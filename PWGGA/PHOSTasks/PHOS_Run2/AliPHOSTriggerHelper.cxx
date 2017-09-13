@@ -9,6 +9,7 @@
 #include <AliVCaloTrigger.h>
 #include <AliVCluster.h>
 #include <AliCaloPhoton.h>
+#include <AliOADBContainer.h>
 
 #include "AliPHOSClusterCuts.h"
 #include "AliPHOSTriggerHelper.h"
@@ -29,7 +30,9 @@ AliPHOSTriggerHelper::AliPHOSTriggerHelper():
 	fTriggerInputL1(-1),//5:1PHL, 6:1PHM, 7:1PHH
 	fTriggerInputL0(-1),//9:0PH0
   fIsMC(kFALSE),
-  fCaloTrigger(0x0)
+  fCaloTrigger(0x0),
+  fIsUserTRUBadMap(kFALSE),
+  fRunNumber(-1)
 {
   //Constructor
   
@@ -39,7 +42,7 @@ AliPHOSTriggerHelper::AliPHOSTriggerHelper():
 
 }
 //________________________________________________________________________
-AliPHOSTriggerHelper::AliPHOSTriggerHelper(Int_t inputL1, Int_t inputL0):
+AliPHOSTriggerHelper::AliPHOSTriggerHelper(TString trigger):
   fPHOSGeo(0x0),
   fXmin(-3),
   fXmax(3),
@@ -51,7 +54,9 @@ AliPHOSTriggerHelper::AliPHOSTriggerHelper(Int_t inputL1, Int_t inputL0):
 	fTriggerInputL1(-1),//5:1PHL, 6:1PHM, 7:1PHH
 	fTriggerInputL0(-1),//9:0PH0
   fIsMC(kFALSE),
-  fCaloTrigger(0x0)
+  fCaloTrigger(0x0),
+  fIsUserTRUBadMap(kFALSE),
+  fRunNumber(-1)
 {
   //Constructor
   
@@ -59,8 +64,29 @@ AliPHOSTriggerHelper::AliPHOSTriggerHelper(Int_t inputL1, Int_t inputL0):
     fPHOSTRUBadMap[i] = 0x0;
   }
 
-  fTriggerInputL1 = inputL1;
-  fTriggerInputL0 = inputL0;
+  trigger.ToUpper();
+
+  if(trigger.Contains("L1")){
+    fTriggerInputL0 = -1;
+    if(trigger.Contains("L1H"))      fTriggerInputL1 = 7;
+    else if(trigger.Contains("L1M")) fTriggerInputL1 = 6;
+    else if(trigger.Contains("L1L")) fTriggerInputL1 = 5;
+    else                             fTriggerInputL1 = -1;
+    //STU stores top-left fired channel
+    fXmin = -3;
+    fXmax = 0;
+    fZmin = -1;
+    fZmax = 2;
+  }
+  if(trigger.Contains("L0")){
+    fTriggerInputL1 = -1;
+    fTriggerInputL0 = 9;
+    //TRU stores bottom-left fired channel.
+    fXmin = -3;
+    fXmax = 0;
+    fZmin = -3;
+    fZmax = 0;
+  }
 
   if(fTriggerInputL1 > 0 && fTriggerInputL0 > 0){
     AliError("Both L1 and L0 are selected. Analyzer must select either L1 or L0. L1 has higher priority in this class.");
@@ -72,50 +98,67 @@ AliPHOSTriggerHelper::~AliPHOSTriggerHelper()
 {
 
   for(Int_t i=0;i<6;i++){
-    if(fPHOSTRUBadMap[i]) delete fPHOSTRUBadMap[i];
+    if(fPHOSTRUBadMap[i]){
+      delete fPHOSTRUBadMap[i];
+      fPHOSTRUBadMap[i] = 0x0;
+    }
   }
-
-
 
 }
 //________________________________________________________________________
 Bool_t AliPHOSTriggerHelper::IsPHI7(AliVEvent *event, AliPHOSClusterCuts *cuts)
 {
-  AliInfo(Form("Your choice L1:%d , L0:%d",fTriggerInputL1,fTriggerInputL0));
-
   fEvent    = dynamic_cast<AliVEvent*>(event);
   fESDEvent = dynamic_cast<AliESDEvent*>(event);
   fAODEvent = dynamic_cast<AliAODEvent*>(event);
   Int_t run = fEvent->GetRunNumber();
 
+  //SetPHOSTRUBadmaps
+  if(fRunNumber != run){
+    fRunNumber = run;
+
+    if(!fIsUserTRUBadMap){
+      AliOADBContainer badmapContainer(Form("phosTriggerBadMap"));
+      badmapContainer.InitFromFile("$ALICE_PHYSICS/OADB/PHOS/PHOSTrigBadMaps.root","phosTriggerBadMap");
+      TObjArray *maps = (TObjArray*)badmapContainer.GetObject(run,"phosTriggerBadMap");
+      if(!maps) AliError(Form("Can not read Trigger Bad map for run %d.",run));
+      else{
+        AliInfo(Form("Setting PHOS Trigger bad map with name %s.",maps->GetName()));
+        for(Int_t mod=0; mod<6;mod++){
+          if(fPHOSTRUBadMap[mod]){
+            delete fPHOSTRUBadMap[mod];
+            fPHOSTRUBadMap[mod] = 0x0;
+          }
+          TH2I * h = (TH2I*)maps->At(mod);
+          if(h) fPHOSTRUBadMap[mod] = new TH2I(*h);
+        }
+      }
+    }
+  }
+
   //if L1 trigger is used, L1 has higher priority
   Bool_t IsPHI7fired = kFALSE;
 
   if(fTriggerInputL1 > 0)
-    IsPHI7fired = event->GetHeader()->GetL1TriggerInputs() & 1 << fTriggerInputL1 - 1;//trigger input -1
+    IsPHI7fired = event->GetHeader()->GetL1TriggerInputs() & 1 << (fTriggerInputL1 - 1);//trigger input -1
   else if(fTriggerInputL0 > 0)
-    IsPHI7fired = event->GetHeader()->GetL0TriggerInputs() & 1 << fTriggerInputL0 - 1;//trigger input -1
+    IsPHI7fired = event->GetHeader()->GetL0TriggerInputs() & 1 << (fTriggerInputL0 - 1);//trigger input -1
   else{
-    AliInfo("Which PHOS triggered data do you analyze? Please set trigger input (L0 or L1).");
+    AliInfo("Which PHOS triggered data do you analyze? Please set trigger input (L0 or L1[H,M,L]).");
     return kFALSE;
   }
 
-  if(!IsPHI7fired){
-    if(fTriggerInputL1 > 0)      AliInfo(Form("Your choice of L1 trigger input %d did not fire.",fTriggerInputL1));
-    else if(fTriggerInputL0 > 0) AliInfo(Form("Your choice of L0 trigger input %d did not fire.",fTriggerInputL0));
-    return kFALSE;
-  }
+  if(!IsPHI7fired) return kFALSE;
 
   if(fTriggerInputL1 > 0)      AliInfo(Form("Your choice of L1 trigger input %d fired.",fTriggerInputL1));
   else if(fTriggerInputL0 > 0) AliInfo(Form("Your choice of L0 trigger input %d fired.",fTriggerInputL0));
 
-  TString trigClasses = event->GetFiredTriggerClasses();
-  if(245917 <= run && run <= 246994){//LHC15o
-    if(!fIsMC && fTriggerInputL1 == 7 && !trigClasses.Contains("CINT7PHH")) return kFALSE;
-    if(!fIsMC && fTriggerInputL1 == 6 && !trigClasses.Contains("CPER7PHM")) return kFALSE;
-  }
-
-  if(fTriggerInputL1 > 0) AliInfo(Form("Your choice of L1 trigger input %d matches with fired trigger classes : %s",fTriggerInputL1,trigClasses.Data()));
+  //TString trigClasses = event->GetFiredTriggerClasses();
+  //if(245917 <= run && run <= 246994){//LHC15o
+  //  if(!fIsMC && fTriggerInputL1 == 7 && !trigClasses.Contains("CINT7PHH")) return kFALSE;
+  //  if(!fIsMC && fTriggerInputL1 == 6 && !trigClasses.Contains("CPER7PHM")) return kFALSE;
+  //}
+  //if(fTriggerInputL1 > 0) AliInfo(Form("Your choice of L1 trigger input %d matches with fired trigger classes : %s",fTriggerInputL1,trigClasses.Data()));
 
   if(run<209122) //Run1
     fPHOSGeo = AliPHOSGeometry::GetInstance("IHEP");
@@ -128,14 +171,12 @@ Bool_t AliPHOSTriggerHelper::IsPHI7(AliVEvent *event, AliPHOSClusterCuts *cuts)
   const Int_t Nfired = fCaloTrigger->GetEntries();
   AliInfo(Form("%d TRU patches fired in PHOS.",Nfired));
 
-  Int_t multClust = 0;
   TClonesArray *array = (TClonesArray*)fEvent->FindListObject("PHOSClusterArray");
   if(array){
     AliInfo("PHOSClusterArray is found!");
-    multClust = array->GetEntriesFast();
   }
   else{
-    AliInfo("PHOSClusterArray is NOT found!");
+    AliInfo("PHOSClusterArray is NOT found! return kFALSE");
     return kFALSE;
   }
   AliVCaloCells *cells = dynamic_cast<AliVCaloCells*>(fEvent->GetPHOSCells());
@@ -144,9 +185,7 @@ Bool_t AliPHOSTriggerHelper::IsPHI7(AliVEvent *event, AliPHOSClusterCuts *cuts)
   Int_t tmod=0; //"Online" module number
   Int_t trgabsId=0; //bottom-left 4x4 edge cell absId [1-64], [1-56]
   Int_t trgmodule=0,trgcellx=0,trgcellz=0;
-  Int_t maxId=0;
   Int_t relId[4]={};
-  Int_t module=0,cellx=0,cellz=0;
   AliVCluster *clu1;
 
   Int_t L1=-999;
@@ -163,13 +202,11 @@ Bool_t AliPHOSTriggerHelper::IsPHI7(AliVEvent *event, AliPHOSClusterCuts *cuts)
     // L1 threshold: -1-L0, 0-PHH, 1-PHM, 2-PHL
 
     if(fCaloTrigger->GetL1TimeSum() != L1){
-      AliInfo(Form("This patch fired as %d, which does not match with your choice %d.",fCaloTrigger->GetL1TimeSum(),L1));
+      //AliInfo(Form("This patch fired as %d, which does not match with your choice %d.",fCaloTrigger->GetL1TimeSum(),L1));
       continue;
     }
-    AliInfo(Form("This patch fired as %d",fCaloTrigger->GetL1TimeSum()));
+    AliInfo(Form("This patch fired as %d.",fCaloTrigger->GetL1TimeSum()));
     fCaloTrigger->GetPosition(tmod,trgabsId);//tmod is online module numbering. i.e., tmod=1 means half module.
-
-    //cout << "tmod = "<< tmod << " , trgabsId = " << trgabsId << endl;
 
     fPHOSGeo->AbsToRelNumbering(trgabsId,trgrelId);
     //for offline numbering, relId should be used.
@@ -178,8 +215,9 @@ Bool_t AliPHOSTriggerHelper::IsPHI7(AliVEvent *event, AliPHOSClusterCuts *cuts)
     trgcellx  = trgrelId[2];
     trgcellz  = trgrelId[3];
 
-    if(trgmodule == 4) continue;
+    //if(!IsGoodTRUChannel("PHOS",trgmodule,trgcellx,trgcellz)) return kFALSE;
 
+    Int_t multClust = array->GetEntriesFast();
     for(Int_t i=0;i<multClust;i++){
       AliCaloPhoton *ph = (AliCaloPhoton*)array->At(i);
       clu1 = (AliVCluster*)ph->GetCluster();
@@ -189,13 +227,8 @@ Bool_t AliPHOSTriggerHelper::IsPHI7(AliVEvent *event, AliPHOSClusterCuts *cuts)
       Int_t maxAbsId = FindHighestAmplitudeCellAbsId(clu1,cells);
 
       fPHOSGeo->AbsToRelNumbering(maxAbsId,relId);
-      module = relId[0];
-      cellx  = relId[2];
-      cellz  = relId[3];
 
-      if(module == 4) continue;
-
-      if(IsMatched(trgrelId,relId) && IsGoodTRUChannel("PHOS",trgrelId[0],trgrelId[2],trgrelId[3])) return kTRUE;
+      if(IsMatched(trgrelId,relId)) return kTRUE;
 
     }//end of fired trigger channel loop
 
@@ -210,14 +243,14 @@ Bool_t AliPHOSTriggerHelper::IsMatched(Int_t *trgrelid, Int_t *clurelid)
   Int_t diffx = trgrelid[2] - clurelid[2];
   Int_t diffz = trgrelid[3] - clurelid[3];
 
-  if(trgrelid[0] != clurelid[0])     return kFALSE; // different modules!
+  if(trgrelid[0] != clurelid[0])     return kFALSE; // different modules!//be carefull! STU kindly detects high energy hits on the border beween 2 modules.
   if(diffx < fXmin || fXmax < diffx) return kFALSE; // X-distance too large!
   if(diffz < fZmin || fZmax < diffz) return kFALSE; // Z-distance too large!
+  if(fTriggerInputL1 < 0 &&  (WhichTRU(trgrelid[2],trgrelid[3]) != WhichTRU(clurelid[2],clurelid[3]))) return kFALSE;// different TRU in case of L0.
 
-  AliInfo(Form("Accepted : diffx = %d , diffz = %d | fXmin = %d , fZmin = %d , fXmax = %d , fZmax = %d.\n",diffx,diffz,fXmin,fZmin,fXmax,fZmax));
+  if(!IsGoodTRUChannel("PHOS",trgrelid[0],trgrelid[2],trgrelid[3])) return kFALSE;
 
-  //if(WhichTRU(trgrelid[2],trgrelid[3]) != WhichTRU(clurelid[2],clurelid[3])) return kFALSE;// different TRU.
-
+  AliInfo(Form("Accepted : diffx = %d , diffz = %d | fXmin = %d , fZmin = %d , fXmax = %d , fZmax = %d.",diffx,diffz,fXmin,fZmin,fXmax,fZmax));
   return kTRUE;
 }
 //________________________________________________________________________

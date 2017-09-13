@@ -192,7 +192,7 @@ void AliAnalysisTaskPHOSObjectCreator::UserExec(Option_t *option)
   AliVCluster *cluster = 0x0;
   Double_t distance=0;
   Int_t inPHOS=0;
-  Int_t absId = -1;
+  //Int_t absId = -1;
 
   for(Int_t iclu=0; iclu<multClust; iclu++){
 
@@ -214,6 +214,7 @@ void AliAnalysisTaskPHOSObjectCreator::UserExec(Option_t *option)
     Double_t ei = 0;
     Double_t eMax = 0;
     Int_t maxAbsId = -1;
+
     Int_t Ncell = cluster->GetNCells();
     for(Int_t i=0;i<cluster->GetNCells();i++){
       Int_t absId_tmp = cluster->GetCellAbsId(i);
@@ -251,7 +252,7 @@ void AliAnalysisTaskPHOSObjectCreator::UserExec(Option_t *option)
 
     if(!fUsePHOSTender && !IsGoodChannel("PHOS",module,cellx,cellz)) continue;
 
-    Bool_t isHG = cells->GetCellHighGain(maxAbsId);
+    //Bool_t isHG = cells->GetCellHighGain(maxAbsId);
 
     energy = cluster->E();
     digMult = cluster->GetNCells();
@@ -342,17 +343,14 @@ void AliAnalysisTaskPHOSObjectCreator::UserExec(Option_t *option)
     AliCaloPhoton *ph = (AliCaloPhoton*)fPHOSObjectArray->At(iph);
     AliVCluster *cluster = (AliVCluster*)ph->GetCluster();
     if(!PassSTDCut(cluster)){
-      AliInfo("cluster is rejected by the standard cluster cut.");
+      //AliInfo("cluster is rejected by the standard cluster cut.");
       fPHOSObjectArray->Remove(ph);
     }
   }
   fPHOSObjectArray->Compress();
 
-  AliInfo("PHOS object array name = PHOSClusterArray.");
-
   AliVEvent* input = InputEvent();
   TObject* outO = input->FindListObject("PHOSClusterArray");
-  TClonesArray* outS = 0;
 
   if(!outO){
     fPHOSObjectArray->SetName("PHOSClusterArray");
@@ -1020,7 +1018,7 @@ void AliAnalysisTaskPHOSObjectCreator::EstimateSTDCutEfficiency(TClonesArray *ar
   const Int_t multClust = array->GetEntriesFast();
 
   TLorentzVector p12;
-  Double_t m12=0,pt12=0;
+  Double_t m12=0;
   Double_t energy=0;
 
   for(Int_t i1=0;i1<multClust;i1++){
