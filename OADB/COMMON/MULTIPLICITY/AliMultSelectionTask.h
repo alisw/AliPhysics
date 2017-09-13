@@ -26,6 +26,8 @@
 #ifndef AliMultSelectionTask_H
 #define AliMultSelectionTask_H
 
+#include <AliAnalysisTaskSE.h>
+
 class TList;
 class TH1F;
 class TH2F;
