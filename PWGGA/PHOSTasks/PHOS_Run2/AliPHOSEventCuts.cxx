@@ -37,16 +37,9 @@ AliPHOSEventCuts::AliPHOSEventCuts(const char *name):
   fMaxAbsZvtx(10.),
   fRejectPileup(kTRUE),
   fRejectDAQIncomplete(kTRUE),
-  fIsPHOSTriggerAnalysis(kFALSE),
-  fTriggerHelper(0x0),
-  fPHOSGeo(0x0),
-  fPHOSClusterCuts(0x0)
+  fPHOSGeo(0x0)
 {
   // Constructor
-
-  for(Int_t i=0;i<6;i++){
-    fPHOSTRUBadMap[i] = 0x0;
-  }
 
 }
 //________________________________________________________________________
@@ -111,7 +104,6 @@ Bool_t AliPHOSEventCuts::AcceptEvent(AliVEvent *event)
   }
 
   const AliVVertex *vVertex    = event->GetPrimaryVertex();
-  //const AliVVertex *vVertexSPD = event->GetPrimaryVertexSPD();
 
   if(vVertex->GetNContributors()<1){
     AliInfo("vertex N contributors is less than 1. reject.");
@@ -158,14 +150,6 @@ Bool_t AliPHOSEventCuts::AcceptEvent(AliVEvent *event)
   if(IsZvtxOut)                               return kFALSE; //reject event with Zvtx > threshold
   if(fRejectPileup && eventPileup)            return kFALSE; //reject pile up event
   if(fRejectDAQIncomplete && IsDAQIncomplete) return kFALSE; //reject DAQ imcopmelete event
-
-  Bool_t IsPHI7fired = kFALSE;
-  //additional criteriat for only PHOS trigger analysis
-  if(fIsPHOSTriggerAnalysis){
-    IsPHI7fired = fTriggerHelper->IsPHI7(event,fPHOSClusterCuts);
-    if(!IsPHI7fired) return kFALSE;
-  }//end of PHOS trigger decision.
-
 
   return kTRUE;
 }
