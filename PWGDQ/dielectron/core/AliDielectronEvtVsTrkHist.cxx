@@ -4,7 +4,7 @@
  * @Email:  pdillens@cern.ch
  * @Filename: AliDielectronEvtVsTrkHist.cxx
  * @Last modified by:   pascaldillenseger
- * @Last modified time: 2017-09-07, 16:25:17
+ * @Last modified time: 2017-09-13, 14:45:06
  */
 
 
@@ -126,15 +126,15 @@ void AliDielectronEvtVsTrkHist::FillHistograms(const AliVEvent *ev)
             bin[iDim] = ADEVTH::GetTrackValue(track, fSparseVars[ADEVTH::kSparseMatchEffITSTPC][iDim]);
           }
         }
-        if(ADEVTH::IsSelectedITS(track)){
-          fNtracksITS++;
-          fMatchEffITS->Fill(bin);
+        if(ADEVTH::IsSelectedKinematics(track)){
           if(ADEVTH::IsSelectedTPC(track)){
-            fNtracksTPC++;
             fMatchEffTPC->Fill(bin);
-          }
-          else{
-            fMatchEffTPC->Fill(bin, 0);
+            fNtracksTPC++;
+            if(ADEVTH::IsSelectedITS(track)){
+              fMatchEffITS->Fill(bin);
+              fNtracksITS++;
+            }
+            else fMatchEffITS->GetBin(bin); // make sure bin is allocated
           }
         }
       }
@@ -305,21 +305,13 @@ void AliDielectronEvtVsTrkHist::SetEventplaneAngles(const AliVEvent *ev)
 }
 
 //______________________________________________
-Bool_t AliDielectronEvtVsTrkHist::IsSelectedITS(AliVTrack *trk)
+Bool_t AliDielectronEvtVsTrkHist::IsSelectedKinematics(AliVTrack *trk)
 {
-  if(!trk) return kFALSE;
-
-  AliDielectronTrackCuts trkCutsITS;
-  trkCutsITS.SetClusterRequirementITS(AliDielectronTrackCuts::kSPD, AliDielectronTrackCuts::kAny);
-  trkCutsITS.SetRequireITSRefit(kTRUE);
-
   Float_t impactParXY = -99.;
   Float_t impactParZ = -99.;
   Float_t eta = -99.;
 
-  if(!trkCutsITS.IsSelected(trk)) return kFALSE;
-
-  if(trk->IsA() == AliESDtrack::Class())trk->GetImpactParameters(impactParXY, impactParZ);
+  if(trk->IsA() == AliESDtrack::Class()) trk->GetImpactParameters(impactParXY, impactParZ);
   else{
     AliAODTrack *trackAOD = (AliAODTrack*) trk;
     Double_t xyz[2] = {-100.,-100.};
@@ -338,8 +330,37 @@ Bool_t AliDielectronEvtVsTrkHist::IsSelectedITS(AliVTrack *trk)
 }
 
 //______________________________________________
+Bool_t AliDielectronEvtVsTrkHist::IsSelectedITS(AliVTrack *trk)
+{
+  // TODO the cuts should be made available to be set by a setter
+  if(!trk) return kFALSE;
+
+  AliDielectronTrackCuts trkCutsITS;
+  trkCutsITS.SetClusterRequirementITS(AliDielectronTrackCuts::kSPD, AliDielectronTrackCuts::kAny);
+  trkCutsITS.SetRequireITSRefit(kTRUE);
+
+  if(!trkCutsITS.IsSelected(trk)) return kFALSE;
+
+  Float_t itsChi2Cl = -99.;
+
+  if(trk->IsA() == AliAODTrack::Class()){
+    AliAODTrack *aodtrk = (AliAODTrack*) trk;
+    itsChi2Cl = ( aodtrk->GetITSNcls()>0 ) ? aodtrk->GetITSchi2() / aodtrk->GetITSNcls() : 0;
+  }
+  if(trk->IsA() == AliESDtrack::Class()){
+    AliESDtrack *esdtrk = (AliESDtrack*) trk;
+    itsChi2Cl = ( esdtrk->GetNcls(0)>0 ) ? esdtrk->GetITSchi2() / esdtrk->GetITSNcls() : 0;
+  }
+
+  if(0. >= itsChi2Cl || itsChi2Cl >= 5.) return kFALSE;
+
+  return kTRUE;
+}
+
+//______________________________________________
 Bool_t AliDielectronEvtVsTrkHist::IsSelectedTPC(AliVTrack *trk)
 {
+  // TODO the cuts should be made available to be set by a setter
   if(!trk) return kFALSE;
 
   AliDielectronTrackCuts trkCutsTPC;
@@ -353,7 +374,10 @@ Bool_t AliDielectronEvtVsTrkHist::IsSelectedTPC(AliVTrack *trk)
   nClsTPC = trk->GetTPCNcls();
   if(nClsTPC < 50. || nClsTPC > 160.) return kFALSE;
   tpcChi2Cl = nClsTPC > 0 ? trk->GetTPCchi2() / nClsTPC : -1.;
-  if(tpcChi2Cl < 0. || tpcChi2Cl > 4.) return kFALSE;
+  if(tpcChi2Cl < 0. || tpcChi2Cl > 3.) return kFALSE;
+
+  Float_t nSigmaEleTPC = fPIDResponse->NumberOfSigmasTPC(trk, AliPID::kElectron); // Use only raw tpc pid not corrected with the dq-framework
+  if( TMath::Abs(nSigmaEleTPC) > 3. ) return kFALSE;
 
   return kTRUE;
 }
@@ -361,7 +385,8 @@ Bool_t AliDielectronEvtVsTrkHist::IsSelectedTPC(AliVTrack *trk)
 //______________________________________________
 void AliDielectronEvtVsTrkHist::CalculateMatchingEfficiency()
 {
-  const Int_t nBins = fMatchEffITS->GetNbins();
+  const Int_t nBins = fMatchEffTPC->GetNbins();
+  printf("NbinsTPC %lld NbinsITS %lld\n", fMatchEffTPC->GetNbins(), fMatchEffITS->GetNbins());
   Double_t matchEff;
   Double_t matchEffErr;
   Int_t matchEffDim = -1;
@@ -375,39 +400,34 @@ void AliDielectronEvtVsTrkHist::CalculateMatchingEfficiency()
   }
 
   Int_t *coord = new Int_t[nDimMatchEff];
-  Double_t *values = new Double_t[nDimMatchEff];
+  Long64_t errBin = -1;
   for (Int_t iBin = 0; iBin < nBins; iBin++) {
     // Get the number of tracks in the bin from the TPC and ITS histograms
-    nCountsITS = fMatchEffITS->GetBinContent(iBin);
     nCountsTPC = fMatchEffTPC->GetBinContent(iBin, coord);
+    nCountsITS = fMatchEffITS->GetBinContent(iBin);
 
-    if (nCountsITS < 0.9) {
-       nCountsTPC = 0.;
-       nCountsITS = 1.;
+    if (nCountsTPC < 0.9) {
+      nCountsITS = 0.;
+      nCountsTPC = 1.;
     }
+
     // Calculate the matching efficiency for the given bin
-    matchEff = nCountsTPC/nCountsITS;
-    // Set values with values of the track and event properties and the matching efficiency
-    for (Int_t iDim = 0; iDim < nDimMatchEff; iDim++) {
-      if(iDim != matchEffDim)  values[iDim] = fMatchEffTPC->GetAxis(iDim)->GetBinCenter(coord[iDim]);
-      else{
-        values[iDim] = matchEff;
-        coord[iDim] = fMatchEffTPC->GetAxis(iDim)->FindBin(matchEff);
-      }
-    }
-    //FIXME place the error calculation after the match eff is calculated fully
-    Double_t err1 = fSparseObjs[ADEVTH::kSparseMatchEffITSTPC]->GetBinError(iBin) * nCountsTPC;
+    matchEff = nCountsITS/nCountsTPC;
+
+    // Set the matching efficiency bin in the coordinates
+    coord[matchEffDim] = fMatchEffTPC->GetAxis(matchEffDim)->FindBin(matchEff);
+
+    Double_t err1 = fMatchEffTPC->GetBinError(iBin) * nCountsTPC;
     Double_t err2 = fMatchEffITS->GetBinError(iBin) * nCountsITS;
-    Double_t b22 = nCountsITS * nCountsITS;
-    Double_t err = (err1 * err1 + err2 * err2) / (b22 * b22);
-    matchEffErr = err;
+    Double_t b22  = nCountsITS * nCountsTPC;
+    if(b22 > 0) matchEffErr = (err1 * err1 + err2 * err2) / (b22 * b22);
+    else matchEffErr = 0.;
 
 // Now set the correct match efficiency value to the bin coordinates
-    fSparseObjs[ADEVTH::kSparseMatchEffITSTPC]->SetBinContent(coord, nCountsITS);
-    // fSparseObjs[ADEVTH::kSparseMatchEffITSTPC]->Fill(values, nCountsITS);
-    //FIXME Error needs a second thought how to be setted
-    fSparseObjs[ADEVTH::kSparseMatchEffITSTPC]->SetBinError2(iBin, matchEffErr);
+    fSparseObjs[ADEVTH::kSparseMatchEffITSTPC]->SetBinContent(coord, nCountsTPC);
+    errBin = fSparseObjs[ADEVTH::kSparseMatchEffITSTPC]->GetBin(coord);
+
+    fSparseObjs[ADEVTH::kSparseMatchEffITSTPC]->SetBinError2(errBin, matchEffErr);
   }
   delete [] coord;
-  delete [] values;
 }

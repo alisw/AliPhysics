@@ -294,7 +294,6 @@ Int_t AliDielectronHelper::GetNacc(const AliVEvent *ev){
 Double_t AliDielectronHelper::GetITSTPCMatchEff(const AliVEvent *ev, Double_t *efficiencies, Bool_t bEventPlane, Bool_t useV0Cep){
   // recalulate the its-tpc matching efficiecy
   if (!ev) return -1;
-  Bool_t bDebug = kFALSE;
 
 
   // AliDielectronVarCuts varCutsTPC;
