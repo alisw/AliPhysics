@@ -7,7 +7,7 @@
  * @Email:  pdillens@cern.ch
  * @Filename: AliDielectronEvtVsTrkHist.h
  * @Last modified by:   pascaldillenseger
- * @Last modified time: 2017-08-31, 13:40:29
+ * @Last modified time: 2017-09-12, 14:22:00
  */
 
 #include <TArray.h>
@@ -61,8 +61,11 @@ public:
   void SetSparseVars(Int_t nSparse, Int_t nAxis, Int_t type);
   void SetEventplaneAngles(const AliVEvent *ev);
 
+  void SetPIDResponse(AliPIDResponse *pidResponse) {fPIDResponse = pidResponse;}
+
   Bool_t IsSelectedITS(AliVTrack *trk);
   Bool_t IsSelectedTPC(AliVTrack *trk);
+  Bool_t IsSelectedKinematics(AliVTrack *trk);
 
   void CalculateMatchingEfficiency();
 
@@ -86,6 +89,8 @@ private:
   Int_t fSparseVars[AliDielectronEvtVsTrkHist::kSparseNMaxValues][20];
   Bool_t fSparseIsTrackVar[AliDielectronEvtVsTrkHist::kSparseNMaxValues][20];
   Float_t fEventPlaneAngle[2]; // 0 = TPC, 1 = V0C
+
+  AliPIDResponse *fPIDResponse; // Used for the pid cut
 
   THnSparseD *fMatchEffITS;  // Sparse object to normalize the matching eff
   THnSparseD *fMatchEffTPC;  // Sparse object to normalize the matching eff
