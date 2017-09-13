@@ -1840,9 +1840,8 @@ Int_t AliMultSelectionTask::SetupRun(const AliVEvent* const esd)
             if ( lItsEPOSLHC ){
                 lProductionName = Form("%s-DefaultMC-EPOSLHC",lPeriodName.Data());
                 AliWarning(Form(" This is EPOS LHC! Will use OADB named %s",lProductionName.Data()));
-                AliWarning(" This feature is being developed NOW! Hang in there! ");
             }
-            if ( (!lItsHijing) && (!lItsDPMJet) ){
+            if ( (!lItsHijing) && (!lItsDPMJet) && (!lItsEPOSLHC) ){
                 AliWarning(" Unable to detect generator type from header. Sorry.");
             }
         }else{
