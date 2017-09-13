@@ -44,7 +44,6 @@
 #include "AliEMCALTriggerPatchInfo.h"
 #include <TArrayI.h>
 #include <AliEMCALTriggerBitConfig.h>
-//#include <AliEmcalTriggerMakerTask.h>
 #include <TSystem.h>
 #include <TROOT.h>
 #include "TRandom3.h"
@@ -55,6 +54,9 @@
 #include "AliOADBContainer.h"
 #include <AliCDBManager.h>
 #include <AliEmcalDownscaleFactorsOCDB.h>
+#include <TGrid.h>
+#include <vector>
+using std::vector;
 
 
 #include "AliAnalysisTaskEMCALClusterTurnOn.h"
@@ -88,6 +90,7 @@ fNLMCut(0),
 fNLMmin(0),
 fTMClusterRejected(kTRUE),
 fTMClusterInConeRejected(kTRUE),
+fFastOrPath(""),
 fBinsPt(),
 fBinsPtCl(),
 fBinsRejection(),
@@ -127,7 +130,8 @@ fM02cut(0),
 fMaskFastOrCells(0),
 fOutputTHnS(0),
 hFastOrIndexLeadingCluster(0),
-fOutTHnS_Clust(0)
+fOutTHnS_Clust(0),
+MaskedFastOrs()
 {
 
     // Default constructor.
@@ -161,6 +165,7 @@ fNLMCut(0),
 fNLMmin(0),
 fTMClusterRejected(kTRUE),
 fTMClusterInConeRejected(kTRUE),
+fFastOrPath(""),
 fBinsPt(),
 fBinsPtCl(),
 fBinsRejection(),
@@ -200,7 +205,8 @@ fM02cut(0),
 fMaskFastOrCells(0),
 fOutputTHnS(0),
 hFastOrIndexLeadingCluster(0),
-fOutTHnS_Clust(0)
+fOutTHnS_Clust(0),
+MaskedFastOrs()
 {
 
     // Standard constructor.
@@ -575,7 +581,7 @@ Bool_t AliAnalysisTaskEMCALClusterTurnOn::Run()
     Float_t Ampli;
     AODtrigger->GetAmplitude(Ampli);
     for(Int_t i = 0; i<ntimes; i++){
-      if((L0times[i]==8 || L0times[i] == 9) && Ampli > 28700.){
+      if((L0times[i]==8 || L0times[i] == 9) && Ampli >5000. ){
         isL0 = kTRUE;
         hL0Amplitude->Fill(Ampli);
 //        break;
@@ -638,6 +644,22 @@ Bool_t AliAnalysisTaskEMCALClusterTurnOn::Run()
   Bool_t FillEGAOver12 = kTRUE;
   Bool_t FillEGAOver14 = kTRUE;
 
+  vector<Int_t> MaskedFastOrs;
+  if(fMaskFastOrCells){
+    if(fFastOrPath.Contains("alien://")) TGrid::Connect("alien://");
+    AliOADBContainer badchannelDB("AliEmcalMaskedFastors");
+    badchannelDB.InitFromFile(fFastOrPath, "AliEmcalMaskedFastors");
+    TObjArray *badchannelmap = static_cast<TObjArray *>(badchannelDB.GetObject(InputEvent()->GetRunNumber()));
+    if(badchannelmap && badchannelmap->GetEntries())
+      {
+      for(TIter citer = TIter(badchannelmap).Begin(); citer != TIter::End(); ++citer){
+        TParameter<int> *channelID = static_cast<TParameter<int> *>(*citer);
+        int maskedFastOr = channelID->GetVal();
+        MaskedFastOrs.push_back(maskedFastOr);
+      }
+    }
+    else Printf("Could not open MaskedFastors.root");
+  }
 
 
   for (auto it : clusters->accepted()){
@@ -655,25 +677,17 @@ Bool_t AliAnalysisTaskEMCALClusterTurnOn::Run()
             
     Bool_t isMasked = kFALSE;
     if(fMaskFastOrCells){
-      AliOADBContainer badchannelDB("AliEmcalMaskedFastors");
-      badchannelDB.InitFromFile("MaskedFastors.root", "AliEmcalMaskedFastors");
-      TObjArray *badchannelmap = static_cast<TObjArray *>(badchannelDB.GetObject(InputEvent()->GetRunNumber()));
-      if(badchannelmap && badchannelmap->GetEntries())
-        {
-        for(TIter citer = TIter(badchannelmap).Begin(); citer != TIter::End(); ++citer){
-          TParameter<int> *channelID = static_cast<TParameter<int> *>(*citer);
-          int maskedFastOr = channelID->GetVal();
-          geom->GetAbsCellIdFromEtaPhi(vecCOI.Eta(),vecCOI.Phi(),cellID);
-          geom->GetFastORIndexFromCellIndex(cellID,FastOrIndex);
-          if(FastOrIndex==maskedFastOr) {
+      geom->GetAbsCellIdFromEtaPhi(vecCOI.Eta(),vecCOI.Phi(),cellID);
+      if(cellID>=0){
+        geom->GetFastORIndexFromCellIndex(cellID,FastOrIndex);
+        for(unsigned int maskedFOcounter=0;maskedFOcounter<MaskedFastOrs.size();maskedFOcounter++){
+          if(FastOrIndex==MaskedFastOrs[maskedFOcounter]) {
             isMasked = kTRUE;
             break;
           }
         }
       }
-      else Printf("Could not open MaskedFastors.root");
     }
-
     if(isMasked){
       continue;
     }

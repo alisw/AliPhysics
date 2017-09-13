@@ -90,6 +90,7 @@ public:
   void			   SetPhiClBinning(vector<Double_t> binedges)			   { fBinsClPhi = binedges; }
   void                     SetM02cut (Bool_t M02)                                          { fM02cut = M02;}
   void                     SetFastOrMasking(Bool_t mask)                                   { fMaskFastOrCells = mask; }
+  void                     SetFastOrPath(TString path)                                     { fFastOrPath = path;}
 
 protected:
   
@@ -132,6 +133,7 @@ protected:
   Int_t       fNLMmin;                         // minimum number of NLM
   Bool_t      fTMClusterRejected;              // able/disable TM cluster rejection
   Bool_t      fTMClusterInConeRejected;        // able/disable TM cluster rejection in isolation cone
+  TString     fFastOrPath;
   
     // Initialization of variables for THnSparse
 
@@ -181,6 +183,7 @@ protected:
   TH2D        *hFastOrIndexLeadingCluster;
   THnSparse   *fOutTHnS_Clust;                 //!<! pT,Rejection,cluster info
   
+  std::vector<Int_t>       MaskedFastOrs;
   
 private:
   AliAnalysisTaskEMCALClusterTurnOn(const AliAnalysisTaskEMCALClusterTurnOn&);            // not implemented
