@@ -519,9 +519,9 @@ Bool_t AliAnalysisTaskEmcalHfeTagging::FillHistograms()
         }
     }
     
-    AliParticleContainer *partContAn = GetParticleContainer(0);
-    TClonesArray *trackArrayAn = partContAn->GetArray();
-    Int_t ntracksEvt = trackArrayAn->GetEntriesFast();
+    //AliParticleContainer *partContAn = GetParticleContainer(0);
+    //TClonesArray *trackArrayAn = partContAn->GetArray();
+    //Int_t ntracksEvt = trackArrayAn->GetEntriesFast();
     
     Float_t rhoVal=0, rhoMassVal = 0.;
     if(jetCont) {
@@ -572,7 +572,7 @@ Bool_t AliAnalysisTaskEmcalHfeTagging::FillHistograms()
             
             fShapesVar[0] = 0.;
             if(fJetShapeType == kDetEmbPartPythia){
-                AliJetContainer *jetContTrue = GetJetContainer(1);
+                //AliJetContainer *jetContTrue = GetJetContainer(1);
                 AliJetContainer *jetContUS = GetJetContainer(2);
                 
                 if(fJetShapeSub==kConstSub){
@@ -594,7 +594,7 @@ Bool_t AliAnalysisTaskEmcalHfeTagging::FillHistograms()
                     continue;
                 }
                 
-                AliJetContainer *jetContPart=GetJetContainer(3);
+                //AliJetContainer *jetContPart=GetJetContainer(3);
                 jet3=jet2->ClosestJet();
                 
                 if(!jet3){
@@ -620,7 +620,7 @@ Bool_t AliAnalysisTaskEmcalHfeTagging::FillHistograms()
             
             if (fJetShapeType == kPythiaDef){
                 
-                AliJetContainer *jetContTrue = GetJetContainer(1);
+                //AliJetContainer *jetContTrue = GetJetContainer(1);
                 AliJetContainer *jetContUS = GetJetContainer(2);
                 AliJetContainer *jetContPart = GetJetContainer(3);
                 
@@ -732,7 +732,8 @@ Bool_t AliAnalysisTaskEmcalHfeTagging::FillHistograms()
             
             
             
-            Float_t ptMatch=0., ptDMatch=0., massMatch=0., constMatch=0.,angulMatch=0.,circMatch=0., lesubMatch=0., sigma2Match=0., coronnaMatch=0;
+            Float_t ptMatch=0., ptDMatch=0., massMatch=0., angulMatch=0.,circMatch=0., lesubMatch=0., coronnaMatch=0;
+            //Float constMatch=0., sigma2Match=0.;
             Int_t kMatched = 0;
             
             if (fJetShapeType==kPythiaDef) {
@@ -984,7 +985,7 @@ Int_t AliAnalysisTaskEmcalHfeTagging::GetNumberOfPairs(AliAODTrack *track,const 
         
         // tagged particle
         Double_t p=-9.,pt=-9.,eta =-9.,phi=-9.;
-        Int_t charge = 0, pdg = 0;
+        Int_t charge = 0;
         
         pt = track->Pt();
         p = track->P();
@@ -994,8 +995,8 @@ Int_t AliAnalysisTaskEmcalHfeTagging::GetNumberOfPairs(AliAODTrack *track,const 
         
         
         // associated particle variables
-        Double_t pAsso=-9.,ptAsso=-9.,etaAsso =-9.,fITSnSigmaAsso=-9.,fTOFnSigmaAsso=-9.,fTPCnSigmaAsso=-9.,phiAsso=-9.;
-        Int_t chargeAsso = 0, pdgAsso = 0;
+        Double_t pAsso=-9.,ptAsso=-9.,etaAsso =-9.,fITSnSigmaAsso=-9.,fTPCnSigmaAsso=-9.,phiAsso=-9.;
+        Int_t chargeAsso = 0;
         
         ptAsso = trackAsso->Pt();
         pAsso = trackAsso->P();
@@ -1064,7 +1065,7 @@ Bool_t AliAnalysisTaskEmcalHfeTagging::IsFromHFdecay(AliAODMCParticle *particle)
 {
     // Check if the mother comes from heavy-flavour decays
     Bool_t isHFdecay = kFALSE;
-    Int_t partPDG = particle->GetPdgCode();
+    //Int_t partPDG = particle->GetPdgCode();
     
     Int_t idMother = particle->GetMother();
     if (idMother>0){
@@ -1097,7 +1098,7 @@ Bool_t AliAnalysisTaskEmcalHfeTagging::IsFromLMdecay(AliAODMCParticle *particle)
 {
     // Check if  mother comes from light-meson decays
     Bool_t isLMdecay = kFALSE;
-    Int_t partPDG = particle->GetPdgCode();
+    //Int_t partPDG = particle->GetPdgCode();
     
     Int_t idMother = particle->GetMother();
     if (idMother>0){
@@ -1535,7 +1536,7 @@ Int_t AliAnalysisTaskEmcalHfeTagging::SelectTrigger(Float_t minpT, Float_t maxpT
     
     
     
-    TList *trackList = new TList();
+    //TList *trackList = new TList();
     Int_t triggers[100];
     for (Int_t iTrigger=0; iTrigger<100; iTrigger++) triggers[iTrigger] = 0;
     Int_t iTT = 0;
@@ -1616,9 +1617,8 @@ Bool_t AliAnalysisTaskEmcalHfeTagging::InclElecTrackCuts(const AliVVertex *pViet
     if(!ietrack->IsOn(AliAODTrack::kITSrefit)) return kFALSE;
     if(!ietrack->IsOn(AliAODTrack::kTPCrefit)) return kFALSE;
     if(!(ietrack->HasPointOnITSLayer(0) && ietrack->HasPointOnITSLayer(1))) return kFALSE;
-    if(ietrack->GetTPCFoundFraction() < 0.6) return kFALSE;
     if ((ietrack->Pt()<0.5) || (ietrack->Pt()>4)) return kFALSE;
-    
+
     Bool_t kinkmotherpass = kTRUE;
     for(Int_t kinkmother = 0; kinkmother < nMother; kinkmother++) {
         if(ietrack->GetID() == listMother[kinkmother]) {
