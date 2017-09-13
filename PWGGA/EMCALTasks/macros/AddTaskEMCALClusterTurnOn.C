@@ -97,20 +97,14 @@ AliAnalysisTaskEMCALClusterTurnOn* AddTaskEMCALClusterTurnOn(
   printf("Path of config file: %s\n",configFilePath.Data());
   
   
-  TString OADBFile("MaskedFastors.root");
   Bool_t MaskFastors = kFALSE;
 
   if(!MaskedFastOrPath.IsNull()){ 
-    Printf("Trying to copy MaskedFastors.root");
     MaskFastors = kTRUE;
-    if(MaskedFastOrPath.Contains("alien:///")){
-    	gSystem->Exec(Form("alien_cp %s/%s .",MaskedFastOrPath.Data(),OADBFile.Data()));
+    if(!MaskedFastOrPath.Contains("alien:///")){
+      Printf("OADB path is not an alien path!!!");
+      return NULL;
     }
-    else{
-    	gSystem->Exec(Form("cp %s/%s .",MaskedFastOrPath.Data(),OADBFile.Data()));
-    }
-    if(TFile::Open("MaskFastors.root","READ") != NULL) Printf("Copy succesful");
-    else Printf("Copy failed!!!");
   }
   
 
@@ -133,6 +127,7 @@ AliAnalysisTaskEMCALClusterTurnOn* AddTaskEMCALClusterTurnOn(
   task->SetNeedEmcalGeom(kTRUE);
   task->SetM02cut(M02cut);
   task->SetFastOrMasking(MaskFastors);
+  task->SetFastOrPath(MaskedFastOrPath);
   
   TString name(Form("ClusterTurnOn_%s_%s", ntracks, nclusters));
   cout<<"name of the containers  "<<name.Data()<<endl;
