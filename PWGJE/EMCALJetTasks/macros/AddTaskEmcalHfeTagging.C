@@ -40,21 +40,29 @@ AliAnalysisTaskEmcalHfeTagging* AddTaskEmcalHfeTagging(const char * njetsBase,
       return NULL;
     }
 
-  TString wagonName1 = Form("JetHfeTaggings_%s_TC%s%s",njetsBase,trigClass.Data(),tag.Data());
+  TString wagonName1;
   TString wagonName2;
     
     
-  if (jetShapeTree == AliAnalysisTaskEmcalHfeTagging::kAll)
+  if (jetShapeTree == AliAnalysisTaskEmcalHfeTagging::kAll){
+    wagonName1 = Form("JetHfeTaggings_%s_TC%s%sList_All",njetsBase,trigClass.Data(),tag.Data());
     wagonName2 = Form("JetHfeTaggings_%s_TC%s%sTree_All",njetsBase,trigClass.Data(),tag.Data());
-  
-  if (jetShapeTree == AliAnalysisTaskEmcalHfeTagging::kInclElec)
+  }
+    
+  if (jetShapeTree == AliAnalysisTaskEmcalHfeTagging::kInclElec){
+    wagonName1 = Form("JetHfeTaggings_%s_TC%s%sList_InclElec",njetsBase,trigClass.Data(),tag.Data());
     wagonName2 = Form("JetHfeTaggings_%s_TC%s%sTree_InclElec",njetsBase,trigClass.Data(),tag.Data());
+  }
     
-  if (jetShapeTree == AliAnalysisTaskEmcalHfeTagging::kPhotElec)
+  if (jetShapeTree == AliAnalysisTaskEmcalHfeTagging::kPhotElec){
+    wagonName1 = Form("JetHfeTaggings_%s_TC%s%sList_PhotElec",njetsBase,trigClass.Data(),tag.Data());
     wagonName2 = Form("JetHfeTaggings_%s_TC%s%sTree_PhotElec",njetsBase,trigClass.Data(),tag.Data());
+  }
     
-  if (jetShapeTree == AliAnalysisTaskEmcalHfeTagging::kNoElec)
+  if (jetShapeTree == AliAnalysisTaskEmcalHfeTagging::kNoElec){
+    wagonName1 = Form("JetHfeTaggings_%s_TC%s%sList_NoElec",njetsBase,trigClass.Data(),tag.Data());
     wagonName2 = Form("JetHfeTaggings_%s_TC%s%sTree_NoElec",njetsBase,trigClass.Data(),tag.Data());
+  }
     
   //Configure jet tagger task
   AliAnalysisTaskEmcalHfeTagging *task = new AliAnalysisTaskEmcalHfeTagging(wagonName1.Data());
