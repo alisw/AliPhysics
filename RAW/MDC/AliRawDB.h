@@ -29,10 +29,11 @@
 #endif
 
 #include "AliDAQ.h"
+#include "AliRawDataArrayV2.h"
 
 // Forward class declarations
 class AliRawEventV2;
-class AliRawDataArrayV2;
+//class AliRawDataArrayV2;
 class TFile;
 class AliESDEvent;
 
