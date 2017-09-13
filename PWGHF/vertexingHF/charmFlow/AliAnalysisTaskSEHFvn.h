@@ -107,6 +107,7 @@ class AliAnalysisTaskSEHFvn : public AliAnalysisTaskSE
     fTPCEtaMin=etamin;
     fTPCEtaMax=etamax;
   }
+  void SetRemoveDaughtersFromq2(Bool_t removeDau) {fRemoveDauFromq2=removeDau;}
 
   // Implementation of interface methods
   virtual void UserCreateOutputObjects();
