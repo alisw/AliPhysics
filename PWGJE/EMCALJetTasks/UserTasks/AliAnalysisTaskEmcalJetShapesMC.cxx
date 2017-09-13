@@ -1156,7 +1156,8 @@ void AliAnalysisTaskEmcalJetShapesMC::SoftDrop(AliEmcalJet *fJet,AliJetContainer
   AliParticleContainer *fTrackCont = fJetCont->GetParticleContainer();
   //cout<<"CALL TO SOFTDROP"<<endl;
   Double_t JetEta=fJet->Eta(),JetPhi=fJet->Phi();
-
+  Double_t zeta=0;
+  Double_t angle=0;
    if (fTrackCont) for (Int_t i=0; i<fJet->GetNumberOfTracks(); i++) {
       AliVParticle *fTrk = fJet->TrackAt(i, fTrackCont->GetArray());
       if (!fTrk) continue; 
@@ -1208,7 +1209,11 @@ void AliAnalysisTaskEmcalJetShapesMC::SoftDrop(AliEmcalJet *fJet,AliJetContainer
      fastjet::PseudoJet PseudoTracksLab=PseudoTracksCMS.boost(MyJet);
      PseudoTracksLab.set_user_index(i+fJet->GetNumberOfTracks()+100);											 
      fInputVectors.push_back(PseudoTracksLab);
-    
+
+     zeta=omega/fJet->E();  
+     angle=PseudoTracksLab.delta_R(MyJet);
+     
+     
    }
 
   
@@ -1258,50 +1263,50 @@ void AliAnalysisTaskEmcalJetShapesMC::SoftDrop(AliEmcalJet *fJet,AliJetContainer
   if(ReclusterAlgo==0){
   fShapesVar[12]=SymParam;
   fShapesVar[13]=DeltaR;
-  fShapesVar[14]=GroomedPt;
-  fShapesVar[15]=NGroomedBranches;
+  fShapesVar[14]=zeta;
+  fShapesVar[15]=angle;
   fShapesVar[16]=GroomedMass;}
    if(ReclusterAlgo==1){
   fShapesVar[17]=SymParam;
   fShapesVar[18]=DeltaR;
-  fShapesVar[19]=GroomedPt;
-  fShapesVar[20]=NGroomedBranches;
+  fShapesVar[19]=zeta;
+  fShapesVar[20]=angle;
   fShapesVar[21]=GroomedMass; }
 
      if(ReclusterAlgo==2){
   fShapesVar[22]=SymParam;
   fShapesVar[23]=DeltaR;
-  fShapesVar[24]=GroomedPt;
-  fShapesVar[25]=NGroomedBranches;
+  fShapesVar[24]=zeta;
+  fShapesVar[25]=angle;
   fShapesVar[26]=GroomedMass;
      }}
   if(beta==1){
      fShapesVar[27]=SymParam;
   fShapesVar[28]=DeltaR;
-  fShapesVar[29]=GroomedPt;
-  fShapesVar[30]=NGroomedBranches;
+  fShapesVar[29]=zeta;
+  fShapesVar[30]=angle;
   fShapesVar[31]=GroomedMass;
   }
   //this one kills soft and large angle radiation
   if((beta==1.5) && (zcut==0.5)){
   fShapesVar[32]=SymParam;
   fShapesVar[33]=DeltaR;
-  fShapesVar[34]=GroomedPt;
-  fShapesVar[35]=NGroomedBranches;
+  fShapesVar[34]=zeta;
+  fShapesVar[35]=angle;
   fShapesVar[36]=GroomedMass; }
    //this option favour democratic branches at large kt
    if((beta==-1) && (zcut==0.005)){
   fShapesVar[37]=SymParam;
   fShapesVar[38]=DeltaR;
-  fShapesVar[39]=GroomedPt;
-  fShapesVar[40]=NGroomedBranches;
+  fShapesVar[39]=zeta;
+  fShapesVar[40]=angle;
   fShapesVar[41]=GroomedMass; }
 
   if((beta==-2) && (zcut==0.005)){
   fShapesVar[42]=SymParam;
   fShapesVar[43]=DeltaR;
-  fShapesVar[44]=GroomedPt;
-  fShapesVar[45]=NGroomedBranches;
+  fShapesVar[44]=zeta;
+  fShapesVar[45]=angle;
   fShapesVar[46]=GroomedMass; }
 
 
