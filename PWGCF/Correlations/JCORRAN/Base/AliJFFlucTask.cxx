@@ -76,12 +76,6 @@ AliJFFlucTask::AliJFFlucTask():
 	fQC_eta_min=-0.8;
 	fQC_eta_max=0.8;
 
-	pfOutlierLowCut = new TF1("fLowCut","[0]+[1]*x - 5.*([2]+[3]*x+[4]*x*x+[5]*x*x*x)",0,100);
-	pfOutlierHighCut = new TF1("fHighCut","[0]+[1]*x + 5.5*([2]+[3]*x+[4]*x*x+[5]*x*x*x)",0,100);
-
-	pfOutlierLowCut->SetParameters(0.0157497, 0.973488, 0.673612, 0.0290718, -0.000546728, 5.82749e-06);
-	pfOutlierHighCut->SetParameters(0.0157497, 0.973488, 0.673612, 0.0290718, -0.000546728, 5.82749e-06);
-
 	for(int icent=0; icent<7; icent++){
 		for(int isub=0; isub<2; isub++){
 			h_ModuledPhi[icent][isub]=NULL;
@@ -125,12 +119,6 @@ AliJFFlucTask::AliJFFlucTask(const char *name,  Bool_t IsMC, Bool_t IsExcludeWea
 	fQC_eta_min=-0.8;
 	fQC_eta_max=0.8;
 
-	pfOutlierLowCut = new TF1("fLowCut","[0]+[1]*x - 5.*([2]+[3]*x+[4]*x*x+[5]*x*x*x)",0,100);
-    	pfOutlierHighCut = new TF1("fHighCut","[0]+[1]*x + 5.5*([2]+[3]*x+[4]*x*x+[5]*x*x*x)",0,100);
-
-	pfOutlierLowCut->SetParameters(0.0157497, 0.973488, 0.673612, 0.0290718, -0.000546728, 5.82749e-06);
-	pfOutlierHighCut->SetParameters(0.0157497, 0.973488, 0.673612, 0.0290718, -0.000546728, 5.82749e-06);
-
 	for(int icent=0; icent<7; icent++){
 		for(int isub=0; isub<2; isub++){
 			h_ModuledPhi[icent][isub]=NULL;
@@ -147,8 +135,6 @@ AliJFFlucTask::AliJFFlucTask(const AliJFFlucTask& ap) :
 	fFFlucAna(ap.fFFlucAna)
 {
 	AliInfo("----DEBUG AliJFFlucTask COPY ----");
-	pfOutlierLowCut = (TF1*)ap.pfOutlierLowCut->Clone();
-	pfOutlierHighCut = (TF1*)ap.pfOutlierHighCut->Clone();
 }
 
 //_____________________________________________________________________________
@@ -164,8 +150,8 @@ AliJFFlucTask& AliJFFlucTask::operator = (const AliJFFlucTask& ap)
 //______________________________________________________________________________
 AliJFFlucTask::~AliJFFlucTask()
 {
-	delete pfOutlierLowCut;
-	delete pfOutlierHighCut;
+	//delete pfOutlierLowCut;
+	//delete pfOutlierHighCut;
 	delete fFFlucAna;
 	delete fInputList;
 	delete fOutput;
@@ -466,9 +452,11 @@ Bool_t AliJFFlucTask::IsGoodEvent( AliAODEvent *event){
 			return kFALSE;
 		}
 
-		Float_t v0mcent = pms->GetMultiplicityPercentile("V0M");
-		Float_t cl0cent = pms->GetMultiplicityPercentile("CL0");
-		if(cl0cent < pfOutlierLowCut->Eval(v0mcent) || cl0cent > pfOutlierHighCut->Eval(v0mcent))
+		double v0mcent = pms->GetMultiplicityPercentile("V0M");
+		double cl0cent = pms->GetMultiplicityPercentile("CL0");
+		double center = 0.973488*cl0cent+0.0157497;
+		double sigma = 0.673612+cl0cent*(0.0290718+cl0cent*(-0.000546728+cl0cent*5.82749e-06));
+		if(v0mcent < center-5.0*sigma || v0mcent > center+5.5*sigma || v0mcent < 0.0 || v0mcent > 60.0)
 			return kFALSE;
 	}
 
