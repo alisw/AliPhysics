@@ -460,7 +460,7 @@ void AliJFFlucAnalysis::UserExec(Option_t *) {
 				}
 			}
 		}
-		fSingleVn[ih][0] = vn2[ih][1]; // fill single vn with SP as method 0
+		fSingleVn[ih][0] = TMath::Sqrt(vn2[ih][1]); // fill single vn with SP as method 0
 	}
 
 	//************************************************************************
