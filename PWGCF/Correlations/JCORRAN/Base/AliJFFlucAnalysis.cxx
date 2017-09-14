@@ -213,10 +213,7 @@ void AliJFFlucAnalysis::UserCreateOutputObjects(){
 	cout << "********" << endl;
 	fEfficiency->SetMode( fEffMode ) ; // 0:NoEff 1:Period 2:RunNum 3:Auto
 	fEfficiency->SetDataPath( "alien:///alice/cern.ch/user/d/djkim/legotrain/efficieny/data" );
-	// Create histograms
-	// Called once
-	// need to fill to book a histo
-	//fHMG = new AliJHistManager("AliJFFlucHistManager","test");
+	
 	fHMG = new AliJHistManager("AliJFFlucHistManager","jfluc");
 	// set AliJBin here //
 	fBin_Subset .Set("Sub","Sub","Sub:%d", AliJBin::kSingle).SetBin(2);
@@ -392,8 +389,6 @@ AliJFFlucAnalysis::~AliJFFlucAnalysis() {
 	delete fInputList;
 	delete fHMG;
 	delete fEfficiency;
-	//delete []fPttJacek;
-	//delete []fCentBin;
 }
 
 //________________________________________________________________________
@@ -431,18 +426,11 @@ void AliJFFlucAnalysis::UserExec(Option_t *) {
 	TComplex QnA[kNH];
 	TComplex QnB[kNH];
 	TComplex QnB_star[kNH];
-	//---------------- Do initialize here -----------
-	for(int ih=0; ih<kNH; ih++){
-		QnA[ih]= TComplex(0,0);
-		QnB[ih]= TComplex(0,0);
-		QnB_star[ih] = TComplex(0,0);
-	}
+
 	//--------------- Calculate Qn--------------------
 	for(int ih=0; ih<kNH; ih++){
 		QnA[ih] = CalculateQnSP( Eta_config[kSubA][kMin], Eta_config[kSubA][kMax], ih);
 		QnB[ih] = CalculateQnSP( Eta_config[kSubB][kMin], Eta_config[kSubB][kMax], ih);
-		//fh_Qvector[fCBin][0][ih]->Fill( QnA[ih].Theta() );
-		//fh_Qvector[fCBin][1][ih]->Fill( QnB[ih].Theta() );
 		QnB_star[ih] = TComplex::Conjugate ( QnB[ih] ) ;
 	}
 	NSubTracks[kSubA] = QnA[0].Re(); // this is number of tracks in Sub A
@@ -472,34 +460,8 @@ void AliJFFlucAnalysis::UserExec(Option_t *) {
 				}
 			}
 		}
-		fSingleVn[ih][0] = vn2[ih][0]; // fill single vn with SP as method 0
+		fSingleVn[ih][0] = vn2[ih][1]; // fill single vn with SP as method 0
 	}
-	// calculate vn^2k
-	/*for(int ih=2; ih<kNH; ih++){
-		for(int ik=0; ik<nKL; ik++){ // 2k(0) =1, 2k(1) =2, 2k(2)=4....
-			if(ik==0){
-				vn2[ih][ik] = TMath::Sqrt((QnA[ih]*QnB_star[ih]).Re());
-				fSingleVn[ih][0] = vn2[ih][ik]; // fill single vn with SP as method 0
-			}else{
-				vn2[ih][ik] = TComplex::Power(QnA[ih]*QnB_star[ih],ik).Re();
-			}
-
-			fh_vn[ih][ik][fCBin]->Fill( vn2[ih][ik] , ebe_2p_weight ); // Fill hvn2
-		}
-	}
-	
-	// calculate hvn_vn (2 combination of vn)
-	for( int ih=2; ih<kNH; ih++){
-		for( int ik=1; ik<nKL; ik++){
-			for( int ihh=2; ihh<kNH; ihh++){
-				for(int ikk=1; ikk<nKL; ikk++){
-					vn2_vn2[ih][ik][ihh][ikk] = (TComplex::Power( QnA[ih]*QnB_star[ih],ik)*TComplex::Power(QnA[ihh]*QnB_star[ihh],ikk) ).Re();
-					
-					fh_vn_vn[ih][ik][ihh][ikk][fCBin]->Fill( vn2_vn2[ih][ik][ihh][ikk], ebe_4p_weight ) ; // Fill hvn_vn
-				}
-			}
-		}
-	}*/
 
 	//************************************************************************
 
