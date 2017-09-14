@@ -363,13 +363,6 @@ AliJFFlucAnalysis::~AliJFFlucAnalysis() {
 
 //________________________________________________________________________
 void AliJFFlucAnalysis::UserExec(Option_t *) {
-	// Main loop
-	// init
-	for(int ih=0; ih<kNH; ih++){
-		for(int im=0; im<3; im++){ //method
-			fSingleVn[ih][im] = -9999;
-		}
-	}
 	// find Centrality
 	Double_t inputCent = fCent;
 	fCBin = -1;
@@ -419,22 +412,19 @@ void AliJFFlucAnalysis::UserExec(Option_t *) {
 	}
 	NSubTracks[kSubA] = QnA[0].Re(); // this is number of tracks in Sub A
 	NSubTracks[kSubB] = QnB[0].Re(); // this is number of tracks in Sub B
-	//-------------- Fill histos with below Values ----
+	
+	Double_t ebe_2p_weight = 1;
+	Double_t ebe_4p_weight = 1;
+	if( IsEbEWeighted == kTRUE ){
+		ebe_2p_weight = NSubTracks[kSubA] * NSubTracks[kSubB] ;
+		ebe_4p_weight = NSubTracks[kSubA]* NSubTracks[kSubB] * (NSubTracks[kSubA]-1) * (NSubTracks[kSubB]-1) ;
+	}
+
 	// v2^2 :  k=1  /// remember QnQn = vn^(2k) not k
 	// use k=0 for check v2, v3 only
 	Double_t vn2[kNH][nKL];
 	Double_t vn2_vn2[kNH][nKL][kNH][nKL];
-	//initiation
-	for(int ih=0; ih<kNH; ih++){
-		for(int ik=0; ik<nKL ; ik++){
-			vn2[ih][ik] =    -999;
-			for(int ihh=0; ihh<kNH; ihh++){
-				for(int ikk=0; ikk<nKL; ikk++){
-					vn2_vn2[ih][ik][ihh][ikk] = -999;
-				}
-			}
-		}
-	}
+	
 	// calculate vn^2k
 	for(int ih=2; ih<kNH; ih++){
 		for(int ik=0; ik<nKL; ik++){ // 2k(0) =1, 2k(1) =2, 2k(2)=4....
@@ -448,6 +438,8 @@ void AliJFFlucAnalysis::UserExec(Option_t *) {
 				QnBstark = TComplex::Power(QnB_star[ih], ik);
 				vn2[ih][ik] = ( QnAk * QnBstark ).Re();
 			}
+
+			fh_vn[ih][ik][fCBin]->Fill( vn2[ih][ik] , ebe_2p_weight ); // Fill hvn2
 		}
 	}
 	// vn^2k calcualted for n.... k....
@@ -457,37 +449,15 @@ void AliJFFlucAnalysis::UserExec(Option_t *) {
 			for( int ihh=2; ihh<kNH; ihh++){
 				for(int ikk=1; ikk<nKL; ikk++){
 					vn2_vn2[ih][ik][ihh][ikk] = (TComplex::Power( QnA[ih]*QnB_star[ih],ik)*TComplex::Power(QnA[ihh]*QnB_star[ihh],ikk) ).Re();
+					
+					fh_vn_vn[ih][ik][ihh][ikk][fCBin]->Fill( vn2_vn2[ih][ik][ihh][ikk], ebe_4p_weight ) ; // Fill hvn_vn
 				}
 			}
 		}
 	}
+
 	//************************************************************************
-	// doing this
-	//Fill the Histos here
-	Double_t ebe_2p_weight = 1;
-	Double_t ebe_4p_weight = 1;
-	if( IsEbEWeighted == kTRUE ){
-		ebe_2p_weight = NSubTracks[kSubA] * NSubTracks[kSubB] ;
-		ebe_4p_weight = NSubTracks[kSubA]* NSubTracks[kSubB] * (NSubTracks[kSubA]-1) * (NSubTracks[kSubB]-1) ;
-	}
 
-	for(int ih=2; ih< kNH; ih++){
-		for(int ik=0; ik<nKL; ik++){
-			if(vn2[ih][ik] != -999)
-				fh_vn[ih][ik][fCBin]->Fill( vn2[ih][ik] , ebe_2p_weight ); // Fill hvn2
-		}
-	}
-
-	for( int ih=2; ih<kNH; ih++){
-		for( int ik=1; ik<nKL; ik++){
-			for( int ihh=2; ihh<kNH; ihh++){
-				for(int ikk=1; ikk<nKL; ikk++){
-					if(vn2_vn2[ih][ik][ihh][ikk] != -999 )
-						fh_vn_vn[ih][ik][ihh][ikk][fCBin]->Fill( vn2_vn2[ih][ik][ihh][ikk], ebe_4p_weight ) ; // Fill hvn_vn
-				}
-			}
-		}
-	}
 	///	Fill more correlators in manualy
 	TComplex V4V2starv2_2 =	QnA[4] *TComplex::Power( QnB_star[2] ,2) * vn2[2][1] ;
 	TComplex V4V2starv2_4 = QnA[4] * TComplex::Power( QnB_star[2], 2) * vn2[2][2] ;
