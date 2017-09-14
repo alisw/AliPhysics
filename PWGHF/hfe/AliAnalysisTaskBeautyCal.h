@@ -62,7 +62,7 @@ public:
     void SetPileUpCut(Bool_t EnablePileupRejVZEROTPCout){fEnablePileupRejVZEROTPCout = EnablePileupRejVZEROTPCout;};  
  
     void SetEPana(Int_t EPana){fEPana = EPana;};
-
+    
     Bool_t ProcessCutStep(Int_t cutStep, AliVParticle *track);
     //void SelectPhotonicElectron(Int_t itrack, AliVTrack *track, Bool_t &fFlagULSElec, Bool_t &fFlagLSElec);
     void SelectPhotonicElectron(Int_t itrack, AliVTrack *track, Bool_t &fFlagULSElec, Bool_t &fFlagLSElec, Bool_t EmbPi0, Bool_t EmbEta, Double_t weight);
@@ -76,6 +76,7 @@ public:
     Bool_t IsDdecay(int mpid);
     Bool_t IsBdecay(int mpid);
     Bool_t IsPdecay(int mpid);
+    void GetEP(Double_t &evPlaneV0);
 
     void SetHFECuts(AliHFEcuts * const hfecuts) {fhfeCuts = hfecuts;};
 

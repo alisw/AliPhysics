@@ -339,7 +339,7 @@ AliFemtoCutMonitorPionPion::Pion::Pion(const bool passing,
       codes.size(), -0.5, codes.size() - 0.5
     );
 
-    for (Int_t bin = 0; bin < codes.size(); bin++) {
+    for (UInt_t bin = 0; bin < codes.size(); bin++) {
       Int_t code = codes[bin];
       auto label = code_to_label.find(code);
       fMC_type->GetXaxis()->SetBinLabel(bin + 1, label->second.c_str());
@@ -355,7 +355,7 @@ AliFemtoCutMonitorPionPion::Pion::Pion(const bool passing,
       parent_codes.size(), -0.5, parent_codes.size() - 0.5
     );
 
-    for (Int_t bin = 0; bin < codes.size(); bin++) {
+    for (UInt_t bin = 0; bin < codes.size(); bin++) {
       Int_t code = codes[bin];
       auto label = code_to_label.find(code);
       fMC_parent->GetXaxis()->SetBinLabel(bin + 1, label->second.c_str());
@@ -363,7 +363,7 @@ AliFemtoCutMonitorPionPion::Pion::Pion(const bool passing,
     fMC_parent->GetXaxis()->CenterLabels();
 
 
-    for (Int_t bin = 0; bin < parent_codes.size(); bin++) {
+    for (UInt_t bin = 0; bin < parent_codes.size(); bin++) {
       Int_t code = parent_codes[bin];
       auto label = code_to_label.find(code);
       fMC_parent->GetYaxis()->SetBinLabel(bin + 1, label->second.c_str());
@@ -409,7 +409,7 @@ void AliFemtoCutMonitorPionPion::Pion::Fill(const AliFemtoTrack* track)
                   eta = 0.5 * ::log((energy + pz) / (energy - pz));
 
 
-  const Int_t ITS_ncls = track->ITSncls(),
+  const Int_t // ITS_ncls = track->ITSncls(),
               TPC_ncls = track->TPCncls();
 
 
@@ -537,7 +537,7 @@ void
 AliFemtoCutMonitorPionPion::Pair::Fill(const AliFemtoPair *pair)
 {
   const float minv = pair->MInv(),
-             kstar = pair->KStar(),
+              // kstar = pair->KStar(),
               qinv = fabs(pair->QInv());
 
   fMinv->Fill(minv);
@@ -586,9 +586,8 @@ AliFemtoCutMonitorPionPion::Pair::Fill(const AliFemtoPair *pair)
     const AliFemtoLorentzVector p1(e1, momentum_1),
                                 p2(e2, momentum_2);
 
-    const double reconstructed_qinv = qinv,
-                          true_qinv = -1.0 * (p1 - p2).m(),
-                          true_minv = (p1 + p2).m();
+    const double true_qinv = -1.0 * (p1 - p2).m(),
+                 true_minv = (p1 + p2).m();
 
     // skip mis-identified protons
     if (mc_1->GetPDGPid() == 2212 || mc_2->GetPDGPid() == 2212) {

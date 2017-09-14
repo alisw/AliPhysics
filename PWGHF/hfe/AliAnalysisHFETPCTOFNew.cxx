@@ -1207,26 +1207,17 @@ void AliAnalysisHFETPCTOFNew::UserExec(Option_t *)
 		if(!vtxTtl.Contains("VertexerTracks")) fNevent_no_vertex_2->Fill(0); 
 		///-------------------------------------------------------------
 		
-		///checking the minimum number of contributors (this need to be done in pp, Pb-Pb, p-Pb...)
-		if(vtTrc->GetNContributors()<2) return;
-		
-		
-		Bool_t isPileupfromSPDmulbins=fAOD->IsPileupFromSPDInMultBins();
-		
-		///minContributors=5; minChi2=5.; minWeiZDiff=15; checkPlpFromDifferentBC=kFALSE;
-		//AliAnalysisUtils *fUtils;
-		AliAnalysisUtils utils;
-		utils.SetMinPlpContribMV(5);
-		utils.SetMaxPlpChi2MV(5.);
-		utils.SetMinWDistMV(15);
-		utils.SetCheckPlpFromDifferentBCMV(kFALSE);
-		Bool_t isPileupFromMV = utils.IsPileUpMV(fAOD);
-		
+		////////////////////
+		//Correlation cuts///
+		////////////////////
+		if(!PassCorrCuts(fAOD)) return;		
 		
 		///Number of events rejected by the correlation cuts between SPD and track vertexes
 		fNevent_corrcut->Fill(0);
 		
-		///Track vertex cut:
+		////////////////////
+		//Track vertex cut//
+		////////////////////
 		Float_t zvtx = vtTrc->GetZ();
 		if(TMath::Abs(zvtx) > 10) return;
 		fVertex1->Fill(zvtx);
@@ -1234,9 +1225,7 @@ void AliAnalysisHFETPCTOFNew::UserExec(Option_t *)
 		//Look for kink mother for AOD
 		fNumberOfVertices = 0; 
 		fNumberOfMotherkink = 0;
-		
-		
-		
+			
 		if(fIsAOD)
 		{
 			fNumberOfVertices = fAOD->GetNumberOfVertices();
@@ -2222,6 +2211,55 @@ Int_t AliAnalysisHFETPCTOFNew::GetElecSourceType(AliAODMCParticle *electron, TCl
     return kOthersE;
     
 }
+
+//_________________________________________
+Bool_t AliAnalysisHFETPCTOFNew::PassCorrCuts(AliAODEvent *fAOD)
+{
+  //event selection cuts
+	if(!fIsPP){
+		Int_t ntracks = -999;
+		ntracks = fAOD->GetNumberOfTracks();
+		if(ntracks < 1) printf("There are %d tracks in this event\n",ntracks);
+
+		AliAODVertex* vtTrc = fAOD->GetPrimaryVertex();
+		Double_t NcontV = vtTrc->GetNContributors();
+		AliAODVertex* vtSPD = fAOD->GetPrimaryVertexSPD();
+		Double_t NcontSPD = vtSPD->GetNContributors();
+		if(NcontV<2 || NcontSPD<1)return kFALSE;
+
+		Double_t covTrc[6],covSPD[6];
+		vtTrc->GetCovarianceMatrix(covTrc);
+		vtSPD->GetCovarianceMatrix(covSPD);
+		Double_t dz = vtTrc->GetZ() - vtSPD->GetZ();
+		Double_t errTot = TMath::Sqrt(covTrc[5]+covSPD[5]);
+		Double_t errTrc = TMath::Sqrt(covTrc[5]);
+		Double_t nsigTot = TMath::Abs(dz)/errTot;
+		Double_t nsigTrc = TMath::Abs(dz)/errTrc;
+		if (TMath::Abs(dz)>0.2 || nsigTot>10 || nsigTrc>20) return kFALSE;// bad vertexing
+		return kTRUE;
+	}
+	
+	if(fIsPP){
+		AliAODVertex* vtTrc = fAOD->GetPrimaryVertex();
+		if(vtTrc->GetNContributors()<2) return kFALSE;
+        
+        Bool_t isPileupfromSPDmulbins=fAOD->IsPileupFromSPDInMultBins();
+        if(isPileupfromSPDmulbins) return kFALSE;
+        
+        ///minContributors=5; minChi2=5.; minWeiZDiff=15; checkPlpFromDifferentBC=kFALSE;
+        AliAnalysisUtils utils;
+        utils.SetMinPlpContribMV(5);
+        utils.SetMaxPlpChi2MV(5.);
+        utils.SetMinWDistMV(15);
+        utils.SetCheckPlpFromDifferentBCMV(kFALSE);
+        Bool_t isPileupFromMV = utils.IsPileUpMV(fAOD);
+		if(isPileupFromMV) return kFALSE;
+		return kTRUE;
+	}
+  
+}
+//_________________________________________
+
 
 
 

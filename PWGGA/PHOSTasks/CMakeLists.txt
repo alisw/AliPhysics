@@ -54,6 +54,8 @@ include_directories(${ROOT_INCLUDE_DIRS}
                     ${AliPhysics_SOURCE_DIR}/PWGGA/PWGGAUtils
                     ${AliPhysics_SOURCE_DIR}/PWGGA/GammaConv/
                     ${AliPhysics_SOURCE_DIR}/PWGCF/FEMTOSCOPY/AliFemto
+                    ${AliPhysics_SOURCE_DIR}/PWGPP/EVCHAR/FlowVectorCorrections/QnCorrections
+                    ${AliPhysics_SOURCE_DIR}/PWGPP/EVCHAR/FlowVectorCorrections/QnCorrectionsInterface
                    )
 
 # Sources in alphabetical order
@@ -97,6 +99,7 @@ set(SRCS
     PHOS_pp_8TeV_2012/AliCaloTriggerSimulator.cxx
     PHOS_Run2/AliAnalysisTaskPHOSObjectCreator.cxx
     PHOS_Run2/AliPHOSTriggerHelper.cxx
+    PHOS_Run2/AliPHOSJetJetMC.cxx
     PHOS_Run2/AliPHOSEventCuts.cxx
     PHOS_Run2/AliPHOSClusterCuts.cxx
     PHOS_Run2/AliAnalysisTaskPHOSPi0EtaToGammaGamma.cxx
@@ -118,7 +121,7 @@ get_directory_property(incdirs INCLUDE_DIRECTORIES)
 generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}")
 
 set(ROOT_DEPENDENCIES Core EG Geom Gpad Hist MathCore Physics RIO Tree)
-set(ALIROOT_DEPENDENCIES ANALYSIS ANALYSISalice ESDfilter AOD CDB EMCALUtils ESD PHOSbase PHOSrec PHOSUtils PWGGAUtils STEER STEERBase Tender TenderSupplies)
+set(ALIROOT_DEPENDENCIES ANALYSIS ANALYSISalice ESDfilter AOD CDB EMCALUtils ESD PHOSbase PHOSrec PHOSUtils PWGGAUtils STEER STEERBase Tender TenderSupplies PWGPPevcharQn PWGPPevcharQnInterface)
 
 # Generate the ROOT map
 # Dependecies

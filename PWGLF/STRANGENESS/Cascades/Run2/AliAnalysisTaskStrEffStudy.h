@@ -131,6 +131,12 @@ public:
     void SetSaveGoodTracks ( Bool_t lOpt = kTRUE) {
         fkSaveGoodTracks = lOpt;
     }
+    void SetSandboxV0 ( Bool_t lOpt = kTRUE) {
+        fkSandboxV0 = lOpt;
+    }
+    void SetSandboxCascade ( Bool_t lOpt = kTRUE) {
+        fkSandboxCascade = lOpt;
+    }
 
 //---------------------------------------------------------------------------------------
     void SetUseExtraEvSels ( Bool_t lUseExtraEvSels = kTRUE) {
@@ -334,6 +340,10 @@ private:
     
     //Save only decent tracks
     Bool_t fkSaveGoodTracks;
+    
+    //Sandbox mode
+    Bool_t fkSandboxV0;
+    Bool_t fkSandboxCascade;
 
     AliVEvent::EOfflineTriggerTypes fTrigType; // trigger type
 
@@ -413,6 +423,19 @@ private:
     Float_t fTreeVariableNegAlpha;
     Float_t fTreeVariableNegSigmaY2;
     Float_t fTreeVariableNegSigmaZ2;
+    
+    //Sandbox mode
+    AliExternalTrackParam *fTreeVariablePosTrack;
+    AliExternalTrackParam *fTreeVariableNegTrack;
+    
+    Float_t fTreeVariableMagneticField;
+    
+    Float_t fTreeVariablePosOriginalX;
+    Float_t fTreeVariableNegOriginalX;
+    
+    Float_t fTreeVariablePVx;
+    Float_t fTreeVariablePVy;
+    Float_t fTreeVariablePVz;
     
 //===========================================================================================
 //   Variables for Cascade Candidate Tree
@@ -505,10 +528,23 @@ private:
     Float_t fTreeCascVarBachPyMC; //!
     Float_t fTreeCascVarBachPzMC; //!
     
-    //Save full AliExternalTrackParam for debugging and development purposes
+    //+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+    //Save full info for full re-vertex offline replay ('sandbox mode')
+    //+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
     AliExternalTrackParam *fTreeCascVarBachTrack;
     AliExternalTrackParam *fTreeCascVarPosTrack;
     AliExternalTrackParam *fTreeCascVarNegTrack;
+    
+    Float_t fTreeCascVarMagneticField;
+    
+    Float_t fTreeCascVarBachOriginalX;
+    Float_t fTreeCascVarPosOriginalX;
+    Float_t fTreeCascVarNegOriginalX;
+    
+    Float_t fTreeCascVarPVx;
+    Float_t fTreeCascVarPVy;
+    Float_t fTreeCascVarPVz;
+    //+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
     
 //===========================================================================================
 //   Histograms

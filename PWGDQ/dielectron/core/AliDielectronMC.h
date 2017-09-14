@@ -18,7 +18,6 @@
 #endif
 class AliESDEvent;
 class AliHFEpid;
-class AliStack;
 class AliMCEvent;
 class AliESDtrack;
 class AliAODTrack;
@@ -41,28 +40,30 @@ public:
   void SetHasMC(Bool_t hasMC) { fHasMC=hasMC; }
   Bool_t HasMC() const { return fHasMC; }
 
+  void SetCheckHF(Bool_t checkHF) { fCheckHF=checkHF; }
+  Bool_t CheckHF() const { return fCheckHF; }
+  
   static AliDielectronMC* Instance();
 
   void Initialize();                              // initialization
   Int_t GetNMCTracks();                                     // return number of generated tracks
-  Int_t GetNMCTracksFromStack();                            // return number of generated tracks from stack
+  Int_t GetNMCTracksFromStack();                            // return number of generated tracks from MC event
   Int_t GetNPrimary() const;                                      // return number of primary tracks
-  Int_t GetNPrimaryFromStack();                                   // return number of primary tracks from stack
+  Int_t GetNPrimaryFromStack();                                   // return number of primary tracks from MC event
   Int_t GetMCPID(const AliESDtrack* _track);                      // return MC PID
   Int_t GetMCPID(const AliAODTrack* _track);                      // return MC PID for AODtrack
-  Int_t GetMCPIDFromStack(const AliESDtrack* _track);             // return MC PID
-  Int_t GetMotherPDG(const AliESDtrack* _track);                  // return mother PID from the MC stack
-  Int_t GetMotherPDG(const AliAODTrack* _track);                  // return mother PID from the MC stack
-  Int_t GetMotherPDG(const AliMCParticle* _track);                  // return mother PID from the MC stack
-  Int_t GetMotherPDG(const AliAODMCParticle* _track);                  // return mother PID from the MC stack
-  Int_t GetMotherPDGFromStack(const AliESDtrack* _track);         // return mother PID from the MC stack
+  Int_t GetMCPIDFromStack(const AliESDtrack* _track);             // return MC PID from MC event                                                                                       
+  Int_t GetMotherPDG(const AliESDtrack* _track);                  // return mother PID from the MC event                                                                               
+  Int_t GetMotherPDG(const AliAODTrack* _track);                  // return mother PID from the MC event                                                                               
+  Int_t GetMotherPDG(const AliMCParticle* _track);                  // return mother PID from the MC event                                                                             
+  Int_t GetMotherPDG(const AliAODMCParticle* _track);                  // return mother PID from the MC event                                                                          
+  Int_t GetMotherPDGFromStack(const AliESDtrack* _track);         // return mother PID from the MC event  
   Int_t GetMCProcess(const AliESDtrack* _track);                  // return process number
   Int_t GetMCProcessFromStack(const AliESDtrack* _track);         // return process number
   Int_t GetMCProcessMother(const AliESDtrack* _track);            // return process number of the mother track
   Int_t GetMCProcessMotherFromStack(const AliESDtrack* _track);   // return process number of the mother track
 
   Bool_t ConnectMCEvent();
-  Bool_t UpdateStack();
 
   Bool_t IsMotherPdg(const AliDielectronPair* pair, Int_t pdgMother);
   Bool_t IsMotherPdg(const AliVParticle *particle1, const AliVParticle *particle2, Int_t pdgMother);
@@ -71,7 +72,8 @@ public:
   Bool_t IsMCTruth(Int_t label, AliDielectronSignalMC* signalMC, Int_t branch) const;
   Int_t GetMothersLabel(Int_t daughterLabel) const;
   Int_t GetPdgFromLabel(Int_t label) const;
-
+  Int_t GetHFProcess(Int_t label); 
+  
   Bool_t IsPrimary(Int_t label) const;
   Bool_t IsPhysicalPrimary(Int_t label) const;  // checks if a particle is physical primary
   Bool_t IsSecondary(Int_t label) const;
@@ -89,14 +91,14 @@ public:
 
 //   AliVParticle* GetMCTrackFromMCEvent(const AliVParticle *track);   // return MC track directly from MC event
   AliVParticle* GetMCTrackFromMCEvent(Int_t label) const;           // return MC track directly from MC event
-  TParticle* GetMCTrackFromStack(const AliESDtrack* _track);        // return MC track from stack
+  TParticle* GetMCTrackFromStack(const AliESDtrack* _track);        // return MC track from MC event
   AliMCParticle* GetMCTrack(const AliESDtrack* _track);             // return MC track associated with reco track
   AliAODMCParticle* GetMCTrack( const AliAODTrack* _track);          // return MC track associated with reco AOD track
 
-  TParticle* GetMCTrackMotherFromStack(const AliESDtrack* _track);  // return MC mother track from stack
-  AliMCParticle* GetMCTrackMother(const AliESDtrack* _track);       // return MC mother track from stack
+  TParticle* GetMCTrackMotherFromStack(const AliESDtrack* _track);  // return MC mother track from MC event                                                                            
+  AliMCParticle* GetMCTrackMother(const AliESDtrack* _track);       // return MC mother track from MC event 
   AliAODMCParticle* GetMCTrackMother(const AliAODTrack* _track);       // return MC mother fot track AODTrack
-  AliMCParticle* GetMCTrackMother(const AliMCParticle* _particle);       // return MC mother track from stack
+  AliMCParticle* GetMCTrackMother(const AliMCParticle* _particle);       // return MC mother track from stack                                                                          
   AliAODMCParticle* GetMCTrackMother(const AliAODMCParticle* _particle);       // return MC mother track from stack
 
   Int_t NumberOfDaughters(const AliESDtrack* track);                 // return number of daughters
@@ -114,10 +116,13 @@ public:
 
 private:
   AliMCEvent    *fMCEvent;  // MC event object
-  AliStack      *fStack;    // MC stack
 
   AnalysisType fAnaType;    // Analysis type
   Bool_t fHasMC;            // Do we have an MC handler?
+  Bool_t fCheckHF;          // Do we look for HF correlated pairs?
+  
+  std::map<Int_t,Int_t> fhfproc; // quark label and HF process
+  
   mutable Int_t  fHasHijingHeader;  //! //mutable needed to change it in a const function.
 
   static AliDielectronMC* fgInstance; //! singleton pointer
@@ -130,6 +135,8 @@ private:
   Bool_t IsMCMotherToEEesd(const AliMCParticle *particle, Int_t pdgMother);
   Bool_t IsMCMotherToEEaod(const AliAODMCParticle *particle, Int_t pdgMother);
 
+
+
   Int_t GetLabelMotherWithPdgESD(const AliVParticle *particle1, const AliVParticle *particle2, Int_t pdgMother);
   Int_t GetLabelMotherWithPdgAOD(const AliVParticle *particle1, const AliVParticle *particle2, Int_t pdgMother);
 
@@ -140,7 +147,11 @@ private:
   Bool_t CheckStackParticle(Int_t labelPart, Int_t requiredPDG) const;
   Bool_t CompareDaughterPDG(Int_t labelM, Int_t reqPDG, Bool_t PDGexclusion, Bool_t CheckBothChargesDaughter) const;
 
-  ClassDef(AliDielectronMC, 1)
+  //MC - Heavy Flavour related methods
+  Bool_t LoadHFPairs();
+  Int_t  IsaBhadron(Int_t pdg) const;
+  
+  ClassDef(AliDielectronMC, 2)
 };
 
 //

@@ -123,6 +123,7 @@ fkDoImprovedCascadeVertexFinding( kFALSE ),
 fkDoImprovedCascadePosition( kFALSE ),
 fkDoImprovedDCAV0DauPropagation( kFALSE ),
 fkDoImprovedDCACascDauPropagation ( kFALSE ),
+fkDoPureGeometricMinimization( kFALSE ),
 fkIfImprovedPerformInitialLinearPropag( kFALSE ),
 fkIfImprovedExtraPrecisionFactor ( 1.0 ),
 fMinPtCascade(   0.3 ),
@@ -165,6 +166,7 @@ fkDoImprovedCascadeVertexFinding( kFALSE ),
 fkDoImprovedCascadePosition ( kFALSE ),
 fkDoImprovedDCAV0DauPropagation( kFALSE ),
 fkDoImprovedDCACascDauPropagation ( kFALSE ),
+fkDoPureGeometricMinimization( kFALSE ),
 fkIfImprovedPerformInitialLinearPropag( kFALSE ),
 fkIfImprovedExtraPrecisionFactor ( 1.0 ),
 fMinPtCascade(   0.3 ), //pre-selection
@@ -1504,11 +1506,11 @@ Double_t AliAnalysisTaskWeakDecayVertexer::PropagateToDCA(AliESDv0 *v, AliExtern
         Double_t dz2=t->GetSigmaZ2() + pTrack->GetSigmaZ2() + nTrack->GetSigmaZ2();
         Double_t dx2=dy2;
         
-        if( TMath::Abs(fkIfImprovedExtraPrecisionFactor-1.0)>1e-4 ){
-            //For testing purposes: override uncertainties, please
-            dx2 = fkIfImprovedExtraPrecisionFactor;
-            dy2 = fkIfImprovedExtraPrecisionFactor;
-            dz2 = fkIfImprovedExtraPrecisionFactor;
+        if( fkDoPureGeometricMinimization ){
+            //Override uncertainties with small values -> pure geometry
+            dx2 = 1e-10;
+            dy2 = 1e-10;
+            dz2 = 1e-10;
         }
         
         //Create dummy V0 track
@@ -1732,10 +1734,6 @@ Double_t AliAnalysisTaskWeakDecayVertexer::PropagateToDCA(AliESDv0 *v, AliExtern
         Double_t sn=TMath::Sin(t->GetAlpha());
         Double_t xthis=r1[0]*cs + r1[1]*sn;
         
-        //Memory cleanup
-        hV0Traj->Delete();
-        hV0Traj=0x0;
-        
         //Propagate bachelor to the point of DCA
         if (!t->PropagateTo(xthis,b)) {
             //AliWarning(" propagation failed !";
@@ -1743,7 +1741,6 @@ Double_t AliAnalysisTaskWeakDecayVertexer::PropagateToDCA(AliESDv0 *v, AliExtern
             fHistV0ToBachelorPropagationStatus->Fill(8.5);
             return 1e+33;
         }
-        
         
         //V0 distance to bachelor: the desired distance
         Double_t rBachDCAPt[3]; t->GetXYZ(rBachDCAPt);
@@ -1854,6 +1851,13 @@ Double_t AliAnalysisTaskWeakDecayVertexer::GetDCAV0Dau( AliExternalTrackParam *p
     Double_t dy2=nt -> GetSigmaY2() + pt->GetSigmaY2();
     Double_t dz2=nt -> GetSigmaZ2() + pt->GetSigmaZ2();
     Double_t dx2=dy2;
+    
+    if( fkDoPureGeometricMinimization ){
+        //Override uncertainties with small values -> pure geometry
+        dx2 = 1e-10;
+        dy2 = 1e-10;
+        dz2 = 1e-10;
+    }
     
     Double_t p1[8]; nt->GetHelixParameters(p1,b);
     p1[6]=TMath::Sin(p1[2]); p1[7]=TMath::Cos(p1[2]);

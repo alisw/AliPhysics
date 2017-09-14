@@ -3944,7 +3944,7 @@ void AliAnalysisTaskGammaCalo::CalculateBackground(){
       AliGammaConversionAODVector *previousEventV0s = fBGHandler[fiCut]->GetBGGoodV0s(zbin,mbin,nEventsInBG);
       for(Int_t iCurrent=0;iCurrent<fClusterCandidates->GetEntries();iCurrent++){
         AliAODConversionPhoton currentEventGoodV0 = *(AliAODConversionPhoton*)(fClusterCandidates->At(iCurrent));
-        for(Int_t iPrevious=0;iPrevious<previousEventV0s->size();iPrevious++){
+        for(UInt_t iPrevious=0;iPrevious<previousEventV0s->size();iPrevious++){
           AliAODConversionPhoton previousGoodV0 = (AliAODConversionPhoton)(*(previousEventV0s->at(iPrevious)));
           AliAODConversionMother *backgroundCandidate = new AliAODConversionMother(&currentEventGoodV0,&previousGoodV0);
           backgroundCandidate->CalculateDistanceOfClossetApproachToPrimVtx(fInputEvent->GetPrimaryVertex());
@@ -3977,31 +3977,46 @@ void AliAnalysisTaskGammaCalo::CalculateBackground(){
     }
   } else if ( ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->UsePtmaxMethod() ) {
 
-    Double_t currentPtMax = 0; Double_t previousPtMax = 0;
-    Double_t currentEta = 0;   Double_t previousEta = 0;
-    Double_t currentPhi = 0;   Double_t previousPhi = 0;
-    Bool_t acceptedPtMax = kFALSE;
+    Double_t currentPtMax   = 0;  Double_t previousPtMax  = 0;
+    Double_t currentAvePt   = 0;  Double_t previousAvePt  = 0;
+    Double_t currentAveEta  = 0;  Double_t previousAveEta = 0;
+    Double_t currentAvePhi  = 0;  Double_t previousAvePhi = 0;
+    Bool_t acceptedPtMax    = kFALSE;
 
     for(Int_t nEventsInBG=0;nEventsInBG <fBGHandler[fiCut]->GetNBGEvents();nEventsInBG++){
       AliGammaConversionAODVector *previousEventV0s = fBGHandler[fiCut]->GetBGGoodV0s(zbin,mbin,nEventsInBG);
       if(previousEventV0s){
         acceptedPtMax = kFALSE;
-        currentPtMax = 0; previousPtMax = 0; currentEta = 0; previousEta = 0; currentPhi = 0; previousPhi = 0;
+        currentPtMax = 0; previousPtMax = 0;
+        currentAvePt = 0; previousAvePt = 0; currentAveEta = 0; previousAveEta = 0; currentAvePhi = 0; previousAvePhi = 0;
         for(Int_t iCurrent=0;iCurrent<fClusterCandidates->GetEntries();iCurrent++){
           AliAODConversionPhoton *currentV0 = (AliAODConversionPhoton*)(fClusterCandidates->At(iCurrent));
-          if(currentV0->GetPhotonPt() > currentPtMax){ currentPtMax = currentV0->GetPhotonPt(); currentEta = currentV0->GetPhotonEta(); currentPhi = currentV0->GetPhotonPhi(); }
-          for(Int_t iPrevious=0;iPrevious<previousEventV0s->size();iPrevious++){
-            AliAODConversionPhoton *previousV0 = (AliAODConversionPhoton*)(previousEventV0s->at(iPrevious));
-            if(previousV0->GetPhotonPt() > previousPtMax){ previousPtMax = previousV0->GetPhotonPt(); previousEta = previousV0->GetPhotonEta(); previousPhi = previousV0->GetPhotonPhi(); }
-          }
+          currentAvePt += currentV0->GetPhotonPt();
+          currentAveEta += currentV0->GetPhotonPt()*currentV0->GetPhotonEta();
+          currentAvePhi += currentV0->GetPhotonPt()*currentV0->GetPhotonPhi();
+          if(currentV0->GetPhotonPt() > currentPtMax){ currentPtMax = currentV0->GetPhotonPt(); }
         }
-        if(currentPtMax > 0 && previousPtMax > 0){
-         if(TMath::Sqrt(pow((currentEta-previousEta),2)+pow((currentPhi-previousPhi),2)) < 0.2) acceptedPtMax = kTRUE;
+        currentAveEta /= currentAvePt;
+        currentAvePhi /= currentAvePt;
+        currentAvePt /= fClusterCandidates->GetEntries();
+        for(UInt_t iPrevious=0;iPrevious<previousEventV0s->size();iPrevious++){
+            AliAODConversionPhoton *previousV0 = (AliAODConversionPhoton*)(previousEventV0s->at(iPrevious));
+            previousAvePt += previousV0->GetPhotonPt();
+            previousAveEta += previousV0->GetPhotonPt()*previousV0->GetPhotonEta();
+            previousAvePhi += previousV0->GetPhotonPt()*previousV0->GetPhotonPhi();
+            if(previousV0->GetPhotonPt() > previousPtMax){ previousPtMax = previousV0->GetPhotonPt(); }
+        }
+        previousAveEta /= previousAvePt;
+        previousAvePhi /= previousAvePt;
+        previousAvePt /= previousEventV0s->size();
+        if(currentPtMax > 0. && previousPtMax > 0.){
+         //if(TMath::Sqrt(pow((currentEta-previousEta),2)+pow((currentPhi-previousPhi),2)) < 0.2) acceptedPtMax = kTRUE;
+         if(TMath::Abs(previousAveEta-currentAveEta)<0.4 && TMath::Abs(previousAvePhi-currentAvePhi)<0.6 && (previousAvePt/currentAvePt)<4. && (previousAvePt/currentAvePt)>0.25) acceptedPtMax = kTRUE;
         }
         if(acceptedPtMax){
           for(Int_t iCurrent=0;iCurrent<fClusterCandidates->GetEntries();iCurrent++){
             AliAODConversionPhoton currentEventGoodV0 = *(AliAODConversionPhoton*)(fClusterCandidates->At(iCurrent));
-            for(Int_t iPrevious=0;iPrevious<previousEventV0s->size();iPrevious++){
+            for(UInt_t iPrevious=0;iPrevious<previousEventV0s->size();iPrevious++){
               AliAODConversionPhoton previousGoodV0 = (AliAODConversionPhoton)(*(previousEventV0s->at(iPrevious)));
               AliAODConversionMother *backgroundCandidate = new AliAODConversionMother(&currentEventGoodV0,&previousGoodV0);
               backgroundCandidate->CalculateDistanceOfClossetApproachToPrimVtx(fInputEvent->GetPrimaryVertex());
@@ -4023,7 +4038,7 @@ void AliAnalysisTaskGammaCalo::CalculateBackground(){
       if(previousEventV0s){
         for(Int_t iCurrent=0;iCurrent<fClusterCandidates->GetEntries();iCurrent++){
           AliAODConversionPhoton currentEventGoodV0 = *(AliAODConversionPhoton*)(fClusterCandidates->At(iCurrent));
-          for(Int_t iPrevious=0;iPrevious<previousEventV0s->size();iPrevious++){
+          for(UInt_t iPrevious=0;iPrevious<previousEventV0s->size();iPrevious++){
 
             AliAODConversionPhoton previousGoodV0 = (AliAODConversionPhoton)(*(previousEventV0s->at(iPrevious)));
             AliAODConversionMother *backgroundCandidate = new AliAODConversionMother(&currentEventGoodV0,&previousGoodV0);

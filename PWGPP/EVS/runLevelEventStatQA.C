@@ -1,8 +1,4 @@
 #ifndef __CINT__
-#include "TTree.h"
-#include "TFile.h"
-#include "TMath.h"
-#include "TPad.h"
 #endif
 #include "triggerInfo.C"
 
@@ -50,8 +46,7 @@ void writeTree(TFile* fout, TTree* t){
 
 //Int_t runLevelEventStatQA(TString qafilename="event_stat.root", Int_t run=254422, TString ocdbStorage = "raw://"){
 //Int_t runLevelEventStatQA(TString qafilename="event_stat.root", Int_t run=255042, TString ocdbStorage = "raw://"){
-//Int_t runLevelEventStatQA(TString qafilename="EventStat_temp.root", Int_t run=256676, TString ocdbStorage = "local:///cvmfs/alice.cern.ch/calibration/data/2016/OCDB"){
-Int_t runLevelEventStatQA(TString qafilename="event_stat_new.root", Int_t run=272399, TString ocdbStorage = "local:///cvmfs/alice.cern.ch/calibration/data/2017/OCDB"){
+Int_t runLevelEventStatQA(TString qafilename="EventStat_temp.root", Int_t run=256676, TString ocdbStorage = "local:///cvmfs/alice.cern.ch/calibration/data/2016/OCDB"){
   
   gStyle->SetOptStat(0);
   gStyle->SetLineScalePS(1.5);
@@ -70,6 +65,7 @@ Int_t runLevelEventStatQA(TString qafilename="event_stat_new.root", Int_t run=27
   Double_t run_duration    = 0;
   Int_t nBCsPerOrbit       = 0;
   Double_t refCounts       = 0;
+  Double_t refTmaskCounts  = 0;
   Double_t mu              = 0;
   Double_t lumi_seen       = 0;
   Double_t interactionRate = 0;
@@ -467,6 +463,22 @@ Int_t runLevelEventStatQA(TString qafilename="event_stat_new.root", Int_t run=27
     }
   }
 
+  // special treatment for T-Mask
+  if (run>=276135) {
+    AliTriggerClass* refTmaskClassObject = (AliTriggerClass*) classes.FindObject("C0TVX-T-NOPF-CENTNOTRD");
+    if (refClass.Contains("CINT7")) refTmaskClassObject = (AliTriggerClass*) classes.FindObject("CINT7-T-NOPF-CENTNOTRD");
+    Int_t refTmaskId = classes.IndexOf(refTmaskClassObject);
+    TString refTmaskCluster = refTmaskClassObject->GetCluster()->GetName();
+    refTmaskCounts = (activeDetectorsString.Contains("TRD") && (refTmaskCluster.EqualTo("CENT") || refTmaskCluster.EqualTo("ALL") || refTmaskCluster.EqualTo("FAST"))) ? class_lMb[refTmaskId] : class_l0b[refTmaskId];
+    for (Int_t i=0;i<classes.GetEntriesFast();i++){
+      AliTriggerClass* cl = (AliTriggerClass*) classes.At(i);
+      if (TString(cl->GetName()).Contains("-T-")){
+        class_lumi[i] = class_lumi[i]*TMath::Log(1-(Double_t)(refTmaskCounts)/totalBCs)/TMath::Log(1-(Double_t)(refCounts)/totalBCs);
+      }
+    }
+  }
+
+
   
   TFile* fin = new TFile(qafilename);
   if (!fin) {
@@ -613,11 +625,11 @@ Int_t runLevelEventStatQA(TString qafilename="event_stat_new.root", Int_t run=27
 
     alias_reconstructed[ibit] = Int_t(hHistStat->GetBinContent(1,j));
     alias_accepted[ibit]      = Int_t(hHistStat->GetBinContent(2,j));
-    if (hHistStat->GetNbinsX()!=19) { 
+    if (hHistStat->GetNbinsX()!=19) {
       // old stat histo without ZDC background monitoring
       // setting ZDCBG step equal to V0AND and take other steps shifted by 1
       alias_acc_step1[ibit]     = Int_t(hHistStat->GetBinContent(3,j));
-      alias_acc_step2[ibit]     = Int_t(hHistStat->GetBinContent(3,j)); 
+      alias_acc_step2[ibit]     = Int_t(hHistStat->GetBinContent(3,j));
       alias_acc_step3[ibit]     = Int_t(hHistStat->GetBinContent(4,j));
       alias_acc_step4[ibit]     = Int_t(hHistStat->GetBinContent(5,j));
       alias_acc_step5[ibit]     = Int_t(hHistStat->GetBinContent(6,j));

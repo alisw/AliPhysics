@@ -116,6 +116,7 @@ virtual ~AliAnalysisTaskEMCALPi0GammaCorr();
   THnSparse                 *h_Pi0;                 //!<!
   THnSparse                 *h_Pi0Track;                 //!<! THnSparse with info on pi0 and track.
   THnSparse                 *h_Pi0Track_Mixed;                 //!<!
+  TH1F                      *h_nEvents; //!<!
 
   TList                      *fEventCutList;           //!<! Output list for event cut histograms
   AliEMCALRecoUtils          *fFiducialCellCut;        //!<!     

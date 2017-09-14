@@ -1031,6 +1031,12 @@ public:
   void SetFlowGFMixedFinalHist(TH1D* const TP, Int_t const c, Int_t const eg) {this->fFlowGFMixedFinalHist[c][eg] = TP;};
   TH1D* SetFlowGFMixedFinalHist(Int_t const c, Int_t const eg) const {return this->fFlowGFMixedFinalHist[c][eg];};
 
+  // sub-sampling
+  void SetFlowGFIntCorProSS(TProfile* const TP, Int_t const s, Int_t const c, Int_t const eg) {this->fFlowGFIntCorProSS[s][c][eg] = TP;};
+  void SetFlowGFIntCorHistSS(TH1D* const TP, Int_t const s, Int_t const c, Int_t const eg) {this->fFlowGFIntCorHistSS[s][c][eg] = TP;};
+  void SetFlowGFIntCovProSS(TProfile* const TP, Int_t const s, Int_t const c, Int_t const eg, Int_t const k) {this->fFlowGFIntCovProSS[s][c][eg][k] = TP;};
+  void SetFlowGFIntCovHistSS(TH1D* const TP, Int_t const s, Int_t const c, Int_t const eg, Int_t const k) {this->fFlowGFIntCovHistSS[s][c][eg][k] = TP;};
+
   // Flow SP ZDC
   void SetFlowSPZDCList(TList* const TL) {this->fFlowSPZDCList = TL;};
 
@@ -1157,6 +1163,7 @@ public:
   Int_t GetMinMulZN() const {return this->fMinMulZN;};
   void SetMaxDevZN(Float_t weights) {this->fMaxDevZN = weights;};
   Float_t GetMaxDevZN() const {return this->fMaxDevZN;};
+  void StoreExtraHistoForSubSampling(Bool_t b) {this->fStoreExtraHistoForSubSampling = b;};
 
 private:
 
@@ -1531,6 +1538,7 @@ private:
   TH3D *fPhiEtaWeights; //!
   TH3D *fPhiEtaWeightsCh[2]; //!
   TH3D *fPhiEtaWeightsChPt[2][3]; //!
+  TH2F *fPtWeightsCent; //!
   TH3D *fPhiEtaWeightsVtx[fCRCMaxnCen]; //!
   TH3D *fPhiEtaRbRWeights; //!
   TH3D *fPhiEtaRbRWeightsCh[2]; //!
@@ -1883,8 +1891,13 @@ private:
 
   TList *fFlowQCVtxList[fCRCMaxnRun];    //! QC List
   const static Int_t fkFlowQCRbRnHist = 2;
+  const static Int_t fkFlowQCRbRnHist2 = 3;
   const static Int_t fkFlowQCRbRnHar = 3;
-  TProfile2D *fFlowQCIntRbRProPtEta[fCRCMaxnRun][fkFlowQCRbRnHar][fkFlowQCRbRnHist]; //!
+  const static Int_t fkFlowQCRbRnVar = 3;
+  const static Int_t fkFlowQCRbRnVar2 = 2;
+  TProfile2D *fFlowQCIntRbRProPtEta[fCRCMaxnRun][fkFlowQCRbRnHar][fkFlowQCRbRnVar][fkFlowQCRbRnHist]; //!
+  TProfile *fFlowQCIntRbRPro[fCRCMaxnRun][fkFlowQCRbRnHar][fkFlowQCRbRnVar2][fkFlowQCRbRnHist2]; //!
+  TProfile *fFlowQCIntRbRProTotal[fkFlowQCRbRnHar][fkFlowQCRbRnVar2][fkFlowQCRbRnHist2]; //!
 
   const static Int_t fkFlowQCnIntCorPro = 5;
   TProfile *fFlowQCIntCorPro[fFlowNHarm][fkFlowQCnIntCorPro]; //!
@@ -1941,6 +1954,13 @@ private:
   TH1D *fFlowGFMixedCorHist[fkFlowGFNHarm][fkFlowGFNHarm]; //!
   TH1D *fFlowGFMixedFinalHist[fkFlowGFNHarm][fkFlowGFNHarm]; //!
 
+  // sub-sampling
+  const static Int_t fkFlowGFNSubSampling = 10;
+  TProfile *fFlowGFIntCorProSS[fkFlowGFNSubSampling][fkFlowGFNHarm][fkFlowGFNOrde]; //!
+  TH1D *fFlowGFIntCorHistSS[fkFlowGFNSubSampling][fkFlowGFNHarm][fkFlowGFNOrde]; //!
+  TProfile *fFlowGFIntCovProSS[fkFlowGFNSubSampling][fkFlowGFNHarm][fkFlowGFNOrde][fkFlowGFNOrde]; //!
+  TH1D *fFlowGFIntCovHistSS[fkFlowGFNSubSampling][fkFlowGFNHarm][fkFlowGFNOrde][fkFlowGFNOrde]; //!
+
   // SC w ZDC
   TList *fFlowQCCorrZDCList; //!
   const static Int_t fSCv2vsZNPtBins = 3;
@@ -1983,6 +2003,7 @@ private:
   TH1D *fCenHist; //! Centrality distribution
   TH1D *fEventCounter; //! Event counter for different methods
   TH3D *fVtxHist[3]; //! primary vertex
+  TH3F* fTwoTrackDistancePt[2]; //!
   TH2D *fRefMulRecHist; //!
   TH1D* fCenWeightsHist; //! Centrality weights
   TProfile2D* fRefMultRbRPro; //! run-by-run average reference multiplicity
@@ -2046,8 +2067,10 @@ private:
   Float_t fMaxDevZN;
   Float_t fZDCGainAlpha;
   Bool_t fbFlagIsPosMagField;
+  Bool_t fbFlagIsBadRunForC34;
+  Bool_t fStoreExtraHistoForSubSampling;
 
-  ClassDef(AliFlowAnalysisCRC,67);
+  ClassDef(AliFlowAnalysisCRC,71);
 
 };
 

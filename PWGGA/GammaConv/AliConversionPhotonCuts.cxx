@@ -219,8 +219,9 @@ AliConversionPhotonCuts::AliConversionPhotonCuts(const char *name,const char *ti
   fHistoEventPlanePhi(NULL),
   fPreSelCut(kFALSE),
   fProcessAODCheck(kFALSE),
-  fProfileContainingMaterialBudgetWeights(NULL),
-  fMaterialBudgetWeightsInitialized(kFALSE)
+  fMaterialBudgetWeightsInitialized(kFALSE),
+  fProfileContainingMaterialBudgetWeights(NULL)
+
 {
   InitPIDResponse();
   for(Int_t jj=0;jj<kNCuts;jj++){fCuts[jj]=0;}
@@ -355,8 +356,9 @@ AliConversionPhotonCuts::AliConversionPhotonCuts(const AliConversionPhotonCuts &
   fHistoEventPlanePhi(NULL),
   fPreSelCut(ref.fPreSelCut),
   fProcessAODCheck(ref.fProcessAODCheck),
-  fProfileContainingMaterialBudgetWeights(ref.fProfileContainingMaterialBudgetWeights),
-  fMaterialBudgetWeightsInitialized(ref.fMaterialBudgetWeightsInitialized)
+  fMaterialBudgetWeightsInitialized(ref.fMaterialBudgetWeightsInitialized),
+  fProfileContainingMaterialBudgetWeights(ref.fProfileContainingMaterialBudgetWeights)
+
 {
   // Copy Constructor
   for(Int_t jj=0;jj<kNCuts;jj++){fCuts[jj]=ref.fCuts[jj];}

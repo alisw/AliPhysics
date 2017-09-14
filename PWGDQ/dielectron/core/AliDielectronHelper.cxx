@@ -43,7 +43,6 @@
 #include <AliAODEvent.h>
 #include <AliAODTracklets.h>
 #include <AliMultiplicity.h>
-#include <AliStack.h>
 
 #include "AliDielectronVarCuts.h"
 #include "AliDielectronTrackCuts.h"
@@ -150,25 +149,21 @@ Int_t AliDielectronHelper::GetNch(const AliMCEvent *ev, Double_t etaRange, Bool_
   // determination of Nch
   if (!ev || ev->IsA()!=AliMCEvent::Class()) return -1;
 
-  AliStack *stack = ((AliMCEvent*)ev)->Stack();
-
-  if (!stack) return -1;
-
-  Int_t nParticles = stack->GetNtrack();
+  Int_t nParticles = ev->GetNumberOfTracks();
   Int_t nCh = 0;
 
   // count..
   for (Int_t iMc = 0; iMc < nParticles; ++iMc) {
-    if (!stack->IsPhysicalPrimary(iMc)) continue;
+    if (!ev->IsPhysicalPrimary(iMc)) continue;
 
-    TParticle* particle = stack->Particle(iMc);
+    TParticle* particle = ev->Particle(iMc);
     if (!particle) continue;
     if (particle->GetPDG()->Charge() == 0) continue;
 
     if(excludeJpsiDaughters){
       Int_t iMother = particle->GetMother(0);
       if( ! (iMother < 0) ) {
-        TParticle* mother = stack->Particle(iMother);
+        TParticle* mother = ev->Particle(iMother);
         if( mother && TMath::Abs( mother->GetPdgCode() ) == 443  ) continue;
       }
     }
@@ -299,7 +294,6 @@ Int_t AliDielectronHelper::GetNacc(const AliVEvent *ev){
 Double_t AliDielectronHelper::GetITSTPCMatchEff(const AliVEvent *ev, Double_t *efficiencies, Bool_t bEventPlane, Bool_t useV0Cep){
   // recalulate the its-tpc matching efficiecy
   if (!ev) return -1;
-  Bool_t bDebug = kFALSE;
 
 
   // AliDielectronVarCuts varCutsTPC;
@@ -516,17 +510,13 @@ Int_t AliDielectronHelper::GetNMothers(const AliMCEvent *ev, Double_t etaRange, 
   // counting number of mother particles generated in given eta range and 2 particle decay
   if (!ev || ev->IsA()!=AliMCEvent::Class()) return -1;
 
-  AliStack *stack = ((AliMCEvent*)ev)->Stack();
-
-  if (!stack) return -1;
-
-  Int_t nParticles = stack->GetNtrack();
+  Int_t nParticles = ev->GetNumberOfTracks();
   Int_t nMothers   = 0;
 
   // count..
   for (Int_t iMc = 0; iMc < nParticles; ++iMc) {
 
-    TParticle* particle = stack->Particle(iMc);
+    TParticle* particle = ev->Particle(iMc);
     if (!particle) continue;
     if (particle->GetPdgCode() != pdgMother)               continue;
     if (TMath::Abs(particle->Eta()) > TMath::Abs(etaRange)) continue;
@@ -536,7 +526,7 @@ Int_t AliDielectronHelper::GetNMothers(const AliMCEvent *ev, Double_t etaRange, 
     if (particle->GetFirstDaughter()>=nParticles ||
 	particle->GetFirstDaughter()<0             ) continue;
 
-    TParticle* dau1 = stack->Particle(particle->GetFirstDaughter());
+    TParticle* dau1 = ev->Particle(particle->GetFirstDaughter());
     if (TMath::Abs(dau1->GetPdgCode()) != pdgDaughter)     continue;
     if (TMath::Abs(dau1->Eta()) > TMath::Abs(etaRange)) continue;
 
@@ -544,7 +534,7 @@ Int_t AliDielectronHelper::GetNMothers(const AliMCEvent *ev, Double_t etaRange, 
     if (particle->GetLastDaughter()>=nParticles ||
 	particle->GetLastDaughter()<0             ) continue;
 
-    TParticle* dau2 = stack->Particle(particle->GetLastDaughter());
+    TParticle* dau2 = ev->Particle(particle->GetLastDaughter());
     if (TMath::Abs(dau2->GetPdgCode()) != pdgDaughter)     continue;
     if (TMath::Abs(dau2->Eta()) > TMath::Abs(etaRange)) continue;
 

@@ -13,6 +13,7 @@
 #pragma link C++ class AliPHOSEventCuts+;
 #pragma link C++ class AliPHOSClusterCuts+;
 #pragma link C++ class AliPHOSTriggerHelper+;
+#pragma link C++ class AliPHOSJetJetMC+;
 #pragma link C++ class AliAnalysisTaskPHOSPi0EtaToGammaGamma+;
 
 

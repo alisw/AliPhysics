@@ -536,7 +536,7 @@ AliAnaPi0EbE* ConfigurePi0EbEAnalysis(TString particle,
 
   if (!kInputDataType.Contains("delta")) {
     ana->SetOutputAODName(Form("%s%s%s",particle.Data(), opt.Data(), kName.Data()));
-    ana->SetOutputAODClassName("AliAODPWG4Particle");
+    ana->SetOutputAODClassName("AliCaloTrackParticle");
   } else
     ana->SetInputAODName(Form("%s%s%s",particle.Data(),opt.Data(),kName.Data()));
   

@@ -124,9 +124,13 @@ AliConversionMesonCuts::AliConversionMesonCuts(const char *name,const char *titl
   fMaxOpanCutMeson(TMath::Pi()),
   fFMaxOpanCut(0),
   fMaxOpanPtDepCut(kFALSE),
+  fBackgroundHandler(0),
+  fBackgroundUseSideband(kFALSE),
+  fBackgroundUseLikeSign(kFALSE),
+  fSidebandMixingLow(0.180),
+  fSidebandMixingHigh(0.300),
   fCutString(NULL),
   fCutStringRead(""),
-  fBackgroundHandler(0),
   fHistoMesonCuts(NULL),
   fHistoMesonBGCuts(NULL),
   fHistoDCAGGMesonBefore(NULL),
@@ -196,13 +200,17 @@ AliConversionMesonCuts::AliConversionMesonCuts(const AliConversionMesonCuts &ref
   fDCAGammaGammaCutOn(ref.fDCAGammaGammaCutOn),
   fDCAZMesonPrimVtxCutOn(ref.fDCAZMesonPrimVtxCutOn),
   fDCARMesonPrimVtxCutOn(ref.fDCARMesonPrimVtxCutOn),
-  fBackgroundHandler(ref.fBackgroundHandler),
+  fMinOpanCutMeson(0),
   fFMinOpanCut(0),
   fMinOpanPtDepCut(kFALSE),
   fMaxOpanCutMeson(TMath::Pi()),
   fFMaxOpanCut(0),
   fMaxOpanPtDepCut(kFALSE),
-  fMinOpanCutMeson(0),
+  fBackgroundHandler(ref.fBackgroundHandler),
+  fBackgroundUseSideband(ref.fBackgroundUseSideband),
+  fBackgroundUseLikeSign(ref.fBackgroundUseLikeSign),
+  fSidebandMixingLow(0.180),
+  fSidebandMixingHigh(0.300),
   fCutString(NULL),
   fCutStringRead(""),
   fHistoMesonCuts(NULL),
@@ -760,7 +768,7 @@ Bool_t AliConversionMesonCuts::MesonIsSelectedMCChiC(TParticle *fMCMother,AliMCE
     TParticle *positron = 0x0;
     TParticle *electron = 0x0;
 
-    Int_t labeljpsiChiC = -1;
+    //Int_t labeljpsiChiC = -1;
 
     for(Int_t index= fMCMother->GetFirstDaughter();index<= fMCMother->GetLastDaughter();index++){
       if(index < 0) continue;
@@ -769,7 +777,7 @@ Bool_t AliConversionMesonCuts::MesonIsSelectedMCChiC(TParticle *fMCMother,AliMCE
       switch( temp->GetPdgCode() ) {
       case 443:
         jpsi =  temp;
-        labeljpsiChiC = index;
+        //labeljpsiChiC = index;
         break;
       case 22:
         gamma    =  temp;
@@ -1263,7 +1271,14 @@ Bool_t AliConversionMesonCuts::SetSelectionWindowCut(Int_t selectionCut){
     fSelectionLow   = 0.1;
     fSelectionHigh  = 0.155;
     break;
-  
+  case 8:
+    fSelectionLow   = 0.125;
+    fSelectionHigh  = 0.145;
+    break;
+  case 9:
+    fSelectionLow   = 0.11;
+    fSelectionHigh  = 0.155;
+    break;
     
   default:
     cout<<"Warning: SelectionCut not defined "<<selectionCut<<endl;
@@ -1960,6 +1975,31 @@ Bool_t AliConversionMesonCuts::SetBackgroundScheme(Int_t BackgroundScheme){
     fdoBGProbability            = kFALSE;
     fUsePtmaxMethodForBG        = kTRUE;
     break;
+  case 10: // mixed event with likesign mixing
+      fUseRotationMethodInBG      = kFALSE;
+      fUseTrackMultiplicityForBG  = kFALSE;
+      fdoBGProbability            = kFALSE;
+      fBackgroundUseLikeSign      = kTRUE;
+      fBackgroundUseSideband      = kFALSE;
+    break;
+  case 11: // mixed event with pi0 sideband candidates (right side of pi0 peak)
+      fUseRotationMethodInBG      = kFALSE;
+      fUseTrackMultiplicityForBG  = kFALSE;
+      fdoBGProbability            = kFALSE;
+      fBackgroundUseLikeSign      = kFALSE;
+      fBackgroundUseSideband      = kTRUE;
+      fSidebandMixingLow          = 0.180;
+      fSidebandMixingHigh         = 0.220;
+      break;
+  case 12: // mixed event with pi0 sideband candidates (left side of pi0 peak)
+      fUseRotationMethodInBG      = kFALSE;
+      fUseTrackMultiplicityForBG  = kFALSE;
+      fdoBGProbability            = kFALSE;
+      fBackgroundUseLikeSign      = kFALSE;
+      fBackgroundUseSideband      = kTRUE;
+      fSidebandMixingLow          = 0.01;
+      fSidebandMixingHigh         = 0.05;
+      break;
   default:
     cout<<"Warning: BackgroundScheme not defined "<<BackgroundScheme<<endl;
     return kFALSE;

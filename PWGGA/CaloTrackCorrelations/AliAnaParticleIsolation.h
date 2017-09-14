@@ -9,7 +9,7 @@
 /// \brief Select clusters/tracks with low particle environment in their vecinity,
 /// isolated within a cone.
 ///
-/// This class takes a particle AOD object with format AliAODPWG4Particle
+/// This class takes a particle AOD object with format AliCaloTrackParticle
 /// produced by any of the identified particle classes (AliAnaPhoton, AliAnaElectron,
 /// AliAnaPi0EbE, AliAnaChargedParticle) and checks if there is low particle environment
 /// around it with the utils of AliIsolationCut, declaring the particle AOD object as isolated or not.
@@ -30,8 +30,8 @@ class TObjString;
 
 // --- ANALYSIS system ---
 #include "AliAnaCaloTrackCorrBaseClass.h"
-class AliAODPWG4Particle;
-class AliAODPWG4ParticleCorrelation ;
+class AliCaloTrackParticle;
+class AliCaloTrackParticleCorrelation ;
 
 class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
 
@@ -44,23 +44,23 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
 
   // Main general methods
     
-  void         CalculateCaloUEBand    (AliAODPWG4ParticleCorrelation * pCandidate,
+  void         CalculateCaloUEBand    (AliCaloTrackParticleCorrelation * pCandidate,
                                        Float_t & etaBand, Float_t & phiBand) ;
     
-  void         CalculateCaloCellUEBand(AliAODPWG4ParticleCorrelation * pCandidate,
+  void         CalculateCaloCellUEBand(AliCaloTrackParticleCorrelation * pCandidate,
                                        Float_t & etaBand, Float_t & phiBand) ;
     
-  void         CalculateTrackUEBand   (AliAODPWG4ParticleCorrelation * pCandidate,
+  void         CalculateTrackUEBand   (AliCaloTrackParticleCorrelation * pCandidate,
                                        Float_t & etaBand, Float_t & phiBand) ;
   
-  void         CalculateCaloSignalInCone    (AliAODPWG4ParticleCorrelation * aodParticle, Float_t & coneptsumCluster, Float_t & coneptLeadCluster) ;
+  void         CalculateCaloSignalInCone    (AliCaloTrackParticleCorrelation * aodParticle, Float_t & coneptsumCluster, Float_t & coneptLeadCluster) ;
     
-  void         CalculateCaloCellSignalInCone(AliAODPWG4ParticleCorrelation * aodParticle, Float_t & coneptsumCell) ;
+  void         CalculateCaloCellSignalInCone(AliCaloTrackParticleCorrelation * aodParticle, Float_t & coneptsumCell) ;
 
-  void         CalculateTrackSignalInCone   (AliAODPWG4ParticleCorrelation * aodParticle, Float_t & coneptsumTrack  , Float_t & coneptLeadTrack  ) ;
+  void         CalculateTrackSignalInCone   (AliCaloTrackParticleCorrelation * aodParticle, Float_t & coneptsumTrack  , Float_t & coneptLeadTrack  ) ;
 
 
-  void         CalculateNormalizeUEBandPerUnitArea(AliAODPWG4ParticleCorrelation * pCandidate, Float_t coneptsumCluster,
+  void         CalculateNormalizeUEBandPerUnitArea(AliCaloTrackParticleCorrelation * pCandidate, Float_t coneptsumCluster,
                                                    Float_t coneptsumCell,  Float_t coneptsumTrack,
                                                    Float_t &coneptsumSubEtaBand, Float_t &coneptsumSubPhiBand, Int_t mcIndex ) ;
   
@@ -84,13 +84,13 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   
   void         FillAcceptanceHistograms();
  
-  void         FillTrackMatchingShowerShapeControlHistograms(AliAODPWG4ParticleCorrelation  * pCandidate,
+  void         FillTrackMatchingShowerShapeControlHistograms(AliCaloTrackParticleCorrelation  * pCandidate,
                                                              Float_t coneptsum,  Float_t coneptsumTrack, Float_t coneptsumCluster, 
                                                              Float_t coneleadpt, Int_t mcIndex) ;
   
   Bool_t       IsTriggerTheNearSideEventLeadingParticle(Int_t & idLeading);
   
-  void         MakeSeveralICAnalysis( AliAODPWG4ParticleCorrelation * ph, Int_t mcIndex ) ;
+  void         MakeSeveralICAnalysis( AliCaloTrackParticleCorrelation * ph, Int_t mcIndex ) ;
   
   void         StudyEMCALRegions(Float_t pt, Float_t phi, Float_t eta, Float_t m02, 
                                  Float_t coneptsumTrack, Float_t coneptsumCluster, 

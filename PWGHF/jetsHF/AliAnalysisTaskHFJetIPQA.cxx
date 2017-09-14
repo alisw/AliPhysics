@@ -209,6 +209,7 @@ void AliAnalysisTaskHFJetIPQA::SmearTrack(AliAODTrack *track) {
   mc->PxPyPz(mcp);
   mcc=mc->Charge();
   AliExternalTrackParam mct(mcx,mcp,mccv,mcc);
+
   const Double_t *parammc=mct.GetParameter();
 //TODO:  const Double_t *covermc=mct.GetCovariance();
   AliVertex vtx(mcx,1.,1);
@@ -265,6 +266,9 @@ void AliAnalysisTaskHFJetIPQA::SmearTrack(AliAODTrack *track) {
   param[1]=d0zn ;
   param[4]=pt1n ;
 
+
+  //Disable since we do not correctly accoutn for them --- thas why we smear
+  /*
    //cov matrix update
   if(sd0rpo>0.)            covar[0]*=(sd0rpn/sd0rpo)*(sd0rpn/sd0rpo);//yy
   if(sd0zo>0. && sd0rpo>0.)covar[1]*=(sd0rpn/sd0rpo)*(sd0zn/sd0zo);//yz
@@ -275,7 +279,7 @@ void AliAnalysisTaskHFJetIPQA::SmearTrack(AliAODTrack *track) {
   if(sd0zo>0.)             covar[7]*=(sd0zn/sd0zo);//zsenT
   if(sd0rpo>0.)            covar[10]*=(sd0rpn/sd0rpo);//ypt
   if(sd0zo>0.)             covar[11]*=(sd0zn/sd0zo);//ypt
-
+*/
   // Copy the smeared parameters to the AOD track
   Double_t x[3];
   Double_t p[3];
@@ -619,7 +623,7 @@ Printf("Smearing %e %e %i",fParam_Smear_Sigma,fParam_Smear_Mean,fRunSmearing? 1:
             jetcongen = static_cast<AliJetContainer*>(fJetCollArray.At(1));
             if(!MatchJetsGeometricDefault()) AliInfo("Jet matching did not succeed!");
             jetcongen->ResetCurrentID();
-            while ((jetgen = jetcongen->GetNextJet()))
+            while ((jetgen = jetcongen->GetNextAcceptJet()))
                 {
                     if (!jetgen) continue;
                     Int_t jetflavour =0;
@@ -640,7 +644,7 @@ Printf("Smearing %e %e %i",fParam_Smear_Sigma,fParam_Smear_Mean,fRunSmearing? 1:
     AliEmcalJet * jetmatched  = nullptr;
     jetconrec->ResetCurrentID();
     Double_t jetpt=0;
-    while ((jetrec = jetconrec->GetNextJet()))
+    while ((jetrec = jetconrec->GetNextAcceptJet()))
         {
             if(!jetrec) break;
             double val;
@@ -670,14 +674,18 @@ Printf("Smearing %e %e %i",fParam_Smear_Sigma,fParam_Smear_Mean,fRunSmearing? 1:
                     jetmatched =jetrec->MatchedJet();
                     if(jetmatched)jetflavour = IsMCJetPartonFast(jetmatched,0.4,is_udgjet); //Event based association to save memory
                 }
-            FillHist("fh1dJetRecPt",jetrec->Pt(), this->fXsectionWeightingFactor );
+            FillHist("fh1dJetRecPt",jetpt, this->fXsectionWeightingFactor );
             if(fIsPythia){
                     if(jetflavour==0)     FillHist("fh1dJetRecPtUnidentified",jetpt, this->fXsectionWeightingFactor );
                     else if(jetflavour==1)FillHist("fh1dJetRecPtudgs",          jetpt, this->fXsectionWeightingFactor );
                     else if(jetflavour==2)FillHist("fh1dJetRecPtc",           jetpt, this->fXsectionWeightingFactor );
                     else if(jetflavour==3)FillHist("fh1dJetRecPtb",           jetpt, this->fXsectionWeightingFactor );
                 }
-            if(!(fJetCutsHF->IsJetSelected(jetrec))) break;
+            fJetCutsHF->SetMaxEtaJet(0.5);
+            fJetCutsHF->SetMinPtJet(-1);
+            fJetCutsHF->SetMaxPtJet(1000);
+
+            if(!(fJetCutsHF->IsJetSelected(jetrec))) continue;
             FillHist("fh1dJetRecEtaPhiAccepted",jetrec->Eta(),jetrec->Phi(), this->fXsectionWeightingFactor );
             FillHist("fh1dJetRecPtAccepted",jetpt, this->fXsectionWeightingFactor );
             if(fIsPythia){

@@ -3,8 +3,11 @@ AliAnalysisTaskPHOSPi0EtaToGammaGamma* AddTaskPHOSPi0EtaToGammaGamma(
     const UInt_t trigger = AliVEvent::kINT7,
     const TString CollisionSystem = "pp",
     const Bool_t isMC = kFALSE,
-    const Int_t L1input = -1,
-    const Int_t L0input = -1,
+    const TString triggerinput = "",//L1H,L1M,L1L,L0
+    const Float_t CenMin = 0.,
+    const Float_t CenMax = 90.,
+    const Int_t NMixed   = 10,
+    const Bool_t FlowTask = kFALSE,
     const Bool_t useCoreE = kFALSE,
     const Bool_t useCoreDisp = kFALSE,
     const Double_t NsigmaCPV  = 2.5,
@@ -12,7 +15,8 @@ AliAnalysisTaskPHOSPi0EtaToGammaGamma* AddTaskPHOSPi0EtaToGammaGamma(
     const Bool_t usePHOSTender = kTRUE,
     const Double_t bs = 25.,//bunch space in ns.
     const Double_t distBC = -1,//minimum distance to bad channel.
-    const Int_t pThardbin = -1
+    const Bool_t isJJMC = kFALSE,
+    const TString MCtype = "MBMC"
     )
 {
   //Add a task AliAnalysisTaskPHOSPi0EtaToGammaGamma to the analysis train
@@ -43,37 +47,37 @@ AliAnalysisTaskPHOSPi0EtaToGammaGamma* AddTaskPHOSPi0EtaToGammaGamma(
   AliPHOSTriggerHelper *helper = 0x0;
 
   if(trigger == (UInt_t)AliVEvent::kPHI7){
-    if(L1input > -1 && L0input > -1){
-      ::Error("AddTaskPHOSPi0EtaToGammaGamma", "Please select L0 or L1 trigger input.");
-      return NULL;
-    }
+    if(triggerinput.Contains("L1") || triggerinput.Contains("L0")){
+      TriggerName = TriggerName + "_" + triggerinput;
 
-    if(L1input > -1){
-      if     (L1input==7) TriggerName += "_L1H";
-      else if(L1input==6) TriggerName += "_L1M";
-      else if(L1input==5) TriggerName += "_L1L";
-    }
-    else if(L0input > -1){
-      if(L0input==9)      TriggerName += "_L0";
     }
     else{
-      ::Error("AddTaskPHOSPi0EtaToGammaGamma", "PHOS trigger analysis requires at least trigger input (L0 or L1).");
+      ::Error("AddTaskPHOSPi0EtaToGammaGamma", "PHOS trigger analysis requires at least trigger input (L0 or L1[H,M,L]).");
       return NULL;
     }
 
-    helper = new AliPHOSTriggerHelper(L1input,L0input);
-    helper->SetMatchingDistance(-3,-3,0,0);
-
-    const TString pathBCMTRU = "alien:///alice/cern.ch/user/d/dsekihat/BadMap/TRUBadMap_LHC15n.root";
-    TFile *rootfile_TRUmap = TFile::Open(pathBCMTRU,"READ");
-    for(Int_t imod=1;imod<5;imod++){
-      TH2I *h2 = (TH2I*)rootfile_TRUmap->Get(Form("hTRUBadMap_M%d",imod));
-      helper->SetPHOSTRUBadMap(imod,h2);
-    }
-
-
+//    helper = new AliPHOSTriggerHelper(triggerinput);
+//    //if(L1input > -1)      helper->SetMatchingDistance(-3,-1,0,2);//xmin,zmin,xmax,zmax
+//    //else if(L0input > -1) helper->SetMatchingDistance(-3,-3,0,0);//xmin,zmin,xmax,zmax
+//
+//    if(triggerinput.Contains("L1")){
+//      const TString pathBCMTRU = "alien:///alice/cern.ch/user/d/dsekihat/BadMap/TRUBadMap_LHC15o_empty.root";
+//      TFile *rootfile_TRUmap = TFile::Open(pathBCMTRU,"READ");
+//      for(Int_t imod=1;imod<5;imod++){
+//        TH2I *h2 = (TH2I*)rootfile_TRUmap->Get(Form("hTRUBadMap_M%d",imod));
+//        helper->SetPHOSTRUBadMap(imod,h2);
+//      }
+//    }
+//    else if(triggerinput.Contains("L0")){
+//      const TString pathBCMTRU = "alien:///alice/cern.ch/user/d/dsekihat/BadMap/TRUBadMap_LHC15n_Nfired_2.00_100.00GeV_Threshold0.90.root";
+//      TFile *rootfile_TRUmap = TFile::Open(pathBCMTRU,"READ");
+//      for(Int_t imod=1;imod<5;imod++){
+//        TH2I *h2 = (TH2I*)rootfile_TRUmap->Get(Form("hTRUBadMap_M%d",imod));
+//        helper->SetPHOSTRUBadMap(imod,h2);
+//      }
+//    }
   }
-  AliPHOSEventCuts *eventcuts = CreatePHOSEventCuts(kMC,helper);
+  AliPHOSEventCuts *eventcuts = CreatePHOSEventCuts(kMC);
 
   Int_t systemID = -1;
   if(CollisionSystem=="pp")                                 systemID = 0;
@@ -92,76 +96,44 @@ AliAnalysisTaskPHOSPi0EtaToGammaGamma* AddTaskPHOSPi0EtaToGammaGamma(
   if(useCoreE) PIDname += "_CoreE";
   else         PIDname += "_FullE";
 
-  TString taskname = Form("%s_%s_%s%s_BS%dns_DBC%02dmm",name,CollisionSystem.Data(),TriggerName.Data(),PIDname.Data(),(Int_t)bs,(Int_t)(distBC*10));
+  TString taskname = Form("%s_%s_%s_Cen%d_%d%s_BS%dns_DBC%02dmm",name,CollisionSystem.Data(),TriggerName.Data(),(Int_t)CenMin,(Int_t)CenMax,PIDname.Data(),(Int_t)bs,(Int_t)(distBC*10));
+  //TString taskname = Form("%s_%s_%s%s_BS%dns_DBC%02dmm",name,CollisionSystem.Data(),TriggerName.Data(),PIDname.Data(),(Int_t)bs,(Int_t)(distBC*10));
 
   AliAnalysisTaskPHOSPi0EtaToGammaGamma* task = new AliAnalysisTaskPHOSPi0EtaToGammaGamma(taskname);
   task->SelectCollisionCandidates(trigger);
-  task->SetCollisionSystem(systemID);//colliions system : pp=0, PbPb=1, pPb (Pbp)=2;
-  if(pThardbin>0) task->SetPtHardBin(pThardbin);
 
+  if(trigger == (UInt_t)AliVEvent::kPHI7) task->SetPHOSTriggerAnalysis(triggerinput);
+
+  task->SetCollisionSystem(systemID);//colliions system : pp=0, PbPb=1, pPb (Pbp)=2;
+  task->SetJetJetMC(isJJMC);
+  task->SetMCType(MCtype);
+  
   task->SetTenderFlag(usePHOSTender);
   task->SetMCFlag(isMC);
   task->SetCoreEnergyFlag(useCoreE);
 
+  //eventcuts->SetClusterCuts(clustercuts);
   task->SetEventCuts(eventcuts);
   task->SetClusterCuts(clustercuts);
 
+  task->SetCentralityMin(CenMin);
+  task->SetCentralityMax(CenMax);
+  task->SetDepthNMixed(NMixed);
+
   //centrality setting
   if(CollisionSystem=="pp"){//for pp
-    const Int_t nbins = 0;
-    Double_t cbin_data[nbins+1] = {0};//added lastbin + 1 as "Ntrack is greater than cbin[lastbin] upto infinity"
-    Double_t cbin_MBMC[nbins+1] = {0};//added lastbin + 1 as "Ntrack is greater than cbin[lastbin] upto infinity"
-    Double_t cbin_JJMC[nbins+1] = {0};//added lastbin + 1 as "Ntrack is greater than cbin[lastbin] upto infinity"
+    task->SetQnVectorTask(FlowTask);
 
-    TArrayD tbin;
-    if(!isMC)           tbin = TArrayD(nbins+1, cbin_data);//data
-    else{//for MC
-      if(pThardbin < 0) tbin = TArrayD(nbins+1, cbin_MBMC);//MB MC to get same cluster occupance on PHOS
-      else              tbin = TArrayD(nbins+1, cbin_JJMC);//MB MC to get same cluster occupance on PHOS
-    }
-
-    Int_t nMixed[nbins+1] = {100};
-    TArrayI tNMixed(nbins+1, nMixed);
-    task->SetCentralityBinningPP(tbin, tNMixed);
   }
   else if(CollisionSystem=="PbPb"){//for PbPb
     task->SetCentralityEstimator("V0M");
+    task->SetQnVectorTask(FlowTask);
 
-    const Int_t nbins = 9;
-    Double_t cbin_data[nbins+1] = {0,10,20,30,40,50,60,70,80,90};//for data
-    Double_t cbin_MBMC[nbins+1] = {1,11,21,31,41,51,61,71,81,91};//for MBMC to get same cluster occupance on PHOS
-    Double_t cbin_JJMC[nbins+1] = {2,12,22,32,42,52,62,72,82,92};//for JJMC to get same cluster occupance on PHOS
-
-    TArrayD tbin;
-    if(!isMC)           tbin = TArrayD(nbins+1, cbin_data);//data
-    else{//for MC
-      if(pThardbin < 0) tbin = TArrayD(nbins+1, cbin_MBMC);//MB MC
-      else              tbin = TArrayD(nbins+1, cbin_JJMC);//MB MC
-    }
-
-    Int_t nMixed[nbins] = {10,10,20,20,50,50,100,100,200};
-    TArrayI tNMixed(nbins, nMixed);
-    task->SetCentralityBinningPbPb(tbin, tNMixed);
   }
   else if(CollisionSystem=="pPb" || CollisionSystem=="Pbp"){//for pPb
     if(CollisionSystem == "pPb")      task->SetCentralityEstimator("V0A");//Pb-going side C->A
     else if(CollisionSystem == "Pbp") task->SetCentralityEstimator("V0C");//Pb-going side A->C
-
-    const Int_t nbins = 5;
-    Double_t cbin_data[nbins+1] = {0,20,40,60,80,100};//for data
-    Double_t cbin_MBMC[nbins+1] = {0,20,40,60,80,100};//for MBMC to get same cluster occupance on PHOS
-    Double_t cbin_JJMC[nbins+1] = {0,20,40,60,80,100};//for JJMC to get same cluster occupance on PHOS
-
-    TArrayD tbin;
-    if(!isMC)           tbin = TArrayD(nbins+1, cbin_data);//data
-    else{//for MC
-      if(pThardbin < 0) tbin = TArrayD(nbins+1, cbin_MBMC);//MB MC
-      else              tbin = TArrayD(nbins+1, cbin_JJMC);//MB MC
-    }
-
-    Int_t nMixed[nbins] = {20,20,50,100,100};
-    TArrayI tNMixed(nbins, nMixed);
-    task->SetCentralityBinningPbPb(tbin, tNMixed);
+    task->SetQnVectorTask(FlowTask);
   }
 
   //setting esd track selection for hybrid track
@@ -180,11 +152,20 @@ AliAnalysisTaskPHOSPi0EtaToGammaGamma* AddTaskPHOSPi0EtaToGammaGamma(
     //TF1 *f1tof = new TF1("f1TOFCutEfficiency","1.",0,100);
 
     task->SetTOFCutEfficiencyFunction(f1tof);
+
+    if(isMC){
+      TF1 *f1Pi0Weight = new TF1("f1Pi0Weight","1.",0,100);
+      task->SetAdditionalPi0PtWeightFunction(f1Pi0Weight);
+
+      TF1 *f1K0SWeight = new TF1("f1K0SWeight","[0] * (2/(1+exp(-[1]*x)) - 1) - ( 0 + [2]/(exp( -(x-[3]) / [4] ) + 1)  )",0,100);//tuned by charged K/pi ratio
+      f1K0SWeight->SetParameters(1.37,4.98,0.156,2.79,0.238);
+      task->SetAdditionalK0SPtWeightFunction(f1K0SWeight);
+    }
   }
   else if(CollisionSystem=="PbPb"){//PbPb
     task->SetBunchSpace(100.);//in unit of ns.
-    TF1 *f1tof = new TF1("f1TOFCutEfficiency","[0] * (2/(1+exp(-[1]*x)) - 1) - ( 0 + [2]/(exp( -(x-[3]) / [4] ) + 1)  )",0,100);
-    f1tof->SetParameters(0.997,7.38,0.029,7.6,0.5);
+    TF1 *f1tof = new TF1("f1TOFCutEfficiency","[0] * (2/(1+exp(-[1]*(x-[2]))) - 1) - ( 0 + [3]/(exp( -(x-[4]) / [5] ) + 1)  )",0,100);
+    f1tof->SetParameters(0.996,5.61,-0.146,0.036,7.39,0.054);
     task->SetTOFCutEfficiencyFunction(f1tof);
   }
   else if(CollisionSystem=="pPb" || CollisionSystem=="pPb"){//pPb
@@ -195,25 +176,17 @@ AliAnalysisTaskPHOSPi0EtaToGammaGamma* AddTaskPHOSPi0EtaToGammaGamma(
     task->SetTOFCutEfficiencyFunction(f1tof);
   }
 
-  if(isMC){
-    //TF1 *f1Pi0Weight = new TF1("f1Pi0Weight","1+[0]*exp(-[1]*x)",0,100);
-    //f1Pi0Weight->SetParameters(0.77,0.57);
-    TF1 *f1Pi0Weight = new TF1("f1Pi0Weight","1.",0,100);
-    task->SetAdditionalPi0PtWeightFunction(f1Pi0Weight);
-
-    TF1 *f1K0SWeight = new TF1("f1K0SWeight","[0] * (2/(1+exp(-[1]*x)) - 1) - ( 0 + [2]/(exp( -(x-[3]) / [4] ) + 1)  )",0,100);
-    f1K0SWeight->SetParameters(1.37,4.98,0.156,2.79,0.238);
-    task->SetAdditionalK0SPtWeightFunction(f1K0SWeight);
-  }
-
-
   mgr->AddTask(task);
   mgr->ConnectInput(task, 0, mgr->GetCommonInputContainer() );
  
-  TString outputFile = AliAnalysisManager::GetCommonFileName();
+  //TString outputFile = AliAnalysisManager::GetCommonFileName();
+  TString outputFile = Form("PHOS_Run2_%s_Cen%d_%d.root",CollisionSystem.Data(),(Int_t)CenMin,(Int_t)CenMax);
 
+  //TString prefix = Form("hist_%s_%s%s_BS%dns_DBC%02dmm",name,TriggerName.Data(),PIDname.Data(),(Int_t)bs,(Int_t)(distBC*10));
   TString prefix = Form("hist_%s",taskname.Data());
-  AliAnalysisDataContainer *coutput1 = mgr->CreateContainer(Form("%s",prefix.Data()), THashList::Class(), AliAnalysisManager::kOutputContainer, outputFile.Data());//event characerization
+
+  //AliAnalysisDataContainer *coutput1 = mgr->CreateContainer(Form("%s",prefix.Data()), THashList::Class(), AliAnalysisManager::kOutputContainer, Form("%s:%s",outputFile.Data(),"PWGGA_PHOSTasks_PHOSRun2"));
+  AliAnalysisDataContainer *coutput1 = mgr->CreateContainer(Form("%s",prefix.Data()), THashList::Class(), AliAnalysisManager::kOutputContainer, outputFile.Data());
   mgr->ConnectOutput(task, 1, coutput1);
 
   return task;

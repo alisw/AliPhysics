@@ -42,12 +42,12 @@ class AliPIDResponse;
 class AliMultSelection;
 class AliEventPoolManager;
 
-
 #include "AliMCEventHandler.h"
 #include "AliMCEvent.h"
 #include "AliMCParticle.h"
 #include "AliStack.h"
 #include "AliAnalysisTaskSE.h"
+#include "AliEventCuts.h"
 
 class AliAnalysisTaskHaHFECorrel : public AliAnalysisTaskSE {
 public:
@@ -61,18 +61,27 @@ public:
     
     //******************** ANALYSIS
     AliAODTrack* FindLPAndHFE(TObjArray* RedTracksHFE, const AliVVertex *pVtx, Int_t nMother, Double_t listMother[]);
-    void FindPhotonicPartner(Int_t iTracks, AliAODTrack* track,  const AliVVertex *pVtx, Int_t nMother, Double_t listMother[], Int_t &LSPartner, Int_t&ULSPartner);
+    void FindPhotonicPartner(Int_t iTracks, AliAODTrack* track,  const AliVVertex *pVtx, Int_t nMother, Double_t listMother[], Int_t &LSPartner, Int_t&ULSPartner, Int_t *LSPartnerID, Int_t *ULSPartnerID);
     void CorrelateElectron(TObjArray* RedTracksHFE);
 
-    void CorrelateLP(AliAODTrack* LPtrack, TObjArray* RedTracksHFE);
+    void CorrelateLP(AliAODTrack* LPtrack,  const AliVVertex* pVtx, Int_t nMother, Double_t listMother[], TObjArray* RedTracksHFE);
     void CorrelateLPMixedEvent(AliAODTrack* LPtrack, Float_t mult, Float_t zVtx);
     
     void CorrelateHadron(TObjArray* RedTracksHFE,  const AliVVertex* pVtx, Int_t nMother, Double_t listMother[], Float_t mult);
     void CorrelateHadronMixedEvent(AliAODTrack* Htrack, Float_t mult, Float_t zVtx);
 
+    void CorrelateWithHadrons(AliAODTrack* TriggerTrack, const AliVVertex* pVtx, Int_t nMother, Double_t listMother[], Bool_t FillHadron, Bool_t FillLP, Bool_t* NonElecIsTrigger, Double_t *NonElecIsTriggerPt, Int_t NumElectronsInEvent); 
+
+
+    //********************MC
+    void MCEfficiencyCorrections(const AliVVertex * RecVertex);
+
+
     //*********************ANALYSIS Helper
     Bool_t ChargedHadronTrackCuts(const AliVVertex *pVtx,AliAODTrack *Htrack, Int_t nMother, Double_t listMother[]);
     Bool_t ChargedHadronPIDCuts(AliAODTrack *Htrack);
+
+    Bool_t AssoHadronPIDCuts(AliAODTrack *Htrack);
 
     Bool_t InclElecTrackCuts(const AliVVertex *pVtx,AliAODTrack *ietrack, Int_t nMother, Double_t listMother[]);
     Bool_t InclElecPIDCuts(AliAODTrack *track, Bool_t IsPrimary);
@@ -80,68 +89,91 @@ public:
     Bool_t PhotElecPIDCuts(AliAODTrack *track);
     Bool_t PhotElecTrackCuts(const AliVVertex *pVtx,AliAODTrack *aetrack, Int_t nMother, Double_t listMother[]);
     
-    Bool_t CloneAndReduceTrackList(TObjArray* RedTracks, AliAODTrack* track, Int_t LSPartner, Int_t ULSPartner);
+    void EvaluateTaggingEfficiency(AliAODTrack * track, Int_t LSPartner, Int_t ULSPartner); 
+    Bool_t CloneAndReduceTrackList(TObjArray* RedTracks, AliAODTrack* track, Int_t LSPartner, Int_t ULSPartner, Int_t *LSPartnerID, Int_t *ULSPartnerID);
 
     void BinLogX(TAxis *axis);
-
+    
 
 
     //**************  SETTINGS
+    void SetMC (Bool_t IsMC) {
+      fIsMC=IsMC;
+      printf("SetMC: %i and IsMc %i", fIsMC, IsMC);};
     void SetTender (Bool_t UseTender) {fUseTender = UseTender;};
     void SetPeriod (Double_t period) {fWhichPeriod = period;};
 
-    void SetAssPtCut (Double_t AssPtCut) {fAssPtCut = AssPtCut;};
-    void SetITSnCut (Int_t ITSnCut) {fITSnCut = ITSnCut;};
-    void SetAssTPCnCut (Int_t AssTPCnCut) {fAssTPCnCut = AssTPCnCut;};
     void SetTPCnCut(Int_t TPCnCut) {fTPCnCut = TPCnCut;};
+    void SetTPCnCutdEdx(Int_t TPCnCutdEdx) {fTPCndEdxCut = TPCnCutdEdx;};
+    void SetITSnCut (Int_t ITSnCut) {fITSnCut = ITSnCut;};
+   
+
+    void SetPhotElecPtCut (Double_t AssPtCut) {fPhotElecPtCut = AssPtCut;};
+    void SetPhotElecTPCnCut (Int_t AssTPCnCut) {fPhotElecTPCnCut = AssTPCnCut;};
+    void SetPhotElecITSrefitCut(Bool_t AssITSrefitCut) {fPhotElecITSrefitCut = AssITSrefitCut;};  
+
     void SetHTPCnCut(Int_t HTPCnCut) {fHTPCnCut = HTPCnCut;}
-    void SetAssITSrefitCut(Bool_t AssITSrefitCut) {fAssITSrefitCut = AssITSrefitCut;};
-    void SetHITSrefitCut(Bool_t HITSrefitCut) {fHITSrefitCut = HITSrefitCut;};
-    
+    void SetHITSrefitCut(Bool_t HITSrefitCut) {fHITSrefitCut = HITSrefitCut;};   
     void SetHTPCrefitCut(Bool_t HTPCrefitCut) {fHTPCrefitCut = HTPCrefitCut;};
 
+   
+
+    void SetUseITS(Bool_t UseITS) {fUseITS = UseITS;}
     void SetSigmaITScut(Double_t SigmaITScut) {fSigmaITScut = SigmaITScut;};
     void SetSigmaTOFcut(Double_t SigmaTOFcut) {fSigmaTOFcut = SigmaTOFcut;};
     void SetSigmaTPCcut(Double_t SigmaTPCcut) {fSigmaTPCcut = SigmaTPCcut;};
 
-    // void SetWeightSyst(Bool_t WeightSyst) {fWeightSyst = WeightSyst;};
-    // void SetSystTOFcut(Bool_t SystTOFcut) {fSystTOFcut = SystTOFcut;};
   
-    //void SetPileUpCut(Bool_t EnablePileupRejVZEROTPCout){fEnablePileupRejVZEROTPCout = EnablePileupRejVZEROTPCout;};
-    void SetRejectKinkMother(Bool_t rejectKinkMother = kFALSE) { fRejectKinkMother = rejectKinkMother; };
-
     void SetHadronCorrelation(Bool_t CorrHadron) {fCorrHadron = CorrHadron;};
     void SetLPCorrelation(Bool_t CorrLP) {fCorrLParticle = CorrLP;};
     
     void SetOpeningAngleCut(Bool_t OpeningAngleCut) {fOpeningAngleCut=OpeningAngleCut;};
     void SetInvmassCut(Double_t InvmassCut) {fInvmassCut=InvmassCut;};
- 
+
+
+    void SetPi0WeightToData(TH1F &  WPion) {fCorrectPiontoData = WPion; fCorrectPiontoData.SetName("fCorrectPiontoData");}
+    void SetEtaWeightToData(TH1F &  WEta)  {fCorrectEtatoData  = WEta; fCorrectEtatoData.SetName("fCorrectEtatoData");}
+
+
 
  private:
     
-    Bool_t                ProcessCutStep(Int_t cutStep, AliVParticle *track);
     Double_t              GetDeltaPhi(Double_t phiA,Double_t phiB) const;
     Double_t              GetDeltaEta(Double_t etaA,Double_t etaB) const;
     
     Bool_t                fUseTender;               // Use tender
     Int_t                 fWhichPeriod;             // period
-    Double_t              fAssPtCut;                // pt cut for associated electron
-    Int_t                 fITSnCut;                 // ITs number of clusters for tagged electrons
-    Int_t                 fAssTPCnCut;              // TPC number of clusters for associated electron
+
+
+    Double_t              fMaxElectronEta;          //
+    Double_t              fMinElectronEta;          //
+    Double_t              fMaxHadronEta;            //
+    Double_t              fMinHadronEta;            //
+
+    // HFECuts
     Int_t                 fTPCnCut;                 // TPC number of clusters for tagged electron
-    Int_t                 fHTPCnCut;                // TPC number of clusters for trigger hadron
-    Bool_t                fAssITSrefitCut;          // ITS refit for associated electron
-    Bool_t                fHITSrefitCut;            // ITS refit for trigger hadron
-    Bool_t                fHTPCrefitCut;            // TPC refit for trigger hadron
+    Int_t                 fTPCndEdxCut;             //
+    Int_t                 fITSnCut;                 // ITs number of clusters for tagged electrons 
+
+    Bool_t                fUseITS;             //
     Double_t              fSigmaITScut;             // ITS nSigma cut
     Double_t              fSigmaTOFcut;             // TOF nSigma cut
-    Double_t              fSigmaTPCcut;             // TPC nSigma cut 
+    Double_t              fSigmaTPCcut;             // lower TPC nSigma cut 
 
-    Bool_t                fWeightSyst;              // used?
-    Bool_t                fSystTOFcut;              // used?
+    // Photonic  Electrons
+    Double_t              fPhotElecPtCut;                // pt cut for associated electron
+    Double_t              fPhotElecSigmaTPCcut;          //
+    Int_t                 fPhotElecTPCnCut;              // TPC number of clusters for associated electron
+    Bool_t                fPhotElecITSrefitCut;          // ITS refit for associated electron
+    
 
-    Bool_t                fEnablePileupRejVZEROTPCout;   // used?
-    Bool_t                fRejectKinkMother;        // Reject Kink Mother
+    // Associate Hadron (non Electron)
+    Double_t              fAssNonEleTPCcut;         //  
+
+    // Hadron Cut
+    Int_t                 fHTPCnCut;                // TPC number of clusters for trigger hadron
+    Bool_t                fHITSrefitCut;            // ITS refit for trigger hadron
+    Bool_t                fHTPCrefitCut;            // TPC refit for trigger hadron 
     
     Double_t              fOpeningAngleCut;         // openingAngle cut for non-HFE selection
     Double_t              fInvmassCut;              // invariant mass cut  for non-HFE selection
@@ -149,8 +181,8 @@ public:
     Double_t              fDCAcut;                  //! used?? DCA cut  for non-HFE selection
   
     // ******* Switch for analysis modes
-    Bool_t                fCorrHadron;              // Choste Hadron-HFE Correl
-    Bool_t                fCorrLParticle;           // Chose LP-HFE Correl
+    Bool_t                fCorrHadron;              // Choose Hadron-HFE Correl
+    Bool_t                fCorrLParticle;           // Choose LP-HFE Correl
     Bool_t                fMixedEvent;              // Fill Mixed Event for the cases chosen above
     Bool_t                fLParticle;               //! Is LP found?
     
@@ -169,45 +201,67 @@ public:
     TClonesArray          *fMCarray;                //! MC array
     AliAODMCHeader        *fMCheader;               //! MC header
 
-    
     TClonesArray          *fTracks_tender;          //Tender tracks
     TClonesArray          *fCaloClusters_tender;    //Tender clusters
-    
-    
-  
-    
+      
+    AliEventCuts          fEventCuts;               //! Test AliEventCuts
     AliHFEcuts            *fCuts;                   //! Cut Collection
     
-    Bool_t                fIdentifiedAsOutInz;      //! used?? Out Of Range in z
-    Bool_t                fPassTheEventCut;         //! used?? Pass The Event Cut
-   
-    Bool_t                fIsMC;                    //! flag for MC analysis
-    Bool_t                fIsAOD;                   //! flag for AOD analysis
-    Bool_t                fSetMassConstraint;       //! used?? set mass constraint
-    Double_t              fVz;                      //! used?? z position of the primary vertex
+     
+    Bool_t                fIsMC;                    // flag for MC analysis
+    Bool_t                fIsAOD;                   // flag for AOD analysis
     AliCFManager          *fCFM;                    //! Correction Framework Manager
     AliHFEpid             *fPID;                    //! PID
     AliHFEpidQAmanager    *fPIDqa;                  //! PID QA manager
-    
-    Int_t                 fWhichDecay;              //! used?? which decay
-    Double_t              fPi0EtaWeight;            //! used?? weight for pi0/eta in MC with enhanced signal
-    
+        
     TList                 *fOutputList;             //! output list
     TH1F                  *fNoEvents;               //! no of events for different cuts
     TH2F                  *fTrkpt;                  //! track pt for different cuts
-    TH1F                  *fMultiplicity;	    //! multiplicity distribution
-    
+    TH2F                  *fEtaVtxZ;                //! Eta vs Vtx z (check for ITS acceptance problem)
+
+    THnSparse             *fMultiplicity;	    //! multiplicity distribution
+
+    TH2F                  *fElectronTrackCuts;      //! 
+    TH2F                  *fElectronTrackTPCNcls;   //! 
+    TH2F                  *fElectronTrackTPCNclsdEdx; //! 
+    TH2F                  *fElectronTrackTPCFrac;    //! 
+    TH2F                  *fElectronTrackITSNcls;   //!
+    TH2F                  *fElectronTrackDCA;       //! 
+
+
+
+   
+
     TH2F                  *fHistITSnSig;            //! ITS sigma vs p
     TH2F                  *fHistTOFnSig;            //! TOF sigma vs p
     TH2F                  *fHistTPCnSig;            //! TPC sigma vs p
     TH2F                  *fHistTPCnSigITScut;      //! TPC sigma vs p (ITS cut)
     TH2F                  *fHistTPCnSigTOFcut;      //! TPC sigma vs p (TOF cut)
     TH2F                  *fHistTPCnSigITSTOFcut;   //! TPC sigma vs p (ITS+TOF cuts)
+
+    TH2F                  *fHadContPvsPt;           //!
+    THnSparse             *fHadContPPhiEtaTPC;      //!
+    THnSparse             *fHadContamination;       //! HadronicContaminationTOF
+    THnSparse             *fHadContMC;              //!
     
 
-    TH1F                  *fInclElecPt;              //! inclusive electron pt
+  
+    TH1F                  *fInclElecPt;             //! inclusive electron p
     TH1F                  *fULSElecPt;              //! ULS electron pt (after IM cut)
     TH1F                  *fLSElecPt;               //! LS electron pt (after IM cut)
+    TH2F                  *fInvmassLS;              //! Inv mass of LS (e,e)
+    TH2F                  *fInvmassULS;             //! Inv mass of ULS (e,e)
+    TH2F                  *fOpeningAngleLS;         //! opening angle for LS pairs
+    TH2F                  *fOpeningAngleULS;        //! opening angle for ULS pairs
+    TH2F                  *fCheckLSULS;             //! check no of LS/ULS partner per electron
+    THnSparse             *fTagMotherPt;              //!
+    THnSparse             *fTagEffIncl;             //! 
+    THnSparse             *fTagEffLS;               //!
+    THnSparse             *fTagEffULS;              //!
+    TH1F                  fCorrectPiontoData;      
+    TH1F                  fCorrectEtatoData;       
+
+    // HFE HFE
     TH1F                  *fElecTrigger;            //! trigger electron vs pt
     TH2F                  *fInclElecPhi;            //! electron (trigger): phi vs pt
     TH2F                  *fULSElecPhi;             //! phi vs pt for electrons from ULS pairs
@@ -215,42 +269,52 @@ public:
     TH2F                  *fElecDphi;               //! inlcusive electron: dPhi vs pt of triggered electron
     TH2F                  *fULSElecDphi;            //! electron from ULS pairs: dPhi vs pt of triggered electron
     TH2F                  *fLSElecDphi;             //! electron from LS pairs: dPhi vs pt of triggered electron
-    TH2F                  *fULSElecDphiDiffMethod;   //! electron from ULS pairs: dPhi vs pt of triggered electron
+    TH2F                  *fULSElecDphiDiffMethod;  //! electron from ULS pairs: dPhi vs pt of triggered electron
     TH2F                  *fLSElecDphiDiffMethod;   //! electron from LS pairs: dPhi vs pt of triggered electron
-    
-    TH1F                  *fElecHaTrigger;          //!
-    THnSparse             *fElecHa;                 //!
+
+   
+ 
+    TH1F                  *fElecHadTrigger;          //!
+    TH1F                  *fHadElecTrigger;          //!
+    TH1F                  *fNonElecHadTrigger;          //!
+    TH1F                  *fHadNonElecTrigger;          //!
+    THnSparse             *fInclElecHa;             //!
     THnSparse             *fLSElecHa;               //!
     THnSparse             *fULSElecHa;              //!
-
+    THnSparse             *fElecHaHa;               //!
     THnSparse             *fElecHaLSNoPartner;      //!
     THnSparse             *fElecHaULSNoPartner;     //!
-
     THnSparse             *fElecHaMixedEvent;       //!
     THnSparse             *fLSElecHaMixedEvent;     //!
     THnSparse             *fULSElecHaMixedEvent;    //!
 
+
     TH1F                  *fElecLPTrigger;          //!
-   
-    THnSparse             *fElecLP;                 //!
+    TH1F                  *fLPElecTrigger;            //!
+    TH1F                  *fNonElecLPTrigger;          //!
+    TH1F                  *fLPNonElecTrigger;            //!
+    THnSparse             *fInclElecLP;             //!
     THnSparse             *fLSElecLP;               //!
     THnSparse             *fULSElecLP;              //!
-
+    THnSparse             *fElecLPHa;               //!
+    THnSparse             *fElecLPLSNoPartner;      //!
+    THnSparse             *fElecLPULSNoPartner;     //!
     THnSparse             *fElecLPMixedEvent;       //!
     THnSparse             *fLSElecLPMixedEvent;     //!
     THnSparse             *fULSElecLPMixedEvent;    //!
-
-
-    TH2F                  *fInvmassLS;              //! Inv mass of LS (e,e)
-    TH2F                  *fInvmassULS;             //! Inv mass of ULS (e,e)
-    TH2F                  *fOpeningAngleLS;         //! opening angle for LS pairs
-    TH2F                  *fOpeningAngleULS;        //! opening angle for ULS pairs
-    TH2F                  *fCheckLSULS;              //!
-    
-    TH2F                  *fPi0Pt;                  //! primary pi0 pt to compute the weight
-    TH2F                  *fEtaPt;                  //! primary eta pt to compute the weight
-    
    
+    TH2F                  *fCheckMCVertex;           //!
+    TH2F                  *fCheckMCPtvsRecPt;        //!
+    THnSparse             *fMCPi0Prod;               //!
+    THnSparse             *fMCEtaProd;               //!
+    THnSparse             *fMCPiPlusProd;            //!
+    THnSparse             *fMCLeadingParticle;       //!
+    TH3F                  *fMCHadPtEtaPhi;           //!
+    TH3F                  *fMCHadPtEtaVtx;           //!
+    TH3F                  *fMCElecPtEtaPhi;          //!
+    TH1F                  *fMCElecPDG;               //!
+    TH3F                  *fMCElecPtEtaPhiStrict;    //!
+       
     
     AliAnalysisTaskHaHFECorrel(const AliAnalysisTaskHaHFECorrel&);
     AliAnalysisTaskHaHFECorrel& operator=(const AliAnalysisTaskHaHFECorrel&);
@@ -265,13 +329,20 @@ class AliBasicParticleHaHFE : public AliVParticle
 {
  public:
  AliBasicParticleHaHFE() 
-   : fID(0), fEta(0), fPhi(0), fpT(0), fCharge(0), fLSpartner(0), fULSpartner(0) 
+   : fID(0), fEta(0), fPhi(0), fpT(0), fCharge(0), fLSpartner(0), fULSpartner(0) , fIDLSPartner(0), fIDULSPartner(0)
     {}
- AliBasicParticleHaHFE(Int_t id, Float_t eta, Float_t phi, Float_t pt, Short_t charge, Short_t LS, Short_t ULS)
-   : fID(id), fEta(eta), fPhi(phi), fpT(pt), fCharge(charge), fLSpartner(LS), fULSpartner(ULS)
+ AliBasicParticleHaHFE(Int_t id, Float_t eta, Float_t phi, Float_t pt, Short_t charge, Short_t LS, Short_t ULS, Int_t *LSPartner, Int_t *ULSPartner)
+   : fID(id), fEta(eta), fPhi(phi), fpT(pt), fCharge(charge), fLSpartner(LS), fULSpartner(ULS), fIDLSPartner(0), fIDULSPartner(0)
   {
+    fIDLSPartner = new Int_t[LS];
+    fIDULSPartner = new Int_t[ULS];
+    for (Int_t i=0; i<LS; i++)  fIDLSPartner[i]=LSPartner[i];
+    for (Int_t i=0; i<ULS; i++) fIDULSPartner[i]=ULSPartner[i];
   }
-  virtual ~AliBasicParticleHaHFE() {}
+  virtual ~AliBasicParticleHaHFE() {
+    if (fIDLSPartner)  delete fIDLSPartner;
+    if (fIDULSPartner) delete fIDULSPartner;
+  }
 
   // kinematics
   virtual Double_t Px() const { AliFatal("Not implemented"); return 0; }
@@ -306,15 +377,20 @@ class AliBasicParticleHaHFE : public AliVParticle
   virtual Short_t LS()          const {return fLSpartner; }
   virtual Short_t ULS()         const {return fULSpartner; }
   virtual Short_t ID()          const {return fID;}
-  
+  virtual Int_t  LSPartner(Int_t i)   const {return fIDLSPartner[i];}
+  virtual Int_t  ULSPartner(Int_t i)  const {return fIDULSPartner[i];}
+
+
  private:
-  Float_t fEta;        // eta
-  Float_t fPhi;        // phi
-  Float_t fpT;         // pT
-  Short_t fCharge;     // charge
-  Short_t fULSpartner; // no of ULS partner
-  Short_t fLSpartner;  // no of LS partner
-  Int_t   fID;         // particle id
+  Float_t fEta;            // eta
+  Float_t fPhi;            // phi
+  Float_t fpT;             // pT
+  Short_t fCharge;         // charge
+  Short_t fULSpartner;     // no of ULS partner
+  Short_t fLSpartner;      // no of LS partner
+  Int_t   fID;             // particle id
+  Int_t*  fIDLSPartner;    //! particle id of LS Partner
+  Int_t*  fIDULSPartner;   //! partilce id of ULS partner
 
   ClassDef(AliBasicParticleHaHFE, 1); // class which contains only quantities requires for this analysis to reduce memory consumption for event mixing
 };

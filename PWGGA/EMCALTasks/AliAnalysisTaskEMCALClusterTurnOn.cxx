@@ -44,15 +44,19 @@
 #include "AliEMCALTriggerPatchInfo.h"
 #include <TArrayI.h>
 #include <AliEMCALTriggerBitConfig.h>
-//#include <AliEmcalTriggerMakerTask.h>
 #include <TSystem.h>
 #include <TROOT.h>
 #include "TRandom3.h"
 #include "AliGenPythiaEventHeader.h"
 #include <AliEMCALTriggerPatchInfo.h>
 #include <AliTriggerClass.h>
+#include <TParameter.h>
+#include "AliOADBContainer.h"
 #include <AliCDBManager.h>
 #include <AliEmcalDownscaleFactorsOCDB.h>
+#include <TGrid.h>
+#include <vector>
+using std::vector;
 
 
 #include "AliAnalysisTaskEMCALClusterTurnOn.h"
@@ -86,6 +90,7 @@ fNLMCut(0),
 fNLMmin(0),
 fTMClusterRejected(kTRUE),
 fTMClusterInConeRejected(kTRUE),
+fFastOrPath(""),
 fBinsPt(),
 fBinsPtCl(),
 fBinsRejection(),
@@ -122,9 +127,11 @@ fL1triggered(0),
 fClusTime(0),
 fPt_trig(0),
 fM02cut(0),
+fMaskFastOrCells(0),
 fOutputTHnS(0),
 hFastOrIndexLeadingCluster(0),
-fOutTHnS_Clust(0)
+fOutTHnS_Clust(0),
+MaskedFastOrs()
 {
 
     // Default constructor.
@@ -158,6 +165,7 @@ fNLMCut(0),
 fNLMmin(0),
 fTMClusterRejected(kTRUE),
 fTMClusterInConeRejected(kTRUE),
+fFastOrPath(""),
 fBinsPt(),
 fBinsPtCl(),
 fBinsRejection(),
@@ -194,9 +202,11 @@ fL1triggered(0),
 fClusTime(0),
 fPt_trig(0),
 fM02cut(0),
+fMaskFastOrCells(0),
 fOutputTHnS(0),
 hFastOrIndexLeadingCluster(0),
-fOutTHnS_Clust(0)
+fOutTHnS_Clust(0),
+MaskedFastOrs()
 {
 
     // Standard constructor.
@@ -571,7 +581,7 @@ Bool_t AliAnalysisTaskEMCALClusterTurnOn::Run()
     Float_t Ampli;
     AODtrigger->GetAmplitude(Ampli);
     for(Int_t i = 0; i<ntimes; i++){
-      if((L0times[i]==8 || L0times[i] == 9) && Ampli > 28700.){
+      if((L0times[i]==8 || L0times[i] == 9) && Ampli >5000. ){
         isL0 = kTRUE;
         hL0Amplitude->Fill(Ampli);
 //        break;
@@ -587,6 +597,9 @@ Bool_t AliAnalysisTaskEMCALClusterTurnOn::Run()
     }
     TLorentzVector vecCOI;
     coi->GetMomentum(vecCOI,fVertex);
+
+    
+
 //    Double_t coiTOF = coi->GetTOF()*1e9;
 //    if(coiTOF< -30. || coiTOF > 30.){
 //      continue;
@@ -631,6 +644,24 @@ Bool_t AliAnalysisTaskEMCALClusterTurnOn::Run()
   Bool_t FillEGAOver12 = kTRUE;
   Bool_t FillEGAOver14 = kTRUE;
 
+  vector<Int_t> MaskedFastOrs;
+  if(fMaskFastOrCells){
+    if(fFastOrPath.Contains("alien://")) TGrid::Connect("alien://");
+    AliOADBContainer badchannelDB("AliEmcalMaskedFastors");
+    badchannelDB.InitFromFile(fFastOrPath, "AliEmcalMaskedFastors");
+    TObjArray *badchannelmap = static_cast<TObjArray *>(badchannelDB.GetObject(InputEvent()->GetRunNumber()));
+    if(badchannelmap && badchannelmap->GetEntries())
+      {
+      for(TIter citer = TIter(badchannelmap).Begin(); citer != TIter::End(); ++citer){
+        TParameter<int> *channelID = static_cast<TParameter<int> *>(*citer);
+        int maskedFastOr = channelID->GetVal();
+        MaskedFastOrs.push_back(maskedFastOr);
+      }
+    }
+    else Printf("Could not open MaskedFastors.root");
+  }
+
+
   for (auto it : clusters->accepted()){
     AliVCluster *coi = static_cast<AliVCluster*>(it);
     if(!coi) {
@@ -644,9 +675,24 @@ Bool_t AliAnalysisTaskEMCALClusterTurnOn::Run()
     Double_t coiTOF = coi->GetTOF()*1e9;
     Double_t coiM02 = coi->GetM02();
             
+    Bool_t isMasked = kFALSE;
+    if(fMaskFastOrCells){
+      geom->GetAbsCellIdFromEtaPhi(vecCOI.Eta(),vecCOI.Phi(),cellID);
+      if(cellID>=0){
+        geom->GetFastORIndexFromCellIndex(cellID,FastOrIndex);
+        for(unsigned int maskedFOcounter=0;maskedFOcounter<MaskedFastOrs.size();maskedFOcounter++){
+          if(FastOrIndex==MaskedFastOrs[maskedFOcounter]) {
+            isMasked = kTRUE;
+            break;
+          }
+        }
+      }
+    }
+    if(isMasked){
+      continue;
+    }
 
     if(fQA) {
-
       fPT->Fill(vecCOI.Pt());
     }
     fE->Fill(vecCOI.E());
@@ -798,7 +844,7 @@ void  AliAnalysisTaskEMCALClusterTurnOn::FillTHnSparse(AliEMCALGeometry* geom, A
 
   if(fThn){
     const Int_t ndims =   fNDimensions;
-    const Int_t ndimsClus = fClusDimensions;
+//    const Int_t ndimsClus = fClusDimensions;
     Double_t outputValues[ndims];
     Int_t nSupMod, nModule, nIphi, nIeta, iphi, ieta;
     Int_t c_eta = 0;
@@ -820,7 +866,6 @@ void  AliAnalysisTaskEMCALClusterTurnOn::FillTHnSparse(AliEMCALGeometry* geom, A
     for (Int_t cellcounter = 0; cellcounter<cellnumber; cellcounter++)
     {
       IDs[cellcounter] = coi->GetCellsAbsId()[cellcounter];        
-      Int_t cellID = IDs[cellcounter];
       geom->GetCellIndex(IDs[cellcounter],nSupMod, nModule, nIphi, nIeta);
       geom->GetCellPhiEtaIndexInSModule(nSupMod, nModule, nIphi, nIeta, iphi, ieta);
       c_eta = 0; 

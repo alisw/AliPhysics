@@ -816,11 +816,11 @@ void AliAnalysisTaskGammaPureMC::ProcessMCParticles()
     if(fIsK0 == 0) continue;
     if( particle->GetPdgCode() == kPdgK0Short){
       if (particle->GetNDaughters() != 2) continue;   
-      UChar_t acceptanceGamma[2] = {0,0};
+      //UChar_t acceptanceGamma[2] = {0,0};
       Double_t energyPi0[2] = {0,0};
       Bool_t allOK[2] = {kFALSE,kFALSE};
       UChar_t gdAcceptanceGamma[4] = {0,0,0,0};
-      Double_t gdEnergyGamma[4] = {0,0,0,0};
+      //Double_t gdEnergyGamma[4] = {0,0,0,0};
       Bool_t allGDOK[4] = {kFALSE, kFALSE, kFALSE,kFALSE};
       for(Int_t k=0;k<2;k++){
         TParticle *daughter=fMCEvent->Particle(particle->GetDaughter(k));
@@ -836,7 +836,7 @@ void AliAnalysisTaskGammaPureMC::ProcessMCParticles()
             if(granddaughter->GetPdgCode() == 22) allGDOK[2*k + h] = kTRUE;
             if(IsInPCMAcceptance(granddaughter))  SETBIT(gdAcceptanceGamma[2*k+h], kPCMAcceptance);
             if(IsInEMCalAcceptance(granddaughter)) SETBIT(gdAcceptanceGamma[2*k+h], kEMCALAcceptance);
-            gdEnergyGamma[2*k+h] = granddaughter->Energy();
+            //gdEnergyGamma[2*k+h] = granddaughter->Energy();
           }
         }
       }

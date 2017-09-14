@@ -423,8 +423,8 @@ void AliAnalysisTaskGammaHadron::UserCreateOutputObjects()
     dimThnPi0++;
 
     titleThnPi0[dimThnPi0] = "Opening Angle [rad]";
-    nBinsThnPi0[dimThnPi0] = 23;
-    Double_t openAngleArray[23+1] = {0,0.009,0.011,0.013,0.015,0.017,0.02,0.03,0.04,0.05,0.06,0.07,0.08,0.09,0.1,0.125,0.15,pi/16.,pi/8.,pi/4.,3.*pi/8.,pi/2.,3.*pi/4.,pi};
+    nBinsThnPi0[dimThnPi0] = 29;
+    Double_t openAngleArray[29+1] = {0,0.009,0.011,0.013,0.015,0.017,0.019,0.021,0.023,0.025,0.027,0.029,0.031,0.033,0.035,0.037,0.04,0.044,0.048,0.055,0.07,0.08,0.09,0.1,0.125,0.15,pi/16.,pi/8.,pi/4.,pi};
     binEdgesThnPi0[dimThnPi0] = openAngleArray;
   //  GenerateFixedBinArray(20,0,TMath::Pi(),openAngleArray);
     minThnPi0[dimThnPi0] = 0;

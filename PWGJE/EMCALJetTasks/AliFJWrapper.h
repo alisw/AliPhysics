@@ -141,7 +141,8 @@ class AliFJWrapper
   void SetRhoRhom (Double_t rho, Double_t rhom) { fUseExternalBkg = kTRUE; fRho = rho; fRhom = rhom;} // if using rho,rhom then fUseExternalBkg is true
   void SetMinJetPt(Double_t MinPt) {fMinJetPt=MinPt;}
   void SetEventSub(Bool_t b) {fEventSub = b;}
-  void SetMaxDelR(Double_t r)  {fUseMaxDelR = kTRUE; fMaxDelR = r;}
+  void SetMaxDelR(Double_t r)  {fMaxDelR = r;}
+  void SetAlpha(Double_t a)  {fAlpha = a;}
 
  protected:
   TString                                fName;               //!
@@ -191,8 +192,8 @@ class AliFJWrapper
   Double_t                               fZcut;               // fZcut = 0.1                
   Double_t                               fBeta;               // fBeta = 0
   Bool_t                                 fEventSub;
-  Bool_t                                 fUseMaxDelR;
   Double_t                               fMaxDelR;
+  Double_t                               fAlpha;
 #ifdef FASTJET_VERSION
   fastjet::JetMedianBackgroundEstimator   *fBkrdEstimator;    //!
   //from contrib package
@@ -296,8 +297,8 @@ AliFJWrapper::AliFJWrapper(const char *name, const char *title)
   , fZcut(0.1)
   , fBeta(0)
   , fEventSub          (kFALSE)
-  , fUseMaxDelR        (kFALSE)
-  , fMaxDelR           (0.4)
+  , fMaxDelR           (-1)
+  , fAlpha             (0)
 #ifdef FASTJET_VERSION
   , fBkrdEstimator     (0)
   , fGenSubtractor     (0)
@@ -1252,7 +1253,6 @@ Int_t AliFJWrapper::DoEventConstituentSubtraction() {
   //Do constituent subtraction
 #ifdef FASTJET_VERSION
   CreateEventConstituentSub();
-  if(fUseMaxDelR) fEventConstituentSubtractor->set_max_standardDeltaR(fMaxDelR);
   fEventSubCorrectedVectors = fEventConstituentSubtractor->subtract_event(fEventSubInputVectors,fMaxRap); //second argument max rap?
   //clear constituent subtracted jets
   if(fEventConstituentSubtractor) { delete fEventConstituentSubtractor; fEventConstituentSubtractor = NULL; }
@@ -1330,7 +1330,7 @@ Int_t AliFJWrapper::CreateConstituentSub() {
 
   // see ConstituentSubtractor.hh signatures
   // ConstituentSubtractor(double rho, double rhom=0, double alpha=0, double maxDeltaR=-1)
-  if (fUseExternalBkg) { fConstituentSubtractor = new fj::contrib::ConstituentSubtractor(fRho,fRhom); }
+  if (fUseExternalBkg) { fConstituentSubtractor = new fj::contrib::ConstituentSubtractor(fRho,fRhom,fAlpha,fMaxDelR); }
   else                 { fConstituentSubtractor = new fj::contrib::ConstituentSubtractor(fBkrdEstimator); }
 
   #endif
@@ -1344,7 +1344,7 @@ Int_t AliFJWrapper::CreateEventConstituentSub() {
   if (fEventConstituentSubtractor) { delete fEventConstituentSubtractor; } // protect against memory leaks
   // see ConstituentSubtractor.hh signatures
   // ConstituentSubtractor(double rho, double rhom=0, double alpha=0, double maxDeltaR=-1)
-  if (fUseExternalBkg)  fEventConstituentSubtractor = new fj::contrib::ConstituentSubtractor(fRho,fRhom); 
+  if (fUseExternalBkg)  fEventConstituentSubtractor = new fj::contrib::ConstituentSubtractor(fRho,fRhom,fAlpha,fMaxDelR); 
   else                  fEventConstituentSubtractor = new fj::contrib::ConstituentSubtractor(fBkrdEstimator); 
 
   #endif

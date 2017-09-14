@@ -67,8 +67,13 @@ AliAnalysisTaskCEP::AliAnalysisTaskCEP(const char* name,
   , fETpatternNDG(ETpatternNDG)
   , fTTmask(TTmask)
   , fTTpattern(TTpattern)
+  , fisSTGTriggerFired(kFALSE)
+  , fnTOFmaxipads(0)
   , fRun(-1)
   , fESDRun(0x0)
+  , fisESD(kFALSE)
+  , fisAOD(kFALSE)
+  , fEvent(0x0)
   , fESDEvent(0x0)
   , fCEPEvent(0x0)
   , fTracks(0x0)
@@ -87,9 +92,13 @@ AliAnalysisTaskCEP::AliAnalysisTaskCEP(const char* name,
   , fTrackCuts(0x0)
   , fMartinSel(0x0)
   , fCEPUtil(0x0)
+	, flQArnum(0x0) 
+	, flBBFlag(0x0)
 	, flSPDpileup(0x0)
 	, flnClunTra(0x0)
 	, flVtx(0x0)
+	, flV0(0x0)
+	, flFMD(0x0)
 	, fhStatsFlow(0x0)
 	, fHist(new TList())
 	, fCEPtree(0x0)
@@ -120,7 +129,13 @@ AliAnalysisTaskCEP::AliAnalysisTaskCEP():
   , fETpatternNDG(AliCEPBase::kETBaseLine)
   , fTTmask(AliCEPBase::kTTBaseLine)
   , fTTpattern(AliCEPBase::kTTBaseLine)
+  , fisSTGTriggerFired(kFALSE)
+  , fnTOFmaxipads(0)
   , fRun(-1)
+  , fESDRun(0x0)
+  , fisESD(kFALSE)
+  , fisAOD(kFALSE)
+  , fEvent(0x0)
   , fESDEvent(0x0)
   , fCEPEvent(0x0)
   , fTracks(0x0)
@@ -587,9 +602,9 @@ void AliAnalysisTaskCEP::UserExec(Option_t *)
      
   // EventCuts only works with run2 data
   // this is doing a lot more than the physics selection (by default uses kAny)
-  // run number > 225000
+  // run number > 256146 (LHC16j)
   Bool_t isEventCutsel = kFALSE;
-  if (fRun >= 225000 && fRun <= 260187) {
+  if (fRun >= 256146) {
     isEventCutsel = fEventCuts->AcceptEvent(fEvent);
   }
   if (isEventCutsel) fhStatsFlow->Fill(AliCEPBase::kBinEventCut);
@@ -609,15 +624,26 @@ void AliAnalysisTaskCEP::UserExec(Option_t *)
     fCEPUtil->VtxAnalysis(fEvent,flVtx);
   }
      
+  // count number of recorded triggers
+  // CINT11-B-NOPF-CENTNOTRD, DG trigger has to be replaied, LHC16[d,e,h]
+  // CCUP2-B-SPD1-CENTNOTRD, DG trigger has to be replaied, LHC16[h,i,j]
+  // CCUP13-B-SPD1-CENTNOTRD = DG trigger, LHC16[k,l,o,p], LHC17[g,h,i,j,k,l]
+  // CCUP25-B-SPD1-CENTNOTRD = DG trigger, LHC17[g,h,i,j,k,l]
+  TString firedTriggerClasses = fEvent->GetFiredTriggerClasses();
+  if (firedTriggerClasses.Contains("CINT11-B-NOPF-CENTNOTRD"))
+    ((TH1F*)flQArnum->At(1))->Fill(fRun);
+  if (firedTriggerClasses.Contains("CCUP2-B-SPD1-CENTNOTRD"))
+    ((TH1F*)flQArnum->At(2))->Fill(fRun);
+  if (firedTriggerClasses.Contains("CCUP13-B-SPD1-CENTNOTRD"))
+    ((TH1F*)flQArnum->At(3))->Fill(fRun);
+  if (firedTriggerClasses.Contains("CCUP25-B-SPD1-CENTNOTRD"))
+    ((TH1F*)flQArnum->At(4))->Fill(fRun);
+  
   // did the double-gap trigger (CCUP13-B-SPD1-CENTNOTRD) fire?
   // this is relevant for the LHC16[k,l,o,p] data
   // in case of MC data and data containing no DG trigger
   // the trigger needs to be replaied
   // different triggers are considered
-  // CINT11-B-NOPF-CENTNOTRD, DG trigger has to be replaied, LHC16[d,e]
-  // CCUP2-B-SPD1-CENTNOTRD, DG trigger has to be replaied, LHC16[h,i,j]
-  // CCUP13-B-SPD1-CENTNOTRD = DG trigger, LHC16[k,l,o,p]
-  TString firedTriggerClasses = fEvent->GetFiredTriggerClasses();
   Bool_t isReplay = fMCEvent
     || firedTriggerClasses.Contains("CINT11-B-NOPF-CENTNOTRD")
     || firedTriggerClasses.Contains("CCUP2-B-SPD1-CENTNOTRD");
@@ -625,8 +651,9 @@ void AliAnalysisTaskCEP::UserExec(Option_t *)
   // The following is needed to replay the DG trigger
   // The STG trigger in 2016 required two online tracklets without additional
   // topology.
-  TBits foMap = fInputEvent->GetMultiplicity()->GetFastOrFiredChips();
-  Bool_t isSTGtriggerFired = IsSTGFired(&foMap);
+  const AliVMultiplicity *mult = fEvent->GetMultiplicity();
+  TBits foMap = mult->GetFastOrFiredChips();
+  fisSTGTriggerFired = IsSTGFired(&foMap);
     
   Bool_t isDGTrigger = kFALSE;
   if (isReplay) {
@@ -639,28 +666,34 @@ void AliAnalysisTaskCEP::UserExec(Option_t *)
     for (Int_t i=32; i<64; i++) isV0Afired |= esdV0->GetBBFlag(i);
     for (Int_t i=0; i<32; i++)  isV0Cfired |= esdV0->GetBBFlag(i);
 
-    isDGTrigger = isSTGtriggerFired && !isV0Afired && !isV0Cfired;
+    isDGTrigger = fisSTGTriggerFired && !isV0Afired && !isV0Cfired;
     
-    // printf("DG trigger replaied: %i %i %i\n",
-    //  isSTGtriggerFired,!isV0Afired,!isV0Cfired);
+    // printf("DG trigger replaied: %i %i %i -> %i\n",
+    //   isSTGtriggerFired,!isV0Afired,!isV0Cfired,isDGTrigger);
   
   } else {
   
-    if (firedTriggerClasses.Contains("CCUP13-B-SPD1-CENTNOTRD")) {
+    if (firedTriggerClasses.Contains("CCUP13-B-SPD1-CENTNOTRD") ||
+      firedTriggerClasses.Contains("CCUP25-B-SPD1-CENTNOTRD") ) {
       isDGTrigger = kTRUE;
       
-      fhStatsFlow->Fill(AliCEPBase::kBinDGTrigger);
-      ((TH1F*)flQArnum->At(1))->Fill(fRun);
-
       // past-future trigger protection
       if (flBBFlag)
         fCEPUtil->BBFlagAnalysis(fEvent,flBBFlag);
     }
   }
-  
+  if (isDGTrigger)
+    fhStatsFlow->Fill(AliCEPBase::kBinDGTrigger);
+    
+  // to replay the CCUP25-B-SPD1-CENTNOTRD two fired TOF maxiPads are required
+  // in addition to CCUP13
+  fnTOFmaxipads = fEvent->GetTOFHeader()->GetNumberOfTOFmaxipad();
+  // if ( isDGTrigger ) {
+  //   printf("Number of fired TOF MaxiPads = %i / %i\n",
+  //     fnTOFmaxipads,firedTriggerClasses.Contains("CCUP25-B-SPD1-CENTNOTRD"));
+  // }
   
   // number of tracklets
-  const AliVMultiplicity *mult = fEvent->GetMultiplicity();
   Int_t nTracklets = mult->GetNumberOfTracklets();
   
   // get trigger information using AliTriggerAnalysis.IsOfflineTriggerFired
@@ -709,10 +742,10 @@ void AliAnalysisTaskCEP::UserExec(Option_t *)
   if (isMBOR) fhStatsFlow->Fill(AliCEPBase::kBinMBOR);
   if (isMBAND) fhStatsFlow->Fill(AliCEPBase::kBinMBAND);
 
-  if (isMBOR) ((TH1F*)flQArnum->At(2))->Fill(fRun);
-  if (isV0DG) ((TH1F*)flQArnum->At(4))->Fill(fRun);
-  if (isADDG) ((TH1F*)flQArnum->At(5))->Fill(fRun);
-  if (isFMDDG)((TH1F*)flQArnum->At(6))->Fill(fRun);
+  if (isMBOR) ((TH1F*)flQArnum->At(5))->Fill(fRun);
+  if (isV0DG) ((TH1F*)flQArnum->At(7))->Fill(fRun);
+  if (isADDG) ((TH1F*)flQArnum->At(8))->Fill(fRun);
+  if (isFMDDG)((TH1F*)flQArnum->At(9))->Fill(fRun);
   
   
   // compre isSPD and isSTGtriggerFired
@@ -901,14 +934,14 @@ void AliAnalysisTaskCEP::UserExec(Option_t *)
   if ( isToSave ) {
     
     // update fhStatsFlow
-    ((TH1F*)flQArnum->At(3))->Fill(fRun);
+    ((TH1F*)flQArnum->At(6))->Fill(fRun);
     fhStatsFlow->Fill(AliCEPBase::kBinSaved);
     if (isToSaveDG) {
-      ((TH1F*)flQArnum->At(7))->Fill(fRun);
+      ((TH1F*)flQArnum->At(10))->Fill(fRun);
       fhStatsFlow->Fill(AliCEPBase::kBinDG);
     }
     if (isToSaveNDG) {
-      ((TH1F*)flQArnum->At(8))->Fill(fRun);
+      ((TH1F*)flQArnum->At(11))->Fill(fRun);
       fhStatsFlow->Fill(AliCEPBase::kBinNDG);
     }
     
@@ -924,6 +957,8 @@ void AliAnalysisTaskCEP::UserExec(Option_t *)
     fCEPEvent->SetCollissionType(fEventType);
     fCEPEvent->SetMagnField(fMagField);
     fCEPEvent->SetFiredTriggerClasses(firedTriggerClasses);
+    fCEPEvent->SetisSTGTriggerFired(fisSTGTriggerFired);
+    fCEPEvent->SetnTOFmaxipads(fnTOFmaxipads);
     
     // FP Flags of V0 and AD
     fCEPEvent->SetPFFlags(fEvent);
@@ -972,7 +1007,7 @@ void AliAnalysisTaskCEP::UserExec(Option_t *)
     Double_t stat,nsig,probs[AliPID::kSPECIES];
     for (Int_t ii=0; ii<nTracksTT; ii++) {
     
-      // proper poiter into fTracks and fTrackStatus
+      // proper pointer into fTracks and fTrackStatus
       Int_t trkIndex = TTindices->At(ii);
       
       // the original track

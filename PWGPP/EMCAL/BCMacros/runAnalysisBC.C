@@ -10,8 +10,8 @@
 /// ---------------------
 /// use root -b to speed up (no canvas drawn)                                                  <br>
 /// root [1] .L runAnalysisBC.C++                                                    <br>
-/// root [2] Run_BadChannel(1,"LHC15o","Train_771","INT7",244918,"","GloballyGood.txt")           //for merging to one runblock   <br>
-/// root [2] Run_BadChannel(-1,"LHC15o","Train_771","INT7",244918,"244918_INT7Filtered.root","")  //for single files              <br>
+/// root [2] runAnalysisBC(1,"LHC15o","Train_771","INT7",244918,"","GloballyGood.txt")           //for merging to one runblock   <br>
+/// root [2] runAnalysisBC(-1,"LHC15o","Train_771","INT7",244918,"244918_INT7Filtered.root","")  //for single files              <br>
 ///
 /// \author Eliane Epple <eliane.epple@yale.edu>, Yale University
 ///
@@ -27,7 +27,7 @@
 
 ///definition of methods
 ///________________________________________________________________________
-void Run_BadChannel(Int_t nversion = -1, TString period = "LHC15n", TString train = "Train_603", TString trigger= "AnyINT", Int_t runNum= 245683, TString externalFile= "",TString listName="runList.txt",TString workDir=".")
+void runAnalysisBC(Int_t nversion = -1, TString period = "LHC15n", TString train = "Train_603", TString trigger= "INT7", Int_t runNum= 245683, TString externalFile= "",TString listName="runList.txt",TString workDir=".")
 {
 	gROOT->ProcessLine("gErrorIgnoreLevel = kWarning;"); //..to supress a lot of standard output
     std::vector<Int_t> badcellsManual;

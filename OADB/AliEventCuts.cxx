@@ -20,6 +20,7 @@ using std::vector;
 #include <AliInputEventHandler.h>
 #include <AliMCEventHandler.h>
 #include <AliMultSelection.h>
+#include <AliMultSelectionTask.h>
 #include <AliVEventHandler.h>
 #include <AliVMultiplicity.h>
 #include <AliVVZERO.h>
@@ -59,6 +60,7 @@ AliEventCuts::AliEventCuts(bool saveplots) : TList(),
   fMinCentrality{-1000.f},
   fMaxCentrality{1000.f},
   fMultSelectionEvCuts{false},
+  fSelectInelGt0{false},
   fUseVariablesCorrelationCuts{false},
   fUseEstimatorsCorrelationCut{false},
   fUseStrongVarCorrelationCut{false},
@@ -149,7 +151,7 @@ bool AliEventCuts::AcceptEvent(AliVEvent *ev) {
   if (vtSPD->GetNContributors() > 0) fFlag |= BIT(kVertexSPD);
   if (vtTrc->GetNContributors() > 1) fFlag |= BIT(kVertexTracks);
   if (((fFlag & BIT(kVertexTracks)) ||  !fRequireTrackVertex) && (fFlag & BIT(kVertexSPD))) fFlag |= BIT(kVertex);
-  const AliVVertex* &vtx = (vtTrc->GetNContributors() < 2) ? vtSPD : vtTrc;
+  const AliVVertex* &vtx = bool(fFlag & BIT(kVertexTracks)) ? vtTrc : vtSPD;
   fPrimaryVertex = const_cast<AliVVertex*>(vtx);
 
   /// Vertex position cut
@@ -163,7 +165,7 @@ bool AliEventCuts::AcceptEvent(AliVEvent *ev) {
   vtSPD->GetCovarianceMatrix(covSPD);
   double dz = bool(fFlag & kVertexSPD) && bool(fFlag & kVertexTracks) ? vtTrc->GetZ() - vtSPD->GetZ() : 0.; /// If one of the two vertices is not available this cut is always passed.
   double errTot = TMath::Sqrt(covTrc[5]+covSPD[5]);
-  double errTrc = TMath::Sqrt(covTrc[5]);
+  double errTrc = bool(fFlag & kVertexTracks) ? TMath::Sqrt(covTrc[5]) : 1.;
   double nsigTot = TMath::Abs(dz) / errTot, nsigTrc = TMath::Abs(dz) / errTrc;
   if (
       (TMath::Abs(dz) <= fMaxDeltaSpdTrackAbsolute && nsigTot <= fMaxDeltaSpdTrackNsigmaSPD && nsigTrc <= fMaxDeltaSpdTrackNsigmaTrack) && // discrepancy track-SPD vertex
@@ -203,8 +205,15 @@ bool AliEventCuts::AcceptEvent(AliVEvent *ev) {
     if ((!fUseEstimatorsCorrelationCut || fMC ||
           (fCentPercentiles[0] >= center - fDeltaEstimatorNsigma[0] * sigma && fCentPercentiles[0] <= center + fDeltaEstimatorNsigma[1] * sigma))
         && fCentPercentiles[0] >= fMinCentrality
-        && fCentPercentiles[0] <= fMaxCentrality) fFlag |= BIT(kMultiplicity);
-  } else fFlag |= BIT(kMultiplicity);
+        && fCentPercentiles[0] <= fMaxCentrality) {
+          fFlag |= BIT(kMultiplicity);
+    }
+  } else
+    fFlag |= BIT(kMultiplicity);
+
+  if (AliMultSelectionTask::IsINELgtZERO(ev) || !fSelectInelGt0) {
+    fFlag |= BIT(kINELgt0);
+  }
 
   if (fUseVariablesCorrelationCuts && !fMC) {
     ComputeTrackMultiplicity(ev);
@@ -259,11 +268,13 @@ bool AliEventCuts::AcceptEvent(AliVEvent *ev) {
     if (fMultCentCorrelation[befaft]) fMultCentCorrelation[befaft]->Fill(fCentPercentiles[0],ntrkl);
     if (fVtz[befaft]) fVtz[befaft]->Fill(vtx->GetZ());
     if (fDeltaTrackSPDvtz[befaft]) fDeltaTrackSPDvtz[befaft]->Fill(dz);
-    if (fTOFvsFB32[befaft]) fTOFvsFB32[befaft]->Fill(fContainer.fMultTrkFB32,fContainer.fMultTrkFB32TOF);
-    if (fTPCvsAll[befaft])  fTPCvsAll[befaft]->Fill(fContainer.fMultTrkTPC,float(fContainer.fMultESD) - fESDvsTPConlyLinearCut[1] * fContainer.fMultTrkTPC);
-    if (fMultvsV0M[befaft]) fMultvsV0M[befaft]->Fill(GetCentrality(),fContainer.fMultTrkFB32Acc);
-    if (fTPCvsTrkl[befaft]) fTPCvsTrkl[befaft]->Fill(ntrkl,fContainer.fMultTrkTPC);
-    if (fVZEROvsTPCout[befaft]) fVZEROvsTPCout[befaft]->Fill(fContainer.fMultTrkTPCout,fContainer.fMultVZERO);
+    if (fUseVariablesCorrelationCuts) {
+      if (fTOFvsFB32[befaft]) fTOFvsFB32[befaft]->Fill(fContainer.fMultTrkFB32,fContainer.fMultTrkFB32TOF);
+      if (fTPCvsAll[befaft])  fTPCvsAll[befaft]->Fill(fContainer.fMultTrkTPC,float(fContainer.fMultESD) - fESDvsTPConlyLinearCut[1] * fContainer.fMultTrkTPC);
+      if (fMultvsV0M[befaft]) fMultvsV0M[befaft]->Fill(GetCentrality(),fContainer.fMultTrkFB32Acc);
+      if (fTPCvsTrkl[befaft]) fTPCvsTrkl[befaft]->Fill(ntrkl,fContainer.fMultTrkTPC);
+      if (fVZEROvsTPCout[befaft]) fVZEROvsTPCout[befaft]->Fill(fContainer.fMultTrkTPCout,fContainer.fMultVZERO);
+    }
     if (!allcuts) return false; /// Do not fill the "after" histograms if the event does not pass the cuts.
   }
 
@@ -292,7 +303,8 @@ void AliEventCuts::AddQAplotsToList(TList *qaList, bool addCorrelationPlots) {
     "Vertex position",
     "Vertex quality",
     "Pile-up",
-    "Centrality selection",
+    "Multiplicity selection",
+    "INEL > 0",
     "Correlations",
     "All cuts"
   };
@@ -494,7 +506,6 @@ void AliEventCuts::SetupRun2pp() {
   ::Info("AliEventCuts::SetupRun2pp","Setup event cuts for the Run2 pp periods.");
   SetName("StandardRun2ppEventCuts");
 
-  fRequireTrackVertex = true;
   fMinVtz = -10.f;
   fMaxVtz = 10.f;
   fMaxDeltaSpdTrackAbsolute = 0.5f;
@@ -520,6 +531,7 @@ void AliEventCuts::SetupRun2pp() {
   else if (fCentralityFramework == 1) {
     fCentEstimators[0] = "V0M";
     fCentEstimators[1] = "CL0";
+    fSelectInelGt0 = true;
   }
 
   fFB128vsTrklLinearCut[0] = 32.077;

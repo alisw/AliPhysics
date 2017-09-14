@@ -15,6 +15,7 @@
 #pragma link C++ class AliDielectronHFhelper+;
 #pragma link C++ class AliDielectronMC+;
 #pragma link C++ class AliDielectronQnEPcorrection+;
+#pragma link C++ class AliDielectronEvtVsTrkHist+;
 #pragma link C++ class AliDielectronVarManager+;
 #pragma link C++ class AliAnalysisTaskDielectronFilter+;
 #pragma link C++ class AliAnalysisTaskMultiDielectron+;

@@ -546,7 +546,7 @@ TF1* AliHFInvMassFitter::CreateTotalFitFunction(TString fname){
 
   SetNumberOfParams();
   Int_t totParams=fNParsBkg+fNParsRfl+fNParsSec+fNParsSig;
-  TF1* ftot=ftot=new TF1(fname.Data(),this,&AliHFInvMassFitter::FitFunction4Mass,fMinMass,fMaxMass,totParams,"AliHFInvMassFitter","FitFunction4Mass");
+  TF1* ftot=new TF1(fname.Data(),this,&AliHFInvMassFitter::FitFunction4Mass,fMinMass,fMaxMass,totParams,"AliHFInvMassFitter","FitFunction4Mass");
   for(Int_t ipar=0; ipar<fNParsBkg; ipar++){
     ftot->SetParameter(ipar,fBkgFunc->GetParameter(ipar));
     ftot->SetParName(ipar,fBkgFunc->GetParName(ipar));

@@ -28,6 +28,7 @@
 
 class TH2;
 class TString;
+class TRandom3;
 class TClonesArray;
 class AliAODMCHeader;
 class AliRDHFCuts;
@@ -62,11 +63,17 @@ class AliAnalysisTaskSEDmesonsFilterCJ : public AliAnalysisTaskEmcal
   Bool_t GetMC() const         { return fUseMCInfo    ; }
 
   // set MC RM or eff
-  void   SetBuildRMEff(Bool_t theRM)   { fBuildRMEff = theRM ; }
-  Bool_t GetBuildRMEff() const         { return fBuildRMEff    ; }
+  void   SetBuildRMEff(Bool_t theRM)   { fBuildRMEff = theRM 	; }
+  Bool_t GetBuildRMEff() const         { return fBuildRMEff    	; }
   
-  void   SetUsePythia(Bool_t theUsePythia) { fUsePythia = theUsePythia; }
-  Bool_t GetUsePythia() const { return fUsePythia; }
+  void   SetUsePythia(Bool_t theUsePythia) 	{ fUsePythia = theUsePythia	; }
+  Bool_t GetUsePythia() const 			{ return fUsePythia		; }
+
+  // set track fraction rejection for JES systematics
+  void SetJESsys(Bool_t c) 		{ fUseRejTracks = c	; }
+  Bool_t GetJESsys() const 		{ return fUseRejTracks	; }
+  void SetTrackIneff(Double_t c) 	{ fTrackIneff = c	; }
+  Double_t GetTrackIneff() const	{ return fTrackIneff	; }
 
   // set usage of generated or reconstucted quantities (relevant for MC)
   void SetUseReco(Bool_t useReco=kTRUE)    { fUseReco = useReco           ; }
@@ -129,6 +136,8 @@ class AliAnalysisTaskSEDmesonsFilterCJ : public AliAnalysisTaskEmcal
   Bool_t          fUseMCInfo;              //  Use MC info
   Bool_t 	  fBuildRMEff;		   //  MC RM or efficiency studies
   Bool_t 	  fUsePythia;		   //  Use Pythia info only for MC
+  Bool_t	  fUseRejTracks;	   //  Reject tracks for JES systematics
+  Double_t	  fTrackIneff;		   //  Tracking inefficiency for JES systematics
   Bool_t          fUseReco;                //  use reconstructed tracks when running on MC
   UInt_t          fCandidateType;          //  Dstar or D0
   TString         fCandidateName;          //  Dstar or D0
@@ -149,6 +158,7 @@ class AliAnalysisTaskSEDmesonsFilterCJ : public AliAnalysisTaskEmcal
   Bool_t          fKeepOnlyDfromB;         //  only accept D mesons coming from a B meson decay (MC)
   AliAODEvent    *fAodEvent;               //!
   AliAODMCHeader *fMCHeader;		   //!
+  TRandom3	 *fRan;			   //! Random number generator
   TClonesArray   *fArrayDStartoD0pi;       //!
   TClonesArray   *fMCarray;                //!
   TClonesArray   *fCandidateArray;         //! contains candidates selected by AliRDHFCuts

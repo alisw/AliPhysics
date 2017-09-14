@@ -76,12 +76,6 @@ AliJFFlucTask::AliJFFlucTask():
 	fQC_eta_min=-0.8;
 	fQC_eta_max=0.8;
 
-	pfOutlierLowCut = new TF1("fLowCut","[0]+[1]*x - 5.*([2]+[3]*x+[4]*x*x+[5]*x*x*x)",0,100);
-	pfOutlierHighCut = new TF1("fHighCut","[0]+[1]*x + 5.5*([2]+[3]*x+[4]*x*x+[5]*x*x*x)",0,100);
-
-	pfOutlierLowCut->SetParameters(0.0157497, 0.973488, 0.673612, 0.0290718, -0.000546728, 5.82749e-06);
-	pfOutlierHighCut->SetParameters(0.0157497, 0.973488, 0.673612, 0.0290718, -0.000546728, 5.82749e-06);
-
 	for(int icent=0; icent<7; icent++){
 		for(int isub=0; isub<2; isub++){
 			h_ModuledPhi[icent][isub]=NULL;
@@ -125,12 +119,6 @@ AliJFFlucTask::AliJFFlucTask(const char *name,  Bool_t IsMC, Bool_t IsExcludeWea
 	fQC_eta_min=-0.8;
 	fQC_eta_max=0.8;
 
-	pfOutlierLowCut = new TF1("fLowCut","[0]+[1]*x - 5.*([2]+[3]*x+[4]*x*x+[5]*x*x*x)",0,100);
-    	pfOutlierHighCut = new TF1("fHighCut","[0]+[1]*x + 5.5*([2]+[3]*x+[4]*x*x+[5]*x*x*x)",0,100);
-
-	pfOutlierLowCut->SetParameters(0.0157497, 0.973488, 0.673612, 0.0290718, -0.000546728, 5.82749e-06);
-	pfOutlierHighCut->SetParameters(0.0157497, 0.973488, 0.673612, 0.0290718, -0.000546728, 5.82749e-06);
-
 	for(int icent=0; icent<7; icent++){
 		for(int isub=0; isub<2; isub++){
 			h_ModuledPhi[icent][isub]=NULL;
@@ -147,8 +135,6 @@ AliJFFlucTask::AliJFFlucTask(const AliJFFlucTask& ap) :
 	fFFlucAna(ap.fFFlucAna)
 {
 	AliInfo("----DEBUG AliJFFlucTask COPY ----");
-	pfOutlierLowCut = (TF1*)ap.pfOutlierLowCut->Clone();
-	pfOutlierHighCut = (TF1*)ap.pfOutlierHighCut->Clone();
 }
 
 //_____________________________________________________________________________
@@ -164,8 +150,8 @@ AliJFFlucTask& AliJFFlucTask::operator = (const AliJFFlucTask& ap)
 //______________________________________________________________________________
 AliJFFlucTask::~AliJFFlucTask()
 {
-	delete pfOutlierLowCut;
-	delete pfOutlierHighCut;
+	//delete pfOutlierLowCut;
+	//delete pfOutlierHighCut;
 	delete fFFlucAna;
 	delete fInputList;
 	delete fOutput;
@@ -287,6 +273,7 @@ void AliJFFlucTask::UserExec(Option_t* /*option*/)
 			fFFlucAna->SetEventVertex( fvertex );
 			fFFlucAna->SetEtaRange( fEta_min, fEta_max );
 			fFFlucAna->SetEventTracksQA( TPCTracks, GlobTracks);
+			fFFlucAna->SetEventFB32TracksQA( FB32Tracks, FB32TOFTracks );
 			fFFlucAna->UserExec(""); // doing some analysis here.
 			//
 		}
@@ -436,78 +423,97 @@ Bool_t AliJFFlucTask::IsGoodEvent( AliAODEvent *event){
 			return kFALSE;
 	}
 
-	// cut on outliers
-	if(IsKineOnly == kFALSE){
-		int frunNumber = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->GetEvent()->GetRunNumber();
-		if(frunNumber < 0)
-			cout << "ERROR: unknown run number" << endl;
-		AliJRunTable *fRunTable = & AliJRunTable::GetSpecialInstance();
-		fRunTable->SetRunNumber( frunNumber );
+	if(IsKineOnly == kTRUE)
+		return kTRUE;
 
-		if(fRunTable->GetRunNumberToPeriod(frunNumber) == AliJRunTable::kLHC15o){
-			const AliVVertex* vtTrc = event->GetPrimaryVertex();
-			const AliVVertex* vtSPD = event->GetPrimaryVertexSPD();
-			double covTrc[6],covSPD[6];
-			vtTrc->GetCovarianceMatrix(covTrc);
-			vtSPD->GetCovarianceMatrix(covSPD);
-			double dz = vtTrc->GetZ()-vtSPD->GetZ();
-			double errTot = TMath::Sqrt(covTrc[5]+covSPD[5]);
-			double errTrc = TMath::Sqrt(covTrc[5]);
-			double nsigTot = TMath::Abs(dz)/errTot, nsigTrc = TMath::Abs(dz)/errTrc;
-			if(TMath::Abs(dz) > 0.2 || nsigTot > 10 || nsigTrc > 20)
-				return kFALSE;
+	int frunNumber = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->GetEvent()->GetRunNumber();
+	if(frunNumber < 0)
+		cout << "ERROR: unknown run number" << endl;
+	AliJRunTable *fRunTable = & AliJRunTable::GetSpecialInstance();
+	fRunTable->SetRunNumber( frunNumber );
 
-			AliMultSelection *pms = (AliMultSelection*)event->FindListObject("MultSelection");
-			if(!pms){
-				AliError("MultSelection unavailable.");
-				return kFALSE;
-			}
+	int fperiod = fRunTable->GetRunNumberToPeriod(frunNumber);
+	if(fperiod == AliJRunTable::kLHC15o){
+		const AliVVertex* vtTrc = event->GetPrimaryVertex();
+		const AliVVertex* vtSPD = event->GetPrimaryVertexSPD();
+		double covTrc[6],covSPD[6];
+		vtTrc->GetCovarianceMatrix(covTrc);
+		vtSPD->GetCovarianceMatrix(covSPD);
+		double dz = vtTrc->GetZ()-vtSPD->GetZ();
+		double errTot = TMath::Sqrt(covTrc[5]+covSPD[5]);
+		double errTrc = TMath::Sqrt(covTrc[5]);
+		double nsigTot = TMath::Abs(dz)/errTot, nsigTrc = TMath::Abs(dz)/errTrc;
+		if(TMath::Abs(dz) > 0.2 || nsigTot > 10 || nsigTrc > 20)
+			return kFALSE;
 
-			Float_t v0mcent = pms->GetMultiplicityPercentile("V0M");
-			Float_t cl0cent = pms->GetMultiplicityPercentile("CL0");
-			if(cl0cent < pfOutlierLowCut->Eval(v0mcent) || cl0cent > pfOutlierHighCut->Eval(v0mcent))
-				return kFALSE;
+		AliMultSelection *pms = (AliMultSelection*)event->FindListObject("MultSelection");
+		if(!pms){
+			AliError("MultSelection unavailable.");
+			return kFALSE;
 		}
 
-		unsigned int multTPC = 0;//Float_t multTPC(0.);
-		unsigned int multGlob = 0;//Float_t multGlob(0.);
-		Int_t nTracks = event->GetNumberOfTracks();
-		for(int it = 0; it < nTracks; it++){
-			AliAODTrack *trackAOD = dynamic_cast<AliAODTrack*>(event->GetTrack(it));
-			//AliAODTrack* trackAOD = event->GetTrack(itracks);
-			if (! trackAOD )
-				continue;
-			if (!(trackAOD->TestFilterBit(1) ))
-				continue;
-			if ((trackAOD->Pt() < 0.2) || (trackAOD->Pt() > 5.0) || (TMath::Abs(trackAOD->Eta()) > 0.8) || (trackAOD->GetTPCNcls() < 70) || (trackAOD->GetDetPid()->GetTPCsignal() < 10.0) || (trackAOD->Chi2perNDF() < 0.2) )
-				continue;
-			multTPC++;
-		}
+		double v0mcent = pms->GetMultiplicityPercentile("V0M");
+		double cl0cent = pms->GetMultiplicityPercentile("CL0");
+		double center = 0.973488*cl0cent+0.0157497;
+		double sigma = 0.673612+cl0cent*(0.0290718+cl0cent*(-0.000546728+cl0cent*5.82749e-06));
+		if(v0mcent < center-5.0*sigma || v0mcent > center+5.5*sigma || v0mcent < 0.0 || v0mcent > 60.0)
+			return kFALSE;
+	}
 
-		for(int it = 0; it < nTracks; it++){
-			AliAODTrack *trackAOD = dynamic_cast<AliAODTrack*>(event->GetTrack(it));
-			if (!trackAOD)
-				continue;
-			if (!(trackAOD->TestFilterBit(16)))
-				continue;
-			if ((trackAOD->Pt() < 0.2) || (trackAOD->Pt() > 5.0) || (TMath::Abs(trackAOD->Eta()) > 0.8) || (trackAOD->GetTPCNcls() < 70) || (trackAOD->GetDetPid()->GetTPCsignal() < 10.0) || (trackAOD->Chi2perNDF() < 0.1) )
-				continue;
-			Double_t b[2] = {-99. , -99.};
-			Double_t bCov[3] = {-99, -99, -99};
-			if (!(trackAOD->PropagateToDCA(event->GetPrimaryVertex(), event->GetMagneticField(), 100., b, bCov) ))
-				continue;
-			//cout << b[0] << b[1] << endl;
-			if ( (TMath::Abs(b[0]) > 0.3) || (TMath::Abs(b[1]) > 0.3) )
-				continue;
-			multGlob++;
-		}
-		TPCTracks = (float)multTPC;
-		GlobTracks = (float)multGlob;
-		//cout <<  Form("Multi TPC : %.2f, Multi Glob : %.2f", multTPC, multGlob) << endl;
-		if( fCutOutliers == kTRUE){
-			if(! (multTPC > (-40.3+1.22*multGlob) && multTPC < (32.1+1.59*multGlob)))
+	TPCTracks = 0;
+	GlobTracks = 0;
+	Int_t nTracks = event->GetNumberOfTracks();
+	for(int it = 0; it < nTracks; it++){
+		AliAODTrack *trackAOD = dynamic_cast<AliAODTrack*>(event->GetTrack(it));
+		//AliAODTrack* trackAOD = event->GetTrack(itracks);
+		if (!trackAOD || !trackAOD->TestFilterBit(1))
+			continue;
+		if ((trackAOD->Pt() < 0.2) || (trackAOD->Pt() > 5.0) || (TMath::Abs(trackAOD->Eta()) > 0.8) || (trackAOD->GetTPCNcls() < 70) || (trackAOD->GetDetPid()->GetTPCsignal() < 10.0) || (trackAOD->Chi2perNDF() < 0.2) )
+			continue;
+		TPCTracks++;
+	}
+
+	for(int it = 0; it < nTracks; it++){
+		AliAODTrack *trackAOD = dynamic_cast<AliAODTrack*>(event->GetTrack(it));
+		if (!trackAOD || !trackAOD->TestFilterBit(16))
+			continue;
+		if ((trackAOD->Pt() < 0.2) || (trackAOD->Pt() > 5.0) || (TMath::Abs(trackAOD->Eta()) > 0.8) || (trackAOD->GetTPCNcls() < 70) || (trackAOD->GetDetPid()->GetTPCsignal() < 10.0) || (trackAOD->Chi2perNDF() < 0.1) )
+			continue;
+		Double_t b[2];
+		Double_t bCov[3];
+		if (!(trackAOD->PropagateToDCA(event->GetPrimaryVertex(), event->GetMagneticField(), 100., b, bCov) ))
+			continue;
+		if ( (TMath::Abs(b[0]) > 0.3) || (TMath::Abs(b[1]) > 0.3) )
+			continue;
+		GlobTracks++;
+	}
+
+	FB32Tracks = 0;
+	FB32TOFTracks = 0;
+	for (int it = 0; it < nTracks; it++){
+		AliAODTrack *trackAOD = dynamic_cast<AliAODTrack*>(event->GetTrack(it));
+		if (!trackAOD || !trackAOD->TestFilterBit(32))
+			continue;
+		FB32Tracks++;
+		if (TMath::Abs(trackAOD->GetTOFsignalDz()) <= 10 && trackAOD->GetTOFsignal() >= 12000 && trackAOD->GetTOFsignal() <= 25000)
+			FB32TOFTracks++;
+	}
+
+	if(fCutOutliers == kTRUE){
+		if(fperiod == AliJRunTable::kLHC15o){
+			double tfb32 = (double)FB32Tracks;
+			double tfb32tof = (double)FB32TOFTracks;
+			double mu32tof = -1.0178+tfb32*(0.333132+tfb32*(9.10282e-05-1.61861e-08*tfb32));
+			double sigma32tof = 1.47848+tfb32*(0.0385923+tfb32*(-5.06153e-05+tfb32*(4.37641e-08+tfb32*(-1.69082e-11+tfb32*2.35085e-15))));
+			double nsigma[] = {4.0,4.0};
+			if(tfb32tof < mu32tof-nsigma[0]*sigma32tof || tfb32tof > mu32tof+nsigma[1]*sigma32tof)
+				return kFALSE;
+
+		}else{
+			if(!((double)TPCTracks > (-40.3+1.22*GlobTracks) && (double)TPCTracks < (32.1+1.59*GlobTracks)))
 				return kFALSE;
 		}
+			
 	}
 
 	return kTRUE;

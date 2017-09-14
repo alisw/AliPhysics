@@ -339,7 +339,9 @@ AliAnalysisTaskHFEpACorrelation::AliAnalysisTaskHFEpACorrelation(const char *nam
 ,fElectronBKGNoEnhULS_WithW(0)
 ,fElectronBKGNoEnhLS_WithW(0)
 ,fElectronBKGNoEnhTotalNumber_WithW(0)
-
+,fEffElec(0)
+,fVtxZMin(-10.)
+,fVtxZMax(10.)
 {
     //Named constructor
     // Define input and output slots here
@@ -583,7 +585,9 @@ AliAnalysisTaskHFEpACorrelation::AliAnalysisTaskHFEpACorrelation()
 ,fElectronBKGNoEnhULS_WithW(0)
 ,fElectronBKGNoEnhLS_WithW(0)
 ,fElectronBKGNoEnhTotalNumber_WithW(0)
-
+,fEffElec(0)
+,fVtxZMin(-10.)
+,fVtxZMax(10.)
 {
     DefineInput(0, TChain::Class());
     DefineOutput(1, TList::Class());
@@ -808,8 +812,8 @@ void AliAnalysisTaskHFEpACorrelation::UserCreateOutputObjects()
     {
         //binnig for unfolding
         
-        Double_t EtaBins[] = {-0.8,-0.7,-0.6,-0.5,-0.4,-0.3,-0.2, -0.1, 0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8}; //16 bins
-        Int_t NEtaBins = 16;
+        Double_t EtaBins[] = {-0.8000,-0.7750,-0.7500,-0.7250,-0.7000,-0.6750,-0.6500,-0.6250,-0.6000,-0.5750,-0.5500,-0.5250,-0.5000,-0.4750,-0.4500,-0.4250,-0.4000,-0.3750,-0.3500,-0.3250,-0.3000,-0.2750,-0.2500,-0.2250,-0.2000,-0.1750,-0.1500,-0.1250,-0.1000,-0.0750,-0.0500,-0.0250,0.0000,0.0250,0.0500,0.0750,0.1000,0.1250,0.1500,0.1750,0.2000,0.2250,0.2500,0.2750,0.3000,0.3250,0.3500,0.3750,0.4000,0.4250,0.4500,0.4750,0.5000,0.5250,0.5500,0.5750,0.6000,0.6250,0.6500,0.6750,0.7000,0.7250,0.7500,0.7750,0.8000}; //16 bins
+        Int_t NEtaBins = 64;
         
         Double_t ZVtxBins[] = {-10, -7, -5, -3, -1, 1, 3, 5, 7, 10.01}; //9 bins
         Int_t nZvtxBinsMC = 9;
@@ -830,7 +834,7 @@ void AliAnalysisTaskHFEpACorrelation::UserCreateOutputObjects()
         fNoEtaCutElectronGeneratedSignalPtEtaZvtx = new TH1F("fNoEtaCutElectronGeneratedSignalPtEtaZvtx", "",110,0.5,6);
         fOutputList->Add(fNoEtaCutElectronGeneratedSignalPtEtaZvtx);
         
-        fEtaCutElectronGeneratedSignalPtEtaZvtx = new TH1F("fEtaCutElectronGeneratedSignalPtEtaZvtx", "",110,0.5,6);
+        fEtaCutElectronGeneratedSignalPtEtaZvtx = new TH3F("fEtaCutElectronGeneratedSignalPtEtaZvtx", "Hfe generated p_{T} x #eta x  ZVtx; p_{T}; #eta; Zvtx", NpTbinsH, pTBinsH, NEtaBins, EtaBins, nZvtxBinsMC, ZVtxBins);
         fOutputList->Add(fEtaCutElectronGeneratedSignalPtEtaZvtx);
         
         
@@ -847,7 +851,7 @@ void AliAnalysisTaskHFEpACorrelation::UserCreateOutputObjects()
         //Tagged Background
         
         //HFe with MC information
-        fEtaCutElectronRecoHFEMC = new TH1F("fEtaCutElectronRecoHFEMC", "", 110,0.5,6);
+        fEtaCutElectronRecoHFEMC = new TH3F("fEtaCutElectronRecoHFEMC", "HFE Reco p_{T} x #eta x  ZVtx; p_{T}; #eta; Zvtx", NpTbinsH, pTBinsH, NEtaBins, EtaBins, nZvtxBinsMC, ZVtxBins);
         //Others with MC information
         fEtaCutElectronRecoOtherMC = new TH1F("fEtaCutElectronRecoOtherMC", "", 110,0.5,6);
         
@@ -1223,6 +1227,19 @@ void AliAnalysisTaskHFEpACorrelation::UserExec(Option_t *)
         }
     }
     
+    const AliAODVertex* trkVtx = fAOD->GetPrimaryVertex();
+    fZvtx = trkVtx->GetZ();
+    
+    //test another Ztvx cuts. It is not possible to use Zvtx <-10 or Zvtx>10 (this cut is applied by the AliMultiSelectionTask)
+    
+    if (fZvtx < fVtxZMin || fZvtx > fVtxZMax)
+    {
+        fNevent2->Fill(10);
+        PostData(1, fOutputList);
+        return;
+        
+    }
+    
     //Kinks
     
     fNumberOfVertices = 0;
@@ -1398,7 +1415,7 @@ void AliAnalysisTaskHFEpACorrelation::UserExec(Option_t *)
                             fNoEtaCutElectronGeneratedSignalPtEtaZvtx->Fill(fMCparticle->Pt());
                             if (EtaMC >= fEtaCutMin && EtaMC <= fEtaCutMax)
                             {
-                                fEtaCutElectronGeneratedSignalPtEtaZvtx->Fill(fMCparticle->Pt());
+                                fEtaCutElectronGeneratedSignalPtEtaZvtx->Fill(fMCparticle->Pt(),EtaMC, fZvtx);
                                 isHFe = kTRUE;
                             }
                             
@@ -1957,7 +1974,8 @@ void AliAnalysisTaskHFEpACorrelation::ElectronHadronCorrelation(AliVTrack *track
                     
                     fDeta = fEtaE - fEtaH;
                     
-                    Double_t WeightHadron = 1./GetHadronEfficiency(fPtH,fEtaH,fZvtx);
+                    Double_t WeightHadron = 1./(GetHadronEfficiency(fPtH,fEtaH,fZvtx)*GetElectronEfficiency(fPtE,fEtaE,fZvtx));
+                    
                     
                     for(Int_t i = 0; i < fpTBins.GetSize()-1; i++)
                     {
@@ -2064,14 +2082,14 @@ void AliAnalysisTaskHFEpACorrelation::ElectronHadronCorrelation(AliVTrack *track
         //Double_t WeightInclusive = 1./(GetInclusiveEfficiency(fPtH,fEtaH,fZvtx) * GetHadronEfficiency(fPtH,fEtaH,fZvtx));
         //Double_t WeightBKG = 1./(GetBackgroundEfficiency(fPtH,fEtaH,fZvtx) * GetHadronEfficiency(fPtH,fEtaH,fZvtx));
         
-        Double_t WeightHadron = 1./GetHadronEfficiency(fPtH,fEtaH,fZvtx);
+        Double_t WeightHadron = 1./(GetHadronEfficiency(fPtH,fEtaH,fZvtx)*GetElectronEfficiency(fPtE,fEtaE,fZvtx));
         
         for(Int_t i = 0; i < fpTBins.GetSize()-1; i++)
         {
             if(fPtE>=fpTBins.At(i) && fPtE<fpTBins.At(i+1))
             {
                 
-                //Filling histograms: Only hadron weight for now.
+                //Filling histograms: Only hadron weight for now. Now including E ONLINE!
                 fCEtaPhi_Inc[i]->Fill(fDphi,fDeta,WeightHadron);
                 
                 if(fNonHFE->IsULS())
@@ -2306,6 +2324,22 @@ Double_t AliAnalysisTaskHFEpACorrelation::GetHadronEfficiency(Double_t pT, Doubl
     
 }
 
+Double_t AliAnalysisTaskHFEpACorrelation::GetElectronEfficiency(Double_t pT, Double_t eta, Double_t zvtx)
+{
+    if (!fEffElec)
+    {
+        return 1.;
+    }
+    Int_t bin = fEffElec->FindBin(pT,eta,zvtx);
+    if ( fEffElec->IsBinUnderflow(bin) || fEffElec->IsBinOverflow(bin) )
+    {
+        return 1.;
+    }
+   
+    return fEffElec->GetBinContent(bin);
+    
+}
+
 Double_t AliAnalysisTaskHFEpACorrelation::CalculateWeight(Int_t pdg_particle, Double_t x)
 {
     //weight for d3 based on MinJung parametrization //sent by Jan
@@ -2446,8 +2480,9 @@ void AliAnalysisTaskHFEpACorrelation::ComputeWeightInEnhancedSample()
         Bool_t IsEnhancedPi0Eta = kFALSE;
         Bool_t IsEnhancedHF = kFALSE;
         
-        Double_t Eta = particle->Eta();
-        if (Eta<-0.8 || Eta > 0.8)
+        Double_t Y = particle->Y();
+        
+        if (Y<-0.8 || Y > 0.8)
             continue;
         
         CocktailType_t Type = FindTrackGenerator(MCIndex, fMCheader,fMCarray);
@@ -2603,7 +2638,7 @@ void AliAnalysisTaskHFEpACorrelation::TaggingEfficiencyCalculationRun1(AliVTrack
                     }
                     else
                     {
-                        fEtaCutElectronRecoHFEMC->Fill(track->Pt());
+                        fEtaCutElectronRecoHFEMC->Fill(fMCparticle->Pt(),fMCparticle->Eta(), fZvtx);
                         *lIsHFe = kTRUE;
                         if (fNonHFE->IsULS())
                             fEtaCutElectronHFEULS->Fill(track->Pt(),fNonHFE->GetNULS());
@@ -2799,7 +2834,7 @@ void AliAnalysisTaskHFEpACorrelation::TaggingEfficiencyCalculationRun2(AliVTrack
         
         //HFe
         if (MotherPDGHeavy >3)
-            fEtaCutElectronRecoHFEMC->Fill(track->Pt());
+            fEtaCutElectronRecoHFEMC->Fill(fMCparticle->Pt(),fMCparticle->Eta(), fZvtx);
 
     }
     
@@ -2828,6 +2863,7 @@ Double_t AliAnalysisTaskHFEpACorrelation::CalculateWeightRun2ToData(Int_t pdg_pa
             return 1.0;
         
         Int_t bin = fBkgPi0WeightToData->FindBin(pT);
+        
         return 1./fBkgPi0WeightToData->GetBinContent(bin);
     }
     else if (TMath::Abs(pdg_particle) == 221)

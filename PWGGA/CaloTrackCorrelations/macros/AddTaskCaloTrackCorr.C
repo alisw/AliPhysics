@@ -696,8 +696,8 @@ AliAnaPhoton* ConfigurePhotonAnalysis()
   if(!kData.Contains("delta")) 
   {
     ana->SetOutputAODName(Form("Photon%s",kName.Data()));
-    ana->SetOutputAODClassName("AliAODPWG4ParticleCorrelation");
-    //ana->SetOutputAODClassName("AliAODPWG4Particle"); // use if no correlation done
+    ana->SetOutputAODClassName("AliCaloTrackParticleCorrelation");
+    //ana->SetOutputAODClassName("AliCaloTrackParticle"); // use if no correlation done
   }
   else ana->SetInputAODName(Form("Photon%s",kName.Data()));
   
@@ -824,7 +824,7 @@ AliAnaElectron* ConfigureElectronAnalysis()
   if(!kData.Contains("delta")) 
   {
     ana->SetOutputAODName(Form("Electron%s",kName.Data()));
-    ana->SetOutputAODClassName("AliAODPWG4ParticleCorrelation");
+    ana->SetOutputAODClassName("AliCaloTrackParticleCorrelation");
   }
   else ana->SetInputAODName(Form("Electron%s",kName.Data()));
   
@@ -875,7 +875,7 @@ AliAnaRandomTrigger* ConfigureRandomTriggerAnalysis(TString detector = "")
   if(!kData.Contains("delta")) 
   {
     ana->SetOutputAODName(Form("RandomTrigger%s%s",detector.Data(),kName.Data()));
-    ana->SetOutputAODClassName("AliAODPWG4ParticleCorrelation");
+    ana->SetOutputAODClassName("AliCaloTrackParticleCorrelation");
   }
   else 
     ana->SetInputAODName(Form("RandomTrigger%s%s",detector.Data(),kName.Data()));
@@ -1029,8 +1029,8 @@ AliAnaChargedParticles* ConfigureChargedAnalysis()
   if(!kData.Contains("delta"))
   {
     ana->SetOutputAODName(Form("Hadron%s",kName.Data()));
-    ana->SetOutputAODClassName("AliAODPWG4ParticleCorrelation");
-    //ana->SetOutputAODClassName("AliAODPWG4Particle"); // use if no correlation done
+    ana->SetOutputAODClassName("AliCaloTrackParticleCorrelation");
+    //ana->SetOutputAODClassName("AliCaloTrackParticle"); // use if no correlation done
   }
   else
     ana->SetInputAODName(Form("Hadron%s",kName.Data()));
@@ -1170,7 +1170,7 @@ AliAnaPi0EbE* ConfigurePi0EbEAnalysis(TString particle,
   if(!kInputDataType.Contains("delta"))
   {
     ana->SetOutputAODName(Form("%s%s%s",particle.Data(), opt.Data(), kName.Data()));
-    ana->SetOutputAODClassName("AliAODPWG4ParticleCorrelation");
+    ana->SetOutputAODClassName("AliCaloTrackParticleCorrelation");
     
   }
   else

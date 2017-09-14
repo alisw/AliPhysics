@@ -21,7 +21,7 @@ class AliNanoAODCustomSetter : public TNamed
 public:
   AliNanoAODCustomSetter(const char * name = "AliNanoAODCustomSetter") : TNamed(name,name) {;}
   virtual ~AliNanoAODCustomSetter() {;}
-  virtual void SetNanoAODHeader(const AliAODEvent * event   , AliNanoAODHeader * head  ) =0;
+  virtual void SetNanoAODHeader(const AliAODEvent * event   , AliNanoAODHeader * head , TString varListHeader  ) =0;
   virtual void SetNanoAODTrack (const AliAODTrack * aodTrack, AliNanoAODTrack * spTrack) =0;
 
   ClassDef(AliNanoAODCustomSetter, 1)
