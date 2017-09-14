@@ -85,6 +85,9 @@ AliAnalysisTaskSEImproveITS::AliAnalysisTaskSEImproveITS()
    fPt1ResPiUpgSA (0),
    fRunInVertexing(kFALSE),
    fImproveTracks(kTRUE),
+   fUpdateSecVertCovMat(kFALSE),
+   fUpdateSTCovMatrix(kTRUE),
+   fUpdatePulls(kFALSE),
    fDebugOutput (0),
    fDebugNtuple (0),
    fDebugVars   (0), 
@@ -149,6 +152,9 @@ AliAnalysisTaskSEImproveITS::AliAnalysisTaskSEImproveITS(const char *name,
    fPt1ResPiUpgSA (0),
    fRunInVertexing(isRunInVertexing),
    fImproveTracks(kTRUE),
+   fUpdateSecVertCovMat(kFALSE),
+   fUpdateSTCovMatrix(kTRUE),
+   fUpdatePulls(kFALSE),
    fDebugOutput (0),
    fDebugNtuple (0),
    fDebugVars   (0),
@@ -336,7 +342,34 @@ void AliAnalysisTaskSEImproveITS::UserExec(Option_t*) {
   if(!ev) return;
   Double_t bz=ev->GetMagneticField();
 
+  // first loop on candidates to fill them in case of reduced AODs
+  // this is done to have the same behaviour of the improver with full (pp, p-Pb) and recuced (Pb-Pb) candidates
+  AliAnalysisVertexingHF *vHF = new AliAnalysisVertexingHF();
 
+  // D0->Kpi
+  TClonesArray *array2Prong=static_cast<TClonesArray*>(ev->GetList()->FindObject("D0toKpi"));
+  if (array2Prong) {
+    for (Int_t icand=0;icand<array2Prong->GetEntries();++icand) {
+      AliAODRecoDecayHF2Prong *decay=static_cast<AliAODRecoDecayHF2Prong*>(array2Prong->At(icand));
+      vHF->FillRecoCand(ev,(AliAODRecoDecayHF2Prong*)decay);
+    }
+  }
+  // Dstar->Kpipi
+  TClonesArray *arrayCascade=static_cast<TClonesArray*>(ev->GetList()->FindObject("Dstar"));
+  if (arrayCascade) {
+    for (Int_t icand=0;icand<arrayCascade->GetEntries();++icand) {
+      AliAODRecoCascadeHF *decayDstar=static_cast<AliAODRecoCascadeHF*>(arrayCascade->At(icand));
+      vHF->FillRecoCasc(ev,((AliAODRecoCascadeHF*)decayDstar),kTRUE);
+    }
+  }
+  // Three prong
+  TClonesArray *array3Prong=static_cast<TClonesArray*>(ev->GetList()->FindObject("Charm3Prong"));
+  if (array3Prong) {
+    for (Int_t icand=0;icand<array3Prong->GetEntries();++icand) {
+      AliAODRecoDecayHF3Prong *decay=static_cast<AliAODRecoDecayHF3Prong*>(array3Prong->At(icand));
+      vHF->FillRecoCand(ev,(AliAODRecoDecayHF3Prong*)decay);
+    }
+  }
 
 
   // Smear all tracks
@@ -353,11 +386,9 @@ void AliAnalysisTaskSEImproveITS::UserExec(Option_t*) {
   // TODO: recalculated primary vertex
   AliVVertex *primaryVertex=ev->GetPrimaryVertex();
 
-  AliAnalysisVertexingHF *vHF = new AliAnalysisVertexingHF();
   
   // Recalculate all candidates
   // D0->Kpi
-  TClonesArray *array2Prong=static_cast<TClonesArray*>(ev->GetList()->FindObject("D0toKpi"));
   if (array2Prong) {
       for (Int_t icand=0;icand<array2Prong->GetEntries();++icand) {
       AliAODRecoDecayHF2Prong *decay=static_cast<AliAODRecoDecayHF2Prong*>(array2Prong->At(icand));
@@ -382,7 +413,7 @@ void AliAnalysisTaskSEImproveITS::UserExec(Option_t*) {
       v12->GetXYZ(pos);
       v12->GetCovMatrix(covpos);
       decay->GetSecondaryVtx()->SetPosition(pos[0],pos[1],pos[2]);
-      decay->GetSecondaryVtx()->SetCovMatrix(covpos);
+      if(fUpdateSecVertCovMat) decay->GetSecondaryVtx()->SetCovMatrix(covpos);
       decay->GetSecondaryVtx()->SetChi2perNDF(v12->GetChi2toNDF()); 
      
       // update d0 
@@ -422,8 +453,6 @@ void AliAnalysisTaskSEImproveITS::UserExec(Option_t*) {
 
 
   // Dstar->Kpipi
-  TClonesArray *arrayCascade=static_cast<TClonesArray*>(ev->GetList()->FindObject("Dstar"));
-  
   if (arrayCascade) {
     for (Int_t icand=0;icand<arrayCascade->GetEntries();++icand) {
       AliAODRecoCascadeHF *decayDstar=static_cast<AliAODRecoCascadeHF*>(arrayCascade->At(icand));
@@ -474,7 +503,6 @@ void AliAnalysisTaskSEImproveITS::UserExec(Option_t*) {
 
 
   // Three prong
-  TClonesArray *array3Prong=static_cast<TClonesArray*>(ev->GetList()->FindObject("Charm3Prong"));
   if (array3Prong) {
     for (Int_t icand=0;icand<array3Prong->GetEntries();++icand) {
       AliAODRecoDecayHF3Prong *decay=static_cast<AliAODRecoDecayHF3Prong*>(array3Prong->At(icand));
@@ -499,7 +527,7 @@ void AliAnalysisTaskSEImproveITS::UserExec(Option_t*) {
       v123->GetXYZ(pos);
       v123->GetCovMatrix(covpos);
       decay->GetSecondaryVtx()->SetPosition(pos[0],pos[1],pos[2]);
-      decay->GetSecondaryVtx()->SetCovMatrix(covpos);
+      if(fUpdateSecVertCovMat) decay->GetSecondaryVtx()->SetCovMatrix(covpos);
       decay->GetSecondaryVtx()->SetChi2perNDF(v123->GetChi2toNDF()); 
 
       // update d0 for all progs
@@ -677,18 +705,27 @@ void AliAnalysisTaskSEImproveITS::SmearTrack(AliAODTrack *track,const TClonesArr
   param[4]=pt1n ;
 
    //cov matrix update
-  if(sd0rpo>0.)            covar[0]*=(sd0rpn/sd0rpo)*(sd0rpn/sd0rpo);//yy
-  if(sd0zo>0. && sd0rpo>0.)covar[1]*=(sd0rpn/sd0rpo)*(sd0zn/sd0zo);//yz
-  if(sd0zo>0.)             covar[2]*=(sd0zn/sd0zo)*(sd0zn/sd0zo);//zz
-  if(sd0rpo>0.)            covar[3]*=(sd0rpn/sd0rpo);//yl
-  if(sd0zo>0.)             covar[4]*=(sd0zn/sd0zo);//zl
-  if(sd0rpo>0.)            covar[6]*=(sd0rpn/sd0rpo);//ysenT
-  if(sd0zo>0.)             covar[7]*=(sd0zn/sd0zo);//zsenT
-  if(sd0rpo>0. && spt1o>0.)covar[10]*=(sd0rpn/sd0rpo)*(spt1n/spt1o);//ypt
-  if(sd0zo>0. && spt1o>0.) covar[11]*=(sd0zn/sd0zo)*(spt1n/spt1o);//zpt
-  if(spt1o>0.)             covar[12]*=(spt1n/spt1o);//sinPhipt
-  if(spt1o>0.)             covar[13]*=(spt1n/spt1o);//tanTpt
-  if(spt1o>0.)             covar[14]*=(spt1n/spt1o)*(spt1n/spt1o);//ptpt
+   if(fUpdateSTCovMatrix){
+    if(sd0rpo>0.)            covar[0]*=(sd0rpn/sd0rpo)*(sd0rpn/sd0rpo);//yy
+    if(sd0zo>0. && sd0rpo>0.)covar[1]*=(sd0rpn/sd0rpo)*(sd0zn/sd0zo);//yz
+    if(sd0zo>0.)             covar[2]*=(sd0zn/sd0zo)*(sd0zn/sd0zo);//zz
+    if(sd0rpo>0.)            covar[3]*=(sd0rpn/sd0rpo);//yl
+    if(sd0zo>0.)             covar[4]*=(sd0zn/sd0zo);//zl
+    if(sd0rpo>0.)            covar[6]*=(sd0rpn/sd0rpo);//ysenT
+    if(sd0zo>0.)             covar[7]*=(sd0zn/sd0zo);//zsenT
+    if(sd0rpo>0. && spt1o>0.)covar[10]*=(sd0rpn/sd0rpo)*(spt1n/spt1o);//ypt
+    if(sd0zo>0. && spt1o>0.) covar[11]*=(sd0zn/sd0zo)*(spt1n/spt1o);//zpt
+    if(spt1o>0.)             covar[12]*=(spt1n/spt1o);//sinPhipt
+    if(spt1o>0.)             covar[13]*=(spt1n/spt1o);//tanTpt
+    if(spt1o>0.)             covar[14]*=(spt1n/spt1o)*(spt1n/spt1o);//ptpt
+  }
+  if(fUpdatePulls){
+    covar[0]*=0.85*0.85;//yy
+    covar[1]*=0.85;//yz
+    covar[3]*=0.85;//yl
+    covar[6]*=0.85;//ysenT
+    covar[10]*=0.85;//ypt
+  }
 
   // Copy the smeared parameters to the AOD track
   Double_t x[3];
