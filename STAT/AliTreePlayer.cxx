@@ -71,7 +71,7 @@ AliTreePlayer::AliTreePlayer(const char *name, const char *title)
 
 ///
 /// Selected metadata fil filing query
-/// retun ObjArray of selected metadatas
+/// retun ObjArray of selected metadata
 /// param
 
 			  
@@ -363,319 +363,331 @@ TString  AliTreePlayer::printSelectedTreeInfo(TTree*tree, TString infoType,  TSt
 /// \return                - status
 
 Int_t  AliTreePlayer::selectWhatWhereOrderBy(TTree * tree, TString what, TString where, TString /*orderBy*/,  Int_t firstentry, Int_t nentries, TString outputFormat, TString outputName){
-    //
-    // Select entry similar to the SQL select
-    //    tree instead - SQL FROM statement used
-    //         - it is supposed that all infomtation is contained in the tree and related friend trees
-    //         - build tree with friends done in separate function
-    //    what -
-    // code inspired by the TTreePlay::Scan but another tretment of arrays needed
-    // but wih few changes realted to different output formating
-    // NOTICE:
-    // for the moment not all parameters used
-    // Example usage:
-    /*
-      AliTreePlayer::selectWhatWhereOrderBy(treeTPC,"run:Logbook.run:meanMIP:meanMIPele:meanMIPvsSector.fElements:fitMIP.fElements","meanMIP>0", "", 0,10,"html","qatpc.html");
+  //
+  // Select entry similar to the SQL select
+  //    tree instead - SQL FROM statement used
+  //         - it is supposed that all infomtation is contained in the tree and related friend trees
+  //         - build tree with friends done in separate function
+  //    what -
+  // code inspired by the TTreePlay::Scan but another tretment of arrays needed
+  // but wih few changes realted to different output formating
+  // NOTICE:
+  // for the moment not all parameters used
+  // Example usage:
+  /*
+    AliTreePlayer::selectWhatWhereOrderBy(treeTPC,"run:Logbook.run:meanMIP:meanMIPele:meanMIPvsSector.fElements:fitMIP.fElements","meanMIP>0", "", 0,10,"html","qatpc.html");
 
-    */
+  */
 
-    if (tree==NULL || tree->GetPlayer()==NULL){
-        ::Error("AliTreePlayer::selectWhatWhereOrderBy","Input tree not defiend");
-        return -1;
-    }
-    // limit number of entries - shorter version of the TTreePlayer::GetEntriesToProcess - but not fully correct ()
-    if (firstentry +nentries >tree->GetEntriesFriend()) nentries=tree->GetEntriesFriend()-firstentry;
-    if (tree->GetEntryList()){ //
-        if (tree->GetEntryList()->GetN()<nentries) nentries=tree->GetEntryList()->GetN();
-    }
-    //
-    Int_t  tnumber = -1;
-    Bool_t isHTML=outputFormat.Contains("html",TString::kIgnoreCase );
-    Bool_t isCSV=outputFormat.Contains("csv",TString::kIgnoreCase);
-    Bool_t isElastic=outputFormat.Contains("elastic",TString::kIgnoreCase);
-    Bool_t isJSON=outputFormat.Contains("json",TString::kIgnoreCase)||isElastic;
+  if (tree==NULL || tree->GetPlayer()==NULL){
+    ::Error("AliTreePlayer::selectWhatWhereOrderBy","Input tree not defiend");
+    return -1;
+  }
+  // limit number of entries - shorter version of the TTreePlayer::GetEntriesToProcess - but not fully correct ()
+  if (firstentry +nentries >tree->GetEntriesFriend()) nentries=tree->GetEntriesFriend()-firstentry;
+  if (tree->GetEntryList()){ //
+    if (tree->GetEntryList()->GetN()<nentries) nentries=tree->GetEntryList()->GetN();
+  }
+  //
+  Int_t  tnumber = -1;
+  Bool_t isHTML=outputFormat.Contains("html",TString::kIgnoreCase );
+  Bool_t isCSV=outputFormat.Contains("csv",TString::kIgnoreCase);
+  Bool_t isElastic=outputFormat.Contains("elastic",TString::kIgnoreCase);
+  Bool_t isJSON=outputFormat.Contains("json",TString::kIgnoreCase)||isElastic;
 
-    //
-    FILE *default_fp = stdout;
-    if (outputName.Length()>0){
-        default_fp=fopen (outputName.Data(),"w");
+  //
+  FILE *default_fp = stdout;
+  if (outputName.Length()>0){
+    default_fp=fopen (outputName.Data(),"w");
+  }
+  TObjArray *fArray=what.Tokenize(":");
+  Int_t      nCols=fArray->GetEntries();
+  TObjArray *fFormulaList       = new TObjArray(nCols+1);
+  TTreeFormula ** rFormulaList  = new TTreeFormula*[nCols+1];
+  TObjString **printFormatList  = new TObjString*[nCols];     // how to format variables
+  TObjString **columnNameList   = new TObjString*[nCols];
+  TObjString **outputFormatList = new TObjString*[nCols];     // root header formatting
+  Bool_t isIndex[nCols];
+  Bool_t isParent[nCols];
+  TClass*  isClass[nCols];       // is object
+  TPRegexp indexPattern("^%I"); // pattern for index
+  TPRegexp parentPattern("^%P"); // pattern for parent index
+  for (Int_t iCol=0; iCol<nCols; iCol++){
+    isClass[iCol]=NULL;
+    rFormulaList[iCol]=NULL;
+    TObjArray * arrayDesc = TString(fArray->At(iCol)->GetName()).Tokenize(";");
+    if (arrayDesc->GetEntries()<=0) {
+      ::Error("AliTreePlayer::selectWhatWhereOrderBy","Invalid descriptor %s", arrayDesc->At(iCol)->GetName());
+      //return -1;
     }
-    TObjArray *fArray=what.Tokenize(":");
-    Int_t      nCols=fArray->GetEntries();
-    TObjArray *fFormulaList       = new TObjArray(nCols+1);
-    TTreeFormula ** rFormulaList  = new TTreeFormula*[nCols+1];
-    TObjString **printFormatList  = new TObjString*[nCols];     // how to format variables
-    TObjString **columnNameList   = new TObjString*[nCols];
-    TObjString **outputFormatList = new TObjString*[nCols];     // root header formatting
-    Bool_t isIndex[nCols];
-    Bool_t isParent[nCols];
-    TClass*  isClass[nCols];       // is object
-    TPRegexp indexPattern("^%I"); // pattern for index
-    TPRegexp parentPattern("^%P"); // pattern for parent index
+    TString  fieldName=arrayDesc->At(0)->GetName();    // variable content
+    if (tree->GetBranch(fieldName.Data())){
+      if (TString(tree->GetBranch(fieldName.Data())->GetClassName()).Length()>0) {
+        isClass[iCol]=TClass::GetClass(tree->GetBranch(fieldName.Data())->GetClassName());
+      }
+    }
+    if (fieldName.Contains(indexPattern)){             // variable is index
+      isIndex[iCol]=kTRUE;
+      indexPattern.Substitute(fieldName,"");
+    }else{
+      isIndex[iCol]=kFALSE;
+    }
+    if (fieldName.Contains(parentPattern)){             // variable is parent
+      isParent[iCol]=kTRUE;
+      parentPattern.Substitute(fieldName,"");
+    }else{
+      isParent[iCol]=kFALSE;
+    }
+    TTreeFormula * formula = new TTreeFormula(fieldName.Data(), fieldName.Data(), tree);
+    if (formula->GetTree()==NULL){
+      ::Error("AliTreePlayer::selectWhatWhereOrderBy","Invalid formula %s, parsed from the original string %s",fieldName.Data(),what.Data());
+      if (isJSON==kFALSE) return -1;
+    }
+    TString  printFormat="";                       // printing format          - column 1 - use default if not specified
+    TString  colName=arrayDesc->At(0)->GetName();  // variable name in ouptut  - column 2 - using defaut ("variable name") as in input
+    TString  outputFormat="";                      // output column format specification for TLeaf (see also reading using TTree::ReadFile)
+    if (arrayDesc->At(1)!=NULL){  // format
+      printFormat=arrayDesc->At(1)->GetName();
+    }else{
+      if (formula->IsInteger()) {
+        printFormat="1.20";
+      }else{
+        printFormat="1.20";
+      }
+    }
+    if (arrayDesc->At(2)!=NULL)  {
+      colName=arrayDesc->At(2)->GetName();
+    }else{
+      colName=arrayDesc->At(0)->GetName();
+    }
+    //colName = (arrayDesc->GetEntries()>1) ? arrayDesc->At(2)->GetName() : arrayDesc->At(0)->GetName();
+    if (arrayDesc->At(3)!=NULL){  //outputFormat (for csv)
+      outputFormat= arrayDesc->At(3)->GetName();
+    }else{
+      outputFormat="/D";
+      if (formula->IsInteger()) outputFormat="/I";
+      if (formula->IsString())  outputFormat="/C";
+    }
+    fFormulaList->AddAt(formula,iCol);
+    rFormulaList[iCol]=formula;
+    printFormatList[iCol]=new TObjString(printFormat);
+    outputFormatList[iCol]=new TObjString(outputFormat);
+    columnNameList[iCol]=new TObjString(colName);
+  }
+  TTreeFormula *select = new TTreeFormula("Selection",where.Data(),tree);
+  fFormulaList->AddLast(select);
+  rFormulaList[nCols]=select;
+
+
+  Bool_t hasArray = kFALSE;
+  Bool_t forceDim = kFALSE;
+  for (Int_t iCol=0; iCol<nCols; iCol++){
+    if (rFormulaList[iCol]!=NULL) rFormulaList[iCol]->UpdateFormulaLeaves();
+    // if ->GetManager()->GetMultiplicity()>0 mean there is at minimum one array
+    switch( rFormulaList[iCol]->GetManager()->GetMultiplicity() ) {
+      case  1:
+      case  2:
+        hasArray = kTRUE;
+        forceDim = kTRUE;
+        break;
+      case -1:
+        forceDim = kTRUE;
+        break;
+      case  0:
+        break;
+    }
+  }
+
+
+  // print header
+  if (isHTML){
+    fprintf(default_fp,"<table class=\"display\" cellspacing=\"0\" width=\"100%\">\n"); // add metadata info
+    fprintf(default_fp,"\t<thead class=\"header\">\n"); // add metadata info
+    fprintf(default_fp,"\t<tr>\n"); // add metadata info
     for (Int_t iCol=0; iCol<nCols; iCol++){
-        isClass[iCol]=NULL;
-        rFormulaList[iCol]=NULL;
-        TObjArray * arrayDesc = TString(fArray->At(iCol)->GetName()).Tokenize(";");
-        if (arrayDesc->GetEntries()<=0) {
-            ::Error("AliTreePlayer::selectWhatWhereOrderBy","Invalid descriptor %s", arrayDesc->At(iCol)->GetName());
-            //return -1;
+      fprintf(default_fp,"\t\t<th>%s</th>\n",columnNameList[iCol]->GetName()); // add metadata info
+    }
+    fprintf(default_fp,"\t</tr>\n"); // add metadata info
+    fprintf(default_fp,"\t</thead>\n"); // add metadata info
+    //
+    fprintf(default_fp,"\t<tfoot class=\"header\">\n"); // add metadata info
+    fprintf(default_fp,"\t<tr>\n"); // add metadata info
+    for (Int_t iCol=0; iCol<nCols; iCol++){
+      fprintf(default_fp,"\t\t<th>%s</th>\n",columnNameList[iCol]->GetName()); // add metadata info
+    }
+    fprintf(default_fp,"\t</tr>\n"); // add metadata info
+    fprintf(default_fp,"\t</tfoot>\n"); // add metadata info
+    fprintf(default_fp,"\t<tbody>\n"); // add metadata info
+  }
+  if (isCSV){
+    // add header info
+    for (Int_t iCol=0; iCol<nCols; iCol++){
+      fprintf(default_fp,"%s%s",columnNameList[iCol]->GetName(), outputFormatList[iCol]->GetName());
+      if (iCol<nCols-1)  {
+        fprintf(default_fp,":");
+      }else{
+        fprintf(default_fp,"\n"); // add metadata info
+      }
+    }
+  }
+
+  Int_t selected=0;
+  for (Int_t ientry=firstentry; ientry<firstentry+nentries; ientry++){
+    Int_t entryNumber = tree->GetEntryNumber(ientry);
+    if (entryNumber < 0) break;
+    Long64_t localEntry = tree->LoadTree(entryNumber);
+    //
+    if (tnumber != tree->GetTreeNumber()) {
+      tnumber = tree->GetTreeNumber();
+      for(Int_t iCol=0;iCol<nCols;iCol++) {
+        rFormulaList[iCol]->UpdateFormulaLeaves();
+      }
+      select->UpdateFormulaLeaves();
+    }
+    if (select) {
+      //      if (select->EvalInstance(inst) == 0) {
+      if (select->EvalInstance(0) == 0) {  // for the moment simplified version of selection - not treating "array" selection
+        continue;
+      }
+    }
+    selected++;
+    // if json out
+    if (isJSON){
+      if (selected>1){
+        if (isElastic) {
+          fprintf(default_fp,"}\n{\"index\":{\"_id\": \"");
         }
-        TString  fieldName=arrayDesc->At(0)->GetName();    // variable content
-        if (tree->GetBranch(fieldName.Data())){
-            if (TString(tree->GetBranch(fieldName.Data())->GetClassName()).Length()>0) {
-                isClass[iCol]=TClass::GetClass(tree->GetBranch(fieldName.Data())->GetClassName());
-            }
+        else{
+          fprintf(default_fp,"},\n{\n");
         }
-        if (fieldName.Contains(indexPattern)){             // variable is index
-            isIndex[iCol]=kTRUE;
-            indexPattern.Substitute(fieldName,"");
+      }else{
+        if (isElastic){
+          fprintf(default_fp,"{\"index\":{\"_id\": \"");
         }else{
-            isIndex[iCol]=kFALSE;
+          fprintf(default_fp,"{{\n");
         }
-        if (fieldName.Contains(parentPattern)){             // variable is parent
-            isParent[iCol]=kTRUE;
-            parentPattern.Substitute(fieldName,"");
+      }
+      for (Int_t icol=0; icol<nCols; icol++){
+        TString obuffer="";
+        if (isClass[icol]){
+          const char*bname=rFormulaList[icol]->GetName();
+          TBranch *br = tree->GetBranch(bname);
+          br->GetEntry(entryNumber); // not sure if the entry is loaded
+          void **ppobject=(void**)br->GetAddress();
+          if (ppobject) {
+            obuffer = TBufferJSON::ConvertToJSON(*ppobject, isClass[icol]);
+            if (isElastic) obuffer.ReplaceAll("\n","");
+            //fprintf(default_fp,"%s",clbuffer.Data());
+          }
+        }
+        if (rFormulaList[icol]->GetTree()==NULL) continue;
+        Int_t nData=rFormulaList[icol]->GetNdata();
+        if (isElastic==kFALSE){
+          fprintf(default_fp,"\t\"%s\":",rFormulaList[icol]->GetName());
         }else{
-            isParent[iCol]=kFALSE;
-        }
-        TTreeFormula * formula = new TTreeFormula(fieldName.Data(), fieldName.Data(), tree);
-        if (formula->GetTree()==NULL){
-            ::Error("AliTreePlayer::selectWhatWhereOrderBy","Invalid formula %s, parsed from the original string %s",fieldName.Data(),what.Data());
-            if (isJSON==kFALSE) return -1;
-        }
-        TString  printFormat="";                       // printing format          - column 1 - use default if not specified
-        TString  colName=arrayDesc->At(0)->GetName();  // variable name in ouptut  - column 2 - using defaut ("variable name") as in input
-        TString  outputFormat="";                      // output column format specification for TLeaf (see also reading using TTree::ReadFile)
-        if (arrayDesc->At(1)!=NULL){  // format
-            printFormat=arrayDesc->At(1)->GetName();
-        }else{
-            if (formula->IsInteger()) {
-                printFormat="1.20";
+          if (isIndex[icol]==kFALSE && isParent[icol]==kFALSE){
+            TString fieldName(rFormulaList[icol]->GetName());
+            if (isClass[icol]) fieldName.Remove(fieldName.Length()-1);
+            fieldName.ReplaceAll(".","%_");
+            if (icol>0 && isIndex[icol-1]==kFALSE && isParent[icol-1]==kFALSE ){
+              fprintf(default_fp,"\t,\"%s\":",fieldName.Data());
             }else{
-                printFormat="1.20";
+              fprintf(default_fp,"\t\"%s\":",fieldName.Data());
             }
+          }
         }
-        if (arrayDesc->At(2)!=NULL)  {
-            colName=arrayDesc->At(2)->GetName();
+        if (nData<=1){
+          if ((isIndex[icol]==kFALSE)&&(isParent[icol]==kFALSE)){
+            if (isClass[icol]!=NULL){
+              fprintf(default_fp,"%s",obuffer.Data());
+            }else {
+              if (isElastic && rFormulaList[icol]->IsString()) {
+                fprintf(default_fp, "\t\"%s\"",
+                        rFormulaList[icol]->PrintValue(0, 0, printFormatList[icol]->GetName()));
+              } else {
+                fprintf(default_fp, "\t%s",
+                        rFormulaList[icol]->PrintValue(0, 0, printFormatList[icol]->GetName()));
+              }
+            }
+          }
+          if (isIndex[icol]){
+            fprintf(default_fp,"%s",rFormulaList[icol]->PrintValue(0,0,printFormatList[icol]->GetName()));
+            if (isIndex[icol+1]){
+              fprintf(default_fp,".");
+            }else
+            if (isParent[icol+1]==kFALSE){
+              fprintf(default_fp,"\"}}\n{");
+            }
+          }
+          if (isParent[icol]==kTRUE){
+            fprintf(default_fp,"\", \"parent\": \"%s\"}}\n{",rFormulaList[icol]->PrintValue(0,0,printFormatList[icol]->GetName()));
+          }
         }else{
-            colName=arrayDesc->At(0)->GetName();
+          fprintf(default_fp,"\t[");
+          for (Int_t iData=0; iData<nData;iData++){
+            fprintf(default_fp,"%f",rFormulaList[icol]->EvalInstance(iData));
+            if (iData<nData-1) {
+              fprintf(default_fp,",");
+            }   else{
+              fprintf(default_fp,"]");
+            }
+          }
         }
-        //colName = (arrayDesc->GetEntries()>1) ? arrayDesc->At(2)->GetName() : arrayDesc->At(0)->GetName();
-        if (arrayDesc->At(3)!=NULL){  //outputFormat (for csv)
-            outputFormat= arrayDesc->At(3)->GetName();
-        }else{
-            outputFormat="/D";
-            if (formula->IsInteger()) outputFormat="/I";
-            if (formula->IsString())  outputFormat="/C";
-        }
-        fFormulaList->AddAt(formula,iCol);
-        rFormulaList[iCol]=formula;
-        printFormatList[iCol]=new TObjString(printFormat);
-        outputFormatList[iCol]=new TObjString(outputFormat);
-        columnNameList[iCol]=new TObjString(colName);
-    }
-    TTreeFormula *select = new TTreeFormula("Selection",where.Data(),tree);
-    fFormulaList->AddLast(select);
-    rFormulaList[nCols]=select;
-
-
-    Bool_t hasArray = kFALSE;
-    Bool_t forceDim = kFALSE;
-    for (Int_t iCol=0; iCol<nCols; iCol++){
-        if (rFormulaList[iCol]!=NULL) rFormulaList[iCol]->UpdateFormulaLeaves();
-        // if ->GetManager()->GetMultiplicity()>0 mean there is at minimum one array
-        switch( rFormulaList[iCol]->GetManager()->GetMultiplicity() ) {
-            case  1:
-            case  2:
-                hasArray = kTRUE;
-                forceDim = kTRUE;
-                break;
-            case -1:
-                forceDim = kTRUE;
-                break;
-            case  0:
-                break;
-        }
+        //	if (icol<nCols-1 && (isIndex[icol]==kFALSE && isParent[icol]==kFALSE) ) fprintf(default_fp,",");
+        //fprintf(default_fp,"\n");
+      }
     }
 
-
-    // print header
+    //
     if (isHTML){
-        fprintf(default_fp,"<table>"); // add metadata info
-        fprintf(default_fp,"<tr>"); // add metadata info
-        for (Int_t iCol=0; iCol<nCols; iCol++){
-            fprintf(default_fp,"<th>%s</th>",columnNameList[iCol]->GetName()); // add metadata info
+      fprintf(default_fp,"<tr>\n");
+      for (Int_t icol=0; icol<nCols; icol++){
+        Int_t nData=rFormulaList[icol]->GetNdata();
+        if (nData<=1){
+          fprintf(default_fp,"\t<td>%s</td>",rFormulaList[icol]->PrintValue(0,0,printFormatList[icol]->GetName()));
+        }else{
+          fprintf(default_fp,"\t<td>");
+          for (Int_t iData=0; iData<nData;iData++){
+            fprintf(default_fp,"%f",rFormulaList[icol]->EvalInstance(iData));
+            if (iData<nData-1) {
+              fprintf(default_fp,",");
+            }else{
+              fprintf(default_fp,"</td>");
+            }
+          }
         }
-        fprintf(default_fp,"<tr>"); // add metadata info
+        fprintf(default_fp,"\n");
+      }
+      fprintf(default_fp,"</tr>\n");
     }
+    //
     if (isCSV){
-        // add header info
-        for (Int_t iCol=0; iCol<nCols; iCol++){
-            fprintf(default_fp,"%s%s",columnNameList[iCol]->GetName(), outputFormatList[iCol]->GetName());
-            if (iCol<nCols-1)  {
-                fprintf(default_fp,":");
+      for (Int_t icol=0; icol<nCols; icol++){  // formula loop
+        Int_t nData=rFormulaList[icol]->GetNdata();
+        if (nData<=1){
+          fprintf(default_fp,"%s\t",rFormulaList[icol]->PrintValue(0,0,printFormatList[icol]->GetName()));
+        }else{
+          for (Int_t iData=0; iData<nData;iData++){  // array loo
+            fprintf(default_fp,"%f",rFormulaList[icol]->EvalInstance(iData));
+            if (iData<nData-1) {
+              fprintf(default_fp,",");
             }else{
-                fprintf(default_fp,"\n"); // add metadata info
+              fprintf(default_fp,"\t");
             }
+          }
         }
+      }
+      fprintf(default_fp,"\n");
     }
+  }
+  if (isJSON) fprintf(default_fp,"}\n");
+  if (isHTML){
+    fprintf(default_fp,"\t</tbody>"); // add metadata info
+    fprintf(default_fp,"</table>"); // add metadata info
+  }
 
-    Int_t selected=0;
-    for (Int_t ientry=firstentry; ientry<firstentry+nentries; ientry++){
-        Int_t entryNumber = tree->GetEntryNumber(ientry);
-        if (entryNumber < 0) break;
-        Long64_t localEntry = tree->LoadTree(entryNumber);
-        //
-        if (tnumber != tree->GetTreeNumber()) {
-            tnumber = tree->GetTreeNumber();
-            for(Int_t iCol=0;iCol<nCols;iCol++) {
-                rFormulaList[iCol]->UpdateFormulaLeaves();
-            }
-            select->UpdateFormulaLeaves();
-        }
-        if (select) {
-            //      if (select->EvalInstance(inst) == 0) {
-            if (select->EvalInstance(0) == 0) {  // for the moment simplified version of selection - not treating "array" selection
-                continue;
-            }
-        }
-        selected++;
-        // if json out
-        if (isJSON){
-            if (selected>1){
-                if (isElastic) {
-                    fprintf(default_fp,"}\n{\"index\":{\"_id\": \"");
-                }
-                else{
-                    fprintf(default_fp,"},\n{\n");
-                }
-            }else{
-                if (isElastic){
-                    fprintf(default_fp,"{\"index\":{\"_id\": \"");
-                }else{
-                    fprintf(default_fp,"{{\n");
-                }
-            }
-            for (Int_t icol=0; icol<nCols; icol++){
-                TString obuffer="";
-                if (isClass[icol]){
-                    const char*bname=rFormulaList[icol]->GetName();
-                    TBranch *br = tree->GetBranch(bname);
-                    br->GetEntry(entryNumber); // not sure if the entry is loaded
-                    void **ppobject=(void**)br->GetAddress();
-                    if (ppobject) {
-                        obuffer = TBufferJSON::ConvertToJSON(*ppobject, isClass[icol]);
-                        if (isElastic) obuffer.ReplaceAll("\n","");
-                        //fprintf(default_fp,"%s",clbuffer.Data());
-                    }
-                }
-                if (rFormulaList[icol]->GetTree()==NULL) continue;
-                Int_t nData=rFormulaList[icol]->GetNdata();
-                if (isElastic==kFALSE){
-                    fprintf(default_fp,"\t\"%s\":",rFormulaList[icol]->GetName());
-                }else{
-                    if (isIndex[icol]==kFALSE && isParent[icol]==kFALSE){
-                        TString fieldName(rFormulaList[icol]->GetName());
-                        if (isClass[icol]) fieldName.Remove(fieldName.Length()-1);
-                        fieldName.ReplaceAll(".","%_");
-                        if (icol>0 && isIndex[icol-1]==kFALSE && isParent[icol-1]==kFALSE ){
-                            fprintf(default_fp,"\t,\"%s\":",fieldName.Data());
-                        }else{
-                            fprintf(default_fp,"\t\"%s\":",fieldName.Data());
-                        }
-                    }
-                }
-                if (nData<=1){
-                    if ((isIndex[icol]==kFALSE)&&(isParent[icol]==kFALSE)){
-                        if (isClass[icol]!=NULL){
-                            fprintf(default_fp,"%s",obuffer.Data());
-                        }else {
-                            if (isElastic && rFormulaList[icol]->IsString()) {
-                                fprintf(default_fp, "\t\"%s\"",
-                                        rFormulaList[icol]->PrintValue(0, 0, printFormatList[icol]->GetName()));
-                            } else {
-                                fprintf(default_fp, "\t%s",
-                                        rFormulaList[icol]->PrintValue(0, 0, printFormatList[icol]->GetName()));
-                            }
-                        }
-                    }
-                    if (isIndex[icol]){
-                        fprintf(default_fp,"%s",rFormulaList[icol]->PrintValue(0,0,printFormatList[icol]->GetName()));
-                        if (isIndex[icol+1]){
-                            fprintf(default_fp,".");
-                        }else
-                        if (isParent[icol+1]==kFALSE){
-                            fprintf(default_fp,"\"}}\n{");
-                        }
-                    }
-                    if (isParent[icol]==kTRUE){
-                        fprintf(default_fp,"\", \"parent\": \"%s\"}}\n{",rFormulaList[icol]->PrintValue(0,0,printFormatList[icol]->GetName()));
-                    }
-                }else{
-                    fprintf(default_fp,"\t[");
-                    for (Int_t iData=0; iData<nData;iData++){
-                        fprintf(default_fp,"%f",rFormulaList[icol]->EvalInstance(iData));
-                        if (iData<nData-1) {
-                            fprintf(default_fp,",");
-                        }   else{
-                            fprintf(default_fp,"]");
-                        }
-                    }
-                }
-                //	if (icol<nCols-1 && (isIndex[icol]==kFALSE && isParent[icol]==kFALSE) ) fprintf(default_fp,",");
-                //fprintf(default_fp,"\n");
-            }
-        }
-
-        //
-        if (isHTML){
-            fprintf(default_fp,"<tr>\n");
-            for (Int_t icol=0; icol<nCols; icol++){
-                Int_t nData=rFormulaList[icol]->GetNdata();
-                if (nData<=1){
-                    fprintf(default_fp,"\t<td>%s</td>",rFormulaList[icol]->PrintValue(0,0,printFormatList[icol]->GetName()));
-                }else{
-                    fprintf(default_fp,"\t<td>");
-                    for (Int_t iData=0; iData<nData;iData++){
-                        fprintf(default_fp,"%f",rFormulaList[icol]->EvalInstance(iData));
-                        if (iData<nData-1) {
-                            fprintf(default_fp,",");
-                        }else{
-                            fprintf(default_fp,"</td>");
-                        }
-                    }
-                }
-                fprintf(default_fp,"\n");
-            }
-            fprintf(default_fp,"</tr>\n");
-        }
-        //
-        if (isCSV){
-            for (Int_t icol=0; icol<nCols; icol++){  // formula loop
-                Int_t nData=rFormulaList[icol]->GetNdata();
-                if (nData<=1){
-                    fprintf(default_fp,"%s\t",rFormulaList[icol]->PrintValue(0,0,printFormatList[icol]->GetName()));
-                }else{
-                    for (Int_t iData=0; iData<nData;iData++){  // array loo
-                        fprintf(default_fp,"%f",rFormulaList[icol]->EvalInstance(iData));
-                        if (iData<nData-1) {
-                            fprintf(default_fp,",");
-                        }else{
-                            fprintf(default_fp,"\t");
-                        }
-                    }
-                }
-            }
-            fprintf(default_fp,"\n");
-        }
-    }
-    if (isJSON) fprintf(default_fp,"}\n");
-    if (isHTML){
-        fprintf(default_fp,"</table>"); // add metadata info
-    }
-
-    if (default_fp!=stdout) fclose (default_fp);
-    return selected;
+  if (default_fp!=stdout) fclose (default_fp);
+  return selected;
 }
 
 // Get the enumeration type from a string
