@@ -151,7 +151,7 @@ bool AliEventCuts::AcceptEvent(AliVEvent *ev) {
   if (vtSPD->GetNContributors() > 0) fFlag |= BIT(kVertexSPD);
   if (vtTrc->GetNContributors() > 1) fFlag |= BIT(kVertexTracks);
   if (((fFlag & BIT(kVertexTracks)) ||  !fRequireTrackVertex) && (fFlag & BIT(kVertexSPD))) fFlag |= BIT(kVertex);
-  const AliVVertex* &vtx = (vtTrc->GetNContributors() < 2) ? vtSPD : vtTrc;
+  const AliVVertex* &vtx = bool(fFlag & BIT(kVertexTracks)) ? vtTrc : vtSPD;
   fPrimaryVertex = const_cast<AliVVertex*>(vtx);
 
   /// Vertex position cut
@@ -165,7 +165,7 @@ bool AliEventCuts::AcceptEvent(AliVEvent *ev) {
   vtSPD->GetCovarianceMatrix(covSPD);
   double dz = bool(fFlag & kVertexSPD) && bool(fFlag & kVertexTracks) ? vtTrc->GetZ() - vtSPD->GetZ() : 0.; /// If one of the two vertices is not available this cut is always passed.
   double errTot = TMath::Sqrt(covTrc[5]+covSPD[5]);
-  double errTrc = TMath::Sqrt(covTrc[5]);
+  double errTrc = bool(fFlag & kVertexTracks) ? TMath::Sqrt(covTrc[5]) : 1.;
   double nsigTot = TMath::Abs(dz) / errTot, nsigTrc = TMath::Abs(dz) / errTrc;
   if (
       (TMath::Abs(dz) <= fMaxDeltaSpdTrackAbsolute && nsigTot <= fMaxDeltaSpdTrackNsigmaSPD && nsigTrc <= fMaxDeltaSpdTrackNsigmaTrack) && // discrepancy track-SPD vertex
@@ -506,7 +506,6 @@ void AliEventCuts::SetupRun2pp() {
   ::Info("AliEventCuts::SetupRun2pp","Setup event cuts for the Run2 pp periods.");
   SetName("StandardRun2ppEventCuts");
 
-  fRequireTrackVertex = true;
   fMinVtz = -10.f;
   fMaxVtz = 10.f;
   fMaxDeltaSpdTrackAbsolute = 0.5f;
