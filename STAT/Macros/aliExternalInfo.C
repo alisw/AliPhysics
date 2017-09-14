@@ -20,7 +20,7 @@
 /*!
     .L $AliRoot_SRC/STAT/Macros/aliExternalInfo.C
     // define some example selection and copy past the code below
-    TString  period="LHC15o", pass="pass1", runSelection="QA.TPC.meanTPCncl>0", varSelection="run:runDuration:totalEventsPhysics:totalNumberOfFilesMigrated";
+    TString  period="LHC15o", pass="pass1", runSelection="QA.TPC.meanTPCncl>0", varSelection="run:runDuration:totalEventsPhysics:totalNumberOfFilesMigrated:QA.TPC.meanMIP";
     TString source="Logbook;QA.TPC;QA.TRD;QA.ITS;MonALISA.RCT";
 */
 
@@ -106,18 +106,26 @@ void drawLogbookMultiExpr(TString period, TString pass,TString runSelection="", 
  */
 void drawLogbookMultiCut(TString period, TString pass,TString runSelection="", TString varSelection="LHCperiod:runDuration:totalEventsPhysics:totalNumberOfFilesMigrated") {
   TTree *treeLogbook = info.GetTree("Logbook", period, pass, "QA.TPC;QA.TRD;QA.ITS;MonALISA.RCT");
-  TMultiGraph *m1 = TStatToolkit::MakeMultGraph(treeLogbook,"","runDuration:run","totalNumberOfFilesMigrated>2000;(run<245000);abs(run-245500)<500;(run>246000)","25;21;22;24","1;2;4", kFALSE, 1,6,0);
+  TMultiGraph *m1 = TStatToolkit::MakeMultGraph(treeLogbook,"","runDuration:run","totalNumberOfFilesMigrated>2000;(run<245000);abs(run-245500)<500;(run>246000)","figTemplateTRD","figTemplateTRD", kFALSE, 1,6,0);
   m1->Draw("ap");
 }
 
-/// makeHTMLPage
-/// \param period
-/// \param pass
-/// \param runSelection
-/// \param varSelection
-/// \param source
-void makeHTMLPage(TString  period,TSring  pass, TString runSelection, TString varSelection, TString source){
-  TTree * tree = info.GetTree("Logbook",period,pass,source);
+/// makeHTMLPage - make a standard html page
+/// \param period        - period               e.g.   : LHC15o
+/// \param pass          - reconstruction pass  e.g.   : pass1
+/// \param runSelection  - run selection cut    e.g.   : MonALISA.RCT.tpc_value>0&&QA.TPC.meanTPCncl>0
+/// \param varSelection  - list of variables to export : run:runDuration:totalEventsPhysics:totalNumberOfFilesMigrated:QA.TPC.meanMIP:QA.TPC.meanMIP
+/// \param source"       - source list          e.g:   : Logbook;QA.TPC;QA.TRD;QA.ITS;MonALISA.RCT
+/// ##Example usage:
+/*!
+ .L $AliRoot_SRC/STAT/Macros/aliExternalInfo.C
+ makeHTMLPage("LHC15o","pass1", "QA.TPC.meanTPCncl>0", "run:runDuration:totalEventsPhysics:totalNumberOfFilesMigrated:QA.TPC.meanMIP:QA.TPC.meanMIP", "Logbook;QA.TPC;QA.TRD;QA.ITS;MonALISA.RCT")
+ makeHTMLPage("LHC15o","pass1", "QA.TPC.meanTPCncl>0", "run:runDuration:totalEventsPhysics:ocdbStatusCounter:ocdbHVStatusCounter:TPC_Status:meanTPCncl_Status:PID_Status:DCAz_Status:DCAr_Status:tpcItsMatch_Status", "Logbook;QA.TPC;QA.TRD;QA.ITS;MonALISA.RCT")
 
+ */
+void makeHTMLPage(TString  period,TString  pass, TString runSelection, TString varSelection, TString source){
+  TTree * tree = info.GetTree("Logbook",period,pass,source);
+  AliTreePlayer::selectWhatWhereOrderBy(tree,varSelection.Data(), runSelection.Data(),"",0,100000,"html","table.html");
   delete tree;
+  gSystem->GetFromPipe("$NOTES/JIRA/ATO-360/code/makeHtml.sh table.html index.html 0");
 }
