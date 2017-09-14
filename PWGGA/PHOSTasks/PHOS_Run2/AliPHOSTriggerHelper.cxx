@@ -220,9 +220,9 @@ Bool_t AliPHOSTriggerHelper::IsPHI7(AliVEvent *event, AliPHOSClusterCuts *cuts)
     Int_t multClust = array->GetEntriesFast();
     for(Int_t i=0;i<multClust;i++){
       AliCaloPhoton *ph = (AliCaloPhoton*)array->At(i);
-      clu1 = (AliVCluster*)ph->GetCluster();
       if(!cuts->AcceptPhoton(ph)) continue;
       if(!ph->IsTOFOK()) continue;
+      clu1 = (AliVCluster*)ph->GetCluster();
 
       Int_t maxAbsId = FindHighestAmplitudeCellAbsId(clu1,cells);
 
