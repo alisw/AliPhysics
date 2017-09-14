@@ -190,12 +190,12 @@ void AliGenMC::Init()
 	break;
     case kLcpKpi:
          fChildSelect[0] = kProton;
-         fChildSelect[1] = kKMinus;
+         fChildSelect[1] = kKPlus;
          fChildSelect[2] = kPiPlus;
          break;
     case kLcpK0S:
          fChildSelect[0] = kProton;
-         fChildSelect[1] = kK0Bar;
+         fChildSelect[1] = kK0;
          break; 
     }
 
