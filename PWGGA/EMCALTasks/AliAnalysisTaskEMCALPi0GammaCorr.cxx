@@ -421,11 +421,11 @@ void AliAnalysisTaskEMCALPi0GammaCorr::UserCreateOutputObjects()
     ///////////////////Tracks////////////////////////////////////////////////
 
 
-    axisNames = "Track ThnSparse; Track Pt; Track Eta ; Track Phi; Track d0 [um]; Track z0 [cm]; # of TPC clusters; TPC signal; Crossed rows; ";
-    int    binsTrack[8] = {5*nbins_Pt, nbins_eta, nbins_phi, nbins_d0, nbins_z0, nbins_nTPCclusters, nbins_TPCsignal, nbins_fTPC};
-    double xminTrack[8] = {0.0, -1.0, 0.0,           min_d0, min_z0, min_nTPCclusters, min_TPCsignal, min_fTPC};
-    double xmaxTrack[8] = {20.0,  1.0, 2*TMath::Pi(), max_d0, max_z0, max_nTPCclusters, max_TPCsignal, max_fTPC};
-    h_Track = new THnSparseD("h_Track", axisNames, 8, binsTrack, xminTrack, xmaxTrack);
+    axisNames = "Track ThnSparse; Track Pt; Track Eta ; Track Phi; Track d0 [um]; Track z0 [cm]; # of TPC clusters; TPC signal; Crossed rows; Charge;";
+    int    binsTrack[10] = {5*nbins_Pt, nbins_eta, nbins_phi, nbins_d0, nbins_z0, nbins_nTPCclusters, nbins_TPCsignal, nbins_fTPC, 2,2};
+    double xminTrack[10] = {0.0, -1.0, 0.0,           min_d0, min_z0, min_nTPCclusters, min_TPCsignal, min_fTPC, -2.0, -0.5};
+    double xmaxTrack[10] = {20.0,  1.0, 2*TMath::Pi(), max_d0, max_z0, max_nTPCclusters, max_TPCsignal, max_fTPC, 2.0, 1.5};
+    h_Track = new THnSparseD("h_Track", axisNames, 10, binsTrack, xminTrack, xmaxTrack);
     h_Track->Sumw2();
     fOutput->Add(h_Track); 
    
@@ -778,10 +778,33 @@ Bool_t AliAnalysisTaskEMCALPi0GammaCorr::FillHistograms()
 
     //AliParticleContainer* tracks = GetParticleContainer(0); //trying trackcontainer above instead 
     AliTrackContainer* tracks = GetTrackContainer("ForCorrelation");
-    if(!tracks){
+    AliTrackContainer* tracksForMatching = GetTrackContainer("ForMatching");
+    if(!tracks or !tracksForMatching){
       AliError(Form("Could not retrieve tracks !"));
     }
-    if(PassedGammaTrigger or fIsMC) {   CorrelateClusterAndTrack(tracks,0, kFALSE, 1); }//correlate with same event }
+    if(PassedGammaTrigger or fIsMC) { CorrelateClusterAndTrack(tracks,0, kFALSE, 1); }//correlate with same event }
+
+
+    for(auto track : tracksForMatching->accepted()){
+      if(!track) continue;
+      Float_t d0=-999.0;
+      Float_t z0=-999.0;
+      track->GetImpactParametersTPC(d0, z0);
+
+
+      double trigger = 0.0;
+      if(PassedGammaTrigger) trigger = 1.0;
+      if(d0<-3000) d0 = -1999;
+      else if(d0>3000) d0 = 1999;
+      double fTPC =static_cast<double>(1.0*track->GetTPCNclsF());
+      // std::cout<< track->GetTPCNclsF() << std::endl;
+      double charge = static_cast<double>(track->Charge());
+
+      double TPCsignal= std::min(static_cast<double>(track->GetTPCsignal()), 149.0);
+      double entries[10] = {track->Pt(), track->Eta() , track->Phi(), 1000*d0, z0, static_cast<double>(track->GetTPCNcls()), TPCsignal, track->GetTPCCrossedRows(),
+			    charge, trigger };
+      h_Track->Fill(entries);
+    }
 
    
     //If MC data, then analyze it: 
@@ -833,23 +856,6 @@ int AliAnalysisTaskEMCALPi0GammaCorr::CorrelateClusterAndTrack(AliParticleContai
     AliTrackContainer* tracksForMatching = GetTrackContainer("ForMatching");
     if(!tracksForMatching) return 0;
    
-    if(!MixedEvent){ 
-        for(auto track : tracksForMatching->accepted()){
-            if(!track) continue;
-            Float_t d0=-999.0;  
-            Float_t z0=-999.0;
-            track->GetImpactParametersTPC(d0, z0);
-  
-            if(d0<-3000) d0 = -1999;
-            else if(d0>3000) d0 = 1999;
-            double fTPC =static_cast<double>(1.0*track->GetTPCNclsF());
-	    // std::cout<< track->GetTPCNclsF() << std::endl;
-       
-            double TPCsignal= std::min(static_cast<double>(track->GetTPCsignal()), 149.0);
-            double entries[8] = {track->Pt(), track->Eta() , track->Phi(), 1000*d0, z0, static_cast<double>(track->GetTPCNcls()), TPCsignal, track->GetTPCCrossedRows() };
-            h_Track->Fill(entries, Weight);    
-         }
-    } 
    
      for(auto cluster: clusters->accepted()){
         if(!PreSelection(cluster))continue ;
