@@ -103,7 +103,7 @@ private:
   Int_t   fNDebug;       /// Max number of debug entries into Ntuple
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskSEImproveITS,7);
+  ClassDef(AliAnalysisTaskSEImproveITS,8);
   /// \endcond
 };
 
