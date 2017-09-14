@@ -82,14 +82,7 @@ fhEnergyTMEtaResidualTCardCorrNoSelectionExotic(0), fhEnergyTMPhiResidualTCardCo
 fhClusterMaxCellCloseCellRatioM02(0),  fhClusterMaxCellECrossM02(0),
 fhInvMassNCellSM(0),                   fhInvMassNCellSMSame(0),
 fhColRowM02(0),                        fhColRowM02NCellCut(0),
-
-fhESecCellEMaxCellM02SM(0),            fhESecCellEClusterM02SM(0),
-fhESecCellLogM02SM(0),                 fhESecCellWeightM02SM(0),
-fhESecCellEMaxCellM02SMSameTCard(0),   fhESecCellEClusterM02SMSameTCard(0),
-fhESecCellLogM02SMSameTCard(0),        fhESecCellWeightM02SMSameTCard(0),
-fhEMaxCellEClusterM02SM(0),            fhEMaxCellLogM02SM(0),
-fhEMaxCellWeightM02SM(0),              
-fhEMaxCellTimeM02SM(0),                fhEMaxCellTimeNCellSM(0),
+fhEMaxCellTimeM02SM(0),                fhEMaxCellTimeNCellSM(0),               fhESecCellTimeNCellSM(0),
 
 // Weight studies
 fhECellClusterRatio(0),                fhECellClusterLogRatio(0),                 
@@ -104,6 +97,7 @@ fhECellTotalRatioMod(0),               fhECellTotalLogRatioMod(0)
     fhClusterMaxCellDiffM02[i] = 0;
     fhNCellsPerClusterM02  [i] = 0;
     fhNCellsPerClusterM20  [i] = 0;
+    fhNCellsPerClusterNLM  [i] = 0;
     
     fhNCellsPerClusterMEta    [i] = 0;
     fhNCellsPerClusterMPhi    [i] = 0;
@@ -114,6 +108,12 @@ fhECellTotalRatioMod(0),               fhECellTotalLogRatioMod(0)
     fhSMNCellM02           [i] = 0;
     fhSMM02                [i] = 0;
     fhSMM02NoCut           [i] = 0;
+   
+    fhSMM20LowM02          [i] = 0;
+    fhSMM20LowM02NoCut     [i] = 0;
+    fhSMM20HighM02         [i] = 0;
+    fhSMM20HighM02NoCut    [i] = 0;
+
     fhColM02               [i] = 0;
     fhRowM02               [i] = 0;
 
@@ -395,14 +395,60 @@ fhECellTotalRatioMod(0),               fhECellTotalLogRatioMod(0)
 //  fhTMEtaResidualExoticityAllSameTCard[i]  = 0;
   }
   
-  for(Int_t i = 0; i < 8; i++)
+  for(Int_t i = 0; i < 20; i++)
   {
-    fhEMaxESecCellSMLowM02 [i] = 0;   
-    fhEMaxECrossSMLowM02   [i] = 0;  
-    fhEMaxESecCellSMHighM02[i] = 0;   
-    fhEMaxECrossSMHighM02  [i] = 0;  
+    fhNCellsPerClusterM02M20PerSM  [i] = 0;
+    fhNCellsPerClusterM02NLMPerSM  [i] = 0;
+    fhESecCellEMaxCellM02NCellPerSM[i] = 0;           
+    fhESecCellEClusterM02NCellPerSM[i] = 0;
+    fhESecCellLogM02NCellPerSM     [i] = 0;   
+    
+    fhEMaxCellEClusterM02NCellPerSM[i] = 0;            
+    fhEMaxCellLogM02NCellPerSM     [i] = 0;
+
+    fhEMaxESecCellNCellLowM02PerSM [i] = 0;   
+    fhEMaxECrossNCellLowM02PerSM   [i] = 0;  
+    fhEMaxESecCellNCellHighM02PerSM[i] = 0;   
+    fhEMaxECrossNCellHighM02PerSM  [i] = 0;  
+    
+    fhColRowFromCellMaxLowM02PerSM[i][0] = 0;
+    fhColRowFromCellMaxLowM02PerSM[i][1] = 0;
+    
+    fhColRowFromCellMaxHighM02PerSM[i][0] = 0;
+    fhColRowFromCellMaxHighM02PerSM[i][1] = 0;
+    
+    fhNCellsPerClusterM02PerSMPerCol[i][0] = 0;
+    fhNCellsPerClusterM20PerSMPerCol[i][0] = 0;
+    fhNCellsPerClusterNLMPerSMPerCol[i][0] = 0;
+    fhNCellsPerClusterM02PerSMPerCol[i][1] = 0;
+    fhNCellsPerClusterM20PerSMPerCol[i][1] = 0;
+    fhNCellsPerClusterNLMPerSMPerCol[i][1] = 0;
+    
+    for(Int_t j = 0; j < 3; j++)
+    {
+      fhColRowFromCellMaxEMaxSecDiffLowM02PerSM [i][0][j] = 0;
+      fhColRowFromCellMaxEMaxSecDiffLowM02PerSM [i][1][j] = 0;
+      fhColRowFromCellMaxEMaxSecDiffHighM02PerSM[i][0][j] = 0;
+      fhColRowFromCellMaxEMaxSecDiffHighM02PerSM[i][1][j] = 0;
+ 
+      fhColRowFromCellMaxEMaxSecDiffFracLowM02PerSM [i][0][j] = 0;
+      fhColRowFromCellMaxEMaxSecDiffFracLowM02PerSM [i][1][j] = 0;
+      fhColRowFromCellMaxEMaxSecDiffFracHighM02PerSM[i][0][j] = 0;
+      fhColRowFromCellMaxEMaxSecDiffFracHighM02PerSM[i][1][j] = 0;
+      
+      fhColRowFromCellMaxECellClusterRatLowM02PerSM [i][0][j] = 0;
+      fhColRowFromCellMaxECellClusterRatLowM02PerSM [i][1][j] = 0;
+      fhColRowFromCellMaxECellClusterRatHighM02PerSM[i][0][j] = 0;
+      fhColRowFromCellMaxECellClusterRatHighM02PerSM[i][1][j] = 0;
+    }
   }
+
+  fhColRowFromCellMaxLowM02[0] = 0;
+  fhColRowFromCellMaxLowM02[1] = 0;
   
+  fhColRowFromCellMaxHighM02[0] = 0;
+  fhColRowFromCellMaxHighM02[1] = 0;
+    
   InitParameters();
 }
 
@@ -434,7 +480,8 @@ void AliAnaClusterShapeCorrelStudies::ChannelCorrelationInTCard
   
   Int_t   ncells = clus->GetNCells();
   Double_t time  = clus->GetTOF()*1.e9;
-  time-=fConstantTimeShift;
+  if(time>400) time-=fConstantTimeShift;
+  
   Float_t deta   = clus->GetTrackDz();
   Float_t dphi   = clus->GetTrackDx();
   
@@ -585,7 +632,7 @@ void AliAnaClusterShapeCorrelStudies::ChannelCorrelationInTCard
   //printf("New E %2.2f, t %2.2f\n",eCellMax,tCellMax*1e9);
   
   tCellMax *= 1.0e9;
-  tCellMax-=fConstantTimeShift;
+  if(tCellMax>400) tCellMax-=fConstantTimeShift;
   
   // correlation not max cells
 //  Int_t nCorr2   = 0;
@@ -620,7 +667,7 @@ void AliAnaClusterShapeCorrelStudies::ChannelCorrelationInTCard
     GetCaloUtils()->RecalibrateCellAmplitude(eCell, GetCalorimeter(), absId);
     GetCaloUtils()->RecalibrateCellTime(tCell, GetCalorimeter(), absId, GetReader()->GetInputEvent()->GetBunchCrossNumber());    
     tCell *= 1.0e9;
-    tCell-=fConstantTimeShift;
+    if(tCell>400) tCell-=fConstantTimeShift;
     
     // consider cells with enough energy weight and not the reference one
     Float_t weight = GetCaloUtils()->GetEMCALRecoUtils()->GetCellWeight(eCell, energy);
@@ -1016,7 +1063,7 @@ void AliAnaClusterShapeCorrelStudies::ChannelCorrelationInTCard
     GetCaloUtils()->RecalibrateCellAmplitude(eCell, GetCalorimeter(), absId);
     GetCaloUtils()->RecalibrateCellTime(tCell, GetCalorimeter(), absId, GetReader()->GetInputEvent()->GetBunchCrossNumber());    
     tCell *= 1.0e9;
-    tCell-=fConstantTimeShift;
+    if(tCell>400) tCell-=fConstantTimeShift;
     
     // consider cells with enough energy weight and not the reference one
     Float_t weight = GetCaloUtils()->GetEMCALRecoUtils()->GetCellWeight(eCell, energy);
@@ -1334,6 +1381,8 @@ void AliAnaClusterShapeCorrelStudies::ClusterShapeHistograms
   Float_t energy = clus->E();
   Float_t m02    = clus->GetM02();
   Float_t m20    = clus->GetM20();
+  Int_t   nlm    = GetCaloUtils()->GetNumberOfLocalMaxima(clus, fCaloCellList) ; 
+
   Int_t   nCell  = 0;
 
   Int_t   dIeta    = 0;
@@ -1418,39 +1467,32 @@ void AliAnaClusterShapeCorrelStudies::ClusterShapeHistograms
     //Float_t tdiff = (tmax-(time*1.0e9-fConstantTimeShift));
     //fhCellTimeSpreadRespectToCellMaxM02->Fill(energy, tdiff, m02, GetEventWeight());   
     
-    if ( energy > fEMinShape && energy < fEMaxShape && nCell > fNCellMinShape && matchedPID == 0 ) 
+    if ( energy > fEMinShape && energy < fEMaxShape  && matchedPID == 0 ) 
     {
-      fhESecCellEMaxCellM02SM->Fill(fracCell, smMax, m02, GetEventWeight());
-      fhESecCellEClusterM02SM->Fill(fracClus, smMax, m02, GetEventWeight());
-      fhESecCellLogM02SM     ->Fill(logECell, smMax, m02, GetEventWeight());
-      fhESecCellWeightM02SM  ->Fill(weight  , smMax, m02, GetEventWeight());
-
-      Int_t rowDiff = -100, colDiff = -100;
-      Bool_t sameTCard = GetCaloUtils()->IsAbsIDsFromTCard(absIdMax,absId,rowDiff,colDiff);
-      if(sameTCard)
-      {
-        fhESecCellEMaxCellM02SMSameTCard->Fill(fracCell, smMax, m02, GetEventWeight());
-        fhESecCellEClusterM02SMSameTCard->Fill(fracClus, smMax, m02, GetEventWeight());
-        fhESecCellLogM02SMSameTCard     ->Fill(logECell, smMax, m02, GetEventWeight());
-        fhESecCellWeightM02SMSameTCard  ->Fill(weight  , smMax, m02, GetEventWeight());
-      }
-    }
+      fhESecCellEMaxCellM02NCellPerSM[smMax]->Fill(fracCell, nCell, m02, GetEventWeight());
+      fhESecCellEClusterM02NCellPerSM[smMax]->Fill(fracClus, nCell, m02, GetEventWeight());
+      fhESecCellLogM02NCellPerSM     [smMax]->Fill(logECell, nCell, m02, GetEventWeight());
     
-    if(energy > fEMinShape && energy < fEMaxShape && nCell >= 2 && nCell < 10)
-    {
       if ( m02 > 0.1 && m02 < 0.3 )
       {
-        fhEMaxESecCellSMLowM02 [nCell-2]->Fill(eCellMax, eCell     , smMax, GetEventWeight());
-        fhEMaxECrossSMLowM02   [nCell-2]->Fill(eCellMax, eCrossFrac, smMax, GetEventWeight());
+        fhEMaxESecCellNCellLowM02PerSM [smMax]->Fill(eCellMax, eCell     , nCell, GetEventWeight());
+        fhEMaxECrossNCellLowM02PerSM   [smMax]->Fill(eCellMax, eCrossFrac, nCell, GetEventWeight());
+        
+        Double_t time  = fCaloCellList->GetCellTime(absId);
+        GetCaloUtils()->RecalibrateCellTime(time, GetCalorimeter(), absId,GetReader()->GetInputEvent()->GetBunchCrossNumber());
+        time*=1.e9;
+        if(time>400) time-=fConstantTimeShift;
+        
+        fhESecCellTimeNCellSM->Fill(time, smMax, nCell, GetEventWeight());
       }
-      else if  ( m02 > 0.6 && m02 < 2 )
+      else if  ( m02 > 0.5 && m02 < 2 )
       {
-        fhEMaxESecCellSMHighM02[nCell-2]->Fill(eCellMax, eCell     , smMax, GetEventWeight());
-        fhEMaxECrossSMHighM02  [nCell-2]->Fill(eCellMax, eCrossFrac, smMax, GetEventWeight());
+        fhEMaxESecCellNCellHighM02PerSM[smMax]->Fill(eCellMax, eCell     , nCell, GetEventWeight());
+        fhEMaxECrossNCellHighM02PerSM  [smMax]->Fill(eCellMax, eCrossFrac, nCell, GetEventWeight());
       }
     }
     
-    if(fStudyShapeParam)
+    //if(fStudyShapeParam)
     {
       //////
       // Cluster asymmetry in cell units
@@ -1467,6 +1509,32 @@ void AliAnaClusterShapeCorrelStudies::ClusterShapeHistograms
         if(dIeta < TMath::Abs(ieta-ietaMax)) dIeta = TMath::Abs(ieta-ietaMax);
         if(ieta-ietaMax < 0 && dIetaNeg > ieta-ietaMax) dIetaNeg = ieta-ietaMax;
         if(ieta-ietaMax > 0 && dIetaPos < ieta-ietaMax) dIetaPos = ieta-ietaMax;
+        
+        if ( energy > fEMinShape && energy < fEMaxShape  && matchedPID == 0 ) 
+        {
+          Int_t nCellBin = 2;
+          if      ( nCell == 2 || nCell == 3 ) nCellBin = 0;
+          else if ( nCell == 4 || nCell == 5 ) nCellBin = 1;
+          if ( m02 > 0.1 && m02 < 0.3 )
+          {
+            fhColRowFromCellMaxLowM02PerSM[smMax][ietaMax%2]->Fill(ietaMax-ieta, iphiMax-iphi, nCell, GetEventWeight());
+            fhColRowFromCellMaxLowM02            [ietaMax%2]->Fill(ietaMax-ieta, iphiMax-iphi,        GetEventWeight());
+            
+            fhColRowFromCellMaxEMaxSecDiffFracLowM02PerSM[smMax][ietaMax%2][nCellBin]->Fill(ietaMax-ieta, iphiMax-iphi,(eCellMax-eCell)/eCellMax, GetEventWeight());
+            fhColRowFromCellMaxEMaxSecDiffLowM02PerSM    [smMax][ietaMax%2][nCellBin]->Fill(ietaMax-ieta, iphiMax-iphi, eCellMax-eCell, GetEventWeight());
+            fhColRowFromCellMaxECellClusterRatLowM02PerSM[smMax][ietaMax%2][nCellBin]->Fill(ietaMax-ieta, iphiMax-iphi, eCell/energy  , GetEventWeight());
+          }
+          else if (m02 > 0.5 && m02 < 2)
+          {
+            fhColRowFromCellMaxHighM02PerSM[smMax][ietaMax%2]->Fill(ietaMax-ieta, iphiMax-iphi, nCell, GetEventWeight());
+            fhColRowFromCellMaxHighM02            [ietaMax%2]->Fill(ietaMax-ieta, iphiMax-iphi,        GetEventWeight());
+            
+            fhColRowFromCellMaxEMaxSecDiffFracHighM02PerSM[smMax][ietaMax%2][nCellBin]->Fill(ietaMax-ieta, iphiMax-iphi,(eCellMax-eCell)/eCellMax, GetEventWeight());
+            fhColRowFromCellMaxEMaxSecDiffHighM02PerSM    [smMax][ietaMax%2][nCellBin]->Fill(ietaMax-ieta, iphiMax-iphi, eCellMax-eCell, GetEventWeight());
+            fhColRowFromCellMaxECellClusterRatHighM02PerSM[smMax][ietaMax%2][nCellBin]->Fill(ietaMax-ieta, iphiMax-iphi, eCell/energy  , GetEventWeight());
+          }
+        }        
+
       }
       else
       {
@@ -1480,8 +1548,24 @@ void AliAnaClusterShapeCorrelStudies::ClusterShapeHistograms
         if(ietaShift-ietaMaxShift < 0 && dIetaNeg > ietaShift-ietaMaxShift) dIetaNeg = ietaShift-ietaMaxShift;
         if(ietaShift-ietaMaxShift > 0 && dIetaPos < ietaShift-ietaMaxShift) dIetaPos = ietaShift-ietaMaxShift;
       }
+      
     }
   } // Fill cell-cluster histogram loop
+  
+  if ( energy > fEMinShape && energy < fEMaxShape  && matchedPID == 0 ) 
+  {
+    fhNCellsPerClusterM02M20PerSM[smMax]->Fill(m20, nCell, m02, GetEventWeight());
+    fhNCellsPerClusterM02NLMPerSM[smMax]->Fill(nlm, nCell, m02, GetEventWeight());
+
+    // Col-Row histogram, fill emax/ecluster ratio for highest energy cell.
+    Int_t nCellBin = 2;
+    if      ( nCell == 2 || nCell == 3 ) nCellBin = 0;
+    else if ( nCell == 4 || nCell == 5 ) nCellBin = 1;
+    if ( m02 > 0.1 && m02 < 0.3 )
+      fhColRowFromCellMaxECellClusterRatLowM02PerSM [smMax][ietaMax%2][nCellBin]->Fill(0., 0., eCellMax/energy, GetEventWeight());
+    else if (m02 > 0.5 && m02 < 2)
+      fhColRowFromCellMaxECellClusterRatHighM02PerSM[smMax][ietaMax%2][nCellBin]->Fill(0., 0., eCellMax/energy, GetEventWeight());
+  }        
   
   if(fStudyExotic)
     fhClusterMaxCellECrossM02->Fill(energy, eCrossFrac, m02, GetEventWeight());
@@ -1493,32 +1577,49 @@ void AliAnaClusterShapeCorrelStudies::ClusterShapeHistograms
   fhClusterTimeEnergyM02 [matchedPID]->Fill(energy, tmax   , m02, GetEventWeight());
   fhNCellsPerClusterM02  [matchedPID]->Fill(energy, nCell  , m02, GetEventWeight());
   fhNCellsPerClusterM20  [matchedPID]->Fill(energy, nCell  , m20, GetEventWeight());
+  fhNCellsPerClusterNLM  [matchedPID]->Fill(energy, nCell  , nlm, GetEventWeight());
+  
+  if ( matchedPID == 0 )
+  {
+    fhNCellsPerClusterM02PerSMPerCol[smMax][ietaMax%2]->Fill(energy, nCell, m02, GetEventWeight());
+    fhNCellsPerClusterM20PerSMPerCol[smMax][ietaMax%2]->Fill(energy, nCell, m20, GetEventWeight());
+    fhNCellsPerClusterNLMPerSMPerCol[smMax][ietaMax%2]->Fill(energy, nCell, nlm, GetEventWeight());
+  }
   
   fhSMNCell              [matchedPID]->Fill(energy, smMax  , nCell, GetEventWeight());
   fhSMM02NoCut           [matchedPID]->Fill(energy, smMax  , m02  , GetEventWeight());
+  if      ( m02 > 0.1 && m02 < 0.3 )
+    fhSMM20LowM02NoCut [matchedPID]->Fill(energy, smMax  , m20  , GetEventWeight());
+  else if ( m02 > 0.5 && m02 < 2   )
+    fhSMM20HighM02NoCut[matchedPID]->Fill(energy, smMax  , m20  , GetEventWeight());
+
   
   if ( energy > fEMinShape && energy < fEMaxShape ) 
   {
     fhSMNCellM02[matchedPID]->Fill(smMax , nCell, m02, GetEventWeight());
     
-    if ( matchedPID == 0 && m02 > 0.1 && m02 < 0.3 ) 
-      fhEMaxCellTimeNCellSM->Fill(tmax, smMax, nCell, GetEventWeight());
-  }
+    if ( matchedPID == 0 )
+    {
+      if ( m02 > 0.1 && m02 < 0.3 ) 
+        fhEMaxCellTimeNCellSM->Fill(tmax, smMax, nCell, GetEventWeight());
+
+      fhEMaxCellTimeM02SM->Fill(tmax, smMax, m02, GetEventWeight());
+
+      fhEMaxCellEClusterM02NCellPerSM[smMax]->Fill(maxFrac, nCell, m02, GetEventWeight());
+      fhEMaxCellLogM02NCellPerSM     [smMax]->Fill(TMath::Log(eCellMax), nCell, m02, GetEventWeight());
+    }
+  } // energy bin
   
   if ( nCell > fNCellMinShape ) // it makes sense only for significant size histograms
   { 
+    if      ( m02 > 0.1 && m02 < 0.3 )
+      fhSMM20LowM02 [matchedPID]->Fill(energy, smMax  , m20  , GetEventWeight());
+    else if ( m02 > 0.5 && m02 < 2   )
+      fhSMM20HighM02[matchedPID]->Fill(energy, smMax  , m20  , GetEventWeight());
+
     fhSMM02 [matchedPID]->Fill(energy, smMax  , m02, GetEventWeight());
     fhColM02[matchedPID]->Fill(energy, ietaMax, m02, GetEventWeight());
     fhRowM02[matchedPID]->Fill(energy, iphiMax, m02, GetEventWeight());
-    
-    if ( energy > fEMinShape && energy < fEMaxShape && matchedPID == 0 ) 
-    {
-      Float_t weightM = GetCaloUtils()->GetEMCALRecoUtils()->GetCellWeight(eCellMax, energy);
-      fhEMaxCellWeightM02SM  ->Fill(weightM, smMax, m02, GetEventWeight());
-      fhEMaxCellEClusterM02SM->Fill(maxFrac, smMax, m02, GetEventWeight());
-      fhEMaxCellLogM02SM     ->Fill(TMath::Log(eCellMax), smMax, m02, GetEventWeight());
-      fhEMaxCellTimeM02SM    ->Fill(tmax, smMax, m02, GetEventWeight());
-    }
   }
 
   // Different shower shape parameters
@@ -1821,7 +1922,7 @@ void AliAnaClusterShapeCorrelStudies::ClusterLoopHistograms()
 
     GetCaloUtils()->RecalibrateCellTime(tmax, GetCalorimeter(), absIdMax, bc);
     tmax*=1.e9;
-    tmax-=fConstantTimeShift;
+    if(tmax>400) tmax-=fConstantTimeShift;
     
     GetCaloUtils()->RecalibrateCellAmplitude(ampMax, GetCalorimeter(), absIdMax);
     
@@ -3646,37 +3747,7 @@ TList * AliAnaClusterShapeCorrelStudies::GetCreateOutputObjects()
     outputContainer->Add(fhInvMassNCellSMSame);       
     
     //
-    
-    fhEMaxCellEClusterM02SM  = new TH3F 
-    ("hEMaxCellEClusterM02SM",
-     Form("(#it{E}_{cluster} - #it{E}_{max cell})/#it{E}_{cluster} vs #lambda_{0}^{2} vs SM number, "
-          "%2.2f<#it{E}<%2.2f GeV, #it{n}_{cells}^{w>0.01}>%d",fEMinShape,fEMaxShape,fNCellMinShape),
-     20,0,1., fNModules,-0.5,fNModules-0.5,nShShBins,minShSh,maxShSh); 
-    fhEMaxCellEClusterM02SM->SetZTitle("#lambda_{0}^{2}");
-    fhEMaxCellEClusterM02SM->SetYTitle("SM number");
-    fhEMaxCellEClusterM02SM->SetXTitle("(#it{E}_{cluster} - #it{E}_{max cell})/ #it{E}_{cluster}");
-    outputContainer->Add(fhEMaxCellEClusterM02SM);  
-    
-    fhEMaxCellLogM02SM  = new TH3F 
-    ("hEMaxCellLogM02SM",
-     Form("log(#it{E}_{max cell}) vs #lambda_{0}^{2} vs SM number, "
-          "%2.2f<#it{E}<%2.2f GeV, #it{n}_{cells}^{w>0.01}>%d",fEMinShape,fEMaxShape,fNCellMinShape),
-     150,-3,3, fNModules,-0.5,fNModules-0.5,nShShBins,minShSh,maxShSh); 
-    fhEMaxCellLogM02SM->SetZTitle("#lambda_{0}^{2}");
-    fhEMaxCellLogM02SM->SetYTitle("SM number");
-    fhEMaxCellLogM02SM->SetXTitle("log(#it{E}_{max cell})");
-    outputContainer->Add(fhEMaxCellLogM02SM);  
-    
-    fhEMaxCellWeightM02SM  = new TH3F 
-    ("hEMaxCellWeightM02SM",
-     Form("#it{w}=Max(4,5+log(#it{E}_{max cell}/#it{E}_{cluster})) vs #lambda_{0}^{2} vs SM number, "
-          "%2.2f<#it{E}<%2.2f GeV, #it{n}_{cells}^{w>0.01}>%d",fEMinShape,fEMaxShape,fNCellMinShape),
-     90,0,4.5, fNModules,-0.5,fNModules-0.5,nShShBins,minShSh,maxShSh); 
-    fhEMaxCellWeightM02SM->SetZTitle("#lambda_{0}^{2}");
-    fhEMaxCellWeightM02SM->SetYTitle("SM number");
-    fhEMaxCellWeightM02SM->SetXTitle("#it{w}=Max(4,5+log(#it{E}_{max cell}/#it{E}_{cluster}))");
-    outputContainer->Add(fhEMaxCellWeightM02SM);  
-
+        
     fhEMaxCellTimeM02SM  = new TH3F 
     ("hEMaxCellTimeM02SM",
      Form("time vs #lambda_{0}^{2} vs SM number, "
@@ -3697,133 +3768,274 @@ TList * AliAnaClusterShapeCorrelStudies::GetCreateOutputObjects()
     fhEMaxCellTimeNCellSM->SetXTitle("time (ns)");
     outputContainer->Add(fhEMaxCellTimeNCellSM);  
 
+    fhESecCellTimeNCellSM  = new TH3F 
+    ("hESecCellTimeNCellSM",
+     Form("secondary cell time vs #it{n}_{cells}^{w>0.01} vs SM number, "
+          "%2.2f<#it{E}<%2.2f GeV, 0.1<#it{sigma}_{long}<0.3",fEMinShape,fEMaxShape),
+     50,-100,100, fNModules,-0.5,fNModules-0.5,cellBins,cellMin,cellMax); 
+    fhESecCellTimeNCellSM->SetZTitle("#it{n}_{cells}^{w>0.01}");
+    fhESecCellTimeNCellSM->SetYTitle("SM number");
+    fhESecCellTimeNCellSM->SetXTitle("time (ns)");
+    outputContainer->Add(fhESecCellTimeNCellSM);  
+    
     //
     
-    fhESecCellEMaxCellM02SM  = new TH3F 
-    ("hESecCellEMaxCellM02SM",
-     Form("#it{E}_{cell}/#it{E}_{cell max} vs #lambda_{0}^{2} vs SM number, "
-          "%2.2f<#it{E}<%2.2f GeV, #it{n}_{cells}^{w>0.01}>%d",fEMinShape,fEMaxShape,fNCellMinShape),
-     20,0,1., fNModules,-0.5,fNModules-0.5,nShShBins,minShSh,maxShSh); 
-    fhESecCellEMaxCellM02SM->SetZTitle("#lambda_{0}^{2}");
-    fhESecCellEMaxCellM02SM->SetYTitle("SM number");
-    fhESecCellEMaxCellM02SM->SetXTitle("#it{E}_{cell}/#it{E}_{cell max}");
-    outputContainer->Add(fhESecCellEMaxCellM02SM);  
-    
-    fhESecCellEClusterM02SM  = new TH3F 
-    ("hESecCellEClusterM02SM",
-     Form("(#it{E}_{cluster} - #it{E}_{cell})/#it{E}_{cluster} vs #lambda_{0}^{2} vs SM number, "
-          "%2.2f<#it{E}<%2.2f GeV, #it{n}_{cells}^{w>0.01}>%d",fEMinShape,fEMaxShape,fNCellMinShape),
-     20,0,1., fNModules,-0.5,fNModules-0.5,nShShBins,minShSh,maxShSh); 
-    fhESecCellEClusterM02SM->SetZTitle("#lambda_{0}^{2}");
-    fhESecCellEClusterM02SM->SetYTitle("SM number");
-    fhESecCellEClusterM02SM->SetXTitle("(#it{E}_{cluster} - #it{E}_{cell})/ #it{E}_{cluster}");
-    outputContainer->Add(fhESecCellEClusterM02SM);  
-
-    fhESecCellLogM02SM  = new TH3F 
-    ("hESecCellLogM02SM",
-     Form("log(#it{E}_{cell}) vs #lambda_{0}^{2} vs SM number, "
-          "%2.2f<#it{E}<%2.2f GeV, #it{n}_{cells}^{w>0.01}>%d",fEMinShape,fEMaxShape,fNCellMinShape),
-     150,-3,3, fNModules,-0.5,fNModules-0.5,nShShBins,minShSh,maxShSh); 
-    fhESecCellLogM02SM->SetZTitle("#lambda_{0}^{2}");
-    fhESecCellLogM02SM->SetYTitle("SM number");
-    fhESecCellLogM02SM->SetXTitle("log(#it{E}_{cell})");
-    outputContainer->Add(fhESecCellLogM02SM);  
-
-    fhESecCellWeightM02SM  = new TH3F 
-    ("hESecCellWeightM02SM",
-     Form("#it{w}=Max(4,5+log(#it{E}_{cell}/#it{E}_{cluster})) vs #lambda_{0}^{2} vs SM number, "
-          "%2.2f<#it{E}<%2.2f GeV, #it{n}_{cells}^{w>0.01}>%d",fEMinShape,fEMaxShape,fNCellMinShape),
-     90,0,4.5, fNModules,-0.5,fNModules-0.5,nShShBins,minShSh,maxShSh); 
-    fhESecCellWeightM02SM->SetZTitle("#lambda_{0}^{2}");
-    fhESecCellWeightM02SM->SetYTitle("SM number");
-    fhESecCellWeightM02SM->SetXTitle("#it{w}=Max(4,5+log(#it{E}_{cell}/#it{E}_{cluster}))");
-    outputContainer->Add(fhESecCellWeightM02SM);  
-
-    //
-    
-    fhESecCellEMaxCellM02SMSameTCard  = new TH3F 
-    ("hESecCellEMaxCellM02SMSameTCard",
-     Form("#it{E}_{cell}/#it{E}_{cell max} vs #lambda_{0}^{2} vs SM number, same T-Card, "
-          "%2.2f<#it{E}<%2.2f GeV, #it{n}_{cells}^{w>0.01}>%d",fEMinShape,fEMaxShape,fNCellMinShape),
-     20,0,1., fNModules,-0.5,fNModules-0.5,nShShBins,minShSh,maxShSh); 
-    fhESecCellEMaxCellM02SMSameTCard->SetZTitle("#lambda_{0}^{2}");
-    fhESecCellEMaxCellM02SMSameTCard->SetYTitle("SM number");
-    fhESecCellEMaxCellM02SMSameTCard->SetXTitle("#it{E}_{cell}/#it{E}_{cell max}");
-    outputContainer->Add(fhESecCellEMaxCellM02SMSameTCard);  
-    
-    fhESecCellEClusterM02SMSameTCard  = new TH3F 
-    ("hESecCellEClusterM02SMSameTCard",
-     Form("(#it{E}_{cluster} - #it{E}_{cell})/#it{E}_{cluster} vs #lambda_{0}^{2} vs SM number, same T-Card, "
-          "%2.2f<#it{E}<%2.2f GeV, #it{n}_{cells}^{w>0.01}>%d",fEMinShape,fEMaxShape,fNCellMinShape),
-     20,0,1., fNModules,-0.5,fNModules-0.5,nShShBins,minShSh,maxShSh); 
-    fhESecCellEClusterM02SMSameTCard->SetZTitle("#lambda_{0}^{2}");
-    fhESecCellEClusterM02SMSameTCard->SetYTitle("SM number");
-    fhESecCellEClusterM02SMSameTCard->SetXTitle("(#it{E}_{cluster} - #it{E}_{cell})/ #it{E}_{cluster}");
-    outputContainer->Add(fhESecCellEClusterM02SMSameTCard);  
-    
-    fhESecCellLogM02SMSameTCard  = new TH3F 
-    ("hESecCellLogM02SMSameTCard",
-     Form("log(#it{E}_{cell}) vs #lambda_{0}^{2} vs SM number, same T-Card, "
-          "%2.2f<#it{E}<%2.2f GeV, #it{n}_{cells}^{w>0.01}>%d",fEMinShape,fEMaxShape,fNCellMinShape),
-     150,-3,3, fNModules,-0.5,fNModules-0.5,nShShBins,minShSh,maxShSh); 
-    fhESecCellLogM02SMSameTCard->SetZTitle("#lambda_{0}^{2}");
-    fhESecCellLogM02SMSameTCard->SetYTitle("SM number");
-    fhESecCellLogM02SMSameTCard->SetXTitle("log(#it{E}_{cell})");
-    outputContainer->Add(fhESecCellLogM02SMSameTCard);  
-    
-    fhESecCellWeightM02SMSameTCard  = new TH3F 
-    ("hESecCellWeightM02SMSameTCard",
-     Form("#it{w}=Max(4,5+log(#it{E}_{cell}/#it{E}_{cluster})) vs #lambda_{0}^{2} vs SM number, same T-Card, , "
-          "%2.2f<#it{E}<%2.2f GeV, #it{n}_{cells}^{w>0.01}>%d",fEMinShape,fEMaxShape,fNCellMinShape),
-     90,0,4.5, fNModules,-0.5,fNModules-0.5,nShShBins,minShSh,maxShSh); 
-    fhESecCellWeightM02SMSameTCard->SetZTitle("#lambda_{0}^{2}");
-    fhESecCellWeightM02SMSameTCard->SetYTitle("SM number");
-    fhESecCellWeightM02SMSameTCard->SetXTitle("#it{w}=Max(4,5+log(#it{E}_{cell}/#it{E}_{cluster}))");
-    outputContainer->Add(fhESecCellWeightM02SMSameTCard);  
-    
-    for(Int_t i = 0; i < 8; i++)
+    Int_t   nbinsdeltacells = 19 ;
+    Float_t   mindeltacells =-9.5;
+    Float_t   maxdeltacells = 9.5;
+    for(Int_t col = 0; col < 2; col++)
     {
-      fhEMaxESecCellSMLowM02[i]  = new TH3F 
-      (Form("hEMaxESecCellSMLowM02_NCell%d",i+2),
-       Form("#it{E}_{cell}^{max} vs #it{E}_{cell}^{secondary} vs SM number vs 0.1 < #lambda_{0}^{2} < 0.3, "
-            "%2.2f<#it{E}<%2.2f GeV, #it{n}_{cells}^{w>0.01}=%d",fEMinShape,fEMaxShape,i+2),
-       24,0,12, 48,0,12,fNModules,-0.5,fNModules-0.5); 
-      fhEMaxESecCellSMLowM02[i]->SetZTitle("SM number");
-      fhEMaxESecCellSMLowM02[i]->SetYTitle("#it{E}_{cell}^{secondary} (GeV)");
-      fhEMaxESecCellSMLowM02[i]->SetXTitle("#it{E}_{cell}^{max} (GeV)");
-      outputContainer->Add(fhEMaxESecCellSMLowM02[i]);      
+      fhColRowFromCellMaxLowM02[col]  = new TH2F 
+      (Form("hColRowFromCellMaxLowM02_Col%d",col),
+       Form("cell col_{max}-#col_{secondary} vs cell #row_{max}-#row_{secondary} vs #it{n}_{cells}^{w>0.01} for 0.1 < #lambda_{0}^{2} < 0.3, "
+            "%2.2f<#it{E}<%2.2f GeV, colum %d",fEMinShape,fEMaxShape,col),
+       nbinsdeltacells,mindeltacells,maxdeltacells,nbinsdeltacells,mindeltacells,maxdeltacells); 
+      fhColRowFromCellMaxLowM02[col]->SetXTitle("#Delta column_{max-secondary}");
+      fhColRowFromCellMaxLowM02[col]->SetYTitle("#Delta row_{max-secondary}");
+      outputContainer->Add(fhColRowFromCellMaxLowM02[col]);   
+            
+      fhColRowFromCellMaxHighM02[col]  = new TH2F 
+      (Form("hColRowFromCellMaxHighM02_Col%d",col),
+       Form("cell col_{max}-#col_{secondary} vs cell #row_{max}-#row_{secondary} vs #it{n}_{cells}^{w>0.01} for 0.5 < #lambda_{0}^{2} < 2, "
+            "%2.2f<#it{E}<%2.2f GeV, colum %d",fEMinShape,fEMaxShape,col),
+       nbinsdeltacells,mindeltacells,maxdeltacells,nbinsdeltacells,mindeltacells,maxdeltacells); 
+      fhColRowFromCellMaxHighM02[col]->SetXTitle("#Delta column_{max-secondary}");
+      fhColRowFromCellMaxHighM02[col]->SetYTitle("#Delta row_{max-secondary}");
+      outputContainer->Add(fhColRowFromCellMaxHighM02[col]);        
+    }//odd/pair col
+
+    //
+    
+    for(Int_t i = 0; i < fNModules; i++)
+    {
+      fhNCellsPerClusterM02M20PerSM [i] = new TH3F
+      (Form("hNCellsPerClusterM02M20_SM%d",i),
+       Form(" vs #lambda_{0}^{2} vs #it{n}_{cells}^{w>0.01} vs #lambda_{1}^{2}, "
+            "%2.2f<#it{E}<%2.2f GeV, SM=%d",fEMinShape,fEMaxShape,i),
+       (Int_t)nShShBins/1.5,0,maxShSh/1.5, cellBins,cellMin,cellMax,nShShBins,minShSh,maxShSh); 
+      fhNCellsPerClusterM02M20PerSM[i]->SetZTitle("#lambda_{0}^{2}");
+      fhNCellsPerClusterM02M20PerSM[i]->SetYTitle("#it{n}_{cells}^{w>0.01}");
+      fhNCellsPerClusterM02M20PerSM[i]->SetXTitle("#lambda_{1}^{2}");
+      outputContainer->Add(fhNCellsPerClusterM02M20PerSM[i]);  
+
+      fhNCellsPerClusterM02NLMPerSM [i] = new TH3F
+      (Form("hNCellsPerClusterM02NLM_SM%d",i),
+       Form(" vs #lambda_{0}^{2} vs #it{n}_{cells}^{w>0.01} vs N_{lm}, "
+            "%2.2f<#it{E}<%2.2f GeV, SM=%d",fEMinShape,fEMaxShape,i),
+       10,0,10, cellBins,cellMin,cellMax,nShShBins,minShSh,maxShSh); 
+      fhNCellsPerClusterM02NLMPerSM[i]->SetZTitle("#lambda_{0}^{2}");
+      fhNCellsPerClusterM02NLMPerSM[i]->SetYTitle("#it{n}_{cells}^{w>0.01}");
+      fhNCellsPerClusterM02NLMPerSM[i]->SetXTitle("n_{lm}");
+      outputContainer->Add(fhNCellsPerClusterM02NLMPerSM[i]);  
+
+      fhEMaxCellEClusterM02NCellPerSM[i]  = new TH3F 
+      (Form("hEMaxCellEClusterM02NCell_SM%d",i),
+       Form("(#it{E}_{cluster} - #it{E}_{max cell})/#it{E}_{cluster} vs #lambda_{0}^{2} vs #it{n}_{cells}^{w>0.01}, "
+            "%2.2f<#it{E}<%2.2f GeV, SM=%d",fEMinShape,fEMaxShape,i),
+       50,0,1., cellBins,cellMin,cellMax,nShShBins,minShSh,maxShSh); 
+      fhEMaxCellEClusterM02NCellPerSM[i]->SetZTitle("#lambda_{0}^{2}");
+      fhEMaxCellEClusterM02NCellPerSM[i]->SetYTitle("#it{n}_{cells}^{w>0.01}");
+      fhEMaxCellEClusterM02NCellPerSM[i]->SetXTitle("(#it{E}_{cluster} - #it{E}_{max cell})/ #it{E}_{cluster}");
+      outputContainer->Add(fhEMaxCellEClusterM02NCellPerSM[i]);  
       
-      fhEMaxECrossSMLowM02[i]  = new TH3F 
-      (Form("hEMaxECrossSMLowM02_NCell%d",i+2),
-       Form("#it{E}_{cell}^{max} vs exoticity vs SM number vs 0.1 < #lambda_{0}^{2} < 0.3, "
-            "%2.2f<#it{E}<%2.2f GeV, #it{n}_{cells}^{w>0.01}=%d",fEMinShape,fEMaxShape,i+2),
-       24,0,12, 40,0.6,1.,fNModules,-0.5,fNModules-0.5); 
-      fhEMaxECrossSMLowM02[i]->SetZTitle("SM number");
-      fhEMaxECrossSMLowM02[i]->SetYTitle("1- #it{E}_{cross}/#it{E}_{cell}^{max}");
-      fhEMaxECrossSMLowM02[i]->SetXTitle("#it{E}_{cell}^{max} (GeV)");
-      outputContainer->Add(fhEMaxECrossSMLowM02[i]); 
+      fhEMaxCellLogM02NCellPerSM[i]  = new TH3F 
+      (Form("hEMaxCellLogM02NCell_SM%d",i),
+       Form("log(#it{E}_{max cell}) vs #lambda_{0}^{2} vs SM number, "
+            "%2.2f<#it{E}<%2.2f GeV, SM=%d",fEMinShape,fEMaxShape,i),
+       150,-3,3, cellBins,cellMin,cellMax,nShShBins,minShSh,maxShSh); 
+      fhEMaxCellLogM02NCellPerSM[i]->SetZTitle("#lambda_{0}^{2}");
+      fhEMaxCellLogM02NCellPerSM[i]->SetYTitle("#it{n}_{cells}^{w>0.01}");
+      fhEMaxCellLogM02NCellPerSM[i]->SetXTitle("log(#it{E}_{max cell})");
+      outputContainer->Add(fhEMaxCellLogM02NCellPerSM[i]);  
       
+      fhESecCellEMaxCellM02NCellPerSM[i]  = new TH3F 
+      (Form("hESecCellEMaxCellM02NCell_SM%d",i),
+       Form("#it{E}_{cell}/#it{E}_{cell max} vs #lambda_{0}^{2} vs #it{n}_{cells}^{w>0.01}, "
+            "%2.2f<#it{E}<%2.2f GeV, SM=%d",fEMinShape,fEMaxShape,i),
+       50,0,1., cellBins,cellMin,cellMax,nShShBins,minShSh,maxShSh); 
+      fhESecCellEMaxCellM02NCellPerSM[i]->SetZTitle("#lambda_{0}^{2}");
+      fhESecCellEMaxCellM02NCellPerSM[i]->SetYTitle("#it{n}_{cells}^{w>0.01}");
+      fhESecCellEMaxCellM02NCellPerSM[i]->SetXTitle("#it{E}_{cell}/#it{E}_{cell max}");
+      outputContainer->Add(fhESecCellEMaxCellM02NCellPerSM[i]);  
       
-      fhEMaxESecCellSMHighM02[i]  = new TH3F 
-      (Form("hEMaxESecCellSMHighM02_NCell%d",i+2),
-       Form("#it{E}_{cell}^{max} vs #it{E}_{cell}^{secondary} vs SM number vs 0.6 < #lambda_{0}^{2} < 2, "
-            "%2.2f<#it{E}<%2.2f GeV, #it{n}_{cells}^{w>0.01}=%d",fEMinShape,fEMaxShape,i+2),
-       24,0,12, 48,0,12,fNModules,-0.5,fNModules-0.5); 
-      fhEMaxESecCellSMHighM02[i]->SetZTitle("SM number");
-      fhEMaxESecCellSMHighM02[i]->SetYTitle("#it{E}_{cell}^{secondary} (GeV)");
-      fhEMaxESecCellSMHighM02[i]->SetXTitle("#it{E}_{cell}^{max} (GeV)");
-      outputContainer->Add(fhEMaxESecCellSMHighM02[i]);      
+      fhESecCellEClusterM02NCellPerSM[i]  = new TH3F 
+      (Form("hESecCellEClusterM02NCell_SM%d",i),
+       Form("(#it{E}_{cluster} - #it{E}_{cell})/#it{E}_{cluster} vs #lambda_{0}^{2} vs #it{n}_{cells}^{w>0.01}, "
+            "%2.2f<#it{E}<%2.2f GeV, SM=%d",fEMinShape,fEMaxShape,i),
+       50,0,1., cellBins,cellMin,cellMax,nShShBins,minShSh,maxShSh); 
+      fhESecCellEClusterM02NCellPerSM[i]->SetZTitle("#lambda_{0}^{2}");
+      fhESecCellEClusterM02NCellPerSM[i]->SetYTitle("#it{n}_{cells}^{w>0.01}");
+      fhESecCellEClusterM02NCellPerSM[i]->SetXTitle("(#it{E}_{cluster} - #it{E}_{cell})/ #it{E}_{cluster}");
+      outputContainer->Add(fhESecCellEClusterM02NCellPerSM[i]);  
       
-      fhEMaxECrossSMHighM02[i]  = new TH3F 
-      (Form("hEMaxECrossSMHighM02_NCell%d",i+2),
-       Form("#it{E}_{cell}^{max} vs exoticity vs SM number vs 0.6 < #lambda_{0}^{2} < 2, "
-            "%2.2f<#it{E}<%2.2f GeV, #it{n}_{cells}^{w>0.01}=%d",fEMinShape,fEMaxShape,i+2),
-       24,0,12, 40,0.6,1.,fNModules,-0.5,fNModules-0.5); 
-      fhEMaxECrossSMHighM02[i]->SetZTitle("SM number");
-      fhEMaxECrossSMHighM02[i]->SetYTitle("1- #it{E}_{cross}/#it{E}_{cell}^{max}");
-      fhEMaxECrossSMHighM02[i]->SetXTitle("#it{E}_{cell}^{max} (GeV)");
-      outputContainer->Add(fhEMaxECrossSMHighM02[i]);    
-    }
+      fhESecCellLogM02NCellPerSM[i]  = new TH3F 
+      (Form("hESecCellLogM02NCell_SM%d",i),
+       Form("log(#it{E}_{cell}) vs #lambda_{0}^{2} vs #it{n}_{cells}^{w>0.01}, "
+            "%2.2f<#it{E}<%2.2f GeV, SM=%d",fEMinShape,fEMaxShape,fNCellMinShape),
+       150,-3,3, cellBins,cellMin,cellMax,nShShBins,minShSh,maxShSh); 
+      fhESecCellLogM02NCellPerSM[i]->SetZTitle("#lambda_{0}^{2}");
+      fhESecCellLogM02NCellPerSM[i]->SetYTitle("#it{n}_{cells}^{w>0.01}");
+      fhESecCellLogM02NCellPerSM[i]->SetXTitle("log(#it{E}_{cell})");
+      outputContainer->Add(fhESecCellLogM02NCellPerSM[i]);  
+      
+      fhEMaxESecCellNCellLowM02PerSM[i]  = new TH3F 
+      (Form("hEMaxESecCellNCellLowM02_SM%d",i),
+       Form("#it{E}_{cell}^{max} vs #it{E}_{cell}^{secondary} vs #it{n}_{cells}^{w>0.01} vs 0.1 < #lambda_{0}^{2} < 0.3, "
+            "%2.2f<#it{E}<%2.2f GeV, SM=%d",fEMinShape,fEMaxShape,i),
+       24,0,12, 48,0,12,cellBins,cellMin,cellMax); 
+      fhEMaxESecCellNCellLowM02PerSM[i]->SetZTitle("#it{n}_{cells}^{w>0.01}");
+      fhEMaxESecCellNCellLowM02PerSM[i]->SetYTitle("#it{E}_{cell}^{secondary} (GeV)");
+      fhEMaxESecCellNCellLowM02PerSM[i]->SetXTitle("#it{E}_{cell}^{max} (GeV)");
+      outputContainer->Add(fhEMaxESecCellNCellLowM02PerSM[i]);      
+      
+      fhEMaxECrossNCellLowM02PerSM[i]  = new TH3F 
+      (Form("hEMaxECrossNCellLowM02_SM%d",i),
+       Form("#it{E}_{cell}^{max} vs exoticity vs #it{n}_{cells}^{w>0.01} vs 0.1 < #lambda_{0}^{2} < 0.3, "
+            "%2.2f<#it{E}<%2.2f GeV, SM=%d",fEMinShape,fEMaxShape,i),
+       24,0,12, 40,0.6,1.,cellBins,cellMin,cellMax); 
+      fhEMaxECrossNCellLowM02PerSM[i]->SetZTitle("#it{n}_{cells}^{w>0.01}");
+      fhEMaxECrossNCellLowM02PerSM[i]->SetYTitle("1- #it{E}_{cross}/#it{E}_{cell}^{max}");
+      fhEMaxECrossNCellLowM02PerSM[i]->SetXTitle("#it{E}_{cell}^{max} (GeV)");
+      outputContainer->Add(fhEMaxECrossNCellLowM02PerSM[i]); 
+      
+      fhEMaxESecCellNCellHighM02PerSM[i]  = new TH3F 
+      (Form("hEMaxESecCellNCellHighM02_SM%d",i),
+       Form("#it{E}_{cell}^{max} vs #it{E}_{cell}^{secondary} vs #it{n}_{cells}^{w>0.01} vs 0.5 < #lambda_{0}^{2} < 2, "
+            "%2.2f<#it{E}<%2.2f GeV, SM=%d",fEMinShape,fEMaxShape,i),
+       24,0,12, 48,0,12,cellBins,cellMin,cellMax); 
+      fhEMaxESecCellNCellHighM02PerSM[i]->SetZTitle("#it{n}_{cells}^{w>0.01}");
+      fhEMaxESecCellNCellHighM02PerSM[i]->SetYTitle("#it{E}_{cell}^{secondary} (GeV)");
+      fhEMaxESecCellNCellHighM02PerSM[i]->SetXTitle("#it{E}_{cell}^{max} (GeV)");
+      outputContainer->Add(fhEMaxESecCellNCellHighM02PerSM[i]);      
+      
+      fhEMaxECrossNCellHighM02PerSM[i]  = new TH3F 
+      (Form("hEMaxECrossNCellHighM02_SM%d",i),
+       Form("#it{E}_{cell}^{max} vs exoticity vs #it{n}_{cells}^{w>0.01} for 0.5 < #lambda_{0}^{2} < 2, "
+            "%2.2f<#it{E}<%2.2f GeV, SM=%d",fEMinShape,fEMaxShape,i),
+       24,0,12, 40,0.6,1.,cellBins,cellMin,cellMax); 
+      fhEMaxECrossNCellHighM02PerSM[i]->SetZTitle("#it{n}_{cells}^{w>0.01}");
+      fhEMaxECrossNCellHighM02PerSM[i]->SetYTitle("1- #it{E}_{cross}/#it{E}_{cell}^{max}");
+      fhEMaxECrossNCellHighM02PerSM[i]->SetXTitle("#it{E}_{cell}^{max} (GeV)");
+      outputContainer->Add(fhEMaxECrossNCellHighM02PerSM[i]);    
+
+      Int_t   nbinsdeltacells = 19 ;
+      Float_t   mindeltacells =-9.5;
+      Float_t   maxdeltacells = 9.5;
+      for(Int_t col = 0; col < 2; col++)
+      {
+        fhNCellsPerClusterM02PerSMPerCol[i][col]  = new TH3F 
+        (Form("hNCellsPerClusterM02_SM%d_Col%d",i,col),
+         Form("#it{E} vs #it{n}_{cells} vs #lambda_{0}^{2}, SM=%d, colum %d",i,col),
+         nEbins,minE,maxE,cellBins,cellMin,cellMax,nShShBins,minShSh,maxShSh); 
+        fhNCellsPerClusterM02PerSMPerCol[i][col]->SetXTitle("#it{E} (GeV)");
+        fhNCellsPerClusterM02PerSMPerCol[i][col]->SetYTitle("#it{n}_{cells}^{w>0.01}");
+        fhNCellsPerClusterM02PerSMPerCol[i][col]->SetZTitle("#lambda_{0}^{2}");
+        outputContainer->Add(fhNCellsPerClusterM02PerSMPerCol[i][col]); 
+        
+        fhNCellsPerClusterM20PerSMPerCol[i][col]  = new TH3F 
+        (Form("hNCellsPerClusterM20_SM%d_Col%d",i,col),
+         Form("#it{E} vs #it{n}_{cells} vs #lambda_{1}^{2}, SM=%d, colum %d",i,col),
+         nEbins,minE,maxE,cellBins,cellMin,cellMax,(Int_t)nShShBins/1.5,0,maxShSh/1.5); 
+        fhNCellsPerClusterM20PerSMPerCol[i][col]->SetXTitle("#it{E} (GeV)");
+        fhNCellsPerClusterM20PerSMPerCol[i][col]->SetYTitle("#it{n}_{cells}^{w>0.01}");
+        fhNCellsPerClusterM20PerSMPerCol[i][col]->SetZTitle("#lambda_{1}^{2}");
+        outputContainer->Add(fhNCellsPerClusterM20PerSMPerCol[i][col]); 
+        
+        fhNCellsPerClusterNLMPerSMPerCol[i][col]  = new TH3F 
+        (Form("hNCellsPerClusterNLM_SM%d_Col%d",i,col),
+         Form("#it{E} vs #it{n}_{cells} vs n_{lm}, SM=%d, colum %d",i,col),
+         nEbins,minE,maxE,cellBins,cellMin,cellMax,10,0,10); 
+        fhNCellsPerClusterNLMPerSMPerCol[i][col]->SetXTitle("#it{E} (GeV)");
+        fhNCellsPerClusterNLMPerSMPerCol[i][col]->SetYTitle("#it{n}_{cells}^{w>0.01}");
+        fhNCellsPerClusterNLMPerSMPerCol[i][col]->SetZTitle("n_{lm}");
+        outputContainer->Add(fhNCellsPerClusterNLMPerSMPerCol[i][col]); 
+        
+        fhColRowFromCellMaxLowM02PerSM[i][col]  = new TH3F 
+        (Form("hColRowFromCellMaxLowM02_SM%d_Col%d",i,col),
+         Form("cell col_{max}-#col_{secondary} vs cell #row_{max}-#row_{secondary} vs #it{n}_{cells}^{w>0.01} for 0.1 < #lambda_{0}^{2} < 0.3, "
+              "%2.2f<#it{E}<%2.2f GeV, SM=%d, colum %d",fEMinShape,fEMaxShape,i,col),
+         nbinsdeltacells,mindeltacells,maxdeltacells,nbinsdeltacells,mindeltacells,maxdeltacells,cellBins,cellMin,cellMax); 
+        fhColRowFromCellMaxLowM02PerSM[i][col]->SetZTitle("#it{n}_{cells}^{w>0.01}");
+        fhColRowFromCellMaxLowM02PerSM[i][col]->SetXTitle("#Delta column_{max-secondary}");
+        fhColRowFromCellMaxLowM02PerSM[i][col]->SetYTitle("#Delta row_{max-secondary}");
+        outputContainer->Add(fhColRowFromCellMaxLowM02PerSM[i][col]);   
+        
+        fhColRowFromCellMaxHighM02PerSM[i][col]  = new TH3F 
+        (Form("hColRowFromCellMaxHighM02_SM%d_Col%d",i,col),
+         Form("cell col_{max}-#col_{secondary} vs cell #row_{max}-#row_{secondary} vs #it{n}_{cells}^{w>0.01} for 0.5 < #lambda_{0}^{2} < 2, "
+              "%2.2f<#it{E}<%2.2f GeV, SM=%d, colum %d",fEMinShape,fEMaxShape,i,col),
+         nbinsdeltacells,mindeltacells,maxdeltacells,nbinsdeltacells,mindeltacells,maxdeltacells,cellBins,cellMin,cellMax); 
+        fhColRowFromCellMaxHighM02PerSM[i][col]->SetZTitle("#it{n}_{cells}^{w>0.01}");
+        fhColRowFromCellMaxHighM02PerSM[i][col]->SetXTitle("#Delta column_{max-secondary}");
+        fhColRowFromCellMaxHighM02PerSM[i][col]->SetYTitle("#Delta row_{max-secondary}");
+        outputContainer->Add(fhColRowFromCellMaxHighM02PerSM[i][col]);   
+        
+        for(Int_t j = 0; j < 3; j++)
+        {
+          fhColRowFromCellMaxEMaxSecDiffLowM02PerSM[i][col][j]  = new TH3F 
+          (Form("hColRowFromCellMaxEMaxSecDiffLowM02_SM%d_Col%d_NCellBin%d",i,col,j),
+           Form("cell col_{max}-#col_{secondary} vs cell #row_{max}-#row_{secondary} vs #Delta #it{E}_{max-secondary} for 0.1 < #lambda_{0}^{2} < 0.3, "
+                "%2.2f<#it{E}<%2.2f GeV, SM=%d, colum %d, #it{n}_{cells}^{w>0.01} bin %d",fEMinShape,fEMaxShape,i,col,j),
+           nbinsdeltacells,mindeltacells,maxdeltacells,nbinsdeltacells,mindeltacells,maxdeltacells,120,0,12); 
+          fhColRowFromCellMaxEMaxSecDiffLowM02PerSM[i][col][j]->SetZTitle("#Delta #it{E}_{max-secondary} (GeV)");
+          fhColRowFromCellMaxEMaxSecDiffLowM02PerSM[i][col][j]->SetXTitle("#Delta column_{max-secondary}");
+          fhColRowFromCellMaxEMaxSecDiffLowM02PerSM[i][col][j]->SetYTitle("#Delta row_{max-secondary}");
+          outputContainer->Add(fhColRowFromCellMaxEMaxSecDiffLowM02PerSM[i][col][j]);   
+          
+          fhColRowFromCellMaxEMaxSecDiffHighM02PerSM[i][col][j]  = new TH3F 
+          (Form("hColRowFromCellMaxEMaxSecDiffHighM02_SM%d_Col%d_NCellBin%d",i,col,j),
+           Form("cell col_{max}-#col_{secondary} vs cell #row_{max}-#row_{secondary} vs #Delta #it{E}_{max-secondary} for 0.5 < #lambda_{0}^{2} < 2, "
+                "%2.2f<#it{E}<%2.2f GeV, SM=%d, colum %d, #it{n}_{cells}^{w>0.01} bin %d",fEMinShape,fEMaxShape,i,col,j),
+           nbinsdeltacells,mindeltacells,maxdeltacells,nbinsdeltacells,mindeltacells,maxdeltacells,120,0,12); 
+          fhColRowFromCellMaxEMaxSecDiffHighM02PerSM[i][col][j]->SetZTitle("#Delta #it{E}_{max-secondary} (GeV)");
+          fhColRowFromCellMaxEMaxSecDiffHighM02PerSM[i][col][j]->SetXTitle("#Delta column_{max-secondary}");
+          fhColRowFromCellMaxEMaxSecDiffHighM02PerSM[i][col][j]->SetYTitle("#Delta row_{max-secondary}");
+          outputContainer->Add(fhColRowFromCellMaxEMaxSecDiffHighM02PerSM[i][col][j]);   
+
+          fhColRowFromCellMaxEMaxSecDiffFracLowM02PerSM[i][col][j]  = new TH3F 
+          (Form("hColRowFromCellMaxEMaxSecDiffFracLowM02_SM%d_Col%d_NCellBin%d",i,col,j),
+           Form("cell col_{max}-#col_{secondary} vs cell #row_{max}-#row_{secondary} vs #Delta #it{E}_{max-secondary}/#it{E}_{max} for 0.1 < #lambda_{0}^{2} < 0.3, "
+                "%2.2f<#it{E}<%2.2f GeV, SM=%d, colum %d, #it{n}_{cells}^{w>0.01} bin %d",fEMinShape,fEMaxShape,i,col,j),
+           nbinsdeltacells,mindeltacells,maxdeltacells,nbinsdeltacells,mindeltacells,maxdeltacells,40,0,1); 
+          fhColRowFromCellMaxEMaxSecDiffFracLowM02PerSM[i][col][j]->SetZTitle("#Delta #it{E}_{max-secondary}/#it{E}_{max}");
+          fhColRowFromCellMaxEMaxSecDiffFracLowM02PerSM[i][col][j]->SetXTitle("#Delta column_{max-secondary}");
+          fhColRowFromCellMaxEMaxSecDiffFracLowM02PerSM[i][col][j]->SetYTitle("#Delta row_{max-secondary}");
+          outputContainer->Add(fhColRowFromCellMaxEMaxSecDiffFracLowM02PerSM[i][col][j]);   
+          
+          fhColRowFromCellMaxEMaxSecDiffFracHighM02PerSM[i][col][j]  = new TH3F 
+          (Form("hColRowFromCellMaxEMaxSecDiffFracHighM02_SM%d_Col%d_NCellBin%d",i,col,j),
+           Form("cell col_{max}-#col_{secondary} vs cell #row_{max}-#row_{secondary} vs #Delta #it{E}_{max-secondary}/#it{E}_{max} for 0.5 < #lambda_{0}^{2} < 2, "
+                "%2.2f<#it{E}<%2.2f GeV, SM=%d, colum %d, #it{n}_{cells}^{w>0.01} bin %d",fEMinShape,fEMaxShape,i,col,j),
+           nbinsdeltacells,mindeltacells,maxdeltacells,nbinsdeltacells,mindeltacells,maxdeltacells,40,0,1); 
+          fhColRowFromCellMaxEMaxSecDiffFracHighM02PerSM[i][col][j]->SetZTitle("#Delta #it{E}_{max-secondary}/#it{E}_{max}");
+          fhColRowFromCellMaxEMaxSecDiffFracHighM02PerSM[i][col][j]->SetXTitle("#Delta column_{max-secondary}");
+          fhColRowFromCellMaxEMaxSecDiffFracHighM02PerSM[i][col][j]->SetYTitle("#Delta row_{max-secondary}");
+          outputContainer->Add(fhColRowFromCellMaxEMaxSecDiffFracHighM02PerSM[i][col][j]);   
+          
+          fhColRowFromCellMaxECellClusterRatLowM02PerSM[i][col][j]  = new TH3F 
+          (Form("hColRowFromCellMaxECellClusterRatLowM02_SM%d_Col%d_NCellBin%d",i,col,j),
+           Form("cell col_{max}-#col_{secondary} vs cell #row_{max}-#row_{secondary} vs #it{E}_{cell}/#it{E}_{cluster} for 0.1 < #lambda_{0}^{2} < 0.3, "
+                "%2.2f<#it{E}<%2.2f GeV, SM=%d, colum %d, #it{n}_{cells}^{w>0.01} bin %d",fEMinShape,fEMaxShape,i,col,j),
+           nbinsdeltacells,mindeltacells,maxdeltacells,nbinsdeltacells,mindeltacells,maxdeltacells,50,0,1); 
+          fhColRowFromCellMaxECellClusterRatLowM02PerSM[i][col][j]->SetZTitle("#it{E}_{cell}/#it{E}_{cluster}");
+          fhColRowFromCellMaxECellClusterRatLowM02PerSM[i][col][j]->SetXTitle("#Delta column_{max-secondary}");
+          fhColRowFromCellMaxECellClusterRatLowM02PerSM[i][col][j]->SetYTitle("#Delta row_{max-secondary}");
+          outputContainer->Add(fhColRowFromCellMaxECellClusterRatLowM02PerSM[i][col][j]);   
+          
+          fhColRowFromCellMaxECellClusterRatHighM02PerSM[i][col][j]  = new TH3F 
+          (Form("hColRowFromCellMaxECellClusterRatHighM02_SM%d_Col%d_NCellBin%d",i,col,j),
+           Form("cell col_{max}-#col_{secondary} vs cell #row_{max}-#row_{secondary} vs #it{E}_{cell}/#it{E}_{cluster} for 0.5 < #lambda_{0}^{2} < 2, "
+                "%2.2f<#it{E}<%2.2f GeV, SM=%d, colum %d, #it{n}_{cells}^{w>0.01} bin %d",fEMinShape,fEMaxShape,i,col,j),
+           nbinsdeltacells,mindeltacells,maxdeltacells,nbinsdeltacells,mindeltacells,maxdeltacells,50,0,1); 
+          fhColRowFromCellMaxECellClusterRatHighM02PerSM[i][col][j]->SetZTitle("#it{E}_{cell}/#it{E}_{cluster}");
+          fhColRowFromCellMaxECellClusterRatHighM02PerSM[i][col][j]->SetXTitle("#Delta column_{max-secondary}");
+          fhColRowFromCellMaxECellClusterRatHighM02PerSM[i][col][j]->SetYTitle("#Delta row_{max-secondary}");
+          outputContainer->Add(fhColRowFromCellMaxECellClusterRatHighM02PerSM[i][col][j]);   
+
+        } // 3 n cell bins
+      }//odd/pair col
+  
+    } // SM
     
     for(Int_t imatch = 0; imatch < 3; imatch++)
     {      
@@ -3884,7 +4096,7 @@ TList * AliAnaClusterShapeCorrelStudies::GetCreateOutputObjects()
         fhDeltaIAM20[imatch]  = new TH3F 
         (Form("hDeltaIAM20_%s",matchCase[imatch].Data()),
          Form("Cluster *asymmetry* in cell units vs #lambda^{2}_{1} for %s",matchCase[imatch].Data()),
-         nEbins,minE,maxE,(Int_t)nShShBins/1.5,minShSh,(Int_t)maxShSh/1.5,asyBins,asyMin,asyMax); 
+         nEbins,minE,maxE,(Int_t)nShShBins/1.5,0,maxShSh/1.5,asyBins,asyMin,asyMax); 
         fhDeltaIAM20[imatch]->SetXTitle("#it{E}_{cluster}");
         fhDeltaIAM20[imatch]->SetYTitle("#lambda^{2}_{1}");
         fhDeltaIAM20[imatch]->SetZTitle("#it{A}_{cell in cluster}");
@@ -3893,7 +4105,7 @@ TList * AliAnaClusterShapeCorrelStudies::GetCreateOutputObjects()
         fhDeltaIATotM20[imatch]  = new TH3F 
         (Form("hDeltaIATotM20_%s",matchCase[imatch].Data()),
          Form("Cluster *total asymmetry* in cell units vs #lambda^{2}_{1} for %s",matchCase[imatch].Data()),
-         nEbins,minE,maxE,(Int_t)nShShBins/1.5,minShSh,(Int_t)maxShSh/1.5,asyBins,asyMin,asyMax); 
+         nEbins,minE,maxE,(Int_t)nShShBins/1.5,0,maxShSh/1.5,asyBins,asyMin,asyMax); 
         fhDeltaIATotM20[imatch]->SetXTitle("#it{E}_{cluster}");
         fhDeltaIATotM20[imatch]->SetYTitle("#lambda^{2}_{1}");
         fhDeltaIATotM20[imatch]->SetZTitle("#it{A}_{cell in cluster}^{total}");
@@ -3973,11 +4185,20 @@ TList * AliAnaClusterShapeCorrelStudies::GetCreateOutputObjects()
       fhNCellsPerClusterM20[imatch]  = new TH3F 
       (Form("hNCellsPerClusterM20_%s",matchCase[imatch].Data()),
        Form("#it{E} vs #it{n}_{cells} vs #lambda_{1}^{2} for ID %s",matchCase[imatch].Data()),
-       nEbins,minE,maxE,cellBins,cellMin,cellMax,(Int_t)nShShBins/1.5,minShSh,(Int_t)maxShSh/1.5); 
+       nEbins,minE,maxE,cellBins,cellMin,cellMax,(Int_t)nShShBins/1.5,0,maxShSh/1.5); 
       fhNCellsPerClusterM20[imatch]->SetXTitle("#it{E} (GeV)");
       fhNCellsPerClusterM20[imatch]->SetYTitle("#it{n}_{cells}^{w>0.01}");
       fhNCellsPerClusterM20[imatch]->SetZTitle("#lambda_{1}^{2}");
       outputContainer->Add(fhNCellsPerClusterM20[imatch]); 
+
+      fhNCellsPerClusterNLM[imatch]  = new TH3F 
+      (Form("hNCellsPerClusterNLM_%s",matchCase[imatch].Data()),
+       Form("#it{E} vs #it{n}_{cells} vs n_{lm} for ID %s",matchCase[imatch].Data()),
+       nEbins,minE,maxE,cellBins,cellMin,cellMax,10,0,10); 
+      fhNCellsPerClusterNLM[imatch]->SetXTitle("#it{E} (GeV)");
+      fhNCellsPerClusterNLM[imatch]->SetYTitle("#it{n}_{cells}^{w>0.01}");
+      fhNCellsPerClusterNLM[imatch]->SetZTitle("n_{lm}");
+      outputContainer->Add(fhNCellsPerClusterNLM[imatch]); 
       
       fhSMM02[imatch]  = new TH3F 
       (Form("hSMM02_%s",matchCase[imatch].Data()),
@@ -3996,6 +4217,44 @@ TList * AliAnaClusterShapeCorrelStudies::GetCreateOutputObjects()
       fhSMM02NoCut[imatch]->SetYTitle("SM number");
       fhSMM02NoCut[imatch]->SetZTitle("#lambda_{0}^{2}");
       outputContainer->Add(fhSMM02NoCut[imatch]); 
+
+      fhSMM20LowM02[imatch]  = new TH3F 
+      (Form("hSMM20LowM02_%s",matchCase[imatch].Data()),
+       Form("#it{E} vs SM number vs #lambda_{1}^{2}, #it{n}_{cells}^{w>0.01}>%d, for 0.1<#lambda_{0}^{2}<0.3, for ID %s",
+            fNCellMinShape,matchCase[imatch].Data()),
+       nEbins,minE,maxE,fNModules,-0.5,fNModules-0.5,(Int_t)nShShBins/1.5,0,maxShSh/1.5); 
+      fhSMM20LowM02[imatch]->SetXTitle("#it{E} (GeV)");
+      fhSMM20LowM02[imatch]->SetYTitle("SM number");
+      fhSMM20LowM02[imatch]->SetZTitle("#lambda_{1}^{2}");
+      outputContainer->Add(fhSMM20LowM02[imatch]); 
+      
+      fhSMM20LowM02NoCut[imatch]  = new TH3F 
+      (Form("hSMM20LowM02NoCut_%s",matchCase[imatch].Data()),
+       Form("#it{E} vs SM number vs #lambda_{1}^{2}, for 0.1<#lambda_{0}^{2}<0.3, for ID %s",matchCase[imatch].Data()),
+       nEbins,minE,maxE,fNModules,-0.5,fNModules-0.5,(Int_t)nShShBins/1.5,0,maxShSh/1.5); 
+      fhSMM20LowM02NoCut[imatch]->SetXTitle("#it{E} (GeV)");
+      fhSMM20LowM02NoCut[imatch]->SetYTitle("SM number");
+      fhSMM20LowM02NoCut[imatch]->SetZTitle("#lambda_{1}^{2}");
+      outputContainer->Add(fhSMM20LowM02NoCut[imatch]); 
+
+      fhSMM20HighM02[imatch]  = new TH3F 
+      (Form("hSMM20HighM02_%s",matchCase[imatch].Data()),
+       Form("#it{E} vs SM number vs #lambda_{1}^{2}, #it{n}_{cells}^{w>0.01}>%d, for 0.5<#lambda_{0}^{2}<2, for ID %s",
+            fNCellMinShape,matchCase[imatch].Data()),
+       nEbins,minE,maxE,fNModules,-0.5,fNModules-0.5,(Int_t)nShShBins/1.5,0,maxShSh/1.5); 
+      fhSMM20HighM02[imatch]->SetXTitle("#it{E} (GeV)");
+      fhSMM20HighM02[imatch]->SetYTitle("SM number");
+      fhSMM20HighM02[imatch]->SetZTitle("#lambda_{1}^{2}");
+      outputContainer->Add(fhSMM20HighM02[imatch]); 
+      
+      fhSMM20HighM02NoCut[imatch]  = new TH3F 
+      (Form("hSMM20HighM02NoCut_%s",matchCase[imatch].Data()),
+       Form("#it{E} vs SM number vs #lambda_{1}^{2}, for 0.5<#lambda_{0}^{2}<2, for ID %s",matchCase[imatch].Data()),
+       nEbins,minE,maxE,fNModules,-0.5,fNModules-0.5,(Int_t)nShShBins/1.5,0,maxShSh/1.5); 
+      fhSMM20HighM02NoCut[imatch]->SetXTitle("#it{E} (GeV)");
+      fhSMM20HighM02NoCut[imatch]->SetYTitle("SM number");
+      fhSMM20HighM02NoCut[imatch]->SetZTitle("#lambda_{1}^{2}");
+      outputContainer->Add(fhSMM20HighM02NoCut[imatch]);       
       
       fhSMNCell[imatch]  = new TH3F 
       (Form("hSMNCell_%s",matchCase[imatch].Data()),

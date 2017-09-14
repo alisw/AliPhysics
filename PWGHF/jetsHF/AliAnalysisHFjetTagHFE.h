@@ -38,6 +38,8 @@ class AliAnalysisHFjetTagHFE : public AliAnalysisTaskEmcalJet {
   void SetCentralityMaxHFEjet(Int_t centMax) {fcentMax = centMax;};
   void SetDebugHFEjet(Bool_t dbHFEj) {idbHFEj = dbHFEj;};
   void SetHybridTrack(Bool_t Hybrid){iHybrid = Hybrid;};
+  void SetMinSig(Double_t mimSig){fmimSig = mimSig;};
+  void SetMCdata(Bool_t mcData) {fmcData = mcData;};
 
  protected:
   void                        ExecOnce();
@@ -56,6 +58,8 @@ class AliAnalysisHFjetTagHFE : public AliAnalysisTaskEmcalJet {
     Float_t fcentMax; // max. centrality
     Bool_t idbHFEj;
     Bool_t iHybrid;
+    Double_t fmimSig; // max. centrality
+    Bool_t fmcData;
 
   // General histograms
   TH1                       **fHistTracksPt;            //!Track pt spectrum
@@ -80,7 +84,7 @@ class AliAnalysisHFjetTagHFE : public AliAnalysisTaskEmcalJet {
   TH2F                        *fHistJetOrgArea;
   TH1F                        *fHistJetBG;
   TH1F                        *fHistJetSub;
-  TH1F                       *fHisteJetOrg;
+  TH1F                        *fHisteJetOrg;
   TH1F                        *fHisteJetBG;
   TH1F                        *fHisteJetSub;
   TH1F                        *fHistIncEle;
@@ -99,11 +103,14 @@ class AliAnalysisHFjetTagHFE : public AliAnalysisTaskEmcalJet {
   TH2F                        *fHistLSjet;
   TH2F                        *fInvmassULS;
   TH2F                        *fInvmassLS;
-  THnSparse                  *HFjetCorr0;
-  THnSparse                  *HFjetCorr1;
-  THnSparse                  *HFjetParticle;
+  THnSparse                   *HFjetCorr0;
+  THnSparse                   *HFjetCorr1;
+  THnSparse                   *HFjetParticle;
   TH1F                        *fQAHistJetPhi;
   TH1F                        *fQAHistTrPhiJet;
+  TH1F                        *fHistClustE;
+  TH1F                        *fHistClustEtime;
+  TH2F                        *fEMCClsEtaPhi;
   TH1F                        *fQAHistTrPhi;
 
 
@@ -130,7 +137,7 @@ class AliAnalysisHFjetTagHFE : public AliAnalysisTaskEmcalJet {
   AliAODMCParticle 	*fMCparticle;
   AliAODMCParticle 	*fMCparticleMother;
 
-  Bool_t fmcData;
+  //Bool_t fmcData;
 
   AliAnalysisHFjetTagHFE(const AliAnalysisHFjetTagHFE&);            // not implemented
   AliAnalysisHFjetTagHFE &operator=(const AliAnalysisHFjetTagHFE&); // not implemented

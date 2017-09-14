@@ -26,6 +26,8 @@
 #ifndef AliMultSelectionTask_H
 #define AliMultSelectionTask_H
 
+#include <AliAnalysisTaskSE.h>
+
 class TList;
 class TH1F;
 class TH2F;
@@ -76,14 +78,15 @@ public:
     void SetSelectedTriggerClass(AliVEvent::EOfflineTriggerTypes trigType) { fkTrigger = trigType;}
     
     //Get Period name (can be static)
-    TString GetPeriodNameByLPM(); //try userInfo first
+    TString GetPeriodNameByLPM(TString lTag); //try userInfo first
     TString GetPeriodNameByPath( const TString lPath ) const; //no input required, will have all info in globals...
     TString GetPeriodNameByRunNumber()  const; //no input required, use fCurrentRun
     Bool_t CheckOADB( TString lProdName ) const;
     
     //Check MC type
-    Bool_t IsHijing() const;
-    Bool_t IsDPMJet() const; 
+    Bool_t IsHijing()  const;
+    Bool_t IsDPMJet()  const;
+    Bool_t IsEPOSLHC() const;
  
     void CreateEmptyOADB(); //In case we really didn't get anything ...
     
@@ -284,8 +287,12 @@ private:
     TH1D *fHistQA_V0C;
     TH1D *fHistQA_CL0; 
     TH1D *fHistQA_CL1;
+    TH1D *fHistQA_SPDClusters;
+    TH1D *fHistQA_SPDTracklets;
     TH1D *fHistQA_ZNA;
     TH1D *fHistQA_ZNC;
+    TH1D *fHistQA_ZNApp;
+    TH1D *fHistQA_ZNCpp;
     TProfile *fHistQA_TrackletsVsV0M; 
     TProfile *fHistQA_TrackletsVsCL0; 
     TProfile *fHistQA_TrackletsVsCL1; 
@@ -295,8 +302,12 @@ private:
     TH1D *fHistQASelected_V0C;
     TH1D *fHistQASelected_CL0; 
     TH1D *fHistQASelected_CL1;
+    TH1D *fHistQASelected_SPDClusters;
+    TH1D *fHistQASelected_SPDTracklets;
     TH1D *fHistQASelected_ZNA;
     TH1D *fHistQASelected_ZNC;
+    TH1D *fHistQASelected_ZNApp;
+    TH1D *fHistQASelected_ZNCpp;
     TProfile *fHistQASelected_TrackletsVsV0M;
     TProfile *fHistQASelected_TrackletsVsCL0; 
     TProfile *fHistQASelected_TrackletsVsCL1; 
@@ -322,7 +333,8 @@ private:
     AliMultSelectionTask(const AliMultSelectionTask&);            // not implemented
     AliMultSelectionTask& operator=(const AliMultSelectionTask&); // not implemented
 
-    ClassDef(AliMultSelectionTask, 2);
+    ClassDef(AliMultSelectionTask, 3);
+    //3 - extra QA histograms
 };
 
 #endif

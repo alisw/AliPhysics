@@ -69,12 +69,16 @@ class AliAnalysisC2Settings : public TObject {
 
   // If availible, trigger selection should be done throught the physics selection trigger mass
   UInt_t fTriggerMask;
-  // Is the AliAODForwardMult object needed (ie., is the fmd needed?)
+  // Use FMD in forward region; requires AliAODForwardMult object
   Bool_t fUseFMD;
-  // Is the AliAODCentralMult object needed (ie., is the fmd needed?)
-  Bool_t fUseSPclusters;
-  // Instead of clusters, we can also run on SPD tracklets.
-  Bool_t fUseSPtracklets;
+  /// Use V0 amplitudes in the forward region
+  Bool_t fUseV0;
+  /// Use SPD Clusters in the central region
+  Bool_t fUseSPDclusters;
+  /// Use SPD tracklets in the central region
+  Bool_t fUseTracklets;
+  /// Use Central tracks
+  Bool_t fUseTracks;
 
 private:
   ClassDef(AliAnalysisC2Settings, 1);

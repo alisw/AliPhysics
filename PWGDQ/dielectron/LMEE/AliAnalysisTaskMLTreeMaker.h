@@ -237,12 +237,13 @@ class AliAnalysisTaskMLTreeMaker : public AliAnalysisTaskSE {
   std::vector<Double_t> chi2ITS;
 //  std::vector<Double_t> chi2TPC;
   std::vector<Double_t> chi2GlobalPerNDF;
-//  std::vector<Double_t> chi2GlobalvsTPC;
+  std::vector<Double_t> chi2GlobalvsTPC;
   Int_t	fCutMaxChi2TPCConstrainedVsGlobalVertexType;
   
   std::vector<Int_t> pdg;
   std::vector<Int_t> pdgmother;
   std::vector<Int_t> hasmother;
+  std::vector<Int_t> label;
   std::vector<Int_t> motherlabel;
   
   //TBits*            fUsedVars;                // used variables by AliDielectronVarManager

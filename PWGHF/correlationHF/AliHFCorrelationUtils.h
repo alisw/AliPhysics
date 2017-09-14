@@ -46,6 +46,7 @@ class AliHFCorrelationUtils : public TObject {
 
   static TH1D* ReflectHisto(TH1D *h,Double_t scale);
   static TH1D* DuplicateHistoTo2piRange(TH1D *h,Double_t scale);
+  static void GetMCClosureModulation(Double_t ptD, Double_t ptTrmin, Double_t ptTrmax, Double_t mod[]);
   
  private:
   

@@ -15,6 +15,8 @@
 #ifndef ALIANALYSISTASKRHOTRANSDEV_H
 #define ALIANALYSISTASKRHOTRANSDEV_H
 
+#include <map>
+
 #include "AliAnalysisTaskRhoBaseDev.h"
 
 /** \class AliAnalysisTaskRhoTransDev
@@ -46,9 +48,6 @@ class AliAnalysisTaskRhoTransDev : public AliAnalysisTaskRhoBaseDev {
 
   void             UserCreateOutputObjects();
 
-  void             SetBackToBackJetPtFraction(Double_t f)    { fBackToBackJetPtFraction = f    ; }
-  void             SetMaxMomentumThridJet(Double_t pt)       { fMaxMomentumThridJet     = pt   ; }
-
   static AliAnalysisTaskRhoTransDev* AddTaskRhoTransDev(
      TString        nTracks                        = "usedefault",
      Double_t       trackPtCut                     = 0.15,
@@ -66,16 +65,9 @@ class AliAnalysisTaskRhoTransDev : public AliAnalysisTaskRhoBaseDev {
  protected:
   void          CalculateRho();
   Bool_t        FillHistograms();
-  Double_t      GetPerpPtDensity(AliEmcalContainer* cont, AliVParticle* leadingJet);
-  Bool_t        IsB2BEvent();
-
   Bool_t        VerifyContainers();
 
-
-  Double_t                            fBackToBackJetPtFraction;          ///< Minimum pt fraction of the back-to-back jet
-  Double_t                            fMaxMomentumThridJet;              ///< Maximum pt of any additional jet in the event (other than the back-to-back fraction
-
-
+  Double_t      GetPerpPtDensity(AliEmcalContainer* cont, AliVParticle* leadingJet);
 
   TH2                                *fHistB2BRhoVsCent;                 //!<!rho vs. centrality
 

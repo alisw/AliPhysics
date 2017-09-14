@@ -37,7 +37,8 @@ AliAnalysisTaskRhoDev::AliAnalysisTaskRhoDev() :
   AliAnalysisTaskRhoBaseDev(),
   fNExclLeadJets(0),
   fRhoSparse(kFALSE),
-  fOccupancyFactor(1.),
+  fExclJetOverlap(),
+  fOccupancyFactor(0),
   fHistOccCorrvsCent(nullptr)
 {
 }
@@ -52,7 +53,8 @@ AliAnalysisTaskRhoDev::AliAnalysisTaskRhoDev(const char *name, Bool_t histo) :
   AliAnalysisTaskRhoBaseDev(name, histo),
   fNExclLeadJets(0),
   fRhoSparse(kFALSE),
-  fOccupancyFactor(1.),
+  fExclJetOverlap(),
+  fOccupancyFactor(0),
   fHistOccCorrvsCent(nullptr)
 {
 }
@@ -67,7 +69,7 @@ void AliAnalysisTaskRhoDev::UserCreateOutputObjects()
 
   AliAnalysisTaskRhoBaseDev::UserCreateOutputObjects();
 
-  fHistOccCorrvsCent = new TH2F("fHistOccCorrvsCent", "fHistOccCorrvsCent", 100, 0, 100, 2000, 0 , 2);
+  fHistOccCorrvsCent = new TH2F("fHistOccCorrvsCent", "fHistOccCorrvsCent;Centrality (%);#it{C}", 100, 0, 100, 2000, 0 , 2);
   fOutput->Add(fHistOccCorrvsCent);
 }
 
@@ -80,33 +82,15 @@ std::pair<AliEmcalJet*, AliEmcalJet*> AliAnalysisTaskRhoDev::GetLeadingJets()
   std::pair<AliEmcalJet*, AliEmcalJet*> maxJets = {nullptr, nullptr};
   if (fNExclLeadJets <= 0) return maxJets;
 
-  auto itJet = fSortedJets["Signal"].begin();
+  auto itJet = fSortedJets["Background"].begin();
 
   maxJets.first = *itJet;
   if (fNExclLeadJets > 1) {
     itJet++;
-    if (itJet != fSortedJets["Signal"].end()) maxJets.second = *itJet;
+    if (itJet != fSortedJets["Background"].end()) maxJets.second = *itJet;
   }
 
   return maxJets;
-}
-
-/**
- * Verify whether two jets have any track in common.
- * @param jet1 First jet
- * @param jet2 Second jet
- * @return kTRUE if the two jets have at least a track in common, kFALSE otherwise
- */
-Bool_t AliAnalysisTaskRhoDev::IsJetOverlapping(AliEmcalJet* jet1, AliEmcalJet* jet2)
-{
-  for (Int_t i = 0; i < jet1->GetNumberOfTracks(); ++i) {
-    Int_t jet1Track = jet1->TrackAt(i);
-    for (Int_t j = 0; j < jet2->GetNumberOfTracks(); ++j) {
-      Int_t jet2Track = jet2->TrackAt(j);
-      if (jet1Track == jet2Track) return kTRUE;
-    }
-  }
-  return kFALSE;
 }
 
 /**
@@ -128,8 +112,10 @@ void AliAnalysisTaskRhoDev::CalculateRho()
 
   AliJetContainer* bkgJetCont = fJetCollArray["Background"];
   AliJetContainer* sigJetCont = nullptr;
-  auto sigJetContIt = fJetCollArray.find("Signal");
-  if (sigJetContIt != fJetCollArray.end()) sigJetCont = sigJetContIt->second;
+  if (!fExclJetOverlap.IsNull()) {
+    auto sigJetContIt = fJetCollArray.find(fExclJetOverlap.Data());
+    if (sigJetContIt != fJetCollArray.end()) sigJetCont = sigJetContIt->second;
+  }
 
   // push all jets within selected acceptance into stack
   for (auto jet : bkgJetCont->accepted()) {
@@ -146,7 +132,7 @@ void AliAnalysisTaskRhoDev::CalculateRho()
     Bool_t overlapsWithSignal = kFALSE;
     if (sigJetCont) {
       for (auto sigJet : sigJetCont->accepted()) {
-        if (IsJetOverlapping(jet, sigJet)) {
+        if (AreJetsOverlapping(jet, sigJet)) {
           overlapsWithSignal = kTRUE;
           break;
         }
@@ -159,13 +145,17 @@ void AliAnalysisTaskRhoDev::CalculateRho()
     ++NjetAcc;
   }
 
+  // Occupancy correction for sparse event described in https://arxiv.org/abs/1207.2392
+  if (TotaljetArea > 0) {
+    fOccupancyFactor = TotaljetAreaPhys / TotaljetArea;
+  }
+  else {
+    fOccupancyFactor = 0;
+  }
 
   if (NjetAcc > 0) {
     //find median value
     Double_t rho = TMath::Median(NjetAcc, rhovec);
-
-    // Occupancy correction for sparse event described in https://arxiv.org/abs/1207.2392
-    if (TotaljetArea > 0) fOccupancyFactor = TotaljetAreaPhys / TotaljetArea;
 
     if (fRhoSparse) rho = rho * fOccupancyFactor;
 
@@ -215,7 +205,7 @@ Bool_t AliAnalysisTaskRhoDev::VerifyContainers()
  * @param suffix additional suffix that can be added at the end of the task name
  * @return pointer to the new AliAnalysisTaskRhoDev task
  */
-AliAnalysisTaskRhoDev* AliAnalysisTaskRhoDev::AddTaskRhoDev(TString trackName, Double_t trackPtCut, TString clusName, Double_t clusECut, TString nRho, Double_t jetradius, UInt_t acceptance, AliJetContainer::EJetType_t jetType , AliJetContainer::ERecoScheme_t rscheme, Bool_t histo, TString suffix)
+AliAnalysisTaskRhoDev* AliAnalysisTaskRhoDev::AddTaskRhoDev(TString trackName, Double_t trackPtCut, TString clusName, Double_t clusECut, TString nRho, Double_t jetradius, UInt_t acceptance, AliJetContainer::EJetType_t jetType, AliJetContainer::ERecoScheme_t rscheme, Bool_t histo, TString suffix)
 {
   // Get the pointer to the existing analysis manager via the static access method.
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();

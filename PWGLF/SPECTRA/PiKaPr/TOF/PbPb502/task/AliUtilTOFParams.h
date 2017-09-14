@@ -12,7 +12,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 #if !defined(__CINT__) || defined(__MAKECINT__)
-#include <Riostream.h>
+#include <iostream>
 #include <TROOT.h>
 #include "TMath.h"
 #endif

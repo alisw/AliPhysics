@@ -379,6 +379,8 @@ private:
     Float_t fTreeCascVarDCAPosToPrimVtx;  //!
     Float_t fTreeCascVarDCANegToPrimVtx;  //!
     Float_t fTreeCascVarCascCosPointingAngle;         //!
+    Float_t fTreeCascVarCascDCAtoPVxy;         //!
+    Float_t fTreeCascVarCascDCAtoPVz;         //!
     Float_t fTreeCascVarCascRadius;                   //!
     Float_t fTreeCascVarV0Mass;                       //!
     Float_t fTreeCascVarV0MassLambda;                       //!
@@ -462,6 +464,11 @@ private:
     Float_t fTreeCascVarCentrality; //!
     Bool_t fTreeCascVarMVPileupFlag; //!
     Bool_t fTreeCascVarOOBPileupFlag; //!
+    
+    //Kink tagging
+    Bool_t fTreeCascVarBachIsKink;
+    Bool_t fTreeCascVarPosIsKink;
+    Bool_t fTreeCascVarNegIsKink;
 
 //===========================================================================================
 //   Histograms

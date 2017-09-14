@@ -9,7 +9,6 @@
 #include "AliVEvent.h"
 #include "AliMCEvent.h"
 #include "AliVTrack.h"
-#include "AliStack.h"
 #include "AliAnalysisCuts.h"
 #include "TH1F.h"
 #include "TF1.h"
@@ -31,9 +30,11 @@ class AliAnalysisManager;
 class AliAODMCParticle;
 class AliEMCALTriggerPatchInfo;
 
-/***
+/**
  * @class AliConvEventCuts
- * @brief Event selection for conversion photon (and mother meson) analysis
+ * @brief Class handling all kinds of selection cuts for Gamma Conversion analysis
+ * @author Friederike Bock
+ * @author Daniel Muehlheim
  * @ingroup GammaConv
  *
  * The cut configuration is set as a string with an 8 digit number.
@@ -41,7 +42,7 @@ class AliEMCALTriggerPatchInfo;
  * its values represent the cut values. The cut configuration is listed here:
  *
  * | Position in the cut string (from the end) | Cut type                     |
- * |--------------------------------------------------------------------------|
+ * |-------------------------------------------|------------------------------|
  * |                  0                        | HeavyIon                     |
  * |                  1                        | CentralityMin                |
  * |                  2                        | CentralityMax                |
@@ -160,8 +161,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
         kLHC15a3b,        //!< anchored LHC13g pass 1 - JJ
         kLHC15d3a,        //!< anchored LHC13g pass 1
         kLHC15d3b,        //!< anchored LHC13g pass 1
-        
-        // 2015
+	// 2015
         kLHC15fm,         //!< pp 13 TeV
         kLHC15n,          //!< pp 5 TeV
         kLHC15o,          //!< PbPb 5 TeV
@@ -205,6 +205,15 @@ class AliConvEventCuts : public AliAnalysisCuts {
         
         // 2016
         kLHC16kl,         //!< pp 13 TeV
+	kLHC16d,          //!< pp 13 TeV
+	kLHC16e,          //!< pp 13 TeV
+	kLHC16f,          //!< pp 13 TeV
+	kLHC16g,          //!< pp 13 TeV
+	kLHC16h,          //!< pp 13 TeV
+	kLHC16i,          //!< pp 13 TeV
+	kLHC16j,          //!< pp 13 TeV
+	kLHC16o,          //!< pp 13 TeV
+	kLHC16p,          //!< pp 13 TeV        
         kLHC16q,          //!< pPb 5 TeV
 	kLHC16r,          //!< pPb 8 TeV
 	kLHC16s,          //!< pPb 8 TeV
@@ -214,14 +223,27 @@ class AliConvEventCuts : public AliAnalysisCuts {
         kLHC16j2b1,       //!< anchored LHC16k pass 1 - general purpose EPOSLHC
         kLHC16j2a2,       //!< anchored LHC16l pass 1 - general purpose Pythia8
         kLHC16j2b2,       //!< anchored LHC16l pass 1 - general purpose EPOSLHC
-        kLHC17a2a,            //!< anchored LHC16qt pass 1 - general purpose EPOSLHC
-        kLHC17a2a_fast,       //!< anchored LHC16qt pass 1 - general purpose EPOSLHC, fast only
-        kLHC17a2a_cent,       //!< anchored LHC16qt pass 1 - general purpose EPOSLHC, CENT
-        kLHC17a2a_cent_woSDD, //!< anchored LHC16qt pass 1 - general purpose EPOSLHC, CENT woSDD
-        kLHC17a2b,            //!< anchored LHC16qt pass 1 - general purpose DPMJET
-        kLHC17a2b_fast,       //!< anchored LHC16qt pass 1 - general purpose DPMJET,  fast only
-        kLHC17a2b_cent,       //!< anchored LHC16qt pass 1 - general purpose DPMJET,  CENT
-        kLHC17a2b_cent_woSDD, //!< anchored LHC16qt pass 1 - general purpose DPMJET,  CENT woSDD
+	// General purpose pp-13TeV
+	kLHC17f6,         //!< anchored LHC16d pass 1 - general purpose Pythia8  
+	kLHC17f9,         //!< anchored LHC16e pass 1 - general purpose Pythia8  
+	kLHC17d1,         //!< anchored LHC16f pass 1 - general purpose Pythia8 Nominal/LowB field 
+	kLHC17d17,         //!< anchored LHC16g pass 1 - general purpose Pythia8  
+	kLHC17f5,         //!< anchored LHC16h pass 1 - general purpose Pythia8  
+	kLHC17d3,         //!< anchored LHC16i pass 1 - general purpose Pythia8  
+	kLHC17e5,         //!< anchored LHC16j pass 1 - general purpose Pythia8  
+	kLHC17d20a1,         //!< anchored LHC16k pass 1 - general purpose Pythia8  
+	kLHC17d20a1_extra,   //!< anchored LHC16k pass 1 - general purpose Pythia8  
+	kLHC17d20a2,         //!< anchored LHC16l pass 1 - general purpose Pythia8  
+	kLHC17d20a2_extra,   //!< anchored LHC16l pass 1 - general purpose Pythia8  
+	kLHC17d16,         //!< anchored LHC16o pass 1 - general purpose Pythia8  
+	kLHC17d18,         //!< anchored LHC16p pass 1 - general purpose Pythia8  
+	// Pythia +JJ pp-13TeV
+	kLHC17f8a,         //!< anchored LHC16k,l pass 1 - Pythia8+JJ  
+	kLHC17f8b,         //!< anchored LHC16f pass 1 - Pythia8+JJ Nominal field 
+	kLHC17f8c,         //!< anchored LHC16g pass 1 - Pythia8+JJ  
+	kLHC17f8d,         //!< anchored LHC16j pass 1 - Pythia8+JJ 
+	kLHC17f8e,         //!< anchored LHC16o pass 1 - Pythia8+JJ   
+	//General purpose- pPb
         kLHC17a3a,            //!< anchored LHC16r pass 1 - general purpose EPOSLHC
         kLHC17a3a_fast,       //!< anchored LHC16r pass 1 - general purpose EPOSLHC, fast only
         kLHC17a3a_cent,       //!< anchored LHC16r pass 1 - general purpose EPOSLHC, CENT
@@ -238,15 +260,19 @@ class AliConvEventCuts : public AliAnalysisCuts {
         kLHC17a4b_fast,       //!< anchored LHC16s pass 1 - general purpose DPMJET,  fast only
         kLHC17a4b_cent,       //!< anchored LHC16s pass 1 - general purpose DPMJET,  CENT
         kLHC17a4b_cent_woSDD, //!< anchored LHC16s pass 1 - general purpose DPMJET,  CENT woSDD
-
         kLHC17f2a,            //!< anchored LHC16qt pass 1 - general purpose EPOSLHC
         kLHC17f2a_fast,       //!< anchored LHC16qt pass 1 - general purpose EPOSLHC, fast only
         kLHC17f2a_cent,       //!< anchored LHC16qt pass 1 - general purpose EPOSLHC, CENT
         kLHC17f2a_cent_woSDD, //!< anchored LHC16qt pass 1 - general purpose EPOSLHC, CENT woSDD
+        kLHC17f2a_fast_fix,       //!< anchored LHC16qt pass 1 - general purpose EPOSLHC, fast only  2nd cycle
+        kLHC17f2a_cent_fix,       //!< anchored LHC16qt pass 1 - general purpose EPOSLHC, CENT       2nd cycle
+        kLHC17f2a_cent_woSDD_fix, //!< anchored LHC16qt pass 1 - general purpose EPOSLHC, CENT woSDD 2nd cycle
         kLHC17f2b,            //!< anchored LHC16qt pass 1 - general purpose DPMJET
         kLHC17f2b_fast,       //!< anchored LHC16qt pass 1 - general purpose DPMJET,  fast only
         kLHC17f2b_cent,       //!< anchored LHC16qt pass 1 - general purpose DPMJET,  CENT
         kLHC17f2b_cent_woSDD, //!< anchored LHC16qt pass 1 - general purpose DPMJET,  CENT woSDD
+	kLHC17g8a_fast,       //!< anchored LHC16qt pass 1 - jet-jet MC in EPOSLHC    fast
+	kLHC17g8a_cent_woSDD, //!< anchored LHC16qt pass 1 - jet-jet MC in EPOSLHC    CENT woSDD
         kLHC17f3a,            //!< anchored LHC16r pass 1 - general purpose EPOSLHC
         kLHC17f3a_fast,       //!< anchored LHC16r pass 1 - general purpose EPOSLHC, fast only
         kLHC17f3a_cent,       //!< anchored LHC16r pass 1 - general purpose EPOSLHC, CENT
@@ -263,9 +289,11 @@ class AliConvEventCuts : public AliAnalysisCuts {
         kLHC17f4b_fast,       //!< anchored LHC16s pass 1 - general purpose DPMJET,  fast only
         kLHC17f4b_cent,       //!< anchored LHC16s pass 1 - general purpose DPMJET,  CENT
         kLHC17f4b_cent_woSDD, //!< anchored LHC16s pass 1 - general purpose DPMJET,  CENT woSDD
+	kLHC17g8b,            //!< anchored LHC16s pass 1 - jet-jet MC in EPOSLHC
+	kLHC17g8c,            //!< anchored LHC16r pass 1 - jet-jet MC in EPOSLHC
 
-        // 
-        kUnknownPeriod//!< kUnknownPeriod
+	//
+	kUnknownPeriod//!< kUnknownPeriod
       };
 
       /**
@@ -301,7 +329,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
       static const char * fgkCutNames[kNCuts];
 
       // Setters
-      Bool_t    SetCutIds (TString cutString); 
+      Bool_t    SetCutIds (TString cutString);
       Bool_t    SetCut (cutIds cutID, Int_t cut);
       Bool_t    SetIsHeavyIon (Int_t isHeavyIon);
       Bool_t    SetCentralityMax (Int_t centralityBin);
@@ -391,6 +419,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
       Bool_t    GetIsFromPileup()                                                   { return fRemovePileUp                                      ; }
       Int_t     GetPastFutureLowBC()                                                { return fPastFutureRejectionLow                            ; }
       Int_t     GetPastFutureHighBC()                                               { return fPastFutureRejectionHigh                           ; }
+      Bool_t    GetDoPileUpRejectV0MTPCout()                                        { return fDoPileUpRejectV0MTPCout                           ; }
       void      GetCentralityRange(Double_t range[2])                               { range[0]=10*fCentralityMin                                ;
                                                                                       range[1]=10*fCentralityMax                                ; }
       TList*    GetCutHistograms()                                                  { return fHistograms                                        ; }
@@ -417,14 +446,14 @@ class AliConvEventCuts : public AliAnalysisCuts {
       TString   GetSpecialTriggerName()                                             { return fSpecialTriggerName                                ; }
       AliEMCALTriggerPatchInfo   *GetMainTriggerPatch();
       ULong_t   GetTriggerList();
-      Float_t   GetWeightForCentralityFlattening(AliVEvent *InputEvent = 0x0);
+      Float_t   GetWeightForCentralityFlattening(AliVEvent *event = 0x0);
       Float_t   GetWeightForMultiplicity(Int_t mult);
-      Float_t   GetWeightForMeson( Int_t index, AliStack *MCStack, AliVEvent *InputEvent = 0x0);
+      Float_t   GetWeightForMeson( Int_t index, AliMCEvent *mcEvent, AliVEvent *event = 0x0);
       Float_t   GetCentrality(AliVEvent *event);
       Bool_t    GetUseNewMultiplicityFramework(); 
       void      GetCorrectEtaShiftFromPeriod();
-      void      GetNotRejectedParticles(Int_t rejection, TList *HeaderList, AliVEvent *MCEvent); 
-      TClonesArray*     GetArrayFromEvent(AliVEvent* fInputEvent, const char *name, const char *clname=0);
+      void      GetNotRejectedParticles(Int_t rejection, TList *HeaderList, AliVEvent *event);
+      TClonesArray*     GetArrayFromEvent(AliVEvent* event, const char *name, const char *clname=0);
       
       Bool_t    InitializeCutsFromCutString(const TString analysisCutSelection);
       void      SelectCollisionCandidates(UInt_t offlineTriggerMask = AliVEvent::kAny) {
@@ -446,11 +475,11 @@ class AliConvEventCuts : public AliAnalysisCuts {
 
       
       // Cut Selection
-      Bool_t    EventIsSelected(  AliVEvent *fInputEvent, 
-                                  AliVEvent *fMCEvent);
+      Bool_t    EventIsSelected(AliVEvent *fInputEvent,
+                                AliMCEvent *fMCEvent);
       Int_t     IsEventAcceptedByCut( AliConvEventCuts *ReaderCuts, 
-                                      AliVEvent *InputEvent, 
-                                      AliMCEvent *MCEvent, 
+                                      AliVEvent *event,
+                                      AliMCEvent *mcEvent,
                                       Int_t isHeavyIon, 
                                       Bool_t isEMCALAnalysis);
         
@@ -462,30 +491,31 @@ class AliConvEventCuts : public AliAnalysisCuts {
       
       ///Cut functions
       Int_t   IsParticleFromBGEvent(  Int_t index, 
-                                      AliStack *MCStack, 
-                                      AliVEvent *InputEvent = 0x0);
+                                      AliMCEvent *mcEvent,
+                                      AliVEvent *event = 0x0);
       
       void    LoadWeightingFlatCentralityFromFile ();
       void    LoadWeightingMultiplicityFromFile ();
       void    LoadReweightingHistosMCFromFile ();
 
       // Event Cuts
-      Bool_t    IsCentralitySelected(AliVEvent *fInputEvent, AliVEvent *fMCEvent = NULL);
-      Bool_t    IsOutOfBunchPileupPastFuture(AliVEvent *fInputEvent);
-      Bool_t    VertexZCut(AliVEvent *fInputEvent);
-      Bool_t    IsJetJetMCEventAccepted(AliVEvent *MCEvent, Double_t& weight);
-      Float_t   GetPtHard(AliVEvent *MCEvent);
-      void      GetXSectionAndNTrials(AliVEvent *MCEvent, Float_t &XSection, Float_t &NTrials);
+      Bool_t    IsCentralitySelected(AliVEvent *event, AliMCEvent *mcEvent);
+      Bool_t    IsOutOfBunchPileupPastFuture(AliVEvent *event);
+      Bool_t    IsPileUpV0MTPCout(AliVEvent *event);
+      Bool_t    VertexZCut(AliVEvent *event);
+      Bool_t    IsJetJetMCEventAccepted(AliMCEvent *event, Double_t& weight);
+      Float_t   GetPtHard(AliMCEvent *event);
+      void      GetXSectionAndNTrials(AliMCEvent *event, Float_t &XSection, Float_t &NTrials);
       Float_t   GetMaxPtJet()                                                       { return fMaxPtJetMC                                        ; }
-      Bool_t    MimicTrigger( AliVEvent *fInputEvent, 
+      Bool_t    MimicTrigger( AliVEvent *event,
                               Bool_t isMC );
-      Bool_t    IsTriggerSelected(  AliVEvent *fInputEvent, 
+      Bool_t    IsTriggerSelected(  AliVEvent *event,
                                     Bool_t isMC);
       Bool_t    HasV0AND()                                                          { return fHasV0AND                                          ; }
       Bool_t    IsSDDFired()                                                        { return fIsSDDFired                                        ; }
       Int_t     IsSpecialTrigger()                                                  { return fSpecialTrigger                                    ; }
       Int_t     IsSpecialSubTrigger()                                               { return fSpecialSubTrigger                                 ; }
-      void      InitializeEMCALTrigger( AliVEvent *fInputEvent);
+      void      InitializeEMCALTrigger( AliVEvent *event);
       Bool_t    HasTriggerType(TriggerTypeEMCAL t);
       
       // Request Flags
@@ -493,19 +523,19 @@ class AliConvEventCuts : public AliAnalysisCuts {
       void      DoEtaShift(Bool_t doEtaShift)                                       { fDoEtaShift = doEtaShift                                  ; }
       
       //MC particle flags - determine whether particle is primary or secondary
-      Bool_t    IsConversionPrimaryESD( AliStack *MCStack,
-                                        Long_t stackpos,
+      Bool_t    IsConversionPrimaryESD( AliMCEvent *mcEvent,
+                                        Long_t eventpos,
                                         Double_t prodVtxX, 
                                         Double_t prodVtxY,
                                         Double_t prodVtxZ);
-      Bool_t    IsConversionPrimaryAOD( AliVEvent *fInputEvent, 
+      Bool_t    IsConversionPrimaryAOD( AliVEvent *event,
                                         AliAODMCParticle* AODMCParticle,
                                         Double_t prodVtxX, 
                                         Double_t prodVtxY,
                                         Double_t prodVtxZ);
       
       Int_t     SecondaryClassificationPhoton(  TParticle *particle,
-                                                AliStack* fMCStack, 
+                                                AliMCEvent *mcEvent,
                                                 Bool_t isConversion );
       Int_t     SecondaryClassificationPhotonAOD( AliAODMCParticle *particle,
                                                   TClonesArray *aodmcArray, 
@@ -531,6 +561,8 @@ class AliConvEventCuts : public AliAnalysisCuts {
       Bool_t                      fRemovePileUp;                          ///< flag
       Int_t                       fPastFutureRejectionLow;                ///< sets bunch crossing event rejection in past
       Int_t                       fPastFutureRejectionHigh;               ///< sets bunch crossing event rejection in future
+      Int_t                       fDoPileUpRejectV0MTPCout;               ///< reject event if # TPCout tracks does not follow expected V=M mult
+      TF1 *                       fFPileUpRejectV0MTPCout;                ///< Pol1 function to compute the cut
       Int_t                       fRejectExtraSignals;                    ///<
       UInt_t                      fOfflineTriggerMask;                    ///< Task processes collision candidates only
       Bool_t                      fHasV0AND;                              ///< V0AND Offline Trigger
@@ -549,8 +581,8 @@ class AliConvEventCuts : public AliAnalysisCuts {
       Double_t                    fEtaShift;                              ///<
       Bool_t                      fDoEtaShift;                            ///< Flag for Etashift
       Int_t                       fDoCentralityFlat;                      ///<
-      TString                     fNameHistoNotFlatCentrality;            ///<
       TString                     fPathWeightsFlatCent;                   ///<
+      TString                     fNameHistoNotFlatCentrality;            ///<
       Bool_t                      fDoReweightHistoMCPi0;                  ///< Flag for reweighting Pi0 input with histogram
       Bool_t                      fDoReweightHistoMCEta;                  ///< Flag for reweighting Eta input with histogram
       Bool_t                      fDoReweightHistoMCK0s;                  ///< Flag for reweighting K0s input with histogram
@@ -619,7 +651,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
   private:
 
       /// \cond CLASSIMP
-      ClassDef(AliConvEventCuts,32)
+      ClassDef(AliConvEventCuts,36)
       /// \endcond
 };
 

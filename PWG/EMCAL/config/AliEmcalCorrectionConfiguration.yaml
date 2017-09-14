@@ -20,7 +20,7 @@ inputObjects:                                       # Define all of the input ob
             # The branch name is inherited from defaultClusterContainer!
             minE: 0.0                               # Cluster min E.
             minPt: 0.0                              # Cluster min pt.
-            clusNonLinCorrEnergyCut: 0.15           # Cluster non-linearity min E. Formerly "minPt" in the non-linearity AddTask() 
+            clusNonLinCorrEnergyCut: 0.15           # Cluster non-linearity min E. Formerly "minPt" in the non-linearity AddTask()
     trackContainers:                                # Configure tracks
         # The user can select the name of each container
         # The names don't need to correspond to any particular scheme
@@ -145,6 +145,11 @@ ClusterHadronicCorrection:                          # Cluster hadronic correctio
         - defaultClusterContainer_2                 # This object is defined above in the cluster section of the input objects
     trackContainersNames:                           # Names of the track input objects which should be attached to the correection
         - defaultTrackContainer                     # This object is defined above in the track section of the input objects
+PHOSCorrections:                                    # PHOS recalibration component (wraps PHOS Tender Supply)
+    enabled: false                                  # Whether to enable the task
+    isMC: false                                     # Whether is MC
+    options: ""                                     # Options for MC decalibration
+    isEmbedded: false                               # Whether to correct clusters from main event or embedded event (if applicable)
 # Determines the order of execution for the correction components. Only experts needs to be any changes here!
 # Just because it is listed here does not mean it will be executed! That is determined by the "enabled" property
 # of each correction component
@@ -158,3 +163,4 @@ executionOrder:
     - ClusterNonLinearity
     - ClusterTrackMatcher
     - ClusterHadronicCorrection
+    - PHOSCorrections

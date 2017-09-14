@@ -554,7 +554,12 @@ void AliDielectronHF::Init()
 
   // has MC signals
   fHasMC=AliDielectronMC::Instance()->HasMC();
+
   Int_t steps = 0;
+  if(!fSignalsMC && fHasMC){
+    AliFatal("Running on MC data but AliDielectronHF::fSignalsMC is a Nullptr - Exiting AliDielectronHF::Init() now!");
+    return;
+  }
   if(fHasMC) steps=fSignalsMC->GetEntries();
   if(fStepGenerated) steps*=2;
   if(fEventArray) steps=1;
@@ -666,7 +671,6 @@ void AliDielectronHF::Init()
     delete histArr;
     histArr=0;
   }
-
 }
 
 //______________________________________________

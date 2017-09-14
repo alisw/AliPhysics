@@ -52,9 +52,9 @@ ClassImp(AliTriggerAnalysis)
 AliTriggerAnalysis::AliTriggerAnalysis(TString name) :
 AliOADBTriggerAnalysis(name.Data()),
 fSPDGFOEfficiency(0),
+fDoFMD(kFALSE),
 fMC(kFALSE),
 fPileupCutsEnabled(kFALSE),
-fDoFMD(kFALSE),
 fHistList(new TList()),
 fHistStat(0),
 fHistFiredBitsSPD(0),
@@ -70,15 +70,6 @@ fHistV0C3vs012All(0),
 fHistV0C3vs012Cln(0),
 fHistSPDVtxPileupAll(0),
 fHistSPDVtxPileupCln(0),
-fHistV0MOnAll(0),
-fHistV0MOnAcc(0),
-fHistV0MOnVHM(0),
-fHistV0MOfAll(0),
-fHistV0MOfAcc(0),
-fHistOFOAll(0),
-fHistOFOAcc(0),
-fHistTKLAll(0),
-fHistTKLAcc(0),
 fHistVIRvsBCmod4pup(0),
 fHistVIRvsBCmod4acc(0),
 fHistVIRCln(0),
@@ -90,6 +81,15 @@ fHistBGAflagsAll(0),
 fHistBGAflagsAcc(0),
 fHistBGCflagsAll(0),
 fHistBGCflagsAcc(0),
+fHistV0MOnAll(0),
+fHistV0MOnAcc(0),
+fHistV0MOnVHM(0),
+fHistV0MOfAll(0),
+fHistV0MOfAcc(0),
+fHistOFOAll(0),
+fHistOFOAcc(0),
+fHistTKLAll(0),
+fHistTKLAcc(0),
 fHistAD(0),
 fHistADAAll(0),
 fHistADAAcc(0),
@@ -99,9 +99,9 @@ fHistV0AAll(0),
 fHistV0AAcc(0),
 fHistV0CAll(0),
 fHistV0CAcc(0),
+fHistZDC(0),
 fHistTimeZNA(0),
 fHistTimeZNC(0),
-fHistZDC(0),
 fHistTDCZDC(0),
 fHistTimeZNSumVsDif(0),
 fHistTimeCorrZDC(0),
@@ -1504,8 +1504,8 @@ void AliTriggerAnalysis::FillHistograms(const AliVEvent* event,Bool_t onlineDeci
   fPileupCutsEnabled = kTRUE;
 
   SPDFiredChips(event,1,kTRUE,0);
-  Int_t decisionADA        = ADTrigger(event, kASide, kFALSE, 1);
-  Int_t decisionADC        = ADTrigger(event, kCSide, kFALSE, 1);
+  // Int_t decisionADA        = ADTrigger(event, kASide, kFALSE, 1);
+  // Int_t decisionADC        = ADTrigger(event, kCSide, kFALSE, 1);
   Int_t decisionV0A        = V0Trigger(event, kASide, kFALSE, 1);
   Int_t decisionV0C        = V0Trigger(event, kCSide, kFALSE, 1);
   Bool_t isSPDClsVsTklBG   = IsSPDClusterVsTrackletBG(event,1);
@@ -1516,10 +1516,10 @@ void AliTriggerAnalysis::FillHistograms(const AliVEvent* event,Bool_t onlineDeci
   Bool_t isSPDVtxPileup    = IsSPDVtxPileup(event,1);
   Bool_t isV0Casym         = IsV0Casym(event,1);
   Bool_t isVHMTrigger      = VHMTrigger(event,1);
-  Bool_t isV0MOnTrigger    = V0MTrigger(event,kTRUE,1);
+  // Bool_t isV0MOnTrigger    = V0MTrigger(event,kTRUE,1);
   Bool_t isV0MOfTrigger    = V0MTrigger(event,kFALSE,1);
   Bool_t isSH1Trigger      = SH1Trigger(event,1);
-  Bool_t isTKLTrigger      = TKLTrigger(event,1);
+  // Bool_t isTKLTrigger      = TKLTrigger(event,1);
   Bool_t isZDCTimeTrigger  = ZDCTimeTrigger(event,1);
   Bool_t isZNATimeBG       = ZDCTimeBGTrigger(event,AliTriggerAnalysis::kASide);
   Bool_t isZNCTimeBG       = ZDCTimeBGTrigger(event,AliTriggerAnalysis::kCSide);

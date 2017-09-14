@@ -27,7 +27,7 @@ AliGenerator* Add_MCGenPythia8_TuneX(   Float_t e_cms       = 2760.,
     gSystem->Load("liblhapdf");
     
     AliGenerator *genP  = NULL;
-    genP                = CreatePythia8Gen(e_cms, tune, kCR, kF, kProcess, ptHardMin, ptHardMax);
+    genP                = CreatePythia8Gen(e_cms, tune, kCR, kF, kProcess, ptHardMin, ptHardMax,longlived);
     
     return genP;
 }
@@ -98,7 +98,7 @@ AliGenerator* CreatePythia8Gen( Float_t e_cms,
         
     (AliPythia8::Instance())->ReadString(Form("MultipartonInteractions:kFactor = %i", kF));
     
-    if(longlived) gener->SetMaximumLifetime(1e6);
+    (AliPythia8::Instance())->SetDecayLonglived();
 
     return gener;
 }

@@ -1,6 +1,6 @@
 #include "AliAnalysisPIDTrack.h"
 #include "AliAnalysisPIDEvent.h"
-#include "AliStack.h"
+//#include "AliStack.h"
 #include "AliTrackReference.h"
 #include "AliMCEvent.h"
 #include "TParticle.h"
@@ -75,6 +75,7 @@ AliAnalysisPIDTrack::AliAnalysisPIDTrack() :
   fTPCNcls(0),
   fTPCNclsF(0),
   fTPCNcr(0.),
+  fChi2TPCConstrainedVsGlobal(-10),
   fTOFIndex(0),
   fTOFTime(0.),
   fTOFExpTime(),
@@ -157,7 +158,8 @@ AliAnalysisPIDTrack::AliAnalysisPIDTrack(const AliAnalysisPIDTrack &source) :
   fTPCdEdxN(source.fTPCdEdxN),
   fTPCNcls(source.fTPCNcls),
   fTPCNclsF(source.fTPCNclsF),
-  fTPCNcr(source.fTPCNcr),  
+  fTPCNcr(source.fTPCNcr),
+  fChi2TPCConstrainedVsGlobal(source.fChi2TPCConstrainedVsGlobal),
   fTOFIndex(source.fTOFIndex),
   fTOFTime(source.fTOFTime),
   fTOFExpTime(),
@@ -231,6 +233,7 @@ AliAnalysisPIDTrack::operator=(const AliAnalysisPIDTrack &source)
   fTPCNcls = source.fTPCNcls;
   fTPCNclsF = source.fTPCNclsF;
   fTPCNcr = source.fTPCNcr;
+  fChi2TPCConstrainedVsGlobal = source.fChi2TPCConstrainedVsGlobal;
   fTOFIndex = source.fTOFIndex;
   fTOFTime = source.fTOFTime;
   for (Int_t i = 0; i < 5; i++) fTOFExpTime[i] = source.fTOFExpTime[i];
@@ -303,6 +306,7 @@ AliAnalysisPIDTrack::Reset()
   fTPCNcls = 0;
   fTPCNclsF = 0;
   fTPCNcr = 0.;
+  fChi2TPCConstrainedVsGlobal=-10;
   fTOFIndex = 0;
   fTOFTime = 0.;
   for (Int_t i = 0; i < 5; i++) fTOFExpTime[i] = 0.;
@@ -340,7 +344,7 @@ AliAnalysisPIDTrack::Reset()
 //___________________________________________________________
 
 void
-AliAnalysisPIDTrack::Update(AliESDtrack *track, AliStack *stack, AliMCEvent *mcevent, AliPIDResponse *PIDRes, Int_t TrackCutFlag)
+AliAnalysisPIDTrack::Update(AliESDtrack *track, AliMCEvent *mcevent, AliPIDResponse *PIDRes, Int_t TrackCutFlag)
 {
   /*
    * update
@@ -417,16 +421,16 @@ AliAnalysisPIDTrack::Update(AliESDtrack *track, AliStack *stack, AliMCEvent *mce
   fMCMotherPdgCode = 0;
   fMCSecondaryWeak = kFALSE;
   fMCSecondaryMaterial = kFALSE;
-  if (stack) {
+  if (mcevent) {
     Int_t index = TMath::Abs(fLabel);
     if (index < 0) {
       printf("index = %d\n", index);
       return;
     }
-    TParticle *particle = stack->Particle(index);
-    fMCPrimary = stack->IsPhysicalPrimary(index);
-    fMCSecondaryWeak = stack->IsSecondaryFromWeakDecay(index);
-    fMCSecondaryMaterial = stack->IsSecondaryFromMaterial(index);
+    TParticle *particle = mcevent->Particle(index);
+    fMCPrimary = mcevent->IsPhysicalPrimary(index);
+    fMCSecondaryWeak = mcevent->IsSecondaryFromWeakDecay(index);
+    fMCSecondaryMaterial = mcevent->IsSecondaryFromMaterial(index);
     fMCPdgCode = particle->GetPdgCode();
     Int_t indexm = particle->GetFirstMother();
     if (indexm < 0) {
@@ -434,8 +438,8 @@ AliAnalysisPIDTrack::Update(AliESDtrack *track, AliStack *stack, AliMCEvent *mce
       fMCMotherPdgCode = 0;
     }
     else {
-      TParticle *particlem = stack->Particle(indexm);
-      fMCMotherPrimary = stack->IsPhysicalPrimary(indexm);
+      TParticle *particlem = mcevent->Particle(indexm);
+      fMCMotherPrimary = mcevent->IsPhysicalPrimary(indexm);
       fMCMotherPdgCode = particlem->GetPdgCode();
       fMCMotherLabel = indexm;
     }
@@ -446,8 +450,8 @@ AliAnalysisPIDTrack::Update(AliESDtrack *track, AliStack *stack, AliMCEvent *mce
     fMCTOFMatchLevel = -1;
     if (fTOFLabel[0] > 0) {
       index = fTOFLabel[0];
-      particle = stack->Particle(index);
-      fMCTOFMatchPrimary = stack->IsPhysicalPrimary(index);
+      particle = mcevent->Particle(index);
+      fMCTOFMatchPrimary = mcevent->IsPhysicalPrimary(index);
       fMCTOFMatchPdgCode = particle->GetPdgCode();
       Int_t tracklabel = TMath::Abs(fLabel);
       Int_t matchlevel = -1;
@@ -456,7 +460,7 @@ AliAnalysisPIDTrack::Update(AliESDtrack *track, AliStack *stack, AliMCEvent *mce
 	  matchlevel = ilevel;
 	  break;
 	}
-	index = stack->Particle(index)->GetFirstMother();
+	index = mcevent->Particle(index)->GetFirstMother();
       }
       fMCTOFMatchLevel = matchlevel;
     }

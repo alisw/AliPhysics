@@ -146,7 +146,7 @@ const Double_t AliGenEMlibV2::fgkMtFactor[3][26] = {
 Double_t AliGenEMlibV2::PtExponential(const Double_t *px, const Double_t *c){
   const double &pt=px[0];
   Double_t invYield = c[0]*exp(-pt*c[1]);
-  
+
   return invYield*(2*TMath::Pi()*pt);
 }
 
@@ -154,7 +154,7 @@ Double_t AliGenEMlibV2::PtExponential(const Double_t *px, const Double_t *c){
 Double_t AliGenEMlibV2::PtModifiedHagedornPowerlaw(const Double_t *px, const Double_t *c){
   const double &pt=px[0];
   Double_t invYield = c[0]*pow(c[1]+pt*c[2],-c[3])*CrossOverLc(c[5],c[4],pt)+CrossOverRc(c[7],c[6],pt)*c[8]*pow(pt+0.001,-c[9]); //pt+0.001: prevent powerlaw from exploding for pt->0
-  
+
   return invYield*(2*TMath::Pi()*pt+0.001); //+0.001: be sure to be > 0
 }
 
@@ -174,7 +174,7 @@ Double_t AliGenEMlibV2::PtPromptRealGamma( const Double_t *px, const Double_t */
 {
   const static Double_t promptGammaPtParam[10] = { 1.908746e-02, 3.326402e-01, 7.525743e-01, 5.251425e+00, 9.275261e+00, 1.855052e+01, 9.855216e+00, 1.867316e+01, 1.198770e-01, 5.407858e+00 };
   //{ 2.146541e-02, 5.540414e-01, 6.664706e-01, 5.739829e+00, 1.816496e+01, 2.561591e+01, 1.121881e+01, 3.569223e+01, 6.624561e-02, 5.234547e+00 };
-  
+
   return PtModifiedHagedornPowerlaw(px,promptGammaPtParam)*GetTAA(fgSelectedCentrality)*1.15;
   //correction factor 1.15 comes from the global fit of all ALICE direct gamma measurements (see definition of fgkThermPtParam), showing that direct gamma is about 15% above the NLO expectation
 }
@@ -320,7 +320,7 @@ Double_t AliGenEMlibV2::V2Pizero( const Double_t *px, const Double_t */*dummy*/ 
       // raw yeilds are not normalized per event
       return (n1*v1+n2*v2+n3*v3+n4*v4+n5*v5)/(n1+n2+n3+n4+n5);
       break;
-      
+
     default:
       return V2Param(px,fgkV2param[fgSelectedCentrality]);
   }
@@ -408,7 +408,7 @@ Double_t AliGenEMlibV2::YOmega( const Double_t *py, const Double_t */*dummy*/ )
 Double_t AliGenEMlibV2::V2Omega( const Double_t *px, const Double_t */*dummy*/ )
 {
   return KEtScal(*px,kOmega);
-  
+
 }
 
 
@@ -432,7 +432,7 @@ Double_t AliGenEMlibV2::PtEtaprime( const Double_t *px, const Double_t */*dummy*
 Double_t AliGenEMlibV2::YEtaprime( const Double_t *py, const Double_t */*dummy*/ )
 {
   return YFlat(*py);
-  
+
 }
 
 Double_t AliGenEMlibV2::V2Etaprime( const Double_t *px, const Double_t */*dummy*/ )
@@ -527,7 +527,7 @@ Double_t AliGenEMlibV2::PtSigma0( const Double_t *px, const Double_t */*dummy*/ 
 Double_t AliGenEMlibV2::YSigma0( const Double_t *py, const Double_t */*dummy*/ )
 {
   return YFlat(*py);
-  
+
 }
 
 Double_t AliGenEMlibV2::V2Sigma0( const Double_t *px, const Double_t */*dummy*/ )
@@ -556,7 +556,7 @@ Double_t AliGenEMlibV2::PtK0short( const Double_t *px, const Double_t */*dummy*/
 Double_t AliGenEMlibV2::YK0short( const Double_t *py, const Double_t */*dummy*/ )
 {
   return YFlat(*py);
-  
+
 }
 
 Double_t AliGenEMlibV2::V2K0short( const Double_t *px, const Double_t */*dummy*/ )
@@ -585,7 +585,7 @@ Double_t AliGenEMlibV2::PtK0long( const Double_t *px, const Double_t */*dummy*/ 
 Double_t AliGenEMlibV2::YK0long( const Double_t *py, const Double_t */*dummy*/ )
 {
   return YFlat(*py);
-  
+
 }
 
 Double_t AliGenEMlibV2::V2K0long( const Double_t *px, const Double_t */*dummy*/ )
@@ -614,7 +614,7 @@ Double_t AliGenEMlibV2::PtLambda( const Double_t *px, const Double_t */*dummy*/ 
 Double_t AliGenEMlibV2::YLambda( const Double_t *py, const Double_t */*dummy*/ )
 {
   return YFlat(*py);
-  
+
 }
 
 Double_t AliGenEMlibV2::V2Lambda( const Double_t *px, const Double_t */*dummy*/ )
@@ -643,7 +643,7 @@ Double_t AliGenEMlibV2::PtDeltaPlPl( const Double_t *px, const Double_t */*dummy
 Double_t AliGenEMlibV2::YDeltaPlPl( const Double_t *py, const Double_t */*dummy*/ )
 {
   return YFlat(*py);
-  
+
 }
 
 Double_t AliGenEMlibV2::V2DeltaPlPl( const Double_t *px, const Double_t */*dummy*/ )
@@ -672,7 +672,7 @@ Double_t AliGenEMlibV2::PtDeltaPl( const Double_t *px, const Double_t */*dummy*/
 Double_t AliGenEMlibV2::YDeltaPl( const Double_t *py, const Double_t */*dummy*/ )
 {
   return YFlat(*py);
-  
+
 }
 
 Double_t AliGenEMlibV2::V2DeltaPl( const Double_t *px, const Double_t */*dummy*/ )
@@ -701,7 +701,7 @@ Double_t AliGenEMlibV2::PtDeltaMi( const Double_t *px, const Double_t */*dummy*/
 Double_t AliGenEMlibV2::YDeltaMi( const Double_t *py, const Double_t */*dummy*/ )
 {
   return YFlat(*py);
-  
+
 }
 
 Double_t AliGenEMlibV2::V2DeltaMi( const Double_t *px, const Double_t */*dummy*/ )
@@ -730,7 +730,7 @@ Double_t AliGenEMlibV2::PtDeltaZero( const Double_t *px, const Double_t */*dummy
 Double_t AliGenEMlibV2::YDeltaZero( const Double_t *py, const Double_t */*dummy*/ )
 {
   return YFlat(*py);
-  
+
 }
 
 Double_t AliGenEMlibV2::V2DeltaZero( const Double_t *px, const Double_t */*dummy*/ )
@@ -759,7 +759,7 @@ Double_t AliGenEMlibV2::PtRhoPl( const Double_t *px, const Double_t */*dummy*/ )
 Double_t AliGenEMlibV2::YRhoPl( const Double_t *py, const Double_t */*dummy*/ )
 {
   return YFlat(*py);
-  
+
 }
 
 Double_t AliGenEMlibV2::V2RhoPl( const Double_t *px, const Double_t */*dummy*/ )
@@ -788,7 +788,7 @@ Double_t AliGenEMlibV2::PtRhoMi( const Double_t *px, const Double_t */*dummy*/ )
 Double_t AliGenEMlibV2::YRhoMi( const Double_t *py, const Double_t */*dummy*/ )
 {
   return YFlat(*py);
-  
+
 }
 
 Double_t AliGenEMlibV2::V2RhoMi( const Double_t *px, const Double_t */*dummy*/ )
@@ -817,7 +817,7 @@ Double_t AliGenEMlibV2::PtK0star( const Double_t *px, const Double_t */*dummy*/ 
 Double_t AliGenEMlibV2::YK0star( const Double_t *py, const Double_t */*dummy*/ )
 {
   return YFlat(*py);
-  
+
 }
 
 Double_t AliGenEMlibV2::V2K0star( const Double_t *px, const Double_t */*dummy*/ )
@@ -1076,11 +1076,11 @@ TF1* AliGenEMlibV2::MtScal(Int_t np, TString name, Bool_t isMeson)
   Double_t xmin, xmax;
   Int_t nPar;
   TString formulaBaseScaled, scaledPt;
-  
+
   // value meson/pi0 (baryon/p) at 5 GeV/c
   Double_t NormPt       = 5.;
   Double_t scaledNormPt, norm;
-  
+
   if (!isMeson && fPtParametrizationProton) {
     // scale baryons from protons
     fPtParametrizationProton->GetRange(xmin, xmax);
@@ -1098,7 +1098,7 @@ TF1* AliGenEMlibV2::MtScal(Int_t np, TString name, Bool_t isMeson)
     scaledNormPt          = TMath::Sqrt(NormPt*NormPt + fgkHM[np]*fgkHM[np] - fgkHM[0]*fgkHM[0]);
     norm                  = fMtFactorHisto->GetBinContent(np+1) * fPtParametrization[0]->Eval(NormPt) / fPtParametrization[0]->Eval(scaledNormPt);
   }
-  
+
   TString formulaBaseScaledTemp = "";
   TString sub1                  = "";
   TString sub2                  = "";
@@ -1110,7 +1110,7 @@ TF1* AliGenEMlibV2::MtScal(Int_t np, TString name, Bool_t isMeson)
     if (i<formulaBaseScaled.Length()-1)
       sub3                      = formulaBaseScaled(i+1, 1);
     else sub3                   = "";
-    
+
     if (sub2.CompareTo("x")!=0) {
       formulaBaseScaledTemp += sub2;
     } else if (sub2.CompareTo("x")==0) {
@@ -1126,7 +1126,7 @@ TF1* AliGenEMlibV2::MtScal(Int_t np, TString name, Bool_t isMeson)
     }
   }
   formulaBaseScaled = formulaBaseScaledTemp;
-  
+
   TF1* result = new TF1(name.Data(), Form("%.10f * (x/%s) * (%s)", norm, scaledPt.Data(), formulaBaseScaled.Data()), xmin, xmax);
   if (!isMeson && fPtParametrizationProton) {
     for (Int_t i=0; i<nPar; i++) {
@@ -1211,13 +1211,13 @@ Double_t AliGenEMlibV2::GetTAA(Int_t cent){
 //
 //--------------------------------------------------------------------------
 Bool_t AliGenEMlibV2::SetPtParametrizations(TString fileName, TString dirName) {
-  
+
   // open parametrizations file
   TFile* fParametrizationFile = TFile::Open(fileName.Data());
   if (!fParametrizationFile) AliFatalClass(Form("File %s not found",fileName.Data()));
   TDirectory* fParametrizationDir = (TDirectory*)fParametrizationFile->Get(dirName.Data());
   if (!fParametrizationDir) AliFatalClass(Form("Directory %s not found",dirName.Data()));
-  
+
   // check for pi0 parametrization
   TF1* fPtParametrizationTemp = (TF1*)fParametrizationDir->Get("111_pt");
   if (!fPtParametrizationTemp) AliFatalClass(Form("File %s doesn't contain pi0 parametrization",fileName.Data()));
@@ -1233,7 +1233,7 @@ Bool_t AliGenEMlibV2::SetPtParametrizations(TString fileName, TString dirName) {
     fPtParametrizationProton = new TF1(*fPtParametrizationProtonTemp);
     fPtParametrizationProton->SetName("2212_pt");
   }
-  
+
   AliGenEMlibV2 lib;
   TRandom* rndm;
 
@@ -1251,10 +1251,10 @@ Bool_t AliGenEMlibV2::SetPtParametrizations(TString fileName, TString dirName) {
         fPtParametrization[i] = (TF1*)MtScal(i, Form("%d_pt_mtScaled", ip), 1);
     }
   }
-  
+
   fParametrizationFile->Close();
   delete fParametrizationFile;
-  
+
   return kTRUE;
 }
 
@@ -1280,7 +1280,7 @@ TF1* AliGenEMlibV2::GetPtParametrization(Int_t np) {
 //
 //--------------------------------------------------------------------------
 void AliGenEMlibV2::SetMtScalingFactors(TString fileName, TString dirName) {
-  
+
   // set collision system
   Int_t selectedCol;
   switch (fgSelectedCollisionsSystem){
@@ -1303,7 +1303,7 @@ void AliGenEMlibV2::SetMtScalingFactors(TString fileName, TString dirName) {
       selectedCol=0;
       printf("<AliGenEMlibV2::SetMtScalingFactors> no collision system has been given\n");
   }
-  
+
   // open file
   TFile*        fMtFactorFile = TFile::Open(fileName.Data());
   TDirectory*   fMtFactorDir  = (TDirectory*)fMtFactorFile->Get(dirName.Data());
@@ -1387,10 +1387,14 @@ TH1D* AliGenEMlibV2::GetMtScalingFactors() {
 Bool_t AliGenEMlibV2::SetPtYDistributions(TString fileName, TString dirName) {
 
   // open parametrizations file
-  TFile* fPtYDistributionFile = TFile::Open(fileName.Data());
+  TFile* fPtYDistributionFile       = TFile::Open(fileName.Data());
   if (!fPtYDistributionFile) AliFatalClass(Form("File %s not found",fileName.Data()));
-  TDirectory* fPtYDistributionDir = (TDirectory*)fPtYDistributionFile->Get(dirName.Data());
-  if (!fPtYDistributionDir) AliFatalClass(Form("Directory %s not found",dirName.Data()));
+
+  TObjArray *arr                    = dirName.Tokenize("_");
+  TString ptYDirName                = ((TObjString*)arr->At(0))->GetString();
+
+  TDirectory* fPtYDistributionDir   = (TDirectory*)fPtYDistributionFile->Get(ptYDirName.Data());
+  if (!fPtYDistributionDir) AliFatalClass(Form("Directory %s not found",ptYDirName.Data()));
 
   // check for pt-y parametrizations
   AliGenEMlibV2 lib;
@@ -1443,7 +1447,7 @@ GenFunc AliGenEMlibV2::GetPt(Int_t param, const char * tname) const
   // Return pointer to pT parameterisation
   GenFunc func=0;
   TString sname(tname);
-  
+
   switch (param) {
     case kDirectRealGamma:
       func=PtDirectRealGamma;
@@ -1541,7 +1545,7 @@ GenFunc AliGenEMlibV2::GetY(Int_t param, const char * tname) const
   // Return pointer to y- parameterisation
   GenFunc func=0;
   TString sname(tname);
-  
+
   switch (param) {
     case kDirectRealGamma:
       func=YDirectRealGamma;
@@ -1639,7 +1643,7 @@ GenFuncIp AliGenEMlibV2::GetIp(Int_t param, const char * tname) const
   // Return pointer to particle type parameterisation
   GenFuncIp func=0;
   TString sname(tname);
-  
+
   switch (param) {
     case kDirectRealGamma:
       func=IpDirectRealGamma;
@@ -1737,7 +1741,7 @@ GenFunc AliGenEMlibV2::GetV2(Int_t param, const char * tname) const
   // Return pointer to v2-parameterisation
   GenFunc func=0;
   TString sname(tname);
-  
+
   switch (param) {
     case kDirectRealGamma:
       func=V2DirectRealGamma;

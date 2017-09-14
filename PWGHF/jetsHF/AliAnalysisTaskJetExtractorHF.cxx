@@ -110,6 +110,7 @@ AliAnalysisTaskJetExtractorHF::AliAnalysisTaskJetExtractorHF() :
   fExtractionCutMaxPt(200.),
   fExtractionPercentage(1.0),
   fExtractionListPIDsHM(),
+  fSetEmcalJetFlavour(0),
   fHadronMatchingRadius(0.5),
   fInitialCollisionMatchingRadius(0.3),
   fTruthJetsArrayName(""),
@@ -156,6 +157,7 @@ AliAnalysisTaskJetExtractorHF::AliAnalysisTaskJetExtractorHF(const char *name) :
   fExtractionCutMaxPt(200.),
   fExtractionPercentage(1.0),
   fExtractionListPIDsHM(),
+  fSetEmcalJetFlavour(0),
   fHadronMatchingRadius(0.5),
   fInitialCollisionMatchingRadius(0.3),
   fTruthJetsArrayName(""),
@@ -206,9 +208,20 @@ void AliAnalysisTaskJetExtractorHF::UserCreateOutputObjects()
   AddHistogram2D<TH2D>("hJetArea", "Jet area", "COLZ", 200, 0., 2., 100, 0, 100, "Jet A", "Centrality", "dN^{Jets}/dA");
 
   AddHistogram2D<TH2D>("hJetType", "Jet type", "COLZ", 7, 0, 7, 7, 0, 7, "Jet type from hadron matching", "Jet type initial collision", "dN^{Jets}/dType");
+  AddHistogram2D<TH2D>("hDeltaPt", "#delta p_{T} distribution", "", 400, -100., 300., 100, 0, 100, "p_{T, cone} (GeV/c)", "Centrality", "dN^{Tracks}/dp_{T}");
 
   AddHistogram2D<TH2D>("hConstituentPt", "Jet constituent p_{T} distribution", "COLZ", 400, 0., 300., 100, 0, 100, "p_{T, const} (GeV/c)", "Centrality", "dN^{Const}/dp_{T}");
   AddHistogram2D<TH2D>("hConstituentPhiEta", "Jet constituent relative #phi/#eta distribution", "COLZ", 120, -0.6, 0.6, 120, -0.6, 0.6, "#Delta#phi", "#Delta#eta", "dN^{Const}/d#phi d#eta");
+
+  // Track QA plots
+  AddHistogram2D<TH2D>("hTrackPt", "Tracks p_{T} distribution", "", 300, 0., 300., 100, 0, 100, "p_{T} (GeV/c)", "Centrality", "dN^{Tracks}/dp_{T}");
+  AddHistogram2D<TH2D>("hTrackPhi", "Track angular distribution in #phi", "LEGO2", 180, 0., 2*TMath::Pi(), 100, 0, 100, "#phi", "Centrality", "dN^{Tracks}/(d#phi)");
+  AddHistogram2D<TH2D>("hTrackEta", "Track angular distribution in #eta", "LEGO2", 100, -2.5, 2.5, 100, 0, 100, "#eta", "Centrality", "dN^{Tracks}/(d#eta)");
+  AddHistogram2D<TH2D>("hTrackPhiEta", "Track angular distribution #phi/#eta", "COLZ", 180, 0., 2*TMath::Pi(), 100, -2.5, 2.5, "#phi", "#eta", "dN^{Tracks}/d#phi d#eta");
+
+  AddHistogram2D<TH2D>("hTrackEtaPt", "Track angular distribution in #eta vs. p_{T}", "LEGO2", 100, -2.5, 2.5, 300, 0., 300., "#eta", "p_{T} (GeV/c)", "dN^{Tracks}/(d#eta dp_{T})");
+  AddHistogram2D<TH2D>("hTrackPhiPt", "Track angular distribution in #phi vs. p_{T}", "LEGO2", 180, 0, 2*TMath::Pi(), 300, 0., 300., "#phi", "p_{T} (GeV/c)", "dN^{Tracks}/(d#phi dp_{T})");
+
 
   TH1* tmpHisto = AddHistogram1D<TH1D>("hJetAcceptance", "Accepted jets", "", 5, 0, 5, "stage","N^{jets}/cut");
   tmpHisto->GetXaxis()->SetBinLabel(1, "Before cuts");
@@ -267,7 +280,7 @@ Bool_t AliAnalysisTaskJetExtractorHF::IsJetSelected(AliEmcalJet* jet)
   if(fExtractionCutUseIC)
   {
     passedCutPID = kFALSE;
-    for(Int_t i=0; i<fExtractionListPIDsIC.size(); i++)
+    for(size_t i=0; i<fExtractionListPIDsIC.size(); i++)
     {
       if (fExtractionListPIDsIC.at(i) == fCurrentJetTypeIC)
         passedCutPID = kTRUE;
@@ -277,7 +290,7 @@ Bool_t AliAnalysisTaskJetExtractorHF::IsJetSelected(AliEmcalJet* jet)
   else if(fExtractionCutUseHM)
   {
     passedCutPID = kFALSE;
-    for(Int_t i=0; i<fExtractionListPIDsHM.size(); i++)
+    for(size_t i=0; i<fExtractionListPIDsHM.size(); i++)
     {
       if (fExtractionListPIDsHM.at(i) == fCurrentJetTypeHM)
         passedCutPID = kTRUE;
@@ -387,8 +400,37 @@ void AliAnalysisTaskJetExtractorHF::FillJetControlHistograms(AliEmcalJet* jet)
     FillHistogram("hConstituentPt", jetConst->Pt(), fCent);
     FillHistogram("hConstituentPhiEta", deltaPhi, deltaEta);
   }
+
+  // ### Random cone / delta pT plots
+  const Int_t kNumRandomConesPerEvent = 4;
+  for(Int_t iCone=0; iCone<kNumRandomConesPerEvent; iCone++)
+  {
+    // Throw random cone
+    Double_t tmpRandConeEta = fJetsCont->GetJetEtaMin() + fRandom->Rndm()*TMath::Abs(fJetsCont->GetJetEtaMax()-fJetsCont->GetJetEtaMin());
+    Double_t tmpRandConePhi = fRandom->Rndm()*TMath::TwoPi();
+    Double_t tmpRandConePt  = 0;
+    // Fill pT that is in cone
+    fTracksCont->ResetCurrentID();
+    while(AliVTrack *track = static_cast<AliVTrack*>(fTracksCont->GetNextAcceptParticle()))
+      if(IsTrackInCone(track, tmpRandConeEta, tmpRandConePhi, fJetsCont->GetJetRadius()))
+        tmpRandConePt += track->Pt();
+
+    // Fill histograms
+    FillHistogram("hDeltaPt", tmpRandConePt - fJetsCont->GetRhoVal()*fJetsCont->GetJetRadius()*fJetsCont->GetJetRadius()*TMath::Pi(), fCent);
+  }
+
 }
 
+//________________________________________________________________________
+void AliAnalysisTaskJetExtractorHF::FillTrackControlHistograms(AliVTrack* track)
+{
+  FillHistogram("hTrackPt", track->Pt(), fCent);
+  FillHistogram("hTrackPhi", track->Phi(), fCent);
+  FillHistogram("hTrackEta", track->Eta(), fCent);
+  FillHistogram("hTrackEtaPt", track->Eta(), track->Pt());
+  FillHistogram("hTrackPhiPt", track->Phi(), track->Pt());
+  FillHistogram("hTrackPhiEta", track->Phi(), track->Eta());
+}
 //________________________________________________________________________
 Bool_t AliAnalysisTaskJetExtractorHF::Run()
 {
@@ -406,6 +448,11 @@ Bool_t AliAnalysisTaskJetExtractorHF::Run()
     FillJetControlHistograms(jet);
     AddJetToTree(jet);
   }
+
+  // ### Particle loop
+  fTracksCont->ResetCurrentID();
+  while(AliVTrack *track = static_cast<AliVTrack*>(fTracksCont->GetNextAcceptParticle()))
+    FillTrackControlHistograms(track);
 
   FillEventControlHistograms();
 
@@ -543,6 +590,8 @@ void AliAnalysisTaskJetExtractorHF::CalculateEventProperties()
   fCurrentNJetsInEvents = 0;
   GetLeadingJets("rho", fCurrentLeadingJet, fCurrentSubleadingJet);
   CalculateInitialCollisionJets();
+  if(fCent==-1)
+    fCent = 99;
 }
 
 //________________________________________________________________________
@@ -715,6 +764,9 @@ void AliAnalysisTaskJetExtractorHF::CalculateJetType_HFMethod(AliEmcalJet* jet, 
     else if ((pdg >= 500 && pdg <= 600) || (pdg >= 5000 && pdg <= 6000)) typeHM = 5;
   }
 
+  // Set flavour of AliEmcalJet object (set ith bit while i corresponds to type)
+  if(fSetEmcalJetFlavour)
+    jet->AddFlavourTag(static_cast<Int_t>(TMath::Power(2, typeHM)));
 }
 
 
@@ -809,6 +861,24 @@ void AliAnalysisTaskJetExtractorHF::AddPIDInformation(AliVParticle* particle, Al
 
   AliAODPid* pidObj = aodtrack->GetDetPid();
   constituent.SetPIDSignal(pidObj->GetITSsignal(), pidObj->GetTPCsignal(), pidObj->GetTOFsignal(), pidObj->GetTRDsignal(), truthPID, recoPID);
+}
+
+//________________________________________________________________________
+inline Bool_t AliAnalysisTaskJetExtractorHF::IsTrackInCone(AliVParticle* track, Double_t eta, Double_t phi, Double_t radius)
+{
+  // This is to use a full cone in phi even at the edges of phi (2pi -> 0) (0 -> 2pi)
+  Double_t trackPhi = 0.0;
+  if (track->Phi() > (TMath::TwoPi() - (radius-phi)))
+    trackPhi = track->Phi() - TMath::TwoPi();
+  else if (track->Phi() < (phi+radius - TMath::TwoPi()))
+    trackPhi = track->Phi() + TMath::TwoPi();
+  else
+    trackPhi = track->Phi();
+
+  if ( TMath::Abs(trackPhi-phi)*TMath::Abs(trackPhi-phi) + TMath::Abs(track->Eta()-eta)*TMath::Abs(track->Eta()-eta) <= radius*radius)
+    return kTRUE;
+
+  return kFALSE;
 }
 
 //________________________________________________________________________

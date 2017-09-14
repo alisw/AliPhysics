@@ -9,7 +9,7 @@
 	//      Task for Heavy-flavour electron analysis in pPb collisions    //
 	//      (+ Electron-Hadron Jetlike Azimuthal Correlation)             //
 	//																	  //
-	//		version: January 26th, 2017.      							  //
+	//		version: August 4, 2017.      							  //
 	//                                                                    //
 	//	    Authors 							                          //
 	//		Elienos Pereira de Oliveira Filho (epereira@cern.ch)	      //
@@ -92,6 +92,8 @@ public:
 	void SetCorrelationAnalysis(Bool_t CorrelationFlag=kTRUE) {fCorrelationFlag = CorrelationFlag;};
 	void SetMCanalysis() {fIsMC = kTRUE;};
 	
+
+	
 	void SetPPanalysis(Bool_t Ispp = kFALSE) {fIspp = Ispp;};
 		//centrality
 	void SetCentralitySys(Bool_t IsCentralitySys = kFALSE) {fIsCentralitySys = IsCentralitySys;};
@@ -155,8 +157,7 @@ private:
 	
 		//Function to process track cuts
 	Bool_t ProcessCutStep(Int_t cutStep, AliVParticle *track);
-		//Function to process eh analysis
-	void ElectronHadronCorrelation(AliVTrack *track, Int_t trackIndex, AliVParticle *vtrack);
+		
 		//Function to find non-HFE and fill histos
 	void Background(AliVTrack *track, Int_t trackIndex, AliVParticle *vtrack, Bool_t IsTPConly, Bool_t IsWeight,Bool_t MassPtBins);
 		//Selected Hadrons, for mixed event analysis
@@ -175,6 +176,10 @@ private:
 	Bool_t				fIspp;
 	Bool_t				fIsCentralitySys;
 	Bool_t				fIsMC;
+	
+
+	
+	
 	Bool_t				fUseEMCal;
 	Bool_t				fUseTrigger;
 	Bool_t				fUseTender;
@@ -207,6 +212,10 @@ private:
 	AliESDEvent 			*fESD;
 	AliAODEvent 		   	*fAOD;				/// new
 	AliVEvent 		      	*fVevent;			/// new
+	
+	TClonesArray  *fTracks_tender;//Tender tracks
+	TClonesArray *fCaloClusters_tender;//Tender cluster
+	
 	AliESDtrackCuts         *fPartnerCuts;
 	TList       			*fOutputList;
 	AliPIDResponse 			*fPidResponse;
@@ -530,6 +539,15 @@ private:
 	TH2F				**fTPCNcls_EoverP;
 	TH2F				**fTPCNcls_pid;
 	TH1F				**fEta;
+	
+	TH2F				**fPt_Eta;
+	TH2F	            **fPt_Eta_excluding_range;
+	TH2F				**fPt_DCAr;
+	TH2F				**fPhi_DCAr;
+	
+	TH2F				**fPhi_DCAr_neg;
+	TH2F				**fPhi_DCAr_pos;
+	
 	TH1F				**fPhi;
 	TH1F				**fR;
 	TH2F				**fR_EoverP;

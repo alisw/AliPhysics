@@ -88,6 +88,8 @@ AliSelectNonHFE::AliSelectNonHFE(const char *name, const Char_t *title)
 ,fEtaCutMax(0.8)
 ,fRequireTPCNclusForPID(kFALSE)
 ,fTpcNclsPID(60)
+,fUseTender(kFALSE)
+
 {
     //
     // Constructor
@@ -148,6 +150,8 @@ AliSelectNonHFE::AliSelectNonHFE()
 ,fEtaCutMax(0.8)
 ,fRequireTPCNclusForPID(kFALSE)
 ,fTpcNclsPID(60)
+,fUseTender(kFALSE)
+
 
 {
     //
@@ -182,10 +186,13 @@ AliSelectNonHFE::~AliSelectNonHFE()
 }
 
 //__________________________________________
-void AliSelectNonHFE::FindNonHFE(Int_t iTrack1, AliVParticle *Vtrack1, AliVEvent *fVevent)
+void AliSelectNonHFE::FindNonHFE(Int_t iTrack1, AliVParticle *Vtrack1, AliVEvent *fVevent, TClonesArray  *fTracks_tender, Bool_t fUseTender)
 {
-    AliVTrack *track1 = dynamic_cast<AliVTrack*>(Vtrack1);
+    
+	
+	AliVTrack *track1 = dynamic_cast<AliVTrack*>(Vtrack1);
     AliESDtrack *etrack1 = dynamic_cast<AliESDtrack*>(Vtrack1);
+	AliAODTrack *atrack1 = dynamic_cast<AliAODTrack*>(Vtrack1);
     
     AliExternalTrackParam extTrackParam1;
     extTrackParam1.CopyFromVTrack(track1);
@@ -208,21 +215,49 @@ void AliSelectNonHFE::FindNonHFE(Int_t iTrack1, AliVParticle *Vtrack1, AliVEvent
     if(fULSPartner) delete [] fULSPartner;
     fLSPartner = new int [100]; 	//store the partners index
     fULSPartner = new int [100];	//store the partners index
-    
-    for(Int_t iTrack2 = 0; iTrack2 < fVevent->GetNumberOfTracks(); iTrack2++)
+	
+	
+	//=============================
+	Int_t NTracks=0;
+	
+		
+	if(fUseTender){
+		NTracks = fTracks_tender->GetEntries();
+	}
+	else{
+		NTracks=fVevent->GetNumberOfTracks();
+	}
+    //=============================
+	
+	
+    for(Int_t iTrack2 = 0; iTrack2 < NTracks; iTrack2++)
     {
-        //if(iTrack1==iTrack2) continue;
-        
-        AliVParticle* Vtrack2 = fVevent->GetTrack(iTrack2);
-        if (!Vtrack2)
-        {
-            printf("ERROR: Could not receive track %d\n", iTrack2);
-            continue;
-        }
+		
+		//It will work for EMCal framework if the "fTracks_tender" and flag fUseTender is passed to SelectNonHFE!
+        if(iTrack1==iTrack2) continue;
+		
+		AliVParticle* Vtrack2 = 0x0;
+		if(!fUseTender) Vtrack2  = fVevent->GetTrack(iTrack2);
+					
+		if(fUseTender){
+			Vtrack2 = dynamic_cast<AliVTrack*>(fTracks_tender->At(iTrack2));
+		}
+		
+		if (!Vtrack2)
+		{
+			printf("ERROR: Could not receive track %d\n", iTrack2);
+			continue;
+		}
+		 
+		
+	
         
         AliVTrack *track2 = dynamic_cast<AliVTrack*>(Vtrack2);
         AliAODTrack *atrack2 = dynamic_cast<AliAODTrack*>(Vtrack2);
         AliESDtrack *etrack2 = dynamic_cast<AliESDtrack*>(Vtrack2);
+		
+			
+		
         AliExternalTrackParam extTrackParam2;
         extTrackParam2.CopyFromVTrack(track2);
 
@@ -286,6 +321,12 @@ void AliSelectNonHFE::FindNonHFE(Int_t iTrack1, AliVParticle *Vtrack1, AliVEvent
         
         //Pt Cut
         if((track2->Pt() < fPtMin) && (fHasPtCut)) continue;
+		
+		
+		
+		
+		
+		
         
         if(fAlgorithm=="DCA")
         {
@@ -323,12 +364,16 @@ void AliSelectNonHFE::FindNonHFE(Int_t iTrack1, AliVParticle *Vtrack1, AliVEvent
             
             if(!hasdcaT1 || !hasdcaT2) AliWarning("It could be a problem in the extrapolation");
             
-            //added by Cris to not take same track  for tender case
+            //added by Cris to not take same track  for tender case (not necessary anymore, since now for emcal framework the TClones array with track and flag of tender can be passed)
+			/*
             if(p1[0]==p2[0] && p1[1]==p2[1] && p1[2]==p2[2]){
-                // printf("Track %d was rejected when combined with main track %d", iTrack2, iTrack1);
+				printf("Track %d was rejected when combined with main track %d", iTrack2, iTrack1);
+				printf("Checking ID: id1 =%f, id2=%f \n", id1, id2);
                 continue;
                 
             }
+			 */
+			
             
             
             //track1-track2 Invariant Mass
@@ -378,6 +423,10 @@ void AliSelectNonHFE::FindNonHFE(Int_t iTrack1, AliVParticle *Vtrack1, AliVEvent
         }
         else if(fAlgorithm=="KF")
         {
+			
+			
+			
+			
             Int_t fPDGtrack1 = 11;
             Int_t fPDGtrack2 = 11;
             

@@ -1,8 +1,14 @@
+///
+/// \file V0LamAnalysis/AliAnalysisV0LamCutProcessing.cxx
+///
+
 #include "AliAnalysisV0LamCutProcessing.h"
 
+using namespace std;
+
 AliAnalysisV0LamCut::AliAnalysisV0LamCut():
-  fIsAnUpperLimit(false),
   fNumberOfCutValues(0),
+  fIsAnUpperLimit(false),
   fCutValues(0)
 {
 }
@@ -36,10 +42,10 @@ AliAnalysisV0LamCutProcessing::AliAnalysisV0LamCutProcessing(TList *const output
     fNumberOfVariableCutValues = 3;//needs to be manually set if values change
   }
   else fNumberOfVariableCutValues = 1;
-  
+
   //New recontruction cuts should be put in here.
   // fOutputList = outputList; //Get the output list from the main analysis task
-  
+
   vector<Double_t> valueDCAPrimProton;
   vector<Double_t> valueDCAPrimPion;
   vector<Double_t> valueDCADaughters;
@@ -136,7 +142,7 @@ AliAnalysisV0LamCutProcessing::AliAnalysisV0LamCutProcessing(TList *const output
   fCuts.push_back(AliAnalysisV0LamCut(valueMassALamDiff, true)); //v0->massALamDifference;
 
   fNumberOfCutTypes = fCuts.size(); //Manually set this to the number of recon cuts
-  
+
   InitHistograms();
 }
 
@@ -159,62 +165,86 @@ void AliAnalysisV0LamCutProcessing::ProcessCut(AliReconstructedV0 *v0, int index
   //question is a variable cut, the function loops over each value of that cut
   //and stores whether the V0 passes or fails each particular value.
   //If isLambdaCandidate is false, the V0 is an Antilambda candidate
-  
+
   //First we get the relevant V0 information that will be tested by this cut.
-  Double_t v0Value;
-  if     (0 == index){ //Get the proton DCA to primary
-    if(isLambdaCandidate) v0Value = v0->daughterPosDCAPrimaryVertex;
-    else                  v0Value = v0->daughterNegDCAPrimaryVertex;
-  }
-  else if(1 == index){ //Get the pion DCA to primary
-    if(isLambdaCandidate) v0Value = v0->daughterNegDCAPrimaryVertex;
-    else                  v0Value = v0->daughterPosDCAPrimaryVertex;
-  }
-  else if(2 == index) v0Value = v0->daughtersDCA;
-  else if(3 == index){
-    if(v0->lorentzGammaLam >0) v0Value = (v0->decayLength / v0->lorentzGammaLam);
-    else v0Value = 1000; // something is wrong if gamma <=0, so set to a fail val
-  }
-  else if(4 == index) v0Value = v0->v0Eta;
-  else if(5 == index) v0Value = v0->cosPointing;
-  else if(6 == index) v0Value = v0->v0DCA;
-  else if(7 == index) v0Value = v0->v0Pt;
-  else if(8 == index) v0Value = v0->massLamDifference;
-  else if(9 == index) v0Value = v0->massALamDifference;
-  else cerr<<"ERROR: No cut for this index value \n";
-  //Find how many cut values are associated with this cut
-  int numberOfCutValues = fCuts[index].fNumberOfCutValues; 
-  if(0 == numberOfCutValues) cerr<<"ERROR: Must have at least one cut value \n";
-  else { 
-    for(int i = 0; i < numberOfCutValues; i++){
-      //check if v0 passes each cut value and set v0 bools accordingly
-      //Cut can either be an upper bound or a lower bound.
-      if(fCuts[index].fIsAnUpperLimit){ //upper bound cuts
-	if(fCuts[index].fCutValues[i] > v0Value )
-	{
-	  //v0 passed cut.  Set v0 bool accordingly
-	  v0->hasPassedCut[index][i] = kTRUE;
-	}
+  Double_t v0Value = 1000;
+
+  switch (index) {
+    case 0: //Get the proton DCA to primary
+      v0Value = (isLambdaCandidate)
+              ? v0->daughterPosDCAPrimaryVertex
+              : v0->daughterNegDCAPrimaryVertex;
+      break;
+    case 1: //Get the pion DCA to primary
+      v0Value = (isLambdaCandidate)
+              ? v0->daughterNegDCAPrimaryVertex
+              : v0->daughterPosDCAPrimaryVertex;
+      break;
+    case 2:
+      v0Value = v0->daughtersDCA;
+      break;
+    case 3:
+      // something is wrong if gamma <=0, so set to a fail val
+      if (v0->lorentzGammaLam > 0) {
+        v0Value = v0->decayLength / v0->lorentzGammaLam;
       }
-      else { //lower bound cuts
-	if(fCuts[index].fCutValues[i] < v0Value )
-	{
-	  //v0 passed cut.  Set v0 bool accordingly
-	  v0->hasPassedCut[index][i] = kTRUE;
-	}
+      break;
+    case 4:
+      v0Value = v0->v0Eta;
+      break;
+    case 5:
+      v0Value = v0->cosPointing;
+      break;
+    case 6:
+      v0Value = v0->v0DCA;
+      break;
+    case 7:
+      v0Value = v0->v0Pt;
+      break;
+    case 8:
+      v0Value = v0->massLamDifference;
+      break;
+    case 9:
+      v0Value = v0->massALamDifference;
+      break;
+    default:
+      cerr << "ERROR: No cut for index value " << index << "\n";
+  }
+
+  //Find how many cut values are associated with this cut
+  UInt_t numberOfCutValues = fCuts[index].fNumberOfCutValues;
+  if (0 == numberOfCutValues) {
+    cerr<<"ERROR: Must have at least one cut value \n";
+    return;
+  }
+
+  for (UInt_t i = 0; i < numberOfCutValues; i++) {
+    //check if v0 passes each cut value and set v0 bools accordingly
+    //Cut can either be an upper bound or a lower bound.
+    if(fCuts[index].fIsAnUpperLimit){ //upper bound cuts
+      if (fCuts[index].fCutValues[i] > v0Value) {
+        //v0 passed cut.  Set v0 bool accordingly
+        v0->hasPassedCut[index][i] = kTRUE;
       }
     }
-  } //end numberOfCutValues > 1
+    else { //lower bound cuts
+      if(fCuts[index].fCutValues[i] < v0Value) {
+        //v0 passed cut.  Set v0 bool accordingly
+        v0->hasPassedCut[index][i] = kTRUE;
+      }
+    }
+  }
+
 }
 
 void AliAnalysisV0LamCutProcessing::CheckIfV0PassesCuts(AliReconstructedV0 *v0)
 {
   // Called by the Analysis Task
-  // Function which checks if V0 passes cuts. 
+  // Function which checks if V0 passes cuts.
   // First the code processes each cut.
-  // If the candidate passes all the cuts, DetermineIfTrueV0 sets 
+  // If the candidate passes all the cuts, DetermineIfTrueV0 sets
   // isLamCenter or isALamCenter to true
-  
+
   for(int cutTypeIndex = 0; cutTypeIndex < fNumberOfCutTypes; cutTypeIndex++)
   {
     //First default these to false
@@ -228,7 +258,7 @@ void AliAnalysisV0LamCutProcessing::CheckIfV0PassesCuts(AliReconstructedV0 *v0)
   //At this point, a V0 could simultaneously be a lambda candidate and an
   //antilambda candidates (based only on the PID of the daughters).  It is
   //necessary to check both cases separately.
-  
+
   //Process cuts for lambda candidates
   if(v0->hasProtonDaughter && v0->hasPiMinusDaughter){
     bool isLambdaCandidate = kTRUE;
@@ -249,14 +279,14 @@ void AliAnalysisV0LamCutProcessing::DetermineIfTrueV0(AliReconstructedV0 *v0, bo
 {
   //Checks to see if the V0 passed all the standard cuts and any of the
   //variable cuts.  The function either checks if the v0 look like a Lambda
-  //or looks like an antiLambda, as set by the isLambda input variable.  
+  //or looks like an antiLambda, as set by the isLambda input variable.
   vector<bool> passedCut(fNumberOfVariableCutValues,kTRUE);
   bool hasFailedStandardCut = kFALSE;
   //Check which cuts the V0 passed and failed
   for(int cutIndex = 0; cutIndex < fNumberOfCutTypes; cutIndex++){
     int numberOfCutValues = fCuts[cutIndex].fNumberOfCutValues; //find how many cut values
     for(int i = 0; i < numberOfCutValues; i++){
-      if(8 > cutIndex /* update this if number of cuts changes*/){ //check generic V0 cuts 
+      if(8 > cutIndex /* update this if number of cuts changes*/){ //check generic V0 cuts
 	if(!v0->hasPassedCut[cutIndex][i]){
 	  if(1 == numberOfCutValues) hasFailedStandardCut = kTRUE;
 	  else passedCut[i] = kFALSE;
@@ -272,7 +302,7 @@ void AliAnalysisV0LamCutProcessing::DetermineIfTrueV0(AliReconstructedV0 *v0, bo
 	if(!v0->hasPassedCut[cutIndex][i]){
 	  if(1 == numberOfCutValues) hasFailedStandardCut = kTRUE;
 	  else passedCut[i] = kFALSE;
-	} 
+	}
       }
     }
   }
@@ -374,7 +404,7 @@ void AliAnalysisV0LamCutProcessing::InitHistograms()
   TString nameMassLam = "fHistMassLam";
   TString nameMassALam = "fHistMassALam";
   TString nameMassCentralityLam = "fHistMassCentralityLam";
-  TString nameMassCentralityALam = "fHistMassCentralityALam"; 
+  TString nameMassCentralityALam = "fHistMassCentralityALam";
   fHistDaughterPosDcaToPrimLam = new TH2F((nameDaughterPosDcaToPrimLam).Data(),"DCA of proton daughter to primary vertex;Cut Bin;DCA (cm);Counts", fNumberOfVariableCutValues, -0.5, fNumberOfVariableCutValues -0.5, 100, 0., 10.);
   fHistDaughterPosDcaToPrimALam = new TH2F((nameDaughterPosDcaToPrimALam).Data(),"DCA of piplus daughter to primary vertex;Cut Bin;DCA (cm);Counts", fNumberOfVariableCutValues, -0.5, fNumberOfVariableCutValues -0.5, 100, 0., 10.);
   fHistDaughterNegDcaToPrimLam = new TH2F((nameDaughterNegDcaToPrimLam).Data(),"DCA of piminus daughter to primary vertex;Cut Bin;DCA (cm);Counts", fNumberOfVariableCutValues, -0.5, fNumberOfVariableCutValues -0.5, 100, 0., 10.);
@@ -391,8 +421,8 @@ void AliAnalysisV0LamCutProcessing::InitHistograms()
   fHistCosPointingALam = new TH2F((nameCosPointingALam).Data(), "Cosine(pointing angle) of AntiLambdas;Cut Bin;Cos(#Theta_{p});Counts", fNumberOfVariableCutValues, -0.5, fNumberOfVariableCutValues -0.5, 100, .97, 1.);
   fHistDcaLam = new TH2F((nameDcaLam).Data(), "DCA of Lambdas to primary vertex;Cut Bin;DCA (cm);Counts", fNumberOfVariableCutValues, -0.5, fNumberOfVariableCutValues -0.5, 100, 0., 5.);
   fHistDcaALam = new TH2F((nameDcaALam).Data(), "DCA of AntiLambdas to primary vertex;Cut Bin;DCA (cm);Counts", fNumberOfVariableCutValues, -0.5, fNumberOfVariableCutValues -0.5, 100, 0., 5.);
-  fHistPtLam = new TH2F((namePtLam).Data(), "Lambda pT distribution;Cut Bin;p_{T} (GeV/c);Counts", fNumberOfVariableCutValues, -0.5, fNumberOfVariableCutValues -0.5, 500, 0., 10.); 
-  fHistPtALam = new TH2F((namePtALam).Data(), "AntiLambda pT distribution;Cut Bin;p_{T} (GeV/c);Counts", fNumberOfVariableCutValues, -0.5, fNumberOfVariableCutValues -0.5, 500, 0., 10.); 
+  fHistPtLam = new TH2F((namePtLam).Data(), "Lambda pT distribution;Cut Bin;p_{T} (GeV/c);Counts", fNumberOfVariableCutValues, -0.5, fNumberOfVariableCutValues -0.5, 500, 0., 10.);
+  fHistPtALam = new TH2F((namePtALam).Data(), "AntiLambda pT distribution;Cut Bin;p_{T} (GeV/c);Counts", fNumberOfVariableCutValues, -0.5, fNumberOfVariableCutValues -0.5, 500, 0., 10.);
   fHistMassLam = new TH2F((nameMassLam).Data(), "Lambda Minv;Cut Bin;m_{inv} (GeV/c^{2});Counts", fNumberOfVariableCutValues, -0.5, fNumberOfVariableCutValues -0.5, 600,1.04,1.19);
   fHistMassALam = new TH2F((nameMassALam).Data(), "AntiLambda Minv;Cut Bin;m_{inv} (GeV/c^{2});Counts", fNumberOfVariableCutValues, -0.5, fNumberOfVariableCutValues -0.5, 600,1.04,1.19);
   fHistMassCentralityLam = new TH3F((nameMassCentralityLam).Data(), "Lambda Minv vs Centrality;Cut Bin;Centrality Bin;m_{inv} (GeV/c^{2})", fNumberOfVariableCutValues, -0.5, fNumberOfVariableCutValues -0.5, 20, .5, 20+.5, 600, 1.04,1.19);

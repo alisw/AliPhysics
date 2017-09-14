@@ -3,7 +3,6 @@
 
 #include "TMath.h"
 #include "TParticle.h"
-#include "AliStack.h"
 #include "AliLog.h"
 #include "TObject.h"
 #include "AliMCEvent.h"   
@@ -68,15 +67,15 @@ class AliConversionPhotonBase {
   Int_t GetMCLabel(Int_t i) const{return fMCLabel[i];}
   Int_t GetMCLabelPositive() const{return fMCLabel[0];}
   Int_t GetMCLabelNegative() const{return fMCLabel[1];}
-  Int_t GetMCParticleLabel(AliStack *fMCStack);
+  Int_t GetMCParticleLabel(AliMCEvent *mcEvent);
 
   // GetMCParticle
 
-  Bool_t IsTruePhoton(AliStack *fMCStack);
-  TParticle *GetMCParticle(AliStack *fMCStack);
-  TParticle *GetPositiveMCDaughter(AliStack *fMCStack){return GetMCDaughter(fMCStack,0);}
-  TParticle *GetNegativeMCDaughter(AliStack *fMCStack){return GetMCDaughter(fMCStack,1);}
-  TParticle *GetMCDaughter(AliStack *fMCStack,Int_t label);
+  Bool_t IsTruePhoton(AliMCEvent *mcEvent);
+  TParticle *GetMCParticle(AliMCEvent *mcEvent);
+  TParticle *GetPositiveMCDaughter(AliMCEvent *mcEvent){return GetMCDaughter(mcEvent,0);}
+  TParticle *GetNegativeMCDaughter(AliMCEvent *mcEvent){return GetMCDaughter(mcEvent,1);}
+  TParticle *GetMCDaughter(AliMCEvent *mcEvent,Int_t label);
 
   // V0Index
   Int_t GetV0Index() const {return fV0Index;}

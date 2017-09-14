@@ -30,6 +30,7 @@ class TTree;
 class TTreeSRedirector;
 class TParticle;
 class TH3D;
+#include <string>
 
 #include "AliTriggerAnalysis.h"
 #include "AliAnalysisTaskSE.h"
@@ -62,6 +63,7 @@ class AliAnalysisTaskFilteredTree : public AliAnalysisTaskSE {
   void ProcessLaser(AliESDEvent *const esdEvent=0, AliMCEvent *const mcEvent=0, AliESDfriend *const esdFriend=0);
   void ProcessMCEff(AliESDEvent *const esdEvent=0, AliMCEvent *const mcEvent=0, AliESDfriend *const esdFriend=0);
   void ProcessCosmics(AliESDEvent *const esdEvent=0, AliESDfriend* esdFriend=0); 
+  void ProcessMC();  //TODO  - not yet finished/tested/enabled
 
   void ProcessITSTPCmatchOut(AliESDEvent *const esdEvent=0,  AliESDfriend *const esdFriend=0);
   void ProcessTrackMatch(AliESDEvent *const esdEvent=0,  AliESDfriend *const esdFriend=0);
@@ -117,6 +119,9 @@ class AliAnalysisTaskFilteredTree : public AliAnalysisTaskSE {
   Int_t   GetNearestTrack(const AliExternalTrackParam * trackMatch, Int_t indexSkip, AliESDEvent*event, Int_t trackType, Int_t paramType,  AliExternalTrackParam & paramNearest);
   static void SetDefaultAliasesV0(TTree *treeV0);
   static void SetDefaultAliasesHighPt(TTree *treeV0);
+  Int_t GetMCInfoTrack(Int_t label,   std::map<std::string,float> &trackInfoF, std::map<std::string,TObject*> &trackInfoO);  //TODO- test before enabling
+  Int_t GetMCInfoKink(Int_t label,    std::map<std::string,float> &kinkInfoF, std::map<std::string,TObject*> &kinkInfoO);  // TODO
+  static Int_t GetMCTrackDiff(const TParticle &particle, const AliExternalTrackParam &param, TClonesArray &trackRefArray, TVectorF &mcDiff); //TODO test before enabling
  private:
 
   AliESDEvent *fESD;    //! ESD event

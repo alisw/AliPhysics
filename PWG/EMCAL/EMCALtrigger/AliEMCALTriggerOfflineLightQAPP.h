@@ -77,8 +77,8 @@ protected:
 
   Int_t                      fL0MinTime;                   ///< Minimum L0 time
   Int_t                      fL0MaxTime;                   ///< Maximum L0 time
-  Int_t                      fMinL0FastORAmp;              ///< Minimum L0 amplitude of the FastORs
-  Int_t                      fMinL1FastORAmp;              ///< Minimum L1 amplitude of the FastORs
+  UInt_t                     fMinL0FastORAmp;              ///< Minimum L0 amplitude of the FastORs
+  UInt_t                     fMinL1FastORAmp;              ///< Minimum L1 amplitude of the FastORs
   THistManager               fHistManager;                 ///< Histogram manager
 
   const AliEMCALTriggerPatchInfo  *fMaxPatchEMCal[fgkNTriggerTypes][fgkNPatchTypes];         //!<! EMCal max patch (will be reset each event)

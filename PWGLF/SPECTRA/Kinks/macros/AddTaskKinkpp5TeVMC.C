@@ -35,12 +35,15 @@ AliAnalysisTaskKinkpp5TeVMC* AddTaskKinkpp5TeVMC(TString lCustomName="",Float_t 
 	task->SetYRange(yRange);
 	mgr->AddTask(task);
 
-	TString outputFileName = AliAnalysisManager::GetCommonFileName();
-        outputFileName += ":PWGLFkinksMC";
-        outputFileName += "_PP";
-        AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("Kinkpp5tev", TList::Class(), AliAnalysisManager::kOutputContainer, outputFileName );
+        TString outputFileName = Form("%s:PWGLFSpectra.kinkppMC", AliAnalysisManager::GetCommonFileName());
+        TString outputname0 = Form("fListDefault_RadiusUp%.1f_RadiusLow%.1f_NCluster%i_Lowqt%2f_rapidity%1f",lRadiusKUp, lRadiusKLow, lNCluster, lLowQtValue, yRange);
+
+        outputname0.Append(Form("%s",lCustomName.Data()));
+
+        AliAnalysisDataContainer *coutput1 = mgr->CreateContainer(outputname0, TList::Class(), AliAnalysisManager::kOutputContainer, outputFileName);
+
         mgr->ConnectInput(task, 0, mgr->GetCommonInputContainer());
         mgr->ConnectOutput(task, 1, coutput1);
-        return task;   
-         
+
+        return task; 
    }

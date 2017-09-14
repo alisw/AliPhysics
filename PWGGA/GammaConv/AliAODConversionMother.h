@@ -45,8 +45,8 @@ class AliAODConversionMother : public AliAODConversionParticle{
 
 		void SetMCLabel(Int_t i){fMCLabel=i;}
 		Int_t GetMCLabel() const {return fMCLabel;}
-		TParticle *GetMCParticle(AliStack *fMCStack);
-		Bool_t IsTrueMeson(AliStack *fMCStack,Int_t pdgcode);
+        TParticle *GetMCParticle(AliMCEvent *mcEvent);
+        Bool_t IsTrueMeson(AliMCEvent *mcEvent,Int_t pdgcode);
 
 		///Set the Chi2 of reconstructed conversion gamma
 		void SetChi2(Float_t chi2) {fChi2 = chi2;}

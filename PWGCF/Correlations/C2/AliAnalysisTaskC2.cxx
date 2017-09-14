@@ -200,6 +200,7 @@ void AliAnalysisTaskC2::UserExec(Option_t *)
     PostData(1, this->fOutputList);
     return;
   }
+
   const Float_t multiplicity = this->GetEventClassifierValue();
   const Double_t zvtx = (this->InputEvent()->GetPrimaryVertex())
     ? this->InputEvent()->GetPrimaryVertex()->GetZ()
@@ -212,6 +213,7 @@ void AliAnalysisTaskC2::UserExec(Option_t *)
       return;
     }
   }
+
   {
     TAxis* zvtxAxis = fEventCounter->GetAxis(cEventCounterDims::kZvtx);
     if (zvtxAxis->FindBin(zvtx) == 0
@@ -219,6 +221,7 @@ void AliAnalysisTaskC2::UserExec(Option_t *)
       return;
     }
   }
+
   const Double_t evWeight = (this->fSettings.kMCTRUTH == this->fSettings.fDataType)
     ? mcEvent->GenEventHeader()->EventWeight()
     : 1;
@@ -246,56 +249,76 @@ void AliAnalysisTaskC2::UserExec(Option_t *)
 			    multiplicity,
 			    zvtx};
     for (auto single: this->fsingleHists) {
-      	if (// Check overflow; see comments in the loop for the pairs.
-	    single->GetAxis(cSinglesDims::kEta)->GetBinLowEdge(1) <= stuffing[cSinglesDims::kEta]
-	    && stuffing[cSinglesDims::kEta] < single->GetAxis(cSinglesDims::kEta)->
-	    GetBinUpEdge(single->GetAxis(cSinglesDims::kEta)->GetNbins()))
-	  {
-	    single->Fill(stuffing, evWeight * track.weight);
-	  }
+      single->Fill(stuffing, evWeight * track.weight);
     }
   }
-
+  struct Bin_indices{
+    Int_t i_eta;
+    Int_t i_phi;
+    Int_t i_pt;
+    Int_t i_mult;
+    Int_t i_zvtx;
+    AliAnalysisTaskValidation::Track track;
+  };
+  // Find the bin indices here instead of doing it (implicity in the loop) which is super slow
+  vector<Bin_indices> track_bin_idxs;
+  for (auto t: tracks) {
+    THn *hist;
+    if (t.eta < this->fSettings.fEtaEdgesIts[0]) {
+      hist = this->fsingleHists[0];
+    } else if (t.eta >= this->fSettings.fEtaEdgesIts[0] && t.eta < this->fSettings.fEtaEdgesFwd[0]) {
+      hist = this->fsingleHists[1];
+    } else {
+      hist = this->fsingleHists[2];
+    }
+    track_bin_idxs.push_back(Bin_indices {
+	hist->GetAxis(cSinglesDims::kEta)->FindFixBin(t.eta),
+	hist->GetAxis(cSinglesDims::kPhi)->FindFixBin(AliAnalysisC2Utils::Wrap02pi(t.phi)),
+	hist->GetAxis(cSinglesDims::kPt)->FindFixBin(t.pt),
+	hist->GetAxis(cSinglesDims::kMult)->FindFixBin(multiplicity),
+	hist->GetAxis(cSinglesDims::kZvtx)->FindFixBin(zvtx),
+	t});
+  }
   // Fill the pair particle histograms
-  const AliAnalysisTaskValidation::Track *trigger, *assoc;
-  for (UInt_t i = 0; i < tracks.size(); i++) {
+  Bin_indices *trigger, *assoc;
+  for (UInt_t i = 0; i < track_bin_idxs.size(); i++) {
     // Do not pair with itself and drop mirrored pairs
-    for (UInt_t j = i + 1; j < tracks.size(); j++) {
+    for (UInt_t j = i + 1; j < track_bin_idxs.size(); j++) {
       // assign trigger/assoc
       // If we bin in pt, use pt as distinction, else use eta
       if (this->fSettings.fPtBinEdges.size() > 2) {
-	if (tracks[i].pt <= tracks[j].pt) {
-	  trigger = &tracks[j];
-	  assoc = &tracks[i];
+	if (track_bin_idxs[i].track.pt <= track_bin_idxs[j].track.pt) {
+	  trigger = &track_bin_idxs[j];
+	  assoc = &track_bin_idxs[i];
 	}
 	else {
-	  trigger = &tracks[i];
-	  assoc = &tracks[j];
+	  trigger = &track_bin_idxs[i];
+	  assoc = &track_bin_idxs[j];
 	}
       }
       else {
-	if (tracks[i].eta <= tracks[j].eta) {
-	  trigger = &tracks[j];
-	  assoc = &tracks[i];
+	if (track_bin_idxs[i].track.eta <= track_bin_idxs[j].track.eta) {
+	  trigger = &track_bin_idxs[j];
+	  assoc = &track_bin_idxs[i];
 	}
 	else {
-	  trigger = &tracks[i];
-	  assoc = &tracks[j];
+	  trigger = &track_bin_idxs[i];
+	  assoc = &track_bin_idxs[j];
 	}
       }
       // FIXME: This will break if I bin ITS region in pt but not the FMD part!
       Int_t pt1Bin = 1; // this->fsingleHists[0]->GetAxis(cSinglesDims::kPt)->FindFixBin(assoc->pt);
       Int_t pt2Bin = 1; // this->fsingleHists[0]->GetAxis(cSinglesDims::kPt)->FindFixBin(trigger->pt);
-      Double_t stuffing[7] =
-	{assoc->eta,
-	 trigger->eta,
-	 AliAnalysisC2Utils::Wrap02pi(assoc->phi),
-	 AliAnalysisC2Utils::Wrap02pi(trigger->phi),
-	 Double_t(AliAnalysisC2Utils::ComputePtPairBin(pt1Bin, pt2Bin) + 0.5),  // +.5 to hit the bin center
-	 multiplicity,
-	 zvtx};
-      this->fpairHists[this->GetPairHistIndex(trigger->eta, assoc->eta)]
-	->Fill(stuffing, assoc->weight * trigger->weight * evWeight);
+      Int_t stuffing[7] =
+	{assoc->i_eta,
+	 trigger->i_eta,
+	 assoc->i_phi,
+	 trigger->i_phi,
+	 AliAnalysisC2Utils::ComputePtPairBin(pt1Bin, pt2Bin) + 1, // bin indices start at 1...
+	 assoc->i_mult,
+	 assoc->i_zvtx};
+      this->fpairHists[this->GetPairHistIndex(trigger->track.eta, assoc->track.eta)]
+	->AddBinContent(stuffing, assoc->track.weight * trigger->track.weight * evWeight);
     }
   }
   PostData(1, this->fOutputList);
@@ -330,24 +353,31 @@ UInt_t AliAnalysisTaskC2::GetPairHistIndex(Float_t trigger, Float_t assoc) {
 AliAnalysisTaskValidation::Tracks AliAnalysisTaskC2::GetValidTracks() {
   // Get the event validation object
   AliAnalysisTaskValidation* ev_val = dynamic_cast<AliAnalysisTaskValidation*>(this->GetInputData(1));
-  ev_val->GetFMDhits();
 
   AliAnalysisTaskValidation::Tracks ret_vector;
   // Append central tracklets
   if (this->fSettings.kRECON == this->fSettings.fDataType) {
     // Are we running on SPD clusters? If so add them to our track vector
-    if (this->fSettings.fUseSPclusters) {
+    if (this->fSettings.fUseSPDclusters) {
       AliError("SPD clusters not yet implemented");
     }
-    else if (this->fSettings.fUseSPtracklets) {
-      auto spdhits = ev_val->GetSPDtracklets();
+    else if (this->fSettings.fUseTracklets) {
+      auto spdhits = ev_val->GetTracklets();
       ret_vector.insert(ret_vector.end(), spdhits.begin(), spdhits.end());
     }
+    else if (this->fSettings.fUseTracks) {
+      auto trks = ev_val->GetTracks();
+      ret_vector.insert(ret_vector.end(), trks.begin(), trks.end());
+    }
+
     // Append the fmd hits to this vector if we are looking at reconstructed data,
     // All hits on the FMD (above the internally used threshold) are "valid"
     if (this->fSettings.fUseFMD) {
       auto fmdhits = ev_val->GetFMDhits();
       ret_vector.insert(ret_vector.end(), fmdhits.begin(), fmdhits.end());
+    } else if (this->fSettings.fUseV0){
+      auto v0amps = ev_val->GetV0hits();
+      ret_vector.insert(ret_vector.end(), v0amps.begin(), v0amps.end());
     }
   }
   // MC truth case:
@@ -369,6 +399,7 @@ Float_t AliAnalysisTaskC2::GetEventClassifierValue() {
       (dynamic_cast< AliMultSelection* >(this->InputEvent()->FindListObject("MultSelection")))
       ->GetEstimator(this->fSettings.fMultEstimator);
     // const Float_t multiplicity = ((Float_t)multEstimator->GetValue()) / multEstimator->GetMean();
+    // const Float_t multiplicity = (Float_t)multEstimator->GetValue();
     const Float_t multiplicity = multEstimator->GetPercentile();
     return multiplicity;
   }

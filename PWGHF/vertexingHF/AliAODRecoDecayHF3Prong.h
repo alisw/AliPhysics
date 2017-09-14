@@ -67,8 +67,11 @@ class AliAODRecoDecayHF3Prong : public AliAODRecoDecayHF {
   
   Double_t CosPiKPhiRFrameKKpi() const {return CosPiKPhiRFrame(0);}
   Double_t CosPiKPhiRFramepiKK() const {return CosPiKPhiRFrame(1);}
+  Double_t CosPiKPhiRFrameKpiK() const {return CosPiKPhiRFrame(2);}
+
   Double_t CosPiDsLabFrameKKpi() const {return CosPiDsLabFrame(0);}
   Double_t CosPiDsLabFramepiKK() const {return CosPiDsLabFrame(1);}
+  Double_t CosPiDsLabFrameKpiK() const {return CosPiDsLabFrame(2);}
   
   Double_t CosPiKPhiRFrame(Int_t option) const;
   Double_t CosPiDsLabFrame(Int_t option) const;

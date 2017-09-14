@@ -1,5 +1,5 @@
 /// \file AddTaskEMCALTimeCalibration.C
-/// \ingroup EMCALPerformanceMacros
+/// \ingroup EMCALPerfAddTaskMacros
 /// \brief Configuration of task AliAnalysisTaskEMCALTimeCalib.
 ///
 /// Configuration of task AliAnalysisTaskEMCALTimeCalib

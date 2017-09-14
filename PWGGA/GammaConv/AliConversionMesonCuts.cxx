@@ -32,7 +32,7 @@
 #include "AliPIDResponse.h"
 #include "TH1.h"
 #include "TH2.h"
-#include "AliStack.h"
+#include "AliMCEvent.h"
 #include "AliAODConversionMother.h"
 #include "TObjString.h"
 #include "AliAODEvent.h"
@@ -47,7 +47,9 @@ class iostream;
 
 using namespace std;
 
+/// \cond CLASSIMP
 ClassImp(AliConversionMesonCuts)
+/// \endcond
 
 
 const char* AliConversionMesonCuts::fgkCutNames[AliConversionMesonCuts::kNCuts] = {
@@ -122,9 +124,13 @@ AliConversionMesonCuts::AliConversionMesonCuts(const char *name,const char *titl
   fMaxOpanCutMeson(TMath::Pi()),
   fFMaxOpanCut(0),
   fMaxOpanPtDepCut(kFALSE),
+  fBackgroundHandler(0),
+  fBackgroundUseSideband(kFALSE),
+  fBackgroundUseLikeSign(kFALSE),
+  fSidebandMixingLow(0.180),
+  fSidebandMixingHigh(0.300),
   fCutString(NULL),
   fCutStringRead(""),
-  fBackgroundHandler(0),
   fHistoMesonCuts(NULL),
   fHistoMesonBGCuts(NULL),
   fHistoDCAGGMesonBefore(NULL),
@@ -194,13 +200,17 @@ AliConversionMesonCuts::AliConversionMesonCuts(const AliConversionMesonCuts &ref
   fDCAGammaGammaCutOn(ref.fDCAGammaGammaCutOn),
   fDCAZMesonPrimVtxCutOn(ref.fDCAZMesonPrimVtxCutOn),
   fDCARMesonPrimVtxCutOn(ref.fDCARMesonPrimVtxCutOn),
-  fBackgroundHandler(ref.fBackgroundHandler),
+  fMinOpanCutMeson(0),
   fFMinOpanCut(0),
   fMinOpanPtDepCut(kFALSE),
   fMaxOpanCutMeson(TMath::Pi()),
   fFMaxOpanCut(0),
   fMaxOpanPtDepCut(kFALSE),
-  fMinOpanCutMeson(0),
+  fBackgroundHandler(ref.fBackgroundHandler),
+  fBackgroundUseSideband(ref.fBackgroundUseSideband),
+  fBackgroundUseLikeSign(ref.fBackgroundUseLikeSign),
+  fSidebandMixingLow(0.180),
+  fSidebandMixingHigh(0.300),
   fCutString(NULL),
   fCutStringRead(""),
   fHistoMesonCuts(NULL),
@@ -371,11 +381,11 @@ void AliConversionMesonCuts::InitCutHistograms(TString name, Bool_t additionalHi
 }
 
 //________________________________________________________________________
-Bool_t AliConversionMesonCuts::MesonIsSelectedMC(TParticle *fMCMother,AliStack *fMCStack, Double_t fRapidityShift){
+Bool_t AliConversionMesonCuts::MesonIsSelectedMC(TParticle *fMCMother,AliMCEvent *mcEvent, Double_t fRapidityShift){
   // Returns true for all pions within acceptance cuts for decay into 2 photons
   // If bMCDaughtersInAcceptance is selected, it requires in addition that both daughter photons are within acceptance cuts
 
-  if(!fMCStack)return kFALSE;
+  if(!mcEvent)return kFALSE;
 
   if(fMCMother->GetPdgCode()==111 || fMCMother->GetPdgCode()==221){
     if(fMCMother->R()>fMaxR)  return kFALSE; // cuts on distance from collision point
@@ -395,12 +405,12 @@ Bool_t AliConversionMesonCuts::MesonIsSelectedMC(TParticle *fMCMother,AliStack *
 
     for(Int_t i=0;i<2;i++){
       if(fMCMother->GetDaughter(i) < 0) return kFALSE;
-      TParticle *MDaughter=fMCStack->Particle(fMCMother->GetDaughter(i));
+      TParticle *MDaughter=mcEvent->Particle(fMCMother->GetDaughter(i));
       // Is Daughter a Photon?
       if(MDaughter->GetPdgCode()!=22)return kFALSE;
       // Is Photon in Acceptance?
       //   if(bMCDaughtersInAcceptance){
-      //  if(!PhotonIsSelectedMC(MDaughter,fMCStack)){return kFALSE;}
+      //  if(!PhotonIsSelectedMC(MDaughter,mcEvent)){return kFALSE;}
       //   }
     }
     return kTRUE;
@@ -438,7 +448,7 @@ Bool_t AliConversionMesonCuts::MesonIsSelectedAODMC(AliAODMCParticle *MCMother,T
       if(MDaughter->GetPdgCode()!=22)return kFALSE;
       // Is Photon in Acceptance?
       //   if(bMCDaughtersInAcceptance){
-      //  if(!PhotonIsSelectedMC(MDaughter,fMCStack)){return kFALSE;}
+      //  if(!PhotonIsSelectedMC(MDaughter,mcEvent)){return kFALSE;}
       //   }
     }
     return kTRUE;
@@ -447,12 +457,12 @@ Bool_t AliConversionMesonCuts::MesonIsSelectedAODMC(AliAODMCParticle *MCMother,T
 }
 
 //________________________________________________________________________
-Bool_t AliConversionMesonCuts::MesonIsSelectedMCDalitz(TParticle *fMCMother,AliStack *fMCStack, Int_t &labelelectron, Int_t &labelpositron, Int_t &labelgamma, Double_t fRapidityShift){
+Bool_t AliConversionMesonCuts::MesonIsSelectedMCDalitz(TParticle *fMCMother,AliMCEvent *mcEvent, Int_t &labelelectron, Int_t &labelpositron, Int_t &labelgamma, Double_t fRapidityShift){
 
   // Returns true for all pions within acceptance cuts for decay into 2 photons
   // If bMCDaughtersInAcceptance is selected, it requires in addition that both daughter photons are within acceptance cuts
 
-  if( !fMCStack )return kFALSE;
+  if( !mcEvent )return kFALSE;
 
   if(  fMCMother->GetPdgCode() != 111 && fMCMother->GetPdgCode() != 221 ) return kFALSE;
 
@@ -479,7 +489,7 @@ Bool_t AliConversionMesonCuts::MesonIsSelectedMCDalitz(TParticle *fMCMother,AliS
 
   for(Int_t index= fMCMother->GetFirstDaughter();index<= fMCMother->GetLastDaughter();index++){
     if(index < 0) continue;
-    TParticle* temp = (TParticle*)fMCStack->Particle( index );
+    TParticle* temp = (TParticle*)mcEvent->Particle( index );
 
     switch( temp->GetPdgCode() ) {
     case ::kPositron:
@@ -559,12 +569,12 @@ Bool_t AliConversionMesonCuts::MesonIsSelectedAODMCDalitz(AliAODMCParticle *fMCM
 }
 
 //________________________________________________________________________
-Bool_t AliConversionMesonCuts::MesonIsSelectedMCEtaPiPlPiMiGamma(TParticle *fMCMother,AliStack *fMCStack, Int_t &labelNegPion, Int_t &labelPosPion, Int_t &labelGamma, Double_t fRapidityShift){
+Bool_t AliConversionMesonCuts::MesonIsSelectedMCEtaPiPlPiMiGamma(TParticle *fMCMother,AliMCEvent *mcEvent, Int_t &labelNegPion, Int_t &labelPosPion, Int_t &labelGamma, Double_t fRapidityShift){
 
   // Returns true for all pions within acceptance cuts for decay into 2 photons
   // If bMCDaughtersInAcceptance is selected, it requires in addition that both daughter photons are within acceptance cuts
 
-  if( !fMCStack )return kFALSE;
+  if( !mcEvent )return kFALSE;
 
   if( fMCMother->GetPdgCode() != 221 ) return kFALSE;
 
@@ -591,7 +601,7 @@ Bool_t AliConversionMesonCuts::MesonIsSelectedMCEtaPiPlPiMiGamma(TParticle *fMCM
 
   for(Int_t index= fMCMother->GetFirstDaughter();index<= fMCMother->GetLastDaughter();index++){
     if(index < 0) continue;
-    TParticle* temp = (TParticle*)fMCStack->Particle( index );
+    TParticle* temp = (TParticle*)mcEvent->Particle( index );
 
     switch( temp->GetPdgCode() ) {
     case 211:
@@ -614,12 +624,12 @@ Bool_t AliConversionMesonCuts::MesonIsSelectedMCEtaPiPlPiMiGamma(TParticle *fMCM
 }
 
 //________________________________________________________________________
-Bool_t AliConversionMesonCuts::MesonIsSelectedMCPiPlPiMiPiZero(TParticle *fMCMother,AliStack *fMCStack, Int_t &labelNegPion, Int_t &labelPosPion, Int_t &labelNeutPion, Double_t fRapidityShift){
+Bool_t AliConversionMesonCuts::MesonIsSelectedMCPiPlPiMiPiZero(TParticle *fMCMother,AliMCEvent *mcEvent, Int_t &labelNegPion, Int_t &labelPosPion, Int_t &labelNeutPion, Double_t fRapidityShift){
 
   // Returns true for all pions within acceptance cuts for decay into 2 photons
   // If bMCDaughtersInAcceptance is selected, it requires in addition that both daughter photons are within acceptance cuts
 
-  if( !fMCStack )return kFALSE;
+  if( !mcEvent )return kFALSE;
 
   if( !(fMCMother->GetPdgCode() == 221 || fMCMother->GetPdgCode() == 223) ) return kFALSE;
   
@@ -647,7 +657,7 @@ Bool_t AliConversionMesonCuts::MesonIsSelectedMCPiPlPiMiPiZero(TParticle *fMCMot
 //   cout << "\n"<< fMCMother->GetPdgCode() << "\n" << endl;
   for(Int_t index= fMCMother->GetFirstDaughter();index<= fMCMother->GetLastDaughter();index++){
     if(index < 0) continue;
-    TParticle* temp = (TParticle*)fMCStack->Particle( index );
+    TParticle* temp = (TParticle*)mcEvent->Particle( index );
 //     cout << temp->GetPdgCode() << endl;
     switch( temp->GetPdgCode() ) {
     case 211:
@@ -670,10 +680,10 @@ Bool_t AliConversionMesonCuts::MesonIsSelectedMCPiPlPiMiPiZero(TParticle *fMCMot
 }
 
 //________________________________________________________________________
-Bool_t AliConversionMesonCuts::MesonIsSelectedMCPiZeroGamma(TParticle *fMCMother, AliStack *fMCStack, Int_t &labelNeutPion, Int_t &labelGamma, Double_t fRapidityShift){
+Bool_t AliConversionMesonCuts::MesonIsSelectedMCPiZeroGamma(TParticle *fMCMother, AliMCEvent *mcEvent, Int_t &labelNeutPion, Int_t &labelGamma, Double_t fRapidityShift){
   // returns true for omegas decaying into pi0 + gamma within the rapidity window
 
-  if(!fMCStack) return kFALSE;
+  if(!mcEvent) return kFALSE;
 
   if(fMCMother->GetPdgCode()!=223) return kFALSE; // we only want omegas
 
@@ -696,7 +706,7 @@ Bool_t AliConversionMesonCuts::MesonIsSelectedMCPiZeroGamma(TParticle *fMCMother
 
   for(Int_t index = fMCMother->GetFirstDaughter();index <= fMCMother->GetLastDaughter();index++){
     if(index < 0) continue;
-    TParticle *temp = (TParticle*)fMCStack->Particle(index);
+    TParticle *temp = (TParticle*)mcEvent->Particle(index);
     switch(temp->GetPdgCode()){
     case 22:
       gamma = temp;
@@ -728,11 +738,11 @@ Bool_t AliConversionMesonCuts::MesonIsSelectedPiZeroGammaAngle(AliAODConversionM
 }
 
 //________________________________________________________________________
-Bool_t AliConversionMesonCuts::MesonIsSelectedMCChiC(TParticle *fMCMother,AliStack *fMCStack,Int_t & labelelectronChiC, Int_t & labelpositronChiC, Int_t & labelgammaChiC, Double_t fRapidityShift){
+Bool_t AliConversionMesonCuts::MesonIsSelectedMCChiC(TParticle *fMCMother,AliMCEvent *mcEvent,Int_t & labelelectronChiC, Int_t & labelpositronChiC, Int_t & labelgammaChiC, Double_t fRapidityShift){
   // Returns true for all ChiC within acceptance cuts for decay into JPsi + gamma -> e+ + e- + gamma
   // If bMCDaughtersInAcceptance is selected, it requires in addition that both daughter photons are within acceptance cuts
 
-  if(!fMCStack)return kFALSE;
+  if(!mcEvent)return kFALSE;
   // if(fMCMother->GetPdgCode()==20443 ){
   //    return kFALSE;
   // }
@@ -758,16 +768,16 @@ Bool_t AliConversionMesonCuts::MesonIsSelectedMCChiC(TParticle *fMCMother,AliSta
     TParticle *positron = 0x0;
     TParticle *electron = 0x0;
 
-    Int_t labeljpsiChiC = -1;
+    //Int_t labeljpsiChiC = -1;
 
     for(Int_t index= fMCMother->GetFirstDaughter();index<= fMCMother->GetLastDaughter();index++){
       if(index < 0) continue;
-      TParticle* temp = (TParticle*)fMCStack->Particle( index );
+      TParticle* temp = (TParticle*)mcEvent->Particle( index );
 
       switch( temp->GetPdgCode() ) {
       case 443:
         jpsi =  temp;
-        labeljpsiChiC = index;
+        //labeljpsiChiC = index;
         break;
       case 22:
         gamma    =  temp;
@@ -782,7 +792,7 @@ Bool_t AliConversionMesonCuts::MesonIsSelectedMCChiC(TParticle *fMCMother,AliSta
 
     for(Int_t index= jpsi->GetFirstDaughter();index<= jpsi->GetLastDaughter();index++){
       if(index < 0) continue;
-      TParticle* temp = (TParticle*)fMCStack->Particle( index );
+      TParticle* temp = (TParticle*)mcEvent->Particle( index );
       switch( temp->GetPdgCode() ) {
       case -11:
         electron =  temp;
@@ -1256,6 +1266,18 @@ Bool_t AliConversionMesonCuts::SetSelectionWindowCut(Int_t selectionCut){
   case 6:
     fSelectionLow   = 0.12;
     fSelectionHigh  = 0.15;
+    break;
+  case 7:
+    fSelectionLow   = 0.1;
+    fSelectionHigh  = 0.155;
+    break;
+  case 8:
+    fSelectionLow   = 0.125;
+    fSelectionHigh  = 0.145;
+    break;
+  case 9:
+    fSelectionLow   = 0.11;
+    fSelectionHigh  = 0.155;
     break;
     
   default:
@@ -1953,6 +1975,31 @@ Bool_t AliConversionMesonCuts::SetBackgroundScheme(Int_t BackgroundScheme){
     fdoBGProbability            = kFALSE;
     fUsePtmaxMethodForBG        = kTRUE;
     break;
+  case 10: // mixed event with likesign mixing
+      fUseRotationMethodInBG      = kFALSE;
+      fUseTrackMultiplicityForBG  = kFALSE;
+      fdoBGProbability            = kFALSE;
+      fBackgroundUseLikeSign      = kTRUE;
+      fBackgroundUseSideband      = kFALSE;
+    break;
+  case 11: // mixed event with pi0 sideband candidates (right side of pi0 peak)
+      fUseRotationMethodInBG      = kFALSE;
+      fUseTrackMultiplicityForBG  = kFALSE;
+      fdoBGProbability            = kFALSE;
+      fBackgroundUseLikeSign      = kFALSE;
+      fBackgroundUseSideband      = kTRUE;
+      fSidebandMixingLow          = 0.180;
+      fSidebandMixingHigh         = 0.220;
+      break;
+  case 12: // mixed event with pi0 sideband candidates (left side of pi0 peak)
+      fUseRotationMethodInBG      = kFALSE;
+      fUseTrackMultiplicityForBG  = kFALSE;
+      fdoBGProbability            = kFALSE;
+      fBackgroundUseLikeSign      = kFALSE;
+      fBackgroundUseSideband      = kTRUE;
+      fSidebandMixingLow          = 0.01;
+      fSidebandMixingHigh         = 0.05;
+      break;
   default:
     cout<<"Warning: BackgroundScheme not defined "<<BackgroundScheme<<endl;
     return kFALSE;

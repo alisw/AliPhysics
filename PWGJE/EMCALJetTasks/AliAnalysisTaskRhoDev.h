@@ -15,6 +15,8 @@
 #ifndef ALIANALYSISTASKRHODEV_H
 #define ALIANALYSISTASKRHODEV_H
 
+#include <utility>
+
 #include "AliAnalysisTaskRhoBaseDev.h"
 
 /** \class AliAnalysisTaskRhoDev
@@ -40,6 +42,7 @@ class AliAnalysisTaskRhoDev : public AliAnalysisTaskRhoBaseDev {
 
   void             SetExcludeLeadJets(UInt_t n)    { fNExclLeadJets = n    ; }
   void             SetRhoSparse(Bool_t b)          { fRhoSparse     = b    ; }
+  void             SetExclJetOverlap(TString n)    { fExclJetOverlap= n    ; }
 
   static AliAnalysisTaskRhoDev* AddTaskRhoDev(
      TString        nTracks                        = "usedefault",
@@ -58,9 +61,6 @@ class AliAnalysisTaskRhoDev : public AliAnalysisTaskRhoBaseDev {
  protected:
   void          CalculateRho();
   Bool_t        FillHistograms();
-
-  Bool_t        IsJetOverlapping(AliEmcalJet* jet1, AliEmcalJet* jet2);
-
   Bool_t        VerifyContainers();
 
   std::pair<AliEmcalJet*, AliEmcalJet*>
@@ -68,6 +68,7 @@ class AliAnalysisTaskRhoDev : public AliAnalysisTaskRhoBaseDev {
 
   UInt_t           fNExclLeadJets;                 ///< number of leading jets to be excluded from the median calculation
   Bool_t           fRhoSparse;                     ///< flag to run CMS method as described in https://arxiv.org/abs/1207.2392
+  TString          fExclJetOverlap;                ///< name of the jet collection that should be used to reject jets that are considered "signal"
 
   Double_t         fOccupancyFactor;               //!<!occupancy correction factor for sparse events
   TH2F            *fHistOccCorrvsCent;             //!<!occupancy correction vs. centrality
@@ -76,7 +77,7 @@ class AliAnalysisTaskRhoDev : public AliAnalysisTaskRhoBaseDev {
   AliAnalysisTaskRhoDev& operator=(const AliAnalysisTaskRhoDev&);  // not implemented
   
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskRhoDev, 1);
+  ClassDef(AliAnalysisTaskRhoDev, 2);
   /// \endcond
 };
 #endif

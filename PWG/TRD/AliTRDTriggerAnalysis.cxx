@@ -141,13 +141,13 @@ Bool_t AliTRDTriggerAnalysis::CalcTriggers(const AliVEvent *event)
   TString trgClasses = event->GetFiredTriggerClasses();
   if (trgClasses.Contains("TRDCO2"))
     MarkClass(kHCO);
-  if (trgClasses.Contains("WUHJT"))
+  if (trgClasses.Contains("HJT"))
     MarkClass(kHJT);
-  if (trgClasses.Contains("WUHSE"))
+  if (trgClasses.Contains("HSE"))
     MarkClass(kHSE);
-  if (trgClasses.Contains("WUHQU"))
+  if (trgClasses.Contains("HQU"))
     MarkClass(kHQU);
-  if (trgClasses.Contains("WUHEE"))
+  if (trgClasses.Contains("HEE"))
     MarkClass(kHEE);
 
   // evaluate trigger inputs

@@ -25,6 +25,8 @@ class TH2D;
 class TH3D;
 class TProfile;
 class AliAnalysisUtils;
+class AliEventCuts;
+class AliHelperPID;
 
 class AliAnalysisTaskPIDBFDptDpt : public AliAnalysisTaskSE
 {
@@ -34,12 +36,16 @@ public:
  
   //PID functions
   //User should call ONLY the function GetParticleSpecies and set the PID strategy in the steering macro!
-  Int_t TellParticleSpecies( AliVTrack * trk );//calculate the PID according to the slected method.
+  Int_t TellParticleSpecies( AliVTrack * trk );//calculate the PID according to the slected method. // for pt cut analysis
+  Int_t TellParticleSpecies_by_P( AliVTrack * trk );//calculate the PID according to the slected method. // for p cut analysis
   void CalculateNSigmas( AliVTrack * trk );   //Calcuate nsigma[ipart][idet], fill NSigma histos
   void CalculateTPCNSigmasElectron( AliVTrack * trk );
   void CheckTOF( AliVTrack * trk );   //check the TOF matching and set fHasTOFPID
   Double_t TOFBetaCalculation( AliVTrack * track ) const;
   Double_t massSquareCalculation( AliVTrack * track ) const;
+  Float_t TPC_EventPlane(AliAODEvent *event);
+  Bool_t Is2015PileUpEvent();
+  Bool_t StoreEventMultiplicities(AliVEvent *event);
     
 private:
     Double_t fnsigmas[4][2]; //nsigma values
@@ -50,8 +56,8 @@ private:
     Double_t electronNSigmaVeto;
     Bool_t fRemoveTracksT0Fill;//if true remove tracks for which only StartTime from To-Fill is available (worst resolution)
 
-    //AliAnalysisUtils
-    AliAnalysisUtils *fUtils;//AliAnalysisUtils
+    AliAnalysisUtils *fUtils; //!
+    AliEventCuts *   fEventCut;  //!
     
     AliAnalysisTaskPIDBFDptDpt(const  AliAnalysisTaskPIDBFDptDpt&);
     const AliAnalysisTaskPIDBFDptDpt& operator=(const  AliAnalysisTaskPIDBFDptDpt&);
@@ -106,9 +112,14 @@ public:
     virtual     void    SetDebugLevel( int v )              { _debugLevel   = v; }
     virtual     void    SetSinglesOnly(int v)               { _singlesOnly  = v; }
     virtual     void    SetPIDparticle( bool v )            { PIDparticle   = v; }
+    virtual     void    SetUse_pT_cut( bool v )             { use_pT_cut   = v; }
+    virtual     void    SetUse_AliHelperPID( bool v )       { useAliHelperPID   = v; }
     virtual     void    SetIfContaminationInMC( bool v )    { NoContamination   = v; }
     virtual     void    SetUseWeights(int v)                { _useWeights   = v; }
     virtual     void    SetUseRapidity(int v)               { _useRapidity  = v; }
+    virtual     void    SetEventPlane(bool v)               { _useEventPlane  = v; }
+    virtual     void    SetEPmin( double v)                 { EP_min          = v; }
+    virtual     void    SetEPmax( double v)                 { EP_max          = v; }
     virtual     void    SetSameFilter(int v)                { _sameFilter   = v; }
     
     virtual     void    SetRejectPileup(int v)              { _rejectPileup         = v; }
@@ -153,7 +164,9 @@ public:
     virtual     void    SetTrackFilterBit(int v)        { _trackFilterBit    = v; }
     virtual     void    SetWeigth_1(TH3F * v)           { _weight_1          = v; }
     virtual     void    SetWeigth_2(TH3F * v)           { _weight_2          = v; }
- 
+
+    AliHelperPID                   * GetHelperPID()          { return fHelperPID; }
+    void SetHelperPID(AliHelperPID* pid)                     { fHelperPID = pid;  }
 
     void SetParticleSpecies( int species )            { particleSpecies = species; }
 
@@ -167,6 +180,8 @@ public:
     void SetPtTOFlowerBoundary( double ptTPCTOFboundary )   { ptTOFlowerBoundary = ptTPCTOFboundary; }
     void SetElectronNSigmaVetoCut( double electronVeto )   { electronNSigmaVeto = electronVeto; }
     void SetfRemoveTracksT0Fill( bool tof )     { fRemoveTracksT0Fill = tof; }    //fRemoveTracksT0Fill
+    //void SetAliEventCuts(AliEventCuts * Event_Cut)     { fEventCut = Event_Cut; }
+
     
 protected:
     
@@ -175,11 +190,12 @@ protected:
     AliESDEvent*             fESDEvent;             //! ESD Event
     AliInputEventHandler*    fInputHandler;    //! Generic InputEventHandler
     
-    AliPIDResponse*          fPIDResponse;
+    AliPIDResponse*          fPIDResponse; //!
+    AliHelperPID* fHelperPID;       // points to class for PID
     
     // Histogram settings
     //TList*              _inputHistoList;
-    TList*              _outputHistoList;
+    TList*              _outputHistoList;   //!
     //int _outputSlot;
     
     
@@ -190,9 +206,15 @@ protected:
     int      _debugLevel;
     int      _singlesOnly;
     bool      PIDparticle;
+    bool      use_pT_cut;
+    bool      useAliHelperPID;
     bool      NoContamination;
     int      _useWeights;
     int      _useRapidity;
+    bool     _useEventPlane;
+    double   EP_min;
+    double   EP_max;
+    TH1F  *  _psi_EventPlane;
     int      _sameFilter;
     int      _rejectPileup;
     int      _rejectPairConversion;
@@ -222,6 +244,11 @@ protected:
 
     Bool_t fExcludeResonancesInMC;
     Bool_t fExcludeElectronsInMC;
+
+    TFormula *f2015V0MtoTrkTPCout;
+    Int_t fV0Multiplicity;
+    Int_t fV0Multiplicity_Victor;
+    Int_t fNoOfTPCoutTracks;
     
     int _tpcnclus;
     double _chi2ndf;
@@ -374,9 +401,6 @@ protected:
     TH1F * _timeTOF_1d_POI;
     TH1F * _realTOF_1d_POI;
     
-    TH1F * _nsigmakaon_1d;
-    TH1F * _nsigmaTOFkaon_1d;
-    
     TH1F * _etadis_POI_AliHelperPID;
     TH1F * _etadis_before_any_cuts;
 
@@ -411,6 +435,7 @@ protected:
     TH2F *  _msquare_p;
     TH2F *  _msquare_p_POI_AliHelperPID;
     TH2F *  _msquare_p_AliHelperPID_no_Undefined;
+    TH2F *  _fhV0MvsTracksTPCout_after;
     
     // PARTICLE 1 (satisfies filter 1)
     // Primary filled quantities

@@ -1,5 +1,4 @@
-
-AliAnalysisTask *AddTaskHaHFECorrel(Bool_t UseTender, Double_t period, Double_t AssPtCut, Int_t ITSnCut, Int_t AssTPCnCut, Int_t TPCnCut, Int_t HTPCnCut, Bool_t AssITSrefitCut, Bool_t HITSrefitCut, Bool_t HTPCrefitCut, Double_t SigmaITScut, Double_t SigmaTOFcut, Double_t SigmaTPCcut, Bool_t rejectKinkMother, Bool_t CorrHadron, Bool_t CorrLP, Bool_t OpeningAngleCut, Double_t InvmassCut, TString ID="ContName")
+AliAnalysisTask *AddTaskHaHFECorrel(Double_t period,Bool_t CorrHadron, Bool_t CorrLP,  Bool_t IsMC, Bool_t UseTender, Int_t ITSnCut,  Int_t TPCnCut, Int_t TPCnCutdEdx,   Double_t PhotElecPtCut, Int_t PhotElecTPCnCut,Bool_t PhotElecITSrefitCut,Double_t InvmassCut, Int_t HTPCnCut,   Bool_t HITSrefitCut, Bool_t HTPCrefitCut, Bool_t UseITS, Double_t SigmaITScut, Double_t SigmaTOFcut, Double_t SigmaTPCcut, TString ID="")
 {
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
@@ -20,14 +19,32 @@ AliAnalysisTask *AddTaskHaHFECorrel(Bool_t UseTender, Double_t period, Double_t 
     MCthere=kFALSE;
   }
 
+
   gROOT->LoadMacro("$ALICE_PHYSICS/PWGHF/hfe/macros/configs/pp/ConfigHaHFECorrel.C");
   AliAnalysisTaskHaHFECorrel *taskMB = 
-    ConfigHaHFECorrel(UseTender, period, AssPtCut, ITSnCut, AssTPCnCut, TPCnCut, HTPCnCut, AssITSrefitCut, HITSrefitCut, HTPCrefitCut, SigmaITScut, SigmaTOFcut, SigmaTPCcut, rejectKinkMother, CorrHadron, CorrLP, OpeningAngleCut, InvmassCut);
+    ConfigHaHFECorrel(period, CorrHadron, CorrLP, IsMC, UseTender, ITSnCut, TPCnCut, TPCnCutdEdx, PhotElecPtCut,PhotElecTPCnCut, PhotElecITSrefitCut,  InvmassCut,  HTPCnCut,  HITSrefitCut, HTPCrefitCut, UseITS, SigmaITScut, SigmaTOFcut, SigmaTPCcut);
   if (!taskMB) {
     Error("AddTaskHaHFECorrel", "No task found.");
   }
   taskMB->SelectCollisionCandidates(AliVEvent::kINT7);
-    
+  
+  if (IsMC) {
+    TH1::AddDirectory(kFALSE);
+    printf("Loading Pi0EtaCorrectionFiles\n");
+    TString CorrectPi0EtaFile="alien:///alice/cern.ch/user/f/flherrma/HaHFECorrel/Pi0EtaWeights.root";
+    TFile *CorrectPi0Eta = TFile::Open(CorrectPi0EtaFile.Data());
+    if (CorrectPi0Eta) {    
+      TH1F * Pi0W = (TH1F*)CorrectPi0Eta->Get("Pi0Weights");
+      TH1F * EtaW = (TH1F*)CorrectPi0Eta->Get("EtaWeights");
+      if (Pi0W) taskMB->SetPi0WeightToData(*Pi0W);
+      else printf("Could not load Pi0Weights\n");
+      if (EtaW)  taskMB->SetEtaWeightToData(*EtaW);
+      else printf("Could not load EtaWeights\n");
+    }
+    else printf("Could not open Pi0Eta correction file \n");
+    TH1::AddDirectory(kTRUE);
+  }
+
   mgr->AddTask(taskMB);
 
   TString containerName1 = mgr->GetCommonFileName();

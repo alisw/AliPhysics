@@ -339,6 +339,9 @@ AliAnalysisTaskHFEpACorrelation::AliAnalysisTaskHFEpACorrelation(const char *nam
 ,fElectronBKGNoEnhULS_WithW(0)
 ,fElectronBKGNoEnhLS_WithW(0)
 ,fElectronBKGNoEnhTotalNumber_WithW(0)
+,fEffElec(0)
+,fVtxZMin(-10.)
+,fVtxZMax(10.)
 {
     //Named constructor
     // Define input and output slots here
@@ -582,7 +585,9 @@ AliAnalysisTaskHFEpACorrelation::AliAnalysisTaskHFEpACorrelation()
 ,fElectronBKGNoEnhULS_WithW(0)
 ,fElectronBKGNoEnhLS_WithW(0)
 ,fElectronBKGNoEnhTotalNumber_WithW(0)
-
+,fEffElec(0)
+,fVtxZMin(-10.)
+,fVtxZMax(10.)
 {
     DefineInput(0, TChain::Class());
     DefineOutput(1, TList::Class());
@@ -807,8 +812,8 @@ void AliAnalysisTaskHFEpACorrelation::UserCreateOutputObjects()
     {
         //binnig for unfolding
         
-        Double_t EtaBins[] = {-0.8,-0.7,-0.6,-0.5,-0.4,-0.3,-0.2, -0.1, 0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8}; //16 bins
-        Int_t NEtaBins = 16;
+        Double_t EtaBins[] = {-0.8000,-0.7750,-0.7500,-0.7250,-0.7000,-0.6750,-0.6500,-0.6250,-0.6000,-0.5750,-0.5500,-0.5250,-0.5000,-0.4750,-0.4500,-0.4250,-0.4000,-0.3750,-0.3500,-0.3250,-0.3000,-0.2750,-0.2500,-0.2250,-0.2000,-0.1750,-0.1500,-0.1250,-0.1000,-0.0750,-0.0500,-0.0250,0.0000,0.0250,0.0500,0.0750,0.1000,0.1250,0.1500,0.1750,0.2000,0.2250,0.2500,0.2750,0.3000,0.3250,0.3500,0.3750,0.4000,0.4250,0.4500,0.4750,0.5000,0.5250,0.5500,0.5750,0.6000,0.6250,0.6500,0.6750,0.7000,0.7250,0.7500,0.7750,0.8000}; //16 bins
+        Int_t NEtaBins = 64;
         
         Double_t ZVtxBins[] = {-10, -7, -5, -3, -1, 1, 3, 5, 7, 10.01}; //9 bins
         Int_t nZvtxBinsMC = 9;
@@ -829,7 +834,7 @@ void AliAnalysisTaskHFEpACorrelation::UserCreateOutputObjects()
         fNoEtaCutElectronGeneratedSignalPtEtaZvtx = new TH1F("fNoEtaCutElectronGeneratedSignalPtEtaZvtx", "",110,0.5,6);
         fOutputList->Add(fNoEtaCutElectronGeneratedSignalPtEtaZvtx);
         
-        fEtaCutElectronGeneratedSignalPtEtaZvtx = new TH1F("fEtaCutElectronGeneratedSignalPtEtaZvtx", "",110,0.5,6);
+        fEtaCutElectronGeneratedSignalPtEtaZvtx = new TH3F("fEtaCutElectronGeneratedSignalPtEtaZvtx", "Hfe generated p_{T} x #eta x  ZVtx; p_{T}; #eta; Zvtx", NpTbinsH, pTBinsH, NEtaBins, EtaBins, nZvtxBinsMC, ZVtxBins);
         fOutputList->Add(fEtaCutElectronGeneratedSignalPtEtaZvtx);
         
         
@@ -846,7 +851,7 @@ void AliAnalysisTaskHFEpACorrelation::UserCreateOutputObjects()
         //Tagged Background
         
         //HFe with MC information
-        fEtaCutElectronRecoHFEMC = new TH1F("fEtaCutElectronRecoHFEMC", "", 110,0.5,6);
+        fEtaCutElectronRecoHFEMC = new TH3F("fEtaCutElectronRecoHFEMC", "HFE Reco p_{T} x #eta x  ZVtx; p_{T}; #eta; Zvtx", NpTbinsH, pTBinsH, NEtaBins, EtaBins, nZvtxBinsMC, ZVtxBins);
         //Others with MC information
         fEtaCutElectronRecoOtherMC = new TH1F("fEtaCutElectronRecoOtherMC", "", 110,0.5,6);
         
@@ -1117,10 +1122,10 @@ void AliAnalysisTaskHFEpACorrelation::UserCreateOutputObjects()
     //Mixed event analysis -- it was removed from is pp because
     if(fEventMixingFlag && fCorrelationFlag)
     {
-        fPoolNevents = new TH1F("fPoolNevents","Event Mixing Statistics; Number of events; Count",1000,0,1000);
+        fPoolNevents = new TH1F("fPoolNevents","Event Mixing Statistics; Number of events; Count",1000,0,10000);
         fOutputList->Add(fPoolNevents);
         
-        Int_t trackDepth = 2000; // number of objects (tracks) kept per event buffer bin. Once the number of stored objects (tracks) is above that limit, the oldest ones are removed.
+        Int_t trackDepth = 100000; // number of objects (tracks) kept per event buffer bin. Once the number of stored objects (tracks) is above that limit, the oldest ones are removed.
         Int_t poolsize   = 1000;  // Maximum number of events, ignored in the present implemented of AliEventPoolManager
         
         Int_t nCentralityBins  = 15;
@@ -1216,219 +1221,53 @@ void AliAnalysisTaskHFEpACorrelation::UserExec(Option_t *)
         
         if (!isINT7selected){
             fNevent2->Fill(25);
+            PostData(1, fOutputList);
+            printf("Event not selected \n");
             return;
         }
     }
     
-    //______________________________________________________________________
-    //Vertex Selection
-    if(!fIspp){
-        
-        fNevent2->Fill(8);
-        
-        if(fIsAOD)
-        {
-            const AliAODVertex* trkVtx = fAOD->GetPrimaryVertex();
-            
-            
-            Float_t zvtx = -100;
-            zvtx=trkVtx->GetZ();
-            fZvtx = zvtx;
-            //x
-            Float_t xvtx = -100;
-            xvtx=trkVtx->GetX();
-            
-            //y
-            Float_t yvtx = -100;
-            yvtx=trkVtx->GetY();
-            
-            
-            //events without vertex
-            if(zvtx==0 && xvtx==0 && yvtx==0) fNevent2->Fill(0);
-            
-            
-            if(!trkVtx || trkVtx->GetNContributors()<=0) return;
-            TString vtxTtl = trkVtx->GetTitle();
-            if(!vtxTtl.Contains("VertexerTracks")) return;
-            //Float_t zvtx = trkVtx->GetZ();
-            
-            trkVtx->GetZ();
-            fZvtx = zvtx;
-            
-            
-            fVtxZ_new1->Fill(fZvtx);
-            
-            const AliAODVertex* spdVtx = fAOD->GetPrimaryVertexSPD();
-            if(spdVtx->GetNContributors()<=0) return;
-            TString vtxTyp = spdVtx->GetTitle();
-            Double_t cov[6]={0};
-            spdVtx->GetCovarianceMatrix(cov);
-            Double_t zRes = TMath::Sqrt(cov[5]);
-            
-            fzRes1->Fill(zRes);
-            //Yvonne e-mail from 12 June 2015 says it has a bug on "vertexer:Z".
-            //if(vtxTyp.Contains("vertexer:Z") && (zRes>0.25)) return;
-            
-            //new line:
-            if (spdVtx->IsFromVertexerZ() && (zRes>0.25)) return;
-            
-            fzRes2->Fill(zRes);
-            
-            fSPD_track_vtx1->Fill(spdVtx->GetZ() - trkVtx->GetZ());
-            if(TMath::Abs(spdVtx->GetZ() - trkVtx->GetZ())>0.5) return;
-            fSPD_track_vtx2->Fill(spdVtx->GetZ() - trkVtx->GetZ());
-            
-            
-            
-            if(TMath::Abs(zvtx) > 10){
-                fNevent2->Fill(2);
-                fVtxZ_new2->Fill(fZvtx);
-                return;
-            }
-            
-            //if(fabs(zvtx>10.0))return;
-            
-            fVtxZ_new3->Fill(fZvtx);
-            fNevent2->Fill(4);
-            
-            //Look for kink mother for AOD
-            
-            fNumberOfVertices = 0;
-            fNumberOfMotherkink = 0;
-            
-            if(fIsAOD)
-            {
-                fNumberOfVertices = fAOD->GetNumberOfVertices();
-                
-                fListOfmotherkink = new Double_t[fNumberOfVertices];
-                
-                for(Int_t ivertex=0; ivertex < fNumberOfVertices; ivertex++)
-                {
-                    AliAODVertex *aodvertex = fAOD->GetVertex(ivertex);
-                    if(!aodvertex) continue;
-                    if(aodvertex->GetType()==AliAODVertex::kKink)
-                    {
-                        AliAODTrack *mother1 = (AliAODTrack *) aodvertex->GetParent();
-                        if(!mother1) continue;
-                        Int_t idmother = mother1->GetID();
-                        fListOfmotherkink[fNumberOfMotherkink] = idmother;
-                        fNumberOfMotherkink++;
-                    }
-                }
-            }
-        }
-        
-        else
-        {
-            
-            
-            
-            /// ESD
-            const AliESDVertex* trkVtx = fESD->GetPrimaryVertex();
-            if(!trkVtx || trkVtx->GetNContributors()<=0) return;
-            TString vtxTtl = trkVtx->GetTitle();
-            if(!vtxTtl.Contains("VertexerTracks")) return;
-            Float_t zvtx = -100;
-            zvtx=trkVtx->GetZ();
-            
-            
-            const AliESDVertex* spdVtx = fESD->GetPrimaryVertexSPD();
-            if(spdVtx->GetNContributors()<=0) return;
-            TString vtxTyp = spdVtx->GetTitle();
-            Double_t cov[6]={0};
-            spdVtx->GetCovarianceMatrix(cov);
-            Double_t zRes = TMath::Sqrt(cov[5]);
-            if(vtxTyp.Contains("vertexer:Z") && (zRes>0.25)) return;
-            if(TMath::Abs(spdVtx->GetZ() - trkVtx->GetZ())>0.5) return;
-            if(TMath::Abs(zvtx) > 10) return;
-        }
-        
-        
-        
-        fNevent2->Fill(12);
-        
-        //check pA pileup cut as it is done in the hfe package
-        if(fAnalysisUtils->IsPileUpEvent(fVevent)){
-            fNevent2->Fill(14);
-            return;
-        }
-        fNevent2->Fill(16);
-        
-    }//close !Ispp flag
+    const AliAODVertex* trkVtx = fAOD->GetPrimaryVertex();
+    fZvtx = trkVtx->GetZ();
     
-    //========================== vertex selection for pp
+    //test another Ztvx cuts. It is not possible to use Zvtx <-10 or Zvtx>10 (this cut is applied by the AliMultiSelectionTask)
     
-    if(fIspp)
+    if (fZvtx < fVtxZMin || fZvtx > fVtxZMax)
     {
-        if(fIsAOD)
+        fNevent2->Fill(10);
+        PostData(1, fOutputList);
+        return;
+        
+    }
+    
+    //Kinks
+    
+    fNumberOfVertices = 0;
+    fNumberOfMotherkink = 0;
+    
+    if(fIsAOD)
+    {
+        fNumberOfVertices = fAOD->GetNumberOfVertices();
+        
+        fListOfmotherkink = new Double_t[fNumberOfVertices];
+        
+        for(Int_t ivertex=0; ivertex < fNumberOfVertices; ivertex++)
         {
-            const AliAODVertex* trkVtx = fAOD->GetPrimaryVertex();
-            if(!trkVtx || trkVtx->GetNContributors()<=0) return;
-            Float_t zvtx = -100;
-            zvtx=trkVtx->GetZ();
-            fZvtx = zvtx;
-            //fVtxZ_new1->Fill(fZvtx);
-            
-            if(TMath::Abs(zvtx) > 10) return;
-            //fVtxZ_new2->Fill(fZvtx);
-            
-            //Look for kink mother for AOD
-            
-            fNumberOfVertices = 0;
-            fNumberOfMotherkink = 0;
-            
-            if(fIsAOD)
+            AliAODVertex *aodvertex = fAOD->GetVertex(ivertex);
+            if(!aodvertex) continue;
+            if(aodvertex->GetType()==AliAODVertex::kKink)
             {
-                fNumberOfVertices = fAOD->GetNumberOfVertices();
-                
-                fListOfmotherkink = new Double_t[fNumberOfVertices];
-                
-                for(Int_t ivertex=0; ivertex < fNumberOfVertices; ivertex++)
-                {
-                    AliAODVertex *aodvertex = fAOD->GetVertex(ivertex);
-                    if(!aodvertex) continue;
-                    if(aodvertex->GetType()==AliAODVertex::kKink)
-                    {
-                        AliAODTrack *mother1 = (AliAODTrack *) aodvertex->GetParent();
-                        if(!mother1) continue;
-                        Int_t idmother = mother1->GetID();
-                        fListOfmotherkink[fNumberOfMotherkink] = idmother;
-                        fNumberOfMotherkink++;
-                    }
-                }
+                AliAODTrack *mother1 = (AliAODTrack *) aodvertex->GetParent();
+                if(!mother1) continue;
+                Int_t idmother = mother1->GetID();
+                fListOfmotherkink[fNumberOfMotherkink] = idmother;
+                fNumberOfMotherkink++;
             }
         }
-        else
-        {
-            
-            
-            
-            /// ESD
-            const AliESDVertex* trkVtx = fESD->GetPrimaryVertex();
-            if(!trkVtx || trkVtx->GetNContributors()<=0) return;
-            Float_t zvtx = -100;
-            zvtx=trkVtx->GetZ();
-            if(TMath::Abs(zvtx) > 10) return;
-        }
     }
-    //______________________________________________________________________
-    //after vertex selection
-    fNevent->Fill(10);
+
     
-    //Only events with at least 2 tracks are accepted
-    Int_t fNOtrks =  fVevent->GetNumberOfTracks();
-    if(fNOtrks<2) return;
-    
-    fNevent->Fill(11);
-    
-    if(fIsAOD){
-        Int_t fNOtrks2 =  fAOD->GetNumberOfTracks();
-        if(fNOtrks2<2) return;
-    }
-    
-    fNevent->Fill(12);
-    
-    
+    fNevent->Fill(20);
     //______________________________________________________________________
     //______________________________________________________________________
     //______________________________________________________________________
@@ -1457,6 +1296,17 @@ void AliAnalysisTaskHFEpACorrelation::UserExec(Option_t *)
                         fCentralityValue = MultSelection->GetMultiplicityPercentile("V0A");
                     }
                     
+                    fNevent->Fill(10);
+                    
+                    if (MultSelection->GetEvSelCode() != 0)
+                    {
+                        PostData(1, fOutputList);
+                        return;
+                    }
+                    fNevent->Fill(11);
+
+                    
+                    
                 }
             }
             else
@@ -1471,7 +1321,15 @@ void AliAnalysisTaskHFEpACorrelation::UserExec(Option_t *)
             
             fCentralityHist->Fill(fCentralityValue);
             
-            if(fCentralityValue<fCentralityMin || fCentralityValue>fCentralityMax) return;
+            fNevent->Fill(12);
+
+            if(fCentralityValue<fCentralityMin || fCentralityValue>fCentralityMax)
+            {
+                PostData(1, fOutputList);
+                return;
+            }
+            
+            fNevent->Fill(13);
             
             fCentralityHistPass->Fill(fCentralityValue);
         }
@@ -1557,7 +1415,7 @@ void AliAnalysisTaskHFEpACorrelation::UserExec(Option_t *)
                             fNoEtaCutElectronGeneratedSignalPtEtaZvtx->Fill(fMCparticle->Pt());
                             if (EtaMC >= fEtaCutMin && EtaMC <= fEtaCutMax)
                             {
-                                fEtaCutElectronGeneratedSignalPtEtaZvtx->Fill(fMCparticle->Pt());
+                                fEtaCutElectronGeneratedSignalPtEtaZvtx->Fill(fMCparticle->Pt(),EtaMC, fZvtx);
                                 isHFe = kTRUE;
                             }
                             
@@ -2116,7 +1974,8 @@ void AliAnalysisTaskHFEpACorrelation::ElectronHadronCorrelation(AliVTrack *track
                     
                     fDeta = fEtaE - fEtaH;
                     
-                    Double_t WeightHadron = 1./GetHadronEfficiency(fPtH,fEtaH,fZvtx);
+                    Double_t WeightHadron = 1./(GetHadronEfficiency(fPtH,fEtaH,fZvtx)*GetElectronEfficiency(fPtE,fEtaE,fZvtx));
+                    
                     
                     for(Int_t i = 0; i < fpTBins.GetSize()-1; i++)
                     {
@@ -2223,14 +2082,14 @@ void AliAnalysisTaskHFEpACorrelation::ElectronHadronCorrelation(AliVTrack *track
         //Double_t WeightInclusive = 1./(GetInclusiveEfficiency(fPtH,fEtaH,fZvtx) * GetHadronEfficiency(fPtH,fEtaH,fZvtx));
         //Double_t WeightBKG = 1./(GetBackgroundEfficiency(fPtH,fEtaH,fZvtx) * GetHadronEfficiency(fPtH,fEtaH,fZvtx));
         
-        Double_t WeightHadron = 1./GetHadronEfficiency(fPtH,fEtaH,fZvtx);
+        Double_t WeightHadron = 1./(GetHadronEfficiency(fPtH,fEtaH,fZvtx)*GetElectronEfficiency(fPtE,fEtaE,fZvtx));
         
         for(Int_t i = 0; i < fpTBins.GetSize()-1; i++)
         {
             if(fPtE>=fpTBins.At(i) && fPtE<fpTBins.At(i+1))
             {
                 
-                //Filling histograms: Only hadron weight for now.
+                //Filling histograms: Only hadron weight for now. Now including E ONLINE!
                 fCEtaPhi_Inc[i]->Fill(fDphi,fDeta,WeightHadron);
                 
                 if(fNonHFE->IsULS())
@@ -2465,6 +2324,22 @@ Double_t AliAnalysisTaskHFEpACorrelation::GetHadronEfficiency(Double_t pT, Doubl
     
 }
 
+Double_t AliAnalysisTaskHFEpACorrelation::GetElectronEfficiency(Double_t pT, Double_t eta, Double_t zvtx)
+{
+    if (!fEffElec)
+    {
+        return 1.;
+    }
+    Int_t bin = fEffElec->FindBin(pT,eta,zvtx);
+    if ( fEffElec->IsBinUnderflow(bin) || fEffElec->IsBinOverflow(bin) )
+    {
+        return 1.;
+    }
+   
+    return fEffElec->GetBinContent(bin);
+    
+}
+
 Double_t AliAnalysisTaskHFEpACorrelation::CalculateWeight(Int_t pdg_particle, Double_t x)
 {
     //weight for d3 based on MinJung parametrization //sent by Jan
@@ -2605,41 +2480,24 @@ void AliAnalysisTaskHFEpACorrelation::ComputeWeightInEnhancedSample()
         Bool_t IsEnhancedPi0Eta = kFALSE;
         Bool_t IsEnhancedHF = kFALSE;
         
-        Double_t Eta = particle->Eta();
-        if (Eta<-0.8 || Eta > 0.8)
+        Double_t Y = particle->Y();
+        
+        if (Y<-0.8 || Y > 0.8)
             continue;
         
         CocktailType_t Type = FindTrackGenerator(MCIndex, fMCheader,fMCarray);
         
-        if ( Type == kBackgroundEnhanced)
-            IsEnhancedPi0Eta = kTRUE;
-        else if (Type == kHFEnhanced)
-            IsEnhancedHF = kTRUE;
+        if ( Type == kBackgroundEnhanced || Type == kHFEnhanced)
+            continue;
         
-        //pi0
-        if (PDGCode == 111)
+        if (particle->IsPrimary() && particle->GetMother()<0)
         {
-            if (IsEnhancedPi0Eta)
-            {
-                if (particle->GetMother()<0)
-                    fPtMCpi0_NoMother->Fill(particle->Pt());
-            }
-            else if (!IsEnhancedHF)
-                fPtMCpi0_PureHijing->Fill(particle->Pt());
+            if (PDGCode == 111)
+                fPtMCpi0_NoMother->Fill(particle->Pt());
+            else if (PDGCode == 221)
+                fPtMCEta_NoMother->Fill(particle->Pt());
         }
-        
-        //eta
-        if (PDGCode == 221)
-        {
-            if (IsEnhancedPi0Eta)
-            {
-                if (particle->GetMother()<0)
-                    fPtMCEta_NoMother->Fill(particle->Pt());
-            }
-            else if (!IsEnhancedHF)
-                fPtMCEta_PureHijing->Fill(particle->Pt());
-            
-        }
+
     }
 }
 
@@ -2780,7 +2638,7 @@ void AliAnalysisTaskHFEpACorrelation::TaggingEfficiencyCalculationRun1(AliVTrack
                     }
                     else
                     {
-                        fEtaCutElectronRecoHFEMC->Fill(track->Pt());
+                        fEtaCutElectronRecoHFEMC->Fill(fMCparticle->Pt(),fMCparticle->Eta(), fZvtx);
                         *lIsHFe = kTRUE;
                         if (fNonHFE->IsULS())
                             fEtaCutElectronHFEULS->Fill(track->Pt(),fNonHFE->GetNULS());
@@ -2815,39 +2673,9 @@ void AliAnalysisTaskHFEpACorrelation::TaggingEfficiencyCalculationRun2(AliVTrack
     Int_t LabelMC = TMath::Abs(track->GetLabel());
     CocktailType_t Type = FindTrackGenerator(LabelMC, fMCheader, fMCarray);
     
-    //Calculate using only the enhanced sample
-    if (Type == kBackgroundEnhanced)
-    {
-        //Find Particle first mother
-        AliAODMCParticle* MCParticle = (AliAODMCParticle*) fMCarray->At(LabelMC);
-        AliAODMCParticle* MCMother = (AliAODMCParticle*) fMCarray->At(MCParticle->GetMother());
-        
-        while (MCMother->GetMother()>=0){
-            MCMother = (AliAODMCParticle*) fMCarray->At(MCMother->GetMother());
-        }
-        
-        //Total number of NHFe in the enh. sample
-        Double_t MotherW = CalculateWeightRun2(TMath::Abs(MCMother->GetPdgCode()),MCMother->Pt());
-        
-        fEtaCutElectronBKNoTag->Fill(track->Pt());
-        fEtaCutElectronBKNoTag_WithMotherW->Fill(track->Pt(),MotherW);
-        
-        
-        if (fNonHFE->IsULS())
-        {
-            fEtaCutElectronBKULSMainSources->Fill(track->Pt(),fNonHFE->GetNULS());
-            fEtaCutElectronBKULSMainSources_WithMotherW->Fill(track->Pt(),fNonHFE->GetNULS()*MotherW);
-        }
-        
-        if (fNonHFE->IsLS())
-        {
-            fEtaCutElectronBKLSMainSources->Fill(track->Pt(),fNonHFE->GetNLS());
-            fEtaCutElectronBKLSMainSources_WithMotherW->Fill(track->Pt(),fNonHFE->GetNLS()*MotherW);
-        }
-    }
+    //Calculate using only the NON-enhanced sample (HF and eta/Pi0)
     
-    //Calculate using only the NON-enhanced sample
-    if ( (Type == kNoCoktail) || (Type == kHijing) )
+    if ( Type != kBackgroundEnhanced &&  Type != kHFEnhanced)
     {
         
         AliAODMCParticle* MCParticle = (AliAODMCParticle*) fMCarray->At(LabelMC);
@@ -2872,6 +2700,11 @@ void AliAnalysisTaskHFEpACorrelation::TaggingEfficiencyCalculationRun2(AliVTrack
                 
                 if (MotherPDGAfterReco ==111 || MotherPDGAfterReco ==221)
                 {
+                    //Pi0/Eta should be primary and have no mother (same condition used to calculate the weight)
+
+                    if (!MCMother->IsPrimary() || MCMother->GetMother()>0)
+                        return;
+                    
                     Double_t Weight = CalculateWeightRun2ToData(MotherPDGAfterReco,MCMother->Pt());
                     fElectronBKGNoEnhTotalNumber_WithW->Fill(track->Pt(), Weight);
                     
@@ -2888,6 +2721,10 @@ void AliAnalysisTaskHFEpACorrelation::TaggingEfficiencyCalculationRun2(AliVTrack
                     {
                         AliAODMCParticle* MCGMother = (AliAODMCParticle*) fMCarray->At(MCMother->GetMother());
                         Int_t GMotherPDGAfterReco = TMath::Abs(MCGMother->GetPdgCode());
+                        
+                        //Pi0/Eta should be primary and have no mother (same condition used to calculate the weight)
+                        if (!MCGMother->IsPrimary() || MCGMother->GetMother()>0)
+                            return;
                         
                         if (GMotherPDGAfterReco ==111 || GMotherPDGAfterReco ==221)
                         {
@@ -2997,7 +2834,7 @@ void AliAnalysisTaskHFEpACorrelation::TaggingEfficiencyCalculationRun2(AliVTrack
         
         //HFe
         if (MotherPDGHeavy >3)
-            fEtaCutElectronRecoHFEMC->Fill(track->Pt());
+            fEtaCutElectronRecoHFEMC->Fill(fMCparticle->Pt(),fMCparticle->Eta(), fZvtx);
 
     }
     
@@ -3026,6 +2863,7 @@ Double_t AliAnalysisTaskHFEpACorrelation::CalculateWeightRun2ToData(Int_t pdg_pa
             return 1.0;
         
         Int_t bin = fBkgPi0WeightToData->FindBin(pT);
+        
         return 1./fBkgPi0WeightToData->GetBinContent(bin);
     }
     else if (TMath::Abs(pdg_particle) == 221)

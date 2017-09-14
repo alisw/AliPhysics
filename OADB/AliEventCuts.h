@@ -11,6 +11,7 @@ using std::string;
 #include "AliVEvent.h"
 #include "AliAnalysisUtils.h"
 
+class AliESDtrackCuts;
 class TList;
 class TH1D;
 class TH1I;
@@ -43,7 +44,7 @@ class AliEventCutsContainer : public TNamed {
 class AliEventCuts : public TList {
   public:
     AliEventCuts(bool savePlots = false);
-    virtual ~AliEventCuts() { if (fMultiplicityV0McorrCut) delete fMultiplicityV0McorrCut; }
+    virtual ~AliEventCuts();
     enum CutsBin {
       kNoCuts = 0,
       kDAQincomplete,
@@ -58,6 +59,7 @@ class AliEventCuts : public TList {
       kVertexQuality,
       kPileUp,
       kMultiplicity,
+      kINELgt0,
       kCorrelations,
       kAllCuts
     };
@@ -116,6 +118,7 @@ class AliEventCuts : public TList {
     float         fMinCentrality;                 ///< Minimum centrality to be analised
     float         fMaxCentrality;                 ///< Maximum centrality to be analised
     bool          fMultSelectionEvCuts;           ///< Enable/Disable the event selection applied in the AliMultSelection framework
+    bool          fSelectInelGt0;                 ///< Select only INEL > 0 events
 
     bool          fUseVariablesCorrelationCuts;   ///< Switch on/off the cuts on the correlation between event variables
     bool          fUseEstimatorsCorrelationCut;   ///< Switch on/off the cut on the correlation between centrality estimators
@@ -174,7 +177,10 @@ class AliEventCuts : public TList {
     TH2F* fTPCvsTrkl[2];           //!<!
     TH2F* fVZEROvsTPCout[2];       //!<!
 
-    ClassDef(AliEventCuts,2)
+    AliESDtrackCuts* fFB32trackCuts; //!<! Cuts corresponding to FB32 in the ESD (used only for correlations cuts in ESDs)
+    AliESDtrackCuts* fTPConlyCuts;   //!<! Cuts corresponding to the standalone TPC cuts in the ESDs (used only for correlations cuts in ESDs)
+
+    ClassDef(AliEventCuts,4)
 };
 
 template<typename F> F AliEventCuts::PolN(F x,F* coef, int n) {

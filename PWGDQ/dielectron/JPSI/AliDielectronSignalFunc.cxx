@@ -281,6 +281,9 @@ void AliDielectronSignalFunc::ProcessFit(TObjArray * const arrhist) {
   if(fRebin>1)
     fHistDataPM->Rebin(fRebin);
   
+  for(Int_t ibin=1; ibin<=fHistDataPM->GetXaxis()->GetNbins(); ibin++) {
+    if(fHistDataPM->GetBinError(ibin)<1e-30 ) fHistDataPM->SetBinError(ibin, fgkErrorZero);
+  }
   fHistSignal = new TH1F("HistSignal", "Fit substracted signal",
                          fHistDataPM->GetXaxis()->GetNbins(),
                          fHistDataPM->GetXaxis()->GetXmin(), fHistDataPM->GetXaxis()->GetXmax());
@@ -290,14 +293,17 @@ void AliDielectronSignalFunc::ProcessFit(TObjArray * const arrhist) {
   
   // the starting parameters of the fit function and their limits can be tuned
   // by the user in its macro
-  fHistDataPM->Fit(fFuncSigBack, fFitOpt.Data(), "", fFitMin, fFitMax);
+//   fHistDataPM->Fit(fFuncSigBack, fFitOpt.Data(), "", fFitMin, fFitMax);
   TFitResultPtr pmFitPtr = fHistDataPM->Fit(fFuncSigBack, fFitOpt.Data(), "", fFitMin, fFitMax);
-  //TFitResult *pmFitResult = pmFitPtr.Get(); // used only with TF1Helper
-  //fFuncBackground->SetParameters(fFuncSigBack->GetParameters());
+  TFitResult *pmFitResult = pmFitPtr.Get(); // used only with TF1Helper
+  if(pmFitResult){
+    fDof =  pmFitResult->Ndf();
+    if(fDof) fChi2Dof = pmFitResult->Chi2() / fDof;
+  }
   fFuncSignal->SetParameters(fFuncSigBack->GetParameters());
   fFuncBackground->SetParameters(fFuncSigBack->GetParameters()+fFuncSignal->GetNpar());
-
   // fill the background spectrum
+
   fHistBackground->Eval(fFuncBackground);
   // set the error for the background histogram
   fHistBackground->Fit(fFuncBackground,"0qR","",fFitMin,fFitMax);
@@ -385,6 +391,8 @@ void AliDielectronSignalFunc::ProcessFit(TObjArray * const arrhist) {
   fProcessed = kTRUE;
   
   fHistBackground->GetListOfFunctions()->Add(fFuncBackground);
+  fHistDataPM->GetListOfFunctions()->Add(fFuncSigBack);
+  fHistSignal->GetListOfFunctions()->Add(fFuncSignal);
 
 }
 
@@ -662,6 +670,8 @@ Double_t AliDielectronSignalFunc::PeakBgndFun(const Double_t *x, const Double_t 
   //
   // merge peak and bgnd functions
   //
-  return (fFuncSignal->EvalPar(x,par) + fFuncBackground->EvalPar(x,par+fNparPeak));
+  for(int i = 0 ; i < fNparPeak; ++i ) fFuncSignal->SetParameter(i, par[i]);
+  for(int i = fNparPeak ; i < fNparPeak+fNparBgnd; ++i ) fFuncSignal->SetParameter(i, par[i]);
+  return (fFuncSignal->Eval(x[0]) + fFuncBackground->Eval(x[0]) );
 }
 

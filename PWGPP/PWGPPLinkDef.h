@@ -60,6 +60,7 @@
 
 #pragma link C++ class AliAnalysisTaskVertexESD+;
 #pragma link C++ class AliAnalysisTaskCheckPileup+;
+//#pragma link C++ class AliAnalysisTaskCheckVertexAOD+;
 #pragma link C++ class AliAnalysisTaskCheckESDTracks+;
 #pragma link C++ class AliAnalysisTaskCheckAODTracks+;
 #pragma link C++ class AliAlignmentDataFilterITS+;
@@ -192,5 +193,9 @@
 #pragma link C++ class  AliAnalysisTaskVdM::EventInfo+;
 #pragma link C++ class  AliAnalysisTaskVdM::ADV0+;
 #pragma link C++ class  AliAnalysisTaskVdM+;
+#pragma link C++ class  AliXMLEngine::NodeIterator+;
+#pragma link C++ class  AliXMLEngine::Node+;
+#pragma link C++ class  AliXMLEngine::Attr+;
+#pragma link C++ class  AliXMLEngine+;
 
 #endif

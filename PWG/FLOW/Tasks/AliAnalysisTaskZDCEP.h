@@ -91,7 +91,11 @@ private:
   
   AliAnalysisUtils* fAnalysisUtils; //!
   AliMultSelection* fMultSelection; //!
-  
+
+
+  AliAnalysisTaskZDCEP(const AliAnalysisTaskZDCEP&);
+  AliAnalysisTaskZDCEP& operator=(const AliAnalysisTaskZDCEP&);
+
   ClassDef(AliAnalysisTaskZDCEP,3);
 };
 

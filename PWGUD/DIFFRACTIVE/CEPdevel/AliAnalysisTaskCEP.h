@@ -69,6 +69,7 @@ private:
 	//-------------------------------------------------------------------
 	Bool_t CheckInput();
 	void PostOutputs();
+  Bool_t IsSTGFired(TBits* fFOmap,Int_t dphiMin=0,Int_t dphiMax=10);
 
   // events are saved if (ET=Event test, TT=Track test)
   // . ET conditions are met (conditions for DG and NDG)
@@ -79,9 +80,13 @@ private:
   UInt_t fETmaskDG,  fETpatternDG;
   UInt_t fETmaskNDG, fETpatternNDG;
   UInt_t fTTmask, fTTpattern;
+  
+  // some hit information
+  Bool_t fisSTGTriggerFired;
+  Int_t  fnTOFmaxipads;
 
 	// event information
-	Int_t fRun;                     //  run number
+	Int_t           fRun;           //  run number
   AliESDRun      *fESDRun;        //! esd run object
   Bool_t          fisESD;         //!
   Bool_t          fisAOD;         //!
@@ -121,6 +126,7 @@ private:
   TList *flnClunTra;    //! list of QA histograms for nClunTra BG rejection
   TList *flVtx     ;    //! list of QA histograms for vertex selection
   TList *flV0      ;    //! list of QA histograms for V0 study
+  TList *flFMD     ;    //! list of QA histograms for FMD study
   TH1F *fhStatsFlow;    //! histogram with event selection statistics
   
 	// output objects

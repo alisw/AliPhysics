@@ -532,7 +532,6 @@ Bool_t AliAnalysisTaskLMREventFilter::IsSelectedTrigger(AliAODEvent *fAOD, Bool_
       delete tokens;
       return evtToBeProcessed;
     }
-  evtToBeProcessed = kTRUE;
 
   if (fillHisto) 
     fhTriggers->Fill(fTriggerClasses[0].Data(),1);
@@ -547,6 +546,7 @@ Bool_t AliAnalysisTaskLMREventFilter::IsSelectedTrigger(AliAODEvent *fAOD, Bool_
 	    {
 	      goodTrig = kTRUE;
 	      fhNMu->Fill(nmu,fTriggerClasses[i],1);
+	      evtToBeProcessed = kTRUE;
 	      break;
 	    }
 	}

@@ -653,6 +653,7 @@ AliAnalysisTaskDiffCrossSections::AliAnalysisTaskDiffCrossSections(const char *n
   , fDetectorsUsed("ADA ADC V0 FMD SPD")
   , fUseBranch("")
   , fFMDMultLowCut(0.3)
+  , fTimeChargeCuts(16)
   , fTriggerAnalysis()
   , fAnalysisUtils()
   , fTE(NULL)
@@ -664,6 +665,7 @@ AliAnalysisTaskDiffCrossSections::AliAnalysisTaskDiffCrossSections(const char *n
   , fMeanVtxCov(3,3)
   , fMeanVtxU(3,3)
 {
+  fTimeChargeCuts.SetOwner(kTRUE);
   fTriggerAnalysis.SetAnalyzeMC(fIsMC);
 
   DefineOutput(1, TTree::Class());
@@ -678,6 +680,12 @@ AliAnalysisTaskDiffCrossSections::~AliAnalysisTaskDiffCrossSections()
   if (NULL != fTE)
     delete fTE;
   fTE = NULL;
+}
+
+Bool_t AliAnalysisTaskDiffCrossSections::DoTimeChargeCut(Int_t ch, Float_t time, Float_t charge) const
+{
+  const TCutG *cut = dynamic_cast<const TCutG*>(fTimeChargeCuts.At(ch));
+  return (cut ? cut->IsInside(time, charge) : kTRUE);
 }
 
 void AliAnalysisTaskDiffCrossSections::SetBranches(TTree* t) {
@@ -979,20 +987,25 @@ void AliAnalysisTaskDiffCrossSections::UserExec(Option_t *)
 	continue;
       for (Int_t module=0; module<4; ++module) {
 	const Int_t ch = 8*side + module;
-	if (esdAD->GetBBFlag(ch) && esdAD->GetBBFlag(ch+4)) {
+        const Bool_t flag1 = esdAD->GetBBFlag(ch)   || DoTimeChargeCut(ch,   esdAD->GetTime(ch),   esdAD->GetAdc(ch));
+        const Bool_t flag2 = esdAD->GetBBFlag(ch+4) || DoTimeChargeCut(ch+4, esdAD->GetTime(ch+4), esdAD->GetAdc(ch+4));
+	if (flag1 && flag2) {
 	  const TVector3 v = GetADPseudoTrack(ch)-vertexPosition;
 	  phi.push_back(v.Phi());
 	  eta.push_back(v.Eta());
 	  const Bool_t isOffline = (side == 0
 				    ? (esdAD->BBTriggerADC(module) && esdAD->BBTriggerADC(module+4))
 				    : (esdAD->BBTriggerADA(module) && esdAD->BBTriggerADA(module+4)));
+          const Bool_t isFlagNotBB = (!esdAD->GetBBFlag(ch) || !esdAD->GetBBFlag(ch+4));
 	  fTreeData.fPseudoTracks.AddTrack(PseudoTrack(v.Eta(),
 						       v.Phi(),
 						       esdAD->GetAdc(ch),
 						       esdAD->GetAdc(ch+4),
 						       (ch< 8)*PseudoTracks::kADC |
 						       (ch>=8)*PseudoTracks::kADA |
-						       PseudoTracks::kOnline | (isOffline*PseudoTracks::kOffline)));
+						       (PseudoTracks::kOnline)                |
+                                                       (PseudoTracks::kOffline   * isOffline) |
+                                                       (PseudoTracks::kFlagNotBB * isFlagNotBB)));
 	}
       }
     }

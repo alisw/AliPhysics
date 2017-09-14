@@ -20,6 +20,7 @@ using std::vector;
 #include <AliInputEventHandler.h>
 #include <AliMCEventHandler.h>
 #include <AliMultSelection.h>
+#include <AliMultSelectionTask.h>
 #include <AliVEventHandler.h>
 #include <AliVMultiplicity.h>
 #include <AliVVZERO.h>
@@ -59,6 +60,7 @@ AliEventCuts::AliEventCuts(bool saveplots) : TList(),
   fMinCentrality{-1000.f},
   fMaxCentrality{1000.f},
   fMultSelectionEvCuts{false},
+  fSelectInelGt0{false},
   fUseVariablesCorrelationCuts{false},
   fUseEstimatorsCorrelationCut{false},
   fUseStrongVarCorrelationCut{false},
@@ -97,10 +99,18 @@ AliEventCuts::AliEventCuts(bool saveplots) : TList(),
   fTPCvsAll{nullptr},
   fMultvsV0M{nullptr},
   fTPCvsTrkl{nullptr},
-  fVZEROvsTPCout{nullptr}
+  fVZEROvsTPCout{nullptr},
+  fFB32trackCuts{nullptr},
+  fTPConlyCuts{nullptr}
 {
   SetName("AliEventCuts");
   SetOwner(true);
+}
+
+AliEventCuts::~AliEventCuts() { 
+  delete fMultiplicityV0McorrCut; 
+  delete fFB32trackCuts;
+  delete fFB32trackCuts;
 }
 
 bool AliEventCuts::AcceptEvent(AliVEvent *ev) {
@@ -141,7 +151,7 @@ bool AliEventCuts::AcceptEvent(AliVEvent *ev) {
   if (vtSPD->GetNContributors() > 0) fFlag |= BIT(kVertexSPD);
   if (vtTrc->GetNContributors() > 1) fFlag |= BIT(kVertexTracks);
   if (((fFlag & BIT(kVertexTracks)) ||  !fRequireTrackVertex) && (fFlag & BIT(kVertexSPD))) fFlag |= BIT(kVertex);
-  const AliVVertex* &vtx = (vtTrc->GetNContributors() < 2) ? vtSPD : vtTrc;
+  const AliVVertex* &vtx = bool(fFlag & BIT(kVertexTracks)) ? vtTrc : vtSPD;
   fPrimaryVertex = const_cast<AliVVertex*>(vtx);
 
   /// Vertex position cut
@@ -155,7 +165,7 @@ bool AliEventCuts::AcceptEvent(AliVEvent *ev) {
   vtSPD->GetCovarianceMatrix(covSPD);
   double dz = bool(fFlag & kVertexSPD) && bool(fFlag & kVertexTracks) ? vtTrc->GetZ() - vtSPD->GetZ() : 0.; /// If one of the two vertices is not available this cut is always passed.
   double errTot = TMath::Sqrt(covTrc[5]+covSPD[5]);
-  double errTrc = TMath::Sqrt(covTrc[5]);
+  double errTrc = bool(fFlag & kVertexTracks) ? TMath::Sqrt(covTrc[5]) : 1.;
   double nsigTot = TMath::Abs(dz) / errTot, nsigTrc = TMath::Abs(dz) / errTrc;
   if (
       (TMath::Abs(dz) <= fMaxDeltaSpdTrackAbsolute && nsigTot <= fMaxDeltaSpdTrackNsigmaSPD && nsigTrc <= fMaxDeltaSpdTrackNsigmaTrack) && // discrepancy track-SPD vertex
@@ -195,8 +205,15 @@ bool AliEventCuts::AcceptEvent(AliVEvent *ev) {
     if ((!fUseEstimatorsCorrelationCut || fMC ||
           (fCentPercentiles[0] >= center - fDeltaEstimatorNsigma[0] * sigma && fCentPercentiles[0] <= center + fDeltaEstimatorNsigma[1] * sigma))
         && fCentPercentiles[0] >= fMinCentrality
-        && fCentPercentiles[0] <= fMaxCentrality) fFlag |= BIT(kMultiplicity);
-  } else fFlag |= BIT(kMultiplicity);
+        && fCentPercentiles[0] <= fMaxCentrality) {
+          fFlag |= BIT(kMultiplicity);
+    }
+  } else
+    fFlag |= BIT(kMultiplicity);
+
+  if (AliMultSelectionTask::IsINELgtZERO(ev) || !fSelectInelGt0) {
+    fFlag |= BIT(kINELgt0);
+  }
 
   if (fUseVariablesCorrelationCuts && !fMC) {
     ComputeTrackMultiplicity(ev);
@@ -221,7 +238,7 @@ bool AliEventCuts::AcceptEvent(AliVEvent *ev) {
       fFlag |= BIT(kCorrelations);
   } else fFlag |= BIT(kCorrelations);
 
-  /// Ignore the vertex position and vertex 
+  /// Ignore the vertex position and vertex
   unsigned long allcuts_mask = (BIT(kAllCuts) - 1) ^ (BIT(kVertexPositionSPD) | BIT(kVertexPositionTracks) | BIT(kVertexSPD) | BIT(kVertexTracks));
   bool allcuts = ((fFlag & allcuts_mask) == allcuts_mask);
   if (allcuts) fFlag |= BIT(kAllCuts);
@@ -236,7 +253,7 @@ bool AliEventCuts::AcceptEvent(AliVEvent *ev) {
   array <unsigned long,4> norm_masks {
     BIT(kNoCuts),
     allcuts_mask ^ (BIT(kVertex) | BIT(kVertexPosition) | BIT(kVertexQuality)),
-    allcuts_mask ^ (BIT(kVertex) | BIT(kVertexQuality)),
+    allcuts_mask ^ BIT(kVertexPosition),
     allcuts_mask
   };
   for (int iC = 0; iC < 4; ++iC) {
@@ -251,11 +268,13 @@ bool AliEventCuts::AcceptEvent(AliVEvent *ev) {
     if (fMultCentCorrelation[befaft]) fMultCentCorrelation[befaft]->Fill(fCentPercentiles[0],ntrkl);
     if (fVtz[befaft]) fVtz[befaft]->Fill(vtx->GetZ());
     if (fDeltaTrackSPDvtz[befaft]) fDeltaTrackSPDvtz[befaft]->Fill(dz);
-    if (fTOFvsFB32[befaft]) fTOFvsFB32[befaft]->Fill(fContainer.fMultTrkFB32,fContainer.fMultTrkFB32TOF);
-    if (fTPCvsAll[befaft])  fTPCvsAll[befaft]->Fill(fContainer.fMultTrkTPC,float(fContainer.fMultESD) - fESDvsTPConlyLinearCut[1] * fContainer.fMultTrkTPC);
-    if (fMultvsV0M[befaft]) fMultvsV0M[befaft]->Fill(GetCentrality(),fContainer.fMultTrkFB32Acc);
-    if (fTPCvsTrkl[befaft]) fTPCvsTrkl[befaft]->Fill(ntrkl,fContainer.fMultTrkTPC);
-    if (fVZEROvsTPCout[befaft]) fVZEROvsTPCout[befaft]->Fill(fContainer.fMultTrkTPCout,fContainer.fMultVZERO);
+    if (fUseVariablesCorrelationCuts) {
+      if (fTOFvsFB32[befaft]) fTOFvsFB32[befaft]->Fill(fContainer.fMultTrkFB32,fContainer.fMultTrkFB32TOF);
+      if (fTPCvsAll[befaft])  fTPCvsAll[befaft]->Fill(fContainer.fMultTrkTPC,float(fContainer.fMultESD) - fESDvsTPConlyLinearCut[1] * fContainer.fMultTrkTPC);
+      if (fMultvsV0M[befaft]) fMultvsV0M[befaft]->Fill(GetCentrality(),fContainer.fMultTrkFB32Acc);
+      if (fTPCvsTrkl[befaft]) fTPCvsTrkl[befaft]->Fill(ntrkl,fContainer.fMultTrkTPC);
+      if (fVZEROvsTPCout[befaft]) fVZEROvsTPCout[befaft]->Fill(fContainer.fMultTrkTPCout,fContainer.fMultVZERO);
+    }
     if (!allcuts) return false; /// Do not fill the "after" histograms if the event does not pass the cuts.
   }
 
@@ -284,7 +303,8 @@ void AliEventCuts::AddQAplotsToList(TList *qaList, bool addCorrelationPlots) {
     "Vertex position",
     "Vertex quality",
     "Pile-up",
-    "Centrality selection",
+    "Multiplicity selection",
+    "INEL > 0",
     "Correlations",
     "All cuts"
   };
@@ -349,12 +369,6 @@ void AliEventCuts::AutomaticSetup(AliVEvent *ev) {
     return;
   }
 
-  if ((fCurrentRun >= 225000 && fCurrentRun <= 244628) ||
-      (fCurrentRun >= 256146 && fCurrentRun <= 260187)) {
-    SetupRun2pp();
-    return;
-  }
-
   /// Run 2 Pb-Pb
   if ( fCurrentRun >= 244917 && fCurrentRun <= 256145 ) {
     SetupLHC15o();
@@ -370,6 +384,13 @@ void AliEventCuts::AutomaticSetup(AliVEvent *ev) {
   }
   if (fCurrentRun >= 266437 && fCurrentRun <= 267110) {   /// LHC16s: Pb-p 5 TeV
     SetupRun2pA(1);
+    return;
+  }
+
+  if ((fCurrentRun >= 225000 && fCurrentRun <= 244628) || // 2015 5+13 TeV sample
+      (fCurrentRun >= 252235 && fCurrentRun <= 264347) || // 2016 13 TeV sample
+      (fCurrentRun >= 270531)) {                          //TODO: put end of 2017 13 TeV sample
+    SetupRun2pp();
     return;
   }
 
@@ -401,14 +422,15 @@ void AliEventCuts::ComputeTrackMultiplicity(AliVEvent *ev) {
     unsigned long evid = ((unsigned long)(ev->GetBunchCrossNumber()) << 32) + ev->GetTimeStamp();
     fNewEvent = (tmp_cont->fEventId != evid);
     tmp_cont->fEventId = evid;
-    //if (fNewEvent) ::Info("AliEventCuts::AcceptEvent","New event. %Lu", evid);
-    //else ::Info("AliEventCuts::AcceptEvent","Old event. %Lu", evid);
 
     if (!fNewEvent) {
       fContainer = *tmp_cont;
       return;
     }
-  } else tmp_cont = new AliEventCutsContainer;
+  } else {
+    tmp_cont = new AliEventCutsContainer;
+    ev->AddObject(tmp_cont);
+  }
 
   bool isAOD = false;
   if (dynamic_cast<AliAODEvent*>(ev))
@@ -416,8 +438,8 @@ void AliEventCuts::ComputeTrackMultiplicity(AliVEvent *ev) {
   else if (!dynamic_cast<AliESDEvent*>(ev))
     AliFatal("I don't find the AOD event nor the ESD one, aborting.");
 
-  std::unique_ptr<AliESDtrackCuts> FB32cuts{AliESDtrackCuts::GetStandardITSTPCTrackCuts2011()};
-  std::unique_ptr<AliESDtrackCuts> TPConlyCuts{AliESDtrackCuts::GetStandardTPCOnlyTrackCuts()};
+  if (!fFB32trackCuts) fFB32trackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011();
+  if (!fTPConlyCuts) fTPConlyCuts = AliESDtrackCuts::GetStandardTPCOnlyTrackCuts();
 
   const int nTracks = ev->GetNumberOfTracks();
   tmp_cont->fMultESD = (isAOD) ? ((AliAODHeader*)ev->GetHeader())->GetNumberOfESDTracks() : dynamic_cast<AliESDEvent*>(ev)->GetNumberOfTracks();
@@ -447,7 +469,7 @@ void AliEventCuts::ComputeTrackMultiplicity(AliVEvent *ev) {
 
       if (esdTrack->GetStatus() & AliESDtrack::kTPCout) tmp_cont->fMultTrkTPCout++;
 
-      if (FB32cuts->AcceptTrack(esdTrack)) {
+      if (fFB32trackCuts->AcceptTrack(esdTrack)) {
         tmp_cont->fMultTrkFB32++;
         if (TMath::Abs(esdTrack->GetTOFsignalDz()) <= 10 && esdTrack->GetTOFsignal() >= 12000 && esdTrack->GetTOFsignal() <= 25000)
           tmp_cont->fMultTrkFB32TOF++;
@@ -459,7 +481,7 @@ void AliEventCuts::ComputeTrackMultiplicity(AliVEvent *ev) {
       /// TPC only tracks, with the same cuts of the filter bit 128
       AliESDtrack tpcParam;
       if (!esdTrack->FillTPCOnlyTrack(tpcParam)) continue;
-      if (!TPConlyCuts->AcceptTrack(&tpcParam)) continue;
+      if (!fTPConlyCuts->AcceptTrack(&tpcParam)) continue;
       if (tpcParam.Pt() > 0.) {
         // only constrain tracks above threshold
         AliExternalTrackParam exParam;
@@ -477,7 +499,6 @@ void AliEventCuts::ComputeTrackMultiplicity(AliVEvent *ev) {
     for(int ich=0; ich < 64; ich++)
       tmp_cont->fMultVZERO += vzero->GetMultiplicity(ich);
   }
-  ev->AddObject(tmp_cont);
   fContainer = *tmp_cont;
 }
 
@@ -485,7 +506,6 @@ void AliEventCuts::SetupRun2pp() {
   ::Info("AliEventCuts::SetupRun2pp","Setup event cuts for the Run2 pp periods.");
   SetName("StandardRun2ppEventCuts");
 
-  fRequireTrackVertex = true;
   fMinVtz = -10.f;
   fMaxVtz = 10.f;
   fMaxDeltaSpdTrackAbsolute = 0.5f;
@@ -511,6 +531,7 @@ void AliEventCuts::SetupRun2pp() {
   else if (fCentralityFramework == 1) {
     fCentEstimators[0] = "V0M";
     fCentEstimators[1] = "CL0";
+    fSelectInelGt0 = true;
   }
 
   fFB128vsTrklLinearCut[0] = 32.077;
@@ -577,7 +598,6 @@ void AliEventCuts::SetupLHC15o() {
 
   array<double,5> vzero_tpcout_polcut = {-2000.,2.1,3.5e-5,0.,0.};
   std::copy(vzero_tpcout_polcut.begin(),vzero_tpcout_polcut.end(),fVZEROvsTPCoutPolCut);
-  fUseStrongVarCorrelationCut = false;
 
   if(!fMultiplicityV0McorrCut) fMultiplicityV0McorrCut = new TF1("fMultiplicityV0McorrCut","[0]+[1]*x+[2]*exp([3]-[4]*x) - 5.*([5]+[6]*exp([7]-[8]*x))",0,100);
   fMultiplicityV0McorrCut->SetParameters(-6.15980e+02, 4.89828e+00, 4.84776e+03, -5.22988e-01, 3.04363e-02, -1.21144e+01, 2.95321e+02, -9.20062e-01, 2.17372e-02);
@@ -603,6 +623,7 @@ void AliEventCuts::SetupLHC11h() {
 }
 
 void AliEventCuts::SetupRun2pA(int iPeriod) {
+  ::Info("AliEventCuts::SetupRun2pA","Event cuts for pA are being set on top of Run2 pp standard selections.");
   /// iPeriod: 0 p-Pb 5&8 TeV, 1 Pb-p 8 TeV
   SetupRun2pp();
   /// p--Pb requires nsigma cuts on primary vertex

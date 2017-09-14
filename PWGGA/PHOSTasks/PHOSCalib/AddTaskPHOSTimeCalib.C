@@ -1,5 +1,7 @@
-AliAnalysisTaskPHOSTimeCalib* AddTaskPHOSTimeCalib(const char* name     = "PHOSCalibration",
-						   const UInt_t trigger = AliVEvent::kAny)
+AliAnalysisTaskPHOSTimeCalib* AddTaskPHOSTimeCalib(
+    const char* name     = "PHOSCalibration",
+    const UInt_t trigger = AliVEvent::kAny
+    )
 {
   //Add a task AliPHOSCalibration to the analysis train
   //Author: Daiki Sekihata
@@ -20,10 +22,10 @@ AliAnalysisTaskPHOSTimeCalib* AddTaskPHOSTimeCalib(const char* name     = "PHOSC
 	if     (trigger == (UInt_t)AliVEvent::kAny)      TriggerName = "kAny";
 	else if(trigger == (UInt_t)AliVEvent::kINT7)     TriggerName = "kINT7";
 	else if(trigger == (UInt_t)AliVEvent::kPHI7)     TriggerName = "kPHI7";
+	else                                             TriggerName = "ELSE";
 
-  cout << "trigger = " << trigger << endl;
 
-  AliAnalysisTaskPHOSTimeCalib* task = new AliAnalysisTaskPHOSCalib(Form("%sTask_%s",name,TriggerName.Data()));
+  AliAnalysisTaskPHOSTimeCalib* task = new AliAnalysisTaskPHOSTimeCalib(Form("%sTask_%s",name,TriggerName.Data()));
 
   mgr->AddTask(task);
   mgr->ConnectInput(task, 0, mgr->GetCommonInputContainer() );

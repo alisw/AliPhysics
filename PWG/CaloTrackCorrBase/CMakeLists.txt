@@ -34,6 +34,8 @@ set(SRCS
   AliMCAnalysisUtils.cxx 
   AliIsolationCut.cxx 
   AliAnaScale.cxx 
+  AliCaloTrackParticle.cxx 
+  AliCaloTrackParticleCorrelation.cxx 
   AliCaloTrackReader.cxx 
   AliCaloTrackESDReader.cxx 
   AliCaloTrackAODReader.cxx 
@@ -60,7 +62,7 @@ generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}")
 add_library_tested(${MODULE} SHARED  ${SRCS} G__${MODULE}.cxx)
 
 # Generate the ROOT map
-# Dependecies
+# Dependencies
 set(LIBDEPS ANALYSISalice EMCALUtils PHOSUtils)
 generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
 
@@ -70,7 +72,7 @@ add_target_parfile(${MODULE} "${SRCS}" "${HDRS}" "${MODULE}LinkDef.h" "${LIBDEPS
 # Linking the library
 target_link_libraries(${MODULE} ${LIBDEPS})
 
-# Public include folders that will be propagated to the dependecies
+# Public include folders that will be propagated to the dependencies
 target_include_directories(${MODULE} PUBLIC ${incdirs})
 
 # System dependent: Modify the way the library is build

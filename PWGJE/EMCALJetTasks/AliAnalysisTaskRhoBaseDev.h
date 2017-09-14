@@ -22,10 +22,9 @@ class TH3F;
 class AliRhoParameter;
 
 #include <map>
-#include <list>
 #include <string>
 
-#include "AliAnalysisTaskEmcalJetLight.h"
+#include "AliAnalysisTaskJetUE.h"
 
 
 /** \class AliAnalysisTaskRhoBaseDev
@@ -36,7 +35,7 @@ class AliRhoParameter;
  * This is a development version. The stable version of this class
  * is AliAnalysisTaskRhoBase.
  */
-class AliAnalysisTaskRhoBaseDev : public AliAnalysisTaskEmcalJetLight {
+class AliAnalysisTaskRhoBaseDev : public AliAnalysisTaskJetUE {
  public:
   AliAnalysisTaskRhoBaseDev();
   AliAnalysisTaskRhoBaseDev(const char *name, Bool_t histo=kFALSE);
@@ -50,7 +49,6 @@ class AliAnalysisTaskRhoBaseDev : public AliAnalysisTaskEmcalJetLight {
   void                   SetRhoFunction(TF1* rf)                               { fRhoFunction          = rf      ;                   }
   TF1*                   LoadRhoFunction(const char* path, const char* name);
   void                   SetAttachToEvent(Bool_t a)                            { fAttachToEvent        = a       ;                   }
-  void                   SetHistoBins(Int_t nbins, Double_t min, Double_t max) { fNbins = nbins; fMinBinPt = min; fMaxBinPt = max    ; }
 
   const char*            GetOutRhoName() const                                 { return fOutRhoName.Data()       ;                   }
   const char*            GetOutRhoScaledName() const                           { return fOutRhoScaledName.Data() ;                   }
@@ -75,11 +73,6 @@ class AliAnalysisTaskRhoBaseDev : public AliAnalysisTaskEmcalJetLight {
   virtual Bool_t                      VerifyContainers() { return kTRUE; }
 
   virtual void                        CalculateRho();
-  virtual void                        CalculateEventProperties();
-
-
-  void                                FillJetHistograms();
-  void                                SortJets();
 
   virtual Double_t                    GetRhoFactor(Double_t cent);
   virtual Double_t                    GetScaleFactor(Double_t cent);
@@ -89,25 +82,8 @@ class AliAnalysisTaskRhoBaseDev : public AliAnalysisTaskEmcalJetLight {
   TF1                                *fRhoFunction;                   ///< pre-computed rho as a function of centrality
   TF1                                *fScaleFunction;                 ///< pre-computed scale factor as a function of centrality
   Bool_t                              fAttachToEvent;                 ///< whether or not attach rho to the event objects list
-  Int_t                               fNbins;                         ///< no. of pt bins
-  Double_t                            fMinBinPt;                      ///< min pt in histograms
-  Double_t                            fMaxBinPt;                      ///< max pt in histograms
 
   Bool_t                              fTaskConfigured;                //!<!kTRUE if the task is properly configured
-
-  // Event properties
-  Int_t                               fNtracks;                       //!<!number of tracks
-  Int_t                               fNclusters;                     //!<!number of clusters
-  std::map<std::string, Int_t>        fNjets;
-
-  std::map<std::string, Double_t>     fTotJetArea;
-
-  AliVParticle                       *fLeadingParticle;
-  AliVCluster                        *fLeadingCluster;
-  std::map<std::string, AliEmcalJet*> fLeadingJet;
-
-  std::map<std::string, std::list<AliEmcalJet*> >
-                                      fSortedJets;                    //!<!jets sorted by momentum
 
   // Exported background density
   AliRhoParameter                    *fOutRho;                        //!<!output rho object
@@ -143,7 +119,7 @@ class AliAnalysisTaskRhoBaseDev : public AliAnalysisTaskEmcalJetLight {
   AliAnalysisTaskRhoBaseDev& operator=(const AliAnalysisTaskRhoBaseDev&);  // not implemented
   
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskRhoBaseDev, 1);
+  ClassDef(AliAnalysisTaskRhoBaseDev, 2);
   /// \endcond
 };
 #endif

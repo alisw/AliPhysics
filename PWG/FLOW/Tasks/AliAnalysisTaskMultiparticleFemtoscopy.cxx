@@ -2626,6 +2626,7 @@ void AliAnalysisTaskMultiparticleFemtoscopy::InitializeArraysForCorrelationFunct
  for(Int_t t=0;t<2;t++)
  {
   fSignalYieldTEST[t] = NULL;
+  fEab_TEST6[t] = NULL;
  }
 
 } // void AliAnalysisTaskMultiparticleFemtoscopy::InitializeArraysForCorrelationFunctionsTEST()
@@ -2813,6 +2814,24 @@ void AliAnalysisTaskMultiparticleFemtoscopy::BookEverythingForCorrelationFunctio
  fSignalYieldTEST[1]->GetXaxis()->SetTitle("Q_{3}");
  fSignalYieldTEST[1]->GetYaxis()->SetTitle("counts");
  fCorrelationFunctionsTESTList->Add(fSignalYieldTEST[1]);
+
+ // TBI temporary here for "Test 6" (checking E_a^b as L.I. observable):
+ // vs. Q2:
+ fEab_TEST6[0] = new TH1F("fEab_TEST6[0]","",10*fnQ2bins,fnQ2min,fnQ2max);
+ fEab_TEST6[0]->SetStats(kFALSE);
+ fEab_TEST6[0]->SetLineColor(kBlue);
+ fEab_TEST6[0]->SetFillColor(kBlue-10);
+ fEab_TEST6[0]->GetXaxis()->SetTitle("Q_{2}");
+ fEab_TEST6[0]->GetYaxis()->SetTitle("dN/dE_{a}^{b}");
+ fCorrelationFunctionsTESTList->Add(fEab_TEST6[0]);
+
+ fEab_TEST6[1] = new TH1F("fEab_TEST6[1]","",10*fnQ2bins,fnQ2min,fnQ2max);
+ fEab_TEST6[1]->SetStats(kFALSE);
+ fEab_TEST6[1]->SetLineColor(kRed);
+ fEab_TEST6[1]->SetFillColor(kRed-10);
+ fEab_TEST6[1]->GetXaxis()->SetTitle("Q_{2}");
+ fEab_TEST6[1]->GetYaxis()->SetTitle("dN/dE_{a}^{b}");
+ fCorrelationFunctionsTESTList->Add(fEab_TEST6[1]);
 
 } // void AliAnalysisTaskMultiparticleFemtoscopy::BookEverythingForCorrelationFunctionsTEST()
 
@@ -5321,6 +5340,17 @@ void AliAnalysisTaskMultiparticleFemtoscopy::CalculateCorrelationFunctionsTEST(A
    dycVsQ3[nl][nme] = new TString();
   }
  }
+ 
+ // Counters for N_\pi+ and N_\pi^-, for each Q2 bin (needed only for "Test 7" at the moment):
+ TString *test7Counters[10000][2] = {{NULL}}; // N[44][0] is then N_\pi+ in the 44th Q2 bin in this event, while N[44][1] is then N_\pi- in the 44th Q2 bin in this event TBI hardwired 10000
+ for(Int_t q2=0;q2<fnQ2bins;q2++)
+ {
+  test7Counters[q2][0] = new TString();
+  *test7Counters[q2][0] = "";
+  
+  test7Counters[q2][1] = new TString();
+  *test7Counters[q2][1] = "";
+ }
 
  // d) Nested loops to calculate single-event averages:
  Int_t nTracks = aAOD->GetNumberOfTracks();
@@ -5480,6 +5510,127 @@ void AliAnalysisTaskMultiparticleFemtoscopy::CalculateCorrelationFunctionsTEST(A
 
     } // if((Pion(gtrack1,1,kTRUE) && Pion(gtrack2,1,kTRUE)) || (Pion(gtrack1,-1,kTRUE) && Pion(gtrack2,-1,kTRUE)))
    } // if(fFillCorrelationFunctionsTEST[5])
+
+   // Test 6: "Same charge pions, E_{a}^{(b)} projected onto Lorentz invariant Q2 (see the write-up). This distribution shall be manifestly Lorentz invariant!"
+   if(fFillCorrelationFunctionsTEST[6])
+   {
+    if((Pion(gtrack1,1,kTRUE) && Pion(gtrack2,1,kTRUE)) || (Pion(gtrack1,-1,kTRUE) && Pion(gtrack2,-1,kTRUE)))
+    {
+     // p_1:
+     Double_t p1x = agtrack1->Px();
+     Double_t p1y = agtrack1->Py();
+     Double_t p1z = agtrack1->Pz();
+     Double_t e1  = agtrack1->E();
+     // p_2:
+     Double_t p2x = agtrack2->Px();
+     Double_t p2y = agtrack2->Py();
+     Double_t p2z = agtrack2->Pz();
+     Double_t e2  = agtrack2->E();  
+
+     // Corresponding energy-momentum four-vectors:
+     TLorentzVector track1(p1x,p1y,p1z,e1);
+     TLorentzVector track2(p2x,p2y,p2z,e2);
+
+     // Calculating L.I. E_{a}^{(b)} (i.e. energy of the 1st particle in the (rest) frame of the 2nd):
+     TVector3 vb = TVector3(p2x/e2,p2y/e2,p2z/e2); // velocity of 2nd particle
+     track1.Boost(-vb); // boosting the 1st track in the rest frame of 2nd
+     //track2.Boost(-vb); // boosting the 2nd track in its rest frame 
+     Double_t Eab = track1.E(); // energy of 1st track in the rest frame of 2nd. Yes, this is L.I. quantity
+
+     // Fill Eab vs. dQ2 distribution, which is then manifestly L.I.
+     Double_t dQ2 = Q2(agtrack1,agtrack2); // Lorentz invariant Q2
+     singleEventAverageCorrelationsVsQ2[6][0][0]->Fill(dQ2,Eab); // <E_{a}^{(b)}> vs. Q2
+
+     fEab_TEST6[0]->Fill(dQ2,Eab);
+
+    } // if((Pion(gtrack1,1,kTRUE) && Pion(gtrack2,1,kTRUE)) || (Pion(gtrack1,-1,kTRUE) && Pion(gtrack2,-1,kTRUE)))
+   } // if(fFillCorrelationFunctionsTEST[6])
+
+   // Test 7: "Differential yield, see the write-up. Instead of counting # of pairs in Q2, I am counting # of particle "a" and # of particle "b" separately. 
+   //          Then, the two independent observables are N_a and N_b, and they fluctuate e-b-e. That's how I get the notion of cumulants, and the projection 
+   //          onto Q2 shall render it manifestly Lorentz invariant!"
+   // To do:
+   // a) Condidering in this test \pi+ \pi- only, later this will be generalized
+   // b) Check explicitly the Lorentz invariance 
+   // c) This clearly will work only for non-identical particles :'( Which is perhaps not than bad, given the fact that I can start to do my thing already with Lp+p-      
+   // d) I cannot do anything for a given event, as it seems... :'( 
+   if(fFillCorrelationFunctionsTEST[7])
+   {
+    //if(Pion(gtrack1,1,kTRUE) && Pion(gtrack2,-1,kTRUE)) // TBI 20170724
+    if( (Pion(gtrack1,1,kTRUE) || Pion(gtrack1,-1,kTRUE)) && (Proton(gtrack2,1,kTRUE) || Proton(gtrack2,-1,kTRUE)) )
+    {
+     // p_1:
+     Double_t p1x = agtrack1->Px();
+     Double_t p1y = agtrack1->Py();
+     Double_t p1z = agtrack1->Pz();
+     Double_t e1  = agtrack1->E();
+     // p_2:
+     Double_t p2x = agtrack2->Px();
+     Double_t p2y = agtrack2->Py();
+     Double_t p2z = agtrack2->Pz();
+     Double_t e2  = agtrack2->E();  
+
+     // Corresponding energy-momentum four-vectors:
+     TLorentzVector track1(p1x,p1y,p1z,e1);
+     TLorentzVector track2(p2x,p2y,p2z,e2);
+
+     // Pseudo-code: 
+     // 0) for each Q2 bin, formed from p_1 and p_2, count number of unique \pi+ and \pi-
+     // 1) Then, treat N_\pi+ and N_\pi- and two independent observables, and after I run over all pairs, fill TProfile to get <N_\pi+ N_\pi-> - <N_\pi+> <N_\pi-> for each Q2 bin
+     // 2) See if there is something non-trivial happening only at low Q2
+     // 3) Do the same thing for background
+     // 4) Generalize for 3-particles
+
+     Double_t dQ2 = Q2(agtrack1,agtrack2); // Lorentz invariant Q2
+
+     Int_t nBinQ2Number = this->BinNoForSpecifiedValue(fCorrelationFunctionsTEST[7][0][0][0],dQ2);
+     //cout<<"BIN_NO: "<<nBinQ2Number<<endl;
+     //cout<<"ENERGIES: "<<agtrack1->E()<<" "<<agtrack2->E()<<endl;
+     if(!test7Counters[nBinQ2Number][0]->Contains(Form("_%.6f_",agtrack1->E())))
+     {
+      *test7Counters[nBinQ2Number][0]+=Form("_%.6f_",agtrack1->E());
+     }
+     //cout<<"STRING1: "<<test7Counters[nBinQ2Number][0]->Data()<<endl;
+
+     if(!test7Counters[nBinQ2Number][1]->Contains(Form("_%.6f_",agtrack2->E())))
+     {
+      *test7Counters[nBinQ2Number][1]+=Form("_%.6f_",agtrack2->E());
+     }
+     //cout<<"STRING2: "<<test7Counters[nBinQ2Number][1]->Data()<<endl;
+
+
+//  TProfile *fCorrelationFunctionsTEST[10][2][7][10]; //! [testNo][0=vs Q2, 1=vs Q3][example [0=<x1>][1=<x2>], ...,[6=<x1x2x3>]][differential index, e.g. for test 0 [0=Cx][1=Cy][2=Cz]]
+
+
+/*
+
+ TString *test7Counters[10000][2] = {{NULL}}; // N[44][0] is then N_\pi+ in the 44th Q2 bin in this event, while N[44][1] is then N_\pi- in the 44th Q2 bin in this event TBI hardwired 10000
+ for(Int_t q2=0;q2<fnQ2bins;q2++)
+ {
+  test7Counters[q2][0] = new TString();
+  *test7Counters[q2][0] = "";
+  
+  test7Counters[q2][1] = new TString();
+  *test7Counters[q2][1] = "";
+ }
+
+*/
+
+/*
+     // Calculating L.I. E_{a}^{(b)} (i.e. energy of the 1st particle in the (rest) frame of the 2nd):
+     TVector3 vb = TVector3(p2x/e2,p2y/e2,p2z/e2); // velocity of 2nd particle
+     track1.Boost(-vb); // boosting the 1st track in the rest frame of 2nd
+     //track2.Boost(-vb); // boosting the 2nd track in its rest frame 
+     Double_t Eab = track1.E(); // energy of 1st track in the rest frame of 2nd. Yes, this is L.I. quantity
+
+     // Fill Eab vs. dQ2 distribution, which is then manifestly L.I.
+     singleEventAverageCorrelationsVsQ2[6][0][0]->Fill(dQ2,Eab); // <E_{a}^{(b)}> vs. Q2
+*/
+ 
+
+    } // if(Pion(gtrack1,1,kTRUE) && Pion(gtrack2,-1,kTRUE))
+   } // if(fFillCorrelationFunctionsTEST[7])
+
 
    // Loop over the 3rd particle:
    for(Int_t iTrack3=0;iTrack3<nTracks;iTrack3++)
@@ -5696,6 +5847,7 @@ void AliAnalysisTaskMultiparticleFemtoscopy::CalculateCorrelationFunctionsTEST(A
   } // for(Int_t iTrack2=0;iTrack2<nTracks;iTrack2++)
  } // for(Int_t iTrack1=0;iTrack1<nTracks;iTrack1++)
 
+
  // e) Build all-event correlations and cumulants from single-event averages:
  for(Int_t t=0;t<nTestsMax;t++) // test No
  {
@@ -5737,6 +5889,10 @@ void AliAnalysisTaskMultiparticleFemtoscopy::CalculateCorrelationFunctionsTEST(A
      fCorrelationFunctionsTEST[t][0][2][xyz]->Fill(dBinCenter,dX1X2); // <X1X2>
      fSignalCumulantsTEST[t][0][0][xyz]->Fill(dBinCenter,dC2); // C2 = <X1X2> - <X1><X2>
     }
+
+    // TBI this was needed for 'Test 6', commenting out now temporarily:
+    //dBinCenter = fCorrelationFunctionsTEST[t][0][0][xyz]->GetBinCenter(b+1); // TBI assuming binning is everywhere the same. TBI it is used also below when filling 3p
+    //fCorrelationFunctionsTEST[t][0][0][xyz]->Fill(dBinCenter,dX1); // <X1>
 
     if(!fFill3pCorrelationFunctions){continue;} // TBI is this really safe
 
@@ -5822,6 +5978,51 @@ void AliAnalysisTaskMultiparticleFemtoscopy::CalculateCorrelationFunctionsTEST(A
 
   } // if(2==t) // for "test 2" I just need correlations, and build cumulants at the end of the day
 
+  if(7==t) // for "test 7" special treatment
+  {
+ 
+   for(Int_t b=1;b<=fnQ2bins;b++) // TBI check the boundaries
+   {
+    Int_t counter[2] = {0,0}; // [0=pions+][1=pions-]
+
+    if(test7Counters[b][0] && !test7Counters[b][0]->EqualTo(""))
+    {
+     // Count pions+
+     TObjArray *oa0 = TString(test7Counters[b][0]->Data()).Tokenize("_");
+     while(oa0->At(counter[0]))
+     {
+      counter[0]++;
+     }
+     //cout<<Form("Bin %d; N = %d; STRING1: ",b,counter[0])<<test7Counters[b][0]->Data()<<endl;
+    } // if(test7Counters[b][0] && !test7Counters[b][0]->EqualTo(""))
+  
+    if(test7Counters[b][1] && !test7Counters[b][1]->EqualTo(""))
+    {
+     // Count pions-
+     TObjArray *oa1 = TString(test7Counters[b][1]->Data()).Tokenize("_");
+     while(oa1->At(counter[1]))
+     {
+      counter[1]++;
+     }
+     //cout<<Form("Bin %d; N = %d; STRING2: ",b,counter[1])<<test7Counters[b][1]->Data()<<endl;
+    } // if(test7Counters[b][1] && !test7Counters[b][1]->EqualTo("")) 
+
+    Int_t nPionsP = counter[0]; // number of positive pions in bth Q2 bin, in this event, X1 in the cumulant formalism
+    Int_t nPionsN = counter[1]; // number of negative pions in bth Q2 bin, in this event, X2 in the cumulant formalism
+
+    if(nPionsP>=1 && nPionsN>=1)
+    {
+     Double_t dBinCenter = fCorrelationFunctionsTEST[7][0][0][0]->GetBinCenter(b); // TBI assuming same binning everyrhere
+     //TProfile *fCorrelationFunctionsTEST[10][2][7][10]; //! [testNo][0=vs Q2, 1=vs Q3][example [0=<x1>][1=<x2>], ...,[6=<x1x2x3>]][differential index, e.g. for test 0 [0=Cx][1=Cy][2=Cz]]
+     fCorrelationFunctionsTEST[7][0][0][0]->Fill(dBinCenter,nPionsP); // X1 
+     fCorrelationFunctionsTEST[7][0][1][0]->Fill(dBinCenter,nPionsN); // X2
+     fCorrelationFunctionsTEST[7][0][2][0]->Fill(dBinCenter,nPionsP*nPionsN); // X1*X2 
+    } // if(nPionsP>=1 && nPionsN>=1)
+ 
+   } // for(Int_t b=1;b<=fnQ2bins;b++) // TBI check the boundaries
+
+  } // if(7==t) // for "test 7" special treatment
+
  } // for(Int_t t=0;t<nTestsMax;t++) // test No
 
 
@@ -5865,6 +6066,12 @@ void AliAnalysisTaskMultiparticleFemtoscopy::CalculateCorrelationFunctionsTEST(A
    if(nme > fnQ3bins){break;}
    delete dycVsQ3[nl][nme];
   }
+ }
+
+ for(Int_t q2=0;q2<fnQ2bins;q2++)
+ {
+  if(test7Counters[q2][0]) delete test7Counters[q2][0];
+  if(test7Counters[q2][1]) delete test7Counters[q2][1];
  }
 
  // c) Three nested loops to calculate C(Q3), just an example; TBI
@@ -6504,6 +6711,17 @@ void AliAnalysisTaskMultiparticleFemtoscopy::Calculate2pBackgroundTEST(TClonesAr
   } // for(Int_t ct=0;ct<n2pCumulantTerms;ct++)
  } // for(Int_t t=0;t<nTestsMax;t++)
 
+ // ) Counters for N_\pi+ and N_\pi^-, for each Q2 bin (needed only for "Test 7" at the moment):
+ TString *test7Counters[10000][2] = {{NULL}}; // N[44][0] is then N_\pi+ in the 44th Q2 bin in this event, while N[44][1] is then N_\pi- in the 44th Q2 bin in this event TBI hardwired 10000
+ for(Int_t q2=0;q2<fnQ2bins;q2++)
+ {
+  test7Counters[q2][0] = new TString();
+  *test7Counters[q2][0] = "";
+  
+  test7Counters[q2][1] = new TString();
+  *test7Counters[q2][1] = "";
+ }
+
  // c) Calculate averages <X1> (1st event), <X2> (2nd event) and <X1X2> (mixed-event), vs. Q2.
  Int_t nTracks1 = ca1->GetEntries();
  Int_t nTracks2 = ca2->GetEntries();
@@ -6626,6 +6844,97 @@ void AliAnalysisTaskMultiparticleFemtoscopy::Calculate2pBackgroundTEST(TClonesAr
 
    } // if(fFillBackgroundTEST[4])
 
+   // Test 6: "Same charge pions, E_{a}^{(b)} projected onto Lorentz invariant Q2 (see the write-up). This distribution shall be manifestly Lorentz invariant!"
+   if(fFillBackgroundTEST[6])
+   {
+    if((Pion(gtrack1,1,kTRUE) && Pion(gtrack2,1,kTRUE)) || (Pion(gtrack1,-1,kTRUE) && Pion(gtrack2,-1,kTRUE)))
+    {
+     // p_1:
+     Double_t p1x = agtrack1->Px();
+     Double_t p1y = agtrack1->Py();
+     Double_t p1z = agtrack1->Pz();
+     Double_t e1  = agtrack1->E();
+     // p_2:
+     Double_t p2x = agtrack2->Px();
+     Double_t p2y = agtrack2->Py();
+     Double_t p2z = agtrack2->Pz();
+     Double_t e2  = agtrack2->E();  
+
+     // Corresponding energy-momentum four-vectors:
+     TLorentzVector track1(p1x,p1y,p1z,e1);
+     TLorentzVector track2(p2x,p2y,p2z,e2);
+
+     // Calculating L.I. E_{a}^{(b)} (i.e. energy of the 1st particle in the (rest) frame of the 2nd):
+     TVector3 vb = TVector3(p2x/e2,p2y/e2,p2z/e2); // velocity of 2nd particle
+     track1.Boost(-vb); // boosting the 1st track in the rest frame of 2nd
+     //track2.Boost(-vb); // boosting the 2nd track in its rest frame 
+     Double_t Eab = track1.E(); // energy of 1st track in the rest frame of 2nd. Yes, this is L.I. quantity
+
+     // Fill Eab vs. dQ2 distribution, which is then manifestly L.I.
+     Double_t dQ2 = Q2(agtrack1,agtrack2); // Lorentz invariant Q2
+     singleEventAverageCorrelationsVsQ2[6][0][0]->Fill(dQ2,Eab); // <E_{a}^{(b)}> vs. Q2
+
+     fEab_TEST6[1]->Fill(dQ2,Eab);
+
+    } // if((Pion(gtrack1,1,kTRUE) && Pion(gtrack2,1,kTRUE)) || (Pion(gtrack1,-1,kTRUE) && Pion(gtrack2,-1,kTRUE)))
+   } // if(fFillBackgroundTEST[6])
+
+   // Test 7: "Differential yield, see the write-up. Instead of counting # of pairs in Q2, I am counting # of particle "a" and # of particle "b" separately. 
+   //          Then, the two independent observables are N_a and N_b, and they fluctuate e-b-e. That's how I get the notion of cumulants, and the projection 
+   //          onto Q2 shall render it manifestly Lorentz invariant!"
+   // To do:
+   // a) Condidering in this test \pi+ \pi- only, later this will be generalized
+   // b) Check explicitly the Lorentz invariance 
+   // c) This clearly will work only for non-identical particles :'( Which is perhaps not than bad, given the fact that I can start to do my thing already with Lp+p-      
+   // d) I cannot do anything for a given event, as it seems... :'( 
+   if(fFillBackgroundTEST[7])
+   {
+    //if(Pion(gtrack1,1,kTRUE) && Pion(gtrack2,-1,kTRUE)) // TBI 20170724
+    if( (Pion(gtrack1,1,kTRUE) || Pion(gtrack1,-1,kTRUE)) && (Proton(gtrack2,1,kTRUE) || Proton(gtrack2,-1,kTRUE)) )
+    {
+     // p_1:
+     Double_t p1x = agtrack1->Px();
+     Double_t p1y = agtrack1->Py();
+     Double_t p1z = agtrack1->Pz();
+     Double_t e1  = agtrack1->E();
+     // p_2:
+     Double_t p2x = agtrack2->Px();
+     Double_t p2y = agtrack2->Py();
+     Double_t p2z = agtrack2->Pz();
+     Double_t e2  = agtrack2->E();  
+
+     // Corresponding energy-momentum four-vectors:
+     TLorentzVector track1(p1x,p1y,p1z,e1);
+     TLorentzVector track2(p2x,p2y,p2z,e2);
+
+     // Pseudo-code: 
+     // 0) for each Q2 bin, formed from p_1 and p_2, count number of unique \pi+ and \pi-
+     // 1) Then, treat N_\pi+ and N_\pi- and two independent observables, and after I run over all pairs, fill TProfile to get <N_\pi+ N_\pi-> - <N_\pi+> <N_\pi-> for each Q2 bin
+     // 2) See if there is something non-trivial happening only at low Q2
+     // 3) Do the same thing for background
+     // 4) Generalize for 3-particles
+
+     Double_t dQ2 = Q2(agtrack1,agtrack2); // Lorentz invariant Q2
+
+     Int_t nBinQ2Number = this->BinNoForSpecifiedValue(fBackgroundTEST[7][0][0][0],dQ2);
+     //cout<<"BIN_NO: "<<nBinQ2Number<<endl;
+     //cout<<"ENERGIES: "<<agtrack1->E()<<" "<<agtrack2->E()<<endl;
+     if(!test7Counters[nBinQ2Number][0]->Contains(Form("_%.6f_",agtrack1->E())))
+     {
+      *test7Counters[nBinQ2Number][0]+=Form("_%.6f_",agtrack1->E());
+     }
+     //cout<<"STRING1: "<<test7Counters[nBinQ2Number][0]->Data()<<endl;
+
+     if(!test7Counters[nBinQ2Number][1]->Contains(Form("_%.6f_",agtrack2->E())))
+     {
+      *test7Counters[nBinQ2Number][1]+=Form("_%.6f_",agtrack2->E());
+     }
+     //cout<<"STRING2: "<<test7Counters[nBinQ2Number][1]->Data()<<endl;
+  
+    } // if(Pion(gtrack1,1,kTRUE) && Pion(gtrack2,-1,kTRUE))
+   } // if(fFillBackgroundTEST[7])
+
+
   } // for(Int_t iTrack2=0;iTrack2<nTracks2;iTrack2++)
  } // for(Int_t iTrack1=0;iTrack1<nTracks1;iTrack1++)
 
@@ -6663,9 +6972,61 @@ void AliAnalysisTaskMultiparticleFemtoscopy::Calculate2pBackgroundTEST(TClonesAr
      fBackgroundCumulantsTEST[t][0][0][xyz]->Fill(dBinCenter,dC2); // C2 = <X1X2> - <X1><X2>
      //cout<<Form("bc: %.2f, xyz: %d, dX1: %.16f, dX2: %.16f, dX1dX2: %.16f, dC2: %.16f",dBinCenter,xyz,dX1,dX2,dX1X2,dC2)<<endl;
     }
+
+    // TBI this was needed for 'Test 6', commenting out now temporarily:
+    //dBinCenter = fBackgroundTEST[t][0][0][xyz]->GetBinCenter(b+1); // TBI assuming binning is everywhere the same. TBI it is used also below when filling 3p
+    //fBackgroundTEST[t][0][0][xyz]->Fill(dBinCenter,dX1); // <X1>
+
    } // for(Int_t xyz=0;xyz<3;xyz++)
   } // for(Int_t b=0;b<nBins;b++) // TBI at the moment, I use same binning for Q2 and Q3
+
+  if(7==t) // for "test 7" special treatment
+  {
+ 
+   for(Int_t b=1;b<=fnQ2bins;b++) // TBI check the boundaries
+   {
+    Int_t counter[2] = {0,0}; // [0=pions+][1=pions-]
+
+    if(test7Counters[b][0] && !test7Counters[b][0]->EqualTo(""))
+    {
+     // Count pions+
+     TObjArray *oa0 = TString(test7Counters[b][0]->Data()).Tokenize("_");
+     while(oa0->At(counter[0]))
+     {
+      counter[0]++;
+     }
+     //cout<<Form("Bin %d; N = %d; STRING1: ",b,counter[0])<<test7Counters[b][0]->Data()<<endl;
+    } // if(test7Counters[b][0] && !test7Counters[b][0]->EqualTo(""))
+  
+    if(test7Counters[b][1] && !test7Counters[b][1]->EqualTo(""))
+    {
+     // Count pions-
+     TObjArray *oa1 = TString(test7Counters[b][1]->Data()).Tokenize("_");
+     while(oa1->At(counter[1]))
+     {
+      counter[1]++;
+     }
+     //cout<<Form("Bin %d; N = %d; STRING2: ",b,counter[1])<<test7Counters[b][1]->Data()<<endl;
+    } // if(test7Counters[b][1] && !test7Counters[b][1]->EqualTo("")) 
+
+    Int_t nPionsP = counter[0]; // number of positive pions in bth Q2 bin, in this event, X1 in the cumulant formalism
+    Int_t nPionsN = counter[1]; // number of negative pions in bth Q2 bin, in this event, X2 in the cumulant formalism
+    if(nPionsP>=1 && nPionsN>=1)
+    {
+     Double_t dBinCenter = fBackgroundTEST[7][0][0][0]->GetBinCenter(b); // TBI assuming same binning everyrhere
+     //TProfile *fBackgroundTEST[10][2][7][10]; //! [testNo][0=vs Q2, 1=vs Q3][example [0=<x1>][1=<x2>], ...,[6=<x1x2x3>]][differential index, e.g. for test 0 [0=Cx][1=Cy][2=Cz]]
+     fBackgroundTEST[7][0][0][0]->Fill(dBinCenter,nPionsP); // X1 
+     fBackgroundTEST[7][0][1][0]->Fill(dBinCenter,nPionsN); // X2
+     fBackgroundTEST[7][0][2][0]->Fill(dBinCenter,nPionsP*nPionsN); // X1*X2 
+    } // if(nPionsP>=1 && nPionsN>=1)
+ 
+   } // for(Int_t b=1;b<=fnQ2bins;b++) // TBI check the boundaries
+
+  } // if(7==t) // for "test 7" special treatment
+
+
  } // for(Int_t t=0;t<nTestsMax;t++)
+
 
  // e) Delete local TProfile's to hold single-event averages:
  for(Int_t t=0;t<nTestsMax;t++)

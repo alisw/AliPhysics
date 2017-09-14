@@ -173,6 +173,18 @@ class AliAnalysisTaskEmcalEmbeddingHelper : public AliAnalysisTaskSE {
   std::string toString(bool includeFileList = false) const;
   /* @} */
 
+  /**
+   * **SHOULD NOT BE USED! Use GetExternalEvent()!**
+   * Returns the external event by overloading InputEvent() defined in AliAnalysisTaskSE.
+   * This is used by AliEmcalCorrectionEventManager, but it should not be used by the user!
+   * Instead, use GetExternalEvent().
+   *
+   * Note that it cannot be protected, because we need to call it externally.
+   *
+   * @return The external event
+   */
+  AliVEvent* InputEvent()                                   const { return GetExternalEvent(); }
+
  protected:
   bool            GetFilenames()        ;
   std::string     GenerateUniqueFileListFilename();
@@ -220,8 +232,8 @@ class AliAnalysisTaskEmcalEmbeddingHelper : public AliAnalysisTaskSE {
   Int_t                                         fLowerEntry       ; //!<! First entry of the current tree to be used for embedding
   Int_t                                         fUpperEntry       ; //!<! Last entry of the current tree to be used for embedding
   Int_t                                         fOffset           ; //!<! Offset from fLowerEntry where the loop over the tree should start
-  Int_t                                         fMaxNumberOfFiles ; //!<! Max number of files that are in the TChain
-  Int_t                                         fFileNumber       ; //!<! File number corresponding to the current tree
+  UInt_t                                        fMaxNumberOfFiles ; //!<! Max number of files that are in the TChain
+  UInt_t                                        fFileNumber       ; //!<! File number corresponding to the current tree
   THistManager                                  fHistManager      ; ///< Manages access to all histograms
   AliEmcalList                                 *fOutput           ; //!<! List which owns the output histograms to be saved
   AliVEvent                                    *fExternalEvent    ; //!<! Current external event available for embedding
@@ -241,7 +253,7 @@ class AliAnalysisTaskEmcalEmbeddingHelper : public AliAnalysisTaskSE {
   AliAnalysisTaskEmcalEmbeddingHelper &operator=(const AliAnalysisTaskEmcalEmbeddingHelper&); // not implemented
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskEmcalEmbeddingHelper, 5);
+  ClassDef(AliAnalysisTaskEmcalEmbeddingHelper, 6);
   /// \endcond
 };
 #endif

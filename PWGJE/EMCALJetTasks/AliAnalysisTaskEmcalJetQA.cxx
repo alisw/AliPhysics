@@ -280,24 +280,24 @@ void AliAnalysisTaskEmcalJetQA::UserCreateOutputObjects()
 
   if (fForceBeamType != AliAnalysisTaskEmcalLight::kpp) {
     axistitle[dim] = "Centrality %";
-    nbins[dim] = 101;
+    nbins[dim] = 100;
     min[dim] = 0;
-    max[dim] = 101;
+    max[dim] = 100;
     dim++;
 
     if (!fCentMethod2.IsNull()) {
       axistitle[dim] = Form("Centrality %s %%", fCentMethod2.Data());
-      nbins[dim] = 101;
+      nbins[dim] = 100;
       min[dim] = 0;
-      max[dim] = 101;
+      max[dim] = 100;
       dim++;
     }
 
     if (!fCentMethod3.IsNull()) {
       axistitle[dim] = Form("Centrality %s %%", fCentMethod3.Data());
-      nbins[dim] = 101;
+      nbins[dim] = 100;
       min[dim] = 0;
-      max[dim] = 101;
+      max[dim] = 100;
       dim++;
     }
 

@@ -969,8 +969,8 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2pPb::UserExec(Option_t *)
         //If you get this warning (and lPercentiles 300) please check that the AliMultSelectionTask actually ran (before your task)
         AliWarning("AliMultSelection object not found!");
     } else {
-        //V0M Multiplicity Percentile
-        lPercentile = MultSelection->GetMultiplicityPercentile("V0A");
+        //V0C Multiplicity Percentile
+        lPercentile = MultSelection->GetMultiplicityPercentile("V0C");
         //Event Selection Code
         lEvSelCode = MultSelection->GetEvSelCode();
     }

@@ -61,35 +61,42 @@ AliAnalysisTaskEmcalEmbeddingHelper* AliAnalysisTaskEmcalEmbeddingHelper::fgInst
  */
 AliAnalysisTaskEmcalEmbeddingHelper::AliAnalysisTaskEmcalEmbeddingHelper() :
   AliAnalysisTaskSE(),
-  fCreateHisto(true),
-  fTreeName(),
-  fAnchorRun(169838),
-  fPtHardBin(-1),
-  fNPtHardBins(1),
-  fRandomEventNumberAccess(kFALSE),
-  fRandomFileAccess(kTRUE),
-  fFilePattern(""),
-  fInputFilename(""),
-  fFileListFilename(""),
-  fFilenameIndex(-1),
-  fFilenames(),
   fTriggerMask(AliVEvent::kAny),
   fMCRejectOutliers(false),
   fPtHardJetPtRejectionFactor(4),
   fZVertexCut(10),
   fMaxVertexDist(999),
-  fExternalFile(0),
+
+  fInitializedConfiguration(false),
+  fInitializedNewFile(false),
+  fInitializedEmbedding(false),
+  fWrappedAroundTree(false),
+
+  fTreeName(),
+  fAnchorRun(169838),
+  fNPtHardBins(1),
+  fPtHardBin(-1),
+  fRandomEventNumberAccess(kFALSE),
+  fRandomFileAccess(kTRUE),
+  fCreateHisto(true),
+
+  fFilePattern(""),
+  fInputFilename(""),
+  fFileListFilename(""),
+  fFilenameIndex(-1),
+  fFilenames(),
+  fPythiaCrossSectionFilenames(),
+  fExternalFile(0),  
+  fChain(nullptr),
   fCurrentEntry(0),
   fLowerEntry(0),
   fUpperEntry(0),
   fOffset(0),
   fMaxNumberOfFiles(0),
   fFileNumber(0),
-  fInitializedConfiguration(false),
-  fInitializedEmbedding(false),
-  fInitializedNewFile(false),
-  fWrappedAroundTree(false),
-  fChain(nullptr),
+  fHistManager(),
+  fOutput(nullptr),
+
   fExternalEvent(nullptr),
   fExternalHeader(nullptr),
   fPythiaHeader(nullptr),
@@ -97,10 +104,7 @@ AliAnalysisTaskEmcalEmbeddingHelper::AliAnalysisTaskEmcalEmbeddingHelper() :
   fPythiaTrialsFromFile(0),
   fPythiaCrossSection(0.),
   fPythiaCrossSectionFromFile(0.),
-  fPythiaPtHard(0.),
-  fPythiaCrossSectionFilenames(),
-  fHistManager(),
-  fOutput(nullptr)
+  fPythiaPtHard(0.)
 {
   if (fgInstance != 0) {
     AliError("An instance of AliAnalysisTaskEmcalEmbeddingHelper already exists: it will be deleted!!!");
@@ -117,46 +121,50 @@ AliAnalysisTaskEmcalEmbeddingHelper::AliAnalysisTaskEmcalEmbeddingHelper() :
  */
 AliAnalysisTaskEmcalEmbeddingHelper::AliAnalysisTaskEmcalEmbeddingHelper(const char *name) :
   AliAnalysisTaskSE(name),
-  fCreateHisto(true),
-  fTreeName("aodTree"),
-  fAnchorRun(169838),
-  fPtHardBin(-1),
-  fNPtHardBins(1),
-  fRandomEventNumberAccess(kFALSE),
-  fRandomFileAccess(kTRUE),
-  fFilePattern(""),
-  fInputFilename(""),
-  fFileListFilename(""),
-  fFilenameIndex(-1),
-  fFilenames(),
   fTriggerMask(AliVEvent::kAny),
   fMCRejectOutliers(false),
   fPtHardJetPtRejectionFactor(4),
   fZVertexCut(10),
   fMaxVertexDist(999),
+
+  fInitializedConfiguration(false),
+  fInitializedNewFile(false),
+  fInitializedEmbedding(false),
+  fWrappedAroundTree(false),
+  
+  fTreeName("aodTree"),
+  fAnchorRun(169838),
+  fNPtHardBins(1),
+  fPtHardBin(-1),
+  fRandomEventNumberAccess(kFALSE),
+  fRandomFileAccess(kTRUE),
+  fCreateHisto(true),
+  
+  fFilePattern(""),
+  fInputFilename(""),
+  fFileListFilename(""),
+  fFilenameIndex(-1),
+  fFilenames(),
+  fPythiaCrossSectionFilenames(),  
   fExternalFile(0),
+  fChain(nullptr),
   fCurrentEntry(0),
   fLowerEntry(0),
   fUpperEntry(0),
   fOffset(0),
   fMaxNumberOfFiles(0),
   fFileNumber(0),
-  fInitializedConfiguration(false),
-  fInitializedEmbedding(false),
-  fInitializedNewFile(false),
-  fWrappedAroundTree(false),
-  fChain(nullptr),
+  fHistManager(name),
+  fOutput(nullptr),
   fExternalEvent(nullptr),
   fExternalHeader(nullptr),
   fPythiaHeader(nullptr),
+
   fPythiaTrials(0),
   fPythiaTrialsFromFile(0),
   fPythiaCrossSection(0.),
   fPythiaCrossSectionFromFile(0.),
-  fPythiaPtHard(0.),
-  fPythiaCrossSectionFilenames(),
-  fHistManager(name),
-  fOutput(nullptr)
+  fPythiaPtHard(0.)
 {
   if (fgInstance != 0) {
     AliError("An instance of AliAnalysisTaskEmcalEmbeddingHelper already exists: it will be deleted!!!");
@@ -390,7 +398,7 @@ void AliAnalysisTaskEmcalEmbeddingHelper::DetermineFirstFileToEmbed()
     AliInfo(TString::Format("Starting with random file number %i!", fFilenameIndex+1));
   }
   // If not random file access, then start from the beginning
-  if (fFilenameIndex >= fFilenames.size() || fFilenameIndex < 0) {
+  if (fFilenameIndex < 0 || static_cast<UInt_t>(fFilenameIndex) >= fFilenames.size()) {
     // Skip notifying on -1 since it will likely be set there due to constructor.
     if (fFilenameIndex != -1) {
       AliWarning(TString::Format("File index %i out of range from 0 to %lu! Resetting to 0!", fFilenameIndex, fFilenames.size()));
@@ -568,11 +576,17 @@ Bool_t AliAnalysisTaskEmcalEmbeddingHelper::CheckIsEmbeddedEventSelected()
   // Physics selection
   if (fTriggerMask != AliVEvent::kAny) {
     UInt_t res = 0;
-    const AliESDEvent *eev = dynamic_cast<const AliESDEvent*>(InputEvent());
+    const AliESDEvent *eev = dynamic_cast<const AliESDEvent*>(fExternalEvent);
     if (eev) {
-      res = (dynamic_cast<AliInputEventHandler*>(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
+      AliFatal("Event selection is not implemented for embedding ESDs.");
+      // Unfortunately, the normal method of retrieving the trigger mask (commented out below) doesn't work for the embedded event since we don't
+      // create an input handler and I am not an expert on getting a trigger mask. Further, embedding ESDs is likely to be inefficient, so it is
+      // probably best to avoid it if possible.
+      //
+      // Suggestions are welcome here!
+      //res = (dynamic_cast<AliInputEventHandler*>(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
     } else {
-      const AliAODEvent *aev = dynamic_cast<const AliAODEvent*>(InputEvent());
+      const AliAODEvent *aev = dynamic_cast<const AliAODEvent*>(fExternalEvent);
       if (aev) {
         res = (dynamic_cast<AliVAODHeader*>(aev->GetHeader()))->GetOfflineTrigger();
       }
@@ -592,7 +606,7 @@ Bool_t AliAnalysisTaskEmcalEmbeddingHelper::CheckIsEmbeddedEventSelected()
   Double_t externalVertex[3]={0};
   Double_t inputVertex[3]={0};
   const AliVVertex *externalVert = fExternalEvent->GetPrimaryVertex();
-  const AliVVertex *inputVert = InputEvent()->GetPrimaryVertex();
+  const AliVVertex *inputVert = AliAnalysisTaskSE::InputEvent()->GetPrimaryVertex();
   if (externalVert && inputVert) {
     externalVert->GetXYZ(externalVertex);
     inputVert->GetXYZ(inputVertex);

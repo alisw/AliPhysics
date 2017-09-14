@@ -35,8 +35,6 @@ ClassImp(AliAnalysisTaskRhoTransDev);
  */
 AliAnalysisTaskRhoTransDev::AliAnalysisTaskRhoTransDev() :
   AliAnalysisTaskRhoBaseDev(),
-  fBackToBackJetPtFraction(0.6),
-  fMaxMomentumThridJet(12),
   fHistB2BRhoVsCent(0),
   fHistB2BRhoVsLeadJetPt(),
   fHistB2BRhoVsLeadTrackPt(0),
@@ -57,8 +55,6 @@ AliAnalysisTaskRhoTransDev::AliAnalysisTaskRhoTransDev() :
  */
 AliAnalysisTaskRhoTransDev::AliAnalysisTaskRhoTransDev(const char *name, Bool_t histo) :
   AliAnalysisTaskRhoBaseDev(name, histo),
-  fBackToBackJetPtFraction(0.6),
-  fMaxMomentumThridJet(12),
   fHistB2BRhoVsCent(0),
   fHistB2BRhoVsLeadJetPt(),
   fHistB2BRhoVsLeadTrackPt(0),
@@ -83,65 +79,73 @@ void AliAnalysisTaskRhoTransDev::UserCreateOutputObjects()
 
   TString name;
 
-  //ranges for PbPb
-  Float_t Ntrackrange[2] = {0, 6000};
-  //set multiplicity related axes to a smaller max value
-  if (fBeamType != kAA) Ntrackrange[1] = 200.;
+  Int_t maxTracks = 6000;
+  Double_t maxRho = 500;
+  Int_t nRhoBins = 500;
 
-  fHistB2BRhoVsCent = new TH2F("fHistB2BRhoVsCent", "fHistB2BRhoVsCent", 100, 0,  100, fNbins, fMinBinPt, fMaxBinPt);
+  if (fForceBeamType == kpp) {
+    maxRho = 50;
+    maxTracks = 200;
+  }
+  else if (fForceBeamType == kpA) {
+    maxRho = 200;
+    maxTracks = 500;
+  }
+
+  Int_t nPtBins = TMath::CeilNint(fMaxPt / fPtBinWidth);
+
+  fHistB2BRhoVsCent = new TH2F("fHistB2BRhoVsCent", "fHistB2BRhoVsCent", 100, 0,  100, nRhoBins, 0, maxRho);
   fHistB2BRhoVsCent->GetXaxis()->SetTitle("Centrality (%)");
   fHistB2BRhoVsCent->GetYaxis()->SetTitle("#rho (GeV/#it{c} #times rad^{-1})");
   fOutput->Add(fHistB2BRhoVsCent);
 
   if (fParticleCollArray.size() > 0) {
-    fHistB2BRhoVsNtrack = new TH2F("fHistB2BRhoVsNtrack", "fHistB2BRhoVsNtrack", 200, Ntrackrange[0], Ntrackrange[1], fNbins, fMinBinPt, fMaxBinPt);
+    fHistB2BRhoVsNtrack = new TH2F("fHistB2BRhoVsNtrack", "fHistB2BRhoVsNtrack", 200, 0, maxTracks, nRhoBins, 0, maxRho);
     fHistB2BRhoVsNtrack->GetXaxis()->SetTitle("No. of tracks");
     fHistB2BRhoVsNtrack->GetYaxis()->SetTitle("#rho (GeV/#it{c} #times rad^{-1})");
     fOutput->Add(fHistB2BRhoVsNtrack);
 
-    fHistB2BRhoVsLeadTrackPt = new TH2F("fHistB2BRhoVsLeadTrackPt", "fHistB2BRhoVsLeadTrackPt", fNbins, fMinBinPt, fMaxBinPt*2, fNbins, fMinBinPt, fMaxBinPt);
+    fHistB2BRhoVsLeadTrackPt = new TH2F("fHistB2BRhoVsLeadTrackPt", "fHistB2BRhoVsLeadTrackPt", nPtBins, 0, fMaxPt, nRhoBins, 0, maxRho);
     fHistB2BRhoVsLeadTrackPt->GetXaxis()->SetTitle("#it{p}_{T,track} (GeV/c)");
     fHistB2BRhoVsLeadTrackPt->GetYaxis()->SetTitle("#rho (GeV/#it{c} #times rad^{-1})");
     fOutput->Add(fHistB2BRhoVsLeadTrackPt);
   }
 
   if (fClusterCollArray.size()>0) {
-    fHistB2BRhoVsNcluster = new TH2F("fHistB2BRhoVsNcluster", "fHistB2BRhoVsNcluster", 50, Ntrackrange[0] / 4, Ntrackrange[1] / 4, fNbins, fMinBinPt, fMaxBinPt);
+    fHistB2BRhoVsNcluster = new TH2F("fHistB2BRhoVsNcluster", "fHistB2BRhoVsNcluster", 50, 0, maxTracks / 4, nRhoBins, 0, maxRho);
     fHistB2BRhoVsNcluster->GetXaxis()->SetTitle("No. of clusters");
     fHistB2BRhoVsNcluster->GetYaxis()->SetTitle("#rho (GeV/#it{c} #times rad^{-1})");
     fOutput->Add(fHistB2BRhoVsNcluster);
 
-    fHistB2BRhoVsLeadClusterE = new TH2F("fHistB2BRhoVsLeadClusterE", "fHistB2BRhoVsLeadClusterE", fNbins, fMinBinPt, fMaxBinPt*2, fNbins, fMinBinPt, fMaxBinPt);
+    fHistB2BRhoVsLeadClusterE = new TH2F("fHistB2BRhoVsLeadClusterE", "fHistB2BRhoVsLeadClusterE", nPtBins, 0, fMaxPt, nRhoBins, 0, maxRho);
     fHistB2BRhoVsLeadClusterE->GetXaxis()->SetTitle("#it{p}_{T,track} (GeV/c)");
     fHistB2BRhoVsLeadClusterE->GetYaxis()->SetTitle("#rho (GeV/#it{c} #times rad^{-1})");
     fOutput->Add(fHistB2BRhoVsLeadClusterE);
   }
 
   for (auto jetCont : fJetCollArray) {
-    std::string jetName = jetCont.second->GetArrayName().Data();
-
-    name = TString::Format("%s_fHistB2BRhoVsLeadJetPt", jetName.c_str());
-    fHistB2BRhoVsLeadJetPt[jetName] = new TH2F(name, name, fNbins, fMinBinPt, fMaxBinPt*2, fNbins, fMinBinPt, fMaxBinPt);
-    fHistB2BRhoVsLeadJetPt[jetName]->GetXaxis()->SetTitle("#it{p}_{T,jet} (GeV/c)");
-    fHistB2BRhoVsLeadJetPt[jetName]->GetYaxis()->SetTitle("#rho (GeV/#it{c} #times rad^{-1})");
-    fOutput->Add(fHistB2BRhoVsLeadJetPt[jetName]);
+    name = TString::Format("%s_fHistB2BRhoVsLeadJetPt", jetCont.first.c_str());
+    fHistB2BRhoVsLeadJetPt[jetCont.first] = new TH2F(name, name, nPtBins, 0, fMaxPt, nRhoBins, 0, maxRho);
+    fHistB2BRhoVsLeadJetPt[jetCont.first]->GetXaxis()->SetTitle("#it{p}_{T,jet} (GeV/c)");
+    fHistB2BRhoVsLeadJetPt[jetCont.first]->GetYaxis()->SetTitle("#rho (GeV/#it{c} #times rad^{-1})");
+    fOutput->Add(fHistB2BRhoVsLeadJetPt[jetCont.first]);
   }
 
   if (fScaleFunction) {
-    fHistB2BRhoScaledVsCent = new TH2F("fHistB2BRhoScaledVsCent", "fHistB2BRhoScaledVsCent", 100, 0, 100, fNbins, fMinBinPt , fMaxBinPt);
+    fHistB2BRhoScaledVsCent = new TH2F("fHistB2BRhoScaledVsCent", "fHistB2BRhoScaledVsCent", 100, 0, 100, nRhoBins, 0, maxRho);
     fHistB2BRhoScaledVsCent->GetXaxis()->SetTitle("Centrality (%)");
     fHistB2BRhoScaledVsCent->GetYaxis()->SetTitle("#rho_{scaled} (GeV/#it{c} #times rad^{-1})");
     fOutput->Add(fHistB2BRhoScaledVsCent);
 
     if (fParticleCollArray.size() > 0) {
-      fHistB2BRhoScaledVsNtrack = new TH2F("fHistB2BRhoScaledVsNtrack", "fHistB2BRhoScaledVsNtrack", 200, Ntrackrange[0], Ntrackrange[1], fNbins, fMinBinPt, fMaxBinPt);
+      fHistB2BRhoScaledVsNtrack = new TH2F("fHistB2BRhoScaledVsNtrack", "fHistB2BRhoScaledVsNtrack", 200, 0, maxTracks, nRhoBins, 0, maxRho);
       fHistB2BRhoScaledVsNtrack->GetXaxis()->SetTitle("No. of tracks");
       fHistB2BRhoScaledVsNtrack->GetYaxis()->SetTitle("#rho (GeV/#it{c} #times rad^{-1})");
       fOutput->Add(fHistB2BRhoScaledVsNtrack);
     }
 
     if (fClusterCollArray.size() > 0) {
-      fHistB2BRhoScaledVsNcluster = new TH2F("fHistB2BRhoScaledVsNcluster", "fHistB2BRhoScaledVsNcluster", 50, Ntrackrange[0] / 4, Ntrackrange[1] / 4, fNbins, fMinBinPt, fMaxBinPt);
+      fHistB2BRhoScaledVsNcluster = new TH2F("fHistB2BRhoScaledVsNcluster", "fHistB2BRhoScaledVsNcluster", 50, 0, maxTracks / 4, nRhoBins, 0, maxRho);
       fHistB2BRhoScaledVsNcluster->GetXaxis()->SetTitle("No. of clusters");
       fHistB2BRhoScaledVsNcluster->GetYaxis()->SetTitle("#rho_{scaled} (GeV/#it{c} #times rad^{-1})");
       fOutput->Add(fHistB2BRhoScaledVsNcluster);
@@ -188,6 +192,7 @@ Double_t AliAnalysisTaskRhoTransDev::GetPerpPtDensity(AliEmcalContainer* cont, A
 void AliAnalysisTaskRhoTransDev::CalculateRho()
 {
   AliEmcalJet* leadingJet = fLeadingJet["Signal"];
+  if (!leadingJet) return;
 
   Double_t perpPtDensity = 0;
 
@@ -200,43 +205,6 @@ void AliAnalysisTaskRhoTransDev::CalculateRho()
   }
 
   fOutRho->SetVal(perpPtDensity);
-}
-
-/**
- * Determines whether the current event is a "back-to-back" event, using the following definition.
- * An event is back-to-back if:
- * 1) The event contains a jet whose azimuthal angle difference with the leading jet is > 5/6 pi (the "back-to-back" jet), and
- * 2) the back-to-back jet carries a minimum fraction (fBackToBackJetPtFraction) of the leading jet momentum, and
- * 3) there are no jets with momentum greater than a given threshold (fMaxMomentumThridJet) that have an azimuthal angle difference smaller than 5/6 pi with the leading jet.
- * @return A boolean indicating whether the event is classified as back-to-back (true) or not (false).
- */
-Bool_t AliAnalysisTaskRhoTransDev::IsB2BEvent()
-{
-  static Float_t minPhi = (5.0/6.0) * TMath::Pi();
-
-  Bool_t b2bJet = kFALSE;
-  Bool_t thirdJetOverThreshold = kFALSE;
-
-  auto itJet = fSortedJets["Signal"].begin();
-  if (itJet == fSortedJets["Signal"].end()) return kFALSE;
-  AliEmcalJet* leadingJet = *itJet;
-  Double_t minB2Bpt = leadingJet->Pt() * fBackToBackJetPtFraction;
-  itJet++;
-  while (itJet != fSortedJets["Signal"].end()) {
-    auto jet = *itJet;
-    Double_t phidiff = TMath::Abs(AliEmcalContainer::RelativePhi(jet->Phi(), leadingJet->Phi()));
-    if (phidiff > minPhi) {
-      if (jet->Pt() > minB2Bpt) b2bJet = kTRUE;
-    }
-    else if (jet->Pt() > fMaxMomentumThridJet) {
-      thirdJetOverThreshold = kTRUE;
-      break;
-    }
-    if (jet->Pt() < fMaxMomentumThridJet && (b2bJet || jet->Pt() < minB2Bpt)) break;
-    itJet++;
-  }
-
-  return b2bJet && !thirdJetOverThreshold;
 }
 
 /**
@@ -258,7 +226,7 @@ Bool_t AliAnalysisTaskRhoTransDev::FillHistograms()
       fHistB2BRhoVsLeadClusterE->Fill(fLeadingCluster->E(), fOutRho->GetVal());
     }
 
-    if (fHistB2BRhoVsNtrack) fHistRhoVsNtrack->Fill(fNtracks, fOutRho->GetVal());
+    if (fHistB2BRhoVsNtrack) fHistB2BRhoVsNtrack->Fill(fNtracks, fOutRho->GetVal());
     if (fHistB2BRhoVsNcluster) fHistRhoVsNcluster->Fill(fNclusters, fOutRho->GetVal());
 
     for (auto jetCont : fJetCollArray) {
@@ -271,7 +239,6 @@ Bool_t AliAnalysisTaskRhoTransDev::FillHistograms()
       if (fHistB2BRhoScaledVsNcluster) fHistRhoScaledVsNcluster->Fill(fNclusters,  fOutRhoScaled->GetVal());
     }
   }
-
   return kTRUE;
 }
 
@@ -386,7 +353,7 @@ AliAnalysisTaskRhoTransDev* AliAnalysisTaskRhoTransDev::AddTaskRhoTransDev(TStri
 
   AliJetContainer *jetCont = new AliJetContainer(jetType, AliJetContainer::antikt_algorithm, rscheme, jetradius, partCont, clusterCont);
   if (jetCont) {
-    jetCont->SetJetPtCut(0);
+    jetCont->SetJetPtCut(1);
     jetCont->SetJetAcceptanceType(acceptance);
     jetCont->SetName("Signal");
     rhotask->AdoptJetContainer(jetCont);

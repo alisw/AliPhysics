@@ -325,8 +325,6 @@ void AliEMCALTriggerOfflineLightQAPP::ProcessFastor(const AliEMCALTriggerFastOR*
 
   if (fBadChannels.find(fastor->GetAbsId()) != fBadChannels.end()) return;
 
-  Bool_t isDCal = kFALSE;
-
   Double_t offlineAmp = 0;
   Int_t nTRU = -1;
   Int_t nADC = -1;
@@ -336,7 +334,6 @@ void AliEMCALTriggerOfflineLightQAPP::ProcessFastor(const AliEMCALTriggerFastOR*
 
   if (fGeom) {
     fGeom->GetPositionInSMFromAbsFastORIndex(fastor->GetAbsId(), iSM, iEta, iPhi);
-    isDCal = fGeom->IsDCALSM(iSM);
 
     Int_t idx[4] = {-1};
     fGeom->GetCellIndexFromFastORIndex(fastor->GetAbsId(), idx);

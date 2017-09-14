@@ -25,6 +25,7 @@ class AliVEvent;
 #include "AliTrackContainer.h"
 #include "AliClusterContainer.h"
 #include "AliEMCALGeometry.h"
+#include "AliEmcalCorrectionEventManager.h"
 
 /**
  * @class AliEmcalCorrectionComponent
@@ -88,13 +89,21 @@ class AliEmcalCorrectionComponent : public TNamed {
   void SetCaloCells(AliVCaloCells * cells) { fCaloCells = cells; }
   void SetRecoUtils(AliEMCALRecoUtils *ru) { fRecoUtils = ru; }
 
-  void SetEvent(AliVEvent * event) { fEvent = event; }
+  void SetInputEvent(AliVEvent * event) { fEventManager.SetInputEvent(event); }
   void SetMCEvent(AliMCEvent * mcevent) { fMCEvent = mcevent; }
+  /**
+   * If we are using standard input event then the embedded event should not be used!
+   * We store whether the embedding event should be used, so we invert the bool here.
+   * Then, if it is only set when we see the standard input event, then any single input
+   * with the standard input event will be enough to disable the embedded event.
+   */
+  void SetUsingInputEvent(bool b = true) { fEventManager.SetUseEmbeddingEvent(!b); }
 
   void SetEMCALGeometry(AliEMCALGeometry * geometry ) { fGeom = geometry; }
   void SetCentralityBin(Int_t bin) { fCentBin = bin; }
   void SetCentrality(Double_t cent) { fCent = cent; }
   void SetNcentralityBins(Int_t n) { fNcentBins = n; }
+  void SetVertex(Double_t * vertex) { fVertex[0] = vertex[0]; fVertex[1] = vertex[1]; fVertex[2] = vertex[2]; }
   void SetIsESD(Bool_t isESD) {fEsdMode = isESD; }
 
 #if !(defined(__CINT__) || defined(__MAKECINT__))
@@ -127,7 +136,7 @@ class AliEmcalCorrectionComponent : public TNamed {
   Int_t                   fRun;                           //!<! Run number
   TString                 fFilepass;                      ///< Input data pass number
   Bool_t                  fGetPassFromFileName;           ///< Get fFilepass from file name
-  AliVEvent              *fEvent;                         //!<! Pointer to event
+  AliEmcalCorrectionEventManager fEventManager;           ///< Minimal task which inherits from AliAnalysisTaskSE and manages access to the event
   Bool_t                  fEsdMode;                       ///< flag for ESD
   AliMCEvent             *fMCEvent;                       //!<! MC
   Double_t                fCent;                          //!<! Event centrality
@@ -153,7 +162,7 @@ class AliEmcalCorrectionComponent : public TNamed {
   AliEmcalCorrectionComponent &operator=(const AliEmcalCorrectionComponent &);    // Not implemented
   
   /// \cond CLASSIMP
-  ClassDef(AliEmcalCorrectionComponent, 2); // EMCal correction component
+  ClassDef(AliEmcalCorrectionComponent, 3); // EMCal correction component
   /// \endcond
 };
 

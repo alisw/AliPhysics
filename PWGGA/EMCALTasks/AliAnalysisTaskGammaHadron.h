@@ -36,6 +36,9 @@ virtual ~AliAnalysisTaskGammaHadron();
   void                        SetM02(Double_t inputMin,Double_t inputMax)           { fClShapeMin = inputMin; fClShapeMax = inputMax;}
   void                        SetRmvMatchedTrack(Bool_t input, Double_t dEta=-1, Double_t dPhi=-1) { fRmvMTrack  = input; fTrackMatchEta=dEta; fTrackMatchPhi=dPhi;}
   void                        SetUseManualEvtCuts(Bool_t input)                     { fUseManualEventCuts = input;}
+  void                        SetDoRotBkg(Bool_t input)                             { fDoRotBkg = input;}
+  void                        SetNRotBkgSamples(Int_t input)                        { fNRotBkgSamples = input;}
+
 
   //Functions for mixed event purposes
   void                        SetExternalEventPoolManager(AliEventPoolManager* mgr) {fPoolMgr = mgr;}
@@ -64,6 +67,7 @@ virtual ~AliAnalysisTaskGammaHadron();
   Bool_t                      FillHistograms()                                              ;
   Int_t                       CorrelateClusterAndTrack(AliParticleContainer* tracks,TObjArray* bgTracks,Bool_t SameMix, Double_t Weight);
   Int_t                       CorrelatePi0AndTrack(AliParticleContainer* tracks,TObjArray* bgTracks,Bool_t SameMix, Double_t Weight);
+  void                        FillPi0CandsHist(AliTLorentzVector CaloClusterVec,AliTLorentzVector CaloClusterVec2,AliTLorentzVector CaloClusterVecPi0,Double_t fMaxClusM02,Double_t Weight);
   void                        FillGhHisograms(Int_t identifier,AliTLorentzVector ClusterVec,AliVParticle* TrackVec, Double_t ClusterEcut, Double_t Weight);
   void                        FillQAHisograms(Int_t identifier,AliClusterContainer* clusters,AliVCluster* caloCluster,AliVParticle* TrackVec);
   Bool_t                      AccClusterForAna(AliClusterContainer* clusters, AliVCluster* caloCluster);
@@ -126,11 +130,6 @@ virtual ~AliAnalysisTaskGammaHadron();
 
   // Other stuff
   TList                      *fEventCutList;           //!<! Output list for event cut histograms
-  TList                      *fOutputList1;            //!<! Output list
-  TList                      *fOutputListTrAs;         //!<! Output list
-  TList                      *fOutputListGamma;        //!<! Output list
-  TList                      *fOutputListXi;           //!<! Output list
-  TList                      *fOutputListZeta;         //!<! Output list
   TList                      *fOutputListQA;           //!<! Output list
 
   // Histograms -
@@ -139,6 +138,14 @@ virtual ~AliAnalysisTaskGammaHadron();
   TH1 					    *fHistPi0;                 //!<! Tyler's histogram
   TH2                       *fMAngle;                  //!<! Tyler's histogram
   TH2                       *fPtAngle;                 //!<! Tyler's histogram
+
+
+  TRandom3    *fRand;//!<! Random number generator.  Initialzed by rot background
+  TH1         *fClusEnergy; //!<! Energy of clusters accepted for pi0 analysis
+  Bool_t       fDoRotBkg; ///< Whether or not to calculate the rotational background
+  Int_t        fNRotBkgSamples; ///< How many samples to use in the rotational background
+  THnSparseF  *fPi0Cands; //!<! Michael's THnSparse for pi0 Candidates
+
 
   TH1 					    *fHistEvsPt;               //!<! E vs pT
   TH1 					   **fHistBinCheckPt;          //!<! plot Pt distribution for ideal binning
