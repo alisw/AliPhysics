@@ -71,6 +71,7 @@ fMixingEventType(AliVEvent::kINT7),
 fCurrentEventTrigger(0),
 fEventCutList(0),
 h_Track(0),
+h_TrackITS(0),
 h_Truth(0),
 h_Cluster(0),
 h_ClusterTrack(0),
@@ -106,6 +107,7 @@ fMixingEventType(AliVEvent::kINT7),
 fCurrentEventTrigger(0),
 fEventCutList(0),
 h_Track(0),
+h_TrackITS(0),
 h_Truth(0),
 h_Cluster(0),
 h_ClusterTrack(0),
@@ -195,9 +197,6 @@ void AliAnalysisTaskEMCALPi0GammaCorr::UserCreateOutputObjects()
     double min_zt = 0;
     double max_zt = 1.2;
    
-    int nbins_E = 25; 
-    double min_E =0;
-    double max_E =50.0;
 
     int nbins_E_Corr = 10;
     double min_E_Corr = 0.0;
@@ -358,49 +357,49 @@ void AliAnalysisTaskEMCALPi0GammaCorr::UserCreateOutputObjects()
     //fOutput->Add(h_ClusterTrack_Mixed);
     
     ///////////////Pi0////////////////////////////////////
-    const int nbins_Pi = 14;
+    const int nbins_Pi = 15;
     axisNames = "Pion THnSparse; Centrality [%]; Z vertex [cm];#pi Mass [GeV]; #pi pT [GeV]; #pi y;"; 
     axisNames = axisNames+ "Asymmetry; ph1_pT [GeV]; ph2_pT [GeV]; #Delta#phi [mrad];";
     axisNames = axisNames+ "ph1 #lambda_{02}; ph2 #lambda_{02}; ";
-    axisNames = axisNames+ "ph1 dR; ph2 dR; true pT;";
+    axisNames = axisNames+ "ph1 dR; ph2 dR; true pT; isGammaTriggered;";
 
     int binsPi0[nbins_Pi] = {nbins_Centrality, nbins_zvertex, nbins_Mass, nbins_Pt, nbins_eta,   
                              nbins_Asymmetry, nbins_Pt, nbins_Pt, nbins_alpha, 
 			     nbins_M02, nbins_M02, nbins_dR,nbins_dR,
-                             nbins_Pt
+                             nbins_Pt,2
 			     };
                             
     double xminPi0[nbins_Pi] = {min_Centrality, min_zvertex, min_Mass, min_Pt, min_eta, 
                                 min_Asymmetry, min_Pt, min_Pt, min_alpha,
                                 min_M02, min_M02,  min_dR, min_dR,
-                                min_Pt
+                                min_Pt, -0.5
                                 };
 
     double xmaxPi0[nbins_Pi] = {max_Centrality, max_zvertex, max_Mass, max_Pt, max_eta,
                                 max_Asymmetry, max_Pt, max_Pt, max_alpha,
                                 max_M02, max_M02, max_dR, max_dR,
-                                max_Pt};
+                                max_Pt, 1.5};
                                 
     h_Pi0= new THnSparseD("h_Pi0", axisNames, nbins_Pi, binsPi0, xminPi0, xmaxPi0);
     h_Pi0->Sumw2();
     fOutput->Add(h_Pi0);
     
     /////////////////////Clusters////////////////////////////////////
-    const int nbins_Cluster = 25;
+    const int nbins_Cluster = 26;
     
     axisNames = "Cluster THnSparse; RunNumber; Centrality; Z vertex; Cluster p_{T}; Cluster #eta; Cluster #phi; Cluster #lambda_{02}; nCells; nMaxima;";
     axisNames = axisNames + "Distance to Border; Distance to Bad Cell; dR to track;  d#eta to track; d#phi to track; Exoticity; time [ns]; nTracks ; nClusters;";
     axisNames = axisNames + "ISO Track; UE_track (etaband); UE_track (ortho); ISO Track Subtracted (etaband); ISO Track Subtracted (ortho);"; 
-    axisNames = axisNames + " ISO Truth; IsTrueGamma; " ; 
+    axisNames = axisNames + " ISO Truth; IsTrueGamma; IsGammaTriggered;" ; 
     int binsCluster[nbins_Cluster] = {nbins_RunNumber, nbins_Centrality, nbins_zvertex, nbins_Pt, nbins_eta, nbins_phi, nbins_M02, nbins_Ncells,  
                                       nbins_nMaxima, nbins_DisToBorder, nbins_DisToBad, nbins_dR, nbins_Matching, nbins_Matching, nbins_Exoticity, nbins_time, nbins_nTracks, nbins_nClusters,
-                                      nbins_IsoE, nbins_IsoE, nbins_IsoE, nbins_IsoE, nbins_IsoE, nbins_IsoETruth, nbins_trueGamma};
+                                      nbins_IsoE, nbins_IsoE, nbins_IsoE, nbins_IsoE, nbins_IsoE, nbins_IsoETruth, nbins_trueGamma, 2};
     double xminCluster[nbins_Cluster] = {min_RunNumber, min_Centrality, min_zvertex, min_Pt,  min_eta, min_phi, min_M02, min_Ncells, min_nMaxima, 
 					 min_DisToBorder, min_DisToBad, min_dR, min_Matching, min_Matching, min_Exoticity, min_time, min_nTracks, min_nClusters, 
-                                         min_IsoE, min_IsoE, min_IsoE, min_IsoE,  min_IsoE, min_IsoETruth, min_trueGamma};
+                                         min_IsoE, min_IsoE, min_IsoE, min_IsoE,  min_IsoE, min_IsoETruth, min_trueGamma, -0.5};
     double xmaxCluster[nbins_Cluster] = {max_RunNumber, max_Centrality, max_zvertex, max_Pt, max_eta, max_phi, max_M02, max_Ncells, max_nMaxima, 
 					 max_DisToBorder, max_DisToBad, max_dR, max_Matching, max_Matching, max_Exoticity, max_time, max_nTracks, max_nClusters, 
-                                         max_IsoE, max_IsoE, max_IsoE, max_IsoE, max_IsoE, max_IsoETruth, max_trueGamma};
+                                         max_IsoE, max_IsoE, max_IsoE, max_IsoE, max_IsoE, max_IsoETruth, max_trueGamma, 1.5};
 
     h_Cluster = new THnSparseD("h_Cluster", axisNames, nbins_Cluster, binsCluster, xminCluster, xmaxCluster);
     h_Cluster->Sumw2();
@@ -421,13 +420,22 @@ void AliAnalysisTaskEMCALPi0GammaCorr::UserCreateOutputObjects()
     ///////////////////Tracks////////////////////////////////////////////////
 
 
-    axisNames = "Track ThnSparse; Track Pt; Track Eta ; Track Phi; Track d0 [um]; Track z0 [cm]; # of TPC clusters; TPC signal; Crossed rows; Charge;";
+    axisNames = "Track ThnSparse; Track Pt; Track Eta ; Track Phi; Track d0 [um]; Track z0 [cm]; # of TPC clusters; TPC signal; Crossed rows; Charge; isGammaTriggeredEvent;";
     int    binsTrack[10] = {5*nbins_Pt, nbins_eta, nbins_phi, nbins_d0, nbins_z0, nbins_nTPCclusters, nbins_TPCsignal, nbins_fTPC, 2,2};
     double xminTrack[10] = {0.0, -1.0, 0.0,           min_d0, min_z0, min_nTPCclusters, min_TPCsignal, min_fTPC, -2.0, -0.5};
     double xmaxTrack[10] = {20.0,  1.0, 2*TMath::Pi(), max_d0, max_z0, max_nTPCclusters, max_TPCsignal, max_fTPC, 2.0, 1.5};
     h_Track = new THnSparseD("h_Track", axisNames, 10, binsTrack, xminTrack, xmaxTrack);
     h_Track->Sumw2();
     fOutput->Add(h_Track); 
+
+
+    axisNames = "Track ITS ThnSparse; Track Pt; Track Eta ; Track Phi; Track d0 [um]; Track z0 [cm]; Charge; isGammaTriggeredEvent;";
+    int    binsTrackITS[7] = {5*nbins_Pt, nbins_eta, nbins_phi, nbins_d0, nbins_z0,  2,2};
+    double xminTrackITS[7] = {0.0, -1.0, 0.0,           min_d0/10.0, min_z0/100.0, -2.0, -0.5};
+    double xmaxTrackITS[7] = {20.0,  1.0, 2*TMath::Pi(), max_d0/10.0, max_z0/100.0, 2.0, 1.5};
+    h_TrackITS = new THnSparseD("h_TrackITS", axisNames, 7, binsTrackITS, xminTrackITS, xmaxTrackITS);
+    h_TrackITS->Sumw2();
+    fOutput->Add(h_TrackITS);
    
     ///////////////////////////////////TRUTH //////////////////////////////////////////////////////
     axisNames = "Truth ThnSparse; True Pt; True y ; PDG;";
@@ -438,7 +446,7 @@ void AliAnalysisTaskEMCALPi0GammaCorr::UserCreateOutputObjects()
     h_Truth->Sumw2();
     fOutput->Add(h_Truth);
 
-    h_nEvents = new TH1F("h_nEvents", "Number of triggers",  2,  0,  1);  
+    h_nEvents = new TH1F("h_nEvents", "Number of triggers",  2,  -0.5,  1.5);  
     fOutput->Add(h_nEvents);
 
     PostData(1, fOutput); // Post data for ALL output slots >0 here, to get at least an empty histogram
@@ -506,6 +514,16 @@ void AliAnalysisTaskEMCALPi0GammaCorr::ExecOnce()
     AliAnalysisTaskEmcal::ExecOnce();
 }
 
+Bool_t AliAnalysisTaskEMCALPi0GammaCorr::PassedGATrigger(){
+
+  TString Trigger = fInputEvent->GetFiredTriggerClasses();
+  bool PassedGammaTrigger = kFALSE;
+  if(Trigger.Contains("EG1") ||Trigger.Contains("EG2") || Trigger.Contains("DG1") || Trigger.Contains("DG2")) PassedGammaTrigger = kTRUE;
+  return PassedGammaTrigger;
+
+}
+
+
 Bool_t AliAnalysisTaskEMCALPi0GammaCorr::IsEventSelected()
 {
     
@@ -521,8 +539,8 @@ Bool_t AliAnalysisTaskEMCALPi0GammaCorr::IsEventSelected()
 
     bool isSelected = AliAnalysisTaskEmcal::IsEventSelected();
     if(isSelected){
-        if(PassedGammaTrigger) h_nEvents->Fill(0);
-        if(PassedMinBiasTrigger) h_nEvents->Fill(0.9);
+        if(PassedGammaTrigger) h_nEvents->Fill(1.0);
+        if(PassedMinBiasTrigger) h_nEvents->Fill(0.0);
     }
     //return kTRUE;
 
@@ -761,7 +779,7 @@ Bool_t AliAnalysisTaskEMCALPi0GammaCorr::FillHistograms()
 	// 3. The reduced and bgTracks arrays must both be passed into
 	//    FillCorrelations(). Also nMix should be passed in, so a weight
 	//    of 1./nMix can be applied.
-  //    std::cout << "Entering fill histograms; centrality= " << fCent << std::endl;
+
     TString Trigger;
     Trigger = fInputEvent->GetFiredTriggerClasses();
     bool PassedGammaTrigger = kFALSE;
@@ -770,41 +788,71 @@ Bool_t AliAnalysisTaskEMCALPi0GammaCorr::FillHistograms()
     if(Trigger.Contains("EG1") ||Trigger.Contains("EG2") || Trigger.Contains("DG1") || Trigger.Contains("DG2")) PassedGammaTrigger = kTRUE;
     if(Trigger.Contains("INT7")) PassedMinBiasTrigger = kTRUE;
  
-
-
-
-   
     double zVertex = fVertex[2];
 
-    //AliParticleContainer* tracks = GetParticleContainer(0); //trying trackcontainer above instead 
+    //Getting track and cluster containers
     AliTrackContainer* tracks = GetTrackContainer("ForCorrelation");
     AliTrackContainer* tracksForMatching = GetTrackContainer("ForMatching");
+    AliTrackContainer* tracksITS = GetTrackContainer("ITSOnly");
+
     if(!tracks or !tracksForMatching){
       AliError(Form("Could not retrieve tracks !"));
     }
-    if(PassedGammaTrigger or fIsMC) { CorrelateClusterAndTrack(tracks,0, kFALSE, 1); }//correlate with same event }
+    AliClusterContainer* clusters  = GetClusterContainer(0);
+    if(!clusters) AliError(Form("Could not retrieve clusters!")); 
 
+    //Filling cluster and pion THnSparsesx 
+    for(auto cluster: clusters->accepted()){
+        if(!PreSelection(cluster))continue ;
+        FillClusterHisto(cluster, h_Cluster);
+        for(auto cluster2: clusters->accepted()){
+            if(!PreSelection(cluster2)) continue;
+            if(cluster==cluster2) continue;
+            FillPionHisto(cluster, cluster2, h_Pi0);
+       } 
+    }
 
+    //Correlation analysis between photon/pion and tracks
+    if(PassedGammaTrigger or fIsMC) { CorrelateClusterAndTrack(tracks,0, kFALSE, 1); }
+
+    //Studying tracks from TPC
     for(auto track : tracksForMatching->accepted()){
-      if(!track) continue;
+        if(!track) continue;
+        Float_t d0=-999.0;
+        Float_t z0=-999.0;
+        track->GetImpactParametersTPC(d0, z0);
+        double trigger = 0.0;
+        if(PassedGammaTrigger) trigger = 1.0;
+        if(d0<-3000) d0 = -1999;
+        else if(d0>3000) d0 = 1999;
+        double fTPC =static_cast<double>(1.0*track->GetTPCNclsF());
+        // std::cout<< track->GetTPCNclsF() << std::endl;
+        double charge = static_cast<double>(track->Charge());
+        double TPCsignal= std::min(static_cast<double>(track->GetTPCsignal()), 149.0);
+        double entries[10] = {track->Pt(), track->Eta() , track->Phi(), 1000*d0, z0, static_cast<double>(track->GetTPCNcls()), TPCsignal, track->GetTPCCrossedRows(),
+        			    charge, trigger };
+        h_Track->Fill(entries);
+    }
+
+    for(auto track :tracksITS->accepted()){
       Float_t d0=-999.0;
       Float_t z0=-999.0;
-      track->GetImpactParametersTPC(d0, z0);
-
-
+      track->GetImpactParameters(d0, z0);
       double trigger = 0.0;
       if(PassedGammaTrigger) trigger = 1.0;
       if(d0<-3000) d0 = -1999;
       else if(d0>3000) d0 = 1999;
-      double fTPC =static_cast<double>(1.0*track->GetTPCNclsF());
-      // std::cout<< track->GetTPCNclsF() << std::endl;
       double charge = static_cast<double>(track->Charge());
 
-      double TPCsignal= std::min(static_cast<double>(track->GetTPCsignal()), 149.0);
-      double entries[10] = {track->Pt(), track->Eta() , track->Phi(), 1000*d0, z0, static_cast<double>(track->GetTPCNcls()), TPCsignal, track->GetTPCCrossedRows(),
-			    charge, trigger };
-      h_Track->Fill(entries);
+      double entries[7] = {track->Pt(), track->Eta() , track->Phi(), 1000*d0, z0,    charge, trigger };
+      h_TrackITS->Fill(entries);
+
+
     }
+
+
+
+
 
    
     //If MC data, then analyze it: 
@@ -856,17 +904,15 @@ int AliAnalysisTaskEMCALPi0GammaCorr::CorrelateClusterAndTrack(AliParticleContai
     AliTrackContainer* tracksForMatching = GetTrackContainer("ForMatching");
     if(!tracksForMatching) return 0;
    
-   
-     for(auto cluster: clusters->accepted()){
-        if(!PreSelection(cluster))continue ;
-        if(MixedEvent){
-	      for(auto track_mix: *bgTracksArray){
+    for(auto cluster: clusters->accepted()){
+       if(!PreSelection(cluster))continue ;
+       if(MixedEvent){
+          for(auto track_mix: *bgTracksArray){
 	      FillPhotonCorrelation(cluster, static_cast<AliPicoTrack*>(track_mix), h_ClusterTrack_Mixed, Weight);
 	  }//end loop over tracks
         }// end if mixed events
         else{
-            FillClusterHisto(cluster, h_Cluster); //filling photon histogram
-            for(auto track : tracks->accepted()){
+	   for(auto track : tracks->accepted()){
                 FillPhotonCorrelation(cluster, track, h_ClusterTrack, Weight);
             } //end loop over tracks
         }//end same event loop.
@@ -883,9 +929,7 @@ int AliAnalysisTaskEMCALPi0GammaCorr::CorrelateClusterAndTrack(AliParticleContai
 		} //end loop over tracks
             } // end mixed event loop 
             else{
-	      
-                FillPionHisto(cluster, cluster2, h_Pi0);
-		for(auto track : tracks->accepted()){
+	  	for(auto track : tracks->accepted()){
                     FillPionCorrelation(cluster, cluster2, track, h_Pi0Track, Weight);
                 } //end loop over tracks
             }//end same event 
@@ -1177,14 +1221,16 @@ void  AliAnalysisTaskEMCALPi0GammaCorr::FillPionHisto(AliVCluster* cluster1, Ali
     if (zVertex>10) zVertex =9.99;
     if (zVertex<-10) zVertex = -9.99;  
 
-
+    double trigger = 0.0;
+    if(PassedGATrigger()) trigger = 1.0;
+ 
     //Check whether pion is TRUE pion or not: 
     double true_pt = 0.0; 
     if(fIsMC) IsRealPion(cluster_lead, cluster_sub, true_pt);
     
-    double entries[14] = {fCent, zVertex, pi0.M(), pi0.Pt(), pi0.Rapidity(),  asym, ph_lead.Pt(), ph_sub.Pt(),  
+    double entries[15] = {fCent, zVertex, pi0.M(), pi0.Pt(), pi0.Rapidity(),  asym, ph_lead.Pt(), ph_sub.Pt(),  
 			  openingAngle,  cluster_lead->GetM02(), cluster_sub->GetM02(), 
-			  dRmin_1, dRmin_2, true_pt};
+			  dRmin_1, dRmin_2, true_pt, trigger};
 
     histo->Fill(entries);
     return;
@@ -1226,6 +1272,9 @@ void AliAnalysisTaskEMCALPi0GammaCorr::FillClusterHisto(AliVCluster* cluster, TH
     
     AliClusterContainer* clusters  = GetClusterContainer(0);
     AliTrackContainer* tracks = GetTrackContainer("ForCorrelation");
+
+    double trigger = 0.0;
+    if(PassedGATrigger()) trigger = 1.0;
 
     TLorentzVector ph;
     clusters->GetMomentum(ph, cluster);
@@ -1285,7 +1334,7 @@ void AliAnalysisTaskEMCALPi0GammaCorr::FillClusterHisto(AliVCluster* cluster, TH
         if(true_photon->PdgCode()==22) trueGamma=.60;
     }
 
-    double entries[25] = {RunNumber, fCent, zVertex, ph.Pt(), ph.Eta(), ph.Phi(), cluster->GetM02(), static_cast<double>(cluster->GetNCells()), 
+    double entries[26] = {RunNumber, fCent, zVertex, ph.Pt(), ph.Eta(), ph.Phi(), cluster->GetM02(), static_cast<double>(cluster->GetNCells()), 
 			  static_cast<double>(cluster->GetNExMax()), disToBorder, disToBad, dRmin, detamin, dphimin, exoticity, time, nTracks, nClusters,
                           std::min(IsoE_Tracks, ulimit),
                           std::min(UE_Tracks_etaband, ulimit), 
@@ -1293,10 +1342,8 @@ void AliAnalysisTaskEMCALPi0GammaCorr::FillClusterHisto(AliVCluster* cluster, TH
 			  std::min(IsoE_Tracks- UE_Tracks_etaband, ulimit),
 			  std::min(IsoE_Tracks- UE_Tracks_ortho, ulimit),
                           std::min(IsoE_Truth, 19.9 ),
-                          trueGamma
+                          trueGamma, trigger
                           };
-
-
 
     histo->Fill(entries);
     return;
