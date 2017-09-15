@@ -47,7 +47,9 @@ Double_t AliAnalysisTaskEmcalJetHCorrelations::p30_50G[17] = {0.997696, 0.081676
 // 50-90% centrality: Good Runs
 Double_t AliAnalysisTaskEmcalJetHCorrelations::p50_90G[17] = {0.97041, 0.0813559, 1.12151, -0.0368797, 0.709327, 0.0701501, -0.00784043, 1.06276, 0.00676173, 0.53607, -0.0703117, 0.982534, 0.0947881, -0.18073, 1.03229, 0.00580109, 0.737801};
 
-//________________________________________________________________________
+/**
+ * Default constructor.
+ */
 AliAnalysisTaskEmcalJetHCorrelations::AliAnalysisTaskEmcalJetHCorrelations() :
   AliAnalysisTaskEmcalJet("AliAnalysisTaskEmcalJetHCorrelations", kFALSE),
   fTrackBias(5),
@@ -72,7 +74,9 @@ AliAnalysisTaskEmcalJetHCorrelations::AliAnalysisTaskEmcalJetHCorrelations() :
   InitializeArraysToZero();
 }
 
-//________________________________________________________________________
+/**
+ * Standard constructor
+ */
 AliAnalysisTaskEmcalJetHCorrelations::AliAnalysisTaskEmcalJetHCorrelations(const char *name) :
   AliAnalysisTaskEmcalJet(name, kTRUE),
   fTrackBias(5),
@@ -99,7 +103,9 @@ AliAnalysisTaskEmcalJetHCorrelations::AliAnalysisTaskEmcalJetHCorrelations(const
   SetMakeGeneralHistograms(kTRUE);
 }
 
-//________________________________________________________________________
+/**
+ * Initialize all member arrays to nullptr. Used as a convenience function in the constructors.
+ */
 void AliAnalysisTaskEmcalJetHCorrelations::InitializeArraysToZero()
 {
   for(Int_t trackPtBin = 0; trackPtBin < kMaxTrackPtBins; trackPtBin++){
@@ -117,7 +123,9 @@ void AliAnalysisTaskEmcalJetHCorrelations::InitializeArraysToZero()
   }
 }
 
-//________________________________________________________________________
+/**
+ * Perform run independent initializations, such as histograms and the event pool.
+ */
 void AliAnalysisTaskEmcalJetHCorrelations::UserCreateOutputObjects() {
   // Called once 
   AliAnalysisTaskEmcalJet::UserCreateOutputObjects();
@@ -214,7 +222,12 @@ void AliAnalysisTaskEmcalJetHCorrelations::UserCreateOutputObjects() {
   fPoolMgr = new AliEventPoolManager(poolSize, fNMixingTracks, nEventActivityBins, eventActivityBins, nZVertexBins, zVertexBins);
 }
 
-//________________________________________________________________________
+/**
+ * Get the proper bin based on the eta value.
+ *
+ * @param[in] eta Eta value to be binned.
+ * @return Bin corresponding to the input value.
+ */
 Int_t AliAnalysisTaskEmcalJetHCorrelations::GetEtaBin(Double_t eta) const
 {
   // Get eta bin for histos.
@@ -227,7 +240,12 @@ Int_t AliAnalysisTaskEmcalJetHCorrelations::GetEtaBin(Double_t eta) const
   return etabin;
 }
 
-//________________________________________________________________________
+/**
+ * Get the proper bin based on the track pt value.
+ *
+ * @param[in] pt Track pt value to be binned.
+ * @return Bin corresponding to the input value.
+ */
 Int_t AliAnalysisTaskEmcalJetHCorrelations::GetTrackPtBin(Double_t pt) const
 {
   Int_t ptBin = -1;
@@ -242,7 +260,12 @@ Int_t AliAnalysisTaskEmcalJetHCorrelations::GetTrackPtBin(Double_t pt) const
   return ptBin;
 }
 
-//________________________________________________________________________
+/**
+ * Get the proper bin based on the jet pt value.
+ *
+ * @param[in] pt Jet pt value to be binned.
+ * @return Bin corresponding to the input value.
+ */
 Int_t AliAnalysisTaskEmcalJetHCorrelations::GetJetPtBin(Double_t pt) const
 {
   // Get jet pt  bin for histos.
@@ -257,16 +280,11 @@ Int_t AliAnalysisTaskEmcalJetHCorrelations::GetJetPtBin(Double_t pt) const
   return ptBin;
 }
 
-//________________________________________________________________________
-void AliAnalysisTaskEmcalJetHCorrelations::ExecOnce() {
-  AliAnalysisTaskEmcalJet::ExecOnce();
-}
-
-//________________________________________________________________________
+/**
+ * Main loop called for each event by AliAnalysisTaskEmcal.
+ */
 Bool_t AliAnalysisTaskEmcalJetHCorrelations::Run()
 {
-  // Main loop called for each event
-
   // Retrieve clusters
   AliClusterContainer * clusters = GetClusterContainer(0);
   if (!clusters) {
@@ -527,13 +545,12 @@ Bool_t AliAnalysisTaskEmcalJetHCorrelations::Run()
   return kTRUE;
 }      
 
-//________________________________________________________________________
-void AliAnalysisTaskEmcalJetHCorrelations::Terminate(Option_t *)
-{
-  //just terminate
-}
-
-//________________________________________________________________________
+/**
+ * Determine if a jet passes the track or cluster bias and is therefore a "biased" jet.
+ *
+ * @param[in] jet The jet to be checked.
+ * @return true if the jet is biased.
+ */
 Bool_t AliAnalysisTaskEmcalJetHCorrelations::BiasedJet(AliEmcalJet * jet)
 {
   if ((jet->MaxTrackPt() > fTrackBias) || (jet->MaxClusterPt() > fClusterBias))
@@ -543,7 +560,15 @@ Bool_t AliAnalysisTaskEmcalJetHCorrelations::BiasedJet(AliEmcalJet * jet)
   return kFALSE;
 }
 
-//________________________________________________________________________
+/**
+ * Get \f$\Delta\phi\f$, \f$\Delta\eta\f$, and \f$\Delta R\f$ between two given particles.
+ *
+ * @param[in] particleOne The first particle.
+ * @param[in] particleTwo The second particle.
+ * @param[out] deltaEta The calculated \f$\Delta\eta\f$ value.
+ * @param[out] deltaPhi The calculated \f$\Delta\phi\f$ value.
+ * @param[out] deltaR The calculated \f$\Delta R\f$ value.
+ */
 void AliAnalysisTaskEmcalJetHCorrelations::GetDeltaEtaDeltaPhiDeltaR(AliTLorentzVector & particleOne, AliVParticle * particleTwo, Double_t & deltaEta, Double_t & deltaPhi, Double_t & deltaR)
 {
   // TODO: Understand order of arguments to DeltaPhi vs DeltaEta
@@ -556,11 +581,15 @@ void AliAnalysisTaskEmcalJetHCorrelations::GetDeltaEtaDeltaPhiDeltaR(AliTLorentz
   deltaPhi = DeltaPhi(particleTwo->Phi(), particleOne.Phi(), -0.5*TMath::Pi(), 3*TMath::Pi()/2.);
 }
 
-//________________________________________________________________________
+/**
+ * Creates a new THnSparseF based on the desired number of entries. Note that the axes are defined in
+ * GetDimParams().
+ *
+ * @param[in] name Name of the new THnSparseF
+ * @param[in] entries Bits corresponding to entires to include in the THnSparseF, with the axis deteremined in GetDimParams().
+ */
 THnSparse* AliAnalysisTaskEmcalJetHCorrelations::NewTHnSparseF(const char* name, UInt_t entries)
 {
-  // generate new THnSparseF, axes are defined in GetDimParams()
-
   Int_t count = 0;
   UInt_t tmp = entries;
   while(tmp!=0){
@@ -592,11 +621,17 @@ THnSparse* AliAnalysisTaskEmcalJetHCorrelations::NewTHnSparseF(const char* name,
   return new THnSparseF(name, hnTitle.Data(), dim, nbins, xmin, xmax);
 }
 
-//________________________________________________________________________
+/**
+ * Stores labels and binning of axes for creating a new THnSparseF.
+ *
+ * @param[in] iEntry Which axis to pick out of the cases.
+ * @param[out] label Label of the axis.
+ * @param[out] nbins Number of bins for the axis.
+ * @param[out] xmin Minimum value of the axis.
+ * @param[out] xmax Maximum value of the axis.
+ */
 void AliAnalysisTaskEmcalJetHCorrelations::GetDimParams(Int_t iEntry, TString &label, Int_t &nbins, Double_t &xmin, Double_t &xmax)
 {
-  // stores label and binning of axis for THnSparse
-
   const Double_t pi = TMath::Pi();
 
   switch(iEntry){
@@ -673,8 +708,13 @@ void AliAnalysisTaskEmcalJetHCorrelations::GetDimParams(Int_t iEntry, TString &l
   }
 }
 
-//_________________________________________________
-// From CF event mixing code PhiCorrelations
+/**
+ * Clone tracks into a lighter object (AliBasicParticle) to store in the event pool. By using
+ * lighter objects, it reduces the event pool size in memory. Adapted from CF event mixing
+ * code PhiCorrelations.
+ *
+ * @return Array containing the lighter track objects.
+ */
 TObjArray* AliAnalysisTaskEmcalJetHCorrelations::CloneAndReduceTrackList()
 {
   // clones a track list by using AliBasicTrack which uses much less memory (used for event mixing)
@@ -725,8 +765,9 @@ Double_t AliAnalysisTaskEmcalJetHCorrelations::EffCorrection(Double_t trackETA, 
  * - 2-9 Explicitly select an Pb-Pb efficiency correction function. It will not be automatically
  *   selected later!
  *
- * @param trackETA Eta of the track
- * @param trackPT pT of the track
+ * @param trackETA Eta of the track.
+ * @param trackPT pT of the track.
+ * @param beamType Type of collision system.
  *
  * @return Track efficiency of the track (the entry should be weighted as 1/(return value))
  */
@@ -863,7 +904,15 @@ Double_t AliAnalysisTaskEmcalJetHCorrelations::EffCorrection(Double_t trackETA, 
   return TRefficiency;
 }
 
-//________________________________________________________________________
+/**
+ * Utility function to fill a histogram with a given weight. If requested, it will also apply the JES correction derived weight
+ * to the hist.
+ *
+ * @param[in] hist Histogram to be filled.
+ * @param[in] fillValue The value to be filled into the hist.
+ * @param[in] weight The weight to be applied when filling the hist.
+ * @param[in] noCorrection True if the JES correction _should not_ be applied.
+ */
 void AliAnalysisTaskEmcalJetHCorrelations::FillHist(TH1 * hist, Double_t fillValue, Double_t weight, Bool_t noCorrection)
 {
   if (fJESCorrectionHist == 0 || noCorrection == kTRUE)
@@ -902,7 +951,16 @@ void AliAnalysisTaskEmcalJetHCorrelations::FillHist(TH1 * hist, Double_t fillVal
   }
 }
 
-//________________________________________________________________________
+/**
+ * Utility function to fill a histogram with a given weight. If requested, it will also apply the JES correction derived weight
+ * to the hist. It assumes that the corrected jet pt value is located in the second element of the fillValue (as defined in
+ * GetDimParams()). If that is changed or the first entry is not included, then this function must be updated!
+ *
+ * @param[in] hist Histogram to be filled.
+ * @param[in] fillValue Array of values to be filled into the hist.
+ * @param[in] weight The weight to be applied when filling the hist.
+ * @param[in] noCorrection True if the JES correction _should not_ be applied.
+ */
 void AliAnalysisTaskEmcalJetHCorrelations::FillHist(THnSparse * hist, Double_t *fillValue, Double_t weight, Bool_t noCorrection)
 {
   if (fJESCorrectionHist == 0 || noCorrection == kTRUE)
@@ -940,7 +998,15 @@ void AliAnalysisTaskEmcalJetHCorrelations::FillHist(THnSparse * hist, Double_t *
   }
 }
 
-//________________________________________________________________________
+/**
+ * Access the array of y bin values for a given x bin. If the scaleFactor is greater than 0, then the values in yBinsContent will be set
+ * in the given histogram with the values scaled by the scale factor. This scaling can be used to normalize the histogram.
+ *
+ * @param[in] hist Histogram from which the bins should be extracted.
+ * @param[in] xBin X bin where the y bins should be extracted.
+ * @param[in,out] yBinsContent Array containing the y bins contents for the given x bin.
+ * @param[in] scaleFactor Scale factor to be applied to the
+ */
 void AliAnalysisTaskEmcalJetHCorrelations::AccessSetOfYBinValues(TH2D * hist, Int_t xBin, std::vector <Double_t> & yBinsContent, Double_t scaleFactor)
 {
   for (Int_t index = 1; index <= hist->GetYaxis()->GetNbins(); index++)
