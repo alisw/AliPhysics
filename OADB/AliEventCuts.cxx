@@ -370,7 +370,7 @@ void AliEventCuts::AutomaticSetup(AliVEvent *ev) {
   }
 
   /// Run 2 Pb-Pb
-  if ( fCurrentRun >= 244917 && fCurrentRun <= 256145 ) {
+  if ( fCurrentRun >= 244917 && fCurrentRun <= 246994) {
     SetupLHC15o();
     return;
   }
