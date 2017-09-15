@@ -128,6 +128,7 @@ AliAnalysisTaskSE(),
   fRemoveDauFromq2(kFALSE),
   fTPCEtaMin(-0.8),
   fTPCEtaMax(0.8),
+  fRemoveNdauRandomTracks(kFALSE),
   fFlowMethod(kEP)
 {
   // Default constructor
@@ -181,6 +182,7 @@ AliAnalysisTaskSEHFvn::AliAnalysisTaskSEHFvn(const char *name,AliRDHFCuts *rdCut
   fRemoveDauFromq2(kFALSE),
   fTPCEtaMin(-0.8),
   fTPCEtaMax(0.8),
+  fRemoveNdauRandomTracks(kFALSE),
   fFlowMethod(kEP)
 {
   // standard constructor
@@ -774,7 +776,7 @@ void AliAnalysisTaskSEHFvn::UserExec(Option_t */*option*/)
   if(fFlowMethod==kEvShape) {
     if(fOnTheFlyTPCq2){
       if(fRemoveDauFromq2 && fFractionOfTracksForTPCq2<1.) {
-        AliWarning("Impossible to set track downsampling and daughter-track removal from q2 at the same time! Downsampling turned off");
+        AliWarning("AliAnalysisTaskSEHFvn::Impossible to set track downsampling and daughter-track removal from q2 at the same time! Downsampling turned off");
         fFractionOfTracksForTPCq2=1.1;
       }
       q2=ComputeTPCq2(aod,q2FullTPC,q2PosTPC,q2NegTPC,qVecDefault,multQvecDefault,multQvecTPC);
@@ -2230,7 +2232,19 @@ Double_t AliAnalysisTaskSEHFvn::ComputeTPCq2(AliAODEvent* aod, Double_t &q2TPCfu
   multQvecTPC[0]=0; //full TPC
   multQvecTPC[1]=0; //pos TPC
   multQvecTPC[2]=0; //neg TPC
+  Int_t nDau=3;
+  if(fDecChannel==1) {nDau=2;}
+  Int_t RandTracks[3]={-1,-1,-1};
+  if(fRemoveNdauRandomTracks) {
+    if(nTracks>=nDau) {
+      for(Int_t iRand=0; iRand<nDau; iRand++) {
+        RandTracks[iRand]=gRandom->Integer((UInt_t)(nTracks+1));
+      }
+    }
+    else return 0.; //remove all tracks if they are <= number of daughters
+  }
   for(Int_t it=0; it<nTracks; it++){
+    if(fRemoveNdauRandomTracks && (it==RandTracks[0] || it==RandTracks[1] || it==RandTracks[2])) {continue;}
     AliAODTrack* track=(AliAODTrack*)aod->GetTrack(it);
     if(!track) continue;
     if(track->TestFilterBit(BIT(8))||track->TestFilterBit(BIT(9))) {
