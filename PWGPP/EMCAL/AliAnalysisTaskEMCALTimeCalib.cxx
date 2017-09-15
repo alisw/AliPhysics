@@ -1499,7 +1499,7 @@ void AliAnalysisTaskEMCALTimeCalib::LoadBadChannelMapOADB()
   } else AliInfo("Do NOT remove EMCAL bad channels\n"); // run array
       
   delete contBC;
-  fBadChannelMapSet=kTRUE;
+  fBadChannelMapSet = kFALSE;//BC map is not fixed at the beginning but can change r-by-r
 }  // Bad channel map loaded
 
 //____________________________________________________
@@ -1518,7 +1518,7 @@ void AliAnalysisTaskEMCALTimeCalib::LoadBadChannelMapFile()
   }
   fBadChannelMapArray = new TObjArray(1);
   fBadChannelMapArray->AddAt(hbm,0);
-  fBadChannelMapSet=kTRUE;
+  fBadChannelMapSet=kTRUE;//BC map is fixed at the beginning for whole dataset
 }  // Bad channel map loaded
 
 
