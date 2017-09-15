@@ -458,17 +458,17 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
    * If there are more than 1 main patch of a given trigger category (i.e. different high and low threshold patches),
    * the highest one according to the ADC value is taken. In case doSimpleOffline is true, then only the patches from
    * the simple offline trigger are used.
-   * @param[in] trigger Type of the EMCAL Level0/Level1 trigger
+   * @param[in] triggersel Type of the EMCAL Level0/Level1 trigger
    * @param[in] doSimpleOffline If true simple offline patches are used
    * @return Main trigger patch for the trigger category (defined as highest energy patch)
    */
-  AliEMCALTriggerPatchInfo   *GetMainTriggerPatch(TriggerCategory triggersel = kTriggerLevel1Jet, Bool_t doOfflinSimple = kFALSE);
+  AliEMCALTriggerPatchInfo   *GetMainTriggerPatch(TriggerCategory triggersel = kTriggerLevel1Jet, Bool_t doSimpleOffline = kFALSE);
 
   /**
    * @brief Check if event has a given trigger type
    *
-   * Trigger types defined in @ref
-   * @param trigger Trigger type to check
+   * Trigger types defined in @ref TriggerType.
+   * @param triggersel Trigger type to check
    * @return True fo the trigger type is found in the event,
    * false otherwise.
    */
