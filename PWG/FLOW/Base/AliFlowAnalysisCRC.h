@@ -973,6 +973,16 @@ public:
   TH1D* GetFlowQCIntCorHistEG(Int_t const eg) const {return this->fFlowQCIntCorHistEG[eg];};
   void SetFlowQCIntCorHistEG(TH1D* const TP, Int_t const eg) {this->fFlowQCIntCorHistEG[eg] = TP;};
 
+  void SetFlowQCIntPtRanCorPro(TProfile* const TP, Int_t const pt, Int_t const eg, Int_t const k) {this->fFlowQCIntPtRanCorPro[pt][eg][k] = TP;};
+  void SetFlowQCIntPtRanCorNUAPro(TProfile* const TP, Int_t const pt, Int_t const eg, Int_t const k) {this->fFlowQCIntPtRanCorNUAPro[pt][eg][k] = TP;};
+  void SetFlowQCIntPtRanCorHist(TH1D* const TP, Int_t const pt, Int_t const eg, Int_t const k) {this->fFlowQCIntPtRanCorHist[pt][eg][k] = TP;};
+  void SetFlowQCIntPtRanCumHist(TH1D* const TP, Int_t const pt, Int_t const eg, Int_t const k) {this->fFlowQCIntPtRanCumHist[pt][eg][k] = TP;};
+  void SetFlowQCIntPtRanCorNUAHist(TH1D* const TP, Int_t const pt, Int_t const eg, Int_t const k) {this->fFlowQCIntPtRanCorNUAHist[pt][eg][k] = TP;};
+  void SetFlowQCIntPtRanCorProEG(TProfile* const TP, Int_t const pt, Int_t const eg) {this->fFlowQCIntPtRanCorProEG[pt][eg] = TP;};
+  void SetFlowQCIntPtRanCorNUAProEG(TProfile* const TP, Int_t const pt, Int_t const eg, Int_t const k) {this->fFlowQCIntPtRanCorNUAProEG[pt][eg][k] = TP;};
+  void SetFlowQCIntPtRanCorNUAHistEG(TH1D* const TP, Int_t const pt, Int_t const eg, Int_t const k) {this->fFlowQCIntPtRanCorNUAHistEG[pt][eg][k] = TP;};
+  void SetFlowQCIntPtRanCorHistEG(TH1D* const TP, Int_t const pt, Int_t const eg) {this->fFlowQCIntPtRanCorHistEG[pt][eg] = TP;};
+
   void SetFlowQCSpectra(TH2D* const TH) {this->fFlowQCSpectra = TH;};
   TH2D* GetFlowQCSpectra() const {return this->fFlowQCSpectra;};
   void SetFlowQCIntCorProTest(TProfile2D* const TP, Int_t const eg, Int_t const j, Int_t const k) {this->fFlowQCIntCorProTest[eg][j][k] = TP;};
@@ -1906,6 +1916,23 @@ private:
   TProfile *fFlowQCIntCorNUAPro[fFlowNHarm][6]; //!
   TH1D *fFlowQCIntCorNUAHist[fFlowNHarm][6]; //!
 
+  TProfile *fFlowQCIntCorProEG[fFlowNHarm]; //!
+  TH1D *fFlowQCIntCorHistEG[fFlowNHarm]; //!
+  TProfile *fFlowQCIntCorNUAProEG[fFlowNHarm][4]; //!
+  TH1D *fFlowQCIntCorNUAHistEG[fFlowNHarm][4]; //!
+
+  const static Int_t fkFlowQCnPtRanges = 2; // 0.2-3, 0.2-5
+  TProfile *fFlowQCIntPtRanCorPro[fkFlowQCnPtRanges][fFlowNHarm][fkFlowQCnIntCorPro]; //!
+  TH1D *fFlowQCIntPtRanCorHist[fkFlowQCnPtRanges][fFlowNHarm][fkFlowQCnIntCorPro]; //!
+  TH1D *fFlowQCIntPtRanCumHist[fkFlowQCnPtRanges][fFlowNHarm][fkFlowQCnIntCorPro]; //!
+  TProfile *fFlowQCIntPtRanCorNUAPro[fkFlowQCnPtRanges][fFlowNHarm][6]; //!
+  TH1D *fFlowQCIntPtRanCorNUAHist[fkFlowQCnPtRanges][fFlowNHarm][6]; //!
+
+  TProfile *fFlowQCIntPtRanCorProEG[fkFlowQCnPtRanges][fFlowNHarm]; //!
+  TH1D *fFlowQCIntPtRanCorHistEG[fkFlowQCnPtRanges][fFlowNHarm]; //!
+  TProfile *fFlowQCIntPtRanCorNUAProEG[fkFlowQCnPtRanges][fFlowNHarm][4]; //!
+  TH1D *fFlowQCIntPtRanCorNUAHistEG[fkFlowQCnPtRanges][fFlowNHarm][4]; //!
+
   const static Int_t fkFlowQCnIntCorTest = 1;
   const static Int_t fkFlowQCnVtxCorTest = 3;
   TProfile2D *fFlowQCIntCorProTest[fFlowNHarm][fkFlowQCnVtxCorTest][fkFlowQCnIntCorTest]; //! correlation profile, precision test
@@ -1914,16 +1941,6 @@ private:
   TH2D *fFlowQCIntFinHistTest[fFlowNHarm][fkFlowQCnVtxCorTest][fkFlowQCnIntCorTest]; //! correlation profile, precision test
   const static Int_t fkFlowQCnNUATest = 6;
   TProfile2D *fFlowQCIntCorNUAProTest[fFlowNHarm][fkFlowQCnNUATest]; //!
-
-//  TList* fFlowQCOrdMagList;
-//  const static Int_t fkNOrdMag = 20;
-//  const static Int_t fkNHistOrdMag = 4;
-//  TH1D *fFlowQCIntCorHistOrdMag[fFlowNHarm][fkNOrdMag][fkNHistOrdMag]; //!
-
-  TProfile *fFlowQCIntCorProEG[fFlowNHarm]; //!
-  TH1D *fFlowQCIntCorHistEG[fFlowNHarm]; //!
-  TProfile *fFlowQCIntCorNUAProEG[fFlowNHarm][4]; //!
-  TH1D *fFlowQCIntCorNUAHistEG[fFlowNHarm][4]; //!
 
   const static Int_t fFlowQCNRef = 14;
   TProfile *fFlowQCRefCorPro[fFlowNHarm][fFlowQCNRef]; //!
@@ -2070,7 +2087,7 @@ private:
   Bool_t fbFlagIsBadRunForC34;
   Bool_t fStoreExtraHistoForSubSampling;
 
-  ClassDef(AliFlowAnalysisCRC,71);
+  ClassDef(AliFlowAnalysisCRC,72);
 
 };
 
