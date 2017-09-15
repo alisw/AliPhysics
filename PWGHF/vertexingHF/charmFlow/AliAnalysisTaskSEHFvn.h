@@ -83,8 +83,9 @@ class AliAnalysisTaskSEHFvn : public AliAnalysisTaskSE
     fOnTheFlyTPCq2=opt;
     fFractionOfTracksForTPCq2=fracKeep;
     fRemoveDauFromq2=removeDau;
-    if(fracKeep<1 && removeNdaurandtracks) {
+    if(fracKeep<1. && removeNdaurandtracks) {
       AliWarning("AliAnalysisTaskSEHFvn::Impossible to set fFractionOfTracksForTPCq2<1 and fRemoveNdauRandomTracks at the same time! fRemoveNdauRandomTracks setted kFALSE.\n");
+      fRemoveNdauRandomTracks=kFALSE;
     }
     else {
       fRemoveNdauRandomTracks=removeNdaurandtracks;
