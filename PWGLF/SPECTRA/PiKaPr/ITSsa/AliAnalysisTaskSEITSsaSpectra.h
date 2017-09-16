@@ -19,6 +19,7 @@ class TF1;
 class TH1I;
 class TH1F;
 class TH2F;
+class TH3F;
 class TList;
 class TNtuple;
 class TRandom3;
@@ -52,8 +53,8 @@ public:
 	};
   enum EEvtCut_Type {
     kIsReadable=1,
-		kIsSDDIn,
 		kPassMultSel,
+		kIsSDDIn,
     kIsNotIncDAQ,
     kPassTrig,
 		kPassINELgtZERO,
@@ -65,7 +66,7 @@ public:
     kHasRecVtx,
     kHasGoodVtxZ,
     kNEvtCuts
-  };// event selection criteria
+  };///< event selection criteria
   enum ETrkCut_Type {
     kHasNoSelection = 1,
     kIsITSsa,
@@ -79,11 +80,11 @@ public:
     kPassPtCut,
     kPassDCAzcut,
     kPassDCAxycut
-  };// track selection criteria
+  };///< track selection criteria
   enum {
-    kNchg  =  2, // pos = 0, neg = 1;
-    kNspc  =  3, // pion = 0, kaon, 1, proton = 2
-    kNbins = 22
+    kNchg  =  2, ///< pos = 0, neg = 1;
+    kNspc  =  3, ///< pion = 0, kaon, 1, proton = 2
+    kNbins = 22  ///< deprecated parameter
   };
 
   AliAnalysisTaskSEITSsaSpectra();
@@ -94,6 +95,13 @@ public:
   virtual void   LocalInit() {Init();}
   virtual void   UserExec(Option_t*);
   virtual void   Terminate(Option_t*);
+
+  //Setters for histo bins
+  void SetBins     (int nbins, float min, float max, float* bins);
+  void SetCentBins (int nbins, float *bins);
+  void SetDCABins  (int nbins, float min, float max);
+  void SetDCABins  (int nbins, float* bins);
+  void SetPtBins   (int nbins, float *bins);
 
   //Setters for event selection settings
   void SetTriggerSel   (UInt_t   tg = AliVEvent::kMB)  { fTriggerSel   = tg;   }
@@ -106,6 +114,7 @@ public:
 	void SetVtxQACheck   (Bool_t chkSPDres = kTRUE, Bool_t chkZsep = kTRUE, Bool_t reqBoth = kFALSE)
   {fChkVtxSPDRes = chkSPDres; fChkVtxZSep = chkZsep; fReqBothVtx = reqBoth;}
   void SetUseExtEventCuts       (Bool_t flag = kTRUE)  { fExtEventCuts = flag; }
+
   //Setters for mult sel.
 	void SetMultMethod(unsigned int meth=0) {fMultMethod = meth;}
 	void SetMultEvSel(Bool_t flag=kFALSE){ fMultEvSel = flag;}
@@ -116,6 +125,7 @@ public:
       fLowMult = low; fUpMult = up;
     }
   }
+
   //Setters for pileup settings
 	void SetPileupSelection(unsigned long plp=1ULL) { fPlpType = plp; }
   void SetSPDPileupSelection(Int_t cont = 3, Float_t distance = 0.8)
@@ -188,111 +198,113 @@ private:
   AliAnalysisTaskSEITSsaSpectra(const AliAnalysisTaskSEITSsaSpectra& source);
   AliAnalysisTaskSEITSsaSpectra& operator=(const AliAnalysisTaskSEITSsaSpectra& source);
 
-  AliESDEvent* fESD; //ESD object
-  AliITSPidParams*   fITSPidParams;
-  AliITSPIDResponse* fITSPIDResponse; //! class with BB parameterizations
+  AliESDEvent*       fESD;            ///<  ESD object
+  AliITSPidParams*   fITSPidParams;   //!<! parameterization used for PID
+  AliITSPIDResponse* fITSPIDResponse; //!<! class with BB parameterizations
 
   //Standard event cut
-  AliEventCuts fEventCuts;      //!<! basic cut variables for events
+  AliEventCuts fEventCuts;            //!<! basic cut variables for events
 
   /////////////////////////////////////////////////////
   // List
   /////////////////////////////////////////////////////
-  TList* fOutput;      //! list with output
-  TList* fListCuts;    //! list with functions storing DCA cut
-  TList* fListTree;    //! list with trees
-  TList* fListPriors;  //! list with priors in case of bayesian pid approach
+  TList*   fOutput;                    //!<! list with output
+  TList*   fListCuts;                  //!<! list with functions storing DCA cut
+  TList*   fListTree;                  //!<! list with trees
+  TList*   fListPriors;                //!<! list with priors in case of bayesian pid approach
 
-  TF1* fDCAxyCutFunc;  // function with DCAz cut vs. pt
-  TF1* fDCAzCutFunc;   // function with DCAxy cut vs. pt
+  TF1*     fDCAxyCutFunc;              ///< function with DCAz cut vs. pt
+  TF1*     fDCAzCutFunc;               ///< function with DCAxy cut vs. pt
 
-  TNtuple* fNtupleData; //! output ntuple
-  TNtuple* fNtupleMC;   //! output MC ntuple
+  TNtuple* fNtupleData;                //!<! output ntuple
+  TNtuple* fNtupleMC;                  //!<! output MC ntuple
 
   /////////////////////////////////////////////////////
   // General Histos
   /////////////////////////////////////////////////////
-  TH1I* fHistNEvents;    //! histo with number of events
-  TH1I* fHistMCEvents;
-  TH1F* fHistMultBefEvtSel;  //! histo with multiplicity of the events before event selection
-  TH1F* fHistMultAftEvtSel;  //! histo with multiplicity of the events after all event selection
-  TH1F* fHistVtxZ;       //! histo with the distribution of the primary vertex Z coordinate
+  TH2I* fHistNEvents;                           //!<! histo with number of events / mult bin
+  TH2I* fHistMCEvents;                          //!<! histo with MC number of events / mult bin
+  TH1F* fHistMultBefEvtSel;                     //!<! histo with multiplicity of the events before event selection
+  TH1F* fHistMultAftEvtSel;                     //!<! histo with multiplicity of the events after all event selection
+  TH2F* fHistVtxZ;                              //!<! histo with the distribution of the primary vertex Z coordinate
 
-  TH2F* fHistNTracks[kNchg];      //! histo with number of tracks vs Pt
-  TH2F* fHistDEDX;                //! histo with dedx versus momentum
-  TH2F* fHistDEDXdouble;          //! histo with dedx versus signed momentum
-  TH2F* fHistNSigmaSep[kNchg * kNspc]; //! histo nsigma separation vs momentum
+  TH3F* fHistNTracks[kNchg];                    //!<! histo with number of tracks vs Pt
+  TH2F* fHistDEDX;                              //!<! histo with dedx versus momentum
+  TH2F* fHistDEDXdouble;                        //!<! histo with dedx versus signed momentum
+  TH2F* fHistNSigmaSep[kNchg * kNspc];          //!<! histo nsigma separation vs momentum
 
   // MC histograms with spectra of primaries from the MC truth
-  TH2F* fHistPrimMCGenVtxZall[kNchg * kNspc]; //! histo from events with gen Zvtx cut
-  TH2F* fHistPrimMCGenVtxZcut[kNchg * kNspc]; //! histo from events with rec Zvtx cut
+  TH3F* fHistPrimMCGenVtxZall[kNchg * kNspc];   //!<! histo from events with gen Zvtx cut
+  TH3F* fHistPrimMCGenVtxZcut[kNchg * kNspc];   //!<! histo from events with rec Zvtx cut
 
   //Reconstructed
-  TH1F* fHistReco      [kNchg * kNspc]; //! NSigma histos for 6 species
-  TH2F* fHistMCReco    [kNchg * kNspc]; //! NSigma histos for 6 species
-  TH2F* fHistMCPrimReco[kNchg * kNspc]; //! NSigma histos for 6 species
+  TH2F* fHistReco      [kNchg * kNspc];         //!<! NSigma histos for 6 species
+  TH3F* fHistMCReco    [kNchg * kNspc];         //!<! NSigma histos for 6 species
+  TH3F* fHistMCPrimReco[kNchg * kNspc];         //!<! NSigma histos for 6 species
 
   // MC histograms using reco values
-  TH1F* fHistPrimMCReco[kNchg * kNspc]; //! histo with spectra of primaries from the MC truth
-  TH1F* fHistSstrMCReco[kNchg * kNspc]; //! histo with spectra of strange decays from the MC truth
-  TH1F* fHistSmatMCReco[kNchg * kNspc]; //! histo with spectra of sec. from material from the MC truth
+  TH2F* fHistPrimMCReco[kNchg * kNspc];         //!<! histo with spectra of primaries from the MC truth
+  TH2F* fHistSstrMCReco[kNchg * kNspc];         //!<! histo with spectra of strange decays from the MC truth
+  TH2F* fHistSmatMCReco[kNchg * kNspc];         //!<! histo with spectra of sec. from material from the MC truth
 
   // DCAxy distributions
-  TH1F* fHistRecoDCA[kNchg * kNspc][kNbins]; //! histo with DCA distibution in the pion hypotesis (positive)
+  TH3F* fHistRecoDCA[kNchg * kNspc];            //!<! histo with DCA distibution in the pion hypotesis (positive)
 
   //DCA Templates
-  TH1F* fHistPrimDCA[kNchg * kNspc][kNbins]; //! histo with DCA distibution and dedx PID
-  TH1F* fHistSstrDCA[kNchg * kNspc][kNbins]; //! histo with DCA distibution and dedx PID
-  TH1F* fHistSmatDCA[kNchg * kNspc][kNbins]; //! histo with DCA distibution and dedx PID
+  TH3F* fHistPrimDCA[kNchg * kNspc];            //!<! histo with DCA distibution and dedx PID
+  TH3F* fHistSstrDCA[kNchg * kNspc];            //!<! histo with DCA distibution and dedx PID
+  TH3F* fHistSmatDCA[kNchg * kNspc];            //!<! histo with DCA distibution and dedx PID
 
-  TH1F* fHistMCtruthPrimDCA[kNchg * kNspc][kNbins]; //! histo with DCA distibution and MC truth PID
-  TH1F* fHistMCtruthSstrDCA[kNchg * kNspc][kNbins]; //! histo with DCA distibution and MC truth PID
-  TH1F* fHistMCtruthSmatDCA[kNchg * kNspc][kNbins]; //! histo with DCA distibution and MC truth PID
+  TH3F* fHistMCtruthPrimDCA[kNchg * kNspc];     //!<! histo with DCA distibution and MC truth PID
+  TH3F* fHistMCtruthSstrDCA[kNchg * kNspc];     //!<! histo with DCA distibution and MC truth PID
+  TH3F* fHistMCtruthSmatDCA[kNchg * kNspc];     //!<! histo with DCA distibution and MC truth PID
 
-  TH1F* fHistCharge[4]; //! histo with charge distribution to check the calibration
+  TH1F* fHistCharge[4];                         //!<! histo with charge distribution to check the calibration
 
   //dEdx distributions
-  TH1F* fHistPosHypPi[kNbins]; //! histo with DCA distibution in the kaons hypotesis (positive)
-  TH1F* fHistPosHypKa[kNbins]; //! histo with DCA distibution in the kaons hypotesis (positive)
-  TH1F* fHistPosHypPr[kNbins]; //! histo with DCA distibution in the protons hypotesis (positive)
-  TH1F* fHistNegHypPi[kNbins]; //! histo with DCA distibution in the pions hypotesis (negative)
-  TH1F* fHistNegHypKa[kNbins]; //! histo with DCA distibution in the kaons hypotesis (negative)
-  TH1F* fHistNegHypPr[kNbins]; //! histo with DCA distibution in the protons hypotesis (negative)
+  TH2F* fHistPosHypPi; //! histo with DCA distibution in the kaons hypotesis (positive)
+  TH2F* fHistPosHypKa; //! histo with DCA distibution in the kaons hypotesis (positive)
+  TH2F* fHistPosHypPr; //! histo with DCA distibution in the protons hypotesis (positive)
+  TH2F* fHistNegHypPi; //! histo with DCA distibution in the pions hypotesis (negative)
+  TH2F* fHistNegHypKa; //! histo with DCA distibution in the kaons hypotesis (negative)
+  TH2F* fHistNegHypPr; //! histo with DCA distibution in the protons hypotesis (negative)
 
   //dEdx distributions for MC
-  TH1F* fHistMCPosOtherHypPion[kNbins]; //! histo with dedx using the MC truth
-  TH1F* fHistMCPosOtherHypKaon[kNbins]; //! histo with dedx using the MC truth
-  TH1F* fHistMCPosOtherHypProt[kNbins]; //! histo with dedx using the MC truth
-  TH1F* fHistMCPosElHypPion[kNbins]; //! histo with dedx using the MC truth
-  TH1F* fHistMCPosElHypKaon[kNbins]; //! histo with dedx using the MC truth
-  TH1F* fHistMCPosElHypProt[kNbins]; //! histo with dedx using the MC truth
-  TH1F* fHistMCPosPiHypPion[kNbins]; //! histo with dedx using the MC truth
-  TH1F* fHistMCPosPiHypKaon[kNbins]; //! histo with dedx using the MC truth
-  TH1F* fHistMCPosPiHypProt[kNbins]; //! histo with dedx using the MC truth
-  TH1F* fHistMCPosKaHypPion[kNbins]; //! histo with dedx using the MC truth
-  TH1F* fHistMCPosKaHypKaon[kNbins]; //! histo with dedx using the MC truth
-  TH1F* fHistMCPosKaHypProt[kNbins]; //! histo with dedx using the MC truth
-  TH1F* fHistMCPosPrHypPion[kNbins]; //! histo with dedx using the MC truth
-  TH1F* fHistMCPosPrHypKaon[kNbins]; //! histo with dedx using the MC truth
-  TH1F* fHistMCPosPrHypProt[kNbins]; //! histo with dedx using the MC truth
+  TH2F* fHistMCPosOtherHypPion; //! histo with dedx using the MC truth
+  TH2F* fHistMCPosOtherHypKaon; //! histo with dedx using the MC truth
+  TH2F* fHistMCPosOtherHypProt; //! histo with dedx using the MC truth
+  TH2F* fHistMCPosElHypPion; //! histo with dedx using the MC truth
+  TH2F* fHistMCPosElHypKaon; //! histo with dedx using the MC truth
+  TH2F* fHistMCPosElHypProt; //! histo with dedx using the MC truth
+  TH2F* fHistMCPosPiHypPion; //! histo with dedx using the MC truth
+  TH2F* fHistMCPosPiHypKaon; //! histo with dedx using the MC truth
+  TH2F* fHistMCPosPiHypProt; //! histo with dedx using the MC truth
+  TH2F* fHistMCPosKaHypPion; //! histo with dedx using the MC truth
+  TH2F* fHistMCPosKaHypKaon; //! histo with dedx using the MC truth
+  TH2F* fHistMCPosKaHypProt; //! histo with dedx using the MC truth
+  TH2F* fHistMCPosPrHypPion; //! histo with dedx using the MC truth
+  TH2F* fHistMCPosPrHypKaon; //! histo with dedx using the MC truth
+  TH2F* fHistMCPosPrHypProt; //! histo with dedx using the MC truth
 
-  TH1F* fHistMCNegOtherHypPion[kNbins]; //! histo with dedx using the MC truth
-  TH1F* fHistMCNegOtherHypKaon[kNbins]; //! histo with dedx using the MC truth
-  TH1F* fHistMCNegOtherHypProt[kNbins]; //! histo with dedx using the MC truth
-  TH1F* fHistMCNegElHypPion[kNbins]; //! histo with dedx using the MC truth
-  TH1F* fHistMCNegElHypKaon[kNbins]; //! histo with dedx using the MC truth
-  TH1F* fHistMCNegElHypProt[kNbins]; //! histo with dedx using the MC truth
-  TH1F* fHistMCNegPiHypPion[kNbins]; //! histo with dedx using the MC truth
-  TH1F* fHistMCNegPiHypKaon[kNbins]; //! histo with dedx using the MC truth
-  TH1F* fHistMCNegPiHypProt[kNbins]; //! histo with dedx using the MC truth
-  TH1F* fHistMCNegKaHypPion[kNbins]; //! histo with dedx using the MC truth
-  TH1F* fHistMCNegKaHypKaon[kNbins]; //! histo with dedx using the MC truth
-  TH1F* fHistMCNegKaHypProt[kNbins]; //! histo with dedx using the MC truth
-  TH1F* fHistMCNegPrHypPion[kNbins]; //! histo with dedx using the MC truth
-  TH1F* fHistMCNegPrHypKaon[kNbins]; //! histo with dedx using the MC truth
-  TH1F* fHistMCNegPrHypProt[kNbins]; //! histo with dedx using the MC truth
+  TH2F* fHistMCNegOtherHypPion; //! histo with dedx using the MC truth
+  TH2F* fHistMCNegOtherHypKaon; //! histo with dedx using the MC truth
+  TH2F* fHistMCNegOtherHypProt; //! histo with dedx using the MC truth
+  TH2F* fHistMCNegElHypPion; //! histo with dedx using the MC truth
+  TH2F* fHistMCNegElHypKaon; //! histo with dedx using the MC truth
+  TH2F* fHistMCNegElHypProt; //! histo with dedx using the MC truth
+  TH2F* fHistMCNegPiHypPion; //! histo with dedx using the MC truth
+  TH2F* fHistMCNegPiHypKaon; //! histo with dedx using the MC truth
+  TH2F* fHistMCNegPiHypProt; //! histo with dedx using the MC truth
+  TH2F* fHistMCNegKaHypPion; //! histo with dedx using the MC truth
+  TH2F* fHistMCNegKaHypKaon; //! histo with dedx using the MC truth
+  TH2F* fHistMCNegKaHypProt; //! histo with dedx using the MC truth
+  TH2F* fHistMCNegPrHypPion; //! histo with dedx using the MC truth
+  TH2F* fHistMCNegPrHypKaon; //! histo with dedx using the MC truth
+  TH2F* fHistMCNegPrHypProt; //! histo with dedx using the MC truth
 
-  Double_t fPtBinLimits[kNbins + 1]; // limits of Pt Bins
+  TArrayF fCentBins;
+  TArrayF fDCABins;
+  TArrayF fPtBins;
 
   //evt sel.
   UInt_t   fTriggerSel;
@@ -352,7 +364,7 @@ private:
   Double_t  fSmearP;    // extra relative smearing on simulated momentum
   Double_t  fSmeardEdx; // extra relative smearing on simulated dE/dx
 
-  ClassDef(AliAnalysisTaskSEITSsaSpectra, 11);
+  ClassDef(AliAnalysisTaskSEITSsaSpectra, 12);
 };
 
 #endif
