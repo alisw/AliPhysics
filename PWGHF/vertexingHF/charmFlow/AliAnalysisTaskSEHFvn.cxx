@@ -138,6 +138,7 @@ AliAnalysisTaskSE(),
     fHistEvPlaneQncorrVZERO[i] = 0x0;
   }
 
+  fHistCandVsCent = 0x0;
 }
 
 //________________________________________________________________________
@@ -191,6 +192,8 @@ AliAnalysisTaskSEHFvn::AliAnalysisTaskSEHFvn(const char *name,AliRDHFCuts *rdCut
     fHistEvPlaneQncorrTPC[i]   = 0x0;
     fHistEvPlaneQncorrVZERO[i] = 0x0;
   }
+
+  fHistCandVsCent = 0x0;
 
   Int_t pdg=421;
   switch(fDecChannel){
@@ -246,7 +249,6 @@ AliAnalysisTaskSEHFvn::AliAnalysisTaskSEHFvn(const char *name,AliRDHFCuts *rdCut
   fDetV0ConfName[0]  = "VZERO";
   fDetV0ConfName[1]  = "VZEROA";
   fDetV0ConfName[2]  = "VZEROC";
-
 }
 
 //________________________________________________________________________
@@ -259,6 +261,7 @@ AliAnalysisTaskSEHFvn::~AliAnalysisTaskSEHFvn()
       delete fHistEvPlaneQncorrTPC[i];
       delete fHistEvPlaneQncorrVZERO[i];
     }
+    delete fHistCandVsCent;
   }
   delete fOutput;
   delete fhEventsInfo;
@@ -367,6 +370,9 @@ void AliAnalysisTaskSEHFvn::UserCreateOutputObjects()
     fOutput->Add(fHistCentrality[i]);
   }
 
+  fHistCandVsCent=new TH2F("hCandVsCent","number of selected candidates vs. centrality",(fMaxCentr-fMinCentr)/(fCentBinSizePerMil/10),fMinCentr,fMaxCentr,101,-0.5,100.5);
+  fOutput->Add(fHistCandVsCent);
+  
   for(int iDet = 0; iDet < 3; iDet++) {
     fHistEvPlaneQncorrTPC[iDet]   = new TH1F(Form("hEvPlaneQncorr%s%s",fDetTPCConfName[iDet].Data(),fNormMethod.Data()),Form("hEvPlaneQncorr%s%s;#phi Ev Plane;Entries",fDetTPCConfName[iDet].Data(),fNormMethod.Data()),200,0.,TMath::Pi());
     fHistEvPlaneQncorrVZERO[iDet] = new TH1F(Form("hEvPlaneQncorr%s%s",fDetV0ConfName[iDet].Data(),fNormMethod.Data()),Form("hEvPlaneQncorr%s%s;#phi Ev Plane;Entries",fDetV0ConfName[iDet].Data(),fNormMethod.Data()),200,0.,TMath::Pi());
@@ -852,6 +858,7 @@ void AliAnalysisTaskSEHFvn::UserExec(Option_t */*option*/)
   AliAnalysisVertexingHF *vHF=new AliAnalysisVertexingHF();
 
   //Loop on D candidates
+  Int_t candCounter=0;
   for (Int_t iCand = 0; iCand < nCand; iCand++) {
     d=(AliAODRecoDecayHF*)arrayProng->UncheckedAt(iCand);
     Bool_t isSelBit=kTRUE;
@@ -888,6 +895,7 @@ void AliAnalysisTaskSEHFvn::UserExec(Option_t */*option*/)
 
     fhEventsInfo->Fill(13); // candidate selected
     if(fDebug>3) printf("+++++++Is Selected\n");
+    candCounter++;
 
     Float_t* invMass=0x0;
     Int_t nmasses;
@@ -1078,6 +1086,8 @@ void AliAnalysisTaskSEHFvn::UserExec(Option_t */*option*/)
     }
     delete [] invMass;
   }
+
+  fHistCandVsCent->Fill(evCentr,candCounter);
 
   delete vHF;
   PostData(1,fhEventsInfo);
