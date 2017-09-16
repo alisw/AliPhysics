@@ -70,6 +70,9 @@ public:
   TH2F* CreateHistoDRPhiinZR(Float_t phi=0.,Int_t nZ=100,Int_t nR=100);
   TH2F* CreateHistoDZinZR   (Float_t phi=0.,Int_t nZ=100,Int_t nR=100);
 
+  TH2F* CreateHistoDRinPhiR   (Float_t z=10.,Int_t nPhi=180,Int_t nR=100, Bool_t useSector=kTRUE, Float_t shift=0.);
+  TH2F* CreateHistoDRPhiinPhiR(Float_t z=10.,Int_t nPhi=180,Int_t nR=100, Bool_t useSector=kTRUE, Float_t shift=0.);
+  TH2F* CreateHistoDZinPhiR   (Float_t z=10.,Int_t nPhi=180,Int_t nR=100, Bool_t useSector=kTRUE, Float_t shift=0.);
 
   TTree* CreateDistortionTree(Double_t step=5, Int_t type=0);
   static void  MakeDistortionMap(THnSparse * his0, TTreeSRedirector *pcstream, const char* hname, Int_t run,  Float_t refX, Int_t type, Int_t integ=1);
