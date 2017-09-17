@@ -84,6 +84,7 @@ ClassImp(AliAnalysisTaskPIDBFDptDpt)
 AliAnalysisTaskPIDBFDptDpt::AliAnalysisTaskPIDBFDptDpt()
 : AliAnalysisTaskSE(),
   fNSigmaPID( 2 ),
+  fNSigmaPID_veto( 2 ),
   ptUpperLimit( 2.0 ),
   electronNSigmaVeto( 1.0 ),
   fRemoveTracksT0Fill( 0 ),
@@ -447,6 +448,7 @@ AliAnalysisTaskPIDBFDptDpt::AliAnalysisTaskPIDBFDptDpt()
 AliAnalysisTaskPIDBFDptDpt::AliAnalysisTaskPIDBFDptDpt(const TString & name)
 : AliAnalysisTaskSE(name),
   fNSigmaPID( 2 ),
+  fNSigmaPID_veto( 2 ),
   ptUpperLimit( 2.0 ),
   electronNSigmaVeto( 1.0 ),
   fRemoveTracksT0Fill( 0 ),
@@ -2695,9 +2697,9 @@ Int_t AliAnalysisTaskPIDBFDptDpt::TellParticleSpecies( AliVTrack * trk )  //func
       nsigmaProton   =  TMath::Abs( fnsigmas[2][1] ); //Proton_TOF
       nsigmaElectron =  TMath::Abs( fnsigmas[3][1] ); //Electron_TOF
 
-      if( ( nsigmaPion < fNSigmaPID ) && ( nsigmaKaon > fNSigmaPID ) && ( nsigmaProton > fNSigmaPID ) && ( trk->Pt() <= ptUpperLimit ) )  return 0; //Pion
-      if( ( nsigmaKaon < fNSigmaPID ) && ( nsigmaPion > fNSigmaPID ) && ( nsigmaProton > fNSigmaPID ) && ( trk->Pt() <= ptUpperLimit ) )  return 1; //Kaon
-      if( ( nsigmaProton < fNSigmaPID ) && ( nsigmaPion > fNSigmaPID ) && ( nsigmaKaon > fNSigmaPID ) && ( trk->Pt() <= ptUpperLimit ) && ( massSquareCalculation(trk) > 0.6 ) && ( massSquareCalculation(trk) < 1.1 ) )   return 2; //Proton // need to add mass square cut in the source code as well!!!
+      if( ( nsigmaPion < fNSigmaPID ) && ( nsigmaKaon > fNSigmaPID_veto ) && ( nsigmaProton > fNSigmaPID_veto ) && ( trk->Pt() <= ptUpperLimit ) )  return 0; //Pion
+      if( ( nsigmaKaon < fNSigmaPID ) && ( nsigmaPion > fNSigmaPID_veto ) && ( nsigmaProton > fNSigmaPID_veto ) && ( trk->Pt() <= ptUpperLimit ) )  return 1; //Kaon
+      if( ( nsigmaProton < fNSigmaPID ) && ( nsigmaPion > fNSigmaPID_veto ) && ( nsigmaKaon > fNSigmaPID_veto ) && ( trk->Pt() <= ptUpperLimit ) && ( massSquareCalculation(trk) > 0.6 ) && ( massSquareCalculation(trk) < 1.1 ) )   return 2; //Proton // need to add mass square cut in the source code as well!!!
     }
   else
     {
@@ -2706,9 +2708,9 @@ Int_t AliAnalysisTaskPIDBFDptDpt::TellParticleSpecies( AliVTrack * trk )  //func
       nsigmaProton   =  TMath::Abs( fnsigmas[2][0] ); //Proton_TPC
       nsigmaElectron =  TMath::Abs( fnsigmas[3][0] ); //Electron_TPC
 
-      if( ( nsigmaPion < fNSigmaPID ) && ( nsigmaKaon > fNSigmaPID ) && ( nsigmaProton > fNSigmaPID ) && ( nsigmaElectron > electronNSigmaVeto ) && ( trk->Pt() >= _min_pt_1 ) && ( trk->Pt() <= ptTOFlowerBoundary ) )   return 0; //Pion
-      if( ( nsigmaKaon < fNSigmaPID ) && ( nsigmaPion > fNSigmaPID ) && ( nsigmaProton > fNSigmaPID ) && ( nsigmaElectron > electronNSigmaVeto ) && ( trk->Pt() >= _min_pt_1 ) && ( trk->Pt() <= ptTOFlowerBoundary ) )   return 1; //Kaon
-      if( ( nsigmaProton < fNSigmaPID ) && ( nsigmaPion > fNSigmaPID ) && ( nsigmaKaon > fNSigmaPID ) && ( nsigmaElectron > electronNSigmaVeto ) && ( trk->Pt() >= _min_pt_1 ) && ( trk->Pt() <= ptTOFlowerBoundary ) )   return 2; //Proton
+      if( ( nsigmaPion < fNSigmaPID ) && ( nsigmaKaon > fNSigmaPID_veto ) && ( nsigmaProton > fNSigmaPID_veto ) && ( nsigmaElectron > electronNSigmaVeto ) && ( trk->Pt() >= _min_pt_1 ) && ( trk->Pt() <= ptTOFlowerBoundary ) )   return 0; //Pion
+      if( ( nsigmaKaon < fNSigmaPID ) && ( nsigmaPion > fNSigmaPID_veto ) && ( nsigmaProton > fNSigmaPID_veto ) && ( nsigmaElectron > electronNSigmaVeto ) && ( trk->Pt() >= _min_pt_1 ) && ( trk->Pt() <= ptTOFlowerBoundary ) )   return 1; //Kaon
+      if( ( nsigmaProton < fNSigmaPID ) && ( nsigmaPion > fNSigmaPID_veto ) && ( nsigmaKaon > fNSigmaPID_veto ) && ( nsigmaElectron > electronNSigmaVeto ) && ( trk->Pt() >= _min_pt_1 ) && ( trk->Pt() <= ptTOFlowerBoundary ) )   return 2; //Proton
     }
 
   // else, return undefined
@@ -2732,9 +2734,9 @@ Int_t AliAnalysisTaskPIDBFDptDpt::TellParticleSpecies_by_P( AliVTrack * trk )  /
       nsigmaProton   =  TMath::Abs( fnsigmas[2][1] ); //Proton_TOF
       nsigmaElectron =  TMath::Abs( fnsigmas[3][1] ); //Electron_TOF
 
-      if( ( nsigmaPion < fNSigmaPID ) && ( nsigmaKaon > fNSigmaPID ) && ( nsigmaProton > fNSigmaPID ) && ( trk->P() <= ptUpperLimit ) )  return 0; //Pion
-      if( ( nsigmaKaon < fNSigmaPID ) && ( nsigmaPion > fNSigmaPID ) && ( nsigmaProton > fNSigmaPID ) && ( trk->P() <= ptUpperLimit ) )  return 1; //Kaon
-      if( ( nsigmaProton < fNSigmaPID ) && ( nsigmaPion > fNSigmaPID ) && ( nsigmaKaon > fNSigmaPID ) && ( trk->P() <= ptUpperLimit ) && ( massSquareCalculation(trk) > 0.6 ) && ( massSquareCalculation(trk) < 1.1 ) )   return 2; //Proton // need to add mass square cut in the source code as well!!!
+      if( ( nsigmaPion < fNSigmaPID ) && ( nsigmaKaon > fNSigmaPID_veto ) && ( nsigmaProton > fNSigmaPID_veto ) && ( trk->Pt() <= ptUpperLimit ) )  return 0; //Pion
+      if( ( nsigmaKaon < fNSigmaPID ) && ( nsigmaPion > fNSigmaPID_veto ) && ( nsigmaProton > fNSigmaPID_veto ) && ( trk->Pt() <= ptUpperLimit ) )  return 1; //Kaon
+      if( ( nsigmaProton < fNSigmaPID ) && ( nsigmaPion > fNSigmaPID_veto ) && ( nsigmaKaon > fNSigmaPID_veto ) && ( trk->Pt() <= ptUpperLimit ) && ( massSquareCalculation(trk) > 0.6 ) && ( massSquareCalculation(trk) < 1.1 ) )   return 2; //Proton // need to add mass square cut in the source code as well!!!
     }
   else
     {
@@ -2743,9 +2745,9 @@ Int_t AliAnalysisTaskPIDBFDptDpt::TellParticleSpecies_by_P( AliVTrack * trk )  /
       nsigmaProton   =  TMath::Abs( fnsigmas[2][0] ); //Proton_TPC
       nsigmaElectron =  TMath::Abs( fnsigmas[3][0] ); //Electron_TPC
 
-      if( ( nsigmaPion < fNSigmaPID ) && ( nsigmaKaon > fNSigmaPID ) && ( nsigmaProton > fNSigmaPID ) && ( nsigmaElectron > electronNSigmaVeto ) && ( trk->Pt() >= _min_pt_1 ) && ( trk->P() <= ptTOFlowerBoundary ) )   return 0; //Pion 
-      if( ( nsigmaKaon < fNSigmaPID ) && ( nsigmaPion > fNSigmaPID ) && ( nsigmaProton > fNSigmaPID ) && ( nsigmaElectron > electronNSigmaVeto ) && ( trk->Pt() >= _min_pt_1 ) && ( trk->P() <= ptTOFlowerBoundary ) )   return 1; //Kaon
-      if( ( nsigmaProton < fNSigmaPID ) && ( nsigmaPion > fNSigmaPID ) && ( nsigmaKaon > fNSigmaPID ) && ( nsigmaElectron > electronNSigmaVeto ) && ( trk->Pt() >= _min_pt_1 ) && ( trk->P() <= ptTOFlowerBoundary ) )   return 2; //Proton
+      if( ( nsigmaPion < fNSigmaPID ) && ( nsigmaKaon > fNSigmaPID_veto ) && ( nsigmaProton > fNSigmaPID_veto ) && ( nsigmaElectron > electronNSigmaVeto ) && ( trk->Pt() >= _min_pt_1 ) && ( trk->P() <= ptTOFlowerBoundary ) )   return 0; //Pion 
+      if( ( nsigmaKaon < fNSigmaPID ) && ( nsigmaPion > fNSigmaPID_veto ) && ( nsigmaProton > fNSigmaPID_veto ) && ( nsigmaElectron > electronNSigmaVeto ) && ( trk->Pt() >= _min_pt_1 ) && ( trk->P() <= ptTOFlowerBoundary ) )   return 1; //Kaon
+      if( ( nsigmaProton < fNSigmaPID ) && ( nsigmaPion > fNSigmaPID_veto ) && ( nsigmaKaon > fNSigmaPID_veto ) && ( nsigmaElectron > electronNSigmaVeto ) && ( trk->Pt() >= _min_pt_1 ) && ( trk->P() <= ptTOFlowerBoundary ) )   return 2; //Proton
     }
 
   // else, return undefined

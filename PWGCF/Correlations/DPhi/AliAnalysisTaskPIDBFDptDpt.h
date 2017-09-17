@@ -51,6 +51,7 @@ private:
     Double_t fnsigmas[4][2]; //nsigma values
     Bool_t fHasTOFPID;
     Double_t fNSigmaPID; // number of sigma for PID cut
+    Double_t fNSigmaPID_veto;
     Double_t ptUpperLimit; //pt cut upper limit
     Double_t ptTOFlowerBoundary; // pt value which is the boundary between TPC & TOF.
     Double_t electronNSigmaVeto;
@@ -176,6 +177,7 @@ public:
     void SetElectronCut( Bool_t NoElectron )          { fExcludeElectronsInMC = NoElectron; }
 
     void SetNSigmaCut( double nsigma )             { fNSigmaPID = nsigma; }
+    void SetNSigmaCut_veto( double nsigma )        { fNSigmaPID_veto = nsigma; }
     void SetPtCutUpperLimit( double ptUpper )      { ptUpperLimit = ptUpper; }
     void SetPtTOFlowerBoundary( double ptTPCTOFboundary )   { ptTOFlowerBoundary = ptTPCTOFboundary; }
     void SetElectronNSigmaVetoCut( double electronVeto )   { electronNSigmaVeto = electronVeto; }
