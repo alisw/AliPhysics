@@ -259,6 +259,9 @@ public:
     return is_range() ? r = RangeListValue_t({fValueRange}), true : load_rangelist(r); }
 
 
+  template <typename T>
+  T* Construct() const;
+
   /// Pretty-print the value
   TString Stringify(const bool pretty=true) const;
 
@@ -542,6 +545,12 @@ AliFemtoConfigObject& AliFemtoConfigObject::operator=(AliFemtoConfigObject &&rhs
 
 
 #undef FORWARD_STANDARD_TYPES
+
+template <typename T>
+T* AliFemtoConfigObject::Construct() const
+{
+  return new T(*this);
+}
 
 
 
