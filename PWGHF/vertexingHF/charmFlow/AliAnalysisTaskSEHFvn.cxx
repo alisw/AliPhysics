@@ -372,7 +372,7 @@ void AliAnalysisTaskSEHFvn::UserCreateOutputObjects()
     fOutput->Add(fHistCentrality[i]);
   }
 
-  fHistCandVsCent=new TH2F("hCandVsCent","number of selected candidates vs. centrality",(fMaxCentr-fMinCentr)/(fCentBinSizePerMil/10),fMinCentr,fMaxCentr,101,-0.5,100.5);
+  fHistCandVsCent=new TH2F("hCandVsCent","number of selected candidates vs. centrality;centrality(%);number of candidates",(fMaxCentr-fMinCentr)/(fCentBinSizePerMil/10),fMinCentr,fMaxCentr,101,-0.5,100.5);
   fOutput->Add(fHistCandVsCent);
 
   for(int iDet = 0; iDet < 3; iDet++) {
@@ -812,9 +812,9 @@ void AliAnalysisTaskSEHFvn::UserExec(Option_t */*option*/)
     }
 
     //fill mult vs. centrality histo (EvShape)
-    ((TH1F*)fOutput->FindObject("hMultVsCentFullTPC"))->Fill(multQvecTPC[0],centr);
-    ((TH1F*)fOutput->FindObject("hMultVsCentPosTPC"))->Fill(multQvecTPC[1],centr);
-    ((TH1F*)fOutput->FindObject("hMultVsCentNegTPC"))->Fill(multQvecTPC[2],centr);
+    ((TH1F*)fOutput->FindObject("hMultVsCentFullTPC"))->Fill(centr,multQvecTPC[0]);
+    ((TH1F*)fOutput->FindObject("hMultVsCentPosTPC"))->Fill(centr,multQvecTPC[1]);
+    ((TH1F*)fOutput->FindObject("hMultVsCentNegTPC"))->Fill(centr,multQvecTPC[2]);
   }
 
   AliEventplane *pl=aod->GetEventplane();
