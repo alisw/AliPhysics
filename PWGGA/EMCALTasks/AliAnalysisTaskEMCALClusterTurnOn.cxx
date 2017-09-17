@@ -867,7 +867,21 @@ void  AliAnalysisTaskEMCALClusterTurnOn::FillTHnSparse(AliEMCALGeometry* geom, A
     Float_t energy = 0;
     for (Int_t cellcounter = 0; cellcounter<cellnumber; cellcounter++)
     {
+      Bool_t reject = kFALSE;
       IDs[cellcounter] = coi->GetCellsAbsId()[cellcounter];        
+      if(IDs[cellcounter]>=0){
+        Int_t FastOrIndex = -1;
+        geom->GetFastORIndexFromCellIndex(IDs[cellcounter],FastOrIndex);
+        if(FastOrIndex>=0){
+          for(unsigned int maskedFOcounter=0;maskedFOcounter<MaskedFastOrs.size();maskedFOcounter++){
+            if(FastOrIndex==MaskedFastOrs[maskedFOcounter]) {
+              reject = kTRUE;
+              break;
+            }
+          }
+        }
+      }
+      if(reject) continue;
       geom->GetCellIndex(IDs[cellcounter],nSupMod, nModule, nIphi, nIeta);
       geom->GetCellPhiEtaIndexInSModule(nSupMod, nModule, nIphi, nIeta, iphi, ieta);
       c_eta = 0; 
