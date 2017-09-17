@@ -115,6 +115,7 @@ class AliAnalysisTaskSEHFvn : public AliAnalysisTaskSE
     fTPCEtaMax=etamax;
   }
   void SetRemoveDaughtersFromq2(Bool_t removeDau) {fRemoveDauFromq2=removeDau;}
+  void SetEnableQnFrameworkCorrForq2(Bool_t usecorr) {fUseQnFrameworkCorrq2=usecorr;}
 
   // Implementation of interface methods
   virtual void UserCreateOutputObjects();
@@ -189,10 +190,11 @@ class AliAnalysisTaskSEHFvn : public AliAnalysisTaskSE
   Double_t fTPCEtaMin;          // min eta for the Q-vector computed on the fly with TPC tracks (both EP and q2)
   Double_t fTPCEtaMax;          // max eta for the Q-vector computed on the fly with TPC tracks (both EP and q2)
   Bool_t fRemoveNdauRandomTracks; // flag to activate the removal of nDau random tracks in the q2TPC computed on the fly
+  Bool_t fUseQnFrameworkCorrq2; // flag to activate the Qn-framework corrections for the q2
 
   AliAnalysisTaskSEHFvn::FlowMethod fFlowMethod;
 
-  ClassDef(AliAnalysisTaskSEHFvn,7); // AliAnalysisTaskSE for the HF v2 analysis
+  ClassDef(AliAnalysisTaskSEHFvn,8); // AliAnalysisTaskSE for the HF v2 analysis
 };
 
 #endif

@@ -129,6 +129,7 @@ AliAnalysisTaskSE(),
   fTPCEtaMin(-0.8),
   fTPCEtaMax(0.8),
   fRemoveNdauRandomTracks(kFALSE),
+  fUseQnFrameworkCorrq2(kTRUE),
   fFlowMethod(kEP)
 {
   // Default constructor
@@ -184,6 +185,7 @@ AliAnalysisTaskSEHFvn::AliAnalysisTaskSEHFvn(const char *name,AliRDHFCuts *rdCut
   fTPCEtaMin(-0.8),
   fTPCEtaMax(0.8),
   fRemoveNdauRandomTracks(kFALSE),
+  fUseQnFrameworkCorrq2(kTRUE),
   fFlowMethod(kEP)
 {
   // standard constructor
@@ -372,7 +374,7 @@ void AliAnalysisTaskSEHFvn::UserCreateOutputObjects()
 
   fHistCandVsCent=new TH2F("hCandVsCent","number of selected candidates vs. centrality",(fMaxCentr-fMinCentr)/(fCentBinSizePerMil/10),fMinCentr,fMaxCentr,101,-0.5,100.5);
   fOutput->Add(fHistCandVsCent);
-  
+
   for(int iDet = 0; iDet < 3; iDet++) {
     fHistEvPlaneQncorrTPC[iDet]   = new TH1F(Form("hEvPlaneQncorr%s%s",fDetTPCConfName[iDet].Data(),fNormMethod.Data()),Form("hEvPlaneQncorr%s%s;#phi Ev Plane;Entries",fDetTPCConfName[iDet].Data(),fNormMethod.Data()),200,0.,TMath::Pi());
     fHistEvPlaneQncorrVZERO[iDet] = new TH1F(Form("hEvPlaneQncorr%s%s",fDetV0ConfName[iDet].Data(),fNormMethod.Data()),Form("hEvPlaneQncorr%s%s;#phi Ev Plane;Entries",fDetV0ConfName[iDet].Data(),fNormMethod.Data()),200,0.,TMath::Pi());
@@ -1028,7 +1030,7 @@ void AliAnalysisTaskSEHFvn::UserExec(Option_t */*option*/)
 
               //auto-correlation removal from twist step (if present)
               theQnVectorCorr   = (AliQnCorrectionsQnVector*) pQvecList->FindObject("twist"); //twist step for TPC
-              if (theQnVectorCorr != NULL && theQnVectorCorr->IsGoodQuality() && theQnVectorUncorr->GetN() != 0) {
+              if (theQnVectorCorr != NULL && theQnVectorCorr->IsGoodQuality() && theQnVectorUncorr->GetN() != 0 && fUseQnFrameworkCorrq2) {
                 Double_t qxTwist = theQnVectorCorr->Qx(nHarmonic);
                 Double_t qyTwist = theQnVectorCorr->Qy(nHarmonic);
                 Double_t Lbplus  = (qyRec - qyTwist)/qxTwist;
@@ -2190,20 +2192,31 @@ Double_t AliAnalysisTaskSEHFvn::Getq2(TList* qnlist, Int_t q2meth, Double_t &mul
 {
   if(!qnlist) {return -1;}
 
+  TString expectedstepTPC="latest";
+  TString altstepTPC="plain";
+  TString expectedstepV0="latest";
+  TString altstepV0="raw";
+  if(!fUseQnFrameworkCorrq2) {
+    expectedstepTPC="plain";
+    altstepTPC="plain";
+    expectedstepV0="raw";
+    altstepV0="raw";
+  }
+
   const AliQnCorrectionsQnVector* qnVect = 0x0;
 
   if(q2meth==kq2TPC)
-    qnVect = GetQnVectorFromList(qnlist, Form("%sQoverSqrtM",fDetTPCConfName[0].Data()), "latest", "plain");
+    qnVect = GetQnVectorFromList(qnlist, Form("%sQoverSqrtM",fDetTPCConfName[0].Data()), expectedstepTPC.Data(), altstepTPC.Data());
   else if(q2meth==kq2NegTPC)
-    qnVect = GetQnVectorFromList(qnlist, Form("%sQoverSqrtM",fDetTPCConfName[1].Data()), "latest", "plain");
+    qnVect = GetQnVectorFromList(qnlist, Form("%sQoverSqrtM",fDetTPCConfName[1].Data()), expectedstepTPC.Data(), altstepTPC.Data());
   else if(q2meth==kq2PosTPC)
-    qnVect = GetQnVectorFromList(qnlist, Form("%sQoverSqrtM",fDetTPCConfName[2].Data()), "latest", "plain");
+    qnVect = GetQnVectorFromList(qnlist, Form("%sQoverSqrtM",fDetTPCConfName[2].Data()), expectedstepTPC.Data(), altstepTPC.Data());
   else if(q2meth==kq2VZERO)
-    qnVect = GetQnVectorFromList(qnlist, Form("%sQoverSqrtM",fDetV0ConfName[0].Data()), "latest", "raw");
+    qnVect = GetQnVectorFromList(qnlist, Form("%sQoverSqrtM",fDetV0ConfName[0].Data()), expectedstepV0.Data(), altstepV0.Data());
   else if(q2meth==kq2VZEROA)
-    qnVect = GetQnVectorFromList(qnlist, Form("%sQoverSqrtM",fDetV0ConfName[1].Data()), "latest", "raw");
+    qnVect = GetQnVectorFromList(qnlist, Form("%sQoverSqrtM",fDetV0ConfName[1].Data()), expectedstepV0.Data(), altstepV0.Data());
   else if(q2meth==kq2VZEROC)
-    qnVect = GetQnVectorFromList(qnlist, Form("%sQoverSqrtM",fDetV0ConfName[2].Data()), "latest", "raw");
+    qnVect = GetQnVectorFromList(qnlist, Form("%sQoverSqrtM",fDetV0ConfName[2].Data()), expectedstepV0.Data(), altstepV0.Data());
   else {return -1;}
 
   if(!qnVect) {return -1;}
