@@ -9328,18 +9328,20 @@ void AliFlowAnalysisCRC::CalculateFlowQC()
       QARe0=0.; QAIm0=0.; QBRe0=0.; QBIm0=0.;
 
       for(Int_t pt=0; pt<fPtDiffNBins; pt++) {
-        QARe += fPOIPtDiffQReEG[0][1][hr+1]->GetBinContent(pt+1);
-        QAIm += fPOIPtDiffQImEG[0][1][hr+1]->GetBinContent(pt+1);
-        QBRe += fPOIPtDiffQReEG[1][1][hr+1]->GetBinContent(pt+1);
-        QBIm += fPOIPtDiffQImEG[1][1][hr+1]->GetBinContent(pt+1);
-        QAM0 += fPOIPtDiffMulEG[0][0][0]->GetBinContent(pt+1);
-        QAM  += fPOIPtDiffMulEG[0][1][0]->GetBinContent(pt+1);
-        QBM0 += fPOIPtDiffMulEG[1][0][0]->GetBinContent(pt+1);
-        QBM  += fPOIPtDiffMulEG[1][1][0]->GetBinContent(pt+1);
-        QARe0 += fPOIPtDiffQReEG[0][0][hr+1]->GetBinContent(pt+1);
-        QAIm0 += fPOIPtDiffQImEG[0][0][hr+1]->GetBinContent(pt+1);
-        QBRe0 += fPOIPtDiffQReEG[1][0][hr+1]->GetBinContent(pt+1);
-        QBIm0 += fPOIPtDiffQImEG[1][0][hr+1]->GetBinContent(pt+1);
+        if(fPOIPtDiffQReEG[0][0][0]->GetXaxis()->GetBinUpEdge(pt+1)<=ptmax) {
+          QARe += fPOIPtDiffQReEG[0][1][hr+1]->GetBinContent(pt+1);
+          QAIm += fPOIPtDiffQImEG[0][1][hr+1]->GetBinContent(pt+1);
+          QBRe += fPOIPtDiffQReEG[1][1][hr+1]->GetBinContent(pt+1);
+          QBIm += fPOIPtDiffQImEG[1][1][hr+1]->GetBinContent(pt+1);
+          QAM0 += fPOIPtDiffMulEG[0][0][0]->GetBinContent(pt+1);
+          QAM  += fPOIPtDiffMulEG[0][1][0]->GetBinContent(pt+1);
+          QBM0 += fPOIPtDiffMulEG[1][0][0]->GetBinContent(pt+1);
+          QBM  += fPOIPtDiffMulEG[1][1][0]->GetBinContent(pt+1);
+          QARe0 += fPOIPtDiffQReEG[0][0][hr+1]->GetBinContent(pt+1);
+          QAIm0 += fPOIPtDiffQImEG[0][0][hr+1]->GetBinContent(pt+1);
+          QBRe0 += fPOIPtDiffQReEG[1][0][hr+1]->GetBinContent(pt+1);
+          QBIm0 += fPOIPtDiffQImEG[1][0][hr+1]->GetBinContent(pt+1);
+        }
       }
 
       IQM2EG = QAM*QBM;
