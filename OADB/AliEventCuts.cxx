@@ -238,10 +238,11 @@ bool AliEventCuts::AcceptEvent(AliVEvent *ev) {
       fFlag |= BIT(kCorrelations);
   } else fFlag |= BIT(kCorrelations);
 
-  /// Ignore the vertex position and vertex
-  unsigned long allcuts_mask = (BIT(kAllCuts) - 1) ^ (BIT(kVertexPositionSPD) | BIT(kVertexPositionTracks) | BIT(kVertexSPD) | BIT(kVertexTracks));
-  bool allcuts = ((fFlag & allcuts_mask) == allcuts_mask);
-  if (allcuts) fFlag |= BIT(kAllCuts);
+  /// Ignore SPD/tracks vertex position and reconstruction individual flags
+  bool allcuts = CheckNormalisationMask(kPassesAllCuts);
+  if (allcuts) {
+    fFlag |= BIT(kAllCuts);
+  }
   if (fCutStats) {
     for (int iCut = kNoCuts; iCut <= kAllCuts; ++iCut) {
       if (TESTBIT(fFlag,iCut))
@@ -250,15 +251,18 @@ bool AliEventCuts::AcceptEvent(AliVEvent *ev) {
   }
 
   /// Filling normalisation histogram
-  array <unsigned long,4> norm_masks {
-    BIT(kNoCuts),
-    allcuts_mask ^ (BIT(kVertex) | BIT(kVertexPosition) | BIT(kVertexQuality)),
-    allcuts_mask ^ BIT(kVertexPosition),
-    allcuts_mask
+  array <NormMask,4> norm_masks {
+    kAnyEvent,
+    kPassesNonVertexRelatedSelections,
+    kHasReconstructedVertex,
+    kPassesAllCuts
   };
   for (int iC = 0; iC < 4; ++iC) {
-    if ((fFlag & norm_masks[iC]) == norm_masks[iC])
-      if (fNormalisationHist) fNormalisationHist->Fill(iC);
+    if (CheckNormalisationMask(norm_masks[iC])) {
+      if (fNormalisationHist) {
+        fNormalisationHist->Fill(iC);
+      }
+    }
   }
 
   /// Filling the monitoring histograms (first iteration always filled, second iteration only for selected events.

@@ -64,9 +64,17 @@ class AliEventCuts : public TList {
       kAllCuts
     };
 
+    enum NormMask {
+      kAnyEvent = BIT(kNoCuts),
+      kPassesAllCuts = (BIT(kAllCuts) - 1) ^ (BIT(kVertexPositionSPD) | BIT(kVertexPositionTracks) | BIT(kVertexSPD) | BIT(kVertexTracks)),
+      kPassesNonVertexRelatedSelections = kPassesAllCuts ^ (BIT(kVertex) | BIT(kVertexPosition) | BIT(kVertexQuality)),
+      kHasReconstructedVertex = kPassesAllCuts ^ BIT(kVertexPosition)
+    };
+
 
     bool   AcceptEvent (AliVEvent *ev);
     bool   PassedCut (AliEventCuts::CutsBin cut) { return fFlag & BIT(cut); }
+    bool   CheckNormalisationMask (AliEventCuts::NormMask mask) { return (fFlag & mask) == mask; }
     void   AddQAplotsToList(TList *qaList = 0x0, bool addCorrelationPlots = false);
     void   OverrideAutomaticTriggerSelection(unsigned long tr, bool ov = true) { fTriggerMask = tr; fOverrideAutoTriggerMask = ov; }
     void   OverridePileUpCuts(int minContrib, float minZdist, float nSigmaZdist, float nSigmaDiamXY, float nSigmaDiamZ, bool ov = true);
