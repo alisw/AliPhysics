@@ -118,14 +118,15 @@ void drawLogbookMultiCut(TString period, TString pass,TString runSelection="", T
 /// \param source"       - source list          e.g:   : Logbook;QA.TPC;QA.TRD;QA.ITS;MonALISA.RCT
 /// ##Example usage:
 /*!
+\code
  .L $AliRoot_SRC/STAT/Macros/aliExternalInfo.C
  makeHTMLPage("LHC15o","pass1", "QA.TPC.meanTPCncl>0", "run:runDuration:totalEventsPhysics:totalNumberOfFilesMigrated:QA.TPC.meanMIP:QA.TPC.meanMIP", "Logbook;QA.TPC;QA.TRD;QA.ITS;MonALISA.RCT")
  makeHTMLPage("LHC15o","pass1", "QA.TPC.meanTPCncl>0", "run:runDuration:totalEventsPhysics:ocdbStatusCounter:ocdbHVStatusCounter:TPC_Status:meanTPCncl_Status:PID_Status:DCAz_Status:DCAr_Status:tpcItsMatch_Status", "Logbook;QA.TPC;QA.TRD;QA.ITS;MonALISA.RCT")
-
+\endcode
  */
 void makeHTMLPage(TString  period,TString  pass, TString runSelection, TString varSelection, TString source){
   TTree * tree = info.GetTree("Logbook",period,pass,source);
   AliTreePlayer::selectWhatWhereOrderBy(tree,varSelection.Data(), runSelection.Data(),"",0,100000,"html","table.html");
   delete tree;
-  gSystem->GetFromPipe("$NOTES/JIRA/ATO-360/code/makeHtml.sh table.html index.html 0");
+  gSystem->GetFromPipe(" table.html index.html 0");
 }
