@@ -215,6 +215,8 @@ fEtVSM02VSEisoclust(0),
 fEtVSM02VSPisotrack(0),
 fPhiTracksVSclustPt(0),
 fEtaTracksVSclustPt(0),
+fTracksPhiVsPt(0),
+fTracksEtaVsPt(0),
 fTrackResolutionPtMC(0),
 fVzBeforecut(0),
 fOutputTHnS(0),
@@ -405,6 +407,8 @@ fEtVSM02VSEisoclust(0),
 fEtVSM02VSPisotrack(0),
 fPhiTracksVSclustPt(0),
 fEtaTracksVSclustPt(0),
+fTracksPhiVsPt(0),
+fTracksEtaVsPt(0),
 fTrackResolutionPtMC(0),
 fVzBeforecut(0),
 fOutputTHnS(0),
@@ -1009,6 +1013,14 @@ void AliAnalysisTaskEMCALPhotonIsolation::UserCreateOutputObjects(){
   fEtaTracksVSclustPt->Sumw2();
   fOutput->Add(fEtaTracksVSclustPt);
 
+  fTracksPhiVsPt = new TH2F("hTracksPhiVsPt", "Tracks #varphi vs #it{p}_{T}", 100, 0., 100., 200, 0., TMath::TwoPi());
+  fTracksPhiVsPt->Sumw2();
+  fOutput->Add(fTracksPhiVsPt);
+  
+  fTracksEtaVsPt = new TH2F("hTracksEtaVsPt", "Tracks #eta vs #it{p}_{T}", 100, 0., 100., 90, -0.9, 0.9);
+  fTracksEtaVsPt->Sumw2();
+  fOutput->Add(fTracksEtaVsPt);
+
   if(!fLightOutput){  
     fCTdistVSpTNC = new TH2F ("hDistanceC_TrackVSpT","Distance between Neutral Clust and closest Track vs pT Candidate",70,0.,70.,210,-0.1,2.);
     fCTdistVSpTNC->Sumw2();
@@ -1357,6 +1369,8 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::Run()
 	fPtTracksVSpTNC->Fill(vecCOI.Pt(),tr->Pt());
 	fPhiTracksVSclustPt->Fill(vecCOI.Pt(),tr->Phi());
 	fEtaTracksVSclustPt->Fill(vecCOI.Pt(),tr->Eta());
+	fTracksPhiVsPt->Fill(tr->Pt(),tr->Phi());
+	fTracksEtaVsPt->Fill(tr->Pt(),tr->Eta());
       }
       
       FillGeneralHistograms(coi,vecCOI, index);
@@ -1397,6 +1411,8 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::Run()
 	  fPtTracksVSpTNC->Fill(vecCOI.Pt(),tr->Pt());
 	  fPhiTracksVSclustPt->Fill(vecCOI.Pt(),tr->Phi());
 	  fEtaTracksVSclustPt->Fill(vecCOI.Pt(),tr->Eta());
+	  fTracksPhiVsPt->Fill(tr->Pt(),tr->Phi());
+	  fTracksEtaVsPt->Fill(tr->Pt(),tr->Eta());
         }
         
         FillGeneralHistograms(coi,vecCOI,index);

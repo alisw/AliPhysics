@@ -327,6 +327,8 @@ class AliAnalysisTaskEMCALPhotonIsolation: public AliAnalysisTaskEmcal {
   TH3F        *fEtVSM02VSEisoclust;            //!<!
   TH2F        *fPhiTracksVSclustPt;            //!<!
   TH2F        *fEtaTracksVSclustPt;            //!<!
+  TH2F        *fTracksPhiVsPt;                 //!<!
+  TH2F        *fTracksEtaVsPt;                 //!<!
   TH2F        *fTrackResolutionPtMC;           //!<!
   TH1D        *fVzBeforecut;                   //!<!
   TH3F        *fEtaPhiClusVsM02;               //!<! Cluster eta vs. phi vs. sigma_long squared (cluster energy from 14 to 16 GeV)
