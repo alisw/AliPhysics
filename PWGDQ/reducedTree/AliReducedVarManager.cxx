@@ -384,8 +384,10 @@ void AliReducedVarManager::FillEventInfo(BASEEVENT* baseEvent, Float_t* values, 
       calibFile->Close();
     }
 
-    if(fgUsedVars[kRunID] && fgRunNumbers.size() && fgRunID < 0  ){
-        for( fgRunID = 0; fgRunNumbers[ fgRunID ] != fgCurrentRunNumber && fgRunID< (Int_t) fgRunNumbers.size() ; ++fgRunID );
+    if(fgUsedVars[kRunID]){
+      if( fgRunID < 0 ){
+        for( fgRunID = 0; fgRunNumbers[ fgRunID ] != fgCurrentRunNumber && fgRunID< fgRunNumbers.size() ; ++fgRunID );
+      }
     }
     for( int iEstimator =0 ; iEstimator < kNMultiplicityEstimators ; ++iEstimator ){
       if( fgAvgMultVsVtxAndRun[iEstimator] ){
@@ -551,13 +553,8 @@ void AliReducedVarManager::FillEventInfo(BASEEVENT* baseEvent, Float_t* values, 
               values[ indexNotSmeared ] = values[ indexAnotSmeared ] + values[ indexCnotSmeared ];
               values[ indexSmeared ]    = values[ indexAsmeared ] + values[ indexCsmeared ];
             }
-            
-            
           }
        }
-      
-      
-      
     }
     
     else{

@@ -161,7 +161,7 @@ class AliReducedVarManager : public TObject {
   };
 
   enum MultiplicityEstimators {
-    kSPDntracklets10,
+    kSPDntracklets10=0,
     kSPDntracklets08,
     kSPDntracklets16,
     kSPDntrackletsOuterEta,
@@ -175,7 +175,7 @@ class AliReducedVarManager : public TObject {
   };
 
   enum Corrections {
-    kVertexCorrectionGlobal,
+    kVertexCorrectionGlobal=0,
     kVertexCorrectionRunwise,
     kVertexCorrectionGlobalGainLoss,
     kVertexCorrectionRunwiseGainLoss,
@@ -184,14 +184,14 @@ class AliReducedVarManager : public TObject {
   };
 
   enum ReferenceMultiplicities {
-   kMaximumMultiplicity,
+   kMaximumMultiplicity=0,
    kMinimumMultiplicity,
    kMeanMultiplicity,
    kNReferenceMultiplicities
   };
 
   enum SmearingMethods {
-   kNoSmearing,
+   kNoSmearing=0,
    kPoissonSmearing,
    kNSmearingMethods
   };
