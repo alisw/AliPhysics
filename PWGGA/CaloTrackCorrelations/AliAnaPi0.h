@@ -518,9 +518,6 @@ class AliAnaPi0 : public AliAnaCaloTrackCorrBaseClass {
   TH2F *   fhMCNotResonancePi0PtOrigin;//!<! Mass of reconstructed pi0 pairs in calorimeter vs mother origin ID, pi0 status 1.
   TH2F *   fhMCPi0PtStatus ;           //!<! Mass of reconstructed pi0 pairs in calorimeter vs mother status.
 
-  // Primaries origin - subcategory - strangeness
-  TH2F *   fhMCPi0PtStrangeness ;         //!<! Spectrum of reconstructed pi0 pairs in calorimeter vs mother strangeness
-  
   TH2F *   fhMCPi0ProdVertex;          //!<! Spectrum of selected pi0 vs production vertex
   TH2F *   fhMCEtaProdVertex;          //!<! Spectrum of selected eta vs production vertex
   TH2F *   fhPrimPi0ProdVertex;        //!<! Spectrum of primary pi0 vs production vertex

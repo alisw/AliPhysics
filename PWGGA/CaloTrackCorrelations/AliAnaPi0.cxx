@@ -114,7 +114,7 @@ fhMCEtaPtTruePtRecRat(0),    fhMCEtaPtTruePtRecDif(0), fhMCEtaPtRecOpenAngle(0),
 fhMCPi0PtTruePtRecRatMassCut(0), fhMCPi0PtTruePtRecDifMassCut(0), fhMCPi0PtRecOpenAngleMassCut(0),
 fhMCEtaPtTruePtRecRatMassCut(0), fhMCEtaPtTruePtRecDifMassCut(0), fhMCEtaPtRecOpenAngleMassCut(0),
 fhMCPi0PtOrigin(0),          fhMCEtaPtOrigin(0),
-fhMCNotResonancePi0PtOrigin(0),fhMCPi0PtStatus(0x0),fhMCPi0PtStrangeness(0x0),
+fhMCNotResonancePi0PtOrigin(0),fhMCPi0PtStatus(0x0),
 fhMCPi0ProdVertex(0),        fhMCEtaProdVertex(0),
 fhPrimPi0ProdVertex(0),      fhPrimEtaProdVertex(0),
 fhReMCFromConversion(0),     fhReMCFromNotConversion(0),   fhReMCFromMixConversion(0),
@@ -1387,7 +1387,7 @@ TList * AliAnaPi0::GetCreateOutputObjects()
     
     if(fFillOriginHisto)
     {
-      fhMCPi0PtOrigin     = new TH2F("hMCPi0PtOrigin","Reconstructed pair from generated #pi^{0} #it{p}_{T} vs origin",nptbins,ptmin,ptmax,11,0,11) ;
+      fhMCPi0PtOrigin     = new TH2F("hMCPi0PtOrigin","Reconstructed pair from generated #pi^{0} #it{p}_{T} vs origin",nptbins,ptmin,ptmax,15,0,15) ;
       fhMCPi0PtOrigin->SetXTitle("#it{p}_{T} (GeV/#it{c})");
       fhMCPi0PtOrigin->SetYTitle("Origin");
       fhMCPi0PtOrigin->GetYaxis()->SetBinLabel(1 ,"Status 21");
@@ -1396,10 +1396,14 @@ TList * AliAnaPi0::GetCreateOutputObjects()
       fhMCPi0PtOrigin->GetYaxis()->SetBinLabel(4 ,"Resonances");
       fhMCPi0PtOrigin->GetYaxis()->SetBinLabel(5 ,"#rho");
       fhMCPi0PtOrigin->GetYaxis()->SetBinLabel(6 ,"#omega");
-      fhMCPi0PtOrigin->GetYaxis()->SetBinLabel(7 ,"K");
+      fhMCPi0PtOrigin->GetYaxis()->SetBinLabel(7 ,"K0S");
       fhMCPi0PtOrigin->GetYaxis()->SetBinLabel(8 ,"Other");
       fhMCPi0PtOrigin->GetYaxis()->SetBinLabel(9 ,"#eta");
       fhMCPi0PtOrigin->GetYaxis()->SetBinLabel(10 ,"#eta prime");
+      fhMCPi0PtOrigin->GetYaxis()->SetBinLabel(11 ,"K0L");
+      fhMCPi0PtOrigin->GetYaxis()->SetBinLabel(12 ,"K+-");
+      fhMCPi0PtOrigin->GetYaxis()->SetBinLabel(13 ,"K*");
+      fhMCPi0PtOrigin->GetYaxis()->SetBinLabel(14 ,"#Lambda");
       outputContainer->Add(fhMCPi0PtOrigin) ;
       
       fhMCNotResonancePi0PtOrigin     = new TH2F("hMCNotResonancePi0PtOrigin","Reconstructed pair from generated #pi^{0} #it{p}_{T} vs origin",nptbins,ptmin,ptmax,11,0,11) ;
@@ -1422,17 +1426,6 @@ TList * AliAnaPi0::GetCreateOutputObjects()
       fhMCPi0PtStatus->SetYTitle("Status");
       outputContainer->Add(fhMCPi0PtStatus) ;
 
-      fhMCPi0PtStrangeness     = new TH2F("hMCPi0PtStrangeness","Primary #pi^{0} #it{p}_{T} vs strangeness origin",nptbins,ptmin,ptmax,5,0,5) ;
-      fhMCPi0PtStrangeness->SetXTitle("#it{p}_{T} (GeV/#it{c})");
-      fhMCPi0PtStrangeness->SetYTitle("Origin");
-      fhMCPi0PtStrangeness->GetYaxis()->SetBinLabel(1 ,"K0S");
-      fhMCPi0PtStrangeness->GetYaxis()->SetBinLabel(2 ,"K0L");
-      fhMCPi0PtStrangeness->GetYaxis()->SetBinLabel(3 ,"K+- ");
-      fhMCPi0PtStrangeness->GetYaxis()->SetBinLabel(4 ,"K*");
-      fhMCPi0PtStrangeness->GetYaxis()->SetBinLabel(5 ,"Lambda");
-      outputContainer->Add(fhMCPi0PtStrangeness) ;
-      
-      
       // Eta
       
       fhMCEtaPtOrigin     = new TH2F("hMCEtaPtOrigin","Reconstructed pair from generated #pi^{0} #it{p}_{T} vs origin",nptbins,ptmin,ptmax,7,0,7) ;
@@ -3318,21 +3311,22 @@ void AliAnaPi0::FillMCVersusRecDataHistograms(Int_t ancLabel , Int_t ancPDG,
                 fhMCPi0Radius[5]->Fill(pt,prodR,GetEventWeight()*weightPt);
               }
               else if(mompdg    >= 310   && mompdg    <= 323) {
-                fhMCPi0PtOrigin->Fill(pt, 6.5, GetEventWeight()*weightPt);//k0S, k+-,k*
                 fhMCPi0Radius[6]->Fill(pt,prodR,GetEventWeight()*weightPt);
-		if(mompdg==310) fhMCPi0PtStrangeness->Fill(pt, 0.5, GetEventWeight()*weightPt);//k0S
-		else if(TMath::Abs(mompdg)==321) fhMCPi0PtStrangeness->Fill(pt, 2.5, GetEventWeight()*weightPt);//k+-
-		else fhMCPi0PtStrangeness->Fill(pt, 3.5, GetEventWeight()*weightPt);//k*
+		if(mompdg==310) fhMCPi0PtOrigin->Fill(pt, 6.5, GetEventWeight()*weightPt);//k0S
+		else if(TMath::Abs(mompdg)==321) fhMCPi0PtOrigin->Fill(pt, 11.5, GetEventWeight()*weightPt);//k+-
+		else fhMCPi0PtOrigin->Fill(pt, 12.5, GetEventWeight()*weightPt);//k*
               }
               else if(mompdg    == 130) {
-                fhMCPi0PtOrigin->Fill(pt, 6.5, GetEventWeight()*weightPt);//k0L
+                fhMCPi0PtOrigin->Fill(pt, 10.5, GetEventWeight()*weightPt);//k0L
                 fhMCPi0Radius[6]->Fill(pt,prodR,GetEventWeight()*weightPt);
-		fhMCPi0PtStrangeness->Fill(pt, 1.5, GetEventWeight()*weightPt);//k0L
               }
+	      else if(mompdg==3122) {
+		fhMCPi0PtOrigin->Fill(pt, 13.5, GetEventWeight()*weightPt);//lambda 
+		fhMCPi0Radius[3]->Fill(pt,prodR,GetEventWeight()*weightPt);
+	      }
               else if(momstatus == 11 || momstatus  == 12 ) {
                 fhMCPi0PtOrigin->Fill(pt, 3.5, GetEventWeight()*weightPt);//resonances
                 fhMCPi0Radius[3]->Fill(pt,prodR,GetEventWeight()*weightPt);
-		if(mompdg==3122) fhMCPi0PtStrangeness->Fill(pt, 4.5, GetEventWeight()*weightPt);//lambda 
               }
               else {
                 fhMCPi0PtOrigin->Fill(pt, 7.5, GetEventWeight()*weightPt);//other? py8 resonances?
