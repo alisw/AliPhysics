@@ -4,7 +4,7 @@
  * @Email:  pdillens@cern.ch
  * @Filename: AliDielectronEvtVsTrkHist.cxx
  * @Last modified by:   pascaldillenseger
- * @Last modified time: 2017-09-13, 14:45:06
+ * @Last modified time: 2017-09-18, 15:27:33
  */
 
 
@@ -422,9 +422,10 @@ void AliDielectronEvtVsTrkHist::CalculateMatchingEfficiency()
     Double_t b22  = nCountsITS * nCountsTPC;
     if(b22 > 0) matchEffErr = (err1 * err1 + err2 * err2) / (b22 * b22);
     else matchEffErr = 0.;
+    matchEffErr = TMath::Sqrt(nCountsITS);
 
 // Now set the correct match efficiency value to the bin coordinates
-    fSparseObjs[ADEVTH::kSparseMatchEffITSTPC]->SetBinContent(coord, nCountsTPC);
+    fSparseObjs[ADEVTH::kSparseMatchEffITSTPC]->SetBinContent(coord, nCountsITS);
     errBin = fSparseObjs[ADEVTH::kSparseMatchEffITSTPC]->GetBin(coord);
 
     fSparseObjs[ADEVTH::kSparseMatchEffITSTPC]->SetBinError2(errBin, matchEffErr);
