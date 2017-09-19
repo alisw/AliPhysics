@@ -27,6 +27,7 @@ class AliCaloPhoton :public TLorentzVector{
 
    const TLorentzVector * GetMomV2()const{return &fMomV2;}
    Int_t    DistToBad() const {return fBadDist ;}
+   Double_t DistToBadfp() const {return fBadDistfp ;}
    Double_t EMCx(void)  const {return fX;}
    Double_t EMCy(void)  const {return fY;}
    Double_t EMCz(void)  const {return fZ;}
@@ -87,6 +88,7 @@ class AliCaloPhoton :public TLorentzVector{
    void SetDispBit(Bool_t chi2){fDisp = chi2 ;} 
    void SetDisp2Bit(Bool_t chi2){fDisp2 = chi2 ;} 
    void SetDistToBad(Int_t dist){fBadDist=dist;} 
+   void SetDistToBadfp(Double_t dist){fBadDistfp=dist;} 
    void SetEMCx(Double_t x){fX = x ;} 
    void SetEMCy(Double_t y){fY = y ;} 
    void SetEMCz(Double_t z){fZ = z ;} 
@@ -139,6 +141,7 @@ private:
   Int_t     fModule ;   //Module number
   Int_t     fBC ;       //Bunch crossing number (BC=0 is main-main collision)
   Int_t     fBadDist ;  //Distance to bad module in module units
+  Double_t   fBadDistfp ;  //Distance to the closest bad cell in cell units with floating point.
   Int_t     fNCells ;   //Number of cells in cluster
   Int_t     fFiducialArea ; //class of fiducial areas
   Int_t     fPi0Decayflag; //if this photon is from pi0 decay (from simulation)
@@ -164,7 +167,7 @@ private:
 
   AliVCluster* fCluster; //! Originating Cluster the Photon Candidate is based on
 
-  ClassDef(AliCaloPhoton,9);
+  ClassDef(AliCaloPhoton,10);
 
 };
 
