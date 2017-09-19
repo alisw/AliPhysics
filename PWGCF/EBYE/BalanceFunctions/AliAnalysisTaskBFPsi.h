@@ -76,6 +76,11 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
     fVzMax = vz;
   }
 
+  void SetRequireHighPtTrigger(Double_t gpTtrigger) {
+    fRequireHighPtTrigger = kTRUE;
+    fPtTriggerMin = gpTtrigger;
+  }
+  
   //==============AOD analysis==============//
   void SetAODtrackCutBit(Int_t bit){
     fnAODtrackCutBit = bit;
@@ -245,7 +250,7 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
 					      Short_t vCharge, 
 					      Double_t gCentrality);
   //===============================correction
-  TObjArray* GetAcceptedTracks(AliVEvent* event, Double_t gCentrality, Double_t gReactionPlane, Double_t &gSphericity);
+  TObjArray* GetAcceptedTracks(AliVEvent* event, Double_t gCentrality, Double_t gReactionPlane, Double_t &gSphericity, Int_t &nAcceptedTracksAboveHighPtThreshold);
   TObjArray* GetShuffledTracks(TObjArray* tracks, Double_t gCentrality);
 
   Double_t GetChannelEqualizationFactor(Int_t run, Int_t channel);
@@ -387,7 +392,7 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
   Bool_t fUseMultiplicity;//use the multiplicity cuts
   Double_t fNumberOfAcceptedTracksMin;//min. number of number of accepted tracks (used for the multiplicity dependence study - pp)
   Double_t fNumberOfAcceptedTracksMax;//max. number of number of accepted tracks (used for the multiplicity dependence study - pp)
-  TH2F *fHistNumberOfAcceptedTracks;//hisot to store the number of accepted tracks
+  TH2F *fHistNumberOfAcceptedTracks;//histo to store the number of accepted tracks
   TH1F *fHistMultiplicity;//hisot to store the number of accepted tracks
   TH2F *fHistMultvsPercent;//hisot to store the multiplicity vs centrality percentile
     
@@ -408,6 +413,10 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
   Double_t fVyMax;//vymax
   Double_t fVzMax;//vzmax
 
+  Bool_t fRequireHighPtTrigger;//use pT trigger
+  Double_t fPtTriggerMin;//pT trigger min
+  TH2F *fHistPtTriggerThreshold;//QA histo
+  
   Int_t fnAODtrackCutBit;//track cut bit from track selection (only used for AODs)
 
   Double_t fPtMin;//only used for AODs

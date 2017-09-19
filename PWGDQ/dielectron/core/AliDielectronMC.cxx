@@ -31,7 +31,6 @@
 #include <AliMCParticle.h>
 #include <AliAODMCParticle.h>
 #include <AliAODMCHeader.h>
-#include <AliStack.h>
 #include <AliESDEvent.h>
 #include <AliAODEvent.h>
 #include <AliESDtrack.h>
@@ -84,7 +83,6 @@ AliDielectronMC* AliDielectronMC::Instance()
 //____________________________________________________________
 AliDielectronMC::AliDielectronMC(AnalysisType type):
   fMCEvent(0x0),
-  fStack(0x0),
   fAnaType(type),
   fHasMC(kTRUE),
   fCheckHF(kFALSE),
@@ -138,8 +136,8 @@ Int_t AliDielectronMC::GetNMCTracksFromStack()
   //
   //  return the number of generated tracks from stack
   //
-  if (!fStack){ AliError("No fStack"); return -999; }
-  return fStack->GetNtrack();
+  if (!fMCEvent){ AliError("No fMCEvent"); return -999; }
+  return fMCEvent->GetNumberOfTracks();
 }
 
 //____________________________________________________________
@@ -158,8 +156,8 @@ Int_t AliDielectronMC::GetNPrimaryFromStack()
   //
   //  return the number of primary track from stack
   //
-  if (!fStack){ AliError("No fStack"); return -999; }
-  return fStack->GetNprimary();
+  if (!fMCEvent){ AliError("No fMCEvent"); return -999; }
+  return fMCEvent->GetNumberOfPrimaries();
 }
 
 //____________________________________________________________
@@ -203,9 +201,10 @@ Bool_t AliDielectronMC::ConnectMCEvent()
     if (!mcEvent){ AliError("Could not retrieve MC event!"); return kFALSE; }
     fMCEvent = mcEvent;
 
-    if (!UpdateStack()) return kFALSE;
-
-    if(fCheckHF) LoadHFPairs(); // So far only compatible with ESD
+    if (fCheckHF){
+      fhfproc.clear();
+      fCheckHF=LoadHFPairs(); // So far only compatible with ESD
+    }
   }
   else if(fAnaType == kAOD)
   {
@@ -221,19 +220,6 @@ Bool_t AliDielectronMC::ConnectMCEvent()
     if (!fMcArray){ /*AliError("Could not retrieve MC array!");*/ return kFALSE; }
     else fHasMC=kTRUE;
   }
-  return kTRUE;
-}
-
-//____________________________________________________________
-Bool_t AliDielectronMC::UpdateStack()
-{
-  //
-  // update stack with new event
-  //
-  if (!fMCEvent){ AliError("No fMCEvent"); return kFALSE;}
-  AliStack* stack = fMCEvent->Stack();
-  if (!stack){ AliError("Could not retrive stack!"); return kFALSE; }
-  fStack = stack;
   return kTRUE;
 }
 
@@ -270,13 +256,15 @@ AliAODMCParticle* AliDielectronMC::GetMCTrack( const AliAODTrack* _track)
 TParticle* AliDielectronMC::GetMCTrackFromStack(const AliESDtrack* _track)
 {
   //
-  // return MC track from stack
+  // return MC track from MC event
   //
-  Int_t label = TMath::Abs(_track->GetLabel());
-  if (!fStack) AliWarning("fStack is not available. Update stack first.");
-  TParticle* mcpart = fStack->Particle(label);
-  if (!mcpart) return NULL;
-  return mcpart;
+   if (!fMCEvent){ AliError("No fMCEvent"); return NULL;}                                                                                                                               
+   Int_t nStack = fMCEvent->GetNumberOfTracks();                                                                                                                                        
+   Int_t label  = TMath::Abs(_track->GetLabel());                                                                                                                                       
+   if(label > nStack) return NULL;                                                                                                                                                      
+   TParticle* mcpart = fMCEvent->Particle(label); 
+   if (!mcpart) return NULL;
+   return mcpart;
 }
 
 //____________________________________________________________
@@ -330,11 +318,11 @@ AliAODMCParticle* AliDielectronMC::GetMCTrackMother(const AliAODMCParticle* _par
 TParticle* AliDielectronMC::GetMCTrackMotherFromStack(const AliESDtrack* _track)
 {
   //
-  // return MC track mother from stack
+  // return MC track mother from MC event
   //
   TParticle* mcpart = GetMCTrackFromStack(_track);
   if ( !mcpart || mcpart->GetFirstMother()<=0 ) return NULL;
-  TParticle* mcmother = fStack->Particle(mcpart->GetFirstMother());
+  TParticle* mcmother = fMCEvent->Particle(mcpart->GetFirstMother());
   if (!mcmother) return NULL;
   return mcmother;
 }
@@ -365,7 +353,7 @@ Int_t AliDielectronMC::GetMCPID(const AliAODTrack* _track)
 Int_t AliDielectronMC::GetMCPIDFromStack(const AliESDtrack* _track)
 {
   //
-  // return MC PDG code from stack
+  // return MC PDG code from MC event
   //
   TParticle* mcpart = GetMCTrackFromStack(_track);
   if (!mcpart) return -999;
@@ -420,7 +408,7 @@ Int_t AliDielectronMC::GetMotherPDG( const AliAODMCParticle* _track)
 Int_t AliDielectronMC::GetMotherPDGFromStack(const AliESDtrack* _track)
 {
   //
-  // return PDG code of the mother track from stack
+  // return PDG code of the mother track from MC event
   //
   TParticle* mcmother = GetMCTrackMotherFromStack(_track);
   if (!mcmother) return -999;
@@ -730,7 +718,7 @@ Int_t AliDielectronMC::GetMothersLabel(Int_t daughterLabel) const {
 //________________________________________________________________________________
 Int_t AliDielectronMC::GetPdgFromLabel(Int_t label) const {
   //
-  //  Get particle code using the label from stack
+  //  Get particle code using the label from MC event
   //  NOTE: for tracks, the absolute label should be passed
   //
   if(label<0) return 0;
@@ -1024,7 +1012,7 @@ Bool_t AliDielectronMC::IsPhysicalPrimary(Int_t label) const {
     return (static_cast<AliAODMCParticle*>(GetMCTrackFromMCEvent(label)))->IsPhysicalPrimary();
   } else if(fAnaType==kESD) {
     if (!fMCEvent) return kFALSE;
-    return fStack->IsPhysicalPrimary(label);
+    return fMCEvent->IsPhysicalPrimary(label);
   }
   return kFALSE;
 }
@@ -1072,7 +1060,7 @@ Bool_t AliDielectronMC::IsSecondaryFromWeakDecay(Int_t label) const {
     return (static_cast<AliAODMCParticle*>(GetMCTrackFromMCEvent(label)))->IsSecondaryFromWeakDecay();
   } else if(fAnaType==kESD) {
     if (!fMCEvent) return kFALSE;
-    return fStack->IsSecondaryFromWeakDecay(label);
+    return fMCEvent->IsSecondaryFromWeakDecay(label);
   }
   return kFALSE;
 }
@@ -1089,7 +1077,7 @@ Bool_t AliDielectronMC::IsSecondaryFromMaterial(Int_t label) const {
     return (static_cast<AliAODMCParticle*>(GetMCTrackFromMCEvent(label)))->IsSecondaryFromMaterial();
   } else if(fAnaType==kESD) {
     if (!fMCEvent) return kFALSE;
-    return fStack->IsSecondaryFromMaterial(label);
+    return fMCEvent->IsSecondaryFromMaterial(label);
   }
   return kFALSE;
 }
@@ -1724,13 +1712,171 @@ Bool_t AliDielectronMC::GetPrimaryVertex(Double_t &primVtxX, Double_t &primVtxY,
 //____________________________________________________________
 Bool_t AliDielectronMC::LoadHFPairs()
 {
-  // To be implemented  
+  
+  //
+  // Look for all correlated c/cbar and b/bbar pairs  
+  // Attributing for each quark a HF Creation Process ID
+  //
+  
+  Int_t quark[2][2]={{0}};
+  Int_t quarktmp[2][2]={{0}};
+  Int_t hadrontmp[2][2]={{0}};
+  
+  //Loop over the MC event to tag all correlated c/cbar and b/bbar quarks 
+  for(Int_t i=0;i<fMCEvent->GetNumberOfTracks();i++){
+    AliMCParticle *cand = dynamic_cast<AliMCParticle *>(fMCEvent->GetTrack(i));
+    Int_t pdg_part = fMCEvent->GetTrack(i)->PdgCode();
+    Int_t pdg_parta = TMath::Abs(pdg_part);
+
+    if(pdg_parta==4 || pdg_parta==5){
+      //The quark is requested to create a B or D hadron -> Must have a daughter 
+      if(!(cand->GetFirstDaughter()>-1)){
+	//childless quark to be linked!
+	if(pdg_part==4) quarktmp[0][0]=i;
+	else if(pdg_part==-4) quarktmp[0][1]=i;
+	else if(pdg_part==5) quarktmp[1][0]=i;
+	else if(pdg_part==-5) quarktmp[1][1]=i;
+	continue;
+      }
+      
+      //Check if the quark is the one leading to the hadron
+      Bool_t isHFprim(kTRUE);
+      for(Int_t idau=cand->GetFirstDaughter();idau<=cand->GetLastDaughter();idau++){
+	if(fMCEvent->GetTrack(idau)->PdgCode()==pdg_part){
+	  isHFprim=kFALSE;
+	  break;
+	} 
+      }
+      if(!isHFprim) continue;
+      
+      //quark is selected, saving its label
+      if(pdg_part==4){
+	if(quark[0][0]>0) return kFALSE;
+	quark[0][0]=i;
+      }
+      else if(pdg_part==-4){
+	if(quark[0][1]>0) return kFALSE;
+	quark[0][1]=i;
+      }
+      else if(pdg_part==5){
+	if(quark[1][0]>0) return kFALSE;
+	quark[1][0]=i;
+      }
+      else if(pdg_part==-5){
+	if(quark[1][1]>0) return kFALSE;
+	quark[1][1]=i;
+      }
+    } //End looking at quarks
+    
+    //Look for Motherless hadrons or hadron's mother is u/d
+    else if(pdg_parta==411 || pdg_parta==421 || pdg_parta==431 || pdg_parta==511 || pdg_parta==521 || pdg_parta==531 || pdg_parta==541 || pdg_parta==4122 || pdg_parta==5122){
+      //Access the oldest ancestor that could be link to a corresponding quark
+      AliMCParticle *mother, *daughter;
+      Bool_t Osci(kFALSE);
+      if(cand->GetMother()>-1){
+	mother = dynamic_cast<AliMCParticle *>(fMCEvent->GetTrack(cand->GetMother()));
+	if(TMath::Abs(mother->PdgCode())<6)daughter=cand;
+	else daughter=mother;
+	
+	if((pdg_parta== 411 || pdg_parta== 421 || pdg_parta== 431 || pdg_parta== 4122) && IsaBhadron(mother->PdgCode())) Osci=kTRUE;
+	while (!(TMath::Abs(mother->PdgCode())<6 && TMath::Abs(mother->PdgCode())>0) && mother->GetMother()>-1){
+	  daughter = mother;
+	  mother = dynamic_cast<AliMCParticle *>(fMCEvent->GetTrack(mother->GetMother()));
+	  if((pdg_parta== 411 || pdg_parta== 421 || pdg_parta== 431 || pdg_parta== 4122) && IsaBhadron(mother->PdgCode())) Osci=kTRUE;
+	}
+      }
+      else daughter = cand;
+      mother=daughter;
+      
+      //Get Original mother in History
+      Int_t pdg_moma(0);
+      if(mother->GetMother()>-1) pdg_moma=TMath::Abs(fMCEvent->GetTrack(mother->GetMother())->PdgCode());
+      if(TMath::Abs(pdg_moma)>6 && mother->GetMother()>-1) continue;
+
+      if((pdg_part== 411 || pdg_part== 421 || pdg_part== 431 || pdg_part== 4122) && !Osci){
+	if(hadrontmp[0][0]>0 && hadrontmp[0][0]!=mother->GetLabel()) return kFALSE;
+	else hadrontmp[0][0]=mother->GetLabel();//c hadron type
+      }
+      else if((pdg_part== -411 || pdg_part== -421 || pdg_part== -431 || pdg_part== -4122) && !Osci){
+	if(hadrontmp[0][1]>0 && hadrontmp[0][1]!=mother->GetLabel()) return kFALSE;
+	else hadrontmp[0][1]=mother->GetLabel();//cbar hadron type
+      }
+      else if(pdg_part== -511 || pdg_part== -521 || pdg_part== -531 || pdg_part== -541 || pdg_part==5122 || ((pdg_part== 411 || pdg_part== 421 || pdg_part== 431 || pdg_part== 4122) && Osci)){
+	if(hadrontmp[1][0]>0 && hadrontmp[1][0]!=mother->GetLabel()) return kFALSE;
+	else hadrontmp[1][0]=mother->GetLabel();//b hadron type
+      }
+      else if(pdg_part== 511 || pdg_part== 521 || pdg_part== 531 || pdg_part== 541 || pdg_part==-5122 || ((pdg_part== -411 || pdg_part== -421 || pdg_part== -431 || pdg_part== -4122) && Osci)){
+	if(hadrontmp[1][1]>0 && hadrontmp[1][1]!=mother->GetLabel()) return kFALSE;
+	else hadrontmp[1][1]=mother->GetLabel();//bbar hadron type
+      } 
+    }//End checking motherless hadrons
+  }//End Loop on the Stack
+
+  //Linking childless quarks with corresponding motherless hadrons
+  if(quarktmp[0][0]>0 && hadrontmp[0][0]>0){
+    quark[0][0]=hadrontmp[0][0];
+  }
+  if(quarktmp[0][1]>0 && hadrontmp[0][1]>0){
+    quark[0][1]=hadrontmp[0][1];
+  }
+  if(quarktmp[1][0]>0 && hadrontmp[1][0]>0){
+    quark[1][0]=hadrontmp[1][0];
+  }
+  if(quarktmp[1][1]>0 && hadrontmp[1][1]>0){
+    quark[1][1]=hadrontmp[1][1];
+  }
+  
+  //Pairing the quarks and attribute them a process number: c/cbar(1) and b/bar(2)  
+  if(quark[0][0]>0 && quark[0][1]>0){
+    fhfproc.insert(std::pair<Int_t,Int_t>(quark[0][0],1));
+    fhfproc.insert(std::pair<Int_t,Int_t>(quark[0][1],1));
+  }
+  if(quark[1][0]>0 && quark[1][1]>0){
+    fhfproc.insert(std::pair<Int_t,Int_t>(quark[1][0],2));
+    fhfproc.insert(std::pair<Int_t,Int_t>(quark[1][1],2));
+  }
+
   return kTRUE;					   
 }
 
 //____________________________________________________________
 Int_t AliDielectronMC::GetHFProcess(const Int_t label)
 {
-  // To be implemented  
+  //
+  // return Heavy Flavour process number of the particle
+  //
+  if(!fCheckHF) return -1; //More than one pair of each -> Undeterminated (so far)
+  if(fhfproc.size()==0) return 0; //No HF pairs in the event
+
+  Int_t mother_label;
+  AliMCParticle *part = dynamic_cast<AliMCParticle *>(fMCEvent->GetTrack(label));
+  if(part->GetMother()==-1) return 0;
+
+  // Looking back in the history if an ancestor is coming from an HF process
+  AliMCParticle *mother = dynamic_cast<AliMCParticle *>(fMCEvent->GetTrack(part->GetMother()));
+  mother_label=mother->GetLabel();
+  for(std::map<Int_t,Int_t>::iterator it = fhfproc.begin(); it != fhfproc.end(); ++it){
+    if(mother_label==it->first) return it->second;
+  }  
+  
+  while (!(TMath::Abs(mother->PdgCode())==4 || TMath::Abs(mother->PdgCode())==5) && mother->GetMother()>-1){
+    mother = dynamic_cast<AliMCParticle *>(fMCEvent->GetTrack(mother->GetMother()));
+    mother_label=mother->GetLabel();
+    for(std::map<Int_t,Int_t>::iterator it = fhfproc.begin(); it != fhfproc.end(); ++it){
+      if(mother_label==it->first) return it->second;
+    }
+  }
+    
   return 0;
 }
+
+
+Int_t AliDielectronMC::IsaBhadron(Int_t pdg) const{
+  Int_t Bhadronspdg[]={511,521,10511,10521,513,523,10513,20513,20523,515,525,531,10531,533,10533,20533,535,541,10541,543,10543,20543,545};
+  Int_t size=sizeof(Bhadronspdg)/sizeof(*Bhadronspdg);
+  for(Int_t i=0;i<size;i++){
+    if(TMath::Abs(pdg==Bhadronspdg[i])) return kTRUE;
+  }
+  return kFALSE;
+}
+

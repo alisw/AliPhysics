@@ -24,7 +24,7 @@ AliAnalysisTaskSubJetFraction* AddTaskAliAnalysisTaskSubJetFraction(const char *
 								    AliAnalysisTaskSubJetFraction::JetShapeType jetShapeType,
 								    AliAnalysisTaskSubJetFraction::JetShapeSub jetShapeSub,
 								    AliAnalysisTaskSubJetFraction::JetSelectionType jetSelection,
-								    Float_t minpTHTrigger =0.,  Float_t maxpTHTrigger =0., AliAnalysisTaskSubJetFraction::DerivSubtrOrder derivSubtrOrder = 0  ) {
+								    Float_t minpTHTrigger =0.,  Float_t maxpTHTrigger =0., AliAnalysisTaskSubJetFraction::DerivSubtrOrder derivSubtrOrder = 0, Int_t SoftDropOn=0) {
   
   
   
@@ -70,6 +70,7 @@ AliAnalysisTaskSubJetFraction* AddTaskAliAnalysisTaskSubJetFraction(const char *
   task->SetJetRadius(R);
   task->SetSharedFractionPtMin(fSharedFractionPtMin);
   task->SetDerivativeSubtractionOrder(derivSubtrOrder);
+  task->SetSoftDropOn(SoftDropOn);
   if (jetSelection == AliAnalysisTaskSubJetFraction::kRecoil) task->SetPtTriggerSelections(minpTHTrigger, maxpTHTrigger);
 
   // TString thename(njetsBase);
@@ -308,7 +309,7 @@ AliAnalysisTaskSubJetFraction* AddTaskAliAnalysisTaskSubJetFraction(const char *
   else if (SubJetAlgorithm==10) SubJetAlgorithmString="_ReclusteringAlgorithm_Min";
   contName1 += SubJetAlgorithmString;
   contName2 += SubJetAlgorithmString;
-  if (task->GetSoftDropOn()==1) {
+  if (SoftDropOn==1) {
     contName1 += "_SD";
     contName2 += "_SD";
   }

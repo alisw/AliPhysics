@@ -28,7 +28,9 @@ AliAnalysisTaskHFEpACorrelation *AddTaskHFEpACorrelation(
                                                          TString HadronEfficiencyFile = "alien:///alice/cern.ch/user/h/hzanoli/Efficiency/Hadron_Tracking.root",
                                                          TString ElectronEfficiencyFile = "",
                                                          TString BackgroundWFileToData = "alien:///alice/cern.ch/user/h/hzanoli/BackgroundW/BackgroundWToData.root",
-                                                         TString Sufix = ""
+                                                         TString Sufix = "",
+                                                         Float_t ZvtxMin  = -10.,
+                                                         Float_t ZvtxMax = 10.
                                                          )
 {
     AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -84,6 +86,8 @@ AliAnalysisTaskHFEpACorrelation *AddTaskHFEpACorrelation(
         task->SetpTBins(16,pTBinsCorrelation);
     }
     
+    task->SetZVtxCut(ZvtxMin,ZvtxMax);
+
     
     if(Correlation)
     {

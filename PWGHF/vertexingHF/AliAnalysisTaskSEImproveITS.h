@@ -36,6 +36,8 @@ public:
   //  virtual void Terminate(Option_t *option);
   void SetImproveTracks(Bool_t flag=kTRUE) { fImproveTracks=flag; return; }
   void SetUpdateSecVertCovMat(Bool_t flag=kTRUE) { fUpdateSecVertCovMat=flag; return; }
+  void SetUpdateSTCovMatrix(Bool_t opt=kTRUE){fUpdateSTCovMatrix=opt;}
+  void SetUpdatePulls(Bool_t opt=kFALSE){fUpdatePulls=opt;}
 
 private:
   AliAnalysisTaskSEImproveITS(const AliAnalysisTaskSEImproveITS&);
@@ -93,13 +95,15 @@ private:
   Bool_t fRunInVertexing; /// flag to run hybrid task before the vertexingHF task or in standard mode
   Bool_t fImproveTracks; /// this is always kTRUE. kFALSE only if re-running on already improved AODs
   Bool_t fUpdateSecVertCovMat; /// flag to swicth on/off the modification of the sec vert cov matrix
+  Bool_t fUpdateSTCovMatrix; /// flag to switch on/off the update of the single track covariance matrix
+  Bool_t fUpdatePulls; /// flag to switch on/off the correction of the pulls
   TList   *fDebugOutput; //!<! collection of debug output
   TNtuple *fDebugNtuple; //!<! debug send on output slot 1
   Float_t *fDebugVars;   //!<! variables to store as degug info 
   Int_t   fNDebug;       /// Max number of debug entries into Ntuple
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskSEImproveITS,7);
+  ClassDef(AliAnalysisTaskSEImproveITS,8);
   /// \endcond
 };
 

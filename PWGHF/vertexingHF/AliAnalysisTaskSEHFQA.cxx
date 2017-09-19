@@ -236,14 +236,14 @@ AliAnalysisTaskSEHFQA::AliAnalysisTaskSEHFQA():AliAnalysisTaskSE()
   , fHiszvtxSelEv(0)
   , fHisWhichVert(0)
   , fHisWhichVertSelEv(0)
-  , fHisnClsITSvsNtrackletsSel(0)
-  , fHiszvtxvsSPDzvtx(0)
-  , fHiszvtxvsSPDzvtxSel(0)
   , fHisTrigCent(0)
   , fHisTrigMul(0)
   , fHisTrigCentSel(0)
   , fHisTrigMulSel(0)
   , fHisWhyEvRejected(0)
+  , fHisnClsITSvsNtrackletsSel(0)
+  , fHiszvtxvsSPDzvtx(0)
+  , fHiszvtxvsSPDzvtxSel(0)
   , fHisFEvents(0)
   , fHisTPCVZE_AngleQ(0)
   , fHisCentVsMultRPS(0)
@@ -417,14 +417,14 @@ AliAnalysisTaskSEHFQA::AliAnalysisTaskSEHFQA(const char *name, AliAnalysisTaskSE
   , fHiszvtxSelEv(0)
   , fHisWhichVert(0)
   , fHisWhichVertSelEv(0)
-  , fHisnClsITSvsNtrackletsSel(0)
-  , fHiszvtxvsSPDzvtx(0)
-  , fHiszvtxvsSPDzvtxSel(0)
   , fHisTrigCent(0)
   , fHisTrigMul(0)
   , fHisTrigCentSel(0)
   , fHisTrigMulSel(0)
   , fHisWhyEvRejected(0)
+  , fHisnClsITSvsNtrackletsSel(0)
+  , fHiszvtxvsSPDzvtx(0)
+  , fHiszvtxvsSPDzvtxSel(0)
   , fHisFEvents(0)
   , fHisTPCVZE_AngleQ(0)
   , fHisCentVsMultRPS(0)
@@ -2281,16 +2281,16 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
   Int_t nCandD0toKpi = arrayProngD0toKpi->GetEntriesFast();
   Int_t nCandDstar = arrayProngDstar->GetEntriesFast();
   Int_t nCandCasc=0;
-  Int_t n4Prong=0;
+  //  Int_t n4Prong=0;
   if(arrayProngCascades)nCandCasc = arrayProngCascades->GetEntriesFast();
-  if(arrayProng4Prong)n4Prong = arrayProng4Prong->GetEntriesFast();
+  //  if(arrayProng4Prong)n4Prong = arrayProng4Prong->GetEntriesFast();
   // D+, Ds and Lc
   AliAODRecoDecayHF *d;
   for (Int_t iCand = 0; iCand < nCand3Prong; iCand++) {
     d = (AliAODRecoDecayHF*)arrayProng3Prong->UncheckedAt(iCand);
     if(!vHF->FillRecoCand(aod,(AliAODRecoDecayHF3Prong*)d))continue;
 
-    if(fUseSelectionBit && !isSimpleMode){
+    if(fUseSelectionBit){
       Double_t ptCand_selBit = d->Pt();
       if(fUseSelectionBit && d->GetSelectionMap()) {
         if(d->HasSelectionBit(AliRDHFCuts::kDplusCuts)) fHisNentriesSelBit->Fill(0.0,ptCand_selBit);
@@ -2303,7 +2303,7 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
   for (Int_t iCand = 0; iCand < nCandD0toKpi; iCand++) {
     d = (AliAODRecoDecayHF*)arrayProngD0toKpi->UncheckedAt(iCand);
     if(!vHF->FillRecoCand(aod,(AliAODRecoDecayHF2Prong*)d))continue;
-    if(fUseSelectionBit && !isSimpleMode){
+    if(fUseSelectionBit){
       Double_t ptCand_selBit = d->Pt();
       if(fUseSelectionBit && d->GetSelectionMap()) {
         if(d->HasSelectionBit(AliRDHFCuts::kD0toKpiCuts)) fHisNentriesSelBit->Fill(3.0,ptCand_selBit);
@@ -2314,7 +2314,7 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
   for (Int_t iCand = 0; iCand < nCandDstar; iCand++) {
     d = (AliAODRecoDecayHF*)arrayProngDstar->UncheckedAt(iCand);
     if(!vHF->FillRecoCasc(aod,((AliAODRecoCascadeHF*)d),kTRUE))continue;
-    if(fUseSelectionBit && !isSimpleMode){
+    if(fUseSelectionBit){
       Double_t ptCand_selBit = d->Pt();
       if(fUseSelectionBit && d->GetSelectionMap()) {
         if(d->HasSelectionBit(AliRDHFCuts::kDstarCuts)) fHisNentriesSelBit->Fill(4.0,ptCand_selBit);

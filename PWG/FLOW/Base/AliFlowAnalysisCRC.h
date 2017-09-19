@@ -973,6 +973,16 @@ public:
   TH1D* GetFlowQCIntCorHistEG(Int_t const eg) const {return this->fFlowQCIntCorHistEG[eg];};
   void SetFlowQCIntCorHistEG(TH1D* const TP, Int_t const eg) {this->fFlowQCIntCorHistEG[eg] = TP;};
 
+  void SetFlowQCIntPtRanCorPro(TProfile* const TP, Int_t const pt, Int_t const eg, Int_t const k) {this->fFlowQCIntPtRanCorPro[pt][eg][k] = TP;};
+  void SetFlowQCIntPtRanCorNUAPro(TProfile* const TP, Int_t const pt, Int_t const eg, Int_t const k) {this->fFlowQCIntPtRanCorNUAPro[pt][eg][k] = TP;};
+  void SetFlowQCIntPtRanCorHist(TH1D* const TP, Int_t const pt, Int_t const eg, Int_t const k) {this->fFlowQCIntPtRanCorHist[pt][eg][k] = TP;};
+  void SetFlowQCIntPtRanCumHist(TH1D* const TP, Int_t const pt, Int_t const eg, Int_t const k) {this->fFlowQCIntPtRanCumHist[pt][eg][k] = TP;};
+  void SetFlowQCIntPtRanCorNUAHist(TH1D* const TP, Int_t const pt, Int_t const eg, Int_t const k) {this->fFlowQCIntPtRanCorNUAHist[pt][eg][k] = TP;};
+  void SetFlowQCIntPtRanCorProEG(TProfile* const TP, Int_t const pt, Int_t const eg) {this->fFlowQCIntPtRanCorProEG[pt][eg] = TP;};
+  void SetFlowQCIntPtRanCorNUAProEG(TProfile* const TP, Int_t const pt, Int_t const eg, Int_t const k) {this->fFlowQCIntPtRanCorNUAProEG[pt][eg][k] = TP;};
+  void SetFlowQCIntPtRanCorNUAHistEG(TH1D* const TP, Int_t const pt, Int_t const eg, Int_t const k) {this->fFlowQCIntPtRanCorNUAHistEG[pt][eg][k] = TP;};
+  void SetFlowQCIntPtRanCorHistEG(TH1D* const TP, Int_t const pt, Int_t const eg) {this->fFlowQCIntPtRanCorHistEG[pt][eg] = TP;};
+
   void SetFlowQCSpectra(TH2D* const TH) {this->fFlowQCSpectra = TH;};
   TH2D* GetFlowQCSpectra() const {return this->fFlowQCSpectra;};
   void SetFlowQCIntCorProTest(TProfile2D* const TP, Int_t const eg, Int_t const j, Int_t const k) {this->fFlowQCIntCorProTest[eg][j][k] = TP;};
@@ -1030,6 +1040,12 @@ public:
   TH1D* GetFlowGFMixedCorHist(Int_t const c, Int_t const eg) const {return this->fFlowGFMixedCorHist[c][eg];};
   void SetFlowGFMixedFinalHist(TH1D* const TP, Int_t const c, Int_t const eg) {this->fFlowGFMixedFinalHist[c][eg] = TP;};
   TH1D* SetFlowGFMixedFinalHist(Int_t const c, Int_t const eg) const {return this->fFlowGFMixedFinalHist[c][eg];};
+
+  // sub-sampling
+  void SetFlowGFIntCorProSS(TProfile* const TP, Int_t const s, Int_t const c, Int_t const eg) {this->fFlowGFIntCorProSS[s][c][eg] = TP;};
+  void SetFlowGFIntCorHistSS(TH1D* const TP, Int_t const s, Int_t const c, Int_t const eg) {this->fFlowGFIntCorHistSS[s][c][eg] = TP;};
+  void SetFlowGFIntCovProSS(TProfile* const TP, Int_t const s, Int_t const c, Int_t const eg, Int_t const k) {this->fFlowGFIntCovProSS[s][c][eg][k] = TP;};
+  void SetFlowGFIntCovHistSS(TH1D* const TP, Int_t const s, Int_t const c, Int_t const eg, Int_t const k) {this->fFlowGFIntCovHistSS[s][c][eg][k] = TP;};
 
   // Flow SP ZDC
   void SetFlowSPZDCList(TList* const TL) {this->fFlowSPZDCList = TL;};
@@ -1157,6 +1173,7 @@ public:
   Int_t GetMinMulZN() const {return this->fMinMulZN;};
   void SetMaxDevZN(Float_t weights) {this->fMaxDevZN = weights;};
   Float_t GetMaxDevZN() const {return this->fMaxDevZN;};
+  void StoreExtraHistoForSubSampling(Bool_t b) {this->fStoreExtraHistoForSubSampling = b;};
 
 private:
 
@@ -1885,11 +1902,12 @@ private:
   TList *fFlowQCVtxList[fCRCMaxnRun];    //! QC List
   const static Int_t fkFlowQCRbRnHist = 2;
   const static Int_t fkFlowQCRbRnHist2 = 3;
-  const static Int_t fkFlowQCRbRnHar = 2;
+  const static Int_t fkFlowQCRbRnHar = 3;
   const static Int_t fkFlowQCRbRnVar = 3;
   const static Int_t fkFlowQCRbRnVar2 = 2;
   TProfile2D *fFlowQCIntRbRProPtEta[fCRCMaxnRun][fkFlowQCRbRnHar][fkFlowQCRbRnVar][fkFlowQCRbRnHist]; //!
   TProfile *fFlowQCIntRbRPro[fCRCMaxnRun][fkFlowQCRbRnHar][fkFlowQCRbRnVar2][fkFlowQCRbRnHist2]; //!
+  TProfile *fFlowQCIntRbRProTotal[fkFlowQCRbRnHar][fkFlowQCRbRnVar2][fkFlowQCRbRnHist2]; //!
 
   const static Int_t fkFlowQCnIntCorPro = 5;
   TProfile *fFlowQCIntCorPro[fFlowNHarm][fkFlowQCnIntCorPro]; //!
@@ -1897,6 +1915,23 @@ private:
   TH1D *fFlowQCIntCumHist[fFlowNHarm][fkFlowQCnIntCorPro]; //!
   TProfile *fFlowQCIntCorNUAPro[fFlowNHarm][6]; //!
   TH1D *fFlowQCIntCorNUAHist[fFlowNHarm][6]; //!
+
+  TProfile *fFlowQCIntCorProEG[fFlowNHarm]; //!
+  TH1D *fFlowQCIntCorHistEG[fFlowNHarm]; //!
+  TProfile *fFlowQCIntCorNUAProEG[fFlowNHarm][4]; //!
+  TH1D *fFlowQCIntCorNUAHistEG[fFlowNHarm][4]; //!
+
+  const static Int_t fkFlowQCnPtRanges = 2; // 0.2-3, 0.2-5
+  TProfile *fFlowQCIntPtRanCorPro[fkFlowQCnPtRanges][fFlowNHarm][fkFlowQCnIntCorPro]; //!
+  TH1D *fFlowQCIntPtRanCorHist[fkFlowQCnPtRanges][fFlowNHarm][fkFlowQCnIntCorPro]; //!
+  TH1D *fFlowQCIntPtRanCumHist[fkFlowQCnPtRanges][fFlowNHarm][fkFlowQCnIntCorPro]; //!
+  TProfile *fFlowQCIntPtRanCorNUAPro[fkFlowQCnPtRanges][fFlowNHarm][6]; //!
+  TH1D *fFlowQCIntPtRanCorNUAHist[fkFlowQCnPtRanges][fFlowNHarm][6]; //!
+
+  TProfile *fFlowQCIntPtRanCorProEG[fkFlowQCnPtRanges][fFlowNHarm]; //!
+  TH1D *fFlowQCIntPtRanCorHistEG[fkFlowQCnPtRanges][fFlowNHarm]; //!
+  TProfile *fFlowQCIntPtRanCorNUAProEG[fkFlowQCnPtRanges][fFlowNHarm][4]; //!
+  TH1D *fFlowQCIntPtRanCorNUAHistEG[fkFlowQCnPtRanges][fFlowNHarm][4]; //!
 
   const static Int_t fkFlowQCnIntCorTest = 1;
   const static Int_t fkFlowQCnVtxCorTest = 3;
@@ -1906,16 +1941,6 @@ private:
   TH2D *fFlowQCIntFinHistTest[fFlowNHarm][fkFlowQCnVtxCorTest][fkFlowQCnIntCorTest]; //! correlation profile, precision test
   const static Int_t fkFlowQCnNUATest = 6;
   TProfile2D *fFlowQCIntCorNUAProTest[fFlowNHarm][fkFlowQCnNUATest]; //!
-
-//  TList* fFlowQCOrdMagList;
-//  const static Int_t fkNOrdMag = 20;
-//  const static Int_t fkNHistOrdMag = 4;
-//  TH1D *fFlowQCIntCorHistOrdMag[fFlowNHarm][fkNOrdMag][fkNHistOrdMag]; //!
-
-  TProfile *fFlowQCIntCorProEG[fFlowNHarm]; //!
-  TH1D *fFlowQCIntCorHistEG[fFlowNHarm]; //!
-  TProfile *fFlowQCIntCorNUAProEG[fFlowNHarm][4]; //!
-  TH1D *fFlowQCIntCorNUAHistEG[fFlowNHarm][4]; //!
 
   const static Int_t fFlowQCNRef = 14;
   TProfile *fFlowQCRefCorPro[fFlowNHarm][fFlowQCNRef]; //!
@@ -1945,6 +1970,13 @@ private:
   TProfile *fFlowGFMixedCorPro[fkFlowGFNHarm][fkFlowGFNHarm]; //!
   TH1D *fFlowGFMixedCorHist[fkFlowGFNHarm][fkFlowGFNHarm]; //!
   TH1D *fFlowGFMixedFinalHist[fkFlowGFNHarm][fkFlowGFNHarm]; //!
+
+  // sub-sampling
+  const static Int_t fkFlowGFNSubSampling = 10;
+  TProfile *fFlowGFIntCorProSS[fkFlowGFNSubSampling][fkFlowGFNHarm][fkFlowGFNOrde]; //!
+  TH1D *fFlowGFIntCorHistSS[fkFlowGFNSubSampling][fkFlowGFNHarm][fkFlowGFNOrde]; //!
+  TProfile *fFlowGFIntCovProSS[fkFlowGFNSubSampling][fkFlowGFNHarm][fkFlowGFNOrde][fkFlowGFNOrde]; //!
+  TH1D *fFlowGFIntCovHistSS[fkFlowGFNSubSampling][fkFlowGFNHarm][fkFlowGFNOrde][fkFlowGFNOrde]; //!
 
   // SC w ZDC
   TList *fFlowQCCorrZDCList; //!
@@ -2053,8 +2085,9 @@ private:
   Float_t fZDCGainAlpha;
   Bool_t fbFlagIsPosMagField;
   Bool_t fbFlagIsBadRunForC34;
+  Bool_t fStoreExtraHistoForSubSampling;
 
-  ClassDef(AliFlowAnalysisCRC,71);
+  ClassDef(AliFlowAnalysisCRC,72);
 
 };
 

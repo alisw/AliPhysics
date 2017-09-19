@@ -553,13 +553,8 @@ void AliReducedVarManager::FillEventInfo(BASEEVENT* baseEvent, Float_t* values, 
               values[ indexNotSmeared ] = values[ indexAnotSmeared ] + values[ indexCnotSmeared ];
               values[ indexSmeared ]    = values[ indexAsmeared ] + values[ indexCsmeared ];
             }
-            
-            
           }
        }
-      
-      
-      
     }
     
     else{

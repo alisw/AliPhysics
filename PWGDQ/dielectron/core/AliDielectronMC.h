@@ -18,7 +18,6 @@
 #endif
 class AliESDEvent;
 class AliHFEpid;
-class AliStack;
 class AliMCEvent;
 class AliESDtrack;
 class AliAODTrack;
@@ -48,24 +47,23 @@ public:
 
   void Initialize();                              // initialization
   Int_t GetNMCTracks();                                     // return number of generated tracks
-  Int_t GetNMCTracksFromStack();                            // return number of generated tracks from stack
+  Int_t GetNMCTracksFromStack();                            // return number of generated tracks from MC event
   Int_t GetNPrimary() const;                                      // return number of primary tracks
-  Int_t GetNPrimaryFromStack();                                   // return number of primary tracks from stack
+  Int_t GetNPrimaryFromStack();                                   // return number of primary tracks from MC event
   Int_t GetMCPID(const AliESDtrack* _track);                      // return MC PID
   Int_t GetMCPID(const AliAODTrack* _track);                      // return MC PID for AODtrack
-  Int_t GetMCPIDFromStack(const AliESDtrack* _track);             // return MC PID
-  Int_t GetMotherPDG(const AliESDtrack* _track);                  // return mother PID from the MC stack
-  Int_t GetMotherPDG(const AliAODTrack* _track);                  // return mother PID from the MC stack
-  Int_t GetMotherPDG(const AliMCParticle* _track);                  // return mother PID from the MC stack
-  Int_t GetMotherPDG(const AliAODMCParticle* _track);                  // return mother PID from the MC stack
-  Int_t GetMotherPDGFromStack(const AliESDtrack* _track);         // return mother PID from the MC stack
+  Int_t GetMCPIDFromStack(const AliESDtrack* _track);             // return MC PID from MC event                                                                                       
+  Int_t GetMotherPDG(const AliESDtrack* _track);                  // return mother PID from the MC event                                                                               
+  Int_t GetMotherPDG(const AliAODTrack* _track);                  // return mother PID from the MC event                                                                               
+  Int_t GetMotherPDG(const AliMCParticle* _track);                  // return mother PID from the MC event                                                                             
+  Int_t GetMotherPDG(const AliAODMCParticle* _track);                  // return mother PID from the MC event                                                                          
+  Int_t GetMotherPDGFromStack(const AliESDtrack* _track);         // return mother PID from the MC event  
   Int_t GetMCProcess(const AliESDtrack* _track);                  // return process number
   Int_t GetMCProcessFromStack(const AliESDtrack* _track);         // return process number
   Int_t GetMCProcessMother(const AliESDtrack* _track);            // return process number of the mother track
   Int_t GetMCProcessMotherFromStack(const AliESDtrack* _track);   // return process number of the mother track
 
   Bool_t ConnectMCEvent();
-  Bool_t UpdateStack();
 
   Bool_t IsMotherPdg(const AliDielectronPair* pair, Int_t pdgMother);
   Bool_t IsMotherPdg(const AliVParticle *particle1, const AliVParticle *particle2, Int_t pdgMother);
@@ -93,14 +91,14 @@ public:
 
 //   AliVParticle* GetMCTrackFromMCEvent(const AliVParticle *track);   // return MC track directly from MC event
   AliVParticle* GetMCTrackFromMCEvent(Int_t label) const;           // return MC track directly from MC event
-  TParticle* GetMCTrackFromStack(const AliESDtrack* _track);        // return MC track from stack
+  TParticle* GetMCTrackFromStack(const AliESDtrack* _track);        // return MC track from MC event
   AliMCParticle* GetMCTrack(const AliESDtrack* _track);             // return MC track associated with reco track
   AliAODMCParticle* GetMCTrack( const AliAODTrack* _track);          // return MC track associated with reco AOD track
 
-  TParticle* GetMCTrackMotherFromStack(const AliESDtrack* _track);  // return MC mother track from stack
-  AliMCParticle* GetMCTrackMother(const AliESDtrack* _track);       // return MC mother track from stack
+  TParticle* GetMCTrackMotherFromStack(const AliESDtrack* _track);  // return MC mother track from MC event                                                                            
+  AliMCParticle* GetMCTrackMother(const AliESDtrack* _track);       // return MC mother track from MC event 
   AliAODMCParticle* GetMCTrackMother(const AliAODTrack* _track);       // return MC mother fot track AODTrack
-  AliMCParticle* GetMCTrackMother(const AliMCParticle* _particle);       // return MC mother track from stack
+  AliMCParticle* GetMCTrackMother(const AliMCParticle* _particle);       // return MC mother track from stack                                                                          
   AliAODMCParticle* GetMCTrackMother(const AliAODMCParticle* _particle);       // return MC mother track from stack
 
   Int_t NumberOfDaughters(const AliESDtrack* track);                 // return number of daughters
@@ -118,7 +116,6 @@ public:
 
 private:
   AliMCEvent    *fMCEvent;  // MC event object
-  AliStack      *fStack;    // MC stack
 
   AnalysisType fAnaType;    // Analysis type
   Bool_t fHasMC;            // Do we have an MC handler?
@@ -152,8 +149,9 @@ private:
 
   //MC - Heavy Flavour related methods
   Bool_t LoadHFPairs();
+  Int_t  IsaBhadron(Int_t pdg) const;
   
-  ClassDef(AliDielectronMC, 1)
+  ClassDef(AliDielectronMC, 2)
 };
 
 //

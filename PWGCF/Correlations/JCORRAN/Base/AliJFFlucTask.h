@@ -35,7 +35,7 @@
 
 using namespace std;
 
-class TF1;
+//class TF1;
 class TH1D;
 class TH2D;
 class TList;
@@ -115,7 +115,7 @@ public:
 					cout << "setting : QC eta range " << fQC_eta_min << "~" << fQC_eta_max << endl;}
 
 private:
-	 TF1 *pfOutlierLowCut, *pfOutlierHighCut;
+	 //TF1 *pfOutlierLowCut, *pfOutlierHighCut;
 	 TClonesArray * fInputList;  // tracklist
 	 TDirectory *fOutput;     // output
 	 AliJFFlucAnalysis *fFFlucAna; // analysis code

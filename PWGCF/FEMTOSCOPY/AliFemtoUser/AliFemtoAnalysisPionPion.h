@@ -14,6 +14,9 @@ class AliFemtoPairCutDetaDphi;
 class TList;
 
 
+#include "AliFemtoConfigObject.h"
+
+
 #include "AliFemtoVertexMultAnalysis.h"
 
 
@@ -126,6 +129,8 @@ protected:
   /// This is a Monte Carlo analysis
   Bool_t fMCAnalysis;
 
+  /// Saved Configuration
+  AliFemtoConfigObject fConfiguration;
 };
 
 /// \class AliFemtoAnalysisPionPion::AnalysisParams

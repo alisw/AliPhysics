@@ -1840,9 +1840,8 @@ Int_t AliMultSelectionTask::SetupRun(const AliVEvent* const esd)
             if ( lItsEPOSLHC ){
                 lProductionName = Form("%s-DefaultMC-EPOSLHC",lPeriodName.Data());
                 AliWarning(Form(" This is EPOS LHC! Will use OADB named %s",lProductionName.Data()));
-                AliWarning(" This feature is being developed NOW! Hang in there! ");
             }
-            if ( (!lItsHijing) && (!lItsDPMJet) ){
+            if ( (!lItsHijing) && (!lItsDPMJet) && (!lItsEPOSLHC) ){
                 AliWarning(" Unable to detect generator type from header. Sorry.");
             }
         }else{
@@ -2400,9 +2399,12 @@ TString AliMultSelectionTask::GetPeriodNameByRunNumber() const
     if ( fCurrentRun >= 256146 && fCurrentRun <= 256420 ) lProductionName = "LHC16j";
     if ( fCurrentRun >= 256504 && fCurrentRun <= 258537 ) lProductionName = "LHC16k";
     if ( fCurrentRun >= 258883 && fCurrentRun <= 260187 ) lProductionName = "LHC16l";
+    if ( fCurrentRun >= 260218 && fCurrentRun <= 260647 ) lProductionName = "LHC16m";
     if ( fCurrentRun >= 262395 && fCurrentRun <= 264035 ) lProductionName = "LHC16o";
     if ( fCurrentRun >= 264076 && fCurrentRun <= 264347 ) lProductionName = "LHC16p";
-    if ( fCurrentRun >= 260218 && fCurrentRun <= 260647 ) lProductionName = "LHC16m";
+
+    //2017
+    if ( fCurrentRun >= 270822 && fCurrentRun <= 270830 ) lProductionName = "LHC17e";
     
     //Registered Productions : Run 2 Pb-Pb
     if ( fCurrentRun >= 243395 && fCurrentRun <= 243984 ) lProductionName = "LHC15m";

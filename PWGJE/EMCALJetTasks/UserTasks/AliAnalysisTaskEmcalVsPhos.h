@@ -78,6 +78,8 @@ class AliAnalysisTaskEmcalVsPhos : public AliAnalysisTaskEmcalJet {
   void SetPlotFineGrainedEtaPhi(Bool_t b)                   { fPlotFineGrainedEtaPhi = b; }
   void SetPlotEvenOddEta(Bool_t b)                          { fPlotEvenOddEta = b; }
   void SetPlotCellSMDensity(Bool_t b)                       { fPlotCellSMDensity = b; }
+  void SetExcludeRejectedCells(Bool_t b)                    { fExcludeRejectedCells = b; }
+  void SetPlotFineGrainedCentrality(Bool_t b)               { fPlotFineGrainedCentrality = b; }
 
  protected:
   void                        ExecOnce()                                        ;
@@ -126,6 +128,8 @@ class AliAnalysisTaskEmcalVsPhos : public AliAnalysisTaskEmcalJet {
   Bool_t                      fPlotFineGrainedEtaPhi;               ///< Set whether to plot fine-grained eta-phi bins in cluster THnSparse
   Bool_t                      fPlotEvenOddEta;                      ///< Set whether to add axis to THnSparse separating even/odd eta columns
   Bool_t                      fPlotCellSMDensity;                   ///< Set whether to plot SM cell density when computing local density
+  Bool_t                      fExcludeRejectedCells;                ///< Set whether to exclude cells from rejected clusters in cone/SM studies
+  Bool_t                      fPlotFineGrainedCentrality;           ///< Set whether to plot a more fine grained centrality binning
 
   // Plotting parameters
   Float_t                     fMaxPt;                               ///< Histogram pt limit
@@ -151,7 +155,7 @@ class AliAnalysisTaskEmcalVsPhos : public AliAnalysisTaskEmcalJet {
   AliAnalysisTaskEmcalVsPhos &operator=(const AliAnalysisTaskEmcalVsPhos&); // not implemented
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskEmcalVsPhos, 7);
+  ClassDef(AliAnalysisTaskEmcalVsPhos, 8);
   /// \endcond
 };
 #endif

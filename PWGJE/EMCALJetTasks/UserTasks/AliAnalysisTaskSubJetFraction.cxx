@@ -44,6 +44,8 @@
 #include "AliAODEvent.h"
 #include "AliAnalysisTaskSubJetFraction.h"
 
+#include "FJ_includes.h"
+
 //Globals
 
 
@@ -84,7 +86,8 @@ AliAnalysisTaskSubJetFraction::AliAnalysisTaskSubJetFraction() :
   fRecoilAngularWindow(0.6),
   fSemigoodCorrect(0),
   fHolePos(0),
-  fHoleWidth(0), 
+  fHoleWidth(0),
+  fRandom(0x0),
   fCentSelectOn(kTRUE),
   fCentMin(0),
   fCentMax(10),
@@ -238,7 +241,8 @@ AliAnalysisTaskSubJetFraction::AliAnalysisTaskSubJetFraction(const char *name) :
   fRecoilAngularWindow(0.6),
   fSemigoodCorrect(0),
   fHolePos(0),
-  fHoleWidth(0), 
+  fHoleWidth(0),
+  fRandom(0x0),
   fCentSelectOn(kTRUE),
   fCentMin(0),
   fCentMax(10),
@@ -1329,12 +1333,12 @@ Bool_t AliAnalysisTaskSubJetFraction::FillHistograms()
 	    fShapesVar[24]=SubJetFraction(Jet1, Reclusterer1, 1, 0, kTRUE, kFALSE);
 	    fShapesVar[26]=SubJetFraction(Jet1, Reclusterer1, 2, 0, kTRUE, kFALSE);
 	  }
-	  fShapesVar[1]=-2;
-	  fShapesVar[3]=-2;
-	  fShapesVar[5]=-2;
-	  fShapesVar[7]=-2;
-	  fShapesVar[9]=-2;
-	  fShapesVar[11]=-2;
+	  fShapesVar[1]=FjNSubJettiness(Jet1,0,1,0,1,0);
+	  fShapesVar[3]=FjNSubJettiness(ModifyJet(Jet1,0,"Randomise"),0,1,0,1,0);
+	  fShapesVar[5]=FjNSubJettiness(ModifyJet(Jet1,0,"AddExtraProng_02_30"),0,1,0,1,0);
+	  fShapesVar[7]=FjNSubJettiness(Jet1,0,2,0,1,0);
+	  fShapesVar[9]=FjNSubJettiness(ModifyJet(Jet1,0,"Randomise"),0,2,0,1,0);
+	  fShapesVar[11]=FjNSubJettiness(ModifyJet(Jet1,0,"AddExtraProng_02_30"),0,2,0,1,0);
 	  fShapesVar[13]=-2;
 	  fShapesVar[15]=-2;
 	  fShapesVar[17]=-2;
@@ -1826,4 +1830,85 @@ void AliAnalysisTaskSubJetFraction::Terminate(Option_t *)
     */
   }
   
+}
+
+///////////Function to modify jets based on Toy Models/////////
+AliEmcalJet* AliAnalysisTaskSubJetFraction::ModifyJet(AliEmcalJet* Jet, Int_t JetContNb, TString Modification){
+
+  std::vector<fastjet::PseudoJet> fInputVectors;
+  AliJetContainer *fJetCont = GetJetContainer(JetContNb);
+  AliParticleContainer *fTrackCont = fJetCont->GetParticleContainer();
+  if (fTrackCont) for (Int_t i=0; i<Jet->GetNumberOfTracks(); i++) {
+      AliVParticle *fTrk = Jet->TrackAt(i, fTrackCont->GetArray());
+      if (!fTrk) continue;    
+      fastjet::PseudoJet PseudoTracks(fTrk->Px(), fTrk->Py(), fTrk->Pz(),fTrk->E());
+      PseudoTracks.set_user_index(Jet->TrackAt(i)+100); //100 is very arbitary....why is it here anyway?
+      fInputVectors.push_back(PseudoTracks);
+    }
+  // if (Modification=="Randomise") fInputVectors=RandomiseTracks(fInputVectors);
+  //if (Modification=="AddExtraProng_02_30") fInputVectors=AddExtraProng(fInputVectors,0.2,0.3);
+
+  fastjet::JetDefinition *fJetDef;         
+  fastjet::ClusterSequence *fClustSeqSA;
+  fJetDef = new fastjet::JetDefinition(fastjet::antikt_algorithm, fJetRadius*2, static_cast<fastjet::RecombinationScheme>(0), fastjet::BestFJ30 ); 
+  try {
+    fClustSeqSA = new fastjet::ClusterSequence(fInputVectors, *fJetDef);
+  } catch (fastjet::Error) {
+    AliError(" [w] FJ Exception caught.");
+    //return -1;
+  }
+  std::vector<fastjet::PseudoJet> Modified_Jet;
+  Modified_Jet.clear();
+  Modified_Jet=fClustSeqSA->inclusive_jets(0);
+
+  AliEmcalJet *Modified_AliEmcalJet= new AliEmcalJet(Modified_Jet[0].perp(), Modified_Jet[0].pseudorapidity(), Modified_Jet[0].phi(), Modified_Jet[0].m());
+  return Modified_AliEmcalJet;
+				
+}
+
+
+std::vector<fastjet::PseudoJet> AliAnalysisTaskSubJetFraction::RandomiseTracks(std::vector<fastjet::PseudoJet> fInputVectors){
+    fRandom->SetSeed(0);
+    Double_t Random_Phi=0.0;
+   Double_t Random_Eta=0.0;
+   Double_t Track_Pt=0.0;
+  std::vector<fastjet::PseudoJet> Random_Track_Vector;
+  Random_Track_Vector.clear();
+   for (Int_t i=0; i< fInputVectors.size(); i++){
+   Random_Phi=fRandom->Uniform(2*TMath::Pi());
+    Random_Eta=fRandom->Uniform(-0.9,0.9);
+    Track_Pt=fInputVectors[i].perp();
+    fastjet::PseudoJet Random_Track(Track_Pt*TMath::Cos(Random_Phi),Track_Pt*TMath::Sin(Random_Phi),Track_Pt*TMath::SinH(Random_Eta),(fInputVectors[i].m()*fInputVectors[i].m())+(Track_Pt*TMath::CosH(Random_Eta)*Track_Pt*TMath::CosH(Random_Eta)));
+    Random_Track.set_user_index(i);
+   Random_Track_Vector.push_back(Random_Track); 
+   }
+  return Random_Track_Vector;
+}
+
+std::vector<fastjet::PseudoJet> AliAnalysisTaskSubJetFraction::AddExtraProng(std::vector<fastjet::PseudoJet> fInputVectors, Double_t Distance, Double_t PtFrac){
+    fRandom->SetSeed(0);
+   fastjet::JetDefinition *fJetDef;         
+   fastjet::ClusterSequence *fClustSeqSA;
+   fJetDef = new fastjet::JetDefinition(fastjet::antikt_algorithm, fJetRadius*2, static_cast<fastjet::RecombinationScheme>(0), fastjet::BestFJ30 ); 
+  try {
+    fClustSeqSA = new fastjet::ClusterSequence(fInputVectors, *fJetDef);
+   } catch (fastjet::Error) {
+    AliError(" [w] FJ Exception caught.");
+  }
+  
+  std::vector<fastjet::PseudoJet> Jet;
+  Jet.clear();
+  Jet= fClustSeqSA->inclusive_jets(0);
+  Double_t Extra_Track_Phi=fRandom->Uniform(-1*Distance,Distance); 
+  Double_t Extra_Track_Eta=TMath::Sqrt((Distance*Distance)-(Extra_Track_Phi*Extra_Track_Phi));
+  Double_t Eta_Sign =  fRandom->Uniform(-1,1);
+  Eta_Sign=Eta_Sign/TMath::Abs(Eta_Sign);
+  Extra_Track_Eta=Extra_Track_Eta*Eta_Sign;
+  Extra_Track_Phi=Jet[0].phi()-Extra_Track_Phi;
+  Extra_Track_Eta=Jet[0].pseudorapidity()-Extra_Track_Eta;
+  Double_t Extra_Track_Pt=Jet[0].perp()*PtFrac;
+  fastjet::PseudoJet ExtraTrack(Extra_Track_Pt*TMath::Cos(Extra_Track_Phi),Extra_Track_Pt*TMath::Sin(Extra_Track_Phi),Extra_Track_Pt*TMath::SinH(Extra_Track_Eta),TMath::Sqrt((Jet[0].m()*Jet[0].m())+(Extra_Track_Pt*TMath::CosH(Extra_Track_Eta)*Extra_Track_Pt*TMath::CosH(Extra_Track_Eta))));  
+  ExtraTrack.set_user_index(150);
+  fInputVectors.push_back(ExtraTrack);
+  return fInputVectors;
 }

@@ -59,13 +59,22 @@ class AliEventCuts : public TList {
       kVertexQuality,
       kPileUp,
       kMultiplicity,
+      kINELgt0,
       kCorrelations,
       kAllCuts
+    };
+
+    enum NormMask {
+      kAnyEvent = BIT(kNoCuts),
+      kPassesAllCuts = (BIT(kAllCuts) - 1) ^ (BIT(kVertexPositionSPD) | BIT(kVertexPositionTracks) | BIT(kVertexSPD) | BIT(kVertexTracks)),
+      kPassesNonVertexRelatedSelections = kPassesAllCuts ^ (BIT(kVertex) | BIT(kVertexPosition) | BIT(kVertexQuality)),
+      kHasReconstructedVertex = kPassesAllCuts ^ BIT(kVertexPosition)
     };
 
 
     bool   AcceptEvent (AliVEvent *ev);
     bool   PassedCut (AliEventCuts::CutsBin cut) { return fFlag & BIT(cut); }
+    bool   CheckNormalisationMask (AliEventCuts::NormMask mask) { return (fFlag & mask) == mask; }
     void   AddQAplotsToList(TList *qaList = 0x0, bool addCorrelationPlots = false);
     void   OverrideAutomaticTriggerSelection(unsigned long tr, bool ov = true) { fTriggerMask = tr; fOverrideAutoTriggerMask = ov; }
     void   OverridePileUpCuts(int minContrib, float minZdist, float nSigmaZdist, float nSigmaDiamXY, float nSigmaDiamZ, bool ov = true);
@@ -117,6 +126,7 @@ class AliEventCuts : public TList {
     float         fMinCentrality;                 ///< Minimum centrality to be analised
     float         fMaxCentrality;                 ///< Maximum centrality to be analised
     bool          fMultSelectionEvCuts;           ///< Enable/Disable the event selection applied in the AliMultSelection framework
+    bool          fSelectInelGt0;                 ///< Select only INEL > 0 events
 
     bool          fUseVariablesCorrelationCuts;   ///< Switch on/off the cuts on the correlation between event variables
     bool          fUseEstimatorsCorrelationCut;   ///< Switch on/off the cut on the correlation between centrality estimators
@@ -178,7 +188,7 @@ class AliEventCuts : public TList {
     AliESDtrackCuts* fFB32trackCuts; //!<! Cuts corresponding to FB32 in the ESD (used only for correlations cuts in ESDs)
     AliESDtrackCuts* fTPConlyCuts;   //!<! Cuts corresponding to the standalone TPC cuts in the ESDs (used only for correlations cuts in ESDs)
 
-    ClassDef(AliEventCuts,3)
+    ClassDef(AliEventCuts,4)
 };
 
 template<typename F> F AliEventCuts::PolN(F x,F* coef, int n) {

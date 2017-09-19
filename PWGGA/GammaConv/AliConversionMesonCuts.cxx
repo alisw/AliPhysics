@@ -207,8 +207,8 @@ AliConversionMesonCuts::AliConversionMesonCuts(const AliConversionMesonCuts &ref
   fFMaxOpanCut(0),
   fMaxOpanPtDepCut(kFALSE),
   fBackgroundHandler(ref.fBackgroundHandler),
-  fBackgroundUseSideband(kFALSE),
-  fBackgroundUseLikeSign(kFALSE),
+  fBackgroundUseSideband(ref.fBackgroundUseSideband),
+  fBackgroundUseLikeSign(ref.fBackgroundUseLikeSign),
   fSidebandMixingLow(0.180),
   fSidebandMixingHigh(0.300),
   fCutString(NULL),
@@ -1980,6 +1980,7 @@ Bool_t AliConversionMesonCuts::SetBackgroundScheme(Int_t BackgroundScheme){
       fUseTrackMultiplicityForBG  = kFALSE;
       fdoBGProbability            = kFALSE;
       fBackgroundUseLikeSign      = kTRUE;
+      fBackgroundUseSideband      = kFALSE;
     break;
   case 11: // mixed event with pi0 sideband candidates (right side of pi0 peak)
       fUseRotationMethodInBG      = kFALSE;

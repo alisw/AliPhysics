@@ -76,12 +76,6 @@ AliJFFlucTask::AliJFFlucTask():
 	fQC_eta_min=-0.8;
 	fQC_eta_max=0.8;
 
-	pfOutlierLowCut = new TF1("fLowCut","[0]+[1]*x - 5.*([2]+[3]*x+[4]*x*x+[5]*x*x*x)",0,100);
-	pfOutlierHighCut = new TF1("fHighCut","[0]+[1]*x + 5.5*([2]+[3]*x+[4]*x*x+[5]*x*x*x)",0,100);
-
-	pfOutlierLowCut->SetParameters(0.0157497, 0.973488, 0.673612, 0.0290718, -0.000546728, 5.82749e-06);
-	pfOutlierHighCut->SetParameters(0.0157497, 0.973488, 0.673612, 0.0290718, -0.000546728, 5.82749e-06);
-
 	for(int icent=0; icent<7; icent++){
 		for(int isub=0; isub<2; isub++){
 			h_ModuledPhi[icent][isub]=NULL;
@@ -125,12 +119,6 @@ AliJFFlucTask::AliJFFlucTask(const char *name,  Bool_t IsMC, Bool_t IsExcludeWea
 	fQC_eta_min=-0.8;
 	fQC_eta_max=0.8;
 
-	pfOutlierLowCut = new TF1("fLowCut","[0]+[1]*x - 5.*([2]+[3]*x+[4]*x*x+[5]*x*x*x)",0,100);
-    	pfOutlierHighCut = new TF1("fHighCut","[0]+[1]*x + 5.5*([2]+[3]*x+[4]*x*x+[5]*x*x*x)",0,100);
-
-	pfOutlierLowCut->SetParameters(0.0157497, 0.973488, 0.673612, 0.0290718, -0.000546728, 5.82749e-06);
-	pfOutlierHighCut->SetParameters(0.0157497, 0.973488, 0.673612, 0.0290718, -0.000546728, 5.82749e-06);
-
 	for(int icent=0; icent<7; icent++){
 		for(int isub=0; isub<2; isub++){
 			h_ModuledPhi[icent][isub]=NULL;
@@ -147,8 +135,6 @@ AliJFFlucTask::AliJFFlucTask(const AliJFFlucTask& ap) :
 	fFFlucAna(ap.fFFlucAna)
 {
 	AliInfo("----DEBUG AliJFFlucTask COPY ----");
-	pfOutlierLowCut = (TF1*)ap.pfOutlierLowCut->Clone();
-	pfOutlierHighCut = (TF1*)ap.pfOutlierHighCut->Clone();
 }
 
 //_____________________________________________________________________________
@@ -164,8 +150,8 @@ AliJFFlucTask& AliJFFlucTask::operator = (const AliJFFlucTask& ap)
 //______________________________________________________________________________
 AliJFFlucTask::~AliJFFlucTask()
 {
-	delete pfOutlierLowCut;
-	delete pfOutlierHighCut;
+	//delete pfOutlierLowCut;
+	//delete pfOutlierHighCut;
 	delete fFFlucAna;
 	delete fInputList;
 	delete fOutput;
@@ -446,7 +432,8 @@ Bool_t AliJFFlucTask::IsGoodEvent( AliAODEvent *event){
 	AliJRunTable *fRunTable = & AliJRunTable::GetSpecialInstance();
 	fRunTable->SetRunNumber( frunNumber );
 
-	if(fRunTable->GetRunNumberToPeriod(frunNumber) == AliJRunTable::kLHC15o){
+	int fperiod = fRunTable->GetRunNumberToPeriod(frunNumber);
+	if(fperiod == AliJRunTable::kLHC15o){
 		const AliVVertex* vtTrc = event->GetPrimaryVertex();
 		const AliVVertex* vtSPD = event->GetPrimaryVertexSPD();
 		double covTrc[6],covSPD[6];
@@ -465,14 +452,16 @@ Bool_t AliJFFlucTask::IsGoodEvent( AliAODEvent *event){
 			return kFALSE;
 		}
 
-		Float_t v0mcent = pms->GetMultiplicityPercentile("V0M");
-		Float_t cl0cent = pms->GetMultiplicityPercentile("CL0");
-		if(cl0cent < pfOutlierLowCut->Eval(v0mcent) || cl0cent > pfOutlierHighCut->Eval(v0mcent))
+		double v0mcent = pms->GetMultiplicityPercentile("V0M");
+		double cl0cent = pms->GetMultiplicityPercentile("CL0");
+		double center = 0.973488*cl0cent+0.0157497;
+		double sigma = 0.673612+cl0cent*(0.0290718+cl0cent*(-0.000546728+cl0cent*5.82749e-06));
+		if(v0mcent < center-5.0*sigma || v0mcent > center+5.5*sigma || v0mcent < 0.0 || v0mcent > 60.0)
 			return kFALSE;
 	}
 
-	unsigned int multTPC = 0;//Float_t multTPC(0.);
-	unsigned int multGlob = 0;//Float_t multGlob(0.);
+	TPCTracks = 0;
+	GlobTracks = 0;
 	Int_t nTracks = event->GetNumberOfTracks();
 	for(int it = 0; it < nTracks; it++){
 		AliAODTrack *trackAOD = dynamic_cast<AliAODTrack*>(event->GetTrack(it));
@@ -481,7 +470,7 @@ Bool_t AliJFFlucTask::IsGoodEvent( AliAODEvent *event){
 			continue;
 		if ((trackAOD->Pt() < 0.2) || (trackAOD->Pt() > 5.0) || (TMath::Abs(trackAOD->Eta()) > 0.8) || (trackAOD->GetTPCNcls() < 70) || (trackAOD->GetDetPid()->GetTPCsignal() < 10.0) || (trackAOD->Chi2perNDF() < 0.2) )
 			continue;
-		multTPC++;
+		TPCTracks++;
 	}
 
 	for(int it = 0; it < nTracks; it++){
@@ -496,25 +485,51 @@ Bool_t AliJFFlucTask::IsGoodEvent( AliAODEvent *event){
 			continue;
 		if ( (TMath::Abs(b[0]) > 0.3) || (TMath::Abs(b[1]) > 0.3) )
 			continue;
-		multGlob++;
+		GlobTracks++;
 	}
-	TPCTracks = multTPC;
-	GlobTracks = multGlob;
-	if(fCutOutliers == kTRUE && !(multTPC > (-40.3+1.22*multGlob) && multTPC < (32.1+1.59*multGlob)))
-		return kFALSE;
 
-	unsigned int multTrk = 0;
-	unsigned int multTrkTOF = 0;
+	FB32Tracks = 0;
+	FB32TOFTracks = 0;
 	for (int it = 0; it < nTracks; it++){
 		AliAODTrack *trackAOD = dynamic_cast<AliAODTrack*>(event->GetTrack(it));
 		if (!trackAOD || !trackAOD->TestFilterBit(32))
 			continue;
-		multTrk++;
+		FB32Tracks++;
 		if (TMath::Abs(trackAOD->GetTOFsignalDz()) <= 10 && trackAOD->GetTOFsignal() >= 12000 && trackAOD->GetTOFsignal() <= 25000)
-			multTrkTOF++;
+			FB32TOFTracks++;
 	}
-	FB32Tracks = multTrk;
-	FB32TOFTracks = multTrkTOF;
+
+	if(fCutOutliers == kTRUE){
+		if(fperiod == AliJRunTable::kLHC15o){
+			AliMultSelection *pms = (AliMultSelection*)event->FindListObject("MultSelection");
+			if(!pms){
+				AliError("MultSelection unavailable.");
+				return kFALSE;
+			}
+
+			double v0mcent = pms->GetMultiplicityPercentile("V0M");
+			double tfbtpc = (double)TPCTracks;
+			double lcut = 2.31181837e+03+v0mcent*(-7.79946952e+01+v0mcent*(8.45194500e-01+v0mcent*(-1.72787009e-03-1.86192490e-05*v0mcent)));
+			if(tfbtpc < lcut)
+				return kFALSE;
+			double hcut = 3.15901050e+03+v0mcent*(-9.42636072e+01+v0mcent*(8.06432447e-01+v0mcent*(3.37574557e-03-6.14272547e-05*v0mcent)));
+			if(tfbtpc > hcut)
+				return kFALSE;
+
+			double tfb32 = (double)FB32Tracks;
+			double tfb32tof = (double)FB32TOFTracks;
+			double mu32tof = -1.0178+tfb32*(0.333132+tfb32*(9.10282e-05-1.61861e-08*tfb32));
+			double sigma32tof = 1.47848+tfb32*(0.0385923+tfb32*(-5.06153e-05+tfb32*(4.37641e-08+tfb32*(-1.69082e-11+tfb32*2.35085e-15))));
+			double nsigma[] = {4.0,4.0};
+			if(tfb32tof < mu32tof-nsigma[0]*sigma32tof || tfb32tof > mu32tof+nsigma[1]*sigma32tof)
+				return kFALSE;
+
+		}else{
+			if(!((double)TPCTracks > (-40.3+1.22*GlobTracks) && (double)TPCTracks < (32.1+1.59*GlobTracks)))
+				return kFALSE;
+		}
+			
+	}
 
 	return kTRUE;
 }

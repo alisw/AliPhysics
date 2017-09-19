@@ -74,7 +74,7 @@ AliEmcalJet::AliEmcalJet() :
  * Constructor that uses the 3-momentum to define the jet axis.
  * It assumes zero mass for the jet.
  * @param px First transverse component of the jet momentum
- * @param px Second transverse component of the jet momentum
+ * @param py Second transverse component of the jet momentum
  * @param pz Longitudinal component of the jet momentum
  */
 AliEmcalJet::AliEmcalJet(Double_t px, Double_t py, Double_t pz) :
@@ -418,7 +418,7 @@ std::vector<int> AliEmcalJet::GetPtSortedTrackConstituentIndexes(TClonesArray* t
   std::vector<ptidx_pair> pair_list;
 
   for (Int_t i_entry = 0; i_entry < GetNumberOfTracks(); i_entry++) {
-    AliVParticle* track = TrackAt(i_entry, tracks);
+    AliVParticle* track = Track(i_entry);
     if (!track) {
       AliError(Form("Unable to find jet track %d in collection %s (pos in collection %d, max %d)", i_entry, tracks->GetName(), TrackAt(i_entry), tracks->GetEntriesFast()));
       continue;
@@ -470,17 +470,16 @@ Double_t AliEmcalJet::GetZ(const AliVParticle* trk) const
 
 /**
  * Find the leading track constituent of the jet.
- * @param tracks Array containing the pointers to the tracks from which jet constituents are drawn
- * @return Pointer to the leading track of the jet
+ * @param tracks DEPRECATED! It is now redundant. Array containing the pointers to the tracks from which jet constituents are drawn.
+ * @return Pointer to the leading track of the jet.
  */
 AliVParticle* AliEmcalJet::GetLeadingTrack(TClonesArray* tracks) const
 {
   AliVParticle* maxTrack = 0;
   for (Int_t i = 0; i < GetNumberOfTracks(); i++) {
-    AliVParticle* track = TrackAt(i, tracks);
+    AliVParticle* track = Track(i);
     if (!track) {
-      AliError(Form("Unable to find jet track %d in collection %s (pos in collection %d, max %d)",
-          i, tracks->GetName(), TrackAt(i), tracks->GetEntriesFast()));
+      AliError(Form("Unable to find jet track %d (global index %d) in the jet", i, TrackAt(i)));
       continue;
     }
     if (!maxTrack || track->Pt() > maxTrack->Pt())
@@ -492,8 +491,8 @@ AliVParticle* AliEmcalJet::GetLeadingTrack(TClonesArray* tracks) const
 
 /**
  * Find the leading cluster constituent of the jet.
- * @param tracks Array containing the pointers to the clusters from which jet constituents are drawn
- * @return Pointer to the leading cluster of the jet
+ * @param clusters DEPRECATED! It is now redundant. Array containing the pointers to the clusters from which jet constituents are drawn.
+ * @return Pointer to the leading cluster of the jet.
  */
 AliVCluster* AliEmcalJet::GetLeadingCluster(TClonesArray* clusters) const
 {
@@ -501,8 +500,7 @@ AliVCluster* AliEmcalJet::GetLeadingCluster(TClonesArray* clusters) const
   for (Int_t i = 0; i < GetNumberOfClusters(); i++) {
     AliVCluster* cluster = ClusterAt(i, clusters);
     if (!cluster) {
-      AliError(Form("Unable to find jet cluster %d in collection %s (pos in collection %d, max %d)",
-          i, clusters->GetName(), ClusterAt(i), clusters->GetEntriesFast()));
+      AliError(Form("Unable to find jet cluster %d (global index %d) in the jet", i, ClusterAt(i)));
       continue;
     }
     if (!maxCluster || cluster->E() > maxCluster->E())
@@ -526,7 +524,7 @@ void AliEmcalJet::ResetMatching()
 
 /**
  * Checks whether a certain track is among the jet constituents by looking for its index
- * @param Index of the track to search
+ * @param it Index of the track to search
  * @return The position of the track in the jet constituent array, if the track is found; -1 if the track is not a jet constituent
  */
 Int_t AliEmcalJet::ContainsTrack(Int_t it) const
@@ -539,7 +537,7 @@ Int_t AliEmcalJet::ContainsTrack(Int_t it) const
 
 /**
  * Checks whether a certain cluster is among the jet constituents by looking for its index
- * @param Index of the cluster to search
+ * @param ic Index of the cluster to search
  * @return The position of the cluster in the jet constituent array, if the cluster is found; -1 if the cluster is not a jet constituent
  */
 Int_t AliEmcalJet::ContainsCluster(Int_t ic) const
@@ -596,21 +594,17 @@ std::ostream &AliEmcalJet::Print(std::ostream &in) const {
  */
 void AliEmcalJet::PrintConstituents(TClonesArray* tracks, TClonesArray* clusters) const
 {
-  if (tracks) {
-    for (Int_t i = 0; i < GetNumberOfTracks(); i++) {
-      AliVParticle* part = TrackAt(i, tracks);
-      if (part) {
-        Printf("Track %d (index = %d) pT = %.2f, eta = %.2f, phi = %.2f, PDG code = %d", i, TrackAt(i), part->Pt(), part->Eta(), part->Phi(), part->PdgCode());
-      }
+  for (Int_t i = 0; i < GetNumberOfTracks(); i++) {
+    AliVParticle* part = Track(i);
+    if (part) {
+      Printf("Track %d (index = %d) pT = %.2f, eta = %.2f, phi = %.2f, PDG code = %d", i, TrackAt(i), part->Pt(), part->Eta(), part->Phi(), part->PdgCode());
     }
   }
 
-  if (clusters) {
-    for (Int_t i = 0; i < GetNumberOfClusters(); i++) {
-      AliVCluster* clus = ClusterAt(i, clusters);
-      if (clus) {
-        Printf("Cluster %d (index = %d) E = %.2f", i, ClusterAt(i), clus->E());
-      }
+  for (Int_t i = 0; i < GetNumberOfClusters(); i++) {
+    AliVCluster* clus = Cluster(i);
+    if (clus) {
+      Printf("Cluster %d (index = %d) E = %.2f", i, ClusterAt(i), clus->E());
     }
   }
 }
@@ -687,6 +681,7 @@ AliVParticle* AliEmcalJet::Track(Int_t idx) const
 
 /**
  * Finds the track constituent corresponding to the index found at a certain position.
+ * @deprecated Only for backwards compatibility - use AliEmcalJet::Track(Int_t idx) instead!
  * @param idx Position of the track constituent
  * @param ta Array with pointers to the tracks from which jet constituents are drawn
  * @return Pointer to the track constituent requested (if found)
@@ -728,8 +723,9 @@ AliVCluster* AliEmcalJet::Cluster(Int_t idx) const
 
 /**
  * Finds the cluster constituent corresponding to the index found at a certain position.
+ * @deprecated Only for backwards compatibility - use AliEmcalJet::Track(Int_t idx) instead!
  * @param idx Position of the cluster constituent
- * @param ta Array with pointers to the clusters from which jet constituents are drawn
+ * @param ca Array with pointers to the clusters from which jet constituents are drawn
  * @return Pointer to the cluster constituent requested (if found)
  */
 AliVCluster* AliEmcalJet::ClusterAt(Int_t idx, TClonesArray *ca) const
@@ -779,7 +775,7 @@ Double_t AliEmcalJet::GetXi( const Double_t trkPx, const Double_t trkPy, const D
 
 /**
  * Add a track to the list of flavor tagging tracks
- * @param Pointer to the flavor track
+ * @param hftrack Pointer to the flavor track
  */
 void AliEmcalJet::AddFlavourTrack(AliVParticle* hftrack)
 {

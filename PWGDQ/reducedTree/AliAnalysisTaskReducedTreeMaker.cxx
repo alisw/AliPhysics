@@ -291,7 +291,7 @@ void AliAnalysisTaskReducedTreeMaker::UserExec(Option_t *option)
 {
   //
   // Main loop. Called for every event
-  //  
+  //
   option = option;
   AliAnalysisManager *man=AliAnalysisManager::GetAnalysisManager();
   Bool_t isESD=man->GetInputEventHandler()->IsA()==AliESDInputHandler::Class();
@@ -339,7 +339,8 @@ void AliAnalysisTaskReducedTreeMaker::UserExec(Option_t *option)
   if(fFillMCInfo) {
      Bool_t hasMC=AliDielectronMC::Instance()->HasMC();
      if(hasMC) {
-        AliDielectronMC::Instance()->ConnectMCEvent();
+	AliDielectronMC::Instance()->SetCheckHF(fFillHFInfo);
+	AliDielectronMC::Instance()->ConnectMCEvent();
         AliDielectronVarManager::SetEvent(AliDielectronMC::Instance()->GetMCEvent());
      }
   }
@@ -836,7 +837,6 @@ void AliAnalysisTaskReducedTreeMaker::FillMCTruthInfo()
    
    Int_t nPrimary = mcHandler->GetNPrimaryFromStack();
 
-   if(fFillHFInfo) mcHandler->SetCheckHF(kTRUE);
    //cout << "Event+++++++++++++++++++++++++" << endl;
    
    for(Int_t i=0; i<nPrimary; ++i) {
@@ -1330,7 +1330,10 @@ void AliAnalysisTaskReducedTreeMaker::FillTrackInfo()
               trackInfo->fMCLabels[3] = grandmotherTruth->GetMother();
               trackInfo->fMCPdg[3] = grandgrandmotherTruth->PdgCode();
            }
-         }
+
+	   if(fFillHFInfo)      trackInfo->fHFProc = AliDielectronMC::Instance()->GetHFProcess(truthParticle->GetLabel());
+	   
+	 }
       }
     }  // end if(isESD)
     if(isAOD) {

@@ -104,6 +104,7 @@ fTest2(0),
 fMCtruth(0),
 fPeriod(""),
 fFiducialCut(0.4),
+fConeAreaPerEvent(kFALSE),
 fEClustersT(0),
 fPtClustersT(0),
 fEtClustersT(0),
@@ -214,6 +215,8 @@ fEtVSM02VSEisoclust(0),
 fEtVSM02VSPisotrack(0),
 fPhiTracksVSclustPt(0),
 fEtaTracksVSclustPt(0),
+fTracksPhiVsPt(0),
+fTracksEtaVsPt(0),
 fTrackResolutionPtMC(0),
 fVzBeforecut(0),
 fOutputTHnS(0),
@@ -224,7 +227,10 @@ fOutputTree(0),
 fphietaPhotons(0),
 fphietaOthers(0),
 fphietaOthersBis(0),
-f2012EGA(0)
+fSPDclustVsSPDtracklets(0),
+fnPUevents(0),
+f2012EGA(0),
+fHistoRangeContainer(0x0)
   // tracks(0),
   // clusters(0)
 {
@@ -291,6 +297,7 @@ fTest2(0),
 fMCtruth(0),
 fPeriod(""),
 fFiducialCut(0.4),
+fConeAreaPerEvent(kFALSE),
 fEClustersT(0),
 fPtClustersT(0),
 fEtClustersT(0),
@@ -401,6 +408,8 @@ fEtVSM02VSEisoclust(0),
 fEtVSM02VSPisotrack(0),
 fPhiTracksVSclustPt(0),
 fEtaTracksVSclustPt(0),
+fTracksPhiVsPt(0),
+fTracksEtaVsPt(0),
 fTrackResolutionPtMC(0),
 fVzBeforecut(0),
 fOutputTHnS(0),
@@ -411,7 +420,10 @@ fOutputTree(0),
 fphietaPhotons(0),
 fphietaOthers(0),
 fphietaOthersBis(0),
-f2012EGA(0)
+fSPDclustVsSPDtracklets(0),
+fnPUevents(0),
+f2012EGA(0),
+fHistoRangeContainer(0x0)
   // tracks(0),
   // clusters(0)
 {
@@ -440,6 +452,11 @@ void AliAnalysisTaskEMCALPhotonIsolation::UserCreateOutputObjects(){
   AliAnalysisTaskEmcal::UserCreateOutputObjects();
     // printf("Up here all good");
   
+    // Histogram binning and ranges (to consider geometry-dependent phi histograms)
+  Int_t   nphibins = GetHistogramRangesAndBinning()->GetHistoPhiBins();
+  Float_t phimax   = GetHistogramRangesAndBinning()->GetHistoPhiMax();
+  Float_t phimin   = GetHistogramRangesAndBinning()->GetHistoPhiMin();
+
   if((fIsoMethod == 0 || fIsoMethod == 1 || fIsoMethod==3) && fTPC4Iso){
     cout<<"Error: Iso_Methods with CELLS and CLUSTERS work only within EMCal "<<endl;
     cout<<"Please Set Iso_Method and TPC4Iso Accordingly!!"<<endl;
@@ -645,15 +662,15 @@ void AliAnalysisTaskEMCALPhotonIsolation::UserCreateOutputObjects(){
         fM02->Sumw2();
         fOutput->Add(fM02);
 
-	fEtaPhiClusVsM02 = new TH3F ("hEtaVsPhiVsM02", "#eta vs. #varphi vs. #sigma_{long}^{2} for clusters with 14 < #it{E}_{T} < 16 GeV", 100, -0.72, 0.72, 100, 1.31, 3.29, 100, 0., 2.);
+	fEtaPhiClusVsM02 = new TH3F ("hEtaVsPhiVsM02", "#eta vs. #varphi vs. #sigma_{long}^{2} for clusters with 14 < #it{E}_{T} < 16 GeV", 100, -0.72, 0.72, nphibins, phimin, phimax, 100, 0., 2.);
         fEtaPhiClusVsM02->Sumw2();
 	fOutput->Add(fEtaPhiClusVsM02);
         
-	fEtaPhiClusVsEtIsoClus = new TH3F ("hEtaVsPhiVsEtIsoClus", "#eta vs. #varphi vs. #Sigma #it{E}_{T}^{clus, cone} for clusters with 14 < #it{E}_{T} < 16 GeV", 100, -0.72, 0.72, 100, 1.31, 3.29, 100, 0., 100.);
+	fEtaPhiClusVsEtIsoClus = new TH3F ("hEtaVsPhiVsEtIsoClus", "#eta vs. #varphi vs. #Sigma #it{E}_{T}^{clus, cone} for clusters with 14 < #it{E}_{T} < 16 GeV", 100, -0.72, 0.72, nphibins, phimin, phimax, 100, 0., 100.);
         fEtaPhiClusVsEtIsoClus->Sumw2();
 	fOutput->Add(fEtaPhiClusVsEtIsoClus);
 
-	fEtaPhiClusVsPtIsoTrack = new TH3F ("hEtaVsPhiVsPtIsoTrack", "#eta vs. #varphi vs. #Sigma #it{p}_{T}^{track, cone} for clusters with 14 < #it{E}_{T} < 16 GeV", 100, -0.72, 0.72, 100, 1.31, 3.29, 100, 0., 100.);
+	fEtaPhiClusVsPtIsoTrack = new TH3F ("hEtaVsPhiVsPtIsoTrack", "#eta vs. #varphi vs. #Sigma #it{p}_{T}^{track, cone} for clusters with 14 < #it{E}_{T} < 16 GeV", 100, -0.72, 0.72, nphibins, phimin, phimax, 100, 0., 100.);
         fEtaPhiClusVsPtIsoTrack->Sumw2();
 	fOutput->Add(fEtaPhiClusVsPtIsoTrack);
 
@@ -669,11 +686,11 @@ void AliAnalysisTaskEMCALPhotonIsolation::UserCreateOutputObjects(){
         fPtIsoTrack->Sumw2();
         fOutput->Add(fPtIsoTrack);
 
-        fPtvsM02vsSum = new TH3D("hPtvsM02vsSum","#it{p}_{T} vs #sigma_{long}^{2} vs  #Sigma E_{T}^{iso cone} distribution for isolated clusters",200,0.,100.,400,0.,4.,200,0.,100.);
+        fPtvsM02vsSum = new TH3D("hPtvsM02vsSum","#it{p}_{T} vs #sigma_{long}^{2} vs  #Sigma E_{T}^{iso cone} distribution for isolated clusters",200,0.,100.,400,0.,4.,220,-10.,100.);
         fPtvsM02vsSum->Sumw2();
         fOutput->Add(fPtvsM02vsSum);
         
-	fPtvsM02vsSumUE = new TH3D("hPtvsM02vsSumUE","#it{p}_{T} vs #sigma_{long}^{2} vs  #Sigma E_{T}^{iso cone}-UE distribution for clusters",200,0.,100.,400,0.,4.,200,-10.,90.);
+	fPtvsM02vsSumUE = new TH3D("hPtvsM02vsSumUE","#it{p}_{T} vs #sigma_{long}^{2} vs  #Sigma E_{T}^{iso cone}-UE distribution for clusters",200,0.,100.,400,0.,4.,220,-10.,100.);
 	fPtvsM02vsSumUE->Sumw2();
 	fOutput->Add(fPtvsM02vsSumUE);
 
@@ -826,7 +843,7 @@ void AliAnalysisTaskEMCALPhotonIsolation::UserCreateOutputObjects(){
     fClusTime->Sumw2();
     fOutput->Add(fClusTime);
     
-    fEtaPhiClus = new TH2D ("hEtaPhiClusActivity","",250,-0.8,0.8, 250, 1.2, 3.4);
+    fEtaPhiClus = new TH2D ("hEtaPhiClusActivity", "", 250, -0.8, 0.8, nphibins, phimin, phimax);
       // fEtaPhiClus->Sumw2();
     fOutput->Add(fEtaPhiClus);
     
@@ -856,31 +873,31 @@ void AliAnalysisTaskEMCALPhotonIsolation::UserCreateOutputObjects(){
     fNLM->Sumw2();
     fOutput->Add(fNLM);
     
-    fTestIndex= new TH2D("hTestIndex","Test index for cluster",100,0.,100.,100,0.,100.);
-    fTestIndex->SetXTitle("index");
-    fTestIndex->SetYTitle("local index");
-    fTestIndex->Sumw2();
-    fOutput->Add(fTestIndex);
-    
-    fTestIndexE= new TH2D("hTestIndexE","Test index vs energy for cluster",200,0.,100.,100,0.,100.);
-    fTestIndexE->SetXTitle("cluster energy");
-    fTestIndexE->SetYTitle("index");
-    fTestIndexE->Sumw2();
-    fOutput->Add(fTestIndexE);
-    
-    fTestLocalIndexE= new TH2D("hTestLocalIndexE","Test local index vs energy for cluster",200,0.,100.,100,0.,100.);
-    fTestLocalIndexE->SetXTitle("cluster energy");
-    fTestLocalIndexE->SetYTitle("local index");
-    fTestLocalIndexE->Sumw2();
-    fOutput->Add(fTestLocalIndexE);
-    
-    fTestEtaPhiCone= new TH2D("hTestEtatPhiCone","Test eta phi neutral clusters candidates",200,0,TMath::TwoPi(),140,-.7,.7);
-    fTestEtaPhiCone->SetXTitle("phi");
-    fTestEtaPhiCone->SetYTitle("eta");
-    fTestEtaPhiCone->Sumw2();
-    fOutput->Add(fTestEtaPhiCone);
-    
     if(!fLightOutput){
+      fTestIndex= new TH2D("hTestIndex","Test index for cluster",100,0.,100.,100,0.,100.);
+      fTestIndex->SetXTitle("index");
+      fTestIndex->SetYTitle("local index");
+      fTestIndex->Sumw2();
+      fOutput->Add(fTestIndex);
+    
+      fTestIndexE= new TH2D("hTestIndexE","Test index vs energy for cluster",200,0.,100.,100,0.,100.);
+      fTestIndexE->SetXTitle("cluster energy");
+      fTestIndexE->SetYTitle("index");
+      fTestIndexE->Sumw2();
+      fOutput->Add(fTestIndexE);
+    
+      fTestLocalIndexE= new TH2D("hTestLocalIndexE","Test local index vs energy for cluster",200,0.,100.,100,0.,100.);
+      fTestLocalIndexE->SetXTitle("cluster energy");
+      fTestLocalIndexE->SetYTitle("local index");
+      fTestLocalIndexE->Sumw2();
+      fOutput->Add(fTestLocalIndexE);
+    
+      fTestEtaPhiCone= new TH2D("hTestEtatPhiCone","Test eta phi neutral clusters candidates",200,0,TMath::TwoPi(),140,-.7,.7);
+      fTestEtaPhiCone->SetXTitle("phi");
+      fTestEtaPhiCone->SetYTitle("eta");
+      fTestEtaPhiCone->Sumw2();
+      fOutput->Add(fTestEtaPhiCone);
+
       fEtVSM02VSPisotrack = new TH3F ("hEtVSM02VSPisotrack","Energy clust vs cluster #sigma_{long}^{2} vs Charged iso",70,0.,700.,200,0.,2.,400,0.,100.);
       fEtVSM02VSPisotrack->SetXTitle("Cluster E (GeV/c)");
       fEtVSM02VSPisotrack->SetYTitle("cluster #sigma_{long}^{2}");
@@ -910,13 +927,23 @@ void AliAnalysisTaskEMCALPhotonIsolation::UserCreateOutputObjects(){
   fVz->Sumw2();
   fOutput->Add(fVz);
   
-  fVzBeforecut = new TH1D("hVz_ALL", "Inclusive Vertex Z distribution",100,-50.,50.);
-  fVzBeforecut->Sumw2();
-  fOutput->Add(fVzBeforecut);
+  if(!fLightOutput){
+    fVzBeforecut = new TH1D("hVz_ALL", "Inclusive Vertex Z distribution",100,-50.,50.);
+    fVzBeforecut->Sumw2();
+    fOutput->Add(fVzBeforecut);
+  }
   
   fEvents = new TH1D("hEvents_NC","Events",100,0.,100.);
   fEvents->Sumw2();
   fOutput->Add(fEvents);
+  
+  fSPDclustVsSPDtracklets = new TH2F("hSPDclustVsSPDtracklets","Number of SPD clusters VS number of SPD tracklets in events with |Zvtx| < 10",100,0,200,250,0,1000);
+  fSPDclustVsSPDtracklets->Sumw2();
+  fOutput->Add(fSPDclustVsSPDtracklets);
+  
+  fnPUevents = new TH1F("hnPUevents","Number of pileUp events rejected", 2,0.,1.);
+  fnPUevents->Sumw2();
+  fOutput->Add(fnPUevents);
   
   fClusEvsClusT = new TH2D("fClustTimeVSClustEn", "Distribution of cluster Time as a function of the cluster Energy", 70, 0., 70., 120, -40., 80.);
   fClusEvsClusT->SetXTitle("E_{T,clus} (GeV/c)    ");
@@ -940,11 +967,11 @@ void AliAnalysisTaskEMCALPhotonIsolation::UserCreateOutputObjects(){
   fPtaftNLM->Sumw2();
   fOutput->Add(fPtaftNLM);
   
-  fClusEtVsEtaPhiMatched = new TH3F ("hEtaVsPhiVsEt_Matched", "#eta vs. #varphi vs. #it{E}_{T} for TRACK-MATCHED clusters", 100, -0.72, 0.72, 100, 1.31, 3.29, 100, 0., 100.);
+  fClusEtVsEtaPhiMatched = new TH3F ("hEtaVsPhiVsEt_Matched", "#eta vs. #varphi vs. #it{E}_{T} for TRACK-MATCHED clusters", 100, -0.72, 0.72, nphibins, phimin, phimax, 100, 0., 100.);
   fClusEtVsEtaPhiMatched->Sumw2();
   fOutput->Add(fClusEtVsEtaPhiMatched);
 
-  fClusEtVsEtaPhiUnmatched = new TH3F ("hEtaVsPhiVsEt_Unmatched", "#eta vs. #varphi vs. #it{E}_{T} for NON TRACK-MATCHED clusters", 100, -0.72, 0.72, 100, 1.31, 3.29, 100, 0., 100.);
+  fClusEtVsEtaPhiUnmatched = new TH3F ("hEtaVsPhiVsEt_Unmatched", "#eta vs. #varphi vs. #it{E}_{T} for NON TRACK-MATCHED clusters", 100, -0.72, 0.72, nphibins, phimin, phimax, 100, 0., 100.);
   fClusEtVsEtaPhiUnmatched->Sumw2();
   fOutput->Add(fClusEtVsEtaPhiUnmatched);
 
@@ -985,15 +1012,23 @@ void AliAnalysisTaskEMCALPhotonIsolation::UserCreateOutputObjects(){
   fPtTracksVSpTNC->Sumw2();
   fOutput->Add(fPtTracksVSpTNC);
   
-  if(!fLightOutput){
-    fPhiTracksVSclustPt  = new TH2F("hPhiTracks_vs_clustPT","Tracks phi distr vs pT Candidate",70, 0.,70., 200,0.,TMath::TwoPi());
-    fPhiTracksVSclustPt->Sumw2();
-    fOutput->Add(fPhiTracksVSclustPt);
+  fPhiTracksVSclustPt  = new TH2F("hPhiTracks_vs_clustPT","Tracks phi distr vs pT Candidate",70, 0.,70., 200,0.,TMath::TwoPi());
+  fPhiTracksVSclustPt->Sumw2();
+  fOutput->Add(fPhiTracksVSclustPt);
   
-    fEtaTracksVSclustPt  = new TH2F("hEtaTracks_vs_clustPT","Tracks eta distr vs pT Candidate",70, 0.,70., 90,-0.9,0.9);
-    fEtaTracksVSclustPt->Sumw2();
-    fOutput->Add(fEtaTracksVSclustPt);
+  fEtaTracksVSclustPt  = new TH2F("hEtaTracks_vs_clustPT","Tracks eta distr vs pT Candidate",70, 0.,70., 90,-0.9,0.9);
+  fEtaTracksVSclustPt->Sumw2();
+  fOutput->Add(fEtaTracksVSclustPt);
+
+  fTracksPhiVsPt = new TH2F("hTracksPhiVsPt", "Tracks #varphi vs #it{p}_{T}", 100, 0., 100., 200, 0., TMath::TwoPi());
+  fTracksPhiVsPt->Sumw2();
+  fOutput->Add(fTracksPhiVsPt);
   
+  fTracksEtaVsPt = new TH2F("hTracksEtaVsPt", "Tracks #eta vs #it{p}_{T}", 100, 0., 100., 90, -0.9, 0.9);
+  fTracksEtaVsPt->Sumw2();
+  fOutput->Add(fTracksEtaVsPt);
+
+  if(!fLightOutput){  
     fCTdistVSpTNC = new TH2F ("hDistanceC_TrackVSpT","Distance between Neutral Clust and closest Track vs pT Candidate",70,0.,70.,210,-0.1,2.);
     fCTdistVSpTNC->Sumw2();
     fOutput->Add(fCTdistVSpTNC);
@@ -1164,7 +1199,7 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::SelectCandidate(AliVCluster *coi)
   
   fPtaftFC->Fill(vecCOI.Pt());
   
-  if(fQA)
+  if(fQA && !fLightOutput)
     fTestIndexE->Fill(vecCOI.Pt(),index);
   
   if(vecCOI.Pt()<5.)
@@ -1211,13 +1246,18 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::Run()
   
   fVevent = dynamic_cast<AliVEvent*>(InputEvent());
   
-  fVzBeforecut->Fill(fVertex[2]);
+  if(!fLightOutput)
+    fVzBeforecut->Fill(fVertex[2]);
   
   if(fVertex[2]>10. || fVertex[2]<-10.)
     return kFALSE;
   
-  if(fRejectPileUpEvent && fVevent->IsPileupFromSPD(fNContrToPileUp, 0.8,3.,2.,5.))
+  fSPDclustVsSPDtracklets->Fill(fVevent->GetMultiplicity()->GetNumberOfTracklets(),(fVevent->GetNumberOfITSClusters(0)+fVevent->GetNumberOfITSClusters(1)));
+  
+  if(fRejectPileUpEvent && fVevent->IsPileupFromSPD(fNContrToPileUp, 0.8,3.,2.,5.)){
+    fnPUevents->Fill(0);
     return kFALSE;
+  }
   
   AliClusterContainer* clusters = GetClusterContainer(0);
   Int_t nbTracksEvent;
@@ -1334,10 +1374,10 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::Run()
           return kFALSE;
         }
 	fPtTracksVSpTNC->Fill(vecCOI.Pt(),tr->Pt());
-	if(!fLightOutput){
-	  fPhiTracksVSclustPt->Fill(vecCOI.Pt(),tr->Phi());
-	  fEtaTracksVSclustPt->Fill(vecCOI.Pt(),tr->Eta());
-	}
+	fPhiTracksVSclustPt->Fill(vecCOI.Pt(),tr->Phi());
+	fEtaTracksVSclustPt->Fill(vecCOI.Pt(),tr->Eta());
+	fTracksPhiVsPt->Fill(tr->Pt(),tr->Phi());
+	fTracksEtaVsPt->Fill(tr->Pt(),tr->Eta());
       }
       
       FillGeneralHistograms(coi,vecCOI, index);
@@ -1376,10 +1416,10 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::Run()
             return kFALSE;
           }
 	  fPtTracksVSpTNC->Fill(vecCOI.Pt(),tr->Pt());
-	  if(!fLightOutput){
-	    fPhiTracksVSclustPt->Fill(vecCOI.Pt(),tr->Phi());
-	    fEtaTracksVSclustPt->Fill(vecCOI.Pt(),tr->Eta());
-	  }
+	  fPhiTracksVSclustPt->Fill(vecCOI.Pt(),tr->Phi());
+	  fEtaTracksVSclustPt->Fill(vecCOI.Pt(),tr->Eta());
+	  fTracksPhiVsPt->Fill(tr->Pt(),tr->Phi());
+	  fTracksEtaVsPt->Fill(tr->Pt(),tr->Eta());
         }
         
         FillGeneralHistograms(coi,vecCOI,index);
@@ -2080,7 +2120,7 @@ void AliAnalysisTaskEMCALPhotonIsolation::EtIsoClusPhiBand(TLorentzVector c, Dou
       // else if(radius < fIsoConeRadius && radius != 0.){
       else{                                                                                         // The cluster is inside the isolation cone -> add the cluster pT to pT_iso
 	sumEnergyConeClus += nClust.Pt();
-	if(fQA){
+	if(fQA && !fLightOutput){
 	  fTestEtaPhiCone->Fill(c.Eta(),c.Phi());
 	  fTestIndex->Fill(index,localIndex);
 	  fTestLocalIndexE->Fill(nClust.Pt(),localIndex);
@@ -2271,7 +2311,7 @@ void AliAnalysisTaskEMCALPhotonIsolation::EtIsoClusEtaBand(TLorentzVector c, Dou
       // else if(radius<fIsoConeRadius && radius != 0.){
       else{                                                                                         // The cluster is inside the isolation cone -> add the cluster pT to pT_iso
 	sumEnergyConeClus += nClust.Pt();
-	if(fQA){
+	if(fQA && !fLightOutput){
 	  fTestEtaPhiCone->Fill(c.Eta(),c.Phi());
 	  fTestIndex->Fill(index,localIndex);
 	  fTestLocalIndexE->Fill(nClust.Pt(),localIndex);
@@ -2354,7 +2394,7 @@ void AliAnalysisTaskEMCALPhotonIsolation::EtIsoClusEtaBand(TLorentzVector c, Dou
   
   fTestEnergyCone->Fill(c.Pt(),sumEnergyConeClus,sumpTConeCharged);
 
-  if(fWho == 2 && fFiducialCut < 0.4){
+  if(fWho == 2 && fConeAreaPerEvent){
     ComputeConeArea(c, isoConeArea);
     fTestEnergyConeNorm->Fill(c.Pt(), sumEnergyConeClus/isoConeArea, sumpTConeCharged/isoConeArea);
   }

@@ -79,10 +79,17 @@ class AliAnalysisTaskSEHFvn : public AliAnalysisTaskSE
     fUsePtWeights=usePtWei;
     fEtaGapInTPCHalves=etagap;
   }
-  void SetRecomputeTPCq2(Bool_t opt, Double_t fracKeep=1.1, Bool_t removeDau=kFALSE){
+  void SetRecomputeTPCq2(Bool_t opt, Double_t fracKeep=1.1, Bool_t removeDau=kFALSE, Bool_t removeNdaurandtracks=kFALSE){
     fOnTheFlyTPCq2=opt;
     fFractionOfTracksForTPCq2=fracKeep;
     fRemoveDauFromq2=removeDau;
+    if(fracKeep<1. && removeNdaurandtracks) {
+      AliWarning("AliAnalysisTaskSEHFvn::Impossible to set fFractionOfTracksForTPCq2<1 and fRemoveNdauRandomTracks at the same time! fRemoveNdauRandomTracks setted kFALSE.\n");
+      fRemoveNdauRandomTracks=kFALSE;
+    }
+    else {
+      fRemoveNdauRandomTracks=removeNdaurandtracks;
+    }
   }
   Float_t GetEventPlanesCompatibility()const {return fEventPlanesComp;}
   Float_t GetUpperMassLimit()const {return fUpmasslimit;}
@@ -107,6 +114,8 @@ class AliAnalysisTaskSEHFvn : public AliAnalysisTaskSE
     fTPCEtaMin=etamin;
     fTPCEtaMax=etamax;
   }
+  void SetRemoveDaughtersFromq2(Bool_t removeDau) {fRemoveDauFromq2=removeDau;}
+  void SetEnableQnFrameworkCorrForq2(Bool_t usecorr) {fUseQnFrameworkCorrq2=usecorr;}
 
   // Implementation of interface methods
   virtual void UserCreateOutputObjects();
@@ -138,6 +147,7 @@ class AliAnalysisTaskSEHFvn : public AliAnalysisTaskSE
   TH1F* fHistEvPlaneQncorrVZERO[3]; //! histogram for EP
   TH1F* fhEventsInfo;           //! histogram send on output slot 1
   TH1F *fHistCentrality[3];     //!<!hist. for cent distr (all,sel ev,out of cent)
+  TH2F *fHistCandVsCent;        //!<!hist. for number of selected candidates vs. cent
   TList   *fOutput;             //! list send on output slot 2
   AliRDHFCuts *fRDCuts;         //cut values (saved in slot 3)
   Float_t fLowmasslimit;        //lower inv mass limit for histos
@@ -179,10 +189,12 @@ class AliAnalysisTaskSEHFvn : public AliAnalysisTaskSE
   Bool_t fRemoveDauFromq2;      // flag to activate removal of daughter tracks from q2 computation
   Double_t fTPCEtaMin;          // min eta for the Q-vector computed on the fly with TPC tracks (both EP and q2)
   Double_t fTPCEtaMax;          // max eta for the Q-vector computed on the fly with TPC tracks (both EP and q2)
+  Bool_t fRemoveNdauRandomTracks; // flag to activate the removal of nDau random tracks in the q2TPC computed on the fly
+  Bool_t fUseQnFrameworkCorrq2; // flag to activate the Qn-framework corrections for the q2
 
   AliAnalysisTaskSEHFvn::FlowMethod fFlowMethod;
 
-  ClassDef(AliAnalysisTaskSEHFvn,5); // AliAnalysisTaskSE for the HF v2 analysis
+  ClassDef(AliAnalysisTaskSEHFvn,8); // AliAnalysisTaskSE for the HF v2 analysis
 };
 
 #endif

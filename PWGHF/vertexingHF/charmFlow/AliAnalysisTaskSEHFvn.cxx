@@ -128,6 +128,8 @@ AliAnalysisTaskSE(),
   fRemoveDauFromq2(kFALSE),
   fTPCEtaMin(-0.8),
   fTPCEtaMax(0.8),
+  fRemoveNdauRandomTracks(kFALSE),
+  fUseQnFrameworkCorrq2(kTRUE),
   fFlowMethod(kEP)
 {
   // Default constructor
@@ -137,6 +139,7 @@ AliAnalysisTaskSE(),
     fHistEvPlaneQncorrVZERO[i] = 0x0;
   }
 
+  fHistCandVsCent = 0x0;
 }
 
 //________________________________________________________________________
@@ -181,6 +184,8 @@ AliAnalysisTaskSEHFvn::AliAnalysisTaskSEHFvn(const char *name,AliRDHFCuts *rdCut
   fRemoveDauFromq2(kFALSE),
   fTPCEtaMin(-0.8),
   fTPCEtaMax(0.8),
+  fRemoveNdauRandomTracks(kFALSE),
+  fUseQnFrameworkCorrq2(kTRUE),
   fFlowMethod(kEP)
 {
   // standard constructor
@@ -189,6 +194,8 @@ AliAnalysisTaskSEHFvn::AliAnalysisTaskSEHFvn(const char *name,AliRDHFCuts *rdCut
     fHistEvPlaneQncorrTPC[i]   = 0x0;
     fHistEvPlaneQncorrVZERO[i] = 0x0;
   }
+
+  fHistCandVsCent = 0x0;
 
   Int_t pdg=421;
   switch(fDecChannel){
@@ -244,7 +251,6 @@ AliAnalysisTaskSEHFvn::AliAnalysisTaskSEHFvn(const char *name,AliRDHFCuts *rdCut
   fDetV0ConfName[0]  = "VZERO";
   fDetV0ConfName[1]  = "VZEROA";
   fDetV0ConfName[2]  = "VZEROC";
-
 }
 
 //________________________________________________________________________
@@ -257,6 +263,7 @@ AliAnalysisTaskSEHFvn::~AliAnalysisTaskSEHFvn()
       delete fHistEvPlaneQncorrTPC[i];
       delete fHistEvPlaneQncorrVZERO[i];
     }
+    delete fHistCandVsCent;
   }
   delete fOutput;
   delete fhEventsInfo;
@@ -365,6 +372,9 @@ void AliAnalysisTaskSEHFvn::UserCreateOutputObjects()
     fOutput->Add(fHistCentrality[i]);
   }
 
+  fHistCandVsCent=new TH2F("hCandVsCent","number of selected candidates vs. centrality;centrality(%);number of candidates",(fMaxCentr-fMinCentr)/(fCentBinSizePerMil/10),fMinCentr,fMaxCentr,101,-0.5,100.5);
+  fOutput->Add(fHistCandVsCent);
+
   for(int iDet = 0; iDet < 3; iDet++) {
     fHistEvPlaneQncorrTPC[iDet]   = new TH1F(Form("hEvPlaneQncorr%s%s",fDetTPCConfName[iDet].Data(),fNormMethod.Data()),Form("hEvPlaneQncorr%s%s;#phi Ev Plane;Entries",fDetTPCConfName[iDet].Data(),fNormMethod.Data()),200,0.,TMath::Pi());
     fHistEvPlaneQncorrVZERO[iDet] = new TH1F(Form("hEvPlaneQncorr%s%s",fDetV0ConfName[iDet].Data(),fNormMethod.Data()),Form("hEvPlaneQncorr%s%s;#phi Ev Plane;Entries",fDetV0ConfName[iDet].Data(),fNormMethod.Data()),200,0.,TMath::Pi());
@@ -381,14 +391,14 @@ void AliAnalysisTaskSEHFvn::UserCreateOutputObjects()
   }
   else if(fFlowMethod==kEvShape) {
     //multiplicity used for q2 vs. centrality (TPC)
-    TH2F* hMultVsCentFullTPC = new TH2F("hMultVsCentFullTPC","Multiplicity for q_{2} vs. centrality (full TPC)};centrality(%);M",(fMaxCentr-fMinCentr)/(fCentBinSizePerMil/10),fMinCentr,fMaxCentr,200,0.,2000.);
-    TH2F* hMultVsCentPosTPC = new TH2F("hMultVsCentPosTPC","Multiplicity for q_{2} vs. centrality (pos TPC)};centrality(%);M",(fMaxCentr-fMinCentr)/(fCentBinSizePerMil/10),fMinCentr,fMaxCentr,200,0.,2000.);
-    TH2F* hMultVsCentNegTPC = new TH2F("hMultVsCentNegTPC","Multiplicity for q_{2} vs. centrality (neg TPC)};centrality(%);M",(fMaxCentr-fMinCentr)/(fCentBinSizePerMil/10),fMinCentr,fMaxCentr,200,0.,2000.);
+    TH2F* hMultVsCentFullTPC = new TH2F("hMultVsCentFullTPC","Multiplicity for q_{2} vs. centrality (full TPC);centrality(%);M",(fMaxCentr-fMinCentr)/(fCentBinSizePerMil/10),fMinCentr,fMaxCentr,100,0.5,30000.5);
+    TH2F* hMultVsCentPosTPC = new TH2F("hMultVsCentPosTPC","Multiplicity for q_{2} vs. centrality (pos TPC);centrality(%);M",(fMaxCentr-fMinCentr)/(fCentBinSizePerMil/10),fMinCentr,fMaxCentr,100,0.5,30000.5);
+    TH2F* hMultVsCentNegTPC = new TH2F("hMultVsCentNegTPC","Multiplicity for q_{2} vs. centrality (neg TPC);centrality(%);M",(fMaxCentr-fMinCentr)/(fCentBinSizePerMil/10),fMinCentr,fMaxCentr,100,0.5,30000.5);
     fOutput->Add(hMultVsCentFullTPC);
     fOutput->Add(hMultVsCentPosTPC);
     fOutput->Add(hMultVsCentNegTPC);
   }
-  
+
   for(Int_t icentr=fMinCentr*10+fCentBinSizePerMil;icentr<=fMaxCentr*10;icentr=icentr+fCentBinSizePerMil){
     TString centrname;centrname.Form("centr%d_%d",icentr-fCentBinSizePerMil,icentr);
 
@@ -758,7 +768,7 @@ void AliAnalysisTaskSEHFvn::UserExec(Option_t */*option*/)
     }
   }
   if(icentr==-1) return;
-  
+
   fCentrBinName=Form("centr%d_%d",icentr-fCentBinSizePerMil,icentr);
   Double_t eventplane=0;
 
@@ -774,7 +784,7 @@ void AliAnalysisTaskSEHFvn::UserExec(Option_t */*option*/)
   if(fFlowMethod==kEvShape) {
     if(fOnTheFlyTPCq2){
       if(fRemoveDauFromq2 && fFractionOfTracksForTPCq2<1.) {
-        AliWarning("Impossible to set track downsampling and daughter-track removal from q2 at the same time! Downsampling turned off");
+        AliWarning("AliAnalysisTaskSEHFvn::Impossible to set track downsampling and daughter-track removal from q2 at the same time! Downsampling turned off");
         fFractionOfTracksForTPCq2=1.1;
       }
       q2=ComputeTPCq2(aod,q2FullTPC,q2PosTPC,q2NegTPC,qVecDefault,multQvecDefault,multQvecTPC);
@@ -788,7 +798,7 @@ void AliAnalysisTaskSEHFvn::UserExec(Option_t */*option*/)
     ((TH1F*)fOutput->FindObject("hq2TPCPosEtaVsNegEta"))->Fill(q2NegTPC,q2PosTPC);
     ((TH1F*)fOutput->FindObject("hq2TPCFullEtaVsNegEta"))->Fill(q2NegTPC,q2FullTPC);
     ((TH1F*)fOutput->FindObject("hq2TPCFullEtaVsPosEta"))->Fill(q2PosTPC,q2FullTPC);
-  
+
     if(fq2Smearing && fq2SmearingHisto) {
       TAxis* ax=0x0;
       if(fq2SmearingAxis==1) {ax=(TAxis*)fq2SmearingHisto->GetYaxis();}
@@ -802,11 +812,11 @@ void AliAnalysisTaskSEHFvn::UserExec(Option_t */*option*/)
     }
 
     //fill mult vs. centrality histo (EvShape)
-    ((TH1F*)fOutput->FindObject("hMultVsCentFullTPC"))->Fill(multQvecTPC[0],centr);
-    ((TH1F*)fOutput->FindObject("hMultVsCentPosTPC"))->Fill(multQvecTPC[1],centr);
-    ((TH1F*)fOutput->FindObject("hMultVsCentNegTPC"))->Fill(multQvecTPC[2],centr);
+    ((TH1F*)fOutput->FindObject("hMultVsCentFullTPC"))->Fill(centr,multQvecTPC[0]);
+    ((TH1F*)fOutput->FindObject("hMultVsCentPosTPC"))->Fill(centr,multQvecTPC[1]);
+    ((TH1F*)fOutput->FindObject("hMultVsCentNegTPC"))->Fill(centr,multQvecTPC[2]);
   }
-  
+
   AliEventplane *pl=aod->GetEventplane();
   if(!pl){
     Printf("AliAnalysisTaskSEHFvn::UserExec:no eventplane! v2 analysis without eventplane not possible!\n");
@@ -850,6 +860,7 @@ void AliAnalysisTaskSEHFvn::UserExec(Option_t */*option*/)
   AliAnalysisVertexingHF *vHF=new AliAnalysisVertexingHF();
 
   //Loop on D candidates
+  Int_t candCounter=0;
   for (Int_t iCand = 0; iCand < nCand; iCand++) {
     d=(AliAODRecoDecayHF*)arrayProng->UncheckedAt(iCand);
     Bool_t isSelBit=kTRUE;
@@ -886,6 +897,7 @@ void AliAnalysisTaskSEHFvn::UserExec(Option_t */*option*/)
 
     fhEventsInfo->Fill(13); // candidate selected
     if(fDebug>3) printf("+++++++Is Selected\n");
+    candCounter++;
 
     Float_t* invMass=0x0;
     Int_t nmasses;
@@ -922,10 +934,16 @@ void AliAnalysisTaskSEHFvn::UserExec(Option_t */*option*/)
 
       Double_t q2Cand = q2;
 
-      if((fq2Meth==kq2TPC || fq2Meth==kq2PosTPC || fq2Meth==kq2NegTPC) && fOnTheFlyTPCq2 && fRemoveDauFromq2) { //if activated, remove daughter tracks from q2
+      if((fq2Meth==kq2TPC || fq2Meth==kq2PosTPC || fq2Meth==kq2NegTPC) && fRemoveDauFromq2) { //if activated, remove daughter tracks from q2
         Int_t nDau=3;
         if(fDecChannel==1) {nDau=2;}
         AliAODTrack *dautrack[3] = {0x0,0x0,0x0};
+        Int_t nHarmonic = 2;
+        Double_t dauqx = 0.;
+        Double_t dauqy = 0.;
+        Double_t daueta = 0.;
+        Double_t dauphi = 0.;
+        Double_t daupt = 0.;
 
         if(fDecChannel!=2) { //D0, Dplus, Ds
           for(Int_t iDauTrk=0; iDauTrk<nDau; iDauTrk++) {
@@ -938,22 +956,96 @@ void AliAnalysisTaskSEHFvn::UserExec(Option_t */*option*/)
           dautrack[1] = (AliAODTrack*)theD0particle->GetDaughter(1);
           dautrack[2] = ((AliAODRecoCascadeHF*)d)->GetBachelor();
         }
-        for(Int_t iDauTrk=0; iDauTrk<nDau; iDauTrk++) {
-          if(dautrack[iDauTrk]->TestFilterBit(BIT(8)) || dautrack[iDauTrk]->TestFilterBit(BIT(9))) { //if passes track cuts is used for q2 -> has to be removed
-            Int_t nHarmonic=2;
-            Double_t daueta = dautrack[iDauTrk]->Eta();
-            Double_t dauphi = dautrack[iDauTrk]->Phi();
-            Double_t dauqx=TMath::Cos(nHarmonic*dauphi);
-            Double_t dauqy=TMath::Sin(nHarmonic*dauphi);
-            if((daueta>fTPCEtaMin && daueta<fTPCEtaMax) && ((daueta>0 && fq2Meth==kq2PosTPC) || (daueta<0 && fq2Meth==kq2NegTPC) || fq2Meth==kq2TPC)) {//if is in right eta region w.r.t. q2, remove
-              qVecDefault[0] -= dauqx;
-              qVecDefault[1] -= dauqy;
-              multQvecDefault--;
+        if(fOnTheFlyTPCq2) {
+          for(Int_t iDauTrk=0; iDauTrk<nDau; iDauTrk++) {
+            if(dautrack[iDauTrk]->TestFilterBit(BIT(8)) || dautrack[iDauTrk]->TestFilterBit(BIT(9))) { //if passes track cuts is used for q2 -> has to be removed
+              daueta = dautrack[iDauTrk]->Eta();
+              dauphi = dautrack[iDauTrk]->Phi();
+              daupt=dautrack[iDauTrk]->Pt();
+              dauqx=TMath::Cos(nHarmonic*dauphi);
+              dauqy=TMath::Sin(nHarmonic*dauphi);
+              if((daupt>0.2 && daupt<5) && (daueta>fTPCEtaMin && daueta<fTPCEtaMax) && ((daueta>0 && fq2Meth==kq2PosTPC) || (daueta<0 && fq2Meth==kq2NegTPC) || fq2Meth==kq2TPC)) {//if is in right eta region w.r.t. q2, remove
+                qVecDefault[0] -= dauqx;
+                qVecDefault[1] -= dauqy;
+                multQvecDefault--;
+              }
+            }
+          }
+          if(multQvecDefault>0) {q2Cand = TMath::Sqrt(qVecDefault[0]*qVecDefault[0]+qVecDefault[1]*qVecDefault[1])/TMath::Sqrt(multQvecDefault);}
+          else {q2Cand=0.;}
+        }
+        else {
+          AliQnCorrectionsQnVector *theQnVectorCorr   = NULL;
+          AliQnCorrectionsQnVector *theQnVectorUncorr = NULL;
+          Double_t corrX = 0., corrY = 0.;
+          Double_t qxRec = -999., qyRec = -999.;     // to store Qx, Qy at the rec step
+          TList *pQvecList=NULL;
+          if(fq2Meth==kq2TPC) {
+            pQvecList = dynamic_cast<TList*> (qnlist->FindObject(Form("%sQoverSqrtM",fDetTPCConfName[0].Data())));
+          }
+          else if(fq2Meth==kq2NegTPC) {
+            pQvecList = dynamic_cast<TList*> (qnlist->FindObject(Form("%sQoverSqrtM",fDetTPCConfName[1].Data())));
+          }
+          else if(fq2Meth==kq2PosTPC) {
+            pQvecList = dynamic_cast<TList*> (qnlist->FindObject(Form("%sQoverSqrtM",fDetTPCConfName[2].Data())));
+          }
+          if (pQvecList != NULL) {
+            /* the detector is present */
+            theQnVectorUncorr = (AliQnCorrectionsQnVector*) pQvecList->FindObject("plain"); //raw step for TPC
+            if (theQnVectorUncorr != NULL && theQnVectorUncorr->IsGoodQuality() && theQnVectorUncorr->GetN() != 0) {
+              Double_t qxPlain = theQnVectorUncorr->Qx(nHarmonic);
+              Double_t qyPlain = theQnVectorUncorr->Qy(nHarmonic);
+
+              //auto-correlation removal from rec step (if present)
+              theQnVectorCorr   = (AliQnCorrectionsQnVector*) pQvecList->FindObject("rec"); //rec step for TPC
+              if (theQnVectorCorr == NULL || !(theQnVectorCorr->IsGoodQuality()) || theQnVectorUncorr->GetN() == 0) {
+                corrX = 0.;
+                corrY = 0.;
+              }
+              else {
+                qxRec = theQnVectorCorr->Qx(nHarmonic);
+                qyRec = theQnVectorCorr->Qy(nHarmonic);
+                corrX = qxPlain - qxRec;
+                corrY = qyPlain - qyRec;
+              }
+              Int_t M = theQnVectorUncorr->GetN();
+              Int_t nDauRemoved=0;
+              for(int iDauTrk = 0; iDauTrk < nDau; iDauTrk++) {
+                if(dautrack[iDauTrk]->TestFilterBit(BIT(8))||dautrack[iDauTrk]->TestFilterBit(BIT(9))) {
+                  daueta = dautrack[iDauTrk]->Eta();
+                  dauphi = dautrack[iDauTrk]->Phi();
+                  daupt=dautrack[iDauTrk]->Pt();
+                  dauqx=TMath::Cos(nHarmonic*dauphi);
+                  dauqy=TMath::Sin(nHarmonic*dauphi);
+                  if((daupt>0.2 && daupt<5) && (daueta>fTPCEtaMin && daueta<fTPCEtaMax) && ((daueta>0 && fq2Meth==kq2PosTPC) || (daueta<0 && fq2Meth==kq2NegTPC) || fq2Meth==kq2TPC)) {
+                   dauqx += TMath::Cos(nHarmonic*dauphi);
+        	         dauqy += TMath::Sin(nHarmonic*dauphi);
+                   nDauRemoved++;
+                 }
+               }
+              }
+
+              Double_t qxRecSub = (qxPlain*M - dauqx)/(M-nDauRemoved) - corrX;
+              Double_t qyRecSub = (qyPlain*M - dauqy)/(M-nDauRemoved) - corrY;
+
+              //auto-correlation removal from twist step (if present)
+              theQnVectorCorr   = (AliQnCorrectionsQnVector*) pQvecList->FindObject("twist"); //twist step for TPC
+              if (theQnVectorCorr != NULL && theQnVectorCorr->IsGoodQuality() && theQnVectorUncorr->GetN() != 0 && fUseQnFrameworkCorrq2) {
+                Double_t qxTwist = theQnVectorCorr->Qx(nHarmonic);
+                Double_t qyTwist = theQnVectorCorr->Qy(nHarmonic);
+                Double_t Lbplus  = (qyRec - qyTwist)/qxTwist;
+                Double_t Lbminus = (qxRec - qxTwist)/qyTwist;
+                Double_t qxTwistSub = (qxRecSub - Lbminus*qyRecSub)/(1-Lbminus*Lbplus);
+                Double_t qyTwistSub = (qyRecSub - Lbplus*qxRecSub)/(1-Lbminus*Lbplus);
+
+                q2Cand = TMath::Sqrt(qxTwistSub*qxTwistSub+qyTwistSub*qyTwistSub);
+              }
+              else {
+                q2Cand = TMath::Sqrt(qxRecSub*qxRecSub+qyRecSub*qyRecSub);
+              }
             }
           }
         }
-        if(multQvecDefault>0) {q2Cand = TMath::Sqrt(qVecDefault[0]*qVecDefault[0]+qVecDefault[1]*qVecDefault[1])/TMath::Sqrt(multQvecDefault);}
-        else {q2Cand=0.;}
       }
 
       //fill the THnSparseF for event-shape engineering
@@ -996,6 +1088,8 @@ void AliAnalysisTaskSEHFvn::UserExec(Option_t */*option*/)
     }
     delete [] invMass;
   }
+
+  fHistCandVsCent->Fill(evCentr,candCounter);
 
   delete vHF;
   PostData(1,fhEventsInfo);
@@ -1786,11 +1880,12 @@ void AliAnalysisTaskSEHFvn::ComputeTPCEventPlane(AliAODEvent* aod, Double_t &rpa
     if(!track) continue;
     if(track->TestFilterBit(BIT(8))||track->TestFilterBit(BIT(9))) {
       Double_t eta=track->Eta();
+      Double_t pt=track->Pt();
       if((fEtaGapInTPCHalves>0. && TMath::Abs(eta)<fEtaGapInTPCHalves) || eta<fTPCEtaMin || eta>fTPCEtaMax) continue;
+      if(pt<0.2 || pt>5) {continue;}
       Double_t phi=track->Phi();
       Double_t wi=1.;
       if(fUsePtWeights){
-	Double_t pt=track->Pt();
 	wi=pt;
 	if(pt>2) wi=2.;
       }
@@ -2097,20 +2192,31 @@ Double_t AliAnalysisTaskSEHFvn::Getq2(TList* qnlist, Int_t q2meth, Double_t &mul
 {
   if(!qnlist) {return -1;}
 
+  TString expectedstepTPC="latest";
+  TString altstepTPC="plain";
+  TString expectedstepV0="latest";
+  TString altstepV0="raw";
+  if(!fUseQnFrameworkCorrq2) {
+    expectedstepTPC="plain";
+    altstepTPC="plain";
+    expectedstepV0="raw";
+    altstepV0="raw";
+  }
+
   const AliQnCorrectionsQnVector* qnVect = 0x0;
 
   if(q2meth==kq2TPC)
-    qnVect = GetQnVectorFromList(qnlist, Form("%sQoverSqrtM",fDetTPCConfName[0].Data()), "latest", "plain");
+    qnVect = GetQnVectorFromList(qnlist, Form("%sQoverSqrtM",fDetTPCConfName[0].Data()), expectedstepTPC.Data(), altstepTPC.Data());
   else if(q2meth==kq2NegTPC)
-    qnVect = GetQnVectorFromList(qnlist, Form("%sQoverSqrtM",fDetTPCConfName[1].Data()), "latest", "plain");
+    qnVect = GetQnVectorFromList(qnlist, Form("%sQoverSqrtM",fDetTPCConfName[1].Data()), expectedstepTPC.Data(), altstepTPC.Data());
   else if(q2meth==kq2PosTPC)
-    qnVect = GetQnVectorFromList(qnlist, Form("%sQoverSqrtM",fDetTPCConfName[2].Data()), "latest", "plain");
+    qnVect = GetQnVectorFromList(qnlist, Form("%sQoverSqrtM",fDetTPCConfName[2].Data()), expectedstepTPC.Data(), altstepTPC.Data());
   else if(q2meth==kq2VZERO)
-    qnVect = GetQnVectorFromList(qnlist, Form("%sQoverSqrtM",fDetV0ConfName[0].Data()), "latest", "raw");
+    qnVect = GetQnVectorFromList(qnlist, Form("%sQoverSqrtM",fDetV0ConfName[0].Data()), expectedstepV0.Data(), altstepV0.Data());
   else if(q2meth==kq2VZEROA)
-    qnVect = GetQnVectorFromList(qnlist, Form("%sQoverSqrtM",fDetV0ConfName[1].Data()), "latest", "raw");
+    qnVect = GetQnVectorFromList(qnlist, Form("%sQoverSqrtM",fDetV0ConfName[1].Data()), expectedstepV0.Data(), altstepV0.Data());
   else if(q2meth==kq2VZEROC)
-    qnVect = GetQnVectorFromList(qnlist, Form("%sQoverSqrtM",fDetV0ConfName[2].Data()), "latest", "raw");
+    qnVect = GetQnVectorFromList(qnlist, Form("%sQoverSqrtM",fDetV0ConfName[2].Data()), expectedstepV0.Data(), altstepV0.Data());
   else {return -1;}
 
   if(!qnVect) {return -1;}
@@ -2149,7 +2255,19 @@ Double_t AliAnalysisTaskSEHFvn::ComputeTPCq2(AliAODEvent* aod, Double_t &q2TPCfu
   multQvecTPC[0]=0; //full TPC
   multQvecTPC[1]=0; //pos TPC
   multQvecTPC[2]=0; //neg TPC
+  Int_t nDau=3;
+  if(fDecChannel==1) {nDau=2;}
+  Int_t RandTracks[3]={-1,-1,-1};
+  if(fRemoveNdauRandomTracks) {
+    if(nTracks>=nDau) {
+      for(Int_t iRand=0; iRand<nDau; iRand++) {
+        RandTracks[iRand]=gRandom->Integer((UInt_t)(nTracks+1));
+      }
+    }
+    else return 0.; //remove all tracks if they are <= number of daughters
+  }
   for(Int_t it=0; it<nTracks; it++){
+    if(fRemoveNdauRandomTracks && (it==RandTracks[0] || it==RandTracks[1] || it==RandTracks[2])) {continue;}
     AliAODTrack* track=(AliAODTrack*)aod->GetTrack(it);
     if(!track) continue;
     if(track->TestFilterBit(BIT(8))||track->TestFilterBit(BIT(9))) {
@@ -2159,7 +2277,7 @@ Double_t AliAnalysisTaskSEHFvn::ComputeTPCq2(AliAODEvent* aod, Double_t &q2TPCfu
       Double_t phi=track->Phi();
       Double_t qx=TMath::Cos(nHarmonic*phi);
       Double_t qy=TMath::Sin(nHarmonic*phi);
-      if(pseudoRand<fFractionOfTracksForTPCq2 && eta<fTPCEtaMax && eta>fTPCEtaMin){
+      if(pseudoRand<fFractionOfTracksForTPCq2 && eta<fTPCEtaMax && eta>fTPCEtaMin && pt>0.2 && pt<5){
 	qVec[0]+=qx;
 	qVec[1]+=qy;
 	multQvecTPC[0]++;
@@ -2176,8 +2294,8 @@ Double_t AliAnalysisTaskSEHFvn::ComputeTPCq2(AliAODEvent* aod, Double_t &q2TPCfu
     }
   }
 
-  
-  
+
+
   q2TPCfull = 0.;
   if(multQvecTPC[0]>0) q2TPCfull = TMath::Sqrt(qVec[0]*qVec[0]+qVec[1]*qVec[1])/TMath::Sqrt(multQvecTPC[0]);
   q2TPCpos = 0.;

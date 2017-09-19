@@ -151,6 +151,9 @@ fDownScaleFactorCascade ( 0.001  ),
 fMinPtToSave( 0.00   ) ,
 fMaxPtToSave( 100.00 ) ,
 
+//---> Flags controlling sandbox mode (cascade)
+fkSandboxMode( kFALSE ),
+
 //---> Variables for Sibling Tagging
 fSibCutDcaV0ToPrimVertex       ( 0.8    ),
 fSibCutDcaV0Daughters          ( 0.15   ),
@@ -481,6 +484,14 @@ fTreeCascVarV0AntiLambdaMassError(0),
 fTreeCascVarBachIsKink(0),
 fTreeCascVarPosIsKink(0),
 fTreeCascVarNegIsKink(0),
+
+//+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+//Save full info for full re-vertex offline replay ('sandbox mode')
+//+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+fTreeCascVarBachTrack(0),
+fTreeCascVarPosTrack(0),
+fTreeCascVarNegTrack(0),
+fTreeCascVarMagneticField(0),
 
 //Histos
 fHistEventCounter(0),
@@ -529,6 +540,9 @@ fDownScaleFactorCascade ( 0.001  ),
 fMinPtToSave( 0.00   ) ,
 fMaxPtToSave( 100.00 ) ,
 
+//---> Flags controlling sandbox mode (cascade)
+fkSandboxMode( kFALSE ),
+
 //---> Variables for Sibling Tagging
 fSibCutDcaV0ToPrimVertex       ( 0.8    ),
 fSibCutDcaV0Daughters          ( 0.15   ),
@@ -862,6 +876,13 @@ fTreeCascVarBachIsKink(0),
 fTreeCascVarPosIsKink(0),
 fTreeCascVarNegIsKink(0),
 
+//+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+//Save full info for full re-vertex offline replay ('sandbox mode')
+//+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+fTreeCascVarBachTrack(0),
+fTreeCascVarPosTrack(0),
+fTreeCascVarNegTrack(0),
+fTreeCascVarMagneticField(0),
 
 //Histos
 fHistEventCounter(0),
@@ -931,11 +952,13 @@ fHistGeneratedPtVsYVsCentralityOmegaPlus(0)
     // B - Study invariant mass *B*ump
     // C - Study OOB pileup in pp 2016 data
     // P - Study *P*arenthood information (for bump, etc)
+    // S - Add sandbox mode information, please
     
     if ( lExtraOptions.Contains("A") ) fkDebugWrongPIDForTracking = kTRUE;
     if ( lExtraOptions.Contains("B") ) fkDebugBump                = kTRUE;
     if ( lExtraOptions.Contains("C") ) fkDebugOOBPileup           = kTRUE;
     if ( lExtraOptions.Contains("P") ) fkDebugParenthood          = kTRUE;
+    if ( lExtraOptions.Contains("S") ) fkSandboxMode              = kTRUE;
     
 }
 
@@ -1201,11 +1224,6 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserCreateOutputObjects()
             fTreeCascade->Branch("fTreeCascVarMagField",&fTreeCascVarMagField,"fTreeCascVarMagField/F");
             //Track Labels (check for duplicates, etc)
             
-            //Cascade decay position calculation metrics
-            fTreeCascade->Branch("fTreeCascVarPrimVertexX",&fTreeCascVarPrimVertexX,"fTreeCascVarPrimVertexX/F");
-            fTreeCascade->Branch("fTreeCascVarPrimVertexY",&fTreeCascVarPrimVertexY,"fTreeCascVarPrimVertexY/F");
-            fTreeCascade->Branch("fTreeCascVarPrimVertexZ",&fTreeCascVarPrimVertexZ,"fTreeCascVarPrimVertexZ/F");
-            
             fTreeCascade->Branch("fTreeCascVarBachelorDCAptX",&fTreeCascVarBachelorDCAptX,"fTreeCascVarBachelorDCAptX/F");
             fTreeCascade->Branch("fTreeCascVarBachelorDCAptY",&fTreeCascVarBachelorDCAptY,"fTreeCascVarBachelorDCAptY/F");
             fTreeCascade->Branch("fTreeCascVarBachelorDCAptZ",&fTreeCascVarBachelorDCAptZ,"fTreeCascVarBachelorDCAptZ/F");
@@ -1329,6 +1347,21 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserCreateOutputObjects()
             fTreeCascade->Branch("fTreeCascVarAmplitudeV0C",&fTreeCascVarAmplitudeV0C,"fTreeCascVarAmplitudeV0C/F");
             fTreeCascade->Branch("fTreeCascVarNHitsFMDA",&fTreeCascVarNHitsFMDA,"fTreeCascVarNHitsFMDA/F");
             fTreeCascade->Branch("fTreeCascVarNHitsFMDC",&fTreeCascVarNHitsFMDC,"fTreeCascVarNHitsFMDC/F");
+        }
+        
+        if( fkSandboxMode ){
+            //Full track info for DCA minim optimization
+            fTreeCascade->Branch("fTreeCascVarBachTrack", &fTreeCascVarBachTrack,16000,99);
+            fTreeCascade->Branch("fTreeCascVarPosTrack", &fTreeCascVarPosTrack,16000,99);
+            fTreeCascade->Branch("fTreeCascVarNegTrack", &fTreeCascVarNegTrack,16000,99);
+            
+            //for sandbox mode
+            fTreeCascade->Branch("fTreeCascVarMagneticField",&fTreeCascVarMagneticField,"fTreeCascVarMagneticField/F");
+            
+            //Cascade decay position calculation metrics
+            fTreeCascade->Branch("fTreeCascVarPrimVertexX",&fTreeCascVarPrimVertexX,"fTreeCascVarPrimVertexX/F");
+            fTreeCascade->Branch("fTreeCascVarPrimVertexY",&fTreeCascVarPrimVertexY,"fTreeCascVarPrimVertexY/F");
+            fTreeCascade->Branch("fTreeCascVarPrimVertexZ",&fTreeCascVarPrimVertexZ,"fTreeCascVarPrimVertexZ/F");
         }
         
         //-----------MC Exclusive info--------------------
@@ -2708,6 +2741,13 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
         AliESDtrack *pTrackXi		= lESDevent->GetTrack( lIdxPosXi );
         AliESDtrack *nTrackXi		= lESDevent->GetTrack( lIdxNegXi );
         AliESDtrack *bachTrackXi	= lESDevent->GetTrack( lBachIdx );
+        
+        //Sandbox information: always, regardless of status
+        fTreeCascVarBachTrack = bachTrackXi;
+        fTreeCascVarPosTrack = pTrackXi;
+        fTreeCascVarNegTrack = nTrackXi;
+        
+        fTreeCascVarMagneticField = lESDevent->GetMagneticField(); 
         
         fTreeCascVarNegIndex  = lIdxNegXi;
         fTreeCascVarPosIndex  = lIdxPosXi;

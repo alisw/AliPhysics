@@ -242,14 +242,14 @@ AliAnalysisTaskEmcalJetTagger* AddTaskEmcalJetTagger(const char *wagonName){
 }
 
 //Attach rho task
-AliAnalysisTaskRhoBase *AttachRhoTaskTagger(TString     kPeriod             = "LHC13b",
-    TString     kTracksName         = "PicoTracks",
-    TString     kClusName           = "caloClustersCorr",
-    Double_t    R                   = 0.4,
-    Double_t    ptminTrack          = 0.15,
-    Double_t    etminClus           = 0.3,
-    Int_t       recombScheme        = 0,
-    TString     tag                 = "Jet"
+AliAnalysisTaskRhoBase *AttachRhoTaskTagger(TString kPeriod,
+    TString     kTracksName,
+    TString     kClusName,
+    Double_t    R,
+    Double_t    ptminTrack,
+    Double_t    etminClus,
+    Int_t       recombScheme,
+    TString     tag
 ) {
 
   AliAnalysisTaskRhoBase *rhoTaskBase;

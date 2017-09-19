@@ -32,6 +32,8 @@ AliAnalysisCODEXtask::AliAnalysisCODEXtask(const char* name) :
   mPtCut{0.1},
   mPOI{255},
   mNsigmaTPCselectionPOI{5.},
+  mNsigmaTOFselectionPOI{10.},
+  mStartingPtTOFselection{1.e4},
   mSkipEmptyEvents{false},
   mOutput{nullptr},
   mTree{nullptr},
@@ -45,10 +47,10 @@ AliAnalysisCODEXtask::AliAnalysisCODEXtask(const char* name) :
   Cuts.SetMaxChi2PerClusterTPC(6);
   Cuts.SetAcceptKinkDaughters(false);
   Cuts.SetRequireTPCRefit(true);
-  Cuts.SetRequireITSRefit(false);
-  Cuts.SetMaxDCAToVertexZ(3);
-  Cuts.SetMaxDCAToVertexXY(3);
-  Cuts.SetMaxChi2PerClusterITS(100000000.);
+  Cuts.SetRequireITSRefit(true);
+  Cuts.SetMaxDCAToVertexZ(2);
+  Cuts.SetMaxDCAToVertexXY(1.5);
+  Cuts.SetMaxChi2PerClusterITS(36);
   Cuts.SetMaxChi2TPCConstrainedGlobal(100000000.);
   Cuts.SetEtaRange(-0.8,0.8);
   DefineInput(0, TChain::Class());
@@ -161,6 +163,15 @@ void AliAnalysisCODEXtask::UserExec(Option_t *){
     for (int iS = 0; iS < 8; ++iS) {
       sig[iS] = mPIDresponse->NumberOfSigmas(AliPIDResponse::kTPC,track,particle_species[iS]);
       if (std::abs(sig[iS]) < mNsigmaTPCselectionPOI && (mPOI & BIT(iS))) {
+        reject = false;
+      }
+    }
+    if (reject) continue;
+
+    reject = track->Pt() >= mStartingPtTOFselection;
+    for (int iS = 0; iS < 8; ++iS) {
+      double sigTOF = mPIDresponse->NumberOfSigmas(AliPIDResponse::kTOF,track,particle_species[iS]);
+      if (std::abs(sigTOF) < mNsigmaTOFselectionPOI && (mPOI & BIT(iS))) {
         reject = false;
       }
     }

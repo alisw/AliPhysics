@@ -10,8 +10,8 @@ using namespace utils;
 #include <TGraphAsymmErrors.h>
 #include <TH2F.h>
 
-int kCentBins[11][2] = {{1,1},{2,2},{3,3},{4,4},{5,5},{6,6},{7,7},{8,8},{9,9},{10,10},{11,11}};
-int kNcentBins = 11;
+int kCentBins[12][2] = {{1,1},{2,2},{3,3},{4,4},{5,5},{6,6},{7,7},{8,8},{9,9},{10,10},{11,11},{1,11}};
+int kNcentBins = 12;
 
 TH1* DoEff(TH1* tof, TH1* tot, string name, char letter, int iBx, TArrayD& cent_labels) {
   int iC0 = kCentBins[iBx-1][0];

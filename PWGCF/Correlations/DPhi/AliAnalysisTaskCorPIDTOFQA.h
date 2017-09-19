@@ -8,6 +8,7 @@
 #include "AliAnalysisTaskSE.h"
 #include "AliPIDResponse.h"
 
+//#define AliAnalysisTaskCorPIDTOFQA AliAnalysisTaskCorPIDTOFQA2
 
 class AliAODTrack;
 
@@ -37,11 +38,13 @@ class AliAnalysisTaskCorPIDTOFQA : public AliAnalysisTaskSE
 
         AliAODEvent*          fAOD;               //! input event
         TList*                fOutputList;        //! output list
+
+
 	AliPIDResponse*       fPIDResponse;
 
+//	TTree*                htree;
 
-	TTree*                htree;
-	AliAODEvent*          helperAOD;                   //! input event
+//	AliAODEvent*          helperAOD;                   //! input event
 	
 	TH1F*                 fHistPt;                     //  1
 

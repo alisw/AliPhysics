@@ -187,6 +187,9 @@ AliAnalysisTaskBFPsi::AliAnalysisTaskBFPsi(const char *name)
   fVxMax(0.8),
   fVyMax(0.8),
   fVzMax(10.),
+  fRequireHighPtTrigger(kFALSE),
+  fPtTriggerMin(0.0),
+  fHistPtTriggerThreshold(0),
   fnAODtrackCutBit(128),
   fPtMin(0.3),
   fPtMax(1.5),
@@ -417,7 +420,7 @@ void AliAnalysisTaskBFPsi::UserCreateOutputObjects() {
   fList->Add(fHistChi2);
   fHistDCA  = new TH2F("fHistDCA","DCA (xy vs. z)",400,-5,5,400,-5,5); 
   fList->Add(fHistDCA);
-  fHistPt   = new TH2F("fHistPt","p_{T} distribution;p_{T} (GeV/c);Centrality percentile",200,0,10,220,-5,105);
+  fHistPt   = new TH2F("fHistPt","p_{T} distribution;p_{T} (GeV/c);Centrality percentile",200,0,20,220,-5,105);
   fList->Add(fHistPt);
   fHistEta  = new TH2F("fHistEta","#eta distribution;#eta;Centrality percentile",200,-2,2,220,-5,105);
   fList->Add(fHistEta);
@@ -425,7 +428,9 @@ void AliAnalysisTaskBFPsi::UserCreateOutputObjects() {
   fList->Add(fHistRapidity);
   fHistPhi  = new TH2F("fHistPhi","#phi distribution;#phi (rad);Centrality percentile",200,0.0,2.*TMath::Pi(),220,-5,105);
   fList->Add(fHistPhi);
-
+  fHistPtTriggerThreshold = new TH2F("fHistPtTriggerThreshold","p_{T} distribution with threshold for pT trig;p_{T} (GeV/c);Centrality percentile",200,0,20,220,-5,105);
+  fList->Add(fHistPtTriggerThreshold);
+				     
   fHistEtaVzPos  = new TH3F("fHistEtaVzPos","#eta vs Vz distribution (+);#eta;V_{z} (cm);Centrality percentile",40,-1.6,1.6,140,-12.,12.,220,-5,105);
   fList->Add(fHistEtaVzPos); 			 
   fHistEtaVzNeg  = new TH3F("fHistEtaVzNeg","#eta vs Vz distribution (-);#eta;V_{z} (cm);Centrality percentile",40,-1.6,1.6,140,-12.,12.,220,-5,105);
@@ -831,9 +836,12 @@ void AliAnalysisTaskBFPsi::UserExec(Option_t *) {
 
   //Sphericity variable
   Double_t gSphericity = -999.;
+
+  //high pT trigger tracks
+  Int_t nTracksAboveHighPtThreshold = 0;
   
   // get the accepted tracks in main event  
-  TObjArray *tracksMain = GetAcceptedTracks(eventMain,lMultiplicityVar,gReactionPlane,gSphericity);
+  TObjArray *tracksMain = GetAcceptedTracks(eventMain,lMultiplicityVar,gReactionPlane,gSphericity,nTracksAboveHighPtThreshold);
   gNumberOfAcceptedTracks = tracksMain->GetEntriesFast();
 
   //Use sphericity cut
@@ -843,7 +851,15 @@ void AliAnalysisTaskBFPsi::UserExec(Option_t *) {
       return;
     }
   }
-  
+
+  //Use of a high pT threshold cut
+  if(fRequireHighPtTrigger) {
+    if(nTracksAboveHighPtThreshold == 0) {
+      AliInfo(Form("The event got rejected since we found no track above the high pT threshold of %.1f",fPtTriggerMin));
+      return;
+    }
+  }
+
   //multiplicity cut (used in pp)
   fHistNumberOfAcceptedTracks->Fill(gNumberOfAcceptedTracks,lMultiplicityVar);
 
@@ -1618,7 +1634,7 @@ Double_t AliAnalysisTaskBFPsi::GetTrackbyTrackCorrectionMatrix( Double_t vEta,
 }
 
 //________________________________________________________________________
-TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t gCentrality, Double_t gReactionPlane, Double_t &gSphericity){
+TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t gCentrality, Double_t gReactionPlane, Double_t &gSphericity, Int_t &nAcceptedTracksAboveHighPtThreshold){
   // Returns TObjArray with tracks after all track cuts (only for AOD!)
   // Fills QA histograms
 
@@ -1910,7 +1926,13 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t gC
       //===========================PID===============================//
       //+++++++++++++++++++++++++++++//
     
-       // Kinematics cuts from ESD track cuts
+      //pT trigger threshold cut
+      if(vPt > fPtTriggerMin) {
+	nAcceptedTracksAboveHighPtThreshold += 1;
+	fHistPtTriggerThreshold->Fill(vPt,gCentrality);
+      }
+      
+      // Kinematics cuts from ESD track cuts
       if( vPt < fPtMin || vPt > fPtMax)      continue;
       if( vEta < fEtaMin || vEta > fEtaMax)  continue;
 
@@ -2059,7 +2081,11 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t gC
       vPt     = aodTrack->Pt();
       vY = log( ( sqrt(fMassParticleOfInterest*fMassParticleOfInterest + vPt*vPt*cosh(vEta)*cosh(vEta)) + vPt*sinh(vEta) ) / sqrt(fMassParticleOfInterest*fMassParticleOfInterest + vPt*vPt) ); // convert eta to y; be aware that this works only for mass assumption of POI 
            
-      
+      if(vPt > fPtTriggerMin) {
+	nAcceptedTracksAboveHighPtThreshold += 1;
+      	fHistPtTriggerThreshold->Fill(vPt,gCentrality);
+      }
+
       // Kinematics cuts from ESD track cuts
       if( vPt < fPtMin || vPt > fPtMax)      continue;
       if( vEta < fEtaMin || vEta > fEtaMax)  continue;
@@ -2122,6 +2148,11 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t gC
 	vPhi    = aodTrack->Phi();// * TMath::RadToDeg();
 	vPt     = aodTrack->Pt();
 	
+	if(vPt > fPtTriggerMin) {
+	  nAcceptedTracksAboveHighPtThreshold += 1;
+	  fHistPtTriggerThreshold->Fill(vPt,gCentrality);
+	}
+
 	// Kinematics cuts from ESD track cuts
 	if( vPt < fPtMin || vPt > fPtMax)      continue;
 	if( vEta < fEtaMin || vEta > fEtaMax)  continue;
@@ -2319,6 +2350,11 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t gC
       }
       //===========================end of PID (so far only for electron rejection)===============================//
       
+      if(vPt > fPtTriggerMin) {
+	nAcceptedTracksAboveHighPtThreshold += 1;
+	fHistPtTriggerThreshold->Fill(vPt,gCentrality);
+      }
+
       // Kinematics cuts from ESD track cuts
       if( vPt < fPtMin || vPt > fPtMax)      continue;
       if( vEta < fEtaMin || vEta > fEtaMax)  continue;

@@ -1330,10 +1330,10 @@ Bool_t AliEmcalCorrectionTask::RetrieveEventObjects()
   AliEmcalContainer* cont = 0;
 
   TIter nextPartColl(&fParticleCollArray);
-  while ((cont = static_cast<AliEmcalContainer*>(nextPartColl()))) cont->NextEvent();
+  while ((cont = static_cast<AliEmcalContainer*>(nextPartColl()))) cont->NextEvent(InputEvent());
 
   TIter nextClusColl(&fClusterCollArray);
-  while ((cont = static_cast<AliEmcalContainer*>(nextClusColl()))) cont->NextEvent();
+  while ((cont = static_cast<AliEmcalContainer*>(nextClusColl()))) cont->NextEvent(InputEvent());
 
   return kTRUE;
 }

@@ -239,7 +239,7 @@ Bool_t AliAnalysisTaskEmcalJet::RetrieveEventObjects()
   AliEmcalContainer* cont = 0;
 
   TIter nextJetColl(&fJetCollArray);
-  while ((cont = static_cast<AliEmcalContainer*>(nextJetColl()))) cont->NextEvent();
+  while ((cont = static_cast<AliEmcalContainer*>(nextJetColl()))) cont->NextEvent(InputEvent());
 
   return kTRUE;
 }
@@ -292,7 +292,7 @@ AliJetContainer* AliAnalysisTaskEmcalJet::AddJetContainer(EJetType_t jetType, EJ
  * @param[in] n Name of the jet branch
  * @param[in] accType One of the AliEmcalJet::JetAcceptanceType enumeration values (kTPC, kEMCAL, kDCAL, ...),
  * or a combination using bitwise OR: For example, (kEMCAL | kDCAL) will select all jets in either EMCal or DCal.
- * @param[in] radius Resolution parameter (0.2, 0.4, ...)
+ * @param[in] jetRadius Resolution parameter (0.2, 0.4, ...)
  * @return Pointer to the new jet container
  */
 AliJetContainer* AliAnalysisTaskEmcalJet::AddJetContainer(const char *n, UInt_t accType, Float_t jetRadius)
@@ -311,7 +311,7 @@ AliJetContainer* AliAnalysisTaskEmcalJet::AddJetContainer(const char *n, UInt_t 
  * Create new jet container and attach it to the task. This method is usually called in the add task macro.
  * @param[in] n Name of the jet branch
  * @param[in] defaultCutType String that correspond to a possible acceptance cut type
- * @param[in] radius Resolution parameter (0.2, 0.4, ...)
+ * @param[in] jetRadius Resolution parameter (0.2, 0.4, ...)
  * @return Pointer to the new jet container
  */
 AliJetContainer* AliAnalysisTaskEmcalJet::AddJetContainer(const char *n, TString defaultCutType, Float_t jetRadius) {

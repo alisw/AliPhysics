@@ -102,7 +102,7 @@ fhPrimEtaOpeningAngleAsym(0x0),fhPrimEtaCosOpeningAngle(0x0),
 fhPrimEtaPtCentrality(0),    fhPrimEtaPtEventPlane(0),
 fhPrimEtaAccPtCentrality(0), fhPrimEtaAccPtEventPlane(0),
 fhPrimPi0PtOrigin(0x0),      fhPrimEtaPtOrigin(0x0),
-fhPrimNotResonancePi0PtOrigin(0x0),      fhPrimPi0PtStatus(0x0),
+			 fhPrimNotResonancePi0PtOrigin(0x0),      fhPrimPi0PtStatus(0x0),
 fhMCPi0MassPtRec(0x0),       fhMCPi0MassPtTrue(0x0),
 fhMCPi0PtTruePtRec(0x0),     fhMCPi0PtTruePtRecMassCut(0x0),
 fhMCEtaMassPtRec(0x0),       fhMCEtaMassPtTrue(0x0),
@@ -231,6 +231,11 @@ fhReSecondaryCellOutTimeWindow(0), fhMiSecondaryCellOutTimeWindow(0)
     fhMCOrgAsym    [i] =0 ;
     fhMCOrgDeltaEta[i] =0 ;
     fhMCOrgDeltaPhi[i] =0 ;
+  }
+  for(Int_t i = 0; i < 3; i++)
+  {
+    fhMCOrgPi0MassPtConversion[i] =0 ;
+    fhMCOrgEtaMassPtConversion[i] =0 ;
   }
 }
 
@@ -742,7 +747,7 @@ TList * AliAnaPi0::GetCreateOutputObjects()
       fhPrimPi0PtStatus->SetXTitle("#it{p}_{T} (GeV/#it{c})");
       fhPrimPi0PtStatus->SetYTitle("Status");
       outputContainer->Add(fhPrimPi0PtStatus) ;
-      
+
       // Eta
       fhPrimEtaPtOrigin     = new TH2F("hPrimEtaPtOrigin","Primary #pi^{0} #it{p}_{T} vs origin",nptbins,ptmin,ptmax,7,0,7) ;
       fhPrimEtaPtOrigin->SetXTitle("#it{p}_{T} (GeV/#it{c})");
@@ -1382,7 +1387,7 @@ TList * AliAnaPi0::GetCreateOutputObjects()
     
     if(fFillOriginHisto)
     {
-      fhMCPi0PtOrigin     = new TH2F("hMCPi0PtOrigin","Reconstructed pair from generated #pi^{0} #it{p}_{T} vs origin",nptbins,ptmin,ptmax,11,0,11) ;
+      fhMCPi0PtOrigin     = new TH2F("hMCPi0PtOrigin","Reconstructed pair from generated #pi^{0} #it{p}_{T} vs origin",nptbins,ptmin,ptmax,15,0,15) ;
       fhMCPi0PtOrigin->SetXTitle("#it{p}_{T} (GeV/#it{c})");
       fhMCPi0PtOrigin->SetYTitle("Origin");
       fhMCPi0PtOrigin->GetYaxis()->SetBinLabel(1 ,"Status 21");
@@ -1391,10 +1396,14 @@ TList * AliAnaPi0::GetCreateOutputObjects()
       fhMCPi0PtOrigin->GetYaxis()->SetBinLabel(4 ,"Resonances");
       fhMCPi0PtOrigin->GetYaxis()->SetBinLabel(5 ,"#rho");
       fhMCPi0PtOrigin->GetYaxis()->SetBinLabel(6 ,"#omega");
-      fhMCPi0PtOrigin->GetYaxis()->SetBinLabel(7 ,"K");
+      fhMCPi0PtOrigin->GetYaxis()->SetBinLabel(7 ,"K0S");
       fhMCPi0PtOrigin->GetYaxis()->SetBinLabel(8 ,"Other");
       fhMCPi0PtOrigin->GetYaxis()->SetBinLabel(9 ,"#eta");
       fhMCPi0PtOrigin->GetYaxis()->SetBinLabel(10 ,"#eta prime");
+      fhMCPi0PtOrigin->GetYaxis()->SetBinLabel(11 ,"K0L");
+      fhMCPi0PtOrigin->GetYaxis()->SetBinLabel(12 ,"K+-");
+      fhMCPi0PtOrigin->GetYaxis()->SetBinLabel(13 ,"K*");
+      fhMCPi0PtOrigin->GetYaxis()->SetBinLabel(14 ,"#Lambda");
       outputContainer->Add(fhMCPi0PtOrigin) ;
       
       fhMCNotResonancePi0PtOrigin     = new TH2F("hMCNotResonancePi0PtOrigin","Reconstructed pair from generated #pi^{0} #it{p}_{T} vs origin",nptbins,ptmin,ptmax,11,0,11) ;
@@ -1416,7 +1425,7 @@ TList * AliAnaPi0::GetCreateOutputObjects()
       fhMCPi0PtStatus->SetXTitle("#it{p}_{T} (GeV/#it{c})");
       fhMCPi0PtStatus->SetYTitle("Status");
       outputContainer->Add(fhMCPi0PtStatus) ;
-      
+
       // Eta
       
       fhMCEtaPtOrigin     = new TH2F("hMCEtaPtOrigin","Reconstructed pair from generated #pi^{0} #it{p}_{T} vs origin",nptbins,ptmin,ptmax,7,0,7) ;
@@ -1496,6 +1505,44 @@ TList * AliAnaPi0::GetCreateOutputObjects()
         fhMCOrgDeltaPhi[i]->SetYTitle("#Delta #varphi (rad)");
         outputContainer->Add(fhMCOrgDeltaPhi[i]) ;
       }
+
+      //reconstructed gamma clusters coming pi0 (validated in MC true) both not from conversion, with one or two conversions
+      fhMCOrgPi0MassPtConversion[0] = new TH2F("hMCOrgPi0MassPtConversion0","Invariant mass of 2 clusters (ancestor #pi^{0}) not originated in conversions",
+					       nptbins,ptmin,ptmax,nmassbins,massmin,massmax);
+      fhMCOrgPi0MassPtConversion[0]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+      fhMCOrgPi0MassPtConversion[0]->SetYTitle("#it{M}_{#gamma,#gamma} (GeV/#it{c}^{2})");
+      outputContainer->Add(fhMCOrgPi0MassPtConversion[0]) ;
+
+      fhMCOrgPi0MassPtConversion[1] = new TH2F("hMCOrgPi0MassPtConversion1","Invariant mass of 2 clusters (ancestor #pi^{0}) one from conversion and the other not",
+					       nptbins,ptmin,ptmax,nmassbins,massmin,massmax);
+      fhMCOrgPi0MassPtConversion[1]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+      fhMCOrgPi0MassPtConversion[1]->SetYTitle("#it{M}_{#gamma,#gamma} (GeV/#it{c}^{2})");
+      outputContainer->Add(fhMCOrgPi0MassPtConversion[1]) ;
+
+      fhMCOrgPi0MassPtConversion[2] = new TH2F("hMCOrgPi0MassPtConversion2","Invariant mass of 2 clusters (ancestor #pi^{0}) originated in conversions",
+					       nptbins,ptmin,ptmax,nmassbins,massmin,massmax);
+      fhMCOrgPi0MassPtConversion[2]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+      fhMCOrgPi0MassPtConversion[2]->SetYTitle("#it{M}_{#gamma,#gamma} (GeV/#it{c}^{2})");
+      outputContainer->Add(fhMCOrgPi0MassPtConversion[2]) ;
+
+      //reconstructed gamma clusters coming eta (validated in MC true) both not from conversion, with one or two conversions
+      fhMCOrgEtaMassPtConversion[0] = new TH2F("hMCOrgEtaMassPtConversion0","Invariant mass of 2 clusters (ancestor #eta) not originated in conversions",
+					       nptbins,ptmin,ptmax,nmassbins,massmin,massmax);
+      fhMCOrgEtaMassPtConversion[0]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+      fhMCOrgEtaMassPtConversion[0]->SetYTitle("#it{M}_{#gamma,#gamma} (GeV/#it{c}^{2})");
+      outputContainer->Add(fhMCOrgEtaMassPtConversion[0]) ;
+
+      fhMCOrgEtaMassPtConversion[1] = new TH2F("hMCOrgEtaMassPtConversion1","Invariant mass of 2 clusters (ancestor #eta) one from conversion and the other not",
+					       nptbins,ptmin,ptmax,nmassbins,massmin,massmax);
+      fhMCOrgEtaMassPtConversion[1]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+      fhMCOrgEtaMassPtConversion[1]->SetYTitle("#it{M}_{#gamma,#gamma} (GeV/#it{c}^{2})");
+      outputContainer->Add(fhMCOrgEtaMassPtConversion[1]) ;
+
+      fhMCOrgEtaMassPtConversion[2] = new TH2F("hMCOrgEtaMassPtConversion2","Invariant mass of 2 clusters (ancestor #eta) originated in conversions",
+					       nptbins,ptmin,ptmax,nmassbins,massmin,massmax);
+      fhMCOrgEtaMassPtConversion[2]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+      fhMCOrgEtaMassPtConversion[2]->SetYTitle("#it{M}_{#gamma,#gamma} (GeV/#it{c}^{2})");
+      outputContainer->Add(fhMCOrgEtaMassPtConversion[2]) ;
       
       if(fMultiCutAnaSim)
       {
@@ -2797,7 +2844,7 @@ void AliAnaPi0::FillAcceptanceHistograms()
           else if(mompdg    == 213) fhPrimPi0PtOrigin->Fill(mesonPt, 4.5, GetEventWeight()*weightPt);//rho
           else if(mompdg    == 223) fhPrimPi0PtOrigin->Fill(mesonPt, 5.5, GetEventWeight()*weightPt);//omega
           else if(mompdg    >= 310   && mompdg <= 323)
-                                    fhPrimPi0PtOrigin->Fill(mesonPt, 6.5, GetEventWeight()*weightPt);//k0S, k+-,k*
+	                            fhPrimPi0PtOrigin->Fill(mesonPt, 6.5, GetEventWeight()*weightPt);//k0S, k+-,k*
           else if(mompdg    == 130) fhPrimPi0PtOrigin->Fill(mesonPt, 6.5, GetEventWeight()*weightPt);//k0L
           else if(momstatus == 11 || momstatus == 12 )
                                     fhPrimPi0PtOrigin->Fill(mesonPt, 3.5, GetEventWeight()*weightPt);//resonances
@@ -3264,13 +3311,19 @@ void AliAnaPi0::FillMCVersusRecDataHistograms(Int_t ancLabel , Int_t ancPDG,
                 fhMCPi0Radius[5]->Fill(pt,prodR,GetEventWeight()*weightPt);
               }
               else if(mompdg    >= 310   && mompdg    <= 323) {
-                fhMCPi0PtOrigin->Fill(pt, 6.5, GetEventWeight()*weightPt);//k0S, k+-,k*
                 fhMCPi0Radius[6]->Fill(pt,prodR,GetEventWeight()*weightPt);
+		if(mompdg==310) fhMCPi0PtOrigin->Fill(pt, 6.5, GetEventWeight()*weightPt);//k0S
+		else if(TMath::Abs(mompdg)==321) fhMCPi0PtOrigin->Fill(pt, 11.5, GetEventWeight()*weightPt);//k+-
+		else fhMCPi0PtOrigin->Fill(pt, 12.5, GetEventWeight()*weightPt);//k*
               }
               else if(mompdg    == 130) {
-                fhMCPi0PtOrigin->Fill(pt, 6.5, GetEventWeight()*weightPt);//k0L
+                fhMCPi0PtOrigin->Fill(pt, 10.5, GetEventWeight()*weightPt);//k0L
                 fhMCPi0Radius[6]->Fill(pt,prodR,GetEventWeight()*weightPt);
               }
+	      else if(mompdg==3122) {
+		fhMCPi0PtOrigin->Fill(pt, 13.5, GetEventWeight()*weightPt);//lambda 
+		fhMCPi0Radius[3]->Fill(pt,prodR,GetEventWeight()*weightPt);
+	      }
               else if(momstatus == 11 || momstatus  == 12 ) {
                 fhMCPi0PtOrigin->Fill(pt, 3.5, GetEventWeight()*weightPt);//resonances
                 fhMCPi0Radius[3]->Fill(pt,prodR,GetEventWeight()*weightPt);
@@ -3580,6 +3633,36 @@ void AliAnaPi0::FillMCVersusRecDataHistograms(Int_t ancLabel , Int_t ancPDG,
   fhMCOrgAsym    [mcIndex]->Fill(pt, asym, GetEventWeight()*weightPt);
   fhMCOrgDeltaEta[mcIndex]->Fill(pt, deta, GetEventWeight()*weightPt);
   fhMCOrgDeltaPhi[mcIndex]->Fill(pt, dphi, GetEventWeight()*weightPt);
+
+  if(mcIndex==2) {//pi0 only check conversions
+    if(GetMCAnalysisUtils()->CheckTagBit(mctag1,AliMCAnalysisUtils::kMCConversion) &&
+       GetMCAnalysisUtils()->CheckTagBit(mctag2,AliMCAnalysisUtils::kMCConversion)) {
+      //both conversions
+      fhMCOrgPi0MassPtConversion[2]->Fill(pt, mass, GetEventWeight()*weightPt);
+    } else if(!GetMCAnalysisUtils()->CheckTagBit(mctag1,AliMCAnalysisUtils::kMCConversion) &&
+	      !GetMCAnalysisUtils()->CheckTagBit(mctag2,AliMCAnalysisUtils::kMCConversion)) {
+      //no conversion
+      fhMCOrgPi0MassPtConversion[0]->Fill(pt, mass, GetEventWeight()*weightPt);
+    } else {
+      //one conversion and one not
+      fhMCOrgPi0MassPtConversion[1]->Fill(pt, mass, GetEventWeight()*weightPt);
+    }
+  }
+
+  if(mcIndex==3) {//eta only, check conversions
+    if(GetMCAnalysisUtils()->CheckTagBit(mctag1,AliMCAnalysisUtils::kMCConversion) &&
+       GetMCAnalysisUtils()->CheckTagBit(mctag2,AliMCAnalysisUtils::kMCConversion)) {
+      //both conversions
+      fhMCOrgEtaMassPtConversion[2]->Fill(pt, mass, GetEventWeight()*weightPt);
+    } else if(!GetMCAnalysisUtils()->CheckTagBit(mctag1,AliMCAnalysisUtils::kMCConversion) &&
+	      !GetMCAnalysisUtils()->CheckTagBit(mctag2,AliMCAnalysisUtils::kMCConversion)) {
+      //no conversion
+      fhMCOrgEtaMassPtConversion[0]->Fill(pt, mass, GetEventWeight()*weightPt);
+    } else {
+      //one conversion and one not
+      fhMCOrgEtaMassPtConversion[1]->Fill(pt, mass, GetEventWeight()*weightPt);
+    }
+  }
   
   if( IsStudyClusterOverlapsPerGeneratorOn() )
   {      
