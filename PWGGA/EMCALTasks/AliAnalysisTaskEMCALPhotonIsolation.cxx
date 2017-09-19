@@ -229,7 +229,8 @@ fphietaOthers(0),
 fphietaOthersBis(0),
 fSPDclustVsSPDtracklets(0),
 fnPUevents(0),
-f2012EGA(0)
+f2012EGA(0),
+fHistoRangeContainer(0x0)
   // tracks(0),
   // clusters(0)
 {
@@ -421,7 +422,8 @@ fphietaOthers(0),
 fphietaOthersBis(0),
 fSPDclustVsSPDtracklets(0),
 fnPUevents(0),
-f2012EGA(0)
+f2012EGA(0),
+fHistoRangeContainer(0x0)
   // tracks(0),
   // clusters(0)
 {
@@ -450,6 +452,11 @@ void AliAnalysisTaskEMCALPhotonIsolation::UserCreateOutputObjects(){
   AliAnalysisTaskEmcal::UserCreateOutputObjects();
     // printf("Up here all good");
   
+    // Histogram binning and ranges (to consider geometry-dependent phi histograms)
+  Int_t   nphibins = GetHistogramRangesAndBinning()->GetHistoPhiBins();
+  Float_t phimax   = GetHistogramRangesAndBinning()->GetHistoPhiMax();
+  Float_t phimin   = GetHistogramRangesAndBinning()->GetHistoPhiMin();
+
   if((fIsoMethod == 0 || fIsoMethod == 1 || fIsoMethod==3) && fTPC4Iso){
     cout<<"Error: Iso_Methods with CELLS and CLUSTERS work only within EMCal "<<endl;
     cout<<"Please Set Iso_Method and TPC4Iso Accordingly!!"<<endl;
@@ -655,15 +662,15 @@ void AliAnalysisTaskEMCALPhotonIsolation::UserCreateOutputObjects(){
         fM02->Sumw2();
         fOutput->Add(fM02);
 
-	fEtaPhiClusVsM02 = new TH3F ("hEtaVsPhiVsM02", "#eta vs. #varphi vs. #sigma_{long}^{2} for clusters with 14 < #it{E}_{T} < 16 GeV", 100, -0.72, 0.72, 100, 1.31, 3.29, 100, 0., 2.);
+	fEtaPhiClusVsM02 = new TH3F ("hEtaVsPhiVsM02", "#eta vs. #varphi vs. #sigma_{long}^{2} for clusters with 14 < #it{E}_{T} < 16 GeV", 100, -0.72, 0.72, nphibins, phimin, phimax, 100, 0., 2.);
         fEtaPhiClusVsM02->Sumw2();
 	fOutput->Add(fEtaPhiClusVsM02);
         
-	fEtaPhiClusVsEtIsoClus = new TH3F ("hEtaVsPhiVsEtIsoClus", "#eta vs. #varphi vs. #Sigma #it{E}_{T}^{clus, cone} for clusters with 14 < #it{E}_{T} < 16 GeV", 100, -0.72, 0.72, 100, 1.31, 3.29, 100, 0., 100.);
+	fEtaPhiClusVsEtIsoClus = new TH3F ("hEtaVsPhiVsEtIsoClus", "#eta vs. #varphi vs. #Sigma #it{E}_{T}^{clus, cone} for clusters with 14 < #it{E}_{T} < 16 GeV", 100, -0.72, 0.72, nphibins, phimin, phimax, 100, 0., 100.);
         fEtaPhiClusVsEtIsoClus->Sumw2();
 	fOutput->Add(fEtaPhiClusVsEtIsoClus);
 
-	fEtaPhiClusVsPtIsoTrack = new TH3F ("hEtaVsPhiVsPtIsoTrack", "#eta vs. #varphi vs. #Sigma #it{p}_{T}^{track, cone} for clusters with 14 < #it{E}_{T} < 16 GeV", 100, -0.72, 0.72, 100, 1.31, 3.29, 100, 0., 100.);
+	fEtaPhiClusVsPtIsoTrack = new TH3F ("hEtaVsPhiVsPtIsoTrack", "#eta vs. #varphi vs. #Sigma #it{p}_{T}^{track, cone} for clusters with 14 < #it{E}_{T} < 16 GeV", 100, -0.72, 0.72, nphibins, phimin, phimax, 100, 0., 100.);
         fEtaPhiClusVsPtIsoTrack->Sumw2();
 	fOutput->Add(fEtaPhiClusVsPtIsoTrack);
 
@@ -836,7 +843,7 @@ void AliAnalysisTaskEMCALPhotonIsolation::UserCreateOutputObjects(){
     fClusTime->Sumw2();
     fOutput->Add(fClusTime);
     
-    fEtaPhiClus = new TH2D ("hEtaPhiClusActivity","",250,-0.8,0.8, 250, 1.2, 3.4);
+    fEtaPhiClus = new TH2D ("hEtaPhiClusActivity", "", 250, -0.8, 0.8, nphibins, phimin, phimax);
       // fEtaPhiClus->Sumw2();
     fOutput->Add(fEtaPhiClus);
     
@@ -960,11 +967,11 @@ void AliAnalysisTaskEMCALPhotonIsolation::UserCreateOutputObjects(){
   fPtaftNLM->Sumw2();
   fOutput->Add(fPtaftNLM);
   
-  fClusEtVsEtaPhiMatched = new TH3F ("hEtaVsPhiVsEt_Matched", "#eta vs. #varphi vs. #it{E}_{T} for TRACK-MATCHED clusters", 100, -0.72, 0.72, 100, 1.31, 3.29, 100, 0., 100.);
+  fClusEtVsEtaPhiMatched = new TH3F ("hEtaVsPhiVsEt_Matched", "#eta vs. #varphi vs. #it{E}_{T} for TRACK-MATCHED clusters", 100, -0.72, 0.72, nphibins, phimin, phimax, 100, 0., 100.);
   fClusEtVsEtaPhiMatched->Sumw2();
   fOutput->Add(fClusEtVsEtaPhiMatched);
 
-  fClusEtVsEtaPhiUnmatched = new TH3F ("hEtaVsPhiVsEt_Unmatched", "#eta vs. #varphi vs. #it{E}_{T} for NON TRACK-MATCHED clusters", 100, -0.72, 0.72, 100, 1.31, 3.29, 100, 0., 100.);
+  fClusEtVsEtaPhiUnmatched = new TH3F ("hEtaVsPhiVsEt_Unmatched", "#eta vs. #varphi vs. #it{E}_{T} for NON TRACK-MATCHED clusters", 100, -0.72, 0.72, nphibins, phimin, phimax, 100, 0., 100.);
   fClusEtVsEtaPhiUnmatched->Sumw2();
   fOutput->Add(fClusEtVsEtaPhiUnmatched);
 
