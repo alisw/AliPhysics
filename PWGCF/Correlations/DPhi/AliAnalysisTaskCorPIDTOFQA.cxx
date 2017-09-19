@@ -33,7 +33,7 @@
 #include "TList.h"
 #include "AliAnalysisTask.h"
 #include "AliAnalysisManager.h"
-#include "AliAODEvent.h"
+//#include "AliAODEvent.h"
 #include "AliAODInputHandler.h"
 #include "AliAnalysisTaskCorPIDTOFQA.h"
 #include "AliPIDResponse.h"
@@ -82,7 +82,7 @@
 
 
 using namespace std;            // std namespace: so you can do things like 'cout'
-//using namespace BSchaefer_devel;
+using namespace BSchaefer_devel;
 
 //ofstream file_output("output.txt");
 
@@ -226,6 +226,9 @@ void AliAnalysisTaskCorPIDTOFQA::UserExec(Option_t *)
         if(!track)                                                                      {    continue;    }
 
 	Float_t pt            = track->Pt();
+	if(pt < 0.2)                                                                    {    continue;    }
+	Float_t dedx   = track->GetTPCsignal();
+	if(dedx > 1000)                                                                 {    continue;    }
 	if(!(track->IsHybridGlobalConstrainedGlobal()))                                 {    continue;    }
 	Float_t eta = track->Eta();	if(TMath::Abs(eta) > 0.8)                       {    continue;    }
 
@@ -255,55 +258,62 @@ void AliAnalysisTaskCorPIDTOFQA::UserExec(Option_t *)
 
 
 	Float_t m2tof  = get_mass_squared(track);
-	Float_t dedx   = track->GetTPCsignal();
+
 	    
 	if(charge > 0)
 	{
-	    if(dedx > 7.91143*deltat+28.8714  &&  deltat > 0.07216*dedx-5.11340)
-	    {
-		if(        (1.0 <= deltat  &&  deltat < 6.0  &&  dedx <   9.6774*deltat+46.7742)
-		       ||  (0.5 <= deltat  &&  deltat < 1.0  &&  dedx <  56.4516)
-		       ||  (0.5 >  deltat  &&                    dedx <  56.4516)
-		       ||  (6.0 <= deltat  &&                    dedx <  12.9032*deltat+27.4193)
-		    )
-		{
-		    if(mom >= 1.0  &&  mom < 4.4)
-		    {
-			for(int w=0; w<3; w++){   fit_deut_curve->SetParameter(w, deut_curves[0][0][w]);   }
-			deut_mean = fit_deut_curve->Eval(mom);
-			for(int w=0; w<3; w++){   fit_deut_curve->SetParameter(w, deut_curves[0][1][w]);   }
-			deut_sigma = fit_deut_curve->Eval(mom);
+//	    if(dedx > 7.91143*deltat+28.8714  &&  deltat > 0.07216*dedx-5.11340)
+//	    {
+//		if(        (1.0 <= deltat  &&  deltat < 6.0  &&  dedx <   9.6774*deltat+46.7742)
+//		       ||  (0.5 <= deltat  &&  deltat < 1.0  &&  dedx <  56.4516)
+//		       ||  (0.5 >  deltat  &&                    dedx <  56.4516)
+//		       ||  (6.0 <= deltat  &&                    dedx <  12.9032*deltat+27.4193)
+//		    )
+//		{
 
-			if(m2tof < deut_mean + cut_width * deut_sigma  &&   m2tof > deut_mean - cut_width * deut_sigma)
-			{
-			    deut_count++;
-			}
-		    }			    
-		}
+	    Double_t nSigmaTPCDeut = fPIDResponse->NumberOfSigmasTPC(track,(AliPID::EParticleType)5);  // 5 = deuteron
+	    Double_t nSigmaTOFDeut = fPIDResponse->NumberOfSigmasTOF(track,(AliPID::EParticleType)5);  // 5 = deuteron
+	    if(nSigmaTPCDeut < 4.0  &&  nSigmaTOFDeut < 4.0)
+	    {
+		if(mom >= 1.0  &&  mom < 4.4)
+		{
+		    for(int w=0; w<3; w++){   fit_deut_curve->SetParameter(w, deut_curves[0][0][w]);   }
+		    deut_mean = fit_deut_curve->Eval(mom);
+		    for(int w=0; w<3; w++){   fit_deut_curve->SetParameter(w, deut_curves[0][1][w]);   }
+		    deut_sigma = fit_deut_curve->Eval(mom);
+		    
+		    if(m2tof < deut_mean + cut_width * deut_sigma  &&   m2tof > deut_mean - cut_width * deut_sigma)
+		    {
+			deut_count++;
+		    }
+		}			    
 	    }
 	}
 	    
 	else if(charge < 0)
 	{
-	    if(dedx > 7.91143*deltat+28.8714  &&  deltat > 0.07216*dedx-5.11340)
+//	    if(dedx > 7.91143*deltat+28.8714  &&  deltat > 0.07216*dedx-5.11340)
+//	    {
+//		if(        (1.0 <= deltat  &&  deltat < 6.0  &&  dedx <   9.6774*deltat+46.7742)
+//		       ||  (0.5 <= deltat  &&  deltat < 1.0  &&  dedx <  56.4516)
+//		       ||  (0.5 >  deltat  &&                    dedx <  56.4516)
+//		       ||  (6.0 <= deltat  &&                    dedx <  12.9032*deltat+27.4193)
+//		    )
+//		{
+	    Double_t nSigmaTPCDeut = fPIDResponse->NumberOfSigmasTPC(track,(AliPID::EParticleType)5);  // 5 = deuteron
+	    Double_t nSigmaTOFDeut = fPIDResponse->NumberOfSigmasTOF(track,(AliPID::EParticleType)5);  // 5 = deuteron
+	    if(nSigmaTPCDeut < 4.0  &&  nSigmaTOFDeut < 4.0)
 	    {
-		if(        (1.0 <= deltat  &&  deltat < 6.0  &&  dedx <   9.6774*deltat+46.7742)
-		       ||  (0.5 <= deltat  &&  deltat < 1.0  &&  dedx <  56.4516)
-		       ||  (0.5 >  deltat  &&                    dedx <  56.4516)
-		       ||  (6.0 <= deltat  &&                    dedx <  12.9032*deltat+27.4193)
-		    )
+		if(mom >= 1.0  &&  mom < 4.4)
 		{
-		    if(mom >= 1.0  &&  mom < 4.4)
-		    {
-			for(int w=0; w<3; w++){   fit_deut_curve->SetParameter(w, deut_curves[1][0][w]);   }
-			deut_mean = fit_deut_curve->Eval(mom);
-			for(int w=0; w<3; w++){   fit_deut_curve->SetParameter(w, deut_curves[1][1][w]);   }
-			deut_sigma = fit_deut_curve->Eval(mom);
+		    for(int w=0; w<3; w++){   fit_deut_curve->SetParameter(w, deut_curves[1][0][w]);   }
+		    deut_mean = fit_deut_curve->Eval(mom);
+		    for(int w=0; w<3; w++){   fit_deut_curve->SetParameter(w, deut_curves[1][1][w]);   }
+		    deut_sigma = fit_deut_curve->Eval(mom);
 		    
-			if(m2tof < deut_mean + cut_width * deut_sigma  &&   m2tof > deut_mean - cut_width * deut_sigma)
-			{
-			    deut_count++;
-			}
+		    if(m2tof < deut_mean + cut_width * deut_sigma  &&   m2tof > deut_mean - cut_width * deut_sigma)
+		    {
+			deut_count++;
 		    }
 		}
 	    }
