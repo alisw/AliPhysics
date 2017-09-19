@@ -22,9 +22,10 @@
 // created from PEDESTAL and PULSER runs vs. Time
 // Origin: F. Prino (prino@to.infn.it)
 
-void PlotCalibSDDVsTime(Int_t year=2016, Int_t firstRun=259000,
+void PlotCalibSDDVsTime(Int_t year=2017, Int_t firstRun=267800,
 			Int_t lastRun=999999999,
-			Int_t selectedMod=-1){
+			Int_t selectedMod=-1,
+			Int_t selectedSid=-1){
 
   gStyle->SetOptTitle(0);
   gStyle->SetOptStat(0);
@@ -133,56 +134,61 @@ void PlotCalibSDDVsTime(Int_t year=2016, Int_t firstRun=259000,
       if(selectedMod>=240 && (iMod+240)!=selectedMod) continue;
       cal=(AliITSCalibrationSDD*)calSDD->At(iMod);
       if(cal==0) continue;
-      Float_t zshi0=cal->GetZSHighThreshold(0);
-      Float_t zshi1=cal->GetZSHighThreshold(1);
-      Float_t zslo0=cal->GetZSLowThreshold(0);
-      Float_t zslo1=cal->GetZSLowThreshold(1);
-      if(zshi0>maxzs) maxzs=zshi0;
-      if(zshi1>maxzs) maxzs=zshi1;
-      if(zslo0<minzs) minzs=zslo0;
-      if(zslo1<minzs) minzs=zslo1;
-      if(!cal->IsBad()){
-	if(iMod<84){
-	  hlowzsthr3->Fill(zslo0);
-	  hlowzsthr3->Fill(zslo1);
-	  hhizsthr3->Fill(zshi0);
-	  hhizsthr3->Fill(zshi1);
-	  hlowzsthr3VsRun->Fill(iPoint,zslo0);
-	  hlowzsthr3VsRun->Fill(iPoint,zslo1);
-	  hhizsthr3VsRun->Fill(iPoint,zshi0);
-	  hhizsthr3VsRun->Fill(iPoint,zshi1);
-	}else{
-	  hlowzsthr4->Fill(zslo0);
-	  hlowzsthr4->Fill(zslo1);
-	  hhizsthr4->Fill(zshi0);
-	  hhizsthr4->Fill(cal->GetZSHighThreshold(1));
-	  hlowzsthr4VsRun->Fill(iPoint,zslo0);
-	  hlowzsthr4VsRun->Fill(iPoint,zslo1);
-	  hhizsthr4VsRun->Fill(iPoint,zshi0);
-	  hhizsthr4VsRun->Fill(iPoint,zshi1);
+      for(Int_t iSid=0; iSid<2; iSid++){
+	if(selectedSid==0 && iSid==1) continue;
+	if(selectedSid==1 && iSid==0) continue;
+	Float_t zshi=cal->GetZSHighThreshold(iSid);
+	Float_t zslo=cal->GetZSLowThreshold(iSid);
+	if(zshi>maxzs) maxzs=zshi;
+	if(zslo<minzs) minzs=zslo;
+	if(!cal->IsBad() || selectedMod!=-1){
+	  if(iMod<84){
+	    hlowzsthr3->Fill(zslo);
+	    hhizsthr3->Fill(zshi);
+	    hlowzsthr3VsRun->Fill(iPoint,zslo);
+	    hhizsthr3VsRun->Fill(iPoint,zshi);
+	  }else{
+	    hlowzsthr4->Fill(zslo);
+	    hhizsthr4->Fill(zshi);
+	    hlowzsthr4VsRun->Fill(iPoint,zslo);
+	    hhizsthr4VsRun->Fill(iPoint,zshi);
+	  }
 	}
       }
       hlowzsthr3VsRun->GetXaxis()->SetBinLabel(iPoint+1,Form("%d",nrun));
       hhizsthr3VsRun->GetXaxis()->SetBinLabel(iPoint+1,Form("%d",nrun));
       hlowzsthr4VsRun->GetXaxis()->SetBinLabel(iPoint+1,Form("%d",nrun));
       hhizsthr4VsRun->GetXaxis()->SetBinLabel(iPoint+1,Form("%d",nrun));
-      for(Int_t iAn=0; iAn<512; iAn++){
+      Int_t firstAn=0;
+      Int_t lastAn=512;
+      if(selectedMod!=-1 && selectedSid==0) lastAn=256;
+      if(selectedMod!=-1 && selectedSid==1) firstAn=256;
+      for(Int_t iAn=firstAn; iAn<lastAn; iAn++){
 	Int_t ic=cal->GetChip(iAn);
 	Float_t base=cal->GetBaseline(iAn);
 	Float_t noise=cal->GetNoiseAfterElectronics(iAn);
 	Float_t gain=cal->GetChannelGain(iAn);
-	if(cal->IsBadChannel(iAn)){
-	  hchstatus->Fill(0);
-	  if(iMod<84) hchstatus3->Fill(0);
-	  else hchstatus4->Fill(0);
-	}
-	if(!cal->IsBadChannel(iAn) && !cal->IsChipBad(ic) && !cal->IsBad() ){
+	if(selectedMod!=-1){
+	  Int_t chStat=1;
+	  if(cal->IsBadChannel(iAn) || cal->IsChipBad(ic) || cal->IsBad()) chStat=0;
+	  hchstatus->Fill(chStat);
 	  hbase->Fill(base);
-	  hchstatus->Fill(1);
-	  if(iMod<84) hchstatus3->Fill(1);
-	  else hchstatus4->Fill(1);
 	  hnoise->Fill(noise);
 	  hgain->Fill(gain);
+	}else{
+	  if(cal->IsBadChannel(iAn)){
+	    hchstatus->Fill(0);
+	    if(iMod<84) hchstatus3->Fill(0);
+	    else hchstatus4->Fill(0);
+	  }
+	  if(!cal->IsBadChannel(iAn) && !cal->IsChipBad(ic) && !cal->IsBad() ){
+	    hbase->Fill(base);
+	    hchstatus->Fill(1);
+	    if(iMod<84) hchstatus3->Fill(1);
+	    else hchstatus4->Fill(1);
+	    hnoise->Fill(noise);
+	    hgain->Fill(gain);
+	  }
 	}
       } 
     }
@@ -295,7 +301,7 @@ void PlotCalibSDDVsTime(Int_t year=2016, Int_t firstRun=259000,
   if(selectedMod==-1){
     gstatvstim->GetYaxis()->SetTitle("Number of good anodes in acquisition");
   }else{
-    gstatvstim->GetYaxis()->SetTitle(Form("Number of good anodes in od %d",selectedMod));
+    gstatvstim->GetYaxis()->SetTitle(Form("Number of good anodes in mod %d",selectedMod));
   }
   cstatus->SaveAs(Form("GoodAnodesRun%d.gif",year));
 
@@ -329,6 +335,7 @@ void PlotCalibSDDVsTime(Int_t year=2016, Int_t firstRun=259000,
     leg->Draw();
   }else{
     gfracvstim->GetYaxis()->SetTitle(Form("Fraction of good anodes in mod %d",selectedMod));
+    gfracvstim->SetMinimum(0.);
   }
   cfrac->SaveAs(Form("FractionGoodRun%d.gif",year));
 
