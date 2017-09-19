@@ -248,6 +248,7 @@ protected:
     Bool_t fExcludeElectronsInMC;
 
     TFormula *f2015V0MtoTrkTPCout;
+    TFormula *f2015V0MtoTrkTPCout_Upper;
     Int_t fV0Multiplicity;
     Int_t fV0Multiplicity_Victor;
     Int_t fNoOfTPCoutTracks;
