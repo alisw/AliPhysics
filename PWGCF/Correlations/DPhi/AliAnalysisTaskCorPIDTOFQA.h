@@ -12,7 +12,7 @@
 
 class AliAODTrack;
 
-namespace BSchaefer_devel{
+//namespace BSchaefer_devel{
     
 class AliAnalysisTaskCorPIDTOFQA : public AliAnalysisTaskSE  
 {
@@ -56,5 +56,5 @@ class AliAnalysisTaskCorPIDTOFQA : public AliAnalysisTaskSE
         ClassDef(AliAnalysisTaskCorPIDTOFQA, 1);
 };
 
-}  //// namespace
+//}  //// namespace
 #endif
