@@ -431,6 +431,7 @@ AliAnalysisTaskPIDBFDptDpt::AliAnalysisTaskPIDBFDptDpt()
   vsPtVsPt("NA"),
   fUtils(0),
   f2015V0MtoTrkTPCout(NULL),
+  f2015V0MtoTrkTPCout_Upper(NULL),
   fV0Multiplicity(0),
   fV0Multiplicity_Victor(0),
   fNoOfTPCoutTracks(0),
@@ -794,6 +795,7 @@ AliAnalysisTaskPIDBFDptDpt::AliAnalysisTaskPIDBFDptDpt(const TString & name)
   vsPtVsPt("NA"),
   fUtils(0),
   f2015V0MtoTrkTPCout(NULL),
+  f2015V0MtoTrkTPCout_Upper(NULL),
   fV0Multiplicity(0),
   fV0Multiplicity_Victor(0),
   fNoOfTPCoutTracks(0),
@@ -1315,6 +1317,7 @@ void  AliAnalysisTaskPIDBFDptDpt::UserExec(Option_t */*option*/)
 	    }
 	  StoreEventMultiplicities( fAODEvent );
 	  f2015V0MtoTrkTPCout = new TFormula(Form("f2015V0MtoTrkTPCout_%s",""),"-1250+3.125*x");
+	  f2015V0MtoTrkTPCout_Upper = new TFormula(Form("f2015V0MtoTrkTPCout_Upper_%s",""),"2000+3.1666667*x");
 	  //cout << "fV0Multiplicity = " << fV0Multiplicity <<endl;
 	  //cout << "fV0Multiplicity_Victor = " << fV0Multiplicity_Victor <<endl;
 	  //cout << "fNoOfTPCoutTracks = " << fNoOfTPCoutTracks <<endl;
@@ -2810,7 +2813,7 @@ Float_t AliAnalysisTaskPIDBFDptDpt::TPC_EventPlane(AliAODEvent *fAOD)
 Bool_t AliAnalysisTaskPIDBFDptDpt::Is2015PileUpEvent()
 {
   Bool_t IsPileUpEvent2015 = kTRUE;
-  if (fV0Multiplicity  < f2015V0MtoTrkTPCout->Eval(fNoOfTPCoutTracks)) IsPileUpEvent2015 = kTRUE;
+  if ( (fV0Multiplicity<f2015V0MtoTrkTPCout->Eval(fNoOfTPCoutTracks)) || (fV0Multiplicity>f2015V0MtoTrkTPCout_Upper->Eval(fNoOfTPCoutTracks)) ) IsPileUpEvent2015 = kTRUE;
   else IsPileUpEvent2015 = kFALSE;
   return IsPileUpEvent2015;
 }
