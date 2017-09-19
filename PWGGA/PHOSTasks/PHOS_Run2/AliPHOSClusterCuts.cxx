@@ -67,6 +67,13 @@ Bool_t AliPHOSClusterCuts::AcceptDisp(AliCaloPhoton *ph)
   return kTRUE;
 }
 //________________________________________________________________________
+Bool_t AliPHOSClusterCuts::AcceptElectron(AliCaloPhoton *ph)
+{
+  if(IsNeutral(ph))  return kFALSE;
+  if(!AcceptDisp(ph)) return kFALSE;
+  return kTRUE;
+}
+//________________________________________________________________________
 Bool_t AliPHOSClusterCuts::AcceptChargedParticle(AliCaloPhoton *ph)
 {
   return !IsNeutral(ph);

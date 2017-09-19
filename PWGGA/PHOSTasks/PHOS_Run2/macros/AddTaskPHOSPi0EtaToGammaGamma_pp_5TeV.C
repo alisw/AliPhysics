@@ -13,6 +13,7 @@ AliAnalysisTaskPHOSPi0EtaToGammaGamma* AddTaskPHOSPi0EtaToGammaGamma_pp_5TeV(
     const Double_t NsigmaCPV  = 2.5,
     const Double_t NsigmaDisp = 2.5,
     const Bool_t usePHOSTender = kTRUE,
+    const Bool_t TOFcorrection = kTRUE,
     const Double_t bs = 25.,//bunch space in ns.
     const Double_t distBC = -1,//minimum distance to bad channel.
     const Bool_t isJJMC = kFALSE,
@@ -104,9 +105,11 @@ AliAnalysisTaskPHOSPi0EtaToGammaGamma* AddTaskPHOSPi0EtaToGammaGamma_pp_5TeV(
 
   //bunch space for TOF cut
   task->SetBunchSpace(bs);//in unit of ns.
-  TF1 *f1tof = new TF1("f1TOFCutEfficiency","[0] * (2/(1+exp(-[1]*(x-[2]))) - 1) - ( 0 + [3]/(exp( -(x-[4]) / [5] ) + 1)  )",0,100);
-  f1tof->SetParameters(0.996,2.45,0.039,0.31,7.16,0.620);
-  task->SetTOFCutEfficiencyFunction(f1tof);
+  if(!isMC && TOFcorrection){
+    TF1 *f1tof = new TF1("f1TOFCutEfficiency","[0] * (2/(1+exp(-[1]*(x-[2]))) - 1) - ( 0 + [3]/(exp( -(x-[4]) / [5] ) + 1)  )",0,100);
+    f1tof->SetParameters(0.996,2.45,0.039,0.31,7.16,0.620);
+    task->SetTOFCutEfficiencyFunction(f1tof);
+  }
 
   if(isMC){
     //TF1 *f1Pi0Weight = new TF1("f1Pi0Weight","1.",0,100);
