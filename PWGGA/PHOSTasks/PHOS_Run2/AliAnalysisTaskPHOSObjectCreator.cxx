@@ -42,13 +42,13 @@ AliAnalysisTaskPHOSObjectCreator::AliAnalysisTaskPHOSObjectCreator(const char *n
   fESDEvent(0x0),
   fPHOSObjectArray(NULL),
   fPHOSGeo(0x0),
-  fNonLinCorr(0),
-  fUserNonLinCorr(0),
+  fNonLinCorr(0x0),
+  fUserNonLinCorr(0x0),
   fRunNumber(0),
   fUsePHOSTender(kTRUE),
   fIsMC(kFALSE),
-  fBunchSpace(25),
-  fMinDistBC(-1),
+  fBunchSpace(25.),
+  fMinDistBC(-1.),
   fObjectArrayName("PHOSClusterArray"),
   fMCArrayESD(0x0),
   fMCArrayAOD(0x0),
@@ -86,9 +86,15 @@ AliAnalysisTaskPHOSObjectCreator::~AliAnalysisTaskPHOSObjectCreator()
     fPHOSObjectArray = 0x0;
   }
 
-  delete fNonLinCorr;
-  if(fUserNonLinCorr) delete fUserNonLinCorr;
+  if(fNonLinCorr){
+    delete fNonLinCorr;
+    fNonLinCorr = 0x0;
+  }
 
+  if(fUserNonLinCorr){
+    delete fUserNonLinCorr;
+    fUserNonLinCorr = 0x0;
+  }
 
 }
 //________________________________________________________________________
@@ -192,7 +198,6 @@ void AliAnalysisTaskPHOSObjectCreator::UserExec(Option_t *option)
   AliVCluster *cluster = 0x0;
   Double_t distance=0;
   Int_t inPHOS=0;
-  //Int_t absId = -1;
 
   for(Int_t iclu=0; iclu<multClust; iclu++){
 
@@ -206,34 +211,19 @@ void AliAnalysisTaskPHOSObjectCreator::UserExec(Option_t *option)
 
     //if(cluster->E() > 1.0 && cluster->GetM02() < 0.1) continue;//energy is high enough, but eigen value of 2nd momentum of shower shape is too small. -> reject.
 
-    distance = cluster->GetDistanceToBadChannel();
+    distance = cluster->GetDistanceToBadChannel();//in cm.
 
     //cout << "Ncell before = " << cluster->GetNCells() << endl;
-
-    const Double32_t * elist = cluster->GetCellsAmplitudeFraction() ;
-    Double_t ei = 0;
-    Double_t eMax = 0;
-    Int_t maxAbsId = -1;
 
     Int_t Ncell = cluster->GetNCells();
     for(Int_t i=0;i<cluster->GetNCells();i++){
       Int_t absId_tmp = cluster->GetCellAbsId(i);
       Double_t amp = cells->GetCellAmplitude(absId_tmp);
-      //cout << "cell amplitude = " << amp << endl;
-
-      ei = elist[i]*cells->GetCellAmplitude(absId_tmp);
-
-      if(ei > eMax){
-        maxAbsId = absId_tmp;
-        eMax = ei;
-      }
 
       if(amp < 2e-6) //less than 2 keV
         Ncell--;
     }
     //cluster->SetNCells(Ncell);
-
-    if(distance < fMinDistBC) continue;
 
     cluster->GetPosition(position);
     TVector3 global1(position);
@@ -252,7 +242,6 @@ void AliAnalysisTaskPHOSObjectCreator::UserExec(Option_t *option)
 
     if(!fUsePHOSTender && !IsGoodChannel("PHOS",module,cellx,cellz)) continue;
 
-    //Bool_t isHG = cells->GetCellHighGain(maxAbsId);
 
     energy = cluster->E();
     digMult = cluster->GetNCells();
@@ -269,12 +258,11 @@ void AliAnalysisTaskPHOSObjectCreator::UserExec(Option_t *option)
     ph->SetNCells(digMult); 
     ph->SetTime(tof);//unit of second
     ph->SetTOFBit(TMath::Abs(tof*1e+9) < fBunchSpace/2.);
-    ph->SetDistToBad((Int_t)(distance*100));//in unit of cm * 100
+    ph->SetDistToBadfp(distance/2.2);//in unit of cells with floating point. 2.2 cm is crystal size
     ph->SetEMCx((Double_t)position[0]);
     ph->SetEMCy((Double_t)position[1]);
     ph->SetEMCz((Double_t)position[2]);
     ph->SetWeight(1.);
-    //if(!isHG) ph->SetTOFBit(kTRUE);//force to set kTRUE to TOFBit
 
     if(fIsMC){
       Bool_t sure = kTRUE;
