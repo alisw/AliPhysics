@@ -61,7 +61,7 @@ public:
     
     //******************** ANALYSIS
     AliAODTrack* FindLPAndHFE(TObjArray* RedTracksHFE, const AliVVertex *pVtx, Int_t nMother, Double_t listMother[]);
-    void FindPhotonicPartner(Int_t iTracks, AliAODTrack* track,  const AliVVertex *pVtx, Int_t nMother, Double_t listMother[], Int_t &LSPartner, Int_t&ULSPartner, Int_t *LSPartnerID, Int_t *ULSPartnerID);
+    void FindPhotonicPartner(Int_t iTracks, AliAODTrack* track,  const AliVVertex *pVtx, Int_t nMother, Double_t listMother[], Int_t &LSPartner, Int_t&ULSPartner, Int_t *LSPartnerID, Int_t *ULSPartnerID, Bool_t &trueULSPartner, Bool_t &iHsPhotonic);
     void CorrelateElectron(TObjArray* RedTracksHFE);
 
     void CorrelateLP(AliAODTrack* LPtrack,  const AliVVertex* pVtx, Int_t nMother, Double_t listMother[], TObjArray* RedTracksHFE);
@@ -89,8 +89,8 @@ public:
     Bool_t PhotElecPIDCuts(AliAODTrack *track);
     Bool_t PhotElecTrackCuts(const AliVVertex *pVtx,AliAODTrack *aetrack, Int_t nMother, Double_t listMother[]);
     
-    void EvaluateTaggingEfficiency(AliAODTrack * track, Int_t LSPartner, Int_t ULSPartner); 
-    Bool_t CloneAndReduceTrackList(TObjArray* RedTracks, AliAODTrack* track, Int_t LSPartner, Int_t ULSPartner, Int_t *LSPartnerID, Int_t *ULSPartnerID);
+    void EvaluateTaggingEfficiency(AliAODTrack * track, Int_t LSPartner, Int_t ULSPartner, Bool_t trueULSPartner); 
+    Bool_t CloneAndReduceTrackList(TObjArray* RedTracks, AliAODTrack* track, Int_t LSPartner, Int_t ULSPartner, Int_t *LSPartnerID, Int_t *ULSPartnerID, Bool_t trueULSPartner);
 
     void BinLogX(TAxis *axis);
     
@@ -138,8 +138,11 @@ public:
 
  private:
     
+    Bool_t                IsPhotonicElectron(Int_t Label1) const;
+    Bool_t                HaveSameMother(Int_t Label1, Int_t Label2) const;
     Double_t              GetDeltaPhi(Double_t phiA,Double_t phiB) const;
     Double_t              GetDeltaEta(Double_t etaA,Double_t etaB) const;
+    Double_t              Eta2y(Double_t pt, Double_t m, Double_t eta) const;
     
     Bool_t                fUseTender;               // Use tender
     Int_t                 fWhichPeriod;             // period
@@ -239,6 +242,9 @@ public:
     TH2F                  *fHistTPCnSigTOFcut;      //! TPC sigma vs p (TOF cut)
     TH2F                  *fHistTPCnSigITSTOFcut;   //! TPC sigma vs p (ITS+TOF cuts)
 
+    THnSparse             *fCheckNHadronScaling;    //!
+    THnSparse             *fCheckNPhotHadScaling;  //!
+
     TH2F                  *fHadContPvsPt;           //!
     THnSparse             *fHadContPPhiEtaTPC;      //!
     THnSparse             *fHadContamination;       //! HadronicContaminationTOF
@@ -258,6 +264,7 @@ public:
     THnSparse             *fTagEffIncl;             //! 
     THnSparse             *fTagEffLS;               //!
     THnSparse             *fTagEffULS;              //!
+    THnSparse             *fTagTruePairs;           //!
     TH1F                  fCorrectPiontoData;      
     TH1F                  fCorrectEtatoData;       
 
@@ -329,10 +336,10 @@ class AliBasicParticleHaHFE : public AliVParticle
 {
  public:
  AliBasicParticleHaHFE() 
-   : fID(0), fEta(0), fPhi(0), fpT(0), fCharge(0), fLSpartner(0), fULSpartner(0) , fIDLSPartner(0), fIDULSPartner(0)
+   : fID(0), fEta(0), fPhi(0), fpT(0), fCharge(0), fLSpartner(0), fULSpartner(0) , fIDLSPartner(0), fIDULSPartner(0), fTrueULSPartner(kFALSE)
     {}
- AliBasicParticleHaHFE(Int_t id, Float_t eta, Float_t phi, Float_t pt, Short_t charge, Short_t LS, Short_t ULS, Int_t *LSPartner, Int_t *ULSPartner)
-   : fID(id), fEta(eta), fPhi(phi), fpT(pt), fCharge(charge), fLSpartner(LS), fULSpartner(ULS), fIDLSPartner(0), fIDULSPartner(0)
+ AliBasicParticleHaHFE(Int_t id, Float_t eta, Float_t phi, Float_t pt, Short_t charge, Short_t LS, Short_t ULS, Int_t *LSPartner, Int_t *ULSPartner, Bool_t trueULSPartner)
+   : fID(id), fEta(eta), fPhi(phi), fpT(pt), fCharge(charge), fLSpartner(LS), fULSpartner(ULS), fIDLSPartner(0), fIDULSPartner(0), fTrueULSPartner(trueULSPartner)
   {
     fIDLSPartner = new Int_t[LS];
     fIDULSPartner = new Int_t[ULS];
@@ -379,18 +386,21 @@ class AliBasicParticleHaHFE : public AliVParticle
   virtual Short_t ID()          const {return fID;}
   virtual Int_t  LSPartner(Int_t i)   const {return fIDLSPartner[i];}
   virtual Int_t  ULSPartner(Int_t i)  const {return fIDULSPartner[i];}
+  virtual Bool_t TruePartner() const {return fTrueULSPartner;}
 
 
  private:
+  Int_t   fID;             // particle id
   Float_t fEta;            // eta
   Float_t fPhi;            // phi
   Float_t fpT;             // pT
   Short_t fCharge;         // charge
   Short_t fULSpartner;     // no of ULS partner
   Short_t fLSpartner;      // no of LS partner
-  Int_t   fID;             // particle id
+
   Int_t*  fIDLSPartner;    //! particle id of LS Partner
   Int_t*  fIDULSPartner;   //! partilce id of ULS partner
+  Bool_t  fTrueULSPartner; //! check if true partner was tagged
 
   ClassDef(AliBasicParticleHaHFE, 1); // class which contains only quantities requires for this analysis to reduce memory consumption for event mixing
 };
