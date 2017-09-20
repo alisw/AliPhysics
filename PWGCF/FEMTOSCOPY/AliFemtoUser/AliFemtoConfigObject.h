@@ -14,6 +14,7 @@
 #include <vector>
 #include <ostream>
 
+#include <TBuffer.h>
 #include <TString.h>
 #include <TText.h>
 
@@ -311,11 +312,18 @@ protected:
   /// Object used to do stuff
   Painter* fPainter; //!
 
-  template <typename OutStreamValue_t>
-  friend OutStreamValue_t& operator<<(OutStreamValue_t &, const AliFemtoConfigObject &);
+  // template <typename OutStreamValue_t>
+  // friend OutStreamValue_t& operator<<(OutStreamValue_t &, const AliFemtoConfigObject &);
 
-  template <typename InStreamValue_t>
-  friend InStreamValue_t& operator>>(InStreamValue_t &, AliFemtoConfigObject &);
+  // template <typename InStreamValue_t>
+  // friend InStreamValue_t& operator>>(InStreamValue_t &, AliFemtoConfigObject &);
+
+  friend std::ostream& operator<<(std::ostream&, const AliFemtoConfigObject&);
+  friend std::istream& operator>>(std::istream&, AliFemtoConfigObject&);
+
+  friend TBuffer& operator<<(TBuffer&, const AliFemtoConfigObject&);
+  friend TBuffer& operator>>(TBuffer&, AliFemtoConfigObject&);
+
 
   typedef std::string::const_iterator StringIter_t;
 
@@ -543,6 +551,21 @@ AliFemtoConfigObject& AliFemtoConfigObject::operator=(AliFemtoConfigObject &&rhs
 
 #endif // move-semantics
 
+
+template <typename StreamType>
+StreamType& operator<<(StreamType &stream, const AliFemtoConfigObject *ptr)
+{
+  return std::operator<<(stream, *ptr);
+}
+
+template <typename StreamType>
+StreamType& operator>>(StreamType &stream, AliFemtoConfigObject *&ptr)
+{
+  if (!ptr) {
+    ptr = new AliFemtoConfigObject();
+  }
+  return std::operator>>(stream, *ptr);
+}
 
 #undef FORWARD_STANDARD_TYPES
 

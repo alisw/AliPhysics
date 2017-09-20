@@ -5,6 +5,7 @@
 #include "AliFemtoConfigObject.h"
 
 #include <TObjString.h>
+#include <TCollection.h>
 
 #include <regex>
 #include <cctype>
@@ -13,10 +14,6 @@
 #include <exception>
 #include <functional>
 #include <numeric>
-
-// #include <TIter.h>
-#include <TList.h>
-#include <TBuffer.h>
 
 /// \cond CLASSIMP
 ClassImp(AliFemtoConfigObject);
@@ -165,7 +162,7 @@ AliFemtoConfigObject::Merge(TCollection *collection)
   return 1;
 }
 
-template<>
+// template<>
 TBuffer& operator<<(TBuffer &stream, const AliFemtoConfigObject &cfg)
 {
   stream << cfg.fTypeTag;
@@ -217,7 +214,7 @@ TBuffer& operator<<(TBuffer &stream, const AliFemtoConfigObject &cfg)
   return stream;
 }
 
-template<>
+// template<>
 TBuffer& operator>>(TBuffer &stream, AliFemtoConfigObject &cfg)
 {
   using ENUM_TYPE = decltype(AliFemtoConfigObject::kEMPTY);
@@ -314,7 +311,7 @@ AliFemtoConfigObject::Streamer(TBuffer &buff)
       std::cerr << "W-AliFemtoConfigObject: Unknown AliFemtoConfigObject version " << v << "\n";
     }
     TObject::Streamer(buff);
-    std::cout << "[AliFemtoConfigObject::Streamer] Reading into AliFemtoConfigObject value at " << this << "\n";
+    // std::cout << "[AliFemtoConfigObject::Streamer] Reading into AliFemtoConfigObject value at " << this << "\n";
     buff >> value;
     // std::cout << "    is-empty? " << value.is_empty() << " " << " (this->is_empty(): " << this->is_empty() << ")\n";
   } else {
