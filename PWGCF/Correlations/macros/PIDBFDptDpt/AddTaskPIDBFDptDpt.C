@@ -22,15 +22,15 @@ AliAnalysisTaskPIDBFDptDpt * AddTaskPIDBFDptDpt
  TString AnalysisDataType       = "RealData", // "RealData"; "MCAOD" for MC AOD truth; "MCAODreco"
  TString System                 = "PbPb",
  bool    pidparticle            =  1,   // 0: All Charged Particles;       1: PID particles
- bool    Use_PT_Cut             =  0,   // 0: Use_P_Cut ( only TOF lower boundary );       1: Use_PT_Cut
+ bool    Use_PT_Cut             =  1,   // 0: Use_P_Cut ( only TOF lower boundary );       1: Use_PT_Cut
  int    useRapidity             =  1,   // 0: pseudo-rapadity      1: rapidity
- int    CentralityGroup         =  22,   // Diff Cent Groups dealing w/ memory limit & weight file 100M Alien limit
+ int    CentralityGroup         =  21,  // Diff Cent Groups dealing w/ memory limit & weight file 100M Alien limit
  int    singlesOnly             =  1,   // 0: full correlations    1: singles only
  int    useWeights              =  0,   // 0: no                   1: yes  
  int    chargeSet               =  1,   // 0: ++    1: +-    2: -+    3: --
  double zMin                    = -6.,  // |zMin| should = zMax due to the design of the code
  double zMax                    =  6.,  // set vertexZ cut   
- double vZwidth                 =  1, // zMin, zMax & vZwidth determine _nBins_vertexZ.
+ double vZwidth                 =  0.5, // zMin, zMax & vZwidth determine _nBins_vertexZ.
  int    trackFilterBit          =  1,   // PbPb10(Global=1;TPConly=128;Hybrid=272); pPb13(Global=?;TPConly=?;Hybrid=768); pp10(Global=1;TPConly=?; Hybrid=?)
  int    nClusterMin             =  70,
  double eta1Min                 = -0.8, // set y1min acturally if useRapidity==1
@@ -42,19 +42,17 @@ AliAnalysisTaskPIDBFDptDpt * AddTaskPIDBFDptDpt
  double dcaZMax                 =  3.2,
  double dcaXYMin                = -2.4,
  double dcaXYMax                =  2.4,
- int nCentrality                =  3,
+ int nCentrality                =  6,
  int particleID                 =  1,   // Pion=0, Kaon=1, Proton=2
- bool Use_AliHelperPID          =  0,  // 0: Not Use_AliHelperPID       1: Use_AliHelperPID
- int pidType                    =  2,  // kNSigmaTPC,kNSigmaTOF, kNSigmaTPCTOF
- Bool_t requestTOFPID           =  1,
- Bool_t isMC                    =  0,
+ bool Use_AliHelperPID          =  0,   // 0: Not Use_AliHelperPID       1: Use_AliHelperPID
+ bool Use_CircularCutPID        =  1,   // 0: Not Use_CircularCutPID     1: Use_CircularCutPID TPC+TOF
  double nSigmaCut               =  2.0,
  double nSigmaCut_veto          =  3.0,
  double ElectronVetoCut         =  1.0,
  double ptMin                   =  0.2, // pt range lower limit cut ( also for pt histos )
+ double ptTOFlowerMin           =  0.5, // boundary between TPC & TOF region
  double ptCUTupperMax           =  2.0, // pt range upper limit cut
  double ptWidthBin              =  0.1, // pt bin width in histos
- double ptTOFlowerMin           =  0.6, // boundary between TPC & TOF region
  int nBinsPhi                   =  36,  // 36 is default value
  const char* taskname           = "ChPM",
  char *inputHistogramFileName   = "alien:///alice/cern.ch/user/j/jipan/TUNE_rHJ_2eCut_8vZ32_G162_4C4_NOwCut_08y16_36phi_02pt2_pi_Pos_S1S2/TUNE_rHJ_2eCut_8vZ32_G162_4C4_NOwCut_08y16_36phi_02pt2_pi_Pos_S1S2.root" )
@@ -76,6 +74,9 @@ AliAnalysisTaskPIDBFDptDpt * AddTaskPIDBFDptDpt
   double  EventPlaneMin         = -3.1415927/6;
   double  EventPlaneMax         =  3.1415927/6;
   double ptMax                  =  3.0; // pt range upper limit for histos; NOT pt cut!!!
+  int pidType                   =  2;  // kNSigmaTPC,kNSigmaTOF, kNSigmaTPCTOF // for AliHelperPID
+  Bool_t requestTOFPID          =  1;  // for AliHelperPID
+  Bool_t isMC                   =  0;  // for AliHelperPID
   
 
   if      ( System == "PbPb" )                { centralityMethod = 4; trigger = kFALSE; }
@@ -401,6 +402,7 @@ AliAnalysisTaskPIDBFDptDpt * AddTaskPIDBFDptDpt
       task->SetElectronNSigmaVetoCut( ElectronVetoCut );
       task->SetfRemoveTracksT0Fill( remove_Tracks_T0 );
       task->SetUse_AliHelperPID(  Use_AliHelperPID  );
+      task->SetUse_CircularCutPID( Use_CircularCutPID );
 
       // assign initial values to AliHelperPID object
       AliHelperPID* helperpid = new AliHelperPID();

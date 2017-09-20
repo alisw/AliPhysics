@@ -37,7 +37,9 @@ public:
   //PID functions
   //User should call ONLY the function GetParticleSpecies and set the PID strategy in the steering macro!
   Int_t TellParticleSpecies( AliVTrack * trk );//calculate the PID according to the slected method. // for pt cut analysis
+  Int_t TellParticleSpecies_CircularCut( AliVTrack * trk );
   Int_t TellParticleSpecies_by_P( AliVTrack * trk );//calculate the PID according to the slected method. // for p cut analysis
+  Int_t TellParticleSpecies_by_P_CircularCut( AliVTrack * trk );
   void CalculateNSigmas( AliVTrack * trk );   //Calcuate nsigma[ipart][idet], fill NSigma histos
   void CalculateTPCNSigmasElectron( AliVTrack * trk );
   void CheckTOF( AliVTrack * trk );   //check the TOF matching and set fHasTOFPID
@@ -115,6 +117,7 @@ public:
     virtual     void    SetPIDparticle( bool v )            { PIDparticle   = v; }
     virtual     void    SetUse_pT_cut( bool v )             { use_pT_cut   = v; }
     virtual     void    SetUse_AliHelperPID( bool v )       { useAliHelperPID   = v; }
+    virtual     void    SetUse_CircularCutPID( bool v )     { useCircularCutPID = v; }
     virtual     void    SetIfContaminationInMC( bool v )    { NoContamination   = v; }
     virtual     void    SetUseWeights(int v)                { _useWeights   = v; }
     virtual     void    SetUseRapidity(int v)               { _useRapidity  = v; }
@@ -210,6 +213,7 @@ protected:
     bool      PIDparticle;
     bool      use_pT_cut;
     bool      useAliHelperPID;
+    bool      useCircularCutPID;
     bool      NoContamination;
     int      _useWeights;
     int      _useRapidity;
@@ -428,8 +432,18 @@ protected:
     TH2F *  _beta_p;
     TH2F *  _beta_p_POI_AliHelperPID;
     TH2F *  _beta_p_AliHelperPID_no_Undefined;
-    TH2F *  _nSigmaTOF_p_POI;
-    TH2F *  _nSigmaTOF_p;
+    TH2F *  _nSigmaTOF_p_pion_before;
+    TH2F *  _nSigmaTOF_p_pion_after;
+    TH2F *  _nSigmaTOF_p_kaon_before;
+    TH2F *  _nSigmaTOF_p_kaon_after;
+    TH2F *  _nSigmaTOF_p_proton_before;
+    TH2F *  _nSigmaTOF_p_proton_after;
+    TH2F *  _nSigmaTPC_nSigmaTOF_Pion_before;
+    TH2F *  _nSigmaTPC_nSigmaTOF_Pion_after;
+    TH2F *  _nSigmaTPC_nSigmaTOF_Kaon_before;
+    TH2F *  _nSigmaTPC_nSigmaTOF_Kaon_after;
+    TH2F *  _nSigmaTPC_nSigmaTOF_Proton_before;
+    TH2F *  _nSigmaTPC_nSigmaTOF_Proton_after;
     
     TH2F *  _inverse_beta_p;
     TH2F *  _inverse_beta_p_POI_AliHelperPID;
