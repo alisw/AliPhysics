@@ -465,7 +465,8 @@ void SummarizeRunByRun(TString period = "LHC15o", TString train = "Train_641", T
 	SetHisto(badCellsVsRun,"Run","No. of cells",0);
 	badCellsVsRun->GetYaxis()->SetTitleOffset(1.7);
 	badCellsVsRun->GetYaxis()->SetRangeUser(0,1300);
-	badCellsVsRun->GetXaxis()->SetLabelSize(0.06-0.1*(nRunsUsed-8)/4); //..lables should get smaller the more runs are on the x-axis
+	if(nRunsUsed>8)badCellsVsRun->GetXaxis()->SetLabelSize(0.06-0.1*(nRunsUsed-8)/4); //..lables should get smaller the more runs are on the x-axis
+	else badCellsVsRun->GetXaxis()->SetLabelSize(0.06);
 	badCellsVsRun->SetLineColor(kCyan+2);
 	badCellsVsRun->SetLineWidth(2);
 	badCellsVsRun->DrawCopy("hist");
@@ -561,7 +562,7 @@ void SummarizeRunByRun(TString period = "LHC15o", TString train = "Train_641", T
 	cout<<"    o 1 bad/dead run out of "<<nRunsUsed<<" is "<<1.0/nRunsUsed<<endl;
 	Double_t percbad = 0.20;       //..If a cell is only bad/dead at 20% of the runs, test it again
 	Double_t setBadCompletley=0.8; //..If a cell is bad in >80% of the runs then set it bad completley
-	cout<<"    o Cells with "<<percbad*100<<"% of bad/dead runs are double checked. These are "<<nRunsUsed*percbad<<" runs"<<endl;
+	cout<<"    o Cells with less than "<<percbad*100<<"% of bad/dead runs are double checked. These are cells with less than "<<nRunsUsed*percbad<<" runs"<<endl;
 	cout<<"    o Cell id with low fraction of bad/dead runs:"<<endl;
 
 	std::vector<Int_t> cellVector;   //..Filled with cells that have only a small fraction of bad runs
@@ -873,19 +874,25 @@ void SummarizeRunByRun(TString period = "LHC15o", TString train = "Train_641", T
 	cout<<endl;
 	TH2F* CompressedClean = CompressHistogram(hFlagvsRun[2],noOfCells , nBadCells,RunIdVec);
 
-	cFlagSumCompCleanI->cd()->SetLeftMargin(0.05);
-	cFlagSumCompCleanI->cd()->SetRightMargin(0.05);
+	cFlagSumCompCleanI->cd()->SetLeftMargin(0.065);
+	cFlagSumCompCleanI->cd()->SetRightMargin(0.02);
 	cFlagSumCompCleanI->cd()->SetBottomMargin(0.05);
 	cFlagSumCompCleanI->cd()->SetTopMargin(0.02);
 	SetHisto(CompressedClean,"certain dead+bad cell (cleaned) pt.1","Run No.",1);
 	CompressedClean->GetXaxis()->SetRangeUser(0,nBadCells/2);
 	CompressedClean->SetFillColor(histCol);
+	if(nRunsUsed>8)CompressedClean->GetYaxis()->SetLabelSize(0.025-0.1*(nRunsUsed-8)/4); //..lables should get smaller the more runs are on the x-axis
+	else CompressedClean->GetYaxis()->SetLabelSize(0.025);
+	CompressedClean->GetYaxis()->SetTitleOffset(0.7);
 	CompressedClean->DrawCopy("BOX");
-	cFlagSumCompCleanII->cd()->SetLeftMargin(0.05);
-	cFlagSumCompCleanII->cd()->SetRightMargin(0.05);
+	cFlagSumCompCleanII->cd()->SetLeftMargin(0.055);
+	cFlagSumCompCleanII->cd()->SetRightMargin(0.02);
 	cFlagSumCompCleanII->cd()->SetBottomMargin(0.05);
 	cFlagSumCompCleanII->cd()->SetTopMargin(0.02);
 	SetHisto(CompressedClean,"certain dead+bad cell (cleaned) pt.2","Run No.",1);
+	if(nRunsUsed>8)CompressedClean->GetYaxis()->SetLabelSize(0.025-0.1*(nRunsUsed-8)/4); //..lables should get smaller the more runs are on the x-axis
+	else CompressedClean->GetYaxis()->SetLabelSize(0.025);
+	CompressedClean->GetYaxis()->SetTitleOffset(0.7);
 	CompressedClean->GetXaxis()->SetRangeUser(nBadCells/2,nBadCells+2);
 	CompressedClean->DrawCopy("BOX");
 
@@ -1070,8 +1077,8 @@ void GetBestPeriodSplitting(TString period = "LHC15o", Int_t train = 771,Int_t N
 	//.......................................
 	//TString runList = "GloballyGood";
 	//TString runList = "GloballyGood10";
-	//TString runList = "AllRuns";
-	TString runList = "AllRunsWO3";
+	TString runList = "AllRuns";
+	//TString runList = "AllRunsWO3";
 	Int_t runNumber=265630;
 	Bool_t weightByNevt=1;  //..weight the run period splitting by the number of events in the run
 
