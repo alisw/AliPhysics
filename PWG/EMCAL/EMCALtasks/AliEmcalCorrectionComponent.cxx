@@ -28,8 +28,7 @@ AliEmcalCorrectionComponentFactory::map_type * AliEmcalCorrectionComponentFactor
  */
 AliEmcalCorrectionComponent::AliEmcalCorrectionComponent() :
   TNamed("AliEmcalCorrectionComponent", "AliEmcalCorrectionComponent"),
-  fUserConfiguration(),
-  fDefaultConfiguration(),
+  fYAMLConfig(),
   fCreateHisto(kTRUE),
   fRun(-1),
   fFilepass(""),
@@ -64,8 +63,7 @@ AliEmcalCorrectionComponent::AliEmcalCorrectionComponent() :
  */
 AliEmcalCorrectionComponent::AliEmcalCorrectionComponent(const char * name) :
   TNamed(name, name),
-  fUserConfiguration(),
-  fDefaultConfiguration(),
+  fYAMLConfig(),
   fCreateHisto(kTRUE),
   fRun(-1),
   fFilepass(""),
@@ -108,7 +106,8 @@ Bool_t AliEmcalCorrectionComponent::Initialize()
 {
   // Read in pass. If it is empty, set flag to automatically find the pass from the filename.
   std::string tempString = "";
-  GetProperty("pass", tempString);
+  // Cannot use usual helper function because "pass" is not inside of a component, but rather at the top level.
+  fYAMLConfig.GetProperty("pass", tempString, true);
   fFilepass = tempString.c_str();
   if (fFilepass != "") {
     fGetPassFromFileName = kFALSE;
@@ -230,28 +229,6 @@ Bool_t AliEmcalCorrectionComponent::CheckIfRunChanged()
     }
   }
   return runChanged;
-}
-
-/**
- * Check if value is a shared parameter, meaning we should look
- * at another node. Also edits the input string to remove "sharedParameters:"
- * if it exists, making it ready for use.
- *
- * @param[in] value String containing the string value return by the parameter.
- *
- * @return True if the value is shared.
- */
-bool AliEmcalCorrectionComponent::IsSharedValue(std::string & value)
-{
-  std::size_t sharedParameterLocation = value.find("sharedParameters:");
-  if (sharedParameterLocation != std::string::npos)
-  {
-    // "sharedParameters:" is 17 characters long
-    value.erase(sharedParameterLocation, sharedParameterLocation + 17);
-    return true;
-  }
-  // Return false otherwise
-  return false;
 }
 
 /**
