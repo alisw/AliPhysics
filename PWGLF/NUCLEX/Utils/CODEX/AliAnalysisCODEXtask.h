@@ -30,11 +30,6 @@ class AliAnalysisCODEXtask : public AliAnalysisTaskSE {
 
     long GetParticleMask(TParticle* part);
 
-    /// You know why I am putting these members as public?
-    /// Because I am sick of writing down setter and getter
-    /// for classes that I, and only I, use.
-    /// If you don't like it, write 3x lines of code for each
-    /// of these members...
     bool            mMCtrue;
     UInt_t          mCentralityMode;
     AliESDtrackCuts Cuts;
@@ -64,7 +59,7 @@ class AliAnalysisCODEXtask : public AliAnalysisTaskSE {
     vector<AliAnalysisCODEX::Track> mTracks; /// Tracks
 
     ///
-    TH2I* mTimeChan;                                    /// 2D histogram with the Time/Channel correlation
+    TH2I* mTimeChan;                                    //! 2D histogram with the Time/Channel correlation
     //
     TString mToDiscard; /// List of the branches to discard
 

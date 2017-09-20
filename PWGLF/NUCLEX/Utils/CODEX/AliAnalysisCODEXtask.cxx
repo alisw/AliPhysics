@@ -15,6 +15,7 @@
 #include "AliMCEventHandler.h"
 #include "AliMCEvent.h"
 #include "AliTOFPIDResponse.h"
+#include "AliMultSelectionTask.h"
 #include "TH2I.h"
 
 #include <climits>
@@ -145,6 +146,10 @@ void AliAnalysisCODEXtask::UserExec(Option_t *){
     AliFatal("Missing MC event");
   if (mMCtrue) {
     mHeader.mEventMask |= kMCevent;
+  }
+
+  if (AliMultSelectionTask::IsINELgtZERO(event)) {
+    mHeader.mEventMask |= kInelGt0;
   }
 
   mTracks.clear();

@@ -45,9 +45,6 @@ using TMath::TwoPi;
 ClassImp(AliAnalysisTaskNucleiYield);
 ///\endcond
 
-const TString kNames[5]= {"pion","kaon","proton","deuteron","triton"};
-const AliPID::EParticleType kSpecies[5] = {AliPID::kPion, AliPID::kKaon, AliPID::kProton, AliPID::kDeuteron, AliPID::kTriton};
-
 static double TOFsignal(double *x, double *par) {
   double &norm = par[0];
   double &mean = par[1];
@@ -60,28 +57,6 @@ static double TOFsignal(double *x, double *par) {
     return norm * TMath::Gaus(tail + mean, mean, sigma) * TMath::Exp(-tail * (x[0] - tail - mean) / (sigma * sigma));
 }
 
-/// Method for the correct logarithmic binning of histograms.
-///
-/// \param h Histogram that has to be correctly binned
-///
-static void BinLogAxis(const TH1 *h) {
-  TAxis *axis = const_cast<TAxis*>(h->GetXaxis());
-  const Int_t bins = axis->GetNbins();
-
-  const Double_t from = axis->GetXmin();
-  const Double_t to = axis->GetXmax();
-  Double_t *newBins = new Double_t[bins + 1];
-
-  newBins[0] = from;
-  Double_t factor = pow(to / from, 1. / bins);
-
-  for (Int_t i = 1; i <= bins; i++) {
-    newBins[i] = factor * newBins[i - 1];
-  }
-  axis->Set(bins, newBins);
-  delete [] newBins;
-}
-
 /// Standard and default constructor of the class.
 ///
 /// \param taskname Name of the task
@@ -92,6 +67,8 @@ AliAnalysisTaskNucleiYield::AliAnalysisTaskNucleiYield(TString taskname)
    ,fEventCut{false}
    ,fFilterBit{BIT(4)}
    ,fPropagateTracks{true}
+   ,fPtCorrectionA{3}
+   ,fPtCorrectionM{3}
    ,fList{nullptr}
    ,fCutVec{}
    ,fPDG{0}
@@ -103,8 +80,6 @@ AliAnalysisTaskNucleiYield::AliAnalysisTaskNucleiYield(TString taskname)
    ,fMagField{0.f}
    ,fDCAzLimit{10.}
    ,fDCAzNbins{400}
-   ,fPtCorrectionA{3}
-   ,fPtCorrectionM{3}
    ,fTOFlowBoundary{-2.4}
    ,fTOFhighBoundary{3.6}
    ,fTOFnBins{75}
@@ -132,7 +107,8 @@ AliAnalysisTaskNucleiYield::AliAnalysisTaskNucleiYield(TString taskname)
    ,fRequireMinEnergyLoss{0.}
    ,fRequireVetoSPD{false}
    ,fRequireMaxMomentum{-1.}
-   ,fFixForLHC14a6{true}
+   ,fFixForLHC14a6{false}
+   ,fEnableFlattening{false} 
    ,fParticle{AliPID::kUnknown}
    ,fCentBins{0}
    ,fDCABins{0}
@@ -151,7 +127,7 @@ AliAnalysisTaskNucleiYield::AliAnalysisTaskNucleiYield(TString taskname)
    ,fTPCcounts{nullptr}
    ,fDCAxy{{nullptr}}
    ,fDCAz{{nullptr}}
-   ,fEnableFlattening{true} {
+   {
      gRandom->SetSeed(0); //TODO: provide a simple method to avoid "complete randomness"
      Float_t aCorrection[3] = {-2.10154e-03,-4.53472e-01,-3.01246e+00};
      Float_t mCorrection[3] = {-2.00277e-03,-4.93461e-01,-3.05463e+00};
