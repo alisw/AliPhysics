@@ -190,7 +190,8 @@ private:
     TH3F *fHistTrueSovsMeasSoEvWithCand;  //!<! hist. of number of tracks passing track selection for spherocity calculation vs eta vs. phi for event with atleast one D meson
     
     TH3F *fHistSpheroAxisDeltaPhi;  //!<! hist. of Invariant mass, pt vs. deltaPhi of spherocity axis w.r.t. D-meson direction
-    
+    TH3F *fHistSpheroAxisDeltaGenPhi;  //!<! hist. of Invariant mass, pt vs. deltaPhi of generated spherocity axis w.r.t. D-meson direction
+
     THnSparseD *fSparseEvtShape;//! THnSparse histograms for Spherocity
     THnSparseD *fSparseEvtShapewithNoPid;//! THnSparse histograms for D0 vs. Spherocity
     THnSparseD *fSparseEvtShapePrompt;//! THnSparse histograms for Prompt D0 vs. Spherocity
@@ -265,7 +266,7 @@ private:
     Int_t ffiltbit2;
     Double_t fphiStepSizeDeg;
     
-    ClassDef(AliAnalysisTaskSEDvsEventShapes,13); // D vs. mult task
+    ClassDef(AliAnalysisTaskSEDvsEventShapes,14); // D vs. mult task
 };
 
 #endif
