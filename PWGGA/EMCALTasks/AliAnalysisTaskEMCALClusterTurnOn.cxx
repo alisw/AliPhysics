@@ -340,9 +340,9 @@ void AliAnalysisTaskEMCALClusterTurnOn::UserCreateOutputObjects(){
     fPtaftFC->Sumw2();
     fOutput->Add(fPtaftFC);
   
-//  fVz = new TH1D("hVz_NC","Vertex Z distribution",100,-50.,50.);
-//  fVz->Sumw2();
-//  fOutput->Add(fVz);
+    fVz = new TH1D("hVz_NC","Vertex Z distribution",100,-50.,50.);
+    fVz->Sumw2();
+    fOutput->Add(fVz);
   }
     //   Initialization of all the Common THistos for the Three different outputs
   
@@ -644,17 +644,19 @@ Bool_t AliAnalysisTaskEMCALClusterTurnOn::Run()
   Bool_t FillEGAOver12 = kTRUE;
   Bool_t FillEGAOver14 = kTRUE;
 
-  vector<Int_t> MaskedFastOrs;
-  if(fMaskFastOrCells){
+  if(fMaskFastOrCells && fEvents->GetEntries()<2){
+    cout << "Trying to load OADB" << endl;
     if(fFastOrPath.Contains("alien://")) TGrid::Connect("alien://");
     AliOADBContainer badchannelDB("AliEmcalMaskedFastors");
     badchannelDB.InitFromFile(fFastOrPath, "AliEmcalMaskedFastors");
     TObjArray *badchannelmap = static_cast<TObjArray *>(badchannelDB.GetObject(InputEvent()->GetRunNumber()));
     if(badchannelmap && badchannelmap->GetEntries())
       {
+      cout << "Run# " << InputEvent()->GetRunNumber() << endl;
       for(TIter citer = TIter(badchannelmap).Begin(); citer != TIter::End(); ++citer){
         TParameter<int> *channelID = static_cast<TParameter<int> *>(*citer);
         int maskedFastOr = channelID->GetVal();
+        cout << "FastOr# " << maskedFastOr << endl;
         MaskedFastOrs.push_back(maskedFastOr);
       }
     }
@@ -865,7 +867,21 @@ void  AliAnalysisTaskEMCALClusterTurnOn::FillTHnSparse(AliEMCALGeometry* geom, A
     Float_t energy = 0;
     for (Int_t cellcounter = 0; cellcounter<cellnumber; cellcounter++)
     {
+      Bool_t reject = kFALSE;
       IDs[cellcounter] = coi->GetCellsAbsId()[cellcounter];        
+      if(IDs[cellcounter]>=0){
+        Int_t FastOrIndex = -1;
+        geom->GetFastORIndexFromCellIndex(IDs[cellcounter],FastOrIndex);
+        if(FastOrIndex>=0){
+          for(unsigned int maskedFOcounter=0;maskedFOcounter<MaskedFastOrs.size();maskedFOcounter++){
+            if(FastOrIndex==MaskedFastOrs[maskedFOcounter]) {
+              reject = kTRUE;
+              break;
+            }
+          }
+        }
+      }
+      if(reject) continue;
       geom->GetCellIndex(IDs[cellcounter],nSupMod, nModule, nIphi, nIeta);
       geom->GetCellPhiEtaIndexInSModule(nSupMod, nModule, nIphi, nIeta, iphi, ieta);
       c_eta = 0; 
