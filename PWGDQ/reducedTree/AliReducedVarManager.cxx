@@ -35,6 +35,7 @@ using std::ifstream;
 #include "AliReducedTrackInfo.h"
 #include "AliReducedPairInfo.h"
 #include "AliReducedCaloClusterInfo.h"
+#include "AliKFParticle.h"
 
 #define BASEEVENT AliReducedBaseEvent
 #define EVENT AliReducedEventInfo
@@ -53,6 +54,26 @@ const Float_t AliReducedVarManager::fgkParticleMass[AliReducedVarManager::kNSpec
     0.938272,     // proton
     0.497614,     // K0
     1.019455      // phi(1020) meson
+};
+
+const Float_t AliReducedVarManager::fgkPairMass[AliReducedPairInfo::kNMaxCandidateTypes] = 
+{
+   0.0, // gamma
+   0.497614, //K0s 
+   1.11568, //Lambda
+   1.11568, //ALambda
+   1.019455, // Phi
+   3.09691599, //Jpsi
+   9.460300, //Upsilon
+   1.86962, // D+-
+   1.86962, // D+-
+   1.86962, // D+-
+   1.86962, // D+-
+   1.86962, // D+-
+   1.86962, // D+-
+   1.86484, // D0
+   1.86962, // D+-
+   1.96850, // Ds
 };
 
 const Char_t* AliReducedVarManager::fgkTrackingStatusNames[AliReducedVarManager::kNTrackingStatus] = {
@@ -386,7 +407,7 @@ void AliReducedVarManager::FillEventInfo(BASEEVENT* baseEvent, Float_t* values, 
 
     if(fgUsedVars[kRunID]){
       if( fgRunID < 0 ){
-        for( fgRunID = 0; fgRunNumbers[ fgRunID ] != fgCurrentRunNumber && fgRunID< fgRunNumbers.size() ; ++fgRunID );
+        for( fgRunID = 0; fgRunNumbers[ fgRunID ] != fgCurrentRunNumber && fgRunID<Int_t(fgRunNumbers.size()) ; ++fgRunID );
       }
     }
     for( int iEstimator =0 ; iEstimator < kNMultiplicityEstimators ; ++iEstimator ){
@@ -1520,6 +1541,20 @@ void AliReducedVarManager::FillPairInfo(BASETRACK* t1, BASETRACK* t2, Int_t type
     values[kPairLegITSchi2+1] = ti2->ITSchi2();
   }
   
+  if((fgUsedVars[kPseudoProperDecayTime] || fgUsedVars[kPairLxy]) &&  
+     (t1->IsA()==TRACK::Class()) && (t2->IsA()==TRACK::Class()) && 
+     (fgEvent->IsA()==EVENT::Class())) {
+     TRACK* ti1=(TRACK*)t1; 
+     TRACK* ti2=(TRACK*)t2;
+     AliKFParticle pairKF = BuildKFcandidate(ti1,m1,ti2,m2);
+     Double_t errPseudoProperTime2;
+     EVENT* eventInfo = (EVENT*)fgEvent;
+     AliKFParticle primVtx = BuildKFvertex(eventInfo);
+     if(fgUsedVars[kPseudoProperDecayTime]) 
+        values[kPseudoProperDecayTime] = pairKF.GetPseudoProperDecayTime(primVtx, fgkPairMass[type], &errPseudoProperTime2);
+     if(fgUsedVars[kPairLxy]) values[kPairLxy] =  ( (pairKF.X() - primVtx.X())*p.Px() + (pairKF.Y() - primVtx.Y())*p.Py() )/p.Pt(); // = values[kPseudoProperDecayTime]*(p.Pt()/PAIR::fgkPairMass[type]);
+  }
+  
   if(p.PairType()==1 && t1->HasMCTruthInfo() && t2->HasMCTruthInfo()) {
      TRACK* pinfo1 = 0x0;
      if(t1->IsA()==TRACK::Class()) pinfo1 = (TRACK*)t1;
@@ -2406,6 +2441,7 @@ void AliReducedVarManager::SetDefaultVarNames() {
   fgVariableNames[kMassV0+3]          = "m_{#gamma}";            fgVariableUnits[kMassV0+3]          = "GeV/c^{2}";
   fgVariableNames[kPairChisquare]     = "pair #chi^{2}";         fgVariableUnits[kPairChisquare]     = "";
   fgVariableNames[kPairLxy]           = "L_{xy}";                fgVariableUnits[kPairLxy]           = "cm.";
+  fgVariableNames[kPseudoProperDecayTime]  = "t";                fgVariableUnits[kPseudoProperDecayTime]  = "cm./c";
   fgVariableNames[kPairOpeningAngle]  = "pair opening angle";    fgVariableUnits[kPairOpeningAngle]  = "rad.";    
   fgVariableNames[kPairPointingAngle] = "#theta_{pointing}";     fgVariableUnits[kPairPointingAngle] = "rad.";
   fgVariableNames[kPairThetaCS]       = "cos(#theta^{*}_{CS})";  fgVariableUnits[kPairThetaCS]       = "";  
@@ -2708,7 +2744,7 @@ void AliReducedVarManager::SetRecenterVZEROqVector(Bool_t option) {
    //if(fgOptionRecenterVZEROqVec) fgOptionCalibrateVZEROqVec = kTRUE;
 }
 
-
+//____________________________________________________________________________________
 Int_t AliReducedVarManager::GetMultiplicityEstimator( Int_t iEstimator,  Int_t iCorrection, Int_t iReference, Int_t iSmearing ){
   //
   // Return the index of the multiplicity estimator, for given
@@ -2726,4 +2762,48 @@ Int_t ret = kMultiplicity + iEstimator * ( 1 + kNCorrections * kNReferenceMultip
     ret += iSmearing;
   }
   return ret;
+}
+
+
+//____________________________________________________________________________________
+AliKFParticle AliReducedVarManager::BuildKFcandidate(TRACK* track1, Float_t mh1, TRACK* track2, Float_t mh2) {
+   //
+   // build a KF pair from the 2 legs
+   //
+ Double_t p[6]; Double_t cov[21];
+ for(int i=0; i<6; i++) p[i] = track1->TrackParam(i);
+ for(int i=0; i<21; i++) cov[i] = track1->CovMatrix(i);
+ AliKFParticle kfPart1; 
+ kfPart1.Initialize();
+ kfPart1.Create(p,cov,track1->Charge(),mh1);
+ //
+ for(int i=0; i<6; i++) p[i] = track2->TrackParam(i);
+ for(int i=0; i<21; i++) cov[i] = track2->CovMatrix(i);
+ AliKFParticle kfPart2;  
+ kfPart2.Initialize();
+ kfPart2.Create(p,cov,track2->Charge(),mh2);
+ //
+ AliKFParticle pairKF; 
+ pairKF.Initialize();
+ pairKF.AddDaughter(kfPart1);
+ pairKF.AddDaughter(kfPart2);
+ 
+ return pairKF;
+}
+
+
+//____________________________________________________________________________________
+AliKFParticle AliReducedVarManager::BuildKFvertex( AliReducedEventInfo * event )
+{
+   // 
+   // build an AliKF vertex using the cov matrix 
+   //
+   AliKFParticle kVtx; kVtx.Initialize();
+   for(int i=0; i<3; i++) kVtx.Parameter(i) = event->Vertex(i);
+   for(int i=0; i<6; i++) kVtx.Covariance(i) = event->VertexCovMatrix(i);
+   kVtx.Chi2() = 1.; // FIX THIS! to be added in AliReducedEventInfo
+   kVtx.NDF() = 2*event->VertexNContributors() - 3;
+   // printf("ndf %d %d %f \n",kVtx.GetNDF(),kVtx.GetQ(),kVtx.GetParameter(0)); getchar();
+ 
+   return kVtx;
 }
