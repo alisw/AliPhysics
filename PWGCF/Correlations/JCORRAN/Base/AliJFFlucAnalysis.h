@@ -110,8 +110,8 @@ private:
 	Double_t fQC_eta_cut_min;
 	Double_t fQC_eta_cut_max;
 
-	TComplex QvectorQC[kNH][nKL];
-	TComplex QvectorQCeta10[kNH][nKL][2]; // ksub
+	TComplex QvectorQC[kNH];
+	TComplex QvectorQCeta10[kNH][2]; // ksub
 
 	TH1D *h_phi_module[7][2]; // cent, isub
 	TFile *inclusFile; // pointer for root file
