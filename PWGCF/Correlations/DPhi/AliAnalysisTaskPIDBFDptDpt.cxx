@@ -101,6 +101,7 @@ AliAnalysisTaskPIDBFDptDpt::AliAnalysisTaskPIDBFDptDpt()
   PIDparticle   ( 0),
   use_pT_cut   ( 0),
   useAliHelperPID( 0),
+  useCircularCutPID( 0),
   fHelperPID(0),
   NoContamination   ( 0),
   _useWeights    ( 0),
@@ -265,8 +266,18 @@ AliAnalysisTaskPIDBFDptDpt::AliAnalysisTaskPIDBFDptDpt()
   _beta_p_POI_AliHelperPID (0),
   _inverse_beta_p_POI_AliHelperPID (0),
   _msquare_p_POI_AliHelperPID (0),
-  _nSigmaTOF_p_POI (0),
-  _nSigmaTOF_p (0),
+  _nSigmaTOF_p_pion_before (0),
+  _nSigmaTOF_p_pion_after (0),
+  _nSigmaTOF_p_kaon_before (0),
+  _nSigmaTOF_p_kaon_after (0),
+  _nSigmaTOF_p_proton_before (0),
+  _nSigmaTOF_p_proton_after (0),
+  _nSigmaTPC_nSigmaTOF_Pion_before (0),
+  _nSigmaTPC_nSigmaTOF_Pion_after (0),
+  _nSigmaTPC_nSigmaTOF_Kaon_before (0),
+  _nSigmaTPC_nSigmaTOF_Kaon_after (0),
+  _nSigmaTPC_nSigmaTOF_Proton_before (0),
+  _nSigmaTPC_nSigmaTOF_Proton_after (0),
 
   _dedx_p_AliHelperPID_no_Undefined (0),
   _beta_p_AliHelperPID_no_Undefined (0),
@@ -466,6 +477,7 @@ AliAnalysisTaskPIDBFDptDpt::AliAnalysisTaskPIDBFDptDpt(const TString & name)
   PIDparticle    ( 0),
   use_pT_cut     ( 0),
   useAliHelperPID( 0),
+  useCircularCutPID( 0),
   fHelperPID(0),
   NoContamination   ( 0),
   _useWeights    ( 0),
@@ -629,8 +641,18 @@ AliAnalysisTaskPIDBFDptDpt::AliAnalysisTaskPIDBFDptDpt(const TString & name)
   _beta_p_POI_AliHelperPID (0),
   _inverse_beta_p_POI_AliHelperPID (0),
   _msquare_p_POI_AliHelperPID (0),
-  _nSigmaTOF_p_POI (0),
-  _nSigmaTOF_p (0),
+  _nSigmaTOF_p_pion_before (0),
+  _nSigmaTOF_p_pion_after (0),
+  _nSigmaTOF_p_kaon_before (0),
+  _nSigmaTOF_p_kaon_after (0),
+  _nSigmaTOF_p_proton_before (0),
+  _nSigmaTOF_p_proton_after (0),
+  _nSigmaTPC_nSigmaTOF_Pion_before (0),
+  _nSigmaTPC_nSigmaTOF_Pion_after (0),
+  _nSigmaTPC_nSigmaTOF_Kaon_before (0),
+  _nSigmaTPC_nSigmaTOF_Kaon_after (0),
+  _nSigmaTPC_nSigmaTOF_Proton_before (0),
+  _nSigmaTPC_nSigmaTOF_Proton_after (0),
 
   _dedx_p_AliHelperPID_no_Undefined (0),
   _beta_p_AliHelperPID_no_Undefined (0),
@@ -1114,8 +1136,19 @@ void  AliAnalysisTaskPIDBFDptDpt::createHistograms()
       name = "msquare_p";   _msquare_p = createHisto2F(name,name, 500, 0, 5,  200, -0.5, 1.5,  "p", "mass square",  "counts");  
       name = "msquare_p_POI_AliHelperPID";   _msquare_p_POI_AliHelperPID = createHisto2F(name,name, 500, 0, 5,  200, -0.5, 1.5,  "p", "mass square","counts");
       name = "msquare_p_AliHelperPID_no_Undefined";   _msquare_p_AliHelperPID_no_Undefined = createHisto2F(name,name, 500, 0, 5,  200, -0.5, 1.5,  "p", "mass square","counts");
-      name = "nSigmaTOF_p";       _nSigmaTOF_p     = createHisto2F(name,name, 500, 0, 5, 120, -20, 100.0, "p", "nSigmaTOF","counts");
-      name = "nSigmaTOF_p_POI";   _nSigmaTOF_p_POI = createHisto2F(name,name, 500, 0, 5, 120, -20, 100.0, "p", "nSigmaTOF_POI","counts");
+      name = "nSigmaTOF_p_pion_before";   _nSigmaTOF_p_pion_before   = createHisto2F(name,name, 500, 0, 5, 120, -20, 100.0, "p", "n#sigma_{TOF}^{pion}","counts");
+      name = "nSigmaTOF_p_pion_after";    _nSigmaTOF_p_pion_after    = createHisto2F(name,name, 500, 0, 5, 120, -20, 100.0, "p", "n#sigma_{TOF}^{pion}","counts");
+      name = "nSigmaTOF_p_kaon_before";   _nSigmaTOF_p_kaon_before   = createHisto2F(name,name, 500, 0, 5, 120, -20, 100.0, "p", "n#sigma_{TOF}^{kaon}","counts");
+      name = "nSigmaTOF_p_kaon_after";    _nSigmaTOF_p_kaon_after    = createHisto2F(name,name, 500, 0, 5, 120, -20, 100.0, "p", "n#sigma_{TOF}^{kaon}","counts");
+      name = "nSigmaTOF_p_proton_before"; _nSigmaTOF_p_proton_before = createHisto2F(name,name, 500, 0, 5, 120, -20, 100.0, "p", "n#sigma_{TOF}^{proton}","counts");
+      name = "nSigmaTOF_p_proton_after";  _nSigmaTOF_p_proton_after  = createHisto2F(name,name, 500, 0, 5, 120, -20, 100.0, "p", "n#sigma_{TOF}^{proton}","counts");
+      name = "nSigmaTPC_nSigmaTOF_Pion_before";   _nSigmaTPC_nSigmaTOF_Pion_before   = createHisto2F(name,name,1000,-5,5,1000,-5,5,"n#sigma_{TPC}^{pion}","n#sigma_{TOF}^{pion}","counts");
+      name = "nSigmaTPC_nSigmaTOF_Pion_after";    _nSigmaTPC_nSigmaTOF_Pion_after    = createHisto2F(name,name,1000,-5,5,1000,-5,5,"n#sigma_{TPC}^{pion}","n#sigma_{TOF}^{pion}","counts");
+      name = "nSigmaTPC_nSigmaTOF_Kaon_before";   _nSigmaTPC_nSigmaTOF_Kaon_before   = createHisto2F(name,name,1000,-5,5,1000,-5,5,"n#sigma_{TPC}^{kaon}","n#sigma_{TOF}^{kaon}","counts");
+      name = "nSigmaTPC_nSigmaTOF_Kaon_after";    _nSigmaTPC_nSigmaTOF_Kaon_after    = createHisto2F(name,name,1000,-5,5,1000,-5,5,"n#sigma_{TPC}^{kaon}","n#sigma_{TOF}^{kaon}","counts");
+      name = "nSigmaTPC_nSigmaTOF_Proton_before"; _nSigmaTPC_nSigmaTOF_Proton_before = createHisto2F(name,name,1000,-5,5,1000,-5,5,"n#sigma_{TPC}^{proton}","n#sigma_{TOF}^{proton}","counts");
+      name = "nSigmaTPC_nSigmaTOF_Proton_after";  _nSigmaTPC_nSigmaTOF_Proton_after  = createHisto2F(name,name,1000,-5,5,1000,-5,5,"n#sigma_{TPC}^{proton}","n#sigma_{TOF}^{proton}","counts");
+
       name = "dedx_p_POI_AliHelperPID";   _dedx_p_POI_AliHelperPID = createHisto2F(name,name, 1980, 0.2, 20,  200, 0, 200,  "p", "dedx","counts");
       name = "dedx_p_AliHelperPID_no_Undefined";   _dedx_p_AliHelperPID_no_Undefined = createHisto2F(name,name, 1980, 0.2, 20,  200, 0, 200,  "p", "dedx","counts");    
       name = "beta_p_POI_AliHelperPID";   _beta_p_POI_AliHelperPID = createHisto2F(name,name, 500, 0, 5,  100, 0.1, 1.1,  "p", "beta","counts");
@@ -1501,8 +1534,13 @@ void  AliAnalysisTaskPIDBFDptDpt::UserExec(Option_t */*option*/)
 		      _trackLength_GetIntegratedLength -> Fill( t -> GetIntegratedLength() );
 		      _msquare_p -> Fill( p, massSquareCalculation(t) );
 		      _beta_p -> Fill( p, TOFBetaCalculation(t) );
-		      _nSigmaTOF_p -> Fill( p, fPIDResponse->NumberOfSigmasTOF(t,AliPID::kPion) );
+		      _nSigmaTOF_p_pion_before -> Fill( p, fPIDResponse->NumberOfSigmasTOF(t,AliPID::kPion) );
+		      _nSigmaTOF_p_kaon_before -> Fill( p, fPIDResponse->NumberOfSigmasTOF(t,AliPID::kKaon) );
+		      _nSigmaTOF_p_proton_before -> Fill( p, fPIDResponse->NumberOfSigmasTOF(t,AliPID::kProton) );
 		      _inverse_beta_p -> Fill( p, 1./TOFBetaCalculation(t)  );
+		      _nSigmaTPC_nSigmaTOF_Pion_before -> Fill( fPIDResponse->NumberOfSigmasTPC(t,AliPID::kPion), fPIDResponse->NumberOfSigmasTOF(t,AliPID::kPion) );
+		      _nSigmaTPC_nSigmaTOF_Kaon_before -> Fill( fPIDResponse->NumberOfSigmasTPC(t,AliPID::kKaon), fPIDResponse->NumberOfSigmasTOF(t,AliPID::kKaon) );
+		      _nSigmaTPC_nSigmaTOF_Proton_before -> Fill( fPIDResponse->NumberOfSigmasTPC(t,AliPID::kProton), fPIDResponse->NumberOfSigmasTOF(t,AliPID::kProton) );
 		    }
 		  else  _dedx_p -> Fill( p, dedx );
 		}
@@ -1540,7 +1578,8 @@ void  AliAnalysisTaskPIDBFDptDpt::UserExec(Option_t */*option*/)
 		  if ( use_pT_cut )
 		    {
 		      if ( useAliHelperPID ) IDrec = fHelperPID -> GetParticleSpecies(t, kTRUE);
-		      else    IDrec = TellParticleSpecies( t ); //returns 0, 1, 2 for Pion, Kaon, Proton, respectively.
+		      else if ( useCircularCutPID ) IDrec = TellParticleSpecies_CircularCut( t );
+		      else IDrec = TellParticleSpecies( t ); //returns 0, 1, 2 for Pion, Kaon, Proton, respectively.
 		    }
 		  else // use_p_cut
 		    {
@@ -1549,6 +1588,7 @@ void  AliAnalysisTaskPIDBFDptDpt::UserExec(Option_t */*option*/)
 			  // NOT COMPLETE YET!!! need a line for p cut here!!!
 			  IDrec = fHelperPID -> GetParticleSpecies(t, kTRUE);
 			}
+		      else if ( useCircularCutPID ) IDrec = TellParticleSpecies_by_P_CircularCut( t );
 		      else    IDrec = TellParticleSpecies_by_P( t ); //returns 0, 1, 2 for Pion, Kaon, Proton, respectively.
 		    }
 
@@ -1619,10 +1659,15 @@ void  AliAnalysisTaskPIDBFDptDpt::UserExec(Option_t */*option*/)
 			    }
 			  _trackLength_POI -> Fill( fPIDResponse->GetTOFResponse().GetExpectedSignal(t, AliPID::kElectron)*1E-3*c );
 			  _trackLength_GetIntegratedLength_POI -> Fill( t -> GetIntegratedLength() );
-			  _nSigmaTOF_p_POI -> Fill( p, fPIDResponse->NumberOfSigmasTOF(t,AliPID::kPion) );
+			  _nSigmaTOF_p_pion_after -> Fill( p, fPIDResponse->NumberOfSigmasTOF(t,AliPID::kPion) );
+			  _nSigmaTOF_p_kaon_after -> Fill( p, fPIDResponse->NumberOfSigmasTOF(t,AliPID::kKaon) );
+			  _nSigmaTOF_p_proton_after -> Fill( p, fPIDResponse->NumberOfSigmasTOF(t,AliPID::kProton) );
 			  _msquare_p_POI_AliHelperPID -> Fill( p, massSquareCalculation(t) );
 			  _beta_p_POI_AliHelperPID -> Fill( p, TOFBetaCalculation(t) );
 			  _inverse_beta_p_POI_AliHelperPID -> Fill( p, 1./TOFBetaCalculation(t) );
+			  _nSigmaTPC_nSigmaTOF_Pion_after -> Fill( fPIDResponse->NumberOfSigmasTPC(t,AliPID::kPion), fPIDResponse->NumberOfSigmasTOF(t,AliPID::kPion) );
+			  _nSigmaTPC_nSigmaTOF_Kaon_after -> Fill( fPIDResponse->NumberOfSigmasTPC(t,AliPID::kKaon), fPIDResponse->NumberOfSigmasTOF(t,AliPID::kKaon) );
+			  _nSigmaTPC_nSigmaTOF_Proton_after -> Fill( fPIDResponse->NumberOfSigmasTPC(t,AliPID::kProton), fPIDResponse->NumberOfSigmasTOF(t,AliPID::kProton) );
 			}
 		      else if ( ( pt >= _min_pt_1 ) && ( pt <= ptTOFlowerBoundary ) )   _dedx_p_POI_AliHelperPID -> Fill( p, dedx );
 		    }
@@ -2722,6 +2767,46 @@ Int_t AliAnalysisTaskPIDBFDptDpt::TellParticleSpecies( AliVTrack * trk )  //func
 
 
 //________________________________________________________________________________________________________________
+Int_t AliAnalysisTaskPIDBFDptDpt::TellParticleSpecies_CircularCut( AliVTrack * trk )  //function to determine the particle ID
+{  
+  CalculateNSigmas( trk );
+
+  Double_t nsigmaPion = 999., nsigmaKaon = 999., nsigmaProton = 999., nsigmaElectron = 999.;
+
+  CheckTOF( trk );
+  
+  if( fHasTOFPID && ( trk->Pt() > ptTOFlowerBoundary ) )
+    {
+      Double_t d2Pion   = fnsigmas[0][0]*fnsigmas[0][0] + fnsigmas[0][1]*fnsigmas[0][1];
+      Double_t d2Kaon   = fnsigmas[1][0]*fnsigmas[1][0] + fnsigmas[1][1]*fnsigmas[1][1];
+      Double_t d2Proton = fnsigmas[2][0]*fnsigmas[2][0] + fnsigmas[2][1]*fnsigmas[2][1];
+    
+      nsigmaPion    =  TMath::Sqrt(d2Pion); //Pion_TPC+TOF_circular
+      nsigmaKaon    =  TMath::Sqrt(d2Kaon); //Kaon_TPC+TOF_circular
+      nsigmaProton  =  TMath::Sqrt(d2Proton); //Proton_TPC+TOF_circular
+
+      if( ( nsigmaPion < fNSigmaPID ) && ( nsigmaKaon > fNSigmaPID_veto ) && ( nsigmaProton > fNSigmaPID_veto ) && ( trk->Pt() <= ptUpperLimit ) )  return 0; //Pion
+      if( ( nsigmaKaon < fNSigmaPID ) && ( nsigmaPion > fNSigmaPID_veto ) && ( nsigmaProton > fNSigmaPID_veto ) && ( trk->Pt() <= ptUpperLimit ) )  return 1; //Kaon
+      if( ( nsigmaProton < fNSigmaPID ) && ( nsigmaPion > fNSigmaPID_veto ) && ( nsigmaKaon > fNSigmaPID_veto ) && ( trk->Pt() <= ptUpperLimit ) && ( massSquareCalculation(trk) > 0.6 ) && ( massSquareCalculation(trk) < 1.1 ) )   return 2; //Proton // need to add mass square cut in the source code as well!!!
+    }
+  else
+    {
+      nsigmaPion     =  TMath::Abs( fnsigmas[0][0] ); //Pion_TPC
+      nsigmaKaon     =  TMath::Abs( fnsigmas[1][0] ); //Kaon_TPC
+      nsigmaProton   =  TMath::Abs( fnsigmas[2][0] ); //Proton_TPC
+      nsigmaElectron =  TMath::Abs( fnsigmas[3][0] ); //Electron_TPC
+
+      if( ( nsigmaPion < fNSigmaPID ) && ( nsigmaKaon > fNSigmaPID_veto ) && ( nsigmaProton > fNSigmaPID_veto ) && ( nsigmaElectron > electronNSigmaVeto ) && ( trk->Pt() >= _min_pt_1 ) && ( trk->Pt() <= ptTOFlowerBoundary ) )   return 0; //Pion
+      if( ( nsigmaKaon < fNSigmaPID ) && ( nsigmaPion > fNSigmaPID_veto ) && ( nsigmaProton > fNSigmaPID_veto ) && ( nsigmaElectron > electronNSigmaVeto ) && ( trk->Pt() >= _min_pt_1 ) && ( trk->Pt() <= ptTOFlowerBoundary ) )   return 1; //Kaon
+      if( ( nsigmaProton < fNSigmaPID ) && ( nsigmaPion > fNSigmaPID_veto ) && ( nsigmaKaon > fNSigmaPID_veto ) && ( nsigmaElectron > electronNSigmaVeto ) && ( trk->Pt() >= _min_pt_1 ) && ( trk->Pt() <= ptTOFlowerBoundary ) )   return 2; //Proton
+    }
+
+  // else, return undefined
+  return 999;
+}
+
+
+//________________________________________________________________________________________________________________
 Int_t AliAnalysisTaskPIDBFDptDpt::TellParticleSpecies_by_P( AliVTrack * trk )  //function to determine the particle ID
 {  
   CalculateNSigmas( trk );
@@ -2736,6 +2821,46 @@ Int_t AliAnalysisTaskPIDBFDptDpt::TellParticleSpecies_by_P( AliVTrack * trk )  /
       nsigmaKaon     =  TMath::Abs( fnsigmas[1][1] ); //Kaon_TOF
       nsigmaProton   =  TMath::Abs( fnsigmas[2][1] ); //Proton_TOF
       nsigmaElectron =  TMath::Abs( fnsigmas[3][1] ); //Electron_TOF
+
+      if( ( nsigmaPion < fNSigmaPID ) && ( nsigmaKaon > fNSigmaPID_veto ) && ( nsigmaProton > fNSigmaPID_veto ) && ( trk->Pt() <= ptUpperLimit ) )  return 0; //Pion
+      if( ( nsigmaKaon < fNSigmaPID ) && ( nsigmaPion > fNSigmaPID_veto ) && ( nsigmaProton > fNSigmaPID_veto ) && ( trk->Pt() <= ptUpperLimit ) )  return 1; //Kaon
+      if( ( nsigmaProton < fNSigmaPID ) && ( nsigmaPion > fNSigmaPID_veto ) && ( nsigmaKaon > fNSigmaPID_veto ) && ( trk->Pt() <= ptUpperLimit ) && ( massSquareCalculation(trk) > 0.6 ) && ( massSquareCalculation(trk) < 1.1 ) )   return 2; //Proton // need to add mass square cut in the source code as well!!!
+    }
+  else
+    {
+      nsigmaPion     =  TMath::Abs( fnsigmas[0][0] ); //Pion_TPC
+      nsigmaKaon     =  TMath::Abs( fnsigmas[1][0] ); //Kaon_TPC
+      nsigmaProton   =  TMath::Abs( fnsigmas[2][0] ); //Proton_TPC
+      nsigmaElectron =  TMath::Abs( fnsigmas[3][0] ); //Electron_TPC
+
+      if( ( nsigmaPion < fNSigmaPID ) && ( nsigmaKaon > fNSigmaPID_veto ) && ( nsigmaProton > fNSigmaPID_veto ) && ( nsigmaElectron > electronNSigmaVeto ) && ( trk->Pt() >= _min_pt_1 ) && ( trk->P() <= ptTOFlowerBoundary ) )   return 0; //Pion 
+      if( ( nsigmaKaon < fNSigmaPID ) && ( nsigmaPion > fNSigmaPID_veto ) && ( nsigmaProton > fNSigmaPID_veto ) && ( nsigmaElectron > electronNSigmaVeto ) && ( trk->Pt() >= _min_pt_1 ) && ( trk->P() <= ptTOFlowerBoundary ) )   return 1; //Kaon
+      if( ( nsigmaProton < fNSigmaPID ) && ( nsigmaPion > fNSigmaPID_veto ) && ( nsigmaKaon > fNSigmaPID_veto ) && ( nsigmaElectron > electronNSigmaVeto ) && ( trk->Pt() >= _min_pt_1 ) && ( trk->P() <= ptTOFlowerBoundary ) )   return 2; //Proton
+    }
+
+  // else, return undefined
+  return 999;
+}
+
+
+//________________________________________________________________________________________________________________
+Int_t AliAnalysisTaskPIDBFDptDpt::TellParticleSpecies_by_P_CircularCut( AliVTrack * trk )  //function to determine the particle ID
+{  
+  CalculateNSigmas( trk );
+
+  Double_t nsigmaPion = 999., nsigmaKaon = 999., nsigmaProton = 999., nsigmaElectron = 999.;
+
+  CheckTOF( trk );
+  
+  if( fHasTOFPID && ( trk->P() > ptTOFlowerBoundary ) ) // !!! diff from TellParticleSpecies
+    {
+      Double_t d2Pion   = fnsigmas[0][0]*fnsigmas[0][0] + fnsigmas[0][1]*fnsigmas[0][1];
+      Double_t d2Kaon   = fnsigmas[1][0]*fnsigmas[1][0] + fnsigmas[1][1]*fnsigmas[1][1];
+      Double_t d2Proton = fnsigmas[2][0]*fnsigmas[2][0] + fnsigmas[2][1]*fnsigmas[2][1];
+    
+      nsigmaPion    =  TMath::Sqrt(d2Pion); //Pion_TPC+TOF_circular
+      nsigmaKaon    =  TMath::Sqrt(d2Kaon); //Kaon_TPC+TOF_circular
+      nsigmaProton  =  TMath::Sqrt(d2Proton); //Proton_TPC+TOF_circular
 
       if( ( nsigmaPion < fNSigmaPID ) && ( nsigmaKaon > fNSigmaPID_veto ) && ( nsigmaProton > fNSigmaPID_veto ) && ( trk->Pt() <= ptUpperLimit ) )  return 0; //Pion
       if( ( nsigmaKaon < fNSigmaPID ) && ( nsigmaPion > fNSigmaPID_veto ) && ( nsigmaProton > fNSigmaPID_veto ) && ( trk->Pt() <= ptUpperLimit ) )  return 1; //Kaon
