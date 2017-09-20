@@ -14,13 +14,15 @@
 #include <TH2F.h>
 #include <TProfile2D.h>
 
+#include <AliReducedPairInfo.h>
+
 class AliReducedBaseEvent;
 class AliReducedEventInfo;
 class AliReducedEventPlaneInfo;
 class AliReducedBaseTrack;
 class AliReducedTrackInfo;
-class AliReducedPairInfo;
 class AliReducedCaloClusterInfo;
+class AliKFParticle;
 
 //_____________________________________________________________________
 class AliReducedVarManager : public TObject {
@@ -198,6 +200,7 @@ class AliReducedVarManager : public TObject {
 
   
   static const Float_t fgkParticleMass[kNSpecies];
+  static const Float_t fgkPairMass[AliReducedPairInfo::kNMaxCandidateTypes];
   
   enum Variables {
     kNothing = -1,
@@ -450,6 +453,7 @@ class AliReducedVarManager : public TObject {
     kMassV0,                    // masses for all 4 V0 assumptions (0-K0s, 1-Lambda, 2-ALambda, 3-Gamma)
     kPairChisquare=kMassV0+4,     
     kPairLxy,           
+    kPseudoProperDecayTime,
     kPairOpeningAngle,  
     kPairPointingAngle, 
     kPairThetaCS,                // cos (theta*) in Collins-Soper frame       
@@ -638,7 +642,9 @@ class AliReducedVarManager : public TObject {
 			    Float_t &thetaCS, Float_t &phiCS,
 			    Float_t leg1Mass=fgkParticleMass[kElectron], Float_t leg2Mass=fgkParticleMass[kElectron]);
   static void GetLegMassAssumption(Int_t id, Float_t& m1, Float_t& m2);
-
+  static AliKFParticle BuildKFcandidate(AliReducedTrackInfo* track1, Float_t mh1, AliReducedTrackInfo* track2, Float_t mh2);
+  static AliKFParticle BuildKFvertex( AliReducedEventInfo * event );
+  
   static TH2F* fgTPCelectronCentroidMap;    // TPC electron centroid 2D map
   static TH2F* fgTPCelectronWidthMap;       // TPC electron width 2D map
   static Variables fgVarDependencyX;        // varX in the 2-D electron correction maps
