@@ -85,6 +85,7 @@ fHistnTrackvsEtavsPhiEvWithCand(0),
 fHistTrueSovsMeasSo(0),
 fHistTrueSovsMeasSoEvWithCand(0),
 fHistSpheroAxisDeltaPhi(0),
+fHistSpheroAxisDeltaGenPhi(0),
 fSparseEvtShape(0),
 fSparseEvtShapewithNoPid(0),
 fSparseEvtShapePrompt(0),
@@ -183,6 +184,7 @@ fHistnTrackvsEtavsPhiEvWithCand(0),
 fHistTrueSovsMeasSo(0),
 fHistTrueSovsMeasSoEvWithCand(0),
 fHistSpheroAxisDeltaPhi(0),
+fHistSpheroAxisDeltaGenPhi(0),
 fSparseEvtShape(0),
 fSparseEvtShapewithNoPid(0),
 fSparseEvtShapePrompt(0),
@@ -434,6 +436,8 @@ void AliAnalysisTaskSEDvsEventShapes::UserCreateOutputObjects()
     
     fHistSpheroAxisDeltaPhi = new TH3F("hSpheroAxisDeltaPhi", "Spherocit axis - D-meson direction; p_{T} [GeV/c]; InvMass [GeV/c^{2}]; #Delta#varphi [rad];", 48, 0., 24., fNMassBins, fLowmasslimit, fUpmasslimit, 200, 0., 2*TMath::Pi());
     
+    fHistSpheroAxisDeltaGenPhi = new TH3F("hSpheroAxisDeltaGenPhi", "Spherocit axis - D-meson direction; p_{T} [GeV/c]; InvMass [GeV/c^{2}]; #Delta#varphi (Gen) [rad];", 48, 0., 24., fNMassBins, fLowmasslimit, fUpmasslimit, 200, 0., 2*TMath::Pi());
+    
     TString histoNtrSphriName;
     TString histoNtrCorrSphriName;
     TString parNameNtrSphri;
@@ -473,6 +477,7 @@ void AliAnalysisTaskSEDvsEventShapes::UserCreateOutputObjects()
     fOutput->Add(fHistTrueSovsMeasSo);
     fOutput->Add(fHistTrueSovsMeasSoEvWithCand);
     fOutput->Add(fHistSpheroAxisDeltaPhi);
+    fOutput->Add(fHistSpheroAxisDeltaGenPhi);
     
     fOutput->Add(fHistNtrVsSo);
     fOutput->Add(fHistNtrCorrVsSo);
@@ -846,6 +851,8 @@ void AliAnalysisTaskSEDvsEventShapes::UserExec(Option_t */*option*/)
     
     Double_t genspherocity = -0.5;
     Double_t genphiRef = -1.0;
+    Double_t phiPart = -1.0;
+    
     // load MC particles and get weight on Nch
     if(fReadMC){
         
@@ -865,6 +872,7 @@ void AliAnalysisTaskSEDvsEventShapes::UserExec(Option_t */*option*/)
             AliAODMCParticle *part=(AliAODMCParticle*)arrayMC->UncheckedAt(i);
             Int_t charge = part->Charge();
             Double_t eta = part->Eta();
+            phiPart = part->Phi();
             Bool_t isPrim = part->IsPrimary();
             Bool_t isPhysPrim = part->IsPhysicalPrimary();
             if(charge!=0) {
@@ -1186,9 +1194,17 @@ void AliAnalysisTaskSEDvsEventShapes::UserExec(Option_t */*option*/)
                 }
                 
                 Double_t deltaPhiRef = (phiRef-phiCand);
+                Double_t deltagenPhiRef = (genphiRef-phiPart);
+                
                 if(deltaPhiRef<0) deltaPhiRef+=2*TMath::Pi();
                 if(deltaPhiRef>2*TMath::Pi()) deltaPhiRef-=2*TMath::Pi();
-                if(phiRef>=0 && phiCand>=0) fHistSpheroAxisDeltaPhi->Fill(ptCand, invMass, deltaPhiRef);
+                if(deltagenPhiRef<0) deltagenPhiRef+=2*TMath::Pi();
+                if(deltagenPhiRef>2*TMath::Pi()) deltagenPhiRef-=2*TMath::Pi();
+                
+                if(phiRef>=0 && phiCand>=0){
+                    fHistSpheroAxisDeltaPhi->Fill(ptCand, invMass, deltaPhiRef);
+                    if(fReadMC) fHistSpheroAxisDeltaGenPhi->Fill(ptCand, invMass, deltagenPhiRef);
+                }
                 
                 if(fRecomputeSpherocity){
                     Double_t arrayForSparseRecSphero[5]={ptCand, invMass, spherocity, multForCand, recSpherocity};
