@@ -2048,23 +2048,23 @@ void AliAnalysisTaskEMCALPhotonIsolation::EtIsoClusPhiBand(TLorentzVector c, Dou
   
   Double_t sumEnergyPhiBandClus = 0., sumEnergyConeClus = 0., sumpTConeCharged = 0., sumpTPhiBandTracks = 0.;
   Double_t clustTOF = 0., phiClust = 0., etaClust = 0., radius = 0.;
-  Double_t minPhi = 0., maxPhi = 0., minEta = 0., maxEta = 0.;
+  Double_t phiMin = 0., phiMax = 0., etaMin = 0., etaMax = 0.;
   
   if(fPeriod != ""){
-    minEta = fGeom->GetArm1EtaMin()+0.03;
-    maxEta = fGeom->GetArm1EtaMax()-0.03;
-    minPhi = (fGeom->GetArm1PhiMin())*TMath::DegToRad()+0.03;
+    etaMin = fGeom->GetArm1EtaMin()+0.03;
+    etaMax = fGeom->GetArm1EtaMax()-0.03;
+    phiMin = (fGeom->GetArm1PhiMin())*TMath::DegToRad()+0.03;
     
     if(fPeriod.Contains("12") || fPeriod.Contains("13"))
-      maxPhi = (fGeom->GetArm1PhiMax()-20.)*TMath::DegToRad()-0.03; // fGeom->GetArm1PhiMax()-20. = 180. deg (in order not to take the two disabled SM into account in 2012-2013)
+      phiMax = (fGeom->GetArm1PhiMax()-20.)*TMath::DegToRad()-0.03; // fGeom->GetArm1PhiMax()-20. = 180. deg (in order not to take the two disabled SM into account in 2012-2013)
     else
-      maxPhi = (fGeom->GetArm1PhiMax())*TMath::DegToRad()-0.03;
+      phiMax = (fGeom->GetArm1PhiMax())*TMath::DegToRad()-0.03;
   }
   else{
-    minPhi = (4./9.)*TMath::Pi()+0.03;
-    maxPhi = TMath::Pi()-0.03;
-    minEta = -0.67;
-    maxEta = 0.67;
+    phiMin = (4./9.)*TMath::Pi()+0.03;
+    phiMax = TMath::Pi()-0.03;
+    etaMin = -0.67;
+    etaMax = 0.67;
   }
   
     // Needs a check on the same cluster
@@ -2111,7 +2111,7 @@ void AliAnalysisTaskEMCALPhotonIsolation::EtIsoClusPhiBand(TLorentzVector c, Dou
     if(nClust.E()<0.3)
       continue;
     
-    if((phiClust < maxPhi) && (phiClust > minPhi) && (etaClust < maxEta) && (etaClust > minEta)){
+    if((phiClust < phiMax) && (phiClust > phiMin) && (etaClust < etaMax) && (etaClust > etaMin)){
       radius = TMath::Sqrt(TMath::Power(phiClust-c.Phi(),2)+TMath::Power(etaClust-c.Eta(),2)); // Define the radius between the leading cluster and the considered cluster
       if(radius > fIsoConeRadius){                                                             // The cluster is outside the isolation cone -> add the cluster pT to pT_UE
 	if(TMath::Abs(etaClust - c.Eta()) < fIsoConeRadius)
@@ -2179,7 +2179,7 @@ void AliAnalysisTaskEMCALPhotonIsolation::EtIsoClusPhiBand(TLorentzVector c, Dou
     phiTrack = eTrack->Phi();
     etaTrack = eTrack->Eta();
 
-    if((phiTrack < maxPhi) && (phiTrack > minPhi) && (etaTrack < maxEta) && (etaTrack > minEta)){
+    if((phiTrack < phiMax) && (phiTrack > phiMin) && (etaTrack < etaMax) && (etaTrack > etaMin)){
       radius = TMath::Sqrt(TMath::Power(phiTrack - c.Phi(),2)+TMath::Power(etaTrack - c.Eta(),2)); // Define the radius between the leading cluster and the considered track
       if(radius > fIsoConeRadius){                                                                 // The track is outside the isolation cone -> add the track pT to pT_UE
 	if(TMath::Abs(etaTrack - c.Eta()) < fIsoConeRadius)
@@ -2237,24 +2237,24 @@ void AliAnalysisTaskEMCALPhotonIsolation::EtIsoClusEtaBand(TLorentzVector c, Dou
   
   Float_t sumEnergyEtaBandClus = 0., sumEnergyConeClus = 0., sumpTConeCharged = 0., sumpTEtaBandTracks = 0.;
   Double_t clustTOF = 0., phiClust = 0., etaClust = 0., radius = 0.;
-  Double_t minPhi = 0., maxPhi = 0., minEta = 0., maxEta = 0.;
+  Double_t phiMin = 0., phiMax = 0., etaMin = 0., etaMax = 0.;
   Double_t isoConeArea = 0.; // Cluster (eta, phi)-dependent cone area
   
   if(fPeriod != ""){
-    minEta = fGeom->GetArm1EtaMin()+0.03;
-    maxEta = fGeom->GetArm1EtaMax()-0.03;
-    minPhi = (fGeom->GetArm1PhiMin())*TMath::DegToRad()+0.03;
+    etaMin = fGeom->GetArm1EtaMin()+0.03;
+    etaMax = fGeom->GetArm1EtaMax()-0.03;
+    phiMin = (fGeom->GetArm1PhiMin())*TMath::DegToRad()+0.03;
     
     if(fPeriod.Contains("12") || fPeriod.Contains("13"))
-      maxPhi = (fGeom->GetArm1PhiMax()-20.)*TMath::DegToRad()-0.03; // fGeom->GetArm1PhiMax()-20. = 180. deg (in order not to take the two disabled SM into account in 2012-2013)
+      phiMax = (fGeom->GetArm1PhiMax()-20.)*TMath::DegToRad()-0.03; // fGeom->GetArm1PhiMax()-20. = 180. deg (in order not to take the two disabled SM into account in 2012-2013)
     else
-      maxPhi = (fGeom->GetArm1PhiMax())*TMath::DegToRad()-0.03;
+      phiMax = (fGeom->GetArm1PhiMax())*TMath::DegToRad()-0.03;
   }
   else{
-    minPhi = (4./9.)*TMath::Pi()+0.03;
-    maxPhi = TMath::Pi()-0.03;
-    minEta = -0.67;
-    maxEta = 0.67;
+    phiMin = (4./9.)*TMath::Pi()+0.03;
+    phiMax = TMath::Pi()-0.03;
+    etaMin = -0.67;
+    etaMax = 0.67;
   }
   
     // AliParticleContainer *clusters = static_cast<AliParticleContainer*>(fParticleCollArray.At(1));
@@ -2302,7 +2302,7 @@ void AliAnalysisTaskEMCALPhotonIsolation::EtIsoClusEtaBand(TLorentzVector c, Dou
     if(nClust.E()<0.3)
       continue;
     
-    if((phiClust < maxPhi) && (phiClust > minPhi) && (etaClust < maxEta) && (etaClust > minEta)){
+    if((phiClust < phiMax) && (phiClust > phiMin) && (etaClust < etaMax) && (etaClust > etaMin)){
       radius = TMath::Sqrt(TMath::Power(phiClust-c.Phi(),2)+TMath::Power(etaClust-c.Eta(),2)); // Define the radius between the leading cluster and the considered cluster
       if(radius > fIsoConeRadius){                                                             // The cluster is outside the isolation cone -> add the cluster pT to pT_UE
 	if(TMath::Abs(phiClust - c.Phi()) < fIsoConeRadius)
@@ -2371,7 +2371,7 @@ void AliAnalysisTaskEMCALPhotonIsolation::EtIsoClusEtaBand(TLorentzVector c, Dou
     phiTrack = eTrack->Phi();
     etaTrack = eTrack->Eta();
     
-    if((phiTrack < maxPhi) && (phiTrack > minPhi) && (etaTrack < maxEta) && (etaTrack > minEta)){
+    if((phiTrack < phiMax) && (phiTrack > phiMin) && (etaTrack < etaMax) && (etaTrack > etaMin)){
       radius = TMath::Sqrt(TMath::Power(phiTrack - c.Phi(),2)+TMath::Power(etaTrack - c.Eta(),2)); // Define the radius between the leading cluster and the considered track
       if(radius > fIsoConeRadius){                                                                 // The track is outside the isolation cone -> add the track pT to pT_UE
 	if(TMath::Abs(phiTrack - c.Phi()) < fIsoConeRadius)
@@ -2436,24 +2436,24 @@ void AliAnalysisTaskEMCALPhotonIsolation::PtIsoTrackPhiBand(TLorentzVector c, Do
     // Underlying events study with tracks in phi band
   
   Double_t sumpTConeCharged = 0., sumpTPhiBandTrack = 0.;
-  Double_t minPhi = 0., maxPhi = 2.*TMath::Pi(), minEta = -0.87, maxEta = 0.87;
+  Double_t phiMin = 0., phiMax = 2.*TMath::Pi(), etaMin = -0.87, etaMax = 0.87;
   
   if(!fTPC4Iso){
     if(fPeriod != ""){
-      minEta = fGeom->GetArm1EtaMin()+0.03;
-      maxEta = fGeom->GetArm1EtaMax()-0.03;
-      minPhi = (fGeom->GetArm1PhiMin())*TMath::DegToRad()+0.03;
+      etaMin = fGeom->GetArm1EtaMin()+0.03;
+      etaMax = fGeom->GetArm1EtaMax()-0.03;
+      phiMin = (fGeom->GetArm1PhiMin())*TMath::DegToRad()+0.03;
       
       if(fPeriod.Contains("12") || fPeriod.Contains("13"))
-        maxPhi = (fGeom->GetArm1PhiMax()-20.)*TMath::DegToRad()-0.03; // fGeom->GetArm1PhiMax()-20. = 180. deg (in order not to take the two disabled SM into account in 2012-2013)
+        phiMax = (fGeom->GetArm1PhiMax()-20.)*TMath::DegToRad()-0.03; // fGeom->GetArm1PhiMax()-20. = 180. deg (in order not to take the two disabled SM into account in 2012-2013)
       else
-        maxPhi = (fGeom->GetArm1PhiMax())*TMath::DegToRad()-0.03;
+        phiMax = (fGeom->GetArm1PhiMax())*TMath::DegToRad()-0.03;
     }
     else{
-      minEta = -0.67;
-      maxEta = 0.67;
-      minPhi = (4./9.)*TMath::Pi()+0.03;
-      maxPhi = TMath::Pi()-0.03;
+      etaMin = -0.67;
+      etaMax = 0.67;
+      phiMin = (4./9.)*TMath::Pi()+0.03;
+      phiMax = TMath::Pi()-0.03;
     }
   }
   
@@ -2501,7 +2501,7 @@ void AliAnalysisTaskEMCALPhotonIsolation::PtIsoTrackPhiBand(TLorentzVector c, Do
     phiTrack = eTrack->Phi();
     etaTrack = eTrack->Eta();
     
-    if((phiTrack < maxPhi) && (phiTrack > minPhi) && (etaTrack < maxEta) && (etaTrack > minEta)){
+    if((phiTrack < phiMax) && (phiTrack > phiMin) && (etaTrack < etaMax) && (etaTrack > etaMin)){
       radius = TMath::Sqrt(TMath::Power(phiTrack - c.Phi(),2)+TMath::Power(etaTrack - c.Eta(),2)); // Define the radius between the leading cluster and the considered track
       if(radius > fIsoConeRadius){                                                                 // The track is outside the isolation cone -> add the track pT to pT_UE
         if(TMath::Abs(etaTrack - c.Eta()) < fIsoConeRadius)
@@ -2536,24 +2536,24 @@ void AliAnalysisTaskEMCALPhotonIsolation::PtIsoTrackEtaBand(TLorentzVector c, Do
     // Underlying events study with tracks in eta band
   
   Double_t sumpTConeCharged = 0., sumpTEtaBandTrack = 0.;
-  Double_t minPhi = 0., maxPhi = 2.*TMath::Pi(), minEta = -0.87, maxEta = 0.87;
+  Double_t phiMin = 0., phiMax = 2.*TMath::Pi(), etaMin = -0.87, etaMax = 0.87;
   
   if(!fTPC4Iso){
     if(fPeriod != ""){
-      minEta = fGeom->GetArm1EtaMin()+0.03;
-      maxEta = fGeom->GetArm1EtaMax()-0.03;
-      minPhi = (fGeom->GetArm1PhiMin())*TMath::DegToRad()+0.03;
+      etaMin = fGeom->GetArm1EtaMin()+0.03;
+      etaMax = fGeom->GetArm1EtaMax()-0.03;
+      phiMin = (fGeom->GetArm1PhiMin())*TMath::DegToRad()+0.03;
       
       if(fPeriod.Contains("12") || fPeriod.Contains("13"))
-        maxPhi = (fGeom->GetArm1PhiMax()-20.)*TMath::DegToRad()-0.03; // fGeom->GetArm1PhiMax()-20. = 180. deg (in order not to take the two disabled SM into account in 2012-2013)
+        phiMax = (fGeom->GetArm1PhiMax()-20.)*TMath::DegToRad()-0.03; // fGeom->GetArm1PhiMax()-20. = 180. deg (in order not to take the two disabled SM into account in 2012-2013)
       else
-        maxPhi = (fGeom->GetArm1PhiMax())*TMath::DegToRad()-0.03;
+        phiMax = (fGeom->GetArm1PhiMax())*TMath::DegToRad()-0.03;
     }
     else{
-      minEta = -0.67;
-      maxEta = 0.67;
-      minPhi = (4./9.)*TMath::Pi()+0.03;
-      maxPhi = TMath::Pi()-0.03;
+      etaMin = -0.67;
+      etaMax = 0.67;
+      phiMin = (4./9.)*TMath::Pi()+0.03;
+      phiMax = TMath::Pi()-0.03;
     }
   }
   
@@ -2602,7 +2602,7 @@ void AliAnalysisTaskEMCALPhotonIsolation::PtIsoTrackEtaBand(TLorentzVector c, Do
     phiTrack = eTrack->Phi();
     etaTrack = eTrack->Eta();
     
-    if( (phiTrack < maxPhi) && (phiTrack > minPhi) && (etaTrack < maxEta) && (etaTrack > minEta)){
+    if( (phiTrack < phiMax) && (phiTrack > phiMin) && (etaTrack < etaMax) && (etaTrack > etaMin)){
       radius = TMath::Sqrt(TMath::Power(phiTrack - c.Phi(),2)+TMath::Power(etaTrack - c.Eta(),2)); // Define the radius between the leading cluster and the considered track
       if(radius > fIsoConeRadius){                                                                 // The track is outside the isolation cone -> add the track pT to pT_UE
         if(TMath::Abs(phiTrack - c.Phi()) < fIsoConeRadius)
@@ -2809,49 +2809,91 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::CheckBoundaries(TLorentzVector vecCO
     // Check if the cone around the considered cluster is in EMCal acceptance
     // AliInfo("Inside CheckBoundaries\n");
   
-  Double_t minPhiBound = 0. , minEtaBound = 0., maxPhiBound = 0., maxEtaBound = 0.;
-  Bool_t isINBoundaries;
-  
+  Double_t etaClust = 0., phiClust = 0.;
+  Double_t etaMin = 0., etaMax = 0., etaMinDCal_InnerEdge = 0., phiMinEMCal = 0. , phiMaxEMCal = 0., phiMinDCal = 0. , phiMaxDCal_FullSM = 0., phiMaxDCal = 0.;
+  Bool_t   isINBoundaries;
+
+  etaClust = vecCOI.Eta();
+  phiClust = vecCOI.Phi();
+
   if(fTPC4Iso){
-    minEtaBound = -0.87+fFiducialCut;
-    maxEtaBound = 0.87-fFiducialCut;
+    etaMin = -0.87+fFiducialCut;
+    etaMax = 0.87-fFiducialCut;
     
-    if(fPeriod != ""){
-      minPhiBound = (fGeom->GetArm1PhiMin())*TMath::DegToRad()+0.03;
-      
+    if(!fPeriod.IsNull()){
+      phiMinEMCal = (fGeom->GetArm1PhiMin())*TMath::DegToRad()+0.03;                                 //  80     deg (4/9*pi  rad) plus  0.03 rad = 1.426 rad
+ 
       if(fPeriod.Contains("12") || fPeriod.Contains("13"))
-        maxPhiBound = (fGeom->GetArm1PhiMax()-20.)*TMath::DegToRad()-0.03;
+        phiMaxEMCal = (fGeom->GetEMCALPhiMax()-20.)*TMath::DegToRad()-0.03;                          // 180     deg (pi      rad) minus 0.03 rad = 3.112 rad
       else
-        maxPhiBound = (fGeom->GetArm1PhiMax())*TMath::DegToRad()-0.03;
+        phiMaxEMCal = (fGeom->GetEMCALPhiMax())*TMath::DegToRad()-0.03;                              // 188.137 deg (3.284   rad) minus 0.03 rad = 3.254 rad
+
+      phiMinDCal        = (fGeom->GetDCALPhiMin())*TMath::DegToRad()+0.03;                           // 260     deg (13/9*pi rad) plus  0.03 rad = 4.568 rad
+      phiMaxDCal_FullSM = (fGeom->GetEMCGeometry()->GetDCALStandardPhiMax())*TMath::DegToRad()-0.03; // 320     deg (16/9*pi rad) minus 0.03 rad = 5.555 rad
+      phiMaxDCal        = (fGeom->GetDCALPhiMax())*TMath::DegToRad()-0.03;                           // 328.137 deg (5.727   rad) minus 0.03 rad = 5.697 rad
+
+      if(etaClust > etaMax || etaClust < etaMin){
+	isINBoundaries = kFALSE;
+	return isINBoundaries;
+      }
+      if(phiClust >= phiMinEMCal && phiClust <= phiMaxEMCal)
+	isINBoundaries = kTRUE;
+      else if(phiClust >= phiMinDCal && phiClust <= phiMaxDCal)
+	isINBoundaries = kTRUE;
+      else
+	isINBoundaries = kFALSE;
     }
-    else{
-      minPhiBound = (4./9.)*TMath::Pi()+0.03;
-      maxPhiBound = TMath::Pi()-0.03;
+    else{ // If no period set, default for 2011-2013 (2*5 EMCal SM)
+      phiMinEMCal = (4./9.)*TMath::Pi()+0.03;
+      phiMaxEMCal = TMath::Pi()-0.03;
+
+      if(etaClust > etaMax || etaClust < etaMin || phiClust > phiMaxEMCal || phiClust < phiMinEMCal)
+	isINBoundaries = kFALSE;
+      else
+	isINBoundaries = kTRUE;
     }
   }
   else{
-    if(fPeriod != ""){
-      minEtaBound = fGeom->GetArm1EtaMin()+0.03+fFiducialCut;
-      maxEtaBound = fGeom->GetArm1EtaMax()-0.03-fFiducialCut;
-      minPhiBound = (fGeom->GetArm1PhiMin())*TMath::DegToRad()+0.03+fFiducialCut;
-      
+    if(!fPeriod.IsNull()){
+      etaMin               = fGeom->GetArm1EtaMin()+0.03+fFiducialCut;
+      etaMax               = fGeom->GetArm1EtaMax()-0.03-fFiducialCut;
+      etaMinDCal_InnerEdge = fGeom->GetEMCGeometry()->GetDCALInnerExtandedEta()+0.03+fFiducialCut;                // DCal hole for eta in (-0.220, 0.220)
+      phiMinEMCal          = (fGeom->GetArm1PhiMin())*TMath::DegToRad()+0.03+fFiducialCut;                        //  80     deg (4/9*pi  rad) plus  0.03 rad = 1.426 rad
+ 
       if(fPeriod.Contains("12") || fPeriod.Contains("13"))
-        maxPhiBound = (fGeom->GetArm1PhiMax()-20.)*TMath::DegToRad()-0.03-fFiducialCut;
+        phiMaxEMCal = (fGeom->GetEMCALPhiMax()-20.)*TMath::DegToRad()-0.03-fFiducialCut;                          // 180     deg (pi      rad) minus 0.03 rad = 3.112 rad
       else
-        maxPhiBound = (fGeom->GetArm1PhiMax())*TMath::DegToRad()-0.03-fFiducialCut;
+        phiMaxEMCal = (fGeom->GetEMCALPhiMax())*TMath::DegToRad()-0.03-fFiducialCut;                              // 188.137 deg (3.284   rad) minus 0.03 rad = 3.254 rad
+
+      phiMinDCal        = (fGeom->GetDCALPhiMin())*TMath::DegToRad()+0.03+fFiducialCut;                           // 260     deg (13/9*pi rad) plus  0.03 rad = 4.568 rad
+      phiMaxDCal_FullSM = (fGeom->GetEMCGeometry()->GetDCALStandardPhiMax())*TMath::DegToRad()-0.03-fFiducialCut; // 320     deg (16/9*pi rad) minus 0.03 rad = 5.555 rad
+      phiMaxDCal        = (fGeom->GetDCALPhiMax())*TMath::DegToRad()-0.03-fFiducialCut;                           // 328.137 deg (5.727   rad) minus 0.03 rad = 5.697 rad
+
+      if(etaClust > etaMax || etaClust < etaMin){
+	isINBoundaries = kFALSE;
+	return isINBoundaries;
+      }
+      if(phiClust >= phiMinEMCal && phiClust <= phiMaxEMCal)
+	isINBoundaries = kTRUE;
+      else if(phiClust >= phiMinDCal && phiClust <= phiMaxDCal_FullSM && TMath::Abs(etaClust) > etaMinDCal_InnerEdge)
+	isINBoundaries = kTRUE;
+      else if(phiClust > phiMaxDCal_FullSM && phiClust <= phiMaxDCal)
+	isINBoundaries = kTRUE;
+      else
+	isINBoundaries = kFALSE;
     }
-    else{
-      minEtaBound = -0.67+fFiducialCut;
-      maxEtaBound = 0.67-fFiducialCut;
-      minPhiBound = (4./9.)*TMath::Pi()+0.03+fFiducialCut;
-      maxPhiBound = TMath::Pi()-0.03-fFiducialCut;
+    else{ // If no period set, default for 2011-2013 (2*5 EMCal SM)
+      etaMin      = -0.67+fFiducialCut;
+      etaMax      = 0.67-fFiducialCut;
+      phiMinEMCal = (4./9.)*TMath::Pi()+0.03+fFiducialCut;
+      phiMaxEMCal = TMath::Pi()-0.03-fFiducialCut;
+
+      if(etaClust > etaMax || etaClust < etaMin || phiClust > phiMaxEMCal || phiClust < phiMinEMCal)
+	isINBoundaries = kFALSE;
+      else
+	isINBoundaries = kTRUE;
     }
   }
-  
-  if(vecCOI.Eta() > maxEtaBound || vecCOI.Eta() < minEtaBound || vecCOI.Phi() > maxPhiBound || vecCOI.Phi() < minPhiBound)
-    isINBoundaries=kFALSE;
-  else
-    isINBoundaries=kTRUE;
   
   return isINBoundaries;
 }
