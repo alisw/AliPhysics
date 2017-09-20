@@ -54,7 +54,7 @@ void PlotAODtrackQA(TString filename="AnalysisResults.root", TString suffix="QA"
   TFile* f=new TFile(filename.Data());
   TDirectoryFile* df=(TDirectoryFile*)f->Get("CheckAODTracks");
   if(!df){
-    printf("Directory CheckESDTracks not found in file %s\n",filename.Data());
+    printf("Directory CheckAODTracks not found in file %s\n",filename.Data());
     return;
   }
   TList* l=(TList*)df->Get(Form("clistCheckAODTracks%s",suffix.Data()));
