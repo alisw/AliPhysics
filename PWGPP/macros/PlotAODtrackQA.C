@@ -53,7 +53,15 @@ void PlotAODtrackQA(TString filename="AnalysisResults.root", TString suffix="QA"
   
   TFile* f=new TFile(filename.Data());
   TDirectoryFile* df=(TDirectoryFile*)f->Get("CheckAODTracks");
+  if(!df){
+    printf("Directory CheckESDTracks not found in file %s\n",filename.Data());
+    return;
+  }
   TList* l=(TList*)df->Get(Form("clistCheckAODTracks%s",suffix.Data()));
+  if(!l){
+    printf("TList clistCheckAODTracks%s not found in file %s\n",suffix.Data(),filename.Data());
+    return;    
+  }
 
   TH3F* hEtaPhiPtTPCsel=(TH3F*)l->FindObject("hEtaPhiPtTPCsel");
   TH3F* hEtaPhiPtTPCselITSref=(TH3F*)l->FindObject("hEtaPhiPtTPCselITSref");
