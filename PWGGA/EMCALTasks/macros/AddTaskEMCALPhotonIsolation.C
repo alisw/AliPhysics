@@ -174,7 +174,8 @@ AliAnalysisTaskEMCALPhotonIsolation* AddTaskEMCALPhotonIsolation(
   gROOT->LoadMacro(configFilePath.Data());
   Printf("Path of config file: %s\n",configFilePath.Data());
 
-  // Set histrogram bins and ranges (for now, only concerning phi)
+  // Set histrogram bins and ranges
+  task->GetHistogramRangesAndBinning()->SetHistoEtaRangeAndNBins(-0.7, 0.7, 96);                                                 // 2 SM = 96 cells in eta
   if(period.Contains("10")){
     task->GetHistogramRangesAndBinning()->SetHistoPhiRangeAndNBins(80.*TMath::DegToRad(), 120.*TMath::DegToRad(), 48);           // 2*2 SM = 48 cells in phi
   }
