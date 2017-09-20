@@ -65,7 +65,6 @@ AliJFFlucAnalysis::AliJFFlucAnalysis()
 	fh_vn(),
 	fh_vn_vn(),
 	fh_cn_4c(),
-	fh_cn_cn_4c(),
 	fh_cn_2c(),
 	fh_cn_cn_2c(),
 	fh_cn_2c_eta10(),
@@ -116,7 +115,6 @@ AliJFFlucAnalysis::AliJFFlucAnalysis(const char *name)
 	fh_vn(),
 	fh_vn_vn(),
 	fh_cn_4c(),
-	fh_cn_cn_4c(),
 	fh_cn_2c(),
 	fh_cn_cn_2c(),
 	fh_cn_2c_eta10(),
@@ -185,7 +183,6 @@ AliJFFlucAnalysis::AliJFFlucAnalysis(const AliJFFlucAnalysis& a):
 	fh_vn(a.fh_vn),
 	fh_vn_vn(a.fh_vn_vn),
 	fh_cn_4c(a.fh_cn_4c),
-	fh_cn_cn_4c(a.fh_cn_cn_4c),
 	fh_cn_2c(a.fh_cn_2c),
 	fh_cn_cn_2c(a.fh_cn_cn_2c),
 	fh_cn_2c_eta10(a.fh_cn_2c_eta10),
@@ -292,12 +289,6 @@ void AliJFFlucAnalysis::UserCreateOutputObjects(){
 	fh_cn_4c
 		<< TH1D("hcn_4c","hcn_4c", 1024, -1.5, 1.5)
 		<< fBin_h << fBin_k
-		<< fHistCentBin
-		<< "END";
-	fh_cn_cn_4c
-		<< TH1D("hcn_cn_4c", "hcn_cn_4c", 1024, -1.5, 1.5)
-		<< fBin_h << fBin_k
-		<< fBin_hh << fBin_kk
 		<< fHistCentBin
 		<< "END";
 	fh_cn_2c
@@ -419,8 +410,8 @@ void AliJFFlucAnalysis::UserExec(Option_t *) {
 	Double_t Eta_config[kNSub][2];
 	Eta_config[kSubA][kMin] = fEta_min;  // 0.4 min for SubA
 	Eta_config[kSubA][kMax] = fEta_max;  // 0.8 max for SubA
-	Eta_config[kSubB][kMin] = -1*fEta_max; // -0.8  min for SubB
-	Eta_config[kSubB][kMax] = -1*fEta_min; // -0.4  max for SubB
+	Eta_config[kSubB][kMin] = -fEta_max; // -0.8  min for SubB
+	Eta_config[kSubB][kMax] = -fEta_min; // -0.4  max for SubB
 
 	// use complex variable instead of doulbe Qn //
 	TComplex QnA[kNH];
@@ -447,15 +438,22 @@ void AliJFFlucAnalysis::UserExec(Option_t *) {
 	// use k=0 for check v2, v3 only
 	Double_t vn2[kNH][nKL];
 	Double_t vn2_vn2[kNH][nKL][kNH][nKL];
+
+	TComplex corr[kNH][nKL];
+
+	for(int ih=2; ih<kNH; ih++){
+		corr[ih][1] = QnA[ih]*QnB_star[ih];
+		for(int ik=2; ik<nKL; ik++)
+			corr[ih][ik] = TComplex::Power(QnA[ih]*QnB_star[ih],ik);
+	}
 	
 	for(int ih=2; ih<kNH; ih++){
 		for(int ik=1; ik<nKL; ik++){ // 2k(0) =1, 2k(1) =2, 2k(2)=4....
-			vn2[ih][ik] = TComplex::Power(QnA[ih]*QnB_star[ih],ik).Re();
+			vn2[ih][ik] = corr[ih][ik].Re();
 			fh_vn[ih][ik][fCBin]->Fill( vn2[ih][ik] , ebe_2p_weight ); // Fill hvn2
-			
 			for( int ihh=2; ihh<kNH; ihh++){
 				for(int ikk=1; ikk<nKL; ikk++){
-					vn2_vn2[ih][ik][ihh][ikk] = (TComplex::Power( QnA[ih]*QnB_star[ih],ik)*TComplex::Power(QnA[ihh]*QnB_star[ihh],ikk) ).Re();
+					vn2_vn2[ih][ik][ihh][ikk] = (corr[ih][ik]*corr[ihh][ikk]).Re();//(TComplex::Power( QnA[ih]*QnB_star[ih],ik)*TComplex::Power(QnA[ihh]*QnB_star[ihh],ikk) ).Re();
 					fh_vn_vn[ih][ik][ihh][ikk][fCBin]->Fill( vn2_vn2[ih][ik][ihh][ikk], ebe_4p_weight ) ; // Fill hvn_vn
 				}
 			}
@@ -521,6 +519,58 @@ void AliJFFlucAnalysis::UserExec(Option_t *) {
 	fh_correlator[17][fCBin]->Fill( V8V2starV3star_2.Re() );
 	fh_correlator[18][fCBin]->Fill( V8V2star_4.Re() );
 
+	CalculateQvectorsQC();
+
+	//cumulants (no mixed harmonics)
+	TComplex four[kNH];
+	TComplex two[kNH];
+	TComplex two_eta10[kNH];
+
+	TComplex M = Q(0,1);
+	Double_t qcn4 = (M*(M-TComplex(1,0))*(M-TComplex(2,0))*(M-TComplex(3,0)));
+	Double_t qcn = (M*(M-TComplex(1,0))).Re();
+	Double_t qcn_10 = (QvectorQCeta10[0][kSubA]*QvectorQCeta10[0][kSubB]).Re();
+	Double_t qw1_4 = 1.0, qw1 = 1.0, qw1_10 = 1.0, qw2_10 = 1.0;
+	if(IsEbEWeighted == kTRUE){
+		qw1_4 = qcn4;
+		qw1 = qcn;
+		qw1_10 = qcn_10;
+		qw2_10 = qcn_10*((QvectorQCeta10[0][kSubA]-1)*(QvectorQCeta10[0][kSubB]-1)).Re();
+	}
+
+	TComplex corr10[kNH][nKL];
+
+	for(int ih=2; ih < kNH; ih++){
+		four[ih] = ((Q(ih,1)*Q(ih,1)*Q(-ih,1)*Q(-ih,1)+Q(2*ih,1)*Q(-2*ih,1)-TComplex(2,0)*(Q(2*ih,1)*Q(-ih,1)*Q(-ih,1)).Re())
+			-2.0*(2.0*(M-TComplex(2,0))*(Q(ih,1)*Q(-ih,1))-M*(M-TComplex(3,0))))/qcn4;
+		two[ih] = (Q(ih,1)*Q(-ih,1)-M)/(M*(M-TComplex(1,0)));
+		two_eta10[ih] = (QvectorQCeta10[ih][kSubA]*TComplex::Conjugate(QvectorQCeta10[ih][kSubB])) / qcn_10;
+
+		corr[ih][1] = two[ih];
+		corr10[ih][1] = two_eta10[ih];
+		for(int ik=2; ik < nKL; ik++){
+			corr[ih][ik] = TComplex::Power(two[ih],ik);
+			corr10[ih][ik] = TComplex::Power(two_eta10[ih],ik);
+		}
+	}
+
+	for(int ih=2; ih < kNH; ih++){
+		for(int ik=1; ik<nKL; ik++){
+			Double_t cn = TComplex::Power(four[ih],ik).Re();
+			fh_cn_4c[ih][ik][fCBin]->Fill(cn,qw1_4);
+			fh_cn_2c[ih][ik][fCBin]->Fill(corr[ih][ik].Re(),qw1);
+			fh_cn_2c_eta10[ih][ik][fCBin]->Fill(corr10[ih][ik].Re(),qw1_10);
+
+			for( int ihh=2; ihh<kNH; ihh++){
+				for(int ikk=1; ikk<nKL; ikk++){
+					Double_t cn_cn = (corr[ih][ik]*corr[ihh][ikk]).Re();//(TComplex::Power(two[ih],ik)*TComplex::Power(two[ihh],ikk)).Re();
+					fh_cn_cn_2c[ih][ik][ihh][ikk][fCBin]->Fill(cn_cn,qw1_4);
+					cn_cn = (corr10[ih][ik]*corr10[ihh][ikk]).Re();//(TComplex::Power(two[ih],ik)*TComplex::Power(two[ihh],ikk)).Re();//(TComplex::Power(two_eta10[ih],ik)*TComplex::Power(two_eta10[ihh],ikk)).Re();
+					fh_cn_cn_2c_eta10[ih][ik][ihh][ikk][fCBin]->Fill(cn_cn,qw2_10);
+				}
+			}
+		}
+	}
 
 	if(IsSCptdep == kTRUE){
 		const int SCNH = 9; // 0, 1, 2(v2), 3(v3), 4(v4), 5(v5)
@@ -585,35 +635,17 @@ void AliJFFlucAnalysis::UserExec(Option_t *) {
 	}//pt dep done
 
 	if(IsSCwithQC==kTRUE){
-		// (a) calculate QC q-vecotr
-		// (b) calculate 4p correaltion
-		// (c) calculate 2p correaltion
-		// (d) calculate 2p corrleaion with |dEta|>1.0 (for normalized SC)
-
-		CalculateQvectorsQC();
-	
-		//cumulants (no mixed harmonics)
-		TComplex four[kNH];
-		TComplex two[kNH];
-		TComplex two_eta10[kNH];
-
 		//cumulants (with mixed harmonics)
 		Double_t QC_4p_value[kNH][kNH];
 		Double_t QC_2p_value[kNH];
 
-		Double_t event_weight_four = 1.0, event_weight_four2 = 1.0;
-		Double_t event_weight_two = 1.0, event_weight_two2 = 1.0;
-		Double_t event_weight_two_eta10 = 1.0, event_weight_two_eta10_2 = 1.0;
+		Double_t event_weight_four = 1.0;
+		Double_t event_weight_two = 1.0;
+		Double_t event_weight_two_eta10 = 1.0;
 		if(IsEbEWeighted == kTRUE){
 			event_weight_four = Four(0,0,0,0).Re();
 			event_weight_two = Two(0,0).Re();
-			event_weight_two_eta10 = (QvectorQCeta10[0][1][kSubA]*QvectorQCeta10[0][1][kSubB]).Re();
-			//event_weight_four2 = (Four(0,0,0,0)*Four(0,0,0,0)).Re();
-			//event_weight_two2 = (Two(0,0)*Two(0,0)).Re();
-			//event_weight_two_eta10_2 = (QvectorQCeta10[0][1][kSubA]*QvectorQCeta10[0][1][kSubB]*QvectorQCeta10[0][1][kSubA]*QvectorQCeta10[0][1][kSubB]).Re();
-			event_weight_four2 = event_weight_four*event_weight_four;
-			event_weight_two2 = event_weight_two*event_weight_two;
-			event_weight_two_eta10_2 = event_weight_two_eta10*event_weight_two_eta10;
+			event_weight_two_eta10 = (QvectorQCeta10[0][kSubA]*QvectorQCeta10[0][kSubB]).Re();
 		}
 
 		for(int ih=2; ih < kNH; ih++){
@@ -623,50 +655,22 @@ void AliJFFlucAnalysis::UserExec(Option_t *) {
 				fh_SC_with_QC_4corr[ih][ihh][fCBin]->Fill( scfour.Re(), event_weight_four );
 				QC_4p_value[ih][ihh] = scfour.Re();
 			}
-		}
-		//(c)
-		for(int ih=2; ih < kNH; ih++){
-			four[ih] = Four( ih, ih, -ih, -ih ) / Four(0,0,0,0).Re();
+
 			// Finally we want 2p corr as like
 			// 1/( M*(M-1) ) * [ QQ* - M ]
 			// two(2,2) = Q2 Q2* - Q0 = Q2Q2* - M
 			// two(0,0) = Q0 Q0* - Q0 = M^2 - M
-			two[ih] = Two(ih, -ih) / Two(0,0).Re();
-			fh_SC_with_QC_2corr[ih][fCBin]->Fill( two[ih].Re(), event_weight_two );
-			QC_2p_value[ih] = two[ih].Re();
+			//two[ih] = Two(ih, -ih) / Two(0,0).Re();
+			TComplex sctwo = Two(ih, -ih) / Two(0,0).Re();
+			fh_SC_with_QC_2corr[ih][fCBin]->Fill( sctwo.Re(), event_weight_two );
+			QC_2p_value[ih] = sctwo.Re();
 			// fill single vn  with QC without EtaGap as method 2
-			fSingleVn[ih][2] = TMath::Sqrt(two[ih].Re() );
-		}
-		//(d)
-		for(int ih=2; ih < kNH; ih++){
-			two_eta10[ih] = (QvectorQCeta10[ih][1][kSubA]*TComplex::Conjugate(QvectorQCeta10[ih][1][kSubB])) / (QvectorQCeta10[0][1][kSubA]*QvectorQCeta10[0][1][kSubB]).Re();
-							// is same as divided by event_weight.(number of comniations)
-			fh_SC_with_QC_2corr_eta10[ih][fCBin]->Fill( two_eta10[ih].Re(), event_weight_two_eta10 );
+			fSingleVn[ih][2] = TMath::Sqrt(sctwo.Re());
+			
+			TComplex sctwo10 = (QvectorQCeta10[ih][kSubA]*TComplex::Conjugate(QvectorQCeta10[ih][kSubB])) / (QvectorQCeta10[0][kSubA]*QvectorQCeta10[0][kSubB]).Re();
+			fh_SC_with_QC_2corr_eta10[ih][fCBin]->Fill( sctwo10.Re(), event_weight_two_eta10 );
 			// fill single vn with QC method with Eta Gap as method 1
-			fSingleVn[ih][1] = TMath::Sqrt(two_eta10[ih].Re() );
-
-		}
-
-		for(int ih=2; ih<kNH; ih++){
-			for(int ik=1; ik<nKL; ik++){ // 2k(0) =1, 2k(1) =2, 2k(2)=4....
-				Double_t cn = TComplex::Power(four[ih],ik).Re();
-				fh_cn_4c[ih][ik][fCBin]->Fill(cn, event_weight_four);
-				cn = TComplex::Power(two[ih],ik).Re();
-				fh_cn_2c[ih][ik][fCBin]->Fill(cn, event_weight_two);
-				cn = TComplex::Power(two_eta10[ih],ik).Re();
-				fh_cn_2c_eta10[ih][ik][fCBin]->Fill(cn, event_weight_two_eta10 );
-
-				for( int ihh=2; ihh<kNH; ihh++){
-					for(int ikk=1; ikk<nKL; ikk++){
-						Double_t cn_cn = (TComplex::Power(four[ih],ik)*TComplex::Power(four[ihh],ikk)).Re();
-						fh_cn_cn_4c[ih][ik][ihh][ikk][fCBin]->Fill(cn_cn, event_weight_four2);
-						cn_cn = (TComplex::Power(two[ih],ik)*TComplex::Power(two[ihh],ikk)).Re();
-						fh_cn_cn_2c[ih][ik][ihh][ikk][fCBin]->Fill(cn_cn, event_weight_two2);
-						cn_cn = (TComplex::Power(two_eta10[ih],ik)*TComplex::Power(two_eta10[ihh],ikk)).Re();
-						fh_cn_cn_2c_eta10[ih][ik][ihh][ikk][fCBin]->Fill(cn_cn, event_weight_two_eta10_2);
-					}
-				}
-			}
+			fSingleVn[ih][1] = TMath::Sqrt(sctwo10.Re());
 		}
 		
 		//Check evt-by-evt SP/QC ratio. (term-by-term)
@@ -874,12 +878,10 @@ void AliJFFlucAnalysis::CalculateQvectorsQC(){
 	// calcualte Q-vector for QC method ( no subgroup )
 	//init
 	for(int ih=0; ih<kNH; ih++){
-		for(int ik=0; ik<nKL; ik++){
-			QvectorQC[ih][ik] = TComplex(0, 0);
-			for(int isub=0; isub<2; isub++){
-				QvectorQCeta10[ih][ik][isub] = TComplex(0, 0);
-			}
-		} // for max power
+		QvectorQC[ih] = TComplex(0, 0);
+		for(int isub=0; isub<2; isub++){
+			QvectorQCeta10[ih][isub] = TComplex(0, 0);
+		}
 	} // for max harmonics
 	//Calculate Q-vector with particle loop
 	Long64_t ntracks = fInputList->GetEntriesFast(); // all tracks from Task input
@@ -900,14 +902,14 @@ void AliJFFlucAnalysis::CalculateQvectorsQC(){
 
 		for(int ih=0; ih<kNH; ih++){
 			for(int ik=0; ik<nKL; ik++){
-				QvectorQC[ih][ik] += TComplex( TMath::Cos(ih*phi), TMath::Sin(ih*phi) );
+				QvectorQC[ih] += TComplex( TMath::Cos(ih*phi), TMath::Sin(ih*phi) );
 				// this is not working (there are no eta gap for +0.6, +0.61 in this way..
 				// fix this as like SP -> 2 sub event //
 				if( TMath::Abs(eta) > 0.5 ){  // this is for Noramlized SC ( denominator need eta gap )
 					int isub = 0;
 					if( eta > 0 )
 						isub = 1; // what about eta=0?
-					QvectorQCeta10[ih][ik][isub] += TComplex( TMath::Cos(ih*phi), TMath::Sin(ih*phi) );
+					QvectorQCeta10[ih][isub] += TComplex( TMath::Cos(ih*phi), TMath::Sin(ih*phi) );
 				}
 			}
 		}
@@ -930,8 +932,8 @@ TComplex AliJFFlucAnalysis::Q(int n, int p){
 	// Retrun QvectorQC
 	// Q{-n, p} = Q{n, p}*
 	if(n >= 0)
-		return QvectorQC[n][p];
-	return TComplex::Conjugate( QvectorQC[-n][p] );
+		return QvectorQC[n];//[p];
+	return TComplex::Conjugate( QvectorQC[-n] );//[p] );
 }
 //________________________________________________________________________
 TComplex AliJFFlucAnalysis::Two(int n1, int n2 ){
