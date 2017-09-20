@@ -1387,7 +1387,7 @@ TList * AliAnaPi0::GetCreateOutputObjects()
     
     if(fFillOriginHisto)
     {
-      fhMCPi0PtOrigin     = new TH2F("hMCPi0PtOrigin","Reconstructed pair from generated #pi^{0} #it{p}_{T} vs origin",nptbins,ptmin,ptmax,15,0,15) ;
+      fhMCPi0PtOrigin     = new TH2F("hMCPi0PtOrigin","Reconstructed pair from generated #pi^{0} #it{p}_{T} vs origin",nptbins,ptmin,ptmax,16,0,16) ;
       fhMCPi0PtOrigin->SetXTitle("#it{p}_{T} (GeV/#it{c})");
       fhMCPi0PtOrigin->SetYTitle("Origin");
       fhMCPi0PtOrigin->GetYaxis()->SetBinLabel(1 ,"Status 21");
@@ -1404,6 +1404,7 @@ TList * AliAnaPi0::GetCreateOutputObjects()
       fhMCPi0PtOrigin->GetYaxis()->SetBinLabel(12 ,"K+-");
       fhMCPi0PtOrigin->GetYaxis()->SetBinLabel(13 ,"K*");
       fhMCPi0PtOrigin->GetYaxis()->SetBinLabel(14 ,"#Lambda");
+      fhMCPi0PtOrigin->GetYaxis()->SetBinLabel(15 ,"hadron int.");
       outputContainer->Add(fhMCPi0PtOrigin) ;
       
       fhMCNotResonancePi0PtOrigin     = new TH2F("hMCNotResonancePi0PtOrigin","Reconstructed pair from generated #pi^{0} #it{p}_{T} vs origin",nptbins,ptmin,ptmax,11,0,11) ;
@@ -3162,6 +3163,7 @@ void AliAnaPi0::FillMCVersusRecDataHistograms(Int_t ancLabel , Int_t ancPDG,
   Int_t mompdg    = -1;
   Int_t momstatus = -1;
   Int_t status    = -1;
+  Int_t uniqueID  = -1;
   Float_t prodR = -1;
   Int_t mcIndex = -1;
   Float_t ptPrim = fMCPrimMesonMom.Pt();
@@ -3261,14 +3263,15 @@ void AliAnaPi0::FillMCVersusRecDataHistograms(Int_t ancLabel , Int_t ancPDG,
             AliVParticle* ancestor = GetMC()->GetTrack(ancLabel);
             status   = ancestor->MCStatusCode();
             momindex = ancestor->GetMother();
-            
+	    uniqueID = ancestor->GetUniqueID();
+
             Bool_t momOK = kFALSE;
             if(momindex >= 0) 
             {
               AliVParticle* mother = GetMC()->GetTrack(momindex);
               mompdg    = TMath::Abs(mother->PdgCode());
               momstatus = mother->MCStatusCode();
-              prodR = TMath::Sqrt(mother->Xv()*mother->Xv()+mother->Yv()*mother->Yv());
+	      prodR = TMath::Sqrt(mother->Xv()*mother->Xv()+mother->Yv()*mother->Yv());
               //prodR = mother->R();
               //uniqueId = mother->GetUniqueID();
               momOK = kTRUE;
@@ -3281,8 +3284,11 @@ void AliAnaPi0::FillMCVersusRecDataHistograms(Int_t ancLabel , Int_t ancPDG,
               
               fhMCPi0ProdVertex->Fill(pt, prodR , GetEventWeight()*weightPt);
               fhMCPi0PtStatus  ->Fill(pt, status, GetEventWeight()*weightPt);
-              
-              if     (momstatus  == 21) {
+
+	      if(uniqueID==13 && mompdg!=130 && mompdg!=310 && TMath::Abs(mompdg)!=3122 && TMath::Abs(mompdg)!=321) {
+		fhMCPi0PtOrigin->Fill(pt, 14.5, GetEventWeight()*weightPt);//hadronic interaction
+	      }
+	      else if     (momstatus  == 21) {
                 fhMCPi0PtOrigin->Fill(pt, 0.5, GetEventWeight()*weightPt);//parton (empty for py8)
                 fhMCPi0Radius[0]->Fill(pt,prodR,GetEventWeight()*weightPt);
               }
@@ -3320,7 +3326,7 @@ void AliAnaPi0::FillMCVersusRecDataHistograms(Int_t ancLabel , Int_t ancPDG,
                 fhMCPi0PtOrigin->Fill(pt, 10.5, GetEventWeight()*weightPt);//k0L
                 fhMCPi0Radius[6]->Fill(pt,prodR,GetEventWeight()*weightPt);
               }
-	      else if(mompdg==3122) {
+	      else if(TMath::Abs(mompdg)==3122) {
 		fhMCPi0PtOrigin->Fill(pt, 13.5, GetEventWeight()*weightPt);//lambda 
 		fhMCPi0Radius[3]->Fill(pt,prodR,GetEventWeight()*weightPt);
 	      }
