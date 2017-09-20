@@ -75,8 +75,15 @@ void PlotESDtrackQA(TString filename="QAresults.root", TString suffix="QA", Int_
 
   TFile* f=new TFile(filename.Data());
   TDirectoryFile* df=(TDirectoryFile*)f->Get("CheckESDTracks");
+  if(!df){
+    printf("Directory CheckESDTracks not found in file %s\n",filename.Data());
+    return;
+  }
   TList* l=(TList*)df->Get(Form("clistCheckESDTracks%s",suffix.Data()));
-
+  if(!l){
+    printf("TList clistCheckESDTracks%s not found in file %s\n",suffix.Data(),filename.Data());
+    return;    
+  }
   TH3F* hEtaPhiPtTPCsel=(TH3F*)l->FindObject("hEtaPhiPtTPCsel");
   TH3F* hEtaPhiPtTPCselITSref=(TH3F*)l->FindObject("hEtaPhiPtTPCselITSref");
   TH3F* hEtaPhiPtTPCselSPDany=(TH3F*)l->FindObject("hEtaPhiPtTPCselSPDany");
