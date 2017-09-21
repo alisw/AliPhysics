@@ -71,6 +71,7 @@ class AliClusterContainer : public AliEmcalContainer {
   void                        SetIncludePHOSonly(Bool_t b)                 { fIncludePHOSonly = b   ; }
   void                        SetPhosMinNcells(Int_t n)                    { fPhosMinNcells = n; }
   void                        SetPhosMinM02(Double_t m)                    { fPhosMinM02 = m; }
+  void 						 SetEmcalM02Range(Double_t min, Double_t max) { fEmcalMinM02 = min; fEmcalMaxM02 = max; }
   void                        SetArray(const AliVEvent * event);
   void                        SetClusUserDefEnergyCut(Int_t t, Double_t cut);
   Double_t                    GetClusUserDefEnergyCut(Int_t t) const;
@@ -119,13 +120,15 @@ class AliClusterContainer : public AliEmcalContainer {
   Bool_t           fIncludePHOSonly;            ///< flag to accept only PHOS clusters (and reject EMCal clusters)
   Int_t            fPhosMinNcells;              ///< min number of phos cells per cluster
   Double_t         fPhosMinM02;                 ///< min value of M02 for phos clusters
+  Double_t		   fEmcalMinM02;				   ///< min value of M02 for EMCAL clusters
+  Double_t 		   fEmcalMaxM02;				   ///< max value of M02 for EMCAL clusters
 
  private:
   AliClusterContainer(const AliClusterContainer& obj); // copy constructor
   AliClusterContainer& operator=(const AliClusterContainer& other); // assignment
 
   /// \cond CLASSIMP
-  ClassDef(AliClusterContainer,9);
+  ClassDef(AliClusterContainer,10);
   /// \endcond
 };
 
