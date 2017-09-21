@@ -9,7 +9,7 @@
 /// The main output is stored in a THnSparse histogram or in a TTree.
 ///
 /// \author Salvatore Aiola <salvatore.aiola@cern.ch>, Yale University
-/// \date June 9, 2016
+/// \date September 21, 20167
 
 #ifndef ALIANALYSISTASKDMESONJETSDETECTORRESPONSE_H
 #define ALIANALYSISTASKDMESONJETSDETECTORRESPONSE_H
@@ -29,6 +29,7 @@
 * provided "as is" without express or implied warranty.                  *
 **************************************************************************/
 
+#include <vector>
 #include "AliAnalysisTaskDmesonJets.h"
 
 class AliAnalysisTaskDmesonJetsDetectorResponse : public AliAnalysisTaskDmesonJets
@@ -134,7 +135,12 @@ class AliAnalysisTaskDmesonJetsDetectorResponse : public AliAnalysisTaskDmesonJe
     void AssignDataSlot(Int_t n) { fDataSlotNumber = n; }
     Int_t GetDataSlotNumber() const { return fDataSlotNumber; }
 
-    friend bool        operator==(const ResponseEngine& lhs, const ResponseEngine& rhs) { return (lhs.fCandidateType == rhs.fCandidateType);}
+    friend bool        operator< (const ResponseEngine& lhs, const ResponseEngine& rhs);
+    friend inline bool operator> (const ResponseEngine& lhs, const ResponseEngine& rhs){ return rhs < lhs    ; }
+    friend inline bool operator<=(const ResponseEngine& lhs, const ResponseEngine& rhs){ return !(lhs > rhs) ; }
+    friend inline bool operator>=(const ResponseEngine& lhs, const ResponseEngine& rhs){ return !(lhs < rhs) ; }
+
+    friend bool        operator==(const ResponseEngine& lhs, const ResponseEngine& rhs);
     friend inline bool operator!=(const ResponseEngine& lhs, const ResponseEngine& rhs) { return !(lhs == rhs); }
 
   protected:
@@ -179,7 +185,7 @@ class AliAnalysisTaskDmesonJetsDetectorResponse : public AliAnalysisTaskDmesonJe
 
   Int_t PostDataFromResponseEngine(const ResponseEngine& eng);
 
-  std::map<ECandidateType_t, ResponseEngine>  fResponseEngines           ; //!<! Response engines
+  std::vector<ResponseEngine>  fResponseEngines           ; //!<! Response engines
 
  private:
 

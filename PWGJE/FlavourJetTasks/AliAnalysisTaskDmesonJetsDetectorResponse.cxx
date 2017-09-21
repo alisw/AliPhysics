@@ -157,13 +157,28 @@ AliAnalysisTaskDmesonJetsDetectorResponse::ResponseEngine& AliAnalysisTaskDmeson
   return *this;
 }
 
+bool operator<(const AliAnalysisTaskDmesonJetsDetectorResponse::ResponseEngine& lhs, const AliAnalysisTaskDmesonJetsDetectorResponse::ResponseEngine& rhs)
+{
+  if (lhs.fRecontructed && rhs.fRecontructed) return (*(lhs.fRecontructed) < *(rhs.fRecontructed));
+  if (!lhs.fRecontructed && rhs.fRecontructed) return true;
+  return false;
+}
+
+
+bool operator==(const AliAnalysisTaskDmesonJetsDetectorResponse::ResponseEngine& lhs, const AliAnalysisTaskDmesonJetsDetectorResponse::ResponseEngine& rhs)
+{
+  if (lhs.fRecontructed && rhs.fRecontructed) return (*(lhs.fRecontructed) == *(rhs.fRecontructed));
+  if (!lhs.fRecontructed && !rhs.fRecontructed) return true;
+  return false;
+}
+
 /// Checks if the response engine is properly set up. Otherwise inhibit the engine.
 ///
 /// \param kTRUE if successful
 Bool_t AliAnalysisTaskDmesonJetsDetectorResponse::ResponseEngine::CheckInit()
 {
   fInhibit = (fRecontructed == 0 || fGenerated == 0);
-  fName = fRecontructed->GetCandidateName();
+  fName = fRecontructed->GetName();
   return !fInhibit;
 }
 
@@ -232,14 +247,14 @@ TTree* AliAnalysisTaskDmesonJetsDetectorResponse::ResponseEngine::BuildTree(cons
 /// \return Always kTRUE.
 Bool_t AliAnalysisTaskDmesonJetsDetectorResponse::ResponseEngine::FillTree(Bool_t applyKinCuts)
 {
-  fRecontructed->FillQA(applyKinCuts);
-  fGenerated->FillQA(applyKinCuts);
-
   std::map<int, AliDmesonJetInfo>& recoDmesons = fRecontructed->GetDmesons();
   std::map<int, AliDmesonJetInfo>& truthDmesons = fGenerated->GetDmesons();
 
   // Loop over reconstructed D meson and look for their generated counterparts
   for (auto& dmeson_reco : recoDmesons) {
+    // TODO: consider adding a control histogram
+    if (dmeson_reco.second.fMCLabel < 0) continue; // it should never happen
+
     // Reset D meson and jet tree branches
     fCurrentDmeson->Reset();
     for (UInt_t ij = 0; ij < fRecontructed->GetJetDefinitions().size(); ij++) {
@@ -265,23 +280,26 @@ Bool_t AliAnalysisTaskDmesonJetsDetectorResponse::ResponseEngine::FillTree(Bool_
     }
 
     // Look for the generated D meson counterpart
-    if (dmeson_reco.second.fMCLabel >= 0) {
-      std::map<int, AliDmesonJetInfo>::iterator it = truthDmesons.find(dmeson_reco.second.fMCLabel);
-      if (it != truthDmesons.end()) {
-        std::pair<const int, AliDmesonJetInfo>& dmeson_truth = (*it);
-        // Flag the generated D meson as reconstructed
-        dmeson_truth.second.fReconstructed = kTRUE;
-        // Copy the generated D meson information in the tree branch
-        fCurrentDmeson->SetGenerated((*it).second);
+    std::map<int, AliDmesonJetInfo>::iterator it = truthDmesons.find(dmeson_reco.second.fMCLabel);
+    if (it != truthDmesons.end()) {
+      std::pair<const int, AliDmesonJetInfo>& dmeson_truth = (*it);
+      // Flag the generated D meson as reconstructed
+      dmeson_truth.second.fReconstructed = kTRUE;
+      // Copy the generated D meson information in the tree branch
+      fCurrentDmeson->SetGenerated((*it).second);
 
-        // Copy the reconstructed jet information in the tree branch
-        for (UInt_t ij = 0; ij < fGenerated->GetJetDefinitions().size(); ij++) {
-          AliJetInfo* jet = dmeson_truth.second.GetJet(fGenerated->GetJetDefinitions()[ij].GetName());
-          if (!jet) continue;
-          if (!applyKinCuts || fGenerated->GetJetDefinitions()[ij].IsJetInAcceptance(*jet)) accGenJets++;
-          fCurrentJetInfoTruth[ij]->Set(dmeson_truth.second, fGenerated->GetJetDefinitions()[ij].GetName());
-        }
+      // Copy the generated jet information in the tree branch
+      for (UInt_t ij = 0; ij < fGenerated->GetJetDefinitions().size(); ij++) {
+        AliJetInfo* jet = dmeson_truth.second.GetJet(fGenerated->GetJetDefinitions()[ij].GetName());
+        if (!jet) continue;
+        if (!applyKinCuts || fGenerated->GetJetDefinitions()[ij].IsJetInAcceptance(*jet)) accGenJets++;
+        fCurrentJetInfoTruth[ij]->Set(dmeson_truth.second, fGenerated->GetJetDefinitions()[ij].GetName());
       }
+    }
+    else {
+      // TODO: consider adding a control histogram
+      // This should happen only in exceptional circumstances, when the reconstructed D meson is outside the acceptance considered for generated D mesons (+/- 1.5 in eta)
+      continue;
     }
 
     // Fill the tree with the current D meson
@@ -294,28 +312,31 @@ Bool_t AliAnalysisTaskDmesonJetsDetectorResponse::ResponseEngine::FillTree(Bool_
 
   // Loop over generated D meson that were not reconstructed
   for (auto& dmeson_truth : truthDmesons) {
-    // Reset D meson tree branch
-    fCurrentDmeson->Reset();
     // Skip if the generated D meson was reconstructed
     if (dmeson_truth.second.fReconstructed) continue;
+
+    // Reset D meson tree branch
+    fCurrentDmeson->Reset();
+
     // Copy the generated D meson information in the tree branch
     fCurrentDmeson->SetGenerated(dmeson_truth.second);
 
-    Int_t accRecJets = 0;
-    Int_t accGenJets = 0;
-
     // Copy the reconstructed jet information in the tree branch
+    Int_t accGenJets = 0;
     for (UInt_t ij = 0; ij < fGenerated->GetJetDefinitions().size(); ij++) {
       fCurrentJetInfoTruth[ij]->Reset();
       AliJetInfo* jet = dmeson_truth.second.GetJet(fGenerated->GetJetDefinitions()[ij].GetName());
       if (!jet) continue;
-      if (applyKinCuts && !fGenerated->GetJetDefinitions()[ij].IsJetInAcceptance(*jet)) continue;
+      if (!applyKinCuts || fGenerated->GetJetDefinitions()[ij].IsJetInAcceptance(*jet)) accGenJets++;
       fCurrentJetInfoTruth[ij]->Set(dmeson_truth.second, fGenerated->GetJetDefinitions()[ij].GetName());
-      accGenJets++;
     }
 
     // Fill the tree with the current D meson
-    if (accRecJets > 0 || accGenJets > 0) fTree->Fill();
+    if (accGenJets > 0) fTree->Fill();
+  }
+
+  for (auto& dmeson_truth : truthDmesons) {
+    dmeson_truth.second.fReconstructed = kFALSE;
   }
 
   return kTRUE;
@@ -354,35 +375,36 @@ void AliAnalysisTaskDmesonJetsDetectorResponse::UserCreateOutputObjects()
 
   for (auto &param : fAnalysisEngines) {
     if (param.IsInhibit()) continue;
-    if (param.GetMCMode() != kSignalOnly && param.GetMCMode() != kMCTruth) continue;
+    if (param.GetMCMode() != kSignalOnly) continue;
 
-    std::map<ECandidateType_t, ResponseEngine>::iterator it = fResponseEngines.find(param.GetCandidateType());
+    ResponseEngine resp(param.GetCandidateType());
+    resp.SetReconstructedAnalysisEngine(&param);
+    fResponseEngines.push_back(resp);
+  }
 
-    if (it == fResponseEngines.end()) {
-      it = (fResponseEngines.insert(std::pair<const ECandidateType_t, ResponseEngine>(param.GetCandidateType(), ResponseEngine(param.GetCandidateType())))).first;
-    }
+  for (auto &resp : fResponseEngines) {
+    for (auto &param : fAnalysisEngines) {
+      if (param.IsInhibit()) continue;
+      if (param.GetMCMode() != kMCTruth) continue;
+      if (resp.fRecontructed->GetCandidateType() != param.GetCandidateType()) continue;
 
-    if (param.GetMCMode() == kMCTruth) {
-      (*it).second.SetGeneratedAnalysisEngine(&param);
-    }
-    else {
-      (*it).second.SetReconstructedAnalysisEngine(&param);
+      resp.SetGeneratedAnalysisEngine(&param);
     }
   }
 
   Int_t treeSlot = 0;
 
   for (auto &resp : fResponseEngines) {
-    if (!resp.second.CheckInit()) continue;
+    if (!resp.CheckInit()) continue;
 
-    resp.second.BuildTree(GetName());
+    resp.BuildTree(GetName());
     if (treeSlot < fNOutputTrees) {
-      resp.second.AssignDataSlot(treeSlot+2);
+      resp.AssignDataSlot(treeSlot+2);
       treeSlot++;
-      PostDataFromResponseEngine(resp.second);
+      PostDataFromResponseEngine(resp);
     }
     else {
-      AliError(Form("Number of data output slots %d not sufficient. Tree of response engine %s will not be posted!", fNOutputTrees, resp.second.GetName()));
+      AliError(Form("Number of data output slots %d not sufficient. Tree of response engine %s will not be posted!", fNOutputTrees, resp.GetName()));
     }
   }
 }
@@ -408,11 +430,17 @@ Bool_t AliAnalysisTaskDmesonJetsDetectorResponse::Run()
 Bool_t AliAnalysisTaskDmesonJetsDetectorResponse::FillHistograms()
 {
   for (auto &resp : fResponseEngines) {
-    if (resp.second.IsInhibit()) continue;
+    if (resp.IsInhibit()) continue;
 
-    resp.second.FillTree(fApplyKinematicCuts);
+    resp.FillTree(fApplyKinematicCuts);
 
-    PostDataFromResponseEngine(resp.second);
+    PostDataFromResponseEngine(resp);
+  }
+
+  for (auto &ana : fAnalysisEngines) {
+    if (ana.IsInhibit()) continue;
+
+    ana.FillQA(fApplyKinematicCuts);
   }
 
   if (fMCContainer) FillPartonLevelHistograms();
