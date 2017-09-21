@@ -33,6 +33,7 @@
 #include <fastjet/PseudoJet.hh>
 #include <fastjet/JetDefinition.hh>
 
+class THistManager;
 class TTree;
 class AliClusterContainer;
 class AliEmcalJet;
@@ -194,9 +195,12 @@ protected:
 
 	void FillTree(double r, double weight, const AliEmcalJet *datajet, const AliEmcalJet *mcjet, AliSoftDropParameters *dataSoftdrop, AliSoftDropParameters *mcsoftdrop, AliNSubjettinessParameters *dataSubjettiness, AliNSubjettinessParameters *mcSubjettiness, Double_t *angularity, Double_t *ptd, Double_t *rhoparameters);
 
+	void DoConstituentQA(const AliEmcalJet *jet, const AliParticleContainer *tracks, const AliClusterContainer *clusters);
+
 private:
 	TTree                       *fJetSubstructureTree;        //!<! Tree with jet substructure information
 	Double_t                     fJetTreeData[kTNVar];        ///< Variable storage for the jet tree
+	THistManager                *fQAHistos;                   //!<! QA histos
 
 	Double_t                     fSDZCut;                     ///< Soft drop z-cut
 	Double_t                     fSDBetaCut;                  ///< Soft drop beta cut
