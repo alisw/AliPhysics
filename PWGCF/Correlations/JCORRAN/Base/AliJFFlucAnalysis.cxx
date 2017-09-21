@@ -535,7 +535,7 @@ void AliJFFlucAnalysis::UserExec(Option_t *) {
 		qw1_4 = qcn4;
 		qw1 = qcn;
 		qw1_10 = qcn_10;
-		qw2_10 = qcn_10*((QvectorQCeta10[0][kSubA]-1)*(QvectorQCeta10[0][kSubB]-1)).Re();
+		qw2_10 = qcn_10*((QvectorQCeta10[0][kSubA]-TComplex(1,0))*(QvectorQCeta10[0][kSubB]-TComplex(1,0))).Re();
 	}
 
 	TComplex corr10[kNH][nKL];
