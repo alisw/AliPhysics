@@ -39,6 +39,7 @@ include_directories(${AliPhysics_SOURCE_DIR}/PWGGA/PHOSTasks
                     ${AliPhysics_SOURCE_DIR}/PWGGA/PHOSTasks/PHOS_TriggerQA
                     ${AliPhysics_SOURCE_DIR}/PWGGA/PHOSTasks/PHOS_pp_8TeV_2012
                     ${AliPhysics_SOURCE_DIR}/PWGGA/PHOSTasks/PHOS_Run2
+                    ${AliPhysics_SOURCE_DIR}/PWGGA/PHOSTasks/PHOS_LHC16_pp
                     ${AliPhysics_SOURCE_DIR}/PWGGA/PHOSTasks/UserTasks
                     ${AliPhysics_SOURCE_DIR}/PWG/muon
                     ${AliPhysics_SOURCE_DIR}/PWG/FLOW/Base
@@ -76,6 +77,21 @@ set(SRCS
     PHOS_EpRatio/AliAnalysisTaskEpRatio.cxx
     PHOS_GAFlow/AliAnalysisTaskThermalGAFlow.cxx
     PHOS_GAFlow/AliAnalysisTaskThermalGAFlowMC.cxx
+    PHOS_LHC16_pp/AliAnalysisTaskPP.cxx
+    PHOS_LHC16_pp/ClusterCuts.cxx
+    PHOS_LHC16_pp/DetectorHistogram.cxx
+    PHOS_LHC16_pp/MesonSelectionMC.cxx
+    PHOS_LHC16_pp/MixingSample.cxx
+    PHOS_LHC16_pp/NonlinearityScanSelection.cxx
+    PHOS_LHC16_pp/ParticlesHistogram.cxx
+    PHOS_LHC16_pp/PhotonSelection.cxx
+    PHOS_LHC16_pp/PhotonSpectrumSelection.cxx
+    PHOS_LHC16_pp/PhotonTimecutStudySelection.cxx
+    PHOS_LHC16_pp/PhysPhotonSelection.cxx
+    PHOS_LHC16_pp/PhysPhotonSelectionMC.cxx
+    PHOS_LHC16_pp/PythiaInfoSelection.cxx
+    PHOS_LHC16_pp/QualityPhotonSelection.cxx
+    PHOS_LHC16_pp/TagAndProbeSelection.cxx
     PHOS_NeutralMeson/AliAnalysisTaskPHOSNeutralMeson.cxx
     PHOS_PbPb/AliAnalysisTaskPi0Flow.cxx
     PHOS_PbPb/AliAnalysisTaskGammaFlow.cxx
@@ -193,6 +209,7 @@ install(DIRECTORY PHOS_Run2embedding/macros DESTINATION PWGGA//PHOSTasks/PHOS_Ru
 install(DIRECTORY CPVperf/macros            DESTINATION PWGGA/PHOSTasks/CPVperf)
 install(DIRECTORY PHOS_pp_8TeV_2012/macros  DESTINATION PWGGA/PHOSTasks/PHOS_pp_8TeV_2012)
 install(DIRECTORY PHOS_Run2/macros          DESTINATION PWGGA/PHOSTasks/PHOS_Run2)
+install(DIRECTORY PHOS_LHC16_pp/macros      DESTINATION PWGGA/PHOSTasks/PHOS_LHC16_pp)
 install(FILES PHOS_pp_pi0/AddTaskPHOSpp.C   DESTINATION PWGGA/PHOSTasks/PHOS_pp_pi0)
 install(FILES PHOS_pp_pi0/AddTaskPHOSpi0Conversion.C DESTINATION PWGGA/PHOSTasks/PHOS_pp_pi0)
 install(FILES PHOSCalib/AddTaskEmeanCalib.C DESTINATION PWGGA/PHOSTasks/PHOSCalib)
