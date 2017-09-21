@@ -84,6 +84,8 @@ class AliEventCuts : public TList {
     void   SetupRun2pp();
     void   SetupRun2pA(int iPeriod);
 
+    static bool GoodPrimaryAODVertex(AliVEvent *ev);
+
     /// While the general philosophy here is to avoid setters and getters
     /// for some variables (like the max z vertex position) standard the cuts usually follow some patterns
     /// (e.g. the max vertex z position is always symmetric wrt the nominal beam collision point) thus
