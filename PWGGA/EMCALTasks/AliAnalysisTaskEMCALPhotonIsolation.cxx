@@ -666,7 +666,7 @@ void AliAnalysisTaskEMCALPhotonIsolation::UserCreateOutputObjects(){
         fM02->Sumw2();
         fOutput->Add(fM02);
 
-	fEtaPhiClusVsM02 = new TH3F ("hEtaVsPhiVsM02", "#eta vs. #varphi vs. #sigma_{long}^{2} for clusters with 14 < #it{E}_{T} < 16 GeV", netabins, etamin, etamax, nphibins, phimin, phimax, 100, 0., 2.);
+	fEtaPhiClusVsM02 = new TH3F ("hEtaVsPhiVsM02", "#eta vs. #varphi vs. #sigma_{long}^{2} for clusters with 14 < #it{E}_{T} < 16 GeV", netabins, etamin, etamax, nphibins, phimin, phimax, 75, 0., 1.5);
         fEtaPhiClusVsM02->Sumw2();
 	fOutput->Add(fEtaPhiClusVsM02);
         
@@ -896,7 +896,7 @@ void AliAnalysisTaskEMCALPhotonIsolation::UserCreateOutputObjects(){
       fTestLocalIndexE->Sumw2();
       fOutput->Add(fTestLocalIndexE);
     
-      fTestEtaPhiCone= new TH2D("hTestEtatPhiCone","Test eta phi neutral clusters candidates",200,0,TMath::TwoPi(),netabins, etamin, etamax);
+      fTestEtaPhiCone= new TH2D("hTestEtatPhiCone","Test eta phi neutral clusters candidates",100,0,TMath::TwoPi(),netabins, etamin, etamax);
       fTestEtaPhiCone->SetXTitle("phi");
       fTestEtaPhiCone->SetYTitle("eta");
       fTestEtaPhiCone->Sumw2();
@@ -973,11 +973,11 @@ void AliAnalysisTaskEMCALPhotonIsolation::UserCreateOutputObjects(){
   fPtaftNLM->Sumw2();
   fOutput->Add(fPtaftNLM);
   
-  fClusEtVsEtaPhiMatched = new TH3F ("hEtaVsPhiVsEt_Matched", "#eta vs. #varphi vs. #it{E}_{T} for TRACK-MATCHED clusters", netabins, etamin, etamax, nphibins, phimin, phimax, 100, 0., 100.);
+  fClusEtVsEtaPhiMatched = new TH3F ("hEtaVsPhiVsEt_Matched", "#eta vs. #varphi vs. #it{E}_{T} for TRACK-MATCHED clusters", netabins, etamin, etamax, nphibins, phimin, phimax, 60, 0., 60.);
   fClusEtVsEtaPhiMatched->Sumw2();
   fOutput->Add(fClusEtVsEtaPhiMatched);
 
-  fClusEtVsEtaPhiUnmatched = new TH3F ("hEtaVsPhiVsEt_Unmatched", "#eta vs. #varphi vs. #it{E}_{T} for NON TRACK-MATCHED clusters", netabins, etamin, etamax, nphibins, phimin, phimax, 100, 0., 100.);
+  fClusEtVsEtaPhiUnmatched = new TH3F ("hEtaVsPhiVsEt_Unmatched", "#eta vs. #varphi vs. #it{E}_{T} for NON TRACK-MATCHED clusters", netabins, etamin, etamax, nphibins, phimin, phimax, 60, 0., 60.);
   fClusEtVsEtaPhiUnmatched->Sumw2();
   fOutput->Add(fClusEtVsEtaPhiUnmatched);
 
@@ -1028,11 +1028,11 @@ void AliAnalysisTaskEMCALPhotonIsolation::UserCreateOutputObjects(){
     fOutput->Add(fEtaTracksVSclustPt);
   }
 
-  fTracksPhiVsPt = new TH2F("hTracksPhiVsPt", "Tracks #varphi vs #it{p}_{T}", 100, 0., 100., 200, 0., TMath::TwoPi());
+  fTracksPhiVsPt = new TH2F("hTracksPhiVsPt", "Tracks #varphi vs #it{p}_{T}", 40, 0., 40., 100, 0., TMath::TwoPi());
   fTracksPhiVsPt->Sumw2();
   fOutput->Add(fTracksPhiVsPt);
   
-  fTracksEtaVsPt = new TH2F("hTracksEtaVsPt", "Tracks #eta vs #it{p}_{T}", 100, 0., 100., 90, -0.9, 0.9);
+  fTracksEtaVsPt = new TH2F("hTracksEtaVsPt", "Tracks #eta vs #it{p}_{T}", 40, 0., 40., 90, -0.9, 0.9);
   fTracksEtaVsPt->Sumw2();
   fOutput->Add(fTracksEtaVsPt);
 
