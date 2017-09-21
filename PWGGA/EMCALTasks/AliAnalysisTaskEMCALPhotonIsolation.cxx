@@ -941,14 +941,16 @@ void AliAnalysisTaskEMCALPhotonIsolation::UserCreateOutputObjects(){
   fEvents->Sumw2();
   fOutput->Add(fEvents);
   
-  fSPDclustVsSPDtracklets = new TH2F("hSPDclustVsSPDtracklets","Number of SPD clusters VS number of SPD tracklets in events with |Zvtx| < 10",100,0,200,250,0,1000);
-  fSPDclustVsSPDtracklets->Sumw2();
-  fOutput->Add(fSPDclustVsSPDtracklets);
+  if(!fLightOutput){
+    fSPDclustVsSPDtracklets = new TH2F("hSPDclustVsSPDtracklets","Number of SPD clusters VS number of SPD tracklets in events with |Zvtx| < 10",100,0,200,250,0,1000);
+    fSPDclustVsSPDtracklets->Sumw2();
+    fOutput->Add(fSPDclustVsSPDtracklets);
   
-  fnPUevents = new TH1F("hnPUevents","Number of pileUp events rejected", 2,0.,1.);
-  fnPUevents->Sumw2();
-  fOutput->Add(fnPUevents);
-  
+    fnPUevents = new TH1F("hnPUevents","Number of pileUp events rejected", 2,0.,1.);
+    fnPUevents->Sumw2();
+    fOutput->Add(fnPUevents);
+  }  
+
   fClusEvsClusT = new TH2D("fClustTimeVSClustEn", "Distribution of cluster Time as a function of the cluster Energy", 70, 0., 70., 120, -40., 80.);
   fClusEvsClusT->SetXTitle("E_{T,clus} (GeV/c)    ");
   fClusEvsClusT->SetYTitle("Time_{clus} (ns)    ");
@@ -1016,13 +1018,15 @@ void AliAnalysisTaskEMCALPhotonIsolation::UserCreateOutputObjects(){
   fPtTracksVSpTNC->Sumw2();
   fOutput->Add(fPtTracksVSpTNC);
   
-  fPhiTracksVSclustPt  = new TH2F("hPhiTracks_vs_clustPT","Tracks phi distr vs pT Candidate",70, 0.,70., 200,0.,TMath::TwoPi());
-  fPhiTracksVSclustPt->Sumw2();
-  fOutput->Add(fPhiTracksVSclustPt);
+  if(!fLightOutput){ 
+    fPhiTracksVSclustPt  = new TH2F("hPhiTracks_vs_clustPT","Tracks phi distr vs pT Candidate",70, 0.,70., 200,0.,TMath::TwoPi());
+    fPhiTracksVSclustPt->Sumw2();
+    fOutput->Add(fPhiTracksVSclustPt);
   
-  fEtaTracksVSclustPt  = new TH2F("hEtaTracks_vs_clustPT","Tracks eta distr vs pT Candidate",70, 0.,70., 90,-0.9,0.9);
-  fEtaTracksVSclustPt->Sumw2();
-  fOutput->Add(fEtaTracksVSclustPt);
+    fEtaTracksVSclustPt  = new TH2F("hEtaTracks_vs_clustPT","Tracks eta distr vs pT Candidate",70, 0.,70., 90,-0.9,0.9);
+    fEtaTracksVSclustPt->Sumw2();
+    fOutput->Add(fEtaTracksVSclustPt);
+  }
 
   fTracksPhiVsPt = new TH2F("hTracksPhiVsPt", "Tracks #varphi vs #it{p}_{T}", 100, 0., 100., 200, 0., TMath::TwoPi());
   fTracksPhiVsPt->Sumw2();
@@ -1256,11 +1260,13 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::Run()
   if(fVertex[2]>10. || fVertex[2]<-10.)
     return kFALSE;
   
-  fSPDclustVsSPDtracklets->Fill(fVevent->GetMultiplicity()->GetNumberOfTracklets(),(fVevent->GetNumberOfITSClusters(0)+fVevent->GetNumberOfITSClusters(1)));
+  if(!fLightOutput){
+    fSPDclustVsSPDtracklets->Fill(fVevent->GetMultiplicity()->GetNumberOfTracklets(),(fVevent->GetNumberOfITSClusters(0)+fVevent->GetNumberOfITSClusters(1)));
   
-  if(fRejectPileUpEvent && fVevent->IsPileupFromSPD(fNContrToPileUp, 0.8,3.,2.,5.)){
-    fnPUevents->Fill(0);
-    return kFALSE;
+    if(fRejectPileUpEvent && fVevent->IsPileupFromSPD(fNContrToPileUp, 0.8,3.,2.,5.)){
+      fnPUevents->Fill(0);
+      return kFALSE;
+    }
   }
   
   AliClusterContainer* clusters = GetClusterContainer(0);
@@ -1378,8 +1384,10 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::Run()
           return kFALSE;
         }
 	fPtTracksVSpTNC->Fill(vecCOI.Pt(),tr->Pt());
-	fPhiTracksVSclustPt->Fill(vecCOI.Pt(),tr->Phi());
-	fEtaTracksVSclustPt->Fill(vecCOI.Pt(),tr->Eta());
+	if(!fLightOutput){ 
+	  fPhiTracksVSclustPt->Fill(vecCOI.Pt(),tr->Phi());
+	  fEtaTracksVSclustPt->Fill(vecCOI.Pt(),tr->Eta());
+	}
 	fTracksPhiVsPt->Fill(tr->Pt(),tr->Phi());
 	fTracksEtaVsPt->Fill(tr->Pt(),tr->Eta());
       }
@@ -1420,8 +1428,10 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::Run()
             return kFALSE;
           }
 	  fPtTracksVSpTNC->Fill(vecCOI.Pt(),tr->Pt());
-	  fPhiTracksVSclustPt->Fill(vecCOI.Pt(),tr->Phi());
-	  fEtaTracksVSclustPt->Fill(vecCOI.Pt(),tr->Eta());
+	  if(!fLightOutput){ 
+	    fPhiTracksVSclustPt->Fill(vecCOI.Pt(),tr->Phi());
+	    fEtaTracksVSclustPt->Fill(vecCOI.Pt(),tr->Eta());
+	  }
 	  fTracksPhiVsPt->Fill(tr->Pt(),tr->Phi());
 	  fTracksEtaVsPt->Fill(tr->Pt(),tr->Eta());
         }
