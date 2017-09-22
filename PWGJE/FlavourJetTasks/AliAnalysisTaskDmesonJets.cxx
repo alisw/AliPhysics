@@ -1072,31 +1072,45 @@ std::vector<AliAnalysisTaskDmesonJets::AliHFJetDefinition>::iterator AliAnalysis
   return it;
 }
 
+/// Set the jet phi range of all jet definitions
+/// \param min Lower bound
+/// \param max Upper bound
 void AliAnalysisTaskDmesonJets::AnalysisEngine::SetJetPhiRange(Double_t min, Double_t max)
 {
   for (auto &jetdef : fJetDefinitions) jetdef.SetJetPhiRange(min, max);
 }
 
+/// Set the jet eta range of all jet definitions
+/// \param min Lower bound
+/// \param max Upper bound
 void AliAnalysisTaskDmesonJets::AnalysisEngine::SetJetEtaRange(Double_t min, Double_t max)
 {
   for (auto &jetdef : fJetDefinitions) jetdef.SetJetEtaRange(min, max);
 }
 
+/// Set the jet pt range of all jet definitions
+/// \param min Lower bound
+/// \param max Upper bound
 void AliAnalysisTaskDmesonJets::AnalysisEngine::SetJetPtRange(Double_t min, Double_t max)
 {
   for (auto &jetdef : fJetDefinitions) jetdef.SetJetPtRange(min, max);
 }
 
+/// Set the jet leading charged constituent pt range of all jet definitions
+/// \param min Lower bound
+/// \param max Upper bound
 void AliAnalysisTaskDmesonJets::AnalysisEngine::SetChargedPtRange(Double_t min, Double_t max)
 {
   for (auto &jetdef : fJetDefinitions) jetdef.SetChargedPtRange(min, max);
 }
 
+/// Set the jet leading neutral constituent pt range range of all jet definitions
+/// \param min Lower bound
+/// \param max Upper bound
 void AliAnalysisTaskDmesonJets::AnalysisEngine::SetNeutralPtRange(Double_t min, Double_t max)
 {
   for (auto &jetdef : fJetDefinitions) jetdef.SetNeutralPtRange(min, max);
 }
-
 
 /// Compares 2 analysis engines.
 /// The ordering is based on the candidate type first and then on the MC mode.
