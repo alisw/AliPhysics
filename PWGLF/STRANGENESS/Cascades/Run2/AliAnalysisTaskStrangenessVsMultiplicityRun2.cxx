@@ -320,6 +320,7 @@ fTreeCascVarOOBPileupFlag(kFALSE),
 fTreeCascVarBachIsKink(kFALSE),
 fTreeCascVarPosIsKink(kFALSE),
 fTreeCascVarNegIsKink(kFALSE),
+fkSelectCharge(0),
 //Histos
 fHistEventCounter(0),
 fHistCentrality(0)
@@ -524,6 +525,7 @@ fTreeCascVarOOBPileupFlag(kFALSE),
 fTreeCascVarBachIsKink(kFALSE),
 fTreeCascVarPosIsKink(kFALSE),
 fTreeCascVarNegIsKink(kFALSE),
+fkSelectCharge(0),
 //Histos
 fHistEventCounter(0),
 fHistCentrality(0)
@@ -2153,6 +2155,8 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::UserExec(Option_t *)
         //Lowest pT cutoff (this is all background anyways)
         if( fTreeCascVarPt < fMinPtToSave ) lKeepCascade = kFALSE;
         if( fTreeCascVarPt > fMaxPtToSave ) lKeepCascade = kFALSE;
+        
+        if( fkSelectCharge !=0 && fkSelectCharge !=  fTreeCascVarCharge ) lKeepCascade = kFALSE; 
 
         if( fkSaveCascadeTree && lKeepCascade &&
            (

@@ -99,6 +99,10 @@ public:
         fkDoExtraEvSels = lUseExtraEvSels;
     }
 //---------------------------------------------------------------------------------------
+    void SetSelectCharge ( Int_t lCharge = -1) {
+        fkSelectCharge = lCharge;
+    }
+//---------------------------------------------------------------------------------------
     //Task Configuration: Skip Event Selections after trigger (VZERO test)
     void SetDownScaleV0 ( Bool_t lOpt = kTRUE, Float_t lVal = 0.001) {
         fkDownScaleV0 = lOpt;
@@ -469,6 +473,9 @@ private:
     Bool_t fTreeCascVarBachIsKink;
     Bool_t fTreeCascVarPosIsKink;
     Bool_t fTreeCascVarNegIsKink;
+    
+    //Select charge (testing / checks)
+    Int_t fkSelectCharge; 
 
 //===========================================================================================
 //   Histograms
