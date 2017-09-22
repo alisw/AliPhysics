@@ -176,6 +176,8 @@ class AliEventCuts : public TList {
 
     /// The following pointers are used to avoid the intense usage of FindObject. The objects pointed are owned by (TList*)this.
     TH1D* fCutStats;               //!<! Cuts statistics: every column keeps track of how many times a cut is passed independently from the other cuts.
+    TH1D* fCutStatsAfterTrigger;   //!<! Cuts statistics: every column keeps track of how many times a cut is passed for events that pass the trigger selection
+    TH1D* fCutStatsAfterMultSelection; //!<! Cuts statistics: every column keeps track of how many times a cut is passed for events that pass the multiplicity selection
     TH1D* fNormalisationHist;      //!<! Cuts statistics: every column keeps track of how many times a cut is passed once that all the other are passed.
     TH1D* fVtz[2];                 //!<! Vertex z distribution
     TH1D* fDeltaTrackSPDvtz[2];    //!<! Difference between the vertex computed using SPD and the track vertex

@@ -90,6 +90,8 @@ AliEventCuts::AliEventCuts(bool saveplots) : TList(),
   fOverrideAutoTriggerMask{false},
   fOverrideAutoPileUpCuts{false},
   fCutStats{nullptr},
+  fCutStatsAfterTrigger{nullptr},
+  fCutStatsAfterMultSelection{nullptr},
   fNormalisationHist{nullptr},
   fVtz{nullptr},
   fDeltaTrackSPDvtz{nullptr},
@@ -250,8 +252,15 @@ bool AliEventCuts::AcceptEvent(AliVEvent *ev) {
   }
   if (fCutStats) {
     for (int iCut = kNoCuts; iCut <= kAllCuts; ++iCut) {
-      if (TESTBIT(fFlag,iCut))
+      if (TESTBIT(fFlag,iCut)) {
         fCutStats->Fill(iCut);
+        if (TESTBIT(fFlag,kTrigger)) {
+          fCutStatsAfterTrigger->Fill(iCut);
+        }
+        if (TESTBIT(fFlag,kMultiplicity)) {
+          fCutStatsAfterMultSelection->Fill(iCut);
+        }
+      }
     }
   }
 
@@ -326,10 +335,18 @@ void AliEventCuts::AddQAplotsToList(TList *qaList, bool addCorrelationPlots) {
   };
 
   fCutStats = new TH1D("fCutStats",";;Number of selected events",bin_labels.size(),-.5,bin_labels.size() - 0.5);
+  fCutStatsAfterTrigger = new TH1D("fCutStatsAfterTrigger",";;Number of selected events",bin_labels.size(),-.5,bin_labels.size() - 0.5);
+  fCutStatsAfterMultSelection = new TH1D("fCutStatsAfterMultSelection",";;Number of selected events",bin_labels.size(),-.5,bin_labels.size() - 0.5);
   fNormalisationHist = new TH1D("fNormalisationHist",";;Number of selected events",norm_labels.size(),-.5,norm_labels.size() - 0.5);
-  for (int iB = 1; iB <= bin_labels.size(); ++iB) fCutStats->GetXaxis()->SetBinLabel(iB,bin_labels[iB-1].data());
+  for (int iB = 1; iB <= bin_labels.size(); ++iB) {
+    fCutStats->GetXaxis()->SetBinLabel(iB,bin_labels[iB-1].data());
+    fCutStatsAfterTrigger->GetXaxis()->SetBinLabel(iB,bin_labels[iB-1].data());
+    fCutStatsAfterMultSelection->GetXaxis()->SetBinLabel(iB,bin_labels[iB-1].data());
+  }
   for (int iB = 1; iB <= norm_labels.size(); ++iB) fNormalisationHist->GetXaxis()->SetBinLabel(iB,norm_labels[iB-1].data());
   qaList->Add(fCutStats);
+  qaList->Add(fCutStatsAfterTrigger);
+  qaList->Add(fCutStatsAfterMultSelection);
   qaList->Add(fNormalisationHist);
 
   string titles[2] = {"before event cuts","after event cuts"};
