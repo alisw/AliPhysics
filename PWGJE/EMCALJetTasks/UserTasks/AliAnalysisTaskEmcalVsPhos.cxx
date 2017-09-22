@@ -79,6 +79,8 @@ AliAnalysisTaskEmcalVsPhos::AliAnalysisTaskEmcalVsPhos() :
   fCentHistBins(0),
   fNPtHistBins(0),
   fPtHistBins(0),
+  fNM02HistBins(0),
+  fM02HistBins(0),
   fUseAliEventCuts(kTRUE),
   fEventCuts(0),
   fEventCutList(0),
@@ -116,6 +118,8 @@ AliAnalysisTaskEmcalVsPhos::AliAnalysisTaskEmcalVsPhos(const char *name) :
   fCentHistBins(0),
   fNPtHistBins(0),
   fPtHistBins(0),
+  fNM02HistBins(0),
+  fM02HistBins(0),
   fUseAliEventCuts(kTRUE),
   fEventCuts(0),
   fEventCutList(0),
@@ -155,6 +159,14 @@ void AliAnalysisTaskEmcalVsPhos::GenerateHistoBins()
   GenerateFixedBinArray(10, 10, 20, fPtHistBins+37);
   GenerateFixedBinArray(15, 20, 50, fPtHistBins+47);
   GenerateFixedBinArray(20, 50, 150, fPtHistBins+62);
+  
+  fNM02HistBins = 81;
+  fM02HistBins = new Double_t[fNM02HistBins+1];
+  GenerateFixedBinArray(35, 0, 0.7, fM02HistBins);
+  GenerateFixedBinArray(6, 0.7, 1., fM02HistBins+35);
+  GenerateFixedBinArray(20, 1., 3., fM02HistBins+41);
+  GenerateFixedBinArray(10, 3., 5., fM02HistBins+61);
+  GenerateFixedBinArray(10, 5., 10., fM02HistBins+71);
 }
 
 /**
@@ -331,10 +343,10 @@ void AliAnalysisTaskEmcalVsPhos::AllocateClusterHistograms()
       dim++;
       
       title[dim] = "M02";
-      nbins[dim] = 50;
-      min[dim] = 0;
-      max[dim] = 5;
-      binEdges[dim] = GenerateFixedBinArray(nbins[dim], min[dim], max[dim]);
+      nbins[dim] = fNM02HistBins;
+      binEdges[dim] = fM02HistBins;
+      min[dim] = fM02HistBins[0];
+      max[dim] = fM02HistBins[fNM02HistBins];
       dim++;
       
       title[dim] = "Ncells";
