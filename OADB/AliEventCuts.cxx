@@ -46,6 +46,7 @@ AliEventCuts::AliEventCuts(bool saveplots) : TList(),
   fMaxDeltaSpdTrackNsigmaSPD{1.e14},
   fMaxDeltaSpdTrackNsigmaTrack{1.e14},
   fMaxResolutionSPDvertex{1.e14f},
+  fCheckAODvertex{true},
   fRejectDAQincomplete{false},
   fRequiredSolenoidPolarity{0},
   fUseMultiplicityDependentPileUpCuts{false},
@@ -89,6 +90,8 @@ AliEventCuts::AliEventCuts(bool saveplots) : TList(),
   fOverrideAutoTriggerMask{false},
   fOverrideAutoPileUpCuts{false},
   fCutStats{nullptr},
+  fCutStatsAfterTrigger{nullptr},
+  fCutStatsAfterMultSelection{nullptr},
   fNormalisationHist{nullptr},
   fVtz{nullptr},
   fDeltaTrackSPDvtz{nullptr},
@@ -150,7 +153,7 @@ bool AliEventCuts::AcceptEvent(AliVEvent *ev) {
   const AliVVertex* vtSPD = ev->GetPrimaryVertexSPD();
   /// On current AODs primary vertex could be from TPC or invalid SPD vertex
   /// The following check should be applied only on AOD.
-  bool goodAODvtx = dynamic_cast<AliAODEvent*>(ev) ? GoodPrimaryAODVertex(ev) : true;
+  bool goodAODvtx = (dynamic_cast<AliAODEvent*>(ev) ? GoodPrimaryAODVertex(ev) : true) || !fCheckAODvertex;
 
   if (vtSPD->GetNContributors() > 0) fFlag |= BIT(kVertexSPD);
   if (vtTrc->GetNContributors() > 1 && goodAODvtx) fFlag |= BIT(kVertexTracks);
@@ -249,8 +252,15 @@ bool AliEventCuts::AcceptEvent(AliVEvent *ev) {
   }
   if (fCutStats) {
     for (int iCut = kNoCuts; iCut <= kAllCuts; ++iCut) {
-      if (TESTBIT(fFlag,iCut))
+      if (TESTBIT(fFlag,iCut)) {
         fCutStats->Fill(iCut);
+        if (TESTBIT(fFlag,kTrigger)) {
+          fCutStatsAfterTrigger->Fill(iCut);
+        }
+        if (TESTBIT(fFlag,kMultiplicity)) {
+          fCutStatsAfterMultSelection->Fill(iCut);
+        }
+      }
     }
   }
 
@@ -324,11 +334,19 @@ void AliEventCuts::AddQAplotsToList(TList *qaList, bool addCorrelationPlots) {
     "Vertex position"
   };
 
-  fCutStats = new TH1I("fCutStats",";;Number of selected events",bin_labels.size(),-.5,bin_labels.size() - 0.5);
-  fNormalisationHist = new TH1I("fNormalisationHist",";;Number of selected events",norm_labels.size(),-.5,norm_labels.size() - 0.5);
-  for (int iB = 1; iB <= bin_labels.size(); ++iB) fCutStats->GetXaxis()->SetBinLabel(iB,bin_labels[iB-1].data());
+  fCutStats = new TH1D("fCutStats",";;Number of selected events",bin_labels.size(),-.5,bin_labels.size() - 0.5);
+  fCutStatsAfterTrigger = new TH1D("fCutStatsAfterTrigger",";;Number of selected events",bin_labels.size(),-.5,bin_labels.size() - 0.5);
+  fCutStatsAfterMultSelection = new TH1D("fCutStatsAfterMultSelection",";;Number of selected events",bin_labels.size(),-.5,bin_labels.size() - 0.5);
+  fNormalisationHist = new TH1D("fNormalisationHist",";;Number of selected events",norm_labels.size(),-.5,norm_labels.size() - 0.5);
+  for (int iB = 1; iB <= bin_labels.size(); ++iB) {
+    fCutStats->GetXaxis()->SetBinLabel(iB,bin_labels[iB-1].data());
+    fCutStatsAfterTrigger->GetXaxis()->SetBinLabel(iB,bin_labels[iB-1].data());
+    fCutStatsAfterMultSelection->GetXaxis()->SetBinLabel(iB,bin_labels[iB-1].data());
+  }
   for (int iB = 1; iB <= norm_labels.size(); ++iB) fNormalisationHist->GetXaxis()->SetBinLabel(iB,norm_labels[iB-1].data());
   qaList->Add(fCutStats);
+  qaList->Add(fCutStatsAfterTrigger);
+  qaList->Add(fCutStatsAfterMultSelection);
   qaList->Add(fNormalisationHist);
 
   string titles[2] = {"before event cuts","after event cuts"};
