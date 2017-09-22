@@ -249,7 +249,7 @@ void AliAnalysisTaskCorPIDTOFQA::UserExec(Option_t *)
 
 
 	
-	Float_t deltat = tof_minus_tpion(track);
+//	Float_t deltat = tof_minus_tpion(track);
 
 	float   mom           = track->P();
 	Short_t charge        = track->Charge();
@@ -327,60 +327,33 @@ void AliAnalysisTaskCorPIDTOFQA::UserExec(Option_t *)
     if (oh)
       oh->SetFillAOD(kFALSE);
 
-      if ((deut_count>=1)  &&  (trig_05_track_count>0)  &&  oh)
+    if ((deut_count>=1)  &&  (trig_05_track_count>0)  &&  oh)
+    {
 //    if ((deut_count >= 1) && oh) {
-      oh->SetFillAOD(kTRUE);
-      AliAODEvent *eout = dynamic_cast<AliAODEvent*>(oh->GetAOD());
-      AliAODEvent *evin = dynamic_cast<AliAODEvent*>(InputEvent());
-      TTree *tout = oh->GetTree();
-      if (tout) {
-	TList *lout = tout->GetUserInfo();
-	if (lout->FindObject("alirootVersion")==0) {
-	  TList *lin = AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()->GetUserInfo();
-	  for (Int_t jj=0;jj<lin->GetEntries()-1;++jj) { 
-	    lout->Add(lin->At(jj)->Clone(lin->At(jj)->GetName()));
-	  }
+	oh->SetFillAOD(kTRUE);
+	AliAODEvent *eout = dynamic_cast<AliAODEvent*>(oh->GetAOD());
+	AliAODEvent *evin = dynamic_cast<AliAODEvent*>(InputEvent());
+	TTree *tout = oh->GetTree();
+	if (tout) {
+	    TList *lout = tout->GetUserInfo();
+	    if (lout->FindObject("alirootVersion")==0) {
+		TList *lin = AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()->GetUserInfo();
+		for (Int_t jj=0;jj<lin->GetEntries()-1;++jj) { 
+		    lout->Add(lin->At(jj)->Clone(lin->At(jj)->GetName()));
+		}
+	    }
 	}
-      }
-
-      if (1) {
-	AliAODHeader *out = (AliAODHeader*)eout->GetHeader();
-	AliAODHeader *in  = (AliAODHeader*)evin->GetHeader();
-	*out = *in;
-      }
-      if (1) {
-	AliTOFHeader *out = const_cast<AliTOFHeader*>(eout->GetTOFHeader());
-	const AliTOFHeader *in  = evin->GetTOFHeader();
-	*out = *in;
-      }
-      if (1) {
-	AliAODVZERO *out = eout->GetVZEROData();
-	AliAODVZERO *in  = evin->GetVZEROData();
-	*out = *in;
-      }
-      if (1) {
-	AliAODTZERO *out = eout->GetTZEROData();
-	AliAODTZERO *in  = evin->GetTZEROData();
-	*out = *in;
-      }
-      if (1) {
-	TClonesArray *out = eout->GetTracks();
-	TClonesArray *in  = evin->GetTracks();
-	new (out) TClonesArray(*in);
-      }
-      if (1) {
-	TClonesArray *out = eout->GetVertices();
-	TClonesArray *in  = evin->GetVertices();
-	new (out) TClonesArray(*in);
-      }
-      if (1) {
-	TClonesArray *out = eout->GetCaloClusters();
-	TClonesArray *in  = evin->GetCaloClusters();
-	new (out) TClonesArray(*in);
-      }
+	
+	if (1) {    AliAODHeader *out = (AliAODHeader*)eout->GetHeader();	                AliAODHeader *in  = (AliAODHeader*)evin->GetHeader();   *out = *in;  	}
+	if (1) {    AliTOFHeader *out = const_cast<AliTOFHeader*>(eout->GetTOFHeader());  const AliTOFHeader *in  = evin->GetTOFHeader();	        *out = *in;	}
+	if (1) {    AliAODVZERO  *out = eout->GetVZEROData();                                   AliAODVZERO  *in  = evin->GetVZEROData();      	        *out = *in;	}
+	if (1) {    AliAODTZERO  *out = eout->GetTZEROData();                                   AliAODTZERO  *in  = evin->GetTZEROData();     	        *out = *in;	}
+	if (1) {    TClonesArray *out = eout->GetTracks();                                      TClonesArray *in  = evin->GetTracks();    	    new (out) TClonesArray(*in);	}
+	if (1) {    TClonesArray *out = eout->GetVertices();                                    TClonesArray *in  = evin->GetVertices();	    new (out) TClonesArray(*in);	}
+	if (1) {    TClonesArray *out = eout->GetCaloClusters();                                TClonesArray *in  = evin->GetCaloClusters();        new (out) TClonesArray(*in);	}
     }
-
-    PostData(1, fOutputList);                           // stream the results the analysis of this event to
+    
+      PostData(1, fOutputList);                           // stream the results the analysis of this event to
                                                         // the output manager which will take care of writing
                                                         // it to a file
 }
