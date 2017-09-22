@@ -30,6 +30,7 @@
 **************************************************************************/
 
 #include <vector>
+#include "THistManager.h"
 #include "AliAnalysisTaskDmesonJets.h"
 
 class AliAnalysisTaskDmesonJetsDetectorResponse : public AliAnalysisTaskDmesonJets
@@ -159,6 +160,8 @@ class AliAnalysisTaskDmesonJetsDetectorResponse : public AliAnalysisTaskDmesonJe
     AnalysisEngine               *fRecontructed        ; //!<! Reconstructed level analysis engine
     AnalysisEngine               *fGenerated           ; //!<! Generated level analysis engine
 
+    THistManager                 *fHistManagerResponse ; //!<! Histogram manager for response
+
     friend class AliAnalysisTaskDmesonJetsDetectorResponse;
 
   private:
@@ -185,6 +188,7 @@ class AliAnalysisTaskDmesonJetsDetectorResponse : public AliAnalysisTaskDmesonJe
 
   Int_t PostDataFromResponseEngine(const ResponseEngine& eng);
 
+  THistManager                 fHistManagerResponse       ; ///<  Histogram manager for response
   std::vector<ResponseEngine>  fResponseEngines           ; //!<! Response engines
 
  private:
@@ -193,7 +197,7 @@ class AliAnalysisTaskDmesonJetsDetectorResponse : public AliAnalysisTaskDmesonJe
   AliAnalysisTaskDmesonJetsDetectorResponse& operator=(const AliAnalysisTaskDmesonJetsDetectorResponse& source);
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskDmesonJetsDetectorResponse, 2);
+  ClassDef(AliAnalysisTaskDmesonJetsDetectorResponse, 3);
   /// \endcond
 };
 

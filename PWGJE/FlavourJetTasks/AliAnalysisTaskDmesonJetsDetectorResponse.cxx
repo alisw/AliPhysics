@@ -104,7 +104,8 @@ AliAnalysisTaskDmesonJetsDetectorResponse::ResponseEngine::ResponseEngine() :
   fCurrentJetInfoTruth(0),
   fDataSlotNumber(-1),
   fRecontructed(0),
-  fGenerated(0)
+  fGenerated(0),
+  fHistManagerResponse(nullptr)
 {
 
 }
@@ -124,7 +125,8 @@ AliAnalysisTaskDmesonJetsDetectorResponse::ResponseEngine::ResponseEngine(ECandi
   fCurrentJetInfoTruth(0),
   fDataSlotNumber(-1),
   fRecontructed(0),
-  fGenerated(0)
+  fGenerated(0),
+  fHistManagerResponse(nullptr)
 {
 
 }
@@ -144,7 +146,8 @@ AliAnalysisTaskDmesonJetsDetectorResponse::ResponseEngine::ResponseEngine(const 
   fCurrentJetInfoTruth(0),
   fDataSlotNumber(source.fDataSlotNumber),
   fRecontructed(source.fRecontructed),
-  fGenerated(source.fGenerated)
+  fGenerated(source.fGenerated),
+  fHistManagerResponse(nullptr)
 {
 }
 
@@ -250,10 +253,20 @@ Bool_t AliAnalysisTaskDmesonJetsDetectorResponse::ResponseEngine::FillTree(Bool_
   std::map<int, AliDmesonJetInfo>& recoDmesons = fRecontructed->GetDmesons();
   std::map<int, AliDmesonJetInfo>& truthDmesons = fGenerated->GetDmesons();
 
+  TString hname;
   // Loop over reconstructed D meson and look for their generated counterparts
   for (auto& dmeson_reco : recoDmesons) {
-    // TODO: consider adding a control histogram
-    if (dmeson_reco.second.fMCLabel < 0) continue; // it should never happen
+    if (dmeson_reco.second.fMCLabel < 0) {
+      hname = TString::Format("%s/fHistGeneratedDMesonNotFoundRecoPt", GetName());
+      fHistManagerResponse->FillTH1(hname, dmeson_reco.second.fD.Pt());
+
+      hname = TString::Format("%s/fHistGeneratedDMesonNotFoundRecoEta", GetName());
+      fHistManagerResponse->FillTH1(hname, dmeson_reco.second.fD.Eta());
+
+      hname = TString::Format("%s/fHistGeneratedDMesonNotFoundRecoPhi", GetName());
+      fHistManagerResponse->FillTH1(hname, dmeson_reco.second.fD.Pt());
+      continue; // it should never happen
+    }
 
     // Reset D meson and jet tree branches
     fCurrentDmeson->Reset();
@@ -297,8 +310,14 @@ Bool_t AliAnalysisTaskDmesonJetsDetectorResponse::ResponseEngine::FillTree(Bool_
       }
     }
     else {
-      // TODO: consider adding a control histogram
-      // This should happen only in exceptional circumstances, when the reconstructed D meson is outside the acceptance considered for generated D mesons (+/- 1.5 in eta)
+      hname = TString::Format("%s/fHistGeneratedDMesonOutsideAccRecoPt", GetName());
+      fHistManagerResponse->FillTH1(hname, dmeson_reco.second.fD.Pt());
+
+      hname = TString::Format("%s/fHistGeneratedDMesonOutsideAccRecoEta", GetName());
+      fHistManagerResponse->FillTH1(hname, dmeson_reco.second.fD.Eta());
+
+      hname = TString::Format("%s/fHistGeneratedDMesonOutsideAccRecoPhi", GetName());
+      fHistManagerResponse->FillTH1(hname, dmeson_reco.second.fD.Pt());
       continue;
     }
 
@@ -351,6 +370,7 @@ ClassImp(AliAnalysisTaskDmesonJetsDetectorResponse);
 /// This is the default constructor, used for ROOT I/O purposes.
 AliAnalysisTaskDmesonJetsDetectorResponse::AliAnalysisTaskDmesonJetsDetectorResponse() :
   AliAnalysisTaskDmesonJets(),
+  fHistManagerResponse(),
   fResponseEngines()
 {
   fOutputType = kNoOutput;
@@ -361,6 +381,7 @@ AliAnalysisTaskDmesonJetsDetectorResponse::AliAnalysisTaskDmesonJetsDetectorResp
 /// \param name Name of the task
 AliAnalysisTaskDmesonJetsDetectorResponse::AliAnalysisTaskDmesonJetsDetectorResponse(const char* name, Int_t nOutputTrees) :
   AliAnalysisTaskDmesonJets(name, nOutputTrees),
+  fHistManagerResponse(TString::Format("%s_QA", name)),
   fResponseEngines()
 {
   fOutputType = kNoOutput;
@@ -394,6 +415,10 @@ void AliAnalysisTaskDmesonJetsDetectorResponse::UserCreateOutputObjects()
 
   Int_t treeSlot = 0;
 
+  TString hname;
+  TString htitle;
+  TH1* h = nullptr;
+
   for (auto &resp : fResponseEngines) {
     if (!resp.CheckInit()) continue;
 
@@ -406,7 +431,37 @@ void AliAnalysisTaskDmesonJetsDetectorResponse::UserCreateOutputObjects()
     else {
       AliError(Form("Number of data output slots %d not sufficient. Tree of response engine %s will not be posted!", fNOutputTrees, resp.GetName()));
     }
+
+    resp.fHistManagerResponse = &fHistManagerResponse;
+
+    hname = TString::Format("%s/fHistGeneratedDMesonNotFoundRecoPt", resp.GetName());
+    htitle = hname + ";#it{p}_{T,D} (GeV/#it{c});counts";
+    h = fHistManagerResponse.CreateTH1(hname, htitle, 300, 0, 150);
+
+    hname = TString::Format("%s/fHistGeneratedDMesonNotFoundRecoEta", resp.GetName());
+    htitle = hname + ";#eta_{D};counts";
+    h = fHistManagerResponse.CreateTH1(hname, htitle, 400, -5, 5);
+
+    hname = TString::Format("%s/fHistGeneratedDMesonNotFoundRecoPhi", resp.GetName());
+    htitle = hname + ";#phi_{D};counts";
+    h = fHistManagerResponse.CreateTH1(hname, htitle, 400, 0, TMath::TwoPi());
+
+    hname = TString::Format("%s/fHistGeneratedDMesonOutsideAccRecoPt", resp.GetName());
+    htitle = hname + ";#it{p}_{T,D} (GeV/#it{c});counts";
+    h = fHistManagerResponse.CreateTH1(hname, htitle, 300, 0, 150);
+
+    hname = TString::Format("%s/fHistGeneratedDMesonOutsideAccRecoEta", resp.GetName());
+    htitle = hname + ";#eta_{D};counts";
+    h = fHistManagerResponse.CreateTH1(hname, htitle, 400, -5, 5);
+
+    hname = TString::Format("%s/fHistGeneratedDMesonOutsideAccRecoPhi", resp.GetName());
+    htitle = hname + ";#phi_{D};counts";
+    h = fHistManagerResponse.CreateTH1(hname, htitle, 400, 0, TMath::TwoPi());
   }
+
+  fOutput->Add(fHistManagerResponse.GetListOfHistograms());
+
+  PostData(1, fOutput);
 }
 
 /// Does some specific initializations for the analysis engines,
