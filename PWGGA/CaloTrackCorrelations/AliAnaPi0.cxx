@@ -116,7 +116,7 @@ fhMCEtaPtTruePtRecRatMassCut(0), fhMCEtaPtTruePtRecDifMassCut(0), fhMCEtaPtRecOp
 fhMCPi0PtOrigin(0),          fhMCEtaPtOrigin(0),
 fhMCNotResonancePi0PtOrigin(0),fhMCPi0PtStatus(0x0),
 fhMCPi0ProdVertex(0),        fhMCEtaProdVertex(0),
-fhPrimPi0ProdVertex(0),      fhPrimEtaProdVertex(0),
+fhPrimPi0ProdVertex(0),      fhPrimEtaProdVertex(0),   fhMCPi0Radius(0), fhMCEtaRadius(0),
 fhReMCFromConversion(0),     fhReMCFromNotConversion(0),   fhReMCFromMixConversion(0),
 fhCosThStarPrimPi0(0),       fhCosThStarPrimEta(0),
 fhEPairDiffTime(0),  
@@ -218,13 +218,6 @@ fhReSecondaryCellOutTimeWindow(0), fhMiSecondaryCellOutTimeWindow(0)
     fhPrimEtaYPerGenerator    [igen] = 0;
   }
 
-  for(Int_t i=0;i<10;i++){
-    fhMCPi0Radius [i] = 0;
-  }
-  for(Int_t i=0;i<6;i++){
-    fhMCEtaRadius [i] = 0;
-  }
-  
   for(Int_t i = 0; i < 17; i++)
   {
     fhMCOrgMass    [i] =0 ;
@@ -1387,7 +1380,7 @@ TList * AliAnaPi0::GetCreateOutputObjects()
     
     if(fFillOriginHisto)
     {
-      fhMCPi0PtOrigin     = new TH2F("hMCPi0PtOrigin","Reconstructed pair from generated #pi^{0} #it{p}_{T} vs origin",nptbins,ptmin,ptmax,16,0,16) ;
+      fhMCPi0PtOrigin     = new TH2F("hMCPi0PtOrigin","Reconstructed pair from generated #pi^{0} #it{p}_{T} vs origin",nptbins,ptmin,ptmax,18,0,18) ;
       fhMCPi0PtOrigin->SetXTitle("#it{p}_{T} (GeV/#it{c})");
       fhMCPi0PtOrigin->SetYTitle("Origin");
       fhMCPi0PtOrigin->GetYaxis()->SetBinLabel(1 ,"Status 21");
@@ -1405,6 +1398,8 @@ TList * AliAnaPi0::GetCreateOutputObjects()
       fhMCPi0PtOrigin->GetYaxis()->SetBinLabel(13 ,"K*");
       fhMCPi0PtOrigin->GetYaxis()->SetBinLabel(14 ,"#Lambda");
       fhMCPi0PtOrigin->GetYaxis()->SetBinLabel(15 ,"hadron int.");
+      fhMCPi0PtOrigin->GetYaxis()->SetBinLabel(16 ,"radius");
+      fhMCPi0PtOrigin->GetYaxis()->SetBinLabel(17 ,"p, n, #pi+-");
       outputContainer->Add(fhMCPi0PtOrigin) ;
       
       fhMCNotResonancePi0PtOrigin     = new TH2F("hMCNotResonancePi0PtOrigin","Reconstructed pair from generated #pi^{0} #it{p}_{T} vs origin",nptbins,ptmin,ptmax,11,0,11) ;
@@ -1452,27 +1447,20 @@ TList * AliAnaPi0::GetCreateOutputObjects()
       fhMCEtaProdVertex->SetYTitle("#it{R} (cm)");
       outputContainer->Add(fhMCEtaProdVertex) ;
 
-      //Production vertex of reconstructed mesons for mother origin
-      TString originTitlePi0[] = {"Status 21","Quark","qq Resonances","Resonances","#rho","#omega","K","Other","#eta","#eta prime"};
-      for (Int_t iorg=0;iorg<10;iorg++) {
-        fhMCPi0Radius[iorg]    = new TH2F
-        (Form("hPrimPi0Radius_%d",iorg),
-         Form("Production radius of reconstructed pair from generated #pi^{0}, origin %s",originTitlePi0[iorg].Data()),
-         200,0,20,1000,0,500) ;
-        fhMCPi0Radius[iorg]->SetYTitle("#it{R} (cm)");
-        fhMCPi0Radius[iorg]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
-        outputContainer->Add(fhMCPi0Radius[iorg]) ;
-      }
-      TString originTitleEta[] = {"Status 21","Quark","qq Resonances","Resonances","Other","#eta prime"};
-      for (Int_t iorg=0;iorg<6;iorg++) {
-        fhMCEtaRadius[iorg]    = new TH2F
-        (Form("hPrimEtaRadius_%d",iorg),
-         Form("Production radius of reconstructed pair from generated #eta, origin %s",originTitleEta[iorg].Data()),
-         200,0,20,1000,0,500) ;
-        fhMCEtaRadius[iorg]->SetYTitle("#it{R} (cm)");
-        fhMCEtaRadius[iorg]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
-        outputContainer->Add(fhMCEtaRadius[iorg]) ;
-      }
+      fhMCPi0Radius = new TH2F("hPrimPi0Radius",
+			       "Production radius of reconstructed pair from generated #pi^{0} corrected by vertex",
+			       200,0,20,5000,0,500) ;
+      fhMCPi0Radius->SetYTitle("#it{R} (cm)");
+      fhMCPi0Radius->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+      outputContainer->Add(fhMCPi0Radius) ;
+      
+      fhMCEtaRadius = new TH2F("hPrimEtaRadius",
+			       "Production radius of reconstructed pair from generated #eta corrected by vertex",
+			       200,0,20,5000,0,500) ;
+      fhMCEtaRadius->SetYTitle("#it{R} (cm)");
+      fhMCEtaRadius->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+      outputContainer->Add(fhMCEtaRadius) ;
+
       
       // Name of found ancestors of the cluster pairs. Check definitions in FillMCVsRecDataHistograms
       TString ancestorTitle[] = {"Photon, conversion","Electron, conversion",
@@ -3165,10 +3153,13 @@ void AliAnaPi0::FillMCVersusRecDataHistograms(Int_t ancLabel , Int_t ancPDG,
   Int_t status    = -1;
   Int_t uniqueID  = -1;
   Float_t prodR = -1;
+  Float_t prodRcorr = -1;
   Int_t mcIndex = -1;
   Float_t ptPrim = fMCPrimMesonMom.Pt();
   Float_t cent   = GetEventCentrality();
-
+  Double_t vertex[3]={0.,0.,0.};
+  GetVertex(vertex);
+  
   if(ancLabel > -1)
   {
     AliDebug(1,Form("Common ancestor label %d, pdg %d, name %s, status %d",
@@ -3272,6 +3263,8 @@ void AliAnaPi0::FillMCVersusRecDataHistograms(Int_t ancLabel , Int_t ancPDG,
               mompdg    = TMath::Abs(mother->PdgCode());
               momstatus = mother->MCStatusCode();
 	      prodR = TMath::Sqrt(mother->Xv()*mother->Xv()+mother->Yv()*mother->Yv());
+	      prodRcorr = TMath::Sqrt((mother->Xv()-vertex[0])*(mother->Xv()-vertex[0]) +
+				      (mother->Yv()-vertex[1])*(mother->Yv()-vertex[1]));
               //prodR = mother->R();
               //uniqueId = mother->GetUniqueID();
               momOK = kTRUE;
@@ -3284,59 +3277,66 @@ void AliAnaPi0::FillMCVersusRecDataHistograms(Int_t ancLabel , Int_t ancPDG,
               
               fhMCPi0ProdVertex->Fill(pt, prodR , GetEventWeight()*weightPt);
               fhMCPi0PtStatus  ->Fill(pt, status, GetEventWeight()*weightPt);
-
-	      if(uniqueID==13 && mompdg!=130 && mompdg!=310 && TMath::Abs(mompdg)!=3122 && TMath::Abs(mompdg)!=321) {
+	      fhMCPi0Radius    ->Fill(pt, prodRcorr,GetEventWeight()*weightPt);
+ 
+	      if((uniqueID==13 && mompdg!=130 && mompdg!=310 && mompdg!=3122 && mompdg!=321)
+		 || mompdg==3212 || mompdg==3222 || mompdg==3112 || mompdg==3322 || mompdg==3212) {
+		//310 - K0S
+		//130 - K0L
+		//3133 - Lambda
+		//321 - K+-
+		//3212 - sigma0
+		//3222,3112 - sigma+-
+		//3322,3312 - cascades
 		fhMCPi0PtOrigin->Fill(pt, 14.5, GetEventWeight()*weightPt);//hadronic interaction
+	      }
+	      else if(mompdg==310) {
+		fhMCPi0PtOrigin->Fill(pt, 6.5, GetEventWeight()*weightPt);//k0S
+	      }
+              else if(mompdg    == 130) {
+                fhMCPi0PtOrigin->Fill(pt, 10.5, GetEventWeight()*weightPt);//k0L
+              }
+	      else if(mompdg==321) {
+		fhMCPi0PtOrigin->Fill(pt, 11.5, GetEventWeight()*weightPt);//k+-
+	      }
+	      else if(mompdg==3122) {
+		fhMCPi0PtOrigin->Fill(pt, 13.5, GetEventWeight()*weightPt);//lambda 
+	      }
+	      else if(prodRcorr>0.1) {//in cm
+		fhMCPi0PtOrigin->Fill(pt, 15.5, GetEventWeight()*weightPt);//radius too large
+	      }
+	      else if(mompdg==2212 || mompdg==2112 || mompdg==211) {
+		fhMCPi0PtOrigin->Fill(pt, 16.5, GetEventWeight()*weightPt);//p,n,pi
 	      }
 	      else if     (momstatus  == 21) {
                 fhMCPi0PtOrigin->Fill(pt, 0.5, GetEventWeight()*weightPt);//parton (empty for py8)
-                fhMCPi0Radius[0]->Fill(pt,prodR,GetEventWeight()*weightPt);
               }
               else if(mompdg     < 22 ) {
                 fhMCPi0PtOrigin->Fill(pt, 1.5, GetEventWeight()*weightPt);//quark
-                fhMCPi0Radius[1]->Fill(pt,prodR,GetEventWeight()*weightPt);
               }
               else if(mompdg     > 2100  && mompdg   < 2210) {
                 fhMCPi0PtOrigin->Fill(pt, 2.5, GetEventWeight()*weightPt);// resonances
-                fhMCPi0Radius[2]->Fill(pt,prodR,GetEventWeight()*weightPt);
               }
               else if(mompdg    == 221) {
                 fhMCPi0PtOrigin->Fill(pt, 8.5, GetEventWeight()*weightPt);//eta
-                fhMCPi0Radius[8]->Fill(pt,prodR,GetEventWeight()*weightPt);
               }
               else if(mompdg    == 331) {
                 fhMCPi0PtOrigin->Fill(pt, 9.5, GetEventWeight()*weightPt);//eta prime
-                fhMCPi0Radius[9]->Fill(pt,prodR,GetEventWeight()*weightPt);
               }
               else if(mompdg    == 213) {
                 fhMCPi0PtOrigin->Fill(pt, 4.5, GetEventWeight()*weightPt);//rho
-                fhMCPi0Radius[4]->Fill(pt,prodR,GetEventWeight()*weightPt);
               }
               else if(mompdg    == 223) {
                 fhMCPi0PtOrigin->Fill(pt, 5.5, GetEventWeight()*weightPt);//omega
-                fhMCPi0Radius[5]->Fill(pt,prodR,GetEventWeight()*weightPt);
               }
-              else if(mompdg    >= 310   && mompdg    <= 323) {
-                fhMCPi0Radius[6]->Fill(pt,prodR,GetEventWeight()*weightPt);
-		if(mompdg==310) fhMCPi0PtOrigin->Fill(pt, 6.5, GetEventWeight()*weightPt);//k0S
-		else if(TMath::Abs(mompdg)==321) fhMCPi0PtOrigin->Fill(pt, 11.5, GetEventWeight()*weightPt);//k+-
-		else fhMCPi0PtOrigin->Fill(pt, 12.5, GetEventWeight()*weightPt);//k*
+              else if(mompdg    > 310   && mompdg    <= 323) {
+		fhMCPi0PtOrigin->Fill(pt, 12.5, GetEventWeight()*weightPt);//k*
               }
-              else if(mompdg    == 130) {
-                fhMCPi0PtOrigin->Fill(pt, 10.5, GetEventWeight()*weightPt);//k0L
-                fhMCPi0Radius[6]->Fill(pt,prodR,GetEventWeight()*weightPt);
-              }
-	      else if(TMath::Abs(mompdg)==3122) {
-		fhMCPi0PtOrigin->Fill(pt, 13.5, GetEventWeight()*weightPt);//lambda 
-		fhMCPi0Radius[3]->Fill(pt,prodR,GetEventWeight()*weightPt);
-	      }
               else if(momstatus == 11 || momstatus  == 12 ) {
                 fhMCPi0PtOrigin->Fill(pt, 3.5, GetEventWeight()*weightPt);//resonances
-                fhMCPi0Radius[3]->Fill(pt,prodR,GetEventWeight()*weightPt);
               }
               else {
                 fhMCPi0PtOrigin->Fill(pt, 7.5, GetEventWeight()*weightPt);//other? py8 resonances?
-                fhMCPi0Radius[7]->Fill(pt,prodR,GetEventWeight()*weightPt);
               }
               
               if(status!=11) // all the time for py8
@@ -3505,38 +3505,36 @@ void AliAnaPi0::FillMCVersusRecDataHistograms(Int_t ancLabel , Int_t ancPDG,
               momstatus = mother->MCStatusCode();
               //prodR = mother->R();
               prodR = TMath::Sqrt(mother->Xv()*mother->Xv()+mother->Yv()*mother->Yv());
+	      prodRcorr = TMath::Sqrt((mother->Xv()-vertex[0])*(mother->Xv()-vertex[0]) +
+				      (mother->Yv()-vertex[1])*(mother->Yv()-vertex[1]));
               momOK = kTRUE;
             }
             
             if(momOK)
             {
               fhMCEtaProdVertex->Fill(pt, prodR, GetEventWeight()*weightPt);
-              
+	      fhMCEtaRadius    ->Fill(pt, prodRcorr, GetEventWeight()*weightPt);
+
+	      
               if     (momstatus == 21 ) { // empty for py8
                 fhMCEtaPtOrigin->Fill(pt, 0.5, GetEventWeight()*weightPt);//parton
-                fhMCEtaRadius[0]->Fill(pt,prodR,GetEventWeight()*weightPt);
               }
               else if(mompdg    < 22  ) {
                 fhMCEtaPtOrigin->Fill(pt, 1.5, GetEventWeight()*weightPt);//quark, include parton for py8
-                fhMCEtaRadius[1]->Fill(pt,prodR,GetEventWeight()*weightPt);
               }
               else if(mompdg    > 2100  && mompdg  < 2210) {
                 fhMCEtaPtOrigin->Fill(pt, 2.5, GetEventWeight()*weightPt);//qq resonances
-                fhMCEtaRadius[2]->Fill(pt,prodR,GetEventWeight()*weightPt);
               }
               else if(mompdg    == 331) {
                 fhMCEtaPtOrigin->Fill(pt, 5.5, GetEventWeight()*weightPt);//eta prime
-                fhMCEtaRadius[5]->Fill(pt,prodR,GetEventWeight()*weightPt);
               }
               else if(momstatus == 11 || momstatus == 12 ) { // empty for py8
                 fhMCEtaPtOrigin->Fill(pt, 3.5, GetEventWeight()*weightPt);//resonances
-                fhMCEtaRadius[3]->Fill(pt,prodR,GetEventWeight()*weightPt);
               }
               else {
                 fhMCEtaPtOrigin->Fill(pt, 4.5, GetEventWeight()*weightPt);//stable, conversions? resonances for py8?
-                fhMCEtaRadius[4]->Fill(pt,prodR,GetEventWeight()*weightPt);
                 //printf("Other Meson pdg %d, Mother %s, pdg %d, status %d\n",pdg, TDatabasePDG::Instance()->GetParticle(mompdg)->GetName(),mompdg, momstatus );
-              } 
+	      }
               
             }
             
