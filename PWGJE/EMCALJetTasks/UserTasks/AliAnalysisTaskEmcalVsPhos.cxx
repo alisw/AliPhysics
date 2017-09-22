@@ -802,7 +802,7 @@ void AliAnalysisTaskEmcalVsPhos::FillClusterHistograms()
           continue;
         }
       } else {
-        continue;
+        continue; // avoid CPV clusters
       }
       
       // Fill cluster spectra by SM, and fill cell histograms
@@ -963,7 +963,7 @@ void AliAnalysisTaskEmcalVsPhos::FillClusterHistograms()
       if (fPlotClusterCone) {
 
         // cluster cone, R=0.05
-        FillClusterTHnSparse(clustersName, eta, phi, Enonlin, Ehadcorr, hasMatchedTrack, M02, nCells, passedDispersionCut, distNN, isOddEta, 0, 0.05,         GetConeClusterEnergy(eta, phi, 0.05));
+        FillClusterTHnSparse(clustersName, eta, phi, Enonlin, Ehadcorr, hasMatchedTrack, M02, nCells, passedDispersionCut, distNN, isOddEta, 0, 0.05, GetConeClusterEnergy(eta, phi, 0.05));
         // cluster cone, R=0.1
         FillClusterTHnSparse(clustersName, eta, phi, Enonlin, Ehadcorr, hasMatchedTrack, M02, nCells, passedDispersionCut, distNN, isOddEta, 0, 0.1, GetConeClusterEnergy(eta, phi, 0.1));
         // cell cone, R=0.05
@@ -1098,6 +1098,10 @@ void AliAnalysisTaskEmcalVsPhos::FillCellHistograms()
     absId = phosCaloCells->GetCellNumber(i);
     ecell = phosCaloCells->GetCellAmplitude(absId);
     
+    if (absId < 0) {
+      continue; // skip CPV cells
+    }
+    
     // Fill cell histo
     histname = TString::Format("Cells/hCellEnergyAll");
     fHistManager.FillTH3(histname, ecell, fCent, kPHOS);
@@ -1188,9 +1192,18 @@ void AliAnalysisTaskEmcalVsPhos::FillClustersInJetsHistograms()
       Int_t nClusters = jet->GetNumberOfClusters();
       AliVCluster* clus;
       for (Int_t iClus = 0; iClus < nClusters; iClus++) {
+        
         clus = jet->Cluster(iClus);
-        Double_t x[5] = {fCent, clus->E(), GetJetPt(jet, rho), jet->Eta(), jet->Phi_0_2pi()};
-        fHistManager.FillTHnSparse(histname, x);
+        
+        if (fForceBeamType != AliAnalysisTaskEmcal::kpp) {
+          Double_t x[5] = {fCent, clus->E(), GetJetPt(jet, rho), jet->Eta(), jet->Phi_0_2pi()};
+          fHistManager.FillTHnSparse(histname, x);
+        }
+        else {
+          Double_t x[4] = {clus->E(), GetJetPt(jet, rho), jet->Eta(), jet->Phi_0_2pi()};
+          fHistManager.FillTHnSparse(histname, x);
+        }
+
       }
         
       // Loop through clusters, and plot estimated shift in JES due to cluster bump
@@ -1198,7 +1211,7 @@ void AliAnalysisTaskEmcalVsPhos::FillClustersInJetsHistograms()
       Double_t eclus;
       Double_t shift;
       Double_t shiftSum = 0;
-      if (fCent < 10.) {
+      if (fCent < 10. || fForceBeamType == AliAnalysisTaskEmcal::kpp) {
         if (GetJetType(jet) > -0.5 && GetJetType(jet) < 1.5) {
           for (Int_t iClus = 0; iClus < nClusters; iClus++) {
             clus = jet->Cluster(iClus);
@@ -1462,7 +1475,7 @@ Double_t AliAnalysisTaskEmcalVsPhos::GetConeCellEnergy(Double_t etaRef, Double_t
 }
 
 /**
- * Compute the cell energy within a SM, excluding cells from rejected clusters.
+ * Compute the cell energy within a SM, excluding cells from rejected clusters if requested.
  * Optionally, can instead return the number of cells.
  */
 Double_t AliAnalysisTaskEmcalVsPhos::GetSMCellEnergy(Int_t sm, Int_t clusType, Bool_t returnNcells)
