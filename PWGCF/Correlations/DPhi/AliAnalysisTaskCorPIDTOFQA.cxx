@@ -327,8 +327,8 @@ void AliAnalysisTaskCorPIDTOFQA::UserExec(Option_t *)
     if (oh)
       oh->SetFillAOD(kFALSE);
 
-    //if ((deut_count>=1)&&(trig_05_track_count>0)&&oh)
-    if ((deut_count >= 1) && oh) {
+      if ((deut_count>=1)  &&  (trig_05_track_count>0)  &&  oh)
+//    if ((deut_count >= 1) && oh) {
       oh->SetFillAOD(kTRUE);
       AliAODEvent *eout = dynamic_cast<AliAODEvent*>(oh->GetAOD());
       AliAODEvent *evin = dynamic_cast<AliAODEvent*>(InputEvent());
