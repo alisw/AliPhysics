@@ -137,6 +137,8 @@ class AliAnalysisTaskEmcalVsPhos : public AliAnalysisTaskEmcalJet {
   Double_t*                   fCentHistBins;                        //!<! cent bins
   Int_t                       fNPtHistBins;                         //!<! number of variable pt bins
   Double_t*                   fPtHistBins;                          //!<! variable pt bins
+  Int_t                       fNM02HistBins;                        //!<! number of variable M02 bins
+  Double_t*                   fM02HistBins;                         //!<! variable M02 bins
   
   // Event selection
   Bool_t                      fUseAliEventCuts;                     ///< Flag to use AliEventCuts (otherwise AliAnalysisTaskEmcal will be used)
@@ -155,7 +157,7 @@ class AliAnalysisTaskEmcalVsPhos : public AliAnalysisTaskEmcalJet {
   AliAnalysisTaskEmcalVsPhos &operator=(const AliAnalysisTaskEmcalVsPhos&); // not implemented
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskEmcalVsPhos, 8);
+  ClassDef(AliAnalysisTaskEmcalVsPhos, 9);
   /// \endcond
 };
 #endif
