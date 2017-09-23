@@ -244,7 +244,7 @@ void AliAnalysisTaskCorPIDTOFQA::UserExec(Option_t *)
 	fHistPt->Fill(pt);
 	
 //	if(pt >= 5.0)	{    trig_05_track_num[trig_05_track_count] = i;	    trig_05_track_count++;	}
-
+	if(pt >= 5.0)	{                                               	    trig_05_track_count++;	}
 	if(!tofIsOk)	                                                                {    continue;    }
 
 
