@@ -54,6 +54,16 @@ class AliAnalysisTaskEmcalVsPhos : public AliAnalysisTaskEmcalJet {
     kDCal     = 1, //!< DCal
     kPHOS     = 2  //!< PHOS
   };
+  
+  enum ParticleType {
+    kUndefined      = -1, //!< Undefined
+    kPhoton         = 0,  //!< Photon (direct or decay)
+    kPi0            = 1,  //!< Pi0 (merged pi0)
+    kPi0Conversion  = 2,  //!< Pi0 (merged pi0) with conversion of one photon (may be only partially contained in cluster)
+    kHadron         = 3,  //!< Hadron (aside from pi0)
+    kElectron       = 4,  //!< Electron
+    kOther          = 5   //!< Other
+  };
 
   AliAnalysisTaskEmcalVsPhos()                                          ;
   AliAnalysisTaskEmcalVsPhos(const char *name)                          ;
@@ -99,7 +109,7 @@ class AliAnalysisTaskEmcalVsPhos : public AliAnalysisTaskEmcalJet {
   void                        FillCellHistograms()                              ;
   void                        FillNeutralJetHistograms()                        ;
   void                        FillClustersInJetsHistograms()                    ;
-  void                        FillClusterTHnSparse(TString clustersName, Double_t eta, Double_t phi, Double_t Enonlin, Double_t Ehadcorr, Int_t hasMatchedTrack, Double_t M02, Int_t nCells, Int_t passDispersionCut, Double_t distNN, Int_t isOddEta, Int_t coneType = 0, Double_t R = 0., Double_t Econe = 0.);
+  void                        FillClusterTHnSparse(TString clustersName, Double_t eta, Double_t phi, Double_t Enonlin, Double_t Ehadcorr, Int_t hasMatchedTrack, Double_t M02, Int_t nCells, Int_t passDispersionCut, Double_t distNN, Int_t isOddEta, Int_t particleType1 = -1, Int_t particleType2 = -1, Int_t coneType = 0, Double_t R = 0., Double_t Econe = 0.);
   void                        FillClusterTHnSparse(TString clustersName, Double_t eta, Double_t phi, Double_t Enonlin, Double_t eCellCone, Double_t eCellSM, Int_t nCellsCone, Int_t nCellsSM);
   
   // Utility functions
@@ -113,6 +123,8 @@ class AliAnalysisTaskEmcalVsPhos : public AliAnalysisTaskEmcalJet {
   Double_t                    GetConeCellEnergy(Double_t etaRef, Double_t phiRef, Double_t R, Bool_t returnNcells = kFALSE);
   Double_t                    GetSMCellEnergy(Int_t sm, Int_t clusType, Bool_t returnNcells = kFALSE);
   Bool_t                      IsCellRejected(Int_t absId, Int_t cellType);
+  ParticleType                GetParticleType1(const AliVCluster* clus, const AliMCEvent* mcevent, const TClonesArray* clusArray);
+  ParticleType                GetParticleType2(const AliVCluster* clus, const AliMCEvent* mcevent, Int_t label);
 
   // Analysis configuration and plotting options
   Bool_t                      fPlotClusterHistograms;               ///< Set whether to plot cluster histograms
@@ -146,6 +158,9 @@ class AliAnalysisTaskEmcalVsPhos : public AliAnalysisTaskEmcalJet {
   TList                      *fEventCutList;                        //!<! Output list for event cut histograms
   Bool_t                      fUseManualEventCuts;                  ///< Flag to use manual event cuts
   
+  // MC options
+  AliMCParticleContainer*     fGeneratorLevel;                      //!<! generator level container
+  
   // Phos geometry (only needed for cluster studies)
   AliPHOSGeometry*            fPHOSGeo;                             //!<! phos geometry
   
@@ -157,7 +172,7 @@ class AliAnalysisTaskEmcalVsPhos : public AliAnalysisTaskEmcalJet {
   AliAnalysisTaskEmcalVsPhos &operator=(const AliAnalysisTaskEmcalVsPhos&); // not implemented
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskEmcalVsPhos, 9);
+  ClassDef(AliAnalysisTaskEmcalVsPhos, 10);
   /// \endcond
 };
 #endif
