@@ -43,16 +43,16 @@ fWeightMuon(kFALSE),
 fAccEffHisto(0x0),
 fMinvBinSeparator("+"),
 fsystLevel(systLevel),
-fBinsToFill(0x0),
-fMinvBinSize(0.025),
-fMinvMin(0.0),
-fMinvMax(16.0),
-fmcptcutmin(0.0),
-fmcptcutmax(12.0),
 fPtFuncOld(0x0),
 fPtFuncNew(0x0),
 fYFuncOld(0x0),
 fYFuncNew(0x0),
+fBinsToFill(0x0),
+fMinvBinSize(0.025),
+fMinvMin(0.0),
+fMinvMax(16.0),
+// fmcptcutmin(0.0),
+// fmcptcutmax(12.0),
 fNDetectors(3)
 {
   // FIXME ? find the AccxEff histogram from HistogramCollection()->Histo("/EXCHANGE/JpsiAccEff")
@@ -99,22 +99,22 @@ AliAnalysisMuMuFlowSP::DefineHistogramCollection(const char* eventSelection,
   Double_t minvMax = fMinvMax;
   Int_t nMinvBins = GetNbins(minvMin,minvMax,fMinvBinSize);
 
-  Int_t nMCMinvBins = GetNbins(minvMin,minvMax,0.1);
+  // Int_t nMCMinvBins = GetNbins(minvMin,minvMax,0.1);
 
-  // Rapidity range
-  Double_t rapidityMin = -5;
-  Double_t rapidityMax = -2;
-  Int_t nbinsRapidity = GetNbins(rapidityMin,rapidityMax,0.05);
+ //  // Rapidity range
+ //  Double_t rapidityMin = -5;
+ //  Double_t rapidityMax = -2;
+ //  Int_t nbinsRapidity = GetNbins(rapidityMin,rapidityMax,0.05);
 
-  // eta range
-  Double_t etaMin = -5;
-  Double_t etaMax = -2;
-  Int_t nbinsEta = GetNbins(etaMin,etaMax,0.05);
+ //  // eta range
+ //  Double_t etaMin = -5;
+ //  Double_t etaMax = -2;
+ //  Int_t nbinsEta = GetNbins(etaMin,etaMax,0.05);
 
- //Multiplicity range
-  Double_t multMin = -0.5;
-  Double_t multMax = 500.5;
-  Int_t nbinsMult = GetNbins(multMin,multMax,1.);
+ // //Multiplicity range
+ //  Double_t multMin = -0.5;
+ //  Double_t multMax = 500.5;
+ //  Int_t nbinsMult = GetNbins(multMin,multMax,1.);
 
 
   TIter next(fBinsToFill);
@@ -123,10 +123,12 @@ AliAnalysisMuMuFlowSP::DefineHistogramCollection(const char* eventSelection,
 
 
   for(Int_t i=0; i<fNDetectors; i++){
-    // CreatePairHistos(kHistoForData| kHistoForMCInput,eventSelection,triggerClassName,centrality,Form("SP_%s",fDetectors[i].Data()),Form("#mu+#mu- SP with %s",fDetectors[i].Data()),
-    //                  600, -1.6, 1.6,-2);
-    CreatePairHistos(kHistoForData| kHistoForMCInput,eventSelection,triggerClassName,centrality,Form("Qn_%s",fDetectors[i].Data()),Form("Qn vector from %s; Qn_{x};Qn_{y}",fDetectors[i].Data()),
-                     600, -0.01, 3.2, 600, -0.01, 3.2);
+    CreateEventHistos(kHistoForData| kHistoForMCInput,eventSelection,triggerClassName,centrality,Form("Qn_%s",fDetectors[i].Data()),Form("Qn vector from %s; Qn_{x};Qn_{y}",fDetectors[i].Data()),
+                     600, -1., 1., 600, -1., 1.);
+    for(Int_t j=i+1; j<fNDetectors;j++){
+      CreateEventHistos(kHistoForData| kHistoForMCInput,eventSelection,triggerClassName,centrality,Form("R_%svs%s",fDetectors[i].Data(),fDetectors[j].Data()),Form("#mu+#mu- resolution : %s vs %s",fDetectors[i].Data(),fDetectors[j].Data()),
+                         600, -2., 2.);//dphi corrected to be in [O,pi]
+    }
   }
   // if( ShouldCorrectDimuonForAccEff())
   // {
@@ -144,25 +146,18 @@ AliAnalysisMuMuFlowSP::DefineHistogramCollection(const char* eventSelection,
     if ( !IsHistogramDisabled(minvName.Data()) ){
       AliDebug(1,Form("bin %d %s histoname = %s",nb,r->AsString().Data(),minvName.Data()));
 
-      // // Reconstructed pair histo
-      // CreatePairHistos(kHistoForData | kHistoForMCInput,eventSelection,triggerClassName,centrality,minvName.Data(),
-      //                  Form("#mu+#mu- inv. mass %s;M_{#mu^{+}#mu^{-}} (GeV/c^{2});Counts",r->AsString().Data()),nMinvBins,minvMin,minvMax,-2);
-      // // Generated J/psi histo
-      // CreateEventHistos(kHistoForMCInput,eventSelection,triggerClassName,centrality,minvName.Data(),
-      //                   Form("MCINPUT #mu+#mu- inv. mass %s;M_{#mu^{+}#mu^{-}} (GeV/c^{2});Counts",r->AsString().Data()),nMCMinvBins,minvMin,minvMax,-2);
+      TString mUName(Form("U_%s",minvName.Data()));
+      CreatePairHistos(kHistoForData | kHistoForMCInput,eventSelection,triggerClassName,centrality,mUName.Data(),
+                         "#mu+#mu- Q vector ;u_{x};u_{y}",600, -1., 1., 600, -1., 1.);
 
-      // CreateEventHistos(kHistoForMCInput,eventSelection,triggerClassName,Form("%s/INYRANGE",centrality),minvName.Data(),
-      //                   Form("MCINPUT #mu+#mu- inv. mass %s;M_{#mu^{+}#mu^{-}} (GeV/c^{2});Counts",r->AsString().Data()),nMCMinvBins,minvMin,minvMax,-2); // Pure MC histo
-
-      CreatePairHistos(kHistoForData | kHistoForMCInput,eventSelection,triggerClassName,centrality,Form("U_%s",minvName.Data()),
-                         "#mu+#mu- Q vector ;u_{x};u_{y}",600, -0.01, 3.2, 600, -0.01, 3.2);
-      // CreatePairHistos(kHistoForData | kHistoForMCInput,eventSelection,triggerClassName,centrality,Form("U_%s",minvName.Data()),
-      //                    Form("#mu+#mu- Q vector %s;M_{#mu^{+}#mu^{-}} (GeV/c^{2});<p_{T}^{#mu^{+}#mu^{-} (GeV/c^{2})}>",r->AsString().Data()),600, -0.01, 3.2,600, -0.01, 3.2);
       for(Int_t i=0; i<fNDetectors; i++){
-        CreatePairHistos(kHistoForData| kHistoForMCInput,eventSelection,triggerClassName,centrality,Form("SP_%s_vs%s",fDetectors[i].Data(),minvName.Data()),
-          Form("#mu+#mu- v_{2} {SP} with %s vs %s;M_{#mu^{+}#mu^{-}} (GeV/c^{2});v_{2} {SP}",fDetectors[i].Data(),r->AsString().Data()),nMinvBins,minvMin,minvMax,-2);
-        // CreatePairHistos(kHistoForData| kHistoForMCInput,eventSelection,triggerClassName,centrality,Form("Qn_%s_%s",fDetectors[i].Data(),minvName.Data()),Form("Qn vector from %s",fDetectors[i].Data()),
-        //             600, -0.01, 3.2,600, -0.01, 3.2);
+        TString mSPName(Form("SP_%s_vs%s",fDetectors[i].Data(),minvName.Data()));
+        // Reconstructed pair histo
+        CreatePairHistos(kHistoForData | kHistoForMCInput,eventSelection,triggerClassName,centrality,mSPName.Data(),
+                         Form("#mu+#mu- v_{2} {SP} with %s vs %s;M_{#mu^{+}#mu^{-}} (GeV/c^{2});v_{2} {SP}",fDetectors[i].Data(),r->AsString().Data()),nMinvBins,minvMin,minvMax,0);
+
+        CreatePairHistos(kHistoForData | kHistoForMCInput,eventSelection,triggerClassName,centrality,Form("%s_corr",mSPName.Data()),
+                         Form("#mu+#mu- v_{2} {SP} (corrected with |Qn|) with %s vs %s;M_{#mu^{+}#mu^{-}} (GeV/c^{2});v_{2} {SP}",fDetectors[i].Data(),r->AsString().Data()),nMinvBins,minvMin,minvMax,0);
       }
 
     }
@@ -173,23 +168,17 @@ AliAnalysisMuMuFlowSP::DefineHistogramCollection(const char* eventSelection,
 
       if ( !IsHistogramDisabled(minvName.Data()) ){
         AliDebug(1,Form("bin %d %s histoname = %s",nb,r->AsString().Data(),minvName.Data()));
-        // // Reconstructed pair histo
-        // CreatePairHistos(kHistoForData | kHistoForMCInput,eventSelection,triggerClassName,centrality,minvName.Data(),
-        //                  Form("#mu+#mu- inv. mass %s (Acc #times Eff Corrected);M_{#mu^{+}#mu^{-}}(GeV/c^{2});Counts",r->AsString().Data()),nMinvBins,minvMin,minvMax,-2);
-        // // Generated J/psi histo
-        // CreateEventHistos(kHistoForMCInput,eventSelection,triggerClassName,centrality,minvName.Data(),
-        //                   Form("#mu+#mu- inv. mass %s (Acc #times Eff Corrected);M_{#mu^{+}#mu^{-}} (GeV/c^{2});Counts",r->AsString().Data()),nMCMinvBins,minvMin,minvMax,-2);
 
-        // CreateEventHistos(kHistoForMCInput,eventSelection,triggerClassName,Form("%s/INYRANGE",centrality),minvName.Data(),
-        //                   Form("#mu+#mu- inv. mass %s (Acc #times Eff Corrected);M_{#mu^{+}#mu^{-}} (GeV/c^{2});Counts",r->AsString().Data()),nMCMinvBins,minvMin,minvMax,-2);
-        // Mean pt accxeff corrected
-
-        CreatePairHistos(kHistoForData | kHistoForMCInput,eventSelection,triggerClassName,centrality,Form("U_%s",minvName.Data()),
-                         "#mu+#mu- Q vector (Acc #times Eff Corrected) ;u_{x};u_{y}",600, -0.01, 3.2, 600, -0.01, 3.2);
+        TString mUAEName(Form("U_%s",minvName.Data()));
+        CreatePairHistos(kHistoForData | kHistoForMCInput,eventSelection,triggerClassName,centrality,mUAEName.Data(),
+                         "#mu+#mu- Q vector (Acc #times Eff Corrected) ;u_{x};u_{y}",600, -1., 1., 600, -1., 1.);
         //scalar product
          for(Int_t i=0; i<fNDetectors; i++){
-          CreatePairHistos(kHistoForData| kHistoForMCInput,eventSelection,triggerClassName,centrality,Form("SP_%s_vs%s",fDetectors[i].Data(),minvName.Data()),
-            Form("#mu+#mu- v_{2} {SP} with %s (Acc #times Eff Corrected) vs %s;M_{#mu^{+}#mu^{-}} (GeV/c^{2});v_{2} {SP}",fDetectors[i].Data(),r->AsString().Data()),nMinvBins,minvMin,minvMax,-2);
+          TString mSPAEName(Form("SP_%s_vs%s",fDetectors[i].Data(),minvName.Data()));
+          CreatePairHistos(kHistoForData| kHistoForMCInput,eventSelection,triggerClassName,centrality,mSPAEName.Data(),
+            Form("#mu+#mu- v_{2} {SP} with %s (Acc #times Eff Corrected) vs %s;M_{#mu^{+}#mu^{-}} (GeV/c^{2});v_{2} {SP}",fDetectors[i].Data(),r->AsString().Data()),nMinvBins,minvMin,minvMax,0);
+          CreatePairHistos(kHistoForData| kHistoForMCInput,eventSelection,triggerClassName,centrality,Form("%s_corr",mSPAEName.Data()),
+            Form("#mu+#mu- v_{2} {SP} (corrected with |Qn|) with %s (Acc #times Eff Corrected) vs %s;M_{#mu^{+}#mu^{-}} (GeV/c^{2});v_{2} {SP}",fDetectors[i].Data(),r->AsString().Data()),nMinvBins,minvMin,minvMax,0);
         }
       }
     }
@@ -295,208 +284,201 @@ void AliAnalysisMuMuFlowSP::FillHistosForPair(const char* eventSelection,
   Double_t SP[3];//Scalar product
 
   // if ( !IsHistogramDisabled("U") ) proxy->Histo("U")->Fill(U.X(),U.Y());
-  for(Int_t i=0; i<3; i++){
-    cout << "Qn:" << endl;
+  for(Int_t i=0; i<fNDetectors; i++){
     if(i==0) Qn[i]= GetQn(fDetectors[i].Data(),4); //twist for SPD
     else Qn[i]= GetQn(fDetectors[i].Data(),3); //twist
 
-    cout << ":Qn " << endl;
-    // SP[i] = U*Qn[i];
-
-    if ( !IsHistogramDisabled(Form("Qn_%s",fDetectors[i].Data())) ) proxy->Histo(Form("Qn_%s",fDetectors[i].Data()))->Fill(0.,0.);
-    cout << "savd histo " << endl;
+    SP[i] = U*Qn[i];
   }
 
 
-  // // Fill histos with MC stack info
-  // if ( HasMC() ){
-  //   // Get 4-vector pairs from MC stack
-  //   TLorentzVector mcpi(mcTracki->Px(),mcTracki->Py(),mcTracki->Pz(),TMath::Sqrt(AliAnalysisMuonUtility::MuonMass2()+mcTracki->P()*mcTracki->P()));
-  //   TLorentzVector mcpj(mcTrackj->Px(),mcTrackj->Py(),mcTrackj->Pz(),TMath::Sqrt(AliAnalysisMuonUtility::MuonMass2()+mcTrackj->P()*mcTrackj->P()));
-  //   mcpj+=mcpi;
+  // Fill histos with MC stack info
+  if ( HasMC() ){
+    AliWarning("MC is not implemented for flow analysis");
+    // Get 4-vector pairs from MC stack
+    TLorentzVector mcpi(mcTracki->Px(),mcTracki->Py(),mcTracki->Pz(),TMath::Sqrt(AliAnalysisMuonUtility::MuonMass2()+mcTracki->P()*mcTracki->P()));
+    TLorentzVector mcpj(mcTrackj->Px(),mcTrackj->Py(),mcTrackj->Pz(),TMath::Sqrt(AliAnalysisMuonUtility::MuonMass2()+mcTrackj->P()*mcTrackj->P()));
+    mcpj+=mcpi;
 
 
-  //   // set pair4MomentumMC for the rest of the function
-  //   pair4MomentumMC = &mcpj;
-  //   UMC.Set(cos(fHar*pair4MomentumMC->Phi()),sin(fHar*pair4MomentumMC->Phi()));//Unitary Q vector of the dimuon
-  //   Double_t SPMC[3];//Scalar product
+    // set pair4MomentumMC for the rest of the function
+    pair4MomentumMC = &mcpj;
+    UMC.Set(cos(fHar*pair4MomentumMC->Phi()),sin(fHar*pair4MomentumMC->Phi()));//Unitary Q vector of the dimuon
+    Double_t SPMC[3];//Scalar product
 
-  //   if ( !IsHistogramDisabled("U") )mcProxy->Histo("U")->Fill(U.X(),U.Y());
+    if ( !IsHistogramDisabled("U") )mcProxy->Histo("U")->Fill(U.X(),U.Y());
 
-  //   for(Int_t i=0; i<3; i++){
-  //     SPMC[i] = UMC*Qn[i];
-  //     if ( !IsHistogramDisabled(Form("Qn_%s",fDetectors[i].Data())) ) mcProxy->Histo(Form("Qn_%s",fDetectors[i].Data()))->Fill(Qn[i].X(),Qn[i].Y());
-  //   }
-  // }
+    for(Int_t i=0; i<fNDetectors; i++){
+      SPMC[i] = UMC*Qn[i];
+    }
+  }
 
-  // TIter nextBin(fBinsToFill);
-  // AliAnalysisMuMuBinning::Range* r;
+  TIter nextBin(fBinsToFill);
+  AliAnalysisMuMuBinning::Range* r;
 
-  // // Loop over all bin ranges
-  // while ( ( r = static_cast<AliAnalysisMuMuBinning::Range*>(nextBin()) ) ){
+  // Loop over all bin ranges
+  while ( ( r = static_cast<AliAnalysisMuMuBinning::Range*>(nextBin()) ) ){
 
-  //   //In this loop we first check if the pairs pass some tests and we fill histo accordingly.
+    //In this loop we first check if the pairs pass some tests and we fill histo accordingly.
 
-  //   // Flag for cuts and ranges
-  //   Bool_t ok(kFALSE);
-  //   Bool_t okMC(kFALSE);
+    // Flag for cuts and ranges
+    Bool_t ok(kFALSE);
+    Bool_t okMC(kFALSE);
 
-  //   //Fully integrated case
-  //   if ( r->IsIntegrated() ){
-  //     ok = kTRUE;
-  //     if ( pair4MomentumMC ) okMC = kTRUE;
-  //   }
-  //   // 2D Binning
-  //   else if ( r->Is2D() ){
-  //     if (r->AsString().BeginsWith("PTVSY") )
-  //     {
-  //       ok = (r->IsInRange(pair4Momentum.Pt(),pair4Momentum.Rapidity()));
-  //       if ( pair4MomentumMC ) okMC = r->IsInRange(pair4MomentumMC->Pt(),pair4MomentumMC->Rapidity());
-  //     }
-  //     if (r->AsString().BeginsWith("YVSPT") )
-  //     {
-  //       ok = (r->IsInRange(pair4Momentum.Rapidity(),pair4Momentum.Pt()));
-  //       if ( pair4MomentumMC ) okMC = r->IsInRange(pair4MomentumMC->Rapidity(),pair4MomentumMC->Pt());
-  //     }
-  //     else AliError(Form("Don't know how to deal with 2D bin %s",r->AsString().Data()));
-  //   }
-  //   // The rest
-  //   else{
-  //     if ( r->Quantity() == "PT" ){
-  //       ok                          = r->IsInRange(pair4Momentum.Pt());
-  //       if ( pair4MomentumMC ) okMC = r->IsInRange(pair4MomentumMC->Pt());
-  //     }
-  //     else if ( r->Quantity() == "Y" ){
-  //       ok                          = r->IsInRange(pair4Momentum.Rapidity());
-  //       if ( pair4MomentumMC ) okMC = r->IsInRange(pair4MomentumMC->Rapidity());
-  //     }
+    //Fully integrated case
+    if ( r->IsIntegrated() ){
+      ok = kTRUE;
+      if ( pair4MomentumMC ) okMC = kTRUE;
+    }
+    // 2D Binning
+    else if ( r->Is2D() ){
+      if (r->AsString().BeginsWith("PTVSY") )
+      {
+        ok = (r->IsInRange(pair4Momentum.Pt(),pair4Momentum.Rapidity()));
+        if ( pair4MomentumMC ) okMC = r->IsInRange(pair4MomentumMC->Pt(),pair4MomentumMC->Rapidity());
+      }
+      if (r->AsString().BeginsWith("YVSPT") )
+      {
+        ok = (r->IsInRange(pair4Momentum.Rapidity(),pair4Momentum.Pt()));
+        if ( pair4MomentumMC ) okMC = r->IsInRange(pair4MomentumMC->Rapidity(),pair4MomentumMC->Pt());
+      }
+      else AliError(Form("Don't know how to deal with 2D bin %s",r->AsString().Data()));
+    }
+    // The rest
+    else{
+      if ( r->Quantity() == "PT" ){
+        ok                          = r->IsInRange(pair4Momentum.Pt());
+        if ( pair4MomentumMC ) okMC = r->IsInRange(pair4MomentumMC->Pt());
+      }
+      else if ( r->Quantity() == "Y" ){
+        ok                          = r->IsInRange(pair4Momentum.Rapidity());
+        if ( pair4MomentumMC ) okMC = r->IsInRange(pair4MomentumMC->Rapidity());
+      }
 
-  //   }
+    }
 
-  //   // Check if pair pass all conditions, either MC or not, and fill Minv Histogrames
-  //   if ( ok || okMC ){
+    // Check if pair pass all conditions, either MC or not, and fill Minv Histogrames
+    if ( ok || okMC ){
 
-  //     // Get Minv histo name associated to the bin
-  //     TString minvName = GetMinvHistoName(*r,kFALSE);
+      // Get Minv histo name associated to the bin
+      TString minvName = GetMinvHistoName(*r,kFALSE);
+      //Create, fill and store Minv histo
+      if (!IsHistogramDisabled(minvName.Data())){
 
-  //     //Create, fill and store Minv histo
-  //     if (!IsHistogramDisabled(minvName.Data())){
+        if ( ok ){
 
-  //       TH1* h(0x0);
+          TString hprofName("");
+          for(Int_t i=0; i<fNDetectors;i++){
+            hprofName = Form("SP_%s_vs%s",fDetectors[i].Data(),minvName.Data());
+            TProfile* hprof = Prof(eventSelection,triggerClassName,centrality,pairCutName,hprofName.Data());
+            if ( !hprof)AliError(Form("Could not get %s",hprofName.Data()));
+            else hprof->Fill(pair4Momentum.M(),SP[i],inputWeight);
+            TProfile* hprofcorr = Prof(eventSelection,triggerClassName,centrality,pairCutName,Form("%s_corr",hprofName.Data()));
+            if ( !hprofcorr)AliError(Form("Could not get %s",Form("%s_corr",hprofName.Data())));
+            else hprofcorr->Fill(pair4Momentum.M(),SP[i]-Qn[i].X()*Qn[i].X()+Qn[i].Y()*Qn[i].Y(),inputWeight);
+          }
+          TString mUName(Form("U_%s",minvName.Data()));
+          if ( !IsHistogramDisabled(mUName.Data() )) proxy->Histo(mUName.Data())->Fill(U.X(),U.Y());
+        }
 
-  //       if ( ok ){
-  //         h = proxy->Histo(minvName.Data());
-  //         if (!h) AliError(Form("Could not get %s",minvName.Data()));
-  //         else h->Fill(pair4Momentum.M(),inputWeight);
+        if( okMC ){
 
-  //         TString* hprofName;
-  //         for(Int_t i=0; i<3;i++){
-  //           // hprofName= Form("SP_%s_vs%s",fDetectors[i].Data(),minvName.Data());
-  //           TProfile* hprof = Prof(eventSelection,triggerClassName,centrality,pairCutName,Form("SP_%s_vs%s",fDetectors[i].Data(),minvName.Data()));
-  //           if ( !hprof)AliError(Form("Could not get SP_%s_vs%s",fDetectors[i].Data(),minvName.Data()));
-  //           else hprof->Fill(pair4Momentum.M(),SP[i],inputWeight);
-  //         }
-  //         TProfile* hprofU = Prof(eventSelection,triggerClassName,centrality,pairCutName,Form("U_%s",minvName.Data()));
-  //         if ( !hprofU)AliError(Form("Could not get U_%s",minvName.Data()));
-  //         else hprofU->Fill(U.X(),U.Y(),inputWeight);
-  //       }
+          TString hprofMCName("");
+          for(Int_t i=0; i<fNDetectors;i++){
+            hprofMCName= Form("SP_MC_%s_vs%s",fDetectors[i].Data(),minvName.Data());
+            TProfile* hprofMC = Prof(eventSelection,triggerClassName,centrality,hprofMCName.Data());
+            if ( !hprofMC)AliError(Form("Could not get %s",hprofMCName.Data()));
+            else hprofMC->Fill(pair4Momentum.M(),SP[i],inputWeight);
+            TProfile* hprofMCcorr = Prof(eventSelection,triggerClassName,centrality,Form("%s_corr",hprofMCName.Data()));
+            if ( !hprofMCcorr)AliError(Form("Could not get %s",Form("%s_corr",hprofMCName.Data())));
+            else hprofMCcorr->Fill(pair4MomentumMC->M(),sqrt(SP[i]-Qn[i].X()*Qn[i].X()+Qn[i].Y()*Qn[i].Y()),inputWeight);//Correct
+          }
 
-  //       if( okMC ){
-  //         h = mcProxy->Histo(minvName.Data());
-  //         if (!h) AliError(Form("Could not get MC %s",minvName.Data()));
-  //         else h->Fill(pair4MomentumMC->M(),inputWeightMC);
+          TString mUMCName(Form("UMC_%s",minvName.Data()));
+          if ( !IsHistogramDisabled(mUMCName.Data() )) proxy->Histo(mUMCName.Data())->Fill(UMC.X(),UMC.Y());
+        }
+      }
 
-  //         // TString* hprofMCName;
-  //         for(Int_t i=0; i<3;i++){
-  //           // hprofMCName= Form("SP_%s_vs%s",fDetectors[i].Data(),minvName.Data());
-  //           TProfile* hprofMC = Prof(eventSelection,triggerClassName,centrality,Form("SP_%s_vs%s",fDetectors[i].Data(),minvName.Data()));
-  //           if ( !hprofMC)AliError(Form("Could not get SP_%s_vs%s",fDetectors[i].Data(),minvName.Data()));
-  //           else hprofMC->Fill(pair4Momentum.M(),SP[i],inputWeight);
-  //         }
+      // Create, fill and store Minv histo already corrected with accxeff
+      if ( ShouldCorrectDimuonForAccEff() ){
 
-  //         TProfile* hprofUMC = Prof(eventSelection,triggerClassName,centrality,pairCutName,Form("UMC_%s",minvName.Data()));
-  //         if ( !hprofUMC)AliError(Form("Could not get UMC_%s",minvName.Data()));
-  //         else hprofUMC->Fill(UMC.X(),UMC.Y(),inputWeight);
-  //       }
-  //     }
+        Double_t AccxEff(0);
+        Bool_t okAccEff(kFALSE);
 
-  //     // Create, fill and store Minv histo already corrected with accxeff
-  //     if ( ShouldCorrectDimuonForAccEff() ){
+        // Protection
+        if ( ok ){
+          AccxEff = GetAccxEff(pair4Momentum.Pt(),pair4Momentum.Rapidity());
+          if ( AccxEff <= 0.0 ) AliError(Form("AccxEff < 0 for pt = %f & y = %f ",pair4Momentum.Pt(),pair4Momentum.Rapidity()));
+          else okAccEff = kTRUE;
+        }
 
-  //       Double_t AccxEff(0);
-  //       Bool_t okAccEff(kFALSE);
+        Double_t AccxEffMC(0);
+        Bool_t okAccEffMC(kFALSE);
 
-  //       // Protection
-  //       if ( ok ){
-  //         AccxEff = GetAccxEff(pair4Momentum.Pt(),pair4Momentum.Rapidity());
-  //         if ( AccxEff <= 0.0 ) AliError(Form("AccxEff < 0 for pt = %f & y = %f ",pair4Momentum.Pt(),pair4Momentum.Rapidity()));
-  //         else okAccEff = kTRUE;
-  //       }
+        // Protection
+        if ( okMC ){
+          AccxEffMC= GetAccxEff(pair4MomentumMC->Pt(),pair4MomentumMC->Rapidity());
+          if ( AccxEffMC <= 0.0 ) AliError(Form("AccxEff < 0 for MC pair with pt = %f & y = %f ",pair4MomentumMC->Pt(),pair4MomentumMC->Rapidity()));
+          else okAccEffMC = kTRUE;
+        }
 
-  //       Double_t AccxEffMC(0);
-  //       Bool_t okAccEffMC(kFALSE);
+        // Get histo name
+        minvName = GetMinvHistoName(*r,kTRUE);
 
-  //       // Protection
-  //       if ( okMC ){
-  //         AccxEffMC= GetAccxEff(pair4MomentumMC->Pt(),pair4MomentumMC->Rapidity());
-  //         if ( AccxEffMC <= 0.0 ) AliError(Form("AccxEff < 0 for MC pair with pt = %f & y = %f ",pair4MomentumMC->Pt(),pair4MomentumMC->Rapidity()));
-  //         else okAccEffMC = kTRUE;
-  //       }
+        // fill histo
+        if (!IsHistogramDisabled(minvName.Data())){
 
-  //       // Get histo name
-  //       minvName = GetMinvHistoName(*r,kTRUE);
+          if ( ok ){
+            TString hprofNameAE("");
+            for(Int_t i=0; i<fNDetectors;i++){
+              hprofNameAE= Form("SP_%s_vs%s",fDetectors[i].Data(),minvName.Data());
+              TProfile* hprof = Prof(eventSelection,triggerClassName,centrality,pairCutName,hprofNameAE.Data());
+              if ( !hprof)AliError(Form("Could not get SP_%s_vs%s",fDetectors[i].Data(),minvName.Data()));
+              else hprof->Fill(pair4Momentum.M(),SP[i],inputWeight/AccxEff);
+            }
+            TString mUName(Form("U_%s",minvName.Data()));
+            if ( !IsHistogramDisabled(mUName.Data() )) proxy->Histo(mUName.Data())->Fill(U.X(),U.Y());
+          }
 
-  //       // fill histo
-  //       if (!IsHistogramDisabled(minvName.Data())){
-
-  //         TH1* hCorr = proxy->Histo(minvName.Data());
-
-  //         if (!hCorr) AliError(Form("Could not get %sr",minvName.Data()));
-  //         else if ( okAccEff ) hCorr->Fill(pair4Momentum.M(),inputWeight/AccxEff);
-
-  //         if ( ok ){
-  //           hCorr = proxy->Histo(minvName.Data());
-  //           if (!hCorr) AliError(Form("Could not get %s",minvName.Data()));
-  //           else hCorr->Fill(pair4Momentum.M(),inputWeight/AccxEff);
-
-  //           TString* hprofName;
-  //           for(Int_t i=0; i<3;i++){
-  //             // hprofName= Form("SP_%s_vs%s",fDetectors[i].Data(),minvName.Data());
-  //             TProfile* hprof = Prof(eventSelection,triggerClassName,centrality,pairCutName,Form("SP_%s_vs%s",fDetectors[i].Data(),minvName.Data()));
-  //             if ( !hprof)AliError(Form("Could not get SP_%s_vs%s",fDetectors[i].Data(),minvName.Data()));
-  //             else hprof->Fill(pair4Momentum.M(),SP[i],inputWeight/AccxEff);
-  //           }
-  //           TProfile* hprofU = Prof(eventSelection,triggerClassName,centrality,pairCutName,Form("U_%s",minvName.Data()));
-  //           if ( !hprofU)AliError(Form("Could not get U_%s",minvName.Data()));
-  //           else hprofU->Fill(U.X(),U.Y(),inputWeight/AccxEff);
-  //         }
-
-  //         if( okAccEffMC ){
-  //           hCorr = mcProxy->Histo(minvName.Data());
-  //           if (!hCorr) AliError(Form("Could not get MC %s",minvName.Data()));
-  //           else hCorr->Fill(pair4MomentumMC->M(),inputWeightMC);
-
-  //           TString* hprofMCName;
-  //           for(Int_t i=0; i<3;i++){
-  //             // hprofMCName= Form("SP_%s_vs%s",fDetectors[i].Data(),minvName.Data());
-  //             TProfile* hprofMC = Prof(eventSelection,triggerClassName,centrality,pairCutName,Form("SP_%s_vs%s",fDetectors[i].Data(),minvName.Data()));
-  //             if ( !hprofMC)AliError(Form("Could not get SP_%s_vs%s",fDetectors[i].Data(),minvName.Data()));
-  //             else hprofMC->Fill(pair4Momentum.M(),SP[i],inputWeight/AccxEff);
-  //           }
-
-  //           TProfile* hprofUMC = Prof(eventSelection,triggerClassName,centrality,pairCutName,Form("U_%s",minvName.Data()));
-  //           if ( !hprofUMC)AliError(Form("Could not get U_%s",minvName.Data()));
-  //           else hprofUMC->Fill(UMC.X(),UMC.Y(),inputWeight/AccxEff);
-  //         }
-  //       }
-  //     }
-  //   }
-  // }
+          if( okAccEffMC ){
+            TString hprofMCNameAE("");
+            for(Int_t i=0; i<fNDetectors;i++){
+              hprofMCNameAE= Form("SP_%s_vs%s",fDetectors[i].Data(),minvName.Data());
+              TProfile* hprofMC = Prof(eventSelection,triggerClassName,centrality,pairCutName,hprofMCNameAE.Data());
+              if ( !hprofMC)AliError(Form("Could not get SP_%s_vs%s",fDetectors[i].Data(),minvName.Data()));
+              else hprofMC->Fill(pair4MomentumMC->M(),SP[i],inputWeight/AccxEff);
+            }
+            TString mUAEMCName(Form("UMC_%s",minvName.Data()));
+            if ( !IsHistogramDisabled(mUAEMCName.Data() )) proxy->Histo(mUAEMCName.Data())->Fill(UMC.X(),UMC.Y());
+          }
+        }
+      }
+    }
+  }
   delete proxy;
   delete mcProxy;
 }
 
+//_____________________________________________________________________________
+void AliAnalysisMuMuFlowSP::FillHistosForEvent(const char* eventSelection,const char* triggerClassName,const char* centrality)
+{
+    // Create proxy in AliMergeableCollection
+  AliMergeableCollectionProxy* proxyEv = HistogramCollection()->CreateProxy(BuildPath(eventSelection,triggerClassName,centrality));
 
+  TVector2 Qn[3];//Q vectors (2nd harmonic) for each detector
+  for(Int_t i=0; i<fNDetectors; i++){
+    if(i==0) Qn[i]= GetQn(fDetectors[i].Data(),4); //twist for SPD
+    else Qn[i]= GetQn(fDetectors[i].Data(),3); //twist
+
+    if ( !IsHistogramDisabled(Form("Qn_%s",fDetectors[i].Data())) ) proxyEv->Histo(Form("Qn_%s",fDetectors[i].Data()))->Fill(Qn[i].X(),Qn[i].Y());
+
+    for(Int_t j=i+1; j<fNDetectors;j++){
+      if ( !IsHistogramDisabled(Form("R_%svs%s",fDetectors[i].Data(),fDetectors[j].Data())))  proxyEv->Histo(Form("R_%svs%s",fDetectors[i].Data(),fDetectors[j].Data()))->Fill(Qn[i]*Qn[j]);
+    }
+  }
+
+  delete proxyEv;
+}
 //_____________________________________________________________________________
 void AliAnalysisMuMuFlowSP::FillHistosForMCEvent(const char* eventSelection,const char* triggerClassName,const char* centrality)
 {
@@ -505,119 +487,7 @@ void AliAnalysisMuMuFlowSP::FillHistosForMCEvent(const char* eventSelection,cons
   ///
 
   if ( !HasMC() ) return;
-  AliError("AliMuMuFlow doe not deal with MC event yet, implement it !");
-  // // Create general proxies to the Histogram Collection
-  // TString mcPath = BuildMCPath(eventSelection,triggerClassName,centrality);
-  // AliMergeableCollectionProxy* mcProxy = HistogramCollection()->CreateProxy(mcPath);
-
-  // // Create proxy to the Histogram Collection for input particles satisfying Y cut
-  // TString mcInYRangeProxyPath = mcPath;
-  // mcInYRangeProxyPath += "INYRANGE/";
-  // AliMergeableCollectionProxy* mcInYRangeProxy = HistogramCollection()->CreateProxy(mcInYRangeProxyPath);
-  // if(!mcInYRangeProxy) printf("Warning :  unable to create proxy for mcInYRangeProxy, will not be filled \n");
-
-  // // number of tracks in Event
-  // Int_t nMCTracks = MCEvent()->GetNumberOfTracks();
-
-  // TIter nextBin(fBinsToFill);
-  // AliAnalysisMuMuBinning::Range* r;
-
-  // // Loop over all events
-  // for ( Int_t i = 0; i < nMCTracks; ++i ){
-  //   // Get particle
-  //   AliVParticle* part = MCEvent()->GetTrack(i);
-
-  //   // Select only primary particles
-  //   if  (AliAnalysisMuonUtility::IsPrimary(part,MCEvent()) && part->GetMother()==-1){
-
-  //     //pt cut. 0-12 by default
-  //     if(part->Pt()>fmcptcutmax || part->Pt()<fmcptcutmin  ) return;
-
-  //     // Get the default WeightPairDistribution
-  //     Double_t inputWeight = WeightPairDistribution(part->Pt(),part->Y());
-
-  //     // Fill Pt, Y, Eta histos
-  //     mcProxy->Histo("Pt")->Fill(part->Pt(),inputWeight);
-  //     mcProxy->Histo("Y")->Fill(part->Y(),inputWeight);
-  //     mcProxy->Histo("Eta")->Fill(part->Eta());
-
-  //     // Fill Pt, Y, Eta histos if tracks rapidity in range
-  //     if ( part->Y() < -2.5 && part->Y() > -4.0 && mcInYRangeProxy ){
-  //       mcInYRangeProxy->Histo("Pt")->Fill(part->Pt(),inputWeight);
-  //       mcInYRangeProxy->Histo("Y")->Fill(part->Y(),inputWeight);
-  //       mcInYRangeProxy->Histo("Eta")->Fill(part->Eta());
-  //     }
-
-  //     nextBin.Reset();
-
-  //     // Loop on all range in order to fill Histo
-  //     while ( ( r = static_cast<AliAnalysisMuMuBinning::Range*>(nextBin()) ) ){
-
-  //       // Check if particles pass all the cuts for different bins
-  //       Bool_t ok(kFALSE);
-
-  //       // always true for integrated
-  //       if ( r->IsIntegrated() )ok = kTRUE;
-  //       // 2D Binning
-  //       else if ( r->Is2D() ){
-  //         if ( r->AsString().BeginsWith("PTVSY") )     ok = r->IsInRange(part->Y(),part->Pt());
-  //         else if ( r->AsString().BeginsWith("YVSPT") )ok = r->IsInRange(part->Pt(),part->Y());
-  //         else AliError(Form("Don't know how to deal with 2D bin %s",r->AsString().Data()));
-  //       }
-  //       // 1D Binning
-  //       else {
-  //         if ( r->Quantity()      == "PT" ) ok = r->IsInRange(part->Pt());
-  //         else if ( r->Quantity() == "Y" )  ok = r->IsInRange(part->Y());
-  //         else if ( r->Quantity() == "PHI" )ok = r->IsInRange(part->Phi());
-  //       }
-
-  //       // Fill Minv histo if bin is in range
-  //       if ( ok ){
-
-  //         // Get histo name
-  //         TString hname = GetMinvHistoName(*r,kFALSE);
-
-  //         // Chek if histo disabled
-  //         if (!IsHistogramDisabled(hname.Data())){
-  //           TH1* h = mcProxy->Histo(hname.Data());
-  //           if (!h) {
-  //             AliError(Form("Could not get /%s/%s/%s/%s/ %s",MCInputPrefix(),eventSelection,triggerClassName,centrality,hname.Data()));
-  //             continue;
-  //           }
-  //           h->Fill(part->M(),inputWeight);
-
-  //           if ( part->Y() < -2.5 && part->Y() > -4.0 && mcInYRangeProxy  ){
-  //             h = mcInYRangeProxy->Histo(hname.Data());
-  //             if (!h){
-  //               AliError(Form("Could not get /%s/%s/%s/%s/INYRANGE %s",MCInputPrefix(),eventSelection,triggerClassName,centrality,hname.Data()));
-  //               continue;
-  //             }
-  //             h->Fill(part->M(),inputWeight);
-  //           }
-  //         }
-
-  //         // Fill compute mean pt histo
-  //         if ( fcomputeMeanPt ){
-
-  //           TString hprofName = Form("MeanPtVs%s",hname.Data());
-  //           TProfile* hprof   = MCProf(eventSelection,triggerClassName,centrality,hprofName.Data());
-
-  //           if ( !hprof )AliError(Form("Could not get %s",hprofName.Data()));
-  //           else hprof->Fill(part->M(),part->Pt(),inputWeight);
-
-  //           if ( part->Y() < -2.5 && part->Y() > -4.0 ){
-  //             hprof = MCProf(eventSelection,triggerClassName,Form("%s/INYRANGE",centrality),hprofName.Data());
-  //             if ( !hprof )AliError(Form("Could not get %s",hprofName.Data()));
-  //             else hprof->Fill(part->M(),part->Pt(),inputWeight);
-  //           }
-  //         }
-  //       }
-  //     }
-  //   }
-  // }
-
-  // delete mcProxy;
-  // delete mcInYRangeProxy;
+  AliError("AliMuMuFlow does not deal with MC event yet, implement it !");
 }
 
 //_____________________________________________________________________________
@@ -719,45 +589,6 @@ Double_t AliAnalysisMuMuFlowSP::TriggerLptApt ( Double_t* xVal, Double_t* par )
 }
 
 //_____________________________________________________________________________
-Bool_t AliAnalysisMuMuFlowSP::IsPtInRange(const AliVParticle& t1, const AliVParticle& t2, Double_t& ptmin, Double_t& ptmax) const
-{
-  /// Whether the pair passes the pT cut
-
-  TLorentzVector total(t1.Px(),t1.Py(),t1.Pz(),TMath::Sqrt(AliAnalysisMuonUtility::MuonMass2()+t1.P()*t1.P()));
-  TLorentzVector p2(t2.Px(),t2.Py(),t2.Pz(),TMath::Sqrt(AliAnalysisMuonUtility::MuonMass2()+t2.P()*t2.P()));
-
-  total += p2;
-
-  Double_t pt = total.Pt();
-
-  return  ( pt < ptmax && pt > ptmin );
-}
-
-//_____________________________________________________________________________
-void AliAnalysisMuMuFlowSP::NameOfIsPtInRange(TString& name, Double_t& ptmin, Double_t& ptmax) const
-{
-  name.Form("PAIRPTIN-%2.1f_-%2.1f",ptmin,ptmax);
-}
-
-//_____________________________________________________________________________
-Bool_t AliAnalysisMuMuFlowSP::IsRapidityInRange(const AliVParticle& t1, const AliVParticle& t2, Double_t& yMin, Double_t& yMax) const
-{
-  /// Whether the pair passes the rapidity cut
-  TLorentzVector total(t1.Px(),t1.Py(),t1.Pz(),TMath::Sqrt(AliAnalysisMuonUtility::MuonMass2()+t1.P()*t1.P()));
-  TLorentzVector p2(t2.Px(),t2.Py(),t2.Pz(),TMath::Sqrt(AliAnalysisMuonUtility::MuonMass2()+t2.P()*t2.P()));
-
-  total += p2;
-
-  Double_t y = total.Rapidity();
-
-  return  ( y < yMax && y > yMin );
-}
-//_____________________________________________________________________________
-void AliAnalysisMuMuFlowSP::NameOfIsRapidityInRange(TString& name, Double_t& ymin, Double_t& ymax) const
-{
-  name.Form("PAIRYIN%2.2f-%2.2f",-ymin,-ymax);
-}
-//_____________________________________________________________________________
 void AliAnalysisMuMuFlowSP::SetBinsToFill(const char* particle, const char* bins)
 {
   delete fBinsToFill;
@@ -796,15 +627,12 @@ TVector2 AliAnalysisMuMuFlowSP::GetQn(const char* detector, Int_t step)
       if (qn == NULL) {
       // align step was not found, trying to get something else
         AliError(Form("%s step was not found for detector %s",fEqSteps[step].Data(),detector));
-        cout << "qn vector is null for detector " << detector << " at step " << fEqSteps[step] << endl;
-        // qn = (AliQnCorrectionsQnVector*) qnlist->First();
-        // if(qn == NULL) AliError ("No step was found.");
       }
       else {
         Qx = static_cast<Double_t> (qn->Qx(fHar));
         Qy = static_cast<Double_t> (qn->Qy(fHar));
       }
-      if(Qx == 0.) cout << " Qx=0 but qn vector is not null for detector " << detector << " at step " << fEqSteps[step] << endl;
+      if(Qx == 0.) AliError(Form(" Qx=0 but qn vector is not null for detector %s at step %s",detector,fEqSteps[step].Data()));
     }
   }
   TVector2 Q(Qx,Qy);

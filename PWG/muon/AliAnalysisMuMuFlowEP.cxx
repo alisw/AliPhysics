@@ -129,6 +129,10 @@ AliAnalysisMuMuFlowEP::DefineHistogramCollection(const char* eventSelection,
       AliDebug(1,Form("bin %d %s histoname = %s",nb,r->AsString().Data(),minvName.Data()));
 
       if ( fcomputeMeanV2 && !minvName.Contains("PHI")){
+        TString mYName(Form("MeanYVs%s",minvName.Data()));
+        CreatePairHistos(kHistoForData | kHistoForMCInput,eventSelection,triggerClassName,centrality,mYName.Data(),
+                  Form("#mu+#mu- mean y %s;M_{#mu^{+}#mu^{-}} (GeV/c^{2});<y^{#mu^{+}#mu^{-} (GeV/c^{2})}>",r->AsString().Data()),nMinvBins,minvMin,minvMax,0);
+
         TString mV2Name[3];
         for(Int_t i=0; i<3;i++){
           mV2Name[i] = Form("MeanV2Vs%s_EP_%s",minvName.Data(),fDetectors[i].Data());
@@ -147,17 +151,17 @@ AliAnalysisMuMuFlowEP::DefineHistogramCollection(const char* eventSelection,
       if ( !IsHistogramDisabled(minvName.Data()) ){
 
         AliDebug(1,Form("bin %d %s histoname = %s",nb,r->AsString().Data(),minvName.Data()));
-        if ( fcomputeMeanV2 && !minvName.Contains("phi") ){
+        if ( fcomputeMeanV2 && !minvName.Contains("PHI") ){
           TString mYName(Form("MeanYVs%s",minvName.Data()));
           CreatePairHistos(kHistoForData | kHistoForMCInput,eventSelection,triggerClassName,centrality,mYName.Data(),
-                           Form("#mu+#mu- mean y %s;M_{#mu^{+}#mu^{-}} (GeV/c^{2});<y^{#mu^{+}#mu^{-} (GeV/c^{2})}>",r->AsString().Data()),nMinvBins,minvMin,minvMax,0);
+                           Form("#mu+#mu- mean (AE corrected) y %s;M_{#mu^{+}#mu^{-}} (GeV/c^{2});<y^{#mu^{+}#mu^{-} (GeV/c^{2})}>",r->AsString().Data()),nMinvBins,minvMin,minvMax,0);
 
           TString mV2Name[3];
           for(Int_t i=0; i<fNDetectors;i++){
             mV2Name[i] = Form("MeanV2Vs%s_EP_%s",minvName.Data(),fDetectors[i].Data());
           // Reconstructed pair histo
             CreatePairHistos(kHistoForData | kHistoForMCInput,eventSelection,triggerClassName,centrality,mV2Name[i].Data(),
-                           Form("#mu+#mu- mean v_{2}^{obs} %s;M_{#mu^{+}#mu^{-}} (GeV/c^{2});v_{2}^{obs} =< cos {2(#varphi_{#mu^{+}#mu^{-}}- #Psi_{EP,2})} > with %s",r->AsString().Data(),fDetectors[i].Data()),nMinvBins,minvMin,minvMax,0);
+                           Form("#mu+#mu- mean (AE corrected) v_{2}^{obs} %s;M_{#mu^{+}#mu^{-}} (GeV/c^{2});v_{2}^{obs} =< cos {2(#varphi_{#mu^{+}#mu^{-}}- #Psi_{EP,2})} > with %s",r->AsString().Data(),fDetectors[i].Data()),nMinvBins,minvMin,minvMax,0);
           }
         }
       }
@@ -437,7 +441,7 @@ void AliAnalysisMuMuFlowEP::FillHistosForPair(const char* eventSelection,
             else hCorr->Fill(pair4MomentumMC->M(),inputWeightMC/AccxEffMC);
           }
 
-          if (fcomputeMeanV2){
+          if (fcomputeMeanV2 && (r->Quantity() == "PT"||r->IsIntegrated())){
 
             TString hprofCorrName("");
             TString hprofYName("");
