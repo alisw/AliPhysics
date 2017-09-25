@@ -349,6 +349,7 @@ void AliAnalysisTaskEMCALClusterTurnOn::UserCreateOutputObjects(){
     hEt_M02 = new TH2D("hEt_M02", ";#it{E}_{T} (GeV);#it{#lambda}^{2}_{0}",3000,0.,60.,1500,0.,3.);
     hEt_M02->Sumw2();
     fOutput->Add(hEt_M02); 
+    
   }
   
   fE = new TH1D("hE_NC","E distribution for Clusters",200,0.,100.);

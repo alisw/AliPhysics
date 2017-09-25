@@ -77,7 +77,7 @@ void Sort_RunNumbers(TString period="LHC15n",Int_t trainNo=603,TString runList="
 /// the bad map looks at a certain runNumber. If everything is committed
 /// correctly they should show the same
 ///________________________________________________________________________
-void Test_OADB(TString period="LHC15n",Int_t trainNo=603,TString version="5",TString runList="")
+void Test_OADB(TString period="LHC15n",Int_t trainNo=603,TString version="INT7Emc",TString runList="")
 {
     gStyle->SetOptStat(0); //..Do not plot stat boxes
 	//......................................................
@@ -118,8 +118,8 @@ void Test_OADB(TString period="LHC15n",Int_t trainNo=603,TString version="5",TSt
     Int_t nRuns=RunIdVec.size();
 	//......................................................
 	//..Get the OADB information
-	TString fBasePath="/Users/Eliane/Software/alice/sw/osx_x86-64/AliPhysics/latest-ali-master/OADB/EMCAL";
-	//TString fBasePath="/Users/Eliane/Software/BadChannelAnalysis";
+	//TString fBasePath="/Users/Eliane/Software/alice/sw/osx_x86-64/AliPhysics/latest-ali-master/OADB/EMCAL"; //..from AliPhysics
+	TString fBasePath="/Users/Eliane/Software/BadChannelAnalysis"; //..locally from OADB commit/e-mail to test quickly
 
 	AliOADBContainer *cont=new AliOADBContainer("");
 	cont->InitFromFile(Form("%s/EMCALBadChannels.root",fBasePath.Data()),"AliEMCALBadChannels");
@@ -272,7 +272,17 @@ void Test_OADB(TString period="LHC15n",Int_t trainNo=603,TString version="5",TSt
 		else             C4   ->Print(Form("%s",summaryPDF.Data()));
 	}//end of run loop
 	cout<<"==Total Summary=="<<endl;
-	cout<<"Runs with a bad map ("<<RunsWithMap.size()<<"):"<<endl;
-	//loop
-	cout<<"Runs without a bad map ("<<RunsWithoutMap.size()<<"):"<<endl;
+	cout<<"Runs with a bad map ("<<RunsWithMap.size()<<"): "<<flush;
+	for(Int_t i=0;i<(Int_t)RunsWithMap.size();i++)
+	{
+		cout<<RunsWithMap.at(i)<<","<<flush;
+	}
+	cout<<endl;
+	//..print runs without a correct map.
+	cout<<"Runs without a bad map ("<<RunsWithoutMap.size()<<"): "<<flush;
+	for(Int_t i=0;i<(Int_t)RunsWithoutMap.size();i++)
+	{
+		cout<<RunsWithoutMap.at(i)<<","<<flush;
+	}
+	cout<<endl;
 }

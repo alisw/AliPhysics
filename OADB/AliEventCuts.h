@@ -84,6 +84,8 @@ class AliEventCuts : public TList {
     void   SetupRun2pp();
     void   SetupRun2pA(int iPeriod);
 
+    static bool GoodPrimaryAODVertex(AliVEvent *ev);
+
     /// While the general philosophy here is to avoid setters and getters
     /// for some variables (like the max z vertex position) standard the cuts usually follow some patterns
     /// (e.g. the max vertex z position is always symmetric wrt the nominal beam collision point) thus
@@ -100,6 +102,7 @@ class AliEventCuts : public TList {
 
     bool          fGreenLight;                    ///< If true it will bypass all the selections.
     bool          fMC;                            ///< Set to true by the automatic setup when analysing MC (in manual mode *you* are responsible for it). In MC the correlations cuts are disabled.
+
     bool          fRequireTrackVertex;            ///< if true all the events with only the SPD vertex are rejected
     float         fMinVtz;                        ///< Min z position for the primary vertex
     float         fMaxVtz;                        ///< Max z position for the primary vertex
@@ -107,6 +110,7 @@ class AliEventCuts : public TList {
     float         fMaxDeltaSpdTrackNsigmaSPD;     ///<
     float         fMaxDeltaSpdTrackNsigmaTrack;   ///<
     float         fMaxResolutionSPDvertex;        ///<
+    bool          fCheckAODvertex;                ///< if true it rejects the AOD primary vertices coming from TPC ESD vertices or SPD placeholder vertices
 
     bool          fRejectDAQincomplete;           ///< Reject events that have incomplete information
 
@@ -171,8 +175,10 @@ class AliEventCuts : public TList {
     bool          fOverrideAutoPileUpCuts;        ///<  If true the pile-up cuts are defined by the user.
 
     /// The following pointers are used to avoid the intense usage of FindObject. The objects pointed are owned by (TList*)this.
-    TH1I* fCutStats;               //!<! Cuts statistics: every column keeps track of how many times a cut is passed independently from the other cuts.
-    TH1I* fNormalisationHist;      //!<! Cuts statistics: every column keeps track of how many times a cut is passed once that all the other are passed.
+    TH1D* fCutStats;               //!<! Cuts statistics: every column keeps track of how many times a cut is passed independently from the other cuts.
+    TH1D* fCutStatsAfterTrigger;   //!<! Cuts statistics: every column keeps track of how many times a cut is passed for events that pass the trigger selection
+    TH1D* fCutStatsAfterMultSelection; //!<! Cuts statistics: every column keeps track of how many times a cut is passed for events that pass the multiplicity selection
+    TH1D* fNormalisationHist;      //!<! Cuts statistics: every column keeps track of how many times a cut is passed once that all the other are passed.
     TH1D* fVtz[2];                 //!<! Vertex z distribution
     TH1D* fDeltaTrackSPDvtz[2];    //!<! Difference between the vertex computed using SPD and the track vertex
     TH1D* fCentrality[2];          //!<! Centrality percentile distribution
@@ -188,7 +194,7 @@ class AliEventCuts : public TList {
     AliESDtrackCuts* fFB32trackCuts; //!<! Cuts corresponding to FB32 in the ESD (used only for correlations cuts in ESDs)
     AliESDtrackCuts* fTPConlyCuts;   //!<! Cuts corresponding to the standalone TPC cuts in the ESDs (used only for correlations cuts in ESDs)
 
-    ClassDef(AliEventCuts,4)
+    ClassDef(AliEventCuts,5)
 };
 
 template<typename F> F AliEventCuts::PolN(F x,F* coef, int n) {

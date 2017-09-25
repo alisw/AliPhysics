@@ -82,10 +82,10 @@ AliAnalysisTaskSEDmesonsFilterCJ::AliAnalysisTaskSEDmesonsFilterCJ() :
   fRejectDfromB(kTRUE),
   fKeepOnlyDfromB(kFALSE),
   fAodEvent(0),
-  fArrayDStartoD0pi(0),
-  fMCarray(0),
   fMCHeader(0),
   fRan(0),
+  fArrayDStartoD0pi(0),
+  fMCarray(0),
   fCandidateArray(0),
   fSideBandArray(0),
   fCombinedDmesons(0),
@@ -158,10 +158,10 @@ AliAnalysisTaskSEDmesonsFilterCJ::AliAnalysisTaskSEDmesonsFilterCJ(const char *n
   fRejectDfromB(kTRUE),
   fKeepOnlyDfromB(kFALSE),
   fAodEvent(0),
-  fArrayDStartoD0pi(0),
-  fMCarray(0),
   fMCHeader(0),
   fRan(0),
+  fArrayDStartoD0pi(0),
+  fMCarray(0),
   fCandidateArray(0),
   fSideBandArray(0),
   fCombinedDmesons(0),
@@ -589,7 +589,7 @@ if(fUseMCInfo && fBuildRMEff){
           Int_t pdgDgDStartoD0pi[2] = { 421, 211 };  // D0,pi
           Int_t pdgDgD0toKpi[2] = { 321, 211 };      // K, pi
           
-          Int_t mcLabel = NULL;
+          Int_t mcLabel = 0;
           if (fCandidateType == kDstartoKpipi) mcLabel = dstar->MatchToMC(413, 421, pdgDgDStartoD0pi, pdgDgD0toKpi, fMCarray);
           else mcLabel = charmCand->MatchToMC(421, fMCarray, fNProngs, fPDGdaughters);
 
@@ -1573,7 +1573,7 @@ Int_t AliAnalysisTaskSEDmesonsFilterCJ::CheckOrigin(AliAODMCParticle* part, TClo
   while (mother >= 0) {
     istep++;
     AliAODMCParticle* mcGranma = static_cast<AliAODMCParticle*>(mcArray->At(mother));
-    if (mcGranma >= 0) {
+    if (mcGranma != 0) {
       pdgGranma = mcGranma->GetPdgCode();
       abspdgGranma = TMath::Abs(pdgGranma);
       if ((abspdgGranma > 500 && abspdgGranma < 600) || (abspdgGranma > 5000 && abspdgGranma < 6000)) {
@@ -1622,7 +1622,7 @@ Int_t AliAnalysisTaskSEDmesonsFilterCJ::CheckOrigin(Int_t ipart, AliStack* stack
   while (mother >= 0) {
     istep++;
     TParticle* mcGranma = stack->Particle(mother);
-    if (mcGranma >= 0) {
+    if (mcGranma != 0) {
       pdgGranma = mcGranma->GetPdgCode();
       abspdgGranma = TMath::Abs(pdgGranma);
       if ((abspdgGranma > 500 && abspdgGranma < 600) || (abspdgGranma > 5000 && abspdgGranma < 6000)) {

@@ -110,8 +110,8 @@ private:
 	Double_t fQC_eta_cut_min;
 	Double_t fQC_eta_cut_max;
 
-	TComplex QvectorQC[kNH][nKL];
-	TComplex QvectorQCeta10[kNH][nKL][2]; // ksub
+	TComplex QvectorQC[kNH];
+	TComplex QvectorQCeta10[kNH][2]; // ksub
 
 	TH1D *h_phi_module[7][2]; // cent, isub
 	TFile *inclusFile; // pointer for root file
@@ -139,7 +139,6 @@ private:
 	AliJTH1D fh_vn;//!  // single vn^k  array [ih][ik][iCent]
 	AliJTH1D fh_vn_vn;//! // combination for <vn*vn> [ih][ik][ihh][ikk][iCent]
 	AliJTH1D fh_cn_4c;//!  // QC
-	AliJTH1D fh_cn_cn_4c;//! // QC
 	AliJTH1D fh_cn_2c;//!  // QC
 	AliJTH1D fh_cn_cn_2c;//! // QC
 	AliJTH1D fh_cn_2c_eta10;//!  // QC
