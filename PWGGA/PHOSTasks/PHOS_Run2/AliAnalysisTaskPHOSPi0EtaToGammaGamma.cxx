@@ -1454,6 +1454,8 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::FillPhoton()
     AliCaloPhoton *ph = (AliCaloPhoton*)fPHOSClusterArray->At(iph);
     weight = 1.;
 
+    if(!fIsMC && fIsPHOSTriggerAnalysis && !ph->IsTrig()) continue;//it is meaningless to focus on photon without fired trigger in PHOS triggered data.
+
     pT = ph->Pt();
     energy = ph->Energy();
     phi = ph->Phi();
@@ -1532,6 +1534,8 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::FillMgg()
     for(Int_t i2=i1+1;i2<multClust;i2++){
       AliCaloPhoton *ph2 = (AliCaloPhoton*)fPHOSClusterArray->At(i2);
       if(!fPHOSClusterCuts->AcceptPhoton(ph2)) continue;
+
+      if(!fIsMC && fIsPHOSTriggerAnalysis && (!ph1->IsTrig() && !ph2->IsTrig())) continue;//it is meaningless to reconstruct invariant mass with FALSE-FALSE combination in PHOS triggered data.
 
       e1 = ph1->Energy();
       e2 = ph2->Energy();
@@ -1635,6 +1639,8 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::FillMixMgg()
       for(Int_t i2=0;i2<mixPHOS->GetEntriesFast();i2++){
         AliCaloPhoton *ph2 = (AliCaloPhoton*)mixPHOS->At(i2);
         if(!fPHOSClusterCuts->AcceptPhoton(ph2)) continue;
+
+        if(!fIsMC && fIsPHOSTriggerAnalysis && (!ph1->IsTrig() && !ph2->IsTrig())) continue;//it is meaningless to reconstruct invariant mass with FALSE-FALSE combination in PHOS triggered data.
 
         e1 = ph1->Energy();
         e2 = ph2->Energy();
@@ -2086,7 +2092,7 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::EstimateTriggerEfficiency()
     AliCaloPhoton *ph1 = (AliCaloPhoton*)fPHOSClusterArray->At(i1);
     if(!fPHOSClusterCuts->AcceptPhoton(ph1)) continue;
     if(!ph1->IsTrig()) continue;
-    if(!ph1->IsTOFOK()) continue;
+    //if(!ph1->IsTOFOK()) continue;
 
     relId[0] = 0; relId[1] = 0; relId[2] = 0; relId[3] = 0;
 
@@ -2108,7 +2114,7 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::EstimateTriggerEfficiency()
 
     for(Int_t i2=0;i2<multClust;i2++){
       AliCaloPhoton *ph2 = (AliCaloPhoton*)fPHOSClusterArray->At(i2);
-      if(!ph2->IsTOFOK()) continue;
+      //if(!ph2->IsTOFOK()) continue;
 
       if(i2==i1) continue;//reject same cluster combination
 
@@ -2149,7 +2155,6 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::EstimateTriggerEfficiency()
       // && (TMath::Abs(dx) < 2)
       // && (TMath::Abs(dz) < 2)
       // ) continue;//reject cluster pair where they belong to same 4x4 region.
-     
 
       AliInfo(Form("dm = %d , dt = %d , dx = %d , dz = %d, truch = %d.",dm,dt,dx,dz,truch));
 
