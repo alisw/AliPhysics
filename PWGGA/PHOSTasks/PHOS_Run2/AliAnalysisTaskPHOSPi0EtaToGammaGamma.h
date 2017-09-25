@@ -15,6 +15,7 @@ class AliStack;
 class AliQnCorrectionsManager;
 
 #include "AliAnalysisTaskSE.h"
+#include "AliQnCorrectionsQnVector.h"
 
 #include "AliPHOSTriggerHelper.h"
 #include "AliPHOSEventCuts.h"
@@ -26,7 +27,6 @@ class AliAnalysisTaskPHOSPi0EtaToGammaGamma : public AliAnalysisTaskSE {
 
     AliAnalysisTaskPHOSPi0EtaToGammaGamma(const char *name = "Pi0EtaToGammaGamma");
     virtual ~AliAnalysisTaskPHOSPi0EtaToGammaGamma(); 
-    void SetNonLinearityStudyFlag(Bool_t flag) {fIsNonLinStudyNeeded = flag;}
 
     void SetESDtrackCutsForGlobal(AliESDtrackCuts* cuts){fESDtrackCutsGlobal = cuts;}
     void SetESDtrackCutsForGlobalConstrained(AliESDtrackCuts* cuts){fESDtrackCutsGlobalConstrained = cuts;}
@@ -76,6 +76,7 @@ class AliAnalysisTaskPHOSPi0EtaToGammaGamma : public AliAnalysisTaskSE {
     void SetCentralityMax(Float_t max) {fCentralityMax = max;}
     void SetDepthNMixed(Int_t Nmix)    {fNMixed        = Nmix;}
     void SetCentralityEstimator(TString estimator) {fEstimator = estimator;}
+    void SetQnEstimator(TString estimator) {fQnEstimator = estimator;}
     void SetPHOSTriggerAnalysis(TString selection){
       fIsPHOSTriggerAnalysis = kTRUE;
       fPHOSTriggerHelper  = new AliPHOSTriggerHelper(selection);
@@ -99,6 +100,7 @@ class AliAnalysisTaskPHOSPi0EtaToGammaGamma : public AliAnalysisTaskSE {
     void SelectTriggeredCluster();
     void FillRejectionFactorMB();
     void FillEpRatio();
+    const AliQnCorrectionsQnVector *GetQnVectorFromList(const TList *qnlist, const char* subdetector);
 
     virtual void SetMCWeight();//set weight related to M.C. (pT slope of mother pi0/eta/K0S/gamma)
 
@@ -110,8 +112,6 @@ class AliAnalysisTaskPHOSPi0EtaToGammaGamma : public AliAnalysisTaskSE {
     Double_t DeltaPhiIn0Pi(Double_t dphi);//this returns dphi in 0-pi range.
 
     virtual Int_t FindCommonParent(Int_t iPart, Int_t jPart);
-
-    virtual void DoNonLinearityStudy();
 
     void FillHistogramTH1(TList *list, const Char_t *name, Double_t x, Double_t w=1., Option_t *opt = "") const ;
     void FillHistogramTH2(TList *list, const Char_t *name, Double_t x, Double_t y, Double_t w=1., Option_t *opt = "") const ;
@@ -181,7 +181,7 @@ class AliAnalysisTaskPHOSPi0EtaToGammaGamma : public AliAnalysisTaskSE {
     AliPHOSJetJetMC *fJJMCHandler;
     Int_t fRunNumber;
     AliPHOSGeometry *fPHOSGeo;
-    TList *fPHOSEvents[10][12];
+    TList *fPHOSEvents[10];
     TClonesArray *fPHOSClusterArray;
     TString fEstimator;
     AliMultSelection *fMultSelection;
@@ -192,16 +192,12 @@ class AliAnalysisTaskPHOSPi0EtaToGammaGamma : public AliAnalysisTaskSE {
     Double_t fVertex[3];
     Int_t fZvtx;
     Bool_t fIsFlowTask;
+    TString fQnEstimator;
     AliQnCorrectionsManager *fFlowQnVectorMgr;
     TString fTPCEPName[3]; 
     TString fV0EPName[3]; 
-    Double_t fEPV0A;
-    Double_t fEPV0C;
-    Double_t fEPTPC;
-    Int_t fEPBin;
+    Double_t fEventPlane;
     Int_t fNHybridTrack;
-    Bool_t fIsNonLinStudyNeeded;
-    TF1 *fNonLin[7][7];
     Bool_t fIsPHOSTriggerAnalysis;
     AliPHOSTriggerHelper *fPHOSTriggerHelper;//for real PHOS triggered data analysis
     AliPHOSTriggerHelper *fPHOSTriggerHelperL0; //only for rejection factor in MB
@@ -214,7 +210,7 @@ class AliAnalysisTaskPHOSPi0EtaToGammaGamma : public AliAnalysisTaskSE {
     AliAnalysisTaskPHOSPi0EtaToGammaGamma(const AliAnalysisTaskPHOSPi0EtaToGammaGamma&);
     AliAnalysisTaskPHOSPi0EtaToGammaGamma& operator=(const AliAnalysisTaskPHOSPi0EtaToGammaGamma&);
 
-    ClassDef(AliAnalysisTaskPHOSPi0EtaToGammaGamma, 22);
+    ClassDef(AliAnalysisTaskPHOSPi0EtaToGammaGamma, 23);
 };
 
 #endif
