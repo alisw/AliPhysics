@@ -55,6 +55,12 @@
 #include "AliVCluster.h"
 #include "AliVParticle.h"
 
+#ifdef EXPERIMENTAL_JETCONSTITUENTS
+#include "AliEmcalClusterJetConstituent.h"
+#include "AliEmcalParticleJetConstituent.h"
+#endif
+
+
 /// \cond CLASSIMP
 ClassImp(EmcalTriggerJets::AliAnalysisTaskEmcalJetSubstructureTree);
 /// \endcond
@@ -106,6 +112,18 @@ void AliAnalysisTaskEmcalJetSubstructureTree::UserCreateOutputObjects() {
   fQAHistos->CreateTH2("hClusterConstTime", "EMCAL cluster time vs. jet pt; p_{t, jet} (GeV/c); t_{cl} (ns)", jetptbinning, timebinning);
   fQAHistos->CreateTH2("hClusterConstM02", "EMCAL cluster M02 vs. jet pt; p{t, jet} (GeV/c); M02", jetptbinning, m02binning);
   fQAHistos->CreateTH2("hClusterConstNcell", "EMCAL cluster ncell vs. jet pt; p{t, jet} (GeV/c); Number of cells", jetptbinning, ncellbinning);
+
+  // Test of constituent QA
+#ifdef EXPERIMENTAL_JETCONSTITUENTS
+  fQAHistos->CreateTH2("hChargedConstituentPt", "charged constituent pt vs jet pt (via constituent map); p_{t,jet} (GeV/c); p_{t,ch} (GeV/c)", jetptbinning, clusterenergybinning);
+  fQAHistos->CreateTH2("hChargedIndexPt", "charged constituent pt vs jet pt (via index map); p_{t, jet} (GeV/c); p_{t, ch} (GeV/c)", jetptbinning, clusterenergybinning);
+
+ fQAHistos->CreateTH2("hClusterConstituentEDefault", "cluster constituent default energy vs. jet pt (va constituent map); p_{t, jet} (GeV/c); E_{cl} (GeV)", jetptbinning, clusterenergybinning);
+ fQAHistos->CreateTH2("hClusterConstituentENLC", "cluster constituent non-linearity-corrected energy vs. jet pt (va constituent map); p_{t, jet} (GeV/c); E_{cl} (GeV)", jetptbinning, clusterenergybinning);
+ fQAHistos->CreateTH2("hClusterConstituentEHC", "cluster constituent hadronic-corrected energy vs. jet pt (va constituent map); p_{t, jet} (GeV/c); E_{cl} (GeV)", jetptbinning, clusterenergybinning);
+ fQAHistos->CreateTH2("hClusterIndexENLC", "cluster constituent non-linearity-corrected energy vs. jet pt (via index map); p_{t, jet} (GeV/c); E_{cl} (GeV)", jetptbinning, clusterenergybinning);
+ fQAHistos->CreateTH2("hClusterIndexEHC", "cluster constituent hadronic-corrected energy vs. jet pt (via index map); p_{t, jet} (GeV/c); E_{cl} (GeV)", jetptbinning, clusterenergybinning);
+#endif
   for(auto h : *(fQAHistos->GetListOfHistograms())) fOutput->Add(h);
 
   OpenFile(2);
@@ -231,6 +249,7 @@ bool AliAnalysisTaskEmcalJetSubstructureTree::Run(){
       double pt = jet->Pt(), pz = jet->Pz(), E = jet->E(), M = TMath::Sqrt(E*E - pt*pt - pz*pz);
       AliDebugStream(2) << "Next jet: pt:" << jet->Pt() << ", E: " << E << ", pz: " << pz << ", M(self): " << M << "M(fj)" << jet->M() << std::endl;
       AliEmcalJet *associatedJet = jet->ClosestJet();
+
       if(mcjets) {
         if(!associatedJet) continue;
         try {
@@ -488,12 +507,43 @@ Double_t AliAnalysisTaskEmcalJetSubstructureTree::MakePtD(const AliEmcalJet &jet
 void AliAnalysisTaskEmcalJetSubstructureTree::DoConstituentQA(const AliEmcalJet *jet, const AliParticleContainer *cont, const AliClusterContainer *clusters){
   for(int icl = 0; icl < jet->GetNumberOfClusters(); icl++){
     AliVCluster *clust = jet->ClusterAt(icl, clusters->GetArray());
-    AliDebugStream(1) << "cluster time " << clust->GetTOF() << std::endl;
-    fQAHistos->FillTH1("hClusterConstE", jet->Pt(),clust->GetUserDefEnergy(clusters->GetDefaultClusterEnergy()));
-    fQAHistos->FillTH1("hClusterConstTime", jet->Pt(), clust->GetTOF());
-    fQAHistos->FillTH1("hClusterConstM02", jet->Pt(), clust->GetM02());
-    fQAHistos->FillTH1("hClusterConstNcell", jet->Pt(), clust->GetNCells());
+    AliDebugStream(3) << "cluster time " << clust->GetTOF() << std::endl;
+    fQAHistos->FillTH2("hClusterConstE", jet->Pt(),clust->GetUserDefEnergy(clusters->GetDefaultClusterEnergy()));
+    fQAHistos->FillTH2("hClusterConstTime", jet->Pt(), clust->GetTOF());
+    fQAHistos->FillTH2("hClusterConstM02", jet->Pt(), clust->GetM02());
+    fQAHistos->FillTH2("hClusterConstNcell", jet->Pt(), clust->GetNCells());
+
+#ifdef EXPERIMENTAL_JETCONSTITUENTS
+    fQAHistos->FillTH2("hClusterIndexENLC", jet->Pt(), clust->GetNonLinCorrEnergy());
+    fQAHistos->FillTH2("hClusterIndexEHC", jet->Pt(), clust->GetHadCorrEnergy());
+#endif
   }
+
+#ifdef EXPERIMENTAL_JETCONSTITUENTS
+  // Loop over charged particles - fill test histogram
+  for(int itrk = 0; itrk < jet->GetNumberOfTracks(); itrk++){
+    AliVParticle *part = jet->TrackAt(itrk, cont->GetArray());
+    fQAHistos->FillTH2("hChargedIndexPt", jet->Pt(), part->Pt());
+  }
+
+  // Look over charged constituents
+  AliDebugStream(2) << "Jet: Number of particle constituents: " << jet->GetParticleConstituents().GetEntriesFast() << std::endl;
+  for(auto pconst : jet->GetParticleConstituents()) {
+    PWG::JETFW::AliEmcalParticleJetConstituent *part = static_cast<PWG::JETFW::AliEmcalParticleJetConstituent *>(pconst);
+    AliDebugStream(3) << "Found particle constituent with pt " << part->Pt() << ", from VParticle " << part->GetParticle()->Pt() << std::endl;
+    fQAHistos->FillTH2("hChargedConstituentPt", jet->Pt(), part->Pt());
+  }
+
+  // Loop over neutral constituents
+  AliDebugStream(2) << "Jet: Number of cluster constituents: " << jet->GetClusterConstituents().GetEntriesFast() << std::endl;
+  for(auto cconst : jet->GetClusterConstituents()){
+    PWG::JETFW::AliEmcalClusterJetConstituent *clust = static_cast<PWG::JETFW::AliEmcalClusterJetConstituent *>(cconst);
+    AliDebugStream(3) << "Found cluster constituent with energy " << clust->E() << " using energy definition " << static_cast<int>(clust->GetDefaultEnergyType()) << std::endl;
+    fQAHistos->FillTH2("hClusterConstituentEDefault", jet->Pt(), clust->E());
+    fQAHistos->FillTH2("hClusterConstituentENLC", jet->Pt(), clust->GetCluster()->GetNonLinCorrEnergy());
+    fQAHistos->FillTH2("hClusterConstituentEHC", jet->Pt(), clust->GetCluster()->GetHadCorrEnergy());
+  }
+#endif
 }
 
 AliAnalysisTaskEmcalJetSubstructureTree *AliAnalysisTaskEmcalJetSubstructureTree::AddEmcalJetSubstructureTreeMaker(Bool_t isMC, Bool_t isData, Double_t jetradius, JetType_t jettype, AliJetContainer::ERecoScheme_t recombinationScheme, const char *trigger){
