@@ -147,6 +147,7 @@ AliAnalysisHFETPCTOFNew* ConfigHFETPCTOF(Bool_t isMCc, Bool_t isAODc, Bool_t isP
     
     ///Weights tilted up and down calculated using the charged pion systematic uncertainty
     ///................................................................................................................................................
+    /*
     if(isCharPion == 0){
 		///Good weights for d20a2_extra (data over MB), where data = charged pions and eta from Mt-scaling (using |eta| < 1.2 in MC for the weight calculation)
 		
@@ -203,7 +204,65 @@ AliAnalysisHFETPCTOFNew* ConfigHFETPCTOF(Bool_t isMCc, Bool_t isAODc, Bool_t isP
 		task->SetEtaWeight3(hetaw3);
 		///--------------------------------------------------------------
 		}
+		*/
 		
+		
+		if(isCharPion == 0){
+		///Good weights for d20a2_extra (data over MB), where data = charged pions and eta from Mt-scaling (using |y| < 0.8 in MC for the weight calculation)
+		
+		cout<<"-----------reference--------------------"<<endl;
+		///Reference-----------------------------------------------------
+		TF1 *hpi0w1 = new TF1("hpi0w1","[0] / (TMath::Power(TMath::Exp( - [1] * x[0] - [2] * x[0] * x[0] ) + x / [3], [4]))", 0.5,2.5);
+		hpi0w1->FixParameter(0,1.00835e+01);
+		hpi0w1->FixParameter(1,-8.79889e+00);
+		hpi0w1->FixParameter(2,7.13270e+00);
+		hpi0w1->FixParameter(3,3.30909e-02);
+		hpi0w1->FixParameter(4,4.14692e-01);
+		task->SetPi0Weight(hpi0w1);
+		
+		TF1 *hpi0w2 = new TF1("hpi0w2","[0] / (TMath::Power(TMath::Exp( - [1] * x[0] - [2] * x[0] * x[0] ) + x / [3], [4]))", 2.5,6);
+		hpi0w2->FixParameter(0,1.07625e+00);
+		hpi0w2->FixParameter(1,-3.99293e+00);
+		hpi0w2->FixParameter(2,9.21251e-01);
+		hpi0w2->FixParameter(3,8.76327e-02);
+		hpi0w2->FixParameter(4,-1.00391e-01);
+		task->SetPi0Weight2(hpi0w2);
+		
+		TF1 *hpi0w3 = new TF1("hpi0w3","[0] / (TMath::Power(TMath::Exp( - [1] * x[0] - [2] * x[0] * x[0] ) + x / [3], [4]))", 6,20);
+		hpi0w3->FixParameter(0,2.32912e+00);
+		hpi0w3->FixParameter(1,-7.09878e-01);
+		hpi0w3->FixParameter(2,8.37756e-02);
+		hpi0w3->FixParameter(3,1.87128e+00);
+		hpi0w3->FixParameter(4,1.88703e-01);
+		task->SetPi0Weight3(hpi0w3);
+		
+		
+		TF1 *hetaw1 = new TF1("hetaw1","[0] / (TMath::Power(TMath::Exp( - [1] * x[0] - [2] * x[0] * x[0] ) + x / [3], [4]))", 0.5,2);
+		hetaw1->FixParameter(0,1.46145e+00);
+		hetaw1->FixParameter(1,-2.57763e+00);
+		hetaw1->FixParameter(2,4.48690e+00);
+		hetaw1->FixParameter(3,1.74529e+00);
+		hetaw1->FixParameter(4,2.83520e-01);
+		task->SetEtaWeight(hetaw1);
+		
+		
+		TF1 *hetaw2 = new TF1("hetaw2","[0] / (TMath::Power(TMath::Exp( - [1] * x[0] - [2] * x[0] * x[0] ) + x / [3], [4]))", 2,6);
+		hetaw2->FixParameter(0,1.18725e+00);
+		hetaw2->FixParameter(1,-1.87279e+00);
+		hetaw2->FixParameter(2,6.36254e-01);
+		hetaw2->FixParameter(3,1.60257e+00);
+		hetaw2->FixParameter(4,-1.04365e-01);
+		task->SetEtaWeight2(hetaw2);
+		
+		TF1 *hetaw3 = new TF1("hetaw3","[0] / (TMath::Power(TMath::Exp( - [1] * x[0] - [2] * x[0] * x[0] ) + x / [3], [4]))", 6,20);
+		hetaw3->FixParameter(0,1.36826e+00);
+		hetaw3->FixParameter(1,1.00818e+00);
+		hetaw3->FixParameter(2,3.23711e-01);
+		hetaw3->FixParameter(3,8.42844e-08);
+		hetaw3->FixParameter(4,-1.66152e-04);
+		task->SetEtaWeight3(hetaw3);
+		///--------------------------------------------------------------
+		}
 		
 		if(isCharPion == 1){
 			cout<<"***********************tilt 1******************************"<<endl;
