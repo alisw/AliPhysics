@@ -2971,7 +2971,7 @@ TProfile* AliAnalysisTaskSELc2V0bachelorTMVA::GetEstimatorHistogram(const AliVEv
       case kpp2016: //0 = LHC16j, 1 = LHC16k, 2 = LHC16l
          if (runNo >= 256219 && runNo <= 256418) period = 0;
          else if (runNo >= 256504 && runNo <= 258537) period = 1;
-         else if (runNo >= 265388 && runNo <= 265427) period = 2;
+         else if (runNo >= 258883 && runNo <= 260187) period = 2;
          if (period < 0 || period > 2) {AliInfo(Form("Run number %d not found for LHC16 pp!",runNo)); return 0;}
          break;
       case kpp2010: // 0 = LHC10b, 1 = LHC10c, 2 = LHC10d, 3 = LHC10e
