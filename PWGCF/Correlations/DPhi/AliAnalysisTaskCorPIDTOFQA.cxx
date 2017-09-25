@@ -166,7 +166,7 @@ void AliAnalysisTaskCorPIDTOFQA::UserCreateOutputObjects()
     }
 
     
-    //htree                      = new TTree("aodTree","Event tree with a branch");                                                                             //  Skim
+    //htree                      = new TTree("aodTree","Event tree with a branch");                                                                         //  Skim
     //helperAOD                  = new AliAODEvent;
     fHistPt                    = new TH1F("fHistPt",                    "Pt()",                       1300,       pt_binning);                              //  1
     deut_per_event             = new TH1I("deut_per_event",             "deut_per_event",               12,        0,     12);                              // 15
@@ -212,7 +212,7 @@ void AliAnalysisTaskCorPIDTOFQA::UserExec(Option_t *)
 
 
     int deut_count              = 0;
-    int trig_05_track_count     = 0;
+//  int trig_05_track_count     = 0;
 
 
     // loop over all these tracks
@@ -251,7 +251,7 @@ void AliAnalysisTaskCorPIDTOFQA::UserExec(Option_t *)
 	
 //	Float_t deltat = tof_minus_tpion(track);
 
-	float   mom           = track->P();
+//	float   mom           = track->P();
 	Short_t charge        = track->Charge();
 	Float_t deut_mean     = 0.0;
 	Float_t deut_sigma    = 0.0;
@@ -272,15 +272,15 @@ void AliAnalysisTaskCorPIDTOFQA::UserExec(Option_t *)
 //		{
 
 	    Double_t nSigmaTPCDeut = fPIDResponse->NumberOfSigmasTPC(track,(AliPID::EParticleType)5);  // 5 = deuteron
-	    Double_t nSigmaTOFDeut = fPIDResponse->NumberOfSigmasTOF(track,(AliPID::EParticleType)5);  // 5 = deuteron
-	    if(nSigmaTPCDeut < 4.0  &&  nSigmaTOFDeut < 4.0)
+//	    Double_t nSigmaTOFDeut = fPIDResponse->NumberOfSigmasTOF(track,(AliPID::EParticleType)5);  // 5 = deuteron
+	    if(TMath::Abs(nSigmaTPCDeut) < 4.0) //  &&  nSigmaTOFDeut < 4.0)
 	    {
-		if(mom >= 1.0  &&  mom < 4.4)
+		if(pt >= 1.0  &&  pt < 4.4)
 		{
 		    for(int w=0; w<3; w++){   fit_deut_curve->SetParameter(w, deut_curves[0][0][w]);   }
-		    deut_mean = fit_deut_curve->Eval(mom);
+		    deut_mean = fit_deut_curve->Eval(pt);
 		    for(int w=0; w<3; w++){   fit_deut_curve->SetParameter(w, deut_curves[0][1][w]);   }
-		    deut_sigma = fit_deut_curve->Eval(mom);
+		    deut_sigma = fit_deut_curve->Eval(pt);
 		    
 		    if(m2tof < deut_mean + cut_width * deut_sigma  &&   m2tof > deut_mean - cut_width * deut_sigma)
 		    {
@@ -301,15 +301,15 @@ void AliAnalysisTaskCorPIDTOFQA::UserExec(Option_t *)
 //		    )
 //		{
 	    Double_t nSigmaTPCDeut = fPIDResponse->NumberOfSigmasTPC(track,(AliPID::EParticleType)5);  // 5 = deuteron
-	    Double_t nSigmaTOFDeut = fPIDResponse->NumberOfSigmasTOF(track,(AliPID::EParticleType)5);  // 5 = deuteron
-	    if(nSigmaTPCDeut < 4.0  &&  nSigmaTOFDeut < 4.0)
+//	    Double_t nSigmaTOFDeut = fPIDResponse->NumberOfSigmasTOF(track,(AliPID::EParticleType)5);  // 5 = deuteron
+	    if(TMath::Abs(nSigmaTPCDeut) < 4.0)  //  &&  nSigmaTOFDeut < 4.0)
 	    {
-		if(mom >= 1.0  &&  mom < 4.4)
+		if(pt >= 1.0  &&  pt < 4.4)
 		{
 		    for(int w=0; w<3; w++){   fit_deut_curve->SetParameter(w, deut_curves[1][0][w]);   }
-		    deut_mean = fit_deut_curve->Eval(mom);
+		    deut_mean = fit_deut_curve->Eval(pt);
 		    for(int w=0; w<3; w++){   fit_deut_curve->SetParameter(w, deut_curves[1][1][w]);   }
-		    deut_sigma = fit_deut_curve->Eval(mom);
+		    deut_sigma = fit_deut_curve->Eval(pt);
 		    
 		    if(m2tof < deut_mean + cut_width * deut_sigma  &&   m2tof > deut_mean - cut_width * deut_sigma)
 		    {
@@ -327,33 +327,37 @@ void AliAnalysisTaskCorPIDTOFQA::UserExec(Option_t *)
     if (oh)
       oh->SetFillAOD(kFALSE);
 
-    if ((deut_count>=1)  &&  (trig_05_track_count>0)  &&  oh)
+//    if ((deut_count>=1)  &&  (trig_05_track_count>0)  &&  oh)
+//    {
+    if ((deut_count >= 1) && oh)
     {
-//    if ((deut_count >= 1) && oh) {
 	oh->SetFillAOD(kTRUE);
 	AliAODEvent *eout = dynamic_cast<AliAODEvent*>(oh->GetAOD());
 	AliAODEvent *evin = dynamic_cast<AliAODEvent*>(InputEvent());
 	TTree *tout = oh->GetTree();
-	if (tout) {
+	if (tout)
+	{
 	    TList *lout = tout->GetUserInfo();
-	    if (lout->FindObject("alirootVersion")==0) {
+	    if (lout->FindObject("alirootVersion")==0)
+	    {
 		TList *lin = AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()->GetUserInfo();
-		for (Int_t jj=0;jj<lin->GetEntries()-1;++jj) { 
+		for (Int_t jj=0;jj<lin->GetEntries()-1;++jj)
+		{ 
 		    lout->Add(lin->At(jj)->Clone(lin->At(jj)->GetName()));
 		}
 	    }
 	}
 	
-	if (1) {    AliAODHeader *out = (AliAODHeader*)eout->GetHeader();	                AliAODHeader *in  = (AliAODHeader*)evin->GetHeader();   *out = *in;  	}
-	if (1) {    AliTOFHeader *out = const_cast<AliTOFHeader*>(eout->GetTOFHeader());  const AliTOFHeader *in  = evin->GetTOFHeader();	        *out = *in;	}
-	if (1) {    AliAODVZERO  *out = eout->GetVZEROData();                                   AliAODVZERO  *in  = evin->GetVZEROData();      	        *out = *in;	}
-	if (1) {    AliAODTZERO  *out = eout->GetTZEROData();                                   AliAODTZERO  *in  = evin->GetTZEROData();     	        *out = *in;	}
-	if (1) {    TClonesArray *out = eout->GetTracks();                                      TClonesArray *in  = evin->GetTracks();    	    new (out) TClonesArray(*in);	}
-	if (1) {    TClonesArray *out = eout->GetVertices();                                    TClonesArray *in  = evin->GetVertices();	    new (out) TClonesArray(*in);	}
-	if (1) {    TClonesArray *out = eout->GetCaloClusters();                                TClonesArray *in  = evin->GetCaloClusters();        new (out) TClonesArray(*in);	}
+	if (1) {   AliAODHeader *out = (AliAODHeader*)eout->GetHeader();                      AliAODHeader *in  = (AliAODHeader*)evin->GetHeader();  	 *out = *in;      }
+	if (1) {   AliTOFHeader *out = const_cast<AliTOFHeader*>(eout->GetTOFHeader()); const AliTOFHeader *in  =                evin->GetTOFHeader();	 *out = *in;      }
+	if (1) {   AliAODVZERO  *out =                eout->GetVZEROData();	              AliAODVZERO  *in  =                evin->GetVZEROData();	 *out = *in;      }
+	if (1) {   AliAODTZERO  *out =                eout->GetTZEROData();	              AliAODTZERO  *in  =                evin->GetTZEROData();	 *out = *in;      }
+	if (1) {   TClonesArray *out =                eout->GetTracks();	              TClonesArray *in  =                evin->GetTracks();	  new (out) TClonesArray(*in);      }
+	if (1) {   TClonesArray *out =                eout->GetVertices();	              TClonesArray *in  =                evin->GetVertices();	  new (out) TClonesArray(*in);      }
+	if (1) {   TClonesArray *out =                eout->GetCaloClusters();	              TClonesArray *in  =                evin->GetCaloClusters(); new (out) TClonesArray(*in);      }
     }
-    
-      PostData(1, fOutputList);                           // stream the results the analysis of this event to
+
+    PostData(1, fOutputList);                           // stream the results the analysis of this event to
                                                         // the output manager which will take care of writing
                                                         // it to a file
 }
