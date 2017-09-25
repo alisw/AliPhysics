@@ -266,6 +266,11 @@ void AliAnalysisTaskEmcalVsPhos::AllocateClusterHistograms()
     TH2* histPhos = fHistManager.CreateTH2(histname.Data(), htitle.Data(), nRejBins, rejReasonBins, fNPtHistBins, fPtHistBins);
     SetRejectionReasonLabels(histPhos->GetXaxis());
     
+    histname = TString::Format("%s/hClusterRejectionReasonMC", cont->GetArrayName().Data());
+    htitle = histname + ";Rejection reason;#it{E}_{clus} (GeV/)";
+    TH2* histMC = fHistManager.CreateTH2(histname.Data(), htitle.Data(), nRejBins, rejReasonBins, fNPtHistBins, fPtHistBins);
+    SetRejectionReasonLabels(histMC->GetXaxis());
+    
     // plot by SM
     const Int_t nEmcalSM = 20;
     for (Int_t sm = 0; sm < nEmcalSM; sm++) {
@@ -370,16 +375,16 @@ void AliAnalysisTaskEmcalVsPhos::AllocateClusterHistograms()
       
       if (fGeneratorLevel) {
         title[dim] = "Particle type1";
-        nbins[dim] = 6;
+        nbins[dim] = 8;
         min[dim] = -0.5;
-        max[dim] = 5.5;
+        max[dim] = 7.5;
         binEdges[dim] = GenerateFixedBinArray(nbins[dim], min[dim], max[dim]);
         dim++;
         
         title[dim] = "Particle type2";
-        nbins[dim] = 6;
+        nbins[dim] = 8;
         min[dim] = -0.5;
-        max[dim] = 5.5;
+        max[dim] = 7.5;
         binEdges[dim] = GenerateFixedBinArray(nbins[dim], min[dim], max[dim]);
         dim++;
       }
@@ -965,7 +970,7 @@ void AliAnalysisTaskEmcalVsPhos::FillClusterHistograms()
           particleType1 = GetParticleType1(clus, mcevent, clusters->GetArray());
           
           // Method 2: Use MC particle container (and only AliMCAnalysisUtils to find merged pi0)
-          particleType2 = GetParticleType2(clus, mcevent, label);
+          particleType2 = GetParticleType2(clus, mcevent, label, clusters);
           
         }
       }
@@ -1047,29 +1052,39 @@ AliAnalysisTaskEmcalVsPhos::ParticleType AliAnalysisTaskEmcalVsPhos::GetParticle
 
   Bool_t isPhoton = mcUtils.CheckTagBit(tag, AliMCAnalysisUtils::kMCPhoton);
   Bool_t isPi0 = mcUtils.CheckTagBit(tag, AliMCAnalysisUtils::kMCPi0);
-  Bool_t isPi0Conversion = mcUtils.CheckTagBit(tag, AliMCAnalysisUtils::kMCConversion);
+  Bool_t isConversion = mcUtils.CheckTagBit(tag, AliMCAnalysisUtils::kMCConversion);
+  Bool_t isEta = mcUtils.CheckTagBit(tag, AliMCAnalysisUtils::kMCEta);
   Bool_t isPion = mcUtils.CheckTagBit(tag, AliMCAnalysisUtils::kMCPion);
   Bool_t isKaon = mcUtils.CheckTagBit(tag, AliMCAnalysisUtils::kMCKaon);
   Bool_t isProton = mcUtils.CheckTagBit(tag, AliMCAnalysisUtils::kMCProton);
   Bool_t isAntiProton = mcUtils.CheckTagBit(tag, AliMCAnalysisUtils::kMCAntiProton);
-
+  Bool_t isNeutron = mcUtils.CheckTagBit(tag, AliMCAnalysisUtils::kMCNeutron);
+  Bool_t isAntiNeutron = mcUtils.CheckTagBit(tag, AliMCAnalysisUtils::kMCAntiNeutron);
   Bool_t isElectron = mcUtils.CheckTagBit(tag, AliMCAnalysisUtils::kMCElectron);
+  Bool_t isMuon = mcUtils.CheckTagBit(tag, AliMCAnalysisUtils::kMCMuon);
+  
   if (isPi0) {
-    if (isPi0Conversion) {
+    if (isConversion) {
       particleType = kPi0Conversion;
     }
     else {
       particleType = kPi0;
     }
   }
+  else if (isEta) {
+    particleType = kEta;
+  }
   else if (isPhoton) {
     particleType = kPhoton;
   }
-  else if (isPion || isKaon || isProton || isAntiProton) {
+  else if (isPion || isKaon || isProton || isAntiProton || isNeutron || isAntiNeutron) {
     particleType = kHadron;
   }
   else if (isElectron) {
     particleType = kElectron;
+  }
+  else if (isMuon) {
+    particleType = kMuon;
   }
   else {
     particleType = kOther;
@@ -1080,13 +1095,20 @@ AliAnalysisTaskEmcalVsPhos::ParticleType AliAnalysisTaskEmcalVsPhos::GetParticle
 /*
  * Compute the MC particle type using the MC particle container (and only AliMCAnalysisUtils to find merged pi0)
  */
-AliAnalysisTaskEmcalVsPhos::ParticleType AliAnalysisTaskEmcalVsPhos::GetParticleType2(const AliVCluster* clus, const AliMCEvent* mcevent, Int_t label)
+AliAnalysisTaskEmcalVsPhos::ParticleType AliAnalysisTaskEmcalVsPhos::GetParticleType2(const AliVCluster* clus, const AliMCEvent* mcevent, Int_t label, const AliClusterContainer* clusters)
 {
   ParticleType particleType = kUndefined;
 
-  AliAODMCParticle *part = fGeneratorLevel->GetAcceptMCParticleWithLabel(label);
+  AliAODMCParticle *part = fGeneratorLevel->GetMCParticleWithLabel(label);
   if (part) {
-    
+  
+    TString histname = TString::Format("%s/hClusterRejectionReasonMC", clusters->GetArrayName().Data());
+    UInt_t rejectionReason = 0;
+    if (!fGeneratorLevel->AcceptMCParticle(part, rejectionReason)) {
+      fHistManager.FillTH2(histname, fGeneratorLevel->GetRejectionReasonBitPosition(rejectionReason), clus->E());
+      return particleType;
+    }
+
     if (part->GetGeneratorIndex() == 0) { // generator index in cocktail
       
       // select charged pions, protons, kaons, electrons, muons
@@ -1106,20 +1128,25 @@ AliAnalysisTaskEmcalVsPhos::ParticleType AliAnalysisTaskEmcalVsPhos::GetParticle
             particleType = kPi0;
           }
         }
+        else if (mcUtils.CheckTagBit(tag, AliMCAnalysisUtils::kMCEta)) {
+          particleType = kEta;
+        }
         else { // direct photon
           particleType = kPhoton;
         }
         
       }
-      else if (pdg == 211 || 2212 || 321) { // pi+ 211, proton 2212, K+ 321
+      else if (pdg == 211 || 2212 || 321 || 2112) { // pi+ 211, proton 2212, K+ 321, neutron 2112
         particleType = kHadron;
       }
-      else if (pdg == 11 || pdg == 13) { // e- 11, mu- 13
+      else if (pdg == 11) { // e- 11
         particleType = kElectron;
+      }
+      else if (pdg == 13) { // mu- 13
+        particleType = kMuon;
       }
       else {
         particleType = kOther;
-        Printf("pdg code: %d", pdg);
       }
     }
   }

@@ -60,9 +60,11 @@ class AliAnalysisTaskEmcalVsPhos : public AliAnalysisTaskEmcalJet {
     kPhoton         = 0,  //!< Photon (direct or decay)
     kPi0            = 1,  //!< Pi0 (merged pi0)
     kPi0Conversion  = 2,  //!< Pi0 (merged pi0) with conversion of one photon (may be only partially contained in cluster)
-    kHadron         = 3,  //!< Hadron (aside from pi0)
-    kElectron       = 4,  //!< Electron
-    kOther          = 5   //!< Other
+    kEta            = 3,  //!< Eta (merged eta)
+    kHadron         = 4,  //!< Hadron (aside from pi0)
+    kElectron       = 5,  //!< Electron
+    kMuon           = 6,  //!< Muon
+    kOther          = 7   //!< Other
   };
 
   AliAnalysisTaskEmcalVsPhos()                                          ;
@@ -124,7 +126,7 @@ class AliAnalysisTaskEmcalVsPhos : public AliAnalysisTaskEmcalJet {
   Double_t                    GetSMCellEnergy(Int_t sm, Int_t clusType, Bool_t returnNcells = kFALSE);
   Bool_t                      IsCellRejected(Int_t absId, Int_t cellType);
   ParticleType                GetParticleType1(const AliVCluster* clus, const AliMCEvent* mcevent, const TClonesArray* clusArray);
-  ParticleType                GetParticleType2(const AliVCluster* clus, const AliMCEvent* mcevent, Int_t label);
+  ParticleType                GetParticleType2(const AliVCluster* clus, const AliMCEvent* mcevent, Int_t label, const AliClusterContainer* clusters);
 
   // Analysis configuration and plotting options
   Bool_t                      fPlotClusterHistograms;               ///< Set whether to plot cluster histograms
@@ -172,7 +174,7 @@ class AliAnalysisTaskEmcalVsPhos : public AliAnalysisTaskEmcalJet {
   AliAnalysisTaskEmcalVsPhos &operator=(const AliAnalysisTaskEmcalVsPhos&); // not implemented
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskEmcalVsPhos, 10);
+  ClassDef(AliAnalysisTaskEmcalVsPhos, 11);
   /// \endcond
 };
 #endif
