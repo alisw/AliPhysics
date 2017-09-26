@@ -623,8 +623,8 @@ void AliAnalysisTaskEMCALPhotonIsolation::UserCreateOutputObjects(){
           fMCQAdim = sizeof(binsSMC)/sizeof(Int_t);
           const Int_t ndimsMCQA = fMCQAdim;
           
-          Double_t xminbismix[] = {0.,  0., -3000, -400,  0.,-1., -1., -10,    0.};
-          Double_t xmaxbismix[] = {70., 2.,  3000,  400, 70., 1.,  1., 100.,  10.};
+//          Double_t xminbismix[] = {0.,  0., -3000, -400,  0.,-1., -1., -10,    0.};
+//          Double_t xmaxbismix[] = {70., 2.,  3000,  400, 70., 1.,  1., 100.,  10.};
           
             // fOutClustMC = new THnSparseF ("fOutClustMC", "E_{T}^{clust}, #sigma_{long}^{2}, PDG, MOM PDG, E_{T}^{true}, #Deltax, #Deltaz, E_{T}^{iso},Label;E_{T}^{reco} (GeV/c); #sigma_{long}^{2};PDG Code; Mothers' PDG Code; E_{T}^{MCtrue} (GeV/c); #Delta#phi; #Delta#eta; E_{T}^{iso} (Gev/c);Label",9,binsSMC,xminbismix,xmaxbismix);
           fOutClustMC = new THnSparseF ("fOutClustMC", "E_{T}^{clust}, #sigma_{long}^{2}, PDG, MOM PDG, E_{T}^{true}, #Deltax, #Deltaz, E_{T}^{iso},Label;E_{T}^{reco} (GeV/c); #sigma_{long}^{2};PDG Code; Mothers' PDG Code; E_{T}^{MCtrue} (GeV/c); #Delta#phi; #Delta#eta; E_{T}^{iso} (Gev/c);Label",ndimsMCQA,binsSMC);
@@ -1277,9 +1277,9 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::Run()
     return kFALSE;
   
 // reject events below 2012 EGA threshold
+  Bool_t isL1 = kFALSE;
   if(f2012EGA){
     TClonesArray *triPatchInfo = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject("EmcalTriggers")); 
-    Bool_t isL1 = kFALSE;
     if(triPatchInfo){
       Int_t nPatch = triPatchInfo->GetEntries();
       for(Int_t ip = 0;ip<nPatch;ip++){
@@ -1296,9 +1296,12 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::Run()
         }
       }
     }                      
-
-    if(!isL1) return kFALSE;
   }
+  if(!isL1 && !fIsMC && f2012EGA){
+    cout << "This Cluster is triggered" << endl;
+    return kFALSE;
+  }
+  else cout << "This Cluster is NOT triggered" << endl;
 
   fEvents->Fill(0); // Fill event number histogram
   
@@ -1327,7 +1330,7 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::Run()
   Int_t index=0;
   
   if(fIsMC){
-    AliAODMCHeader *mcHeader; // Is this object useful compared to fmcHeader?
+//    AliAODMCHeader *mcHeader; // Is this object useful compared to fmcHeader?
     
     fAODMCParticles = static_cast <TClonesArray*>(InputEvent()->FindListObject(AliAODMCParticle::StdBranchName()));
     fmcHeader = dynamic_cast<AliAODMCHeader*>(InputEvent()->FindListObject(AliAODMCHeader::StdBranchName()));
@@ -1352,6 +1355,11 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::Run()
     }
   }
   
+  if(!isL1 && fIsMC && f2012EGA){
+    cout << "REJECTED!!!" << endl;
+    return kFALSE;
+  }
+
   if(fisLCAnalysis){
       // Get the leading particle
     
@@ -1575,7 +1583,7 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::MCSimTrigger(AliVEvent *eventIn, Int
   
     // AliError(Form("Pass the trigger function definition"));
   AliClusterContainer *clusters = GetClusterContainer(0);
-  Int_t localIndex=0;
+//  Int_t localIndex=0;
   
   for(auto it : clusters->accepted()){
     AliVCluster* coi = static_cast<AliVCluster*>(it);
@@ -1824,7 +1832,6 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::AreNeighbours(Int_t absId1, Int_t ab
 void AliAnalysisTaskEMCALPhotonIsolation::RecalAmpCell(Float_t & amp, Int_t id) const {
   
   Int_t iSupMod = -1, iTower = -1, iIphi = -1, iIeta = -1, iphi = -1, ieta = -1;
-  Float_t ampold=amp;
   fGeom->GetCellIndex(id,iSupMod,iTower,iIphi,iIeta);
   fGeom->GetCellPhiEtaIndexInSModule(iSupMod,iTower,iIphi, iIeta,iphi,ieta);
   
@@ -2941,7 +2948,7 @@ void AliAnalysisTaskEMCALPhotonIsolation::LookforParticle(Int_t clusterlabel, Do
     // cout<<"Number of particles in the event: "<<npart<<endl;
   
   AliAODMCParticle *particle2Check, *momP2Check;
-  Int_t clustPDG, p2clabel, p2ccharge;
+  Int_t clustPDG, p2ccharge;
   Double_t enTrue,phiTrue, etaTrue;
   Double_t dPhi,dEta ;
   Int_t clusterFromPromptPhoton=-1;
@@ -3122,6 +3129,7 @@ void AliAnalysisTaskEMCALPhotonIsolation::LookforParticle(Int_t clusterlabel, Do
   outputvalueMCmix[6] = dEta;
   outputvalueMCmix[7] = isolation;
   outputvalueMCmix[8] = clusterFromPromptPhoton;
+  cout << "Fill ClustMC!!!" << endl;
     // clusterFromPP=1 ->clusterlabel = 8 TruePromptPhoton;
     // clusterFromPP=2 ->clusterlabel = indexe+/e- with 1 contribution to the Energy;
     // clusterFromPP=3 ->clusterlabel = indexe+/e- with 2 contributions to the Energy;
@@ -3141,13 +3149,14 @@ void AliAnalysisTaskEMCALPhotonIsolation::FillInvMassHistograms(Bool_t iso, Doub
   
   return;
   
-  Double_t clustTOF=0, invMass=0;
+  Double_t clustTOF=0;
+//  Double_t invMass=0;
   
-  Double_t invMasspi0Min=0.135-0.035;
-  Double_t invMasspi0Max=0.135+0.035;
+//  Double_t invMasspi0Min=0.135-0.035;
+//  Double_t invMasspi0Max=0.135+0.035;
   
-  Double_t invMassetaMin=0.548-0.035;
-  Double_t invMassetaMax=0.548+0.035;
+//  Double_t invMassetaMin=0.548-0.035;
+//  Double_t invMassetaMax=0.548+0.035;
   
     // AliParticleContainer *clusters = static_cast<AliParticleContainer*>(fParticleCollArray.At(1));
   AliClusterContainer *clusters = GetClusterContainer(0);
@@ -3185,7 +3194,7 @@ void AliAnalysisTaskEMCALPhotonIsolation::FillInvMassHistograms(Bool_t iso, Doub
         // if(ClustTrackMatching(coi))
         // 	continue;
       
-      invMass = (c+nClust).M();
+//      invMass = (c+nClust).M();
     }
   } // End of clusters loop
 }
@@ -3721,6 +3730,7 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::FillGeneralHistograms(AliVCluster *c
       break;
       
     case 1:
+      cout << " Fill THnSparse" << endl;
       outputValues[0] = eTCOI;
       outputValues[1] = m02COI;
       outputValues[2] = isolation;
@@ -3994,10 +4004,10 @@ void AliAnalysisTaskEMCALPhotonIsolation::AnalyzeMC(){
   }
     // AliInfo(Form("number of particles in the array %d",nTracks));
   
-  AliAODMCParticle *mcpart, *mom, *mcpp,*mcsearch, *mcfirst, *mcfirstmom,*matchingtrack, *mum;
+  AliAODMCParticle *mcpart, *mom, *mcpp,*mcsearch, *mcfirst,*matchingtrack, *mum;
   
     // Bool_t prompt=kFALSE;
-  Double_t mcEnergy, maxE, energy;
+  Double_t maxE;
   Int_t pdg, mompdg, photonlabel;
   Double_t mcFirstEta=0., mcFirstPhi=0.;
   
@@ -4006,7 +4016,6 @@ void AliAnalysisTaskEMCALPhotonIsolation::AnalyzeMC(){
   
   if(!fisLCAnalysis){
     for(int iTr=0;iTr<nTracks;iTr++){
-      mcEnergy=0.;energy =0;
       eT=0.; phi=0.; eta=0.;
       
       mcpart = static_cast<AliAODMCParticle*>(fAODMCParticles->At(iTr));
@@ -4152,6 +4161,7 @@ void AliAnalysisTaskEMCALPhotonIsolation::AnalyzeMC(){
         // fill some histograms or a THnSparse or a TTree.
         //	AliError(Form("Fill something in Analize MC"));
       if(fWho==1)
+        cout << "Fill MCtruth!!" << endl;
         fOutMCTruth->Fill(outputValuesMC);
       if(fWho==2)
 	fPtvsSum_MC->Fill(eT, sumEiso);
