@@ -3,8 +3,8 @@
 
 /**
  *
- * \class AliAnalysisMuMuNch
- * \brief Invariant mass dimuon analysis
+ * \class AliAnalysisMuMuEP
+ * \brief Elliptic dimuon analysis with the event plane method
  * \author A. Francisco (Subatech)
  */
 

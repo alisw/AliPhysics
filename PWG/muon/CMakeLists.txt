@@ -122,7 +122,7 @@ add_library_tested(${MODULE} SHARED  ${SRCS} G__${MODULE}.cxx)
 
 # Generate the ROOT map
 # Dependecies
-set(LIBDEPS ANALYSISalice AOD CORRFW OADB STEERBase)
+set(LIBDEPS ANALYSISalice AOD CORRFW OADB PWGPPevcharQn PWGPPevcharQnInterface STEERBase)
 generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
 
 # Generate a PARfile target for this library

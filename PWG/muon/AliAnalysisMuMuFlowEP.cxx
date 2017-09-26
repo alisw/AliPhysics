@@ -6,7 +6,8 @@
  *
  * \class AliAnalysisMuMuFlowEP
  *
- * Analysis which fills a bunch of histograms for invariant mass analysis of J/psi
+ * Analysis which fills a bunch of histograms for elliptic flow analysis of J/psi
+ * The flow vectors and event plane angles are recovered from Qn correction framework (PWGPP/EVCHAR/FlowVectorCorrections)
  *
  * Can be used on real data and/or simulated (for instance to get Acc x Eff)
  *

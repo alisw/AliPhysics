@@ -4,7 +4,7 @@
 /**
  *
  * \class AliAnalysisMuMuSP
- * \brief Flow with Scalar Product method for dimuon analysis
+ * \brief Elliptic dimuon analysis with the scalar product method
  * \author A. Francisco (Subatech)
  */
 
