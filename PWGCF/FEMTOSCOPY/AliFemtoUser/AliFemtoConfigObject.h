@@ -177,11 +177,13 @@ public:
     // constructors with all associated value-types (IntValue_t, MapValue_t, etc..)
     FORWARD_STANDARD_TYPES(ConstructorDef);
 
-    ConstructorDef(TString, kSTRING, fValueString);
+    //ConstructorDef(TString, kSTRING, fValueString);   // implicit cast - not allowed by clang 9.0, must be declared explicitly
     ConstructorDef(char *, kSTRING, fValueString);
     ConstructorDef(int, kINT, fValueInt);
     ConstructorDef(float, kFLOAT, fValueFloat);
   #undef ConstructorDef
+  // Explicit constructor for TString - needed for clang 9.0
+  AliFemtoConfigObject(TString &v) : fTypeTag(kSTRING), fValueString((const char *)v), fPainter(nullptr) {}
 
   // iterator-based constructors
   #define ConstructorDefItor(__type, __tag, __dest) \
