@@ -12,6 +12,7 @@ AliNanoAODHeader::AliNanoAODHeader():
   fCentrCL0(-1),
   fCentrCL1(-1),
   fMagField(-1),
+  fOfflineTrigger(-1),
   fRunNumber(-1)
 {
 
@@ -28,10 +29,26 @@ AliNanoAODHeader::AliNanoAODHeader(Int_t size):
   fCentrCL0(-1),
   fCentrCL1(-1),
   fMagField(-1),
+  fOfflineTrigger(-1),
+  fRunNumber(-1)
+{
+  AllocateInternalStorage(size, 0);
+}
+
+AliNanoAODHeader::AliNanoAODHeader(Int_t size, Int_t sizeString):
+  AliVAODHeader(),
+  AliNanoAODStorage(),
+  fCentralityMethod("V0M"),
+  fCentr(-1),
+  fCentrTRK(-1),
+  fCentrCL0(-1),
+  fCentrCL1(-1),
+  fMagField(-1),
+  fOfflineTrigger(-1),
   fRunNumber(-1)
 {
 
-AllocateInternalStorage(size);
+  AllocateInternalStorage(size, sizeString);
 
 }
 
@@ -47,7 +64,9 @@ AliNanoAODHeader& AliNanoAODHeader::operator=(const AliNanoAODHeader& evt) {
 void  AliNanoAODHeader::Clear(Option_t * /*opt*/) {
   // empty storage
   fVars.clear();
+  fVarsString.clear();
   fNVars = 0;
+  fNVarsString = 0;
 }
 
 Double_t AliNanoAODHeader::GetCentrality () const {
