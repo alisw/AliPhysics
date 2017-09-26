@@ -95,9 +95,11 @@ class AliNanoAODReplicator : public AliAODBranchReplicator
   
   Int_t GetSaveVzero() {return fSaveVzero;}
   Int_t GetSaveAODZDC() {return fSaveAODZDC;}
-  
-  void SetNumberOfHaederParam(Int_t var){fNumberOfHeaderParam=var;}
 
+  void SetNumberOfHaederParam(Int_t var){fNumberOfHeaderParam=var;}
+  void SetNumberOfHaederParamString(Int_t var){fNumberOfHeaderParamString=var;}
+  void SetInputArrayName(TString name) {fInputArrayName=name;}
+  void SetOutputArrayName(TString name) {fOutputArrayName=name;}
 
  private:
 
@@ -134,17 +136,20 @@ class AliNanoAODReplicator : public AliAODBranchReplicator
   mutable AliAODVZERO* fVzero; //! internal array of AliAODVZEROs
   mutable AliAODZDC* fAodZDC; //! internal array of AliAODZDCs
   Int_t fNumberOfHeaderParam; // number of parameters saved in AliNanoAODHeader
+  Int_t fNumberOfHeaderParamString; // number of string parameters saved in AliNanoAODHeader
     
   Int_t fSaveAODZDC;  // if kTRUE AliAODZDC will be saved in AliAODEvent
   Int_t fSaveVzero;  // if kTRUE AliAODVZERO will be saved in AliAODEvent
 
+  TString fInputArrayName; // name of array if tracks are stored in a TObjectArray
+  TString fOutputArrayName; // name of the output array, where the NanoAODTracks are stored
  private:
 
-  
+
   AliNanoAODReplicator(const AliNanoAODReplicator&);
   AliNanoAODReplicator& operator=(const AliNanoAODReplicator&);
-  
-  ClassDef(AliNanoAODReplicator,2) // Branch replicator for ESD to muon AOD.
+
+  ClassDef(AliNanoAODReplicator,3) // Branch replicator for ESD to muon AOD.
 };
 
 #endif

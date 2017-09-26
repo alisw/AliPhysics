@@ -55,7 +55,10 @@ public:
   void  SetVarListHead (TString var                     ) { fVarListHead = var;}
   void  ReplicatorSaveVzero(Bool_t var ) {fSaveVzero=var;}
   void  ReplicatorSaveAODZDC(Bool_t var ) {fSaveAODZDC=var;}
-    
+
+  void SetInputArrayName(TString name) {fInputArrayName=name;}
+  void SetOutputArrayName(TString name) {fOutputArrayName=name;}
+
 private:
   Int_t fMCMode; // true if processing monte carlo. if > 1 not all MC particles are filtered
   AliNanoAODReplicator* fTrkrep       ; // ! replicator
@@ -67,14 +70,16 @@ private:
   AliNanoAODCustomSetter * fSetter; // setter for custom variables
   
   Bool_t fSaveCutsFlag; // If true, the event and track cuts are saved to disk. Can only be set in the constructor.
-  Bool_t fSaveVzero; // if kTRUE AliAODVZERO will be saved in AliAODEvent
   Bool_t fSaveAODZDC;  // if kTRUE AliAODZDC will be saved in AliAODEvent
+  Bool_t fSaveVzero; // if kTRUE AliAODVZERO will be saved in AliAODEvent
 
-  
+  TString fInputArrayName; // name of TObjectArray of Tracks
+  TString fOutputArrayName; // name of TObjectArray of AliNanoAODTracks
+
   AliAnalysisTaskNanoAODFilter(const AliAnalysisTaskNanoAODFilter&); // not implemented
   AliAnalysisTaskNanoAODFilter& operator=(const AliAnalysisTaskNanoAODFilter&); // not implemented
-    
-  ClassDef(AliAnalysisTaskNanoAODFilter, 2); // example of analysis
+
+  ClassDef(AliAnalysisTaskNanoAODFilter, 3); // example of analysis
 };
 
 #endif

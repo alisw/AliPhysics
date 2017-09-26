@@ -115,14 +115,18 @@ void AliNanoAODSimpleSetter::SetNanoAODHeader(const AliAODEvent * event   , AliN
 
 
   Double_t magfield = header->GetMagneticField();
+  UInt_t offlineTrigger = header->GetOfflineTrigger();
   Int_t runNumber = event->GetRunNumber();
 
-  static const char * validatorString[] = {"Centr","MagField","CentrTRK","CentrCL0", "CentrCL1", "RunNumber", 0};
+  TString firedTriggerClasses = header->GetFiredTriggerClasses();
+
+  static const char * validatorString[] = {"Centr","CentrTRK","CentrCL0","CentrCL1", "MagField", "OfflineTrigger", "RunNumber", "FiredTriggerClasses", 0};
   TObjArray * vars = varListHeader.Tokenize(",");
-  Int_t size = vars->GetSize();
+  //Int_t size = vars->GetSize();
   TIter it(vars);
   TObjString *token  = 0;
   Int_t index=0;
+  Int_t indexString=0;
 
   std::map<TString,int> cstMap = head->GetMapCstVar();
 
@@ -137,11 +141,14 @@ void AliNanoAODSimpleSetter::SetNanoAODHeader(const AliAODEvent * event   , AliN
     }
 
     if (!( isValid || var.BeginsWith("cst"))) AliFatal(Form("Invalid var [%s]", var.Data()));
-    if     (var == "Centr"      ) head->SetCentrIndex      (index);
+
+    if(var == "FiredTriggerClasses"      ){ head->SetFiredTriggerClassesIndex(indexString); indexString++; continue;}
+    else if(var == "Centr"      ) head->SetCentrIndex      (index);
     else if(var == "CentrTRK"   ) head->SetCentrTRKIndex   (index);
     else if(var == "CentrCL0"   ) head->SetCentrCL0Index   (index);
     else if(var == "CentrCL1"   ) head->SetCentrCL1Index   (index);
     else if(var == "MagField"   ) head->SetMagFieldIndex   (index);
+    else if(var == "OfflineTrigger"   ) head->SetOfflineTriggerIndex   (index);
     else if(var == "RunNumber"  ) head->SetRunNumberIndex  (index);
     else {
       cstMap[var] = index;
@@ -151,15 +158,17 @@ void AliNanoAODSimpleSetter::SetNanoAODHeader(const AliAODEvent * event   , AliN
 
     index++;
   }
-  size = index;
+  //size = index;
   if(vars) vars->Delete();
   head->SetMapCstVar(cstMap);
 
+  if ((head->GetFiredTriggerClassesIndex())!=-1)     head->SetVarString(head->GetFiredTriggerClassesIndex(), firedTriggerClasses);
   if ((head->GetCentrIndex())!=-1)     head->SetVar(head->GetCentrIndex()    ,           centrV0M );
   if ((head->GetCentrTRKIndex())!=-1)  head->SetVar(head->GetCentrTRKIndex() ,           centrTRK );
   if ((head->GetCentrCL1Index())!=-1)  head->SetVar(head->GetCentrCL1Index() ,           centrCL1 );
   if ((head->GetCentrCL0Index())!=-1)  head->SetVar(head->GetCentrCL0Index() ,           centrCL0 );
   if ((head->GetMagFieldIndex())!=-1)  head->SetVar(head->GetMagFieldIndex() ,           magfield );
+  if ((head->GetOfflineTriggerIndex())!=-1)  head->SetVar(head->GetOfflineTriggerIndex() , Double_t(offlineTrigger));
   if ((head->GetRunNumberIndex())!=-1) head->SetVar(head->GetRunNumberIndex(), Double_t(runNumber));
 
 

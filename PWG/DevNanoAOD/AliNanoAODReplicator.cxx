@@ -98,9 +98,12 @@ AliAODBranchReplicator(),
   fVzero(0x0),
   fAodZDC(0x0),
   fNumberOfHeaderParam(0),
+  fNumberOfHeaderParamString(0),
   fSaveAODZDC(0),
-  fSaveVzero(0){
-  // Default ctor. we need it to avoid instantiating a wrong mapping when reading from file 
+  fSaveVzero(0),
+  fInputArrayName(""),
+  fOutputArrayName("tracks"){
+  // Default ctor. we need it to avoid instantiating a wrong mapping when reading from file
   }
 
 AliNanoAODReplicator::AliNanoAODReplicator(const char* name, const char* title,
@@ -125,8 +128,11 @@ AliNanoAODReplicator::AliNanoAODReplicator(const char* name, const char* title,
   fVzero(0x0),
   fAodZDC(0x0),
   fNumberOfHeaderParam(0),
+  fNumberOfHeaderParamString(0),
   fSaveAODZDC(0),
-  fSaveVzero(0)
+  fSaveVzero(0),
+  fInputArrayName(""),
+  fOutputArrayName("tracks")
 {
   // default ctor
   AliNanoAODTrackMapping * tm =new AliNanoAODTrackMapping(fVarList);
@@ -136,8 +142,12 @@ AliNanoAODReplicator::AliNanoAODReplicator(const char* name, const char* title,
   for (Int_t i=0; i < fVarListHeader.Length(); i++){
       if (fVarListHeader.Data()[i] == ',') fNumberOfHeaderParam++;
   }
+  
   if(fVarListHeader.CompareTo("")==0) fNumberOfHeaderParam=2;
   else fNumberOfHeaderParam = fNumberOfHeaderParam+1 ;
+
+  fNumberOfHeaderParamString = AliNanoAODHeader::GetStringParameters(fVarListHeader);
+  fNumberOfHeaderParam -= fNumberOfHeaderParamString;
 }
 
 //_____________________________________________________________________________
@@ -423,11 +433,11 @@ TList* AliNanoAODReplicator::GetList() const
       fList = new TList;
       fList->SetOwner(kTRUE);
 
-      fTracks = new TClonesArray("AliNanoAODTrack");      
-      fTracks->SetName("tracks"); // TODO: consider the possibility to use a different name to distinguish in AliAODEvent
-      fList->Add(fTracks);    
+      fTracks = new TClonesArray("AliNanoAODTrack");
+      fTracks->SetName(fOutputArrayName.Data()); // TODO: consider the possibility to use a different name to distinguish in AliAODEvent
+      fList->Add(fTracks);
 
-      fHeader = new AliNanoAODHeader(fNumberOfHeaderParam);
+      fHeader = new AliNanoAODHeader(fNumberOfHeaderParam, fNumberOfHeaderParamString);
       fHeader->SetName("header"); // TODO: consider the possibility to use a different name to distinguish in AliAODEvent
       fList->Add(fHeader);    
         
@@ -488,7 +498,7 @@ void AliNanoAODReplicator::ReplicateAndFilter(const AliAODEvent& source)
   Int_t ntracks(0);
   Int_t input(0);
 
-  AliAODVertex *vtx = source.GetPrimaryVertex();
+  //AliAODVertex *vtx = source.GetPrimaryVertex();
 
   // TODO: implement header!
   //  *fHeader = *source.GetHeader();
@@ -496,14 +506,23 @@ void AliNanoAODReplicator::ReplicateAndFilter(const AliAODEvent& source)
     // Set custom variables in the header if the callback is set
     fCustomSetter->SetNanoAODHeader(&source, fHeader,fVarListHeader);
   }
+  Int_t entries = -1;
+  TClonesArray* particleArray = 0x0;
 
-  const Int_t entries = source.GetNumberOfTracks();
+  if(!fInputArrayName.IsNull()){
+    particleArray = static_cast<TClonesArray*> (source.FindListObject(fInputArrayName.Data()));
+    entries = particleArray->GetEntries();
+  }else{
+    entries = source.GetNumberOfTracks();
+  }
+
   if(entries<=0) return;
 
   for(Int_t j=0; j<entries; j++){
-    
-    AliVTrack *track = (AliVTrack*)source.GetTrack(j);
-    
+    AliVTrack *track = 0x0;
+    if (particleArray) track = (AliVTrack*)particleArray->At(j);
+    else track = (AliVTrack*)source.GetTrack(j);
+
     AliAODTrack *aodtrack =(AliAODTrack*)track;// FIXME DYNAMIC CAST?
     if(fTrackCut && !fTrackCut->IsSelected(aodtrack)) continue;
 
