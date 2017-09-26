@@ -146,7 +146,7 @@ AliFemtoString AliFemtoCorrFctnDPhiStarDEta::Report()
   report += TString::Format("Number of entries in numerator:\t%E\n", fDPhiStarDEtaNumerator->GetEntries());
   report += TString::Format("Number of entries in denominator:\t%E\n", fDPhiStarDEtaDenominator->GetEntries());
   //  report += mCoulombWeight->Report();
-  return AliFemtoString(report);
+  return AliFemtoString((const char *)report);
 }
 
 //____________________________

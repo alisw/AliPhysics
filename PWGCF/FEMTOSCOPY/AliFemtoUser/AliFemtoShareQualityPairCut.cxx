@@ -136,7 +136,7 @@ AliFemtoString AliFemtoShareQualityPairCut::Report()
   // Prepare the report from the execution
   TString report("AliFemtoShareQuality Pair Cut - remove shared and split pairs\n");
   report += TString::Format("Number of pairs which passed:\t%ld  Number which failed:\t%ld\n", fNPairsPassed, fNPairsFailed);
-  return AliFemtoString(report);
+  return AliFemtoString((const char *)report);
 }
 
 //__________________

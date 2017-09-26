@@ -234,7 +234,7 @@ AliFemtoString AliFemtoCorrFctnKStar::Report()
   report += TString::Format("Number of entries in numerator:\t%E\n", fNumerator->GetEntries());
   report += TString::Format("Number of entries in denominator:\t%E\n", fDenominator->GetEntries());
   report += TString::Format("Number of entries in ratio:\t%E\n", fRatio->GetEntries());
-  return AliFemtoString(report);
+  return AliFemtoString((const char *)report);
 }
 
 //______________________________

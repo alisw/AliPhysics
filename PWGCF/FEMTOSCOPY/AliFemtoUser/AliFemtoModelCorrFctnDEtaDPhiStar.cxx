@@ -281,5 +281,5 @@ AliFemtoModelCorrFctnDEtaDPhiStar::Report()
   report += TString::Format("Number of entries in ideal unweighted numerator:\t%0.2f\n", fDPhiStarDEtaNumeratorIdealUnweighted->GetEntries());
   report += TString::Format("Number of entries in denominator:\t%0.2f\n", fDPhiStarDEtaIdealDenominator->GetEntries());
 
-  return AliFemtoString(report);
+  return AliFemtoString((const char *)report);
 }
