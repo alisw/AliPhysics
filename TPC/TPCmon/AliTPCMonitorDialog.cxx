@@ -339,9 +339,9 @@ void AliTPCMonitorDialog::HandleButtons(Int_t id)
   // Set Configuration (base, max, sum)
       Int_t fConfigArr[6];
       
-      string s1((TString)fEnt[0]->GetDisplayText().Data());
-      string s2((TString)fEnt[1]->GetDisplayText().Data());
-      string s3((TString)fEnt[2]->GetDisplayText().Data());
+      string s1((const char *)((TString)fEnt[0]->GetDisplayText().Data()));
+      string s2((const char *)((TString)fEnt[1]->GetDisplayText().Data()));
+      string s3((const char *)((TString)fEnt[2]->GetDisplayText().Data()));
       
       Int_t error = 1;
       
