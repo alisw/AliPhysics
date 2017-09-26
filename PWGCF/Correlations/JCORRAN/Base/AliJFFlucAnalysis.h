@@ -133,7 +133,7 @@ private:
 	AliJTH1D fh_pt;//! // for pt dist of tracks
 	AliJTH1D fh_eta;//! // for eta dist of tracks
 	AliJTH1D fh_phi;//! // for phi dist [ic][isub]
-	AliJTH1D fh_Qvector;//! // for Q-Vector dist [ic][isub][ih]
+	//AliJTH1D fh_Qvector;//! // for Q-Vector dist [ic][isub][ih]
 
 	AliJTH1D fh_ntracks;//! // for number of tracks dist
 	AliJTH1D fh_vn;//!  // single vn^k  array [ih][ik][iCent]
@@ -159,8 +159,8 @@ private:
 	AliJTH1D fh_SC_with_QC_4corr;//! // for <vn^2 vm^2>
 	AliJTH1D fh_SC_with_QC_2corr;//! // for <vn^2>
 	AliJTH1D fh_SC_with_QC_2corr_eta10;//!
-	AliJTH2D fh_QvectorQC;//! // check for Q-vec dist for [ic][ih]
-	AliJTH1D fh_QvectorQCphi;//!
+	//AliJTH2D fh_QvectorQC;//! // check for Q-vec dist for [ic][ih]
+	//AliJTH1D fh_QvectorQCphi;//!
 	AliJTH1D fh_evt_SP_QC_ratio_2p;//! // check SP QC evt by evt ratio
 	AliJTH1D fh_evt_SP_QC_ratio_4p;//! // check SP QC evt by evt ratio
 	ClassDef(AliJFFlucAnalysis, 1); // example of analysis
