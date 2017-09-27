@@ -95,6 +95,8 @@ public:
     void SetNonHFEmassCut(Double_t MassCut) { fMassCut = MassCut; fMassCutFlag = kTRUE;};
     void SetEtaCut(Double_t EtaCutMin,Double_t EtaCutMax ) { fEtaCutMin = EtaCutMin; fEtaCutMax = EtaCutMax; };
     void SetpTBins(Int_t n, Float_t* array) { fpTBins.Set(n,array); };
+    void SetZvtxBins(Int_t n, Double_t* array) { fZVtxBins.Set(n,array); };
+
     
     void SetZVtxCut( Float_t VtxZMin, Float_t VtxZMax)
     {
@@ -203,6 +205,7 @@ private:
     
     //General variables
     TArrayF                 fpTBins;
+    TArrayD                 fZVtxBins;
     AliESDEvent 			*fESD; //!
     AliAODEvent 		   	*fAOD;//!
     AliVEvent 		      	*fVevent; //!
@@ -292,11 +295,11 @@ private:
     TH2F				**fTPCNcls_pid; //!
 
     //Electron-Hadron Correlation Histograms
-    TH2F				**fCEtaPhi_Inc; //!
-    TH2F				**fCEtaPhi_ULS_Weight; //!
-    TH2F				**fCEtaPhi_LS_Weight; //!
-    TH2F				**fCEtaPhi_ULS_NoP_Weight; //!
-    TH2F				**fCEtaPhi_LS_NoP_Weight; //!
+    TH2F				***fCEtaPhi_Inc; //!
+    TH2F				***fCEtaPhi_ULS_Weight; //!
+    TH2F				***fCEtaPhi_LS_Weight; //!
+    TH2F				***fCEtaPhi_ULS_NoP_Weight; //!
+    TH2F				***fCEtaPhi_LS_NoP_Weight; //!
     
     TH1F				**fInvMassULS; //!
     TH1F				**fInvMassLS; //!
@@ -370,6 +373,8 @@ private:
     AliMCEventHandler	*fEventHandler; //!
     AliMCEvent			*fMCevent; //!
     
+    
+    
     //______________________________________________________________________
     //Mixed event analysis
     AliEventPoolManager *fPoolMgr; //!
@@ -377,23 +382,23 @@ private:
     TObjArray			*fTracksClone; //!
     TObjArray			*fTracks; //!
     
-    TH2F				**fCEtaPhi_Inc_EM; //!
+    TH2F				***fCEtaPhi_Inc_EM; //!
     
-    TH2F				**fCEtaPhi_ULS_Weight_EM; //!
-    TH2F				**fCEtaPhi_LS_Weight_EM; //!
+    TH2F				***fCEtaPhi_ULS_Weight_EM; //!
+    TH2F				***fCEtaPhi_LS_Weight_EM; //!
     
-    TH2F				**fCEtaPhi_Inc_NoULSP; //!
-    TH2F				**fCEtaPhi_Back_ULS_NoULSP; //!
-    TH2F				**fCEtaPhi_Back_LS_NoULSP; //!
+    TH2F				***fCEtaPhi_Inc_NoULSP; //!
+    TH2F				***fCEtaPhi_Back_ULS_NoULSP; //!
+    TH2F				***fCEtaPhi_Back_LS_NoULSP; //!
     
-    TH1F				*fPoolNevents; //!
+    TH2F				*fPoolNevents; //!
     
     Bool_t				fEventMixingFlag; //
     //______________________________________________________________________
     
     //______________________________________________________________________
     //Di-hadron correlation
-    TH2F				**fCEtaPhi_Inc_DiHadron;  //!
+    TH2F				***fCEtaPhi_Inc_DiHadron;  //!
     TH1F				*fPtTrigger_Inc;  //!
     AliAnalysisUtils *fAnalysisUtils;     //! Analysis Utils for pA pileup cut
     
@@ -492,7 +497,7 @@ private:
     AliAnalysisTaskHFEpACorrelation(const AliAnalysisTaskHFEpACorrelation&); 			// not implemented
     AliAnalysisTaskHFEpACorrelation& operator=(const AliAnalysisTaskHFEpACorrelation&); 		// not implemented
     
-    ClassDef(AliAnalysisTaskHFEpACorrelation, 8); 								// example of analysis
+    ClassDef(AliAnalysisTaskHFEpACorrelation, 9); 								// example of analysis
     //______________________________________________________________________
 };
 
