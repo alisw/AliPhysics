@@ -264,11 +264,11 @@ void AliJFFlucAnalysis::UserCreateOutputObjects(){
 		<< TH1D("h_phi", "h_phi", 100, -10, 10)
 		<< fHistCentBin << fBin_Subset
 		<< "END" ;
-	fh_Qvector
+	/*fh_Qvector
 		<< TH1D("h_QVector", "h_QVector", 100, -10, 10)
 		<< fHistCentBin << fBin_Subset
 		<< fBin_h
-		<< "END" ;
+		<< "END" ;*/
 
 	fh_ntracks
 		<< TH1D("h_tracks", "h_tracks", 100, 0, 30000)
@@ -346,7 +346,7 @@ void AliJFFlucAnalysis::UserCreateOutputObjects(){
 		<< fBin_h
 		<< fHistCentBin
 		<< "END" ;
-	fh_QvectorQC
+	/*fh_QvectorQC
 		<< TH2D("hQvecQC", "hQvecQC", 1024, -1.1 , 1.1, 1024, -1.1, 1.1 )
 		<< fBin_h
 		<< fHistCentBin
@@ -356,7 +356,7 @@ void AliJFFlucAnalysis::UserCreateOutputObjects(){
 		<< TH1D("hQbecQCphi", "hQbecQCphi", 1024, -3.2 , 3.2 )
 		<< fBin_h
 		<< fHistCentBin
-		<< "END" ;
+		<< "END" ;*/
 	fh_evt_SP_QC_ratio_4p
 		<< TH1D("hSPQCratio4p", "hSPQCratio4p", 1024, -100, 100)
 		<< fBin_h
@@ -463,12 +463,12 @@ void AliJFFlucAnalysis::UserExec(Option_t *) {
 
 	//************************************************************************
 
-	TComplex V4V2starv2_2 =	QnA[4] *TComplex::Power( QnB_star[2] ,2) * vn2[2][1] ;
-	TComplex V4V2starv2_4 = QnA[4] * TComplex::Power( QnB_star[2], 2) * vn2[2][2] ;
+	TComplex V4V2starv2_2 =	QnA[4] * TComplex::Power(QnB_star[2],2) * corr[2][1];//vn[2][1]
+	TComplex V4V2starv2_4 = QnA[4] * TComplex::Power( QnB_star[2], 2) * corr[2][2];//vn2[2][2]
 	TComplex V4V2star = QnA[4] * TComplex::Power( QnB_star[2], 2 );
-	TComplex V5V2starV3starv2_2 = QnA[5] * QnB_star[2] * QnB_star[3] * vn2[2][1] ;
+	TComplex V5V2starV3starv2_2 = QnA[5] * QnB_star[2] * QnB_star[3] * corr[2][1]; //vn2[2][1]
 	TComplex V5V2starV3star = QnA[5] * QnB_star[2] * QnB_star[3] ;
-	TComplex V5V2starV3startv3_2 = QnA[5] * QnB_star[2] * QnB_star[3] * vn2[3][1];
+	TComplex V5V2starV3startv3_2 = QnA[5] * QnB_star[2] * QnB_star[3] * corr[3][1]; //vn2[3][1]
 	TComplex V6V2star_3 = QnA[6] * TComplex::Power( QnB_star[2] , 3) ;
 	TComplex V6V3star_2 = QnA[6] * TComplex::Power( QnB_star[3], 2) ;
 	TComplex V7V2star_2V3star = QnA[7] * TComplex::Power( QnB_star[2] , 2) * QnB_star[3];
@@ -902,14 +902,13 @@ void AliJFFlucAnalysis::CalculateQvectorsQC(){
 
 		for(int ih=0; ih<kNH; ih++){
 			for(int ik=0; ik<nKL; ik++){
-				QvectorQC[ih] += TComplex( TMath::Cos(ih*phi), TMath::Sin(ih*phi) );
-				// this is not working (there are no eta gap for +0.6, +0.61 in this way..
-				// fix this as like SP -> 2 sub event //
-				if( TMath::Abs(eta) > 0.5 ){  // this is for Noramlized SC ( denominator need eta gap )
+				TComplex q = TComplex( TMath::Cos(ih*phi), TMath::Sin(ih*phi) );
+				QvectorQC[ih] += q;
+				if( TMath::Abs(eta) > 0.4 ){  // this is for normalized SC ( denominator needs an eta gap )
 					int isub = 0;
 					if( eta > 0 )
-						isub = 1; // what about eta=0?
-					QvectorQCeta10[ih][isub] += TComplex( TMath::Cos(ih*phi), TMath::Sin(ih*phi) );
+						isub = 1;
+					QvectorQCeta10[ih][isub] += q;
 				}
 			}
 		}
