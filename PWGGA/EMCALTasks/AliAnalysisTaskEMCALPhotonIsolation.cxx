@@ -1290,18 +1290,19 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::Run()
 //        if(pti->GetEtaGeo()==0. && pti->GetPhiGeo()==0.){
 //         continue;
 //        }
-        if(pti->GetADCAmp() > 130){  
+        if(!fIsMC && pti->GetADCAmp() > 130){  
           isL1 = kTRUE;
           break;
+        }
+        if(fIsMC && pti->GetSmearedEnergy() > 8.4){
+          isL1 = kTRUE;
         }
       }
     }                      
   }
   if(!isL1 && !fIsMC && f2012EGA){
-    cout << "This Cluster is triggered" << endl;
     return kFALSE;
   }
-  else cout << "This Cluster is NOT triggered" << endl;
 
   fEvents->Fill(0); // Fill event number histogram
   
@@ -1356,7 +1357,6 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::Run()
   }
   
   if(!isL1 && fIsMC && f2012EGA){
-    cout << "REJECTED!!!" << endl;
     return kFALSE;
   }
 
@@ -3129,7 +3129,6 @@ void AliAnalysisTaskEMCALPhotonIsolation::LookforParticle(Int_t clusterlabel, Do
   outputvalueMCmix[6] = dEta;
   outputvalueMCmix[7] = isolation;
   outputvalueMCmix[8] = clusterFromPromptPhoton;
-  cout << "Fill ClustMC!!!" << endl;
     // clusterFromPP=1 ->clusterlabel = 8 TruePromptPhoton;
     // clusterFromPP=2 ->clusterlabel = indexe+/e- with 1 contribution to the Energy;
     // clusterFromPP=3 ->clusterlabel = indexe+/e- with 2 contributions to the Energy;
@@ -3730,7 +3729,6 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::FillGeneralHistograms(AliVCluster *c
       break;
       
     case 1:
-      cout << " Fill THnSparse" << endl;
       outputValues[0] = eTCOI;
       outputValues[1] = m02COI;
       outputValues[2] = isolation;
@@ -4161,7 +4159,6 @@ void AliAnalysisTaskEMCALPhotonIsolation::AnalyzeMC(){
         // fill some histograms or a THnSparse or a TTree.
         //	AliError(Form("Fill something in Analize MC"));
       if(fWho==1)
-        cout << "Fill MCtruth!!" << endl;
         fOutMCTruth->Fill(outputValuesMC);
       if(fWho==2)
 	fPtvsSum_MC->Fill(eT, sumEiso);
