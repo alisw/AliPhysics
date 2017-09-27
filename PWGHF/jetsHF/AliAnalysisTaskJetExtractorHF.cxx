@@ -102,7 +102,7 @@ AliAnalysisTaskJetExtractorHF::AliAnalysisTaskJetExtractorHF() :
   fCurrentInitialParton2Type(0),
   fCurrentTrueJetPt(0),
   fFoundIC(kFALSE),
-  fLowPtExtractionBinContents(),
+  fUnderflowBinContents(),
   fExtractionCutMinCent(-1),
   fExtractionCutMaxCent(-1),
   fExtractionCutUseIC(kFALSE),
@@ -112,8 +112,10 @@ AliAnalysisTaskJetExtractorHF::AliAnalysisTaskJetExtractorHF() :
   fExtractionPercentage(1.0),
   fExtractionListPIDsHM(),
   fSetEmcalJetFlavour(0),
-  fNumLowPtExtractionBins(1),
-  fHadronMatchingRadius(0.5),
+  fUnderflowNumBins(1),
+  fUnderflowCutOff(5.0),
+  fUnderflowPercentage(0.5),
+  fHadronMatchingRadius(0.4),
   fInitialCollisionMatchingRadius(0.3),
   fTruthJetsArrayName(""),
   fTruthJetsRhoName(""),
@@ -129,7 +131,7 @@ AliAnalysisTaskJetExtractorHF::AliAnalysisTaskJetExtractorHF() :
   SetMakeGeneralHistograms(kTRUE);
   fRandom = new TRandom3(0);
   for(size_t i=0;i<100;i++)
-    fLowPtExtractionBinContents[i] = 0;
+    fUnderflowBinContents[i] = 0;
 }
 
 //________________________________________________________________________
@@ -153,7 +155,7 @@ AliAnalysisTaskJetExtractorHF::AliAnalysisTaskJetExtractorHF(const char *name) :
   fCurrentInitialParton2Type(0),
   fCurrentTrueJetPt(0),
   fFoundIC(kFALSE),
-  fLowPtExtractionBinContents(),
+  fUnderflowBinContents(),
   fExtractionCutMinCent(-1),
   fExtractionCutMaxCent(-1),
   fExtractionCutUseIC(kFALSE),
@@ -163,8 +165,10 @@ AliAnalysisTaskJetExtractorHF::AliAnalysisTaskJetExtractorHF(const char *name) :
   fExtractionPercentage(1.0),
   fExtractionListPIDsHM(),
   fSetEmcalJetFlavour(0),
-  fNumLowPtExtractionBins(1),
-  fHadronMatchingRadius(0.5),
+  fUnderflowNumBins(1),
+  fUnderflowCutOff(5.0),
+  fUnderflowPercentage(0.5),
+  fHadronMatchingRadius(0.4),
   fInitialCollisionMatchingRadius(0.3),
   fTruthJetsArrayName(""),
   fTruthJetsRhoName(""),
@@ -180,7 +184,7 @@ AliAnalysisTaskJetExtractorHF::AliAnalysisTaskJetExtractorHF(const char *name) :
   SetMakeGeneralHistograms(kTRUE);
   fRandom = new TRandom3(0);
   for(size_t i=0;i<100;i++)
-    fLowPtExtractionBinContents[i] = 0;
+    fUnderflowBinContents[i] = 0;
 }
 
 //________________________________________________________________________
@@ -266,8 +270,8 @@ void AliAnalysisTaskJetExtractorHF::ExecOnce() {
   }
 
   // Status message on low-pt extraction
-  if(fNumLowPtExtractionBins)
-    AliWarning(Form("Low-pT extraction active: Jets will be extracted in %d bin(s) from 0 to %2.2f GeV/c.", fNumLowPtExtractionBins, fExtractionCutMinPt));
+  if(fUnderflowNumBins)
+    AliWarning(Form("Low-pT extraction active: %2.0f%% of jets will be extracted in %d bin(s) from %2.2f to %2.2f GeV/c.", fUnderflowPercentage*100., fUnderflowNumBins, fUnderflowCutOff, fExtractionCutMinPt));
   else
     AliWarning(Form("Low-pT extraction not active: Jets below %2.2f GeV/c will be discarded completely.", fExtractionCutMinPt));
 
@@ -294,16 +298,21 @@ Bool_t AliAnalysisTaskJetExtractorHF::IsJetSelected(AliEmcalJet* jet)
 
   if(jetPt < fExtractionCutMinPt)
   {
-    if(!fNumLowPtExtractionBins) // If low-pT extraction is not active, discard jet
+    if(!fUnderflowNumBins) // If low-pT extraction is not active, discard jet
       return kFALSE;
     else // If active, put in underflow bin
     {
-      Double_t extractionBinSize = fExtractionCutMinPt/fNumLowPtExtractionBins;
+      if(fRandom->Rndm() >= fUnderflowPercentage)
+      {
+        FillHistogram("hJetPtAcceptance", jetPt, fCent);
+        return kFALSE;
+      }
+      Double_t extractionBinSize = (fExtractionCutMinPt-fUnderflowCutOff)/fUnderflowNumBins;
       // Low-pT extraction
-      for(Int_t i=0; i<fNumLowPtExtractionBins; i++)
-        if( (jetPt >= i*extractionBinSize) && (jetPt < (i+1)*extractionBinSize))
+      for(Int_t i=0; i<fUnderflowNumBins; i++)
+        if( (jetPt >= i*extractionBinSize + fUnderflowCutOff) && (jetPt < (i+1)*extractionBinSize + fUnderflowCutOff))
         {
-          if (fLowPtExtractionBinContents[i+1] >= fLowPtExtractionBinContents[0])
+          if (fUnderflowBinContents[i+1] >= fUnderflowBinContents[0])
           {
             FillHistogram("hJetPtAcceptance", jetPt, fCent);
             return kFALSE;
@@ -350,17 +359,17 @@ Bool_t AliAnalysisTaskJetExtractorHF::IsJetSelected(AliEmcalJet* jet)
   FillHistogram("hJetAcceptance", 4.5);
   fCurrentNJetsInEvents++;
 
-  if(fNumLowPtExtractionBins)
+  if(fUnderflowNumBins)
   {
     // Fill low-pt extraction bin contents
     // Those contents decide whether we extract further jets in an "underflow" bin
-    Double_t extractionBinSize = fExtractionCutMinPt/fNumLowPtExtractionBins;
-    for(Int_t i=0; i<fNumLowPtExtractionBins; i++)
-      if( (jetPt >= i*extractionBinSize) && (jetPt < (i+1)*extractionBinSize))
-        fLowPtExtractionBinContents[i+1]++;
+    Double_t extractionBinSize = (fExtractionCutMinPt-fUnderflowCutOff)/fUnderflowNumBins;
+    for(Int_t i=0; i<fUnderflowNumBins; i++)
+      if( (jetPt >= i*extractionBinSize + fUnderflowCutOff) && (jetPt < (i+1)*extractionBinSize + fUnderflowCutOff))
+        fUnderflowBinContents[i+1]++;
 
     if( (jetPt >= fExtractionCutMinPt) && (jetPt < fExtractionCutMinPt+extractionBinSize) )
-      fLowPtExtractionBinContents[0]++;
+      fUnderflowBinContents[0]++;
   }
 
   return kTRUE;
