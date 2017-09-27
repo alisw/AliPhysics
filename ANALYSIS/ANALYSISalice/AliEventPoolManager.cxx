@@ -187,7 +187,7 @@ Long64_t AliEventPool::Merge(TCollection* hlist)
   return hlist->GetEntries() + 1;
 }
 
-void AliEventPool::Clear()
+void AliEventPool::Clear(Option_t * option)
 {
   // Clear the pool without deleting the object
   // Don't touch lock or save flag here to be fully flexible
