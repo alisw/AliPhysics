@@ -60,7 +60,6 @@ AliEventCuts::AliEventCuts(bool saveplots) : TList(),
   fCentralityFramework{0},
   fMinCentrality{-1000.f},
   fMaxCentrality{1000.f},
-  fMultSelectionEvCuts{false},
   fSelectInelGt0{false},
   fUseVariablesCorrelationCuts{false},
   fUseEstimatorsCorrelationCut{false},
@@ -89,6 +88,7 @@ AliEventCuts::AliEventCuts(bool saveplots) : TList(),
   fNewEvent{true},
   fOverrideAutoTriggerMask{false},
   fOverrideAutoPileUpCuts{false},
+  fMultSelectionEvCuts{false},  
   fCutStats{nullptr},
   fCutStatsAfterTrigger{nullptr},
   fCutStatsAfterMultSelection{nullptr},
@@ -565,10 +565,6 @@ void AliEventCuts::SetupRun2pp() {
 
   if (!fOverrideAutoTriggerMask) fTriggerMask = AliVEvent::kINT7;
 
-  fUtils.SetMaxPlpChi2MV(5);
-  fUtils.SetMinWDistMV(15);
-  fUtils.SetCheckPlpFromDifferentBCMV(kFALSE);
-  fPileUpCutMV = true;
 }
 
 void AliEventCuts::SetupLHC15o() {
@@ -649,21 +645,44 @@ void AliEventCuts::SetupLHC11h() {
 }
 
 void AliEventCuts::SetupRun2pA(int iPeriod) {
-  ::Info("AliEventCuts::SetupRun2pA","Event cuts for pA are being set on top of Run2 pp standard selections.");
   /// iPeriod: 0 p-Pb 5&8 TeV, 1 Pb-p 8 TeV
-  SetupRun2pp();
+  ::Info("AliEventCuts::SetupRun2pA","Event cuts for pA are being set on top of Run2 pp standard selections.");
+  SetName("StandardRun2pAEventCuts");  
+
   /// p--Pb requires nsigma cuts on primary vertex
   fMaxDeltaSpdTrackNsigmaSPD = 20.f;
   fMaxDeltaSpdTrackNsigmaTrack = 40.f;
 
-  /// p-Pb MC do not have the ZDC, the following line avoid any crashes.
-  if (!fMC) {
-    fCentralityFramework = 1;
-    fUseEstimatorsCorrelationCut = false;
+  /// p-Pb pile-up cut is based on MV only, the SPD vs mult cut is here disabled
+  fUtils.SetMaxPlpChi2MV(5);
+  fUtils.SetMinWDistMV(15);
+  fUtils.SetCheckPlpFromDifferentBCMV(kFALSE);
+  fPileUpCutMV = true;
 
+  fMinVtz = -10.f;
+  fMaxVtz = 10.f;
+  fMaxDeltaSpdTrackAbsolute = 0.5f;
+  fMaxDeltaSpdTrackNsigmaSPD = 1.e14f;
+  fMaxDeltaSpdTrackNsigmaTrack = 1.e14;
+  fMaxResolutionSPDvertex = 0.25f;
+
+  fRejectDAQincomplete = true;
+
+  if (!fOverrideAutoTriggerMask) fTriggerMask = AliVEvent::kINT7;
+
+  /// p-Pb MC do not have the ZDC, the following line avoid any crashes.
+  if (fMC) {
+    ::Warning("AliEventCuts::SetupRun2pA","Be careful, in p-Pb MC ZDC is not available, if you require the ZN centrality you may encounter a crash.");
+  }
+  fUseEstimatorsCorrelationCut = false;
+
+  if (fCentralityFramework > 1)
+    ::Fatal("AliEventCuts::SetupRun2pA","You cannot use the legacy centrality framework in pp. Please set the fCentralityFramework to 0 to disable the multiplicity selection or to 1 to use AliMultSelection.");
+  else if (fCentralityFramework == 1) {
     fCentEstimators[0] = iPeriod ? "ZNC" : "ZNA";
     fCentEstimators[1] = iPeriod ? "V0C" : "V0A";
   }
+
 }
 
 void  AliEventCuts::OverridePileUpCuts(int minContrib, float minZdist, float nSigmaZdist, float nSigmaDiamXY, float nSigmaDiamZ, bool ov) {
@@ -689,4 +708,11 @@ bool AliEventCuts::GoodPrimaryAODVertex(AliVEvent* ev) {
       return false;
   }
   return true;
+}
+
+void AliEventCuts::UseMultSelectionEventSelection(bool useIt) {
+  fMultSelectionEvCuts = useIt;
+  if (useIt) {
+    SetCentralityRange(0.,100.);
+  }
 }
