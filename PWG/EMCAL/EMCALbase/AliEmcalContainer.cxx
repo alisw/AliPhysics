@@ -20,7 +20,6 @@
 #include "AliTLorentzVector.h"
 
 #include "AliEmcalContainerUtils.h"
-#include "AliAnalysisTaskEmcalEmbeddingHelper.h"
 
 #include "AliEmcalContainer.h"
 
