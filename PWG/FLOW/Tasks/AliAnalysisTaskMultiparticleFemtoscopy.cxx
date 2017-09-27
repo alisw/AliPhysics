@@ -5341,7 +5341,7 @@ void AliAnalysisTaskMultiparticleFemtoscopy::CalculateCorrelationFunctionsTEST(A
   }
  }
  
- // Counters for N_\pi+ and N_\pi^-, for each Q2 bin (needed only for "Test 7" at the moment):
+ // Counters for N_\pi+ and N_\pi^-, for each Q2 bin (needed only for "Test 7" and "Test 8" at the moment):
  TString *test7Counters[10000][2] = {{NULL}}; // N[44][0] is then N_\pi+ in the 44th Q2 bin in this event, while N[44][1] is then N_\pi- in the 44th Q2 bin in this event TBI hardwired 10000
  for(Int_t q2=0;q2<fnQ2bins;q2++)
  {
@@ -5350,6 +5350,15 @@ void AliAnalysisTaskMultiparticleFemtoscopy::CalculateCorrelationFunctionsTEST(A
   
   test7Counters[q2][1] = new TString();
   *test7Counters[q2][1] = "";
+ }
+ TString *test8Counters[10000][2] = {{NULL}}; // N[44][0] is then N_\pi+ in the 44th Q2 bin in this event, while N[44][1] is then N_\pi- in the 44th Q2 bin in this event TBI hardwired 10000
+ for(Int_t q2=0;q2<fnQ2bins;q2++)
+ {
+  test8Counters[q2][0] = new TString();
+  *test8Counters[q2][0] = "";
+  
+  test8Counters[q2][1] = new TString();
+  *test8Counters[q2][1] = "";
  }
 
  // d) Nested loops to calculate single-event averages:
@@ -5556,8 +5565,7 @@ void AliAnalysisTaskMultiparticleFemtoscopy::CalculateCorrelationFunctionsTEST(A
    // d) I cannot do anything for a given event, as it seems... :'( 
    if(fFillCorrelationFunctionsTEST[7])
    {
-    //if(Pion(gtrack1,1,kTRUE) && Pion(gtrack2,-1,kTRUE)) // TBI 20170724
-    if( (Pion(gtrack1,1,kTRUE) || Pion(gtrack1,-1,kTRUE)) && (Proton(gtrack2,1,kTRUE) || Proton(gtrack2,-1,kTRUE)) )
+    if(Pion(gtrack1,1,kTRUE) && Proton(gtrack2,1,kTRUE)) // TBI 20170927
     {
      // p_1:
      Double_t p1x = agtrack1->Px();
@@ -5628,9 +5636,85 @@ void AliAnalysisTaskMultiparticleFemtoscopy::CalculateCorrelationFunctionsTEST(A
 */
  
 
-    } // if(Pion(gtrack1,1,kTRUE) && Pion(gtrack2,-1,kTRUE))
+    } // if(Pion(gtrack1,1,kTRUE) && Proton(gtrack2,1,kTRUE))
    } // if(fFillCorrelationFunctionsTEST[7])
 
+   // Test 8: "Same as Test 7, just correlationg \pi^- and antiprotons"
+   if(fFillCorrelationFunctionsTEST[8])
+   {
+    if(Pion(gtrack1,-1,kTRUE) && Proton(gtrack2,-1,kTRUE)) // TBI 20170927
+    {
+     // p_1:
+     Double_t p1x = agtrack1->Px();
+     Double_t p1y = agtrack1->Py();
+     Double_t p1z = agtrack1->Pz();
+     Double_t e1  = agtrack1->E();
+     // p_2:
+     Double_t p2x = agtrack2->Px();
+     Double_t p2y = agtrack2->Py();
+     Double_t p2z = agtrack2->Pz();
+     Double_t e2  = agtrack2->E();  
+
+     // Corresponding energy-momentum four-vectors:
+     TLorentzVector track1(p1x,p1y,p1z,e1);
+     TLorentzVector track2(p2x,p2y,p2z,e2);
+
+     // Pseudo-code: 
+     // 0) for each Q2 bin, formed from p_1 and p_2, count number of unique \pi+ and \pi-
+     // 1) Then, treat N_\pi+ and N_\pi- and two independent observables, and after I run over all pairs, fill TProfile to get <N_\pi+ N_\pi-> - <N_\pi+> <N_\pi-> for each Q2 bin
+     // 2) See if there is something non-trivial happening only at low Q2
+     // 3) Do the same thing for background
+     // 4) Generalize for 3-particles
+
+     Double_t dQ2 = Q2(agtrack1,agtrack2); // Lorentz invariant Q2
+
+     Int_t nBinQ2Number = this->BinNoForSpecifiedValue(fCorrelationFunctionsTEST[8][0][0][0],dQ2);
+     //cout<<"BIN_NO: "<<nBinQ2Number<<endl;
+     //cout<<"ENERGIES: "<<agtrack1->E()<<" "<<agtrack2->E()<<endl;
+     if(!test8Counters[nBinQ2Number][0]->Contains(Form("_%.6f_",agtrack1->E())))
+     {
+      *test8Counters[nBinQ2Number][0]+=Form("_%.6f_",agtrack1->E());
+     }
+     //cout<<"STRING1: "<<test8Counters[nBinQ2Number][0]->Data()<<endl;
+
+     if(!test8Counters[nBinQ2Number][1]->Contains(Form("_%.6f_",agtrack2->E())))
+     {
+      *test8Counters[nBinQ2Number][1]+=Form("_%.6f_",agtrack2->E());
+     }
+     //cout<<"STRING2: "<<test8Counters[nBinQ2Number][1]->Data()<<endl;
+
+
+//  TProfile *fCorrelationFunctionsTEST[10][2][7][10]; //! [testNo][0=vs Q2, 1=vs Q3][example [0=<x1>][1=<x2>], ...,[6=<x1x2x3>]][differential index, e.g. for test 0 [0=Cx][1=Cy][2=Cz]]
+
+
+/*
+
+ TString *test8Counters[10000][2] = {{NULL}}; // N[44][0] is then N_\pi+ in the 44th Q2 bin in this event, while N[44][1] is then N_\pi- in the 44th Q2 bin in this event TBI hardwired 10000
+ for(Int_t q2=0;q2<fnQ2bins;q2++)
+ {
+  test8Counters[q2][0] = new TString();
+  *test8Counters[q2][0] = "";
+  
+  test8Counters[q2][1] = new TString();
+  *test8Counters[q2][1] = "";
+ }
+
+*/
+
+/*
+     // Calculating L.I. E_{a}^{(b)} (i.e. energy of the 1st particle in the (rest) frame of the 2nd):
+     TVector3 vb = TVector3(p2x/e2,p2y/e2,p2z/e2); // velocity of 2nd particle
+     track1.Boost(-vb); // boosting the 1st track in the rest frame of 2nd
+     //track2.Boost(-vb); // boosting the 2nd track in its rest frame 
+     Double_t Eab = track1.E(); // energy of 1st track in the rest frame of 2nd. Yes, this is L.I. quantity
+
+     // Fill Eab vs. dQ2 distribution, which is then manifestly L.I.
+     singleEventAverageCorrelationsVsQ2[6][0][0]->Fill(dQ2,Eab); // <E_{a}^{(b)}> vs. Q2
+*/
+ 
+
+    } // if(Pion(gtrack1,-1,kTRUE) && Proton(gtrack2,-1,kTRUE))
+   } // if(fFillCorrelationFunctionsTEST[8])
 
    // Loop over the 3rd particle:
    for(Int_t iTrack3=0;iTrack3<nTracks;iTrack3++)
@@ -5857,31 +5941,31 @@ void AliAnalysisTaskMultiparticleFemtoscopy::CalculateCorrelationFunctionsTEST(A
   {
    for(Int_t xyz=0;xyz<3;xyz++)
    {
-    Double_t dX1 = 0., dX1Err = 0.; // <X1>
-    Double_t dX2 = 0., dX2Err = 0.; // <X2>
-    Double_t dX3 = 0., dX3Err = 0.; // <X3>
-    Double_t dX1X2 = 0., dX1X2Err = 0.; // <X1X2>
-    Double_t dX1X3 = 0., dX1X3Err = 0.; // <X1X3>
-    Double_t dX2X3 = 0., dX2X3Err = 0.; // <X2X3>
-    Double_t dX1X2X3 = 0., dX1X2X3Err = 0.; // <X1X2X3>
-    Double_t dC2 = 0., dC2Err = 0.; // C2 = <X1X2> - <X1><X2> vs. Q2
-    Double_t dC12 = 0., dC12Err = 0.; // C12 = <X1X2> - <X1><X2> vs. Q3
-    Double_t dC13 = 0., dC13Err = 0.; // C13 = <X1X3> - <X1><X3> vs. Q3
-    Double_t dC23 = 0., dC23Err = 0.; // C23 = <X2X3> - <X2><X3> vs. Q3
-    Double_t dC3 = 0., dC3Err = 0.; // C3 = <X1X2X3> - <X1X2><X3> - <X1X3><X2> - <X2X3><X1> + 2<X1><X2><X3> vs. Q3
+    Double_t dX1 = 0./*, dX1Err = 0.*/; // <X1> TBI 
+    Double_t dX2 = 0./*, dX2Err = 0.*/; // <X2> TBI
+    Double_t dX3 = 0./*, dX3Err = 0.*/; // <X3> TBI
+    Double_t dX1X2 = 0./*, dX1X2Err = 0.*/; // <X1X2> TBI
+    Double_t dX1X3 = 0./*, dX1X3Err = 0.*/; // <X1X3> TBI
+    Double_t dX2X3 = 0./*, dX2X3Err = 0.*/; // <X2X3> TBI
+    Double_t dX1X2X3 = 0./*, dX1X2X3Err = 0.*/; // <X1X2X3>
+    Double_t dC2 = 0./*, dC2Err = 0.*/; // C2 = <X1X2> - <X1><X2> vs. Q2
+    Double_t dC12 = 0./*, dC12Err = 0.*/; // C12 = <X1X2> - <X1><X2> vs. Q3
+    Double_t dC13 = 0./*, dC13Err = 0.*/; // C13 = <X1X3> - <X1><X3> vs. Q3
+    Double_t dC23 = 0./*, dC23Err = 0.*/; // C23 = <X2X3> - <X2><X3> vs. Q3
+    Double_t dC3 = 0./*, dC3Err = 0.*/; // C3 = <X1X2X3> - <X1X2><X3> - <X1X3><X2> - <X2X3><X1> + 2<X1><X2><X3> vs. Q3
     Double_t dBinCenter = 0.; // TBI assuming binning is everywhere the same. TBI it is used also below when filling 3p
     // 2p correlation terms:
     dX1 = singleEventAverageCorrelationsVsQ2[t][0][xyz]->GetBinContent(b+1); // <X1> vs. Q2
-    dX1Err = singleEventAverageCorrelationsVsQ2[t][0][xyz]->GetBinError(b+1);
+    //dX1Err = singleEventAverageCorrelationsVsQ2[t][0][xyz]->GetBinError(b+1);
     dX2 = singleEventAverageCorrelationsVsQ2[t][1][xyz]->GetBinContent(b+1); // <X2> vs. Q2
-    dX2Err = singleEventAverageCorrelationsVsQ2[t][1][xyz]->GetBinError(b+1);
+    //dX2Err = singleEventAverageCorrelationsVsQ2[t][1][xyz]->GetBinError(b+1);
     dX1X2 = singleEventAverageCorrelationsVsQ2[t][2][xyz]->GetBinContent(b+1); // <X1X2> vs. Q2
-    dX1X2Err = singleEventAverageCorrelationsVsQ2[t][2][xyz]->GetBinError(b+1);
+    //dX1X2Err = singleEventAverageCorrelationsVsQ2[t][2][xyz]->GetBinError(b+1);
     if(TMath::Abs(dX1)>1.e-14 && TMath::Abs(dX2)>1.e-14 && TMath::Abs(dX1X2)>1.e-14) // basically, do calculations only if all terms in the 2p cumulant definition are non-zero
     {
      // 2p cumulant:
      dC2 = dX1X2 - dX1*dX2;
-     dC2Err = 0.; // TBI propagate an error one day
+     //dC2Err = 0.; // TBI propagate an error one day
      // fill 2p:
      dBinCenter = fCorrelationFunctionsTEST[t][0][0][xyz]->GetBinCenter(b+1); // TBI assuming binning is everywhere the same. TBI it is used also below when filling 3p
      fCorrelationFunctionsTEST[t][0][0][xyz]->Fill(dBinCenter,dX1); // <X1>
@@ -5898,33 +5982,33 @@ void AliAnalysisTaskMultiparticleFemtoscopy::CalculateCorrelationFunctionsTEST(A
 
     // 3p correlation terms (note that now binning is vs. Q3 TBI yes, fine for the time being, but this is a landmine clearly...):
     dX1 = singleEventAverageCorrelationsVsQ3[t][0][xyz]->GetBinContent(b+1); // <X1> vs. Q3
-    dX1Err = singleEventAverageCorrelationsVsQ3[t][0][xyz]->GetBinError(b+1);
+    //dX1Err = singleEventAverageCorrelationsVsQ3[t][0][xyz]->GetBinError(b+1);
     dX2 = singleEventAverageCorrelationsVsQ3[t][1][xyz]->GetBinContent(b+1); // <X2> vs. Q3
-    dX2Err = singleEventAverageCorrelationsVsQ3[t][1][xyz]->GetBinError(b+1);
+    //dX2Err = singleEventAverageCorrelationsVsQ3[t][1][xyz]->GetBinError(b+1);
     dX3 = singleEventAverageCorrelationsVsQ3[t][2][xyz]->GetBinContent(b+1); // <X3> vs. Q3
-    dX3Err = singleEventAverageCorrelationsVsQ3[t][2][xyz]->GetBinError(b+1);
+    //dX3Err = singleEventAverageCorrelationsVsQ3[t][2][xyz]->GetBinError(b+1);
     dX1X2 = singleEventAverageCorrelationsVsQ3[t][3][xyz]->GetBinContent(b+1); // <X1X2> vs. Q3
-    dX1X2Err = singleEventAverageCorrelationsVsQ3[t][3][xyz]->GetBinError(b+1);
+    //dX1X2Err = singleEventAverageCorrelationsVsQ3[t][3][xyz]->GetBinError(b+1);
     dX1X3 = singleEventAverageCorrelationsVsQ3[t][4][xyz]->GetBinContent(b+1); // <X1X3> vs. Q3
-    dX1X3Err = singleEventAverageCorrelationsVsQ3[t][4][xyz]->GetBinError(b+1);
+    //dX1X3Err = singleEventAverageCorrelationsVsQ3[t][4][xyz]->GetBinError(b+1);
     dX2X3 = singleEventAverageCorrelationsVsQ3[t][5][xyz]->GetBinContent(b+1); // <X2X3> vs. Q3
-    dX2X3Err = singleEventAverageCorrelationsVsQ3[t][5][xyz]->GetBinError(b+1);
+    //dX2X3Err = singleEventAverageCorrelationsVsQ3[t][5][xyz]->GetBinError(b+1);
     dX1X2X3 = singleEventAverageCorrelationsVsQ3[t][6][xyz]->GetBinContent(b+1); // <X1X2X3> vs. Q3
-    dX1X2X3Err = singleEventAverageCorrelationsVsQ3[t][6][xyz]->GetBinError(b+1);
+    //dX1X2X3Err = singleEventAverageCorrelationsVsQ3[t][6][xyz]->GetBinError(b+1);
     if(TMath::Abs(dX1)>1.e-14 && TMath::Abs(dX2)>1.e-14 && TMath::Abs(dX3)>1.e-14 &&
        TMath::Abs(dX1X2)>1.e-14 && TMath::Abs(dX1X3)>1.e-14 && TMath::Abs(dX2X3)>1.e-14 &&
        TMath::Abs(dX1X2X3)>1.e-14) // basically, do calculations only if all terms in the 3p cumulant definition are non-zero
     {
      // three 2p cumulants vs. Q3 (why not!?)
      dC12 = dX1X2 - dX1*dX2; // C12 = <X1X2> - <X1><X2> vs. Q3
-     dC12Err = 0.; // TBI propagate an error one day
+     //dC12Err = 0.; // TBI propagate an error one day
      dC13 = dX1X3 - dX1*dX3; // C13 = <X1X3> - <X1><X3> vs. Q3
-     dC13Err = 0.; // TBI propagate an error one day
+     //dC13Err = 0.; // TBI propagate an error one day
      dC23 = dX2X3 - dX2*dX3; // C23 = <X2X3> - <X2><X3> vs. Q3
-     dC23Err = 0.; // TBI propagate an error one day
+     //dC23Err = 0.; // TBI propagate an error one day
      // 3p cumulant vs. Q3:
      dC3 = dX1X2X3 - dX1X2*dX3 - dX1X3*dX2 - dX2X3*dX1 + 2.*dX1*dX2*dX3;
-     dC3Err = 0.; // TBI propagate an error one day
+     //dC3Err = 0.; // TBI propagate an error one day
      // fill 3p:
      dBinCenter = fCorrelationFunctionsTEST[t][1][0][xyz]->GetBinCenter(b+1); // TBI assuming binning is everywhere the same. TBI it is used also below when filling 3p
      fCorrelationFunctionsTEST[t][1][0][xyz]->Fill(dBinCenter,dX1); // <X1>
@@ -5941,7 +6025,6 @@ void AliAnalysisTaskMultiparticleFemtoscopy::CalculateCorrelationFunctionsTEST(A
     } // if(TMath::Abs(dX1)>1.e-14 && TMath::Abs(dX2)>1.e-14 && TMath::Abs(dX3)>1.e-14 && ...
    } // for(Int_t xyz=0;xyz<3;xyz++)
   } // for(Int_t b=0;b<nBins;b++) // TBI at the moment, I use same binning for Q2 and Q3
-
 
   if(2==t) // for "test 2" I just need correlations, and build cumulants at the end of the day. [x = pion yield][y = kaon yield][z = proton yield]
   {
@@ -6007,8 +6090,8 @@ void AliAnalysisTaskMultiparticleFemtoscopy::CalculateCorrelationFunctionsTEST(A
      //cout<<Form("Bin %d; N = %d; STRING2: ",b,counter[1])<<test7Counters[b][1]->Data()<<endl;
     } // if(test7Counters[b][1] && !test7Counters[b][1]->EqualTo("")) 
 
-    Int_t nPionsP = counter[0]; // number of positive pions in bth Q2 bin, in this event, X1 in the cumulant formalism
-    Int_t nPionsN = counter[1]; // number of negative pions in bth Q2 bin, in this event, X2 in the cumulant formalism
+    Int_t nPionsP = counter[0]; // number of positive pions in bth Q2 bin, in this event, X1 in the cumulant formalism. PID set via if(Pion(gtrack1,1,kTRUE) && Proton(gtrack2,1,kTRUE))
+    Int_t nPionsN = counter[1]; // number of negative pions in bth Q2 bin, in this event, X2 in the cumulant formalism. PID set via if(Pion(gtrack1,1,kTRUE) && Proton(gtrack2,1,kTRUE))
 
     if(nPionsP>=1 && nPionsN>=1)
     {
@@ -6022,6 +6105,52 @@ void AliAnalysisTaskMultiparticleFemtoscopy::CalculateCorrelationFunctionsTEST(A
    } // for(Int_t b=1;b<=fnQ2bins;b++) // TBI check the boundaries
 
   } // if(7==t) // for "test 7" special treatment
+
+  if(8==t) // for "test 7" special treatment
+  {
+ 
+   for(Int_t b=1;b<=fnQ2bins;b++) // TBI check the boundaries
+   {
+    Int_t counter[2] = {0,0}; // [0=pions+][1=pions-]
+
+    if(test8Counters[b][0] && !test8Counters[b][0]->EqualTo(""))
+    {
+     // Count pions+
+     TObjArray *oa0 = TString(test8Counters[b][0]->Data()).Tokenize("_");
+     while(oa0->At(counter[0]))
+     {
+      counter[0]++;
+     }
+     //cout<<Form("Bin %d; N = %d; STRING1: ",b,counter[0])<<test8Counters[b][0]->Data()<<endl;
+    } // if(test8Counters[b][0] && !test8Counters[b][0]->EqualTo(""))
+  
+    if(test8Counters[b][1] && !test8Counters[b][1]->EqualTo(""))
+    {
+     // Count pions-
+     TObjArray *oa1 = TString(test8Counters[b][1]->Data()).Tokenize("_");
+     while(oa1->At(counter[1]))
+     {
+      counter[1]++;
+     }
+     //cout<<Form("Bin %d; N = %d; STRING2: ",b,counter[1])<<test8Counters[b][1]->Data()<<endl;
+    } // if(test8Counters[b][1] && !test8Counters[b][1]->EqualTo("")) 
+
+    Int_t nPionsP = counter[0]; // number of positive pions in bth Q2 bin, in this event, X1 in the cumulant formalism. PID set via if(Pion(gtrack1,-1,kTRUE) && Proton(gtrack2,-1,kTRUE))
+    Int_t nPionsN = counter[1]; // number of negative pions in bth Q2 bin, in this event, X2 in the cumulant formalism. PID set via if(Pion(gtrack1,-1,kTRUE) && Proton(gtrack2,-1,kTRUE))
+
+    if(nPionsP>=1 && nPionsN>=1)
+    {
+     Double_t dBinCenter = fCorrelationFunctionsTEST[8][0][0][0]->GetBinCenter(b); // TBI assuming same binning everyrhere
+     //TProfile *fCorrelationFunctionsTEST[10][2][7][10]; //! [testNo][0=vs Q2, 1=vs Q3][example [0=<x1>][1=<x2>], ...,[6=<x1x2x3>]][differential index, e.g. for test 0 [0=Cx][1=Cy][2=Cz]]
+     fCorrelationFunctionsTEST[8][0][0][0]->Fill(dBinCenter,nPionsP); // X1 
+     fCorrelationFunctionsTEST[8][0][1][0]->Fill(dBinCenter,nPionsN); // X2
+     fCorrelationFunctionsTEST[8][0][2][0]->Fill(dBinCenter,nPionsP*nPionsN); // X1*X2 
+    } // if(nPionsP>=1 && nPionsN>=1)
+ 
+   } // for(Int_t b=1;b<=fnQ2bins;b++) // TBI check the boundaries
+
+  } // if(8==t) // for "test 8" special treatment
+
 
  } // for(Int_t t=0;t<nTestsMax;t++) // test No
 
@@ -6072,6 +6201,8 @@ void AliAnalysisTaskMultiparticleFemtoscopy::CalculateCorrelationFunctionsTEST(A
  {
   if(test7Counters[q2][0]) delete test7Counters[q2][0];
   if(test7Counters[q2][1]) delete test7Counters[q2][1];
+  if(test8Counters[q2][0]) delete test8Counters[q2][0];
+  if(test8Counters[q2][1]) delete test8Counters[q2][1];
  }
 
  // c) Three nested loops to calculate C(Q3), just an example; TBI
@@ -6711,7 +6842,7 @@ void AliAnalysisTaskMultiparticleFemtoscopy::Calculate2pBackgroundTEST(TClonesAr
   } // for(Int_t ct=0;ct<n2pCumulantTerms;ct++)
  } // for(Int_t t=0;t<nTestsMax;t++)
 
- // ) Counters for N_\pi+ and N_\pi^-, for each Q2 bin (needed only for "Test 7" at the moment):
+ // ) Counters for N_\pi+ and N_\pi^-, for each Q2 bin (needed only for "Test 7" and "Test 8" at the moment):
  TString *test7Counters[10000][2] = {{NULL}}; // N[44][0] is then N_\pi+ in the 44th Q2 bin in this event, while N[44][1] is then N_\pi- in the 44th Q2 bin in this event TBI hardwired 10000
  for(Int_t q2=0;q2<fnQ2bins;q2++)
  {
@@ -6720,6 +6851,15 @@ void AliAnalysisTaskMultiparticleFemtoscopy::Calculate2pBackgroundTEST(TClonesAr
   
   test7Counters[q2][1] = new TString();
   *test7Counters[q2][1] = "";
+ }
+ TString *test8Counters[10000][2] = {{NULL}}; // N[44][0] is then N_\pi+ in the 44th Q2 bin in this event, while N[44][1] is then N_\pi- in the 44th Q2 bin in this event TBI hardwired 10000
+ for(Int_t q2=0;q2<fnQ2bins;q2++)
+ {
+  test8Counters[q2][0] = new TString();
+  *test8Counters[q2][0] = "";
+  
+  test8Counters[q2][1] = new TString();
+  *test8Counters[q2][1] = "";
  }
 
  // c) Calculate averages <X1> (1st event), <X2> (2nd event) and <X1X2> (mixed-event), vs. Q2.
@@ -6889,8 +7029,7 @@ void AliAnalysisTaskMultiparticleFemtoscopy::Calculate2pBackgroundTEST(TClonesAr
    // d) I cannot do anything for a given event, as it seems... :'( 
    if(fFillBackgroundTEST[7])
    {
-    //if(Pion(gtrack1,1,kTRUE) && Pion(gtrack2,-1,kTRUE)) // TBI 20170724
-    if( (Pion(gtrack1,1,kTRUE) || Pion(gtrack1,-1,kTRUE)) && (Proton(gtrack2,1,kTRUE) || Proton(gtrack2,-1,kTRUE)) )
+    if(Pion(gtrack1,1,kTRUE) && Proton(gtrack2,1,kTRUE)) // TBI 20170927
     {
      // p_1:
      Double_t p1x = agtrack1->Px();
@@ -6931,9 +7070,55 @@ void AliAnalysisTaskMultiparticleFemtoscopy::Calculate2pBackgroundTEST(TClonesAr
      }
      //cout<<"STRING2: "<<test7Counters[nBinQ2Number][1]->Data()<<endl;
   
-    } // if(Pion(gtrack1,1,kTRUE) && Pion(gtrack2,-1,kTRUE))
+    } // if(Pion(gtrack1,1,kTRUE) && Proton(gtrack2,1,kTRUE))
    } // if(fFillBackgroundTEST[7])
 
+   // Test 8: "Same as Test 7, just correlating \pi^- and antiprotons"
+   if(fFillBackgroundTEST[8])
+   {
+    if(Pion(gtrack1,-1,kTRUE) && Proton(gtrack2,-1,kTRUE)) // TBI 20170927
+    {
+     // p_1:
+     Double_t p1x = agtrack1->Px();
+     Double_t p1y = agtrack1->Py();
+     Double_t p1z = agtrack1->Pz();
+     Double_t e1  = agtrack1->E();
+     // p_2:
+     Double_t p2x = agtrack2->Px();
+     Double_t p2y = agtrack2->Py();
+     Double_t p2z = agtrack2->Pz();
+     Double_t e2  = agtrack2->E();  
+
+     // Corresponding energy-momentum four-vectors:
+     TLorentzVector track1(p1x,p1y,p1z,e1);
+     TLorentzVector track2(p2x,p2y,p2z,e2);
+
+     // Pseudo-code: 
+     // 0) for each Q2 bin, formed from p_1 and p_2, count number of unique \pi+ and \pi-
+     // 1) Then, treat N_\pi+ and N_\pi- and two independent observables, and after I run over all pairs, fill TProfile to get <N_\pi+ N_\pi-> - <N_\pi+> <N_\pi-> for each Q2 bin
+     // 2) See if there is something non-trivial happening only at low Q2
+     // 3) Do the same thing for background
+     // 4) Generalize for 3-particles
+
+     Double_t dQ2 = Q2(agtrack1,agtrack2); // Lorentz invariant Q2
+
+     Int_t nBinQ2Number = this->BinNoForSpecifiedValue(fBackgroundTEST[8][0][0][0],dQ2);
+     //cout<<"BIN_NO: "<<nBinQ2Number<<endl;
+     //cout<<"ENERGIES: "<<agtrack1->E()<<" "<<agtrack2->E()<<endl;
+     if(!test8Counters[nBinQ2Number][0]->Contains(Form("_%.6f_",agtrack1->E())))
+     {
+      *test8Counters[nBinQ2Number][0]+=Form("_%.6f_",agtrack1->E());
+     }
+     //cout<<"STRING1: "<<test8Counters[nBinQ2Number][0]->Data()<<endl;
+
+     if(!test8Counters[nBinQ2Number][1]->Contains(Form("_%.6f_",agtrack2->E())))
+     {
+      *test8Counters[nBinQ2Number][1]+=Form("_%.6f_",agtrack2->E());
+     }
+     //cout<<"STRING2: "<<test8Counters[nBinQ2Number][1]->Data()<<endl;
+  
+    } // if(Pion(gtrack1,1,kTRUE) && Pion(gtrack2,-1,kTRUE))
+   } // if(fFillBackgroundTEST[7])
 
   } // for(Int_t iTrack2=0;iTrack2<nTracks2;iTrack2++)
  } // for(Int_t iTrack1=0;iTrack1<nTracks1;iTrack1++)
@@ -6947,23 +7132,23 @@ void AliAnalysisTaskMultiparticleFemtoscopy::Calculate2pBackgroundTEST(TClonesAr
   {
    for(Int_t xyz=0;xyz<3;xyz++)
    {
-    Double_t dX1 = 0., dX1Err = 0.; // <X1>
-    Double_t dX2 = 0., dX2Err = 0.; // <X2>
-    Double_t dX1X2 = 0., dX1X2Err = 0.; // <X1X2>
-    Double_t dC2 = 0., dC2Err = 0.; // C2 = <X1X2> - <X1><X2>
+    Double_t dX1 = 0./*, dX1Err = 0.*/; // <X1>
+    Double_t dX2 = 0./*, dX2Err = 0.*/; // <X2>
+    Double_t dX1X2 = 0./*, dX1X2Err = 0.*/; // <X1X2>
+    Double_t dC2 = 0./*,dC2Err = 0.*/; // C2 = <X1X2> - <X1><X2>
     Double_t dBinCenter = 0.; // TBI assuming binning is everywhere the same
     // 2p correlation terms:
     dX1 = singleEventAverageCorrelationsVsQ2[t][0][xyz]->GetBinContent(b+1); // <X1> vs. Q2
-    dX1Err = singleEventAverageCorrelationsVsQ2[t][0][xyz]->GetBinError(b+1);
+    //dX1Err = singleEventAverageCorrelationsVsQ2[t][0][xyz]->GetBinError(b+1);
     dX2 = singleEventAverageCorrelationsVsQ2[t][1][xyz]->GetBinContent(b+1); // <X2> vs. Q2
-    dX2Err = singleEventAverageCorrelationsVsQ2[t][1][xyz]->GetBinError(b+1);
+    //dX2Err = singleEventAverageCorrelationsVsQ2[t][1][xyz]->GetBinError(b+1);
     dX1X2 = singleEventAverageCorrelationsVsQ2[t][2][xyz]->GetBinContent(b+1); // <X1X2> vs. Q2
-    dX1X2Err = singleEventAverageCorrelationsVsQ2[t][2][xyz]->GetBinError(b+1);
+    //dX1X2Err = singleEventAverageCorrelationsVsQ2[t][2][xyz]->GetBinError(b+1);
     if(TMath::Abs(dX1)>1.e-14 && TMath::Abs(dX2)>1.e-14 && TMath::Abs(dX1X2)>1.e-14) // basically, do calculations only if all terms in the 2p cumulant definition are non-zero
     {
      // 2p cumulant:
      dC2 = dX1X2 - dX1*dX2;
-     dC2Err = 0.; // TBI propagate an error one day
+     //dC2Err = 0.; // TBI propagate an error one day
      // fill 2p:
      dBinCenter = fBackgroundTEST[t][0][0][xyz]->GetBinCenter(b+1); // TBI assuming binning is everywhere the same. TBI it is used also below when filling 3p
      fBackgroundTEST[t][0][0][xyz]->Fill(dBinCenter,dX1); // <X1>
@@ -7009,8 +7194,8 @@ void AliAnalysisTaskMultiparticleFemtoscopy::Calculate2pBackgroundTEST(TClonesAr
      //cout<<Form("Bin %d; N = %d; STRING2: ",b,counter[1])<<test7Counters[b][1]->Data()<<endl;
     } // if(test7Counters[b][1] && !test7Counters[b][1]->EqualTo("")) 
 
-    Int_t nPionsP = counter[0]; // number of positive pions in bth Q2 bin, in this event, X1 in the cumulant formalism
-    Int_t nPionsN = counter[1]; // number of negative pions in bth Q2 bin, in this event, X2 in the cumulant formalism
+    Int_t nPionsP = counter[0]; // number of positive pions in bth Q2 bin, in this event, X1 in the cumulant formalism. PID set via if(Pion(gtrack1,1,kTRUE) && Proton(gtrack2,1,kTRUE))
+    Int_t nPionsN = counter[1]; // number of negative pions in bth Q2 bin, in this event, X2 in the cumulant formalism. PID set via if(Pion(gtrack1,1,kTRUE) && Proton(gtrack2,1,kTRUE))
     if(nPionsP>=1 && nPionsN>=1)
     {
      Double_t dBinCenter = fBackgroundTEST[7][0][0][0]->GetBinCenter(b); // TBI assuming same binning everyrhere
@@ -7024,6 +7209,49 @@ void AliAnalysisTaskMultiparticleFemtoscopy::Calculate2pBackgroundTEST(TClonesAr
 
   } // if(7==t) // for "test 7" special treatment
 
+  if(8==t) // for "test 8" special treatment
+  {
+ 
+   for(Int_t b=1;b<=fnQ2bins;b++) // TBI check the boundaries
+   {
+    Int_t counter[2] = {0,0}; // [0=pions+][1=pions-]
+
+    if(test8Counters[b][0] && !test8Counters[b][0]->EqualTo(""))
+    {
+     // Count pions+
+     TObjArray *oa0 = TString(test8Counters[b][0]->Data()).Tokenize("_");
+     while(oa0->At(counter[0]))
+     {
+      counter[0]++;
+     }
+     //cout<<Form("Bin %d; N = %d; STRING1: ",b,counter[0])<<test8Counters[b][0]->Data()<<endl;
+    } // if(test8Counters[b][0] && !test8Counters[b][0]->EqualTo(""))
+  
+    if(test8Counters[b][1] && !test8Counters[b][1]->EqualTo(""))
+    {
+     // Count pions-
+     TObjArray *oa1 = TString(test8Counters[b][1]->Data()).Tokenize("_");
+     while(oa1->At(counter[1]))
+     {
+      counter[1]++;
+     }
+     //cout<<Form("Bin %d; N = %d; STRING2: ",b,counter[1])<<test8Counters[b][1]->Data()<<endl;
+    } // if(test8Counters[b][1] && !test8Counters[b][1]->EqualTo("")) 
+
+    Int_t nPionsP = counter[0]; // number of positive pions in bth Q2 bin, in this event, X1 in the cumulant formalism. PID set via if(Pion(gtrack1,-1,kTRUE) && Proton(gtrack2,-1,kTRUE))
+    Int_t nPionsN = counter[1]; // number of negative pions in bth Q2 bin, in this event, X2 in the cumulant formalism. PID set via if(Pion(gtrack1,-1,kTRUE) && Proton(gtrack2,-1,kTRUE))
+    if(nPionsP>=1 && nPionsN>=1)
+    {
+     Double_t dBinCenter = fBackgroundTEST[8][0][0][0]->GetBinCenter(b); // TBI assuming same binning everyrhere
+     //TProfile *fBackgroundTEST[10][2][7][10]; //! [testNo][0=vs Q2, 1=vs Q3][example [0=<x1>][1=<x2>], ...,[6=<x1x2x3>]][differential index, e.g. for test 0 [0=Cx][1=Cy][2=Cz]]
+     fBackgroundTEST[8][0][0][0]->Fill(dBinCenter,nPionsP); // X1 
+     fBackgroundTEST[8][0][1][0]->Fill(dBinCenter,nPionsN); // X2
+     fBackgroundTEST[8][0][2][0]->Fill(dBinCenter,nPionsP*nPionsN); // X1*X2 
+    } // if(nPionsP>=1 && nPionsN>=1)
+ 
+   } // for(Int_t b=1;b<=fnQ2bins;b++) // TBI check the boundaries
+
+  } // if(7==t) // for "test 7" special treatment
 
  } // for(Int_t t=0;t<nTestsMax;t++)
 
@@ -7322,48 +7550,48 @@ void AliAnalysisTaskMultiparticleFemtoscopy::Calculate3pBackgroundTEST(TClonesAr
   {
    for(Int_t xyz=0;xyz<3;xyz++)
    {
-    Double_t dX1 = 0., dX1Err = 0.; // <X1>
-    Double_t dX2 = 0., dX2Err = 0.; // <X2>
-    Double_t dX3 = 0., dX3Err = 0.; // <X3>
-    Double_t dX1X2 = 0., dX1X2Err = 0.; // <X1X2>
-    Double_t dX1X3 = 0., dX1X3Err = 0.; // <X1X3>
-    Double_t dX2X3 = 0., dX2X3Err = 0.; // <X2X3>
-    Double_t dX1X2X3 = 0., dX1X2X3Err = 0.; // <X1X2X3>
-    Double_t dC12 = 0., dC12Err = 0.; // C12 = <X1X2> - <X1><X2> vs. Q3
-    Double_t dC13 = 0., dC13Err = 0.; // C13 = <X1X3> - <X1><X3> vs. Q3
-    Double_t dC23 = 0., dC23Err = 0.; // C23 = <X2X3> - <X2><X3> vs. Q3
-    Double_t dC3 = 0., dC3Err = 0.; // C3 = <X1X2X3> - <X1X2><X3> - <X1X3><X2> - <X2X3><X1> + 2<X1><X2><X3>
+    Double_t dX1 = 0./*, dX1Err = 0.*/; // <X1>
+    Double_t dX2 = 0./*, dX2Err = 0.*/; // <X2>
+    Double_t dX3 = 0./*, dX3Err = 0.*/; // <X3>
+    Double_t dX1X2 = 0./*, dX1X2Err = 0.*/; // <X1X2>
+    Double_t dX1X3 = 0./*, dX1X3Err = 0.*/; // <X1X3>
+    Double_t dX2X3 = 0./*, dX2X3Err = 0.*/; // <X2X3>
+    Double_t dX1X2X3 = 0./*, dX1X2X3Err = 0.*/; // <X1X2X3>
+    Double_t dC12 = 0./*, dC12Err = 0.*/; // C12 = <X1X2> - <X1><X2> vs. Q3
+    Double_t dC13 = 0./*, dC13Err = 0.*/; // C13 = <X1X3> - <X1><X3> vs. Q3
+    Double_t dC23 = 0./*, dC23Err = 0.*/; // C23 = <X2X3> - <X2><X3> vs. Q3
+    Double_t dC3 = 0./*, dC3Err = 0.*/; // C3 = <X1X2X3> - <X1X2><X3> - <X1X3><X2> - <X2X3><X1> + 2<X1><X2><X3>
     Double_t dBinCenter = 0.; // TBI assuming binning is everywhere the same
 
     // 3p correlation terms (note that now binning is vs. Q3 TBI yes, fine for the time being, but this is a landmine clearly...):
     dX1 = singleEventAverageCorrelationsVsQ3[t][0][xyz]->GetBinContent(b+1); // <X1> vs. Q3
-    dX1Err = singleEventAverageCorrelationsVsQ3[t][0][xyz]->GetBinError(b+1);
+    //dX1Err = singleEventAverageCorrelationsVsQ3[t][0][xyz]->GetBinError(b+1);
     dX2 = singleEventAverageCorrelationsVsQ3[t][1][xyz]->GetBinContent(b+1); // <X2> vs. Q3
-    dX2Err = singleEventAverageCorrelationsVsQ3[t][1][xyz]->GetBinError(b+1);
+    //dX2Err = singleEventAverageCorrelationsVsQ3[t][1][xyz]->GetBinError(b+1);
     dX3 = singleEventAverageCorrelationsVsQ3[t][2][xyz]->GetBinContent(b+1); // <X3> vs. Q3
-    dX3Err = singleEventAverageCorrelationsVsQ3[t][2][xyz]->GetBinError(b+1);
+    //dX3Err = singleEventAverageCorrelationsVsQ3[t][2][xyz]->GetBinError(b+1);
     dX1X2 = singleEventAverageCorrelationsVsQ3[t][3][xyz]->GetBinContent(b+1); // <X1X2> vs. Q3
-    dX1X2Err = singleEventAverageCorrelationsVsQ3[t][3][xyz]->GetBinError(b+1);
+    //dX1X2Err = singleEventAverageCorrelationsVsQ3[t][3][xyz]->GetBinError(b+1);
     dX1X3 = singleEventAverageCorrelationsVsQ3[t][4][xyz]->GetBinContent(b+1); // <X1X3> vs. Q3
-    dX1X3Err = singleEventAverageCorrelationsVsQ3[t][4][xyz]->GetBinError(b+1);
+    //dX1X3Err = singleEventAverageCorrelationsVsQ3[t][4][xyz]->GetBinError(b+1);
     dX2X3 = singleEventAverageCorrelationsVsQ3[t][5][xyz]->GetBinContent(b+1); // <X2X3> vs. Q3
-    dX2X3Err = singleEventAverageCorrelationsVsQ3[t][5][xyz]->GetBinError(b+1);
+    //dX2X3Err = singleEventAverageCorrelationsVsQ3[t][5][xyz]->GetBinError(b+1);
     dX1X2X3 = singleEventAverageCorrelationsVsQ3[t][6][xyz]->GetBinContent(b+1); // <X1X2X3> vs. Q3
-    dX1X2X3Err = singleEventAverageCorrelationsVsQ3[t][6][xyz]->GetBinError(b+1);
+    //dX1X2X3Err = singleEventAverageCorrelationsVsQ3[t][6][xyz]->GetBinError(b+1);
     if(TMath::Abs(dX1)>1.e-14 && TMath::Abs(dX2)>1.e-14 && TMath::Abs(dX3)>1.e-14 &&
        TMath::Abs(dX1X2)>1.e-14 && TMath::Abs(dX1X3)>1.e-14 && TMath::Abs(dX2X3)>1.e-14 &&
        TMath::Abs(dX1X2X3)>1.e-14) // basically, do calculations only if all terms in the 3p cumulant definition are non-zero
     {
      // 2p cumulants vs. Q3:
      dC12 = dX1X2 - dX1*dX2; // C12 = <X1X2> - <X1><X2> vs. Q3
-     dC12Err = 0.; // TBI propagate an error one day
+     //dC12Err = 0.; // TBI propagate an error one day
      dC13 = dX1X3 - dX1*dX3; // C13 = <X1X3> - <X1><X3> vs. Q3
-     dC13Err = 0.; // TBI propagate an error one day
+     //dC13Err = 0.; // TBI propagate an error one day
      dC23 = dX2X3 - dX2*dX3; // C23 = <X2X3> - <X2><X3> vs. Q3
-     dC23Err = 0.; // TBI propagate an error one day
+     //dC23Err = 0.; // TBI propagate an error one day
      // 3p cumulant vs. Q3:
      dC3 = dX1X2X3 - dX1X2*dX3 - dX1X3*dX2 - dX2X3*dX1 + 2.*dX1*dX2*dX3;
-     dC3Err = 0.; // TBI propagate an error one day
+     //dC3Err = 0.; // TBI propagate an error one day
      // fill 3p:
 
      dBinCenter = fBackgroundTEST[t][1][0][xyz]->GetBinCenter(b+1); // TBI assuming binning is everywhere the same. TBI it is used also below when filling 3p
