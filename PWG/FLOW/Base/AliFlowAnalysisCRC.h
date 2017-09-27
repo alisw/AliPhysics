@@ -187,8 +187,8 @@ public:
   virtual void CalculateIntFlowSumOfEventWeightsNUA();
   virtual void CalculateIntFlowSumOfProductOfEventWeightsNUA();
   virtual void CalculateMixedHarmonics();
-  virtual std::complex<double> ucN(const Int_t n, const TArrayI& h);
-  virtual std::complex<double> ucN2(const Int_t n, TArrayI& h, TArrayI& cnt);
+  virtual std::complex<double> ucN(const Int_t n, const TArrayI& h, Int_t ptb);
+  virtual std::complex<double> ucN2(const Int_t n, TArrayI& h, TArrayI& cnt, Int_t ptb);
   // 2c.) Cross-checking reference flow correlations with nested loops:
   virtual void EvaluateIntFlowNestedLoops(AliFlowEventSimple* const anEvent);
   virtual void EvaluateIntFlowCorrelationsWithNestedLoops(AliFlowEventSimple* const anEvent);
@@ -1047,6 +1047,12 @@ public:
   void SetFlowGFIntCovProSS(TProfile* const TP, Int_t const s, Int_t const c, Int_t const eg, Int_t const k) {this->fFlowGFIntCovProSS[s][c][eg][k] = TP;};
   void SetFlowGFIntCovHistSS(TH1D* const TP, Int_t const s, Int_t const c, Int_t const eg, Int_t const k) {this->fFlowGFIntCovHistSS[s][c][eg][k] = TP;};
 
+  // in wide pt bins
+  void SetFlowGFIntCorProPtB(TProfile* const TP, Int_t const s, Int_t const c, Int_t const eg) {this->fFlowGFIntCorProPtB[s][c][eg] = TP;};
+  void SetFlowGFIntCorHistPtB(TH1D* const TP, Int_t const s, Int_t const c, Int_t const eg) {this->fFlowGFIntCorHistPtB[s][c][eg] = TP;};
+  void SetFlowGFIntCovProPtB(TProfile* const TP, Int_t const s, Int_t const c, Int_t const eg, Int_t const k) {this->fFlowGFIntCovProPtB[s][c][eg][k] = TP;};
+  void SetFlowGFIntCovHistPtB(TH1D* const TP, Int_t const s, Int_t const c, Int_t const eg, Int_t const k) {this->fFlowGFIntCovHistPtB[s][c][eg][k] = TP;};
+
   // Flow SP ZDC
   void SetFlowSPZDCList(TList* const TL) {this->fFlowSPZDCList = TL;};
 
@@ -1277,6 +1283,9 @@ private:
   TMatrixD *fSpk; //! fSM[p][k] = (sum_{i=1}^{M} w_{i}^{k})^{p+1}
   TMatrixD *fReQGF; //! fReQ[m][k] = sum_{i=1}^{M} w_{i}^{k} cos(m*phi_{i})
   TMatrixD *fImQGF; //! fImQ[m][k] = sum_{i=1}^{M} w_{i}^{k} sin(m*phi_{i})
+  const static Int_t fkGFPtB = 3;
+  TMatrixD *fReQGFPt[fkGFPtB]; //! fReQ[m][k] = sum_{i=1}^{M} w_{i}^{k} cos(m*phi_{i})
+  TMatrixD *fImQGFPt[fkGFPtB]; //! fImQ[m][k] = sum_{i=1}^{M} w_{i}^{k} sin(m*phi_{i})
   TH1D *fIntFlowCorrelationsEBE; //! 1st bin: <2>, 2nd bin: <4>, 3rd bin: <6>, 4th bin: <8>
   TH1D *fIntFlowEventWeightsForCorrelationsEBE; //! 1st bin: eW_<2>, 2nd bin: eW_<4>, 3rd bin: eW_<6>, 4th bin: eW_<8>
   TH1D *fIntFlowCorrelationsAllEBE; //! to be improved (add comment)
@@ -1813,12 +1822,9 @@ private:
   TH1D *fPOIPhiDiffQRe[fQVecPower][fFlowNHarmMax]; //! real part [0=pos,1=neg][0=back,1=forw][m]
   TH1D *fPOIPhiDiffQIm[fQVecPower][fFlowNHarmMax]; //! imaginary part [0=pos,1=neg][0=back,1=forw][m]
   TH1D *fPOIPhiDiffMul[fQVecPower][fFlowNHarmMax]; //! imaginary part [0=pos,1=neg][0=back,1=forw][p][k]
-  TH2D *fPOIPtEtaDiffQRe[fQVecPower][fFlowNHarmMax]; //! real part [0=pos,1=neg][0=back,1=forw][m]
-  TH2D *fPOIPtEtaDiffQIm[fQVecPower][fFlowNHarmMax]; //! imaginary part [0=pos,1=neg][0=back,1=forw][m]
-  TH2D *fPOIPtEtaDiffMul[fQVecPower][fFlowNHarmMax]; //! imaginary part [0=pos,1=neg][0=back,1=forw][p][k]
-  TH2D *fPOIPhiEtaDiffQRe[fkNITStypes][fQVecPower][fFlowNHarmMax]; //! real part [0=pos,1=neg][0=back,1=forw][m]
-  TH2D *fPOIPhiEtaDiffQIm[fkNITStypes][fQVecPower][fFlowNHarmMax]; //! imaginary part [0=pos,1=neg][0=back,1=forw][m]
-  TH2D *fPOIPhiEtaDiffMul[fkNITStypes][fQVecPower][fFlowNHarmMax]; //! imaginary part [0=pos,1=neg][0=back,1=forw][p][k]
+  TH2D *fPOIPhiEtaDiffQRe[fQVecPower][fFlowNHarmMax]; //! real part [0=pos,1=neg][0=back,1=forw][m]
+  TH2D *fPOIPhiEtaDiffQIm[fQVecPower][fFlowNHarmMax]; //! imaginary part [0=pos,1=neg][0=back,1=forw][m]
+  TH2D *fPOIPhiEtaDiffMul[fQVecPower][fFlowNHarmMax]; //! imaginary part [0=pos,1=neg][0=back,1=forw][p][k]
   TH1D *fEtaDiffQRe[2][fFlowNHarmMax]; //! real part [0=pos,1=neg][0=back,1=forw][eta]
   TH1D *fEtaDiffQIm[2][fFlowNHarmMax]; //! imaginary part [0=pos,1=neg][0=back,1=forw][eta]
   TH1D *fEtaDiffMul[2][fFlowNHarmMax]; //! imaginary part [0=pos,1=neg][0=back,1=forw][p][eta]
@@ -1896,18 +1902,20 @@ private:
   TH1D *fFlowQCCorCovHist[fCRCMaxnCen][fFlowNHarm][fFlowQCNCov]; //! histo for covariances
   TH1D *fFlowQCFinalPtDifHist[fCRCMaxnCen][fFlowNHarm][fFlowQCNCov]; //!
   TProfile *fFlowQCCorProPhi[fCRCMaxnCen][fFlowNHarm][fFlowQCNPro]; //! correlation profile, [CRCBin][eg]
-  TProfile2D *fFlowQCIntCorProPtEta[fCRCMaxnCen][fFlowNHarm][fFlowQCNPro]; //! vn vs phi vs eta [CRCBin][eg]
+  const static Int_t fFlowQCNProPhiEta = 6;
+  TProfile2D *fFlowQCIntCorProPhiEta[fCRCMaxnCen][fFlowNHarm][fFlowQCNProPhiEta]; //! vn vs phi vs eta [CRCBin][eg]
   // TProfile2D *fFlowQCCorProPhiEtaITSType[fCRCMaxnCen][fFlowNHarm][fkNITStypes]; //! vn vs phi vs eta [CRCBin][eg]
 
   TList *fFlowQCVtxList[fCRCMaxnRun];    //! QC List
-  const static Int_t fkFlowQCRbRnHist = 2;
-  const static Int_t fkFlowQCRbRnHist2 = 3;
+  const static Int_t fkFlowQCRbRnHist = 3;
+  // const static Int_t fkFlowQCRbRnHist2 = 3;
   const static Int_t fkFlowQCRbRnHar = 3;
-  const static Int_t fkFlowQCRbRnVar = 3;
-  const static Int_t fkFlowQCRbRnVar2 = 2;
-  TProfile2D *fFlowQCIntRbRProPtEta[fCRCMaxnRun][fkFlowQCRbRnHar][fkFlowQCRbRnVar][fkFlowQCRbRnHist]; //!
-  TProfile *fFlowQCIntRbRPro[fCRCMaxnRun][fkFlowQCRbRnHar][fkFlowQCRbRnVar2][fkFlowQCRbRnHist2]; //!
-  TProfile *fFlowQCIntRbRProTotal[fkFlowQCRbRnHar][fkFlowQCRbRnVar2][fkFlowQCRbRnHist2]; //!
+  const static Int_t fkFlowQCRbRnVar = 4;
+  // const static Int_t fkFlowQCRbRnVar2 = 2;
+  // TProfile2D *fFlowQCIntRbRProPtEta[fCRCMaxnRun][fkFlowQCRbRnHar][fkFlowQCRbRnVar][fkFlowQCRbRnHist]; //!
+  // TProfile *fFlowQCIntRbRPro[fCRCMaxnRun][fkFlowQCRbRnHar][fkFlowQCRbRnVar2][fkFlowQCRbRnHist2]; //!
+  // TProfile *fFlowQCIntRbRProTotal[fkFlowQCRbRnHar][fkFlowQCRbRnVar2][fkFlowQCRbRnHist2]; //!
+  TProfile2D *fFlowQCIntProEta[fkFlowQCRbRnHar][fkFlowQCRbRnVar][fkFlowQCRbRnHist]; //!
 
   const static Int_t fkFlowQCnIntCorPro = 5;
   TProfile *fFlowQCIntCorPro[fFlowNHarm][fkFlowQCnIntCorPro]; //!
@@ -1978,6 +1986,12 @@ private:
   TProfile *fFlowGFIntCovProSS[fkFlowGFNSubSampling][fkFlowGFNHarm][fkFlowGFNOrde][fkFlowGFNOrde]; //!
   TH1D *fFlowGFIntCovHistSS[fkFlowGFNSubSampling][fkFlowGFNHarm][fkFlowGFNOrde][fkFlowGFNOrde]; //!
 
+  // in wide pt bins
+  TProfile *fFlowGFIntCorProPtB[fkGFPtB][fkFlowGFNHarm][fkFlowGFNOrde]; //!
+  TH1D *fFlowGFIntCorHistPtB[fkGFPtB][fkFlowGFNHarm][fkFlowGFNOrde]; //!
+  TProfile *fFlowGFIntCovProPtB[fkGFPtB][fkFlowGFNHarm][fkFlowGFNOrde][fkFlowGFNOrde]; //!
+  TH1D *fFlowGFIntCovHistPtB[fkGFPtB][fkFlowGFNHarm][fkFlowGFNOrde][fkFlowGFNOrde]; //!
+
   // SC w ZDC
   TList *fFlowQCCorrZDCList; //!
   const static Int_t fSCv2vsZNPtBins = 3;
@@ -2020,7 +2034,8 @@ private:
   TH1D *fCenHist; //! Centrality distribution
   TH1D *fEventCounter; //! Event counter for different methods
   TH3D *fVtxHist[3]; //! primary vertex
-  TH3F* fTwoTrackDistancePt[2]; //!
+  TH3F* fTwoTrackDistanceLS[2]; //!
+  TH3F* fTwoTrackDistanceUS[2]; //!
   TH2D *fRefMulRecHist; //!
   TH1D* fCenWeightsHist; //! Centrality weights
   TProfile2D* fRefMultRbRPro; //! run-by-run average reference multiplicity
@@ -2087,7 +2102,7 @@ private:
   Bool_t fbFlagIsBadRunForC34;
   Bool_t fStoreExtraHistoForSubSampling;
 
-  ClassDef(AliFlowAnalysisCRC,72);
+  ClassDef(AliFlowAnalysisCRC,73);
 
 };
 
