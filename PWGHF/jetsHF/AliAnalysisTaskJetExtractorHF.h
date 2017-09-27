@@ -56,8 +56,13 @@ class AliAnalysisTaskJetExtractorHF : public AliAnalysisTaskEmcalJet {
   void                        SetVertexerCuts(AliRDHFJetsCutsVertex* val)         { fVertexerCuts = val; }
   void                        SetSetEmcalJetFlavour(Bool_t val)                   { fSetEmcalJetFlavour = val; }
 
-  // This setter activates the extraction of jets below the extraction min pt cut
-  void                        SetNumLowPtExtractionBins (Int_t splitBins)         { fNumLowPtExtractionBins =  splitBins; }
+  // This setter configures the extraction of jets below the extraction min pt cut
+  void                        SetUnderflowBins(Int_t nBins, Double_t minPt, Double_t percentage)
+  {
+    fUnderflowNumBins     =  nBins;
+    fUnderflowCutOff      =  minPt;
+    fUnderflowPercentage  =  percentage;
+  }
 
   void                        SetExtractionCutListPIDHM(const char* val)
   { 
@@ -137,8 +142,7 @@ class AliAnalysisTaskJetExtractorHF : public AliAnalysisTaskEmcalJet {
   Int_t                       fCurrentInitialParton2Type;               ///< type of initial parton 2
   Double_t                    fCurrentTrueJetPt;                        ///< truth jet pt buffer
   Bool_t                      fFoundIC;                                 ///< status var showing that IC has been found
-
-  Int_t                       fLowPtExtractionBinContents[100];         //!<! contents in "underflow" bins
+  Int_t                       fUnderflowBinContents[100];               //!<! contents in "underflow" bins
 
   // ################## CUTS
   Int_t                       fExtractionCutMinCent;                    ///< Extraction cut: minimum centrality
@@ -151,7 +155,9 @@ class AliAnalysisTaskJetExtractorHF : public AliAnalysisTaskEmcalJet {
   std::vector<Int_t>          fExtractionListPIDsHM;                    ///< list of PIDs (hadron matching) that will be accepted
   std::vector<Int_t>          fExtractionListPIDsIC;                    ///< list of PIDs (initial collision) that will be accepted
   Bool_t                      fSetEmcalJetFlavour;                      ///< if set, the flavour property of the AliEmcalJets will be set
-  Int_t                       fNumLowPtExtractionBins;                  ///< number of "underflow" low-pT bins
+  Int_t                       fUnderflowNumBins;                        ///< number of "underflow" low-pT bins
+  Double_t                    fUnderflowCutOff;                         ///< "underflow" low-pT cut-off
+  Double_t                    fUnderflowPercentage;                     ///< Percentage accepted in "underflow" low-pT bins
 
   Double_t                    fHadronMatchingRadius;                    ///< Matching radius to search for beauty/charm hadrons around jet
   Double_t                    fInitialCollisionMatchingRadius;          ///< Matching radius to find a jet of the IC
