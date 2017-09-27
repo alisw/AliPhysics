@@ -65,8 +65,7 @@ AliAnalysisTaskPHOSObjectCreator::AliAnalysisTaskPHOSObjectCreator(const char *n
 
   //Initialize non-linrarity correction
   fNonLinCorr = new TF1("nonlin","0.0241 + 1.0504*x + 0.000249*x*x",0.,100.);
-  fUserNonLinCorr = new TF1("usernonlin","pol0(0)",0.,100.);
-  fUserNonLinCorr->SetParameter(0,1);
+  fUserNonLinCorr = new TF1("usernonlin","1.",0.,100.);
  
   // Define input and output slots here
   // Input slot #0 works with a TChain

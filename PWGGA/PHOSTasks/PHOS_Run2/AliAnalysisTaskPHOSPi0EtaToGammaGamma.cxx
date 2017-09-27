@@ -413,7 +413,9 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::UserCreateOutputObjects()
     fOutputContainer->Add(h3Mix_TOF);
   }//end of asymmetry loop
 
+
   //<- histograms for physics analysis
+
 
   const Int_t NpTggModule = 71;
   Double_t pTggModule[NpTggModule]={};
@@ -493,6 +495,15 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::UserCreateOutputObjects()
   TH2F *h2mix_pp_TOF = new TH2F("hMixMgg_PassingProbe_TOF","Mix Passing Probe #gamma TOF;M_{#gamma#gamma} (GeV/c^{2});E_{#gamma} (GeV)",60,0,0.24,NpTgg-1,pTgg);
   h2mix_pp_TOF->Sumw2();
   fOutputContainer->Add(h2mix_pp_TOF);
+
+  //for nonlinearity
+  TH2F *h2MggvsE = new TH2F("hMggvsE_asym01","Invariant Mass with 2#gamma;M_{#gamma#gamma} (GeV/c^{2});E_{cluster} (GeV)",60,0,0.24,NpTgg-1,pTgg);
+  h2MggvsE->Sumw2();
+  fOutputContainer->Add(h2MggvsE);
+
+  TH2F *h2MixMggvsE = new TH2F("hMixMggvsE_asym01","Mix Invariant Mass with 2#gamma;M_{#gamma#gamma} (GeV/c^{2});E_{cluster} (GeV)",60,0,0.24,NpTgg-1,pTgg);
+  h2MixMggvsE->Sumw2();
+  fOutputContainer->Add(h2MixMggvsE);
 
   if(fIsPHOSTriggerAnalysis){
 
@@ -1324,7 +1335,7 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::ClusterQA()
     energy  = ph->Energy();
     if(fUseCoreEnergy){
       energy = (ph->GetMomV2())->Energy();
-    }
+   }
 
     digMult = ph->GetNCells();
     tof     = ph->GetTime();//unit is second.
@@ -1608,6 +1619,11 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::FillMgg()
 
       }//end of TOF cut
 
+      if(asym < 0.1){
+        FillHistogramTH2(fOutputContainer,"hMggvsE_asym01",m12,e1,weight);
+        FillHistogramTH2(fOutputContainer,"hMggvsE_asym01",m12,e2,weight);
+      }//end of asym01
+
     }//end of ph2
 
   }//end of ph1
@@ -1694,9 +1710,14 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::FillMixMgg()
 
         }//end of TOF cut
 
-      }//end of mix
+        if(asym < 0.1){
+          FillHistogramTH2(fOutputContainer,"hMixMggvsE_asym01",m12,e1,weight);
+          FillHistogramTH2(fOutputContainer,"hMixMggvsE_asym01",m12,e2,weight);
+        }//end of asym01
 
-    }//end of ph2
+      }//end of ph2
+
+    }//end of mix
 
   }//end of ph1
 

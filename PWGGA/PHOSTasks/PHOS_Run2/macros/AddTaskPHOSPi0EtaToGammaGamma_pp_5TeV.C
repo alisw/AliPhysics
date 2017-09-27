@@ -107,8 +107,9 @@ AliAnalysisTaskPHOSPi0EtaToGammaGamma* AddTaskPHOSPi0EtaToGammaGamma_pp_5TeV(
   task->SetBunchSpace(bs);//in unit of ns.
   if(!isMC && TOFcorrection){
     TF1 *f1tof = new TF1("f1TOFCutEfficiency","[0] * (2/(1+exp(-[1]*(x-[2]))) - 1) - ( 0 + [3]/(exp( -(x-[4]) / [5] ) + 1)  )",0,100);
-    f1tof->SetParameters(0.996,2.45,0.039,0.31,7.16,0.620);
+    f1tof->SetParameters(0.994,2.38,-1.78e-3,0.506,7.33,0.613);
     task->SetTOFCutEfficiencyFunction(f1tof);
+    printf("TOF cut efficiency as a function of E is %s\n",f1tof->GetTitle());
   }
 
   if(isMC){
