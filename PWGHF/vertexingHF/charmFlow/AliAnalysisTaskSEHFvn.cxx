@@ -140,6 +140,7 @@ AliAnalysisTaskSE(),
   }
 
   fHistCandVsCent = 0x0;
+  fHistCandMassRangeVsCent = 0x0;
 }
 
 //________________________________________________________________________
@@ -196,6 +197,7 @@ AliAnalysisTaskSEHFvn::AliAnalysisTaskSEHFvn(const char *name,AliRDHFCuts *rdCut
   }
 
   fHistCandVsCent = 0x0;
+  fHistCandMassRangeVsCent = 0x0;
 
   Int_t pdg=421;
   switch(fDecChannel){
@@ -264,6 +266,7 @@ AliAnalysisTaskSEHFvn::~AliAnalysisTaskSEHFvn()
       delete fHistEvPlaneQncorrVZERO[i];
     }
     delete fHistCandVsCent;
+    delete fHistCandMassRangeVsCent;
   }
   delete fOutput;
   delete fhEventsInfo;
@@ -374,6 +377,8 @@ void AliAnalysisTaskSEHFvn::UserCreateOutputObjects()
 
   fHistCandVsCent=new TH2F("hCandVsCent","number of selected candidates vs. centrality;centrality(%);number of candidates",(fMaxCentr-fMinCentr)/(fCentBinSizePerMil/10),fMinCentr,fMaxCentr,101,-0.5,100.5);
   fOutput->Add(fHistCandVsCent);
+  fHistCandMassRangeVsCent=new TH2F("hCandMassRangeVsCent","number of selected candidates in mass range vs. centrality;centrality(%);number of candidates",(fMaxCentr-fMinCentr)/(fCentBinSizePerMil/10),fMinCentr,fMaxCentr,101,-0.5,100.5);
+  fOutput->Add(fHistCandMassRangeVsCent);
 
   for(int iDet = 0; iDet < 3; iDet++) {
     fHistEvPlaneQncorrTPC[iDet]   = new TH1F(Form("hEvPlaneQncorr%s%s",fDetTPCConfName[iDet].Data(),fNormMethod.Data()),Form("hEvPlaneQncorr%s%s;#phi Ev Plane;Entries",fDetTPCConfName[iDet].Data(),fNormMethod.Data()),200,0.,TMath::Pi());
@@ -861,6 +866,7 @@ void AliAnalysisTaskSEHFvn::UserExec(Option_t */*option*/)
 
   //Loop on D candidates
   Int_t candCounter=0;
+  Int_t candCounterInMassRange=0;
   for (Int_t iCand = 0; iCand < nCand; iCand++) {
     d=(AliAODRecoDecayHF*)arrayProng->UncheckedAt(iCand);
     Bool_t isSelBit=kTRUE;
@@ -902,6 +908,12 @@ void AliAnalysisTaskSEHFvn::UserExec(Option_t */*option*/)
     Float_t* invMass=0x0;
     Int_t nmasses;
     CalculateInvMasses(d,invMass,nmasses);
+    Bool_t ismassrange = kFALSE;
+
+    if(isInMassRange(invMass[0],d->Pt()) || (nmasses>1 && isInMassRange(invMass[1],d->Pt()))) {
+      ismassrange = kTRUE;
+      candCounterInMassRange++;
+    }
 
     if(fEvPlaneDet==kFullTPC || fEvPlaneDet==kPosTPC || fEvPlaneDet==kNegTPC){
       Float_t eventplaneOld=eventplane;
@@ -933,8 +945,10 @@ void AliAnalysisTaskSEHFvn::UserExec(Option_t */*option*/)
       }
 
       Double_t q2Cand = q2;
+      Double_t qVecRemDau[2] = {qVecDefault[0],qVecDefault[1]};
+      Double_t multQvecRemDau = multQvecDefault;
 
-      if((fq2Meth==kq2TPC || fq2Meth==kq2PosTPC || fq2Meth==kq2NegTPC) && fRemoveDauFromq2) { //if activated, remove daughter tracks from q2
+      if((fq2Meth==kq2TPC || fq2Meth==kq2PosTPC || fq2Meth==kq2NegTPC) && fRemoveDauFromq2 && ismassrange) { //if activated, remove daughter tracks from q2
         Int_t nDau=3;
         if(fDecChannel==1) {nDau=2;}
         AliAODTrack *dautrack[3] = {0x0,0x0,0x0};
@@ -965,13 +979,13 @@ void AliAnalysisTaskSEHFvn::UserExec(Option_t */*option*/)
               dauqx=TMath::Cos(nHarmonic*dauphi);
               dauqy=TMath::Sin(nHarmonic*dauphi);
               if((daupt>0.2 && daupt<5) && (daueta>fTPCEtaMin && daueta<fTPCEtaMax) && ((daueta>0 && fq2Meth==kq2PosTPC) || (daueta<0 && fq2Meth==kq2NegTPC) || fq2Meth==kq2TPC)) {//if is in right eta region w.r.t. q2, remove
-                qVecDefault[0] -= dauqx;
-                qVecDefault[1] -= dauqy;
-                multQvecDefault--;
+                qVecRemDau[0] -= dauqx;
+                qVecRemDau[1] -= dauqy;
+                multQvecRemDau--;
               }
             }
           }
-          if(multQvecDefault>0) {q2Cand = TMath::Sqrt(qVecDefault[0]*qVecDefault[0]+qVecDefault[1]*qVecDefault[1])/TMath::Sqrt(multQvecDefault);}
+          if(multQvecRemDau>0) {q2Cand = TMath::Sqrt(qVecRemDau[0]*qVecRemDau[0]+qVecRemDau[1]*qVecRemDau[1])/TMath::Sqrt(multQvecRemDau);}
           else {q2Cand=0.;}
         }
         else {
@@ -1090,6 +1104,7 @@ void AliAnalysisTaskSEHFvn::UserExec(Option_t */*option*/)
   }
 
   fHistCandVsCent->Fill(evCentr,candCounter);
+  fHistCandMassRangeVsCent->Fill(evCentr,candCounterInMassRange);
 
   delete vHF;
   PostData(1,fhEventsInfo);
@@ -2324,6 +2339,30 @@ Double_t AliAnalysisTaskSEHFvn::ComputeTPCq2(AliAODEvent* aod, Double_t &q2TPCfu
   else return 0.;
 }
 
+Bool_t AliAnalysisTaskSEHFvn::isInMassRange(Double_t massCand, Double_t pt) {
+  if(fDecChannel==0) {
+    Double_t mass=TDatabasePDG::Instance()->GetParticle(411)->Mass();
+    Double_t sigma = 0.01+0.0005*pt; //GeV
+    if(massCand>mass-3*sigma && massCand<mass+3*sigma) {return kTRUE;}
+  }
+  else if(fDecChannel==1) {
+    Double_t mass=TDatabasePDG::Instance()->GetParticle(421)->Mass();
+    Double_t sigma = 0.01+0.0005*pt; //GeV
+    if(massCand>mass-3*sigma && massCand<mass+3*sigma) {return kTRUE;}
+  }
+  else if(fDecChannel==2) {
+    Double_t deltamass=(TDatabasePDG::Instance()->GetParticle(413)->Mass())-(TDatabasePDG::Instance()->GetParticle(421)->Mass());
+    Double_t sigma = 0.0008; //GeV
+    if(massCand>deltamass-3*sigma && massCand<deltamass+3*sigma) {return kTRUE;}
+  }
+  else if(fDecChannel==3) {
+    Double_t mass=TDatabasePDG::Instance()->GetParticle(431)->Mass();
+    Double_t sigma = 0.01+0.0005*pt; //GeV
+    if(massCand>mass-3*sigma && massCand<mass+3*sigma) {return kTRUE;}
+  }
+
+  return kFALSE;
+}
 
 //________________________________________________________________________
 void AliAnalysisTaskSEHFvn::Terminate(Option_t */*option*/)

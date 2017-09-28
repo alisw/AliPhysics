@@ -142,12 +142,14 @@ class AliAnalysisTaskSEHFvn : public AliAnalysisTaskSE
   Double_t ComputeTPCq2(AliAODEvent* aod, Double_t &q2TPCfull, Double_t &q2TPCpos,Double_t &q2TPCneg, Double_t qVecDefault[2], Double_t &multQvecDefault, Double_t multQvecTPC[3]) const;
   void CreateSparseForEvShapeAnalysis();
   Double_t Getq2(TList* qnlist, Int_t q2meth, Double_t &mult);
+  Bool_t isInMassRange(Double_t massCand, Double_t pt);
 
   TH1F* fHistEvPlaneQncorrTPC[3];   //! histogram for EP
   TH1F* fHistEvPlaneQncorrVZERO[3]; //! histogram for EP
   TH1F* fhEventsInfo;           //! histogram send on output slot 1
   TH1F *fHistCentrality[3];     //!<!hist. for cent distr (all,sel ev,out of cent)
   TH2F *fHistCandVsCent;        //!<!hist. for number of selected candidates vs. cent
+  TH2F *fHistCandMassRangeVsCent; //!<!hist. for number of selected candidates in mass range vs. cent
   TList   *fOutput;             //! list send on output slot 2
   AliRDHFCuts *fRDCuts;         //cut values (saved in slot 3)
   Float_t fLowmasslimit;        //lower inv mass limit for histos
@@ -194,7 +196,7 @@ class AliAnalysisTaskSEHFvn : public AliAnalysisTaskSE
 
   AliAnalysisTaskSEHFvn::FlowMethod fFlowMethod;
 
-  ClassDef(AliAnalysisTaskSEHFvn,8); // AliAnalysisTaskSE for the HF v2 analysis
+  ClassDef(AliAnalysisTaskSEHFvn,9); // AliAnalysisTaskSE for the HF v2 analysis
 };
 
 #endif
