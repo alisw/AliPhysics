@@ -46,16 +46,16 @@ public:
     virtual void Print(Option_t *opt) const;
 
     void SetPIDParams(AliTRDPIDParams *params,AliTRDPIDResponse::ETRDPIDMethod method=AliTRDPIDResponse::kLQ1D);
-    void SetPIDReference(AliTRDPIDReference *params,AliTRDPIDResponse::ETRDPIDMethod method=AliTRDPIDResponse::kLQ1D);
+    void SetPIDReference(AliTRDPIDReference *params,AliTRDPIDResponse::ETRDPIDMethod method=AliTRDPIDResponse::kLQ1D, Int_t NofCharges=1);
 
     // Derive reference
-    TObject *GetLowerReference(AliPID::EParticleType spec, Float_t p, Float_t &pLower,AliTRDPIDResponse::ETRDPIDMethod method=AliTRDPIDResponse::kLQ1D) const;
-    TObject *GetUpperReference(AliPID::EParticleType spec, Float_t p, Float_t &pUpper,AliTRDPIDResponse::ETRDPIDMethod method=AliTRDPIDResponse::kLQ1D) const;
+    TObject *GetLowerReference(AliPID::EParticleType spec, Float_t p, Float_t &pLower,AliTRDPIDResponse::ETRDPIDMethod method=AliTRDPIDResponse::kLQ1D, Int_t Charge=0) const;
+    TObject *GetUpperReference(AliPID::EParticleType spec, Float_t p, Float_t &pUpper,AliTRDPIDResponse::ETRDPIDMethod method=AliTRDPIDResponse::kLQ1D, Int_t Charge=0) const;
 
     Int_t GetNumberOfMomentumBins(AliTRDPIDResponse::ETRDPIDMethod method=AliTRDPIDResponse::kLQ1D) const;
 
     // Derive threshold params
-    Bool_t GetThresholdParameters(Int_t ntracklets, Double_t efficiency, Double_t *params,Double_t centrality = -1,AliTRDPIDResponse::ETRDPIDMethod method=AliTRDPIDResponse::kLQ1D) const;
+    Bool_t GetThresholdParameters(Int_t ntracklets, Double_t efficiency, Double_t *params,Double_t centrality = -1,AliTRDPIDResponse::ETRDPIDMethod method=AliTRDPIDResponse::kLQ1D, Int_t charge=0) const;
 
     // Number of SlicesQ0
     Int_t GetNSlicesQ0() const{return fNSlicesQ0;}

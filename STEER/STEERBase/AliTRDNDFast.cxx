@@ -229,8 +229,8 @@ TF1 *AliTRDNDFast::GetLangauFun(TString funcname,Double_t range[2],Double_t scal
 
 TF1 *AliTRDNDFast::FitLandau(TString name,TH1F *htemp,Double_t range[2],TString option){
     //cout<<"Started Fit Landau routine of name: "<<name.Data()<<endl;
-    ofstream FileToDebugFit;
-    FileToDebugFit.open("FileToDebugFit.txt",std::ios::app);
+    //ofstream FileToDebugFit;
+    //FileToDebugFit.open("FileToDebugFit.txt",std::ios::app);
     TF1 *fitlandau1D=GetLangauFun(name,range);
     TF1 fit("land","landau");
     Double_t max=htemp->GetXaxis()->GetBinCenter(htemp->GetMaximumBin());
@@ -240,9 +240,9 @@ TF1 *AliTRDNDFast::FitLandau(TString name,TH1F *htemp,Double_t range[2],TString 
     htemp->Fit("land",option.Data(),"",range[0],range[1]);
     ScaleLangauFun(fitlandau1D,fit.GetParameter(1));
     //cout<<"LanDau Fit performed and LanGau scaled"<<endl;
-    //htemp->Fit(fitlandau1D,option.Data(),"",range[0],range[1]); // range for references
-    TFitResultPtr FitRes=htemp->Fit(fitlandau1D,option.Data(),"",range[0],range[1]); // range for references
-    cout<<"got Fit result"<<endl;
+    htemp->Fit(fitlandau1D,option.Data(),"",range[0],range[1]); // range for references
+    //TFitResultPtr FitRes=htemp->Fit(fitlandau1D,option.Data(),"",range[0],range[1]); // range for references
+    /*cout<<"got Fit result"<<endl;
     FitRes->GetCovarianceMatrix();
     TMatrixDSym TMatrCovFitRes=FitRes->GetCovarianceMatrix();
     TMatrixDSym TMatrCorFitRes=FitRes->GetCorrelationMatrix();
@@ -250,7 +250,7 @@ TF1 *AliTRDNDFast::FitLandau(TString name,TH1F *htemp,Double_t range[2],TString 
     double dNDF=FitRes->Ndf();
     double dChiDivNdf=dChi2/dNDF;
     //cout<<"got Chi2()"<<endl;
-    FileToDebugFit<<" Chi2 "<<dChiDivNdf<<endl;
+    /*FileToDebugFit<<" Chi2 "<<dChiDivNdf<<endl;
     FileToDebugFit<<" CorrMatrix:"<<endl;
     for (int i=0; i<kNpar; i++){
         for (int j=0; j<kNpar; j++){
@@ -262,7 +262,7 @@ TF1 *AliTRDNDFast::FitLandau(TString name,TH1F *htemp,Double_t range[2],TString 
     FileToDebugFit.close();
     FileToDebugFit.open("FileToDebugFit2.txt",std::ios::app);
     FileToDebugFit<<dChiDivNdf<<" ";
-    FileToDebugFit.close();
+    FileToDebugFit.close();*/
     return fitlandau1D;
 }
 
@@ -295,7 +295,6 @@ void AliTRDNDFast::Build(Double_t **pars){
     BuildHistos();
 }
 
-
 void AliTRDNDFast::Build(TH1F **hdEdx,TString path){
 
     Double_t range[2];
@@ -310,11 +309,12 @@ void AliTRDNDFast::Build(TH1F **hdEdx,TString path){
         gPad->SetLogy();
         range[0]=hdEdx[idim]->GetXaxis()->GetXmin();
         range[1]=hdEdx[idim]->GetXaxis()->GetXmax();
+        //range[1]=8000;
         // Norm Histogram
 
         if(hdEdx[idim]->Integral(1,hdEdx[idim]->GetNbinsX(),"width")!=0) hdEdx[idim]->Scale(1./hdEdx[idim]->Integral(1,hdEdx[idim]->GetNbinsX(),"width"));
         // Fit Histogram
-        fFunc[idim]=FitLandau(Form("fit%d",idim),hdEdx[idim],range,"RMB0S");
+        fFunc[idim]=FitLandau(Form("fit%d",idim),hdEdx[idim],range,"RMBSQ0");
         // Norm Landau
         if(fFunc[idim]->Integral(range[0],range[1])!=0.0) fFunc[idim]->SetParameter(2,fFunc[idim]->GetParameter(2)/fFunc[idim]->Integral(range[0],range[1]));
         else {

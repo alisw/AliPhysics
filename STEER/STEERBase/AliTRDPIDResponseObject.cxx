@@ -149,7 +149,7 @@ void AliTRDPIDResponseObject::SetPIDParams(AliTRDPIDParams *params,AliTRDPIDResp
 }
 
 //____________________________________________________________
-void AliTRDPIDResponseObject::SetPIDReference(AliTRDPIDReference *reference,AliTRDPIDResponse::ETRDPIDMethod method){
+void AliTRDPIDResponseObject::SetPIDReference(AliTRDPIDReference *reference,AliTRDPIDResponse::ETRDPIDMethod method, Int_t NofCharges){
 
     if(Int_t(method)>=Int_t(AliTRDPIDResponse::kNMethod)||Int_t(method)<0){
         AliError("Method does not exist");
@@ -159,11 +159,11 @@ void AliTRDPIDResponseObject::SetPIDReference(AliTRDPIDReference *reference,AliT
 	delete fPIDReference[method];
 	fPIDReference[method]=NULL;
     }
-    fPIDReference[method]=new AliTRDPIDReference(*reference);
+    fPIDReference[method]=new AliTRDPIDReference(*reference, NofCharges);
 }
 
 //____________________________________________________________
-TObject *AliTRDPIDResponseObject::GetUpperReference(AliPID::EParticleType spec, Float_t p, Float_t &pUpper,AliTRDPIDResponse::ETRDPIDMethod method) const{
+TObject *AliTRDPIDResponseObject::GetUpperReference(AliPID::EParticleType spec, Float_t p, Float_t &pUpper,AliTRDPIDResponse::ETRDPIDMethod method, Int_t Charge) const{
 
     if(Int_t(method)>=Int_t(AliTRDPIDResponse::kNMethod)||Int_t(method)<0){
 	AliError("Method does not exist");
@@ -171,14 +171,14 @@ TObject *AliTRDPIDResponseObject::GetUpperReference(AliPID::EParticleType spec, 
     }
    
     if(fPIDReference[method]){
-	return fPIDReference[method]->GetUpperReference(spec,p,pUpper);
+    return fPIDReference[method]->GetUpperReference(spec,p,pUpper,Charge);
     }
     return NULL;
 }
 
 
 //____________________________________________________________
-TObject *AliTRDPIDResponseObject::GetLowerReference(AliPID::EParticleType spec, Float_t p, Float_t &pLower,AliTRDPIDResponse::ETRDPIDMethod method) const{
+TObject *AliTRDPIDResponseObject::GetLowerReference(AliPID::EParticleType spec, Float_t p, Float_t &pLower,AliTRDPIDResponse::ETRDPIDMethod method, Int_t Charge) const{
 
     if(Int_t(method)>=Int_t(AliTRDPIDResponse::kNMethod)||Int_t(method)<0){
 	AliError("Method does not exist");
@@ -186,13 +186,13 @@ TObject *AliTRDPIDResponseObject::GetLowerReference(AliPID::EParticleType spec, 
     }
 
     if(fPIDReference[method]){
-	 return fPIDReference[method]->GetLowerReference(spec,p,pLower);
+     return fPIDReference[method]->GetLowerReference(spec,p,pLower,Charge);
      }
     return NULL;
 }
 
 //____________________________________________________________
-Bool_t AliTRDPIDResponseObject::GetThresholdParameters(Int_t ntracklets, Double_t efficiency, Double_t *params,Double_t centrality,AliTRDPIDResponse::ETRDPIDMethod method) const{
+Bool_t AliTRDPIDResponseObject::GetThresholdParameters(Int_t ntracklets, Double_t efficiency, Double_t *params,Double_t centrality,AliTRDPIDResponse::ETRDPIDMethod method, Int_t charge) const{
 
     if(Int_t(method)>=Int_t(AliTRDPIDResponse::kNMethod)||Int_t(method)<0){
 	AliError("Method does not exist");
@@ -200,7 +200,7 @@ Bool_t AliTRDPIDResponseObject::GetThresholdParameters(Int_t ntracklets, Double_
     }
 
     if(fPIDParams[method]){
-	return fPIDParams[method]->GetThresholdParameters(ntracklets,efficiency,params,centrality);
+    return fPIDParams[method]->GetThresholdParameters(ntracklets,efficiency,params,centrality, charge);
     }
     AliError("TRD Threshold Container does not exist");
     return kFALSE;

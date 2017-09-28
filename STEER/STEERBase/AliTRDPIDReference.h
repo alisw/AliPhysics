@@ -31,16 +31,16 @@ class AliTRDPIDReference : public TNamed{
 public:
 	AliTRDPIDReference();
 	AliTRDPIDReference(const Char_t *name);
-	AliTRDPIDReference(const AliTRDPIDReference &ref);
+    AliTRDPIDReference(const AliTRDPIDReference &ref, Int_t NofCharges=1);
 	AliTRDPIDReference &operator=(const AliTRDPIDReference &ref);
 	~AliTRDPIDReference();
 
-	void SetNumberOfMomentumBins(Int_t nBins, Float_t *momenta);
-	void AddReference(TObject *histo, AliPID::EParticleType spec, Int_t pbin);
+    void SetNumberOfMomentumBins(Int_t nBins, Float_t *momenta, Int_t NofCharges=1);
+    void AddReference(TObject *histo, AliPID::EParticleType spec, Int_t pbin, Int_t Charge=0);
 
 	// Derive reference
-	TObject *GetLowerReference(AliPID::EParticleType spec, Float_t p, Float_t &pLower) const;
-	TObject *GetUpperReference(AliPID::EParticleType spec, Float_t p, Float_t &pUpper) const;
+    TObject *GetLowerReference(AliPID::EParticleType spec, Float_t p, Float_t &pLower, Int_t Charge=0) const;
+    TObject *GetUpperReference(AliPID::EParticleType spec, Float_t p, Float_t &pUpper, Int_t Charge=0) const;
 
 	Int_t GetNumberOfMomentumBins() const { return fMomentumBins.GetSize(); }
 	void Print(const Option_t *) const;
