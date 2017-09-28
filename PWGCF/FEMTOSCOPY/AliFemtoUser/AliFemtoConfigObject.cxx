@@ -135,6 +135,69 @@ AliFemtoConfigObject::Stringify(bool pretty) const
 }
 
 
+AliFemtoConfigObject*
+AliFemtoConfigObject::pop(Int_t idx)
+{
+  AliFemtoConfigObject *result = nullptr;
+  if (is_array()) {
+    auto N = static_cast<Int_t>(fValueArray.size());
+
+    // out of bounds
+    if (idx <= -N || N <= idx) {
+      return nullptr;
+    }
+
+    auto it = fValueArray.begin();
+
+    // wrap negative numbers around
+    if (idx < 0) {
+      idx += N;
+    }
+
+    // move iterator to index, move value and erase from array
+    std::advance(it, idx);
+    result = new AliFemtoConfigObject(std::move(*it));
+    fValueArray.erase(it);
+  }
+  return result;
+}
+
+
+AliFemtoConfigObject*
+AliFemtoConfigObject::pop(const Key_t &key)
+{
+  AliFemtoConfigObject *result = nullptr;
+  if (is_map()) {
+    auto it = fValueMap.find(key);
+    if (it != fValueMap.end()) {
+      result = new AliFemtoConfigObject(std::move(it->second));
+      fValueMap.erase(it);
+    }
+  }
+  return result;
+}
+
+
+void
+AliFemtoConfigObject::WarnOfRemainingItems(std::ostream& out) const
+{
+  if (is_map() && fValueMap.size() > 0) {
+    out << "Warning - AliFemtoConfigObject map has unexpected leftover objects: ";
+    for (auto &it : fValueMap) {
+      out << it.first << "[" << NameFromtype(it.second.fTypeTag) << "] ";
+    }
+    out << "\n";
+  }
+  else if(is_array() && fValueArray.size() > 0) {
+    out << "Warning - AliFemtoConfigObject array has " << fValueArray.size() << " unexpected leftover objects: ";
+    for (auto &val : fValueArray) {
+      out << "[" << NameFromtype(val.fTypeTag) << "] ";
+    }
+    out << "\n";
+  }
+}
+
+
 //=================================
 //
 //   TObject Methods
