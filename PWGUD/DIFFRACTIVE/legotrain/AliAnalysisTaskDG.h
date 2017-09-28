@@ -80,7 +80,7 @@ public:
     UShort_t  fnTrk;
     UShort_t  fnTrklet[4]; // all, C,cent,A
     UShort_t  fnFO[2];     // inner,outer layer
-    Char_t    fCharge;
+    Short_t   fCharge;
     UShort_t  fL2Inputs;
     UShort_t  fOrbitID;
 
@@ -108,8 +108,8 @@ public:
     void FillInvalid();
 
     Float_t    fTime[2];            //
-    Char_t     fBB[2];              //
-    Char_t     fBG[2];              //
+    Short_t    fBB[2];              //
+    Short_t    fBG[2];              //
     Double32_t fDecisionOnline[2];  //[-1,3,2]
     Double32_t fDecisionOffline[2]; //[-1,3,2]
     Double32_t fPFBBA[21];          //[0,32,5]
@@ -149,7 +149,7 @@ public:
     Bool_t    fIsIncompleteDAQ;
     Bool_t    fIsSPDClusterVsTrackletBG;
     Bool_t    fIskMB;
-    ClassDef(TreeData, 7);
+    ClassDef(TreeData, 8);
   } ;
 
   struct TrackData : public TObject {
@@ -265,7 +265,7 @@ private:
   TClonesArray     fMCTracks;            //!
   AliESDtrackCuts *fTrackCuts;           //!
 
-  ClassDef(AliAnalysisTaskDG, 14);
+  ClassDef(AliAnalysisTaskDG, 15);
 } ;
 
 #endif // ALIANALYSISTASKDG_H
