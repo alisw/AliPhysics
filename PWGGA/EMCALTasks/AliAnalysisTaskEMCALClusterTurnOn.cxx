@@ -119,6 +119,8 @@ fTriggerbit(0),
 //hL0Amplitude(0),
 hmaxADC(0),
 hADCpos0(0),
+hSmearedE(0),
+hPatchE(0),
 //hmaxL0ADC(0),
 hL1PatchPosition(0),
 hFastOrPatchE(0),
@@ -195,6 +197,8 @@ fTriggerbit(0),
 //hL0Amplitude(0),
 hmaxADC(0),
 hADCpos0(0),
+hSmearedE(0),
+hPatchE(0),
 //hmaxL0ADC(0),
 hL1PatchPosition(0),
 hFastOrPatchE(0),
@@ -345,6 +349,14 @@ void AliAnalysisTaskEMCALClusterTurnOn::UserCreateOutputObjects(){
     fVz = new TH1D("hVz_NC","Vertex Z distribution",100,-50.,50.);
     fVz->Sumw2();
     fOutput->Add(fVz);
+  
+    hSmearedE = new TH1D("hSmearedE","smeared patch energy;#it{E}_{T} (GeV); counts",200,0.,20);
+    hSmearedE->Sumw2();
+    fOutput->Add(hSmearedE);
+  
+    hPatchE = new TH1D("hPatchE","patch energy;#it{E}_{T} (GeV); counts",200,0.,20);
+    hPatchE->Sumw2();
+    fOutput->Add(hPatchE);
     
     hEt_M02 = new TH2D("hEt_M02", ";#it{E}_{T} (GeV);#it{#lambda}^{2}_{0}",3000,0.,60.,1500,0.,3.);
     hEt_M02->Sumw2();
@@ -550,8 +562,10 @@ Bool_t AliAnalysisTaskEMCALClusterTurnOn::Run()
         maxADC = pti->GetADCAmp();
         E_of_maxADC = pti->GetPatchE();
       }
+      if(fQA) hPatchE->Fill(pti->GetPatchE());
       if(pti->GetADCAmp() > 130){  
         isL1 = kTRUE;
+        if(fQA) hSmearedE->Fill(pti->GetSmearedEnergy());
         if(pti->GetEtaGeo()==0. && pti->GetPhiGeo()==0.){
          hADCpos0->Fill(pti->GetADCAmp(),pti->GetPatchE());
          continue;

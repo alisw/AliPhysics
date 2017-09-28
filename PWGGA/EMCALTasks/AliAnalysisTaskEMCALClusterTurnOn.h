@@ -169,6 +169,8 @@ protected:
 //  TH1D        *hL0Amplitude;                    //!<! ADC Amplitudes of EMC L0
   TH2D        *hmaxADC;                         //!<! max L1 ADC/Event
   TH2D        *hADCpos0;                        //!<! ADC of patches at (0,0)
+  TH1D        *hSmearedE;                       //!<! smeared patch E distribution
+  TH1D        *hPatchE;                         //!<! patch energy
 //  TH2D        *hmaxL0ADC;                       //!<! max L0 ADC/Event
   TH2D        *hL1PatchPosition;                //!<! position of L1 trigger patch
   TH2D        *hFastOrPatchE;                   //!<! FastOr# E distribution
