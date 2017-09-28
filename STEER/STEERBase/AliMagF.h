@@ -27,7 +27,7 @@ class AliMagF : public TVirtualMagField
   //
   AliMagF();
   AliMagF(const char *name, const char* title,Double_t factorSol=1., Double_t factorDip=1., 
-	  BMap_t maptype = k5kG, BeamType_t btype=kBeamTypepp, Double_t benergy=-1,	
+	  BMap_t maptype = k5kG, BeamType_t btype=kBeamTypepp, Double_t benergy=-1, float a2z=1.0,
 	  Int_t integ=2, Double_t fmax=15,const char* path="$(ALICE_ROOT)/data/maps/mfchebKGI_sym.root");
   AliMagF(const AliMagF& src);             
   AliMagF& operator=(const AliMagF& src);
@@ -74,7 +74,7 @@ class AliMagF : public TVirtualMagField
   static Int_t GetPolarityConvention()                                {return Int_t(fgkPolarityConvention);}
   static AliMagF* CreateFieldMap(Float_t l3Current=-30000., Float_t diCurrent=-6000., 
 				 Int_t convention=0, Bool_t uniform = kFALSE, 
-				 Float_t beamenergy=7000, const Char_t* btype="pp",
+				 Float_t beamenergy=7000, const Char_t* btype="pp", int az0=0, int az1=0,
 				 const Char_t* path="$(ALICE_ROOT)/data/maps/mfchebKGI_sym.root",
 				 Bool_t returnNullOnInvalidCurrent = kFALSE);
   //
@@ -83,7 +83,7 @@ class AliMagF : public TVirtualMagField
   
  protected:
   // not supposed to be changed during the run, set only at the initialization via constructor
-  void         InitMachineField(BeamType_t btype, Double_t benergy);
+  void         InitMachineField(BeamType_t btype, Double_t benergy, float a2z=1.0);
   void         SetBeamType(BeamType_t type)                           {fBeamType = type;}
   void         SetBeamEnergy(Float_t energy)                          {fBeamEnergy = energy;}
   //

@@ -169,10 +169,13 @@ Bool_t AliGRPManager::SetMagField()
   Int_t  polConvention = fGRPData->IsPolarityConventionLHC() ? AliMagF::kConvLHC : AliMagF::kConvDCS2008;
   Bool_t uniformB = fGRPData->IsUniformBMap();
   
+  int az0 = fGRPData->GetSingleBeamType(0).Atoi();
+  int az1 = fGRPData->GetSingleBeamType(1).Atoi();    
+
   if (ok) { 
     AliMagF* fld = AliMagF::CreateFieldMap(TMath::Abs(l3Current) * (l3Polarity ? -1:1), 
 					   TMath::Abs(diCurrent) * (diPolarity ? -1:1), 
-					   polConvention,uniformB,beamEnergy, beamType.Data());
+					   polConvention,uniformB,beamEnergy, beamType.Data(), az0, az1);
     if (fld) {
       TGeoGlobalMagField::Instance()->SetField( fld );
       TGeoGlobalMagField::Instance()->Lock();

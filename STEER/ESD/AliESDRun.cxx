@@ -442,7 +442,8 @@ Bool_t AliESDRun::InitMagneticField() const
   }
   //
   fld = AliMagF::CreateFieldMap(fCurrentL3,fCurrentDip,AliMagF::kConvLHC,
-				TestBit(kUniformBMap), GetBeamEnergy(), GetBeamType());
+				TestBit(kUniformBMap), GetBeamEnergy(), GetBeamType(),
+				GetBeamParticle(0),GetBeamParticle(1));
   if (fld) {
     TGeoGlobalMagField::Instance()->SetField( fld );
     TGeoGlobalMagField::Instance()->Lock();
