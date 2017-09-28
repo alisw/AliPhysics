@@ -103,7 +103,6 @@ void AliGenSLEvtGen::Generate()
   TLorentzVector momGen;
   TLorentzVector momTot;
   momTot.SetXYZM(0.,0.,0.,0.);
-  
   static TClonesArray *decayProducts;
   if(!decayProducts) decayProducts = new TClonesArray("TParticle",1000);
   fStack = AliRunLoader::Instance()->Stack();
@@ -126,7 +125,7 @@ void AliGenSLEvtGen::Generate()
   fStack->Clean(); //We are re-decaying, Remove previous particles 
   
   Int_t nProducts;
-  Bool_t  genOK = kFALSE;  
+  Bool_t  genOK = kFALSE;
   // generate events until all constraints are fulfilled
   for (Int_t trials=0; !genOK && trials < 100*1000; ++trials) {
   	if(fDecayPolarized)fDecayer->DecayPolarized(fEvtGenNumber,&momTot,fPolarization);
@@ -135,9 +134,7 @@ void AliGenSLEvtGen::Generate()
 	genOK = kTRUE;
   	for (int i = 0; i < nProducts; i++) {
          	TParticle* partEvtGen = (TParticle *) decayProducts->At(i);
-
-	 	//AliInfo(Form("PDG = %d, Status = %d \n",partEvtGen->GetPdgCode(),partEvtGen->GetStatusCode()));
-	 	if(partEvtGen->GetStatusCode() !=1) continue;//don't fill mother particles for time being
+     		if(partEvtGen->GetStatusCode()!=1) continue;
 		
 		if (fEtaChildMin <= fEtaChildMax) genOK = genOK && (partEvtGen->Eta() >= fEtaChildMin && partEvtGen->Eta() <  fEtaChildMax);
       		if (!genOK) break;
@@ -146,19 +143,20 @@ void AliGenSLEvtGen::Generate()
 	
 	//AliInfo(Form("nProducts = %d, Weight = %d \n",nProducts,trials+1));
   	// Put decay products on the stack
+	Int_t iparent = -1;
 	for (int i = 0; i < nProducts; i++) {
          	TParticle* partEvtGen = (TParticle *) decayProducts->At(i);
-
-	 	//AliInfo(Form("PDG = %d, Status = %d \n",partEvtGen->GetPdgCode(),partEvtGen->GetStatusCode()));
-	 	if(partEvtGen->GetStatusCode() !=1) continue;//don't fill mother particles for time being
-		
-         	PushTrack(1, -1, partEvtGen->GetPdgCode(),
+	 	//AliInfo(Form("PDG = %d, Status = %d, Mother = %d \n",partEvtGen->GetPdgCode(),partEvtGen->GetStatusCode(),partEvtGen->GetFirstMother()));
+		 
+		PushTrack((partEvtGen->GetStatusCode() == 1) ? 1 : 0, iparent, partEvtGen->GetPdgCode(),
 	 	   partEvtGen->Px(),partEvtGen->Py(),partEvtGen->Pz(),partEvtGen->Energy(),
 		   VertexPos[0],VertexPos[1],VertexPos[2],partEvtGen->T(),
 		   Polarization[0],Polarization[1],Polarization[2],
-	  	   kPPrimary, nt, trials+1, partEvtGen->GetStatusCode());
-		    
+	  	   (i == 0) ? kPPrimary : kPDecay, nt, trials+1, partEvtGen->GetStatusCode());
+
+		if(i == 0)iparent = nt;    
          	KeepTrack(nt);
+		SetHighWaterMark(nt);
          	}// Particle loop - stack
          decayProducts->Clear();
 	 }
