@@ -1453,25 +1453,33 @@ void AliAnalysisTaskGammaHadron::FillPi0CandsHist(AliTLorentzVector CaloClusterV
 
   if (!fRand) fRand = new TRandom3(0);
 
+  Double_t fParA = 1.3;  
+
   for (int i = 0; i < fNRotBkgSamples; i++) {
     Double_t fEta,fPhi;
     Double_t fOpeningAngle;
-    while (true) {
+    Int_t nLoopTrials = 15; // avoid too many trials 
+    for (int j = 0; j < nLoopTrials; j++) {
       fEta = fRand->Uniform(-0.7,0.7);  // change to eta cut maybe
       // GetClusterContainer("caloClusters")->SetMinEta() 
       // GetClusterContainer("caloClusters")->SetMaxEta() 
       fPhi = fRand->Uniform(80,254); // pretend DCAL next to EMCAL
       if(fPhi > 187) {
         // Check PHOS hole
-        if (TMath::Abs(fEta) < .22) continue;
+        if (TMath::Abs(fEta) < .22 && fPhi < 247) continue;
         fPhi+= 73;  // shift DCAL points
       } 
       fPhi = fPhi * 3.141592653589793 / 180.;
+
       // Opening Angle Cut
       CaloClusterVec2.SetPhi(fPhi);
       CaloClusterVec2.SetTheta(2.*TMath::ATan(TMath::Exp(-fEta)));
       fOpeningAngle = CaloClusterVec.Angle(CaloClusterVec2.Vect());
-  //    if (fOpeningAngle < fOpeningAngleCut) continue;
+
+      // Weighting towards lower angles (higher pT)
+      Double_t fR = fRand->Rndm(); 
+      if (fR > 0.1 + 0.9 * TMath::Exp(-TMath::Power(fOpeningAngle/fParA,3))) continue; 
+
       break;
     }
 
