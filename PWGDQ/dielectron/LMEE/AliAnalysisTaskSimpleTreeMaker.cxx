@@ -672,7 +672,7 @@ void AliAnalysisTaskSimpleTreeMaker::UserExec(Option_t *) {
             //Get V0 daughter tracks
             AliESDtrack* negTrack = esdEvent->GetTrack(V0vertex->GetIndex(0));
             AliESDtrack* posTrack = esdEvent->GetTrack(V0vertex->GetIndex(1));
-            if(!negTrack | !posTrack){
+            if(!negTrack || !posTrack){
                 Printf("Daughter track of v0 not found: %p - %p \n",negTrack, posTrack);
                 continue;
             }
@@ -684,11 +684,11 @@ void AliAnalysisTaskSimpleTreeMaker::UserExec(Option_t *) {
             if(isV0daughterAccepted(posTrack) != kTRUE){ continue; }
 
             Double_t pointingAngle = V0vertex->GetV0CosineOfPointingAngle();
-            Double_t daughtersDCA = V0vertex->GetDcaV0Daughters();
-            Double_t decayLength = V0vertex->GetRr();
-            Double_t v0mass = V0vertex->M();
+            Double_t daughtersDCA  = V0vertex->GetDcaV0Daughters();
+            Double_t decayLength   = V0vertex->GetRr();
+            Double_t v0mass        = V0vertex->M();
             //Super loose cuts on V0 topological qualities(stored in Tree to be cut on later)
-            if( pointingAngle < 0.8 | daughtersDCA < 0.05 | decayLength < 0.01 ){ continue; }
+            if( pointingAngle < 0.8 || daughtersDCA < 0.05 || decayLength < 0.01 ){ continue; }
 
             Double_t ptArm = V0vertex->PtArmV0();
             Double_t alpha = V0vertex->AlphaV0();
@@ -802,6 +802,10 @@ void AliAnalysisTaskSimpleTreeMaker::UserExec(Option_t *) {
                 "pdg="        << iPdg <<
                 "pdgMother="  << iPdgMother <<
                 "motherLabel=" << motherLabel << 
+				"multiplicity=" << nMultiplicity << 
+                "runNumber="  << runNumber << 
+                "eventNum="   << eventNum <<
+                "gridPID="    << fGridPID <<
                 //V0 particle observables 
                 "v0effMass="  << v0mass <<
                 "pointing="   << pointingAngle << 
@@ -831,6 +835,10 @@ void AliAnalysisTaskSimpleTreeMaker::UserExec(Option_t *) {
                 "impParamZ="  << ImpParamZ <<
                 "charge="     << daughtCharge <<
                 "DCA="        << daughtersDCA <<
+                "multiplicity=" << nMultiplicity << 
+                "runNumber="  << runNumber << 
+                "eventNum="   << eventNum <<
+                "gridPID="    << fGridPID <<
                 //V0 particle observables 
                 "v0effMass="  << v0mass <<
                 "pointing="   << pointingAngle << 
@@ -929,6 +937,10 @@ void AliAnalysisTaskSimpleTreeMaker::UserExec(Option_t *) {
                 "pdg="        << iPdg <<
                 "pdgMother="  << iPdgMother <<
                 "motherLabel=" << motherLabel << 
+                "multiplicity=" << nMultiplicity << 
+                "runNumber="  << runNumber << 
+                "eventNum="   << eventNum <<
+                "gridPID="    << fGridPID <<
                 //V0 particle observables 
                 "v0effMass="  << v0mass <<
                 "pointing="   << pointingAngle << 
@@ -958,6 +970,10 @@ void AliAnalysisTaskSimpleTreeMaker::UserExec(Option_t *) {
                 "impParamZ="  << ImpParamZ <<
                 "charge="     << daughtCharge <<
                 "DCA="        << daughtersDCA <<
+                "multiplicity=" << nMultiplicity << 
+                "runNumber="  << runNumber << 
+                "eventNum="   << eventNum <<
+                "gridPID="    << fGridPID <<
                 //V0 particle observables 
                 "v0effMass="  << v0mass <<
                 "pointing="   << pointingAngle << 
@@ -1039,9 +1055,7 @@ Bool_t AliAnalysisTaskSimpleTreeMaker::isV0daughterAccepted(AliVTrack* track){
         }
     }
     fQAhist->Fill("Tracks_KineCuts", 1);
-    //PID cuts
-    Double_t EnSigmaTPC = fPIDResponse->NumberOfSigmasTPC(track,(AliPID::EParticleType)AliPID::kElectron);
-    if( EnSigmaTPC > fESigTPCMax || EnSigmaTPC < fESigTPCMin) { return answer; }
+	//Do not apply PID cuts
     fQAhist->Fill("Tracks_PIDcuts",1); 
 
     answer = kTRUE;
