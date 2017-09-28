@@ -1296,6 +1296,7 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::Run()
         }
         if(fIsMC && pti->GetSmearedEnergy() > 8.4){
           isL1 = kTRUE;
+          break;
         }
       }
     }                      
