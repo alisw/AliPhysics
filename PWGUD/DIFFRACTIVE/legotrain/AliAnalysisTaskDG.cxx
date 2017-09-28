@@ -62,6 +62,7 @@ void AliAnalysisTaskDG::EventInfo::Fill(const AliVEvent* vEvent) {
 void AliAnalysisTaskDG::ADV0::FillInvalid() {
   fTime[0] = fTime[1] = -10240.0f;
   fBB[0] = fBG[0] = fBB[1] = fBG[1] = -1;
+  fMult[0] = fMult[1] = -1;
   for (Int_t bc=0; bc<21; ++bc)
     fPFBBA[bc] = fPFBBC[bc] = fPFBGA[bc] = fPFBGC[bc] = 0;
 }
@@ -73,30 +74,33 @@ void AliAnalysisTaskDG::ADV0::FillAD(const AliVEvent *vEvent, AliTriggerAnalysis
   fDecisionOffline[0] = trigAna.ADTrigger(vEvent, AliTriggerAnalysis::kCSide, kTRUE);
   fDecisionOffline[1] = trigAna.ADTrigger(vEvent, AliTriggerAnalysis::kASide, kTRUE);
 
-  const AliVAD *esdAD = vEvent->GetADData();
-  if (!esdAD) {
+  const AliVAD *vAD = vEvent->GetADData();
+  if (!vAD) {
     FillInvalid();
     return;
   }
-  fTime[0] = esdAD->GetADCTime();
-  fTime[1] = esdAD->GetADATime();
+  fTime[0] = vAD->GetADCTime();
+  fTime[1] = vAD->GetADATime();
 
   fBB[0] = fBB[1] = fBG[0] = fBG[1] = 0;
+  fMult[0] = fMult[1] = 0;
   for (Int_t ch=0; ch<4; ++ch) {
-    fBB[0] += (esdAD->GetBBFlag(ch  ) && esdAD->GetBBFlag(ch+ 4));
-    fBB[1] += (esdAD->GetBBFlag(ch+8) && esdAD->GetBBFlag(ch+12));
-    fBG[0] += (esdAD->GetBGFlag(ch  ) && esdAD->GetBGFlag(ch+ 4));
-    fBG[1] += (esdAD->GetBGFlag(ch+8) && esdAD->GetBGFlag(ch+12));
+    fBB[0] += (vAD->GetBBFlag(ch  ) && vAD->GetBBFlag(ch+ 4));
+    fBB[1] += (vAD->GetBBFlag(ch+8) && vAD->GetBBFlag(ch+12));
+    fBG[0] += (vAD->GetBGFlag(ch  ) && vAD->GetBGFlag(ch+ 4));
+    fBG[1] += (vAD->GetBGFlag(ch+8) && vAD->GetBGFlag(ch+12));
+    fMult[0] += vAD->GetMultiplicity(ch)   + vAD->GetMultiplicity(ch+ 4);
+    fMult[1] += vAD->GetMultiplicity(ch+8) + vAD->GetMultiplicity(ch+12);
   }
 
   for (Int_t bc=0; bc<21; ++bc) {
     fPFBBA[bc] = fPFBBC[bc] = fPFBGA[bc] = fPFBGC[bc] = 0;
     for (Int_t ch=0; ch<4; ++ch) {
-      fPFBBC[bc] += (esdAD->GetPFBBFlag(ch, bc) && esdAD->GetPFBBFlag(ch+4, bc));
-      fPFBGC[bc] += (esdAD->GetPFBGFlag(ch, bc) && esdAD->GetPFBGFlag(ch+4, bc));
+      fPFBBC[bc] += (vAD->GetPFBBFlag(ch, bc) && vAD->GetPFBBFlag(ch+4, bc));
+      fPFBGC[bc] += (vAD->GetPFBGFlag(ch, bc) && vAD->GetPFBGFlag(ch+4, bc));
 
-      fPFBBA[bc] += (esdAD->GetPFBBFlag(ch+8, bc) && esdAD->GetPFBBFlag(ch+12, bc));
-      fPFBGA[bc] += (esdAD->GetPFBGFlag(ch+8, bc) && esdAD->GetPFBGFlag(ch+12, bc));
+      fPFBBA[bc] += (vAD->GetPFBBFlag(ch+8, bc) && vAD->GetPFBBFlag(ch+12, bc));
+      fPFBGA[bc] += (vAD->GetPFBGFlag(ch+8, bc) && vAD->GetPFBGFlag(ch+12, bc));
     }
   }
 }
@@ -107,28 +111,30 @@ void AliAnalysisTaskDG::ADV0::FillV0(const AliVEvent *vEvent, AliTriggerAnalysis
   fDecisionOffline[0] = trigAna.V0Trigger(vEvent, AliTriggerAnalysis::kCSide, kTRUE);
   fDecisionOffline[1] = trigAna.V0Trigger(vEvent, AliTriggerAnalysis::kASide, kTRUE);
 
-  const AliVVZERO *esdV0 = vEvent->GetVZEROData();
-  if (!esdV0) {
+  const AliVVZERO *vV0 = vEvent->GetVZEROData();
+  if (!vV0) {
     FillInvalid();
     return;
   }
 
-  fTime[0] = esdV0->GetV0CTime();
-  fTime[1] = esdV0->GetV0ATime();
+  fTime[0] = vV0->GetV0CTime();
+  fTime[1] = vV0->GetV0ATime();
 
   fBB[0] = fBB[1] = fBG[0] = fBG[1] = 0;
+  fMult[0] = fMult[1] = 0;
   for (Int_t ch=0; ch<64; ++ch) {
-    fBB[ch/32] += esdV0->GetBBFlag(ch);
-    fBG[ch/32] += esdV0->GetBGFlag(ch);
+    fBB[ch/32]   += vV0->GetBBFlag(ch);
+    fBG[ch/32]   += vV0->GetBGFlag(ch);
+    fMult[ch/32] += vV0->GetMultiplicity(ch);
   }
 
   for (Int_t bc=0; bc<21; ++bc) {
     fPFBBA[bc] = fPFBBC[bc] = fPFBGA[bc] = fPFBGC[bc] = 0;
     for (Int_t ch=0; ch<32; ++ch) {
-      fPFBBC[bc] += esdV0->GetPFBBFlag(ch,    bc);
-      fPFBGC[bc] += esdV0->GetPFBGFlag(ch,    bc);
-      fPFBBA[bc] += esdV0->GetPFBBFlag(ch+32, bc);
-      fPFBGA[bc] += esdV0->GetPFBGFlag(ch+32, bc);
+      fPFBBC[bc] += vV0->GetPFBBFlag(ch,    bc);
+      fPFBGC[bc] += vV0->GetPFBGFlag(ch,    bc);
+      fPFBBA[bc] += vV0->GetPFBBFlag(ch+32, bc);
+      fPFBGA[bc] += vV0->GetPFBGFlag(ch+32, bc);
     }
   }
 }
@@ -482,18 +488,18 @@ void AliAnalysisTaskDG::FillSPDFOEffiencyHistograms(const AliESDEvent *esdEvent)
   }
   AliInfoF("selectedForSPD = %d", selectedForSPD);
   if (selectedForSPD) { // PF protection
-    const AliVAD    *esdAD = esdEvent->GetADData();
-    const AliVVZERO *esdV0 = esdEvent->GetVZEROData();
+    const AliVAD    *vAD = esdEvent->GetADData();
+    const AliVVZERO *vV0 = esdEvent->GetVZEROData();
     Int_t nBB=0;
     for (Int_t bc=3; bc<=17 && !nBB; ++bc) {
       if (bc == 10)
 	continue;
       for (Int_t ch=0; ch<4; ++ch) {
-	nBB += (esdAD->GetPFBBFlag(ch,   bc) && esdAD->GetPFBBFlag(ch+ 4, bc));
-	nBB += (esdAD->GetPFBBFlag(ch+8, bc) && esdAD->GetPFBBFlag(ch+12, bc));
+	nBB += (vAD->GetPFBBFlag(ch,   bc) && vAD->GetPFBBFlag(ch+ 4, bc));
+	nBB += (vAD->GetPFBBFlag(ch+8, bc) && vAD->GetPFBBFlag(ch+12, bc));
       }
       for (Int_t ch=0; ch<64; ++ch)
-	nBB += esdV0->GetPFBBFlag(ch, bc);
+	nBB += vV0->GetPFBBFlag(ch, bc);
     }
     if (!nBB) {
       Int_t matched[1200] = { 0 };

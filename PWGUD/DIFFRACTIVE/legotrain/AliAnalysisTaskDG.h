@@ -95,7 +95,7 @@ public:
     ADV0() {
       for (Int_t i=0; i<2; ++i) {
 	fTime[i] = -10240.0f;
-	fBB[i] = fBG[i] = -1;
+	fBB[i] = fBG[i] = fMult[i] = -1;
 	fDecisionOnline[i] = fDecisionOffline[i] = -1;
       }
       for (Int_t bc=0; bc<21; ++bc)
@@ -116,6 +116,7 @@ public:
     Double32_t fPFBBC[21];          //[0,32,5]
     Double32_t fPFBGA[21];          //[0,32,5]
     Double32_t fPFBGC[21];          //[0,32,5]
+    Float_t    fMult[2];            // C-, A-side multiplicity
   } ;
 
   struct FMD {
@@ -148,7 +149,7 @@ public:
     Bool_t    fIsIncompleteDAQ;
     Bool_t    fIsSPDClusterVsTrackletBG;
     Bool_t    fIskMB;
-    ClassDef(TreeData, 6);
+    ClassDef(TreeData, 7);
   } ;
 
   struct TrackData : public TObject {
@@ -264,7 +265,7 @@ private:
   TClonesArray     fMCTracks;            //!
   AliESDtrackCuts *fTrackCuts;           //!
 
-  ClassDef(AliAnalysisTaskDG, 13);
+  ClassDef(AliAnalysisTaskDG, 14);
 } ;
 
 #endif // ALIANALYSISTASKDG_H
