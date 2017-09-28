@@ -41,8 +41,10 @@ public:
     class AliTRDPIDThresholds : public TObject{
     public:
         AliTRDPIDThresholds();
-        AliTRDPIDThresholds(Int_t nTracklets, Double_t effMin, Double_t effMax, Double_t *params = NULL, Int_t charge=0);
-        AliTRDPIDThresholds(Int_t nTracklets, Double_t eff, Double_t *params = NULL, Int_t charge=0);
+        AliTRDPIDThresholds(Int_t nTracklets, Double_t effMin, Double_t effMax, Double_t *params, Int_t charge);
+        AliTRDPIDThresholds(Int_t nTracklets, Double_t eff, Double_t *params, Int_t charge);
+        AliTRDPIDThresholds(Int_t nTracklets, Double_t effMin, Double_t effMax, Double_t *params = NULL);
+        AliTRDPIDThresholds(Int_t nTracklets, Double_t eff, Double_t *params = NULL);
         AliTRDPIDThresholds(const AliTRDPIDThresholds &);
         AliTRDPIDThresholds &operator=(const AliTRDPIDThresholds &);
         virtual ~AliTRDPIDThresholds() {}
@@ -101,7 +103,7 @@ private:
     TList *fEntries; //
 
 
-    ClassDef(AliTRDPIDParams, 2);
+    ClassDef(AliTRDPIDParams, 3);
 };
 #endif
 
