@@ -177,11 +177,14 @@ void ITSQArecoparam(char *iFile, Int_t runNb=150000, Int_t idet=2, Int_t FirstEv
 
    Int_t  polConvention = fGRPData->IsPolarityConventionLHC() ? AliMagF::kConvLHC : AliMagF::kConvDCS2008;
    Bool_t uniformB = fGRPData->IsUniformBMap();
-   
+
+   int az0 = GRPData->GetSingleBeamType(0).Atoi();
+   int az1 = GRPData->GetSingleBeamType(1).Atoi();    
+
    if (ok) { 
      AliMagF* fld = AliMagF::CreateFieldMap(TMath::Abs(l3Current) * (l3Polarity ? -1:1), 
 					    TMath::Abs(diCurrent) * (diPolarity ? -1:1), 
-					    polConvention,uniformB,beamEnergy, beamType.Data());
+					    polConvention,uniformB,beamEnergy, beamType.Data(), az0, az1);
      if (fld) {
        TGeoGlobalMagField::Instance()->SetField( fld );
        TGeoGlobalMagField::Instance()->Lock();
