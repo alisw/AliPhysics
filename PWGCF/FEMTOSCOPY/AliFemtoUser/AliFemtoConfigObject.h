@@ -13,7 +13,9 @@
 #include <string>
 #include <vector>
 #include <ostream>
+#include <iostream>
 
+#include <TBuffer.h>
 #include <TString.h>
 #include <TText.h>
 
@@ -183,7 +185,7 @@ public:
     ConstructorDef(float, kFLOAT, fValueFloat);
   #undef ConstructorDef
   // Explicit constructor for TString - needed for clang 9.0
-  AliFemtoConfigObject(TString &v) : fTypeTag(kSTRING), fValueString((const char *)v), fPainter(nullptr) {}
+  AliFemtoConfigObject(const TString &v) : fTypeTag(kSTRING), fValueString(v.Data()), fPainter(nullptr) {}
 
   // iterator-based constructors
   #define ConstructorDefItor(__type, __tag, __dest) \
@@ -211,6 +213,33 @@ public:
   #undef ConstructorDef
 
 #endif // move-semantics
+
+
+  /// \class BuildStruct
+  /// \brief helper class for building a mapping object
+  class BuildMap {
+  public:
+#ifdef ENABLE_MOVE_SEMANTICS
+    #define IMPL_BUILDITEM(__type, __a, __b) \
+      BuildMap& operator()(const Key_t &key, const __type& val) { fMap[key] = val; return *this; }  \
+      BuildMap& operator()(const Key_t &key, __type && val) { fMap[key] = std::move(val); return *this; }
+#else
+    #define IMPL_BUILDITEM(__type, __a, __b) \
+      BuildMap& operator()(const Key_t &key, const __type& val) { fMap[key] = val; return *this; }
+#endif
+
+    FORWARD_STANDARD_TYPES(IMPL_BUILDITEM);
+
+    IMPL_BUILDITEM(AliFemtoConfigObject, 0, 0);
+    #undef IMPL_BUILDITEM
+
+    operator AliFemtoConfigObject() {
+      return AliFemtoConfigObject(std::move(fMap));
+    }
+
+  protected:
+    MapValue_t fMap;
+  };
 
 
   // ========================
@@ -259,9 +288,61 @@ public:
     return is_range() ? r = RangeListValue_t({fValueRange}), true : load_rangelist(r); }
 
 
+  /// Remove and returns pointer to object at *index* if an array
+  ///
+  /// Delete the pointer after use!
+  ///
+  /// Index starts at 0. Negative numbers wrap around to the back, so '-1'
+  /// removes the last element (default behavior).
+  ///
+  /// If not array, or index out of bounds returns nullptr
+  AliFemtoConfigObject* pop(Int_t index=-1);
+
+  /// Removes and returns pointer to object associated with *key*
+  ///
+  /// If not a struct nor has *key*, return nullptr.
+  AliFemtoConfigObject* pop(const Key_t &key);
+
+  /// Removes and returns pointer to object associated with *key*,
+  /// or pointer to ConfigObject constructed from default if not
+  /// found or not a struct.
+  template <typename ReturnType>
+  AliFemtoConfigObject* pop(const Key_t &key, const ReturnType &default_);
+
+  /// \defgroup Pop&Load Methods
+  /// @{
+  /// Removes item identified by *key*
+
+#define IMPL_POPANDLOAD(__dest_type, __tag, __source)      \
+  bool pop_and_load(const Key_t &key, __dest_type &dest) { \
+    if (!is_map()) { return false; }                       \
+    auto found = fValueMap.find(key);                      \
+    if (found == fValueMap.end()) { return false; }        \
+    if (found->second.fTypeTag != __tag) { return false; } \
+    dest = found->second. __source;                        \
+    fValueMap.erase(found); return true; }
+
+  FORWARD_STANDARD_TYPES(IMPL_POPANDLOAD)
+
+  typedef std::pair<float,float> pair_of_floats;
+  IMPL_POPANDLOAD(pair_of_floats, kRANGE, fValueRange);
+
+#undef IMPL_POPANDLOAD
+
+  /// }@
+
+  /// A general template method for building objects with config object
+  ///
+  /// Default implementation simply calls the type's constructor with
+  /// a const reference to this object.
+  template <typename T>
+  T* Construct() const;
+
   /// Pretty-print the value
   TString Stringify(const bool pretty=true) const;
 
+  /// Print warning that multiple
+  void WarnOfRemainingItems(std::ostream& out=std::cerr) const;
 
   // ========================
   //     TObject Methods
@@ -308,11 +389,18 @@ protected:
   /// Object used to do stuff
   Painter* fPainter; //!
 
-  template <typename OutStreamValue_t>
-  friend OutStreamValue_t& operator<<(OutStreamValue_t &, const AliFemtoConfigObject &);
+  // template <typename OutStreamValue_t>
+  // friend OutStreamValue_t& operator<<(OutStreamValue_t &, const AliFemtoConfigObject &);
 
-  template <typename InStreamValue_t>
-  friend InStreamValue_t& operator>>(InStreamValue_t &, AliFemtoConfigObject &);
+  // template <typename InStreamValue_t>
+  // friend InStreamValue_t& operator>>(InStreamValue_t &, AliFemtoConfigObject &);
+
+  friend std::ostream& operator<<(std::ostream&, const AliFemtoConfigObject&);
+  friend std::istream& operator>>(std::istream&, AliFemtoConfigObject&);
+
+  friend TBuffer& operator<<(TBuffer&, const AliFemtoConfigObject&);
+  friend TBuffer& operator>>(TBuffer&, AliFemtoConfigObject&);
+
 
   typedef std::string::const_iterator StringIter_t;
 
@@ -324,6 +412,21 @@ protected:
   /// Parse a string 'into' destination
   // static void Parse(const std::string &, AliFemtoConfigObject &);
 
+  static TString NameFromtype(TypeTagEnum_t tag)
+  {
+    switch (tag) {
+      case kEMPTY: return "empty";
+      case kBOOL: return "bool";
+      case kINT: return "int";
+      case kFLOAT: return "float";
+      case kSTRING: return "str";
+      case kRANGE: return "range";
+      case kRANGELIST: return "rangelist";
+      case kARRAY: return "array";
+      case kMAP: return "map";
+    }
+    return "--";
+  }
 
 private:
 
@@ -541,10 +644,39 @@ AliFemtoConfigObject& AliFemtoConfigObject::operator=(AliFemtoConfigObject &&rhs
 #endif // move-semantics
 
 
+template <typename StreamType>
+StreamType& operator<<(StreamType &stream, const AliFemtoConfigObject *ptr)
+{
+  return std::operator<<(stream, *ptr);
+}
+
+template <typename StreamType>
+StreamType& operator>>(StreamType &stream, AliFemtoConfigObject *&ptr)
+{
+  if (!ptr) {
+    ptr = new AliFemtoConfigObject();
+  }
+  return std::operator>>(stream, *ptr);
+}
+
+template <typename ReturnType>
+AliFemtoConfigObject* AliFemtoConfigObject::pop(const Key_t &key, const ReturnType &default_)
+{
+  if (auto *obj = pop(key)) {
+    return obj;
+  }
+  return new AliFemtoConfigObject(default_);
+}
+
+
+template <typename T>
+T* AliFemtoConfigObject::Construct() const
+{
+  return new T(*this);
+}
+
+
 #undef FORWARD_STANDARD_TYPES
-
-
-
 
 
 #endif // ALIFEMTOCONFIGOBJECT_H

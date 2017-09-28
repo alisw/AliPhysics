@@ -267,4 +267,15 @@ struct AliFemtoAnalysisPionPion::CutParams {
 
 };
 
+/*
+template<>
+AliFemtoAnalysisPionPion*
+AliFemtoConfigObject::Construct<AliFemtoAnalysisPionPion>() const
+{
+  // AliFemtoAnalysisPionPion* AliFemtoConfigObject::Construct() const {
+
+  return nullptr;
+}
+*/
+
 #endif
