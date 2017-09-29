@@ -333,12 +333,16 @@ class AliAnalysisTaskElectronEfficiency : public AliAnalysisTaskSE {
   TH1D*                           fPRec;
   TH2D*                           fPGen_DeltaP;
   TH2D*                           fPtGen_DeltaPt;
+  TH2D*                           fPtGen_DeltaPtOverPtGen;
   TH2D*                           fPGen_PrecOverPGen; // higher precision at low p than 'fPGen_DeltaP'.
   TH2D*                           fPtGen_PtRecOverPtGen;
   TH2D*                           fPGen_DeltaEta;     // momentum dependence.
+  TH2D*                           fPtGen_DeltaEta;
   TH2D*                           fPGen_DeltaTheta;
   TH2D*                           fPGen_DeltaPhi_Ele; // delta phi is charge dependent.
   TH2D*                           fPGen_DeltaPhi_Pos;
+  TH2D*                           fPtGen_DeltaPhi_Ele; // delta phi is charge dependent.
+  TH2D*                           fPtGen_DeltaPhi_Pos;
   TH2D*                           fEtaGen_DeltaEta;
   TH2D*                           fThetaGen_DeltaTheta;
   TH2D*                           fPhiGen_DeltaPhi;
