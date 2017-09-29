@@ -53,7 +53,7 @@ AliAnalysisTaskdStar* AddTaskdStar(bool isMC=true,TString suffix = ""){
   // Get and connect other common input/output containers via the manager as below
   //==============================================================================
   TString outputFileName = AliAnalysisManager::GetCommonFileName();
-  outputFileName += ":AODpentaquark";
+  outputFileName += ":AODdstar";
 
   AliAnalysisDataContainer *coutput =0x0;
 
