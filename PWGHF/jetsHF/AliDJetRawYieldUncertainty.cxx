@@ -916,7 +916,7 @@ Bool_t AliDJetRawYieldUncertainty::EvaluateUncertaintyEffScale()
   fJetPtYieldUnc->SaveAs(Form("FinalRawYieldUncertaintyJetPt_%s_%s.root", fDmesonLabel.Data(), fMethodLabel.Data()));
   fJetPtYieldCentral->SetStats(kFALSE);
   fJetPtYieldCentral->Draw();
-  fJetPtYieldCentral->SaveAs(Form("FinalRawYieldCentralPlusSystUncertaintyJetPt_%s_%s.root", fDmesonLabel.Data(), fMethodLabel.Data()));
+  fJetPtYieldCentral->SaveAs(Form("FinalRawYieldCentralPlusSystUncertainty_JetPt_%s_%s.root", fDmesonLabel.Data(), fMethodLabel.Data()));
 
   // print distribution of yields for each variation
   for (int ibin = 0; ibin < fnJetPtbins; ibin++) {
