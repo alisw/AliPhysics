@@ -597,21 +597,9 @@ Bool_t AliAnalysisTaskMuonRefit::SetMagField() const
     return kFALSE;
   }
   
-  Float_t l3Current = grpData->GetL3Current((AliGRPObject::Stats)0);
-  if (l3Current == AliGRPObject::GetInvalidFloat()) {
-    AliError("GRP/GRP/Data entry:  missing value for the L3 current !");
-    return kFALSE;
-  }
-  
   Char_t l3Polarity = grpData->GetL3Polarity();
   if (l3Polarity == AliGRPObject::GetInvalidChar()) {
     AliError("GRP/GRP/Data entry:  missing value for the L3 polarity !");
-    return kFALSE;
-  }
-  
-  Float_t diCurrent = grpData->GetDipoleCurrent((AliGRPObject::Stats)0);
-  if (diCurrent == AliGRPObject::GetInvalidFloat()) {
-    AliError("GRP/GRP/Data entry:  missing value for the dipole current !");
     return kFALSE;
   }
   
@@ -633,17 +621,21 @@ Bool_t AliAnalysisTaskMuonRefit::SetMagField() const
     return kFALSE;
   }
   
-    // read special bits for the polarity convention and map type
-  Int_t  polConvention = grpData->IsPolarityConventionLHC() ? AliMagF::kConvLHC : AliMagF::kConvDCS2008;
-  Bool_t uniformB = grpData->IsUniformBMap();
-
-  const int az0 = grpData->GetSingleBeamType(0).Atoi();
-  const int az1 = grpData->GetSingleBeamType(1).Atoi();
-
-  AliMagF* fld = AliMagF::CreateFieldMap(TMath::Abs(l3Current) * (l3Polarity ? -1:1),
-                                         TMath::Abs(diCurrent) * (diPolarity ? -1:1),
-                                         polConvention,uniformB,beamEnergy, beamType.Data(), az0, az1);
-  TGeoGlobalMagField::Instance()->SetField(fld);
+  AliMagF::BeamType_t btype = AliMagF::kNoBeamField;
+  TString btypestr = beamType;
+  btypestr.ToLower();
+  TPRegexp protonBeam("(proton|p)\\s*-?\\s*\\1");
+  TPRegexp ionBeam("(lead|pb|ion|a|A)\\s*-?\\s*\\1");
+  TPRegexp protonionBeam("(proton|p)\\s*-?\\s*(lead|pb|ion|a|A)");
+  TPRegexp ionprotonBeam("(lead|pb|ion|a|A)\\s*-?\\s*(proton|p)");
+  if (btypestr.Contains(ionBeam)) btype = AliMagF::kBeamTypeAA;
+  else if (btypestr.Contains(protonBeam)) btype = AliMagF::kBeamTypepp;
+  else if (btypestr.Contains(protonionBeam)) btype = AliMagF::kBeamTypepA;
+  else if (btypestr.Contains(ionprotonBeam)) btype = AliMagF::kBeamTypeAp;
+  else AliInfoGeneral("AliMagF",Form("Assume no LHC magnet field for the beam type %s !",beamType.Data()));
+  
+  TGeoGlobalMagField::Instance()->SetField(new AliMagF("fld", "fld", l3Polarity ? -1:1, diPolarity ? -1:1,
+						       AliMagF::k5kG, btype, beamEnergy, 2, 15., fField.Data()));
   TGeoGlobalMagField::Instance()->Lock();
   AliInfo("Running with the B field constructed out of GRP and custom field map !");
   
