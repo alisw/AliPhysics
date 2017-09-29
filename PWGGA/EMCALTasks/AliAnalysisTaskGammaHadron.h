@@ -28,7 +28,7 @@ virtual ~AliAnalysisTaskGammaHadron();
   void                        SetEffHistGamma(THnF *h)                              { fHistEffGamma    = h      ; }
   void                        SetEffHistHadron(THnF *h)                             { fHistEffHadron   = h      ; }
   void                        SetSavePool(Bool_t input)                             { fSavePool        = input  ; }
-  void                        SetPlotMore(Bool_t input)                             { fPlotQA          = input  ; }
+  void                        SetPlotMore(Int_t input)                             { fPlotQA          = input  ; }
   void                        SetEvtTriggerType(UInt_t input)                       { fTriggerType     = input  ; }
   void                        SetEvtMixType(UInt_t input)                           { fMixingEventType = input  ; }
 //  void                        SetCutsId(Id, cent, ptCl,Ecl,,.... UInt_t input)      { fMixingEventType = input  ; }
@@ -85,7 +85,7 @@ virtual ~AliAnalysisTaskGammaHadron();
   Bool_t                      fSEvMEv;                   ///< This option performs the analysis either for same event or for mixed event analysis
   Bool_t                      fDebug;			        ///< Can be set for debugging
   Bool_t                      fSavePool;                 ///< Defines whether to save output pools in a root file
-  Bool_t                      fPlotQA;                   ///< plot additional QA histograms
+  Int_t                       fPlotQA;                   ///< plot additional QA histograms
   Bool_t                      fUseManualEventCuts;       ///< Use manual cuts if automatic setup is not available for the period
 
   //..Input histograms
