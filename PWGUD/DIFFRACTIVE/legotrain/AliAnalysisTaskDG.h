@@ -12,6 +12,8 @@ class AliESDHeader;
 class AliVTrack;
 class AliESDtrackCuts;
 
+#include <algorithm>
+
 #include <TObject.h>
 #include <TString.h>
 #include <TBits.h>
@@ -62,8 +64,7 @@ public:
       , fCharge(0)
       , fL2Inputs(0)
       , fOrbitID(0) {
-      for (Int_t i=0; i<4; ++i)
-	fnTrklet[i] = 0;
+      std::fill_n(fnTrklet, 4, 0);
       fnFO[0] = fnFO[1] = 0;
     }
 
@@ -95,11 +96,14 @@ public:
     ADV0() {
       for (Int_t i=0; i<2; ++i) {
 	fTime[i] = -10240.0f;
-	fBB[i] = fBG[i] = fMult[i] = -1;
+	fBB[i] = fBG[i];
 	fDecisionOnline[i] = fDecisionOffline[i] = -1;
       }
-      for (Int_t bc=0; bc<21; ++bc)
-	fPFBBA[bc] = fPFBBC[bc] = fPFBGA[bc] = fPFBGC[bc] = 0;
+      std::fill_n(fMult,   8, -1);
+      std::fill_n(fPFBBA, 21,  0);
+      std::fill_n(fPFBBC, 21,  0);
+      std::fill_n(fPFBGA, 21,  0);
+      std::fill_n(fPFBGC, 21,  0);
     }
 
     void FillAD(const AliVEvent *, AliTriggerAnalysis &);
@@ -116,7 +120,7 @@ public:
     Double32_t fPFBBC[21];          //[0,32,5]
     Double32_t fPFBGA[21];          //[0,32,5]
     Double32_t fPFBGC[21];          //[0,32,5]
-    Float_t    fMult[2];            // C-, A-side multiplicity
+    Float_t    fMult[8];            // multiplicity per ring
   } ;
 
   struct FMD {
@@ -166,9 +170,9 @@ public:
       , fFilterMap(0)
       , fFlags(0) {
       fPIDStatus[0] = fPIDStatus[1] = fPIDStatus[2] = AliPIDResponse::kDetNoSignal;
-      for (Int_t i=0; i<AliPID::kSPECIES; ++i) {
-	fNumSigmaITS[i] = fNumSigmaTPC[i] = fNumSigmaTOF[i] = -32.0f;
-      }
+      std::fill_n(fNumSigmaITS, AliPID::kSPECIES, -32.0f);
+      std::fill_n(fNumSigmaTPC, AliPID::kSPECIES, -32.0f);
+      std::fill_n(fNumSigmaTOF, AliPID::kSPECIES, -32.0f);
       fChipKey[0] = fChipKey[1] = -1;
       fStatus[0]  = fStatus[1]  = -1;
       Fill(tr, pidResponse);

@@ -62,9 +62,11 @@ void AliAnalysisTaskDG::EventInfo::Fill(const AliVEvent* vEvent) {
 void AliAnalysisTaskDG::ADV0::FillInvalid() {
   fTime[0] = fTime[1] = -10240.0f;
   fBB[0] = fBG[0] = fBB[1] = fBG[1] = -1;
-  fMult[0] = fMult[1] = -1;
-  for (Int_t bc=0; bc<21; ++bc)
-    fPFBBA[bc] = fPFBBC[bc] = fPFBGA[bc] = fPFBGC[bc] = 0;
+  std::fill_n(fMult,   8, -1);
+  std::fill_n(fPFBBA, 21,  0);
+  std::fill_n(fPFBBC, 21,  0);
+  std::fill_n(fPFBGA, 21,  0);
+  std::fill_n(fPFBGC, 21,  0);
 }
 
 void AliAnalysisTaskDG::ADV0::FillAD(const AliVEvent *vEvent, AliTriggerAnalysis &trigAna) {
@@ -83,15 +85,15 @@ void AliAnalysisTaskDG::ADV0::FillAD(const AliVEvent *vEvent, AliTriggerAnalysis
   fTime[1] = vAD->GetADATime();
 
   fBB[0] = fBB[1] = fBG[0] = fBG[1] = 0;
-  fMult[0] = fMult[1] = 0;
   for (Int_t ch=0; ch<4; ++ch) {
     fBB[0] += (vAD->GetBBFlag(ch  ) && vAD->GetBBFlag(ch+ 4));
     fBB[1] += (vAD->GetBBFlag(ch+8) && vAD->GetBBFlag(ch+12));
     fBG[0] += (vAD->GetBGFlag(ch  ) && vAD->GetBGFlag(ch+ 4));
     fBG[1] += (vAD->GetBGFlag(ch+8) && vAD->GetBGFlag(ch+12));
-    fMult[0] += vAD->GetMultiplicity(ch)   + vAD->GetMultiplicity(ch+ 4);
-    fMult[1] += vAD->GetMultiplicity(ch+8) + vAD->GetMultiplicity(ch+12);
   }
+  std::fill_n(fMult, 8, 0);
+  for (Int_t ch=0; ch<16; ++ch)
+    fMult[ch/4] += vAD->GetMultiplicity(ch);
 
   for (Int_t bc=0; bc<21; ++bc) {
     fPFBBA[bc] = fPFBBC[bc] = fPFBGA[bc] = fPFBGC[bc] = 0;
@@ -121,11 +123,11 @@ void AliAnalysisTaskDG::ADV0::FillV0(const AliVEvent *vEvent, AliTriggerAnalysis
   fTime[1] = vV0->GetV0ATime();
 
   fBB[0] = fBB[1] = fBG[0] = fBG[1] = 0;
-  fMult[0] = fMult[1] = 0;
+  std::fill_n(fMult, 8, 0);
   for (Int_t ch=0; ch<64; ++ch) {
-    fBB[ch/32]   += vV0->GetBBFlag(ch);
-    fBG[ch/32]   += vV0->GetBGFlag(ch);
-    fMult[ch/32] += vV0->GetMultiplicity(ch);
+    fBB[ch/32]  += vV0->GetBBFlag(ch);
+    fBG[ch/32]  += vV0->GetBGFlag(ch);
+    fMult[ch/8] += vV0->GetMultiplicity(ch);
   }
 
   for (Int_t bc=0; bc<21; ++bc) {
@@ -300,9 +302,8 @@ AliAnalysisTaskDG::AliAnalysisTaskDG(const char *name)
   , fMCTracks("TLorentzVector", 2)
   , fTrackCuts(nullptr)
 {
-  for (Int_t i=0; i<kNHist;++i) {
-    fHist[i] = nullptr;
-  }
+  std::fill_n(fHist, kNHist, nullptr);
+
   DefineOutput(1, TList::Class());
   DefineOutput(2, TTree::Class());
 }
@@ -617,6 +618,7 @@ void AliAnalysisTaskDG::UserExec(Option_t *)
 
   Bool_t cutNotV0           = kFALSE;
   Bool_t useOnly2Trk        = kFALSE;
+  Bool_t useOnly4Trk        = kFALSE;
   Bool_t requireAtLeast2Trk = kFALSE;
 
   Bool_t selected = (fTriggerSelection == "");
@@ -625,6 +627,7 @@ void AliAnalysisTaskDG::UserExec(Option_t *)
     // fTriggerSelection can be "CLASS1|CLASS2&NotV0|CLASS3&Only2Trk|CLASS4&AtLeast2Trk"
     Int_t sumCutNotV0(0);
     Int_t sumUseOnly2Trk(0);
+    Int_t sumUseOnly4Trk(0);
     Int_t sumRequireAtLeast2Trk(0);
 
     Int_t   counter     = 0;
@@ -638,6 +641,7 @@ void AliAnalysisTaskDG::UserExec(Option_t *)
       if ( tcName.Tokenize(tok, from_tok, "&")) {
 	sumCutNotV0           += (tok == "NotV0");
 	sumUseOnly2Trk        += (tok == "Only2Trk");
+	sumUseOnly4Trk        += (tok == "Only4Trk");
 	sumRequireAtLeast2Trk += (tok == "AtLeast2Trk");
 	++counter;
       }
@@ -646,11 +650,12 @@ void AliAnalysisTaskDG::UserExec(Option_t *)
     selected           = (counter != 0);
     cutNotV0           = (counter == sumCutNotV0);
     useOnly2Trk        = (counter == sumUseOnly2Trk);
+    useOnly4Trk        = (counter == sumUseOnly4Trk);
     requireAtLeast2Trk = (counter == sumRequireAtLeast2Trk);
   }
 
-  AliDebugF(5, "selected: %d (%d,%d,%d) %s ", selected,
-	    cutNotV0, useOnly2Trk, requireAtLeast2Trk,
+  AliDebugF(5, "selected: %d (%d,%d,%d,%d) %s ", selected,
+	    cutNotV0, useOnly2Trk, useOnly4Trk, requireAtLeast2Trk,
 	    vEvent->GetFiredTriggerClasses().Data());
   if (!selected)
     return;
@@ -690,8 +695,7 @@ void AliAnalysisTaskDG::UserExec(Option_t *)
   fIR1InteractionMap = vHeader->GetIRInt1InteractionMap();
   fIR2InteractionMap = vHeader->GetIRInt2InteractionMap();
 
-  for (Int_t i=0; i<4; ++i)
-    fTreeData.fEventInfo.fnTrklet[i] = 0;
+  std::fill_n(fTreeData.fEventInfo.fnTrklet, 4, 0);
   for (Int_t i=0, n=mult->GetNumberOfTracklets(); i<n; ++i) {
     const Double_t eta = -TMath::Log(TMath::Tan(0.5*mult->GetTheta(i)));
     fTreeData.fEventInfo.fnTrklet[0] += 1;           // all tracklets
@@ -723,13 +727,14 @@ void AliAnalysisTaskDG::UserExec(Option_t *)
   if (useOnly2Trk && fTreeData.fEventInfo.fnTrk != 2)
     return;
 
+  if (useOnly4Trk && fTreeData.fEventInfo.fnTrk != 4)
+    return;
+
   if (requireAtLeast2Trk && fTreeData.fEventInfo.fnTrk < 2)
     return;
 
   for (Int_t i=0, n=oa->GetEntries(); i<n; ++i)
-    fTreeData.fEventInfo.fCharge += (GetTrackSign(dynamic_cast<AliVTrack*>(oa->At(i))) > 0
-				     ? +1
-				     : -1);
+    fTreeData.fEventInfo.fCharge += 2*(GetTrackSign(dynamic_cast<AliVTrack*>(oa->At(i))) > 0) - 1;
 
   TClonesArrayGuard guardTrackData(fTrackData);
   if (oa->GetEntries() <= fMaxTracksSave)  {
