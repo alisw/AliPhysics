@@ -618,6 +618,7 @@ void AliAnalysisTaskDG::UserExec(Option_t *)
 
   Bool_t cutNotV0           = kFALSE;
   Bool_t useOnly2Trk        = kFALSE;
+  Bool_t useOnly4Trk        = kFALSE;
   Bool_t requireAtLeast2Trk = kFALSE;
 
   Bool_t selected = (fTriggerSelection == "");
@@ -626,6 +627,7 @@ void AliAnalysisTaskDG::UserExec(Option_t *)
     // fTriggerSelection can be "CLASS1|CLASS2&NotV0|CLASS3&Only2Trk|CLASS4&AtLeast2Trk"
     Int_t sumCutNotV0(0);
     Int_t sumUseOnly2Trk(0);
+    Int_t sumUseOnly4Trk(0);
     Int_t sumRequireAtLeast2Trk(0);
 
     Int_t   counter     = 0;
@@ -639,6 +641,7 @@ void AliAnalysisTaskDG::UserExec(Option_t *)
       if ( tcName.Tokenize(tok, from_tok, "&")) {
 	sumCutNotV0           += (tok == "NotV0");
 	sumUseOnly2Trk        += (tok == "Only2Trk");
+	sumUseOnly4Trk        += (tok == "Only4Trk");
 	sumRequireAtLeast2Trk += (tok == "AtLeast2Trk");
 	++counter;
       }
@@ -647,11 +650,12 @@ void AliAnalysisTaskDG::UserExec(Option_t *)
     selected           = (counter != 0);
     cutNotV0           = (counter == sumCutNotV0);
     useOnly2Trk        = (counter == sumUseOnly2Trk);
+    useOnly4Trk        = (counter == sumUseOnly4Trk);
     requireAtLeast2Trk = (counter == sumRequireAtLeast2Trk);
   }
 
-  AliDebugF(5, "selected: %d (%d,%d,%d) %s ", selected,
-	    cutNotV0, useOnly2Trk, requireAtLeast2Trk,
+  AliDebugF(5, "selected: %d (%d,%d,%d,%d) %s ", selected,
+	    cutNotV0, useOnly2Trk, useOnly4Trk, requireAtLeast2Trk,
 	    vEvent->GetFiredTriggerClasses().Data());
   if (!selected)
     return;
@@ -721,6 +725,9 @@ void AliAnalysisTaskDG::UserExec(Option_t *)
   fTreeData.fEventInfo.fCharge = 0;
 
   if (useOnly2Trk && fTreeData.fEventInfo.fnTrk != 2)
+    return;
+
+  if (useOnly4Trk && fTreeData.fEventInfo.fnTrk != 4)
     return;
 
   if (requireAtLeast2Trk && fTreeData.fEventInfo.fnTrk < 2)
