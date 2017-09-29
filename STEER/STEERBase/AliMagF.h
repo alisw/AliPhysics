@@ -29,6 +29,8 @@ class AliMagF : public TVirtualMagField
   AliMagF(const char *name, const char* title,Double_t factorSol=1., Double_t factorDip=1., 
 	  BMap_t maptype = k5kG, BeamType_t btype=kBeamTypepp, Double_t benergy=-1, float a2z=1.0,
 	  Int_t integ=2, Double_t fmax=15,const char* path="$(ALICE_ROOT)/data/maps/mfchebKGI_sym.root");
+  AliMagF(const char *name, const char* title,Double_t factorSol, Double_t factorDip, 
+	  BMap_t maptype, BeamType_t btype, Double_t benergy, Int_t integ, Double_t fmax,const char* path="$(ALICE_ROOT)/data/maps/mfchebKGI_sym.root");
   AliMagF(const AliMagF& src);             
   AliMagF& operator=(const AliMagF& src);
   virtual ~AliMagF();
