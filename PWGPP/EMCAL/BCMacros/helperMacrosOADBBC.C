@@ -12,6 +12,7 @@
 /// root [0] .L helperMacrosOADBBC.C++                          <br>
 /// root [1] Sort_RunNumbers("LHC16o",663,"runList.txt")        <br>
 /// root [2] Test_OADB("LHC16k",804,0,"runList16k.txt")         <br>
+/// root [3] Plot_CellList("LHC15o",771,"1","List115o.txt")         <br>
 ///
 /// \author Eliane Epple <eliane.epple@yale.edu>, Yale University
 /// \date June 29, 2017
@@ -118,10 +119,10 @@ void Test_OADB(TString period="LHC15n",Int_t trainNo=603,TString version="INT7Em
     Int_t nRuns=RunIdVec.size();
 	//......................................................
 	//..Get the OADB information
-	//TString fBasePath="/Users/Eliane/Software/alice/sw/osx_x86-64/AliPhysics/latest-ali-master/OADB/EMCAL"; //..from AliPhysics
-	TString fBasePath="/Users/Eliane/Software/BadChannelAnalysis"; //..locally from OADB commit/e-mail to test quickly
+    //TString fBasePath="/Users/Eliane/Software/alice/sw/osx_x86-64/AliPhysics/latest-ali-master/OADB/EMCAL"; //..from AliPhysics
+    TString fBasePath="/Users/Eliane/Software/BadChannelAnalysis"; //..locally from OADB commit/e-mail to test quickly
 
-	AliOADBContainer *cont=new AliOADBContainer("");
+    AliOADBContainer *cont=new AliOADBContainer("");
 	cont->InitFromFile(Form("%s/EMCALBadChannels.root",fBasePath.Data()),"AliEMCALBadChannels");
 	//......................................................
 	//..Get the .root file with the original histogram to compare if they coincide
@@ -272,13 +273,13 @@ void Test_OADB(TString period="LHC15n",Int_t trainNo=603,TString version="INT7Em
 		else             C4   ->Print(Form("%s",summaryPDF.Data()));
 	}//end of run loop
 	cout<<"==Total Summary=="<<endl;
+	//..print runs without a correct map.
 	cout<<"Runs with a bad map ("<<RunsWithMap.size()<<"): "<<flush;
 	for(Int_t i=0;i<(Int_t)RunsWithMap.size();i++)
 	{
 		cout<<RunsWithMap.at(i)<<","<<flush;
 	}
 	cout<<endl;
-	//..print runs without a correct map.
 	cout<<"Runs without a bad map ("<<RunsWithoutMap.size()<<"): "<<flush;
 	for(Int_t i=0;i<(Int_t)RunsWithoutMap.size();i++)
 	{
@@ -286,3 +287,120 @@ void Test_OADB(TString period="LHC15n",Int_t trainNo=603,TString version="INT7Em
 	}
 	cout<<endl;
 }
+///
+/// After OADB maps are online you will get
+/// suggestions from other users that think certain
+/// channels should be masked. You can look at them here
+///________________________________________________________________________
+void Plot_CellList(TString period="LHC15n",Int_t trainNo=603,TString version="5",TString cellList="")
+{
+	//......................................................
+	//..open the text file and save the run IDs into the RunId[] array
+	cout<<"o o o Open .txt file with run indices. Name = " << cellList << endl;
+	FILE *pFile = fopen(cellList.Data(), "r");
+	if(!pFile)
+	{
+		cout<<"couldn't open file "<<cellList<<"!"<<endl;
+		return;
+	}
+	Int_t q;
+	Int_t ncols;
+	Int_t nlines = 0 ;
+	Int_t cellId[500] ;
+	std::vector<Int_t> cellIdVec;
+	while (1)
+	{
+		ncols = fscanf(pFile,"  %d ",&q);
+		if (ncols< 0) break;
+		cellId[nlines]=q;
+		cellIdVec.push_back(q);
+		nlines++;
+	}
+	fclose(pFile);
+	//..sort the vector by size to be shure to use the right order
+	std::sort (cellIdVec.begin(), cellIdVec.end());
+    Int_t nCells=cellIdVec.size();
+
+	//......................................................
+	//..Get the .root file with the original histogram to compare if they coincide
+	TString path        = Form("/Users/Eliane/Software/BadChannelAnalysis/AnalysisOutput/%s/Train_%i/Version%s",period.Data(),trainNo,version.Data());
+	TString rootFileName= Form("%s_INT7_Histograms_V%s.root",period.Data(),version.Data());
+	TFile* outputRoot   = TFile::Open(Form("%s/%s",path.Data(),rootFileName.Data()));
+	if(!outputRoot)cout<<"File "<<outputRoot->GetName()<<" does not exist"<<endl;
+	TH2F* h2DAmp   =(TH2F*)outputRoot->Get("hCellAmplitude");
+	TH2F* h2DRatio =(TH2F*)outputRoot->Get("ratio2DAmp");
+
+	TCanvas *c1 = new TCanvas(1);
+	c1->Divide(2);
+	c1->cd(1);
+	h2DAmp->Draw("colz");
+	c1->cd(2);
+	h2DRatio->Draw("colz");
+
+
+
+	Int_t totalperCv = 16;
+	Int_t nPad = TMath::Sqrt(totalperCv);
+	Int_t nCv  = nCells/totalperCv+1;
+	if(nCv<1)nCv=1;
+
+	cout<<"    o create: "<<nCv<<" Canvases with "<<nPad*nPad<<" pads"<<endl;
+	//..to compare specific cells over the runs
+	TCanvas **cComp     = new TCanvas*[nCv];
+	TCanvas **cCompR     = new TCanvas*[nCv];
+	for(Int_t i=0;i<nCv;i++)
+	{
+		cComp[i]    = new TCanvas(TString::Format("CompareGood%d", i), TString::Format("V) Candidates (%d/%d)", i+1, nCv), 1000,750);
+		cComp[i]    ->Divide(nPad,nPad,0.001,0.001);
+		cCompR[i]    = new TCanvas(TString::Format("CompareGoodR%d", i), TString::Format("V) Ratio (%d/%d)", i+1, nCv), 1000,750);
+		cCompR[i]    ->Divide(nPad,nPad,0.001,0.001);
+	}
+	cout<<"    o Fill Canvases with bad cells canvases"<<endl;
+
+	for(Int_t icell = 0; icell < nCells; icell++)
+	{
+		TH1D *htmpCellAllRuns     =h2DAmp->ProjectionX(TString::Format("hIDProj_cell%d", icell), icell+1, icell+1);
+		cout<<"cell number:"<<cellIdVec.at(icell)<<endl;
+		cComp[(icell)/totalperCv]->cd(((icell)%totalperCv)+1)->SetLogy();
+		//SetHisto(htmpCellAllRuns,Form("Energy of cell %i",cellIdVec.at(icell)),"Number of Hits",0);
+		//htmpCellAllRuns->GetXaxis()->SetRangeUser(0,3);
+		htmpCellAllRuns->Draw("hist");
+
+
+		TH1D *htmpCellRatioAllRuns     =h2DRatio->ProjectionX(TString::Format("hIDRatioProj_cell%d", icell), icell+1, icell+1);
+		cout<<"cell number:"<<cellIdVec.at(icell)<<endl;
+		cCompR[(icell)/totalperCv]->cd(((icell)%totalperCv)+1)->SetLogy();
+		//SetHisto(htmpCellAllRuns,Form("Energy of cell %i",cellIdVec.at(icell)),"Number of Hits",0);
+		//htmpCellAllRuns->GetXaxis()->SetRangeUser(0,3);
+		htmpCellRatioAllRuns->Draw("hist");
+}
+
+	TString pdfName="MoreBadCellsCandidates.pdf";
+	//..plot the canvases of cells into a .pdf file
+	for(Int_t can=0;can<nCv;can++)
+	{
+		//TString internal_pdfName1=pdfName+"Low.pdf";
+		if(can==0)
+		{
+			//..first pad
+			//internal_pdfName1 +="(";
+			cComp[can]    ->Print(Form("%s(",pdfName.Data()));
+		}
+		else if(can==(nCv-1))
+		{
+			//..last pad
+			//internal_pdfName1 +=")";
+			cComp[can]    ->Print(Form("%s)",pdfName.Data()));
+		}
+		else
+		{
+			//..all pads in between
+			cComp[can]    ->Print(Form("%s",pdfName.Data()));
+		}
+	}
+
+
+
+}
+
+
