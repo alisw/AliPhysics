@@ -157,6 +157,69 @@ AliMagF::AliMagF(const char *name, const char* title, Double_t factorSol, Double
 }
 
 //_______________________________________________________________________
+AliMagF::AliMagF(const char *name, const char* title, Double_t factorSol, Double_t factorDip, 
+		 BMap_t maptype, BeamType_t bt, Double_t be,
+		 Int_t integ, Double_t fmax, const char* path):
+  TVirtualMagField(name),
+  fMeasuredMap(0),
+  fFastField(0),
+  fMapType(maptype),
+  fSolenoid(0),
+  fBeamType(bt),
+  fBeamEnergy(be),
+  //
+  fInteg(integ),
+  fPrecInteg(1),
+  fFactorSol(1.),
+  fFactorDip(1.),
+  fMax(fmax),
+  fDipoleOFF(factorDip==0.),
+  //
+  fQuadGradient(0),
+  fDipoleField(0),
+  fCCorrField(0), 
+  fACorr1Field(0),
+  fACorr2Field(0),
+  fParNames("","")
+{
+  // Initialize the field with Geant integration option "integ" and max field "fmax,
+  // Impose scaling of parameterized L3 field by factorSol and of dipole by factorDip.
+  // The "be" is the energy of the beam in GeV/nucleon
+  //
+  SetTitle(title);
+  if(integ<0 || integ > 2) {
+    AliWarning(Form("Invalid magnetic field flag: %5d; Helix tracking chosen instead",integ));
+    fInteg = 2;
+  }
+  if (fInteg == 0) fPrecInteg = 0;
+  //
+  if (fBeamEnergy<=0 && fBeamType!=kNoBeamField) {
+    if      (fBeamType == kBeamTypepp) fBeamEnergy = 7000.; // max proton energy
+    else if (fBeamType == kBeamTypeAA) fBeamEnergy = 2760;  // max PbPb energy
+    else if (fBeamType == kBeamTypepA || fBeamType == kBeamTypeAp) fBeamEnergy = 2760;  // same rigitiy max PbPb energy
+    AliInfo("Maximum possible beam energy for requested beam is assumed");
+  } 
+  const char* parname = 0;
+  //  
+  if      (fMapType == k2kG) parname = fDipoleOFF ? "Sol12_Dip0_Hole":"Sol12_Dip6_Hole";
+  else if (fMapType == k5kG) parname = fDipoleOFF ? "Sol30_Dip0_Hole":"Sol30_Dip6_Hole";
+  else if (fMapType == k5kGUniform) parname = "Sol30_Dip6_Uniform";
+  else AliFatal(Form("Unknown field identifier %d is requested\n",fMapType));
+  //
+  SetDataFileName(path);
+  SetParamName(parname);
+  //
+  LoadParameterization();
+  InitMachineField(fBeamType,fBeamEnergy);
+  double xyz[3]={0.,0.,0.};
+  fSolenoid = GetBz(xyz);
+  SetFactorSol(factorSol);
+  SetFactorDip(factorDip);
+  AllowFastField( GetFastFieldDefault() );
+  Print("a");
+}
+
+//_______________________________________________________________________
 AliMagF::AliMagF(const AliMagF &src):
   TVirtualMagField(src),
   fMeasuredMap(0),
