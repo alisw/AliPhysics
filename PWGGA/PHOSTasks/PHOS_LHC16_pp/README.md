@@ -39,7 +39,7 @@ alienHandler->SetOutputFiles(files);
 ## Class hierarchy
 
 ```c++
-AliAnalysisTaskPP            //  Main analysis 
+AliAnalysisTaskPP13            //  Main analysis 
 └───   MixingSample
 └───   PhotonSelection         
         └───   PhysPhotonSelection   // Fills all histograms needed to reconstruct $\pi^{0}$s

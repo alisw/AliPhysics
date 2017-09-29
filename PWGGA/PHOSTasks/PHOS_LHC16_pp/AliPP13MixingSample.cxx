@@ -1,16 +1,16 @@
 // --- Custom libraries ---
-#include "MixingSample.h"
+#include "AliPP13MixingSample.h"
 
 
-ClassImp(MixingSample)
+ClassImp(AliPP13MixingSample)
 
-MixingSample::MixingSample():
+AliPP13MixingSample::AliPP13MixingSample():
 	TObject(),
 	fPool(),
 	fPoolSize(0)
 {}
 
-MixingSample::MixingSample(Int_t psize):
+AliPP13MixingSample::AliPP13MixingSample(Int_t psize):
 	TObject(),
 	fPool(),
 	fPoolSize(psize)
@@ -22,7 +22,7 @@ MixingSample::MixingSample(Int_t psize):
 	}
 }
 
-MixingSample::~MixingSample()
+AliPP13MixingSample::~AliPP13MixingSample()
 {
 	for (Int_t i = 0; i < 10; ++i)
 	{
@@ -30,7 +30,7 @@ MixingSample::~MixingSample()
 	}
 }
 
-TList * MixingSample::GetPool(EventFlags & e)
+TList * AliPP13MixingSample::GetPool(EventFlags & e)
 {
 	Int_t zbin = Int_t((e.vtxBest[2] + 10.) / 2.);
 	if (zbin < 0) zbin = 0;
@@ -39,7 +39,7 @@ TList * MixingSample::GetPool(EventFlags & e)
 	return fPool[zbin];
 }
 
-void MixingSample::UpdatePool(const TObjArray & clusters, EventFlags & e)
+void AliPP13MixingSample::UpdatePool(const TObjArray & clusters, EventFlags & e)
 {
 	TList * pool = GetPool(e);
 

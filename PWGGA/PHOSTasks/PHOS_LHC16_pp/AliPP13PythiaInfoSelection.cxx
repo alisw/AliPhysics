@@ -1,5 +1,5 @@
 // --- Custom header files ---
-#include "PythiaInfoSelection.h"
+#include "AliPP13PythiaInfoSelection.h"
 
 // --- ROOT system ---
 #include <TProfile.h>
@@ -16,13 +16,13 @@
 using namespace std;
 
 
-ClassImp(PythiaInfoSelection);
+ClassImp(AliPP13PythiaInfoSelection);
 
 //________________________________________________________________
-void PythiaInfoSelection::CountMBEvent()
+void AliPP13PythiaInfoSelection::CountMBEvent()
 {
 
-	PhotonSelection::CountMBEvent();
+	AliPP13PhotonSelection::CountMBEvent();
 
 	// Fetch the histgram file
 	TTree * tree = AliAnalysisManager::GetAnalysisManager()->GetTree();
@@ -69,7 +69,7 @@ void PythiaInfoSelection::CountMBEvent()
 }
 
 //________________________________________________________________
-void PythiaInfoSelection::FillPi0Mass(TObjArray * clusArray, TList * pool, const EventFlags & eflags)
+void AliPP13PythiaInfoSelection::FillPi0Mass(TObjArray * clusArray, TList * pool, const EventFlags & eflags)
 {
 	(void) clusArray;
 	(void) pool;
@@ -78,7 +78,7 @@ void PythiaInfoSelection::FillPi0Mass(TObjArray * clusArray, TList * pool, const
 }
 
 //________________________________________________________________
-void PythiaInfoSelection::InitSelectionHistograms()
+void AliPP13PythiaInfoSelection::InitSelectionHistograms()
 {
 
 	fXsec = new TH1F("hXsec", "xsec from pyxsec.root", 1, 0, 1);

@@ -5,8 +5,9 @@
 #include <TObjArray.h>
 #include <TROOT.h>
 
+#include "AliAnalysisTaskPP13.h"
+
 // --- AliRoot header files ---
-#include "AliAnalysisTaskPP.h"
 #include "AliAnalysisManager.h"
 #include <AliVEvent.h>
 #include <AliVCaloCells.h>
@@ -23,10 +24,10 @@
 #include <AliMCEvent.h>
 
 
-ClassImp(AliAnalysisTaskPP)
+ClassImp(AliAnalysisTaskPP13)
 
 //________________________________________________________________
-AliAnalysisTaskPP::AliAnalysisTaskPP() : AliAnalysisTaskSE(),
+AliAnalysisTaskPP13::AliAnalysisTaskPP13() : AliAnalysisTaskSE(),
 	fPreviousEvents(0),
 	fSelections(0),
 	fPHOSBadMap(),
@@ -38,7 +39,7 @@ AliAnalysisTaskPP::AliAnalysisTaskPP() : AliAnalysisTaskSE(),
 }
 
 //________________________________________________________________
-AliAnalysisTaskPP::AliAnalysisTaskPP(const char * name, TList * selections, Int_t nmix):
+AliAnalysisTaskPP13::AliAnalysisTaskPP13(const char * name, TList * selections, Int_t nmix):
 	AliAnalysisTaskSE(name),
 	fPreviousEvents(0),
 	fSelections(selections),
@@ -54,7 +55,7 @@ AliAnalysisTaskPP::AliAnalysisTaskPP(const char * name, TList * selections, Int_
 }
 
 //________________________________________________________________
-AliAnalysisTaskPP::~AliAnalysisTaskPP()
+AliAnalysisTaskPP13::~AliAnalysisTaskPP13()
 {
 	if (!AliAnalysisManager::GetAnalysisManager()->IsProofMode()) delete fSelections;
 	if (fBadCells) delete [] fBadCells;
@@ -62,21 +63,21 @@ AliAnalysisTaskPP::~AliAnalysisTaskPP()
 }
 
 //________________________________________________________________
-void AliAnalysisTaskPP::UserCreateOutputObjects()
+void AliAnalysisTaskPP13::UserCreateOutputObjects()
 {
 	// Initialization of all outputs
 	for (int i = 0; i < fSelections->GetEntries(); ++i)
 	{
-		PhotonSelection * selection = dynamic_cast<PhotonSelection *> (fSelections->At(i));
+		AliPP13PhotonSelection * selection = dynamic_cast<AliPP13PhotonSelection *> (fSelections->At(i));
 		selection->InitSummaryHistograms();
 		PostData(i + 1, selection->GetListOfHistos()); // Output starts from 1
 	}
 
-	fPreviousEvents = new MixingSample(fNMixedEvents);
+	fPreviousEvents = new AliPP13MixingSample(fNMixedEvents);
 }
 
 //________________________________________________________________
-void AliAnalysisTaskPP::UserExec(Option_t *)
+void AliAnalysisTaskPP13::UserExec(Option_t *)
 {
 	// Does the job for one event
 
@@ -91,7 +92,7 @@ void AliAnalysisTaskPP::UserExec(Option_t *)
 	// Count MB event before event cuts for every selection 
 	for (int i = 0; i < fSelections->GetEntries(); ++i) 
 	{
-		PhotonSelection * selection = dynamic_cast<PhotonSelection *> (fSelections->At(i));
+		AliPP13PhotonSelection * selection = dynamic_cast<AliPP13PhotonSelection *> (fSelections->At(i));
 		selection->CountMBEvent();
 	}
 
@@ -135,7 +136,7 @@ void AliAnalysisTaskPP::UserExec(Option_t *)
 	TList * pool = fPreviousEvents->GetPool(evtProperties);
 	for (int i = 0; i < fSelections->GetEntries(); ++i) // Fill and Post Data to outputs
 	{
-		PhotonSelection * selection = dynamic_cast<PhotonSelection *> (fSelections->At(i));
+		AliPP13PhotonSelection * selection = dynamic_cast<AliPP13PhotonSelection *> (fSelections->At(i));
 
 		if (!selection->SelectEvent(evtProperties))
 			continue;
@@ -149,7 +150,7 @@ void AliAnalysisTaskPP::UserExec(Option_t *)
 }
 
 //________________________________________________________________
-TClonesArray * AliAnalysisTaskPP::GetMCParticles(const AliVEvent * event) const
+TClonesArray * AliAnalysisTaskPP13::GetMCParticles(const AliVEvent * event) const
 {
 	// TODO: Handle the ESD case here
 	const AliAODEvent * aodevent = dynamic_cast<const AliAODEvent*>(event);
@@ -162,12 +163,12 @@ TClonesArray * AliAnalysisTaskPP::GetMCParticles(const AliVEvent * event) const
 }
 
 //________________________________________________________________
-void AliAnalysisTaskPP::Terminate(Option_t *)
+void AliAnalysisTaskPP13::Terminate(Option_t *)
 {
 }
 
 //________________________________________________________________
-Bool_t AliAnalysisTaskPP::EventSelected(const AliVEvent * event, EventFlags & eprops) const
+Bool_t AliAnalysisTaskPP13::EventSelected(const AliVEvent * event, EventFlags & eprops) const
 {
 	// pileup
 	if (event->IsPileupFromSPD(3, 0.8, 3., 2., 5.))
@@ -200,7 +201,7 @@ Bool_t AliAnalysisTaskPP::EventSelected(const AliVEvent * event, EventFlags & ep
 }
 
 //____________________________________________________________
-void AliAnalysisTaskPP::SetBadCells(Int_t badcells[], Int_t nbad)
+void AliAnalysisTaskPP13::SetBadCells(Int_t badcells[], Int_t nbad)
 {
 	// Set absId numbers for bad cells;
 	// clusters which contain a bad cell will be rejected.
@@ -222,7 +223,7 @@ void AliAnalysisTaskPP::SetBadCells(Int_t badcells[], Int_t nbad)
 }
 
 //________________________________________________________________
-Bool_t AliAnalysisTaskPP::CellInPhos(Int_t absId, Int_t & sm, Int_t & ix, Int_t & iz) const
+Bool_t AliAnalysisTaskPP13::CellInPhos(Int_t absId, Int_t & sm, Int_t & ix, Int_t & iz) const
 {
 	// Converts cell absId --> (sm,ix,iz);
 	AliPHOSGeometry * geomPHOS = AliPHOSGeometry::GetInstance();
@@ -242,7 +243,7 @@ Bool_t AliAnalysisTaskPP::CellInPhos(Int_t absId, Int_t & sm, Int_t & ix, Int_t 
 }
 
 //________________________________________________________________
-Bool_t AliAnalysisTaskPP::IsClusterBad(AliVCluster * clus) const
+Bool_t AliAnalysisTaskPP13::IsClusterBad(AliVCluster * clus) const
 {
 	// Returns true if cluster contains a bad cell
 	for (Int_t b = 0; b < fNBad; b++)
@@ -272,7 +273,7 @@ Bool_t AliAnalysisTaskPP::IsClusterBad(AliVCluster * clus) const
 }
 
 //________________________________________________________________
-void AliAnalysisTaskPP::SetBadMap(const char * filename)
+void AliAnalysisTaskPP13::SetBadMap(const char * filename)
 {
 	TFile * fBadMap = TFile::Open(filename);
 	if (!fBadMap->IsOpen())

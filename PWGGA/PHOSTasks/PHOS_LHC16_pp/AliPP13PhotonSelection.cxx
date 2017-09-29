@@ -1,6 +1,5 @@
 // --- Custom header files ---
-#include "PhotonSelection.h"
-// #include "AliAnalysisTaskPP.h"
+#include "AliPP13PhotonSelection.h"
 
 // --- ROOT system ---
 #include <TH2F.h>
@@ -15,9 +14,9 @@ using namespace std;
 
 
 
-ClassImp(PhotonSelection);
+ClassImp(AliPP13PhotonSelection);
 //________________________________________________________________
-void PhotonSelection::FillPi0Mass(TObjArray * clusArray, TList * pool, const EventFlags & eflags)
+void AliPP13PhotonSelection::FillPi0Mass(TObjArray * clusArray, TList * pool, const EventFlags & eflags)
 {
 	// Ensure that we are not doing mixing
 	EventFlags flags = eflags;
@@ -49,7 +48,7 @@ void PhotonSelection::FillPi0Mass(TObjArray * clusArray, TList * pool, const Eve
 }
 
 //________________________________________________________________
-void PhotonSelection::MixPhotons(TObjArray & photonCandidates, TList * pool, const EventFlags & eflags)
+void AliPP13PhotonSelection::MixPhotons(TObjArray & photonCandidates, TList * pool, const EventFlags & eflags)
 {
 	// Notify all selections that this is mixing
 	EventFlags mflags = eflags;
@@ -79,7 +78,7 @@ void PhotonSelection::MixPhotons(TObjArray & photonCandidates, TList * pool, con
 }
 
 //________________________________________________________________
-Int_t PhotonSelection::CheckClusterGetSM(const AliVCluster * clus, Int_t & x, Int_t & z) const
+Int_t AliPP13PhotonSelection::CheckClusterGetSM(const AliVCluster * clus, Int_t & x, Int_t & z) const
 {
 	// Apply common cluster cuts and return supermodule number on success.
 	// Return -1 if cuts not passed or an error occured.
@@ -113,7 +112,7 @@ Int_t PhotonSelection::CheckClusterGetSM(const AliVCluster * clus, Int_t & x, In
 }
 
 //________________________________________________________________
-TLorentzVector PhotonSelection::ClusterMomentum(const AliVCluster * c1, const EventFlags & eflags) const
+TLorentzVector AliPP13PhotonSelection::ClusterMomentum(const AliVCluster * c1, const EventFlags & eflags) const
 {
 	TLorentzVector p;
 	c1->GetMomentum(p, eflags.vtxBest);		
@@ -121,7 +120,7 @@ TLorentzVector PhotonSelection::ClusterMomentum(const AliVCluster * c1, const Ev
 }
 
 //________________________________________________________________
-void PhotonSelection::InitSummaryHistograms()
+void AliPP13PhotonSelection::InitSummaryHistograms()
 {
 	// Find better place to apply this
 	fListOfHistos = new TList();
@@ -159,14 +158,14 @@ void PhotonSelection::InitSummaryHistograms()
 }
 
 //________________________________________________________________
-void PhotonSelection::CountMBEvent()
+void AliPP13PhotonSelection::CountMBEvent()
 {
 	fEventCounter->Fill(EventFlags::kMB);
 }
 	
 
 //________________________________________________________________
-PhotonSelection::~PhotonSelection()
+AliPP13PhotonSelection::~AliPP13PhotonSelection()
 {
 	// Don't delete fEventCounter and other ROOT objects
 	// root has it's own memory management.
@@ -177,7 +176,7 @@ PhotonSelection::~PhotonSelection()
 
 
 //________________________________________________________________
-Bool_t PhotonSelection::SelectEvent(const EventFlags & flgs)
+Bool_t AliPP13PhotonSelection::SelectEvent(const EventFlags & flgs)
 {
 	// All events
 	fEventCounter->Fill(EventFlags::kGood);
@@ -202,7 +201,7 @@ Bool_t PhotonSelection::SelectEvent(const EventFlags & flgs)
 
 
 //________________________________________________________________
-void PhotonSelection::FillHistogram(const char * key, Double_t x, Double_t y, Double_t z)
+void AliPP13PhotonSelection::FillHistogram(const char * key, Double_t x, Double_t y, Double_t z)
 {
 	//FillHistogram
 	TObject * obj = fListOfHistos->FindObject(key);
@@ -232,7 +231,7 @@ void PhotonSelection::FillHistogram(const char * key, Double_t x, Double_t y, Do
 }
 
 //________________________________________________________________
-void PhotonSelection::SelectPhotonCandidates(const TObjArray * clusArray, TObjArray * candidates, const EventFlags & eflags)
+void AliPP13PhotonSelection::SelectPhotonCandidates(const TObjArray * clusArray, TObjArray * candidates, const EventFlags & eflags)
 {
 	// Don't return TObjArray: force user to handle candidates lifetime
 	Int_t sm, x, z;

@@ -98,20 +98,20 @@
 #pragma link C++ class AliAnalysisTaskCPV+;
 
 // LHC16_pp
-#pragma link C++ class ClusterCuts+;
-#pragma link C++ class DetectorHistogram+;
-#pragma link C++ class PhotonSelection+;
-#pragma link C++ class PhotonSpectrumSelection+;
-#pragma link C++ class QualityPhotonSelection+;
-#pragma link C++ class ParticlesHistogram+;
-#pragma link C++ class PhotonTimecutStudySelection+;
-#pragma link C++ class PhysPhotonSelection+;
-#pragma link C++ class TagAndProbeSelection+;
-#pragma link C++ class MesonSelectionMC+;
-#pragma link C++ class PythiaInfoSelection+;
-#pragma link C++ class PhysPhotonSelectionMC+;
-#pragma link C++ class NonlinearityScanSelection+;
-#pragma link C++ class MixingSample+;
-#pragma link C++ class AliAnalysisTaskPP+;
+#pragma link C++ class AliPP13ClusterCuts+;
+#pragma link C++ class AliPP13DetectorHistogram+;
+#pragma link C++ class AliPP13PhotonSelection+;
+#pragma link C++ class AliPP13PhotonSpectrumSelection+;
+#pragma link C++ class AliPP13QualityPhotonSelection+;
+#pragma link C++ class AliPP13ParticlesHistogram+;
+#pragma link C++ class AliPP13PhotonTimecutStudySelection+;
+#pragma link C++ class AliPP13PhysPhotonSelection+;
+#pragma link C++ class AliPP13TagAndProbeSelection+;
+#pragma link C++ class AliPP13MesonSelectionMC+;
+#pragma link C++ class AliPP13PythiaInfoSelection+;
+#pragma link C++ class AliPP13PhysPhotonSelectionMC+;
+#pragma link C++ class AliPP13NonlinearityScanSelection+;
+#pragma link C++ class AliPP13MixingSample+;
+#pragma link C++ class AliAnalysisTaskPP13+;
 
 #endif

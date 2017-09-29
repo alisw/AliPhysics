@@ -1,20 +1,20 @@
-#ifndef NONLINEARITYSCANSELECTION_H
-#define NONLINEARITYSCANSELECTION_H
+#ifndef ALIPP13NONLINEARITYSCANSELECTION_H
+#define ALIPP13NONLINEARITYSCANSELECTION_H
 
 // --- Custom header files ---
-#include "PhysPhotonSelection.h"
+#include "AliPP13PhysPhotonSelection.h"
 
 // --- AliRoot header files ---
 #include <AliVCluster.h>
 
-class NonlinearityScanSelection : public PhysPhotonSelection
+class AliPP13NonlinearityScanSelection : public AliPP13PhysPhotonSelection
 {
 	enum ScanSize {kNbinsA = 11, kNbinsSigma = 11};
 public:
-	NonlinearityScanSelection(): PhysPhotonSelection() {}
-	NonlinearityScanSelection(const char * name, const char * title, ClusterCuts cuts,
+	AliPP13NonlinearityScanSelection(): AliPP13PhysPhotonSelection() {}
+	AliPP13NonlinearityScanSelection(const char * name, const char * title, AliPP13ClusterCuts cuts,
 	                           Float_t nona = 0., Float_t nonsigma = 1., Float_t genergy = 1.):
-		PhysPhotonSelection(name, title, cuts),
+		AliPP13PhysPhotonSelection(name, title, cuts),
 		fInvariantMass(),
 		fMixInvariantMass(),
 		fNonA(nona),
@@ -49,8 +49,8 @@ protected:
 		return fNonSigma - fPrecisionSigma * kNbinsSigma / 2 + ib * fPrecisionSigma;
 	}
 
-	NonlinearityScanSelection(const NonlinearityScanSelection &);
-	NonlinearityScanSelection & operator = (const NonlinearityScanSelection &);
+	AliPP13NonlinearityScanSelection(const AliPP13NonlinearityScanSelection &);
+	AliPP13NonlinearityScanSelection & operator = (const AliPP13NonlinearityScanSelection &);
 
 private:
 
@@ -65,6 +65,6 @@ private:
 	Float_t fPrecisionA;
 	Float_t fPrecisionSigma;
 
-	ClassDef(NonlinearityScanSelection, 2)
+	ClassDef(AliPP13NonlinearityScanSelection, 2)
 };
 #endif

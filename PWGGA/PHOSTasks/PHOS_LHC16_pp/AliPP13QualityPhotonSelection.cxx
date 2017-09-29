@@ -1,6 +1,5 @@
 // --- Custom header files ---
-#include "QualityPhotonSelection.h"
-// #include "AliAnalysisTaskPP.h"
+#include "AliPP13QualityPhotonSelection.h"
 
 // --- AliRoot header files ---
 #include <AliPHOSGeometry.h>
@@ -9,10 +8,10 @@
 using namespace std;
 
 
-ClassImp(QualityPhotonSelection);
+ClassImp(AliPP13QualityPhotonSelection);
 
 //________________________________________________________________
-void QualityPhotonSelection::InitSelectionHistograms()
+void AliPP13QualityPhotonSelection::InitSelectionHistograms()
 {
 	// pi0 mass spectrum
 	Int_t nM       = 750;
@@ -46,14 +45,14 @@ void QualityPhotonSelection::InitSelectionHistograms()
 	for(Int_t i = 0; i < 2; ++i)
 	{
 		TString tenergy = Form(", E %s 1,", i == 0 ? "<" : ">");
-		fClusterNXZ[i] = new DetectorHistogram(new TH2F(Form("hCluNXZM_%d_", i), "Cluster N(X,Z)" + tenergy + " ; x; z", 64, 0.5, 64.5, 56, 0.5, 56.5), fListOfHistos, DetectorHistogram::kModules);
-		fClusterEXZ[i] = new DetectorHistogram(new TH2F(Form("hCluEXZM_%d_", i), "Cluster E(X,Z)" + tenergy + " ; x; z", 64, 0.5, 64.5, 56, 0.5, 56.5), fListOfHistos, DetectorHistogram::kModules);
+		fClusterNXZ[i] = new AliPP13DetectorHistogram(new TH2F(Form("hCluNXZM_%d_", i), "Cluster N(X,Z)" + tenergy + " ; x; z", 64, 0.5, 64.5, 56, 0.5, 56.5), fListOfHistos, AliPP13DetectorHistogram::kModules);
+		fClusterEXZ[i] = new AliPP13DetectorHistogram(new TH2F(Form("hCluEXZM_%d_", i), "Cluster E(X,Z)" + tenergy + " ; x; z", 64, 0.5, 64.5, 56, 0.5, 56.5), fListOfHistos, AliPP13DetectorHistogram::kModules);
 	}
 
 	// Time maps
-	fClusterTime    = new DetectorHistogram(new TH1F("hClusterTime", "Cluster Time scaled by E, ;t, s", 4800, -0.25 * 1e-6, 0.25 * 1e-6), fListOfHistos, DetectorHistogram::kModules);
-	fClusterEvsT    = new DetectorHistogram(new TH2F("hClusterEvsT", "Cluster energy vs time, ; cluster energy, GeV; time, s", 100, 0., 12., 1200, -0.25 * 1e-6, 0.25 * 1e-6), fListOfHistos, DetectorHistogram::kModules);
-	fClusterTimeMap = new DetectorHistogram(new TH2F("hClusterTimeMap", "Cluster time map, ; X; Z", 64, 0.5, 64.5, 56, 0.5, 56.5), fListOfHistos, DetectorHistogram::kModules);
+	fClusterTime    = new AliPP13DetectorHistogram(new TH1F("hClusterTime", "Cluster Time scaled by E, ;t, s", 4800, -0.25 * 1e-6, 0.25 * 1e-6), fListOfHistos, AliPP13DetectorHistogram::kModules);
+	fClusterEvsT    = new AliPP13DetectorHistogram(new TH2F("hClusterEvsT", "Cluster energy vs time, ; cluster energy, GeV; time, s", 100, 0., 12., 1200, -0.25 * 1e-6, 0.25 * 1e-6), fListOfHistos, AliPP13DetectorHistogram::kModules);
+	fClusterTimeMap = new AliPP13DetectorHistogram(new TH2F("hClusterTimeMap", "Cluster time map, ; X; Z", 64, 0.5, 64.5, 56, 0.5, 56.5), fListOfHistos, AliPP13DetectorHistogram::kModules);
 
 	for(Int_t i = 0; i < 2; ++i)
 	{
@@ -68,7 +67,7 @@ void QualityPhotonSelection::InitSelectionHistograms()
 
 
 //________________________________________________________________
-void QualityPhotonSelection::ConsiderPair(const AliVCluster * c1, const AliVCluster * c2, const EventFlags & eflags)
+void AliPP13QualityPhotonSelection::ConsiderPair(const AliVCluster * c1, const AliVCluster * c2, const EventFlags & eflags)
 {
 	TLorentzVector p1, p2, psum;
 	c1->GetMomentum(p1, eflags.vtxBest);
@@ -95,7 +94,7 @@ void QualityPhotonSelection::ConsiderPair(const AliVCluster * c1, const AliVClus
 
 
 //________________________________________________________________
-void QualityPhotonSelection::SelectPhotonCandidates(const TObjArray * clusArray, TObjArray * candidates, const EventFlags & eflags)
+void AliPP13QualityPhotonSelection::SelectPhotonCandidates(const TObjArray * clusArray, TObjArray * candidates, const EventFlags & eflags)
 {
 	// Don't return TObjArray: force user to handle candidates lifetime
 	Int_t sm, x, z;
@@ -153,7 +152,7 @@ void QualityPhotonSelection::SelectPhotonCandidates(const TObjArray * clusArray,
 
 // Default version defined in PHOSutils uses ideal geometry
 // use this instead
-Int_t QualityPhotonSelection::AbsId(Int_t x, Int_t z, Int_t sm) const
+Int_t AliPP13QualityPhotonSelection::AbsId(Int_t x, Int_t z, Int_t sm) const
 {
 	// Converts cell absId --> (sm,eta,phi);
 	// AliPHOSGeometry * geomPHOS = AliPHOSGeometry::GetInstance("Run2");
@@ -177,11 +176,11 @@ Int_t QualityPhotonSelection::AbsId(Int_t x, Int_t z, Int_t sm) const
 }
 
 //________________________________________________________________
-Bool_t QualityPhotonSelection::SelectEvent(const EventFlags & flgs)
+Bool_t AliPP13QualityPhotonSelection::SelectEvent(const EventFlags & flgs)
 {
 	// Keep it this way if you decide to switch Bool_t -> Some_Other_type
 
-	Bool_t accepted = PhotonSelection::SelectEvent(flgs);
+	Bool_t accepted = AliPP13PhotonSelection::SelectEvent(flgs);
 	if (accepted)
 		fZvertex->Fill(flgs.vtxBest[2]);
 

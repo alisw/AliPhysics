@@ -1,5 +1,5 @@
-#ifndef PARTICLESHISTOGRAM_H 
-#define PARTICLESHISTOGRAM_H 
+#ifndef ALIPP13PARTICLESHISTOGRAM_H 
+#define ALIPP13PARTICLESHISTOGRAM_H 
 
 #include <map>
 
@@ -8,19 +8,19 @@
 #include <TList.h>
 
 
-class ParticlesHistogram
+class AliPP13ParticlesHistogram
 {
 public:
 	typedef std::map<Int_t, TString> EnumNames;
 	typedef std::map<Int_t, TH1 *> HistogramList;
-	ParticlesHistogram(TH1 * hist, TList * owner, EnumNames & sources);
+	AliPP13ParticlesHistogram(TH1 * hist, TList * owner, EnumNames & sources);
 
 	void FillS(Float_t x, Float_t y = 1.0);
 	void Fill(Int_t pdg, Float_t x, Float_t y = 1.0);
 	void FillAll(Int_t pdg, Float_t x, Float_t y = 1.0);
 
 private:
-	ParticlesHistogram(const ParticlesHistogram &);
+	AliPP13ParticlesHistogram(const AliPP13ParticlesHistogram &);
 
 	EnumNames fSources;
 	HistogramList fHistograms;

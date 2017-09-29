@@ -77,21 +77,21 @@ set(SRCS
     PHOS_EpRatio/AliAnalysisTaskEpRatio.cxx
     PHOS_GAFlow/AliAnalysisTaskThermalGAFlow.cxx
     PHOS_GAFlow/AliAnalysisTaskThermalGAFlowMC.cxx
-    PHOS_LHC16_pp/AliAnalysisTaskPP.cxx
-    PHOS_LHC16_pp/ClusterCuts.cxx
-    PHOS_LHC16_pp/DetectorHistogram.cxx
-    PHOS_LHC16_pp/MesonSelectionMC.cxx
-    PHOS_LHC16_pp/MixingSample.cxx
-    PHOS_LHC16_pp/NonlinearityScanSelection.cxx
-    PHOS_LHC16_pp/ParticlesHistogram.cxx
-    PHOS_LHC16_pp/PhotonSelection.cxx
-    PHOS_LHC16_pp/PhotonSpectrumSelection.cxx
-    PHOS_LHC16_pp/PhotonTimecutStudySelection.cxx
-    PHOS_LHC16_pp/PhysPhotonSelection.cxx
-    PHOS_LHC16_pp/PhysPhotonSelectionMC.cxx
-    PHOS_LHC16_pp/PythiaInfoSelection.cxx
-    PHOS_LHC16_pp/QualityPhotonSelection.cxx
-    PHOS_LHC16_pp/TagAndProbeSelection.cxx
+    PHOS_LHC16_pp/AliAnalysisTaskPP13.cxx
+    PHOS_LHC16_pp/AliPP13ClusterCuts.cxx
+    PHOS_LHC16_pp/AliPP13DetectorHistogram.cxx
+    PHOS_LHC16_pp/AliPP13MesonSelectionMC.cxx
+    PHOS_LHC16_pp/AliPP13MixingSample.cxx
+    PHOS_LHC16_pp/AliPP13NonlinearityScanSelection.cxx
+    PHOS_LHC16_pp/AliPP13ParticlesHistogram.cxx
+    PHOS_LHC16_pp/AliPP13PhotonSelection.cxx
+    PHOS_LHC16_pp/AliPP13PhotonSpectrumSelection.cxx
+    PHOS_LHC16_pp/AliPP13PhotonTimecutStudySelection.cxx
+    PHOS_LHC16_pp/AliPP13PhysPhotonSelection.cxx
+    PHOS_LHC16_pp/AliPP13PhysPhotonSelectionMC.cxx
+    PHOS_LHC16_pp/AliPP13PythiaInfoSelection.cxx
+    PHOS_LHC16_pp/AliPP13QualityPhotonSelection.cxx
+    PHOS_LHC16_pp/AliPP13TagAndProbeSelection.cxx
     PHOS_NeutralMeson/AliAnalysisTaskPHOSNeutralMeson.cxx
     PHOS_PbPb/AliAnalysisTaskPi0Flow.cxx
     PHOS_PbPb/AliAnalysisTaskGammaFlow.cxx

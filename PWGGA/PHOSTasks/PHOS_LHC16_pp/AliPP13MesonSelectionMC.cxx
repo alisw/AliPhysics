@@ -2,7 +2,7 @@
 // #include "iterator"
 
 // --- Custom header files ---
-#include "MesonSelectionMC.h"
+#include "AliPP13MesonSelectionMC.h"
 
 // --- ROOT system ---
 #include <TParticle.h>
@@ -22,11 +22,11 @@
 using namespace std;
 
 
-ClassImp(MesonSelectionMC);
+ClassImp(AliPP13MesonSelectionMC);
 
 
 //________________________________________________________________
-void MesonSelectionMC::ConsiderPair(const AliVCluster * c1, const AliVCluster * c2, const EventFlags & eflags)
+void AliPP13MesonSelectionMC::ConsiderPair(const AliVCluster * c1, const AliVCluster * c2, const EventFlags & eflags)
 {
 	TLorentzVector p1 = ClusterMomentum(c1, eflags);
 	TLorentzVector p2 = ClusterMomentum(c2, eflags);
@@ -103,7 +103,7 @@ void MesonSelectionMC::ConsiderPair(const AliVCluster * c1, const AliVCluster * 
 
 
 //________________________________________________________________
-void MesonSelectionMC::InitSelectionHistograms()
+void AliPP13MesonSelectionMC::InitSelectionHistograms()
 {
 	Int_t nM       = 750;
 	Double_t mMin  = 0.0;
@@ -143,12 +143,12 @@ void MesonSelectionMC::InitSelectionHistograms()
 	TH1 * hist5 = new TH2F(Form("hMassPt_%s_secondary_", np), "(M,p_{T})_{#gamma#gamma} from secondary ; M_{#gamma#gamma}, GeV; p_{T}, GeV/c", nM, mMin, mMax, nPt, ptMin, ptMax);
 	TH1 * hist6 = new TH2F(Form("hMassPt_%s_feeddown_", np), "(M,p_{T})_{#gamma#gamma} from secondary ; M_{#gamma#gamma}, GeV; p_{T}, GeV/c", nM, mMin, mMax, nPt, ptMin, ptMax);
 
-	fPrimaryPi0[kGenerated]       = new ParticlesHistogram(hist1, fListOfHistos, fPi0SourcesNames);
-	fSecondaryPi0[kGenerated]     = new ParticlesHistogram(hist2, fListOfHistos, fPi0SourcesNames);
-	fFeedDownPi0[kGenerated]      = new ParticlesHistogram(hist3, fListOfHistos, fPi0SourcesNames);
-	fPrimaryPi0[kReconstructed]   = new ParticlesHistogram(hist4, fListOfHistos, fPi0SourcesNames);
-	fSecondaryPi0[kReconstructed] = new ParticlesHistogram(hist5, fListOfHistos, fPi0SourcesNames);
-	fFeedDownPi0[kReconstructed]  = new ParticlesHistogram(hist6, fListOfHistos, fPi0SourcesNames);
+	fPrimaryPi0[kGenerated]       = new AliPP13ParticlesHistogram(hist1, fListOfHistos, fPi0SourcesNames);
+	fSecondaryPi0[kGenerated]     = new AliPP13ParticlesHistogram(hist2, fListOfHistos, fPi0SourcesNames);
+	fFeedDownPi0[kGenerated]      = new AliPP13ParticlesHistogram(hist3, fListOfHistos, fPi0SourcesNames);
+	fPrimaryPi0[kReconstructed]   = new AliPP13ParticlesHistogram(hist4, fListOfHistos, fPi0SourcesNames);
+	fSecondaryPi0[kReconstructed] = new AliPP13ParticlesHistogram(hist5, fListOfHistos, fPi0SourcesNames);
+	fFeedDownPi0[kReconstructed]  = new AliPP13ParticlesHistogram(hist6, fListOfHistos, fPi0SourcesNames);
 
 
 	for (EnumNames::iterator i = fPartNames.begin(); i != fPartNames.end(); ++i)
@@ -166,7 +166,7 @@ void MesonSelectionMC::InitSelectionHistograms()
 }
 
 
-void MesonSelectionMC::ConsiderGeneratedParticles(const EventFlags & flags)
+void AliPP13MesonSelectionMC::ConsiderGeneratedParticles(const EventFlags & flags)
 {
 	if (!flags.fMcParticles)
 		return;
@@ -204,7 +204,7 @@ void MesonSelectionMC::ConsiderGeneratedParticles(const EventFlags & flags)
 	}
 }
 
-void MesonSelectionMC::ConsiderGeneratedPi0(Int_t i, Double_t pt, Bool_t primary, const EventFlags & flags)
+void AliPP13MesonSelectionMC::ConsiderGeneratedPi0(Int_t i, Double_t pt, Bool_t primary, const EventFlags & flags)
 {
 	// Reject MIPS and count again
 	if (pt < 0.3)
@@ -242,7 +242,7 @@ void MesonSelectionMC::ConsiderGeneratedPi0(Int_t i, Double_t pt, Bool_t primary
 }
 
 //________________________________________________________________
-AliAODMCParticle * MesonSelectionMC::GetParent(Int_t label, Int_t & plabel, TClonesArray * particles) const
+AliAODMCParticle * AliPP13MesonSelectionMC::GetParent(Int_t label, Int_t & plabel, TClonesArray * particles) const
 {
 	if (label <= -1)
 		return 0;
@@ -264,7 +264,7 @@ AliAODMCParticle * MesonSelectionMC::GetParent(Int_t label, Int_t & plabel, TClo
 }
 
 //________________________________________________________________
-Bool_t MesonSelectionMC::IsPrimary(const AliAODMCParticle * particle) const
+Bool_t AliPP13MesonSelectionMC::IsPrimary(const AliAODMCParticle * particle) const
 {
 	// Look what particle left vertex (e.g. with vertex with radius <1 cm)
 	Double_t rcut = 1.;

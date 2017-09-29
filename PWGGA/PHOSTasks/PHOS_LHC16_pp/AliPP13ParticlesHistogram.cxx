@@ -1,6 +1,5 @@
 // --- Custom header files ---
-#include "ParticlesHistogram.h"
-// #include "AliAnalysisTaskPP.h"
+#include "AliPP13ParticlesHistogram.h"
 
 // --- ROOT system ---
 #include <TString.h>
@@ -11,7 +10,7 @@ using namespace std;
 
 
 //________________________________________________________________
-ParticlesHistogram::ParticlesHistogram(TH1 * hist, TList * owner, EnumNames & sources):
+AliPP13ParticlesHistogram::AliPP13ParticlesHistogram(TH1 * hist, TList * owner, EnumNames & sources):
 	fSources(sources)
 {
 	TString name = hist->GetName();
@@ -31,14 +30,14 @@ ParticlesHistogram::ParticlesHistogram(TH1 * hist, TList * owner, EnumNames & so
 
 
 //________________________________________________________________
-void ParticlesHistogram::FillS(Float_t x, Float_t y)
+void AliPP13ParticlesHistogram::FillS(Float_t x, Float_t y)
 {
 	fHistograms[kAll]->Fill(x, y);
 }
 
 
 //________________________________________________________________
-void ParticlesHistogram::Fill(Int_t pdg, Float_t x, Float_t y)
+void AliPP13ParticlesHistogram::Fill(Int_t pdg, Float_t x, Float_t y)
 {
 	EnumNames::iterator s = fSources.find(pdg);
 	if (s == fSources.end())
@@ -49,7 +48,7 @@ void ParticlesHistogram::Fill(Int_t pdg, Float_t x, Float_t y)
 
 
 //________________________________________________________________
-void ParticlesHistogram::FillAll(Int_t pdg, Float_t x, Float_t y)
+void AliPP13ParticlesHistogram::FillAll(Int_t pdg, Float_t x, Float_t y)
 {
 	FillS(x, y);
 	Fill(pdg, x, y);

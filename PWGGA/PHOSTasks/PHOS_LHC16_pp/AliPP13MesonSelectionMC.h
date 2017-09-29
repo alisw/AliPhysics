@@ -1,12 +1,12 @@
-#ifndef MESONSELECTIONMC_H
-#define MESONSELECTIONMC_H
+#ifndef ALIPP13MESONSELECTIONMC_H
+#define ALIPP13MESONSELECTIONMC_H
 
 
 #include <map>
 
 // --- Custom header files ---
-#include "PhotonSelection.h"
-#include "ParticlesHistogram.h"
+#include "AliPP13PhotonSelection.h"
+#include "AliPP13ParticlesHistogram.h"
 
 // --- ROOT system ---
 #include <TClonesArray.h>
@@ -61,7 +61,7 @@ struct ParticleSpectrum
 };
 
 
-class MesonSelectionMC: public PhotonSelection
+class AliPP13MesonSelectionMC: public AliPP13PhotonSelection
 {
 public:
 	enum Modes {kGenerated = 0, kReconstructed = 1, kNhists = 2};
@@ -74,8 +74,8 @@ public:
 		kKplus = 321, kKminus = -321, kSigmaZero = 3212
 	};
 
-	MesonSelectionMC():
-		PhotonSelection(),
+	AliPP13MesonSelectionMC():
+		AliPP13PhotonSelection(),
 		fPrimaryPi0(),
 		fSecondaryPi0(),
 		fFeedDownPi0(),
@@ -104,8 +104,8 @@ public:
 		fPi0SourcesNames[kSigmaZero] = "#Sigma^{0}";
 	}
 
-	MesonSelectionMC(const char * name, const char * title, ClusterCuts cuts):
-		PhotonSelection(name, title, cuts),
+	AliPP13MesonSelectionMC(const char * name, const char * title, AliPP13ClusterCuts cuts):
+		AliPP13PhotonSelection(name, title, cuts),
 		fPrimaryPi0(),
 		fSecondaryPi0(),
 		fFeedDownPi0(),
@@ -144,7 +144,7 @@ public:
 	virtual void InitSelectionHistograms();
 	virtual void ConsiderGeneratedParticles(const EventFlags & eflags);
 
-	virtual ~MesonSelectionMC()
+	virtual ~AliPP13MesonSelectionMC()
 	{
 		for (int i = 0; i < kNhists; ++i)
 		{
@@ -169,12 +169,12 @@ protected:
 	}
 	void ConsiderGeneratedPi0(Int_t i, Double_t pt, Bool_t primary, const EventFlags & flags);
 
-	MesonSelectionMC(const MesonSelectionMC &);
-	MesonSelectionMC & operator = (const MesonSelectionMC &);
+	AliPP13MesonSelectionMC(const AliPP13MesonSelectionMC &);
+	AliPP13MesonSelectionMC & operator = (const AliPP13MesonSelectionMC &);
 
-	ParticlesHistogram * fPrimaryPi0[kNhists];
-	ParticlesHistogram * fSecondaryPi0[kNhists];
-	ParticlesHistogram * fFeedDownPi0[kNhists];
+	AliPP13ParticlesHistogram * fPrimaryPi0[kNhists];
+	AliPP13ParticlesHistogram * fSecondaryPi0[kNhists];
+	AliPP13ParticlesHistogram * fFeedDownPi0[kNhists];
 
 
 	// This data structure contains all necesary histograms
@@ -189,6 +189,6 @@ protected:
 	TH1 * fInvMass[2];  //!
 	TH1 * fPi0Sources[2];  //!
 
-	ClassDef(MesonSelectionMC, 2)
+	ClassDef(AliPP13MesonSelectionMC, 2)
 };
 #endif

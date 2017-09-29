@@ -1,9 +1,9 @@
-#ifndef TAGANDPROBESELECTION_H
-#define TAGANDPROBESELECTION_H
+#ifndef ALIPP13TAGANDPROBESELECTION_H
+#define ALIPP13TAGANDPROBESELECTION_H
 
 // --- Custom header files ---
-#include "PhotonSelection.h"
-#include "DetectorHistogram.h"
+#include "AliPP13PhotonSelection.h"
+#include "AliPP13DetectorHistogram.h"
 
 // --- ROOT system ---
 #include <TObjArray.h>
@@ -14,19 +14,19 @@
 #include <AliVCluster.h>
 #include <AliLog.h>
 
-class TagAndProbeSelection: public PhotonSelection
+class AliPP13TagAndProbeSelection: public AliPP13PhotonSelection
 {
 public:
-	TagAndProbeSelection():
-		PhotonSelection(),
+	AliPP13TagAndProbeSelection():
+		AliPP13PhotonSelection(),
 		fTimingCut(999999),
 		fMassEnergyAll(),
 		fMassEnergyTOF()
 	{
 	}
 
-	TagAndProbeSelection(const char * name, const char * title, ClusterCuts cuts):
-		PhotonSelection(name, title, cuts),
+	AliPP13TagAndProbeSelection(const char * name, const char * title, AliPP13ClusterCuts cuts):
+		AliPP13PhotonSelection(name, title, cuts),
 		fTimingCut(cuts.fTimingCut),  // Copy timing cut information
 		fMassEnergyAll(),
 		fMassEnergyTOF()
@@ -40,13 +40,13 @@ protected:
 	virtual void ConsiderPair(const AliVCluster * c1, const AliVCluster * c2, const EventFlags & eflags);
 	virtual void FillPi0Mass(TObjArray * clusArray, TList * pool, const EventFlags & eflags);
 
-	TagAndProbeSelection(const TagAndProbeSelection &);
-	TagAndProbeSelection & operator = (const TagAndProbeSelection &);
+	AliPP13TagAndProbeSelection(const AliPP13TagAndProbeSelection &);
+	AliPP13TagAndProbeSelection & operator = (const AliPP13TagAndProbeSelection &);
 private:
 	Float_t fTimingCut;
-	DetectorHistogram * fMassEnergyAll[2]; //!
-	DetectorHistogram * fMassEnergyTOF[2]; //!
+	AliPP13DetectorHistogram * fMassEnergyAll[2]; //!
+	AliPP13DetectorHistogram * fMassEnergyTOF[2]; //!
 
-	ClassDef(TagAndProbeSelection, 2)
+	ClassDef(AliPP13TagAndProbeSelection, 2)
 };
 #endif

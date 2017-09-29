@@ -1,8 +1,8 @@
-#ifndef GPHOTONSELECTION_H
-#define GPHOTONSELECTION_H
+#ifndef ALIPP13GPHOTONSELECTION_H
+#define ALIPP13GPHOTONSELECTION_H
 
 // --- Custom libraries ---
-#include "ClusterCuts.h"
+#include "AliPP13ClusterCuts.h"
 
 
 // --- ROOT system ---
@@ -48,25 +48,25 @@ struct EventFlags
 };
 
 
-class PhotonSelection : public TNamed
+class AliPP13PhotonSelection : public TNamed
 {
 public:
 
-	PhotonSelection():
+	AliPP13PhotonSelection():
 		TNamed(),
 		fListOfHistos(0),
 		fCuts(),
 		fEventCounter(0)
 	{}
 
-	PhotonSelection(const char * name, const char * title, ClusterCuts cuts):
+	AliPP13PhotonSelection(const char * name, const char * title, AliPP13ClusterCuts cuts):
 		TNamed(name, title),
 		fListOfHistos(0),
 		fCuts(cuts),
 		fEventCounter(0)
 	{}
 
-	virtual ~PhotonSelection();
+	virtual ~AliPP13PhotonSelection();
 
 	virtual void InitSummaryHistograms();
 	virtual void InitSelectionHistograms() = 0;
@@ -101,15 +101,15 @@ protected:
 		(void) eflags;
 	}	
 
-	PhotonSelection(const PhotonSelection &);
-	PhotonSelection & operator = (const PhotonSelection &);
+	AliPP13PhotonSelection(const AliPP13PhotonSelection &);
+	AliPP13PhotonSelection & operator = (const AliPP13PhotonSelection &);
 
 	void FillHistogram(const char * key, Double_t x, Double_t y = 1, Double_t z = 1); //Fill 3D histogram witn name key
 	TList  * fListOfHistos;  //! list of histograms
-	ClusterCuts fCuts;
+	AliPP13ClusterCuts fCuts;
 
 	TH1 * fEventCounter;  //!
 private:
-	ClassDef(PhotonSelection, 2)
+	ClassDef(AliPP13PhotonSelection, 2)
 };
 #endif

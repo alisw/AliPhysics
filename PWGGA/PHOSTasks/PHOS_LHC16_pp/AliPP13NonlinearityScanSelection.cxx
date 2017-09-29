@@ -1,5 +1,5 @@
 // --- Custom header files ---
-#include "NonlinearityScanSelection.h"
+#include "AliPP13NonlinearityScanSelection.h"
 
 // --- AliRoot header files ---
 #include <AliPHOSAodCluster.h>
@@ -9,11 +9,11 @@
 using namespace std;
 
 
-ClassImp(NonlinearityScanSelection);
+ClassImp(AliPP13NonlinearityScanSelection);
 
 
 //________________________________________________________________
-TLorentzVector NonlinearityScanSelection::ClusterMomentum(const AliVCluster * c1, const EventFlags & eflags, Int_t ia, Int_t ib) const
+TLorentzVector AliPP13NonlinearityScanSelection::ClusterMomentum(const AliVCluster * c1, const EventFlags & eflags, Int_t ia, Int_t ib) const
 {
 	Float_t energy = c1->E();
 
@@ -24,7 +24,7 @@ TLorentzVector NonlinearityScanSelection::ClusterMomentum(const AliVCluster * c1
 }
 
 //________________________________________________________________
-Float_t NonlinearityScanSelection::Nonlinearity(Float_t x, Int_t ia, Int_t ib) const
+Float_t AliPP13NonlinearityScanSelection::Nonlinearity(Float_t x, Int_t ia, Int_t ib) const
 {
 	Float_t non_a = GetA(ia);
 	Float_t non_sigma = GetSigma(ib);
@@ -33,7 +33,7 @@ Float_t NonlinearityScanSelection::Nonlinearity(Float_t x, Int_t ia, Int_t ib) c
 }
 
 //________________________________________________________________
-void NonlinearityScanSelection::InitSelectionHistograms()
+void AliPP13NonlinearityScanSelection::InitSelectionHistograms()
 {
 	// pi0 mass spectrum
 	Int_t nM       = 750;
@@ -72,7 +72,7 @@ void NonlinearityScanSelection::InitSelectionHistograms()
 }
 
 
-void NonlinearityScanSelection::ConsiderPair(const AliVCluster * c1, const AliVCluster * c2, const EventFlags & eflags)
+void AliPP13NonlinearityScanSelection::ConsiderPair(const AliVCluster * c1, const AliVCluster * c2, const EventFlags & eflags)
 {
 	Int_t sm1, sm2, x1, z1, x2, z2;
 	if ((sm1 = CheckClusterGetSM(c1, x1, z1)) < 0) return; //  To be sure that everything is Ok

@@ -1,8 +1,8 @@
-#ifndef PYTHIAINFOSELECTION_H
-#define PYTHIAINFOSELECTION_H
+#ifndef ALIPP13PYTHIAINFOSELECTION_H
+#define ALIPP13PYTHIAINFOSELECTION_H
 
 // --- Custom header files ---
-#include "PhotonSelection.h"
+#include "AliPP13PhotonSelection.h"
 
 // --- ROOT system ---
 #include <TClonesArray.h>
@@ -15,19 +15,19 @@
 #include <AliStack.h>
 #include <AliLog.h>
 
-class PythiaInfoSelection: public PhotonSelection
+class AliPP13PythiaInfoSelection: public AliPP13PhotonSelection
 {
 public:
-	PythiaInfoSelection():
-		PhotonSelection(),
+	AliPP13PythiaInfoSelection():
+		AliPP13PhotonSelection(),
 		fXsec(0),
 		fTrials(0)
 	{
 
 	}
 
-	PythiaInfoSelection(const char * name, const char * title):
-		PhotonSelection(name, title, ClusterCuts()),
+	AliPP13PythiaInfoSelection(const char * name, const char * title):
+		AliPP13PhotonSelection(name, title, AliPP13ClusterCuts()),
 		fXsec(0),
 		fTrials(0)
 	{
@@ -43,14 +43,14 @@ public:
 	virtual void FillPi0Mass(TObjArray * clusArray, TList * pool, const EventFlags & eflags);
 
 protected:
-	PythiaInfoSelection(const PythiaInfoSelection &);
-	PythiaInfoSelection & operator = (const PythiaInfoSelection &);
+	AliPP13PythiaInfoSelection(const AliPP13PythiaInfoSelection &);
+	AliPP13PythiaInfoSelection & operator = (const AliPP13PythiaInfoSelection &);
 
 private:
 	// NB: Don't delete these pointers
 	TH1F * fXsec;    //!
 	TH1F * fTrials;  //!
 
-	ClassDef(PythiaInfoSelection, 2)
+	ClassDef(AliPP13PythiaInfoSelection, 2)
 };
 #endif

@@ -1,6 +1,6 @@
 // --- Custom header files ---
-#include "TagAndProbeSelection.h"
-#include "DetectorHistogram.h"
+#include "AliPP13TagAndProbeSelection.h"
+#include "AliPP13DetectorHistogram.h"
 
 // --- ROOT system ---
 #include <TH2F.h>
@@ -12,11 +12,11 @@
 using namespace std;
 
 
-ClassImp(TagAndProbeSelection);
+ClassImp(AliPP13TagAndProbeSelection);
 
 
 //________________________________________________________________
-void TagAndProbeSelection::FillPi0Mass(TObjArray * clusArray, TList * pool, const EventFlags & eflags)
+void AliPP13TagAndProbeSelection::FillPi0Mass(TObjArray * clusArray, TList * pool, const EventFlags & eflags)
 {
 	(void) pool;
 	// Ensure that we are not doing mixing
@@ -49,7 +49,7 @@ void TagAndProbeSelection::FillPi0Mass(TObjArray * clusArray, TList * pool, cons
 }
 
 //________________________________________________________________
-void TagAndProbeSelection::ConsiderPair(const AliVCluster * c1, const AliVCluster * c2, const EventFlags & eflags)
+void AliPP13TagAndProbeSelection::ConsiderPair(const AliVCluster * c1, const AliVCluster * c2, const EventFlags & eflags)
 {
 	TLorentzVector p1, p2, psum;
 	c1->GetMomentum(p1, eflags.vtxBest);
@@ -73,7 +73,7 @@ void TagAndProbeSelection::ConsiderPair(const AliVCluster * c1, const AliVCluste
 
 
 //________________________________________________________________
-void TagAndProbeSelection::InitSelectionHistograms()
+void AliPP13TagAndProbeSelection::InitSelectionHistograms()
 {
 	// pi0 mass spectrum
 	Int_t nM       = 250;
@@ -91,8 +91,8 @@ void TagAndProbeSelection::InitSelectionHistograms()
 		TH2F * hist1 = new TH2F(Form("h%sMassEnergyAll_", sf), "(M_{#gamma#gamma}, E_{probe}) ; M_{#gamma#gamma}, GeV; E_{proble}, GeV", nM, mMin, mMax, nE, eMin, eMax);
 		TH2F * hist2 = new TH2F(Form("h%sMassEnergyTOF_", sf), "(M_{#gamma#gamma}, E_{probe}) ; M_{#gamma#gamma}, GeV; E_{proble}, GeV", nM, mMin, mMax, nE, eMin, eMax);
 
-		fMassEnergyAll[i] = new DetectorHistogram(hist1, fListOfHistos, DetectorHistogram::kModules);
-		fMassEnergyTOF[i] = new DetectorHistogram(hist2, fListOfHistos, DetectorHistogram::kModules);
+		fMassEnergyAll[i] = new AliPP13DetectorHistogram(hist1, fListOfHistos, AliPP13DetectorHistogram::kModules);
+		fMassEnergyTOF[i] = new AliPP13DetectorHistogram(hist2, fListOfHistos, AliPP13DetectorHistogram::kModules);
 	}
 
 	for (Int_t i = 0; i < fListOfHistos->GetEntries(); ++i)

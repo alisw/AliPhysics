@@ -8,43 +8,43 @@ TString AddAnalysisTaskPP(UInt_t offlineTriggerMask, TString description, TStrin
 		return;
 	}
 
-    gROOT->LoadMacro("ClusterCuts.cxx+");
-    gROOT->LoadMacro("DetectorHistogram.cxx+");
-    gROOT->LoadMacro("PhotonSelection.cxx+");
-    gROOT->LoadMacro("PhotonSpectrumSelection.cxx+");
-    gROOT->LoadMacro("QualityPhotonSelection.cxx+");
-    gROOT->LoadMacro("ParticlesHistogram.cxx+");
-    gROOT->LoadMacro("PhotonTimecutStudySelection.cxx+");
-    gROOT->LoadMacro("PhysPhotonSelection.cxx+");
-    gROOT->LoadMacro("TagAndProbeSelection.cxx+");
-    gROOT->LoadMacro("MesonSelectionMC.cxx+");
-    gROOT->LoadMacro("PythiaInfoSelection.cxx+");
-    gROOT->LoadMacro("PhysPhotonSelectionMC.cxx+");
-    gROOT->LoadMacro("NonlinearityScanSelection.cxx+");
-    gROOT->LoadMacro("MixingSample.cxx+");
-    gROOT->LoadMacro("AliAnalysisTaskPP.cxx+");
+    gROOT->LoadMacro("AliPP13ClusterCuts.cxx+");
+    gROOT->LoadMacro("AliPP13DetectorHistogram.cxx+");
+    gROOT->LoadMacro("AliPP13PhotonSelection.cxx+");
+    gROOT->LoadMacro("AliPP13PhotonSpectrumSelection.cxx+");
+    gROOT->LoadMacro("AliPP13QualityPhotonSelection.cxx+");
+    gROOT->LoadMacro("AliPP13ParticlesHistogram.cxx+");
+    gROOT->LoadMacro("AliPP13PhotonTimecutStudySelection.cxx+");
+    gROOT->LoadMacro("AliPP13PhysPhotonSelection.cxx+");
+    gROOT->LoadMacro("AliPP13TagAndProbeSelection.cxx+");
+    gROOT->LoadMacro("AliPP13MesonSelectionMC.cxx+");
+    gROOT->LoadMacro("AliPP13PythiaInfoSelection.cxx+");
+    gROOT->LoadMacro("AliPP13PhysPhotonSelectionMC.cxx+");
+    gROOT->LoadMacro("AliPP13NonlinearityScanSelection.cxx+");
+    gROOT->LoadMacro("AliPP13MixingSample.cxx+");
+    gROOT->LoadMacro("AliAnalysisTaskPP13.cxx+");
 
     // exit(1);
   
 	// Setup Selections
 	TList * selections = new TList();
 
-	ClusterCuts cuts_pi0 = ClusterCuts::GetClusterCuts();
-	ClusterCuts cuts_eta = ClusterCuts::GetClusterCuts();
+	AliPP13ClusterCuts cuts_pi0 = AliPP13ClusterCuts::GetClusterCuts();
+	AliPP13ClusterCuts cuts_eta = AliPP13ClusterCuts::GetClusterCuts();
 	cuts_eta.fAsymmetryCut = 0.7;
 
 	if (!isTest && !isMC)
 	{
-		selections->Add(new PhysPhotonSelection("Phys", "Physics Selection", cuts_pi0));
-		selections->Add(new PhotonTimecutStudySelection("Time", "Testing Timing Selection", cuts_pi0));
-		selections->Add(new TagAndProbeSelection("TagAndProbleTOF", "Cluster P_{t} Selection", cuts_pi0));
+		selections->Add(new AliPP13PhysPhotonSelection("Phys", "Physics Selection", cuts_pi0));
+		selections->Add(new AliPP13PhotonTimecutStudySelection("Time", "Testing Timing Selection", cuts_pi0));
+		selections->Add(new AliPP13TagAndProbeSelection("TagAndProbleTOF", "Cluster P_{t} Selection", cuts_pi0));
 
-		selections->Add(new PhysPhotonSelection("Eta", "Physics Selection for eta meson", cuts_eta));
-		selections->Add(new PhotonTimecutStudySelection("EtaTime", "Testing Timing Selection for eta meson", cuts_eta));
+		selections->Add(new AliPP13PhysPhotonSelection("Eta", "Physics Selection for eta meson", cuts_eta));
+		selections->Add(new AliPP13PhotonTimecutStudySelection("EtaTime", "Testing Timing Selection for eta meson", cuts_eta));
 		
-		selections->Add(new QualityPhotonSelection("Qual", "Cluster quality Selection", cuts_pi0));
-		selections->Add(new PhotonSpectrumSelection("Photons", "Cluster P_{t} Selection", cuts_pi0));
-		selections->Add(new PhotonSpectrumSelection("PhotonsTime", "Cluster P_{t} Selection with timing cut", cuts_pi0, 10., 3.));
+		selections->Add(new AliPP13QualityPhotonSelection("Qual", "Cluster quality Selection", cuts_pi0));
+		selections->Add(new AliPP13PhotonSpectrumSelection("Photons", "Cluster P_{t} Selection", cuts_pi0));
+		selections->Add(new AliPP13PhotonSpectrumSelection("PhotonsTime", "Cluster P_{t} Selection with timing cut", cuts_pi0, 10., 3.));
 	}	
 
 	// Nonlinearity for zs 20 Run2Default (Daiki's approximation)
@@ -56,27 +56,27 @@ TString AddAnalysisTaskPP(UInt_t offlineTriggerMask, TString description, TStrin
 	
 	if(isTest)
 	{
-		selections->Add(new PhysPhotonSelection("Phys", "Physics Selection", cuts_pi0));
-		selections->Add(new PhotonSpectrumSelection("PhotonsTime", "Cluster P_{t} Selection with timing cut", cuts_pi0, 10., 3.));
-		selections->Add(new PhotonTimecutStudySelection("Time", "Testing Timing Selection", cuts_pi0));
-		selections->Add(new TagAndProbeSelection("TagAndProbleTOF", "Cluster P_{t} Selection", cuts_pi0));
-		selections->Add(new NonlinearityScanSelection("StudyNonlin", "Corrected for nonlinearity Physics Selection",cuts_pi0, nonlin_a, nonlin_b, ge_scale));
+		selections->Add(new AliPP13PhysPhotonSelection("Phys", "Physics Selection", cuts_pi0));
+		selections->Add(new AliPP13PhotonSpectrumSelection("PhotonsTime", "Cluster P_{t} Selection with timing cut", cuts_pi0, 10., 3.));
+		selections->Add(new AliPP13PhotonTimecutStudySelection("Time", "Testing Timing Selection", cuts_pi0));
+		selections->Add(new AliPP13TagAndProbeSelection("TagAndProbleTOF", "Cluster P_{t} Selection", cuts_pi0));
+		selections->Add(new AliPP13NonlinearityScanSelection("StudyNonlin", "Corrected for nonlinearity Physics Selection",cuts_pi0, nonlin_a, nonlin_b, ge_scale));
 	}
 
 
 	if (isMC)
 	{
-		selections->Add(new PhysPhotonSelectionMC("PhysNonlin", "Corrected for nonlinearity Physics Selection",cuts_pi0, nonlin_a, nonlin_b, ge_scale));
-		selections->Add(new PhysPhotonSelectionMC("PhysRaw", "Raw Physics Selection", cuts_pi0));
-		selections->Add(new MesonSelectionMC("MCStudy", "MC Selection with timing cut", cuts_pi0));
-		selections->Add(new QualityPhotonSelection("Qual", "Cluster quality Selection", cuts_pi0));
+		selections->Add(new AliPP13PhysPhotonSelectionMC("PhysNonlin", "Corrected for nonlinearity Physics Selection",cuts_pi0, nonlin_a, nonlin_b, ge_scale));
+		selections->Add(new AliPP13PhysPhotonSelectionMC("PhysRaw", "Raw Physics Selection", cuts_pi0));
+		selections->Add(new AliPP13MesonSelectionMC("MCStudy", "MC Selection with timing cut", cuts_pi0));
+		selections->Add(new AliPP13QualityPhotonSelection("Qual", "Cluster quality Selection", cuts_pi0));
 
 		if(suff.Contains("Only") && IsJetJetMC(description, isMC))
-			selections->Add(new PythiaInfoSelection("PythiaInfo", "Cross section and ntrials for a pthard bin."));
+			selections->Add(new AliPP13PythiaInfoSelection("PythiaInfo", "Cross section and ntrials for a pthard bin."));
 	}
 
 	// Setup task
-	AliAnalysisTaskPP * task = new AliAnalysisTaskPP("PhosProtons", selections);
+	AliAnalysisTaskPP13 * task = new AliAnalysisTaskPP13("PhosProtons", selections);
 
 	if ( !badmap.IsNull() ) 
 		task->SetBadMap(badmap);
@@ -104,7 +104,7 @@ TString AddAnalysisTaskPP(UInt_t offlineTriggerMask, TString description, TStrin
 	AliAnalysisDataContainer * coutput = 0;
 	for (Int_t i = 0; i < task->GetSelections()->GetEntries(); ++ i)
 	{
-		PhotonSelection * fSel = dynamic_cast<PhotonSelection *> (task->GetSelections()->At(i));
+		AliPP13PhotonSelection * fSel = dynamic_cast<AliPP13PhotonSelection *> (task->GetSelections()->At(i));
 		fSel->SetTitle(description);
 		cout << fSel->GetTitle() << endl;
 
@@ -120,56 +120,56 @@ TString AddAnalysisTaskPP(UInt_t offlineTriggerMask, TString description, TStrin
 	TString libs   = plugin->GetAdditionalLibs();
 	plugin->SetAnalysisSource(
 		sources +
-	    "ClusterCuts.cxx " +
-	    "DetectorHistogram.cxx " +
-	    "PhotonSelection.cxx " +
-	    "PhotonSpectrumSelection.cxx " +
-	    "QualityPhotonSelection.cxx " +
-	    "ParticlesHistogram.cxx " +
-	    "PhysPhotonSelection.cxx " +
-	    "PhotonTimecutStudySelection.cxx " +
-	    "TagAndProbeSelection.cxx " +
-	    "MesonSelectionMC.cxx " +
-	    "PythiaInfoSelection.cxx " +
-	    "PhysPhotonSelectionMC.cxx " +
-	    "NonlinearityScanSelection.cxx " +
-	    "MixingSample.cxx " +
-	    "AliAnalysisTaskPP.cxx "
+	    "AliPP13ClusterCuts.cxx " +
+	    "AliPP13DetectorHistogram.cxx " +
+	    "AliPP13PhotonSelection.cxx " +
+	    "AliPP13PhotonSpectrumSelection.cxx " +
+	    "AliPP13QualityPhotonSelection.cxx " +
+	    "AliPP13ParticlesHistogram.cxx " +
+	    "AliPP13PhysPhotonSelection.cxx " +
+	    "AliPP13PhotonTimecutStudySelection.cxx " +
+	    "AliPP13TagAndProbeSelection.cxx " +
+	    "AliPP13MesonSelectionMC.cxx " +
+	    "AliPP13PythiaInfoSelection.cxx " +
+	    "AliPP13PhysPhotonSelectionMC.cxx " +
+	    "AliPP13NonlinearityScanSelection.cxx " +
+	    "AliPP13MixingSample.cxx " +
+	    "AliAnalysisTaskPP13.cxx "
 	);
 
 	plugin->SetAdditionalLibs(
 		libs +
 		"libPWGGAPHOSTasks.so "	+
-	    "ClusterCuts.cxx " +
-	    "ClusterCuts.h " +
-	    "DetectorHistogram.cxx " +
-	    "DetectorHistogram.h " +
-	    "PhotonSelection.cxx " +
-	    "PhotonSelection.h " +
-	    "PhotonSpectrumSelection.cxx " +
-	    "PhotonSpectrumSelection.h " +
-	    "QualityPhotonSelection.cxx " +
-	    "QualityPhotonSelection.h " +
-	    "ParticlesHistogram.cxx " +
-	    "ParticlesHistogram.h " +
-	    "PhysPhotonSelection.cxx " +
-	    "PhysPhotonSelection.h " +
-	    "PhotonTimecutStudySelection.cxx " +
-	    "PhotonTimecutStudySelection.h " +
-	    "TagAndProbeSelection.cxx " +
-	    "TagAndProbeSelection.h " +
-	    "MesonSelectionMC.cxx " +
-	    "MesonSelectionMC.h " +
-	    "PhysPhotonSelectionMC.cxx " +
-	    "PhysPhotonSelectionMC.h " +
-	    "PythiaInfoSelection.cxx " +
-	    "PythiaInfoSelection.h " +
-	    "NonlinearityScanSelection.cxx " +
-	    "NonlinearityScanSelection.h " +
-	    "MixingSample.cxx " +
-	    "MixingSample.h " +
-	    "AliAnalysisTaskPP.cxx " +
-	    "AliAnalysisTaskPP.h " 
+	    "AliPP13ClusterCuts.cxx " +
+	    "AliPP13ClusterCuts.h " +
+	    "AliPP13DetectorHistogram.cxx " +
+	    "AliPP13DetectorHistogram.h " +
+	    "AliPP13PhotonSelection.cxx " +
+	    "AliPP13PhotonSelection.h " +
+	    "AliPP13PhotonSpectrumSelection.cxx " +
+	    "AliPP13PhotonSpectrumSelection.h " +
+	    "AliPP13QualityPhotonSelection.cxx " +
+	    "AliPP13QualityPhotonSelection.h " +
+	    "AliPP13ParticlesHistogram.cxx " +
+	    "AliPP13ParticlesHistogram.h " +
+	    "AliPP13PhysPhotonSelection.cxx " +
+	    "AliPP13PhysPhotonSelection.h " +
+	    "AliPP13PhotonTimecutStudySelection.cxx " +
+	    "AliPP13PhotonTimecutStudySelection.h " +
+	    "AliPP13TagAndProbeSelection.cxx " +
+	    "AliPP13TagAndProbeSelection.h " +
+	    "AliPP13MesonSelectionMC.cxx " +
+	    "AliPP13MesonSelectionMC.h " +
+	    "AliPP13PhysPhotonSelectionMC.cxx " +
+	    "AliPP13PhysPhotonSelectionMC.h " +
+	    "AliPP13PythiaInfoSelection.cxx " +
+	    "AliPP13PythiaInfoSelection.h " +
+	    "AliPP13NonlinearityScanSelection.cxx " +
+	    "AliPP13NonlinearityScanSelection.h " +
+	    "AliPP13MixingSample.cxx " +
+	    "AliPP13MixingSample.h " +
+	    "AliAnalysisTaskPP13.cxx " +
+	    "AliAnalysisTaskPP13.h " 
 	);
 
 	return TString(AliAnalysisManager::GetCommonFileName()) + " ";  // This extra space is important

@@ -1,5 +1,5 @@
 // --- Custom header files ---
-#include "PhysPhotonSelectionMC.h"
+#include "AliPP13PhysPhotonSelectionMC.h"
 
 // --- AliRoot header files ---
 #include <AliPHOSAodCluster.h>
@@ -9,11 +9,11 @@
 using namespace std;
 
 
-ClassImp(PhysPhotonSelectionMC);
+ClassImp(AliPP13PhysPhotonSelectionMC);
 
 
 //________________________________________________________________
-TLorentzVector PhysPhotonSelectionMC::ClusterMomentum(const AliVCluster * c1, const EventFlags & eflags) const
+TLorentzVector AliPP13PhysPhotonSelectionMC::ClusterMomentum(const AliVCluster * c1, const EventFlags & eflags) const
 {
     Float_t energy = c1->E();
 
@@ -24,7 +24,7 @@ TLorentzVector PhysPhotonSelectionMC::ClusterMomentum(const AliVCluster * c1, co
 }
 
 //________________________________________________________________
-Float_t PhysPhotonSelectionMC::Nonlinearity(Float_t x) const
+Float_t AliPP13PhysPhotonSelectionMC::Nonlinearity(Float_t x) const
 {
 	return fGlobalEnergyScale * (1. + fNonA * TMath::Exp(-x / 2. * x / fNonSigma / fNonSigma));
 }

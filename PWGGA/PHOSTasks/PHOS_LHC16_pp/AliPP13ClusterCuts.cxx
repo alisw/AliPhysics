@@ -1,8 +1,8 @@
 // --- Custom libraries ---
-#include "ClusterCuts.h"
+#include "AliPP13ClusterCuts.h"
 
 
-Bool_t ClusterCuts::AcceptCluster(AliVCluster * clus) const
+Bool_t AliPP13ClusterCuts::AcceptCluster(AliVCluster * clus) const
 {
 	if (clus->GetNCells() < fNCellsCut)
 		return kFALSE;
@@ -16,12 +16,12 @@ Bool_t ClusterCuts::AcceptCluster(AliVCluster * clus) const
 	return kTRUE;
 }
 
-ClusterCuts ClusterCuts::GetClusterCuts(Int_t ctype)
+AliPP13ClusterCuts AliPP13ClusterCuts::GetClusterCuts(Int_t ctype)
 {
 	// This parameter is redundant,
 	// but it will be easier to extend this for other periods/datasets
 	(void) ctype;
-	ClusterCuts cuts;
+	AliPP13ClusterCuts cuts;
 	cuts.fNCellsCut = 3;
 	cuts.fClusterMinE = 0.3;
 	cuts.fTimingCut = 12.5e-9;

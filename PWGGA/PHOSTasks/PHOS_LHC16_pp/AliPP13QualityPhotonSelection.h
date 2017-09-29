@@ -1,9 +1,9 @@
-#ifndef QUALITYPHOTONSELECTION_H
-#define QUALITYPHOTONSELECTION_H
+#ifndef ALIPP13QUALITYPHOTONSELECTION_H
+#define ALIPP13QUALITYPHOTONSELECTION_H
 
 // --- Custom header files ---
-#include "DetectorHistogram.h"
-#include "PhotonSelection.h"
+#include "AliPP13DetectorHistogram.h"
+#include "AliPP13PhotonSelection.h"
 
 // --- ROOT system ---
 #include <TH1F.h>
@@ -17,11 +17,11 @@
 #include <AliVCluster.h>
 #include <AliLog.h>
 
-class QualityPhotonSelection : public PhotonSelection
+class AliPP13QualityPhotonSelection : public AliPP13PhotonSelection
 {
 public:
-	QualityPhotonSelection():
-		PhotonSelection(),
+	AliPP13QualityPhotonSelection():
+		AliPP13PhotonSelection(),
 		fClusterNXZ(),
 		fClusterEXZ(),
 		fClusterTime(0),
@@ -36,8 +36,8 @@ public:
 	{
 	}
 
-	QualityPhotonSelection(const char * name, const char * title, ClusterCuts cuts):
-		PhotonSelection(name, title, cuts),
+	AliPP13QualityPhotonSelection(const char * name, const char * title, AliPP13ClusterCuts cuts):
+		AliPP13PhotonSelection(name, title, cuts),
 		fClusterNXZ(),
 		fClusterEXZ(),
 		fClusterTime(0),
@@ -52,7 +52,7 @@ public:
 	{
 	}
 
-	~QualityPhotonSelection()
+	~AliPP13QualityPhotonSelection()
 	{
 		// NB: Don't use "delete []", to supress warnings.
 		//
@@ -75,17 +75,17 @@ protected:
 	virtual void SelectPhotonCandidates(const TObjArray * clusArray, TObjArray * candidates, const EventFlags & eflags);
 	virtual void ConsiderPair(const AliVCluster * c1, const AliVCluster * c2, const EventFlags & eflags);
 
-	QualityPhotonSelection(const QualityPhotonSelection &);
-	QualityPhotonSelection & operator = (const QualityPhotonSelection &);
+	AliPP13QualityPhotonSelection(const AliPP13QualityPhotonSelection &);
+	AliPP13QualityPhotonSelection & operator = (const AliPP13QualityPhotonSelection &);
 
 private:
 	virtual Int_t AbsId(Int_t x, Int_t z, Int_t sm) const;
 
-	DetectorHistogram * fClusterNXZ[2]; //!
-	DetectorHistogram * fClusterEXZ[2]; //!
-	DetectorHistogram * fClusterTime; //!
-	DetectorHistogram * fClusterEvsT; //!
-	DetectorHistogram * fClusterTimeMap; //!
+	AliPP13DetectorHistogram * fClusterNXZ[2]; //!
+	AliPP13DetectorHistogram * fClusterEXZ[2]; //!
+	AliPP13DetectorHistogram * fClusterTime; //!
+	AliPP13DetectorHistogram * fClusterEvsT; //!
+	AliPP13DetectorHistogram * fClusterTimeMap; //!
 	TH1F * fClusterIdN[2]; //!
 	TH1F * fClusterIdE[2]; //!
 
@@ -94,6 +94,6 @@ private:
 	TH2F * fNcellsE; //!
 	TH2F * fShapeE;  //!
 
-	ClassDef(QualityPhotonSelection, 2)
+	ClassDef(AliPP13QualityPhotonSelection, 2)
 };
 #endif

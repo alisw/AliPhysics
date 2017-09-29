@@ -1,9 +1,9 @@
-#ifndef QUALITYSELECTION_H
-#define QUALITYSELECTION_H
+#ifndef ALIPP13QUALITYSELECTION_H
+#define ALIPP13QUALITYSELECTION_H
 
 // --- Custom header files ---
-#include "PhotonSelection.h"
-#include "DetectorHistogram.h"
+#include "AliPP13PhotonSelection.h"
+#include "AliPP13DetectorHistogram.h"
 
 // --- ROOT system ---
 #include <TObjArray.h>
@@ -13,11 +13,11 @@
 #include <AliVCluster.h>
 #include <AliLog.h>
 
-class PhotonSpectrumSelection : public PhotonSelection
+class AliPP13PhotonSpectrumSelection : public AliPP13PhotonSelection
 {
 public:
-    PhotonSpectrumSelection():
-        PhotonSelection(),
+    AliPP13PhotonSpectrumSelection():
+        AliPP13PhotonSelection(),
         fSpectrum(0),
         fSpectrumCPV(0),
         fSpectrumDisp(0),
@@ -25,8 +25,8 @@ public:
     {
     }
 
-    PhotonSpectrumSelection(const char * name, const char * title, ClusterCuts cuts, Float_t cpv = 10., Float_t disp = 3.0):
-        PhotonSelection(name, title, cuts),
+    AliPP13PhotonSpectrumSelection(const char * name, const char * title, AliPP13ClusterCuts cuts, Float_t cpv = 10., Float_t disp = 3.0):
+        AliPP13PhotonSelection(name, title, cuts),
         fDistanceCPV(cpv),
         fDispersionCut(disp),
         fSpectrum(0),
@@ -36,7 +36,7 @@ public:
     {
     }
 
-    ~PhotonSpectrumSelection()
+    ~AliPP13PhotonSpectrumSelection()
     {
         if(fSpectrum)     delete fSpectrum;
         if(fSpectrumCPV)  delete fSpectrumCPV;
@@ -57,19 +57,19 @@ public:
 protected:
     virtual void FillClusterHistograms(const AliVCluster * c, const EventFlags & eflags);
 
-    PhotonSpectrumSelection(const PhotonSpectrumSelection &);
-    PhotonSpectrumSelection & operator = (const PhotonSpectrumSelection &);
+    AliPP13PhotonSpectrumSelection(const AliPP13PhotonSpectrumSelection &);
+    AliPP13PhotonSpectrumSelection & operator = (const AliPP13PhotonSpectrumSelection &);
 
     Float_t fDistanceCPV;
     Float_t fDispersionCut;
 
 private:
 
-    DetectorHistogram * fSpectrum;     //!
-    DetectorHistogram * fSpectrumCPV;  //!
-    DetectorHistogram * fSpectrumDisp; //!
-    DetectorHistogram * fSpectrumBoth; //!
+    AliPP13DetectorHistogram * fSpectrum;     //!
+    AliPP13DetectorHistogram * fSpectrumCPV;  //!
+    AliPP13DetectorHistogram * fSpectrumDisp; //!
+    AliPP13DetectorHistogram * fSpectrumBoth; //!
 
-    ClassDef(PhotonSpectrumSelection, 2)
+    ClassDef(AliPP13PhotonSpectrumSelection, 2)
 };
 #endif

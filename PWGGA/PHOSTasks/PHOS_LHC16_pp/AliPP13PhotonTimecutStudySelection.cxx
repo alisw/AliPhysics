@@ -1,5 +1,5 @@
 // --- Custom header files ---
-#include "PhotonTimecutStudySelection.h"
+#include "AliPP13PhotonTimecutStudySelection.h"
 
 // --- ROOT system ---
 #include <TH2F.h>
@@ -11,17 +11,17 @@
 #include <iostream>
 using namespace std;
 
-ClassImp(PhotonTimecutStudySelection);
+ClassImp(AliPP13PhotonTimecutStudySelection);
 
 
 //________________________________________________________________
-Bool_t PhotonTimecutStudySelection::IsMainBC(const AliVCluster * clus) const
+Bool_t AliPP13PhotonTimecutStudySelection::IsMainBC(const AliVCluster * clus) const
 {
 	return TMath::Abs(clus->GetTOF()) < fTimingCutPair;
 }
 
 //________________________________________________________________
-void PhotonTimecutStudySelection::InitSelectionHistograms()
+void AliPP13PhotonTimecutStudySelection::InitSelectionHistograms()
 {
 
 	// pi0 mass spectrum
@@ -36,11 +36,11 @@ void PhotonTimecutStudySelection::InitSelectionHistograms()
 	for (Int_t i = 0; i < 2; ++i)
 	{
 		const char * s = (i == 0) ? "" : "Mix";
-		DetectorHistogram::Mode m = DetectorHistogram::kSingleHist;
-		fMassPt[i]             = new DetectorHistogram(new TH2F(Form("h%sMassPt", s), "(M,p_{T})_{#gamma#gamma}, N_{cell}>2 ; M_{#gamma#gamma}, GeV; p_{T}, GeV/c", nM, mMin, mMax, nPt, ptMin, ptMax), fListOfHistos, m);
-		fMassPtMainMain[i]     = new DetectorHistogram(new TH2F(Form("h%sMassPtMainMain", s), "(M,p_{T})_{#gamma#gamma}, main-main ; M_{#gamma#gamma}, GeV; p_{T}, GeV/c", nM, mMin, mMax, nPt, ptMin, ptMax), fListOfHistos, m);
-		fMassPtMainPileup[i]   = new DetectorHistogram(new TH2F(Form("h%sMassPtMainPileup", s), "(M,p_{T})_{#gamma#gamma}, main-pileup ; M_{#gamma#gamma}, GeV; p_{T}, GeV/c", nM, mMin, mMax, nPt, ptMin, ptMax), fListOfHistos, m);
-		fMassPtPileupPileup[i] = new DetectorHistogram(new TH2F(Form("h%sMassPtPileupPileup", s), "(M,p_{T})_{#gamma#gamma}, pileup-pileup ; M_{#gamma#gamma}, GeV; p_{T}, GeV/c", nM, mMin, mMax, nPt, ptMin, ptMax), fListOfHistos, m);
+		AliPP13DetectorHistogram::Mode m = AliPP13DetectorHistogram::kSingleHist;
+		fMassPt[i]             = new AliPP13DetectorHistogram(new TH2F(Form("h%sMassPt", s), "(M,p_{T})_{#gamma#gamma}, N_{cell}>2 ; M_{#gamma#gamma}, GeV; p_{T}, GeV/c", nM, mMin, mMax, nPt, ptMin, ptMax), fListOfHistos, m);
+		fMassPtMainMain[i]     = new AliPP13DetectorHistogram(new TH2F(Form("h%sMassPtMainMain", s), "(M,p_{T})_{#gamma#gamma}, main-main ; M_{#gamma#gamma}, GeV; p_{T}, GeV/c", nM, mMin, mMax, nPt, ptMin, ptMax), fListOfHistos, m);
+		fMassPtMainPileup[i]   = new AliPP13DetectorHistogram(new TH2F(Form("h%sMassPtMainPileup", s), "(M,p_{T})_{#gamma#gamma}, main-pileup ; M_{#gamma#gamma}, GeV; p_{T}, GeV/c", nM, mMin, mMax, nPt, ptMin, ptMax), fListOfHistos, m);
+		fMassPtPileupPileup[i] = new AliPP13DetectorHistogram(new TH2F(Form("h%sMassPtPileupPileup", s), "(M,p_{T})_{#gamma#gamma}, pileup-pileup ; M_{#gamma#gamma}, GeV; p_{T}, GeV/c", nM, mMin, mMax, nPt, ptMin, ptMax), fListOfHistos, m);
 	}
 
 
@@ -55,7 +55,7 @@ void PhotonTimecutStudySelection::InitSelectionHistograms()
 }
 
 //________________________________________________________________
-void PhotonTimecutStudySelection::ConsiderPair(const AliVCluster * c1, const AliVCluster * c2, const EventFlags & eflags)
+void AliPP13PhotonTimecutStudySelection::ConsiderPair(const AliVCluster * c1, const AliVCluster * c2, const EventFlags & eflags)
 {
 	TLorentzVector p1, p2, psum;
 	c1->GetMomentum(p1, eflags.vtxBest);

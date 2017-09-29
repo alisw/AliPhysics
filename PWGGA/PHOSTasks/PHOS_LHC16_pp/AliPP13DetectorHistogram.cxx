@@ -1,6 +1,5 @@
 // --- Custom header files ---
-#include "DetectorHistogram.h"
-// #include "AliAnalysisTaskPP.h"
+#include "AliPP13DetectorHistogram.h"
 
 // --- ROOT system ---
 #include <TString.h>
@@ -13,7 +12,7 @@ using namespace std;
 
 //
 //________________________________________________________________
-DetectorHistogram::DetectorHistogram(TH1 * hist, TList * owner, DetectorHistogram::Mode mode):
+AliPP13DetectorHistogram::AliPP13DetectorHistogram(TH1 * hist, TList * owner, AliPP13DetectorHistogram::Mode mode):
 	fHistogram123(0),
 	fHistograms(),
 	fInterModuleHistograms(),
@@ -62,7 +61,7 @@ DetectorHistogram::DetectorHistogram(TH1 * hist, TList * owner, DetectorHistogra
 
 
 //________________________________________________________________
-void DetectorHistogram::FillAll(Int_t sm1, Int_t sm2, Float_t x, Float_t y)
+void AliPP13DetectorHistogram::FillAll(Int_t sm1, Int_t sm2, Float_t x, Float_t y)
 {
 	if (sm1 < kFirstModule || sm1 > kLastModule)
 	{
@@ -89,7 +88,7 @@ void DetectorHistogram::FillAll(Int_t sm1, Int_t sm2, Float_t x, Float_t y)
 }
 
 //________________________________________________________________
-void DetectorHistogram::FillAll(Int_t sm1, Int_t sm2, Float_t x, Float_t y, Float_t z)
+void AliPP13DetectorHistogram::FillAll(Int_t sm1, Int_t sm2, Float_t x, Float_t y, Float_t z)
 {
 	if (sm1 < kFirstModule || sm1 > kLastModule)
 	{
@@ -116,7 +115,7 @@ void DetectorHistogram::FillAll(Int_t sm1, Int_t sm2, Float_t x, Float_t y, Floa
 }
 
 //________________________________________________________________
-void DetectorHistogram::FillModules(Int_t sm1, Int_t sm2, Float_t x, Float_t y, Float_t z)
+void AliPP13DetectorHistogram::FillModules(Int_t sm1, Int_t sm2, Float_t x, Float_t y, Float_t z)
 {
 
 	if (sm1 == sm2 && fMode == kModules)
@@ -129,7 +128,7 @@ void DetectorHistogram::FillModules(Int_t sm1, Int_t sm2, Float_t x, Float_t y, 
 
 
 //________________________________________________________________
-void DetectorHistogram::FillModules(Int_t sm1, Int_t sm2, Float_t x, Float_t y)
+void AliPP13DetectorHistogram::FillModules(Int_t sm1, Int_t sm2, Float_t x, Float_t y)
 {
 
 	if (sm1 == sm2 && fMode == kModules)
@@ -140,7 +139,7 @@ void DetectorHistogram::FillModules(Int_t sm1, Int_t sm2, Float_t x, Float_t y)
 }
 
 //________________________________________________________________
-TString DetectorHistogram::Title(TString title, Int_t i) const
+TString AliPP13DetectorHistogram::Title(TString title, Int_t i) const
 {
 	if (i == -1)
 		return title + "SM123";
@@ -150,30 +149,17 @@ TString DetectorHistogram::Title(TString title, Int_t i) const
 }
 
 //________________________________________________________________
-TString DetectorHistogram::Title(TString title, Int_t i, Int_t j) const
+TString AliPP13DetectorHistogram::Title(TString title, Int_t i, Int_t j) const
 {
 	TString s = (i == j) ? Form("SM%d", i) : Form("SM%dSM%d", i, j);
 	return title + s;
 }
 
 //________________________________________________________________
-Int_t DetectorHistogram::Index(Int_t sm1, Int_t sm2) const
+Int_t AliPP13DetectorHistogram::Index(Int_t sm1, Int_t sm2) const
 {
 	if (sm1 > sm2)
 		swap(sm1, sm2);
 
-	// TODO: Get rid of this loop here
-	//       Replace by the triangular array indexing
-	
-	Int_t index = 0;
-	for (Int_t i = kFirstModule; i < (kLastModule + 1); ++i)
-	{
-		for (Int_t j = i; j < (kLastModule + 1); ++j)
-		{
-			if (i == sm1 && j == sm2)
-				return index;
-			++index;
-		}
-	}
-	return -1;
+	return sm2 * (sm2 + 1) / 2 + sm1;
 }

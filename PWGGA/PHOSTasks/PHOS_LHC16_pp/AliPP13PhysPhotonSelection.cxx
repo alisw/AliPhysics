@@ -1,6 +1,5 @@
 // --- Custom header files ---
-#include "PhysPhotonSelection.h"
-// #include "AliAnalysisTaskPP.h"
+#include "AliPP13PhysPhotonSelection.h"
 
 // --- ROOT system ---
 #include <TH2F.h>
@@ -13,11 +12,11 @@
 using namespace std;
 
 
-ClassImp(PhysPhotonSelection);
+ClassImp(AliPP13PhysPhotonSelection);
 
 
 //________________________________________________________________
-void PhysPhotonSelection::InitSelectionHistograms()
+void AliPP13PhysPhotonSelection::InitSelectionHistograms()
 {
 	// pi0 mass spectrum
 	Int_t nM       = 750;
@@ -31,7 +30,7 @@ void PhysPhotonSelection::InitSelectionHistograms()
 	{
 		const char * s = (i == 0) ? "" : "Mix";
 		TH1 * hist = new TH2F(Form("h%sMassPt", s), "(M,p_{T})_{#gamma#gamma}, ; M_{#gamma#gamma}, GeV; p_{T}, GeV/c", nM, mMin, mMax, nPt, ptMin, ptMax);
-		fInvariantMass[i] = new DetectorHistogram(hist, fListOfHistos);
+		fInvariantMass[i] = new AliPP13DetectorHistogram(hist, fListOfHistos);
 	}
 
 	for (Int_t i = 0; i < fListOfHistos->GetEntries(); ++i)
@@ -50,7 +49,7 @@ void PhysPhotonSelection::InitSelectionHistograms()
 }
 
 //________________________________________________________________
-void PhysPhotonSelection::ConsiderPair(const AliVCluster * c1, const AliVCluster * c2, const EventFlags & eflags)
+void AliPP13PhysPhotonSelection::ConsiderPair(const AliVCluster * c1, const AliVCluster * c2, const EventFlags & eflags)
 {
 	TLorentzVector p1 = ClusterMomentum(c1, eflags);
 	TLorentzVector p2 = ClusterMomentum(c2, eflags);
@@ -74,7 +73,7 @@ void PhysPhotonSelection::ConsiderPair(const AliVCluster * c1, const AliVCluster
 }
 
 //________________________________________________________________
-void PhysPhotonSelection::FillClusterHistograms(const AliVCluster * clus, const EventFlags & eflags)
+void AliPP13PhysPhotonSelection::FillClusterHistograms(const AliVCluster * clus, const EventFlags & eflags)
 {
 	TLorentzVector p = ClusterMomentum(clus, eflags);
 	
