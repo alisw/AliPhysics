@@ -2173,13 +2173,7 @@ void AliAnalysisTaskEMCALDirGamma::UserExec(Option_t *)
   if (!TGeoGlobalMagField::Instance()->GetField()) { // construct field map
     if (fEsdEv) {
       const AliESDRun *erun = fEsdEv->GetESDRun();
-      AliMagF *field = AliMagF::CreateFieldMap(erun->GetCurrentL3(),
-                                               erun->GetCurrentDip(),
-                                               AliMagF::kConvLHC,
-                                               kFALSE,
-                                               erun->GetBeamEnergy(),
-                                               erun->GetBeamType());
-      TGeoGlobalMagField::Instance()->SetField(field);
+      erun->InitMagneticField();
     }
     else {
       Double_t pol = -1; //polarity
