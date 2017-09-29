@@ -51,7 +51,7 @@ private:
   TH2F                 *fProduction[2][2];             //!<! *(MC only)* Total number of produced particles dStar state][Matter-Antimatter]
   TH2F                 *fReconstructed[2][2][3];    //!<! *(MC only)* Positive and negative tracks reconstructed in the acceptance (ITS-TPC,ITS-TPC-TOF,ITS-TPC-(TOF)) [Ps state][Matter-Antimatter][Detector]
   TH2F                 *fTotal[2][2];               //!<! *(MC only)* Positively and negatively charged particles in acceptance : [dStar state][Matter-Antimatter]
-  TH1F                 *nDaughters;
+  TH1F                 *fNDaughters;
 
   /// \cond CLASSDEF
   ClassDef(AliAnalysisTaskdStar,1)

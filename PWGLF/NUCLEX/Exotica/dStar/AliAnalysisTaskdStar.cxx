@@ -34,8 +34,7 @@ ClassImp(AliAnalysisTaskdStar);
 
 struct mother_struct{
   int id;
-  bool pip_tof;
-  bool pim_tof;
+  bool pi_tof;
   bool deuteron_tof;
   int n_daughters;
   FourVector_t vec;
@@ -99,7 +98,7 @@ void AliAnalysisTaskdStar::UserCreateOutputObjects() {
     }
   }
 
-  nDaughters = new TH1F("nDaugthers","number of daughter per dstar", 10, 0, 10);
+  fNDaughters = new TH1F("nDaugthers","number of daughter per dstar", 10, 0, 10);
   fList->Add(nDaughters);
 
   AliPDG::AddParticlesToPdgDataBase();
@@ -142,56 +141,18 @@ void AliAnalysisTaskdStar::UserExec(Option_t *){
     AliAODMCParticle *part = (AliAODMCParticle*)stack->UncheckedAt(iMC);
     const int pdg = TMath::Abs(part->GetPdgCode());
     const int iC = part->Charge() > 0 ? 1 : 0;
-
-    //const int mult = -1 + 2 * iC;
-    // const int iS = pdg == 900010020 ? 0 : pdg == 9322136 ? 1 : -1;
-    //if (iS == -1) continue;
-
+    if (pdg != 900010020) continue;
     FourVector_t moth_vec = {0.f,0.f,0.f,0.f}, tmp_vec = {0.f,0.f,0.f,0.f};
 
-    // bool visible_decay = false;
+    for(int iD=0; iD<0: iD++){
+      const int daughter_id = part->GetDaughter(0+iD);
+      AliAODMCParticle *daughter_part = AliAODMCParticle*)stack->At(TMath::Abs(daughter_id));
+      mp_vec.SetCoordinates(daughter_part->Pt(),daughter_part->Eta(),daughter_part->Phi(),daughter_part->M());
+      moth_vec+=tmp_vec;
+    }
 
-    const int pip_id = part->GetDaughter(1);
-    AliAODMCParticle *pip_part = (AliAODMCParticle*)stack->At(TMath::Abs(pip_id));
-    tmp_vec.SetCoordinates(pip_part->Pt(),pip_part->Eta(),pip_part->Phi(),pip_part->M());
-    moth_vec+=tmp_vec;
-
-    const int pim_id = part->GetDaughter(1);
-    AliAODMCParticle *pim_part = (AliAODMCParticle*)stack->At(TMath::Abs(pim_id));
-    tmp_vec.SetCoordinates(pim_part->Pt(),pim_part->Eta(),pim_part->Phi(),pim_part->M());
-    moth_vec+=tmp_vec;
-
-    const int deuteron_id = part->GetDaughter(1);
-    AliAODMCParticle *deuteron_part = (AliAODMCParticle*)stack->At(TMath::Abs(deuteron_id));
-    tmp_vec.SetCoordinates(deuteron_part->Pt(),deuteron_part->Eta(),deuteron_part->Phi(),deuteron_part->M());
-    moth_vec+=tmp_vec;
-
-
-    // a cosa serve il numero in GetDaughter()?
-    // non capisco dove identifico la particella
-
-
-    const int phi_id = part->GetDaughter(0); //Phi meson
-    AliAODMCParticle *phi_part = (AliAODMCParticle*)stack->At(TMath::Abs(phi_id));
-    int phi_pdg = phi_part->GetPdgCode();
-    int phi_dah_n = phi_part->GetNDaughters();
-    const int kaon1_id = phi_part->GetDaughter(0);
-    AliAODMCParticle *kaon1_part = (AliAODMCParticle*)stack->At(TMath::Abs(kaon1_id));
-    int kaon1_pdg = TMath::Abs(kaon1_part->GetPdgCode());
-
-    tmp_vec.SetCoordinates(kaon1_part->Pt(),kaon1_part->Eta(),kaon1_part->Phi(),kaon1_part->M());
-    moth_vec+=tmp_vec;
-    const int kaon2_id = phi_part->GetDaughter(1);
-    AliAODMCParticle *kaon2_part = (AliAODMCParticle*)stack->At(TMath::Abs(kaon2_id));
-    int kaon2_pdg = TMath::Abs(kaon2_part->GetPdgCode());
-    tmp_vec.SetCoordinates(kaon2_part->Pt(),kaon2_part->Eta(),kaon2_part->Phi(),kaon2_part->M());
-    moth_vec+=tmp_vec;
-    const int proton_id = part->GetDaughter(1); // Proton
-    AliAODMCParticle *proton_part = (AliAODMCParticle*)stack->At(TMath::Abs(proton_id));
-    int proton_pdg = TMath::Abs(proton_part->GetPdgCode());
-    tmp_vec.SetCoordinates(proton_part->Pt(),proton_part->Eta(),proton_part->Phi(),proton_part->M());
-    moth_vec+=tmp_vec;
-
+    int part_n_daughters = part->GetDaughter(1)-part->GetDaughter(0);
+    fNDaughters->Fill(part_n_daughters); // check the number of daughter for dstar
     fProduction[iC]->Fill(part->M(),part->Pt());
 
     if ( (part->Y() < fRequireYmin || part->Y() > fRequireYmax) ) continue;
@@ -208,7 +169,7 @@ void AliAnalysisTaskdStar::UserExec(Option_t *){
     AliAODMCParticle *part = (AliAODMCParticle*)stack->At(TMath::Abs(track->GetLabel()));
     if (!part) continue;
     const int pdg = TMath::Abs(part->GetPdgCode());
-    if (pdg != 211 && pdg != -211 && pdg != 1000010020) continue;
+    if (pdg != 211 && pdg != 1000010020) continue;
 
     const int mother_id = part->GetMother();
     AliAODMCParticle* mother = (mother_id >= 0) ? (AliAODMCParticle*)stack->At(mother_id) : nullptr;
@@ -243,38 +204,18 @@ void AliAnalysisTaskdStar::UserExec(Option_t *){
       if (it == mothers.end()){
         mother_struct tmp_mum;
         tmp_mum.id = mother_id;
-        tmp_mum.pip_tof = AliAnalysisTaskdStar::HasTOF(track) && (TMath::Abs(fPID->NumberOfSigmas(AliPIDResponse::kTOF,track,AliPID::kPion))<3.);
+        tmp_mum.pi_tof = AliAnalysisTaskdStar::HasTOF(track) && (TMath::Abs(fPID->NumberOfSigmas(AliPIDResponse::kTOF,track,AliPID::kPion))<3.);
         tmp_mum.n_daughters = 1;
         tmp_mum.vec = tmp_vec;
         mothers.push_back(tmp_mum);
       }
       else{
         it->n_daughters++;
-        it->pip_tof *= AliAnalysisTaskdStar::HasTOF(track) && (TMath::Abs(fPID->NumberOfSigmas(AliPIDResponse::kTOF,track,AliPID::kPion))<3.);
+        it->pi_tof *= AliAnalysisTaskdStar::HasTOF(track) && (TMath::Abs(fPID->NumberOfSigmas(AliPIDResponse::kTOF,track,AliPID::kPion))<3.);
         it->vec+=tmp_vec;
       }
     }
 
-
-    //Check wether the track belgons to a pion-
-    if (pdg == -211 && mother_pdg == 900010020) {
-      if(TMath::Abs(fPID->NumberOfSigmas(AliPIDResponse::kTPC,track,AliPID::kPion))>3.) continue;
-      FourVector_t tmp_vec = {(float)track->Pt(),(float)track->Eta(),(float)track->Phi(),(float)track->M(AliAODTrack::kPion)};
-      auto it = std::find(mothers.begin(),mothers.end(), mother_id);
-      if (it == mothers.end()){
-        mother_struct tmp_mum;
-        tmp_mum.id = mother_id;
-        tmp_mum.pip_tof = AliAnalysisTaskdStar::HasTOF(track) && (TMath::Abs(fPID->NumberOfSigmas(AliPIDResponse::kTOF,track,AliPID::kPion))<3.);
-        tmp_mum.n_daughters = 1;
-        tmp_mum.vec = tmp_vec;
-        mothers.push_back(tmp_mum);
-      }
-      else{
-        it->n_daughters++;
-        it->pip_tof *= AliAnalysisTaskdStar::HasTOF(track) && (TMath::Abs(fPID->NumberOfSigmas(AliPIDResponse::kTOF,track,AliPID::kPion))<3.);
-        it->vec+=tmp_vec;
-      }
-    }
   } // End AOD track loop
 
   for (const auto& mum : mothers) {
@@ -286,7 +227,7 @@ void AliAnalysisTaskdStar::UserExec(Option_t *){
     const float pt_rec = mum.vec.Pt();
     const float mass_rec = mum.vec.M();
     fReconstructed[iC][0]->Fill(mass_rec,pt_rec);
-    if(mum.pip_tof && pim_tof && mum.deuteron_tof) fReconstructed[iC][1]->Fill(mass_rec,pt_rec);
+    if(mum.pi_tof && mum.deuteron_tof) fReconstructed[iC][1]->Fill(mass_rec,pt_rec);
     if(mum.deuteron_tof) fReconstructed[iC][2]->Fill(mass_rec,pt_rec);
   }
 
