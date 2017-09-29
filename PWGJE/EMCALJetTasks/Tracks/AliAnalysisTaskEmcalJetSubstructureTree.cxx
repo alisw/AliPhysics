@@ -26,6 +26,7 @@
  ************************************************************************************/
 #include <iostream>
 #include <string>
+#include <set>
 #include <sstream>
 #include <vector>
 
@@ -226,22 +227,7 @@ bool AliAnalysisTaskEmcalJetSubstructureTree::Run(){
   nsubjettinessSettings.fBeta = 1.;
   nsubjettinessSettings.fRadius = 0.4;
 
-  if(mcjets && !datajets) {
-    // pure MC (gen) train - run over MC jets
-    AliDebugStream(1) << "In MC pure jet branch: found " << mcjets->GetNJets() << " jets, " << mcjets->GetNAcceptedJets() << " were accepted\n";
-    for(auto jet : mcjets->accepted()) {
-      try {
-        AliJetSubstructureData structure = MakeJetSubstructure(*jet, mcjets->GetJetRadius() * 2., particles, nullptr,{softdropSettings, nsubjettinessSettings});
-        Double_t angularity[2] = {0., MakeAngularity(*jet, particles, nullptr)},
-                 ptd[2] = {0., MakePtD(*jet, particles, nullptr)};
-        FillTree(mcjets->GetJetRadius(), weight, nullptr, jet, nullptr, &(structure.fSoftDrop), nullptr, &(structure.fNsubjettiness), angularity, ptd, rhoparameters);
-      } catch (ReclusterizerException &e) {
-        AliErrorStream() << "Error in reclusterization - skipping jet" << std::endl;
-      }
-    }
-  }
-
-
+  std::set<AliEmcalJet *> taglist;
   if(datajets) {
     AliDebugStream(1) << "In data jets branch: found" <<  datajets->GetNJets() << " jets, " << datajets->GetNAcceptedJets() << " were accepted\n";
     AliDebugStream(1) << "Having MC information: " << (mcjets ? TString::Format("yes, with %d jets", mcjets->GetNJets()) : "no") << std::endl; 
@@ -252,6 +238,7 @@ bool AliAnalysisTaskEmcalJetSubstructureTree::Run(){
 
       if(mcjets) {
         if(!associatedJet) continue;
+        taglist.insert(associatedJet);
         try {
           DoConstituentQA(jet, tracks, clusters);
           AliJetSubstructureData structureData =  MakeJetSubstructure(*jet, datajets->GetJetRadius() * 2., tracks, clusters, {softdropSettings, nsubjettinessSettings}),
@@ -272,6 +259,25 @@ bool AliAnalysisTaskEmcalJetSubstructureTree::Run(){
         } catch(ReclusterizerException &e) {
           AliErrorStream() << "Error in reclusterization - skipping jet" << std::endl;
         }
+      }
+    }
+  }
+
+  if(mcjets) {
+	  // process non-matched true jets
+    // - for efficiency studies
+    // - for MCgen train (taglist will be empty in this case)
+    AliDebugStream(1) << "In MC pure jet branch: found " << mcjets->GetNJets() << " jets, " << mcjets->GetNAcceptedJets() << " were accepted\n";
+    for(auto j : mcjets->accepted()){
+      AliEmcalJet *mcjet = static_cast<AliEmcalJet *>(j);
+      if(taglist.find(mcjet) != taglist.end()) continue;
+      try {
+        AliJetSubstructureData structure = MakeJetSubstructure(*mcjet, mcjets->GetJetRadius() * 2., particles, nullptr,{softdropSettings, nsubjettinessSettings});
+        Double_t angularity[2] = {0., MakeAngularity(*mcjet, particles, nullptr)},
+                 ptd[2] = {0., MakePtD(*mcjet, particles, nullptr)};
+        FillTree(mcjets->GetJetRadius(), weight, nullptr, mcjet, nullptr, &(structure.fSoftDrop), nullptr, &(structure.fNsubjettiness), angularity, ptd, rhoparameters);
+      } catch (ReclusterizerException &e) {
+        AliErrorStream() << "Error in reclusterization - skipping jet" << std::endl;
       }
     }
   }
