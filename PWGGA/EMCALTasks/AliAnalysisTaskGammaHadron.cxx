@@ -1656,8 +1656,8 @@ void AliAnalysisTaskGammaHadron::FillQAHisograms(Int_t identifier,AliClusterCont
 					valueArray[2] = etadiff;
 					valueArray[3] = phidiff;
 					valueArray[4] = energy/mom;
-					valueArray[5] = gammaInfo;
-					valueArray[6] = fCent;
+					valueArray[5] = fCent;
+					valueArray[6] = gammaInfo;
 					fClusterProp->Fill(valueArray); //..all clusters - no cuts
 				}
 			}
@@ -1670,8 +1670,8 @@ void AliAnalysisTaskGammaHadron::FillQAHisograms(Int_t identifier,AliClusterCont
 				valueArray[2] = 0;
 				valueArray[3] = 0;
 				valueArray[4] = 0;
-				valueArray[5] = gammaInfo;
-				valueArray[6] = fCent;
+				valueArray[5] = fCent;
+				valueArray[6] = gammaInfo;
 				fClusterProp->Fill(valueArray); //..all clusters - no cuts
 			}
 		}
