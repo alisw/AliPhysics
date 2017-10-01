@@ -808,7 +808,7 @@ class AliAnalysisTaskTOFSpectra : public AliAnalysisTaskSE {
   TH1F* hTOFResidualX;                        ///<  Histogram with the Impact Residual X
   TH1F* hTOFResidualZ;                        ///<  Histogram with the Impact Residual Z
   TH2F* hPadDist;                             ///<  Histogram with the Impact Residual X and Residual Z values
-  TH2F* hTOFDist;                             ///<  Histogram with the distributions of the TOF strips and sectors
+  TH2F* hTOFDist;                             ///<  Histogram with the distributions of the TOF strips and sectors matched to tracks
   TH1F* hTOFChannel;                          ///<  Histogram with the Channel in the TOF
   TH1F* hT0;                                  ///<  Histogram with the T0 used for each track
   TH1F* hT0Resolution;                        ///<  Histogram with the resolution on the T0
@@ -828,7 +828,10 @@ class AliAnalysisTaskTOFSpectra : public AliAnalysisTaskSE {
   TH2I* hBetaNoMismatchCentral;               ///<  Histogram with the track beta vs the track momentum for central events with a cut on the maximum number of clusters to reduce the mismatch
   TH2I* hBetaNoMismatchCentralEtaCut;         ///<  Histogram with the track beta vs the track momentum for central events with a cut on the maximum number of clusters to reduce the mismatch and a cut on the eta range
   TH2I* hBetaNoMismatchCentralEtaCutOut;      ///<  Histogram with the track beta vs the track momentum for central events with a cut on the maximum number of clusters to reduce the mismatch and a cut on the eta range
+  TH1F* hChannelEvents;                       ///<  Histogram with the numbe of events used in the TOF channel-time mode
   TH2I* hChannelTime;                         ///<  Histogram with the measured time at TOF divided into each channel (or strip) -> Used to get the mismatch
+  TH1F* hChannelHits;                         ///<  Histogram with the numer of TOF Hits (matched and not matched) per channel
+  TH1F* hChannelClusters;                     ///<  Histogram with the numer of TOF Clusters (matched and not matched) per channel
   TH1F* hTOFClusters;                         ///<  Histogram with the number of TOF clusters per track
   TH1F* hTOFClustersDCApass;                  ///<  Histogram with the number of TOF clusters per track, for tracks which passed the DCA cut for primaries
   //->TPC information

@@ -262,7 +262,10 @@ AliAnalysisTaskTOFSpectra::AliAnalysisTaskTOFSpectra(const TString taskname, Boo
     , hBetaNoMismatchCentralEtaCut(0x0)
     , hBetaNoMismatchCentralEtaCutOut(0x0)
     //Channel and clusters in TOF
+    , hChannelEvents(0x0)
     , hChannelTime(0x0)
+    , hChannelHits(0x0)
+    , hChannelClusters(0x0)
     , hTOFClusters(0x0)
     , hTOFClustersDCApass(0x0)
     //TPC energy loss
@@ -714,8 +717,20 @@ void AliAnalysisTaskTOFSpectra::UserCreateOutputObjects()
   DefineTimePerformance();
 
   if (fChannelmode) {
+    hChannelEvents = new TH1F("hChannelEvents", "Histogram with Channel/Time correlation;Channel;TOF (ps)", 10, -.5, 9.5);
+    hChannelEvents->GetXaxis()->SetBinLabel(1, "Events Read");             //Number of events used
+    hChannelEvents->GetXaxis()->SetBinLabel(2, "Total # of TOF Hits");     //Number of events used
+    hChannelEvents->GetXaxis()->SetBinLabel(2, "Total # of TOF Clusters"); //Number of events used
+    fListHist->AddLast(hChannelEvents);
+
     hChannelTime = new TH2I("hChannelTime", "Histogram with Channel/Time correlation;Channel;TOF (ps)", kChannelBins, fChannelFirst - .5, fChannelLast - .5, kTimeBins, fTOFmin, fTOFmax);
     fListHist->AddLast(hChannelTime);
+
+    hChannelHits = new TH1F("hChannelHits", "Histogram with Hits per Channel;Channel;Counts", kChannelBins, fChannelFirst - .5, fChannelLast - .5);
+    fListHist->AddLast(hChannelHits);
+
+    hChannelClusters = new TH1F("hChannelClusters", "Histogram with Clusters per Channel;Channel;Counts", kChannelBins, fChannelFirst - .5, fChannelLast - .5);
+    fListHist->AddLast(hChannelClusters);
   } else {
 
     Int_t binstart = 1;
@@ -2101,8 +2116,10 @@ void AliAnalysisTaskTOFSpectra::UserExec(Option_t*)
       AnTrk->fTOFMismatchTime = fTOFMismatchTime;
       for (Int_t ipart = 0; ipart < kExpSpecies; ipart++)
         AnTrk->fTOFExpTime[ipart] = fTOFExpTime[ipart];
+      //
       for (Int_t ipart = 0; ipart < kExpSpecies; ipart++)
         AnTrk->fTOFExpSigma[ipart] = fTOFExpSigma[ipart];
+      //
       AnTrk->fT0TrkTime = fT0TrkTime;
       AnTrk->fTOFchan = fTOFchan;
       AnTrk->fEta = fEta;
@@ -2185,7 +2202,7 @@ void AliAnalysisTaskTOFSpectra::UserExec(Option_t*)
       }
 
       //
-      //All trakcs matched to TOF
+      //All tracks matched to TOF
       //
       hNumMatch[fSign]->Fill(fPt);           //-> transverse momentum
       hNumMatchEta[fSign]->Fill(fEta);       //-> eta
@@ -2205,7 +2222,9 @@ void AliAnalysisTaskTOFSpectra::UserExec(Option_t*)
       //Performance plots
       FillPerformanceHistograms();
 
-      //fine plot test matching efficiency
+      //====================//
+      // TOF geometry plots //
+      //====================//
       hPadDist->Fill(fTOFImpactDX, fTOFImpactDZ);
       AliTOFGeometry::GetVolumeIndices(fTOFchan, det);
       coord[0] = AliTOFGeometry::GetX(det);
@@ -2215,6 +2234,10 @@ void AliAnalysisTaskTOFSpectra::UserExec(Option_t*)
       hTOFResidualX->Fill(fTOFImpactDX);
       hTOFResidualZ->Fill(fTOFImpactDZ);
       hTOFChannel->Fill(fTOFchan);
+
+      //======================//
+      // TOF resolution plots //
+      //======================//
       if ((fP > 0.9) && (fP < 1.1)) { //P range selected for TOF resolution measurements
         Float_t deltat = fTOFTime - fT0TrkTime - fTOFExpTime[AliPID::kPion];
         hTimeOfFlightRes->Fill(deltat);
@@ -2226,12 +2249,13 @@ void AliAnalysisTaskTOFSpectra::UserExec(Option_t*)
             break;
           }
         }
-        if (fT0TrkTime != 0) { //No T0 Fill
+        //
+        if (fT0TrkTime != 0) //No T0 Fill
           hTimeOfFlightTOFRes->Fill(deltat);
-        }
-        if ((TMath::Abs(fTOFImpactDX) < 1.25) && (TMath::Abs(fTOFImpactDZ) < 1.75)) {
+        //
+        if ((TMath::Abs(fTOFImpactDX) < 1.25) && (TMath::Abs(fTOFImpactDZ) < 1.75)) //Center of the PAD
           hTimeOfFlightGoodRes->Fill(deltat);
-        }
+        //
       }
     }
 
@@ -2895,13 +2919,27 @@ Bool_t AliAnalysisTaskTOFSpectra::SelectEvents(Int_t& binstart)
 //________________________________________________________________________
 void AliAnalysisTaskTOFSpectra::RunTOFChannel()
 {
+  hChannelEvents->Fill(0);//Number of events used
 
-  for (Int_t iTrack = 0; iTrack < fESD->GetNumberOfTracks(); iTrack++) {
-    AliESDtrack* track = fESD->GetTrack(iTrack);
-    if (!track) {
+  AliESDtrack* track = 0x0;
+  //Loop over all Tracks
+  for (Int_t iTrack = 0; iTrack < fESD->GetNumberOfTracks(); iTrack++)
+  {
+    track = fESD->GetTrack(iTrack);
+    if (!track)
       continue;
+    //
+    hChannelTime->Fill(track->GetTOFCalChannel(), track->GetTOFsignal());//Filling TOF channel + TOF signal of the matched track
+  }
+  //Loop over all TOF Hits
+  for (Int_t i = 0; i < fESD->GetESDTOFHits()->GetEntries(); i++) {
+    hChannelEvents->Fill(1); //Number of total Hits in all events
+    hChannelHits->Fill(static_cast<AliESDTOFHit*>(fESD->GetESDTOFHits()->At(i))->GetTOFchannel());
     }
-    hChannelTime->Fill(track->GetTOFCalChannel(), track->GetTOFsignal());
+  //Loop over all TOF Clusters
+  for (Int_t i = 0; i < fESD->GetESDTOFClusters()->GetEntries(); i++) {
+    hChannelEvents->Fill(2); //Number of total Clusters in all events
+    hChannelClusters->Fill(static_cast<AliESDTOFCluster*>(fESD->GetESDTOFClusters()->At(i))->GetTOFchannel());
   }
 }
 
