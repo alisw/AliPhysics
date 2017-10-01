@@ -1,4 +1,4 @@
-AliAnalysisTaskTOFSpectra *AddTaskTOFSpectra(Int_t optTree = kTRUE, Bool_t readMC = kFALSE, Bool_t HeavyIon = kTRUE, Bool_t ChannelMismatch = kTRUE, Bool_t CutVariation = kFALSE, Int_t SimpleCutMode = -1, TString prefix = "", TString tname = "TOFSpectra"){
+AliAnalysisTaskTOFSpectra *AddTaskTOFSpectra(Bool_t optTree = kTRUE, Bool_t readMC = kFALSE, Bool_t HeavyIon = kTRUE, Bool_t ChannelMismatch = kTRUE, Bool_t CutVariation = kFALSE, Int_t SimpleCutMode = -1, TString prefix = "", TString tname = "TOFSpectra"){
   // Creates, configures and attaches to the train the task for pi, K , p spectra
   // Get the pointer to the existing analysis manager via the static access method.
   //============================================================================== 
