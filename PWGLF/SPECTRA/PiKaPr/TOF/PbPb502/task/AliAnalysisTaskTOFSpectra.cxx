@@ -450,11 +450,11 @@ void AliAnalysisTaskTOFSpectra::Init()
     ppLimits.AddAt(10, j++);
     ppLimits.AddAt(15, j++);
     ppLimits.AddAt(23, j++);
-    ppLimits.AddAt(33, j);
+    ppLimits.AddAt(33, j++);
     fMultiplicityBin.Set(j, ppLimits.GetArray());
   }
   //Check on the defined binning
-  for (Int_t i = 0; i < (fHImode ? kEvtMultBins : fMultiplicityBin.GetSize()); i++) // Multiplicity
+  for (Int_t i = 0; i < (fHImode ? kEvtMultBins : fMultiplicityBin.GetSize() - 1); i++) // Multiplicity
   {
     AliDebugF(2, "Mutltiplicity Bin %i is [%f, %f]", i, fMultiplicityBin.GetAt(i), fMultiplicityBin.GetAt(i + 1));
     if (fMultiplicityBin.GetAt(i) >= fMultiplicityBin.GetAt(i + 1))
