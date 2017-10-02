@@ -8,7 +8,7 @@
 runLevelQA()
 {
 qaFile=$1
-MACRODIR=$ALICE_PHYSICS/PWGPP/EMCAL/QA/macros
+MACRODIR=$ALICE_PHYSICS/PWGPP/EMCAL/QAMacros
 SaveImages=1
 
 suffix=".root"
@@ -75,7 +75,7 @@ periodLevelQA()
 {
 
 trendingFile=$1
-MACRODIR=$ALICE_PHYSICS/PWGPP/EMCAL/QA/macros
+MACRODIR=$ALICE_PHYSICS/PWGPP/EMCAL/QAMacros
 SaveImages=1
 
 echo
