@@ -2905,23 +2905,22 @@ Bool_t AliAnalysisTaskTOFSpectra::SelectEvents(Int_t& binstart)
 //________________________________________________________________________
 void AliAnalysisTaskTOFSpectra::RunTOFChannel()
 {
-  hChannelEvents->Fill(0);//Number of events used
+  hChannelEvents->Fill(0); //Number of events used
 
   AliESDtrack* track = 0x0;
   //Loop over all Tracks
-  for (Int_t iTrack = 0; iTrack < fESD->GetNumberOfTracks(); iTrack++)
-  {
+  for (Int_t iTrack = 0; iTrack < fESD->GetNumberOfTracks(); iTrack++) {
     track = fESD->GetTrack(iTrack);
     if (!track)
       continue;
     //
-    hChannelTime->Fill(track->GetTOFCalChannel(), track->GetTOFsignal());//Filling TOF channel + TOF signal of the matched track
+    hChannelTime->Fill(track->GetTOFCalChannel(), track->GetTOFsignal()); //Filling TOF channel + TOF signal of the matched track
   }
   //Loop over all TOF Hits
   for (Int_t i = 0; i < fESD->GetESDTOFHits()->GetEntries(); i++) {
     hChannelEvents->Fill(1); //Number of total Hits in all events
     hChannelHits->Fill(static_cast<AliESDTOFHit*>(fESD->GetESDTOFHits()->At(i))->GetTOFchannel());
-    }
+  }
   //Loop over all TOF Clusters
   for (Int_t i = 0; i < fESD->GetESDTOFClusters()->GetEntries(); i++) {
     hChannelEvents->Fill(2); //Number of total Clusters in all events
