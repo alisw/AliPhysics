@@ -79,10 +79,11 @@ class AliAnalysisTaskSEHFvn : public AliAnalysisTaskSE
     fUsePtWeights=usePtWei;
     fEtaGapInTPCHalves=etagap;
   }
-  void SetRecomputeTPCq2(Bool_t opt, Double_t fracKeep=1.1, Int_t removeDau=0, Bool_t removeNdaurandtracks=kFALSE){
+  void SetRecomputeTPCq2(Bool_t opt, Double_t fracKeep=1.1, Int_t removeDau=0, Bool_t removeNdaurandtracks=kFALSE, Bool_t requiremass=kFALSE){
     fOnTheFlyTPCq2=opt;
     fFractionOfTracksForTPCq2=fracKeep;
     fRemoveDauFromq2=removeDau;
+    fRequireMassForDauRemFromq2=requiremass;
     if(fracKeep<1. && removeNdaurandtracks) {
       AliWarning("AliAnalysisTaskSEHFvn::Impossible to set fFractionOfTracksForTPCq2<1 and fRemoveNdauRandomTracks at the same time! fRemoveNdauRandomTracks setted kFALSE.\n");
       fRemoveNdauRandomTracks=kFALSE;
@@ -114,7 +115,7 @@ class AliAnalysisTaskSEHFvn : public AliAnalysisTaskSE
     fTPCEtaMin=etamin;
     fTPCEtaMax=etamax;
   }
-  void SetRemoveDaughtersFromq2(Int_t removeDau) {fRemoveDauFromq2=removeDau;}
+  void SetRemoveDaughtersFromq2(Int_t removeDau, Bool_t requiremass) {fRemoveDauFromq2=removeDau; fRequireMassForDauRemFromq2=requiremass;}
   void SetEnableQnFrameworkCorrForq2(Bool_t usecorr) {fUseQnFrameworkCorrq2=usecorr;}
 
   // Implementation of interface methods
@@ -194,10 +195,11 @@ class AliAnalysisTaskSEHFvn : public AliAnalysisTaskSE
   Double_t fTPCEtaMax;          // max eta for the Q-vector computed on the fly with TPC tracks (both EP and q2)
   Bool_t fRemoveNdauRandomTracks; // flag to activate the removal of nDau random tracks in the q2TPC computed on the fly
   Bool_t fUseQnFrameworkCorrq2; // flag to activate the Qn-framework corrections for the q2
+  Bool_t fRequireMassForDauRemFromq2; // flag to activate mass range when removing daughter tracks from q2
 
   AliAnalysisTaskSEHFvn::FlowMethod fFlowMethod;
 
-  ClassDef(AliAnalysisTaskSEHFvn,10); // AliAnalysisTaskSE for the HF v2 analysis
+  ClassDef(AliAnalysisTaskSEHFvn,11); // AliAnalysisTaskSE for the HF v2 analysis
 };
 
 #endif
