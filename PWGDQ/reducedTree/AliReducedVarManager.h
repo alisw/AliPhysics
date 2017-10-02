@@ -162,20 +162,6 @@ class AliReducedVarManager : public TObject {
     kNTrackingFlags
   };
 
-  enum MultiplicityEstimators {
-    kSPDntracklets10=0,
-    kSPDntracklets08,
-    kSPDntracklets16,
-    kSPDntrackletsOuterEta,
-    kSPDntrackletsEtaBin,
-    kSPDnTrackletsEtaVtxCorr = kSPDntrackletsEtaBin + 32,
-    kVZEROTotalMult,
-    kVZEROATotalMult,
-    kVZEROCTotalMult,
-    kVZEROACTotalMult,
-    kNMultiplicityEstimators
-  };
-
   enum Corrections {
     kVertexCorrectionGlobal=0,
     kVertexCorrectionRunwise,
@@ -315,7 +301,19 @@ class AliReducedVarManager : public TObject {
     kNCaloClusters,     // number of calorimeter clusters
     kNTPCclusters,    // number of TPC clusters
     kMultiplicity,
-    kSPDFiredChips = kMultiplicity + kNMultiplicityEstimators * ( 1 + kNCorrections * kNReferenceMultiplicities * kNSmearingMethods ), // SPD fired chips in first and second layer
+    kSPDntracklets = kMultiplicity,
+    kSPDntracklets08,
+    kSPDntracklets16,
+    kSPDntrackletsOuterEta,
+    kSPDntrackletsEtaBin,
+    kSPDnTracklets10EtaVtxCorr = kSPDntrackletsEtaBin + 32,
+    kVZEROTotalMult,
+    kVZEROATotalMult,
+    kVZEROCTotalMult,
+    kVZEROACTotalMult,
+    kCorrectedMultiplicity,
+    kNMultiplicityEstimators = kCorrectedMultiplicity - kMultiplicity,
+    kSPDFiredChips = kCorrectedMultiplicity + kNMultiplicityEstimators * ( 1 + kNCorrections * kNReferenceMultiplicities * kNSmearingMethods), // SPD fired chips in first and second layer
     kITSnClusters=kSPDFiredChips+2,        // number of ITS clusters in each layer
     kSPDnSingleClusters=kITSnClusters+6,   // number of clusters in SPD layer 1 not mached to tracklets from layer 2
     kEventMixingId,     // Id of the event mixing category 
@@ -620,11 +618,11 @@ class AliReducedVarManager : public TObject {
   static void SetLHCDataInfo(TH1F* totalLumi, TH1F* totalInt0, TH1F* totalInt1, TH1I* fillNumber);
   static void SetGRPDataInfo(TH1I* dipolePolarity, TH1I* l3Polarity, TH1I* timeStart, TH1I* timeStop);
   static void SetRunNumbers( TString runNumbers );
-  static void SetMultiplicityProfile( TH2* profile, MultiplicityEstimators estimator );
+  static void SetMultiplicityProfile( TH2* profile, Int_t estimator );
   static void SetVZEROCalibrationPath(const Char_t* path);
   static void SetCalibrateVZEROqVector(Bool_t option);
   static void SetRecenterVZEROqVector(Bool_t option);
-  static Int_t GetMultiplicityEstimator( Int_t iEstimator, Int_t iCorrection = -1, Int_t iReference = 0, Int_t iSmearing = 0 );
+  static Int_t GetCorrectedMultiplicity( Int_t estimator = kMultiplicity, Int_t correction = 0, Int_t reference = 0, Int_t smearing = 0 );
   
  private:
   static Int_t     fgCurrentRunNumber;               // current run number
@@ -680,7 +678,7 @@ class AliReducedVarManager : public TObject {
   AliReducedVarManager(AliReducedVarManager const&);
   AliReducedVarManager& operator=(AliReducedVarManager const&);  
   
-  ClassDef(AliReducedVarManager,3);
+  ClassDef(AliReducedVarManager, 3);
 };
 
 #endif
