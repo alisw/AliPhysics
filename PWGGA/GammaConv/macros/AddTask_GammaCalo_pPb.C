@@ -557,8 +557,14 @@ void AddTask_GammaCalo_pPb(
     cuts.AddCut("86800113","1111100017032230000","01631031000000d0"); // 60-80
     cuts.AddCut("88000113","1111100017032230000","01631031000000d0"); // 80-100
 
-  } else if (trainConfig == 204){ // EMCAL clusters standard cuts, no nonlin, open timing
+  } else if (trainConfig == 204){ // EMCAL clusters standard cuts, no nonlin
     cuts.AddCut("80000513","1111100057032230000","01631031000000d0"); // 0-100
+  } else if (trainConfig == 205){ // EMCAL clusters standard cuts, no nonlin
+    cuts.AddCut("80000513","1111141057032230000","01631031000000d0"); // 0-100
+    cuts.AddCut("80000513","1111142057032230000","01631031000000d0"); // 0-100
+    cuts.AddCut("80000513","1111151057032230000","01631031000000d0"); // 0-100
+    cuts.AddCut("80000513","1111152057032230000","01631031000000d0"); // 0-100
+  } else if (trainConfig == 206){ // EMCAL clusters standard cuts, no nonlin
     cuts.AddCut("80200513","1111100057032230000","01631031000000d0"); // 0-20
     cuts.AddCut("82400513","1111100057032230000","01631031000000d0"); // 20-40
     cuts.AddCut("84600513","1111100057032230000","01631031000000d0"); // 40-60
@@ -665,8 +671,12 @@ void AddTask_GammaCalo_pPb(
     cuts.AddCut("80000513","2444401011013200000","0163103100000010"); // PHOS group standard, 1000 \mus
     cuts.AddCut("80000513","2444400041013200000","0163103100000010"); // no non lin
     cuts.AddCut("80000513","2444400011013200000","0163103100000010"); // no non lin 1000 \mus
-  } else if (trainConfig == 345) {  // PHOS  INT7 with cents
+  } else if (trainConfig == 345) {  // PHOS  INT7
     cuts.AddCut("80000513","2444400051013200000","0163103100000010"); // no non lin 0-100%
+  } else if (trainConfig == 346) {  // PHOS  INT7
+    cuts.AddCut("80000513","2444451051013200000","0163103100000010"); // CCMF 0-100%
+    cuts.AddCut("80000513","2444452051013200000","0163103100000010"); // CMF 0-100%
+  } else if (trainConfig == 347) {  // PHOS  INT7 with cents
     cuts.AddCut("80200513","2444400051013200000","0163103100000010"); // no non lin 0-20%
     cuts.AddCut("82400513","2444400051013200000","0163103100000010"); // no non lin 20-40%
     cuts.AddCut("84600513","2444400051013200000","0163103100000010"); // no non lin 40-60%
