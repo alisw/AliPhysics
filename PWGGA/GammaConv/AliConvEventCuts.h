@@ -271,6 +271,8 @@ class AliConvEventCuts : public AliAnalysisCuts {
         kLHC17f2b_fast,       //!< anchored LHC16qt pass 1 - general purpose DPMJET,  fast only
         kLHC17f2b_cent,       //!< anchored LHC16qt pass 1 - general purpose DPMJET,  CENT
         kLHC17f2b_cent_woSDD, //!< anchored LHC16qt pass 1 - general purpose DPMJET,  CENT woSDD
+	kLHC17g8a_fast,       //!< anchored LHC16qt pass 1 - jet-jet MC in EPOSLHC    fast
+	kLHC17g8a_cent_woSDD, //!< anchored LHC16qt pass 1 - jet-jet MC in EPOSLHC    CENT woSDD
         kLHC17f3a,            //!< anchored LHC16r pass 1 - general purpose EPOSLHC
         kLHC17f3a_fast,       //!< anchored LHC16r pass 1 - general purpose EPOSLHC, fast only
         kLHC17f3a_cent,       //!< anchored LHC16r pass 1 - general purpose EPOSLHC, CENT
@@ -287,9 +289,11 @@ class AliConvEventCuts : public AliAnalysisCuts {
         kLHC17f4b_fast,       //!< anchored LHC16s pass 1 - general purpose DPMJET,  fast only
         kLHC17f4b_cent,       //!< anchored LHC16s pass 1 - general purpose DPMJET,  CENT
         kLHC17f4b_cent_woSDD, //!< anchored LHC16s pass 1 - general purpose DPMJET,  CENT woSDD
+	kLHC17g8b,            //!< anchored LHC16s pass 1 - jet-jet MC in EPOSLHC
+	kLHC17g8c,            //!< anchored LHC16r pass 1 - jet-jet MC in EPOSLHC
 
-        // 
-        kUnknownPeriod//!< kUnknownPeriod
+	//
+	kUnknownPeriod//!< kUnknownPeriod
       };
 
       /**
@@ -577,8 +581,8 @@ class AliConvEventCuts : public AliAnalysisCuts {
       Double_t                    fEtaShift;                              ///<
       Bool_t                      fDoEtaShift;                            ///< Flag for Etashift
       Int_t                       fDoCentralityFlat;                      ///<
-      TString                     fNameHistoNotFlatCentrality;            ///<
       TString                     fPathWeightsFlatCent;                   ///<
+      TString                     fNameHistoNotFlatCentrality;            ///<
       Bool_t                      fDoReweightHistoMCPi0;                  ///< Flag for reweighting Pi0 input with histogram
       Bool_t                      fDoReweightHistoMCEta;                  ///< Flag for reweighting Eta input with histogram
       Bool_t                      fDoReweightHistoMCK0s;                  ///< Flag for reweighting K0s input with histogram
@@ -647,7 +651,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
   private:
 
       /// \cond CLASSIMP
-      ClassDef(AliConvEventCuts,35)
+      ClassDef(AliConvEventCuts,36)
       /// \endcond
 };
 

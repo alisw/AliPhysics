@@ -39,6 +39,7 @@ class AliAnalysisHFjetTagHFE : public AliAnalysisTaskEmcalJet {
   void SetDebugHFEjet(Bool_t dbHFEj) {idbHFEj = dbHFEj;};
   void SetHybridTrack(Bool_t Hybrid){iHybrid = Hybrid;};
   void SetMinSig(Double_t mimSig){fmimSig = mimSig;};
+  void SetMCdata(Bool_t mcData) {fmcData = mcData;};
 
  protected:
   void                        ExecOnce();
@@ -58,6 +59,7 @@ class AliAnalysisHFjetTagHFE : public AliAnalysisTaskEmcalJet {
     Bool_t idbHFEj;
     Bool_t iHybrid;
     Double_t fmimSig; // max. centrality
+    Bool_t fmcData;
 
   // General histograms
   TH1                       **fHistTracksPt;            //!Track pt spectrum
@@ -77,6 +79,7 @@ class AliAnalysisHFjetTagHFE : public AliAnalysisTaskEmcalJet {
   TH2F                        *fHistZcorr; //!
   TH1F                        *fHistCent; //!
   TH2F                        *fHistTPCnSigma;
+  TH2F                        *fHistEopNsig;
   TH2F                        *fHistEop;
   TH1F                        *fHistJetOrg;
   TH2F                        *fHistJetOrgArea;
@@ -121,7 +124,8 @@ class AliAnalysisHFjetTagHFE : public AliAnalysisTaskEmcalJet {
   void SelectPhotonicElectron(Int_t itrack, AliVTrack *track, Bool_t &fFlagPhotonicElec, Bool_t &fFlagConvinatElec);
   Bool_t isHeavyFlavour(int Mompdg);
   Bool_t isPhotonic(int Mompdg);
-  void MakeParticleLevelJet(THnSparse *pJet);
+  //void MakeParticleLevelJet(THnSparse *pJet);
+  void MakeParticleLevelJet();
   //void SetCentralityMim(Int_t centMim) {fcentMim = centMim;};
   //void SetCentralityMax(Int_t centMax) {fcentMax = centMax;};
 
@@ -135,7 +139,7 @@ class AliAnalysisHFjetTagHFE : public AliAnalysisTaskEmcalJet {
   AliAODMCParticle 	*fMCparticle;
   AliAODMCParticle 	*fMCparticleMother;
 
-  Bool_t fmcData;
+  //Bool_t fmcData;
 
   AliAnalysisHFjetTagHFE(const AliAnalysisHFjetTagHFE&);            // not implemented
   AliAnalysisHFjetTagHFE &operator=(const AliAnalysisHFjetTagHFE&); // not implemented

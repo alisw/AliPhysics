@@ -10,7 +10,6 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
                              Bool_t bUseZDC=kFALSE,
                              TString ZDCCalibFileName,
                              TString sCorrWeight="TPCmVZuZDCu",
-                             Double_t MaxChi2PerClITS=100.,
                              Double_t etaMin=-0.8,
                              Double_t etaMax=0.8,
                              TString Label="",
@@ -19,13 +18,14 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
                              Double_t dMinClusTPC=70,
                              Double_t dDCAxy=1000.,
                              Double_t dDCAz=1000.,
-                             Int_t CRC2nEtaBins=5,
                              Double_t MaxFracSharedTPCCl=0.4,
                              Double_t MaxFracSharedITSCl=0.75,
+                             Double_t MaxChi2PerClTPC=4.,
+                             Double_t MaxChi2PerClITS=100.,
                              TString sSelecCharge="",
                              Bool_t bPtDepDCAxyCut=kFALSE,
                              Bool_t bRequireITSRefit=kFALSE,
-                             Bool_t bCorrectPhiTracklets=kFALSE,
+                             Bool_t bStoreExtraHistoForSubSampling=kFALSE,
                              Double_t DeltaEta=0.4,
                              Bool_t bRecZDCVtxRbR=kFALSE,
                              TString PtWeightsFileName="",
@@ -94,7 +94,6 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
   Bool_t bCorrSpecZDC=kFALSE;
   Bool_t bUsePhiEtaCuts=kFALSE;
   Bool_t bSetQAZDC=kTRUE;
-  Double_t MaxChi2PerClTPC=4.;
   Int_t bCutTPCbound=0;
   Bool_t bCalculateFlow=kTRUE;
   Bool_t bCorrectForBadChannel=kFALSE;
@@ -108,6 +107,8 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
   if(MinMulZN>=13) bZDCCut=kTRUE;
   Bool_t bUseCRCRecenter=kFALSE;
   Float_t ZDCGainAlpha=0.395;
+  Int_t CRC2nEtaBins=5;
+  Bool_t bCorrectPhiTracklets=kFALSE;
 
   // define CRC suffix
   TString CRCsuffix = ":CRC";
@@ -171,9 +172,11 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
   if (EvTrigger == "SemiCen")
     taskFE->SelectCollisionCandidates(AliVEvent::kMB | AliVEvent::kSemiCentral);
   if (EvTrigger == "MB")
-    taskFE->SelectCollisionCandidates(AliVEvent::kMB);
+    //taskFE->SelectCollisionCandidates(AliVEvent::kMB);
+    taskFE->SelectCollisionCandidates(0);
   if (EvTrigger == "MB" && sDataSet.Contains("2015"))
-    taskFE->SelectCollisionCandidates(AliVEvent::kINT7);
+    //taskFE->SelectCollisionCandidates(AliVEvent::kINT7);
+    taskFE->SelectCollisionCandidates(0);
   if (EvTrigger == "Any")
     taskFE->SelectCollisionCandidates(AliVEvent::kAny);
 
@@ -545,6 +548,7 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
   taskQC->SetMaxDevZN(MaxDevZN);
   taskQC->SetZDCGainAlpha(ZDCGainAlpha);
   taskQC->SetTestSin(bTestSin);
+  taskQC->StoreExtraHistoForSubSampling(bStoreExtraHistoForSubSampling);
   taskQC->SetRecenterZDCVtxRbR(bRecZDCVtxRbR);
   taskQC->SetRemoveSplitMergedTracks(bRemoveSplitMergedTracks);
   if (analysisTypeUser == "Tracklets") taskQC->SetUseTracklets(kTRUE);
@@ -850,8 +854,15 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
       }
       if(bUsePtWeights && sPhiEtaWeight.EqualTo("EtaPhiVtxRbR")) {
         if(AODfilterBit==96)  PhiEtaWeightsFileName += "15oHI_FB96_CenPhiEtaWeights_VtxRbR.root";
-        if(AODfilterBit==768 && !Label.Contains("ITScut")) PhiEtaWeightsFileName += "15oHI_FB768_CenPhiEtaWeights_VtxRbR.root";
+        if(AODfilterBit==32)  PhiEtaWeightsFileName += "15oHI_FB32_CenPhiEtaWeights_VtxRbR.root";
+        if(AODfilterBit==768 && !Label.Contains("ITScut") && !Label.Contains("TOF")) PhiEtaWeightsFileName += "15oHI_FB768_CenPhiEtaWeights_VtxRbR.root";
         if(AODfilterBit==768 && Label.Contains("ITScut")) PhiEtaWeightsFileName += "15oHI_FB768ITScuts_CenPhiEtaWeights_VtxRbR.root";
+        if(AODfilterBit==768 && Label.Contains("TOF")) PhiEtaWeightsFileName += "15oHI_FB768_TOF_CenPhiEtaWeights_VtxRbR.root";
+        if(AODfilterBit==768 && sSelecCharge.EqualTo("pos")) PhiEtaWeightsFileName = "alien:///alice/cern.ch/user/j/jmargutt/15oHI_FB768_PosCh_CenPhiEtaWeights_VtxRbR.root";
+        if(AODfilterBit==768 && sSelecCharge.EqualTo("neg")) PhiEtaWeightsFileName = "alien:///alice/cern.ch/user/j/jmargutt/15oHI_FB768_NegCh_CenPhiEtaWeights_VtxRbR.root";
+        if(AODfilterBit==768 && Label.Contains("NTPCCl")) PhiEtaWeightsFileName = "alien:///alice/cern.ch/user/j/jmargutt/15oHI_FB768_NTPCCl_CenPhiEtaWeights_VtxRbR.root";
+        if(AODfilterBit==768 && Label.Contains("ShClITS")) PhiEtaWeightsFileName = "alien:///alice/cern.ch/user/j/jmargutt/15oHI_FB768_ShClITS_CenPhiEtaWeights_VtxRbR.root";
+        if(AODfilterBit==768 && Label.Contains("NTPCCl")) PhiEtaWeightsFileName = "alien:///alice/cern.ch/user/j/jmargutt/15oHI_FB768_NTPCCl_CenPhiEtaWeights_VtxRbR.root";
       }
     }
     if(sDataSet=="2015pidfix") {
@@ -863,6 +874,7 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
       if(bUsePtWeights && sPhiEtaWeight.EqualTo("EtaPhiVtxRbR")) {
         if(AODfilterBit==96) PhiEtaWeightsFileName += "10h_FB96_CenPhiEtaWeights_VtxRbR.root";
         if(AODfilterBit==768) PhiEtaWeightsFileName += "10h_FB768_CenPhiEtaWeights_VtxRbR.root";
+        if(AODfilterBit==768 && Label.Contains("NTPCCl")) PhiEtaWeightsFileName = "alien:///alice/cern.ch/user/j/jmargutt/10h_FB768_NTPCCl_CenPhiEtaWeights_VtxRbR.root";
       }
     }
     TFile* PhiEtaWeightsFile = TFile::Open(PhiEtaWeightsFileName,"READ");

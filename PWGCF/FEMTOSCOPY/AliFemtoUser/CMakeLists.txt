@@ -78,6 +78,7 @@ set(SRCS
   AliFemtoShareQualityQAPairCut.cxx
   AliFemtoShareQualityCorrFctn.cxx
   AliFemtoYlm.cxx
+  AliFemtoConfigObject.cxx
   AliFemtoCorrFctnDirectYlm.cxx
   AliFemtoCorrFctnTPCNcls.cxx
   AliFemtoCorrFctnDEtaDPhi.cxx

@@ -187,6 +187,9 @@ AliAnalysisTaskBFPsi::AliAnalysisTaskBFPsi(const char *name)
   fVxMax(0.8),
   fVyMax(0.8),
   fVzMax(10.),
+  fRequireHighPtTrigger(kFALSE),
+  fPtTriggerMin(0.0),
+  fHistPtTriggerThreshold(0),
   fnAODtrackCutBit(128),
   fPtMin(0.3),
   fPtMax(1.5),
@@ -417,7 +420,7 @@ void AliAnalysisTaskBFPsi::UserCreateOutputObjects() {
   fList->Add(fHistChi2);
   fHistDCA  = new TH2F("fHistDCA","DCA (xy vs. z)",400,-5,5,400,-5,5); 
   fList->Add(fHistDCA);
-  fHistPt   = new TH2F("fHistPt","p_{T} distribution;p_{T} (GeV/c);Centrality percentile",200,0,10,220,-5,105);
+  fHistPt   = new TH2F("fHistPt","p_{T} distribution;p_{T} (GeV/c);Centrality percentile",200,0,20,220,-5,105);
   fList->Add(fHistPt);
   fHistEta  = new TH2F("fHistEta","#eta distribution;#eta;Centrality percentile",200,-2,2,220,-5,105);
   fList->Add(fHistEta);
@@ -425,7 +428,9 @@ void AliAnalysisTaskBFPsi::UserCreateOutputObjects() {
   fList->Add(fHistRapidity);
   fHistPhi  = new TH2F("fHistPhi","#phi distribution;#phi (rad);Centrality percentile",200,0.0,2.*TMath::Pi(),220,-5,105);
   fList->Add(fHistPhi);
-
+  fHistPtTriggerThreshold = new TH2F("fHistPtTriggerThreshold","p_{T} distribution with threshold for pT trig;p_{T} (GeV/c);Centrality percentile",200,0,20,220,-5,105);
+  fList->Add(fHistPtTriggerThreshold);
+				     
   fHistEtaVzPos  = new TH3F("fHistEtaVzPos","#eta vs Vz distribution (+);#eta;V_{z} (cm);Centrality percentile",40,-1.6,1.6,140,-12.,12.,220,-5,105);
   fList->Add(fHistEtaVzPos); 			 
   fHistEtaVzNeg  = new TH3F("fHistEtaVzNeg","#eta vs Vz distribution (-);#eta;V_{z} (cm);Centrality percentile",40,-1.6,1.6,140,-12.,12.,220,-5,105);
@@ -831,9 +836,12 @@ void AliAnalysisTaskBFPsi::UserExec(Option_t *) {
 
   //Sphericity variable
   Double_t gSphericity = -999.;
+
+  //high pT trigger tracks
+  Int_t nTracksAboveHighPtThreshold = 0;
   
   // get the accepted tracks in main event  
-  TObjArray *tracksMain = GetAcceptedTracks(eventMain,lMultiplicityVar,gReactionPlane,gSphericity);
+  TObjArray *tracksMain = GetAcceptedTracks(eventMain,lMultiplicityVar,gReactionPlane,gSphericity,nTracksAboveHighPtThreshold);
   gNumberOfAcceptedTracks = tracksMain->GetEntriesFast();
 
   //Use sphericity cut
@@ -843,7 +851,15 @@ void AliAnalysisTaskBFPsi::UserExec(Option_t *) {
       return;
     }
   }
-  
+
+  //Use of a high pT threshold cut
+  if(fRequireHighPtTrigger) {
+    if(nTracksAboveHighPtThreshold == 0) {
+      AliInfo(Form("The event got rejected since we found no track above the high pT threshold of %.1f",fPtTriggerMin));
+      return;
+    }
+  }
+
   //multiplicity cut (used in pp)
   fHistNumberOfAcceptedTracks->Fill(gNumberOfAcceptedTracks,lMultiplicityVar);
 
@@ -928,8 +944,7 @@ Double_t AliAnalysisTaskBFPsi::IsEventAccepted(AliVEvent *event){
   Float_t gRefMultiplicity = -1.;
   TString gAnalysisLevel = fBalance->GetAnalysisLevel();
 
-  AliMCEvent *mcevent = dynamic_cast<AliMCEvent*>(event);
-
+  AliMCEvent *mcevent = dynamic_cast<AliMCEvent*>(event);  
   fHistEventStats->Fill(1,gRefMultiplicity); //all events
 
   // check first event in chunk (is not needed for new reconstructions)
@@ -969,10 +984,10 @@ Double_t AliAnalysisTaskBFPsi::IsEventAccepted(AliVEvent *event){
 	if(header){  
 	  TArrayF gVertexArray;
 	  header->PrimaryVertex(gVertexArray);
-	  //Printf("Vertex: %lf (x) - %lf (y) - %lf (z)",
-	  //gVertexArray.At(0),
-	  //gVertexArray.At(1),
-	  //gVertexArray.At(2));
+	  /*Printf("Vertex: %lf (x) - %lf (y) - %lf (z)",
+	  gVertexArray.At(0),
+	  gVertexArray.At(1),
+	  gVertexArray.At(2));*/
 	  fHistEventStats->Fill(3,gRefMultiplicity); //events with a proper vertex
 	  if(TMath::Abs(gVertexArray.At(0)) < fVxMax) {
 	    if(TMath::Abs(gVertexArray.At(1)) < fVyMax) {
@@ -1119,72 +1134,112 @@ Double_t AliAnalysisTaskBFPsi::GetRefMultiOrCentrality(AliVEvent *event){
   //if (fUseMultSelectionFramework) {
   
   AliMultSelection *multSelection = (AliMultSelection*) event->FindListObject("MultSelection");
-  if (!multSelection)
-    AliFatal("MultSelection not found in input event");
-  
-  if (fEventClass=="Multiplicity") {
+  if(gAnalysisLevel != "MC") {
+    if (!multSelection)
+      AliFatal("MultSelection not found in input event");
+  }
     
-    if (fUseUncheckedCentrality)
-      gCentrality = multSelection->GetMultiplicityPercentile(fCentralityEstimator, kFALSE);
-    else
-      gCentrality = multSelection->GetMultiplicityPercentile(fCentralityEstimator, kTRUE);
-
-    // error handling
-    if (gCentrality > 100)
-      gCentrality = -1;
-    
-    // QA for centrality estimators (only for checked centrality)
-    fHistCentStats->Fill(0.,multSelection->GetMultiplicityPercentile("V0M", kTRUE));
-    fHistCentStats->Fill(1.,multSelection->GetMultiplicityPercentile("V0A", kTRUE));
-    fHistCentStats->Fill(2.,multSelection->GetMultiplicityPercentile("V0C", kTRUE));
-    fHistCentStats->Fill(3.,multSelection->GetMultiplicityPercentile("FMD", kTRUE));
-    fHistCentStats->Fill(4.,multSelection->GetMultiplicityPercentile("TRK", kTRUE));
-    fHistCentStats->Fill(5.,multSelection->GetMultiplicityPercentile("TKL", kTRUE));
-    fHistCentStats->Fill(6.,multSelection->GetMultiplicityPercentile("CL0", kTRUE));
-    fHistCentStats->Fill(7.,multSelection->GetMultiplicityPercentile("CL1", kTRUE));
-    fHistCentStats->Fill(8.,multSelection->GetMultiplicityPercentile("ZNA", kTRUE));
-    fHistCentStats->Fill(9.,multSelection->GetMultiplicityPercentile("ZPA", kTRUE));
-    fHistCentStats->Fill(10.,multSelection->GetMultiplicityPercentile("V0MvsFMD", kTRUE));
-    fHistCentStats->Fill(11.,multSelection->GetMultiplicityPercentile("TKLvsV0M", kTRUE));
-    fHistCentStats->Fill(12.,multSelection->GetMultiplicityPercentile("ZEMvsZDC", kTRUE));
-    
-    // Centrality estimator USED   ++++++++++++++++++++++++++++++
-    fHistCentStatsUsed->Fill(0.,gCentrality);
-    
-    gMultiplicity = multSelection->GetEstimator(fCentralityEstimator)->GetValue();
-    fHistMultiplicity->Fill(gMultiplicity);
-    fHistMultvsPercent->Fill(gMultiplicity, gCentrality);
-
-    if (fUseOutOfBunchPileUpCutsLHC15o) {
-      if (TMath::Abs(multSelection->GetMultiplicityPercentile("V0M") - multSelection->GetMultiplicityPercentile("CL1")) > 7.5) {
-      fHistEventStats->Fill(9, -1);
-      return -1;
-    }
-      const Int_t nTracks = event->GetNumberOfTracks();
-      Int_t multEsd = ((AliAODHeader*)event->GetHeader())->GetNumberOfESDTracks();
-      Int_t multTPC = 0;
-      for (Int_t it = 0; it < nTracks; it++) {
-	AliAODTrack* AODTrk = (AliAODTrack*)event->GetTrack(it);
-	if (!AODTrk){ delete AODTrk; continue; }
-	if (AODTrk->TestFilterBit(128)) {multTPC++;}
-      } // end of for (Int_t it = 0; it < nTracks; it++)
-
-      if ((multEsd - 3.38*multTPC) > 15000) return -1;
-
-    }
-    
-    fHistCL1vsVZEROPercentile->Fill(multSelection->GetMultiplicityPercentile("V0M"),multSelection->GetMultiplicityPercentile("CL1"));
-    
-    if(multSelection->GetEstimator("RefMult08"))
-      fHistTPCvsVZEROMultiplicity->Fill( multSelection->GetEstimator("V0M")->GetValue(),multSelection->GetEstimator("RefMult08")->GetValue());
-    else
-      gMultiplicityFromAOD = GetReferenceMultiplicityFromAOD(event);
-    
+  if (fEventClass=="Multiplicity") {    
+    //pure MC analysis with "Multiplicity" option
+    if(gAnalysisLevel == "MC") {
+      AliMCEvent* gMCEvent = dynamic_cast<AliMCEvent*>(event);
+      //Calculating the multiplicity as the number of charged primaries
+      //within \pm 0.8 in eta and pT > 0.1 GeV/c
+      for(Int_t iParticle = 0; iParticle < gMCEvent->GetNumberOfPrimaries(); iParticle++) {
+	AliMCParticle* track = dynamic_cast<AliMCParticle *>(gMCEvent->GetTrack(iParticle));
+	if (!track) {
+	  AliError(Form("Could not receive particle %d", iParticle));
+	  continue;
+	}
+	
+	//exclude non stable particles
+	if(!(gMCEvent->IsPhysicalPrimary(iParticle))) continue;
+	
+	//++++++++++++++++
+	if (fMultiplicityEstimator == "V0M") {
+	  if((track->Eta() > 5.1 || track->Eta() < 2.8)&&(track->Eta() < -3.7 || track->Eta() > -1.7)) 
+	    continue;}
+	else if (fMultiplicityEstimator == "V0A") {
+	  if(track->Eta() > 5.1 || track->Eta() < 2.8)  continue;}
+	else if (fMultiplicityEstimator == "V0C") {
+	  if(track->Eta() > -1.7 || track->Eta() < -3.7)  continue;}
+	else if (fMultiplicityEstimator == "TPC") {
+	  if(track->Eta() < fEtaMin || track->Eta() > fEtaMax)  continue;
+	  if(track->Pt() < fPtMin || track->Pt() > fPtMax)  continue;
+	}
+	else{
+	  if(track->Pt() < fPtMin || track->Pt() > fPtMax)  continue;
+	  if(track->Eta() < fEtaMin || track->Eta() > fEtaMax)  continue;
+	}
+	//++++++++++++++++
+	
+	if(track->Charge() == 0) continue;
+	
+	gMultiplicity += 1;
+      }//loop over primaries
+      fHistMultiplicity->Fill(gMultiplicity);
+    }//MC mode
+    else {
+      if (fUseUncheckedCentrality)
+	gCentrality = multSelection->GetMultiplicityPercentile(fCentralityEstimator, kFALSE);
+      else
+	gCentrality = multSelection->GetMultiplicityPercentile(fCentralityEstimator, kTRUE);
+      
+      // error handling
+      if (gCentrality > 100)
+	gCentrality = -1;
+      
+      // QA for centrality estimators (only for checked centrality)
+      fHistCentStats->Fill(0.,multSelection->GetMultiplicityPercentile("V0M", kTRUE));
+      fHistCentStats->Fill(1.,multSelection->GetMultiplicityPercentile("V0A", kTRUE));
+      fHistCentStats->Fill(2.,multSelection->GetMultiplicityPercentile("V0C", kTRUE));
+      fHistCentStats->Fill(3.,multSelection->GetMultiplicityPercentile("FMD", kTRUE));
+      fHistCentStats->Fill(4.,multSelection->GetMultiplicityPercentile("TRK", kTRUE));
+      fHistCentStats->Fill(5.,multSelection->GetMultiplicityPercentile("TKL", kTRUE));
+      fHistCentStats->Fill(6.,multSelection->GetMultiplicityPercentile("CL0", kTRUE));
+      fHistCentStats->Fill(7.,multSelection->GetMultiplicityPercentile("CL1", kTRUE));
+      fHistCentStats->Fill(8.,multSelection->GetMultiplicityPercentile("ZNA", kTRUE));
+      fHistCentStats->Fill(9.,multSelection->GetMultiplicityPercentile("ZPA", kTRUE));
+      fHistCentStats->Fill(10.,multSelection->GetMultiplicityPercentile("V0MvsFMD", kTRUE));
+      fHistCentStats->Fill(11.,multSelection->GetMultiplicityPercentile("TKLvsV0M", kTRUE));
+      fHistCentStats->Fill(12.,multSelection->GetMultiplicityPercentile("ZEMvsZDC", kTRUE));
+      
+      // Centrality estimator USED   ++++++++++++++++++++++++++++++
+      fHistCentStatsUsed->Fill(0.,gCentrality);
+      
+      gMultiplicity = multSelection->GetEstimator(fCentralityEstimator)->GetValue();
+      fHistMultiplicity->Fill(gMultiplicity);
+      fHistMultvsPercent->Fill(gMultiplicity, gCentrality);
+      
+      if (fUseOutOfBunchPileUpCutsLHC15o) {
+	if (TMath::Abs(multSelection->GetMultiplicityPercentile("V0M") - multSelection->GetMultiplicityPercentile("CL1")) > 7.5) {
+	  fHistEventStats->Fill(9, -1);
+	  return -1;
+	}
+	const Int_t nTracks = event->GetNumberOfTracks();
+	Int_t multEsd = ((AliAODHeader*)event->GetHeader())->GetNumberOfESDTracks();
+	Int_t multTPC = 0;
+	for (Int_t it = 0; it < nTracks; it++) {
+	  AliAODTrack* AODTrk = (AliAODTrack*)event->GetTrack(it);
+	  if (!AODTrk){ delete AODTrk; continue; }
+	  if (AODTrk->TestFilterBit(128)) {multTPC++;}
+	} // end of for (Int_t it = 0; it < nTracks; it++)
+	
+	if ((multEsd - 3.38*multTPC) > 15000) return -1;
+	
+      }
+      
+      fHistCL1vsVZEROPercentile->Fill(multSelection->GetMultiplicityPercentile("V0M"),multSelection->GetMultiplicityPercentile("CL1"));
+      
+      if(multSelection->GetEstimator("RefMult08"))
+	fHistTPCvsVZEROMultiplicity->Fill( multSelection->GetEstimator("V0M")->GetValue(),multSelection->GetEstimator("RefMult08")->GetValue());
+      else
+	gMultiplicityFromAOD = GetReferenceMultiplicityFromAOD(event);
+    } //Not "MC" option
   }
   
   // use centrality framework
-  else{ 
-    
+  else { 
     // calculate centrality always (not only in centrality mode)
     if(gAnalysisLevel == "AOD"|| gAnalysisLevel == "MCAOD" || gAnalysisLevel == "MCAODrec" ) { //centrality in AOD header  //++++++++++++++
       AliAODHeader *header = (AliAODHeader*) event->GetHeader();
@@ -1618,7 +1673,7 @@ Double_t AliAnalysisTaskBFPsi::GetTrackbyTrackCorrectionMatrix( Double_t vEta,
 }
 
 //________________________________________________________________________
-TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t gCentrality, Double_t gReactionPlane, Double_t &gSphericity){
+TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t gCentrality, Double_t gReactionPlane, Double_t &gSphericity, Int_t &nAcceptedTracksAboveHighPtThreshold){
   // Returns TObjArray with tracks after all track cuts (only for AOD!)
   // Fills QA histograms
 
@@ -1910,7 +1965,13 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t gC
       //===========================PID===============================//
       //+++++++++++++++++++++++++++++//
     
-       // Kinematics cuts from ESD track cuts
+      //pT trigger threshold cut
+      if(vPt > fPtTriggerMin) {
+	nAcceptedTracksAboveHighPtThreshold += 1;
+	fHistPtTriggerThreshold->Fill(vPt,gCentrality);
+      }
+      
+      // Kinematics cuts from ESD track cuts
       if( vPt < fPtMin || vPt > fPtMax)      continue;
       if( vEta < fEtaMin || vEta > fEtaMax)  continue;
 
@@ -2059,7 +2120,11 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t gC
       vPt     = aodTrack->Pt();
       vY = log( ( sqrt(fMassParticleOfInterest*fMassParticleOfInterest + vPt*vPt*cosh(vEta)*cosh(vEta)) + vPt*sinh(vEta) ) / sqrt(fMassParticleOfInterest*fMassParticleOfInterest + vPt*vPt) ); // convert eta to y; be aware that this works only for mass assumption of POI 
            
-      
+      if(vPt > fPtTriggerMin) {
+	nAcceptedTracksAboveHighPtThreshold += 1;
+      	fHistPtTriggerThreshold->Fill(vPt,gCentrality);
+      }
+
       // Kinematics cuts from ESD track cuts
       if( vPt < fPtMin || vPt > fPtMax)      continue;
       if( vEta < fEtaMin || vEta > fEtaMax)  continue;
@@ -2122,6 +2187,11 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t gC
 	vPhi    = aodTrack->Phi();// * TMath::RadToDeg();
 	vPt     = aodTrack->Pt();
 	
+	if(vPt > fPtTriggerMin) {
+	  nAcceptedTracksAboveHighPtThreshold += 1;
+	  fHistPtTriggerThreshold->Fill(vPt,gCentrality);
+	}
+
 	// Kinematics cuts from ESD track cuts
 	if( vPt < fPtMin || vPt > fPtMax)      continue;
 	if( vEta < fEtaMin || vEta > fEtaMax)  continue;
@@ -2319,6 +2389,11 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t gC
       }
       //===========================end of PID (so far only for electron rejection)===============================//
       
+      if(vPt > fPtTriggerMin) {
+	nAcceptedTracksAboveHighPtThreshold += 1;
+	fHistPtTriggerThreshold->Fill(vPt,gCentrality);
+      }
+
       // Kinematics cuts from ESD track cuts
       if( vPt < fPtMin || vPt > fPtMax)      continue;
       if( vEta < fEtaMin || vEta > fEtaMax)  continue;

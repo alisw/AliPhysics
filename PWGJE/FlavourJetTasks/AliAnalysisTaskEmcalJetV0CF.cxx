@@ -305,9 +305,9 @@ Bool_t AliAnalysisTaskEmcalJetV0CF::FillRecoInfo()
     if (!pV0->IsV0PhysicalPrimary()) continue;
     if (!pV0->IsV0InEtaAcc(fV0CutMinEta,fV0CutMaxEta)) continue;
 
-    const auto bKshort(pV0->IsKshort());
-    const auto bLambda(pV0->IsLambda());
-    const auto bAntiLa(pV0->IsAntiLa());
+    const auto bKshort(pV0->IsKshortMC());
+    const auto bLambda(pV0->IsLambdaMC());
+    const auto bAntiLa(pV0->IsAntiLaMC());
     if (!(bKshort || bLambda || bAntiLa)) continue;
 //=============================================================================
 

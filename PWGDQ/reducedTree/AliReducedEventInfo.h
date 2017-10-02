@@ -70,6 +70,10 @@ class AliReducedEventInfo : public AliReducedBaseEvent {
   Float_t   MultEstimatorSPDTracklets()   const {return fMultiplicityEstimators[7];}
   Float_t   MultEstimatorRefMult05()   const {return fMultiplicityEstimators[8];}
   Float_t   MultEstimatorRefMult08()   const {return fMultiplicityEstimators[9];}
+  Float_t   MultEstimatorV0M()   const {return fMultiplicityEstimators[10];}
+  Float_t   MultEstimatorV0A()   const {return fMultiplicityEstimators[11];}
+  Float_t   MultEstimatorV0C()   const {return fMultiplicityEstimators[12];}
+  
   Float_t   MultEstimatorPercentileOnlineV0M()   const {return fMultiplicityEstimatorPercentiles[0];}
   Float_t   MultEstimatorPercentileOnlineV0A()   const {return fMultiplicityEstimatorPercentiles[1];}
   Float_t   MultEstimatorPercentileOnlineV0C()   const {return fMultiplicityEstimatorPercentiles[2];}
@@ -80,6 +84,9 @@ class AliReducedEventInfo : public AliReducedBaseEvent {
   Float_t   MultEstimatorPercentileSPDTracklets()   const {return fMultiplicityEstimatorPercentiles[7];}
   Float_t   MultEstimatorPercentileRefMult05()   const {return fMultiplicityEstimatorPercentiles[8];}
   Float_t   MultEstimatorPercentileRefMult08()   const {return fMultiplicityEstimatorPercentiles[9];}
+  Float_t   MultEstimatorPercentileV0M()   const {return fMultiplicityEstimatorPercentiles[10];}
+  Float_t   MultEstimatorPercentileV0A()   const {return fMultiplicityEstimatorPercentiles[11];}
+  Float_t   MultEstimatorPercentileV0C()   const {return fMultiplicityEstimatorPercentiles[12];}
   
   Float_t   MultChannelVZERO(Int_t channel)   const {return (channel>=0 && channel<=63 ? fVZEROMult[channel] : -999.);}
   Float_t   MultVZEROA()                      const;
@@ -152,8 +159,8 @@ class AliReducedEventInfo : public AliReducedBaseEvent {
   UInt_t    fTimeStamp;             // time stamp of the event                
   UInt_t    fEventType;             // event type                             
   ULong64_t fTriggerMask;           // trigger mask
-  Float_t   fMultiplicityEstimators[10];   // multiplicity estimators: "OnlineV0M", "OnlineV0A", "OnlineV0C", "ADM", "ADA", "ADC", "SPDClusters", "SPDTracklets", "RefMult05", "RefMult08"
-  Float_t   fMultiplicityEstimatorPercentiles[10];   // multiplicity estimators: "OnlineV0M", "OnlineV0A", "OnlineV0C", "ADM", "ADA", "ADC", "SPDClusters", "SPDTracklets", "RefMult05", "RefMult08"
+  Float_t   fMultiplicityEstimators[13];   // multiplicity estimators: "OnlineV0M", "OnlineV0A", "OnlineV0C", "ADM", "ADA", "ADC", "SPDClusters", "SPDTracklets", "RefMult05", "RefMult08"
+  Float_t   fMultiplicityEstimatorPercentiles[13];   // multiplicity estimators: "OnlineV0M", "OnlineV0A", "OnlineV0C", "ADM", "ADA", "ADC", "SPDClusters", "SPDTracklets", "RefMult05", "RefMult08"
   Bool_t    fIsPhysicsSelection;    // PhysicsSelection passed event
   Bool_t    fIsSPDPileup;           // identified as pileup event by SPD
   Bool_t    fIsSPDPileupMultBins;   // identified as pileup event by SPD in multiplicity bins

@@ -3329,11 +3329,11 @@ void AliAnalysisTaskSED0Correlations::FillPurityPlots(TClonesArray* mcArray, Ali
         ((TH1F*)fOutputStudy->FindObject(Form("hPurityCount_SecAccepted_pTD%s_pTass%s",stringpTD.Data(),namebinAss[j].Data())))->Fill(0.); 
         ((TH1F*)fOutputStudy->FindObject(Form("hPuritydPhi_SecAccepted_pTD%s_pTass%s",stringpTD.Data(),namebinAss[j].Data())))->Fill(deltaphi); 
       }
-      if(origTr>=1&&origTr<=3) {
+      if(primTrack && origTr>=1&&origTr<=3) {  //fill for acccepted primary charm tracks
         ((TH1F*)fOutputStudy->FindObject(Form("hPurityCount_CharmAccepted_pTD%s_pTass%s",stringpTD.Data(),namebinAss[j].Data())))->Fill(0.); 
         ((TH1F*)fOutputStudy->FindObject(Form("hPuritydPhi_CharmAccepted_pTD%s_pTass%s",stringpTD.Data(),namebinAss[j].Data())))->Fill(deltaphi); 
       }
-      if(origTr>=4&&origTr<=8) {
+      if(primTrack && origTr>=4&&origTr<=8) {  //fill for accepted primary beauty tracks
         ((TH1F*)fOutputStudy->FindObject(Form("hPurityCount_BeautyAccepted_pTD%s_pTass%s",stringpTD.Data(),namebinAss[j].Data())))->Fill(0.); 
         ((TH1F*)fOutputStudy->FindObject(Form("hPuritydPhi_BeautyAccepted_pTD%s_pTass%s",stringpTD.Data(),namebinAss[j].Data())))->Fill(deltaphi); 
       }

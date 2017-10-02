@@ -4,6 +4,7 @@
 #include <TH1F.h>
 #include <TFile.h>
 #include <TF1.h>
+#include <TSystem.h>
 #include <TMath.h>
 #include "TTree.h"
 #include <TLegend.h>
@@ -24,7 +25,10 @@ void FillMeanAndRms(TH2F* h2d, TGraphErrors* gMean, TGraphErrors* gRms);
 const Int_t totTrending=36;
 Float_t vecForTrend[totTrending];
 
-void PlotAODtrackQA(TString filename="AnalysisResults.root", TString suffix="QA", Int_t runNumber=-1){
+void PlotAODtrackQA(TString filename="AnalysisResults.root", TString suffix="QA", Int_t runNumber=-1, TString outputForm="png"){
+
+  TString pdfFileNames="";
+  TString plotFileName="";
 
   TString varForTrending[totTrending];
   for(Int_t jbit=0; jbit<12; jbit++){
@@ -53,7 +57,15 @@ void PlotAODtrackQA(TString filename="AnalysisResults.root", TString suffix="QA"
   
   TFile* f=new TFile(filename.Data());
   TDirectoryFile* df=(TDirectoryFile*)f->Get("CheckAODTracks");
+  if(!df){
+    printf("Directory CheckAODTracks not found in file %s\n",filename.Data());
+    return;
+  }
   TList* l=(TList*)df->Get(Form("clistCheckAODTracks%s",suffix.Data()));
+  if(!l){
+    printf("TList clistCheckAODTracks%s not found in file %s\n",suffix.Data(),filename.Data());
+    return;    
+  }
 
   TH3F* hEtaPhiPtTPCsel=(TH3F*)l->FindObject("hEtaPhiPtTPCsel");
   TH3F* hEtaPhiPtTPCselITSref=(TH3F*)l->FindObject("hEtaPhiPtTPCselITSref");
@@ -192,7 +204,9 @@ void PlotAODtrackQA(TString filename="AnalysisResults.root", TString suffix="QA"
     hRatioPosNegEtaNegTPCsel->Draw();
     cdist->cd(4);
     hRatioPosNegEtaPosTPCsel->Draw();
-    cdist->SaveAs("TracksPtDistrib-TPCsel.png");
+    plotFileName=Form("TracksPtDistrib-TPCsel.%s",outputForm.Data());
+    cdist->SaveAs(plotFileName.Data());
+    if(outputForm=="pdf") pdfFileNames+=Form("%s ",plotFileName.Data());
 
     TCanvas* cdists=new TCanvas("cdists","Pt Distrib SPDany",900,900);
     cdists->Divide(2,2);
@@ -207,7 +221,9 @@ void PlotAODtrackQA(TString filename="AnalysisResults.root", TString suffix="QA"
     hRatioPosNegEtaNegTPCsel->Draw();
     cdists->cd(4);
     hRatioPosNegEtaPosTPCsel->Draw();
-    cdists->SaveAs("TracksPtDistrib-TPCselSPDany.png");
+    plotFileName=Form("TracksPtDistrib-TPCselSPDany.%s",outputForm.Data());
+    cdists->SaveAs(plotFileName.Data());
+    if(outputForm=="pdf") pdfFileNames+=Form("%s ",plotFileName.Data());
   }else{
     TCanvas* cdist=new TCanvas("cdist","Pt+Phi Distrib",900,900);
     cdist->Divide(2,2);
@@ -227,7 +243,9 @@ void PlotAODtrackQA(TString filename="AnalysisResults.root", TString suffix="QA"
     legd->Draw();
     cdist->cd(4);
     DrawDistrib(hPhiEtaPosTPCsel,hPhiEtaPosTPCselITSref,hPhiEtaPosTPCselSPDany,kFALSE);
-    cdist->SaveAs("TracksPtPhiDistrib.png");
+    plotFileName=Form("TracksPtPhiDistrib.%s",outputForm.Data());
+    cdist->SaveAs(plotFileName.Data());
+    if(outputForm=="pdf") pdfFileNames+=Form("%s ",plotFileName.Data());
   }
 
   TCanvas* cdist2=new TCanvas("cdist2","Phi Distrib",900,900);
@@ -245,7 +263,9 @@ void PlotAODtrackQA(TString filename="AnalysisResults.root", TString suffix="QA"
   DrawDistrib(hPhiEtaNegTPCselHighPt,hPhiEtaNegTPCselITSrefHighPt,hPhiEtaNegTPCselSPDanyHighPt,kFALSE);
   cdist2->cd(4);
   DrawDistrib(hPhiEtaPosTPCselHighPt,hPhiEtaPosTPCselITSrefHighPt,hPhiEtaPosTPCselSPDanyHighPt,kFALSE);
-  cdist2->SaveAs("TracksPhiDistrib-PtBins.png");
+  plotFileName=Form("TracksPhiDistrib-PtBins.%s",outputForm.Data());
+  cdist2->SaveAs(plotFileName.Data());
+  if(outputForm=="pdf") pdfFileNames+=Form("%s ",plotFileName.Data());
 
   TH1D* hMatchEffVsPtNegEta=ComputeMatchEff(hPtEtaNegTPCselITSref,hPtEtaNegTPCsel,"hMatchEffVsPtNegEta",1,20,"p_{T} (GeV/c)");
   TH1D* hMatchEffVsPtPosEta=ComputeMatchEff(hPtEtaPosTPCselITSref,hPtEtaPosTPCsel,"hMatchEffVsPtPosEta",1,20,"p_{T} (GeV/c)");
@@ -329,7 +349,9 @@ void PlotAODtrackQA(TString filename="AnalysisResults.root", TString suffix="QA"
   gPad->SetTicky();
   hMatchEffVsPhiPosEta->Draw("PE");
   hMatchEffVsPhiPosEtaSPDany->Draw("samepe");
-  cme->SaveAs("MatchEff.png");
+  plotFileName=Form("MatchEff.%s",outputForm.Data());
+  cme->SaveAs(plotFileName.Data());
+  if(outputForm=="pdf") pdfFileNames+=Form("%s ",plotFileName.Data());
 
   TCanvas* cme2=new TCanvas("cme2","MatchEff Phi",900,900);
   cme2->Divide(2,2);
@@ -362,7 +384,9 @@ void PlotAODtrackQA(TString filename="AnalysisResults.root", TString suffix="QA"
   gPad->SetTicky();
   hMatchEffVsPhiPosEtaHighPt->Draw("PE");
   hMatchEffVsPhiPosEtaSPDanyHighPt->Draw("samepe");
-  cme2->SaveAs("MatchEffVsPhi.png");
+  plotFileName=Form("MatchEffVsPhi.%s",outputForm.Data());
+  cme2->SaveAs(plotFileName.Data());
+  if(outputForm=="pdf") pdfFileNames+=Form("%s ",plotFileName.Data());
 
   TH3F* hEtaPhiPtTPCselITSrefGood=(TH3F*)l->FindObject("hEtaPhiPtTPCselITSrefGood");
   TH3F* hEtaPhiPtTPCselITSrefFake=(TH3F*)l->FindObject("hEtaPhiPtTPCselITSrefFake");
@@ -453,7 +477,9 @@ void PlotAODtrackQA(TString filename="AnalysisResults.root", TString suffix="QA"
     hratiofakeip->GetYaxis()->SetTitle("Fraction of fakes");
     hratiofakeip->GetYaxis()->SetTitleOffset(1.2);
     hratiofakeip->Draw();
-    c1->SaveAs("GoodFakeTracks.png");
+    plotFileName=Form("GoodFakeTracks.%s",outputForm.Data());
+    c1->SaveAs(plotFileName.Data());
+    if(outputForm=="pdf") pdfFileNames+=Form("%s ",plotFileName.Data());
   }
   
   TH3F* hImpParXYPtMulTPCselSPDanyPrim=(TH3F*)l->FindObject("hImpParXYPtMulTPCselSPDanyPrim");
@@ -580,7 +606,9 @@ void PlotAODtrackQA(TString filename="AnalysisResults.root", TString suffix="QA"
     hratiosecdecip->GetYaxis()->SetTitleOffset(1.2);
     hratiosecdecip->Draw();
     hratiosecmatip->Draw("same");
-    cps1->SaveAs("PrimSecTracks.png");
+    plotFileName=Form("PrimSecTracks.%s",outputForm.Data());
+    cps1->SaveAs(plotFileName.Data());
+    if(outputForm=="pdf") pdfFileNames+=Form("%s ",plotFileName.Data());
   }
   
   TH2F* hPtResidVsPtTPCselITSrefPion=(TH2F*)l->FindObject("hPtResidVsPtTPCselITSrefpi");
@@ -767,7 +795,9 @@ void PlotAODtrackQA(TString filename="AnalysisResults.root", TString suffix="QA"
       gRelProt->Draw("psame");
       gRelK->Draw("psame");
     }
-    c2->SaveAs("PtResisuals.png");
+    plotFileName=Form("PtResisuals.%s",outputForm.Data());
+    c2->SaveAs(plotFileName.Data());
+    if(outputForm=="pdf") pdfFileNames+=Form("%s ",plotFileName.Data());
   }
 
   TH2F* hFilterBits=(TH2F*)l->FindObject("hFilterBits");
@@ -839,7 +869,9 @@ void PlotAODtrackQA(TString filename="AnalysisResults.root", TString suffix="QA"
     }
     leg2->Draw();
   }
-  cip->SaveAs("FilterBits.png");
+  plotFileName=Form("FilterBits.%s",outputForm.Data());
+  cip->SaveAs(plotFileName.Data());
+  if(outputForm=="pdf") pdfFileNames+=Form("%s ",plotFileName.Data());
 
 
   for(Int_t jb=0; jb<12; jb++){
@@ -883,7 +915,9 @@ void PlotAODtrackQA(TString filename="AnalysisResults.root", TString suffix="QA"
     hdist6->SetStats(0);
     hdist6->Draw("colz");
     gPad->SetLogz();
-    ccc->SaveAs(Form("VarDistFiltBit%d.png",jb));
+    plotFileName=Form("VarDistFiltBit%d.%s",jb,outputForm.Data());
+    ccc->SaveAs(plotFileName.Data());
+    if(outputForm=="pdf") pdfFileNames+=Form("%s ",plotFileName.Data());
   }
 
   TH3F*	hInvMassK0s3d=(TH3F*)l->FindObject("hInvMassK0s");
@@ -950,7 +984,9 @@ void PlotAODtrackQA(TString filename="AnalysisResults.root", TString suffix="QA"
   cv0->cd(3);
   hInvMassAntiLambda->Draw();
   InitFuncAndFit(hInvMassAntiLambda,fmassL,kFALSE);
-  cv0->SaveAs("MassSpectraV0-integrated.png");
+  plotFileName=Form("MassSpectraV0-integrated.%s",outputForm.Data());
+  cv0->SaveAs(plotFileName.Data());
+  if(outputForm=="pdf") pdfFileNames+=Form("%s ",plotFileName.Data());
 
   TCanvas* clam=new TCanvas("clam","Lambda vs R",1400,900);
   clam->Divide(2,2);
@@ -986,7 +1022,9 @@ void PlotAODtrackQA(TString filename="AnalysisResults.root", TString suffix="QA"
   tr4->SetTextFont(43);
   tr4->SetTextSize(26);
   tr4->Draw();
-  clam->SaveAs("Lambda-MassSpectra-VsR.png");
+  plotFileName=Form("Lambda-MassSpectra-VsR.%s",outputForm.Data());
+  clam->SaveAs(plotFileName.Data());
+  if(outputForm=="pdf") pdfFileNames+=Form("%s ",plotFileName.Data());
 
   TCanvas* ck0=new TCanvas("ck0","K0s vs. pt",1400,900);
   ck0->Divide(2,2);
@@ -1022,7 +1060,10 @@ void PlotAODtrackQA(TString filename="AnalysisResults.root", TString suffix="QA"
   tp4->SetTextFont(43);
   tp4->SetTextSize(26);
   tp4->Draw();
-  ck0->SaveAs("K0s-MassSpectra-VsPt.png");
+  plotFileName=Form("K0s-MassSpectra-VsPt.%s",outputForm.Data());
+  ck0->SaveAs(plotFileName.Data());
+  if(outputForm=="pdf") pdfFileNames+=Form("%s ",plotFileName.Data());
+
 
   trtree->Fill();
 
@@ -1032,6 +1073,8 @@ void PlotAODtrackQA(TString filename="AnalysisResults.root", TString suffix="QA"
     fouttree->Close();
     delete fouttree;
   }
+
+  gSystem->Exec(Form("gs -q -dNOPAUSE -dBATCH -sDEVICE=pdfwrite -sOutputFile=PlotsAODTrackQA.pdf %s",pdfFileNames.Data()));
 
 }
 

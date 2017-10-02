@@ -45,6 +45,8 @@ class AliAnalysisTaskUpcEtaC : public AliAnalysisTaskSE {
   void InitSystematics();
   Double_t GetMedian(Double_t *daArray);
   Bool_t CheckMeritCutWinner(int cutChoice, double oldPars[3], double newPars[3]);
+  void BoostCut(TLorentzVector d1, TLorentzVector d2, TLorentzVector parent, Double_t *boostInfo);
+
 
  private:
   Int_t fType; // 0 - ESD, 1 - AOD
@@ -236,8 +238,7 @@ class AliAnalysisTaskUpcEtaC : public AliAnalysisTaskSE {
   TH2D *fEtaCPtVsMinvK0sChannel;
   //  TH1D *fEtaCMinvK0sChannel;
   TH1D *fK0sDecayLength;
-  TH2D *fMK0svsMPiK; //added for non-V0 test
-  TH2D *fK0sOtherKPiPtVsMinv; //added for non-V0 test
+
 
   TH2D *fHistEtaCMassVsPt;
   TH1D *fHistEtaCMassCoherent;
@@ -276,7 +277,59 @@ class AliAnalysisTaskUpcEtaC : public AliAnalysisTaskSE {
   TH1D *fV0DecayLength;
   TH1D *fV0Eta;
   TH1D *fCosPointingAngle;
+
+  //RhoRho Channel histos.
+  TH1D *fHistNeventsEtaCRhoChannel;
+  TH2D *f2RhoPtVsMinvRho;
+  TH2D *f4PionPtVsMinvRho;
+  TH2D *f2RhoPtVsMinvEtaC;
+  TH2D *f4PionPtVsMinvEtaC;
+
+  TH2D *f2RhoPtVsMinvOtherRho;
+  TH2D *f2RhoPtVsMinvNonRhoPairs;
+
+  //3PiPi Channel histos
+  TH1D *fHistNeventsEtaC3PiPiChannel;
+  TH2D *f3PiPiPtVsMinvEtaC;
     
+  //Helicity cut histos
+  TH1D *fKstarParentPx;
+  TH1D *fKstarParentPy;
+  TH1D *fKstarParentPz;
+  TH1D *fKstarDaughterParentAngle;
+  TH1D *fKstarDaughterDaughterAngle;
+  TH1D *fKstarDaughterDaughterCosAngle;
+  TH1D *fKstarDaughterPtotal;
+  TH1D *fKstarDaughterPtotalNorm;
+
+  //Helicity cut histos - Check histos
+  TH1D *fKstarParentPxCheck;
+  TH1D *fKstarParentPyCheck;
+  TH1D *fKstarParentPzCheck;
+  TH1D *fKstarDaughterParentAngleCheck;
+  TH1D *fKstarDaughterDaughterAngleCheck;
+  TH1D *fKstarDaughterDaughterCosAngleCheck;
+  TH1D *fKstarDaughterPtotalCheck;
+  TH1D *fKstarDaughterPtotalNormCheck;
+
+  //2Rho0 channel Helicity cut histos
+  TH1D *f2RhoParentPx;
+  TH1D *f2RhoParentPy;
+  TH1D *f2RhoParentPz;
+  TH1D *f2RhoDaughterParentAngle;
+  TH1D *f2RhoDaughterDaughterAngle;
+  TH1D *f2RhoDaughterDaughterCosAngle;
+  TH1D *f2RhoDaughterPtotal;
+
+  //2Rho0 channel Helicity cut histos - Check histos
+  TH1D *f2RhoParentPxCheck;
+  TH1D *f2RhoParentPyCheck;
+  TH1D *f2RhoParentPzCheck;
+  TH1D *f2RhoDaughterParentAngleCheck;
+  TH1D *f2RhoDaughterDaughterAngleCheck;
+  TH1D *f2RhoDaughterDaughterCosAngleCheck;
+  TH1D *f2RhoDaughterPtotalCheck;
+
   TH1D *fHistZDCCuts;
   
   TList *fListSystematics;
@@ -288,7 +341,7 @@ class AliAnalysisTaskUpcEtaC : public AliAnalysisTaskSE {
   AliAnalysisTaskUpcEtaC(const AliAnalysisTaskUpcEtaC&); //not implemented
   AliAnalysisTaskUpcEtaC& operator =(const AliAnalysisTaskUpcEtaC&); //not implemented
   
-  ClassDef(AliAnalysisTaskUpcEtaC, 4); 
+  ClassDef(AliAnalysisTaskUpcEtaC, 5); 
 };
 
 #endif

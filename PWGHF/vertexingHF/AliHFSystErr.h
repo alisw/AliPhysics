@@ -188,7 +188,10 @@ class AliHFSystErr : public TNamed
   void InitDstartoD0pi2013pPb2040ZNA();
   void InitDstartoD0pi2013pPb4060ZNA();
   void InitDstartoD0pi2013pPb60100ZNA();
-  
+
+   void InitDstartoD0pi2016pPb010ZNA();
+   void InitDstartoD0pi2016pPb60100ZNA();
+ 
   void InitDstartoD0pi2013pPb020CL1();
   void InitDstartoD0pi2013pPb2040CL1();
   void InitDstartoD0pi2013pPb4060CL1();
@@ -272,6 +275,7 @@ class AliHFSystErr : public TNamed
   void InitDstoKKpi2016pPb140trkl();
   void InitDstoKKpi2016pPb4070trkl();
   void InitDstoKKpi2016pPb70200trkl();
+  void InitDstoKKpi2016pp13TeV();
 
   void InitLctopKpi2010pp();
   void InitLctopKpi2010ppBDT();

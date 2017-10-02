@@ -43,18 +43,26 @@ class AliAnalysisTaskJetExtractorHF : public AliAnalysisTaskEmcalJet {
     fExtractionCutMaxCent = maxCent;
   }
 
-  void                        SetHadronMatchingRadius(Double_t val) { fHadronMatchingRadius = val; }
+  void                        SetHadronMatchingRadius(Double_t val)               { fHadronMatchingRadius = val; }
   void                        SetInitialCollisionMatchingRadius(Double_t val)     { fInitialCollisionMatchingRadius = val; }
-  void                        SetTrueJetArrayName(const char* val)           { fTruthJetsArrayName = val; }
-  void                        SetTrueRhoName(const char* val)                { fTruthJetsRhoName = val; }
-  void                        SetTruthParticleArrayName(const char* val)     { fTruthParticleArrayName = val; }
-  void                        SetSecondaryVertexMaxChi2(Double_t val   )     { fSecondaryVertexMaxChi2 = val; }
-  void                        SetSecondaryVertexMaxDispersion(Double_t val)  { fSecondaryVertexMaxDispersion = val; }
-  void                        SetAddPIDSignal(Bool_t val)  { fAddPIDSignal = val; }
-  void                        SetCalculateSecondaryVertices(Bool_t val)  { fCalculateSecondaryVertices = val; }
-  void                        SetUseJetTaggingHFMethod(Bool_t val)  { fUseJetTaggingHFMethod = val; }
-  void                        SetVertexerCuts(AliRDHFJetsCutsVertex* val)  { fVertexerCuts = val; }
-  void                        SetSetEmcalJetFlavour(Bool_t val) { fSetEmcalJetFlavour = val; }
+  void                        SetTrueJetArrayName(const char* val)                { fTruthJetsArrayName = val; }
+  void                        SetTrueRhoName(const char* val)                     { fTruthJetsRhoName = val; }
+  void                        SetTruthParticleArrayName(const char* val)          { fTruthParticleArrayName = val; }
+  void                        SetSecondaryVertexMaxChi2(Double_t val   )          { fSecondaryVertexMaxChi2 = val; }
+  void                        SetSecondaryVertexMaxDispersion(Double_t val)       { fSecondaryVertexMaxDispersion = val; }
+  void                        SetAddPIDSignal(Bool_t val)                         { fAddPIDSignal = val; }
+  void                        SetCalculateSecondaryVertices(Bool_t val)           { fCalculateSecondaryVertices = val; }
+  void                        SetUseJetTaggingHFMethod(Bool_t val)                { fUseJetTaggingHFMethod = val; }
+  void                        SetVertexerCuts(AliRDHFJetsCutsVertex* val)         { fVertexerCuts = val; }
+  void                        SetSetEmcalJetFlavour(Bool_t val)                   { fSetEmcalJetFlavour = val; }
+
+  // This setter configures the extraction of jets below the extraction min pt cut
+  void                        SetUnderflowBins(Int_t nBins, Double_t minPt, Double_t percentage)
+  {
+    fUnderflowNumBins     =  nBins;
+    fUnderflowCutOff      =  minPt;
+    fUnderflowPercentage  =  percentage;
+  }
 
   void                        SetExtractionCutListPIDHM(const char* val)
   { 
@@ -134,6 +142,7 @@ class AliAnalysisTaskJetExtractorHF : public AliAnalysisTaskEmcalJet {
   Int_t                       fCurrentInitialParton2Type;               ///< type of initial parton 2
   Double_t                    fCurrentTrueJetPt;                        ///< truth jet pt buffer
   Bool_t                      fFoundIC;                                 ///< status var showing that IC has been found
+  Int_t                       fUnderflowBinContents[100];               //!<! contents in "underflow" bins
 
   // ################## CUTS
   Int_t                       fExtractionCutMinCent;                    ///< Extraction cut: minimum centrality
@@ -146,6 +155,9 @@ class AliAnalysisTaskJetExtractorHF : public AliAnalysisTaskEmcalJet {
   std::vector<Int_t>          fExtractionListPIDsHM;                    ///< list of PIDs (hadron matching) that will be accepted
   std::vector<Int_t>          fExtractionListPIDsIC;                    ///< list of PIDs (initial collision) that will be accepted
   Bool_t                      fSetEmcalJetFlavour;                      ///< if set, the flavour property of the AliEmcalJets will be set
+  Int_t                       fUnderflowNumBins;                        ///< number of "underflow" low-pT bins
+  Double_t                    fUnderflowCutOff;                         ///< "underflow" low-pT cut-off
+  Double_t                    fUnderflowPercentage;                     ///< Percentage accepted in "underflow" low-pT bins
 
   Double_t                    fHadronMatchingRadius;                    ///< Matching radius to search for beauty/charm hadrons around jet
   Double_t                    fInitialCollisionMatchingRadius;          ///< Matching radius to find a jet of the IC

@@ -102,6 +102,7 @@ AliAnalysisTaskJetExtractorHF::AliAnalysisTaskJetExtractorHF() :
   fCurrentInitialParton2Type(0),
   fCurrentTrueJetPt(0),
   fFoundIC(kFALSE),
+  fUnderflowBinContents(),
   fExtractionCutMinCent(-1),
   fExtractionCutMaxCent(-1),
   fExtractionCutUseIC(kFALSE),
@@ -111,7 +112,10 @@ AliAnalysisTaskJetExtractorHF::AliAnalysisTaskJetExtractorHF() :
   fExtractionPercentage(1.0),
   fExtractionListPIDsHM(),
   fSetEmcalJetFlavour(0),
-  fHadronMatchingRadius(0.5),
+  fUnderflowNumBins(1),
+  fUnderflowCutOff(5.0),
+  fUnderflowPercentage(0.5),
+  fHadronMatchingRadius(0.4),
   fInitialCollisionMatchingRadius(0.3),
   fTruthJetsArrayName(""),
   fTruthJetsRhoName(""),
@@ -126,6 +130,8 @@ AliAnalysisTaskJetExtractorHF::AliAnalysisTaskJetExtractorHF() :
   // Default constructor.
   SetMakeGeneralHistograms(kTRUE);
   fRandom = new TRandom3(0);
+  for(size_t i=0;i<100;i++)
+    fUnderflowBinContents[i] = 0;
 }
 
 //________________________________________________________________________
@@ -149,6 +155,7 @@ AliAnalysisTaskJetExtractorHF::AliAnalysisTaskJetExtractorHF(const char *name) :
   fCurrentInitialParton2Type(0),
   fCurrentTrueJetPt(0),
   fFoundIC(kFALSE),
+  fUnderflowBinContents(),
   fExtractionCutMinCent(-1),
   fExtractionCutMaxCent(-1),
   fExtractionCutUseIC(kFALSE),
@@ -158,7 +165,10 @@ AliAnalysisTaskJetExtractorHF::AliAnalysisTaskJetExtractorHF(const char *name) :
   fExtractionPercentage(1.0),
   fExtractionListPIDsHM(),
   fSetEmcalJetFlavour(0),
-  fHadronMatchingRadius(0.5),
+  fUnderflowNumBins(1),
+  fUnderflowCutOff(5.0),
+  fUnderflowPercentage(0.5),
+  fHadronMatchingRadius(0.4),
   fInitialCollisionMatchingRadius(0.3),
   fTruthJetsArrayName(""),
   fTruthJetsRhoName(""),
@@ -173,6 +183,8 @@ AliAnalysisTaskJetExtractorHF::AliAnalysisTaskJetExtractorHF(const char *name) :
   // Default constructor.
   SetMakeGeneralHistograms(kTRUE);
   fRandom = new TRandom3(0);
+  for(size_t i=0;i<100;i++)
+    fUnderflowBinContents[i] = 0;
 }
 
 //________________________________________________________________________
@@ -204,6 +216,7 @@ void AliAnalysisTaskJetExtractorHF::UserCreateOutputObjects()
 
   AddHistogram2D<TH2D>("hJetPtRaw", "Jets p_{T} distribution (raw)", "COLZ", 300, 0., 300., 100, 0, 100, "p_{T, jet} (GeV/c)", "Centrality", "dN^{Jets}/dp_{T}");
   AddHistogram2D<TH2D>("hJetPt", "Jets p_{T} distribution (background subtracted)", "COLZ", 400, -100., 300., 100, 0, 100, "p_{T, jet} (GeV/c)", "Centrality", "dN^{Jets}/dp_{T}");
+  AddHistogram2D<TH2D>("hJetPtAcceptance", "Statistically discarded jets p_{T} distribution (background subtracted)", "COLZ", 400, -100., 300., 100, 0, 100, "p_{T, jet} (GeV/c)", "Centrality", "dN^{Discarded jets}/dp_{T}");
   AddHistogram2D<TH2D>("hJetPhiEta", "Jet angular distribution #phi/#eta", "COLZ", 180, 0., 2*TMath::Pi(), 100, -2.5, 2.5, "#phi", "#eta", "dN^{Jets}/d#phi d#eta");
   AddHistogram2D<TH2D>("hJetArea", "Jet area", "COLZ", 200, 0., 2., 100, 0, 100, "Jet A", "Centrality", "dN^{Jets}/dA");
 
@@ -255,6 +268,13 @@ void AliAnalysisTaskJetExtractorHF::ExecOnce() {
     fVtxTagger = new AliHFJetsTaggingVertex();
     fVtxTagger->SetCuts(fVertexerCuts);
   }
+
+  // Status message on low-pt extraction
+  if(fUnderflowNumBins)
+    AliWarning(Form("Low-pT extraction active: %2.0f%% of jets will be extracted in %d bin(s) from %2.2f to %2.2f GeV/c.", fUnderflowPercentage*100., fUnderflowNumBins, fUnderflowCutOff, fExtractionCutMinPt));
+  else
+    AliWarning(Form("Low-pT extraction not active: Jets below %2.2f GeV/c will be discarded completely.", fExtractionCutMinPt));
+
 }
 
 //________________________________________________________________________
@@ -270,9 +290,37 @@ Bool_t AliAnalysisTaskJetExtractorHF::IsJetSelected(AliEmcalJet* jet)
     return kFALSE;
   FillHistogram("hJetAcceptance", 1.5);
 
+  Double_t jetPt = jet->Pt()-jet->Area()*fJetsCont->GetRhoVal();
+
   // ### PT
-  if( ((jet->Pt()-jet->Area()*fJetsCont->GetRhoVal()) < fExtractionCutMinPt) || ((jet->Pt()-jet->Area()*fJetsCont->GetRhoVal()) >= fExtractionCutMaxPt) )
+  if(jetPt >= fExtractionCutMaxPt || jetPt < 0)
     return kFALSE;
+
+  if(jetPt < fExtractionCutMinPt)
+  {
+    if(!fUnderflowNumBins) // If low-pT extraction is not active, discard jet
+      return kFALSE;
+    else // If active, put in underflow bin
+    {
+      if(fRandom->Rndm() >= fUnderflowPercentage)
+      {
+        FillHistogram("hJetPtAcceptance", jetPt, fCent);
+        return kFALSE;
+      }
+      Double_t extractionBinSize = (fExtractionCutMinPt-fUnderflowCutOff)/fUnderflowNumBins;
+      // Low-pT extraction
+      for(Int_t i=0; i<fUnderflowNumBins; i++)
+        if( (jetPt >= i*extractionBinSize + fUnderflowCutOff) && (jetPt < (i+1)*extractionBinSize + fUnderflowCutOff))
+        {
+          if (fUnderflowBinContents[i+1] >= fUnderflowBinContents[0])
+          {
+            FillHistogram("hJetPtAcceptance", jetPt, fCent);
+            return kFALSE;
+          }
+        }
+    }
+  }
+
   FillHistogram("hJetAcceptance", 2.5);
 
   Bool_t passedCutPID = kTRUE;
@@ -304,10 +352,26 @@ Bool_t AliAnalysisTaskJetExtractorHF::IsJetSelected(AliEmcalJet* jet)
 
   // Discard jets statistically
   if(fRandom->Rndm() >= fExtractionPercentage)
+  {
+    FillHistogram("hJetPtAcceptance", jetPt, fCent);
     return kFALSE;
+  }
   FillHistogram("hJetAcceptance", 4.5);
-
   fCurrentNJetsInEvents++;
+
+  if(fUnderflowNumBins)
+  {
+    // Fill low-pt extraction bin contents
+    // Those contents decide whether we extract further jets in an "underflow" bin
+    Double_t extractionBinSize = (fExtractionCutMinPt-fUnderflowCutOff)/fUnderflowNumBins;
+    for(Int_t i=0; i<fUnderflowNumBins; i++)
+      if( (jetPt >= i*extractionBinSize + fUnderflowCutOff) && (jetPt < (i+1)*extractionBinSize + fUnderflowCutOff))
+        fUnderflowBinContents[i+1]++;
+
+    if( (jetPt >= fExtractionCutMinPt) && (jetPt < fExtractionCutMinPt+extractionBinSize) )
+      fUnderflowBinContents[0]++;
+  }
+
   return kTRUE;
 }
 
@@ -518,7 +582,7 @@ void AliAnalysisTaskJetExtractorHF::AddSecondaryVertices(const AliVVertex* primV
     // Calculate vtx distance
     Double_t effX = secVtx->GetX() - esdVtx->GetX();
     Double_t effY = secVtx->GetY() - esdVtx->GetY();
-    Double_t effZ = secVtx->GetZ() - esdVtx->GetZ();
+    //Double_t effZ = secVtx->GetZ() - esdVtx->GetZ();
 
     // ##### Vertex properties
     // vertex dispersion
@@ -638,7 +702,7 @@ void AliAnalysisTaskJetExtractorHF::CalculateJetType(AliEmcalJet* jet, Int_t& ty
       else if ((absPDG > 400 && absPDG < 500) || (absPDG > 4000 && absPDG < 5000))
         typeHM = 4; // charm
       // Particle has strangeness: Only search for strangeness, if charm was not already found
-      else if (typeHM != 4 && (absPDG > 300 && absPDG < 400) || (absPDG > 3000 && absPDG < 4000))
+      else if (typeHM != 4 && ((absPDG > 300 && absPDG < 400) || (absPDG > 3000 && absPDG < 4000)))
         typeHM = 3; // strange
     }
   }
@@ -671,7 +735,7 @@ void AliAnalysisTaskJetExtractorHF::CalculateJetType(AliEmcalJet* jet, Int_t& ty
       else if ((absPDG > 400 && absPDG < 500) || (absPDG > 4000 && absPDG < 5000))
         typeHM = 4; // charm
       // Particle has strangeness: Only search for strangeness, if charm was not already found
-      else if (typeHM != 4 && (absPDG > 300 && absPDG < 400) || (absPDG > 3000 && absPDG < 4000))
+      else if (typeHM != 4 && ((absPDG > 300 && absPDG < 400) || (absPDG > 3000 && absPDG < 4000)))
         typeHM = 3; // strange
     }
   }

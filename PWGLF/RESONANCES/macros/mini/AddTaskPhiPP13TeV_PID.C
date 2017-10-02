@@ -1,7 +1,7 @@
 /***************************************************************************
-              Anders Knospe - last modified on 26 March 2016
+              Anders Knospe - last modified on 31 August 2016
 
-//Lauches phi analysis with rsn mini package
+//Launches phi analysis with rsn mini package
 //Allows basic configuration of pile-up check and event cuts
 ****************************************************************************/
 
@@ -48,7 +48,8 @@ AliRsnMiniAnalysisTask * AddTaskPhiPP13TeV_PID
  Bool_t      useMixLS=0,
  Bool_t      checkReflex=0,
  AliRsnMiniValue::EType yaxisvar=AliRsnMiniValue::kPt,
- TString     polarizationOpt="" /* J - Jackson,T - Transversity */
+ TString     polarizationOpt="" /* J - Jackson,T - Transversity */,
+ Bool_t      saveRsnTreeInFile = kFALSE
 )
 {  
   //-------------------------------------------
@@ -108,7 +109,7 @@ AliRsnMiniAnalysisTask * AddTaskPhiPP13TeV_PID
 
   // create the task and configure 
   TString taskName=Form("phi%s%s_%i%i",(isPP? "pp" : "PbPb"),(isMC ? "MC" : "Data"),(Int_t)cutKaCandidate);
-  AliRsnMiniAnalysisTask* task=new AliRsnMiniAnalysisTask(taskName.Data(),isMC);
+  AliRsnMiniAnalysisTask* task=new AliRsnMiniAnalysisTask(taskName.Data(),isMC,saveRsnTreeInFile);
   if(evtCutSetID==eventCutSet::kSpecial4 || evtCutSetID==eventCutSet::kSpecial5) task->UseESDTriggerMask(triggerMask); //ESD ****** check this *****
   if(evtCutSetID!=eventCutSet::kNoEvtSel && evtCutSetID!=eventCutSet::kSpecial3 && evtCutSetID!=eventCutSet::kSpecial4) task->SelectCollisionCandidates(triggerMask); //AOD
 
@@ -125,7 +126,6 @@ AliRsnMiniAnalysisTask * AddTaskPhiPP13TeV_PID
   task->SetMaxDiffVz(maxDiffVzMix);
   task->SetMaxDiffMult(maxDiffMultMix);
   ::Info("AddTaskPhiPP13TeV_PID", Form("Event mixing configuration: \n events to mix = %i \n max diff. vtxZ = cm %5.3f \n max diff multi = %5.3f", nmix, maxDiffVzMix, maxDiffMultMix));
-  task->SaveRsnTreeInFile(kTRUE);
 
   mgr->AddTask(task);
 
@@ -210,7 +210,10 @@ AliRsnMiniAnalysisTask * AddTaskPhiPP13TeV_PID
   TH2F* hvz=new TH2F("hVzVsCent","",110,0.,110., 240,-12.0,12.0);
   task->SetEventQAHist("vz",hvz);//plugs this histogram into the fHAEventVz data member
 
-  TH2F* hmc=new TH2F("MultiVsCent","", 110,0.,110., 400,0.5,400.5);
+  double ybins[500];
+  for(j=0;j<=401;j++) ybins[j]=j-0.5;
+
+  TH2F* hmc=new TH2F("MultiVsCent","", nmult,multbins, 401,ybins);
   hmc->GetYaxis()->SetTitle("QUALITY");
   task->SetEventQAHist("multicent",hmc);//plugs this histogram into the fHAEventMultiCent data member
 
@@ -239,9 +242,15 @@ AliRsnMiniAnalysisTask * AddTaskPhiPP13TeV_PID
   AliAnalysisDataContainer* output=mgr->CreateContainer(Form("RsnOut_%s",outNameSuffix.Data()),
 							TList::Class(),
 							AliAnalysisManager::kOutputContainer,
-							outputFileName);
+              outputFileName);
+  AliAnalysisDataContainer* outputTree=0;
+  if (saveRsnTreeInFile) {
+    outputTree=mgr->CreateContainer("rsnTree", TTree::Class(),
+    AliAnalysisManager::kOutputContainer, Form("RsnTree_%s_%s.root",task->GetName(), outNameSuffix.Data()));
+  }
   mgr->ConnectInput(task, 0, mgr->GetCommonInputContainer());
   mgr->ConnectOutput(task, 1, output);
-
+  Printf("%p %d", outputTree,saveRsnTreeInFile);
+  if (outputTree) mgr->ConnectOutput(task, 2, outputTree);
   return task;
 }

@@ -605,15 +605,15 @@ void BadChannelAna::PeriodAnalysis(Int_t criterion, Double_t nsigma, Double_t em
 
 	if(criterion==1)
 	{
-		if(emin>2)FlagAsBad(criterion, histogram, nsigma, -1);//..do not apply a lower boundary
-		else      FlagAsBad(criterion, histogram, nsigma, 400);
+//		if(emin>=1.8)FlagAsBad(criterion, histogram, nsigma, -1);//..do not apply a lower boundary
+		if(emin>=0.5)FlagAsBad(criterion, histogram, nsigma, -1);//..do not apply a lower boundary
+		else      FlagAsBad(criterion, histogram, nsigma, 200);//400
 	}
 	if(criterion==2)
 	{
-		if(emin>2)FlagAsBad(criterion, histogram, nsigma, -1);//..do not narrow the integration window
+//		if(emin>=1.8)FlagAsBad(criterion, histogram, nsigma, -1);//..do not narrow the integration window
+		if(emin>=0.5)FlagAsBad(criterion, histogram, nsigma, -1);//..do not narrow the integration window
 		else      FlagAsBad(criterion, histogram, nsigma, 601);
-		//FlagAsBad(criterion, histogram, nsigma,601);// ELIANE ELIANE
-		//FlagAsBad(criterion, histogram, nsigma, -1);//..do not narrow the integration window
 	}
 	if(criterion==3) FlagAsBad(criterion, histogram, nsigma, 602);
 }
@@ -792,7 +792,7 @@ void BadChannelAna::FlagAsBad(Int_t crit, TH1F* inhisto, Double_t nsigma, Double
 	//. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 	//cout<<"max value: "<<dmaxVal<<", min value: "<<dminVal<<endl;
 	if(crit==2 && inputBins==-1)	dnbins=dmaxVal-dminVal;
-	if(crit==1 && inputBins==-1)	dnbins=400;
+	if(crit==1 && inputBins==-1)	dnbins=200;
 
 	if(crit==2 && inputBins!=-1)
 	{
@@ -1347,6 +1347,8 @@ void BadChannelAna::SummarizeResults()
 		cout<<"    o EMCal ("<<nEMCalCells<<" ="<<perBadEMCal<<"%), DCal ("<<nDCalCells<<" ="<<perBadDCal<<"%)"<<endl;
 	}
 	file.close();
+	cout<<"    o Total: "<<endl;
+	cout<<"    o Bad+Dead cells: "<<nDeadEMCalCells+nEMCalCells+nDeadDCalCells+nDCalCells<<", this is "<<(nDeadEMCalCells+nEMCalCells+nDeadDCalCells+nDCalCells)*100/(1.0*fNoOfCells)<<"% of the whole detector"<<endl;
 
 	//. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 	//..Determine the number of warm cells and save the flagged cells to .pdf files
@@ -1461,10 +1463,11 @@ void BadChannelAna::SummarizeResults()
 		file2<<"| *Detector* |    *No of cells*    |  *percentage*  |"<<endl;
 		file2<<"| Dead EMCal |    "<<nDeadEMCalCells<<"    |  "<<perDeadEMCal<<"%  |"<<endl;
 		file2<<"| Bad EMCal |    "<<nEMCalCells<<"    |  "<<perBadEMCal<<"%  |"<<endl;
-		file2<<"| - Warm EMCal |    "<<nWEMCalCells<<"    |  "<<perWarmEMCal<<"%  |"<<endl;
+		file2<<"|  - Warm EMCal |    "<<nWEMCalCells<<"    |  "<<perWarmEMCal<<"%  |"<<endl;
 		file2<<"| Dead DCal |    "<<nDeadDCalCells<<"    |  "<<perDeadDCal<<"%  |"<<endl;
 		file2<<"| Bad DCal |    "<<nDCalCells<<"    |  "<<perBadDCal<<"%  |"<<endl;
 		file2<<"|  - Warm DCal |    "<<nWDCalCells<<"    |  "<<perWarmDCal<<"%  |"<<endl;
+		file2<<"| Summ D+B |    "<<nDeadEMCalCells+nEMCalCells+nDeadDCalCells+nDCalCells<<"    |  "<<(nDeadEMCalCells+nEMCalCells+nDeadDCalCells+nDCalCells)*100/(1.0*fNoOfCells)<<"%  |"<<endl;
 		file2<<"\n"<<endl;
 	}
 	file2.close();

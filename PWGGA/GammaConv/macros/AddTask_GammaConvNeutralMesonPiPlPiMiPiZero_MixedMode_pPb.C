@@ -220,7 +220,6 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiPiZero_MixedMode_pPb(
   task->SetV0ReaderName(V0ReaderName);
   if(runLightOutput>1) task->SetLightOutput(kTRUE);
   task->SetTolerance(tolerance);
-
   CutHandlerNeutralMixed cuts;
 
   Bool_t doEtaShiftIndCuts = kFALSE;

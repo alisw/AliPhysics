@@ -69,6 +69,7 @@ set(SRCS
       core/AliDielectronV0Cuts.cxx
       core/AliDielectronVarCuts.cxx
       core/AliDielectronVarManager.cxx
+      core/AliDielectronEvtVsTrkHist.cxx
       core/AliAnalysisTaskDielectronFilter.cxx
       core/AliAnalysisTaskDielectronReadAODBranch.cxx
       core/AliAnalysisTaskMultiDielectron.cxx

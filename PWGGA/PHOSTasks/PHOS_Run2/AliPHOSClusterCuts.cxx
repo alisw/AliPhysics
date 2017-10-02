@@ -17,7 +17,6 @@ AliPHOSClusterCuts::AliPHOSClusterCuts(const char *name):
 {
   //Constructor
   SetName(name);
-  AliInfo(Form("Cut Parameter | CPV:%2.1f sigma , Dispersion:%2.1f sigma.",fNsigmaCPV,fNsigmaDisp));
 
 }
 //________________________________________________________________________
@@ -65,6 +64,13 @@ Bool_t AliPHOSClusterCuts::AcceptDisp(AliCaloPhoton *ph)
     }
   }
 
+  return kTRUE;
+}
+//________________________________________________________________________
+Bool_t AliPHOSClusterCuts::AcceptElectron(AliCaloPhoton *ph)
+{
+  if(IsNeutral(ph))  return kFALSE;
+  if(!AcceptDisp(ph)) return kFALSE;
   return kTRUE;
 }
 //________________________________________________________________________

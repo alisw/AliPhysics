@@ -89,6 +89,8 @@ public:
   void			   SetEtaClBinning(vector<Double_t> binedges)			   { fBinsClEta = binedges; }
   void			   SetPhiClBinning(vector<Double_t> binedges)			   { fBinsClPhi = binedges; }
   void                     SetM02cut (Bool_t M02)                                          { fM02cut = M02;}
+  void                     SetFastOrMasking(Bool_t mask)                                   { fMaskFastOrCells = mask; }
+  void                     SetFastOrPath(TString path)                                     { fFastOrPath = path;}
 
 protected:
   
@@ -116,7 +118,6 @@ protected:
   
     //    TList       *fOutputList; //!<! Output list
     //    TGeoHMatrix *fGeomMatrix[12];//!<! Geometry misalignment matrices for EMCal
-  
   Float_t     fIsoConeRadius;                  // Radius for the Isolation Cont
   Double_t    fdetacut;                        // cut on deta between track and cluster
   Double_t    fdphicut;                        // cut on dphi between track and cluster
@@ -132,6 +133,7 @@ protected:
   Int_t       fNLMmin;                         // minimum number of NLM
   Bool_t      fTMClusterRejected;              // able/disable TM cluster rejection
   Bool_t      fTMClusterInConeRejected;        // able/disable TM cluster rejection in isolation cone
+  TString     fFastOrPath;
   
     // Initialization of variables for THnSparse
 
@@ -148,9 +150,9 @@ protected:
 
     //IMPLEMENT ALL THE HISTOGRAMS AND ALL THE OUTPUT OBJECTS WE WANT!!!
   TH2D        *fEtaPhiClus;                     ///< EMCAL Cluster Distribution EtaPhi ---QA
-  TH2D        *fPt_trig;                        //!<! Et - fired trigger class
   TH1D        *fPT;                             //!<! Pt distribution
   TH1D        *fE;                              //!<! E distribution
+  TH2D        *hEt_M02;                         //!<! E vs M02 distribution
   TH2D        *fNLM;                            //!<! NLM distribution
   TH1D        *fVz;                             //!<! Veretex Z distribution
   TH1D        *fEvents;                         //!<! Number of Events
@@ -163,23 +165,28 @@ protected:
   TH1D        *fDTBC;                           //!<! DTBC distribution after TM
   TH1D        *fPtaftDTBC;                      //!<! E distribution for NC after DistanceToBadChannel cut
   TH1D        *fPtaftFC;                        //!<! E distribution for clusters after fiducial cut
-  TH1D        *fClusTime;                       //!<! Time distribution for clusters
   TH2D        *fTriggerbit;                     //!<! fired Trigger Bits 
-  TH2D        *hmaxL0ADC;
-  TH1D        *fL0triggered;                    //!<! max cluster energy of L0 triggered events
-  TH2D        *fEventsover10;                   
+//  TH1D        *hL0Amplitude;                    //!<! ADC Amplitudes of EMC L0
+  TH2D        *hmaxADC;                         //!<! max L1 ADC/Event
+  TH2D        *hADCpos0;                        //!<! ADC of patches at (0,0)
+  TH1D        *hSmearedE;                       //!<! smeared patch E distribution
+  TH1D        *hPatchE;                         //!<! patch energy
+//  TH2D        *hmaxL0ADC;                       //!<! max L0 ADC/Event
+  TH2D        *hL1PatchPosition;                //!<! position of L1 trigger patch
+  TH2D        *hFastOrPatchE;                   //!<! FastOr# E distribution
+//  TH1D        *fL0triggered;                    //!<! max cluster energy of L0 triggered events
+  TH2D        *fEventsover10;                   //!<! # of Events over threshold
   TH1D        *fL1triggered;                    //!<! max cluster energy of L1 triggered events
-  TH2D        *hADCpos0;
-  TH2D        *hmaxADC;
-  TH2D        *hL1PatchPosition;
-  TH2D        *hFastOrPatchE;
-  TH1D        *hL0Amplitude;
+  TH1D        *fClusTime;                       //!<! Time distribution for clusters
+  TH2D        *fPt_trig;                        //!<! Et - fired trigger class
+  Bool_t      fM02cut;                          
+  Bool_t      fMaskFastOrCells;                 
   
   THnSparse   *fOutputTHnS;                    //!<! pT,Rejection,cell info
+  TH2D        *hFastOrIndexLeadingCluster;     //!<! leading Cluster E per FastOr
   THnSparse   *fOutTHnS_Clust;                 //!<! pT,Rejection,cluster info
   
-  TH2D        *hFastOrIndexLeadingCluster;
-  Bool_t      fM02cut;
+  std::vector<Int_t>       MaskedFastOrs;      
   
 private:
   AliAnalysisTaskEMCALClusterTurnOn(const AliAnalysisTaskEMCALClusterTurnOn&);            // not implemented

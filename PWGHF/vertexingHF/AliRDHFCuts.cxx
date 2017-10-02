@@ -562,7 +562,7 @@ Bool_t AliRDHFCuts::IsEventSelected(AliVEvent *event) {
   }
 
   // centrality selection
-  if (fUseCentrality!=kCentOff) {  
+  if (fUseCentrality!=kCentOff) {
     Int_t rejection=IsEventSelectedInCentrality(event);    
     Bool_t okCent=kFALSE;
     if(rejection==0) okCent=kTRUE;
@@ -759,7 +759,6 @@ Int_t AliRDHFCuts::CheckMatchingAODdeltaAODevents(){
     TList* lm=mfile->GetListOfKeys();
     TList* ld=dfile->GetListOfKeys();
     Int_t nentm=lm->GetEntries();
-    Int_t nentd=ld->GetEntries();
     for(Int_t jm=0; jm<nentm; jm++){
       TKey* o=(TKey*)lm->At(jm);
       TString clnam=o->GetClassName();
@@ -1306,6 +1305,8 @@ Float_t AliRDHFCuts::GetCentrality(AliAODEvent* aodEvent,AliRDHFCuts::ECentralit
   if(aodEvent->GetRunNumber()<244824)return GetCentralityOldFramework(aodEvent,estimator);
   Double_t cent=-999;
 
+  if(estimator==kCentOff) return -999;
+
   AliMultSelection *multSelection = (AliMultSelection*)aodEvent->FindListObject(fMultSelectionObjectName);
   if(!multSelection){
       AliWarning("AliMultSelection could not be found in the aod event list of objects");
@@ -1334,7 +1335,7 @@ Float_t AliRDHFCuts::GetCentrality(AliAODEvent* aodEvent,AliRDHFCuts::ECentralit
   }else if(estimator==kCentCL1){
     cent=multSelection->GetMultiplicityPercentile("CL1");
   }else {
-    AliWarning(Form("CENTRALITY ESTIMATE WITH ESTIMATEOR %d NOT YET IMPLEMENTED FOR NEW FRAMEWORK",(Int_t)estimator));
+    AliWarning(Form("CENTRALITY ESTIMATE WITH ESTIMATOR %d NOT YET IMPLEMENTED FOR NEW FRAMEWORK",(Int_t)estimator));
     return cent;
   }
   Int_t qual = multSelection->GetEvSelCode();

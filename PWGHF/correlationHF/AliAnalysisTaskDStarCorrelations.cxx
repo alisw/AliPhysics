@@ -32,12 +32,14 @@
 #include <TParticle.h>
 #include <TVector3.h>
 #include <TChain.h>
+#include <TTree.h>
 #include "TROOT.h"
 #include <TCanvas.h>
 #include <TList.h>
 #include <TString.h>
 #include "AliAnalysisTaskDStarCorrelations.h"
 #include "AliRDHFCutsDStartoKpipi.h"
+#include "AliRDHFCutsD0toKpi.h"
 #include "AliHFAssociatedTrackCuts.h"
 #include "AliAODRecoDecay.h"
 #include "AliAODRecoCascadeHF.h"
@@ -58,6 +60,9 @@
 #include "AliVertexingHFUtils.h"
 #include "AliAODVZERO.h"
 #include "AliESDUtils.h"
+#include "AliDstarhCutOptim.h"
+
+
 using std::cout;
 using std::endl;
 
@@ -112,7 +117,9 @@ fTracksOutput(0x0),
 fEMOutput(0x0),
 fCorrelationOutput(0x0),
 fOutputMC(0x0),
-
+fFillTrees(kNoTrees),
+fBranchDCutVars(),
+fTreeD(0x0),
 fCuts(0),
 fAssocCuts(0),
 fUtils(0),
@@ -174,7 +181,9 @@ fTracksOutput(0x0),
 fEMOutput(0x0),
 fCorrelationOutput(0x0),
 fOutputMC(0x0),
-
+fFillTrees(kNoTrees),
+fBranchDCutVars(),
+fTreeD(0x0),
 fCuts(0),
 fAssocCuts(AsscCuts),
 fUtils(0),
@@ -209,6 +218,8 @@ fDeffMapvsPtvsEta(0)
 
   DefineOutput(8,AliRDHFCutsDStartoKpipi::Class()); // my D meson cuts
   DefineOutput(9,AliHFAssociatedTrackCuts::Class()); // my associated tracks cuts
+    DefineOutput(10,TTree::Class());  //My private output
+
 }
 
 //__________________________________________________________________________
@@ -275,6 +286,23 @@ void AliAnalysisTaskDStarCorrelations::Init(){
 void AliAnalysisTaskDStarCorrelations::UserCreateOutputObjects(){
 	Info("UserCreateOutputObjects","CreateOutputObjects of task %s\n", GetName());
 	
+    
+    if(fFillTrees==kFillCutOptTree) {
+        
+      
+        
+        fBranchDCutVars = new AliDstarhCutOptim();
+        
+     //   printf("Vediamo se funziona fFillTrees== kFillCutOptTree 1\n"); getchar();
+        
+        fTreeD = new TTree("fTreeD","TTree for Dstar mesons - Vars for Cut Optimization");
+        fTreeD->Branch("branchD",&fBranchDCutVars);
+        
+        
+        PostData(10,fTreeD);
+    }
+    
+    
 	//slot #1
 	//OpenFile(0);
 	fOutput = new TList();
@@ -298,6 +326,8 @@ void AliAnalysisTaskDStarCorrelations::UserCreateOutputObjects(){
 	// define histograms
 	DefineHistoForAnalysis();
     DefineThNSparseForAnalysis();
+    
+ 
     
 
     
@@ -334,12 +364,14 @@ void AliAnalysisTaskDStarCorrelations::UserCreateOutputObjects(){
     PostData(5,fCorrelationOutput); // set the outputs
     PostData(6,fOutputMC); // set the outputs
 	PostData(7,fCounter); // set the outputs
+    PostData(10,fTreeD);
 }
 
 //________________________________________  user exec ____________
 void AliAnalysisTaskDStarCorrelations::UserExec(Option_t *){
     // cout << "Task debug check 1 " << endl;
      // ********************************************** LOAD THE EVENT ****************************************************
+    
     
     if (!fInputEvent) {
         Error("UserExec","NO EVENT FOUND!");
@@ -390,6 +422,9 @@ void AliAnalysisTaskDStarCorrelations::UserExec(Option_t *){
     // added event selection for pA
     
     if(fSystem == pA){
+        
+       // printf("LOAD THE EVENT\n******************************************************************"); getchar();
+
         
         if(fUtils->IsFirstEventInChunk(aodEvent)) {
             AliInfo("Rejecting the event - first in the chunk");
@@ -846,7 +881,8 @@ if(fmult){
                ((TH2D*)fDmesonOutput->FindObject(Form("histDZerovsDStarMass_%d",ptbin)))->Fill(invMassDZero,deltainvMDStar);
                if(fUseDmesonEfficiencyCorrection) ((TH2D*)fDmesonOutput->FindObject(Form("histDZerovsDStarMassWeight_%d",ptbin)))->Fill(invMassDZero,deltainvMDStar,DmesonWeight);
             }
-           // cout << "crash here 2" << endl;
+           
+           // cout << "crash here 2" << endl; getchar();
             
            
             // fill D0 invariant mass
@@ -870,7 +906,7 @@ if(fmult){
             }
             
             
-            // good D0 canidates
+            // good D0 candidates
             if (TMath::Abs(invMassDZero-mPDGD0)<fDMesonSigmas[1]*mD0Window){
                 // fill D* invariant mass
 
@@ -890,14 +926,29 @@ if(fmult){
 		{
                 if(!fmixing){ ((TH1F*)fDmesonOutput->FindObject(Form("histDStarMass_%d",ptbin)))->Fill(deltainvMDStar);
 	        
-		  
                    // fill D* invariant mass if weighting
  if(fUseDmesonEfficiencyCorrection)
    ((TH1F*)fDmesonOutput->FindObject(Form("histDStarMassWeight_%d",ptbin)))->Fill(deltainvMDStar,DmesonWeight);
       
 
+
+                    
 		} // end if no mixing
 		}// end of fmult
+                
+         
+                
+                
+                if(!fmontecarlo){
+                    
+                   
+
+                    
+                    if(fFillTrees==kFillCutOptTree) {FillTreeDStarForCutOptim(dstarD0pi,aodEvent); //only for offline correlations to optimize D0 cut variables
+                    
+              
+                    }
+}
 
 
                      isInPeak = kTRUE;
@@ -1493,7 +1544,10 @@ void AliAnalysisTaskDStarCorrelations::DefineThNSparseForAnalysis(){
     Int_t nbinsSparse[5]=      {nbinscorr, 50 ,  32, 10,nbinsPool};
     Double_t binLowLimitSparse[5]={lowcorrbin,0.142 ,-1.6,  0,-0.5};
     Double_t binUpLimitSparse[5]= {upcorrbin ,0.1495 , 1.6,  5,nbinsPool-0.5};
-    if(fUseSmallSizePlots) nbinsSparse[1]=25; nbinsSparse[2]=16;
+    if(fUseSmallSizePlots) {
+      nbinsSparse[1]=25; 
+      nbinsSparse[2]=16;
+    }
     
     
   //  Int_t nbinsSparseDStarSB[5]=         {nbinscorr ,     27 ,  32, 10,nbinsPool};
@@ -1803,7 +1857,6 @@ void AliAnalysisTaskDStarCorrelations::DefineHistoForAnalysis(){
 	    // fDmesonOutput->Add(DStarFromSBMass);
 	    // fDmesonOutput->Add(DZerovsDStarMass);
 	    
-	    
         }
         
         // if using D meson efficiency, define weighted histos
@@ -2097,6 +2150,133 @@ void AliAnalysisTaskDStarCorrelations::DefineHistoForAnalysis(){
     fEMOutput->Add(EtaVsMultForDCand8to16);
     fEMOutput->Add(EtaVsMultForSB8to16);
     
+   // if(fFillTrees!=kNoTrees) PostData(10,fTreeD);
+    
+}
+
+
+
+//__________________________________________________________________________________________________
+
+void AliAnalysisTaskDStarCorrelations::FillTreeDStarForCutOptim(AliAODRecoCascadeHF* dstarD0pi, AliAODEvent* aodEvent) {
+    
+    
+    
+  
+  
+    
+    //Dzero
+    AliAODRecoDecayHF2Prong* dd = (AliAODRecoDecayHF2Prong*)dstarD0pi->Get2Prong();
+   // if(!dd){
+   //     cout<<"AliAODRecoDecayHF2Prong null"<<endl;
+   //     return 0;
+    
+  //  }
+    
+   
+    
+    AliAODTrack *softPi = (AliAODTrack*)dstarD0pi->GetBachelor();
+    
+    
+    //recalculate vertex w/o daughters
+    AliAODVertex *origownvtx=0x0;
+    if(dstarD0pi->GetOwnPrimaryVtx()) origownvtx=new AliAODVertex(*dstarD0pi->GetOwnPrimaryVtx());
+    if(!fCuts->RecalcOwnPrimaryVtx(dstarD0pi,aodEvent)) {
+        fCuts->CleanOwnPrimaryVtx(dstarD0pi,aodEvent,origownvtx);
+        return;
+    }
+    
+  
+
+    
+    
+    //Preliminary vars
+    Double_t mDStar;
+    dstarD0pi->InvMassDstarKpipi();
+    fBranchDCutVars->deltaInvMass = 0;
+ 
+    
+    
+    //topomatic
+    Double_t dd0max=0;
+    for(Int_t ipr=0; ipr<3; ipr++) {
+        Double_t diffIP, errdiffIP;
+        dstarD0pi->Getd0MeasMinusExpProng(ipr,aodEvent->GetMagneticField(),diffIP,errdiffIP);
+        Double_t normdd0=0.;
+        if(errdiffIP>0) normdd0=diffIP/errdiffIP;
+        if(ipr==0) dd0max=normdd0;
+        else if(TMath::Abs(normdd0)>TMath::Abs(dd0max)) dd0max=normdd0;
+    }
+    
+ 
+    
+    Float_t centEv = -9;
+    if(fCuts->GetUseCentrality()) centEv = fCuts->GetCentrality(aodEvent);
+    
+    
+    
+  
+
+    
+    Double_t pt=dstarD0pi->Pt();
+    //Int_t ptbin=PtBin(pt);
+    
+    // DStarMass and D0mass
+    Double_t mDSPDG = TDatabasePDG::Instance()->GetParticle(413)->Mass();
+    Double_t mD0PDG = TDatabasePDG::Instance()->GetParticle(421)->Mass();
+    // delta mass PDG
+    Double_t deltaPDG = mDSPDG-mD0PDG;
+    
+    
+   
+
+    
+    ResetBranchDForCutOptim();
+    
+   
+   
+    fBranchDCutVars->deltaInvMass = (Float_t)dstarD0pi->DeltaInvMass();
+    fBranchDCutVars->cent = (Float_t)centEv;
+    fBranchDCutVars->pt = (Float_t)dstarD0pi->Pt();
+    fBranchDCutVars->dca = (Float_t)dd->GetDCA();
+    fBranchDCutVars->cosThSt = (Float_t)dd->CosThetaStarD0();
+    fBranchDCutVars->pTk = (Float_t)dd->Pt2Prong(1);
+    fBranchDCutVars->pTpi = (Float_t)dd->Pt2Prong(0);
+    fBranchDCutVars->d0k = (Float_t)TMath::Abs(dd->Getd0Prong(1));
+    fBranchDCutVars->d0pi = (Float_t)TMath::Abs(dd->Getd0Prong(0));
+    fBranchDCutVars->d0xd0 = (Float_t)dd->Prodd0d0();
+    fBranchDCutVars->cosThPt = (Float_t)dd->CosPointingAngle();
+   // fBranchDCutVars->angleD0Pisoft= (Float_t)dstarD0pi->AngleD0dkpPisoft();
+    fBranchDCutVars->normLxy = (Float_t)dd->NormalizedDecayLengthXY();
+   // fBranchDCutVars->topom = (Float_t)TMath::Abs(dd0max);
+    fTreeD->Fill();
+    
+    
+    
+}
+
+
+
+
+
+//________________________________________________________________________
+void AliAnalysisTaskDStarCorrelations::ResetBranchDForCutOptim() {
+    
+    fBranchDCutVars->deltaInvMass = 0.;
+    fBranchDCutVars->cent =  0.;
+    fBranchDCutVars->pt =  0.;
+    fBranchDCutVars->dca =  0.;
+    fBranchDCutVars->cosThSt = 0.;
+    fBranchDCutVars->pTk =  0.;
+    fBranchDCutVars->pTpi =  0.;
+    fBranchDCutVars->d0k =  0.;
+    fBranchDCutVars->d0pi =  0.;
+    fBranchDCutVars->d0xd0 =  0.;
+    fBranchDCutVars->cosThPt =  0.;
+  //  fBranchDCutVars->angleD0Pisoft=  0.;
+    fBranchDCutVars->normLxy =  0.;
+  //  fBranchDCutVars->topom =  0.;
+    return;
 }
 
 

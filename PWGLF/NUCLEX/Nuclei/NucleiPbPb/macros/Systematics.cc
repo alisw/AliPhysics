@@ -39,11 +39,11 @@ void Systematics() {
   //TFile secsyst_file(kSecondariesOutput.data());
   TFile output_file(kSystematicsOutput.data(),"recreate");
 
-  int n_centralities = 1;
+  int n_centralities = kCentLength;
 
   TAxis* centAxis = (TAxis*)input_file.Get("centrality");
 
-  const double pt_bin_limits[16] = {0.6,0.7,0.8,0.9,1.0,1.1,1.2,1.4,1.6,1.8,2.0,2.2,2.6,3.0,3.4,3.8};//,4.4};
+  const double pt_bin_limits[16] = {0.6,0.7,0.8,0.9,1.0,1.1,1.2,1.4,1.6,1.8,2.0,2.2,2.6,3.0,3.4,3.8};
   const int n_pt_bins = 15;
 
   vector<TH1F*> references(n_centralities,nullptr);
@@ -202,7 +202,6 @@ void Systematics() {
           totsyst[iC]->SetBinContent(iB,0.);
         }
         else{
-                    std::cout << ptAxis->GetBinCenter(iB) << std::endl;
           float tot = sqrt(
               cutsyst[iC]->GetBinContent(iB) * cutsyst[iC]->GetBinContent(iB) +
               matsyst[iC]->GetBinContent(iB) * matsyst[iC]->GetBinContent(iB) +

@@ -28,10 +28,11 @@ virtual ~AliAnalysisTaskGammaHadron();
   void                        SetEffHistGamma(THnF *h)                              { fHistEffGamma    = h      ; }
   void                        SetEffHistHadron(THnF *h)                             { fHistEffHadron   = h      ; }
   void                        SetSavePool(Bool_t input)                             { fSavePool        = input  ; }
-  void                        SetPlotMore(Bool_t input)                             { fPlotQA          = input  ; }
+  void                        SetPlotMore(Int_t input)                             { fPlotQA          = input  ; }
   void                        SetEvtTriggerType(UInt_t input)                       { fTriggerType     = input  ; }
   void                        SetEvtMixType(UInt_t input)                           { fMixingEventType = input  ; }
 //  void                        SetCutsId(Id, cent, ptCl,Ecl,,.... UInt_t input)      { fMixingEventType = input  ; }
+  void                        SetClEnergyMin(Int_t input)                           { fClEnergyMin = input;}
   void                        SetNLM(Int_t input)                                   { fMaxNLM = input;}
   void                        SetM02(Double_t inputMin,Double_t inputMax)           { fClShapeMin = inputMin; fClShapeMax = inputMax;}
   void                        SetRmvMatchedTrack(Bool_t input, Double_t dEta=-1, Double_t dPhi=-1) { fRmvMTrack  = input; fTrackMatchEta=dEta; fTrackMatchPhi=dPhi;}
@@ -84,7 +85,7 @@ virtual ~AliAnalysisTaskGammaHadron();
   Bool_t                      fSEvMEv;                   ///< This option performs the analysis either for same event or for mixed event analysis
   Bool_t                      fDebug;			        ///< Can be set for debugging
   Bool_t                      fSavePool;                 ///< Defines whether to save output pools in a root file
-  Bool_t                      fPlotQA;                   ///< plot additional QA histograms
+  Int_t                       fPlotQA;                   ///< plot additional QA histograms
   Bool_t                      fUseManualEventCuts;       ///< Use manual cuts if automatic setup is not available for the period
 
   //..Input histograms
@@ -107,6 +108,7 @@ virtual ~AliAnalysisTaskGammaHadron();
   //..cuts
   Double_t                    fClShapeMin;               ///< Minimum cluster shape
   Double_t                    fClShapeMax;               ///< Maximum cluster shape
+  Double_t                    fClEnergyMin;              ///< Minimum cluster energy for pi0 Reconstruction
   Int_t                       fMaxNLM;                   ///< Maximum number of local maxima
   Bool_t                      fRmvMTrack;                ///< Switch to enable removing clusters with a matched track
   Double_t                    fTrackMatchEta;            ///< eta range in which a track is called a match to a cluster

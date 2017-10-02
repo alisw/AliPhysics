@@ -109,6 +109,10 @@ void runAnalysisTrain(const Char_t* infile, const Char_t* runmode = "local", con
            multTask->SetAlternateOADBforEstimators("LHC15o-DefaultMC-HIJING");
          if(hasMC && (!prod.CompareTo("LHC16q") || !prod.CompareTo("LHC16t")))
             multTask->SetAlternateOADBforEstimators("LHC16q-DefaultMC-HIJING");
+         if(hasMC && (!prod.CompareTo("LHC16r")))
+            multTask->SetAlternateOADBforEstimators("LHC16r-DefaultMC-EPOSLHC");
+         if(hasMC && (!prod.CompareTo("LHC16s")))
+            multTask->SetAlternateOADBforEstimators("LHC16s-DefaultMC-EPOSLHC");
       }      
 
       //===== ADD PID RESPONSE: ===

@@ -62,6 +62,7 @@ set ( SRCS2
   global/AliAnalysisTaskGlobalQA.cxx
   global/AliAnalysisTaskVertexESD.cxx
   global/AliAnalysisTaskCheckPileup.cxx
+  #global/AliAnalysisTaskCheckVertexAOD.cxx  # TODO reenable when AliRoot is tagged
   global/AliAnalysisTaskCheckESDTracks.cxx
   global/AliAnalysisTaskCheckAODTracks.cxx
   global/AliGlobalFBFqa.cxx

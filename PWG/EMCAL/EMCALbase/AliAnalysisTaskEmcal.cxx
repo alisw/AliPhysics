@@ -1527,14 +1527,12 @@ Bool_t AliAnalysisTaskEmcal::RetrieveEventObjects()
 
   TIter nextPartColl(&fParticleCollArray);
   while ((cont = static_cast<AliEmcalContainer*>(nextPartColl()))){
-    cont->NextEvent();
-    cont->SetVertex(fVertex);
+    cont->NextEvent(InputEvent());
   }
 
   TIter nextClusColl(&fClusterCollArray);
   while ((cont = static_cast<AliParticleContainer*>(nextClusColl()))){
-    cont->NextEvent();
-    cont->SetVertex(fVertex);
+    cont->NextEvent(InputEvent());
   }
 
   return kTRUE;

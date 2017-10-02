@@ -55,8 +55,8 @@ const Int_t AliEmcalJetTask::fgkConstIndexShift = 100000;
 AliEmcalJetTask::AliEmcalJetTask() :
   AliAnalysisTaskEmcal(),
   fJetsTag(),
-  fJetAlgo(AliJetContainer::antikt_algorithm),
   fJetType(AliJetContainer::kFullJet),
+  fJetAlgo(AliJetContainer::antikt_algorithm),
   fRecombScheme(AliJetContainer::pt_scheme),
   fRadius(0.4),
   fMinJetArea(0.001),
@@ -67,8 +67,8 @@ AliEmcalJetTask::AliEmcalJetTask() :
   fJetEtaMax(+1),
   fGhostArea(0.005),
   fTrackEfficiency(1.),
-  fTrackEfficiencyOnlyForEmbedding(kFALSE),
   fUtilities(0),
+  fTrackEfficiencyOnlyForEmbedding(kFALSE),
   fLocked(0),
   fJetsName(),
   fIsInit(0),
@@ -77,9 +77,9 @@ AliEmcalJetTask::AliEmcalJetTask() :
   fLegacyMode(kFALSE),
   fFillGhost(kFALSE),
   fJets(0),
+  fFastJetWrapper("AliEmcalJetTask","AliEmcalJetTask"),
   fClusterContainerIndexMap(),
-  fParticleContainerIndexMap(),
-  fFastJetWrapper("AliEmcalJetTask","AliEmcalJetTask")
+  fParticleContainerIndexMap()
 {
 }
 
@@ -90,8 +90,8 @@ AliEmcalJetTask::AliEmcalJetTask() :
 AliEmcalJetTask::AliEmcalJetTask(const char *name) :
   AliAnalysisTaskEmcal(name),
   fJetsTag("Jets"),
-  fJetAlgo(AliJetContainer::antikt_algorithm),
   fJetType(AliJetContainer::kFullJet),
+  fJetAlgo(AliJetContainer::antikt_algorithm),
   fRecombScheme(AliJetContainer::pt_scheme),
   fRadius(0.4),
   fMinJetArea(0.001),
@@ -102,8 +102,8 @@ AliEmcalJetTask::AliEmcalJetTask(const char *name) :
   fJetEtaMax(+1),
   fGhostArea(0.005),
   fTrackEfficiency(1.),
-  fTrackEfficiencyOnlyForEmbedding(kFALSE),
   fUtilities(0),
+  fTrackEfficiencyOnlyForEmbedding(kFALSE),
   fLocked(0),
   fJetsName(),
   fIsInit(0),
@@ -112,9 +112,9 @@ AliEmcalJetTask::AliEmcalJetTask(const char *name) :
   fLegacyMode(kFALSE),
   fFillGhost(kFALSE),
   fJets(0),
+  fFastJetWrapper(name,name),
   fClusterContainerIndexMap(),
-  fParticleContainerIndexMap(),
-  fFastJetWrapper(name,name)
+  fParticleContainerIndexMap()
 {
 }
 
@@ -1066,8 +1066,6 @@ AliEmcalJetTask* AliEmcalJetTask::AddTaskEmcalJet(
   // Create containers for input/output
   AliAnalysisDataContainer* cinput = mgr->GetCommonInputContainer();
   mgr->ConnectInput(jetTask, 0, cinput);
-
-  TObjArray* cnt = mgr->GetContainers();
 
   return jetTask;
 }

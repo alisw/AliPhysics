@@ -98,7 +98,10 @@ class AliAnalysisTaskSubJetFraction : public AliAnalysisTaskEmcalJet {
   Double_t                            SubJetOrdering(AliEmcalJet *Jet, AliEmcalJetFinder *Reclusterer, Int_t N, Int_t Type, Bool_t Index);
   Double_t                            SubJetFraction(AliEmcalJet *Jet, AliEmcalJetFinder *Reclusterer, Int_t N, Int_t Type, Bool_t Add, Bool_t Loss);
   Double_t                            NSubJettiness(AliEmcalJet *Jet, Int_t JetContNb, Double_t JetRadius,  AliEmcalJetFinder *Reclusterer, Int_t N, Int_t A, Int_t B);
-  Double_t                            fjNSubJettiness(AliEmcalJet *Jet, Int_t JetContNb, Int_t N, Int_t Algorithm, Double_t Beta, Int_t Option=0, Double_t Beta_SD=0, Double_t ZCut=0.1);
+  Double_t                            FjNSubJettiness(AliEmcalJet *Jet, Int_t JetContNb, Int_t N, Int_t Algorithm, Double_t Beta, Int_t Option=0, Double_t Beta_SD=0, Double_t ZCut=0.1);
+  AliEmcalJet*                        ModifyJet(AliEmcalJet* Jet, Int_t JetContNb, TString Modification);
+  std::vector<fastjet::PseudoJet>     RandomiseTracks(std::vector<fastjet::PseudoJet> fInputVectors);
+  std::vector<fastjet::PseudoJet>     AddExtraProng(std::vector<fastjet::PseudoJet> fInputVectors, Double_t Distance, Double_t PtFrac);
  
   Int_t                               fContainer;              // jets to be analyzed 0 for Base, 1 for subtracted. 
   Float_t                             fMinFractionShared;          // only fill histos for jets if shared fraction larger than X
@@ -114,7 +117,8 @@ class AliAnalysisTaskSubJetFraction : public AliAnalysisTaskEmcalJet {
   Float_t                             fRecoilAngularWindow;             //angular window for btb recoil analysis 
   Int_t                               fSemigoodCorrect;             //if==1 we run over semigood runs
   Float_t                             fHolePos;                          //position in radians of the bad TPC sector
-  Float_t                             fHoleWidth;                       //width of the hole in radians 
+  Float_t                             fHoleWidth;                       //width of the hole in radians
+  TRandom3                            *fRandom;                     //! Random number generator
   Bool_t                              fCentSelectOn;                // switch on/off centrality selection
   Float_t                             fCentMin;                     // min centrality value
   Float_t                             fCentMax;                     // max centrality value

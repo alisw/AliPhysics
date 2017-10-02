@@ -26,6 +26,7 @@
  ************************************************************************************/
 #include <iostream>
 #include <string>
+#include <set>
 #include <sstream>
 #include <vector>
 
@@ -33,6 +34,8 @@
 #include <fastjet/contrib/Nsubjettiness.hh>
 #include <fastjet/contrib/SoftDrop.hh>
 
+#include <THistManager.h>
+#include <TLinearBinning.h>
 #include <TLorentzVector.h>
 #include <TMath.h>
 #include <TString.h>
@@ -53,6 +56,12 @@
 #include "AliVCluster.h"
 #include "AliVParticle.h"
 
+#ifdef EXPERIMENTAL_JETCONSTITUENTS
+#include "AliEmcalClusterJetConstituent.h"
+#include "AliEmcalParticleJetConstituent.h"
+#endif
+
+
 /// \cond CLASSIMP
 ClassImp(EmcalTriggerJets::AliAnalysisTaskEmcalJetSubstructureTree);
 /// \endcond
@@ -62,6 +71,7 @@ namespace EmcalTriggerJets {
 AliAnalysisTaskEmcalJetSubstructureTree::AliAnalysisTaskEmcalJetSubstructureTree() :
     AliAnalysisTaskEmcalJet(),
     fJetSubstructureTree(nullptr),
+    fQAHistos(nullptr),
     fSDZCut(0.1),
     fSDBetaCut(0),
     fReclusterizer(kCAAlgo),
@@ -74,6 +84,7 @@ AliAnalysisTaskEmcalJetSubstructureTree::AliAnalysisTaskEmcalJetSubstructureTree
 AliAnalysisTaskEmcalJetSubstructureTree::AliAnalysisTaskEmcalJetSubstructureTree(const char *name) :
     AliAnalysisTaskEmcalJet(name, kTRUE),
     fJetSubstructureTree(nullptr),
+    fQAHistos(nullptr),
     fSDZCut(0.1),
     fSDBetaCut(0),
     fReclusterizer(kCAAlgo),
@@ -90,6 +101,31 @@ AliAnalysisTaskEmcalJetSubstructureTree::~AliAnalysisTaskEmcalJetSubstructureTre
 
 void AliAnalysisTaskEmcalJetSubstructureTree::UserCreateOutputObjects() {
   AliAnalysisTaskEmcalJet::UserCreateOutputObjects();
+
+  // Make QA for constituent clusters
+  TLinearBinning jetptbinning(9, 20, 200),
+                 clusterenergybinning(200, 0., 200),
+                 timebinning(1000, -500., 500.),
+                 m02binning(100, 0., 1.),
+                 ncellbinning(101, -0.5, 100.5);
+  fQAHistos = new THistManager("QAhistos");
+  fQAHistos->CreateTH2("hClusterConstE", "EMCAL cluster energy vs jet pt; p_{t, jet} (GeV/c); E_{cl} (GeV)", jetptbinning, clusterenergybinning);
+  fQAHistos->CreateTH2("hClusterConstTime", "EMCAL cluster time vs. jet pt; p_{t, jet} (GeV/c); t_{cl} (ns)", jetptbinning, timebinning);
+  fQAHistos->CreateTH2("hClusterConstM02", "EMCAL cluster M02 vs. jet pt; p{t, jet} (GeV/c); M02", jetptbinning, m02binning);
+  fQAHistos->CreateTH2("hClusterConstNcell", "EMCAL cluster ncell vs. jet pt; p{t, jet} (GeV/c); Number of cells", jetptbinning, ncellbinning);
+
+  // Test of constituent QA
+#ifdef EXPERIMENTAL_JETCONSTITUENTS
+  fQAHistos->CreateTH2("hChargedConstituentPt", "charged constituent pt vs jet pt (via constituent map); p_{t,jet} (GeV/c); p_{t,ch} (GeV/c)", jetptbinning, clusterenergybinning);
+  fQAHistos->CreateTH2("hChargedIndexPt", "charged constituent pt vs jet pt (via index map); p_{t, jet} (GeV/c); p_{t, ch} (GeV/c)", jetptbinning, clusterenergybinning);
+
+ fQAHistos->CreateTH2("hClusterConstituentEDefault", "cluster constituent default energy vs. jet pt (va constituent map); p_{t, jet} (GeV/c); E_{cl} (GeV)", jetptbinning, clusterenergybinning);
+ fQAHistos->CreateTH2("hClusterConstituentENLC", "cluster constituent non-linearity-corrected energy vs. jet pt (va constituent map); p_{t, jet} (GeV/c); E_{cl} (GeV)", jetptbinning, clusterenergybinning);
+ fQAHistos->CreateTH2("hClusterConstituentEHC", "cluster constituent hadronic-corrected energy vs. jet pt (va constituent map); p_{t, jet} (GeV/c); E_{cl} (GeV)", jetptbinning, clusterenergybinning);
+ fQAHistos->CreateTH2("hClusterIndexENLC", "cluster constituent non-linearity-corrected energy vs. jet pt (via index map); p_{t, jet} (GeV/c); E_{cl} (GeV)", jetptbinning, clusterenergybinning);
+ fQAHistos->CreateTH2("hClusterIndexEHC", "cluster constituent hadronic-corrected energy vs. jet pt (via index map); p_{t, jet} (GeV/c); E_{cl} (GeV)", jetptbinning, clusterenergybinning);
+#endif
+  for(auto h : *(fQAHistos->GetListOfHistograms())) fOutput->Add(h);
 
   OpenFile(2);
   fJetSubstructureTree = new TTree("jetSubstructure", "Tree with jet substructure information");
@@ -149,6 +185,8 @@ bool AliAnalysisTaskEmcalJetSubstructureTree::Run(){
   AliJetContainer *mcjets = GetJetContainer("mcjets");
   AliJetContainer *datajets = GetJetContainer("datajets");
 
+  //for(auto e : *(fInputEvent->GetList())) std::cout << e->GetName() << std::endl;
+
   TString rhoTagData = datajets ? TString::Format("R%02d", static_cast<Int_t>(datajets->GetJetRadius() * 10.)) : "",
           rhoTagMC = mcjets ? TString::Format("R%02d", static_cast<Int_t>(mcjets->GetJetRadius() * 10.)) : "";
 
@@ -189,32 +227,20 @@ bool AliAnalysisTaskEmcalJetSubstructureTree::Run(){
   nsubjettinessSettings.fBeta = 1.;
   nsubjettinessSettings.fRadius = 0.4;
 
-  if(mcjets && !datajets) {
-    // pure MC (gen) train - run over MC jets
-    AliDebugStream(1) << "In MC pure jet branch: found " << mcjets->GetNJets() << " jets, " << mcjets->GetNAcceptedJets() << " were accepted\n";
-    for(auto jet : mcjets->accepted()) {
-      try {
-        AliJetSubstructureData structure = MakeJetSubstructure(*jet, mcjets->GetJetRadius() * 2., particles, nullptr,{softdropSettings, nsubjettinessSettings});
-        Double_t angularity[2] = {0., MakeAngularity(*jet, particles, nullptr)},
-                 ptd[2] = {0., MakePtD(*jet, particles, nullptr)};
-        FillTree(mcjets->GetJetRadius(), weight, nullptr, jet, nullptr, &(structure.fSoftDrop), nullptr, &(structure.fNsubjettiness), angularity, ptd, rhoparameters);
-      } catch (ReclusterizerException &e) {
-        AliErrorStream() << "Error in reclusterization - skipping jet" << std::endl;
-      }
-    }
-  }
-
-
+  std::set<AliEmcalJet *> taglist;
   if(datajets) {
     AliDebugStream(1) << "In data jets branch: found" <<  datajets->GetNJets() << " jets, " << datajets->GetNAcceptedJets() << " were accepted\n";
     AliDebugStream(1) << "Having MC information: " << (mcjets ? TString::Format("yes, with %d jets", mcjets->GetNJets()) : "no") << std::endl; 
     for(auto jet : datajets->accepted()) {
       double pt = jet->Pt(), pz = jet->Pz(), E = jet->E(), M = TMath::Sqrt(E*E - pt*pt - pz*pz);
       AliDebugStream(2) << "Next jet: pt:" << jet->Pt() << ", E: " << E << ", pz: " << pz << ", M(self): " << M << "M(fj)" << jet->M() << std::endl;
-      AliEmcalJet *associatedJet = jet->MatchedJet();
+      AliEmcalJet *associatedJet = jet->ClosestJet();
+
       if(mcjets) {
         if(!associatedJet) continue;
+        taglist.insert(associatedJet);
         try {
+          DoConstituentQA(jet, tracks, clusters);
           AliJetSubstructureData structureData =  MakeJetSubstructure(*jet, datajets->GetJetRadius() * 2., tracks, clusters, {softdropSettings, nsubjettinessSettings}),
                                  structureMC = MakeJetSubstructure(*associatedJet, mcjets->GetJetRadius() * 2, particles, nullptr, {softdropSettings, nsubjettinessSettings});
           Double_t angularity[2] = {MakeAngularity(*jet, tracks, clusters), MakeAngularity(*associatedJet, particles, nullptr)},
@@ -225,6 +251,7 @@ bool AliAnalysisTaskEmcalJetSubstructureTree::Run(){
         }
       } else {
         try {
+          DoConstituentQA(jet, tracks, clusters);
           AliJetSubstructureData structure = MakeJetSubstructure(*jet, 0.4, tracks, clusters, {softdropSettings, nsubjettinessSettings});
           Double_t angularity[2] = {MakeAngularity(*jet, tracks, clusters), 0.},
                    ptd[2] = {MakePtD(*jet, tracks, clusters), 0.};
@@ -232,6 +259,25 @@ bool AliAnalysisTaskEmcalJetSubstructureTree::Run(){
         } catch(ReclusterizerException &e) {
           AliErrorStream() << "Error in reclusterization - skipping jet" << std::endl;
         }
+      }
+    }
+  }
+
+  if(mcjets) {
+	  // process non-matched true jets
+    // - for efficiency studies
+    // - for MCgen train (taglist will be empty in this case)
+    AliDebugStream(1) << "In MC pure jet branch: found " << mcjets->GetNJets() << " jets, " << mcjets->GetNAcceptedJets() << " were accepted\n";
+    for(auto j : mcjets->accepted()){
+      AliEmcalJet *mcjet = static_cast<AliEmcalJet *>(j);
+      if(taglist.find(mcjet) != taglist.end()) continue;
+      try {
+        AliJetSubstructureData structure = MakeJetSubstructure(*mcjet, mcjets->GetJetRadius() * 2., particles, nullptr,{softdropSettings, nsubjettinessSettings});
+        Double_t angularity[2] = {0., MakeAngularity(*mcjet, particles, nullptr)},
+                 ptd[2] = {0., MakePtD(*mcjet, particles, nullptr)};
+        FillTree(mcjets->GetJetRadius(), weight, nullptr, mcjet, nullptr, &(structure.fSoftDrop), nullptr, &(structure.fNsubjettiness), angularity, ptd, rhoparameters);
+      } catch (ReclusterizerException &e) {
+        AliErrorStream() << "Error in reclusterization - skipping jet" << std::endl;
       }
     }
   }
@@ -462,6 +508,48 @@ Double_t AliAnalysisTaskEmcalJetSubstructureTree::MakePtD(const AliEmcalJet &jet
     }
   }
   return TMath::Sqrt(num)/den;
+}
+
+void AliAnalysisTaskEmcalJetSubstructureTree::DoConstituentQA(const AliEmcalJet *jet, const AliParticleContainer *cont, const AliClusterContainer *clusters){
+  for(int icl = 0; icl < jet->GetNumberOfClusters(); icl++){
+    AliVCluster *clust = jet->ClusterAt(icl, clusters->GetArray());
+    AliDebugStream(3) << "cluster time " << clust->GetTOF() << std::endl;
+    fQAHistos->FillTH2("hClusterConstE", jet->Pt(),clust->GetUserDefEnergy(clusters->GetDefaultClusterEnergy()));
+    fQAHistos->FillTH2("hClusterConstTime", jet->Pt(), clust->GetTOF());
+    fQAHistos->FillTH2("hClusterConstM02", jet->Pt(), clust->GetM02());
+    fQAHistos->FillTH2("hClusterConstNcell", jet->Pt(), clust->GetNCells());
+
+#ifdef EXPERIMENTAL_JETCONSTITUENTS
+    fQAHistos->FillTH2("hClusterIndexENLC", jet->Pt(), clust->GetNonLinCorrEnergy());
+    fQAHistos->FillTH2("hClusterIndexEHC", jet->Pt(), clust->GetHadCorrEnergy());
+#endif
+  }
+
+#ifdef EXPERIMENTAL_JETCONSTITUENTS
+  // Loop over charged particles - fill test histogram
+  for(int itrk = 0; itrk < jet->GetNumberOfTracks(); itrk++){
+    AliVParticle *part = jet->TrackAt(itrk, cont->GetArray());
+    fQAHistos->FillTH2("hChargedIndexPt", jet->Pt(), part->Pt());
+  }
+
+  // Look over charged constituents
+  AliDebugStream(2) << "Jet: Number of particle constituents: " << jet->GetParticleConstituents().GetEntriesFast() << std::endl;
+  for(auto pconst : jet->GetParticleConstituents()) {
+    PWG::JETFW::AliEmcalParticleJetConstituent *part = static_cast<PWG::JETFW::AliEmcalParticleJetConstituent *>(pconst);
+    AliDebugStream(3) << "Found particle constituent with pt " << part->Pt() << ", from VParticle " << part->GetParticle()->Pt() << std::endl;
+    fQAHistos->FillTH2("hChargedConstituentPt", jet->Pt(), part->Pt());
+  }
+
+  // Loop over neutral constituents
+  AliDebugStream(2) << "Jet: Number of cluster constituents: " << jet->GetClusterConstituents().GetEntriesFast() << std::endl;
+  for(auto cconst : jet->GetClusterConstituents()){
+    PWG::JETFW::AliEmcalClusterJetConstituent *clust = static_cast<PWG::JETFW::AliEmcalClusterJetConstituent *>(cconst);
+    AliDebugStream(3) << "Found cluster constituent with energy " << clust->E() << " using energy definition " << static_cast<int>(clust->GetDefaultEnergyType()) << std::endl;
+    fQAHistos->FillTH2("hClusterConstituentEDefault", jet->Pt(), clust->E());
+    fQAHistos->FillTH2("hClusterConstituentENLC", jet->Pt(), clust->GetCluster()->GetNonLinCorrEnergy());
+    fQAHistos->FillTH2("hClusterConstituentEHC", jet->Pt(), clust->GetCluster()->GetHadCorrEnergy());
+  }
+#endif
 }
 
 AliAnalysisTaskEmcalJetSubstructureTree *AliAnalysisTaskEmcalJetSubstructureTree::AddEmcalJetSubstructureTreeMaker(Bool_t isMC, Bool_t isData, Double_t jetradius, JetType_t jettype, AliJetContainer::ERecoScheme_t recombinationScheme, const char *trigger){

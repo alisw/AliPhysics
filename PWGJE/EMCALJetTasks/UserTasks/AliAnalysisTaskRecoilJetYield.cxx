@@ -251,14 +251,14 @@ AliAnalysisTaskRecoilJetYield::~AliAnalysisTaskRecoilJetYield()
     fJetInfoVarNames[1] = "Pt_Truth";
     fJetInfoVarNames[2] = "SymParam";
     fJetInfoVarNames[3] = "SymParam_Truth";
-    fJetInfoVarNames[4] = "Tau1";
-    fJetInfoVarNames[5] = "Tau1_Truth";
-    fJetInfoVarNames[6] = "Tau2";
-    fJetInfoVarNames[7] = "Tau2_Truth";
-    fJetInfoVarNames[8] = "PTD";
-    fJetInfoVarNames[9] = "PTD_Truth";
-    fJetInfoVarNames[10] = "Angularity";
-    fJetInfoVarNames[11] = "Angularity_Truth";
+    fJetInfoVarNames[4] = "Mass";
+    fJetInfoVarNames[5] = "Mass_Truth";
+    fJetInfoVarNames[6] = "SLSubJetMass";
+    fJetInfoVarNames[7] = "SLSubJetMass_Truth";
+    fJetInfoVarNames[8] = "LeadingParton";
+    fJetInfoVarNames[9] = "LeadingParton_Truth";
+    fJetInfoVarNames[10] = "SLSubJetPt";
+    fJetInfoVarNames[11] = "SLSubJetPt_Truth";
     fJetInfoVarNames[12] = "DelR";
     fJetInfoVarNames[13] = "DelR_Truth";
     fJetInfoVarNames[14] = "N_Groomed_Branches";
@@ -464,6 +464,7 @@ Bool_t AliAnalysisTaskRecoilJetYield::FillHistograms()
 	  fhJetPhi->Fill(JetPhi);
 	  fhJetEta->Fill(Jet1->Eta());
 	  fhJetMass->Fill(Jet1->M());
+	  fJetInfoVar[4]=Jet1->M();
 	  fhJetRadius->Fill(TMath::Sqrt((Jet1->Area()/TMath::Pi()))); //Radius of Jets per event
           fhNumberOfJetTracks->Fill(Jet1->GetNumberOfTracks());
 	  if(fJetShapeSub==kNoSub || fJetShapeSub==kDerivSub) fJetInfoVar[0]= Jet1->Pt()-(GetRhoVal(0)*Jet1->Area());
@@ -476,6 +477,8 @@ Bool_t AliAnalysisTaskRecoilJetYield::FillHistograms()
 	    fJetInfoVar[3]=0;
 	    fJetInfoVar[5]=0;
 	    fJetInfoVar[7]=0;
+	    fJetInfoVar[9]=0;
+	    fJetInfoVar[11]=0;
 	    fJetInfoVar[13]=0;
 	    fJetInfoVar[15]=0;
 	    fJetInfoVar[17]=0;
@@ -489,6 +492,10 @@ Bool_t AliAnalysisTaskRecoilJetYield::FillHistograms()
 	    fJetInfoVar[5]=0;
 	    fJetInfoVar[6]=0;
 	    fJetInfoVar[7]=0;
+	    fJetInfoVar[8]=0;
+	    fJetInfoVar[9]=0;
+	    fJetInfoVar[10]=0;
+	    fJetInfoVar[11]=0;
 	    fJetInfoVar[12]=0;
 	    fJetInfoVar[13]=0;
 	    fJetInfoVar[14]=0;
@@ -498,10 +505,6 @@ Bool_t AliAnalysisTaskRecoilJetYield::FillHistograms()
 	    fJetInfoVar[18]=0;
 	    fJetInfoVar[19]=0;
 	  }		    
-	  fJetInfoVar[8]=PTD(Jet1,0);
-	  fJetInfoVar[9]=0;
-	  fJetInfoVar[10]=Angularity(Jet1,0);
-	  fJetInfoVar[11]=0;
 	  fTreeJetInfo->Fill();
 	}
       }
@@ -582,6 +585,10 @@ Bool_t AliAnalysisTaskRecoilJetYield::FillHistograms()
 	fJetInfoVar[5]=0;
 	fJetInfoVar[6]=0;
 	fJetInfoVar[7]=0;
+	fJetInfoVar[8]=0;
+	fJetInfoVar[9]=0;
+	fJetInfoVar[10]=0;
+	fJetInfoVar[11]=0;
 	fJetInfoVar[12]=0;
 	fJetInfoVar[13]=0;
 	fJetInfoVar[14]=0;
@@ -590,11 +597,9 @@ Bool_t AliAnalysisTaskRecoilJetYield::FillHistograms()
 	fJetInfoVar[17]=0;
 	fJetInfoVar[18]=0;
 	fJetInfoVar[19]=0;
-      }		    
-      fJetInfoVar[8]=PTD(JetHybridS,0);
-      fJetInfoVar[9]=PTD(JetPythTrue,0);
-      fJetInfoVar[10]=Angularity(JetHybridS,0);
-      fJetInfoVar[11]=Angularity(JetPythTrue,0);
+      }
+      fJetInfoVar[4]=JetHybridS->M();
+      fJetInfoVar[5]=JetPythTrue->M();
       fTreeJetInfo->Fill();
     }
     
@@ -672,6 +677,10 @@ Bool_t AliAnalysisTaskRecoilJetYield::FillHistograms()
 	    fJetInfoVar[5]=0;
 	    fJetInfoVar[6]=0;
 	    fJetInfoVar[7]=0;
+	    fJetInfoVar[8]=0;
+	    fJetInfoVar[9]=0;
+	    fJetInfoVar[10]=0;
+	    fJetInfoVar[11]=0;
 	    fJetInfoVar[12]=0;
 	    fJetInfoVar[13]=0;
 	    fJetInfoVar[14]=0;
@@ -680,11 +689,9 @@ Bool_t AliAnalysisTaskRecoilJetYield::FillHistograms()
 	    fJetInfoVar[17]=0;
 	    fJetInfoVar[18]=0;
 	    fJetInfoVar[19]=0;
-	  }		    
-	  fJetInfoVar[8]=PTD(JetDet,0);
-	  fJetInfoVar[9]=PTD(JetTrue,0);
-	  fJetInfoVar[10]=Angularity(JetDet,0);
-	  fJetInfoVar[11]=Angularity(JetTrue,0);
+	  }
+	  fJetInfoVar[4]=JetDet->M();
+	  fJetInfoVar[5]=JetTrue->M();
 	  fTreeJetInfo->Fill();
 
 	  JetsMatched=kFALSE;
@@ -750,6 +757,10 @@ Bool_t AliAnalysisTaskRecoilJetYield::FillHistograms()
 	    fJetInfoVar[5]=0;
 	    fJetInfoVar[6]=0;
 	    fJetInfoVar[7]=0;
+	    fJetInfoVar[8]=0;
+	    fJetInfoVar[9]=0;
+	    fJetInfoVar[10]=0;
+	    fJetInfoVar[11]=0;
 	    fJetInfoVar[12]=0;
 	    fJetInfoVar[13]=0;
 	    fJetInfoVar[14]=0;
@@ -758,11 +769,9 @@ Bool_t AliAnalysisTaskRecoilJetYield::FillHistograms()
 	    fJetInfoVar[17]=0;
 	    fJetInfoVar[18]=0;
 	    fJetInfoVar[19]=0;
-	  }		    
-	  fJetInfoVar[8]=PTD(Jet1,0);
-	  fJetInfoVar[9]=0;
-	  fJetInfoVar[10]=Angularity(Jet1,0);
-	  fJetInfoVar[11]=0;
+	  }
+	  fJetInfoVar[4]=Jet1->M();
+	  fJetInfoVar[5]=0;
 	  fTreeJetInfo->Fill();
 	}
       }
@@ -894,12 +903,12 @@ Double_t AliAnalysisTaskRecoilJetYield::PTD(AliEmcalJet *Jet, Int_t JetContNb){
   for(Int_t j=1; j<3; j++){
     if(jet_constituents.size() < j){
       if(!fTruthJet){
-	if(j==1) fJetInfoVar[4]=-5;
-	else if(j==2) fJetInfoVar[6]=-5;
+	//if(j==1) fJetInfoVar[4]=-5;
+	//	if(j==2) fJetInfoVar[6]=-5;
       }
       else {
-	if(j==1) fJetInfoVar[5]=-5;
-	else if(j==2) fJetInfoVar[7]=-5;
+	//if(j==1) fJetInfoVar[5]=-5;
+	//	if(j==2) fJetInfoVar[7]=-5;
       }
       continue;
     }
@@ -931,13 +940,13 @@ Double_t AliAnalysisTaskRecoilJetYield::PTD(AliEmcalJet *Jet, Int_t JetContNb){
     }
   }
     if(!fTruthJet){
-      fJetInfoVar[4]=NSubjettinessResult[1];
-      fJetInfoVar[6]=NSubjettinessResult[2];
+      //fJetInfoVar[4]=NSubjettinessResult[1];
+      //fJetInfoVar[6]=NSubjettinessResult[2];
       // fJetInfoVar[12]=DelR;
     }
     else {
-      fJetInfoVar[5]=NSubjettinessResult[1];
-      fJetInfoVar[7]=NSubjettinessResult[2];
+      //fJetInfoVar[5]=NSubjettinessResult[1];
+      //fJetInfoVar[7]=NSubjettinessResult[2];
       // fJetInfoVar[13]=DelR;
     }
 
@@ -982,6 +991,48 @@ Double_t AliAnalysisTaskRecoilJetYield::PTD(AliEmcalJet *Jet, Int_t JetContNb){
   DeltaR=(finaljet.structure_of<fastjet::contrib::SoftDrop>().delta_R());
   //fhGroomedPtvJetPt->Fill(finaljet.perp(),fJet->Pt());
   //fhDroppedBranches->Fill(finaljet.structure_of<fastjet::contrib::SoftDrop>().dropped_count());
+  std::vector<fastjet::PseudoJet> subjets;
+  if ( finaljet.has_pieces() ) {
+    subjets = finaljet.pieces();
+    fastjet::PseudoJet subjet1 = subjets[0];
+    fastjet::PseudoJet subjet2 = subjets[1];
+    if(!fTruthJet){
+      if(subjets[0].perp() > subjets[1].perp()){
+	fJetInfoVar[6]=subjets[1].m();
+	fJetInfoVar[8]=LeadingTrackPt(subjets[1]);
+	fJetInfoVar[10]=subjets[1].perp();
+      }
+      else {
+	fJetInfoVar[6]= subjets[0].m();
+	fJetInfoVar[8]=LeadingTrackPt(subjets[0]);
+	fJetInfoVar[10]= subjets[0].perp();
+      }
+    }
+    else {
+      if(subjets[0].perp() > subjets[1].perp()){
+	fJetInfoVar[7]=subjets[1].m();
+	fJetInfoVar[9]=LeadingTrackPt(subjets[1]);
+	fJetInfoVar[11]=subjets[1].perp();
+      }
+      else{
+	fJetInfoVar[7]= subjets[0].m();
+	fJetInfoVar[9]=LeadingTrackPt(subjets[0]);
+	fJetInfoVar[11]=subjets[0].perp();
+      }
+    }
+
+  }
+  else {
+    if(!fTruthJet){
+      fJetInfoVar[6]=0;
+      fJetInfoVar[10]=-1;
+    }
+    else {
+      fJetInfoVar[7]=0;
+      fJetInfoVar[11]=-1;
+    }
+  }
+    
   if(!fTruthJet) fJetInfoVar[2]=SymParam;
   else fJetInfoVar[3]=SymParam;
   if(!fTruthJet) fJetInfoVar[12] = DeltaR;
@@ -1003,6 +1054,21 @@ Double_t AliAnalysisTaskRecoilJetYield::PTD(AliEmcalJet *Jet, Int_t JetContNb){
 
   
 }
+
+//--------------------------------------------------------------------------
+Double_t AliAnalysisTaskRecoilJetYield::LeadingTrackPt(fastjet::PseudoJet jet){
+  std::vector< fastjet::PseudoJet > constituents = jet.constituents();
+  fastjet::PseudoJet leadingtrack = constituents[0];
+  Double_t track_pt;
+  for(size_t i=0; i<constituents.size(); i++){
+    track_pt=constituents[i].perp();
+    if (track_pt > leadingtrack.perp()){
+      leadingtrack = constituents[i];
+    }
+  }
+  return leadingtrack.perp();
+}
+
 
 //--------------------------------------------------------------------------
 Int_t AliAnalysisTaskRecoilJetYield::SelectTriggerHadron(Float_t PtMin, Float_t PtMax){

@@ -13,8 +13,7 @@ void runNew(TString fileList="runlist.txt"){
     gSystem->Exec(Form("aliroot -l -b -q 'runLevelEventStatQA.C\(\"%s\",%i,\"local:///cvmfs/alice-ocdb.cern.ch/calibration/data/2017/OCDB\"\)'","",run));
     gSystem->mkdir(Form("all/%i",run));
 //    gSystem->Exec(Form("mv trending.root all/%i/trending.root",run)); // Old solution
-    gSystem->CopyFile("trending.root",Form("all/%i/trending.root",run));// Fix file corruption when moving files on EOS due to time-expiration
-    gSystem->Unlink("trending.root");
+    gSystem->Rename("trending.root",Form("all/%i/trending.root",run));
   }
   gSystem->Exec("hadd -f trending_merged.root all/*/trending.root");
   gSystem->Exec("aliroot -l -b -q periodLevelQA.C");
