@@ -292,7 +292,7 @@ AliAnalysisHFETPCTOFNew::AliAnalysisHFETPCTOFNew(const char *name)
 
 //For MC
 ,fMCstack(0)
-,fRejectKinkMother(kFALSE)
+,fRejectKinkMother(kTRUE)
 ,fMCtrack(0)
 ,fMCtrackMother(0)
 ,fMCtrackGMother(0)
@@ -520,7 +520,7 @@ AliAnalysisHFETPCTOFNew::AliAnalysisHFETPCTOFNew()
 
 //For MC
 ,fMCstack(0)
-,fRejectKinkMother(kFALSE)
+,fRejectKinkMother(kTRUE)
 ,fMCtrack(0)
 ,fMCtrackMother(0)
 ,fMCtrackGMother(0)
@@ -2219,7 +2219,8 @@ Bool_t AliAnalysisHFETPCTOFNew::PassCorrCuts(AliAODEvent *fAOD)
 	if(!fIsPP){
 		Int_t ntracks = -999;
 		ntracks = fAOD->GetNumberOfTracks();
-		if(ntracks < 1) printf("There are %d tracks in this event\n",ntracks);
+		if(ntracks < 1) return kFALSE;
+
 
 		AliAODVertex* vtTrc = fAOD->GetPrimaryVertex();
 		Double_t NcontV = vtTrc->GetNContributors();
