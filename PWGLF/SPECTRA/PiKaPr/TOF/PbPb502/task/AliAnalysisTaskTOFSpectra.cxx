@@ -538,23 +538,21 @@ void AliAnalysisTaskTOFSpectra::Init()
 #endif
   }
 
-  for (Int_t mult = 0; mult < kEvtMultBins; mult++) {   //Multiplicity loop
-    for (Int_t charge = 0; charge < 2; charge++) {      //Charge loop Positive/Negative
-      for (Int_t species = 0; species < 3; species++) { //Species loop
+  for (Int_t charge = 0; charge < 2; charge++) {      //Charge loop Positive/Negative
+    for (Int_t species = 0; species < 3; species++) { //Species loop
 
-        hNumMatchMultTrk[charge][species][mult] = 0x0;
-        hDenMatchMultTrk[charge][species][mult] = 0x0;
+      hNumMatchMultTrk[charge][species] = 0x0;
+      hDenMatchMultTrk[charge][species] = 0x0;
 
-        hNumMatchMultTrkTRDOut[charge][species][mult] = 0x0;
-        hDenMatchMultTrkTRDOut[charge][species][mult] = 0x0;
+      hNumMatchMultTrkTRDOut[charge][species] = 0x0;
+      hDenMatchMultTrkTRDOut[charge][species] = 0x0;
 
-        hNumMatchMultTrkNoTRDOut[charge][species][mult] = 0x0;
-        hDenMatchMultTrkNoTRDOut[charge][species][mult] = 0x0;
-      }
-
-      hNumMatchMultTrkInc[charge][mult] = 0x0;
-      hDenMatchMultTrkInc[charge][mult] = 0x0;
+      hNumMatchMultTrkNoTRDOut[charge][species] = 0x0;
+      hDenMatchMultTrkNoTRDOut[charge][species] = 0x0;
     }
+
+    hNumMatchMultTrkInc[charge] = 0x0;
+    hDenMatchMultTrkInc[charge] = 0x0;
   }
 
   for (Int_t charge = 0; charge < 2; charge++) {      //Charge loop Positive/Negative
@@ -564,16 +562,14 @@ void AliAnalysisTaskTOFSpectra::Init()
       hDenTrkVertex[charge][species] = 0x0;
       hDenTrkVertexMCVertexZ[charge][species] = 0x0;
 
-      for (Int_t mult = 0; mult < kEvtMultBins; mult++) { //Multiplicity loop
-        hDenTrkTrigger[charge][species][mult] = 0x0;
-        hDenPrimMCYCut[charge][species][mult] = 0x0;
-        hDenPrimMCEtaCut[charge][species][mult] = 0x0;
-        hDenPrimMCEtaYCut[charge][species][mult] = 0x0;
-        hNumPrimMCTrueMatch[charge][species][mult] = 0x0;
-        hNumPrimMCTrueMatchYCut[charge][species][mult] = 0x0;
-        hNumPrimMCTrueMatchYCutTPC[charge][species][mult] = 0x0;
-        hNumPrimMCConsistentMatchYCut[charge][species][mult] = 0x0;
-      }
+      hDenTrkTrigger[charge][species] = 0x0;
+      hDenPrimMCYCut[charge][species] = 0x0;
+      hDenPrimMCEtaCut[charge][species] = 0x0;
+      hDenPrimMCEtaYCut[charge][species] = 0x0;
+      hNumPrimMCTrueMatch[charge][species] = 0x0;
+      hNumPrimMCTrueMatchYCut[charge][species] = 0x0;
+      hNumPrimMCTrueMatchYCutTPC[charge][species] = 0x0;
+      hNumPrimMCConsistentMatchYCut[charge][species] = 0x0;
 
       hDenMatchPrimNoCut[charge][species] = 0x0;
       hDenPrimMCNoCut[charge][species] = 0x0;
@@ -614,11 +610,9 @@ void AliAnalysisTaskTOFSpectra::Init()
 
       hNumMatchPrimMC[charge][species] = 0x0;
       hDenMatchPrimMC[charge][species] = 0x0;
-      for (Int_t mult = 0; mult < kEvtMultBins; mult++) { //Multiplicity loop
 
-        hNumMatchPrimMCYCut[charge][species][mult] = 0x0;
-        hDenMatchPrimMCYCut[charge][species][mult] = 0x0;
-      }
+      hNumMatchPrimMCYCut[charge][species] = 0x0;
+      hDenMatchPrimMCYCut[charge][species] = 0x0;
     }
   }
 
@@ -1241,16 +1235,13 @@ void AliAnalysisTaskTOFSpectra::UserCreateOutputObjects()
           hDenMatchPrimMC[charge][species]->Sumw2();
           fListHist->AddLast(hDenMatchPrimMC[charge][species]);
 
-          for (Int_t mult = 0; mult < kEvtMultBins; mult++) { //Multiplicity loop
+          hNumMatchPrimMCYCut[charge][species] = new TH2F(Form("hNumMatchPrimMCYCut%s%s", pC[charge].Data(), pS[species].Data()), Form("Matching Numerator with MC PID and Primary |y| < %.1f %s %s;%s", fRapidityCut, pCharge[charge].Data(), pSpecies[species].Data(), ptstring.Data()), kPtBins, fBinPt, fMultiplicityBin.GetSize(), fMultiplicityBin.GetArray());
+          hNumMatchPrimMCYCut[charge][species]->Sumw2();
+          fListHist->AddLast(hNumMatchPrimMCYCut[charge][species]);
 
-            hNumMatchPrimMCYCut[charge][species][mult] = new TH1F(Form("hNumMatchPrimMCYCut%s%s_%i", pC[charge].Data(), pS[species].Data(), mult), Form("Matching Numerator with MC PID and Primary |y| < %.1f %s %s;%s", fRapidityCut, pCharge[charge].Data(), pSpecies[species].Data(), ptstring.Data()), kPtBins, fBinPt);
-            hNumMatchPrimMCYCut[charge][species][mult]->Sumw2();
-            fListHist->AddLast(hNumMatchPrimMCYCut[charge][species][mult]);
-
-            hDenMatchPrimMCYCut[charge][species][mult] = new TH1F(Form("hDenMatchPrimMCYCut%s%s_%i", pC[charge].Data(), pS[species].Data(), mult), Form("Matching Denominator with MC PID and Primary |y| < %.1f %s %s;%s", fRapidityCut, pCharge[charge].Data(), pSpecies[species].Data(), ptstring.Data()), kPtBins, fBinPt);
-            hDenMatchPrimMCYCut[charge][species][mult]->Sumw2();
-            fListHist->AddLast(hDenMatchPrimMCYCut[charge][species][mult]);
-          }
+          hDenMatchPrimMCYCut[charge][species] = new TH2F(Form("hDenMatchPrimMCYCut%s%s", pC[charge].Data(), pS[species].Data()), Form("Matching Denominator with MC PID and Primary |y| < %.1f %s %s;%s", fRapidityCut, pCharge[charge].Data(), pSpecies[species].Data(), ptstring.Data()), kPtBins, fBinPt, fMultiplicityBin.GetSize(), fMultiplicityBin.GetArray());
+          hDenMatchPrimMCYCut[charge][species]->Sumw2();
+          fListHist->AddLast(hDenMatchPrimMCYCut[charge][species]);
 
           //*****
           //Info from the DCAxy with MC information
@@ -1273,43 +1264,41 @@ void AliAnalysisTaskTOFSpectra::UserCreateOutputObjects()
       }
 
       //efficiency
-      for (Int_t mult = 0; mult < kEvtMultBins; mult++) {   //Multiplicity loop
-        for (Int_t charge = 0; charge < 2; charge++) {      //Charge loop Positive/Negative
-          for (Int_t species = 0; species < 3; species++) { //Species loop
+      for (Int_t charge = 0; charge < 2; charge++) {      //Charge loop Positive/Negative
+        for (Int_t species = 0; species < 3; species++) { //Species loop
 
-            hNumMatchMultTrk[charge][species][mult] = new TH1F(Form("hNumMatch_MultTrk%i_%s%s", mult, pC[charge].Data(), pS[species].Data()), "", kPtBins, fBinPt);
-            hNumMatchMultTrk[charge][species][mult]->Sumw2();
-            fListHist->AddLast(hNumMatchMultTrk[charge][species][mult]);
+          hNumMatchMultTrk[charge][species] = new TH2F(Form("hNumMatch_MultTrk_%s%s", pC[charge].Data(), pS[species].Data()), "", kPtBins, fBinPt, fMultiplicityBin.GetSize(), fMultiplicityBin.GetArray());
+          hNumMatchMultTrk[charge][species]->Sumw2();
+          fListHist->AddLast(hNumMatchMultTrk[charge][species]);
 
-            hDenMatchMultTrk[charge][species][mult] = new TH1F(Form("hDenMatch_MultTrk%i_%s%s", mult, pC[charge].Data(), pS[species].Data()), "", kPtBins, fBinPt);
-            hDenMatchMultTrk[charge][species][mult]->Sumw2();
-            fListHist->AddLast(hDenMatchMultTrk[charge][species][mult]);
+          hDenMatchMultTrk[charge][species] = new TH2F(Form("hDenMatch_MultTrk_%s%s", pC[charge].Data(), pS[species].Data()), "", kPtBins, fBinPt, fMultiplicityBin.GetSize(), fMultiplicityBin.GetArray());
+          hDenMatchMultTrk[charge][species]->Sumw2();
+          fListHist->AddLast(hDenMatchMultTrk[charge][species]);
 
-            hNumMatchMultTrkTRDOut[charge][species][mult] = new TH1F(Form("hNumMatch_MultTrk%i_%s%s_TRDOut", mult, pC[charge].Data(), pS[species].Data()), "", kPtBins, fBinPt);
-            hNumMatchMultTrkTRDOut[charge][species][mult]->Sumw2();
-            fListHist->AddLast(hNumMatchMultTrkTRDOut[charge][species][mult]);
+          hNumMatchMultTrkTRDOut[charge][species] = new TH2F(Form("hNumMatch_MultTrk_%s%s_TRDOut", pC[charge].Data(), pS[species].Data()), "", kPtBins, fBinPt, fMultiplicityBin.GetSize(), fMultiplicityBin.GetArray());
+          hNumMatchMultTrkTRDOut[charge][species]->Sumw2();
+          fListHist->AddLast(hNumMatchMultTrkTRDOut[charge][species]);
 
-            hDenMatchMultTrkTRDOut[charge][species][mult] = new TH1F(Form("hDenMatch_MultTrk%i_%s%s_TRDOut", mult, pC[charge].Data(), pS[species].Data()), "", kPtBins, fBinPt);
-            hDenMatchMultTrkTRDOut[charge][species][mult]->Sumw2();
-            fListHist->AddLast(hDenMatchMultTrkTRDOut[charge][species][mult]);
+          hDenMatchMultTrkTRDOut[charge][species] = new TH2F(Form("hDenMatch_MultTrk_%s%s_TRDOut", pC[charge].Data(), pS[species].Data()), "", kPtBins, fBinPt, fMultiplicityBin.GetSize(), fMultiplicityBin.GetArray());
+          hDenMatchMultTrkTRDOut[charge][species]->Sumw2();
+          fListHist->AddLast(hDenMatchMultTrkTRDOut[charge][species]);
 
-            hNumMatchMultTrkNoTRDOut[charge][species][mult] = new TH1F(Form("hNumMatch_MultTrk%i_%s%s_NoTRDOut", mult, pC[charge].Data(), pS[species].Data()), "", kPtBins, fBinPt);
-            hNumMatchMultTrkNoTRDOut[charge][species][mult]->Sumw2();
-            fListHist->AddLast(hNumMatchMultTrkNoTRDOut[charge][species][mult]);
+          hNumMatchMultTrkNoTRDOut[charge][species] = new TH2F(Form("hNumMatch_MultTrk_%s%s_NoTRDOut", pC[charge].Data(), pS[species].Data()), "", kPtBins, fBinPt, fMultiplicityBin.GetSize(), fMultiplicityBin.GetArray());
+          hNumMatchMultTrkNoTRDOut[charge][species]->Sumw2();
+          fListHist->AddLast(hNumMatchMultTrkNoTRDOut[charge][species]);
 
-            hDenMatchMultTrkNoTRDOut[charge][species][mult] = new TH1F(Form("hDenMatch_MultTrk%i_%s%s_NoTRDOut", mult, pC[charge].Data(), pS[species].Data()), "", kPtBins, fBinPt);
-            hDenMatchMultTrkNoTRDOut[charge][species][mult]->Sumw2();
-            fListHist->AddLast(hDenMatchMultTrkNoTRDOut[charge][species][mult]);
-          }
-
-          hNumMatchMultTrkInc[charge][mult] = new TH1F(Form("hNumMatch_Inc_MultTrk%i_%s", mult, pC[charge].Data()), "", kPtBins, fBinPt);
-          hNumMatchMultTrkInc[charge][mult]->Sumw2();
-          fListHist->AddLast(hNumMatchMultTrkInc[charge][mult]);
-
-          hDenMatchMultTrkInc[charge][mult] = new TH1F(Form("hDenMatch_Inc_MultTrk%i_%s", mult, pC[charge].Data()), "", kPtBins, fBinPt);
-          hDenMatchMultTrkInc[charge][mult]->Sumw2();
-          fListHist->AddLast(hDenMatchMultTrkInc[charge][mult]);
+          hDenMatchMultTrkNoTRDOut[charge][species] = new TH2F(Form("hDenMatch_MultTrk_%s%s_NoTRDOut", pC[charge].Data(), pS[species].Data()), "", kPtBins, fBinPt, fMultiplicityBin.GetSize(), fMultiplicityBin.GetArray());
+          hDenMatchMultTrkNoTRDOut[charge][species]->Sumw2();
+          fListHist->AddLast(hDenMatchMultTrkNoTRDOut[charge][species]);
         }
+
+        hNumMatchMultTrkInc[charge] = new TH2F(Form("hNumMatch_Inc_MultTrk_%s", pC[charge].Data()), "", kPtBins, fBinPt, fMultiplicityBin.GetSize(), fMultiplicityBin.GetArray());
+        hNumMatchMultTrkInc[charge]->Sumw2();
+        fListHist->AddLast(hNumMatchMultTrkInc[charge]);
+
+        hDenMatchMultTrkInc[charge] = new TH2F(Form("hDenMatch_Inc_MultTrk_%s", pC[charge].Data()), "", kPtBins, fBinPt, fMultiplicityBin.GetSize(), fMultiplicityBin.GetArray());
+        hDenMatchMultTrkInc[charge]->Sumw2();
+        fListHist->AddLast(hDenMatchMultTrkInc[charge]);
       }
 
       for (Int_t charge = 0; charge < 2; charge++) {      //Charge loop Positive/Negative
@@ -1327,40 +1316,37 @@ void AliAnalysisTaskTOFSpectra::UserCreateOutputObjects()
           hDenTrkVertexMCVertexZ[charge][species]->Sumw2();
           fListHist->AddLast(hDenTrkVertexMCVertexZ[charge][species]);
 
-          for (Int_t mult = 0; mult < kEvtMultBins; mult++) { //Multiplicity loop
+          hDenTrkTrigger[charge][species] = new TH2F(Form("hDenTrkTrigger_%s%s", pC[charge].Data(), pS[species].Data()), "", kPtBins, fBinPt, fMultiplicityBin.GetSize(), fMultiplicityBin.GetArray());
+          hDenTrkTrigger[charge][species]->Sumw2();
+          fListHist->AddLast(hDenTrkTrigger[charge][species]);
 
-            hDenTrkTrigger[charge][species][mult] = new TH1F(Form("hDenTrkTrigger_%s%s_%i", pC[charge].Data(), pS[species].Data(), mult), "", kPtBins, fBinPt);
-            hDenTrkTrigger[charge][species][mult]->Sumw2();
-            fListHist->AddLast(hDenTrkTrigger[charge][species][mult]);
+          hDenPrimMCYCut[charge][species] = new TH2F(Form("hDenPrimMCYCut_%s%s", pC[charge].Data(), pS[species].Data()), "Primary particles", kPtBins, fBinPt, fMultiplicityBin.GetSize(), fMultiplicityBin.GetArray());
+          hDenPrimMCYCut[charge][species]->Sumw2();
+          fListHist->AddLast(hDenPrimMCYCut[charge][species]);
 
-            hDenPrimMCYCut[charge][species][mult] = new TH1F(Form("hDenPrimMCYCut_%s%s_%i", pC[charge].Data(), pS[species].Data(), mult), "Primary particles", kPtBins, fBinPt);
-            hDenPrimMCYCut[charge][species][mult]->Sumw2();
-            fListHist->AddLast(hDenPrimMCYCut[charge][species][mult]);
+          hDenPrimMCEtaCut[charge][species] = new TH2F(Form("hDenPrimMCEtaCut_%s%s", pC[charge].Data(), pS[species].Data()), "", kPtBins, fBinPt, fMultiplicityBin.GetSize(), fMultiplicityBin.GetArray());
+          hDenPrimMCEtaCut[charge][species]->Sumw2();
+          fListHist->AddLast(hDenPrimMCEtaCut[charge][species]);
 
-            hDenPrimMCEtaCut[charge][species][mult] = new TH1F(Form("hDenPrimMCEtaCut_%s%s_%i", pC[charge].Data(), pS[species].Data(), mult), "", kPtBins, fBinPt);
-            hDenPrimMCEtaCut[charge][species][mult]->Sumw2();
-            fListHist->AddLast(hDenPrimMCEtaCut[charge][species][mult]);
+          hDenPrimMCEtaYCut[charge][species] = new TH2F(Form("hDenPrimMCEtaYCut_%s%s", pC[charge].Data(), pS[species].Data()), "", kPtBins, fBinPt, fMultiplicityBin.GetSize(), fMultiplicityBin.GetArray());
+          hDenPrimMCEtaYCut[charge][species]->Sumw2();
+          fListHist->AddLast(hDenPrimMCEtaYCut[charge][species]);
 
-            hDenPrimMCEtaYCut[charge][species][mult] = new TH1F(Form("hDenPrimMCEtaYCut_%s%s_%i", pC[charge].Data(), pS[species].Data(), mult), "", kPtBins, fBinPt);
-            hDenPrimMCEtaYCut[charge][species][mult]->Sumw2();
-            fListHist->AddLast(hDenPrimMCEtaYCut[charge][species][mult]);
+          hNumPrimMCTrueMatch[charge][species] = new TH2F(Form("hNumPrimMCTrueMatch_%s%s", pC[charge].Data(), pS[species].Data()), "", kPtBins, fBinPt, fMultiplicityBin.GetSize(), fMultiplicityBin.GetArray());
+          hNumPrimMCTrueMatch[charge][species]->Sumw2();
+          fListHist->AddLast(hNumPrimMCTrueMatch[charge][species]);
 
-            hNumPrimMCTrueMatch[charge][species][mult] = new TH1F(Form("hNumPrimMCTrueMatch_%s%s_%i", pC[charge].Data(), pS[species].Data(), mult), "", kPtBins, fBinPt);
-            hNumPrimMCTrueMatch[charge][species][mult]->Sumw2();
-            fListHist->AddLast(hNumPrimMCTrueMatch[charge][species][mult]);
+          hNumPrimMCTrueMatchYCut[charge][species] = new TH2F(Form("hNumPrimMCTrueMatchYCut_%s%s", pC[charge].Data(), pS[species].Data()), "", kPtBins, fBinPt, fMultiplicityBin.GetSize(), fMultiplicityBin.GetArray());
+          hNumPrimMCTrueMatchYCut[charge][species]->Sumw2();
+          fListHist->AddLast(hNumPrimMCTrueMatchYCut[charge][species]);
 
-            hNumPrimMCTrueMatchYCut[charge][species][mult] = new TH1F(Form("hNumPrimMCTrueMatchYCut_%s%s_%i", pC[charge].Data(), pS[species].Data(), mult), "", kPtBins, fBinPt);
-            hNumPrimMCTrueMatchYCut[charge][species][mult]->Sumw2();
-            fListHist->AddLast(hNumPrimMCTrueMatchYCut[charge][species][mult]);
+          hNumPrimMCTrueMatchYCutTPC[charge][species] = new TH2F(Form("hNumPrimMCTrueMatchYCutTPC_%s%s", pC[charge].Data(), pS[species].Data()), "", kPtBins, fBinPt, fMultiplicityBin.GetSize(), fMultiplicityBin.GetArray());
+          hNumPrimMCTrueMatchYCutTPC[charge][species]->Sumw2();
+          fListHist->AddLast(hNumPrimMCTrueMatchYCutTPC[charge][species]);
 
-            hNumPrimMCTrueMatchYCutTPC[charge][species][mult] = new TH1F(Form("hNumPrimMCTrueMatchYCutTPC_%s%s_%i", pC[charge].Data(), pS[species].Data(), mult), "", kPtBins, fBinPt);
-            hNumPrimMCTrueMatchYCutTPC[charge][species][mult]->Sumw2();
-            fListHist->AddLast(hNumPrimMCTrueMatchYCutTPC[charge][species][mult]);
-
-            hNumPrimMCConsistentMatchYCut[charge][species][mult] = new TH1F(Form("hNumPrimMCConsistentMatchYCut_%s%s_%i", pC[charge].Data(), pS[species].Data(), mult), "", kPtBins, fBinPt);
-            hNumPrimMCConsistentMatchYCut[charge][species][mult]->Sumw2();
-            fListHist->AddLast(hNumPrimMCConsistentMatchYCut[charge][species][mult]);
-          }
+          hNumPrimMCConsistentMatchYCut[charge][species] = new TH2F(Form("hNumPrimMCConsistentMatchYCut_%s%s", pC[charge].Data(), pS[species].Data()), "", kPtBins, fBinPt, fMultiplicityBin.GetSize(), fMultiplicityBin.GetArray());
+          hNumPrimMCConsistentMatchYCut[charge][species]->Sumw2();
+          fListHist->AddLast(hNumPrimMCConsistentMatchYCut[charge][species]);
 
           if (fFineEfficiency) {
             hDenMatchPrimNoCut[charge][species] = new TH3S(Form("hDenMatchPrimNoCut_%s%s", pC[charge].Data(), pS[species].Data()), Form(";%s;%s;%s", ptstring.Data(), etastring.Data(), phistring.Data()), kPtBins, 0, kPtBins, kEtaBins, -fEtaRange, fEtaRange, kPhiBins, 0, TMath::TwoPi());
@@ -2039,7 +2025,7 @@ void AliAnalysisTaskTOFSpectra::UserExec(Option_t*)
         if (fProdInfo == 0) {
           hDenMatchPrimMC[fSign][fPdgIndex]->Fill(fPt);
           if (TMath::Abs(fRapidityMC) < fRapidityCut)
-            hDenMatchPrimMCYCut[fSign][fPdgIndex][fEvtMultBin]->Fill(fPt);
+            hDenMatchPrimMCYCut[fSign][fPdgIndex]->Fill(fPt, fEvtMult);
           if (fFineEfficiency)
             hDenMatchPrimNoCut[fSign][fPdgIndex]->Fill(fPt, fEta, fPhiout);
         }
@@ -2194,18 +2180,18 @@ void AliAnalysisTaskTOFSpectra::UserExec(Option_t*)
         if (fProdInfo == 0) { //Primaries
           hNumMatchPrimMC[fSign][fPdgIndex]->Fill(fPt);
           if (TMath::Abs(fRapidityMC) < fRapidityCut)
-            hNumMatchPrimMCYCut[fSign][fPdgIndex][fEvtMultBin]->Fill(fPt);
+            hNumMatchPrimMCYCut[fSign][fPdgIndex]->Fill(fPt, fEvtMult);
           if (fMCTOFMatch == 0) { //True match in TOF
-            hNumPrimMCTrueMatch[fSignMC][fPdgIndex][fEvtMultBin]->Fill(fPtMC);
+            hNumPrimMCTrueMatch[fSignMC][fPdgIndex]->Fill(fPtMC, fEvtMult);
             if (TMath::Abs(fRapidityMC) < fRapidityCut) {
-              hNumPrimMCTrueMatchYCut[fSign][fPdgIndex][fEvtMultBin]->Fill(fPt);
+              hNumPrimMCTrueMatchYCut[fSign][fPdgIndex]->Fill(fPt, fEvtMult);
               if ((TMath::Abs(fTPCSigma[kpi]) < 5) && (TMath::Abs(fTPCSigma[kK]) < 5) && (TMath::Abs(fTPCSigma[kp]) < 5))
-                hNumPrimMCTrueMatchYCutTPC[fSign][fPdgIndex][fEvtMultBin]->Fill(fPt);
+                hNumPrimMCTrueMatchYCutTPC[fSign][fPdgIndex]->Fill(fPt, fEvtMult);
             }
 
           } else if (fMCTOFMatch > 0 && TMath::Abs(fTOFSigma[kpi + fPdgIndex]) < 2.) { //Consistent match in TOF
             if (TMath::Abs(fRapidityMC) < fRapidityCut) {
-              hNumPrimMCConsistentMatchYCut[fSign][fPdgIndex][fEvtMultBin]->Fill(fPt);
+              hNumPrimMCConsistentMatchYCut[fSign][fPdgIndex]->Fill(fPt, fEvtMult);
             }
           }
         }
@@ -2627,7 +2613,7 @@ void AliAnalysisTaskTOFSpectra::AnalyseMCParticles()
       fSignMC = kTRUE; //Particle is negative
 
     if (passy) {
-      hDenTrkTrigger[fSignMC][fPdgIndex][fEvtMultBin]->Fill(fPtMC);
+      hDenTrkTrigger[fSignMC][fPdgIndex]->Fill(fPtMC, fEvtMult);
       if (fEvtMCSampSelected)
         hDenTrkMCVertexZ[fSignMC][fPdgIndex]->Fill(fPtMC);
     }
@@ -2649,13 +2635,13 @@ void AliAnalysisTaskTOFSpectra::AnalyseMCParticles()
       hDenPrimMCNoCut[fSignMC][fPdgIndex]->Fill(fPtMC, fEtaMC, fPhiMC);
 
     if (passy)
-      hDenPrimMCYCut[fSignMC][fPdgIndex][fEvtMultBin]->Fill(fPtMC);
+      hDenPrimMCYCut[fSignMC][fPdgIndex]->Fill(fPtMC, fEvtMult);
 
     if (passeta)
-      hDenPrimMCEtaCut[fSignMC][fPdgIndex][fEvtMultBin]->Fill(fPtMC);
+      hDenPrimMCEtaCut[fSignMC][fPdgIndex]->Fill(fPtMC, fEvtMult);
 
     if (passeta && passy)
-      hDenPrimMCEtaYCut[fSignMC][fPdgIndex][fEvtMultBin]->Fill(fPtMC);
+      hDenPrimMCEtaYCut[fSignMC][fPdgIndex]->Fill(fPtMC, fEvtMult);
   }
 
   InitializeMCTrackVar();
@@ -2673,22 +2659,23 @@ Bool_t AliAnalysisTaskTOFSpectra::AnalyseMCTracks()
   } //Rapidity cut
 
   if ((fTOFout == kTRUE) && (fTime == kTRUE))
-    hNumMatchMultTrkInc[fSign][fEvtMultBin]->Fill(fPt);
-  hDenMatchMultTrkInc[fSign][fEvtMultBin]->Fill(fPt);
+    hNumMatchMultTrkInc[fSign]->Fill(fPt, fEvtMult);
+  //
+  hDenMatchMultTrkInc[fSign]->Fill(fPt, fEvtMult);
 
   if (fPdgIndex < 0)
     return kFALSE; //Pi/K/P only!
-  hDenMatchMultTrk[fSign][fPdgIndex][fEvtMultBin]->Fill(fPt);
+  hDenMatchMultTrk[fSign][fPdgIndex]->Fill(fPt, fEvtMult);
   if (fTRDout == kTRUE)
-    hDenMatchMultTrkTRDOut[fSign][fPdgIndex][fEvtMultBin]->Fill(fPt);
+    hDenMatchMultTrkTRDOut[fSign][fPdgIndex]->Fill(fPt, fEvtMult);
   else
-    hDenMatchMultTrkNoTRDOut[fSign][fPdgIndex][fEvtMultBin]->Fill(fPt);
+    hDenMatchMultTrkNoTRDOut[fSign][fPdgIndex]->Fill(fPt, fEvtMult);
   if ((fTOFout == kTRUE) && (fTime == kTRUE)) {
-    hNumMatchMultTrk[fSign][fPdgIndex][fEvtMultBin]->Fill(fPt);
+    hNumMatchMultTrk[fSign][fPdgIndex]->Fill(fPt, fEvtMult);
     if (fTRDout == kTRUE)
-      hNumMatchMultTrkTRDOut[fSign][fPdgIndex][fEvtMultBin]->Fill(fPt);
+      hNumMatchMultTrkTRDOut[fSign][fPdgIndex]->Fill(fPt, fEvtMult);
     else
-      hNumMatchMultTrkNoTRDOut[fSign][fPdgIndex][fEvtMultBin]->Fill(fPt);
+      hNumMatchMultTrkNoTRDOut[fSign][fPdgIndex]->Fill(fPt, fEvtMult);
   }
 
   //   fTreeTrackMC->Fill();
