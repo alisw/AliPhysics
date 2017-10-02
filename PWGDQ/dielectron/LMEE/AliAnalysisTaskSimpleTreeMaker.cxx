@@ -281,8 +281,8 @@ void AliAnalysisTaskSimpleTreeMaker::UserExec(Option_t *) {
     
 
     Int_t eventTracks = event->GetNumberOfTracks();
-    Int_t runNumber = event->GetRunNumber();
-    Int_t numV0s = event->GetNumberOfV0s();
+    Int_t runNumber   = event->GetRunNumber();
+    Int_t numV0s      = event->GetNumberOfV0s();
 
     AliVParticle* mcTrack = 0x0;
     AliVParticle* motherMCtrack = 0x0;
@@ -697,7 +697,7 @@ void AliAnalysisTaskSimpleTreeMaker::UserExec(Option_t *) {
             fQAhist->Fill("Arm. cuts",1);
 
             //Get positive particle obsevables
-            Double_t pt = posTrack->Pt();
+            Double_t pt  = posTrack->Pt();
             Double_t eta = posTrack->Eta();
             Double_t phi = posTrack->Phi();
 
@@ -745,18 +745,21 @@ void AliAnalysisTaskSimpleTreeMaker::UserExec(Option_t *) {
             Int_t label = -999;
             Int_t motherLabel = -9999999;
 
-            if(fIsMC){
-                label = posTrack->GetLabel();
-				AliVEvent* mcEvent = MCEvent();
-                AliVParticle* mcTrack = dynamic_cast<AliVParticle*>(mcEvent->GetTrack(TMath::Abs(label)));
-                TParticle* mcParticle = dynamic_cast<TParticle*>(mcTrack->Particle());
-                mcEta = mcTrack->Eta();
-                mcPhi = mcTrack->Phi();
-                mcPt = mcTrack->Pt();
+			//TODO: Improve efficiency of MC section
+			//Currently: checks neg particle, then pos particle.
+			//If both pass, write pos particle features, then get neg features
+			//again!
+			if(fIsMC){
+				//-------- Check negative charge particle --------------
+				//No need to set variables. Only want to check validity of
+				//track
+				label = negTrack->GetLabel();
 
-                iPdg = mcTrack->PdgCode();
-
-              
+				mcTrack = dynamic_cast<AliMCParticle*>(mcEvent->GetTrack(TMath::Abs(label)));
+				//Check valid pointer has been returned. If not, disregard track. 
+				if(!mcTrack){
+					continue;
+				}
                 Int_t gMotherIndex = mcTrack->GetMother();
 				
 				if(!(gMotherIndex < 0)){
@@ -773,10 +776,52 @@ void AliAnalysisTaskSimpleTreeMaker::UserExec(Option_t *) {
 						    continue;
 					    }
                     }
-                	iPdgMother = motherMCtrack->PdgCode();
-                    motherLabel = TMath::Abs(motherMCtrack->GetLabel());
+				}//End loop over motherIndex
+				//--------- End negative particle check	 -------------
+		
+				//--------- Get postive particle features
+				//Set features for writing into TTree
+			   
+				label = posTrack->GetLabel();
+
+				mcTrack = dynamic_cast<AliMCParticle*>(mcEvent->GetTrack(TMath::Abs(track->GetLabel())));
+				//Check valid pointer has been returned. If not, disregard track. 
+				if(!mcTrack){
+					continue;
 				}
-                (*fStream)    << "tracks" <<
+
+				//Fill MC check
+				fQAhist->Fill("Tracks_MCcheck", 1);
+
+				iPdg = mcTrack->PdgCode();
+				
+				mcEta = mcTrack->Eta();
+				mcPhi = mcTrack->Phi();
+				mcPt  = mcTrack->Pt();
+				mcTrack->XvYvZv(mcVert);
+
+				Int_t gMotherIndex = mcTrack->GetMother();
+				
+				if(!(gMotherIndex < 0)){
+					if(fIsAOD){
+						motherMCtrack = dynamic_cast<AliAODMCParticle*>((mcEvent->GetTrack(gMotherIndex)));
+						//Check for mother particle. 
+						if(!motherMCtrack){
+							continue;
+						}
+					}else{
+						motherMCtrack = dynamic_cast<AliMCParticle*>((mcEvent->GetTrack(gMotherIndex)));
+						//Check for mother particle. 
+						if(!motherMCtrack){
+							continue;
+						}
+					}
+					HasMother = kTRUE;
+					iPdgMother = motherMCtrack->PdgCode();
+					motherLabel = TMath::Abs(motherMCtrack->GetLabel());
+				}//End loop over motherIndex
+			}
+            	(*fStream)    << "tracks" <<
                 //Positive particle obsevables
                 "pt="         << pt << 
                 "eta="        << eta << 
@@ -799,6 +844,9 @@ void AliAnalysisTaskSimpleTreeMaker::UserExec(Option_t *) {
                 "mcEta="      << mcEta <<
                 "mcPhi="      << mcPhi <<
                 "mcPt="       << mcPt <<
+				"mcVtX="       << mcVert[0] <<
+				"mcVtY="       << mcVert[1] <<
+				"mcVtZ="       << mcVert[2] <<
                 "pdg="        << iPdg <<
                 "pdgMother="  << iPdgMother <<
                 "motherLabel=" << motherLabel << 
@@ -869,7 +917,7 @@ void AliAnalysisTaskSimpleTreeMaker::UserExec(Option_t *) {
             negTrack->GetImpactParameters( &ImpParamXY, &ImpParamZ);
   
             if(fHasSDD){
-                //ITS clusters andared clusters
+                //ITS clusters and shared clusters
                 nITS = negTrack->GetNumberOfITSClusters();
                 fITS_shared = 0.;
                 for(Int_t d = 0; d < 6; d++){
@@ -879,18 +927,26 @@ void AliAnalysisTaskSimpleTreeMaker::UserExec(Option_t *) {
             }
             daughtCharge = negTrack->Charge(); 
             //Write negative observales to tree (v0 information written twice. Filter by looking at only pos or neg charge)
-            if(fIsMC){
+			if(fIsMC){
                 label = negTrack->GetLabel();
-				AliVEvent* mcEvent = MCEvent();
-                AliVParticle* mcTrack = dynamic_cast<AliVParticle*>(mcEvent->GetTrack(TMath::Abs(label)));
-                TParticle* mcParticle = dynamic_cast<TParticle*>(mcTrack->Particle());
-                mcEta = mcTrack->Eta();
-                mcPhi = mcTrack->Phi();
-                mcPt = mcTrack->Pt();
+
+				mcTrack = dynamic_cast<AliMCParticle*>(mcEvent->GetTrack(TMath::Abs(track->GetLabel())));
+				//Check valid pointer has been returned. If not, disregard track. 
+				//Redundant?
+				if(!mcTrack){
+					continue;
+				}
+
+				//Fill MC check
+            	fQAhist->Fill("Tracks_MCcheck", 1);
 
                 iPdg = mcTrack->PdgCode();
+                
+                mcEta = mcTrack->Eta();
+                mcPhi = mcTrack->Phi();
+                mcPt  = mcTrack->Pt();
+				mcTrack->XvYvZv(mcVert);
 
-              
                 Int_t gMotherIndex = mcTrack->GetMother();
 				
 				if(!(gMotherIndex < 0)){
@@ -907,48 +963,53 @@ void AliAnalysisTaskSimpleTreeMaker::UserExec(Option_t *) {
 						    continue;
 					    }
                     }
+					HasMother = kTRUE;
                 	iPdgMother = motherMCtrack->PdgCode();
                     motherLabel = TMath::Abs(motherMCtrack->GetLabel());
-				}
+				}//End loop over motherIndex
+			}//End MC check
 
-                (*fStream)    << "tracks" <<
-                //Positive particle obsevables
-                "pt="         << pt << 
-                "eta="        << eta << 
-                "phi="        << phi << 
-                "EsigITS="    << EnSigmaITS <<
-                "EsigTPC="    << EnSigmaTPC <<
-                "EsigTOF="    << EnSigmaTOF <<
-                "PsigITS="    << PnSigmaITS <<
-                "PsigTPC="    << PnSigmaTPC <<
-                "PsigTOF="    << PnSigmaTOF <<
-                "KsigITS="    << KnSigmaITS <<
-                "KsigTPC="    << KnSigmaTPC <<
-                "KsigTOF="    << KnSigmaTOF <<
-                "nITS="       << nITS <<
-                "nITSshared=" << fITS_shared << 
-                "impParamXY=" << ImpParamXY <<
-                "impParamZ="  << ImpParamZ <<
-                "charge="     << daughtCharge <<
-                "DCA="        << daughtersDCA <<
-                "mcEta="      << mcEta <<
-                "mcPhi="      << mcPhi <<
-                "mcPt="       << mcPt <<
-                "pdg="        << iPdg <<
-                "pdgMother="  << iPdgMother <<
-                "motherLabel=" << motherLabel << 
-                "multiplicity=" << nMultiplicity << 
-                "runNumber="  << runNumber << 
-                "eventNum="   << eventNum <<
-                "gridPID="    << fGridPID <<
-                //V0 particle observables 
-                "v0effMass="  << v0mass <<
-                "pointing="   << pointingAngle << 
-                "Rlength="    << decayLength <<
-                "ptArm="      << ptArm <<
-                "alpha="      << alpha <<
-                "\n";
-            }
+			(*fStream)    << "tracks" <<
+			//Positive particle obsevables
+			"pt="         << pt << 
+			"eta="        << eta << 
+			"phi="        << phi << 
+			"EsigITS="    << EnSigmaITS <<
+			"EsigTPC="    << EnSigmaTPC <<
+			"EsigTOF="    << EnSigmaTOF <<
+			"PsigITS="    << PnSigmaITS <<
+			"PsigTPC="    << PnSigmaTPC <<
+			"PsigTOF="    << PnSigmaTOF <<
+			"KsigITS="    << KnSigmaITS <<
+			"KsigTPC="    << KnSigmaTPC <<
+			"KsigTOF="    << KnSigmaTOF <<
+			"nITS="       << nITS <<
+			"nITSshared=" << fITS_shared << 
+			"impParamXY=" << ImpParamXY <<
+			"impParamZ="  << ImpParamZ <<
+			"charge="     << daughtCharge <<
+			"DCA="        << daughtersDCA <<
+			"mcEta="      << mcEta <<
+			"mcPhi="      << mcPhi <<
+			"mcPt="       << mcPt <<
+			"mcVtX="       << mcVert[0] <<
+			"mcVtY="       << mcVert[1] <<
+			"mcVtZ="       << mcVert[2] <<
+			"pdg="        << iPdg <<
+			"pdgMother="  << iPdgMother <<
+			"motherLabel=" << motherLabel << 
+			"multiplicity=" << nMultiplicity << 
+			"runNumber="  << runNumber << 
+			"eventNum="   << eventNum <<
+			"gridPID="    << fGridPID <<
+			//V0 particle observables 
+			"v0effMass="  << v0mass <<
+			"pointing="   << pointingAngle << 
+			"Rlength="    << decayLength <<
+			"ptArm="      << ptArm <<
+			"alpha="      << alpha <<
+            "\n";
+        	}
             else{
                 (*fStream)    << "tracks" <<
                 //Positive particle obsevables
