@@ -84,7 +84,7 @@ class AliAnalysisTaskEmcalJetV0CF : public AliAnalysisTaskEmcalJet {
 
   TList *fListUserOutputs; //!
 
-  ClassDef(AliAnalysisTaskEmcalJetV0CF, 1);
+  ClassDef(AliAnalysisTaskEmcalJetV0CF, 2);
 };
 
 #endif

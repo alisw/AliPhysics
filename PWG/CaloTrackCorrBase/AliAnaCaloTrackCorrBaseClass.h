@@ -40,7 +40,7 @@ class TObjString;
 #include "AliNeutralMesonSelection.h"
 #include "AliCalorimeterUtils.h" 
 #include "AliHistogramRanges.h"
-#include "AliAODPWG4ParticleCorrelation.h"
+#include "AliCaloTrackParticleCorrelation.h"
 #include "AliMixedEvent.h" 
 class AliVCaloCells;
 class AliMCEvent ; 
@@ -115,7 +115,7 @@ public:
   
   // AOD branch
   
-  virtual void           AddAODParticle(AliAODPWG4Particle part) ;
+  virtual void           AddAODParticle(AliCaloTrackParticle part) ;
   
   virtual void           ConnectInputOutputAODBranches();
   
@@ -306,7 +306,7 @@ public:
                                                               Int_t & icolAbs, Int_t & irowAbs) const 
   { return fCaloUtils->GetModuleNumberCellIndexesAbsCaloMap(absId, calo, icol, irow,iRCU,icolAbs,irowAbs) ; }
   
-  virtual Int_t          GetModuleNumber(AliAODPWG4Particle * part) const 
+  virtual Int_t          GetModuleNumber(AliCaloTrackParticle * part) const 
   { return fCaloUtils->GetModuleNumber(part, fReader->GetInputEvent())          ; }
   
   virtual Int_t          GetModuleNumber(AliVCluster * cluster)     const 
@@ -425,7 +425,7 @@ private:
   TClonesArray*              fOutputAODBranch ;    //!<! Selected output particles branch.
   Bool_t                     fNewAOD ;             ///<  Flag, new aod branch added to the analysis or not.
   TString                    fOutputAODName ;      ///<  Name of output AOD branch.
-  TString                    fOutputAODClassName;  ///<  Type of aod objects to be stored in the TClonesArray (AliAODPWG4Particle, AliAODPWG4ParticleCorrelation ...).	
+  TString                    fOutputAODClassName;  ///<  Type of aod objects to be stored in the TClonesArray (AliCaloTrackParticle, AliCaloTrackParticleCorrelation ...).	
   TString                    fAODObjArrayName ;    ///<  Name of ref array kept in a TList in AliAODParticleCorrelation with clusters or track. references.
   TString                    fAddToHistogramsName; ///<  Add this string to histograms name.
   

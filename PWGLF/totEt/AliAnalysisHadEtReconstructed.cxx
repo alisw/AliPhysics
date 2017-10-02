@@ -143,14 +143,12 @@ Int_t AliAnalysisHadEtReconstructed::AnalyseEvent(AliVEvent* ev, Int_t eventtype
  if(fDataSet==20100||fDataSet==2011 ||  fDataSet==2015){//If this is Pb+Pb or pPb
    AliCentrality *centrality = realEvent->GetCentrality();//if the centrality task exists, use it!
    if(centrality && useOldCentrality){
-     //cout<<"Using AliCentrality";//<<endl;
+     //if(centrality){
     fCentBin = GetCentralityBin(fNCentBins, centrality);
-    //cout<<" cent bin "<<fCentBin<<endl;
    }
    //else{
-   if(fCentBin==-1){//if the centrality class returns nothing it still exists!
-     //cout<<"Using AliMultSelection";//<<endl;
-     AliMultSelection *MultSelection = (AliMultSelection * ) realEvent->FindListObject("MultSelection");
+   AliMultSelection *MultSelection = (AliMultSelection * ) realEvent->FindListObject("MultSelection");
+   if(MultSelection && !useOldCentrality){//if the centrality class returns nothing it still exists!
      fCentBin = GetCentralityBin(fNCentBins, MultSelection);
      if(fCentBin ==-1){
        fGoodEvent = kFALSE;//but for Pb+Pb events we don't want to count events where we did not find a centrality
@@ -161,9 +159,8 @@ Int_t AliAnalysisHadEtReconstructed::AnalyseEvent(AliVEvent* ev, Int_t eventtype
 	 fGoodEvent = kFALSE;//but for Pb+Pb events we don't want to count events where we did not find a centrality
        }
      }
-     //cout<<" cent bin "<<fCentBin<<endl;
      }
- }
+   }
  //}
   //for PID
 //   AliESDpid *pID = new AliESDpid();

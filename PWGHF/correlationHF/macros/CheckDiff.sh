@@ -136,5 +136,28 @@ echo "####################### "
 echo " CHECKING DoPlotInSingleCanvasNoSpaces.C"
 echo "####################### "
 diff -b ${pathRef}/DoPlotInSingleCanvasNoSpaces.C DoPlotInSingleCanvasNoSpaces.C
-
+echo "####################### "
+echo " CHECKING CompareFitResultspPb2016.C"
+echo "####################### "
+diff -b ${pathRef}/CompareFitResultspPb2016.C CompareFitResultspPb2016.C
+echo "####################### "
+echo " CHECKING DoComparison_ppVspPballPanels2016.C"
+echo "####################### "
+diff -b ${pathRef}/DoComparison_ppVspPballPanels2016.C DoComparison_ppVspPballPanels2016.C
+echo "####################### "
+echo " CHECKING DoComparison_pPb2016VsMCallPanelsNew.C"
+echo "####################### "
+diff -b ${pathRef}/DoComparison_pPb2016VsMCallPanelsNew.C DoComparison_pPb2016VsMCallPanelsNew.C
+echo "####################### "
+echo " CHECKING FitSystematicsAverage_pPb2016.C"
+echo "####################### "
+diff -b ${pathRef}/FitSystematicsAverage_pPb2016.C FitSystematicsAverage_pPb2016.C
+echo "####################### "
+echo " CHECKING DoComparison_pPbVsMC2016.C"
+echo "####################### "
+diff -b ${pathRef}/DoComparison_pPbVsMC2016.C DoComparison_pPbVsMC2016.C
+echo "####################### "
+echo " CHECKING Restyle_pPb2016_Prel_Plots.C"
+echo "####################### "
+diff -b ${pathRef}/Restyle_pPb2016_Prel_Plots.C Restyle_pPb2016_Prel_Plots.C
 

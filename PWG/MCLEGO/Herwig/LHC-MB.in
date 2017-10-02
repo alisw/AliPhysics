@@ -48,8 +48,5 @@ set /Herwig/Analysis/HepMCFile:Format GenEvent
 set /Herwig/Analysis/HepMCFile:Units GeV_mm
 set /Herwig/Analysis/HepMCFile:Filename output.hepmc
 
-##################################################
-# Save run for later usage with 'Herwig run'
-##################################################
-saverun LHC-MB LHCGenerator
+run LHC-MB LHCGenerator
 

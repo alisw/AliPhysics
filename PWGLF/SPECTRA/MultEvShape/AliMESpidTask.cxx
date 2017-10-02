@@ -60,9 +60,12 @@ void AliMESpidTask::UserExec(Option_t *opt)
 
   AliMESbaseTask::UserExec(opt);
 
+  // number of events counter
+  Double_t vec_hNoEvts[7];   // vector used to fill hNoEvts
+  THnSparseD *hNoEvts = (THnSparseD*)fHistosQA->At(3);
 
   Double_t mult_comb08 = fEvInfo->GetMultiplicity(AliMESeventInfo::kComb);  	// combined multiplicity with |eta| < 0.8
-  Double_t mult_V0M = fEvInfo->GetMultiplicity(AliMESeventInfo::kV0M);   			// V0M percentile
+  Double_t mult_V0M = fEvInfo->GetMultiplicity(AliMESeventInfo::kV0M);   		// V0M percentile
   /*
   if(ESDmult > 0.){
 	  if(ESDmult < 0.01) ESDmult = 1;
@@ -85,11 +88,25 @@ void AliMESpidTask::UserExec(Option_t *opt)
   Double_t directivity_plus = fEvInfo->GetEventShape()->GetDirectivity(1);
   Double_t directivity_minus = fEvInfo->GetEventShape()->GetDirectivity(0);
 
+  vec_hNoEvts[0] = 0.;
+  hNoEvts->Fill(vec_hNoEvts);
+
   // select events with both dirs in the same interval
   const Int_t lenght = 4;
-  Double_t intervals[lenght] = {0., 0.3, 0.6, 0.9};
+  // Double_t intervals[lenght] = {0., 0.3, 0.6, 0.9};
+  Double_t intervals[lenght] = {0., 0.3, 0.6, 1.0};
   // NOTE: the intervals are considered half-closed: (a,b]
   if( (directivity_plus < intervals[0]) || (directivity_plus > intervals[lenght-1]) ) return;
+
+  // if(directivity_plus < 0) return;
+  vec_hNoEvts[0] = 1.;
+  hNoEvts->Fill(vec_hNoEvts);
+
+  // if(directivity_minus < 0) return;
+  // if( (directivity_minus < intervals[0]) || (directivity_minus > intervals[lenght-1]) ) return;
+  vec_hNoEvts[0] = 2.;
+  hNoEvts->Fill(vec_hNoEvts);
+
   Int_t first = -1;
   for(Int_t i=1; i<lenght; i++){
       if(directivity_plus <= intervals[i]){
@@ -134,8 +151,7 @@ void AliMESpidTask::UserExec(Option_t *opt)
   if(ESDmult < 0.) return;
   ((TH2*)fHistosQA->At(3))->Fill(3, ESDmult);
 */
-  Double_t vec_hNoEvts[7];   // vector used to fill hNoEvts
-  THnSparseD *hNoEvts = (THnSparseD*)fHistosQA->At(3);
+
 //   vec_hNoEvts[1] = fEvInfo->GetMultiplicity(AliMESeventInfo::kComb);				// combined multiplicity with |eta| < 0.8
   vec_hNoEvts[1] = mult_comb08;				// combined multiplicity with |eta| < 0.8
 //   vec_hNoEvts[2] = fEvInfo->GetMultiplicity(AliMESeventInfo::kV0M);				// V0M percentile
@@ -639,13 +655,13 @@ Bool_t AliMESpidTask::BuildQAHistos()
   Double_t binLimitsV0M[] = {0.0,0.01,0.1,1.0,2.0,3.0,4.0,5.0,6.0,7.0,8.0,9.0,10.0,11.0,12.0,13.0,14.0,15.0,16.0,17.0,18.0,19.0,20.0,21.0,22.0,23.0,24.0,25.0,26.0,27.0,28.0,29.0,30.0,31.0,32.0,33.0,34.0,35.0,36.0,37.0,38.0,39.0,40.0,41.0,42.0,43.0,44.0,45.0,46.0,47.0,48.0,49.0,50.0,51.0,52.0,53.0,54.0,55.0,56.0,57.0,58.0,59.0,60.0,61.0,62.0,63.0,64.0,65.0,66.0,67.0,68.0,69.0,70.0,71.0,72.0,73.0,74.0,75.0,76.0,77.0,78.0,79.0,80.0,81.0,82.0,83.0,84.0,85.0,86.0,87.0,88.0,89.0,90.0,91.0,92.0,93.0,94.0,95.0,96.0,97.0,98.0,99.0,100.0};
 
   const Int_t ndim(8);
-  const Int_t cldNbins[ndim]   = {150, 102, 50, 20, 150, 102, 100, 20};
-  const Double_t cldMin[ndim]  = {0.5, 0., 0., 0., 0.5, 0., 0.5, 0.},
-  cldMax[ndim]  = {150.5, 100., 500., 1., 150.5, 100., 100.5, 1.};
+  const Int_t cldNbins[ndim]   = {105, 102, 50, 20, 102, 102, 20, 20};
+  const Double_t cldMin[ndim]  = {-5, 0., 0., 0., -1.5, -1.5, -2.5, 0.},
+  cldMax[ndim]  = {100., 100., 500., 1., 100.5, 100.5, 1.5, 1.};
   // THnSparseD *hMultEst = new THnSparseD("hMultEst","hMultEst;combined 0.8;V0M;combined 0.4-0.8; directivity; generated 0.8;generated V0M;generated 0.4-0.8;generated directivity;",ndim, cldNbins, cldMin, cldMax);
   THnSparseD *hMultEst = new THnSparseD("hMultEst","hMultEst;combined 0.8;V0M;V0A signal;directivity;generated 0.8;generated V0M;generated 0.4-0.8;generated directivity;",ndim, cldNbins, cldMin, cldMax);
   hMultEst->GetAxis(1)->Set(102, binLimitsV0M);  // custom made V0M binning (to incorporate the 3 bins below 1)
-  hMultEst->GetAxis(5)->Set(102, binLimitsV0M);  // custom made V0M binning (to incorporate the 3 bins below 1)
+  // hMultEst->GetAxis(5)->Set(102, binLimitsV0M);  // custom made V0M binning (to incorporate the 3 bins below 1)
   fHistosQA->AddAt(hMultEst, 0);
 
   // use for matching, PID and contaminations efficiency

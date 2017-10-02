@@ -15,6 +15,7 @@
 #include "AliMCEventHandler.h"
 #include "AliMCEvent.h"
 #include "AliTOFPIDResponse.h"
+#include "AliMultSelectionTask.h"
 #include "TH2I.h"
 
 #include <climits>
@@ -23,30 +24,34 @@ ClassImp(AliAnalysisCODEXtask);
 
 using namespace AliAnalysisCODEX;
 
-AliAnalysisCODEXtask::AliAnalysisCODEXtask(const char* name)
-  :AliAnalysisTaskSE(name)
-  ,mMCtrue(false)
-  ,mCentralityMode(0)
-  ,Cuts()
-  ,mOutput(0x0)
-  ,mTree(0x0)
-  ,mPIDresponse(0x0)
-  ,mHeader()
-  ,mTracks()
-  ,mTimeChan(0x0)
-  ,mEventCuts(false)
-  ,mPtCut(0.1)
-  ,mPOI(255)
-  ,mNsigmaTPCselectionPOI(5.)
+AliAnalysisCODEXtask::AliAnalysisCODEXtask(const char* name) :
+  AliAnalysisTaskSE(name),
+  mMCtrue{false},
+  mCentralityMode{0},
+  Cuts{},
+  mEventCuts{},
+  mPtCut{0.1},
+  mPOI{255},
+  mNsigmaTPCselectionPOI{5.},
+  mNsigmaTOFselectionPOI{10.},
+  mStartingPtTOFselection{1.e4},
+  mSkipEmptyEvents{false},
+  mOutput{nullptr},
+  mTree{nullptr},
+  mPIDresponse{nullptr},
+  mHeader{},
+  mTracks{},
+  mTimeChan{nullptr},
+  mToDiscard{}
 {
   Cuts.SetMinNClustersTPC(60);
   Cuts.SetMaxChi2PerClusterTPC(6);
   Cuts.SetAcceptKinkDaughters(false);
   Cuts.SetRequireTPCRefit(true);
-  Cuts.SetRequireITSRefit(false);
-  Cuts.SetMaxDCAToVertexZ(3);
-  Cuts.SetMaxDCAToVertexXY(3);
-  Cuts.SetMaxChi2PerClusterITS(100000000.);
+  Cuts.SetRequireITSRefit(true);
+  Cuts.SetMaxDCAToVertexZ(2);
+  Cuts.SetMaxDCAToVertexXY(1.5);
+  Cuts.SetMaxChi2PerClusterITS(36);
   Cuts.SetMaxChi2TPCConstrainedGlobal(100000000.);
   Cuts.SetEtaRange(-0.8,0.8);
   DefineInput(0, TChain::Class());
@@ -56,21 +61,9 @@ AliAnalysisCODEXtask::AliAnalysisCODEXtask(const char* name)
 
 
 AliAnalysisCODEXtask::~AliAnalysisCODEXtask() {
-  if (mPIDresponse) {
-    delete mPIDresponse;
-    mPIDresponse = 0x0;
-  }
-
-  if (mTree) {
-    delete mTree;
-    mTree = 0x0;
-  }
-
-  if (mOutput){
-    delete mOutput;
-    mOutput = 0x0;
-  }
-
+  delete mPIDresponse;
+  delete mTree;
+  delete mOutput;
 }
 
 void AliAnalysisCODEXtask::UserCreateOutputObjects() {
@@ -80,6 +73,7 @@ void AliAnalysisCODEXtask::UserCreateOutputObjects() {
   mTree = new TTree("AliCODEX","Alice COmpressed Dataset for EXotica");
   mTree->Branch("Header",&mHeader);
   mTree->Branch("Tracks",&mTracks);
+  Discard();
   //
   mTree->SetAutoSave(100000000);
   PostData(1,mTree);
@@ -154,7 +148,10 @@ void AliAnalysisCODEXtask::UserExec(Option_t *){
     mHeader.mEventMask |= kMCevent;
   }
 
-  bool first = true;
+  if (AliMultSelectionTask::IsINELgtZERO(event)) {
+    mHeader.mEventMask |= kInelGt0;
+  }
+
   mTracks.clear();
   Track t;
   for (int iEv = 0;iEv < event->GetNumberOfTracks(); ++iEv) {
@@ -171,6 +168,15 @@ void AliAnalysisCODEXtask::UserExec(Option_t *){
     for (int iS = 0; iS < 8; ++iS) {
       sig[iS] = mPIDresponse->NumberOfSigmas(AliPIDResponse::kTPC,track,particle_species[iS]);
       if (std::abs(sig[iS]) < mNsigmaTPCselectionPOI && (mPOI & BIT(iS))) {
+        reject = false;
+      }
+    }
+    if (reject) continue;
+
+    reject = track->Pt() >= mStartingPtTOFselection;
+    for (int iS = 0; iS < 8; ++iS) {
+      double sigTOF = mPIDresponse->NumberOfSigmas(AliPIDResponse::kTOF,track,particle_species[iS]);
+      if (std::abs(sigTOF) < mNsigmaTOFselectionPOI && (mPOI & BIT(iS))) {
         reject = false;
       }
     }
@@ -253,7 +259,10 @@ void AliAnalysisCODEXtask::UserExec(Option_t *){
 
     /// Binned information
     float cov[3],dca[2];
+    double ITSsamp[4];
     track->GetImpactParameters(dca,cov);
+    track->GetITSdEdxSamples(ITSsamp);
+    for(int iL = 0; iL < 4; iL++) t.ITSSignal[iL] = ITSsamp[iL];
     t.SetDCAxy(dca[0]);
     t.SetDCAz(dca[1]);
     t.SetTPCChi2NDF(track->GetTPCchi2() / track->GetTPCNcls());
@@ -325,7 +334,9 @@ void AliAnalysisCODEXtask::UserExec(Option_t *){
       mTracks.push_back(t);
     }
   }
-  mTree->Fill();
+  if (!(mSkipEmptyEvents && mTracks.empty())) {
+    mTree->Fill();
+  }
   PostData(1,mTree);
 
   PostData(2,mOutput);
@@ -344,4 +355,11 @@ long AliAnalysisCODEXtask::GetParticleMask(TParticle *part) {
     case 1000020040: return kHe4;
   }
   return 0;
+}
+
+void AliAnalysisCODEXtask::Discard(){
+  if(mToDiscard.IsNull() || mToDiscard.IsWhitespace()) return;
+  TObjArray *arr = mToDiscard.Tokenize(" ");
+  for(Int_t i = 0; i < arr->GetEntries(); i++) mTree->SetBranchStatus(static_cast<TObjString*>(arr->At(i))->GetName(), 0);
+  mToDiscard = "";
 }

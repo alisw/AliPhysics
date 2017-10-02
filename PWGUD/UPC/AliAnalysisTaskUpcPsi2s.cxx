@@ -72,7 +72,7 @@ AliAnalysisTaskUpcPsi2s::AliAnalysisTaskUpcPsi2s()
     fVtxContrib(0),fVtxChi2(0),fVtxNDF(0),fSpdVtxContrib(0),
     fBCrossNum(0),fNtracklets(0),fNLooseTracks(0),
     fZNAenergy(0),fZNCenergy(0), fZPAenergy(0),fZPCenergy(0),fZDCAtime(0),fZDCCtime(0),fV0Adecision(0),fV0Cdecision(0),fADAdecision(0),fADCdecision(0),
-    fDataFilnam(0),fRecoPass(0),fEvtNum(0),
+    fDataFilnam(0),fRecoPass(0),fEvtNum(0),fFOFiredChips(0),
     fJPsiAODTracks(0),fJPsiESDTracks(0),fPsi2sAODTracks(0),fPsi2sESDTracks(0),fGenPart(0),
     fEveTree(0),fPt(0), fY(0), fM(0), fDiLeptonM(0), fDiLeptonPt(0), fPIDsigma(0), fChannel(0),
     fListTrig(0),fHistCcup4TriggersPerRun(0), fHistCcup7TriggersPerRun(0), fHistCcup2TriggersPerRun(0),fHistCint1TriggersPerRun(0),fHistCint6TriggersPerRun(0), fHistC0tvxAndCint1TriggersPerRun(0),
@@ -98,7 +98,7 @@ AliAnalysisTaskUpcPsi2s::AliAnalysisTaskUpcPsi2s(const char *name)
     fVtxContrib(0),fVtxChi2(0),fVtxNDF(0),fSpdVtxContrib(0),
     fBCrossNum(0),fNtracklets(0),fNLooseTracks(0),
     fZNAenergy(0),fZNCenergy(0), fZPAenergy(0),fZPCenergy(0),fZDCAtime(0),fZDCCtime(0),fV0Adecision(0),fV0Cdecision(0),fADAdecision(0),fADCdecision(0),
-    fDataFilnam(0),fRecoPass(0),fEvtNum(0),
+    fDataFilnam(0),fRecoPass(0),fEvtNum(0),fFOFiredChips(0),
     fJPsiAODTracks(0),fJPsiESDTracks(0),fPsi2sAODTracks(0),fPsi2sESDTracks(0),fGenPart(0),
     fEveTree(0),fPt(0), fY(0), fM(0), fDiLeptonM(0), fDiLeptonPt(0), fPIDsigma(0), fChannel(0),
     fListTrig(0),fHistCcup4TriggersPerRun(0), fHistCcup7TriggersPerRun(0), fHistCcup2TriggersPerRun(0),fHistCint1TriggersPerRun(0), fHistCint6TriggersPerRun(0), fHistC0tvxAndCint1TriggersPerRun(0),
@@ -253,7 +253,7 @@ void AliAnalysisTaskUpcPsi2s::UserCreateOutputObjects()
   fJPsiTree ->Branch("fADCdecision", &fADCdecision, "fADCdecision/I");  
   fJPsiTree ->Branch("fDataFilnam", &fDataFilnam);
   fJPsiTree ->Branch("fRecoPass", &fRecoPass, "fRecoPass/S");
-  fJPsiTree ->Branch("fEvtNum", &fEvtNum, "fEvtNum/L"); 		       
+  fJPsiTree ->Branch("fEvtNum", &fEvtNum, "fEvtNum/L");		       
   if( fType == 0 ) {
     fJPsiTree ->Branch("fJPsiESDTracks", &fJPsiESDTracks);
   }
@@ -264,6 +264,7 @@ void AliAnalysisTaskUpcPsi2s::UserCreateOutputObjects()
     fJPsiTree ->Branch("fGenPart", &fGenPart);
     fJPsiTree ->Branch("fTriggerInputsMC", &fTriggerInputsMC[0], Form("fTriggerInputsMC[%i]/O", ntrg));
     fJPsiTree ->Branch("fMCVtxPos", &fMCVtxPos[0], "fMCVtxPos[3]/D");
+    fJPsiTree ->Branch("fFOFiredChips", &fFOFiredChips);
   }
 
  
@@ -320,7 +321,7 @@ void AliAnalysisTaskUpcPsi2s::UserCreateOutputObjects()
   fPsi2sTree ->Branch("fADCdecision", &fADCdecision, "fADCdecision/I");  
   fPsi2sTree ->Branch("fDataFilnam", &fDataFilnam);
   fPsi2sTree ->Branch("fRecoPass", &fRecoPass, "fRecoPass/S");
-  fPsi2sTree ->Branch("fEvtNum", &fEvtNum, "fEvtNum/L");  		       
+  fPsi2sTree ->Branch("fEvtNum", &fEvtNum, "fEvtNum/L");	       
   if( fType == 0 ) {
     fPsi2sTree ->Branch("fPsi2sESDTracks", &fPsi2sESDTracks);
   }
@@ -331,6 +332,7 @@ void AliAnalysisTaskUpcPsi2s::UserCreateOutputObjects()
     fPsi2sTree ->Branch("fGenPart", &fGenPart);
     fPsi2sTree ->Branch("fTriggerInputsMC", &fTriggerInputsMC[0], Form("fTriggerInputsMC[%i]/O", ntrg));
     fPsi2sTree ->Branch("fMCVtxPos", &fMCVtxPos[0], "fMCVtxPos[3]/D");
+    fPsi2sTree ->Branch("fFOFiredChips", &fFOFiredChips);
   }
   
   fListTrig = new TList();
@@ -1063,8 +1065,8 @@ void AliAnalysisTaskUpcPsi2s::RunAODtree()
   }//Track loop
   
   fJPsiAODTracks->Clear("C");
-  if(0){
-  //if(nGoodTracks == 2){
+  //if(0){
+  if(nGoodTracks == 2){
 
    	  TDatabasePDG *pdgdat = TDatabasePDG::Instance();
 	  TParticlePDG *partMuon = pdgdat->GetParticle( 13 );
@@ -1131,7 +1133,7 @@ void AliAnalysisTaskUpcPsi2s::RunAODtree()
   for(UInt_t i=0; i<2; i++)delete KFpart[i];
   delete KFvtx; 
 
-  //if(!isMC) fJPsiTree ->Fill();
+  if(!isMC) fJPsiTree ->Fill();
   }
   
    nGoodTracks = 0;
@@ -1236,7 +1238,7 @@ void AliAnalysisTaskUpcPsi2s::RunAODtree()
   }
   
   if(isMC){
-  	//fJPsiTree ->Fill();
+  	fJPsiTree ->Fill();
 	fPsi2sTree ->Fill();
   }
   
@@ -1265,6 +1267,7 @@ void AliAnalysisTaskUpcPsi2s::RunAODMC(AliAODEvent *aod)
   					
   //SPD inputs
   const AliAODTracklets *mult = aod->GetMultiplicity();
+  fFOFiredChips = mult->GetFastOrFiredChips();
   Int_t vPhiInner[20]; for (Int_t i=0; i<20; ++i) vPhiInner[i]=0;
   Int_t vPhiOuter[40]; for (Int_t i=0; i<40; ++i) vPhiOuter[i]=0;
 
@@ -1455,14 +1458,13 @@ void AliAnalysisTaskUpcPsi2s::RunESDhist()
   Int_t TrackIndex[5] = {-1,-1,-1,-1,-1};
   Double_t TrackPt[5]={0,0,0,0,0};
   
-  Short_t qTrack[5];
   TLorentzVector vMuon[5],vElectron[5],vProton[5],vPion[5], vJPsiCandidate;
 
   Float_t nSigmaMuon[5], nSigmaElectron[5], nSigmaPion[5], nSigmaProton[5],MeanPt;
   Short_t qPion[5];
   TLorentzVector vLepton[5], vDilepton, vPsi2sCandidate;
   Short_t qLepton[5];
-  UInt_t nPion = 0, nElectron = 0, nMuon = 0, nLepton = 0, nProton = 0;
+  UInt_t nPion = 0,nLepton = 0;
 
 
  //Two Track loop
@@ -1889,20 +1891,7 @@ void AliAnalysisTaskUpcPsi2s::RunESDtree()
   
   fPsi2sESDTracks->Clear("C");
   if(nGoodTracks == 4){
-  
-  	  TDatabasePDG *pdgdat = TDatabasePDG::Instance();
-	  TParticlePDG *partMuon = pdgdat->GetParticle( 13 );
-  	  Double_t muonMass = partMuon->Mass();  
-          TParticlePDG *partElectron = pdgdat->GetParticle( 11 );
-          Double_t electronMass = partElectron->Mass();  
-  	  TParticlePDG *partPion = pdgdat->GetParticle( 211 );
-  	  Double_t pionMass = partPion->Mass();
-  
-  	  Double_t KFcov[21];
-  	  Double_t KFpar[6];
-	  Double_t KFmass = pionMass;
-	  Double_t fRecTPCsignal;
-  	  AliKFParticle *KFpart[2];
+
   	  AliKFVertex *KFvtx = new AliKFVertex();
   	  KFvtx->SetField(esd->GetMagneticField()); 
 

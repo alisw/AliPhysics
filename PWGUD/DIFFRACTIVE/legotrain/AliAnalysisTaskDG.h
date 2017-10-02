@@ -12,6 +12,8 @@ class AliESDHeader;
 class AliVTrack;
 class AliESDtrackCuts;
 
+#include <algorithm>
+
 #include <TObject.h>
 #include <TString.h>
 #include <TBits.h>
@@ -62,8 +64,7 @@ public:
       , fCharge(0)
       , fL2Inputs(0)
       , fOrbitID(0) {
-      for (Int_t i=0; i<4; ++i)
-	fnTrklet[i] = 0;
+      std::fill_n(fnTrklet, 4, 0);
       fnFO[0] = fnFO[1] = 0;
     }
 
@@ -80,7 +81,7 @@ public:
     UShort_t  fnTrk;
     UShort_t  fnTrklet[4]; // all, C,cent,A
     UShort_t  fnFO[2];     // inner,outer layer
-    Char_t    fCharge;
+    Short_t   fCharge;
     UShort_t  fL2Inputs;
     UShort_t  fOrbitID;
 
@@ -95,11 +96,14 @@ public:
     ADV0() {
       for (Int_t i=0; i<2; ++i) {
 	fTime[i] = -10240.0f;
-	fBB[i] = fBG[i] = -1;
+	fBB[i] = fBG[i];
 	fDecisionOnline[i] = fDecisionOffline[i] = -1;
       }
-      for (Int_t bc=0; bc<21; ++bc)
-	fPFBBA[bc] = fPFBBC[bc] = fPFBGA[bc] = fPFBGC[bc] = 0;
+      std::fill_n(fMult,   8, -1);
+      std::fill_n(fPFBBA, 21,  0);
+      std::fill_n(fPFBBC, 21,  0);
+      std::fill_n(fPFBGA, 21,  0);
+      std::fill_n(fPFBGC, 21,  0);
     }
 
     void FillAD(const AliVEvent *, AliTriggerAnalysis &);
@@ -108,14 +112,15 @@ public:
     void FillInvalid();
 
     Float_t    fTime[2];            //
-    Char_t     fBB[2];              //
-    Char_t     fBG[2];              //
+    Short_t    fBB[2];              //
+    Short_t    fBG[2];              //
     Double32_t fDecisionOnline[2];  //[-1,3,2]
     Double32_t fDecisionOffline[2]; //[-1,3,2]
     Double32_t fPFBBA[21];          //[0,32,5]
     Double32_t fPFBBC[21];          //[0,32,5]
     Double32_t fPFBGA[21];          //[0,32,5]
     Double32_t fPFBGC[21];          //[0,32,5]
+    Float_t    fMult[8];            // multiplicity per ring
   } ;
 
   struct FMD {
@@ -148,7 +153,7 @@ public:
     Bool_t    fIsIncompleteDAQ;
     Bool_t    fIsSPDClusterVsTrackletBG;
     Bool_t    fIskMB;
-    ClassDef(TreeData, 6);
+    ClassDef(TreeData, 8);
   } ;
 
   struct TrackData : public TObject {
@@ -158,14 +163,16 @@ public:
       , fPx(0)
       , fPy(0)
       , fPz(0)
+      , fLength(0)
       , fITSsignal(0)
       , fTPCsignal(0)
       , fTOFsignal(0)
-      , fFilterMap(0) {
+      , fFilterMap(0)
+      , fFlags(0) {
       fPIDStatus[0] = fPIDStatus[1] = fPIDStatus[2] = AliPIDResponse::kDetNoSignal;
-      for (Int_t i=0; i<AliPID::kSPECIES; ++i) {
-	fNumSigmaITS[i] = fNumSigmaTPC[i] = fNumSigmaTOF[i] = -32.0f;
-      }
+      std::fill_n(fNumSigmaITS, AliPID::kSPECIES, -32.0f);
+      std::fill_n(fNumSigmaTPC, AliPID::kSPECIES, -32.0f);
+      std::fill_n(fNumSigmaTOF, AliPID::kSPECIES, -32.0f);
       fChipKey[0] = fChipKey[1] = -1;
       fStatus[0]  = fStatus[1]  = -1;
       Fill(tr, pidResponse);
@@ -175,6 +182,7 @@ public:
 
     Double32_t fSign;                          //[-1,1,2]
     Float_t    fPx,fPy,fPz;
+    Float_t    fLength;
     Float_t    fITSsignal, fTPCsignal, fTOFsignal;
     Double32_t fNumSigmaITS[AliPID::kSPECIES]; //[-32,32,8]
     Double32_t fNumSigmaTPC[AliPID::kSPECIES]; //[-32,32,8]
@@ -183,7 +191,8 @@ public:
     Short_t    fChipKey[2];                    // L0,L1 (SPD)
     Int_t      fStatus[2];                     // L0,L1 (SPD)
     UInt_t     fFilterMap;
-    ClassDef(TrackData, 5);
+    ULong_t    fFlags;
+    ClassDef(TrackData, 6);
   } ;
 
   struct SPD_0STG : public TObject {
@@ -260,7 +269,7 @@ private:
   TClonesArray     fMCTracks;            //!
   AliESDtrackCuts *fTrackCuts;           //!
 
-  ClassDef(AliAnalysisTaskDG, 13);
+  ClassDef(AliAnalysisTaskDG, 15);
 } ;
 
 #endif // ALIANALYSISTASKDG_H

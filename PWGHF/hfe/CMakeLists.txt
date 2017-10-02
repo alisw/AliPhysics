@@ -23,6 +23,7 @@ include_directories(${AliPhysics_SOURCE_DIR}/PWGHF/hfe)
 # Additional includes - alphabetical order except ROOT
 include_directories(${ROOT_INCLUDE_DIRS}
                     ${AliPhysics_SOURCE_DIR}/CORRFW
+                    ${AliPhysics_SOURCE_DIR}/OADB
                     ${AliPhysics_SOURCE_DIR}/PWG/CaloTrackCorrBase
                     ${AliPhysics_SOURCE_DIR}/PWG/EMCAL/Trigger
                     ${AliPhysics_SOURCE_DIR}/PWG/FLOW/Base
@@ -30,7 +31,8 @@ include_directories(${ROOT_INCLUDE_DIRS}
                     ${AliPhysics_SOURCE_DIR}/PWG/muon
                     ${AliPhysics_SOURCE_DIR}/PWG/TRD
                     ${AliPhysics_SOURCE_DIR}/PWGPP/EVCHAR/FlowVectorCorrections/QnCorrections
-                    ${AliPhysics_SOURCE_DIR}/PWGPP/EVCHAR/FlowVectorCorrections/QnCorrectionsInterface)
+                    ${AliPhysics_SOURCE_DIR}/PWGPP/EVCHAR/FlowVectorCorrections/QnCorrectionsInterface
+		    ${AliPhysics_SOURCE_DIR}/PWGHF/vertexingHF)
 
 # Sources - alphabetical order
 set(SRCS
@@ -87,7 +89,6 @@ set(SRCS
   AliAnalysisTaskFlowTPCEMCalEP.cxx
   AliAnalysisTaskHFECal.cxx 
   AliAnalysisTaskEMCalHFEpA.cxx 
-  AliAnalysisHFETPCTOF.cxx 
   AliAnalysisTaskHFEpACorrelation.cxx
   AliHFEdebugTreeTask.cxx
   AliHFEVZEROEventPlane.cxx
@@ -110,6 +111,7 @@ set(SRCS
   AliAnalysisTaskHFEQA.cxx
   AliAnalysisTaskHFEemcQA.cxx
   AliAnalysisTaskBeautyCal.cxx
+  AliAnalysisTaskTPCCalBeauty.cxx
   AliAnalysisTaskFlowITSTPCTOFQCSP.cxx
   AliAnalysisTaskHFEMulti.cxx
   AliAnalysisTaskHFEMultiplicity.cxx
@@ -118,6 +120,7 @@ set(SRCS
   AliHFEUnfolding.cxx	
   AliAnalysisTaskHFEEfficiency.cxx
   AliAnalysisTaskHaHFECorrel.cxx
+  AliAnalysisHFETPCTOFNew.cxx
   )
 
 # Headers from sources
@@ -133,7 +136,7 @@ add_library_tested(${MODULE} SHARED  ${SRCS} G__${MODULE}.cxx)
 
 # Generate the ROOT map
 # Dependecies
-set(LIBDEPS ANALYSISalice CORRFW PWGflowTasks PWGTRD MLP PWGPPevcharQn PWGPPevcharQnInterface)
+set(LIBDEPS OADB ANALYSISalice CORRFW PWGflowTasks PWGTRD MLP PWGPPevcharQn PWGPPevcharQnInterface PWGHFvertexingHF)
 generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
 
 # Generate a PARfile target for this library

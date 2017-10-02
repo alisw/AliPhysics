@@ -103,6 +103,11 @@ class AliCEPUtils : public TObject {
     void V0Analysis (
       AliESDEvent *Event,
       TList *lhh );
+    static TList* GetFMDQAHists();
+    void FMDAnalysis (
+      AliESDEvent *Event,
+	    AliTriggerAnalysis *fTrigger,
+      TList *lhh );
 
     UInt_t GetVtxPos(AliVEvent *Event, TVector3 *vtxpos);
 

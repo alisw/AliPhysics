@@ -1,0 +1,66 @@
+AliAnalysisTaskPHOSObjectCreator* AddTaskPHOSObjectCreator(
+    const char* name           = "PHOSObjectCreator",
+    const UInt_t trigger       = AliVEvent::kINT7|AliVEvent::kPHI7,
+    const Bool_t usePHOSTender = kTRUE,
+    const Bool_t isMC          = kFALSE,
+    const Double_t BunchSpace  = 25.,
+    const Double_t distanceBC  = 0.,
+    const Bool_t NonLinCorr    = kTRUE,
+    const Bool_t excludeM4     = kTRUE,
+    const TString period       = "LHC15n"
+    )
+{
+  //Add a task AliAnalysisTaskPHOSObjectCreator to the analysis train
+  //Author: Daiki Sekihata
+  /* $Id$ */
+
+  AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
+  if (!mgr) {
+    ::Error("AddTaskPHOSObjectCreator", "No analysis manager to connect to");
+    return NULL;
+  }
+  
+  if (!mgr->GetInputEventHandler()) {
+    ::Error("AddTaskPHOSObjectCreator", "This task requires an input event handler");
+    return NULL;
+  }
+
+  TString taskname = Form("%s_BS%dns_DBC%dcm",name,(Int_t)BunchSpace,(Int_t)(distanceBC*10));
+
+  AliAnalysisTaskPHOSObjectCreator* task = new AliAnalysisTaskPHOSObjectCreator(taskname);
+  task->SelectCollisionCandidates(trigger);
+  task->SetTenderFlag(usePHOSTender);
+  task->SetMCFlag(isMC);
+  task->SetBunchSpace(BunchSpace);//in unit of ns
+  task->SetMinimumDistanceFromBC(distanceBC);
+  task->ExcludeM4(excludeM4);
+
+  if(isMC && NonLinCorr){  
+    TF1 *f1nonlin = new TF1("f1nonlin","[2]*(1.+[0]/(1. + TMath::Power(x/[1],2)))",0,100);
+    f1nonlin->SetNpx(1000);
+    f1nonlin->SetParNames("a","b (GeV)","c");
+
+    if(period.Contains("LHC15n")){
+      f1nonlin->FixParameter(0,-0.0363); //for full E, ZS = 20MeV;
+      f1nonlin->FixParameter(1,  0.683); //for full E, ZS = 20MeV;
+      f1nonlin->FixParameter(2,  0.998); //for full E, ZS = 20MeV;//decalib 3% on M123
+    }
+    else if(period.Contains("LHC15o")){
+      f1nonlin->FixParameter(0,-0.0388);//for core E at ZS 20 MeV with only MIP cut
+      f1nonlin->FixParameter(1,  0.748);//for core E at ZS 20 MeV with only MIP cut
+      f1nonlin->FixParameter(2,  0.991);//for core E at ZS 20 MeV with only MIP cut
+    }
+    task->SetUserDefinedNonlinearity(f1nonlin);
+  }
+
+  mgr->AddTask(task);
+  mgr->ConnectInput(task, 0, mgr->GetCommonInputContainer());
+  const TString listname = Form("hist_%s",name);
+
+  TString outputFile = AliAnalysisManager::GetCommonFileName();
+  AliAnalysisDataContainer *coutput1 = mgr->CreateContainer(Form("%s",listname.Data()), THashList::Class(), AliAnalysisManager::kOutputContainer, Form("%s:%s",outputFile.Data(),"PWGGA_PHOSTasks_PHOSRun2"));
+  mgr->ConnectOutput(task, 1, coutput1);
+
+  return task;
+}
+

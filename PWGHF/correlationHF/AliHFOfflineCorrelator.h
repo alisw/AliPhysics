@@ -122,7 +122,7 @@ public:
     void SetNumSelD(Int_t sel) {fNumSelD=sel;}
     void SetNumSelTr(Int_t sel) {fNumSelTr=sel;}
     void SetCentralitySelection(Double_t min, Double_t max) {fMinCent=min; fMaxCent=max;} //activated only if both values are != 0
-    void SetRemoveSoftPionInME(Bool_t remove) {fRemoveSoftPiInME=remove;}
+    void SetRejectSoftPion(Bool_t store) {fRejectSoftPi=store;}
     void SetDebugLevel(Int_t deb=0) {fDebug=deb;}
 
     Bool_t Correlate();
@@ -197,12 +197,12 @@ private:
     TString fOutputFileName;
     TString fNameCutObj;
 
-    Bool_t fUseEff;			//flag to use D-meson and track efficiency
+    Bool_t fUseEff;			    //flag to use D-meson and track efficiency
     Bool_t fMake2DPlots; 		//flag to produce 2D plots for sign.region and SB
     Bool_t fWeightPeriods;		//flag to weight periods in ME analysis with max number of tracks used
-    Bool_t fRemoveSoftPiInME;		//flag to remove soft pions in ME analysis for D0 meson (SE rejection is done in the task)
+    Bool_t fRejectSoftPi;	     //flag to remove soft pions in SE and ME analysis for D0 meson (ME rejection is done in extraction code)
 
-    ClassDef(AliHFOfflineCorrelator,2); // class for plotting HF correlations
+    ClassDef(AliHFOfflineCorrelator,4); // class for plotting HF correlations
 
 };
 

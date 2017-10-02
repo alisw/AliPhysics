@@ -42,15 +42,15 @@ ClassImp(AliMultiplicitySelectionCPPWA)
 
 //Class Constructor
 AliMultiplicitySelectionCPPWA::AliMultiplicitySelectionCPPWA(): TObject(),
-	fkCheckReferenceMultiplicity(0),
 	fTPCnclsS(3),
 	fTrackDCAz(5),
 	fTrackEtaMin(-0.9),
 	fTrackEtaMax(0.9),
+	fkCheckReferenceMultiplicity(0),
+        fTrackCutListPrim(0x0),
 	fIndicesN(0x0),
 	fIndicesP(0x0),
-	fkIgnoreV0s(0),
-	fTrackCutListPrim(0x0)
+	fkIgnoreV0s(0)
 {
 	IgnoreV0s();
 	for(Int_t i = 0; i< fkNtrackMax; i++)

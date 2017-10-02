@@ -73,6 +73,8 @@ class AliJHSInterplayTask : public AliAnalysisTaskSE {
 		AliJEfficiency *fEfficiency;
 		int fHadronSelectionCut;
 
+		TF1 *pfOutlierLowCut, *pfOutlierHighCut;
+		
 		TClonesArray * fInputList;
 		TClonesArray * fInputListSpectra;
 		int fVnMethod; // 0; RunFlow 1 : JFluc

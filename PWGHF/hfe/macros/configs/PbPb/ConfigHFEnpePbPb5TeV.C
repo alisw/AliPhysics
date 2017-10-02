@@ -1,7 +1,7 @@
 TF1* GetEtaCorrection(){
   TString list=gSystem->Getenv("LIST");
 
-  TString etaMap="$TRAIN_ROOT/hfe_HFE/EtaCorrMapsTest.root";
+  TString etaMap="$ALICE_PHYSICS/PWGHF/hfe/macros/configs/PbPb/EtaCorrMapsTPC.root";
   TString trainRoot=gSystem->Getenv("TRAIN_ROOT");
 
   if (gSystem->AccessPathName(gSystem->ExpandPathName(etaMap.Data()))){
@@ -32,16 +32,16 @@ Bool_t ReadContaminationFunctions(TString filename, TF1 **functions, double sigm
   gROOT->cd();
   //int isig = static_cast<int>(sigma * 100.);  // original
   int isig      = static_cast<int>(sigma * 1000.);   
-  int nTOFsigma = static_cast<int>(TOFs);
-  int nITSsigma = static_cast<int>(ITSs);
+  int nTOFsigma = static_cast<int>(TOFs*10);
+  int nITSsigma = static_cast<int>(ITSs*10);
 
+  printf("File opened: %s\n", in->GetName());
   printf("Getting hadron background for the sigma cut: %d\n", isig);
-  printf("Getting hadron background for TOF sigma (INTEGER): %d\n", nTOFsigma);
-  printf("Getting hadron background for ITS sigma (INTEGER): %d\n", nITSsigma);
+  printf("Getting hadron background for TOF sigma (INTEGER*10): %d\n", nTOFsigma);
+  printf("Getting hadron background for ITS sigma (INTEGER*10): %d\n", nITSsigma);
   bool status = kTRUE;
 
   for(int icent = 0; icent < 12; icent++){
-
     //functions[icent] = dynamic_cast<TF1 *>(in->Get(Form("hback_%d_%d", isig, icent)));        // original
     if(isig<0)  // --- case of negative low TPC cut ---
     {
@@ -51,7 +51,7 @@ Bool_t ReadContaminationFunctions(TString filename, TF1 **functions, double sigm
         //printf("function[%d] name = hback_ITS%d_TOF%d_m%d_%d\n",icent, nITSsigma, nTOFsigma, isigSignSwitched, icent);
     }
     else       functions[icent] = dynamic_cast<TF1 *>(in->Get(Form("hback_ITS%d_TOF%d_%d_%d", nITSsigma, nTOFsigma, isig, icent))); 
-    if(functions[icent]) printf("Config for centrality class %d found\n", icent);
+    if(functions[icent]) printf("Config for centrality class %d found - function name: %s\n", icent, functions[icent]->GetName());
     else{
       printf("Config for the centrality class %d not found\n", icent);
       status = kFALSE;
@@ -78,9 +78,15 @@ AliAnalysisTaskHFE* ConfigHFEnpePbPb5TeV(Bool_t useMC, Bool_t isAOD, TString app
 				     Double_t assDCAr=1.0, Double_t assDCAz=2.0, 
 				     Double_t *assTPCSminus=NULL, Double_t *assTPCSplus=NULL, 
 				     Bool_t useCat1Tracks = kTRUE, Bool_t useCat2Tracks = kTRUE, 
-                                     Int_t weightlevelback = -1, Bool_t releasemcvx = kFALSE,
+                                     Int_t weightlevelback = -1, 
+                                     Double_t assMinpT = 0.1,  // associated particle minimum pT syst. (mfaggin, 14th July 2017)
+                                     Bool_t releasemcvx = kFALSE,
 				     Bool_t nondefaultcentr = kFALSE,Bool_t ipCharge = kFALSE, Bool_t ipOpp = kFALSE,
-				     Bool_t usekfparticle = kFALSE)
+				     Bool_t usekfparticle = kFALSE
+                                     // ----- Asymmetric ITS cut (mfaggin, June 26th 2017) -----
+
+                                     // --------------------------------------------------------
+                                     )
 {
   Bool_t kAnalyseTaggedTracks = kFALSE;
   Bool_t kApplyPreselection = kFALSE;
@@ -280,7 +286,8 @@ AliAnalysisTaskHFE* ConfigHFEnpePbPb5TeV(Bool_t useMC, Bool_t isAOD, TString app
   // Configure ITS PID
   if (useits>0){
     AliHFEpidITS *itspid = pid->GetDetPID(AliHFEpid::kITSpid);
-    itspid->SetITSnSigma(1.);
+    //itspid->SetITSnSigma(1.);
+    itspid->SetITSnSigma(ITSs); // ***** modified 11/06/2017 (mfaggin)
   }
 
   // To make different upper TOF cut to see contamination effect
@@ -295,7 +302,12 @@ AliAnalysisTaskHFE* ConfigHFEnpePbPb5TeV(Bool_t useMC, Bool_t isAOD, TString app
     Bool_t status = kTRUE;
     TF1 *hBackground[12];                                                                                // TOF sigma and ITS sigma added
     status = ReadContaminationFunctions("hadronContamination_PbPb5TeV.root", hBackground, tpcdEdxcutlow[0], TOFs, ITSs);
-    for(Int_t a=0;a<12;a++) {
+    //status = ReadContaminationFunctions("hadronContamination_PbPb5TeV_attempt19072017.root", hBackground, tpcdEdxcutlow[0], TOFs, ITSs);        // attempt 19/07/2017
+    //status = ReadContaminationFunctions("hadronContamination_PbPb5TeV_22072017attempt.root", hBackground, tpcdEdxcutlow[0], TOFs, ITSs);        // attempt 22/07/2017
+    //status = ReadContaminationFunctions("hadronContamination_PbPb5TeV_24072017attempt.root", hBackground, tpcdEdxcutlow[0], TOFs, ITSs);        // attempt 24/07/2017
+   // status = ReadContaminationFunctions("hadronContamination_PbPb5TeV_24072017attempt_newParametrisation.root", hBackground, tpcdEdxcutlow[0], TOFs, ITSs);        // attempt 24/07/2017 with new parametrisation done on 28/07/2017
+
+  for(Int_t a=0;a<12;a++) {
       //printf("back %f \n",hBackground[a]);
       if(status) task->SetBackGroundFactorsFunction(hBackground[a],a);
       else printf("not all background functions found\n");
@@ -324,7 +336,10 @@ AliAnalysisTaskHFE* ConfigHFEnpePbPb5TeV(Bool_t useMC, Bool_t isAOD, TString app
   AliHFEcuts *hfeBackgroundCuts = new AliHFEcuts(Form("HFEBackSub%s",appendix.Data()),"Background sub Cuts");
   //  hfeBackgroundCuts->SetEtaRange(assETA);
   hfeBackgroundCuts->SetEtaRange(assETAm,assETAp);
-  hfeBackgroundCuts->SetPtRange(0.1,1e10);
+
+  //hfeBackgroundCuts->SetPtRange(0.1,1e10);    // old hardcoded minimum pT (mfaggin, 14th July 2017)
+  hfeBackgroundCuts->SetPtRange(assMinpT,1e10); // associated particle minimum pT syst. (mfaggin, 14th July 2017)
+
   hfeBackgroundCuts->SetMaxChi2perClusterTPC(4);
   hfeBackgroundCuts->SetMinNClustersITS(assITS);
   hfeBackgroundCuts->SetMinNClustersTPC(assTPCcl);

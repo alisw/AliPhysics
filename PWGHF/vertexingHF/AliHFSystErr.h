@@ -170,6 +170,9 @@ class AliHFSystErr : public TNamed
   void InitD0toKpi2013pPb2040ZNA();
   void InitD0toKpi2013pPb4060ZNA();
   void InitD0toKpi2013pPb60100ZNA();
+
+  void InitD0toKpi2016pPb010ZNA();
+  void InitD0toKpi2016pPb60100ZNA();
   
   void InitD0toKpi2013pPb020CL1();
   void InitD0toKpi2013pPb2040CL1();
@@ -185,7 +188,10 @@ class AliHFSystErr : public TNamed
   void InitDstartoD0pi2013pPb2040ZNA();
   void InitDstartoD0pi2013pPb4060ZNA();
   void InitDstartoD0pi2013pPb60100ZNA();
-  
+
+   void InitDstartoD0pi2016pPb010ZNA();
+   void InitDstartoD0pi2016pPb60100ZNA();
+ 
   void InitDstartoD0pi2013pPb020CL1();
   void InitDstartoD0pi2013pPb2040CL1();
   void InitDstartoD0pi2013pPb4060CL1();
@@ -206,6 +212,11 @@ class AliHFSystErr : public TNamed
   void InitDplustoKpipi2013pPb4060CL1();
   void InitDplustoKpipi2013pPb60100CL1();
     
+  void InitDplustoKpipi2016pPb140trkl();
+  void InitDplustoKpipi2016pPb4070trkl();
+  void InitDplustoKpipi2016pPb70200trkl();
+  void InitDplustoKpipi2016pPb010ZNA();
+  void InitDplustoKpipi2016pPb60100ZNA();
 
  private:
 
@@ -223,6 +234,7 @@ class AliHFSystErr : public TNamed
   void InitD0toKpi2011PbPb3050(); 
   void InitD0toKpi2011PbPb010();
   void InitD0toKpi2013pPb0100();
+  void InitD0toKpi2016pPb0100();
   void InitD0toKpi2013pPb0100LowPtAn();
   void InitD0toKpi2016pPb0100LowPtAn();
 
@@ -230,12 +242,15 @@ class AliHFSystErr : public TNamed
   void InitDplustoKpipi2010ppPass4();
   void InitDplustoKpipi2010ppLowEn();
   void InitDplustoKpipi2012pp();
+  void InitDplustoKpipi2015pp5TeV();
+  void InitDplustoKpipi2016pp13TeV();
   void InitDplustoKpipi2011PbPb07half();
   void InitDplustoKpipi2010PbPb020();
   void InitDplustoKpipi2010PbPb4080();
   void InitDplustoKpipi2011PbPb3050();
   void InitDplustoKpipi2011PbPb010();
   void InitDplustoKpipi2013pPb0100();
+  void InitDplustoKpipi2016pPb0100();
 
   void InitDstartoD0pi2010pp();
   void InitDstartoD0pi2010ppLowEn();
@@ -247,6 +262,7 @@ class AliHFSystErr : public TNamed
   void InitDstartoD0pi2011PbPb3050();
   void InitDstartoD0pi2011PbPb010();
   void InitDstartoD0pi2013pPb0100();
+  void InitDstartoD0pi2016pPb0100();
   void InitDstartoD0pi2010ppPass4();
  
   void InitDstoKKpi2010pp();
@@ -255,6 +271,11 @@ class AliHFSystErr : public TNamed
   void InitDstoKKpi2011PbPb010();
   void InitDstoKKpi2011PbPb2050();
   void InitDstoKKpi2013pPb0100();
+  void InitDstoKKpi2016pPb0100();
+  void InitDstoKKpi2016pPb140trkl();
+  void InitDstoKKpi2016pPb4070trkl();
+  void InitDstoKKpi2016pPb70200trkl();
+  void InitDstoKKpi2016pp13TeV();
 
   void InitLctopKpi2010pp();
   void InitLctopKpi2010ppBDT();
@@ -265,12 +286,21 @@ class AliHFSystErr : public TNamed
   void InitLctopK0S2013pPb();
   void InitLctopK0S2013pPbBDT();
 
+  void InitD0toKpi2015PbPb010();
   void InitD0toKpi2015PbPb3050();
+  void InitD0toKpi2015PbPb6080();
+  
+  void InitDplustoKpipi2015PbPb010();
   void InitDplustoKpipi2015PbPb3050();
+  void InitDplustoKpipi2015PbPb6080();
+
   void InitDstoKKpi2015PbPb010();
   void InitDstoKKpi2015PbPb3050();
   void InitDstoKKpi2015PbPb6080();
+
+  void InitDstartoD0pi2015PbPb010();
   void InitDstartoD0pi2015PbPb3050();
+  void InitDstartoD0pi2015PbPb6080();
 
 
   TH1F* ReflectHisto(TH1F *hin) const;

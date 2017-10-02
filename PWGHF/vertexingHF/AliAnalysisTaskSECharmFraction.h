@@ -82,6 +82,7 @@ class AliAnalysisTaskSECharmFraction : public AliAnalysisTaskSE {
   void SetPtWeightsFromDataPbPb276overLHC12a17a();
   void SetFillImpParTree(Bool_t fillimppar){fFillTree=fillimppar;}
   void SetAODMismatchProtection(Int_t opt=1) {fAODProtection=opt;}
+  void SetLightOutput(Bool_t lightOutput){fLightOutput=lightOutput;}
 
   /* ######### THE FOLLOWING IS FOR FURTHER IMPLEMENATION ############
      Int_t GetPtBin(Double_t pt)const;
@@ -119,6 +120,7 @@ class AliAnalysisTaskSECharmFraction : public AliAnalysisTaskSE {
   AliRDHFCutsD0toKpi *fCutsLoose;        /// Loose cuts object
   AliRDHFCutsD0toKpi *fCutsTight;      /// Vertexer heavy flavour
   Int_t fFastAnalysis;                  /// Level of analysis speed: default is 1, switch it to 2 to fill the THnSparse
+  Bool_t  fLightOutput;                 ///Flag to fill just the output for the simpler analysis 
   Bool_t  fReadMC;                          /// Flag To switch on/off access to MC 
   Bool_t fcheckD0Bit;                       /// Flag to check the D0 bit flag
   Bool_t  fsplitMassD0D0bar;                /// Flag to use two shistos for D0 and D0bar invariant masses
@@ -217,7 +219,7 @@ class AliAnalysisTaskSECharmFraction : public AliAnalysisTaskSE {
   AliAnalysisTaskSECharmFraction(const AliAnalysisTaskSECharmFraction&); // not implemented
   AliAnalysisTaskSECharmFraction& operator=(const AliAnalysisTaskSECharmFraction&); // not implemented
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskSECharmFraction,7); /// analysis task for prompt charm fraction
+  ClassDef(AliAnalysisTaskSECharmFraction,8); /// analysis task for prompt charm fraction
   /// \endcond 
 };
 

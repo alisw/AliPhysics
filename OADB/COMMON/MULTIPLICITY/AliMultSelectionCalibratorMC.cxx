@@ -600,6 +600,7 @@ Bool_t AliMultSelectionCalibratorMC::Calibrate() {
     TString fFormula = "[0]*x";
     
     //Experimental: quadratic fit
+    //WARNING: NOT READY YET!
     if(fkUseQuadraticMapping) fFormula = "[0]*TMath::Power(x-[1],2)+[2]";
     
     for(Int_t iRun=0; iRun<lNRuns; iRun++) {
@@ -630,12 +631,22 @@ Bool_t AliMultSelectionCalibratorMC::Calibrate() {
             //Die hard fitting
             //TVirtualFitter::SetMaxIterations(1000000);
             
-            fitdata[iRun][iEst]->SetParameter(0,-1e-3);
-            fitmc[iRun][iEst]->SetParameter(0,-1e-3);
-            fitdata[iRun][iEst]->SetParameter(1,lMaxEst[iEst][iRun]*5);
-            fitmc[iRun][iEst]->SetParameter(1,lMaxEst[iEst][iRun]*5);
-            fitdata[iRun][iEst]->SetParameter(2,0.0);
-            fitmc[iRun][iEst]->SetParameter(2,0.0);
+            //Guess initial parameters more wisely: linear approximation, please
+            
+            Double_t lIncline   = 1e-3;
+            Double_t lInclineMC = 1e-3;
+            
+            if( TMath::Abs(lAvEst[iEst][iRun])>1e-3 ){
+                lIncline   = profdata[iRun][iEst]->GetBinContent( profdata[iRun][iEst]->FindBin(lAvEst[iEst][iRun]) ) / lAvEst[iEst][iRun];
+                lInclineMC = profmc  [iRun][iEst]->GetBinContent( profmc  [iRun][iEst]->FindBin(lAvEst[iEst][iRun]) ) / lAvEst[iEst][iRun];
+            }
+            
+            fitdata[iRun][iEst]->SetParameter(0,lIncline);
+            fitmc[iRun][iEst]->SetParameter(0,lIncline);
+            //fitdata[iRun][iEst]->SetParameter(1,lMaxEst[iEst][iRun]*5);
+            //fitmc[iRun][iEst]->SetParameter(1,lMaxEst[iEst][iRun]*5);
+            //fitdata[iRun][iEst]->SetParameter(2,0.0);
+            //fitmc[iRun][iEst]->SetParameter(2,0.0);
             
             //remember to not be silly...
             TString lEstName = fSelection->GetEstimator(iEst)->GetName();

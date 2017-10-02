@@ -15,4 +15,3 @@ eval $(alienv printenv Herwig::v7.0.4-alice1-1)
 # run Herwig
 sed -e s#output.hepmc#"$1"# ${ALICE_PHYSICS}/PWG/MCLEGO/Herwig/LHC-MB.in > Matchbox.in
 Herwig read --repo=$HERWIG_ROOT/share/Herwig/HerwigDefaults.rpo Matchbox.in
-Herwig run Matchbox.run -N 10000000

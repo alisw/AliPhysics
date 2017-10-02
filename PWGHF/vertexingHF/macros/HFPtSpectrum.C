@@ -39,7 +39,7 @@
 //
 
 enum decay { kD0Kpi, kDplusKpipi, kDstarD0pi, kDsKKpi, kLctopKpi, kLcK0Sp};
-enum centrality{ kpp8, kpp7, kpp276, k07half, kpPb0100, k010, k1020, k020, k2040, k2030, k3040, k4050, k3050, k5060, k4060, k6080, k4080, k5080, k80100, kpPb020, kpPb2040, kpPb4060, kpPb60100 };
+enum centrality{ kpp8, kpp7, kpp276, k07half, kpPb0100, k010, k1020, k020, k2040, k2030, k3040, k4050, k3050, k5060, k4060, k6080, k4080, k5080, k80100, kpPb010, kpPb020, kpPb2040, kpPb4060, kpPb60100 };
 enum centestimator{ kV0M, kV0A, kZNA, kCL1 };
 enum energy{ k276, k5dot023, k55 };
 enum BFDSubtrMethod { knone, kfc, kNb };
@@ -141,7 +141,9 @@ void HFPtSpectrum ( Int_t decayChan=kDplusKpipi,
     }
   }
   else if( ccestimator == kZNA ){
-    if ( cc == kpPb020 ) {
+     if(cc == kpPb010)  {
+      tab = 0.17; tabUnc = 0.01275;
+    } else if ( cc == kpPb020 ) {
       tab = 0.164; tabUnc = 0.010724;
     } else if ( cc == kpPb2040 ) {
       tab = 0.137; tabUnc = 0.005099;
@@ -420,8 +422,10 @@ void HFPtSpectrum ( Int_t decayChan=kDplusKpipi,
   else if (cc==kpp8){
     systematics->SetRunNumber(12);
   }
-  else if ( cc == kpPb0100 || cc == kpPb020 || cc == kpPb2040 || cc == kpPb4060 || cc == kpPb60100 ) {
+  else if ( cc == kpPb0100 || cc == kpPb010 || cc == kpPb020 || cc == kpPb2040 || cc == kpPb4060 || cc == kpPb60100 ) {
     systematics->SetCollisionType(2);
+    systematics->SetRunNumber(16);//check this
+  
     // Rapidity slices
     if(rapiditySlice!=kdefault){
       systematics->SetIspPb2011RapidityScan(true);
@@ -445,10 +449,11 @@ void HFPtSpectrum ( Int_t decayChan=kDplusKpipi,
       else if(cc == kpPb4060) systematics->SetCentrality("4060V0A");
       else if(cc == kpPb60100) systematics->SetCentrality("60100V0A");
     } else if (ccestimator==kZNA) {
-      if(cc == kpPb020) systematics->SetCentrality("020ZNA");
+      if(cc == kpPb010){systematics->SetRunNumber(2016); systematics->SetCentrality("010ZNA");}
+      else if(cc == kpPb020) systematics->SetCentrality("020ZNA");
       else if(cc == kpPb2040) systematics->SetCentrality("2040ZNA");
       else if(cc == kpPb4060) systematics->SetCentrality("4060ZNA");
-      else if(cc == kpPb60100) systematics->SetCentrality("60100ZNA");
+      else if(cc == kpPb60100){systematics->SetRunNumber(2016); systematics->SetCentrality("60100ZNA");}
     } else if (ccestimator==kCL1) {
       if(cc == kpPb020) systematics->SetCentrality("020CL1");
       else if(cc == kpPb2040) systematics->SetCentrality("2040CL1");

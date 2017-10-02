@@ -31,6 +31,7 @@
 #include <TVector3.h>
 #include <TROOT.h>
 #include <TH3F.h>
+#include <TRandom3.h>
 
 #include "AliLog.h"
 #include "AliRDHFCutsDStartoKpipi.h"
@@ -62,6 +63,8 @@ AliAnalysisTaskSEDmesonsFilterCJ::AliAnalysisTaskSEDmesonsFilterCJ() :
   fUseMCInfo(kFALSE),
   fBuildRMEff(kFALSE),
   fUsePythia(kFALSE),
+  fUseRejTracks(kFALSE),
+  fTrackIneff(0),
   fUseReco(kTRUE),
   fCandidateType(0),
   fCandidateName(""),
@@ -79,9 +82,10 @@ AliAnalysisTaskSEDmesonsFilterCJ::AliAnalysisTaskSEDmesonsFilterCJ() :
   fRejectDfromB(kTRUE),
   fKeepOnlyDfromB(kFALSE),
   fAodEvent(0),
+  fMCHeader(0),
+  fRan(0),
   fArrayDStartoD0pi(0),
   fMCarray(0),
-  fMCHeader(0),
   fCandidateArray(0),
   fSideBandArray(0),
   fCombinedDmesons(0),
@@ -135,6 +139,8 @@ AliAnalysisTaskSEDmesonsFilterCJ::AliAnalysisTaskSEDmesonsFilterCJ(const char *n
   fUseMCInfo(kFALSE),
   fBuildRMEff(kFALSE),
   fUsePythia(kFALSE),
+  fUseRejTracks(kFALSE),
+  fTrackIneff(0),
   fUseReco(kTRUE),
   fCandidateType(candtype),
   fCandidateName(""),
@@ -152,9 +158,10 @@ AliAnalysisTaskSEDmesonsFilterCJ::AliAnalysisTaskSEDmesonsFilterCJ(const char *n
   fRejectDfromB(kTRUE),
   fKeepOnlyDfromB(kFALSE),
   fAodEvent(0),
+  fMCHeader(0),
+  fRan(0),
   fArrayDStartoD0pi(0),
   fMCarray(0),
-  fMCHeader(0),
   fCandidateArray(0),
   fSideBandArray(0),
   fCombinedDmesons(0),
@@ -463,6 +470,8 @@ void AliAnalysisTaskSEDmesonsFilterCJ::ExecOnce()
     AddObjectToEvent(fCombinedDmesonsBkg);
     if(fUseMCInfo) AddObjectToEvent(fMCCombinedDmesons);
   }
+  
+  fRan  = new TRandom3(0);
 
   AliAnalysisTaskEmcal::ExecOnce();
 }
@@ -545,6 +554,10 @@ if(fUseMCInfo && fBuildRMEff){
       continue;
     }
 
+     Int_t decay = CheckDecayChannel(charmPart, fMCarray);
+    if( TMath::Abs(charmPart->GetPdgCode()) == 413 && decay != kDecayDStartoKpipi) continue;
+    if( TMath::Abs(charmPart->GetPdgCode()) == 421 && decay != kDecayD0toKpi) continue;
+
     fHistStat->Fill(3);
     
     if (fNCand==fAnalyseCand){  
@@ -555,6 +568,7 @@ if(fUseMCInfo && fBuildRMEff){
         AliAODRecoCascadeHF* dstar = 0;
         
         // loop over reco D candidates to find a match to MC
+        Int_t isRecoD = kFALSE;
         for (Int_t icharm = 0; icharm < nD; icharm++) {  
  
           charmCand = static_cast<AliAODRecoDecayHF2Prong*>(fArrayDStartoD0pi->At(icharm)); // D candidates
@@ -575,13 +589,14 @@ if(fUseMCInfo && fBuildRMEff){
           Int_t pdgDgDStartoD0pi[2] = { 421, 211 };  // D0,pi
           Int_t pdgDgD0toKpi[2] = { 321, 211 };      // K, pi
           
-          Int_t mcLabel = NULL;
+          Int_t mcLabel = 0;
           if (fCandidateType == kDstartoKpipi) mcLabel = dstar->MatchToMC(413, 421, pdgDgDStartoD0pi, pdgDgD0toKpi, fMCarray);
           else mcLabel = charmCand->MatchToMC(421, fMCarray, fNProngs, fPDGdaughters);
 
-          if(mcLabel == iMCcharm) break; 
+          if(mcLabel == iMCcharm) { isRecoD = kTRUE; break; }
         }
         
+          if (!isRecoD) break;
          if (!charmCand) break;
          if (fCandidateType == kDstartoKpipi &&  !dstar) break;
         
@@ -1467,7 +1482,12 @@ void AliAnalysisTaskSEDmesonsFilterCJ::AddMCEventTracks(TClonesArray* coll, AliP
           bool isInj = IsMCTrackInjected(mcpart, fMCHeader, fMCarray);
           if(!isInj) continue;
         }
+      
+        
         if (allMCDaughters.Remove(mcpart) == 0) {
+            if(fUseRejTracks){
+              if(fRan->Rndm() < fTrackIneff) continue;
+            }
             new ((*coll)[n]) AliAODMCParticle(*mcpart);
             n++;
             AliDebug(2, Form("Track %d (pT = %.3f, eta = %.3f, phi = %.3f) is included", mctracks->GetCurrentID(), mcpart->Pt(), mcpart->Eta(), mcpart->Phi()));
@@ -1484,17 +1504,18 @@ Double_t AliAnalysisTaskSEDmesonsFilterCJ::AddMCDaughters(AliAODMCParticle* mcDm
     // Add all the dauthers of cand in an array. Follows all the decay cascades.
 
     Int_t n = mcDmeson->GetNDaughters();
-
+    Int_t nD0 = mcDmeson->GetDaughter(0); // get label of the first daughter
     //Printf("AddDaughters: the number of dauhters is %d", n);
     Double_t pt = 0;
 
     for (Int_t i = 0; i < n; i++) {
-        AliAODMCParticle* DDaughter = static_cast<AliAODMCParticle*>(mcArray->At(mcDmeson->GetDaughter(i)));
+        AliAODMCParticle* DDaughter = static_cast<AliAODMCParticle*>(mcArray->At(nD0+i));
         if (!DDaughter) continue;
 
         if (DDaughter->GetNDaughters()>0) {
             //Printf("Daughter pT = %.3f --> ", track->Pt());
             pt += AddMCDaughters(DDaughter, mcdaughters, mcArray);
+            mcdaughters.AddLast(DDaughter);
         }
         else {
             //Printf("Daughter pT = %.3f", track->Pt());
@@ -1552,7 +1573,7 @@ Int_t AliAnalysisTaskSEDmesonsFilterCJ::CheckOrigin(AliAODMCParticle* part, TClo
   while (mother >= 0) {
     istep++;
     AliAODMCParticle* mcGranma = static_cast<AliAODMCParticle*>(mcArray->At(mother));
-    if (mcGranma >= 0) {
+    if (mcGranma != 0) {
       pdgGranma = mcGranma->GetPdgCode();
       abspdgGranma = TMath::Abs(pdgGranma);
       if ((abspdgGranma > 500 && abspdgGranma < 600) || (abspdgGranma > 5000 && abspdgGranma < 6000)) {
@@ -1601,7 +1622,7 @@ Int_t AliAnalysisTaskSEDmesonsFilterCJ::CheckOrigin(Int_t ipart, AliStack* stack
   while (mother >= 0) {
     istep++;
     TParticle* mcGranma = stack->Particle(mother);
-    if (mcGranma >= 0) {
+    if (mcGranma != 0) {
       pdgGranma = mcGranma->GetPdgCode();
       abspdgGranma = TMath::Abs(pdgGranma);
       if ((abspdgGranma > 500 && abspdgGranma < 600) || (abspdgGranma > 5000 && abspdgGranma < 6000)) {

@@ -49,8 +49,8 @@ AliEmcalTriggerQATask::AliEmcalTriggerQATask() :
   fMinTimeStamp(0),
   fMaxTimeStamp(0),
   fTimeStampBinWidth(0),
-  fTriggerPatches(0),
-  fESDEvent(0)
+  fESDEvent(0),
+  fTriggerPatches(0)
 {
 }
 
@@ -68,8 +68,8 @@ AliEmcalTriggerQATask::AliEmcalTriggerQATask(const char *name, EBeamType_t beamT
   fMinTimeStamp(0),
   fMaxTimeStamp(0),
   fTimeStampBinWidth(0),
-  fTriggerPatches(0),
-  fESDEvent(0)
+  fESDEvent(0),
+  fTriggerPatches(0)
 {
   // Constructor.
   SetMakeGeneralHistograms(kTRUE);
@@ -377,7 +377,7 @@ void AliEmcalTriggerQATask::AddTaskEmcalTriggerQA_QAtrain(Int_t runnumber)
     task->SetForceBeamType(beam);
     task->AddAcceptedTriggerClass(triggerClass.c_str());
     if (runnumber > 197692) {
-      task->SetUseNewCentralityEstimation(kTRUE);
+      task->SetCentralityEstimation(kNewCentrality);
     }
 
     if (triggerClass.find("CINT7") != std::string::npos) {

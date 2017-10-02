@@ -57,7 +57,7 @@ public:
             
   void         ClusterShapeHistograms(AliVCluster* cluster,  
                                       Int_t   absIdMax    , Double_t maxCellFraction, 
-                                      Float_t eCrossFrac  , Double_t tmax, 
+                                      Float_t eCrossFrac  , Float_t ampMax  , Double_t tmax, 
                                       Int_t   matchedPID  , Int_t    mcIndex);
   
   void         ClusterMatchedToTrackPID(AliVCluster *clus, Int_t & matchedPID);
@@ -103,11 +103,23 @@ public:
   void         SetNEBinCuts(Int_t nb)           { fNEBinCuts = nb            ; }
   void         SetEBinCutsAt(Int_t i, Float_t va) { if(i < 15) fEBinCuts[i] = va ; }
 
+  Float_t      GetEnergyMinShape()       const  { return fEMinShape      ; }
+  void         SetEnergyMinShape(Float_t en)    { fEMinShape = en        ; }
+  
+  Float_t      GetEnergyMaxShape()       const  { return fEMaxShape      ; }
+  void         SetEnergyMaxShape(Float_t en)    { fEMaxShape = en        ; }
+  
+  Int_t        GetNCellMinShape()        const  { return fNCellMinShape   ; }
+  void         SetNCellMinShape(Int_t nc)       { fNCellMinShape = nc     ; }
+  
   // Analysis switchs
   
   void SwitchOnStudyClusterShape()              { fStudyShape            = kTRUE  ; }
   void SwitchOffStudyClusterShape()             { fStudyShape            = kFALSE ; }
 
+  void SwitchOnStudyClusterShapeParam()         { fStudyShapeParam       = kTRUE  ; }
+  void SwitchOffStudyClusterShapeParam()        { fStudyShapeParam       = kFALSE ; }
+  
   void SwitchOnStudyWeight()                    { fStudyWeight           = kTRUE  ; }
   void SwitchOffStudyWeight()                   { fStudyWeight           = kFALSE ; }
   
@@ -124,8 +136,9 @@ public:
   //
   // Switches
   //
-  Bool_t   fStudyShape;                         ///<  Study asymmetry and shower shape of clusters
-  
+  Bool_t   fStudyShape;                         ///<  Study shower shape of clusters and other param on TH3
+  Bool_t   fStudyShapeParam;                    ///<  Study not only M02 but other kind of shape param
+
   Bool_t   fStudyWeight;                        ///<  Study the energy weight used in different cluster calculations
  
   Bool_t   fStudyTCardCorrelation;              ///<  Study TCard channels cross correlation
@@ -138,8 +151,12 @@ public:
   Int_t    fNCellMin;                           ///<  Minimum number of cells on clusters
   Float_t  fMinDistToBad;                       ///<  Minimum distance to bad channel
 
-  Float_t  fEBinCuts[15] ;                      ///<  Energy bins cut 
-  Int_t    fNEBinCuts;                          ///<  Number of energy bin cuts
+  Float_t  fEBinCuts[15] ;                      ///<  Energy bins cut for fStudyTCardCorrelation
+  Int_t    fNEBinCuts;                          ///<  Number of energy bin cuts for fStudyTCardCorrelation
+  
+  Float_t  fEMinShape;                          ///<  Minimum cluster energy for some fStudyShape histograms           
+  Float_t  fEMaxShape;                          ///<  Maximum cluster energy for some fStudyShape histograms           
+  Int_t    fNCellMinShape;                      ///<  Minumum cluster number of cells for some fStudyShape histograms           
   
   Int_t    fdEdXMinEle;                         ///<  dEdX min cut for electrons, set in InitdEdXParameters()
   Int_t    fdEdXMaxEle;                         ///<  dEdX max cut for electrons
@@ -432,22 +449,72 @@ public:
   TH3F *   fhClusterMaxCellDiffM02[3];           //!<! Difference between cluster energy and energy of cell with more energy, vs m02
   TH3F *   fhNCellsPerClusterM02  [3];           //!<! N cells per cluster vs cluster energy vs m02
   TH3F *   fhNCellsPerClusterM20  [3];           //!<! N cells per cluster vs cluster energy vs m20  
+  TH3F *   fhNCellsPerClusterNLM  [3];           //!<! N cells per cluster vs cluster energy vs nlm  
+
+  TH3F *   fhNCellsPerClusterM02PerSMPerCol[20][2]; //!<! N cells per cluster vs cluster energy vs m02, per SM, per odd/even col
+  TH3F *   fhNCellsPerClusterM20PerSMPerCol[20][2]; //!<! N cells per cluster vs cluster energy vs m20, per SM, per odd/even col  
+  TH3F *   fhNCellsPerClusterNLMPerSMPerCol[20][2]; //!<! N cells per cluster vs cluster energy vs nlm, per SM, per odd/even col  
   
   TH3F *   fhNCellsPerClusterMEta    [3];         //!<! N cells per cluster vs cluster energy vs shape in eta direction
   TH3F *   fhNCellsPerClusterMPhi    [3];         //!<! N cells per cluster vs cluster energy vs shape in phi direction
   TH3F *   fhNCellsPerClusterMEtaPhi [3];         //!<! N cells per cluster vs cluster energy vs shape in eta*phi direction
   TH3F *   fhNCellsPerClusterMEtaPhiA[3];         //!<! N cells per cluster vs cluster energy vs shape in (phi-eta)/(eta+phi)
+
+  TH3F *   fhInvMassNCellSM;                      //!<! Invariant mass vs first selected cluster N cell with 8 < E < 12 GeV and per SM  of trigger cluster
+  TH3F *   fhInvMassNCellSMSame;                  //!<! Invariant mass vs first selected cluster N cell with 8 < E < 12 GeV and per SM of both cluster
+  
+  TH3F *   fhColRowM02;                           //!<! Cluster position in cell max col-row, 8 < E < 12 GeV, neutral only
+  TH3F *   fhColRowM02NCellCut;                   //!<! Cluster position in cell max col-row, 9 < E < 12 GeV, n cell > 4, neutral only
   
   TH2F *   fhOriginE  [3];                        //!<! check origin of selected clusters
   TH3F *   fhOriginM02[3];                        //!<! check origin of selected clusters, vs E vs M02
 
   TH3F *   fhSMM02NoCut[3];                       //!<! SM number vs m02, no cut
   TH3F *   fhSMM02    [3];                        //!<! SM number vs m02, n cell > 4
+  TH3F *   fhSMM20HighM02NoCut[3];                //!<! SM number vs m20, 0.5<m02<2, no ncell cut
+  TH3F *   fhSMM20HighM02[3];                     //!<! SM number vs m20, 0.5<m02<2, n cell > 4
+  TH3F *   fhSMM20LowM02NoCut[3];                 //!<! SM number vs m20, 0.1<m02<0.3, no ncell cut
+  TH3F *   fhSMM20LowM02[3];                      //!<! SM number vs m20, 0.1<m02<0.3, n cell > 4
   TH3F *   fhSMNCell  [3];                        //!<! SM number vs number of cells
+  TH3F *   fhSMNCellM02[3];                       //!<! SM number vs number of cells vs M02, in E bin
   TH3F *   fhColM02   [3];                        //!<! main cell column vs m02, n cell > 4
   TH3F *   fhRowM02   [3];                        //!<! main cell row vs m02, n cell > 4
   
-  //
+  TH3F *   fhEMaxCellTimeM02SM  ;                 //!<! m02 vs SM number vs max cell time
+  TH3F *   fhEMaxCellTimeNCellSM;                 //!<! n cell vs SM number vs max cell time
+  TH3F *   fhESecCellTimeNCellSM;                 //!<! n cell vs SM number vs secondary cell time
+
+  // 8 < E < 12 GeV per SM, neutral
+  TH3F *   fhNCellsPerClusterM02M20PerSM  [20];   //!<! m02 vs m20 vs n cells 
+  TH3F *   fhNCellsPerClusterM02NLMPerSM  [20];   //!<! m02 vs NLM vs n cells 
+  TH3F *   fhESecCellEMaxCellM02NCellPerSM[20];   //!<! m02 vs SM number vs ncell vs E cell / E cell max 
+  TH3F *   fhESecCellEClusterM02NCellPerSM[20];   //!<! m02 vs SM number vs ncell vs E cluster - E cell / E cluster
+  TH3F *   fhESecCellLogM02NCellPerSM     [20];   //!<! m02 vs SM number vs ncell vs log E cell 
+
+  TH3F *   fhEMaxCellEClusterM02NCellPerSM[20];   //!<! m02 vs SM number vs ncell vs E cluster - E max cell / E cluster
+  TH3F *   fhEMaxCellLogM02NCellPerSM     [20];   //!<! m02 vs SM number vs ncell vs log E max cell 
+
+  TH3F *   fhEMaxESecCellNCellLowM02PerSM [20];   //!<! E cell max vs E cell secondary vs ncells vs SM for clusters 8 < E < 12 GeV, 0.1 < M02 < 0.3 per SM number
+  TH3F *   fhEMaxECrossNCellLowM02PerSM   [20];   //!<! E cell max vs E cross vs ncells vs SM for clusters 8 < E < 12 GeV, 0.1 < M02 < 0.3, per SM number
+  
+  TH3F *   fhEMaxESecCellNCellHighM02PerSM[20];   //!<! E cell max vs E cell vs ncells secondary vs SM for clusters 8 < E < 12 GeV, 0.5 < M02 < 2, per SM number 
+  TH3F *   fhEMaxECrossNCellHighM02PerSM  [20];   //!<! E cell max vs E cross vs ncells vs SM for clusters 8 < E < 12 GeV, 0.5 < M02 < 2, per SM number
+
+  TH3F *   fhColRowFromCellMaxLowM02PerSM [20][2];//!<! secondary cell distance to cell max in col vs row vs n cells, for clusters 8 < E < 12 GeV, 0.1 < M02 < 0.3, per SM number, per odd/pair column
+  TH3F *   fhColRowFromCellMaxHighM02PerSM[20][2];//!<! secondary cell distance to cell max in col vs row vs n cells, for clusters 8 < E < 12 GeV, 0.5 < M02 < 2, per SM number, per odd/pair column
+
+  TH3F *   fhColRowFromCellMaxEMaxSecDiffLowM02PerSM [20][2][3];//!<! secondary cell distance to cell max in col vs row vs energy difference to cell max, (2-3), (4-5) (>5) n cells, for clusters 8 < E < 12 GeV, 0.1 < M02 < 0.3, per SM number, per odd/pair column
+  TH3F *   fhColRowFromCellMaxEMaxSecDiffHighM02PerSM[20][2][3];//!<! secondary cell distance to cell max in col vs row vs energy difference to cell max, (2-3), (4-5) (>5) n cells,, for clusters 8 < E < 12 GeV, 0.5 < M02 < 2, per SM number, per odd/pair column
+
+  TH3F *   fhColRowFromCellMaxEMaxSecDiffFracLowM02PerSM [20][2][3];//!<! secondary cell distance to cell max in col vs row vs energy difference to cell max / e max, (2-3), (4-5) (>5) n cells, for clusters 8 < E < 12 GeV, 0.1 < M02 < 0.3, per SM number, per odd/pair column
+  TH3F *   fhColRowFromCellMaxEMaxSecDiffFracHighM02PerSM[20][2][3];//!<! secondary cell distance to cell max in col vs row vs energy difference to cell max /  e max, (2-3), (4-5) (>5) n cells,, for clusters 8 < E < 12 GeV, 0.5 < M02 < 2, per SM number, per odd/pair column
+
+  TH3F *   fhColRowFromCellMaxECellClusterRatLowM02PerSM [20][2][3];//!<! secondary cell distance to cell max in col vs row vs energy ratio to cluster E, (2-3), (4-5) (>5) n cells, for clusters 8 < E < 12 GeV, 0.1 < M02 < 0.3, per SM number, per odd/pair column
+  TH3F *   fhColRowFromCellMaxECellClusterRatHighM02PerSM[20][2][3];//!<! secondary cell distance to cell max in col vs row vs energy ratio to cluster E, (2-3), (4-5) (>5) n cells,, for clusters 8 < E < 12 GeV, 0.5 < M02 < 2, per SM number, per odd/pair column
+
+  TH2F *   fhColRowFromCellMaxLowM02         [2]; //!<! secondary cell distance to cell max in col vs row vs n cells, for clusters 8 < E < 12 GeV, 0.1 < M02 < 0.3, per odd/pair column
+  TH2F *   fhColRowFromCellMaxHighM02        [2]; //!<! secondary cell distance to cell max in col vs row vs n cells, for clusters 8 < E < 12 GeV, 0.5 < M02 < 2, per odd/pair column
+ 
   // Weight studies
   //
   
@@ -475,7 +542,7 @@ public:
   AliAnaClusterShapeCorrelStudies(              const AliAnaClusterShapeCorrelStudies & qa) ;
   
   /// \cond CLASSIMP
-  ClassDef(AliAnaClusterShapeCorrelStudies,2) ;
+  ClassDef(AliAnaClusterShapeCorrelStudies,4) ;
   /// \endcond
 
 } ;

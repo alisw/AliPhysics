@@ -1,4 +1,8 @@
-TString names=("newPID;TOFreq;TOFif");
+// TString names=("resolutionCuts");
+// TString names=("kPbPb2015_Pt400_tightTOFreq_MB;kPbPb2015_Pt400_tightTOFif_MB;kPbPb2015_Pt400_looseTOFif_MB");
+TString names=("cut0;cut1;cut2;cut3;cut4;cut5;cut6;cut7;cut8;cut9");
+// TString names=("cut10;cut11;cut12;cut13;cut14;cut15;cut16;cut17;cut18;cut19");
+
 TObjArray*  arrNames=names.Tokenize(";");
 const Int_t nDie=arrNames->GetEntriesFast();
 //________________________________________________________________
@@ -19,10 +23,10 @@ const Int_t nDie=arrNames->GetEntriesFast();
 //________________________________________________________________
 // main task settings
 // fill resolutions for one cutInstance (step 1).
-const Bool_t CalcResolution   = kTRUE;
+const Bool_t CalcResolution   = kFALSE;
 // use previously extracted resolutions (step 2).
-TString resolutionfile = "resolution_PbPb2011_CENTRALITY_deltaXvsP.root";
-Bool_t CalcEfficiencyRec      = kFALSE;  // use given resolution file to smear the kinematics.
+TString resolutionfile = "resolution_PbPb2015_CENTRALITY_deltaXvsP.root";
+Bool_t CalcEfficiencyRec      = kTRUE;  // use given resolution file to smear the kinematics.
 Bool_t bUseRelPResolution     = kTRUE;  // specify if the file contains a relative or an absolute momentum resolution array.
 Bool_t bUseEtaResolution      = kFALSE; // kFALSE means using theta instead of eta.
 // determine efficiency from only positive label tracks (in addition to using all labels).
@@ -30,7 +34,7 @@ Bool_t CalcEfficiencyPoslabel = kFALSE;
 // determine pair efficiency for all cutInstances. (Consider high combinatorics if not only MC-true electrons are selected.)
 const Bool_t doPairing = kFALSE;
 // specify for which "cutInstance" the support histos should be filled!
-const Int_t     supportedCutInstance = 0;
+const Int_t     supportedCutInstance = 1;
 // specify if track tree shall be filled and written to file (only recommended for small checks!)
 const Bool_t    writeTree = kFALSE;
 // activate UsePhysicsSelection and SetTriggerMask for MC (may be needed for new MC productions according to Mahmut)
@@ -42,7 +46,7 @@ const Bool_t    writeTree = kFALSE;
 // eta bins
 const Double_t EtaMin   = -1.;
 const Double_t EtaMax   =  1.;
-const Int_t    nBinsEta = 100; //flexible to rebin
+const Int_t    nBinsEta = 40; //flexible to rebin
 // phi bins
 const Double_t PhiMin   = 0.;
 const Double_t PhiMax   = 6.2832;
@@ -75,8 +79,8 @@ const Double_t MeeMax    = 5.;
 const Int_t    nBinsMee  = 500;
 // ptee bins
 const Double_t PteeMin   = 0.;
-const Double_t PteeMax   = 6.;
-const Int_t    nBinsPtee = 600;
+const Double_t PteeMax   = 8.;
+const Int_t    nBinsPtee = 800;
 
 // run string must be sorted in increasing order!
 //AOD_115_goodPID //TString sRuns("167987, 167988, 168310, 168311, 168322, 168325, 168341, 168342, 168361, 168362, 168458, 168460, 168464, 168467, 168511, 168512, 168514, 168777, 168826, 168988, 168992, 169035, 169040, 169044, 169045, 169091, 169094, 169099, 169138, 169144, 169145, 169148, 169156, 169160, 169167, 169238, 169411, 169415, 169417, 169418, 169419, 169420, 169475, 169498, 169504, 169506, 169512, 169515, 169550, 169553, 169554, 169555, 169557, 169586, 169587, 169588, 169590, 169591, 169835, 169837, 169838, 169846, 169855, 169858, 169859, 170027, 170040, 170081, 170083, 170084, 170085, 170088, 170089, 170091, 170155, 170159, 170163, 170193, 170203, 170204, 170207, 170228, 170230, 170268, 170269, 170270, 170306, 170308, 170309, 170311, 170312, 170313, 170315, 170387, 170388, 170572, 170593");
@@ -156,9 +160,8 @@ void SetupMCSignals(AliAnalysisTaskElectronEfficiency* task){
   task->AddSignalMC(eleFinalState);
 }
 
-
 //________________________________________________________________
-AliAnalysisFilter* SetupTrackCutsAndSettings(Int_t cutDefinition, Bool_t isESD=kTRUE)
+AliAnalysisFilter* SetupTrackCutsAndSettings(TString cutDefinition, Bool_t isESD=kTRUE)
 {
   std::cout << "SetupTrackCutsAndSettings( cutInstance = " << cutDefinition << " )" <<std::endl;
   AliAnalysisFilter *anaFilter = new AliAnalysisFilter("anaFilter","anaFilter"); // named constructor seems mandatory!
@@ -174,22 +177,144 @@ AliAnalysisFilter* SetupTrackCutsAndSettings(Int_t cutDefinition, Bool_t isESD=k
 
 
   LMEECutLib* LMcutlib = new LMEECutLib();
-  if (cutDefinition == 0) {
-      AnaCut.SetPIDAna(LMEECutLib::kPbPb2015_Pt400_TPCele_AsymITS_tightTOFif);
-      AnaCut.SetTrackSelectionAna(LMEECutLib::kSPDfirst);
-      AnaCut.SetPairCutsAna(LMEECutLib::kNoPairCutsAna);
-
-      AnaCut.SetPreFilterType(LMEECutLib::kNoPreFilter);
-      AnaCut.SetPIDPre(LMEECutLib::kStandardPre);
-      AnaCut.SetTrackSelectionPre(LMEECutLib::kPrefilter_cut1);
-      AnaCut.SetPairCutsPre(LMEECutLib::kNoPairCutsPre);
-
-      AnaCut.SetCentrality(LMEECutLib::kPbPbSemiCentral);
-      AnaCut.SetMixing(LMEECutLib::kEventMixing_1);
-      AnaCut.SetESDTrackSelection(LMEECutLib::kStandardESD);
-      // LMcutlib->SetEtaCorrection(die, AnaCut.GetPIDAna(), AnaCut.GetCentrality(), AliDielectronVarManager::kRefMultTPConly, AliDielectronVarManager::kEta);
+  if (cutDefinition == "kPbPb2015_Pt400_tightTOFreq_MB"){
+    AnaCut.SetPIDAna(LMEECutLib::kPbPb2015_Pt400_tightTOFreq);
+    AnaCut.SetTrackSelectionAna(LMEECutLib::kSPDfirst);
+    AnaCut.SetCentrality(LMEECutLib::kPbPb_00to80);
+    AnaCut.SetStandardCut();
   }
-
+  else if (cutDefinition == "kPbPb2015_Pt400_looseTOFif_MB"){
+    AnaCut.SetPIDAna(LMEECutLib::kPbPb2015_Pt400_looseTOFif);
+    AnaCut.SetTrackSelectionAna(LMEECutLib::kSPDfirst);
+    AnaCut.SetMixing(LMEECutLib::kEventMixing_1);
+    AnaCut.SetStandardCut();
+  }
+  else if (cutDefinition == "kPbPb2015_Pt400_tightTOFif_MB"){
+    AnaCut.SetPIDAna(LMEECutLib::kPbPb2015_Pt400_tightTOFif);
+    AnaCut.SetTrackSelectionAna(LMEECutLib::kSPDfirst);
+    AnaCut.SetCentrality(LMEECutLib::kPbPb_00to80);
+    AnaCut.SetStandardCut();
+  }
+  else if (cutDefinition == "cut0"){
+    AnaCut.SetPIDAna(LMEECutLib::kPIDcut_0);
+    AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_0);
+    AnaCut.SetCentrality(LMEECutLib::kPbPb_00to80);
+    AnaCut.SetStandardCut();
+  }
+  else if (cutDefinition == "cut1"){
+    AnaCut.SetPIDAna(LMEECutLib::kPIDcut_1);
+    AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_1);
+    AnaCut.SetCentrality(LMEECutLib::kPbPb_00to80);
+    AnaCut.SetStandardCut();
+  }
+  else if (cutDefinition == "cut2"){
+    AnaCut.SetPIDAna(LMEECutLib::kPIDcut_2);
+    AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_2);
+    AnaCut.SetCentrality(LMEECutLib::kPbPb_00to80);
+    AnaCut.SetStandardCut();
+  }
+  else if (cutDefinition == "cut3"){
+    AnaCut.SetPIDAna(LMEECutLib::kPIDcut_3);
+    AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_3);
+    AnaCut.SetCentrality(LMEECutLib::kPbPb_00to80);
+    AnaCut.SetStandardCut();
+  }
+  else if (cutDefinition == "cut4"){
+    AnaCut.SetPIDAna(LMEECutLib::kPIDcut_4);
+    AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_4);
+    AnaCut.SetCentrality(LMEECutLib::kPbPb_00to80);
+    AnaCut.SetStandardCut();
+  }
+  else if (cutDefinition == "cut5"){
+    AnaCut.SetPIDAna(LMEECutLib::kPIDcut_5);
+    AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_5);
+    AnaCut.SetCentrality(LMEECutLib::kPbPb_00to80);
+    AnaCut.SetStandardCut();
+  }
+  else if (cutDefinition == "cut6"){
+    AnaCut.SetPIDAna(LMEECutLib::kPIDcut_6);
+    AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_6);
+    AnaCut.SetCentrality(LMEECutLib::kPbPb_00to80);
+    AnaCut.SetStandardCut();
+  }
+  else if (cutDefinition == "cut7"){
+    AnaCut.SetPIDAna(LMEECutLib::kPIDcut_7);
+    AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_7);
+    AnaCut.SetCentrality(LMEECutLib::kPbPb_00to80);
+    AnaCut.SetStandardCut();
+  }
+  else if (cutDefinition == "cut8"){
+    AnaCut.SetPIDAna(LMEECutLib::kPIDcut_8);
+    AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_8);
+    AnaCut.SetCentrality(LMEECutLib::kPbPb_00to80);
+    AnaCut.SetStandardCut();
+  }
+  else if (cutDefinition == "cut9"){
+    AnaCut.SetPIDAna(LMEECutLib::kPIDcut_9);
+    AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_9);
+    AnaCut.SetCentrality(LMEECutLib::kPbPb_00to80);
+    AnaCut.SetStandardCut();
+  }
+  else if (cutDefinition == "cut10"){
+    AnaCut.SetPIDAna(LMEECutLib::kPIDcut_10);
+    AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_10);
+    AnaCut.SetCentrality(LMEECutLib::kPbPb_00to80);
+    AnaCut.SetStandardCut();
+  }
+  else if (cutDefinition == "cut11"){
+    AnaCut.SetPIDAna(LMEECutLib::kPIDcut_11);
+    AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_11);
+    AnaCut.SetCentrality(LMEECutLib::kPbPb_00to80);
+    AnaCut.SetStandardCut();
+  }
+  else if (cutDefinition == "cut12"){
+    AnaCut.SetPIDAna(LMEECutLib::kPIDcut_12);
+    AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_12);
+    AnaCut.SetCentrality(LMEECutLib::kPbPb_00to80);
+    AnaCut.SetStandardCut();
+  }
+  else if (cutDefinition == "cut13"){
+    AnaCut.SetPIDAna(LMEECutLib::kPIDcut_13);
+    AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_13);
+    AnaCut.SetCentrality(LMEECutLib::kPbPb_00to80);
+    AnaCut.SetStandardCut();
+  }
+  else if (cutDefinition == "cut14"){
+    AnaCut.SetPIDAna(LMEECutLib::kPIDcut_14);
+    AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_14);
+    AnaCut.SetCentrality(LMEECutLib::kPbPb_00to80);
+    AnaCut.SetStandardCut();
+  }
+  else if (cutDefinition == "cut15"){
+    AnaCut.SetPIDAna(LMEECutLib::kPIDcut_15);
+    AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_15);
+    AnaCut.SetCentrality(LMEECutLib::kPbPb_00to80);
+    AnaCut.SetStandardCut();
+  }
+  else if (cutDefinition == "cut16"){
+    AnaCut.SetPIDAna(LMEECutLib::kPIDcut_16);
+    AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_16);
+    AnaCut.SetCentrality(LMEECutLib::kPbPb_00to80);
+    AnaCut.SetStandardCut();
+  }
+  else if (cutDefinition == "cut17"){
+    AnaCut.SetPIDAna(LMEECutLib::kPIDcut_17);
+    AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_17);
+    AnaCut.SetCentrality(LMEECutLib::kPbPb_00to80);
+    AnaCut.SetStandardCut();
+  }
+  else if (cutDefinition == "cut18"){
+    AnaCut.SetPIDAna(LMEECutLib::kPIDcut_18);
+    AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_18);
+    AnaCut.SetCentrality(LMEECutLib::kPbPb_00to80);
+    AnaCut.SetStandardCut();
+  }
+  else if (cutDefinition == "cut19"){
+    AnaCut.SetPIDAna(LMEECutLib::kPIDcut_19);
+    AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_19);
+    AnaCut.SetCentrality(LMEECutLib::kPbPb_00to80);
+    AnaCut.SetStandardCut();
+  }
   else {
     cout << " =============================== " << endl;
     cout << " ==== INVALID CONFIGURATION ==== " << endl;
@@ -292,56 +417,3 @@ Int_t SetupPrefilterPairCuts(Int_t cutInstance)
 
   return 1;
 }
-
-
-// //________________________________________________________________
-// AliAnalysisCuts* SetupTrackCuts(Int_t cutInstance)
-// {
-//   std::cout << "SetupTrackCuts()" <<std::endl;
-//   //AliAnalysisCuts* trackCuts=0x0;
-//
-//   if(cutInstance == 0) {
-//     // reproduce AOD filter bit 4:
-//     AliESDtrackCuts *esdTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(kFALSE);
-//     //esdTrackCuts->SetMaxDCAToVertexXY(2.4);
-//     //esdTrackCuts->SetMaxDCAToVertexZ(3.2);
-//     esdTrackCuts->SetDCAToVertex2D(kTRUE);
-//     // ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//
-//     // additional or modified cuts: like in LMEECutLib::GetTrackCutsAna()
-//     esdTrackCuts->SetMaxDCAToVertexXY(1.);
-//     esdTrackCuts->SetMaxDCAToVertexZ(3.);
-//     esdTrackCuts->SetMinNClustersITS(4);
-//     esdTrackCuts->SetMinNCrossedRowsTPC(100); //default is 70 (in GetStandardITSTPCTrackCuts2011())
-//     esdTrackCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8); //default is 0.8
-//     //
-//     esdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kFirst);
-//
-//     // kinematic cuts:
-//     // esdTrackCuts->SetPtRange(   0.4 , 3.5 ); // Should be taken care in LMEECutLib
-//     // esdTrackCuts->SetEtaRange( -0.9 , 0.9 ); // Should be taken care in LMEECutLib
-//   }
-//
-//   return esdTrackCuts;
-//   //  trackCuts = fesdTrackCuts;
-//   //  trackCuts->Print();
-//   //  return trackCuts;
-// }
-//
-// //________________________________________________________________
-// AliAnalysisCuts* SetupPIDcuts(Int_t cutInstance)
-// {
-//   std::cout << "SetupPIDcuts()" <<std::endl;
-//   AliAnalysisCuts* pidCuts=0x0;
-//
-//   if(cutInstance == 0) {
-//     AliDielectronPID *pid = new AliDielectronPID("pidXtraPIn","pidXtraPIn");
-//     pid->AddCut(AliDielectronPID::kTPC,AliPID::kPion,      -3.  ,3. ,0.0, 100., kTRUE);
-//     pid->AddCut(AliDielectronPID::kTPC,AliPID::kElectron,  -1.5 ,3. ,0.0, 100., kFALSE);
-//     pid->AddCut(AliDielectronPID::kTOF,AliPID::kElectron,  -3.  ,3. ,0.0, 1.7 , kFALSE);
-//   }
-//
-//   pidCuts = pid;
-//   //pidCuts->Print();
-//   return pidCuts;
-// }

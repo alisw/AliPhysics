@@ -6,17 +6,18 @@ AliAnalysisTask  *AddTaskT0Calib(Int_t runNumber)
   //
   // add calibration task
   //
+
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
     ::Error("AddTaskT0Calib", "No analysis manager to connect to.");
     return NULL;
-  }  
-  
+  }
+
   // check the input handler
   if (!mgr->GetInputEventHandler()) {
     ::Error("AddTaskT0Calib", "This task requires an input event handler");
     return NULL;
-  }  
+  }
 
   // set TPC OCDB parameters
   //ConfigOCDB(runNumber);
@@ -25,14 +26,14 @@ AliAnalysisTask  *AddTaskT0Calib(Int_t runNumber)
   AliT0CalibOffsetChannelsTask  *task1 = new AliT0CalibOffsetChannelsTask("CalibObjectsTrain1");
   readCDB(task1, runNumber);
    mgr->AddTask(task1);
-  
+
   //  AliT0AnalysisTaskQA * task2 = new AliT0AnalysisTaskQA("QA task");
   //    mgr->AddTask(task2);
 
   AliAnalysisDataContainer *cinput1 = mgr->GetCommonInputContainer();
-  if (!cinput1) cinput1 = mgr->CreateContainer("cchain",TChain::Class(), 
+  if (!cinput1) cinput1 = mgr->CreateContainer("cchain",TChain::Class(),
                                       AliAnalysisManager::kInputContainer);
-  AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("T0Calib",TObjArray::Class(), AliAnalysisManager::kOutputContainer, "CalibObjects.root");  
+  AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("T0Calib",TObjArray::Class(), AliAnalysisManager::kOutputContainer, "CalibObjects.root");
 
   mgr->ConnectInput(task1,0,cinput1);
   mgr->ConnectOutput(task1,1,coutput1);
@@ -44,10 +45,10 @@ void    readCDB (TObject *task1,  Int_t runNumber) {
   Float_t zero_timecdb[24]={0};
   Float_t *timecdb = zero_timecdb;
   Float_t cfdvalue[24][5];
-  for(Int_t i=0; i<24; i++) 
+  for(Int_t i=0; i<24; i++)
     for (Int_t i0=0; i0<5; i0++)
       cfdvalue[i][i0] = 0;
-      
+
   Float_t zero_shiftcdb[4]={0};
   Float_t *shiftcdb = zero_shiftcdb;
   AliT0CalibOffsetChannelsTask *mytask = (AliT0CalibOffsetChannelsTask*)task1;
@@ -62,14 +63,14 @@ void    readCDB (TObject *task1,  Int_t runNumber) {
   if (!entry1) AliFatal("CTP time-alignment is not found in OCDB !");
   AliCTPTimeParams *ctpTimeAlign = (AliCTPTimeParams*)entry1->GetObject();
   l1Delay += ((Float_t)ctpTimeAlign->GetDelayL1L0()*25.0);
- 
+
   AliCDBEntry *entry4 = AliCDBManager::Instance()->Get("GRP/Calib/LHCClockPhase");
   if (!entry4) AliFatal("LHC clock-phase shift is not found in OCDB !");
   AliLHCClockPhase *phase = (AliLHCClockPhase*)entry4->GetObject();
   Float_t fGRPdelays = l1Delay - phase->GetMeanPhase();
 
-  AliCDBEntry* entry5 = AliCDBManager::Instance()->Get("GRP/GRP/Data");
-  AliGRPObject* grpData = dynamic_cast<AliGRPObject*>(entry5->GetObject());
+  AliCDBEntry* entryGRP = AliCDBManager::Instance()->Get("GRP/GRP/Data");
+  AliGRPObject* grpData = dynamic_cast<AliGRPObject*>(entryGRP->GetObject());
   if (!grpData) {
     ::Error("AddTaskT0Calib","Failed to get GRP data for run %d",runNumber);
     return;
@@ -79,8 +80,15 @@ void    readCDB (TObject *task1,  Int_t runNumber) {
   Bool_t isLHC10b =  LHCperiod.Contains("LHC10b");
   Bool_t isLHC10c =  LHCperiod.Contains("LHC10c");
 
+  //  AliCDBEntry* entryGRP = AliCDBManager::Instance()->Get("GRP/GRP/Data");
+  // AliGRPObject* grpData = dynamic_cast<AliGRPObject*>(entryGRP->GetObject());
+  UInt_t timeStart = grpData->GetTimeStart();
+  UInt_t timeEnd = grpData->GetTimeEnd();
+  mytask->SetStartEndTime(timeStart,timeEnd);
+  cout<<"T0 start time  "<<timeStart<<" end time "<<timeEnd<<endl;
+
   ::Info("AddTaskT0Calib","LHCperiod:%s  --->  isLHC10b:%d isLHC10c:%d",
-	 LHCperiod.Data(),(Int_t)isLHC10b, (Int_t)isLHC10c);
+         LHCperiod.Data(),(Int_t)isLHC10b, (Int_t)isLHC10c);
 
   if(isLHC10b || isLHC10c) mytask-> SetRefPMT(12,2);
 
@@ -92,7 +100,7 @@ void    readCDB (TObject *task1,  Int_t runNumber) {
   AliT0CalibLatency *calibda=(AliT0CalibLatency*)entryCalib0->GetObject();
   Float_t fLatencyL1 = calibda->GetLatencyL1();
   Float_t fLatencyHPTDC = calibda->GetLatencyHPTDC();
- 
+
   AliCDBEntry *entryCalib1 = man->Get("T0/Calib/TimeDelay");
   if(!entryCalib1) {
     ::Error("AddTaskT0Calib","Cannot find any AliCDBEntry for [Calib, TimeDelay]!");
@@ -102,18 +110,18 @@ void    readCDB (TObject *task1,  Int_t runNumber) {
     {
       AliT0CalibTimeEq *clb = (AliT0CalibTimeEq*)entryCalib1->GetObject();
       timecdb = clb->GetTimeEq();
-      for(Int_t i=0; i<24; i++) 
-	for (Int_t i0=0; i0<5; i0++){
-	  cfdvalue[i][i0] = clb->GetCFDvalue(i, i0);
-	}
+      for(Int_t i=0; i<24; i++)
+        for (Int_t i0=0; i0<5; i0++){
+          cfdvalue[i][i0] = clb->GetCFDvalue(i, i0);
+        }
     }
- 
+
   for (Int_t i=0; i<24; i++) {
     Float_t cfdmean = cfdvalue[i][0];
     if( cfdvalue[i][0] < 500 || cfdvalue[i][0] > 50000) cfdmean = ( 1000.*fLatencyHPTDC - 1000.*fLatencyL1 + 1000.*fGRPdelays)/24.4;
      mytask->SetCFDvalue(i, cfdmean);
     mytask->SetTimeEq(i, timecdb[i]);
-  } 
+  }
 
   AliCDBEntry *entryCalib2 = man->Get("T0/Calib/TimeAdjust");
   if(!entryCalib2) {
@@ -124,6 +132,6 @@ void    readCDB (TObject *task1,  Int_t runNumber) {
       AliT0CalibSeasonTimeShift *clb1 = (AliT0CalibSeasonTimeShift*)entryCalib2->GetObject();
       shiftcdb = clb1->GetT0Means();
     }
-  
+
   for (Int_t i=0; i<4; i++)  mytask->SetT0Means(i,shiftcdb[i]);
 }

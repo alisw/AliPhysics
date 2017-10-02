@@ -91,7 +91,7 @@ class AliTrackContainer : public AliParticleContainer {
   void SetSelectionModeAny() { fSelectionModeAny = kTRUE ; }
   void SetSelectionModeAll() { fSelectionModeAny = kFALSE; }
 
-  void                        NextEvent();
+  void                        NextEvent(const AliVEvent* event);
 
   static void                 SetDefTrackCutsPeriod(const char* period)       { fgDefTrackCutsPeriod = period; }
   static TString              GetDefTrackCutsPeriod()                         { return fgDefTrackCutsPeriod  ; }

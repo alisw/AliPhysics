@@ -59,18 +59,17 @@ const std::map <std::string, AliEmcalTrackSelection::ETrackFilterType_t> AliEmca
  */
 AliEmcalCorrectionTask::AliEmcalCorrectionTask() :
   AliAnalysisTaskSE("AliEmcalCorrectionTask"),
-  fSuffix(""),
   fUserConfiguration(),
-  fUserConfigurationFilename(""),
-  fUserConfigurationString(""),
   fDefaultConfiguration(),
-  fDefaultConfigurationFilename(""),
+  fSuffix(""),
+  fUserConfigurationString(""),
   fDefaultConfigurationString(""),
-  fCorrectionComponents(),
-  fIsEsd(false),
-  fForceBeamType(kNA),
-  fConfigurationInitialized(false),
+  fUserConfigurationFilename(""),
+  fDefaultConfigurationFilename(""),
   fOrderedComponentsToExecute(),
+  fCorrectionComponents(),
+  fConfigurationInitialized(false),
+  fIsEsd(false),
   fEventInitialized(false),
   fCent(0),
   fCentBin(-1),
@@ -82,6 +81,7 @@ AliEmcalCorrectionTask::AliEmcalCorrectionTask() :
   fVertex{0},
   fNVertCont(0),
   fBeamType(kNA),
+  fForceBeamType(kNA),
   fNeedEmcalGeom(kTRUE),
   fGeom(0),
   fParticleCollArray(),
@@ -107,18 +107,17 @@ AliEmcalCorrectionTask::AliEmcalCorrectionTask() :
  */
 AliEmcalCorrectionTask::AliEmcalCorrectionTask(const char * name) :
   AliAnalysisTaskSE(name),
-  fSuffix(""),
   fUserConfiguration(),
-  fUserConfigurationFilename(""),
-  fUserConfigurationString(""),
   fDefaultConfiguration(),
-  fDefaultConfigurationFilename(""),
+  fSuffix(""),
+  fUserConfigurationString(""),
   fDefaultConfigurationString(""),
-  fCorrectionComponents(),
-  fIsEsd(false),
-  fForceBeamType(kNA),
-  fConfigurationInitialized(false),
+  fUserConfigurationFilename(""),
+  fDefaultConfigurationFilename(""),
   fOrderedComponentsToExecute(),
+  fCorrectionComponents(),
+  fConfigurationInitialized(false),
+  fIsEsd(false),
   fEventInitialized(false),
   fCent(0),
   fCentBin(-1),
@@ -130,6 +129,7 @@ AliEmcalCorrectionTask::AliEmcalCorrectionTask(const char * name) :
   fVertex{0},
   fNVertCont(0),
   fBeamType(kNA),
+  fForceBeamType(kNA),
   fNeedEmcalGeom(kTRUE),
   fGeom(0),
   fParticleCollArray(),
@@ -596,9 +596,9 @@ void AliEmcalCorrectionTask::InitializeComponents()
     AddContainersToComponent(component, AliEmcalContainerUtils::kTrack, true);
 
     // Initialize each component
-    component->Initialize();
+    bool initialized = component->Initialize();
 
-    if (component)
+    if (component && initialized)
     {
       AliInfo(TString::Format("Successfully added correction task: %s", componentName.c_str()));
       fCorrectionComponents.push_back(component);
@@ -666,6 +666,7 @@ void AliEmcalCorrectionTask::CreateInputObjects(AliEmcalContainerUtils::InputObj
  *
  * @param[in] component The correction component to which the input objects will be added
  * @param[in] inputObjectType The type of input object to add to the component
+ * @param[in] checkObjectExists If true, check if the object exists before adding it to the component
  */
 void AliEmcalCorrectionTask::AddContainersToComponent(AliEmcalCorrectionComponent * component, AliEmcalContainerUtils::InputObject_t inputObjectType, bool checkObjectExists)
 {
@@ -692,6 +693,11 @@ void AliEmcalCorrectionTask::AddContainersToComponent(AliEmcalCorrectionComponen
         AliError(TString::Format("%s: Unable to retrieve input object \"%s\" because it is null. Please check your configuration!", GetName(), str.c_str()));
       }
       component->AdoptClusterContainer(GetClusterContainer(str.c_str()));
+
+      // Check that we are using the standard input event
+      if (!(cont->GetIsEmbedding())) {
+        component->SetUsingInputEvent(true);
+      }
     }
     else if (inputObjectType == AliEmcalContainerUtils::kTrack)
     {
@@ -702,6 +708,11 @@ void AliEmcalCorrectionTask::AddContainersToComponent(AliEmcalCorrectionComponen
         AliFatal(TString::Format("%s: Unable to retrieve input object \"%s\" because it is null. Please check your configuration!", GetName(), str.c_str()));
       }
       component->AdoptParticleContainer(GetParticleContainer(str.c_str()));
+
+      // Check that we are using the standard input event
+      if (!(cont->GetIsEmbedding())) {
+        component->SetUsingInputEvent(true);
+      }
     }
     else if (inputObjectType == AliEmcalContainerUtils::kCaloCells)
     {
@@ -734,6 +745,11 @@ void AliEmcalCorrectionTask::AddContainersToComponent(AliEmcalCorrectionComponen
       // should rarely be an issue.
       if (component->GetCaloCells()) {
         AliDebugStream(3) << "Component GetNumberOfCells: " << component->GetCaloCells()->GetNumberOfCells() << std::endl;
+      }
+
+      // Check that we are using the standard input event
+      if (!(cellCont->GetIsEmbedding())) {
+        component->SetUsingInputEvent(true);
       }
     }
   }
@@ -1209,13 +1225,13 @@ void AliEmcalCorrectionTask::ExecOnceComponents()
     // Setup geometry
     component->SetEMCALGeometry(fGeom);
 
-    // Set the input events. This is redundant to where it is set during Run(), but the events need to be
-    // available to components, and they are only called one extra time.
-    component->SetEvent(InputEvent());
-    component->SetMCEvent(MCEvent());
-
     // Add the requested cells to the component
     AddContainersToComponent(component, AliEmcalContainerUtils::kCaloCells);
+
+    // Set the input events. This is redundant to where it is set during Run(), but the events need to be
+    // available to components, and they are only called one extra time.
+    component->SetInputEvent(InputEvent());
+    component->SetMCEvent(MCEvent());
 
     // Component ExecOnce()
     component->ExecOnce();
@@ -1314,10 +1330,10 @@ Bool_t AliEmcalCorrectionTask::RetrieveEventObjects()
   AliEmcalContainer* cont = 0;
 
   TIter nextPartColl(&fParticleCollArray);
-  while ((cont = static_cast<AliEmcalContainer*>(nextPartColl()))) cont->NextEvent();
+  while ((cont = static_cast<AliEmcalContainer*>(nextPartColl()))) cont->NextEvent(InputEvent());
 
   TIter nextClusColl(&fClusterCollArray);
-  while ((cont = static_cast<AliEmcalContainer*>(nextClusColl()))) cont->NextEvent();
+  while ((cont = static_cast<AliEmcalContainer*>(nextClusColl()))) cont->NextEvent(InputEvent());
 
   return kTRUE;
 }
@@ -1331,10 +1347,11 @@ Bool_t AliEmcalCorrectionTask::Run()
   // Run the initialization for all derived classes.
   for (auto component : fCorrectionComponents)
   {
-    component->SetEvent(InputEvent());
+    component->SetInputEvent(InputEvent());
     component->SetMCEvent(MCEvent());
     component->SetCentralityBin(fCentBin);
     component->SetCentrality(fCent);
+    component->SetVertex(fVertex);
 
     component->Run();
   }

@@ -75,6 +75,7 @@ class AliMTRChEffAnalysis : public TObject {
   TArrayI BoardsInRPC ( Int_t irpc ) const;
   void CopyDir ( TDirectory *source ) const;
   Bool_t CopyLocally ( const char* runList, const char* path, const char* pattern, const char* localFileList, const char* outDir, const char* directory ) const;
+  Int_t Check() const;
   Int_t  CompareEfficiencies ( TObjArray* effHistoLists, const char* titles, const char* opt, const char* canvasNameSuffix ) const;
   TList* CloneEffHistoList ( TList* effHistos ) const;
   Bool_t ExecCommand ( TString command, Bool_t prompt ) const;

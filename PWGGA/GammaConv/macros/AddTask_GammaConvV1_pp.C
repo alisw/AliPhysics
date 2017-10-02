@@ -503,6 +503,14 @@ void AddTask_GammaConvV1_pp(  Int_t   trainConfig                     = 1,      
     cuts.AddCut("00010113", "00202209227302008250400000", "0152103500000000","1111111067032220000"); // standard cut 8tev
     cuts.AddCut("00052113", "00202209227302008250400000", "0152103500000000","1111111067032220000"); // trigger kEMC7 
     cuts.AddCut("00081113", "00202209227302008250400000", "0152103500000000","1111111067032220000"); // trigger kEGA7
+  } else if (trainConfig == 74) { //pp 8TeV std cuts with EMC triggers
+    cuts.AddCut("00010113", "00200009227300008250404000", "0152103500000000","1111111067032220000"); // new standard cut 8tev
+    cuts.AddCut("00052113", "00200009227300008250404000", "0152103500000000","1111111067032220000"); // trigger kEMC7
+    cuts.AddCut("00081113", "00200009227300008250404000", "0152103500000000","1111111067032220000"); // trigger kEGA7
+  } else if (trainConfig == 75) { //pp 8TeV cuts with smearing
+    cuts.AddCut("00010113", "00200009227300008250404000", "0152103500000000"); //New standard cut for 8TeV analysis V0AND with double counting cut, TOF removed
+    cuts.AddCut("00010113", "00200009227300008250404000", "0152103500800000"); //smearing 8
+    cuts.AddCut("00010113", "00200009227300008250404000", "0152103500900000"); //smearing 9
 
 
     //---------systematic studies mesons and direct photon 2016 pp 7TeV------------------//
@@ -653,6 +661,45 @@ void AddTask_GammaConvV1_pp(  Int_t   trainConfig                     = 1,      
     cuts.AddCut("00010113", "00200009227300008250400000", "0152103500000000"); // no double counting
     cuts.AddCut("00010113", "00200009227300008250404000", "0152105500000000"); // meson alpha < 0.75
     cuts.AddCut("00010113", "00200009227300008250404000", "0152107500000000"); // meson alpha < 0.85
+    // eta cut variation to exclude central cathode
+  } else if (trainConfig == 130) {
+    cuts.AddCut("00010113", "00200009227300008250404000", "0152103500000000"); //standard cut from 8TeV ana
+    cuts.AddCut("00010113", "0a200009227300008250404000", "0152103500000000"); //eta cut 0.2 < |eta| < 0.9
+  } else if (trainConfig == 131) {
+    cuts.AddCut("00000113", "00200009227300008250404000", "0152103500000000"); //standard cut from 7TeV ana
+    cuts.AddCut("00000113", "0a200009227300008250404000", "0152103500000000"); //eta cut 0.2 < |eta| < 0.9
+    // minimum pT studies on electrons and photons
+  } else if (trainConfig == 132) {
+    cuts.AddCut("00010113", "00200009227300008250404000", "0152103500000000"); //standard cut from 8TeV ana
+    cuts.AddCut("00010113", "00200099227300008250404000", "0152103500000000"); // gamma pT > 0.1 GeV/c
+    cuts.AddCut("00010113", "002000a9227300008250404000", "0152103500000000"); // gamma pT > 0.15 GeV/c
+    cuts.AddCut("00010113", "002000b9227300008250404000", "0152103500000000"); // gamma pT > 0.2 GeV/c
+  } else if (trainConfig == 133) {
+    cuts.AddCut("00010113", "002000c9227300008250404000", "0152103500000000"); // 8 TeV std, but min electron pT > 0.6 for all configs
+    cuts.AddCut("00010113", "002000d9227300008250404000", "0152103500000000"); // gamma pT > 0.1 GeV/c
+    cuts.AddCut("00010113", "002000e9227300008250404000", "0152103500000000"); // gamma pT > 0.15 GeV/c
+    cuts.AddCut("00010113", "002000f9227300008250404000", "0152103500000000"); // gamma pT > 0.2 GeV/c
+  } else if (trainConfig == 134) {
+    cuts.AddCut("00000113", "00200009227300008250404000", "0152103500000000"); //standard cut from 7TeV ana
+    cuts.AddCut("00000113", "00200099227300008250404000", "0152103500000000"); // gamma pT > 0.1 GeV/c
+    cuts.AddCut("00000113", "002000a9227300008250404000", "0152103500000000"); // gamma pT > 0.15 GeV/c
+    cuts.AddCut("00000113", "002000b9227300008250404000", "0152103500000000"); // gamma pT > 0.2 GeV/c
+  } else if (trainConfig == 135) {
+    cuts.AddCut("00000113", "002000c9227300008250404000", "0152103500000000"); // 7 TeV std, but min electron pT > 0.6 for all configs
+    cuts.AddCut("00000113", "002000d9227300008250404000", "0152103500000000"); // gamma pT > 0.1 GeV/c
+    cuts.AddCut("00000113", "002000e9227300008250404000", "0152103500000000"); // gamma pT > 0.15 GeV/c
+    cuts.AddCut("00000113", "002000f9227300008250404000", "0152103500000000"); // gamma pT > 0.2 GeV/c
+  } else if (trainConfig == 136) { // 8 TeV
+    cuts.AddCut("00010113", "002000g9227300008250404000", "0152103500000000"); // 0.075 GeV + min gamma pT cut of 150 MeV
+    cuts.AddCut("00010113", "002000h9227300008250404000", "0152103500000000"); // 0.100 GeV + min gamma pT cut of 200 MeV
+    cuts.AddCut("00010113", "002000i9227300008250404000", "0152103500000000"); // 0.150 GeV + min gamma pT cut of 300 MeV
+    cuts.AddCut("00010113", "002000j9227300008250404000", "0152103500000000"); // 0.150 GeV
+  } else if (trainConfig == 137) { // 7 TeV
+    cuts.AddCut("00000113", "002000g9227300008250404000", "0152103500000000"); // 0.075 GeV + min gamma pT cut of 150 MeV
+    cuts.AddCut("00000113", "002000h9227300008250404000", "0152103500000000"); // 0.100 GeV + min gamma pT cut of 200 MeV
+    cuts.AddCut("00000113", "002000i9227300008250404000", "0152103500000000"); // 0.150 GeV + min gamma pT cut of 300 MeV
+    cuts.AddCut("00000113", "002000j9227300008250404000", "0152103500000000"); // 0.150 GeV
+
     // -------- Material weights -several configs with same sets for running with various mat weights ----------
   } else if (trainConfig == 160) { // like last last two in 70 and dalitz standard 7TeV
     cuts.AddCut("00000113", "00200009227302008250400000", "0152103500000000"); //New standard cut for 7TeV analysis V0OR
@@ -710,15 +757,27 @@ void AddTask_GammaConvV1_pp(  Int_t   trainConfig                     = 1,      
   } else if (trainConfig == 300) {  
     cuts.AddCut("00010113", "00200009297302001280004000", "0152103500000000"); // Min Bias
     cuts.AddCut("00010113", "00200009297302001280004000", "0152101500000000"); // alpha pT dependent
+  } else if (trainConfig == 310) {  
+    cuts.AddCut("00010113", "00200009327302002280004000", "0152103500000000"); // Min Bias
+    cuts.AddCut("00010113", "00200009327302002280004000", "0152101500000000"); // alpha pT dependent
+ 
  // High Mult V0
   } else if (trainConfig == 301) {  
     cuts.AddCut("00074113", "00200009297302001280004000", "0152103500000000"); // for V0 High-Mult trigger
     cuts.AddCut("00074013", "00200009297302001280004000", "0152103500000000"); // check # of entries w/ pileup rejection cut for V0HM
+  } else if (trainConfig == 311) {  
+    cuts.AddCut("00074113", "00200009327302002280004000", "0152103500000000"); // for V0 High-Mult trigger
+    cuts.AddCut("00074013", "00200009327302002280004000", "0152103500000000"); // check # of entries w/ pileup rejection cut for V0HM
+
  // Low B Field
   } else if (trainConfig == 302) {  
     cuts.AddCut("00010113", "00200089297302001280004000", "0152103500000000"); // Min Bias
     cuts.AddCut("00010113", "00200089397302001280004000", "0152103500000000"); // Open dEdx
-  } else if (trainConfig == 303) { // EMC triggers
+  } else if (trainConfig == 312) {  
+    cuts.AddCut("00010113", "00200089327302001280004000", "0152103500000000"); // Min Bias
+    cuts.AddCut("00010113", "00200089127302001280004000", "0152103500000000"); // Open dEdx
+ 
+ } else if (trainConfig == 303) { // EMC triggers
     cuts.AddCut("00010113", "00200009397300008250400000", "0163103100000000","1111100007032220000"); //INT7
     cuts.AddCut("00052113", "00200009397300008250400000", "0163103100000000","1111100007032220000"); //EMC7
     cuts.AddCut("00085113", "00200009397300008250400000", "0163103100000000","1111100007032220000"); //EG2

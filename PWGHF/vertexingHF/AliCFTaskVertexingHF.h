@@ -229,6 +229,7 @@ class AliCFTaskVertexingHF: public AliAnalysisTaskSE {
   void SetPtWeightsFromFONLL7overLHC11b2Lc();
   void SetPtWeightsFromFONLL7overLHC10f7aLc();
   void SetPtWeightsFromFONLL8overLHC15l2a2();
+  void SetPtWeightsFromFONLL13overLHC17c3a12();
 
   void SetPtWeightsFromFONLL5anddataoverLHC16i2a();
   void SetPtWeightsFromFONLL5andLBToverLHC16i2a();

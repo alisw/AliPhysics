@@ -2,6 +2,7 @@
 #define ALIANALYSISTASKNUCLEIKINE_H
 
 #include <AliAnalysisTaskSE.h>
+#include <AliGenLightNuclei.h>
 
 class TH1D;
 class TH3D;
@@ -23,12 +24,16 @@ class AliAnalysisTaskNucleiKine : public AliAnalysisTaskSE {
       kPiPlus, kPiMinus, kKplus, kKminus, kProton, kAntiProton, kNeutron, kAntiNeutron, kDeuteron, kAntiDeuteron,
       kLambda, kAntiLambda, kXiMinus, kXiPlus, kOmegaMinus, kOmegaPlus
     };
+    std::vector<std::string> fParticleNames;
 
     bool   fIgnoreCentrality;
+    bool   fUseAfterburner;
+    AliGenLightNuclei fAfterburner; // Afterburner
 
   protected:
     AliAnalysisTaskNucleiKine(const AliAnalysisTaskNucleiKine& other);
     AliAnalysisTaskNucleiKine& operator=(const AliAnalysisTaskNucleiKine& other);
+
 
     TList* fOutputList;    //! output list for histograms
 

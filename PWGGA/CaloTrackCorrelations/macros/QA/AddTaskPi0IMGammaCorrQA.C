@@ -658,7 +658,7 @@ AliAnaPhoton* ConfigurePhotonAnalysis(TString calorimeter,   Bool_t caloType, TS
   
   // Input / output delta AOD settings
   ana->SetOutputAODName(Form("Photon%s_Calo%d",containerName.Data(),caloType));
-  ana->SetOutputAODClassName("AliAODPWG4ParticleCorrelation");
+  ana->SetOutputAODClassName("AliCaloTrackParticleCorrelation");
   ana->SetInputAODName (Form("Photon%s_Calo%d",containerName.Data(),caloType));
 
   // Set Histograms name tag, bins and ranges
@@ -790,7 +790,7 @@ AliAnaChargedParticles* ConfigureChargedAnalysis(TString collision,TString conta
   // Input / output delta AOD settings
   
   ana->SetOutputAODName(Form("Hadron%s",containerName.Data()));
-  ana->SetOutputAODClassName("AliAODPWG4ParticleCorrelation");
+  ana->SetOutputAODClassName("AliCaloTrackParticleCorrelation");
   ana->SetInputAODName(Form("Hadron%s",containerName.Data()));
 
   //Set Histograms name tag, bins and ranges

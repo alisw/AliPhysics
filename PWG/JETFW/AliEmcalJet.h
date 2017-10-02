@@ -90,7 +90,7 @@ class AliEmcalJet : public AliVParticle
   AliEmcalJet(const AliEmcalJet &jet);
   AliEmcalJet& operator=(const AliEmcalJet &jet);
   virtual ~AliEmcalJet();
-  friend std::ostream &operator<<(std::ostream &in, const AliEmcalJet &jet);
+  friend std::ostream &operator<<(std::ostream &in, const AliEmcalJet &myjet);
   Int_t Compare(const TObject* obj)  const;
   std::ostream &Print(std::ostream &in) const;
   TString toString() const;
@@ -162,12 +162,13 @@ class AliEmcalJet : public AliVParticle
   AliVCluster      *ClusterAt(Int_t idx, TClonesArray *ca)                         const;
   Int_t             ContainsCluster(AliVCluster* cluster, TClonesArray* clusters)  const;
   Int_t             ContainsCluster(Int_t ic)                                      const;
-  AliVCluster      *GetLeadingCluster(TClonesArray *clusters)                      const;
+  AliVCluster      *GetLeadingCluster(TClonesArray *clusters = 0)                  const;
   AliVParticle     *Track(Int_t idx)                                               const;
   AliVParticle     *TrackAt(Int_t idx, TClonesArray *ta)                           const;
   Int_t             ContainsTrack(AliVParticle* track, TClonesArray* tracks)       const;
   Int_t             ContainsTrack(Int_t it)                                        const;
-  AliVParticle     *GetLeadingTrack(TClonesArray *tracks)                          const;
+  AliVParticle     *GetLeadingTrack(TClonesArray *tracks = 0)                      const;
+  Bool_t            IsGhost()                                                      const { return fNn + fNch == 0; }
 
   // Fragmentation function
   Double_t          GetZ(const Double_t trkPx, const Double_t trkPy, const Double_t trkPz)  const;
@@ -238,7 +239,7 @@ class AliEmcalJet : public AliVParticle
 
   // Debug printouts
   void Print(Option_t* /*opt*/ = "") const;
-  void PrintConstituents(TClonesArray* tracks, TClonesArray* clusters) const;
+  void PrintConstituents(TClonesArray* tracks = 0, TClonesArray* clusters = 0) const;
 
   //heavy-flavor jets
   Int_t             GetFlavour()                 const { return fFlavourTagging;                       }

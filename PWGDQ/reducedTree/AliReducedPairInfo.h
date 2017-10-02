@@ -35,6 +35,7 @@ class AliReducedPairInfo : public AliReducedBaseTrack {
     kDsminusToK0sKminus,     // Ds-          -> K0s K-
     kNMaxCandidateTypes
   };
+  static const Char_t* fgkDecayChannelNames[kNMaxCandidateTypes][4];
   
   AliReducedPairInfo();
   AliReducedPairInfo(const AliReducedPairInfo &c);
@@ -45,6 +46,9 @@ class AliReducedPairInfo : public AliReducedBaseTrack {
   void PairType(Char_t type) {fPairType=type;}
   void SetMass(Float_t m) {fMass[0]=m;}
   void SetLegIds(UShort_t leg1, UShort_t leg2) {fLegIds[0]=leg1;fLegIds[1]=leg2;}
+  void SetLxy(Float_t lxy) {fLxy = lxy;}
+  void SetPointingAngle(Float_t pa) {fPointingAngle = pa;}
+  void SetChisquare(Float_t chi2) {fChisquare = chi2;}
   
   // getters
   Char_t   CandidateId()         const {return fCandidateId;}

@@ -132,7 +132,7 @@ AliConversionAODBGHandlerRP::~AliConversionAODBGHandlerRP()
     for(Int_t z = 0; z < fNBinsZ; z++){
       for(Int_t eventCounter=0; eventCounter < fNBGEvents[psi][z] && eventCounter<fNEvents; eventCounter++){
 
-          for(Int_t d=0; d < fBGEvents[psi][z][eventCounter].size(); d++){
+          for(UInt_t d=0; d < fBGEvents[psi][z][eventCounter].size(); d++){
             delete (AliAODConversionPhoton*)(fBGEvents[psi][z][eventCounter][d]);
 
           }
@@ -299,7 +299,7 @@ void AliConversionAODBGHandlerRP::AddEvent(TObjArray * const eventGammas,AliVEve
     Int_t eventCounter = fBGEventCounter[psi][z];
 
     //clear the vector for old gammas
-    for(Int_t d = 0; d < fBGEvents[psi][z][eventCounter].size(); d++){
+    for(UInt_t d = 0; d < fBGEvents[psi][z][eventCounter].size(); d++){
       delete (AliAODConversionPhoton*)(fBGEvents[psi][z][eventCounter][d]);
     }
 
@@ -334,7 +334,7 @@ void AliConversionAODBGHandlerRP::AddEvent(TList * const eventGammas,AliVEvent *
     Int_t eventCounter = fBGEventCounter[psi][z];
 
     //clear the vector for old gammas
-    for(Int_t d = 0; d < fBGEvents[psi][z][eventCounter].size(); d++){
+    for(UInt_t d = 0; d < fBGEvents[psi][z][eventCounter].size(); d++){
       delete (AliAODConversionPhoton*)(fBGEvents[psi][z][eventCounter][d]);
     }
 

@@ -1,5 +1,5 @@
 /// \file AddTaskEMCALTriggerQA.C
-/// \ingroup EMCALPerformanceMacros
+/// \ingroup EMCALPerfAddTaskMacros
 /// \brief Configuration analysis task for EMCal trigger QA.
 ///
 /// Configuration analysis task for EMCal trigger QA. The only parameter is the check on

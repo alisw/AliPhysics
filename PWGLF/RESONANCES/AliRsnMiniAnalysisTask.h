@@ -36,7 +36,7 @@ class AliRsnMiniAnalysisTask : public AliAnalysisTaskSE {
 public:
 
    AliRsnMiniAnalysisTask();
-   AliRsnMiniAnalysisTask(const char *name, Bool_t isMC = kFALSE);
+   AliRsnMiniAnalysisTask(const char *name, Bool_t isMC = kFALSE,Bool_t saveRsnTreeInFile=kFALSE);
    AliRsnMiniAnalysisTask(const AliRsnMiniAnalysisTask &copy);
    AliRsnMiniAnalysisTask &operator=(const AliRsnMiniAnalysisTask &copy);
    virtual ~AliRsnMiniAnalysisTask();
@@ -68,11 +68,12 @@ public:
    void                SetMotherAcceptanceCutMinPt(Float_t minPt)  {fMotherAcceptanceCutMinPt = minPt;}
    void                SetMotherAcceptanceCutMaxEta(Float_t maxEta){fMotherAcceptanceCutMaxEta = maxEta;}
    void                KeepMotherInAcceptance(Bool_t keepMotherInAcceptance) {fKeepMotherInAcceptance = keepMotherInAcceptance;}
+   void                SaveRsnTreeInFile(Bool_t saveInFile=kTRUE) {fRsnTreeInFile = saveInFile;}
    Int_t               AddTrackCuts(AliRsnCutSet *cuts);
    TClonesArray       *Outputs()                          {return &fHistograms;}
    TClonesArray       *Values()                           {return &fValues;}
    Short_t             GetMaxNDaughters()                 {return fMaxNDaughters;}
-   void                SetEventQAHist(TString type,TH2F *histo);
+   void                SetEventQAHist(TString type,TH1 *histo);
    void                UseBigOutput(Bool_t b=kTRUE) { fBigOutput = b; }
 
    virtual void        UserCreateOutputObjects();
@@ -155,8 +156,9 @@ private:
    Float_t              fMotherAcceptanceCutMinPt;              // cut value to apply when selecting the mothers inside a defined acceptance
    Float_t              fMotherAcceptanceCutMaxEta;             // cut value to apply when selecting the mothers inside a defined acceptance
    Bool_t               fKeepMotherInAcceptance;                // flag to keep also mothers in acceptance
+   Bool_t               fRsnTreeInFile;  // flag rsn tree should be saved in file instead of memory
 
-   ClassDef(AliRsnMiniAnalysisTask, 13);   // AliRsnMiniAnalysisTask
+   ClassDef(AliRsnMiniAnalysisTask, 15);   // AliRsnMiniAnalysisTask
 };
 
 

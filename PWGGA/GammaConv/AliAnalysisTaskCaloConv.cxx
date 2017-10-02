@@ -32,7 +32,6 @@
 #include "AliAnalysisManager.h"
 #include "AliESDInputHandler.h"
 #include "AliAnalysisTaskCaloConv.h"
-#include "AliStack.h"
 #include "AliLog.h"
 #include "AliESDEvent.h"
 #include "AliESDpid.h"
@@ -57,10 +56,10 @@ ClassImp(AliAnalysisTaskCaloConv)
 
 AliAnalysisTaskCaloConv::AliAnalysisTaskCaloConv():
 AliAnalysisTaskSE(),
+  fMCEvent(NULL),
   fESDEvent(NULL),	
   fESDpid(NULL),
   fESDtrackCuts(NULL),
-  fStack(NULL),
   fOutputContainer(NULL),
   fCFOutputContainer(NULL),
   fConvCFCont(0x0),
@@ -113,10 +112,10 @@ AliAnalysisTaskSE(),
 }
 AliAnalysisTaskCaloConv::AliAnalysisTaskCaloConv(const char* name):
   AliAnalysisTaskSE(name),
+  fMCEvent(NULL),
   fESDEvent(NULL),
   fESDpid(NULL),
   fESDtrackCuts(NULL),
-  fStack(NULL),
   fOutputContainer(NULL),
   fCFOutputContainer(NULL),
   fConvCFCont(0x0),
@@ -240,12 +239,8 @@ void AliAnalysisTaskCaloConv::UserExec(Option_t */*option*/)
   // Execute analysis for current event
   // First select conversion and calorimeter photons 
   // then construct inv. mass distributions
-  //First try to find Stack information.
-  if(AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler()){
-    if(static_cast<AliMCEventHandler*>(AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler())->MCEvent())
-      fStack = static_cast<AliMCEventHandler*>(AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler())->MCEvent()->Stack();
-  }
 
+  fMCEvent = MCEvent();
 
   AliESDInputHandler *esdHandler=dynamic_cast<AliESDInputHandler*>(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
   if(!fESDpid){
@@ -255,7 +250,7 @@ void AliAnalysisTaskCaloConv::UserExec(Option_t */*option*/)
     else {
       fESDpid=new AliESDpid;
       Double_t alephParameters[5];
-      if(fStack){// simulation
+      if(static_cast<AliMCEventHandler*>(AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler())->MCEvent()){// simulation
         alephParameters[0] = 2.15898e+00/50.;
         alephParameters[1] = 1.75295e+01;
         alephParameters[2] = 3.40030e-09;
@@ -328,9 +323,9 @@ void AliAnalysisTaskCaloConv::UserExec(Option_t */*option*/)
 
   //Take Only events with proper trigger
   //No trigger in MC data => no check
-//  if(!fStack && !fESDEvent->IsTriggerClassFired("CINT1B-ABCE-NOPF-ALL")){
+//  if(!fMCEvent && !fESDEvent->IsTriggerClassFired("CINT1B-ABCE-NOPF-ALL")){
   //for LHC10e
-  if(!fStack && !fESDEvent->IsTriggerClassFired("CINT1-B-NOPF-ALLNOTRD")){
+  if(!fMCEvent && !fESDEvent->IsTriggerClassFired("CINT1-B-NOPF-ALLNOTRD")){
     PostData(1, fOutputContainer);
     return ;
   } 
@@ -1452,9 +1447,9 @@ void AliAnalysisTaskCaloConv::SelectConvPhotons(){
     }
 
     //Fill MC information
-    if(fStack){
-      TParticle * negativeMC = fStack->Particle(TMath::Abs(neg->GetLabel()));
-      TParticle * positiveMC = fStack->Particle(TMath::Abs(pos->GetLabel()));
+    if(fMCEvent){
+      TParticle * negativeMC = fMCEvent->Particle(TMath::Abs(neg->GetLabel()));
+      TParticle * positiveMC = fMCEvent->Particle(TMath::Abs(pos->GetLabel()));
 
       if(!negativeMC || !positiveMC)
           continue ;
@@ -1469,7 +1464,7 @@ void AliAnalysisTaskCaloConv::SelectConvPhotons(){
         continue;
       }
 
-      TParticle * v0Gamma = fStack->Particle(negativeMC->GetMother(0));
+      TParticle * v0Gamma = fMCEvent->Particle(negativeMC->GetMother(0));
  
       if(negativeMC->GetUniqueID() != 5 || positiveMC->GetUniqueID() !=5){ // id 5 is conversion
         continue;
@@ -2037,7 +2032,7 @@ void AliAnalysisTaskCaloConv::FillRealMixed(){
 void AliAnalysisTaskCaloConv::ProcessMC(){
   //ProcessMC
   //fill histograms for efficiensy etc. calculation
-  if(!fStack) return ;
+  if(!fMCEvent) return ;
   
   const Double_t rcut = 1. ; //cut for primary particles
   Double_t vtx[3];
@@ -2052,8 +2047,8 @@ void AliAnalysisTaskCaloConv::ProcessMC(){
   //---------First pi0/eta-----------------------------
   char partName[10] ;
   char hkey[55] ;
-  for (Int_t iTracks = 0; iTracks < fStack->GetNtrack(); iTracks++) {
-    TParticle* particle = (TParticle *)fStack->Particle(iTracks);
+  for (Int_t iTracks = 0; iTracks < fMCEvent->GetNumberOfTracks(); iTracks++) {
+    TParticle* particle = (TParticle *)fMCEvent->Particle(iTracks);
     if(particle->GetPdgCode() == 111)
       snprintf(partName,10,"pi0") ;
     else
@@ -2079,8 +2074,8 @@ void AliAnalysisTaskCaloConv::ProcessMC(){
     if(particle->GetNDaughters()!=2)
      continue ; //Do not account Dalitz decays
 
-    TParticle * gamma1 = fStack->Particle(particle->GetFirstDaughter());
-    TParticle * gamma2 = fStack->Particle(particle->GetLastDaughter());
+    TParticle * gamma1 = fMCEvent->Particle(particle->GetFirstDaughter());
+    TParticle * gamma2 = fMCEvent->Particle(particle->GetLastDaughter());
     //Number of pi0s decayed into acceptance
     Bool_t inAcc1 = (TMath::Abs(gamma1->Eta())<0.9) ;
     Bool_t inAcc2 = (TMath::Abs(gamma2->Eta())<0.9) ;
@@ -2108,8 +2103,8 @@ void AliAnalysisTaskCaloConv::ProcessMC(){
  
     Bool_t converted1 = kFALSE ;
     if(gamma1->GetNDaughters()==2){
-      TParticle * e1=fStack->Particle(gamma1->GetFirstDaughter()) ;
-      TParticle * e2=fStack->Particle(gamma1->GetLastDaughter()) ;
+      TParticle * e1=fMCEvent->Particle(gamma1->GetFirstDaughter()) ;
+      TParticle * e2=fMCEvent->Particle(gamma1->GetLastDaughter()) ;
       if(TMath::Abs(e1->GetPdgCode())==11 && TMath::Abs(e2->GetPdgCode())==11){ //conversion
         if(e1->R()<180.)
           converted1 = kTRUE ;
@@ -2117,8 +2112,8 @@ void AliAnalysisTaskCaloConv::ProcessMC(){
     }
     Bool_t converted2 = kFALSE ;
     if(gamma2->GetNDaughters()==2){
-      TParticle * e1=fStack->Particle(gamma2->GetFirstDaughter()) ;
-      TParticle * e2=fStack->Particle(gamma2->GetLastDaughter()) ;
+      TParticle * e1=fMCEvent->Particle(gamma2->GetFirstDaughter()) ;
+      TParticle * e2=fMCEvent->Particle(gamma2->GetLastDaughter()) ;
       if(TMath::Abs(e1->GetPdgCode())==11 && TMath::Abs(e2->GetPdgCode())==11){ //conversion
         if(e1->R()<180.)
           converted2 = kTRUE ;
@@ -2158,8 +2153,8 @@ void AliAnalysisTaskCaloConv::ProcessMC(){
     for(Int_t iv0=0; iv0<fESDEvent->GetNumberOfV0s();iv0++){
       AliESDv0 * v0 = fESDEvent->GetV0(iv0) ;
  
-      TParticle * negativeMC = fStack->Particle(TMath::Abs(fESDEvent->GetTrack(v0->GetNindex())->GetLabel()));
-      TParticle * positiveMC = fStack->Particle(TMath::Abs(fESDEvent->GetTrack(v0->GetPindex())->GetLabel()));
+      TParticle * negativeMC = fMCEvent->Particle(TMath::Abs(fESDEvent->GetTrack(v0->GetNindex())->GetLabel()));
+      TParticle * positiveMC = fMCEvent->Particle(TMath::Abs(fESDEvent->GetTrack(v0->GetPindex())->GetLabel()));
  
       if(negativeMC->GetMother(0) != positiveMC->GetMother(0))
         continue ;
@@ -2171,11 +2166,11 @@ void AliAnalysisTaskCaloConv::ProcessMC(){
         continue;
       }
   
-      TParticle * v0Gamma = fStack->Particle(negativeMC->GetMother(0));
+      TParticle * v0Gamma = fMCEvent->Particle(negativeMC->GetMother(0));
       Bool_t same = (v0Gamma == gamma1) ;
       TParticle * tmp = v0Gamma ;
       while(!same && tmp->GetFirstMother()>=0){
-        tmp = fStack->Particle(tmp->GetFirstMother());
+        tmp = fMCEvent->Particle(tmp->GetFirstMother());
        same = (tmp == gamma1) ;
      }
      if(same){
@@ -2205,7 +2200,7 @@ void AliAnalysisTaskCaloConv::ProcessMC(){
      same = (v0Gamma == gamma2) ;
      tmp = v0Gamma ;
      while(!same && tmp->GetFirstMother()>=0){
-       tmp = fStack->Particle(tmp->GetFirstMother());
+       tmp = fMCEvent->Particle(tmp->GetFirstMother());
        same = (tmp == gamma2) ;
      }
      if(same){
@@ -2273,7 +2268,7 @@ void AliAnalysisTaskCaloConv::ProcessMC(){
          break ;
        }
        else{
-         iprim=fStack->Particle(iprim)->GetFirstMother() ;
+         iprim=fMCEvent->Particle(iprim)->GetFirstMother() ;
        }
      }
      if(!matched)
@@ -2450,10 +2445,10 @@ void AliAnalysisTaskCaloConv::ProcessMC(){
               commonA=curPHOS ;
             }
             else{
-              curNeg=fStack->Particle(curNeg)->GetFirstMother() ;
+              curNeg=fMCEvent->Particle(curNeg)->GetFirstMother() ;
             }
           }
-          curPHOS=fStack->Particle(curPHOS)->GetFirstMother() ;
+          curPHOS=fMCEvent->Particle(curPHOS)->GetFirstMother() ;
         }
         found = kFALSE ;
         curPHOS=iprimPHOS ;
@@ -2466,17 +2461,17 @@ void AliAnalysisTaskCaloConv::ProcessMC(){
               commonB=curPHOS ;
             }
             else{
-              curPos=fStack->Particle(curPos)->GetFirstMother() ;
+              curPos=fMCEvent->Particle(curPos)->GetFirstMother() ;
             }
           }
-          curPHOS=fStack->Particle(curPHOS)->GetFirstMother() ;
+          curPHOS=fMCEvent->Particle(curPHOS)->GetFirstMother() ;
         }
         if(commonA != commonB){
            //Strange
            AliInfo(Form("CommonA=%d, commonB=%d",commonA,commonB)) ; 
         }
         if(commonA>-1){//There was common particles
-          Int_t pdg = fStack->Particle(commonA)->GetPdgCode() ;
+          Int_t pdg = fMCEvent->Particle(commonA)->GetPdgCode() ;
           TLorentzVector pi=*cal + *cnv ;
           Double_t m=pi.M() ;
           Double_t pt=pi.Pt() ;
@@ -2544,10 +2539,10 @@ void AliAnalysisTaskCaloConv::ProcessMC(){
               commonA=curEMCAL ;
             }
             else{
-              curNeg=fStack->Particle(curNeg)->GetFirstMother() ;
+              curNeg=fMCEvent->Particle(curNeg)->GetFirstMother() ;
             }
           }
-          curEMCAL=fStack->Particle(curEMCAL)->GetFirstMother() ;
+          curEMCAL=fMCEvent->Particle(curEMCAL)->GetFirstMother() ;
         }
         found = kFALSE ;
         curEMCAL=iprimEMCAL ;
@@ -2560,10 +2555,10 @@ void AliAnalysisTaskCaloConv::ProcessMC(){
               commonB=curEMCAL ;
             }
             else{
-              curPos=fStack->Particle(curPos)->GetFirstMother() ;
+              curPos=fMCEvent->Particle(curPos)->GetFirstMother() ;
             }
           }
-          curEMCAL=fStack->Particle(curEMCAL)->GetFirstMother() ;
+          curEMCAL=fMCEvent->Particle(curEMCAL)->GetFirstMother() ;
         }
   
         if(commonA != commonB){
@@ -2571,7 +2566,7 @@ void AliAnalysisTaskCaloConv::ProcessMC(){
            AliInfo(Form("CommonA=%d, commonB=%d",commonA,commonB)) ;
         }
         if(commonA>-1){//There was common particles
-          Int_t pdg = fStack->Particle(commonA)->GetPdgCode() ;
+          Int_t pdg = fMCEvent->Particle(commonA)->GetPdgCode() ;
           TLorentzVector pi=*cal + *cnv ;
           Double_t m=pi.M() ;
           Double_t pt=pi.Pt() ;
@@ -2613,8 +2608,8 @@ void AliAnalysisTaskCaloConv::ProcessMC(){
    
 
    //------------- now photons ----------------
-   for (Int_t iTracks = 0; iTracks < fStack->GetNtrack(); iTracks++) {
-     TParticle* particle = (TParticle *)fStack->Particle(iTracks);
+   for (Int_t iTracks = 0; iTracks < fMCEvent->GetNumberOfTracks(); iTracks++) {
+     TParticle* particle = (TParticle *)fMCEvent->Particle(iTracks);
      if(particle->GetPdgCode() != 22)
        continue ;
 
@@ -2642,8 +2637,8 @@ void AliAnalysisTaskCaloConv::ProcessMC(){
      //number of photons converted
      Bool_t converted = kFALSE ;
      if(particle->GetNDaughters()==2){
-       TParticle * e1=fStack->Particle(particle->GetFirstDaughter()) ;
-       TParticle * e2=fStack->Particle(particle->GetLastDaughter()) ;
+       TParticle * e1=fMCEvent->Particle(particle->GetFirstDaughter()) ;
+       TParticle * e2=fMCEvent->Particle(particle->GetLastDaughter()) ;
        if(TMath::Abs(e1->GetPdgCode())==11 && TMath::Abs(e2->GetPdgCode())==11){ //conversion
          if(e1->R()<180.)
            converted = kTRUE ;
@@ -2658,8 +2653,8 @@ void AliAnalysisTaskCaloConv::ProcessMC(){
      for(Int_t iv0=0; iv0<fESDEvent->GetNumberOfV0s();iv0++){
        AliESDv0 * v0 = fESDEvent->GetV0(iv0) ;
 
-       TParticle * negativeMC = fStack->Particle(TMath::Abs(fESDEvent->GetTrack(v0->GetNindex())->GetLabel()));
-       TParticle * positiveMC = fStack->Particle(TMath::Abs(fESDEvent->GetTrack(v0->GetPindex())->GetLabel()));
+       TParticle * negativeMC = fMCEvent->Particle(TMath::Abs(fESDEvent->GetTrack(v0->GetNindex())->GetLabel()));
+       TParticle * positiveMC = fMCEvent->Particle(TMath::Abs(fESDEvent->GetTrack(v0->GetPindex())->GetLabel()));
 
        if(negativeMC->GetMother(0) != positiveMC->GetMother(0))
          continue ;
@@ -2671,11 +2666,11 @@ void AliAnalysisTaskCaloConv::ProcessMC(){
          continue;
        }
 
-       TParticle * v0Gamma = fStack->Particle(negativeMC->GetMother(0));
+       TParticle * v0Gamma = fMCEvent->Particle(negativeMC->GetMother(0));
        Bool_t same = (v0Gamma == particle) ;
        TParticle * tmp = v0Gamma ;
        while(!same && tmp->GetFirstMother()>=0){
-         tmp = fStack->Particle(tmp->GetFirstMother());
+         tmp = fMCEvent->Particle(tmp->GetFirstMother());
          same = (tmp == particle) ;
        }
        if(same){
@@ -2707,7 +2702,7 @@ void AliAnalysisTaskCaloConv::ProcessMC(){
            break ;
          }
          else{
-           iprim=fStack->Particle(iprim)->GetFirstMother() ;
+           iprim=fMCEvent->Particle(iprim)->GetFirstMother() ;
          }
        }
        if(!matched)

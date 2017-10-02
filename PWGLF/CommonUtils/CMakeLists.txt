@@ -96,5 +96,4 @@ install(TARGETS ${MODULE}
 install(FILES ${HDRS} DESTINATION include)
 
 # Install macros
-install(FILES MConthefly/macros/AddTaskSimSpectraLF.C
-        DESTINATION PWGLF/CommonUtils/MConthefly/macros)
+install(DIRECTORY MConthefly/macros DESTINATION PWGLF/CommonUtils/MConthefly)

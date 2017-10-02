@@ -34,7 +34,7 @@
 #include "AliPIDResponse.h"
 #include "TH1.h"
 #include "TH2.h"
-#include "AliStack.h"
+#include "AliMCEvent.h"
 #include "TObjString.h"
 #include "AliAODEvent.h"
 #include "AliESDEvent.h"
@@ -377,12 +377,12 @@ Bool_t AliDalitzElectronCuts::InitPIDResponse(){
   return kFALSE;
 }
 ///________________________________________________________________________
-Bool_t AliDalitzElectronCuts::ElectronIsSelectedMC(Int_t labelParticle,AliStack *fMCStack)
+Bool_t AliDalitzElectronCuts::ElectronIsSelectedMC(Int_t labelParticle,AliMCEvent *mcEvent)
 {   
-        if( labelParticle < 0 || labelParticle >= fMCStack->GetNtrack() ) return kFALSE;
-        //if( fMCStack->IsPhysicalPrimary(labelParticle) == kFALSE ) return kFALSE; //Ask Ana
+        if( labelParticle < 0 || labelParticle >= mcEvent->GetNumberOfTracks() ) return kFALSE;
+        //if( mcEvent->IsPhysicalPrimary(labelParticle) == kFALSE ) return kFALSE; //Ask Ana
 
-        TParticle* particle = fMCStack->Particle(labelParticle);
+        TParticle* particle = mcEvent->Particle(labelParticle);
 
         if( TMath::Abs( particle->GetPdgCode() ) != 11 )  return kFALSE;
         

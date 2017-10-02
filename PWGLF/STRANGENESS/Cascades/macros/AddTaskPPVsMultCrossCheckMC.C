@@ -18,9 +18,9 @@ AliAnalysisTaskPPVsMultCrossCheckMC *AddTaskPPVsMultCrossCheckMC( const TString 
     
     // Create and configure the task
     AliAnalysisTaskPPVsMultCrossCheckMC *taskAuxiliary = new AliAnalysisTaskPPVsMultCrossCheckMC("taskAuxiliary");
-      taskAuxiliary->SetSelectedTriggerClass(AliVEvent::kINT7);
-      taskAuxiliary->SetUseMultSelection(kTRUE);
-      taskAuxiliary->SetSkipPS(kTRUE);
+    taskAuxiliary->SetSelectedTriggerClass(AliVEvent::kINT7);
+    taskAuxiliary->SetUseMultSelection(kTRUE);
+    taskAuxiliary->SetSkipPS(kTRUE);
     mgr->AddTask(taskAuxiliary);
     TString outputFileName = AliAnalysisManager::GetCommonFileName();
     

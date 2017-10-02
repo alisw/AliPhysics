@@ -372,7 +372,7 @@ AliBaseMCTrackDensity::ProcessTracks(const AliMCEvent& event,
       static_cast<AliMCParticle*>(event.GetTrack(iTr));
     
     // Check if this charged and a primary 
-    if (!particle->Charge() != 0) continue;
+    if (particle->Charge() == 0) continue;
     
     Bool_t isPrimary = event.IsPhysicalPrimary(iTr) && iTr < nPrim;
     

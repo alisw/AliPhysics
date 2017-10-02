@@ -80,7 +80,9 @@ AliAnalysisTask *AddTaskRsnPhiSpinPol(
   if (outputFileName.IsNull())
     outputFileName = AliAnalysisManager::GetCommonFileName();
 
-  TString outListName = "RsnOutput";
+  TString outListName = "RsnOutput_";
+  outListName += name;
+
   // Creating output container
   AliAnalysisDataContainer *output = mgr->CreateContainer(
       outListName.Data(), TList::Class(), AliAnalysisManager::kOutputContainer,

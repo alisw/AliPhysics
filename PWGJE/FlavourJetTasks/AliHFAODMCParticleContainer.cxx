@@ -167,11 +167,12 @@ Bool_t AliHFAODMCParticleContainer::IsSpecialPDG(const AliAODMCParticle* part, T
 
   if (fRejectISR) {
     // proton has PDG code 2212
-    auto origin = AliAnalysisTaskDmesonJets::AnalysisEngine::CheckOrigin(part, fClArray, AliAnalysisTaskDmesonJets::AnalysisEngine::kParticlePDG, 2212);
-    if (origin.second && TMath::Abs(origin.second->GetPdgCode()) == 2212) return kFALSE;
+    std::set<UInt_t> pdgSet = {2212};
+    auto origin = AliAnalysisTaskDmesonJets::AnalysisEngine::FindParticleOrigin(part, fClArray, AliAnalysisTaskDmesonJets::AnalysisEngine::kFindFirst, pdgSet);
+    if (origin) return kFALSE;
   }
 
-  auto origin = AliAnalysisTaskDmesonJets::AnalysisEngine::CheckOrigin(part, fClArray);
+  auto origin = AliAnalysisTaskDmesonJets::AnalysisEngine::IsPromptCharm(part, fClArray);
 
   if (histOrigin) {
     UInt_t rs = origin.first;

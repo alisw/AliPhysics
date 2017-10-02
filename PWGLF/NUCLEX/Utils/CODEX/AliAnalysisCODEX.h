@@ -70,7 +70,8 @@ namespace AliAnalysisCODEX {
 
   enum EventMask {
     kMCevent = BIT(0),
-    kNegativeB = BIT(1)
+    kNegativeB = BIT(1),
+    kInelGt0 = BIT(2)
   };
 
   enum ITSbits {
@@ -192,6 +193,7 @@ namespace AliAnalysisCODEX {
       unsigned char    TPCnSignal;   /// Number of clusters with PID info in TPC
       unsigned char    TOFnClusters; /// Number of clusters in TOF
       unsigned char    ITSmap;       /// Map of ITS clusters
+      unsigned short   ITSSignal[4]; /// Energy loss (binned) in the sensitive layers of the ITS
       unsigned char    TPCchi2NDF;   /// Chi2/ndf (binned) in TPC
       unsigned char    ITSchi2NDF;   /// Chi2/ndf (binned) in ITS
       unsigned char    GoldenChi2;   /// Golden Chi2 defined as Constrained Global TPC chi2 (binned)

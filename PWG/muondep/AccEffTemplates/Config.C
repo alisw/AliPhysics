@@ -188,6 +188,7 @@ void Config()
   Int_t iT0    = 1;
   Int_t iVZERO = 1;
   Int_t iZDC   = 0;
+  Int_t iAD    = 1;
 
     //=================== Alice BODY parameters =============================
     AliBODY *BODY = new AliBODY("BODY", "Alice envelop");
@@ -224,7 +225,7 @@ void Config()
     {
         //=================== FRAME parameters ============================
 
-        AliFRAMEv2 *FRAME = new AliFRAMEv2("FRAME", "Space Frame");
+        AliFRAMEv3 *FRAME = new AliFRAMEv3("FRAME", "Space Frame");
 	FRAME->SetHoles(1);
     }
 
@@ -254,8 +255,9 @@ void Config()
         //=================== ZDC parameters ============================
 	
       AliZDC *ZDC = new AliZDCv4("ZDC", "normal ZDC");
-      ZDC->SetSpectatorsTrack();
       ZDC->SetLumiLength(0.);
+      ZDC->SetVCollSideCAperture(2.8);
+      ZDC->SetVCollSideCApertureNeg(2.8);
     }
 
     if (iFMD)
@@ -280,10 +282,18 @@ void Config()
         AliT0 *T0 = new AliT0v1("T0", "T0 Detector");
     }
 
-     if (iVZERO)
+    if (iVZERO)
     {
         //=================== ACORDE parameters ============================
 
         AliVZERO *VZERO = new AliVZEROv7("VZERO", "normal VZERO");
     }
+
+    if (iAD)
+    {
+        //=================== AD parameters ============================
+
+        AliAD *AD = new AliADv1("AD", "normal AD");
+    }
+
 }

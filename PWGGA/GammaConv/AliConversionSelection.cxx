@@ -264,8 +264,8 @@ void AliConversionSelection::CalculatePi0Candidates(){
 
 				if(fMCEvent){
 
-					TParticle *mcgam0=gamma0->GetMCParticle(fMCEvent->Stack());
-					TParticle *mcgam1=gamma1->GetMCParticle(fMCEvent->Stack());
+                    TParticle *mcgam0=gamma0->GetMCParticle(fMCEvent);
+                    TParticle *mcgam1=gamma1->GetMCParticle(fMCEvent);
 
 					if(mcgam0&&mcgam1){
 					// Have same Mother?

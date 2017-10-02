@@ -49,7 +49,6 @@
 #include "AliESDEvent.h"
 #include "AliPID.h"
 #include "AliMCEvent.h"
-#include "AliStack.h"
 #include "AliMCEventHandler.h"
 #include "AliESDpid.h"
 #include "AliESDtrackCuts.h"
@@ -80,6 +79,8 @@ ClassImp(AliV0ReaderV1)
 
 //________________________________________________________________________
 AliV0ReaderV1::AliV0ReaderV1(const char *name) : AliAnalysisTaskSE(name),
+  kAddv0sInESDFilter(kFALSE),
+  fPCMv0BitField(NULL),
   fConversionCuts(NULL),
   fEventCuts(NULL),
   fConversionGammas(NULL),
@@ -87,7 +88,6 @@ AliV0ReaderV1::AliV0ReaderV1(const char *name) : AliAnalysisTaskSE(name),
   fUseOwnXYZCalculation(kTRUE),
   fUseConstructGamma(kFALSE),
   kUseAODConversionPhoton(kTRUE),
-  kAddv0sInESDFilter(kFALSE),
   fCreateAOD(kFALSE),
   fDeltaAODBranchName("GammaConv"),
   fDeltaAODFilename("AliAODGammaConversion.root"),
@@ -95,6 +95,7 @@ AliV0ReaderV1::AliV0ReaderV1(const char *name) : AliAnalysisTaskSE(name),
   fPreviousV0ReaderPerformsAODRelabeling(0),
   fEventIsSelected(kFALSE),
   fNumberOfPrimaryTracks(0),
+  fNumberOfTPCoutTracks(0),
   fPeriodName(""),
   fPtHardBin(0),
   fUseMassToZero(kTRUE),
@@ -147,8 +148,7 @@ AliV0ReaderV1::AliV0ReaderV1(const char *name) : AliAnalysisTaskSE(name),
   fImpactParamTree(NULL),
   fVectorFoundGammas(0),
   fCurrentFileName(""),
-  fMCFileChecked(kFALSE),
-  fPCMv0BitField(NULL)
+  fMCFileChecked(kFALSE)
 {
   // Default constructor
 
@@ -165,6 +165,29 @@ AliV0ReaderV1::~AliV0ReaderV1()
     fConversionGammas->Delete();// Clear Objects
     delete fConversionGammas;
     fConversionGammas=0x0;
+  }
+}
+
+/**
+ * @brief Array index operator
+ *
+ * Access to the photon at a given index in the V0 reader, treated as container
+ *
+ * @param index Index of the photon inside the container
+ * @return Pointer to photon (if the container has at least one photon), otherwise nullptr
+ */
+AliConversionPhotonBase *AliV0ReaderV1::operator[](int index) const {
+  if(fConversionGammas && (index < fConversionGammas->GetEntriesFast())) {
+    TObject *tmp = fConversionGammas->At(index);
+    if(tmp->IsA() == AliAODConversionPhoton::Class()){
+      AliAODConversionPhoton *photon = static_cast<AliAODConversionPhoton *>(tmp);
+      return photon;
+    } else {
+      AliKFConversionPhoton *photon = static_cast<AliKFConversionPhoton *>(tmp);
+      return photon;
+    }
+  } else {
+    return nullptr;
   }
 }
 
@@ -595,7 +618,11 @@ Bool_t AliV0ReaderV1::ProcessEvent(AliVEvent *inputEvent,AliMCEvent *mcEvent)
 
 
   // Count Primary Tracks Event
-  CountTracks();
+  CountTracks();  
+
+  //Count Tracks with TPCout flag 
+  CountTPCoutTracks();
+
 
   // Event Cuts
   if(!fEventCuts->EventIsSelected(fInputEvent,fMCEvent)){
@@ -816,8 +843,6 @@ AliKFConversionPhoton *AliV0ReaderV1::ReconstructV0(AliESDv0 *fCurrentV0,Int_t c
   //Set MC Label
   if(fMCEvent){
 
-    AliStack *fMCStack= fMCEvent->Stack();
-
     Int_t labelp=TMath::Abs(fConversionCuts->GetTrack(fInputEvent,fCurrentMotherKF->GetTrackLabelPositive())->GetLabel());
     Int_t labeln=TMath::Abs(fConversionCuts->GetTrack(fInputEvent,fCurrentMotherKF->GetTrackLabelNegative())->GetLabel());
 
@@ -826,9 +851,9 @@ AliKFConversionPhoton *AliV0ReaderV1::ReconstructV0(AliESDv0 *fCurrentV0,Int_t c
 //     cout << "MC: " <<  labeln << "\t" << labelp << endl;
 
     TParticle *fNegativeMCParticle = 0x0;
-    if(labeln>-1) fNegativeMCParticle = fMCStack->Particle(labeln);
+    if(labeln>-1) fNegativeMCParticle = fMCEvent->Particle(labeln);
     TParticle *fPositiveMCParticle = 0x0;
-    if(labelp>-1) fPositiveMCParticle = fMCStack->Particle(labelp);
+    if(labelp>-1) fPositiveMCParticle = fMCEvent->Particle(labelp);
 
     if(fPositiveMCParticle&&fNegativeMCParticle){
       fCurrentMotherKF->SetMCLabelPositive(labelp);
@@ -1343,7 +1368,27 @@ void AliV0ReaderV1::CountTracks(){
 	EsdTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010();
 	// else if run2 data use 2015 PbPb cuts
       }else if (runNumber>=209122){
-	EsdTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2015PbPb();
+	//EsdTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2015PbPb();
+	// hard coded track cuts for the moment, because AliESDtrackCuts::GetStandardITSTPCTrackCuts2015PbPb() gives spams warnings
+	EsdTrackCuts = new AliESDtrackCuts();
+	// TPC; clusterCut = 1, cutAcceptanceEdges = kTRUE, removeDistortedRegions = kFALSE
+	EsdTrackCuts->AliESDtrackCuts::SetMinNCrossedRowsTPC(70);
+	EsdTrackCuts->AliESDtrackCuts::SetMinRatioCrossedRowsOverFindableClustersTPC(0.8); 
+	EsdTrackCuts->SetCutGeoNcrNcl(2., 130., 1.5, 0.0, 0.0);  // only dead zone and not clusters per length
+	//EsdTrackCuts->AliESDtrackCuts::SetCutOutDistortedRegionsTPC(kTRUE);
+	EsdTrackCuts->AliESDtrackCuts::SetMaxChi2PerClusterTPC(4);
+	EsdTrackCuts->AliESDtrackCuts::SetAcceptKinkDaughters(kFALSE);
+	EsdTrackCuts->AliESDtrackCuts::SetRequireTPCRefit(kTRUE);
+	// ITS; selPrimaries = 1
+	EsdTrackCuts->AliESDtrackCuts::SetRequireITSRefit(kTRUE);
+	EsdTrackCuts->AliESDtrackCuts::SetClusterRequirementITS(AliESDtrackCuts::kSPD,
+								AliESDtrackCuts::kAny);
+	EsdTrackCuts->AliESDtrackCuts::SetMaxDCAToVertexXYPtDep("0.0105+0.0350/pt^1.1");
+	EsdTrackCuts->AliESDtrackCuts::SetMaxChi2TPCConstrainedGlobal(36);
+	EsdTrackCuts->AliESDtrackCuts::SetMaxDCAToVertexZ(2);
+	EsdTrackCuts->AliESDtrackCuts::SetDCAToVertex2D(kFALSE);
+	EsdTrackCuts->AliESDtrackCuts::SetRequireSigmaToVertex(kFALSE);
+	EsdTrackCuts->AliESDtrackCuts::SetMaxChi2PerClusterITS(36);
 	// else use 2011 version of track cuts
       }else{
 	EsdTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011();
@@ -1379,15 +1424,36 @@ void AliV0ReaderV1::CountTracks(){
 }
 
 ///________________________________________________________________________
-Bool_t AliV0ReaderV1::ParticleIsConvertedPhoton(AliStack *MCStack, TParticle *particle, Double_t etaMax, Double_t rMax, Double_t zMax){
+void AliV0ReaderV1::CountTPCoutTracks(){
+  fNumberOfTPCoutTracks = 0;
+
+  for (Int_t itrk = 0; itrk < fInputEvent->GetNumberOfTracks(); itrk++) {
+    AliVTrack *trk = dynamic_cast<AliVTrack*>(fInputEvent->GetTrack(itrk));
+
+    if (trk != NULL) {
+      /* the initial method of counting TPC out tracks */
+      if (!(trk->Pt() < 0.15) && (TMath::Abs(trk->Eta()) < 0.8)) {
+        if ((trk->GetStatus() & AliVTrack::kTPCout) == AliVTrack::kTPCout) {
+          fNumberOfTPCoutTracks++;
+        }
+      }
+    }
+  }
+
+
+  return;
+}
+
+///________________________________________________________________________
+Bool_t AliV0ReaderV1::ParticleIsConvertedPhoton(AliMCEvent *mcEvent, TParticle *particle, Double_t etaMax, Double_t rMax, Double_t zMax){
   // MonteCarlo Photon Selection
-  if(!MCStack)return kFALSE;
+  if(!mcEvent)return kFALSE;
 
   if (particle->GetPdgCode() == 22){
     // check whether particle is within eta range
     if( TMath::Abs(particle->Eta()) > etaMax ) return kFALSE;
     // check if particle doesn't have a photon as mother
-    if(particle->GetMother(0) >-1 && MCStack->Particle(particle->GetMother(0))->GetPdgCode() == 22){
+    if(particle->GetMother(0) >-1 && mcEvent->Particle(particle->GetMother(0))->GetPdgCode() == 22){
       return kFALSE; // no photon as mothers!
     }
     // looking for conversion gammas (electron + positron from pairbuilding (= 5) )
@@ -1396,7 +1462,7 @@ Bool_t AliV0ReaderV1::ParticleIsConvertedPhoton(AliStack *MCStack, TParticle *pa
     if(particle->GetNDaughters() >= 2){
       for(Int_t daughterIndex=particle->GetFirstDaughter();daughterIndex<=particle->GetLastDaughter();daughterIndex++){
         if(daughterIndex<0) continue;
-        TParticle *tmpDaughter = MCStack->Particle(daughterIndex);
+        TParticle *tmpDaughter = mcEvent->Particle(daughterIndex);
         if(tmpDaughter->GetUniqueID() == 5){
           if(tmpDaughter->GetPdgCode() == 11){
             eNeg = tmpDaughter;
@@ -1451,24 +1517,23 @@ void AliV0ReaderV1::CreatePureMCHistosForV0FinderEffiESD(){
   Double_t mcProdVtxZ   = primVtxMC->GetZ();
    //cout << mcProdVtxX <<"\t" << mcProdVtxY << "\t" << mcProdVtxZ << endl;
 
-  AliStack *fMCStack= fMCEvent->Stack();
   // Loop over all primary MC particle
-  for(Long_t i = 0; i < fMCStack->GetNtrack(); i++) {
-    if (fEventCuts->IsConversionPrimaryESD( fMCStack, i, mcProdVtxX, mcProdVtxY, mcProdVtxZ)){
+  for(Long_t i = 0; i < fMCEvent->GetNumberOfTracks(); i++) {
+    if (fEventCuts->IsConversionPrimaryESD( fMCEvent, i, mcProdVtxX, mcProdVtxY, mcProdVtxZ)){
       // fill primary histogram
-      TParticle* particle = (TParticle *)fMCStack->Particle(i);
+      TParticle* particle = (TParticle *)fMCEvent->Particle(i);
       if (!particle) continue;
-      if (ParticleIsConvertedPhoton(fMCStack, particle, 0.9, 180.,250. )){
+      if (ParticleIsConvertedPhoton(fMCEvent, particle, 0.9, 180.,250. )){
         if(particle->GetFirstDaughter()<0) continue;
-        TParticle *tmpDaughter = fMCStack->Particle(particle->GetFirstDaughter());
+        TParticle *tmpDaughter = fMCEvent->Particle(particle->GetFirstDaughter());
         if (!tmpDaughter) continue;
         fHistoMCGammaPtvsR->Fill(particle->Pt(),tmpDaughter->R());
         fHistoMCGammaPtvsPhi->Fill(particle->Pt(),particle->Phi());
         fHistoMCGammaRvsPhi->Fill(tmpDaughter->R(),particle->Phi());
       }
-      if (ParticleIsConvertedPhoton(fMCStack, particle, 1.4, 180.,250. )){
+      if (ParticleIsConvertedPhoton(fMCEvent, particle, 1.4, 180.,250. )){
         if(particle->GetFirstDaughter()<0) continue;
-        TParticle *tmpDaughter = fMCStack->Particle(particle->GetFirstDaughter());
+        TParticle *tmpDaughter = fMCEvent->Particle(particle->GetFirstDaughter());
         if (!tmpDaughter) continue;
         fHistoMCGammaPtvsEta->Fill(particle->Pt(),particle->Eta());
         fHistoMCGammaRvsEta->Fill(tmpDaughter->R(),particle->Eta());
@@ -1490,15 +1555,13 @@ void AliV0ReaderV1::FillRecMCHistosForV0FinderEffiESD( AliESDv0* currentV0){
   Int_t tracklabelPos=currentV0->GetPindex();
   Int_t tracklabelNeg=currentV0->GetNindex();
 
-  AliStack *fMCStack= fMCEvent->Stack();
-
   Int_t labelp=TMath::Abs(fConversionCuts->GetTrack(fInputEvent,tracklabelPos)->GetLabel());
   Int_t labeln=TMath::Abs(fConversionCuts->GetTrack(fInputEvent,tracklabelNeg)->GetLabel());
 
   TParticle* negPart = 0x0;
-  if(labeln>-1) negPart = (TParticle *)fMCStack->Particle(labeln);
+  if(labeln>-1) negPart = (TParticle *)fMCEvent->Particle(labeln);
   TParticle* posPart = 0x0;
-  if(labelp>-1) posPart = (TParticle *)fMCStack->Particle(labelp);
+  if(labelp>-1) posPart = (TParticle *)fMCEvent->Particle(labelp);
 
   if ( negPart == NULL || posPart == NULL ) return;
 //   if (!(negPart->GetPdgCode() == 11)) return;
@@ -1508,29 +1571,29 @@ void AliV0ReaderV1::FillRecMCHistosForV0FinderEffiESD( AliESDv0* currentV0){
 
 //   cout << "mother neg " << motherlabelNeg << " mother pos " << motherlabelPos << endl;
   if (motherlabelNeg>-1 && motherlabelNeg == motherlabelPos && negPart->GetFirstMother() != -1){
-    if (fEventCuts->IsConversionPrimaryESD( fMCStack, negPart->GetFirstMother(), mcProdVtxX, mcProdVtxY, mcProdVtxZ)){
+    if (fEventCuts->IsConversionPrimaryESD( fMCEvent, negPart->GetFirstMother(), mcProdVtxX, mcProdVtxY, mcProdVtxZ)){
 
-      TParticle* mother =  (TParticle *)fMCStack->Particle(motherlabelNeg);
+      TParticle* mother =  (TParticle *)fMCEvent->Particle(motherlabelNeg);
       if (mother->GetPdgCode() == 22 ){
         if (!CheckVectorForDoubleCount(fVectorFoundGammas,motherlabelNeg ) ){
-          if (ParticleIsConvertedPhoton(fMCStack, mother, 0.9, 180.,250. )){
+          if (ParticleIsConvertedPhoton(fMCEvent, mother, 0.9, 180.,250. )){
             fHistoRecMCGammaPtvsR->Fill(mother->Pt(),negPart->R());
             fHistoRecMCGammaPtvsPhi->Fill(mother->Pt(),mother->Phi());
             fHistoRecMCGammaRvsPhi->Fill(negPart->R(),mother->Phi());
           }
-          if (ParticleIsConvertedPhoton(fMCStack, mother, 1.4, 180.,250. )){
+          if (ParticleIsConvertedPhoton(fMCEvent, mother, 1.4, 180.,250. )){
             fHistoRecMCGammaPtvsEta->Fill(mother->Pt(),mother->Eta());
             fHistoRecMCGammaRvsEta->Fill(negPart->R(),mother->Eta());
             fHistoRecMCGammaPhivsEta->Fill(mother->Phi(),mother->Eta());
           }
 //           cout << "new gamma found" << endl;
         } else {
-          if (ParticleIsConvertedPhoton(fMCStack, mother, 0.9, 180.,250. )){
+          if (ParticleIsConvertedPhoton(fMCEvent, mother, 0.9, 180.,250. )){
             fHistoRecMCGammaMultiPt->Fill(mother->Pt());
             fHistoRecMCGammaMultiPhi->Fill(mother->Phi());
             fHistoRecMCGammaMultiR->Fill(negPart->R());
           }
-          if (ParticleIsConvertedPhoton(fMCStack, mother, 1.4, 180.,250. )){
+          if (ParticleIsConvertedPhoton(fMCEvent, mother, 1.4, 180.,250. )){
             fHistoRecMCGammaMultiPtvsEta->Fill(mother->Pt(),mother->Eta());
           }
 //           cout << "this one I had already: " << motherlabelNeg << endl << "-----------------------"  << endl;
@@ -1667,9 +1730,9 @@ void AliV0ReaderV1::FillImpactParamHistograms( AliVTrack* pTrack, AliVTrack* nTr
   Float_t negX;
   Float_t negPt;
   Float_t R;
-  TBranch *Branch_Pt = fImpactParamTree->Branch("posPt",&posPt,"posPt/F");
-  TBranch *Branch_Y = fImpactParamTree->Branch("posY",&posY,"posY/F");
-  TBranch *Branch_R = fImpactParamTree->Branch("R",&R,"R/F");
+  fImpactParamTree->Branch("posPt",&posPt,"posPt/F");
+  fImpactParamTree->Branch("posY",&posY,"posY/F");
+  fImpactParamTree->Branch("R",&R,"R/F");
   posZ = positiveTrack->GetZ();
   posY = positiveTrack->GetY();
   posX = positiveTrack->GetX();
@@ -1748,4 +1811,68 @@ Bool_t AliV0ReaderV1::CheckVectorForDoubleCount(vector<Int_t> &vec, Int_t tobech
 void AliV0ReaderV1::Terminate(Option_t *)
 {
 
+}
+
+AliV0ReaderV1::iterator::iterator(const AliV0ReaderV1 *reader, AliV0ReaderV1::iterator::Direction_t dir, int position):
+    std::iterator<std::bidirectional_iterator_tag, AliConversionPhotonBase>(),
+    fkData(reader),
+    fCurrentIndex(position),
+    fDirection(dir)
+{
+}
+
+AliV0ReaderV1::iterator::iterator(const AliV0ReaderV1::iterator &other):
+    std::iterator<std::bidirectional_iterator_tag, AliConversionPhotonBase>(other),
+    fkData(other.fkData),
+    fCurrentIndex(other.fCurrentIndex),
+    fDirection(other.fDirection)
+{
+}
+
+AliV0ReaderV1::iterator &AliV0ReaderV1::iterator::operator=(const AliV0ReaderV1::iterator &other){
+  if(this != &other){
+    fkData = other.fkData;
+    fCurrentIndex = other.fCurrentIndex;
+    fDirection = other.fDirection;
+  }
+  return *this;
+}
+
+bool AliV0ReaderV1::iterator::operator!=(AliV0ReaderV1::iterator &other) const{
+  if(fkData != other.fkData) return true;
+  return fCurrentIndex != other.fCurrentIndex;
+}
+
+AliV0ReaderV1::iterator AliV0ReaderV1::iterator::operator++(int index){
+  iterator tmp(*this);
+  operator++();
+  return tmp;
+}
+
+AliV0ReaderV1::iterator &AliV0ReaderV1::iterator::operator++(){
+  if(fDirection == AliV0ReaderV1::iterator::kForwardDirection){
+    fCurrentIndex++;
+  } else {
+    fCurrentIndex--;
+  }
+  return *this;
+}
+
+AliV0ReaderV1::iterator AliV0ReaderV1::iterator::operator--(int){
+  iterator tmp(*this);
+  operator--();
+  return tmp;
+}
+
+AliV0ReaderV1::iterator &AliV0ReaderV1::iterator::operator--(){
+  if(fDirection == AliV0ReaderV1::iterator::kForwardDirection){
+    fCurrentIndex++;
+  } else {
+    fCurrentIndex--;
+  }
+  return *this;
+}
+
+AliConversionPhotonBase *AliV0ReaderV1::iterator::operator*(){
+  return (*fkData)[fCurrentIndex];
 }

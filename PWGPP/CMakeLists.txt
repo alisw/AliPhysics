@@ -21,7 +21,7 @@ add_subdirectory(EVCHAR/FlowVectorCorrections/QnCorrectionsInterface)
 add_subdirectory(MUON)
 add_subdirectory(EMCAL)
 add_subdirectory(Alignment)
-
+add_subdirectory(scripts)
 #Module
 set(MODULE PWGPP)
 add_definitions(-D_MODULE_="${MODULE}")
@@ -62,6 +62,7 @@ set ( SRCS2
   global/AliAnalysisTaskGlobalQA.cxx
   global/AliAnalysisTaskVertexESD.cxx
   global/AliAnalysisTaskCheckPileup.cxx
+  #global/AliAnalysisTaskCheckVertexAOD.cxx  # TODO reenable when AliRoot is tagged
   global/AliAnalysisTaskCheckESDTracks.cxx
   global/AliAnalysisTaskCheckAODTracks.cxx
   global/AliGlobalFBFqa.cxx
@@ -241,6 +242,7 @@ set ( SRCS20
   )
 set ( SRCS21
   vdM/AliAnalysisTaskVdM.cxx
+  vdM/AliXMLEngine.cxx
   )
 
 list ( APPEND SRCS
@@ -402,6 +404,6 @@ install(FILES BeamGasMonitoring/macros/AddTaskMBVeto.C
 	      BeamGasMonitoring/macros/AddTaskBGMonitorQATrain.C
 	      DESTINATION PWGPP/BeamGasMonitoring/macros)
 install(FILES vdM/AddAnalysisTaskVdM.C
-	      DESTINATION PWGPP/vdM)
+              DESTINATION PWGPP/vdM)
 
 message(STATUS "PWGPP enabled")

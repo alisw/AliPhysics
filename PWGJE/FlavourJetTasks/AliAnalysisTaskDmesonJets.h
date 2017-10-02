@@ -8,7 +8,7 @@
 /// The main output is stored in a THnSparse histogram or in a TTree.
 ///
 /// \author Salvatore Aiola <salvatore.aiola@cern.ch>, Yale University
-/// \date Feb 6, 2016
+/// \date Sep 21, 2017
 
 #ifndef ALIANALYSISTASKDMESONJETS_H
 #define ALIANALYSISTASKDMESONJETS_H
@@ -155,16 +155,16 @@ class AliAnalysisTaskDmesonJets : public AliAnalysisTaskEmcalLight
                        fJets                    ; //!<! list of jets
     Int_t              fMCLabel                 ; //!<! MC label, i.e. index of the generator level D meson (only for detector level D meson candidates)
     Bool_t             fReconstructed           ; //!<! Whether this D meson was reconstructed (only for particle level D mesons)
-    AliAODMCParticle  *fFirstParton             ; //!<! pointer to the first parton in the shower tree of the D meson (only for particle level D mesons)
-    Short_t            fFirstPartonType         ; //!<! type of the first parton in the shower tree (only for particle level D mesons)
-    AliAODMCParticle  *fLastParton              ; //!<! pointer to the last parton in the shower tree of the D meson (only for particle level D mesons)
-    Short_t            fLastPartonType          ; //!<! type of the last parton in the shower tree (only for particle level D mesons)
+    AliAODMCParticle  *fParton                  ; //!<! pointer to the parton in the shower tree of the D meson (only for particle level D mesons)
+    Short_t            fPartonType              ; //!<! type of the parton in the shower tree (only for particle level D mesons)
+    AliAODMCParticle  *fAncestor                ; //!<! pointer to the ancestor particle in the shower tree of the D meson (only for particle level D mesons)
     Byte_t             fSelectionType           ; //!<! for D0: 0=not selected, 1=D0, 2=D0bar, 3=both
 
     const AliJetInfo* GetJet(std::string n) const;
     AliJetInfo* GetJet(std::string n);
     void Reset();
     Double_t GetZ(std::string n) const;
+    Double_t GetCorrZ(std::string n) const;
     Double_t GetDistance(std::string n, Double_t& deta, Double_t& dphi) const;
     Double_t GetDistance(std::string n) const;
     Double_t GetDistance(const AliJetInfo& jet, Double_t& deta, Double_t& dphi) const;
@@ -172,7 +172,7 @@ class AliAnalysisTaskDmesonJets : public AliAnalysisTaskEmcalLight
     void Print() const;
 
     /// \cond CLASSIMP
-    ClassDef(AliDmesonJetInfo, 1);
+    ClassDef(AliDmesonJetInfo, 2);
     /// \endcond
   };
 
@@ -216,22 +216,25 @@ class AliAnalysisTaskDmesonJets : public AliAnalysisTaskEmcalLight
   /// information in a very compact data structure (77 bits)
   class AliJetInfoPbPbSummary : public AliJetInfoSummary {
   public:
-    AliJetInfoPbPbSummary() : AliJetInfoSummary(), fCorrPt(0), fArea(0) {;}
+    AliJetInfoPbPbSummary() : AliJetInfoSummary(), fCorrPt(0), fCorrZ(0), fArea(0) {;}
     AliJetInfoPbPbSummary(const AliDmesonJetInfo& source, std::string n);
     virtual ~AliJetInfoPbPbSummary() {}
 
     virtual void Reset();
-    virtual void Set(const AliDmesonJetInfo& source, std::string n) { AliJetInfoSummary::Set(source, n); }
+    virtual void Set(const AliDmesonJetInfo& source, std::string n);
     virtual void Set(const AliJetInfo& source);
 
     /// Transverse momentum of the jet in GeV/c after subtracting average background
     Double32_t  fCorrPt    ; //[-409.6,409.6,14]
 
+    /// Z of the D meson after subtracting average background
+    Double32_t  fCorrZ     ; //[0,1.024,10]
+
     /// Area of the jet
     Double32_t  fArea      ; //[0,2.048,8]
 
     /// \cond CLASSIMP
-    ClassDef(AliJetInfoPbPbSummary, 1);
+    ClassDef(AliJetInfoPbPbSummary, 2);
     /// \endcond
   };
 
@@ -268,24 +271,22 @@ class AliAnalysisTaskDmesonJets : public AliAnalysisTaskEmcalLight
   /// information in a very compact data structure (68 bits)
   class AliDmesonMCInfoSummary : public AliDmesonInfoSummary {
   public:
-    AliDmesonMCInfoSummary() : AliDmesonInfoSummary(), fFirstPartonType(0), fFirstPartonPt(0), fLastPartonType(0), fLastPartonPt(0) {;}
+    AliDmesonMCInfoSummary() : AliDmesonInfoSummary(), fPartonType(0), fPartonPt(0), fAncestorPDG(0) {;}
     AliDmesonMCInfoSummary(const AliDmesonJetInfo& source);
     virtual ~AliDmesonMCInfoSummary() {}
 
     virtual void Reset();
     virtual void Set(const AliDmesonJetInfo& source);
 
-    /// First parton type
-    Double32_t   fFirstPartonType  ; //[0, 16, 4]
-    /// Transverse momentum of the first parton
-    Double32_t   fFirstPartonPt    ; //[0,819.2,14]
-    /// Last parton type
-    Double32_t   fLastPartonType   ; //[0, 16, 4]
-    /// Transverse momentum of the last parton
-    Double32_t   fLastPartonPt     ; //[0,819.2,14]
+    /// Parton type
+    Double32_t   fPartonType  ; //[0, 16, 4]
+    /// Transverse momentum of the parton
+    Double32_t   fPartonPt    ; //[0,819.2,14]
+
+    UShort_t     fAncestorPDG ; /// Absolute PDG of the ancestor particle
 
     /// \cond CLASSIMP
-    ClassDef(AliDmesonMCInfoSummary, 2);
+    ClassDef(AliDmesonMCInfoSummary, 3);
     /// \endcond
   };
 
@@ -354,6 +355,7 @@ class AliAnalysisTaskDmesonJets : public AliAnalysisTaskEmcalLight
     void SetNeutralPtRange(Double_t min, Double_t max)    { fMinNeutralPt = min; fMaxNeutralPt = max; }
     void SetRhoName(TString n)                            { fRhoName      = n  ; }
     Double_t GetRadius() const { return fRadius; }
+    TString GetRhoName() const { return fRhoName; }
 
     Bool_t IsJetInAcceptance(const AliJetInfo& jet) const;
     Bool_t IsJetInAcceptance(const AliDmesonJetInfo& dMesonJet, std::string n) const;
@@ -403,13 +405,14 @@ class AliAnalysisTaskDmesonJets : public AliAnalysisTaskEmcalLight
   public:
     typedef std::pair<AliJetInfo*, Double_t> jet_distance_pair;
 
-    enum ECheckOriginMode_t {
-      kFirstParton,    /// Look for the very first parton in the fragmentation tree
-      kLastParton,     /// Look for the last parton in the fragmentation tree (closest to the hadron)
-      kParticlePDG     /// Look for a specific particle in the fragmentation tree (closest to the hadron)
+    enum EFindParticleOriginMode_t {
+      kFindFirst,    /// Look for the very first particle in the fragmentation tree
+      kFindLast     /// Look for the last particle in the fragmentation tree (closest to the hadron)
     };
 
-    static std::pair<AliAnalysisTaskDmesonJets::EMesonOrigin_t, AliAODMCParticle*> CheckOrigin(const AliAODMCParticle* part, TClonesArray* mcArray, ECheckOriginMode_t mode = kLastParton, Int_t pdg = 2212);
+    static AliAODMCParticle* FindParticleOrigin(const AliAODMCParticle* part, TClonesArray* mcArray, EFindParticleOriginMode_t mode, const std::set<UInt_t>& pdgSet);
+    static AliAODMCParticle* FindParticleOrigin(const AliAODMCParticle* part, TClonesArray* mcArray, EFindParticleOriginMode_t mode);
+    static std::pair<AliAnalysisTaskDmesonJets::EMesonOrigin_t, AliAODMCParticle*> IsPromptCharm(const AliAODMCParticle* part, TClonesArray* mcArray);
     static EMesonDecayChannel_t CheckDecayChannel(const AliAODMCParticle* part, TClonesArray* mcArray);
 
     AnalysisEngine();
@@ -442,6 +445,12 @@ class AliAnalysisTaskDmesonJets : public AliAnalysisTaskEmcalLight
     std::vector<AliAnalysisTaskDmesonJets::AliHFJetDefinition>& GetJetDefinitions() { return fJetDefinitions; }
     Bool_t IsAnyJetInAcceptance(const AliDmesonJetInfo& dMesonJet) const;
 
+    void SetJetPhiRange(Double_t min, Double_t max);
+    void SetJetEtaRange(Double_t min, Double_t max);
+    void SetJetPtRange(Double_t min, Double_t max);
+    void SetChargedPtRange(Double_t min, Double_t max);
+    void SetNeutralPtRange(Double_t min, Double_t max);
+
 #if !(defined(__CINT__) || defined(__MAKECINT__))
     std::map<int, AliDmesonJetInfo>& GetDmesons() { return fDmesonJets; }
 #endif
@@ -472,8 +481,7 @@ class AliAnalysisTaskDmesonJets : public AliAnalysisTaskEmcalLight
     friend bool        operator==(const AnalysisEngine& lhs, const AnalysisEngine& rhs);
     friend inline bool operator!=(const AnalysisEngine& lhs, const AnalysisEngine& rhs){ return !(lhs == rhs); }
 
-    std::map<AliAODMCParticle*, Short_t> fFirstPartons ; //!<! set of the first partons in the shower that produced each D meson
-    std::map<AliAODMCParticle*, Short_t> fLastPartons  ; //!<! set of the last partons in the shower that produced each D meson
+    std::map<AliAODMCParticle*, Short_t> fPartons ; //!<! set of the partons in the shower that produced each D meson
 
   protected:
     void RunAnalysis();
@@ -510,6 +518,8 @@ class AliAnalysisTaskDmesonJets : public AliAnalysisTaskEmcalLight
     AliAODEvent                       *fAodEvent              ; //!<! AOD event
     AliFJWrapper                      *fFastJetWrapper        ; //!<! Fastjet wrapper
     THistManager                      *fHistManager           ; //!<! Histograms
+    Double_t                           fCent                  ; //!<! Event centrality
+    mutable TString                    fName                  ; //!<! Name of this object
 
     friend class AliAnalysisTaskDmesonJets;
 
@@ -535,8 +545,8 @@ class AliAnalysisTaskDmesonJets : public AliAnalysisTaskEmcalLight
   AliAnalysisTaskDmesonJets(const char* name, Int_t nOutputTrees=2);
   virtual ~AliAnalysisTaskDmesonJets();
 
-  AnalysisEngine* AddAnalysisEngine(ECandidateType_t type, TString cutfname, EMCMode_t bkgMode, EJetType_t jettype, Double_t jetradius, TString rhoName = "");
-  AnalysisEngine* AddAnalysisEngine(ECandidateType_t type, TString cutfname, EMCMode_t bkgMode, const AliHFJetDefinition& jetDef, TString rhoName = "");
+  AnalysisEngine* AddAnalysisEngine(ECandidateType_t type, TString cutfname, TString cuttype, EMCMode_t bkgMode, EJetType_t jettype, Double_t jetradius, TString rhoName = "");
+  AnalysisEngine* AddAnalysisEngine(ECandidateType_t type, TString cutfname, TString cuttype, EMCMode_t bkgMode, const AliHFJetDefinition& jetDef, TString rhoName = "");
   std::list<AnalysisEngine>::iterator FindAnalysisEngine(const AnalysisEngine& eng);
 
   void SetShowPositionD(Bool_t b = kTRUE)         { fEnabledAxis = b ?  fEnabledAxis | kPositionD         : fEnabledAxis & ~kPositionD         ; }
@@ -553,6 +563,8 @@ class AliAnalysisTaskDmesonJets : public AliAnalysisTaskEmcalLight
   void SetOutputType(EOutputType_t b)             { SetOutputTypeInternal(b); }
   void SetTrackEfficiency(Double_t t)             { fTrackEfficiency    = t ; }
   void SetRejectISR(Bool_t b)                     { fRejectISR          = b ; }
+  void SetJetArea(Int_t type,
+      Double_t garea = 0.005)                     { fJetAreaType        = type; fJetGhostArea = garea; }
 
   virtual void         UserCreateOutputObjects();
   virtual void         ExecOnce();
@@ -583,6 +595,8 @@ class AliAnalysisTaskDmesonJets : public AliAnalysisTaskEmcalLight
   Int_t                fNOutputTrees              ; ///<  Maximum number of output trees
   Double_t             fTrackEfficiency           ; ///<  Artificial tracking inefficiency (0...1)
   Bool_t               fRejectISR                 ; ///<  Reject initial state radiation
+  Int_t                fJetAreaType               ; ///<  Jet area type
+  Double_t             fJetGhostArea              ; ///<  Area of the ghost particles
   AliHFAODMCParticleContainer* fMCContainer       ; //!<! MC particle container
   AliAODEvent         *fAodEvent                  ; //!<! AOD event
   AliFJWrapper        *fFastJetWrapper            ; //!<! Fastjet wrapper
@@ -593,7 +607,7 @@ class AliAnalysisTaskDmesonJets : public AliAnalysisTaskEmcalLight
   AliAnalysisTaskDmesonJets& operator=(const AliAnalysisTaskDmesonJets& source);
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskDmesonJets, 8);
+  ClassDef(AliAnalysisTaskDmesonJets, 9);
   /// \endcond
 };
 

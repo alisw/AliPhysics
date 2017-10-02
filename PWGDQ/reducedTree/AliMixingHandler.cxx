@@ -44,7 +44,10 @@ AliMixingHandler::AliMixingHandler() :
   fCentralityVariable(AliReducedVarManager::kNothing),
   fEventVertexVariable(AliReducedVarManager::kNothing),
   fEventPlaneVariable(AliReducedVarManager::kNothing),
-  fHistos(0x0)
+  fHistos(0x0),
+  fCrossPairsCuts(),
+  fLikePairsLeg1Cuts(),
+  fLikePairsLeg2Cuts()
 {
   // 
   // default constructor
@@ -56,6 +59,9 @@ AliMixingHandler::AliMixingHandler() :
   fEventVertexLimits.Set(2,dummyZRange);
   fEventPlaneLimits.Set(2,dummyEPRange);
   fPoolSize.Set(1);
+  fCrossPairsCuts.SetOwner(kTRUE);
+  fLikePairsLeg1Cuts.SetOwner(kTRUE);
+  fLikePairsLeg2Cuts.SetOwner(kTRUE);
 }
 
 
@@ -79,7 +85,10 @@ AliMixingHandler::AliMixingHandler(const Char_t* name, const Char_t* title) :
   fCentralityVariable(AliReducedVarManager::kNothing),
   fEventVertexVariable(AliReducedVarManager::kNothing),
   fEventPlaneVariable(AliReducedVarManager::kNothing),
-  fHistos(0x0)
+  fHistos(0x0),
+  fCrossPairsCuts(),
+  fLikePairsLeg1Cuts(),
+  fLikePairsLeg2Cuts()
 {
   //
   // Named constructor
@@ -91,6 +100,9 @@ AliMixingHandler::AliMixingHandler(const Char_t* name, const Char_t* title) :
   fEventVertexLimits.Set(2,dummyZRange);
   fEventPlaneLimits.Set(2,dummyEPRange);
   fPoolSize.Set(1);
+  fCrossPairsCuts.SetOwner(kTRUE);
+  fLikePairsLeg1Cuts.SetOwner(kTRUE);
+  fLikePairsLeg2Cuts.SetOwner(kTRUE);
 }
 
 
@@ -99,6 +111,9 @@ AliMixingHandler::~AliMixingHandler() {
   //
   // destructor
   //
+   fCrossPairsCuts.Clear("C");
+   fLikePairsLeg1Cuts.Clear("C");
+   fLikePairsLeg2Cuts.Clear("C");
 }
 
 
@@ -434,6 +449,7 @@ void AliMixingHandler::RunEventMixing(TClonesArray* leg1Pool, TClonesArray* leg2
 	  // fill cross-pairs (leg1 - leg2) for the enabled bits
 	  AliReducedVarManager::FillPairInfoME(ev1Leg1, ev2Leg2, type, values);
           //cout << "######## cross-pair (mass): " << values[AliReducedVarManager::kMass] << endl;
+          if(!IsPairSelected(values, 1)) continue;   // fill histograms only if pair cuts are fulfilled
 	  for(Int_t ibit=0; ibit<fNParallelCuts; ++ibit) {
             if((testFlags2)&(ULong_t(1)<<ibit)) 
               fHistos->FillHistClass(histClassArr->At(ibit*3+1)->GetName(), values);
@@ -454,6 +470,7 @@ void AliMixingHandler::RunEventMixing(TClonesArray* leg1Pool, TClonesArray* leg2
 	  // fill like-pairs (leg1 - leg1) for the enabled bits
 	  AliReducedVarManager::FillPairInfoME(ev1Leg1, ev2Leg1, type, values);
           //cout << "######## like-pair leg1-leg1 (mass): " << values[AliReducedVarManager::kMass] << endl;
+          if(!IsPairSelected(values, 0)) continue;   // fill histograms only if pair cuts are fulfilled
 	  for(Int_t ibit=0; ibit<fNParallelCuts; ++ibit) {
             if((testFlags2)&(ULong_t(1)<<ibit)) 
               fHistos->FillHistClass(histClassArr->At(ibit*3+0)->GetName(), values);
@@ -485,6 +502,7 @@ void AliMixingHandler::RunEventMixing(TClonesArray* leg1Pool, TClonesArray* leg2
 	  // fill like-pairs (leg2 - leg2) for the enabled bits
 	  AliReducedVarManager::FillPairInfoME(ev1Leg2, ev2Leg2, type, values);
           //cout << "######## like-pair leg2-leg2 (mass): " << values[AliReducedVarManager::kMass] << endl;
+          if(!IsPairSelected(values, 2)) continue;   // fill histograms only if pair cuts are fulfilled
 	  for(Int_t ibit=0; ibit<fNParallelCuts; ++ibit) {
             if((testFlags2)&(ULong_t(1)<<ibit)) 
               fHistos->FillHistClass(histClassArr->At(ibit*3+2)->GetName(), values);
@@ -570,6 +588,37 @@ void AliMixingHandler::RunEventMixing(TClonesArray* leg1Pool, TClonesArray* leg2
        leg2Pool->RemoveAt(i); leg2Pool->Compress(); //delete leg2List;
     }
   }
+}
+
+
+//_________________________________________________________________________
+Bool_t AliMixingHandler::IsPairSelected(Float_t* values, Int_t pairType) {
+   //
+   // apply pair cuts
+   //
+   TList* cutList = 0;
+   switch(pairType) {
+      case 0:
+         cutList = &fLikePairsLeg1Cuts;
+         break;
+      case 1:
+         cutList = &fCrossPairsCuts;
+         break;
+      case 2:
+         cutList = &fLikePairsLeg2Cuts;
+         break;
+      default:
+         break;
+   };
+   if(!cutList) return kTRUE;
+   if(cutList->GetEntries()==0) return kTRUE;
+   
+   // loop over all the cuts and make a logical AND between all of them
+   for(Int_t i=0; i<cutList->GetEntries(); ++i) {
+      AliReducedInfoCut* cut = (AliReducedInfoCut*)cutList->At(i);
+      if(!cut->IsSelected(values)) return kFALSE;
+   }
+   return kTRUE;
 }
 
 

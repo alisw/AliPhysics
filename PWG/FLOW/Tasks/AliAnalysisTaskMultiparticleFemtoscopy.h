@@ -664,6 +664,7 @@ class AliAnalysisTaskMultiparticleFemtoscopy : public AliAnalysisTaskSE{
   TProfile *fCorrelationFunctionsTEST[10][2][7][10]; //! [testNo][0=vs Q2, 1=vs Q3][example [0=<x1>][1=<x2>], ...,[6=<x1x2x3>]][differential index, e.g. for test 0 [0=Cx][1=Cy][2=Cz]]
   TProfile *fSignalCumulantsTEST[10][2][4][10];      //! [testNo][0=vs Q2, 1=vs Q3][[0=<x1x2>_c][1=<x1x3>_c][2=<x2x3>_c][3=<x1x2x3>_c]][differential index, e.g. for test 0 [0=Cx][1=Cy][2=Cz]]
   TH1F *fSignalYieldTEST[2];                         //! [0=for <X1X2> and Q2, 1=for <X1X2X3> and Q3]
+  TH1F *fEab_TEST6[2];                               //! [0=for signal "Test 6", 1=for background "Test 6"]
 
   // *.) Testing new ways to calculate background functions:
   TList *fBackgroundTESTList;                       // list to hold all TEST background for primary particle

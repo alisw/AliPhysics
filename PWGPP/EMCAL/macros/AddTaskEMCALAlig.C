@@ -1,5 +1,5 @@
 /// \file AddTaskEmcalAlig
-/// \ingroup EMCALPerformanceMacros
+/// \ingroup EMCALPerfAddTaskMacros
 /// \brief Configuration analysis task on alignment checks.
 ///
 /// The configuration of alignment checks analysis

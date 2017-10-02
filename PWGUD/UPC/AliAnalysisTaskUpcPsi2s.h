@@ -14,6 +14,7 @@ class AliPIDResponse;
 class AliAODEvent;
 class AliESDEvent;
 class AliTOFTriggerMask;
+class TBits;
 
 #define ntrg 17
 #include "AliAnalysisTaskSE.h"
@@ -102,6 +103,8 @@ class AliAnalysisTaskUpcPsi2s : public AliAnalysisTaskSE {
   TObjString *fDataFilnam;
   Short_t fRecoPass;
   Long64_t fEvtNum;
+  //spd
+  TBits fFOFiredChips;
   //tracks
   TClonesArray *fJPsiAODTracks;
   TClonesArray *fJPsiESDTracks; 
@@ -163,7 +166,7 @@ class AliAnalysisTaskUpcPsi2s : public AliAnalysisTaskSE {
   AliAnalysisTaskUpcPsi2s(const AliAnalysisTaskUpcPsi2s&); //not implemented
   AliAnalysisTaskUpcPsi2s& operator =(const AliAnalysisTaskUpcPsi2s&); //not implemented
   
-  ClassDef(AliAnalysisTaskUpcPsi2s, 6); 
+  ClassDef(AliAnalysisTaskUpcPsi2s, 7); 
 };
 
 #endif

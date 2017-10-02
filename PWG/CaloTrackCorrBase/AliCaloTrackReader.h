@@ -318,8 +318,9 @@ public:
   void             SetRejectEventsWithBit(UInt_t bit)      { Int_t n = fRejectEventsWithBit.GetSize();
                                                              fRejectEventsWithBit.Set(n+1);
                                                              fRejectEventsWithBit.AddAt(bit,n) ; }
-
-  void             SwitchOnLEDEventsRemoval()              { fRemoveLEDEvents       = kTRUE  ; }
+  /// Activate removal of LED events depending on number of cells in SM
+  /// \param opt: 1- default, check only SM3, 2- or larger check all SMs
+  void             SwitchOnLEDEventsRemoval(Int_t opt = 1) { fRemoveLEDEvents       = opt    ; }
   void             SwitchOffLEDEventsRemoval()             { fRemoveLEDEvents       = kFALSE ; }
   Bool_t           IsLEDEventRemoved()               const { return fRemoveLEDEvents         ; }   
   Bool_t           RejectLEDEvents();
@@ -872,7 +873,7 @@ public:
   
   Float_t          fZvtxCut ;	                     ///<  Cut on vertex position.
   Bool_t           fAcceptFastCluster;             ///<  Accept events from fast cluster, exclude these events for LHC11a.
-  Bool_t           fRemoveLEDEvents;               ///<  Remove events where LED was wrongly firing - EMCAL LHC11a.
+  Int_t            fRemoveLEDEvents;               ///<  Remove events where LED was wrongly firing - only EMCAL LHC11a for this equal to 1, generalized to any SM for larger
   
   Bool_t           fRemoveBadTriggerEvents;        ///<  Remove triggered events because trigger was exotic, bad, or out of BC.
   Bool_t           fTriggerPatchClusterMatch;      ///<  Search for the trigger patch and check if associated cluster was the trigger.
@@ -948,6 +949,7 @@ public:
   // cut control histograms
   
   TList *          fOutputContainer;               //!<! Output container with cut control histograms.
+  TH2F  *          fhEMCALClusterEtaPhi;           //!<! Control histogram on EMCAL clusters acceptance, before fiducial cuts
   TH2F  *          fhEMCALClusterTimeE;            //!<! Control histogram on EMCAL timing
   TH1F  *          fhEMCALClusterCutsE[8];         //!<! Control histogram on the different EMCal cluster selection cuts, E
   TH1F  *          fhPHOSClusterCutsE [7];         //!<! Control histogram on the different PHOS cluster selection cuts, E
