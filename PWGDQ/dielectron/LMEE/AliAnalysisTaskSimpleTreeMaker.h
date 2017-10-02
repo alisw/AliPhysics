@@ -172,12 +172,13 @@ class AliAnalysisTaskSimpleTreeMaker : public AliAnalysisTaskSE {
         Double_t fEtaMax;// maximum eta threshold (default = 0.8)
 
      
-        Double_t fESigTPCMin; 
-        Double_t fESigTPCMax; 
+      
 
         //Values and flags for PID cuts in ITS and TOF
         Double_t fESigITSMin;
         Double_t fESigITSMax;
+ 		Double_t fESigTPCMin; 
+        Double_t fESigTPCMax; 
         Double_t fESigTOFMin;
         Double_t fESigTOFMax;
         
@@ -185,13 +186,14 @@ class AliAnalysisTaskSimpleTreeMaker : public AliAnalysisTaskSE {
         Bool_t fPIDcutTOF;
         
         //Values and flag for pion PID cuts in TPC
+        Bool_t fPionPIDcutTPC;
         Double_t fPSigTPCMin;
         Double_t fPSigTPCMax;
         
-        Bool_t fPionPIDcutTPC;
         
-        Bool_t fIsV0tree;
         Bool_t fHasSDD;
+
+        Bool_t fIsV0tree;
         TH2F* fArmPlot;
 
         Bool_t fIsAOD;
