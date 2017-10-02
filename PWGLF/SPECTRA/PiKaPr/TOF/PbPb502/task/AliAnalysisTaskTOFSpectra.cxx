@@ -381,7 +381,11 @@ void AliAnalysisTaskTOFSpectra::Init()
   //Defining ranges and bins
   //
   AliInfo("Defining Multiplicity bins");
-  for (Int_t i = 0; i <= kEvtMultBins; i++) { //Multiplicity
+  //
+  // Multiplicity
+  //
+  // Only for PbPb
+  for (Int_t i = 0; i <= kEvtMultBins; i++) { 
     // Multiplicity [0%, 100%] - not uniform
     //5% step from 0% to 10% -> 2 bins
     //10% step from 10% to 100% -> 9 bins
@@ -399,7 +403,23 @@ void AliAnalysisTaskTOFSpectra::Init()
     if (i > 0)
       AliInfo(Form("Multiplicity Bin %i/%i [%.1f, %.1f]", i, kEvtMultBins, fMultiplicityBin.At(i - 1), fMultiplicityBin.At(i)));
   }
-  //
+  // Only for pp
+  if (!fHImode) {
+    TArrayF ppLimits(10);
+    Int_t j = 0;
+    ppLimits.AddAt(-1000, j++);
+    ppLimits.AddAt(-204, j++);
+    ppLimits.AddAt(-200, j++);
+    ppLimits.AddAt(0, j++);
+    ppLimits.AddAt(5, j++);
+    ppLimits.AddAt(10, j++);
+    ppLimits.AddAt(15, j++);
+    ppLimits.AddAt(23, j++);
+    ppLimits.AddAt(33, j++);
+    ppLimits.AddAt(1000, j++);
+    fMultiplicityBin.Set(j, ppLimits.GetArray());
+  }
+  // Only for cutting on the impact parameter!
   if (fCutOnMCImpact && fMCmode) {
     AliInfo("Changing the centrality cut to match the data impact parameter b");
     TArrayD bLimits(kEvtMultBins + 1);
@@ -439,26 +459,16 @@ void AliAnalysisTaskTOFSpectra::Init()
     for (Int_t i = 0; i <= kEvtMultBins; i++)
       fMultiplicityBin.AddAt(bLimits.At(i), i);
   }
-  if (!fHImode) {
-    TArrayF ppLimits(9);
-    Int_t j = 0;
-    ppLimits.AddAt(-1000, j++);
-    ppLimits.AddAt(-204, j++);
-    ppLimits.AddAt(-200, j++);
-    ppLimits.AddAt(0, j++);
-    ppLimits.AddAt(5, j++);
-    ppLimits.AddAt(10, j++);
-    ppLimits.AddAt(15, j++);
-    ppLimits.AddAt(23, j++);
-    ppLimits.AddAt(33, j++);
-    fMultiplicityBin.Set(j, ppLimits.GetArray());
-  }
-  //Check on the defined binning
-  for (Int_t i = 0; i < (fHImode ? kEvtMultBins : fMultiplicityBin.GetSize() - 1); i++) // Multiplicity
+  // Sanity Check on the defined binning
+  for (Int_t i = 0; i < fMultiplicityBin.GetSize() - 1; i++) // Loop on all Multiplicity bins
   {
     AliDebugF(2, "Mutltiplicity Bin %i is [%f, %f]", i, fMultiplicityBin.GetAt(i), fMultiplicityBin.GetAt(i + 1));
-    if (fMultiplicityBin.GetAt(i) >= fMultiplicityBin.GetAt(i + 1))
+    if (fMultiplicityBin.GetAt(i) >= fMultiplicityBin.GetAt(i + 1)) // Consecutive bins must be in increasing order!
       AliFatalF("Multiplicity bin %i is not defined correctly: %.3f > %.3f", i, fMultiplicityBin.GetAt(i), fMultiplicityBin.GetAt(i + 1));
+    //
+    if (i >= kEvtMultBins)
+      AliFatalF("Bin %i is out of bounds! Total number %i while maximum is %i", i, fMultiplicityBin.GetSize(), kEvtMultBins);
+    //
   }
   //
   //Shift to the TPC signal
@@ -2502,6 +2512,7 @@ void AliAnalysisTaskTOFSpectra::ComputeEvtMultiplicityBin()
     for (Int_t multbin = 0; multbin < kEvtMultBins; multbin++) { ///<  Computes the Multiplicity bin
       if (fEvtMult < fMultiplicityBin.At(multbin) || fEvtMult >= fMultiplicityBin.At(multbin + 1))
         continue;
+    //
       AliDebug(2, Form("Found bin %i/%i : %f < fEvtMultBin %f < %f", multbin, kEvtMultBins, fMultiplicityBin.At(multbin), fEvtMult, fMultiplicityBin.At(multbin + 1)));
       fEvtMultBin = multbin;
       break;
