@@ -131,6 +131,7 @@ AliAnalysisTaskSE(),
   fTPCEtaMax(0.8),
   fRemoveNdauRandomTracks(kFALSE),
   fUseQnFrameworkCorrq2(kTRUE),
+  fRequireMassForDauRemFromq2(kFALSE),
   fFlowMethod(kEP)
 {
   // Default constructor
@@ -188,6 +189,7 @@ AliAnalysisTaskSEHFvn::AliAnalysisTaskSEHFvn(const char *name,AliRDHFCuts *rdCut
   fTPCEtaMax(0.8),
   fRemoveNdauRandomTracks(kFALSE),
   fUseQnFrameworkCorrq2(kTRUE),
+  fRequireMassForDauRemFromq2(kFALSE),
   fFlowMethod(kEP)
 {
   // standard constructor
@@ -956,12 +958,12 @@ void AliAnalysisTaskSEHFvn::UserExec(Option_t */*option*/)
   }
 
   AliAnalysisVertexingHF *vHF=new AliAnalysisVertexingHF();
-  vector<Double_t> invMassCand;
-  vector<Double_t> invMassCand2;
-  vector<Double_t> ptCand;
-  vector<Double_t> deltaphiCand;
-  vector<Double_t> q2Cand;
-  vector<Int_t> isSelectedCand;
+  std::vector<Double_t> invMassCand;
+  std::vector<Double_t> invMassCand2;
+  std::vector<Double_t> ptCand;
+  std::vector<Double_t> deltaphiCand;
+  std::vector<Double_t> q2Cand;
+  std::vector<Int_t> isSelectedCand;
 
   Int_t nSelCandInMassRange=0;
   //Loop on D candidates
@@ -1016,6 +1018,7 @@ void AliAnalysisTaskSEHFvn::UserExec(Option_t */*option*/)
       ismassrange = kTRUE;
       nSelCandInMassRange++;
     }
+    if(!fRequireMassForDauRemFromq2) {ismassrange=kTRUE;}
 
     if(fEvPlaneDet==kFullTPC || fEvPlaneDet==kPosTPC || fEvPlaneDet==kNegTPC){
       Float_t eventplaneOld=eventplane;
