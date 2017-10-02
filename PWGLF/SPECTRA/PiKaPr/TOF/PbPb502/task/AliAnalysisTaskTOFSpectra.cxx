@@ -420,7 +420,7 @@ void AliAnalysisTaskTOFSpectra::Init()
     fMultiplicityBin.Set(j, ppLimits.GetArray());
   }
   // Only for cutting on the impact parameter!
-  if (fCutOnMCImpact && fMCmode) {
+  if (fCutOnMCImpact && fMCmode && fHImode) {
     AliInfo("Changing the centrality cut to match the data impact parameter b");
     TArrayD bLimits(kEvtMultBins + 1);
     Int_t j = 0;
@@ -456,8 +456,7 @@ void AliAnalysisTaskTOFSpectra::Init()
     if (j != kEvtMultBins)
       AliFatal("Somehow index does not sum up");
     //Copy the values to the cut array
-    for (Int_t i = 0; i <= kEvtMultBins; i++)
-      fMultiplicityBin.AddAt(bLimits.At(i), i);
+    fMultiplicityBin.Set(j + 1, bLimits.GetArray());
   }
   // Sanity Check on the defined binning
   for (Int_t i = 0; i < fMultiplicityBin.GetSize() - 1; i++) // Loop on all Multiplicity bins
@@ -2467,7 +2466,7 @@ void AliAnalysisTaskTOFSpectra::Terminate(Option_t*)
 void AliAnalysisTaskTOFSpectra::ComputeEvtMultiplicity()
 {
   if (fHImode) {
-    if (fMCmode && fCutOnMCImpact) { //If requested, using the MC impact parameter instead of the measured centrality
+    if (fMCmode && fCutOnMCImpact && fHImode) { //If requested, using the MC impact parameter instead of the measured centrality
       fEvtMult = static_cast<AliGenHepMCEventHeader*>(fMCEvt->GenEventHeader())->impact_parameter();
       return;
     }
@@ -2504,8 +2503,12 @@ void AliAnalysisTaskTOFSpectra::ComputeEvtMultiplicityBin()
     break;
   }
 
-  if (fEvtMultBin < 0 || fEvtMultBin >= kEvtMultBins)
+  if (fEvtMultBin < 0 || fEvtMultBin >= kEvtMultBins) {
+    for (Int_t multbin = 0; multbin < fMultiplicityBin.GetSize() - 1; multbin++)
+      printf("Multiplicity Bin %i/%i [%f, %f]\n", multbin, fMultiplicityBin.GetSize() - 1, fMultiplicityBin.At(multbin), fMultiplicityBin.At(multbin + 1));
+    //
     AliFatal(Form("Multiplicity bin wrongly assigned, for Multiplicity %f fEvtMultBin value: %hd!", fEvtMult, fEvtMultBin));
+  }
 }
 
 //________________________________________________________________________
