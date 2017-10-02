@@ -91,6 +91,8 @@ ClassImp(AliAnalysisTaskSEHFvn)
 AliAnalysisTaskSEHFvn::AliAnalysisTaskSEHFvn():
 AliAnalysisTaskSE(),
   fhEventsInfo(0),
+  fHistCandVsCent(0x0),
+  fHistCandMassRangeVsCent(0x0),
   fOutput(0),
   fRDCuts(0),
   fLowmasslimit(1.669),
@@ -141,14 +143,14 @@ AliAnalysisTaskSE(),
     fHistEvPlaneQncorrVZERO[i] = 0x0;
   }
 
-  fHistCandVsCent = 0x0;
-  fHistCandMassRangeVsCent = 0x0;
 }
 
 //________________________________________________________________________
 AliAnalysisTaskSEHFvn::AliAnalysisTaskSEHFvn(const char *name,AliRDHFCuts *rdCuts,Int_t decaychannel):
   AliAnalysisTaskSE(name),
   fhEventsInfo(0),
+  fHistCandVsCent(0x0),
+  fHistCandMassRangeVsCent(0x0),
   fOutput(0),
   fRDCuts(rdCuts),
   fLowmasslimit(0),
@@ -199,8 +201,6 @@ AliAnalysisTaskSEHFvn::AliAnalysisTaskSEHFvn(const char *name,AliRDHFCuts *rdCut
     fHistEvPlaneQncorrVZERO[i] = 0x0;
   }
 
-  fHistCandVsCent = 0x0;
-  fHistCandMassRangeVsCent = 0x0;
 
   Int_t pdg=421;
   switch(fDecChannel){
