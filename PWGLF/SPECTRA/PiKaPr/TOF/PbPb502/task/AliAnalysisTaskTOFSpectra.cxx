@@ -385,7 +385,7 @@ void AliAnalysisTaskTOFSpectra::Init()
   // Multiplicity
   //
   // Only for PbPb
-  for (Int_t i = 0; i <= kEvtMultBins; i++) { 
+  for (Int_t i = 0; i <= kEvtMultBins; i++) {
     // Multiplicity [0%, 100%] - not uniform
     //5% step from 0% to 10% -> 2 bins
     //10% step from 10% to 100% -> 9 bins
@@ -2508,38 +2508,13 @@ void AliAnalysisTaskTOFSpectra::ComputeEvtMultiplicityBin()
     return;
   }
 
-  if (fHImode) {
-    for (Int_t multbin = 0; multbin < kEvtMultBins; multbin++) { ///<  Computes the Multiplicity bin
-      if (fEvtMult < fMultiplicityBin.At(multbin) || fEvtMult >= fMultiplicityBin.At(multbin + 1))
-        continue;
+  for (Int_t multbin = 0; multbin < fMultiplicityBin.GetSize() - 1; multbin++) { ///<  Computes the Multiplicity bin
+    if (fEvtMult < fMultiplicityBin.At(multbin) || fEvtMult >= fMultiplicityBin.At(multbin + 1))
+      continue;
     //
-      AliDebug(2, Form("Found bin %i/%i : %f < fEvtMultBin %f < %f", multbin, kEvtMultBins, fMultiplicityBin.At(multbin), fEvtMult, fMultiplicityBin.At(multbin + 1)));
-      fEvtMultBin = multbin;
-      break;
-    }
-  } else {
-
-    if ((fEvtMult >= 0) && (fEvtMult <= 5)) {
-      fEvtMultBin = 0;
-    }
-    if ((fEvtMult >= 6) && (fEvtMult <= 9)) {
-      fEvtMultBin = 1;
-    }
-    if ((fEvtMult >= 10) && (fEvtMult <= 14)) {
-      fEvtMultBin = 2;
-    }
-    if ((fEvtMult >= 15) && (fEvtMult <= 22)) {
-      fEvtMultBin = 3;
-    }
-    if ((fEvtMult >= 23) && (fEvtMult <= 32)) {
-      fEvtMultBin = 4;
-    }
-    if (fEvtMult >= 33) {
-      fEvtMultBin = 5;
-    }
-    if ((fEvtMult >= -204) && (fEvtMult <= -200)) {
-      fEvtMultBin = 6;
-    }
+    AliDebug(2, Form("Found bin %i/%i : %f < fEvtMultBin %f < %f", multbin, kEvtMultBins, fMultiplicityBin.At(multbin), fEvtMult, fMultiplicityBin.At(multbin + 1)));
+    fEvtMultBin = multbin;
+    break;
   }
 
   if (fEvtMultBin < 0 || fEvtMultBin >= kEvtMultBins)
