@@ -31,25 +31,22 @@ class TDatabasePDG;
 class AliESDVertex;
 class TClonesArray;
 class TProfile;
+class TTree;
+class AliTOFT0maker;
+class AliTOFcalib;
+class AliPIDResponse;
+class AliESDTOFCluster;
 
 //Includes
 #include "AliAnalysisTask.h"
 #include "AliAnalysisTaskSE.h"
-#include "AliBackgroundSelection.h"
-#include "AliESDTOFCluster.h"
 #include "AliESDtrackCuts.h"
 #include "AliEventCuts.h"
+#include "AliLog.h"
 #include "AliMultSelection.h"
-#include "AliPIDResponse.h"
-#include "AliPhysicsSelection.h"
-#include "AliPhysicsSelectionTask.h"
-#include "AliTOFT0maker.h"
-#include "AliTOFT0v1.h"
-#include "AliTOFcalib.h"
+#include "AliTOFPIDResponse.h"
 #include "AliUtilTOFParams.h"
 #include "TBenchmark.h"
-#include "TRandom3.h"
-#include <TTree.h>
 
 using namespace AliUtilTOFParams;
 
