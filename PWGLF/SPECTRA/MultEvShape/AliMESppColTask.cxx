@@ -110,7 +110,7 @@ void AliMESppColTask::UserExec(Option_t *opt)
 //	if( (directivity_minus <= intervals[first-1]) || (directivity_minus > intervals[first]) ) return;
   if (directivity_minus <= 0.0 || directivity_minus > 0.3) return;
   if (directivity_plus <= 0.0 || directivity_plus > 0.3) return;
-  if (mult_comb08<30 || mult_comb08>39) return;
+//   if (mult_comb08<30 || mult_comb08>39) return;
 	
 	vec_hNoEvts[1] = mult_comb08; // combined multiplicity with |eta| < 0.8
 	vec_hNoEvts[2] = directivity;
