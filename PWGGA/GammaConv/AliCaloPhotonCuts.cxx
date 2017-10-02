@@ -3941,6 +3941,22 @@ Bool_t AliCaloPhotonCuts::SetMaxM02(Int_t maxM02)
       fMaxM02=0.32;
       break;
 
+    case 20:
+      if (!fUseM02) fUseM02=2;
+      fMinM02CutNr=9;
+      fMaxM02=0.5;
+      break;
+    case 21:
+      if (!fUseM02) fUseM02=2;
+      fMinM02CutNr=9;
+      fMaxM02=0.5;
+      break;
+    case 22:
+      if (!fUseM02) fUseM02=2;
+      fMinM02CutNr=9;
+      fMaxM02=0.7;
+      break;
+
     default:
       AliError(Form("Max M02 Cut not defined %d",maxM02));
       return kFALSE;
@@ -3977,6 +3993,16 @@ Float_t AliCaloPhotonCuts::CalculateMaxM02 (Int_t maxM02, Float_t clusEnergy){
       } else {
         return 10;
       }
+
+    case 20:
+      if( (0.27 + 0.0092 * TMath::Power(clusEnergy,2)) >= 0.5) return 0.5;
+      else return (0.27 + 0.0092 * TMath::Power(clusEnergy,2));
+    case 21:
+      if( (0.32 + 0.0072 * TMath::Power(clusEnergy,2)) >= 0.5) return 0.5;
+      else return (0.32 + 0.0072 * TMath::Power(clusEnergy,2));
+    case 22:
+      if( (0.32 + 0.0152 * TMath::Power(clusEnergy,2)) >= 0.7) return 0.7;
+      else return (0.32 + 0.0152 * TMath::Power(clusEnergy,2));
 
     default:
       AliError(Form("Max M02 for merged cluster Cut not defined %d",maxM02));
@@ -4022,6 +4048,8 @@ Float_t AliCaloPhotonCuts::CalculateMinM02 (Int_t minM02, Float_t clusEnergy){
       return 0.27;
     case 8:
       return 0.25;
+    case 9:
+      return 0.1;
 
     default:
       AliError(Form("Min M02 for merged cluster Cut not defined %d",minM02));
