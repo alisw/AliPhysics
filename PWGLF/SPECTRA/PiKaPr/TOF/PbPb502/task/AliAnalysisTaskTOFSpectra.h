@@ -623,7 +623,7 @@ class AliAnalysisTaskTOFSpectra : public AliAnalysisTaskSE {
   //Multiplicity
   Float_t fEvtMult;         ///<  Event Multiplicity
   Short_t fEvtMultBin;      ///<  Event Multiplicity bin to compact the information in the Tree
-  TArrayF fMultiplicityBin; ///<  Array of the Event Multiplicity bins
+  TArrayD fMultiplicityBin; ///<  Array of the Event Multiplicity bins
 
   /////////////////////
   // Track Variables //
