@@ -3942,17 +3942,17 @@ Bool_t AliCaloPhotonCuts::SetMaxM02(Int_t maxM02)
       break;
 
     case 20:
-      if (!fUseM02) fUseM02=2;
+      fUseM02=2;
       fMinM02CutNr=9;
       fMaxM02=0.5;
       break;
     case 21:
-      if (!fUseM02) fUseM02=2;
+      fUseM02=2;
       fMinM02CutNr=9;
       fMaxM02=0.5;
       break;
     case 22:
-      if (!fUseM02) fUseM02=2;
+      fUseM02=2;
       fMinM02CutNr=9;
       fMaxM02=0.7;
       break;
