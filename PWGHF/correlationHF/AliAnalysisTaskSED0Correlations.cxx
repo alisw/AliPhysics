@@ -119,6 +119,9 @@ AliAnalysisTaskSE(),
   fFractAccME(100),
   fAODProtection(1),
   fPurityStudies(kFALSE),
+  fUseNtrklWeight(kFALSE),
+  fHistNtrklWeight(0x0),
+  fWeight(1.),
   fBranchD(),
   fBranchTr(),
   fBranchDCutVars(),
@@ -189,6 +192,9 @@ AliAnalysisTaskSED0Correlations::AliAnalysisTaskSED0Correlations(const char *nam
   fFractAccME(100),
   fAODProtection(1),
   fPurityStudies(kFALSE),
+  fUseNtrklWeight(kFALSE),
+  fHistNtrklWeight(0x0),
+  fWeight(1.),
   fBranchD(),
   fBranchTr(),
   fBranchDCutVars(),
@@ -281,6 +287,9 @@ AliAnalysisTaskSED0Correlations::AliAnalysisTaskSED0Correlations(const AliAnalys
   fFractAccME(source.fFractAccME),
   fAODProtection(source.fAODProtection),
   fPurityStudies(source.fPurityStudies),
+  fUseNtrklWeight(source.fUseNtrklWeight),
+  fHistNtrklWeight(source.fHistNtrklWeight),
+  fWeight(source.fWeight),
   fBranchD(source.fBranchD),
   fBranchTr(source.fBranchTr),
   fBranchDCutVars(source.fBranchDCutVars), 
@@ -395,6 +404,9 @@ AliAnalysisTaskSED0Correlations& AliAnalysisTaskSED0Correlations::operator=(cons
   fFractAccME = orig.fFractAccME; 
   fAODProtection = orig.fAODProtection;
   fPurityStudies = orig.fPurityStudies;
+  fUseNtrklWeight = orig.fUseNtrklWeight;
+  fHistNtrklWeight = orig.fHistNtrklWeight;
+  fWeight = orig.fWeight;
   fBranchD = orig.fBranchD;
   fBranchTr = orig.fBranchTr;
   fBranchDCutVars = orig.fBranchDCutVars;
@@ -864,6 +876,14 @@ void AliAnalysisTaskSED0Correlations::UserExec(Option_t */*option*/)
   fAlreadyFilled=kFALSE;
   fNtrigD=0;
 
+  //Reset (and, in case, evaluate), Ntrkl event weights
+  fWeight=1.;
+  if(fReadMC && fUseNtrklWeight) {
+    Int_t nTracklets = static_cast<Int_t>(AliVertexingHFUtils::GetNumberOfTrackletsInEtaRange(aod,-1.,1.));
+    fWeight *= GetNtrklWeight(nTracklets);
+    printf("Using Ntrkl weights, tracklets=%d, Weight=%f\n",nTracklets,fWeight);
+  }
+
   //***** Loop over D0 candidates *****
   Int_t nInD0toKpi = inputArray->GetEntriesFast();
   if(fDebug>2) printf("Number of D0->Kpi: %d\n",nInD0toKpi);
@@ -906,7 +926,7 @@ void AliAnalysisTaskSED0Correlations::UserExec(Option_t */*option*/)
   // if they have been deleted in dAOD reconstruction phase
   // in order to reduce the size of the file
   AliAnalysisVertexingHF *vHF = new AliAnalysisVertexingHF();
-  
+
   //Fill Event Multiplicity (needed only in Reco)
   fMultEv = (Double_t)(AliVertexingHFUtils::GetNumberOfTrackletsInEtaRange(aod,-1.,1.));
 
@@ -2581,6 +2601,9 @@ void AliAnalysisTaskSED0Correlations::FillSparsePlots(TClonesArray* mcArray, Dou
   //fills the THnSparse for correlations, calculating the variables
   //
 
+  //for MC, in case Ntrkl reweight is active, add the event weights to THnSparse
+  if(fReadMC && fUseNtrklWeight) wg*=fWeight;
+
   //Initialization of variables
   Double_t mD0, mD0bar, deltaphi = 0., deltaeta = 0.;
   mD0 = mInv[0];
@@ -3322,26 +3345,39 @@ void AliAnalysisTaskSED0Correlations::FillPurityPlots(TClonesArray* mcArray, Ali
   for(int j=0; j<6; j++) {
     if(fillAssocRange[j]==kTRUE) {
       if(primTrack) {
-        ((TH1F*)fOutputStudy->FindObject(Form("hPurityCount_PrimAccepted_pTD%s_pTass%s",stringpTD.Data(),namebinAss[j].Data())))->Fill(0.); 
-        ((TH1F*)fOutputStudy->FindObject(Form("hPuritydPhi_PrimAccepted_pTD%s_pTass%s",stringpTD.Data(),namebinAss[j].Data())))->Fill(deltaphi); 
+        ((TH1F*)fOutputStudy->FindObject(Form("hPurityCount_PrimAccepted_pTD%s_pTass%s",stringpTD.Data(),namebinAss[j].Data())))->Fill(0.,fWeight); 
+        ((TH1F*)fOutputStudy->FindObject(Form("hPuritydPhi_PrimAccepted_pTD%s_pTass%s",stringpTD.Data(),namebinAss[j].Data())))->Fill(deltaphi,fWeight); 
       }
       if(!primTrack) {
-        ((TH1F*)fOutputStudy->FindObject(Form("hPurityCount_SecAccepted_pTD%s_pTass%s",stringpTD.Data(),namebinAss[j].Data())))->Fill(0.); 
-        ((TH1F*)fOutputStudy->FindObject(Form("hPuritydPhi_SecAccepted_pTD%s_pTass%s",stringpTD.Data(),namebinAss[j].Data())))->Fill(deltaphi); 
+        ((TH1F*)fOutputStudy->FindObject(Form("hPurityCount_SecAccepted_pTD%s_pTass%s",stringpTD.Data(),namebinAss[j].Data())))->Fill(0.,fWeight); 
+        ((TH1F*)fOutputStudy->FindObject(Form("hPuritydPhi_SecAccepted_pTD%s_pTass%s",stringpTD.Data(),namebinAss[j].Data())))->Fill(deltaphi,fWeight); 
       }
       if(primTrack && origTr>=1&&origTr<=3) {  //fill for acccepted primary charm tracks
-        ((TH1F*)fOutputStudy->FindObject(Form("hPurityCount_CharmAccepted_pTD%s_pTass%s",stringpTD.Data(),namebinAss[j].Data())))->Fill(0.); 
-        ((TH1F*)fOutputStudy->FindObject(Form("hPuritydPhi_CharmAccepted_pTD%s_pTass%s",stringpTD.Data(),namebinAss[j].Data())))->Fill(deltaphi); 
+        ((TH1F*)fOutputStudy->FindObject(Form("hPurityCount_CharmAccepted_pTD%s_pTass%s",stringpTD.Data(),namebinAss[j].Data())))->Fill(0.,fWeight); 
+        ((TH1F*)fOutputStudy->FindObject(Form("hPuritydPhi_CharmAccepted_pTD%s_pTass%s",stringpTD.Data(),namebinAss[j].Data())))->Fill(deltaphi,fWeight); 
       }
       if(primTrack && origTr>=4&&origTr<=8) {  //fill for accepted primary beauty tracks
-        ((TH1F*)fOutputStudy->FindObject(Form("hPurityCount_BeautyAccepted_pTD%s_pTass%s",stringpTD.Data(),namebinAss[j].Data())))->Fill(0.); 
-        ((TH1F*)fOutputStudy->FindObject(Form("hPuritydPhi_BeautyAccepted_pTD%s_pTass%s",stringpTD.Data(),namebinAss[j].Data())))->Fill(deltaphi); 
+        ((TH1F*)fOutputStudy->FindObject(Form("hPurityCount_BeautyAccepted_pTD%s_pTass%s",stringpTD.Data(),namebinAss[j].Data())))->Fill(0.,fWeight); 
+        ((TH1F*)fOutputStudy->FindObject(Form("hPuritydPhi_BeautyAccepted_pTD%s_pTass%s",stringpTD.Data(),namebinAss[j].Data())))->Fill(deltaphi,fWeight); 
       }
     }
   }
   
   return;
 }
+
+//__________________________________________________________________________________________________
+Double_t AliAnalysisTaskSED0Correlations::GetNtrklWeight(Int_t ntrkl){
+  //
+  //  extracts the Ntrkl weight using the histo with data/MC Ntracklets ratio
+  //
+  if(ntrkl<=0) return 1.;
+  if(!fHistNtrklWeight) { AliError("Input histogram to evaluate Ntrkl weight missing"); return 0.; }
+  Double_t histweight=fHistNtrklWeight->GetBinContent(fHistNtrklWeight->FindBin(ntrkl));
+  Double_t weight = histweight>0 ? histweight : 0.;
+  return weight;
+}
+
 
 //________________________________________________________________________
 void AliAnalysisTaskSED0Correlations::PrintBinsAndLimits() {
@@ -3402,6 +3438,8 @@ void AliAnalysisTaskSED0Correlations::PrintBinsAndLimits() {
   cout << "TTree filling = "<<fFillTrees<<"\n";
   cout << "--------------------------\n";  
   cout << "Purity studies (for MC) = "<<fPurityStudies<<"\n";
+  cout << "--------------------------\n";  
+  cout << "Ntrkl reweighting (for MC) = "<<fUseNtrklWeight<<"\n";
   cout << "--------------------------\n";  
 
   if(fPurityStudies) {
