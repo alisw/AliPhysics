@@ -33,9 +33,10 @@ AliNanoAODHeader::AliNanoAODHeader(Int_t size):
   fRunNumber(-1)
 {
   AllocateInternalStorage(size, 0);
+
 }
 
-AliNanoAODHeader::AliNanoAODHeader(Int_t size, Int_t sizeString):
+AliNanoAODHeader::AliNanoAODHeader(Int_t size, Int_t sizeInt):
   AliVAODHeader(),
   AliNanoAODStorage(),
   fCentralityMethod("V0M"),
@@ -48,8 +49,7 @@ AliNanoAODHeader::AliNanoAODHeader(Int_t size, Int_t sizeString):
   fRunNumber(-1)
 {
 
-  AllocateInternalStorage(size, sizeString);
-
+  AllocateInternalStorage(size, sizeInt);
 }
 
 AliNanoAODHeader& AliNanoAODHeader::operator=(const AliNanoAODHeader& evt) {
@@ -64,9 +64,9 @@ AliNanoAODHeader& AliNanoAODHeader::operator=(const AliNanoAODHeader& evt) {
 void  AliNanoAODHeader::Clear(Option_t * /*opt*/) {
   // empty storage
   fVars.clear();
-  fVarsString.clear();
+  fVarsInt.clear();
   fNVars = 0;
-  fNVarsString = 0;
+  fNVarsInt = 0;
 }
 
 Double_t AliNanoAODHeader::GetCentrality () const {
@@ -90,17 +90,79 @@ Int_t  AliNanoAODHeader::GetRunNumber() const {
    if (fRunNumber>0) return Int_t(GetVar(fRunNumber));
    return 0;
 
- } 
+} 
 
- Int_t AliNanoAODHeader::GetVarIndex(TString varName){
-    std::map<TString,Int_t>::iterator it = fMapCstVar.find(varName); // FIXME: do I need to delete "it"?
-        if(it != fMapCstVar.end()) {
-            //element found;
-            return it->second;
-        }else{
-            return -1;
-        } 
+
+void AliNanoAODHeader::SetFiredTriggerClasses(TString varlist) {
+  int firedTrigClasses = 0;
+
+  TObjArray * vars = varlist.Tokenize("  ");
+  TIter it(vars);
+  TObjString *token  = 0;
+  
+  if(fMapFiredTriggerClasses.size()==0){
+    AliFatal("fMapFiredTriggerClasses does not exist. Cannot set fired trigger classes.");
+  }
+  
+  while ((token = (TObjString*) it.Next())) {
+    TString var = token->GetString();
+    std::map<TString,Int_t>::iterator it = fMapFiredTriggerClasses.find(var); // FIXME: do I need to delete "it"?
+    if(it != fMapFiredTriggerClasses.end()) {
+      //element found;
+      firedTrigClasses |= 1 << it->second;
+    }else{
+      //ignore missing fired trigger classes
+    } 
+  }
+
+  //create object to save these triggers
+  fVarsInt[fFiredTriggerClasses] = firedTrigClasses;
+}
+
+TString  AliNanoAODHeader::GetFiredTriggerClasses() const {
+  TString firedTrigClasses = "";
+
+  if(fMapFiredTriggerClasses.size()==0){
+    AliFatal("fMapFiredTriggerClasses does not exist. Cannot get fired trigger classes.");
+  }
+
+  for (std::map<TString, int>::const_iterator it = fMapFiredTriggerClasses.begin(); it != fMapFiredTriggerClasses.end(); it++){
+    int bit = (fVarsInt[fFiredTriggerClasses] >> it->second) & 1;
+    if(bit==1){
+      if(firedTrigClasses.Length()>1)
+	firedTrigClasses += "  ";
+      firedTrigClasses += it->first;
+    }
+  }
+
+  return firedTrigClasses;
+  
+}
+
+void AliNanoAODHeader::SetMapFiredTriggerClasses (TString trigClasses){
+
+  TObjArray * vars = trigClasses.Tokenize(",");
+  TIter it(vars);
+  TObjString *token  = 0;
+  Int_t index=0;
+
+  while ((token = (TObjString*) it.Next())) {
+    TString var = token->GetString().Strip(TString::kBoth, ' ');
+    fMapFiredTriggerClasses[var] = index;
+    index++;
+  }
+}
+
+
+Int_t AliNanoAODHeader::GetVarIndex(TString varName){
+  std::map<TString,Int_t>::iterator it = fMapCstVar.find(varName); // FIXME: do I need to delete "it"?
+  if(it != fMapCstVar.end()) {
+    //element found;
+    return it->second;
+  }else{
+    return -1;
   } 
+} 
 
 void AliNanoAODHeader::NotImplemented(void) const {
   AliError("Not implemented");
