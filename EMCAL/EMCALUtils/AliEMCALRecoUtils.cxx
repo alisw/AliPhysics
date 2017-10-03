@@ -137,7 +137,7 @@ AliEMCALRecoUtils::AliEMCALRecoUtils(const AliEMCALRecoUtils & reco)
 {  
   for (Int_t i = 0; i < 15 ; i++) { fMisalRotShift[i]      = reco.fMisalRotShift[i]      ; 
                                     fMisalTransShift[i]    = reco.fMisalTransShift[i]    ; }
-  for (Int_t i = 0; i < 7  ; i++) { fNonLinearityParams[i] = reco.fNonLinearityParams[i] ; }
+  for (Int_t i = 0; i < 10  ; i++) { fNonLinearityParams[i] = reco.fNonLinearityParams[i] ; }
   for (Int_t i = 0; i < 3  ; i++) { fSmearClusterParam[i]  = reco.fSmearClusterParam[i]  ; }
   for (Int_t j = 0; j < 5  ; j++) { fMCGenerToAccept[j]    = reco.fMCGenerToAccept[j]    ; }
 }
@@ -153,7 +153,7 @@ AliEMCALRecoUtils & AliEMCALRecoUtils::operator = (const AliEMCALRecoUtils & rec
   
   for (Int_t i = 0; i < 15 ; i++) { fMisalTransShift[i]    = reco.fMisalTransShift[i]    ; 
     fMisalRotShift[i]      = reco.fMisalRotShift[i]      ; }
-  for (Int_t i = 0; i < 7  ; i++) { fNonLinearityParams[i] = reco.fNonLinearityParams[i] ; }
+  for (Int_t i = 0; i < 10  ; i++) { fNonLinearityParams[i] = reco.fNonLinearityParams[i] ; }
   for (Int_t i = 0; i < 3  ; i++) { fSmearClusterParam[i]  = reco.fSmearClusterParam[i]  ; }   
   
   fParticleType              = reco.fParticleType;
@@ -912,7 +912,66 @@ Float_t AliEMCALRecoUtils::CorrectClusterEnergyLinearity(AliVCluster* cluster)
       
       break;
     }
+
+  case kPCMv1:
+    {
+      //based on symmetric decays of pi0 meson 
+      // described in the note: https://aliceinfo.cern.ch/Notes/node/211 - Sec 3.1.2 (Test Beam Constrained SDM).
+      // parameters vary from MC to MC
+      //fNonLinearityParams[0] =   0.984876;
+      //fNonLinearityParams[1] =  -9.999609;
+      //fNonLinearityParams[2] =  -4.999891;
+      //fNonLinearityParams[3] =  0.;
+      //fNonLinearityParams[4] =  0.;
+      //fNonLinearityParams[5] =  0.;
+      //fNonLinearityParams[6] =  0.;
+      energy /= fNonLinearityParams[0] + exp(fNonLinearityParams[1] + fNonLinearityParams[2]*energy);
       
+      break;
+    }  
+
+  case kPCMplusBTCv1:
+    {
+      //convolution of TestBeamCorrectedv3 with PCM method
+      //Based on comparing MC truth information to the reconstructed energy of clusters.
+      // described in the note: https://aliceinfo.cern.ch/Notes/node/211 - Sec 3.1.2 (Test Beam Constrained SDM).
+      // parameters vary from MC to MC
+      //fNonLinearityParams[0] =  0.976941;
+      //fNonLinearityParams[1] =  0.162310;
+      //fNonLinearityParams[2] =  1.08689;
+      //fNonLinearityParams[3] =  0.0819592;
+      //fNonLinearityParams[4] =  152.338;
+      //fNonLinearityParams[5] =  30.9594;
+      //fNonLinearityParams[6] =  0.9615;
+      //fNonLinearityParams[7] =   0.984876;
+      //fNonLinearityParams[8] =  -9.999609;
+      //fNonLinearityParams[9] =  -4.999891;
+      energy *= fNonLinearityParams[6]/(fNonLinearityParams[0]*(1./(1.+fNonLinearityParams[1]*exp(-energy/fNonLinearityParams[2]))*1./(1.+fNonLinearityParams[3]*exp((energy-fNonLinearityParams[4])/fNonLinearityParams[5]))));
+      energy /= fNonLinearityParams[7] + exp(fNonLinearityParams[8] + fNonLinearityParams[9]*energy);
+      
+      break;
+    }  
+
+  case kPCMsysv1:
+    {
+      // Systematic variation of kPCMv1
+      //Based on comparing MC truth information to the reconstructed energy of clusters.
+      // described in the note: https://aliceinfo.cern.ch/Notes/node/211 - Sec 3.1.2 (Test Beam Constrained SDM).
+      // parameters vary from MC to MC
+      //fNonLinearityParams[0] =  0.0;
+      //fNonLinearityParams[1] =  1.0;
+      //fNonLinearityParams[2] =  1.0;
+      //fNonLinearityParams[3] =  0.0;
+      //fNonLinearityParams[4] =  1.0;
+      //fNonLinearityParams[5] =  0.0;
+      //fNonLinearityParams[6] =  0.0;
+      energy /= (fNonLinearityParams[0] + fNonLinearityParams[1] * TMath::Power(energy,fNonLinearityParams[2]) ) /
+	(fNonLinearityParams[3] + fNonLinearityParams[4] * TMath::Power(energy,fNonLinearityParams[5]) ) + fNonLinearityParams[6];
+      
+      break;
+    }  
+
+    
     case kNoCorrection:
       AliDebug(2,"No correction on the energy\n");
       break;
@@ -1058,6 +1117,48 @@ void AliEMCALRecoUtils::InitNonLinearityParam()
     fNonLinearityParams[5] = 116.938;   
     fNonLinearityParams[6] = 1.00437;   
   }
+
+if (fNonLinearityFunction == kPCMv1) {
+  //parameters change from MC production to MC production, they need to set for each period
+    fNonLinearityParams[0] =  0.984876;
+    fNonLinearityParams[1] = -9.999609;
+    fNonLinearityParams[2] = -4.999891;
+    fNonLinearityParams[3] = 0.;
+    fNonLinearityParams[4] = 0.;
+    fNonLinearityParams[5] = 0.;
+    fNonLinearityParams[6] = 0.;
+  }
+
+ if (fNonLinearityFunction == kPCMplusBTCv1) {
+   // test beam corrected values convoluted with symmetric meson decays values
+   // for test beam:
+   // https://indico.cern.ch/event/438805/contribution/1/attachments/1145354/1641875/emcalPi027August2015.pdf
+   // for PCM method:
+   // https://aliceinfo.cern.ch/Notes/node/211
+    fNonLinearityParams[0] =  0.976941;
+    fNonLinearityParams[1] =  0.162310;
+    fNonLinearityParams[2] =  1.08689;
+    fNonLinearityParams[3] =  0.0819592;
+    fNonLinearityParams[4] =  152.338;
+    fNonLinearityParams[5] =  30.9594;
+    fNonLinearityParams[6] =  0.9615;
+    fNonLinearityParams[7] =   0.984876;
+    fNonLinearityParams[8] =  -9.999609;
+    fNonLinearityParams[9] =  -4.999891;
+ }
+
+ if (fNonLinearityFunction == kPCMsysv1) {
+   //systematics for kPCMv1
+   // for PCM method:
+   // https://aliceinfo.cern.ch/Notes/node/211
+   fNonLinearityParams[0] =  0.0;
+   fNonLinearityParams[1] =  1.0;
+   fNonLinearityParams[2] =  1.0;
+   fNonLinearityParams[3] =  0.0;
+   fNonLinearityParams[4] =  1.0;
+   fNonLinearityParams[5] =  0.0;
+   fNonLinearityParams[6] =  0.0;
+ }
 }
 
 ///
@@ -1275,7 +1376,7 @@ void AliEMCALRecoUtils::InitParameters()
   }
   
   // Non linearity
-  for (Int_t i = 0; i < 7  ; i++) fNonLinearityParams[i] = 0.; 
+  for (Int_t i = 0; i < 10  ; i++) fNonLinearityParams[i] = 0.; 
   
   // For kBeamTestCorrectedv2 case, but default is no correction
   fNonLinearityParams[0] =  0.983504;
@@ -3589,7 +3690,7 @@ void AliEMCALRecoUtils::Print(const Option_t *) const
                                   fMisalRotShift[i*3],  fMisalRotShift[i*3+1],  fMisalRotShift[i*3+2]   );
   printf("\tNon linearity function %d, parameters:\n", fNonLinearityFunction);
   if (fNonLinearityFunction != 3) // print only if not kNoCorrection
-    for (Int_t i=0; i<6; i++) printf("param[%d]=%f\n",i, fNonLinearityParams[i]);
+    for (Int_t i=0; i<10; i++) printf("param[%d]=%f\n",i, fNonLinearityParams[i]);
   
   printf("\tPosition Recalculation option %d, Particle Type %d, fW0 %2.2f, Recalibrate Data %d \n",fPosAlgo,fParticleType,fW0, fRecalibration);
 

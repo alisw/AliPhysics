@@ -72,7 +72,11 @@ public:
                                   kBeamTestCorrectedv2   = 8,
                                   kSDMv5   = 9, kPi0MCv5 = 10,
                                   kSDMv6   =11, kPi0MCv6 = 12,
-                                  kBeamTestCorrectedv3   = 13};
+                                  kBeamTestCorrectedv3   = 13,
+				  kPCMv1 = 14, //pure symmetric decay muon method 
+				  kPCMplusBTCv1 = 15, //kPCMv1 convoluted with kBeamTestCorrectedv3
+				  kPCMsysv1 = 16 //variation of kPCMv1 to calculate systematics
+  };
 
   /// Cluster position enum list of possible algoritms
   enum     PositionAlgorithms{kUnchanged=-1,kPosTowerIndex=0, kPosTowerGlobal=1};
@@ -124,11 +128,11 @@ public:
   // Non Linearity
   //-----------------------------------------------------
   Float_t  CorrectClusterEnergyLinearity(AliVCluster* clu) ;
-  Float_t  GetNonLinearityParam(Int_t i)     const { if(i < 7 && i >=0 ){ return fNonLinearityParams[i]  ; }
-                                                     else  { AliInfo(Form("Index %d larger than 6 or negative, do nothing\n",i)) ;
+  Float_t  GetNonLinearityParam(Int_t i)     const { if(i < 10 && i >=0 ){ return fNonLinearityParams[i]  ; }
+                                                     else  { AliInfo(Form("Index %d larger than 9 or negative, do nothing\n",i)) ;
                                                                          return 0.                     ; } }
-  void     SetNonLinearityParam(Int_t i, Float_t param)  { if(i < 7 && i >=0 ){ fNonLinearityParams[i] = param ; }
-                                                           else { AliInfo(Form("Index %d larger than 6 or negative, do nothing\n",i)) ; } }
+  void     SetNonLinearityParam(Int_t i, Float_t param)  { if(i < 10 && i >=0 ){ fNonLinearityParams[i] = param ; }
+                                                           else { AliInfo(Form("Index %d larger than 9 or negative, do nothing\n",i)) ; } }
   void     InitNonLinearityParam();
   Int_t    GetNonLinearityFunction() const               { return fNonLinearityFunction    ; }
   void     SetNonLinearityFunction(Int_t fun)            { fNonLinearityFunction = fun     ; InitNonLinearityParam() ; }
@@ -444,7 +448,7 @@ private:
     
   // Non linearity
   Int_t      fNonLinearityFunction;      ///< Non linearity function choice, see enum NonlinearityFunctions
-  Float_t    fNonLinearityParams[7];     ///< Parameters for the non linearity function
+  Float_t    fNonLinearityParams[10];    ///< Parameters for the non linearity function
   Int_t	     fNonLinearThreshold;        ///< Non linearity threshold value for kBeamTest non linearity function 
   
   // Energy smearing for MC
