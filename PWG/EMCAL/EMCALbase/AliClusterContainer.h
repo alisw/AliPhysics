@@ -72,6 +72,7 @@ class AliClusterContainer : public AliEmcalContainer {
   void                        SetPhosMinNcells(Int_t n)                    { fPhosMinNcells = n; }
   void                        SetPhosMinM02(Double_t m)                    { fPhosMinM02 = m; }
   void 						 SetEmcalM02Range(Double_t min, Double_t max) { fEmcalMinM02 = min; fEmcalMaxM02 = max; }
+  void                        SetEmcalMaxM02Energy(Double_t max)           { fEmcalMaxM02CutEnergy = max; }
   void                        SetArray(const AliVEvent * event);
   void                        SetClusUserDefEnergyCut(Int_t t, Double_t cut);
   Double_t                    GetClusUserDefEnergyCut(Int_t t) const;
@@ -122,13 +123,14 @@ class AliClusterContainer : public AliEmcalContainer {
   Double_t         fPhosMinM02;                 ///< min value of M02 for phos clusters
   Double_t		   fEmcalMinM02;				   ///< min value of M02 for EMCAL clusters
   Double_t 		   fEmcalMaxM02;				   ///< max value of M02 for EMCAL clusters
+  Double_t         fEmcalMaxM02CutEnergy;       ///< max EMCal cluster energy for which to apply M02 cut
 
  private:
   AliClusterContainer(const AliClusterContainer& obj); // copy constructor
   AliClusterContainer& operator=(const AliClusterContainer& other); // assignment
 
   /// \cond CLASSIMP
-  ClassDef(AliClusterContainer,10);
+  ClassDef(AliClusterContainer,11);
   /// \endcond
 };
 
