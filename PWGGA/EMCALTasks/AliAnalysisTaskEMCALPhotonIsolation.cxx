@@ -1422,7 +1422,7 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::Run()
       TLorentzVector vecCOI;
       coi->GetMomentum(vecCOI,fVertex);
       
-      if(fWho == 2 && vecCOI.Eta() > 0.) // Reject A-side clusters
+      if(fWho == 2 && vecCOI.Eta() < 0.) // Reject C-side clusters
 	return kFALSE;
 
       fPT->Fill(vecCOI.Pt());
