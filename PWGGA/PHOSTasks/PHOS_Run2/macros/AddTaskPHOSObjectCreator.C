@@ -41,16 +41,20 @@ AliAnalysisTaskPHOSObjectCreator* AddTaskPHOSObjectCreator(
     f1nonlin->SetParNames("a","b (GeV)","c");
 
     if(period.Contains("LHC15n")){
-      f1nonlin->FixParameter(0,-0.0363); //for full E, ZS = 20MeV;
-      f1nonlin->FixParameter(1,  0.683); //for full E, ZS = 20MeV;
-      f1nonlin->FixParameter(2,  0.998); //for full E, ZS = 20MeV;//decalib 3% on M123
+      f1nonlin->FixParameter(0,-0.05); //for full E, ZS = 20MeV;
+      f1nonlin->FixParameter(1,  0.6); //for full E, ZS = 20MeV;
+      f1nonlin->FixParameter(2,1.006); //for full E, ZS = 20MeV;//decalib 3% on M123
     }
     else if(period.Contains("LHC15o")){
-      f1nonlin->FixParameter(0,-0.0388);//for core E at ZS 20 MeV with only MIP cut
-      f1nonlin->FixParameter(1,  0.748);//for core E at ZS 20 MeV with only MIP cut
-      f1nonlin->FixParameter(2,  0.991);//for core E at ZS 20 MeV with only MIP cut
+      f1nonlin->FixParameter(0,-0.04);//for core E at ZS 20 MeV with only MIP cut
+      f1nonlin->FixParameter(1,  0.8);//for core E at ZS 20 MeV with only MIP cut
+      f1nonlin->FixParameter(2,0.993);//for core E at ZS 20 MeV with only MIP cut
     }
     task->SetUserDefinedNonlinearity(f1nonlin);
+
+    printf("Non-linearity correction in M.C. is ON\n");
+    printf("function shape : %s , where p0 = %3.2f , p1 = %3.2f , p2 = %3.2f\n",f1nonlin->GetTitle(),f1nonlin->GetParameter(0),f1nonlin->GetParameter(1),f1nonlin->GetParameter(2));
+
   }
 
   mgr->AddTask(task);

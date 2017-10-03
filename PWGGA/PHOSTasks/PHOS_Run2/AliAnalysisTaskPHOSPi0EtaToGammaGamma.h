@@ -37,9 +37,12 @@ class AliAnalysisTaskPHOSPi0EtaToGammaGamma : public AliAnalysisTaskSE {
     void SetBunchSpace(Double_t bs) {fBunchSpace = bs;}
     void SetCollisionSystem(Int_t id) {fCollisionSystem = id;}
     void SetQnVectorTask(Bool_t flag) {fIsFlowTask = flag;}
+    void SetHarmonics(Int_t harmonics) {fHarmonics = harmonics;}
     void SetJetJetMC(Bool_t flag){ fIsJJMC = flag; }
     void SetMCType(TString type){fMCType = type;}
     void SetTOFCutEfficiencyFunction(TF1 *f1) {fTOFEfficiency = f1;}
+    void SetNonLinearityStudy(Bool_t flag) {fIsNonLinStudy = flag;}
+
 
     void SetEventCuts(Bool_t isMC){
       fPHOSEventCuts = new AliPHOSEventCuts("PHOSEventCuts");
@@ -152,6 +155,8 @@ class AliAnalysisTaskPHOSPi0EtaToGammaGamma : public AliAnalysisTaskSE {
     Int_t FindPrimaryMotherESD(Int_t label);
     AliPHOSGeometry *GetPHOSGeometry();
 
+    virtual void DoNonLinearityStudy();
+
   protected:
     Bool_t fIsMC;
     Bool_t fIsJJMC;//jet jet MC
@@ -181,7 +186,7 @@ class AliAnalysisTaskPHOSPi0EtaToGammaGamma : public AliAnalysisTaskSE {
     AliPHOSJetJetMC *fJJMCHandler;
     Int_t fRunNumber;
     AliPHOSGeometry *fPHOSGeo;
-    TList *fPHOSEvents[10];
+    TList *fPHOSEvents[10][12];
     TClonesArray *fPHOSClusterArray;
     TString fEstimator;
     AliMultSelection *fMultSelection;
@@ -191,7 +196,9 @@ class AliAnalysisTaskPHOSPi0EtaToGammaGamma : public AliAnalysisTaskSE {
     Int_t fNMixed;
     Double_t fVertex[3];
     Int_t fZvtx;
+    Int_t fEPBin;
     Bool_t fIsFlowTask;
+    Int_t fHarmonics;
     TString fQnEstimator;
     AliQnCorrectionsManager *fFlowQnVectorMgr;
     TString fTPCEPName[3]; 
@@ -205,12 +212,14 @@ class AliAnalysisTaskPHOSPi0EtaToGammaGamma : public AliAnalysisTaskSE {
     AliPHOSTriggerHelper *fPHOSTriggerHelperL1M;//only for rejection factor in MB
     AliPHOSTriggerHelper *fPHOSTriggerHelperL1L;//only for rejection factor in MB
     AliPIDResponse *fPIDResponse;
+    Bool_t fIsNonLinStudy;
+    TF1 *fNonLin[7][7];
 
   private:
     AliAnalysisTaskPHOSPi0EtaToGammaGamma(const AliAnalysisTaskPHOSPi0EtaToGammaGamma&);
     AliAnalysisTaskPHOSPi0EtaToGammaGamma& operator=(const AliAnalysisTaskPHOSPi0EtaToGammaGamma&);
 
-    ClassDef(AliAnalysisTaskPHOSPi0EtaToGammaGamma, 23);
+    ClassDef(AliAnalysisTaskPHOSPi0EtaToGammaGamma, 25);
 };
 
 #endif

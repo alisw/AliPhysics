@@ -111,7 +111,9 @@ AliAnalysisTaskPHOSPi0EtaToGammaGamma::AliAnalysisTaskPHOSPi0EtaToGammaGamma(con
   fCentralityMax(90.),
   fNMixed(10),
   fZvtx(-1),
+  fEPBin(-1),
   fIsFlowTask(kFALSE),
+  fHarmonics(-1),
   fQnEstimator("QoverM"),
   fFlowQnVectorMgr(0x0),
   fEventPlane(-999.),
@@ -122,18 +124,26 @@ AliAnalysisTaskPHOSPi0EtaToGammaGamma::AliAnalysisTaskPHOSPi0EtaToGammaGamma(con
   fPHOSTriggerHelperL1H(0x0),
   fPHOSTriggerHelperL1M(0x0),
   fPHOSTriggerHelperL1L(0x0),
-  fPIDResponse(0x0)
+  fPIDResponse(0x0),
+  fIsNonLinStudy(kFALSE)
 {
   // Constructor
 
   for(Int_t i=0;i<10;i++){
-      fPHOSEvents[i] = 0;
+    for(Int_t j=0;j<12;j++){
+      fPHOSEvents[i][j] = 0x0;
+    }
   }
 
   for(Int_t i=0;i<3;i++){
     fVertex[i] = 0;
   }
 
+  for(Int_t i=0;i<7;i++){
+    for(Int_t j=0;j<7;j++){
+      fNonLin[i][j] = 0x0;
+    }
+  }
 
   fTPCEPName[0] = "TPC";
   fTPCEPName[1] = "TPCNegEta";
@@ -167,9 +177,11 @@ AliAnalysisTaskPHOSPi0EtaToGammaGamma::AliAnalysisTaskPHOSPi0EtaToGammaGamma(con
 AliAnalysisTaskPHOSPi0EtaToGammaGamma::~AliAnalysisTaskPHOSPi0EtaToGammaGamma()
 {
   for(Int_t i=0;i<10;i++){
-    if(fPHOSEvents[i]){
-      delete fPHOSEvents[i];
-      fPHOSEvents[i] = 0;
+    for(Int_t j=0;j<12;j++){
+      if(fPHOSEvents[i][j]){
+        delete fPHOSEvents[i][j];
+        fPHOSEvents[i][j] = 0x0;
+      }
     }
   }
 
@@ -214,6 +226,16 @@ AliAnalysisTaskPHOSPi0EtaToGammaGamma::~AliAnalysisTaskPHOSPi0EtaToGammaGamma()
     delete fPHOSClusterCuts;
     fPHOSClusterCuts = 0x0;
   }
+
+  for(Int_t i=0;i<7;i++){
+    for(Int_t j=0;j<7;j++){
+      if(fNonLin[i][j]){
+        delete fNonLin[i][j];
+        fNonLin[i][j] = 0x0;
+      }
+    }
+  }
+
 }
 //________________________________________________________________________
 void AliAnalysisTaskPHOSPi0EtaToGammaGamma::UserCreateOutputObjects()
@@ -245,8 +267,8 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::UserCreateOutputObjects()
   fOutputContainer->Add(hPHI7Summary);
 
   //event character histogram
-  fOutputContainer->Add(new TH1F("hVertexZ","VertexZ",1000,-50.,50.));
-  fOutputContainer->Add(new TH1F("hVertexZSelectEvent","VertexZ SelectEvent",1000,-50.,50.));
+  fOutputContainer->Add(new TH1F("hVertexZ","VertexZ",100,-50.,50.));
+  fOutputContainer->Add(new TH1F("hVertexZSelectEvent","VertexZ SelectEvent",100,-50.,50.));
 
   fOutputContainer->Add(new TH2F("hVertexXY","VertexXY",100,-0.5,0.5,100,-0.5,0.5));
   fOutputContainer->Add(new TH2F("hVertexXYSelectEvent","VertexXY SelectEvent",100,-0.5,0.5,100,-0.5,0.5));
@@ -265,21 +287,28 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::UserCreateOutputObjects()
   fOutputContainer->Add(new TH2F("hCentralityV0AvsV0C","Centrality V0A vs. V0C",100,0.,100,100,0.,100.));
   fOutputContainer->Add(new TH2F("hCentralityZNAvsZNC","Centrality ZNA vs. ZNC",100,0.,100,100,0.,100.));
 
-  fOutputContainer->Add(new TH2F(Form("hCentrality%svsDeltaEventPlane%s%s",fEstimator.Data(),fV0EPName[0].Data() ,fTPCEPName[1].Data()),Form("Centrality %s vs. cos(#Delta#Psi_{EP});centrality (%%);cos(#Delta#Psi_{EP})",fEstimator.Data()),100,0,100,200,-1,1));
-  fOutputContainer->Add(new TH2F(Form("hCentrality%svsDeltaEventPlane%s%s",fEstimator.Data(),fV0EPName[0].Data() ,fTPCEPName[2].Data()),Form("Centrality %s vs. cos(#Delta#Psi_{EP});centrality (%%);cos(#Delta#Psi_{EP})",fEstimator.Data()),100,0,100,200,-1,1));
-  fOutputContainer->Add(new TH2F(Form("hCentrality%svsDeltaEventPlane%s%s",fEstimator.Data(),fTPCEPName[1].Data(),fTPCEPName[2].Data()),Form("Centrality %s vs. cos(#Delta#Psi_{EP});centrality (%%);cos(#Delta#Psi_{EP})",fEstimator.Data()),100,0,100,200,-1,1));
-
-  fOutputContainer->Add(new TH2F(Form("hCentrality%svsDeltaEventPlane%s%s",fEstimator.Data(),fTPCEPName[0].Data(),fV0EPName[1].Data()),Form("Centrality %s vs. cos(#Delta#Psi_{EP});centrality (%%);cos(#Delta#Psi_{EP})",fEstimator.Data()),100,0,100,200,-1,1));
-  fOutputContainer->Add(new TH2F(Form("hCentrality%svsDeltaEventPlane%s%s",fEstimator.Data(),fTPCEPName[0].Data(),fV0EPName[2].Data()),Form("Centrality %s vs. cos(#Delta#Psi_{EP});centrality (%%);cos(#Delta#Psi_{EP})",fEstimator.Data()),100,0,100,200,-1,1));
-  fOutputContainer->Add(new TH2F(Form("hCentrality%svsDeltaEventPlane%s%s",fEstimator.Data(),fV0EPName[1].Data() ,fV0EPName[2].Data()),Form("Centrality %s vs. cos(#Delta#Psi_{EP});centrality (%%);cos(#Delta#Psi_{EP})",fEstimator.Data()),100,0,100,200,-1,1));
-
   for(Int_t i=0;i<3;i++){
-    fOutputContainer->Add(new TH2F(Form("hCentrality%svsEventPlane%s%s",fEstimator.Data(),fTPCEPName[i].Data(),fQnEstimator.Data()),Form("Centrality %s vs. EP %s %s;centrality (%%);#Psi_{EP}",fEstimator.Data(),fTPCEPName[i].Data(),fQnEstimator.Data()),100,0,100,320,0,3.2));
+    fOutputContainer->Add(new TH2F(Form("hCentrality%svsEventPlane%s%s",fEstimator.Data(),fTPCEPName[i].Data(),fQnEstimator.Data()),Form("Centrality %s vs. EP %s %s;centrality (%%);#Psi_{EP}",fEstimator.Data(),fTPCEPName[i].Data(),fQnEstimator.Data()),100,0,100,32,0,3.2));
   }
   for(Int_t i=0;i<3;i++){
-    fOutputContainer->Add(new TH2F(Form("hCentrality%svsEventPlane%s%s",fEstimator.Data(),fV0EPName[i].Data(),fQnEstimator.Data()),Form("Centrality %s vs. EP %s %s;centrality (%%);#Psi_{EP}",fEstimator.Data(),fV0EPName[i].Data(),fQnEstimator.Data()),100,0,100,320,0,3.2));
+    fOutputContainer->Add(new TH2F(Form("hCentrality%svsEventPlane%s%s",fEstimator.Data(),fV0EPName[i].Data(),fQnEstimator.Data()),Form("Centrality %s vs. EP %s %s;centrality (%%);#Psi_{EP}",fEstimator.Data(),fV0EPName[i].Data(),fQnEstimator.Data()),100,0,100,32,0,3.2));
   }
 
+  fOutputContainer->Add(new TH2F(Form("hCentrality%svsCosDeltaEventPlane%s%s",fEstimator.Data(),fV0EPName[0].Data() ,fTPCEPName[1].Data()),Form("Centrality %s vs. cos(%d #Delta#Psi_{EP});centrality (%%);cos(%d #Delta#Psi_{EP})",fEstimator.Data(),fHarmonics,fHarmonics),100,0,100,20,-1,1));
+  fOutputContainer->Add(new TH2F(Form("hCentrality%svsCosDeltaEventPlane%s%s",fEstimator.Data(),fV0EPName[0].Data() ,fTPCEPName[2].Data()),Form("Centrality %s vs. cos(%d #Delta#Psi_{EP});centrality (%%);cos(%d #Delta#Psi_{EP})",fEstimator.Data(),fHarmonics,fHarmonics),100,0,100,20,-1,1));
+  fOutputContainer->Add(new TH2F(Form("hCentrality%svsCosDeltaEventPlane%s%s",fEstimator.Data(),fTPCEPName[1].Data(),fTPCEPName[2].Data()),Form("Centrality %s vs. cos(%d #Delta#Psi_{EP});centrality (%%);cos(%d #Delta#Psi_{EP})",fEstimator.Data(),fHarmonics,fHarmonics),100,0,100,20,-1,1));
+
+  fOutputContainer->Add(new TH2F(Form("hCentrality%svsCosDeltaEventPlane%s%s",fEstimator.Data(),fTPCEPName[0].Data(),fV0EPName[1].Data()),Form("Centrality %s vs. cos(%d #Delta#Psi_{EP});centrality (%%);cos(%d #Delta#Psi_{EP})",fEstimator.Data(),fHarmonics,fHarmonics),100,0,100,20,-1,1));
+  fOutputContainer->Add(new TH2F(Form("hCentrality%svsCosDeltaEventPlane%s%s",fEstimator.Data(),fTPCEPName[0].Data(),fV0EPName[2].Data()),Form("Centrality %s vs. cos(%d #Delta#Psi_{EP});centrality (%%);cos(%d #Delta#Psi_{EP})",fEstimator.Data(),fHarmonics,fHarmonics),100,0,100,20,-1,1));
+  fOutputContainer->Add(new TH2F(Form("hCentrality%svsCosDeltaEventPlane%s%s",fEstimator.Data(),fV0EPName[1].Data() ,fV0EPName[2].Data()),Form("Centrality %s vs. cos(%d #Delta#Psi_{EP});centrality (%%);cos(%d #Delta#Psi_{EP})",fEstimator.Data(),fHarmonics,fHarmonics),100,0,100,20,-1,1));
+
+  fOutputContainer->Add(new TH2F(Form("hCentrality%svsSinDeltaEventPlane%s%s",fEstimator.Data(),fV0EPName[0].Data() ,fTPCEPName[1].Data()),Form("Centrality %s vs. sin(%d #Delta#Psi_{EP});centrality (%%);sin(%d #Delta#Psi_{EP})",fEstimator.Data(),fHarmonics,fHarmonics),100,0,100,20,-1,1));
+  fOutputContainer->Add(new TH2F(Form("hCentrality%svsSinDeltaEventPlane%s%s",fEstimator.Data(),fV0EPName[0].Data() ,fTPCEPName[2].Data()),Form("Centrality %s vs. sin(%d #Delta#Psi_{EP});centrality (%%);sin(%d #Delta#Psi_{EP})",fEstimator.Data(),fHarmonics,fHarmonics),100,0,100,20,-1,1));
+  fOutputContainer->Add(new TH2F(Form("hCentrality%svsSinDeltaEventPlane%s%s",fEstimator.Data(),fTPCEPName[1].Data(),fTPCEPName[2].Data()),Form("Centrality %s vs. sin(%d #Delta#Psi_{EP});centrality (%%);sin(%d #Delta#Psi_{EP})",fEstimator.Data(),fHarmonics,fHarmonics),100,0,100,20,-1,1));
+
+  fOutputContainer->Add(new TH2F(Form("hCentrality%svsSinDeltaEventPlane%s%s",fEstimator.Data(),fTPCEPName[0].Data(),fV0EPName[1].Data()),Form("Centrality %s vs. sin(%d #Delta#Psi_{EP});centrality (%%);sin(%d #Delta#Psi_{EP})",fEstimator.Data(),fHarmonics,fHarmonics),100,0,100,20,-1,1));
+  fOutputContainer->Add(new TH2F(Form("hCentrality%svsSinDeltaEventPlane%s%s",fEstimator.Data(),fTPCEPName[0].Data(),fV0EPName[2].Data()),Form("Centrality %s vs. sin(%d #Delta#Psi_{EP});centrality (%%);sin(%d #Delta#Psi_{EP})",fEstimator.Data(),fHarmonics,fHarmonics),100,0,100,20,-1,1));
+  fOutputContainer->Add(new TH2F(Form("hCentrality%svsSinDeltaEventPlane%s%s",fEstimator.Data(),fV0EPName[1].Data() ,fV0EPName[2].Data()),Form("Centrality %s vs. sin(%d #Delta#Psi_{EP});centrality (%%);sin(%d #Delta#Psi_{EP})",fEstimator.Data(),fHarmonics,fHarmonics),100,0,100,20,-1,1));
 
   fOutputContainer->Add(new TH2F(Form("hCentrality%svsPHOSClusterMultiplicityMC" ,fEstimator.Data()),Form("Centrality %s vs. Cluster Multiplicity;centrality (%%);Ncluster"                  ,fEstimator.Data()),100,0,100,201,-0.5,200.5));
   fOutputContainer->Add(new TH2F(Form("hCentrality%svsPHOSClusterMultiplicity"   ,fEstimator.Data()),Form("Centrality %s vs. Cluster Multiplicity;centrality (%%);Ncluster"                  ,fEstimator.Data()),100,0,100,201,-0.5,200.5));
@@ -339,20 +368,26 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::UserCreateOutputObjects()
   for(Int_t imod=1;imod<Nmod;imod++) fOutputContainer->Add(new TH3F(Form("hdXvsXvsTrackPt_minus_M%d",imod)  ,"dX vs. X negative;X (cm);dX (cm);p_{T}^{track -} (GeV/c)",160,-80,80,80,-20,20,40,0,20));
   for(Int_t imod=1;imod<Nmod;imod++) fOutputContainer->Add(new TH3F(Form("hdZvsZvsTrackPtElectron_M%d",imod),"dZ vs. Z of e^{#pm};Z (cm);dZ (cm);p_{T}^{track} (GeV/c)",160,-80,80,80,-20,20,40,0,20));//for radial displacement
 
+  const Int_t NpTggModule = 71;
+  Double_t pTggModule[NpTggModule]={};
+  for(Int_t i=0;i<50;i++)     pTggModule[i] = 0.1 * i;            //every 0.1 GeV/c, up to 5 GeV/c
+  for(Int_t i=50;i<60;i++)    pTggModule[i] = 0.5 * (i-50) + 5.0; //every 0.5 GeV/c, up to 10 GeV/c
+  for(Int_t i=60;i<NpTggModule;i++) pTggModule[i] = 1.0 * (i-60) + 10.0;//every 1.0 GeV/c, up to 20 GeV/c
+
   for(Int_t imod=1;imod<Nmod;imod++){
-    fOutputContainer->Add(new TH2F(Form("hEpRatiovsEnergy_M%d_Electron",imod) ,Form("E/p ratio vs. E_{cluster} M%d;E/p;E_{cluster} (GeV)",imod)    ,100,0,2,100,0,50));
-    fOutputContainer->Add(new TH2F(Form("hEpRatiovsEnergy_M%d_Others",imod)   ,Form("E/p ratio vs. E_{cluster} M%d;E/p;E_{cluster} (GeV)",imod)    ,100,0,2,100,0,50));
-    fOutputContainer->Add(new TH2F(Form("hEpRatiovsTrackPt_M%d_Electron",imod),Form("E/p ratio vs. E_{cluster} M%d;E/p;p_{T}^{track} (GeV/c)",imod),100,0,2,100,0,50));
-    fOutputContainer->Add(new TH2F(Form("hEpRatiovsTrackPt_M%d_Others",imod)  ,Form("E/p ratio vs. E_{cluster} M%d;E/p;p_{T}^{track} (GeV/c)",imod),100,0,2,100,0,50));
+    fOutputContainer->Add(new TH2F(Form("hEpRatiovsEnergy_M%d_Electron",imod) ,Form("E/p ratio vs. E_{cluster} M%d;E/p;E_{cluster} (GeV)",imod)    ,50,0,2,NpTggModule-1,pTggModule));
+    fOutputContainer->Add(new TH2F(Form("hEpRatiovsEnergy_M%d_Others",imod)   ,Form("E/p ratio vs. E_{cluster} M%d;E/p;E_{cluster} (GeV)",imod)    ,50,0,2,NpTggModule-1,pTggModule));
+    fOutputContainer->Add(new TH2F(Form("hEpRatiovsTrackPt_M%d_Electron",imod),Form("E/p ratio vs. E_{cluster} M%d;E/p;p_{T}^{track} (GeV/c)",imod),50,0,2,NpTggModule-1,pTggModule));
+    fOutputContainer->Add(new TH2F(Form("hEpRatiovsTrackPt_M%d_Others",imod)  ,Form("E/p ratio vs. E_{cluster} M%d;E/p;p_{T}^{track} (GeV/c)",imod),50,0,2,NpTggModule-1,pTggModule));
   }
 
-  fOutputContainer->Add(new TH2F("hEpRatiovsNsigmaElectronTPC","E/p ratio vs. N_{#sigma}^{e};E/p;n#sigma^{e}",100,0,2,100,-5,5));
+  fOutputContainer->Add(new TH2F("hEpRatiovsNsigmaElectronTPC","E/p ratio vs. N_{#sigma}^{e};E/p;n#sigma^{e}",50,0,2,20,-5,5));
   fOutputContainer->Add(new TH2F("hTPCdEdx_Electron","TPC dEdx vs. electron momentum;p^{track} (GeV/c);dE/dx (a.u.)"    ,40,0,20,200,0,200));
   fOutputContainer->Add(new TH2F("hTPCdEdx_Others"  ,"TPC dEdx vs. non-electron momentum;p^{track} (GeV/c);dE/dx (a.u.)",40,0,20,200,0,200));
 
   fOutputContainer->Add(new TH2F("hClusterEtaPhi","Cluster eta vs. phi;#phi;#eta",63,0,6.3,200,-1,1));
   fOutputContainer->Add(new TH2F("hEnergyvsDistanceToBadChannel","distance to closest bad channel;E (GeV);distance in cell",100,0,50,20,0,10));
-  fOutputContainer->Add(new TH2F("hAsymvsMgg","asymmetry vs. M_{#gamma#gamma};asymmetry;M_{#gamma#gamma} (GeV/c^{2})",10,0,1,60,0,0.24));
+  fOutputContainer->Add(new TH2F("hAsymvsMgg","asymmetry vs. M_{#gamma#gamma};asymmetry;M_{#gamma#gamma} (GeV/c^{2})",10,0,1,240,0,0.96));
   fOutputContainer->Add(new TH2F("hAsymvsPt" ,"asymmetry vs. p_{T}^{#gamma#gamma};asymmetry;p_{T} (GeV/c)",10,0,1,100,0,50));
 
   //<- histograms for QA
@@ -369,15 +404,17 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::UserCreateOutputObjects()
   Double_t mgg[Nm] = {};
   for(Int_t i=0;i<Nm;i++) mgg[i] = 0.004*i;
 
-  const Double_t EventPlane[] = {0,15,30,45,60,75,90,105,120,135,150,165,180};
-  const Int_t Nep = sizeof(EventPlane)/sizeof(EventPlane[0]);
+  const Int_t Nphi = 13;
+  Double_t phibin[Nphi] = {};
+  const Double_t delta = (1. - -1.)/Double_t(Nphi-1);
+  for(Int_t iphi=0;iphi<Nphi;iphi++) phibin[iphi] = (delta * iphi) -1;
 
   //photon pT histograms
-  TH2F *h2PhotonPt = new TH2F("hPhotonPt","Photon Pt;p_{T} (GeV/c);#Delta#phi (deg)",NpTgg-1,pTgg,Nep-1,EventPlane);
+  TH2F *h2PhotonPt = new TH2F("hPhotonPt",Form("Photon Pt;p_{T} (GeV/c);cos(%d #Delta#phi)",fHarmonics),NpTgg-1,pTgg,Nphi-1,phibin);
   h2PhotonPt->Sumw2();
   fOutputContainer->Add(h2PhotonPt);
 
-  TH2F *h2PhotonPt_TOF = new TH2F("hPhotonPt_TOF","Photon Pt with TOF cut;p_{T} (GeV/c);#Delta#phi (deg)",NpTgg-1,pTgg,Nep-1,EventPlane);
+  TH2F *h2PhotonPt_TOF = new TH2F("hPhotonPt_TOF",Form("Photon Pt with TOF cut;p_{T} (GeV/c);cos(%d #Delta#phi)",fHarmonics),NpTgg-1,pTgg,Nphi-1,phibin);
   h2PhotonPt_TOF->Sumw2();
   fOutputContainer->Add(h2PhotonPt_TOF);
 
@@ -393,35 +430,29 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::UserCreateOutputObjects()
   const TString Asym[] = {"","_asym08"};
   const Int_t Nasym = sizeof(Asym)/sizeof(Asym[0]);
 
+
   //Mgg vs. pT histogram
   for(Int_t iasym=0;iasym<Nasym;iasym++){
-    TH3F *h3 = new TH3F(Form("hMgg%s",Asym[iasym].Data()),"Invariant Mass with 2#gamma;M_{#gamma#gamma} (GeV/c^{2});p_{T} (GeV/c);#Delta#phi (deg.)",Nm-1,mgg,NpTgg-1,pTgg,Nep-1,EventPlane);
+    TH3F *h3 = new TH3F(Form("hMgg%s",Asym[iasym].Data()),Form("Invariant Mass with 2#gamma;M_{#gamma#gamma} (GeV/c^{2});p_{T} (GeV/c);cos(%d #Delta#phi)",fHarmonics),Nm-1,mgg,NpTgg-1,pTgg,Nphi-1,phibin);
     h3->Sumw2();
     fOutputContainer->Add(h3);
 
-    TH3F *h3_TOF = new TH3F(Form("hMgg_TOF%s",Asym[iasym].Data()),"Invariant Mass of 2#gamma with TOF cut;M_{#gamma#gamma} (GeV/c^{2});p_{T} (GeV/c);#Delta#phi (deg.)",Nm-1,mgg,NpTgg-1,pTgg,Nep-1,EventPlane);
+    TH3F *h3_TOF = new TH3F(Form("hMgg_TOF%s",Asym[iasym].Data()),Form("Invariant Mass of 2#gamma with TOF cut;M_{#gamma#gamma} (GeV/c^{2});p_{T} (GeV/c);cos(%d #Delta#phi)",fHarmonics),Nm-1,mgg,NpTgg-1,pTgg,Nphi-1,phibin);
     h3_TOF->Sumw2();
     fOutputContainer->Add(h3_TOF);
 
 
-    TH3F *h3Mix = new TH3F(Form("hMixMgg%s",Asym[iasym].Data()),"Mix Invariant Mass with 2#gamma;M_{#gamma#gamma} (GeV/c^{2});p_{T} (GeV/c);#Delta#phi (deg.)",Nm-1,mgg,NpTgg-1,pTgg,Nep-1,EventPlane);
+    TH3F *h3Mix = new TH3F(Form("hMixMgg%s",Asym[iasym].Data()),Form("Mix Invariant Mass with 2#gamma;M_{#gamma#gamma} (GeV/c^{2});p_{T} (GeV/c);cos(%d #Delta#phi)",fHarmonics),Nm-1,mgg,NpTgg-1,pTgg,Nphi-1,phibin);
     h3Mix->Sumw2();
     fOutputContainer->Add(h3Mix);
 
-    TH3F *h3Mix_TOF = new TH3F(Form("hMixMgg_TOF%s",Asym[iasym].Data()),"Mix Invariant Mass of 2#gamma with TOF cut;M_{#gamma#gamma} (GeV/c^{2});p_{T} (GeV/c);#Delta#phi (deg.)",Nm-1,mgg,NpTgg-1,pTgg,Nep-1,EventPlane);
+    TH3F *h3Mix_TOF = new TH3F(Form("hMixMgg_TOF%s",Asym[iasym].Data()),Form("Mix Invariant Mass of 2#gamma with TOF cut;M_{#gamma#gamma} (GeV/c^{2});p_{T} (GeV/c);cos(%d #Delta#phi)",fHarmonics),Nm-1,mgg,NpTgg-1,pTgg,Nphi-1,phibin);
     h3Mix_TOF->Sumw2();
     fOutputContainer->Add(h3Mix_TOF);
   }//end of asymmetry loop
 
 
   //<- histograms for physics analysis
-
-
-  const Int_t NpTggModule = 71;
-  Double_t pTggModule[NpTggModule]={};
-  for(Int_t i=0;i<50;i++)     pTggModule[i] = 0.1 * i;            //every 0.1 GeV/c, up to 5 GeV/c
-  for(Int_t i=50;i<60;i++)    pTggModule[i] = 0.5 * (i-50) + 5.0; //every 0.5 GeV/c, up to 10 GeV/c
-  for(Int_t i=60;i<NpTggModule;i++) pTggModule[i] = 1.0 * (i-60) + 10.0;//every 1.0 GeV/c, up to 20 GeV/c
 
   for(Int_t imod1=1;imod1<Nmod;imod1++){
     for(Int_t imod2=imod1;imod2<Nmod;imod2++){
@@ -610,7 +641,7 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::UserCreateOutputObjects()
       h1Pt->Sumw2();
       fOutputContainer->Add(h1Pt);
 
-      TH2F *h2EtaPhi = new TH2F(Form("hGen%sEtaPhi",parname[ipar].Data()),Form("generated %s eta vs phi;#eta;#phi (rad)",parname[ipar].Data()),63,0,6.3,200,-1,1);
+      TH2F *h2EtaPhi = new TH2F(Form("hGen%sEtaPhi",parname[ipar].Data()),Form("generated %s eta vs phi;#phi;#eta (rad)",parname[ipar].Data()),63,0,6.3,200,-1,1);
       h2EtaPhi->Sumw2();
       fOutputContainer->Add(h2EtaPhi);
 
@@ -637,6 +668,27 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::UserCreateOutputObjects()
       fOutputContainer->Add(h2);
 
     }//end of asym loop
+
+    if(fIsNonLinStudy){
+      //for systematic non-linearity study
+      const Int_t Na = 7;
+      const Int_t Nb = 7;
+
+      for(Int_t ia=0;ia<Na;ia++){
+        for(Int_t ib=0;ib<Nb;ib++){
+          Double_t a = -0.07 + 0.01*ia;
+          Double_t b =  0.4  + 0.1 *ib;
+
+          fNonLin[ia][ib] = new TF1(Form("fNonLin_a%d_b%d",ia,ib),"1.00*(1. + [0] / (1. + TMath::Power(x/[1],2)))",0,100);
+          fNonLin[ia][ib]->SetParNames("a","b (GeV)");
+          fNonLin[ia][ib]->FixParameter(0,a);
+          fNonLin[ia][ib]->FixParameter(1,b);
+
+          fOutputContainer->Add(new TH2F(Form("hMgg_a%d_b%d",ia,ib)   ,Form("M_{#gamma#gamma} vs. p_{T} a = %3.2f , b = %3.2f;M_{#gamma#gamma} (GeV/c^{2});p_{T} (GeV/c)",a,b)      ,60,0,0.24,NpTggModule-1,pTggModule));
+          fOutputContainer->Add(new TH2F(Form("hMixMgg_a%d_b%d",ia,ib),Form("M_{#gamma#gamma}^{mix} vs. p_{T} a = %3.2f , b = %3.2f;M_{#gamma#gamma} (GeV/c^{2});p_{T} (GeV/c)",a,b),60,0,0.24,NpTggModule-1,pTggModule));
+        }//end of ib
+      }//end of ia
+    }
 
     //for JJMC
     if(fIsJJMC){
@@ -750,7 +802,6 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::UserExec(Option_t *option)
   Float_t fCentralityZNA = -1.;
   Float_t fCentralityZNC = -1.;
 
-  //const Int_t system = GetCollisionSystem();
   if(fCollisionSystem==0){
     //not centrality, but track multiplicity
     //track QA to extrack number of hybrid track for centrality binning
@@ -781,7 +832,6 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::UserExec(Option_t *option)
       return;
     }
 
-    AliInfo(Form("fCentralityMain estimated by %s = %f %%,Zvtx = %f cm, fZvtx = %d.",fEstimator.Data(),fCentralityMain,fVertex[2],fZvtx));
 
   }
   else if(fCollisionSystem==2){//for pPb,Pbp to be implemented
@@ -808,7 +858,6 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::UserExec(Option_t *option)
       return;
     }
 
-    AliInfo(Form("fCentralityMain estimated by %s = %f %%, Zvtx = %f cm, fZvtx = %d.",fEstimator.Data(),fCentralityMain,fVertex[2],fZvtx));
 
   }
   else{
@@ -882,47 +931,69 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::UserExec(Option_t *option)
 
   if(fIsFlowTask){
     //fFlowQnVectorMgr->GetQnVectorList()->Print("",-1);
-    const Int_t myHarmonic = 2;
+
+    if(fHarmonics < 0){
+      AliError(Form("Qn Flow vector correction flag is ON, but fHarmonics is not set. (it is %d now).",fHarmonics));
+      return;
+    }
+
     TList* qnlist = fFlowQnVectorMgr->GetQnVectorList();
 
     const AliQnCorrectionsQnVector *QnVectorTPCDet[3];
     Double_t TPCEP[3] = {};
     for(Int_t i=0;i<3;i++){
       QnVectorTPCDet[i] = GetQnVectorFromList(qnlist,Form("%s%s",fTPCEPName[i].Data(),fQnEstimator.Data()));
-      if(QnVectorTPCDet[i]) TPCEP[i] = QnVectorTPCDet[i]->EventPlane(myHarmonic);
-      if(TPCEP[i] < 0) TPCEP[i] += 2./(Double_t) myHarmonic * TMath::Pi();
+      if(QnVectorTPCDet[i]) TPCEP[i] = QnVectorTPCDet[i]->EventPlane(fHarmonics);
+      if(TPCEP[i] < 0) TPCEP[i] += 2./(Double_t) fHarmonics * TMath::Pi();
       FillHistogramTH2(fOutputContainer,Form("hCentrality%svsEventPlane%s%s",fEstimator.Data(),fTPCEPName[i].Data(),fQnEstimator.Data()),fCentralityMain,TPCEP[i]);
-      AliInfo(Form("TPC sub detector name %s : event plane = %f (rad).",fTPCEPName[i].Data(),TPCEP[i]));
+      AliInfo(Form("harmonics %d | TPC sub detector name %s : event plane = %f (rad).",fHarmonics,fTPCEPName[i].Data(),TPCEP[i]));
     }
 
     const AliQnCorrectionsQnVector *QnVectorV0Det[3];
     Double_t V0EP[3]  = {};
     for(Int_t i=0;i<3;i++){
       QnVectorV0Det[i]  = GetQnVectorFromList(qnlist,Form("%s%s",fV0EPName[i].Data(),fQnEstimator.Data()));
-      if(QnVectorV0Det[i]) V0EP[i] = QnVectorV0Det[i]->EventPlane(myHarmonic);
-      if(V0EP[i] < 0)  V0EP[i]  += 2./(Double_t) myHarmonic * TMath::Pi();
+      if(QnVectorV0Det[i]) V0EP[i] = QnVectorV0Det[i]->EventPlane(fHarmonics);
+      if(V0EP[i] < 0)  V0EP[i]  += 2./(Double_t) fHarmonics * TMath::Pi();
       FillHistogramTH2(fOutputContainer,Form("hCentrality%svsEventPlane%s%s",fEstimator.Data(),fV0EPName[i].Data(),fQnEstimator.Data()),fCentralityMain,V0EP[i]);
-      AliInfo(Form("V0 sub detector name %s : event plane = %f (rad)." ,fV0EPName[i].Data() ,V0EP[i]));
+      AliInfo(Form("harmonics %d | V0  sub detector name %s : event plane = %f (rad).",fHarmonics,fV0EPName[i].Data() ,V0EP[i]));
     }
 
     //0 < event plane < pi.
     //fEventPlane = TPCEP[0];//full acceptance of TPC
     fEventPlane = V0EP[0];//full V0
 
+
+    const Double_t delta = 2. * TMath::Pi() / Double_t(fHarmonics) / 12.;
+    fEPBin = (Int_t)((fEventPlane) / delta);//it should be 0-11.
+    if(fEPBin < 0)  fEPBin =  0;//protection to avoid fEPBin = -1.
+    if(fEPBin > 11) fEPBin = 11;//protection to avoid fEPBin = 12.
+
     //for event plane resolution
-    //V0(main)-TPCA-TPCC
-    FillHistogramTH2(fOutputContainer,Form("hCentrality%svsDeltaEventPlane%s%s",fEstimator.Data(),fV0EPName[0].Data() ,fTPCEPName[1].Data()),fCentralityMain,TMath::Cos(myHarmonic * (V0EP[0]  - TPCEP[1])));
-    FillHistogramTH2(fOutputContainer,Form("hCentrality%svsDeltaEventPlane%s%s",fEstimator.Data(),fV0EPName[0].Data() ,fTPCEPName[2].Data()),fCentralityMain,TMath::Cos(myHarmonic * (V0EP[0]  - TPCEP[2])));
-    FillHistogramTH2(fOutputContainer,Form("hCentrality%svsDeltaEventPlane%s%s",fEstimator.Data(),fTPCEPName[1].Data(),fTPCEPName[2].Data()),fCentralityMain,TMath::Cos(myHarmonic * (TPCEP[1] - TPCEP[2])));
+    //cos V0(main)-TPCA-TPCC
+    FillHistogramTH2(fOutputContainer,Form("hCentrality%svsCosDeltaEventPlane%s%s",fEstimator.Data(),fV0EPName[0].Data() ,fTPCEPName[1].Data()),fCentralityMain,TMath::Cos(fHarmonics * (V0EP[0]  - TPCEP[1])));
+    FillHistogramTH2(fOutputContainer,Form("hCentrality%svsCosDeltaEventPlane%s%s",fEstimator.Data(),fV0EPName[0].Data() ,fTPCEPName[2].Data()),fCentralityMain,TMath::Cos(fHarmonics * (V0EP[0]  - TPCEP[2])));
+    FillHistogramTH2(fOutputContainer,Form("hCentrality%svsCosDeltaEventPlane%s%s",fEstimator.Data(),fTPCEPName[1].Data(),fTPCEPName[2].Data()),fCentralityMain,TMath::Cos(fHarmonics * (TPCEP[1] - TPCEP[2])));
 
-    //TPC(main)-V0A-V0C
-    FillHistogramTH2(fOutputContainer,Form("hCentrality%svsDeltaEventPlane%s%s",fEstimator.Data(),fTPCEPName[0].Data(),fV0EPName[1].Data()),fCentralityMain,TMath::Cos(myHarmonic * (TPCEP[0] - V0EP[1])));
-    FillHistogramTH2(fOutputContainer,Form("hCentrality%svsDeltaEventPlane%s%s",fEstimator.Data(),fTPCEPName[0].Data(),fV0EPName[2].Data()),fCentralityMain,TMath::Cos(myHarmonic * (TPCEP[0] - V0EP[2])));
-    FillHistogramTH2(fOutputContainer,Form("hCentrality%svsDeltaEventPlane%s%s",fEstimator.Data(),fV0EPName[1].Data() ,fV0EPName[2].Data()),fCentralityMain,TMath::Cos(myHarmonic * (V0EP[1]  - V0EP[2])));
+    //cos TPC(main)-V0A-V0C
+    FillHistogramTH2(fOutputContainer,Form("hCentrality%svsCosDeltaEventPlane%s%s",fEstimator.Data(),fTPCEPName[0].Data(),fV0EPName[1].Data()),fCentralityMain,TMath::Cos(fHarmonics * (TPCEP[0] - V0EP[1])));
+    FillHistogramTH2(fOutputContainer,Form("hCentrality%svsCosDeltaEventPlane%s%s",fEstimator.Data(),fTPCEPName[0].Data(),fV0EPName[2].Data()),fCentralityMain,TMath::Cos(fHarmonics * (TPCEP[0] - V0EP[2])));
+    FillHistogramTH2(fOutputContainer,Form("hCentrality%svsCosDeltaEventPlane%s%s",fEstimator.Data(),fV0EPName[1].Data() ,fV0EPName[2].Data()),fCentralityMain,TMath::Cos(fHarmonics * (V0EP[1]  - V0EP[2])));
 
+    //sin V0(main)-TPCA-TPCC
+    FillHistogramTH2(fOutputContainer,Form("hCentrality%svsSinDeltaEventPlane%s%s",fEstimator.Data(),fV0EPName[0].Data() ,fTPCEPName[1].Data()),fCentralityMain,TMath::Sin(fHarmonics * (V0EP[0]  - TPCEP[1])));
+    FillHistogramTH2(fOutputContainer,Form("hCentrality%svsSinDeltaEventPlane%s%s",fEstimator.Data(),fV0EPName[0].Data() ,fTPCEPName[2].Data()),fCentralityMain,TMath::Sin(fHarmonics * (V0EP[0]  - TPCEP[2])));
+    FillHistogramTH2(fOutputContainer,Form("hCentrality%svsSinDeltaEventPlane%s%s",fEstimator.Data(),fTPCEPName[1].Data(),fTPCEPName[2].Data()),fCentralityMain,TMath::Sin(fHarmonics * (TPCEP[1] - TPCEP[2])));
+
+    //sin TPC(main)-V0A-V0C
+    FillHistogramTH2(fOutputContainer,Form("hCentrality%svsSinDeltaEventPlane%s%s",fEstimator.Data(),fTPCEPName[0].Data(),fV0EPName[1].Data()),fCentralityMain,TMath::Sin(fHarmonics * (TPCEP[0] - V0EP[1])));
+    FillHistogramTH2(fOutputContainer,Form("hCentrality%svsSinDeltaEventPlane%s%s",fEstimator.Data(),fTPCEPName[0].Data(),fV0EPName[2].Data()),fCentralityMain,TMath::Sin(fHarmonics * (TPCEP[0] - V0EP[2])));
+    FillHistogramTH2(fOutputContainer,Form("hCentrality%svsSinDeltaEventPlane%s%s",fEstimator.Data(),fV0EPName[1].Data() ,fV0EPName[2].Data()),fCentralityMain,TMath::Sin(fHarmonics * (V0EP[1]  - V0EP[2])));
   }
-
-  
+  else fEPBin = 0;
+ 
+  AliInfo(Form("Collision system = %d | fCentralityMain estimated by %s = %f %% | Zvtx = %f cm , fZvtx = %d | Harmonics = %d , fEventPlane = %f (rad.) , fEPBin = %d |",fCollisionSystem,fEstimator.Data(),fCentralityMain,fVertex[2],fZvtx,fHarmonics,fEventPlane,fEPBin));
+ 
   if(!fIsMC) FillRejectionFactorMB();
 
   if(fRunNumber != fEvent->GetRunNumber()){ // Check run number
@@ -1007,8 +1078,8 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::UserExec(Option_t *option)
       fPHOSClusterArray->Compress();
     }
   }
-  if(!fPHOSEvents[fZvtx]) fPHOSEvents[fZvtx] = new TList();
-  TList *prevPHOS = fPHOSEvents[fZvtx];
+  if(!fPHOSEvents[fZvtx][fEPBin]) fPHOSEvents[fZvtx][fEPBin] = new TList();
+  TList *prevPHOS = fPHOSEvents[fZvtx][fEPBin];
 
   if(fIsPHOSTriggerAnalysis){
     TriggerQA();
@@ -1030,6 +1101,8 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::UserExec(Option_t *option)
 
   EstimatePIDCutEfficiency();
   EstimateTOFCutEfficiency();
+
+  if(fIsNonLinStudy) DoNonLinearityStudy();
 
   //Now we either add current events to stack or remove
   //If no photons in current event - no need to add it to mixed
@@ -1507,10 +1580,10 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::FillPhoton()
     }
     else dphi = DeltaPhiIn0Pi(phi);
 
-    FillHistogramTH2(fOutputContainer,"hPhotonPt",pT,dphi*TMath::RadToDeg(),weight);
+    FillHistogramTH2(fOutputContainer,"hPhotonPt",pT,TMath::Cos(fHarmonics * dphi),weight);
 
     if(ph->IsTOFOK()){
-      FillHistogramTH2(fOutputContainer,"hPhotonPt_TOF",pT,dphi*TMath::RadToDeg(),1/eff * weight);
+      FillHistogramTH2(fOutputContainer,"hPhotonPt_TOF",pT,TMath::Cos(fHarmonics * dphi),1/eff * weight);
     }
 
   }//end of cluster loop
@@ -1603,19 +1676,19 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::FillMgg()
       else dphi = DeltaPhiIn0Pi(phi);
 
       if(TMath::Abs(ph1->Module()-ph2->Module()) < 2) FillHistogramTH2(fOutputContainer,Form("hMgg_M%d%d",TMath::Min(ph1->Module(),ph2->Module()), TMath::Max(ph1->Module(),ph2->Module())),m12,pt12,weight);
-      FillHistogramTH3(fOutputContainer,"hMgg",m12,pt12,dphi*TMath::RadToDeg(),weight);
+      FillHistogramTH3(fOutputContainer,"hMgg",m12,pt12,TMath::Cos(fHarmonics * dphi),weight);
 
       FillHistogramTH2(fOutputContainer,"hAsymvsMgg",asym,m12,weight);
       if(0.12 < m12 && m12 < 0.15) FillHistogramTH2(fOutputContainer,"hAsymvsPt",asym,pt12,weight);
 
-      if(asym < 0.8) FillHistogramTH3(fOutputContainer,"hMgg_asym08",m12,pt12,dphi*TMath::RadToDeg(),weight);
+      if(asym < 0.8) FillHistogramTH3(fOutputContainer,"hMgg_asym08",m12,pt12,TMath::Cos(fHarmonics * dphi),weight);
 
       if(ph1->IsTOFOK() && ph2->IsTOFOK()){
-        FillHistogramTH3(fOutputContainer,"hMgg_TOF",m12,pt12,dphi*TMath::RadToDeg(),1/eff12 * weight);
+        FillHistogramTH3(fOutputContainer,"hMgg_TOF",m12,pt12,TMath::Cos(fHarmonics * dphi),1/eff12 * weight);
 
         if(TMath::Abs(ph1->Module()-ph2->Module()) < 2) FillHistogramTH2(fOutputContainer,Form("hMgg_M%d%d_TOF",TMath::Min(ph1->Module(),ph2->Module()), TMath::Max(ph1->Module(),ph2->Module())),m12,pt12,1/eff12 * weight);
 
-        if(asym < 0.8) FillHistogramTH3(fOutputContainer,"hMgg_TOF_asym08",m12,pt12,dphi*TMath::RadToDeg(),1/eff12 * weight);
+        if(asym < 0.8) FillHistogramTH3(fOutputContainer,"hMgg_TOF_asym08",m12,pt12,TMath::Cos(fHarmonics * dphi),1/eff12 * weight);
 
       }//end of TOF cut
 
@@ -1632,7 +1705,7 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::FillMgg()
 //________________________________________________________________________
 void AliAnalysisTaskPHOSPi0EtaToGammaGamma::FillMixMgg() 
 {
-  TList *prevPHOS = fPHOSEvents[fZvtx];
+  TList *prevPHOS = fPHOSEvents[fZvtx][fEPBin];
 
   const Int_t multClust = fPHOSClusterArray->GetEntriesFast();
 
@@ -1697,16 +1770,16 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::FillMixMgg()
         }
         else dphi = DeltaPhiIn0Pi(phi);
 
-        FillHistogramTH3(fOutputContainer,"hMixMgg",m12,pt12,dphi*TMath::RadToDeg(),weight);
+        FillHistogramTH3(fOutputContainer,"hMixMgg",m12,pt12,TMath::Cos(fHarmonics * dphi),weight);
         if(TMath::Abs(ph1->Module()-ph2->Module()) < 2) FillHistogramTH2(fOutputContainer,Form("hMixMgg_M%d%d",TMath::Min(ph1->Module(),ph2->Module()), TMath::Max(ph1->Module(),ph2->Module())),m12,pt12);
 
-        if(asym < 0.8) FillHistogramTH3(fOutputContainer,"hMixMgg_asym08",m12,pt12,dphi*TMath::RadToDeg(),weight);
+        if(asym < 0.8) FillHistogramTH3(fOutputContainer,"hMixMgg_asym08",m12,pt12,TMath::Cos(fHarmonics * dphi),weight);
 
         if(ph1->IsTOFOK() && ph2->IsTOFOK()){
-          FillHistogramTH3(fOutputContainer,"hMixMgg_TOF",m12,pt12,dphi*TMath::RadToDeg(),1/eff12 * weight);
+          FillHistogramTH3(fOutputContainer,"hMixMgg_TOF",m12,pt12,TMath::Cos(fHarmonics * dphi),1/eff12 * weight);
           if(TMath::Abs(ph1->Module()-ph2->Module()) < 2) FillHistogramTH2(fOutputContainer,Form("hMixMgg_M%d%d_TOF",TMath::Min(ph1->Module(),ph2->Module()), TMath::Max(ph1->Module(),ph2->Module())),m12,pt12,1/eff12);
 
-          if(asym < 0.8) FillHistogramTH3(fOutputContainer,"hMixMgg_TOF_asym08",m12,pt12,dphi*TMath::RadToDeg(),1/eff12 * weight);
+          if(asym < 0.8) FillHistogramTH3(fOutputContainer,"hMixMgg_TOF_asym08",m12,pt12,TMath::Cos(fHarmonics * dphi),1/eff12 * weight);
 
         }//end of TOF cut
 
@@ -1877,7 +1950,7 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::EstimatePIDCutEfficiency()
   }//end of ph1
 
   //next mixed event
-  TList *prevPHOS = fPHOSEvents[fZvtx];
+  TList *prevPHOS = fPHOSEvents[fZvtx][fEPBin];
 
   for(Int_t i1=0;i1<multClust;i1++){
     AliCaloPhoton *ph1 = (AliCaloPhoton*)fPHOSClusterArray->At(i1);
@@ -1949,7 +2022,7 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::EstimateTOFCutEfficiency()
   }//end of ph1
 
   //next mixed event
-  TList *prevPHOS = fPHOSEvents[fZvtx];
+  TList *prevPHOS = fPHOSEvents[fZvtx][fEPBin];
 
   for(Int_t i1=0;i1<multClust;i1++){
     AliCaloPhoton *ph1 = (AliCaloPhoton*)fPHOSClusterArray->At(i1);
@@ -2192,7 +2265,7 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::EstimateTriggerEfficiency()
   }//end of ph1
 
   //next mixed event
-  TList *prevPHOS = fPHOSEvents[fZvtx];
+  TList *prevPHOS = fPHOSEvents[fZvtx][fEPBin];
 
   for(Int_t i1=0;i1<multClust;i1++){
     AliCaloPhoton *ph1 = (AliCaloPhoton*)fPHOSClusterArray->At(i1);
@@ -2500,11 +2573,10 @@ Double_t AliAnalysisTaskPHOSPi0EtaToGammaGamma::Rho(AliAODMCParticle* p)
 //________________________________________________________________________
 Double_t AliAnalysisTaskPHOSPi0EtaToGammaGamma::DeltaPhiIn0Pi(Double_t dphi)
 {
-  //this returns dphi in 0-pi range.
-  const Int_t myHarmonic = 2;
+  //this returns dphi in 0-pi range in unit of radian.
   Double_t tmp = dphi;
-  while(tmp < 0)           tmp += 2./(Double_t)myHarmonic * TMath::Pi();
-  while(tmp > TMath::Pi()) tmp -= 2./(Double_t)myHarmonic * TMath::Pi();
+  while(tmp < 0)           tmp += 2./(Double_t)fHarmonics * TMath::Pi();
+  while(tmp > TMath::Pi()) tmp -= 2./(Double_t)fHarmonics * TMath::Pi();
 
   return tmp;
 }
@@ -2901,6 +2973,88 @@ const AliQnCorrectionsQnVector *AliAnalysisTaskPHOSPi0EtaToGammaGamma::GetQnVect
 
 
 //  return 0x0;
+}
+//_______________________________________________________________________________
+void AliAnalysisTaskPHOSPi0EtaToGammaGamma::DoNonLinearityStudy()
+{
+  const Int_t multClust = fPHOSClusterArray->GetEntriesFast();
+  TLorentzVector p12, p12core;
+  Double_t m12=0,pt12=0;
+  Double_t e1=0,e2=0;
+
+  for(Int_t ia=0;ia<7;ia++){
+    for(Int_t ib=0;ib<7;ib++){
+
+      for(Int_t i1=0;i1<multClust-1;i1++){
+        AliCaloPhoton *ph1 = (AliCaloPhoton*)fPHOSClusterArray->At(i1);
+        if(!fPHOSClusterCuts->AcceptPhoton(ph1)) continue;
+
+        for(Int_t i2=i1+1;i2<multClust;i2++){
+          AliCaloPhoton *ph2 = (AliCaloPhoton*)fPHOSClusterArray->At(i2);
+          if(!fPHOSClusterCuts->AcceptPhoton(ph2)) continue;
+
+          e1 = ph1->Energy();
+          e2 = ph2->Energy();
+
+          p12 = *ph1*fNonLin[ia][ib]->Eval(e1) + *ph2*fNonLin[ia][ib]->Eval(e2);
+          m12 = p12.M();
+          pt12 = p12.Pt();
+
+          if(fUseCoreEnergy){
+            e1 = (ph1->GetMomV2())->Energy();
+            e2 = (ph2->GetMomV2())->Energy();
+
+            p12core = *(ph1->GetMomV2())*fNonLin[ia][ib]->Eval(e1) + *(ph2->GetMomV2())*fNonLin[ia][ib]->Eval(e2);
+            m12 = p12core.M();
+            pt12 = p12core.Pt();
+          }
+
+          FillHistogramTH2(fOutputContainer,Form("hMgg_a%d_b%d",ia,ib),m12,pt12);
+
+        }//end of ph2
+      }//end of ph1
+    }//end of ib
+  }//end of ia
+
+  TList *prevPHOS = fPHOSEvents[fZvtx][fEPBin];
+
+  for(Int_t ia=0;ia<7;ia++){
+    for(Int_t ib=0;ib<7;ib++){
+
+      for(Int_t i1=0;i1<multClust;i1++){
+        AliCaloPhoton *ph1 = (AliCaloPhoton*)fPHOSClusterArray->At(i1);
+        if(!fPHOSClusterCuts->AcceptPhoton(ph1)) continue;
+
+        for(Int_t ev=0;ev<prevPHOS->GetSize();ev++){
+          TClonesArray *mixPHOS = static_cast<TClonesArray*>(prevPHOS->At(ev));
+
+          for(Int_t i2=0;i2<mixPHOS->GetEntriesFast();i2++){
+            AliCaloPhoton *ph2 = (AliCaloPhoton*)mixPHOS->At(i2);
+            if(!fPHOSClusterCuts->AcceptPhoton(ph2)) continue;
+
+            e1 = ph1->Energy();
+            e2 = ph2->Energy();
+
+            p12 = *ph1*fNonLin[ia][ib]->Eval(e1) + *ph2*fNonLin[ia][ib]->Eval(e2);
+            m12 = p12.M();
+            pt12 = p12.Pt();
+
+            if(fUseCoreEnergy){
+              e1 = (ph1->GetMomV2())->Energy();
+              e2 = (ph2->GetMomV2())->Energy();
+              p12core = *(ph1->GetMomV2())*fNonLin[ia][ib]->Eval(e1) + *(ph2->GetMomV2())*fNonLin[ia][ib]->Eval(e2);
+              m12 = p12core.M();
+              pt12 = p12core.Pt();
+            }
+
+            FillHistogramTH2(fOutputContainer,Form("hMixMgg_a%d_b%d",ia,ib),m12,pt12);
+
+          }//end of mix
+        }//end of ph2
+      }//end of ph1
+    }//end of ib
+  }//end of ia
+
 }
 //_______________________________________________________________________________
 
