@@ -60,37 +60,37 @@ public:
     virtual void   Terminate(Option_t *);
     
     //******************** ANALYSIS
-    AliAODTrack* FindLPAndHFE(TObjArray* RedTracksHFE, const AliVVertex *pVtx, Int_t nMother, Double_t listMother[]);
-    void FindPhotonicPartner(Int_t iTracks, AliAODTrack* track,  const AliVVertex *pVtx, Int_t nMother, Double_t listMother[], Int_t &LSPartner, Int_t&ULSPartner, Int_t *LSPartnerID, Int_t *ULSPartnerID, Bool_t &trueULSPartner, Bool_t &iHsPhotonic);
+    AliAODTrack* FindLPAndHFE(TObjArray* RedTracksHFE, const AliAODVertex *pVtx, Int_t nMother, Double_t listMother[]);
+    void FindPhotonicPartner(Int_t iTracks, AliAODTrack* track,  const AliAODVertex *pVtx, Int_t nMother, Double_t listMother[], Int_t &LSPartner, Int_t&ULSPartner, Int_t *LSPartnerID, Int_t *ULSPartnerID, Bool_t &trueULSPartner, Bool_t &iHsPhotonic);
     void CorrelateElectron(TObjArray* RedTracksHFE);
 
-    void CorrelateLP(AliAODTrack* LPtrack,  const AliVVertex* pVtx, Int_t nMother, Double_t listMother[], TObjArray* RedTracksHFE);
+    void CorrelateLP(AliAODTrack* LPtrack,  const AliAODVertex* pVtx, Int_t nMother, Double_t listMother[], TObjArray* RedTracksHFE);
     void CorrelateLPMixedEvent(AliAODTrack* LPtrack, Float_t mult, Float_t zVtx);
     
-    void CorrelateHadron(TObjArray* RedTracksHFE,  const AliVVertex* pVtx, Int_t nMother, Double_t listMother[], Float_t mult);
+    void CorrelateHadron(TObjArray* RedTracksHFE,  const AliAODVertex* pVtx, Int_t nMother, Double_t listMother[], Float_t mult);
     void CorrelateHadronMixedEvent(AliAODTrack* Htrack, Float_t mult, Float_t zVtx);
 
-    void CorrelateWithHadrons(AliAODTrack* TriggerTrack, const AliVVertex* pVtx, Int_t nMother, Double_t listMother[], Bool_t FillHadron, Bool_t FillLP, Bool_t* NonElecIsTrigger, Double_t *NonElecIsTriggerPt, Int_t NumElectronsInEvent); 
+    void CorrelateWithHadrons(AliAODTrack* TriggerTrack, const AliAODVertex* pVtx, Int_t nMother, Double_t listMother[], Bool_t FillHadron, Bool_t FillLP, Bool_t* NonElecIsTrigger, Double_t *NonElecIsTriggerPt, Int_t NumElectronsInEvent); 
 
 
     //********************MC
-    void MCEfficiencyCorrections(const AliVVertex * RecVertex);
+    void MCEfficiencyCorrections(const AliAODVertex * RecVertex);
 
 
     //*********************ANALYSIS Helper
-    Bool_t ChargedHadronTrackCuts(const AliVVertex *pVtx,AliAODTrack *Htrack, Int_t nMother, Double_t listMother[]);
+    Bool_t ChargedHadronTrackCuts(const AliAODVertex *pVtx,AliAODTrack *Htrack, Int_t nMother, Double_t listMother[]);
     Bool_t ChargedHadronPIDCuts(AliAODTrack *Htrack);
 
     Bool_t AssoHadronPIDCuts(AliAODTrack *Htrack);
 
-    Bool_t InclElecTrackCuts(const AliVVertex *pVtx,AliAODTrack *ietrack, Int_t nMother, Double_t listMother[]);
+    Bool_t InclElecTrackCuts(const AliAODVertex *pVtx,AliAODTrack *ietrack, Int_t nMother, Double_t listMother[]);
     Bool_t InclElecPIDCuts(AliAODTrack *track, Bool_t IsPrimary);
 
     Bool_t PhotElecPIDCuts(AliAODTrack *track);
-    Bool_t PhotElecTrackCuts(const AliVVertex *pVtx,AliAODTrack *aetrack, Int_t nMother, Double_t listMother[]);
+    Bool_t PhotElecTrackCuts(const AliAODVertex *pVtx,AliAODTrack *aetrack, Int_t nMother, Double_t listMother[]);
     
     void EvaluateTaggingEfficiency(AliAODTrack * track, Int_t LSPartner, Int_t ULSPartner, Bool_t trueULSPartner); 
-    Bool_t CloneAndReduceTrackList(TObjArray* RedTracks, AliAODTrack* track, Int_t LSPartner, Int_t ULSPartner, Int_t *LSPartnerID, Int_t *ULSPartnerID, Bool_t trueULSPartner);
+    Bool_t CloneAndReduceTrackList(TObjArray* RedTracks, AliAODTrack* track, Int_t LSPartner, Int_t ULSPartner, Int_t *LSPartnerID, Int_t *ULSPartnerID, Bool_t trueULSPartner, Bool_t isPhotonic, Bool_t isHadron);
 
     void BinLogX(TAxis *axis);
     
@@ -146,6 +146,7 @@ public:
     
     Bool_t                fUseTender;               // Use tender
     Int_t                 fWhichPeriod;             // period
+    Bool_t                fUseKFforPhotonicPartner; //default ist DCA
 
 
     Double_t              fMaxElectronEta;          //
@@ -248,11 +249,14 @@ public:
     TH2F                  *fHadContPvsPt;           //!
     THnSparse             *fHadContPPhiEtaTPC;      //!
     THnSparse             *fHadContamination;       //! HadronicContaminationTOF
+    THnSparse             *fHadContaminationPt;       //! HadronicContaminationTOF
     THnSparse             *fHadContMC;              //!
+    THnSparse             *fHadContMCPt;              //!
     
 
   
     TH1F                  *fInclElecPt;             //! inclusive electron p
+    TH1F                  *fInclElecP;             //! inclusive electron p
     TH1F                  *fULSElecPt;              //! ULS electron pt (after IM cut)
     TH1F                  *fLSElecPt;               //! LS electron pt (after IM cut)
     TH2F                  *fInvmassLS;              //! Inv mass of LS (e,e)
@@ -265,12 +269,18 @@ public:
     THnSparse             *fTagEffLS;               //!
     THnSparse             *fTagEffULS;              //!
     THnSparse             *fTagTruePairs;           //!
+    THnSparse             *fTagEffInclWoWeight;      //! 
+    THnSparse             *fTagEffLSWoWeight;        //!
+    THnSparse             *fTagEffULSWoWeight;        //!
+    THnSparse             *fTagTruePairsWoWeight;     //!
+
     TH1F                  fCorrectPiontoData;      
     TH1F                  fCorrectEtatoData;       
 
     // HFE HFE
     TH1F                  *fElecTrigger;            //! trigger electron vs pt
     TH2F                  *fInclElecPhi;            //! electron (trigger): phi vs pt
+    TH2F                  *fInclElecEta;            //! electron (trigger): phi vs pt
     TH2F                  *fULSElecPhi;             //! phi vs pt for electrons from ULS pairs
     TH2F                  *fLSElecPhi;              //! phi vs pt for electrons from LS pairs
     TH2F                  *fElecDphi;               //! inlcusive electron: dPhi vs pt of triggered electron
@@ -281,25 +291,34 @@ public:
 
    
  
-    TH1F                  *fElecHadTrigger;          //!
-    TH1F                  *fHadElecTrigger;          //!
-    TH1F                  *fNonElecHadTrigger;          //!
-    TH1F                  *fHadNonElecTrigger;          //!
+    TH1F                  *fElecHadTrigger;         //!
+    TH1F                  *fHadElecTrigger;         //!
+    TH1F                  *fNonElecHadTrigger;      //!
+    TH1F                  *fHadNonElecTrigger;      //!
     THnSparse             *fInclElecHa;             //!
     THnSparse             *fLSElecHa;               //!
     THnSparse             *fULSElecHa;              //!
+     THnSparse            *fMCElecHaHadron;        //!
     THnSparse             *fElecHaHa;               //!
     THnSparse             *fElecHaLSNoPartner;      //!
     THnSparse             *fElecHaULSNoPartner;     //!
+
+
+
+
+    THnSparse             *fMCElecHaTruePartner;    //!
+    THnSparse             *fMCElecHaNoPartner;      //!
+    TH1F                  *fMCElecHaTruePartnerTrigger;        //!
+    TH1F                  *fMCElecHaNoPartnerTrigger;          //!
     THnSparse             *fElecHaMixedEvent;       //!
     THnSparse             *fLSElecHaMixedEvent;     //!
     THnSparse             *fULSElecHaMixedEvent;    //!
 
 
     TH1F                  *fElecLPTrigger;          //!
-    TH1F                  *fLPElecTrigger;            //!
-    TH1F                  *fNonElecLPTrigger;          //!
-    TH1F                  *fLPNonElecTrigger;            //!
+    TH1F                  *fLPElecTrigger;          //!
+    TH1F                  *fLPNonElecTrigger;       //!
+    TH1F                  *fNonElecLPTrigger;       //!
     THnSparse             *fInclElecLP;             //!
     THnSparse             *fLSElecLP;               //!
     THnSparse             *fULSElecLP;              //!
@@ -312,15 +331,18 @@ public:
    
     TH2F                  *fCheckMCVertex;           //!
     TH2F                  *fCheckMCPtvsRecPt;        //!
-    THnSparse             *fMCPi0Prod;               //!
-    THnSparse             *fMCEtaProd;               //!
-    THnSparse             *fMCPiPlusProd;            //!
-    THnSparse             *fMCLeadingParticle;       //!
     TH3F                  *fMCHadPtEtaPhi;           //!
     TH3F                  *fMCHadPtEtaVtx;           //!
     TH3F                  *fMCElecPtEtaPhi;          //!
     TH1F                  *fMCElecPDG;               //!
     TH3F                  *fMCElecPtEtaPhiStrict;    //!
+    THnSparse             *fMCPi0Prod;               //!
+    THnSparse             *fMCEtaProd;               //!
+    THnSparse             *fMCPiPlusProd;            //!
+    THnSparse             *fMCPiPlusProdV2;          //!
+    THnSparse             *fMCLeadingParticle;       //!
+
+   
        
     
     AliAnalysisTaskHaHFECorrel(const AliAnalysisTaskHaHFECorrel&);
@@ -336,10 +358,10 @@ class AliBasicParticleHaHFE : public AliVParticle
 {
  public:
  AliBasicParticleHaHFE() 
-   : fID(0), fEta(0), fPhi(0), fpT(0), fCharge(0), fLSpartner(0), fULSpartner(0) , fIDLSPartner(0), fIDULSPartner(0), fTrueULSPartner(kFALSE)
+   : fID(0), fEta(0), fPhi(0), fpT(0), fCharge(0), fULSpartner(0), fLSpartner(0) , fIDLSPartner(0), fIDULSPartner(0), fTrueULSPartner(kFALSE), fIsPhotonic(kFALSE), fIsHadron(kFALSE)
     {}
- AliBasicParticleHaHFE(Int_t id, Float_t eta, Float_t phi, Float_t pt, Short_t charge, Short_t LS, Short_t ULS, Int_t *LSPartner, Int_t *ULSPartner, Bool_t trueULSPartner)
-   : fID(id), fEta(eta), fPhi(phi), fpT(pt), fCharge(charge), fLSpartner(LS), fULSpartner(ULS), fIDLSPartner(0), fIDULSPartner(0), fTrueULSPartner(trueULSPartner)
+ AliBasicParticleHaHFE(Int_t id, Float_t eta, Float_t phi, Float_t pt, Short_t charge, Short_t LS, Short_t ULS, Int_t *LSPartner, Int_t *ULSPartner, Bool_t trueULSPartner, Bool_t isPhotonic, Bool_t isHadron)
+   : fID(id), fEta(eta), fPhi(phi), fpT(pt), fCharge(charge), fULSpartner(LS), fLSpartner(ULS), fIDLSPartner(0), fIDULSPartner(0), fTrueULSPartner(trueULSPartner), fIsPhotonic(isPhotonic), fIsHadron(isHadron)
   {
     fIDLSPartner = new Int_t[LS];
     fIDULSPartner = new Int_t[ULS];
@@ -387,6 +409,9 @@ class AliBasicParticleHaHFE : public AliVParticle
   virtual Int_t  LSPartner(Int_t i)   const {return fIDLSPartner[i];}
   virtual Int_t  ULSPartner(Int_t i)  const {return fIDULSPartner[i];}
   virtual Bool_t TruePartner() const {return fTrueULSPartner;}
+  virtual Bool_t IsPhotonic() const {return fIsPhotonic;}
+  virtual Bool_t IsHadron() const {return fIsHadron;}
+  //  virtual Int_t  PDG() const {return fPDG;}
 
 
  private:
@@ -400,7 +425,9 @@ class AliBasicParticleHaHFE : public AliVParticle
 
   Int_t*  fIDLSPartner;    //! particle id of LS Partner
   Int_t*  fIDULSPartner;   //! partilce id of ULS partner
-  Bool_t  fTrueULSPartner; //! check if true partner was tagged
+  Bool_t  fTrueULSPartner; // check if true partner was tagged
+  Bool_t  fIsPhotonic;     //
+  Bool_t  fIsHadron;            // only for MC
 
   ClassDef(AliBasicParticleHaHFE, 1); // class which contains only quantities requires for this analysis to reduce memory consumption for event mixing
 };
