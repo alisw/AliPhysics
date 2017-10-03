@@ -917,7 +917,7 @@ class AliAnalysisTaskTOFSpectra : public AliAnalysisTaskSE {
   AliAnalysisTaskTOFSpectra(const AliAnalysisTaskTOFSpectra&);            //! Not implemented
   AliAnalysisTaskTOFSpectra& operator=(const AliAnalysisTaskTOFSpectra&); //! Not implemented
 
-  ClassDef(AliAnalysisTaskTOFSpectra, 8); //AliAnalysisTaskTOFSpectra used for the Pi/K/p analysis with TOF
+  ClassDef(AliAnalysisTaskTOFSpectra, 9); //AliAnalysisTaskTOFSpectra used for the Pi/K/p analysis with TOF
 };
 
 #endif
