@@ -136,10 +136,11 @@ private:
   
   struct AnalysisManagerQueueData
   {
-	  AnalysisManagerQueueData() : fEvent(NULL), fFriend(NULL), fRequestPush(false) {}
+	  AnalysisManagerQueueData() : fEvent(NULL), fFriend(NULL), fRequestPush(false), fFlatPointers(false) {}
 	  AliVEvent* fEvent;
 	  AliVfriendEvent* fFriend;
 	  bool fRequestPush;
+	  bool fFlatPointers;
   };
   
   Int_t ReadInput(AnalysisManagerQueueData* eventData);

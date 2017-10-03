@@ -331,8 +331,16 @@ void AliHLTAnalysisManagerComponent::CleanEventData(AnalysisManagerQueueData* ev
   }
   else
   {
-    delete eventData->fEvent;
-    delete eventData->fFriend;
+    if (eventData->fFlatPointers)
+    {
+      delete[] (Byte_t*) eventData->fEvent;
+      delete[] (Byte_t*) eventData->fFriend;
+    }
+    else
+    {
+      delete eventData->fEvent;
+      delete eventData->fFriend;
+    }
     delete eventData;
   }
 }
@@ -448,9 +456,6 @@ Int_t AliHLTAnalysisManagerComponent::DoEvent(const AliHLTComponentEventData& ev
   if (IsDataEvent())
   {
     // -- Get ESD object
-    // -------------------
-    AliVEvent* vEvent=NULL;
-    AliVfriendEvent* vFriend=NULL;
     if (fAsyncProcess)
     {
       eventData = (AnalysisManagerQueueData*) fAsyncProcessor.AllocateBuffer();
@@ -496,6 +501,7 @@ Int_t AliHLTAnalysisManagerComponent::DoEvent(const AliHLTComponentEventData& ev
     else
     {
       CleanEventData(eventData); //Buffers have been allocated, clean up
+      eventData = NULL; //Make sure this is not cleaned up again
     }
   }
   
@@ -602,26 +608,31 @@ Int_t AliHLTAnalysisManagerComponent::ReadInput(AnalysisManagerQueueData* eventD
     }
     vEvent->GetStdContent();
   }
-  for ( const TObject *iter = GetFirstInputObject(kAliHLTDataTypeESDfriendObject); iter != NULL; iter = GetNextInputObject() ) {
-    vFriend = dynamic_cast<AliESDfriend*>(const_cast<TObject*>( iter ) );
-    if( !vFriend ){ 
-      HLTWarning("Wrong ESDFriend object received");
-      iResult = -1;
-      continue;
-    }
-    if (fAsyncProcess)
-    {
-      HLTFatal("Invalid configuration: HLTAnalysisManager must process FlatESDs not ESDs in async-process mode!");
-    }
-    if (RemoveInputObjectFromCleanupList(vFriend) == NULL)
-    {
-      HLTError("Error taking ownership for esdEvent-friends, cannot queue async calibration task.");
+  
+  if (vEvent)
+  {
+    for ( const TObject *iter = GetFirstInputObject(kAliHLTDataTypeESDfriendObject); iter != NULL; iter = GetNextInputObject() ) {
+      vFriend = dynamic_cast<AliESDfriend*>(const_cast<TObject*>( iter ) );
+      if( !vFriend ){ 
+        HLTWarning("Wrong ESDFriend object received");
+        iResult = -1;
+        continue;
+      }
+      if (fAsyncProcess)
+      {
+        HLTFatal("Invalid configuration: HLTAnalysisManager must process FlatESDs not ESDs in async-process mode!");
+      }
+      if (RemoveInputObjectFromCleanupList(vFriend) == NULL)
+      {
+        HLTError("Error taking ownership for esdEvent-friends, cannot queue async calibration task.");
+      }
     }
   }
 
     size_t flatEsdSize;
     if (!vEvent)
     {
+	eventData->fFlatPointers = true;
 	const AliHLTComponentBlockData* pBlock=GetFirstInputBlock(kAliHLTDataTypeFlatESD|kAliHLTDataOriginOut);
 	if (pBlock)
 	{
