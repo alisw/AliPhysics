@@ -1230,9 +1230,10 @@ void AliAnalysisTaskSEDs::UserExec(Option_t */*option*/)
 	Double_t sigvert=d->GetSigmaVert();
 	Double_t cosPiDs=-99.;
 	Double_t cosPiKPhi=-99.;
-	Double_t normIP;                     //to store the maximum topomatic var. among the 3 prongs
+	Double_t normIP=-999.;                //to store the maximum topomatic var. among the 3 prongs
 	Double_t normIPprong[nProng];        //to store IP of k,k,pi
-        
+        for(Int_t ijp=0; ijp<nProng; ijp++) normIPprong[ijp]=-999.;
+
 	Double_t ptWeight = 1.;
 	if(fFillSparse) {
         
@@ -1640,7 +1641,7 @@ Bool_t AliAnalysisTaskSEDs::CheckDaugAcc(TClonesArray* arrayMC,Int_t nProng, Int
 void AliAnalysisTaskSEDs::GenerateRotBkg(AliAODRecoDecayHF3Prong *d, Int_t dec, Int_t iPtBin) {
     
   const Int_t nprongs = 3;
-  Double_t PxProng[nprongs], PyProng[nprongs], PtProng[nprongs], PzProng[nprongs], P2Prong[nprongs], mProng[nprongs];
+  Double_t PxProng[nprongs], PyProng[nprongs], PzProng[nprongs], P2Prong[nprongs], mProng[nprongs];
   Double_t Px, Py, Pz, P2;
   UInt_t pdg[3]={321,321,211};
   int idPion = 2;
@@ -1653,7 +1654,6 @@ void AliAnalysisTaskSEDs::GenerateRotBkg(AliAODRecoDecayHF3Prong *d, Int_t dec, 
   for (Int_t ip=0; ip<nprongs; ip++) {
     PxProng[ip] = d->PxProng(ip);
     PyProng[ip] = d->PxProng(ip);
-    PtProng[ip] = d->PtProng(ip);
     PzProng[ip] = d->PzProng(ip);
     P2Prong[ip] = d->P2Prong(ip);
     mProng[ip]  = TDatabasePDG::Instance()->GetParticle(pdg[ip])->Mass();
