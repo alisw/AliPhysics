@@ -13,7 +13,7 @@ public:
   using AliVHeader::ClassName;
   AliNanoAODHeader();
   AliNanoAODHeader(Int_t size);
-  AliNanoAODHeader(Int_t size, Int_t sizeString);
+  AliNanoAODHeader(Int_t size, Int_t sizeInt);
   virtual ~AliNanoAODHeader(){;}
 
 
@@ -53,8 +53,8 @@ public:
   virtual void     SetTriggerMask(ULong64_t /* trigMsk */)    {NotImplemented(); };
   virtual void     SetTriggerMaskNext50(ULong64_t /* trigMsk */) {NotImplemented(); };
   virtual void     SetTriggerCluster(UChar_t /* trigClus */)  {NotImplemented(); };
-  virtual void     SetFiredTriggerClasses(TString /* trig */) {NotImplemented(); };
-  virtual TString  GetFiredTriggerClasses() const             { return TString(GetVarString(fFiredTriggerClasses));};
+  virtual void     SetFiredTriggerClasses(TString varlist);
+  virtual TString  GetFiredTriggerClasses() const;
   virtual Double_t GetZDCN1Energy()         const             {NotImplemented(); return 0;};
   virtual Double_t GetZDCP1Energy()         const             {NotImplemented(); return 0;};
   virtual Double_t GetZDCN2Energy()         const             {NotImplemented(); return 0;};
@@ -116,11 +116,13 @@ public:
   Int_t GetRunNumberIndex  () { return fRunNumber ; }
 
   std::map<TString,int> GetMapCstVar () { return fMapCstVar; } 
-  void SetMapCstVar (std::map<TString,int> cstmap) { fMapCstVar = cstmap; } 
+  void SetMapCstVar (std::map<TString,int> cstmap) { fMapCstVar = cstmap; }
+  std::map<TString,int> GetMapFiredTriggerClasses () { return fMapFiredTriggerClasses; } 
+  void SetMapFiredTriggerClasses (TString trigClasses);
 
   Int_t GetVarIndex(TString varName); 
   
-  ClassDef(AliNanoAODHeader, 3)
+  ClassDef(AliNanoAODHeader, 4)
 private:
   void NotImplemented() const;
 
@@ -137,6 +139,8 @@ private:
   Int_t fRunNumber;  // index of stored variable 
 
   std::map<TString,int> fMapCstVar;// Map of indexes of custom variables: CACHE THIS TO CONST INTs IN YOUR TASK TO AVOID CONTINUOUS STRING COMPARISONS
+
+  std::map<TString,int> fMapFiredTriggerClasses;// Map of indexes of fired trigger Classes
 };
 
 #endif /* _ALINANOAODHEADER_H_ */

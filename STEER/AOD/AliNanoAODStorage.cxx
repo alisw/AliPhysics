@@ -8,7 +8,7 @@ void AliNanoAODStorage::AllocateInternalStorage(Int_t size) {
   AllocateInternalStorage(size, 0);
 }
 
-void AliNanoAODStorage::AllocateInternalStorage(Int_t size, Int_t sizeString) {
+void AliNanoAODStorage::AllocateInternalStorage(Int_t size, Int_t sizeInt) {
   // Creates the internal array
   if(size == 0){
     AliError("Zero size");
@@ -25,10 +25,10 @@ void AliNanoAODStorage::AllocateInternalStorage(Int_t size, Int_t sizeString) {
   //   fVars[ivar]=0;
   // }
 
-  if(sizeString>0){
-    fNVarsString = sizeString;
-    fVarsString.clear();
-    fVarsString.resize(sizeString, "");
+  if(sizeInt>0){
+    fNVarsInt = sizeInt;
+    fVarsInt.clear();
+    fVarsInt.resize(sizeInt, 0);
   }
   
 }
@@ -36,13 +36,13 @@ void AliNanoAODStorage::AllocateInternalStorage(Int_t size, Int_t sizeString) {
 AliNanoAODStorage& AliNanoAODStorage::operator=(const AliNanoAODStorage& sto)
 {
   // Assignment operator
-  AllocateInternalStorage(sto.fNVars, sto.fNVarsString);
+  AllocateInternalStorage(sto.fNVars, sto.fNVarsInt);
   if(this!=&sto) {
     for (Int_t isize = 0; isize<sto.fNVars; isize++) {
       SetVar(isize, sto.GetVar(isize));    
     }
-    for (Int_t isize = 0; isize<sto.fNVarsString; isize++) {
-      SetVarString(isize, sto.GetVarString(isize));    
+    for (Int_t isize = 0; isize<sto.fNVarsInt; isize++) {
+      SetVarInt(isize, sto.GetVarInt(isize));    
     }
     
   }
@@ -50,7 +50,7 @@ AliNanoAODStorage& AliNanoAODStorage::operator=(const AliNanoAODStorage& sto)
   return *this;
 }
 
-Int_t AliNanoAODStorage::GetStringParameters(const TString varListHeader){
+Int_t AliNanoAODStorage::GetIntParameters(const TString varListHeader){
   const TString stringVariables = "FiredTriggerClasses";//list of all possible string variables in AliNanoAODStorage
 
   TObjArray * vars = varListHeader.Tokenize(",");
