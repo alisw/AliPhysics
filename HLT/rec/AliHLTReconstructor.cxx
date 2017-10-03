@@ -110,17 +110,17 @@ void AliHLTReconstructor::Init()
 {
   // init the reconstructor
   if (!fpPluginBase) {
-    AliError("internal memory error: can not get AliHLTSystem instance from plugin");
+    AliFatal("internal memory error: can not get AliHLTSystem instance from plugin");
     return;
   }
 
   AliHLTSystem* pSystem=fpPluginBase->GetInstance();
   if (!pSystem) {
-    AliError("can not create AliHLTSystem object");
+    AliFatal("can not create AliHLTSystem object");
     return;
   }
   if (pSystem->CheckStatus(AliHLTSystem::kError)) {
-    AliError("HLT system in error state");
+    AliFatal("HLT system in error state");
     return;
   }
 
@@ -190,11 +190,11 @@ void AliHLTReconstructor::Init()
   if (!pSystem->CheckStatus(AliHLTSystem::kReady)) {
     pSystem->SetDetectorMask(GetRunInfo()->GetDetectorMask());
     if (pSystem->ScanOptions(option.Data())<0) {
-      AliError("error setting options for HLT system");
+      AliFatal("error setting options for HLT system");
       return;
     }
     if ((pSystem->Configure())<0) {
-      AliError("error during HLT system configuration");
+      AliFatal("error during HLT system configuration");
       return;
     }
   }
@@ -273,7 +273,7 @@ void AliHLTReconstructor::Reconstruct(AliRawReader* rawReader, TTree* /*clusters
   // The HLTOUT data is finally processed in FillESD
 
   if (!fpPluginBase) {
-    AliError("internal memory error: can not get AliHLTSystem instance from plugin");
+    AliFatal("internal memory error: can not get AliHLTSystem instance from plugin");
     return;
   }
 
@@ -305,7 +305,7 @@ void AliHLTReconstructor::Reconstruct(AliRawReader* rawReader, TTree* /*clusters
       return;
     }
     if (!pSystem->CheckStatus(AliHLTSystem::kReady)) {
-      AliError("HLT system in wrong state");
+      AliFatal("HLT system in wrong state");
       return;
     }
 
