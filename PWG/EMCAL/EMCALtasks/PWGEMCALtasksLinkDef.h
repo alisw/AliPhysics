@@ -28,7 +28,6 @@
 #pragma link C++ class  AliEMCALConfiguration+;
 #pragma link C++ class  AliEMCALConfigHandler+;
 #pragma link C++ class  AliEMCALConfigurationMatcher+;
-#pragma link C++ class  AliAnalysisTaskEmcalTriggerSelection+;
 #pragma link C++ class  AliAnalysisTaskEmcalIteratorTest+;
 #pragma link C++ class  AliEmcalCopyCollection+;
 #pragma link C++ class  AliEmcalCorrectionEventManager+;
@@ -53,4 +52,5 @@
 #pragma link C++ class PWG::EMCAL::AliEmcalTriggerRejectionMaker+;
 #pragma link C++ class PWG::EMCAL::AliEmcalCellMonitorTask+;
 #pragma link C++ class PWG::EMCAL::AliEmcalFastOrMonitorTask+;
+#pragma link C++ class PWG::EMCAL::AliAnalysisTaskEmcalTriggerSelection+;
 #endif
