@@ -49,6 +49,7 @@
 #include "AliEmcalAnalysisFactory.h"
 #include "AliEmcalJet.h"
 #include "AliEmcalList.h"
+#include "AliEmcalTriggerDecisionContainer.h"
 #include "AliLog.h"
 #include "AliParticleContainer.h"
 #include "AliTrackContainer.h"
@@ -202,8 +203,22 @@ bool AliAnalysisTaskEmcalJetSubstructureTree::Run(){
   // Run trigger selection (not on pure MCgen train)
   if(datajets){
     if(!(fInputHandler->IsEventSelected() & fTriggerSelectionBits)) return false;
-    if(fTriggerSelectionString.Length()) {
-      if(!fInputEvent->GetFiredTriggerClasses().Contains(fTriggerSelectionString)) return false;
+    if(!mcjets){
+      // Pure data - do EMCAL trigger selection from selection string
+      if(fTriggerSelectionString.Length()) {
+        if(!fInputEvent->GetFiredTriggerClasses().Contains(fTriggerSelectionString)) return false;
+      }
+    } else {
+      // Simulation - do EMCAL trigger selection from trigger selection object
+      PWG::EMCAL::AliEmcalTriggerDecisionContainer *mctrigger = static_cast<PWG::EMCAL::AliEmcalTriggerDecisionContainer *>(fInputEvent->FindListObject("EmcalTriggerDecision"));
+      AliDebugStream(1) << "Found trigger decision object: " << (mctrigger ? "yes" : "no") << std::endl;
+      if(fTriggerSelectionString.Length()){
+        if(!mctrigger){
+          AliErrorStream() <<  "Trigger decision container not found in event - not possible to select EMCAL triggers" << std::endl;
+          return false;
+        }
+        if(!mctrigger->IsEventSelected(fTriggerSelectionString)) return false;
+      }
     }
   }
 
