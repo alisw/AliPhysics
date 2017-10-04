@@ -760,7 +760,7 @@ Bool_t AliAnalysisTaskChargedJetsHadronCF::Run()
       vetoJet = GetVetoJet(jet);
     for(Int_t i = 0; i<fJetEmbeddingCuts.size(); i++)
     {
-      AliChargedJetsHadronCFCuts currentCut = fJetEmbeddingCuts.at(i);
+      AliChargedJetsHadronCFCuts* currentCut = &fJetEmbeddingCuts.at(i);
       AliEmcalJet* refJet = GetReferenceJet(jet);
       Double_t trackRatio = 0.;
       Double_t ptRatio = 0.;
@@ -770,11 +770,11 @@ Bool_t AliAnalysisTaskChargedJetsHadronCF::Run()
       if(vetoJet)
         vetoJetPt = vetoJet->Pt() - vetoJet->Area()*fJetsCont->GetRhoVal();
 
-      if(!currentCut.IsCutFulfilled(jet->Pt(), refJet->Pt(), fCent, ptRatio, vetoJetPt))
+      if(!currentCut->IsCutFulfilled(jet->Pt(), refJet->Pt(), fCent, ptRatio, vetoJetPt))
         continue;
 
-      FillHistogramsJets(jet, currentCut.fCutName.Data());
-      AddJetToOutputArray(jet, currentCut.fArrayIndex, currentCut.fAcceptedJets);
+      FillHistogramsJets(jet, currentCut->fCutName.Data());
+      AddJetToOutputArray(jet, currentCut->fArrayIndex, currentCut->fAcceptedJets);
     }
   }
 
