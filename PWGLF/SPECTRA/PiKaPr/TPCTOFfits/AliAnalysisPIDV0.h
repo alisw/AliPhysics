@@ -23,6 +23,7 @@ public TObject
   Double_t GetV0CosinePA() { return fV0CosinePA; };
   Double_t GetPt() { return fPt; };
   Double_t GetEta() { return fEta; };
+  Double_t GetDCAPV();
   Int_t GetMCPdgCode();
  protected:  
   Double_t fInvMK0s,fInvML,fInvMAL;
