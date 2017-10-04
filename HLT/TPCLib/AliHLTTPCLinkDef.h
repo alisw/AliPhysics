@@ -58,7 +58,6 @@
 #pragma link C++ class AliHLTTPCCASliceData+;
 #pragma link C++ class AliHLTTPCCASliceOutput+;
 #pragma link C++ class AliHLTTPCCAStandaloneFramework+;
-#pragma link C++ class AliTPCtrackerCA+;
 #pragma link C++ class AliHLTTPCCATrackerFramework+;
 #pragma link C++ class AliHLTTPCCAGPUTracker+;
 #pragma link C++ class AliHLTTPCCATrackerOutputConverter+;

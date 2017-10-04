@@ -150,7 +150,6 @@ set(SRCS
     tracking-ca/AliHLTTPCCATracklet.cxx
     tracking-ca/AliHLTTPCCATrackletSelector.cxx
     tracking-ca/AliHLTTPCCATrackParam.cxx
-    tracking-ca/AliTPCtrackerCA.cxx
     transform/AliHLTTPCFastTransform.cxx
     transform/AliHLTTPCSpline2D3D.cxx
     transform/AliHLTTPCSpline2D3DObject.cxx
