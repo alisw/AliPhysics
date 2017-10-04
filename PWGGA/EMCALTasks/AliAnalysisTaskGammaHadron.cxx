@@ -554,7 +554,7 @@ void AliAnalysisTaskGammaHadron::UserCreateOutputObjects()
     	titleThnQA[dimThnQA] = "#Delta #eta^{match. track-cluster}";
     	nbinsThnQA[dimThnQA] = 50;
     	binEdgesThnQA[dimThnQA] = etaArrayDistMatched;
-    	GenerateFixedBinArray(50,-0.05, 0.05,etaArrayDistMatched);
+    	GenerateFixedBinArray(50,0, 0.1,etaArrayDistMatched);
     	minThnQA[dimThnQA] = 0;
     	maxThnQA[dimThnQA] = 50;
     	dimThnQA++;
@@ -562,7 +562,7 @@ void AliAnalysisTaskGammaHadron::UserCreateOutputObjects()
     	titleThnQA[dimThnQA] = "#Delta #varphi^{match. track-cluster}";
     	nbinsThnQA[dimThnQA] = 50;
     	binEdgesThnQA[dimThnQA] = phiArrayDistMatched;
-    	GenerateFixedBinArray(50,-0.05, 0.05,phiArrayDistMatched);
+    	GenerateFixedBinArray(50,0, 0.1,phiArrayDistMatched);
     	minThnQA[dimThnQA] = 0;
     	maxThnQA[dimThnQA] = 50;
     	dimThnQA++;
@@ -590,8 +590,13 @@ void AliAnalysisTaskGammaHadron::UserCreateOutputObjects()
     }
 
     Double_t EPArray[100+1];
+    Double_t NTracksArray[5+1];
+    static const Int_t nCentHistBins=4;
+    Double_t centBinArray[nCentHistBins+1]  = {0.0,10.0,30.0,60.0,100.0};
+
     if(fPlotQA==2)
     {
+    		//..E/p for electron identification
         titleThnQA[dimThnQA] = "E/p";
         nbinsThnQA[dimThnQA] = 100;
         binEdgesThnQA[dimThnQA] = EPArray;
@@ -599,13 +604,17 @@ void AliAnalysisTaskGammaHadron::UserCreateOutputObjects()
         minThnQA[dimThnQA] = 0;
         maxThnQA[dimThnQA] = 2;
         dimThnQA++;
-    }
 
-    static const Int_t nCentHistBins=4;
-    Double_t centBinArray[nCentHistBins+1]  = {0.0,10.0,30.0,60.0,100.0};
-    if(fPlotQA==2)
-    {
-    		//..Centrality
+        //..number of tracks matched to a cluster within 0.1
+        titleThnQA[dimThnQA] = "No. of matched tracks (0.1)";
+        nbinsThnQA[dimThnQA] = 5;
+        binEdgesThnQA[dimThnQA] = NTracksArray;
+        GenerateFixedBinArray(5,0,5,NTracksArray);
+        minThnQA[dimThnQA] = 0;
+        maxThnQA[dimThnQA] = 5;
+        dimThnQA++;
+
+        //..Centrality
     		titleThnQA[dimThnQA] = "Centrality %";
     		nbinsThnQA[dimThnQA] = nCentHistBins;
     		binEdgesThnQA[dimThnQA] = centBinArray;
@@ -613,7 +622,7 @@ void AliAnalysisTaskGammaHadron::UserCreateOutputObjects()
     		maxThnQA[dimThnQA] = centBinArray[nCentHistBins];
     		dimThnQA++;
     }
-    //..ID array -  0 - leading, 1- track matched, 2 - leading & track matched
+    /*//..ID array -  0 - leading, 1- track matched, 2 - leading & track matched
     titleThnQA[dimThnQA] = "ID code of photon";
     nbinsThnQA[dimThnQA] = 5;
     Double_t IdArray[5+1];
@@ -622,7 +631,7 @@ void AliAnalysisTaskGammaHadron::UserCreateOutputObjects()
     minThnQA[dimThnQA] = 0;
     maxThnQA[dimThnQA] = 5;
     dimThnQA++;
-
+     */
     /*
         titleThnQA[dimThnQA] = "NLM";
         nbinsThnQA[dimThnQA] = 4;
@@ -1616,14 +1625,13 @@ void AliAnalysisTaskGammaHadron::FillQAHisograms(Int_t identifier,AliClusterCont
 		//Eg, lambda0,NLM, ncells, distance to bad ,e/p, Mgg
 		if(fPlotQA==1)
 		{
-			Double_t valueArray[7];
+			Double_t valueArray[6];
 			valueArray[0] = energy;
 			valueArray[1] = caloCluster->GetM02();
 			valueArray[2] = caloCluster->GetDistanceToBadChannel()-1; //..shift to -1 since it starts at 1 and not at 0
 			valueArray[3] = minCellDistance;                          //..closest distance to SM border
 			valueArray[4] = caloClusterVec.Eta();
 			valueArray[5] = aliCaloClusterVec.Phi_0_2pi()*fRtoD;
-			valueArray[6] = gammaInfo;
 			fClusterProp->Fill(valueArray); //..all clusters - no cuts
 		}
 
@@ -1653,11 +1661,11 @@ void AliAnalysisTaskGammaHadron::FillQAHisograms(Int_t identifier,AliClusterCont
 					Double_t valueArray[7];
 					valueArray[0] = energy;
 					valueArray[1] = caloCluster->GetM02();
-					valueArray[2] = etadiff;
-					valueArray[3] = phidiff;
+					valueArray[2] = fabs(etadiff);
+					valueArray[3] = fabs(phidiff);
 					valueArray[4] = energy/mom;
-					valueArray[5] = fCent;
-					valueArray[6] = gammaInfo;
+					valueArray[5] = Ntrks;
+					valueArray[6] = fCent;
 					fClusterProp->Fill(valueArray); //..all clusters - no cuts
 				}
 			}
@@ -1667,11 +1675,11 @@ void AliAnalysisTaskGammaHadron::FillQAHisograms(Int_t identifier,AliClusterCont
 				valueArray[0] = energy;
 				valueArray[1] = caloCluster->GetM02();
 				//..no mathced track
-				valueArray[2] = 0;
-				valueArray[3] = 0;
+				valueArray[2] = 0.1;
+				valueArray[3] = 0.1;
 				valueArray[4] = 0;
-				valueArray[5] = fCent;
-				valueArray[6] = gammaInfo;
+				valueArray[5] = 0;
+				valueArray[6] = fCent;
 				fClusterProp->Fill(valueArray); //..all clusters - no cuts
 			}
 		}
