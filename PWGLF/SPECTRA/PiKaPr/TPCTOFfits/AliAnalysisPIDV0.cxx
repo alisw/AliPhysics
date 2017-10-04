@@ -68,3 +68,6 @@ Int_t AliAnalysisPIDV0::GetMCPdgCode() {
       return fPosAnalysisPIDTrack->GetMCMotherPdgCode();
   return 0;
 };
+Double_t AliAnalysisPIDV0::GetDCAPV() {
+  return fRadius * ( TMath::Sqrt(1. - fV0CosinePA * fV0CosinePA));
+};
