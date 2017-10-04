@@ -111,5 +111,9 @@ double AliEmcalClusterJetConstituent::Eta() const {
   return fPVec.Eta();
 }
 
+double AliEmcalClusterJetConstituent::Phi() const {
+  return fPVec.Phi();
+}
+
 }
 }

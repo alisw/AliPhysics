@@ -145,6 +145,12 @@ public:
   virtual double Eta() const;
 
   /**
+   * @brief Access to azimuthal angle
+   * @return Constituent azimuthal angle
+   */
+  virtual double Phi() const;
+
+  /**
    * @brief Get the underlying cluster
    * @return
    */

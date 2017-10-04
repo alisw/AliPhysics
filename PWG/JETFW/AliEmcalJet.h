@@ -20,13 +20,8 @@
 #include <AliVEvent.h>
 
 #include "AliEmcalJetShapeProperties.h"
-
-namespace PWG {
-namespace JETFW {
-class AliEmcalParticleJetConstituent;
-class AliEmcalClusterJetConstituent;
-}
-}
+#include "AliEmcalClusterJetConstituent.h"
+#include "AliEmcalParticleJetConstituent.h"
 
 /**
  * @class AliEmcalJet
@@ -47,6 +42,11 @@ class AliEmcalClusterJetConstituent;
  * - matching with other reconstructed jets (e.g. detector level with particole level).
  * The class implements also a number of service function to calculate other observable,
  * such as fragmentation functions, subtracted jet momentum, etc.
+ *
+ * # Access to jet constituents
+ *
+ * Constituents are distinguished between cluster type (EMCAL/PHOS cluster) and particle
+ * type (track / particle) constituents.
  */
 class AliEmcalJet : public AliVParticle
 {
@@ -181,25 +181,25 @@ class AliEmcalJet : public AliVParticle
    * @brief Get container with particle (track / MC particle) constituents
    * @return Container with constituents
    */
-  const TClonesArray &GetParticleConstituents() const { return fParticleConstituents; }
+  const std::vector<PWG::JETFW::AliEmcalParticleJetConstituent> &GetParticleConstituents() const { return fParticleConstituents; }
 
   /**
    * @brief Get container with cluster constituents
    * @return Container with constituents
    */
-  const TClonesArray &GetClusterConstituents() const { return fClusterConstituents; }
+  const std::vector<PWG::JETFW::AliEmcalClusterJetConstituent> &GetClusterConstituents() const { return fClusterConstituents; }
 
   /**
    * @brief Get the number of particle constituents assigned to the given jet
    * @return Number of particle constituents
    */
-  int GetNumberOfParticleConstituents() const { return fParticleConstituents.GetEntriesFast(); }
+  int GetNumberOfParticleConstituents() const { return fParticleConstituents.size(); }
 
   /**
    * @brief Get the number of cluster constituents
    * @return Number of cluster constituents
    */
-  int GetNumberOfClusterConstituents() const { return fClusterConstituents.GetEntriesFast(); }
+  int GetNumberOfClusterConstituents() const { return fClusterConstituents.size(); }
 
   /**
    * @brief Access to the \f$ i^{th}\f$-cluster constituent
@@ -415,8 +415,8 @@ class AliEmcalJet : public AliVParticle
   AliEmcalJetShapeProperties *fJetShapeProperties; //!<! Pointer to the jet shape properties
   UInt_t fJetAcceptanceType;    //!<!  Jet acceptance type (stored bitwise)
 
-  TClonesArray      fParticleConstituents;  ///< List of particle constituents
-  TClonesArray      fClusterConstituents;   ///< List of cluster constituents
+  std::vector<PWG::JETFW::AliEmcalParticleJetConstituent>      fParticleConstituents;  ///< List of particle constituents
+  std::vector<PWG::JETFW::AliEmcalClusterJetConstituent>       fClusterConstituents;   ///< List of cluster constituents
 
  private:
   /**

@@ -96,5 +96,9 @@ double AliEmcalParticleJetConstituent::Eta() const {
   return fkParticle->Eta();
 }
 
+double AliEmcalParticleJetConstituent::Phi() const {
+  return fkParticle->Phi();
+}
+
 }
 }

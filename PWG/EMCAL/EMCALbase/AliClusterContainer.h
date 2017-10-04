@@ -121,14 +121,9 @@ class AliClusterContainer : public AliEmcalContainer {
   Bool_t           fIncludePHOSonly;            ///< flag to accept only PHOS clusters (and reject EMCal clusters)
   Int_t            fPhosMinNcells;              ///< min number of phos cells per cluster
   Double_t         fPhosMinM02;                 ///< min value of M02 for phos clusters
-<<<<<<< HEAD
   Double_t		   fEmcalMinM02;				   ///< min value of M02 for EMCAL clusters
   Double_t 		   fEmcalMaxM02;				   ///< max value of M02 for EMCAL clusters
   Double_t         fEmcalMaxM02CutEnergy;       ///< max EMCal cluster energy for which to apply M02 cut
-=======
-  Double_t		      fEmcalMinM02;				   ///< min value of M02 for EMCAL clusters
-  Double_t 		    fEmcalMaxM02;				   ///< max value of M02 for EMCAL clusters
->>>>>>> Implementation of a constituent wrapper class
 
  private:
   AliClusterContainer(const AliClusterContainer& obj); // copy constructor

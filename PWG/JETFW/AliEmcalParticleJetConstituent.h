@@ -120,6 +120,12 @@ public:
    */
   virtual double Eta() const;
 
+  /**
+   * @brief Access to azimuthal angle
+   * @return Constituent azimuthal angle
+   */
+  virtual double Phi() const;
+
   const AliVParticle *GetParticle() const { return fkParticle;}
 
 private:

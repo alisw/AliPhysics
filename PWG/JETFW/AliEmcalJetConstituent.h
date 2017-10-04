@@ -101,6 +101,40 @@ public:
    */
   virtual double Eta() const = 0;
 
+  /**
+   * @brief Access to azimuthal angle
+   * @return Constituent azimuthal angle
+   */
+  virtual double Phi() const = 0;
+
+  /**
+   * @brief Checks whether the constituent is from an embedded event
+   * @return True if the constituent is from an embedded event
+   */
+  Bool_t IsFromEmbeddedEvent() const { return fIsFromEmbeddedEvent; }
+
+  /**
+   * @brief Get the index of the constituent in the global index map
+   * @return Index of the constituent in the global index map
+   */
+  ULong_t GetGlobalIndex() const  { return fGlobalIndex; }
+
+  /**
+   * @brief Specify whether constituent is from embedded event
+   * @param[in] isEmbedded Flag of embedded status (true - constituent is from embedded event)
+   */
+  void SetIsFromEmbeddedEvent(Bool_t isEmbedded) { fIsFromEmbeddedEvent = isEmbedded; }
+
+  /**
+   * @brief Set the index in the globl
+   * @param[in] index Index of the constituent in the global index map
+   */
+  void SetGlobalIndex(ULong_t index) { fGlobalIndex = index; }
+
+protected:
+  Bool_t 			fIsFromEmbeddedEvent;	///< Flag whether constituent is from embedded event
+  ULong_t		    fGlobalIndex;			///< Index of the constituent in the global index map
+
   /// \cond CLASSIMP
   ClassDef(AliEmcalJetConstituent, 0);
   /// \endcond
