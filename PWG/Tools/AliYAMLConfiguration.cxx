@@ -41,6 +41,7 @@ AliYAMLConfiguration::AliYAMLConfiguration(const std::string prefixString, const
 bool AliYAMLConfiguration::AddEmptyConfiguration(const std::string configurationName)
 {
   YAML::Node node;
+  AliInfoStream() << "Adding configuration \"" << configurationName << "\" as an empty YAML node.\n";
   return AddConfiguration(node, configurationName);
 }
 
@@ -97,7 +98,7 @@ bool AliYAMLConfiguration::AddConfiguration(const YAML::Node node, std::string c
   }
 
   // Add the configuration
-  AliInfoStream() << "Adding configuration \"" << configurationName << "\"\n.";
+  AliDebugStream(2) << "Adding configuration \"" << configurationName << "\".\n";
   fConfigurations.push_back(std::make_pair(configurationName, node));
   return true;
 }
@@ -110,7 +111,7 @@ bool AliYAMLConfiguration::AddConfiguration(const YAML::Node node, std::string c
  *
  * @return True if write was successful.
  */
-bool AliYAMLConfiguration::WriteConfiguration(const int index, const std::string filename) const
+bool AliYAMLConfiguration::WriteConfiguration(const std::string filename, const int index) const
 {
   // Write to a local temp filename
   TUUID tempUUID;
@@ -138,9 +139,9 @@ bool AliYAMLConfiguration::WriteConfiguration(const int index, const std::string
  *
  * @return True if write was successful.
  */
-bool AliYAMLConfiguration::WriteConfiguration(const std::string configurationName, const std::string filename) const
+bool AliYAMLConfiguration::WriteConfiguration(const std::string filename, const std::string configurationName) const
 {
-  return WriteConfiguration(GetConfigurationIndexByName(configurationName, fConfigurations), filename);
+  return WriteConfiguration(filename, GetConfigurationIndexByName(configurationName, fConfigurations));
 }
 
 /**
@@ -187,9 +188,9 @@ void AliYAMLConfiguration::SetupReadingConfigurationFilePath(std::string & filen
       if (fileIdentifier != "") {
         localFilename = fileIdentifier + "." + localFilename;
       }
-      // Add UUID to ensure there are no conflicts if multiple correction tasks have the same configuration file name
+      // Add UUID to ensure there are no conflicts if multiple yaml configs have the same configuration file name
       TUUID tempUUID;
-      localFilename = ":" + localFilename;
+      localFilename = "." + localFilename;
       localFilename = tempUUID.AsString() + localFilename;
 
       // Copy file
@@ -202,12 +203,13 @@ void AliYAMLConfiguration::SetupReadingConfigurationFilePath(std::string & filen
 }
 
 /**
- * Write a selected YAML configuration to file.
+ * Write a selected YAML configuration to file. Practically, it copies a local file to the desired location]
+ * to ensure seamless access to AliEn.
  *
  * @param[in] filename Filename to which the configuration should be written.
  * @param[in] localFilename Filename where the configuration was written locally.
  */
-void AliYAMLConfiguration::WriteConfigurationToFilePath(std::string filename, const std::string localFilename) const
+void AliYAMLConfiguration::WriteConfigurationToFilePath(const std::string localFilename, std::string filename) const
 {
   bool cannotWriteFile = false;
   if (localFilename == "") {
