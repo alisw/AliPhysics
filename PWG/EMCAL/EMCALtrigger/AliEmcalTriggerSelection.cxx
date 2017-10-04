@@ -25,6 +25,7 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.                     *
  ************************************************************************************/
 #include <vector>
+#include <iostream>
 #include <TClonesArray.h>
 
 #include "AliEMCALTriggerPatchInfo.h"
@@ -58,7 +59,7 @@ AliEmcalTriggerDecision* AliEmcalTriggerSelection::MakeDecison(const TClonesArra
   TIter patchIter(inputPatches);
   AliEMCALTriggerPatchInfo *patch(NULL);
   std::vector<AliEMCALTriggerPatchInfo *> selectedPatches;
-  std::cout << "Number of input patches: " << inputPatches->GetEntries() << std::endl;
+  AliDebugStream(1) << "Number of input patches: " << inputPatches->GetEntries() << std::endl;
   while((patch = dynamic_cast<AliEMCALTriggerPatchInfo *>(patchIter()))){
     if(fSelectionCuts->IsSelected(patch)){
       selectedPatches.push_back(patch);
