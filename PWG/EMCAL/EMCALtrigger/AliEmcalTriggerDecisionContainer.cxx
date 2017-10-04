@@ -27,7 +27,9 @@
 #include "AliEmcalTriggerDecision.h"
 #include "AliEmcalTriggerDecisionContainer.h"
 
+/// \cond CLASSIMP
 ClassImp(PWG::EMCAL::AliEmcalTriggerDecisionContainer)
+/// \endcond
 
 namespace PWG{
 namespace EMCAL{

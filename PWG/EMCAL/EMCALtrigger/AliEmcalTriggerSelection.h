@@ -76,8 +76,16 @@ public:
    */
   virtual ~AliEmcalTriggerSelection() {}
 
+  /**
+   * @brief Get the selection cuts used in the trigger selection
+   * @return Selection cuts used in this trigger selection
+   */
   const AliEmcalTriggerSelectionCuts *GetSelectionCuts() const { return fSelectionCuts; }
 
+  /**
+   * @brief Set the selection cuts used in this trigger selection
+   * @param[in] cuts Selection cuts used to fire the trigger
+   */
   void SetSelectionCuts(const AliEmcalTriggerSelectionCuts * const cuts) { fSelectionCuts = cuts; }
 
   /**
@@ -93,7 +101,10 @@ public:
 protected:
   const AliEmcalTriggerSelectionCuts  *fSelectionCuts;    ///< Cuts used for the trigger patch selection
 
+  /// \cond CLASSIMP
   ClassDef(AliEmcalTriggerSelection, 1);    // EMCAL trigger selection component
+  /// \endcond
+
 private:
   AliEmcalTriggerSelection(const AliEmcalTriggerSelection &ref);
   AliEmcalTriggerSelection &operator=(const AliEmcalTriggerSelection &ref);

@@ -138,7 +138,9 @@ protected:
   Bool_t                fUseSimpleOffline;          ///< Request simple offline patches
   Bool_t                fUseRecalc;                 ///< Request recalc patch
 
+  /// \cond CLASSIMP
   ClassDef(AliEmcalTriggerSelectionCuts, 1);         // Cuts for the EMCAL Trigger selection
+  /// \endcond
 };
 
 }

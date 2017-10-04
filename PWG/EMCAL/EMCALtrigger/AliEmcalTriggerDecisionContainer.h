@@ -85,6 +85,12 @@ public:
   const AliEmcalTriggerDecision *FindTriggerDecision(const char *name) const;
 
   /**
+   * @brief Get container with trigger decision results
+   * @return List of trigger decision objects
+   */
+  const TList *GetListOfTriggerDecisions() const { return &fContainer; }
+
+  /**
    * @brief Checks whether the events is selected for a given trigger type
    * @param[in] name Name of the EMCAL trigger
    * @return True if the event is selected, false otherwise
@@ -94,7 +100,9 @@ public:
 protected:
   TList     fContainer;         ///< List of trigger decisions
 
+  /// \cond CLASSIMP
   ClassDef(AliEmcalTriggerDecisionContainer, 1);    // Container for trigger decisions
+  /// \endcond
 };
 
 }

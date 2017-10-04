@@ -26,11 +26,13 @@
  ************************************************************************************/
 #include <algorithm>
 #include <vector>
+#include <TH1.h>
 #include "AliEmcalTriggerDecision.h"
 #include "AliEmcalTriggerDecisionContainer.h"
 #include "AliEmcalTriggerSelection.h"
 #include "AliEmcalTriggerSelectionCuts.h"
 #include "AliAnalysisTaskEmcalTriggerSelection.h"
+#include "AliEMCALTriggerPatchInfo.h"
 
 /// \cond CLASSIMP
 ClassImp(PWG::EMCAL::AliAnalysisTaskEmcalTriggerSelection)
@@ -42,17 +44,29 @@ namespace EMCAL {
 AliAnalysisTaskEmcalTriggerSelection::AliAnalysisTaskEmcalTriggerSelection():
   AliAnalysisTaskEmcal(),
   fGlobalDecisionContainerName("EmcalTriggerDecision"),
-  fTriggerSelections()
+  fTriggerSelections(),
+  fSelectionQA()
 {
+  SetCaloTriggerPatchInfoName("EmcalTriggers");
   fTriggerSelections.SetOwner(kTRUE);
 }
 
 AliAnalysisTaskEmcalTriggerSelection::AliAnalysisTaskEmcalTriggerSelection(const char* name):
-  AliAnalysisTaskEmcal(name, kFALSE),
+  AliAnalysisTaskEmcal(name, kTRUE),
   fGlobalDecisionContainerName("EmcalTriggerDecision"),
-  fTriggerSelections()
+  fTriggerSelections(),
+  fSelectionQA()
 {
+  SetCaloTriggerPatchInfoName("EmcalTriggers");
+  SetMakeGeneralHistograms(true);
   fTriggerSelections.SetOwner(kTRUE);
+}
+
+void AliAnalysisTaskEmcalTriggerSelection::UserCreateOutputObjects() {
+  AliAnalysisTaskEmcal::UserCreateOutputObjects();
+
+  for(auto s : fTriggerSelections) InitQA(static_cast<AliEmcalTriggerSelection *>(s));
+  for(auto q : fSelectionQA) static_cast<AliEmcalTriggerSelectionQA *>(q)->GetHistos(fOutput);
 }
 
 void AliAnalysisTaskEmcalTriggerSelection::AddTriggerSelection(AliEmcalTriggerSelection * const selection){
@@ -62,12 +76,16 @@ void AliAnalysisTaskEmcalTriggerSelection::AddTriggerSelection(AliEmcalTriggerSe
 Bool_t AliAnalysisTaskEmcalTriggerSelection::Run(){
   AliEmcalTriggerDecisionContainer *cont = GetGlobalTriggerDecisionContainer();
   cont->Reset();
-  TClonesArray *triggerPatches(fTriggerPatchInfo);
-  TIter selectionIter(&fTriggerSelections);
   AliEmcalTriggerSelection *selection(NULL);
+  TIter selectionIter(&fTriggerSelections);
   while((selection = dynamic_cast<AliEmcalTriggerSelection *>(selectionIter()))){
-    cont->AddTriggerDecision(selection->MakeDecison(triggerPatches));
+    cont->AddTriggerDecision(selection->MakeDecison(fTriggerPatchInfo));
   }
+  return kTRUE;
+}
+
+Bool_t AliAnalysisTaskEmcalTriggerSelection::FillHistograms() {
+  MakeQA(GetGlobalTriggerDecisionContainer());
   return kTRUE;
 }
 
@@ -78,6 +96,18 @@ AliEmcalTriggerDecisionContainer *AliAnalysisTaskEmcalTriggerSelection::GetGloba
     fInputEvent->AddObject(cont);
   }
   return cont;
+}
+
+void AliAnalysisTaskEmcalTriggerSelection::InitQA(const AliEmcalTriggerSelection *sel){
+  AliEmcalTriggerSelectionQA *qa = new AliEmcalTriggerSelectionQA(sel);
+  fSelectionQA.Add(qa);
+}
+
+void AliAnalysisTaskEmcalTriggerSelection::MakeQA(const AliEmcalTriggerDecisionContainer *cont) {
+  for(auto d : *(cont->GetListOfTriggerDecisions())) {
+    AliEmcalTriggerDecision *myd = static_cast<AliEmcalTriggerDecision *>(d);
+    static_cast<AliEmcalTriggerSelectionQA *>(fSelectionQA.FindObject(myd->GetName()))->Fill(myd);
+  }
 }
 
 void AliAnalysisTaskEmcalTriggerSelection::AutoConfigure(const char *period) {
@@ -221,6 +251,58 @@ void AliAnalysisTaskEmcalTriggerSelection::ConfigureMCPP2016() {
   dj2cuts->SetUseSimpleOfflinePatches(true);
   dj2cuts->SetThreshold(4.);
   this->AddTriggerSelection(new AliEmcalTriggerSelection("DJ2", dj2cuts));
+}
+
+AliAnalysisTaskEmcalTriggerSelection::AliEmcalTriggerSelectionQA::AliEmcalTriggerSelectionQA():
+    TNamed(),
+    fMaxPatchADC(nullptr),
+    fMaxPatchEnergy(nullptr),
+    fMaxPatchEnergySmeared(nullptr)
+{
+}
+
+AliAnalysisTaskEmcalTriggerSelection::AliEmcalTriggerSelectionQA::AliEmcalTriggerSelectionQA(const AliEmcalTriggerSelection * const sel):
+    TNamed(sel->GetName(), ""),
+    fMaxPatchADC(nullptr),
+    fMaxPatchEnergy(nullptr),
+    fMaxPatchEnergySmeared(nullptr)
+{
+  fMaxPatchADC = new TH1D(Form("hMaxPatchADC%s", GetName()), "Max. patch ADC", 1000, 0., 1000);
+  fMaxPatchEnergy = new TH1D(Form("hMaxPatchEnergy%s", GetName()), "Max. patch energy", 1000, 0., 100);
+  fMaxPatchEnergySmeared = new TH1D(Form("hMaxPatchEnergySmeared%s", GetName()), "Max. patch smeared energy", 1000, 0., 100);
+}
+
+AliAnalysisTaskEmcalTriggerSelection::AliEmcalTriggerSelectionQA::AliEmcalTriggerSelectionQA(const AliEmcalTriggerSelectionQA &ref):
+    TNamed(ref),
+    fMaxPatchADC(ref.fMaxPatchADC),
+    fMaxPatchEnergy(ref.fMaxPatchEnergy),
+    fMaxPatchEnergySmeared(ref.fMaxPatchEnergySmeared)
+{
+}
+
+AliAnalysisTaskEmcalTriggerSelection::AliEmcalTriggerSelectionQA &AliAnalysisTaskEmcalTriggerSelection::AliEmcalTriggerSelectionQA::operator=(const AliAnalysisTaskEmcalTriggerSelection::AliEmcalTriggerSelectionQA &ref) {
+  TNamed::operator=(ref);
+  if(this != &ref) {
+    fMaxPatchADC = ref.fMaxPatchADC;
+    fMaxPatchEnergy = ref.fMaxPatchEnergy;
+    fMaxPatchEnergySmeared = ref.fMaxPatchEnergySmeared;
+  }
+  return *this;
+}
+
+void AliAnalysisTaskEmcalTriggerSelection::AliEmcalTriggerSelectionQA::Fill(const AliEmcalTriggerDecision * const decision){
+  if(decision->GetMainPatch()){
+    fMaxPatchADC->Fill(decision->GetMainPatch()->GetADCAmp());
+    fMaxPatchEnergy->Fill(decision->GetMainPatch()->GetPatchE());
+    fMaxPatchEnergySmeared->Fill(decision->GetMainPatch()->GetSmearedEnergy());
+  }
+}
+
+void AliAnalysisTaskEmcalTriggerSelection::AliEmcalTriggerSelectionQA::GetHistos(TList *targetlist) const {
+  targetlist->Add(fMaxPatchADC);
+  targetlist->Add(fMaxPatchEnergy);
+  targetlist->Add(fMaxPatchEnergySmeared);
+
 }
 
 }

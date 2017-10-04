@@ -31,8 +31,11 @@
 #include "AliEmcalTriggerDecision.h"
 #include "AliEmcalTriggerSelection.h"
 #include "AliEmcalTriggerSelectionCuts.h"
+#include "AliLog.h"
 
+/// \cond CLASSIMP
 ClassImp(PWG::EMCAL::AliEmcalTriggerSelection)
+/// \endcond
 
 namespace PWG{
 namespace EMCAL{
@@ -50,15 +53,18 @@ AliEmcalTriggerSelection::AliEmcalTriggerSelection(const char *name, const AliEm
 }
 
 AliEmcalTriggerDecision* AliEmcalTriggerSelection::MakeDecison(const TClonesArray * const inputPatches) const {
+  AliDebugStream(1) << "Trigger selection " << GetName() << ": Make decision" << std::endl;
   AliEmcalTriggerDecision *result = new AliEmcalTriggerDecision(GetName());
   TIter patchIter(inputPatches);
   AliEMCALTriggerPatchInfo *patch(NULL);
   std::vector<AliEMCALTriggerPatchInfo *> selectedPatches;
+  std::cout << "Number of input patches: " << inputPatches->GetEntries() << std::endl;
   while((patch = dynamic_cast<AliEMCALTriggerPatchInfo *>(patchIter()))){
     if(fSelectionCuts->IsSelected(patch)){
       selectedPatches.push_back(patch);
     }
   }
+  AliDebugStream(1) << "Number of patches fulfilling the trigger condition: " << selectedPatches.size() << std::endl;
   // Find the main patch
   AliEMCALTriggerPatchInfo *mainPatch(NULL), *testpatch(NULL);
   for(std::vector<AliEMCALTriggerPatchInfo *>::iterator it = selectedPatches.begin(); it != selectedPatches.end(); ++it){

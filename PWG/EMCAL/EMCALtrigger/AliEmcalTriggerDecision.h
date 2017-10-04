@@ -74,12 +74,42 @@ public:
    */
   virtual ~AliEmcalTriggerDecision() {}
 
+  /**
+   * @brief Get the highest energetic trigger patch of the event firing the trigger
+   * @return Highest energetic trigger patch of the event
+   */
   const AliEMCALTriggerPatchInfo *GetMainPatch() const { return fMainPatch; }
+
+  /**
+   * @brief Get the selection cuts used in the trigger selection
+   * @return Selection cuts used for the corresponding trigger class
+   */
   const AliEmcalTriggerSelectionCuts *GetSelectionCuts() const { return fSelectionCuts; }
+
+  /**
+   * @brief Get the list of all patches in the event satisfying the trigger condition
+   * @return
+   */
   const TList *GetAcceptedPatches() const { return &fAcceptedPatches; }
+
+  /**
+   * @brief Check whether event is selected under the given trigger
+   *
+   * An event is selected if a main (highest energy) patch was found
+   * @return True if the event was selected, false otherwise
+   */
   Bool_t IsSelected() const { return fMainPatch != NULL; }
 
+  /**
+   * @brief Set the selection cuts used in the trigger selection
+   * @param[in] cuts Selection cuts for the given trigger class
+   */
   void SetSelectionCuts(const AliEmcalTriggerSelectionCuts * const cuts) { fSelectionCuts = cuts; }
+
+  /**
+   * @brief Set the main (highest-energetic) trigger patch
+   * @param[in] mainpatch Highest energetic trigger patch of the event firing the trigger
+   */
   void SetMainPatch(const AliEMCALTriggerPatchInfo * const mainpatch) { fMainPatch = mainpatch; }
 
   /**
@@ -94,7 +124,9 @@ protected:
   const AliEmcalTriggerSelectionCuts      *fSelectionCuts;     ///< Pointer to the cuts used for the trigger selection
   TList                                    fAcceptedPatches;   ///< All trigger patches which are accepted as well
 
+  /// \cond CLASSIMP
   ClassDef(AliEmcalTriggerDecision, 1);               // Container of the trigger decision information
+  /// \endcond
 private:
   AliEmcalTriggerDecision(const AliEmcalTriggerDecision &ref);
   AliEmcalTriggerDecision &operator=(const AliEmcalTriggerDecision &ref);

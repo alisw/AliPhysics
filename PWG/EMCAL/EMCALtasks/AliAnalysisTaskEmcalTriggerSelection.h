@@ -28,12 +28,14 @@
 #define ALIANALYSISTASKEMCALTRIGGERSELECTION_H
 
 #include <TList.h>
+#include <TNamed.h>
 #include <TString.h>
 #include "AliAnalysisTaskEmcal.h"
 
 namespace PWG{
 namespace EMCAL {
 
+class AliEmcalTriggerDecision;
 class AliEmcalTriggerDecisionContainer;
 class AliEmcalTriggerSelection;
 
@@ -60,6 +62,10 @@ public:
    * To be called by the users
    */
   AliAnalysisTaskEmcalTriggerSelection(const char *name);
+
+  /**
+   * @brief Destructor
+   */
   virtual ~AliAnalysisTaskEmcalTriggerSelection() {}
 
   /**
@@ -68,12 +74,15 @@ public:
    * @param[in] selection the trigger selection to be added
    */
   void AddTriggerSelection(AliEmcalTriggerSelection * const selection);
-  void SetGlobalDecisionContainerName(const char *name) { fGlobalDecisionContainerName = name; }
 
   /**
-   * @brief Run over all trigger selections, and append the selection to the global trigger selection container
+   * @brief Set the name of the global trigger decision container
+   *
+   * Other tasks have to connet to the container via this name.
+   *
+   * @param[in] name Name of the trigger decision container
    */
-  virtual Bool_t Run();
+  void SetGlobalDecisionContainerName(const char *name) { fGlobalDecisionContainerName = name; }
 
   /**
    * @brief Automatically configure trigger decision handler for different periods
@@ -97,6 +106,95 @@ public:
   void ConfigureMCPP2016();
 
 protected:
+
+  /**
+   * @class AliEmcalTriggerSelectionQA
+   * @brief Helper class for the trigger selection
+   * @author Markus Fasel <markus.fasel@cern.ch>, Oak Ridge National Laboratory
+   * @since Oct 3, 2017
+   */
+  class AliEmcalTriggerSelectionQA : public TNamed {
+  public:
+
+    /**
+     * @brief Dummy constructor
+     */
+    AliEmcalTriggerSelectionQA();
+
+    /**
+     * @brief Constructor
+     *
+     * Initializing component matching to the trigger selection
+     *
+     * @param[in] sel Corresponding trigger selection to be monitored by this QA component
+     */
+    AliEmcalTriggerSelectionQA(const AliEmcalTriggerSelection * const sel);
+
+    /**
+     * @brief Copy constructor
+     *
+     * Histograms will be shared between the two QA components
+     * @param[in] ref Reference for copy
+     */
+    AliEmcalTriggerSelectionQA(const AliEmcalTriggerSelectionQA &ref);
+
+    /**
+     * @brief Assignment operator
+     *
+     * Histograms will be shared between the two QA components
+     * @param[in] ref Reference for assignment
+     * @return This object after assignment
+     */
+    AliEmcalTriggerSelectionQA &operator=(const AliEmcalTriggerSelectionQA &ref);
+
+    /**
+     * @brief Destructor
+     */
+    virtual ~AliEmcalTriggerSelectionQA() {}
+
+    /**
+     * Fill histograms for the main patch for the given trigger decision
+     * @param[in] decision
+     */
+    void Fill(const AliEmcalTriggerDecision * const decision);
+
+    /**
+     * @brief Fill histograms of this QA component into the targetlist
+     *
+     * The outputlist will take ownership over the histograms
+     *
+     * @param[out] targetlist list toe
+     */
+    void GetHistos(TList *targetlist) const;
+
+  private:
+     TH1 *fMaxPatchADC;                 ///< Histogram with patch ADC of the max patch
+     TH1 *fMaxPatchEnergy;              ///< Histogram with patch energy of the max patch
+     TH1 *fMaxPatchEnergySmeared;       ///< Histogram with smeared patch energy of the max patch
+  };
+
+  /**
+   * @brief Initialize QA histograms
+   */
+  virtual void UserCreateOutputObjects();
+
+  /**
+   * @brief Run over all trigger selections, and append the selection to the global trigger selection container
+   * @return Always true
+   */
+  virtual Bool_t Run();
+
+  /**
+   * @brief Filling basic QA Histograms of the trigger selection task
+   *
+   * The QA histograms are connected to the main patch and monitor
+   * - ADC Amplitude
+   * - Energy
+   * - Smeared energy
+   * @return Always true
+   */
+  virtual Bool_t FillHistograms();
+
   /**
    * @brief Find the main trigger container in the input event.
    *
@@ -104,10 +202,25 @@ protected:
    */
   AliEmcalTriggerDecisionContainer *GetGlobalTriggerDecisionContainer();
 
+  /**
+   * @brief Fill QA histograms for the event
+   * @param cont
+   */
+  void MakeQA(const AliEmcalTriggerDecisionContainer *cont);
+
+  /**
+   * @brief Initialize QA histograms for trigger selection
+   * @param sel
+   */
+  void InitQA(const AliEmcalTriggerSelection *const sel);
+
   TString fGlobalDecisionContainerName;     ///< Name of the global trigger selection
   TList fTriggerSelections;                 ///< List of trigger selections
+  TList fSelectionQA;                       ///< Trigger selection QA
 
+  /// \cond CLASSIMP
   ClassDef(AliAnalysisTaskEmcalTriggerSelection, 1);    // Task running different EMCAL trigger selections
+  /// \endcond
 };
 
 }

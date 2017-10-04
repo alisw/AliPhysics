@@ -45,11 +45,11 @@ AliEmcalTriggerSelectionCuts::AliEmcalTriggerSelectionCuts() :
 }
 
 Bool_t AliEmcalTriggerSelectionCuts::IsSelected(const AliEMCALTriggerPatchInfo * const patch) const {
-  if(fUseSimpleOffline && !patch->IsOfflineSimple()) return kFALSE;
-  else if(!fUseSimpleOffline && patch->IsOfflineSimple()) return kFALSE;
-  if(!SelectAcceptance(patch))
+  //if(fUseSimpleOffline && !patch->IsOfflineSimple()) return kFALSE;
+  //else if(!fUseSimpleOffline && patch->IsOfflineSimple()) return kFALSE;
+  if(!SelectAcceptance(patch)) return kFALSE;
   if(!SelectPatchType(patch)) return kFALSE;
-  if(GetCutPrimitive(patch) <= fThreshold) return kFALSE;
+  if(GetCutPrimitive(patch) < fThreshold) return kFALSE;
   return kTRUE;
 }
 
