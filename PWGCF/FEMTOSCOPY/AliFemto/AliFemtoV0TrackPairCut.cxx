@@ -357,7 +357,7 @@ AliFemtoString AliFemtoV0TrackPairCut::Report()
   TString report = "AliFemtoV0 Pair Cut - remove shared and split pairs\n";
   report += TString::Format("Number of pairs which passed:\t%ld  Number which failed:\t%ld\n", fNPairsPassed, fNPairsFailed);
 
-  return AliFemtoString(report);
+  return AliFemtoString((const char *)report);
 }
 //__________________
 

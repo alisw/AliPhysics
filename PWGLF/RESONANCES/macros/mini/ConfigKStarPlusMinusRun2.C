@@ -348,7 +348,7 @@ Bool_t ConfigKStarPlusMinusRun2
         outpsf->SetCutID(1,iCutPi);
         outpsf->SetMotherPDG(323);
         outpsf->SetMotherMass(0.89166);
-        outpsf->SetPairCuts(PairCutsSames);
+        outpsf->SetPairCuts(PairCutsSame);
         outpsf->AddAxis(fdpt,30,0.,3.);
         outpsf->AddAxis(sdpt,30,0.,3.);
         outpsf->AddAxis(ptID,300,0.,3.);

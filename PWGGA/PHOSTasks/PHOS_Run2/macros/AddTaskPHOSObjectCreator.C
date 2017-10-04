@@ -1,11 +1,13 @@
 AliAnalysisTaskPHOSObjectCreator* AddTaskPHOSObjectCreator(
-    const char* name     = "PHOSObjectCreator",
-    const UInt_t trigger = AliVEvent::kINT7|AliVEvent::kPHI7,
+    const char* name           = "PHOSObjectCreator",
+    const UInt_t trigger       = AliVEvent::kINT7|AliVEvent::kPHI7,
     const Bool_t usePHOSTender = kTRUE,
-    const Bool_t isMC = kFALSE,
-    const Double_t BunchSpace = 25,
-    const Double_t distanceBC = 0,
-    const TString period = "LHC15n"
+    const Bool_t isMC          = kFALSE,
+    const Double_t BunchSpace  = 25.,
+    const Double_t distanceBC  = 0.,
+    const Bool_t NonLinCorr    = kTRUE,
+    const Bool_t excludeM4     = kTRUE,
+    const TString period       = "LHC15n"
     )
 {
   //Add a task AliAnalysisTaskPHOSObjectCreator to the analysis train
@@ -23,7 +25,6 @@ AliAnalysisTaskPHOSObjectCreator* AddTaskPHOSObjectCreator(
     return NULL;
   }
 
-
   TString taskname = Form("%s_BS%dns_DBC%dcm",name,(Int_t)BunchSpace,(Int_t)(distanceBC*10));
 
   AliAnalysisTaskPHOSObjectCreator* task = new AliAnalysisTaskPHOSObjectCreator(taskname);
@@ -32,30 +33,22 @@ AliAnalysisTaskPHOSObjectCreator* AddTaskPHOSObjectCreator(
   task->SetMCFlag(isMC);
   task->SetBunchSpace(BunchSpace);//in unit of ns
   task->SetMinimumDistanceFromBC(distanceBC);
+  task->ExcludeM4(excludeM4);
 
-  if(isMC){  
-    TF1 *f1nonlin = new TF1("f1nonlin","[2]*(1.+[0]*TMath::Exp(-x*x/2./[1]/[1]))",0,100);
+  if(isMC && NonLinCorr){  
+    TF1 *f1nonlin = new TF1("f1nonlin","[2]*(1.+[0]/(1. + TMath::Power(x/[1],2)))",0,100);
     f1nonlin->SetNpx(1000);
-    f1nonlin->SetParNames("a","b");
-    //f1nonlin->FixParameter(0,0);//for core E
-    //f1nonlin->FixParameter(1,1);//for core E
-    //f1nonlin->FixParameter(0,-0.03);//for core E at ZS5
-    //f1nonlin->FixParameter(1,  0.6);//for core E at ZS5
-    //f1nonlin->FixParameter(0,-0.06); //for full E at ZS5 ;
-    //f1nonlin->FixParameter(1,  0.4); //for full E at ZS5 ;
+    f1nonlin->SetParNames("a","b (GeV)","c");
+
     if(period.Contains("LHC15n")){
-      cout << "pp LHC15n is called." << endl;
-      f1nonlin->FixParameter(0,-0.05); //for full E, ZS = 20MeV;
-      f1nonlin->FixParameter(1,  0.6); //for full E, ZS = 20MeV;
-      f1nonlin->FixParameter(2,1.006); //for full E, ZS = 20MeV;//decalib 3% on M123
-      //f1nonlin->FixParameter(0,-0.03);//for core E at ZS 20 MeV
-      //f1nonlin->FixParameter(1,  0.9);//for core E at ZS 20 MeV
+      f1nonlin->FixParameter(0,-0.0363); //for full E, ZS = 20MeV;
+      f1nonlin->FixParameter(1,  0.683); //for full E, ZS = 20MeV;
+      f1nonlin->FixParameter(2,  0.998); //for full E, ZS = 20MeV;//decalib 3% on M123
     }
     else if(period.Contains("LHC15o")){
-      cout << "PbPb LHC15o is called." << endl;
-      f1nonlin->FixParameter(0,-0.04);//for core E at ZS 20 MeV with only MIP cut
-      f1nonlin->FixParameter(1,  0.8);//for core E at ZS 20 MeV with only MIP cut
-      f1nonlin->FixParameter(2, 0.99);//for core E at ZS 20 MeV with only MIP cut
+      f1nonlin->FixParameter(0,-0.0388);//for core E at ZS 20 MeV with only MIP cut
+      f1nonlin->FixParameter(1,  0.748);//for core E at ZS 20 MeV with only MIP cut
+      f1nonlin->FixParameter(2,  0.991);//for core E at ZS 20 MeV with only MIP cut
     }
     task->SetUserDefinedNonlinearity(f1nonlin);
   }
@@ -65,7 +58,7 @@ AliAnalysisTaskPHOSObjectCreator* AddTaskPHOSObjectCreator(
   const TString listname = Form("hist_%s",name);
 
   TString outputFile = AliAnalysisManager::GetCommonFileName();
-  AliAnalysisDataContainer *coutput1 = mgr->CreateContainer(Form("%s",listname.Data()), THashList::Class(), AliAnalysisManager::kOutputContainer, outputFile.Data());
+  AliAnalysisDataContainer *coutput1 = mgr->CreateContainer(Form("%s",listname.Data()), THashList::Class(), AliAnalysisManager::kOutputContainer, Form("%s:%s",outputFile.Data(),"PWGGA_PHOSTasks_PHOSRun2"));
   mgr->ConnectOutput(task, 1, coutput1);
 
   return task;

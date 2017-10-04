@@ -152,6 +152,7 @@ protected:
   TH2D        *fEtaPhiClus;                     ///< EMCAL Cluster Distribution EtaPhi ---QA
   TH1D        *fPT;                             //!<! Pt distribution
   TH1D        *fE;                              //!<! E distribution
+  TH2D        *hEt_M02;                         //!<! E vs M02 distribution
   TH2D        *fNLM;                            //!<! NLM distribution
   TH1D        *fVz;                             //!<! Veretex Z distribution
   TH1D        *fEvents;                         //!<! Number of Events
@@ -165,25 +166,27 @@ protected:
   TH1D        *fPtaftDTBC;                      //!<! E distribution for NC after DistanceToBadChannel cut
   TH1D        *fPtaftFC;                        //!<! E distribution for clusters after fiducial cut
   TH2D        *fTriggerbit;                     //!<! fired Trigger Bits 
-  TH1D        *hL0Amplitude;
-  TH2D        *hmaxADC;
-  TH2D        *hADCpos0;
-  TH2D        *hmaxL0ADC;
-  TH2D        *hL1PatchPosition;
-  TH2D        *hFastOrPatchE;
-  TH1D        *fL0triggered;                    //!<! max cluster energy of L0 triggered events
-  TH2D        *fEventsover10;                   
+//  TH1D        *hL0Amplitude;                    //!<! ADC Amplitudes of EMC L0
+  TH2D        *hmaxADC;                         //!<! max L1 ADC/Event
+  TH2D        *hADCpos0;                        //!<! ADC of patches at (0,0)
+  TH1D        *hSmearedE;                       //!<! smeared patch E distribution
+  TH1D        *hPatchE;                         //!<! patch energy
+//  TH2D        *hmaxL0ADC;                       //!<! max L0 ADC/Event
+  TH2D        *hL1PatchPosition;                //!<! position of L1 trigger patch
+  TH2D        *hFastOrPatchE;                   //!<! FastOr# E distribution
+//  TH1D        *fL0triggered;                    //!<! max cluster energy of L0 triggered events
+  TH2D        *fEventsover10;                   //!<! # of Events over threshold
   TH1D        *fL1triggered;                    //!<! max cluster energy of L1 triggered events
   TH1D        *fClusTime;                       //!<! Time distribution for clusters
   TH2D        *fPt_trig;                        //!<! Et - fired trigger class
-  Bool_t      fM02cut;
-  Bool_t      fMaskFastOrCells;
+  Bool_t      fM02cut;                          
+  Bool_t      fMaskFastOrCells;                 
   
   THnSparse   *fOutputTHnS;                    //!<! pT,Rejection,cell info
-  TH2D        *hFastOrIndexLeadingCluster;
+  TH2D        *hFastOrIndexLeadingCluster;     //!<! leading Cluster E per FastOr
   THnSparse   *fOutTHnS_Clust;                 //!<! pT,Rejection,cluster info
   
-  std::vector<Int_t>       MaskedFastOrs;
+  std::vector<Int_t>       MaskedFastOrs;      
   
 private:
   AliAnalysisTaskEMCALClusterTurnOn(const AliAnalysisTaskEMCALClusterTurnOn&);            // not implemented

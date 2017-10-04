@@ -137,12 +137,12 @@ AliDielectronMixingHandler* LMEECutLib::GetMixingHandler(Int_t cutSet) {
 AliAnalysisCuts* LMEECutLib::GetPairCutsAna(Int_t cutSet)  {
     
     std::cout << " >>>>>>>>>>>>>>>>>>>>>> GetPairCutsAna() >>>>>>>>>>>>>>>>>>>>>> " << std::endl;
-    AliAnalysisCuts* cuts             = 0x0;
+    AliAnalysisCuts* cuts = 0x0;
 
      //AND cut group to select low mass pairs with large opening angle
-    AliDielectronCutGroup* convRejCut = new AliDielectronCutGroup("convRejCut", "convRejCut", AliDielectronCutGroup::kCompAND); 
-    AliDielectronVarCuts* convMassCut     = new AliDielectronVarCuts("convMassCut", "convMassCut");
-    AliDielectronVarCuts* convPhiVCut     = new AliDielectronVarCuts("convPhiVCut", "convPhiVCut");
+    AliDielectronCutGroup* convRejCut = new AliDielectronCutGroup("convRejCut", "convRejCut", AliDielectronCutGroup::kCompAND);
+    AliDielectronVarCuts* convMassCut = new AliDielectronVarCuts("convMassCut", "convMassCut");
+    AliDielectronVarCuts* convPhiVCut = new AliDielectronVarCuts("convPhiVCut", "convPhiVCut");
     convMassCut->AddCut(AliDielectronVarManager::kM, 0.00, 0.05);
     convPhiVCut->AddCut(AliDielectronVarManager::kOpeningAngle, 0.05, 3.2);
     convRejCut->AddCut(convMassCut);
@@ -242,7 +242,7 @@ AliAnalysisCuts* LMEECutLib::GetPairCutsPre(Int_t cutSet)  {
 
 AliAnalysisCuts* LMEECutLib::GetPIDCutsAna(Int_t cutSet) {
   cout << " >>>>>>>>>>>>>>>>>>>>>> GetPIDCutsAna() >>>>>>>>>>>>>>>>>>>>>> " << endl;
-  AliAnalysisCuts* pidCuts=0x0;
+  AliAnalysisCuts* pidCuts = 0x0;
   
   //-----------------------------------------------
   // Define different PID Cuts, that are used later
@@ -426,7 +426,7 @@ AliAnalysisCuts* LMEECutLib::GetTrackCutsAna(Int_t cutSet){
 //Relaxed PID cuts for additional rejection step, do not use blindly		
 AliAnalysisCuts* LMEECutLib::GetPIDCutsPre(Int_t cutSet){		
     std::cout << " >>>>>>>>>>>>>>>>>>>>>> GetPIDCutsPre() >>>>>>>>>>>>>>>>>>>>>> " << std::endl;		
-    AliAnalysisCuts* pidCuts=0x0;		
+    AliAnalysisCuts* pidCuts = 0x0;		
 		
     switch(cutSet){		
     case kAllSpecies: 		
@@ -453,7 +453,7 @@ AliAnalysisCuts* LMEECutLib::GetPIDCutsPre(Int_t cutSet){
 //Not used at the moment		
 AliAnalysisCuts* LMEECutLib::GetTrackCutsPre(Int_t cutSet){		
     std::cout << " >>>>>>>>>>>>>>>>>>>>>> GetTrackCutsPre() >>>>>>>>>>>>>>>>>>>>>> " << std::endl;		
-    AliDielectronCutGroup* trackCuts=0x0;		
+    AliDielectronCutGroup* trackCuts = 0x0;		
     switch(cutSet){		
         case kAllSpecies: 		
         case kElectrons: 		

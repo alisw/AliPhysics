@@ -5,6 +5,7 @@
 #include "AliFemtoConfigObject.h"
 
 #include <TObjString.h>
+#include <TCollection.h>
 
 #include <regex>
 #include <cctype>
@@ -13,10 +14,6 @@
 #include <exception>
 #include <functional>
 #include <numeric>
-
-// #include <TIter.h>
-#include <TList.h>
-#include <TBuffer.h>
 
 /// \cond CLASSIMP
 ClassImp(AliFemtoConfigObject);
@@ -138,6 +135,69 @@ AliFemtoConfigObject::Stringify(bool pretty) const
 }
 
 
+AliFemtoConfigObject*
+AliFemtoConfigObject::pop(Int_t idx)
+{
+  AliFemtoConfigObject *result = nullptr;
+  if (is_array()) {
+    auto N = static_cast<Int_t>(fValueArray.size());
+
+    // out of bounds
+    if (idx <= -N || N <= idx) {
+      return nullptr;
+    }
+
+    auto it = fValueArray.begin();
+
+    // wrap negative numbers around
+    if (idx < 0) {
+      idx += N;
+    }
+
+    // move iterator to index, move value and erase from array
+    std::advance(it, idx);
+    result = new AliFemtoConfigObject(std::move(*it));
+    fValueArray.erase(it);
+  }
+  return result;
+}
+
+
+AliFemtoConfigObject*
+AliFemtoConfigObject::pop(const Key_t &key)
+{
+  AliFemtoConfigObject *result = nullptr;
+  if (is_map()) {
+    auto it = fValueMap.find(key);
+    if (it != fValueMap.end()) {
+      result = new AliFemtoConfigObject(std::move(it->second));
+      fValueMap.erase(it);
+    }
+  }
+  return result;
+}
+
+
+void
+AliFemtoConfigObject::WarnOfRemainingItems(std::ostream& out) const
+{
+  if (is_map() && fValueMap.size() > 0) {
+    out << "Warning - AliFemtoConfigObject map has unexpected leftover objects: ";
+    for (auto &it : fValueMap) {
+      out << it.first << "[" << NameFromtype(it.second.fTypeTag) << "] ";
+    }
+    out << "\n";
+  }
+  else if(is_array() && fValueArray.size() > 0) {
+    out << "Warning - AliFemtoConfigObject array has " << fValueArray.size() << " unexpected leftover objects: ";
+    for (auto &val : fValueArray) {
+      out << "[" << NameFromtype(val.fTypeTag) << "] ";
+    }
+    out << "\n";
+  }
+}
+
+
 //=================================
 //
 //   TObject Methods
@@ -165,7 +225,7 @@ AliFemtoConfigObject::Merge(TCollection *collection)
   return 1;
 }
 
-template<>
+// template<>
 TBuffer& operator<<(TBuffer &stream, const AliFemtoConfigObject &cfg)
 {
   stream << cfg.fTypeTag;
@@ -217,7 +277,7 @@ TBuffer& operator<<(TBuffer &stream, const AliFemtoConfigObject &cfg)
   return stream;
 }
 
-template<>
+// template<>
 TBuffer& operator>>(TBuffer &stream, AliFemtoConfigObject &cfg)
 {
   using ENUM_TYPE = decltype(AliFemtoConfigObject::kEMPTY);
@@ -314,7 +374,7 @@ AliFemtoConfigObject::Streamer(TBuffer &buff)
       std::cerr << "W-AliFemtoConfigObject: Unknown AliFemtoConfigObject version " << v << "\n";
     }
     TObject::Streamer(buff);
-    std::cout << "[AliFemtoConfigObject::Streamer] Reading into AliFemtoConfigObject value at " << this << "\n";
+    // std::cout << "[AliFemtoConfigObject::Streamer] Reading into AliFemtoConfigObject value at " << this << "\n";
     buff >> value;
     // std::cout << "    is-empty? " << value.is_empty() << " " << " (this->is_empty(): " << this->is_empty() << ")\n";
   } else {

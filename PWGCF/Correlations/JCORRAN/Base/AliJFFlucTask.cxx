@@ -501,6 +501,21 @@ Bool_t AliJFFlucTask::IsGoodEvent( AliAODEvent *event){
 
 	if(fCutOutliers == kTRUE){
 		if(fperiod == AliJRunTable::kLHC15o){
+			AliMultSelection *pms = (AliMultSelection*)event->FindListObject("MultSelection");
+			if(!pms){
+				AliError("MultSelection unavailable.");
+				return kFALSE;
+			}
+
+			double v0mcent = pms->GetMultiplicityPercentile("V0M");
+			double tfbtpc = (double)TPCTracks;
+			double lcut = 2.31181837e+03+v0mcent*(-7.79946952e+01+v0mcent*(8.45194500e-01+v0mcent*(-1.72787009e-03-1.86192490e-05*v0mcent)));
+			if(tfbtpc < lcut)
+				return kFALSE;
+			double hcut = 3.15901050e+03+v0mcent*(-9.42636072e+01+v0mcent*(8.06432447e-01+v0mcent*(3.37574557e-03-6.14272547e-05*v0mcent)));
+			if(tfbtpc > hcut)
+				return kFALSE;
+
 			double tfb32 = (double)FB32Tracks;
 			double tfb32tof = (double)FB32TOFTracks;
 			double mu32tof = -1.0178+tfb32*(0.333132+tfb32*(9.10282e-05-1.61861e-08*tfb32));

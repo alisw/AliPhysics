@@ -146,7 +146,7 @@ AliFemtoString
 AliFemtoModelCorrFctnKStar::Report()
 {
   TString report;
-  return AliFemtoString(report);
+  return AliFemtoString((const char *)report);
 }
 
 

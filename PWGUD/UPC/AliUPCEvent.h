@@ -77,6 +77,7 @@ public:
   void SetZPAtdcData(Int_t tdc) {fZPAtdcData = tdc;}
   void SetZNCTime(Float_t tdc) {fZNCTime = tdc;}
   void SetZNATime(Float_t tdc) {fZNATime = tdc;}
+  void SetZNTDCm(Float_t *znatdcm,Float_t *znctdcm);
 
   AliUPCTrack *AddTrack(void);
   AliUPCMuonTrack *AddMuonTrack(void);
@@ -153,6 +154,8 @@ public:
   Int_t GetZPAtdcData(void) const { return fZPAtdcData; }
   Float_t GetZNCTime(void) const { return fZNCTime; }
   Float_t GetZNATime(void) const { return fZNATime; }
+  Float_t GetZNATDCm(Int_t channel) {return fZNATDCm[channel];}
+  Float_t GetZNCTDCm(Int_t channel) {return fZNCTDCm[channel];} 
 
   Int_t GetNumberOfTracks(void) const { return fNtracks; }
   AliUPCTrack *GetTrack(Int_t iTrack) const;
@@ -217,6 +220,8 @@ protected:
   Int_t fZPAtdcData; // sum of ZPA TDC
   Float_t fZNCTime; // ZNC TDC sum in ns corrected 4 phase shift, AOD
   Float_t fZNATime; // ZNA TDC sum in ns corrected 4 phase shift
+  Float_t fZNATDCm[4];
+  Float_t fZNCTDCm[4];
   TClonesArray *fUPCTracks; //-> array of central upc tracks
   Int_t fNtracks; // number of central upc tracks in event
   TClonesArray *fUPCMuonTracks; //-> array of muon upc tracks

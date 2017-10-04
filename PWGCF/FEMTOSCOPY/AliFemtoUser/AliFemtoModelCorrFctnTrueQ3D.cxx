@@ -133,11 +133,11 @@ Qcms(const AliFemtoLorentzVector &p1, const AliFemtoLorentzVector &p2)
 
   Double_t beta = p.z()/p.t(),
           gamma = 1.0 / TMath::Sqrt((1.0-beta)*(1.0+beta));
-  
+
   Double_t qlong = gamma * (d.z() - beta*d.t());
 
   // double qlong = (p.t()*d.z() - p.z()*d.t()) / TMath::Sqrt(p.t()*p.t() - p.z()*p.z());
-  
+
   return std::make_tuple(qout, qside, qlong);
 }
 
@@ -146,7 +146,7 @@ static void
 AddPair(const AliFemtoParticle &particle1, const AliFemtoParticle &particle2, TH3D *gen_hist, TH3D *rec_hist, Double_t weight)
 {
   Double_t q_out, q_side, q_long;
-  
+
   // Fill reconstructed histogram with "standard" particle momentum
   std::tie(q_out, q_side, q_long) = Qcms(particle1.FourMomentum(), particle2.FourMomentum());
   rec_hist->Fill(q_out, q_side, q_long, weight);
@@ -162,7 +162,7 @@ AddPair(const AliFemtoParticle &particle1, const AliFemtoParticle &particle2, TH
 
   const Float_t mass1 = info1->GetMass(),
                 mass2 = info2->GetMass();
-  
+
   // block all zero-mass particles from the correlation function
   if (mass1 == 0.0 || mass2 == 0.0) {
     return;
@@ -173,10 +173,10 @@ AddPair(const AliFemtoParticle &particle1, const AliFemtoParticle &particle2, TH
 
   const Double_t e1 = sqrt(mass1 * mass1 + true_momentum1->Mag2()),
                  e2 = sqrt(mass2 * mass2 + true_momentum2->Mag2());
-  
+
   const AliFemtoLorentzVector p1 = AliFemtoLorentzVector(e1, *true_momentum1),
                               p2 = AliFemtoLorentzVector(e2, *true_momentum2);
-  
+
   // Fill generated-momentum histogram with "true" particle momentum
   std::tie(q_out, q_side, q_long) = Qcms(p1, p2);
   gen_hist->Fill(q_out, q_side, q_long, weight);
@@ -216,5 +216,5 @@ AliFemtoString
 AliFemtoModelCorrFctnTrueQ3D::Report()
 {
   TString report;
-  return AliFemtoString(report);
+  return AliFemtoString((const char *)report);
 }

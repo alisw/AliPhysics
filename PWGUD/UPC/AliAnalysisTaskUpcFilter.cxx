@@ -406,6 +406,7 @@ void AliAnalysisTaskUpcFilter::UserExec(Option_t *)
   if(!dataZDC) {PostData(2, fHistList); return;}
 
   //energy in ZDC
+  /*/
   Double_t eZnc=0., eZpc=0., eZna=0., eZpa=0.;
   for(Int_t i=0; i<5; i++) {
     eZnc += dataZDC->GetZNCTowerEnergy()[i];
@@ -416,7 +417,12 @@ void AliAnalysisTaskUpcFilter::UserExec(Option_t *)
   fUPCEvent->SetZNCEnergy( eZnc );
   fUPCEvent->SetZPCEnergy( eZpc );
   fUPCEvent->SetZNAEnergy( eZna );
-  fUPCEvent->SetZPAEnergy( eZpa );
+  fUPCEvent->SetZPAEnergy( eZpa );/*/
+  
+  fUPCEvent->SetZNCEnergy( dataZDC->GetZNCTowerEnergy()[0] );
+  fUPCEvent->SetZPCEnergy( dataZDC->GetZPCTowerEnergy()[0] );
+  fUPCEvent->SetZNAEnergy( dataZDC->GetZNATowerEnergy()[0] );
+  fUPCEvent->SetZPAEnergy( dataZDC->GetZPATowerEnergy()[0] );
 
   //default primary vertex
   const AliVVertex *vtx = vEvent->GetPrimaryVertex();
@@ -580,6 +586,12 @@ Bool_t AliAnalysisTaskUpcFilter::RunAOD()
 
   fUPCEvent->SetZNCTime( dataZDCAOD->GetZNCTime() );
   fUPCEvent->SetZNATime( dataZDCAOD->GetZNATime() );
+  
+  Float_t znatdcm[4];
+  Float_t znctdcm[4];
+  for (Int_t i=0;i<4;i++) znatdcm[i] = dataZDCAOD->GetZNATDCm(i);
+  for (Int_t i=0;i<4;i++) znctdcm[i] = dataZDCAOD->GetZNCTDCm(i);
+  fUPCEvent->SetZNTDCm(znatdcm,znctdcm);
 
   //SPD primary vertex in AOD
   AliAODVertex *vtx = aodEvent->GetPrimaryVertexSPD();

@@ -100,11 +100,11 @@ AliAnalysisTaskEMCALPhotonIsolation* AddTaskEMCALPhotonIsolation(
     myContName = Form("Analysis_Neutrals");
   }
   
-  // for the 2012 EGA/L1 Analysis, only events with EGA/L1 recalc patches are considered
-  // this configuration requires a TriggerMaker wagon in the train!!!
-  Bool_t is2012_EGA = kFALSE;
-  TString Period = periodstr;
-  if((triggerName.Contains("EGArecalc") || triggerName.Contains("L1recalc")) && Period.Contains("12")) is2012_EGA = kTRUE;
+  // For the 2012 EGA/L1 Analysis, only events with EGA/L1 recalc patches are considered
+  // (This configuration requires a TriggerMaker wagon in the train!!!)
+  TString period     = periodstr;
+  Bool_t  is2012_EGA = kFALSE;
+  if((triggerName.Contains("EGArecalc") || triggerName.Contains("L1recalc")) && period.Contains("12")) is2012_EGA = kTRUE;
   
   if(triggerName.Contains("EG1") || triggerName.Contains("EGA1")){
     triggerName = "_Trigger_EG1";
@@ -173,6 +173,18 @@ AliAnalysisTaskEMCALPhotonIsolation* AddTaskEMCALPhotonIsolation(
   TString configFilePath(configBasePath+"/"+configFileMD5);
   gROOT->LoadMacro(configFilePath.Data());
   Printf("Path of config file: %s\n",configFilePath.Data());
+
+  // Set histrogram bins and ranges
+  task->GetHistogramRangesAndBinning()->SetHistoEtaRangeAndNBins(-0.7, 0.7, 96);                                                 // 2 SM = 96 cells in eta
+  if(period.Contains("10")){
+    task->GetHistogramRangesAndBinning()->SetHistoPhiRangeAndNBins(80.*TMath::DegToRad(), 120.*TMath::DegToRad(), 48);           // 2*2 SM = 48 cells in phi
+  }
+  else if(period.Contains("11") || period.Contains("12") || period.Contains("13")){
+    task->GetHistogramRangesAndBinning()->SetHistoPhiRangeAndNBins(80.*TMath::DegToRad(), 180.*TMath::DegToRad(), 120);          // 2*5 SM = 120 cells in phi
+  }
+  else{
+    task->GetHistogramRangesAndBinning()->SetHistoPhiRangeAndNBins(80.*TMath::DegToRad(), (340.-40./3.)*TMath::DegToRad(), 296); // 2*10 SM = 296 cells in phi
+  }
 
   // #### Task preferences
   task->SetOutputFormat(iOutput);

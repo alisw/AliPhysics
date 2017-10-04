@@ -184,7 +184,6 @@ Bool_t AliPHOSTriggerHelper::IsPHI7(AliVEvent *event, AliPHOSClusterCuts *cuts)
   Int_t trgrelId[4]={};
   Int_t tmod=0; //"Online" module number
   Int_t trgabsId=0; //bottom-left 4x4 edge cell absId [1-64], [1-56]
-  Int_t trgmodule=0,trgcellx=0,trgcellz=0;
   Int_t relId[4]={};
   AliVCluster *clu1;
 
@@ -211,18 +210,16 @@ Bool_t AliPHOSTriggerHelper::IsPHI7(AliVEvent *event, AliPHOSClusterCuts *cuts)
     fPHOSGeo->AbsToRelNumbering(trgabsId,trgrelId);
     //for offline numbering, relId should be used.
 
-    trgmodule = trgrelId[0];
-    trgcellx  = trgrelId[2];
-    trgcellz  = trgrelId[3];
 
-    //if(!IsGoodTRUChannel("PHOS",trgmodule,trgcellx,trgcellz)) return kFALSE;
+    AliInfo(Form("Fired trigger channel : M%d X%d Z%d",trgrelId[0],trgrelId[2],trgrelId[3]));
+    //if(!IsGoodTRUChannel("PHOS",trgrelId[0],trgrelId[2],trgrelId[3])) return kFALSE;
 
     Int_t multClust = array->GetEntriesFast();
     for(Int_t i=0;i<multClust;i++){
       AliCaloPhoton *ph = (AliCaloPhoton*)array->At(i);
-      clu1 = (AliVCluster*)ph->GetCluster();
       if(!cuts->AcceptPhoton(ph)) continue;
-      if(!ph->IsTOFOK()) continue;
+      //if(!ph->IsTOFOK()) continue;
+      clu1 = (AliVCluster*)ph->GetCluster();
 
       Int_t maxAbsId = FindHighestAmplitudeCellAbsId(clu1,cells);
 

@@ -13,6 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 #include <algorithm>
+#include <cfloat>
 #include <iostream>
 #include <vector>
 #include <TClonesArray.h>
@@ -44,7 +45,10 @@ AliClusterContainer::AliClusterContainer():
   fIncludePHOS(kFALSE),
   fIncludePHOSonly(kFALSE),
   fPhosMinNcells(0),
-  fPhosMinM02(0)
+  fPhosMinM02(0),
+  fEmcalMinM02(DBL_MIN),
+  fEmcalMaxM02(DBL_MAX),
+  fEmcalMaxM02CutEnergy(DBL_MAX)
 {
   fBaseClassName = "AliVCluster";
   SetClassName("AliVCluster");
@@ -67,7 +71,10 @@ AliClusterContainer::AliClusterContainer(const char *name):
   fIncludePHOS(kFALSE),
   fIncludePHOSonly(kFALSE),
   fPhosMinNcells(0),
-  fPhosMinM02(0)
+  fPhosMinM02(0),
+  fEmcalMinM02(DBL_MIN),
+  fEmcalMaxM02(DBL_MAX),
+  fEmcalMaxM02CutEnergy(DBL_MAX)
 {
   fBaseClassName = "AliVCluster";
   SetClassName("AliVCluster");
@@ -366,6 +373,15 @@ Bool_t AliClusterContainer::ApplyClusterCuts(const AliVCluster* clus, UInt_t &re
     return kFALSE;
   }
   
+  if (clus->IsEMCAL()) {
+    if (clus->E() < fEmcalMaxM02CutEnergy) {
+      if(clus->GetM02() < fEmcalMinM02 || clus->GetM02() > fEmcalMaxM02) {
+        rejectionReason |= kExoticCut; // Not really true, but there is a lack of leftover bits
+        return kFALSE;
+      }
+    }
+  }
+
   for (Int_t i = 0; i <= AliVCluster::kLastUserDefEnergy; i++) {
     if (clus->GetUserDefEnergy((VCluUserDefEnergy_t)i) < fUserDefEnergyCut[i]) {
       rejectionReason |= kEnergyCut;

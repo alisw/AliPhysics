@@ -568,7 +568,10 @@ void SetupAODtrackCutsTight2(AliDielectron *die)
   varCuts->AddCut(AliDielectronVarManager::kImpactParXY, -1.0,   1.0);
   varCuts->AddCut(AliDielectronVarManager::kImpactParZ,  -3.0,   3.0);
   varCuts->AddCut(AliDielectronVarManager::kKinkIndex0,   0.);
-  
+
+  // additional 
+  varCuts->AddCut(AliDielectronVarManager::kNFclsTPCfCross, 0.95, 1.05);
+
   /* vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv PID CUTS vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv */
 
   AliDielectronPID *pidCuts        = new AliDielectronPID("PIDCuts","PIDCuts");

@@ -31,25 +31,22 @@ class TDatabasePDG;
 class AliESDVertex;
 class TClonesArray;
 class TProfile;
+class TTree;
+class AliTOFT0maker;
+class AliTOFcalib;
+class AliPIDResponse;
+class AliESDTOFCluster;
 
 //Includes
 #include "AliAnalysisTask.h"
 #include "AliAnalysisTaskSE.h"
-#include "AliBackgroundSelection.h"
-#include "AliESDTOFCluster.h"
 #include "AliESDtrackCuts.h"
 #include "AliEventCuts.h"
+#include "AliLog.h"
 #include "AliMultSelection.h"
-#include "AliPIDResponse.h"
-#include "AliPhysicsSelection.h"
-#include "AliPhysicsSelectionTask.h"
-#include "AliTOFT0maker.h"
-#include "AliTOFT0v1.h"
-#include "AliTOFcalib.h"
+#include "AliTOFPIDResponse.h"
 #include "AliUtilTOFParams.h"
 #include "TBenchmark.h"
-#include "TRandom3.h"
-#include <TTree.h>
 
 using namespace AliUtilTOFParams;
 
@@ -623,7 +620,7 @@ class AliAnalysisTaskTOFSpectra : public AliAnalysisTaskSE {
   //Multiplicity
   Float_t fEvtMult;         ///<  Event Multiplicity
   Short_t fEvtMultBin;      ///<  Event Multiplicity bin to compact the information in the Tree
-  TArrayF fMultiplicityBin; ///<  Array of the Event Multiplicity bins
+  TArrayD fMultiplicityBin; ///<  Array of the Event Multiplicity bins
 
   /////////////////////
   // Track Variables //
@@ -808,7 +805,7 @@ class AliAnalysisTaskTOFSpectra : public AliAnalysisTaskSE {
   TH1F* hTOFResidualX;                        ///<  Histogram with the Impact Residual X
   TH1F* hTOFResidualZ;                        ///<  Histogram with the Impact Residual Z
   TH2F* hPadDist;                             ///<  Histogram with the Impact Residual X and Residual Z values
-  TH2F* hTOFDist;                             ///<  Histogram with the distributions of the TOF strips and sectors
+  TH2F* hTOFDist;                             ///<  Histogram with the distributions of the TOF strips and sectors matched to tracks
   TH1F* hTOFChannel;                          ///<  Histogram with the Channel in the TOF
   TH1F* hT0;                                  ///<  Histogram with the T0 used for each track
   TH1F* hT0Resolution;                        ///<  Histogram with the resolution on the T0
@@ -828,7 +825,10 @@ class AliAnalysisTaskTOFSpectra : public AliAnalysisTaskSE {
   TH2I* hBetaNoMismatchCentral;               ///<  Histogram with the track beta vs the track momentum for central events with a cut on the maximum number of clusters to reduce the mismatch
   TH2I* hBetaNoMismatchCentralEtaCut;         ///<  Histogram with the track beta vs the track momentum for central events with a cut on the maximum number of clusters to reduce the mismatch and a cut on the eta range
   TH2I* hBetaNoMismatchCentralEtaCutOut;      ///<  Histogram with the track beta vs the track momentum for central events with a cut on the maximum number of clusters to reduce the mismatch and a cut on the eta range
+  TH1F* hChannelEvents;                       ///<  Histogram with the numbe of events used in the TOF channel-time mode
   TH2I* hChannelTime;                         ///<  Histogram with the measured time at TOF divided into each channel (or strip) -> Used to get the mismatch
+  TH1F* hChannelHits;                         ///<  Histogram with the numer of TOF Hits (matched and not matched) per channel
+  TH1F* hChannelClusters;                     ///<  Histogram with the numer of TOF Clusters (matched and not matched) per channel
   TH1F* hTOFClusters;                         ///<  Histogram with the number of TOF clusters per track
   TH1F* hTOFClustersDCApass;                  ///<  Histogram with the number of TOF clusters per track, for tracks which passed the DCA cut for primaries
   //->TPC information
@@ -852,35 +852,35 @@ class AliAnalysisTaskTOFSpectra : public AliAnalysisTaskSE {
   //
   //MC Info
   //
-  TH1F* hNumMatchMC[2][3];                                 ///<  Matching efficiency numerator with MC information on PID
-  TH1F* hDenMatchMC[2][3];                                 ///<  Matching efficiency denominator with MC information on PID
-  TH1F* hNumMatchPrimMC[2][3];                             ///<  Matching efficiency numerator with MC information on PID and on Primary production
-  TH1F* hDenMatchPrimMC[2][3];                             ///<  Matching efficiency denominator with MC information on PID and on Primary production
-  TH1F* hNumMatchPrimMCYCut[2][3][kEvtMultBins];           ///<  Matching efficiency numerator with MC information on PID and on Primary production with a cut on |y| < 0.5
-  TH1F* hDenMatchPrimMCYCut[2][3][kEvtMultBins];           ///<  Matching efficiency denominator with MC information on PID and on Primary production with a cut on |y| < 0.5
-  TH1F* hNumMatchMultTrkTRDOut[2][3][kEvtMultBins];        ///<  Matching efficiency numerator with kTRDOut flag and MC information on PID
-  TH1F* hDenMatchMultTrkTRDOut[2][3][kEvtMultBins];        ///<  Matching efficiency denominator with kTRDOut flag and MC information on PID
-  TH1F* hNumMatchMultTrkNoTRDOut[2][3][kEvtMultBins];      ///<  Matching efficiency numerator without kTRDOut flag and with MC information on PID
-  TH1F* hDenMatchMultTrkNoTRDOut[2][3][kEvtMultBins];      ///<  Matching efficiency denominator without kTRDOut flag and with MC information on PID
-  TH1F* hNumMatchMultTrk[2][3][kEvtMultBins];              ///<  Matching efficiency numerator with kTIME, kTRDOut flags and MC information on PID
-  TH1F* hDenMatchMultTrk[2][3][kEvtMultBins];              ///<  Matching efficiency denominator with kTIME, kTRDOut flags and MC information on PID
-  TH1F* hNumMatchMultTrkInc[2][kEvtMultBins];              ///<  Matching efficiency numerator with kTIME, kTRDOut flags
-  TH1F* hDenMatchMultTrkInc[2][kEvtMultBins];              ///<  Matching efficiency denominator with kTIME, kTRDOut flags
-  TH1F* hDenTrkTrigger[2][3][kEvtMultBins];                ///<  Generated particles with MC truth on PID for all events: that passed and didn't pass Physics Selection
-  TH1F* hDenTrkMCVertexZ[2][3];                            ///<  Generated particles with MC truth on PID for all events: that passed and didn't pass Physics Selection. But that are inside the sample selection in the MC
-  TH1F* hDenTrkVertex[2][3];                               ///<  Generated particles with MC truth on PID for events that passed Vertex Cuts
-  TH1F* hDenTrkVertexMCVertexZ[2][3];                      ///<  Generated particles with MC truth on PID for events that passed Vertex Cuts
-  TH1F* hDenPrimMCYCut[2][3][kEvtMultBins];                ///<  Pt Distribution of Primary Particles with MC Truth on PID, that passed Physics Selection and Event Selection with a cut on the max y
-  TH1F* hDenPrimMCEtaCut[2][3][kEvtMultBins];              ///<  Pt Distribution of Primary Particles with MC Truth on PID, that passed Physics Selection and Event Selection with a cut on the max eta
-  TH1F* hDenPrimMCEtaYCut[2][3][kEvtMultBins];             ///<  Pt Distribution of Primary Particles with MC Truth on PID, that passed Physics Selection and Event Selection with a cut on the max eta and max y
-  TH1F* hNumPrimMCTrueMatch[2][3][kEvtMultBins];           ///<  Pt Distribution of Tracks from primary particles with MC Truth on PID, with true match in the TOF detector
-  TH1F* hNumPrimMCTrueMatchYCut[2][3][kEvtMultBins];       ///<  Pt Distribution of Tracks from primary particles with MC Truth on PID, with true match in the TOF detector with a Y cut
-  TH1F* hNumPrimMCTrueMatchYCutTPC[2][3][kEvtMultBins];    ///<  Pt Distribution of Tracks from primary particles with MC Truth on PID, with true match in the TOF detector with a Y cut and a TPC 5sigma cut on the signal for pi/k/p
-  TH1F* hNumPrimMCConsistentMatchYCut[2][3][kEvtMultBins]; ///<  Pt Distribution of Tracks from primary particles with MC Truth on PID, with true match in the TOF detector with a Y cut
-  TH3S* hDenMatchPrimNoCut[2][3];                          ///<  Matching efficiency denominator with MC information on PID and on Primary production without any geometical cut i.e. it has the three variables for pT eta and phi
-  TH3S* hDenPrimMCNoCut[2][3];                             ///<  Distribution of Primary Particles with MC Truth on PID, that passed Physics Selection and Event Selection without any geometical cut i.e. it has the three variables for pT eta and phi
+  TH1F* hNumMatchMC[2][3];                   ///<  Matching efficiency numerator with MC information on PID
+  TH1F* hDenMatchMC[2][3];                   ///<  Matching efficiency denominator with MC information on PID
+  TH1F* hNumMatchPrimMC[2][3];               ///<  Matching efficiency numerator with MC information on PID and on Primary production
+  TH1F* hDenMatchPrimMC[2][3];               ///<  Matching efficiency denominator with MC information on PID and on Primary production
+  TH2F* hNumMatchPrimMCYCut[2][3];           ///<  Matching efficiency numerator with MC information on PID and on Primary production with a cut on |y| < 0.5
+  TH2F* hDenMatchPrimMCYCut[2][3];           ///<  Matching efficiency denominator with MC information on PID and on Primary production with a cut on |y| < 0.5
+  TH2F* hNumMatchMultTrkTRDOut[2][3];        ///<  Matching efficiency numerator with kTRDOut flag and MC information on PID
+  TH2F* hDenMatchMultTrkTRDOut[2][3];        ///<  Matching efficiency denominator with kTRDOut flag and MC information on PID
+  TH2F* hNumMatchMultTrkNoTRDOut[2][3];      ///<  Matching efficiency numerator without kTRDOut flag and with MC information on PID
+  TH2F* hDenMatchMultTrkNoTRDOut[2][3];      ///<  Matching efficiency denominator without kTRDOut flag and with MC information on PID
+  TH2F* hNumMatchMultTrk[2][3];              ///<  Matching efficiency numerator with kTIME, kTRDOut flags and MC information on PID
+  TH2F* hDenMatchMultTrk[2][3];              ///<  Matching efficiency denominator with kTIME, kTRDOut flags and MC information on PID
+  TH2F* hNumMatchMultTrkInc[2];              ///<  Matching efficiency numerator with kTIME, kTRDOut flags
+  TH2F* hDenMatchMultTrkInc[2];              ///<  Matching efficiency denominator with kTIME, kTRDOut flags
+  TH2F* hDenTrkTrigger[2][3];                ///<  Generated particles with MC truth on PID for all events: that passed and didn't pass Physics Selection
+  TH1F* hDenTrkMCVertexZ[2][3];              ///<  Generated particles with MC truth on PID for all events: that passed and didn't pass Physics Selection. But that are inside the sample selection in the MC
+  TH1F* hDenTrkVertex[2][3];                 ///<  Generated particles with MC truth on PID for events that passed Vertex Cuts
+  TH1F* hDenTrkVertexMCVertexZ[2][3];        ///<  Generated particles with MC truth on PID for events that passed Vertex Cuts
+  TH2F* hDenPrimMCYCut[2][3];                ///<  Pt Distribution of Primary Particles with MC Truth on PID, that passed Physics Selection and Event Selection with a cut on the max y
+  TH2F* hDenPrimMCEtaCut[2][3];              ///<  Pt Distribution of Primary Particles with MC Truth on PID, that passed Physics Selection and Event Selection with a cut on the max eta
+  TH2F* hDenPrimMCEtaYCut[2][3];             ///<  Pt Distribution of Primary Particles with MC Truth on PID, that passed Physics Selection and Event Selection with a cut on the max eta and max y
+  TH2F* hNumPrimMCTrueMatch[2][3];           ///<  Pt Distribution of Tracks from primary particles with MC Truth on PID, with true match in the TOF detector
+  TH2F* hNumPrimMCTrueMatchYCut[2][3];       ///<  Pt Distribution of Tracks from primary particles with MC Truth on PID, with true match in the TOF detector with a Y cut
+  TH2F* hNumPrimMCTrueMatchYCutTPC[2][3];    ///<  Pt Distribution of Tracks from primary particles with MC Truth on PID, with true match in the TOF detector with a Y cut and a TPC 5sigma cut on the signal for pi/k/p
+  TH2F* hNumPrimMCConsistentMatchYCut[2][3]; ///<  Pt Distribution of Tracks from primary particles with MC Truth on PID, with true match in the TOF detector with a Y cut
+  TH3S* hDenMatchPrimNoCut[2][3];            ///<  Matching efficiency denominator with MC information on PID and on Primary production without any geometical cut i.e. it has the three variables for pT eta and phi
+  TH3S* hDenPrimMCNoCut[2][3];               ///<  Distribution of Primary Particles with MC Truth on PID, that passed Physics Selection and Event Selection without any geometical cut i.e. it has the three variables for pT eta and phi
 
-  //histograms for matching efficiency calculation
+  //histograms for matching efficiency calculation (Also in Real Data)
   //Positive / Negative
   TH1F* hNumMatch[2];            ///<  Matching efficiency numerator Pt Distribution
   TH1F* hDenMatch[2];            ///<  Matching efficiency denominator Pt Distribution
@@ -917,7 +917,7 @@ class AliAnalysisTaskTOFSpectra : public AliAnalysisTaskSE {
   AliAnalysisTaskTOFSpectra(const AliAnalysisTaskTOFSpectra&);            //! Not implemented
   AliAnalysisTaskTOFSpectra& operator=(const AliAnalysisTaskTOFSpectra&); //! Not implemented
 
-  ClassDef(AliAnalysisTaskTOFSpectra, 8); //AliAnalysisTaskTOFSpectra used for the Pi/K/p analysis with TOF
+  ClassDef(AliAnalysisTaskTOFSpectra, 9); //AliAnalysisTaskTOFSpectra used for the Pi/K/p analysis with TOF
 };
 
 #endif

@@ -30,7 +30,8 @@ AliAnalysisTaskHFEpACorrelation *AddTaskHFEpACorrelation(
                                                          TString BackgroundWFileToData = "alien:///alice/cern.ch/user/h/hzanoli/BackgroundW/BackgroundWToData.root",
                                                          TString Sufix = "",
                                                          Float_t ZvtxMin  = -10.,
-                                                         Float_t ZvtxMax = 10.
+                                                         Float_t ZvtxMax = 10.,
+                                                         Int_t ZvtxBinConfig = 0
                                                          )
 {
     AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -55,6 +56,33 @@ AliAnalysisTaskHFEpACorrelation *AddTaskHFEpACorrelation(
     
     AliAnalysisTaskHFEpACorrelation *task = ConfigHFEpACorrelation(taskName, Correlation, ispp, isMC,   ElectronDCAxy,ElectronDCAz,HadronDCAxy,HadronDCAz,TPCPIDLow,TPCPIDUp,InvariantMassCut,pTCutPartner, MultiplicityLow, MultiplicityUp, HadronPtCutLow, HadronPtCutUp, EtaCutLow, EtaCutUp, NonHFEangleCut, NHitsITS, SPDLayers, TPCNCluster, TPCNClusterPartner, TPCNClusterPID,UseGlobalTracksForHadrons,CentralityEstimator);
     
+    
+    Double_t vertexBins0[] = {-10, -5.3, -2.6, -0.5, 1.5, 3.5, 5.7,10.01};
+    Double_t vertexBins1[] = {-10, -5, -3, -1, 1, 3, 5, 10.01};
+    Double_t vertexBins2[] = {-10, -6, -2.2, -1, 0.8, 2.7, 5.2,10.01};
+    Double_t vertexBins3[] = {-10, -4, -1.0,0.7, 1.9, 3.7, 6.2,10.01};
+    Double_t vertexBins4[] = {-10, -5.5, -3.0,-0.9, 1.2, 2.9, 5.9,10.01};
+    
+    switch (ZvtxBinConfig) {
+        case 1:
+            task->SetZvtxBins(8,vertexBins1);
+            break;
+        case 2:
+            task->SetZvtxBins(8,vertexBins2);
+            break;
+        case 3:
+            task->SetZvtxBins(8,vertexBins3);
+            break;
+        case 4:
+            task->SetZvtxBins(8,vertexBins4);
+            break;
+            
+        default:
+            task->SetZvtxBins(8,vertexBins0);
+            break;
+    }
+
+    
     //_______________________
     //Trigger
     
@@ -66,7 +94,7 @@ AliAnalysisTaskHFEpACorrelation *AddTaskHFEpACorrelation(
     if(pTBin ==0)
     {
         Float_t pTBinsCorrelation[] = {0.5,0.75,1.0,1.25,1.5,2,2.5,3,4,6};
-        task->SetpTBins(11,pTBinsCorrelation);
+        task->SetpTBins(10,pTBinsCorrelation);
     }
     else if (pTBin ==1)
     {

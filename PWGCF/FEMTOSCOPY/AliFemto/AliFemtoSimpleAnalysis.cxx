@@ -431,7 +431,7 @@ AliFemtoString AliFemtoSimpleAnalysis::Report()
 
   report += "-------------\n";
 
-  return AliFemtoString(report);
+  return AliFemtoString((const char *)report);
 }
 //_________________________
 void AliFemtoSimpleAnalysis::ProcessEvent(const AliFemtoEvent* hbtEvent)

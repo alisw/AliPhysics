@@ -1349,7 +1349,7 @@ if(fIsMC)
 				 ///----------------------------------------------------
 				     
 				///pt spectra for pi0 and eta
-				if(fMCparticle->Eta()<-1.2 || fMCparticle->Eta()>1.2) continue;
+				if(fMCparticle->Y()<-0.8 || fMCparticle->Y()>0.8) continue;
 				    
 				///Using thnSparse--------------------------------------
 				//Pt

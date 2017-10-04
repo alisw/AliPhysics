@@ -97,4 +97,21 @@
 //CPV performance
 #pragma link C++ class AliAnalysisTaskCPV+;
 
+// LHC16_pp
+#pragma link C++ class AliPP13ClusterCuts+;
+#pragma link C++ class AliPP13DetectorHistogram+;
+#pragma link C++ class AliPP13PhotonSelection+;
+#pragma link C++ class AliPP13PhotonSpectrumSelection+;
+#pragma link C++ class AliPP13QualityPhotonSelection+;
+#pragma link C++ class AliPP13ParticlesHistogram+;
+#pragma link C++ class AliPP13PhotonTimecutStudySelection+;
+#pragma link C++ class AliPP13PhysPhotonSelection+;
+#pragma link C++ class AliPP13TagAndProbeSelection+;
+#pragma link C++ class AliPP13MesonSelectionMC+;
+#pragma link C++ class AliPP13PythiaInfoSelection+;
+#pragma link C++ class AliPP13PhysPhotonSelectionMC+;
+#pragma link C++ class AliPP13NonlinearityScanSelection+;
+#pragma link C++ class AliPP13MixingSample+;
+#pragma link C++ class AliAnalysisTaskPP13+;
+
 #endif

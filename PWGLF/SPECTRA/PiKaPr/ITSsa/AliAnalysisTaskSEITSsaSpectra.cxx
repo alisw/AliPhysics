@@ -31,6 +31,7 @@
 #include <TF1.h>
 #include <TH1F.h>
 #include <TH2F.h>
+#include <TH3F.h>
 #include <THnSparse.h>
 #include <TNtuple.h>
 #include <TParticle.h>
@@ -82,6 +83,9 @@ AliAnalysisTaskSEITSsaSpectra::AliAnalysisTaskSEITSsaSpectra():
   fHistVtxZ(NULL),
   fHistDEDX(NULL),
   fHistDEDXdouble(NULL),
+  fCentBins(),
+  fDCABins(),
+  fPtBins(),
   fTriggerSel(AliVEvent::kMB),
   fMaxVtxZCut(10.),
 	fChkIsEventINELgtZERO(kFALSE),
@@ -96,16 +100,16 @@ AliAnalysisTaskSEITSsaSpectra::AliAnalysisTaskSEITSsaSpectra():
   fMultMethod(0),
   fMultEstimator("V0M"),
 	fMultEvSel(kFALSE),
-  fLowMult(-1.),
-  fUpMult(-1.),
-  fEvtMult(-999),
+  fLowMult(-5.),
+  fUpMult(500),
+  fEvtMult(-1),
   fPlpType(BIT(kNoPileup)),
+  fMinPlpContribSPD(5),
+  fMinPlpZdistSPD(.8),
   fMinPlpContribMV(5),
   fMaxPlpChi2MV(5.),
   fMinWDistMV(15.),
   fCheckPlpFromDifferentBCMV(kFALSE),
-  fMinPlpContribSPD(5),
-  fMinPlpZdistSPD(.8),
 	fMinSPDPts(1),
   fMinNdEdxSamples(3),
   fAbsEtaCut(.8),
@@ -131,12 +135,20 @@ AliAnalysisTaskSEITSsaSpectra::AliAnalysisTaskSEITSsaSpectra():
   //Constructor
   fRandGener = new TRandom3(0);
 
-  Double_t xbins[kNbins + 1] = {0.08, 0.10, 0.12, 0.14, 0.16, 0.18, 0.20, 0.25,
-                                0.30, 0.35, 0.40, 0.45, 0.50, 0.55, 0.60, 0.65,
-                                0.70, 0.75, 0.80, 0.85, 0.90, 0.95, 1.0
-                               };
-  for (Int_t iBin = 0; iBin < (kNbins + 1); ++iBin)
-    fPtBinLimits[iBin] = xbins[iBin];
+  // Inizialize bins array
+  fCentBins.Set(3);
+  fCentBins[0]=-5.f;
+  fCentBins[1]=0.f;
+  fCentBins[2]=100.f;
+
+  float ptBins[kNbins + 1] = {
+    0.08, 0.10, 0.12, 0.14, 0.16, 0.18, 0.20, 0.25,
+    0.30, 0.35, 0.40, 0.45, 0.50, 0.55, 0.60, 0.65,
+    0.70, 0.75, 0.80, 0.85, 0.90, 0.95, 1.0
+  };
+  fPtBins.Set(kNbins+1, ptBins);
+
+  SetDCABins(2000, -2, 2);
 
   for (int iChg = 0; iChg < kNchg; ++iChg)
     fHistNTracks[iChg] = NULL;
@@ -158,7 +170,7 @@ AliAnalysisTaskSEITSsaSpectra::AliAnalysisTaskSEITSsaSpectra():
       fHistSstrMCReco[index] = NULL;
       fHistSmatMCReco[index] = NULL;
 
-      for (Int_t iptbin = 0; iptbin < kNbins; ++iptbin) {
+/*      for (Int_t iptbin = 0; iptbin < kNbins; ++iptbin) {
         fHistRecoDCA[index][iptbin] = NULL; //! histo with DCA distibution
 
         fHistPrimDCA[index][iptbin] = NULL; //! histo with DCA distibution and dedx PID
@@ -168,60 +180,56 @@ AliAnalysisTaskSEITSsaSpectra::AliAnalysisTaskSEITSsaSpectra():
         fHistMCtruthPrimDCA[index][iptbin] = NULL; //! histo with DCA distibution, MC truth
         fHistMCtruthSstrDCA[index][iptbin] = NULL; //! histo with DCA distibution, MC truth
         fHistMCtruthSmatDCA[index][iptbin] = NULL; //! histo with DCA distibution, MC truth
-      }
+      } */
     }
   }
-  for (Int_t j = 0; j < 4; j++) fHistCharge[j] = NULL;
+  for (Int_t iL = 0; iL < 4; ++iL) fHistCharge[iL] = NULL;
 
-  for (Int_t iptbin = 0; iptbin < kNbins; ++iptbin) {
-    //dEdx distributions
-    fHistPosHypPi[iptbin] = NULL;
-    fHistPosHypKa[iptbin] = NULL;
-    fHistPosHypPr[iptbin] = NULL;
-    fHistNegHypPi[iptbin] = NULL;
-    fHistNegHypKa[iptbin] = NULL;
-    fHistNegHypPr[iptbin] = NULL;
+  //dEdx distributions
+  fHistPosHypPi = NULL;
+  fHistPosHypKa = NULL;
+  fHistPosHypPr = NULL;
+  fHistNegHypPi = NULL;
+  fHistNegHypKa = NULL;
+  fHistNegHypPr = NULL;
 
-    //dEdx distributions for MC
-    fHistMCPosOtherHypPion[iptbin] = NULL;
-    fHistMCPosOtherHypKaon[iptbin] = NULL;
-    fHistMCPosOtherHypProt[iptbin] = NULL;
-    fHistMCPosElHypPion[iptbin]    = NULL;
-    fHistMCPosElHypKaon[iptbin]    = NULL;
-    fHistMCPosElHypProt[iptbin]    = NULL;
-    fHistMCPosPiHypPion[iptbin]    = NULL;
-    fHistMCPosPiHypKaon[iptbin]    = NULL;
-    fHistMCPosPiHypProt[iptbin]    = NULL;
-    fHistMCPosKaHypPion[iptbin]    = NULL;
-    fHistMCPosKaHypKaon[iptbin]    = NULL;
-    fHistMCPosKaHypProt[iptbin]    = NULL;
-    fHistMCPosPrHypPion[iptbin]    = NULL;
-    fHistMCPosPrHypKaon[iptbin]    = NULL;
-    fHistMCPosPrHypProt[iptbin]    = NULL;
+  //dEdx distributions for MC
+  fHistMCPosOtherHypPion = NULL;
+  fHistMCPosOtherHypKaon = NULL;
+  fHistMCPosOtherHypProt = NULL;
+  fHistMCPosElHypPion    = NULL;
+  fHistMCPosElHypKaon    = NULL;
+  fHistMCPosElHypProt    = NULL;
+  fHistMCPosPiHypPion    = NULL;
+  fHistMCPosPiHypKaon    = NULL;
+  fHistMCPosPiHypProt    = NULL;
+  fHistMCPosKaHypPion    = NULL;
+  fHistMCPosKaHypKaon    = NULL;
+  fHistMCPosKaHypProt    = NULL;
+  fHistMCPosPrHypPion    = NULL;
+  fHistMCPosPrHypKaon    = NULL;
+  fHistMCPosPrHypProt    = NULL;
 
-    fHistMCNegOtherHypPion[iptbin] = NULL;
-    fHistMCNegOtherHypKaon[iptbin] = NULL;
-    fHistMCNegOtherHypProt[iptbin] = NULL;
-    fHistMCNegElHypPion[iptbin]    = NULL;
-    fHistMCNegElHypKaon[iptbin]    = NULL;
-    fHistMCNegElHypProt[iptbin]    = NULL;
-    fHistMCNegPiHypPion[iptbin]    = NULL;
-    fHistMCNegPiHypKaon[iptbin]    = NULL;
-    fHistMCNegPiHypProt[iptbin]    = NULL;
-    fHistMCNegKaHypPion[iptbin]    = NULL;
-    fHistMCNegKaHypKaon[iptbin]    = NULL;
-    fHistMCNegKaHypProt[iptbin]    = NULL;
-    fHistMCNegPrHypPion[iptbin]    = NULL;
-    fHistMCNegPrHypKaon[iptbin]    = NULL;
-    fHistMCNegPrHypProt[iptbin]    = NULL;
-  }
+  fHistMCNegOtherHypPion = NULL;
+  fHistMCNegOtherHypKaon = NULL;
+  fHistMCNegOtherHypProt = NULL;
+  fHistMCNegElHypPion    = NULL;
+  fHistMCNegElHypKaon    = NULL;
+  fHistMCNegElHypProt    = NULL;
+  fHistMCNegPiHypPion    = NULL;
+  fHistMCNegPiHypKaon    = NULL;
+  fHistMCNegPiHypProt    = NULL;
+  fHistMCNegKaHypPion    = NULL;
+  fHistMCNegKaHypKaon    = NULL;
+  fHistMCNegKaHypProt    = NULL;
+  fHistMCNegPrHypPion    = NULL;
+  fHistMCNegPrHypKaon    = NULL;
+  fHistMCNegPrHypProt    = NULL;
 
   DefineInput(0, TChain::Class());
-  if (!fUseDefaultPriors) DefineInput(1, TList::Class());
   DefineOutput(1, TList::Class());
   DefineOutput(2, TList::Class());
-  if (fFillNtuple) DefineOutput(3, TList::Class());
-
+  DefineOutput(3, TList::Class());
   AliInfo("End of AliAnalysisTaskSEITSsaSpectra");
 }
 
@@ -264,16 +272,6 @@ void AliAnalysisTaskSEITSsaSpectra::UserCreateOutputObjects()
 {
   // Create a TList with histograms and a TNtuple
   // Called once
-  if (fFillNtuple) {
-    fListTree = new TList();
-    fListTree->SetOwner();
-
-    fNtupleData = new TNtuple("fNtupleData", "fNtupleData", "p:pt:s0:s1:s2:s3:dEdx:sign:eta:dcaXY:dcaZ:clumap");
-    fListTree->Add(fNtupleData);
-    fNtupleMC   = new TNtuple("fNtupleMC", "fNtupleMC", "mcPt:pdgcode:sign:mcEta:mcRap:isph:run");
-    fListTree->Add(fNtupleMC);
-  }
-
   if (!fUseDefaultPriors) {
     fListPriors = dynamic_cast<TList*>(GetInputData(1));  //FIXME
     if (!fListPriors) {
@@ -292,62 +290,78 @@ void AliAnalysisTaskSEITSsaSpectra::UserCreateOutputObjects()
     //Histograms for event Selection
     fEventCuts.AddQAplotsToList(fOutput);
   }
+  
+  const int nPtBins = fPtBins.GetSize() - 1;
+  const int nCentBins = fCentBins.GetSize() - 1;
+  const int nDCABins = fDCABins.GetSize() - 1;
+  const float* ptBins = fPtBins.GetArray();
+  const float* centBins = fCentBins.GetArray();
+  const float* dcaBins = fDCABins.GetArray();
+
+  float evBins[kNEvtCuts + 1];
+  SetBins(kNEvtCuts,.5f,kNEvtCuts+.5f,evBins);
 
 	const char* notApp= "_notApplied";
-  fHistNEvents = new TH1I("fHistNEvents", "Number of processed events;Ev. Sel. Step;Counts", kNEvtCuts, .5, (kNEvtCuts + .5));
+  fHistNEvents = new TH2I("fHistNEvents", "Number of processed events;Centrality (%);",
+      nCentBins,centBins,kNEvtCuts,evBins);
   fHistNEvents->Sumw2();
   fHistNEvents->SetMinimum(0);
-  fHistNEvents->GetXaxis()->SetBinLabel(kIsReadable,  "Readable");
-  fHistNEvents->GetXaxis()->SetBinLabel(kIsSDDIn,     Form("HasSDDIn%s",   (fChkIsSDDIn ? "" : notApp)));
-  fHistNEvents->GetXaxis()->SetBinLabel(kPassMultSel, Form("PassMultSel%s",(fMultMethod ? "" : notApp)));
-  fHistNEvents->GetXaxis()->SetBinLabel(kIsNotIncDAQ, Form("PassIncDAQ%s", (fRejIncDAQ  ? "" : notApp)));
-  fHistNEvents->GetXaxis()->SetBinLabel(kPassTrig, "PassPhysSelTrig");
-  fHistNEvents->GetXaxis()->SetBinLabel(kPassINELgtZERO, Form("PassINELgtZERO%s", (fChkIsEventINELgtZERO ? "" : notApp)));
-  fHistNEvents->GetXaxis()->SetBinLabel(kCorrelations, Form("Correlations%s", (fExtEventCuts ? "" : notApp)));
-  fHistNEvents->GetXaxis()->SetBinLabel(kPassSPDclsVsTCut, Form("PassClsVsTrackletBG%s", (fDoSPDCvsTCut ? "" : notApp)));
-  fHistNEvents->GetXaxis()->SetBinLabel(kIsPileupSPD,           Form("PassIsPileupSPD%s", ((fPlpType & BIT(kPileupSPD) ? "" : notApp))));
-  fHistNEvents->GetXaxis()->SetBinLabel(kIsPileupSPDinMultBins, Form("PassIsPileupSPDinMultBins%s", ((fPlpType & BIT(kPileupInMultBins) ? "" : notApp))));
-  fHistNEvents->GetXaxis()->SetBinLabel(kIsPileupMV,            Form("PassIsPileupMV%s", ((fPlpType & BIT(kPileupMV) ? "" : notApp))));
-  fHistNEvents->GetXaxis()->SetBinLabel(kHasRecVtx,   "HasVertex");
-  fHistNEvents->GetXaxis()->SetBinLabel(kHasGoodVtxZ, "HasGoodVertex");
-  fHistNEvents->GetXaxis()->SetBinLabel(kNEvtCuts,    "IsSelected");
+  fHistNEvents->GetYaxis()->SetBinLabel(kIsReadable,  "Readable");
+  fHistNEvents->GetYaxis()->SetBinLabel(kPassMultSel, Form("PassMultSel%s",(fMultMethod ? "" : notApp)));
+  fHistNEvents->GetYaxis()->SetBinLabel(kIsSDDIn,     Form("HasSDDIn%s",   (fChkIsSDDIn ? "" : notApp)));
+  fHistNEvents->GetYaxis()->SetBinLabel(kIsNotIncDAQ, Form("PassIncDAQ%s", (fRejIncDAQ  ? "" : notApp)));
+  fHistNEvents->GetYaxis()->SetBinLabel(kPassTrig, "PassPhysSelTrig");
+  fHistNEvents->GetYaxis()->SetBinLabel(kPassINELgtZERO, Form("PassINELgtZERO%s", (fChkIsEventINELgtZERO ? "" : notApp)));
+  fHistNEvents->GetYaxis()->SetBinLabel(kCorrelations, Form("Correlations%s", (fExtEventCuts ? "" : notApp)));
+  fHistNEvents->GetYaxis()->SetBinLabel(kPassSPDclsVsTCut, Form("PassClsVsTrackletBG%s", (fDoSPDCvsTCut ? "" : notApp)));
+  fHistNEvents->GetYaxis()->SetBinLabel(kIsPileupSPD,           Form("PassIsPileupSPD%s", ((fPlpType & BIT(kPileupSPD) ? "" : notApp))));
+  fHistNEvents->GetYaxis()->SetBinLabel(kIsPileupSPDinMultBins, Form("PassIsPileupSPDinMultBins%s", ((fPlpType & BIT(kPileupInMultBins) ? "" : notApp))));
+  fHistNEvents->GetYaxis()->SetBinLabel(kIsPileupMV,            Form("PassIsPileupMV%s", ((fPlpType & BIT(kPileupMV) ? "" : notApp))));
+  fHistNEvents->GetYaxis()->SetBinLabel(kHasRecVtx,   "HasVertex");
+  fHistNEvents->GetYaxis()->SetBinLabel(kHasGoodVtxZ, "HasGoodVertex");
+  fHistNEvents->GetYaxis()->SetBinLabel(kNEvtCuts,    "IsSelected");
   fOutput->Add(fHistNEvents);
 
-  fHistMCEvents = new TH1I("fHistMCEvents", "Number of processed events;Ev. Sel. Step;Counts", kNEvtCuts, .5, (kNEvtCuts + .5));
+  fHistMCEvents = new TH2I("fHistMCEvents", "Number of processed events;Centrality (%);",
+      nCentBins,centBins,kNEvtCuts,evBins);
   fHistMCEvents->Sumw2();
   fHistMCEvents->SetMinimum(0);
-	fHistMCEvents->GetXaxis()->SetBinLabel(kIsReadable,  "Readable");
-  fHistMCEvents->GetXaxis()->SetBinLabel(kIsSDDIn,     Form("HasSDDIn%s",   (fChkIsSDDIn ? "" : notApp)));
-  fHistMCEvents->GetXaxis()->SetBinLabel(kPassMultSel, Form("PassMultSel%s",(fMultMethod ? "" : notApp)));
-  fHistMCEvents->GetXaxis()->SetBinLabel(kIsNotIncDAQ, Form("PassIncDAQ%s", (fRejIncDAQ  ? "" : notApp)));
-  fHistMCEvents->GetXaxis()->SetBinLabel(kPassTrig, "PassPhysSelTrig");
-  fHistMCEvents->GetXaxis()->SetBinLabel(kPassINELgtZERO, Form("PassINELgtZERO%s", (fChkIsEventINELgtZERO ? "" : notApp)));
-  fHistMCEvents->GetXaxis()->SetBinLabel(kCorrelations, Form("Correlations%s", (fExtEventCuts ? "" : notApp)));
-  fHistMCEvents->GetXaxis()->SetBinLabel(kPassSPDclsVsTCut, Form("PassClsVsTrackletBG%s", (fDoSPDCvsTCut ? "" : notApp)));
-  fHistMCEvents->GetXaxis()->SetBinLabel(kIsPileupSPD,           Form("PassIsPileupSPD%s", ((fPlpType & BIT(kPileupSPD) ? "" : notApp))));
-  fHistMCEvents->GetXaxis()->SetBinLabel(kIsPileupSPDinMultBins, Form("PassIsPileupSPDinMultBins%s", ((fPlpType & BIT(kPileupInMultBins) ? "" : notApp))));
-  fHistMCEvents->GetXaxis()->SetBinLabel(kIsPileupMV,            Form("PassIsPileupMV%s", ((fPlpType & BIT(kPileupMV) ? "" : notApp))));
-  fHistMCEvents->GetXaxis()->SetBinLabel(kHasRecVtx,   "HasVertex");
-  fHistMCEvents->GetXaxis()->SetBinLabel(kHasGoodVtxZ, "HasGoodVertex");
-  fHistMCEvents->GetXaxis()->SetBinLabel(kNEvtCuts,    "IsSelected");
+	fHistMCEvents->GetYaxis()->SetBinLabel(kIsReadable,  "Readable");
+  fHistMCEvents->GetYaxis()->SetBinLabel(kPassMultSel, Form("PassMultSel%s",(fMultMethod ? "" : notApp)));
+  fHistMCEvents->GetYaxis()->SetBinLabel(kIsSDDIn,     Form("HasSDDIn%s",   (fChkIsSDDIn ? "" : notApp)));
+  fHistMCEvents->GetYaxis()->SetBinLabel(kIsNotIncDAQ, Form("PassIncDAQ%s", (fRejIncDAQ  ? "" : notApp)));
+  fHistMCEvents->GetYaxis()->SetBinLabel(kPassTrig, "PassPhysSelTrig");
+  fHistMCEvents->GetYaxis()->SetBinLabel(kPassINELgtZERO, Form("PassINELgtZERO%s", (fChkIsEventINELgtZERO ? "" : notApp)));
+  fHistMCEvents->GetYaxis()->SetBinLabel(kCorrelations, Form("Correlations%s", (fExtEventCuts ? "" : notApp)));
+  fHistMCEvents->GetYaxis()->SetBinLabel(kPassSPDclsVsTCut, Form("PassClsVsTrackletBG%s", (fDoSPDCvsTCut ? "" : notApp)));
+  fHistMCEvents->GetYaxis()->SetBinLabel(kIsPileupSPD,           Form("PassIsPileupSPD%s", ((fPlpType & BIT(kPileupSPD) ? "" : notApp))));
+  fHistMCEvents->GetYaxis()->SetBinLabel(kIsPileupSPDinMultBins, Form("PassIsPileupSPDinMultBins%s", ((fPlpType & BIT(kPileupInMultBins) ? "" : notApp))));
+  fHistMCEvents->GetYaxis()->SetBinLabel(kIsPileupMV,            Form("PassIsPileupMV%s", ((fPlpType & BIT(kPileupMV) ? "" : notApp))));
+  fHistMCEvents->GetYaxis()->SetBinLabel(kHasRecVtx,   "HasVertex");
+  fHistMCEvents->GetYaxis()->SetBinLabel(kHasGoodVtxZ, "HasGoodVertex");
+  fHistMCEvents->GetYaxis()->SetBinLabel(kNEvtCuts,    "IsSelected");
   fOutput->Add(fHistMCEvents);
 
-  Int_t kNMultBin = 115;
-  Float_t lMultBinLimit[kNMultBin];
-  for (Int_t ibin = 0; ibin < kNMultBin; ++ibin)
-    lMultBinLimit[ibin] = (ibin < 100) ? (0. + (1.) * ibin) : (100. + 100 * (ibin - 100));
+  Int_t nMultBin = 100;
+  Float_t lMultBinLimit[nMultBin+1];
+  SetBins(nMultBin,0,100,lMultBinLimit);
 
-  fHistMultBefEvtSel = new TH1F("fHistMultBefEvtSel", "Event Multiplicity before event selection", kNMultBin - 1, lMultBinLimit);
+  fHistMultBefEvtSel = new TH1F("fHistMultBefEvtSel", "Event Multiplicity before event selection;Centrality (%)",
+      nMultBin, lMultBinLimit);
   fHistMultBefEvtSel->Sumw2();
   fHistMultBefEvtSel->SetMinimum(0);
   fOutput->Add(fHistMultBefEvtSel);
 
-  fHistMultAftEvtSel = new TH1F("fHistMultAftEvtSel", "Event Multiplicity after event selection", kNMultBin - 1, lMultBinLimit);
+  fHistMultAftEvtSel = new TH1F("fHistMultAftEvtSel", "Event Multiplicity after event selection;Centrality (%)",
+      nMultBin, lMultBinLimit);
   fHistMultAftEvtSel->Sumw2();
   fHistMultAftEvtSel->SetMinimum(0);
   fOutput->Add(fHistMultAftEvtSel);
-
-  fHistVtxZ = new TH1F("fHistVtxZ", "Vtx Z distribution", 400, -20, 20);
+  const int nVtxBins = 400;
+  float vtxBins[nVtxBins + 1];
+  SetBins(nVtxBins,-20,20,vtxBins);
+  fHistVtxZ = new TH2F("fHistVtxZ", "Vtx Z distribution;Centrality (%);Z_vtx",
+      nCentBins,centBins,nVtxBins,vtxBins);
   fHistVtxZ->Sumw2();
   fHistVtxZ->SetMinimum(0);
   fOutput->Add(fHistVtxZ);
@@ -356,37 +370,40 @@ void AliAnalysisTaskSEITSsaSpectra::UserCreateOutputObjects()
   const char chgName[kNchg][4] = {"Pos", "Neg"};
 
   char* histName;
+  const int nTrkBins = 20;
+  float trkBins[nTrkBins + 1];
+  SetBins(nTrkBins,.5f,nTrkBins+.5f,trkBins);
   //Histo with track cuts
   for (Int_t iChg = 0; iChg < kNchg; ++iChg) {
     histName = Form("fHistNTracks%s", chgName[iChg]);
-    fHistNTracks[iChg] = new TH2F(histName, "Number of ITSsa tracks; Trk Sel; pt [GeV/c]",
-                                  20, .5, 20.5, kNbins, fPtBinLimits);
+    fHistNTracks[iChg] = new TH3F(histName, "Number of ITSsa tracks;Centrality (%);#it{p}_{T} (GeV/#it{c}); Trk Selection",
+        nCentBins,centBins,nPtBins,ptBins,nTrkBins,trkBins);
     fHistNTracks[iChg]->Sumw2();
 
     TString label("no selection");//1
-    fHistNTracks[iChg]->GetXaxis()->SetBinLabel(kHasNoSelection, label.Data());
+    fHistNTracks[iChg]->GetZaxis()->SetBinLabel(kHasNoSelection, label.Data());
     label = "ITSsa";//2
-    fHistNTracks[iChg]->GetXaxis()->SetBinLabel(kIsITSsa, label.Data());
+    fHistNTracks[iChg]->GetZaxis()->SetBinLabel(kIsITSsa, label.Data());
     label = "ITSrefit";//3
-    fHistNTracks[iChg]->GetXaxis()->SetBinLabel(kIsITSrefit, label.Data());
+    fHistNTracks[iChg]->GetZaxis()->SetBinLabel(kIsITSrefit, label.Data());
     label = "neutral particle";//4
-    fHistNTracks[iChg]->GetXaxis()->SetBinLabel(kIsNotNeutralParticle, label.Data());
+    fHistNTracks[iChg]->GetZaxis()->SetBinLabel(kIsNotNeutralParticle, label.Data());
     label = "SPDcls";//7
-    fHistNTracks[iChg]->GetXaxis()->SetBinLabel(kPassSPD, label.Data());
+    fHistNTracks[iChg]->GetZaxis()->SetBinLabel(kPassSPD, label.Data());
     label = "SDD+SSD cls";//8
-    fHistNTracks[iChg]->GetXaxis()->SetBinLabel(kPassPIDcls, label.Data());
+    fHistNTracks[iChg]->GetZaxis()->SetBinLabel(kPassPIDcls, label.Data());
     label = "chi2/ncls";//9
-    fHistNTracks[iChg]->GetXaxis()->SetBinLabel(kPassChi2Ncls, label.Data());
+    fHistNTracks[iChg]->GetZaxis()->SetBinLabel(kPassChi2Ncls, label.Data());
     label = "eta";//11
-    fHistNTracks[iChg]->GetXaxis()->SetBinLabel(kIsInEta, label.Data());
+    fHistNTracks[iChg]->GetZaxis()->SetBinLabel(kIsInEta, label.Data());
     label = "dE/dx < 0";//12
-    fHistNTracks[iChg]->GetXaxis()->SetBinLabel(kPassdEdx, label.Data());
+    fHistNTracks[iChg]->GetZaxis()->SetBinLabel(kPassdEdx, label.Data());
     label = "Pt cut";
-    fHistNTracks[iChg]->GetXaxis()->SetBinLabel(kPassPtCut, label.Data());
+    fHistNTracks[iChg]->GetZaxis()->SetBinLabel(kPassPtCut, label.Data());
     label = "DCAz";//13
-    fHistNTracks[iChg]->GetXaxis()->SetBinLabel(kPassDCAzcut, label.Data());
+    fHistNTracks[iChg]->GetZaxis()->SetBinLabel(kPassDCAzcut, label.Data());
     label = "DCAxy";//14
-    fHistNTracks[iChg]->GetXaxis()->SetBinLabel(kPassDCAxycut, label.Data());
+    fHistNTracks[iChg]->GetZaxis()->SetBinLabel(kPassDCAxycut, label.Data());
     fOutput->Add(fHistNTracks[iChg]);
   }
 
@@ -419,77 +436,87 @@ void AliAnalysisTaskSEITSsaSpectra::UserCreateOutputObjects()
 
       //Reconstructed
       histName = Form("fHistReco%s%s", spcName[ispc], chgName[ichg]);
-      fHistReco[index] = new TH1F(histName, histName, kNbins, fPtBinLimits);
+      fHistReco[index] = new TH2F(histName,";Centrality (%);#it{p}_{T} (GeV/#it{c});",
+          nCentBins,centBins,nPtBins,ptBins);
       fOutput->Add(fHistReco[index]);
+
+      histName = Form("fHistRecoDCA%s%s", spcName[ispc], chgName[ichg]);
+      fHistRecoDCA[index] = new TH3F(histName,";Centrality (%);#it{p}_{T} (GeV/#it{c}); DCA_{xy} (cm)",
+          nCentBins,centBins,nPtBins,ptBins,nDCABins,dcaBins);
+      fOutput->Add(fHistRecoDCA[index]);
 
       if (fIsMC) {
         //
         //Histograms MC part Gen bef and afte all selection Good Vertex Gen.
         histName = Form("fHistPrimMCGenVtxZall%s%s", spcName[ispc], chgName[ichg]);
-        fHistPrimMCGenVtxZall[index] = new TH2F(histName, histName, kNEvtCuts, .5, (kNEvtCuts + .5), kNbins, fPtBinLimits);
+        fHistPrimMCGenVtxZall[index] = new TH3F(histName,";Centrality (%);#it{p}_{T} (GeV/#it{c});",
+          nCentBins,centBins,nPtBins,ptBins,kNEvtCuts,evBins);
 
         histName = Form("fHistPrimMCGenVtxZcut%s%s", spcName[ispc], chgName[ichg]);
-        fHistPrimMCGenVtxZcut[index] = new TH2F(histName, histName, kNEvtCuts, .5, (kNEvtCuts + .5), kNbins, fPtBinLimits);
+        fHistPrimMCGenVtxZcut[index] = new TH3F(histName,";Centrality (%);#it{p}_{T} (GeV/#it{c});",
+          nCentBins,centBins,nPtBins,ptBins,kNEvtCuts,evBins);
 
         fOutput->Add(fHistPrimMCGenVtxZall[index]);
         fOutput->Add(fHistPrimMCGenVtxZcut[index]);
 
         histName = Form("fHistMCReco%s%s", spcName[ispc], chgName[ichg]);
-        fHistMCReco[index] = new TH2F(histName, histName, kNbins, fPtBinLimits, 4, -1.5, 2.5);
+        fHistMCReco[index] = new TH3F(histName,";Centrality (%);#it{p}_{T} (GeV/#it{c});",
+          nCentBins,centBins,nPtBins,ptBins,kNEvtCuts,evBins);
         fOutput->Add(fHistMCReco[index]);
 
         histName = Form("fHistMCPrimReco%s%s", spcName[ispc], chgName[ichg]);
-        fHistMCPrimReco[index] = new TH2F(histName, histName, kNbins, fPtBinLimits, 4, -1.5, 2.5);
+        fHistMCPrimReco[index] = new TH3F(histName,";Centrality (%);#it{p}_{T} (GeV/#it{c});",
+          nCentBins,centBins,nPtBins,ptBins,kNEvtCuts,evBins);
         fOutput->Add(fHistMCPrimReco[index]);
 
-        //
         //Histograms MC part Rec.
         histName = Form("fHistPrimMCReco%s%s", spcName[ispc], chgName[ichg]);
-        fHistPrimMCReco[index] = new TH1F(histName, histName, kNbins, fPtBinLimits);
-
+        fHistPrimMCReco[index] = new TH2F(histName,";Centrality (%);#it{p}_{T} (GeV/#it{c})",
+          nCentBins,centBins,nPtBins,ptBins);
         histName = Form("fHistSstrMCReco%s%s", spcName[ispc], chgName[ichg]);
-        fHistSstrMCReco[index] = new TH1F(histName, histName, kNbins, fPtBinLimits);
-
+        fHistSstrMCReco[index] = new TH2F(histName,";Centrality (%);#it{p}_{T} (GeV/#it{c})",
+          nCentBins,centBins,nPtBins,ptBins);
         histName = Form("fHistSmatMCReco%s%s", spcName[ispc], chgName[ichg]);
-        fHistSmatMCReco[index] = new TH1F(histName, histName, kNbins, fPtBinLimits);
+        fHistSmatMCReco[index] = new TH2F(histName,";Centrality (%);#it{p}_{T} (GeV/#it{c})",
+          nCentBins,centBins,nPtBins,ptBins);
 
         fOutput->Add(fHistPrimMCReco[index]);
         fOutput->Add(fHistSstrMCReco[index]);
         fOutput->Add(fHistSmatMCReco[index]);
+
+        //Histograms MC DCAxy
+        histName = Form("fHistPrimDCA%s%s", spcName[ispc], chgName[ichg]);
+        fHistPrimDCA[index] = new TH3F(histName,";Centrality (%);#it{p}_{T} (GeV/#it{c}); DCA_{xy} (cm)",
+          nCentBins,centBins,nPtBins,ptBins,nDCABins,dcaBins);
+
+        histName = Form("fHistSstrDCA%s%s", spcName[ispc], chgName[ichg]);
+        fHistSstrDCA[index] = new TH3F(histName,";Centrality (%);#it{p}_{T} (GeV/#it{c}); DCA_{xy} (cm)",
+          nCentBins,centBins,nPtBins,ptBins,nDCABins,dcaBins);
+
+        histName = Form("fHistSmatDCA%s%s", spcName[ispc], chgName[ichg]);
+        fHistSmatDCA[index] = new TH3F(histName,";Centrality (%);#it{p}_{T} (GeV/#it{c}); DCA_{xy} (cm)",
+          nCentBins,centBins,nPtBins,ptBins,nDCABins,dcaBins);
+
+        histName = Form("fHistMCtruthPrimDCA%s%s", spcName[ispc], chgName[ichg]);
+        fHistMCtruthPrimDCA[index] = new TH3F(histName,";Centrality (%);#it{p}_{T} (GeV/#it{c}); DCA_{xy} (cm)",
+          nCentBins,centBins,nPtBins,ptBins,nDCABins,dcaBins);
+
+        histName = Form("fHistMCtruthSstrDCA%s%s", spcName[ispc], chgName[ichg]);
+        fHistMCtruthSstrDCA[index] = new TH3F(histName,";Centrality (%);#it{p}_{T} (GeV/#it{c}); DCA_{xy} (cm)",
+          nCentBins,centBins,nPtBins,ptBins,nDCABins,dcaBins);
+
+        histName = Form("fHistMCtruthSmatDCA%s%s", spcName[ispc], chgName[ichg]);
+        fHistMCtruthSmatDCA[index] = new TH3F(histName,";Centrality (%);#it{p}_{T} (GeV/#it{c}); DCA_{xy} (cm)",
+          nCentBins,centBins,nPtBins,ptBins,nDCABins,dcaBins);
+
+        fOutput->Add(fHistPrimDCA[index]);
+        fOutput->Add(fHistSstrDCA[index]);
+        fOutput->Add(fHistSmatDCA[index]);
+        fOutput->Add(fHistMCtruthPrimDCA[index]);
+        fOutput->Add(fHistMCtruthSstrDCA[index]);
+        fOutput->Add(fHistMCtruthSmatDCA[index]);
+
       }//end IsMC
-
-      for (Int_t iptbin = 0; iptbin < kNbins; iptbin++) {
-        histName = Form("fHistRecoDCA%s%s_%d", spcName[ispc], chgName[ichg], iptbin);
-        fHistRecoDCA[index][iptbin] = new TH1F(histName, histName, 2000, -2, 2);
-        fOutput->Add(fHistRecoDCA[index][iptbin]);
-
-        if (fIsMC) {
-          histName = Form("fHistPrimDCA%s%s_%d", spcName[ispc], chgName[ichg], iptbin);
-          fHistPrimDCA[index][iptbin] = new TH1F(histName, histName, 2000, -2, 2);
-
-          histName = Form("fHistSstrDCA%s%s_%d", spcName[ispc], chgName[ichg], iptbin);
-          fHistSstrDCA[index][iptbin] = new TH1F(histName, histName, 2000, -2, 2);
-
-          histName = Form("fHistSmatDCA%s%s_%d", spcName[ispc], chgName[ichg], iptbin);
-          fHistSmatDCA[index][iptbin] = new TH1F(histName, histName, 2000, -2, 2);
-
-          histName = Form("fHistMCtruthPrimDCA%s%s_%d", spcName[ispc], chgName[ichg], iptbin);
-          fHistMCtruthPrimDCA[index][iptbin] = new TH1F(histName, histName, 2000, -2, 2);
-
-          histName = Form("fHistMCtruthSstrDCA%s%s_%d", spcName[ispc], chgName[ichg], iptbin);
-          fHistMCtruthSstrDCA[index][iptbin] = new TH1F(histName, histName, 2000, -2, 2);
-
-          histName = Form("fHistMCtruthSmatDCA%s%s_%d", spcName[ispc], chgName[ichg], iptbin);
-          fHistMCtruthSmatDCA[index][iptbin] = new TH1F(histName, histName, 2000, -2, 2);
-
-          fOutput->Add(fHistPrimDCA[index][iptbin]);
-          fOutput->Add(fHistSstrDCA[index][iptbin]);
-          fOutput->Add(fHistSmatDCA[index][iptbin]);
-          fOutput->Add(fHistMCtruthPrimDCA[index][iptbin]);
-          fOutput->Add(fHistMCtruthSstrDCA[index][iptbin]);
-          fOutput->Add(fHistMCtruthSmatDCA[index][iptbin]);
-        }//end isMC
-      }
     }
   }
 
@@ -499,93 +526,110 @@ void AliAnalysisTaskSEITSsaSpectra::UserCreateOutputObjects()
   }
 
   if (fFillIntDistHist) {
-    for (Int_t i = 0; i < kNbins; i++) {
-      //dEdx distributions
-      fHistPosHypPi[i] = new TH1F(Form("fHistPosHypPi%d", i), Form("fHistPosHypPi%d", i), 2000, -1, 1); //DCA distr. with NSigma PID
-      fHistPosHypKa[i] = new TH1F(Form("fHistPosHypKa%d", i), Form("fHistPosHypKa%d", i), 2000, -1, 1);
-      fHistPosHypPr[i] = new TH1F(Form("fHistPosHypPr%d", i), Form("fHistPosHypPr%d", i), 2000, -1, 1);
-      fHistNegHypPi[i] = new TH1F(Form("fHistNegHypPi%d", i), Form("fHistNegHypPi%d", i), 2000, -1, 1);
-      fHistNegHypKa[i] = new TH1F(Form("fHistNegHypKa%d", i), Form("fHistNegHypKa%d", i), 2000, -1, 1);
-      fHistNegHypPr[i] = new TH1F(Form("fHistNegHypPr%d", i), Form("fHistNegHypPr%d", i), 2000, -1, 1);
+ 
+    //dEdx distributions
 
-      fOutput->Add(fHistPosHypPi[i]); //DCA distr
-      fOutput->Add(fHistPosHypKa[i]);
-      fOutput->Add(fHistPosHypPr[i]);
-      fOutput->Add(fHistNegHypPi[i]);
-      fOutput->Add(fHistNegHypKa[i]);
-      fOutput->Add(fHistNegHypPr[i]);
+    fHistPosHypPi = new TH2F("fHistPosHypPi", "fHistPosHypPi", nPtBins,ptBins,nDCABins,dcaBins); //DCA distr. with NSigma PID
+    fHistPosHypKa = new TH2F("fHistPosHypKa", "fHistPosHypKa", nPtBins,ptBins,nDCABins,dcaBins);
+    fHistPosHypPr = new TH2F("fHistPosHypPr", "fHistPosHypPr", nPtBins,ptBins,nDCABins,dcaBins);
+    fHistNegHypPi = new TH2F("fHistNegHypPi", "fHistNegHypPi", nPtBins,ptBins,nDCABins,dcaBins);
+    fHistNegHypKa = new TH2F("fHistNegHypKa", "fHistNegHypKa", nPtBins,ptBins,nDCABins,dcaBins);
+    fHistNegHypPr = new TH2F("fHistNegHypPr", "fHistNegHypPr", nPtBins,ptBins,nDCABins,dcaBins);
 
-      if (fIsMC) {
-        fHistMCPosOtherHypPion[i] = new TH1F(Form("fHistMCPosOtherHypPion%d", i), Form("fHistMCPosOtherHypPion%d", i), 175, -3.5, 3.5); //MC truth
-        fHistMCPosOtherHypKaon[i] = new TH1F(Form("fHistMCPosOtherHypKaon%d", i), Form("fHistMCPosOtherHypKaon%d", i), 175, -3.5, 3.5);
-        fHistMCPosOtherHypProt[i] = new TH1F(Form("fHistMCPosOtherHypProt%d", i), Form("fHistMCPosOtherHypProt%d", i), 175, -3.5, 3.5);
-        fHistMCPosElHypPion[i]    = new TH1F(Form("fHistMCPosElHypPion%d", i), Form("fHistMCPosElHypPion%d", i), 175, -3.5, 3.5);
-        fHistMCPosElHypKaon[i]    = new TH1F(Form("fHistMCPosElHypKaon%d", i), Form("fHistMCPosElHypKaon%d", i), 175, -3.5, 3.5);
-        fHistMCPosElHypProt[i]    = new TH1F(Form("fHistMCPosElHypProt%d", i), Form("fHistMCPosElHypProt%d", i), 175, -3.5, 3.5);
-        fHistMCPosPiHypPion[i]    = new TH1F(Form("fHistMCPosPiHypPion%d", i), Form("fHistMCPosPiHypPion%d", i), 175, -3.5, 3.5);
-        fHistMCPosPiHypKaon[i]    = new TH1F(Form("fHistMCPosPiHypKaon%d", i), Form("fHistMCPosPiHypKaon%d", i), 175, -3.5, 3.5);
-        fHistMCPosPiHypProt[i]    = new TH1F(Form("fHistMCPosPiHypProton%d", i), Form("fHistMCPosPiHypProton%d", i), 175, -3.5, 3.5);
-        fHistMCPosKaHypPion[i]    = new TH1F(Form("fHistMCPosKaHypPion%d", i), Form("fHistMCPosKaHypPion%d", i), 175, -3.5, 3.5);
-        fHistMCPosKaHypKaon[i]    = new TH1F(Form("fHistMCPosKaHypKaon%d", i), Form("fHistMCPosKaHypKaon%d", i), 175, -3.5, 3.5);
-        fHistMCPosKaHypProt[i]    = new TH1F(Form("fHistMCPosKaHypProt%d", i), Form("fHistMCPosKaHypProt%d", i), 175, -3.5, 3.5);
-        fHistMCPosPrHypPion[i]    = new TH1F(Form("fHistMCPosPrHypPion%d", i), Form("fHistMCPosPrHypPion%d", i), 175, -3.5, 3.5);
-        fHistMCPosPrHypKaon[i]    = new TH1F(Form("fHistMCPosPrHypKaon%d", i), Form("fHistMCPosPrHypKaon%d", i), 175, -3.5, 3.5);
-        fHistMCPosPrHypProt[i]    = new TH1F(Form("fHistMCPosPrHypProt%d", i), Form("fHistMCPosPrHypProt%d", i), 175, -3.5, 3.5);
+    fOutput->Add(fHistPosHypPi); //DCA distr
+    fOutput->Add(fHistPosHypKa);
+    fOutput->Add(fHistPosHypPr);
+    fOutput->Add(fHistNegHypPi);
+    fOutput->Add(fHistNegHypKa);
+    fOutput->Add(fHistNegHypPr);
 
-        fHistMCNegOtherHypPion[i] = new TH1F(Form("fHistMCNegOtherHypPion%d", i), Form("fHistMCNegOtherHypPion%d", i), 175, -3.5, 3.5); //MC truth
-        fHistMCNegOtherHypKaon[i] = new TH1F(Form("fHistMCNegOtherHypKaon%d", i), Form("fHistMCNegOtherHypKaon%d", i), 175, -3.5, 3.5);
-        fHistMCNegOtherHypProt[i] = new TH1F(Form("fHistMCNegOtherHypProt%d", i), Form("fHistMCNegOtherHypProt%d", i), 175, -3.5, 3.5);
-        fHistMCNegElHypPion[i]    = new TH1F(Form("fHistMCNegElHypPion%d", i), Form("fHistMCNegElHypPion%d", i), 175, -3.5, 3.5);
-        fHistMCNegElHypKaon[i]    = new TH1F(Form("fHistMCNegElHypKaon%d", i), Form("fHistMCNegElHypKaon%d", i), 175, -3.5, 3.5);
-        fHistMCNegElHypProt[i]    = new TH1F(Form("fHistMCNegElHypProt%d", i), Form("fHistMCNegElHypProt%d", i), 175, -3.5, 3.5);
-        fHistMCNegPiHypPion[i]    = new TH1F(Form("fHistMCNegPiHypPion%d", i), Form("fHistMCNegPiHypPion%d", i), 175, -3.5, 3.5);
-        fHistMCNegPiHypKaon[i]    = new TH1F(Form("fHistMCNegPiHypKaon%d", i), Form("fHistMCNegPiHypKaon%d", i), 175, -3.5, 3.5);
-        fHistMCNegPiHypProt[i]    = new TH1F(Form("fHistMCNegPiHypProt%d", i), Form("fHistMCNegPiHypProt%d", i), 175, -3.5, 3.5);
-        fHistMCNegKaHypPion[i]    = new TH1F(Form("fHistMCNegKaHypPion%d", i), Form("fHistMCNegKaHypPion%d", i), 175, -3.5, 3.5);
-        fHistMCNegKaHypKaon[i]    = new TH1F(Form("fHistMCNegKaHypKaon%d", i), Form("fHistMCNegKaHypKaon%d", i), 175, -3.5, 3.5);
-        fHistMCNegKaHypProt[i]    = new TH1F(Form("fHistMCNegKaHypProt%d", i), Form("fHistMCNegKaHypProt%d", i), 175, -3.5, 3.5);
-        fHistMCNegPrHypPion[i]    = new TH1F(Form("fHistMCNegPrHypPion%d", i), Form("fHistMCNegPrHypPion%d", i), 175, -3.5, 3.5);
-        fHistMCNegPrHypKaon[i]    = new TH1F(Form("fHistMCNegPrHypKaon%d", i), Form("fHistMCNegPrHypKaon%d", i), 175, -3.5, 3.5);
-        fHistMCNegPrHypProt[i]    = new TH1F(Form("fHistMCNegPrHypProt%d", i), Form("fHistMCNegPrHypProt%d", i), 175, -3.5, 3.5);
+    if (fIsMC) {
+      const int nBins = 175;
+      float dEdxBins[nBins + 1];
+      SetBins(nBins,-3.5f,3.5f,dEdxBins);
+      fHistMCPosOtherHypPion = new TH2F("fHistMCPosOtherHypPion", "fHistMCPosOtherHypPion",nPtBins,ptBins,nBins,dEdxBins); //MC truth
+      fHistMCPosOtherHypKaon = new TH2F("fHistMCPosOtherHypKaon", "fHistMCPosOtherHypKaon",nPtBins,ptBins,nBins,dEdxBins);
+      fHistMCPosOtherHypProt = new TH2F("fHistMCPosOtherHypProt", "fHistMCPosOtherHypProt",nPtBins,ptBins,nBins,dEdxBins);
+      fHistMCPosElHypPion    = new TH2F("fHistMCPosElHypPion", "fHistMCPosElHypPion",nPtBins,ptBins,nBins,dEdxBins);
+      fHistMCPosElHypKaon    = new TH2F("fHistMCPosElHypKaon", "fHistMCPosElHypKaon",nPtBins,ptBins,nBins,dEdxBins);
+      fHistMCPosElHypProt    = new TH2F("fHistMCPosElHypProt", "fHistMCPosElHypProt",nPtBins,ptBins,nBins,dEdxBins);
+      fHistMCPosPiHypPion    = new TH2F("fHistMCPosPiHypPion", "fHistMCPosPiHypPion",nPtBins,ptBins,nBins,dEdxBins);
+      fHistMCPosPiHypKaon    = new TH2F("fHistMCPosPiHypKaon", "fHistMCPosPiHypKaon",nPtBins,ptBins,nBins,dEdxBins);
+      fHistMCPosPiHypProt    = new TH2F("fHistMCPosPiHypProton", "fHistMCPosPiHypProton",nPtBins,ptBins,nBins,dEdxBins);
+      fHistMCPosKaHypPion    = new TH2F("fHistMCPosKaHypPion", "fHistMCPosKaHypPion",nPtBins,ptBins,nBins,dEdxBins);
+      fHistMCPosKaHypKaon    = new TH2F("fHistMCPosKaHypKaon", "fHistMCPosKaHypKaon",nPtBins,ptBins,nBins,dEdxBins);
+      fHistMCPosKaHypProt    = new TH2F("fHistMCPosKaHypProt", "fHistMCPosKaHypProt",nPtBins,ptBins,nBins,dEdxBins);
+      fHistMCPosPrHypPion    = new TH2F("fHistMCPosPrHypPion", "fHistMCPosPrHypPion",nPtBins,ptBins,nBins,dEdxBins);
+      fHistMCPosPrHypKaon    = new TH2F("fHistMCPosPrHypKaon", "fHistMCPosPrHypKaon",nPtBins,ptBins,nBins,dEdxBins);
+      fHistMCPosPrHypProt    = new TH2F("fHistMCPosPrHypProt", "fHistMCPosPrHypProt",nPtBins,ptBins,nBins,dEdxBins);
 
-        fOutput->Add(fHistMCPosOtherHypPion[i]);//MC truth
-        fOutput->Add(fHistMCPosOtherHypKaon[i]);
-        fOutput->Add(fHistMCPosOtherHypProt[i]);
-        fOutput->Add(fHistMCPosElHypPion[i]);
-        fOutput->Add(fHistMCPosElHypKaon[i]);
-        fOutput->Add(fHistMCPosElHypProt[i]);
-        fOutput->Add(fHistMCPosPiHypPion[i]);
-        fOutput->Add(fHistMCPosPiHypKaon[i]);
-        fOutput->Add(fHistMCPosPiHypProt[i]);
-        fOutput->Add(fHistMCPosKaHypPion[i]);
-        fOutput->Add(fHistMCPosKaHypKaon[i]);
-        fOutput->Add(fHistMCPosKaHypProt[i]);
-        fOutput->Add(fHistMCPosPrHypPion[i]);
-        fOutput->Add(fHistMCPosPrHypKaon[i]);
-        fOutput->Add(fHistMCPosPrHypProt[i]);
+      fHistMCNegOtherHypPion = new TH2F("fHistMCNegOtherHypPion","fHistMCNegOtherHypPion",nPtBins,ptBins,nBins,dEdxBins); //MC truth
+      fHistMCNegOtherHypKaon = new TH2F("fHistMCNegOtherHypKaon","fHistMCNegOtherHypKaon",nPtBins,ptBins,nBins,dEdxBins);
+      fHistMCNegOtherHypProt = new TH2F("fHistMCNegOtherHypProt","fHistMCNegOtherHypProt",nPtBins,ptBins,nBins,dEdxBins);
+      fHistMCNegElHypPion    = new TH2F("fHistMCNegElHypPion", "fHistMCNegElHypPion",nPtBins,ptBins,nBins,dEdxBins);
+      fHistMCNegElHypKaon    = new TH2F("fHistMCNegElHypKaon", "fHistMCNegElHypKaon",nPtBins,ptBins,nBins,dEdxBins);
+      fHistMCNegElHypProt    = new TH2F("fHistMCNegElHypProt", "fHistMCNegElHypProt",nPtBins,ptBins,nBins,dEdxBins);
+      fHistMCNegPiHypPion    = new TH2F("fHistMCNegPiHypPion", "fHistMCNegPiHypPion",nPtBins,ptBins,nBins,dEdxBins);
+      fHistMCNegPiHypKaon    = new TH2F("fHistMCNegPiHypKaon", "fHistMCNegPiHypKaon",nPtBins,ptBins,nBins,dEdxBins);
+      fHistMCNegPiHypProt    = new TH2F("fHistMCNegPiHypProt", "fHistMCNegPiHypProt",nPtBins,ptBins,nBins,dEdxBins);
+      fHistMCNegKaHypPion    = new TH2F("fHistMCNegKaHypPion", "fHistMCNegKaHypPion",nPtBins,ptBins,nBins,dEdxBins);
+      fHistMCNegKaHypKaon    = new TH2F("fHistMCNegKaHypKaon", "fHistMCNegKaHypKaon",nPtBins,ptBins,nBins,dEdxBins);
+      fHistMCNegKaHypProt    = new TH2F("fHistMCNegKaHypProt", "fHistMCNegKaHypProt",nPtBins,ptBins,nBins,dEdxBins);
+      fHistMCNegPrHypPion    = new TH2F("fHistMCNegPrHypPion", "fHistMCNegPrHypPion",nPtBins,ptBins,nBins,dEdxBins);
+      fHistMCNegPrHypKaon    = new TH2F("fHistMCNegPrHypKaon", "fHistMCNegPrHypKaon",nPtBins,ptBins,nBins,dEdxBins);
+      fHistMCNegPrHypProt    = new TH2F("fHistMCNegPrHypProt", "fHistMCNegPrHypProt",nPtBins,ptBins,nBins,dEdxBins);
 
-        fOutput->Add(fHistMCNegOtherHypPion[i]);//MC truth
-        fOutput->Add(fHistMCNegOtherHypKaon[i]);
-        fOutput->Add(fHistMCNegOtherHypProt[i]);
-        fOutput->Add(fHistMCNegElHypPion[i]);
-        fOutput->Add(fHistMCNegElHypKaon[i]);
-        fOutput->Add(fHistMCNegElHypProt[i]);
-        fOutput->Add(fHistMCNegPiHypPion[i]);
-        fOutput->Add(fHistMCNegPiHypKaon[i]);
-        fOutput->Add(fHistMCNegPiHypProt[i]);
-        fOutput->Add(fHistMCNegKaHypPion[i]);
-        fOutput->Add(fHistMCNegKaHypKaon[i]);
-        fOutput->Add(fHistMCNegKaHypProt[i]);
-        fOutput->Add(fHistMCNegPrHypPion[i]);
-        fOutput->Add(fHistMCNegPrHypKaon[i]);
-        fOutput->Add(fHistMCNegPrHypProt[i]);
-      }//end IsMC
-    }//end FillIntDistHist
-  }
+      fOutput->Add(fHistMCPosOtherHypPion);//MC truth
+      fOutput->Add(fHistMCPosOtherHypKaon);
+      fOutput->Add(fHistMCPosOtherHypProt);
+      fOutput->Add(fHistMCPosElHypPion);
+      fOutput->Add(fHistMCPosElHypKaon);
+      fOutput->Add(fHistMCPosElHypProt);
+      fOutput->Add(fHistMCPosPiHypPion);
+      fOutput->Add(fHistMCPosPiHypKaon);
+      fOutput->Add(fHistMCPosPiHypProt);
+      fOutput->Add(fHistMCPosKaHypPion);
+      fOutput->Add(fHistMCPosKaHypKaon);
+      fOutput->Add(fHistMCPosKaHypProt);
+      fOutput->Add(fHistMCPosPrHypPion);
+      fOutput->Add(fHistMCPosPrHypKaon);
+      fOutput->Add(fHistMCPosPrHypProt);
+
+      fOutput->Add(fHistMCNegOtherHypPion);//MC truth
+      fOutput->Add(fHistMCNegOtherHypKaon);
+      fOutput->Add(fHistMCNegOtherHypProt);
+      fOutput->Add(fHistMCNegElHypPion);
+      fOutput->Add(fHistMCNegElHypKaon);
+      fOutput->Add(fHistMCNegElHypProt);
+      fOutput->Add(fHistMCNegPiHypPion);
+      fOutput->Add(fHistMCNegPiHypKaon);
+      fOutput->Add(fHistMCNegPiHypProt);
+      fOutput->Add(fHistMCNegKaHypPion);
+      fOutput->Add(fHistMCNegKaHypKaon);
+      fOutput->Add(fHistMCNegKaHypProt);
+      fOutput->Add(fHistMCNegPrHypPion);
+      fOutput->Add(fHistMCNegPrHypKaon);
+      fOutput->Add(fHistMCNegPrHypProt);
+    }//end IsMC
+  }//end FillIntDistHist
+
+  PostData(1, fOutput);
+
+  CreateDCAcutFunctions(); //Creating kParamContainer data
+  PostData(2, fListCuts);
 
   // Post output data container
-  PostData(1, fOutput);
+  if (fFillNtuple) {
+    fListTree = new TList();
+    fListTree->SetOwner();
+
+    fNtupleData = new TNtuple("fNtupleData", "fNtupleData", "mult:p:pt:s0:s1:s2:s3:dEdx:sign:eta:dcaXY:dcaZ:clumap");
+    fListTree->Add(fNtupleData);
+    fNtupleMC   = new TNtuple("fNtupleMC", "fNtupleMC", "mult:mcPt:pdgcode:sign:mcEta:mcRap:isph:run");
+    fListTree->Add(fNtupleMC);
+  }
   if (fFillNtuple) PostData(3, fListTree);
+
   AliInfo("End of CreateOutputObjects");
 }
 
@@ -651,6 +695,8 @@ void AliAnalysisTaskSEITSsaSpectra::CreateDCAcutFunctions()
 void AliAnalysisTaskSEITSsaSpectra::Init()
 {
   // Initialization
+  if (!fUseDefaultPriors) DefineInput(1, TList::Class());
+
   AliInfo("Tracks selections");
   AliInfoF(" y = yLab + %.3f,  Ymin %.1f, Ymax %.1f, Eabs %.1f, DCAxyCut %.1f, DCAzCut %.1f, Chi2 %.1f,   nSPD %d,   nPID %d",
            fCMSRapFct, fMinRapCut, fMaxRapCut, fAbsEtaCut, fNSigmaDCAxy, fNSigmaDCAz, fMaxChi2Clu, fMinSPDPts, fMinNdEdxSamples);
@@ -658,9 +704,6 @@ void AliAnalysisTaskSEITSsaSpectra::Init()
   if (fMultMethod)
     AliInfoF("Cent. %.f %.f %s", fLowMult, fUpMult, fMultEstimator.Data());
 
-  CreateDCAcutFunctions(); //Creating kParamContainer data
-  // Post parameter data container
-  PostData(2, fListCuts);
   return;
 }
 
@@ -700,13 +743,6 @@ void AliAnalysisTaskSEITSsaSpectra::UserExec(Option_t*)
       return;
     }
 
-    //lMCstack = lMCevent->Stack();
-    //if (!lMCstack) {
-    //  AliDebug(3, "MC stack not available");
-    //  PostAllData();
-    //  return;
-    //}
-
     const AliVVertex* lGenVtx = lMCevent->GetPrimaryVertex();
     if (!lGenVtx) {
       AliDebug(3, "MC Vtx not available");
@@ -725,8 +761,8 @@ void AliAnalysisTaskSEITSsaSpectra::UserExec(Option_t*)
   Bool_t lIsEventSelected = IsEventAccepted(lastEvtCutPassed);
   if (fIsMC) AnalyseMCParticles(lMCevent, lastEvtCutPassed, lHasGoodVtxGen);
   for (int istep = (int)kIsReadable; istep < (int)lastEvtCutPassed; ++istep) {
-    fHistNEvents->Fill(istep);
-    if (lHasGoodVtxGen) fHistMCEvents->Fill(istep);
+    fHistNEvents->Fill(fEvtMult,istep);
+    if (lHasGoodVtxGen) fHistMCEvents->Fill(fEvtMult,istep);
   }
 
   if (!lIsEventSelected)  {
@@ -734,16 +770,14 @@ void AliAnalysisTaskSEITSsaSpectra::UserExec(Option_t*)
     PostAllData();
     return;
   }
-	fHistNEvents->Fill(kNEvtCuts);
-  if (lHasGoodVtxGen) fHistMCEvents->Fill(kNEvtCuts);
+	fHistNEvents->Fill(fEvtMult,kNEvtCuts);
+  if (lHasGoodVtxGen) fHistMCEvents->Fill(fEvtMult,kNEvtCuts);
 
   if (fMultMethod) //Fill fHistMultAftEvtSel after the event Selection
     fHistMultAftEvtSel->Fill(fEvtMult);
 
   if (!fITSPIDResponse)
     fITSPIDResponse = new AliITSPIDResponse(fIsMC);
-
-  TAxis* lAxis = new TAxis(kNbins, fPtBinLimits); //utils
 
   //loop on tracks
   for (Int_t iTrk = 0; iTrk < fESD->GetNumberOfTracks(); ++iTrk) {
@@ -780,59 +814,57 @@ void AliAnalysisTaskSEITSsaSpectra::UserExec(Option_t*)
     ETrkCut_Type trkSel = kHasNoSelection;
 
     //"no selection"
-    fHistNTracks[iChg]->Fill(trkSel, trkPt);
+    fHistNTracks[iChg]->Fill(fEvtMult,trkPt,trkSel);
 
     //"ITSsa"
     if (!(status & AliESDtrack::kITSpureSA)) continue;
     trkSel = kIsITSsa;
-    fHistNTracks[iChg]->Fill(trkSel, trkPt);
+    fHistNTracks[iChg]->Fill(fEvtMult,trkPt,trkSel);
 
     //"ITSrefit"
     if (!(status & AliESDtrack::kITSrefit)) continue;
     trkSel = kIsITSrefit;
-    fHistNTracks[iChg]->Fill(trkSel, trkPt);
+    fHistNTracks[iChg]->Fill(fEvtMult,trkPt,trkSel);
 
     //"neutral particle"
     if (TMath::Abs(track->GetSign()) < 0.0001) continue;
     trkSel = kIsNotNeutralParticle;
-    fHistNTracks[iChg]->Fill(trkSel, trkPt);
+    fHistNTracks[iChg]->Fill(fEvtMult,trkPt,trkSel);
 
     //"SPDcls"
     if (nSPD < fMinSPDPts) continue;//At least one point in the SPD
     trkSel = kPassSPD;
-    fHistNTracks[iChg]->Fill(trkSel, trkPt);
+    fHistNTracks[iChg]->Fill(fEvtMult,trkPt,trkSel);
 
     //"SDD+SSD cls" at least 3 points on SSD/SDD
     if (nPtsForPid < fMinNdEdxSamples) continue;
     trkSel = kPassPIDcls;
-    fHistNTracks[iChg]->Fill(trkSel, trkPt);
+    fHistNTracks[iChg]->Fill(fEvtMult,trkPt,trkSel);
 
     //"chi2/ncls"->chisquare/nclusters
     Int_t nclu = nSPD + nPtsForPid;
     if (track->GetITSchi2() / nclu > fMaxChi2Clu) continue;
     trkSel = kPassChi2Ncls;
-    fHistNTracks[iChg]->Fill(trkSel, trkPt);
+    fHistNTracks[iChg]->Fill(fEvtMult,trkPt,trkSel);
 
     //"eta"->pseudorapidity
     if (TMath::Abs(track->Eta()) > fAbsEtaCut) continue;
     trkSel = kIsInEta;
-    fHistNTracks[iChg]->Fill(trkSel, trkPt);
+    fHistNTracks[iChg]->Fill(fEvtMult,trkPt,trkSel);
 
     //"dE/dx < 0"->truncated mean
     if (dEdx < 0) continue;
     trkSel = kPassdEdx;
-    fHistNTracks[iChg]->Fill(trkSel, trkPt);
+    fHistNTracks[iChg]->Fill(fEvtMult,trkPt,trkSel);
 
     //fill propaganda plot with dedx before pt cut
     fHistDEDX->Fill(track->GetP(), dEdx);
     fHistDEDXdouble->Fill(track->GetP()*track->GetSign(), dEdx);
 
     //"ptCut"
-    Int_t trkPtBin = lAxis->FindFixBin(trkPt);
-    if (!trkPtBin || trkPtBin > lAxis->GetNbins()) continue;
-    trkPtBin--;
+    if ((trkPt < fPtBins[0]) || (trkPt >= fPtBins[fPtBins.GetSize()-1])) continue;
     trkSel = kPassPtCut;
-    fHistNTracks[iChg]->Fill(trkSel, trkPt);
+    fHistNTracks[iChg]->Fill(fEvtMult,trkPt,trkSel);
 
     /////////////////////////////////////////////////////////////////////////////
     // Because we fit the DCA distributions, we need them after the DCAz cut,  //
@@ -844,23 +876,24 @@ void AliAnalysisTaskSEITSsaSpectra::UserExec(Option_t*)
     //"DCAz"
     if (!DCAcutZ(impactZ, trkPt)) continue;
     trkSel = kPassDCAzcut;
-    fHistNTracks[iChg]->Fill(trkSel, trkPt);
+    fHistNTracks[iChg]->Fill(fEvtMult,trkPt,trkSel);
 
     if (fFillNtuple) {
       Float_t xnt[12];
       Int_t index = 0;
-      /*1 */ xnt[index++] = (float)track->GetP();
-      /*2 */ xnt[index++] = (float)track->Pt();
-      /*3 */ xnt[index++] = (float)dEdxLay[0];
-      /*4 */ xnt[index++] = (float)dEdxLay[1];
-      /*5 */ xnt[index++] = (float)dEdxLay[2];
-      /*6 */ xnt[index++] = (float)dEdxLay[3];
-      /*7 */ xnt[index++] = (float)dEdx;
-      /*8*/ xnt[index++]  = (float)track->GetSign();
-      /*9*/ xnt[index++]  = (float)track->Eta();
-      /*10*/ xnt[index++] = (float)impactXY;
-      /*11*/ xnt[index++] = (float)impactZ;
-      /*12*/ xnt[index++] = (float)clumap;
+      /*1 */ xnt[index++] = (float)fEvtMult;
+      /*2 */ xnt[index++] = (float)track->GetP();
+      /*3 */ xnt[index++] = (float)track->Pt();
+      /*4 */ xnt[index++] = (float)dEdxLay[0];
+      /*5 */ xnt[index++] = (float)dEdxLay[1];
+      /*6 */ xnt[index++] = (float)dEdxLay[2];
+      /*7 */ xnt[index++] = (float)dEdxLay[3];
+      /*8 */ xnt[index++] = (float)dEdx;
+      /*9*/ xnt[index++]  = (float)track->GetSign();
+      /*10*/ xnt[index++]  = (float)track->Eta();
+      /*11*/ xnt[index++] = (float)impactXY;
+      /*12*/ xnt[index++] = (float)impactZ;
+      /*13*/ xnt[index++] = (float)clumap;
 
       fNtupleData->Fill(xnt);
     } else {
@@ -899,41 +932,42 @@ void AliAnalysisTaskSEITSsaSpectra::UserExec(Option_t*)
 
       if (lIsGoodTrack) {
         //DCA distributions, before the DCA cuts, based on PID approach
-        fHistRecoDCA[lPidIndex][trkPtBin]->Fill(impactXY);
+        fHistRecoDCA[lPidIndex]->Fill(fEvtMult,trkPt,impactXY);
+
         //DCA distributions, before the DCAxy cuts from the MC kinematics
         //Filling DCA distribution with MC truth Physics values
         if (fIsMC) {
-          if (lMCevent->IsPhysicalPrimary(lMCtrk))        fHistPrimDCA[lPidIndex][trkPtBin]->Fill(impactXY);
-          if (lMCevent->IsSecondaryFromWeakDecay(lMCtrk)) fHistSstrDCA[lPidIndex][trkPtBin]->Fill(impactXY);
-          if (lMCevent->IsSecondaryFromMaterial(lMCtrk))  fHistSmatDCA[lPidIndex][trkPtBin]->Fill(impactXY);
+          if (lMCevent->IsPhysicalPrimary(lMCtrk))        fHistPrimDCA[lPidIndex]->Fill(fEvtMult,trkPt,impactXY);
+          if (lMCevent->IsSecondaryFromWeakDecay(lMCtrk)) fHistSstrDCA[lPidIndex]->Fill(fEvtMult,trkPt,impactXY);
+          if (lMCevent->IsSecondaryFromMaterial(lMCtrk))  fHistSmatDCA[lPidIndex]->Fill(fEvtMult,trkPt,impactXY);
         }
       }// end lIsGoodTrack
       if (fIsMC && lIsGoodPart) {
         //DCA distributions, before the DCAxy cuts from the MC kinematics
         //Filling DCA distribution with MC truth Physics values
-        if (lMCevent->IsPhysicalPrimary(lMCtrk))        fHistMCtruthPrimDCA[lMCtIndex][trkPtBin]->Fill(impactXY);
-        if (lMCevent->IsSecondaryFromWeakDecay(lMCtrk)) fHistMCtruthSstrDCA[lMCtIndex][trkPtBin]->Fill(impactXY);
-        if (lMCevent->IsSecondaryFromMaterial(lMCtrk))  fHistMCtruthSmatDCA[lMCtIndex][trkPtBin]->Fill(impactXY);
+        if (lMCevent->IsPhysicalPrimary(lMCtrk))        fHistMCtruthPrimDCA[lMCtIndex]->Fill(fEvtMult,trkPt,impactXY);
+        if (lMCevent->IsSecondaryFromWeakDecay(lMCtrk)) fHistMCtruthSstrDCA[lMCtIndex]->Fill(fEvtMult,trkPt,impactXY);
+        if (lMCevent->IsSecondaryFromMaterial(lMCtrk))  fHistMCtruthSmatDCA[lMCtIndex]->Fill(fEvtMult,trkPt,impactXY);
       }// end lIsGoodPart
       //"DCAxy"
       if (!DCAcutXY(impactXY, trkPt)) continue;
       trkSel = kPassDCAxycut;
-      fHistNTracks[iChg]->Fill(trkSel, trkPt);
+      fHistNTracks[iChg]->Fill(fEvtMult,trkPt,trkSel);
 
-      if (lIsGoodTrack) fHistReco[lPidIndex]->Fill(trkPt);
+      if (lIsGoodTrack) fHistReco[lPidIndex]->Fill(fEvtMult,trkPt);
       //Filling Histos for Reco Efficiency
       //information from the MC kinematics
       if (fIsMC && lIsGoodPart) {
-        if (lMCevent->IsPhysicalPrimary(lMCtrk))         fHistPrimMCReco[lMCtIndex]->Fill(trkPt);
-        if (lMCevent->IsSecondaryFromWeakDecay(lMCtrk))  fHistSstrMCReco[lMCtIndex]->Fill(trkPt);
-        if (lMCevent->IsSecondaryFromMaterial(lMCtrk))   fHistSmatMCReco[lMCtIndex]->Fill(trkPt);
+        if (lMCevent->IsPhysicalPrimary(lMCtrk))         fHistPrimMCReco[lMCtIndex]->Fill(fEvtMult,trkPt);
+        if (lMCevent->IsSecondaryFromWeakDecay(lMCtrk))  fHistSstrMCReco[lMCtIndex]->Fill(fEvtMult,trkPt);
+        if (lMCevent->IsSecondaryFromMaterial(lMCtrk))   fHistSmatMCReco[lMCtIndex]->Fill(fEvtMult,trkPt);
       }
 
       Int_t binPart = (lMCspc > AliPID::kMuon) ? (lMCspc - 2) : -1;
       if (fIsMC && lIsGoodTrack) {
-        fHistMCReco[lPidIndex]->Fill(trkPt, binPart);
+        fHistMCReco[lPidIndex]->Fill(fEvtMult,fEvtMult,trkPt, binPart);
         if (lMCevent->IsPhysicalPrimary(lMCtrk))
-          fHistMCPrimReco[lPidIndex]->Fill(trkPt, binPart);
+          fHistMCPrimReco[lPidIndex]->Fill(fEvtMult,trkPt, binPart);
       }//end y
 
       if (lIsGoodTrack && fFillIntDistHist) {
@@ -942,70 +976,69 @@ void AliAnalysisTaskSEITSsaSpectra::UserExec(Option_t*)
         //
         Int_t lAbsPdgCode = TMath::Abs(lMCpdg);
         if (track->GetSign() > 0) {
-          if (IsRapIn(y[AliPID::kPion]))  fHistPosHypPi[trkPtBin]->Fill(logdiff[0]);
-          if (IsRapIn(y[AliPID::kKaon]))  fHistPosHypKa[trkPtBin]->Fill(logdiff[1]);
-          if (IsRapIn(y[AliPID::kProton]))fHistPosHypPr[trkPtBin]->Fill(logdiff[2]);
+          if (IsRapIn(y[AliPID::kPion]))  fHistPosHypPi->Fill(trkPt,logdiff[0]);
+          if (IsRapIn(y[AliPID::kKaon]))  fHistPosHypKa->Fill(trkPt,logdiff[1]);
+          if (IsRapIn(y[AliPID::kProton]))fHistPosHypPr->Fill(trkPt,logdiff[2]);
           if (fIsMC) {
             if (IsRapIn(y[AliPID::kPion])) {
               if ((lAbsPdgCode != 11) && (lAbsPdgCode != 211) && (lAbsPdgCode != 321) && (lAbsPdgCode != 2212))
-                fHistMCPosOtherHypPion[trkPtBin]->Fill(logdiff[0]);
-              if (lAbsPdgCode == 11)  fHistMCPosElHypPion[trkPtBin]->Fill(logdiff[0]);
-              if (lAbsPdgCode == 211) fHistMCPosPiHypPion[trkPtBin]->Fill(logdiff[0]);
-              if (lAbsPdgCode == 321) fHistMCPosKaHypPion[trkPtBin]->Fill(logdiff[0]);
-              if (lAbsPdgCode == 2212)fHistMCPosPrHypPion[trkPtBin]->Fill(logdiff[0]);
+                fHistMCPosOtherHypPion->Fill(trkPt,logdiff[0]);
+              if (lAbsPdgCode == 11)  fHistMCPosElHypPion->Fill(trkPt,logdiff[0]);
+              if (lAbsPdgCode == 211) fHistMCPosPiHypPion->Fill(trkPt,logdiff[0]);
+              if (lAbsPdgCode == 321) fHistMCPosKaHypPion->Fill(trkPt,logdiff[0]);
+              if (lAbsPdgCode == 2212)fHistMCPosPrHypPion->Fill(trkPt,logdiff[0]);
             }
             if (IsRapIn(y[AliPID::kKaon])) {
               if ((lAbsPdgCode != 11) && (lAbsPdgCode != 211) && (lAbsPdgCode != 321) && (lAbsPdgCode != 2212))
-                fHistMCPosOtherHypKaon[trkPtBin]->Fill(logdiff[1]);
-              if (lAbsPdgCode == 11)  fHistMCPosElHypKaon[trkPtBin]->Fill(logdiff[1]);
-              if (lAbsPdgCode == 211) fHistMCPosPiHypKaon[trkPtBin]->Fill(logdiff[1]);
-              if (lAbsPdgCode == 321) fHistMCPosKaHypKaon[trkPtBin]->Fill(logdiff[1]);
-              if (lAbsPdgCode == 2212)fHistMCPosPrHypKaon[trkPtBin]->Fill(logdiff[1]);
+                fHistMCPosOtherHypKaon->Fill(trkPt,logdiff[1]);
+              if (lAbsPdgCode == 11)  fHistMCPosElHypKaon->Fill(trkPt,logdiff[1]);
+              if (lAbsPdgCode == 211) fHistMCPosPiHypKaon->Fill(trkPt,logdiff[1]);
+              if (lAbsPdgCode == 321) fHistMCPosKaHypKaon->Fill(trkPt,logdiff[1]);
+              if (lAbsPdgCode == 2212)fHistMCPosPrHypKaon->Fill(trkPt,logdiff[1]);
             }
             if (IsRapIn(y[AliPID::kProton])) {
               if ((lAbsPdgCode != 11) && (lAbsPdgCode != 211) && (lAbsPdgCode != 321) && (lAbsPdgCode != 2212))
-                fHistMCPosOtherHypProt[trkPtBin]->Fill(logdiff[2]);
-              if (lAbsPdgCode == 11)  fHistMCPosElHypProt[trkPtBin]->Fill(logdiff[2]);
-              if (lAbsPdgCode == 211) fHistMCPosPiHypProt[trkPtBin]->Fill(logdiff[2]);
-              if (lAbsPdgCode == 321) fHistMCPosKaHypProt[trkPtBin]->Fill(logdiff[2]);
-              if (lAbsPdgCode == 2212)fHistMCPosPrHypProt[trkPtBin]->Fill(logdiff[2]);
+                fHistMCPosOtherHypProt->Fill(trkPt,logdiff[2]);
+              if (lAbsPdgCode == 11)  fHistMCPosElHypProt->Fill(trkPt,logdiff[2]);
+              if (lAbsPdgCode == 211) fHistMCPosPiHypProt->Fill(trkPt,logdiff[2]);
+              if (lAbsPdgCode == 321) fHistMCPosKaHypProt->Fill(trkPt,logdiff[2]);
+              if (lAbsPdgCode == 2212)fHistMCPosPrHypProt->Fill(trkPt,logdiff[2]);
             }
           }
         } else {
-          if (IsRapIn(y[AliPID::kPion]))  fHistNegHypPi[trkPtBin]->Fill(logdiff[0]);
-          if (IsRapIn(y[AliPID::kKaon]))  fHistNegHypKa[trkPtBin]->Fill(logdiff[1]);
-          if (IsRapIn(y[AliPID::kProton]))fHistNegHypPr[trkPtBin]->Fill(logdiff[2]);
+          if (IsRapIn(y[AliPID::kPion]))  fHistNegHypPi->Fill(trkPt,logdiff[0]);
+          if (IsRapIn(y[AliPID::kKaon]))  fHistNegHypKa->Fill(trkPt,logdiff[1]);
+          if (IsRapIn(y[AliPID::kProton]))fHistNegHypPr->Fill(trkPt,logdiff[2]);
           if (fIsMC) {
             if (IsRapIn(y[AliPID::kPion])) {
               if ((lAbsPdgCode != 11) && (lAbsPdgCode != 211) && (lAbsPdgCode != 321) && (lAbsPdgCode != 2212))
-                fHistMCNegOtherHypPion[trkPtBin]->Fill(logdiff[0]);
-              if (lAbsPdgCode == 11)  fHistMCNegElHypPion[trkPtBin]->Fill(logdiff[0]);
-              if (lAbsPdgCode == 211) fHistMCNegPiHypPion[trkPtBin]->Fill(logdiff[0]);
-              if (lAbsPdgCode == 321) fHistMCNegKaHypPion[trkPtBin]->Fill(logdiff[0]);
-              if (lAbsPdgCode == 2212)fHistMCNegPrHypPion[trkPtBin]->Fill(logdiff[0]);
+                fHistMCNegOtherHypPion->Fill(trkPt,logdiff[0]);
+              if (lAbsPdgCode == 11)  fHistMCNegElHypPion->Fill(trkPt,logdiff[0]);
+              if (lAbsPdgCode == 211) fHistMCNegPiHypPion->Fill(trkPt,logdiff[0]);
+              if (lAbsPdgCode == 321) fHistMCNegKaHypPion->Fill(trkPt,logdiff[0]);
+              if (lAbsPdgCode == 2212)fHistMCNegPrHypPion->Fill(trkPt,logdiff[0]);
             }
             if (IsRapIn(y[AliPID::kKaon])) {
               if ((lAbsPdgCode != 11) && (lAbsPdgCode != 211) && (lAbsPdgCode != 321) && (lAbsPdgCode != 2212))
-                fHistMCNegOtherHypKaon[trkPtBin]->Fill(logdiff[1]);
-              if (lAbsPdgCode == 11)  fHistMCNegElHypKaon[trkPtBin]->Fill(logdiff[1]);
-              if (lAbsPdgCode == 211) fHistMCNegPiHypKaon[trkPtBin]->Fill(logdiff[1]);
-              if (lAbsPdgCode == 321) fHistMCNegKaHypKaon[trkPtBin]->Fill(logdiff[1]);
-              if (lAbsPdgCode == 2212)fHistMCNegPrHypKaon[trkPtBin]->Fill(logdiff[1]);
+                fHistMCNegOtherHypKaon->Fill(trkPt,logdiff[1]);
+              if (lAbsPdgCode == 11)  fHistMCNegElHypKaon->Fill(trkPt,logdiff[1]);
+              if (lAbsPdgCode == 211) fHistMCNegPiHypKaon->Fill(trkPt,logdiff[1]);
+              if (lAbsPdgCode == 321) fHistMCNegKaHypKaon->Fill(trkPt,logdiff[1]);
+              if (lAbsPdgCode == 2212)fHistMCNegPrHypKaon->Fill(trkPt,logdiff[1]);
             }
             if (IsRapIn(y[AliPID::kProton])) {
               if ((lAbsPdgCode != 11) && (lAbsPdgCode != 211) && (lAbsPdgCode != 321) && (lAbsPdgCode != 2212))
-                fHistMCNegOtherHypProt[trkPtBin]->Fill(logdiff[2]);
-              if (lAbsPdgCode == 11)  fHistMCNegElHypProt[trkPtBin]->Fill(logdiff[2]);
-              if (lAbsPdgCode == 211) fHistMCNegPiHypProt[trkPtBin]->Fill(logdiff[2]);
-              if (lAbsPdgCode == 321) fHistMCNegKaHypProt[trkPtBin]->Fill(logdiff[2]);
-              if (lAbsPdgCode == 2212)fHistMCNegPrHypProt[trkPtBin]->Fill(logdiff[2]);
+                fHistMCNegOtherHypProt->Fill(trkPt,logdiff[2]);
+              if (lAbsPdgCode == 11)  fHistMCNegElHypProt->Fill(trkPt,logdiff[2]);
+              if (lAbsPdgCode == 211) fHistMCNegPiHypProt->Fill(trkPt,logdiff[2]);
+              if (lAbsPdgCode == 321) fHistMCNegKaHypProt->Fill(trkPt,logdiff[2]);
+              if (lAbsPdgCode == 2212)fHistMCNegPrHypProt->Fill(trkPt,logdiff[2]);
             }
           }
         }
       }//end lIsGooTrack
     }//end else fill Ntuple
   }//end track loop
-  delete lAxis;
 
   // Post output data.
   PostAllData();
@@ -1029,7 +1062,17 @@ void AliAnalysisTaskSEITSsaSpectra::Terminate(Option_t*)
 //________________________________________________________________________
 Bool_t AliAnalysisTaskSEITSsaSpectra::IsEventAccepted(EEvtCut_Type& evtSel)
 {
-	//Check if has SDD info (if requiered)
+	//Check multiplicity selection first
+	if (!IsMultSelected()){
+		AliDebug(3, "Event doesn't pass multiplicity selection");
+    PostAllData();
+    evtSel = kPassMultSel;
+    return kFALSE;
+	} else {
+		fHistMultBefEvtSel->Fill(fEvtMult);
+	}
+
+  //Check if has SDD info (if requiered)
 	if (fChkIsSDDIn && !fIsMC) {
 		TString firedTriggerClasses(fESD->GetFiredTriggerClasses());
     if (!(firedTriggerClasses.Contains("ALL") || firedTriggerClasses.Contains("CENT"))) {
@@ -1039,16 +1082,6 @@ Bool_t AliAnalysisTaskSEITSsaSpectra::IsEventAccepted(EEvtCut_Type& evtSel)
 			evtSel = kIsSDDIn;
       return kFALSE;
     }
-	}
-
-	//Check multiplicity selection first
-	if (!IsMultSelected()){
-		AliDebug(3, "Event doesn't pass multiplicity selection");
-    PostAllData();
-    evtSel = kPassMultSel;
-    return kFALSE;
-	} else {
-		fHistMultBefEvtSel->Fill(fEvtMult);
 	}
 
   if (fExtEventCuts) {
@@ -1315,7 +1348,7 @@ UInt_t AliAnalysisTaskSEITSsaSpectra::IsPileup()
 Bool_t AliAnalysisTaskSEITSsaSpectra::IsGoodVtxZ()
 {
   const AliESDVertex* vtx = fESD->GetPrimaryVertex();
-  fHistVtxZ->Fill(vtx->GetZ());
+  fHistVtxZ->Fill(fEvtMult,vtx->GetZ());
   if (TMath::Abs(vtx->GetZ()) > fMaxVtxZCut) return kFALSE;
 
   return kTRUE;
@@ -1496,6 +1529,7 @@ void AliAnalysisTaskSEITSsaSpectra::AnalyseMCParticles(AliMCEvent* lMCevent,
       //filling MC ntuple
       Float_t xntMC[8];
       Int_t indexMC = 0;
+      xntMC[indexMC++] = (Float_t)fEvtMult;
       xntMC[indexMC++] = (Float_t)mcPt;
       xntMC[indexMC++] = (Float_t)pdg;
       xntMC[indexMC++] = (Float_t)iChg;
@@ -1513,9 +1547,9 @@ void AliAnalysisTaskSEITSsaSpectra::AnalyseMCParticles(AliMCEvent* lMCevent,
 
     int index = iPart * kNchg + iChg;
     for (int istep = (int)kIsReadable; istep <= (int)lastEvtCutPassed; ++istep) {
-      fHistPrimMCGenVtxZall[index]->Fill(istep, TMath::Abs(mcPt));
+      fHistPrimMCGenVtxZall[index]->Fill(fEvtMult,TMath::Abs(mcPt), istep);
       if (lHasGoodVtxGen)
-        fHistPrimMCGenVtxZcut[index]->Fill(istep, TMath::Abs(mcPt));
+        fHistPrimMCGenVtxZcut[index]->Fill(fEvtMult,TMath::Abs(mcPt), istep);
     }
   }//end MC stack loop
 }
@@ -1715,4 +1749,49 @@ void AliAnalysisTaskSEITSsaSpectra::ComputeBayesProbabilities(Double_t* probs, c
 
   for (Int_t i = 0; i < AliPID::kSPECIES; i++)
     probs[i] = pDens[i] * prior[i] / sum;
+}
+
+//
+//
+//________________________________________________________________________
+void AliAnalysisTaskSEITSsaSpectra::SetBins(int nbins, float min, float max, float* bins) {
+  const float delta = (max - min) / nbins;
+  for (int iB = 0; iB < nbins; ++iB) {
+    bins[iB] = min + iB * delta;
+  }
+  bins[nbins] = max;
+}
+
+//
+//
+//________________________________________________________________________
+void AliAnalysisTaskSEITSsaSpectra::SetCentBins(int nbins, float *bins) {
+  fCentBins.Set(nbins + 1, bins);
+}
+
+
+//
+//
+//________________________________________________________________________
+void AliAnalysisTaskSEITSsaSpectra::SetDCABins(int nbins, float min, float max) {
+  const float delta = (max - min) / nbins;
+  fDCABins.Set(nbins + 1);
+  for (int iB = 0; iB < nbins; ++iB) {
+    fDCABins[iB] = min + iB * delta;
+  }
+  fDCABins[nbins] = max;
+}
+
+//
+//
+//________________________________________________________________________
+void AliAnalysisTaskSEITSsaSpectra::SetDCABins(int nbins, float *bins) {
+  fDCABins.Set(nbins + 1, bins);
+}
+
+//
+//
+//________________________________________________________________________
+void AliAnalysisTaskSEITSsaSpectra::SetPtBins(int nbins, float *bins) {
+  fPtBins.Set(nbins + 1, bins);
 }

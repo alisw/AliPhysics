@@ -293,10 +293,10 @@ void AliReducedAnalysisTest::Process() {
 	  if(pair->IsPureV0ALambda()) fHistosManager->FillHistClass(Form("PairQA_%sPureALambda",pairTypeStr.Data()),fValues);
 	  break;
         case AliReducedPairInfo::kJpsiToEE :
-           fHistosManager->FillHistClass(Form("PairQA_Jpsi2EE_%s", type[pair->PairType()].Data()),fValues);
+           fHistosManager->FillHistClass(Form("PairQA_Jpsi2EE_%s", type[Int_t(pair->PairType())].Data()),fValues);
            break;  
         case AliReducedPairInfo::kADzeroToKplusPiminus :
-           fHistosManager->FillHistClass(Form("PairQA_ADzeroToKplusPiminus_%s", type[pair->PairType()].Data()),fValues);
+           fHistosManager->FillHistClass(Form("PairQA_ADzeroToKplusPiminus_%s", type[Int_t(pair->PairType())].Data()),fValues);
            break;     
       };
       fValues[AliReducedVarManager::kNpairsSelected] += 1.0;

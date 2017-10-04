@@ -79,6 +79,7 @@ class AliAnalysisHFjetTagHFE : public AliAnalysisTaskEmcalJet {
   TH2F                        *fHistZcorr; //!
   TH1F                        *fHistCent; //!
   TH2F                        *fHistTPCnSigma;
+  TH2F                        *fHistEopNsig;
   TH2F                        *fHistEop;
   TH1F                        *fHistJetOrg;
   TH2F                        *fHistJetOrgArea;
@@ -123,7 +124,8 @@ class AliAnalysisHFjetTagHFE : public AliAnalysisTaskEmcalJet {
   void SelectPhotonicElectron(Int_t itrack, AliVTrack *track, Bool_t &fFlagPhotonicElec, Bool_t &fFlagConvinatElec);
   Bool_t isHeavyFlavour(int Mompdg);
   Bool_t isPhotonic(int Mompdg);
-  void MakeParticleLevelJet(THnSparse *pJet);
+  //void MakeParticleLevelJet(THnSparse *pJet);
+  void MakeParticleLevelJet();
   //void SetCentralityMim(Int_t centMim) {fcentMim = centMim;};
   //void SetCentralityMax(Int_t centMax) {fcentMax = centMax;};
 

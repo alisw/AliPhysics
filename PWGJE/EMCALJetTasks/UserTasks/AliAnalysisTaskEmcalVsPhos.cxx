@@ -47,6 +47,7 @@
 #include "AliEMCALGeometry.h"
 #include "AliPHOSGeometry.h"
 #include "AliOADBContainer.h"
+#include "AliMCAnalysisUtils.h"
 
 #include "AliAnalysisTaskEmcalVsPhos.h"
 
@@ -79,10 +80,13 @@ AliAnalysisTaskEmcalVsPhos::AliAnalysisTaskEmcalVsPhos() :
   fCentHistBins(0),
   fNPtHistBins(0),
   fPtHistBins(0),
+  fNM02HistBins(0),
+  fM02HistBins(0),
   fUseAliEventCuts(kTRUE),
   fEventCuts(0),
   fEventCutList(0),
   fUseManualEventCuts(kFALSE),
+  fGeneratorLevel(0),
   fPHOSGeo(nullptr),
   fHistManager()
 {
@@ -116,10 +120,13 @@ AliAnalysisTaskEmcalVsPhos::AliAnalysisTaskEmcalVsPhos(const char *name) :
   fCentHistBins(0),
   fNPtHistBins(0),
   fPtHistBins(0),
+  fNM02HistBins(0),
+  fM02HistBins(0),
   fUseAliEventCuts(kTRUE),
   fEventCuts(0),
   fEventCutList(0),
   fUseManualEventCuts(kFALSE),
+  fGeneratorLevel(0),
   fPHOSGeo(nullptr),
   fHistManager(name)
 {
@@ -155,6 +162,14 @@ void AliAnalysisTaskEmcalVsPhos::GenerateHistoBins()
   GenerateFixedBinArray(10, 10, 20, fPtHistBins+37);
   GenerateFixedBinArray(15, 20, 50, fPtHistBins+47);
   GenerateFixedBinArray(20, 50, 150, fPtHistBins+62);
+  
+  fNM02HistBins = 81;
+  fM02HistBins = new Double_t[fNM02HistBins+1];
+  GenerateFixedBinArray(35, 0, 0.7, fM02HistBins);
+  GenerateFixedBinArray(6, 0.7, 1., fM02HistBins+35);
+  GenerateFixedBinArray(20, 1., 3., fM02HistBins+41);
+  GenerateFixedBinArray(10, 3., 5., fM02HistBins+61);
+  GenerateFixedBinArray(10, 5., 10., fM02HistBins+71);
 }
 
 /**
@@ -164,6 +179,8 @@ void AliAnalysisTaskEmcalVsPhos::GenerateHistoBins()
 void AliAnalysisTaskEmcalVsPhos::UserCreateOutputObjects()
 {
   AliAnalysisTaskEmcalJet::UserCreateOutputObjects();
+  
+  fGeneratorLevel = GetMCParticleContainer("mcparticles");
   
   AllocateCaloHistograms();
 
@@ -249,6 +266,11 @@ void AliAnalysisTaskEmcalVsPhos::AllocateClusterHistograms()
     TH2* histPhos = fHistManager.CreateTH2(histname.Data(), htitle.Data(), nRejBins, rejReasonBins, fNPtHistBins, fPtHistBins);
     SetRejectionReasonLabels(histPhos->GetXaxis());
     
+    histname = TString::Format("%s/hClusterRejectionReasonMC", cont->GetArrayName().Data());
+    htitle = histname + ";Rejection reason;#it{E}_{clus} (GeV/)";
+    TH2* histMC = fHistManager.CreateTH2(histname.Data(), htitle.Data(), nRejBins, rejReasonBins, fNPtHistBins, fPtHistBins);
+    SetRejectionReasonLabels(histMC->GetXaxis());
+    
     // plot by SM
     const Int_t nEmcalSM = 20;
     for (Int_t sm = 0; sm < nEmcalSM; sm++) {
@@ -331,10 +353,10 @@ void AliAnalysisTaskEmcalVsPhos::AllocateClusterHistograms()
       dim++;
       
       title[dim] = "M02";
-      nbins[dim] = 50;
-      min[dim] = 0;
-      max[dim] = 5;
-      binEdges[dim] = GenerateFixedBinArray(nbins[dim], min[dim], max[dim]);
+      nbins[dim] = fNM02HistBins;
+      binEdges[dim] = fM02HistBins;
+      min[dim] = fM02HistBins[0];
+      max[dim] = fM02HistBins[fNM02HistBins];
       dim++;
       
       title[dim] = "Ncells";
@@ -350,6 +372,22 @@ void AliAnalysisTaskEmcalVsPhos::AllocateClusterHistograms()
       max[dim] = 1.5;
       binEdges[dim] = GenerateFixedBinArray(nbins[dim], min[dim], max[dim]);
       dim++;
+      
+      if (fGeneratorLevel) {
+        title[dim] = "Particle type1";
+        nbins[dim] = 8;
+        min[dim] = -0.5;
+        max[dim] = 7.5;
+        binEdges[dim] = GenerateFixedBinArray(nbins[dim], min[dim], max[dim]);
+        dim++;
+        
+        title[dim] = "Particle type2";
+        nbins[dim] = 8;
+        min[dim] = -0.5;
+        max[dim] = 7.5;
+        binEdges[dim] = GenerateFixedBinArray(nbins[dim], min[dim], max[dim]);
+        dim++;
+      }
     }
     
     if (fPlotEvenOddEta) {
@@ -759,7 +797,13 @@ void AliAnalysisTaskEmcalVsPhos::FillClusterHistograms()
   // Get cells from event
   fCaloCells = InputEvent()->GetEMCALCells();
   AliVCaloCells* phosCaloCells = InputEvent()->GetPHOSCells();
-    
+  
+  // If MC, get the MC event and utils
+  const AliMCEvent* mcevent;
+  if (fGeneratorLevel) {
+    mcevent = MCEvent();
+  }
+  
   // Loop through clusters and plot cluster THnSparse (centrality, cluster type, E, E-hadcorr, has matched track, M02, Ncells)
   AliClusterContainer* clusters = 0;
   const AliVCluster* clus;
@@ -802,7 +846,7 @@ void AliAnalysisTaskEmcalVsPhos::FillClusterHistograms()
           continue;
         }
       } else {
-        continue;
+        continue; // avoid CPV clusters
       }
       
       // Fill cluster spectra by SM, and fill cell histograms
@@ -911,10 +955,29 @@ void AliAnalysisTaskEmcalVsPhos::FillClusterHistograms()
         fGeom->GetCellPhiEtaIndexInSModule(nSupMod, nModule, nIphi, nIeta, iphi, ieta);
         isOddEta = ieta % 2;
       }
+      
+      // If MC, determine the particle type
+      // Each detector-level cluster contains an array of labels of each truth-level particle contributing to the cluster
+      ParticleType particleType1 = kUndefined;
+      ParticleType particleType2 = kUndefined;
+      
+      if (fGeneratorLevel) {
+        
+        Int_t label = TMath::Abs(clus->GetLabel()); // returns mc-label of particle that deposited the most energy in the cluster
+        if (label > 0) { // if the particle has a truth-level match, the label is > 0
+          
+          // Method 1: Use AliMCAnalysisUtils to identify all particles
+          particleType1 = GetParticleType1(clus, mcevent, clusters->GetArray());
+          
+          // Method 2: Use MC particle container (and only AliMCAnalysisUtils to find merged pi0)
+          particleType2 = GetParticleType2(clus, mcevent, label, clusters);
+          
+        }
+      }
 
       // Standard option: fill once per cluster
       if (!fPlotClusterCone && !fPlotCaloCentrality) {
-          FillClusterTHnSparse(clustersName, eta, phi, Enonlin, Ehadcorr, hasMatchedTrack, M02, nCells, passedDispersionCut, distNN, isOddEta);
+          FillClusterTHnSparse(clustersName, eta, phi, Enonlin, Ehadcorr, hasMatchedTrack, M02, nCells, passedDispersionCut, distNN, isOddEta, particleType1, particleType2);
       }
       
       if (fPlotCaloCentrality) {
@@ -963,13 +1026,13 @@ void AliAnalysisTaskEmcalVsPhos::FillClusterHistograms()
       if (fPlotClusterCone) {
 
         // cluster cone, R=0.05
-        FillClusterTHnSparse(clustersName, eta, phi, Enonlin, Ehadcorr, hasMatchedTrack, M02, nCells, passedDispersionCut, distNN, isOddEta, 0, 0.05,         GetConeClusterEnergy(eta, phi, 0.05));
+        FillClusterTHnSparse(clustersName, eta, phi, Enonlin, Ehadcorr, hasMatchedTrack, M02, nCells, passedDispersionCut, distNN, isOddEta, -1, -1, 0, 0.05, GetConeClusterEnergy(eta, phi, 0.05));
         // cluster cone, R=0.1
-        FillClusterTHnSparse(clustersName, eta, phi, Enonlin, Ehadcorr, hasMatchedTrack, M02, nCells, passedDispersionCut, distNN, isOddEta, 0, 0.1, GetConeClusterEnergy(eta, phi, 0.1));
+        FillClusterTHnSparse(clustersName, eta, phi, Enonlin, Ehadcorr, hasMatchedTrack, M02, nCells, passedDispersionCut, distNN, isOddEta, -1, -1, 0, 0.1, GetConeClusterEnergy(eta, phi, 0.1));
         // cell cone, R=0.05
-        FillClusterTHnSparse(clustersName, eta, phi, Enonlin, Ehadcorr, hasMatchedTrack, M02, nCells, passedDispersionCut, distNN, isOddEta, 1, 0.05, GetConeCellEnergy(eta, phi, 0.05));
+        FillClusterTHnSparse(clustersName, eta, phi, Enonlin, Ehadcorr, hasMatchedTrack, M02, nCells, passedDispersionCut, distNN, isOddEta, -1, -1, 1, 0.05, GetConeCellEnergy(eta, phi, 0.05));
         // cell cone, R=0.1
-        FillClusterTHnSparse(clustersName, eta, phi, Enonlin, Ehadcorr, hasMatchedTrack, M02, nCells, passedDispersionCut, distNN, isOddEta, 1, 0.1, GetConeCellEnergy(eta, phi, 0.1));
+        FillClusterTHnSparse(clustersName, eta, phi, Enonlin, Ehadcorr, hasMatchedTrack, M02, nCells, passedDispersionCut, distNN, isOddEta, -1, -1, 1, 0.1, GetConeCellEnergy(eta, phi, 0.1));
         
       }
 
@@ -978,9 +1041,123 @@ void AliAnalysisTaskEmcalVsPhos::FillClusterHistograms()
 }
 
 /*
+ * Compute the MC particle type using AliMCAnalysisUtils
+ */
+AliAnalysisTaskEmcalVsPhos::ParticleType AliAnalysisTaskEmcalVsPhos::GetParticleType1(const AliVCluster* clus, const AliMCEvent* mcevent, const TClonesArray* clusArray)
+{
+  ParticleType particleType = kUndefined;
+  
+  AliMCAnalysisUtils mcUtils;
+  Int_t tag = mcUtils.CheckOrigin(clus->GetLabels(), clus->GetNLabels(), mcevent, clusArray);
+
+  Bool_t isPhoton = mcUtils.CheckTagBit(tag, AliMCAnalysisUtils::kMCPhoton);
+  Bool_t isPi0 = mcUtils.CheckTagBit(tag, AliMCAnalysisUtils::kMCPi0);
+  Bool_t isConversion = mcUtils.CheckTagBit(tag, AliMCAnalysisUtils::kMCConversion);
+  Bool_t isEta = mcUtils.CheckTagBit(tag, AliMCAnalysisUtils::kMCEta);
+  Bool_t isPion = mcUtils.CheckTagBit(tag, AliMCAnalysisUtils::kMCPion);
+  Bool_t isKaon = mcUtils.CheckTagBit(tag, AliMCAnalysisUtils::kMCKaon);
+  Bool_t isProton = mcUtils.CheckTagBit(tag, AliMCAnalysisUtils::kMCProton);
+  Bool_t isAntiProton = mcUtils.CheckTagBit(tag, AliMCAnalysisUtils::kMCAntiProton);
+  Bool_t isNeutron = mcUtils.CheckTagBit(tag, AliMCAnalysisUtils::kMCNeutron);
+  Bool_t isAntiNeutron = mcUtils.CheckTagBit(tag, AliMCAnalysisUtils::kMCAntiNeutron);
+  Bool_t isElectron = mcUtils.CheckTagBit(tag, AliMCAnalysisUtils::kMCElectron);
+  Bool_t isMuon = mcUtils.CheckTagBit(tag, AliMCAnalysisUtils::kMCMuon);
+  
+  if (isPi0) {
+    if (isConversion) {
+      particleType = kPi0Conversion;
+    }
+    else {
+      particleType = kPi0;
+    }
+  }
+  else if (isEta) {
+    particleType = kEta;
+  }
+  else if (isPhoton) {
+    particleType = kPhoton;
+  }
+  else if (isPion || isKaon || isProton || isAntiProton || isNeutron || isAntiNeutron) {
+    particleType = kHadron;
+  }
+  else if (isElectron) {
+    particleType = kElectron;
+  }
+  else if (isMuon) {
+    particleType = kMuon;
+  }
+  else {
+    particleType = kOther;
+  }
+  return particleType;
+}
+
+/*
+ * Compute the MC particle type using the MC particle container (and only AliMCAnalysisUtils to find merged pi0)
+ */
+AliAnalysisTaskEmcalVsPhos::ParticleType AliAnalysisTaskEmcalVsPhos::GetParticleType2(const AliVCluster* clus, const AliMCEvent* mcevent, Int_t label, const AliClusterContainer* clusters)
+{
+  ParticleType particleType = kUndefined;
+
+  AliAODMCParticle *part = fGeneratorLevel->GetMCParticleWithLabel(label);
+  if (part) {
+  
+    TString histname = TString::Format("%s/hClusterRejectionReasonMC", clusters->GetArrayName().Data());
+    UInt_t rejectionReason = 0;
+    if (!fGeneratorLevel->AcceptMCParticle(part, rejectionReason)) {
+      fHistManager.FillTH2(histname, fGeneratorLevel->GetRejectionReasonBitPosition(rejectionReason), clus->E());
+      return particleType;
+    }
+
+    if (part->GetGeneratorIndex() == 0) { // generator index in cocktail
+      
+      // select charged pions, protons, kaons, electrons, muons
+      Int_t pdg = TMath::Abs(part->PdgCode()); // abs value ensures both particles and antiparticles are included
+      
+      if (pdg == 22) { // gamma 22
+        
+        AliMCAnalysisUtils mcUtils;
+        Int_t tag;
+        mcUtils.CheckOverlapped2GammaDecay(clus->GetLabels(), clus->GetNLabels(), part->GetMother(), mcevent, tag);
+        
+        if (mcUtils.CheckTagBit(tag, AliMCAnalysisUtils::kMCPi0)) {
+          if (mcUtils.CheckTagBit(tag, AliMCAnalysisUtils::kMCConversion)) {
+            particleType = kPi0Conversion;
+          }
+          else {
+            particleType = kPi0;
+          }
+        }
+        else if (mcUtils.CheckTagBit(tag, AliMCAnalysisUtils::kMCEta)) {
+          particleType = kEta;
+        }
+        else { // direct photon
+          particleType = kPhoton;
+        }
+        
+      }
+      else if (pdg == 211 || 2212 || 321 || 2112) { // pi+ 211, proton 2212, K+ 321, neutron 2112
+        particleType = kHadron;
+      }
+      else if (pdg == 11) { // e- 11
+        particleType = kElectron;
+      }
+      else if (pdg == 13) { // mu- 13
+        particleType = kMuon;
+      }
+      else {
+        particleType = kOther;
+      }
+    }
+  }
+  return particleType;
+}
+
+
+/*
  * This function fills the cluster THnSparse.
  */
-void AliAnalysisTaskEmcalVsPhos::FillClusterTHnSparse(TString clustersName, Double_t eta, Double_t phi, Double_t Enonlin, Double_t Ehadcorr, Int_t hasMatchedTrack, Double_t M02, Int_t nCells, Int_t passedDispersionCut, Double_t distNN, Int_t isOddEta, Int_t coneType, Double_t R, Double_t Econe)
+void AliAnalysisTaskEmcalVsPhos::FillClusterTHnSparse(TString clustersName, Double_t eta, Double_t phi, Double_t Enonlin, Double_t Ehadcorr, Int_t hasMatchedTrack, Double_t M02, Int_t nCells, Int_t passedDispersionCut, Double_t distNN, Int_t isOddEta, Int_t particleType1, Int_t particleType2, Int_t coneType, Double_t R, Double_t Econe)
 {
   Double_t contents[30]={0};
   TString histname = TString::Format("%s/clusterObservables", clustersName.Data());
@@ -1010,6 +1187,10 @@ void AliAnalysisTaskEmcalVsPhos::FillClusterTHnSparse(TString clustersName, Doub
       contents[i] = distNN;
     else if (title=="Even/odd eta")
       contents[i] = isOddEta;
+    else if (title=="Particle type1")
+      contents[i] = particleType1;
+    else if (title=="Particle type2")
+      contents[i] = particleType2;
     else if (title=="Cone type")
       contents[i] = coneType;
     else if (title=="R")
@@ -1097,6 +1278,10 @@ void AliAnalysisTaskEmcalVsPhos::FillCellHistograms()
     
     absId = phosCaloCells->GetCellNumber(i);
     ecell = phosCaloCells->GetCellAmplitude(absId);
+    
+    if (absId < 0) {
+      continue; // skip CPV cells
+    }
     
     // Fill cell histo
     histname = TString::Format("Cells/hCellEnergyAll");
@@ -1188,9 +1373,18 @@ void AliAnalysisTaskEmcalVsPhos::FillClustersInJetsHistograms()
       Int_t nClusters = jet->GetNumberOfClusters();
       AliVCluster* clus;
       for (Int_t iClus = 0; iClus < nClusters; iClus++) {
+        
         clus = jet->Cluster(iClus);
-        Double_t x[5] = {fCent, clus->E(), GetJetPt(jet, rho), jet->Eta(), jet->Phi_0_2pi()};
-        fHistManager.FillTHnSparse(histname, x);
+        
+        if (fForceBeamType != AliAnalysisTaskEmcal::kpp) {
+          Double_t x[5] = {fCent, clus->E(), GetJetPt(jet, rho), jet->Eta(), jet->Phi_0_2pi()};
+          fHistManager.FillTHnSparse(histname, x);
+        }
+        else {
+          Double_t x[4] = {clus->E(), GetJetPt(jet, rho), jet->Eta(), jet->Phi_0_2pi()};
+          fHistManager.FillTHnSparse(histname, x);
+        }
+
       }
         
       // Loop through clusters, and plot estimated shift in JES due to cluster bump
@@ -1198,7 +1392,7 @@ void AliAnalysisTaskEmcalVsPhos::FillClustersInJetsHistograms()
       Double_t eclus;
       Double_t shift;
       Double_t shiftSum = 0;
-      if (fCent < 10.) {
+      if (fCent < 10. || fForceBeamType == AliAnalysisTaskEmcal::kpp) {
         if (GetJetType(jet) > -0.5 && GetJetType(jet) < 1.5) {
           for (Int_t iClus = 0; iClus < nClusters; iClus++) {
             clus = jet->Cluster(iClus);
@@ -1462,7 +1656,7 @@ Double_t AliAnalysisTaskEmcalVsPhos::GetConeCellEnergy(Double_t etaRef, Double_t
 }
 
 /**
- * Compute the cell energy within a SM, excluding cells from rejected clusters.
+ * Compute the cell energy within a SM, excluding cells from rejected clusters if requested.
  * Optionally, can instead return the number of cells.
  */
 Double_t AliAnalysisTaskEmcalVsPhos::GetSMCellEnergy(Int_t sm, Int_t clusType, Bool_t returnNcells)

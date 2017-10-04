@@ -739,7 +739,7 @@ AliAnaRandomTrigger* ConfigureRandomTriggerAnalysis(TString detector = "")
   ana->SetDebug(kDebug); //10 for lots of messages
 
   if(detector=="") detector = kCalorimeter;
-  ana->SetDetector(detector);
+  ana->SetTriggerDetector(detector);
 
   // selection cuts
   ana->SetMinPt(4.);

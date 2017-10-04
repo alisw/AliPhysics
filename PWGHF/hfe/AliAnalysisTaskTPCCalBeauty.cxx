@@ -468,7 +468,7 @@ void AliAnalysisTaskTPCCalBeauty::UserExec(Option_t*)
                 }
             }
             
-            Double_t fvalueElectron[9] = {-999,-999,-999,-999,-999,-999,-999,-999,-999}; //IsDCal,pT,nsigma,E/p,M20,M02,SortElectronsbyMom,DCA,IsPhotonic
+            Double_t fvalueElectron[5] = {-999,-999,-999,-999,-999};
             fvalueElectron[0] = track->Pt();
             fvalueElectron[1] = nsigma;
             fvalueElectron[2] = EovP;
@@ -481,9 +481,9 @@ void AliAnalysisTaskTPCCalBeauty::UserExec(Option_t*)
             }
             if (fClsTypeDCAL){
                 fvalueElectron[5] = 1; //0=EMCal, 1=DCal
-            }
+            }*/
             fElectronSprs->Fill(fvalueElectron);
-            */
+            
         }
         
     }

@@ -80,7 +80,6 @@ class AliAnalysisTaskEmcalJetHCorrelations : public AliAnalysisTaskEmcalJet {
   Double_t       EffCorrection(Double_t trkETA, Double_t trkPT, AliAnalysisTaskEmcal::BeamType beamType) const;
 
   virtual void            UserCreateOutputObjects();
-  virtual void            Terminate(Option_t *);
 
   // AddTask
   static AliAnalysisTaskEmcalJetHCorrelations * AddTaskEmcalJetHCorrelations(
@@ -127,7 +126,6 @@ class AliAnalysisTaskEmcalJetHCorrelations : public AliAnalysisTaskEmcalJet {
   };
 
   // EMCal framework functions
-  void                   ExecOnce();
   Bool_t                 Run();
 
   // Reduce event mixing memory usage

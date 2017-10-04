@@ -8,7 +8,7 @@
 /// The main output is stored in a THnSparse histogram or in a TTree.
 ///
 /// \author Salvatore Aiola <salvatore.aiola@cern.ch>, Yale University
-/// \date Feb 6, 2016
+/// \date Sep 21, 2017
 
 #ifndef ALIANALYSISTASKDMESONJETS_H
 #define ALIANALYSISTASKDMESONJETS_H
@@ -445,6 +445,12 @@ class AliAnalysisTaskDmesonJets : public AliAnalysisTaskEmcalLight
     std::vector<AliAnalysisTaskDmesonJets::AliHFJetDefinition>& GetJetDefinitions() { return fJetDefinitions; }
     Bool_t IsAnyJetInAcceptance(const AliDmesonJetInfo& dMesonJet) const;
 
+    void SetJetPhiRange(Double_t min, Double_t max);
+    void SetJetEtaRange(Double_t min, Double_t max);
+    void SetJetPtRange(Double_t min, Double_t max);
+    void SetChargedPtRange(Double_t min, Double_t max);
+    void SetNeutralPtRange(Double_t min, Double_t max);
+
 #if !(defined(__CINT__) || defined(__MAKECINT__))
     std::map<int, AliDmesonJetInfo>& GetDmesons() { return fDmesonJets; }
 #endif
@@ -513,6 +519,7 @@ class AliAnalysisTaskDmesonJets : public AliAnalysisTaskEmcalLight
     AliFJWrapper                      *fFastJetWrapper        ; //!<! Fastjet wrapper
     THistManager                      *fHistManager           ; //!<! Histograms
     Double_t                           fCent                  ; //!<! Event centrality
+    mutable TString                    fName                  ; //!<! Name of this object
 
     friend class AliAnalysisTaskDmesonJets;
 
@@ -538,8 +545,8 @@ class AliAnalysisTaskDmesonJets : public AliAnalysisTaskEmcalLight
   AliAnalysisTaskDmesonJets(const char* name, Int_t nOutputTrees=2);
   virtual ~AliAnalysisTaskDmesonJets();
 
-  AnalysisEngine* AddAnalysisEngine(ECandidateType_t type, TString cutfname, EMCMode_t bkgMode, EJetType_t jettype, Double_t jetradius, TString rhoName = "");
-  AnalysisEngine* AddAnalysisEngine(ECandidateType_t type, TString cutfname, EMCMode_t bkgMode, const AliHFJetDefinition& jetDef, TString rhoName = "");
+  AnalysisEngine* AddAnalysisEngine(ECandidateType_t type, TString cutfname, TString cuttype, EMCMode_t bkgMode, EJetType_t jettype, Double_t jetradius, TString rhoName = "");
+  AnalysisEngine* AddAnalysisEngine(ECandidateType_t type, TString cutfname, TString cuttype, EMCMode_t bkgMode, const AliHFJetDefinition& jetDef, TString rhoName = "");
   std::list<AnalysisEngine>::iterator FindAnalysisEngine(const AnalysisEngine& eng);
 
   void SetShowPositionD(Bool_t b = kTRUE)         { fEnabledAxis = b ?  fEnabledAxis | kPositionD         : fEnabledAxis & ~kPositionD         ; }

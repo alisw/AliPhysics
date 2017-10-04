@@ -45,6 +45,7 @@ class AliAnalysisTaskSEDs : public AliAnalysisTaskSE
   void SetFillNSparse(Bool_t fill=kTRUE){fFillSparse=fill;}
   void SetFillNSparseDplus(Bool_t fill=kTRUE){fFillSparseDplus=fill;if(fill)fFillSparse=fill;}
   void SetFillNSparseImpPar(Bool_t fill=kTRUE){fFillImpParSparse=fill;}
+  void SetFillNSparseAcceptanceLevel(Bool_t fill=kTRUE){fFillAcceptanceLevel=fill;}
   void SetMassRange(Double_t rang=0.4){fMassRange=rang;}
   void SetDoCutVarHistos(Bool_t opt=kTRUE) {fDoCutVarHistos=opt;}
   void SetUseSelectionBit(Bool_t opt=kFALSE){ fUseSelectionBit=opt;}
@@ -164,6 +165,7 @@ class AliAnalysisTaskSEDs : public AliAnalysisTaskSE
   Bool_t  fFillSparse;                /// flag for usage of THnSparse
   Bool_t  fFillSparseDplus;           /// flag for usage of THnSparse
   Bool_t  fFillImpParSparse;          /// flag for usage of sparse for imp. parameter
+  Bool_t  fFillAcceptanceLevel;       /// flag for filling true reconstructed Ds at acceptance level (see FillMCGenAccHistos)
   Bool_t fDoRotBkg;                   ///flag to create rotational bkg (rotating pi track)
   Bool_t fDoBkgPhiSB;                 ///flag to create bkg from phi sidebands
   Bool_t fDoCutV0multTPCout;          ///flag to activate cut on V0mult vs #tracks TPCout
@@ -199,7 +201,7 @@ class AliAnalysisTaskSEDs : public AliAnalysisTaskSE
   TString fCentEstName; /// name of the centrality estimator (to fill axis of sparse)
     
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskSEDs,25);    ///  AliAnalysisTaskSE for Ds mass spectra
+  ClassDef(AliAnalysisTaskSEDs,26);    ///  AliAnalysisTaskSE for Ds mass spectra
   /// \endcond
 };
 

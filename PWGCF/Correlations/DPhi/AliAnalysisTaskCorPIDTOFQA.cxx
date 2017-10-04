@@ -33,7 +33,7 @@
 #include "TList.h"
 #include "AliAnalysisTask.h"
 #include "AliAnalysisManager.h"
-#include "AliAODEvent.h"
+//#include "AliAODEvent.h"
 #include "AliAODInputHandler.h"
 #include "AliAnalysisTaskCorPIDTOFQA.h"
 #include "AliPIDResponse.h"
@@ -42,6 +42,7 @@
 #include "TFile.h"
 //#include "AliEmcalTrackSelection.h"
 //#include "AliEmcalTrackSelectionAOD.h"
+#include "AliAODHandler.h"
 
 //#include "TFile.h"
 
@@ -91,12 +92,11 @@ ClassImp(AliAnalysisTaskCorPIDTOFQA) // classimp: necessary for root
 AliAnalysisTaskCorPIDTOFQA::AliAnalysisTaskCorPIDTOFQA() : AliAnalysisTaskSE(), 
 fAOD(0), fOutputList(0), fPIDResponse(0),
 
-    htree(0),                       
-    helperAOD(0),
+//    htree(0),                       
+//    helperAOD(0),
     
     fHistPt(0),                    //  1
-
-    deut_per_event(0)              // 15
+    deut_per_event(0)             // 15
 
 {
     // default constructor, don't allocate memory here!
@@ -107,12 +107,12 @@ AliAnalysisTaskCorPIDTOFQA::AliAnalysisTaskCorPIDTOFQA(const char* name) : AliAn
 fAOD(0), fOutputList(0), fPIDResponse(0),
 
 
-    htree(0),                       
-    helperAOD(0),									   
+//    htree(0),                       
+//    helperAOD(0),									   
 
     fHistPt(0),                    //  1
-
-    deut_per_event(0)              // 15
+    deut_per_event(0)             // 15
+    
 {
     // constructor
     DefineInput(0, TChain::Class());
@@ -148,15 +148,16 @@ void AliAnalysisTaskCorPIDTOFQA::UserCreateOutputObjects()
     deut_curves[1][1][1] = 0.0187545;
     deut_curves[1][1][2] = 0.00346519;
 
-
+//  cout<<endl<<endl<<endl<<fAOD->GetRunNumber()<<endl<<endl<<endl;
+    
     fOutputList = new TList();          // this is a list which will contain all of your histograms
                                         // at the end of the analysis, the contents of this list are written
                                         // to the output file
     fOutputList->SetOwner(kTRUE);       // memory stuff: the list is owner of all objects it contains and will delete them
                                         // if requested (dont worry about this now)
 
-
     Double_t pt_binning[2001];
+
     Float_t moving_marker = 0.010;
     for(int i=0; i<1602; i++)
     {
@@ -164,24 +165,22 @@ void AliAnalysisTaskCorPIDTOFQA::UserCreateOutputObjects()
 	moving_marker = moving_marker + pt_binning[i] * 0.005;
     }
 
-
     
-    htree                      = new TTree("htree","Event tree with a branch");                                                                             //  Skim
-
-    helperAOD                  = new AliAODEvent;
-    
+    //htree                      = new TTree("aodTree","Event tree with a branch");                                                                         //  Skim
+    //helperAOD                  = new AliAODEvent;
     fHistPt                    = new TH1F("fHistPt",                    "Pt()",                       1300,       pt_binning);                              //  1
-
     deut_per_event             = new TH1I("deut_per_event",             "deut_per_event",               12,        0,     12);                              // 15
+
+
 
     // objects added to output file
     
-    htree->Branch("AODevent", &helperAOD);
 
-    fOutputList->Add(htree);
+    //htree->Branch("AODevent", &helperAOD);
+
+    //fOutputList->Add(htree);
 
     fOutputList->Add(fHistPt);                     //  1
-
     fOutputList->Add(deut_per_event);              // 15
 
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -205,17 +204,20 @@ void AliAnalysisTaskCorPIDTOFQA::UserCreateOutputObjects()
 //_____________________________________________________________________________
 void AliAnalysisTaskCorPIDTOFQA::UserExec(Option_t *)
 {
-
     fAOD = dynamic_cast<AliAODEvent*>(InputEvent());
     if(!fAOD) return;
 
     Int_t iTracks(fAOD->GetNumberOfTracks());
 
-//    cout<<fAOD->GetRunNumber()<<endl;
-
 
 
     int deut_count              = 0;
+    int trig_05_track_count     = 0;
+
+
+    // loop over all these tracks
+    //
+    // pull out track numbers for high-pt triggers and also deutons
 
    
     for(Int_t i(0); i < iTracks; i++)
@@ -223,8 +225,10 @@ void AliAnalysisTaskCorPIDTOFQA::UserExec(Option_t *)
         AliAODTrack* track = static_cast<AliAODTrack*>(fAOD->GetTrack(i));
         if(!track)                                                                      {    continue;    }
 
-
 	Float_t pt            = track->Pt();
+	if(pt < 0.2)                                                                    {    continue;    }
+	Float_t dedx   = track->GetTPCsignal();
+	if(dedx > 1000)                                                                 {    continue;    }
 	if(!(track->IsHybridGlobalConstrainedGlobal()))                                 {    continue;    }
 	Float_t eta = track->Eta();	if(TMath::Abs(eta) > 0.8)                       {    continue;    }
 
@@ -239,82 +243,119 @@ void AliAnalysisTaskCorPIDTOFQA::UserExec(Option_t *)
 
 	fHistPt->Fill(pt);
 	
+//	if(pt >= 5.0)	{    trig_05_track_num[trig_05_track_count] = i;	    trig_05_track_count++;	}
+	if(pt >= 5.0)	{                                                	    trig_05_track_count++;	}
 	if(!tofIsOk)	                                                                {    continue;    }
 
-	Float_t deltat        = 0.0;
-	deltat                = tof_minus_tpion(track);
+
+	
+//	Float_t deltat = tof_minus_tpion(track);
+
+//	float   mom           = track->P();
 	Short_t charge        = track->Charge();
 	Float_t deut_mean     = 0.0;
 	Float_t deut_sigma    = 0.0;
 
 
-	Float_t m2tof         = get_mass_squared(track);
-	Float_t dedx          = track->GetTPCsignal();
+	Float_t m2tof  = get_mass_squared(track);
 
 	    
 	if(charge > 0)
 	{
-	    if(dedx > 7.91143*deltat+28.8714  &&  deltat > 0.07216*dedx-5.11340)
-	    {
-		if(        (1.0 <= deltat  &&  deltat < 6.0  &&  dedx <   9.6774*deltat+46.7742)
-		       ||  (0.5 <= deltat  &&  deltat < 1.0  &&  dedx <  56.4516)
-		       ||  (0.5 >  deltat  &&                    dedx <  56.4516)
-		       ||  (6.0 <= deltat  &&                    dedx <  12.9032*deltat+27.4193)
-		    )
-		{
-		    if(pt >= 1.0  &&  pt < 4.4)
-		    {
-			for(int w=0; w<3; w++){   fit_deut_curve->SetParameter(w, deut_curves[0][0][w]);   }
-			deut_mean = fit_deut_curve->Eval(pt);
-			for(int w=0; w<3; w++){   fit_deut_curve->SetParameter(w, deut_curves[0][1][w]);   }
-			deut_sigma = fit_deut_curve->Eval(pt);
+//	    if(dedx > 7.91143*deltat+28.8714  &&  deltat > 0.07216*dedx-5.11340)
+//	    {
+//		if(        (1.0 <= deltat  &&  deltat < 6.0  &&  dedx <   9.6774*deltat+46.7742)
+//		       ||  (0.5 <= deltat  &&  deltat < 1.0  &&  dedx <  56.4516)
+//		       ||  (0.5 >  deltat  &&                    dedx <  56.4516)
+//		       ||  (6.0 <= deltat  &&                    dedx <  12.9032*deltat+27.4193)
+//		    )
+//		{
 
-			if(m2tof < deut_mean + cut_width * deut_sigma  &&   m2tof > deut_mean - cut_width * deut_sigma)
-			{
-			    deut_count++;
-			}
-		    }			    
-		}
+	    Double_t nSigmaTPCDeut = fPIDResponse->NumberOfSigmasTPC(track,(AliPID::EParticleType)5);  // 5 = deuteron
+//	    Double_t nSigmaTOFDeut = fPIDResponse->NumberOfSigmasTOF(track,(AliPID::EParticleType)5);  // 5 = deuteron
+	    if(TMath::Abs(nSigmaTPCDeut) < 4.0) //  &&  nSigmaTOFDeut < 4.0)
+	    {
+		if(pt >= 1.0  &&  pt < 4.4)
+		{
+		    for(int w=0; w<3; w++){   fit_deut_curve->SetParameter(w, deut_curves[0][0][w]);   }
+		    deut_mean = fit_deut_curve->Eval(pt);
+		    for(int w=0; w<3; w++){   fit_deut_curve->SetParameter(w, deut_curves[0][1][w]);   }
+		    deut_sigma = fit_deut_curve->Eval(pt);
+		    
+		    if(m2tof < deut_mean + cut_width * deut_sigma  &&   m2tof > deut_mean - cut_width * deut_sigma)
+		    {
+			deut_count++;
+		    }
+		}			    
 	    }
 	}
 	    
 	else if(charge < 0)
 	{
-	    if(dedx > 7.91143*deltat+28.8714  &&  deltat > 0.07216*dedx-5.11340)
+//	    if(dedx > 7.91143*deltat+28.8714  &&  deltat > 0.07216*dedx-5.11340)
+//	    {
+//		if(        (1.0 <= deltat  &&  deltat < 6.0  &&  dedx <   9.6774*deltat+46.7742)
+//		       ||  (0.5 <= deltat  &&  deltat < 1.0  &&  dedx <  56.4516)
+//		       ||  (0.5 >  deltat  &&                    dedx <  56.4516)
+//		       ||  (6.0 <= deltat  &&                    dedx <  12.9032*deltat+27.4193)
+//		    )
+//		{
+	    Double_t nSigmaTPCDeut = fPIDResponse->NumberOfSigmasTPC(track,(AliPID::EParticleType)5);  // 5 = deuteron
+//	    Double_t nSigmaTOFDeut = fPIDResponse->NumberOfSigmasTOF(track,(AliPID::EParticleType)5);  // 5 = deuteron
+	    if(TMath::Abs(nSigmaTPCDeut) < 4.0)  //  &&  nSigmaTOFDeut < 4.0)
 	    {
-		if(        (1.0 <= deltat  &&  deltat < 6.0  &&  dedx <   9.6774*deltat+46.7742)
-		       ||  (0.5 <= deltat  &&  deltat < 1.0  &&  dedx <  56.4516)
-		       ||  (0.5 >  deltat  &&                    dedx <  56.4516)
-		       ||  (6.0 <= deltat  &&                    dedx <  12.9032*deltat+27.4193)
-		    )
+		if(pt >= 1.0  &&  pt < 4.4)
 		{
-		    if(pt >= 1.0  &&  pt < 4.4)
-		    {
-			for(int w=0; w<3; w++){   fit_deut_curve->SetParameter(w, deut_curves[1][0][w]);   }
-			deut_mean = fit_deut_curve->Eval(pt);
-			for(int w=0; w<3; w++){   fit_deut_curve->SetParameter(w, deut_curves[1][1][w]);   }
-			deut_sigma = fit_deut_curve->Eval(pt);
+		    for(int w=0; w<3; w++){   fit_deut_curve->SetParameter(w, deut_curves[1][0][w]);   }
+		    deut_mean = fit_deut_curve->Eval(pt);
+		    for(int w=0; w<3; w++){   fit_deut_curve->SetParameter(w, deut_curves[1][1][w]);   }
+		    deut_sigma = fit_deut_curve->Eval(pt);
 		    
-			if(m2tof < deut_mean + cut_width * deut_sigma  &&   m2tof > deut_mean - cut_width * deut_sigma)
-			{
-			    deut_count++;
-			}
+		    if(m2tof < deut_mean + cut_width * deut_sigma  &&   m2tof > deut_mean - cut_width * deut_sigma)
+		    {
+			deut_count++;
 		    }
 		}
 	    }
 	}    //   end of neg charge if statement
     }        //   end of track loop
 
+
     deut_per_event->Fill(deut_count);
 
-//  if(deut_count > 0  &&  trig_05_track_count > 0)
-    if(deut_count > 0)
+    AliAODHandler *oh = (AliAODHandler*)AliAnalysisManager::GetAnalysisManager()->GetOutputEventHandler();
+    if (oh)
+      oh->SetFillAOD(kFALSE);
+
+    if ((deut_count>=1)  &&  (trig_05_track_count>0)  &&  oh)
+//  if ((deut_count >= 1) && oh)
     {
-	helperAOD = fAOD;
-	htree->Fill();
+	oh->SetFillAOD(kTRUE);
+	AliAODEvent *eout = dynamic_cast<AliAODEvent*>(oh->GetAOD());
+	AliAODEvent *evin = dynamic_cast<AliAODEvent*>(InputEvent());
+	TTree *tout = oh->GetTree();
+	if (tout)
+	{
+	    TList *lout = tout->GetUserInfo();
+	    if (lout->FindObject("alirootVersion")==0)
+	    {
+		TList *lin = AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()->GetUserInfo();
+		for (Int_t jj=0;jj<lin->GetEntries()-1;++jj)
+		{ 
+		    lout->Add(lin->At(jj)->Clone(lin->At(jj)->GetName()));
+		}
+	    }
+	}
+	
+	if (1) {   AliAODHeader *out = (AliAODHeader*)eout->GetHeader();                      AliAODHeader *in  = (AliAODHeader*)evin->GetHeader();  	 *out = *in;      }
+	if (1) {   AliTOFHeader *out = const_cast<AliTOFHeader*>(eout->GetTOFHeader()); const AliTOFHeader *in  =                evin->GetTOFHeader();	 *out = *in;      }
+	if (1) {   AliAODVZERO  *out =                eout->GetVZEROData();	              AliAODVZERO  *in  =                evin->GetVZEROData();	 *out = *in;      }
+	if (1) {   AliAODTZERO  *out =                eout->GetTZEROData();	              AliAODTZERO  *in  =                evin->GetTZEROData();	 *out = *in;      }
+	if (1) {   TClonesArray *out =                eout->GetTracks();	              TClonesArray *in  =                evin->GetTracks();	  new (out) TClonesArray(*in);      }
+	if (1) {   TClonesArray *out =                eout->GetVertices();	              TClonesArray *in  =                evin->GetVertices();	  new (out) TClonesArray(*in);      }
+	if (1) {   TClonesArray *out =                eout->GetCaloClusters();	              TClonesArray *in  =                evin->GetCaloClusters(); new (out) TClonesArray(*in);      }
     }
-    
-                                                        // continue until all the tracks are processed
+
     PostData(1, fOutputList);                           // stream the results the analysis of this event to
                                                         // the output manager which will take care of writing
                                                         // it to a file

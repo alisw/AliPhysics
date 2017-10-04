@@ -71,6 +71,19 @@ struct CutConfig_Event {
     /// these parameters.
     template <typename EventCutType>
     EventCutType* ConstructCut() const;
+
+    CutConfig_Event(AliFemtoConfigObject obj) {
+      obj.pop_and_load("multiplicity", multiplicity);
+      obj.pop_and_load("centrality", centrality);
+      obj.WarnOfRemainingItems();
+    }
+
+    /// Construct a config object wiht this object's properties
+    operator AliFemtoConfigObject() const {
+        return AliFemtoConfigObject::BuildMap()
+          ("multiplicity", multiplicity)
+          ("centrality", centrality);
+    }
 };
 
 /// Configuration for creating a particle cut specifically for usage
@@ -119,19 +132,6 @@ const UInt_t default_pion_min_tpc_ncls = 80;
 const Bool_t default_pion_remove_kinks = kTRUE,
              default_pion_set_label = kFALSE;
 
-
-const Float_t default_event_EventMultMin = 0
-          , default_event_EventMultMax = 100000
-
-          , default_event_EventCentralityMin = 0
-          , default_event_EventCentralityMax = 90
-
-          , default_event_VertZPosMin = -10.0
-          , default_event_VertZPosMax = 10.0
-
-          , default_event_EPVZEROMin = -1000.0
-          , default_event_EPVZEROMax = 1000.0
-          ;
 
 const  int  default_event_TriggerSelection = 0;
 const  bool default_event_AcceptBadVertex = kFALSE;
@@ -386,7 +386,7 @@ AliFemtoAnalysisPionPion::DefaultCutConfig()
   };
 
   // sanity checks
-  assert(params.event_MultMin == default_event_EventMultMin);
+  assert(params.event_MultMin == default_event.multiplicity.first);
   assert(params.pion_1_PtMin == default_pion_PtMin);
   assert(params.pion_2_PtMin == default_pion_PtMin);
   assert(params.pair_TPCOnly == default_pair_TPCOnly);

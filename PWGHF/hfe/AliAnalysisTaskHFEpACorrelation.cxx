@@ -126,6 +126,7 @@ AliAnalysisTaskHFEpACorrelation::AliAnalysisTaskHFEpACorrelation(const char *nam
 ,fIsFromEta(kFALSE)
 ,fIsFromGamma(kFALSE)
 ,fpTBins(0)
+,fZVtxBins(0)
 ,fESD(0)
 ,fAOD(0)
 ,fVevent(0)
@@ -377,6 +378,7 @@ AliAnalysisTaskHFEpACorrelation::AliAnalysisTaskHFEpACorrelation()
 ,fIsFromEta(kFALSE)
 ,fIsFromGamma(kFALSE)
 ,fpTBins(0)
+,fZVtxBins(0)
 ,fESD(0)
 ,fAOD(0)
 ,fVevent(0)
@@ -984,25 +986,41 @@ void AliAnalysisTaskHFEpACorrelation::UserCreateOutputObjects()
     fOpAngle = new TH1F("fOpAngle","",100,0,0.5);
     fOpAngleBack = new TH1F("fOpAngleBack","",100,0,0.5);
     
+    fOutputList->Add(fDCA);
+    fOutputList->Add(fDCABack);
+    fOutputList->Add(fOpAngle);
+    fOutputList->Add(fOpAngleBack);
+    
     if(fCorrelationFlag)
     {
         Int_t NumberBins = fpTBins.GetSize();
+        Int_t NumberBinsVtx = fZVtxBins.GetSize();
+
         
-        fCEtaPhi_Inc = new TH2F *[NumberBins];
-        fCEtaPhi_Inc_DiHadron = new TH2F *[NumberBins];
-        fCEtaPhi_ULS_Weight = new TH2F *[NumberBins];
-        fCEtaPhi_LS_Weight = new TH2F *[NumberBins];
-        fCEtaPhi_ULS_NoP_Weight = new TH2F *[NumberBins];
-        fCEtaPhi_LS_NoP_Weight = new TH2F *[NumberBins];
+        fCEtaPhi_Inc = new TH2F **[NumberBins];
+        fCEtaPhi_Inc_DiHadron = new TH2F **[NumberBins];
+        fCEtaPhi_ULS_Weight = new TH2F **[NumberBins];
+        fCEtaPhi_LS_Weight = new TH2F **[NumberBins];
+        fCEtaPhi_ULS_NoP_Weight = new TH2F **[NumberBins];
+        fCEtaPhi_LS_NoP_Weight = new TH2F **[NumberBins];
         
-        fCEtaPhi_Inc_EM = new TH2F *[NumberBins];
-        fCEtaPhi_ULS_Weight_EM = new TH2F *[NumberBins];
-        fCEtaPhi_LS_Weight_EM = new TH2F *[NumberBins];
+        fCEtaPhi_Inc_EM = new TH2F **[NumberBins];
+        fCEtaPhi_ULS_Weight_EM = new TH2F **[NumberBins];
+        fCEtaPhi_LS_Weight_EM = new TH2F **[NumberBins];
         
-        fOutputList->Add(fDCA);
-        fOutputList->Add(fDCABack);
-        fOutputList->Add(fOpAngle);
-        fOutputList->Add(fOpAngleBack);
+        for (Int_t i = 0; i < fpTBins.GetSize()-1; i++)
+        {
+            fCEtaPhi_Inc[i] = new TH2F *[NumberBinsVtx];
+            fCEtaPhi_Inc_DiHadron[i] = new TH2F *[NumberBinsVtx];
+            fCEtaPhi_ULS_Weight[i] = new TH2F *[NumberBinsVtx];
+            fCEtaPhi_LS_Weight[i] = new TH2F *[NumberBinsVtx];
+            fCEtaPhi_ULS_NoP_Weight[i] = new TH2F *[NumberBinsVtx];
+            fCEtaPhi_LS_NoP_Weight[i] = new TH2F *[NumberBinsVtx];
+            
+            fCEtaPhi_Inc_EM[i] = new TH2F *[NumberBinsVtx];
+            fCEtaPhi_ULS_Weight_EM[i] = new TH2F *[NumberBinsVtx];
+            fCEtaPhi_LS_Weight_EM[i] = new TH2F *[NumberBins];
+        }
     }
     
     
@@ -1020,20 +1038,48 @@ void AliAnalysisTaskHFEpACorrelation::UserCreateOutputObjects()
         
         if(fCorrelationFlag)
         {
+            for (Int_t j = 0; j < fZVtxBins.GetSize()-1; j++)
+            {
+                Int_t BinSize = 40;
+                fCEtaPhi_Inc[i][j] = new TH2F(Form("fCEtaPhi_Inc_%d_%d",i,j),Form("%1.2f < p_{t} < %1.2f GeV/c and %1.2f < Z_{vtx} < %1.2f ;#Delta#varphi (rad);#Delta#eta",fpTBins.At(i),fpTBins.At(i+1),fZVtxBins.At(j),fZVtxBins.At(j+1)),BinSize,-0.5*TMath::Pi(),1.5*TMath::Pi(),BinSize,-2,2);
+                fCEtaPhi_Inc_DiHadron[i][j] = new TH2F(Form("fCEtaPhi_Inc_DiHadron_%d_%d",i,j),Form("%1.2f < p_{t} < %1.2f GeV/c and %1.2f < Z_{vtx} < %1.2f ;#Delta#varphi (rad);#Delta#eta",fpTBins.At(i),fpTBins.At(i+1),fZVtxBins.At(j),fZVtxBins.At(j+1)),BinSize,-0.5*TMath::Pi(),1.5*TMath::Pi(),BinSize,-2,2);
+                
+                
+                fCEtaPhi_ULS_Weight[i][j] = new TH2F(Form("fCEtaPhi_ULS_Weight_%d_%d",i,j),Form("%1.2f < p_{t} < %1.2f GeV/c and %1.2f < Z_{vtx} < %1.2f ;#Delta#varphi (rad);#Delta#eta",fpTBins.At(i),fpTBins.At(i+1),fZVtxBins.At(j),fZVtxBins.At(j+1)),BinSize,-0.5*TMath::Pi(),1.5*TMath::Pi(),BinSize,-2,2);
+                fCEtaPhi_LS_Weight[i][j] = new TH2F(Form("fCEtaPhi_LS_Weight_%d_%d",i,j),Form("%1.2f < p_{t} < %1.2f GeV/c and %1.2f < Z_{vtx} < %1.2f ;#Delta#varphi (rad);#Delta#eta",fpTBins.At(i),fpTBins.At(i+1),fZVtxBins.At(j),fZVtxBins.At(j+1)),BinSize,-0.5*TMath::Pi(),1.5*TMath::Pi(),BinSize,-2,2);
+                fCEtaPhi_ULS_NoP_Weight[i][j] = new TH2F(Form("fCEtaPhi_ULS_NoP_Weight_%d_%d",i,j),Form("%1.2f < p_{t} < %1.2f GeV/c and %1.2f < Z_{vtx} < %1.2f ;#Delta#varphi (rad);#Delta#eta",fpTBins.At(i),fpTBins.At(i+1),fZVtxBins.At(j),fZVtxBins.At(j+1)),BinSize,-0.5*TMath::Pi(),1.5*TMath::Pi(),BinSize,-2,2);
+                fCEtaPhi_LS_NoP_Weight[i][j] = new TH2F(Form("fCEtaPhi_LS_NoP_Weight_%d_%d",i,j),Form("%1.2f < p_{t} < %1.2f GeV/c and %1.2f < Z_{vtx} < %1.2f ;#Delta#varphi (rad);#Delta#eta",fpTBins.At(i),fpTBins.At(i+1),fZVtxBins.At(j),fZVtxBins.At(j+1)),BinSize,-0.5*TMath::Pi(),1.5*TMath::Pi(),BinSize,-2,2);
             
-            Int_t BinSize = 40;
-            fCEtaPhi_Inc[i] = new TH2F(Form("fCEtaPhi_Inc%d",i),Form("%1.2f < p_{t} < %1.2f GeV/c;#Delta#varphi (rad);#Delta#eta",fpTBins.At(i),fpTBins.At(i+1)),BinSize,-0.5*TMath::Pi(),1.5*TMath::Pi(),BinSize,-2,2);
-            fCEtaPhi_Inc_DiHadron[i] = new TH2F(Form("fCEtaPhi_Inc_DiHadron%d",i),Form("%1.2f < p_{t} < %1.2f GeV/c;#Delta#varphi (rad);#Delta#eta",fpTBins.At(i),fpTBins.At(i+1)),BinSize,-0.5*TMath::Pi(),1.5*TMath::Pi(),BinSize,-2,2);
+                fOutputList->Add(fCEtaPhi_Inc[i][j]);
+                fOutputList->Add(fCEtaPhi_Inc_DiHadron[i][j]);
+                fOutputList->Add(fCEtaPhi_ULS_Weight[i][j]);
+                fOutputList->Add(fCEtaPhi_LS_Weight[i][j]);
+                fOutputList->Add(fCEtaPhi_ULS_NoP_Weight[i][j]);
+                fOutputList->Add(fCEtaPhi_LS_NoP_Weight[i][j]);
+                
+                if(fEventMixingFlag)
+                {
+                    Int_t BinSize = 40;
+                    fCEtaPhi_Inc_EM[i][j] = new TH2F(Form("fCEtaPhi_Inc_EM_%d_%d",i,j),Form("%1.2f < p_{t} < %1.2f GeV/c and %1.2f < Z_{vtx} < %1.2f ;#Delta#varphi (rad);#Delta#eta",fpTBins.At(i),fpTBins.At(i+1),fZVtxBins.At(j),fZVtxBins.At(j+1)),BinSize,-0.5*TMath::Pi(),1.5*TMath::Pi(),BinSize,-2,2);
+                    
+                    fCEtaPhi_ULS_Weight_EM[i][j] = new TH2F(Form("fCEtaPhi_ULS_Weight_EM_%d_%d",i,j),Form("%1.2f < p_{t} < %1.2f GeV/c and %1.2f < Z_{vtx} < %1.2f ;#Delta#varphi (rad);#Delta#eta",fpTBins.At(i),fpTBins.At(i+1),fZVtxBins.At(j),fZVtxBins.At(j+1)),BinSize,-0.5*TMath::Pi(),1.5*TMath::Pi(),BinSize,-2,2);
+                    fCEtaPhi_LS_Weight_EM[i][j] = new TH2F(Form("fCEtaPhi_LS_Weight__%d_%d",i,j),Form("%1.2f < p_{t} < %1.2f GeV/c and %1.2f < Z_{vtx} < %1.2f ;#Delta#varphi (rad);#Delta#eta",fpTBins.At(i),fpTBins.At(i+1),fZVtxBins.At(j),fZVtxBins.At(j+1)),BinSize,-0.5*TMath::Pi(),1.5*TMath::Pi(),BinSize,-2,2);
+                    
+                    fOutputList->Add(fCEtaPhi_Inc_EM[i][j]);
+                    fOutputList->Add(fCEtaPhi_ULS_Weight_EM[i][j]);
+                    fOutputList->Add(fCEtaPhi_LS_Weight_EM[i][j]);
+                }
+
+
+            }
             
-            
-            fCEtaPhi_ULS_Weight[i] = new TH2F(Form("fCEtaPhi_ULS_Weight%d",i),Form("%1.2f < p_{t} < %1.2f GeV/c;#Delta#varphi (rad);#Delta#eta",fpTBins.At(i),fpTBins.At(i+1)),BinSize,-0.5*TMath::Pi(),1.5*TMath::Pi(),BinSize,-2,2);
-            fCEtaPhi_LS_Weight[i] = new TH2F(Form("fCEtaPhi_LS_Weight%d",i),Form("%1.2f < p_{t} < %1.2f GeV/c;#Delta#varphi (rad);#Delta#eta",fpTBins.At(i),fpTBins.At(i+1)),BinSize,-0.5*TMath::Pi(),1.5*TMath::Pi(),BinSize,-2,2);
-            fCEtaPhi_ULS_NoP_Weight[i] = new TH2F(Form("fCEtaPhi_ULS_NoP_Weight%d",i),Form("%1.2f < p_{t} < %1.2f GeV/c;#Delta#varphi (rad);#Delta#eta",fpTBins.At(i),fpTBins.At(i+1)),BinSize,-0.5*TMath::Pi(),1.5*TMath::Pi(),BinSize,-2,2);
-            fCEtaPhi_LS_NoP_Weight[i] = new TH2F(Form("fCEtaPhi_LS_NoP_Weight%d",i),Form("%1.2f < p_{t} < %1.2f GeV/c;#Delta#varphi (rad);#Delta#eta",fpTBins.At(i),fpTBins.At(i+1)),BinSize,-0.5*TMath::Pi(),1.5*TMath::Pi(),BinSize,-2,2);
+
+            }
             
             
             if (fIsMC)
             {
+                Int_t BinSize = 40;
                 
                 fCEtaPhiNoEtaCutHFe[i] = new TH2F(Form("fCEtaPhiNoEtaCutHFe%d",i),Form("%1.2f < p_{t} < %1.2f GeV/c;#Delta#varphi (rad);#Delta#eta",fpTBins.At(i),fpTBins.At(i+1)),BinSize,-0.5*TMath::Pi(),1.5*TMath::Pi(),BinSize,-2,2);
                 
@@ -1055,30 +1101,6 @@ void AliAnalysisTaskHFEpACorrelation::UserCreateOutputObjects()
                 
                 
             }
-            
-            fOutputList->Add(fCEtaPhi_Inc[i]);
-            fOutputList->Add(fCEtaPhi_Inc_DiHadron[i]);
-            
-            fOutputList->Add(fCEtaPhi_ULS_Weight[i]);
-            fOutputList->Add(fCEtaPhi_LS_Weight[i]);
-            fOutputList->Add(fCEtaPhi_ULS_NoP_Weight[i]);
-            fOutputList->Add(fCEtaPhi_LS_NoP_Weight[i]);
-            
-            
-            
-            if(fEventMixingFlag)
-            {
-                Int_t BinSize = 40;
-                fCEtaPhi_Inc_EM[i] = new TH2F(Form("fCEtaPhi_Inc_EM%d",i),Form("%1.2f < p_{t} < %1.2f GeV/c;#Delta#varphi (rad);#Delta#eta",fpTBins.At(i),fpTBins.At(i+1)),BinSize,-0.5*TMath::Pi(),1.5*TMath::Pi(),BinSize,-2,2);
-                
-                fCEtaPhi_ULS_Weight_EM[i] = new TH2F(Form("fCEtaPhi_ULS_Weight_EM%d",i),Form("%1.2f < p_{t} < %1.2f GeV/c;#Delta#varphi (rad);#Delta#eta",fpTBins.At(i),fpTBins.At(i+1)),BinSize,-0.5*TMath::Pi(),1.5*TMath::Pi(),BinSize,-2,2);
-                fCEtaPhi_LS_Weight_EM[i] = new TH2F(Form("fCEtaPhi_LS_Weight_EM%d",i),Form("%1.2f < p_{t} < %1.2f GeV/c;#Delta#varphi (rad);#Delta#eta",fpTBins.At(i),fpTBins.At(i+1)),BinSize,-0.5*TMath::Pi(),1.5*TMath::Pi(),BinSize,-2,2);
-                
-                fOutputList->Add(fCEtaPhi_Inc_EM[i]);
-                fOutputList->Add(fCEtaPhi_ULS_Weight_EM[i]);
-                fOutputList->Add(fCEtaPhi_LS_Weight_EM[i]);
-            }
-        }
     }
     
     //pt integrated
@@ -1122,19 +1144,24 @@ void AliAnalysisTaskHFEpACorrelation::UserCreateOutputObjects()
     //Mixed event analysis -- it was removed from is pp because
     if(fEventMixingFlag && fCorrelationFlag)
     {
-        fPoolNevents = new TH1F("fPoolNevents","Event Mixing Statistics; Number of events; Count",1000,0,10000);
-        fOutputList->Add(fPoolNevents);
         
-        Int_t trackDepth = 100000; // number of objects (tracks) kept per event buffer bin. Once the number of stored objects (tracks) is above that limit, the oldest ones are removed.
+        
+        Int_t trackDepth = 6000; // number of objects (tracks) kept per event buffer bin. Once the number of stored objects (tracks) is above that limit, the oldest ones are removed.
         Int_t poolsize   = 1000;  // Maximum number of events, ignored in the present implemented of AliEventPoolManager
         
-        Int_t nCentralityBins  = 15;
-        Double_t centralityBins[] = { 0, 1, 2, 3, 4, 5, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100.1 };
+        Int_t nCentralityBins  = 3;
+        Double_t centralityBins[] = { 0,20,60,100.01};
         
-        Int_t nZvtxBins  = 9;
-        Double_t vertexBins[] = {-10, -7, -5, -3, -1, 1, 3, 5, 7, 10.01};
+        fPoolMgr = new AliEventPoolManager(poolsize, trackDepth, nCentralityBins, (Double_t*) centralityBins, fZVtxBins.GetSize()-1, fZVtxBins.GetArray());
+
         
-        fPoolMgr = new AliEventPoolManager(poolsize, trackDepth, nCentralityBins, (Double_t*) centralityBins, nZvtxBins, (Double_t*) vertexBins);
+        //following distribution Zvtx
+        
+        fPoolNevents = new TH2F("fPoolNevents","Event Mixing Statistics; Number of events; Zvtx; Count",1000,0,4000, fZVtxBins.GetSize()-1, fZVtxBins.GetArray());
+        fOutputList->Add(fPoolNevents);
+
+        
+        
     }
     
     //______________________________________________________________________
@@ -1834,7 +1861,6 @@ Bool_t AliAnalysisTaskHFEpACorrelation::ProcessCutStep(Int_t cutStep, AliVPartic
 //______________________________________________________________________
 void AliAnalysisTaskHFEpACorrelation::ElectronHadronCorrelation(AliVTrack *track, Int_t trackIndex, AliVParticle *vtrack)
 {
-    
     ///_________________________________________________________________
     ///MC analysis
     Bool_t lIsNHFe = kFALSE;
@@ -1933,6 +1959,19 @@ void AliAnalysisTaskHFEpACorrelation::ElectronHadronCorrelation(AliVTrack *track
     
     if (!fCorrelationFlag) return;
     
+    //Find ZVtx bin
+    
+    Int_t ZVtxCurrentBin = -1;
+    
+    for(Int_t i = 0; i < fZVtxBins.GetSize()-1; i++)
+    {
+        if(fZvtx>=fZVtxBins.At(i) && fZvtx<fZVtxBins.At(i+1))
+        {
+            ZVtxCurrentBin = i;
+        }
+    }
+
+    
     if(fEventMixingFlag)
     {
         //hadling pp in the same task
@@ -1950,7 +1989,7 @@ void AliAnalysisTaskHFEpACorrelation::ElectronHadronCorrelation(AliVTrack *track
         }
         if(fPool->GetCurrentNEvents() >= 5) // start mixing when 5 events are in the buffer
         {
-            fPoolNevents->Fill(fPool->GetCurrentNEvents());
+            fPoolNevents->Fill(fPool->GetCurrentNEvents(),fZvtx);
             
             for (Int_t jMix = 0; jMix < fPool->GetCurrentNEvents(); jMix++)  // mix with each event in the buffer
             {
@@ -1981,10 +2020,10 @@ void AliAnalysisTaskHFEpACorrelation::ElectronHadronCorrelation(AliVTrack *track
                     {
                         if(fPtE>=fpTBins.At(i) && fPtE<fpTBins.At(i+1))
                         {
-                            fCEtaPhi_Inc_EM[i]->Fill(fDphi,fDeta,WeightHadron);
+                            fCEtaPhi_Inc_EM[i][ZVtxCurrentBin]->Fill(fDphi,fDeta,WeightHadron);
                             
-                            if(fNonHFE->IsULS()) fCEtaPhi_ULS_Weight_EM[i]->Fill(fDphi,fDeta,fNonHFE->GetNULS()*WeightHadron);
-                            if(fNonHFE->IsLS()) fCEtaPhi_LS_Weight_EM[i]->Fill(fDphi,fDeta,fNonHFE->GetNLS()*WeightHadron);
+                            if(fNonHFE->IsULS()) fCEtaPhi_ULS_Weight_EM[i][ZVtxCurrentBin]->Fill(fDphi,fDeta,fNonHFE->GetNULS()*WeightHadron);
+                            if(fNonHFE->IsLS()) fCEtaPhi_LS_Weight_EM[i][ZVtxCurrentBin]->Fill(fDphi,fDeta,fNonHFE->GetNLS()*WeightHadron);
                             
                             
                         }
@@ -2083,27 +2122,27 @@ void AliAnalysisTaskHFEpACorrelation::ElectronHadronCorrelation(AliVTrack *track
         //Double_t WeightBKG = 1./(GetBackgroundEfficiency(fPtH,fEtaH,fZvtx) * GetHadronEfficiency(fPtH,fEtaH,fZvtx));
         
         Double_t WeightHadron = 1./(GetHadronEfficiency(fPtH,fEtaH,fZvtx)*GetElectronEfficiency(fPtE,fEtaE,fZvtx));
-        
+        printf("filling histograms\n");
+
         for(Int_t i = 0; i < fpTBins.GetSize()-1; i++)
         {
             if(fPtE>=fpTBins.At(i) && fPtE<fpTBins.At(i+1))
             {
                 
                 //Filling histograms: Only hadron weight for now. Now including E ONLINE!
-                fCEtaPhi_Inc[i]->Fill(fDphi,fDeta,WeightHadron);
+                fCEtaPhi_Inc[i][ZVtxCurrentBin]->Fill(fDphi,fDeta,WeightHadron);
                 
                 if(fNonHFE->IsULS())
-                    fCEtaPhi_ULS_Weight[i]->Fill(fDphi,fDeta,fNonHFE->GetNULS()*WeightHadron);
+                    fCEtaPhi_ULS_Weight[i][ZVtxCurrentBin]->Fill(fDphi,fDeta,fNonHFE->GetNULS()*WeightHadron);
                 
                 if(fNonHFE->IsLS())
-                    fCEtaPhi_LS_Weight[i]->Fill(fDphi,fDeta,fNonHFE->GetNLS()*WeightHadron);
+                    fCEtaPhi_LS_Weight[i][ZVtxCurrentBin]->Fill(fDphi,fDeta,fNonHFE->GetNLS()*WeightHadron);
                 
                 if(fNonHFE->IsULS() && !fUlsIsPartner && !fLsIsPartner)
-                    fCEtaPhi_ULS_NoP_Weight[i]->Fill(fDphi,fDeta,fNonHFE->GetNULS()*WeightHadron);
+                    fCEtaPhi_ULS_NoP_Weight[i][ZVtxCurrentBin]->Fill(fDphi,fDeta,fNonHFE->GetNULS()*WeightHadron);
                 
                 if(fNonHFE->IsLS() && !fUlsIsPartner && !fLsIsPartner)
-                    fCEtaPhi_LS_NoP_Weight[i]->Fill(fDphi,fDeta,fNonHFE->GetNLS()*WeightHadron);
-                
+                    fCEtaPhi_LS_NoP_Weight[i][ZVtxCurrentBin]->Fill(fDphi,fDeta,fNonHFE->GetNLS()*WeightHadron);
                 
                 if (fIsMC)
                 {
@@ -2198,20 +2237,17 @@ TObjArray* AliAnalysisTaskHFEpACorrelation::SelectedHadrons()
 //______________________________________________________________________
 void AliAnalysisTaskHFEpACorrelation::DiHadronCorrelation(AliVTrack *track, Int_t trackIndex)
 {
-    //________________________________________________
-    //Associated particle cut
-    fPartnerCuts->SetAcceptKinkDaughters(kFALSE);
-    fPartnerCuts->SetRequireITSRefit(kTRUE);
-    fPartnerCuts->SetRequireTPCRefit(kTRUE);
-    fPartnerCuts->SetEtaRange(-0.9,0.9);
-    fPartnerCuts->SetMaxChi2PerClusterTPC(4.0);
-    fPartnerCuts->SetMinNClustersTPC(80);
-    fPartnerCuts->SetPtRange(0.3,1e10);
-    //fPartnerCuts->SetRequireSigmaToVertex(kTRUE);
-    //fPartnerCuts->SetMaxDCAToVertexXY(1);
-    //fPartnerCuts->SetMaxDCAToVertexZ(3);
-    //_________________________________________________
     
+    Int_t ZVtxCurrentBin = -1;
+    
+    for(Int_t i = 0; i < fZVtxBins.GetSize()-1; i++)
+    {
+        if(fZvtx>=fZVtxBins.At(i) && fZvtx<fZVtxBins.At(i+1))
+        {
+            ZVtxCurrentBin = i;
+        }
+    }
+
     //Electron Information
     Double_t fPhiE = -999;
     Double_t fEtaE = -999;
@@ -2303,7 +2339,7 @@ void AliAnalysisTaskHFEpACorrelation::DiHadronCorrelation(AliVTrack *track, Int_
         {
             if(fPtE>=fpTBins.At(i) && fPtE<fpTBins.At(i+1))
             {
-                fCEtaPhi_Inc_DiHadron[i]->Fill(fDphi,fDeta);
+                fCEtaPhi_Inc_DiHadron[i][ZVtxCurrentBin]->Fill(fDphi,fDeta);
             }
         }
     }

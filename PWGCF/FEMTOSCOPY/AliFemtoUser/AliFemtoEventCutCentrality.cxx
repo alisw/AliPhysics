@@ -59,5 +59,5 @@ AliFemtoString AliFemtoEventCutCentrality::Report()
            + TString::Format("Vertex Z-position:\t %E - %E\n", fVertZPos.first, fVertZPos.second)
            + TString::Format("Number of events which passed:\t%lu  Number which failed:\t%lu\n", fNEventsPassed, fNEventsFailed);
 
-  return AliFemtoString(report);
+  return AliFemtoString((const char *)report);
 }

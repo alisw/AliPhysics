@@ -605,12 +605,14 @@ void BadChannelAna::PeriodAnalysis(Int_t criterion, Double_t nsigma, Double_t em
 
 	if(criterion==1)
 	{
-		if(emin>=1.8)FlagAsBad(criterion, histogram, nsigma, -1);//..do not apply a lower boundary
+//		if(emin>=1.8)FlagAsBad(criterion, histogram, nsigma, -1);//..do not apply a lower boundary
+		if(emin>=0.5)FlagAsBad(criterion, histogram, nsigma, -1);//..do not apply a lower boundary
 		else      FlagAsBad(criterion, histogram, nsigma, 200);//400
 	}
 	if(criterion==2)
 	{
-		if(emin>=1.8)FlagAsBad(criterion, histogram, nsigma, -1);//..do not narrow the integration window
+//		if(emin>=1.8)FlagAsBad(criterion, histogram, nsigma, -1);//..do not narrow the integration window
+		if(emin>=0.5)FlagAsBad(criterion, histogram, nsigma, -1);//..do not narrow the integration window
 		else      FlagAsBad(criterion, histogram, nsigma, 601);
 	}
 	if(criterion==3) FlagAsBad(criterion, histogram, nsigma, 602);

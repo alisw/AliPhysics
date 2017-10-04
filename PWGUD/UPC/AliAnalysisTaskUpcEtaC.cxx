@@ -1470,7 +1470,7 @@ void AliAnalysisTaskUpcEtaC::RunAODhist()
 		  //1 Kstar case
 		  else if ((vKstar[0].M() < (kStarMass + kStarWidth)) && (vKstar[0].M() > (kStarMass - kStarWidth)) &&
 			   ((vKstar[1].M() > (kStarMass + kStarWidth)) || (vKstar[1].M() < (kStarMass - kStarWidth))) &&
-			   goodPairA && !goodPairB) {
+			   goodPairA) {
 		    //Fill using first Kstar candidate
 		    fHistNeventsEtaC->Fill(14);
 		    if(qPion[0] > 0 && qPion[1] < 0) {
@@ -1540,6 +1540,8 @@ void AliAnalysisTaskUpcEtaC::RunAODhist()
 		  }
 		  //0 Kstar case
 		  else {
+		    //if(((vKstar[0].M() > (kStarMass+kStarWidth)) || (vKstar[0].M() < (kStarMass-kStarWidth))) &&
+		    //	  ((vKstar[1].M() > (kStarMass+kStarWidth)) || (vKstar[1].M() < (kStarMass-kStarWidth)))) {
 		    fHistNeventsEtaC->Fill(15);
 		    if(qPion[0] > 0 && qPion[1] < 0) {
 		      f0KstarPtPiPlus->Fill(vPion[0].Pt());

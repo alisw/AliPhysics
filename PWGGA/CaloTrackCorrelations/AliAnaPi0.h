@@ -461,7 +461,11 @@ class AliAnaPi0 : public AliAnaCaloTrackCorrBaseClass {
   TH2F *   fhMCOrgAsym[17];            //!<! Asymmetry vs pt of real pairs, check common origin of pair
   TH2F *   fhMCOrgDeltaEta[17];        //!<! Delta Eta vs pt of real pairs, check common origin of pair
   TH2F *   fhMCOrgDeltaPhi[17];        //!<! Delta Phi vs pt of real pairs, check common origin of pair
-  
+
+  //reconstructed and validated (true) pi0 and eta either zero, one or two photons from conversion
+  TH2F *   fhMCOrgPi0MassPtConversion[3]; //!<! Mass vs pt of real pairs (with 0,1,2 conversion) with ancestor pi0
+  TH2F *   fhMCOrgEtaMassPtConversion[3]; //!<! Mass vs pt of real pairs (with 0,1,2 conversion) with ancestor eta
+    
   // Multiple cuts in simulation, origin pi0 or eta
     
   /// Real pi0 pairs, reconstructed mass vs reconstructed pt of original pair.
@@ -519,8 +523,8 @@ class AliAnaPi0 : public AliAnaCaloTrackCorrBaseClass {
   TH2F *   fhPrimPi0ProdVertex;        //!<! Spectrum of primary pi0 vs production vertex
   TH2F *   fhPrimEtaProdVertex;        //!<! Spectrum of primary eta vs production vertex
 
-  TH2F *   fhMCPi0Radius[10] ;         //!<! reconstructed Pi0 production vertex vs pT for mother origin
-  TH2F *   fhMCEtaRadius[6] ;          //!<! reconstructed Eta production vertex vs pT for mother origin
+  TH2F *   fhMCPi0Radius ;             //!<! reconstructed Pi0 production vertex corrected by real vertex vs pT for mother origin
+  TH2F *   fhMCEtaRadius ;             //!<! reconstructed Eta production vertex corrected by real vertex vs pT for mother origin
 
   
   TH2F *   fhReMCFromConversion ;      //!<! Invariant mass of 2 clusters originated in conversions
