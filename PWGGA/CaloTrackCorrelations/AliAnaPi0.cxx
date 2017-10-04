@@ -1380,7 +1380,7 @@ TList * AliAnaPi0::GetCreateOutputObjects()
     
     if(fFillOriginHisto)
     {
-      fhMCPi0PtOrigin     = new TH2F("hMCPi0PtOrigin","Reconstructed pair from generated #pi^{0} #it{p}_{T} vs origin",nptbins,ptmin,ptmax,18,0,18) ;
+      fhMCPi0PtOrigin     = new TH2F("hMCPi0PtOrigin","Reconstructed pair from generated #pi^{0} #it{p}_{T} vs origin",nptbins,ptmin,ptmax,20,0,20) ;
       fhMCPi0PtOrigin->SetXTitle("#it{p}_{T} (GeV/#it{c})");
       fhMCPi0PtOrigin->SetYTitle("Origin");
       fhMCPi0PtOrigin->GetYaxis()->SetBinLabel(1 ,"Status 21");
@@ -1400,6 +1400,8 @@ TList * AliAnaPi0::GetCreateOutputObjects()
       fhMCPi0PtOrigin->GetYaxis()->SetBinLabel(15 ,"hadron int.");
       fhMCPi0PtOrigin->GetYaxis()->SetBinLabel(16 ,"radius");
       fhMCPi0PtOrigin->GetYaxis()->SetBinLabel(17 ,"p, n, #pi+-");
+      fhMCPi0PtOrigin->GetYaxis()->SetBinLabel(18 ,"e+-");
+      fhMCPi0PtOrigin->GetYaxis()->SetBinLabel(19 ,"#mu+-");
       outputContainer->Add(fhMCPi0PtOrigin) ;
       
       fhMCNotResonancePi0PtOrigin     = new TH2F("hMCNotResonancePi0PtOrigin","Reconstructed pair from generated #pi^{0} #it{p}_{T} vs origin",nptbins,ptmin,ptmax,11,0,11) ;
@@ -3308,11 +3310,17 @@ void AliAnaPi0::FillMCVersusRecDataHistograms(Int_t ancLabel , Int_t ancPDG,
 	      else if(mompdg==2212 || mompdg==2112 || mompdg==211) {
 		fhMCPi0PtOrigin->Fill(pt, 16.5, GetEventWeight()*weightPt);//p,n,pi
 	      }
+	      else if(mompdg==11) {
+		fhMCPi0PtOrigin->Fill(pt, 17.5, GetEventWeight()*weightPt);//e+-
+	      }
+	      else if(mompdg==13) {
+		fhMCPi0PtOrigin->Fill(pt, 18.5, GetEventWeight()*weightPt);//mu+-
+	      }
 	      else if     (momstatus  == 21) {
                 fhMCPi0PtOrigin->Fill(pt, 0.5, GetEventWeight()*weightPt);//parton (empty for py8)
               }
-              else if(mompdg     < 22 ) {
-                fhMCPi0PtOrigin->Fill(pt, 1.5, GetEventWeight()*weightPt);//quark
+              else if(mompdg     < 22 && mompdg!=11 && mompdg!=13) {
+                fhMCPi0PtOrigin->Fill(pt, 1.5, GetEventWeight()*weightPt);//quark (no e nor mu)
               }
               else if(mompdg     > 2100  && mompdg   < 2210) {
                 fhMCPi0PtOrigin->Fill(pt, 2.5, GetEventWeight()*weightPt);// resonances
