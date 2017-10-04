@@ -8,7 +8,11 @@ if test "x$ALICE_PARFILES_NOFORCEDEBUG" != "x1" ; then
   makeopts='ROOTBUILD=debug'
 fi
 
-npar=`grep -c bogomips /proc/cpuinfo 2> /dev/null || echo 0`
+if test "x$ALIEN_JDL_OUTPUTDIR" != "x" ; then
+  npar=1  # Grid policy: cap to 1 on worker nodes
+else
+  npar=`grep -c bogomips /proc/cpuinfo 2> /dev/null || echo 0`
+fi
 if test $npar -eq 0 2> /dev/null ; then
   # Assume we are on OS X
   npar=`sysctl hw.ncpu | cut -b10 2> /dev/null`
