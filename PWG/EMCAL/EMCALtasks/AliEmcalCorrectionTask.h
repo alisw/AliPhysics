@@ -1,21 +1,17 @@
 #ifndef ALIEMCALCORRECTIONTASK_H
 #define ALIEMCALCORRECTIONTASK_H
 
-// CINT can't handle the yaml header!
-#if !(defined(__CINT__) || defined(__MAKECINT__))
-#include <yaml-cpp/yaml.h>
-#endif
-
+// YAML::Node
+class Node;
 class AliEmcalCorrectionCellContainer;
 class AliEmcalCorrectionComponent;
 class AliEMCALGeometry;
 class AliVEvent;
 
-#include <iosfwd>
-
 #include <AliAnalysisTaskSE.h>
 #include <AliVCluster.h>
 
+#include "AliYAMLConfiguration.h"
 #include "AliEmcalContainerUtils.h"
 #include "AliParticleContainer.h"
 #include "AliMCParticleContainer.h"
@@ -148,9 +144,6 @@ class AliEmcalCorrectionTask : public AliAnalysisTaskSE {
 
  private:
   // Utility functions
-  // File utilities
-  static inline bool DoesFileExist(const std::string & filename);
-  void SetupConfigurationFilePath(std::string & filename, bool userFile = false);
   // Cell utilities
   void SetCellsObjectInCellContainerBasedOnProperties(AliEmcalCorrectionCellContainer * cellContainer);
   // Container utilities
@@ -179,32 +172,22 @@ class AliEmcalCorrectionTask : public AliAnalysisTaskSE {
   void CreateInputObjects(AliEmcalContainerUtils::InputObject_t inputObjectType);
   void AddContainersToComponent(AliEmcalCorrectionComponent * component, AliEmcalContainerUtils::InputObject_t inputObjectType, bool checkObjectExists = false);
   
-#if !(defined(__CINT__) || defined(__MAKECINT__))
   // Hidden from CINT since it cannot handle YAML objects well
   // Input objects 
-  void SetupContainersFromInputNodes(AliEmcalContainerUtils::InputObject_t inputObjectType, YAML::Node & userInputObjectNode, YAML::Node & defaultInputObjectNode, std::set <std::string> & requestedContainers);
+  void SetupContainersFromInputNodes(AliEmcalContainerUtils::InputObject_t inputObjectType, std::set <std::string> & requestedContainers);
   // Cells
-  void SetupCellsInfo(std::string containerName, YAML::Node & userNode, YAML::Node & defaultNode);
+  void SetupCellsInfo(std::string containerName);
   // Containers
-  void SetupContainer(AliEmcalContainerUtils::InputObject_t inputObjectType, std::string containerName, YAML::Node & userNode, YAML::Node & defaultNode);
-  AliEmcalContainer * AddContainer(AliEmcalContainerUtils::InputObject_t contType, std::string & containerName, YAML::Node & userNode, YAML::Node & defaultNode);
+  void SetupContainer(const AliEmcalContainerUtils::InputObject_t inputObjectType, const std::string containerName);
+  AliEmcalContainer * AddContainer(const AliEmcalContainerUtils::InputObject_t contType, const std::string containerName);
 
   // Utilities
-  // YAML node dependent input objects utilties
-  void GetNodeForInputObjects(YAML::Node & inputNode, YAML::Node & nodeToRetrieveFrom, std::string & inputObjectName, bool requiredProperty);
   // YAML node dependent initialization utlitiles
-  void GetPropertyNamesFromNode(const std::string & componentName, const YAML::Node & node, std::set <std::string> & propertyNames, const bool nodeRequired);
-#endif
+  void GetPropertyNamesFromNode(const std::string configurationName, const std::string componentName, std::set <std::string> & propertyNames, const bool nodeRequired);
 
-#if !(defined(__CINT__) || defined(__MAKECINT__))
-  // Hidden from CINT since it cannot handle YAML objects well
-  YAML::Node                  fUserConfiguration;          //!<! User YAML Configuration
-  YAML::Node                  fDefaultConfiguration;       //!<! Default YAML Configuration
-#endif
+  AliYAMLConfiguration        fYAMLConfig;                 ///< Handles configuration from YAML.
 
-  std::string                 fSuffix;                     ///< Suffix of the Correction Task (used to select components)
-  std::string                 fUserConfigurationString;    ///< Store the user YAML configuration as a string so that it can be streamed
-  std::string                 fDefaultConfigurationString; ///< Store the default YAML configuration as a string so that it can be streamed
+  std::string                 fSuffix;                     ///< Suffix of the Correction Task (used to select specialized components)
 
   std::string                 fUserConfigurationFilename;  //!<! User YAML configruation filename
   std::string                 fDefaultConfigurationFilename; //!<! Default YAML configuration filename

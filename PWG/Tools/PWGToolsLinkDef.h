@@ -30,6 +30,13 @@
 #pragma link C++ class AliJSONString+;
 #pragma link C++ class AliAnalysisTaskDummy+;
 #pragma link C++ class AliTLorentzVector+;
+#if ROOT_VERSION_CODE > ROOT_VERSION(6,4,0)
+#pragma link C++ namespace YAML;
+#pragma link C++ class YAML::Node+;
+#endif
+#pragma link C++ class std::pair<std::string, std::string>+;
+#pragma link C++ class std::vector<std::pair<std::string, std::string> >+;
+#pragma link C++ class AliYAMLConfiguration+;
 #pragma link C++ namespace TestTHistManager;
 #pragma link C++ class TestTHistManager::THistManagerTestSuite;
 #pragma link C++ function TestTHistManager::TestRunAll();
