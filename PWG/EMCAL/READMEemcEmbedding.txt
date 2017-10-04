@@ -329,6 +329,37 @@ in your tasks output.
 Note that for compatibility reasons, AliAnalysisTaskEmcal::IsPythia() should be set to __false__ if you task
 inherits from that class. Otherwise, histogram names will conflict.
 
+# Embedding on LEGO trains                                                  {#emcEmbeddingLegoTrain}
+
+Embedding can be used as expected on the LEGO train. If available, it is best to use centralized wagons, while
+changing the configuration for your particular dataset. The main difficulty with the LEGO train is that a new train
+must be configured for each pt hard bin. Previously, that meant that a variable must be changed every time, which can
+be a rather error prone process. Now, the embedding helper can handle this configuration automatically.
+
+The relevant functions are in the function group "pT hard bin auto configuration". Once enabled, the user must set
+the proper paths to determine where to locate a scratch file, as well as how the particular set of trains will be identified. See the example below for an illustrative example:
+
+~~~{.cxx}
+// Configure the embedding helper as usual
+//...
+// Enable pt hard bin auto configuration
+embeddingHelper->SetAutoConfigurePtHardBins();
+// Tells it the base path of where to write the auto configuration file.
+embeddingHelper->SetAutoConfigureBasePath("/alice/cern.ch/user/a/alitrain/");
+// Identifies the type of train this train is running on.
+embeddingHelper->SetAutoConfigureTrainTypePath("PWGJE/Jets_EMC_PbPb/");
+// This value must be unique for your train run. Probably best to use your name!
+embeddingHelper->SetAutoConfigureIdentifier("myEmbedding");
+
+// Note that if you've enabled the pt hard bin auto configuration, be certain to not select a particular pt hard bin!
+// However, you _must_ set the number of pt hard bins in your production!
+embeddingHelper->SetNPtHardBins(11);
+~~~
+
+Now just request the trains. Each one can be started with the desired settings, and they will automatically coordinate to determine which pt hard bins should be selected for each train. No need to manually change variables for each pt hard bin!
+
+With the above settings
+
 # Note on jets and jet finding
 
 When handling jet finding, a bit more care needs to be applied, especially if apply an artificial tracking
