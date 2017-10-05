@@ -99,19 +99,19 @@ class AliYAMLConfiguration : public TObject {
   bool Reinitialize();
 
   /// Add YAML configuration at configurationFilename to available configurations
-  bool AddEmptyConfiguration(const std::string configurationName);
+  bool AddEmptyConfiguration(const std::string & configurationName);
   bool AddConfiguration(std::string configurationFilename, std::string configurationName = "");
   #if !(defined(__CINT__) || defined(__MAKECINT__))
   bool AddConfiguration(const YAML::Node node, std::string configurationName = "");
 
-  const std::pair<std::string, YAML::Node> & GetConfiguration(const int i)            const { return fConfigurations.at(i); }
-  const std::pair<std::string, YAML::Node> & GetConfiguration(const std::string name) const { return fConfigurations.at(GetConfigurationIndexByName(name, fConfigurations)); }
-  std::pair<std::string, YAML::Node> & GetConfiguration(const int i)                        { return fConfigurations.at(i); }
-  std::pair<std::string, YAML::Node> & GetConfiguration(const std::string name)             { return fConfigurations.at(GetConfigurationIndexByName(name, fConfigurations)); }
+  const std::pair<std::string, YAML::Node> & GetConfiguration(const int i)              const { return fConfigurations.at(i); }
+  const std::pair<std::string, YAML::Node> & GetConfiguration(const std::string & name) const { return fConfigurations.at(GetConfigurationIndexByName(name, fConfigurations)); }
+  std::pair<std::string, YAML::Node> & GetConfiguration(const int i)                          { return fConfigurations.at(i); }
+  std::pair<std::string, YAML::Node> & GetConfiguration(const std::string & name)             { return fConfigurations.at(GetConfigurationIndexByName(name, fConfigurations)); }
 
   // Helper functions to retrieve property values
   template<typename T>
-  bool GetProperty(std::vector<std::string> propertyPath, const std::string propertyName, T & property, const bool requiredProperty) const;
+  bool GetProperty(std::vector<std::string> propertyPath, const std::string & propertyName, T & property, const bool requiredProperty) const;
   template<typename T>
   bool GetProperty(const std::vector<std::string> propertyPath, T & property, const bool requiredProperty) const;
   // Retrieve property driver function.
@@ -123,11 +123,11 @@ class AliYAMLConfiguration : public TObject {
   bool WriteProperty(std::string propertyName, T & property, std::string configurationName = "");
   #endif
 
-  bool WriteConfiguration(const std::string filename, const int i) const;
-  bool WriteConfiguration(const std::string filename, const std::string configurationName) const;
+  bool WriteConfiguration(const std::string & filename, const unsigned int i) const;
+  bool WriteConfiguration(const std::string & filename, const std::string & configurationName) const;
 
-  void PrintConfiguration(int i = 0) const;
-  void PrintConfiguration(std::string name) const;
+  void PrintConfiguration(const unsigned int i = 0) const;
+  void PrintConfiguration(const std::string & name) const;
   void PrintConfigurations() const;
 
  protected:
@@ -135,11 +135,11 @@ class AliYAMLConfiguration : public TObject {
   // Utility functions
   // File utilities
   inline bool DoesFileExist(const std::string & filename) const;
-  void SetupReadingConfigurationFilePath(std::string & filename, const std::string fileIdentifier) const;
-  void WriteConfigurationToFilePath(const std::string localFilename, std::string filename) const;
+  void SetupReadingConfigurationFilePath(std::string & filename, const std::string & fileIdentifier) const;
+  void WriteConfigurationToFilePath(const std::string & localFilename, std::string filename) const;
   // Configuration utilities
   template<typename T>
-  int GetConfigurationIndexByName(const std::string name, const std::vector<std::pair<std::string, T>> & configurations) const;
+  unsigned int GetConfigurationIndexByName(const std::string & name, const std::vector<std::pair<std::string, T>> & configurations) const;
 
   bool IsSharedValue(std::string & value) const;
   #if !(defined(__CINT__) || defined(__MAKECINT__))
@@ -155,7 +155,7 @@ class AliYAMLConfiguration : public TObject {
   template<typename T>
   bool GetPropertyFromNode(const YAML::Node & node, std::string propertyName, T & property) const;
   template<typename T>
-  bool GetProperty(YAML::Node & node, YAML::Node & sharedParametersNode, const std::string configurationName, std::string propertyName, T & property) const;
+  bool GetProperty(YAML::Node & node, YAML::Node & sharedParametersNode, const std::string & configurationName, std::string propertyName, T & property) const;
 
   template<typename T>
   void WriteValue(YAML::Node & node, std::string propertyName, T & proeprty);
@@ -275,7 +275,7 @@ bool AliYAMLConfiguration::GetPropertyFromNode(const YAML::Node & node, std::str
  * @return True if the property was set successfully
  */
 template<typename T>
-bool AliYAMLConfiguration::GetProperty(std::vector <std::string> propertyPath, const std::string propertyName, T & property, const bool requiredProperty) const
+bool AliYAMLConfiguration::GetProperty(std::vector <std::string> propertyPath, const std::string & propertyName, T & property, const bool requiredProperty) const
 {
   propertyPath.push_back(propertyName);
   return GetProperty(propertyPath, property, requiredProperty);
@@ -387,7 +387,7 @@ bool AliYAMLConfiguration::GetProperty(std::string propertyName, T & property, c
  * @return True if the property was set successfully
  */
 template<typename T>
-bool AliYAMLConfiguration::GetProperty(YAML::Node & node, YAML::Node & sharedParametersNode, const std::string configurationName, std::string propertyName, T & property) const
+bool AliYAMLConfiguration::GetProperty(YAML::Node & node, YAML::Node & sharedParametersNode, const std::string & configurationName, std::string propertyName, T & property) const
 {
   // Used as a buffer for printing complicated messages
   std::stringstream tempMessage;
@@ -497,7 +497,7 @@ bool AliYAMLConfiguration::GetProperty(YAML::Node & node, YAML::Node & sharedPar
 template<typename T>
 bool AliYAMLConfiguration::WriteProperty(std::string propertyName, T & property, std::string configurationName)
 {
-  int configurationIndex = 0;
+  unsigned int configurationIndex = 0;
   if (configurationName != "")
   {
     configurationIndex = GetConfigurationIndexByName(configurationName, fConfigurations);
@@ -568,7 +568,7 @@ void AliYAMLConfiguration::WriteValue(YAML::Node & node, std::string propertyNam
  * @return Index of the configuration, or -1 if not found.
  */
 template<typename T>
-int AliYAMLConfiguration::GetConfigurationIndexByName(const std::string name, const std::vector<std::pair<std::string, T>> & configurations) const
+unsigned int AliYAMLConfiguration::GetConfigurationIndexByName(const std::string & name, const std::vector<std::pair<std::string, T>> & configurations) const
 {
   int index = -1;
   for (const auto & configPair : configurations)

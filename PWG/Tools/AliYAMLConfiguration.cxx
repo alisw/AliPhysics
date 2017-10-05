@@ -38,7 +38,7 @@ AliYAMLConfiguration::AliYAMLConfiguration(const std::string prefixString, const
  *
  * @return True if the configuration was added successfully.
  */
-bool AliYAMLConfiguration::AddEmptyConfiguration(const std::string configurationName)
+bool AliYAMLConfiguration::AddEmptyConfiguration(const std::string & configurationName)
 {
   YAML::Node node;
   AliInfoStream() << "Adding configuration \"" << configurationName << "\" as an empty YAML node.\n";
@@ -111,7 +111,7 @@ bool AliYAMLConfiguration::AddConfiguration(const YAML::Node node, std::string c
  *
  * @return True if write was successful.
  */
-bool AliYAMLConfiguration::WriteConfiguration(const std::string filename, const int index) const
+bool AliYAMLConfiguration::WriteConfiguration(const std::string & filename, const unsigned int index) const
 {
   // Write to a local temp filename
   TUUID tempUUID;
@@ -139,7 +139,7 @@ bool AliYAMLConfiguration::WriteConfiguration(const std::string filename, const 
  *
  * @return True if write was successful.
  */
-bool AliYAMLConfiguration::WriteConfiguration(const std::string filename, const std::string configurationName) const
+bool AliYAMLConfiguration::WriteConfiguration(const std::string & filename, const std::string & configurationName) const
 {
   return WriteConfiguration(filename, GetConfigurationIndexByName(configurationName, fConfigurations));
 }
@@ -166,7 +166,7 @@ inline bool AliYAMLConfiguration::DoesFileExist(const std::string & filename) co
  * @param[in,out] filename Name of the file to be open
  * @param[in] fileIdentifier Additional file identifier to add onto the file name
  */
-void AliYAMLConfiguration::SetupReadingConfigurationFilePath(std::string & filename, const std::string fileIdentifier) const
+void AliYAMLConfiguration::SetupReadingConfigurationFilePath(std::string & filename, const std::string & fileIdentifier) const
 {
   if (filename != "")
   {
@@ -209,7 +209,7 @@ void AliYAMLConfiguration::SetupReadingConfigurationFilePath(std::string & filen
  * @param[in] filename Filename to which the configuration should be written.
  * @param[in] localFilename Filename where the configuration was written locally.
  */
-void AliYAMLConfiguration::WriteConfigurationToFilePath(const std::string localFilename, std::string filename) const
+void AliYAMLConfiguration::WriteConfigurationToFilePath(const std::string & localFilename, std::string filename) const
 {
   bool cannotWriteFile = false;
   if (localFilename == "") {
@@ -325,7 +325,7 @@ bool AliYAMLConfiguration::IsSharedValue(std::string & value) const
  *
  * @param[in] i Index of the YAML configuration.
  */
-void AliYAMLConfiguration::PrintConfiguration(int i) const
+void AliYAMLConfiguration::PrintConfiguration(const unsigned int i) const
 {
   if (fConfigurations.size() > i)
   {
@@ -340,7 +340,7 @@ void AliYAMLConfiguration::PrintConfiguration(int i) const
  *
  * @param[in] name Name of the YAML configuration.
  */
-void AliYAMLConfiguration::PrintConfiguration(std::string name) const
+void AliYAMLConfiguration::PrintConfiguration(const std::string & name) const
 {
   PrintConfiguration(GetConfigurationIndexByName(name, fConfigurations));
 }
