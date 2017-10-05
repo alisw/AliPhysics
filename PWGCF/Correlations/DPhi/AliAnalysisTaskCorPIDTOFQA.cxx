@@ -347,13 +347,14 @@ void AliAnalysisTaskCorPIDTOFQA::UserExec(Option_t *)
 	    }
 	}
 	
-	if (1) {   AliAODHeader *out = (AliAODHeader*)eout->GetHeader();                      AliAODHeader *in  = (AliAODHeader*)evin->GetHeader();  	 *out = *in;      }
-	if (1) {   AliTOFHeader *out = const_cast<AliTOFHeader*>(eout->GetTOFHeader()); const AliTOFHeader *in  =                evin->GetTOFHeader();	 *out = *in;      }
-	if (1) {   AliAODVZERO  *out =                eout->GetVZEROData();	              AliAODVZERO  *in  =                evin->GetVZEROData();	 *out = *in;      }
-	if (1) {   AliAODTZERO  *out =                eout->GetTZEROData();	              AliAODTZERO  *in  =                evin->GetTZEROData();	 *out = *in;      }
-	if (1) {   TClonesArray *out =                eout->GetTracks();	              TClonesArray *in  =                evin->GetTracks();	  new (out) TClonesArray(*in);      }
-	if (1) {   TClonesArray *out =                eout->GetVertices();	              TClonesArray *in  =                evin->GetVertices();	  new (out) TClonesArray(*in);      }
-	if (1) {   TClonesArray *out =                eout->GetCaloClusters();	              TClonesArray *in  =                evin->GetCaloClusters(); new (out) TClonesArray(*in);      }
+	if (1) {   AliAODHeader    *out = (AliAODHeader*)eout->GetHeader();                      AliAODHeader    *in = (AliAODHeader*)evin->GetHeader();  	    *out = *in;                  }
+	if (1) {   AliTOFHeader    *out = const_cast<AliTOFHeader*>(eout->GetTOFHeader()); const AliTOFHeader    *in =                evin->GetTOFHeader();	    *out = *in;                  }
+	if (1) {   AliAODVZERO     *out =                eout->GetVZEROData();	                 AliAODVZERO     *in =                evin->GetVZEROData();	    *out = *in;                  }
+	if (1) {   AliAODTZERO     *out =                eout->GetTZEROData();	                 AliAODTZERO     *in =                evin->GetTZEROData(); 	    *out = *in;                  }
+	if (1) {   TClonesArray    *out =                eout->GetTracks();	                 TClonesArray    *in =                evin->GetTracks();	new (out) TClonesArray(*in);     }
+	if (1) {   TClonesArray    *out =                eout->GetVertices();	                 TClonesArray    *in =                evin->GetVertices();      new (out) TClonesArray(*in);     }
+	if (1) {   TClonesArray    *out =                eout->GetCaloClusters();	         TClonesArray    *in =                evin->GetCaloClusters();  new (out) TClonesArray(*in);     }
+	if (1) {   AliAODCaloCells *out =                eout->GetEMCALCells();                  AliAODCaloCells *in =                evin->GetEMCALCells();        *out = *in;                  }
     }
 
     PostData(1, fOutputList);                           // stream the results the analysis of this event to
