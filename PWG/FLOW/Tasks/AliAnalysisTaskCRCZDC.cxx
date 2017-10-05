@@ -649,17 +649,17 @@ void AliAnalysisTaskCRCZDC::UserCreateOutputObjects()
   fhZNBCCorr = new TH3D("fhZNBCCorr","fhZNBCCorr",100,0.,100.,500,0.,1.E5,500,0.,1.E5);
   fOutput->Add(fhZNBCCorr);
 
-  fQATrackTPCNcls = new TH3D("fQATrackTPCNcls","fQATrackTPCNcls",20,0.,5.,16,-0.8,0.8,50,50.,150.);
+  fQATrackTPCNcls = new TH3D("fQATrackTPCNcls","fQATrackTPCNcls",50,0.,TMath::TwoPi(),16,-0.8,0.8,50,50.,150.);
   fOutput->Add(fQATrackTPCNcls);
-  fQATrackITSNcls = new TH3D("fQATrackITSNcls","fQATrackITSNcls",20,0.,5.,16,-0.8,0.8,6,0.,6.);
+  fQATrackITSNcls = new TH3D("fQATrackITSNcls","fQATrackITSNcls",50,0.,TMath::TwoPi(),16,-0.8,0.8,6,0.,6.);
   fOutput->Add(fQATrackITSNcls);
-  fQATrackTPCchi2 = new TH3D("fQATrackTPCchi2","fQATrackTPCchi2",20,0.,5.,16,-0.8,0.8,50,0.,5.);
+  fQATrackTPCchi2 = new TH3D("fQATrackTPCchi2","fQATrackTPCchi2",50,0.,TMath::TwoPi(),16,-0.8,0.8,50,0.,5.);
   fOutput->Add(fQATrackTPCchi2);
-  fQATrackITSchi2 = new TH3D("fQATrackITSchi2","fQATrackITSchi2",20,0.,5.,16,-0.8,0.8,50,0.,50.);
+  fQATrackITSchi2 = new TH3D("fQATrackITSchi2","fQATrackITSchi2",50,0.,TMath::TwoPi(),16,-0.8,0.8,50,0.,50.);
   fOutput->Add(fQATrackITSchi2);
-  fQATrackTPCScls = new TH3D("fQATrackTPCScls","fQATrackTPCScls",20,0.,5.,16,-0.8,0.8,50,0.,1.);
+  fQATrackTPCScls = new TH3D("fQATrackTPCScls","fQATrackTPCScls",50,0.,TMath::TwoPi(),16,-0.8,0.8,50,0.,1.);
   fOutput->Add(fQATrackTPCScls);
-  fQATrackITSScls = new TH3D("fQATrackITSScls","fQATrackITSScls",20,0.,5.,16,-0.8,0.8,50,0.,1.);
+  fQATrackITSScls = new TH3D("fQATrackITSScls","fQATrackITSScls",50,0.,TMath::TwoPi(),16,-0.8,0.8,50,0.,1.);
   fOutput->Add(fQATrackITSScls);
 
   if(fAnalysisType == kMCAOD) {
@@ -2103,29 +2103,29 @@ Bool_t AliAnalysisTaskCRCZDC::SelectPileup(AliAODEvent *aod)
       if (aodTrk->TestFilterBit(128))
         multTPC++;
 
-      if (centrV0M<10. && aodTrk->TestFilterBit(768)) {
+      if (centrV0M<10. && aodTrk->TestFilterBit(768) && aodTrk->Pt()>0.2) {
 
           // cut on # TPC clusters
           Int_t ntpccls = aodTrk->GetTPCNcls();
-          fQATrackTPCNcls->Fill(aodTrk->Pt(),aodTrk->Eta(),ntpccls);
+          fQATrackTPCNcls->Fill(aodTrk->Phi(),aodTrk->Eta(),ntpccls);
 
           // cut on # ITS clusters
           Int_t nitscls = aodTrk->GetITSNcls();
-          fQATrackITSNcls->Fill(aodTrk->Pt(),aodTrk->Eta(),nitscls);
+          fQATrackITSNcls->Fill(aodTrk->Phi(),aodTrk->Eta(),nitscls);
 
           // cut on chi2 / # TPC clusters
           Double_t chi2tpc = 0.;
           if(ntpccls>0) {
             chi2tpc = aodTrk->Chi2perNDF();
           }
-          fQATrackTPCchi2->Fill(aodTrk->Pt(),aodTrk->Eta(),chi2tpc);
+          fQATrackTPCchi2->Fill(aodTrk->Phi(),aodTrk->Eta(),chi2tpc);
 
           // cut on chi2 / # ITS clusters
           Double_t chi2its = 0.;
           if(nitscls>0) {
             chi2its = aodTrk->GetITSchi2()/aodTrk->GetITSNcls();
           }
-          fQATrackITSchi2->Fill(aodTrk->Pt(),aodTrk->Eta(),chi2its);
+          fQATrackITSchi2->Fill(aodTrk->Phi(),aodTrk->Eta(),chi2its);
 
           // cut on fraction shared TPC clusters
           Double_t fshtpccls = 0.;
@@ -2133,7 +2133,7 @@ Bool_t AliAnalysisTaskCRCZDC::SelectPileup(AliAODEvent *aod)
             Int_t ntpcclsS = aodTrk->GetTPCnclsS();
             fshtpccls = 1.*ntpcclsS/ntpccls;
           }
-          fQATrackTPCScls->Fill(aodTrk->Pt(),aodTrk->Eta(),fshtpccls);
+          fQATrackTPCScls->Fill(aodTrk->Phi(),aodTrk->Eta(),fshtpccls);
 
           // cut on fraction shared ITS clusters
           Double_t fshitscls = 0.;
@@ -2144,7 +2144,7 @@ Bool_t AliAnalysisTaskCRCZDC::SelectPileup(AliAODEvent *aod)
             }
             fshitscls = 1.*nshcl/nitscls;
           }
-          fQATrackITSScls->Fill(aodTrk->Pt(),aodTrk->Eta(),fshitscls);
+          fQATrackITSScls->Fill(aodTrk->Phi(),aodTrk->Eta(),fshitscls);
 
       }
 
