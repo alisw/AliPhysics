@@ -120,6 +120,7 @@ set(SRCS
     merger-ca/AliHLTTPCGMSliceTrack.cxx
     merger-ca/AliHLTTPCGMTrackParam.cxx
     merger-ca/AliHLTTPCGMPhysicalTrackModel.cxx
+    merger-ca/AliHLTTPCGMPropagator.cxx
     offline/AliHLTTPCDigitPublisherComponent.cxx
     offline/AliHLTTPCOfflineCluster.cxx
     tracking-ca/AliHLTTPCCABaseTrackParam.cxx
