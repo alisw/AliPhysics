@@ -338,7 +338,7 @@ Bool_t AliTRDPIDParams::AliTRDPIDCentrality::GetThresholdParameters(Int_t ntrack
     AliTRDPIDThresholds test(ntracklets, efficiency, charge);
     TObject *result = fEntries->FindObject(&test);
     if(!result){
-        AliDebug(1, Form("No threshold params found for %d tracklets and an electron efficiency of %f", ntracklets, efficiency));
+        AliDebug(1, Form("No threshold params found for %d tracklets, an electron efficiency of %f and a charge %d", ntracklets, efficiency, charge));
         return kFALSE;
     }
     AliTRDPIDThresholds *parResult = static_cast<AliTRDPIDThresholds *>(result);

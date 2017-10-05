@@ -149,6 +149,10 @@ TObject *AliTRDPIDReference::GetUpperReference(AliPID::EParticleType spec, Float
     // In case no next upper reference is found, NULL is returned
     // The momentum value the reference is associated to is stored in the reference pUpper
     //
+    if ((fRefContainer->GetSize())<(fMomentumBins.GetSize() * AliPID::kSPECIES * (Charge+1))){
+        AliDebug(2,Form("RefContainer Size %d; needed Size %d; Both charges will be used for Reference",fRefContainer->GetSize(),(fMomentumBins.GetSize() * AliPID::kSPECIES * Charge)));
+        return NULL;
+    }
     Int_t bin = -1;
     pUpper = 20;
     //get next larger momentum "bin" (next larger than "p")
@@ -163,7 +167,7 @@ TObject *AliTRDPIDReference::GetUpperReference(AliPID::EParticleType spec, Float
     AliDebug(2, Form("p = %.1f, bin = %d\n", p, bin));
     if(bin >= 0) {
         pUpper = fMomentumBins[bin];
-        return fRefContainer->At(spec * fMomentumBins.GetSize() + bin + (AliPID::kSPECIES *  fMomentumBins.GetSize() * Charge));
+        return fRefContainer->At(spec * fMomentumBins.GetSize() + bin + (AliPID::kSPECIES * fMomentumBins.GetSize() * Charge));
     }
     else return NULL;
 }
@@ -175,6 +179,10 @@ TObject *AliTRDPIDReference::GetLowerReference(AliPID::EParticleType spec, Float
     // In case no next lower reference is found, NULL is returned
     // The momentum value the reference is associated to is stored in the reference pLower
     //
+    if ((fRefContainer->GetSize())<((fMomentumBins.GetSize())* AliPID::kSPECIES * (Charge+1))){
+        AliDebug(2,Form("RefContainer Size %d; needed Size %d; Both charges will be used for Reference",fRefContainer->GetSize(),(fMomentumBins.GetSize() * AliPID::kSPECIES * Charge)));
+        return NULL;
+    }
     Int_t bin = -1;
     pLower = 0;
     for(Int_t ip = fMomentumBins.GetSize() - 1; ip >= 0; ip--){

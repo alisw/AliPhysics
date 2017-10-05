@@ -67,7 +67,7 @@ public:
 
         // #if ROOT_VERSION_CODE < ROOT_VERSION(5,99,0)
         // Private - cannot be streamed
-        ClassDef(AliTRDPIDThresholds, 1);
+        ClassDef(AliTRDPIDThresholds, 2);
         // #endif
     };
 
@@ -103,7 +103,7 @@ private:
     TList *fEntries; //
 
 
-    ClassDef(AliTRDPIDParams, 3);
+    ClassDef(AliTRDPIDParams, 2);
 };
 #endif
 

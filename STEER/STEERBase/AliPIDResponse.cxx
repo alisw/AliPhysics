@@ -2150,8 +2150,7 @@ Bool_t AliPIDResponse::IdentifiedAsElectronTRD(const AliVTrack *vtrack, Int_t &n
     }
   }
   p = TMath::Mean(nmomenta, trdmomenta);
-
-  return fTRDResponse.IdentifiedAsElectron(ntracklets, probs, p, efficiencyLevel,centrality,PIDmethod);
+  return fTRDResponse.IdentifiedAsElectron(ntracklets, probs, p, efficiencyLevel,centrality,PIDmethod,vtrack);
 }
 
 //______________________________________________________________________________
@@ -2913,7 +2912,7 @@ Int_t AliPIDResponse::CalculateTRDResponse(const AliVTrack *track,Double_t p[],A
 	}
     }
 
-    return fTRDResponse.GetResponse(nslices, dedx, mom, p,PIDmethod);
+    return fTRDResponse.GetResponse(nslices, dedx, mom, p,PIDmethod, kTRUE, track);
 
 }
 //______________________________________________________________________________
