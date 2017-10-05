@@ -211,6 +211,10 @@
 #pragma link C++ class AliJetEmbeddingSelRhoTask+;
 #pragma link C++ class Cumulants+;
 #pragma link C++ class VPart+;
+#pragma link C++ namespace PWGJE;
+#pragma link C++ namespace PWGJE::EMCALJetTasks;
+#pragma link C++ namespace PWGJE::EMCALJetTasks::Test;
+#pragma link C++ class PWGJE::EMCALJetTasks::Test::AliAnalysisTaskEmcalTriggerSelectionTest+;
 
 #ifdef HAVE_FASTJET
 #pragma link C++ class AliEmcalJetUtility+;

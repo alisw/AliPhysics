@@ -43,6 +43,7 @@ namespace EMCAL {
 
 AliAnalysisTaskEmcalTriggerSelection::AliAnalysisTaskEmcalTriggerSelection():
   AliAnalysisTaskEmcal(),
+  fTriggerDecisionContainer(nullptr),
   fGlobalDecisionContainerName("EmcalTriggerDecision"),
   fTriggerSelections(),
   fSelectionQA()
@@ -53,6 +54,7 @@ AliAnalysisTaskEmcalTriggerSelection::AliAnalysisTaskEmcalTriggerSelection():
 
 AliAnalysisTaskEmcalTriggerSelection::AliAnalysisTaskEmcalTriggerSelection(const char* name):
   AliAnalysisTaskEmcal(name, kTRUE),
+  fTriggerDecisionContainer(nullptr),
   fGlobalDecisionContainerName("EmcalTriggerDecision"),
   fTriggerSelections(),
   fSelectionQA()
@@ -69,17 +71,21 @@ void AliAnalysisTaskEmcalTriggerSelection::UserCreateOutputObjects() {
   for(auto q : fSelectionQA) static_cast<AliEmcalTriggerSelectionQA *>(q)->GetHistos(fOutput);
 }
 
+void AliAnalysisTaskEmcalTriggerSelection::UserExecOnce(){
+  if(!fTriggerDecisionContainer) fTriggerDecisionContainer = new AliEmcalTriggerDecisionContainer(fGlobalDecisionContainerName.Data());
+  fInputEvent->AddObject(fTriggerDecisionContainer);
+}
+
 void AliAnalysisTaskEmcalTriggerSelection::AddTriggerSelection(AliEmcalTriggerSelection * const selection){
   fTriggerSelections.Add(selection);
 }
 
 Bool_t AliAnalysisTaskEmcalTriggerSelection::Run(){
-  AliEmcalTriggerDecisionContainer *cont = GetGlobalTriggerDecisionContainer();
-  cont->Reset();
+  fTriggerDecisionContainer->Reset();
   AliEmcalTriggerSelection *selection(NULL);
   TIter selectionIter(&fTriggerSelections);
   while((selection = dynamic_cast<AliEmcalTriggerSelection *>(selectionIter()))){
-    cont->AddTriggerDecision(selection->MakeDecison(fTriggerPatchInfo));
+    fTriggerDecisionContainer->AddTriggerDecision(selection->MakeDecison(fTriggerPatchInfo));
   }
   return kTRUE;
 }
@@ -87,15 +93,6 @@ Bool_t AliAnalysisTaskEmcalTriggerSelection::Run(){
 Bool_t AliAnalysisTaskEmcalTriggerSelection::FillHistograms() {
   MakeQA(GetGlobalTriggerDecisionContainer());
   return kTRUE;
-}
-
-AliEmcalTriggerDecisionContainer *AliAnalysisTaskEmcalTriggerSelection::GetGlobalTriggerDecisionContainer(){
-  AliEmcalTriggerDecisionContainer *cont(dynamic_cast<AliEmcalTriggerDecisionContainer *>(fInputEvent->FindListObject(fGlobalDecisionContainerName.Data())));
-  if(!cont){
-    cont = new AliEmcalTriggerDecisionContainer(fGlobalDecisionContainerName.Data());
-    fInputEvent->AddObject(cont);
-  }
-  return cont;
 }
 
 void AliAnalysisTaskEmcalTriggerSelection::InitQA(const AliEmcalTriggerSelection *sel){
