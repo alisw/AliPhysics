@@ -498,7 +498,7 @@ AliVCluster* AliEmcalJet::GetLeadingCluster(TClonesArray* clusters) const
 {
   AliVCluster* maxCluster = 0;
   for (Int_t i = 0; i < GetNumberOfClusters(); i++) {
-    AliVCluster* cluster = ClusterAt(i, clusters);
+    AliVCluster* cluster = Cluster(i);
     if (!cluster) {
       AliError(Form("Unable to find jet cluster %d (global index %d) in the jet", i, ClusterAt(i)));
       continue;
