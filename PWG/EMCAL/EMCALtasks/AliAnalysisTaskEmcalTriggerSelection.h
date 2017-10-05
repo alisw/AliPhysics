@@ -179,6 +179,11 @@ protected:
   virtual void UserCreateOutputObjects();
 
   /**
+   * @brief Initializing common output container for trigger decision
+   */
+  virtual void UserExecOnce();
+
+  /**
    * @brief Run over all trigger selections, and append the selection to the global trigger selection container
    * @return Always true
    */
@@ -200,7 +205,7 @@ protected:
    *
    * If not available, create it and add it to the input event
    */
-  AliEmcalTriggerDecisionContainer *GetGlobalTriggerDecisionContainer();
+  AliEmcalTriggerDecisionContainer *GetGlobalTriggerDecisionContainer() const { return fTriggerDecisionContainer; }
 
   /**
    * @brief Fill QA histograms for the event
@@ -214,9 +219,10 @@ protected:
    */
   void InitQA(const AliEmcalTriggerSelection *const sel);
 
-  TString fGlobalDecisionContainerName;     ///< Name of the global trigger selection
-  TList fTriggerSelections;                 ///< List of trigger selections
-  TList fSelectionQA;                       ///< Trigger selection QA
+  AliEmcalTriggerDecisionContainer          *fTriggerDecisionContainer;        ///<
+  TString                                    fGlobalDecisionContainerName;     ///< Name of the global trigger selection
+  TList                                      fTriggerSelections;               ///< List of trigger selections
+  TList                                      fSelectionQA;                     ///< Trigger selection QA
 
   /// \cond CLASSIMP
   ClassDef(AliAnalysisTaskEmcalTriggerSelection, 1);    // Task running different EMCAL trigger selections
