@@ -651,6 +651,8 @@ public:
     kNch05JpsiExcl,          // MC true number of charged particles in |eta|<0.5 without J/psi daughter tracks
     kNch10,                  // MC true number of charged particles in |eta|<1.0
     kNch10JpsiExcl,          // MC true number of charged particles in |eta|<1.0 without J/psi daughter tracks
+    kNch09,                  // MC true number of charged particles in |eta|<1.0
+    kNch09JpsiExcl,          // MC true number of charged particles in |eta|<1.0 without J/psi daughter tracks
 
     kCentrality,             // event centrality fraction V0M
     kCentralityV0A,          // event centrality fraction V0A
@@ -2519,7 +2521,6 @@ inline void AliDielectronVarManager::FillVarVEvent(const AliVEvent *event, Doubl
 
     // VZERO event plane
     TVector2 qvec;
-    // TVector2 *qVecQnFramework;
     Double_t qx = 0, qy = 0;
 
     ep->CalculateVZEROEventPlane(event,10, 2, qx, qy);    qvec.Set(qx,qy);
@@ -2911,16 +2912,33 @@ inline void AliDielectronVarManager::FillVarMCEvent(const AliMCEvent *event, Dou
   values[AliDielectronVarManager::kYvPrimMCtruth]       = values[AliDielectronVarManager::kYvPrim];
   values[AliDielectronVarManager::kZvPrimMCtruth]       = values[AliDielectronVarManager::kZvPrim];
   // Fill AliMCEvent interface specific information
-  values[AliDielectronVarManager::kNch]   = AliDielectronHelper::GetNch(event, 1.6);
-  values[AliDielectronVarManager::kNchJpsiExcl]   = AliDielectronHelper::GetNch(event, 1.6, kTRUE);
-  values[AliDielectronVarManager::kNch05] = AliDielectronHelper::GetNch(event, 0.5);
-  values[AliDielectronVarManager::kNch05JpsiExcl] = AliDielectronHelper::GetNch(event, 0.5, kTRUE);
-  values[AliDielectronVarManager::kNch10] = AliDielectronHelper::GetNch(event, 1.0);
-  values[AliDielectronVarManager::kNch10JpsiExcl] = AliDielectronHelper::GetNch(event, 1.0, kTRUE);
+  Double_t numbers[11] = {0};
 
-  values[AliDielectronVarManager::kNumberOfJPsis] = AliDielectronHelper::GetNMothers(event, 0.9, 443, 11);
-  values[AliDielectronVarManager::kNumberOfJPsisPrompt]  = AliDielectronHelper::GetNMothers(event, 0.9, 443, 11, 1);
-  values[AliDielectronVarManager::kNumberOfJPsisNPrompt] = AliDielectronHelper::GetNMothers(event, 0.9, 443, 11, 0);
+  AliDielectronHelper::CountMCtracks(event, numbers, 443, 11);
+  printf("HalloWelt Nch = %f\n", numbers[0]);
+  values[AliDielectronVarManager::kNch]           = numbers[0];
+  values[AliDielectronVarManager::kNchJpsiExcl]   = numbers[1];
+  values[AliDielectronVarManager::kNch05]         = numbers[2];
+  values[AliDielectronVarManager::kNch05JpsiExcl] = numbers[3];
+  values[AliDielectronVarManager::kNch10]         = numbers[4];
+  values[AliDielectronVarManager::kNch10JpsiExcl] = numbers[5];
+  values[AliDielectronVarManager::kNch09]         = numbers[6];
+  values[AliDielectronVarManager::kNch09JpsiExcl] = numbers[7];
+
+  values[AliDielectronVarManager::kNumberOfJPsis]        = numbers[8];
+  values[AliDielectronVarManager::kNumberOfJPsisPrompt]  = numbers[9];
+  values[AliDielectronVarManager::kNumberOfJPsisNPrompt] = numbers[10];
+
+  // values[AliDielectronVarManager::kNch]   = AliDielectronHelper::GetNch(event, 1.6);
+  // values[AliDielectronVarManager::kNchJpsiExcl]   = AliDielectronHelper::GetNch(event, 1.6, kTRUE);
+  // values[AliDielectronVarManager::kNch05] = AliDielectronHelper::GetNch(event, 0.5);
+  // values[AliDielectronVarManager::kNch05JpsiExcl] = AliDielectronHelper::GetNch(event, 0.5, kTRUE);
+  // values[AliDielectronVarManager::kNch10] = AliDielectronHelper::GetNch(event, 1.0);
+  // values[AliDielectronVarManager::kNch10JpsiExcl] = AliDielectronHelper::GetNch(event, 1.0, kTRUE);
+  //
+  // values[AliDielectronVarManager::kNumberOfJPsis] = AliDielectronHelper::GetNMothers(event, 0.9, 443, 11);
+  // values[AliDielectronVarManager::kNumberOfJPsisPrompt]  = AliDielectronHelper::GetNMothers(event, 0.9, 443, 11, 1);
+  // values[AliDielectronVarManager::kNumberOfJPsisNPrompt] = AliDielectronHelper::GetNMothers(event, 0.9, 443, 11, 0);
 }
 
 inline void AliDielectronVarManager::FillVarTPCEventPlane(const AliEventplane *evplane, Double_t * const values)

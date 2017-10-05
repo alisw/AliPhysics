@@ -1614,6 +1614,7 @@ void AliDielectron::FillMCHistograms(const AliVEvent *ev) {
   TString className,className2,className3;
   Double_t values[AliDielectronVarManager::kNMaxValues]={0.};
   AliDielectronVarManager::SetFillMap(fUsedVars);
+  // AliDielectronVarManager::Fill(ev, values);
   // not needed to get event information here, because done in FillVarVParticle() [and FillVarDielectronPair()].
 
   //loop over all added mc signals
