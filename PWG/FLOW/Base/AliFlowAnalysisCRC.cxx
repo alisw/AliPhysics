@@ -995,13 +995,23 @@ void AliFlowAnalysisCRC::Make(AliFlowEventSimple* anEvent)
             }
           }
         }
-        Int_t ptb = (dPt<0.5?0:(dPt<1.?1:2));
-        for(Int_t m=0;m<21;m++) // to be improved - hardwired 6
-        {
-          for(Int_t k=0;k<9;k++) // to be improved - hardwired 9
+
+        for(Int_t ptb=0; ptb<fkGFPtB; ptb++) {
+          if(ptb==0 && dPt>0.5) continue;
+          if(ptb==1 && (dPt<0.5 || dPt>1.)) continue;
+          if(ptb==2 && (dPt<1. || dPt>2.)) continue;
+          if(ptb==3 && dPt<2.) continue;
+          if(ptb==4 && (dPt<1. || dPt>2.5)) continue;
+          if(ptb==5 && dPt<2.5) continue;
+          if(ptb==6 && (dPt<1. || dPt>3.)) continue;
+          if(ptb==7 && dPt<3.) continue;
+          for(Int_t m=0;m<21;m++) // to be improved - hardwired 6
           {
-            (*fReQGFPt[ptb])(m,k) += pow(wPhiEta*wPhi*wPt*wEta*wTrack,k)*TMath::Cos(m*dPhi);
-            (*fImQGFPt[ptb])(m,k) += pow(wPhiEta*wPhi*wPt*wEta*wTrack,k)*TMath::Sin(m*dPhi);
+            for(Int_t k=0;k<9;k++) // to be improved - hardwired 9
+            {
+              (*fReQGFPt[ptb])(m,k) += pow(wPhiEta*wPhi*wPt*wEta*wTrack,k)*TMath::Cos(m*dPhi);
+              (*fImQGFPt[ptb])(m,k) += pow(wPhiEta*wPhi*wPt*wEta*wTrack,k)*TMath::Sin(m*dPhi);
+            }
           }
         }
 
