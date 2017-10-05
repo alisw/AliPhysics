@@ -8,7 +8,7 @@ AliAnalysisTaskPHOSPi0EtaToGammaGamma* AddTaskPHOSPi0EtaToGammaGamma_pp_5TeV(
     const Float_t CenMax = 90.,
     const Int_t NMixed   = 10,
     const Bool_t FlowTask = kFALSE,
-    const Int_t harmonics = 2,
+    const Int_t harmonics = -1,
     const Bool_t useCoreE = kFALSE,
     const Bool_t useCoreDisp = kFALSE,
     const Double_t NsigmaCPV  = 2.5,

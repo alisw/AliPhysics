@@ -1578,7 +1578,7 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::FillPhoton()
     if(fIsFlowTask){
       dphi = DeltaPhiIn0Pi(phi - fEventPlane);
     }
-    else dphi = DeltaPhiIn0Pi(phi);
+    else dphi = phi;
 
     FillHistogramTH2(fOutputContainer,"hPhotonPt",pT,TMath::Cos(fHarmonics * dphi),weight);
 
@@ -1673,7 +1673,7 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::FillMgg()
       if(fIsFlowTask){
         dphi = DeltaPhiIn0Pi(phi - fEventPlane);
       }
-      else dphi = DeltaPhiIn0Pi(phi);
+      else dphi = phi;
 
       if(TMath::Abs(ph1->Module()-ph2->Module()) < 2) FillHistogramTH2(fOutputContainer,Form("hMgg_M%d%d",TMath::Min(ph1->Module(),ph2->Module()), TMath::Max(ph1->Module(),ph2->Module())),m12,pt12,weight);
       FillHistogramTH3(fOutputContainer,"hMgg",m12,pt12,TMath::Cos(fHarmonics * dphi),weight);
@@ -1768,7 +1768,7 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::FillMixMgg()
         if(fIsFlowTask){
           dphi = DeltaPhiIn0Pi(phi - fEventPlane);
         }
-        else dphi = DeltaPhiIn0Pi(phi);
+        else dphi = phi;
 
         FillHistogramTH3(fOutputContainer,"hMixMgg",m12,pt12,TMath::Cos(fHarmonics * dphi),weight);
         if(TMath::Abs(ph1->Module()-ph2->Module()) < 2) FillHistogramTH2(fOutputContainer,Form("hMixMgg_M%d%d",TMath::Min(ph1->Module(),ph2->Module()), TMath::Max(ph1->Module(),ph2->Module())),m12,pt12);
