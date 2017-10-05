@@ -624,6 +624,8 @@ const char* AliDielectronVarManager::fgkParticleNames[AliDielectronVarManager::k
   {"Nch05JpsiExcl",           "N_{ch} #cbar_{#||{#eta}<0.5} without J/#psi daughters ",  ""},
   {"Nch10",                  "N_{ch} #cbar_{#||{#eta}<1.0}",                       ""},
   {"Nch10JpsiExcl",           "N_{ch} #cbar_{#||{#eta}<1.0} without J/#psi daughters ",  ""},
+  {"Nch09",                  "N_{ch} #cbar_{#||{#eta}<0.9}",                       ""},
+  {"Nch09JpsiExcl",           "N_{ch} #cbar_{#||{#eta}<0.9} without J/#psi daughters ",  ""},
   {"Centrality",             "centrality_{V0M}",                                  "(%)"},
   {"CentralityV0A",          "centrality_{V0A}",                                  "(%)"},
   {"CentralityV0C",          "centrality_{V0C}",                                  "(%)"},
