@@ -101,8 +101,11 @@ AliJetResponseMaker* AddTaskJetResponseMaker(
   jetCont2->SetFlavourCut(jetTagging);
   jetCont2->SetMaxTrackPt(1000); // disable default 100 GeV/c track cut for particle level jets
 
-    
+#ifdef __CLING__
+  jetTask->SetMatching(static_cast<AliJetResponseMaker::MatchingType>(matching), maxDistance1, maxDistance2);
+#else
   jetTask->SetMatching(matching, maxDistance1, maxDistance2);
+#endif
   jetTask->SetVzRange(-10,10);
   jetTask->SetIsPythia(kTRUE);
   jetTask->SetPtHardBin(ptHardBin);
