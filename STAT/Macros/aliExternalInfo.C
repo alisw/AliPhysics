@@ -128,5 +128,5 @@ void makeHTMLPage(TString  period,TString  pass, TString runSelection, TString v
   TTree * tree = info.GetTree("Logbook",period,pass,source);
   AliTreePlayer::selectWhatWhereOrderBy(tree,varSelection.Data(), runSelection.Data(),"",0,100000,"html","table.html");
   delete tree;
-  gSystem->GetFromPipe(" table.html index.html 0");
+  gSystem->GetFromPipe("$AliPhysics_SRC/PWGPP/scripts/makeHtml.sh index.html table.html 0");
 }
