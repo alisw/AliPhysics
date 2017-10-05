@@ -8,12 +8,14 @@ AliAnalysisTaskPHOSPi0EtaToGammaGamma* AddTaskPHOSPi0EtaToGammaGamma_pp_5TeV(
     const Float_t CenMax = 90.,
     const Int_t NMixed   = 10,
     const Bool_t FlowTask = kFALSE,
+    const Int_t harmonics = 2,
     const Bool_t useCoreE = kFALSE,
     const Bool_t useCoreDisp = kFALSE,
     const Double_t NsigmaCPV  = 2.5,
     const Double_t NsigmaDisp = 2.5,
     const Bool_t usePHOSTender = kTRUE,
     const Bool_t TOFcorrection = kTRUE,
+    const Bool_t NonLinStudy = kFALSE,
     const Double_t bs = 25.,//bunch space in ns.
     const Double_t distBC = -1,//minimum distance to bad channel.
     const Bool_t isJJMC = kFALSE,
@@ -70,7 +72,15 @@ AliAnalysisTaskPHOSPi0EtaToGammaGamma* AddTaskPHOSPi0EtaToGammaGamma_pp_5TeV(
   if(useCoreE) PIDname += "_CoreE";
   else         PIDname += "_FullE";
 
-  TString taskname = Form("%s_%s_%s_Cen%d_%d%s_BS%dns_DBC%02dmm",name,CollisionSystem.Data(),TriggerName.Data(),(Int_t)CenMin,(Int_t)CenMax,PIDname.Data(),(Int_t)bs,(Int_t)(distBC*10));
+  TString taskname = "";
+  if(FlowTask){
+     if(harmonics > 0) taskname = Form("%s_%s_%s_Cen%d_%d%s_Harmonics%d_BS%dns_DBC%02dmm",name,CollisionSystem.Data(),TriggerName.Data(),(Int_t)CenMin,(Int_t)CenMax,PIDname.Data(),harmonics,(Int_t)bs,(Int_t)(distBC*10));
+      else{
+        ::Error("AddTaskPHOSPi0EtaToGammaGamma", "Qn flow vector correction is ON, but you do not set harmonics.");
+        return NULL;
+      }
+  }
+  else taskname = Form("%s_%s_%s_Cen%d_%d%s_BS%dns_DBC%02dmm",name,CollisionSystem.Data(),TriggerName.Data(),(Int_t)CenMin,(Int_t)CenMax,PIDname.Data(),(Int_t)bs,(Int_t)(distBC*10));
 
   AliAnalysisTaskPHOSPi0EtaToGammaGamma* task = new AliAnalysisTaskPHOSPi0EtaToGammaGamma(taskname);
   task->SelectCollisionCandidates(trigger);
@@ -80,6 +90,7 @@ AliAnalysisTaskPHOSPi0EtaToGammaGamma* AddTaskPHOSPi0EtaToGammaGamma_pp_5TeV(
   task->SetCollisionSystem(systemID);//colliions system : pp=0, PbPb=1, pPb (Pbp)=2;
   task->SetJetJetMC(isJJMC);
   task->SetMCType(MCtype);
+  task->SetNonLinearityStudy(NonLinStudy);
   
   task->SetTenderFlag(usePHOSTender);
   task->SetMCFlag(isMC);
@@ -92,6 +103,7 @@ AliAnalysisTaskPHOSPi0EtaToGammaGamma* AddTaskPHOSPi0EtaToGammaGamma_pp_5TeV(
   task->SetCentralityMax(CenMax);
   task->SetDepthNMixed(NMixed);
   task->SetQnVectorTask(FlowTask);
+  task->SetHarmonics(harmonics);
 
   //centrality setting
   task->SetCentralityEstimator("V0M");
