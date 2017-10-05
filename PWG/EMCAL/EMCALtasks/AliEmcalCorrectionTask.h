@@ -70,9 +70,15 @@ class AliEmcalCorrectionTask : public AliAnalysisTaskSE {
   AliEmcalCorrectionTask(AliEmcalCorrectionTask && other);
   virtual ~AliEmcalCorrectionTask();
 
-  // YAML
-  void Initialize();
-  // YAML options
+  /**
+   * Initializes the Correction Task by initializing the YAML configuration and selected correction components,
+   * including setting up the input objects (cells, clusters, and tracks).
+   *
+   * This function is the main function for initialization and should be called from a run macro!
+   * Once called, most of the configuration of the correction task and the correction components is locked in,
+   * so be certain to change any additional configuration before that!
+   */
+  void Initialize(bool removeDummyTask = false);
   /// Set the path to the user configuration filename
   void SetUserConfigurationFilename(std::string name) { fUserConfigurationFilename = name; }
   /// Set the path to the default configuration filename (Expert use only! The user should set the user configuration!)
@@ -139,8 +145,28 @@ class AliEmcalCorrectionTask : public AliAnalysisTaskSE {
   virtual void ExecOnce();
   virtual Bool_t Run();
 
-  // Add Task
+  /**
+   * EMCal Correction Task AddTask. Should be used by most users, except for those on the LEGO train
+   * (see below).
+   *
+   * @param[in] suffix Suffix string used to select components in a YAML configuration
+   *
+   * @return A new EMCal Correction Task added to the analysis manager and ready to configure.
+   */
   static AliEmcalCorrectionTask* AddTaskEmcalCorrectionTask(TString suffix = "");
+  /**
+   * Retrieve an existing correction task by name to perform further configuration. This should
+   * _ONLY_ be used on the LEGO train. The suffix passed here must be unique to identify a user.
+   *
+   * To achieve this, a dummy task is created when the configure task is called because AliAnalysisTaskCfg
+   * requires that all wagons add a task. Then, when Initialize(true) is called on the correction task, the
+   * dummy task is removed. This is a hack, but is required to work around constraints in AliAnalysisTaskCfg.
+   *
+   * @param[in] suffix Suffix string used to uniquely identify a user and find the corresponding correction task. If using a suffix with the correction task, the suffixes must match.
+   *
+   * @return An existing (usually unconfigured) EMCal Correction Task which was retrieved from the analysis manager.
+   */
+  static AliEmcalCorrectionTask* ConfigureEmcalCorrectionTaskOnLEGOTrain(TString suffix);
 
  private:
   // Utility functions
@@ -154,6 +180,8 @@ class AliEmcalCorrectionTask : public AliAnalysisTaskSE {
   // General utilities
   BeamType GetBeamType() const;
   void PrintRequestedContainersInformation(AliEmcalContainerUtils::InputObject_t inputObjectType, std::ostream & stream) const;
+  // LEGO Train utilities
+  void RemoveDummyTask() const;
 
   // Retrieve objects in event
   Bool_t RetrieveEventObjects();

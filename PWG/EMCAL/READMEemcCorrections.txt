@@ -23,6 +23,7 @@ The following correction components are available:
 - [ClusterNonLinearity](\ref AliEmcalCorrectionClusterNonLinearity) -- Corrects cluster energy for non-linear response.
 - [ClusterTrackMatcher](\ref AliEmcalCorrectionClusterTrackMatcher) -- Matches each track to a single cluster, if they are in close enough proximity.
 - [ClusterHadronicCorrection](\ref AliEmcalCorrectionClusterHadronicCorrection) -- For clusters that have one or more matched tracks, reduces the cluster energy in order to avoid overestimating the particle's energy.
+- [PHOSCorrection](\ref AliEmcalCorrectionPHOSCorrection) -- Perform PHOS correction via an interface to the PHOS tender.
 
 This new correction task unifies what was previously done by tasks such as:
  - [EMCal Tender](\ref AliEmcalTenderTask)
@@ -58,7 +59,7 @@ For the instructions, please see \subpage READMEemcCorrectionsChange.
 To enable the correction task, add the following lines to your run macro:
 
 ~~~{.cxx}
-AliEmcalCorrectionTask * correctionTask = AddTaskEmcalCorrectionTask();
+AliEmcalCorrectionTask * correctionTask = AliEmcalCorrectionTask::AddTaskEmcalCorrectionTask();
 correctionTask->SelectCollisionCandidates(kPhysSel);
 // Set the user configuration file, assuming that your file is called "userConfiguration.yaml" and is located in
 // the current directory. This also supports alien:// paths!
@@ -68,13 +69,29 @@ correctionTask->SetUserConfigurationFilename("userConfiguration.yaml");
 correctionTask->Initialize();
 ~~~
 
-Don't forget to also load the macro with:
+## LEGO Train Wagon                                             {#emcCorrectionsLEGOTrainWagon}
+
+There are some special procedures for the LEGO train. There will be a centralized EMCal Correction Task wagon which
+contains standard settings such as physics selection, etc. Then the user will create a wagon which calls
+`PWG/EMCAL/macros/ConfigureEmcalCorrectionTaskOnLEGOTrain(std::string suffix)`. This will return an EMCal Correction Task
+for you to configure with your particular YAML configuration file and then initialize.
+
+To setup this wagon, use the macro listed above. One argument is required: the suffix. This suffix should be some unique
+identifier for your analysis - it could be your name, your analysis, whatever you like. The precise value only matters
+if you are using [specialization](\ref emcCorrectionsSpecialization) - in such a case, your suffix for the configuration
+wagon must match the specialization suffix.
+
+Then in the macro customization of your configuration wagon, you specify your YAML configuration file and initialize
+the configuration. It should looks something like the following:
 
 ~~~{.cxx}
-gROOT->LoadMacro("$ALICE_PHYSICS/PWG/EMCAL/macros/AddTaskEmcalCorrectionTask.C");
+// Set your user configuration
+__R_ADDTASK__->SetUserConfigurationFilename("userConfiguration.yaml");
+// It is extremely important to pass "true" to Initialize().
+__R_ADDTASK__->Initialize(true);
 ~~~
 
-# Configuring Corrections                                      {#configureEMCalCorrections}
+# Configuring Corrections                                       {#configureEMCalCorrections}
 
 The corrections configuration file is specified via a file written in the YAML markup language. YAML is quite
 readable and is commonly used for configuration files. Although it should be straightforward to read and write,
@@ -267,7 +284,7 @@ Correction2:
 
 In the example, any change to ``aMinimumValue`` will be propagated to ``exampleValue`` in ``Correction1`` and ``anotherExample`` in ``Correction2``. Note that the parameter name (here, ``aMinimumValu``) can be anything that the user desires. When setting the value, don't forget to prepend "sharedParameters:" (in our example, "sharedParameters:aMinimumValu")!
 
-#### Running multiple corrections at once ("specializing")
+#### Running multiple corrections at once ("specializing")                      {#emcCorrectionsSpecialization}
 
 Often, a user would like to run two nearly identical corrections. For instance, one could run two clusterizers with the same configuration, but perhaps different input cells and output clusters. In such a case, the clusterizer can be "specialized", such that each of the two clusterizers will inherit the same settings except for the cells. Consider the following example YAML configuration file:
 

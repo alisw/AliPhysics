@@ -4,7 +4,6 @@
 //
 
 #include "AliEmcalCorrectionTask.h"
-#include "AliYAMLConfiguration.h"
 #include "AliEmcalCorrectionComponent.h"
 
 #include <vector>
@@ -26,8 +25,6 @@
 #include "AliESDEvent.h"
 #include "AliAnalysisManager.h"
 #include "AliAODEvent.h"
-
-#include "AliAnalysisTaskEmcalEmbeddingHelper.h"
 
 /// \cond CLASSIMP
 ClassImp(AliEmcalCorrectionTask);
@@ -246,15 +243,7 @@ AliEmcalCorrectionTask::~AliEmcalCorrectionTask()
   // Destructor
 }
 
-/**
- * Initializes the Correction Task by initializing the YAML configuration and selected correction components,
- * including setting up the input objects (cells, clusters, and tracks).
- *
- * This function is the main function for initialization and should be called from a run macro!
- * Once called, most of the configuration of the correction task and the correction components is locked in,
- * so be certain to change any additional configuration before that!
- */
-void AliEmcalCorrectionTask::Initialize()
+void AliEmcalCorrectionTask::Initialize(bool removeDummyTask)
 {
   // Determine file type
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -317,9 +306,43 @@ void AliEmcalCorrectionTask::Initialize()
   // Initialize components
   InitializeComponents();
 
+  if (removeDummyTask == true) {
+    RemoveDummyTask();
+  }
+
   // Print the results of the initialization
   // Print outside of the ALICE Log system to ensure that it is always available!
   std::cout << GetName() << " Settings:\n" << *this;
+}
+
+/**
+ * Remove the dummy task which had to be added by ConfigureEmcalCorrectionTaskOnLEGOTrain()
+ * from the Analysis Mangaer
+ */
+void AliEmcalCorrectionTask::RemoveDummyTask() const
+{
+  AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
+  if (!mgr)
+  {
+    AliErrorStream() << "No analysis manager to connect to.\n";
+    return;
+  }
+
+  // Remove the dummy task
+  std::string dummyTaskName = GetName();
+  dummyTaskName += "_dummyTask";
+  TObjArray * tasks = mgr->GetTasks();
+  if (tasks) {
+    AliAnalysisTaskSE * dummyTask = dynamic_cast<AliAnalysisTaskSE *>(tasks->FindObject(dummyTaskName.c_str()));
+    if (!dummyTask) {
+      AliErrorStream() << "Could not remove dummy task \"" << dummyTaskName << "\" from analysis manager! Was it added?\n";
+    }
+    // Actually remove the task
+    tasks->Remove(dummyTask);
+  }
+  else {
+    AliErrorStream() << "Could not retrieve tasks from the analysis manager.\n";
+  }
 }
 
 /**
@@ -1624,7 +1647,7 @@ AliEmcalCorrectionTask * AliEmcalCorrectionTask::AddTaskEmcalCorrectionTask(TStr
   if (!mgr)
   {
     ::Error("AddTaskEmcalCorrectionTask", "No analysis manager to connect to.");
-    return 0;
+    return nullptr;
   }
 
   // Check the analysis type using the event handlers connected to the analysis manager.
@@ -1633,7 +1656,7 @@ AliEmcalCorrectionTask * AliEmcalCorrectionTask::AddTaskEmcalCorrectionTask(TStr
   if (!handler)
   {
     ::Error("AddTaskEmcalCorrectionTask", "This task requires an input event handler");
-    return 0;
+    return nullptr;
   }
 
   TString name = "AliEmcalCorrectionTask";
@@ -1668,6 +1691,63 @@ AliEmcalCorrectionTask * AliEmcalCorrectionTask::AddTaskEmcalCorrectionTask(TStr
   mgr->ConnectOutput(correctionTask, 1, cOutput);
 
   //TObjArray* cnt = mgr->GetContainers();
+
+  return correctionTask;
+}
+
+AliEmcalCorrectionTask * AliEmcalCorrectionTask::ConfigureEmcalCorrectionTaskOnLEGOTrain(TString suffix)
+{
+  // Get the pointer to the existing analysis manager via the static access method.
+  //==============================================================================
+  AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
+  if (!mgr)
+  {
+    ::Error("ConfigureEmcalCorrectionTaskOnLEGOTrain", "No analysis manager to connect to.");
+    return nullptr;
+  }
+
+  // Find the correction task
+  AliEmcalCorrectionTask * correctionTask = nullptr;
+  const std::string taskName = "AliEmcalCorrectionTask";
+  std::string foundTaskName = "";
+  bool taskFound = false;
+  std::vector<std::string> namesToSearch = {taskName};
+
+  // Determine if the suffix name should be searched for.
+  // If a suffix is given, it will be looked for first, followed by the generically named task.
+  // This way, a user's configuration can be uniquely identified in the case of multiple correction tasks, but
+  // if there is only one correction task without a suffix, this method will still fall back to that one and
+  // return a correction task to be configured.
+  if (suffix != "")
+  {
+    std::string suffixName = taskName;
+    suffixName += "_";
+    suffixName += suffix.Data();
+    namesToSearch.insert(namesToSearch.begin(), suffixName);
+  }
+
+  // Attempt to retrieve the task from the analysis manager
+  for (auto name : namesToSearch)
+  {
+    correctionTask = dynamic_cast<AliEmcalCorrectionTask *>(mgr->GetTask(name.c_str()));
+    if (correctionTask != nullptr) {
+      taskFound = true;
+      foundTaskName = name;
+      break;
+    }
+  }
+
+  // Fatal if we can't find the task
+  if (taskFound == false) {
+    AliFatalClassF("Could not find correction task, checking for both the suffix \"%s\" and the main task. Did you remember to create it?", suffix.Data());
+  }
+
+  AliInfoClassStream() << "Found correction task named \"" << foundTaskName <<"\" to configure.\n";
+
+  // AliAnalysisTaskCfg will require a task to be returned, so we add a dummy task to the analysis manager,
+  // which will be removed when the user calls Initialize(true) on the correction task.
+  std::string dummyTaskName = foundTaskName + "_dummyTask";
+  mgr->AddTask(new AliAnalysisTaskSE(dummyTaskName.c_str()));
 
   return correctionTask;
 }
