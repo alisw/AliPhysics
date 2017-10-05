@@ -90,6 +90,7 @@ AliAnalysisTaskEmcalJetShapesMC::AliAnalysisTaskEmcalJetShapesMC() :
   fhpTjetpT(0x0),
   fhPt(0x0),
   fhPhi(0x0),
+  fHLundIterative(0x0),
   fNbOfConstvspT(0x0),
   fTreeObservableTagging(0x0),
   fTf1Omega(0x0),
@@ -141,9 +142,10 @@ AliAnalysisTaskEmcalJetShapesMC::AliAnalysisTaskEmcalJetShapesMC(const char *nam
   fhpTjetpT(0x0),
   fhPt(0x0),
   fhPhi(0x0),
+  fHLundIterative(0x0),
   fNbOfConstvspT(0x0),
   fTreeObservableTagging(0x0),
-  fTf1Omega(0x0),
+    fTf1Omega(0x0),
   fTf1Kt(0x0)
 {
   // Standard constructor.
@@ -207,7 +209,7 @@ AliAnalysisTaskEmcalJetShapesMC::~AliAnalysisTaskEmcalJetShapesMC()
   fShapesVarNames[10] = "DeltaRkt";
   fShapesVarNames[11] = "DeltaRMin";
   fShapesVarNames[12] = "SDSymm";
-   fShapesVarNames[13] = "SDDeltaR";
+  fShapesVarNames[13] = "SDDeltaR";
   fShapesVarNames[14] = "SDGroomedFrac"; 
   fShapesVarNames[15] = "SDGroomedN"; 
   fShapesVarNames[16] = "SDMass";
@@ -221,34 +223,27 @@ AliAnalysisTaskEmcalJetShapesMC::~AliAnalysisTaskEmcalJetShapesMC()
   fShapesVarNames[24] = "SDGroomedFracAkt"; 
   fShapesVarNames[25] = "SDGroomedNAkt";
    fShapesVarNames[26] = "SDMassAkt";
-  fShapesVarNames[27] = "SDSymmBeta1";
-   fShapesVarNames[28] = "SDDeltaRBeta1";
-  fShapesVarNames[29] = "SDGroomedFracBeta1"; 
-  fShapesVarNames[30] = "SDGroomedNBeta1";
-  fShapesVarNames[31] = "SDMassBeta1";
-   fShapesVarNames[32] = "SDSymmBeta15zcut05";
-   fShapesVarNames[33] = "SDDeltaRBeta15zcut05";
-  fShapesVarNames[34] = "SDGroomedFracBeta15zcut05"; 
-  fShapesVarNames[35] = "SDGroomedNBeta15zcut05";
-  fShapesVarNames[36] = "SDMassBeta15zcut05";
- fShapesVarNames[37] = "SDSymmBetanegzcut025";
-  fShapesVarNames[38] = "SDDeltaRBetanegzcut025";
-  fShapesVarNames[39] = "SDGroomedFracBetanegzcut025"; 
-  fShapesVarNames[40] = "SDGroomedNBetanegzcut025";
-  fShapesVarNames[41] = "SDMassBetanegzcut025";
- fShapesVarNames[42] = "SDSymmForm";
+  fShapesVarNames[27] = "SDSymmktForm";
+   fShapesVarNames[28] = "SDDeltaRktForm";
+  fShapesVarNames[29] = "SDGroomedFracktForm"; 
+  fShapesVarNames[30] = "SDGroomedNktForm";
+  fShapesVarNames[31] = "SDMassktForm";
+  fShapesVarNames[32] = "SDSymmDemo";
+  fShapesVarNames[33] = "SDDeltaRDemo";
+  fShapesVarNames[34] = "SDGroomedFracDemo"; 
+  fShapesVarNames[35] = "SDGroomedNDemo";
+  fShapesVarNames[36] = "SDMassDemo";
+  fShapesVarNames[42] = "SDSymmForm";
   fShapesVarNames[43] = "SDDeltaRForm";
   fShapesVarNames[44] = "SDGroomedFracForm"; 
   fShapesVarNames[45] = "SDGroomedNForm";
   fShapesVarNames[46] = "SDMassForm";
   fShapesVarNames[47] = "weightPythia";
-  fShapesVarNames[48] = "SDNsubjet1kt";
-  fShapesVarNames[49] = "SDNsubjet2kt"; 
-  fShapesVarNames[50] = "SDNsubjet1Min"; 
-  fShapesVarNames[51] = "SDNsubjet2Min";
-  fShapesVarNames[52] = "SDDeltaRkt_Nsub";
-  fShapesVarNames[53] = "SDDeltaRMin_Nsub";
-
+  fShapesVarNames[42] = "SDSymmNoCut";
+  fShapesVarNames[43] = "SDDeltaRNoCut";
+  fShapesVarNames[44] = "SDGroomedFracNoCut"; 
+  fShapesVarNames[45] = "SDGroomedNNoCut";
+  fShapesVarNames[46] = "SDMassNoCut";
 
   
    //fShapesVarNames[7] = "lesub";
@@ -298,7 +293,19 @@ AliAnalysisTaskEmcalJetShapesMC::~AliAnalysisTaskEmcalJetShapesMC()
   fOutput->Add(fhPt);
   fhPhi= new TH1F("fhPhi", "fhPhi", 100, -TMath::Pi(), TMath::Pi());
   fOutput->Add(fhPhi);
-  
+
+
+
+  //log(1/theta),log(z*theta),jetpT,algo// 
+   const Int_t dimSpec   = 4;
+   const Int_t nBinsSpec[4]     = {100,100,20,2};
+   const Double_t lowBinSpec[4] = {0.0,-10,  0,0};
+   const Double_t hiBinSpec[4]  = {5.0,  0,200,2};
+   fHLundIterative = new THnSparseF("fHLundIterative",
+                   "LundIterativePlot [log(1/theta),log(z*theta),pTjet,algo]",
+                   dimSpec,nBinsSpec,lowBinSpec,hiBinSpec);
+  fOutput->Add(fHLundIterative);  
+   
   fNbOfConstvspT=new TH2F("fNbOfConstvspT", "fNbOfConstvspT", 100, 0, 100, 200, 0, 200);
   fOutput->Add(fNbOfConstvspT);
   
@@ -369,12 +376,11 @@ Bool_t AliAnalysisTaskEmcalJetShapesMC::FillHistograms()
     while((jet1 = jetCont->GetNextAcceptJet())) {
       //Printf("jet1=%p", jet1);
       if (!jet1) continue;
-      AliEmcalJet* jet2 = 0x0;
-      AliEmcalJet* jet3 = 0x0;
+     
       fPtJet->Fill(jet1->Pt());
-      AliEmcalJet *jetUS = NULL;
-      Int_t ifound=0, jfound=0;
-      Int_t ilab=-1, jlab=-1;
+     
+     
+      
       
       if(fSemigoodCorrect && (fJetSelection != kRecoil)){
         Double_t disthole=RelativePhi(jet1->Phi(),fHolePos);
@@ -492,9 +498,9 @@ Bool_t AliAnalysisTaskEmcalJetShapesMC::FillHistograms()
       SoftDrop(jet1,jetCont,0.1,0,2);
       SoftDrop(jet1,jetCont,0.1,1,0); 
       SoftDrop(jet1,jetCont,0.5,1.5,0); 
-      SoftDrop(jet1,jetCont,0.005,-1.0,0); 
-      SoftDrop(jet1,jetCont,0.005,-2.0,0);
-      
+      SoftDrop(jet1,jetCont,0.002,-2.0,0);
+      RecursiveParents(jet1,jetCont,0);
+      RecursiveParents(jet1,jetCont,1);
       // Float_t nTFractions[8]={0.,0.,0.,0.,0.,0.,0.,0.};
       //NTValues(jet1, 0, nTFractions);
       //shape 13 is pythia weight!
@@ -760,7 +766,7 @@ AliEmcalJetFinder *AliAnalysisTaskEmcalJetShapesMC::Recluster(AliEmcalJet *Jet, 
   Reclusterer->SetJetAlgorithm(Algorithm); //0 for anti-kt     1 for kt
   Reclusterer->SetJetMaxEta(0.9-JetRadius);
   Reclusterer->SetRecombSheme(0);
-  const AliVVertex *vert = InputEvent()->GetPrimaryVertex();
+  
 
   //Double_t dVtx[3]={vert->GetX(),vert->GetY(),vert->GetZ()};
   Double_t dVtx[3]={0.,0.,0.};
@@ -774,10 +780,9 @@ AliEmcalJetFinder *AliAnalysisTaskEmcalJetShapesMC::Recluster(AliEmcalJet *Jet, 
 //----------------------------------------------------------------------
 Double_t AliAnalysisTaskEmcalJetShapesMC::GetSubjetFraction(AliEmcalJet *Jet, Int_t JetContNb, Double_t JetRadius,  AliEmcalJetFinder *Reclusterer){
   AliJetContainer *JetCont = GetJetContainer(JetContNb);
-  AliEmcalJet *SubJet=NULL;
-  Double_t DeltaR1=0;
-  Double_t DeltaR2=0;
-  AliVParticle *JetParticle=0x0;
+  
+ 
+  
   Double_t SubJetiness_Numerator = 0;
   Double_t SubJetiness_Denominator = 0;
   Double_t Index=-2;
@@ -1155,7 +1160,7 @@ void AliAnalysisTaskEmcalJetShapesMC::SoftDrop(AliEmcalJet *fJet,AliJetContainer
   fastjet::PseudoJet PseudoTracksCMS;
   AliParticleContainer *fTrackCont = fJetCont->GetParticleContainer();
   //cout<<"CALL TO SOFTDROP"<<endl;
-  Double_t JetEta=fJet->Eta(),JetPhi=fJet->Phi();
+ 
   Double_t zeta=0;
   Double_t angle=0;
    if (fTrackCont) for (Int_t i=0; i<fJet->GetNumberOfTracks(); i++) {
@@ -1183,7 +1188,7 @@ void AliAnalysisTaskEmcalJetShapesMC::SoftDrop(AliEmcalJet *fJet,AliJetContainer
 
    for(Int_t i=0;i<fAdditionalTracks;i++){
 
-     Double_t ppx,ppy,ppz,kTscale,pTscale,ppE,lim2o,lim1o;
+     Double_t ppx,ppy,ppz,kTscale,lim2o,lim1o;
     Double_t lim2=xQs;   
     Double_t lim1=10000;
     
@@ -1209,9 +1214,9 @@ void AliAnalysisTaskEmcalJetShapesMC::SoftDrop(AliEmcalJet *fJet,AliJetContainer
      fastjet::PseudoJet PseudoTracksLab=PseudoTracksCMS.boost(MyJet);
      PseudoTracksLab.set_user_index(i+fJet->GetNumberOfTracks()+100);											 
      fInputVectors.push_back(PseudoTracksLab);
-
+     //in the frame of the jet 
      zeta=omega/fJet->E();  
-     angle=PseudoTracksLab.delta_R(MyJet);
+     angle=pptheta;
      
      
    }
@@ -1323,3 +1328,68 @@ void AliAnalysisTaskEmcalJetShapesMC::SoftDrop(AliEmcalJet *fJet,AliJetContainer
 
   
 }
+
+
+
+//_________________________________________________________________________
+void AliAnalysisTaskEmcalJetShapesMC::RecursiveParents(AliEmcalJet *fJet,AliJetContainer *fJetCont, Int_t ReclusterAlgo){
+ 
+  std::vector<fastjet::PseudoJet>  fInputVectors;
+  fInputVectors.clear();
+  fastjet::PseudoJet  PseudoTracks;
+  double xflagalgo=0; 
+  AliParticleContainer *fTrackCont = fJetCont->GetParticleContainer();
+  
+    if (fTrackCont) for (Int_t i=0; i<fJet->GetNumberOfTracks(); i++) {
+      AliVParticle *fTrk = fJet->TrackAt(i, fTrackCont->GetArray());
+      if (!fTrk) continue; 
+      PseudoTracks.reset(fTrk->Px(), fTrk->Py(), fTrk->Pz(),fTrk->E());
+      PseudoTracks.set_user_index(fJet->TrackAt(i)+100);
+      fInputVectors.push_back(PseudoTracks);
+     
+    }
+
+    
+  
+  fastjet::JetDefinition                *fJetDef;         
+  fastjet::ClusterSequence              *fClustSeqSA;
+  if(ReclusterAlgo==0) xflagalgo=0.5;
+  if(ReclusterAlgo==1) xflagalgo=1.5;
+  if(ReclusterAlgo==0) fJetDef = new fastjet::JetDefinition(fastjet::kt_algorithm, fJetRadius*2, static_cast<fastjet::RecombinationScheme>(0), fastjet::BestFJ30 ); 
+  if(ReclusterAlgo==1) fJetDef = new fastjet::JetDefinition(fastjet::cambridge_algorithm, fJetRadius*2, static_cast<fastjet::RecombinationScheme>(0), fastjet::BestFJ30 ); 
+
+  try {
+    fClustSeqSA = new fastjet::ClusterSequence(fInputVectors, *fJetDef);
+  } catch (fastjet::Error) {
+    AliError(" [w] FJ Exception caught.");
+    //return -1;
+  }
+
+  std::vector<fastjet::PseudoJet>   fOutputJets;
+  fOutputJets.clear();
+  fOutputJets=fClustSeqSA->inclusive_jets(0);
+  
+   fastjet::PseudoJet jj;
+   fastjet::PseudoJet j1;
+   fastjet::PseudoJet j2;
+   jj=fOutputJets[0];
+   
+  while(jj.has_parents(j1,j2)){
+    if(j1.perp() < j2.perp()) swap(j1,j2);
+    double delta_R=j1.delta_R(j2);
+    double z=j2.perp()/(j1.perp()+j2.perp());
+    double y =log(1.0/delta_R);
+    double lnpt_rel=log(z*delta_R);
+    Double_t LundEntries[4] = {y,lnpt_rel,fOutputJets[0].perp(),xflagalgo};  
+    fHLundIterative->Fill(LundEntries);
+    jj=j1;} 
+
+
+  return;
+
+  
+}
+
+
+
+
