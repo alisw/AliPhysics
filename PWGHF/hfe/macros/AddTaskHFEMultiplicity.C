@@ -1,4 +1,5 @@
 AliAnalysisTask* AddTaskHFEMultiplicity(TString suffixName = "",
+				        Bool_t SwitchPi0EtaWeightCalc = kTRUE,
 					Bool_t PhysSelINT7 = kTRUE,
 					Bool_t useTender   =  kTRUE,
 					Bool_t ClsTypeEMC  =  kTRUE,
@@ -16,7 +17,15 @@ AliAnalysisTask* AddTaskHFEMultiplicity(TString suffixName = "",
   if (!mgr->GetInputEventHandler()) {
     return 0x0;
   }
-  
+  TString type = mgr->GetInputEventHandler()->GetDataType(); // can be "ESD" or "AOD"
+
+  Bool_t  fReadMC = kTRUE;
+  AliMCEventHandler *mcH = dynamic_cast<AliMCEventHandler*>(mgr->GetMCtruthEventHandler());
+  if(!mcH){
+    fReadMC=kFALSE;
+  }
+
+
   TString fileName = AliAnalysisManager::GetCommonFileName();
   fileName += ":MyTask";
   
@@ -25,7 +34,7 @@ AliAnalysisTask* AddTaskHFEMultiplicity(TString suffixName = "",
     mgr->AddTask(HFEtaskINT7); //HFEtask is my task
     HFEtaskINT7->SelectCollisionCandidates(AliVEvent::kINT7);
     HFEtaskINT7->SetTenderSwitch(useTender);
-    
+    HFEtaskINT7->SwitchPi0EtaWeightCalc(SwitchPi0EtaWeightCalc);
     HFEtaskINT7->SetClusterTypeEMC(ClsTypeEMC);
     HFEtaskINT7->SetClusterTypeDCAL(ClsTypeDCAL);
 
@@ -76,6 +85,7 @@ AliAnalysisTask* AddTaskHFEMultiplicity(TString suffixName = "",
      HFEtaskEG1->SelectCollisionCandidates(AliVEvent::kEMCEGA);
      HFEtaskEG1->SetEMCalTriggerEG1(kTRUE);
      HFEtaskEG1->SetTenderSwitch(useTender);
+     HFEtaskEG1->SwitchPi0EtaWeightCalc(SwitchPi0EtaWeightCalc);
      HFEtaskEG1->SetClusterTypeEMC(ClsTypeEMC);
      HFEtaskEG1->SetClusterTypeDCAL(ClsTypeDCAL);
 
@@ -119,6 +129,7 @@ AliAnalysisTask* AddTaskHFEMultiplicity(TString suffixName = "",
      HFEtaskEG2->SelectCollisionCandidates(AliVEvent::kEMCEGA);
      HFEtaskEG2->SetEMCalTriggerEG2(kTRUE);
      HFEtaskEG2->SetTenderSwitch(useTender);
+     HFEtaskEG2->SwitchPi0EtaWeightCalc(SwitchPi0EtaWeightCalc);
      HFEtaskEG2->SetClusterTypeEMC(ClsTypeEMC);
      HFEtaskEG2->SetClusterTypeDCAL(ClsTypeDCAL);
 
@@ -165,6 +176,7 @@ AliAnalysisTask* AddTaskHFEMultiplicity(TString suffixName = "",
      HFEtaskDG1->SelectCollisionCandidates(AliVEvent::kEMCEGA);
      HFEtaskDG1->SetEMCalTriggerDG1(kTRUE);
      HFEtaskDG1->SetTenderSwitch(useTender);
+     HFEtaskDG1->SwitchPi0EtaWeightCalc(SwitchPi0EtaWeightCalc);
      HFEtaskDG1->SetClusterTypeEMC(ClsTypeEMC);
      HFEtaskDG1->SetClusterTypeDCAL(ClsTypeDCAL);
       
@@ -208,6 +220,7 @@ AliAnalysisTask* AddTaskHFEMultiplicity(TString suffixName = "",
      HFEtaskDG2->SelectCollisionCandidates(AliVEvent::kEMCEGA);
      HFEtaskDG2->SetEMCalTriggerDG2(kTRUE);
      HFEtaskDG2->SetTenderSwitch(useTender);
+     HFEtaskDG2->SwitchPi0EtaWeightCalc(SwitchPi0EtaWeightCalc);
      HFEtaskDG2->SetClusterTypeEMC(ClsTypeEMC);
      HFEtaskDG2->SetClusterTypeDCAL(ClsTypeDCAL);
      

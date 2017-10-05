@@ -101,7 +101,8 @@ ClassImp(AliAnalysisTaskHFEMultiplicity)
 AliAnalysisTaskHFEMultiplicity::AliAnalysisTaskHFEMultiplicity() : AliAnalysisTaskSE(), 
  
   fAOD(0),
-  fMCarray(0),
+  fMCArray(0),
+  fMCHeader(0),
   fMCparticle(0),
   fNevents(0),
   fTenderClusterName("caloClusters"),
@@ -140,7 +141,14 @@ AliAnalysisTaskHFEMultiplicity::AliAnalysisTaskHFEMultiplicity() : AliAnalysisTa
   fTrkMatchClusetaphi(0x0),						 
   fEMCTrkMatchcluster(0x0),
   fReadMC(kFALSE),
- 
+  fCalculateWeight(kFALSE),
+  fNTotMCpart(0),
+  fNpureMC(0),
+  fNembMCpi0(0),
+  fNembMCeta(0),
+  fSprsPi0EtaWeightCal(0),
+  ftype(-1),
+  fWeight(1),
   fRejectPUFromSPD(kFALSE),
   fRefMult(61.26),
   gRandom(new TRandom3(0)),
@@ -151,6 +159,8 @@ AliAnalysisTaskHFEMultiplicity::AliAnalysisTaskHFEMultiplicity() : AliAnalysisTa
   fULSElecPt(0),
   fLSElecPt(0),
 
+  fSparseClusE(0),
+  fvalueCluE(0),
   fSparseElectron(0),
   fvalueElectron(0),
   fSparseLSElectron(0),
@@ -160,8 +170,9 @@ AliAnalysisTaskHFEMultiplicity::AliAnalysisTaskHFEMultiplicity() : AliAnalysisTa
   fvalueMulti(0)
   
 {   fvalueElectron = new Double_t[9];
-  fvaluePHElectron = new Double_t[5];
-  fvalueMulti = new Double_t[7];
+  fvaluePHElectron = new Double_t[3];
+  fvalueCluE = new Double_t[3];
+  fvalueMulti = new Double_t[6];
   for(Int_t i=0; i<2; i++) fMultEstimatorAvg[i]=0;
 
 }
@@ -170,7 +181,8 @@ AliAnalysisTaskHFEMultiplicity::AliAnalysisTaskHFEMultiplicity() : AliAnalysisTa
 AliAnalysisTaskHFEMultiplicity::AliAnalysisTaskHFEMultiplicity(const char* name) : AliAnalysisTaskSE(name),
   
   fAOD(0),
-  fMCarray(0),
+  fMCArray(0),
+  fMCHeader(0),
   fMCparticle(0),
   fNevents(0),
   fTenderClusterName("caloClusters"),
@@ -209,7 +221,14 @@ AliAnalysisTaskHFEMultiplicity::AliAnalysisTaskHFEMultiplicity(const char* name)
   fTrkMatchClusetaphi(0x0),						 
   fEMCTrkMatchcluster(0x0),
   fReadMC(kFALSE),
- 
+  fCalculateWeight(kFALSE),
+  fNTotMCpart(0),
+  fNpureMC(0),
+  fNembMCpi0(0),
+  fNembMCeta(0),
+  fSprsPi0EtaWeightCal(0),
+  ftype(-1),
+  fWeight(1),
   fRejectPUFromSPD(kFALSE),
   fRefMult(61.26),
   gRandom(new TRandom3(0)),
@@ -220,6 +239,8 @@ AliAnalysisTaskHFEMultiplicity::AliAnalysisTaskHFEMultiplicity(const char* name)
   fULSElecPt(0),
   fLSElecPt(0),
 
+  fSparseClusE(0),
+  fvalueCluE(0),
   fSparseElectron(0),
   fvalueElectron(0),
   fSparseLSElectron(0),
@@ -231,8 +252,9 @@ AliAnalysisTaskHFEMultiplicity::AliAnalysisTaskHFEMultiplicity(const char* name)
 {
   // constructor
   fvalueElectron = new Double_t[9];
-  fvaluePHElectron = new Double_t[5];
-  fvalueMulti = new Double_t[7];
+  fvaluePHElectron = new Double_t[3];
+  fvalueCluE = new Double_t[3];
+  fvalueMulti = new Double_t[6];
   for(Int_t i=0; i<2; i++) fMultEstimatorAvg[i]=0;
   DefineInput(0, TChain::Class());   
   DefineOutput(1, TList::Class());
@@ -246,6 +268,8 @@ AliAnalysisTaskHFEMultiplicity::~AliAnalysisTaskHFEMultiplicity()
   // destructor
   if(fOutputList) {
     delete fOutputList;     // at the end of your task, it is deleted from memory by calling this function
+    delete fSparseClusE;
+    delete []fvalueCluE;
     delete fSparseElectron;
     delete fSparseLSElectron;
     delete fSparseULSElectron;
@@ -253,6 +277,7 @@ AliAnalysisTaskHFEMultiplicity::~AliAnalysisTaskHFEMultiplicity()
     delete []fvaluePHElectron;
     delete fSparseMulti;
     delete []fvalueMulti;
+    delete fSprsPi0EtaWeightCal,
     delete fTracks_tender;
     delete fCaloClusters_tender;
   }
@@ -343,32 +368,44 @@ void AliAnalysisTaskHFEMultiplicity::UserCreateOutputObjects()
   fULSElecPt  		= new TH1F("fULSElecPt","p_{T} distribution of ULS electrons;p_{T} (GeV/c);counts",500,0,50);
   fLSElecPt 		= new TH1F("fLSElecPt","p_{T} distribution of LS electrons;p_{T} (GeV/c);counts",500,0,50);
   
-
-
   
+   
+
+//---------------THnSparse------------
+  Int_t binsE[3]	=      	{200, 1000, 1000};
+  Double_t xminE[3]	=	{  0,  0,   0};
+  Double_t xmaxE[3]	=	{  100,   2050,   1000};
+
+  fSparseClusE 	= new THnSparseD ("Cluster Energy","Cluster Energy;ClusterE;V0M;SPDTracklets;",3 ,binsE,xminE,xmaxE);
+ 
 
   
   Int_t bins[9]		=      	{280, 160, 100, 100, 100, 1000, 1000, 200,1000};
   Double_t xmin[9]	=	{  2,  -8,   0,   0,   0, 0, 0, 0 ,-50};
-  Double_t xmax[9]	=	{  30,   8,   2,   2,  2, 2000, 1000, 100, 50};
+  Double_t xmax[9]	=	{  30,   8,   2,   2,  2, 2050, 1000, 100, 50};
 
   fSparseElectron 	= new THnSparseD ("Electron","Electron;pT;nSigma;E/P;m02;m20;V0M;SPDTracklets;Cluster Energy;zvtx;",9 ,bins,xmin,xmax);
  
 
-  Int_t binsls[4]	=      	{280, 1000, 1000, 200};
-  Double_t xminls[4]	=	{  2, 0, 0, 0};
-  Double_t xmaxls[4]	=	{  30, 2000, 1000, 100};
+  Int_t binsls[3]	=      	{280, 1000, 1000};
+  Double_t xminls[3]	=	{  2, 0, 0};
+  Double_t xmaxls[3]	=	{  30, 2050, 1000};
 
-  fSparseLSElectron 	= new THnSparseD ("LSElectron","LSElectron;pT;V0M;SPDTracklets;Cluster Energy;",4 ,binsls,xminls,xmaxls);
-  fSparseULSElectron 	= new THnSparseD ("ULSElectron","ULSElectron;pT;V0M;SPDTracklets;Cluster Energy;",4 ,binsls,xminls,xmaxls);
+  fSparseLSElectron 	= new THnSparseD ("LSElectron","LSElectron;pT;V0M;SPDTracklets;",3 ,binsls,xminls,xmaxls);
+  fSparseULSElectron 	= new THnSparseD ("ULSElectron","ULSElectron;pT;V0M;SPDTracklets;",3 ,binsls,xminls,xmaxls);
   
-  Int_t binsm[7]	=      	{1000,1000,1000,1000,1000,1000,1000};
-  Double_t xminm[7]	=	{-50,0,0,0,0,0,0};
-  Double_t xmaxm[7]	=	{ 50,2000,1000,2000,1000,1000,2000};
-  fSparseMulti 		= new THnSparseD ("Multiplicity","Multiplicity;zvtx;V0M_class;SPDTracklets_class;V0M_data;SPDTracklets_data;Corrected_SPDTracklets;Corrected_V0M",7,binsm,xminm,xmaxm);
+  Int_t binsm[6]	=      	{1000,1000,1000,1000,1000,400};
+  Double_t xminm[6]	=	{-50,0,0,0,0,0};
+  Double_t xmaxm[6]	=	{ 50,2050,1000,2050,1000,400};
+  fSparseMulti 		= new THnSparseD ("Multiplicity","Multiplicity;zvtx;V0M_class;SPDTracklets_class;V0M_data;SPDTracklets_data;Corrected_SPDTracklets;Corrected_V0M;ncharge;",6,binsm,xminm,xmaxm);
     
-    
+ 
+   Int_t binw[4] = {500,3,2,7}; //pT, PDG, HijingOrNot, pi0etaType
+  Double_t xminw[4] = {0,0,0,-1};
+  Double_t xmaxw[4] = {50,3,2,6};
 
+  fSprsPi0EtaWeightCal = new THnSparseD("fSprsPi0EtaWeightCal","Sparse to calculate #pi^{0} and #eta weight;p_{T};PDGID;HijingOrNot;pi0etaType;",4,binw,xminw,xmaxw);
+  
     
 
  
@@ -377,7 +414,9 @@ void AliAnalysisTaskHFEMultiplicity::UserCreateOutputObjects()
   fSparseLSElectron->Sumw2();
   fSparseULSElectron->Sumw2();
   fSparseMulti->Sumw2();
-
+  fClusE->Sumw2();
+  fSprsPi0EtaWeightCal->Sumw2();
+  fSparseClusE->Sumw2();
  
   fOutputList->Add(fNevents);
   fOutputList->Add(fClusPhi);
@@ -409,10 +448,14 @@ void AliAnalysisTaskHFEMultiplicity::UserCreateOutputObjects()
   fOutputList->Add(fULSElecPt);
   fOutputList->Add(fLSElecPt);
 
+  fOutputList->Add(fSparseClusE);
   fOutputList->Add(fSparseElectron);
   fOutputList->Add(fSparseLSElectron);
   fOutputList->Add(fSparseULSElectron);
   fOutputList->Add(fSparseMulti);
+  fOutputList->Add(fSprsPi0EtaWeightCal);  
+
+  
              
   PostData(1,fOutputList);  
  // PostData(2,fListProfiles);         
@@ -428,19 +471,46 @@ void AliAnalysisTaskHFEMultiplicity::UserExec(Option_t *)
   fAOD = dynamic_cast<AliAODEvent*>(InputEvent());    
   if(!fAOD) return;
 
-  if(fReadMC){fMCarray = dynamic_cast<TClonesArray*>(fAOD->FindListObject(AliAODMCParticle::StdBranchName()));} //MC information
+  if(fReadMC){
+
+	fMCArray = dynamic_cast<TClonesArray*>(fAOD->FindListObject(AliAODMCParticle::StdBranchName()));
+	if(!fMCArray){
+   	 AliError("Array of MC particles not found");
+    	 return;
+  	}
+		 fMCHeader = dynamic_cast<AliAODMCHeader*>(fAOD->GetList()->FindObject(AliAODMCHeader::StdBranchName()));
+ 		 if (!fMCHeader) {
+   		 AliError("Could not find MC Header in AOD");
+   		 return;
+ 				 }
+	} //MC information
  
   if(!PassEventSelect(fAOD)) return;
 			
 
   if(fUseTender){
     fTracks_tender = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject(fTenderTrackName));
-    fCaloClusters_tender = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject(fTenderClusterName));
+    fCaloClusters_tender = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject(fTenderClusterName)); //emcal correction
   }
-	
- 
-  //--------------Multiplicity from Multselection class-------------------
+  
+  ////////////////////////////////
+  //Get number of Gen particles //
+  ////////////////////////////////
+  GetNMCPartProduced();
 
+
+  /////////////////////////////////
+  //Calculate Pi0 and Eta weight //
+  /////////////////////////////////
+	
+ if(fCalculateWeight) GetPi0EtaWeight(fSprsPi0EtaWeightCal);
+
+ 
+  //////////////////
+  // Multiplicity //
+  /////////////////
+
+ 
   Float_t lPercentiles[4];
   Int_t fMultV0A = -999, fMultV0C = -999, fMultV0M = -999, fMultSPDTracklets = -999;
   Double_t fMultSPDTracklets_Percentile = -999;
@@ -519,15 +589,19 @@ void AliAnalysisTaskHFEMultiplicity::UserExec(Option_t *)
 
   
   fvalueMulti[0] = Zvertex1;
-  fvalueMulti[1] = fMultV0M;
-  fvalueMulti[2] = fMultSPDTracklets;
-  fvalueMulti[3] = V0Mult;
-  fvalueMulti[4] = nAcc;
-  fvalueMulti[5] = correctednAcc;
-  fvalueMulti[6] = vzeroMultCorr;
+  fvalueMulti[1] = V0Mult;
+  fvalueMulti[2] = nAcc;
+  fvalueMulti[3] = vzeroMultCorr; 
+  fvalueMulti[4] = correctednAcc;
+  fvalueMulti[5] = GetNcharged();
   
 
-  fSparseMulti->Fill(fvalueMulti);    
+  fSparseMulti->Fill(fvalueMulti);    // multiplicity from tracklets only, not from class alimultselection
+
+
+   //////////////////
+  // Tigger Check //
+  /////////////////
 
 
   //-------------------selecting trigger for calorimeter( EMCAL + DCAL )
@@ -556,16 +630,103 @@ void AliAnalysisTaskHFEMultiplicity::UserExec(Option_t *)
   if(!fpidResponse) return;
 
   
+  /////////////////////////
+  // cluster information //
+  ////////////////////////	
 
+  Double_t cluphi = -999.0;
+  Double_t clueta =-999.0 ;
+  Int_t ncells = -999.0;
+  Float_t energy = -999.0;
+  Float_t clut = -999.0;
+  Double_t  energycell = -999.0;
+  Double_t CellId =0;
+  Int_t Nclust = -999;               
 
-  //-----------cluster information---------------------------------------------------------------------------		
  
-  ClusterInfo();
+  if(!fUseTender) Nclust = fAOD->GetNumberOfCaloClusters(); 
+  if(fUseTender) Nclust = fCaloClusters_tender->GetEntries();
+
+  Bool_t fClsTypeEMC = kFALSE, fClsTypeDCAL = kFALSE;
+  for ( Int_t index = 0; index < Nclust ; index++ ) {
+    AliAODCaloCluster * clu =0x0;
+    if(!fUseTender) clu  = (AliAODCaloCluster*)fAOD->GetCaloCluster(index) ; 
+    if(fUseTender) clu = dynamic_cast<AliAODCaloCluster*>(fCaloClusters_tender->At(index));
+    if(!clu) continue;
 	  
+    fClsTypeEMC = kFALSE; fClsTypeDCAL = kFALSE;
+    if (clu->IsEMCAL()){
+	
+      AliAODCaloCells &cells = *(fAOD->GetEMCALCells());
+	
+      Float_t  x[3]; // cluster pos
+      Double_t V[3];
+      Double_t clup,Etrans,b;
+      fAOD->GetVertex()->GetXYZ(V);
+      TLorentzVector p;
+      clu->GetMomentum(p,V);
+      Etrans = p.Et();
+      b = clu->GetM02();
 
-  //--------------------Track information------------------------	
 
+      clu->GetPosition(x);
+      TVector3 clustposi(x[0],x[1],x[2]);
+   
+
+      cluphi = clustposi.Phi();
+      clueta = clustposi.Eta();
+      if(cluphi < 0) cluphi = cluphi+(2*TMath::Pi());
+      if(cluphi > 1.39 && cluphi < 3.265) fClsTypeEMC = kTRUE; //EMCAL : 80 < phi < 187
+      if(cluphi > 4.53 && cluphi < 5.708) fClsTypeDCAL = kTRUE;//DCAL  : 260 < phi < 327
+
+      if(fFlagClsTypeEMC && !fFlagClsTypeDCAL)
+	if(!fClsTypeEMC) continue; //selecting only EMCAL clusters
+
+      if(fFlagClsTypeDCAL && !fFlagClsTypeEMC)
+	if(!fClsTypeDCAL) continue; //selecting only DCAL clusters
+
+      clut = clu->GetTOF()*1e9 ;
+      energy = clu->E();
+      ncells= clu->GetNCells();
+	
+  //////////////////////
+  // Cell information //
+  /////////////////////
  
+      /*    UShort_t * C    = clu->GetCellsAbsId() ;
+	    Double_t *fraction = clu->GetCellsAmplitudeFraction() ;
+	    for(Int_t i = 0; i < ncells ; i++){
+	    Int_t absId       = C[i]; 
+	    Double_t ampFract = fraction[i];
+	    Double_t Ecell    = cells.GetCellAmplitude(absId);
+	    Double_t Tcell 	  = cells.GetCellTime(absId)*1e9;
+	    fCellE->Fill(Ecell); 
+	    fCellT->Fill(Tcell);
+	
+	    }*/
+
+	
+      fClusPhi->Fill(cluphi);
+      fClusEtaPhi->Fill(clueta,cluphi);
+      fClusEta->Fill(clueta);
+      fNCells->Fill(ncells);
+      fClusE->Fill(energy);
+      fClusT->Fill(clut);
+        
+        fvalueCluE[0] = energy;
+	fvalueCluE[1] = vzeroMultCorr; //V0M, Multiplicity information
+	fvalueCluE[2] = correctednAcc; //SPD Tracklets
+
+  fSparseClusE->Fill(fvalueCluE); 
+    
+      
+	}  
+
+}
+  ///////////////////////
+  // Track information //
+  //////////////////////
+
   Int_t ntracks = -999;
   if(!fUseTender)ntracks = fAOD->GetNumberOfTracks();
   if(fUseTender) ntracks = fTracks_tender->GetEntries(); 
@@ -657,14 +818,14 @@ void AliAnalysisTaskHFEMultiplicity::UserExec(Option_t *)
 						
 	fSparseElectron->Fill(fvalueElectron);   //Electron information sparse         
 	
-	if(nsigma < -1.  || nsigma > 3.) continue;
+        if(nsigma < -1.  || nsigma > 3.) continue;
 	if(M20trkmatch < 0.02 || M20trkmatch> 0.35) continue;
 	if(Eoptrk < 0.8 || Eoptrk > 1.2) continue;
+	
 
 	fvaluePHElectron[0] = TrkPt;
 	fvaluePHElectron[1] = vzeroMultCorr; //V0M, Multiplicity information
 	fvaluePHElectron[2] = correctednAcc; //SPD Tracklets
-	fvaluePHElectron[3] = Etrkmatch;  //cluster energy after matching
 	
 	Bool_t fFlagPhotonicElec = kFALSE, fFlagElecLS=kFALSE;
 	SelectNonHFElectron(iTracks,track,fFlagPhotonicElec,fFlagElecLS);					    
@@ -680,6 +841,11 @@ void AliAnalysisTaskHFEMultiplicity::UserExec(Option_t *)
 
 
 //______________________________________________________________________
+
+
+
+//______________________________________________________________________
+
 Bool_t AliAnalysisTaskHFEMultiplicity::Passtrackcuts(AliAODTrack *atrack)
 { 
   Double_t d0z0[2]={-999,-999}, cov[3];
@@ -726,7 +892,7 @@ Bool_t AliAnalysisTaskHFEMultiplicity::Passtrackcuts(AliAODTrack *atrack)
   if(atrack->PropagateToDCA(pVtx, fAOD->GetMagneticField(), 20., d0z0, cov))
     if(TMath::Abs(d0z0[0]) > DCAxyCut || TMath::Abs(d0z0[1]) > DCAzCut) return kFALSE;
 
-
+ return kTRUE;
 
 }
 
@@ -759,96 +925,9 @@ Bool_t AliAnalysisTaskHFEMultiplicity::PassEventSelect(AliAODEvent *fAOD)
   return kTRUE;
   
 } 
+//______________________________________________________________________
 
 //______________________________________________________________________
-void AliAnalysisTaskHFEMultiplicity::ClusterInfo() 
-{
-  Double_t cluphi = -999.0;
-  Double_t clueta =-999.0 ;
-  Int_t ncells = -999.0;
-  Float_t energy = -999.0;
-  Float_t clut = -999.0;
-  Double_t  energycell = -999.0;
-  Double_t CellId =0;
-  Int_t Nclust = -999;               
-
- 
-  if(!fUseTender) Nclust = fAOD->GetNumberOfCaloClusters(); 
-  if(fUseTender) Nclust = fCaloClusters_tender->GetEntries();
-
-  Bool_t fClsTypeEMC = kFALSE, fClsTypeDCAL = kFALSE;
-  for ( Int_t index = 0; index < Nclust ; index++ ) {
-    AliAODCaloCluster * clu =0x0;
-    if(!fUseTender) clu  = (AliAODCaloCluster*)fAOD->GetCaloCluster(index) ; 
-    if(fUseTender) clu = dynamic_cast<AliAODCaloCluster*>(fCaloClusters_tender->At(index));
-    if(!clu) continue;
-	  
-    fClsTypeEMC = kFALSE; fClsTypeDCAL = kFALSE;
-    if (clu->IsEMCAL()){
-	
-      AliAODCaloCells &cells = *(fAOD->GetEMCALCells());
-	
-      Float_t  x[3]; // cluster pos
-      Double_t V[3];
-      Double_t clup,Etrans,b;
-      fAOD->GetVertex()->GetXYZ(V);
-      TLorentzVector p;
-      clu->GetMomentum(p,V);
-      Etrans = p.Et();
-      b = clu->GetM02();
-
-
-      clu->GetPosition(x);
-      TVector3 clustposi(x[0],x[1],x[2]);
-   
-
-      cluphi = clustposi.Phi();
-      clueta = clustposi.Eta();
-      if(cluphi < 0) cluphi = cluphi+(2*TMath::Pi());
-      if(cluphi > 1.39 && cluphi < 3.265) fClsTypeEMC = kTRUE; //EMCAL : 80 < phi < 187
-      if(cluphi > 4.53 && cluphi < 5.708) fClsTypeDCAL = kTRUE;//DCAL  : 260 < phi < 327
-
-      if(fFlagClsTypeEMC && !fFlagClsTypeDCAL)
-	if(!fClsTypeEMC) continue; //selecting only EMCAL clusters
-
-      if(fFlagClsTypeDCAL && !fFlagClsTypeEMC)
-	if(!fClsTypeDCAL) continue; //selecting only DCAL clusters
-
-      clut = clu->GetTOF()*1e9 ;
-      energy = clu->E();
-      ncells= clu->GetNCells();
-		
-
-      //-----------Cell information
- 
-      /*    UShort_t * C    = clu->GetCellsAbsId() ;
-	    Double_t *fraction = clu->GetCellsAmplitudeFraction() ;
-	    for(Int_t i = 0; i < ncells ; i++){
-	    Int_t absId       = C[i]; 
-	    Double_t ampFract = fraction[i];
-	    Double_t Ecell    = cells.GetCellAmplitude(absId);
-	    Double_t Tcell 	  = cells.GetCellTime(absId)*1e9;
-	    fCellE->Fill(Ecell); 
-	    fCellT->Fill(Tcell);
-	
-	    }*/
-
-	
-      fClusPhi->Fill(cluphi);
-      fClusEtaPhi->Fill(clueta,cluphi);
-      fClusEta->Fill(clueta);
-      fNCells->Fill(ncells);
-      fClusE->Fill(energy);
-      fClusT->Fill(clut);
-
-    
-    }	    
-
-
-		
-  }
-	
-}
 
 //______________________________________________________________________
 void AliAnalysisTaskHFEMultiplicity::SelectNonHFElectron(Int_t itrack, AliAODTrack *track, Bool_t &fFlagPhotonicElec, Bool_t &fFlagElecLS)
@@ -880,6 +959,10 @@ void AliAnalysisTaskHFEMultiplicity::SelectNonHFElectron(Int_t itrack, AliAODTra
 
     if(!atrackAsso->TestFilterMask(AliAODTrack::kTrkTPCOnly)) continue;
     if(atrackAsso->GetTPCNcls() < 80.) continue;
+    if(atrackAsso->GetITSNcls() < 3.) continue;
+    if((!(atrackAsso->GetStatus()&AliAODTrack::kITSrefit)|| (!(atrackAsso->GetStatus()&AliAODTrack::kTPCrefit)))) continue; //refit required
+    if(!(atrackAsso->HasPointOnITSLayer(0) || atrackAsso->HasPointOnITSLayer(1))) continue;
+
   
     nsigmaAsso = fpidResponse->NumberOfSigmasTPC(atrackAsso, AliPID::kElectron);
     ptAsso = atrackAsso->Pt();
@@ -905,7 +988,7 @@ void AliAnalysisTaskHFEMultiplicity::SelectNonHFElectron(Int_t itrack, AliAODTra
 
     AliKFParticle ge1 = AliKFParticle(*track, fPDGe1);
     AliKFParticle ge2 = AliKFParticle(*atrackAsso, fPDGe2);
-    AliKFParticle recg(ge1, ge2);
+    AliKFParticle recg(ge1,ge2);
 
     if(recg.GetNDF()<1) continue;
     Double_t chi2recg = recg.GetChi2()/recg.GetNDF();
@@ -928,7 +1011,7 @@ void AliAnalysisTaskHFEMultiplicity::SelectNonHFElectron(Int_t itrack, AliAODTra
       fULSElecPt->Fill(track->Pt());
       fSparseULSElectron->Fill(fvaluePHElectron); 
     }
-
+    
     if(mass<0.14 && fFlagULS && !flagPhotonicElec){
       flagPhotonicElec = kTRUE;
     }
@@ -977,6 +1060,137 @@ void AliAnalysisTaskHFEMultiplicity::GetTrkClsEtaPhiDiff(AliAODTrack *t, AliAODC
   etadiff=veta-ceta;
   phidiff=TVector2::Phi_mpi_pi(vphi-cphi);
 }
+
+//____________________________________________________________________________
+
+
+//______________________________________________________________________________
+Int_t AliAnalysisTaskHFEMultiplicity::GetNcharged(){
+    //counts all tracks in eta<1 with charge!=0
+
+    Int_t Nch = 0;
+
+    if(!fReadMC) return Nch; // if no MC info return 0
+
+    // loop over all tracks 
+    for (Int_t igen = 0; igen < fMCArray->GetEntriesFast(); igen++){
+        AliAODMCParticle *mctrack=(AliAODMCParticle*)fMCArray->UncheckedAt(igen);
+        Int_t charge = mctrack->Charge();
+        Double_t eta = mctrack->Eta();
+        Bool_t isPhysPrim = mctrack->IsPhysicalPrimary();
+        if(charge!=0){
+            if(eta > -1.0 && eta < 1.0){
+                if(isPhysPrim){
+                    Nch++;
+                }
+            }
+        }
+    }
+    return Nch;
+}
+//______________________________________________________________________________
+void AliAnalysisTaskHFEMultiplicity::GetPi0EtaWeight(THnSparse *SparseWeight)
+{
+  //Get pi0 and eta information for weight calculation
+
+  Double_t fvalue[4] = {-999,-999,-999,-999};
+
+  for(int imc=0; imc< fNTotMCpart; imc++)
+  {
+    AliAODMCParticle *AODMCtrack = (AliAODMCParticle*)fMCArray->At(imc);
+    if(TMath::Abs(AODMCtrack->Eta()) > 1.2) continue;
+
+    //-------Get PDG
+    Int_t TrackPDG = TMath::Abs(AODMCtrack->GetPdgCode());
+    if((TrackPDG != 111) && (TrackPDG != 221) && (TrackPDG != 22)) continue;
+
+    Double_t fPartPDGid = -999;
+    if (TrackPDG == 111) fPartPDGid = 0.2;
+    if (TrackPDG == 221) fPartPDGid = 1.2;
+    if (TrackPDG == 22) fPartPDGid = 2.2;
+
+    Double_t fTrkPt = AODMCtrack->Pt();
+
+    //-------Check if the particle is from hijing or not
+    Bool_t fFromHijing = kHijing;
+    if(imc >= fNpureMC)fFromHijing = kElse;
+
+    //------Get type of the particle
+    Int_t fType = GetPi0EtaType(AODMCtrack);
+
+    fvalue[0] = fTrkPt;
+    fvalue[1] = fPartPDGid;
+    fvalue[2] = fFromHijing;
+    fvalue[3] = fType;
+
+    SparseWeight->Fill(fvalue);
+  }
+}
+//______________________________________________________________________________
+Int_t AliAnalysisTaskHFEMultiplicity::GetPi0EtaType(AliAODMCParticle *part)
+{
+  // Return the type of particle
+
+  // IsPrimary
+  Bool_t primMC = part->IsPrimary();
+  if(!primMC) return kNotIsPrimary;
+
+  // Mother
+  Int_t motherlabel = part->GetMother();
+  if(motherlabel<0) return kNoMother;
+
+  else {
+    AliAODMCParticle *mother = (AliAODMCParticle*)fMCArray->At(motherlabel);
+    Int_t motherpdg = TMath::Abs(mother->GetPdgCode());
+
+    if(motherpdg == 111 || motherpdg == 221 || motherpdg == 223 || motherpdg == 333 || motherpdg == 331 || motherpdg == 113 || motherpdg == 213 || motherpdg == 313 || motherpdg == 323) return kLightMesons;
+
+    if ( (int(TMath::Abs(motherpdg)/100.)%10) == 5 || (int(TMath::Abs(motherpdg)/1000.)%10) == 5 ) return kBeauty;
+    if ( (int(TMath::Abs(motherpdg)/100.)%10) == 4 || (int(TMath::Abs(motherpdg)/1000.)%10) == 4 ) return kCharm;
+    return kNoFeedDown;
+  }
+}
+//______________________________________________________________________________
+Bool_t AliAnalysisTaskHFEMultiplicity::GetNMCPartProduced()
+{
+  //Get number of MC particles produced by generators.
+
+ TList *lh = fMCHeader->GetCocktailHeaders();
+  fNTotMCpart = 0;
+  fNembMCpi0 = 0;
+  fNembMCeta = 0;
+  fNpureMC = 0;
+  TString MCgen;
+  TString embpi0("pi");
+  TString embeta("eta");
+
+  if(!lh){
+    AliError("no MC header");
+    return (0);
+  }
+
+  for(int igene=0; igene<lh->GetEntries(); igene++)
+  {
+    AliGenEventHeader* gh=(AliGenEventHeader*)lh->At(igene);
+    if(!gh) continue;
+
+    MCgen =  gh->GetName();
+    //cout << "Gen name, N produced = " << gh->GetName() << ", " << gh->NProduced() << endl;
+    if(igene==0) fNpureMC = gh->NProduced();  // generated by HIJING
+
+    //if(MCgen.Contains(embpi0))cout << MCgen << endl;
+    //if(MCgen.Contains(embeta))cout << MCgen << endl;
+
+    if(MCgen.Contains(embpi0))fNembMCpi0 = fNTotMCpart;
+    if(MCgen.Contains(embeta))fNembMCeta = fNTotMCpart;
+    fNTotMCpart += gh->NProduced();
+  }
+  //cout << "fNpureMC, fNembMCpi0, fNembMCeta, fNTotMCpart : " <<fNpureMC << ", " << fNembMCpi0 << ", " << fNembMCeta << ", " << fNTotMCpart << endl;
+
+  return kTRUE;
+}
+//______________________________________________________________________________
+
 //______________________________________________________________________________
 
 void AliAnalysisTaskHFEMultiplicity::Terminate(Option_t *)
