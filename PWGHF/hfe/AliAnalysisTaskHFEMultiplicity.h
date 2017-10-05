@@ -11,7 +11,6 @@ class AliHFEcontainer;
 class AliHFEcuts;
 class AliHFEpid;
 class AliHFEpidQAmanager;
-class AliAODMCHeader;
 class AliAODMCParticle; // sample
 class AliEMCALTriggerPatchInfo;
 class AliMagF;
@@ -33,7 +32,6 @@ class AliMultSelection;
 #include "AliPIDResponse.h"
 #include "TProfile.h"
 #include "AliAnalysisVertexingHF.h"
-#include "AliNormalizationCounter.h"
 #include "AliVertexingHFUtils.h"
 #include "AliVEvent.h"
 #include "AliSelectNonHFE.h"
@@ -41,11 +39,13 @@ class AliMultSelection;
 
 
 
-
-
 class AliAnalysisTaskHFEMultiplicity : public AliAnalysisTaskSE  
 {
  public:
+
+  enum HijingOrNot {kHijing,kElse};
+  enum pi0etaType {kNoMother, kNoFeedDown, kNotIsPrimary, kLightMesons, kBeauty, kCharm};
+  
   AliAnalysisTaskHFEMultiplicity();
   AliAnalysisTaskHFEMultiplicity(const char *name);
   virtual                 ~AliAnalysisTaskHFEMultiplicity();
@@ -60,8 +60,12 @@ class AliAnalysisTaskHFEMultiplicity : public AliAnalysisTaskSE
   Bool_t  		PassEventSelect(AliAODEvent *fAOD);
   Bool_t		Passtrackcuts(AliAODTrack *atrack);
   void    		GetTrkClsEtaPhiDiff(AliAODTrack *t, AliAODCaloCluster *v, Double_t &phidiff, Double_t &etadiff );
-  void    		ClusterInfo(); 
-  
+  Int_t 		GetNcharged();
+
+  void   	        GetPi0EtaWeight(THnSparse *SparseWeight);
+  Bool_t  		GetNMCPartProduced();
+  Int_t                 GetPi0EtaType(AliAODMCParticle *part);
+  void    		SwitchPi0EtaWeightCalc(Bool_t fSwitch) {fCalculateWeight = fSwitch;};
   Bool_t  		GetTenderSwitch() {return fUseTender;};     
   void    		SetTenderSwitch(Bool_t usetender){fUseTender = usetender;};
   void    		SetClusterTypeEMC(Bool_t flagClsEMC) {fFlagClsTypeEMC = flagClsEMC;};
@@ -76,7 +80,6 @@ class AliAnalysisTaskHFEMultiplicity : public AliAnalysisTaskSE
   void                  SetEMCalTriggerDG1(Bool_t flagTr1) { fDCalDG1=flagTr1; fDCalDG2=kFALSE;};
   void                  SetEMCalTriggerDG2(Bool_t flagTr2) { fDCalDG2=flagTr2; fDCalDG1=kFALSE;};  
   void    		SelectNonHFElectron(Int_t itrack, AliAODTrack *track, Bool_t &fFlagPhotonicElec, Bool_t &fFlagElecLS);
-
   void 			SetReferenceMultiplicity(Double_t multi){fRefMult=multi;}
 
   void 			SetMultiProfileLHC16s(TProfile * hprof){
@@ -97,20 +100,28 @@ private:
   TClonesArray*         fTracks_tender;//Tender tracks     
   TClonesArray*         fCaloClusters_tender;//Tender cluster      
   AliAODMCParticle*	fMCparticle;
-  TClonesArray*	        fMCarray;//! MC array
+  AliAODMCHeader*	fMCHeader;//!
+  TClonesArray*	        fMCArray;//! MC array
   TProfile* 		GetEstimatorHistogram(const AliAODEvent *fAOD);
 
   Bool_t                fUseTender;// switch to add tender
   Bool_t                fFlagClsTypeEMC;//switch to select EMC clusters
   Bool_t                fFlagClsTypeDCAL;//switch to select DCAL c
   Bool_t                fEMCEG1;//EMcal Threshold EG1
-  Bool_t                fEMCEG2;//EMcal Threshold EG2
+  Bool_t                fEMCEG2;//EMcal Threshold SetReferenceMultiplicityEG2
   Bool_t                fDCalDG1;//DCal Threshold DG1
   Bool_t                fDCalDG2;//DCal Threshold DG2
   Bool_t 		fRejectPUFromSPD;
+
+  Bool_t              	fCalculateWeight;//
+  Int_t               	fNTotMCpart; //! N of total MC particles produced by generator
+  Int_t              	fNpureMC;//! N of particles from main generator (Hijing/Pythia)
+  Int_t               	fNembMCpi0; //! N > fNembMCpi0 = particles from pi0 generator
+  Int_t               	fNembMCeta; //! N > fNembMCeta = particles from eta generator
   
   TList*                fOutputList;//! output list
   TList*		fListProfiles; // list of profile histos for z-vtx correction
+ 
   TH1F*			fNevents;//! no of events
   TH1F*			fClusPhi;//! Cluster Phi
   TH1F*			fClusEta;//! Cluster Eta
@@ -134,25 +145,38 @@ private:
   TH2F*			fTrkMatchClusetaphi;//! matched cluster eta phi
   TH2F*			fEMCTrkMatchcluster;//!Distance of EMC cluster to closest track in x and z
 
-  TH1F*                fInvmassLS;//!
-  TH1F*                fInvmassULS;//!
-  TH2F*                fInvmassLSPt;//!
-  TH2F*                fInvmassULSPt;//!
-  TH1F*                fULSElecPt;//!
-  TH1F*                fLSElecPt;//!
+
+  TH1F*                 fInvmassLS;//!
+  TH1F*                 fInvmassULS;//!
+  TH2F*                 fInvmassLSPt;//!
+  TH2F*                 fInvmassULSPt;//!
+  TH1F*                 fULSElecPt;//!
+  TH1F*                 fLSElecPt;//!
 
   Bool_t 		fReadMC;    //flag for access to MC
+  Int_t                 ftype;//!
+  Double_t              fWeight;//!
+
+
   TProfile*		fMultEstimatorAvg[2];
   Double_t 		fRefMult;
   TRandom3*		gRandom;//!< random number generator
  
   THnSparse* 	        fSparseElectron; //! Electron information
+  THnSparse*		fSparseClusE;//cluster energy before track matching
   THnSparse* 	        fSparseLSElectron; //! Electron information
   THnSparse* 	        fSparseULSElectron; //! Electron information
+  Double_t*             fvalueCluE; //!
   Double_t*             fvaluePHElectron;//!
   Double_t*             fvalueElectron; //!
+ 
+ 
   THnSparse* 	        fSparseMulti; //! Multiplicity information
   Double_t*             fvalueMulti; //!
+
+ 
+
+  THnSparse*		fSprsPi0EtaWeightCal;//!
 
  
 
