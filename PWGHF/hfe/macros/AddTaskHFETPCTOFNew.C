@@ -20,7 +20,7 @@ AliAnalysisHFETPCTOFNew* AddTaskHFETPCTOFNew( ///-> to run locally
             Int_t 	isCharPion 			= 0,
             Float_t DCAxy,
             Float_t DCAz,
-            Bool_t 	isErf 			= kFALSE
+            Int_t HadCont 			= 0
             
 )           
 {
@@ -38,7 +38,7 @@ AliAnalysisHFETPCTOFNew* AddTaskHFETPCTOFNew( ///-> to run locally
 	}
 	
 	//_______________________
-    AliAnalysisHFETPCTOFNew *task = ConfigHFETPCTOF(isMC,isAOD,isPP,tpcPIDmincut,tpcPIDmaxcut,tofPIDcut,MinNClustersTPC,MinNClustersTPCPID,MinRatioTPCclusters,MinNClustersITS,pixel,Mass,MinPt,TpcNclus,EtaMin,EtaMax,isCharPion,DCAxy,DCAz,isErf);
+    AliAnalysisHFETPCTOFNew *task = ConfigHFETPCTOF(isMC,isAOD,isPP,tpcPIDmincut,tpcPIDmaxcut,tofPIDcut,MinNClustersTPC,MinNClustersTPCPID,MinRatioTPCclusters,MinNClustersITS,pixel,Mass,MinPt,TpcNclus,EtaMin,EtaMax,isCharPion,DCAxy,DCAz,HadCont);
     //_____________________________________________________
 	//Trigger
 		if(!isMC){
@@ -65,7 +65,7 @@ AliAnalysisHFETPCTOFNew* AddTaskHFETPCTOFNew( ///-> to run locally
 }
 
 
-AliAnalysisHFETPCTOFNew* ConfigHFETPCTOF(Bool_t isMCc, Bool_t isAODc, Bool_t isPPc,Double_t tpcPIDmincut,Double_t tpcPIDmaxcut, Double_t tofPID, Int_t minNClustersTPC, Int_t minNClustersTPCPID, Float_t minRatioTPCclusters, Int_t  minNClustersITS, AliHFEextraCuts::ITSPixel_t pixel, Float_t Mass, Float_t MinPt, Float_t TpcNclus, Float_t EtaMin, Float_t EtaMax, Int_t isCharPion, Float_t DCAxy, Float_t DCAz, Bool_t isErf)
+AliAnalysisHFETPCTOFNew* ConfigHFETPCTOF(Bool_t isMCc, Bool_t isAODc, Bool_t isPPc,Double_t tpcPIDmincut,Double_t tpcPIDmaxcut, Double_t tofPID, Int_t minNClustersTPC, Int_t minNClustersTPCPID, Float_t minRatioTPCclusters, Int_t  minNClustersITS, AliHFEextraCuts::ITSPixel_t pixel, Float_t Mass, Float_t MinPt, Float_t TpcNclus, Float_t EtaMin, Float_t EtaMax, Int_t isCharPion, Float_t DCAxy, Float_t DCAz, Bool_t HadCont)
 {
     ///_______________________________________________________________________________________________________________
     ///Track selection: Cuts used to ensure a minimum quality level of the tracks selected to perform the analysis
@@ -118,27 +118,49 @@ AliAnalysisHFETPCTOFNew* ConfigHFETPCTOF(Bool_t isMCc, Bool_t isAODc, Bool_t isP
    
     //______________________________________
     ///Hadron Contamination function
-      
+    
+         
     ///Landau function
-    if(!isErf){
+    if(HadCont == 0){
 		TF1 *hBackground = new TF1("hadronicBackgroundFunction","[0]*TMath::Landau(x,[1],[2],0)", 0.5, 8);
-		hBackground->FixParameter(0, 6.30930e-02);
-		hBackground->FixParameter(1, 6.61437e+00);
-		hBackground->FixParameter(2, 1.67725e+00);
+		hBackground->FixParameter(0, 1.89864e-02);
+		hBackground->FixParameter(1, 4.82510e+00);
+		hBackground->FixParameter(2, 1.18288e+00);
 		//hBackground->Eval(0,0,0);
 		task->SetHadronFunction(hBackground);
 	} 
      
     ///Error function
-    if(isErf){
+    if(HadCont == 1){
 		TF1 *hBackground = new TF1("hadronicBackgroundFunction","[0]+[1]*TMath::Erf(([2]*x-[3]))", 0.5, 8);
-		hBackground->FixParameter(0, 1.01135e-02);
-		hBackground->FixParameter(1, 1.01144e-02);
-		hBackground->FixParameter(2, 7.55811e-01);
-		hBackground->FixParameter(3, 3.25378e+00);
+		hBackground->FixParameter(0, 9.99999e-01);
+		hBackground->FixParameter(1, 1.00000e+00);
+		hBackground->FixParameter(2, 4.51097e-01);
+		hBackground->FixParameter(3, 3.67968e+00);
 		//hBackground->Eval(0,0,0);
 		task->SetHadronFunction(hBackground);
 	}
+	
+	///Landau function fit up
+	if(HadCont == 2){
+		TF1 *hBackground = new TF1("hadronicBackgroundFunction","[0]*TMath::Landau(x,[1],[2],0)", 0.5, 8);
+		hBackground->FixParameter(0, 2.82262e-02);
+		hBackground->FixParameter(1, 5.03114e+00);
+		hBackground->FixParameter(2, 1.26631e+00);
+		//hBackground->Eval(0,0,0);
+		task->SetHadronFunction(hBackground);
+	}
+	
+	///Landau function fit down
+	if(HadCont == 3){
+		TF1 *hBackground = new TF1("hadronicBackgroundFunction","[0]*TMath::Landau(x,[1],[2],0)", 0.5, 8);
+		hBackground->FixParameter(0, 9.85918e-03);
+		hBackground->FixParameter(1, 4.37298e+00);
+		hBackground->FixParameter(2, 9.99751e-01);
+		//hBackground->Eval(0,0,0);
+		task->SetHadronFunction(hBackground);
+	}  
+	
     //______________________________________
     
     
