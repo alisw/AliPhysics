@@ -408,23 +408,26 @@ bool AliYAMLConfiguration::GetProperty(YAML::Node & node, YAML::Node & sharedPar
     {
       // Retrieve node and then recurse
       YAML::Node tempNode = node[nodeName];
-      AliDebugGeneralStream("AliYAMLConfiguration", 2) << "Retrieveing parameter \"" << tempPropertyName << "\" by going a node deeper with node \"" << nodeName << "\".\n";
+      AliDebugGeneralStream("AliYAMLConfiguration", 2) << "Attempting to retrieving property \"" << tempPropertyName << "\" by going a node deeper with node \"" << nodeName << "\".\n";
       returnValue = GetProperty(tempNode, sharedParametersNode, configurationName, tempPropertyName, property);
     }
-    else
+
+    // Check for the specialization if the nodeName is undefined.
+    // Alternatively, if the value was not returned successfully, we should also check for the specialization
+    //   such as inheritnace for input objects.
+    if (node[nodeName].IsDefined() == false || returnValue == false)
     {
       // Check for specialization
       if ((delimiterPosition = nodeName.find(specializationDelimiter)) != std::string::npos)
       {
         std::string specializationNodeName = nodeName.substr(0, delimiterPosition);
         YAML::Node tempNode = node[specializationNodeName];
-        AliDebugGeneralStream("AliYAMLConfiguration", 2) << "Retrieving parameter \"" << tempPropertyName << "\" by going a node deeper through dropping the specializtion and using node \"" << specializationNodeName << "\".\n";
+        AliDebugGeneralStream("AliYAMLConfiguration", 2) << "Attempting to retrieving property \"" << tempPropertyName << "\" by going a node deeper through dropping the specializtion and using node \"" << specializationNodeName << "\".\n";
         returnValue = GetProperty(tempNode, sharedParametersNode, configurationName, tempPropertyName, property);
       }
       else {
         returnValue = false;
       }
-
     }
   }
   else
