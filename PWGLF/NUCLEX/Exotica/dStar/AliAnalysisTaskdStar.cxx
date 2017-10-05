@@ -76,7 +76,7 @@ void AliAnalysisTaskdStar::UserCreateOutputObjects() {
   fList = new TList();
   fList->SetOwner(true);
 
-  char   letter[2] = {'A','M'};
+  char   letter[2] = {'a','m'};
   string tpctof[2] = {"TPC","TOF"};
   string tpctofMC[3] = {"TPC","TPC_TOF","TPC_(TOF)"};
   string dStarState = "dStar(2380)";
@@ -86,20 +86,20 @@ void AliAnalysisTaskdStar::UserCreateOutputObjects() {
 
   for (int iC = 0; iC < 2; ++iC) {
 
-    fProduction[iC] = new TH2F(Form("fProduction_%s_%c", dStarState.data(),letter[iC]),";M (GeV/#it{c}^{2});#it{p}_{T} (GeV/#it{c});Counts",20,low_mass_limit,up_mass_limit,20,0,10);
+    fProduction[iC] = new TH2F(Form("fProduction_%s_%c", dStarState.data(),letter[iC]),";M (GeV/#it{c}^{2});#it{p}_{T} (GeV/#it{c});Counts",50,low_mass_limit,up_mass_limit,20,0,10);
     fList->Add(fProduction[iC]);
 
-    fTotal[iC] = new TH2F(Form("fTotal_%s_%c",dStarState.data(),letter[iC]),";M (GeV/#it{c}^{2});#it{p}_{T} (GeV/#it{c});Counts",20,low_mass_limit,up_mass_limit,20,0,10);
+    fTotal[iC] = new TH2F(Form("fTotal_%s_%c",dStarState.data(),letter[iC]),";M (GeV/#it{c}^{2});#it{p}_{T} (GeV/#it{c});Counts",50,low_mass_limit,up_mass_limit,20,0,10);
     fList->Add(fTotal[iC]);
 
     for (int iT = 0; iT < 3; ++iT) {
-      fReconstructed[iC][iT] = new TH2F(Form("fRec_%s_%c_ITS_%s",dStarState.data(),letter[iC],tpctofMC[iT].data()),";M (GeV/#it{c}^{2});#it{p}_{T} (GeV/#it{c});Counts",20,low_mass_limit,up_mass_limit,20,0,10);
+      fReconstructed[iC][iT] = new TH2F(Form("fRec_%s_%c_ITS_%s",dStarState.data(),letter[iC],tpctofMC[iT].data()),";M (GeV/#it{c}^{2});#it{p}_{T} (GeV/#it{c});Counts",50,low_mass_limit,up_mass_limit,20,0,10);
       fList->Add(fReconstructed[iC][iT]);
     }
   }
 
-  fNDaughters = new TH1F("nDaugthers","number of daughter per dstar", 10, 0, 10);
-  fList->Add(nDaughters);
+  fNDaughters = new TH1F("nDaugthers","number of daughter per dTtar", 5, 0, 5);
+  fList->Add(fNDaughters);
 
   AliPDG::AddParticlesToPdgDataBase();
   fEventCut.AddQAplotsToList(fList);
@@ -144,10 +144,10 @@ void AliAnalysisTaskdStar::UserExec(Option_t *){
     if (pdg != 900010020) continue;
     FourVector_t moth_vec = {0.f,0.f,0.f,0.f}, tmp_vec = {0.f,0.f,0.f,0.f};
 
-    for(int iD=0; iD<0: iD++){
-      const int daughter_id = part->GetDaughter(0+iD);
-      AliAODMCParticle *daughter_part = AliAODMCParticle*)stack->At(TMath::Abs(daughter_id));
-      mp_vec.SetCoordinates(daughter_part->Pt(),daughter_part->Eta(),daughter_part->Phi(),daughter_part->M());
+    for(int iD=0; iD<3; iD++){
+      const int daughter_id = part->GetDaughter(0)+iD;
+      AliAODMCParticle *daughter_part = (AliAODMCParticle*)stack->At(TMath::Abs(daughter_id));
+      tmp_vec.SetCoordinates(daughter_part->Pt(),daughter_part->Eta(),daughter_part->Phi(),daughter_part->M());
       moth_vec+=tmp_vec;
     }
 
@@ -155,7 +155,7 @@ void AliAnalysisTaskdStar::UserExec(Option_t *){
     fNDaughters->Fill(part_n_daughters); // check the number of daughter for dstar
     fProduction[iC]->Fill(part->M(),part->Pt());
 
-    if ( (part->Y() < fRequireYmin || part->Y() > fRequireYmax) ) continue;
+    if ( part->Y() < fRequireYmin || part->Y() > fRequireYmax ) continue;
     fTotal[iC]->Fill(moth_vec.M(),moth_vec.Pt());
   }
 
