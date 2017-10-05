@@ -1944,7 +1944,9 @@ void  AliAnalysisTaskPIDBFDptDpt::UserExec(Option_t */*option*/)
 		      Int_t pdgCodeOfMother = motherTrack -> GetPdgCode();
                        
 		      if( pdgCodeOfMother == 311 || pdgCodeOfMother == -311 // K0
-			  || pdgCodeOfMother == 310
+			  || pdgCodeOfMother == 310 // K_Short
+			  || pdgCodeOfMother == 130 // K_Long
+			  || pdgCodeOfMother == 333 // phi
 			  || pdgCodeOfMother == 3122 || pdgCodeOfMother == -3122 // Lambda
 			  || pdgCodeOfMother == 111 // pi0
 			  || pdgCodeOfMother == 22 // photon
