@@ -13,6 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
+#include <cstdio>
 #include <string>
 #include <sstream>
 #include <vector>
@@ -46,6 +47,7 @@
 #include <AliAODMCHeader.h>
 #include <AliGenPythiaEventHeader.h>
 
+#include "AliYAMLConfiguration.h"
 #include "AliEmcalList.h"
 
 #include "AliAnalysisTaskEmcalEmbeddingHelper.h"
@@ -54,7 +56,7 @@
 ClassImp(AliAnalysisTaskEmcalEmbeddingHelper);
 /// \endcond
 
-AliAnalysisTaskEmcalEmbeddingHelper* AliAnalysisTaskEmcalEmbeddingHelper::fgInstance = 0;
+AliAnalysisTaskEmcalEmbeddingHelper* AliAnalysisTaskEmcalEmbeddingHelper::fgInstance = nullptr;
 
 /**
  * Default constructor. Needed by ROOT I/O
@@ -66,27 +68,28 @@ AliAnalysisTaskEmcalEmbeddingHelper::AliAnalysisTaskEmcalEmbeddingHelper() :
   fPtHardJetPtRejectionFactor(4),
   fZVertexCut(10),
   fMaxVertexDist(999),
-
   fInitializedConfiguration(false),
   fInitializedNewFile(false),
   fInitializedEmbedding(false),
   fWrappedAroundTree(false),
-
-  fTreeName(),
+  fTreeName(""),
   fAnchorRun(169838),
   fNPtHardBins(1),
   fPtHardBin(-1),
   fRandomEventNumberAccess(kFALSE),
   fRandomFileAccess(kTRUE),
   fCreateHisto(true),
-
+  fAutoConfigurePtHardBins(false),
+  fAutoConfigureBasePath(""),
+  fAutoConfigureTrainTypePath(""),
+  fAutoConfigureIdentifier(""),
   fFilePattern(""),
   fInputFilename(""),
   fFileListFilename(""),
   fFilenameIndex(-1),
   fFilenames(),
   fPythiaCrossSectionFilenames(),
-  fExternalFile(0),  
+  fExternalFile(nullptr),
   fChain(nullptr),
   fCurrentEntry(0),
   fLowerEntry(0),
@@ -96,7 +99,6 @@ AliAnalysisTaskEmcalEmbeddingHelper::AliAnalysisTaskEmcalEmbeddingHelper() :
   fFileNumber(0),
   fHistManager(),
   fOutput(nullptr),
-
   fExternalEvent(nullptr),
   fExternalHeader(nullptr),
   fPythiaHeader(nullptr),
@@ -106,7 +108,7 @@ AliAnalysisTaskEmcalEmbeddingHelper::AliAnalysisTaskEmcalEmbeddingHelper() :
   fPythiaCrossSectionFromFile(0.),
   fPythiaPtHard(0.)
 {
-  if (fgInstance != 0) {
+  if (fgInstance != nullptr) {
     AliError("An instance of AliAnalysisTaskEmcalEmbeddingHelper already exists: it will be deleted!!!");
     delete fgInstance;
   }
@@ -126,12 +128,10 @@ AliAnalysisTaskEmcalEmbeddingHelper::AliAnalysisTaskEmcalEmbeddingHelper(const c
   fPtHardJetPtRejectionFactor(4),
   fZVertexCut(10),
   fMaxVertexDist(999),
-
   fInitializedConfiguration(false),
   fInitializedNewFile(false),
   fInitializedEmbedding(false),
   fWrappedAroundTree(false),
-  
   fTreeName("aodTree"),
   fAnchorRun(169838),
   fNPtHardBins(1),
@@ -139,14 +139,17 @@ AliAnalysisTaskEmcalEmbeddingHelper::AliAnalysisTaskEmcalEmbeddingHelper(const c
   fRandomEventNumberAccess(kFALSE),
   fRandomFileAccess(kTRUE),
   fCreateHisto(true),
-  
+  fAutoConfigurePtHardBins(false),
+  fAutoConfigureBasePath("alien:///alice/cern.ch/user/a/alitrain/"),
+  fAutoConfigureTrainTypePath("PWGJE/Jets_EMC_PbPb/"),
+  fAutoConfigureIdentifier("autoConfigIdentifier"),
   fFilePattern(""),
   fInputFilename(""),
   fFileListFilename(""),
   fFilenameIndex(-1),
   fFilenames(),
-  fPythiaCrossSectionFilenames(),  
-  fExternalFile(0),
+  fPythiaCrossSectionFilenames(),
+  fExternalFile(nullptr),
   fChain(nullptr),
   fCurrentEntry(0),
   fLowerEntry(0),
@@ -159,7 +162,6 @@ AliAnalysisTaskEmcalEmbeddingHelper::AliAnalysisTaskEmcalEmbeddingHelper(const c
   fExternalEvent(nullptr),
   fExternalHeader(nullptr),
   fPythiaHeader(nullptr),
-
   fPythiaTrials(0),
   fPythiaTrialsFromFile(0),
   fPythiaCrossSection(0.),
@@ -185,7 +187,7 @@ AliAnalysisTaskEmcalEmbeddingHelper::AliAnalysisTaskEmcalEmbeddingHelper(const c
  */
 AliAnalysisTaskEmcalEmbeddingHelper::~AliAnalysisTaskEmcalEmbeddingHelper()
 {
-  if (fgInstance == this) fgInstance = 0;
+  if (fgInstance == this) fgInstance = nullptr;
   if (fExternalEvent) delete fExternalEvent;
   if (fExternalFile) {
     fExternalFile->Close();
@@ -250,6 +252,18 @@ bool AliAnalysisTaskEmcalEmbeddingHelper::GetFilenames()
   // Retrieve filenames if we don't have them yet.
   if (fFilenames.size() == 0)
   {
+    // Handle pt hard bin auto configuration
+    if (fAutoConfigurePtHardBins)
+    {
+      if (fPtHardBin > 0) {
+        AliFatal("Requested both pt hard bin auto configuration and selected a non-zero pt hard bin. These are incompatible options. Please check your configuration.");
+      }
+      bool success = AutoConfigurePtHardBins();
+      if (success == false) {
+        AliFatal("Pt hard bin auto configuration requested, but it failed. Please check the logs.\n");
+      }
+    }
+
     // Handle if fPtHardBin or fAnchorRun are set
     // This will require formatting the file pattern in the proper way to support these substitutions
     if (fPtHardBin != -1 && fFilePattern != "") {
@@ -362,13 +376,130 @@ bool AliAnalysisTaskEmcalEmbeddingHelper::GetFilenames()
 }
 
 /**
+ * Handle auto-configuration of pt hard bins on LEGO trains. It gets the train number from the LEGO train
+ * environment, thereby assigning a pt hard bin to a particular train. This assignment is written out to a
+ * YAML file so all of the trains can determine which pt hard bins are available. The YAML file that is written
+ * contains a map of ptHardBin to train number.
+ *
+ * Note that when the number of pt hard bins is exhausted and all trains are assigned, the file is removed.
+ *
+ * Relevant directory information for an example train:
+ *   - PWD=/home/alitrain/train-workdir/PWGJE/Jets_EMC_PbPb/2558_20170930-2042/config
+ *   - Grid workdir relative to user $HOME: _________ /alice/cern.ch/user/a/alitrain/PWGJE/Jets_EMC_PbPb/2558_20170930-2042
+ *   - Grid output directory relative to workdir: ___ $1/PWGJE/Jets_EMC_PbPb/2558_20170930-2042
+ *
+ * @return true if the pt hard bin was successfully extracted.
+ */
+bool AliAnalysisTaskEmcalEmbeddingHelper::AutoConfigurePtHardBins()
+{
+  bool returnValue = false;
+
+  AliInfoStream() << "Attempting to auto configure pt hard bins.\n";
+  // YAML configuration containing pt hard bin to train number mapping
+  AliYAMLConfiguration config;
+
+  // Handle AliEn explicitly here since the default base path contains "alien://"
+  if (fAutoConfigureBasePath.find("alien://") != std::string::npos && !gGrid) {
+    AliInfo("Trying to connect to AliEn ...");
+    TGrid::Connect("alien://");
+  }
+
+  // Get train ID
+  // Need to get the char * directly because it may be null.
+  const char * trainNumberStr = gSystem->Getenv("TRAIN_RUN_ID");
+  std::stringstream trainNumberSS;
+  if (trainNumberStr) {
+    trainNumberSS << trainNumberStr;
+  }
+  if (trainNumberSS.str() == "") {
+    AliFatal("Cannot retrieve train ID.");
+  }
+  // Extract train number from the string
+  int trainNumber;
+  trainNumberSS >> trainNumber;
+
+  // Determine the file path
+  auto filename = RemoveTrailingSlashes(fAutoConfigureBasePath);
+  filename += "/";
+  filename += RemoveTrailingSlashes(fAutoConfigureTrainTypePath);
+  filename += "/";
+  filename += fAutoConfigureIdentifier;
+  // Add ".yaml" if it is not already there
+  std::string yamlExtension = ".yaml";
+  if (filename.find(yamlExtension) == std::string::npos) {
+    filename += yamlExtension;
+  }
+
+  std::string configurationName = "ptHardTrainConfig";
+
+  // Check if file exists
+  if (gSystem->AccessPathName(filename.c_str())) {
+    // File _does not_ exist
+    AliInfoStream() << "Train pt hard bin configuration file not available, so creating a new empty configuration named \"" << configurationName << "\".\n";
+    // Use an empty configuration
+    config.AddEmptyConfiguration(configurationName);
+  }
+  else {
+    AliInfoStream() << "Opening configuration located at \"" << filename << "\".\n";
+    // Use the existing configuration
+    config.AddConfiguration(filename, configurationName);
+  }
+
+  // Look for each pt hard bin, and then retrieve the corresponding train number
+  // Once an open pt hard bin is found, add the current train number
+  int tempTrainNumber = -1;
+  bool getPropertyReturnValue = false;
+  std::stringstream propertyName;
+  for (int ptHardBin = 1; ptHardBin < fNPtHardBins; ptHardBin++)
+  {
+    propertyName.str("");
+    propertyName << ptHardBin;
+    getPropertyReturnValue = config.GetProperty(propertyName.str(), tempTrainNumber, false);
+    if (getPropertyReturnValue != true) {
+      AliInfoStream() << "Train " << trainNumber << " will use pt hard bin " << ptHardBin << ".\n";
+      // We have determine our pt hard bin!
+      fPtHardBin = ptHardBin;
+
+      // Write the train number back out to the YAML configuration and save it
+      config.WriteProperty(propertyName.str(), trainNumber, configurationName);
+      config.WriteConfiguration(filename, configurationName);
+
+      // Cleanup after the process by removing the YAML configuration once all the trains have been launched.
+      if (ptHardBin == (fNPtHardBins - 1)) {
+        AliInfoStream() << "Created last train pt hard bin, so removing the YAML configuration file to clean up.\n";
+        remove(filename.c_str());
+      }
+
+      // We are done - continue on.
+      returnValue = true;
+      break;
+    }
+    else {
+      AliDebugStream(2) << "Found pt hard bin " << ptHardBin << " corresponding to train number " << trainNumber << ".\n";
+      // If train was already allocated (say, by a test train), then use that pt hard bin
+      if (tempTrainNumber == trainNumber) {
+        AliInfoStream() << "Train run number " << trainNumber << " was already found assigned to pt hard bin " << ptHardBin << ". That pt hard bin will be used.\n";
+        fPtHardBin = ptHardBin;
+
+        // We are done - continue on.
+        returnValue = true;
+        break;
+      }
+      // Otherwise, nothing to be done.
+    }
+  }
+
+  return returnValue;
+}
+
+/**
  * Simple helper function to generate a unique file list filename. This filename will be used to store the
  * filelist locally. It will be of the form fFileListFilename + ".UUID.txt". If fFileListFilename is empty,
  * then the beginning of the filename will be "fileList".
  *
  * @return std::string containing the rest of the file to be appended to fFileListFilename
  */
-std::string AliAnalysisTaskEmcalEmbeddingHelper::GenerateUniqueFileListFilename()
+std::string AliAnalysisTaskEmcalEmbeddingHelper::GenerateUniqueFileListFilename() const
 {
   std::string tempStr = "";
   if (fFileListFilename == "") {
@@ -380,6 +511,22 @@ std::string AliAnalysisTaskEmcalEmbeddingHelper::GenerateUniqueFileListFilename(
   tempStr += ".txt";
 
   return tempStr;
+}
+
+/**
+ * Remove slashes at the end of strings. See: https://stackoverflow.com/a/14878124
+ *
+ * @param[in] filename String containing a filename with some number of extra trailing slashes.
+ *
+ * @return string without trailing slahes.
+ */
+std::string AliAnalysisTaskEmcalEmbeddingHelper::RemoveTrailingSlashes(std::string filename) const
+{
+  while (filename.rbegin() != filename.rend() && *(filename.rbegin()) == '/') {
+    filename.pop_back();
+  }
+
+  return filename;
 }
 
 /**
@@ -901,7 +1048,7 @@ Bool_t AliAnalysisTaskEmcalEmbeddingHelper::SetupInputFiles()
  *
  * @return True if the file was found
  */
-std::string AliAnalysisTaskEmcalEmbeddingHelper::DeterminePythiaXSecFilename(TString baseFileName, TString pythiaBaseFilename, bool testIfExists)
+std::string AliAnalysisTaskEmcalEmbeddingHelper::DeterminePythiaXSecFilename(TString baseFileName, TString pythiaBaseFilename, bool testIfExists) const
 {
   std::string pythiaXSecFilename = "";
 

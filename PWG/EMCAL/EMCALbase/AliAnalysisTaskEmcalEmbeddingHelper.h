@@ -161,6 +161,22 @@ class AliAnalysisTaskEmcalEmbeddingHelper : public AliAnalysisTaskSE {
 
   /**
    * @{
+   * @name pT hard bin auto configuration
+   * @brief Setup pt hard bin auto configuration to be used on the LEGO train. See AutoConfigurePtHardBins() and the variable definitions for the purpose of each variable.
+   */
+  bool GetAutoConfigurePtHardBins()                         const { return fAutoConfigurePtHardBins; }
+  std::string GetAutoConfigureBasePath()                    const { return fAutoConfigureBasePath; }
+  std::string GetAutoConfigureTrainTypePath()               const { return fAutoConfigureTrainTypePath; }
+  std::string GetAutoConfigureIdentifier()                  const { return fAutoConfigureIdentifier; }
+
+  void SetAutoConfigurePtHardBins(bool configure = true)          { fAutoConfigurePtHardBins = configure; }
+  void SetAutoConfigureBasePath(std::string path)                 { fAutoConfigureBasePath = path; }
+  void SetAutoConfigureTrainTypePath(std::string path)            { fAutoConfigureTrainTypePath = path; }
+  void SetAutoConfigureIdentifier(std::string path)               { fAutoConfigureIdentifier = path; }
+  /* @} */
+
+  /**
+   * @{
    * @name Utility functions
    */
   // AddTask
@@ -187,11 +203,13 @@ class AliAnalysisTaskEmcalEmbeddingHelper : public AliAnalysisTaskSE {
 
  protected:
   bool            GetFilenames()        ;
-  std::string     GenerateUniqueFileListFilename();
+  bool            AutoConfigurePtHardBins();
+  std::string     GenerateUniqueFileListFilename() const;
+  std::string     RemoveTrailingSlashes(std::string filename) const;
   void            DetermineFirstFileToEmbed();
   void            SetupEmbedding()      ;
   Bool_t          SetupInputFiles()     ;
-  std::string     DeterminePythiaXSecFilename(TString baseFileName, TString pythiaBaseFilename, bool testIfExists);
+  std::string     DeterminePythiaXSecFilename(TString baseFileName, TString pythiaBaseFilename, bool testIfExists) const;
   Bool_t          GetNextEntry()        ;
   void            SetEmbeddedEventProperties();
   void            RecordEmbeddedEventProperties();
@@ -217,8 +235,13 @@ class AliAnalysisTaskEmcalEmbeddingHelper : public AliAnalysisTaskSE {
   Int_t                                         fNPtHardBins      ; ///<  Total number of pt hard bins
   Int_t                                         fPtHardBin        ; ///<  ptHard bin for the given pythia production
   Bool_t                                        fRandomEventNumberAccess; ///<  If true, it will start embedding from a random entry in the file rather than from the first
-  Bool_t                                        fRandomFileAccess ; ///< If true, it will start embedding from a random file in the input files list
-  bool                                          fCreateHisto      ; ///< If true, create QA histograms
+  Bool_t                                        fRandomFileAccess ; ///<  If true, it will start embedding from a random file in the input files list
+  bool                                          fCreateHisto      ; ///<  If true, create QA histograms
+
+  bool                                    fAutoConfigurePtHardBins; ///<  If true, attempt to auto configure pt hard bins. Only works on the LEGO train.
+  std::string                               fAutoConfigureBasePath; ///<  The base path to the auto configuration (for example, "/alice/cern.ch/user/a/alitrain/")
+  std::string                          fAutoConfigureTrainTypePath; ///<  The path associated with the train type (for example, "PWGJE/Jets_EMC_PbPb/")
+  std::string                             fAutoConfigureIdentifier; ///<  How the auto configuration YAML file should be identified. (for example, "rehlersTrain")
 
   TString                                       fFilePattern      ; ///<  File pattern to select AliEn files using alien_find
   TString                                       fInputFilename    ; ///<  Filename of input root files
@@ -253,7 +276,7 @@ class AliAnalysisTaskEmcalEmbeddingHelper : public AliAnalysisTaskSE {
   AliAnalysisTaskEmcalEmbeddingHelper &operator=(const AliAnalysisTaskEmcalEmbeddingHelper&); // not implemented
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskEmcalEmbeddingHelper, 6);
+  ClassDef(AliAnalysisTaskEmcalEmbeddingHelper, 7);
   /// \endcond
 };
 #endif
