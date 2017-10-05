@@ -120,7 +120,6 @@ set(SRCS
   AliHFEUnfolding.cxx	
   AliAnalysisTaskHFEEfficiency.cxx
   AliAnalysisTaskHaHFECorrel.cxx
-  AliAnalysisHFETPCTOFNew.cxx
   )
 
 # Headers from sources
