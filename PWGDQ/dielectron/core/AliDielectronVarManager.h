@@ -2915,7 +2915,6 @@ inline void AliDielectronVarManager::FillVarMCEvent(const AliMCEvent *event, Dou
   Double_t numbers[11] = {0};
 
   AliDielectronHelper::CountMCtracks(event, numbers, 443, 11);
-  printf("HalloWelt Nch = %f\n", numbers[0]);
   values[AliDielectronVarManager::kNch]           = numbers[0];
   values[AliDielectronVarManager::kNchJpsiExcl]   = numbers[1];
   values[AliDielectronVarManager::kNch05]         = numbers[2];
