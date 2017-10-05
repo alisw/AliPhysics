@@ -603,7 +603,6 @@ Int_t AliDielectronHelper::GetNMothers(const AliMCEvent *ev, Double_t etaRange, 
       nMothers++;
     }
   }
-  printf("HalloWelt nMothers = %d\n", nMothers);
   return nMothers;
 }
 
