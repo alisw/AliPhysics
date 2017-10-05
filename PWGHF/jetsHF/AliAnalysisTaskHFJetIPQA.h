@@ -89,7 +89,6 @@ public:
     virtual ~AliAnalysisTaskHFJetIPQA(){;}
     virtual void   UserCreateOutputObjects();
     virtual Bool_t Run();
-    //virtual Bool_t IsEventSelected();
     virtual Bool_t IsSelected(AliVEvent *event, Int_t &WhyRejected,ULong_t &RejectionBits);
     void SetESDCuts (AliESDtrackCuts  *cuts =NULL){fESDTrackCut =  new AliESDtrackCuts(*cuts);}
     virtual AliRDHFJetsCuts* GetJetCutsHF(){return fJetCutsHF;}
@@ -149,6 +148,8 @@ public:
         fRunSmearing = value;
     }
 
+    //virtual Bool_t IsEventSelected();
+    void FillCorrelations(bool bn[3], double v[3], double jetpt);
 private:
     THistManager         fHistManager    ;///< Histogram manager
     const AliAODVertex * fEventVertex;//!
@@ -230,8 +231,67 @@ private:
     Int_t   fProductionNumberPtHard;//
     Double_t fMCglobalDCAxyShift;//
     Double_t fMCglobalDCASmear;//
-
     Double_t fVertexRecalcMinPt;//
+//Event mixing for correlation study
+    Double_t fn1_mix ;
+    Double_t fn2_mix ;
+    Double_t fn3_mix ;
+
+
+    Bool_t   fIsMixSignalReady_n1;
+    Bool_t   fIsMixSignalReady_n2;
+    Bool_t   fIsMixSignalReady_n3;
+    Bool_t   fIsSameEvent_n1;
+    Bool_t   fIsSameEvent_n2;
+    Bool_t   fIsSameEvent_n3;
+
+    void SetMixDCA(int n , Double_t v){
+    if(n==1){
+            if(fIsMixSignalReady_n1) return;
+            fn1_mix = v;
+            fIsMixSignalReady_n1 = kTRUE;
+            fIsSameEvent_n1 = kTRUE;
+
+        }
+    else if(n==2){
+            if(fIsMixSignalReady_n2) return;
+            fn2_mix = v;
+            fIsMixSignalReady_n2 = kTRUE;
+            fIsSameEvent_n2 = kTRUE;
+
+        }
+    else if(n==3){
+            if(fIsMixSignalReady_n3) return;
+            fn3_mix = v;
+            fIsMixSignalReady_n3 = kTRUE;
+            fIsSameEvent_n3 = kTRUE;
+        }
+    }
+
+    Bool_t GetMixDCA(int n , double &v){
+        if(n==1){
+                if (!fIsMixSignalReady_n1 || fIsSameEvent_n1) return kFALSE;
+                v= fn1_mix;
+                fIsMixSignalReady_n1 = kFALSE;
+            }
+        else if(n==2){
+                if (!fIsMixSignalReady_n2|| fIsSameEvent_n2) return kFALSE;
+                v = fn2_mix;
+                fIsMixSignalReady_n2 = kFALSE;
+            }
+        else if(n==3){
+                if (!fIsMixSignalReady_n3|| fIsSameEvent_n3) return kFALSE;
+                v = fn3_mix;
+                fIsMixSignalReady_n3 = kFALSE;
+            }
+    return kTRUE;
+    }
+
+
+
+
+
+
 
     ClassDef(AliAnalysisTaskHFJetIPQA, 21)
 };
