@@ -123,8 +123,8 @@ class AliYAMLConfiguration : public TObject {
   bool WriteProperty(std::string propertyName, T & property, std::string configurationName = "");
   #endif
 
-  bool WriteConfiguration(const int i, const std::string filename) const;
-  bool WriteConfiguration(const std::string name, const std::string filename) const;
+  bool WriteConfiguration(const std::string filename, const int i) const;
+  bool WriteConfiguration(const std::string filename, const std::string configurationName) const;
 
   void PrintConfiguration(int i = 0) const;
   void PrintConfiguration(std::string name) const;
@@ -136,7 +136,7 @@ class AliYAMLConfiguration : public TObject {
   // File utilities
   inline bool DoesFileExist(const std::string & filename) const;
   void SetupReadingConfigurationFilePath(std::string & filename, const std::string fileIdentifier) const;
-  void WriteConfigurationToFilePath(std::string filename, std::string localFilename) const;
+  void WriteConfigurationToFilePath(const std::string localFilename, std::string filename) const;
   // Configuration utilities
   template<typename T>
   int GetConfigurationIndexByName(const std::string name, const std::vector<std::pair<std::string, T>> & configurations) const;
@@ -408,23 +408,26 @@ bool AliYAMLConfiguration::GetProperty(YAML::Node & node, YAML::Node & sharedPar
     {
       // Retrieve node and then recurse
       YAML::Node tempNode = node[nodeName];
-      AliDebugGeneralStream("AliYAMLConfiguration", 2) << "Retrieveing parameter \"" << tempPropertyName << "\" by going a node deeper with node \"" << nodeName << "\".\n";
+      AliDebugGeneralStream("AliYAMLConfiguration", 2) << "Attempting to retrieving property \"" << tempPropertyName << "\" by going a node deeper with node \"" << nodeName << "\".\n";
       returnValue = GetProperty(tempNode, sharedParametersNode, configurationName, tempPropertyName, property);
     }
-    else
+
+    // Check for the specialization if the nodeName is undefined.
+    // Alternatively, if the value was not returned successfully, we should also check for the specialization
+    //   such as inheritnace for input objects.
+    if (node[nodeName].IsDefined() == false || returnValue == false)
     {
       // Check for specialization
       if ((delimiterPosition = nodeName.find(specializationDelimiter)) != std::string::npos)
       {
         std::string specializationNodeName = nodeName.substr(0, delimiterPosition);
         YAML::Node tempNode = node[specializationNodeName];
-        AliDebugGeneralStream("AliYAMLConfiguration", 2) << "Retrieving parameter \"" << tempPropertyName << "\" by going a node deeper through dropping the specializtion and using node \"" << specializationNodeName << "\".\n";
+        AliDebugGeneralStream("AliYAMLConfiguration", 2) << "Attempting to retrieving property \"" << tempPropertyName << "\" by going a node deeper through dropping the specializtion and using node \"" << specializationNodeName << "\".\n";
         returnValue = GetProperty(tempNode, sharedParametersNode, configurationName, tempPropertyName, property);
       }
       else {
         returnValue = false;
       }
-
     }
   }
   else
@@ -498,6 +501,11 @@ bool AliYAMLConfiguration::WriteProperty(std::string propertyName, T & property,
   if (configurationName != "")
   {
     configurationIndex = GetConfigurationIndexByName(configurationName, fConfigurations);
+  }
+
+  if (fConfigurations.size() == 0) {
+    AliErrorStream() << "No configurations available! Property will not be written!\n";
+    return false;
   }
 
   std::pair<std::string, YAML::Node> & configPair = fConfigurations.at(configurationIndex);
