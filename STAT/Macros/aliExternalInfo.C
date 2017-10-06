@@ -21,7 +21,7 @@
     .L $AliRoot_SRC/STAT/Macros/aliExternalInfo.C
     // define some example selection and copy past the code below
     TString  period="LHC15o", pass="pass1", runSelection="QA.TPC.meanTPCncl>0", varSelection="run:runDuration:totalEventsPhysics:totalNumberOfFilesMigrated:QA.TPC.meanMIP";
-    TString source="Logbook;QA.TPC;QA.TRD;QA.ITS;MonALISA.RCT";
+    TString source="Logbook;QA.TPC;QA.TRD;QA.ITS;MonALISA.RCT;QA.EVS";
 */
 
 AliExternalInfo info;
@@ -122,6 +122,10 @@ void drawLogbookMultiCut(TString period, TString pass,TString runSelection="", T
  .L $AliRoot_SRC/STAT/Macros/aliExternalInfo.C
  makeHTMLPage("LHC15o","pass1", "QA.TPC.meanTPCncl>0", "run:runDuration:totalEventsPhysics:totalNumberOfFilesMigrated:QA.TPC.meanMIP:QA.TPC.meanMIP", "Logbook;QA.TPC;QA.TRD;QA.ITS;MonALISA.RCT")
  makeHTMLPage("LHC15o","pass1", "QA.TPC.meanTPCncl>0", "run:runDuration:totalEventsPhysics:ocdbStatusCounter:ocdbHVStatusCounter:TPC_Status:meanTPCncl_Status:PID_Status:DCAz_Status:DCAr_Status:tpcItsMatch_Status", "Logbook;QA.TPC;QA.TRD;QA.ITS;MonALISA.RCT")
+ makeHTMLPage("LHC15o","pass1", "QA.TPC.meanTPCncl>0", "run:runDuration:totalEventsPhysics:ocdbStatusCounter:ocdbHVStatusCounter:MonALISA.RCT.tpc_value:rctMismatch:TPC_Status:meanTPCncl_Status:PID_Status:DCAz_Status:DCAr_Status:tpcItsMatch_Status", "Logbook;QA.TPC;QA.TRD;QA.ITS;MonALISA.RCT")
+
+
+
 \endcode
  */
 void makeHTMLPage(TString  period,TString  pass, TString runSelection, TString varSelection, TString source){
