@@ -218,7 +218,7 @@ void AliEmcalTriggerMakerTask::ExecOnce(){
       dataset = "p-Pb 2013";
     } else if((runnumber >= 224891 && runnumber <= 244628) || runnumber >= 253434){
       // Configuration starting with LHC15f
-      fTriggerMaker->ConfigureForPbPb2015();
+      fTriggerMaker->ConfigureForPP2015();
       dataset = "pp 2015-2016";
     } else if(runnumber >= 244824 && runnumber <= 246994){
       fTriggerMaker->ConfigureForPbPb2015();

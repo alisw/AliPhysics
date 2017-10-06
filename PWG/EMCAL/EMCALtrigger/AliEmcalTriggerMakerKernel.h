@@ -397,6 +397,11 @@ public:
   void ConfigureForPP2015();
 
   /**
+   * @brief Configure the class for 2015 pp
+   */
+  void ConfigureForPP20158x8();
+
+  /**
    * @brief Configure the class for 2013 pPb
    */
   void ConfigureForPPb2013();
