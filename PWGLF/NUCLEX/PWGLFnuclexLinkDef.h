@@ -16,7 +16,7 @@
 /// * Ps
 #pragma link C++ class AliAnalysisTaskPsEfficiency+;
 /// * dStar
-#pragma link C++ class AliAnalysistaskdStar+;
+#pragma link C++ class AliAnalysisTaskdStar+;
 
 /// Nuclei
 /// * DeltaMasses
