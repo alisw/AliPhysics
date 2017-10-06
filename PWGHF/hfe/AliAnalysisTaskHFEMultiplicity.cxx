@@ -475,6 +475,7 @@ void AliAnalysisTaskHFEMultiplicity::UserExec(Option_t *)
 
 	fMCArray = dynamic_cast<TClonesArray*>(fAOD->FindListObject(AliAODMCParticle::StdBranchName()));
 	if(!fMCArray){
+
    	 AliError("Array of MC particles not found");
     	 return;
   	}
@@ -493,6 +494,7 @@ void AliAnalysisTaskHFEMultiplicity::UserExec(Option_t *)
     fCaloClusters_tender = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject(fTenderClusterName)); //emcal correction
   }
   
+if(fReadMC){
   ////////////////////////////////
   //Get number of Gen particles //
   ////////////////////////////////
@@ -505,7 +507,7 @@ void AliAnalysisTaskHFEMultiplicity::UserExec(Option_t *)
 	
  if(fCalculateWeight) GetPi0EtaWeight(fSprsPi0EtaWeightCal);
 
- 
+ }
   //////////////////
   // Multiplicity //
   /////////////////

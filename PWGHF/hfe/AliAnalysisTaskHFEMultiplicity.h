@@ -70,6 +70,7 @@ class AliAnalysisTaskHFEMultiplicity : public AliAnalysisTaskSE
   void    		SetTenderSwitch(Bool_t usetender){fUseTender = usetender;};
   void    		SetClusterTypeEMC(Bool_t flagClsEMC) {fFlagClsTypeEMC = flagClsEMC;};
   void    		SetClusterTypeDCAL(Bool_t flagClsDCAL) {fFlagClsTypeDCAL = flagClsDCAL;};
+  void 			SetReadMC(Bool_t readMC=kTRUE){fReadMC=readMC;}
   
   Bool_t                GetEMCalTriggerEG1() { return fEMCEG1; };
   Bool_t                GetEMCalTriggerEG2() { return fEMCEG2; };
