@@ -34,13 +34,6 @@ AliAnalysisTaskdStar* AddTaskdStar(bool isMC=true,TString suffix = ""){
     return NULL;
   }
 
-  // Add MC handler (for kinematics)
-  if(isMC){
-    AliMCEventHandler* handler = new AliMCEventHandler;
-    handler->SetReadTR(kFALSE);
-    mgr->SetMCtruthEventHandler(handler);
-  }
-
   // Create and configure the task
 
   TString tskname = "dStar";
@@ -57,7 +50,7 @@ AliAnalysisTaskdStar* AddTaskdStar(bool isMC=true,TString suffix = ""){
 
   AliAnalysisDataContainer *coutput =0x0;
 
-  coutput = mgr->CreateContainer(Form("lbariogl_%s",tskname.Data()),
+  coutput = mgr->CreateContainer(Form("pfecchio_%s",tskname.Data()),
 				 TList::Class(),
 				 AliAnalysisManager::kOutputContainer,
 				 AliAnalysisManager::GetCommonFileName());
