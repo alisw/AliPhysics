@@ -105,6 +105,7 @@ set ( SRCS7
   TRD/AliTRDcheckTRK.cxx
   TRD/AliTRDclusterResolution.cxx
   TRD/AliTRDdigitsFilter.cxx
+  TRD/AliTRDdigitsTask.cxx
   TRD/AliTRDefficiency.cxx
   TRD/AliTRDefficiencyMC.cxx
   TRD/AliTRDinfoGen.cxx
