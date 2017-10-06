@@ -15,7 +15,8 @@ AliAnalysisTask *AddTaskHFEminiEventCreator(  Double_t TPCchi2 = 4.,
 					      Double_t nsigmaTPClow = -1.,
 					      Double_t nsigmaTPChigh = 3.,
 					      Double_t nsigmaTOF = 3.,
-					      TString collisionSystem = "pp" ){
+					      TString collisionSystem = "pp",
+					      TString taskName = "Test" ){
   
   printf("Adding mini event creator\n");
   
@@ -35,9 +36,11 @@ AliAnalysisTask *AddTaskHFEminiEventCreator(  Double_t TPCchi2 = 4.,
   
   Bool_t isInt7 = kTRUE;
   Bool_t isRemoveFirstEvent = kTRUE;
+
+  TString commontaskName = "MiniTree";
+  commontaskName        += taskName;
   
-  
-  AliHFEminiEventCreator *miniEventCreator = new AliHFEminiEventCreator("HFEminiEventCreator");
+  AliHFEminiEventCreator *miniEventCreator = new AliHFEminiEventCreator(commontaskName);
 
   miniEventCreator->SetChi2TPCCut( TPCchi2 );
   miniEventCreator->SetMinClusterTPC( MinTPCNcluster );
@@ -61,13 +64,10 @@ AliAnalysisTask *AddTaskHFEminiEventCreator(  Double_t TPCchi2 = 4.,
   AliHFEpidTPC *tpcpid = miniEventCreator->GetTPCResponse();
   
   mgr->AddTask(miniEventCreator);
+  
+  AliAnalysisDataContainer *coutput = mgr->CreateContainer(commontaskName.Data(), TList::Class(), AliAnalysisManager::kOutputContainer,"AnalysisResults.root");
   mgr->ConnectInput(miniEventCreator, 0, cinput);
-  AliAnalysisDataContainer *coutput = mgr->CreateContainer("HFEtree", TTree::Class(), AliAnalysisManager::kOutputContainer,"AnalysisResults.root");
-  AliAnalysisDataContainer *coutput2 = mgr->CreateContainer("Number of Events", TH1D::Class(), AliAnalysisManager::kOutputContainer,"AnalysisResults.root");
-  AliAnalysisDataContainer *coutput3 = mgr->CreateContainer("Number of Tracks", TH1D::Class(), AliAnalysisManager::kOutputContainer,"AnalysisResults.root");
   mgr->ConnectOutput(miniEventCreator, 1, coutput);
-  mgr->ConnectOutput(miniEventCreator, 2, coutput2);
-  mgr->ConnectOutput(miniEventCreator, 3, coutput3);
   
   return miniEventCreator;
 }
