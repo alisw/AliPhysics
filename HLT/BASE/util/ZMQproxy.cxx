@@ -16,12 +16,15 @@
 #include <string>
 #include <map>
 #include "AliZMQhelpers.h"
+#include "AliOptionParser.h"
 
 //this is meant to become a class, hence the structure with global vars etc.
 //Also the code is rather flat - it is a bit of a playground to test ideas.
 //TODO structure this at some point, e.g. introduce a SIMPLE unified way of handling
 //zmq payloads, maybe a AliZMQmessage class which would by default be multipart and provide
 //easy access to payloads based on topic or so (a la HLT GetFirstInputObject() etc...)
+
+using namespace AliZMQhelpers;
 
 //methods
 int ProcessOptionString(TString arguments);
@@ -30,9 +33,9 @@ void* work(void* param);
 int Run();
 
 //configuration vars
-TString fZMQconfigIN   = "";
-TString fZMQconfigOUT  = "";
-TString fZMQconfigMON  = "";
+TString fZMQconfigIN   = "SUB";
+TString fZMQconfigOUT  = "PUB";
+TString fZMQconfigMON  = "REP";
 
 Bool_t  fSendOnMerge = kTRUE;
 Bool_t  fResetOnSend = kFALSE;
@@ -89,15 +92,18 @@ int forward(void* from, void* to, void* mon, zmq_msg_t* msg)
   int rc = 0;
   int more = 0;
   size_t moresize = sizeof(more);
+  int nparts = 0;
   while (true)
   {
     rc = zmq_msg_recv(msg,from,0);
+    ++nparts;
     if (rc<0) return -1;
     rc = zmq_getsockopt(from, ZMQ_RCVMORE, &more, &moresize);
+    if (fVerbose) printf("  part %i more: %i\n",nparts, more);
+    if (rc<0) return -1;
     if (from!=mon) {
       rc = capture(mon,msg,more);
     }
-    if (rc<0) return -1;
     rc = zmq_msg_send(msg,to,more?ZMQ_SNDMORE:0);
     if (rc<0) return -1;
     if (more==0) break;

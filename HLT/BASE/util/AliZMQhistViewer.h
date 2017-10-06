@@ -17,6 +17,7 @@
 #include <deque>
 #include "TQObject.h"
 #include "TObject.h"
+#include "AliOptionParser.h"
 
 class TVirtualPad;
 class TString;
@@ -26,6 +27,8 @@ class TCanvas;
 class TPRegexp;
 class TCollection;
 class AliAnalysisDataContainer;
+
+using namespace AliZMQhelpers;
 
 struct ZMQviewerObject {
   TObject* object;

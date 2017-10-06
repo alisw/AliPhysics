@@ -156,6 +156,7 @@
 #pragma link C++ class AliMergeableCollection+;
 #pragma link C++ class AliMergeableCollectionIterator+;
 #pragma link C++ class AliMergeableCollectionProxy+;
+#pragma link C++ class AliMergeable+;
 
 #pragma link C++ class AliMultSelectionBase+;
 

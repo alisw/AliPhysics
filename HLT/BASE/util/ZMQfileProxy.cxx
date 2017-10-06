@@ -1,5 +1,5 @@
 #include "zmq.h"
-#include "AliZMQhelpers.h"
+#include "AliHLTZMQhelpers.h"
 #include <iostream>
 #include "TTimeStamp.h"
 #include "AliHLTDataTypes.h"
@@ -25,7 +25,10 @@
 #include "TSystem.h"
 #include "TStyle.h"
 #include "signal.h"
+#include "AliOptionParser.h"
 class MySignalHandler;
+
+using namespace AliZMQhelpers;
 
 //this is meant to become a class, hence the structure with global vars etc.
 //Also the code is rather flat - it is a bit of a playground to test ideas.
@@ -35,7 +38,6 @@ class MySignalHandler;
 
 //methods
 int ProcessOptionString(TString arguments);
-int DumpToFile(TObject* object, std::string name);
 int processInfo(aliZMQmsg::iterator& i);
 void* run(void* arg);
 void* runToFile(void* arg);
@@ -50,14 +52,14 @@ TString fZMQconfigIN  = "PULL>tcp://localhost:60211";
 int fZMQsocketModeIN=-1;
 TString fZMQsubscriptionIN = "";
 TString fFilter = "";
+Bool_t fSerializeROOTobjects = kTRUE;
+Bool_t fFilenameWithRunAndTime = kTRUE;
 
-TString fFileNameBase="";
 TString fFileName="";
-TFile* fFile=NULL;
 Int_t fFileNumber = 0;
 
 int fPollInterval = 0;
-int fPollTimeout = 1000; //1s
+int fPollTimeout = 1000; //ms
 Bool_t fSort = kTRUE;
 
 //internal state
@@ -73,20 +75,24 @@ TPRegexp* fUnSelectionRegexp = NULL;
 
 bool fgTerminationSignaled=false;
 int fNumberOfTObjectsInMessage=0;
+std::string fLoadLibs;
 
 ULong64_t iterations=0;
 
 const char* fUSAGE = 
-    "ZMQfileProxy: proxy between a (multi-part) message and a ROOT file (sink/source)\n"
+    "ZMQfileProxy: proxy between a ZMQ HLT message and a ROOT file (sink/source)\n"
     "options: \n"
-    " -in : data in (can be file://)\n"
-    " -out : data out (can be file://)\n"
-    " -sleep : how long to sleep in between requests for data in/out (s) (if applicable) (-1 means send/dump once and exit)\n"
-    " -once : write one file (send contents of one file) and exit (same as -sleep=-1)\n"
-    " -timeout : how long to wait for the server (when using a REQ socket) to reply before retrying (s)\n"
-    " -Verbose : be verbose\n"
-    " -select : request selected objects by name with a (perl compatible-) regexp\n"
-    " -unselect : as select, only inverted\n"
+    " -in                     : [""] data in (can be file://)\n"
+    " -out                    : [""] data out (can be file://)\n"
+    " -sleep                  : [0ms] time between requests (-1 means send/dump once and exit)\n"
+    " -once                   : [0] write one file (send contents of one file) and exit (same as -sleep=-1)\n"
+    " -timeout                : [1000ms] request timeout (when using a REQ socket)\n"
+    " -Verbose                : [0] be verbose\n"
+    " -select                 : [""] request selected objects by name with a (perl compatible-) regexp\n"
+    " -unselect               : [""] as select, only inverted\n"
+    " -loadlibs               : [""] load ROOT libs, comma separated list\n"
+    " -serializeROOTobjects   : [1] store ROOT objects as ROOT objects, not binary data\n"
+    " -filenameWithRunAndTime : [1] append run number and a time to stored file names\n"
     ;
 
 //_______________________________________________________________________________________
@@ -95,6 +101,35 @@ void sig_handler(int signo)
   if (signo == SIGINT)
     printf("received signal\n");
   fgTerminationSignaled=true;
+}
+
+//______________________________________________________________________________
+TString GetFileName(TString name)
+{
+  if (!fFilenameWithRunAndTime) { return name; }
+  name.ReplaceAll(".root","");
+  TTimeStamp time;
+  TString timestamp = time.AsString("s");
+  timestamp.ReplaceAll(" ","_");
+
+  char runStr[10];
+  snprintf(runStr,10,"%.9i",fRunNumber);
+
+  TString fileName  = name;
+  fileName += "_";
+  fileName += runStr;
+  fileName += "_"+timestamp;
+  //if we just have one object, append it to file name for clarity)
+  if (fNumberOfTObjectsInMessage==1) 
+  {
+    TString objectName = name.Data();
+    objectName.ReplaceAll(" ","_");
+    fileName += "_"+objectName;
+  }
+  fileName += ".";
+  fileName += fFileNumber;
+  fileName += ".root";
+  return fileName;
 }
 
 //_______________________________________________________________________________________
@@ -112,86 +147,23 @@ void* runFromFile(void* arg)
       aliZMQmsg request;
       alizmq_msg_recv(&request, fZMQin, 0);
       alizmq_msg_close(&request);
+      if (fVerbose) {printf("got a request!\n");}
     }
 
-    //init message to be sent
+
+    TFile file(fFileName.Data(),"read");
+    if (file.IsZombie())
+    {
+      Printf("cannot open %s",fFileName.Data());
+      return NULL;
+    }
+
+    if (fVerbose) {printf("replying...\n");}
     aliZMQmsg message;
-
-    if (!fFile)
-    {
-      fFile = new TFile(fFileName.Data(),"read");
-      if (fFile->IsZombie())
-      {
-        Printf("cannot open %s",fFileName.Data());
-        return NULL;
-      }
-    }
-
-    TObject* infoObject = fFile->Get("_ZMQ_internal_fInfo");
-    if (infoObject) {
-      TObjString* objstr = dynamic_cast<TObjString*>(infoObject);
-      if (objstr) {
-        fInfo = objstr->String();
-        fRunNumber = atoi(GetParamString("run",fInfo).c_str());
-      }
-      if (fVerbose) printf("read metadata: %s\n", fInfo.c_str());
-      delete infoObject;
-    }
-
-    //parse the file name for run number
-    if (fRunNumber<0) {
-      TObjArray* eearr = fRunNumberRegex.MatchS(fFileName);
-      TObject* runstr = NULL;
-      if (eearr) runstr = eearr->At(2);
-      if (runstr) fRunNumber = atoi(runstr->GetName());
-      else fRunNumber = 0;
-      delete eearr;
-      fInfo+=Form("run=%i",fRunNumber);
-    }
-
-    alizmq_msg_add(&message, "INFO", fInfo);
-
-    //attach each key as a message part
-    TList* listOfKeys = fFile->GetListOfKeys();
-    TIter keys(listOfKeys);
-    while (TKey* key = (TKey*)keys.Next())
-    {
-      string objectName = key->GetName();
-      
-      //skip the info part (handled before)
-      if (objectName=="_ZMQ_internal_fInfo") {
-        continue;
-      }
-      
-      //do the selection
-      Bool_t selected = kTRUE;
-      Bool_t unselected = kFALSE;
-      if (fSelectionRegexp) selected = fSelectionRegexp->Match(objectName.c_str());
-      if (fUnSelectionRegexp) unselected = fUnSelectionRegexp->Match(objectName.c_str());
-      if (!selected || unselected)
-      {
-        if (fVerbose) Printf("skipping %s",objectName.c_str());
-        continue;
-      }
-
-      //read and attach object
-      TObject* object = key->ReadObj();
-      if (object)
-      {
-
-        if (fVerbose) Printf("attaching %s",objectName.c_str());
-        AliHLTDataTopic topic = kAliHLTDataTypeTObject;
-        alizmq_msg_add(&message, &topic, object);
-      }
-    }
-
-    //send the full message
-    if (fVerbose) Printf("- sending, runNumber=%i",fRunNumber);
+    alizmq_file_read(file, &message);
     alizmq_msg_send(&message, fZMQin, 0);
     alizmq_msg_close(&message);
-    
-    delete fFile; fFile=NULL;
-    
+
     if (fZMQsocketModeIN==ZMQ_REQ)
     {
       //get a request if we are using REQ
@@ -205,17 +177,15 @@ void* runFromFile(void* arg)
         //server died
         Printf("connection timed out, server %s died?", fZMQconfigIN.Data());
         fZMQsocketModeIN = alizmq_socket_init(fZMQin, fZMQcontext, fZMQconfigIN.Data());
-        if (fZMQsocketModeIN < 0) 
+        if (fZMQsocketModeIN < 0)
         {
           Printf("cannot reinit ZMQ socket %s, %s, exiting...", fZMQconfigIN.Data(), zmq_strerror(errno));
           return NULL;
         }
         continue;
       }
-
-
     }
-    
+
     if (fPollInterval<0) break;
     usleep(fPollInterval);
   }//main loop
@@ -233,8 +203,8 @@ void* runToFile(void* arg)
     if (fZMQsocketModeIN==ZMQ_REQ)
     {
       string request;
-      
-      if (fSelectionRegexp || fUnSelectionRegexp) 
+
+      if (fSelectionRegexp || fUnSelectionRegexp)
       {
         if (fSelectionRegexp) request += " select="+fSelectionRegexp->GetPattern();
         if (fUnSelectionRegexp) request += " unselect="+fUnSelectionRegexp->GetPattern();
@@ -244,10 +214,10 @@ void* runToFile(void* arg)
       if (fVerbose) Printf("sending request CONFIG %s", request.c_str());
       alizmq_msg_send("", "", fZMQin, 0);
     }
-    
+
     //wait for the data
-    zmq_pollitem_t sockets[] = { 
-                                 { fZMQin, 0, ZMQ_POLLIN, 0 }, 
+    zmq_pollitem_t sockets[] = {
+                                 { fZMQin, 0, ZMQ_POLLIN, 0 },
                                };
     int rc = zmq_poll(sockets, 1, (fZMQsocketModeIN==ZMQ_REQ)?fPollTimeout:-1);
 
@@ -262,61 +232,37 @@ void* runToFile(void* arg)
       //server died
       Printf("connection timed out, server %s died?", fZMQconfigIN.Data());
       fZMQsocketModeIN = alizmq_socket_init(fZMQin, fZMQcontext, fZMQconfigIN.Data());
-      if (fZMQsocketModeIN < 0) 
+      if (fZMQsocketModeIN < 0)
       {
         Printf("cannot reinit ZMQ socket %s, %s, exiting...", fZMQconfigIN.Data(), zmq_strerror(errno));
         return NULL;
       }
       continue;
     }
-    
+
 
     if (sockets[0].revents & ZMQ_POLLIN)
     {
       //get all data (topic+body), possibly many of them
       aliZMQmsg message;
       alizmq_msg_recv(&message, fZMQin, 0);
-      
-      //count ROOT objects
-      for (aliZMQmsg::iterator i=message.begin(); i!=message.end(); ++i)
-      {
-        if (alizmq_msg_iter_check_id(i, "ROOT")==0) fNumberOfTObjectsInMessage++;
-      }
 
-      //process
+      //check if there is some run metadata in there
       for (aliZMQmsg::iterator i=message.begin(); i!=message.end(); ++i)
       {
-        TObject* object = NULL;
-        string name;
-        if (alizmq_msg_iter_check_id(i, "INFO")==0)
+        if (fFilenameWithRunAndTime && alizmq_msg_iter_check_id(i, "INFO")==0)
         {
           //check if we have a runnumber in the string
           alizmq_msg_iter_data(i,fInfo);
           if (fVerbose) Printf("processing INFO %s", fInfo.c_str());
           fRunNumber = atoi(GetParamString("run",fInfo).c_str());
-          object = new TObjString(fInfo.c_str());
-          name = "_ZMQ_internal_fInfo";
-        }
-        else
-        {
-          alizmq_msg_iter_data(i, object);
-          if (object) name = object->GetName();
-        }
-
-        if (fVerbose && object) Printf("got %s %s", object->ClassName(), object->GetName());
-
-        if (object && !fFileNameBase.IsNull()) 
-        {
-          DumpToFile(object,name);
-          delete object;
-        }
-        else
-        {
-          Printf("no object or no file");
         }
       }
+
+      AtomicFile atomicFile(GetFileName(fFileName));
+      alizmq_file_write(atomicFile, &message, fSerializeROOTobjects);
+
       alizmq_msg_close(&message);
-      delete fFile; fFile=NULL;
       fFileNumber++;
 
     }//socket 0
@@ -357,7 +303,6 @@ int main(int argc, char** argv)
   {
     fFileName = fConfigIN;
     fFileName.ReplaceAll("file://","");
-    fFileNameBase = fFileName;
     fZMQconfigIN = fConfigOUT;
     fToFile=false;
   }
@@ -367,7 +312,6 @@ int main(int argc, char** argv)
   {
     fFileName = fConfigOUT;
     fFileName.ReplaceAll("file://","");
-    fFileNameBase = fFileName;
     fZMQconfigIN = fConfigIN;
     fToFile=true;
   }
@@ -376,14 +320,7 @@ int main(int argc, char** argv)
     Printf("either -in or -out MUST be \"file://\", not both");
     return 1;
   }
-  
-  fFileNameBase.ReplaceAll(".root","");
-  if (fFileNameBase.IsNull())
-  {
-    Printf("no file specified!");
-    return 1;
-  }
-  
+
   int mainReturnCode=0;
 
   //init stuff
@@ -405,10 +342,6 @@ int main(int argc, char** argv)
 
   run(NULL);
 
-  Printf("closing file(s) and exiting...");
-  if (fFile) fFile->Close();
-  delete fFile; fFile=0;
-
   //destroy ZMQ sockets
 
   int linger=0;
@@ -416,38 +349,6 @@ int main(int argc, char** argv)
   zmq_close(fZMQin);
   zmq_ctx_term(fZMQcontext);
   return mainReturnCode;
-}
-
-//______________________________________________________________________________
-int DumpToFile(TObject* object, std::string name)
-{
-  Option_t* fileMode="RECREATE";
-  TTimeStamp time;
-  TString timestamp = time.AsString("s");
-  timestamp.ReplaceAll(" ","_");
-
-  char runStr[10];
-  snprintf(runStr,10,"%.9i",fRunNumber);
-
-  fFileName  = fFileNameBase;
-  fFileName += "_";
-  fFileName += runStr;
-  fFileName += "_"+timestamp;
-  //if we just have one object, append it to file name for clarity)
-  if (fNumberOfTObjectsInMessage==1) 
-  {
-    TString objectName = name.c_str();
-    objectName.ReplaceAll(" ","_");
-    fFileName += "_"+objectName;
-  }
-  fFileName += ".";
-  fFileName += fFileNumber;
-  fFileName += ".root";
-  if (fVerbose) Printf("opening file: %s", fFileName.Data());
-  if (!fFile) fFile = new TFile(fFileName,fileMode);
-  if (fVerbose) Printf("writing object %s to %s",name.c_str(), fFileName.Data());
-  int rc = object->Write(name.c_str(),TObject::kOverwrite);
-  return rc;
 }
 
 //______________________________________________________________________________
@@ -467,7 +368,7 @@ int ProcessOptionString(TString arguments)
     }
     else if (option.EqualTo("PollInterval") || option.EqualTo("sleep"))
     {
-      fPollInterval = round(value.Atof()*1e6);
+      fPollInterval = round(value.Atof()*1e3);
     }
     else if (option.EqualTo("PollTimeout") || option.EqualTo("timeout"))
     {
@@ -495,6 +396,18 @@ int ProcessOptionString(TString arguments)
       delete fUnSelectionRegexp;
       fUnSelectionRegexp=new TPRegexp(value);
     }
+    else if (option.EqualTo("loadlibs"))
+    {
+      fLoadLibs = value.Data();
+    }
+    else if (option.EqualTo("serializeROOTobjects"))
+    {
+      fSerializeROOTobjects=!value.EqualTo("0");
+    }
+    else if (option.EqualTo("filenameWithRunAndTime"))
+    {
+      fFilenameWithRunAndTime=!value.EqualTo("0");
+    }
     else
     {
       nOptions=-1;
@@ -503,6 +416,13 @@ int ProcessOptionString(TString arguments)
     nOptions++;
   }
   delete options; //tidy up
+
+  if (!fLoadLibs.empty()) {
+    if (LoadROOTlibs(fLoadLibs,fVerbose)<0) {
+      Printf("problem loading libraries %s",fLoadLibs.c_str());
+      nOptions=-1;
+    }
+  }
 
   return nOptions; 
 }

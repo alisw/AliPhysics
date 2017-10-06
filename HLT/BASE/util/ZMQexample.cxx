@@ -1,13 +1,16 @@
 #include "zmq.h"
-#include "AliZMQhelpers.h"
+#include "AliHLTZMQhelpers.h"
 #include "AliHLTDataTypes.h"
 #include "TObject.h"
+#include "AliOptionParser.h"
 
 void* fChannelIN;
 TString fConfigIN;
 const char* fUSAGE = "example, needs one argument, e.g. in=PULL@ipc:///tmp/examplesource\n";
 
 int ProcessOptionString(TString arguments);
+
+using namespace AliZMQhelpers;
 
 //_______________________________________________________________________________________
 int main(int argc, char** argv)

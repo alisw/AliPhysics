@@ -218,7 +218,7 @@ int AliZMQhistViewer::GetData(void* socket)
       }
       continue;
     }
-    if (alizmq_msg_iter_check_id(i,kAliHLTDataTypeStreamerInfo)==0)
+    if (alizmq_msg_iter_check_id(i,kDataTypeStreamerInfos)==0)
     {
       if (fVerbose) printf("extracting schema\n");
       alizmq_msg_iter_init_streamer_infos(i);

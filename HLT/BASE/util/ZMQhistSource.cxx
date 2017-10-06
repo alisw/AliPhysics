@@ -17,14 +17,18 @@
 #include <string>
 #include <map>
 #include <unistd.h>
-#include "AliZMQhelpers.h"
+#include "AliHLTZMQhelpers.h"
 #include <sstream>
 #include <vector>
 #include "TRandom.h"
 #include "TTimeStamp.h"
 #include "TSystem.h"
 #include "TObjArray.h"
-#include "AliAnalysisDataContainer.h"
+#include "AliHLTObjArray.h"
+#include "AliOptionParser.h"
+#include "AliHLTexampleMergeableContainer.h"
+
+using namespace AliZMQhelpers;
 
 void* fZMQout = NULL;
 void* fZMQcontext = NULL;
@@ -46,25 +50,30 @@ int fHistNBins = 100;
 aliZMQrootStreamerInfo* fSchema = NULL;
 bool fVerbose = false;
 int fCompression = 0;
-TObjArray* fCollection = NULL;
-AliAnalysisDataContainer* fAnalContainer = NULL;
+TList* fCollection = NULL;
+AliHLTObjArray* fAnalContainer = NULL;
+TObjArray* fAnalComponentContainer = NULL;
+AliHLTexampleMergeableContainer* fCustomContainer = NULL;
+TH1F* fTemplateHist = NULL;
+Int_t fNumberOfTemplateEntries = 5000000;
 
 const char* fUSAGE =
     "ZMQhstSource: send a randomly filled ROOT histogram\n"
     "options: \n"
     " -out : data out\n"
     " -name : name of the histogram\n"
-    " -sleep : how long to sleep between sending a new one\n"
+    " -sleep : [ms] how long to sleep between sending a new one\n"
     " -distribution : the pdf of the distribution\n"
     " -range : the range of the histogram, comma separated, e.g. -12.,12.\n"
     " -nbins : how many bins\n"
-    " -count : how many histograms to send before quitting (0 is never quit)\n"
+    " -count : how many messages to send before quitting (0 is never quit)\n"
     " -entries : how many entries in the histogram before sending\n"
     " -histos : how many histograms per message\n"
     " -schema : include the streamer infos in the message\n"
     " -run : run number\n"
     " -collection : wrap all histograms in a TObjArray\n"
-    " -analysisContainer : wrap the collection in an AliAnalysisDataContainer\n"
+    " -analysisContainer : wrap the collection in an AliHLTObjArray inside TObjArray like online\n"
+    " -customContainer : wrap the collection in an AliHLTexampleMergeableContainer\n"
     //" -compression : compression level (0|1)\n"
     ;
 
@@ -93,9 +102,16 @@ int main(int argc, char** argv)
   {
     stringstream ss;
     ss << fHistName.Data();
-    if (i>0) ss << i;
-    fHistograms.push_back(new TH1F(ss.str().c_str(), ss.str().c_str(), fHistNBins, fHistRangeLow, fHistRangeHigh));
+    ss << i;
+    TH1F* hist = new TH1F(ss.str().c_str(), ss.str().c_str(), fHistNBins, fHistRangeLow, fHistRangeHigh);
+    hist->SetXTitle("x title");
+    fHistograms.push_back(hist);
   }
+
+  printf("initializing the distribution (%s) \n", formula.GetExpFormula("P").Data());
+  TH1F* templateHist = new TH1F("templateHist", "templateHist", fHistNBins, fHistRangeLow, fHistRangeHigh);
+  templateHist->FillRandom("histDistribution", fNumberOfTemplateEntries);
+  printf("...done\n");
 
   if (fCollection)
   {
@@ -107,7 +123,16 @@ int main(int argc, char** argv)
 
   if (fCollection && fAnalContainer)
   {
-    fAnalContainer->SetData(fCollection);
+    fAnalContainer->Add(fCollection);
+  }
+
+  if (fCustomContainer)
+  {
+    for (int i = 0; i < fNHistos; i++)
+    {
+      if (fVerbose) printf("adding histogram to custom container\n");
+      fCustomContainer->Add(fHistograms[i]);
+    }
   }
 
   if (fSchema) {
@@ -124,7 +149,7 @@ int main(int argc, char** argv)
     for (int i = 0; i < fNHistos; i++)
     {
       fHistograms[i]->Reset();
-      fHistograms[i]->FillRandom("histDistribution", fNentries);
+      fHistograms[i]->FillRandom(templateHist, fNentries);
     }
 
     AliHLTDataTopic topic = kAliHLTDataTypeTObject;
@@ -144,15 +169,24 @@ int main(int argc, char** argv)
     }
 
     aliZMQmsg message;
-    if (fCollection && !fAnalContainer)
+    if (fCollection && !fAnalComponentContainer && !fCustomContainer)
     {
+      if (fVerbose) printf("adding collection\n");
       rc = alizmq_msg_add(&message, &topic, fCollection, fCompression, fSchema);
       if (rc < 0)
         printf("unable to send\n");
     }
-    else if (fCollection && fAnalContainer)
+    else if (fCollection && fAnalComponentContainer)
     {
-      rc = alizmq_msg_add(&message, &topic, fAnalContainer, fCompression, fSchema);
+      if (fVerbose) printf("adding analysis container\n");
+      rc = alizmq_msg_add(&message, &topic, fAnalComponentContainer, fCompression, fSchema);
+      if (rc < 0)
+        printf("unable to send\n");
+    }
+    else if (fCustomContainer)
+    {
+      if (fVerbose) printf("adding custom container\n");
+      rc = alizmq_msg_add(&message, &topic, fCustomContainer, fCompression, fSchema);
       if (rc < 0)
         printf("unable to send\n");
     }
@@ -160,6 +194,7 @@ int main(int argc, char** argv)
     {
       for (int i = 0; i < fNHistos; i++)
       {
+        if (fVerbose) printf("adding histogram directly\n");
         rc = alizmq_msg_add(&message, &topic, fHistograms[i], fCompression, fSchema);
         if (rc < 0)
           printf("unable to send\n");
@@ -203,7 +238,7 @@ int ProcessOptionString(TString arguments)
     }
     else if (option.EqualTo("sleep"))
     {
-      fSleep = round(value.Atof()*1e6);
+      fSleep = round(value.Atof()*1e3);
     }
     else if (option.EqualTo("distribution"))
     {
@@ -215,15 +250,21 @@ int ProcessOptionString(TString arguments)
     }
     else if (option.EqualTo("collection"))
     {
-      fCollection = new TObjArray(100);
-      fCollection->SetName("exampleContainer1");
+      if (!fCollection) fCollection = new TList();
       fCollection->SetOwner(kTRUE);
     }
     else if (option.EqualTo("analysisContainer"))
     {
-      fAnalContainer = new AliAnalysisDataContainer("container",TObjArray::Class());
-      if (!fCollection) fCollection = new TObjArray(100);
+      fAnalContainer = new AliHLTObjArray(1);
+      fAnalComponentContainer = new TObjArray(1);
+      fAnalComponentContainer->Add(fAnalContainer);
+      if (!fCollection) fCollection = new TList();
       fCollection->SetOwner(kTRUE);
+    }
+    else if (option.EqualTo("customContainer"))
+    {
+      fCustomContainer = new AliHLTexampleMergeableContainer("test");
+
     }
     else if (option.EqualTo("range"))
     {

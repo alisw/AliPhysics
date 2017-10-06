@@ -66,6 +66,8 @@
 #pragma link C++ class AliHLTDataInflater+;
 #pragma link C++ class AliHLTDataInflaterSimple+;
 #pragma link C++ class AliHLTDataInflaterHuffman+;
+#pragma link C++ class AliHLTObjArray-;
+#pragma link C++ class AliHLTList-;
 
 #include "RVersion.h"
 #if ROOT_VERSION_CODE < 334336 //ROOT_VERSION(5,26,0)
@@ -157,7 +159,6 @@
 #pragma link C++ struct AliHLTRunDesc+;
 #pragma link C++ struct AliHLTComponentStatistics+;
 #pragma link C++ struct AliHLTComponentTableEntry;
-#pragma link C++ struct AliHLTDataTopic+;
 
 #pragma link C++ function operator==( const AliHLTComponentDataType&, const AliHLTComponentDataType&);
 #pragma link C++ function operator!=( const AliHLTComponentDataType&, const AliHLTComponentDataType&);

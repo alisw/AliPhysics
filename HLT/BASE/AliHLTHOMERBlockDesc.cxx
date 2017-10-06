@@ -257,9 +257,3 @@ void AliHLTHOMERBlockDesc::ComponentDataType(AliHLTComponentDataType& dataType)
   memcpy(dataType.fOrigin, fDetector.Data(), kAliHLTComponentDataTypefOriginSize);
 }
 
-//##################################################################################
-void AliHLTHOMERBlockDesc::Topic(char* topic, int topicSize)
-{
-  memcpy(topic, fDataType.Data(), kAliHLTComponentDataTypefIDsize);
-  memcpy(topic+kAliHLTComponentDataTypefIDsize, fDetector.Data(), kAliHLTComponentDataTypefOriginSize);
-}

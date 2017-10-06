@@ -36,7 +36,8 @@
 #include "TSystem.h"
 #include "TTimeStamp.h"
 #include "zmq.h"
-#include "AliZMQhelpers.h"
+#include "AliHLTZMQhelpers.h"
+#include "AliOptionParser.h"
 #include <vector>
 #include <iostream>
 #include <sys/ioctl.h>
@@ -46,6 +47,7 @@
 #include "AliGRPManager.h"
 
 using namespace std;
+using namespace AliZMQhelpers;
 
 //configuration vars
 Bool_t  fVerbose = kFALSE;
@@ -440,6 +442,7 @@ Int_t ProcessOptionString(TString arguments)
     }
     else if (option.EqualTo("config"))
     {
+      printf("configuring chain with %s\n", value.Data());
       fConfigMacro = value;
     }
     else if (option.EqualTo("requestGRP"))

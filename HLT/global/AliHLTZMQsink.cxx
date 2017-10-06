@@ -1,5 +1,5 @@
 /**************************************************************************
- * This file is property of and copyright by the ALICE HLT Project        * 
+ * This file is property of and copyright by the ALICE HLT Project        *
  * ALICE Experiment at CERN, All rights reserved.                         *
  *                                                                        *
  * Primary Author: Mikolaj Krzewicki, mikolaj.krzewicki@cern.ch           *
@@ -27,7 +27,7 @@
 #include "TStreamerInfo.h"
 #include "TCollection.h"
 #include "TList.h"
-#include "AliZMQhelpers.h"
+#include "AliHLTZMQhelpers.h"
 
 using namespace std;
 
@@ -112,7 +112,7 @@ Int_t AliHLTZMQsink::DoInit( Int_t /*argc*/, const Char_t** /*argv*/ )
   Int_t retCode=0;
 
   //process arguments
-  if (ProcessOptionString(GetComponentArgs())<0) 
+  if (ProcessOptionString(GetComponentArgs())<0)
   {
     HLTFatal("wrong config string! %s", GetComponentArgs().c_str());
     return -1;
@@ -125,21 +125,21 @@ Int_t AliHLTZMQsink::DoInit( Int_t /*argc*/, const Char_t** /*argv*/ )
   if (!fZMQcontext) return -1;
 
   //init ZMQ socket
-  rc = alizmq_socket_init(fZMQout, fZMQcontext, fZMQoutConfig, 0, 10 ); 
-  if (!fZMQout || rc<0) 
+  rc = alizmq_socket_init(fZMQout, fZMQcontext, fZMQoutConfig, 0, 10 );
+  if (!fZMQout || rc<0)
   {
     HLTError("cannot initialize ZMQ socket %s, %s",fZMQoutConfig.c_str(),zmq_strerror(errno));
     return -1;
   }
-  
+
   HLTMessage(Form("socket create ptr %p %s",fZMQout,(rc<0)?zmq_strerror(errno):""));
   HLTMessage(Form("ZMQ connected to: %s (%s(id %i)) rc %i %s",
                fZMQoutConfig.c_str(),alizmq_socket_name(fZMQsocketType),
                fZMQsocketType,rc,(rc<0)?zmq_strerror(errno):""));
-  
+
   //init a simple info string with just the run number
   char tmp[34];
-  snprintf(tmp,34,"%i",GetRunNo()); 
+  snprintf(tmp,34,"%i",GetRunNo());
   fInfoString  = "run="; fInfoString += tmp;
 
   return retCode;
@@ -156,20 +156,19 @@ Int_t AliHLTZMQsink::DoDeinit()
 
 //______________________________________________________________________________
 int AliHLTZMQsink::DoProcessing( const AliHLTComponentEventData& evtData,
-                                const AliHLTComponentBlockData* blocks, 
+                                const AliHLTComponentBlockData* blocks,
                                 AliHLTComponentTriggerData& /*trigData*/,
-                                AliHLTUInt8_t* /*outputPtr*/, 
+                                AliHLTUInt8_t* /*outputPtr*/,
                                 AliHLTUInt32_t& /*size*/,
                                 AliHLTComponentBlockDataList& outputBlocks,
                                 AliHLTComponentEventDoneData*& /*edd*/ )
-{ 
+{
   // see header file for class documentation
   Int_t retCode=0;
-  
+
   //create a default selection of any data:
   int requestTopicSize=-1;
-  char requestTopic[kAliHLTComponentDataTypeTopicSize];
-  memset(requestTopic, '*', kAliHLTComponentDataTypeTopicSize);
+  AliHLTDataTopic requestTopic(kAliHLTAnyDataType);
 
   int rc = 0;
   Bool_t doSend = kTRUE;
@@ -177,10 +176,7 @@ int AliHLTZMQsink::DoProcessing( const AliHLTComponentEventData& evtData,
   Bool_t doSendStreamerInfos = kFALSE;
   Bool_t doSendCDB = kFALSE;
   AliCDBEntry* cdbEntry = NULL;
-  
-  //cache an ECS param topic
-  char ecsParamTopic[kAliHLTComponentDataTypeTopicSize];
-  DataType2Topic(kAliHLTDataTypeECSParam, ecsParamTopic);
+
   TString requestedCDBpath;
 
   //in case we reply to requests instead of just pushing/publishing
@@ -196,7 +192,7 @@ int AliHLTZMQsink::DoProcessing( const AliHLTComponentEventData& evtData,
       size_t moreSize=sizeof(more);
       do //request could be multipart, get all parts
       {
-        requestTopicSize = zmq_recv (fZMQout, requestTopic, kAliHLTComponentDataTypeTopicSize, 0);
+        requestTopicSize = zmq_recv (fZMQout, &requestTopic, sizeof(requestTopic), 0);
         zmq_getsockopt(fZMQout, ZMQ_RCVMORE, &more, &moreSize);
         zmq_msg_t requestMsg;
         int requestSize=-1;
@@ -206,24 +202,24 @@ int AliHLTZMQsink::DoProcessing( const AliHLTComponentEventData& evtData,
           zmq_getsockopt(fZMQout, ZMQ_RCVMORE, &more, &moreSize);
         }
         //if request is for ECS params, set the flag
-        if (*reinterpret_cast<const AliHLTUInt64_t*>(requestTopic) ==
+        if (*requestTopic.GetIDptr() ==
             *reinterpret_cast<const AliHLTUInt64_t*>(kAliHLTDataTypeECSParam.fID))
         {
           doSendECSparamString = kTRUE;
         }
         //if request is for streamer infos, set the flag
-        else if (*reinterpret_cast<const AliHLTUInt64_t*>(requestTopic) ==
+        else if (*requestTopic.GetIDptr() ==
                  *reinterpret_cast<const AliHLTUInt64_t*>(kAliHLTDataTypeStreamerInfo.fID))
         {
           doSendStreamerInfos = kTRUE;
         }
         //if request is for an OCDB object, set the flag
         else if (requestSize>0 &&
-            *reinterpret_cast<const AliHLTUInt64_t*>(requestTopic) ==
+            *requestTopic.GetIDptr() ==
             *reinterpret_cast<const AliHLTUInt64_t*>(kAliHLTDataTypeCDBEntry.fID))
         {
           requestedCDBpath.Append(static_cast<char*>(zmq_msg_data(&requestMsg)),requestSize);
-          
+
           //get the CDB entry in a safe way
           do {
             if (!requestedCDBpath.Contains(fCDBpattern)) {
@@ -249,16 +245,16 @@ int AliHLTZMQsink::DoProcessing( const AliHLTComponentEventData& evtData,
     }
     else { doSend = kFALSE; }
   }
- 
+
   //if enabled (option -pushback-period), send at most so often
   if (fPushbackDelayPeriod>0)
   {
     TDatime time;
-    if ((Int_t)time.Get()-fLastPushbackDelayTime<fPushbackDelayPeriod) 
+    if ((Int_t)time.Get()-fLastPushbackDelayTime<fPushbackDelayPeriod)
     {
       doSend=kFALSE;
     }
-  }  
+  }
 
   //caching the ECS param string has to happen for non data event
   AliHLTUInt32_t eventType = 0;
@@ -267,7 +263,7 @@ int AliHLTZMQsink::DoProcessing( const AliHLTComponentEventData& evtData,
     const AliHLTComponentBlockData* inputBlock = NULL;
     for (int iBlock = 0;
          iBlock < evtData.fBlockCnt;
-         iBlock++) 
+         iBlock++)
     {
       inputBlock = &blocks[iBlock];
       //cache the ECS param string
@@ -291,7 +287,7 @@ int AliHLTZMQsink::DoProcessing( const AliHLTComponentEventData& evtData,
         if (ecsRunNo != GetRunNo()) {
           HLTWarning("Mismatch run from OCDB: %i and ECS: %i",GetRunNo(),ecsRunNo);
         }
-        
+
         fInfoString += ";HLT_MODE=" + fECSparamMap["HLT_MODE"];
         break;
       }
@@ -303,7 +299,7 @@ int AliHLTZMQsink::DoProcessing( const AliHLTComponentEventData& evtData,
     const AliHLTComponentBlockData* inputBlock = NULL;
     for (int iBlock = 0;
         iBlock < evtData.fBlockCnt;
-        iBlock++) 
+        iBlock++)
     {
       inputBlock = &blocks[iBlock];
       //cache the streamer info
@@ -347,12 +343,12 @@ int AliHLTZMQsink::DoProcessing( const AliHLTComponentEventData& evtData,
     std::vector<int> selectedBlockIdx;
     for (int iBlock = 0;
          iBlock < evtData.fBlockCnt;
-         iBlock++) 
+         iBlock++)
     {
       inputBlock = &blocks[iBlock];
 
       //don't include provate data unless explicitly asked to
-      if (!fIncludePrivateBlocks && 
+      if (!fIncludePrivateBlocks &&
           *reinterpret_cast<const AliHLTUInt32_t*>(inputBlock->fDataType.fOrigin) ==
           *reinterpret_cast<const AliHLTUInt32_t*>(kAliHLTDataOriginPrivate))
       {
@@ -360,9 +356,8 @@ int AliHLTZMQsink::DoProcessing( const AliHLTComponentEventData& evtData,
       }
 
       //check if the data type matches the request
-      char blockTopic[kAliHLTComponentDataTypeTopicSize];
-      DataType2Topic(inputBlock->fDataType, blockTopic);
-      if (Topicncmp(requestTopic, blockTopic, requestTopicSize))
+      AliHLTDataTopic blockTopic(inputBlock->fDataType);
+      if (blockTopic==requestTopic)
       {
         selectedBlockIdx.push_back(iBlock);
       }
@@ -419,10 +414,10 @@ int AliHLTZMQsink::DoProcessing( const AliHLTComponentEventData& evtData,
     //add the selected blocks
     for (int iSelectedBlock = 0;
          iSelectedBlock < selectedBlockIdx.size();
-         iSelectedBlock++) 
+         iSelectedBlock++)
     {
       inputBlock = &blocks[selectedBlockIdx[iSelectedBlock]];
-      AliHLTDataTopic blockTopic = *inputBlock;
+      AliHLTDataTopic blockTopic(*inputBlock);
 
       rc = alizmq_msg_add(&message, &blockTopic, inputBlock->fPtr, inputBlock->fSize);
       if (rc<0) {
@@ -430,11 +425,11 @@ int AliHLTZMQsink::DoProcessing( const AliHLTComponentEventData& evtData,
       }
     }
 
-    
+
     //send an empty message if we really need a reply (ZMQ_REP mode)
     //only in case no blocks were sent
     if (message.size()==0 && fZMQsocketType==ZMQ_REP)
-    { 
+    {
       rc = alizmq_msg_add(&message, "", "");
       if (rc<0) {
         HLTWarning("ZMQ error adding dummy rep data");
@@ -463,7 +458,7 @@ int AliHLTZMQsink::ProcessOption(TString option, TString value)
 {
   //process option
   //to be implemented by the user
-  
+
   if (option.EqualTo("out"))
   {
     fZMQoutConfig = value;
@@ -512,7 +507,7 @@ int AliHLTZMQsink::ProcessOption(TString option, TString value)
     else if (value.EqualTo("1") || value.EqualTo("yes") || value.Contains("true",TString::kIgnoreCase) )
       fZMQneverBlock = kTRUE;
   }
-  
+
   else if (option.EqualTo("ZMQerrorMsgSkip"))
   {
     fZMQerrorMsgSkip = value.Atoi();
@@ -529,6 +524,6 @@ int AliHLTZMQsink::ProcessOption(TString option, TString value)
     return -1;
   }
 
-  return 1; 
+  return 1;
 }
 

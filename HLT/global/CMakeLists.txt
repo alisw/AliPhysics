@@ -106,7 +106,8 @@ set(SRCS
    )
 
 if(ZEROMQ_FOUND)
-  include_directories(${ZEROMQ_INCLUDE_DIR})
+  include_directories(${ZEROMQ_INCLUDE_DIR}
+                      ${AliRoot_SOURCE_DIR}/HLT/ZMQ)
   set(SRCS 
       ${SRCS}
       AliHLTZMQsink.cxx
@@ -159,11 +160,12 @@ if(ZEROMQ_FOUND)
   include_directories(
                       ${AliRoot_SOURCE_DIR}/HLT/BASE/HOMER
                       ${AliRoot_SOURCE_DIR}/HLT/BASE/util
+                      ${AliRoot_SOURCE_DIR}/HLT/ZMQ
                       ${ZEROMQ_INCLUDE_DIR}
                       )
 
   add_executable(ZMQDIMlumiregServer ZMQDIMlumiregServer.cxx)
-  target_link_libraries(ZMQDIMlumiregServer HLTbase AliHLTGlobal AliHLTUtil AliHLTHOMER RAWDatabase Geom Graf MathCore Net Tree EG Gpad Matrix Minuit Physics VMC Thread STEERBase XMLParser Graf3d RIO Hist Core ${ZMQ_LIBRARIES})
+  target_link_libraries(ZMQDIMlumiregServer HLTbase AliHLTGlobal AliZMQhelpers AliHLTUtil AliHLTHOMER RAWDatabase Geom Graf MathCore Net Tree EG Gpad Matrix Minuit Physics VMC Thread STEERBase XMLParser Graf3d RIO Hist Core ${ZMQ_LIBRARIES})
   
   # Installation of 
   install(TARGETS ZMQDIMlumiregServer RUNTIME DESTINATION bin)

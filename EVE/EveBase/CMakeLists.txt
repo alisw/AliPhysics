@@ -97,6 +97,7 @@ set(SRCS
 if(ZEROMQ_FOUND)
     include_directories(
                         ${ZEROMQ_INCLUDE_DIR}
+                        ${AliRoot_SOURCE_DIR}/HLT/ZMQ
                         )
     set(SRCS
         ${SRCS}

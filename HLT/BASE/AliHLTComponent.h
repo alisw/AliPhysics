@@ -654,12 +654,6 @@ class AliHLTComponent : public AliHLTLogging {
   static string DataType2Text( const AliHLTComponentDataType& type, int mode=0);
   
   /**
-   * Helper functions to convert data type to a char array (ZMQ topic) and back
-   * fID goes first (8 chars) then fOrigin (4 chars)
-   **/
-  static void DataType2Topic( const AliHLTComponentDataType type, char* output );
-
-  /**
    * Calculate a CRC checksum of a data buffer.
    * Polynomial for the calculation is 0xD8.
    */

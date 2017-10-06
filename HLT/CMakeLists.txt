@@ -52,6 +52,7 @@ add_subdirectory(QA)
 add_subdirectory(rec)
 add_subdirectory(shuttle)
 add_subdirectory(sim)
+add_subdirectory(ZMQ)
 
 if (DIM_FOUND)
     add_subdirectory(createGRP/lib)
