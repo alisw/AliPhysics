@@ -156,9 +156,9 @@ void qatpcAddMetadata(TTree*tree, Int_t verbose){
   //   QA variables  
   const Int_t nQA=8;
   const TString qaVariableClass[nQA]={"Ncl", "Eff","dEdx", "DCAr", "DCAz","Occ","Attach","Electron"};
-  const TString qaVariableAxisTitle[nQA]={"Ncl(#)", "Eff(unit)","dEdx(MIP/50)", "DCAr(cm)", "DCAz(cm)", "Occupancy","Attach","Electron"};
-  const TString qaVariableLegend[nQA]={"Ncl", "Eff","dEdx", "DCAr", "DCAz","Occ.","Attach","e-"};
-  const TString qaVariableTitle[nQA]={"Ncl", "Eff","dEdx", "DCAr", "DCAz", "Occupancy","Attach","e-"};
+  const TString qaVariableAxisTitle[nQA]={"Ncl(#)", "Eff(unit)","dEdx(MIP/50)", "DCA_{xy}(cm)", "DCA_{z}(cm)", "Occupancy","Attach","Electron"};
+  const TString qaVariableLegend[nQA]={"Ncl", "Eff","dEdx", "DCA_{xy}", "DCA_{z}","Occ.","Attach","e-"};
+  const TString qaVariableTitle[nQA]={"Ncl", "Eff","dEdx", "DCA_{xy}", "DCA_{z}", "Occupancy","Attach","e-"};
   TPRegexp regQAVariable[nQA];
   regQAVariable[0]=TPRegexp("ncl");               // Ncl
   regQAVariable[1]=TPRegexp("tpcitsmatch");       // TPC->ITS eff
