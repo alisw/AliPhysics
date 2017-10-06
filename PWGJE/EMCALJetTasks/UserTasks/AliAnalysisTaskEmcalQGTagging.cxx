@@ -82,6 +82,7 @@ AliAnalysisTaskEmcalQGTagging::AliAnalysisTaskEmcalQGTagging() :
   fhpTjetpT(0x0),
   fhPt(0x0),
   fhPhi(0x0),
+  fHLundIterative(0x0),
   fNbOfConstvspT(0x0),
   fTreeObservableTagging(0)
 
@@ -126,6 +127,7 @@ AliAnalysisTaskEmcalQGTagging::AliAnalysisTaskEmcalQGTagging(const char *name) :
   fhpTjetpT(0x0),
   fhPt(0x0),
   fhPhi(0x0),
+  fHLundIterative(0x0),
   fNbOfConstvspT(0x0),
   fTreeObservableTagging(0)
   
@@ -183,6 +185,16 @@ AliAnalysisTaskEmcalQGTagging::~AliAnalysisTaskEmcalQGTagging()
   fOutput->Add(fhPt);
   fhPhi= new TH1F("fhPhi", "fhPhi", 100, -TMath::Pi(), TMath::Pi());
   fOutput->Add(fhPhi);
+
+   //log(1/theta),log(z*theta),jetpT,algo// 
+   const Int_t dimSpec   = 4;
+   const Int_t nBinsSpec[4]     = {100,100,20,2};
+   const Double_t lowBinSpec[4] = {0.0,-10,  0,0};
+   const Double_t hiBinSpec[4]  = {5.0,  0,200,2};
+   fHLundIterative = new THnSparseF("fHLundIterative",
+                   "LundIterativePlot [log(1/theta),log(z*theta),pTjet,algo]",
+                   dimSpec,nBinsSpec,lowBinSpec,hiBinSpec);
+  fOutput->Add(fHLundIterative);  
   
   fNbOfConstvspT=new TH2F("fNbOfConstvspT", "fNbOfConstvspT", 100, 0, 100, 200, 0, 200);
   fOutput->Add(fNbOfConstvspT);
@@ -200,7 +212,7 @@ AliAnalysisTaskEmcalQGTagging::~AliAnalysisTaskEmcalQGTagging()
 
  
   TH1::AddDirectory(oldStatus);
-  const Int_t nVar = 19;
+  const Int_t nVar = 17;
   const char* nameoutput = GetOutputSlot(2)->GetContainer()->GetName();
   fTreeObservableTagging = new TTree(nameoutput, nameoutput);
   
@@ -227,9 +239,9 @@ AliAnalysisTaskEmcalQGTagging::~AliAnalysisTaskEmcalQGTagging()
   fShapesVarNames[14] = "coronnaMatch";
   fShapesVarNames[15]="weightPythia";
   //fShapesVarNames[14]="ntrksEvt";
-  fShapesVarNames[16]="rhoVal";
-  fShapesVarNames[17]="rhoMassVal";
-  fShapesVarNames[18]="ptUnsub";
+  //fShapesVarNames[16]="rhoVal";
+  //fShapesVarNames[17]="rhoMassVal";
+  fShapesVarNames[16]="ptUnsub";
 
    for(Int_t ivar=0; ivar < nVar; ivar++){
     cout<<"looping over variables"<<endl;
@@ -520,7 +532,9 @@ Bool_t AliAnalysisTaskEmcalQGTagging::FillHistograms()
       fShapesVar[5] = GetJetCircularity(jet1,0);
       fShapesVar[6] = GetJetLeSub(jet1,0);
       fShapesVar[6] = GetJetCoronna(jet1,0);
-
+      RecursiveParents(jet1,jetCont,0);
+      RecursiveParents(jet1,jetCont,1);
+      
       Float_t ptMatch=0., ptDMatch=0., massMatch=0., constMatch=0.,angulMatch=0.,circMatch=0., lesubMatch=0., sigma2Match=0., coronnaMatch=0;
       Int_t kMatched = 0;
 
@@ -579,9 +593,9 @@ Bool_t AliAnalysisTaskEmcalQGTagging::FillHistograms()
        fShapesVar[14] = coronnaMatch;
       fShapesVar[15] = kWeight;
       //fShapesVar[16] = ntracksEvt;
-      fShapesVar[16] = rhoVal;
-      fShapesVar[17] = rhoMassVal;
-      fShapesVar[18] = jet1->Pt();
+      // fShapesVar[16] = rhoVal;
+      //fShapesVar[17] = rhoMassVal;
+      fShapesVar[16] = jet1->Pt();
 
 
       fTreeObservableTagging->Fill();
@@ -1083,6 +1097,71 @@ Double_t AliAnalysisTaskEmcalQGTagging::RelativePhi(Double_t mphi,Double_t vphi)
   else if (dphi > TMath::Pi()) dphi -= (2*TMath::Pi());
   return dphi;//dphi in [-Pi, Pi]
 }
+
+
+//_________________________________________________________________________
+void AliAnalysisTaskEmcalQGTagging::RecursiveParents(AliEmcalJet *fJet,AliJetContainer *fJetCont, Int_t ReclusterAlgo){
+ 
+  std::vector<fastjet::PseudoJet>  fInputVectors;
+  fInputVectors.clear();
+  fastjet::PseudoJet  PseudoTracks;
+  double xflagalgo=0; 
+  AliParticleContainer *fTrackCont = fJetCont->GetParticleContainer();
+  
+    if (fTrackCont) for (Int_t i=0; i<fJet->GetNumberOfTracks(); i++) {
+      AliVParticle *fTrk = fJet->TrackAt(i, fTrackCont->GetArray());
+      if (!fTrk) continue; 
+      PseudoTracks.reset(fTrk->Px(), fTrk->Py(), fTrk->Pz(),fTrk->E());
+      PseudoTracks.set_user_index(fJet->TrackAt(i)+100);
+      fInputVectors.push_back(PseudoTracks);
+     
+    }
+
+    
+  
+  fastjet::JetDefinition                *fJetDef;         
+  fastjet::ClusterSequence              *fClustSeqSA;
+  if(ReclusterAlgo==0) xflagalgo=0.5;
+  if(ReclusterAlgo==1) xflagalgo=1.5;
+  if(ReclusterAlgo==0) fJetDef = new fastjet::JetDefinition(fastjet::kt_algorithm, 1., static_cast<fastjet::RecombinationScheme>(0), fastjet::BestFJ30 ); 
+  if(ReclusterAlgo==1) fJetDef = new fastjet::JetDefinition(fastjet::cambridge_algorithm, 1., static_cast<fastjet::RecombinationScheme>(0), fastjet::BestFJ30 ); 
+
+  try {
+    fClustSeqSA = new fastjet::ClusterSequence(fInputVectors, *fJetDef);
+  } catch (fastjet::Error) {
+    AliError(" [w] FJ Exception caught.");
+    //return -1;
+  }
+
+  std::vector<fastjet::PseudoJet>   fOutputJets;
+  fOutputJets.clear();
+  fOutputJets=fClustSeqSA->inclusive_jets(0);
+  
+   fastjet::PseudoJet jj;
+   fastjet::PseudoJet j1;
+   fastjet::PseudoJet j2;
+   jj=fOutputJets[0];
+   
+  while(jj.has_parents(j1,j2)){
+    if(j1.perp() < j2.perp()) swap(j1,j2);
+    double delta_R=j1.delta_R(j2);
+    double z=j2.perp()/(j1.perp()+j2.perp());
+    double y =log(1.0/delta_R);
+    double lnpt_rel=log(z*delta_R);
+    Double_t LundEntries[4] = {y,lnpt_rel,fOutputJets[0].perp(),xflagalgo};  
+    fHLundIterative->Fill(LundEntries);
+    jj=j1;} 
+
+
+  return;
+
+  
+}
+
+
+
+
+
 
 
 //________________________________________________________________________
