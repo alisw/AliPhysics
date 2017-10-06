@@ -118,9 +118,8 @@ class AliHFEminiEventCreator : public AliAnalysisTaskSE{
     Bool_t               fSelectSignalOnly;          // Select signal-only tracks
     TString              fCollisionSystem;           //pp or AA (pPb, PbPb)
    
-    
+    TList                *fList;                     //List
     TTree                *fHFEtree;                  // HFE tree 
-    TList                *fQA;
     TH1D                 *fNevents;
     TH1D                 *fNtracks;
     
