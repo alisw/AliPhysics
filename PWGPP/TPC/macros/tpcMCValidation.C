@@ -1,12 +1,13 @@
 /*
-  .L $NOTES/JIRA/ATO-83/code/tpcMCValidationStandardQA.C+
+  .L $AliPhysics_SRC/PWGPP/TPC/macros/tpcMCValidation.C+
   TString mcPeriod="LHC15k1a1";
   TString mcPass="passMC";
   TString anchorPeriod="LHC15o";
   TString anchorPass="pass3_lowIR_pidfix";
   
-  InitTPCMCValidation("LHC15k1a1","passMC","LHC15o", "pass3_lowIR_pidfix",0,0);
- 
+  //InitTPCMCValidation("LHC15k1a1","passMC","LHC15o", "pass3_lowIR_pidfix",0,0);
+InitTPCMCValidation("LHC15k1a1","passMC","LHC15o", "pass1",0,0);
+
 
 */ 
 //gSystem->AddIncludePath("-I$ALICE_ROOT/include/"); //couldn't add include path in .rootrc
@@ -30,45 +31,49 @@
 AliExternalInfo   *pinfo=0;
 AliTreeTrending   *trendingDraw=0;  
 TTree * treeMC;
-  
+std::vector<Double_t> cRange;
+std::vector<Double_t> cRange2;
+std::vector<Double_t> cRange5;
+
 void makeTPCMCAlarms(TTree * treeMC, Bool_t doCheck,Int_t verbose);
-void tpcMCValidationStandard(TString mcPeriod,Int_t verbose,Int_t doCheck);
+//void tpcMCValidationStandard(TString mcPeriod,Int_t verbose,Int_t doCheck);
 Bool_t InitTPCMCValidation(TString mcPeriod,  TString mcPass, TString anchorPeriod,  TString anchorPass, Int_t verbose,Int_t doCheck);
 void MakeReport(const char* mcrddir);
 void MakePlot(TTree * tree,const char* mcrddir, const char *fname, const char *LegendTitle, std::vector<Double_t>& legpos, const char *groupName, const char* expr, const char * cut, const char * markers, const char *colors, Bool_t drawSparse, Float_t msize, Float_t sigmaRange, Bool_t comp);
 
+/// function to create a set of the comparison plots MC/AnchorRaw data
+/// \param MCper     -  MC production name
+/// \param mcrddir   -  directory where png and html files are stored
 void tpcMCValidation(const char* MCper ="LHC15k1a1",const char* mcrddir="./"){
-
-//gROOT->LoadMacro("tpcMCValidationStandardQA.C+");
-cout<<"INITIALIZING TPC MC Validation"<<endl;
-AliExternalInfo i;
-cout<<MCper<<endl;
-TString AnchProdNamenPass = i.GetMCPassGuess(TString::Format("%s",MCper));
-//TString AnchProdName;
-cout<<"Anchor Production Name and Pass: "<<AnchProdNamenPass<<endl;
-TObjArray *subStrL;
-subStrL = TPRegexp("^([^ ]+)").MatchS(AnchProdNamenPass);
-TString AnchProdName = ((TObjString*)subStrL->At(0))->GetString();
-
-subStrL = TPRegexp("([^ ])+$").MatchS(AnchProdNamenPass);
-TString AnchPassName = ((TObjString*)subStrL->At(0))->GetString();
-
-
-if(InitTPCMCValidation(MCper,"passMC",AnchProdName, AnchPassName,0,0)){
-
+  //gROOT->LoadMacro("tpcMCValidationStandardQA.C+");
+  cout<<"INITIALIZING TPC MC Validation"<<endl;
+  AliExternalInfo i;
+  cout<<MCper<<endl;
+  TString AnchProdNamenPass = i.GetMCPassGuess(TString::Format("%s",MCper));
+  //TString AnchProdName;
+  cout<<"Anchor Production Name and Pass: "<<AnchProdNamenPass<<endl;
+  TObjArray *subStrL;
+  subStrL = TPRegexp("^([^ ]+)").MatchS(AnchProdNamenPass);
+  TString AnchProdName = ((TObjString*)subStrL->At(0))->GetString();
+  subStrL = TPRegexp("([^ ])+$").MatchS(AnchProdNamenPass);
+  TString AnchPassName = ((TObjString*)subStrL->At(0))->GetString();
+  if(InitTPCMCValidation(MCper,"passMC",AnchProdName, AnchPassName,0,0)){
     MakeReport(mcrddir);
-}
-else ::Error("tpcMCValidation","InitTPCMCValidation returned with error -> skip plotting!");
-}
-
-
-
-void tpcMCValidationStandard(TString mcPeriod,  TString mcPass, TString anchorPeriod,  TString anchorPass, Int_t verbose,Int_t doCheck){
-  InitTPCMCValidation( mcPeriod,mcPass, anchorPeriod, anchorPass,verbose,doCheck);
+  }
+  else ::Error("tpcMCValidation","InitTPCMCValidation returned with error -> skip plotting!");
 }
 
+//
+//
+//void tpcMCValidationStandard(TString mcPeriod,  TString mcPass, TString anchorPeriod,  TString anchorPass, Int_t verbose,Int_t doCheck){
+//  InitTPCMCValidation( mcPeriod,mcPass, anchorPeriod, anchorPass,verbose,doCheck);
+//}
+//
 
-
+/// makeTPCMCAlarms
+/// \param treeMC  - input tree
+/// \param doCheck - force check of the variables
+/// \param verbose - set verbosity for make alarms
 void makeTPCMCAlarms(TTree * treeMC, Bool_t doCheck,Int_t verbose){
   //
   //  define variables for alarms for MC/raw mismatch
@@ -77,7 +82,7 @@ void makeTPCMCAlarms(TTree * treeMC, Bool_t doCheck,Int_t verbose){
   //  1.)  Partial alarms  (variable, variableAnchor deltaWarning,deltaError, PhysAcc) 
   //                 deltaWarning and deltaErrror can be an expression which is understtod by TTreeFormula
   //  ==============================================================
-  TString sTrendVars=";";   
+  TString sTrendVars=";";
   {
     // Ncl
     sTrendVars+="QA.TPC.meanTPCncl,TPC.Anchor.meanTPCncl,5,10,5;";       // delta Ncl  warning 5 ,  error 10     (nominal ~ 100-140)
@@ -90,49 +95,39 @@ void makeTPCMCAlarms(TTree * treeMC, Bool_t doCheck,Int_t verbose){
     // Eff ITS: TPC->ITS
     sTrendVars+="QA.ITS.EffoneSPDPt02,ITS.Anchor.EffoneSPDPt02,0.05,0.1,0.07;";
     sTrendVars+="QA.ITS.EffoneSPDPt1,ITS.Anchor.EffoneSPDPt1,0.05,0.1,0.07;";
-    sTrendVars+="QA.ITS.EffoneSPDPt10,ITS.Anchor.EffoneSPDPt10,0.05,0.1,0.07;";        
+    sTrendVars+="QA.ITS.EffoneSPDPt10,ITS.Anchor.EffoneSPDPt10,0.05,0.1,0.07;";
     sTrendVars+="QA.ITS.EffTOTPt02,ITS.Anchor.EffTOTPt02,0.05,0.1,0.07;";
     sTrendVars+="QA.ITS.EffTOTPt1,ITS.Anchor.EffTOTPt1,0.05,0.1,0.07;";
-    sTrendVars+="QA.ITS.EffTOTPt10,ITS.Anchor.EffTOTPt10,0.05,0.1,0.07;";    
+    sTrendVars+="QA.ITS.EffTOTPt10,ITS.Anchor.EffTOTPt10,0.05,0.1,0.07;";
     // Eff TRD: TPC->TRD    
   }
   TStatToolkit::MakeAnchorAlias(treeMC,sTrendVars, doCheck, verbose);
-  
-  
   //Make aliases for Mean of MC-anchor of variables
   treeMC->SetAlias("mcrddiff_meanTPCncl" , "QA.TPC.meanTPCncl-TPC.Anchor.meanTPCncl");
-  
-  
-  
   treeMC->SetAlias("statisticOK", "(meanTPCncl>0)");
-  
-  TString sDiffVars=";"; 
+  TString sDiffVars=";";
   sDiffVars+=";mcrddiff_meanTPCncl;";
-          
   TObjArray* oaTrendVars = sDiffVars.Tokenize(";");
   Float_t entryFrac=0.8, nsigmaOutlier=6., nsigmaWarning=3., epsilon=1.0e-6, combfac=1.;
-  
-  for (Int_t vari=0; vari<oaTrendVars->GetEntriesFast(); vari++)
-  {
-    TString sVar( oaTrendVars->At(vari)->GetName() );
 
-    TStatToolkit::SetStatusAlias(treeMC, sVar.Data(),    "statisticOK", Form("varname_OutlierMin:(MeanEF-%f*RMSEF-%f):%f", nsigmaOutlier, epsilon, entryFrac));   
-    TStatToolkit::SetStatusAlias(treeMC, sVar.Data(),    "statisticOK", Form("varname_OutlierMax:(MeanEF+%f*RMSEF+%f):%f", nsigmaOutlier, epsilon, entryFrac));   
+  for (Int_t vari=0; vari<oaTrendVars->GetEntriesFast(); vari++) {
+    TString sVar( oaTrendVars->At(vari)->GetName() );
+    TStatToolkit::SetStatusAlias(treeMC, sVar.Data(),    "statisticOK", Form("varname_OutlierMin:(MeanEF-%f*RMSEF-%f):%f", nsigmaOutlier, epsilon, entryFrac));
+    TStatToolkit::SetStatusAlias(treeMC, sVar.Data(),    "statisticOK", Form("varname_OutlierMax:(MeanEF+%f*RMSEF+%f):%f", nsigmaOutlier, epsilon, entryFrac));
     TStatToolkit::SetStatusAlias(treeMC, sVar.Data(),    "statisticOK", Form("varname_WarningMin:(MeanEF-%f*RMSEF-%f):%f", nsigmaWarning, epsilon, entryFrac));
-    TStatToolkit::SetStatusAlias(treeMC, sVar.Data(),    "statisticOK", Form("varname_WarningMax:(MeanEF+%f*RMSEF+%f):%f", nsigmaWarning, epsilon, entryFrac));    
+    TStatToolkit::SetStatusAlias(treeMC, sVar.Data(),    "statisticOK", Form("varname_WarningMax:(MeanEF+%f*RMSEF+%f):%f", nsigmaWarning, epsilon, entryFrac));
     TStatToolkit::SetStatusAlias(treeMC, sVar.Data(),    "statisticOK", Form("varname_PhysAccMin:(MeanEF-%f*MeanEF):%f", 0.05*combfac, entryFrac));
     TStatToolkit::SetStatusAlias(treeMC, sVar.Data(),    "statisticOK", Form("varname_PhysAccMax:(MeanEF+%f*MeanEF):%f", 0.05*combfac, entryFrac));
     TStatToolkit::SetStatusAlias(treeMC, sVar.Data(),    "statisticOK", Form("varname_RobustMean:(MeanEF+0):%f", entryFrac));
   }
-  
- for (Int_t vari=0; vari<oaTrendVars->GetEntriesFast(); vari++)
-  {
+
+  for (Int_t vari=0; vari<oaTrendVars->GetEntriesFast(); vari++) {
     TString sVar( oaTrendVars->At(vari)->GetName() );
     TStatToolkit::SetStatusAlias(treeMC, sVar.Data(),    "", Form("varname_Outlier:(varname>varname_OutlierMax||varname<varname_OutlierMin)"));
     TStatToolkit::SetStatusAlias(treeMC, sVar.Data(),    "", Form("varname_Warning:(varname>varname_WarningMax||varname<varname_WarningMin)"));
     TStatToolkit::SetStatusAlias(treeMC, sVar.Data(),    "", Form("varname_PhysAcc:(varname>varname_PhysAccMin&&varname<varname_PhysAccMax)"));
- }
-  
+  }
+
   //  ==============================================================
   // 2.) Configure combined status. Default using logiacal OR of problems
   //  ==============================================================
@@ -141,15 +136,24 @@ void makeTPCMCAlarms(TTree * treeMC, Bool_t doCheck,Int_t verbose){
   sCombinedStatus+="dcarResol,TPC.Anchor.dcarAP0,TPC.Anchor.dcarAP1,TPC.Anchor.dcarCP0,TPC.Anchor.dcarCP1;";  // Status: DCA resolution
   sCombinedStatus+="itsEffStatus,ITS.Anchor.EffoneSPDPt02,ITS.Anchor.EffoneSPDPt1,ITS.Anchor.EffoneSPDPt10,ITS.Anchor.EffTOTPt02,ITS.Anchor.EffTOTPt1,ITS.Anchor.EffTOTPt10;";
   sCombinedStatus += "mcrddiff,mcrddiff_meanTPCncl,mcrddiff_meanTPCncl;"; // Status number of clusters and findable clusters
- 
+
   // Status: ITS:TPC-ITS matching efficiency 
   TStatToolkit::MakeCombinedAlias(treeMC,sCombinedStatus,doCheck, verbose);
   ::Info("InitTPCMCValidation","Done with aliases");
 }
 
-
+///
+/// \param mcPeriod
+/// \param mcPass
+/// \param anchorPeriod
+/// \param anchorPass
+/// \param verbose
+/// \param doCheck
+/// \return
 Bool_t InitTPCMCValidation(TString mcPeriod,  TString mcPass, TString anchorPeriod,  TString anchorPass, Int_t verbose,Int_t doCheck){
-
+  cRange=std::vector<Double_t>{0.13,0.01,0.5,0.35};
+  cRange2=std::vector<Double_t>{0.13,0.01,0.5,0.3};
+  cRange5=std::vector<Double_t>{0.13,0.01,0.8,0.3};
   pinfo=new AliExternalInfo(".","",verbose);
   trendingDraw= new AliTreeTrending;
   trendingDraw->SetDefaultStyle();
@@ -166,7 +170,7 @@ Bool_t InitTPCMCValidation(TString mcPeriod,  TString mcPass, TString anchorPeri
   TTree * treeAnchorTRD0; 
   if(pinfo->GetTree("QA.TRD",anchorPeriod,anchorPass,"Logbook")!=0){
       treeAnchorTRD0=pinfo->GetTree("QA.TRD",anchorPeriod,anchorPass,"Logbook");
-      ::Info("InitTPCMCValidation","QA.TRD tree entries: %d",treeAnchorTRD0->GetEntries());
+      ::Info("InitTPCMCValidation","QA.TRD tree entries: %d",Int_t(treeAnchorTRD0->GetEntries()));
   }
   else{
       ::Error("InitTPCMCValidation","Failed to get QA.TRD tree");
@@ -176,7 +180,7 @@ Bool_t InitTPCMCValidation(TString mcPeriod,  TString mcPass, TString anchorPeri
   TTree * treeAnchorITS0;
   if(pinfo->GetTree("QA.ITS",anchorPeriod,anchorPass,"Logbook")!=0){ 
       treeAnchorITS0 = pinfo->GetTree("QA.ITS",anchorPeriod,anchorPass,"Logbook");
-      ::Info("InitTPCMCValidation","QA.ITS tree entries: %d",treeAnchorITS0->GetEntries());
+      ::Info("InitTPCMCValidation","QA.ITS tree entries: %d",Int_t(treeAnchorITS0->GetEntries()));
   }
   else{
       ::Error("InitTPCMCValidation","Failed to get QA.ITS tree");
@@ -186,6 +190,20 @@ Bool_t InitTPCMCValidation(TString mcPeriod,  TString mcPass, TString anchorPeri
   treeMC->AddFriend(treeAnchorTPC,"TPC.Anchor");
   treeMC->AddFriend(treeAnchorTRD0,"TRD.Anchor");
   treeMC->AddFriend(treeAnchorITS0,"ITS.Anchor");
+  // check the match between MC and MC anchor
+  {
+    Int_t entriesMatch=treeMC->Draw("QA.TPC.meanTPCncl-TPC.Anchor.meanTPCncl","1");
+    Int_t entriesMC=treeMC->Draw("QA.TPC.meanTPCncl","1");
+    Int_t entriesAnchor=treeMC->Draw("TPC.Anchor.meanTPCncl","1");
+    if (entriesMatch==0){
+      ::Error("InitTPCMCValidation","No run match between the MC and and anchor raw");
+      ::Error("InitTPCMCValidation","QA runs:\tMC=%d\tAnchor=%d\tMatch=%d",entriesMC, entriesAnchor, entriesMatch);
+      return kFALSE;
+    }else{
+      ::Info("InitTPCMCValidation","QA runs:\tMC=%d\tAnchor=%d\tMatch=%d",entriesMC, entriesAnchor, entriesMatch);
+    }
+  }
+  //
   makeTPCMCAlarms(treeMC,doCheck,verbose);
   TString sStatusbarVars ("ncl;dcarResol;itsEffStatus;mcrddiff;");
   TString sStatusbarNames("#(cl);dcar;itsEffStatus;mcrddiff;");
@@ -207,11 +225,11 @@ Bool_t InitTPCMCValidation(TString mcPeriod,  TString mcPass, TString anchorPeri
   else return kFALSE;
 }
 
+///
+/// \param mcrddir
 void MakeReport(const char* mcrddir){
 
-  std::vector<Double_t> cRange{0.13,0.01,0.5,0.35};
-  std::vector<Double_t> cRange2{0.13,0.01,0.5,0.3};
-  std::vector<Double_t> cRange5{0.13,0.01,0.8,0.3};
+
   TMultiGraph *graph=0,*lines=0;
   
 
@@ -305,24 +323,39 @@ void MakeReport(const char* mcrddir){
   }
 }
 
-void MakePlot(TTree * tree,const char* mcrddir, const char *fname, const char *LegendTitle, std::vector<Double_t>& legpos, const char *groupName, const char* expr, const char * cut, const char * markers, const char *colors, Bool_t drawSparse, Float_t msize, Float_t sigmaRange, Bool_t comp)
-{
+///
+/// \param tree
+/// \param mcrddir
+/// \param fname
+/// \param LegendTitle
+/// \param legpos
+/// \param groupName
+/// \param expr
+/// \param cut
+/// \param markers
+/// \param colors
+/// \param drawSparse
+/// \param msize
+/// \param sigmaRange
+/// \param comp
+void MakePlot(TTree * tree,const char* mcrddir, const char *fname, const char *LegendTitle, std::vector<Double_t>& legpos, const char *groupName, const char* expr, const char * cut, const char * markers, const char *colors, Bool_t drawSparse, Float_t msize, Float_t sigmaRange, Bool_t comp) {
   TMultiGraph *graph=0;
   
    trendingDraw->fWorkingCanvas->Clear();  
-   TLegend legend = TLegend(legpos[0],legpos[1],legpos[2],legpos[3],LegendTitle);
-   legend.SetBorderSize(0);
-   graph = TStatToolkit::MakeMultGraph(tree,groupName,expr,cut,markers,colors,drawSparse,msize,sigmaRange,&legend,comp);
+   TLegend *legend = new TLegend(legpos[0],legpos[1],legpos[2],legpos[3],LegendTitle);
+   legend->SetBorderSize(0);
+   graph = TStatToolkit::MakeMultGraph(tree,groupName,expr,cut,markers,colors,drawSparse,msize,sigmaRange,legend,comp);
    if(!graph){
        ::Error("MakePlot","No plot returned -> dummy plot!");
    } 
    else {
        TStatToolkit::DrawMultiGraph(graph,"alp");
        trendingDraw->AppendStatusPad(0.3, 0.4, 0.05);
-       legend.SetFillStyle(0);
-       legend.Draw();
+       legend->SetFillStyle(0);
+       legend->Draw();
    }
-
-   trendingDraw->fWorkingCanvas->SaveAs(TString(mcrddir)+"/"+TString(fname)); 
+   trendingDraw->fWorkingCanvas->SaveAs(TString(mcrddir)+"/"+TString(fname));
+  //if ()
+  // TODO - in case of non debug mode delete the content  - graph and legends - Sebastian
 
 }
