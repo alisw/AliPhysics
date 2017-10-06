@@ -578,17 +578,23 @@ void AliDecayerPythia8::ForceDecay()
 	fPythia8->ReadString("23:onIfAll = 11 11");
 	break;
     case kHadronicD:
-      ForceHadronicD(1,0);
+      ForceHadronicD(1,0,0);
 	break;
     case kHadronicDWithV0:
-        ForceHadronicD(1,1);
+        ForceHadronicD(1,1,0);
         break;
     case kHadronicDWithout4Bodies:
-        ForceHadronicD(0,0);
+        ForceHadronicD(0,0,0);
         break;
     case kHadronicDWithout4BodiesWithV0:
-        ForceHadronicD(0,1);
+        ForceHadronicD(0,1,0);
         break;
+    case kLcpKpi:
+      ForceHadronicD(0,0,1);  // Lc -> p K pi
+      break;
+    case kLcpK0S:
+      ForceHadronicD(0,0,2);  // Lc -> p K0S
+      break;
     case kPhiKK:
 	// Phi-> K+ K-
 	fPythia8->ReadString("333:onMode = off");
@@ -671,7 +677,7 @@ void  AliDecayerPythia8::SwitchOffHeavyFlavour()
 }
 
 
-void AliDecayerPythia8::ForceHadronicD(Int_t optUse4Bodies, Int_t optUseDtoV0)
+void AliDecayerPythia8::ForceHadronicD(Int_t optUse4Bodies, Int_t optUseDtoV0, Int_t optForceLcChannel)
 {
 //
 // Force golden D decay modes
@@ -727,6 +733,7 @@ void AliDecayerPythia8::ForceHadronicD(Int_t optUse4Bodies, Int_t optUseDtoV0)
     // D_s -> Phi pi
     fPythia8->ReadString("431:onIfMatch = 333 211");
 
+    if (optForceLcChannel == 0) { // all Lc channels
     // Lambda_c -> p K*
     fPythia8->ReadString("4122:onIfMatch = 2212 313");
     // Lambda_c -> Delta K
@@ -737,7 +744,17 @@ void AliDecayerPythia8::ForceHadronicD(Int_t optUse4Bodies, Int_t optUseDtoV0)
     fPythia8->ReadString("4122:onIfMatch = 2212 321 211");
     // Lambda_c -> Lambda pi 
     fPythia8->ReadString("4122:onIfMatch = 3122 211");
+    // Lambda_c -> p K0
+    fPythia8->ReadString("4122:onIfMatch = 2212 311");
+    }
 
+    if (optForceLcChannel == 1) { // force only Lc -> p K pi
+    fPythia8->ReadString("4122:onIfMatch = 2212 321 211"); 
+    }
+
+    if (optForceLcChannel == 2) { // force only Lc -> p K0S
+    fPythia8->ReadString("4122:onIfMatch = 2212 311");
+    }
 }
 
 //___________________________________________________________________________

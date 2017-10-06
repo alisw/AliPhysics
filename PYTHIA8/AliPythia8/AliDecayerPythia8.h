@@ -36,7 +36,7 @@ class AliDecayerPythia8 : public TVirtualMCDecayer {
   AliDecayerPythia8(const AliDecayerPythia8&);
   AliDecayerPythia8 operator=(const AliDecayerPythia8&);
   void     SwitchOffHeavyFlavour();
-  void     ForceHadronicD(Int_t optUser4Bodies = 1,Int_t optUseDtoV0 =1);
+  void     ForceHadronicD(Int_t optUser4Bodies = 1,Int_t optUseDtoV0 =1, Int_t optForceLcChannel = 0);
 
   AliTPythia8*  fPythia8;          // Pointer to pythia8
   Int_t         fDebug;            // Debug level
@@ -44,7 +44,7 @@ class AliDecayerPythia8 : public TVirtualMCDecayer {
   Decay_t       fDecay;            //  Forced decay mode
   Bool_t        fHeavyFlavour;     //! Flag for heavy flavors
   static Bool_t fgInit;            //! initialization flag 
-  ClassDef(AliDecayerPythia8, 1) // Particle Decayer using Pythia8
+  ClassDef(AliDecayerPythia8, 2) // Particle Decayer using Pythia8
 };
 #endif
 

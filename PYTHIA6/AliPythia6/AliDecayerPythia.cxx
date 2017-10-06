@@ -459,16 +459,16 @@ void AliDecayerPythia::ForceDecay()
         ForceParticleDecay(  23, 11,2); // Z -> e+ e-
 	break;
     case kHadronicD:
-        ForceHadronicD(1,0);
+        ForceHadronicD(1,0,0);
         break;
     case kHadronicDWithV0:
-        ForceHadronicD(1,1);
+        ForceHadronicD(1,1,0);
         break;
     case kHadronicDWithout4Bodies:
-        ForceHadronicD(0,0);
+        ForceHadronicD(0,0,0);
         break;
     case kHadronicDWithout4BodiesWithV0:
-      ForceHadronicD(0,1);
+      ForceHadronicD(0,1,0);
 	break;
     case kPhiKK:
 	ForceParticleDecay(333,321,2); // Phi->K+K-
@@ -556,7 +556,14 @@ void AliDecayerPythia::ForceDecay()
         break;
     case kBeautyUpgrade:
         ForceBeautyUpgrade();
-      break;
+        break;
+    case kLcpKpi:
+        ForceHadronicD(0,0,1);
+        break;
+     case kLcpK0S:
+        ForceHadronicD(0,0,2);
+        break;
+
     }
 }
 
@@ -597,7 +604,7 @@ void  AliDecayerPythia::ForceBeautyUpgrade()
    const Int_t prod2[2]={413,211};
    ForceParticleDecay(511,prod2,mult,2,1);
    // force charm hadronic decays (D mesons and Lc)
-   ForceHadronicD(0,0);
+   ForceHadronicD(0,0,0);
 }
 
 void  AliDecayerPythia::Lu1Ent(Int_t flag, Int_t idpart, 
@@ -622,7 +629,7 @@ Int_t AliDecayerPythia::CountProducts(Int_t channel, Int_t particle)
 }
 
 
-void AliDecayerPythia::ForceHadronicD(Int_t optUse4Bodies, Int_t optUseDtoV0)
+void AliDecayerPythia::ForceHadronicD(Int_t optUse4Bodies, Int_t optUseDtoV0, Int_t optForceLcChannel)
 {
 
   // Xic->Xipipi
@@ -792,6 +799,21 @@ void AliDecayerPythia::ForceHadronicD(Int_t optUse4Bodies, Int_t optUseDtoV0)
       } // decay channels
       if (norm > 0) fBraPart[kc] /= norm;
     } // hadrons
+
+    //Options for forcing Lc decays for dedicated productions
+   Int_t prodLcpKpi[3] = {2212,321,211};
+   Int_t multLcpKpi[3] = {1,1,1};
+
+   Int_t prodLcpK0S[2] = {2212,311};
+   Int_t multLcpK0S[2] = {1,1};
+    if (optForceLcChannel == 1) { //pKpi
+      ForceParticleDecay(4122,prodLcpKpi,multLcpKpi,3,1);
+    }
+    if (optForceLcChannel == 2) { //pK0S
+      ForceParticleDecay(4122,prodLcpK0S,multLcpK0S,2,1);
+    }
+      
+
 }
 
 
