@@ -932,6 +932,15 @@ void AliAnalysisTaskUpcPsi2s::RunAODtree()
   	fTrigger[12]  = trigger.Contains("CCUP12-B"); //*0UBA *0UBC 0STP
   	fTrigger[13]  = trigger.Contains("CTRUE-B"); //Unbiased trigger
 	}
+  if(fTracking == 1){ 
+  	fTrigger[0] = trigger.Contains("CCUP14-B"); 
+  	fTrigger[1] = trigger.Contains("CCUP15-B"); 
+  	fTrigger[2] = trigger.Contains("CCUP20-B"); 
+  	fTrigger[3] = trigger.Contains("CCUP21-B"); 
+  	fTrigger[4] = trigger.Contains("CCUP22-B"); 
+  	fTrigger[5] = trigger.Contains("CCUP23-B"); 
+  	fTrigger[6] = trigger.Contains("CCUP24-B");
+	} 
    if(fTracking == 8){ 
   	fTrigger[0]  = trigger.Contains("CMUP10-B");	// *0VBA *0UBA *0UBC 0MSL			
   	fTrigger[1]  = trigger.Contains("CMUP11-B");	// !0VBA & !0UBA & !0UBC & 0MUL 		
