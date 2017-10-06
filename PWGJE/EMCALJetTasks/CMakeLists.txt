@@ -169,7 +169,6 @@ set(SRCS
     UserTasks/AliAnalysisTaskEmcalJetTriggerQA.cxx
     UserTasks/AliAnalysisTaskEmcalJetv2QA.cxx
     UserTasks/AliAnalysisTaskEmcalRun2QA.cxx
-    UserTasks/AliAnalysisTaskEmcalQGTagging.cxx
     UserTasks/AliAnalysisTaskEmcalHfeTagging.cxx
     UserTasks/AliAnalysisTaskFakeJets.cxx
     UserTasks/AliAnalysisTaskEmcalMissingEnergy.cxx
@@ -219,6 +218,7 @@ if(FASTJET_FOUND)
         AliJetEmbeddingFromAODTask.cxx
 	AliJetEmbeddingFromPYTHIATask.cxx
         AliJetShape.cxx
+	UserTasks/AliAnalysisTaskEmcalQGTagging.cxx
         UserTasks/AliAnalysisTaskEmcalJetShapesMC.cxx
         UserTasks/AliAnalysisTaskFullpAJets.cxx
         UserTasks/AliAnalysisTaskFullppJet.cxx
