@@ -1045,18 +1045,28 @@ Bool_t AliStack::IsPhysicalPrimary(Int_t index, Bool_t useInEmbedding)
     //
     TParticle* p = Particle(index,useInEmbedding);
     Int_t ist = p->GetStatusCode();
-    
+    Int_t pdg = TMath::Abs(p->GetPdgCode());    
     //
     // Initial state particle
-    if (ist > 1) return kFALSE;
-    
-    Int_t pdg = TMath::Abs(p->GetPdgCode());
+    // Solution for K0L decayed by Pythia6
+    // ->
+    if ((ist > 1) && (pdg!=130) && index < GetNprimary()) return kFALSE;
+    if ((ist > 1) && index >= GetNprimary()) return kFALSE;
+    // <-
+
     
     if (!IsStable(pdg)) return kFALSE;
-    
     if (index < GetNprimary()) {
 //
 // Particle produced by generator
+      // Solution for K0L decayed by Pythia6
+      // ->
+      Int_t ipm =  p->GetFirstMother();
+      if (ipm > -1) {
+	TParticle* ppm  = Particle(ipm, useInEmbedding);
+	if (TMath::Abs(ppm->GetPdgCode()) == 130) return kFALSE;
+      }
+      // <-
 	return kTRUE;
     } else {
 //
