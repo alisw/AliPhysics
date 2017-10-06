@@ -334,14 +334,14 @@ void AliAnalysisTaskCheckAODTracks::UserCreateOutputObjects() {
   fOutput->Add(fHistFilterBits);
 
   fHistITSnClusTPCsel=new TH1F("hITSnClusTPCsel","N ITS clusters (TPC+ITS)",7,-0.5,6.5);
-  fHistITSnClusITSsa=new TH1F("hITSnClusITSsa","N ITS clusters (TPC+ITS)",7,-0.5,6.5);
-  fHistITSnClusITSPureSA=new TH1F("hITSnClusITSPureSA","N ITS clusters (TPC+ITS)",7,-0.5,6.5);
+  fHistITSnClusITSsa=new TH1F("hITSnClusITSsa","N ITS clusters (ITSsa)",7,-0.5,6.5);
+  fHistITSnClusITSPureSA=new TH1F("hITSnClusITSPureSA","N ITS clusters (ITSpuresa)",7,-0.5,6.5);
   fOutput->Add(fHistITSnClusTPCsel);
   fOutput->Add(fHistITSnClusITSsa);
   fOutput->Add(fHistITSnClusITSPureSA);
   fHistITSCluInLayTPCsel = new TH1F("hITSCluInLayTPCsel", "N tracks with point on Layer (TPC+ITS); Layer; N tracks",6, -0.5, 5.5);
   fHistITSCluInLayITSsa  = new TH1F("hITSCluInLayITSsa", "N tracks with point on Layer (ITSsa); Layer; N tracks",6, -0.5, 5.5);
-  fHistITSCluInLayITSPureSA  = new TH1F("hITSCluInLayITSPureSA", "N tracks with point on Layer (ITSsa); Layer; N tracks",6, -0.5, 5.5);
+  fHistITSCluInLayITSPureSA  = new TH1F("hITSCluInLayITSPureSA", "N tracks with point on Layer (ITSpuresa); Layer; N tracks",6, -0.5, 5.5);
   fOutput->Add(fHistITSCluInLayTPCsel);
   fOutput->Add(fHistITSCluInLayITSsa);
   fOutput->Add(fHistITSCluInLayITSPureSA);
