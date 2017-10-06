@@ -1376,7 +1376,11 @@ TMultiGraph * TStatToolkit::MakeMultGraph(TTree * tree, const char *groupName, c
       TString legendName="";
       TNamed*named = TStatToolkit::GetMetadata(tree,TString::Format("%s.Legend",expName).Data(),&prefix);
       if (named) {
-        legendName+=named->GetName();
+        if (prefix.Length()>0){
+          legendName+=prefix.Data();
+          legendName+=" ";
+        }
+        legendName+=named->GetTitle();
       }else{
         legendName=expName;
       }
@@ -1384,7 +1388,7 @@ TMultiGraph * TStatToolkit::MakeMultGraph(TTree * tree, const char *groupName, c
         legendName+=" ";
         named = TStatToolkit::GetMetadata(tree,TString::Format("%s.Legend",exprCutArray->At(iCut+1)->GetName()).Data(),&prefix);
         if (named) {
-          legendName+=named->GetName();
+          legendName+=named->GetTitle();
         }else{
           legendName=exprCutArray->At(iCut+1)->GetName();
         }
