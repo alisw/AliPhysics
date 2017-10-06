@@ -1,7 +1,8 @@
 AliAnalysisTask* AddTaskHFEMultiplicity(TString suffixName = "",
+					Bool_t readMC	=	kFALSE,
 				        Bool_t SwitchPi0EtaWeightCalc = kTRUE,
-					Bool_t PhysSelINT7 = kTRUE,
-					Bool_t useTender   =  kTRUE,
+					Bool_t PhysSelINT7 =  kTRUE,
+					Bool_t useTender   =  kTRUE, 
 					Bool_t ClsTypeEMC  =  kTRUE,
 					Bool_t ClsTypeDCAL =  kTRUE,
 					TString estimatorFilename="",
@@ -32,6 +33,7 @@ AliAnalysisTask* AddTaskHFEMultiplicity(TString suffixName = "",
   if(PhysSelINT7){
     AliAnalysisTaskHFEMultiplicity* HFEtaskINT7 = new AliAnalysisTaskHFEMultiplicity("");
     mgr->AddTask(HFEtaskINT7); //HFEtask is my task
+    HFEtaskINT7->SetReadMC(readMC);
     HFEtaskINT7->SelectCollisionCandidates(AliVEvent::kINT7);
     HFEtaskINT7->SetTenderSwitch(useTender);
     HFEtaskINT7->SwitchPi0EtaWeightCalc(SwitchPi0EtaWeightCalc);
@@ -82,6 +84,7 @@ AliAnalysisTask* AddTaskHFEMultiplicity(TString suffixName = "",
             
      AliAnalysisTaskHFEMultiplicity* HFEtaskEG1 = new AliAnalysisTaskHFEMultiplicity("");
      mgr->AddTask(HFEtaskEG1);
+     HFEtaskEG1->SetReadMC(readMC);
      HFEtaskEG1->SelectCollisionCandidates(AliVEvent::kEMCEGA);
      HFEtaskEG1->SetEMCalTriggerEG1(kTRUE);
      HFEtaskEG1->SetTenderSwitch(useTender);
@@ -126,6 +129,7 @@ AliAnalysisTask* AddTaskHFEMultiplicity(TString suffixName = "",
             
      AliAnalysisTaskHFEMultiplicity* HFEtaskEG2 = new AliAnalysisTaskHFEMultiplicity("");
      mgr->AddTask(HFEtaskEG2);
+     HFEtaskEG2->SetReadMC(readMC);
      HFEtaskEG2->SelectCollisionCandidates(AliVEvent::kEMCEGA);
      HFEtaskEG2->SetEMCalTriggerEG2(kTRUE);
      HFEtaskEG2->SetTenderSwitch(useTender);
@@ -173,6 +177,7 @@ AliAnalysisTask* AddTaskHFEMultiplicity(TString suffixName = "",
      // DCal EGA DG1
      AliAnalysisTaskHFEMultiplicity* HFEtaskDG1 = new AliAnalysisTaskHFEMultiplicity("");
      mgr->AddTask(HFEtaskDG1);
+     HFEtaskDG1->SetReadMC(readMC);
      HFEtaskDG1->SelectCollisionCandidates(AliVEvent::kEMCEGA);
      HFEtaskDG1->SetEMCalTriggerDG1(kTRUE);
      HFEtaskDG1->SetTenderSwitch(useTender);
@@ -217,6 +222,7 @@ AliAnalysisTask* AddTaskHFEMultiplicity(TString suffixName = "",
 
      AliAnalysisTaskHFEMultiplicity* HFEtaskDG2 = new AliAnalysisTaskHFEMultiplicity("");
      mgr->AddTask(HFEtaskDG2);
+     HFEtaskDG2->SetReadMC(readMC);
      HFEtaskDG2->SelectCollisionCandidates(AliVEvent::kEMCEGA);
      HFEtaskDG2->SetEMCalTriggerDG2(kTRUE);
      HFEtaskDG2->SetTenderSwitch(useTender);
