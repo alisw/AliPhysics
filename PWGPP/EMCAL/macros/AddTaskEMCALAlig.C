@@ -7,7 +7,7 @@
 /// \author Henrique Zanoli <Henrique.Zanoli@cern.ch>, University of Sao Paulo and Utrecht University
 ///
 
-AliAnalysisTaskEMCALAlig* AddTaskEmcalAlig(
+AliAnalysisTaskEMCALAlig* AddTaskEMCALAlig(
                                            const char *ntracks            = "usedefault",
                                            const char *nclusters          = "usedefault",
                                            const char* ncells             = "usedefault",
