@@ -29,6 +29,8 @@ if(HLT_OPENCL)
     add_subdirectory(tracking-ca/cagpu/opencl)
 endif()
 
+add_subdirectory(tracking-standalone/cmake_AliRoot)
+
 # Module
 set(MODULE AliHLTTPC)
 
@@ -154,7 +156,7 @@ set(SRCS
     transform/AliHLTTPCSpline2D3D.cxx
     transform/AliHLTTPCSpline2D3DObject.cxx
     transform/AliHLTTPCFastTransformObject.cxx
-	test/AliHLTTPCRawClusterDumpComponent.cxx
+    test/AliHLTTPCRawClusterDumpComponent.cxx
    )
 
 # Headers from sources
