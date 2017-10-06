@@ -15,6 +15,8 @@
 #pragma link C++ class AliAnalysisTaskNOmegaLX+;
 /// * Ps
 #pragma link C++ class AliAnalysisTaskPsEfficiency+;
+/// * dStar
+#pragma link C++ class AliAnalysisTaskdStar+;
 
 /// Nuclei
 /// * DeltaMasses
@@ -79,4 +81,3 @@
 #pragma link C++ class std::vector<AliAnalysisCODEX::Track>+;
 #pragma link C++ class AliAnalysisCODEXtask+;
 #endif
-
