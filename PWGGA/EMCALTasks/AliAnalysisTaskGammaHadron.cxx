@@ -494,12 +494,12 @@ void AliAnalysisTaskGammaHadron::UserCreateOutputObjects()
     Double_t *binEdgesThnQA[11] = {0};
 
     titleThnQA[dimThnQA] = "E_{#gamma}";
-    nbinsThnQA[dimThnQA] = 150;
-    Double_t EgArray[150+1];
+    nbinsThnQA[dimThnQA] = 75;
+    Double_t EgArray[75+1];
     binEdgesThnQA[dimThnQA] = EgArray;
-    GenerateFixedBinArray(150,0,30,EgArray);
+    GenerateFixedBinArray(75,0,25,EgArray);
     minThnQA[dimThnQA] = 0;
-    maxThnQA[dimThnQA] = 30;
+    maxThnQA[dimThnQA] = 25;
     dimThnQA++;
 
     //..Create the fhAmpId TH2D with increasing binwidth
@@ -507,17 +507,17 @@ void AliAnalysisTaskGammaHadron::UserCreateOutputObjects()
     //Double_t binWidth=(ptfinemax-ptfinemin)/nfineptbins;
     TCustomBinning xBinning;
     xBinning.SetMinimum(0);
-    xBinning.AddStep(0.5,0.005);   //..first entries of the array are the set ranges and bins
-    xBinning.AddStep(1,0.02);      //..expand the previously defined range by 2 but increase the bin width
-    xBinning.AddStep(4,0.04);      //..expand the previously defined range by 4 but increase the bin width
+    xBinning.AddStep(0.5,0.005);   //100..first entries of the array are the set ranges and bins
+    xBinning.AddStep(1,0.025);     //25..expand the previously defined range by 2 but increase the bin width
+    xBinning.AddStep(4,0.05);      //50..expand the previously defined range by 4 but increase the bin width
 
     TArrayD xbinsArray;
     xBinning.CreateBinEdges(xbinsArray);
 
     titleThnQA[dimThnQA] = "#lambda_{0}";
-    nbinsThnQA[dimThnQA] = 200;
-    Double_t ShapeArray[200+1];
-	for(Int_t i=0;i<201;i++)
+    nbinsThnQA[dimThnQA] = 175;
+    Double_t ShapeArray[175+1];
+	for(Int_t i=0;i<176;i++)
     {
     		ShapeArray[i]=xbinsArray.At(i);
     }
@@ -547,24 +547,35 @@ void AliAnalysisTaskGammaHadron::UserCreateOutputObjects()
     	dimThnQA++;
     }
 
-    Double_t etaArrayDistMatched[50+1];
-    Double_t phiArrayDistMatched[50+1];
+    TCustomBinning xBinning2;
+    xBinning2.SetMinimum(0);
+    xBinning2.AddStep(0.04,0.002);     //..first entries of the array are the set ranges and bins
+    xBinning2.AddStep(0.1,0.004);      //..expand the previously defined range but increase the bin width
+    Double_t etaArrayDistMatched[35+1];
+    Double_t phiArrayDistMatched[35+1];
+    TArrayD xbinsArray2;
+    xBinning2.CreateBinEdges(xbinsArray2);
+
+    for(Int_t i=0;i<36;i++)
+    {
+       	etaArrayDistMatched[i]=xbinsArray2.At(i);
+       	phiArrayDistMatched[i]=xbinsArray2.At(i);
+    }
+
     if(fPlotQA==2)
     {
     	titleThnQA[dimThnQA] = "#Delta #eta^{match. track-cluster}";
-    	nbinsThnQA[dimThnQA] = 50;
+    	nbinsThnQA[dimThnQA] = 35;
     	binEdgesThnQA[dimThnQA] = etaArrayDistMatched;
-    	GenerateFixedBinArray(50,0, 0.1,etaArrayDistMatched);
     	minThnQA[dimThnQA] = 0;
-    	maxThnQA[dimThnQA] = 50;
+    	maxThnQA[dimThnQA] = 35;
     	dimThnQA++;
 
     	titleThnQA[dimThnQA] = "#Delta #varphi^{match. track-cluster}";
-    	nbinsThnQA[dimThnQA] = 50;
+    	nbinsThnQA[dimThnQA] = 35;
     	binEdgesThnQA[dimThnQA] = phiArrayDistMatched;
-    	GenerateFixedBinArray(50,0, 0.1,phiArrayDistMatched);
     	minThnQA[dimThnQA] = 0;
-    	maxThnQA[dimThnQA] = 50;
+    	maxThnQA[dimThnQA] = 35;
     	dimThnQA++;
     }
 
