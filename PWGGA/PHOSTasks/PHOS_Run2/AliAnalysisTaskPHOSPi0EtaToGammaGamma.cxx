@@ -676,10 +676,10 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::UserCreateOutputObjects()
 
       for(Int_t ia=0;ia<Na;ia++){
         for(Int_t ib=0;ib<Nb;ib++){
-          Double_t a = -0.07 + 0.01*ia;
+          Double_t a = -0.09 + 0.01*ia;
           Double_t b =  0.4  + 0.1 *ib;
 
-          fNonLin[ia][ib] = new TF1(Form("fNonLin_a%d_b%d",ia,ib),"1.00*(1. + [0] / (1. + TMath::Power(x/[1],2)))",0,100);
+          fNonLin[ia][ib] = new TF1(Form("fNonLin_a%d_b%d",ia,ib),"1.01*(1. + [0] / (1. + TMath::Power(x/[1],2)))",0,100);
           fNonLin[ia][ib]->SetParNames("a","b (GeV)");
           fNonLin[ia][ib]->FixParameter(0,a);
           fNonLin[ia][ib]->FixParameter(1,b);
