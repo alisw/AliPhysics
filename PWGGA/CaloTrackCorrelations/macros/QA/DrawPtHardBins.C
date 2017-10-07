@@ -744,12 +744,17 @@ void DrawPtHardBins(
     TH1F* hPhi      = (TH1F*)hPhiSPD->Clone(Form("%s_hTrackPhi",scaleCase[k].Data()));
     hPhi->Add(hPhiNoSPD);
     
+    Float_t normFactor = 1./hPhi->Integral();
+    hPhi     ->Scale(normFactor);
+    hPhiSPD  ->Scale(normFactor);
+    hPhiNoSPD->Scale(normFactor);
+    
     hPhi     ->SetTitle(Form("Hybrid track type #varphi, 0.2<#it{p}_{T}<2 GeV/#it{c}, %s",scaleTitle[k].Data()));
     hPhi     ->SetLineColor(1);
     hPhiSPD  ->SetLineColor(2);
     hPhiNoSPD->SetLineColor(4);
     
-    hPhi     ->SetMinimum(1);
+    hPhi     ->SetMinimum(0);
     hPhi     ->SetMaximum(hPhi->GetMaximum()*1.3);
     hPhi     ->SetTitleOffset(1.5,"Y");
     hPhi     ->SetYTitle("Entries");
@@ -790,7 +795,7 @@ void DrawPtHardBins(
 
     hEtaPhiSum[k]->Draw("colz");
     
-    cEtaPhi->Print(Form("EtaPhi_%s.eps",scaleCase[k].Data()));
+    cEtaPhi->Print(Form("EtaPhi_Cluster_%s.eps",scaleCase[k].Data()));
     
     TCanvas * cCellEtaPhi = new TCanvas(Form("cCellEtaPhi%d",k),Form("cell Eta/phi, %s",scaleCase[k].Data()), 200,200);
     
@@ -801,7 +806,7 @@ void DrawPtHardBins(
     
     hCellEtaPhiSum[k]->Draw("colz");
     
-    cCellEtaPhi->Print(Form("EtaPhi_%s.eps",scaleCase[k].Data()));
+    cCellEtaPhi->Print(Form("EtaPhi_Cell_%s.eps",scaleCase[k].Data()));
     
     TCanvas * cTrackEtaPhi = new TCanvas(Form("cTrackEtaPhi%d",k),Form("track Eta/phi, %s",scaleCase[k].Data()), 200,200);
     
@@ -812,7 +817,7 @@ void DrawPtHardBins(
     
     hTrackEtaPhiSum[k]->Draw("colz");
     
-    cTrackEtaPhi->Print(Form("TrackEtaPhi_%s.eps",scaleCase[k].Data()));
+    cTrackEtaPhi->Print(Form("EtaPhi_Track_%s.eps",scaleCase[k].Data()));
 
     //////////////////////
     // EMCal Invariant mass
