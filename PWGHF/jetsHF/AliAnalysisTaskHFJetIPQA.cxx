@@ -209,82 +209,82 @@ void AliAnalysisTaskHFJetIPQA::SmearTrack(AliAODTrack *track) {
     if(!fIsPythia) return;
 
     // Get reconstructed track parameters
-  AliExternalTrackParam et; et.CopyFromVTrack(track);
-  Double_t *param=const_cast<Double_t*>(et.GetParameter());
-  Double_t *covar=const_cast<Double_t*>(et.GetCovariance());
+    AliExternalTrackParam et; et.CopyFromVTrack(track);
+    Double_t *param=const_cast<Double_t*>(et.GetParameter());
+    Double_t *covar=const_cast<Double_t*>(et.GetCovariance());
 
-  // Get MC info
-  Int_t imc=track->GetLabel();
-  if (imc<=0) return;
-  const AliAODMCParticle *mc=static_cast<AliAODMCParticle*>(fMCArray->At(imc));
-  Double_t mcx[3];
-  Double_t mcp[3];
-  Double_t mccv[36]={0.};
-  Short_t  mcc;
-  mc->XvYvZv(mcx);
-  mc->PxPyPz(mcp);
-  mcc=mc->Charge();
-  AliExternalTrackParam mct(mcx,mcp,mccv,mcc);
+    // Get MC info
+    Int_t imc=track->GetLabel();
+    if (imc<=0) return;
+    const AliAODMCParticle *mc=static_cast<AliAODMCParticle*>(fMCArray->At(imc));
+    Double_t mcx[3];
+    Double_t mcp[3];
+    Double_t mccv[36]={0.};
+    Short_t  mcc;
+    mc->XvYvZv(mcx);
+    mc->PxPyPz(mcp);
+    mcc=mc->Charge();
+    AliExternalTrackParam mct(mcx,mcp,mccv,mcc);
 
-  const Double_t *parammc=mct.GetParameter();
-//TODO:  const Double_t *covermc=mct.GetCovariance();
-  AliVertex vtx(mcx,1.,1);
+    const Double_t *parammc=mct.GetParameter();
+    //TODO:  const Double_t *covermc=mct.GetCovariance();
+    AliVertex vtx(mcx,1.,1);
 
-  // Correct reference points and frames according to MC
-  // TODO: B-Field correct?
-  // TODO: failing propagation....
-  et.PropagateToDCA(&vtx,track->GetBz(),10.);
-  et.Rotate(mct.GetAlpha());
+    // Correct reference points and frames according to MC
+    // TODO: B-Field correct?
+    // TODO: failing propagation....
+    et.PropagateToDCA(&vtx,track->GetBz(),10.);
+    et.Rotate(mct.GetAlpha());
 
-  // Select appropriate smearing functions
-  Double_t sd0rpn=fParam_Smear_Sigma;
-  Double_t sd0mrpn=fParam_Smear_Mean;//mu m
-  Double_t sd0zn =1.;
-  Double_t spt1n =1.;
-  Double_t sd0rpo=1;
-  Double_t sd0mrpo=0;
-  Double_t sd0zo =1.;
-  Double_t spt1o =1.;
+    // Select appropriate smearing functions
+    Double_t sd0rpn=fParam_Smear_Sigma;
+    Double_t sd0mrpn=fParam_Smear_Mean;//mu m
+    Double_t sd0zn =1.;
+    Double_t spt1n =1.;
+    Double_t sd0rpo=1;
+    Double_t sd0mrpo=0;
+    Double_t sd0zo =1.;
+    Double_t spt1o =1.;
 
-//FillPArameter heere
-
-
-
-  // Use the same units (i.e. cm and GeV/c)! TODO: pt!
-  sd0rpo*=1.e-4;
-  sd0zo *=1.e-4;
-  sd0rpn*=1.e-4;
-  sd0zn *=1.e-4;
-  sd0mrpo*=1.e-4;
-  sd0mrpn*=1.e-4;
-
-  // Apply the smearing
-  Double_t d0zo  =param  [1];
-  Double_t d0zmc =parammc[1];
-  Double_t d0rpo =param  [0];
-  Double_t d0rpmc=parammc[0];
-  Double_t pt1o  =param  [4];
-  Double_t pt1mc =parammc[4];
+    //FillPArameter heere
 
 
 
-  Double_t dd0zo =d0zo-d0zmc;
-  Double_t dd0zn =dd0zo *(sd0zo >0. ? (sd0zn /sd0zo ) : 1.);
-  Double_t d0zn  =d0zmc+dd0zn;
-  Double_t dd0rpo=d0rpo-d0rpmc;
-  Double_t dd0rpn=dd0rpo*(sd0rpo>0. ? (sd0rpn/sd0rpo) : 1.);
-  Double_t dd0mrpn=TMath::Abs(sd0mrpn)-TMath::Abs(sd0mrpo);
-  Double_t d0rpn =d0rpmc+dd0rpn-dd0mrpn;
-  Double_t dpt1o =pt1o-pt1mc;
-  Double_t dpt1n =dpt1o *(spt1o >0. ? (spt1n /spt1o ) : 1.);
-  Double_t pt1n  =pt1mc+dpt1n;
-  param[0]=d0rpn;
-  param[1]=d0zn ;
-  param[4]=pt1n ;
+    // Use the same units (i.e. cm and GeV/c)! TODO: pt!
+    sd0rpo*=1.e-4;
+    sd0zo *=1.e-4;
+    sd0rpn*=1.e-4;
+    sd0zn *=1.e-4;
+    sd0mrpo*=1.e-4;
+    sd0mrpn*=1.e-4;
+
+    // Apply the smearing
+    Double_t d0zo  =param  [1];
+    Double_t d0zmc =parammc[1];
+    Double_t d0rpo =param  [0];
+    Double_t d0rpmc=parammc[0];
+    Double_t pt1o  =param  [4];
+    Double_t pt1mc =parammc[4];
 
 
-  //Disable since we do not correctly accoutn for them --- thas why we smear
-  /*
+
+    Double_t dd0zo =d0zo-d0zmc;
+    Double_t dd0zn =dd0zo *(sd0zo >0. ? (sd0zn /sd0zo ) : 1.);
+    Double_t d0zn  =d0zmc+dd0zn;
+    Double_t dd0rpo=d0rpo-d0rpmc;
+    Double_t dd0rpn=dd0rpo*(sd0rpo>0. ? (sd0rpn/sd0rpo) : 1.);
+    Double_t dd0mrpn=TMath::Abs(sd0mrpn)-TMath::Abs(sd0mrpo);
+    Double_t d0rpn =d0rpmc+dd0rpn-dd0mrpn;
+    Double_t dpt1o =pt1o-pt1mc;
+    Double_t dpt1n =dpt1o *(spt1o >0. ? (spt1n /spt1o ) : 1.);
+    Double_t pt1n  =pt1mc+dpt1n;
+    param[0]=d0rpn;
+    param[1]=d0zn ;
+    param[4]=pt1n ;
+
+
+    //Disable since we do not correctly accoutn for them --- thas why we smear
+    /*
    //cov matrix update
   if(sd0rpo>0.)            covar[0]*=(sd0rpn/sd0rpo)*(sd0rpn/sd0rpo);//yy
   if(sd0zo>0. && sd0rpo>0.)covar[1]*=(sd0rpn/sd0rpo)*(sd0zn/sd0zo);//yz
@@ -296,23 +296,23 @@ void AliAnalysisTaskHFJetIPQA::SmearTrack(AliAODTrack *track) {
   if(sd0rpo>0.)            covar[10]*=(sd0rpn/sd0rpo);//ypt
   if(sd0zo>0.)             covar[11]*=(sd0zn/sd0zo);//ypt
 */
-  // Copy the smeared parameters to the AOD track
-  Double_t x[3];
-  Double_t p[3];
-  et.GetXYZ(x);
-  et.GetPxPyPz(p);
-  Double_t cv[21];
-  et.GetCovarianceXYZPxPyPz(cv);
-  track->SetPosition(x,kFALSE);
-  track->SetP(p,kTRUE);
-  track->SetCovMatrix(cv);
+    // Copy the smeared parameters to the AOD track
+    Double_t x[3];
+    Double_t p[3];
+    et.GetXYZ(x);
+    et.GetPxPyPz(p);
+    Double_t cv[21];
+    et.GetCovarianceXYZPxPyPz(cv);
+    track->SetPosition(x,kFALSE);
+    track->SetP(p,kTRUE);
+    track->SetCovMatrix(cv);
 
 
-  // Mark the track as "improved" with a trick (this is done with a trick using layer 7 (ie the 8th))
-  UChar_t itsClusterMap = track->GetITSClusterMap();
-  SETBIT(itsClusterMap,7);
-  track->SetITSClusterMap(itsClusterMap);
-  //
+    // Mark the track as "improved" with a trick (this is done with a trick using layer 7 (ie the 8th))
+    UChar_t itsClusterMap = track->GetITSClusterMap();
+    SETBIT(itsClusterMap,7);
+    track->SetITSClusterMap(itsClusterMap);
+    //
 }
 
 
@@ -422,8 +422,8 @@ Bool_t AliAnalysisTaskHFJetIPQA::Run(){
     if(TMath::Abs(fEventVertex->GetZ())>=fAnalysisCuts[bAnalysisCut_MaxVtxZ]) {
             return kFALSE;
         }
-IncHist("fh1dEventsAcceptedInRun",1);
-/*
+    IncHist("fh1dEventsAcceptedInRun",1);
+    /*
 Printf("fProductionNumberPtHard %i",fProductionNumberPtHard);
 Printf("Smearing %e %e %i",fParam_Smear_Sigma,fParam_Smear_Mean,fRunSmearing? 1: 0 );
 */
@@ -615,9 +615,9 @@ Printf("Smearing %e %e %i",fParam_Smear_Sigma,fParam_Smear_Mean,fRunSmearing? 1:
                     IncHist("fh1dTracksAccepeted",3);
                     continue;
                 }
-             if(fRunSmearing)SmearTrack((AliAODTrack*)trackV);
+            if(fRunSmearing)SmearTrack((AliAODTrack*)trackV);
 
-             IncHist("fh1dTracksAccepeted",2);
+            IncHist("fh1dTracksAccepeted",2);
             FillHist("fh2dAcceptedTracksEtaPhi",trackV->Eta(),trackV->Phi(), this->fXsectionWeightingFactor );
             TrackWeight =1;dca[0]=-9999;dca[1]=-9999;cov[0]=-9999;cov[1]=-9999;cov[2]=-9999;
             HasImpactParameter =kFALSE;
@@ -707,13 +707,13 @@ Printf("Smearing %e %e %i",fParam_Smear_Sigma,fParam_Smear_Mean,fRunSmearing? 1:
             fJetCutsHF->SetMinPtJet(-1);
             fJetCutsHF->SetMaxPtJet(1000);
 
-           // Printf("Jet acceptance");
+            // Printf("Jet acceptance");
 
             bool manual = true;
             if(fabs(jetrec->Eta()) >0.5) manual = false;
 
 
-         //   Printf("Jet acceptance: m %i hfjcuts %i   weight %e",manual ? 1:0, fJetCutsHF->IsJetSelected(jetrec) ?1:0,this->fXsectionWeightingFactor );
+            //   Printf("Jet acceptance: m %i hfjcuts %i   weight %e",manual ? 1:0, fJetCutsHF->IsJetSelected(jetrec) ?1:0,this->fXsectionWeightingFactor );
 
 
 
@@ -1012,11 +1012,11 @@ Printf("Smearing %e %e %i",fParam_Smear_Sigma,fParam_Smear_Mean,fRunSmearing? 1:
             if((int)sImpParXY.size()>1) hasIPs[1]=kTRUE;
             if((int)sImpParXY.size()>2) hasIPs[2]=kTRUE;
 
-           Double_t ipval [3] = {-9999};
-           Double_t ipvalwgt [3] = {-9999};
-           if(hasIPs[0])ipval[0] =sImpParXY.at(0).first;
-           if(hasIPs[1])ipval[1] =sImpParXY.at(1).first;
-           if(hasIPs[2])ipval[2] =sImpParXY.at(2).first;
+            Double_t ipval [3] = {-9999};
+            Double_t ipvalwgt [3] = {-9999};
+            if(hasIPs[0])ipval[0] =sImpParXY.at(0).first;
+            if(hasIPs[1])ipval[1] =sImpParXY.at(1).first;
+            if(hasIPs[2])ipval[2] =sImpParXY.at(2).first;
 
 
 
@@ -1028,7 +1028,7 @@ Printf("Smearing %e %e %i",fParam_Smear_Sigma,fParam_Smear_Mean,fRunSmearing? 1:
 
 
             for (Int_t ot = 0 ; ot <3 ;++ot){
-                if ((int)sImpParXY.size()>ot){
+                    if ((int)sImpParXY.size()>ot){
 
                             if(ot==0) {
                                     if(jetflavour >0){
@@ -1246,7 +1246,7 @@ Bool_t AliAnalysisTaskHFJetIPQA::SetResFunctionPID(const char * filename){
     fUsePIDJetProb =kTRUE;
     return kTRUE;
 
-    }
+}
 /*
 
 
@@ -1308,62 +1308,67 @@ Bool_t AliAnalysisTaskHFJetIPQA::SetResFunctionPID(const char * filename){
 */
 
 void AliAnalysisTaskHFJetIPQA::FillCorrelations(bool bn[3],double v[3], double jetpt ){
-//Fill all possible same jet distributions
-if (bn[0] && bn[1]) {
-    FillHist("fh2dInclusiveCorrelationN1N2",v[0],v[1]);
-    if(jetpt>10 && jetpt <20)    FillHist("fh2dGreater10_20GeVCorrelationN1N2",v[0],v[1]);
-    if(jetpt>20 && jetpt <30)    FillHist("fh2dGreater20_30GeVCorrelationN1N2",v[0],v[1]);
-    if(jetpt>30 && jetpt <100)    FillHist("fh2dGreater30_100GeVCorrelationN1N2",v[0],v[1]);
+    //Fill all possible same jet distributions
+    if (bn[0] && bn[1]) {
+            FillHist("fh2dInclusiveCorrelationN1N2",v[0],v[1]);
+            if(jetpt>10 && jetpt <20)    FillHist("fh2dGreater10_20GeVCorrelationN1N2",v[0],v[1]);
+            if(jetpt>20 && jetpt <30)    FillHist("fh2dGreater20_30GeVCorrelationN1N2",v[0],v[1]);
+            if(jetpt>30 && jetpt <100)    FillHist("fh2dGreater30_100GeVCorrelationN1N2",v[0],v[1]);
 
 
-    }
-if (bn[0] && bn[2]) {
-        FillHist("fh2dInclusiveCorrelationN1N3",v[1],v[2]);
-        if(jetpt>10 && jetpt <20)    FillHist("fh2dGreater10_20GeVCorrelationN1N3",v[0],v[2]);
-        if(jetpt>20 && jetpt <30)    FillHist("fh2dGreater20_30GeVCorrelationN1N3",v[0],v[2]);
-        if(jetpt>30 && jetpt <100)    FillHist("fh2dGreater30_100GeVCorrelationN1N3",v[0],v[2]);
-        FillHist("fh2dInclusiveCorrelationN2N3",v[0],v[2]);
-        if(jetpt>10 && jetpt <20)    FillHist("fh2dGreater10_20GeVCorrelationN2N3",v[1],v[2]);
-        if(jetpt>20 && jetpt <30)    FillHist("fh2dGreater20_30GeVCorrelationN2N3",v[1],v[2]);
-        if(jetpt>30 && jetpt <100)    FillHist("fh2dGreater30_100GeVCorrelationN2N3",v[1],v[2]);
-    }
+        }
+    if (bn[0] && bn[2]) {
+            FillHist("fh2dInclusiveCorrelationN1N3",v[1],v[2]);
+            if(jetpt>10 && jetpt <20)    FillHist("fh2dGreater10_20GeVCorrelationN1N3",v[0],v[2]);
+            if(jetpt>20 && jetpt <30)    FillHist("fh2dGreater20_30GeVCorrelationN1N3",v[0],v[2]);
+            if(jetpt>30 && jetpt <100)    FillHist("fh2dGreater30_100GeVCorrelationN1N3",v[0],v[2]);
+            FillHist("fh2dInclusiveCorrelationN2N3",v[0],v[2]);
+            if(jetpt>10 && jetpt <20)    FillHist("fh2dGreater10_20GeVCorrelationN2N3",v[1],v[2]);
+            if(jetpt>20 && jetpt <30)    FillHist("fh2dGreater20_30GeVCorrelationN2N3",v[1],v[2]);
+            if(jetpt>30 && jetpt <100)    FillHist("fh2dGreater30_100GeVCorrelationN2N3",v[1],v[2]);
+        }
 
 
-//Fill if possible mix distributions
-if(bn[0]){
+    //Fill if possible mix distributions
+    bool n3wasReady = false;
+    double storedn3=-999;
+    if(bn[0]){
 
-        if(fIsMixSignalReady_n2) {
-                double n2 =0;
-                if(GetMixDCA(2,n2)) {
-                        FillHist("fh2dInclusiveCorrelationN1N2mix",v[0],n2);
-                        if(jetpt>10 && jetpt <20)    FillHist("fh2dGreater10_20GeVCorrelationN1N2mix",v[0],n2);
-                        if(jetpt>20 && jetpt <30)    FillHist("fh2dGreater20_30GeVCorrelationN1N2mix",v[0],n2);
-                        if(jetpt>30 && jetpt <100)    FillHist("fh2dGreater30_100GeVCorrelationN1N2mix",v[0],n2);
-                    }
- }
+            if(fIsMixSignalReady_n2) {
+                    double n2 =0;
+                    if(GetMixDCA(2,n2)) {
+                            FillHist("fh2dInclusiveCorrelationN1N2mix",v[0],n2);
+                            if(jetpt>10 && jetpt <20)    FillHist("fh2dGreater10_20GeVCorrelationN1N2mix",v[0],n2);
+                            if(jetpt>20 && jetpt <30)    FillHist("fh2dGreater20_30GeVCorrelationN1N2mix",v[0],n2);
+                            if(jetpt>30 && jetpt <100)    FillHist("fh2dGreater30_100GeVCorrelationN1N2mix",v[0],n2);
+                        }
+                }
 
 
-        if(fIsMixSignalReady_n3) {
-                double n3 =0;
-                if(GetMixDCA(3,n3)) {
-                        FillHist("fh2dInclusiveCorrelationN1N3mix",v[0],n3);
-                        if(jetpt>10 && jetpt <20)    FillHist("fh2dGreater10_20GeVCorrelationN1N3mix",v[0],n3);
-                        if(jetpt>20 && jetpt <30)    FillHist("fh2dGreater20_30GeVCorrelationN1N3mix",v[0],n3);
-                        if(jetpt>30 && jetpt <100)    FillHist("fh2dGreater30_100GeVCorrelationN1N3mix",v[0],n3);
-                    }
- }
- }
+            if(fIsMixSignalReady_n3) {
+                    double n3 =0;
+                    if(GetMixDCA(3,n3)) {
+                            n3wasReady=true;
 
-if(bn[1]) {
-        if(fIsMixSignalReady_n3) {
-                double n3 =0;
-                if(GetMixDCA(3,n3)) {
-                        FillHist("fh2dInclusiveCorrelationN2N3mix",v[1],n3);
-                        if(jetpt>10 && jetpt <20)    FillHist("fh2dGreater10_20GeVCorrelationN2N3mix",v[1],n3);
-                        if(jetpt>20 && jetpt <30)    FillHist("fh2dGreater20_30GeVCorrelationN2N3mix",v[1],n3);
-                        if(jetpt>30 && jetpt <100)    FillHist("fh2dGreater30_100GeVCorrelationN2N3mix",v[1],n3);
-                    }
- }}
+                            storedn3=n3;
+                            FillHist("fh2dInclusiveCorrelationN1N3mix",v[0],n3);
+                            if(jetpt>10 && jetpt <20)    FillHist("fh2dGreater10_20GeVCorrelationN1N3mix",v[0],n3);
+                            if(jetpt>20 && jetpt <30)    FillHist("fh2dGreater20_30GeVCorrelationN1N3mix",v[0],n3);
+                            if(jetpt>30 && jetpt <100)    FillHist("fh2dGreater30_100GeVCorrelationN1N3mix",v[0],n3);
+                        }
+                }
+        }
+
+    if(bn[1]) {
+            if(n3wasReady) {
+                    double n3 =0;
+                    n3=storedn3;
+                    FillHist("fh2dInclusiveCorrelationN2N3mix",v[1],n3);
+                    if(jetpt>10 && jetpt <20)    FillHist("fh2dGreater10_20GeVCorrelationN2N3mix",v[1],n3);
+                    if(jetpt>20 && jetpt <30)    FillHist("fh2dGreater20_30GeVCorrelationN2N3mix",v[1],n3);
+                    if(jetpt>30 && jetpt <100)    FillHist("fh2dGreater30_100GeVCorrelationN2N3mix",v[1],n3);
+                }
+        }}
 
 return;
 }
@@ -1475,53 +1480,53 @@ void AliAnalysisTaskHFJetIPQA::UserCreateOutputObjects(){
     h1->GetXaxis()->SetBinLabel(3,"rejected");
     // Tracks impact parameter histograms
     //*********************Histograms for vertexing factor quicktest
-        fHistManager.CreateTH1("fh1dVERTEXFACTOR_VERTEXZ_FULL","fh1dVERTEXFACTOR_VERTEXZ_FULL;;",400,-100,100,"s");
-        fHistManager.CreateTH1("fh1dVERTEXFACTOR_VERTEXZ_10CM","fh1dVERTEXFACTOR_VERTEXZ_10CM;",400,-100,100,"s");
+    fHistManager.CreateTH1("fh1dVERTEXFACTOR_VERTEXZ_FULL","fh1dVERTEXFACTOR_VERTEXZ_FULL;;",400,-100,100,"s");
+    fHistManager.CreateTH1("fh1dVERTEXFACTOR_VERTEXZ_10CM","fh1dVERTEXFACTOR_VERTEXZ_10CM;",400,-100,100,"s");
 
-        TH1D * hvt = (TH1D*)AddHistogramm("fh1dVERTEXFACTOR_EVENTS","fh1dVERTEXFACTOR_EVENTS;;",3,0,3);
-        hvt->GetXaxis()->SetBinLabel(1,"Event in");
-        hvt->GetXaxis()->SetBinLabel(2,"Event kMB");
-        hvt->GetXaxis()->SetBinLabel(3,"Event kMB with Vertex");
+    TH1D * hvt = (TH1D*)AddHistogramm("fh1dVERTEXFACTOR_EVENTS","fh1dVERTEXFACTOR_EVENTS;;",3,0,3);
+    hvt->GetXaxis()->SetBinLabel(1,"Event in");
+    hvt->GetXaxis()->SetBinLabel(2,"Event kMB");
+    hvt->GetXaxis()->SetBinLabel(3,"Event kMB with Vertex");
 
 
     //***************************************
 
-        //Same Jet
-        fHistManager.CreateTH2("fh2dInclusiveCorrelationN1N2","fh2dInclusiveCorrelationN1N2 ;N1 impact parameter xy (cm);N2impact parameter xy (cm)",1000,lowIPxy,highIPxy,1000,lowIPxy,highIPxy,"s");
-        fHistManager.CreateTH2("fh2dInclusiveCorrelationN1N3","fh2dInclusiveCorrelationN1N3 ;N1 impact parameter xy (cm);N3impact parameter xy (cm)",1000,lowIPxy,highIPxy,1000,lowIPxy,highIPxy,"s");
-        fHistManager.CreateTH2("fh2dInclusiveCorrelationN2N3","fh2dInclusiveCorrelationN2N3 ;N2 impact parameter xy (cm);N3impact parameter xy (cm)",1000,lowIPxy,highIPxy,1000,lowIPxy,highIPxy,"s");
+    //Same Jet
+    fHistManager.CreateTH2("fh2dInclusiveCorrelationN1N2","fh2dInclusiveCorrelationN1N2 ;N1 impact parameter xy (cm);N2impact parameter xy (cm)",1000,lowIPxy,highIPxy,1000,lowIPxy,highIPxy,"s");
+    fHistManager.CreateTH2("fh2dInclusiveCorrelationN1N3","fh2dInclusiveCorrelationN1N3 ;N1 impact parameter xy (cm);N3impact parameter xy (cm)",1000,lowIPxy,highIPxy,1000,lowIPxy,highIPxy,"s");
+    fHistManager.CreateTH2("fh2dInclusiveCorrelationN2N3","fh2dInclusiveCorrelationN2N3 ;N2 impact parameter xy (cm);N3impact parameter xy (cm)",1000,lowIPxy,highIPxy,1000,lowIPxy,highIPxy,"s");
 
-        fHistManager.CreateTH2("fh2dGreater10_20GeVCorrelationN1N2","fh2dGreater10_20GeVCorrelationN1N2 ;N1 impact parameter xy (cm);N2impact parameter xy (cm)",1000,lowIPxy,highIPxy,1000,lowIPxy,highIPxy,"s");
-        fHistManager.CreateTH2("fh2dGreater10_20GeVCorrelationN1N3","fh2dGreater10_20GeVCorrelationN1N3 ;N1 impact parameter xy (cm);N3impact parameter xy (cm)",1000,lowIPxy,highIPxy,1000,lowIPxy,highIPxy,"s");
-        fHistManager.CreateTH2("fh2dGreater10_20GeVCorrelationN2N3","fh2dGreater10_20GeVCorrelationN2N3 ;N2 impact parameter xy (cm);N3impact parameter xy (cm)",1000,lowIPxy,highIPxy,1000,lowIPxy,highIPxy,"s");
+    fHistManager.CreateTH2("fh2dGreater10_20GeVCorrelationN1N2","fh2dGreater10_20GeVCorrelationN1N2 ;N1 impact parameter xy (cm);N2impact parameter xy (cm)",1000,lowIPxy,highIPxy,1000,lowIPxy,highIPxy,"s");
+    fHistManager.CreateTH2("fh2dGreater10_20GeVCorrelationN1N3","fh2dGreater10_20GeVCorrelationN1N3 ;N1 impact parameter xy (cm);N3impact parameter xy (cm)",1000,lowIPxy,highIPxy,1000,lowIPxy,highIPxy,"s");
+    fHistManager.CreateTH2("fh2dGreater10_20GeVCorrelationN2N3","fh2dGreater10_20GeVCorrelationN2N3 ;N2 impact parameter xy (cm);N3impact parameter xy (cm)",1000,lowIPxy,highIPxy,1000,lowIPxy,highIPxy,"s");
 
-        fHistManager.CreateTH2("fh2dGreater20_30GeVCorrelationN1N2","fh2dGreater20_30GeVCorrelationN1N2 ;N1 impact parameter xy (cm);N2impact parameter xy (cm)",1000,lowIPxy,highIPxy,1000,lowIPxy,highIPxy,"s");
-        fHistManager.CreateTH2("fh2dGreater20_30GeVCorrelationN1N3","fh2dGreater20_30GeVCorrelationN1N3 ;N1 impact parameter xy (cm);N3impact parameter xy (cm)",1000,lowIPxy,highIPxy,1000,lowIPxy,highIPxy,"s");
-        fHistManager.CreateTH2("fh2dGreater20_30GeVCorrelationN2N3","fh2dGreater20_30GeVCorrelationN2N3 ;N2 impact parameter xy (cm);N3impact parameter xy (cm)",1000,lowIPxy,highIPxy,1000,lowIPxy,highIPxy,"s");
+    fHistManager.CreateTH2("fh2dGreater20_30GeVCorrelationN1N2","fh2dGreater20_30GeVCorrelationN1N2 ;N1 impact parameter xy (cm);N2impact parameter xy (cm)",1000,lowIPxy,highIPxy,1000,lowIPxy,highIPxy,"s");
+    fHistManager.CreateTH2("fh2dGreater20_30GeVCorrelationN1N3","fh2dGreater20_30GeVCorrelationN1N3 ;N1 impact parameter xy (cm);N3impact parameter xy (cm)",1000,lowIPxy,highIPxy,1000,lowIPxy,highIPxy,"s");
+    fHistManager.CreateTH2("fh2dGreater20_30GeVCorrelationN2N3","fh2dGreater20_30GeVCorrelationN2N3 ;N2 impact parameter xy (cm);N3impact parameter xy (cm)",1000,lowIPxy,highIPxy,1000,lowIPxy,highIPxy,"s");
 
-        fHistManager.CreateTH2("fh2dGreater30_100GeVCorrelationN1N2","fh2dGreater30_100GeVCorrelationN1N2 ;N1 impact parameter xy (cm);N2impact parameter xy (cm)",1000,lowIPxy,highIPxy,1000,lowIPxy,highIPxy,"s");
-        fHistManager.CreateTH2("fh2dGreater30_100GeVCorrelationN1N3","fh2dGreater30_100GeVCorrelationN1N3 ;N1 impact parameter xy (cm);N3impact parameter xy (cm)",1000,lowIPxy,highIPxy,1000,lowIPxy,highIPxy,"s");
-        fHistManager.CreateTH2("fh2dGreater30_100GeVCorrelationN2N3","fh2dGreater30_100GeVCorrelationN2N3 ;N2 impact parameter xy (cm);N3impact parameter xy (cm)",1000,lowIPxy,highIPxy,1000,lowIPxy,highIPxy,"s");
+    fHistManager.CreateTH2("fh2dGreater30_100GeVCorrelationN1N2","fh2dGreater30_100GeVCorrelationN1N2 ;N1 impact parameter xy (cm);N2impact parameter xy (cm)",1000,lowIPxy,highIPxy,1000,lowIPxy,highIPxy,"s");
+    fHistManager.CreateTH2("fh2dGreater30_100GeVCorrelationN1N3","fh2dGreater30_100GeVCorrelationN1N3 ;N1 impact parameter xy (cm);N3impact parameter xy (cm)",1000,lowIPxy,highIPxy,1000,lowIPxy,highIPxy,"s");
+    fHistManager.CreateTH2("fh2dGreater30_100GeVCorrelationN2N3","fh2dGreater30_100GeVCorrelationN2N3 ;N2 impact parameter xy (cm);N3impact parameter xy (cm)",1000,lowIPxy,highIPxy,1000,lowIPxy,highIPxy,"s");
 
-        //Different Jet different event
-        fHistManager.CreateTH2("fh2dInclusiveCorrelationN1N2mix","fh2dInclusiveCorrelationN1N2mix ;N1 impact parameter xy (cm);N2impact parameter xy (cm)",1000,lowIPxy,highIPxy,1000,lowIPxy,highIPxy,"s");
-        fHistManager.CreateTH2("fh2dInclusiveCorrelationN1N3mix","fh2dInclusiveCorrelationN1N3mix ;N1 impact parameter xy (cm);N3impact parameter xy (cm)",1000,lowIPxy,highIPxy,1000,lowIPxy,highIPxy,"s");
-        fHistManager.CreateTH2("fh2dInclusiveCorrelationN2N3mix","fh2dInclusiveCorrelationN2N3mix ;N2 impact parameter xy (cm);N3impact parameter xy (cm)",1000,lowIPxy,highIPxy,1000,lowIPxy,highIPxy,"s");
+    //Different Jet different event
+    fHistManager.CreateTH2("fh2dInclusiveCorrelationN1N2mix","fh2dInclusiveCorrelationN1N2mix ;N1 impact parameter xy (cm);N2impact parameter xy (cm)",1000,lowIPxy,highIPxy,1000,lowIPxy,highIPxy,"s");
+    fHistManager.CreateTH2("fh2dInclusiveCorrelationN1N3mix","fh2dInclusiveCorrelationN1N3mix ;N1 impact parameter xy (cm);N3impact parameter xy (cm)",1000,lowIPxy,highIPxy,1000,lowIPxy,highIPxy,"s");
+    fHistManager.CreateTH2("fh2dInclusiveCorrelationN2N3mix","fh2dInclusiveCorrelationN2N3mix ;N2 impact parameter xy (cm);N3impact parameter xy (cm)",1000,lowIPxy,highIPxy,1000,lowIPxy,highIPxy,"s");
 
-        fHistManager.CreateTH2("fh2dGreater10_20GeVCorrelationN1N2mix","fh2dGreater10_20GeVCorrelationN1N2mix ;N1 impact parameter xy (cm);N2impact parameter xy (cm)",1000,lowIPxy,highIPxy,1000,lowIPxy,highIPxy,"s");
-        fHistManager.CreateTH2("fh2dGreater10_20GeVCorrelationN1N3mix","fh2dGreater10_20GeVCorrelationN1N3mix ;N1 impact parameter xy (cm);N3impact parameter xy (cm)",1000,lowIPxy,highIPxy,1000,lowIPxy,highIPxy,"s");
-        fHistManager.CreateTH2("fh2dGreater10_20GeVCorrelationN2N3mix","fh2dGreater10_20GeVCorrelationN2N3mix ;N2 impact parameter xy (cm);N3impact parameter xy (cm)",1000,lowIPxy,highIPxy,1000,lowIPxy,highIPxy,"s");
+    fHistManager.CreateTH2("fh2dGreater10_20GeVCorrelationN1N2mix","fh2dGreater10_20GeVCorrelationN1N2mix ;N1 impact parameter xy (cm);N2impact parameter xy (cm)",1000,lowIPxy,highIPxy,1000,lowIPxy,highIPxy,"s");
+    fHistManager.CreateTH2("fh2dGreater10_20GeVCorrelationN1N3mix","fh2dGreater10_20GeVCorrelationN1N3mix ;N1 impact parameter xy (cm);N3impact parameter xy (cm)",1000,lowIPxy,highIPxy,1000,lowIPxy,highIPxy,"s");
+    fHistManager.CreateTH2("fh2dGreater10_20GeVCorrelationN2N3mix","fh2dGreater10_20GeVCorrelationN2N3mix ;N2 impact parameter xy (cm);N3impact parameter xy (cm)",1000,lowIPxy,highIPxy,1000,lowIPxy,highIPxy,"s");
 
-        fHistManager.CreateTH2("fh2dGreater20_30GeVCorrelationN1N2mix","fh2dGreater20_30GeVCorrelationN1N2mix ;N1 impact parameter xy (cm);N2impact parameter xy (cm)",1000,lowIPxy,highIPxy,1000,lowIPxy,highIPxy,"s");
-        fHistManager.CreateTH2("fh2dGreater20_30GeVCorrelationN1N3mix","fh2dGreater20_30GeVCorrelationN1N3mix ;N1 impact parameter xy (cm);N3impact parameter xy (cm)",1000,lowIPxy,highIPxy,1000,lowIPxy,highIPxy,"s");
-        fHistManager.CreateTH2("fh2dGreater20_30GeVCorrelationN2N3mix","fh2dGreater20_30GeVCorrelationN2N3mix ;N2 impact parameter xy (cm);N3impact parameter xy (cm)",1000,lowIPxy,highIPxy,1000,lowIPxy,highIPxy,"s");
+    fHistManager.CreateTH2("fh2dGreater20_30GeVCorrelationN1N2mix","fh2dGreater20_30GeVCorrelationN1N2mix ;N1 impact parameter xy (cm);N2impact parameter xy (cm)",1000,lowIPxy,highIPxy,1000,lowIPxy,highIPxy,"s");
+    fHistManager.CreateTH2("fh2dGreater20_30GeVCorrelationN1N3mix","fh2dGreater20_30GeVCorrelationN1N3mix ;N1 impact parameter xy (cm);N3impact parameter xy (cm)",1000,lowIPxy,highIPxy,1000,lowIPxy,highIPxy,"s");
+    fHistManager.CreateTH2("fh2dGreater20_30GeVCorrelationN2N3mix","fh2dGreater20_30GeVCorrelationN2N3mix ;N2 impact parameter xy (cm);N3impact parameter xy (cm)",1000,lowIPxy,highIPxy,1000,lowIPxy,highIPxy,"s");
 
-        fHistManager.CreateTH2("fh2dGreater30_100GeVCorrelationN1N2mix","fh2dGreater30_100GeVCorrelationN1N2mix ;N1 impact parameter xy (cm);N2impact parameter xy (cm)",1000,lowIPxy,highIPxy,1000,lowIPxy,highIPxy,"s");
-        fHistManager.CreateTH2("fh2dGreater30_100GeVCorrelationN1N3mix","fh2dGreater30_100GeVCorrelationN1N3mix ;N1 impact parameter xy (cm);N3impact parameter xy (cm)",1000,lowIPxy,highIPxy,1000,lowIPxy,highIPxy,"s");
-        fHistManager.CreateTH2("fh2dGreater30_100GeVCorrelationN2N3mix","fh2dGreater30_100GeVCorrelationN2N3mix ;N2 impact parameter xy (cm);N3impact parameter xy (cm)",1000,lowIPxy,highIPxy,1000,lowIPxy,highIPxy,"s");
+    fHistManager.CreateTH2("fh2dGreater30_100GeVCorrelationN1N2mix","fh2dGreater30_100GeVCorrelationN1N2mix ;N1 impact parameter xy (cm);N2impact parameter xy (cm)",1000,lowIPxy,highIPxy,1000,lowIPxy,highIPxy,"s");
+    fHistManager.CreateTH2("fh2dGreater30_100GeVCorrelationN1N3mix","fh2dGreater30_100GeVCorrelationN1N3mix ;N1 impact parameter xy (cm);N3impact parameter xy (cm)",1000,lowIPxy,highIPxy,1000,lowIPxy,highIPxy,"s");
+    fHistManager.CreateTH2("fh2dGreater30_100GeVCorrelationN2N3mix","fh2dGreater30_100GeVCorrelationN2N3mix ;N2 impact parameter xy (cm);N3impact parameter xy (cm)",1000,lowIPxy,highIPxy,1000,lowIPxy,highIPxy,"s");
 
 
-//*********************************************
+    //*********************************************
     fHistManager.CreateTH1("fh1dPtHardMonitor","fh1dPtHardMonitor;ptHard;",500,0,250,"s");
     fHistManager.CreateTH2("fh2dTracksImpParXY","radial imp. parameter ;impact parameter xy (cm);a.u.",2000,lowIPxy,highIPxy,500,0,100.,"s");
     fHistManager.CreateTH2("fh2dTracksImpParXYZ","XYZ imp. parameter ;impact parameter xy (cm);a.u.",2000,-1,1,500,0,100.,"s");
@@ -3019,8 +3024,8 @@ Bool_t AliAnalysisTaskHFJetIPQA::GetImpactParameter(const AliAODTrack *track, co
             etp.GetXYZ(XYZatDCA);
             etp.GetXYZ(x_at_dca);
             etp.GetPxPyPz(p_at_dca);
-//         if(fIsPythia)   dca[0] *= fMCglobalDCASmear;
-//         if(fIsPythia)   dca[0] += fMCglobalDCAxyShift; // generic mean offset in LHC10e default is 0.007 == 7 µm
+            //         if(fIsPythia)   dca[0] *= fMCglobalDCASmear;
+            //         if(fIsPythia)   dca[0] += fMCglobalDCAxyShift; // generic mean offset in LHC10e default is 0.007 == 7 µm
 
         } else return kFALSE;
 
