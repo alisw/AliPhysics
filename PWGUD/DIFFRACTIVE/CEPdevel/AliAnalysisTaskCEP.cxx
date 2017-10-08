@@ -627,9 +627,11 @@ void AliAnalysisTaskCEP::UserExec(Option_t *)
   // count number of recorded triggers
   // CINT11-B-NOPF-CENTNOTRD, DG trigger has to be replaied, LHC16[d,e,h]
   // CCUP2-B-SPD1-CENTNOTRD, DG trigger has to be replaied, LHC16[h,i,j]
-  // CCUP13-B-SPD1-CENTNOTRD = DG trigger, LHC16[k,l,o,p], LHC17[g,h,i,j,k,l]
-  // CCUP25-B-SPD1-CENTNOTRD = DG trigger, LHC17[g,h,i,j,k,l]
+  // CCUP13-B-SPD1-CENTNOTRD = DG trigger, LHC16[k,l,o,p], LHC17[f,h,i,k,l]
+  // CCUP25-B-SPD1-CENTNOTRD = DG trigger, LHC17[f,h,i,k,l]
   TString firedTriggerClasses = fEvent->GetFiredTriggerClasses();
+  printf("Triggers: %s\n",firedTriggerClasses.Data());
+  
   if (firedTriggerClasses.Contains("CINT11-B-NOPF-CENTNOTRD"))
     ((TH1F*)flQArnum->At(1))->Fill(fRun);
   if (firedTriggerClasses.Contains("CCUP2-B-SPD1-CENTNOTRD"))

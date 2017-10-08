@@ -60,6 +60,20 @@ public:
   // called  at  end  of  analysis
   // virtual void Terminate(Option_t* option);
   
+  // setters for the task parameters
+  void setTaskState(Int_t state) { fTaskState = state; }
+  void setRnumMin(Int_t rn) { frnummin = rn; }
+  void setRnumMax(Int_t rn) { frnummax = rn; }
+  void setnTracksMax(Int_t ntrk) { fnumTracksMax = ntrk; }
+  void setfracDG(Double_t frac) { ffracDG = frac; }
+  void setfracNDG(Double_t frac) { ffracNDG = frac; }
+  void setETmaskDG(UInt_t mask) { fETmaskDG = mask; }
+  void setETpatternDG(UInt_t pattern) { fETpatternDG = pattern; }
+  void setETmaskNDG(UInt_t mask) { fETmaskNDG = mask; }
+  void setETpatternNDG(UInt_t pattern) { fETpatternNDG = pattern; }
+  void setTTmask(UInt_t mask) { fTTmask = mask; }
+  void setTTpattern(UInt_t pattern) { fTTpattern = pattern; }
+  
 private:
 
 	AliAnalysisTaskCEP(const AliAnalysisTaskCEP  &p);
@@ -74,6 +88,7 @@ private:
   // events are saved if (ET=Event test, TT=Track test)
   // . ET conditions are met (conditions for DG and NDG)
   // . 0 < nTrack='number of tracks meeting the TT conditions' <= fnumTracksMax
+  Int_t fTaskState;
   Int_t frnummin, frnummax;
   Int_t fnumTracksMax;
   Double_t ffracDG, ffracNDG;

@@ -585,7 +585,7 @@ void AliCEPUtils::SPDVtxAnalysis (
 }
 
 //------------------------------------------------------------------------------
-// This function compiles parameters which are relevant fpr the
+// This function compiles parameters which are relevant for the
 // number-of-SPD-clusters-vs-number-of-tracklets BG rejection
 // see e.g. AliAnalysisUtils::IsSPDClusterVsTrackletBG
 // histograms include (see AliCEPUtils::GetnClunTraQAHists)
@@ -1489,7 +1489,7 @@ void AliCEPUtils::InitTrackCuts(Bool_t IsRun1, Int_t clusterCut)
   // to study V0s this needs be set to kFALSE
   Bool_t  selPrimaries = kFALSE;
 
-  // Run2
+  // Run1
   if (IsRun1) {
 
     // ITS+TPC
