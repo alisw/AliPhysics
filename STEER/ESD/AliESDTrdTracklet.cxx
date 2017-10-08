@@ -28,20 +28,24 @@ ClassImp(AliESDTrdTracklet)
 AliESDTrdTracklet::AliESDTrdTracklet() :
   AliVTrdTracklet(),
   fHCId(-1),
-  fTrackletWord(0),
-  fLabel(-1)
+  fTrackletWord(0)
 {
   // default ctor
-
+  for (int i=3;i--;) fLabel[i] = -1;
 }
 
-AliESDTrdTracklet::AliESDTrdTracklet(UInt_t trackletWord, Short_t hcid, Int_t label) :
+AliESDTrdTracklet::AliESDTrdTracklet(UInt_t trackletWord, Short_t hcid, const Int_t* label) :
   AliVTrdTracklet(),
   fHCId(hcid),
-  fTrackletWord(trackletWord),
-  fLabel(label)
+  fTrackletWord(trackletWord)
 {
   // ctor with given tracklet word (and label)
+  if (label) {
+    for (int i=3;i--;) fLabel[i] = label[i];
+  }
+  else {
+    for (int i=3;i--;) fLabel[i] = -1;
+  }
 }
 
 AliESDTrdTracklet::~AliESDTrdTracklet()
@@ -52,11 +56,10 @@ AliESDTrdTracklet::~AliESDTrdTracklet()
 AliESDTrdTracklet::AliESDTrdTracklet(const AliESDTrdTracklet &trkl) :
   AliVTrdTracklet(trkl),
   fHCId(trkl.fHCId),
-  fTrackletWord(trkl.fTrackletWord),
-  fLabel(trkl.fLabel)
+  fTrackletWord(trkl.fTrackletWord)
 {
   // copy ctor
-
+  for (int i=3;i--;) fLabel[i] = trkl.fLabel[i];
 }
 
 AliESDTrdTracklet& AliESDTrdTracklet::operator=(const AliESDTrdTracklet &trkl)
@@ -69,8 +72,8 @@ AliESDTrdTracklet& AliESDTrdTracklet::operator=(const AliESDTrdTracklet &trkl)
   AliVTrdTracklet::operator=(trkl);
   fHCId = trkl.fHCId;
   fTrackletWord = trkl.fTrackletWord;
-  fLabel = trkl.fLabel;
-
+  for (int i=3;i--;) fLabel[i] = trkl.fLabel[i];
+  
   return *this;
 }
 

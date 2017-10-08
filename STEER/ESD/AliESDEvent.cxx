@@ -1355,7 +1355,7 @@ void AliESDEvent::AddTrdTracklet(const AliESDTrdTracklet *trkl)
 }
 
 //______________________________________________________________________________
-void AliESDEvent::AddTrdTracklet(UInt_t trackletWord, Short_t hcid, Int_t label)
+void AliESDEvent::AddTrdTracklet(UInt_t trackletWord, Short_t hcid, const Int_t* label)
 {
   new ((*fTrdTracklets)[fTrdTracklets->GetEntriesFast()]) AliESDTrdTracklet(trackletWord, hcid, label);
 }
@@ -2696,9 +2696,11 @@ void AliESDEvent::AdjustMCLabels(const AliVEvent *mcTruth)
   // TRD tracklets
   for (int itr=GetNumberOfTrdTracklets();itr--;) {
     AliESDTrdTracklet* trdTklet = GetTrdTracklet(itr);
-    lbraw = trdTklet->GetLabel();
-    if (lbraw<0) continue;
-    trdTklet->SetLabel(mcEvent->Raw2MergedLabel(lbraw));    
+    for (int i=3;i--;) {
+      lbraw = trdTklet->GetLabel(i);
+      if (lbraw<0) continue;
+      trdTklet->SetLabel(i,mcEvent->Raw2MergedLabel(lbraw));
+    }
   }
   // TRD tracks
   for (int itr=GetNumberOfTrdTracks();itr--;) {
