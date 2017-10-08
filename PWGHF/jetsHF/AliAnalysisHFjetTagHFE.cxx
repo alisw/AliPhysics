@@ -989,8 +989,8 @@ Bool_t AliAnalysisHFjetTagHFE::Run()
         fTPCnSigma = fpidResponse->NumberOfSigmasTPC(track, AliPID::kElectron);
 
          if(idbHFEj)cout << "fmimSig = " << fmimSig << endl;
-        if(fTPCnSigma<0 || fTPCnSigma>6)continue;
-        //if(fTPCnSigma<fmimSig || fTPCnSigma>3)continue;  //++++++++
+        //if(fTPCnSigma<0 || fTPCnSigma>6)continue;
+        if(fTPCnSigma<fmimSig || fTPCnSigma>3)continue;  //++++++++
         fHistTPCnSigma->Fill(pt,fTPCnSigma);
 
                epTarray[0] = px;
@@ -1036,7 +1036,9 @@ Bool_t AliAnalysisHFjetTagHFE::Run()
             
             Double_t clustMatchE = clustMatch->E();
             Double_t m20 =clustMatch->GetM20();
-            
+         
+            if(m20<0.03 || m20>0.3)continue; 
+     
             //EMCAL EID info
             Double_t eop = -1.0;
             if(track->P()>0)eop = clustMatchE/track->P();
