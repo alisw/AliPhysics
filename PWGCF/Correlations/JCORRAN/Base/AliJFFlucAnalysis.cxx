@@ -136,8 +136,8 @@ AliJFFlucAnalysis::AliJFFlucAnalysis(const char *name)
 	IsSCptdep = kFALSE;
 	fEta_min = 0;
 	fEta_max = 0;
-	fQC_eta_cut_min = -0.8; // default setting
-	fQC_eta_cut_max = 0.8; // default setting
+	fQC_eta_cut_min = -1.0;//-0.8; // default setting
+	fQC_eta_cut_max = 1.0;//0.8; // default setting
 	fImpactParameter = -1;
 
 	for(int icent=0; icent<NCent; icent++){
@@ -913,18 +913,6 @@ void AliJFFlucAnalysis::CalculateQvectorsQC(){
 			}
 		}
 	} // track loop done.
-
-
-	// Q-vector[ih][ik] calculated doen. //(need ik??)
-
-	/*
-	// Save QA plot
-	for(int ih=2; ih<kNH; ih++){
-	fh_QvectorQC[ih][fCBin]->Fill( QvectorQC[ih][1].Re()/QvectorQC[0][1].Re() , QvectorQC[ih][1].Im()/QvectorQC[0][1].Re() ); // fill normalized Q vector
-	fh_QvectorQCphi[ih][fCBin]->Fill( QvectorQC[ih][1].Theta() );
-	}
-	// Q-vector calculated
-	 */
 }
 //________________________________________________________________________
 TComplex AliJFFlucAnalysis::Q(int n, int p){
