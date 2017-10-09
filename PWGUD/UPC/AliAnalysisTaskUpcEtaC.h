@@ -187,6 +187,7 @@ class AliAnalysisTaskUpcEtaC : public AliAnalysisTaskSE {
   //    TH1D *f2KstarMinvFirstKstar;
   //    TH1D *f2KstarMinvSecondKstar;
   TH2D *f2KstarPtVsMinvEtaC;
+  TH2D *f2KstarYVsMinvEtaC;
   //    TH1D *f2KstarMinvEtaC;
   //1 Kstar case
   TH1D *f1KstarPtPiPlus;
@@ -204,6 +205,7 @@ class AliAnalysisTaskUpcEtaC : public AliAnalysisTaskSE {
   //    TH1D *f1KstarMinvKstar;
   //    TH1D *f1KstarMinvOtherPiKcombo;
   TH2D *f1KstarPtVsMinvEtaC;
+  TH2D *f1KstarYVsMinvEtaC;
   //    TH1D *f1KstarMinvEtaC;
   //0 Kstar case
   TH1D *f0KstarPtPiPlus;
@@ -221,6 +223,7 @@ class AliAnalysisTaskUpcEtaC : public AliAnalysisTaskSE {
   //    TH1D *f0KstarMinvFirstPiKcombo;
   //    TH1D *f0KstarMinvSecondPiKcombo;
   TH2D *f0KstarPtVsMinvEtaC;
+  TH2D *f0KstarYVsMinvEtaC;
   //    TH1D *f0KstarMinvEtaC;
 
   //K0s Channel
@@ -238,6 +241,7 @@ class AliAnalysisTaskUpcEtaC : public AliAnalysisTaskSE {
   TH2D *fEtaCPtVsMinvK0sChannel;
   //  TH1D *fEtaCMinvK0sChannel;
   TH1D *fK0sDecayLength;
+  TH2D *fK0sYVsMinvEtaC;
 
 
   TH2D *fHistEtaCMassVsPt;
@@ -287,10 +291,15 @@ class AliAnalysisTaskUpcEtaC : public AliAnalysisTaskSE {
 
   TH2D *f2RhoPtVsMinvOtherRho;
   TH2D *f2RhoPtVsMinvNonRhoPairs;
+  TH2D *f4PiVs2PiMinv;
+  TH2D *f4PiVs2PiMinvSquared;
+  TH2D *f2RhoYVsMinvEtaC;
+  TH2D *f4PionYVsMinvEtaC;
 
   //3PiPi Channel histos
   TH1D *fHistNeventsEtaC3PiPiChannel;
   TH2D *f3PiPiPtVsMinvEtaC;
+  TH2D *f3PiPiYVsMinvEtaC;
     
   //Helicity cut histos
   TH1D *fKstarParentPx;
@@ -329,6 +338,14 @@ class AliAnalysisTaskUpcEtaC : public AliAnalysisTaskSE {
   TH1D *f2RhoDaughterDaughterAngleCheck;
   TH1D *f2RhoDaughterDaughterCosAngleCheck;
   TH1D *f2RhoDaughterPtotalCheck;
+
+  //4 Kaon channel
+  TH1D *fHistNeventsEtaC4KaonChannel;
+  TH2D *f4KaonPtVsMinvEtaC;
+  TH2D *f4KaonPtVsMinvKK;
+  TH2D *f4KVs2KMinv;
+  TH2D *f4KVs2KMinvSquared;
+  TH2D *f4KaonYVsMinvEtaC;
 
   TH1D *fHistZDCCuts;
   
