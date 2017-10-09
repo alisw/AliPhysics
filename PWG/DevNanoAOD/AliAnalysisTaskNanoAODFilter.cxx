@@ -55,6 +55,7 @@ AliAnalysisTaskNanoAODFilter::AliAnalysisTaskNanoAODFilter() // All data members
   fTrkrep(0),
   fVarList(""),
   fVarListHead(""),
+  fVarListHeader_fTC(""),
   fEvtCuts(0),
   fTrkCuts(0),
   fSetter(0),
@@ -62,8 +63,7 @@ AliAnalysisTaskNanoAODFilter::AliAnalysisTaskNanoAODFilter() // All data members
   fSaveAODZDC(kFALSE),
   fSaveVzero(kFALSE),
   fInputArrayName(""),
-  fOutputArrayName(""),
-  fVarListHeader_fTC("")
+  fOutputArrayName("")
 {
   // Dummy constructor ALWAYS needed for I/O.
 }
@@ -75,6 +75,7 @@ AliAnalysisTaskNanoAODFilter::AliAnalysisTaskNanoAODFilter(const char *name, Boo
    fTrkrep(0),
    fVarList(""),
    fVarListHead(""),
+   fVarListHeader_fTC(""),
    fEvtCuts(0),
    fTrkCuts(0),
    fSetter(0),
@@ -82,8 +83,7 @@ AliAnalysisTaskNanoAODFilter::AliAnalysisTaskNanoAODFilter(const char *name, Boo
    fSaveAODZDC(kFALSE),
    fSaveVzero(kFALSE),
    fInputArrayName(""),
-   fOutputArrayName(""),
-  fVarListHeader_fTC("")
+   fOutputArrayName("")
 
 {
   // Constructor
