@@ -316,11 +316,14 @@ void AddTask_GammaCalo_pp(  Int_t     trainConfig                   = 1,        
     cuts.AddCut("00010113","11111110670522c0000","01631031000000d0"); //0.9 GeV/c
   } else if (trainConfig == 103){ //EMCAL M02 variation
     cuts.AddCut("00010113","1111111067032200000","01631031000000d0"); //no max M02 cut
-    cuts.AddCut("00010113","1111111067032250000","01631031000000d0"); //M02 < 0.3
-    cuts.AddCut("00010113","11111110670322m0000","01631031000000d0"); //M02, pT-dep with 0.32-0.7
-    cuts.AddCut("00010113","11111110670322l0000","01631031000000d0"); //M02, pT-dep with 0.32-0.5
     cuts.AddCut("00010113","11111110670322k0000","01631031000000d0"); //M02, pT-dep with 0.27-0.5
-  } else if (trainConfig == 104){ //EMCAL minNCells, M02, with/without TRD variation
+    cuts.AddCut("00010113","11111110670322l0000","01631031000000d0"); //M02, pT-dep with 0.32-0.5
+    cuts.AddCut("00010113","11111110670322m0000","01631031000000d0"); //M02, pT-dep with 0.32-0.7
+    cuts.AddCut("00010113","11111110670322n0000","01631031000000d0"); //M02, pT-dep with 0.32-0.7
+    cuts.AddCut("00010113","11111110670322o0000","01631031000000d0"); //M02, pT-dep with 0.32-0.7
+    cuts.AddCut("00010113","11111110670322p0000","01631031000000d0"); //M02, pT-dep with 0.34-0.7
+    cuts.AddCut("00010113","11111110670322q0000","01631031000000d0"); //M02, pT-dep with 0.36-0.7
+  } else if (trainConfig == 104){ //EMCAL minNCells,with/without TRD variation
     cuts.AddCut("00010113","11111110670312c0000","01631031000000d0"); //n cells >= 1
     cuts.AddCut("00010113","11111110670332c0000","01631031000000d0"); //n cells >= 3
     cuts.AddCut("00010113","11121110670322c0000","01631031000000d0"); //only modules with TRD infront
@@ -416,11 +419,14 @@ void AddTask_GammaCalo_pp(  Int_t     trainConfig                   = 1,        
     cuts.AddCut("00052113","11111110670522c0000","01631031000000d0"); //0.9 GeV/c
   } else if (trainConfig == 122){ //EMCAL M02 variation
     cuts.AddCut("00052113","1111111067032200000","01631031000000d0"); //no max M02 cut
-    cuts.AddCut("00052113","1111111067032250000","01631031000000d0"); //M02 < 0.3
-    cuts.AddCut("00052113","11111110670322m0000","01631031000000d0"); //M02, pT-dep with 0.32-0.7
-    cuts.AddCut("00052113","11111110670322l0000","01631031000000d0"); //M02, pT-dep with 0.32-0.5
     cuts.AddCut("00052113","11111110670322k0000","01631031000000d0"); //M02, pT-dep with 0.27-0.5
-  } else if (trainConfig == 123){ //EMCAL minNCells, M02, with/without TRD variation
+    cuts.AddCut("00052113","11111110670322l0000","01631031000000d0"); //M02, pT-dep with 0.32-0.5
+    cuts.AddCut("00052113","11111110670322m0000","01631031000000d0"); //M02, pT-dep with 0.32-0.7
+    cuts.AddCut("00052113","11111110670322n0000","01631031000000d0"); //M02, pT-dep with 0.32-0.7
+    cuts.AddCut("00052113","11111110670322o0000","01631031000000d0"); //M02, pT-dep with 0.32-0.7
+    cuts.AddCut("00052113","11111110670322p0000","01631031000000d0"); //M02, pT-dep with 0.34-0.7
+    cuts.AddCut("00052113","11111110670322q0000","01631031000000d0"); //M02, pT-dep with 0.36-0.7
+  } else if (trainConfig == 123){ //EMCAL minNCells, with/without TRD variation
     cuts.AddCut("00052113","11111110670312c0000","01631031000000d0"); //n cells >= 1
     cuts.AddCut("00052113","11111110670332c0000","01631031000000d0"); //n cells >= 3
     cuts.AddCut("00052113","11121110670322c0000","01631031000000d0"); //only modules with TRD infront
@@ -496,11 +502,14 @@ void AddTask_GammaCalo_pp(  Int_t     trainConfig                   = 1,        
     cuts.AddCut("00081113","11111110670522c0000","01631031000000d0"); //0.9 GeV/c
   } else if (trainConfig == 142){ //EMCAL M02 variation
     cuts.AddCut("00081113","1111111067032200000","01631031000000d0"); //no max M02 cut
-    cuts.AddCut("00081113","1111111067032250000","01631031000000d0"); //M02 < 0.3
-    cuts.AddCut("00081113","11111110670322m0000","01631031000000d0"); //M02, pT-dep with 0.32-0.7
-    cuts.AddCut("00081113","11111110670322l0000","01631031000000d0"); //M02, pT-dep with 0.32-0.5
     cuts.AddCut("00081113","11111110670322k0000","01631031000000d0"); //M02, pT-dep with 0.27-0.5
-  } else if (trainConfig == 143){ //EMCAL minNCells, M02, with/without TRD variation
+    cuts.AddCut("00081113","11111110670322l0000","01631031000000d0"); //M02, pT-dep with 0.32-0.5
+    cuts.AddCut("00081113","11111110670322m0000","01631031000000d0"); //M02, pT-dep with 0.32-0.7
+    cuts.AddCut("00081113","11111110670322n0000","01631031000000d0"); //M02, pT-dep with 0.32-0.7
+    cuts.AddCut("00081113","11111110670322o0000","01631031000000d0"); //M02, pT-dep with 0.32-0.7
+    cuts.AddCut("00081113","11111110670322p0000","01631031000000d0"); //M02, pT-dep with 0.34-0.7
+    cuts.AddCut("00081113","11111110670322q0000","01631031000000d0"); //M02, pT-dep with 0.36-0.7
+  } else if (trainConfig == 143){ //EMCAL minNCells, with/without TRD variation
     cuts.AddCut("00081113","11111110670312c0000","01631031000000d0"); //n cells >= 1
     cuts.AddCut("00081113","11111110670332c0000","01631031000000d0"); //n cells >= 3
     cuts.AddCut("00081113","11121110670322c0000","01631031000000d0"); //only modules with TRD infront

@@ -3956,6 +3956,26 @@ Bool_t AliCaloPhotonCuts::SetMaxM02(Int_t maxM02)
       fMinM02CutNr=9;
       fMaxM02=0.7;
       break;
+    case 23:
+      fUseM02=2;
+      fMinM02CutNr=9;
+      fMaxM02=0.7;
+      break;
+    case 24:
+      fUseM02=2;
+      fMinM02CutNr=9;
+      fMaxM02=0.7;
+      break;
+    case 25:
+      fUseM02=2;
+      fMinM02CutNr=9;
+      fMaxM02=0.7;
+      break;
+    case 26:
+      fUseM02=2;
+      fMinM02CutNr=9;
+      fMaxM02=0.7;
+      break;
 
     default:
       AliError(Form("Max M02 Cut not defined %d",maxM02));
@@ -4002,6 +4022,18 @@ Float_t AliCaloPhotonCuts::CalculateMaxM02 (Int_t maxM02, Float_t clusEnergy){
       else return (0.32 + 0.0072 * TMath::Power(clusEnergy,2));
     case 22:
       if( (0.32 + 0.0152 * TMath::Power(clusEnergy,2)) >= 0.7) return 0.7;
+      else return (0.32 + 0.0152 * TMath::Power(clusEnergy,2));
+    case 23:
+      if( (0.32 + 0.0238 * TMath::Power(clusEnergy,2)) >= 0.7) return 0.7;
+      else return (0.32 + 0.0238 * TMath::Power(clusEnergy,2));
+    case 24:
+      if( (0.32 + 0.042 * TMath::Power(clusEnergy,2)) >= 0.7) return 0.7;
+      else return (0.32 + 0.042 * TMath::Power(clusEnergy,2));
+    case 25:
+      if( (0.34 + 0.0152 * TMath::Power(clusEnergy,2)) >= 0.7) return 0.7;
+      else return (0.32 + 0.0152 * TMath::Power(clusEnergy,2));
+    case 26:
+      if( (0.36 + 0.0152 * TMath::Power(clusEnergy,2)) >= 0.7) return 0.7;
       else return (0.32 + 0.0152 * TMath::Power(clusEnergy,2));
 
     default:
