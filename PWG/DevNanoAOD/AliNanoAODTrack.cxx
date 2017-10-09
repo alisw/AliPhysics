@@ -119,7 +119,7 @@ AliNanoAODTrack::AliNanoAODTrack(AliAODTrack * aodTrack, const char * vars) :
     else if(varString == "FilterMap"               ) SetVar(AliNanoAODTrackMapping::GetInstance()->GetFilterMap()        , aodTrack->GetFilterMap()            );
     else if(varString == "covmat0"                 ) {
         Double_t covMatrix[21];
-        Bool_t covmatrix = aodTrack->GetCovarianceXYZPxPyPz(covMatrix);
+        aodTrack->GetCovarianceXYZPxPyPz(covMatrix);
         for(Int_t i=0;i<21;i++){
             SetVar(AliNanoAODTrackMapping::GetInstance()->GetCovMat(i)       , covMatrix[i]                        );
         }
