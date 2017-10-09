@@ -62,7 +62,8 @@ AliAnalysisTaskNanoAODFilter::AliAnalysisTaskNanoAODFilter() // All data members
   fSaveAODZDC(kFALSE),
   fSaveVzero(kFALSE),
   fInputArrayName(""),
-  fOutputArrayName("")
+  fOutputArrayName(""),
+  fVarListHeader_fTC("")
 {
   // Dummy constructor ALWAYS needed for I/O.
 }
@@ -81,7 +82,8 @@ AliAnalysisTaskNanoAODFilter::AliAnalysisTaskNanoAODFilter(const char *name, Boo
    fSaveAODZDC(kFALSE),
    fSaveVzero(kFALSE),
    fInputArrayName(""),
-   fOutputArrayName("")
+   fOutputArrayName(""),
+  fVarListHeader_fTC("")
 
 {
   // Constructor
@@ -126,18 +128,19 @@ void AliAnalysisTaskNanoAODFilter::AddFilteredAOD(const char* aodfilename, const
   
 
   AliNanoAODReplicator * rep = new AliNanoAODReplicator("NanoAODReplicator",
-							      "remove non interesting tracks, "
-							      "writes special tracks array tracks",
-							      fVarList,
-                                  fVarListHead,
-							      fTrkCuts,
-							      fMCMode);
+							"remove non interesting tracks, "
+							"writes special tracks array tracks",
+							fVarList,
+							fVarListHead,
+							fTrkCuts,
+							fMCMode);
 
      
   cout<<"rep: "<<rep<<endl;
   rep->SetCustomSetter(fSetter);
   if (fSaveVzero) rep->SetVzero(1);
   if (fSaveAODZDC) rep->SetAODZDC(1);
+  if (fVarListHeader_fTC) rep->SetVarListHeaderStringVariable(fVarListHeader_fTC);
   if (!fInputArrayName.IsNull()) rep->SetInputArrayName(fInputArrayName);
   if (!fOutputArrayName.IsNull()) rep->SetOutputArrayName(fOutputArrayName);
 

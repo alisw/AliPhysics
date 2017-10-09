@@ -162,7 +162,7 @@ void AliNanoAODSimpleSetter::SetNanoAODHeader(const AliAODEvent * event   , AliN
   if(vars) vars->Delete();
   head->SetMapCstVar(cstMap);
 
-  if ((head->GetFiredTriggerClassesIndex())!=-1)     head->SetVarString(head->GetFiredTriggerClassesIndex(), firedTriggerClasses);
+  if ((head->GetFiredTriggerClassesIndex())!=-1)     head->SetFiredTriggerClasses(firedTriggerClasses);
   if ((head->GetCentrIndex())!=-1)     head->SetVar(head->GetCentrIndex()    ,           centrV0M );
   if ((head->GetCentrTRKIndex())!=-1)  head->SetVar(head->GetCentrTRKIndex() ,           centrTRK );
   if ((head->GetCentrCL1Index())!=-1)  head->SetVar(head->GetCentrCL1Index() ,           centrCL1 );

@@ -97,10 +97,12 @@ class AliNanoAODReplicator : public AliAODBranchReplicator
   Int_t GetSaveAODZDC() {return fSaveAODZDC;}
 
   void SetNumberOfHaederParam(Int_t var){fNumberOfHeaderParam=var;}
-  void SetNumberOfHaederParamString(Int_t var){fNumberOfHeaderParamString=var;}
+  void SetNumberOfHaederParamInt(Int_t var){fNumberOfHeaderParamInt=var;}
   void SetInputArrayName(TString name) {fInputArrayName=name;}
   void SetOutputArrayName(TString name) {fOutputArrayName=name;}
 
+  void SetVarListHeaderStringVariable(TString var) {fVarListHeader_fTC=var;}
+    
  private:
 
   void SelectParticle(Int_t i);
@@ -130,13 +132,14 @@ class AliNanoAODReplicator : public AliAODBranchReplicator
 			
   TString fVarList; // list of variables to be filterered
   TString fVarListHeader; // list of variables to be filtered (header)
+  TString fVarListHeader_fTC;// list of fired Trigger Classes which are used in the NanoAOD generation 
 
   AliNanoAODCustomSetter * fCustomSetter;  // Setter class for custom variables
     
   mutable AliAODVZERO* fVzero; //! internal array of AliAODVZEROs
   mutable AliAODZDC* fAodZDC; //! internal array of AliAODZDCs
   Int_t fNumberOfHeaderParam; // number of parameters saved in AliNanoAODHeader
-  Int_t fNumberOfHeaderParamString; // number of string parameters saved in AliNanoAODHeader
+  Int_t fNumberOfHeaderParamInt; // number of string parameters saved in AliNanoAODHeader
     
   Int_t fSaveAODZDC;  // if kTRUE AliAODZDC will be saved in AliAODEvent
   Int_t fSaveVzero;  // if kTRUE AliAODVZERO will be saved in AliAODEvent
@@ -149,7 +152,7 @@ class AliNanoAODReplicator : public AliAODBranchReplicator
   AliNanoAODReplicator(const AliNanoAODReplicator&);
   AliNanoAODReplicator& operator=(const AliNanoAODReplicator&);
 
-  ClassDef(AliNanoAODReplicator,3) // Branch replicator for ESD to muon AOD.
+  ClassDef(AliNanoAODReplicator,4) // Branch replicator for ESD to muon AOD.
 };
 
 #endif
