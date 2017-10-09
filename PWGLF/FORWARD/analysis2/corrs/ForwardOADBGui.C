@@ -226,6 +226,7 @@ struct ForwardOADBGUI
     fSysSelect.AddEntry("Pb-Pb ",2);
     fSysSelect.AddEntry("p-Pb",  3);
     fSysSelect.AddEntry("Pb-p",  4);
+    fSysSelect.AddEntry("Xe-Xe", 5);
     fSysSelect.SetHeight(22);
     fSelectFrame.AddFrame(&fSysFrame, &fFrameHints);
     fSysFrame.AddFrame(&fSysLabel, &fLabelHints);
@@ -512,8 +513,9 @@ struct ForwardOADBGUI
     lve->SetSubnames(Form("%lu", e->fRunNo), 
 		     (e->fSys == 1 ? "p-p" : 
 		      e->fSys == 2 ? "Pb-Pb" : 
-		      e->fSys == 3 ? "p-Pb" :
-		      e->fSys == 4 ? "Pb-p" : "?"),
+		      e->fSys == 3 ? "p-Pb"  :
+		      e->fSys == 4 ? "Pb-p"  :
+		      e->fSys == 5 ? "Xe-Xe" :	"?"),
 		     Form("%4huGeV",e->fSNN), 
 		     Form("%+2hdkG", e->fField), 
 		     (e->fMC ? "MC" : "Real"),
@@ -775,7 +777,8 @@ struct ForwardOADBGUI
     out.Append(Form("_%s", (fEntry->fSys == 1 ? "pp" : 
 			    fEntry->fSys == 2 ? "PbPb" :
 			    fEntry->fSys == 3 ? "pPb" :
-			    fEntry->fSys == 4 ? "Pbp" : "XX")));
+			    fEntry->fSys == 4 ? "Pbp" :
+			    fEntry->fSys == 5 ? "Xe-Xe" : "XX")));
     out.Append(Form("_%04huGeV", fEntry->fSNN));
     out.Append(Form("_%c%hukG", fEntry->fField >= 0 ? 'p' : 'm', 
 		    TMath::Abs(fEntry->fField)));

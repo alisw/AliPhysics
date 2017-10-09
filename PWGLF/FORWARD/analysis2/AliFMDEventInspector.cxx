@@ -1524,7 +1524,13 @@ AliFMDEventInspector::ReadRunDetails(const AliESDEvent* esd)
   const char* sys  = esd->GetBeamType();
   Float_t     cms  = 2 * esd->GetBeamEnergy();
   Float_t     fld  = esd->GetMagneticField();
-  fCollisionSystem = AliForwardUtil::ParseCollisionSystem(sys);
+  Int_t       b1a  = esd->GetBeamParticleA(0);
+  Int_t       b1z  = esd->GetBeamParticleZ(0);
+  Int_t       b2a  = esd->GetBeamParticleA(1);
+  Int_t       b2z  = esd->GetBeamParticleZ(1);
+  fCollisionSystem = AliForwardUtil::ParseCollisionSystem(b1a, b1z,
+							  b2a, b2z,
+							  sys);
   fEnergy          = AliForwardUtil::ParseCenterOfMassEnergy(fCollisionSystem, 
 							     cms);
   fField           = AliForwardUtil::ParseMagneticField(fld);
