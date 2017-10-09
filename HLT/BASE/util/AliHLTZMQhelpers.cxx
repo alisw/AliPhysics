@@ -29,6 +29,7 @@
 #include "AliRawData.h"
 #include "TSystem.h"
 #include <exception>
+#include <stdexcept>
 
 using namespace AliZMQhelpers;
 
