@@ -121,6 +121,9 @@ set(SRCS
   AliAnalysisTaskHFEEfficiency.cxx
   AliAnalysisTaskHaHFECorrel.cxx
   AliAnalysisHFETPCTOFNew.cxx
+  AliHFEminiEventCreator.cxx
+  AliHFEminiEvent.cxx
+  AliHFEminiTrack.cxx
   )
 
 # Headers from sources
