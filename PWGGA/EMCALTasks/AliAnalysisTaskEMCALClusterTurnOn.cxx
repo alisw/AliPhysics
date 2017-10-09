@@ -358,7 +358,7 @@ void AliAnalysisTaskEMCALClusterTurnOn::UserCreateOutputObjects(){
     hPatchE->Sumw2();
     fOutput->Add(hPatchE);
     
-    hEt_M02 = new TH2D("hEt_M02", ";#it{E}_{T} (GeV);#it{#lambda}^{2}_{0}",3000,0.,60.,1500,0.,3.);
+    hEt_M02 = new TH2D("hEt_M02", "Neutral Clusters;#it{E}_{T} (GeV);#it{#lambda}^{2}_{0}",3000,0.,60.,1500,0.,3.);
     hEt_M02->Sumw2();
     fOutput->Add(hEt_M02); 
     
@@ -728,7 +728,9 @@ Bool_t AliAnalysisTaskEMCALClusterTurnOn::Run()
 
     if(fQA) {
       fPT->Fill(vecCOI.Pt());
-      hEt_M02->Fill(vecCOI.E(),coiM02);
+      if(!ClustTrackMatching(coi)){
+        hEt_M02->Fill(vecCOI.E(),coiM02);
+      }
     }
     fE->Fill(vecCOI.E());
     
