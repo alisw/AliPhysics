@@ -13,7 +13,7 @@ cp $FLUPRO/random.dat old.seed
 
 # Give some meaningfull name to the output
 ln -s fluka.out fort.11
-
+ln -s fluka.err fort.15
 #Link FlukaConfig.C as Config.C
 ln -fs $ALICE_ROOT/TFluka/macro/FlukaConfig.C Config.C
 ln -fs $ALICE_ROOT/TFluka/input/coreFlukaVmc.inp coreFlukaVmc.inp

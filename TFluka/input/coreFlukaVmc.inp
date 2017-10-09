@@ -1,7 +1,5 @@
 GLOBAL        10000.                           4.0
 DEFAULTS                                                              NEW-DEFA
-OPEN             15.                                                  UNKNOWN
-FlukaVmc.err
 OPEN              1.                                                  OLD
 random.dat
 GEOBEGIN                                                              COMBINAT
