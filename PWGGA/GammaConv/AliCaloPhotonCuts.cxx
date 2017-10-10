@@ -114,7 +114,9 @@ AliCaloPhotonCuts::AliCaloPhotonCuts(Int_t isMC, const char *name,const char *ti
   fCurrentMC(kNoMC),
   fClusterType(0),
   fMinEtaCut(-10),
+  fMinEtaInnerEdge(0),
   fMaxEtaCut(10),
+  fMaxEtaInnerEdge(0),
   fUseEtaCut(0),
   fMinPhiCut(-10000),
   fMaxPhiCut(-10000),
@@ -284,7 +286,9 @@ AliCaloPhotonCuts::AliCaloPhotonCuts(const AliCaloPhotonCuts &ref) :
   fCurrentMC(ref.fCurrentMC),
   fClusterType(ref.fClusterType),
   fMinEtaCut(ref.fMinEtaCut),
+  fMinEtaInnerEdge(ref.fMinEtaInnerEdge),
   fMaxEtaCut(ref.fMaxEtaCut),
+  fMaxEtaInnerEdge(ref.fMaxEtaInnerEdge),
   fUseEtaCut(ref.fUseEtaCut),
   fMinPhiCut(ref.fMinPhiCut),
   fMaxPhiCut(ref.fMaxPhiCut),
@@ -1296,6 +1300,7 @@ Bool_t AliCaloPhotonCuts::ClusterIsSelectedMC(TParticle *particle,AliMCEvent *mc
 
     if ( particle->Eta() < fMinEtaCut || particle->Eta() > fMaxEtaCut ) return kFALSE;
     if ( particle->Phi() < fMinPhiCut || particle->Phi() > fMaxPhiCut ) return kFALSE;
+    if ( fClusterType == 3 && particle->Eta() < fMaxEtaInnerEdge && particle->Eta() > fMinEtaInnerEdge ) return kFALSE;
 
     if(particle->GetMother(0) >-1 && mcEvent->Particle(particle->GetMother(0))->GetPdgCode() == 22){
       return kFALSE;// no photon as mothers!
@@ -1316,6 +1321,7 @@ Bool_t AliCaloPhotonCuts::ClusterIsSelectedElecMC(TParticle *particle,AliMCEvent
 
     if ( particle->Eta() < fMinEtaCut || particle->Eta() > fMaxEtaCut ) return kFALSE;
     if ( particle->Phi() < fMinPhiCut || particle->Phi() > fMaxPhiCut ) return kFALSE;
+    if ( fClusterType == 3 && particle->Eta() < fMaxEtaInnerEdge && particle->Eta() > fMinEtaInnerEdge ) return kFALSE;
 
     if(particle->GetMother(0) >-1 && mcEvent->Particle(particle->GetMother(0))->GetPdgCode() == 11){
       return kFALSE;// no photon as mothers!
@@ -1336,6 +1342,7 @@ Bool_t AliCaloPhotonCuts::ClusterIsSelectedElecAODMC(AliAODMCParticle *particle,
 
     if ( particle->Eta() < fMinEtaCut || particle->Eta() > fMaxEtaCut ) return kFALSE;
     if ( particle->Phi() < fMinPhiCut || particle->Phi() > fMaxPhiCut ) return kFALSE;
+    if ( fClusterType == 3 && particle->Eta() < fMaxEtaInnerEdge && particle->Eta() > fMinEtaInnerEdge ) return kFALSE;
     if(particle->GetMother() >-1 && (static_cast<AliAODMCParticle*>(aodmcArray->At(particle->GetMother())))->GetPdgCode() == 11){
       return kFALSE;// no photon as mothers!
     }
@@ -1354,6 +1361,7 @@ Bool_t AliCaloPhotonCuts::ClusterIsSelectedAODMC(AliAODMCParticle *particle,TClo
   if (particle->GetPdgCode() == 22){
     if ( particle->Eta() < fMinEtaCut || particle->Eta() > fMaxEtaCut ) return kFALSE;
     if ( particle->Phi() < fMinPhiCut || particle->Phi() > fMaxPhiCut ) return kFALSE;
+    if ( fClusterType == 3 && particle->Eta() < fMaxEtaInnerEdge && particle->Eta() > fMinEtaInnerEdge ) return kFALSE;
     if(particle->GetMother() > -1 && (static_cast<AliAODMCParticle*>(aodmcArray->At(particle->GetMother())))->GetPdgCode() == 22){
         return kFALSE;// no photon as mothers!
     }
@@ -1873,6 +1881,7 @@ void AliCaloPhotonCuts::FillHistogramsExtendedQA(AliVEvent *event, Int_t isMC)
 
     //acceptance cuts
     if (fUseEtaCut && (etaCluster < fMinEtaCut || etaCluster > fMaxEtaCut)){delete cluster; continue;}
+    if (fUseEtaCut && fClusterType == 3 && etaCluster < fMaxEtaInnerEdge && etaCluster > fMinEtaInnerEdge ) {delete cluster; continue;}
     if (fUsePhiCut && (phiCluster < fMinPhiCut || phiCluster > fMaxPhiCut)){delete cluster; continue;}
     if (fUseDistanceToBadChannel>0 && CheckDistanceToBadChannel(cluster,event)){delete cluster; continue;}
     //cluster quality cuts
@@ -1910,6 +1919,7 @@ void AliCaloPhotonCuts::FillHistogramsExtendedQA(AliVEvent *event, Int_t isMC)
 
       //acceptance cuts
       if (fUseEtaCut && (etaclusterMatched < fMinEtaCut || etaclusterMatched > fMaxEtaCut)){delete clusterMatched; continue;}
+      if (fUseEtaCut && fClusterType == 3 && etaclusterMatched < fMaxEtaInnerEdge && etaclusterMatched > fMinEtaInnerEdge ) {delete cluster; continue;}
       if (fUsePhiCut && (phiclusterMatched < fMinPhiCut || phiclusterMatched > fMaxPhiCut)){delete clusterMatched; continue;}
       if (fUseDistanceToBadChannel>0 && CheckDistanceToBadChannel(clusterMatched,event)){delete clusterMatched; continue;}
       //cluster quality cuts
@@ -2572,7 +2582,7 @@ Bool_t AliCaloPhotonCuts::AcceptanceCuts(AliVCluster *cluster, AliVEvent* event,
 
   // check eta range
   if (fUseEtaCut){
-    if (etaCluster < fMinEtaCut || etaCluster > fMaxEtaCut){
+    if (etaCluster < fMinEtaCut || etaCluster > fMaxEtaCut || (fClusterType == 3 && etaCluster < fMaxEtaInnerEdge && etaCluster > fMinEtaInnerEdge ) ){
       if(fHistAcceptanceCuts)fHistAcceptanceCuts->Fill(cutIndex);
       return kFALSE;
     }
@@ -3228,6 +3238,11 @@ Bool_t AliCaloPhotonCuts::SetMinEtaCut(Int_t minEta)
     if (!fUseEtaCut) fUseEtaCut=1;
     fMinEtaCut=-0.4;
     break;
+  case 8:
+    if (!fUseEtaCut) fUseEtaCut=1;
+    fMinEtaCut=-0.4;
+    fMinEtaInnerEdge=-0.227579;
+    break;
 
   default:
     AliError(Form("MinEta Cut not defined %d",minEta));
@@ -3273,6 +3288,11 @@ Bool_t AliCaloPhotonCuts::SetMaxEtaCut(Int_t maxEta)
     if (!fUseEtaCut) fUseEtaCut=1;
     fMaxEtaCut=0.4;
     break;
+  case 8:
+    if(!fUseEtaCut) fUseEtaCut=1;
+    fMaxEtaCut=0.66112;
+    fMaxEtaInnerEdge=0.227579;
+    break;
   default:
     AliError(Form("MaxEta Cut not defined %d",maxEta));
     return kFALSE;
@@ -3306,7 +3326,7 @@ Bool_t AliCaloPhotonCuts::SetMinPhiCut(Int_t minPhi)
     break;
   case 5:
     if( !fUsePhiCut ) fUsePhiCut=1;
-    fMinPhiCut = 4.54;//DCal acceptance
+    fMinPhiCut = 4.5572;//DCal acceptance
     break;
   case 6:
     if( !fUsePhiCut ) fUsePhiCut=1;
@@ -3346,7 +3366,7 @@ Bool_t AliCaloPhotonCuts::SetMaxPhiCut(Int_t maxPhi)
     break;
   case 5:
     if( !fUsePhiCut ) fUsePhiCut=1;
-    fMaxPhiCut = 5.59;//DCal acceptance
+    fMaxPhiCut = 5.5658;//DCal acceptance
     break;
   case 6:
     if( !fUsePhiCut ) fUsePhiCut=1;

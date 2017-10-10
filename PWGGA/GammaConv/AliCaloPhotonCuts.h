@@ -353,7 +353,9 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
     //cuts
     Int_t     fClusterType;                             // which cluster do we have
     Double_t  fMinEtaCut;                               // min eta cut
+    Double_t  fMinEtaInnerEdge;                         // min eta of inner Edge (DCal)
     Double_t  fMaxEtaCut;                               // max eta cut
+    Double_t  fMaxEtaInnerEdge;                         // max eta of inner Edge (DCal)
     Bool_t    fUseEtaCut;                               // flag for switching on eta cut
     Double_t  fMinPhiCut;                               // phi cut
     Double_t  fMaxPhiCut;                               // phi cut
@@ -510,7 +512,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
     
   private:
 
-    ClassDef(AliCaloPhotonCuts,48)
+    ClassDef(AliCaloPhotonCuts,49)
 };
 
 #endif
