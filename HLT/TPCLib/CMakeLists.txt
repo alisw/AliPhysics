@@ -29,7 +29,7 @@ if(HLT_OPENCL)
     add_subdirectory(tracking-ca/cagpu/opencl)
 endif()
 
-add_subdirectory(tracking-standalone/cmake_AliRoot)
+#add_subdirectory(tracking-standalone/cmake_AliRoot) #We use the HLT O2 CA Tracking standalone build at the moment
 
 # Module
 set(MODULE AliHLTTPC)
