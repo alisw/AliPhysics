@@ -119,7 +119,7 @@ const int kDataTypeTopicSize = kDataTypefIDsize+kDataTypefOriginSize;
 
 //Helper functions
 bool Topicncmp(const char* topic, const char* reference, int topicSize=kDataTypeTopicSize, int referenceSize=kDataTypeTopicSize);
-ULong64_t CharArr2uint32(const char* str);
+UInt_t CharArr2uint32(const char* str);
 ULong64_t CharArr2uint64(const char* str);
 
 //helper function to print a hex/ASCII dump of some memory
@@ -262,7 +262,7 @@ inline ULong64_t CharArr2uint64(const char* str)
 }
 
 //______________________________________________________________________________
-inline ULong64_t CharArr2uint32(const char* str)
+inline UInt_t CharArr2uint32(const char* str)
 {
 	return((UInt_t) str[0] |
          (str[0] ? ((UInt_t) str[1] << 8 |
