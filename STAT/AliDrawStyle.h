@@ -73,6 +73,8 @@ public:
   static Float_t GetMarkerSize(const char *style, Int_t index);
   static Int_t   GetMarkerColor(const char *style, Int_t index);
   static Int_t   GetFillColor(const char *style, Int_t index);
+  static Int_t   GetLineStyle(const char *style, Int_t index);  
+  static Int_t   GetLineColor(const char *style, Int_t index);    
   static Float_t GetLineWidth(const char *style, Int_t index);
   static void PrintLatexSymbols(Option_t *option,TPRegexp& regExp);
   static void PrintStyles(Option_t *option, TPRegexp& regExp);
@@ -86,6 +88,8 @@ protected:
   static std::map<TString, std::vector<float> > fMarkerSize;  ///< map of predefined marker sizes ()
   static std::map<TString, std::vector<int> > fFillColors;    ///< map of predefined fill colors arrays
   static std::map<TString, std::vector<float> > fLineWidth;   ///< map of predefined line width
+  static std::map<TString, std::vector<float> > fLineStyle;   ///< map of predefined line style 
+  static std::map<TString, std::vector<float> > fLineColor;   ///< map of predefined line color
   //
   static void  RegisterDefaultLatexSymbols();                 ///< initialize default LatexSymbols
   static void  RegisterDefaultStyle();                        ///< initialize default TStyles

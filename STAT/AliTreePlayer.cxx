@@ -14,25 +14,7 @@
  **************************************************************************/
 
 
-/*
-  Set of functions to extend functionality of the TTreePlayer
-  - data sources (tree+friend trees)  configured independently in AliExternalInfo
 
-  Functionality:
-  * function to support metadata and collumns annotation
-  * filtering function (branch, aliases metadata)
-  * select function  - export to (json, csv,  html, JIRA) + metadata (not yet implemented)
-  ** subset of metadata for columns included in select export outputName.metadata
-  * select function  - for root trees
-  ** to be done using TTree::CopyTree  functionality swithing ON/OFF selected branches - metadata should be exported automatically (to check) 
-  
-  See  example usage in the test macro AliTreePlayerTest.C
-  * AliTreePlayerTest.C::testAll();
-  * AliTreePlayerTest.C::testSelectMetadata()
-  * AliTreePlayerTest.C::testselectTreeInfo()
-  * AliTreePlayerTest.C:testselectWhatWhereOrderByForTRD()
-
-*/
 
 #include "TStatToolkit.h"
 #include "Riostream.h"
@@ -52,12 +34,113 @@
 #include "TLegend.h"
 #include "TBufferJSON.h"
 #include "AliSysInfo.h"
+#include <sstream>
 
 using namespace std;
-
 ClassImp(AliTreePlayer)
+ClassImp(AliTreeFormulaF)
 
-//_____________________________________________________________________________
+
+/// Default constructor
+AliTreeFormulaF::AliTreeFormulaF() : TTreeFormula(), fTextArray(NULL), fFormatArray(NULL), fFormulaArray(NULL) {
+}
+
+///
+/// \param name
+/// \param formula
+/// \param tree
+AliTreeFormulaF::AliTreeFormulaF(const char *name, const char *formula, TTree *tree):
+        TTreeFormula(), fTextArray(NULL), fFormatArray(NULL), fFormulaArray(NULL) {
+  SetName(name);
+  SetTitle(formula);
+  SetTree(tree);
+  Compile(formula);
+  SetBit(kIsCharacter);
+
+}
+
+AliTreeFormulaF::~AliTreeFormulaF() {
+  /// TODO  - check if not memory leak
+  delete fTextArray;
+  delete fFormulaArray;
+  delete fFormatArray;
+}
+
+/// Compile Formatted expression
+/// \param expression
+/// \return
+/// TODO - Error handling - invalidate expression in case of the compilation error
+Int_t AliTreeFormulaF::Compile(const char *expression) {
+  TTree *tree = GetTree();
+  TString fquery = expression;
+  //
+  // 1. GetList of %format{variables}  to query
+  //    format:   TString
+  //    variable: TTreeFormula
+  // 3. GetFormatted string
+  //
+  Int_t sLength = fquery.Length();     // original format string
+  Int_t iVar = 0;
+  Int_t varBegin = -1;
+  fFormulaArray = new TObjArray;
+  fFormatArray = new TObjArray;
+  fTextArray = new TObjArray;
+  Int_t nVars = 0;
+  Int_t lastI = 0;
+  Int_t iChar = 0;
+  for (iChar = 0; iChar < fquery.Length(); iChar++) {
+    if (fquery[iChar] != '{') continue;
+    Int_t delta0 = 1, deltaf = 0;
+    for (delta0 = 1; delta0 + iChar < fquery.Length(); delta0++) if (fquery[iChar + delta0] == '}') break;
+    for (deltaf = -1; deltaf + iChar >= 0; deltaf--) if (fquery[iChar + deltaf] == '%') break;
+    TString stext(fquery(lastI, iChar + deltaf - lastI));
+    TString sformat(fquery(iChar + deltaf + 1, -(deltaf + 1)));
+    TString sformula(fquery(iChar + 1, delta0 - 1));
+    if (0/*verbose*/) { ///TODO - add AliDebug
+      printf("%d\t%d\t%d\n", iChar, deltaf, delta0);
+      printf("%d\t%s\t%s\t%s\n", nVars, stext.Data(), sformat.Data(), sformula.Data());
+    }
+    fFormatArray->AddAtAndExpand(new TObjString(sformat.Data()), nVars);
+    fTextArray->AddAtAndExpand(new TObjString(stext.Data()), nVars);
+    fFormulaArray->AddAtAndExpand(new TTreeFormula(sformula.Data(), sformula.Data(), tree), nVars);
+    nVars++;
+    lastI = iChar + delta0 + 1;
+  }
+  TString stext(fquery(lastI, fquery.Length() - lastI));
+  fTextArray->AddAtAndExpand(new TObjString(stext.Data()), nVars);
+}
+
+/// Overwrite TTreeFormula PritValue
+/// \param mode
+/// \param instance
+/// \param decform
+/// \return
+char *AliTreeFormulaF::PrintValue(Int_t mode, Int_t instance, const char *decform) const {
+  std::stringstream stream;
+  Int_t nVars = fFormulaArray->GetEntries();
+  for (Int_t iVar = 0; iVar <= nVars; iVar++) {
+    stream << fTextArray->At(iVar)->GetName();
+    if (iVar < nVars) {
+      TTreeFormula *treeFormula = (TTreeFormula *) fFormulaArray->At(iVar);
+      stream << treeFormula->PrintValue(0, instance, fFormatArray->At(iVar)->GetName());
+    }
+  }
+  return (char *) (stream.str().data());  /// TODO - local cache value to be created
+}
+///
+void        AliTreeFormulaF::UpdateFormulaLeaves(){
+  if (fFormulaArray==NULL) return;
+  return;
+  Int_t nVars = fFormulaArray->GetEntries();
+  for (Int_t iVar = 0; iVar <= nVars; iVar++) {
+    TTreeFormula *treeFormula = (TTreeFormula *) fFormulaArray->At(iVar);
+    treeFormula->UpdateFormulaLeaves();
+  }
+}
+
+/// Dummy AliTreePlayerConstructor
+/// \param name
+/// \param title
 AliTreePlayer::AliTreePlayer(const char *name, const char *title)
          :TNamed(name, title)
 {
@@ -73,8 +156,6 @@ AliTreePlayer::AliTreePlayer(const char *name, const char *title)
 /// Selected metadata fil filing query
 /// retun ObjArray of selected metadata
 /// param
-
-			  
 TObjArray  *  AliTreePlayer::selectMetadata(TTree * tree, TString query, Int_t verbose){
   /*
     query -  case sensitive matching is done using Contains method (e.g N(Axis)<=N(xis) )
@@ -276,17 +357,15 @@ TObjArray * AliTreePlayer::selectTreeInfo(TTree* tree, TString query,Int_t verbo
 }
 
 
-
-
-TString  AliTreePlayer::printSelectedTreeInfo(TTree*tree, TString infoType,  TString regExpFriend, TString regExpTag, Int_t verbose){
-  //
-  //
-  //
-  //   tree         - input master tree pointer
-  //   infoType     - array in which information is queried - "branch" "alias" "metaData" and logical or 
-  //   regExpFriend - regeular expression patter, where to seek (default empty - master tree) 
-  //   regExpTag    - regula expression tag to be queried - use non case sensitive Contain ( use as ^regExpTag$ to get full match )
-  //
+///
+/// \param tree         - input master tree pointer
+/// \param infoType     - array in which information is queried - "branch" "alias" "metaData" and logical or
+/// \param regExpFriend - regular expression patter, where to seek (default empty - master tree)
+/// \param regExpTag    - regular expression tag to be queried - use non case sensitive Contain ( use as ^regExpTag$ to get full match )
+/// \param verbose      - verbosity flag
+/// \return             return selected string
+TString AliTreePlayer::printSelectedTreeInfo(TTree *tree, TString infoType, TString regExpFriend, TString regExpTag,
+                                             Int_t verbose) {
   /*
     Example usage:
       AliExternalInfo info;
@@ -307,45 +386,46 @@ TString  AliTreePlayer::printSelectedTreeInfo(TTree*tree, TString infoType,  TSt
         AliTreePlayer::printSelectedTreeInfo(treeTPC,"branch alias",".*","meanMIPvsSectorArray",1); ==> meanMIPvsSectorArray
         AliTreePlayer::printSelectedTreeInfo(treeTPC,"branch alias ",".*","Name$",1) ==> runTypeName
    */
-  TString result="";
-  TList * treeFriends = tree->GetListOfFriends();
-  Int_t ntrees = 1+( (treeFriends!=NULL)?treeFriends->GetEntries():0 );
-  TPRegexp  pregExpFriend=regExpFriend;
-  TPRegexp  pregExpTag=regExpTag;
-  const char* dataTypes[3]={"branch","alias", "metaData"};
-  for (Int_t itree=0; itree<ntrees; itree++){
-    TTree * currentTree = 0;
-    if (itree==0){
-      currentTree=tree;
-      if (pregExpFriend.Match(currentTree->GetName())==0) continue;
-    }else{
-      if (pregExpFriend.Match(treeFriends->At(itree-1)->GetName())==0) continue;
-      currentTree = ((TFriendElement*)(treeFriends->At(itree-1)))->GetTree();
+  TString result = "";
+  TList *treeFriends = tree->GetListOfFriends();
+  Int_t ntrees = 1 + ((treeFriends != NULL) ? treeFriends->GetEntries() : 0);
+  TPRegexp pregExpFriend = regExpFriend;
+  TPRegexp pregExpTag = regExpTag;
+  const char *dataTypes[3] = {"branch", "alias", "metaData"};
+  for (Int_t itree = 0; itree < ntrees; itree++) {
+    TTree *currentTree = 0;
+    if (itree == 0) {
+      currentTree = tree;
+      if (pregExpFriend.Match(currentTree->GetName()) == 0) continue;
+    } else {
+      if (pregExpFriend.Match(treeFriends->At(itree - 1)->GetName()) == 0) continue;
+      currentTree = ((TFriendElement * )(treeFriends->At(itree - 1)))->GetTree();
     }
 
-    if (verbose&0x1){
-      ::Info("printSelectedTreeInfo","tree %s selected", currentTree->GetName());
+    if (verbose & 0x1) {
+      ::Info("printSelectedTreeInfo", "tree %s selected", currentTree->GetName());
     }
-    for (Int_t iDataType=0; iDataType<3; iDataType++){
-      if (infoType.Contains(dataTypes[iDataType], TString::kIgnoreCase)==0) continue;
-      TList * selList = 0;
-      if (iDataType==0) selList=(TList*)currentTree->GetListOfBranches();
-      if (iDataType==1) selList=(TList*)currentTree->GetListOfAliases();
-      if (iDataType==2 && tree->GetUserInfo()) selList=(TList*)(currentTree->GetUserInfo()->FindObject("metaTable"));
+    for (Int_t iDataType = 0; iDataType < 3; iDataType++) {
+      if (infoType.Contains(dataTypes[iDataType], TString::kIgnoreCase) == 0) continue;
+      TList *selList = 0;
+      if (iDataType == 0) selList = (TList *) currentTree->GetListOfBranches();
+      if (iDataType == 1) selList = (TList *) currentTree->GetListOfAliases();
+      if (iDataType == 2 && tree->GetUserInfo())
+        selList = (TList * )(currentTree->GetUserInfo()->FindObject("metaTable"));
 
-      if (selList==NULL) continue;
-      Int_t selListEntries=selList->GetEntries();
-      for (Int_t iEntry=0; iEntry<selListEntries; iEntry++){
-	if (pregExpTag.Match(selList->At(iEntry)->GetName())<=0) continue;
-	if (verbose&0x1){
-	  ::Info(" printSelectedTreeInfo","%s.%s", currentTree->GetName(),selList->At(iEntry)->GetName());
-	}
-	if (result.Length()>0) result+=":";
-	if (itree>0) 	{
-	  result+=treeFriends->At(itree-1)->GetName(); 
-	  result+=".";
-	}
-	result+=selList->At(iEntry)->GetName();
+      if (selList == NULL) continue;
+      Int_t selListEntries = selList->GetEntries();
+      for (Int_t iEntry = 0; iEntry < selListEntries; iEntry++) {
+        if (pregExpTag.Match(selList->At(iEntry)->GetName()) <= 0) continue;
+        if (verbose & 0x1) {
+          ::Info(" printSelectedTreeInfo", "%s.%s", currentTree->GetName(), selList->At(iEntry)->GetName());
+        }
+        if (result.Length() > 0) result += ":";
+        if (itree > 0) {
+          result += treeFriends->At(itree - 1)->GetName();
+          result += ".";
+        }
+        result += selList->At(iEntry)->GetName();
       }
     }
   }
@@ -361,22 +441,20 @@ TString  AliTreePlayer::printSelectedTreeInfo(TTree*tree, TString infoType,  TSt
 /// \param outputFormat    - output format (csv,json, elastic json - for bulk export,html table)
 /// \param outputName
 /// \return                - status
-
 Int_t  AliTreePlayer::selectWhatWhereOrderBy(TTree * tree, TString what, TString where, TString /*orderBy*/,  Int_t firstentry, Int_t nentries, TString outputFormat, TString outputName){
   //
   // Select entry similar to the SQL select
   //    tree instead - SQL FROM statement used
-  //         - it is supposed that all infomtation is contained in the tree and related friend trees
+  //         - it is supposed that all information is contained in the tree and related friend trees
   //         - build tree with friends done in separate function
   //    what -
-  // code inspired by the TTreePlay::Scan but another tretment of arrays needed
-  // but wih few changes realted to different output formating
+  // code inspired by the TTreePlay::Scan but another treatment of arrays needed
+  // but wih few changes realted to different output formatting
   // NOTICE:
   // for the moment not all parameters used
   // Example usage:
   /*
     AliTreePlayer::selectWhatWhereOrderBy(treeTPC,"run:Logbook.run:meanMIP:meanMIPele:meanMIPvsSector.fElements:fitMIP.fElements","meanMIP>0", "", 0,10,"html","qatpc.html");
-
   */
 
   if (tree==NULL || tree->GetPlayer()==NULL){
@@ -438,7 +516,17 @@ Int_t  AliTreePlayer::selectWhatWhereOrderBy(TTree * tree, TString what, TString
     }else{
       isParent[iCol]=kFALSE;
     }
-    TTreeFormula * formula = new TTreeFormula(fieldName.Data(), fieldName.Data(), tree);
+    TTreeFormula * formula = NULL;
+    if (fieldName[0]!='#') {
+      formula=new TTreeFormula(fieldName.Data(), fieldName.Data(), tree);
+    }else{
+      TString fstring=fieldName;
+      if (tree->GetAlias(fieldName.Data())){
+        fstring=tree->GetAlias(fieldName.Data());
+      }
+      formula=new AliTreeFormulaF(fieldName.Data(), fstring.Data(), tree);
+    }
+
     if (formula->GetTree()==NULL){
       ::Error("AliTreePlayer::selectWhatWhereOrderBy","Invalid formula %s, parsed from the original string %s",fieldName.Data(),what.Data());
       if (isJSON==kFALSE) return -1;
@@ -483,6 +571,7 @@ Int_t  AliTreePlayer::selectWhatWhereOrderBy(TTree * tree, TString what, TString
   Bool_t forceDim = kFALSE;
   for (Int_t iCol=0; iCol<nCols; iCol++){
     if (rFormulaList[iCol]!=NULL) rFormulaList[iCol]->UpdateFormulaLeaves();
+    if (rFormulaList[iCol]->GetManager()==NULL) continue;   // TODO - check of needed for AliTreeFormulaF
     // if ->GetManager()->GetMultiplicity()>0 mean there is at minimum one array
     switch( rFormulaList[iCol]->GetManager()->GetMultiplicity() ) {
       case  1:

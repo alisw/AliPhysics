@@ -21,6 +21,7 @@
 
 #ifdef ROOT_HAS_HTTP
 #pragma link C++ class AliTreePlayer+;
+#pragma link C++ class AliTreeFormulaF+;
 #endif
 
 #pragma link C++ class AliExternalInfo+;

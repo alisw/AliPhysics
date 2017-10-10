@@ -123,10 +123,9 @@ void drawLogbookMultiCut(TString period, TString pass,TString runSelection="", T
  makeHTMLPage("LHC15o","pass1", "QA.TPC.meanTPCncl>0", "run:runDuration:totalEventsPhysics:totalNumberOfFilesMigrated:QA.TPC.meanMIP:QA.TPC.meanMIP", "Logbook;QA.TPC;QA.TRD;QA.ITS;MonALISA.RCT")
  makeHTMLPage("LHC15o","pass1", "QA.TPC.meanTPCncl>0", "run:runDuration:totalEventsPhysics:ocdbStatusCounter:ocdbHVStatusCounter:TPC_Status:meanTPCncl_Status:PID_Status:DCAz_Status:DCAr_Status:tpcItsMatch_Status", "Logbook;QA.TPC;QA.TRD;QA.ITS;MonALISA.RCT")
  makeHTMLPage("LHC15o","pass1", "QA.TPC.meanTPCncl>0", "run:runDuration:totalEventsPhysics:ocdbStatusCounter:ocdbHVStatusCounter:MonALISA.RCT.tpc_value:rctMismatch:TPC_Status:meanTPCncl_Status:PID_Status:DCAz_Status:DCAr_Status:tpcItsMatch_Status", "Logbook;QA.TPC;QA.TRD;QA.ITS;MonALISA.RCT")
-
-
-
-\endcode
+//
+ makeHTMLPage("LHC15o","pass1", "QA.TPC.meanTPCncl>0", "run:runDuration:#%d{year}/%d{period.GetName()}/%d{pass.GetName()}/%d{run}:totalEventsPhysics:totalNumberOfFilesMigrated:QA.TPC.meanMIP", "Logbook;QA.TPC;")
+ \endcode
  */
 void makeHTMLPage(TString  period,TString  pass, TString runSelection, TString varSelection, TString source){
   TTree * tree = info.GetTree("Logbook",period,pass,source);

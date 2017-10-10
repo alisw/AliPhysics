@@ -27,6 +27,7 @@
 #include "TLegend.h"
 #include "TPRegexp.h"
 #include "AliDrawStyle.h"
+#include <stdlib.h>
 
 using std::cout;
 using std::cerr;
@@ -1273,7 +1274,7 @@ TGraph * TStatToolkit::MakeGraphSparse(TTree * tree, const char * expr, const ch
 ///  mGraph->Draw();
 ///  legend->Draw();
 /// \endcode
-TMultiGraph * TStatToolkit::MakeMultGraph(TTree * tree, const char *groupName, const char* expr, const char * cut, const char * markers, const char *colors, Bool_t drawSparse, Float_t msize, Float_t sigmaRange, TLegend * legend, Bool_t comp){
+TMultiGraph * TStatToolkit::MakeMultGraph(TTree * tree, const char *groupName, const char* expr, const char * cut, const char * styles, const char *colors, Bool_t drawSparse, Float_t msize, Float_t sigmaRange, TLegend * legend, Bool_t comp){
 
   TMultiGraph *multiGraph=new TMultiGraph(groupName,groupName);
   TObjArray * exprVars=TString(expr).Tokenize(":");
@@ -1286,8 +1287,32 @@ TMultiGraph * TStatToolkit::MakeMultGraph(TTree * tree, const char *groupName, c
   TObjArray*exprVarArray = TString(exprVars->At(0)->GetName()).Tokenize(";");
   TObjArray*exprVarErrArray=(exprVars->GetEntries()>2)?  TString(exprVars->At(2)->GetName()).Tokenize(";"):0;
   TObjArray*exprCutArray= TString(cut).Tokenize(";");
-  //
-  //Int markerStyle=AliDrawStyle::GetMarkerStyles(markers);
+  
+  //determine marker style and line style
+  const char* markerstyles;
+  const char* linestyles=0;
+  
+  if(TString(styles).Contains(",")){    
+  TString styls=TString(styles).ReplaceAll(" ","");
+  TObjArray * stylarr=styls.Tokenize(","); 
+  markerstyles=TString(stylarr->At(0)->GetName());
+  linestyles=TString(stylarr->At(1)->GetName()); 
+  }
+  else markerstyles = styles;
+  
+  //determine marker style and line style
+  const char* markercolors;
+  const char* linecolors=0;
+  
+  if(TString(colors).Contains(",")){    
+  TString cols=TString(colors).ReplaceAll(" ","");
+  TObjArray * colarr=cols.Tokenize(","); 
+  markercolors=TString(colarr->At(0)->GetName());
+  linecolors=TString(colarr->At(1)->GetName()); 
+  }
+  else markercolors = colors;
+//  ::Info("MakeMultGraph","Linestyle %d", atoi(linestyles));
+    //Int markerStyle=AliDrawStyle::GetMarkerStyles(markers);
   Int_t notOK=(exprVarArray->GetEntries()<1 && exprCutArray->GetEntries()<2);
   if (exprVarErrArray) notOK+=2*(exprVarArray->GetEntriesFast()!=exprVarErrArray->GetEntriesFast());
   if (notOK>0){
@@ -1306,8 +1331,8 @@ TMultiGraph * TStatToolkit::MakeMultGraph(TTree * tree, const char *groupName, c
   TVectorF vecMean(ngraphs);
   Bool_t flag = kFALSE;
   for (Int_t iGraph=0; iGraph<ngraphs; iGraph++){
-    Int_t color=AliDrawStyle::GetMarkerColor(colors,iGraph);
-    Int_t marker=AliDrawStyle::GetMarkerStyle(markers, iGraph);
+    Int_t color=AliDrawStyle::GetMarkerColor(markercolors,iGraph);
+    Int_t marker=AliDrawStyle::GetMarkerStyle(markerstyles, iGraph);
     Int_t iCut =iGraph%nCuts;
     Int_t iExpr=iGraph/nCuts;
     const char *expName=exprVarArray->At(iExpr)->GetName();
@@ -1332,6 +1357,11 @@ TMultiGraph * TStatToolkit::MakeMultGraph(TTree * tree, const char *groupName, c
         gr=TStatToolkit::MakeGraphErrors(tree, TString::Format("%s:%s:%s",expName,xName,expErrName).Data(),cCut.Data(), marker,color,msize);
       }
     }
+    
+    if(linestyles!=0) gr->SetLineStyle(AliDrawStyle::GetLineStyle(linestyles,iGraph));
+    if(linecolors!=0) gr->SetLineColor(AliDrawStyle::GetLineColor(linecolors,iGraph));
+//      ::Info("MakeMultGraph","Linestyle2 %d", AliDrawStyle::GetLineStyle(linestyles,iGraph));
+    
     if (gr) {
       if (marker<=0) 	{  // explicitly specify draw options - try to avoid bug in TMultiGraph draw in xaxis definition
         multiGraph->Add(gr);

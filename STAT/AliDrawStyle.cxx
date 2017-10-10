@@ -70,6 +70,8 @@ std::map<TString, std::vector<int> > AliDrawStyle::fMarkerColors;  // IN ORDER T
 std::map<TString, std::vector<float> > AliDrawStyle::fMarkerSize;  // NATIVE SLC6 COMPILER!!!
 std::map<TString, std::vector<int> > AliDrawStyle::fFillColors;
 std::map<TString, std::vector<float> > AliDrawStyle::fLineWidth;
+std::map<TString, std::vector<float> > AliDrawStyle::fLineStyle;
+std::map<TString, std::vector<float> > AliDrawStyle::fLineColor;
 
 void AliDrawStyle::SetDefaults(){
   AliDrawStyle::RegisterDefaultLatexSymbols();
@@ -168,6 +170,28 @@ Int_t AliDrawStyle::GetMarkerStyle(const char *style, Int_t index){
     return GetIntegerAt(style,index);
   }
   return  AliDrawStyle::fMarkerStyles[style][index];
+}
+
+// GetLineStyle associated to the style.
+/// \param  style - name of style used
+/// \param index  - marker index
+/// \return marker style for given stylename, index
+Int_t AliDrawStyle::GetLineStyle(const char *style, Int_t index){
+  if (AliDrawStyle::fLineStyle[style].size() <= index) {
+    return GetIntegerAt(style,index);
+  }
+  return  AliDrawStyle::fLineStyle[style][index];
+}
+
+// GetLineColor associated to the style.
+/// \param  style - name of style used
+/// \param index  - marker index
+/// \return marker style for given stylename, index
+Int_t AliDrawStyle::GetLineColor(const char *style, Int_t index){
+  if (AliDrawStyle::fLineColor[style].size() <= index) {
+    return GetIntegerAt(style,index);
+  }
+  return  AliDrawStyle::fLineColor[style][index];
 }
 
 /// GetMarkerColor associated to the style.
@@ -309,12 +333,15 @@ void  AliDrawStyle::RegisterDefaultMarkers(){
   (fMarkerSize["figTemplate"])=std::vector<float>(10);
   (fFillColors["figTemplate"])=std::vector<int>(10);
   (fLineWidth["figTemplate"])=std::vector<float>(10);
+  (fLineColor["figTemplate"])=std::vector<float>(10);  
   for (Int_t i=0;i<10; i++){
     (fMarkerStyles["figTemplate"])[i]=markers[i];
     (fMarkerColors["figTemplate"])[i]=colors[i];
     (fMarkerSize["figTemplate"])[i]=1;
     (fFillColors["figTemplate"])[i]=fillColors[i];
     (fLineWidth["figTemplate"])[i]=0.5;
+    (fLineStyle["figTemplate"])[i]=i+1;   
+    (fLineColor["figTemplate"])[i]=colors[i];    
   }
   // style inspired by TRD performance paper
   Int_t colorsTRD[12]={0};
