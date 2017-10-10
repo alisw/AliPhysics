@@ -313,8 +313,6 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::UserCreateOutputObjects()
   fOutputContainer->Add(new TH2F(Form("hCentrality%svsPHOSClusterMultiplicityMC" ,fEstimator.Data()),Form("Centrality %s vs. Cluster Multiplicity;centrality (%%);Ncluster"                  ,fEstimator.Data()),100,0,100,201,-0.5,200.5));
   fOutputContainer->Add(new TH2F(Form("hCentrality%svsPHOSClusterMultiplicity"   ,fEstimator.Data()),Form("Centrality %s vs. Cluster Multiplicity;centrality (%%);Ncluster"                  ,fEstimator.Data()),100,0,100,201,-0.5,200.5));
   fOutputContainer->Add(new TH2F(Form("hCentrality%svsPHOSClusterMultiplicityTOF",fEstimator.Data()),Form("Centrality %s vs. Cluster Multiplicity with TOF cut;centrality (%%);Ncluster"     ,fEstimator.Data()),100,0,100,201,-0.5,200.5));
-  fOutputContainer->Add(new TH2F(Form("hCentrality%svsPHOSClusterMultiplicityNoPID",fEstimator.Data()),Form("Centrality %s vs. Cluster Multiplicity;centrality (%%);Ncluster"                ,fEstimator.Data()),100,0,100,201,-0.5,200.5));
-  fOutputContainer->Add(new TH2F(Form("hCentrality%svsPHOSClusterMultiplicityNoPIDTOF",fEstimator.Data()),Form("Centrality %s vs. Cluster Multiplicity with TOF cut;centrality (%%);Ncluster",fEstimator.Data()),100,0,100,201,-0.5,200.5));
 
   fOutputContainer->Add(new TH2F(Form("hCentrality%svsTrackMultiplicity",fEstimator.Data()),Form("Centrality %s vs. track Multiplicity",fEstimator.Data()),100,0,100,5000,0,5000));
   fOutputContainer->Add(new TH2F("hPHOSClusterMultiplicityvsTrackMultiplicity"   ,"cluster multiplicity vs. track multiplicity"         ,500,0,5000,201,-0.5,200.5));
@@ -418,18 +416,16 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::UserCreateOutputObjects()
   h2PhotonPt_TOF->Sumw2();
   fOutputContainer->Add(h2PhotonPt_TOF);
 
-  const Int_t Ndimg = 4;
-  const Int_t    Nbing[Ndimg] = {10,10,10,500};//cpv1,disp1,distBC,pt
-  const Double_t xming[Ndimg] = { 0, 0, 0,  0};//cpv1,disp1,distBC,pt
-  const Double_t xmaxg[Ndimg] = { 5, 5, 5, 50};//cpv1,disp1,distBC,pt
-
-  THnSparse *hsPhoton = new THnSparseF("hSparsePhoton","Photon;CPV (#sigma);Disp (#sigma);distance to BC (cell);p_{T} (GeV/c);",Ndimg,Nbing,xming,xmaxg);
-  hsPhoton->Sumw2();
-  fOutputContainer->Add(hsPhoton);
+  //const Int_t Ndimg = 4;
+  //const Int_t    Nbing[Ndimg] = {10,10,10,500};//cpv1,disp1,distBC,pt
+  //const Double_t xming[Ndimg] = { 0, 0, 0,  0};//cpv1,disp1,distBC,pt
+  //const Double_t xmaxg[Ndimg] = { 5, 5, 5, 50};//cpv1,disp1,distBC,pt
+  //THnSparse *hsPhoton = new THnSparseF("hSparsePhoton","Photon;CPV (#sigma);Disp (#sigma);distance to BC (cell);p_{T} (GeV/c);",Ndimg,Nbing,xming,xmaxg);
+  //hsPhoton->Sumw2();
+  //fOutputContainer->Add(hsPhoton);
 
   const TString Asym[] = {"","_asym08"};
   const Int_t Nasym = sizeof(Asym)/sizeof(Asym[0]);
-
 
   //Mgg vs. pT histogram
   for(Int_t iasym=0;iasym<Nasym;iasym++){
@@ -450,7 +446,6 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::UserCreateOutputObjects()
     h3Mix_TOF->Sumw2();
     fOutputContainer->Add(h3Mix_TOF);
   }//end of asymmetry loop
-
 
   //<- histograms for physics analysis
 
@@ -684,8 +679,8 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::UserCreateOutputObjects()
           fNonLin[ia][ib]->FixParameter(0,a);
           fNonLin[ia][ib]->FixParameter(1,b);
 
-          fOutputContainer->Add(new TH2F(Form("hMgg_a%d_b%d",ia,ib)   ,Form("M_{#gamma#gamma} vs. p_{T} a = %3.2f , b = %3.2f;M_{#gamma#gamma} (GeV/c^{2});p_{T} (GeV/c)",a,b)      ,60,0,0.24,NpTggModule-1,pTggModule));
-          fOutputContainer->Add(new TH2F(Form("hMixMgg_a%d_b%d",ia,ib),Form("M_{#gamma#gamma}^{mix} vs. p_{T} a = %3.2f , b = %3.2f;M_{#gamma#gamma} (GeV/c^{2});p_{T} (GeV/c)",a,b),60,0,0.24,NpTggModule-1,pTggModule));
+          fOutputContainer->Add(new TH2F(Form("hMgg_a%d_b%d",ia,ib)   ,Form("M_{#gamma#gamma} vs. p_{T} a = %3.2f , b = %3.2f;M_{#gamma#gamma} (GeV/c^{2});p_{T} (GeV/c)",a,b)      ,240,0,0.96,NpTgg-1,pTgg));
+          fOutputContainer->Add(new TH2F(Form("hMixMgg_a%d_b%d",ia,ib),Form("M_{#gamma#gamma}^{mix} vs. p_{T} a = %3.2f , b = %3.2f;M_{#gamma#gamma} (GeV/c^{2});p_{T} (GeV/c)",a,b),240,0,0.96,NpTgg-1,pTgg));
         }//end of ib
       }//end of ia
     }
@@ -959,10 +954,9 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::UserExec(Option_t *option)
       AliInfo(Form("harmonics %d | V0  sub detector name %s : event plane = %f (rad).",fHarmonics,fV0EPName[i].Data() ,V0EP[i]));
     }
 
-    //0 < event plane < pi.
+    //0 < event plane < 2*pi/fHarmonics.
     //fEventPlane = TPCEP[0];//full acceptance of TPC
     fEventPlane = V0EP[0];//full V0
-
 
     const Double_t delta = 2. * TMath::Pi() / Double_t(fHarmonics) / 12.;
     fEPBin = (Int_t)((fEventPlane) / delta);//it should be 0-11.
@@ -1025,16 +1019,6 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::UserExec(Option_t *option)
     }
     FillHistogramTH2(fOutputContainer,Form("hCentrality%svsPHOSClusterMultiplicityMC",fEstimator.Data()),fCentralityMain  ,multPHOSClustAll);
   }
-
-  Int_t multPHOSClustnoPID = 0;
-  Int_t multPHOSClustnoPIDTOF = 0;
-  for(Int_t i1=0;i1<fPHOSClusterArray->GetEntriesFast();i1++){
-    AliCaloPhoton *ph = (AliCaloPhoton*)fPHOSClusterArray->At(i1);
-    multPHOSClustnoPID++;
-    if(ph->IsTOFOK()) multPHOSClustnoPIDTOF++;
-  }
-  FillHistogramTH2(fOutputContainer,Form("hCentrality%svsPHOSClusterMultiplicityNoPID",fEstimator.Data()),fCentralityMain   ,multPHOSClustnoPID);
-  FillHistogramTH2(fOutputContainer,Form("hCentrality%svsPHOSClusterMultiplicityNoPIDTOF",fEstimator.Data()),fCentralityMain,multPHOSClustnoPIDTOF);
 
   if(fIsMC && fIsJJMC){
     //This should be called after ProcessMC(), because fMCArrayAOD is used.
@@ -1529,16 +1513,16 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::FillPhoton()
   Double_t phi = -999, dphi = -999.;
   Double_t eff=1;
   TF1 *f1tof = GetTOFCutEfficiencyFunction();
-  Double_t value[4] = {};
+  //Double_t value[4] = {};
 
   Double_t weight = 1.;
   Int_t primary = -1;
 
   for(Int_t iph=0;iph<multClust;iph++){
     AliCaloPhoton *ph = (AliCaloPhoton*)fPHOSClusterArray->At(iph);
-    weight = 1.;
-
+    if(!fPHOSClusterCuts->AcceptPhoton(ph)) continue;
     if(!fIsMC && fIsPHOSTriggerAnalysis && !ph->IsTrig()) continue;//it is meaningless to focus on photon without fired trigger in PHOS triggered data.
+    weight = 1.;
 
     pT = ph->Pt();
     energy = ph->Energy();
@@ -1552,20 +1536,18 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::FillPhoton()
 
     eff = f1tof->Eval(energy);
 
-    value[0] = ph->GetNsigmaCPV();
-    value[1] = ph->GetNsigmaCoreDisp();
-    value[2] = ph->DistToBadfp();
-    value[3] = pT;
+    //value[0] = ph->GetNsigmaCPV();
+    //value[1] = ph->GetNsigmaCoreDisp();
+    //value[2] = ph->DistToBadfp();
+    //value[3] = pT;
 
-    //for PID systematic study
-    if(fIsMC) FillSparse(fOutputContainer,"hSparsePhoton",value,weight);
-    else{
-      if(ph->IsTOFOK()){
-        FillSparse(fOutputContainer,"hSparsePhoton",value,1/eff * weight);
-      }
-    }
-
-    if(!fPHOSClusterCuts->AcceptPhoton(ph)) continue;
+    ////for PID systematic study
+    //if(fIsMC) FillSparse(fOutputContainer,"hSparsePhoton",value,weight);
+    //else{
+    //  if(ph->IsTOFOK()){
+    //    FillSparse(fOutputContainer,"hSparsePhoton",value,1/eff * weight);
+    //  }
+    //}
 
     if(fIsMC){
       primary = ph->GetPrimary();
@@ -2001,6 +1983,7 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::EstimateTOFCutEfficiency()
 
     for(Int_t i2=0;i2<multClust;i2++){
       AliCaloPhoton *ph2 = (AliCaloPhoton*)fPHOSClusterArray->At(i2);
+      if(!fPHOSClusterCuts->AcceptPhoton(ph2)) continue;
 
       if(i2==i1) continue;//reject same cluster combination
 
@@ -2034,6 +2017,7 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::EstimateTOFCutEfficiency()
 
       for(Int_t i2=0;i2<mixPHOS->GetEntriesFast();i2++){
         AliCaloPhoton *ph2 = (AliCaloPhoton*)mixPHOS->At(i2);
+        if(!fPHOSClusterCuts->AcceptPhoton(ph2)) continue;
 
         p12 = *ph1 + *ph2;
         m12 = p12.M();
