@@ -480,8 +480,8 @@ void AliAnalysisTaskHFv1::UserCreateOutputObjects()
                 SPsuffix2="uQC";
             }
             
-            const Int_t nETABins = 3;
-            Double_t binsEta[nETABins+1] = {-0.8,-0.2,0.2,0.8};
+            const Int_t nETABins = 4;
+            Double_t binsEta[nETABins+1] = {-0.8,-0.4,0.0,0.4,0.8};
             
             Int_t nBins[5] = {100,fNMassBins,50,nETABins,3};
             Double_t xmin[5] = {-fScalProdLimit,fLowmasslimit,0.,-0.8,0.};

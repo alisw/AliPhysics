@@ -112,4 +112,8 @@
 #pragma link C++ class  AliAnalysisTaskTPCCalBeauty+;
 #pragma link C++ class  AliAnalysisHFETPCTOFNew+;
 
+#pragma link C++ class  AliHFEminiEventCreator+;
+#pragma link C++ class  AliHFEminiEvent+;
+#pragma link C++ class  AliHFEminiTrack+;
+
 #endif
