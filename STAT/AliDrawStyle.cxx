@@ -333,7 +333,8 @@ void  AliDrawStyle::RegisterDefaultMarkers(){
   (fMarkerSize["figTemplate"])=std::vector<float>(10);
   (fFillColors["figTemplate"])=std::vector<int>(10);
   (fLineWidth["figTemplate"])=std::vector<float>(10);
-  (fLineColor["figTemplate"])=std::vector<float>(10);  
+  (fLineColor["figTemplate"])=std::vector<float>(10);
+  (fLineStyle["figTemplate"])=std::vector<float>(10);
   for (Int_t i=0;i<10; i++){
     (fMarkerStyles["figTemplate"])[i]=markers[i];
     (fMarkerColors["figTemplate"])[i]=colors[i];
@@ -364,12 +365,13 @@ void  AliDrawStyle::RegisterDefaultMarkers(){
   (fMarkerSize["figTemplateTRD"])=std::vector<float>(10);
   (fFillColors["figTemplateTRD"])=std::vector<int>(10);
   (fLineWidth["figTemplateTRD"])=std::vector<float>(10);
+  (fLineStyle["figTemplateTRD"])=std::vector<float>(10);
   (fMarkerStyles["figTemplateTRDPair"])=std::vector<int>(10);
   (fMarkerColors["figTemplateTRDPair"])=std::vector<int>(10);
   (fMarkerSize["figTemplateTRDPair"])=std::vector<float>(10);
   (fFillColors["figTemplateTRDPair"])=std::vector<int>(10);
   (fLineWidth["figTemplateTRDPair"])=std::vector<float>(10);
-
+  (fLineStyle["figTemplateTRDPair"])=std::vector<float>(10);
   for (Int_t i=0; i<10; i++){
     (fMarkerStyles["figTemplateTRD"])[i]=markersTRD[i];
     (fMarkerColors["figTemplateTRD"])[i]=TColor::GetColorDark(colorsTRD[i]);
