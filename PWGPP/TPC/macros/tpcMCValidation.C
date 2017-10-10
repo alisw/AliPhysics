@@ -31,6 +31,7 @@ InitTPCMCValidation("LHC15k1a1","passMC","LHC15o", "pass1",0,0);
 AliExternalInfo   *pinfo=0;
 AliTreeTrending   *trendingDraw=0;  
 TTree * treeMC;
+
 std::vector<Double_t> cRange;
 std::vector<Double_t> cRange2;
 std::vector<Double_t> cRange5;
@@ -38,13 +39,14 @@ std::vector<Double_t> cRange5;
 void makeTPCMCAlarms(TTree * treeMC, Bool_t doCheck,Int_t verbose);
 //void tpcMCValidationStandard(TString mcPeriod,Int_t verbose,Int_t doCheck);
 Bool_t InitTPCMCValidation(TString mcPeriod,  TString mcPass, TString anchorPeriod,  TString anchorPass, Int_t verbose,Int_t doCheck);
-void MakeReport(const char* mcrddir);
-void MakePlot(TTree * tree,const char* mcrddir, const char *fname, const char *LegendTitle, std::vector<Double_t>& legpos, const char *groupName, const char* expr, const char * cut, const char * markers, const char *colors, Bool_t drawSparse, Float_t msize, Float_t sigmaRange, Bool_t comp);
+void MakeReport(const char* outputdir);
+void MakePlot(TTree * tree,const char* outputdir, const char *fname, const char *LegendTitle, std::vector<Double_t>& legpos, const char *groupName, const char* expr, const char * cut, const char * markers, const char *colors, Bool_t drawSparse, Float_t msize, Float_t sigmaRange, Bool_t comp);
+void AppendBand(TTree * tree,const char* outputdir, const char *fname, const char* expr, const char * cut, const char * linestyle, const char *colors, Bool_t drawSparse, Float_t sigmaRange, Bool_t comp) ;
 
 /// function to create a set of the comparison plots MC/AnchorRaw data
 /// \param MCper     -  MC production name
-/// \param mcrddir   -  directory where png and html files are stored
-void tpcMCValidation(const char* MCper ="LHC15k1a1",const char* mcrddir="./"){
+/// \param outputdir   -  directory where png and html files are stored
+void tpcMCValidation(const char* MCper ="LHC15k1a1",const char* outputdir="./"){
   //gROOT->LoadMacro("tpcMCValidationStandardQA.C+");
   cout<<"INITIALIZING TPC MC Validation"<<endl;
   AliExternalInfo i;
@@ -58,7 +60,7 @@ void tpcMCValidation(const char* MCper ="LHC15k1a1",const char* mcrddir="./"){
   subStrL = TPRegexp("([^ ])+$").MatchS(AnchProdNamenPass);
   TString AnchPassName = ((TObjString*)subStrL->At(0))->GetString();
   if(InitTPCMCValidation(MCper,"passMC",AnchProdName, AnchPassName,0,0)){
-    MakeReport(mcrddir);
+    MakeReport(outputdir);
   }
   else ::Error("tpcMCValidation","InitTPCMCValidation returned with error -> skip plotting!");
 }
@@ -226,64 +228,73 @@ Bool_t InitTPCMCValidation(TString mcPeriod,  TString mcPass, TString anchorPeri
 }
 
 ///
-/// \param mcrddir
-void MakeReport(const char* mcrddir){
+/// \param outputdir
+void MakeReport(const char* outputdir){
 
 
   TMultiGraph *graph=0,*lines=0;
   
 
-  MakePlot(treeMC,mcrddir,"matchingTPC-ITSEffe.png","Number of clusters",cRange,"","meanTPCncl;TPC.Anchor.meanTPCncl:run","defaultcut","25;21;25;21","2;2;4;4",1,0.75,6,kTRUE);  
-  MakePlot(treeMC,mcrddir,"matchingTPC-ITSEffe.png","Matching efficiency:MC/Anchor",cRange,"","QA.TPC.tpcItsMatchA;QA.TPC.tpcItsMatchC;QA.ITS.EffTOTPt02;QA.ITS.EffTOTPt1;QA.ITS.EffTOTPt10;TPC.Anchor.tpcItsMatchA;TPC.Anchor.tpcItsMatchC;ITS.Anchor.EffTOTPt02;ITS.Anchor.EffTOTPt1;ITS.Anchor.EffTOTPt10:run","defaultcut","25;21;25;21","2;2;4;4",1,0.75,6,kTRUE);  
-  MakePlot(treeMC,mcrddir,"tpcItsMatch.png","TPC - ITS Match",cRange,"","tpcItsMatchHighPtA;TPC.Anchor.tpcItsMatchHighPtA;tpcItsMatchHighPtC;TPC.Anchor.tpcItsMatchHighPtC:run","defaultcut","25;21;25;21","2;2;4;4",1,0.75,6,kTRUE);  
-  MakePlot(treeMC,mcrddir,"rmsDCAMultSpartMCtoAnchor.png","DCA Resolution mult due MS:MC/Anchor",cRange,"","dcarAP1;dcarCP1;TPC.Anchor.dcarAP1;TPC.Anchor.dcarCP1:run","defaultcut","25;21;25;21","2;2;4;4",1,0.75,6,kTRUE);  
-  MakePlot(treeMC,mcrddir,"matchingTPC-ITSEffe_1.png","Matching efficiencyx",cRange,"","QA.TPC.tpcItsMatchA;QA.TPC.tpcItsMatchC;QA.ITS.EffoneSPDPt02;QA.ITS.EffoneSPDPt1;QA.ITS.EffoneSPDPt10;TPC.Anchor.tpcItsMatchA;TPC.Anchor.tpcItsMatchC;ITS.Anchor.EffoneSPDPt02;ITS.Anchor.EffoneSPDPt1;ITS.Anchor.EffoneSPDPt10:run","defaultcut","21;24;25;27;28;21;24;25;27;28","2;2;2;2;2;4;4;4;4;4",1,0.75,6,kTRUE);  
-  MakePlot(treeMC,mcrddir,"meanTPCNclRatioMCtoAnchor.png","Number of clusters MC/Anchor",cRange,"","meanTPCncl/TPC.Anchor.meanTPCncl;meanTPCnclF/TPC.Anchor.meanTPCnclF:run","defaultcut","25;21;25;21","2;2;4;4",1,0.75,6,kTRUE);  
-  MakePlot(treeMC,mcrddir,"matchingTPC-ITSEffe_2.png","Matching efficiency",cRange,"","QA.TPC.tpcItsMatchA/TPC.Anchor.tpcItsMatchA;QA.TPC.tpcItsMatchC/TPC.Anchor.tpcItsMatchC;QA.ITS.EffTOTPt02/ITS.Anchor.EffTOTPt02;QA.ITS.EffTOTPt1/ITS.Anchor.EffTOTPt1;QA.ITS.EffTOTPt10/ITS.Anchor.EffTOTPt10:run","defaultcut","21;24;25;27;28;21;24;25;27;28","1;2;4;3;6;2;4;4;4;4;4",1,0.75,6,kTRUE);  
-  MakePlot(treeMC,mcrddir,"meanVertX.png","meanVertX:run MC/Anchor",cRange,"","QA.TPC.meanVertX;TPC.Anchor.meanVertX:run","defaultcut","25;21;25;21","2;2;4;4",1,0.75,6,kTRUE);  
-  MakePlot(treeMC,mcrddir,"meanVertY.png","meanVertY:run MC/Anchor",cRange,"","QA.TPC.meanVertY;TPC.Anchor.meanVertY:run","defaultcut","25;21;25;21","2;2;4;4",1,0.75,6,kTRUE);  
-  MakePlot(treeMC,mcrddir,"meanVertZ.png","meanVertZ:run MC/Anchor",cRange,"","offsetdRA;TPC.Anchor.offsetdRA:run","defaultcut","25;21;25;21","2;2;4;4",1,0.75,6,kTRUE);
-  MakePlot(treeMC,mcrddir,"offsetdR.png","offsetdR",cRange,"","offsetdRA;TPC.Anchor.offsetdRA;offsetdRC;TPC.Anchor.offsetdRC:run","defaultcut","25;21;25;21","2;2;4;4",1,0.75,6,kTRUE);  
-  MakePlot(treeMC,mcrddir,"offsetdZ.png","offsetdZ",cRange,"","offsetdZA;TPC.Anchor.offsetdZA;offsetdZC;TPC.Anchor.offsetdZC:run","defaultcut","25;21;25;21","2;2;4;4",1,0.75,6,kTRUE);   
-  MakePlot(treeMC,mcrddir,"offsetd_comb4.png","offsetd_comb4",cRange,"","offsetd_comb4;TPC.Anchor.offsetd_comb4:run","defaultcut","25;21;25;21","2;2;4;4",1,0.75,6,kTRUE);  
-  MakePlot(treeMC,mcrddir,"meanMultPos.png","meanMultPos",cRange,"","meanMultPos;TPC.Anchor.meanMultPos:run","defaultcut","25;21;25;21","2;2;4;4",1,0.75,6,kTRUE);  
-  MakePlot(treeMC,mcrddir,"meanMultNeg.png","meanMultNeg",cRange,"","meanMultNeg;TPC.Anchor.meanMultNeg:run","defaultcut","25;21;25;21","2;2;4;4",1,0.75,6,kTRUE);  
-  MakePlot(treeMC,mcrddir,"meanMult_comb2.png","meanMult_comb2",cRange,"","meanMult_comb2;TPC.Anchor.meanMult_comb2:run","defaultcut","25;21;25;21","2;2;4;4",1,0.75,6,kTRUE);  
-  MakePlot(treeMC,mcrddir,"tpcItsMatch.png","tpcItsMatch",cRange,"","tpcItsMatchA;TPC.Anchor.tpcItsMatchA;tpcItsMatchC;TPC.Anchor.tpcItsMatchC:run","defaultcut","25;21;25;21","2;2;4;4",1,0.75,6,kTRUE);  
-  MakePlot(treeMC,mcrddir,"tpcItsMatchHighPt.png","tpcItsMatchHighPt",cRange,"","tpcItsMatchHighPtA;TPC.Anchor.tpcItsMatchHighPtA;tpcItsMatchHighPtC;TPC.Anchor.tpcItsMatchHighPtC:run","defaultcut","25;21;25;21","2;2;4;4",1,0.75,6,kTRUE);  
-  MakePlot(treeMC,mcrddir,"tpcItsMatch_comb4.png","tpcItsMatch_comb4",cRange,"","tpcItsMatch_comb4;TPC.Anchor.tpcItsMatch_comb4:run","defaultcut","25;21;25;21","2;2;4;4",1,0.75,6,kTRUE);  
-  MakePlot(treeMC,mcrddir,"lambdaPull.png","lambdaPull",cRange,"","lambdaPull;TPC.Anchor.lambdaPull:run","defaultcut","25;21;25;21","2;2;4;4",1,0.75,6,kTRUE);  
-  MakePlot(treeMC,mcrddir,"tpcConstrainPhiC.png","tpcConstrainPhiC",cRange,"","tpcConstrainPhiC;TPC.Anchor.tpcConstrainPhiC:run","defaultcut","25;21;25;21","2;2;4;4",1,0.75,6,kTRUE);  
-  MakePlot(treeMC,mcrddir,"yPull.png","yPull",cRange,"","yPull;TPC.Anchor.yPull:run","defaultcut","25;21;25;21","2;2;4;4",1,0.75,6,kTRUE);  
-  MakePlot(treeMC,mcrddir,"zPull.png","zPull",cRange,"","zPull;TPC.Anchor.zPull:run","defaultcut","25;21;25;21","2;2;4;4",1,0.75,6,kTRUE);  
-  MakePlot(treeMC,mcrddir,"itsTpcPulls_comb4.png","itsTpcPulls_comb4",cRange,"","itsTpcPulls_comb4;TPC.Anchor.itsTpcPulls_comb4:run","defaultcut","25;21;25;21","2;2;4;4",1,0.75,6,kTRUE);  
-  MakePlot(treeMC,mcrddir,"tpcConstrainPhi.png","tpcConstrainPhi",cRange,"","tpcConstrainPhiA;TPC.Anchor.tpcConstrainPhiA;tpcConstrainPhiC;TPC.Anchor.tpcConstrainPhiC:run","defaultcut","25;21;25;21","2;2;4;4",1,0.75,6,kTRUE);  
-  MakePlot(treeMC,mcrddir,"tpcConstrainPhi_comb2.png","tpcConstrainPhi_comb2",cRange,"","tpcConstrainPhi_comb2;TPC.Anchor.tpcConstrainPhi_comb2:run","defaultcut","25;21;25;21","2;2;4;4",1,0.75,6,kTRUE);  
-  MakePlot(treeMC,mcrddir,"deltaPt.png","deltaPt",cRange,"","deltaPt;TPC.Anchor.deltaPt:run","defaultcut","25;21;25;21","2;2;4;4",1,0.75,6,kTRUE);  
-  MakePlot(treeMC,mcrddir,"deltaPtAC.png","deltaPtAC",cRange,"","deltaPtA;TPC.Anchor.deltaPtA;deltaPtC;TPC.Anchor.deltaPtC:run","defaultcut","25;21;25;21","2;2;4;4",1,0.75,6,kTRUE);  
-  MakePlot(treeMC,mcrddir,"dcarP0.png","dcarP0",cRange,"","dcarAP0;TPC.Anchor.dcarAP0;dcarCP0;TPC.Anchor.dcarCP0:run","defaultcut","25;21;25;21","2;2;4;4",1,0.75,6,kTRUE);  
-  MakePlot(treeMC,mcrddir,"dcarP1.png","dcarP1",cRange,"","dcarAP1;TPC.Anchor.dcarAP1;dcarCP1;TPC.Anchor.dcarCP1:run","defaultcut","25;21;25;21","2;2;4;4",1,0.75,6,kTRUE);  
-  MakePlot(treeMC,mcrddir,"dcarFitpar_comb4.png","dcarFitpar_comb4",cRange,"","dcarFitpar_comb4;TPC.Anchor.dcarFitpar_comb4:run","defaultcut","25;21;25;21","2;2;4;4",1,0.75,6,kTRUE);  
-  MakePlot(treeMC,mcrddir,"dcar_A_0.png","dcar_A_0",cRange,"","dcar_posA_0;TPC.Anchor.dcar_posA_0;dcar_negA_0;TPC.Anchor.dcar_negA_0:run","defaultcut","25;21;25;21","2;2;4;4",1,0.75,6,kTRUE);  
-  MakePlot(treeMC,mcrddir,"dcar_C_0.png","dcar_C_0",cRange,"","dcar_posC_0;TPC.Anchor.dcar_posC_0;dcar_negC_0;TPC.Anchor.dcar_negC_0:run","defaultcut","25;21;25;21","2;2;4;4",1,0.75,6,kTRUE);  
-  MakePlot(treeMC,mcrddir,"dcar_C_1.png","dcar_C_1",cRange,"","dcar_posC_1;TPC.Anchor.dcar_posC_1;dcar_negC_1;TPC.Anchor.dcar_negC_1:run","defaultcut","25;21;25;21","2;2;4;4",1,0.75,6,kTRUE);  
-  MakePlot(treeMC,mcrddir,"dcar_A_1.png","dcar_A_1",cRange,"","dcar_posA_1;TPC.Anchor.dcar_posA_1;dcar_negA_1;TPC.Anchor.dcar_negA_1:run","defaultcut","25;21;25;21","2;2;4;4",1,0.75,6,kTRUE);  
-  MakePlot(treeMC,mcrddir,"dcar_A_2.png","dcar_A_2",cRange,"","dcar_posA_2;TPC.Anchor.dcar_posA_2;dcar_negA_2;TPC.Anchor.dcar_negA_2:run","defaultcut","25;21;25;21","2;2;4;4",1,0.75,6,kTRUE);  
-  MakePlot(treeMC,mcrddir,"dcar_C_2.png","dcar_C_2",cRange,"","dcar_posC_2;TPC.Anchor.dcar_posC_2;dcar_negC_2;TPC.Anchor.dcar_negC_2:run","defaultcut","25;21;25;21","2;2;4;4",1,0.75,6,kTRUE);  
-  MakePlot(treeMC,mcrddir,"dcaz_A_0.png","dcaz_A_0",cRange,"","dcaz_posA_0;TPC.Anchor.dcaz_posA_0;dcaz_negA_0;TPC.Anchor.dcaz_negA_0:run","defaultcut","25;21;25;21","2;2;4;4",1,0.75,6,kTRUE);  
-  MakePlot(treeMC,mcrddir,"dcaz_C_0.png","dcaz_C_0",cRange,"","dcaz_posC_0;TPC.Anchor.dcaz_posC_0;dcaz_negC_0;TPC.Anchor.dcaz_negC_0:run","defaultcut","25;21;25;21","2;2;4;4",1,0.75,6,kTRUE);  
-  MakePlot(treeMC,mcrddir,"dcaz_C_1.png","dcaz_C_1",cRange,"","dcaz_posC_1;TPC.Anchor.dcaz_posC_1;dcaz_negC_1;TPC.Anchor.dcaz_negC_1:run","defaultcut","25;21;25;21","2;2;4;4",1,0.75,6,kTRUE);  
-  MakePlot(treeMC,mcrddir,"dcaz_A_1.png","dcaz_A_1",cRange,"","dcaz_posA_1;TPC.Anchor.dcaz_posA_1;dcaz_negA_1;TPC.Anchor.dcaz_negA_1:run","defaultcut","25;21;25;21","2;2;4;4",1,0.75,6,kTRUE);  
-  MakePlot(treeMC,mcrddir,"dcaz_A_2.png","dcaz_A_2",cRange,"","dcaz_posA_2;TPC.Anchor.dcaz_posA_2;dcaz_negA_2;TPC.Anchor.dcaz_negA_2:run","defaultcut","25;21;25;21","2;2;4;4",1,0.75,6,kTRUE);  
-  MakePlot(treeMC,mcrddir,"dcaz_C_2.png","dcaz_C_2",cRange,"","dcaz_posC_2;TPC.Anchor.dcaz_posC_2;dcaz_negC_2;TPC.Anchor.dcaz_negC_2:run","defaultcut","25;21;25;21","2;2;4;4",1,0.75,6,kTRUE);  
-  MakePlot(treeMC,mcrddir,"iroc.png","iroc",cRange,"","iroc_A_side;TPC.Anchor.iroc_A_side;iroc_C_side;TPC.Anchor.iroc_C_side:run","defaultcut","25;21;25;21","2;2;4;4",1,0.75,6,kTRUE);  
-  MakePlot(treeMC,mcrddir,"oroc.png","oroc",cRange,"","oroc_A_side;TPC.Anchor.oroc_A_side;oroc_C_side;TPC.Anchor.oroc_C_side:run","defaultcut","25;21;25;21","2;2;4;4",1,0.75,6,kTRUE);  
-  MakePlot(treeMC,mcrddir,"MIPattachSlopeA.png","MIPattachSlopeA",cRange,"","MIPattachSlopeA;TPC.Anchor.MIPattachSlopeA:run","defaultcut","25;21;25;21","2;2;4;4",1,0.75,6,kTRUE);  
-  MakePlot(treeMC,mcrddir,"MIPattachSlopeC*(-1).png","MIPattachSlopeC*(-1)",cRange,"","MIPattachSlopeC*(-1);TPC.Anchor.MIPattachSlopeC*(-1):run","defaultcut","25;21;25;21","2;2;4;4",1,0.75,6,kTRUE);  
-  MakePlot(treeMC,mcrddir,"MIPattachSlope_comb2.png","MIPattachSlope_comb2",cRange,"","MIPattachSlope_comb2;TPC.Anchor.MIPattachSlope_comb2:run","defaultcut","25;21;25;21","2;2;4;4",1,0.75,6,kTRUE);  
-  MakePlot(treeMC,mcrddir,"electroMIPSeparation.png","electroMIPSeparation",cRange,"","electroMIPSeparation;TPC.Anchor.electroMIPSeparation:run","defaultcut","25;21;25;21","2;2;4;4",1,0.75,6,kTRUE); 
+  MakePlot(treeMC,0,"matchingTPC-ITSEffe.png","Number of clusters",cRange,"","meanTPCncl;TPC.Anchor.meanTPCncl:run","defaultcut","25;21;25;21","2;2;4;4",1,0.75,6,kTRUE);  
+  AppendBand(treeMC,outputdir,"matchingTPC-ITSEffe.png", "meanTPCnclF_RobustMean:run","defaultcut", "2", "2", 1,6,kTRUE); 
+
+  MakePlot(treeMC,outputdir,"matchingTPC-ITSEffe.png","Matching efficiency:MC/Anchor",cRange,"","QA.TPC.tpcItsMatchA;QA.TPC.tpcItsMatchC;QA.ITS.EffTOTPt02;QA.ITS.EffTOTPt1;QA.ITS.EffTOTPt10;TPC.Anchor.tpcItsMatchA;TPC.Anchor.tpcItsMatchC;ITS.Anchor.EffTOTPt02;ITS.Anchor.EffTOTPt1;ITS.Anchor.EffTOTPt10:run","defaultcut","25;21;25;21","2;2;4;4",1,0.75,6,kTRUE);  
+  MakePlot(treeMC,outputdir,"tpcItsMatch.png","TPC - ITS Match",cRange,"","tpcItsMatchHighPtA;TPC.Anchor.tpcItsMatchHighPtA;tpcItsMatchHighPtC;TPC.Anchor.tpcItsMatchHighPtC:run","defaultcut","25;21;25;21","2;2;4;4",1,0.75,6,kTRUE);  
+  MakePlot(treeMC,outputdir,"rmsDCAMultSpartMCtoAnchor.png","DCA Resolution mult due MS:MC/Anchor",cRange,"","dcarAP1;dcarCP1;TPC.Anchor.dcarAP1;TPC.Anchor.dcarCP1:run","defaultcut","25;21;25;21","2;2;4;4",1,0.75,6,kTRUE);  
+  MakePlot(treeMC,outputdir,"matchingTPC-ITSEffe_1.png","Matching efficiencyx",cRange,"","QA.TPC.tpcItsMatchA;QA.TPC.tpcItsMatchC;QA.ITS.EffoneSPDPt02;QA.ITS.EffoneSPDPt1;QA.ITS.EffoneSPDPt10;TPC.Anchor.tpcItsMatchA;TPC.Anchor.tpcItsMatchC;ITS.Anchor.EffoneSPDPt02;ITS.Anchor.EffoneSPDPt1;ITS.Anchor.EffoneSPDPt10:run","defaultcut","21;24;25;27;28;21;24;25;27;28","2;2;2;2;2;4;4;4;4;4",1,0.75,6,kTRUE);  
+  MakePlot(treeMC,outputdir,"meanTPCNclRatioMCtoAnchor.png","Number of clusters MC/Anchor",cRange,"","meanTPCncl/TPC.Anchor.meanTPCncl;meanTPCnclF/TPC.Anchor.meanTPCnclF:run","defaultcut","25;21;25;21","2;2;4;4",1,0.75,6,kTRUE);  
+  MakePlot(treeMC,outputdir,"matchingTPC-ITSEffe_2.png","Matching efficiency",cRange,"","QA.TPC.tpcItsMatchA/TPC.Anchor.tpcItsMatchA;QA.TPC.tpcItsMatchC/TPC.Anchor.tpcItsMatchC;QA.ITS.EffTOTPt02/ITS.Anchor.EffTOTPt02;QA.ITS.EffTOTPt1/ITS.Anchor.EffTOTPt1;QA.ITS.EffTOTPt10/ITS.Anchor.EffTOTPt10:run","defaultcut","21;24;25;27;28;21;24;25;27;28","1;2;4;3;6;2;4;4;4;4;4",1,0.75,6,kTRUE);  
+  MakePlot(treeMC,outputdir,"meanVertX.png","meanVertX:run MC/Anchor",cRange,"","QA.TPC.meanVertX;TPC.Anchor.meanVertX:run","defaultcut","25;21;25;21","2;2;4;4",1,0.75,6,kTRUE);  
+  MakePlot(treeMC,outputdir,"meanVertY.png","meanVertY:run MC/Anchor",cRange,"","QA.TPC.meanVertY;TPC.Anchor.meanVertY:run","defaultcut","25;21;25;21","2;2;4;4",1,0.75,6,kTRUE);  
+  MakePlot(treeMC,outputdir,"meanVertZ.png","meanVertZ:run MC/Anchor",cRange,"","offsetdRA;TPC.Anchor.offsetdRA:run","defaultcut","25;21;25;21","2;2;4;4",1,0.75,6,kTRUE);
+  MakePlot(treeMC,0,"offsetdR.png","offsetdR",cRange,"","offsetdRA;TPC.Anchor.offsetdRA;offsetdRC;TPC.Anchor.offsetdRC:run","defaultcut","25;21;25;21","2;2;4;4",1,0.75,6,kTRUE);  
+  AppendBand(treeMC,0,"offsetdR.png", "offsetdRA_RobustMean;offsetdRA_OutlierMin;offsetdRA_OutlierMax;offsetdRA_WarningMin;offsetdRA_WarningMax:run","defaultcut", "1;1;1;1;1,1;2;2;3;3", "1;1;1;1;1,1;2;2;3;3", 1,6,kTRUE); 
+//  AppendBand(treeMC,0,"offsetdR.png", "offsetdRA_OutlierMin:run","defaultcut", "1,2", "1,3", 1,6,kTRUE); 
+//  AppendBand(treeMC,0,"offsetdR.png", "offsetdRA_OutlierMax:run","defaultcut", "2,2", "1,3", 1,6,kTRUE);
+//  AppendBand(treeMC,0,"offsetdR.png", "offsetdRA_WarningMin:run","defaultcut", "2,3", "1,4", 1,6,kTRUE);
+//  AppendBand(treeMC,outputdir,"offsetdR.png", "offsetdRA_WarningMax:run","defaultcut", "1,3", "1,4", 1,6,kTRUE);
   
-  MakePlot(treeMC,mcrddir,"mcrddiff_statvar.png","mcrddiff Status Variable",cRange,"","mcrddiff_Warning;mcrddiff_Outlier;mcrddiff_PhysAcc:run","defaultcut","25;21;25;21","2;2;4;4",1,0.75,6,kTRUE); 
+  
+  MakePlot(treeMC,outputdir,"offsetdZ.png","offsetdZ",cRange,"","offsetdZA;TPC.Anchor.offsetdZA;offsetdZC;TPC.Anchor.offsetdZC:run","defaultcut","25;21;25;21","2;2;4;4",1,0.75,6,kTRUE);   
+  MakePlot(treeMC,outputdir,"offsetd_comb4.png","offsetd_comb4",cRange,"","offsetd_comb4;TPC.Anchor.offsetd_comb4:run","defaultcut","25;21;25;21","2;2;4;4",1,0.75,6,kTRUE);  
+  MakePlot(treeMC,outputdir,"meanMultPos.png","meanMultPos",cRange,"","meanMultPos;TPC.Anchor.meanMultPos:run","defaultcut","25;21;25;21","2;2;4;4",1,0.75,6,kTRUE);  
+  MakePlot(treeMC,outputdir,"meanMultNeg.png","meanMultNeg",cRange,"","meanMultNeg;TPC.Anchor.meanMultNeg:run","defaultcut","25;21;25;21","2;2;4;4",1,0.75,6,kTRUE);  
+  MakePlot(treeMC,outputdir,"meanMult_comb2.png","meanMult_comb2",cRange,"","meanMult_comb2;TPC.Anchor.meanMult_comb2:run","defaultcut","25;21;25;21","2;2;4;4",1,0.75,6,kTRUE);  
+  MakePlot(treeMC,outputdir,"tpcItsMatch.png","tpcItsMatch",cRange,"","tpcItsMatchA;TPC.Anchor.tpcItsMatchA;tpcItsMatchC;TPC.Anchor.tpcItsMatchC:run","defaultcut","25;21;25;21","2;2;4;4",1,0.75,6,kTRUE);  
+  MakePlot(treeMC,outputdir,"tpcItsMatchHighPt.png","tpcItsMatchHighPt",cRange,"","tpcItsMatchHighPtA;TPC.Anchor.tpcItsMatchHighPtA;tpcItsMatchHighPtC;TPC.Anchor.tpcItsMatchHighPtC:run","defaultcut","25;21;25;21","2;2;4;4",1,0.75,6,kTRUE);  
+  MakePlot(treeMC,outputdir,"tpcItsMatch_comb4.png","tpcItsMatch_comb4",cRange,"","tpcItsMatch_comb4;TPC.Anchor.tpcItsMatch_comb4:run","defaultcut","25;21;25;21","2;2;4;4",1,0.75,6,kTRUE);  
+  MakePlot(treeMC,outputdir,"lambdaPull.png","lambdaPull",cRange,"","lambdaPull;TPC.Anchor.lambdaPull:run","defaultcut","25;21;25;21","2;2;4;4",1,0.75,6,kTRUE);  
+  MakePlot(treeMC,outputdir,"tpcConstrainPhiC.png","tpcConstrainPhiC",cRange,"","tpcConstrainPhiC;TPC.Anchor.tpcConstrainPhiC:run","defaultcut","25;21;25;21","2;2;4;4",1,0.75,6,kTRUE);  
+  MakePlot(treeMC,outputdir,"yPull.png","yPull",cRange,"","yPull;TPC.Anchor.yPull:run","defaultcut","25;21;25;21","2;2;4;4",1,0.75,6,kTRUE);  
+  MakePlot(treeMC,outputdir,"zPull.png","zPull",cRange,"","zPull;TPC.Anchor.zPull:run","defaultcut","25;21;25;21","2;2;4;4",1,0.75,6,kTRUE);  
+  MakePlot(treeMC,outputdir,"itsTpcPulls_comb4.png","itsTpcPulls_comb4",cRange,"","itsTpcPulls_comb4;TPC.Anchor.itsTpcPulls_comb4:run","defaultcut","25;21;25;21","2;2;4;4",1,0.75,6,kTRUE);  
+  MakePlot(treeMC,outputdir,"tpcConstrainPhi.png","tpcConstrainPhi",cRange,"","tpcConstrainPhiA;TPC.Anchor.tpcConstrainPhiA;tpcConstrainPhiC;TPC.Anchor.tpcConstrainPhiC:run","defaultcut","25;21;25;21","2;2;4;4",1,0.75,6,kTRUE);  
+  MakePlot(treeMC,outputdir,"tpcConstrainPhi_comb2.png","tpcConstrainPhi_comb2",cRange,"","tpcConstrainPhi_comb2;TPC.Anchor.tpcConstrainPhi_comb2:run","defaultcut","25;21;25;21","2;2;4;4",1,0.75,6,kTRUE);  
+  MakePlot(treeMC,outputdir,"deltaPt.png","deltaPt",cRange,"","deltaPt;TPC.Anchor.deltaPt:run","defaultcut","25;21;25;21","2;2;4;4",1,0.75,6,kTRUE);  
+  MakePlot(treeMC,outputdir,"deltaPtAC.png","deltaPtAC",cRange,"","deltaPtA;TPC.Anchor.deltaPtA;deltaPtC;TPC.Anchor.deltaPtC:run","defaultcut","25;21;25;21","2;2;4;4",1,0.75,6,kTRUE);  
+  MakePlot(treeMC,outputdir,"dcarP0.png","dcarP0",cRange,"","dcarAP0;TPC.Anchor.dcarAP0;dcarCP0;TPC.Anchor.dcarCP0:run","defaultcut","25;21;25;21","2;2;4;4",1,0.75,6,kTRUE);  
+  MakePlot(treeMC,outputdir,"dcarP1.png","dcarP1",cRange,"","dcarAP1;TPC.Anchor.dcarAP1;dcarCP1;TPC.Anchor.dcarCP1:run","defaultcut","25;21;25;21","2;2;4;4",1,0.75,6,kTRUE);  
+  MakePlot(treeMC,outputdir,"dcarFitpar_comb4.png","dcarFitpar_comb4",cRange,"","dcarFitpar_comb4;TPC.Anchor.dcarFitpar_comb4:run","defaultcut","25;21;25;21","2;2;4;4",1,0.75,6,kTRUE);  
+  MakePlot(treeMC,outputdir,"dcar_A_0.png","dcar_A_0",cRange,"","dcar_posA_0;TPC.Anchor.dcar_posA_0;dcar_negA_0;TPC.Anchor.dcar_negA_0:run","defaultcut","25;21;25;21","2;2;4;4",1,0.75,6,kTRUE);  
+  MakePlot(treeMC,outputdir,"dcar_C_0.png","dcar_C_0",cRange,"","dcar_posC_0;TPC.Anchor.dcar_posC_0;dcar_negC_0;TPC.Anchor.dcar_negC_0:run","defaultcut","25;21;25;21","2;2;4;4",1,0.75,6,kTRUE);  
+  MakePlot(treeMC,outputdir,"dcar_C_1.png","dcar_C_1",cRange,"","dcar_posC_1;TPC.Anchor.dcar_posC_1;dcar_negC_1;TPC.Anchor.dcar_negC_1:run","defaultcut","25;21;25;21","2;2;4;4",1,0.75,6,kTRUE);  
+  MakePlot(treeMC,outputdir,"dcar_A_1.png","dcar_A_1",cRange,"","dcar_posA_1;TPC.Anchor.dcar_posA_1;dcar_negA_1;TPC.Anchor.dcar_negA_1:run","defaultcut","25;21;25;21","2;2;4;4",1,0.75,6,kTRUE);  
+  MakePlot(treeMC,outputdir,"dcar_A_2.png","dcar_A_2",cRange,"","dcar_posA_2;TPC.Anchor.dcar_posA_2;dcar_negA_2;TPC.Anchor.dcar_negA_2:run","defaultcut","25;21;25;21","2;2;4;4",1,0.75,6,kTRUE);  
+  MakePlot(treeMC,outputdir,"dcar_C_2.png","dcar_C_2",cRange,"","dcar_posC_2;TPC.Anchor.dcar_posC_2;dcar_negC_2;TPC.Anchor.dcar_negC_2:run","defaultcut","25;21;25;21","2;2;4;4",1,0.75,6,kTRUE);  
+  MakePlot(treeMC,outputdir,"dcaz_A_0.png","dcaz_A_0",cRange,"","dcaz_posA_0;TPC.Anchor.dcaz_posA_0;dcaz_negA_0;TPC.Anchor.dcaz_negA_0:run","defaultcut","25;21;25;21","2;2;4;4",1,0.75,6,kTRUE);  
+  MakePlot(treeMC,outputdir,"dcaz_C_0.png","dcaz_C_0",cRange,"","dcaz_posC_0;TPC.Anchor.dcaz_posC_0;dcaz_negC_0;TPC.Anchor.dcaz_negC_0:run","defaultcut","25;21;25;21","2;2;4;4",1,0.75,6,kTRUE);  
+  MakePlot(treeMC,outputdir,"dcaz_C_1.png","dcaz_C_1",cRange,"","dcaz_posC_1;TPC.Anchor.dcaz_posC_1;dcaz_negC_1;TPC.Anchor.dcaz_negC_1:run","defaultcut","25;21;25;21","2;2;4;4",1,0.75,6,kTRUE);  
+  MakePlot(treeMC,outputdir,"dcaz_A_1.png","dcaz_A_1",cRange,"","dcaz_posA_1;TPC.Anchor.dcaz_posA_1;dcaz_negA_1;TPC.Anchor.dcaz_negA_1:run","defaultcut","25;21;25;21","2;2;4;4",1,0.75,6,kTRUE);  
+  MakePlot(treeMC,outputdir,"dcaz_A_2.png","dcaz_A_2",cRange,"","dcaz_posA_2;TPC.Anchor.dcaz_posA_2;dcaz_negA_2;TPC.Anchor.dcaz_negA_2:run","defaultcut","25;21;25;21","2;2;4;4",1,0.75,6,kTRUE);  
+  MakePlot(treeMC,outputdir,"dcaz_C_2.png","dcaz_C_2",cRange,"","dcaz_posC_2;TPC.Anchor.dcaz_posC_2;dcaz_negC_2;TPC.Anchor.dcaz_negC_2:run","defaultcut","25;21;25;21","2;2;4;4",1,0.75,6,kTRUE);  
+  MakePlot(treeMC,outputdir,"iroc.png","iroc",cRange,"","iroc_A_side;TPC.Anchor.iroc_A_side;iroc_C_side;TPC.Anchor.iroc_C_side:run","defaultcut","25;21;25;21","2;2;4;4",1,0.75,6,kTRUE);  
+  MakePlot(treeMC,outputdir,"oroc.png","oroc",cRange,"","oroc_A_side;TPC.Anchor.oroc_A_side;oroc_C_side;TPC.Anchor.oroc_C_side:run","defaultcut","25;21;25;21","2;2;4;4",1,0.75,6,kTRUE);  
+  MakePlot(treeMC,outputdir,"MIPattachSlopeA.png","MIPattachSlopeA",cRange,"","MIPattachSlopeA;TPC.Anchor.MIPattachSlopeA:run","defaultcut","25;21;25;21","2;2;4;4",1,0.75,6,kTRUE);  
+  MakePlot(treeMC,outputdir,"MIPattachSlopeC*(-1).png","MIPattachSlopeC*(-1)",cRange,"","MIPattachSlopeC*(-1);TPC.Anchor.MIPattachSlopeC*(-1):run","defaultcut","25;21;25;21","2;2;4;4",1,0.75,6,kTRUE);  
+  MakePlot(treeMC,outputdir,"MIPattachSlope_comb2.png","MIPattachSlope_comb2",cRange,"","MIPattachSlope_comb2;TPC.Anchor.MIPattachSlope_comb2:run","defaultcut","25;21;25;21","2;2;4;4",1,0.75,6,kTRUE);  
+  MakePlot(treeMC,outputdir,"electroMIPSeparation.png","electroMIPSeparation",cRange,"","electroMIPSeparation;TPC.Anchor.electroMIPSeparation:run","defaultcut","25;21;25;21","2;2;4;4",1,0.75,6,kTRUE); 
+  
+  MakePlot(treeMC,outputdir,"mcrddiff_statvar.png","mcrddiff Status Variable",cRange,"","mcrddiff_Warning;mcrddiff_Outlier;mcrddiff_PhysAcc:run","defaultcut","25;21;25;21","2;2;4;4",1,0.75,6,kTRUE); 
 
  { // MIP resolution  and separation
     trendingDraw->fWorkingCanvas->Clear(); 
@@ -297,13 +308,13 @@ void MakeReport(const char* mcrddir){
     TStatToolkit::DrawMultiGraph(lines,"l");
     legend->SetFillStyle(0);legend->Draw();
    
-    trendingDraw->fWorkingCanvas->SaveAs(TString(mcrddir)+"/mipToEleSeparation.png");    
+    trendingDraw->fWorkingCanvas->SaveAs(TString(outputdir)+"/mipToEleSeparation.png");    
   }
 }
 
 ///
 /// \param tree
-/// \param mcrddir
+/// \param outputdir
 /// \param fname
 /// \param LegendTitle
 /// \param legpos
@@ -316,7 +327,7 @@ void MakeReport(const char* mcrddir){
 /// \param msize
 /// \param sigmaRange
 /// \param comp
-void MakePlot(TTree * tree,const char* mcrddir, const char *fname, const char *LegendTitle, std::vector<Double_t>& legpos, const char *groupName, const char* expr, const char * cut, const char * markers, const char *colors, Bool_t drawSparse, Float_t msize, Float_t sigmaRange, Bool_t comp) {
+void MakePlot(TTree * tree,const char* outputdir, const char *fname, const char *LegendTitle, std::vector<Double_t>& legpos, const char *groupName, const char* expr, const char * cut, const char * markers, const char *colors, Bool_t drawSparse, Float_t msize, Float_t sigmaRange, Bool_t comp) {
   TMultiGraph *graph=0;
   
    trendingDraw->fWorkingCanvas->Clear();  
@@ -332,8 +343,33 @@ void MakePlot(TTree * tree,const char* mcrddir, const char *fname, const char *L
        legend->SetFillStyle(0);
        legend->Draw();
    }
-   trendingDraw->fWorkingCanvas->SaveAs(TString(mcrddir)+"/"+TString(fname));
-  //if ()
-  // TODO - in case of non debug mode delete the content  - graph and legends - Sebastian
+   if(outputdir!=0) trendingDraw->fWorkingCanvas->SaveAs(TString(outputdir)+"/"+TString(fname));
+   
+}
+
+/// \param tree
+/// \param outputdir
+/// \param fname
+/// \param expr
+/// \param cut
+/// \param linestyle
+/// \param colors
+/// \param drawSparse
+/// \param sigmaRange
+/// \param comp
+void AppendBand(TTree * tree,const char* outputdir, const char *fname, const char* expr, const char * cut, const char * linestyle, const char *colors, Bool_t drawSparse, Float_t sigmaRange, Bool_t comp) {
+    
+    TMultiGraph *graph=0;  
+    graph = TStatToolkit::MakeMultGraph(tree,"",expr,cut,linestyle,colors,drawSparse,0,sigmaRange,0,comp);
+//    graph->GetHistogram()->SetLineStyle(2);
+    if(!graph){
+       ::Error("MakePlot","No plot returned -> dummy plot!");
+    } 
+    else {
+        TStatToolkit::DrawMultiGraph(graph,"l");
+    }
+    
+    if(outputdir!=0) trendingDraw->fWorkingCanvas->SaveAs(TString(outputdir)+"/"+TString(fname));
 
 }
+
