@@ -374,7 +374,7 @@ void AliAnalysisTaskHFEMultiplicity::UserCreateOutputObjects()
 //---------------THnSparse------------
   Int_t binsE[3]	=      	{200, 1000, 1000};
   Double_t xminE[3]	=	{  0,  0,   0};
-  Double_t xmaxE[3]	=	{  100,   2050,   1000};
+  Double_t xmaxE[3]	=	{  100,   2000,   1000};
 
   fSparseClusE 	= new THnSparseD ("Cluster Energy","Cluster Energy;ClusterE;V0M;SPDTracklets;",3 ,binsE,xminE,xmaxE);
  
@@ -382,22 +382,22 @@ void AliAnalysisTaskHFEMultiplicity::UserCreateOutputObjects()
   
   Int_t bins[9]		=      	{280, 160, 100, 100, 100, 1000, 1000, 200,1000};
   Double_t xmin[9]	=	{  2,  -8,   0,   0,   0, 0, 0, 0 ,-50};
-  Double_t xmax[9]	=	{  30,   8,   2,   2,  2, 2050, 1000, 100, 50};
+  Double_t xmax[9]	=	{  30,   8,   2,   2,  2, 2000, 1000, 100, 50};
 
   fSparseElectron 	= new THnSparseD ("Electron","Electron;pT;nSigma;E/P;m02;m20;V0M;SPDTracklets;Cluster Energy;zvtx;",9 ,bins,xmin,xmax);
  
 
   Int_t binsls[3]	=      	{280, 1000, 1000};
   Double_t xminls[3]	=	{  2, 0, 0};
-  Double_t xmaxls[3]	=	{  30, 2050, 1000};
+  Double_t xmaxls[3]	=	{  30, 2000, 1000};
 
   fSparseLSElectron 	= new THnSparseD ("LSElectron","LSElectron;pT;V0M;SPDTracklets;",3 ,binsls,xminls,xmaxls);
   fSparseULSElectron 	= new THnSparseD ("ULSElectron","ULSElectron;pT;V0M;SPDTracklets;",3 ,binsls,xminls,xmaxls);
   
   Int_t binsm[6]	=      	{1000,1000,1000,1000,1000,400};
   Double_t xminm[6]	=	{-50,0,0,0,0,0};
-  Double_t xmaxm[6]	=	{ 50,2050,1000,2050,1000,400};
-  fSparseMulti 		= new THnSparseD ("Multiplicity","Multiplicity;zvtx;V0M_class;SPDTracklets_class;V0M_data;SPDTracklets_data;Corrected_SPDTracklets;Corrected_V0M;ncharge;",6,binsm,xminm,xmaxm);
+  Double_t xmaxm[6]	=	{ 50,2000,1000,2000,1000,400};
+  fSparseMulti 		= new THnSparseD ("Multiplicity","Multiplicity;zvtx;V0M_data;SPDTracklets_data;Corrected_SPDTracklets;Corrected_V0M;ncharge;",6,binsm,xminm,xmaxm);
     
  
    Int_t binw[4] = {500,3,2,7}; //pT, PDG, HijingOrNot, pi0etaType
@@ -475,8 +475,7 @@ void AliAnalysisTaskHFEMultiplicity::UserExec(Option_t *)
 
 	fMCArray = dynamic_cast<TClonesArray*>(fAOD->FindListObject(AliAODMCParticle::StdBranchName()));
 	if(!fMCArray){
-
-   	 AliError("Array of MC particles not found");
+	AliError("Array of MC particles not found");
     	 return;
   	}
 		 fMCHeader = dynamic_cast<AliAODMCHeader*>(fAOD->GetList()->FindObject(AliAODMCHeader::StdBranchName()));
@@ -512,28 +511,6 @@ if(fReadMC){
   // Multiplicity //
   /////////////////
 
- 
-  Float_t lPercentiles[4];
-  Int_t fMultV0A = -999, fMultV0C = -999, fMultV0M = -999, fMultSPDTracklets = -999;
-  Double_t fMultSPDTracklets_Percentile = -999;
-  TString lNames[4] = {"V0M", "V0A", "V0C", "SPDTracklets"};
-  for(Int_t iEst=0; iEst<4; iEst++) lPercentiles[iEst] = 200;	
-  AliMultSelection *MultSelection = 0x0;
-  MultSelection= (AliMultSelection*)fAOD->FindListObject("MultSelection");
-  if( MultSelection ){
-
-    fMultV0A =  MultSelection->GetEstimator("V0A")->GetValue();
-    fMultV0C =  MultSelection->GetEstimator("V0C")->GetValue();
-    fMultV0M =  MultSelection->GetEstimator("V0M")->GetValue();
-    fMultSPDTracklets =  MultSelection->GetEstimator("SPDTracklets")->GetValue();
-    for(Int_t iEst=0; iEst<4; iEst++)
-      lPercentiles[iEst] = MultSelection->GetMultiplicityPercentile(lNames[iEst].Data());
-
-
-  }
-  else{
-    AliInfo("Didn't find MultSelection!"); 
-  }
 
   //---------------------multiplicity ------------------------------
   Double_t Zvertex1 = -100;						    
