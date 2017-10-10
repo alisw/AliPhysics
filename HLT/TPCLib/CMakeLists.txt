@@ -29,8 +29,6 @@ if(HLT_OPENCL)
     add_subdirectory(tracking-ca/cagpu/opencl)
 endif()
 
-add_subdirectory(tracking-ca/standalone)
-
 # Module
 set(MODULE AliHLTTPC)
 
