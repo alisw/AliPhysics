@@ -53,6 +53,9 @@ AliAnalysisTaskSEImproveITS::AliAnalysisTaskSEImproveITS()
    fD0RPResPCur (0),
    fD0RPResKCur (0),
    fD0RPResPiCur(0),
+   fD0RPSigmaPullRatioP(0),
+   fD0RPSigmaPullRatioK(0),
+   fD0RPSigmaPullRatioPi(0),
    fPt1ResPCur  (0),
    fPt1ResKCur  (0),
    fPt1ResPiCur (0),
@@ -85,9 +88,10 @@ AliAnalysisTaskSEImproveITS::AliAnalysisTaskSEImproveITS()
    fPt1ResPiUpgSA (0),
    fRunInVertexing(kFALSE),
    fImproveTracks(kTRUE),
-   fUpdateSecVertCovMat(kFALSE),
+   fUpdateSecVertCovMat(kTRUE),
    fUpdateSTCovMatrix(kTRUE),
-   fUpdatePulls(kFALSE),
+   fUpdatePulls(kTRUE),
+   fMimicData(kFALSE),
    fDebugOutput (0),
    fDebugNtuple (0),
    fDebugVars   (0), 
@@ -109,8 +113,8 @@ AliAnalysisTaskSEImproveITS::AliAnalysisTaskSEImproveITS()
 }
 
 AliAnalysisTaskSEImproveITS::AliAnalysisTaskSEImproveITS(const char *name,
-                           const char *resfileCurURI,
-                           const char *resfileUpgURI,
+                           const char *period,
+                           const char *systematic,
                            Bool_t isRunInVertexing,
 			   Int_t ndebug)
   :AliAnalysisTaskSE(name),
@@ -120,6 +124,9 @@ AliAnalysisTaskSEImproveITS::AliAnalysisTaskSEImproveITS(const char *name,
    fD0RPResPCur (0),
    fD0RPResKCur (0),
    fD0RPResPiCur(0),
+   fD0RPSigmaPullRatioP(0),
+   fD0RPSigmaPullRatioK(0),
+   fD0RPSigmaPullRatioPi(0),
    fPt1ResPCur  (0),
    fPt1ResKCur  (0),
    fPt1ResPiCur (0),
@@ -152,9 +159,10 @@ AliAnalysisTaskSEImproveITS::AliAnalysisTaskSEImproveITS(const char *name,
    fPt1ResPiUpgSA (0),
    fRunInVertexing(isRunInVertexing),
    fImproveTracks(kTRUE),
-   fUpdateSecVertCovMat(kFALSE),
+   fUpdateSecVertCovMat(kTRUE),
    fUpdateSTCovMatrix(kTRUE),
-   fUpdatePulls(kFALSE),
+   fUpdatePulls(kTRUE),
+   fMimicData(kFALSE),
    fDebugOutput (0),
    fDebugNtuple (0),
    fDebugVars   (0),
@@ -179,10 +187,16 @@ AliAnalysisTaskSEImproveITS::AliAnalysisTaskSEImproveITS(const char *name,
     }
   }
   
-  TFile *resfileCur=TFile::Open(resfileCurURI);
+  TString resfileCurURI = Form("alien:///alice/cern.ch/user/p/pwg_hf/common/Improver/%s/%s/ITSgraphs_Current.root",period,systematic);
+  TFile *resfileCur=TFile::Open(resfileCurURI.Data());
+    
+
   fD0RPResPCur =new TGraph(*static_cast<TGraph*>(resfileCur->Get("D0RPResP" )));
   fD0RPResKCur =new TGraph(*static_cast<TGraph*>(resfileCur->Get("D0RPResK" )));
   fD0RPResPiCur=new TGraph(*static_cast<TGraph*>(resfileCur->Get("D0RPResPi")));
+  fD0RPSigmaPullRatioP =new TGraph(*static_cast<TGraph*>(resfileCur->Get("D0RPSigmaPullRatioP" )));
+  fD0RPSigmaPullRatioK =new TGraph(*static_cast<TGraph*>(resfileCur->Get("D0RPSigmaPullRatioK" )));
+  fD0RPSigmaPullRatioPi=new TGraph(*static_cast<TGraph*>(resfileCur->Get("D0RPSigmaPullRatioPi")));
   for(Int_t j=0; j<2; j++){
     for(Int_t i=0; i<4; i++){
       fD0RPMeanPCur[j][i]=new TGraph(*static_cast<TGraph*>(resfileCur->Get(Form("D0RPMeanP_B%d_phi%d",j,i))));
@@ -202,7 +216,7 @@ AliAnalysisTaskSEImproveITS::AliAnalysisTaskSEImproveITS(const char *name,
   fD0RPResPCur ->SetName("D0RPResPCur" );
   fD0RPResKCur ->SetName("D0RPResKCur" );
   fD0RPResPiCur->SetName("D0RPResPiCur");
-  fD0ZResPCur  ->SetName("D0ZResPCur"  ); 
+  fD0ZResPCur  ->SetName("D0ZResPCur"  );
   fD0ZResKCur  ->SetName("D0ZResKCur"  );
   fD0ZResPiCur ->SetName("D0ZResPiCur" );
   fPt1ResPCur  ->SetName("Pt1ResPCur"  );
@@ -227,7 +241,9 @@ AliAnalysisTaskSEImproveITS::AliAnalysisTaskSEImproveITS(const char *name,
   fPt1ResKCurSA  ->SetName("Pt1ResKCurSA"  );
   fPt1ResPiCurSA ->SetName("Pt1ResPiCurSA" );
   delete resfileCur;
-  TFile *resfileUpg=TFile::Open(resfileUpgURI );
+    
+  TString resfileUpgURI = Form("alien:///alice/cern.ch/user/p/pwg_hf/common/Improver/%s/%s/ITSgraphs_NewAll-X0.3-Res4um.root",period,systematic);
+  TFile *resfileUpg=TFile::Open(resfileUpgURI.Data());
   fD0RPResPUpg =new TGraph(*static_cast<TGraph*>(resfileUpg->Get("D0RPResP" )));
   fD0RPResKUpg =new TGraph(*static_cast<TGraph*>(resfileUpg->Get("D0RPResK" )));
   fD0RPResPiUpg=new TGraph(*static_cast<TGraph*>(resfileUpg->Get("D0RPResPi")));
@@ -300,6 +316,9 @@ void AliAnalysisTaskSEImproveITS::UserCreateOutputObjects() {
   fDebugOutput->Add(fD0RPResPCur );
   fDebugOutput->Add(fD0RPResKCur );
   fDebugOutput->Add(fD0RPResPiCur);
+  fDebugOutput->Add(fD0RPSigmaPullRatioP);
+  fDebugOutput->Add(fD0RPSigmaPullRatioK);
+  fDebugOutput->Add(fD0RPSigmaPullRatioPi);
   for(Int_t j=0; j<2; j++){
     for(Int_t i=0; i<4; i++){
       fDebugOutput->Add(fD0RPMeanPCur[j][i]);
@@ -640,6 +659,8 @@ void AliAnalysisTaskSEImproveITS::SmearTrack(AliAODTrack *track,const TClonesArr
   Double_t sd0mrpo=0.;
   Double_t sd0zo =0.;
   Double_t spt1o =0.;
+  Double_t pullcorr=0.;
+    
   switch (mc->GetPdgCode()) {
   case 2212: case -2212:
     sd0rpo=EvalGraph(ptmc,fD0RPResPCur,fD0RPResPCurSA);
@@ -650,6 +671,7 @@ void AliAnalysisTaskSEImproveITS::SmearTrack(AliAODTrack *track,const TClonesArr
     spt1n =EvalGraph(ptmc,fPt1ResPUpg,fPt1ResPUpgSA);
     sd0mrpo=EvalGraph(ptmc,fD0RPMeanPCur[magfield][phiBin],fD0RPMeanPCur[magfield][phiBin]);
     sd0mrpn=EvalGraph(ptmc,fD0RPMeanPUpg[magfield][phiBin],fD0RPMeanPUpg[magfield][phiBin]);
+    pullcorr=EvalGraph(ptmc,fD0RPSigmaPullRatioP,fD0RPSigmaPullRatioP);
     break;
   case 321: case -321:
     sd0rpo=EvalGraph(ptmc,fD0RPResKCur,fD0RPResKCurSA);
@@ -660,6 +682,7 @@ void AliAnalysisTaskSEImproveITS::SmearTrack(AliAODTrack *track,const TClonesArr
     spt1n =EvalGraph(ptmc,fPt1ResKUpg,fPt1ResKUpgSA);
     sd0mrpo=EvalGraph(ptmc,fD0RPMeanKCur[magfield][phiBin],fD0RPMeanKCur[magfield][phiBin]);
     sd0mrpn=EvalGraph(ptmc,fD0RPMeanKUpg[magfield][phiBin],fD0RPMeanKUpg[magfield][phiBin]);
+    pullcorr=EvalGraph(ptmc,fD0RPSigmaPullRatioK,fD0RPSigmaPullRatioK);
     break;
   case 211: case -211:
     sd0rpo=EvalGraph(ptmc,fD0RPResPiCur,fD0RPResPiCurSA);
@@ -670,6 +693,7 @@ void AliAnalysisTaskSEImproveITS::SmearTrack(AliAODTrack *track,const TClonesArr
     spt1n =EvalGraph(ptmc,fPt1ResPiUpg,fPt1ResPiUpgSA);
     sd0mrpo=EvalGraph(ptmc,fD0RPMeanPiCur[magfield][phiBin],fD0RPMeanPiCur[magfield][phiBin]);
     sd0mrpn=EvalGraph(ptmc,fD0RPMeanPiUpg[magfield][phiBin],fD0RPMeanPiUpg[magfield][phiBin]);
+    pullcorr=EvalGraph(ptmc,fD0RPSigmaPullRatioPi,fD0RPSigmaPullRatioPi);
     break;
   default:
     return;
@@ -697,6 +721,12 @@ void AliAnalysisTaskSEImproveITS::SmearTrack(AliAODTrack *track,const TClonesArr
   Double_t dd0rpn=dd0rpo*(sd0rpo>0. ? (sd0rpn/sd0rpo) : 1.);
   Double_t dd0mrpn=TMath::Abs(sd0mrpn)-TMath::Abs(sd0mrpo);
   Double_t d0rpn =d0rpmc+dd0rpn-dd0mrpn;
+    
+    if(fMimicData){
+       dd0mrpn=sd0mrpn-sd0mrpo;
+       d0rpn =d0rpmc+dd0rpn+dd0mrpn;
+    }
+    
   Double_t dpt1o =pt1o-pt1mc;
   Double_t dpt1n =dpt1o *(spt1o >0. ? (spt1n /spt1o ) : 1.);
   Double_t pt1n  =pt1mc+dpt1n;
@@ -720,11 +750,13 @@ void AliAnalysisTaskSEImproveITS::SmearTrack(AliAODTrack *track,const TClonesArr
     if(spt1o>0.)             covar[14]*=(spt1n/spt1o)*(spt1n/spt1o);//ptpt
   }
   if(fUpdatePulls){
-    covar[0]*=0.85*0.85;//yy
-    covar[1]*=0.85;//yz
-    covar[3]*=0.85;//yl
-    covar[6]*=0.85;//ysenT
-    covar[10]*=0.85;//ypt
+  
+      covar[0]*=pullcorr*pullcorr;//yy
+      covar[1]*=pullcorr;//yz
+      covar[3]*=pullcorr;//yl
+      covar[6]*=pullcorr;//ysenT
+      covar[10]*=pullcorr;//ypt
+      
   }
 
   // Copy the smeared parameters to the AOD track
