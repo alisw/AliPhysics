@@ -46,9 +46,12 @@ AliAnalysisTaskPHOSObjectCreator* AddTaskPHOSObjectCreator(
       f1nonlin->FixParameter(2, 1.01); //for full E, ZS = 20MeV;//decalib 3% on M123
     }
     else if(period.Contains("LHC15o")){
-      f1nonlin->FixParameter(0,-0.04);//for core E at ZS 20 MeV with only MIP cut
-      f1nonlin->FixParameter(1,  0.8);//for core E at ZS 20 MeV with only MIP cut
-      f1nonlin->FixParameter(2,0.993);//for core E at ZS 20 MeV with only MIP cut
+      f1nonlin->FixParameter(0,-0.06);//for core E at ZS 20 MeV with only MIP cut
+      f1nonlin->FixParameter(1,  0.7);//for core E at ZS 20 MeV with only MIP cut
+      f1nonlin->FixParameter(2, 1.01);//for core E at ZS 20 MeV with only MIP cut
+      //f1nonlin->FixParameter(0,-0.04);//for core E at ZS 20 MeV with only MIP cut
+      //f1nonlin->FixParameter(1,  0.8);//for core E at ZS 20 MeV with only MIP cut
+      //f1nonlin->FixParameter(2,0.993);//for core E at ZS 20 MeV with only MIP cut
     }
     task->SetUserDefinedNonlinearity(f1nonlin);
 
