@@ -97,7 +97,7 @@ AliAnalysisTaskUpcEtaC::AliAnalysisTaskUpcEtaC()
   f2RhoParentPx(0),f2RhoParentPy(0),f2RhoParentPz(0),f2RhoDaughterParentAngle(0),f2RhoDaughterDaughterAngle(0),f2RhoDaughterDaughterCosAngle(0),f2RhoDaughterPtotal(0),
   f2RhoParentPxCheck(0),f2RhoParentPyCheck(0),f2RhoParentPzCheck(0),f2RhoDaughterParentAngleCheck(0),f2RhoDaughterDaughterAngleCheck(0),f2RhoDaughterDaughterCosAngleCheck(0),f2RhoDaughterPtotalCheck(0),
   fHistNeventsEtaC4KaonChannel(0),f4KaonPtVsMinvEtaC(0),f4KaonPtVsMinvKK(0),f4KVs2KMinv(0),f4KVs2KMinvSquared(0),
-  f2KstarYVsMinvEtaC(0),f1KstarYVsMinvEtaC(0),f0KstarYVsMinvEtaC(0),f2RhoYVsMinvEtaC(0),f4PionYVsMinvEtaC(0),f3PiPiYVsMinvEtaC(0),f4KaonYVsMinvEtaC(0),fK0sYVsMinvEtaC(0),
+  f2KstarEtaVsMinvEtaC(0),f1KstarEtaVsMinvEtaC(0),f0KstarEtaVsMinvEtaC(0),f2RhoEtaVsMinvEtaC(0),f4PionEtaVsMinvEtaC(0),f3PiPiEtaVsMinvEtaC(0),f4KaonEtaVsMinvEtaC(0),fEtaCEtaVsMinvK0sChannel(0),
     fListSystematics(0),fListJPsiLoose(0),fListJPsiTight(0),fListEtaCLoose(0),fListEtaCTight(0)
 
 {
@@ -140,7 +140,7 @@ AliAnalysisTaskUpcEtaC::AliAnalysisTaskUpcEtaC(const char *name)
   f2RhoParentPx(0),f2RhoParentPy(0),f2RhoParentPz(0),f2RhoDaughterParentAngle(0),f2RhoDaughterDaughterAngle(0),f2RhoDaughterDaughterCosAngle(0),f2RhoDaughterPtotal(0),
   f2RhoParentPxCheck(0),f2RhoParentPyCheck(0),f2RhoParentPzCheck(0),f2RhoDaughterParentAngleCheck(0),f2RhoDaughterDaughterAngleCheck(0),f2RhoDaughterDaughterCosAngleCheck(0),f2RhoDaughterPtotalCheck(0),
   fHistNeventsEtaC4KaonChannel(0),f4KaonPtVsMinvEtaC(0),f4KaonPtVsMinvKK(0),f4KVs2KMinv(0),f4KVs2KMinvSquared(0),
-  f2KstarYVsMinvEtaC(0),f1KstarYVsMinvEtaC(0),f0KstarYVsMinvEtaC(0),f2RhoYVsMinvEtaC(0),f4PionYVsMinvEtaC(0),f3PiPiYVsMinvEtaC(0),f4KaonYVsMinvEtaC(0),fK0sYVsMinvEtaC(0),
+  f2KstarEtaVsMinvEtaC(0),f1KstarEtaVsMinvEtaC(0),f0KstarEtaVsMinvEtaC(0),f2RhoEtaVsMinvEtaC(0),f4PionEtaVsMinvEtaC(0),f3PiPiEtaVsMinvEtaC(0),f4KaonEtaVsMinvEtaC(0),fEtaCEtaVsMinvK0sChannel(0),
   fListSystematics(0),fListJPsiLoose(0),fListJPsiTight(0),fListEtaCLoose(0),fListEtaCTight(0)
 
 {
@@ -586,6 +586,13 @@ void AliAnalysisTaskUpcEtaC::UserCreateOutputObjects()
   f4PiVs2PiMinvSquared = new TH2D("f4PiVs2PiMinvSquared","f4PiVs2PiMinvSquared",2500, 0., 25., 2500, 0., 25.);
   fListHist->Add(f4PiVs2PiMinvSquared);
 
+  f2RhoEtaVsMinvEtaC = new TH2D("f2RhoEtaVsMinvEtaC","f2RhoEtaVsMinvEtaC",1000, 0., 10., 2000, -10., 10.);
+  fListHist->Add(f2RhoEtaVsMinvEtaC);
+
+  f4PionEtaVsMinvEtaC = new TH2D("f4PionEtaVsMinvEtaC","f4PionEtaVsMinvEtaC",1000, 0., 10., 2000, -10., 10.);
+  fListHist->Add(f4PionEtaVsMinvEtaC);
+
+
   //3PiPi channel
   TString CutNameEtaC3PiPiChannel[9] = {"Analyzed","Triggered","Vertex cut","V0 decision","Neutron ZDC cut","Six good tracks",
 					"Six Pions","non-zero net charge","candidate (0 net charge)"};
@@ -597,6 +604,9 @@ void AliAnalysisTaskUpcEtaC::UserCreateOutputObjects()
   
   f3PiPiPtVsMinvEtaC = new TH2D("f3PiPiPtVsMinvEtaC","f3PiPiPtVsMinvEtaC",1000, 0., 10.,1000, 0., 10.);
   fListHist->Add(f3PiPiPtVsMinvEtaC);
+
+  f3PiPiEtaVsMinvEtaC = new TH2D("f3PiPiEtaVsMinvEtaC","f3PiPiEtaVsMinvEtaC",1000, 0., 10., 2000, -10., 10.);
+  fListHist->Add(f3PiPiEtaVsMinvEtaC);
 
   //4 kaon channel
   TString CutNameEtaC4KaonChannel[10] = {"Analyzed","Triggered","Vertex cut","V0 decision","Neutron ZDC cut","Four good tracks",
@@ -618,6 +628,8 @@ void AliAnalysisTaskUpcEtaC::UserCreateOutputObjects()
   f4KVs2KMinvSquared = new TH2D("f4KVs2KMinvSquared","f4KVs2KMinvSquared",2500, 0., 25., 2500, 0., 25.);
   fListHist->Add(f4KVs2KMinvSquared);
 
+  f4KaonEtaVsMinvEtaC = new TH2D("f4KaonEtaVsMinvEtaC","f4KaonEtaVsMinvEtaC",1000, 0., 10., 2000, -10., 10.);
+  fListHist->Add(f4KaonEtaVsMinvEtaC);
 
   //f3PiPi3RhoPtVsMinvEtaC = new TH2D("f3PiPi3RhoPtVsMinvEtaC","f3PiPi3RhoPtVsMinvEtaC",1000, 0., 10.,1000, 0., 10.);
   //fListHist->Add(f3PiPi3RhoPtVsMinvEtaC);
@@ -730,6 +742,8 @@ void AliAnalysisTaskUpcEtaC::UserCreateOutputObjects()
   //fListHist->Add(f2KstarMinvSecondKstar);
   f2KstarPtVsMinvEtaC = new TH2D("f2KstarPtVsMinvEtaC","f2KstarPtVsMinvEtaC",1000, 0., 10.,1000, 0., 10.);
   fListHist->Add(f2KstarPtVsMinvEtaC);
+  f2KstarEtaVsMinvEtaC = new TH2D("f2KstarEtaVsMinvEtaC","f2KstarEtaVsMinvEtaC",1000, 0., 10., 2000, -10., 10.);
+  fListHist->Add(f2KstarEtaVsMinvEtaC);
   //f2KstarMinvEtaC = new TH1D("f2KstarMinvEtaC","f2KstarMinvEtaC",200, 2., 4.);
   //fListHist->Add(f2KstarMinvEtaC);
 
@@ -759,6 +773,8 @@ void AliAnalysisTaskUpcEtaC::UserCreateOutputObjects()
   //fListHist->Add(f1KstarMinvOtherPiKcombo);
   f1KstarPtVsMinvEtaC = new TH2D("f1KstarPtVsMinvEtaC","f1KstarPtVsMinvEtaC",1000, 0., 10., 1000, 0., 10.);
   fListHist->Add(f1KstarPtVsMinvEtaC);
+  f1KstarEtaVsMinvEtaC = new TH2D("f1KstarEtaVsMinvEtaC","f1KstarEtaVsMinvEtaC",1000, 0., 10., 2000, -10., 10.);
+  fListHist->Add(f1KstarEtaVsMinvEtaC);
   //f1KstarMinvEtaC = new TH1D("f1KstarMinvEtaC","f1KstarMinvEtaC",200, 2., 4.);
   //fListHist->Add(f1KstarMinvEtaC);
 
@@ -788,6 +804,8 @@ void AliAnalysisTaskUpcEtaC::UserCreateOutputObjects()
   //fListHist->Add(f0KstarMinvSecondPiKcombo);
   f0KstarPtVsMinvEtaC = new TH2D("f0KstarPtVsMinvEtaC","f0KstarPtVsMinvEtaC",1000, 0., 10., 1000, 0., 10.);
   fListHist->Add(f0KstarPtVsMinvEtaC);
+  f0KstarEtaVsMinvEtaC = new TH2D("f0KstarEtaVsMinvEtaC","f0KstarEtaVsMinvEtaC",1000, 0., 10., 2000, -10., 10.);
+  fListHist->Add(f0KstarEtaVsMinvEtaC);
   //f0KstarMinvEtaC = new TH1D("f0KstarMinvEtaC","f0KstarMinvEtaC",200, 2., 4.);
   //fListHist->Add(f0KstarMinvEtaC);
 
@@ -862,6 +880,8 @@ void AliAnalysisTaskUpcEtaC::UserCreateOutputObjects()
   fListHist->Add(fMK0sVsMKPiK0sChannel);
   fEtaCPtVsMinvK0sChannel = new TH2D("fEtaCPtVsMinvK0sChannel","fEtaCPtVsMinvK0sChannel",1000, 0., 10., 1000, 0., 10.);
   fListHist->Add(fEtaCPtVsMinvK0sChannel);
+  fEtaCEtaVsMinvK0sChannel = new TH2D("fEtaCEtaVsMinvK0sChannel","fEtaCEtaVsMinvK0sChannel",1000, 0., 10., 2000, -10., 10.);
+  fListHist->Add(fEtaCEtaVsMinvK0sChannel);
   //fEtaCMinvK0sChannel = new TH1D("fEtaCMinvK0sChannel","fEtaCMinvK0sChannel",200, 2., 4.);
   //fListHist->Add(fEtaCMinvK0sChannel);
   fK0sDecayLength = new TH1D("fK0sDecayLength","fK0sDecayLength",300, 0., 30.);
@@ -1503,6 +1523,7 @@ void AliAnalysisTaskUpcEtaC::RunAODhist()
 		    //f2KstarMinvSecondKstar->Fill(vKstar[1].M());
 		    //Fill EtaC histos
 		    f2KstarPtVsMinvEtaC->Fill(vCandidate.M(),vCandidate.Pt());
+		    f2KstarEtaVsMinvEtaC->Fill(vCandidate.M(),vCandidate.Eta());
 		    //f2KstarMinvEtaC->Fill(vCandidate.M());
 		  }
 		  //1 Kstar case
@@ -1539,6 +1560,7 @@ void AliAnalysisTaskUpcEtaC::RunAODhist()
 		    //f1KstarMinvOtherPiKcombo->Fill(vKstar[1].M());
 		    //Fill EtaC histos
 		    f1KstarPtVsMinvEtaC->Fill(vCandidate.M(),vCandidate.Pt());
+		    f1KstarEtaVsMinvEtaC->Fill(vCandidate.M(),vCandidate.Eta());
 		    //f1KstarMinvEtaC->Fill(vCandidate.M());
 		  }
 		  else if ((vKstar[1].M() < (kStarMass + kStarWidth)) && (vKstar[1].M() > (kStarMass - kStarWidth)) &&
@@ -1574,6 +1596,7 @@ void AliAnalysisTaskUpcEtaC::RunAODhist()
 		    //f1KstarMinvOtherPiKcombo->Fill(vKstar[0].M());
 		    //Fill EtaC histos
 		    f1KstarPtVsMinvEtaC->Fill(vCandidate.M(),vCandidate.Pt());
+		    f1KstarEtaVsMinvEtaC->Fill(vCandidate.M(),vCandidate.Eta());
 		    //f1KstarMinvEtaC->Fill(vCandidate.M());
 		  }
 		  //0 Kstar case
@@ -1609,6 +1632,7 @@ void AliAnalysisTaskUpcEtaC::RunAODhist()
 		    //f0KstarMinvSecondPiKcombo->Fill(vKstar[1].M());
 		    //Fill EtaC histos
 		    f0KstarPtVsMinvEtaC->Fill(vCandidate.M(),vCandidate.Pt());
+		    f0KstarEtaVsMinvEtaC->Fill(vCandidate.M(),vCandidate.Eta());
 		    //f0KstarMinvEtaC->Fill(vCandidate.M());
 		  }
 
@@ -1881,8 +1905,10 @@ void AliAnalysisTaskUpcEtaC::RunAODhist()
 		if(nRhoPairs > 0) {
 		  fHistNeventsEtaCRhoChannel->Fill(13);
 		  f2RhoPtVsMinvEtaC->Fill(vCandidate.M(),vCandidate.Pt()); //4Pi final states with 2 intermediate rho's.
+		  f2RhoEtaVsMinvEtaC->Fill(vCandidate.M(),vCandidate.Eta());
 		} else if(nRhoPairs == 0) {
 		  f4PionPtVsMinvEtaC->Fill(vCandidate.M(),vCandidate.Pt()); //All 4Pi final states.
+		  f4PionEtaVsMinvEtaC->Fill(vCandidate.M(),vCandidate.Eta());
 		}
 
 		//For all cases look at 4pi vs 2pi minv
@@ -1985,6 +2011,7 @@ void AliAnalysisTaskUpcEtaC::RunAODhist()
 	      //TEMP if(vPion[0].M() == pionMass && vPion[1].M() == pionMass && vKaon[0].M() == kaonMass && vKaon[1].M() == kaonMass) {
 		vCandidate = vPion[0] + vPion[1] + vPion[2] + vPion[3] + vPion[4] + vPion[5];
 		f3PiPiPtVsMinvEtaC->Fill(vCandidate.M(),vCandidate.Pt());
+		f3PiPiEtaVsMinvEtaC->Fill(vCandidate.M(),vCandidate.Eta());
 		//cout << "mEtaC " << vCandidate.M() << ", ptEtaC " << vCandidate.Pt() << endl;
 
 		  
@@ -2083,9 +2110,10 @@ void AliAnalysisTaskUpcEtaC::RunAODhist()
 	      //TEMP if(vPion[0].M() == pionMass && vPion[1].M() == pionMass && vKaon[0].M() == kaonMass && vKaon[1].M() == kaonMass) {
 		vCandidate = vKaon[0] + vKaon[1] + vKaon[2] + vKaon[3];
 		f4KaonPtVsMinvEtaC->Fill(vCandidate.M(),vCandidate.Pt());
+		f4KaonEtaVsMinvEtaC->Fill(vCandidate.M(),vCandidate.Eta());
 		//cout << "mEtaC " << vCandidate.M() << ", ptEtaC " << vCandidate.Pt() << endl;
 
-		//Now the intermediate K+K- pairs (all combinations
+		//Now the intermediate K+K- pairs (all combinations)
 		nKK = 0;
 		if(qKaon[0]*qKaon[1] < 0.) { vKK[nKK] = vKaon[0] + vKaon[1]; nKK++; }
 		if(qKaon[0]*qKaon[2] < 0.) { vKK[nKK] = vKaon[0] + vKaon[2]; nKK++; }
@@ -2627,6 +2655,7 @@ void AliAnalysisTaskUpcEtaC::RunAODhist()
 	  //Compute EtaC info
 	  vCandidate = vK0sPion[0] + vK0sPion[1] + vPion[0] + vKaon[0];
 	  fEtaCPtVsMinvK0sChannel->Fill(vCandidate.M(),vCandidate.Pt());
+	  fEtaCEtaVsMinvK0sChannel->Fill(vCandidate.M(),vCandidate.Eta());
 	  //fEtaCMinvK0sChannel->Fill(vCandidate.M());
 	  fK0sDecayLength->Fill(v0->DecayLength(fAODVertex));
 	}
