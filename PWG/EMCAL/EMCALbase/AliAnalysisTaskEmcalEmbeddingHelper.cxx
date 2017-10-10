@@ -13,7 +13,6 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-#include <cstdio>
 #include <string>
 #include <sstream>
 #include <vector>
@@ -73,7 +72,7 @@ AliAnalysisTaskEmcalEmbeddingHelper::AliAnalysisTaskEmcalEmbeddingHelper() :
   fInitializedEmbedding(false),
   fWrappedAroundTree(false),
   fTreeName(""),
-  fAnchorRun(169838),
+  fAnchorRun(-1),
   fNPtHardBins(1),
   fPtHardBin(-1),
   fRandomEventNumberAccess(kFALSE),
@@ -133,7 +132,7 @@ AliAnalysisTaskEmcalEmbeddingHelper::AliAnalysisTaskEmcalEmbeddingHelper(const c
   fInitializedEmbedding(false),
   fWrappedAroundTree(false),
   fTreeName("aodTree"),
-  fAnchorRun(169838),
+  fAnchorRun(-1),
   fNPtHardBins(1),
   fPtHardBin(-1),
   fRandomEventNumberAccess(kFALSE),
@@ -430,19 +429,17 @@ bool AliAnalysisTaskEmcalEmbeddingHelper::AutoConfigurePtHardBins()
     filename += yamlExtension;
   }
 
-  std::string configurationName = "ptHardTrainConfig";
-
   // Check if file exists
   if (gSystem->AccessPathName(filename.c_str())) {
     // File _does not_ exist
-    AliInfoStream() << "Train pt hard bin configuration file not available, so creating a new empty configuration named \"" << configurationName << "\".\n";
+    AliInfoStream() << "Train pt hard bin configuration file not available, so creating a new empty configuration named \"" << fAutoConfigureIdentifier << "\".\n";
     // Use an empty configuration
-    config.AddEmptyConfiguration(configurationName);
+    config.AddEmptyConfiguration(fAutoConfigureIdentifier);
   }
   else {
     AliInfoStream() << "Opening configuration located at \"" << filename << "\".\n";
     // Use the existing configuration
-    config.AddConfiguration(filename, configurationName);
+    config.AddConfiguration(filename, fAutoConfigureIdentifier);
   }
 
   // Look for each pt hard bin, and then retrieve the corresponding train number
@@ -450,7 +447,7 @@ bool AliAnalysisTaskEmcalEmbeddingHelper::AutoConfigurePtHardBins()
   int tempTrainNumber = -1;
   bool getPropertyReturnValue = false;
   std::stringstream propertyName;
-  for (int ptHardBin = 1; ptHardBin < fNPtHardBins; ptHardBin++)
+  for (int ptHardBin = 1; ptHardBin <= fNPtHardBins; ptHardBin++)
   {
     propertyName.str("");
     propertyName << ptHardBin;
@@ -461,14 +458,12 @@ bool AliAnalysisTaskEmcalEmbeddingHelper::AutoConfigurePtHardBins()
       fPtHardBin = ptHardBin;
 
       // Write the train number back out to the YAML configuration and save it
-      config.WriteProperty(propertyName.str(), trainNumber, configurationName);
-      config.WriteConfiguration(filename, configurationName);
+      config.WriteProperty(propertyName.str(), trainNumber, fAutoConfigureIdentifier);
+      config.WriteConfiguration(filename, fAutoConfigureIdentifier);
 
-      // Cleanup after the process by removing the YAML configuration once all the trains have been launched.
-      if (ptHardBin == (fNPtHardBins - 1)) {
-        AliInfoStream() << "Created last train pt hard bin, so removing the YAML configuration file to clean up.\n";
-        remove(filename.c_str());
-      }
+      // NOTE: Cannot clean up the yaml file on the last pt hard bin because the train can be launched
+      // multiple times due to tests, etc. Therefore, we have to accept that we are leaving around used
+      // yaml config files.
 
       // We are done - continue on.
       returnValue = true;
