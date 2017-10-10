@@ -21,8 +21,8 @@ class AliAnalysisTaskSEImproveITS:public AliAnalysisTaskSE {
 public:
   AliAnalysisTaskSEImproveITS();
   AliAnalysisTaskSEImproveITS(const char *name,
-                              const char *resfileCurURI,
-                              const char *resfileUpgURI,
+                              const char *period,
+                              const char *systematic,
                               Bool_t isRunInVertexing,
                               Int_t ndebug);
 
@@ -37,7 +37,8 @@ public:
   void SetImproveTracks(Bool_t flag=kTRUE) { fImproveTracks=flag; return; }
   void SetUpdateSecVertCovMat(Bool_t flag=kTRUE) { fUpdateSecVertCovMat=flag; return; }
   void SetUpdateSTCovMatrix(Bool_t opt=kTRUE){fUpdateSTCovMatrix=opt;}
-  void SetUpdatePulls(Bool_t opt=kFALSE){fUpdatePulls=opt;}
+  void SetUpdatePulls(Bool_t opt=kTRUE){fUpdatePulls=opt;}
+  void SetMimicData(Bool_t opt=kFALSE){fMimicData=opt;}
 
 private:
   AliAnalysisTaskSEImproveITS(const AliAnalysisTaskSEImproveITS&);
@@ -55,6 +56,9 @@ private:
   TGraph *fD0RPResPCur; /// old pt dep. d0 res. in rphi for protons
   TGraph *fD0RPResKCur; /// old pt dep. d0 res. in rphi for kaons
   TGraph *fD0RPResPiCur; /// old pt dep. d0 res. in rphi for pions
+  TGraph *fD0RPSigmaPullRatioP; /// pt dep. d0 sigma pull MC/data in rphi for protons
+  TGraph *fD0RPSigmaPullRatioK; /// pt dep. d0 sigma pull MC/data in rphi for kaons
+  TGraph *fD0RPSigmaPullRatioPi; /// pt dep. d0 sigma pull MC/data in rphi for pions
   TGraph *fD0RPMeanPCur[2][4]; /// old pt dep. d0 mean. in rphi for protons in 4 phi regions
   TGraph *fD0RPMeanKCur[2][4]; /// old pt dep. d0 mean. in rphi for kaons in 4 phi regions
   TGraph *fD0RPMeanPiCur[2][4]; /// old pt dep. d0 mean. in rphi for pions in 4 phi regions
@@ -97,13 +101,14 @@ private:
   Bool_t fUpdateSecVertCovMat; /// flag to swicth on/off the modification of the sec vert cov matrix
   Bool_t fUpdateSTCovMatrix; /// flag to switch on/off the update of the single track covariance matrix
   Bool_t fUpdatePulls; /// flag to switch on/off the correction of the pulls
+  Bool_t fMimicData;
   TList   *fDebugOutput; //!<! collection of debug output
   TNtuple *fDebugNtuple; //!<! debug send on output slot 1
   Float_t *fDebugVars;   //!<! variables to store as degug info 
   Int_t   fNDebug;       /// Max number of debug entries into Ntuple
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskSEImproveITS,8);
+  ClassDef(AliAnalysisTaskSEImproveITS,9);
   /// \endcond
 };
 
