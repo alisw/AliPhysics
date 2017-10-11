@@ -781,16 +781,22 @@ namespace std {
              ^ (std::hash<Range_t::second_type>{}(pair.second) << 1);
     }
 
+    ULong_t operator()(AliFemtoConfigObject::ArrayValue_t const& array) const {
+      using Item_t = AliFemtoConfigObject::ArrayValue_t::value_type;
+
+      return std::accumulate(
+        array.cbegin(), array.cend(), 0,
+        [] (ULong_t hash, const Item_t &obj) { return obj.Hash() ^ (hash << 1); });
+    }
 
     ULong_t operator()(AliFemtoConfigObject::RangeListValue_t const& list) const {
       using Item_t = AliFemtoConfigObject::RangeListValue_t::value_type;
 
       return std::accumulate(
         list.cbegin(), list.cend(), 0,
-        [&] (ULong_t a, const Item_t &pair) { return a ^ (operator()(pair) << 1);
-      });
+        [&] (ULong_t a, const Item_t &pair) {
+          return operator()(pair) ^ (a << 1); });
     }
-
   };
 }
 
@@ -798,7 +804,9 @@ namespace std {
 ULong_t
 AliFemtoConfigObject::Hash() const
 {
-  ULong_t result = TObject::Hash() ^ std::hash<int>{}(fTypeTag);
+  static const ULong_t MAGIC_HASH_NUMBER = 3527539;
+
+  ULong_t result = MAGIC_HASH_NUMBER ^ std::hash<int>{}(fTypeTag);
 
   switch (fTypeTag) {
     case kEMPTY: return result;
@@ -810,10 +818,6 @@ AliFemtoConfigObject::Hash() const
     case kRANGELIST: return result ^ std::hash<AliFemtoConfigObject>{}(fValueRangeList);
 
     case kARRAY:
-      return std::accumulate(
-        fValueArray.cbegin(), fValueArray.cend(), result,
-        [] (ULong_t hash, const AliFemtoConfigObject &obj) {
-          return hash ^ (obj.Hash() << 1); });
 
     case kMAP:
       return std::accumulate(
@@ -825,5 +829,64 @@ AliFemtoConfigObject::Hash() const
   }
 
   return 0;
+}
+
+
+std::string AliFemtoConfigObject::as_JSON_string() const
+{
+  if (is_empty()) {
+    return "null";
+  }
+
+  std::stringstream ss;
+  if (is_map()) {
+    ss << "{";
+    std::string seperator = "";
+    for (const auto &pair : fValueMap) {
+      ss << seperator << "\"" << pair.first << "\": "
+         << pair.second.as_JSON_string();
+      seperator = ", ";
+    }
+    ss << "}";
+  }
+  else if (is_array()) {
+    ss << "[";
+    std::string seperator = "";
+    for (const auto &item : fValueArray) {
+      ss << seperator << item.as_JSON_string();
+      seperator = ", ";
+    }
+    ss << "]";
+  }
+  else if (is_range()) {
+    ss << "{\"MIN\": " << std::get<0>(fValueRange)
+       << ", \"MAX\": " << std::get<1>(fValueRange)
+       << "}";
+  }
+  else if (is_rangelist()) {
+    ss << "[";
+    std::string seperator = "";
+    for (const auto &item : fValueRangeList) {
+      ss << "{\"MIN\": " << std::get<0>(item)
+         << ", \"MAX\": " << std::get<1>(item)
+         << "}";
+      seperator = ", ";
+    }
+    ss << "]";
+  }
+  else if (is_int()) {
+    ss << fValueInt;
+  }
+  else if (is_float()) {
+    ss << fValueFloat;
+  }
+  else if (is_bool()) {
+    ss << (fValueBool ? "true" : "false");
+  }
+  else if (is_str()) {\
+    ss << '"' << fValueString << '"';
+  }
+
+  return ss.str();
 }
 

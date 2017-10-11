@@ -19,9 +19,11 @@
 #include <TString.h>
 #include <TText.h>
 
+
 #if false && __cplusplus >= 201103L
 #define ENABLE_MOVE_SEMANTICS 1
 #endif
+
 
 #define FORWARD_STANDARD_TYPES(__FUNC)          \
   __FUNC(BoolValue_t, kBOOL, fValueBool);       \
@@ -214,21 +216,33 @@ public:
 
 #endif // move-semantics
 
+  typedef std::pair<float,float> pair_of_floats;
 
   /// \class BuildStruct
   /// \brief helper class for building a mapping object
   class BuildMap {
   public:
+    BuildMap() {}
+
 #ifdef ENABLE_MOVE_SEMANTICS
     #define IMPL_BUILDITEM(__type, __a, __b) \
       BuildMap& operator()(const Key_t &key, const __type& val) { fMap[key] = val; return *this; }  \
       BuildMap& operator()(const Key_t &key, __type && val) { fMap[key] = std::move(val); return *this; }
+    #define IMPL_CASTED_BUILDITEM(__type, __savedtype) \
+      BuildMap& operator()(const Key_t &key, const __type& val) { fMap[key] = static_cast<__savedtype>(val); return *this; }  \
+      BuildMap& operator()(const Key_t &key, __type && val) { fMap[key] = std::move(static_cast<__savedtype>(val)); return *this; }
 #else
     #define IMPL_BUILDITEM(__type, __a, __b) \
       BuildMap& operator()(const Key_t &key, const __type& val) { fMap[key] = val; return *this; }
+    #define IMPL_CASTED_BUILDITEM(__type, __savedtype) \
+      BuildMap& operator()(const Key_t &key, const __type& val) { fMap[key] = static_cast<__savedtype>(val); return *this; }
 #endif
 
     FORWARD_STANDARD_TYPES(IMPL_BUILDITEM);
+
+    IMPL_CASTED_BUILDITEM(Int_t, IntValue_t);
+    IMPL_CASTED_BUILDITEM(UInt_t, IntValue_t);
+    IMPL_CASTED_BUILDITEM(pair_of_floats, RangeValue_t);
 
     IMPL_BUILDITEM(AliFemtoConfigObject, 0, 0);
     #undef IMPL_BUILDITEM
@@ -285,7 +299,22 @@ public:
   bool load_rangelist(RangeListValue_t &r) const {
     return is_rangelist() ? r = fValueRangeList, true : load_rangelist(r); }
   bool load_ranges(RangeListValue_t &r) const {
-    return is_range() ? r = RangeListValue_t({fValueRange}), true : load_rangelist(r); }
+    std::cout << "loading ranges " << std::flush;
+    if (is_range()) {
+      std::cout << "from range! " << std::flush;
+      std::cout << " (" << fValueRange.first << ", " << fValueRange.second << ")\n";
+      r.clear();
+      std::cout << "  cleared.\n";
+      r.push_back(fValueRange);
+      std::cout << " pushed back...\n";
+      return true;
+    } else {
+      return load_rangelist(r);
+    }
+    // return is_range() ? r.clear(), r.push_back(fValueRange), true : load_rangelist(r);
+  }
+
+  bool load_range(std::pair<float, float> &r) const { return is_range() ? r = fValueRange, true : false; }
 
 
   /// Remove and returns pointer to object at *index* if an array
@@ -324,12 +353,39 @@ public:
 
   FORWARD_STANDARD_TYPES(IMPL_POPANDLOAD)
 
-  typedef std::pair<float,float> pair_of_floats;
   IMPL_POPANDLOAD(pair_of_floats, kRANGE, fValueRange);
+  IMPL_POPANDLOAD(int, kINT, fValueInt);
+  IMPL_POPANDLOAD(unsigned int, kINT, fValueInt);
 
 #undef IMPL_POPANDLOAD
 
-  /// }@
+  /// @}
+
+  /// \class Popper
+  /// \brief Struct used for 'poping' many values from object
+  struct Popper {
+    AliFemtoConfigObject* src;
+    Popper(const AliFemtoConfigObject &obj);
+    virtual ~Popper();
+
+    template <typename T>
+    Popper& operator()(const Key_t &key, T &dest) {
+      src->pop_and_load(key, dest); return *this; }
+
+    Popper& WarnOfRemainingItems() {
+      src->WarnOfRemainingItems();
+      return *this;
+    }
+  };
+
+  Popper pop_all() const { return Popper(*this); }
+
+  /// return a string of valid JSON that may be parsed by other
+  /// languages into their equivalent data types.
+  ///
+  /// Similar to Stringify method, this output is valid JSON.
+  ///
+  std::string as_JSON_string() const;
 
   /// A general template method for building objects with config object
   ///
@@ -337,6 +393,16 @@ public:
   /// a const reference to this object.
   template <typename T>
   T* Construct() const;
+
+  /// Consume this config object while constructing new class
+  ///
+  /// \param warn Will print warning if there are remaining elements
+  ///   in this config object. This is the only way to be notified of
+  ///   key "typos" in the config definition
+  ///
+  /// \return New object of type whatever
+  template <typename T>
+  T* Into(bool warn=true);
 
   /// Pretty-print the value
   TString Stringify(const bool pretty=true) const;
@@ -457,6 +523,18 @@ public:
 protected:
   TText fTitle;
 };
+
+inline
+AliFemtoConfigObject::Popper::Popper(const AliFemtoConfigObject &obj)
+: src(new AliFemtoConfigObject(obj))
+{}
+
+inline
+AliFemtoConfigObject::Popper::~Popper()
+{
+  delete src;
+}
+
 
 inline
 void
@@ -675,6 +753,19 @@ T* AliFemtoConfigObject::Construct() const
   return new T(*this);
 }
 
+
+/*
+template <>
+AliFemtoConfigObject::Popper&
+AliFemtoConfigObject::Popper::operator()<int>(const Key_t &key, int &dest) {
+  src->pop_and_load(key, (Int_t&)dest); return *this; }
+
+template <>
+AliFemtoConfigObject::Popper&
+AliFemtoConfigObject::Popper::operator()<UInt_t>(const Key_t &key, UInt_t &dest) {
+  src->pop_and_load(key, (Int_t&)dest); return *this; }
+
+*/
 
 #undef FORWARD_STANDARD_TYPES
 
