@@ -66,6 +66,10 @@ public:
   static const std::vector<int> &    GetMarkerColors(const char *style){return AliDrawStyle::fMarkerColors[style];};
   static const std::vector<float> &  GetLineWidth(const char *style){return AliDrawStyle::fLineWidth[style];};
   static const std::vector<int> &    GetFillColors(const char *style){return AliDrawStyle::fFillColors[style];};
+  // CSS like attribute fields parsing
+  static TString  GetAttributeValue(TString input, TString tagName);
+  static Int_t    GetNamedIntegerAt(TString input, TString tagName, Int_t index);
+  static Float_t  GetNamedFloatAt(TString input, TString tagName, Int_t index);
   //
   static Int_t   GetIntegerAt(const char * format, Int_t index, const char * separator=";");
   static Float_t GetFloatAt(const char * format, Int_t index, const char * separator=";");

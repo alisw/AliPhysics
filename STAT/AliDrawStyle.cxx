@@ -429,3 +429,73 @@ TStyle*  RegisterDefaultStyleFigTemplate(Bool_t graypalette) {
   figStyle->SetLegendFont(42);
   return figStyle;
 }
+
+/// CSS sttle parsing functions
+///
+
+///
+/// \param input      - input string
+/// \param tagName    - name of tag to find
+/// \return           - attribute tagName from the input string using CSS like parsing, empty string in case not found
+///
+TString  AliDrawStyle::GetAttributeValue(TString input, TString tagName){
+  Int_t index0 = input.Index(tagName.Data());
+  if (index0<0) return "";
+  Int_t index1 = input.Index(':',index0)+1;
+  Int_t index2= input.Index(';',index1)-1;
+  if (index2-index1-1<0) return "";
+  TString result(input(index1,index2-index1+1));
+  return result;
+}
+///
+/// \param input    - input string (CSS record - find proper name in the w3c)
+/// \param tagName  -  name of tag to find
+/// \param index    - index of value to find
+/// \return         - value as a integer  -1 if does not exist, resp , separated value at index index
+/*!
+ ####  Example use:
+  TString input="{\nmarker_style:25,21,22,23; \nmarker_color:1,2,4,5; \n}";
+  AliDrawStyle::GetNamedIntegerAt(input,"marker_style",0);  //  return  25
+  AliDrawStyle::GetNamedIntegerAt(input,"marker_style",3);  //  return  23
+  AliDrawStyle::GetNamedIntegerAt(input,"marker_color",2);  //  return  4
+ */
+Int_t    AliDrawStyle::GetNamedIntegerAt(TString input, TString tagName, Int_t index){
+  TString  value = AliDrawStyle::GetAttributeValue(input,tagName);
+  Int_t indexStart=0;
+  Int_t indexFinish=value.Index(',',indexStart);
+  for (Int_t j=0; j<index; j++){
+    indexStart=value.Index(',',indexStart)+1;
+    indexFinish=value.Index(',',indexStart);
+    if (indexStart<0 || index>value.CountChar(',')) return -1;
+    if (indexFinish<0) indexFinish = value.Length();
+  }
+  TString valueAt(value(indexStart, indexFinish - indexStart));
+  if (valueAt.IsFloat()) return valueAt.Atoi();
+  else return -1;
+}
+
+/// \param input    - input string (CSS record - find proper name in the w3c)
+/// \param tagName  -  name of tag to find
+/// \param index    - index of value to find
+/// \return         - value as a float  -1 if does not exist, resp , separated value at index index
+/*!
+ ####  Example use:
+  TString input="{\nmarker_style:25,21,22,23; \nmarker_color:1,2,4,5; \n}";
+  AliDrawStyle::GetNamedIntegerAt(input,"marker_style",0);  //  return  25
+  AliDrawStyle::GetNamedIntegerAt(input,"marker_style",3);  //  return  23
+  AliDrawStyle::GetNamedIntegerAt(input,"marker_color",2);  //  return  4
+ */
+Float_t  AliDrawStyle::GetNamedFloatAt(TString input, TString tagName, Int_t index){
+  TString  value = AliDrawStyle::GetAttributeValue(input,tagName);
+  Int_t indexStart=0;
+  Int_t indexFinish=value.Index(',',indexStart);
+  for (Int_t j=0; j<index; j++){
+    indexStart=value.Index(',',indexStart)+1;
+    indexFinish=value.Index(',',indexStart);
+    if (indexStart<0 || index>value.CountChar(',')) return -1;
+    if (indexFinish<0) indexFinish = value.Length();
+  }
+  TString valueAt(value(indexStart, indexFinish - indexStart));
+  if (valueAt.IsFloat()) return valueAt.Atof();
+  else return -1;
+}
