@@ -132,6 +132,9 @@ private:
   TH3D *h_tpc_track_neg_recvertex_3_5_6;//!
   TH3D *h_tpc_track_neg_recvertex_4_5_6;//!
 
+  AliPerformanceTPC(const AliPerformanceTPC&); // not implemented
+  AliPerformanceTPC& operator=(const AliPerformanceTPC&); // not implemented
+
   ClassDef(AliPerformanceTPC,15);
 };
 
