@@ -233,11 +233,9 @@ void MakeReport(const char* outputdir){
 
 
   TMultiGraph *graph=0,*lines=0;
-  
+  trendingDraw->fWorkingCanvas->Print(TString(outputdir)+"/report.pdf[","pdf");
 
   MakePlot(treeMC,0,"matchingTPC-ITSEffe.png","Number of clusters",cRange,"","meanTPCncl;TPC.Anchor.meanTPCncl:run","defaultcut","25;21;25;21","2;2;4;4",1,0.75,6,kTRUE);  
-  AppendBand(treeMC,outputdir,"matchingTPC-ITSEffe.png", "meanTPCnclF_RobustMean:run","defaultcut", "2", "2", 1,6,kTRUE); 
-
   MakePlot(treeMC,outputdir,"matchingTPC-ITSEffe.png","Matching efficiency:MC/Anchor",cRange,"","QA.TPC.tpcItsMatchA;QA.TPC.tpcItsMatchC;QA.ITS.EffTOTPt02;QA.ITS.EffTOTPt1;QA.ITS.EffTOTPt10;TPC.Anchor.tpcItsMatchA;TPC.Anchor.tpcItsMatchC;ITS.Anchor.EffTOTPt02;ITS.Anchor.EffTOTPt1;ITS.Anchor.EffTOTPt10:run","defaultcut","25;21;25;21","2;2;4;4",1,0.75,6,kTRUE);  
   MakePlot(treeMC,outputdir,"tpcItsMatch.png","TPC - ITS Match",cRange,"","tpcItsMatchHighPtA;TPC.Anchor.tpcItsMatchHighPtA;tpcItsMatchHighPtC;TPC.Anchor.tpcItsMatchHighPtC:run","defaultcut","25;21;25;21","2;2;4;4",1,0.75,6,kTRUE);  
   MakePlot(treeMC,outputdir,"rmsDCAMultSpartMCtoAnchor.png","DCA Resolution mult due MS:MC/Anchor",cRange,"","dcarAP1;dcarCP1;TPC.Anchor.dcarAP1;TPC.Anchor.dcarCP1:run","defaultcut","25;21;25;21","2;2;4;4",1,0.75,6,kTRUE);  
@@ -248,12 +246,7 @@ void MakeReport(const char* outputdir){
   MakePlot(treeMC,outputdir,"meanVertY.png","meanVertY:run MC/Anchor",cRange,"","QA.TPC.meanVertY;TPC.Anchor.meanVertY:run","defaultcut","25;21;25;21","2;2;4;4",1,0.75,6,kTRUE);  
   MakePlot(treeMC,outputdir,"meanVertZ.png","meanVertZ:run MC/Anchor",cRange,"","offsetdRA;TPC.Anchor.offsetdRA:run","defaultcut","25;21;25;21","2;2;4;4",1,0.75,6,kTRUE);
   MakePlot(treeMC,0,"offsetdR.png","offsetdR",cRange,"","offsetdRA;TPC.Anchor.offsetdRA;offsetdRC;TPC.Anchor.offsetdRC:run","defaultcut","25;21;25;21","2;2;4;4",1,0.75,6,kTRUE);  
-  AppendBand(treeMC,0,"offsetdR.png", "offsetdRA_RobustMean;offsetdRA_OutlierMin;offsetdRA_OutlierMax;offsetdRA_WarningMin;offsetdRA_WarningMax:run","defaultcut", "1;1;1;1;1,1;2;2;3;3", "1;1;1;1;1,1;2;2;3;3", 1,6,kTRUE); 
-//  AppendBand(treeMC,0,"offsetdR.png", "offsetdRA_OutlierMin:run","defaultcut", "1,2", "1,3", 1,6,kTRUE); 
-//  AppendBand(treeMC,0,"offsetdR.png", "offsetdRA_OutlierMax:run","defaultcut", "2,2", "1,3", 1,6,kTRUE);
-//  AppendBand(treeMC,0,"offsetdR.png", "offsetdRA_WarningMin:run","defaultcut", "2,3", "1,4", 1,6,kTRUE);
-//  AppendBand(treeMC,outputdir,"offsetdR.png", "offsetdRA_WarningMax:run","defaultcut", "1,3", "1,4", 1,6,kTRUE);
-  
+  AppendBand(treeMC,outputdir,"offsetdR.png", "offsetdRA_RobustMean;offsetdRA_OutlierMin;offsetdRA_OutlierMax;offsetdRA_WarningMin;offsetdRA_WarningMax:run","defaultcut", "1;1;1;1;1,1;2;2;3;3", "1;1;1;1;1,1;2;2;4;4", 1,6,kTRUE); 
   
   MakePlot(treeMC,outputdir,"offsetdZ.png","offsetdZ",cRange,"","offsetdZA;TPC.Anchor.offsetdZA;offsetdZC;TPC.Anchor.offsetdZC:run","defaultcut","25;21;25;21","2;2;4;4",1,0.75,6,kTRUE);   
   MakePlot(treeMC,outputdir,"offsetd_comb4.png","offsetd_comb4",cRange,"","offsetd_comb4;TPC.Anchor.offsetd_comb4:run","defaultcut","25;21;25;21","2;2;4;4",1,0.75,6,kTRUE);  
@@ -308,8 +301,14 @@ void MakeReport(const char* outputdir){
     TStatToolkit::DrawMultiGraph(lines,"l");
     legend->SetFillStyle(0);legend->Draw();
    
-    trendingDraw->fWorkingCanvas->SaveAs(TString(outputdir)+"/mipToEleSeparation.png");    
+    trendingDraw->fWorkingCanvas->SaveAs(TString(outputdir)+"/mipToEleSeparation.png");  
+    trendingDraw->fWorkingCanvas->Print(TString(outputdir)+"/report.pdf");
   }
+  
+  
+  
+  trendingDraw->fWorkingCanvas->Clear(); 
+  trendingDraw->fWorkingCanvas->Print(TString(outputdir)+"/report.pdf]","pdf");
 }
 
 ///
@@ -343,8 +342,10 @@ void MakePlot(TTree * tree,const char* outputdir, const char *fname, const char 
        legend->SetFillStyle(0);
        legend->Draw();
    }
-   if(outputdir!=0) trendingDraw->fWorkingCanvas->SaveAs(TString(outputdir)+"/"+TString(fname));
-   
+   if(outputdir!=0){
+       trendingDraw->fWorkingCanvas->SaveAs(TString(outputdir)+"/"+TString(fname));
+       trendingDraw->fWorkingCanvas->Print(TString(outputdir)+"/report.pdf");
+   }
 }
 
 /// \param tree
@@ -369,7 +370,10 @@ void AppendBand(TTree * tree,const char* outputdir, const char *fname, const cha
         TStatToolkit::DrawMultiGraph(graph,"l");
     }
     
-    if(outputdir!=0) trendingDraw->fWorkingCanvas->SaveAs(TString(outputdir)+"/"+TString(fname));
+   if(outputdir!=0){
+       trendingDraw->fWorkingCanvas->SaveAs(TString(outputdir)+"/"+TString(fname));
+       trendingDraw->fWorkingCanvas->Print(TString(outputdir)+"/report.pdf");
+   }
 
 }
 
