@@ -927,7 +927,7 @@ void AliAnalysisTaskEmcalVsPhos::FillClusterHistograms()
   AliVCaloCells* phosCaloCells = InputEvent()->GetPHOSCells();
   
   // If MC, get the MC event
-  const AliMCEvent* mcevent;
+  const AliMCEvent* mcevent = nullptr;
   if (fGeneratorLevel) {
     mcevent = MCEvent();
   }
@@ -1176,7 +1176,7 @@ void AliAnalysisTaskEmcalVsPhos::FillJetPerformanceHistograms()
   TString histname;
   
   // If MC, get the MC event
-  const AliMCEvent* mcevent;
+  const AliMCEvent* mcevent = nullptr;
   if (fGeneratorLevel) {
     mcevent = MCEvent();
   }
