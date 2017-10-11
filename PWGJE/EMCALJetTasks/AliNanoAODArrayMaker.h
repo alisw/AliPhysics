@@ -1,3 +1,11 @@
+/// \class AliNanoAODArrayMaker
+/// \brief creates input arrays for the analysis from NanoAODs
+///
+/// The class converts the nanoAOD information into the standard arrays which are used in the PWGJE EMCAL analysis
+/// this includes embedded tracks in measured events
+///
+/// \author M.Zimmermann
+
 #ifndef ALIANALYSISTASKARRAYMAKER_H
 #define ALIANALYSISTASKARRAYMAKER_H
 
@@ -25,14 +33,14 @@ class AliNanoAODArrayMaker : public AliAnalysisTaskSE {
   AliAODTrack*        GetAODTrack(AliNanoAODTrack* track);
 
  private:
-  TString             fOutputArrayName; ///
-  TClonesArray*       fOutputArray; //!<!
+  TString             fOutputArrayName; /// name of the output array with all particles
+  TClonesArray*       fOutputArray; //!<! array with all particles
 
-  TString             fOutputArrayPythiaName; ///
-  TClonesArray*       fPythiaArray; //!<!
+  TString             fOutputArrayPythiaName; /// name of the output array with pythia particles
+  TClonesArray*       fPythiaArray; //!<! output array with pythia particles
 
-  TString             fOutputArrayDataName; ///
-  TClonesArray*       fDataArray; //!<!
+  TString             fOutputArrayDataName; /// name of the output array with data particles
+  TClonesArray*       fDataArray; //!<! output array with data particles
     
   TList* fOutputList;
 
