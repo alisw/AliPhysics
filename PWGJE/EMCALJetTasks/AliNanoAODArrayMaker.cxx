@@ -1,3 +1,9 @@
+///
+/// task to create arrays from NanoAODs which are used in the analysis
+///
+/// Author: M.Zimmermann
+///
+
 #include "AliAnalysisTask.h"
 #include "AliAnalysisManager.h"
 
@@ -25,7 +31,7 @@ AliNanoAODArrayMaker::AliNanoAODArrayMaker(const char *name)
 //________________________________________________________________________
 void AliNanoAODArrayMaker::UserCreateOutputObjects()
 {
-  // Create histograms
+  // Create arrays and set names
   // Called once
 
   fOutputList = new TList();
@@ -55,6 +61,7 @@ void AliNanoAODArrayMaker::UserExec(Option_t *)
   InputEvent()->AddObject(fPythiaArray);
   InputEvent()->AddObject(fDataArray);
 
+  //find NanoAOD particle array
   TClonesArray *particleArray = static_cast<TClonesArray*> (InputEvent()->FindListObject("Nanotracks"));
   Int_t nTracks = particleArray->GetEntries();
 
@@ -62,6 +69,7 @@ void AliNanoAODArrayMaker::UserExec(Option_t *)
   Int_t accTracksPythia = 0;
   Int_t accTracksData = 0;
 
+  //get custom NanoAOD variables which had to be defined in the nanoAOD generation
   Int_t indexHybGlob = AliNanoAODTrackMapping::GetInstance()->GetVarIndex("cstIsGlobalHybrid");
   Int_t indexIsPyth = AliNanoAODTrackMapping::GetInstance()->GetVarIndex("cstIsPythiaTrack");
 
@@ -69,6 +77,7 @@ void AliNanoAODArrayMaker::UserExec(Option_t *)
   fPythiaArray->Clear("C"); 
   fDataArray->Clear("C"); 
 
+  //loop over particles in the event and add them to the correct arrays
   for(Int_t iPart=0; iPart<nTracks; iPart++){
    AliNanoAODTrack *nanoTrack = (AliNanoAODTrack*) particleArray->At(iPart);
     
@@ -95,6 +104,7 @@ void AliNanoAODArrayMaker::Terminate(Option_t *)
 //_____________________________________________________________________________________________________
 AliAODTrack* AliNanoAODArrayMaker::GetAODTrack(AliNanoAODTrack* track, Int_t index)
 {
+  //create AOD track from NanoAOD track with the availbable information
   AliAODTrack* newTrack = new AliAODTrack();
   newTrack->SetPt(track->Pt());
   newTrack->SetTheta(2.*atan(exp(-track->Eta()))); // the same as in AliAnalysisTaskParticleRandomizer
@@ -109,6 +119,7 @@ AliAODTrack* AliNanoAODArrayMaker::GetAODTrack(AliNanoAODTrack* track, Int_t ind
 //_____________________________________________________________________________________________________
 AliAODTrack* AliNanoAODArrayMaker::GetAODTrack(AliNanoAODTrack* track){
 
+  //create AOD track from NanoAOD track with the availbable information
   AliAODTrack* newTrack = new AliAODTrack();
   newTrack->SetPt(track->Pt());
   newTrack->SetTheta(2.*atan(exp(-track->Eta()))); // the same as in AliAnalysisTaskParticleRandomizer

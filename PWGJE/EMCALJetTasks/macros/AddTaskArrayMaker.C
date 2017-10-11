@@ -1,3 +1,11 @@
+/// \file AddTaskArrayMaker.C
+/// \brief AddTask macro for the AliNanoAODArrayMaker class.
+///
+/// AddTask macro for the AliNanoAODArrayMaker class.
+///
+/// \author Markus Zimmermann
+/// \date October 11, 2017
+
 AliAnalysisTask * AddTaskArrayMaker(const char *output    = 0 , const char *outputPythia    = 0, const char *outputdata    = 0 ) {
   // Adds my task
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
