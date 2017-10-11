@@ -95,20 +95,49 @@ class AliYAMLConfiguration : public TObject {
   AliYAMLConfiguration(const std::string prefixString = "AliEmcalCorrection", const std::string delimiterCharacter = ":");
   virtual ~AliYAMLConfiguration() {}
 
+  /** @{
+   * @name Setup the configurations at various points of the analysis.
+   */
   bool Initialize();
   bool Reinitialize();
+  /** @} */
 
+  /** @{
+   * @name Add a new particular configuration under a given name.
+   */
   /// Add YAML configuration at configurationFilename to available configurations
-  bool AddEmptyConfiguration(const std::string & configurationName);
-  bool AddConfiguration(std::string configurationFilename, std::string configurationName = "");
+  int AddEmptyConfiguration(const std::string & configurationName);
+  int AddConfiguration(std::string configurationFilename, std::string configurationName = "");
   #if !(defined(__CINT__) || defined(__MAKECINT__))
-  bool AddConfiguration(const YAML::Node node, std::string configurationName = "");
+  int AddConfiguration(const YAML::Node node, std::string configurationName = "");
+  /** @} */
 
+  /** @{
+   * @name Get a particular configuration by index or name.
+   */
   const std::pair<std::string, YAML::Node> & GetConfiguration(const int i)              const { return fConfigurations.at(i); }
-  const std::pair<std::string, YAML::Node> & GetConfiguration(const std::string & name) const { return fConfigurations.at(GetConfigurationIndexByName(name, fConfigurations)); }
+  const std::pair<std::string, YAML::Node> & GetConfiguration(const std::string & name) const { return GetConfiguration(GetConfigurationIndexFromName(name, fConfigurations)); }
   std::pair<std::string, YAML::Node> & GetConfiguration(const int i)                          { return fConfigurations.at(i); }
-  std::pair<std::string, YAML::Node> & GetConfiguration(const std::string & name)             { return fConfigurations.at(GetConfigurationIndexByName(name, fConfigurations)); }
+  std::pair<std::string, YAML::Node> & GetConfiguration(const std::string & name)             { return GetConfiguration(GetConfigurationIndexFromName(name, fConfigurations)); }
+  /** @} */
 
+  /** @{
+   * @name Translate between configuration name and index.
+   */
+  std::string GetConfigurationNameFromIndex(const unsigned int i)                       const { return fConfigurations.at(i).first; }
+  int GetConfigurationIndexFromName(const std::string & name)                           const { return GetConfigurationIndexFromName(name, fConfigurations); }
+  /** @} */
+
+  /** @{
+   * @name Remove a particular configuration by index or name.
+   */
+  bool RemoveConfiguration(const unsigned int i);
+  bool RemoveConfiguration(const std::string & name)                                          { return RemoveConfiguration(GetConfigurationIndexFromName(name, fConfigurations)); }
+  /** @} */
+
+  /** @{
+   * @name Get a property from the available configurations
+   */
   // Helper functions to retrieve property values
   template<typename T>
   bool GetProperty(std::vector<std::string> propertyPath, const std::string & propertyName, T & property, const bool requiredProperty) const;
@@ -117,18 +146,33 @@ class AliYAMLConfiguration : public TObject {
   // Retrieve property driver function.
   template<typename T>
   bool GetProperty(std::string propertyName, T & property, const bool requiredProperty = true) const;
+  /** @} */
 
+  /** @{
+   * @name Write a property to a particular configuration
+   */
   // Write property driver function.
   template<typename T>
   bool WriteProperty(std::string propertyName, T & property, std::string configurationName = "");
+  /** @} */
   #endif
 
+  /** @{
+   * @name Write a particular configuration at a given index or name to a file.
+   */
   bool WriteConfiguration(const std::string & filename, const unsigned int i) const;
   bool WriteConfiguration(const std::string & filename, const std::string & configurationName) const;
+  /** @} */
 
-  void PrintConfiguration(const unsigned int i = 0) const;
-  void PrintConfiguration(const std::string & name) const;
-  void PrintConfigurations() const;
+  /** @{
+   * @name Print a particular configuration at a given index or name to a file.
+   */
+  std::string toString(const int index = -1) const;
+  std::ostream & Print(std::ostream &in, const int index = -1) const;
+  std::ostream & Print(std::ostream &in, const std::string & configurationName) const;
+  friend std::ostream & operator<<(std::ostream &in, const AliYAMLConfiguration &myTask);
+  void Print(Option_t* /* opt */ = "") const;
+  /** @} */
 
  protected:
 
@@ -137,9 +181,13 @@ class AliYAMLConfiguration : public TObject {
   inline bool DoesFileExist(const std::string & filename) const;
   void SetupReadingConfigurationFilePath(std::string & filename, const std::string & fileIdentifier) const;
   void WriteConfigurationToFilePath(const std::string & localFilename, std::string filename) const;
+  #if !(defined(__CINT__) || defined(__MAKECINT__))
+  // Printing
+  void PrintConfiguration(std::ostream & stream, const std::pair<std::string, YAML::Node> & configPair) const;
+  #endif
   // Configuration utilities
   template<typename T>
-  unsigned int GetConfigurationIndexByName(const std::string & name, const std::vector<std::pair<std::string, T>> & configurations) const;
+  unsigned int GetConfigurationIndexFromName(const std::string & name, const std::vector<std::pair<std::string, T>> & configurations) const;
 
   bool IsSharedValue(std::string & value) const;
   #if !(defined(__CINT__) || defined(__MAKECINT__))
@@ -318,14 +366,13 @@ bool AliYAMLConfiguration::GetProperty(const std::vector <std::string> propertyP
  * @param[in] propertyName Name of the property to retrieve
  * @param[out] property Contains the retrieved property
  * @param[in] requiredProperty True if the property is required
- * @param[in] correctionName Name of the correction from where the property should be retrieved
  *
  * @return True if the property was set successfully
  */
 template<typename T>
 bool AliYAMLConfiguration::GetProperty(std::string propertyName, T & property, const bool requiredProperty) const
 {
-  // Remove AliEmcalCorrection if in name
+  // Remove the prefix string if in name
   std::size_t prefixStringLocation = propertyName.find(fPrefixString);
   if (prefixStringLocation != std::string::npos)
   {
@@ -500,7 +547,7 @@ bool AliYAMLConfiguration::WriteProperty(std::string propertyName, T & property,
   unsigned int configurationIndex = 0;
   if (configurationName != "")
   {
-    configurationIndex = GetConfigurationIndexByName(configurationName, fConfigurations);
+    configurationIndex = GetConfigurationIndexFromName(configurationName, fConfigurations);
   }
 
   if (fConfigurations.size() == 0) {
@@ -560,7 +607,8 @@ void AliYAMLConfiguration::WriteValue(YAML::Node & node, std::string propertyNam
 #endif
 
 /**
- * Get the index of the configuration given the configuration name.
+ * Get the index of the configuration given the configuration name. If the same name is used multiple times, then
+ * the first instance will be returned.
  *
  * @param[in] name Name of the configuration.
  * @param[in] configurations Configurations to search through (could contain YAML nodes, or the string copies).
@@ -568,7 +616,7 @@ void AliYAMLConfiguration::WriteValue(YAML::Node & node, std::string propertyNam
  * @return Index of the configuration, or -1 if not found.
  */
 template<typename T>
-unsigned int AliYAMLConfiguration::GetConfigurationIndexByName(const std::string & name, const std::vector<std::pair<std::string, T>> & configurations) const
+unsigned int AliYAMLConfiguration::GetConfigurationIndexFromName(const std::string & name, const std::vector<std::pair<std::string, T>> & configurations) const
 {
   int index = -1;
   for (const auto & configPair : configurations)
