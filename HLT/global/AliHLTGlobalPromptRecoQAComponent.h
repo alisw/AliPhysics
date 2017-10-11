@@ -11,8 +11,6 @@
 #include "TH1.h"
 #include "AliOptionParser.h"
 
-using namespace AliZMQhelpers;
-
 // forward declarations
 class AliESDEvent;
 class AliESDfriend;

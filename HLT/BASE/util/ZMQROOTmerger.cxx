@@ -832,17 +832,6 @@ Int_t DoSend(void* socket)
     alizmq_msg_close(&messageCopy);
   }
 
-  int sentBytes = 0;
-  //send a copy to the broadcast socket if requested on reset
-  if (reset && fZMQresetBroadcast && fZMQresetBroadcast!=socket) {
-    aliZMQmsg messageCopy;
-    alizmq_msg_copy(&messageCopy, &message);
-    sentBytes += alizmq_msg_send(&messageCopy, fZMQresetBroadcast, 0);
-    fNumberOfMessagesSent++;
-    if (fVerbose) printf("a copy was broadcasted, %i bytes\n", sentBytes);
-    alizmq_msg_close(&messageCopy);
-  }
-
   //send
   sentBytes += alizmq_msg_send(&message, socket, 0);
   fNumberOfMessagesSent++;
@@ -1086,14 +1075,6 @@ Int_t ProcessOptionString(TString arguments, Bool_t verbose)
     else if (option.EqualTo("UnpackContainers"))
     {
       fUnpackContainers = (value.Contains("0") || value.Contains("no"))?kFALSE:kTRUE;
-    }
-    else if (option.EqualTo("IgnoreDefaultContainerNames"))
-    {
-      fIgnoreDefaultNamesWhenUnpacking = (value.Contains("0"))?kFALSE:kTRUE;
-    }
-    else if (option.EqualTo("FullyDestroyAnalysisDataContainer"))
-    {
-      fFullyDestroyAnalysisDataContainer = (value.Contains("0"))?kFALSE:kTRUE;
     }
     else if (option.EqualTo("IgnoreDefaultContainerNames"))
     {

@@ -51,12 +51,6 @@ const AliZMQhelpers::DataTopic AliZMQhelpers::kDataTypeConfig("CONFIG__","***\n"
 const AliZMQhelpers::DataTopic AliZMQhelpers::kDataTypeTObject("ROOTTOBJ","***\n",0);
 const AliZMQhelpers::DataTopic AliZMQhelpers::kDataTypeTH1("ROOTHIST","***\n",0);
 
-const AliZMQhelpers::DataTopic AliZMQhelpers::kDataTypeStreamerInfos("ROOTSTRI","***\n",0);
-const AliZMQhelpers::DataTopic AliZMQhelpers::kDataTypeInfo("INFO____","***\n",0);
-const AliZMQhelpers::DataTopic AliZMQhelpers::kDataTypeConfig("CONFIG__","***\n",0);
-const AliZMQhelpers::DataTopic AliZMQhelpers::kDataTypeTObject("ROOTTOBJ","***\n",0);
-const AliZMQhelpers::DataTopic AliZMQhelpers::kDataTypeTH1("ROOTHIST","***\n",0);
-
 //_______________________________________________________________________________________
 void* AliZMQhelpers::alizmq_context()
 {
