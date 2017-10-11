@@ -35,6 +35,7 @@ set(SRCS
   AliNanoAODReplicator.cxx
   AliNanoAODTrack.cxx
   AliAnalysisNanoAODCutsCRCZDC.cxx
+  AliAnalysisNanoAODCutsJet.cxx
   )
 
 # Headers from sources
