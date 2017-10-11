@@ -55,6 +55,7 @@
 #include "AliVCluster.h"
 #include "AliVEventHandler.h"
 #include "AliVParticle.h"
+#include "AliNanoAODHeader.h"
 
 Double_t AliAnalysisTaskEmcal::fgkEMCalDCalPhiDivide = 4.;
 
@@ -1055,7 +1056,7 @@ Bool_t AliAnalysisTaskEmcal::IsEventSelected()
     } else {
       const AliAODEvent *aev = dynamic_cast<const AliAODEvent*>(InputEvent());
       if (aev) {
-        res = ((AliVAODHeader*)aev->GetHeader())->GetOfflineTrigger();
+	 res = ((AliVAODHeader*)aev->GetHeader())->GetOfflineTrigger();
       }
     }
     if ((res & fOffTrigger) == 0) {
@@ -1373,9 +1374,13 @@ Bool_t AliAnalysisTaskEmcal::RetrieveEventObjects()
   }
 
   fBeamType = GetBeamType();
-
+  TObject * header = InputEvent()->GetHeader();
   if (fBeamType == kAA || fBeamType == kpA ) {
     if (fUseNewCentralityEstimation) {
+    if (header->InheritsFrom("AliNanoAODStorage")){
+       AliNanoAODHeader *nanoHead = (AliNanoAODHeader*)header;
+       fCent=nanoHead->GetCentr(fCentEst.Data());
+    }else{
       AliMultSelection *MultSelection = static_cast<AliMultSelection*>(InputEvent()->FindListObject("MultSelection"));
       if (MultSelection) {
         fCent = MultSelection->GetMultiplicityPercentile(fCentEst.Data());
@@ -1383,8 +1388,13 @@ Bool_t AliAnalysisTaskEmcal::RetrieveEventObjects()
       else {
         AliWarning(Form("%s: Could not retrieve centrality information! Assuming 99", GetName()));
       }
+      }
     }
     else { // old centrality estimation < 2015
+    if (header->InheritsFrom("AliNanoAODStorage")){
+       AliNanoAODHeader *nanoHead = (AliNanoAODHeader*)header;
+       fCent=nanoHead->GetCentr(fCentEst.Data());
+    }else{
       AliCentrality *aliCent = InputEvent()->GetCentrality();
       if (aliCent) {
         fCent = aliCent->GetCentralityPercentile(fCentEst.Data());
@@ -1392,6 +1402,7 @@ Bool_t AliAnalysisTaskEmcal::RetrieveEventObjects()
       else {
         AliWarning(Form("%s: Could not retrieve centrality information! Assuming 99", GetName()));
       }
+    }
     }
 
     if (fNcentBins==4) {
@@ -1431,7 +1442,12 @@ Bool_t AliAnalysisTaskEmcal::RetrieveEventObjects()
         fCentBin = fNcentBins-1;
       }
     }
-
+    if (header->InheritsFrom("AliNanoAODStorage")){
+        AliNanoAODHeader *nanoHead = (AliNanoAODHeader*)header;
+        fEPV0=nanoHead->GetVar(nanoHead->GetVarIndex("cstEvPlaneV0"));
+        fEPV0A=nanoHead->GetVar(nanoHead->GetVarIndex("cstEvPlaneV0A"));
+        fEPV0C=nanoHead->GetVar(nanoHead->GetVarIndex("cstEvPlaneV0C"));
+    }else{
     AliEventplane *aliEP = InputEvent()->GetEventplane();
     if (aliEP) {
       fEPV0  = aliEP->GetEventplane("V0" ,InputEvent());
@@ -1439,6 +1455,7 @@ Bool_t AliAnalysisTaskEmcal::RetrieveEventObjects()
       fEPV0C = aliEP->GetEventplane("V0C",InputEvent());
     } else {
       AliWarning(Form("%s: Could not retrieve event plane information!", GetName()));
+    }
     }
   }
   else {

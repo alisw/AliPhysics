@@ -26,6 +26,7 @@ include_directories(${AliPhysics_SOURCE_DIR}/PWGJE/EMCALJetTasks
 include_directories(${ROOT_INCLUDE_DIRS}
                     ${AliPhysics_SOURCE_DIR}/CORRFW
                     ${AliPhysics_SOURCE_DIR}/OADB
+		    ${AliPhysics_SOURCE_DIR}/PWG/DevNanoAOD
                     ${AliPhysics_SOURCE_DIR}/PWG/EMCAL/EMCALbase
                     ${AliPhysics_SOURCE_DIR}/PWG/EMCAL/EMCALtrigger
                     ${AliPhysics_SOURCE_DIR}/PWG/JETFW
@@ -66,6 +67,7 @@ set(SRCS
     AliJetRandomizerTask.cxx
     AliJetResponseMaker.cxx
     AliJetTriggerSelectionTask.cxx
+    AliNanoAODArrayMaker.cxx
     Tracks/AliAnalysisTaskEmcalTriggerBase.cxx
     Tracks/AliAnalysisTaskEmcalTriggerPosition.cxx
     Tracks/AliAnalysisTaskPtEMCalTrigger.cxx
