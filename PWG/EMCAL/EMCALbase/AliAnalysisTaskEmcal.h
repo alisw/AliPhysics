@@ -256,6 +256,17 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   void                        SetMakeGeneralHistograms(Bool_t g)                    { fGeneralHistograms = g                              ; }
 
   /**
+   * @brief Switch on/off getting \f$ p_{t,hard}\f$ bin from the file path.
+   *
+   * By default the \f$ p_{t,hard}\f$ bin is obtained from the file path in case the
+   * task is defined to run on a \f$ p_{t,hard}\f$ production. New samples decode
+   * the \f$ p_{t,hard}\f$ bin number in the file path. However this is not supported
+   * for
+   * @param[in] docheck
+   */
+  void                        SetGetPtHardBinFromPath(Bool_t docheck)               { fGetPtHardBinFromName = docheck; }
+
+  /**
    * @brief Set the number of \f$ p_{t}\f$-hard bins
    * @param[in] nbins Number of \f$ p_{t}\f$-hard bins
    */
@@ -842,6 +853,7 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   Bool_t                      fIsEmbedded;                 ///< trigger, embedded signal
   Bool_t                      fIsPythia;                   ///< trigger, if it is a PYTHIA production
   Bool_t                      fIsHerwig;                   ///< trigger, if it is a HERWIG production
+  Bool_t                      fGetPtHardBinFromName;       ///< Obtain pt-hard bin from file path
   Int_t                       fSelectPtHardBin;            ///< select one pt hard bin for analysis
   Int_t                       fMinMCLabel;                 ///< minimum MC label value for the tracks/clusters being considered MC particles
   Int_t                       fMCLabelShift;               ///< if MC label > fMCLabelShift, MC label -= fMCLabelShift
@@ -886,6 +898,7 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   Float_t                     fPtHard;                     //!<!event \f$ p_{t}\f$-hard
   Int_t                       fPtHardBin;                  //!<!event \f$ p_{t}\f$-hard bin
   Int_t                       fPtHardBinGlobal;            //!<!event \f$ p_{t}\f$-hard bin, detected from filename
+  Bool_t                      fPtHardInitialized;          //!<!flag whether the \f$ p_{t}\f$-hard bin was initialized, purely for internal processing
   Int_t                       fNPtHardBins;                ///< Number of \f$ p_{t}\f$-hard bins in the dataset
   TArrayI                     fPtHardBinning;              ///< \f$ p_{t}\f$-hard binning
   Int_t                       fNTrials;                    //!<!event trials
@@ -917,7 +930,7 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   AliAnalysisTaskEmcal &operator=(const AliAnalysisTaskEmcal&); // not implemented
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskEmcal, 16) // EMCAL base analysis task
+  ClassDef(AliAnalysisTaskEmcal, 17) // EMCAL base analysis task
   /// \endcond
 };
 

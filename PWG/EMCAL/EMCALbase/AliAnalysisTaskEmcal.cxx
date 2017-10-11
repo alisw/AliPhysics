@@ -99,6 +99,7 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal() :
   fIsEmbedded(kFALSE),
   fIsPythia(kFALSE),
   fIsHerwig(kFALSE),
+  fGetPtHardBinFromName(kTRUE),
   fSelectPtHardBin(-999),
   fMinMCLabel(0),
   fMCLabelShift(0),
@@ -139,6 +140,7 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal() :
   fPtHard(0),
   fPtHardBin(0),
   fPtHardBinGlobal(-1),
+  fPtHardInitialized(false),
   fNPtHardBins(11),
   fPtHardBinning(),
   fNTrials(0),
@@ -210,6 +212,7 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal(const char *name, Bool_t histo) :
   fIsEmbedded(kFALSE),
   fIsPythia(kFALSE),
   fIsHerwig(kFALSE),
+  fGetPtHardBinFromName(kTRUE),
   fSelectPtHardBin(-999),
   fMinMCLabel(0),
   fMCLabelShift(0),
@@ -250,6 +253,7 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal(const char *name, Bool_t histo) :
   fPtHard(0),
   fPtHardBin(0),
   fPtHardBinGlobal(-1),
+  fPtHardInitialized(false),
   fNPtHardBins(11),
   fPtHardBinning(),
   fNTrials(0),
@@ -521,13 +525,18 @@ void AliAnalysisTaskEmcal::UserCreateOutputObjects()
 Bool_t AliAnalysisTaskEmcal::FillGeneralHistograms()
 {
   if (fIsPythia || fIsHerwig) {
-    fHistEventsAfterSel->Fill(fPtHardBin, 1);
-    fHistTrialsAfterSel->Fill(fPtHardBin, fNTrials);
-    fHistXsectionAfterSel->Fill(fPtHardBin, fXsection);
+    // Protection: In case the pt-hard bin handling is not initialized we fall back to the
+    // global pt-hard bin (usually 0) in order to aviod mismatch between histograms before
+    // and after selection
+    fHistEventsAfterSel->Fill(fPtHardInitialized ? fPtHardBin : fPtHardBinGlobal, 1);
+    fHistTrialsAfterSel->Fill(fPtHardInitialized ? fPtHardBin : fPtHardBinGlobal, fNTrials);
+    fHistXsectionAfterSel->Fill(fPtHardInitialized ? fPtHardBin : fPtHardBinGlobal, fXsection);
     fHistPtHard->Fill(fPtHard);
-    fHistPtHardCorr->Fill(fPtHardBin, fPtHard);
-    fHistPtHardCorrGlobal->Fill(fPtHardBinGlobal, fPtHard);
-    fHistPtHardBinCorr->Fill(fPtHardBin, fPtHardBinGlobal);
+    if(fPtHardInitialized){
+    	fHistPtHardCorr->Fill(fPtHardBin, fPtHard);
+    	fHistPtHardCorrGlobal->Fill(fPtHardBinGlobal, fPtHard);
+    	fHistPtHardBinCorr->Fill(fPtHardBin, fPtHardBinGlobal);
+    }
   }
 
 
@@ -815,6 +824,7 @@ Bool_t AliAnalysisTaskEmcal::PythiaInfoFromFile(const char* currFile, Float_t &f
 }
 
 Bool_t AliAnalysisTaskEmcal::UserNotify(){
+  fPtHardInitialized = kFALSE;
   fFileChanged = kTRUE;
   return kTRUE;
 }
@@ -849,7 +859,15 @@ Bool_t AliAnalysisTaskEmcal::FileChanged(){
 
   fUseXsecFromHeader = false;
   PythiaInfoFromFile(curfile->GetName(), xsection, trials, pthardbin);
-  fPtHardBinGlobal = pthardbin;
+  if(fGetPtHardBinFromName) {
+    // Use the bin obtained from the path name
+    fPtHardBinGlobal = pthardbin;
+    fPtHardInitialized = kTRUE;
+  } else {
+    // Put everything in the first bin
+    fPtHardBinGlobal = 0;
+    pthardbin = 0;
+  }
 
   if ((pthardbin < 0) || (pthardbin > fNPtHardBins-1)){
     AliErrorStream() << GetName() << ": Invalid global pt-hard bin " << pthardbin << " detected" << std::endl;
@@ -1494,8 +1512,11 @@ Bool_t AliAnalysisTaskEmcal::RetrieveEventObjects()
       fPtHardBin = 0;
     }
 
-    if(fPtHardBin != fPtHardBinGlobal){
-      AliErrorStream() << GetName() << ": Mismatch in pt-hard bin determination. Local: " << fPtHardBin << ", Global: " << fPtHardBinGlobal << std::endl;
+    if(fPtHardInitialized){
+      // do check only in case the global pt-hard bin is initialized
+      if(fPtHardBin != fPtHardBinGlobal){
+        AliErrorStream() << GetName() << ": Mismatch in pt-hard bin determination. Local: " << fPtHardBin << ", Global: " << fPtHardBinGlobal << std::endl;
+      }
     }
 
     fXsection = fPythiaHeader->GetXsection();
