@@ -692,14 +692,14 @@ void AliTOFTrigger::PrepareTOFMapFromRaw(AliRawReader *fRawReader,Int_t deltaBC)
 	  Int_t iChannelIndex=AliTOFGeometry::FromDDLtoChannelIndex(iCH,iTDC);
 	  Int_t index[2]={iLTMindex,iChannelIndex};
 	  
-	  UInt_t indexDDL    = fgFromTriggertoDCS[index[0]];
+	  UInt_t indexDCS    = fgFromTriggertoDCS[index[0]];
 
 
-	  if(fTOFTrigMask->IsON(indexDDL,index[1]) && TMath::Abs(tofRawDatum->GetTOF()-deltaBC) < 500) fTOFTrigMap->SetON(index[0],index[1]);
+	  if(fTOFTrigMask->IsON(indexDCS,index[1]) && TMath::Abs(tofRawDatum->GetTOF()-deltaBC) < 500) fTOFTrigMap->SetON(index[0],index[1]);
 
 
-//	  if(!fTOFTrigMask->IsON(indexDDL,index[1])){
-//	    printf("TOF problem (%i,%i) - (%i,%i) \n",indexDDL,index[1],index[0],index[1]);
+//	  if(!fTOFTrigMask->IsON(indexDCS,index[1])){
+//	    printf("TOF problem (%i,%i) - (%i,%i) \n",indexDCS,index[1],index[0],index[1]);
 //	  }
 //	  else
 //	    printf("TOF time = %i\n",tofRawDatum->GetTOF());
@@ -762,10 +762,10 @@ void AliTOFTrigger::PrepareTOFMapFromDigit(TTree *treeD, Float_t startTimeHit, F
     GetLTMIndex(detind,indexLTM);
 
     UInt_t channelCTTM = indexLTM[1]/2;
-    UInt_t indexDDL    = fgFromTriggertoDCS[indexLTM[0]];
+    UInt_t indexDCS    = fgFromTriggertoDCS[indexLTM[0]];
 
     // skip digits for channels not included in the trigger active mask
-    if (!fTOFTrigMask->IsON(indexDDL,channelCTTM)) continue;
+    if (!fTOFTrigMask->IsON(indexDCS,channelCTTM)) continue;
     fTOFTrigMap->SetON(indexLTM[0],channelCTTM);
   }
 
@@ -820,6 +820,9 @@ void AliTOFTrigger::GetLTMIndex(const Int_t * const detind, Int_t *indexLTM) {
     else{
       //      AliError("Smth Wrong!!!");
     }
+
+    // invert order in back frame
+    indexLTM[1] = 45-indexLTM[1];
   }
 
 }

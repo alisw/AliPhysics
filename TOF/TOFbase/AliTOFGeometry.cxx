@@ -2216,7 +2216,7 @@ Int_t AliTOFGeometry::FromDDLtoLTM(Int_t ddl,Int_t chain){
     iLTMindex=chain;
     break;
   case 3:
-    iLTMindex=36+chain;
+    iLTMindex=36+!chain;
     break;
   default:
     break;
