@@ -1,0 +1,19 @@
+.TH*  {
+    marker_size:   1,1,1,1;
+    marker_color:  2,4,6,8;
+    line_color:    2,4,6,8;
+    line_style:    1,1,1,1;
+}
+.TGraph*  {
+    marker_size:   1,1,1,1;
+    marker_color:  2,4,6,8;
+    line_color:    2,4,6,8;
+    line_style:    1,1,1,1;
+}
+.TGraphErrors*  {
+    marker_size:   1,1,1,1;
+    marker_color:  2,4,6,8;
+    line_color:    2,4,6,8;
+    line_style:    1,1,1,1;
+}
+

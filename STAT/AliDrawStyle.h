@@ -70,6 +70,10 @@ public:
   static TString  GetAttributeValue(TString input, TString tagName);
   static Int_t    GetNamedIntegerAt(TString input, TString tagName, Int_t index);
   static Float_t  GetNamedFloatAt(TString input, TString tagName, Int_t index);
+  static Bool_t  IsSelected(TString selector, TString className, TString objectName);
+  static TObjArray * ReadCSSFile(const char *  inputName,Int_t verbose);
+  static void    WriteCSSFile(TObjArray * cssArray, const char *  outputName, fstream *pcssOut=NULL);
+  //
   //
   static Int_t   GetIntegerAt(const char * format, Int_t index, const char * separator=";");
   static Float_t GetFloatAt(const char * format, Int_t index, const char * separator=";");

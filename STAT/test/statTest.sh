@@ -74,7 +74,7 @@ EOF
   N_BAD=$(grep -c "E-Ali" AliDrawStyleTest.log)
   TEST_STATUS=0
   if [[ $N_GOOD != 21 ]]; then
-    alilog_error "statTest.AliDrawStyleTest: Test OK"
+    alilog_error "statTest.AliDrawStyleTest: Test FAILED"
     ((TEST_STATUS++))
   fi
   if [[ $N_BAD != 0 ]]; then

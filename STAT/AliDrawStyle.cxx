@@ -59,7 +59,14 @@
 #include "TPRegexp.h"
 #include "TColor.h"
 #include "TMath.h"
+#include "TObjArray.h"
+#include "TSystem.h"
 #include <iostream>
+#include <fstream>
+#include <iomanip>
+#include <ios>
+
+using namespace std;
 //
 TString AliDrawStyle::fDefaultTStyleID;                            ///< ID of the default TStyle
 TString AliDrawStyle::fDefaultArrayStyleID;                        ///< ID of the default array styles
@@ -102,7 +109,7 @@ TString AliDrawStyle::GetLatexAlice(const char * symbol){
 /// \param format    -  array string
 /// \param index     -  element index
 /// \param separator -  array separator
-/// TODO: using TString - to be replaced by faster variant with rough pointers
+/// TODO: using TString - to be replaced by faster variant with rough pointers (make it faster if possible)
 /// Example usage:
 /*!
 \code
@@ -133,7 +140,7 @@ Int_t AliDrawStyle::GetIntegerAt(const char * format, Int_t index, const char * 
 /// \param format    -  array string
 /// \param index     -  element index
 /// \param separator -  array separator
-/// TODO: using TString - to be replaced by faster variant with rough pointers
+/// TODO: using TString - to be replaced by faster variant with rough pointers (Boris check)
 /// Example usage:
 /*!
 \code
@@ -498,4 +505,67 @@ Float_t  AliDrawStyle::GetNamedFloatAt(TString input, TString tagName, Int_t ind
   TString valueAt(value(indexStart, indexFinish - indexStart));
   if (valueAt.IsFloat()) return valueAt.Atof();
   else return -1;
+}
+
+/// Read CSS html like files  (*see also AliRoot modification in CSS)
+/// TODO:
+/// * proper exception  handling (Boris)
+///   * code should not fail
+///   * return 0 pointer if inconsistent content
+///   * Use ::Error verbosity according debug level
+/// * proper CSS comments handling (Boris)
+/// * include CSS files  (should be included as )
+/// \param inputName     - input file to read
+/// \param verbose       - specify verbose level for ::error and ::info (Int_t should be interpreted as an bitmask)
+/// \return              - TObjArray  with the pairs TNamed of the CSS <Selector, declaration> or  TObjArray (recursive structure like includes)
+TObjArray * AliDrawStyle::ReadCSSFile(const char *  inputName, Int_t verbose){
+  TString inputCSS = gSystem->GetFromPipe(TString::Format("cat %s",inputName).Data());     // I expect this variable is defined
+  TObjArray *tokenArray = inputCSS.Tokenize("{}");   //assuming we can not use {} symbols in the style IDS
+  Int_t entries = tokenArray->GetEntries();
+  TObjArray *cssArray = new TObjArray(entries / 2);
+  for (Int_t i = 0; i < entries; i += 2) {
+    if (i + 1 >= entries) continue;
+    TString selector = tokenArray->At(i)->GetName();
+    TString declaration = tokenArray->At(i + 1)->GetName();
+    cssArray->AddLast(new TNamed(selector.Data(), declaration.Data()));
+  }
+  return cssArray;
+}
+
+/// Write cssArray to the file as a plain array (recursive function)
+/// \param cssArray    - input css array to write
+/// \param outputName  - output file
+/// \param pcssOut     - output stream ( )
+void    AliDrawStyle::WriteCSSFile(TObjArray * cssArray, const char *  outputName, fstream *pcssOut) {
+  if (pcssOut == NULL) {
+    pcssOut=new fstream;
+    pcssOut->open("test.css", ios_base::out|ios_base::trunc);
+  }
+  fstream &cssOut = *pcssOut;
+  for (Int_t i=0;i<cssArray->GetEntries();i++) {
+    TObject *object = cssArray->At(i);
+    if (object->InheritsFrom("TObjArray")){
+      AliDrawStyle::WriteCSSFile((TObjArray*)object, 0, pcssOut);
+    }else {
+      cssOut << object->GetName();
+      cssOut << "{";
+      cssOut << object->GetTitle();
+      cssOut << "}";
+    }
+  }
+  cssOut<<std::flush;
+  if (outputName!=NULL) {
+    pcssOut->close();
+    delete pcssOut;
+  }
+}
+/// Function to check  match between "CSS" selector and pair of className, objectName
+/// \param selector    - selector ID
+/// \param className   - name of class
+/// \param objectName  - object name
+/// \return            - kTRUE if selector match classname and objectName
+/// TODO
+///   - precalculate the tree ?
+Bool_t  AliDrawStyle::IsSelected(TString selector, TString className, TString objectName){
+  return kTRUE;
 }
