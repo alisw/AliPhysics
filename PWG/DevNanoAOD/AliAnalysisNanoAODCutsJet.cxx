@@ -1,4 +1,6 @@
 
+#include <TClonesArray.h>
+
 #include "AliAnalysisNanoAODCutsJet.h"
 #include "AliAODTrack.h"
 #include "AliAODEvent.h"
