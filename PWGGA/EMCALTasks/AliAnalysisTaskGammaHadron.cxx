@@ -1649,50 +1649,47 @@ void AliAnalysisTaskGammaHadron::FillQAHisograms(Int_t identifier,AliClusterCont
 		if(fPlotQA==2)
 		{
 			Int_t Ntrks = caloCluster->GetNTracksMatched();
-
-			if(Ntrks>0)
+			Double_t etadiff=100;
+			Double_t phidiff=100;
+			Double_t etadiffTrack;
+			Double_t phidiffTrack;
+			Double_t mom;
+			Double_t momTrack;
+			//..loop over matched tracks
+			for (Int_t i = 0; i < Ntrks; ++i)
 			{
-				//..loop over matched tracks
-				for (Int_t i = 0; i < Ntrks; ++i)
+				AliVTrack* track = static_cast<AliVTrack*>(caloCluster->GetTrackMatched(i));
+
+				Double_t veta = track->GetTrackEtaOnEMCal();
+				Double_t vphi = track->GetTrackPhiOnEMCal();
+				momTrack      = track->P();
+
+				Float_t pos[3] = {0};
+				caloCluster->GetPosition(pos);
+				TVector3 cpos(pos);
+				Double_t ceta     = cpos.Eta();
+				Double_t cphi     = cpos.Phi();
+
+				etadiffTrack  = veta-ceta;
+				phidiffTrack  = TVector2::Phi_mpi_pi(vphi-cphi);
+				if(sqrt(pow(etadiffTrack,2)+pow(phidiffTrack,2))<sqrt(pow(etadiff,2)+pow(phidiff,2)))
 				{
-					AliVTrack* track = static_cast<AliVTrack*>(caloCluster->GetTrackMatched(i));
-
-					Double_t veta = track->GetTrackEtaOnEMCal();
-					Double_t vphi = track->GetTrackPhiOnEMCal();
-					Double_t mom  = track->P();
-
-					Float_t pos[3] = {0};
-					caloCluster->GetPosition(pos);
-					TVector3 cpos(pos);
-					Double_t ceta     = cpos.Eta();
-					Double_t cphi     = cpos.Phi();
-					Double_t etadiff  = veta-ceta;
-					Double_t phidiff  = TVector2::Phi_mpi_pi(vphi-cphi);
-
-					Double_t valueArray[7];
-					valueArray[0] = energy;
-					valueArray[1] = caloCluster->GetM02();
-					valueArray[2] = fabs(etadiff);
-					valueArray[3] = fabs(phidiff);
-					valueArray[4] = energy/mom;
-					valueArray[5] = Ntrks;
-					valueArray[6] = fCent;
-					fClusterProp->Fill(valueArray); //..all clusters - no cuts
+					etadiff = etadiffTrack;
+					phidiff = phidiffTrack;
+					mom     = momTrack;
 				}
 			}
-			else
-			{
-				Double_t valueArray[7];
-				valueArray[0] = energy;
-				valueArray[1] = caloCluster->GetM02();
-				//..no mathced track
-				valueArray[2] = 0.1;
-				valueArray[3] = 0.1;
-				valueArray[4] = 0;
-				valueArray[5] = 0;
-				valueArray[6] = fCent;
-				fClusterProp->Fill(valueArray); //..all clusters - no cuts
-			}
+
+			Double_t valueArray[7];
+			valueArray[0] = energy;
+			valueArray[1] = caloCluster->GetM02();
+			valueArray[2] = fabs(etadiff);
+			valueArray[3] = fabs(phidiff);
+			valueArray[4] = energy/mom;
+			valueArray[5] = Ntrks;
+			valueArray[6] = fCent;
+			fClusterProp->Fill(valueArray); //..all clusters - no cuts
+
 		}
 		//valueArray[6] = phiDistMatched;
 		//valueArray[7] = etaDistMatched;
