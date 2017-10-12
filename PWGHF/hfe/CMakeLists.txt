@@ -107,9 +107,11 @@ set(SRCS
   AliHFEreducedEventCreatorESD.cxx
   AliHFEreducedEvent.cxx
   AliHFEreducedTrack.cxx
-  AliHFEminiEventCreator.cxx
-  AliHFEminiEvent.cxx
+  
   AliHFEminiTrack.cxx
+  AliHFEminiEvent.cxx
+  AliHFEminiEventCreator.cxx
+  
   AliHFEreducedMCParticle.cxx
   AliAnalysisTaskHFEQA.cxx
   AliAnalysisTaskHFEemcQA.cxx
