@@ -160,6 +160,11 @@ void AliEMCALTriggerSTU::L1(int type)
   AliDebug(999,Form("STU L1 (type %d) using subregion size (%d,%d), patch size (%d,%d)\n",type,int(SubRegionSize()->X()),int(SubRegionSize()->Y()),int(PatchSize()->X()),int(PatchSize()->Y())));
   AliDebug(999,Form("STU L1 subtracting Bkg = %d\n",fBkg));
 
+  if (GetThreshold(type) == 0) {
+    AliDebug(999,Form("STU has 0 threshold for type %d.  Skipping this trigger calculation.  Check OCDB!!!",type));
+    return; // Don't execute trigger with 0 threshold.
+  }
+
   SlidingWindow(GetThreshold(type) + fBkg);
   AliDebug(999, Form("STU type %d sliding window w/ thr %d found %d patches", type, GetThreshold(type)+ fBkgRho * int(PatchSize()->X() * PatchSize()->Y() / 4.), fPatches->GetEntriesFast()));
 }

@@ -169,6 +169,11 @@ Int_t AliEMCALTriggerTRU::L0()
   AliDebug(999,Form("=== TRU fw version %x ===",fDCSConfig->GetFw()));
   AliDebug(999,Form("=== TRU L0 THR = %d ===",fDCSConfig->GetGTHRL0()));
   
+  if (fDCSConfig->GetGTHRL0() <= 1) { // Checking for the null threshold
+    AliDebug(999,"TRU is missing threshold.  Skipping L0 Trigger for this TRU.");
+    return 0; // Don't use trigger if threshold is 0 or 1.
+  }
+
   if (fDCSConfig->GetFw() < 0x4d) {
     return L0v0(nb, ma);
   } else {
