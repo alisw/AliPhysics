@@ -3549,6 +3549,10 @@ TString AliGRPPreprocessor::ParseBeamTypeString(TString beamType, Int_t iBeamTyp
 				Log(Form("Beam %d is %s --> A = 208",iBeamType, strA.Data()));
 				a = 208;
 			}
+			else if (strA.CompareTo("XE",TString::kIgnoreCase) == 0){
+			  a = 129;
+			  Log(Form("Beam %d is %s --> A = %d",iBeamType, strA.Data(),a));
+			}
 			else{
 				Log(Form("This beam was not foreseen so far, leaving A=0"));
 			}
