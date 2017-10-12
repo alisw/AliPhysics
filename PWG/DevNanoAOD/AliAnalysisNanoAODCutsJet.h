@@ -3,6 +3,8 @@
 
 #include "AliNanoAODCustomSetter.h"
 
+class TClonesArray;
+
 class AliNanoAODSimpleSetterJet : public AliNanoAODCustomSetter
 {
 public:

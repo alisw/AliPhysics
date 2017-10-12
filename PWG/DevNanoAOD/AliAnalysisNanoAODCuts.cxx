@@ -159,7 +159,10 @@ void AliNanoAODSimpleSetter::SetNanoAODHeader(const AliAODEvent * event   , AliN
     index++;
   }
   //size = index;
-  if(vars) vars->Delete();
+  if(vars){
+    vars->Delete();
+    delete vars;
+  }
   head->SetMapCstVar(cstMap);
 
   if ((head->GetFiredTriggerClassesIndex())!=-1)     head->SetFiredTriggerClasses(firedTriggerClasses);
