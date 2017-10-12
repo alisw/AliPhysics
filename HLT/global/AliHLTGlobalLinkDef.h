@@ -49,7 +49,6 @@
 #pragma link C++ class AliHLTGlobalPromptRecoQAComponent+;
 #pragma link C++ class AliAnalysisTaskExampleV+;
 #ifdef ZMQ
-#pragma link C++ class AliOptionParser+;
 #pragma link C++ class AliHLTZMQsink+;
 #pragma link C++ class AliHLTZMQsource+;
 #endif
