@@ -43,19 +43,12 @@ void AliNanoAODSimpleSetterJet::SetNanoAODTrack (const AliAODTrack * aodTrack, A
 
 void AliNanoAODSimpleSetterJet::SetNanoAODHeader(const AliAODEvent * event   , AliNanoAODHeader * head , TString varListHeader  ) {
 
-  AliNanoAODSimpleSetter *simleSetter = new AliNanoAODSimpleSetter();
-  simleSetter->SetNanoAODHeader(event,head,varListHeader);
+  AliNanoAODSimpleSetter simpleSetter;
+  simpleSetter.SetNanoAODHeader(event,head,varListHeader);
 
   fArrayPythia = static_cast<TClonesArray*> (event->FindListObject(fArrayPythiaName.Data()));
 
   AliAODHeader *header = (AliAODHeader*)event->GetHeader();
-
-  Printf("fired trigger classes");
-  Printf(header->GetFiredTriggerClasses());
-  
-  static Int_t isSelIndex = head->GetVarIndex("cstIsEvSelected");
-  UInt_t sel = header->GetOfflineTrigger();
-  head->SetVar(isSelIndex,sel);
 
   static Int_t indexEPV0 = head->GetVarIndex("cstEvPlaneV0");
   static Int_t indexEPV0A = head->GetVarIndex("cstEvPlaneV0A");
