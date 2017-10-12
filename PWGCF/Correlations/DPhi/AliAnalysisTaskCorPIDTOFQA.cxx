@@ -82,7 +82,7 @@
 
 
 using namespace std;            // std namespace: so you can do things like 'cout'
-using namespace BSchaefer_devel;
+//using namespace BSchaefer_devel;
 
 //ofstream file_output("output.txt");
 
@@ -93,22 +93,16 @@ AliAnalysisTaskCorPIDTOFQA::AliAnalysisTaskCorPIDTOFQA() : AliAnalysisTaskSE(),
 fAOD(0), fOutputList(0), fPIDResponse(0),
 
     fHistPt(0),                   //  1
-
     m2_pt_pos(0),                 //  2
     m2_pt_neg(0),                 //  3
-    
     m2_pt_pos_T(0),               //  4
     m2_pt_neg_T(0),               //  5
-
     m2_pt_pos_cut_T(0),           //  6
     m2_pt_neg_cut_T(0),           //  7
-
     m2_pt_pos_cut_A(0),           //  8
     m2_pt_neg_cut_A(0),           //  9
-
     m2_pt_pos_cut_B(0),           // 10
     m2_pt_neg_cut_B(0),           // 11
-    
     deut_per_event(0)             // 12
 
 {
@@ -120,22 +114,16 @@ AliAnalysisTaskCorPIDTOFQA::AliAnalysisTaskCorPIDTOFQA(const char* name) : AliAn
 fAOD(0), fOutputList(0), fPIDResponse(0),
 
     fHistPt(0),                   //  1
-
     m2_pt_pos(0),                 //  2
     m2_pt_neg(0),                 //  3
-    
     m2_pt_pos_T(0),               //  4
     m2_pt_neg_T(0),               //  5
-
     m2_pt_pos_cut_T(0),           //  6
     m2_pt_neg_cut_T(0),           //  7
-
     m2_pt_pos_cut_A(0),           //  8
     m2_pt_neg_cut_A(0),           //  9
-
     m2_pt_pos_cut_B(0),           // 10
     m2_pt_neg_cut_B(0),           // 11
-    
     deut_per_event(0)             // 12
 
 {
@@ -182,7 +170,7 @@ void AliAnalysisTaskCorPIDTOFQA::UserCreateOutputObjects()
 
     Double_t pt_binning[2001];
 
-    Float_t moving_marker = 0.010;
+    Float_t moving_marker = 0.10;
     for(int i=0; i<1602; i++)
     {
 	pt_binning[i] = moving_marker;
@@ -192,22 +180,16 @@ void AliAnalysisTaskCorPIDTOFQA::UserCreateOutputObjects()
 
 
     fHistPt                    = new TH1F("fHistPt",                    "Pt()",                       1300,       pt_binning);                              //  1
-
     m2_pt_pos                  = new TH2F("m2_pt_pos",                  "m2_pt_pos",                   800,       pt_binning,    2400,    -1.0,     7.0);   //  2
     m2_pt_neg                  = new TH2F("m2_pt_neg",                  "m2_pt_neg",                   800,       pt_binning,    2400,    -1.0,     7.0);   //  3
-
     m2_pt_pos_T                = new TH2F("m2_pt_pos_T",                "m2_pt_pos_T",                 800,       pt_binning,    2400,    -1.0,     7.0);   //  4
     m2_pt_neg_T                = new TH2F("m2_pt_neg_T",                "m2_pt_neg_T",                 800,       pt_binning,    2400,    -1.0,     7.0);   //  5
-
     m2_pt_pos_cut_T            = new TH2F("m2_pt_pos_cut_T",            "m2_pt_pos_cut_T",             800,       pt_binning,    2400,    -1.0,     7.0);   //  6
     m2_pt_neg_cut_T            = new TH2F("m2_pt_neg_cut_T",            "m2_pt_neg_cut_T",             800,       pt_binning,    2400,    -1.0,     7.0);   //  7
-
     m2_pt_pos_cut_A            = new TH2F("m2_pt_pos_cut_A",            "m2_pt_pos_cut_A",             800,       pt_binning,    2400,    -1.0,     7.0);   //  8
     m2_pt_neg_cut_A            = new TH2F("m2_pt_neg_cut_A",            "m2_pt_neg_cut_A",             800,       pt_binning,    2400,    -1.0,     7.0);   //  9
-
     m2_pt_pos_cut_B            = new TH2F("m2_pt_pos_cut_B",            "m2_pt_pos_cut_B",             800,       pt_binning,    2400,    -1.0,     7.0);   // 10
     m2_pt_neg_cut_B            = new TH2F("m2_pt_neg_cut_B",            "m2_pt_neg_cut_B",             800,       pt_binning,    2400,    -1.0,     7.0);   // 11
-
     deut_per_event             = new TH1I("deut_per_event",             "deut_per_event",               12,        0,     12);                              // 12
 
 
@@ -301,10 +283,13 @@ void AliAnalysisTaskCorPIDTOFQA::UserExec(Option_t *)
 	    
 	if(charge > 0)
 	{
+	    m2_pt_pos->Fill(pt, m2tof);
 	    Double_t nSigmaTPCDeut = fPIDResponse->NumberOfSigmasTPC(track,(AliPID::EParticleType) 5);  // 5 = deuteron
 //	    Double_t nSigmaTOFDeut = fPIDResponse->NumberOfSigmasTOF(track,(AliPID::EParticleType) 5);  // 5 = deuteron
 	    if(TMath::Abs(nSigmaTPCDeut) < 3.0) //  &&  nSigmaTOFDeut < 4.0)
 	    {
+		m2_pt_pos_T->Fill(pt, m2tof);
+		
 		if(pt >= 1.0  &&  pt < 4.4)
 		{
 		    for(int w=0; w<3; w++){   fit_deut_curve->SetParameter(w, deut_curves[0][0][w]);   }
@@ -315,15 +300,18 @@ void AliAnalysisTaskCorPIDTOFQA::UserExec(Option_t *)
 		    if(m2tof < deut_mean + cut_width * deut_sigma   &&   m2tof > deut_mean - cut_width * deut_sigma)
 		    {
 			deut_count++;
+			m2_pt_pos_cut_T->Fill(pt, m2tof);
 		    }
 		    else if(m2tof -1.2 < deut_mean + cut_width * deut_sigma   &&   m2tof -1.2 > deut_mean - cut_width * deut_sigma)
 		    {
 			deut_count++;
+			m2_pt_pos_cut_B->Fill(pt, m2tof);
 		    }
 
 		    else if(m2tof +1.2 < deut_mean + cut_width * deut_sigma   &&   m2tof +1.2 > deut_mean - cut_width * deut_sigma)
 		    {
 			deut_count++;
+			m2_pt_pos_cut_A->Fill(pt, m2tof);
 		    }
 		}			    
 	    }
@@ -331,10 +319,12 @@ void AliAnalysisTaskCorPIDTOFQA::UserExec(Option_t *)
 	    
 	else if(charge < 0)
 	{
+	    m2_pt_neg->Fill(pt, m2tof);
 	    Double_t nSigmaTPCDeut = fPIDResponse->NumberOfSigmasTPC(track,(AliPID::EParticleType)5);  // 5 = deuteron
 //	    Double_t nSigmaTOFDeut = fPIDResponse->NumberOfSigmasTOF(track,(AliPID::EParticleType)5);  // 5 = deuteron
 	    if(TMath::Abs(nSigmaTPCDeut) < 3.0)  //  &&  nSigmaTOFDeut < 4.0)
 	    {
+		m2_pt_neg_T->Fill(pt, m2tof);
 		if(pt >= 1.0  &&  pt < 4.4)
 		{
 		    for(int w=0; w<3; w++){   fit_deut_curve->SetParameter(w, deut_curves[1][0][w]);   }
@@ -345,15 +335,18 @@ void AliAnalysisTaskCorPIDTOFQA::UserExec(Option_t *)
 		    if(m2tof < deut_mean + cut_width * deut_sigma   &&   m2tof > deut_mean - cut_width * deut_sigma)
 		    {
 			deut_count++;
+			m2_pt_neg_cut_T->Fill(pt, m2tof);
 		    }
 		    else if(m2tof -1.2 < deut_mean + cut_width * deut_sigma   &&   m2tof -1.2 > deut_mean - cut_width * deut_sigma)
 		    {
 			deut_count++;
+			m2_pt_neg_cut_B->Fill(pt, m2tof);
 		    }
 
 		    else if(m2tof +1.2 < deut_mean + cut_width * deut_sigma   &&   m2tof +1.2 > deut_mean - cut_width * deut_sigma)
 		    {
 			deut_count++;
+			m2_pt_neg_cut_A->Fill(pt, m2tof);
 		    }
 		}
 	    }
