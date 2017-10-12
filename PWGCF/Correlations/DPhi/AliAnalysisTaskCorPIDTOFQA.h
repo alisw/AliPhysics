@@ -32,7 +32,7 @@ class AliAnalysisTaskCorPIDTOFQA : public AliAnalysisTaskSE
 	Double_t deut_curves[2][2][3];  /* [charge][mean,sigma][par]  */
 	TF1 *fit_deut_curve = new TF1("fit_m_mean",   "[0] + [1]*x + [2]/sqrt(x)",  1.0, 4.4);
 
-	Double_t cut_width  = 4.0;
+	Double_t cut_width  = 3.0;
 	
     private:
 
@@ -42,13 +42,29 @@ class AliAnalysisTaskCorPIDTOFQA : public AliAnalysisTaskSE
 
 	AliPIDResponse*       fPIDResponse;
 
-//	TTree*                htree;
-
-//	AliAODEvent*          helperAOD;                   //! input event
-	
 	TH1F*                 fHistPt;                     //  1
 
-	TH1I*                 deut_per_event;              // 15
+	TH2F*                 m2_pt_pos;                   //  2
+	TH2F*                 m2_pt_neg;                   //  3
+
+	TH2F*                 m2_pt_pos_T;                 //  4
+	TH2F*                 m2_pt_neg_T;                 //  5
+
+	TH2F*                 m2_pt_pos_cut_T;             //  6
+	TH2F*                 m2_pt_neg_cut_T;             //  7
+
+	TH2F*                 m2_pt_pos_cut_A;             //  8
+	TH2F*                 m2_pt_neg_cut_A;             //  9
+
+	TH2F*                 m2_pt_pos_cut_B;             // 10
+	TH2F*                 m2_pt_neg_cut_B;             // 11
+	
+	TH1I*                 deut_per_event;              // 12
+
+
+
+
+	
 	
         AliAnalysisTaskCorPIDTOFQA(const AliAnalysisTaskCorPIDTOFQA&);                        // not implemented
         AliAnalysisTaskCorPIDTOFQA& operator=(const AliAnalysisTaskCorPIDTOFQA&);             // not implemented
