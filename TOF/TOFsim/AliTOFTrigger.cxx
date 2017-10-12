@@ -688,34 +688,18 @@ void AliTOFTrigger::PrepareTOFMapFromRaw(AliRawReader *fRawReader,Int_t deltaBC)
 	Int_t iCH=tofRawDatum->GetTDCchannel();
 
 	if(nTRM==3 && iTDC>=12 && iTDC<=14 && indexDDL%2==1){ // DDL number to LTM number mapping
-	  Int_t iLTMindex=-1;
-	  Int_t iChannelIndex=-1;
-	  switch(indexDDL%AliTOFGeometry::NDDL()){
-	  case 1:
-	    iLTMindex=1;
-	    break;
-	  case 3:
-	    iLTMindex=36;
-	    break;
-	  default:
-	    break;
-	  }
-	  iLTMindex+=2*(Int_t)(indexDDL/AliTOFGeometry::NDDL());
-	  if(iChain==0 && indexDDL<36)
-	    iLTMindex--;
-	  if(iChain==0 && indexDDL>=36)
-	    iLTMindex++;
-	  iChannelIndex=iCH+iTDC*AliTOFGeometry::NCh()-12*AliTOFGeometry::NCh();
+          Int_t iLTMindex = AliTOFGeometry::FromDDLtoLTM(indexDDL,iChain);
+	  Int_t iChannelIndex=AliTOFGeometry::FromDDLtoChannelIndex(iCH,iTDC);
 	  Int_t index[2]={iLTMindex,iChannelIndex};
 	  
-	  UInt_t indexDDL    = fgFromTriggertoDCS[index[0]];
+	  UInt_t indexDCS    = fgFromTriggertoDCS[index[0]];
 
 
-	  if(fTOFTrigMask->IsON(indexDDL,index[1]) && TMath::Abs(tofRawDatum->GetTOF()-deltaBC) < 500) fTOFTrigMap->SetON(index[0],index[1]);
+	  if(fTOFTrigMask->IsON(indexDCS,index[1]) && TMath::Abs(tofRawDatum->GetTOF()-deltaBC) < 500) fTOFTrigMap->SetON(index[0],index[1]);
 
 
-//	  if(!fTOFTrigMask->IsON(indexDDL,index[1])){
-//	    printf("TOF problem (%i,%i) - (%i,%i) \n",indexDDL,index[1],index[0],index[1]);
+//	  if(!fTOFTrigMask->IsON(indexDCS,index[1])){
+//	    printf("TOF problem (%i,%i) - (%i,%i) \n",indexDCS,index[1],index[0],index[1]);
 //	  }
 //	  else
 //	    printf("TOF time = %i\n",tofRawDatum->GetTOF());
@@ -778,10 +762,10 @@ void AliTOFTrigger::PrepareTOFMapFromDigit(TTree *treeD, Float_t startTimeHit, F
     GetLTMIndex(detind,indexLTM);
 
     UInt_t channelCTTM = indexLTM[1]/2;
-    UInt_t indexDDL    = fgFromTriggertoDCS[indexLTM[0]];
+    UInt_t indexDCS    = fgFromTriggertoDCS[indexLTM[0]];
 
     // skip digits for channels not included in the trigger active mask
-    if (!fTOFTrigMask->IsON(indexDDL,channelCTTM)) continue;
+    if (!fTOFTrigMask->IsON(indexDCS,channelCTTM)) continue;
     fTOFTrigMap->SetON(indexLTM[0],channelCTTM);
   }
 
@@ -836,6 +820,9 @@ void AliTOFTrigger::GetLTMIndex(const Int_t * const detind, Int_t *indexLTM) {
     else{
       //      AliError("Smth Wrong!!!");
     }
+
+    // invert order in back frame
+    indexLTM[1] = 45-indexLTM[1];
   }
 
 }
@@ -978,34 +965,18 @@ void AliTOFTrigger::SetBit(Int_t nDDL, Int_t nTRM, Int_t iChain,
 
     if(nTRM==3 && iTDC>=12 && iTDC<=14 && nDDL%2==1){ // DDL number to LTM number mapping
 //       getchar();
-    Int_t iLTMindex=-1;
-    Int_t iChannelIndex=-1;
-    switch(nDDL%AliTOFGeometry::NDDL()){
-    case 1:
-      iLTMindex=1;
-      break;
-    case 3:
-      iLTMindex=36;
-      break;
-    default:
-      AliError("Call this function only if(nTRM==3 && iTDC>12 && iTDC<14 && nDDL%2==1) ");
-      break;
-    }
-    iLTMindex+=2*(Int_t)(nDDL/AliTOFGeometry::NDDL());
-    if(iChain==0 && nDDL<36)
-      iLTMindex--;
-    if(iChain==0 && nDDL>=36)
-      iLTMindex++;
-    iChannelIndex=iCH+iTDC*AliTOFGeometry::NCh()-12*AliTOFGeometry::NCh();
-    Int_t index[2]={iLTMindex,iChannelIndex};
-    if (index[0]<36){
-      fCTTMmatrixFront[index[0]][index[1]]=kTRUE;
-      fLTMmatrix[index[0]][index[1]*2]=kTRUE;
-    }
-    else{
+      Int_t iLTMindex = AliTOFGeometry::FromDDLtoLTM(nDDL,iChain);
+      Int_t iChannelIndex=AliTOFGeometry::FromDDLtoChannelIndex(iCH,iTDC);
+      
+      Int_t index[2]={iLTMindex,iChannelIndex};
+      if (index[0]<36){
+	fCTTMmatrixFront[index[0]][index[1]]=kTRUE;
+	fLTMmatrix[index[0]][index[1]*2]=kTRUE;
+      }
+      else{
 	fCTTMmatrixBack[index[0]-36][index[1]]=kTRUE;
 	fLTMmatrix[index[0]][index[1]*2]=kTRUE;
-    }
+      }
     }
 
 }
@@ -1036,25 +1007,9 @@ void AliTOFTrigger::ResetBit(Int_t nDDL, Int_t nTRM, Int_t iChain,
   //
 
   if(nTRM==3 && iTDC>12 && iTDC<14 && nDDL%2==1){ // DDL number to LTM number mapping
-    Int_t iLTMindex=-1;
-    Int_t iChannelIndex=-1;
-    switch(nDDL%AliTOFGeometry::NDDL()){
-    case 1:
-      iLTMindex=1;
-      break;
-    case 3:
-      iLTMindex=36;
-      break;
-    default:
-      AliError("Call this function only if(nTRM==3 && iTDC>12 && iTDC<14 && nDDL%2==1) ");
-      break;
-    }
-    iLTMindex+=2*(Int_t)(nDDL/AliTOFGeometry::NDDL());
-    if(iChain==0 && nDDL<36)
-      iLTMindex--;
-    if(iChain==0 && nDDL>=36)
-      iLTMindex++;
-    iChannelIndex=iCH+iTDC*AliTOFGeometry::NCh()-12*AliTOFGeometry::NCh();
+    Int_t iLTMindex = AliTOFGeometry::FromDDLtoLTM(nDDL,iChain);
+    Int_t iChannelIndex=AliTOFGeometry::FromDDLtoChannelIndex(iCH,iTDC);
+
     Int_t index[2]={iLTMindex,iChannelIndex};
     if (index[0]<36){
       fCTTMmatrixFront[index[0]][index[1]]=kFALSE;
@@ -1096,29 +1051,12 @@ Bool_t AliTOFTrigger::GetBit(Int_t nDDL, Int_t nTRM, Int_t iChain,
   }
   //if (nTRM==3 && iTDC>12 && iTDC<14 && nDDL%2==1) { // DDL number to LTM number mapping
 
-  UInt_t iLTMindex=0;
-  UInt_t iChannelindex=0;
-  switch(nDDL%AliTOFGeometry::NDDL()) {
-  case 1:
-    iLTMindex=1;
-    break;
-  case 3:
-    iLTMindex=36;
-    break;
-  default:
-    AliError("something wrong");
-    break;
-  }
-  iLTMindex+=2*(Int_t)(nDDL/AliTOFGeometry::NDDL());
+  UInt_t iLTMindex = AliTOFGeometry::FromDDLtoLTM(nDDL,iChain);
+  UInt_t iChannelIndex=AliTOFGeometry::FromDDLtoChannelIndex(iCH,iTDC);
 
   if (iChain==1) return kFALSE; // AdC
 
-  if (nDDL<36)
-    iLTMindex--;
-  if (nDDL>=36)
-    iLTMindex++;
-  iChannelindex=iCH+iTDC*AliTOFGeometry::NCh()-12*AliTOFGeometry::NCh();
-  Int_t index[2]={static_cast<Int_t>(iLTMindex),static_cast<Int_t>(iChannelindex)};
+  Int_t index[2]={static_cast<Int_t>(iLTMindex),static_cast<Int_t>(iChannelIndex)};
   return (index[0]<36)?fCTTMmatrixFront[index[0]][index[1]]:fCTTMmatrixBack[index[0]-36][index[1]];
 
 }
