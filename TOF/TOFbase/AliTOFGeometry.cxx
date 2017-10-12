@@ -2208,3 +2208,24 @@ Int_t AliTOFGeometry::GetTOFsupermodule(Int_t index)
   else return index/NpadXStrip()/NStripXSector();
 
 }
+//-----------------------------------------------------------------------------
+Int_t AliTOFGeometry::FromDDLtoLTM(Int_t ddl,Int_t chain){
+  Int_t iLTMindex=-1;
+  switch(ddl%NDDL()){
+  case 1:
+    iLTMindex=chain;
+    break;
+  case 3:
+    iLTMindex=36+chain;
+    break;
+  default:
+    break;
+  }
+  iLTMindex+=2*(Int_t)(ddl/NDDL());
+
+  return iLTMindex;
+}
+//-----------------------------------------------------------------------------
+Int_t AliTOFGeometry::FromDDLtoChannelIndex(Int_t tdcChan,Int_t itdc){
+  return tdcChan+itdc*NCh()-12*NCh();
+}

@@ -52,6 +52,9 @@ class AliTOFGeometry: public TObject{
 
   static  Int_t MaxTOFTree()  { return kMaxTOFTree;};
 
+  static Int_t FromDDLtoLTM(Int_t ddl,Int_t chain);
+  static Int_t FromDDLtoChannelIndex(Int_t tdcChan,Int_t itdc);
+
   static  Int_t NDDL()        { return kNDDL;};
   static  Int_t NTRM()        { return kNTRM;}
   static  Int_t NTdc()        { return kNTdc;};

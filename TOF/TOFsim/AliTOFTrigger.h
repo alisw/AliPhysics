@@ -50,7 +50,6 @@ class AliTOFTrigger : public AliTriggerDetector
   void ResetBit(Int_t nDDL, Int_t nTRM, Int_t iChain,Int_t iTDC, Int_t iCH);
   void ResetBit(Int_t *detind);
 
-
   void   SetHighMultTh(Int_t HighMultTh){fHighMultTh = HighMultTh;}
   void   SetppMBTh(Int_t ppMBTh){fppMBTh = ppMBTh;}
   void   SetMultiMuonTh(Int_t MultiMuonTh){fMultiMuonTh = MultiMuonTh;}
