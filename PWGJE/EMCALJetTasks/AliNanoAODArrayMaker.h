@@ -17,7 +17,7 @@ class TString;
 
 class AliNanoAODArrayMaker : public AliAnalysisTaskSE {
  public:
-  AliNanoAODArrayMaker() : AliAnalysisTaskSE(), fOutputArrayName(), fOutputArray(0), fOutputList(0x0) {}
+ AliNanoAODArrayMaker() : AliAnalysisTaskSE(), fIsFirstLoop(1), fOutputArrayName(), fOutputArray(0), fOutputList(0x0) {}
   AliNanoAODArrayMaker(const char *name);
   virtual ~AliNanoAODArrayMaker() {}
   
@@ -29,10 +29,10 @@ class AliNanoAODArrayMaker : public AliAnalysisTaskSE {
   void SetOutputArrayPythiaName(const char* name) {fOutputArrayPythiaName = name;}
   void SetOutputArrayDataName(const char* name) {fOutputArrayDataName = name;}
 
-  AliAODTrack*        GetAODTrack(AliNanoAODTrack* track, Int_t index);
-  AliAODTrack*        GetAODTrack(AliNanoAODTrack* track);
+  void GetAODTrack(AliAODTrack* newTrack, AliNanoAODTrack* track, Int_t index = -1);
 
  private:
+  Bool_t              fIsFirstLoop; /// describes if this is the first event loop
   TString             fOutputArrayName; /// name of the output array with all particles
   TClonesArray*       fOutputArray; //!<! array with all particles
 

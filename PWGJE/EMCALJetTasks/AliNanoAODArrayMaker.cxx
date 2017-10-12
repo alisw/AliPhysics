@@ -57,9 +57,12 @@ void AliNanoAODArrayMaker::UserExec(Option_t *)
 {
   // Main loop
   // Called for each event
-  InputEvent()->AddObject(fOutputArray);
-  InputEvent()->AddObject(fPythiaArray);
-  InputEvent()->AddObject(fDataArray);
+  if(fIsFirstLoop){
+    InputEvent()->AddObject(fOutputArray);
+    InputEvent()->AddObject(fPythiaArray);
+    InputEvent()->AddObject(fDataArray);
+    fIsFirstLoop = false;
+  }
 
   //find NanoAOD particle array
   TClonesArray *particleArray = static_cast<TClonesArray*> (InputEvent()->FindListObject("Nanotracks"));
@@ -73,25 +76,32 @@ void AliNanoAODArrayMaker::UserExec(Option_t *)
   Int_t indexHybGlob = AliNanoAODTrackMapping::GetInstance()->GetVarIndex("cstIsGlobalHybrid");
   Int_t indexIsPyth = AliNanoAODTrackMapping::GetInstance()->GetVarIndex("cstIsPythiaTrack");
 
-  fOutputArray->Clear("C");   
-  fPythiaArray->Clear("C"); 
-  fDataArray->Clear("C"); 
+  AliAODTrack* newTrack = new AliAODTrack();
 
+  //Delte array members from the previous event
+  fPythiaArray->Delete();
+  fOutputArray->Delete();
+  fDataArray->Delete();
+  
   //loop over particles in the event and add them to the correct arrays
   for(Int_t iPart=0; iPart<nTracks; iPart++){
    AliNanoAODTrack *nanoTrack = (AliNanoAODTrack*) particleArray->At(iPart);
     
     if (nanoTrack->GetVar(indexIsPyth)==1){
-        new ((*fPythiaArray)[accTracksPythia]) AliAODTrack(*(GetAODTrack(nanoTrack)));
-        new ((*fOutputArray)[accTracks]) AliAODTrack(*(GetAODTrack(nanoTrack)));
-        accTracksPythia++;
+      GetAODTrack(newTrack, nanoTrack);
+      new ((*fPythiaArray)[accTracksPythia]) AliAODTrack(*newTrack);
+      new ((*fOutputArray)[accTracks]) AliAODTrack(*newTrack);
+      accTracksPythia++;
     }else{
-        new ((*fDataArray)[accTracksData]) AliAODTrack(*(GetAODTrack(nanoTrack,indexHybGlob)));
-        new ((*fOutputArray)[accTracks]) AliAODTrack(*(GetAODTrack(nanoTrack,indexHybGlob)));
-        accTracksData++;
+      GetAODTrack(newTrack, nanoTrack,indexHybGlob);
+      new ((*fDataArray)[accTracksData]) AliAODTrack(*newTrack);
+      new ((*fOutputArray)[accTracks]) AliAODTrack(*newTrack);
+      accTracksData++;
     }
     accTracks++;
   }
+  
+  delete newTrack;
 }      
 
 //________________________________________________________________________
@@ -102,34 +112,16 @@ void AliNanoAODArrayMaker::Terminate(Option_t *)
 
 }
 //_____________________________________________________________________________________________________
-AliAODTrack* AliNanoAODArrayMaker::GetAODTrack(AliNanoAODTrack* track, Int_t index)
+void AliNanoAODArrayMaker::GetAODTrack(AliAODTrack* newTrack, AliNanoAODTrack* track, Int_t index)
 {
   //create AOD track from NanoAOD track with the availbable information
-  AliAODTrack* newTrack = new AliAODTrack();
   newTrack->SetPt(track->Pt());
   newTrack->SetTheta(2.*atan(exp(-track->Eta()))); // the same as in AliAnalysisTaskParticleRandomizer
   newTrack->SetPhi(track->Phi());
   newTrack->SetCharge(track->Charge());
   newTrack->SetLabel(track->GetLabel());
-  if (track->GetVar(index) == 1) newTrack->SetIsHybridGlobalConstrainedGlobal();
+  if (index==-1 || track->GetVar(index) == 1) newTrack->SetIsHybridGlobalConstrainedGlobal();
   newTrack->SetFilterMap(track->GetFilterMap());
 
-  return newTrack;
 }
-//_____________________________________________________________________________________________________
-AliAODTrack* AliNanoAODArrayMaker::GetAODTrack(AliNanoAODTrack* track){
 
-  //create AOD track from NanoAOD track with the availbable information
-  AliAODTrack* newTrack = new AliAODTrack();
-  newTrack->SetPt(track->Pt());
-  newTrack->SetTheta(2.*atan(exp(-track->Eta()))); // the same as in AliAnalysisTaskParticleRandomizer
-  newTrack->SetPhi(track->Phi());
-  newTrack->SetCharge(track->Charge());
-  newTrack->SetLabel(track->GetLabel());
-
-  // Hybrid tracks (compatible with LHC11h)
-  UInt_t filterMap = BIT(8) | BIT(9);
-  newTrack->SetIsHybridGlobalConstrainedGlobal();
-  newTrack->SetFilterMap(track->GetFilterMap());
-  return newTrack;
-}
