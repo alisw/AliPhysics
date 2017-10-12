@@ -397,15 +397,6 @@ void AliAnalysisTaskSEHFvn::UserCreateOutputObjects()
     TH1F* hNormQ3 = new TH1F("hNormQ3","hNormQ3;|Q_{3}|;Entries",100,0.,1);
     fOutput->Add(hNormQ3);
   }
-  else if(fFlowMethod==kEvShape) {
-    //multiplicity used for q2 vs. centrality (TPC)
-    TH2F* hMultVsCentFullTPC = new TH2F("hMultVsCentFullTPC","Multiplicity for q_{2} vs. centrality (full TPC);centrality(%);M",(fMaxCentr-fMinCentr)/(fCentBinSizePerMil/10),fMinCentr,fMaxCentr,100,0.5,30000.5);
-    TH2F* hMultVsCentPosTPC = new TH2F("hMultVsCentPosTPC","Multiplicity for q_{2} vs. centrality (pos TPC);centrality(%);M",(fMaxCentr-fMinCentr)/(fCentBinSizePerMil/10),fMinCentr,fMaxCentr,100,0.5,30000.5);
-    TH2F* hMultVsCentNegTPC = new TH2F("hMultVsCentNegTPC","Multiplicity for q_{2} vs. centrality (neg TPC);centrality(%);M",(fMaxCentr-fMinCentr)/(fCentBinSizePerMil/10),fMinCentr,fMaxCentr,100,0.5,30000.5);
-    fOutput->Add(hMultVsCentFullTPC);
-    fOutput->Add(hMultVsCentPosTPC);
-    fOutput->Add(hMultVsCentNegTPC);
-  }
 
   for(Int_t icentr=fMinCentr*10+fCentBinSizePerMil;icentr<=fMaxCentr*10;icentr=icentr+fCentBinSizePerMil){
     TString centrname;centrname.Form("centr%d_%d",icentr-fCentBinSizePerMil,icentr);
@@ -525,6 +516,24 @@ void AliAnalysisTaskSEHFvn::UserCreateOutputObjects()
       else if(fq2Meth==kq2VZERO) {q2axisname="q_{2}^{V0}";}
       else if(fq2Meth==kq2VZEROA) {q2axisname="q_{2}^{V0A}";}
       else if(fq2Meth==kq2VZEROC) {q2axisname="q_{2}^{V0C}";}
+
+      //EP angle vs q2
+      TH2F* hEvPlaneQncorrTPCvsq2[3];
+      TH2F* hEvPlaneQncorrVZEROvsq2[3];
+      for(Int_t iDet=0; iDet<3; iDet++) {
+        hEvPlaneQncorrTPCvsq2[iDet] = new TH2F(Form("hEvPlaneQncorr%s%svsq2",fDetTPCConfName[iDet].Data(),fNormMethod.Data()),Form("hEvPlaneQncorr%s%svsq2;%s;#phi Ev Plane",fDetTPCConfName[iDet].Data(),fNormMethod.Data(),q2axisname.Data()),500,0,10.,200,0.,TMath::Pi());
+        hEvPlaneQncorrVZEROvsq2[iDet] = new TH2F(Form("hEvPlaneQncorr%s%svsq2",fDetV0ConfName[iDet].Data(),fNormMethod.Data()),Form("hEvPlaneQncorr%s%svsq2;%s;#phi Ev Plane",fDetV0ConfName[iDet].Data(),fNormMethod.Data(),q2axisname.Data()),500,0,10.,200,0.,TMath::Pi());
+        fOutput->Add(hEvPlaneQncorrTPCvsq2[iDet]);
+        fOutput->Add(hEvPlaneQncorrVZEROvsq2[iDet]);
+      }
+
+      //multiplicity used for q2 vs. centrality (TPC)
+      TH2F* hMultVsCentFullTPC = new TH2F("hMultVsCentFullTPC","Multiplicity for q_{2} vs. centrality (full TPC);centrality(%);M",(fMaxCentr-fMinCentr)/(fCentBinSizePerMil/10),fMinCentr,fMaxCentr,100,0.5,10000.5);
+      TH2F* hMultVsCentPosTPC = new TH2F("hMultVsCentPosTPC","Multiplicity for q_{2} vs. centrality (pos TPC);centrality(%);M",(fMaxCentr-fMinCentr)/(fCentBinSizePerMil/10),fMinCentr,fMaxCentr,100,0.5,10000.5);
+      TH2F* hMultVsCentNegTPC = new TH2F("hMultVsCentNegTPC","Multiplicity for q_{2} vs. centrality (neg TPC);centrality(%);M",(fMaxCentr-fMinCentr)/(fCentBinSizePerMil/10),fMinCentr,fMaxCentr,100,0.5,10000.5);
+      fOutput->Add(hMultVsCentFullTPC);
+      fOutput->Add(hMultVsCentPosTPC);
+      fOutput->Add(hMultVsCentNegTPC);
 
       //q2TPC correlations
       TH2F* hq2TPCPosEtaVsNegEta = new TH2F("hq2TPCPosEtaVsNegEta","q_{2}^{pos TPC} vs. q_{2}^{neg TPC};q_{2}^{neg TPC};q_{2}^{pos TPC}",500,0.,10.,500,0.,10.);
@@ -1196,15 +1205,22 @@ void AliAnalysisTaskSEHFvn::UserExec(Option_t */*option*/)
       else if(fq2Meth==kq2PosTPC) {q2=q2PosTPC;}
       else if(fq2Meth==kq2NegTPC) {q2=q2NegTPC;}
     }
+
+    //fill EP angle vs. q2 histograms
+    for(Int_t iDet=0; iDet<3; iDet++) {
+      ((TH2F*)fOutput->FindObject(Form("hEvPlaneQncorr%s%svsq2",fDetTPCConfName[iDet].Data(),fNormMethod.Data())))->Fill(q2,eventplaneqncorrTPC[iDet]);
+      ((TH2F*)fOutput->FindObject(Form("hEvPlaneQncorr%s%svsq2",fDetV0ConfName[iDet].Data(),fNormMethod.Data())))->Fill(q2,eventplaneqncorrVZERO[iDet]);
+    }
+
     //fill mult vs. centrality histo (EvShape)
-    ((TH1F*)fOutput->FindObject("hMultVsCentFullTPC"))->Fill(centr,multQvecRemDauTPC[0]);
-    ((TH1F*)fOutput->FindObject("hMultVsCentPosTPC"))->Fill(centr,multQvecRemDauTPC[1]);
-    ((TH1F*)fOutput->FindObject("hMultVsCentNegTPC"))->Fill(centr,multQvecRemDauTPC[2]);
+    ((TH2F*)fOutput->FindObject("hMultVsCentFullTPC"))->Fill(centr,multQvecRemDauTPC[0]);
+    ((TH2F*)fOutput->FindObject("hMultVsCentPosTPC"))->Fill(centr,multQvecRemDauTPC[1]);
+    ((TH2F*)fOutput->FindObject("hMultVsCentNegTPC"))->Fill(centr,multQvecRemDauTPC[2]);
 
     //fill q2 correlation histograms
-    ((TH1F*)fOutput->FindObject("hq2TPCPosEtaVsNegEta"))->Fill(q2NegTPC,q2PosTPC);
-    ((TH1F*)fOutput->FindObject("hq2TPCFullEtaVsNegEta"))->Fill(q2NegTPC,q2FullTPC);
-    ((TH1F*)fOutput->FindObject("hq2TPCFullEtaVsPosEta"))->Fill(q2PosTPC,q2FullTPC);
+    ((TH2F*)fOutput->FindObject("hq2TPCPosEtaVsNegEta"))->Fill(q2NegTPC,q2PosTPC);
+    ((TH2F*)fOutput->FindObject("hq2TPCFullEtaVsNegEta"))->Fill(q2NegTPC,q2FullTPC);
+    ((TH2F*)fOutput->FindObject("hq2TPCFullEtaVsPosEta"))->Fill(q2PosTPC,q2FullTPC);
 
     if(fq2Smearing && fq2SmearingHisto) {
       TAxis* ax=0x0;
