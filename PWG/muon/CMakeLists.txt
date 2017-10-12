@@ -54,6 +54,7 @@ set(SRCS
   AliAnalysisMuMuFlowSP.cxx
   AliAnalysisMuMuNch.cxx
   AliAnalysisMuMuSingle.cxx
+  AliAnalysisMuMuTriggerResponse.cxx
   AliAnalysisMuonUtility.cxx
   AliAnalysisNonMuonTrackCuts.cxx
   AliAnalysisNonPrimaryVertices.cxx
@@ -80,6 +81,7 @@ set(SRCS
   AliAnalysisTaskSEMuonsHF.cxx
   AliAnalysisTaskSingleMu.cxx
   AliAnalysisTaskSingleMuESD.cxx
+  AliAnalysisTaskWeightMTRResponse.cxx
   AliAODEventInfo.cxx
   AliAODMuonReplicator.cxx
   AliCFMuonResTask1.cxx
@@ -102,6 +104,7 @@ set(SRCS
   AliMuonTriggerCombo.cxx
   AliOADBMuonTrackCutsParam.cxx
   AliTaskMuonTrackSmearing.cxx
+  AliUtilityDimuonSource.cxx
   AliUtilityMuonAncestor.cxx
   AliVAnalysisMuon.cxx
   AliAnalysisTaskLMREventFilter.cxx
@@ -147,6 +150,3 @@ install(FILES ${HDRS} DESTINATION include)
 
 # Installing the macros
 install(DIRECTORY . DESTINATION PWG/muon FILES_MATCHING PATTERN "*.C")
-
-
-
