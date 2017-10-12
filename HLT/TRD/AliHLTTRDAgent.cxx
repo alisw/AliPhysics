@@ -93,6 +93,7 @@ int AliHLTTRDAgent::CreateConfigurations(AliHLTConfigurationHandler* handler,
     
     handler->CreateConfiguration("TRDDigitPublisher","AliLoaderPublisher",NULL,"-loader TRDLoader -tree tracklets -datatype 'ALITREED' 'TRD '");
     handler->CreateConfiguration("TRD-tracklet-reader", "TRDTrackletReader", "TRDDigitPublisher","");
+    handler->CreateConfiguration("TRD-tracker", "TRDTracker", "TRD-tracklet-reader TPC-globalmerger TPC-mcTrackMarker","");
   }
  return 0;
 }
