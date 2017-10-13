@@ -182,7 +182,7 @@ bool AliYAMLConfiguration::CompareConfigurations(const int configIndex1, const i
   bool returnValue = false;
 
   bool configsExist = true;
-  std::vector<const int> configs = {configIndex1, configIndex2};
+  std::vector<int> configs = {configIndex1, configIndex2};
   for (auto config : configs) {
     if (!DoesConfigurationExist(config)) {
       AliErrorStream() << "Configuration at index " << config << " does not exist.\n";

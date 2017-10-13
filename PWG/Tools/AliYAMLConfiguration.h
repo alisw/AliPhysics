@@ -115,7 +115,7 @@ class AliYAMLConfiguration : public TObject {
   /** @{
    * @name Get a particular configuration by index or name.
    */
-  bool DoesConfigurationExist(const int i)                                              const { return i >= 0 && i < fConfigurations.size(); }
+  bool DoesConfigurationExist(const int i)                                              const { return i >= 0 && static_cast<const unsigned int>(i) < fConfigurations.size(); }
   bool DoesConfigurationExist(const std::string & name)                                 const { return DoesConfigurationExist(GetConfigurationIndexFromName(name, fConfigurations)); }
   const std::pair<std::string, YAML::Node> & GetConfiguration(const int i)              const { return fConfigurations.at(i); }
   const std::pair<std::string, YAML::Node> & GetConfiguration(const std::string & name) const { return GetConfiguration(GetConfigurationIndexFromName(name, fConfigurations)); }
