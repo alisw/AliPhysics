@@ -594,8 +594,8 @@ void AliHFDmesonCorrAverage::CalculateAverage(){
       errsyst=fhDplus->GetBinContent(j)*fSystDplus->GetHistoFDmax()->GetBinContent(j);
       systFDmax+=errsyst*weight;
 
-      printf(" Dplus feeddown the min syst value is: %f (rel %f), sum: %f \n",errsyst,fSystDplus->GetHistoFDmin()->GetBinContent(j), systMCclosureMin);
-      printf(" Dplus feeddown the max syst value is: %f (rel %f), sum: %f \n",errsyst,fSystDplus->GetHistoFDmax()->GetBinContent(j), systMCclosureMax);
+      printf(" Dplus feeddown the min syst value is: %f (rel %f), sum: %f \n",errsyst,fSystDplus->GetHistoFDmin()->GetBinContent(j), systFDmin);
+      printf(" Dplus feeddown the max syst value is: %f (rel %f), sum: %f \n",errsyst,fSystDplus->GetHistoFDmax()->GetBinContent(j), systFDmin);
 
       printf("Dplus the value is: %f, weight: %f \n",value, weight);
 

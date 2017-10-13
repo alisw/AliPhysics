@@ -290,7 +290,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2010DzeroLowPtAss03HP()
 
   fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
   for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
-    x=fhMCclosureTestMax->GetBinLowEdge(j);
+    x=fhMCclosureTestMax->GetBinCenter(j);
     fhMCclosureTestMax->SetBinContent(j,0.);
     
     //     if(-0.4<x&&x<-0.2){    
@@ -457,7 +457,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2010DzeroMidPtAss03HP()
 
   fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
   for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
-    x=fhMCclosureTestMax->GetBinLowEdge(j);
+    x=fhMCclosureTestMax->GetBinCenter(j);
     fhMCclosureTestMax->SetBinContent(j,0.);
     
     //     if(-0.4<x&&x<-0.2){    
@@ -628,7 +628,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2010DzeroHighPtAss03HP(
 
   fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
   for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
-    x=fhMCclosureTestMax->GetBinLowEdge(j);
+    x=fhMCclosureTestMax->GetBinCenter(j);
     fhMCclosureTestMax->SetBinContent(j,0.);
     
     //     if(-0.4<x&&x<-0.2){    
@@ -799,7 +799,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2010DstarLowPtAss03HP()
 
   fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
   for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
-    x=fhMCclosureTestMax->GetBinLowEdge(j);
+    x=fhMCclosureTestMax->GetBinCenter(j);
     fhMCclosureTestMax->SetBinContent(j,0.);
     
     //     if(-0.4<x&&x<-0.2){    
@@ -965,7 +965,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2010DstarMidPtAss03HP()
 
   fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
   for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
-    x=fhMCclosureTestMax->GetBinLowEdge(j);
+    x=fhMCclosureTestMax->GetBinCenter(j);
     fhMCclosureTestMax->SetBinContent(j,0.);
     
     //     if(-0.4<x&&x<-0.2){    
@@ -1154,7 +1154,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2010DstarHighPtAss03HP(
 
   fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
   for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
-    x=fhMCclosureTestMax->GetBinLowEdge(j);
+    x=fhMCclosureTestMax->GetBinCenter(j);
     fhMCclosureTestMax->SetBinContent(j,0.);
     
     //     if(-0.4<x&&x<-0.2){    
@@ -2782,7 +2782,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2010DplusLowPtAss03(){ 
 
   fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
   for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
-    //    x=fhMCclosureTestMax->GetBinLowEdge(j);
+    //    x=fhMCclosureTestMax->GetBinCenter(j);
     fhMCclosureTestMax->SetBinContent(j,0.);
     
     //     if(-0.4<x&&x<-0.2){    
@@ -2948,7 +2948,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2010DplusMidPtAss03(){ 
 
   fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
   for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
-    x=fhMCclosureTestMax->GetBinLowEdge(j);
+    x=fhMCclosureTestMax->GetBinCenter(j);
     fhMCclosureTestMax->SetBinContent(j,0.);
     
     //     if(-0.4<x&&x<-0.2){    
@@ -3117,7 +3117,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2010DplusHighPtAss03(){
 
   fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
   for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
-    x=fhMCclosureTestMax->GetBinLowEdge(j);
+    x=fhMCclosureTestMax->GetBinCenter(j);
     fhMCclosureTestMax->SetBinContent(j,0.);
     
     //     if(-0.4<x&&x<-0.2){    
@@ -3289,7 +3289,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2010DzeroLowPtAss05(){
 
   fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
   for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
-    //    x=fhMCclosureTestMax->GetBinLowEdge(j);
+    //    x=fhMCclosureTestMax->GetBinCenter(j);
     fhMCclosureTestMax->SetBinContent(j,0.);
     
     //     if(-0.4<x&&x<-0.2){    
@@ -3456,7 +3456,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2010DzeroMidPtAss05(){
 
   fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
   for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
-    x=fhMCclosureTestMax->GetBinLowEdge(j);
+    x=fhMCclosureTestMax->GetBinCenter(j);
     fhMCclosureTestMax->SetBinContent(j,0.);
     
     //     if(-0.4<x&&x<-0.2){    
@@ -3626,7 +3626,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2010DzeroHighPtAss05(){
 
   fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
   for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
-    x=fhMCclosureTestMax->GetBinLowEdge(j);
+    x=fhMCclosureTestMax->GetBinCenter(j);
     fhMCclosureTestMax->SetBinContent(j,0.);
     
     //     if(-0.4<x&&x<-0.2){    
@@ -3797,7 +3797,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2010DstarLowPtAss05(){
 
   fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
   for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
-    x=fhMCclosureTestMax->GetBinLowEdge(j);
+    x=fhMCclosureTestMax->GetBinCenter(j);
     fhMCclosureTestMax->SetBinContent(j,0.);
     
     //     if(-0.4<x&&x<-0.2){    
@@ -3963,7 +3963,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2010DstarMidPtAss05(){
 
   fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
   for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
-    x=fhMCclosureTestMax->GetBinLowEdge(j);
+    x=fhMCclosureTestMax->GetBinCenter(j);
     fhMCclosureTestMax->SetBinContent(j,0.);
     
     //     if(-0.4<x&&x<-0.2){    
@@ -4129,7 +4129,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2010DstarHighPtAss05(){
 
   fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
   for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
-    x=fhMCclosureTestMax->GetBinLowEdge(j);
+    x=fhMCclosureTestMax->GetBinCenter(j);
     fhMCclosureTestMax->SetBinContent(j,0.);
     
     //     if(-0.4<x&&x<-0.2){    
@@ -4300,7 +4300,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2010DplusLowPtAss05(){
 
   fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
   for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
-    //    x=fhMCclosureTestMax->GetBinLowEdge(j);
+    //    x=fhMCclosureTestMax->GetBinCenter(j);
     fhMCclosureTestMax->SetBinContent(j,0.);
     
     //     if(-0.4<x&&x<-0.2){    
@@ -4466,7 +4466,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2010DplusMidPtAss05(){ 
 
   fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
   for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
-    x=fhMCclosureTestMax->GetBinLowEdge(j);
+    x=fhMCclosureTestMax->GetBinCenter(j);
     fhMCclosureTestMax->SetBinContent(j,0.);
     
     //     if(-0.4<x&&x<-0.2){    
@@ -4635,7 +4635,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2010DplusHighPtAss05(){
 
   fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
   for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
-    x=fhMCclosureTestMax->GetBinLowEdge(j);
+    x=fhMCclosureTestMax->GetBinCenter(j);
     fhMCclosureTestMax->SetBinContent(j,0.);
     
     //     if(-0.4<x&&x<-0.2){    
@@ -4806,7 +4806,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2010DzeroLowPtAss1(){
 
   fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
   for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
-    //    x=fhMCclosureTestMax->GetBinLowEdge(j);
+    //    x=fhMCclosureTestMax->GetBinCenter(j);
     fhMCclosureTestMax->SetBinContent(j,0.);
     
     //     if(-0.4<x&&x<-0.2){    
@@ -4972,7 +4972,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2010DzeroMidPtAss1(){
 
   fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
   for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
-    x=fhMCclosureTestMax->GetBinLowEdge(j);
+    x=fhMCclosureTestMax->GetBinCenter(j);
     fhMCclosureTestMax->SetBinContent(j,0.);
     
     //     if(-0.4<x&&x<-0.2){    
@@ -5141,7 +5141,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2010DzeroHighPtAss1(){
 
   fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
   for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
-    x=fhMCclosureTestMax->GetBinLowEdge(j);
+    x=fhMCclosureTestMax->GetBinCenter(j);
     fhMCclosureTestMax->SetBinContent(j,0.);
     
     //     if(-0.4<x&&x<-0.2){    
@@ -5312,7 +5312,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2010DstarLowPtAss1(){ P
 
   fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
   for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
-    x=fhMCclosureTestMax->GetBinLowEdge(j);
+    x=fhMCclosureTestMax->GetBinCenter(j);
     fhMCclosureTestMax->SetBinContent(j,0.);
     
     //     if(-0.4<x&&x<-0.2){    
@@ -5478,7 +5478,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2010DstarMidPtAss1(){
 
   fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
   for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
-    x=fhMCclosureTestMax->GetBinLowEdge(j);
+    x=fhMCclosureTestMax->GetBinCenter(j);
     fhMCclosureTestMax->SetBinContent(j,0.);
     
     //     if(-0.4<x&&x<-0.2){    
@@ -5645,7 +5645,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2010DstarHighPtAss1(){
 
   fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
   for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
-    x=fhMCclosureTestMax->GetBinLowEdge(j);
+    x=fhMCclosureTestMax->GetBinCenter(j);
     fhMCclosureTestMax->SetBinContent(j,0.);
     
     //     if(-0.4<x&&x<-0.2){    
@@ -5816,7 +5816,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2010DplusLowPtAss1(){
 
   fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
   for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
-    //    x=fhMCclosureTestMax->GetBinLowEdge(j);
+    //    x=fhMCclosureTestMax->GetBinCenter(j);
     fhMCclosureTestMax->SetBinContent(j,0.);
     
     //     if(-0.4<x&&x<-0.2){    
@@ -5982,7 +5982,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2010DplusMidPtAss1(){
 
   fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
   for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
-    x=fhMCclosureTestMax->GetBinLowEdge(j);
+    x=fhMCclosureTestMax->GetBinCenter(j);
     fhMCclosureTestMax->SetBinContent(j,0.);
     
     //     if(-0.4<x&&x<-0.2){    
@@ -6151,7 +6151,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2010DplusHighPtAss1(){
 
   fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
   for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
-    x=fhMCclosureTestMax->GetBinLowEdge(j);
+    x=fhMCclosureTestMax->GetBinCenter(j);
     fhMCclosureTestMax->SetBinContent(j,0.);
     
     //     if(-0.4<x&&x<-0.2){    
@@ -6333,7 +6333,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2013DzeroLowPtAss03(){
 
   fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
   for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
-    //    x=fhMCclosureTestMax->GetBinLowEdge(j);
+    //    x=fhMCclosureTestMax->GetBinCenter(j);
     fhMCclosureTestMax->SetBinContent(j,0.02);
     
     //     if(-0.4<x&&x<-0.2){    
@@ -6499,7 +6499,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2013DzeroMidPtAss03(){
 
   fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
   for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
-    x=fhMCclosureTestMax->GetBinLowEdge(j);
+    x=fhMCclosureTestMax->GetBinCenter(j);
     fhMCclosureTestMax->SetBinContent(j,0.02);
     
     //     if(-0.4<x&&x<-0.2){    
@@ -6668,7 +6668,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2013DzeroHighPtAss03()
 
   fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
   for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
-    x=fhMCclosureTestMax->GetBinLowEdge(j);
+    x=fhMCclosureTestMax->GetBinCenter(j);
     fhMCclosureTestMax->SetBinContent(j,0.02);
     
     //     if(-0.4<x&&x<-0.2){    
@@ -6839,7 +6839,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2013DstarLowPtAss03(){
 
   fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
   for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
-    x=fhMCclosureTestMax->GetBinLowEdge(j);
+    x=fhMCclosureTestMax->GetBinCenter(j);
     fhMCclosureTestMax->SetBinContent(j,0.02);
     
     //     if(-0.4<x&&x<-0.2){    
@@ -7005,7 +7005,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2013DstarMidPtAss03(){
 
   fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
   for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
-    x=fhMCclosureTestMax->GetBinLowEdge(j);
+    x=fhMCclosureTestMax->GetBinCenter(j);
     fhMCclosureTestMax->SetBinContent(j,0.02);
     
     //     if(-0.4<x&&x<-0.2){    
@@ -7171,7 +7171,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2013DstarHighPtAss03()
 
   fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
   for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
-    x=fhMCclosureTestMax->GetBinLowEdge(j);
+    x=fhMCclosureTestMax->GetBinCenter(j);
     fhMCclosureTestMax->SetBinContent(j,0.02);
     
     //     if(-0.4<x&&x<-0.2){    
@@ -7343,7 +7343,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2013DplusLowPtAss03(){
 
   fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
   for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
-    //    x=fhMCclosureTestMax->GetBinLowEdge(j);
+    //    x=fhMCclosureTestMax->GetBinCenter(j);
     fhMCclosureTestMax->SetBinContent(j,0.02);
     
     //     if(-0.4<x&&x<-0.2){    
@@ -7509,7 +7509,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2013DplusMidPtAss03(){
 
   fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
   for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
-    x=fhMCclosureTestMax->GetBinLowEdge(j);
+    x=fhMCclosureTestMax->GetBinCenter(j);
     fhMCclosureTestMax->SetBinContent(j,0.02);
     
     //     if(-0.4<x&&x<-0.2){    
@@ -7678,7 +7678,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2013DplusHighPtAss03()
 
   fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
   for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
-    x=fhMCclosureTestMax->GetBinLowEdge(j);
+    x=fhMCclosureTestMax->GetBinCenter(j);
     fhMCclosureTestMax->SetBinContent(j,0.02);
     
     //     if(-0.4<x&&x<-0.2){    
@@ -7850,7 +7850,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2013DzeroLowPtAss05(){
 
   fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
   for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
-    //    x=fhMCclosureTestMax->GetBinLowEdge(j);
+    //    x=fhMCclosureTestMax->GetBinCenter(j);
     fhMCclosureTestMax->SetBinContent(j,0.02);
     
     //     if(-0.4<x&&x<-0.2){    
@@ -8016,7 +8016,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2013DzeroMidPtAss05(){
 
   fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
   for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
-    x=fhMCclosureTestMax->GetBinLowEdge(j);
+    x=fhMCclosureTestMax->GetBinCenter(j);
     fhMCclosureTestMax->SetBinContent(j,0.02);
     
     //     if(-0.4<x&&x<-0.2){    
@@ -8185,7 +8185,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2013DzeroHighPtAss05()
 
   fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
   for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
-    x=fhMCclosureTestMax->GetBinLowEdge(j);
+    x=fhMCclosureTestMax->GetBinCenter(j);
     fhMCclosureTestMax->SetBinContent(j,0.02);
     
     //     if(-0.4<x&&x<-0.2){    
@@ -8356,7 +8356,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2013DstarLowPtAss05(){
 
   fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
   for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
-    x=fhMCclosureTestMax->GetBinLowEdge(j);
+    x=fhMCclosureTestMax->GetBinCenter(j);
     fhMCclosureTestMax->SetBinContent(j,0.02);
     
     //     if(-0.4<x&&x<-0.2){    
@@ -8522,7 +8522,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2013DstarMidPtAss05(){
 
   fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
   for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
-    x=fhMCclosureTestMax->GetBinLowEdge(j);
+    x=fhMCclosureTestMax->GetBinCenter(j);
     fhMCclosureTestMax->SetBinContent(j,0.02);
     
     //     if(-0.4<x&&x<-0.2){    
@@ -8688,7 +8688,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2013DstarHighPtAss05()
 
   fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
   for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
-    x=fhMCclosureTestMax->GetBinLowEdge(j);
+    x=fhMCclosureTestMax->GetBinCenter(j);
     fhMCclosureTestMax->SetBinContent(j,0.02);
     
     //     if(-0.4<x&&x<-0.2){    
@@ -8859,7 +8859,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2013DplusLowPtAss05(){
 
   fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
   for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
-    //    x=fhMCclosureTestMax->GetBinLowEdge(j);
+    //    x=fhMCclosureTestMax->GetBinCenter(j);
     fhMCclosureTestMax->SetBinContent(j,0.02);
     
     //     if(-0.4<x&&x<-0.2){    
@@ -9025,7 +9025,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2013DplusMidPtAss05(){
 
   fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
   for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
-    x=fhMCclosureTestMax->GetBinLowEdge(j);
+    x=fhMCclosureTestMax->GetBinCenter(j);
     fhMCclosureTestMax->SetBinContent(j,0.02);
     
     //     if(-0.4<x&&x<-0.2){    
@@ -9194,7 +9194,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2013DplusHighPtAss05()
 
   fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
   for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
-    x=fhMCclosureTestMax->GetBinLowEdge(j);
+    x=fhMCclosureTestMax->GetBinCenter(j);
     fhMCclosureTestMax->SetBinContent(j,0.02);
     
     //     if(-0.4<x&&x<-0.2){    
@@ -9365,7 +9365,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2013DzeroLowPtAss1(){
 
   fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
   for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
-    //    x=fhMCclosureTestMax->GetBinLowEdge(j);
+    //    x=fhMCclosureTestMax->GetBinCenter(j);
     fhMCclosureTestMax->SetBinContent(j,0.02);
     
     //     if(-0.4<x&&x<-0.2){    
@@ -9531,7 +9531,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2013DzeroMidPtAss1(){
 
   fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
   for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
-    x=fhMCclosureTestMax->GetBinLowEdge(j);
+    x=fhMCclosureTestMax->GetBinCenter(j);
     fhMCclosureTestMax->SetBinContent(j,0.02);
     
     //     if(-0.4<x&&x<-0.2){    
@@ -9700,7 +9700,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2013DzeroHighPtAss1(){
 
   fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
   for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
-    x=fhMCclosureTestMax->GetBinLowEdge(j);
+    x=fhMCclosureTestMax->GetBinCenter(j);
     fhMCclosureTestMax->SetBinContent(j,0.02);
     
     //     if(-0.4<x&&x<-0.2){    
@@ -9871,7 +9871,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2013DstarLowPtAss1(){
 
   fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
   for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
-    x=fhMCclosureTestMax->GetBinLowEdge(j);
+    x=fhMCclosureTestMax->GetBinCenter(j);
     fhMCclosureTestMax->SetBinContent(j,0.02);
     
     //     if(-0.4<x&&x<-0.2){    
@@ -10037,7 +10037,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2013DstarMidPtAss1(){
 
   fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
   for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
-    x=fhMCclosureTestMax->GetBinLowEdge(j);
+    x=fhMCclosureTestMax->GetBinCenter(j);
     fhMCclosureTestMax->SetBinContent(j,0.02);
     
     //     if(-0.4<x&&x<-0.2){    
@@ -10203,7 +10203,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2013DstarHighPtAss1(){
 
   fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
   for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
-    x=fhMCclosureTestMax->GetBinLowEdge(j);
+    x=fhMCclosureTestMax->GetBinCenter(j);
     fhMCclosureTestMax->SetBinContent(j,0.02);
     
     //     if(-0.4<x&&x<-0.2){    
@@ -10374,7 +10374,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2013DplusLowPtAss1(){
 
   fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
   for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
-    //    x=fhMCclosureTestMax->GetBinLowEdge(j);
+    //    x=fhMCclosureTestMax->GetBinCenter(j);
     fhMCclosureTestMax->SetBinContent(j,0.02);
     
     //     if(-0.4<x&&x<-0.2){    
@@ -10540,7 +10540,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2013DplusMidPtAss1(){
 
   fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
   for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
-    x=fhMCclosureTestMax->GetBinLowEdge(j);
+    x=fhMCclosureTestMax->GetBinCenter(j);
     fhMCclosureTestMax->SetBinContent(j,0.02);
     
     //     if(-0.4<x&&x<-0.2){    
@@ -10709,7 +10709,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2013DplusHighPtAss1(){
 
   fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
   for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
-    x=fhMCclosureTestMax->GetBinLowEdge(j);
+    x=fhMCclosureTestMax->GetBinCenter(j);
     fhMCclosureTestMax->SetBinContent(j,0.02);
     
     //     if(-0.4<x&&x<-0.2){    
@@ -10901,7 +10901,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DzeroLowPtAss03to9
 
   fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
   for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
-    x=fhMCclosureTestMax->GetBinLowEdge(j);
+    x=fhMCclosureTestMax->GetBinCenter(j);
     fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
     
     if(-1.<x&&x<=-0.8){    
@@ -11098,7 +11098,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DzeroLowPtAss03to1
 
   fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
   for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
-    x=fhMCclosureTestMax->GetBinLowEdge(j);
+    x=fhMCclosureTestMax->GetBinCenter(j);
     fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
     
     if(-1.<x&&x<=-0.8){    
@@ -11295,7 +11295,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DzeroLowPtAss1to99
 
   fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
   for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
-    x=fhMCclosureTestMax->GetBinLowEdge(j);
+    x=fhMCclosureTestMax->GetBinCenter(j);
     fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
     
     if(-1.<x&&x<=-0.8){    
@@ -11492,7 +11492,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DzeroLowPtAss2to99
 
   fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
   for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
-    x=fhMCclosureTestMax->GetBinLowEdge(j);
+    x=fhMCclosureTestMax->GetBinCenter(j);
     fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
     
     if(-1.<x&&x<=-0.8){    
@@ -11689,7 +11689,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DzeroLowPtAss3to99
 
   fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
   for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
-    x=fhMCclosureTestMax->GetBinLowEdge(j);
+    x=fhMCclosureTestMax->GetBinCenter(j);
     fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
     
     if(-1.<x&&x<=-0.8){    
@@ -11886,7 +11886,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DzeroLowPtAss1to2(
 
   fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
   for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
-    x=fhMCclosureTestMax->GetBinLowEdge(j);
+    x=fhMCclosureTestMax->GetBinCenter(j);
     fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
     
     if(-1.<x&&x<=-0.8){    
@@ -12083,7 +12083,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DzeroLowPtAss2to3(
 
   fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
   for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
-    x=fhMCclosureTestMax->GetBinLowEdge(j);
+    x=fhMCclosureTestMax->GetBinCenter(j);
     fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
     
     if(-1.<x&&x<=-0.8){    
@@ -12281,7 +12281,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DzeroMidPtAss03to9
 
   fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
   for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
-    x=fhMCclosureTestMax->GetBinLowEdge(j);
+    x=fhMCclosureTestMax->GetBinCenter(j);
     fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
     
     if(-1.<x&&x<=-0.8){    
@@ -12478,7 +12478,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DzeroMidPtAss03to1
 
   fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
   for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
-    x=fhMCclosureTestMax->GetBinLowEdge(j);
+    x=fhMCclosureTestMax->GetBinCenter(j);
     fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
     
     if(-1.<x&&x<=-0.8){    
@@ -12675,7 +12675,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DzeroMidPtAss1to99
 
   fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
   for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
-    x=fhMCclosureTestMax->GetBinLowEdge(j);
+    x=fhMCclosureTestMax->GetBinCenter(j);
     fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
     
     if(-1.<x&&x<=-0.8){    
@@ -12872,7 +12872,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DzeroMidPtAss2to99
 
   fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
   for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
-    x=fhMCclosureTestMax->GetBinLowEdge(j);
+    x=fhMCclosureTestMax->GetBinCenter(j);
     fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
     
     if(-1.<x&&x<=-0.8){    
@@ -13069,7 +13069,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DzeroMidPtAss3to99
 
   fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
   for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
-    x=fhMCclosureTestMax->GetBinLowEdge(j);
+    x=fhMCclosureTestMax->GetBinCenter(j);
     fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
     
     if(-1.<x&&x<=-0.8){    
@@ -13266,7 +13266,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DzeroMidPtAss1to2(
 
   fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
   for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
-    x=fhMCclosureTestMax->GetBinLowEdge(j);
+    x=fhMCclosureTestMax->GetBinCenter(j);
     fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
     
     if(-1.<x&&x<=-0.8){    
@@ -13463,7 +13463,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DzeroMidPtAss2to3(
 
   fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
   for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
-    x=fhMCclosureTestMax->GetBinLowEdge(j);
+    x=fhMCclosureTestMax->GetBinCenter(j);
     fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
     
     if(-1.<x&&x<=-0.8){    
@@ -13661,7 +13661,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DzeroHighPtAss03to
 
   fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
   for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
-    x=fhMCclosureTestMax->GetBinLowEdge(j);
+    x=fhMCclosureTestMax->GetBinCenter(j);
     fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
     
     if(-1.<x&&x<=-0.8){    
@@ -13858,7 +13858,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DzeroHighPtAss03to
 
   fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
   for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
-    x=fhMCclosureTestMax->GetBinLowEdge(j);
+    x=fhMCclosureTestMax->GetBinCenter(j);
     fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
     
     if(-1.<x&&x<=-0.8){    
@@ -14055,7 +14055,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DzeroHighPtAss1to9
 
   fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
   for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
-    x=fhMCclosureTestMax->GetBinLowEdge(j);
+    x=fhMCclosureTestMax->GetBinCenter(j);
     fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
     
     if(-1.<x&&x<=-0.8){    
@@ -14252,7 +14252,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DzeroHighPtAss2to9
 
   fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
   for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
-    x=fhMCclosureTestMax->GetBinLowEdge(j);
+    x=fhMCclosureTestMax->GetBinCenter(j);
     fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
     
     if(-1.<x&&x<=-0.8){    
@@ -14449,7 +14449,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DzeroHighPtAss3to9
 
   fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
   for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
-    x=fhMCclosureTestMax->GetBinLowEdge(j);
+    x=fhMCclosureTestMax->GetBinCenter(j);
     fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
     
     if(-1.<x&&x<=-0.8){    
@@ -14646,7 +14646,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DzeroHighPtAss1to2
 
   fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
   for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
-    x=fhMCclosureTestMax->GetBinLowEdge(j);
+    x=fhMCclosureTestMax->GetBinCenter(j);
     fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
     
     if(-1.<x&&x<=-0.8){    
@@ -14843,7 +14843,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DzeroHighPtAss2to3
 
   fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
   for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
-    x=fhMCclosureTestMax->GetBinLowEdge(j);
+    x=fhMCclosureTestMax->GetBinCenter(j);
     fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
     
     if(-1.<x&&x<=-0.8){    
@@ -15043,7 +15043,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DzeroVeryHighPtAss
 
   fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
   for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
-    x=fhMCclosureTestMax->GetBinLowEdge(j);
+    x=fhMCclosureTestMax->GetBinCenter(j);
     fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
     
     if(-1.<x&&x<=-0.8){    
@@ -15240,7 +15240,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DzeroVeryHighPtAss
 
   fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
   for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
-    x=fhMCclosureTestMax->GetBinLowEdge(j);
+    x=fhMCclosureTestMax->GetBinCenter(j);
     fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
     
     if(-1.<x&&x<=-0.8){    
@@ -15437,7 +15437,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DzeroVeryHighPtAss
 
   fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
   for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
-    x=fhMCclosureTestMax->GetBinLowEdge(j);
+    x=fhMCclosureTestMax->GetBinCenter(j);
     fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
     
     if(-1.<x&&x<=-0.8){    
@@ -15634,7 +15634,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DzeroVeryHighPtAss
 
   fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
   for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
-    x=fhMCclosureTestMax->GetBinLowEdge(j);
+    x=fhMCclosureTestMax->GetBinCenter(j);
     fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
     
     if(-1.<x&&x<=-0.8){    
@@ -15831,7 +15831,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DzeroVeryHighPtAss
 
   fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
   for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
-    x=fhMCclosureTestMax->GetBinLowEdge(j);
+    x=fhMCclosureTestMax->GetBinCenter(j);
     fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
     
     if(-1.<x&&x<=-0.8){    
@@ -16028,7 +16028,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DzeroVeryHighPtAss
 
   fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
   for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
-    x=fhMCclosureTestMax->GetBinLowEdge(j);
+    x=fhMCclosureTestMax->GetBinCenter(j);
     fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
     
     if(-1.<x&&x<=-0.8){    
@@ -16225,7 +16225,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DzeroVeryHighPtAss
 
   fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
   for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
-    x=fhMCclosureTestMax->GetBinLowEdge(j);
+    x=fhMCclosureTestMax->GetBinCenter(j);
     fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
     
     if(-1.<x&&x<=-0.8){    
@@ -16424,7 +16424,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DstarLowPtAss03to9
 
   fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
   for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
-    x=fhMCclosureTestMax->GetBinLowEdge(j);
+    x=fhMCclosureTestMax->GetBinCenter(j);
     fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
     
     if(-1.<x&&x<=-0.8){    
@@ -16621,7 +16621,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DstarLowPtAss03to1
 
   fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
   for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
-    x=fhMCclosureTestMax->GetBinLowEdge(j);
+    x=fhMCclosureTestMax->GetBinCenter(j);
     fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
     
     if(-1.<x&&x<=-0.8){    
@@ -16818,7 +16818,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DstarLowPtAss1to99
 
   fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
   for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
-    x=fhMCclosureTestMax->GetBinLowEdge(j);
+    x=fhMCclosureTestMax->GetBinCenter(j);
     fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
     
     if(-1.<x&&x<=-0.8){    
@@ -17015,7 +17015,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DstarLowPtAss2to99
 
   fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
   for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
-    x=fhMCclosureTestMax->GetBinLowEdge(j);
+    x=fhMCclosureTestMax->GetBinCenter(j);
     fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
     
     if(-1.<x&&x<=-0.8){    
@@ -17212,7 +17212,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DstarLowPtAss3to99
 
   fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
   for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
-    x=fhMCclosureTestMax->GetBinLowEdge(j);
+    x=fhMCclosureTestMax->GetBinCenter(j);
     fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
     
     if(-1.<x&&x<=-0.8){    
@@ -17409,7 +17409,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DstarLowPtAss1to2(
 
   fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
   for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
-    x=fhMCclosureTestMax->GetBinLowEdge(j);
+    x=fhMCclosureTestMax->GetBinCenter(j);
     fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
     
     if(-1.<x&&x<=-0.8){    
@@ -17606,7 +17606,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DstarLowPtAss2to3(
 
   fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
   for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
-    x=fhMCclosureTestMax->GetBinLowEdge(j);
+    x=fhMCclosureTestMax->GetBinCenter(j);
     fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
     
     if(-1.<x&&x<=-0.8){    
@@ -17804,7 +17804,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DstarMidPtAss03to9
 
   fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
   for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
-    x=fhMCclosureTestMax->GetBinLowEdge(j);
+    x=fhMCclosureTestMax->GetBinCenter(j);
     fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
     
     if(-1.<x&&x<=-0.8){    
@@ -18000,7 +18000,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DstarMidPtAss03to1
 
   fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
   for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
-    x=fhMCclosureTestMax->GetBinLowEdge(j);
+    x=fhMCclosureTestMax->GetBinCenter(j);
     fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
     
     if(-1.<x&&x<=-0.8){    
@@ -18197,7 +18197,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DstarMidPtAss1to99
 
   fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
   for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
-    x=fhMCclosureTestMax->GetBinLowEdge(j);
+    x=fhMCclosureTestMax->GetBinCenter(j);
     fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
     
     if(-1.<x&&x<=-0.8){    
@@ -18394,7 +18394,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DstarMidPtAss2to99
 
   fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
   for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
-    x=fhMCclosureTestMax->GetBinLowEdge(j);
+    x=fhMCclosureTestMax->GetBinCenter(j);
     fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
     
     if(-1.<x&&x<=-0.8){    
@@ -18591,7 +18591,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DstarMidPtAss3to99
 
   fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
   for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
-    x=fhMCclosureTestMax->GetBinLowEdge(j);
+    x=fhMCclosureTestMax->GetBinCenter(j);
     fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
     
     if(-1.<x&&x<=-0.8){    
@@ -18788,7 +18788,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DstarMidPtAss1to2(
 
   fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
   for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
-    x=fhMCclosureTestMax->GetBinLowEdge(j);
+    x=fhMCclosureTestMax->GetBinCenter(j);
     fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
     
     if(-1.<x&&x<=-0.8){    
@@ -18985,7 +18985,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DstarMidPtAss2to3(
 
   fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
   for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
-    x=fhMCclosureTestMax->GetBinLowEdge(j);
+    x=fhMCclosureTestMax->GetBinCenter(j);
     fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
     
     if(-1.<x&&x<=-0.8){    
@@ -19183,7 +19183,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DstarHighPtAss03to
 
   fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
   for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
-    x=fhMCclosureTestMax->GetBinLowEdge(j);
+    x=fhMCclosureTestMax->GetBinCenter(j);
     fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
     
     if(-1.<x&&x<=-0.8){    
@@ -19380,7 +19380,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DstarHighPtAss03to
 
   fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
   for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
-    x=fhMCclosureTestMax->GetBinLowEdge(j);
+    x=fhMCclosureTestMax->GetBinCenter(j);
     fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
     
     if(-1.<x&&x<=-0.8){    
@@ -19577,7 +19577,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DstarHighPtAss1to9
 
   fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
   for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
-    x=fhMCclosureTestMax->GetBinLowEdge(j);
+    x=fhMCclosureTestMax->GetBinCenter(j);
     fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
     
     if(-1.<x&&x<=-0.8){    
@@ -19774,7 +19774,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DstarHighPtAss2to9
 
   fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
   for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
-    x=fhMCclosureTestMax->GetBinLowEdge(j);
+    x=fhMCclosureTestMax->GetBinCenter(j);
     fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
     
     if(-1.<x&&x<=-0.8){    
@@ -19971,7 +19971,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DstarHighPtAss3to9
 
   fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
   for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
-    x=fhMCclosureTestMax->GetBinLowEdge(j);
+    x=fhMCclosureTestMax->GetBinCenter(j);
     fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
     
     if(-1.<x&&x<=-0.8){    
@@ -20168,7 +20168,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DstarHighPtAss1to2
 
   fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
   for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
-    x=fhMCclosureTestMax->GetBinLowEdge(j);
+    x=fhMCclosureTestMax->GetBinCenter(j);
     fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
     
     if(-1.<x&&x<=-0.8){    
@@ -20365,7 +20365,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DstarHighPtAss2to3
 
   fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
   for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
-    x=fhMCclosureTestMax->GetBinLowEdge(j);
+    x=fhMCclosureTestMax->GetBinCenter(j);
     fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
     
     if(-1.<x&&x<=-0.8){    
@@ -20565,7 +20565,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DstarVeryHighPtAss
 
   fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
   for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
-    x=fhMCclosureTestMax->GetBinLowEdge(j);
+    x=fhMCclosureTestMax->GetBinCenter(j);
     fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
     
     if(-1.<x&&x<=-0.8){    
@@ -20761,7 +20761,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DstarVeryHighPtAss
 
   fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
   for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
-    x=fhMCclosureTestMax->GetBinLowEdge(j);
+    x=fhMCclosureTestMax->GetBinCenter(j);
     fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
     
     if(-1.<x&&x<=-0.8){    
@@ -20958,7 +20958,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DstarVeryHighPtAss
 
   fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
   for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
-    x=fhMCclosureTestMax->GetBinLowEdge(j);
+    x=fhMCclosureTestMax->GetBinCenter(j);
     fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
     
     if(-1.<x&&x<=-0.8){    
@@ -21155,7 +21155,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DstarVeryHighPtAss
 
   fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
   for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
-    x=fhMCclosureTestMax->GetBinLowEdge(j);
+    x=fhMCclosureTestMax->GetBinCenter(j);
     fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
     
     if(-1.<x&&x<=-0.8){    
@@ -21352,7 +21352,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DstarVeryHighPtAss
 
   fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
   for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
-    x=fhMCclosureTestMax->GetBinLowEdge(j);
+    x=fhMCclosureTestMax->GetBinCenter(j);
     fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
     
     if(-1.<x&&x<=-0.8){    
@@ -21549,7 +21549,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DstarVeryHighPtAss
 
   fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
   for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
-    x=fhMCclosureTestMax->GetBinLowEdge(j);
+    x=fhMCclosureTestMax->GetBinCenter(j);
     fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
     
     if(-1.<x&&x<=-0.8){    
@@ -21746,7 +21746,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DstarVeryHighPtAss
 
   fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
   for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
-    x=fhMCclosureTestMax->GetBinLowEdge(j);
+    x=fhMCclosureTestMax->GetBinCenter(j);
     fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
     
     if(-1.<x&&x<=-0.8){    
@@ -21945,7 +21945,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DplusLowPtAss03to9
 
   fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
   for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
-    x=fhMCclosureTestMax->GetBinLowEdge(j);
+    x=fhMCclosureTestMax->GetBinCenter(j);
     fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
     
     if(-1.<x&&x<=-0.8){    
@@ -22142,7 +22142,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DplusLowPtAss03to1
 
   fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
   for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
-    x=fhMCclosureTestMax->GetBinLowEdge(j);
+    x=fhMCclosureTestMax->GetBinCenter(j);
     fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
     
     if(-1.<x&&x<=-0.8){    
@@ -22339,7 +22339,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DplusLowPtAss1to99
 
   fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
   for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
-    x=fhMCclosureTestMax->GetBinLowEdge(j);
+    x=fhMCclosureTestMax->GetBinCenter(j);
     fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
     
     if(-1.<x&&x<=-0.8){    
@@ -22536,7 +22536,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DplusLowPtAss2to99
 
   fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
   for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
-    x=fhMCclosureTestMax->GetBinLowEdge(j);
+    x=fhMCclosureTestMax->GetBinCenter(j);
     fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
     
     if(-1.<x&&x<=-0.8){    
@@ -22733,7 +22733,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DplusLowPtAss3to99
 
   fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
   for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
-    x=fhMCclosureTestMax->GetBinLowEdge(j);
+    x=fhMCclosureTestMax->GetBinCenter(j);
     fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
     
     if(-1.<x&&x<=-0.8){    
@@ -22930,7 +22930,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DplusLowPtAss1to2(
 
   fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
   for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
-    x=fhMCclosureTestMax->GetBinLowEdge(j);
+    x=fhMCclosureTestMax->GetBinCenter(j);
     fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
     
     if(-1.<x&&x<=-0.8){    
@@ -23126,7 +23126,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DplusLowPtAss2to3(
 
   fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
   for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
-    x=fhMCclosureTestMax->GetBinLowEdge(j);
+    x=fhMCclosureTestMax->GetBinCenter(j);
     fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
     
     if(-1.<x&&x<=-0.8){    
@@ -23324,7 +23324,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DplusMidPtAss03to9
 
   fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
   for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
-    x=fhMCclosureTestMax->GetBinLowEdge(j);
+    x=fhMCclosureTestMax->GetBinCenter(j);
     fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
     
     if(-1.<x&&x<=-0.8){    
@@ -23521,7 +23521,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DplusMidPtAss03to1
 
   fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
   for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
-    x=fhMCclosureTestMax->GetBinLowEdge(j);
+    x=fhMCclosureTestMax->GetBinCenter(j);
     fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
     
     if(-1.<x&&x<=-0.8){    
@@ -23718,7 +23718,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DplusMidPtAss1to99
 
   fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
   for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
-    x=fhMCclosureTestMax->GetBinLowEdge(j);
+    x=fhMCclosureTestMax->GetBinCenter(j);
     fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
     
     if(-1.<x&&x<=-0.8){    
@@ -23915,7 +23915,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DplusMidPtAss2to99
 
   fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
   for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
-    x=fhMCclosureTestMax->GetBinLowEdge(j);
+    x=fhMCclosureTestMax->GetBinCenter(j);
     fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
     
     if(-1.<x&&x<=-0.8){    
@@ -24111,7 +24111,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DplusMidPtAss3to99
 
   fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
   for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
-    x=fhMCclosureTestMax->GetBinLowEdge(j);
+    x=fhMCclosureTestMax->GetBinCenter(j);
     fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
     
     if(-1.<x&&x<=-0.8){    
@@ -24308,7 +24308,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DplusMidPtAss1to2(
 
   fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
   for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
-    x=fhMCclosureTestMax->GetBinLowEdge(j);
+    x=fhMCclosureTestMax->GetBinCenter(j);
     fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
     
     if(-1.<x&&x<=-0.8){    
@@ -24505,7 +24505,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DplusMidPtAss2to3(
 
   fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
   for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
-    x=fhMCclosureTestMax->GetBinLowEdge(j);
+    x=fhMCclosureTestMax->GetBinCenter(j);
     fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
     
     if(-1.<x&&x<=-0.8){    
@@ -24703,7 +24703,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DplusHighPtAss03to
 
   fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
   for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
-    x=fhMCclosureTestMax->GetBinLowEdge(j);
+    x=fhMCclosureTestMax->GetBinCenter(j);
     fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
     
     if(-1.<x&&x<=-0.8){    
@@ -24900,7 +24900,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DplusHighPtAss03to
 
   fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
   for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
-    x=fhMCclosureTestMax->GetBinLowEdge(j);
+    x=fhMCclosureTestMax->GetBinCenter(j);
     fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
     
     if(-1.<x&&x<=-0.8){    
@@ -25097,7 +25097,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DplusHighPtAss1to9
 
   fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
   for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
-    x=fhMCclosureTestMax->GetBinLowEdge(j);
+    x=fhMCclosureTestMax->GetBinCenter(j);
     fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
     
     if(-1.<x&&x<=-0.8){    
@@ -25294,7 +25294,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DplusHighPtAss2to9
 
   fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
   for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
-    x=fhMCclosureTestMax->GetBinLowEdge(j);
+    x=fhMCclosureTestMax->GetBinCenter(j);
     fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
     
     if(-1.<x&&x<=-0.8){    
@@ -25491,7 +25491,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DplusHighPtAss3to9
 
   fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
   for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
-    x=fhMCclosureTestMax->GetBinLowEdge(j);
+    x=fhMCclosureTestMax->GetBinCenter(j);
     fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
     
     if(-1.<x&&x<=-0.8){    
@@ -25688,7 +25688,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DplusHighPtAss1to2
 
   fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
   for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
-    x=fhMCclosureTestMax->GetBinLowEdge(j);
+    x=fhMCclosureTestMax->GetBinCenter(j);
     fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
     
     if(-1.<x&&x<=-0.8){    
@@ -25885,7 +25885,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DplusHighPtAss2to3
 
   fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
   for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
-    x=fhMCclosureTestMax->GetBinLowEdge(j);
+    x=fhMCclosureTestMax->GetBinCenter(j);
     fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
     
     if(-1.<x&&x<=-0.8){    
@@ -26085,7 +26085,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DplusVeryHighPtAss
 
   fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
   for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
-    x=fhMCclosureTestMax->GetBinLowEdge(j);
+    x=fhMCclosureTestMax->GetBinCenter(j);
     fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
     
     if(-1.<x&&x<=-0.8){    
@@ -26282,7 +26282,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DplusVeryHighPtAss
 
   fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
   for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
-    x=fhMCclosureTestMax->GetBinLowEdge(j);
+    x=fhMCclosureTestMax->GetBinCenter(j);
     fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
     
     if(-1.<x&&x<=-0.8){    
@@ -26479,7 +26479,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DplusVeryHighPtAss
 
   fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
   for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
-    x=fhMCclosureTestMax->GetBinLowEdge(j);
+    x=fhMCclosureTestMax->GetBinCenter(j);
     fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
     
     if(-1.<x&&x<=-0.8){    
@@ -26676,7 +26676,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DplusVeryHighPtAss
 
   fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
   for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
-    x=fhMCclosureTestMax->GetBinLowEdge(j);
+    x=fhMCclosureTestMax->GetBinCenter(j);
     fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
     
     if(-1.<x&&x<=-0.8){    
@@ -26873,7 +26873,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DplusVeryHighPtAss
 
   fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
   for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
-    x=fhMCclosureTestMax->GetBinLowEdge(j);
+    x=fhMCclosureTestMax->GetBinCenter(j);
     fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
     
     if(-1.<x&&x<=-0.8){    
@@ -27070,7 +27070,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DplusVeryHighPtAss
 
   fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
   for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
-    x=fhMCclosureTestMax->GetBinLowEdge(j);
+    x=fhMCclosureTestMax->GetBinCenter(j);
     fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
     
     if(-1.<x&&x<=-0.8){    
@@ -27267,7 +27267,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DplusVeryHighPtAss
 
   fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
   for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
-    x=fhMCclosureTestMax->GetBinLowEdge(j);
+    x=fhMCclosureTestMax->GetBinCenter(j);
     fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
     
     if(-1.<x&&x<=-0.8){    
