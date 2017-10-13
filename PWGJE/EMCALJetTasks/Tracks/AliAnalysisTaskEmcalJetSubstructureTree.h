@@ -170,6 +170,7 @@ public:
 
 	void SetTriggerBits(UInt_t triggersel) { fTriggerSelectionBits = triggersel; }
 	void SetTriggerString(TString triggerstring) { fTriggerSelectionString = triggerstring; }
+	void SetUseDownscaleWeight(Bool_t usedownscale) { fUseDownscaleWeight = usedownscale; }
 
 	void SetSoftdropDefiniion(Double_t zcut, Double_t betacut, Reclusterizer_t reclusterizer) {
 	  fSDZCut = zcut;
@@ -182,6 +183,7 @@ public:
 protected:
 	virtual void UserCreateOutputObjects();
 	virtual bool Run();
+	virtual void RunChanged(Int_t newrun);
 
 	AliJetSubstructureData MakeJetSubstructure(const AliEmcalJet &jet, double jetradius, const AliParticleContainer *tracks, const AliClusterContainer *clusters, const AliJetSubstructureSettings &settings) const;
 
@@ -208,6 +210,7 @@ private:
 
 	UInt_t                       fTriggerSelectionBits;       ///< Trigger selection bits
   TString                      fTriggerSelectionString;     ///< Trigger selection string
+  Bool_t                       fUseDownscaleWeight;         ///< Use 1/downscale as weight
 
 	/// \cond CLASSIMP
 	ClassDef(AliAnalysisTaskEmcalJetSubstructureTree, 1);

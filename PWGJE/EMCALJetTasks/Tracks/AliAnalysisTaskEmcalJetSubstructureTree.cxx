@@ -47,6 +47,7 @@
 #include "AliClusterContainer.h"
 #include "AliJetContainer.h"
 #include "AliEmcalAnalysisFactory.h"
+#include "AliEmcalDownscaleFactorsOCDB.h"
 #include "AliEmcalJet.h"
 #include "AliEmcalList.h"
 #include "AliEmcalTriggerDecisionContainer.h"
@@ -77,7 +78,8 @@ AliAnalysisTaskEmcalJetSubstructureTree::AliAnalysisTaskEmcalJetSubstructureTree
     fSDBetaCut(0),
     fReclusterizer(kCAAlgo),
     fTriggerSelectionBits(AliVEvent::kAny),
-    fTriggerSelectionString("")
+    fTriggerSelectionString(""),
+    fUseDownscaleWeight(false)
 {
   memset(fJetTreeData, 0, sizeof(Double_t) * kTNVar);
 }
@@ -90,7 +92,8 @@ AliAnalysisTaskEmcalJetSubstructureTree::AliAnalysisTaskEmcalJetSubstructureTree
     fSDBetaCut(0),
     fReclusterizer(kCAAlgo),
     fTriggerSelectionBits(AliVEvent::kAny),
-    fTriggerSelectionString("")
+    fTriggerSelectionString(""),
+    fUseDownscaleWeight(false)
 {
   memset(fJetTreeData, 0, sizeof(Double_t) * kTNVar);
   DefineOutput(2, TTree::Class());
@@ -178,6 +181,12 @@ void AliAnalysisTaskEmcalJetSubstructureTree::UserCreateOutputObjects() {
   PostData(2, fJetSubstructureTree);
 }
 
+void AliAnalysisTaskEmcalJetSubstructureTree::RunChanged(Int_t newrun) {
+  if(fUseDownscaleWeight){
+    AliEmcalDownscaleFactorsOCDB::Instance()->SetRun(newrun);
+  }
+}
+
 bool AliAnalysisTaskEmcalJetSubstructureTree::Run(){
   AliClusterContainer *clusters = GetClusterContainer("caloClusters");
   AliTrackContainer *tracks = GetTrackContainer("tracks");
@@ -199,6 +208,11 @@ bool AliAnalysisTaskEmcalJetSubstructureTree::Run(){
   AliDebugStream(2) << "Found rho parameter for sim pt:              " << (rhoPtSim ? "yes" : "no") << ", value: " << (rhoPtSim ? rhoPtSim->GetVal() : 0.) << std::endl;
   AliDebugStream(2) << "Found rho parameter for reconstructed Mass:  " << (rhoMassRec ? "yes" : "no") << ", value: " << (rhoMassRec ? rhoMassRec->GetVal() : 0.) << std::endl;
   AliDebugStream(2) << "Found rho parameter for sim Mass:            " << (rhoMassSim ? "yes" : "no") << ", value: " << (rhoMassSim ? rhoMassSim->GetVal() : 0.) << std::endl;
+
+  double weight = 1.;
+  if(fUseDownscaleWeight){
+    weight = AliEmcalDownscaleFactorsOCDB::Instance()->GetDownscaleFactorForTriggerClass(this->fTriggerSelectionString);
+  }
 
   // Run trigger selection (not on pure MCgen train)
   if(datajets){
@@ -222,7 +236,6 @@ bool AliAnalysisTaskEmcalJetSubstructureTree::Run(){
     }
   }
 
-  Double_t weight = 1;
   Double_t rhoparameters[4]; memset(rhoparameters, 0, sizeof(Double_t) * 4);
   if(rhoPtRec) rhoparameters[0] = rhoPtRec->GetVal();
   if(rhoPtSim) rhoparameters[1] = rhoPtSim->GetVal();
@@ -590,7 +603,7 @@ AliAnalysisTaskEmcalJetSubstructureTree *AliAnalysisTaskEmcalJetSubstructureTree
                               AliJetContainer::antikt_algorithm,
                               recombinationScheme,
                               jetradius,
-                              isData ? AliEmcalJet::kEMCALfid : AliEmcalJet::kTPC,
+                              (isData && jettype == kFull) ? AliEmcalJet::kEMCALfid : AliEmcalJet::kTPC,
                               particles, nullptr);
     mcjets->SetName("mcjets");
     mcjets->SetJetPtCut(20.);
@@ -614,7 +627,7 @@ AliAnalysisTaskEmcalJetSubstructureTree *AliAnalysisTaskEmcalJetSubstructureTree
                               AliJetContainer::antikt_algorithm,
                               recombinationScheme,
                               jetradius,
-                              AliEmcalJet::kEMCALfid,
+                              jettype == kFull ? AliEmcalJet::kEMCALfid : AliEmcalJet::kTPCfid,
                               tracks, clusters);
     datajets->SetName("datajets");
     datajets->SetJetPtCut(20.);
