@@ -112,6 +112,13 @@ if (NOT CMAKE_SYSTEM_NAME STREQUAL Windows)
   set(CMAKE_SHARED_LIBRARY_SUFFIX .so)
 endif (NOT CMAKE_SYSTEM_NAME STREQUAL Windows)
 
+# HLT/ZMQ and HLT/BASE/util need X11
+find_package(X11)
+if(X11_FOUND)
+  get_filename_component(X11_LIB_DIR ${X11_X11_LIB} DIRECTORY)
+  message("Found X11: ${X11_LIB_DIR} ${X11_INCLUDE_DIR}")
+endif(X11_FOUND)
+
 # Optional: Doxygen for reference doc generation
 find_package(Doxygen)
 if(DOXYGEN_FOUND AND DOXYGEN_DOT_FOUND)
