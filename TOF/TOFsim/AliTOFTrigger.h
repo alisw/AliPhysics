@@ -84,6 +84,9 @@ class AliTOFTrigger : public AliTriggerDetector
   static AliTOFTriggerMask *GetTOFTriggerMap() {return fTOFTrigMap;}
   static void PrepareTOFMapFromRaw(AliRawReader *fRawReader,Int_t deltaBC=13600);
   static void PrepareTOFMapFromDigit(TTree *treeD, Float_t startTimeHit=0, Float_t timeWidthTrigger=25);
+
+  static void    GetLTMIndex(const Int_t * const detind, Int_t *LTMIndex);
+
  private:
 
   enum{
@@ -103,7 +106,6 @@ class AliTOFTrigger : public AliTriggerDetector
   AliTOFTrigger(const AliTOFTrigger & tr);
 
   void    GetCTTMIndex(Int_t *detind, Int_t *indexCTTM);
-  static void    GetLTMIndex(const Int_t * const detind, Int_t *LTMIndex);
   Bool_t  fLTMmatrix[kNLTM][kNLTMchannels];         //LTM matrix 
   Bool_t  fLTMarray[kNCTTM];        //LTM array for UPpurposes
   Bool_t  fCTTMmatrixFront[kNCTTM][kNCTTMchannels];//CTTM matrix for TOP FPGA 
