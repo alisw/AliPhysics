@@ -4573,7 +4573,7 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC)
     // New PCM-EMC nonlinearity with energy squared
     case 17:
       if(isMC>0){
-         if( fCurrentMC==k16h3 ||fCurrentMC==k16k5a ||  fCurrentMC==k17e2 ) {
+         if( fCurrentMC==k16h3 ||fCurrentMC==k16k5a ||fCurrentMC==k16k5b ||  fCurrentMC==k17e2 ) {
           if(fClusterType==1){
             energy /= (FunctionNL_kSDM(energy, 0.945037*1.005, -3.42935, -0.384718));
           }
@@ -4700,7 +4700,7 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC)
     // New PCM-EMC nonlinearity with energy squared
     case 27:
       if(isMC>0){
-         if( fCurrentMC==k16h3 ||fCurrentMC==k16k5a ||  fCurrentMC==k17e2 ) {
+         if( fCurrentMC==k16h3 ||fCurrentMC==k16k5a ||fCurrentMC==k16k5b ||  fCurrentMC==k17e2 ) {
           if(fClusterType==1){
             energy /= (FunctionNL_DPOW(energy, 1.1497456392, -0.1999999732, -0.0839303140, 1.1818406492, -0.1999998957, -0.1434322871) + 0.0055);
           }
