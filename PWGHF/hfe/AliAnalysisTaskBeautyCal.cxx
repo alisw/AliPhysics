@@ -181,6 +181,10 @@ ClassImp(AliAnalysisTaskBeautyCal)
   fHistDCAde(0),
   fHistDCAbe(0),
   fHistDCApe(0),
+  fHistDCAdeEnhance(0),
+  fHistDCAbeEnhance(0),
+  fHistDCAdePureMC(0),
+  fHistDCAbePureMC(0),
   fHistDCAdeInc(0),
   fHistDCAbeInc(0),
   fHistDCAdeSemi(0),
@@ -325,6 +329,10 @@ AliAnalysisTaskBeautyCal::AliAnalysisTaskBeautyCal()
   fHistDCAde(0),
   fHistDCAbe(0),
   fHistDCApe(0),
+  fHistDCAdeEnhance(0),
+  fHistDCAbeEnhance(0),
+  fHistDCAdePureMC(0),
+  fHistDCAbePureMC(0),
   fHistDCAdeInc(0),
   fHistDCAbeInc(0),
   fHistDCAdeSemi(0),
@@ -691,6 +699,18 @@ void AliAnalysisTaskBeautyCal::UserCreateOutputObjects()
   fHistDCAbe = new TH2D("fHistDCAbe", "DCA of B-> e; p_{T}(GeV/c);DCAxchargexMag.", 40,0,40,2000,-0.2,0.2);
   fOutputList->Add(fHistDCAbe);
 
+  fHistDCAdeEnhance = new TH2D("fHistDCAdeEnhance", "DCA of D-> e; p_{T}(GeV/c);DCAxchargexMag.", 40,0,40,2000,-0.2,0.2);
+  fOutputList->Add(fHistDCAdeEnhance);
+ 
+  fHistDCAbeEnhance = new TH2D("fHistDCAbeEnhance", "DCA of B-> e; p_{T}(GeV/c);DCAxchargexMag.", 40,0,40,2000,-0.2,0.2);
+  fOutputList->Add(fHistDCAbeEnhance);
+
+  fHistDCAdePureMC = new TH2D("fHistDCAdePureMC", "DCA of D-> e; p_{T}(GeV/c);DCAxchargexMag.", 40,0,40,2000,-0.2,0.2);
+  fOutputList->Add(fHistDCAdePureMC);
+ 
+  fHistDCAbePureMC = new TH2D("fHistDCAbePureMC", "DCA of B-> e; p_{T}(GeV/c);DCAxchargexMag.", 40,0,40,2000,-0.2,0.2);
+  fOutputList->Add(fHistDCAbePureMC);
+
   fHistDCApe = new TH2D("fHistDCApe", "DCA of pi0/eta-> e; p_{T}(GeV/c);DCAxchargexMag.", 40,0,40,2000,-0.2,0.2);
   fOutputList->Add(fHistDCApe);
 
@@ -985,6 +1005,7 @@ void AliAnalysisTaskBeautyCal::UserExec(Option_t *)
  
   Int_t MagSign = 1;
   if(fVevent->GetMagneticField()<0)MagSign = -1;
+  cout << "Mag F = " << fVevent->GetMagneticField() << endl;
 
   ////////////////////
   //event selection///
@@ -1237,6 +1258,8 @@ void AliAnalysisTaskBeautyCal::UserExec(Option_t *)
       pid_eleB = IsBdecay(pidM);
       pid_eleP = IsPdecay(pidM);
 
+      cout << pdg << " ; pid_eleD = " << pid_eleD <<  " ; pid_eleB = " << pid_eleB << endl;
+
       if(pidM==111)
         {
          if(ilabelM>NembMCpi0 && ilabelM<NembMCeta)iEmbPi0 = kTRUE;
@@ -1274,23 +1297,29 @@ void AliAnalysisTaskBeautyCal::UserExec(Option_t *)
     Bool_t pid_eleB = IsBdecay(pidM);
     Bool_t pid_eleP = IsPdecay(pidM);
     */
+    
         if(pid_eleD)fHistDCAde->Fill(track->Pt(),DCAxy);
         if(pid_eleB)fHistDCAbe->Fill(track->Pt(),DCAxy);
         if(pid_eleP)fHistDCApe->Fill(track->Pt(),DCAxy);
-
+  
         if(pid_eleD)fHistResD->Fill(track->Pt(),fMCparticle->Pt());
         if(pid_eleB)fHistResB->Fill(track->Pt(),fMCparticle->Pt()); 
 
-    //if(abs(pdg)==11 && (pid_eleD || pid_eleB))cout << " pid_ele = " << pid_ele << " ; pidM = " << pidM << endl;
+    if(abs(pdg)==11 && pid_eleD)cout << " pid_ele from D = " << pid_ele << " ; pidM = " << pidM << endl;
+    if(abs(pdg)==11 && pid_eleB)cout << " pid_ele from B = " << pid_ele << " ; pidM = " << pidM << endl;
     //if(abs(pdg)==11 && (pid_eleD || pid_eleB))cout << " NpureMCproc = " << NpureMCproc << " ; ilabel = " << ilabel << endl;
     if(abs(pdg)==11 && (pid_eleD || pid_eleB))
       {
        if(ilabel<NpureMCproc+1)
          {
+          if(pid_eleD)fHistDCAdeEnhance->Fill(track->Pt(),DCAxy);
+          if(pid_eleB)fHistDCAbeEnhance->Fill(track->Pt(),DCAxy);
           fHistHFmcCheck->Fill(1);
          }
        else
          {
+          if(pid_eleD)fHistDCAdePureMC->Fill(track->Pt(),DCAxy);
+          if(pid_eleB)fHistDCAbePureMC->Fill(track->Pt(),DCAxy);
           fHistHFmcCheck->Fill(0);
           if(pid_eleD)pid_eleD = kFALSE;
           if(pid_eleB)pid_eleB = kFALSE;
