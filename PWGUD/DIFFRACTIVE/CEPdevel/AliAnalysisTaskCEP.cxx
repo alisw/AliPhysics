@@ -709,11 +709,11 @@ void AliAnalysisTaskCEP::UserExec(Option_t *)
   for (Int_t ii=0;    ii<400; ii++) nFiredChips[2] += foMap[ii]>0 ? 1 : 0;
   for (Int_t ii=400; ii<1200; ii++) nFiredChips[3] += foMap[ii]>0 ? 1 : 0;
   
-  if (firedTriggerClasses.Contains("CCUP13-B-SPD1-CENTNOTRD")) {
-    printf("Triggers: %s\n",firedTriggerClasses.Data());
-    printf("Number of SPD chips: %i %i / %i %i\n",
-      nFiredChips[0],nFiredChips[1],nFiredChips[2],nFiredChips[3]);
-  }
+  // if (firedTriggerClasses.Contains("CCUP13-B-SPD1-CENTNOTRD")) {
+  //   printf("Triggers: %s\n",firedTriggerClasses.Data());
+  //   printf("Number of SPD chips: %i %i / %i %i\n",
+  //     nFiredChips[0],nFiredChips[1],nFiredChips[2],nFiredChips[3]);
+  // }
          
   // get trigger information using AliTriggerAnalysis.IsOfflineTriggerFired
   // kSPDGFOBits: SPD (any fired chip)
@@ -822,9 +822,9 @@ void AliAnalysisTaskCEP::UserExec(Option_t *)
       }
 	  }
     
-    if (firedTriggerClasses.Contains("CCUP13-B-SPD1-CENTNOTRD"))
-      printf("ntrk with SPD hits (of %i trks): %i / %i\n",
-        nTracksTotal,nTracksTPCITS,ntrkwSPDHit);
+    // if (firedTriggerClasses.Contains("CCUP13-B-SPD1-CENTNOTRD"))
+    //   printf("ntrk with SPD hits (of %i trks): %i / %i\n",
+    //     nTracksTotal,nTracksTPCITS,ntrkwSPDHit);
     
   }
   
