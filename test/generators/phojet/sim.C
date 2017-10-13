@@ -3,12 +3,11 @@ void sim(Int_t nev=5) {
 
   gSystem->Load("liblhapdf"); // Parton density functions
   gSystem->Load("libEGPythia6"); // TGenerator interface
-  gSystem->Load("libpythia6"); // Pythia
-  gSystem->Load("libAliPythia6"); // ALICE specific implementations
   gSystem->Load("libgeant321");
 
-  gSystem->Load("libDPMJET"); // Parton density functions
-  gSystem->Load("libTDPMjet"); // Parton density functions
+  gSystem->Load("libDPMJET"); // DPMJET, PhoJet and Pythia6115 library
+  gSystem->Load("libAliPythia6"); // ALICE specific implementations
+  gSystem->Load("libTDPMjet"); // DPMJET interface
 
 
   AliSimulation simulator;
