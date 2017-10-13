@@ -1,6 +1,6 @@
 AlidNdPtUnifiedAnalysisTask* AddTask_mkrueger_Unified(TString controlstring, Int_t cutModeLow = 100, Int_t cutModeHigh = 120)
 {
-  // INFO: for MC use 4 different trains (cutModeLow, cutModeHigh) = (100,105) (105,111), (111,116), (116,120)
+  // INFO: for MC use 4 different trains (cutModeLow, cutModeHigh) = (100,105), (105,109), (109,113), (113,116), (116,120)
 
   // settings:
   UInt_t offlineTriggerMask = AliVEvent::kINT7;
@@ -119,18 +119,18 @@ AlidNdPtUnifiedAnalysisTask* AddTask_mkrueger_Unified(TString controlstring, Int
 	
       if(cutMode == 107) {task->SetFractionSharedClustersTPC(0.2);}
       if(cutMode == 108) {task->SetFractionSharedClustersTPC(1.0);}
-	
+//MC3--	
       if(cutMode == 109) {task->SetMaxChi2TPCConstrained(25.);}
       if(cutMode == 110) {task->SetMaxChi2TPCConstrained(49.);}
-//MC3--	
+
       if(cutMode == 111) {task->SetDCAtoVertexXYPtDep("0.0104+0.0200/pt^1.01");}
       if(cutMode == 112) {task->SetDCAtoVertexXYPtDep("0.0260+0.0500/pt^1.01");}
-	
+//MC4--		  
       if(cutMode == 113) {task->SetDCAtoVertexZ(1.0);}
       if(cutMode == 114) {task->SetDCAtoVertexZ(5.0);}
 
       if(cutMode == 115) {task->SetClusterReqITS(kFALSE);}
-//MC4--		  
+//MC5--		  
       if(cutMode == 116) {task->SetGeometricalCut(kTRUE,3,120,1.5,0.85,0.7);}	
       if(cutMode == 117) {task->SetGeometricalCut(kTRUE,3,140,1.5,0.85,0.7);}	
 
