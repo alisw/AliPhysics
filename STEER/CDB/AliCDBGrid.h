@@ -28,6 +28,8 @@ class AliCDBGrid: public AliCDBStorage {
   virtual void SetMirrorSEs(const char* mirrors) {fMirrorSEs=mirrors;}
   virtual const char* GetMirrorSEs() const {return fMirrorSEs;}
 
+  static void   SetForbidGRPOverride(Bool_t v) {fgForbidGRPOverride = v;}
+  static Bool_t GetForbidGRPOverride() {return fgForbidGRPOverride;}
 
   protected:
 
@@ -75,6 +77,8 @@ class AliCDBGrid: public AliCDBStorage {
   Long64_t   fCacheSize;           // local cache size (in bytes)
   Long_t     fCleanupInterval;     // local cache cleanup interval
 
+  static Bool_t fgForbidGRPOverride; // forbid overriding objects in GRP dir
+  
   ClassDef(AliCDBGrid, 0)      // access class to a DataBase in an AliEn storage
 };
 
