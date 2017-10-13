@@ -86,6 +86,17 @@ const AliAnalysisTaskDiffCrossSections::PseudoTrack& AliAnalysisTaskDiffCrossSec
   //   AliFatalF("idx=%d is outside of the allowed range [0,%d)", idx, fTracks.GetSize());
   return *p;
 }
+void AliAnalysisTaskDiffCrossSections::PseudoTracks::SortIfNeeded() {
+  Float_t etaLast=0;
+  Bool_t isSorted = kTRUE;
+  for (Int_t i=0, n=fTracks.GetEntriesFast(); i<n && isSorted; ++i) {
+    const PseudoTrack &t = GetTrackAt(i);
+    isSorted = (i ? t.Eta() >= etaLast : kTRUE);
+    etaLast = t.Eta();
+  }
+  if (!isSorted)
+    fTracks.Sort();
+}
 
 TVector3 AliAnalysisTaskDiffCrossSections::GetADPseudoTrack(Int_t ch) {
   const Double_t z[2] = {
@@ -165,16 +176,7 @@ Int_t AliAnalysisTaskDiffCrossSections::PseudoTracks::ClassifyEventBits(Int_t &i
   // boundaries of acceptance:
   AliDebugF(5, "etaAccLR= %.3f %.3f", etaAccL, etaAccR);
 
-  // make sure that fTracks is sorted
-  Float_t etaLast=0;
-  Bool_t isSorted = kTRUE;
-  for (Int_t i=0; i<nt && isSorted; ++i) {
-    const PseudoTrack &t = GetTrackAt(i);
-    isSorted = (i ? t.Eta() >= etaLast : kTRUE);
-    etaLast = t.Eta();
-  }
-  if (!isSorted)
-    fTracks.Sort();
+  // fTracks.Sort(); already sorted
 
   // find etaL,etaR indices
   for (Int_t i=0; i<nt; ++i) {
@@ -685,7 +687,8 @@ AliAnalysisTaskDiffCrossSections::~AliAnalysisTaskDiffCrossSections()
 Bool_t AliAnalysisTaskDiffCrossSections::DoTimeChargeCut(Int_t ch, Float_t time, Float_t charge) const
 {
   const TCutG *cut = dynamic_cast<const TCutG*>(fTimeChargeCuts.At(ch));
-  return (cut ? cut->IsInside(time, charge) : kTRUE);
+  // it no cut is set, require a time measurement (AliADReconstructor::kInvalidTime=-1024)
+  return (cut ? cut->IsInside(time, charge) : (time > -1023.0f));
 }
 
 void AliAnalysisTaskDiffCrossSections::SetBranches(TTree* t) {
