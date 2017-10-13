@@ -156,6 +156,10 @@ public:
   /// Create object by parsing string
   static AliFemtoConfigObject Parse(const std::string &);
 
+  /// Create object from string; if a map, also parse defaults and
+  /// insert any values missing in object with defaults.
+  static AliFemtoConfigObject ParseWithDefaults(const std::string &, const std::string &defaults);
+
   /// Create object in empty state
   AliFemtoConfigObject();
 
@@ -299,14 +303,9 @@ public:
   bool load_rangelist(RangeListValue_t &r) const {
     return is_rangelist() ? r = fValueRangeList, true : load_rangelist(r); }
   bool load_ranges(RangeListValue_t &r) const {
-    std::cout << "loading ranges " << std::flush;
     if (is_range()) {
-      std::cout << "from range! " << std::flush;
-      std::cout << " (" << fValueRange.first << ", " << fValueRange.second << ")\n";
       r.clear();
-      std::cout << "  cleared.\n";
       r.push_back(fValueRange);
-      std::cout << " pushed back...\n";
       return true;
     } else {
       return load_rangelist(r);
@@ -315,6 +314,29 @@ public:
   }
 
   bool load_range(std::pair<float, float> &r) const { return is_range() ? r = fValueRange, true : false; }
+
+
+
+  /// \defgroup Find&Load Methods
+  /// @{
+  /// Copies item identified by *key*, returns true if found
+  #define IMPL_FINDANDLOAD(__dest_type, __tag, __source)            \
+    bool find_and_load(const Key_t &key, __dest_type &dest) const { \
+      if (!is_map()) { return false; }                        \
+      auto found = fValueMap.find(key);                       \
+      if (found == fValueMap.end()) { return false; }         \
+      if (found->second.fTypeTag != __tag) { return false; }  \
+      dest = found->second. __source;                         \
+      return true; }
+
+    FORWARD_STANDARD_TYPES(IMPL_FINDANDLOAD)
+
+    IMPL_FINDANDLOAD(pair_of_floats, kRANGE, fValueRange);
+    IMPL_FINDANDLOAD(int, kINT, fValueInt);
+    IMPL_FINDANDLOAD(unsigned int, kINT, fValueInt);
+
+  #undef IMPL_FINDANDLOAD
+  /// @}
 
 
   /// Remove and returns pointer to object at *index* if an array
@@ -342,22 +364,22 @@ public:
   /// @{
   /// Removes item identified by *key*
 
-#define IMPL_POPANDLOAD(__dest_type, __tag, __source)      \
-  bool pop_and_load(const Key_t &key, __dest_type &dest) { \
-    if (!is_map()) { return false; }                       \
-    auto found = fValueMap.find(key);                      \
-    if (found == fValueMap.end()) { return false; }        \
-    if (found->second.fTypeTag != __tag) { return false; } \
-    dest = found->second. __source;                        \
-    fValueMap.erase(found); return true; }
+  #define IMPL_POPANDLOAD(__dest_type, __tag, __source)      \
+    bool pop_and_load(const Key_t &key, __dest_type &dest) { \
+      if (!is_map()) { return false; }                       \
+      auto found = fValueMap.find(key);                      \
+      if (found == fValueMap.end()) { return false; }        \
+      if (found->second.fTypeTag != __tag) { return false; } \
+      dest = found->second. __source;                        \
+      fValueMap.erase(found); return true; }
 
-  FORWARD_STANDARD_TYPES(IMPL_POPANDLOAD)
+    FORWARD_STANDARD_TYPES(IMPL_POPANDLOAD)
 
-  IMPL_POPANDLOAD(pair_of_floats, kRANGE, fValueRange);
-  IMPL_POPANDLOAD(int, kINT, fValueInt);
-  IMPL_POPANDLOAD(unsigned int, kINT, fValueInt);
+    IMPL_POPANDLOAD(pair_of_floats, kRANGE, fValueRange);
+    IMPL_POPANDLOAD(int, kINT, fValueInt);
+    IMPL_POPANDLOAD(unsigned int, kINT, fValueInt);
 
-#undef IMPL_POPANDLOAD
+  #undef IMPL_POPANDLOAD
 
   /// @}
 
@@ -407,7 +429,18 @@ public:
   /// Pretty-print the value
   TString Stringify(const bool pretty=true) const;
 
-  /// Print warning that multiple
+  /// Perform a "deep" update of object into this map object.
+  /// If either is not a map, do nothing.
+  /// Loop through keys in "default" object, if any key is missing
+  /// in `this`, copy value over. If both keys point to maps, recursively
+  /// call SetDefault on thses sub-objects.
+  ///
+  void SetDefault(const AliFemtoConfigObject &default_mapobj);
+#ifdef ENABLE_MOVE_SEMANTICS
+  void SetDefault(AliFemtoConfigObject &&default_mapobj);
+#endif
+
+/// Print warning that multiple
   void WarnOfRemainingItems(std::ostream& out=std::cerr) const;
 
   // ========================
@@ -745,7 +778,6 @@ AliFemtoConfigObject* AliFemtoConfigObject::pop(const Key_t &key, const ReturnTy
   }
   return new AliFemtoConfigObject(default_);
 }
-
 
 template <typename T>
 T* AliFemtoConfigObject::Construct() const

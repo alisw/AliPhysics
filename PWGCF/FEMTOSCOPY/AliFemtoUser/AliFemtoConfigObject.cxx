@@ -483,6 +483,35 @@ AliFemtoConfigObject::Parse(const std::string &src)
 
 }
 
+AliFemtoConfigObject
+AliFemtoConfigObject::ParseWithDefaults(const std::string &src, const std::string &defaults)
+{
+  AliFemtoConfigObject obj = Parse(src);
+  if (obj.is_map()) {
+    auto d = Parse(defaults);
+    obj.SetDefault(d);
+  }
+  return obj;
+}
+
+void
+AliFemtoConfigObject::SetDefault(const AliFemtoConfigObject &d)
+{
+  // only proceed if both are maps
+  if (!is_map() || !d.is_map()) {
+    return;
+  }
+
+  for (auto &kv_pair : d.fValueMap) {
+    auto found = fValueMap.find(kv_pair.first);
+    if (found == fValueMap.end()) {
+      fValueMap.emplace(kv_pair.first, kv_pair.second);
+    }
+    else if (found->second.is_map() && kv_pair.second.is_map()) {
+      found->second.SetDefault(kv_pair.second);
+    }
+  }
+}
 
 #define INT_PATTERN "\\-?\\d+"
 #define FLT_PATTERN "\\-?(?:inf|nan|(?:\\d+\\.\\d*|\\.\\d+)(?:e[+\\-]?\\d+)?|\\d+e[+\\-]?\\d+)"

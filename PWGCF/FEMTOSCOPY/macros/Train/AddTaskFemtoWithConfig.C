@@ -60,12 +60,32 @@ AliAnalysisTaskFemto* AddTaskFemtoWithConfig(TString configuration,
               , DEFAULT_SUBWAGON_TYPE = "centrality"
               ;
 
+  const std::string CONFIG_DEFAULTS = "{ directory:'$ALICE_PHYSICS/PWGCF/FEMTOSCOPY/macros/Train'"
+                                      ", container:'femtolist'"
+                                      ", output_container:'PWG2FEMTO'"
+                                      ", task_name:'TaskConfigured'"
+                                      ", subwagon_type:'centrality'"
+                                      "}";
+
+
+  const AliFemtoConfigObject cfg = AliFemtoConfigObject::ParseWithDefaults(configuration, CONFIG_DEFAULTS);
+
+  const std::string macro_name;
+
+  if (!cfg.find_and_load("macro", macro_name)) {
+    std::cerr << " ** Error - Configuration missing key 'macro'.\n"
+                 "      Please include path to macro file, similar to {macro: '%%/PionPionFemto/ConfigFemtoAnalysis.C'}\n";
+    return nullptr;
+  }
+
+
   // Get the global manager
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
     Error("AddTaskFemtoWithConfig", "Could not get the global AliAnalysisManager.");
     return NULL;
   }
+
 
   TString macro = DEFAULT_MACRO
         , output_filename = mgr->GetCommonFileName()
