@@ -12,8 +12,11 @@
 #include <TUUID.h>
 
 /// \cond CLASSIMP
-ClassImp(AliYAMLConfiguration);
+ClassImp(PWG::Tools::AliYAMLConfiguration);
 /// \endcond
+
+namespace PWG {
+namespace Tools {
 
 /**
  * Default constructor.
@@ -509,3 +512,5 @@ void AliYAMLConfiguration::Print(Option_t* opt) const
   AliInfoStream() << toString();
 }
 
+} // namespace Tools
+} // namespace PWG

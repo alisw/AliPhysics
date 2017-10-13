@@ -395,7 +395,7 @@ bool AliAnalysisTaskEmcalEmbeddingHelper::AutoConfigurePtHardBins()
 
   AliInfoStream() << "Attempting to auto configure pt hard bins.\n";
   // YAML configuration containing pt hard bin to train number mapping
-  AliYAMLConfiguration config;
+  PWG::Tools::AliYAMLConfiguration config;
 
   // Handle AliEn explicitly here since the default base path contains "alien://"
   if (fAutoConfigureBasePath.find("alien://") != std::string::npos && !gGrid) {

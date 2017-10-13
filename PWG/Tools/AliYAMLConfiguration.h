@@ -90,6 +90,9 @@
  * @date Sept 19, 2017
  */
 
+namespace PWG {
+namespace Tools {
+
 class AliYAMLConfiguration : public TObject {
  public:
   AliYAMLConfiguration(const std::string prefixString = "AliEmcalCorrection", const std::string delimiterCharacter = ":");
@@ -642,5 +645,8 @@ unsigned int AliYAMLConfiguration::GetConfigurationIndexFromName(const std::stri
 
   return index;
 }
+
+} // namespace Tools
+} // namespace PWG
 
 #endif /* ALIYAMLCONFIGURATION_H */
