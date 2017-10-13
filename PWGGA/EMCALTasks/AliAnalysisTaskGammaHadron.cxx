@@ -1653,7 +1653,7 @@ void AliAnalysisTaskGammaHadron::FillQAHisograms(Int_t identifier,AliClusterCont
 			Double_t phidiff=100;
 			Double_t etadiffTrack;
 			Double_t phidiffTrack;
-			Double_t mom;
+			Double_t mom=0;
 			Double_t momTrack;
 			//..loop over matched tracks
 			for (Int_t i = 0; i < Ntrks; ++i)
