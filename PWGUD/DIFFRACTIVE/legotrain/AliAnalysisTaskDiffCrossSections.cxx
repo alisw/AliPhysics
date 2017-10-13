@@ -871,8 +871,6 @@ void AliAnalysisTaskDiffCrossSections::UserExec(Option_t *)
   fTreeData.fFMDInfo.Fill(esdEvent, fFMDMultLowCut);
   fTreeData.fADInfo.FillAD(esdEvent, fTriggerAnalysis);
 
-  fTreeData.fVtxInfo.Fill(esdEvent->GetPrimaryVertexSPD());
-
   fFastOrMap    = mult->GetFastOrFiredChips();
   fFiredChipMap = mult->GetFiredChipMap();
 
@@ -883,7 +881,9 @@ void AliAnalysisTaskDiffCrossSections::UserExec(Option_t *)
   if (fIsMC)
     fMCInfo.Fill(MCEvent(), fMCType);
 
-  const AliESDVertex *esdVertex = esdEvent->GetPrimaryVertex();
+  const AliESDVertex *esdVertex = esdEvent->GetPrimaryVertexSPD();
+  fTreeData.fVtxInfo.Fill(esdVertex);
+
   TVector3 vertexPosition(esdVertex->GetX(),
                           esdVertex->GetY(),
                           esdVertex->GetZ());
