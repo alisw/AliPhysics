@@ -1,8 +1,6 @@
 #ifndef ALIEMCALCORRECTIONTASK_H
 #define ALIEMCALCORRECTIONTASK_H
 
-// YAML::Node
-class Node;
 class AliEmcalCorrectionCellContainer;
 class AliEmcalCorrectionComponent;
 class AliEMCALGeometry;
@@ -79,16 +77,23 @@ class AliEmcalCorrectionTask : public AliAnalysisTaskSE {
    * so be certain to change any additional configuration before that!
    */
   void Initialize(bool removeDummyTask = false);
+
+  /** @{
+   * @name Functions related to the YAML configuration files.
+   */
   /// Set the path to the user configuration filename
   void SetUserConfigurationFilename(std::string name) { fUserConfigurationFilename = name; }
   /// Set the path to the default configuration filename (Expert use only! The user should set the user configuration!)
   void SetDefaultConfigurationFilename(std::string name) { fDefaultConfigurationFilename = name; }
   // Print the actual configuration string
-  std::ostream & PrintConfigurationString(std::ostream & in, bool userConfig = false) const;
+  std::ostream & PrintConfiguration(std::ostream & in, bool userConfig = false) const;
   // Write configuration to file
   bool WriteConfigurationFile(std::string filename, bool userConfig = false) const;
   // Compare configurations
-  bool CompareToStoredConfiguration(std::string filename, bool userConfig = false) const;
+  bool CompareToStoredConfiguration(std::string filename, bool userConfig = false);
+  /// Retrieve the YAML configurations for direct access
+  AliYAMLConfiguration & GetYAMLConfiguration() { return fYAMLConfig; }
+  /** @} */
 
   // Options
   // Printing
@@ -123,10 +128,10 @@ class AliEmcalCorrectionTask : public AliAnalysisTaskSE {
   void                        AdoptTrackContainer(AliTrackContainer* cont)          { AdoptParticleContainer(cont)                        ; }
   void                        AdoptMCParticleContainer(AliMCParticleContainer* cont){ AdoptParticleContainer(cont)                        ; }
   void                        AdoptClusterContainer(AliClusterContainer* cont)      { fClusterCollArray.Add(cont)                         ; }
-  AliParticleContainer       *GetParticleContainer(Int_t i=0)         const         { return AliEmcalContainerUtils::GetContainer<AliParticleContainer>(i, fParticleCollArray); }
-  AliParticleContainer       *GetParticleContainer(const char* name)  const         { return AliEmcalContainerUtils::GetContainer<AliParticleContainer>(name, fParticleCollArray); }
-  AliClusterContainer        *GetClusterContainer(Int_t i=0)          const         { return AliEmcalContainerUtils::GetContainer<AliClusterContainer>(i, fClusterCollArray); }
-  AliClusterContainer        *GetClusterContainer(const char* name)   const         { return AliEmcalContainerUtils::GetContainer<AliClusterContainer>(name, fClusterCollArray); }
+  AliParticleContainer       *GetParticleContainer(Int_t i=0)                 const { return AliEmcalContainerUtils::GetContainer<AliParticleContainer>(i, fParticleCollArray); }
+  AliParticleContainer       *GetParticleContainer(const char* name)          const { return AliEmcalContainerUtils::GetContainer<AliParticleContainer>(name, fParticleCollArray); }
+  AliClusterContainer        *GetClusterContainer(Int_t i=0)                  const { return AliEmcalContainerUtils::GetContainer<AliClusterContainer>(i, fClusterCollArray); }
+  AliClusterContainer        *GetClusterContainer(const char* name)           const { return AliEmcalContainerUtils::GetContainer<AliClusterContainer>(name, fClusterCollArray); }
   AliMCParticleContainer     *GetMCParticleContainer(Int_t i=0)               const { return dynamic_cast<AliMCParticleContainer*>(GetParticleContainer(i))   ; }
   AliMCParticleContainer     *GetMCParticleContainer(const char* name)        const { return dynamic_cast<AliMCParticleContainer*>(GetParticleContainer(name)); }
   AliTrackContainer          *GetTrackContainer(Int_t i=0)                    const { return dynamic_cast<AliTrackContainer*>(GetParticleContainer(i))        ; }

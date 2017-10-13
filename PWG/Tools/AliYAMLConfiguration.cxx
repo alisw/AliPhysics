@@ -36,9 +36,9 @@ AliYAMLConfiguration::AliYAMLConfiguration(const std::string prefixString, const
  *
  * @param[in] configurationName Name of the YAML node. The node will be stored under this name.
  *
- * @return True if the configuration was added successfully.
+ * @return Position of configuration if the configuration was added successfully. -1 if unsuccessful.
  */
-bool AliYAMLConfiguration::AddEmptyConfiguration(const std::string & configurationName)
+int AliYAMLConfiguration::AddEmptyConfiguration(const std::string & configurationName)
 {
   YAML::Node node;
   AliInfoStream() << "Adding configuration \"" << configurationName << "\" as an empty YAML node.\n";
@@ -51,16 +51,16 @@ bool AliYAMLConfiguration::AddEmptyConfiguration(const std::string & configurati
  * @param[in] configurationFilename Filename of the YAML configuration file to be added.
  * @param[in] configurationName Name of the YAML node. The node will be stored under this name.
  *
- * @return True if the configuration was added successfully.
+ * @return Position of configuration if the configuration was added successfully. -1 if unsuccessful.
  */
-bool AliYAMLConfiguration::AddConfiguration(std::string configurationFilename, std::string configurationName)
+int AliYAMLConfiguration::AddConfiguration(std::string configurationFilename, std::string configurationName)
 {
   SetupReadingConfigurationFilePath(configurationFilename, configurationName);
 
   // Add file
   if (DoesFileExist(configurationFilename) == false) {
     AliErrorStream() << "Configuration filename \"" << configurationFilename << "\" does not exist!\n";
-    return false;
+    return -1;
   }
 
   // Create node from filename
@@ -68,7 +68,7 @@ bool AliYAMLConfiguration::AddConfiguration(std::string configurationFilename, s
 
   if (node.IsNull() == true) {
     AliErrorStream() << "The node at configuration filename \"" << configurationFilename << "\" is null and will not be added!\n";
-    return false;
+    return -1;
   }
 
   AliInfoStream() << "Adding configuration \"" << configurationName << "\" located at \"" << configurationFilename << "\".\n";
@@ -81,9 +81,9 @@ bool AliYAMLConfiguration::AddConfiguration(std::string configurationFilename, s
  * @param[in] node YAML node to be added.
  * @param[in] configurationName Name of the YAML node. The node will be stored under this name.
  *
- * @return True if the configuration was added successfully.
+ * @return Position of configuration if the configuration was added successfully. -1 if unsuccessful.
  */
-bool AliYAMLConfiguration::AddConfiguration(const YAML::Node node, std::string configurationName)
+int AliYAMLConfiguration::AddConfiguration(const YAML::Node node, std::string configurationName)
 {
   if (configurationName == "")
   {
@@ -94,13 +94,34 @@ bool AliYAMLConfiguration::AddConfiguration(const YAML::Node node, std::string c
 
   if (configurationName == "") {
     AliErrorStream() << "Could not determine a name for the configuration:\n\"\n" << node << "\n\" Configuration will not be added!\n";
-    return false;
+    return -1;
   }
 
   // Add the configuration
   AliDebugStream(2) << "Adding configuration \"" << configurationName << "\".\n";
   fConfigurations.push_back(std::make_pair(configurationName, node));
-  return true;
+
+  // Return the location of the new configuration
+  return fConfigurations.size() - 1;
+}
+
+/**
+ * Remove a configuration at a given index.
+ *
+ * @param[in] i Index of the configuration to be rmeoved.
+ *
+ * @return true if the configuration was removed.
+ */
+bool AliYAMLConfiguration::RemoveConfiguration(const unsigned int i)
+{
+  bool returnValue = false;
+  if (i < fConfigurations.size())
+  {
+    fConfigurations.erase(fConfigurations.begin() + i);
+    returnValue = true;
+  }
+
+  return returnValue;
 }
 
 /**
@@ -118,6 +139,10 @@ bool AliYAMLConfiguration::WriteConfiguration(const std::string & filename, cons
   std::string localFilename = tempUUID.AsString();
   localFilename += ".yaml";
 
+  if (!DoesConfigurationExist(index)) {
+    AliWarningStream() << "Requested configuration index " << index << " does not exist - it cannot be written!\n";
+    return false;
+  }
   auto configPair = fConfigurations.at(index);
   std::ofstream outputFile(localFilename);
   outputFile << configPair.second;
@@ -141,8 +166,67 @@ bool AliYAMLConfiguration::WriteConfiguration(const std::string & filename, cons
  */
 bool AliYAMLConfiguration::WriteConfiguration(const std::string & filename, const std::string & configurationName) const
 {
-  return WriteConfiguration(filename, GetConfigurationIndexByName(configurationName, fConfigurations));
+  return WriteConfiguration(filename, GetConfigurationIndexFromName(configurationName, fConfigurations));
 }
+
+/**
+ * Compare two configurations to see if they are identical.
+ *
+ * @param[in] configIndex1 Index of the first configuration.
+ * @param[in] configIndex2 Index of the second configuration.
+ *
+ * @return True if the configurations are the same.
+ */
+bool AliYAMLConfiguration::CompareConfigurations(const int configIndex1, const int configIndex2) const
+{
+  bool returnValue = false;
+
+  bool configsExist = true;
+  std::vector<int> configs = {configIndex1, configIndex2};
+  for (auto config : configs) {
+    if (!DoesConfigurationExist(config)) {
+      AliErrorStream() << "Configuration at index " << config << " does not exist.\n";
+      configsExist = false;
+    }
+  }
+
+  if (configsExist)
+  {
+    // Generate YAML nodes for the comparison
+    auto configPair1 = GetConfiguration(configIndex1);
+    auto configPair2 = GetConfiguration(configIndex2);
+
+    // Need to stream the configuration back to a string to remove the comments
+    // since they are not preserved in the YAML node.
+    std::stringstream config1SS;
+    config1SS << configPair1.second;
+    std::stringstream config2SS;
+    config2SS << configPair2.second;
+
+    // Compare the nodes. Make the comparison as strings, as the YAML nodes do _not_ match,
+    // despite the strings matching. In fact, the YAML nodes will _not_ match even if they
+    // are generated from the same string....
+    if (config1SS.str() == config2SS.str()) {
+      returnValue = true;
+    }
+    else {
+      // Already should be the case, but just to be explicit.
+      returnValue = false;
+
+      // Inform the user about the details of the mismatch
+      std::stringstream errorMessageSS;
+      errorMessageSS << "Configuration mismatch between configuration at index " << configIndex1 << " and at index " << configIndex2 << "\n";
+      errorMessageSS << "Config 1:\n";
+      Print(errorMessageSS, configIndex1);
+      errorMessageSS << "Config 2:\n";
+      Print(errorMessageSS, configIndex2);
+      AliWarningStream() << errorMessageSS.str();
+    }
+  }
+
+  return returnValue;
+}
+
 
 /**
  * Checks if a file exists. This is done inline to make it efficient.
@@ -271,6 +355,9 @@ bool AliYAMLConfiguration::Initialize()
  * Reinitialize the configurations from the strings after streaming. This is required because the YAML
  * node objects cannot be streamed.
  *
+ * This should be called immediately after the object is streamed on the grid. For example, at
+ * UserCreateOutputObjects().
+ *
  * @return True if the configurations were re-initialized.
  */
 bool AliYAMLConfiguration::Reinitialize()
@@ -323,36 +410,102 @@ bool AliYAMLConfiguration::IsSharedValue(std::string & value) const
 /**
  * Print a particular configuration.
  *
- * @param[in] i Index of the YAML configuration.
+ * @param[in] index Index of the YAML configuration.
  */
-void AliYAMLConfiguration::PrintConfiguration(const unsigned int i) const
+void AliYAMLConfiguration::PrintConfiguration(std::ostream & stream, const std::pair<std::string, YAML::Node> & configPair) const
 {
-  if (fConfigurations.size() > i)
-  {
-    auto & configPair = fConfigurations.at(i);
-    AliInfoStream() << "\nName: " << configPair.first << "\n\n";
-    AliInfoStream() << configPair.second << "\n";
-  }
+  stream << "\nConfiguration Name: \"" << configPair.first << "\"\n\n";
+  stream << configPair.second << "\n";
 }
 
 /**
- * Print a particular configuration.
+ * Prints information about the YAML configuration(s).
  *
- * @param[in] name Name of the YAML configuration.
+ * If index = -1 (which is the default argument), then all configurations will be printed!
+ *
+ * @param index Index of the YAML configuration to be printed.
+ * @return std::string containing information about the task.
  */
-void AliYAMLConfiguration::PrintConfiguration(const std::string & name) const
+std::string AliYAMLConfiguration::toString(const int index) const
 {
-  PrintConfiguration(GetConfigurationIndexByName(name, fConfigurations));
+  std::stringstream tempSS;
+
+  if (index < 0) {
+    // Print header information
+    tempSS << std::boolalpha;
+    tempSS << "AliYAMLConfiguration:\n";
+    tempSS << "Initialized: " << fInitialized << "\n";
+    tempSS << "Prefix string: \"" << fPrefixString << "\"\n";
+    tempSS << "Delimiter: \"" << fDelimiter << "\"\n";
+    tempSS << "Configurations vector length: " << fConfigurations.size() << ", Configurations string vector length: " << fConfigurationsStrings.size() << "\n";
+    tempSS << "\nYAML Configurations:\n";
+
+    // Print all configurations
+    for (auto configPair : fConfigurations) {
+      PrintConfiguration(tempSS, configPair);
+    }
+  }
+  else {
+    // Print a particular configuration
+    if (static_cast<const unsigned int>(index) < fConfigurations.size()) {
+      PrintConfiguration(tempSS, fConfigurations.at(index));
+    }
+    else {
+      tempSS << "Index " << index << " is out of range!\n";
+    }
+  }
+
+  return tempSS.str();
 }
 
 /**
- * Print all configurations.
+ * Print YAML configuration information on an output stream using the string representation provided by
+ * AliYAMLConfiguration::toString(). Used by operator<<.
+ *
+ * If index = -1 (which is the default argument), then all configurations will be printed!
+ *
+ * @param in output stream stream
+ * @param index Index of the configuration to print.
+ * @return reference to the output stream
  */
-void AliYAMLConfiguration::PrintConfigurations() const
+std::ostream & AliYAMLConfiguration::Print(std::ostream & in, const int index) const {
+  in << toString(index);
+  return in;
+}
+
+/**
+ * Print YAML configuration information on an output stream using the string representation provided by
+ * AliYAMLConfiguration::toString(). Used by operator<<
+ *
+ * @param in output stream stream.
+ * @param configurationName Name of the configuration to print.
+ * @return reference to the output stream
+ */
+std::ostream & AliYAMLConfiguration::Print(std::ostream & in, const std::string & configurationName) const {
+  std::ostream & result = Print(in, GetConfigurationIndexFromName(configurationName, fConfigurations));
+  return result;
+}
+
+/**
+ * Implementation of the output stream operator for AliYAMLConfiguration. Printing
+ * basic YAML configuration information provided by the function toString()
+ *
+ * @param in output stream
+ * @param myTask Task which will be printed
+ * @return Reference to the output stream
+ */
+std::ostream & operator<<(std::ostream & in, const AliYAMLConfiguration & myTask)
 {
-  for (unsigned int i = 0; i < fConfigurations.size(); i++)
-  {
-    PrintConfiguration(i);
-  }
+  std::ostream & result = myTask.Print(in);
+  return result;
+}
+
+/**
+ * Print basic YAML configuration information using the string representation provided by
+ * AliYAMLConfiguration::toString()
+ */
+void AliYAMLConfiguration::Print(Option_t* opt) const
+{
+  AliInfoStream() << toString();
 }
 

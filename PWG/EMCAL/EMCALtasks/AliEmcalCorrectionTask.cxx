@@ -339,6 +339,7 @@ void AliEmcalCorrectionTask::RemoveDummyTask() const
     }
     // Actually remove the task
     tasks->Remove(dummyTask);
+    AliDebugStream(1) << "Removed dummy task named \"" << dummyTaskName << "\".\n";
   }
   else {
     AliErrorStream() << "Could not retrieve tasks from the analysis manager.\n";
@@ -365,17 +366,17 @@ void AliEmcalCorrectionTask::InitializeConfiguration()
   // Setup and initialize configurations
   // user is added first so that it will be checked first.
   // User file
-  bool returnValue = fYAMLConfig.AddConfiguration(fUserConfigurationFilename, "user");
-  if (returnValue) {
+  int returnValue = fYAMLConfig.AddConfiguration(fUserConfigurationFilename, "user");
+  if (returnValue >= 0) {
     AliInfoStream() << "Using user EMCal corrections configuration located at \"" << fUserConfigurationFilename << "\"\n";
   }
   else {
-    AliInfoStream() << "User file at \"" << fUserConfigurationFilename << "\" does not exist! All settings will be from the default file!";
+    AliInfoStream() << "User file at \"" << fUserConfigurationFilename << "\" does not exist! All settings will be from the default file!\n";
   }
 
   // Default file
   returnValue = fYAMLConfig.AddConfiguration(fDefaultConfigurationFilename, "default");
-  if (returnValue) {
+  if (returnValue >= 0) {
     AliInfoStream() << "Using default EMCal corrections configuration located at \"" << fDefaultConfigurationFilename << "\"\n";
   }
   else {
@@ -408,10 +409,12 @@ void AliEmcalCorrectionTask::DetermineComponentsToExecute(std::vector <std::stri
   // Possible components to create from both the user and default configurations
   // Use set so that the possible components are not repeated
   std::set <std::string> possibleComponents;
-  for (auto node : fYAMLConfig.GetConfiguration("user").second) {
-    possibleComponents.insert(node.first.as<std::string>());
+  if (fYAMLConfig.DoesConfigurationExist("user")) {
+    for (const auto node : fYAMLConfig.GetConfiguration("user").second) {
+      possibleComponents.insert(node.first.as<std::string>());
+    }
   }
-  for (auto node : fYAMLConfig.GetConfiguration("default").second) {
+  for (const auto node : fYAMLConfig.GetConfiguration("default").second) {
     possibleComponents.insert(node.first.as<std::string>());
   }
 
@@ -1344,13 +1347,19 @@ Bool_t AliEmcalCorrectionTask::UserNotify()
  * @param in Stream to which the configuration string should be added
  * @param userConfig True if the user configuration should be printed
  */
-std::ostream & AliEmcalCorrectionTask::PrintConfigurationString(std::ostream & in, bool userConfig) const
+std::ostream & AliEmcalCorrectionTask::PrintConfiguration(std::ostream & in, bool userConfig) const
 {
-  auto configPair = fYAMLConfig.GetConfiguration(userConfig ? "user" : "default");
-  if (configPair.second.IsNull() == true) {
-    AliWarning(TString::Format("%s configuration is empty!", configPair.first.c_str()));
+  std::string configurationName = userConfig ? "user" : "default";
+  if (fYAMLConfig.DoesConfigurationExist(configurationName)) {
+    auto configPair = fYAMLConfig.GetConfiguration(configurationName);
+    if (configPair.second.IsNull() == true) {
+      AliWarning(TString::Format("%s configuration is empty!", configPair.first.c_str()));
+    }
+    in << configPair.second;
   }
-  in << configPair.second;
+  else {
+    in << "Configuration \"" << configurationName << "\" does not exist!\n";
+  }
 
   return in;
 }
@@ -1364,74 +1373,31 @@ std::ostream & AliEmcalCorrectionTask::PrintConfigurationString(std::ostream & i
  */
 bool AliEmcalCorrectionTask::WriteConfigurationFile(std::string filename, bool userConfig) const
 {
-  bool returnValue = false;
-  if (filename != "")
-  {
-    if (fConfigurationInitialized == true)
-    {
-      std::ofstream outFile(filename);
-      PrintConfigurationString(outFile, userConfig);
-      outFile.close();
-
-      returnValue = true;
-    }
-    else
-    {
-      AliError(TString::Format("Configuration not properly initialized! Cannot print %s configuration!", userConfig ? "user" : "default"));
-    }
-
-  }
-  else
-  {
-    AliError("Please pass a valid filename instead of empty quotes!");
-  }
-  return returnValue;
+  return fYAMLConfig.WriteConfiguration(filename, userConfig ? "user" : "default");
 }
 
 /**
- * Compare the passed YAML configuration to the stored YAML configuration.
+ * Compare the passed YAML configuration to the stored YAML configuration. Note that this function
+ * is not const as the passed filename is briefly added and removed to the configuration.
  *
  * @param filename The filename of the YAML configuration to compare
  * @param userConfig True to compare against the user configuration
  * @return True when the passed YAML configuration is the same as the stored YAML configuration
  */
-bool AliEmcalCorrectionTask::CompareToStoredConfiguration(std::string filename, bool userConfig) const
+bool AliEmcalCorrectionTask::CompareToStoredConfiguration(std::string filename, bool userConfig)
 {
-  bool returnValue = false;
-  if (filename != "")
-  {
-    if (fConfigurationInitialized == true)
-    {
-      // Generate YAML nodes for the comparison
-      YAML::Node passedNode = YAML::LoadFile(filename);
-      auto configPair = fYAMLConfig.GetConfiguration(userConfig ? "user" : "default");
+  // Setup
+  // It's important to reinitialize the configuration so the YAML nodes are defined!
+  fYAMLConfig.Reinitialize();
+  std::string tempConfigName = "tempConfig";
+  fYAMLConfig.AddConfiguration(filename, tempConfigName);
 
-      // Need to stream the configuration back to a string to remove the comments
-      // since they are not preserved in the YAML node.
-      std::stringstream passedNodeSS;
-      passedNodeSS << passedNode;
-      std::stringstream comparisonNodeSS;
-      comparisonNodeSS << configPair.second;
+  // Compare
+  bool returnValue = fYAMLConfig.CompareConfigurations(tempConfigName, userConfig ? "user" : "default");
 
-      // Compare the nodes. Make the comparison as strings, as the YAML nodes do _not_ match,
-      // despite the strings matching. In fact, the YAML nodes will _not_ match even if they
-      // are generated from the same string....
-      if (passedNodeSS.str() == comparisonNodeSS.str()) {
-        returnValue = true;
-      }
-      else {
-        AliWarningStream() << "Passed YAML config:\n" << passedNode << "\n\nStored YAML config:\n" << configPair.second << "\nPassed config located in file \"" << filename << "\" is not the same as the stored " << configPair.first << "configuration file! YAML configurations printed above.\n";
-      }
-    }
-    else
-    {
-      AliError(TString::Format("Configuration not properly initialized! Cannot compare %s configuration!", userConfig ? "user" : "default"));
-    }
-  }
-  else
-  {
-    AliError("Please pass a valid filename instead of empty quotes!");
-  }
+  // Cleanup
+  fYAMLConfig.RemoveConfiguration(tempConfigName);
+
   return returnValue;
 }
 
@@ -1602,21 +1568,24 @@ void AliEmcalCorrectionTask::PrintRequestedContainersInformation(AliEmcalContain
  */
 void AliEmcalCorrectionTask::GetPropertyNamesFromNode(const std::string configurationName, const std::string componentName, std::set <std::string> & propertyNames, const bool nodeRequired)
 {
-  auto configPair = fYAMLConfig.GetConfiguration(configurationName);
-  if (configPair.second[componentName])
-  {
-    for (auto propertyName : configPair.second[componentName])
+  bool retrievedPropertyNames = false;
+  if (fYAMLConfig.DoesConfigurationExist(configurationName)) {
+    auto configPair = fYAMLConfig.GetConfiguration(configurationName);
+    if (configPair.second[componentName])
     {
-      propertyNames.insert(propertyName.first.as<std::string>());
+      for (auto propertyName : configPair.second[componentName])
+      {
+        propertyNames.insert(propertyName.first.as<std::string>());
+      }
+      retrievedPropertyNames = true;
     }
   }
-  else {
-    if (nodeRequired) {
-      std::stringstream message;
-      message << "Failed to retrieve required property \""
-          << componentName << "\" from the \"" << configurationName << "\" configuration!" << std::endl;
-      AliFatal(message.str().c_str());
-    }
+
+  if (retrievedPropertyNames && nodeRequired) {
+    std::stringstream message;
+    message << "Failed to retrieve required property \""
+        << componentName << "\" from the \"" << configurationName << "\" configuration!" << std::endl;
+    AliFatal(message.str().c_str());
   }
 }
 
@@ -1774,9 +1743,9 @@ std::string AliEmcalCorrectionTask::toString(bool includeYAMLConfigurationInfo) 
 
   if (includeYAMLConfigurationInfo == true) {
     tempSS << "\nUser Configuration:\n";
-    PrintConfigurationString(tempSS, true);
+    PrintConfiguration(tempSS, true);
     tempSS << "\n\nDefault Configuration:\n";
-    PrintConfigurationString(tempSS);
+    PrintConfiguration(tempSS);
     tempSS << "\n";
   }
 
