@@ -46,7 +46,7 @@ class AliAnalysisTaskLMeeCocktailMC : public AliAnalysisTaskSE {
     Int_t*                fParticleList;              // array with particle Pdg values
     TString*              fParticleListNames;         // array with particle names
 
-    const Int_t nInputParticles = 14;
+    static const Int_t nInputParticles = 14;
 
     // Event histograms
     TH1F*                 fHistNEvents;               // number of events histo
@@ -60,7 +60,7 @@ class AliAnalysisTaskLMeeCocktailMC : public AliAnalysisTaskSE {
 
     // DCA input templates:
     TH1F** fh_DCAtemplates;
-    const Int_t nbDCAtemplate = 6;
+    static const Int_t nbDCAtemplate = 6;
 
     //VPH histogram (pT) and function (mass)
     TF1* ffVPHpT;
