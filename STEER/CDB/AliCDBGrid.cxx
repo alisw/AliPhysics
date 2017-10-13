@@ -41,6 +41,8 @@
 
 ClassImp(AliCDBGrid)
 
+Bool_t AliCDBGrid::fgForbidGRPOverride = kTRUE;
+
 //_____________________________________________________________________________
 AliCDBGrid::AliCDBGrid(const char *gridUrl, const char *user, const char *dbFolder,
     const char *se, const char* cacheFolder, Bool_t operateDisconnected,
@@ -343,8 +345,13 @@ Bool_t AliCDBGrid::PrepareId(AliCDBId& id) {
   // GRP entries with explicitly set version escape default incremental versioning
   if(id.GetPath().Contains("GRP") && id.HasVersion() && lastVersion!=0)
   {
-    AliDebug(5,Form("Entry %s won't be put in the destination OCDB", id.ToString().Data()));
-    return kFALSE;
+    if (GetForbidGRPOverride()) {
+      AliDebug(5,Form("Entry %s won't be put in the destination OCDB", id.ToString().Data()));
+      return kFALSE;
+    }
+    else {
+      AliInfo("ATTENTION: Interdiction to override GRP* objects was explicitly disabled");
+    }
   }
 
   id.SetVersion(lastVersion + 1);
