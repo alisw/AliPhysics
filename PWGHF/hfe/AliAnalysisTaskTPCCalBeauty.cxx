@@ -1,5 +1,5 @@
 //
-//  AliAnalysisTaskTPCCalBeautyTest.cxx
+//  AliAnalysisTaskTPCCalBeauty.cxx
 //  
 //
 //  Created by Erin Gauger
@@ -17,7 +17,7 @@
 #include "AliAODInputHandler.h"
 #include "AliAODHandler.h"
 #include "AliPIDResponse.h"
-#include "AliAnalysisTaskTPCCalBeautyTest.h"
+#include "AliAnalysisTaskTPCCalBeauty.h"
 #include "AliKFParticle.h"
 #include "AliAODMCParticle.h"
 #include "AliGenHijingEventHeader.h"
@@ -26,13 +26,13 @@
 #include "AliMultSelection.h"
 #include "AliCentrality.h"
 
-class AliAnalysisTaskTPCCalBeautyTest;
+class AliAnalysisTaskTPCCalBeauty;
 
 using namespace std;
 
-ClassImp(AliAnalysisTaskTPCCalBeautyTest)
+ClassImp(AliAnalysisTaskTPCCalBeauty)
 
-AliAnalysisTaskTPCCalBeautyTest::AliAnalysisTaskTPCCalBeautyTest() :
+AliAnalysisTaskTPCCalBeauty::AliAnalysisTaskTPCCalBeauty() :
     AliAnalysisTaskSE(),
     fAOD(0),
     fMCHeader(0),
@@ -111,7 +111,7 @@ AliAnalysisTaskTPCCalBeautyTest::AliAnalysisTaskTPCCalBeautyTest() :
     //Root IO constructor, don't allocate memory here
 }
 //_____________________________________________________________________
-AliAnalysisTaskTPCCalBeautyTest::AliAnalysisTaskTPCCalBeautyTest(const char *name) :
+AliAnalysisTaskTPCCalBeauty::AliAnalysisTaskTPCCalBeauty(const char *name) :
     AliAnalysisTaskSE(name),
     fAOD(0),
     fMCHeader(0),
@@ -190,7 +190,7 @@ AliAnalysisTaskTPCCalBeautyTest::AliAnalysisTaskTPCCalBeautyTest(const char *nam
     DefineOutput(1, TList::Class());
 }
 //_____________________________________________________________________________
-AliAnalysisTaskTPCCalBeautyTest::~AliAnalysisTaskTPCCalBeautyTest()
+AliAnalysisTaskTPCCalBeauty::~AliAnalysisTaskTPCCalBeauty()
 {
     // destructor
     if(fOutputList) {
@@ -198,7 +198,7 @@ AliAnalysisTaskTPCCalBeautyTest::~AliAnalysisTaskTPCCalBeautyTest()
     }
 }
 //_____________________________________________________________________
-void AliAnalysisTaskTPCCalBeautyTest::UserCreateOutputObjects()
+void AliAnalysisTaskTPCCalBeauty::UserCreateOutputObjects()
 {
     //Weights for pho reco?
     
@@ -387,7 +387,7 @@ void AliAnalysisTaskTPCCalBeautyTest::UserCreateOutputObjects()
     PostData(1, fOutputList);
 }
 //_____________________________________________________________________
-void AliAnalysisTaskTPCCalBeautyTest::UserExec(Option_t*)
+void AliAnalysisTaskTPCCalBeauty::UserExec(Option_t*)
 {
     // Get AOD event from the analysis manager
     fAOD = dynamic_cast<AliAODEvent*>(InputEvent());
@@ -799,7 +799,7 @@ void AliAnalysisTaskTPCCalBeautyTest::UserExec(Option_t*)
     PostData(1,fOutputList);
 }
 //___________________________________________
-Double_t AliAnalysisTaskTPCCalBeautyTest::CheckCentrality(AliAODEvent* fAOD, Bool_t &centralitypass)
+Double_t AliAnalysisTaskTPCCalBeauty::CheckCentrality(AliAODEvent* fAOD, Bool_t &centralitypass)
 {
     //check centrality, Run 2
     if(fAOD)fMultSelection = (AliMultSelection * ) fAOD->FindListObject("MultSelection");
@@ -827,7 +827,7 @@ Double_t AliAnalysisTaskTPCCalBeautyTest::CheckCentrality(AliAODEvent* fAOD, Boo
     return fCentrality;
 }
 //_________________________________________________________________
-Bool_t AliAnalysisTaskTPCCalBeautyTest::GetNMCPartProduced()
+Bool_t AliAnalysisTaskTPCCalBeauty::GetNMCPartProduced()
 {
     //Get number of MC particles produced by generators.
     
@@ -870,7 +870,7 @@ Bool_t AliAnalysisTaskTPCCalBeautyTest::GetNMCPartProduced()
     return kTRUE;
 }
 //_________________________________________
-void AliAnalysisTaskTPCCalBeautyTest::GetPi0EtaWeight(THnSparse *SparseWeight)
+void AliAnalysisTaskTPCCalBeauty::GetPi0EtaWeight(THnSparse *SparseWeight)
 {
     //Get pi0 and eta information for weight calculation
     
@@ -907,7 +907,7 @@ void AliAnalysisTaskTPCCalBeautyTest::GetPi0EtaWeight(THnSparse *SparseWeight)
     }
 }
 //________________________________________________________________________
-void AliAnalysisTaskTPCCalBeautyTest::GetTrkClsEtaPhiDiff(AliVTrack *t, AliVCluster *v, Double_t &phidiff, Double_t &etadiff)
+void AliAnalysisTaskTPCCalBeauty::GetTrkClsEtaPhiDiff(AliVTrack *t, AliVCluster *v, Double_t &phidiff, Double_t &etadiff)
 {
     // Calculate phi and eta difference between a track and a cluster. The position of the track is obtained on the EMCAL surface
 
@@ -928,7 +928,7 @@ void AliAnalysisTaskTPCCalBeautyTest::GetTrkClsEtaPhiDiff(AliVTrack *t, AliVClus
     phidiff=TVector2::Phi_mpi_pi(vphi-cphi);
 }
 //________________________________________________________________________
-void AliAnalysisTaskTPCCalBeautyTest::FindMother(AliAODMCParticle* part, Int_t &fpidSort, Bool_t &kEmbEta, Bool_t &kEmbPi0, Bool_t &kHijing, Double_t &momPt)
+void AliAnalysisTaskTPCCalBeauty::FindMother(AliAODMCParticle* part, Int_t &fpidSort, Bool_t &kEmbEta, Bool_t &kEmbPi0, Bool_t &kHijing, Double_t &momPt)
 {
     //gets the pid of mother track
     
@@ -1038,7 +1038,7 @@ void AliAnalysisTaskTPCCalBeautyTest::FindMother(AliAODMCParticle* part, Int_t &
 }
 
 //________________________________________________________________________
-void AliAnalysisTaskTPCCalBeautyTest::InvMassCheck(int itrack, AliVTrack *track, Double_t *d0z0, Int_t MagSign)
+void AliAnalysisTaskTPCCalBeauty::InvMassCheck(int itrack, AliVTrack *track, Double_t *d0z0, Int_t MagSign)
 {
     // Flags photonic electrons with inv mass cut
     
@@ -1114,7 +1114,7 @@ void AliAnalysisTaskTPCCalBeautyTest::InvMassCheck(int itrack, AliVTrack *track,
     fPhotonicElecYield->Fill(track->Pt(),Nuls-Nls);
 }
 //_____________________________________________________________________
-void AliAnalysisTaskTPCCalBeautyTest::Terminate(Option_t *)
+void AliAnalysisTaskTPCCalBeauty::Terminate(Option_t *)
 {
     // terminate
 }

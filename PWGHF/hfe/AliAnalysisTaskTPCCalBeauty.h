@@ -1,13 +1,13 @@
 //
-//  AliAnalysisTaskTPCCalBeautyTest.h
+//  AliAnalysisTaskTPCCalBeauty.h
 //  
 //
 //  Created by Erin Gauger
 //
 //
 
-#ifndef AliAnalysisTaskTPCCalBeautyTest_cxx
-#define AliAnalysisTaskTPCCalBeautyTest_cxx
+#ifndef AliAnalysisTaskTPCCalBeauty_cxx
+#define AliAnalysisTaskTPCCalBeauty_cxx
 
 #include "AliAnalysisTaskSE.h"
 #include "AliCentrality.h"
@@ -19,14 +19,14 @@ class AliMultSelection;
 class AliAODMCParticle;
 class AliAODMCHeader;
 
-class AliAnalysisTaskTPCCalBeautyTest : public AliAnalysisTaskSE
+class AliAnalysisTaskTPCCalBeauty : public AliAnalysisTaskSE
 {
     public:
         //two class constructors
-                        AliAnalysisTaskTPCCalBeautyTest();
-                        AliAnalysisTaskTPCCalBeautyTest(const char *name);
+                        AliAnalysisTaskTPCCalBeauty();
+                        AliAnalysisTaskTPCCalBeauty(const char *name);
         //class destructor
-        virtual         ~AliAnalysisTaskTPCCalBeautyTest();
+        virtual         ~AliAnalysisTaskTPCCalBeauty();
         //called once at beginning of runtime
         virtual void    UserCreateOutputObjects();
         //called for each event
@@ -136,9 +136,9 @@ class AliAnalysisTaskTPCCalBeautyTest : public AliAnalysisTaskSE
         //THnSparse           *fElectronSprs;  //! Sparse with electron cut parameters
         //Double_t            *fvalueElectron; //! Electron info
     
-    AliAnalysisTaskTPCCalBeautyTest(const AliAnalysisTaskTPCCalBeautyTest&); // not implemented???
-    AliAnalysisTaskTPCCalBeautyTest& operator=(const AliAnalysisTaskTPCCalBeautyTest&); // not implemented???
-    ClassDef(AliAnalysisTaskTPCCalBeautyTest, 1);
+    AliAnalysisTaskTPCCalBeauty(const AliAnalysisTaskTPCCalBeauty&); // not implemented???
+    AliAnalysisTaskTPCCalBeauty& operator=(const AliAnalysisTaskTPCCalBeauty&); // not implemented???
+    ClassDef(AliAnalysisTaskTPCCalBeauty, 1);
 };
 
 #endif

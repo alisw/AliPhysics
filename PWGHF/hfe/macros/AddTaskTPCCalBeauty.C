@@ -6,7 +6,7 @@
 ///////////////////////////////////////////////////////////////////
 class AliAnalysisDataContainer;
 
-AliAnalysisTask* AddTaskTPCCalBeautyTest(Double_t centMin=0, Double_t centMax=10, TString ContNameExt = " ")
+AliAnalysisTask* AddTaskTPCCalBeauty(Double_t centMin=0, Double_t centMax=10, TString ContNameExt = " ")
 {
     // get the manager via the static access member
     AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -34,7 +34,7 @@ AliAnalysisTask* AddTaskTPCCalBeautyTest(Double_t centMin=0, Double_t centMax=10
 
     //FOR EMCAL CLUSTERS.......................................................................
     
-    AliAnalysisTaskTPCCalBeautyTest* taskBFEemc = new AliAnalysisTaskTPCCalBeautyTest("bfeemc");
+    AliAnalysisTaskTPCCalBeauty* taskBFEemc = new AliAnalysisTaskTPCCalBeauty("bfeemc");
     if(!taskBFEemc) return 0x0;
     // add your task to the manager
     mgr->AddTask(taskBFEemc);
@@ -61,7 +61,7 @@ AliAnalysisTask* AddTaskTPCCalBeautyTest(Double_t centMin=0, Double_t centMax=10
     
     //FOR DCAL CLUSTERS....................................................................
     
-    AliAnalysisTaskTPCCalBeautyTest* taskBFEdc = new AliAnalysisTaskTPCCalBeautyTest("bfedc");
+    AliAnalysisTaskTPCCalBeauty* taskBFEdc = new AliAnalysisTaskTPCCalBeauty("bfedc");
     if(!taskBFEdc) return 0x0;
     // add your task to the manager
     mgr->AddTask(taskBFEdc);
@@ -90,7 +90,7 @@ AliAnalysisTask* AddTaskTPCCalBeautyTest(Double_t centMin=0, Double_t centMax=10
     //////////
     //  MB  //
     //////////
-    AliAnalysisTaskTPCCalBeautyTest* taskBFEmb = new AliAnalysisTaskTPCCalBeautyTest("bfemb");
+    AliAnalysisTaskTPCCalBeauty* taskBFEmb = new AliAnalysisTaskTPCCalBeauty("bfemb");
     if(!taskBFEmb) return 0x0;
     // add your task to the manager
     mgr->AddTask(taskBFEmb);
@@ -117,7 +117,7 @@ AliAnalysisTask* AddTaskTPCCalBeautyTest(Double_t centMin=0, Double_t centMax=10
     //EMCAL TRIGGERED, EMCAL CLUSTERS.........................................................
 
     
-    AliAnalysisTaskTPCCalBeautyTest* taskBFEeg01emc = new AliAnalysisTaskTPCCalBeautyTest("bfeeg01emc");
+    AliAnalysisTaskTPCCalBeauty* taskBFEeg01emc = new AliAnalysisTaskTPCCalBeauty("bfeeg01emc");
     if(!taskBFEeg01emc) return 0x0;
     // add your task to the manager
     mgr->AddTask(taskBFEeg01emc);
@@ -145,7 +145,7 @@ AliAnalysisTask* AddTaskTPCCalBeautyTest(Double_t centMin=0, Double_t centMax=10
     
     //EMCAL TRIGGERED, DCAL CLUSTERS..........................................................
     
-    /*AliAnalysisTaskTPCCalBeautyTest* taskBFEeg01dc = new AliAnalysisTaskTPCCalBeautyTest("bfeeg01dc");
+    /*AliAnalysisTaskTPCCalBeauty* taskBFEeg01dc = new AliAnalysisTaskTPCCalBeauty("bfeeg01dc");
     if(!taskBFEeg01dc) return 0x0;
     // add your task to the manager
     mgr->AddTask(taskBFEeg01dc);
@@ -167,7 +167,7 @@ AliAnalysisTask* AddTaskTPCCalBeautyTest(Double_t centMin=0, Double_t centMax=10
 
     //DCAL TRIGGERED, EMCAL CLUSTERS.........................................................
     
-    AliAnalysisTaskTPCCalBeautyTest* taskBFEdg01emc = new AliAnalysisTaskTPCCalBeautyTest("bfedg01emc");
+    AliAnalysisTaskTPCCalBeauty* taskBFEdg01emc = new AliAnalysisTaskTPCCalBeauty("bfedg01emc");
     if(!taskBFEdg01emc) return 0x0;
     // add your task to the manager
     mgr->AddTask(taskBFEdg01emc);
@@ -190,7 +190,7 @@ AliAnalysisTask* AddTaskTPCCalBeautyTest(Double_t centMin=0, Double_t centMax=10
     
     //DCAL TRIGGERED, DCAL CLUSTERS............................................................
     
-    AliAnalysisTaskTPCCalBeautyTest* taskBFEdg01dc = new AliAnalysisTaskTPCCalBeautyTest("bfedg01dc");
+    AliAnalysisTaskTPCCalBeauty* taskBFEdg01dc = new AliAnalysisTaskTPCCalBeauty("bfedg01dc");
     if(!taskBFEdg01dc) return 0x0;
     // add your task to the manager
     mgr->AddTask(taskBFEdg01dc);
