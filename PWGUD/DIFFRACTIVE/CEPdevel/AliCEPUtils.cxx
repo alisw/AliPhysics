@@ -958,7 +958,19 @@ Int_t AliCEPUtils::AnalyzeTracks(AliESDEvent* fESDEvent,
       if (cut->AcceptTrack(track))
         trackstat |= AliCEPBase::kTTAccITSSA;
     }
+    
+    // accepted by standard TPCOnly cuts
+    cut = AliESDtrackCuts::GetStandardTPCOnlyTrackCuts();
+    if (cut) {
+      if (cut->AcceptTrack(track))
+        trackstat |= AliCEPBase::kTTAccTPCOnly;
+    }
 
+    // has at least one SPD hit
+    if (track->HasPointOnITSLayer(0) || track->HasPointOnITSLayer(1))
+      trackstat |= AliCEPBase::kTTSPDHit;
+    
+    
     // FiredChips test
     // test whether both modules associated with the track are modules
     // with fired chips
