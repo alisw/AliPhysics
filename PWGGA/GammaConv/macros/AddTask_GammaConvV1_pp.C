@@ -762,6 +762,10 @@ void AddTask_GammaConvV1_pp(  Int_t   trainConfig                     = 1,      
     cuts.AddCut("00010113", "00200009266300008854404000", "0152103500000000"); // Min Bias                
     cuts.AddCut("00010113", "00200009266300008854404000", "0152101500000000"); // alpha pT dependent and gamma asym cut
     cuts.AddCut("00010113", "00200009266300008284404000", "0152101500000000"); // alpha pT dependent and gamma asym cut , chi2 30
+  } else if (trainConfig == 306) { // to be used with MBW  
+    cuts.AddCut("00010113", "00200009266300008854404000", "0152103500000000"); // Min Bias                
+    cuts.AddCut("00010113", "00200009266300008854404000", "0152101500000000"); // alpha pT dependent and gamma asym cut
+    cuts.AddCut("00010113", "00200009266300008284404000", "0152101500000000"); // alpha pT dependent and gamma asym cut , chi2 30
 
   } else if (trainConfig == 310) {  
     cuts.AddCut("00010113", "00200009327302002280004000", "0152103500000000"); // Min Bias
