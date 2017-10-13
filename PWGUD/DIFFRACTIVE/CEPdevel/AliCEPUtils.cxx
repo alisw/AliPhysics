@@ -585,7 +585,7 @@ void AliCEPUtils::SPDVtxAnalysis (
 }
 
 //------------------------------------------------------------------------------
-// This function compiles parameters which are relevant fpr the
+// This function compiles parameters which are relevant for the
 // number-of-SPD-clusters-vs-number-of-tracklets BG rejection
 // see e.g. AliAnalysisUtils::IsSPDClusterVsTrackletBG
 // histograms include (see AliCEPUtils::GetnClunTraQAHists)
@@ -958,7 +958,19 @@ Int_t AliCEPUtils::AnalyzeTracks(AliESDEvent* fESDEvent,
       if (cut->AcceptTrack(track))
         trackstat |= AliCEPBase::kTTAccITSSA;
     }
+    
+    // accepted by standard TPCOnly cuts
+    cut = AliESDtrackCuts::GetStandardTPCOnlyTrackCuts();
+    if (cut) {
+      if (cut->AcceptTrack(track))
+        trackstat |= AliCEPBase::kTTAccTPCOnly;
+    }
 
+    // has at least one SPD hit
+    if (track->HasPointOnITSLayer(0) || track->HasPointOnITSLayer(1))
+      trackstat |= AliCEPBase::kTTSPDHit;
+    
+    
     // FiredChips test
     // test whether both modules associated with the track are modules
     // with fired chips
@@ -1489,7 +1501,7 @@ void AliCEPUtils::InitTrackCuts(Bool_t IsRun1, Int_t clusterCut)
   // to study V0s this needs be set to kFALSE
   Bool_t  selPrimaries = kFALSE;
 
-  // Run2
+  // Run1
   if (IsRun1) {
 
     // ITS+TPC

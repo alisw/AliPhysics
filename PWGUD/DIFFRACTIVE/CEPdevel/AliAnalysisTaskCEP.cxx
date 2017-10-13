@@ -623,13 +623,14 @@ void AliAnalysisTaskCEP::UserExec(Option_t *)
   if (flVtx) {
     fCEPUtil->VtxAnalysis(fEvent,flVtx);
   }
-     
+  
   // count number of recorded triggers
   // CINT11-B-NOPF-CENTNOTRD, DG trigger has to be replaied, LHC16[d,e,h]
   // CCUP2-B-SPD1-CENTNOTRD, DG trigger has to be replaied, LHC16[h,i,j]
-  // CCUP13-B-SPD1-CENTNOTRD = DG trigger, LHC16[k,l,o,p], LHC17[g,h,i,j,k,l]
-  // CCUP25-B-SPD1-CENTNOTRD = DG trigger, LHC17[g,h,i,j,k,l]
+  // CCUP13-B-SPD1-CENTNOTRD = DG trigger, LHC16[k,l,o,p], LHC17[f,h,i,k,l]
+  // CCUP25-B-SPD1-CENTNOTRD = DG trigger, LHC17[f,h,i,k,l]
   TString firedTriggerClasses = fEvent->GetFiredTriggerClasses();
+  
   if (firedTriggerClasses.Contains("CINT11-B-NOPF-CENTNOTRD"))
     ((TH1F*)flQArnum->At(1))->Fill(fRun);
   if (firedTriggerClasses.Contains("CCUP2-B-SPD1-CENTNOTRD"))
@@ -673,6 +674,10 @@ void AliAnalysisTaskCEP::UserExec(Option_t *)
   
   } else {
   
+    // LHC2010 data
+    // there is no DG trigger
+    
+    // LHC2016 and LHC2017 data
     if (firedTriggerClasses.Contains("CCUP13-B-SPD1-CENTNOTRD") ||
       firedTriggerClasses.Contains("CCUP25-B-SPD1-CENTNOTRD") ) {
       isDGTrigger = kTRUE;
@@ -681,6 +686,7 @@ void AliAnalysisTaskCEP::UserExec(Option_t *)
       if (flBBFlag)
         fCEPUtil->BBFlagAnalysis(fEvent,flBBFlag);
     }
+    
   }
   if (isDGTrigger)
     fhStatsFlow->Fill(AliCEPBase::kBinDGTrigger);
@@ -696,6 +702,19 @@ void AliAnalysisTaskCEP::UserExec(Option_t *)
   // number of tracklets
   Int_t nTracklets = mult->GetNumberOfTracklets();
   
+  // get the number of fired FastOR trigger chips
+  Short_t nFiredChips[4] = {0};
+  nFiredChips[0] = mult->GetNumberOfFiredChips(0);
+  nFiredChips[1] = mult->GetNumberOfFiredChips(1);
+  for (Int_t ii=0;    ii<400; ii++) nFiredChips[2] += foMap[ii]>0 ? 1 : 0;
+  for (Int_t ii=400; ii<1200; ii++) nFiredChips[3] += foMap[ii]>0 ? 1 : 0;
+  
+  // if (firedTriggerClasses.Contains("CCUP13-B-SPD1-CENTNOTRD")) {
+  //   printf("Triggers: %s\n",firedTriggerClasses.Data());
+  //   printf("Number of SPD chips: %i %i / %i %i\n",
+  //     nFiredChips[0],nFiredChips[1],nFiredChips[2],nFiredChips[3]);
+  // }
+         
   // get trigger information using AliTriggerAnalysis.IsOfflineTriggerFired
   // kSPDGFOBits: SPD (any fired chip)
   // kV0A, kV0C: V0
@@ -780,11 +799,33 @@ void AliAnalysisTaskCEP::UserExec(Option_t *)
   if (fCEPUtil->checkstatus(fAnalysisStatus,
     AliCEPBase::kBitTrackCutStudy,AliCEPBase::kBitTrackCutStudy)) {
     Int_t nTracksTotal = fESDEvent->GetNumberOfTracks();
+    Int_t ntrkwSPDHit = 0;
     Int_t nTracksTPCITS = 0;
     for (Int_t ii = 0; ii < nTracksTotal; ii++) {
       AliESDtrack *track = fESDEvent->GetTrack(ii);
-	  	if (track) if (fTrackCuts->AcceptTrack(track)) nTracksTPCITS++;
+	  	if (track) {
+        if (fTrackCuts->AcceptTrack(track)) nTracksTPCITS++;
+      
+        if (track->HasPointOnITSLayer(0) || track->HasPointOnITSLayer(1))
+          ntrkwSPDHit++;
+        
+        // does track have SPD hit and is bit0 set?
+        /*
+        if (firedTriggerClasses.Contains("CCUP13-B-SPD1-CENTNOTRD")) {
+          
+          printf("track %i, ITS hits on layer",ii);
+          for (Int_t jj=0; jj<6; jj++)
+            printf(" %i/%i",jj,track->HasPointOnITSLayer(jj) ? 1:0);
+          printf("\n");
+        }
+        */
+      }
 	  }
+    
+    // if (firedTriggerClasses.Contains("CCUP13-B-SPD1-CENTNOTRD"))
+    //   printf("ntrk with SPD hits (of %i trks): %i / %i\n",
+    //     nTracksTotal,nTracksTPCITS,ntrkwSPDHit);
+    
   }
   
   // get an TObjArray of tracks with the corresponding TrackStatus
@@ -957,6 +998,7 @@ void AliAnalysisTaskCEP::UserExec(Option_t *)
     fCEPEvent->SetCollissionType(fEventType);
     fCEPEvent->SetMagnField(fMagField);
     fCEPEvent->SetFiredTriggerClasses(firedTriggerClasses);
+    fCEPEvent->SetnFiredChips(nFiredChips);
     fCEPEvent->SetisSTGTriggerFired(fisSTGTriggerFired);
     fCEPEvent->SetnTOFmaxipads(fnTOFmaxipads);
     
@@ -977,7 +1019,7 @@ void AliAnalysisTaskCEP::UserExec(Option_t *)
   
     // if this is a MC event then get the MC true information
     // and save it into the event buffer
-    AliStack *stack;
+    AliStack *stack = NULL;
     if (fMCEvent) {
 	    
       // MC generator and process type
@@ -1207,7 +1249,6 @@ Bool_t AliAnalysisTaskCEP::IsSTGFired(TBits* fFOmap,Int_t dphiMin,Int_t dphiMax)
     // printf("<AliAnalysisTaskCEP::IsSTGFired> Problem with F0map - b!\n");
     return stg;
   }
-  
   
   Bool_t l0[20]={0};
   Bool_t l1[40]={0};

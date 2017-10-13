@@ -50,6 +50,8 @@ CEPEventBuffer::CEPEventBuffer()
   , fCEPTracks(new TObjArray())
 {
 
+  for (Int_t ii=0; ii<4; ii++) fFiredChips[ii] = 0;
+
 }
 
 // ----------------------------------------------------------------------------
@@ -80,6 +82,7 @@ void CEPEventBuffer::Reset()
   fCollissionType  = AliCEPBase::kBinEventUnknown;
   fMagnField       = AliCEPBase::kdumval;
   fFiredTriggerClasses = TString("");
+  for (Int_t ii=0; ii<4; ii++) fFiredChips[ii] = 0;
 
   // general event features
   fEventCutsel     = kFALSE;

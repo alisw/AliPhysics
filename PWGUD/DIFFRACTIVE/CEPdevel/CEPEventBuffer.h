@@ -32,6 +32,8 @@ class CEPEventBuffer : public TObject {
     Bool_t fPhysel;
     Bool_t fisPileup;
     Bool_t fisClusterCut;
+    Short_t fFiredChips[4];   // Number of FastOR chips in the two SPD layers
+                              // and number of offline fired chips
     Bool_t fisDGTrigger;
     Bool_t fisSTGTriggerFired;
     Int_t  fnTOFmaxipads;
@@ -76,6 +78,10 @@ class CEPEventBuffer : public TObject {
     void SetMagnField(Double_t magnf)   { fMagnField = magnf; }
     void SetFiredTriggerClasses(TString ftc)   { fFiredTriggerClasses = ftc; }
     void SetPFFlags(AliVEvent *Event);
+    void SetnFiredChips(Short_t chips[4]) {
+      fFiredChips[0]=chips[0]; fFiredChips[1]=chips[1]; 
+      fFiredChips[2]=chips[2]; fFiredChips[3]=chips[3]; 
+    }
     void SetisSTGTriggerFired(Bool_t stgtrig) { fisSTGTriggerFired = stgtrig; }
     void SetnTOFmaxipads(Int_t nmaxipads) { fnTOFmaxipads = nmaxipads; }
 
@@ -114,6 +120,8 @@ class CEPEventBuffer : public TObject {
     Bool_t* GetPFBGFlagV0() { return fPFBGFlagV0; }
     Bool_t* GetPFBBFlagAD() { return fPFBBFlagAD; }
     Bool_t* GetPFBGFlagAD() { return fPFBGFlagAD; }
+    Short_t GetnFiredChips(Int_t layer) {
+      return (layer>=0 && layer<=3) ? fFiredChips[layer] : -1; }
     Bool_t  GetisSTGTriggerFired() { return fisSTGTriggerFired; }
     Int_t   GetnTOFmaxipads() { return fnTOFmaxipads; }
 
