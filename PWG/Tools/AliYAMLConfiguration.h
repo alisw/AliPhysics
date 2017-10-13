@@ -115,6 +115,8 @@ class AliYAMLConfiguration : public TObject {
   /** @{
    * @name Get a particular configuration by index or name.
    */
+  bool DoesConfigurationExist(const int i)                                              const { return i >= 0 && i < fConfigurations.size(); }
+  bool DoesConfigurationExist(const std::string & name)                                 const { return DoesConfigurationExist(GetConfigurationIndexFromName(name, fConfigurations)); }
   const std::pair<std::string, YAML::Node> & GetConfiguration(const int i)              const { return fConfigurations.at(i); }
   const std::pair<std::string, YAML::Node> & GetConfiguration(const std::string & name) const { return GetConfiguration(GetConfigurationIndexFromName(name, fConfigurations)); }
   std::pair<std::string, YAML::Node> & GetConfiguration(const int i)                          { return fConfigurations.at(i); }
@@ -162,6 +164,15 @@ class AliYAMLConfiguration : public TObject {
    */
   bool WriteConfiguration(const std::string & filename, const unsigned int i) const;
   bool WriteConfiguration(const std::string & filename, const std::string & configurationName) const;
+  /** @} */
+
+  /** @{
+   * @name Write a particular configuration at a given index or name to a file.
+   */
+  bool CompareConfigurations(const int config1, const int config2)                     const;
+  bool CompareConfigurations(const int config1, const std::string & config2)           const { return CompareConfigurations(config1, GetConfigurationIndexFromName(config2, fConfigurations)); }
+  bool CompareConfigurations(const std::string & config1, const std::string & config2) const { return CompareConfigurations(GetConfigurationIndexFromName(config1, fConfigurations), GetConfigurationIndexFromName(config2, fConfigurations)); }
+
   /** @} */
 
   /** @{

@@ -139,6 +139,10 @@ bool AliYAMLConfiguration::WriteConfiguration(const std::string & filename, cons
   std::string localFilename = tempUUID.AsString();
   localFilename += ".yaml";
 
+  if (!DoesConfigurationExist(index)) {
+    AliWarningStream() << "Requested configuration index " << index << " does not exist - it cannot be written!\n";
+    return false;
+  }
   auto configPair = fConfigurations.at(index);
   std::ofstream outputFile(localFilename);
   outputFile << configPair.second;
@@ -164,6 +168,65 @@ bool AliYAMLConfiguration::WriteConfiguration(const std::string & filename, cons
 {
   return WriteConfiguration(filename, GetConfigurationIndexFromName(configurationName, fConfigurations));
 }
+
+/**
+ * Compare two configurations to see if they are identical.
+ *
+ * @param[in] configIndex1 Index of the first configuration.
+ * @param[in] configIndex2 Index of the second configuration.
+ *
+ * @return True if the configurations are the same.
+ */
+bool AliYAMLConfiguration::CompareConfigurations(const int configIndex1, const int configIndex2) const
+{
+  bool returnValue = false;
+
+  bool configsExist = true;
+  std::vector<const int> configs = {configIndex1, configIndex2};
+  for (auto config : configs) {
+    if (!DoesConfigurationExist(config)) {
+      AliErrorStream() << "Configuration at index " << config << " does not exist.\n";
+      configsExist = false;
+    }
+  }
+
+  if (configsExist)
+  {
+    // Generate YAML nodes for the comparison
+    auto configPair1 = GetConfiguration(configIndex1);
+    auto configPair2 = GetConfiguration(configIndex2);
+
+    // Need to stream the configuration back to a string to remove the comments
+    // since they are not preserved in the YAML node.
+    std::stringstream config1SS;
+    config1SS << configPair1.second;
+    std::stringstream config2SS;
+    config2SS << configPair2.second;
+
+    // Compare the nodes. Make the comparison as strings, as the YAML nodes do _not_ match,
+    // despite the strings matching. In fact, the YAML nodes will _not_ match even if they
+    // are generated from the same string....
+    if (config1SS.str() == config2SS.str()) {
+      returnValue = true;
+    }
+    else {
+      // Already should be the case, but just to be explicit.
+      returnValue = false;
+
+      // Inform the user about the details of the mismatch
+      std::stringstream errorMessageSS;
+      errorMessageSS << "Configuration mismatch between configuration at index " << configIndex1 << " and at index " << configIndex2 << "\n";
+      errorMessageSS << "Config 1:\n";
+      Print(errorMessageSS, configIndex1);
+      errorMessageSS << "Config 2:\n";
+      Print(errorMessageSS, configIndex2);
+      AliWarningStream() << errorMessageSS.str();
+    }
+  }
+
+  return returnValue;
+}
+
 
 /**
  * Checks if a file exists. This is done inline to make it efficient.
