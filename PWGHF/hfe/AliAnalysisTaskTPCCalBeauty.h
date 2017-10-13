@@ -1,30 +1,32 @@
 //
-//  AliAnalysisTaskTPCCalBeauty.h
+//  AliAnalysisTaskTPCCalBeautyTest.h
 //  
 //
 //  Created by Erin Gauger
 //
 //
 
-#ifndef AliAnalysisTaskTPCCalBeauty_cxx
-#define AliAnalysisTaskTPCCalBeauty_cxx
+#ifndef AliAnalysisTaskTPCCalBeautyTest_cxx
+#define AliAnalysisTaskTPCCalBeautyTest_cxx
 
 #include "AliAnalysisTaskSE.h"
-//#include "AliCentrality.h"
+#include "AliCentrality.h"
 //#include "AliSelectNonHFE.h"
+#include "AliAODMCParticle.h"
 
 class THnSparse;
 class AliMultSelection;
 class AliAODMCParticle;
+class AliAODMCHeader;
 
-class AliAnalysisTaskTPCCalBeauty : public AliAnalysisTaskSE
+class AliAnalysisTaskTPCCalBeautyTest : public AliAnalysisTaskSE
 {
     public:
         //two class constructors
-                        AliAnalysisTaskTPCCalBeauty();
-                        AliAnalysisTaskTPCCalBeauty(const char *name);
+                        AliAnalysisTaskTPCCalBeautyTest();
+                        AliAnalysisTaskTPCCalBeautyTest(const char *name);
         //class destructor
-        virtual         ~AliAnalysisTaskTPCCalBeauty();
+        virtual         ~AliAnalysisTaskTPCCalBeautyTest();
         //called once at beginning of runtime
         virtual void    UserCreateOutputObjects();
         //called for each event
@@ -46,13 +48,16 @@ class AliAnalysisTaskTPCCalBeauty : public AliAnalysisTaskSE
         void            SetCentralitySelection(Double_t centMin, Double_t centMax){fCentralityMin = centMin; fCentralityMax = centMax;};
         Double_t        CheckCentrality(AliAODEvent* fAOD, Bool_t &centralitypass);
     
+        Bool_t          GetNMCPartProduced();
+        void            GetPi0EtaWeight(THnSparse *SparseWeight);
+
         void            GetTrkClsEtaPhiDiff(AliVTrack *t, AliVCluster *v, Double_t &phidiff, Double_t &etadiff);
-        void            FindMother(AliAODMCParticle* part, int &ilabelM, int &pidM, Int_t &fpidSort);
-        void            FindMother2(AliAODMCParticle* part, int &ilabelM, int &pidM, Int_t &fpidSort);
+        void            FindMother(AliAODMCParticle* part, Int_t &fpidSort, Bool_t &kEmbEta, Bool_t &kEmbPi0, Bool_t &kHijing, Double_t &momPt);
         void            InvMassCheck(int itrack, AliVTrack *track, Double_t *d0z0, Int_t MagSign);
     
     private:
         AliAODEvent         *fAOD;           //! input event
+        AliAODMCHeader      *fMCHeader;      //!
         TClonesArray        *fMCarray;       //! MC array
         AliAODMCParticle    *fMCparticle;    //! MC particle
         AliPIDResponse      *fpidResponse;   //! pid response
@@ -92,17 +97,48 @@ class AliAnalysisTaskTPCCalBeauty : public AliAnalysisTaskSE
         TH1F                *fCentCheck;     //! event centrality
         TH1F                *fTrigCheck;     //! checking trigger used
         TH2F                *fEMCTrkMatch;   //! plots distance of cluster from closest track
+    
         TH1F                *fInvmassLS;     //! Plots LS mass dist
         TH1F                *fInvmassULS;    //! Plots ULS mass dist
         TH1F                *fPhotonicElecYield; //! Photonic electron yield vs. pT
         TH2F                *fULSdcaBelow;   //! ULS electron DCA vs. pT, m<0.1
         TH2F                *fLSdcaBelow;    //! LS electron DCA vs. pT, m<0.1
-        THnSparse           *fElectronSprs;  //! Sparse with electron cut parameters
+        TH2F                *fPhotonicDCA;   //! Photonic DCA using MC PID
+        TH2F                *fDalitzDCA;     //! pion and eta DCA using MC PID
+        TH2F                *fInclElecDCA;   //! Inclusive electron DCA vs. pT
+        TH2F                *fInclElecEoP;   //! Inclusive electron EoP vs. pT
+        TH2F                *fHadronEoP;     //! Hadron EoP vs. pT
+        TH2F                *fHadronDCA;     //! Hadron DCA vs. pT
+    
+        TF1                 *fPi0Weight;    //! Function to weight enhanced pi0
+        TF1                 *fEtaWeight;    //! Function to weight enhanced eta
+        //TF1                 *fPi0EtaWeight; //! Function to weight enhanced eta+pi0
+        Double_t            fWeight;        //!
+    
+        TH2F                *fPi0DCA;           //! Pi0 DCA vs. pT
+        TH2F                *fEtaDCA;           //! Eta DCA vs. pT
+        //TH2F                *fPi0EtaDCA;        //! Pi0+Eta DCA vs. pT
+        TH2F                *fPhotonMCTrueDCA;  //! gamma DCA vs. pT
+        TH2F               *fPi0MCTrueWeightEnhDCA; //!
+        TH2F               *fEtaMCTrueWeightEnhDCA; //!
+        //TH2F               *fPi0EtaMCTrueWeightEnhDCA; //!
+        TH2F               *fPi0MCTrueHijingDCA; //!
+        TH2F               *fEtaMCTrueHijingDCA; //!
+        //TH2F               *fPi0EtaMCTrueHijingDCA; //!
+    
+        Int_t               fNtotMCpart;     //! N of total MC particles produced by generator
+        Int_t               fNpureMC;        //! N of particles from main generator (Hijing/Pythia)
+        Int_t               fNembMCpi0;      //! N > fNembMCpi0 = particles from pi0 generator
+        Int_t               fNembMCeta;      //! N > fNembMCeta = particles from eta generator
+    
+        THnSparse           *fSprsPi0EtaWeightCal;  //! Sparse for pi0,eta weight calc
+        THnSparse           *fSprsTemplates;  //! Sparse for templates
+        //THnSparse           *fElectronSprs;  //! Sparse with electron cut parameters
         //Double_t            *fvalueElectron; //! Electron info
     
-    AliAnalysisTaskTPCCalBeauty(const AliAnalysisTaskTPCCalBeauty&); // not implemented???
-    AliAnalysisTaskTPCCalBeauty& operator=(const AliAnalysisTaskTPCCalBeauty&); // not implemented???
-    ClassDef(AliAnalysisTaskTPCCalBeauty, 1);
+    AliAnalysisTaskTPCCalBeautyTest(const AliAnalysisTaskTPCCalBeautyTest&); // not implemented???
+    AliAnalysisTaskTPCCalBeautyTest& operator=(const AliAnalysisTaskTPCCalBeautyTest&); // not implemented???
+    ClassDef(AliAnalysisTaskTPCCalBeautyTest, 1);
 };
 
 #endif
