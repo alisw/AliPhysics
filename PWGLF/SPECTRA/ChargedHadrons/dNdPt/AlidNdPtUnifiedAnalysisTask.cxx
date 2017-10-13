@@ -121,6 +121,7 @@ AlidNdPtUnifiedAnalysisTask::AlidNdPtUnifiedAnalysisTask(const char *name) : Ali
   fLowerCentralityBound(0.),
   fUpperCentralityBound(0.),
   fIncludeSigmas(kTRUE),
+  fHistMCTrackMult(0),
   fHistV0Amp(0)
 {
   // Set default binning
@@ -180,6 +181,11 @@ void AlidNdPtUnifiedAnalysisTask::UserCreateOutputObjects(){
   Int_t nBinsMultEvent[3]={fBinsMultCent->GetSize()-1,fBinsMultCent->GetSize()-1,fBinsMultCent->GetSize()-1};
   Double_t minMultEvent[3]={fBinsMultCent->GetAt(0),fBinsMultCent->GetAt(0),fBinsMultCent->GetAt(0)};
   Double_t maxMultEvent[3]={fBinsMultCent->GetAt(fBinsMultCent->GetSize()-1),fBinsMultCent->GetAt(fBinsMultCent->GetSize()-1),fBinsMultCent->GetAt(fBinsMultCent->GetSize()-1)};
+
+  /// Track histogram with multiplicity correlation pt:multacc:multgen
+  Int_t nBinsMultTrack[3]={fBinsPt->GetSize()-1, fBinsMultCent->GetSize()-1,fBinsMultCent->GetSize()-1};
+  Double_t minMultTrack[3]={fBinsPt->GetAt(0), fBinsMultCent->GetAt(0),fBinsMultCent->GetAt(0)};
+  Double_t maxMultTrack[3]={fBinsPt->GetAt(fBinsPt->GetSize()-1),fBinsMultCent->GetAt(fBinsMultCent->GetSize()-1),fBinsMultCent->GetAt(fBinsMultCent->GetSize()-1)};
 
 
   /// Event multiplicity investigation histograms multcent:multacc
@@ -421,6 +427,16 @@ void AlidNdPtUnifiedAnalysisTask::UserCreateOutputObjects(){
     fHistMCMultPt->Sumw2();
 
 
+    
+    fHistMCTrackMult = new THnF("fHistMCTrackMult", "Tracks as function of measured and true Mult", 3, nBinsMultTrack, minMultTrack, maxMultTrack);
+    fHistMCTrackMult -> SetBinEdges(0,fBinsPt->GetArray());
+    fHistMCTrackMult -> SetBinEdges(1,fBinsMultCent->GetArray());
+    fHistMCTrackMult -> SetBinEdges(2,fBinsMultCent->GetArray());
+    fHistMCTrackMult->GetAxis(0)->SetTitle("#it{p}_T");
+    fHistMCTrackMult->GetAxis(1)->SetTitle("N_{acc}");
+    fHistMCTrackMult->GetAxis(2)->SetTitle("N_{ch}");
+    fHistMCTrackMult -> Sumw2();
+    
     /*
        fHistMCGenTrackINEL0 = new THnF("fHistMCGenTrackINEL0","Histogram for generated tracks for INEL>0 MC Events",4,nBinsTrack,minTrack,maxTrack);
        fHistMCGenTrackINEL0->SetBinEdges(0,fBinsPt->GetArray());
@@ -467,6 +483,7 @@ void AlidNdPtUnifiedAnalysisTask::UserCreateOutputObjects(){
     fOutputList->Add(fHistMCResponseMat);
     fOutputList->Add(fHistMCMultPt);
 
+    fOutputList->Add(fHistMCTrackMult);
 
     //     fOutputList->Add(fHistMCGenTrackINEL0);
   }
@@ -577,9 +594,30 @@ void AlidNdPtUnifiedAnalysisTask::UserExec(Option_t *){ // Main loop (called for
     if(isEventINEL0) fHistMCRecINEL0Event->Fill(eventValues);
   }
 
-  ///--------------- Loop over measured Tracks ---------------------------------
+  /// ------------------ Count Multiplicities --------------------------------------
 
-  /// Multiplicity counting loop
+  // True Multiplicity Nch:
+
+  if(fIsMC){
+
+    for (Int_t iParticle = 0; iParticle < fMCStack->GetNtrack(); iParticle++){
+      TParticle *mcGenParticle = fMCStack->Particle(iParticle);
+      if(!mcGenParticle) {printf("ERROR: mcGenParticle  not available\n"); continue;}
+
+      /// \li Acceptance cuts for generated particles
+      // lower pt cut is disabled for mpt analysis! (Nch should be counted down to pt=0)!
+      if(!IsTrackAcceptedKinematics(mcGenParticle, kTRUE)) continue;
+
+      if(IsChargedPrimary(iParticle)){
+
+        multGenPart++;
+
+      }
+    }
+  }
+  
+  // Measured Multiplicity Nacc:
+  
   AliVTrack *track = NULL;
   for (Int_t iTrack = 0; iTrack < fEvent->GetNumberOfTracks(); iTrack++){
     track = fEvent->GetVTrack(iTrack);
@@ -595,8 +633,6 @@ void AlidNdPtUnifiedAnalysisTask::UserExec(Option_t *){ // Main loop (called for
       if((track->GetTOFsignal())>25000) continue;
     }
 
-
-    /// \li Count Track Multiplicity
     multAccTracks++;
 
     //correct multiplicity via pt-dependant tracking efficiency function
@@ -611,6 +647,8 @@ void AlidNdPtUnifiedAnalysisTask::UserExec(Option_t *){ // Main loop (called for
 
   fHistEvent->Fill(eventValues);
 
+  
+  ///--------------- Loop over measured Tracks ---------------------------------
 
   track = NULL;
   for (Int_t iTrack = 0; iTrack < fEvent->GetNumberOfTracks(); iTrack++){
@@ -633,13 +671,19 @@ void AlidNdPtUnifiedAnalysisTask::UserExec(Option_t *){ // Main loop (called for
     Double_t trackValues[4] = {track->Pt(), track->Eta(), zVertEvent, multEvent};
     fHistTrack->Fill(trackValues);
 
+    // Crosscheck Histo for Multiplicity dependent pt spectra
+    if(fIsMC){
+      Double_t trackValuesMult[3] = {track->Pt(), multEvent, multGenPart};
+      fHistMCTrackMult->Fill(trackValuesMult);
+    }
+    
     Double_t trackChargeValues[4] = {track->Pt(), track->Eta(), multEvent, ((Double_t) track->Charge())/3.};
     fHistTrackCharge->Fill(trackChargeValues);
 
 
     /// \li Find original particle in MC-Stack
     if(fIsMC){
-      Int_t mcLabel = TMath::Abs(track->GetLabel());	///TODO doesn't work without abs for some reason?? source of errors!!!
+      Int_t mcLabel = TMath::Abs(track->GetLabel());
       TParticle *mcParticle = fMCStack->Particle(mcLabel);
       if(!mcParticle) {printf("ERROR: mcParticle not available\n"); continue;}
 
@@ -688,23 +732,6 @@ void AlidNdPtUnifiedAnalysisTask::UserExec(Option_t *){ // Main loop (called for
 
   ///------------------- Loop over Generated Tracks (True MC)------------------------------
   if (fIsMC){
-
-    /// count generated multipicity
-    for (Int_t iParticle = 0; iParticle < fMCStack->GetNtrack(); iParticle++){
-      TParticle *mcGenParticle = fMCStack->Particle(iParticle);
-      if(!mcGenParticle) {printf("ERROR: mcGenParticle  not available\n"); continue;}
-
-      /// \li Acceptance cuts for generated particles
-      // lower pt cut is disabled for mpt analysis! (Nch should be counted down to pt=0)!
-      if(!IsTrackAcceptedKinematics(mcGenParticle, kTRUE)) continue;
-
-      if(IsChargedPrimary(iParticle)){
-
-        multGenPart++;
-
-      }
-    }
-
 
     for (Int_t iParticle = 0; iParticle < fMCStack->GetNtrack(); iParticle++){
       TParticle *mcGenParticle = fMCStack->Particle(iParticle);

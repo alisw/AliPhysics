@@ -209,6 +209,8 @@ class AlidNdPtUnifiedAnalysisTask : public AliAnalysisTaskSE {
     THnF        	*fHistMCRecSecTrack;		///<  Histogram for secondary MC tracks (pt,eta,mult/cent)
     THnF        	*fHistMCRecSecTrackParticle;	///<  Particle type histogram for secondary MC tracks (pt,eta,mult/cent)
 
+    THnF        	*fHistMCTrackMult;		///<  Histogram for tracks vs multiplicity (pt,Nacc,Nch)
+
     UInt_t fTriggerMask;    // trigger mask
 
     // Acceptance cuts for tracks
