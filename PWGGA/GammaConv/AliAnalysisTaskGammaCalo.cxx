@@ -673,7 +673,6 @@ void AliAnalysisTaskGammaCalo::UserCreateOutputObjects(){
 
   if (fDoClusterQA == 2) fProduceCellIDPlots = kTRUE;
   if (fIsMC == 2){
-    fDoClusterQA      = 0;
     fDoTHnSparse      = kFALSE;
   } else if (fIsMC == 3){
     fDoTHnSparse      = kFALSE;
@@ -729,10 +728,10 @@ void AliAnalysisTaskGammaCalo::UserCreateOutputObjects(){
 
   fCutFolder          = new TList*[fnCuts];
   fESDList            = new TList*[fnCuts];
-    if(fDoTHnSparse){
-        fBackList     = new TList*[fnCuts];
-        fMotherList   = new TList*[fnCuts];
-    }
+  if(fDoTHnSparse){
+      fBackList     = new TList*[fnCuts];
+      fMotherList   = new TList*[fnCuts];
+  }
   fHistoNEvents       = new TH1F*[fnCuts];
   if(fIsMC > 1){
     fHistoNEventsWOWeight   = new TH1F*[fnCuts];
