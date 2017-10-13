@@ -776,55 +776,13 @@ void AliTOFTrigger::GetLTMIndex(const Int_t * const detind, Int_t *indexLTM) {
   // getting LTMmatrix indexes for current digit
   //
 
-  if (detind[1]==0 || detind[1]==1 || (detind[1]==2 && detind[2]<=7)) {
-    if (detind[4]<24){
-      indexLTM[0] = detind[0]*2;
-    }
-    else {
-      indexLTM[0] = detind[0]*2+1;
-    }
-  }
-  else {
-    if (detind[4]<24){
-      indexLTM[0] = detind[0]*2+36;
-    }
-    else {
-      indexLTM[0] = (detind[0]*2+1)+36;
-    }
-  }
-
-  if (indexLTM[0]<36) {
-    if (detind[1] ==0){
-      indexLTM[1] = detind[2];
-    }
-    else if (detind[1] ==1){
-      indexLTM[1] = detind[2]+19;
-    }
-    else if (detind[1] ==2){
-      indexLTM[1] = detind[2]+19*2;
-    }
-    else{
-      //      AliError("Smth Wrong!!!");
-    }
-  }
-  else {
-    if (detind[1] ==2){
-      indexLTM[1] = detind[2]-8;
-    }
-    else if (detind[1] ==3){
-      indexLTM[1] = detind[2]+7;
-    }
-    else if (detind[1] ==4){
-      indexLTM[1] = detind[2]+26;
-    }
-    else{
-      //      AliError("Smth Wrong!!!");
-    }
-
-    // invert order in back frame
-    indexLTM[1] = 45-indexLTM[1];
-  }
-
+  Int_t iStrip = 19*detind[1]+detind[2] + (detind[1]>2 ? -4: 0);
+  indexLTM[0] = detind[0]*2;
+  if (detind[4]<24) indexLTM[0] += iStrip<45 ? 0 : 36;
+  else              indexLTM[0] += iStrip<46 ? 1 : 37;
+  if (indexLTM[0]<36) indexLTM[1] = iStrip;
+  else                indexLTM[1] = 90-iStrip;
+  
 }
 //-------------------------------------------------------------------------
 /*
