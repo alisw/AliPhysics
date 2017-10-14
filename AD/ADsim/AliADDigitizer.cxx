@@ -136,30 +136,19 @@ AliADDigitizer::~AliADDigitizer()
   // destructor
   if (fDigits) {
     fDigits->Delete();
-    delete fDigits;
-    fDigits = NULL;
+    SafeDelete(fDigits);
   }
 
-  if (fTimeSignalShape) {
-    delete fTimeSignalShape;
-    fTimeSignalShape = NULL;
-  }
-  if (fChargeSignalShape) {
-    delete fChargeSignalShape;
-    fChargeSignalShape = NULL;
-  }
+  SafeDelete(fTimeSignalShape);
+  SafeDelete(fChargeSignalShape);
 
   for(Int_t ch=0; ch<16; ++ch) {
-    if (fTime[ch]) {
+    if (fTime[ch])
       delete [] fTime[ch];
-    }
     fTime[ch] = NULL;
 
-    for (Int_t centerBCint=0; centerBCint<2; ++centerBCint) {
-      if (fTailVsTotalCharge[ch][centerBCint])
-	delete fTailVsTotalCharge[ch][centerBCint];
-      fTailVsTotalCharge[ch][centerBCint] = NULL;
-    }
+    for (Int_t centerBCint=0; centerBCint<2; ++centerBCint)
+      SafeDelete(fTailVsTotalCharge[ch][centerBCint]);
   }
 }
 
@@ -317,10 +306,15 @@ Bool_t AliADDigitizer::Init()
     fCssTau[i]    = PulseShapes->GetBinContent(i+1,2);
     fCssSigma[i]  = PulseShapes->GetBinContent(i+1,3);
 
-    for(Int_t j=0; j<kADNClocks; ++j) fAdc[i][j] = 0;
+    for(Int_t j=0; j<kADNClocks; ++j)
+      fAdc[i][j] = 0;
+
     fLeadingTime[i] = fTimeWidth[i] = 0;
 
-    fPmGain[i]    = fCalibData->GetGain(i);
+    fPmGain[i]     = fCalibData->GetGain(i);
+    fLightYield[i] = fCalibData->GetLightYields(i);
+    if (fLightYield[i] <= 0.0f || fLightYield[i] > 1.0f)
+      AliFatalF("fLightYield[%d] = %f", i, fLightYield[i]);
 
     fAdcPedestal[i][0] = fCalibData->GetPedestal(i);
     fAdcSigma[i][0]    = fCalibData->GetSigma(i);
@@ -401,14 +395,28 @@ void AliADDigitizer::Digitize(Option_t* /*option*/)
   }
 }
 
+Int_t AliADDigitizer::SimulateLightYield(Int_t pmt, Int_t nPhot) const
+{
+  const Float_t p = fLightYield[pmt];
+  if (p <= 0.0f || p > 1.0f)
+    AliFatalF("lightYield[%d]=%f", pmt, p);
+  if (p == 1.0f || nPhot == 0)
+    return nPhot;
+  const Int_t n = Int_t(0.5+1.0f/p*(nPhot < 100
+                                    ? gRandom->Binomial(nPhot, p)
+                                    : gRandom->Gaus(p*nPhot+0.5, TMath::Sqrt(p*(1-p)*nPhot))));
+  AliDebugF(5, "SimulateLightYield[%d]: nPhot=%d p=%.2e n=%d", pmt, nPhot, p, n);
+  return n;
+}
+
 //____________________________________________________________________________
 void AliADDigitizer::DigitizeHits()
 {
   // Digitize the hits to the level of
   // SDigits (fTime arrays)
-  Int_t nTotPhot[16];
-  Float_t PMTime[16];
-  Int_t nPMHits[16];
+  Int_t nTotPhot[16] = {0};
+  Float_t PMTime[16] = {0};
+  Int_t  nPMHits[16] = {0};
 
   for(Int_t i=0; i<16; ++i) {
     memset(fTime[i],0,fNBins[i]*sizeof(Float_t));
@@ -436,21 +444,20 @@ void AliADDigitizer::DigitizeHits()
   for(Int_t iTrack=0; iTrack<nTracks; iTrack++) {
     fAD->ResetHits();
     treeH->GetEvent(iTrack);
-    Int_t nHits = hits->GetEntriesFast();
-    for (Int_t iHit=0; iHit<nHits; iHit++) {
+    for (Int_t iHit=0, nHits=hits->GetEntriesFast(); iHit<nHits; iHit++) {
       AliADhit* hit = (AliADhit *)hits->UncheckedAt(iHit);
-      Int_t nPhot = hit->GetNphot();
-      Int_t pmt  = hit->GetCell();
+      const Int_t pmt   = hit->GetCell();
       if (pmt < 0) continue;
-      Int_t trackLabel = hit->GetTrack();
+      const Int_t nPhot = SimulateLightYield(pmt, hit->GetNphot());
+      const Int_t trackLabel = hit->GetTrack();
       for(Int_t l=0; l<3; ++l) {
         if (fLabels[pmt][l] < 0) {
           fLabels[pmt][l] = trackLabel;
           break;
         }
       }
-      Float_t dt_scintillator = gRandom->Gaus(0,kADIntTimeRes);
-      Float_t t = dt_scintillator + hit->GetTof();
+      const Float_t dt_scintillator = gRandom->Gaus(0,kADIntTimeRes);
+      const Float_t t = dt_scintillator + hit->GetTof();
       nTotPhot[pmt] += nPhot;
       nPMHits[pmt]++;
       //PMTime[pmt] += t*nPhot*nPhot;
@@ -468,16 +475,16 @@ void AliADDigitizer::DigitizeHits()
     PMTime[iPM] += fHptdcOffset[iPM];
 
     fChargeSignalShape->SetParameters(fCssOffset[iPM],fCssTau[iPM],fCssSigma[iPM]);
-    Float_t integral = fChargeSignalShape->Integral(0,300);
+    const Float_t integral = fChargeSignalShape->Integral(0,300);
     //std::cout<<"Integral = "<<integral<<std::endl;
 
-    Float_t charge = nTotPhot[iPM]*fPmGain[iPM]*fBinSize[iPM]/integral;
+    const Float_t charge = nTotPhot[iPM]*fPmGain[iPM]*fBinSize[iPM]/integral;
 
-    Int_t firstBin = TMath::Max(0,(Int_t)((PMTime[iPM])/fBinSize[iPM]));
-    Int_t lastBin = fNBins[iPM]-1;
+    const Int_t firstBin = TMath::Max(0,(Int_t)((PMTime[iPM])/fBinSize[iPM]));
+    const Int_t lastBin = fNBins[iPM]-1;
     //std::cout<<"First Bin: "<<firstBin<<std::endl;
     for(Int_t iBin = firstBin; iBin <= lastBin; ++iBin) {
-      Float_t tempT = fBinSize[iPM]*(0.5+iBin)-PMTime[iPM];
+      const Float_t tempT = fBinSize[iPM]*(0.5+iBin)-PMTime[iPM];
       if (tempT <= 0) continue;
       fTime[iPM][iBin] += charge*fChargeSignalShape->Eval(tempT);
     }
@@ -490,22 +497,23 @@ void AliADDigitizer::DigitizeSDigits()
 {
   // Digitize the fTime arrays (SDigits) to the level of
   // Digits (fAdc arrays)
-  Float_t fMCTime[16];
-  for(Int_t i=0; i<16; ++i) {
-    for(Int_t j=0; j<kADNClocks; ++j) fAdc[i][j] = 0;
+  Float_t fMCTime[16] = {0};
+  for (Int_t i=0; i<16; ++i) {
+    for (Int_t j=0; j<kADNClocks; ++j)
+      fAdc[i][j] = 0;
     fMCTime[i] = fLeadingTime[i] = fTimeWidth[i] = 0;
   }
 
   for (Int_t ipmt=0; ipmt<16; ++ipmt) {
     fChargeSignalShape->SetParameters(fCssOffset[ipmt],fCssTau[ipmt],fCssSigma[ipmt]);
-    Float_t maximum = 0.9*fChargeSignalShape->GetMaximum(0,300);
-    Float_t integral = fChargeSignalShape->Integral(0,300);
-    Float_t thr = fCalibData->GetCalibDiscriThr(ipmt)*kADChargePerADC*maximum*fBinSize[ipmt]/integral;
+    const Float_t maximum  = 0.9*fChargeSignalShape->GetMaximum(0,300);
+    const Float_t integral = fChargeSignalShape->Integral(0,300);
+    const Float_t thr      = fCalibData->GetCalibDiscriThr(ipmt)*kADChargePerADC*maximum*fBinSize[ipmt]/integral;
     //Float_t thr = 0;
 
     Bool_t ltFound = kFALSE, ttFound = kFALSE;
     for (Int_t iBin = 1; iBin<fNBins[ipmt]; ++iBin) {
-      Float_t t = fBinSize[ipmt]*Float_t(iBin);
+      const Float_t t = fBinSize[ipmt]*Float_t(iBin);
       if (fTime[ipmt][iBin] > 0.0) {
         if (!ltFound && (iBin < fNBinsLT[ipmt])) {
           ltFound = kTRUE;
@@ -546,14 +554,14 @@ void AliADDigitizer::DigitizeSDigits()
 
   for (Int_t j=0; j<16; ++j){
     Float_t adcSignal = 0.0;
-    Float_t adcClock = 0.0;
+    Float_t adcClock  = 0.0;
     for (Int_t iClock=0; iClock<kADNClocks; ++iClock) {
-      Int_t integrator = (iClock + fEvenOrOdd) % 2;
+      const Int_t integrator = (iClock + fEvenOrOdd) % 2;
       AliDebugF(1, "ADC %d %d %f",j,iClock,fAdc[j][iClock]);
       fAdc[j][iClock]  += gRandom->Gaus(fAdcPedestal[j][integrator], fAdcSigma[j][integrator]);
     }
     for (Int_t iClock=0; iClock<kADNClocks; ++iClock) {
-      Int_t integrator = (iClock + fEvenOrOdd) % 2;
+      const Int_t integrator = (iClock + fEvenOrOdd) % 2;
       adcClock = (Int_t)fAdc[j][iClock];
       if (fAdc[j][iClock]>1023) adcClock = 1023;
       adcClock -= fAdcPedestal[j][integrator];
@@ -815,8 +823,7 @@ void AliADDigitizer::ResetDigits(Option_t *opt)
   fNdigits = 0;
   if (fDigits) {
     fDigits->Clear(opt);
-    delete fDigits;
-    fDigits = NULL;
+    SafeDelete(fDigits);
   }
 }
 
