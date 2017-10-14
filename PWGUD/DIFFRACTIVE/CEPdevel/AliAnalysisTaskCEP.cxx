@@ -55,7 +55,7 @@ AliAnalysisTaskCEP::AliAnalysisTaskCEP(const char* name,
   UInt_t ETmaskDG, UInt_t ETpatternDG,
   UInt_t ETmaskNDG, UInt_t ETpatternNDG,
   UInt_t TTmask, UInt_t TTpattern):
-	AliAnalysisTaskSE(name)
+  AliAnalysisTaskSE(name)
   , frnummin(rnummin)
   , frnummax(rnummax)
   , fnumTracksMax(numTracksMax)
@@ -86,30 +86,30 @@ AliAnalysisTaskCEP::AliAnalysisTaskCEP(const char* name,
   , fPIDCombined1(0x0)
   , fPIDCombined2(0x0)
   , fPIDCombined3(0x0)
-	, fTrigger(0x0)
-	, fPhysicsSelection(0x0)
+  , fTrigger(0x0)
+  , fPhysicsSelection(0x0)
   , fEventCuts(0x0)
   , fTrackCuts(0x0)
   , fMartinSel(0x0)
   , fCEPUtil(0x0)
-	, flQArnum(0x0) 
-	, flBBFlag(0x0)
-	, flSPDpileup(0x0)
-	, flnClunTra(0x0)
-	, flVtx(0x0)
-	, flV0(0x0)
-	, flFMD(0x0)
-	, fhStatsFlow(0x0)
-	, fHist(new TList())
-	, fCEPtree(0x0)
+  , flQArnum(0x0) 
+  , flBBFlag(0x0)
+  , flSPDpileup(0x0)
+  , flnClunTra(0x0)
+  , flVtx(0x0)
+  , flV0(0x0)
+  , flFMD(0x0)
+  , fhStatsFlow(0x0)
+  , fHist(new TList())
+  , fCEPtree(0x0)
 {
 
-	// ensures that the histograms are all deleted on exit!
-	fHist->SetOwner();
+  // ensures that the histograms are all deleted on exit!
+  fHist->SetOwner();
 
-	// slot in TaskSE must start from 1
-	Int_t iOutputSlot = 1;
-	DefineOutput(iOutputSlot++, TList::Class());
+  // slot in TaskSE must start from 1
+  Int_t iOutputSlot = 1;
+  DefineOutput(iOutputSlot++, TList::Class());
   DefineOutput(iOutputSlot++, TTree::Class());
   
 }
@@ -117,7 +117,7 @@ AliAnalysisTaskCEP::AliAnalysisTaskCEP(const char* name,
 
 //------------------------------------------------------------------------------
 AliAnalysisTaskCEP::AliAnalysisTaskCEP():
-	AliAnalysisTaskSE()
+  AliAnalysisTaskSE()
   , frnummin(100000)
   , frnummax(300000)
   , fnumTracksMax(6)
@@ -148,22 +148,22 @@ AliAnalysisTaskCEP::AliAnalysisTaskCEP():
   , fPIDCombined1(0x0)
   , fPIDCombined2(0x0)
   , fPIDCombined3(0x0)
-	, fTrigger(0x0)
-	, fPhysicsSelection(0x0)
+  , fTrigger(0x0)
+  , fPhysicsSelection(0x0)
   , fEventCuts(0x0)
-	, fTrackCuts(0x0)
+  , fTrackCuts(0x0)
   , fMartinSel(0x0)
   , fCEPUtil(0x0)
   , flQArnum(0x0)
   , flBBFlag(0x0)
-	, flSPDpileup(0x0)
-	, flnClunTra(0x0)
-	, flVtx(0x0)
+  , flSPDpileup(0x0)
+  , flnClunTra(0x0)
+  , flVtx(0x0)
   , flV0(0x0)
   , flFMD(0x0)
-	, fhStatsFlow(0x0)
-	, fHist(new TList())
-	, fCEPtree(0x0)
+  , fhStatsFlow(0x0)
+  , fHist(new TList())
+  , fCEPtree(0x0)
 {
 
 }
@@ -172,7 +172,7 @@ AliAnalysisTaskCEP::AliAnalysisTaskCEP():
 //------------------------------------------------------------------------------
 AliAnalysisTaskCEP::~AliAnalysisTaskCEP()
 {
-	// Destructor
+  // Destructor
   
   // delet all objects created with new  
   // delete CEPEventBuffer
@@ -182,20 +182,20 @@ AliAnalysisTaskCEP::~AliAnalysisTaskCEP()
     fCEPEvent = 0x0;
   }
   
-	// delete array of tracks
+  // delete array of tracks
   if (fTracks) {
     fTracks->SetOwner(kTRUE);
     fTracks->Clear();
-		delete fTracks;
-		fTracks = 0x0;
-	}
+    delete fTracks;
+    fTracks = 0x0;
+  }
 
-	// delete array of TrackStatus
+  // delete array of TrackStatus
   if (fTrackStatus) {
     fTrackStatus->Reset();
-		delete fTrackStatus;
-		fTrackStatus = 0x0;
-	}
+    delete fTrackStatus;
+    fTrackStatus = 0x0;
+  }
 
   // delete fTrigger
   if (fTrigger) {
@@ -307,13 +307,13 @@ void AliAnalysisTaskCEP::UserCreateOutputObjects()
   
   // fTrigger
   fTrigger = new AliTriggerAnalysis();
- 	fTrigger->SetDoFMD(kTRUE);
-	fTrigger->SetFMDThreshold(0.3,0.5);
+   fTrigger->SetDoFMD(kTRUE);
+  fTrigger->SetFMDThreshold(0.3,0.5);
   fTrigger->ApplyPileupCuts(kTRUE);
  
-	// fEventCuts
+  // fEventCuts
   fEventCuts = new AliEventCuts();
-	
+  
   // fTrackCuts
   Bool_t isRun1 = fCEPUtil->checkstatus(fAnalysisStatus,
     AliCEPBase::kBitisRun1,AliCEPBase::kBitisRun1);
@@ -327,8 +327,8 @@ void AliAnalysisTaskCEP::UserCreateOutputObjects()
   }
   
   // Martin's selection
-	fMartinSel = new AliMultiplicitySelectionCP();
-	fMartinSel->InitDefaultTrackCuts(1);          // 1 = b and c, 0 = d and e
+  fMartinSel = new AliMultiplicitySelectionCP();
+  fMartinSel->InitDefaultTrackCuts(1);          // 1 = b and c, 0 = d and e
   
   // AliCEPUtils
   fCEPUtil = new AliCEPUtils();
@@ -339,27 +339,27 @@ void AliAnalysisTaskCEP::UserCreateOutputObjects()
   
   fCEPUtil->InitTrackCuts(isRun1,clusterCut);  
 
-	// prepare PID Combined
+  // prepare PID Combined
   // three types of Bayes PID
   // 1. with priors
   // 2. without priors
   // 3. with CEP priors
   
   // 1. with priors
-	fPIDCombined1 = new AliPIDCombined;
+  fPIDCombined1 = new AliPIDCombined;
   fPIDCombined1->SetSelectedSpecies(AliPID::kSPECIES);  // This is default
-	fPIDCombined1->SetEnablePriors(kTRUE);
-	fPIDCombined1->SetDefaultTPCPriors();
+  fPIDCombined1->SetEnablePriors(kTRUE);
+  fPIDCombined1->SetDefaultTPCPriors();
   
   // 2. without priors
-	fPIDCombined2 = new AliPIDCombined;
+  fPIDCombined2 = new AliPIDCombined;
   fPIDCombined2->SetSelectedSpecies(AliPID::kSPECIES);  // This is default
-	fPIDCombined2->SetEnablePriors(kFALSE);               // priors are set to 1
+  fPIDCombined2->SetEnablePriors(kFALSE);               // priors are set to 1
   
   // 3. set CEP specific priors
   //fPIDCombined3 = new AliPIDCombined;
   //fPIDCombined3->SetSelectedSpecies(AliPID::kSPECIES);  //This is default
-	//fPIDCombined3->SetEnablePriors(kTRUE);               // priors are set to 1
+  //fPIDCombined3->SetEnablePriors(kTRUE);               // priors are set to 1
   //TString fnameMyPriors = TString("/home/pbuehler/physics/projects/alice/CEP/working/forpass4/res/20160501/MergedPriors.root");
   //TH1F *priordistr[AliPID::kSPECIES];
   //GetMyPriors(fnameMyPriors,priordistr);
@@ -494,10 +494,10 @@ void AliAnalysisTaskCEP::UserCreateOutputObjects()
   // add QA histograms for event cut
   fEventCuts->AddQAplotsToList(fHist);
 
-	//CEP tree
-	fCEPtree = new TTree("CEP", "CEP");
+  //CEP tree
+  fCEPtree = new TTree("CEP", "CEP");
 
-	// add MonteCarlo truth
+  // add MonteCarlo truth
   fCEPtree->Branch("MCtruth", &fMCCEPSystem);
 
   // add branch with CEPEventBuffer
@@ -505,7 +505,7 @@ void AliAnalysisTaskCEP::UserCreateOutputObjects()
   Int_t bsize = 16000; 
   fCEPtree->Branch("CEPEvents","CEPEventBuffer",&fCEPEvent, bsize, split);
   
-	PostOutputs();
+  PostOutputs();
   
 }
 
@@ -525,9 +525,9 @@ void AliAnalysisTaskCEP::UserExec(Option_t *)
   // update the run number fRun
   // get MC event fMCEvent
   if ( !CheckInput() ) {
-		PostOutputs();
-		return;
-	}
+    PostOutputs();
+    return;
+  }
   fhStatsFlow->Fill(AliCEPBase::kBinGoodInput);
   ((TH1F*)flQArnum->At(0))->Fill(fRun);
   if (fMCEvent) fhStatsFlow->Fill(AliCEPBase::kBinMCEvent);
@@ -592,7 +592,7 @@ void AliAnalysisTaskCEP::UserExec(Option_t *)
   
   AliAnalysisUtils fAnalysisUtils;
   //fAnalysisUtils.SetBSPDCvsTCut(4);
-	//fAnalysisUtils.SetASPDCvsTCut(65);
+  //fAnalysisUtils.SetASPDCvsTCut(65);
   Bool_t isClusterCut = !fAnalysisUtils.IsSPDClusterVsTrackletBG(fEvent);
   if (isClusterCut) fhStatsFlow->Fill(AliCEPBase::kBinClusterCut);
 
@@ -610,7 +610,7 @@ void AliAnalysisTaskCEP::UserExec(Option_t *)
   if (isEventCutsel) fhStatsFlow->Fill(AliCEPBase::kBinEventCut);
 
   // vertex type and position
-	// first check vertex from tracks
+  // first check vertex from tracks
   // if that does not exists, then try vertex from SPD
   // VertexType:
   // -1: no vertex
@@ -725,13 +725,13 @@ void AliAnalysisTaskCEP::UserExec(Option_t *)
   // kZDC: hit on any side of ZDC
   // kZNA, kZNC: ZN
   // printf("<I - UserExec> Doing trigger analysis ...\n");
-	Bool_t isSPD  =
+  Bool_t isSPD  =
     (fTrigger->IsOfflineTriggerFired(fEvent,AliTriggerAnalysis::kSPDGFO));
-	// Bool_t isSPD  =
+  // Bool_t isSPD  =
   //   (fTrigger->IsOfflineTriggerFired(fEvent,AliTriggerAnalysis::kSPDGFOBits));
-	Bool_t isMBOR  =
+  Bool_t isMBOR  =
     (fTrigger->IsOfflineTriggerFired(fEvent,AliTriggerAnalysis::kMB1));
-	// Bool_t isMBAND  =
+  // Bool_t isMBAND  =
   //   (fTrigger->IsOfflineTriggerFired(fEvent,AliTriggerAnalysis::kMB2));
   Bool_t isMBAND =
     (fTrigger->IsOfflineTriggerFired(fEvent,AliTriggerAnalysis::kV0AND));
@@ -747,11 +747,11 @@ void AliAnalysisTaskCEP::UserExec(Option_t *)
     (fTrigger->IsOfflineTriggerFired(fEvent,AliTriggerAnalysis::kFMDA));
   Bool_t isFMDC =
     (fTrigger->IsOfflineTriggerFired(fEvent,AliTriggerAnalysis::kFMDC)); 
-	Bool_t isZDC  =
+  Bool_t isZDC  =
     (fTrigger->IsOfflineTriggerFired(fEvent,AliTriggerAnalysis::kZDC));
-	Bool_t isZDNA  =
+  Bool_t isZDNA  =
     (fTrigger->IsOfflineTriggerFired(fEvent,AliTriggerAnalysis::kZNA));
-	Bool_t isZDNC  =
+  Bool_t isZDNC  =
     (fTrigger->IsOfflineTriggerFired(fEvent,AliTriggerAnalysis::kZNC));
   
   Bool_t isV0DG = isSPD && !(isV0A || isV0C);
@@ -803,7 +803,7 @@ void AliAnalysisTaskCEP::UserExec(Option_t *)
     Int_t nTracksTPCITS = 0;
     for (Int_t ii = 0; ii < nTracksTotal; ii++) {
       AliESDtrack *track = fESDEvent->GetTrack(ii);
-	  	if (track) {
+      if (track) {
         if (fTrackCuts->AcceptTrack(track)) nTracksTPCITS++;
       
         if (track->HasPointOnITSLayer(0) || track->HasPointOnITSLayer(1))
@@ -820,7 +820,7 @@ void AliAnalysisTaskCEP::UserExec(Option_t *)
         }
         */
       }
-	  }
+    }
     
     // if (firedTriggerClasses.Contains("CCUP13-B-SPD1-CENTNOTRD"))
     //   printf("ntrk with SPD hits (of %i trks): %i / %i\n",
@@ -845,9 +845,9 @@ void AliAnalysisTaskCEP::UserExec(Option_t *)
   if (nbad==0) fhStatsFlow->Fill(AliCEPBase::kBinSharedCluster);
   fEventCondition += (nbad==0) * AliCEPBase::kETSClusterCut;
   
-	// Martin's selection
-	TArrayI Mindices;
-	Int_t nMartinSel = fMartinSel->GetNumberOfITSTPCtracks(fESDEvent,Mindices);
+  // Martin's selection
+  TArrayI Mindices;
+  Int_t nMartinSel = fMartinSel->GetNumberOfITSTPCtracks(fESDEvent,Mindices);
   //printf("<I - UserExec> nMartinSel: %i\n",nMartinSel);
     
   // use the AliCEPUtils::GetCEPTracks method
@@ -1021,10 +1021,10 @@ void AliAnalysisTaskCEP::UserExec(Option_t *)
     // and save it into the event buffer
     AliStack *stack = NULL;
     if (fMCEvent) {
-	    
+      
       // MC generator and process type
       TString fMCGenerator;
-	    Int_t fMCProcess; 
+      Int_t fMCProcess; 
       fCEPUtil->DetermineMCprocessType(fMCEvent,fMCGenerator,fMCProcess);
       
       // get MC vertex
@@ -1154,54 +1154,54 @@ Bool_t AliAnalysisTaskCEP::CheckInput()
 {
   if (!fInputHandler) return kFALSE;
 
-	//general protection
-	// are we dealing with an ESD or AOD?
-	fEvent = fInputHandler->GetEvent();
+  //general protection
+  // are we dealing with an ESD or AOD?
+  fEvent = fInputHandler->GetEvent();
   if (fEvent->GetDataLayoutType()==AliVEvent::kESD) fisESD = kTRUE;
   if (fEvent->GetDataLayoutType()==AliVEvent::kAOD) fisAOD = kTRUE;
   
   if (fisESD) fESDEvent = (AliESDEvent*)fEvent;
   
   if (!fisESD) {
-		printf("<E - CheckInput> No valid ESD event!\n");
+    printf("<E - CheckInput> No valid ESD event!\n");
     return kFALSE;
-	}
+  }
     
   // check incomplete DAQ, see recommendation at
   // https://twiki.cern.ch/twiki/bin/view/ALICE/PWGPPEvSelRun2pp
   if (fEvent->IsIncompleteDAQ()) {
-		printf("<E - CheckInput> Incomplete DAQ!\n");
+    printf("<E - CheckInput> Incomplete DAQ!\n");
     return kFALSE;
-	}
+  }
 
-	// get the LHC period name
+  // get the LHC period name
   //TList *uiList = fInputHandler->GetUserInfo();
   //AliProdInfo prodInfo(uiList);
   //fLHCPeriod = TString(prodInfo.GetLHCPeriod());
 
   // PID response
-	fPIDResponse = (AliPIDResponse*)fInputHandler->GetPIDResponse();
-	if (!fPIDResponse){
-		printf("<E - CheckInput> No PID information!\n");
-		return kFALSE;
-	}
+  fPIDResponse = (AliPIDResponse*)fInputHandler->GetPIDResponse();
+  if (!fPIDResponse){
+    printf("<E - CheckInput> No PID information!\n");
+    return kFALSE;
+  }
 
-	// check magnetic field
+  // check magnetic field
   if (TMath::Abs(fEvent->GetMagneticField())<1) {
-		printf("<E - CheckInput> Wrong Bfield value! %f\n",
+    printf("<E - CheckInput> Wrong Bfield value! %f\n",
       fEvent->GetMagneticField());
-		return kFALSE;
-	}
+    return kFALSE;
+  }
 
-	// update the run number
+  // update the run number
   Int_t tmprun = fEvent->GetRunNumber();
-	if (fRun != tmprun) {
-		fRun = tmprun;
-		fCEPUtil->SPDLoadGeom(fRun);
-	}
+  if (fRun != tmprun) {
+    fRun = tmprun;
+    fCEPUtil->SPDLoadGeom(fRun);
+  }
 
-	// get MC event
-	fMCEvent = MCEvent();
+  // get MC event
+  fMCEvent = MCEvent();
   if (fMCEvent) {  
     // Bug fix 28.05.2016 - do not trust to presence of MC handler, check if the content is valid
     //                    - proper solution (autodetection of MC information) to be implemented 
@@ -1215,17 +1215,17 @@ Bool_t AliAnalysisTaskCEP::CheckInput()
   }
   */
   
-	return kTRUE;
+  return kTRUE;
 }
 
 //------------------------------------------------------------------------------
 void AliAnalysisTaskCEP::PostOutputs()
 {
-	// PostData
-	Int_t iOutputSlot = 1;
-	PostData(iOutputSlot++, fHist);
+  // PostData
+  Int_t iOutputSlot = 1;
+  PostData(iOutputSlot++, fHist);
   PostData(iOutputSlot++, fCEPtree);
-	
+  
 }
 
 
