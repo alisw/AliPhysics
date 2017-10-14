@@ -1258,7 +1258,7 @@ void AliAnalysisTaskBeautyCal::UserExec(Option_t *)
       pid_eleB = IsBdecay(pidM);
       pid_eleP = IsPdecay(pidM);
 
-      cout << pdg << " ; pid_eleD = " << pid_eleD <<  " ; pid_eleB = " << pid_eleB << endl;
+      //cout << pdg << " ; pid_eleD = " << pid_eleD <<  " ; pid_eleB = " << pid_eleB << endl;
 
       if(pidM==111)
         {
@@ -1305,14 +1305,28 @@ void AliAnalysisTaskBeautyCal::UserExec(Option_t *)
         if(pid_eleD)fHistResD->Fill(track->Pt(),fMCparticle->Pt());
         if(pid_eleB)fHistResB->Fill(track->Pt(),fMCparticle->Pt()); 
 
-    if(abs(pdg)==11 && pid_eleD)cout << " pid_ele from D = " << pid_ele << " ; pidM = " << pidM << endl;
-    if(abs(pdg)==11 && pid_eleB)cout << " pid_ele from B = " << pid_ele << " ; pidM = " << pidM << endl;
+    //if(abs(pdg)==11 && pid_eleD)cout << " pid_ele from D = " << pid_ele << " ; pidM = " << pidM << endl;
+    //if(abs(pdg)==11 && pid_eleB)cout << " pid_ele from B = " << pid_ele << " ; pidM = " << pidM << endl;
     //if(abs(pdg)==11 && (pid_eleD || pid_eleB))cout << " NpureMCproc = " << NpureMCproc << " ; ilabel = " << ilabel << endl;
     if(abs(pdg)==11 && (pid_eleD || pid_eleB))
       {
        if(ilabel<NpureMCproc+1)
          {
-          if(pid_eleD)fHistDCAdeEnhance->Fill(track->Pt(),DCAxy);
+          if(pid_eleD)
+             {
+              AliAODMCParticle* fMCparticleM = (AliAODMCParticle*) fMCarray->At(ilabelM);
+              Int_t ilabelGM = -1; Int_t pidGM = -1; Double_t pTGmom = -99.9;
+              FindMother(fMCparticleM, ilabelGM, pidGM, pTGmom);
+              cout << "check D->e ;" << pidGM << endl;
+              if(pidGM<500)
+                 {
+                  fHistDCAdeEnhance->Fill(track->Pt(),DCAxy);
+                 }
+              else  // B->D->e
+                 {
+                  fHistDCAbeEnhance->Fill(track->Pt(),DCAxy);
+                 } 
+               }
           if(pid_eleB)fHistDCAbeEnhance->Fill(track->Pt(),DCAxy);
           fHistHFmcCheck->Fill(1);
          }
