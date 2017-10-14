@@ -756,7 +756,7 @@ void AliADDigitizer::WriteDigits(AliLoader *loader)
   DigitsArray();
   treeD->Branch("ADDigit", &fDigits);
 
-  Short_t *chargeADC = new Short_t[kADNClocks];
+  static Short_t chargeADC[kADNClocks];
   for (Int_t i=0; i<16; i++) {
     for (Int_t j=0; j < kADNClocks; ++j) {
       Int_t tempadc = Int_t(fAdc[i][j]);
@@ -765,7 +765,6 @@ void AliADDigitizer::WriteDigits(AliLoader *loader)
     }
     if(!fCalibData->IsChannelDead(i)) AddDigit(i, fLeadingTime[i], fTimeWidth[i], Bool_t((10+fEvenOrOdd)%2), chargeADC, fBBFlag[i], fBGFlag[i], fLabels[i]);
   }
-  delete [] chargeADC;
 
   treeD->Fill();
   loader->WriteDigits("OVERWRITE");
