@@ -115,9 +115,9 @@ class AliCEPUtils : public TObject {
     Int_t countstatus(TArrayI *stats, UInt_t mask, UInt_t pattern);
     Int_t countstatus(TArrayI *stats, UInt_t mask, UInt_t pattern, TArrayI *indices);
     Int_t countstatus(TArrayI *stats,
-      TArrayI *masks, TArrayI *patterns);
+    TArrayI *masks, TArrayI *patterns);
     Int_t countstatus(TArrayI *stats,
-      TArrayI *masks, TArrayI *patterns, TArrayI* indices);
+    TArrayI *masks, TArrayI *patterns, TArrayI* indices);
 
     Int_t GetCEPTracks(AliESDEvent *ESDEvent, TArrayI *stats, TArrayI* indices);
     Int_t GetResiduals(AliESDEvent* fESDEvent);

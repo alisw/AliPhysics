@@ -960,7 +960,7 @@ Int_t AliCEPUtils::AnalyzeTracks(AliESDEvent* fESDEvent,
     }
     
     // accepted by standard TPCOnly cuts
-    cut = AliESDtrackCuts::GetStandardTPCOnlyTrackCuts();
+    cut = (AliESDtrackCuts*)fTrackCutListPrim->At(2);
     if (cut) {
       if (cut->AcceptTrack(track))
         trackstat |= AliCEPBase::kTTAccTPCOnly;
@@ -1555,6 +1555,11 @@ void AliCEPUtils::InitTrackCuts(Bool_t IsRun1, Int_t clusterCut)
 		fcutITSSA_P->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kOff);
 		fcutITSSA_P->SetName("ITSSA");
 		AddTrackCut(fcutITSSA_P);
+
+    // TPCOnly
+    AliESDtrackCuts *fcutTPCOnly_P = AliESDtrackCuts::GetStandardTPCOnlyTrackCuts();
+		fcutTPCOnly_P->SetName("TPCOnly");
+		AddTrackCut(fcutTPCOnly_P);
 
 	}
 
