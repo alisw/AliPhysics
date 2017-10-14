@@ -19,6 +19,15 @@ AliAnalysisTask* AddTaskTPCCalBeauty(Double_t centMin=0, Double_t centMax=10, TS
         return 0x0;
     }
     
+    //Check if MC
+    Bool_t MCthere=kFALSE;
+    AliMCEventHandler *mcH = dynamic_cast<AliMCEventHandler*>(mgr->GetMCtruthEventHandler());
+    if(!mcH){
+        MCthere=kFALSE;
+    }else{
+        MCthere=kTRUE;
+    }
+    
     ////////////
     //  INT7  //
     ////////////
@@ -37,7 +46,13 @@ AliAnalysisTask* AddTaskTPCCalBeauty(Double_t centMin=0, Double_t centMax=10, TS
     // Get the filename and make subfolders
     TString fileNameemc = mgr->AliAnalysisManager::GetCommonFileName();
     TString subContainerNameemc = ContNameExt;
-    subContainerNameemc += "BFE_PbPb_INT7_EMCClus";
+    if(MCthere){
+        subContainerNameemc+="_MC";
+    }
+    if(!MCthere){
+        subContainerNameemc+="_Data";
+    }
+    subContainerNameemc += "_INT7_EMCAL";
     AliAnalysisDataContainer *coutput3emc = mgr->CreateContainer(subContainerNameemc,TList::Class(),AliAnalysisManager::kOutputContainer,fileNameemc.Data());
         
     // connect the manager to task
@@ -58,7 +73,13 @@ AliAnalysisTask* AddTaskTPCCalBeauty(Double_t centMin=0, Double_t centMax=10, TS
     // Get the filename and make subfolders
     TString fileNamedc = mgr->AliAnalysisManager::GetCommonFileName();
     TString subContainerNamedc = ContNameExt;
-    subContainerNamedc += "BFE_PbPb_INT7_DCClus";
+    if(MCthere){
+        subContainerNamedc+="_MC";
+    }
+    if(!MCthere){
+        subContainerNamedc+="_Data";
+    }
+    subContainerNamedc += "_INT7_DCAL";
     AliAnalysisDataContainer *coutput3dc = mgr->CreateContainer(subContainerNamedc,TList::Class(),AliAnalysisManager::kOutputContainer,fileNamedc.Data());
         
     // connect the manager to task
@@ -109,7 +130,13 @@ AliAnalysisTask* AddTaskTPCCalBeauty(Double_t centMin=0, Double_t centMax=10, TS
     // Get the filename and make subfolders
     TString fileNameEG01emc = mgr->AliAnalysisManager::GetCommonFileName();
     TString subContainerNameEG01emc = ContNameExt;
-    subContainerNameEG01emc += "BFE_PbPb_TrigEG1_EMCClus";
+    if(MCthere){
+        subContainerNameEG01emc+="_MC";
+    }
+    if(!MCthere){
+        subContainerNameEG01emc+="_Data";
+    }
+    subContainerNameEG01emc += "_TrigEG1_EMCAL";
     AliAnalysisDataContainer *coutputEG01emc = mgr->CreateContainer(subContainerNameEG01emc,TList::Class(),AliAnalysisManager::kOutputContainer,fileNameEG01emc.Data());
     
     // connect the manager to task
@@ -176,7 +203,13 @@ AliAnalysisTask* AddTaskTPCCalBeauty(Double_t centMin=0, Double_t centMax=10, TS
     // Get the filename and make subfolders
     TString fileNameDG01dc = mgr->AliAnalysisManager::GetCommonFileName();
     TString subContainerNameDG01dc = ContNameExt;
-    subContainerNameDG01dc += "BFE_PbPb_TrigDG1_DCClus";
+    if(MCthere){
+        subContainerNameDG01dc+="_MC";
+    }
+    if(!MCthere){
+        subContainerNameDG01dc+="_Data";
+    }
+    subContainerNameDG01dc += "_TrigDG1_DCAL";
     AliAnalysisDataContainer *coutputDG01dc = mgr->CreateContainer(subContainerNameDG01dc,TList::Class(),AliAnalysisManager::kOutputContainer,fileNameDG01dc.Data());
         
     // connect the manager to task
