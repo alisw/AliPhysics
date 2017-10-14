@@ -12,7 +12,8 @@
 
 const Double_t centBinsMultV0MSPD[] = {1e-10, 1., 5., 10., 15., 20., 30., 40., 50., 70., 100};
 const Double_t centBinsMultV0M[] =   {0., 1., 5., 10., 15., 20., 30., 40., 50., 70., 100};
-const Double_t centBinsMultV0M_Ridge[] = {0., 0.001, 0.01, 0.1, 0.5, 1., 3., 5., 10., 20., 30., 40., 50., 90., 100};
+const Double_t centBinsMultV0M_Ridge[] = {0., 0.001, 0.01, 0.1, 0.5, 1., 5., 10., 15., 20., 30., 40., 50., 70., 100};
+//const Double_t centBinsMultV0M_Ridge[] = {0., 0.001, 0.01, 0.1, 0.5, 1., 3., 5., 10., 20., 30., 40., 50., 90., 100};
 //const Double_t centBinsMultV0M_Ridge[] = {0., 1., 8., 16., 25., 27., 43., 45., 68., 69., 100.};
 const Double_t centBinsMultRef[] = {0., 1., 5., 10., 15., 20., 30., 40., 50., 70., 100};
 const Double_t centBinsMB[] = {0., 100.};
@@ -168,7 +169,7 @@ TString calibfile = "./V0M_bins_LHC15g3a3.root"
     centBins = centBinsMultV0M_Ridge;
     nCentBins = sizeof(centBinsMultV0M_Ridge) / 8 - 1;
   }
-  
+
 
   task->SetCentPercentiles(centBins, nCentBins);
   task->SetTriggerSelection(trigSel);
