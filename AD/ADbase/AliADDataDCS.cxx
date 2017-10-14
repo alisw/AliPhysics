@@ -99,14 +99,10 @@ AliADDataDCS::AliADDataDCS(Int_t nRun, UInt_t startTime, UInt_t endTime, UInt_t 
 
 //_____________________________________________________________________________
 AliADDataDCS::~AliADDataDCS() {
-  if (fGraphs) {
+  if (fGraphs)
     fGraphs->Clear("C");
-    delete fGraphs;
-  }
-  fGraphs = NULL;
-  if (fFEEParameters)
-    delete fFEEParameters;
-  fFEEParameters = NULL;
+  SafeDelete(fGraphs);
+  SafeDelete(fFEEParameters);
 }
 
 //_____________________________________________________________________________

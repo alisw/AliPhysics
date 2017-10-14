@@ -170,18 +170,9 @@ AliADReconstructor& AliADReconstructor::operator = (const AliADReconstructor&)
 AliADReconstructor::~AliADReconstructor()
 {
   // destructor
-  if (fESDAD) {
-    delete fESDAD;
-    fESDAD = NULL;
-  }
-  if (fESDADfriend) {
-    delete fESDADfriend;
-    fESDADfriend = NULL;
-  }
-  if (fDigitsArray) {
-    delete fDigitsArray;
-    fDigitsArray = NULL;
-  }
+  SafeDelete(fESDAD);
+  SafeDelete(fESDADfriend);
+  SafeDelete(fDigitsArray);
 }
 
 //_____________________________________________________________________________
