@@ -99,7 +99,9 @@ AliAnalysisTaskDmesonJets::AliDmesonJetInfo::AliDmesonJetInfo() :
   fParton(0),
   fPartonType(0),
   fAncestor(0),
-  fSelectionType(0)
+  fD0D0bar(kFALSE),
+  fSelectionType(0),
+  fEvent(nullptr)
 {
 }
 
@@ -117,7 +119,9 @@ AliAnalysisTaskDmesonJets::AliDmesonJetInfo::AliDmesonJetInfo(const AliDmesonJet
   fParton(source.fParton),
   fPartonType(source.fPartonType),
   fAncestor(source.fAncestor),
-  fSelectionType(source.fSelectionType)
+  fD0D0bar(source.fD0D0bar),
+  fSelectionType(source.fSelectionType),
+  fEvent(source.fEvent)
 {
 }
 
@@ -142,6 +146,7 @@ void AliAnalysisTaskDmesonJets::AliDmesonJetInfo::Reset()
   fParton = 0;
   fPartonType = 0;
   fAncestor = 0;
+  fD0D0bar = kFALSE;
   for (auto &jet : fJets) {
     jet.second.fMomentum.SetPtEtaPhiE(0,0,0,0);
     jet.second.fNConstituents = 0;
@@ -515,7 +520,7 @@ AliAnalysisTaskDmesonJets::AliD0InfoSummary::AliD0InfoSummary(const AliDmesonJet
 void AliAnalysisTaskDmesonJets::AliD0InfoSummary::Set(const AliDmesonJetInfo& source)
 {
   fInvMass = source.fD.M();
-  fSelectionType = source.fSelectionType;
+  fSelectionType = source.GetSelectionTypeSummary();
   AliDmesonInfoSummary::Set(source);
 }
 
@@ -525,6 +530,86 @@ void AliAnalysisTaskDmesonJets::AliD0InfoSummary::Reset()
   AliDmesonInfoSummary::Reset();
   fSelectionType = 0;
   fInvMass = 0;
+}
+
+// Definitions of class AliAnalysisTaskDmesonJets::AliD0ExtendedInfoSummary
+
+/// \cond CLASSIMP
+ClassImp(AliAnalysisTaskDmesonJets::AliD0ExtendedInfoSummary);
+/// \endcond
+
+/// Constructor that uses an AliDmesonJetInfo as its source
+///
+/// \param source A const reference to a valid AliDmesonJetInfo object
+AliAnalysisTaskDmesonJets::AliD0ExtendedInfoSummary::AliD0ExtendedInfoSummary(const AliDmesonJetInfo& source) :
+  AliD0InfoSummary(source),
+  fDCA(0),
+  fCosThetaStar(0),
+  fd0K(0),
+  fd0Pi(0),
+  fd0d0(0),
+  fCosPointing(0),
+  fMaxNormd0(0)
+{
+  Set(source);
+}
+
+/// Set the current object using an instance of AliDmesonJetInfo as its source
+///
+/// \param source A const reference to a valid AliDmesonJetInfo object
+void AliAnalysisTaskDmesonJets::AliD0ExtendedInfoSummary::Set(const AliDmesonJetInfo& source)
+{
+  AliD0InfoSummary::Set(source);
+
+  AliAODRecoDecayHF2Prong* recoDecay = dynamic_cast<AliAODRecoDecayHF2Prong*>(source.fDmesonParticle);
+  if (recoDecay) {
+    fDCA = recoDecay->GetDCA();
+    if (source.fSelectionType == 1) { // D0
+      fCosThetaStar = recoDecay->CosThetaStarD0();
+      fPtK = recoDecay->PtProng(0);
+      fPtPi = recoDecay->PtProng(1);
+      fd0K = recoDecay->Getd0Prong(0);
+      fd0Pi = recoDecay->Getd0Prong(1);
+    }
+    else { //D0bar
+      fCosThetaStar = recoDecay->CosThetaStarD0bar();
+      fPtK = recoDecay->PtProng(1);
+      fPtPi = recoDecay->PtProng(0);
+      fd0K = recoDecay->Getd0Prong(1);
+      fd0Pi = recoDecay->Getd0Prong(0);
+    }
+
+    fMaxNormd0 = 0.;
+    // Based on Int_t AliRDHFCutsD0toKpi::IsSelected(TObject* obj,Int_t selectionLevel,AliAODEvent* aod)
+    // Line 480 and following
+    if (source.fEvent) {
+      for (Int_t ipr=0; ipr < 2; ipr++) {
+        Double_t diffIP = 0., errdiffIP = 0.;
+        recoDecay->Getd0MeasMinusExpProng(ipr, source.fEvent->GetMagneticField(), diffIP, errdiffIP);
+        Double_t normdd0 = 0.;
+        if (errdiffIP > 0.) normdd0 = diffIP / errdiffIP;
+        if (TMath::Abs(normdd0) > TMath::Abs(fMaxNormd0)) {
+          fMaxNormd0 = normdd0;
+        }
+      }
+    }
+
+    fd0d0 = recoDecay->Prodd0d0();
+    fCosPointing = recoDecay->CosPointingAngle();
+  }
+}
+
+/// Reset the object
+void AliAnalysisTaskDmesonJets::AliD0ExtendedInfoSummary::Reset()
+{
+  AliD0InfoSummary::Reset();
+  fDCA = 0;
+  fCosThetaStar = 0;
+  fd0K = 0;
+  fd0Pi = 0;
+  fd0d0 = 0;
+  fCosPointing = 0;
+  fMaxNormd0 = 0;
 }
 
 // Definitions of class AliAnalysisTaskDmesonJets::AliDStarInfoSummary
@@ -777,6 +862,7 @@ AliAnalysisTaskDmesonJets::AnalysisEngine::AnalysisEngine() :
   fJetDefinitions(),
   fPtBinWidth(0.5),
   fMaxPt(100),
+  fD0Extended(kFALSE),
   fRandomGen(0),
   fTrackEfficiency(0),
   fRejectISR(kFALSE),
@@ -822,6 +908,7 @@ AliAnalysisTaskDmesonJets::AnalysisEngine::AnalysisEngine(ECandidateType_t type,
   fJetDefinitions(),
   fPtBinWidth(0.5),
   fMaxPt(100),
+  fD0Extended(kFALSE),
   fRandomGen(0),
   fTrackEfficiency(0),
   fDataSlotNumber(-1),
@@ -1500,6 +1587,7 @@ void AliAnalysisTaskDmesonJets::AnalysisEngine::RunDetectorLevelAnalysis()
   const Int_t nD = fCandidateArray->GetEntriesFast();
 
   AliDmesonJetInfo DmesonJet;
+  DmesonJet.fEvent = this->fAodEvent;
 
   std::map<AliHFJetDefinition*,Double_t> maxJetPt;
   for (auto& def : fJetDefinitions) maxJetPt[&def] = 0;
@@ -1541,8 +1629,8 @@ void AliAnalysisTaskDmesonJets::AnalysisEngine::RunDetectorLevelAnalysis()
       nAccCharm[2] += 2;
     }
     if (nMassHypo == 2) { // both mass hypothesis accepted
-      fDmesonJets[(icharm+1)].fSelectionType = 3;
-      fDmesonJets[-(icharm+1)].fSelectionType = 3;
+      fDmesonJets[(icharm+1)].fD0D0bar = kTRUE;
+      fDmesonJets[-(icharm+1)].fD0D0bar = kTRUE;
     }
   } // end of D cand loop
 
@@ -1872,8 +1960,14 @@ TTree* AliAnalysisTaskDmesonJets::AnalysisEngine::BuildTree(const char* taskName
     switch (fCandidateType) {
     case kD0toKpi:
     case kD0toKpiLikeSign:
-      classname = "AliAnalysisTaskDmesonJets::AliD0InfoSummary";
-      fCurrentDmesonJetInfo = new AliD0InfoSummary();
+      if (fD0Extended) {
+        classname = "AliAnalysisTaskDmesonJets::AliD0ExtendedInfoSummary";
+        fCurrentDmesonJetInfo = new AliD0ExtendedInfoSummary();
+      }
+      else {
+        classname = "AliAnalysisTaskDmesonJets::AliD0InfoSummary";
+        fCurrentDmesonJetInfo = new AliD0InfoSummary();
+      }
       break;
     case kDstartoKpipi:
       classname = "AliAnalysisTaskDmesonJets::AliDStarInfoSummary";
@@ -3317,4 +3411,3 @@ AliAnalysisTaskDmesonJets* AliAnalysisTaskDmesonJets::AddTaskDmesonJets(TString 
   }
   return jetTask;
 }
-

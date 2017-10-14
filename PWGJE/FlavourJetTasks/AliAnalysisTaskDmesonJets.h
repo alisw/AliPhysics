@@ -8,7 +8,7 @@
 /// The main output is stored in a THnSparse histogram or in a TTree.
 ///
 /// \author Salvatore Aiola <salvatore.aiola@cern.ch>, Yale University
-/// \date Sep 21, 2017
+/// \date Oct 13, 2017
 
 #ifndef ALIANALYSISTASKDMESONJETS_H
 #define ALIANALYSISTASKDMESONJETS_H
@@ -158,7 +158,11 @@ class AliAnalysisTaskDmesonJets : public AliAnalysisTaskEmcalLight
     AliAODMCParticle  *fParton                  ; //!<! pointer to the parton in the shower tree of the D meson (only for particle level D mesons)
     Short_t            fPartonType              ; //!<! type of the parton in the shower tree (only for particle level D mesons)
     AliAODMCParticle  *fAncestor                ; //!<! pointer to the ancestor particle in the shower tree of the D meson (only for particle level D mesons)
-    Byte_t             fSelectionType           ; //!<! for D0: 0=not selected, 1=D0, 2=D0bar, 3=both
+    Bool_t             fD0D0bar                 ; //!<! kTRUE if selected both as D0 and D0bar
+    Byte_t             fSelectionType           ; //!<! for D0: 0=not selected, 1=D0, 2=D0bar
+    const AliVEvent   *fEvent                   ; //!<! pointer to the ESD/AOD event
+
+    Byte_t GetSelectionTypeSummary() const { return fD0D0bar && fSelectionType ? 3 : fSelectionType; }
 
     const AliJetInfo* GetJet(std::string n) const;
     AliJetInfo* GetJet(std::string n);
@@ -264,7 +268,7 @@ class AliAnalysisTaskDmesonJets : public AliAnalysisTaskEmcalLight
     /// \endcond
   };
 
-  /// \class AliDmesonInfoSummary
+  /// \class AliDmesonMCInfoSummary
   /// \brief Lightweight class that encapsulates D meson jets
   ///
   /// This class encapsulates D meson
@@ -306,10 +310,51 @@ class AliAnalysisTaskDmesonJets : public AliAnalysisTaskEmcalLight
 
     /// Invariant mass of the D0 meson candidate in GeV/c2
     Double32_t          fInvMass        ; //[0,6.5536,16]
+    /// Selection type: D0, D0bar, both
     Double32_t          fSelectionType  ; //[0,4,2]
 
     /// \cond CLASSIMP
     ClassDef(AliD0InfoSummary, 3);
+    /// \endcond
+  };
+
+  /// \class AliD0ExtendedInfoSummary
+  /// \brief Lightweight class that encapsulates D0
+  ///
+  /// This class encapsulates D0 jet
+  /// information in a very compact data structure (142 bits)
+  /// This is an extended version with additional variables
+  /// used to implement topological cuts
+  class AliD0ExtendedInfoSummary : public AliD0InfoSummary {
+  public:
+    AliD0ExtendedInfoSummary() : AliD0InfoSummary(), fDCA(0), fCosThetaStar(0), fPtK(0), fPtPi(0), fd0K(0), fd0Pi(0), fd0d0(0), fCosPointing(0), fMaxNormd0(0) {}
+    AliD0ExtendedInfoSummary(const AliDmesonJetInfo& source);
+    virtual ~AliD0ExtendedInfoSummary() {}
+
+    virtual void Reset();
+    virtual void Set(const AliDmesonJetInfo& source);
+
+    /// Distance of closest approach
+    Double32_t          fDCA           ; //[0,4.096,9]
+    /// Cosine of theta star
+    Double32_t          fCosThetaStar  ; //[-1.28,1.28,8]
+    /// Transverse momentum of the kaon
+    Double32_t          fPtK           ; //[0,102.4,11]
+    /// Transverse momentum of the pion
+    Double32_t          fPtPi          ; //[0,102.4,11]
+    /// D0K
+    Double32_t          fd0K           ; //[-2.56,2.56,8]
+    /// D0Pi
+    Double32_t          fd0Pi          ; //[-2.56,2.56,8]
+    /// D0K * D0Pi
+    Double32_t          fd0d0          ; //[-0.000524288,0.000524288,20]
+    /// Cosine of the pointing angle
+    Double32_t          fCosPointing   ; //[0,1.28,7]
+    /// max norm d0
+    Double32_t          fMaxNormd0     ; //[0,102.4,10]
+
+    /// \cond CLASSIMP
+    ClassDef(AliD0ExtendedInfoSummary, 1);
     /// \endcond
   };
 
@@ -337,6 +382,10 @@ class AliAnalysisTaskDmesonJets : public AliAnalysisTaskEmcalLight
     /// \endcond
   };
 
+  /// \class AliHFJetDefinition
+  /// \brief HF jet definition
+  ///
+  /// This class encapsulates the jet definition
   class AliHFJetDefinition : public TObject {
   public:
     AliHFJetDefinition();
@@ -407,7 +456,7 @@ class AliAnalysisTaskDmesonJets : public AliAnalysisTaskEmcalLight
 
     enum EFindParticleOriginMode_t {
       kFindFirst,    /// Look for the very first particle in the fragmentation tree
-      kFindLast     /// Look for the last particle in the fragmentation tree (closest to the hadron)
+      kFindLast      /// Look for the last particle in the fragmentation tree (closest to the hadron)
     };
 
     static AliAODMCParticle* FindParticleOrigin(const AliAODMCParticle* part, TClonesArray* mcArray, EFindParticleOriginMode_t mode, const std::set<UInt_t>& pdgSet);
@@ -431,6 +480,8 @@ class AliAnalysisTaskDmesonJets : public AliAnalysisTaskEmcalLight
     void SetRejectedOriginMap(UInt_t m)             { fRejectedOrigin = m    ; }
     void SetAcceptedDecayMap(UInt_t m)              { fAcceptedDecay  = m    ; }
     void SetRejectISR(Bool_t b)                     { fRejectISR      = b    ; }
+
+    void SetD0Extended(Bool_t b)                    { fD0Extended     = b    ; }
 
     const char* GetCandidateName() const { return fCandidateName.Data(); }
     const char* GetName() const;
@@ -461,11 +512,11 @@ class AliAnalysisTaskDmesonJets : public AliAnalysisTaskEmcalLight
     TTree* GetTree() const { return fTree; }
     Bool_t FillTree(Bool_t applyKinCuts);
 
-    void SetTrackEfficiency(Double_t t)      { fTrackEfficiency       = t; }
-    void AssignDataSlot(Int_t n)             { fDataSlotNumber        = n; }
-    Int_t GetDataSlotNumber() const          { return fDataSlotNumber    ; }
+    void   SetTrackEfficiency(Double_t t)      { fTrackEfficiency       = t; }
+    void   AssignDataSlot(Int_t n)             { fDataSlotNumber        = n; }
+    Int_t  GetDataSlotNumber() const           { return fDataSlotNumber    ; }
 
-    void BuildHnSparse(UInt_t enabledAxis);
+    void   BuildHnSparse(UInt_t enabledAxis);
     Bool_t FillHnSparse(Bool_t applyKinCuts);
     Bool_t FillHnSparse(THnSparse* h, const AliDmesonJetInfo& DmesonJet, std::string n);
 
@@ -503,6 +554,7 @@ class AliAnalysisTaskDmesonJets : public AliAnalysisTaskEmcalLight
     std::vector<AliHFJetDefinition>    fJetDefinitions        ; ///<  Jet definitions
     Float_t                            fPtBinWidth            ; ///<  Histogram pt bin width
     Float_t                            fMaxPt                 ; ///<  Histogram pt limit
+    Bool_t                             fD0Extended            ; ///<  Store extended information in the tree (only for D0 mesons)
     TRandom                           *fRandomGen             ; //!<! Random number generator
     Double_t                           fTrackEfficiency       ; //!<! Artificial tracking inefficiency (0...1) -> set automatically at ExecOnce by AliAnalysisTaskDmesonJets
     Bool_t                             fRejectISR             ; //!<! Reject initial state radiation
@@ -537,7 +589,7 @@ class AliAnalysisTaskDmesonJets : public AliAnalysisTaskEmcalLight
     Bool_t              FindJet(AliAODRecoDecayHF2Prong* Dcand, AliDmesonJetInfo& DmesonJet, AliHFJetDefinition& jetDef);
 
     /// \cond CLASSIMP
-    ClassDef(AnalysisEngine, 2);
+    ClassDef(AnalysisEngine, 3);
     /// \endcond
   };
 
