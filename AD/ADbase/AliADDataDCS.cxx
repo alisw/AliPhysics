@@ -28,6 +28,7 @@
 #include <TString.h>
 #include <TObjString.h>
 #include <TH1F.h>
+#include <TVectorD.h>
 
 class TH2;
 class AliCDBMetaData;
@@ -135,16 +136,13 @@ Bool_t AliADDataDCS::ProcessData(TMap& aliasMap){
     TIter iterarray(aliasArr);
 
     if(iAlias<kNHvChannel){ // Treating HV values
-      Int_t nentries = aliasArr->GetEntries();
-
-      Double_t *times = new Double_t[nentries];
-      Double_t *values = new Double_t[nentries];
+      const Int_t nentries = aliasArr->GetEntries();
+      TVectorD times(nentries), values(nentries);
 
       UInt_t iValue=0;
       Float_t variation = 0.0;
-
       while((aValue = (AliDCSValue*) iterarray.Next())) {
-	UInt_t currentTime = aValue->GetTimeStamp();
+	const UInt_t currentTime = aValue->GetTimeStamp();
 	if(currentTime>fCtpEndTime) break;
 
 	values[iValue] = aValue->GetFloat();
@@ -157,34 +155,27 @@ Bool_t AliADDataDCS::ProcessData(TMap& aliasMap){
 	fHv[iAlias]->Fill(values[iValue]);
 	iValue++;
       }
-      CreateGraph(iAlias, iValue, times, values); // fill graphs
+      CreateGraph(iAlias, iValue, times.GetMatrixArray(), values.GetMatrixArray()); // fill graphs
 
       // calculate mean and rms of the first two histos
       // Int_t iChannel	   = iAlias;  not used
       fMeanHV[iAlias]  = fHv[iAlias]->GetMean();
       fWidthHV[iAlias] = fHv[iAlias]->GetRMS();
-
-      delete [] values;
-      delete [] times;
     }
     else if(iAlias >= kNHvChannel && iAlias<2*kNHvChannel){
-      Int_t nentries = aliasArr->GetEntries();
+      const Int_t nentries = aliasArr->GetEntries();
+      TVectorD times(nentries), values(nentries);
 
-      Double_t *times = new Double_t[nentries];
-      Double_t *values = new Double_t[nentries];
       UInt_t iValue=0;
-
       while((aValue = (AliDCSValue*) iterarray.Next())) {
-        UInt_t currentTime = aValue->GetTimeStamp();
+        const UInt_t currentTime = aValue->GetTimeStamp();
         if(currentTime>fCtpEndTime) break;
 
         values[iValue] = aValue->GetFloat();
         times[iValue] = (Double_t) (currentTime);
         iValue++;
       }
-      CreateGraph(iAlias, iValue, times, values); // fill graphs
-      delete [] times;
-      delete [] values;
+      CreateGraph(iAlias, iValue, times.GetMatrixArray(), values.GetMatrixArray()); // fill graphs
     }
     else { // Treating FEE Parameters
       AliDCSValue * lastVal = NULL;
