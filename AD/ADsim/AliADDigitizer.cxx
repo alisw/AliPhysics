@@ -213,22 +213,22 @@ Bool_t AliADDigitizer::SetupTailVsTotalCharge()
       Float_t charge0 = tail;
       Float_t charge1 = tail;
       for (Int_t bc=0; bc<fTailBegin; ++bc) {
-	if (!doExtrapolation[bc])
-	  continue;
-	const Bool_t integrator = ((bc%2) == 0); // bc=10 -> integrator=kTRUE
-	f0 = dynamic_cast<TF1*>(f_Int[!integrator]->At(bc));
-	f1 = dynamic_cast<TF1*>(f_Int[ integrator]->At(bc));
+        if (!doExtrapolation[bc])
+          continue;
+        const Bool_t integrator = ((bc%2) == 0); // bc=10 -> integrator=kTRUE
+        f0 = dynamic_cast<TF1*>(f_Int[!integrator]->At(bc));
+        f1 = dynamic_cast<TF1*>(f_Int[ integrator]->At(bc));
 
-	if (!f0 || !f1) {
-	  AliWarning("f0==NULL || f1==NULL");
-	  continue;
-	}
+        if (!f0 || !f1) {
+          AliWarning("f0==NULL || f1==NULL");
+          continue;
+        }
 #if ROOT_VERSION_CODE < ROOT_VERSION(5,99,0) // ROOT version <6
-	f0->Optimize();
-	f1->Optimize();
+        f0->Optimize();
+        f1->Optimize();
 #endif
-	charge0 += TMath::Max(0.0, f0->Eval(tail));
-	charge1 += TMath::Max(0.0, f1->Eval(tail));
+        charge0 += TMath::Max(0.0, f0->Eval(tail));
+        charge1 += TMath::Max(0.0, f1->Eval(tail));
       }
       fTailVsTotalCharge[ch][0]->SetPoint(fTailVsTotalCharge[ch][0]->GetN(), charge0, tail);
       fTailVsTotalCharge[ch][1]->SetPoint(fTailVsTotalCharge[ch][1]->GetN(), charge1, tail);
@@ -323,8 +323,8 @@ Bool_t AliADDigitizer::Init()
 
     const Int_t board = AliADCalibData::GetBoardNumber(i);
     fNBins[i]   = TMath::Nint(((Float_t)(fCalibData->GetMatchWindow(board)+1)*25.0+
-			       (Float_t)kADMaxTDCWidth*fCalibData->GetWidthResolution(board))/
-			      fCalibData->GetTimeResolution(board));
+                               (Float_t)kADMaxTDCWidth*fCalibData->GetWidthResolution(board))/
+                              fCalibData->GetTimeResolution(board));
     fNBinsLT[i] = TMath::Nint(((Float_t)(fCalibData->GetMatchWindow(board)+1)*25.0)/
                               fCalibData->GetTimeResolution(board));
     fBinSize[i] = fCalibData->GetTimeResolution(board);
@@ -613,7 +613,7 @@ void AliADDigitizer::AdjustPulseShapeADC()
     for (Int_t bc=0; bc<kADNClocks; ++bc) {
       newADC[bc] = 0.0;
       if (!doExtrapolation[bc])
-	continue;
+        continue;
       const Bool_t integrator = ((bc+fEvenOrOdd) % 2);
       TF1 *f = dynamic_cast<TF1*>(f_Int[integrator]->At(bc));
 #if ROOT_VERSION_CODE < ROOT_VERSION(5,99,0) // ROOT version <6
@@ -637,7 +637,7 @@ void AliADDigitizer::AdjustPulseShapeADC()
     const Float_t b =   ( (n+1)  *chargeLastBC - tail)/det;
     if (a < 0 || b < 0) {
       AliErrorF("charge redistribution failed for Ch%02d: n=%f a=%e b=%e chargeLastBC=%f tail=%f",
-		ch, n, a, b, chargeLastBC, tail);
+                ch, n, a, b, chargeLastBC, tail);
       continue;
     }
     // fill the tail BCs with linear function
@@ -646,9 +646,9 @@ void AliADDigitizer::AdjustPulseShapeADC()
     }
 
     AliDebugF(5, "OLD: Ch%02d %5.1f %5.1f %5.1f %5.1f %5.1f %5.1f", ch,
-	      fAdc[ch][20], fAdc[ch][19], fAdc[ch][18], fAdc[ch][17], fAdc[ch][16], fAdc[ch][15]);
+              fAdc[ch][20], fAdc[ch][19], fAdc[ch][18], fAdc[ch][17], fAdc[ch][16], fAdc[ch][15]);
     AliDebugF(5, "NEW: Ch%02d %5.1f %5.1f %5.1f %5.1f %5.1f %5.1f", ch,
-	      newADC[20], newADC[19], newADC[18], newADC[17], newADC[16], newADC[15]);
+              newADC[20], newADC[19], newADC[18], newADC[17], newADC[16], newADC[15]);
     Float_t newCharge=0.0;
     for (Int_t bc=0; bc<kADNClocks; ++bc) {
       fAdc[ch][bc] = newADC[bc];
@@ -717,7 +717,7 @@ void AliADDigitizer::ReadSDigits()
         Int_t nbins = sDigit->GetNBins();
         if (nbins != fNBins[pmNumber]) {
           AliErrorF("Incompatible number of bins between digitizer (%d) and sdigit (%d) for PM %d! Skipping sdigit!",
-		    fNBins[pmNumber],nbins,pmNumber);
+                    fNBins[pmNumber],nbins,pmNumber);
           continue;
         }
         // Sum the charges
