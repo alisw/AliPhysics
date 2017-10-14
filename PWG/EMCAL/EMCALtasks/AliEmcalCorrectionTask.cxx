@@ -724,7 +724,7 @@ void AliEmcalCorrectionTask::AddContainersToComponent(AliEmcalCorrectionComponen
       // for the number of cells. This could potentially decrease the amount of debug information, but this
       // should rarely be an issue.
       if (component->GetCaloCells()) {
-        AliDebugStream(3) << "Component GetNumberOfCells: " << component->GetCaloCells()->GetNumberOfCells() << std::endl;
+        AliDebugStream(3) << "Component GetNumberOfCells(): " << component->GetCaloCells()->GetNumberOfCells() << std::endl;
       }
 
       // Check that we are using the standard input event
@@ -1562,6 +1562,7 @@ void AliEmcalCorrectionTask::PrintRequestedContainersInformation(AliEmcalContain
  * This function handles the nodes by hand due to the rare requirement to handle the user and default
  * configurations separately.
  *
+ * @param[in] configurationName Name of the configuration to be investigated
  * @param[in] componentName Name of the node from which properties are extracted
  * @param[out] propertyNames Names of all of the properties that were in the desired node
  * @param[in] nodeRequired True if the node is required to exist
@@ -1570,18 +1571,20 @@ void AliEmcalCorrectionTask::GetPropertyNamesFromNode(const std::string configur
 {
   bool retrievedPropertyNames = false;
   if (fYAMLConfig.DoesConfigurationExist(configurationName)) {
+    AliDebugStream(3) << "Looking for nodes in component \"" << componentName << "\" in the \"" << configurationName << "\" configuration\n";
     auto configPair = fYAMLConfig.GetConfiguration(configurationName);
     if (configPair.second[componentName])
     {
       for (auto propertyName : configPair.second[componentName])
       {
+        AliDebugStream(4) << "Node property name " << propertyName.first.as<std::string>() << "\n";
         propertyNames.insert(propertyName.first.as<std::string>());
       }
       retrievedPropertyNames = true;
     }
   }
 
-  if (retrievedPropertyNames && nodeRequired) {
+  if (retrievedPropertyNames == false && nodeRequired) {
     std::stringstream message;
     message << "Failed to retrieve required property \""
         << componentName << "\" from the \"" << configurationName << "\" configuration!" << std::endl;
