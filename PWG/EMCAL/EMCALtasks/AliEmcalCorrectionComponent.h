@@ -103,12 +103,12 @@ class AliEmcalCorrectionComponent : public TNamed {
   void SetIsESD(Bool_t isESD) {fEsdMode = isESD; }
 
   /// Set YAML Configuration
-  void SetYAMLConfiguration(AliYAMLConfiguration config) { fYAMLConfig = config; }
+  void SetYAMLConfiguration(PWG::Tools::AliYAMLConfiguration config) { fYAMLConfig = config; }
 
   /// Retrieve property
   template<typename T> bool GetProperty(std::string propertyName, T & property, bool requiredProperty = true, std::string correctionName = "");
  protected:
-  AliYAMLConfiguration    fYAMLConfig;                    ///< Contains the YAML configuration used to configure the component
+  PWG::Tools::AliYAMLConfiguration fYAMLConfig;           ///< Contains the YAML configuration used to configure the component
   Bool_t                  fCreateHisto;                   ///< Flag to make some basic histograms
   Int_t                   fRun;                           //!<! Run number
   TString                 fFilepass;                      ///< Input data pass number

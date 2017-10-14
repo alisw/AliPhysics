@@ -92,7 +92,7 @@ class AliEmcalCorrectionTask : public AliAnalysisTaskSE {
   // Compare configurations
   bool CompareToStoredConfiguration(std::string filename, bool userConfig = false);
   /// Retrieve the YAML configurations for direct access
-  AliYAMLConfiguration & GetYAMLConfiguration() { return fYAMLConfig; }
+  PWG::Tools::AliYAMLConfiguration & GetYAMLConfiguration() { return fYAMLConfig; }
   /** @} */
 
   // Options
@@ -218,7 +218,7 @@ class AliEmcalCorrectionTask : public AliAnalysisTaskSE {
   // YAML node dependent initialization utlitiles
   void GetPropertyNamesFromNode(const std::string configurationName, const std::string componentName, std::set <std::string> & propertyNames, const bool nodeRequired);
 
-  AliYAMLConfiguration        fYAMLConfig;                 ///< Handles configuration from YAML.
+  PWG::Tools::AliYAMLConfiguration fYAMLConfig;            ///< Handles configuration from YAML.
 
   std::string                 fSuffix;                     ///< Suffix of the Correction Task (used to select specialized components)
 

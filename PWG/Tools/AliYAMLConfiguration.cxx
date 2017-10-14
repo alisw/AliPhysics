@@ -12,8 +12,11 @@
 #include <TUUID.h>
 
 /// \cond CLASSIMP
-ClassImp(AliYAMLConfiguration);
+ClassImp(PWG::Tools::AliYAMLConfiguration);
 /// \endcond
+
+namespace PWG {
+namespace Tools {
 
 /**
  * Default constructor.
@@ -487,25 +490,29 @@ std::ostream & AliYAMLConfiguration::Print(std::ostream & in, const std::string 
 }
 
 /**
- * Implementation of the output stream operator for AliYAMLConfiguration. Printing
- * basic YAML configuration information provided by the function toString()
- *
- * @param in output stream
- * @param myTask Task which will be printed
- * @return Reference to the output stream
- */
-std::ostream & operator<<(std::ostream & in, const AliYAMLConfiguration & myTask)
-{
-  std::ostream & result = myTask.Print(in);
-  return result;
-}
-
-/**
  * Print basic YAML configuration information using the string representation provided by
  * AliYAMLConfiguration::toString()
  */
 void AliYAMLConfiguration::Print(Option_t* opt) const
 {
   AliInfoStream() << toString();
+}
+
+} // namespace Tools
+} // namespace PWG
+
+/**
+ * Implementation of the output stream operator for AliYAMLConfiguration. Printing
+ * basic YAML configuration information provided by the function toString(). Note that
+ * since this is friend, it is defined outside the namespace.
+ *
+ * @param in output stream
+ * @param myTask Task which will be printed
+ * @return Reference to the output stream
+ */
+std::ostream & operator<<(std::ostream & in, const PWG::Tools::AliYAMLConfiguration & myTask)
+{
+  std::ostream & result = myTask.Print(in);
+  return result;
 }
 

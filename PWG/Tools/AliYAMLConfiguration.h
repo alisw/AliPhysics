@@ -90,6 +90,14 @@
  * @date Sept 19, 2017
  */
 
+// operator<< has to be forward declared carefully to stay in the global namespace so that it works with CINT.
+// For generally how to keep the operator in the global namespace, See: https://stackoverflow.com/a/38801633
+namespace PWG { namespace Tools { class AliYAMLConfiguration; } }
+std::ostream & operator<< (std::ostream &in, const PWG::Tools::AliYAMLConfiguration &myTask);
+
+namespace PWG {
+namespace Tools {
+
 class AliYAMLConfiguration : public TObject {
  public:
   AliYAMLConfiguration(const std::string prefixString = "AliEmcalCorrection", const std::string delimiterCharacter = ":");
@@ -181,7 +189,7 @@ class AliYAMLConfiguration : public TObject {
   std::string toString(const int index = -1) const;
   std::ostream & Print(std::ostream &in, const int index = -1) const;
   std::ostream & Print(std::ostream &in, const std::string & configurationName) const;
-  friend std::ostream & operator<<(std::ostream &in, const AliYAMLConfiguration &myTask);
+  friend std::ostream & ::operator<< (std::ostream &in, const AliYAMLConfiguration &myTask);
   void Print(Option_t* /* opt */ = "") const;
   /** @} */
 
@@ -642,5 +650,8 @@ unsigned int AliYAMLConfiguration::GetConfigurationIndexFromName(const std::stri
 
   return index;
 }
+
+} // namespace Tools
+} // namespace PWG
 
 #endif /* ALIYAMLCONFIGURATION_H */
