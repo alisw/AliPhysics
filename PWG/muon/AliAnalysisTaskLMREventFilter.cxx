@@ -470,20 +470,7 @@ void AliAnalysisTaskLMREventFilter::UserExec(Option_t *)
 	  TVector3 dcaAtVz  = fMuonTrackCuts->GetCorrectedDCA(track);
 	  Double_t pTotMean = fMuonTrackCuts->GetAverageMomentum(track);
 	  Double_t pDca = pTotMean * dcaAtVz.Mag();
-	  trk=new AliLMRMuon();
-	  trk->SetMomentum(p[0],p[1],p[2]);
-	  trk->SetCharge(charge);
-	  trk->SetChi2Match(chi2Match);
-	  trk->SetChi2(chi2);
-	  trk->SetRabs(rAbs);
-	  trk->SetpDCA(pDca);
-	  trk->SetTriggerMatch(match);
-	  trk->SetSelectionMask(fMuonTrackCuts->GetSelectionMask(track));
-	  trk->SetLocalBoard((UShort_t)AliAnalysisMuonUtility::GetLoCircuit(track));
-	  fAliLMREvent->AddMuon(trk);
-	  delete trk;
 	  // Create new Muon
-	  /*
 	  trk=fAliLMREvent->AddMuon();
 	  trk->SetMomentum(p[0],p[1],p[2]);
 	  trk->SetCharge(charge);
@@ -494,7 +481,6 @@ void AliAnalysisTaskLMREventFilter::UserExec(Option_t *)
 	  trk->SetTriggerMatch(match);
 	  trk->SetSelectionMask(fMuonTrackCuts->GetSelectionMask(track));
 	  trk->SetLocalBoard((UShort_t)AliAnalysisMuonUtility::GetLoCircuit(track));
-	  */
 	  }
     }
   
