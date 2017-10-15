@@ -89,7 +89,7 @@ AliAnalysisTaskLMREventFilter::AliAnalysisTaskLMREventFilter() :
   fTriggerClasses[6]="CMSH8";
   fTriggerClasses[7]="CMUL8";
   fTriggerClasses[8]="CMLL8";
-  fTriggerClasses[9]="C0TVX";
+  fTriggerClasses[9]="C0TVX-B-NOPF-CENT";
   fTriggerClasses[10]="CINT7-B-NOPF-MUFAST";
   fTriggerClasses[11]="CINT7-B-NOPF-CENTNOTRD";
   fTriggerClasses[12]="CINT7-B-NOPF-CENT";
@@ -129,7 +129,7 @@ AliAnalysisTaskLMREventFilter::AliAnalysisTaskLMREventFilter(const Char_t *name,
   fTriggerClasses[6]="CMSH8";
   fTriggerClasses[7]="CMUL8";
   fTriggerClasses[8]="CMLL8";
-  fTriggerClasses[9]="C0TVX";
+  fTriggerClasses[9]="C0TVX-B-NOPF-CENT";
   fTriggerClasses[10]="CINT7-B-NOPF-MUFAST";
   fTriggerClasses[11]="CINT7-B-NOPF-CENTNOTRD";
   fTriggerClasses[12]="CINT7-B-NOPF-CENT";
@@ -184,11 +184,11 @@ void AliAnalysisTaskLMREventFilter::UserCreateOutputObjects()
   fOutputList = new TList();
   fOutputList->SetOwner(kTRUE);
   
-  fhTriggers = new TH1D("hTriggers","L2 Triggers",46,0,fNTrigClass);
+  fhTriggers = new TH1D("hTriggers","L2 Triggers",47,0,fNTrigClass);
   fOutputList->Add(fhTriggers);	  
   fhTriggers->Sumw2();
 
-  fhNMu = new TH2D("hNMu","Number of Muon",20,0,20,46,0,fNTrigClass);
+  fhNMu = new TH2D("hNMu","Number of Muon",20,0,20,47,0,fNTrigClass);
   fOutputList->Add(fhNMu);
   fhNMu->Sumw2();
 
@@ -298,6 +298,9 @@ void AliAnalysisTaskLMREventFilter::UserCreateOutputObjects()
   fhTriggers->GetXaxis()->SetBinLabel(CINT8Shift+29,Form("%s &0TVX &0MSL (PS)",fTriggerClasses[12].Data()));
   fhNMu->GetYaxis()->SetBinLabel(CINT8Shift+29,Form("%s &0TVX &0MSL (PS)",fTriggerClasses[12].Data()));
     
+  fhTriggers->GetXaxis()->SetBinLabel(CINT8Shift+30,Form("MB || %s",fTriggerClasses[9].Data()));
+  fhNMu->GetYaxis()->SetBinLabel(CINT8Shift+30,Form("MB || %s",fTriggerClasses[9].Data()));
+
   PostData(1, fOutputList);
   PostData(2, fEventTree);
   printf("End of create Output\n");
@@ -532,6 +535,7 @@ Bool_t AliAnalysisTaskLMREventFilter::IsSelectedTrigger(AliAODEvent *fAOD, Bool_
       delete tokens;
       return evtToBeProcessed;
     }
+  evtToBeProcessed = kTRUE;
 
   if (fillHisto) 
     fhTriggers->Fill(fTriggerClasses[0].Data(),1);
@@ -546,7 +550,6 @@ Bool_t AliAnalysisTaskLMREventFilter::IsSelectedTrigger(AliAODEvent *fAOD, Bool_
 	    {
 	      goodTrig = kTRUE;
 	      fhNMu->Fill(nmu,fTriggerClasses[i],1);
-	      evtToBeProcessed = kTRUE;
 	      break;
 	    }
 	}
@@ -564,8 +567,11 @@ Bool_t AliAnalysisTaskLMREventFilter::IsSelectedTrigger(AliAODEvent *fAOD, Bool_
 
   if(fSelectMask&(AliVEvent::kINT7|AliVEvent::kINT7inMUON))
     physicsSelectionMask|=1<<1;
-  if(fSelectMask&AliVEvent::kINT8)
-    physicsSelectionMask|=1<<2;
+  if(fSelectMask&AliVEvent::kAny)
+    {
+      if(trigStr.Contains("C0TVX-B-NOPF-CENT"))
+	physicsSelectionMask|=1<<2;
+    }
   if(isMuonINT7selected)
     physicsSelectionMask|=1<<3;
   if(isMuonC0TVXselected)
@@ -622,7 +628,7 @@ Bool_t AliAnalysisTaskLMREventFilter::IsSelectedTrigger(AliAODEvent *fAOD, Bool_
 	    }
 	}
     }
-  if(fSelectMask&AliVEvent::kINT8)
+  if(physicsSelectionMask&1<<2)//fSelectMask&AliVEvent::kINT8)
     {
       if(trigStr.Contains(fTriggerClasses[9].Data()))
 	{
@@ -637,6 +643,14 @@ Bool_t AliAnalysisTaskLMREventFilter::IsSelectedTrigger(AliAODEvent *fAOD, Bool_
 	    {
 	      fhTriggers->Fill(Form("%s &0MUL (PS)",fTriggerClasses[9].Data()),1);
 	      fhNMu ->Fill(nmu,Form("%s &0MUL (PS)",fTriggerClasses[9].Data()),1);
+	    }
+	}
+      if(fSelectMask&AliVEvent::kAny)
+	{
+	  if(trigStr.Contains("CINT7-B-NOPF-CENT"))
+	    {
+	      fhTriggers->Fill(Form("MB || %s",fTriggerClasses[9].Data()),1);
+	      fhNMu->Fill(nmu,Form("MB || %s",fTriggerClasses[9].Data()),1);
 	    }
 	}
     }
