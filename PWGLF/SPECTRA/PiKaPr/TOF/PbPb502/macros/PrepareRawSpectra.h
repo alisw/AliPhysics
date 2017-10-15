@@ -437,16 +437,16 @@ void PrepareRawSpectra(TString dirname = latestDir[0], TString dataname = "TOFDa
             fitrange[0] = ptbin > 10 ? -10 : -25;
             if( ptbin >= 27) fitrange[0] = -5;
             if( ptbin > 40) fitrange[0] = -3;
-            
+
             if(ptbin < 34) fitrange[1] = 200;
             else if(ptbin < 37) fitrange[1] = 100;
             else fitrange[1] = 40;
-            
+
             if(0){
               if(ptbin < 10) useit[4] = kFALSE;
             }
             else{
-              
+
               fitrange[0] = -30;
               if(ptbin >= 29) fitrange[0] = -5;
               fitrange[1] = 50;
