@@ -124,6 +124,13 @@ class AliAnalysisTaskTOFSpectra : public AliAnalysisTaskSE {
     AliInfo(Form("Using fUseTPCShift %i\n", fUseTPCShift));
   };
 
+  ///
+  /// Method to obtain the output list for histograms, this is intended so as to check the data size of output
+  TList* GetOutput()
+  {
+    return fListHist;
+  }
+
   //Utility methods
   ///
   ///  Method to get the event Multiplicity
