@@ -17,8 +17,8 @@
 // Contributors: Nirbhay K. Behera, Jiyeon Kwon, Jonghan Park
 
 #include "TObjArray.h"
-#include "AliHFEminiTrack.h"
 #include "AliHFEreducedMCParticle.h"
+#include "AliHFEminiTrack.h"
 #include "AliHFEminiEvent.h"
 
 ClassImp(AliHFEminiEvent)

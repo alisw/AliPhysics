@@ -64,11 +64,10 @@
 #include "AliHFEextraCuts.h"
 #include "AliHFEmcQA.h"
 #include "AliHFEpidTPC.h"
-#include "AliHFEminiEvent.h"
-#include "AliHFEminiTrack.h"
-#include "AliHFEreducedMCParticle.h"
 #include "AliHFEsignalCuts.h"
 #include "AliHFEV0taginfo.h"
+#include "AliHFEminiEvent.h"
+#include "AliHFEminiTrack.h"
 
 
 #include "AliHFEminiEventCreator.h"

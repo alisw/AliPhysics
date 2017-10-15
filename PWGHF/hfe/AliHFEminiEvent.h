@@ -22,8 +22,9 @@
 #include <TObject.h>
 
 class TObjArray;
-class AliHFEminiTrack;
 class AliHFEreducedMCParticle;
+class AliHFEminiTrack;
+
 
 class AliHFEminiEvent : public TObject{
  public:

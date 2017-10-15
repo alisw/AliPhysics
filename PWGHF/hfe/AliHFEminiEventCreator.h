@@ -41,8 +41,9 @@ class AliHFEcuts;
 class AliHFEextraCuts;
 class AliHFEpidTPC;
 class AliHFEsignalCuts;
-class AliHFEminiEvent;
 class AliHFEV0taginfo;
+class AliHFEminiEvent;
+class AliHFEminiTrack;
 
 class AliHFEminiEventCreator : public AliAnalysisTaskSE{
   public:
