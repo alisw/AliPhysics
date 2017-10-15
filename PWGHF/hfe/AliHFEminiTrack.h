@@ -16,8 +16,8 @@
 // Base class for AliHFEminiEventCreator.cxx/h
 // Contributors: Nirbhay K. Behera, Jiyeon Kwon, Jonghan Park
 
-#ifndef ALIHFEREDUCEDTRACK_H
-#define ALIHFEREDUCEDTRACK_H
+#ifndef ALIHFEMINITRACK_H
+#define ALIHFEMINITRACK_H
 
 #include <TObject.h>
 #include <TMath.h>
