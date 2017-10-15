@@ -161,15 +161,14 @@ TString calibfile = "./V0M_bins_LHC15g3a3.root"
     centBins = centBinsMultV0M;
     nCentBins = sizeof(centBinsMultV0M) / 8 - 1;
   }
-  else if(strCentr == "SPDTracklets"){
-    centBins = centBinsMultV0M;
-    nCentBins = sizeof(centBinsMultV0M) / 8 - 1;
-  }
   else if (strCentr == "SPDTracklets" && ridgeBins){
     centBins = centBinsMultV0M_Ridge;
     nCentBins = sizeof(centBinsMultV0M_Ridge) / 8 - 1;
   }
-
+  else if(strCentr == "SPDTracklets"){
+    centBins = centBinsMultV0M;
+    nCentBins = sizeof(centBinsMultV0M) / 8 - 1;
+  }
 
   task->SetCentPercentiles(centBins, nCentBins);
   task->SetTriggerSelection(trigSel);
