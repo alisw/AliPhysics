@@ -1,4 +1,5 @@
 #!/bin/sh
+
 # Download analysis train results for MC done on pT hard bins and multiple runs
 # also merge the runs per pT hard bin into a single file per pT hard bin in the end
 # finally extract the histograms into other file and scale each pT hard and merge the final files
@@ -7,6 +8,16 @@
 #./DownloadExtractScaleMergePtHardAnalysisFiles.sh RunMinIndex RunMaxIndex pTHardMin pTHardMax path1 path2
 #example
 #./DownloadExtractScaleMergePtHardAnalysisFiles.sh 0 2 1 21 /alice/sim/2017/LHC17g8a_fast PWGPP/AnalysisQA_AOD/400_20171005-1137
+#
+# Input files and macros/scripts called:
+# - This script expects a list of runs provided in the txt file "runList.txt", 
+# each run in different line
+# - Also, the merging script "mergePtHardRunFiles.sh" is executed to merge the different 
+# histogram files per runs in each pT hard
+# - The macro "ScaleExtractPtHardBinHistograms.C" extracts the histograms in 2 separate files
+# one scaled with the proper cross section and the other without scaling.
+#
+#
 
 j=-1
 
