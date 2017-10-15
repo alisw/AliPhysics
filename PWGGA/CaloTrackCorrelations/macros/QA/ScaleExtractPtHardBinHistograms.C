@@ -1,12 +1,12 @@
 /// \file ScaleExtractPtHardBinHistograms.C
-/// \ingroup CaloTrackCorrMacrosQA
+/// \ingroup CaloTrackCorrMacrosQAPtHard
 /// \brief Scale and extract pT hard dependent histograms of analysis EMCal PWG-GA QA wagon
 ///
 /// Macro to extract and scale QA MC productions  histograms 
 /// done with pT hard bins (pythia jet-jet)./
 /// Extract the histograms scaled and not scaled
 ///
-/// To execute:root -q -b -l ScaleExtractPtHardBinHistograms.C'(1,50,kFALSE)'
+/// To execute: root -q -b -l ScaleExtractPtHardBinHistograms.C'(1,50,kFALSE)'
 ///
 /// The input files Scaled.root and NotScaled.root are obtained executing the script:
 /// * DownloadExtractScaleMergePtHardAnalysisFiles.sh

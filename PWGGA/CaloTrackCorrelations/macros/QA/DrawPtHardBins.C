@@ -1,5 +1,5 @@
 /// \file DrawPtHardBins.C
-/// \ingroup CaloTrackCorrMacrosQA
+/// \ingroup CaloTrackCorrMacrosQAPtHard
 /// \brief Plot pT hard dependent histograms of analysis EMCal PWG-GA QA wagon
 ///
 /// Macro to plot few selected histograms
@@ -18,6 +18,12 @@
 ///
 /// The input files Scaled.root and NotScaled.root are obtained executing the script:
 /// * DownloadExtractScaleMergePtHardAnalysisFiles.sh
+///
+/// This script: 
+///  1 downloads the analysis QA train output files per pT hard bin and run, 
+///  1 merges the files per run in each pT hard bin,  
+///  1 extracts the histograms of the EMCAL QA wagon in 2 separate files, in one of them it scales the histograms with the proper cross section
+///  1 adds the different pT hard bins
 ///
 /// \author Gustavo Conesa Balbastre <Gustavo.Conesa.Balbastre@cern.ch>, (LPSC-CNRS)
 ///
