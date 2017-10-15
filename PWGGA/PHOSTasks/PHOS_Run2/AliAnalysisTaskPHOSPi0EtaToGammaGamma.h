@@ -43,7 +43,6 @@ class AliAnalysisTaskPHOSPi0EtaToGammaGamma : public AliAnalysisTaskSE {
     void SetTOFCutEfficiencyFunction(TF1 *f1) {fTOFEfficiency = f1;}
     void SetNonLinearityStudy(Bool_t flag) {fIsNonLinStudy = flag;}
 
-
     void SetEventCuts(Bool_t isMC){
       fPHOSEventCuts = new AliPHOSEventCuts("PHOSEventCuts");
       fPHOSEventCuts->SetMCFlag(isMC);
@@ -52,11 +51,12 @@ class AliAnalysisTaskPHOSPi0EtaToGammaGamma : public AliAnalysisTaskSE {
       fPHOSEventCuts->SetRejectDAQIncompleteEvent(kTRUE);
     }
 
-    void SetClusterCuts(Bool_t useCoreDisp, Double_t NsigmaCPV, Double_t NsigmaDisp){
+    void SetClusterCuts(Bool_t useCoreDisp, Double_t NsigmaCPV, Double_t NsigmaDisp, Double_t distBC){
       fPHOSClusterCuts = new AliPHOSClusterCuts("PHOSClusterCuts");
       fPHOSClusterCuts->SetUseCoreDispersion(useCoreDisp);
       fPHOSClusterCuts->SetNsigmaCPV(NsigmaCPV);
       fPHOSClusterCuts->SetNsigmaDisp(NsigmaDisp);
+      fPHOSClusterCuts->SetMinDistanceFromBC(distBC);
     }
 
     void SetAdditionalPi0PtWeightFunction(TArrayD *centarray, TObjArray *funcarray) {
@@ -167,7 +167,6 @@ class AliAnalysisTaskPHOSPi0EtaToGammaGamma : public AliAnalysisTaskSE {
     AliPHOSEventCuts *fPHOSEventCuts;
     AliPHOSClusterCuts *fPHOSClusterCuts;
     Double_t fBunchSpace;// in unit of ns.
-    Double_t fMinDistBCM;//minimum distance to the closest bad channel
     Int_t fCollisionSystem;//colliions system : pp=0, PbPb=1, pPb (Pbp)=2;
     TF1 *fTOFEfficiency;//TOF cut efficiency as a function of cluster energy;
     AliESDtrackCuts *fESDtrackCutsGlobal;//good global track
@@ -219,7 +218,7 @@ class AliAnalysisTaskPHOSPi0EtaToGammaGamma : public AliAnalysisTaskSE {
     AliAnalysisTaskPHOSPi0EtaToGammaGamma(const AliAnalysisTaskPHOSPi0EtaToGammaGamma&);
     AliAnalysisTaskPHOSPi0EtaToGammaGamma& operator=(const AliAnalysisTaskPHOSPi0EtaToGammaGamma&);
 
-    ClassDef(AliAnalysisTaskPHOSPi0EtaToGammaGamma, 25);
+    ClassDef(AliAnalysisTaskPHOSPi0EtaToGammaGamma, 27);
 };
 
 #endif

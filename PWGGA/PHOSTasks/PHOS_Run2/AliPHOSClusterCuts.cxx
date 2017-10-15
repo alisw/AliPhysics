@@ -13,7 +13,8 @@ AliPHOSClusterCuts::AliPHOSClusterCuts(const char *name):
   fUseDisp(kFALSE),
   fNsigmaCPV(-1),
   fNsigmaDisp(-1),
-  fIsCore(kFALSE)
+  fIsCore(kFALSE),
+  fMinDistBC(0.)
 {
   //Constructor
   SetName(name);
@@ -29,8 +30,9 @@ AliPHOSClusterCuts::~AliPHOSClusterCuts()
 //________________________________________________________________________
 Bool_t AliPHOSClusterCuts::AcceptPhoton(AliCaloPhoton *ph)
 {
-  if(!IsNeutral(ph))  return kFALSE;
-  if(!AcceptDisp(ph)) return kFALSE;
+  if(!IsNeutral(ph))   return kFALSE;
+  if(!AcceptDisp(ph))  return kFALSE;
+  if(!IsFarFromBC(ph)) return kFALSE;
 
   return kTRUE;
 }
@@ -67,15 +69,26 @@ Bool_t AliPHOSClusterCuts::AcceptDisp(AliCaloPhoton *ph)
   return kTRUE;
 }
 //________________________________________________________________________
+Bool_t AliPHOSClusterCuts::IsFarFromBC(AliCaloPhoton *ph)
+{
+  Double_t distance = ph->DistToBadfp();
+  if(distance < fMinDistBC) return kFALSE;
+  else return kTRUE;
+}
+//________________________________________________________________________
 Bool_t AliPHOSClusterCuts::AcceptElectron(AliCaloPhoton *ph)
 {
-  if(IsNeutral(ph))  return kFALSE;
-  if(!AcceptDisp(ph)) return kFALSE;
+  if(IsNeutral(ph))    return kFALSE;
+  if(!AcceptDisp(ph))  return kFALSE;
+  if(!IsFarFromBC(ph)) return kFALSE;
+
   return kTRUE;
 }
 //________________________________________________________________________
 Bool_t AliPHOSClusterCuts::AcceptChargedParticle(AliCaloPhoton *ph)
 {
-  return !IsNeutral(ph);
+  if(!IsFarFromBC(ph)) return kFALSE;
+  else return !IsNeutral(ph);
 }
 //________________________________________________________________________
+

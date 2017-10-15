@@ -26,7 +26,6 @@ class AliAnalysisTaskPHOSObjectCreator : public AliAnalysisTaskSE {
     void SetTenderFlag(Bool_t tender) {fUsePHOSTender = tender;}
     void SetMCFlag(Bool_t mc) {fIsMC = mc;}
     void SetBunchSpace(Double_t bs) {fBunchSpace = bs;}
-    void SetMinimumDistanceFromBC(Double_t dist) {fMinDistBC = dist;}
 
     void SetPHOSBadMap(Int_t mod,TH2I *h)
     {
@@ -77,7 +76,6 @@ class AliAnalysisTaskPHOSObjectCreator : public AliAnalysisTaskSE {
     Bool_t fUsePHOSTender;
     Bool_t fIsMC;
     Double_t fBunchSpace;
-    Double_t fMinDistBC;
     TString fObjectArrayName;
     AliStack *fMCArrayESD;
     TClonesArray *fMCArrayAOD;
@@ -88,7 +86,7 @@ class AliAnalysisTaskPHOSObjectCreator : public AliAnalysisTaskSE {
     AliAnalysisTaskPHOSObjectCreator(const AliAnalysisTaskPHOSObjectCreator&);
     AliAnalysisTaskPHOSObjectCreator& operator=(const AliAnalysisTaskPHOSObjectCreator&);
 
-    ClassDef(AliAnalysisTaskPHOSObjectCreator, 11);
+    ClassDef(AliAnalysisTaskPHOSObjectCreator, 13);
 };
 
 #endif

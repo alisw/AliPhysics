@@ -48,7 +48,6 @@ AliAnalysisTaskPHOSObjectCreator::AliAnalysisTaskPHOSObjectCreator(const char *n
   fUsePHOSTender(kTRUE),
   fIsMC(kFALSE),
   fBunchSpace(25.),
-  fMinDistBC(-1.),
   fObjectArrayName("PHOSClusterArray"),
   fMCArrayESD(0x0),
   fMCArrayAOD(0x0),

@@ -17,7 +17,7 @@ AliAnalysisTaskPHOSPi0EtaToGammaGamma* AddTaskPHOSPi0EtaToGammaGamma_pp_5TeV(
     const Bool_t TOFcorrection = kTRUE,
     const Bool_t NonLinStudy = kFALSE,
     const Double_t bs = 25.,//bunch space in ns.
-    const Double_t distBC = -1,//minimum distance to bad channel.
+    const Double_t distBC = 0,//minimum distance to bad channel.
     const Bool_t isJJMC = kFALSE,
     const TString MCtype = "MBMC"
     )
@@ -74,13 +74,13 @@ AliAnalysisTaskPHOSPi0EtaToGammaGamma* AddTaskPHOSPi0EtaToGammaGamma_pp_5TeV(
 
   TString taskname = "";
   if(FlowTask){
-     if(harmonics > 0) taskname = Form("%s_%s_%s_Cen%d_%d%s_Harmonics%d_BS%dns_DBC%02dmm",name,CollisionSystem.Data(),TriggerName.Data(),(Int_t)CenMin,(Int_t)CenMax,PIDname.Data(),harmonics,(Int_t)bs,(Int_t)(distBC*10));
+     if(harmonics > 0) taskname = Form("%s_%s_%s_Cen%d_%d%s_Harmonics%d_BS%dns_DBC%dcell",name,CollisionSystem.Data(),TriggerName.Data(),(Int_t)CenMin,(Int_t)CenMax,PIDname.Data(),harmonics,(Int_t)bs,(Int_t)(distBC));
       else{
         ::Error("AddTaskPHOSPi0EtaToGammaGamma", "Qn flow vector correction is ON, but you do not set harmonics.");
         return NULL;
       }
   }
-  else taskname = Form("%s_%s_%s_Cen%d_%d%s_BS%dns_DBC%02dmm",name,CollisionSystem.Data(),TriggerName.Data(),(Int_t)CenMin,(Int_t)CenMax,PIDname.Data(),(Int_t)bs,(Int_t)(distBC*10));
+  else taskname = Form("%s_%s_%s_Cen%d_%d%s_BS%dns_DBC%dcell",name,CollisionSystem.Data(),TriggerName.Data(),(Int_t)CenMin,(Int_t)CenMax,PIDname.Data(),(Int_t)bs,(Int_t)(distBC));
 
   AliAnalysisTaskPHOSPi0EtaToGammaGamma* task = new AliAnalysisTaskPHOSPi0EtaToGammaGamma(taskname);
   task->SelectCollisionCandidates(trigger);
@@ -91,13 +91,13 @@ AliAnalysisTaskPHOSPi0EtaToGammaGamma* AddTaskPHOSPi0EtaToGammaGamma_pp_5TeV(
   task->SetJetJetMC(isJJMC);
   task->SetMCType(MCtype);
   task->SetNonLinearityStudy(NonLinStudy);
-  
+ 
   task->SetTenderFlag(usePHOSTender);
   task->SetMCFlag(isMC);
   task->SetCoreEnergyFlag(useCoreE);
 
   task->SetEventCuts(isMC);
-  task->SetClusterCuts(useCoreDisp,NsigmaCPV,NsigmaDisp);
+  task->SetClusterCuts(useCoreDisp,NsigmaCPV,NsigmaDisp,distBC);
 
   task->SetCentralityMin(CenMin);
   task->SetCentralityMax(CenMax);

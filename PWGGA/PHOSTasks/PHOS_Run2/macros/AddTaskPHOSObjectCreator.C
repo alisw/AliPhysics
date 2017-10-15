@@ -4,7 +4,6 @@ AliAnalysisTaskPHOSObjectCreator* AddTaskPHOSObjectCreator(
     const Bool_t usePHOSTender = kTRUE,
     const Bool_t isMC          = kFALSE,
     const Double_t BunchSpace  = 25.,
-    const Double_t distanceBC  = 0.,
     const Bool_t NonLinCorr    = kTRUE,
     const Bool_t excludeM4     = kTRUE,
     const TString period       = "LHC15n"
@@ -25,14 +24,13 @@ AliAnalysisTaskPHOSObjectCreator* AddTaskPHOSObjectCreator(
     return NULL;
   }
 
-  TString taskname = Form("%s_BS%dns_DBC%dcm",name,(Int_t)BunchSpace,(Int_t)(distanceBC*10));
+  TString taskname = Form("%s_BS%dns",name,(Int_t)BunchSpace);
 
   AliAnalysisTaskPHOSObjectCreator* task = new AliAnalysisTaskPHOSObjectCreator(taskname);
   task->SelectCollisionCandidates(trigger);
   task->SetTenderFlag(usePHOSTender);
   task->SetMCFlag(isMC);
   task->SetBunchSpace(BunchSpace);//in unit of ns
-  task->SetMinimumDistanceFromBC(distanceBC);
   task->ExcludeM4(excludeM4);
 
   if(isMC && NonLinCorr){  
@@ -43,12 +41,12 @@ AliAnalysisTaskPHOSObjectCreator* AddTaskPHOSObjectCreator(
     if(period.Contains("LHC15n")){
       f1nonlin->FixParameter(0,-0.06); //for full E, ZS = 20MeV;
       f1nonlin->FixParameter(1,  0.7); //for full E, ZS = 20MeV;
-      f1nonlin->FixParameter(2, 1.01); //for full E, ZS = 20MeV;//decalib 3% on M123
+      f1nonlin->FixParameter(2,1.012); //for full E, ZS = 20MeV;//decalib 3% on M123
     }
     else if(period.Contains("LHC15o")){
       f1nonlin->FixParameter(0,-0.06);//for core E at ZS 20 MeV with only MIP cut
       f1nonlin->FixParameter(1,  0.7);//for core E at ZS 20 MeV with only MIP cut
-      f1nonlin->FixParameter(2, 1.01);//for core E at ZS 20 MeV with only MIP cut
+      f1nonlin->FixParameter(2,0.995);//for core E at ZS 20 MeV with only MIP cut
       //f1nonlin->FixParameter(0,-0.04);//for core E at ZS 20 MeV with only MIP cut
       //f1nonlin->FixParameter(1,  0.8);//for core E at ZS 20 MeV with only MIP cut
       //f1nonlin->FixParameter(2,0.993);//for core E at ZS 20 MeV with only MIP cut
@@ -56,7 +54,7 @@ AliAnalysisTaskPHOSObjectCreator* AddTaskPHOSObjectCreator(
     task->SetUserDefinedNonlinearity(f1nonlin);
 
     printf("Non-linearity correction in M.C. is ON\n");
-    printf("function shape : %s , where p0 = %3.2f , p1 = %3.2f , p2 = %3.2f\n",f1nonlin->GetTitle(),f1nonlin->GetParameter(0),f1nonlin->GetParameter(1),f1nonlin->GetParameter(2));
+    printf("function shape : %s , where p0 = %4.3f , p1 = %4.3f , p2 = %4.3f\n",f1nonlin->GetTitle(),f1nonlin->GetParameter(0),f1nonlin->GetParameter(1),f1nonlin->GetParameter(2));
 
   }
 
