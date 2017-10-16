@@ -92,7 +92,6 @@ class AliAnalysisTaskEmcalEmbeddingHelper : public AliAnalysisTaskSE {
   // Get
   Int_t GetPtHardBin()                                      const { return fPtHardBin; }
   Int_t GetNPtHardBins()                                    const { return fNPtHardBins; }
-  Int_t GetAnchorRun()                                      const { return fAnchorRun; }
   TString GetTreeName()                                     const { return fTreeName; }
   Bool_t GetRandomEventNumberAccess()                       const { return fRandomEventNumberAccess; }
   Bool_t GetRandomFileAccess()                              const { return fRandomFileAccess; }
@@ -107,8 +106,6 @@ class AliAnalysisTaskEmcalEmbeddingHelper : public AliAnalysisTaskSE {
   void SetPtHardBin(Int_t n)                                      { fPtHardBin           = n; }
   /// Set the number of pt hard bins in the production to properly format the histograms
   void SetNPtHardBins(Int_t n)                                    { fNPtHardBins         = n; }
-  /// Sets the anchor run which will be added into the file pattern. Can also be omitted and set directly in the pattern.
-  void SetAnchorRun(Int_t r)                                      { fAnchorRun           = r; }
   /// Set to embed from ESD
   void SetESD(const char * treeName = "esdTree")                  { fTreeName     = treeName; }
   /// Set to embed from AOD
@@ -133,6 +130,8 @@ class AliAnalysisTaskEmcalEmbeddingHelper : public AliAnalysisTaskSE {
   void SetFileListFilename(const char * filename)                 { fFileListFilename = filename; }
   /// Create QA histograms. These are necessary for proper scaling, so be careful disabling them!
   void SetCreateHistos(bool b)                                    { fCreateHisto = b; }
+  /// Set path to YAML configuration file
+  void SetConfigurationPath(const char * path)                    { fConfigurationPath = path; }
   /* @} */
 
   /**
@@ -208,6 +207,7 @@ class AliAnalysisTaskEmcalEmbeddingHelper : public AliAnalysisTaskSE {
 
  protected:
   bool            GetFilenames()        ;
+  bool            InitializeYamlConfig();
   bool            AutoConfigurePtHardBins();
   std::string     GenerateUniqueFileListFilename() const;
   std::string     RemoveTrailingSlashes(std::string filename) const;
@@ -223,6 +223,7 @@ class AliAnalysisTaskEmcalEmbeddingHelper : public AliAnalysisTaskSE {
   Bool_t          InitEvent()           ;
   void            InitTree()            ;
   bool            PythiaInfoFromCrossSectionFile(std::string filename);
+  Bool_t          IsGoodEmbeddedRun(TString path);
 
   UInt_t                                        fTriggerMask;       ///<  Trigger selection mask
   bool                                          fMCRejectOutliers;  ///<  If true, MC outliers will be rejected
@@ -236,7 +237,6 @@ class AliAnalysisTaskEmcalEmbeddingHelper : public AliAnalysisTaskSE {
   bool                                          fWrappedAroundTree; //!<! Notes whether we have wrapped around the tree, which is important if the offset into the tree is non-zero
 
   TString                                       fTreeName         ; ///<  Name of the ESD/AOD tree where the events are to be found
-  Int_t                                         fAnchorRun        ; ///<  Anchor run for the given pythia production
   Int_t                                         fNPtHardBins      ; ///<  Total number of pt hard bins
   Int_t                                         fPtHardBin        ; ///<  ptHard bin for the given pythia production
   Bool_t                                        fRandomEventNumberAccess; ///<  If true, it will start embedding from a random entry in the file rather than from the first
@@ -253,6 +253,8 @@ class AliAnalysisTaskEmcalEmbeddingHelper : public AliAnalysisTaskSE {
   TString                                       fFileListFilename ; ///<  Name of the file list containing paths to files to embed
   Int_t                                         fFilenameIndex    ; ///<  Index of vector containing paths to files to embed
   std::vector <std::string>                     fFilenames        ; ///<  Paths to the files to embed
+  std::string                                   fConfigurationPath; ///<  Path to YAML configuration
+  std::vector <std::string>                     fEmbeddedRunlist  ; ///<  Good runlist for files to embed
   std::vector <std::string>                     fPythiaCrossSectionFilenames; ///< Paths to the pythia xsection files
   TFile                                        *fExternalFile     ; //!<! External file used for embedding
   TChain                                       *fChain            ; //!<! External TChain (tree) containing the events available for embedding
@@ -281,7 +283,7 @@ class AliAnalysisTaskEmcalEmbeddingHelper : public AliAnalysisTaskSE {
   AliAnalysisTaskEmcalEmbeddingHelper &operator=(const AliAnalysisTaskEmcalEmbeddingHelper&); // not implemented
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskEmcalEmbeddingHelper, 7);
+  ClassDef(AliAnalysisTaskEmcalEmbeddingHelper, 8);
   /// \endcond
 };
 #endif
