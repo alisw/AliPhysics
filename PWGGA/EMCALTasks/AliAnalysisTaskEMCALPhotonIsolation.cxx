@@ -3841,42 +3841,18 @@ void AliAnalysisTaskEMCALPhotonIsolation::AddParticleToUEMC(Double_t& sumUE,AliA
   Double_t phip=mcpp->Phi();
 
   if(!fTPC4Iso){
-    // if(TMath::Abs(etap)>=(fGeom->GetArm1EtaMax()-0.03) || (phip<=((fGeom->GetArm1PhiMin())*TMath::DegToRad()+0.03) || phip>= ((fGeom->GetArm1PhiMax())*TMath::DegToRad()-0.03)))
-    //   return;
-
-    // if(!fPeriod.IsNull()){
-    //   etaMin               = fGeom->GetArm1EtaMin()+0.03;
-    //   etaMax               = fGeom->GetArm1EtaMax()-0.03;
-    //   etaMinDCal_InnerEdge = fGeom->GetEMCGeometry()->GetDCALInnerExtandedEta()+0.03;                // DCal hole for eta in (-0.220, 0.220)
-    //   phiMinEMCal          = (fGeom->GetArm1PhiMin())*TMath::DegToRad()+0.03;                        //  80     deg (4/9*pi  rad) plus  0.03 rad = 1.426 rad
-
-    //   if(fPeriod.Contains("12") || fPeriod.Contains("13"))
-    //     phiMaxEMCal = (fGeom->GetEMCALPhiMax()-20.)*TMath::DegToRad()-0.03;                          // 180     deg (pi      rad) minus 0.03 rad = 3.112 rad
-    //   else
-    //     phiMaxEMCal = (fGeom->GetEMCALPhiMax())*TMath::DegToRad()-0.03;                              // 188.137 deg (3.284   rad) minus 0.03 rad = 3.254 rad
-
-    //   phiMinDCal        = (fGeom->GetDCALPhiMin())*TMath::DegToRad()+0.03;                           // 260     deg (13/9*pi rad) plus  0.03 rad = 4.568 rad
-    //   phiMaxDCal_FullSM = (fGeom->GetEMCGeometry()->GetDCALStandardPhiMax())*TMath::DegToRad()-0.03; // 320     deg (16/9*pi rad) minus 0.03 rad = 5.555 rad
-    //   phiMaxDCal        = (fGeom->GetDCALPhiMax())*TMath::DegToRad()-0.03;                           // 328.137 deg (5.727   rad) minus 0.03 rad = 5.697 rad
-    // }
-    // else{ // If no period set, default for 2011-2013 (2*5 EMCal SM)
-    //   etaMin      = -0.67;
-    //   etaMax      = 0.67;
-    //   phiMinEMCal = (4./9.)*TMath::Pi()+0.03;
-    //   phiMaxEMCal = TMath::Pi()-0.03;
-    // }
-
-    // if(!fPeriod.IsNull() && (etap > etaMax || etap < etaMin || phip < phiMinEMCal || phip > phiMaxDCal || (phip > phiMaxEMCal && phip < phiMinDCal) || (TMath::Abs(etap) <= etaMinDCal_InnerEdge && phip >= phiMinDCal && phip < phiMaxDCal_FullSM)))
-    //   return;
-    // else if(fPeriod.IsNull() && (etap > etaMax || etap < etaMin || phip > phiMaxEMCal || phip < phiMinEMCal))
-    //   return;
-
-    etaMax      = fGeom->GetArm1EtaMax()-0.03;
-    phiMinEMCal = (fGeom->GetArm1PhiMin())*TMath::DegToRad()+0.03;        //  80     deg (4/9*pi  rad) plus  0.03 rad = 1.426 rad
-    if(fPeriod.Contains("12") || fPeriod.Contains("13"))
-      phiMaxEMCal = (fGeom->GetEMCALPhiMax()-20.)*TMath::DegToRad()-0.03; // 180     deg (pi      rad) minus 0.03 rad = 3.112 rad
-    else
-      phiMaxEMCal = (fGeom->GetEMCALPhiMax())*TMath::DegToRad()-0.03;     // 188.137 deg (3.284   rad) minus 0.03 rad = 3.254 rad
+    etaMax = fGeom->GetArm1EtaMax()-0.03;
+    if(!fPeriod.IsNull()){
+      phiMinEMCal = (fGeom->GetArm1PhiMin())*TMath::DegToRad()+0.03;        //  80     deg (4/9*pi  rad) plus  0.03 rad = 1.426 rad
+      if(fPeriod.Contains("12") || fPeriod.Contains("13"))
+	phiMaxEMCal = (fGeom->GetEMCALPhiMax()-20.)*TMath::DegToRad()-0.03; // 180     deg (pi      rad) minus 0.03 rad = 3.112 rad
+      else
+	phiMaxEMCal = (fGeom->GetEMCALPhiMax())*TMath::DegToRad()-0.03;     // 188.137 deg (3.284   rad) minus 0.03 rad = 3.254 rad
+    }
+    else{ // If no period set, default for 2011-2013 (2*5 EMCal SM)
+      phiMinEMCal = (4./9.)*TMath::Pi()+0.03;
+      phiMaxEMCal = TMath::Pi()-0.03;
+    }
 
     if(TMath::Abs(etap) >= etaMax || (phip <= phiMinEMCal || phip >= phiMaxEMCal))
       return;
@@ -4082,90 +4058,39 @@ void AliAnalysisTaskEMCALPhotonIsolation::AnalyzeMC(){
       eta = mcpart->Eta();
       phi = mcpart->Phi();
 
-        // Check photons in EMCal
-      // if(!fTPC4Iso){
-      //   if((TMath::Abs(eta)>(fGeom->GetArm1EtaMax()-0.03)-fIsoConeRadius ) || (phi < ((fGeom->GetArm1PhiMin())*TMath::DegToRad()+0.03+fIsoConeRadius) || phi>((fGeom->GetArm1PhiMax())*TMath::DegToRad()-0.03-fIsoConeRadius)))
-      //     continue;
-      // }
-      // else{
-      //   if((TMath::Abs(eta)>0.87-fIsoConeRadius ) || (phi < ((fGeom->GetArm1PhiMin())*TMath::DegToRad()+0.03) || phi>((fGeom->GetArm1PhiMax())*TMath::DegToRad()-0.03)))
-      //     continue;
-      // }
-
-      // if(!fTPC4Iso){
-      //   if(!fPeriod.IsNull()){
-      //     etaMin               = fGeom->GetArm1EtaMin()+0.03+fFiducialCut;
-      //     etaMax               = fGeom->GetArm1EtaMax()-0.03-fFiducialCut;
-      //     etaMinDCal_InnerEdge = fGeom->GetEMCGeometry()->GetDCALInnerExtandedEta()+0.03+fFiducialCut;                // DCal hole for eta in (-0.220, 0.220)
-      //     phiMinEMCal          = (fGeom->GetArm1PhiMin())*TMath::DegToRad()+0.03+fFiducialCut;                        //  80     deg (4/9*pi  rad) plus  0.03 rad = 1.426 rad
-
-      //     if(fPeriod.Contains("12") || fPeriod.Contains("13"))
-      //       phiMaxEMCal = (fGeom->GetEMCALPhiMax()-20.)*TMath::DegToRad()-0.03-fFiducialCut;                          // 180     deg (pi      rad) minus 0.03 rad = 3.112 rad
-      //     else
-      //       phiMaxEMCal = (fGeom->GetEMCALPhiMax())*TMath::DegToRad()-0.03-fFiducialCut;                              // 188.137 deg (3.284   rad) minus 0.03 rad = 3.254 rad
-
-      //     phiMinDCal        = (fGeom->GetDCALPhiMin())*TMath::DegToRad()+0.03+fFiducialCut;                           // 260     deg (13/9*pi rad) plus  0.03 rad = 4.568 rad
-      //     phiMaxDCal_FullSM = (fGeom->GetEMCGeometry()->GetDCALStandardPhiMax())*TMath::DegToRad()-0.03-fFiducialCut; // 320     deg (16/9*pi rad) minus 0.03 rad = 5.555 rad
-      //     phiMaxDCal        = (fGeom->GetDCALPhiMax())*TMath::DegToRad()-0.03-fFiducialCut;                           // 328.137 deg (5.727   rad) minus 0.03 rad = 5.697 rad
-
-      //     if(eta > etaMax || eta < etaMin || phi < phiMinEMCal || phi > phiMaxDCal || (phi > phiMaxEMCal && phi < phiMinDCal) || (TMath::Abs(eta) <= etaMinDCal_InnerEdge && phi >= phiMinDCal && phi < phiMaxDCal_FullSM))
-      //       continue;
-      //   }
-      //   else{ // If no period set, default for 2011-2013 (2*5 EMCal SM)
-      //     etaMin      = -0.67+fFiducialCut;
-      //     etaMax      = 0.67-fFiducialCut;
-      //     phiMinEMCal = (4./9.)*TMath::Pi()+0.03+fFiducialCut;
-      //     phiMaxEMCal = TMath::Pi()-0.03-fFiducialCut;
-
-      //     if(eta > etaMax || eta < etaMin || phi > phiMaxEMCal || phi < phiMinEMCal)
-      //     	continue;
-      //   }
-      // }
-      // else{
-      //   etaMin = -0.87+fFiducialCut;
-      //   etaMax = 0.87-fFiducialCut;
-
-      //   if(!fPeriod.IsNull()){
-      //     phiMinEMCal = (fGeom->GetArm1PhiMin())*TMath::DegToRad()+0.03;                                 //  80     deg (4/9*pi  rad) plus  0.03 rad = 1.426 rad
-
-      //     if(fPeriod.Contains("12") || fPeriod.Contains("13"))
-      //       phiMaxEMCal = (fGeom->GetEMCALPhiMax()-20.)*TMath::DegToRad()-0.03;                          // 180     deg (pi      rad) minus 0.03 rad = 3.112 rad
-      //     else
-      //       phiMaxEMCal = (fGeom->GetEMCALPhiMax())*TMath::DegToRad()-0.03;                              // 188.137 deg (3.284   rad) minus 0.03 rad = 3.254 rad
-
-      //     phiMinDCal        = (fGeom->GetDCALPhiMin())*TMath::DegToRad()+0.03;                           // 260     deg (13/9*pi rad) plus  0.03 rad = 4.568 rad
-      //     phiMaxDCal        = (fGeom->GetDCALPhiMax())*TMath::DegToRad()-0.03;                           // 328.137 deg (5.727   rad) minus 0.03 rad = 5.697 rad
-
-      //     if(eta > etaMax || eta < etaMin || phi < phiMinEMCal || phi > phiMaxDCal || (phi > phiMaxEMCal && phi < phiMinDCal))
-      //       continue;
-      //   }
-      //   else{ // If no period set, default for 2011-2013 (2*5 EMCal SM)
-      //     phiMinEMCal = (4./9.)*TMath::Pi()+0.03;
-      //     phiMaxEMCal = TMath::Pi()-0.03;
-
-      //     if(eta > etaMax || eta < etaMin || phi > phiMaxEMCal || phi < phiMinEMCal)
-      //       continue;
-      //   }
-      // }
-
+      // Check photons in EMCal
       if(!fTPC4Iso){
-	etaMax      = fGeom->GetArm1EtaMax()-0.03-fFiducialCut;
-	phiMinEMCal = (fGeom->GetArm1PhiMin())*TMath::DegToRad()+0.03+fFiducialCut;
-	if(fPeriod.Contains("12") || fPeriod.Contains("13"))
-	  phiMaxEMCal = (fGeom->GetEMCALPhiMax()-20.)*TMath::DegToRad()-0.03-fFiducialCut;
-	else
-	  phiMaxEMCal = (fGeom->GetEMCALPhiMax())*TMath::DegToRad()-0.03-fFiducialCut;
+	etaMax = fGeom->GetArm1EtaMax()-0.03-fFiducialCut;
+
+	if(!fPeriod.IsNull()){
+	  phiMinEMCal = (fGeom->GetArm1PhiMin())*TMath::DegToRad()+0.03+fFiducialCut;
+	  if(fPeriod.Contains("12") || fPeriod.Contains("13"))
+	    phiMaxEMCal = (fGeom->GetEMCALPhiMax()-20.)*TMath::DegToRad()-0.03-fFiducialCut;
+	  else
+	    phiMaxEMCal = (fGeom->GetEMCALPhiMax())*TMath::DegToRad()-0.03-fFiducialCut;
+	}
+	else{ // If no period set, default for 2011-2013 (2*5 EMCal SM)
+	  phiMinEMCal = (4./9.)*TMath::Pi()+0.03+fFiducialCut;
+	  phiMaxEMCal = TMath::Pi()-0.03-fFiducialCut;
+	}
 
         if((TMath::Abs(eta) > etaMax) || (phi < phiMinEMCal || phi > phiMaxEMCal))
           continue;
       }
       else{
-	etaMax      = 0.87-fFiducialCut;
-	phiMinEMCal = (fGeom->GetArm1PhiMin())*TMath::DegToRad()+0.03;
-	if(fPeriod.Contains("12") || fPeriod.Contains("13"))
-	  phiMaxEMCal = (fGeom->GetEMCALPhiMax()-20.)*TMath::DegToRad()-0.03;
-	else
-	  phiMaxEMCal = (fGeom->GetEMCALPhiMax())*TMath::DegToRad()-0.03;
+	etaMax = 0.87-fFiducialCut;
+
+	if(!fPeriod.IsNull()){
+	  phiMinEMCal = (fGeom->GetArm1PhiMin())*TMath::DegToRad()+0.03;
+	  if(fPeriod.Contains("12") || fPeriod.Contains("13"))
+	    phiMaxEMCal = (fGeom->GetEMCALPhiMax()-20.)*TMath::DegToRad()-0.03;
+	  else
+	    phiMaxEMCal = (fGeom->GetEMCALPhiMax())*TMath::DegToRad()-0.03;
+	}
+	else{ // If no period set, default for 2011-2013 (2*5 EMCal SM)
+	  phiMinEMCal = (4./9.)*TMath::Pi()+0.03;
+	  phiMaxEMCal = TMath::Pi()-0.03;
+	}
 
         if((TMath::Abs(eta) > etaMax) || (phi < phiMinEMCal || phi > phiMaxEMCal))
           continue;
@@ -4310,89 +4235,38 @@ void AliAnalysisTaskEMCALPhotonIsolation::AnalyzeMC(){
       // eta = mcsearch->Eta();
       // phi = mcsearch->Phi();
 
-      // if(!fTPC4Iso){
-      //   if((TMath::Abs(mcsearch->Eta())>(fGeom->GetArm1EtaMax()-0.03)-fIsoConeRadius ) || (mcsearch->Phi() < ((fGeom->GetArm1PhiMin())*TMath::DegToRad()+0.03+fIsoConeRadius) || mcsearch->Phi()>((fGeom->GetArm1PhiMax())*TMath::DegToRad()-0.03-fIsoConeRadius)))
-      //     continue;
-      // }
-      // else{
-      //   if((TMath::Abs(mcsearch->Eta())>0.87-fIsoConeRadius ) || (mcsearch->Phi() < ((fGeom->GetArm1PhiMin())*TMath::DegToRad()+0.03) || mcsearch->Phi()>((fGeom->GetArm1PhiMax())*TMath::DegToRad()-0.03)))
-      //     continue;
-      // }
-
-      // if(!fTPC4Iso){
-      //   if(!fPeriod.IsNull()){
-      //     etaMin               = fGeom->GetArm1EtaMin()+0.03+fFiducialCut;
-      //     etaMax               = fGeom->GetArm1EtaMax()-0.03-fFiducialCut;
-      //     etaMinDCal_InnerEdge = fGeom->GetEMCGeometry()->GetDCALInnerExtandedEta()+0.03+fFiducialCut;                // DCal hole for eta in (-0.220, 0.220)
-      //     phiMinEMCal          = (fGeom->GetArm1PhiMin())*TMath::DegToRad()+0.03+fFiducialCut;                        //  80     deg (4/9*pi  rad) plus  0.03 rad = 1.426 rad
-
-      //     if(fPeriod.Contains("12") || fPeriod.Contains("13"))
-      //       phiMaxEMCal = (fGeom->GetEMCALPhiMax()-20.)*TMath::DegToRad()-0.03-fFiducialCut;                          // 180     deg (pi      rad) minus 0.03 rad = 3.112 rad
-      //     else
-      //       phiMaxEMCal = (fGeom->GetEMCALPhiMax())*TMath::DegToRad()-0.03-fFiducialCut;                              // 188.137 deg (3.284   rad) minus 0.03 rad = 3.254 rad
-
-      //     phiMinDCal        = (fGeom->GetDCALPhiMin())*TMath::DegToRad()+0.03+fFiducialCut;                           // 260     deg (13/9*pi rad) plus  0.03 rad = 4.568 rad
-      //     phiMaxDCal_FullSM = (fGeom->GetEMCGeometry()->GetDCALStandardPhiMax())*TMath::DegToRad()-0.03-fFiducialCut; // 320     deg (16/9*pi rad) minus 0.03 rad = 5.555 rad
-      //     phiMaxDCal        = (fGeom->GetDCALPhiMax())*TMath::DegToRad()-0.03-fFiducialCut;                           // 328.137 deg (5.727   rad) minus 0.03 rad = 5.697 rad
-
-      //     if(eta > etaMax || eta < etaMin || phi < phiMinEMCal || phi > phiMaxDCal || (phi > phiMaxEMCal && phi < phiMinDCal) || (TMath::Abs(eta) <= etaMinDCal_InnerEdge && phi >= phiMinDCal && phi < phiMaxDCal_FullSM))
-      //       continue;
-      //   }
-      //   else{ // If no period set, default for 2011-2013 (2*5 EMCal SM)
-      //     etaMin      = -0.67+fFiducialCut;
-      //     etaMax      = 0.67-fFiducialCut;
-      //     phiMinEMCal = (4./9.)*TMath::Pi()+0.03+fFiducialCut;
-      //     phiMaxEMCal = TMath::Pi()-0.03-fFiducialCut;
-
-      //     if(eta > etaMax || eta < etaMin || phi > phiMaxEMCal || phi < phiMinEMCal)
-      //       continue;
-      //   }
-      // }
-      // else{
-      //   etaMin = -0.87+fFiducialCut;
-      //   etaMax = 0.87-fFiducialCut;
-
-      //   if(!fPeriod.IsNull()){
-      //     phiMinEMCal = (fGeom->GetArm1PhiMin())*TMath::DegToRad()+0.03;                                 //  80     deg (4/9*pi  rad) plus  0.03 rad = 1.426 rad
-
-      //     if(fPeriod.Contains("12") || fPeriod.Contains("13"))
-      //       phiMaxEMCal = (fGeom->GetEMCALPhiMax()-20.)*TMath::DegToRad()-0.03;                          // 180     deg (pi      rad) minus 0.03 rad = 3.112 rad
-      //     else
-      //       phiMaxEMCal = (fGeom->GetEMCALPhiMax())*TMath::DegToRad()-0.03;                              // 188.137 deg (3.284   rad) minus 0.03 rad = 3.254 rad
-
-      //     phiMinDCal        = (fGeom->GetDCALPhiMin())*TMath::DegToRad()+0.03;                           // 260     deg (13/9*pi rad) plus  0.03 rad = 4.568 rad
-      //     phiMaxDCal        = (fGeom->GetDCALPhiMax())*TMath::DegToRad()-0.03;                           // 328.137 deg (5.727   rad) minus 0.03 rad = 5.697 rad
-
-      //     if(eta > etaMax || eta < etaMin || phi < phiMinEMCal || phi > phiMaxDCal || (phi > phiMaxEMCal && phi < phiMinDCal))
-      //       continue;
-      //   }
-      //   else{ // If no period set, default for 2011-2013 (2*5 EMCal SM)
-      //     phiMinEMCal = (4./9.)*TMath::Pi()+0.03;
-      //     phiMaxEMCal = TMath::Pi()-0.03;
-
-      //     if(eta > etaMax || eta < etaMin || phi > phiMaxEMCal || phi < phiMinEMCal)
-      //       continue;
-      //   }
-      // }
-
       if(!fTPC4Iso){
-	etaMax      = fGeom->GetArm1EtaMax()-0.03-fFiducialCut;
-	phiMinEMCal = (fGeom->GetArm1PhiMin())*TMath::DegToRad()+0.03+fFiducialCut;
-	if(fPeriod.Contains("12") || fPeriod.Contains("13"))
-	  phiMaxEMCal = (fGeom->GetEMCALPhiMax()-20.)*TMath::DegToRad()-0.03-fFiducialCut;
-	else
-	  phiMaxEMCal = (fGeom->GetEMCALPhiMax())*TMath::DegToRad()-0.03-fFiducialCut;
+	etaMax = fGeom->GetArm1EtaMax()-0.03-fFiducialCut;
+
+	if(!fPeriod.IsNull()){
+	  phiMinEMCal = (fGeom->GetArm1PhiMin())*TMath::DegToRad()+0.03+fFiducialCut;
+	  if(fPeriod.Contains("12") || fPeriod.Contains("13"))
+	    phiMaxEMCal = (fGeom->GetEMCALPhiMax()-20.)*TMath::DegToRad()-0.03-fFiducialCut;
+	  else
+	    phiMaxEMCal = (fGeom->GetEMCALPhiMax())*TMath::DegToRad()-0.03-fFiducialCut;
+	}
+	else{ // If no period set, default for 2011-2013 (2*5 EMCal SM)
+	  phiMinEMCal = (4./9.)*TMath::Pi()+0.03+fFiducialCut;
+	  phiMaxEMCal = TMath::Pi()-0.03-fFiducialCut;
+	}
 
         if((TMath::Abs(mcsearch->Eta()) > etaMax) || (mcsearch->Phi() < phiMinEMCal || mcsearch->Phi() > phiMaxEMCal))
           continue;
       }
       else{
-	etaMax      = 0.87-fFiducialCut;
-	phiMinEMCal = (fGeom->GetArm1PhiMin())*TMath::DegToRad()+0.03;
-	if(fPeriod.Contains("12") || fPeriod.Contains("13"))
-	  phiMaxEMCal = (fGeom->GetEMCALPhiMax()-20.)*TMath::DegToRad()-0.03;
-	else
-	  phiMaxEMCal = (fGeom->GetEMCALPhiMax())*TMath::DegToRad()-0.03;
+	etaMax = 0.87-fFiducialCut;
+
+	if(!fPeriod.IsNull()){
+	  phiMinEMCal = (fGeom->GetArm1PhiMin())*TMath::DegToRad()+0.03;
+	  if(fPeriod.Contains("12") || fPeriod.Contains("13"))
+	    phiMaxEMCal = (fGeom->GetEMCALPhiMax()-20.)*TMath::DegToRad()-0.03;
+	  else
+	    phiMaxEMCal = (fGeom->GetEMCALPhiMax())*TMath::DegToRad()-0.03;
+	}
+	else{ // If no period set, default for 2011-2013 (2*5 EMCal SM)
+	  phiMinEMCal = (4./9.)*TMath::Pi()+0.03;
+	  phiMaxEMCal = TMath::Pi()-0.03;
+	}
 
         if((TMath::Abs(mcsearch->Eta()) > etaMax) || (mcsearch->Phi() < phiMinEMCal || mcsearch->Phi() > phiMaxEMCal))
           continue;
