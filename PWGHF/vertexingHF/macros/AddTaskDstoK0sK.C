@@ -27,7 +27,8 @@ AliAnalysisTaskSEDstoK0sK *AddTaskDstoK0sK(TString cutFileName,
 
    // Create the analysis cuts.
    //==============================================================================
-   TFile *filecuts = new TFile(cutFileName.Data());
+   TFile *filecuts;
+   filecuts = TFile::Open(cutFileName.Data());
    if (!filecuts || (filecuts && !(filecuts->IsOpen())))
       AliFatal("Cut object not found: analysis will not start!\n");
 
@@ -38,7 +39,7 @@ AliAnalysisTaskSEDstoK0sK *AddTaskDstoK0sK(TString cutFileName,
 
    // Create the analysis task.
    //==============================================================================
-   const Int_t nCutsTuple = 34;
+   const Int_t nCutsTuple = 28;
    Float_t minCutsTuple[nCutsTuple]={0.}; std::fill_n(minCutsTuple, nCutsTuple, -1000.);
    Float_t maxCutsTuple[nCutsTuple]={0.}; std::fill_n(maxCutsTuple, nCutsTuple,  1000.);
    if (fFillNtuple) {
@@ -59,27 +60,21 @@ AliAnalysisTaskSEDstoK0sK *AddTaskDstoK0sK(TString cutFileName,
       minCutsTuple[10] =  0.1;         maxCutsTuple[10] =   40.;        // "K0sPtDauNeg"
       minCutsTuple[11] =  0.3;         maxCutsTuple[11] =   40.;        // "BachPt"
       minCutsTuple[12] = -3.;          maxCutsTuple[12] =    3.;        // "Bachd0"
-      minCutsTuple[13] = -1000.;       maxCutsTuple[13] = 1000.;        // "BachNsigmaTPCpion"
-      minCutsTuple[14] = -1000.;       maxCutsTuple[14] = 1000.;        // "BachNsigmaTPCkaon"
-      minCutsTuple[15] = -1000.;       maxCutsTuple[15] = 1000.;        // "BachNsigmaTPCproton"
-      minCutsTuple[16] = -1000.;       maxCutsTuple[16] = 1000.;        // "BachNsigmaTOFpion"
-      minCutsTuple[17] = -1000.;       maxCutsTuple[17] = 1000.;        // "BachNsigmaTOFkaon"
-      minCutsTuple[18] = -1000.;       maxCutsTuple[18] = 1000.;        // "BachNsigmaTOFproton"
-      minCutsTuple[19] = massDs-0.2;   maxCutsTuple[19] = massDs+0.2;   // "CanInvMassDs"
-      minCutsTuple[20] = massDp-0.2;   maxCutsTuple[20] = massDp+0.2;   // "CanInvMassDplus"
-      minCutsTuple[21] =  1.;          maxCutsTuple[21] =  24.;         // "CanPt"
-      minCutsTuple[22] =  0.;          maxCutsTuple[22] =   8.;         // "CanDCAProngToProng"
-      minCutsTuple[23] = -1.;          maxCutsTuple[23] =   1.;         // "CanCosThetaStarK0s"
-      minCutsTuple[24] = -1.;          maxCutsTuple[24] =   1.;         // "CanCosThetaStarBach"
-      minCutsTuple[25] =  0.;          maxCutsTuple[25] =   1.;         // "CanCosPA"
-      minCutsTuple[26] = -1.;          maxCutsTuple[26] =   1.;         // "CanCosPAxy"
-      minCutsTuple[27] =  0.;          maxCutsTuple[27] =   3.;         // "CanDLengthXY"
-      minCutsTuple[28] =  0.;          maxCutsTuple[28] = 1000.;        // "CanNormDLengthXY"
-      minCutsTuple[29] =  0.;          maxCutsTuple[29] =   3.;         // "CanDLength3D"
-      minCutsTuple[30] =  0.;          maxCutsTuple[30] = 1000.;        // "CanNormDLength3D"
-      minCutsTuple[31] =  0.;          maxCutsTuple[31] = 1000.;        // "CanSigmaVtx"
-      minCutsTuple[32] = -1000.;       maxCutsTuple[32] = 1000.;        // "CanNormTopoBach"
-      minCutsTuple[33] = -1000.;       maxCutsTuple[33] = 1000.;        // "CanNormTopoK0s"
+      minCutsTuple[13] = massDs-0.2;   maxCutsTuple[13] = massDs+0.2;   // "CanInvMassDs"
+      minCutsTuple[14] = massDp-0.2;   maxCutsTuple[14] = massDp+0.2;   // "CanInvMassDplus"
+      minCutsTuple[15] =  1.;          maxCutsTuple[15] =  24.;         // "CanPt"
+      minCutsTuple[16] =  0.;          maxCutsTuple[16] =   8.;         // "CanDCAProngToProng"
+      minCutsTuple[17] = -1.;          maxCutsTuple[17] =   1.;         // "CanCosThetaStarK0s"
+      minCutsTuple[18] = -1.;          maxCutsTuple[18] =   1.;         // "CanCosThetaStarBach"
+      minCutsTuple[19] =  0.;          maxCutsTuple[19] =   1.;         // "CanCosPA"
+      minCutsTuple[20] = -1.;          maxCutsTuple[20] =   1.;         // "CanCosPAxy"
+      minCutsTuple[21] =  0.;          maxCutsTuple[21] =   3.;         // "CanDLengthXY"
+      minCutsTuple[22] =  0.;          maxCutsTuple[22] = 1000.;        // "CanNormDLengthXY"
+      minCutsTuple[23] =  0.;          maxCutsTuple[23] =   3.;         // "CanDLength3D"
+      minCutsTuple[24] =  0.;          maxCutsTuple[24] = 1000.;        // "CanNormDLength3D"
+      minCutsTuple[25] =  0.;          maxCutsTuple[25] = 1000.;        // "CanSigmaVtx"
+      minCutsTuple[26] = -1000.;       maxCutsTuple[26] = 1000.;        // "CanNormTopoBach"
+      minCutsTuple[27] = -1000.;       maxCutsTuple[27] = 1000.;        // "CanNormTopoK0s"
    }
 
 
