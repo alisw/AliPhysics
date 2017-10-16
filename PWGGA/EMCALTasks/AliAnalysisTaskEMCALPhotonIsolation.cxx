@@ -1455,43 +1455,11 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::Run()
   //_________________________________________________________________________________
 void AliAnalysisTaskEMCALPhotonIsolation::FillQAHistograms(AliVCluster *coi, TLorentzVector vecCOI){
 
-  // Smearing for shower shape study histograms ONLY (fWho = 2)
-  Double_t       m02COI     = 0.;
-  Int_t          nlm        = 0;
-  AliVCaloCells *fCaloCells = InputEvent()->GetEMCALCells();
-  if(fCaloCells)
-    nlm = GetNLM(coi,fCaloCells);
-
-  if(fSSsmearing){
-    if(coi->GetM02()>0.1){
-      if(nlm == 1){
-        if((fSSsmearwidth != 0.)){
-          TRandom3 *ran = new TRandom3(0);
-
-          if(fWhich == 0){ // Landau Smearing
-            Float_t smear = ran->Landau(fSSsmear_mean,fSSsmearwidth);
-            if(fSSsmear_mean == 0 || (fSSsmear_mean != 0 && coi->GetID()%3 == 0))
-              m02COI = coi->GetM02() + smear;
-          }
-          else{ // Gaussian Smearing
-            Float_t smear = ran->Gaus(fSSsmear_mean,fSSsmearwidth);
-            if(fSSsmear_mean == 0 || (fSSsmear_mean != 0 && coi->GetID()%3 == 0))
-              m02COI = coi->GetM02() + smear;
-          }
-        }
-        else{
-          AliWarning("The Smearing is set but the width of the distribution is null!\nNOT DOING ANYTHING for the Shower Shape!");
-          m02COI = coi->GetM02();
-        }
-      }
-      else
-        m02COI = coi->GetM02();
-    }
-  }
-  else{
-    AliWarning("Smearing not SET!");
+  Double_t m02COI = 0.;
+  if(fSSsmearing)
+    ApplySmearing(coi, m02COI);
+  else
     m02COI = coi->GetM02();
-  }
 
   switch(fWho)
   {
@@ -2228,38 +2196,10 @@ void AliAnalysisTaskEMCALPhotonIsolation::EtIsoClusPhiBand(TLorentzVector c, Dou
 
   // Set smearing for MC
   Double_t m02candidate = 0.;
-  Int_t    nlm          = 0;
-  AliVCaloCells * fCaloCells = InputEvent()->GetEMCALCells();
-  if(fCaloCells)
-    nlm = GetNLM(candidate,fCaloCells);
-
-  if(fSSsmearing){
-    if(candidate->GetM02() > 0.1){
-      if(nlm == 1){
-        if(fSSsmearwidth != 0.){
-          TRandom3 *ran =new TRandom3(0);
-          if(fWhich == 0){ // Landau Smearing
-            Float_t smear = ran->Landau(fSSsmear_mean,fSSsmearwidth);
-            if(fSSsmear_mean == 0 || (fSSsmear_mean != 0 && candidate->GetID()%3 == 0))
-              m02candidate = candidate->GetM02() + smear;
-          }
-          else{ // Gaussian Smearing
-            Float_t smear = ran->Gaus(fSSsmear_mean,fSSsmearwidth);
-            if(fSSsmear_mean == 0 || (fSSsmear_mean != 0 && candidate->GetID()%3 == 0))
-              m02candidate = candidate->GetM02() + smear;
-          }
-        }
-        else{
-          m02candidate = candidate->GetM02();
-        }
-      }
-      else
-        m02candidate = candidate->GetM02();
-    }
-  }
-  else{
+  if(fSSsmearing)
+    ApplySmearing(candidate, m02candidate);
+  else
     m02candidate = candidate->GetM02();
-  }
 
   if(fIsoMethod==1 && fQA && !fLightOutput){
     fEtVSM02VSPisotrack->Fill(c.Pt(),m02candidate,sumpTConeCharged);
@@ -2463,38 +2403,10 @@ void AliAnalysisTaskEMCALPhotonIsolation::EtIsoClusEtaBand(TLorentzVector c, Dou
 
   // Set smearing for MC
   Double_t m02candidate = 0.;
-  Int_t    nlm          = 0;
-  AliVCaloCells * fCaloCells = InputEvent()->GetEMCALCells();
-  if(fCaloCells)
-    nlm = GetNLM(candidate,fCaloCells);
-
-  if(fSSsmearing){
-    if(candidate->GetM02() > 0.1){
-      if(nlm == 1){
-        if(fSSsmearwidth != 0.){
-          TRandom3 *ran =new TRandom3(0);
-          if(fWhich == 0){ // Landau Smearing
-            Float_t smear = ran->Landau(fSSsmear_mean,fSSsmearwidth);
-            if(fSSsmear_mean == 0 || (fSSsmear_mean != 0 && candidate->GetID()%3 == 0))
-              m02candidate = candidate->GetM02() + smear;
-          }
-          else{ // Gaussian Smearing
-            Float_t smear = ran->Gaus(fSSsmear_mean,fSSsmearwidth);
-            if(fSSsmear_mean == 0 || (fSSsmear_mean != 0 && candidate->GetID()%3 == 0))
-              m02candidate = candidate->GetM02() + smear;
-          }
-        }
-        else{
-          m02candidate = candidate->GetM02();
-        }
-      }
-      else
-        m02candidate = candidate->GetM02();
-    }
-  }
-  else{
+  if(fSSsmearing)
+    ApplySmearing(candidate, m02candidate);
+  else
     m02candidate = candidate->GetM02();
-  }
 
   if(fIsoMethod==1 && fQA && !fLightOutput){
     fEtVSM02VSPisotrack->Fill(c.Pt(),m02candidate,sumpTConeCharged);
@@ -3297,38 +3209,10 @@ void AliAnalysisTaskEMCALPhotonIsolation::IsolationAndUEinEMCAL(AliVCluster *coi
 
   // Set smearing for MC
   Double_t m02COI = 0.;
-  Int_t    nlm    = 0;
-  AliVCaloCells * fCaloCells = InputEvent()->GetEMCALCells();
-  if(fCaloCells)
-    nlm = GetNLM(coi,fCaloCells);
-
-  if(fSSsmearing){
-    if(coi->GetM02() > 0.1){
-      if(nlm == 1){
-        if(fSSsmearwidth != 0.){
-          TRandom3 *ran =new TRandom3(0);
-          if(fWhich == 0){ // Landau Smearing
-            Float_t smear = ran->Landau(fSSsmear_mean,fSSsmearwidth);
-            if(fSSsmear_mean == 0 || (fSSsmear_mean != 0 && coi->GetID()%3 == 0))
-              m02COI = coi->GetM02() + smear;
-          }
-          else{ // Gaussian Smearing
-            Float_t smear = ran->Gaus(fSSsmear_mean,fSSsmearwidth);
-            if(fSSsmear_mean == 0 || (fSSsmear_mean != 0 && coi->GetID()%3 == 0))
-              m02COI = coi->GetM02() + smear;
-          }
-        }
-        else{
-          m02COI = coi->GetM02();
-        }
-      }
-      else
-        m02COI = coi->GetM02();
-    }
-  }
-  else{
+  if(fSSsmearing)
+    ApplySmearing(coi, m02COI);
+  else
     m02COI = coi->GetM02();
-  }
 
     // EMCal Only for Acceptance of Cells/Clusters/Tracks
   switch(fIsoMethod)
@@ -3513,38 +3397,10 @@ void AliAnalysisTaskEMCALPhotonIsolation::IsolationAndUEinTPC(AliVCluster *coi, 
 
   // Set smearing for MC
   Double_t m02COI = 0.;
-  Int_t    nlm    = 0;
-  AliVCaloCells * fCaloCells = InputEvent()->GetEMCALCells();
-  if(fCaloCells)
-    nlm = GetNLM(coi,fCaloCells);
-
-  if(fSSsmearing){
-    if(coi->GetM02() > 0.1){
-      if(nlm == 1){
-        if(fSSsmearwidth != 0.){
-          TRandom3 *ran =new TRandom3(0);
-          if(fWhich == 0){ // Landau Smearing
-            Float_t smear = ran->Landau(fSSsmear_mean,fSSsmearwidth);
-            if(fSSsmear_mean == 0 || (fSSsmear_mean != 0 && coi->GetID()%3 == 0))
-              m02COI = coi->GetM02() + smear;
-          }
-          else{ // Gaussian Smearing
-            Float_t smear = ran->Gaus(fSSsmear_mean,fSSsmearwidth);
-            if(fSSsmear_mean == 0 || (fSSsmear_mean != 0 && coi->GetID()%3 == 0))
-              m02COI = coi->GetM02() + smear;
-          }
-        }
-        else{
-          m02COI = coi->GetM02();
-        }
-      }
-      else
-        m02COI = coi->GetM02();
-    }
-  }
-  else{
+  if(fSSsmearing)
+    ApplySmearing(coi, m02COI);
+  else
     m02COI = coi->GetM02();
-  }
 
   switch(fUEMethod)
   {
@@ -3768,56 +3624,19 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::FillGeneralHistograms(AliVCluster *c
   if(fQA)
     fTrackMult->Fill(nTracks);
 
-    // Printf("After Loop on Tracks");
-  Double_t eTCOI = 0., m02COI = 0.;
-
     // Definition of the Array for Davide's Output
   const Int_t ndims =   fNDimensions;
   Double_t outputValues[ndims];
 
+  Double_t eTCOI = 0.;
   eTCOI = vecCOI.Et();
 
-  Int_t nlm=0;
-  AliVCaloCells * fCaloCells =InputEvent()->GetEMCALCells();
-  if(fCaloCells)
-    nlm = GetNLM(coi,fCaloCells);
-
-    // Printf("cluster ID %d with nlm %d . M02 BEFORE possible smearing %.4lf . Do we set the smearing ? %s ",coi->GetID(),nlm, m02COI = coi->GetM02(), fSSsmearing? "Yes":"No");
-
-  if(fSSsmearing){
-    if(coi->GetM02()>0.1){
-        // Printf("Smearing for only clusters with nlm = %d" ,fWhich);
-      if(nlm==1){
-        if((fSSsmearwidth != 0.)){
-          TRandom3 *ran=new TRandom3(0);
-
-          if(fWhich==0){ // Landau Smearing
-            Float_t smear = ran->Landau(fSSsmear_mean,fSSsmearwidth);
-
-            if(fSSsmear_mean==0 || (fSSsmear_mean !=0 && coi->GetID()%3==0))
-              m02COI = coi->GetM02() + smear;
-          }
-          else{ // Gaussian Smearing
-            Float_t smear = ran->Gaus(fSSsmear_mean,fSSsmearwidth);
-
-            if(fSSsmear_mean==0 || (fSSsmear_mean !=0 && coi->GetID()%3==0))
-              m02COI = coi->GetM02() + smear;
-          }
-
-        }
-        else{
-          AliWarning("The Smearing is set but the width of the distribution is null!\nNOT DOING ANYTHING for the Shower Shape!");
-          m02COI = coi->GetM02();
-        }
-      }
-      else
-        m02COI = coi->GetM02();
-    } // No else for "if(coi->GetM02()>0.1)"!
-  }
-  else{
-    AliWarning("Smearing not SET!");
+  // Set smearing for MC
+  Double_t m02COI = 0.;
+  if(fSSsmearing)
+    ApplySmearing(coi, m02COI);
+  else
     m02COI = coi->GetM02();
-  }
 
     // ******** Isolation and UE calculation with different methods *********
 
@@ -3970,6 +3789,41 @@ void AliAnalysisTaskEMCALPhotonIsolation::ComputeConeArea(TLorentzVector c, Doub
   }
   else // Full cone area (EMCal centre)
     coneArea = TMath::Pi()*TMath::Power(fIsoConeRadius, 2.);
+}
+
+  //__________________________________________________________________________
+void AliAnalysisTaskEMCALPhotonIsolation::ApplySmearing(AliVCluster *coi, Double_t &m02COI){
+
+  // Compute and apply smearing to shower shape in MC
+
+  Int_t          nlm        = 0;
+  AliVCaloCells *fCaloCells = InputEvent()->GetEMCALCells();
+  if(fCaloCells)
+    nlm = GetNLM(coi, fCaloCells);
+
+  if(coi->GetM02() > 0.1){
+    if(nlm == 1){
+      if((fSSsmearwidth != 0.)){
+	TRandom3 *ran = new TRandom3(0);
+
+	if(fWhich == 0){
+	  Float_t smear = ran->Landau(fSSsmear_mean, fSSsmearwidth);
+	  if(fSSsmear_mean == 0 || (fSSsmear_mean != 0 && coi->GetID()%3 == 0))
+	    m02COI = coi->GetM02() + smear;
+	} // Landau Smearing
+	else{
+	  Float_t smear = ran->Gaus(fSSsmear_mean, fSSsmearwidth);
+	  if(fSSsmear_mean == 0 || (fSSsmear_mean != 0 && coi->GetID()%3 == 0))
+	    m02COI = coi->GetM02() + smear;
+	} // Gaussian Smearing
+      }
+      else{
+	m02COI = coi->GetM02();
+      }
+    }
+    else
+      m02COI = coi->GetM02();
+  }
 }
 
   //_________________________________________________________________________
