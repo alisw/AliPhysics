@@ -170,9 +170,10 @@ public:
       , fFilterMap(0)
       , fFlags(0) {
       fPIDStatus[0] = fPIDStatus[1] = fPIDStatus[2] = AliPIDResponse::kDetNoSignal;
-      std::fill_n(fNumSigmaITS, AliPID::kSPECIES, -32.0f);
-      std::fill_n(fNumSigmaTPC, AliPID::kSPECIES, -32.0f);
-      std::fill_n(fNumSigmaTOF, AliPID::kSPECIES, -32.0f);
+      const Int_t nSpecies = AliPID::kSPECIES;
+      std::fill_n(fNumSigmaITS, nSpecies, -32.0f);
+      std::fill_n(fNumSigmaTPC, nSpecies, -32.0f);
+      std::fill_n(fNumSigmaTOF, nSpecies, -32.0f);
       fChipKey[0] = fChipKey[1] = -1;
       fStatus[0]  = fStatus[1]  = -1;
       Fill(tr, pidResponse);
