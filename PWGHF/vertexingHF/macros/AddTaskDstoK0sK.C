@@ -27,7 +27,8 @@ AliAnalysisTaskSEDstoK0sK *AddTaskDstoK0sK(TString cutFileName,
 
    // Create the analysis cuts.
    //==============================================================================
-   TFile *filecuts = new TFile(cutFileName.Data());
+   TFile *filecuts;
+   filecuts = TFile::Open(cutFileName.Data());
    if (!filecuts || (filecuts && !(filecuts->IsOpen())))
       AliFatal("Cut object not found: analysis will not start!\n");
 
