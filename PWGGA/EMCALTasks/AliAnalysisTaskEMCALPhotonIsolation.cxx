@@ -2226,9 +2226,44 @@ void AliAnalysisTaskEMCALPhotonIsolation::EtIsoClusPhiBand(TLorentzVector c, Dou
     fEtaPhiClusVsPtIsoTrack->Fill(c.Eta(),c.Phi(),sumpTConeCharged);
   }
 
+  // Set smearing for MC
+  Double_t m02candidate = 0.;
+  Int_t    nlm          = 0;
+  AliVCaloCells * fCaloCells = InputEvent()->GetEMCALCells();
+  if(fCaloCells)
+    nlm = GetNLM(candidate,fCaloCells);
+
+  if(fSSsmearing){
+    if(candidate->GetM02() > 0.1){
+      if(nlm == 1){
+        if(fSSsmearwidth != 0.){
+          TRandom3 *ran =new TRandom3(0);
+          if(fWhich == 0){ // Landau Smearing
+            Float_t smear = ran->Landau(fSSsmear_mean,fSSsmearwidth);
+            if(fSSsmear_mean == 0 || (fSSsmear_mean != 0 && candidate->GetID()%3 == 0))
+              m02candidate = candidate->GetM02() + smear;
+          }
+          else{ // Gaussian Smearing
+            Float_t smear = ran->Gaus(fSSsmear_mean,fSSsmearwidth);
+            if(fSSsmear_mean == 0 || (fSSsmear_mean != 0 && candidate->GetID()%3 == 0))
+              m02candidate = candidate->GetM02() + smear;
+          }
+        }
+        else{
+          m02candidate = candidate->GetM02();
+        }
+      }
+      else
+        m02candidate = candidate->GetM02();
+    }
+  }
+  else{
+    m02candidate = candidate->GetM02();
+  }
+
   if(fIsoMethod==1 && fQA && !fLightOutput){
-    fEtVSM02VSPisotrack->Fill(c.Pt(),candidate->GetM02(),sumpTConeCharged);
-    fEtVSM02VSEisoclust->Fill(c.Pt(),candidate->GetM02(),sumEnergyConeClus);
+    fEtVSM02VSPisotrack->Fill(c.Pt(),m02candidate,sumpTConeCharged);
+    fEtVSM02VSEisoclust->Fill(c.Pt(),m02candidate,sumEnergyConeClus);
   }
 
   if(fWho==2 && !fLightOutput){
@@ -2426,9 +2461,44 @@ void AliAnalysisTaskEMCALPhotonIsolation::EtIsoClusEtaBand(TLorentzVector c, Dou
     fEtaPhiClusVsPtIsoTrack->Fill(c.Eta(),c.Phi(),sumpTConeCharged);
   }
 
+  // Set smearing for MC
+  Double_t m02candidate = 0.;
+  Int_t    nlm          = 0;
+  AliVCaloCells * fCaloCells = InputEvent()->GetEMCALCells();
+  if(fCaloCells)
+    nlm = GetNLM(candidate,fCaloCells);
+
+  if(fSSsmearing){
+    if(candidate->GetM02() > 0.1){
+      if(nlm == 1){
+        if(fSSsmearwidth != 0.){
+          TRandom3 *ran =new TRandom3(0);
+          if(fWhich == 0){ // Landau Smearing
+            Float_t smear = ran->Landau(fSSsmear_mean,fSSsmearwidth);
+            if(fSSsmear_mean == 0 || (fSSsmear_mean != 0 && candidate->GetID()%3 == 0))
+              m02candidate = candidate->GetM02() + smear;
+          }
+          else{ // Gaussian Smearing
+            Float_t smear = ran->Gaus(fSSsmear_mean,fSSsmearwidth);
+            if(fSSsmear_mean == 0 || (fSSsmear_mean != 0 && candidate->GetID()%3 == 0))
+              m02candidate = candidate->GetM02() + smear;
+          }
+        }
+        else{
+          m02candidate = candidate->GetM02();
+        }
+      }
+      else
+        m02candidate = candidate->GetM02();
+    }
+  }
+  else{
+    m02candidate = candidate->GetM02();
+  }
+
   if(fIsoMethod==1 && fQA && !fLightOutput){
-    fEtVSM02VSPisotrack->Fill(c.Pt(),candidate->GetM02(),sumpTConeCharged);
-    fEtVSM02VSEisoclust->Fill(c.Pt(),candidate->GetM02(),sumEnergyConeClus);
+    fEtVSM02VSPisotrack->Fill(c.Pt(),m02candidate,sumpTConeCharged);
+    fEtVSM02VSEisoclust->Fill(c.Pt(),m02candidate,sumEnergyConeClus);
   }
 
   if(fWho==2 && !fLightOutput){
@@ -3220,8 +3290,42 @@ void AliAnalysisTaskEMCALPhotonIsolation::IsolationAndUEinEMCAL(AliVCluster *coi
 
   TLorentzVector vecCOI;
   coi->GetMomentum(vecCOI,fVertex);
-  Double_t m02COI=coi->GetM02();
-  Double_t eTCOI=vecCOI.Et();
+  Double_t eTCOI  = vecCOI.Et();
+
+  // Set smearing for MC
+  Double_t m02COI = 0.;
+  Int_t    nlm    = 0;
+  AliVCaloCells * fCaloCells = InputEvent()->GetEMCALCells();
+  if(fCaloCells)
+    nlm = GetNLM(coi,fCaloCells);
+
+  if(fSSsmearing){
+    if(coi->GetM02() > 0.1){
+      if(nlm == 1){
+        if(fSSsmearwidth != 0.){
+          TRandom3 *ran =new TRandom3(0);
+          if(fWhich == 0){ // Landau Smearing
+            Float_t smear = ran->Landau(fSSsmear_mean,fSSsmearwidth);
+            if(fSSsmear_mean == 0 || (fSSsmear_mean != 0 && coi->GetID()%3 == 0))
+              m02COI = coi->GetM02() + smear;
+          }
+          else{ // Gaussian Smearing
+            Float_t smear = ran->Gaus(fSSsmear_mean,fSSsmearwidth);
+            if(fSSsmear_mean == 0 || (fSSsmear_mean != 0 && coi->GetID()%3 == 0))
+              m02COI = coi->GetM02() + smear;
+          }
+        }
+        else{
+          m02COI = coi->GetM02();
+        }
+      }
+      else
+        m02COI = coi->GetM02();
+    }
+  }
+  else{
+    m02COI = coi->GetM02();
+  }
 
     // EMCal Only for Acceptance of Cells/Clusters/Tracks
   switch(fIsoMethod)
@@ -3282,11 +3386,11 @@ void AliAnalysisTaskEMCALPhotonIsolation::IsolationAndUEinEMCAL(AliVCluster *coi
     }
 
       if(fWho==2){
-        fPtvsM02vsSum->Fill(vecCOI.Pt(),coi->GetM02(),isolation);
+        fPtvsM02vsSum->Fill(vecCOI.Pt(),m02COI,isolation);
 
         isolation=isolation-ue; // UE subtraction
 
-	fPtvsM02vsSumUE->Fill(vecCOI.Pt(),coi->GetM02(),isolation);
+	fPtvsM02vsSumUE->Fill(vecCOI.Pt(),m02COI,isolation);
         fEtIsoClust->Fill(vecCOI.Pt(),isolation);
       }
 
@@ -3294,7 +3398,7 @@ void AliAnalysisTaskEMCALPhotonIsolation::IsolationAndUEinEMCAL(AliVCluster *coi
         FillInvMassHistograms(kTRUE, m02COI, vecCOI, index, isolation);
 
         if(fWho==2 && !fLightOutput){
-          fPtvsM02iso->Fill(vecCOI.Pt(),coi->GetM02());
+          fPtvsM02iso->Fill(vecCOI.Pt(),m02COI);
 	  fPtIsolatedNClust->Fill(vecCOI.Pt());
         }
 
@@ -3314,7 +3418,7 @@ void AliAnalysisTaskEMCALPhotonIsolation::IsolationAndUEinEMCAL(AliVCluster *coi
           FillInvMassHistograms(kFALSE, m02COI, vecCOI, index, isolation);
 
         if(fWho==2 && !fLightOutput)
-          fPtvsM02noiso->Fill(vecCOI.Pt(),coi->GetM02());
+          fPtvsM02noiso->Fill(vecCOI.Pt(),m02COI);
 
         fPtnoisoT=vecCOI.Pt();
         fM02noisoT=m02COI;
@@ -3348,11 +3452,11 @@ void AliAnalysisTaskEMCALPhotonIsolation::IsolationAndUEinEMCAL(AliVCluster *coi
     }
 
       if(fWho==2){
-        fPtvsM02vsSum->Fill(vecCOI.Pt(),coi->GetM02(),isolation);
+        fPtvsM02vsSum->Fill(vecCOI.Pt(),m02COI,isolation);
 
         isolation=isolation-ue; // UE subtraction
 
-	fPtvsM02vsSumUE->Fill(vecCOI.Pt(),coi->GetM02(),isolation);
+	fPtvsM02vsSumUE->Fill(vecCOI.Pt(),m02COI,isolation);
         fPtIsoTrack->Fill(vecCOI.Pt() , isolation);
       }
 
@@ -3360,7 +3464,7 @@ void AliAnalysisTaskEMCALPhotonIsolation::IsolationAndUEinEMCAL(AliVCluster *coi
         FillInvMassHistograms(kTRUE, m02COI, vecCOI, index, isolation);
 
         if(fWho==2 && !fLightOutput){
-          fPtvsM02iso->Fill(vecCOI.Pt(),coi->GetM02());
+          fPtvsM02iso->Fill(vecCOI.Pt(),m02COI);
 	  fPtIsolatedNTracks->Fill(vecCOI.Pt());
         }
 
@@ -3380,7 +3484,7 @@ void AliAnalysisTaskEMCALPhotonIsolation::IsolationAndUEinEMCAL(AliVCluster *coi
           FillInvMassHistograms(kFALSE, m02COI, vecCOI, index, isolation);
 
         if(fWho==2 && !fLightOutput)
-          fPtvsM02noiso->Fill(vecCOI.Pt(),coi->GetM02());
+          fPtvsM02noiso->Fill(vecCOI.Pt(),m02COI);
 
         fPtnoisoT=vecCOI.Pt();
         fM02noisoT=m02COI;
@@ -3402,8 +3506,42 @@ void AliAnalysisTaskEMCALPhotonIsolation::IsolationAndUEinTPC(AliVCluster *coi, 
 
   TLorentzVector vecCOI;
   coi->GetMomentum(vecCOI,fVertex);
-  Double_t m02COI=coi->GetM02();
   Double_t eTCOI=vecCOI.Et();
+
+  // Set smearing for MC
+  Double_t m02COI = 0.;
+  Int_t    nlm    = 0;
+  AliVCaloCells * fCaloCells = InputEvent()->GetEMCALCells();
+  if(fCaloCells)
+    nlm = GetNLM(coi,fCaloCells);
+
+  if(fSSsmearing){
+    if(coi->GetM02() > 0.1){
+      if(nlm == 1){
+        if(fSSsmearwidth != 0.){
+          TRandom3 *ran =new TRandom3(0);
+          if(fWhich == 0){ // Landau Smearing
+            Float_t smear = ran->Landau(fSSsmear_mean,fSSsmearwidth);
+            if(fSSsmear_mean == 0 || (fSSsmear_mean != 0 && coi->GetID()%3 == 0))
+              m02COI = coi->GetM02() + smear;
+          }
+          else{ // Gaussian Smearing
+            Float_t smear = ran->Gaus(fSSsmear_mean,fSSsmearwidth);
+            if(fSSsmear_mean == 0 || (fSSsmear_mean != 0 && coi->GetID()%3 == 0))
+              m02COI = coi->GetM02() + smear;
+          }
+        }
+        else{
+          m02COI = coi->GetM02();
+        }
+      }
+      else
+        m02COI = coi->GetM02();
+    }
+  }
+  else{
+    m02COI = coi->GetM02();
+  }
 
   switch(fUEMethod)
   {
@@ -3414,13 +3552,13 @@ void AliAnalysisTaskEMCALPhotonIsolation::IsolationAndUEinTPC(AliVCluster *coi, 
       ue = ue * (isoConeArea / phiBandAreaTr); // Normalisation of UE wrt UE area
 
       if(fWho==2)
-        fPtvsM02vsSum->Fill(vecCOI.Pt(),coi->GetM02(),isolation);
+        fPtvsM02vsSum->Fill(vecCOI.Pt(),m02COI,isolation);
 
       if(fAnalysispPb)
         isolation=isolation-ue; // UE subtraction
 
       if(fWho==2){
-	fPtvsM02vsSumUE->Fill(vecCOI.Pt(),coi->GetM02(),isolation);
+	fPtvsM02vsSumUE->Fill(vecCOI.Pt(),m02COI,isolation);
         fPtIsoTrack->Fill(vecCOI.Pt(), isolation);
       }
 
@@ -3428,7 +3566,7 @@ void AliAnalysisTaskEMCALPhotonIsolation::IsolationAndUEinTPC(AliVCluster *coi, 
         FillInvMassHistograms(kTRUE, m02COI, vecCOI, index,isolation);
 
         if(fWho==2 && !fLightOutput){
-          fPtvsM02iso->Fill(vecCOI.Pt(),coi->GetM02());
+          fPtvsM02iso->Fill(vecCOI.Pt(),m02COI);
 	  fPtIsolatedNTracks->Fill(vecCOI.Pt());
         }
 
@@ -3448,7 +3586,7 @@ void AliAnalysisTaskEMCALPhotonIsolation::IsolationAndUEinTPC(AliVCluster *coi, 
           FillInvMassHistograms(kFALSE, m02COI, vecCOI, index,isolation);
 
         if(fWho==2 && !fLightOutput)
-          fPtvsM02noiso->Fill(vecCOI.Pt(),coi->GetM02());
+          fPtvsM02noiso->Fill(vecCOI.Pt(),m02COI);
 
         fPtnoisoT=vecCOI.Pt();
         fM02noisoT=m02COI;
@@ -3463,13 +3601,13 @@ void AliAnalysisTaskEMCALPhotonIsolation::IsolationAndUEinTPC(AliVCluster *coi, 
       ue = ue * (isoConeArea / etaBandAreaTr); // Normalisation of UE wrt UE area
 
       if(fWho==2)
-        fPtvsM02vsSum->Fill(vecCOI.Pt(),coi->GetM02(),isolation);
+        fPtvsM02vsSum->Fill(vecCOI.Pt(),m02COI,isolation);
 
       if(fAnalysispPb)
         isolation=isolation-ue; // UE subtraction
 
       if(fWho==2){
-	fPtvsM02vsSumUE->Fill(vecCOI.Pt(),coi->GetM02(),isolation);
+	fPtvsM02vsSumUE->Fill(vecCOI.Pt(),m02COI,isolation);
         fPtIsoTrack->Fill(vecCOI.Pt(), isolation);
       }
 
@@ -3477,7 +3615,7 @@ void AliAnalysisTaskEMCALPhotonIsolation::IsolationAndUEinTPC(AliVCluster *coi, 
         FillInvMassHistograms(kTRUE, m02COI, vecCOI, index,isolation);
 
         if(fWho==2 && !fLightOutput){
-          fPtvsM02iso->Fill(vecCOI.Pt(),coi->GetM02());
+          fPtvsM02iso->Fill(vecCOI.Pt(),m02COI);
 	  fPtIsolatedNTracks->Fill(vecCOI.Pt());
         }
 
@@ -3497,7 +3635,7 @@ void AliAnalysisTaskEMCALPhotonIsolation::IsolationAndUEinTPC(AliVCluster *coi, 
           FillInvMassHistograms(kFALSE, m02COI, vecCOI, index,isolation);
 
         if(fWho==2 && !fLightOutput)
-          fPtvsM02noiso->Fill(vecCOI.Pt(),coi->GetM02());
+          fPtvsM02noiso->Fill(vecCOI.Pt(),m02COI);
 
         fPtnoisoT=vecCOI.Pt();
         fM02noisoT=m02COI;
@@ -3513,13 +3651,13 @@ void AliAnalysisTaskEMCALPhotonIsolation::IsolationAndUEinTPC(AliVCluster *coi, 
       ue = ue * (isoConeArea / perpConesArea); // Normalisation of UE wrt UE area
 
       if(fWho==2)
-        fPtvsM02vsSum->Fill(vecCOI.Pt(),coi->GetM02(),isolation);
+        fPtvsM02vsSum->Fill(vecCOI.Pt(),m02COI,isolation);
 
       if(fAnalysispPb)
         isolation=isolation-ue; // UE subtraction
 
       if(fWho==2){
-	fPtvsM02vsSumUE->Fill(vecCOI.Pt(),coi->GetM02(),isolation);
+	fPtvsM02vsSumUE->Fill(vecCOI.Pt(),m02COI,isolation);
         fPtIsoTrack->Fill(vecCOI.Pt(), isolation);
       }
 
@@ -3527,7 +3665,7 @@ void AliAnalysisTaskEMCALPhotonIsolation::IsolationAndUEinTPC(AliVCluster *coi, 
         FillInvMassHistograms(kTRUE, m02COI, vecCOI, index, isolation);
 
         if(fWho==2 && !fLightOutput){
-          fPtvsM02iso->Fill(vecCOI.Pt(),coi->GetM02());
+          fPtvsM02iso->Fill(vecCOI.Pt(),m02COI);
 	  fPtIsolatedNTracks->Fill(vecCOI.Pt());
         }
 
@@ -3547,7 +3685,7 @@ void AliAnalysisTaskEMCALPhotonIsolation::IsolationAndUEinTPC(AliVCluster *coi, 
           FillInvMassHistograms(kFALSE, m02COI, vecCOI, index, isolation);
 
         if(fWho==2 && !fLightOutput)
-          fPtvsM02noiso->Fill(vecCOI.Pt(),coi->GetM02());
+          fPtvsM02noiso->Fill(vecCOI.Pt(),m02COI);
 
         fPtnoisoT=vecCOI.Pt();
         fM02noisoT=m02COI;
@@ -3564,23 +3702,23 @@ void AliAnalysisTaskEMCALPhotonIsolation::IsolationAndUEinTPC(AliVCluster *coi, 
                                              // fill histograms for isolation
 
       if(fWho==2)
-        fPtvsM02vsSum->Fill(vecCOI.Pt(),coi->GetM02(),isolation);
+        fPtvsM02vsSum->Fill(vecCOI.Pt(),m02COI,isolation);
 
       if(fAnalysispPb)
         isolation=isolation-ue; // UE subtraction
 
       if(fWho==2){
-	fPtvsM02vsSumUE->Fill(vecCOI.Pt(),coi->GetM02(),isolation);
+	fPtvsM02vsSumUE->Fill(vecCOI.Pt(),m02COI,isolation);
         fPtIsoTrack->Fill(vecCOI.Pt(), isolation);
       }
         // fTracksConeEtaPt->Fill(isolation, vecCOI.Eta(), vecCOI.Pt());
-        // fTracksConeEtaM02->Fill(isolation, vecCOI.Eta(), coi->GetM02());
+        // fTracksConeEtaM02->Fill(isolation, vecCOI.Eta(), m02COI);
 
       if(isolation<eTThreshold){
         FillInvMassHistograms(kTRUE, m02COI, vecCOI, index, isolation);
 
         if(fWho==2 && !fLightOutput){
-          fPtvsM02iso->Fill(vecCOI.Pt(),coi->GetM02());
+          fPtvsM02iso->Fill(vecCOI.Pt(),m02COI);
 	  fPtIsolatedNTracks->Fill(vecCOI.Pt());
         }
 
@@ -3600,7 +3738,7 @@ void AliAnalysisTaskEMCALPhotonIsolation::IsolationAndUEinTPC(AliVCluster *coi, 
           FillInvMassHistograms(kFALSE, m02COI, vecCOI, index, isolation);
 
         if(fWho==2 && !fLightOutput)
-          fPtvsM02noiso->Fill(vecCOI.Pt(),coi->GetM02());
+          fPtvsM02noiso->Fill(vecCOI.Pt(),m02COI);
 
         fPtnoisoT=vecCOI.Pt();
         fM02noisoT=m02COI;
