@@ -438,32 +438,38 @@ void AliHFDmesonCorrAverage::CalculateAverage(){
       errSystBkgValue+=1./fweightsDzeroSystBkg[j-1]*weight*weight;
       sumweights+=weight;
       
-      printf("Dzero the value is: %f, weight: %f \n",value, weight);
+      printf("\nDzero the value is: %f, weight: %f \n",value, weight);
       // MCcorrections  : associated tracks, correlated
       errsyst=TMath::Abs(fhDzero->GetBinContent(j)*fSystDzero->GetHistoMCcorrectionsMin()->GetBinContent(j));
       systMCcorrectionsMin+=errsyst*weight;
-      errsyst=fhDzero->GetBinContent(j)*fSystDzero->GetHistoMCcorrectionsMax()->GetBinContent(j);
+      errsyst=TMath::Abs(fhDzero->GetBinContent(j)*fSystDzero->GetHistoMCcorrectionsMax()->GetBinContent(j));
       systMCcorrectionsMax+=errsyst*weight;
 
       printf(" Dzero trackeff the min syst value is: %f (rel %f), sum: %f \n",errsyst,fSystDzero->GetHistoMCcorrectionsMin()->GetBinContent(j), systMCcorrectionsMin);
       printf(" Dzero trackeff the max syst value is: %f (rel %f), sum: %f \n",errsyst,fSystDzero->GetHistoMCcorrectionsMax()->GetBinContent(j), systMCcorrectionsMax);
 
       // MCDefficiency  : uncorrelated
-      errsyst=fhDzero->GetBinContent(j)*fSystDzero->GetHistoMCDefficiencyMin()->GetBinContent(j);
+      errsyst=TMath::Abs(fhDzero->GetBinContent(j)*fSystDzero->GetHistoMCDefficiencyMin()->GetBinContent(j));
       systMCDefficiencyMin+=errsyst*errsyst*weight*weight;
-      errsyst=fhDzero->GetBinContent(j)*fSystDzero->GetHistoMCDefficiencyMax()->GetBinContent(j);
+      errsyst=TMath::Abs(fhDzero->GetBinContent(j)*fSystDzero->GetHistoMCDefficiencyMax()->GetBinContent(j));
       systMCDefficiencyMax+=errsyst*errsyst*weight*weight;
+
+      printf(" Dzero cutvariat the min syst value is: %f (rel %f), sum: %f \n",errsyst,fSystDzero->GetHistoMCDefficiencyMin()->GetBinContent(j), systMCDefficiencyMin);
+      printf(" Dzero cutvariat the max syst value is: %f (rel %f), sum: %f \n",errsyst,fSystDzero->GetHistoMCDefficiencyMax()->GetBinContent(j), systMCDefficiencyMax);
 
       // SecContamination  : correlated
       errsyst=TMath::Abs(fhDzero->GetBinContent(j)*fSystDzero->GetHistoSecContaminationMin()->GetBinContent(j));
       systSecContaminationMin+=errsyst*weight;
-      errsyst=fhDzero->GetBinContent(j)*fSystDzero->GetHistoSecContaminationMax()->GetBinContent(j);
+      errsyst=TMath::Abs(fhDzero->GetBinContent(j)*fSystDzero->GetHistoSecContaminationMax()->GetBinContent(j));
       systSecContaminationMax+=errsyst*weight;
+
+      printf(" Dzero seccontam the min syst value is: %f (rel %f), sum: %f \n",errsyst,fSystDzero->GetHistoSecContaminationMin()->GetBinContent(j), systSecContaminationMin);
+      printf(" Dzero seccontam the max syst value is: %f (rel %f), sum: %f \n",errsyst,fSystDzero->GetHistoSecContaminationMax()->GetBinContent(j), systSecContaminationMax);
 
       // MC closure: fully correlated
       errsyst=TMath::Abs(fhDzero->GetBinContent(j)*fSystDzero->GetHistoMCclosureTestMin()->GetBinContent(j));
       systMCclosureMin+=errsyst*weight;
-      errsyst=fhDzero->GetBinContent(j)*fSystDzero->GetHistoMCclosureTestMax()->GetBinContent(j);
+      errsyst=TMath::Abs(fhDzero->GetBinContent(j)*fSystDzero->GetHistoMCclosureTestMax()->GetBinContent(j));
       systMCclosureMax+=errsyst*weight;
 
       printf(" Dzero Mcclosure the min syst value is: %f (rel %f), sum: %f \n",errsyst,fSystDzero->GetHistoMCclosureTestMin()->GetBinContent(j), systMCclosureMin);
@@ -472,8 +478,9 @@ void AliHFDmesonCorrAverage::CalculateAverage(){
       // FD (assume full correlations)
       errsyst=TMath::Abs(fhDzero->GetBinContent(j)*fSystDzero->GetHistoFDmin()->GetBinContent(j));
       systFDmin+=errsyst*weight;
-      errsyst=fhDzero->GetBinContent(j)*fSystDzero->GetHistoFDmax()->GetBinContent(j);
+      errsyst=TMath::Abs(fhDzero->GetBinContent(j)*fSystDzero->GetHistoFDmax()->GetBinContent(j));
       systFDmax+=errsyst*weight;
+
       printf(" Dzero feeddown the min syst value is: %f (rel %f), sum: %f \n",errsyst,fSystDzero->GetHistoFDmin()->GetBinContent(j), systFDmin);
       printf(" Dzero feeddown the max syst value is: %f (rel %f), sum: %f \n",errsyst,fSystDzero->GetHistoFDmax()->GetBinContent(j), systFDmax);
 
@@ -506,21 +513,27 @@ void AliHFDmesonCorrAverage::CalculateAverage(){
       printf(" Dstar trackeff the max syst value is: %f (rel %f), sum: %f \n",errsyst,fSystDstar->GetHistoMCcorrectionsMax()->GetBinContent(j), systMCcorrectionsMax);
 
       // MCDefficiency  : uncorrelated
-      errsyst=fhDstar->GetBinContent(j)*fSystDstar->GetHistoMCDefficiencyMin()->GetBinContent(j);
+      errsyst=TMath::Abs(fhDstar->GetBinContent(j)*fSystDstar->GetHistoMCDefficiencyMin()->GetBinContent(j));
       systMCDefficiencyMin+=errsyst*errsyst*weight*weight;
-      errsyst=fhDstar->GetBinContent(j)*fSystDstar->GetHistoMCDefficiencyMax()->GetBinContent(j);
+      errsyst=TMath::Abs(fhDstar->GetBinContent(j)*fSystDstar->GetHistoMCDefficiencyMax()->GetBinContent(j));
       systMCDefficiencyMax+=errsyst*errsyst*weight*weight;
+
+      printf(" Dstar cutvariat the min syst value is: %f (rel %f), sum: %f \n",errsyst,fSystDstar->GetHistoMCDefficiencyMin()->GetBinContent(j), systMCDefficiencyMin);
+      printf(" Dstar cutvariat the max syst value is: %f (rel %f), sum: %f \n",errsyst,fSystDstar->GetHistoMCDefficiencyMax()->GetBinContent(j), systMCDefficiencyMax);
 
       // SecContamination  : correlated
       errsyst=TMath::Abs(fhDstar->GetBinContent(j)*fSystDstar->GetHistoSecContaminationMin()->GetBinContent(j));
       systSecContaminationMin+=errsyst*weight;
-      errsyst=fhDstar->GetBinContent(j)*fSystDstar->GetHistoSecContaminationMax()->GetBinContent(j);
+      errsyst=TMath::Abs(fhDstar->GetBinContent(j)*fSystDstar->GetHistoSecContaminationMax()->GetBinContent(j));
       systSecContaminationMax+=errsyst*weight;
+
+      printf(" Dstar seccontam the min syst value is: %f (rel %f), sum: %f \n",errsyst,fSystDstar->GetHistoSecContaminationMin()->GetBinContent(j), systSecContaminationMin);
+      printf(" Dstar seccontam the max syst value is: %f (rel %f), sum: %f \n",errsyst,fSystDstar->GetHistoSecContaminationMax()->GetBinContent(j), systSecContaminationMax);
 
       // MC closure
       errsyst=TMath::Abs(fhDstar->GetBinContent(j)*fSystDstar->GetHistoMCclosureTestMin()->GetBinContent(j));
       systMCclosureMin+=errsyst*weight;
-      errsyst=fhDstar->GetBinContent(j)*fSystDstar->GetHistoMCclosureTestMax()->GetBinContent(j);
+      errsyst=TMath::Abs(fhDstar->GetBinContent(j)*fSystDstar->GetHistoMCclosureTestMax()->GetBinContent(j));
       systMCclosureMax+=errsyst*weight;
 
       printf(" Dstar Mcclosure the min syst value is: %f (rel %f), sum: %f \n",errsyst,fSystDstar->GetHistoMCclosureTestMin()->GetBinContent(j), systMCclosureMin);
@@ -530,7 +543,7 @@ void AliHFDmesonCorrAverage::CalculateAverage(){
       // FD (assume full correlations)
       errsyst=TMath::Abs(fhDstar->GetBinContent(j)*fSystDstar->GetHistoFDmin()->GetBinContent(j));
       systFDmin+=errsyst*weight;
-      errsyst=fhDstar->GetBinContent(j)*fSystDstar->GetHistoFDmax()->GetBinContent(j);
+      errsyst=TMath::Abs(fhDstar->GetBinContent(j)*fSystDstar->GetHistoFDmax()->GetBinContent(j));
       systFDmax+=errsyst*weight;
 
       printf(" Dstar feeddown the min syst value is: %f (rel %f), sum: %f \n",errsyst,fSystDstar->GetHistoFDmin()->GetBinContent(j), systFDmin);
@@ -558,16 +571,16 @@ void AliHFDmesonCorrAverage::CalculateAverage(){
       // MCcorrections  : associated tracsk, correlated
       errsyst=TMath::Abs(fhDplus->GetBinContent(j)*fSystDplus->GetHistoMCcorrectionsMin()->GetBinContent(j));
       systMCcorrectionsMin+=errsyst*weight;
-      errsyst=fhDplus->GetBinContent(j)*fSystDplus->GetHistoMCcorrectionsMax()->GetBinContent(j);
+      errsyst=TMath::Abs(fhDplus->GetBinContent(j)*fSystDplus->GetHistoMCcorrectionsMax()->GetBinContent(j));
       systMCcorrectionsMax+=errsyst*weight;
 
       printf(" Dplus trackeff the min syst value is: %f (rel %f), sum: %f \n",errsyst,fSystDplus->GetHistoMCcorrectionsMin()->GetBinContent(j), systMCcorrectionsMin);
       printf(" Dplus trackeff the max syst value is: %f (rel %f), sum: %f \n",errsyst,fSystDplus->GetHistoMCcorrectionsMax()->GetBinContent(j), systMCcorrectionsMax);
 
       // MCDefficiency  : uncorrelated
-      errsyst=fhDplus->GetBinContent(j)*fSystDplus->GetHistoMCDefficiencyMin()->GetBinContent(j);
+      errsyst=TMath::Abs(fhDplus->GetBinContent(j)*fSystDplus->GetHistoMCDefficiencyMin()->GetBinContent(j));
       systMCDefficiencyMin+=errsyst*errsyst*weight*weight;
-      errsyst=fhDplus->GetBinContent(j)*fSystDplus->GetHistoMCDefficiencyMax()->GetBinContent(j);
+      errsyst=TMath::Abs(fhDplus->GetBinContent(j)*fSystDplus->GetHistoMCDefficiencyMax()->GetBinContent(j));
       systMCDefficiencyMax+=errsyst*errsyst*weight*weight;
 
       printf(" Dplus cutvariat the min syst value is: %f (rel %f), sum: %f \n",errsyst,fSystDplus->GetHistoMCDefficiencyMin()->GetBinContent(j), systMCDefficiencyMin);
@@ -576,13 +589,16 @@ void AliHFDmesonCorrAverage::CalculateAverage(){
       // SecContamination  : correlated
       errsyst=TMath::Abs(fhDplus->GetBinContent(j)*fSystDplus->GetHistoSecContaminationMin()->GetBinContent(j));
       systSecContaminationMin+=errsyst*weight;
-      errsyst=fhDplus->GetBinContent(j)*fSystDplus->GetHistoSecContaminationMax()->GetBinContent(j);
+      errsyst=TMath::Abs(fhDplus->GetBinContent(j)*fSystDplus->GetHistoSecContaminationMax()->GetBinContent(j));
       systSecContaminationMax+=errsyst*weight;
+
+      printf(" Dplus cutvariat the min syst value is: %f (rel %f), sum: %f \n",errsyst,fSystDplus->GetHistoSecContaminationMin()->GetBinContent(j), systSecContaminationMin);
+      printf(" Dplus cutvariat the max syst value is: %f (rel %f), sum: %f \n",errsyst,fSystDplus->GetHistoSecContaminationMax()->GetBinContent(j), systSecContaminationMax);
 
       // MC closure
       errsyst=TMath::Abs(fhDplus->GetBinContent(j)*fSystDplus->GetHistoMCclosureTestMin()->GetBinContent(j));
       systMCclosureMin+=errsyst*weight;
-      errsyst=fhDplus->GetBinContent(j)*fSystDplus->GetHistoMCclosureTestMax()->GetBinContent(j);
+      errsyst=TMath::Abs(fhDplus->GetBinContent(j)*fSystDplus->GetHistoMCclosureTestMax()->GetBinContent(j));
       systMCclosureMax+=errsyst*weight;
 
       printf(" Dplus Mcclosure the min syst value is: %f (rel %f), sum: %f \n",errsyst,fSystDplus->GetHistoMCclosureTestMin()->GetBinContent(j), systMCclosureMin);
@@ -591,7 +607,7 @@ void AliHFDmesonCorrAverage::CalculateAverage(){
       // FD (assume full correlations)
       errsyst=TMath::Abs(fhDplus->GetBinContent(j)*fSystDplus->GetHistoFDmin()->GetBinContent(j));
       systFDmin+=errsyst*weight;
-      errsyst=fhDplus->GetBinContent(j)*fSystDplus->GetHistoFDmax()->GetBinContent(j);
+      errsyst=TMath::Abs(fhDplus->GetBinContent(j)*fSystDplus->GetHistoFDmax()->GetBinContent(j));
       systFDmax+=errsyst*weight;
 
       printf(" Dplus feeddown the min syst value is: %f (rel %f), sum: %f \n",errsyst,fSystDplus->GetHistoFDmin()->GetBinContent(j), systFDmin);
