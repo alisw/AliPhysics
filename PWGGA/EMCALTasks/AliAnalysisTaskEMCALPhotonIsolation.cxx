@@ -2902,44 +2902,47 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::CheckBoundaries(TLorentzVector vecCO
     // AliInfo("Inside CheckBoundaries\n");
 
   Double_t etaClust = 0., phiClust = 0.;
-  Double_t etaMin = 0., etaMax = 0., etaMinDCal_InnerEdge = 0., phiMinEMCal = 0., phiMaxEMCal = 0., phiMinDCal = 0. , phiMaxDCal_FullSM = 0., phiMaxDCal = 0.;
-  Bool_t   isINBoundaries;
+  Double_t etaMax = 0., etaMinDCal_InnerEdge = 0., phiMinEMCal = 0., phiMaxEMCal = 0., phiMinDCal = 0. , phiMaxDCal_FullSM = 0., phiMaxDCal = 0.;
+  Bool_t   isINBoundaries = kFALSE;
 
   etaClust = vecCOI.Eta();
   phiClust = vecCOI.Phi();
 
   if(fTPC4Iso){
-    etaMin = -0.87+fFiducialCut;
     etaMax = 0.87-fFiducialCut;
 
     if(!fPeriod.IsNull()){
-      phiMinEMCal = (fGeom->GetArm1PhiMin())*TMath::DegToRad()+0.03;                                 //  80     deg (4/9*pi  rad) plus  0.03 rad = 1.426 rad
+      phiMinEMCal = (fGeom->GetArm1PhiMin())*TMath::DegToRad()+0.03;
 
       if(fPeriod.Contains("12") || fPeriod.Contains("13"))
-        phiMaxEMCal = (fGeom->GetEMCALPhiMax()-20.)*TMath::DegToRad()-0.03;                          // 180     deg (pi      rad) minus 0.03 rad = 3.112 rad
+        phiMaxEMCal = (fGeom->GetEMCALPhiMax()-20.)*TMath::DegToRad()-0.03;
       else
-        phiMaxEMCal = (fGeom->GetEMCALPhiMax())*TMath::DegToRad()-0.03;                              // 188.137 deg (3.284   rad) minus 0.03 rad = 3.254 rad
+        phiMaxEMCal = (fGeom->GetEMCALPhiMax())*TMath::DegToRad()-0.03;
 
-      phiMinDCal        = (fGeom->GetDCALPhiMin())*TMath::DegToRad()+0.03;                           // 260     deg (13/9*pi rad) plus  0.03 rad = 4.568 rad
-      phiMaxDCal_FullSM = (fGeom->GetEMCGeometry()->GetDCALStandardPhiMax())*TMath::DegToRad()-0.03; // 320     deg (16/9*pi rad) minus 0.03 rad = 5.555 rad
-      phiMaxDCal        = (fGeom->GetDCALPhiMax())*TMath::DegToRad()-0.03;                           // 328.137 deg (5.727   rad) minus 0.03 rad = 5.697 rad
-
-      if(etaClust > etaMax || etaClust < etaMin){
-	isINBoundaries = kFALSE;
-	return isINBoundaries;
+      if(fPeriod.Contains("15") || fPeriod.Contains("16") || fPeriod.Contains("17")){
+	phiMinDCal        = (fGeom->GetDCALPhiMin())*TMath::DegToRad()+0.03;
+	phiMaxDCal_FullSM = (fGeom->GetEMCGeometry()->GetDCALStandardPhiMax())*TMath::DegToRad()-0.03;
+	phiMaxDCal        = (fGeom->GetDCALPhiMax())*TMath::DegToRad()-0.03;
       }
-      if(phiClust >= phiMinEMCal && phiClust <= phiMaxEMCal)
-	isINBoundaries = kTRUE;
-      else if(phiClust >= phiMinDCal && phiClust <= phiMaxDCal)
-	isINBoundaries = kTRUE;
-      else
-	isINBoundaries = kFALSE;
+
+      if(fPeriod.Contains("10") || fPeriod.Contains("11") || fPeriod.Contains("12") || fPeriod.Contains("13")){
+	if(TMath::Abs(etaClust) > etaMax || phiClust < phiMinEMCal || phiClust > phiMaxEMCal)
+	  isINBoundaries = kFALSE;
+	else
+	  isINBoundaries = kTRUE;
+      } // Run 1
+      else if(fPeriod.Contains("15") || fPeriod.Contains("16") || fPeriod.Contains("17")){
+	if(TMath::Abs(etaClust) > etaMax || phiClust < phiMinEMCal || phiClust > phiMaxDCal || (phiClust > phiMaxEMCal && phiClust < phiMinDCal))
+	  isINBoundaries = kFALSE;
+	else
+	  isINBoundaries = kTRUE;
+      } // Run 2
     }
     else{ // If no period set, default for 2011-2013 (2*5 EMCal SM)
       phiMinEMCal = (4./9.)*TMath::Pi()+0.03;
       phiMaxEMCal = TMath::Pi()-0.03;
 
-      if(etaClust > etaMax || etaClust < etaMin || phiClust > phiMaxEMCal || phiClust < phiMinEMCal)
+      if(TMath::Abs(etaClust) > etaMax || phiClust < phiMinEMCal || phiClust > phiMaxEMCal)
 	isINBoundaries = kFALSE;
       else
 	isINBoundaries = kTRUE;
@@ -2947,40 +2950,40 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::CheckBoundaries(TLorentzVector vecCO
   }
   else{
     if(!fPeriod.IsNull()){
-      etaMin               = fGeom->GetArm1EtaMin()+0.03+fFiducialCut;
-      etaMax               = fGeom->GetArm1EtaMax()-0.03-fFiducialCut;
-      etaMinDCal_InnerEdge = fGeom->GetEMCGeometry()->GetDCALInnerExtandedEta()+0.03+fFiducialCut;                // DCal hole for eta in (-0.220, 0.220)
-      phiMinEMCal          = (fGeom->GetArm1PhiMin())*TMath::DegToRad()+0.03+fFiducialCut;                        //  80     deg (4/9*pi  rad) plus  0.03 rad = 1.426 rad
+      etaMax      = fGeom->GetArm1EtaMax()-0.03-fFiducialCut;
+      phiMinEMCal = (fGeom->GetArm1PhiMin())*TMath::DegToRad()+0.03+fFiducialCut;
 
       if(fPeriod.Contains("12") || fPeriod.Contains("13"))
-        phiMaxEMCal = (fGeom->GetEMCALPhiMax()-20.)*TMath::DegToRad()-0.03-fFiducialCut;                          // 180     deg (pi      rad) minus 0.03 rad = 3.112 rad
+        phiMaxEMCal = (fGeom->GetEMCALPhiMax()-20.)*TMath::DegToRad()-0.03-fFiducialCut;
       else
-        phiMaxEMCal = (fGeom->GetEMCALPhiMax())*TMath::DegToRad()-0.03-fFiducialCut;                              // 188.137 deg (3.284   rad) minus 0.03 rad = 3.254 rad
+        phiMaxEMCal = (fGeom->GetEMCALPhiMax())*TMath::DegToRad()-0.03-fFiducialCut;
 
-      phiMinDCal        = (fGeom->GetDCALPhiMin())*TMath::DegToRad()+0.03+fFiducialCut;                           // 260     deg (13/9*pi rad) plus  0.03 rad = 4.568 rad
-      phiMaxDCal_FullSM = (fGeom->GetEMCGeometry()->GetDCALStandardPhiMax())*TMath::DegToRad()-0.03-fFiducialCut; // 320     deg (16/9*pi rad) minus 0.03 rad = 5.555 rad
-      phiMaxDCal        = (fGeom->GetDCALPhiMax())*TMath::DegToRad()-0.03-fFiducialCut;                           // 328.137 deg (5.727   rad) minus 0.03 rad = 5.697 rad
-
-      if(etaClust > etaMax || etaClust < etaMin){
-	isINBoundaries = kFALSE;
-	return isINBoundaries;
+      if(fPeriod.Contains("15") || fPeriod.Contains("16") || fPeriod.Contains("17")){
+	etaMinDCal_InnerEdge = fGeom->GetEMCGeometry()->GetDCALInnerExtandedEta()+0.03+fFiducialCut;
+	phiMinDCal           = (fGeom->GetDCALPhiMin())*TMath::DegToRad()+0.03+fFiducialCut;
+	phiMaxDCal_FullSM    = (fGeom->GetEMCGeometry()->GetDCALStandardPhiMax())*TMath::DegToRad()-0.03-fFiducialCut;
+	phiMaxDCal           = (fGeom->GetDCALPhiMax())*TMath::DegToRad()-0.03-fFiducialCut;
       }
-      if(phiClust >= phiMinEMCal && phiClust <= phiMaxEMCal)
-	isINBoundaries = kTRUE;
-      else if(phiClust >= phiMinDCal && phiClust <= phiMaxDCal_FullSM && TMath::Abs(etaClust) > etaMinDCal_InnerEdge)
-	isINBoundaries = kTRUE;
-      else if(phiClust > phiMaxDCal_FullSM && phiClust <= phiMaxDCal)
-	isINBoundaries = kTRUE;
-      else
-	isINBoundaries = kFALSE;
+
+      if(fPeriod.Contains("10") || fPeriod.Contains("11") || fPeriod.Contains("12") || fPeriod.Contains("13")){
+	if(TMath::Abs(etaClust) > etaMax || phiClust < phiMinEMCal || phiClust > phiMaxEMCal)
+	  isINBoundaries = kFALSE;
+	else
+	  isINBoundaries = kTRUE;
+      } // Run 1
+      else if(fPeriod.Contains("15") || fPeriod.Contains("16") || fPeriod.Contains("17")){
+	if(TMath::Abs(etaClust) > etaMax || phiClust < phiMinEMCal || phiClust > phiMaxDCal || (phiClust > phiMaxEMCal && phiClust < phiMinDCal) || (phiClust >= phiMinDCal && phiClust < phiMaxDCal_FullSM && TMath::Abs(etaClust) < etaMinDCal_InnerEdge))
+	  isINBoundaries = kFALSE;
+	else
+	  isINBoundaries = kTRUE;
+      } // Run 2
     }
     else{ // If no period set, default for 2011-2013 (2*5 EMCal SM)
-      etaMin      = -0.67+fFiducialCut;
       etaMax      = 0.67-fFiducialCut;
       phiMinEMCal = (4./9.)*TMath::Pi()+0.03+fFiducialCut;
       phiMaxEMCal = TMath::Pi()-0.03-fFiducialCut;
 
-      if(etaClust > etaMax || etaClust < etaMin || phiClust > phiMaxEMCal || phiClust < phiMinEMCal)
+      if(TMath::Abs(etaClust) > etaMax || phiClust < phiMinEMCal || phiClust > phiMaxEMCal)
 	isINBoundaries = kFALSE;
       else
 	isINBoundaries = kTRUE;
@@ -3973,7 +3976,7 @@ void AliAnalysisTaskEMCALPhotonIsolation::ComputeConeArea(TLorentzVector c, Doub
 
 void AliAnalysisTaskEMCALPhotonIsolation::AddParticleToUEMC(Double_t& sumUE,AliAODMCParticle* mcpp, Double_t eta,Double_t phi){
 
-  Double_t etaMin = 0., etaMax = 0., etaMinDCal_InnerEdge = 0., phiMinEMCal = 0., phiMaxEMCal = 0., phiMinDCal = 0. , phiMaxDCal_FullSM = 0., phiMaxDCal = 0.;
+  Double_t etaMax = 0./*, etaMinDCal_InnerEdge = 0.*/, phiMinEMCal = 0., phiMaxEMCal = 0./*, phiMinDCal = 0. , phiMaxDCal_FullSM = 0., phiMaxDCal = 0.*/;
 
   Double_t etap=mcpp->Eta();
   Double_t phip=mcpp->Phi();
@@ -4016,13 +4019,7 @@ void AliAnalysisTaskEMCALPhotonIsolation::AddParticleToUEMC(Double_t& sumUE,AliA
     }
   }
   else{
-    etaMin = -0.87;
     etaMax = 0.87;
-
-    // if(TMath::Abs(etap) >= 0.87)
-    //   return;
-    // if(etap > etaMax || etap < etaMin)
-    //   return;
     if(TMath::Abs(etap) >= etaMax)
       return;
     else{
@@ -4136,7 +4133,7 @@ void AliAnalysisTaskEMCALPhotonIsolation::AnalyzeMC(){
     // DO THIS ALSO FOR ESDs
 
   Double_t eT = 0., sumEiso = 0., sumUE = 0., phi = 0., eta = 0., distance = 0., phip = 0., etap = 0., mcfirstEnergy = 0.;
-  Double_t etaMin = 0., etaMax = 0., etaMinDCal_InnerEdge = 0., phiMinEMCal = 0., phiMaxEMCal = 0., phiMinDCal = 0. , phiMaxDCal_FullSM = 0., phiMaxDCal = 0.;
+  Double_t etaMax = 0./*, etaMinDCal_InnerEdge = 0.*/, phiMinEMCal = 0., phiMaxEMCal = 0./*, phiMinDCal = 0. , phiMaxDCal_FullSM = 0., phiMaxDCal = 0.*/;
 
   if(fAODMCParticles->GetEntries() < 1){
     AliError("number of tracks insufficient");
