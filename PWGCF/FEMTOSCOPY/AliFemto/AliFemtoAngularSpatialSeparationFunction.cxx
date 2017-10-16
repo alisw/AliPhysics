@@ -13,7 +13,7 @@
 #include <cstdio>
 #include <TMath.h>
 
-#ifdef __ROOT__ 
+#ifdef __ROOT__
 ClassImp(AliFemtoAngularSpatialSeparationFunction)
 #endif
 
@@ -22,7 +22,7 @@ AliFemtoAngularSpatialSeparationFunction::AliFemtoAngularSpatialSeparationFuncti
   fAlphaNum = new TH1D(Form("NumSpatialSeparation_%s",title),Form("NumSpatialSeparation_%s",title),numberOfBins,0,TMath::Pi());
 
   fAlphaDen = new TH1D(Form("DenSpatialSeparation_%s",title),Form("DenSpatialSeparation_%s",title),numberOfBins,0,TMath::Pi());
-  
+
   fAlphaNum->Sumw2();
   fAlphaDen->Sumw2();
 }
@@ -31,7 +31,7 @@ AliFemtoAngularSpatialSeparationFunction::AliFemtoAngularSpatialSeparationFuncti
 {
   if (aFunction.fAlphaNum)    fAlphaNum = new TH1D(*aFunction.fAlphaNum);
   else                        fAlphaNum = nullptr;
-  
+
   if (aFunction.fAlphaDen)    fAlphaDen = new TH1D(*aFunction.fAlphaDen);
   else                        fAlphaDen = nullptr;
 }
@@ -46,10 +46,10 @@ AliFemtoAngularSpatialSeparationFunction& AliFemtoAngularSpatialSeparationFuncti
 {
   if (aFunction.fAlphaNum)  fAlphaNum = new TH1D(*aFunction.fAlphaNum);
   else                      fAlphaNum = nullptr;
-  
+
   if (aFunction.fAlphaDen)  fAlphaNum = new TH1D(*aFunction.fAlphaDen);
   else                      fAlphaDen = nullptr;
-  
+
   return *this;
 }
 
@@ -71,7 +71,7 @@ AliFemtoString AliFemtoAngularSpatialSeparationFunction::Report()
 void AliFemtoAngularSpatialSeparationFunction::AddFirstParticle(AliFemtoParticle *particle, bool mixing)
 {
   AliFemtoLorentzVector fourMomentum = particle->FourMomentum();
-  
+
   if(mixing){
     phi1mixed.push_back(fourMomentum.Phi());
     theta1mixed.push_back(fourMomentum.Theta());
@@ -85,7 +85,7 @@ void AliFemtoAngularSpatialSeparationFunction::AddFirstParticle(AliFemtoParticle
 void AliFemtoAngularSpatialSeparationFunction::AddSecondParticle(AliFemtoParticle *particle)
 {
   AliFemtoLorentzVector fourMomentum = particle->FourMomentum();
-  
+
   phi2real.push_back(fourMomentum.Phi());
   theta2real.push_back(fourMomentum.Theta());
 }
@@ -95,72 +95,72 @@ void AliFemtoAngularSpatialSeparationFunction::CalculateAnglesForEvent()
   double avgPhi1real=0;
   double avgPhi2real=0;
   double avgPhi1mixed=0;
-  
+
   double avgTheta1real=0;
   double avgTheta2real=0;
   double avgTheta1mixed=0;
-  
-  for(int i=0;i<phi1real.size();i++){
+
+  for(UInt_t i=0;i<phi1real.size();i++){
     avgPhi1real+=phi1real[i];
   }
   avgPhi1real /= phi1real.size();
-  
-  for(int i=0;i<phi2real.size();i++){
+
+  for(UInt_t i=0;i<phi2real.size();i++){
     avgPhi2real+=phi2real[i];
   }
   avgPhi2real /= phi2real.size();
-  
-  for(int i=0;i<phi1mixed.size();i++){
+
+  for(UInt_t i=0;i<phi1mixed.size();i++){
     avgPhi1mixed+=phi1mixed[i];
   }
   avgPhi1mixed /= phi1mixed.size();
-  
-  for(int i=0;i<theta1real.size();i++){
+
+  for(UInt_t i=0;i<theta1real.size();i++){
     avgTheta1real+=theta1real[i];
   }
   avgTheta1real /= theta1real.size();
-  
-  for(int i=0;i<theta2real.size();i++){
+
+  for(UInt_t i=0;i<theta2real.size();i++){
     avgTheta2real+=theta2real[i];
   }
   avgTheta2real /= theta2real.size();
-  
-  for(int i=0;i<theta1mixed.size();i++){
+
+  for(UInt_t i=0;i<theta1mixed.size();i++){
     avgTheta1mixed+=theta1mixed[i];
   }
   avgTheta1mixed /= theta1mixed.size();
-  
-  
+
+
   double d1real[3];
   double d2real[3];
   double d1mixed[3];
-  
+
   d1real[0] = sin(avgTheta1real) * cos(avgPhi1real);
   d1real[1] = sin(avgTheta1real) * sin(avgPhi1real);
   d1real[2] = cos(avgTheta1real);
-  
+
   d2real[0] = sin(avgTheta2real) * cos(avgPhi2real);
   d2real[1] = sin(avgTheta2real) * sin(avgPhi2real);
   d2real[2] = cos(avgTheta2real);
-  
+
   d1mixed[0] = sin(avgTheta1mixed) * cos(avgPhi1mixed);
   d1mixed[1] = sin(avgTheta1mixed) * sin(avgPhi1mixed);
   d1mixed[2] = cos(avgTheta1mixed);
-  
+
   double alphaReal  = acos(d1real[0]*d2real[0] + d1real[1]*d2real[1] + d1real[2]*d2real[2]);
   double alphaMixed = acos(d1mixed[0]*d2real[0] + d1mixed[1]*d2real[1] + d1mixed[2]*d2real[2]);
-  
+
   fAlphaNum->Fill(fabs(alphaReal));
   fAlphaDen->Fill(fabs(alphaMixed));
-  
+
   phi1real.clear();
   phi2real.clear();
   phi1mixed.clear();
-  
+
   theta1real.clear();
   theta2real.clear();
   theta1mixed.clear();
-  
+
 }
 
 void AliFemtoAngularSpatialSeparationFunction::WriteHistos()
