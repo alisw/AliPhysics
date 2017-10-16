@@ -65,7 +65,7 @@ AliAnalysisHFETPCTOFNew* AddTaskHFETPCTOFNew( ///-> to run locally
 }
 
 
-AliAnalysisHFETPCTOFNew* ConfigHFETPCTOF(Bool_t isMCc, Bool_t isAODc, Bool_t isPPc,Double_t tpcPIDmincut,Double_t tpcPIDmaxcut, Double_t tofPID, Int_t minNClustersTPC, Int_t minNClustersTPCPID, Float_t minRatioTPCclusters, Int_t  minNClustersITS, AliHFEextraCuts::ITSPixel_t pixel, Float_t Mass, Float_t MinPt, Float_t TpcNclus, Float_t EtaMin, Float_t EtaMax, Int_t isCharPion, Float_t DCAxy, Float_t DCAz, Bool_t HadCont)
+AliAnalysisHFETPCTOFNew* ConfigHFETPCTOF(Bool_t isMCc, Bool_t isAODc, Bool_t isPPc,Double_t tpcPIDmincut,Double_t tpcPIDmaxcut, Double_t tofPID, Int_t minNClustersTPC, Int_t minNClustersTPCPID, Float_t minRatioTPCclusters, Int_t  minNClustersITS, AliHFEextraCuts::ITSPixel_t pixel, Float_t Mass, Float_t MinPt, Float_t TpcNclus, Float_t EtaMin, Float_t EtaMax, Int_t isCharPion, Float_t DCAxy, Float_t DCAz, Int_t HadCont)
 {
     ///_______________________________________________________________________________________________________________
     ///Track selection: Cuts used to ensure a minimum quality level of the tracks selected to perform the analysis
@@ -159,6 +159,7 @@ AliAnalysisHFETPCTOFNew* ConfigHFETPCTOF(Bool_t isMCc, Bool_t isAODc, Bool_t isP
 		hBackground->FixParameter(2, 9.99751e-01);
 		//hBackground->Eval(0,0,0);
 		task->SetHadronFunction(hBackground);
+		cout<<"HadCont = "<<HadCont<<endl;
 	}  
 	
     //______________________________________
