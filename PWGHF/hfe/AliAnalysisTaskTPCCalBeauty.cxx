@@ -730,7 +730,7 @@ void AliAnalysisTaskTPCCalBeauty::UserExec(Option_t*)
                 
             }
         
-            //InvMassCheck(i, track, d0z0, MagSign);
+            InvMassCheck(i, track, d0z0, MagSign);
             
             //Make incl electron and photonic electron plots
             /*if(nsigma>-1 && nsigma<3) {
