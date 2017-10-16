@@ -30,10 +30,18 @@ using std::endl;
 void PrepareRawSpectra(TString dirname = latestDir[0], TString dataname = "TOFDataHisto.root", TString fitprefix = "", UInt_t iCharge = 0, UInt_t iSpecies = 0,  UInt_t iMult = 11, UInt_t fitmode = 0, TString prefix = "", const Bool_t fitsigma = kTRUE, const Bool_t save = kFALSE){
   Infomsg("PrepareRawSpectra", Form("TString dirname %s, TString dataname %s, TString fitprefix %s, const UInt_t iCharge %i, const UInt_t iSpecies %i, const UInt_t iMult %i, UInt_t fitmode %i, TString prefix %s, const Bool_t fitsigma %i", dirname.Data(), dataname.Data(), fitprefix.Data(), iCharge, iSpecies, iMult, fitmode, prefix.Data(), fitsigma));
 
-  if(iCharge >= kCharges) Fatalmsg("PrepareRawSpectra", Form("Wrong charge: %i", iCharge));
-  if(iSpecies >= kSpecies) Fatalmsg("PrepareRawSpectra", Form("Wrong particle: %i", iSpecies));
-  if(fitmode >= kFModes) Fatalmsg("PrepareRawSpectra", Form("Wrong fitmode: %i", fitmode));
-  if(iMult >= nMultBin) Fatalmsg("PrepareRawSpectra", Form("Multiplicity bin %i out of bounds", iMult));
+  if (iCharge >= kCharges)
+    Fatalmsg("PrepareRawSpectra", Form("Wrong charge: %i", iCharge));
+  //
+  if (iSpecies >= kSpecies)
+    Fatalmsg("PrepareRawSpectra", Form("Wrong particle: %i", iSpecies));
+  //
+  if (fitmode >= kFModes)
+    Fatalmsg("PrepareRawSpectra", Form("Wrong fitmode: %i", fitmode));
+  //
+  if (iMult >= nMultBin)
+    Fatalmsg("PrepareRawSpectra", Form("Multiplicity bin %i out of bounds", iMult));
+  //
   const Bool_t drawresult = kTRUE;//To draw the magenta histogram of the total fit result
   const Bool_t samemismatch = iMult == 11 || iMult < 2 ? kFALSE : kFALSE;//To use the mismatch template from the Centrality integrated case
   const Int_t mismatchindex = 0;//Which mismatch template to use in case we want to use the same one as for other multiplicity bins
@@ -1114,7 +1122,7 @@ void PrepareRawSpectra(TString dirname = latestDir[0], TString dataname = "TOFDa
     hRatioToFitted[ptbin]->SetTitle(Form("Ratio to Fit;%s;Fitted/Data", fitsigma ? nsigmastringSpecies[iSpecies + kpi].Data() : tofsignalstringSpecies[iSpecies + kpi].Data()));
     hRatioToFitted[ptbin]->Sumw2();
     hRatioToFitted[ptbin]->Divide(hFitted[ptbin], datahisto, 1, 1);
-    hRatioToFitted[ptbin]->DrawCopy();
+    hRatioToFitted[ptbin]->DrawCopy()->GetXaxis()->SetRangeUser(fitrange[0], fitrange[1]);;
     DrawLabel(label);
     if(showratiomean){
       TF1 *meanvalue = new TF1("fmean", "pol0", -100, 100);
