@@ -292,6 +292,9 @@ public:
    
  
     TH1F                  *fElecHadTrigger;         //!
+    TH1F                  *fElecHadTriggerLS;         //!
+    TH1F                  *fElecHadTriggerULS;         //!
+    TH1F                  *fHadContTrigger;         //!
     TH1F                  *fHadElecTrigger;         //!
     TH1F                  *fNonElecHadTrigger;      //!
     TH1F                  *fHadNonElecTrigger;      //!
@@ -329,13 +332,23 @@ public:
     THnSparse             *fLSElecLPMixedEvent;     //!
     THnSparse             *fULSElecLPMixedEvent;    //!
    
+    
     TH2F                  *fCheckMCVertex;           //!
-    TH2F                  *fCheckMCPtvsRecPt;        //!
-    TH3F                  *fMCHadPtEtaPhi;           //!
-    TH3F                  *fMCHadPtEtaVtx;           //!
-    TH3F                  *fMCElecPtEtaPhi;          //!
+    
+    TH2F                  *fCheckMCPtvsRecPtHad;     //!
+    TH2F                  *fCheckMCEtavsRecEtaHad;   //!
+    TH2F                  *fCheckMCPhivsRecPhiHad;   //!
+    THnSparse             *fMCHadPtEtaPhiVtx;        //!
+    THnSparse             *fRecHadMCPtEtaPhiVtx;     //!
+    THnSparse             *fRecHadPtEtaPhiVtx;       //!
+
+    TH2F                  *fCheckMCPtvsRecPtEle;     //!
+    THnSparse             *fMCElecPtEtaPhiVtx;       //!
+    THnSparse             *fRecElecPtEtaPhiVtx;      //!
+    THnSparse             *fRecElecMCPtEtaPhiVtx;    //!
     TH1F                  *fMCElecPDG;               //!
-    TH3F                  *fMCElecPtEtaPhiStrict;    //!
+    THnSparse             *fMCElecPtEtaPhiStrictVtx; //!
+
     THnSparse             *fMCPi0Prod;               //!
     THnSparse             *fMCEtaProd;               //!
     THnSparse             *fMCPiPlusProd;            //!
@@ -361,7 +374,7 @@ class AliBasicParticleHaHFE : public AliVParticle
    : fID(0), fEta(0), fPhi(0), fpT(0), fCharge(0), fULSpartner(0), fLSpartner(0) , fIDLSPartner(0), fIDULSPartner(0), fTrueULSPartner(kFALSE), fIsPhotonic(kFALSE), fIsHadron(kFALSE)
     {}
  AliBasicParticleHaHFE(Int_t id, Float_t eta, Float_t phi, Float_t pt, Short_t charge, Short_t LS, Short_t ULS, Int_t *LSPartner, Int_t *ULSPartner, Bool_t trueULSPartner, Bool_t isPhotonic, Bool_t isHadron)
-   : fID(id), fEta(eta), fPhi(phi), fpT(pt), fCharge(charge), fULSpartner(LS), fLSpartner(ULS), fIDLSPartner(0), fIDULSPartner(0), fTrueULSPartner(trueULSPartner), fIsPhotonic(isPhotonic), fIsHadron(isHadron)
+   : fID(id), fEta(eta), fPhi(phi), fpT(pt), fCharge(charge), fULSpartner(ULS), fLSpartner(LS), fIDLSPartner(0), fIDULSPartner(0), fTrueULSPartner(trueULSPartner), fIsPhotonic(isPhotonic), fIsHadron(isHadron)
   {
     fIDLSPartner = new Int_t[LS];
     fIDULSPartner = new Int_t[ULS];
