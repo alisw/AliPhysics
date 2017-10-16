@@ -313,7 +313,7 @@ void PrepareRawSpectra(TString dirname = latestDir[0], TString dataname = "TOFDa
   lCanvas->Add(cYield);
 
   TCanvas *cYieldResidual = new TCanvas(Form("cYieldResidual%s%s", pC[iCharge].Data(), pS[iSpecies].Data()), Form("Canvas with YieldResidual for %s %s", pCharge[iCharge].Data(), pSpecies[iSpecies].Data()));
-  cYieldResidual->Divide(2);
+  cYieldResidual->Divide(2, 2);
   lCanvas->Add(cYieldResidual);
 
   TCanvas *cBackground = new TCanvas(Form("cBackground%s%s", pC[iCharge].Data(), pS[iSpecies].Data()), Form("Canvas with Background for %s %s", pCharge[iCharge].Data(), pSpecies[iSpecies].Data()));
@@ -1231,13 +1231,31 @@ void PrepareRawSpectra(TString dirname = latestDir[0], TString dataname = "TOFDa
   DrawLabel("Evt. Scaled counts");
   cYield->SaveAs(Form("%s%s%s_%s.pdf", outpath.Data(), pCharge[iCharge].Data(), pSpecies[iSpecies].Data(), MultBinString[iMult].Data()));
 
+  //
+  //Draw the residual of the yield
+  //
+  TH1* H = 0x0;
   cYieldResidual->cd(1);
-  hYieldResidual->DrawCopy("")->GetYaxis()->SetTitle("Residual");
+  H = hYieldResidual->DrawCopy("");
+  H->GetXaxis()->SetRangeUser(0, 5);
+  H->SetLineColor(kRed);
+  H->GetYaxis()->SetTitle("Residual");
   DrawLabel("Residual yield");
   cYieldResidual->cd(2);
-  hYieldResidual->DrawCopy("")->Divide(hYield);
+  H->DrawCopy("")->Divide(hYield);
   DrawLabel("Ratio to yield");
-
+  cYieldResidual->cd(3);
+  H = hYieldResidual->DrawCopy("");
+  H->SetLineColor(kRed);
+  H->GetXaxis()->SetRangeUser(0, 5);
+  hYield->DrawCopy("same");
+  H->Add(hYield);
+  DrawLabel("Yield and Yield + Residual");
+  cYieldResidual->cd(4);
+  H = H->DrawCopy("");
+  H->Divide(hYield);
+  H->GetYaxis()->SetRangeUser(.9, 1.1);
+  DrawLabel("Yield + Residual Ratio to Yield");
 
   //
   //Draw the background
