@@ -93,23 +93,37 @@ void AliMESppColTask::UserExec(Option_t *opt)
 	Double_t directivity_plus = fEvInfo->GetEventShape()->GetDirectivity(1);
 	Double_t directivity_minus = fEvInfo->GetEventShape()->GetDirectivity(0);
 	Double_t sfer = fEvInfo->GetEventShape()->GetSphericity();
-// 	  AliInfo(Form("Sfer=%f", sfer));
+	
+	vec_hNoEvts[0] = 0.;
+	hNoEvts->Fill(vec_hNoEvts);
+	
+
 	// select events with both dirs in the same interval
-// 	const Int_t lenght = 4;
-// 	Double_t intervals[lenght] = {0., 0.3, 0.6, 0.9};
+	const Int_t lenght = 4;
+	Double_t intervals[lenght] = {0., 0.3, 0.6, 0.9};
 	// NOTE: the intervals are considered half-closed: (a,b]
-/*	if( (directivity_plus < intervals[0]) || (directivity_plus > intervals[lenght-1]) ) return;
+	if( (directivity_plus < intervals[0]) || (directivity_plus > intervals[lenght-1]) ) return;
+	vec_hNoEvts[0] = 1.;
+	hNoEvts->Fill(vec_hNoEvts);
+	if( (directivity_minus < intervals[0]) || (directivity_minus > intervals[lenght-1]) ) return;
+	vec_hNoEvts[0] = 2.;
+	hNoEvts->Fill(vec_hNoEvts);
+  
 	Int_t first = -1;
 	for(Int_t i=1; i<lenght; i++){
 		if(directivity_plus <= intervals[i]){
 			first = i;
 			break;
 		}
-	}*/
+	}
+	if( (directivity_minus <= intervals[first-1]) || (directivity_minus > intervals[first]) ) return;
+	vec_hNoEvts[0] = 3.;
+	hNoEvts->Fill(vec_hNoEvts);
+	
 	Double_t directivity = (directivity_plus + directivity_minus) / 2.0;
-//	if( (directivity_minus <= intervals[first-1]) || (directivity_minus > intervals[first]) ) return;
-  if (directivity_minus <= 0.0 || directivity_minus > 0.3) return;
-  if (directivity_plus <= 0.0 || directivity_plus > 0.3) return;
+	
+//   if (directivity_minus <= 0.0 || directivity_minus > 0.3) return;
+//   if (directivity_plus <= 0.0 || directivity_plus > 0.3) return;
 //   if (mult_comb08<30 || mult_comb08>39) return;
 	
 	vec_hNoEvts[1] = mult_comb08; // combined multiplicity with |eta| < 0.8
@@ -137,7 +151,7 @@ void AliMESppColTask::UserExec(Option_t *opt)
 		vec_hNoEvts[6] = MC_sfer;
 	}
 	
-	vec_hNoEvts[0] = 3.;
+	vec_hNoEvts[0] = 4.;
 	hNoEvts->Fill(vec_hNoEvts);
 	
 	
@@ -152,7 +166,7 @@ void AliMESppColTask::UserExec(Option_t *opt)
 	
     
 // NOTE: the intervals are considered half-closed: (a,b]
-    if(directivity_plus>0.0 && directivity_plus<=0.3 && directivity_minus>0.0 && directivity_minus<=0.3){
+    if(directivity_plus>0.3 && directivity_plus<=0.6 && directivity_minus>0.3 && directivity_minus<=0.6){
       FillCorrelationSE(mult_comb08, selectedTracks);
       FillCorrelationMixing(mult_comb08, fEvInfo->GetVertexZ(), 80., 0., selectedTracks);
 	}
@@ -163,7 +177,7 @@ void AliMESppColTask::UserExec(Option_t *opt)
 		if(!selectedTracksMC) return;
 		selectedTracksMC->SetOwner(kTRUE);
     // NOTE: the intervals are considered half-closed: (a,b]
-		if(MC_directivity_plus>0.0 && MC_directivity_plus<=0.3 && MC_directivity_minus>0.0 && MC_directivity_minus<=0.3){
+		if(MC_directivity_plus>0.3 && MC_directivity_plus<=0.6 && MC_directivity_minus>0.3 && MC_directivity_minus<=0.6){
 			FillCorrelationSE(MC_mult_glob08, selectedTracksMC);
 			FillCorrelationMixing(MC_mult_glob08, fMCevInfo->GetVertexZ(), 80., 0., selectedTracksMC);
 		}
@@ -414,8 +428,8 @@ Bool_t AliMESppColTask::BuildQAHistos()
   
 // used for scaling
   const Int_t ndimNoEvts(7);
-  const Int_t cldNbinsNoEvts[ndimNoEvts]   = {4, 150, 30, 30, 150, 30, 30};
-  const Double_t cldMinNoEvts[ndimNoEvts]  = {-0.5, 0.5, 0., 0., 0.5, 0., 0.}, cldMaxNoEvts[ndimNoEvts]  = {3.5, 150.5, 1., 1., 150.5, 1., 1.};
+  const Int_t cldNbinsNoEvts[ndimNoEvts]   = {5, 150, 30, 30, 150, 30, 30};
+  const Double_t cldMinNoEvts[ndimNoEvts]  = {-0.5, 0.5, 0., 0., 0.5, 0., 0.}, cldMaxNoEvts[ndimNoEvts]  = {4.5, 150.5, 1., 1., 150.5, 1., 1.};
   THnSparseD *hNoEvts = new THnSparseD("NoEvts","NoEvts;step;combined 0.8;directivity;sfericity; MCmultiplicity;MCdirectivity; MCsfericity;",ndimNoEvts, cldNbinsNoEvts, cldMinNoEvts, cldMaxNoEvts);
   hNoEvts->GetAxis(0)->SetBinLabel(1, "Tender OK");
   hNoEvts->GetAxis(0)->SetBinLabel(2, "Pile-up Rejection");
