@@ -7,11 +7,7 @@
 #include <TClonesArray.h>
 #include <TH2F.h>
 #include <TList.h>
-#include <TMath.h>
-#include "Math/Vector3D.h"
-#include "Math/Vector4D.h"
-using namespace ROOT::Math;
-typedef ROOT::Math::LorentzVector<ROOT::Math::PtEtaPhiM4D<float>> FourVector_t ;
+
 // ALIROOT includes
 #include "AliPDG.h"
 #include "AliVTrack.h"
@@ -32,15 +28,6 @@ typedef ROOT::Math::LorentzVector<ROOT::Math::PtEtaPhiM4D<float>> FourVector_t ;
 ClassImp(AliAnalysisTaskdStar);
 ///\endcond
 
-struct mother_struct{
-  int id;
-  bool pi_tof;
-  bool deuteron_tof;
-  int n_daughters;
-  FourVector_t vec;
-  bool operator==(const int &id_comp) const {return id==id_comp;}
-};
-
 /// Standard and default constructor of the class.
 ///
 /// \param taskname Name of the task
@@ -52,6 +39,9 @@ fList(),
 fProduction(),
 fReconstructed(),
 fTotal(),
+fTree(nullptr),
+fDeuteronVector(),
+fPiVector(),
 fRequireYmin(-0.5f),
 fRequireYmax(0.5f),
 fPID()
@@ -59,6 +49,7 @@ fPID()
   fFilterBit = BIT(8);
   DefineInput(0, TChain::Class());
   DefineOutput(1, TList::Class());
+  DefineOutput(2, TTree::Class());
 }
 
 /// Standard destructor
@@ -66,6 +57,7 @@ fPID()
 AliAnalysisTaskdStar::~AliAnalysisTaskdStar() {
   if (fList) delete fList;
   if (fPID) delete fPID;
+  if (fTree) delete fTree;
 }
 
 /// This function creates all the histograms and all the objects in general used during the analysis
@@ -73,38 +65,39 @@ AliAnalysisTaskdStar::~AliAnalysisTaskdStar() {
 ///
 void AliAnalysisTaskdStar::UserCreateOutputObjects() {
 
+  OpenFile(1);
+
   fList = new TList();
   fList->SetOwner(true);
 
   char   letter[2] = {'a','m'};
-  string tpctof[2] = {"TPC","TOF"};
   string tpctofMC[3] = {"TPC","TPC_TOF","TPC_(TOF)"};
   string dStarState = "dStar(2380)";
   float low_mass_limit = 2.2;
   float up_mass_limit = 2.7;
 
-
-  for (int iC = 0; iC < 2; ++iC) {
-
+  for (int iC = 0; iC < 2; ++iC){
     fProduction[iC] = new TH2F(Form("fProduction_%s_%c", dStarState.data(),letter[iC]),";M (GeV/#it{c}^{2});#it{p}_{T} (GeV/#it{c});Counts",50,low_mass_limit,up_mass_limit,20,0,10);
     fList->Add(fProduction[iC]);
-
     fTotal[iC] = new TH2F(Form("fTotal_%s_%c",dStarState.data(),letter[iC]),";M (GeV/#it{c}^{2});#it{p}_{T} (GeV/#it{c});Counts",50,low_mass_limit,up_mass_limit,20,0,10);
     fList->Add(fTotal[iC]);
-
-    for (int iT = 0; iT < 3; ++iT) {
+    for (int iT = 0; iT < 3; ++iT){
       fReconstructed[iC][iT] = new TH2F(Form("fRec_%s_%c_ITS_%s",dStarState.data(),letter[iC],tpctofMC[iT].data()),";M (GeV/#it{c}^{2});#it{p}_{T} (GeV/#it{c});Counts",50,low_mass_limit,up_mass_limit,20,0,10);
       fList->Add(fReconstructed[iC][iT]);
     }
   }
 
-  fNDaughters = new TH1F("nDaugthers","number of daughter per dTtar", 5, 0, 5);
-  fList->Add(fNDaughters);
-
   AliPDG::AddParticlesToPdgDataBase();
   fEventCut.AddQAplotsToList(fList);
-
   PostData(1,fList);
+
+  OpenFile(2);
+  fTree = new TTree("dStarTree", "Data for dStar background analysis");
+  fTree->Branch("Deuteron", &fDeuteronVector);
+  fTree->Branch("Pi", &fPiVector);
+  fTree->SetAutoSave(100000000);
+  PostData(2,fTree);
+
 }
 
 /// This is the function that is evaluated for each event. The analysis code stays here.
@@ -112,7 +105,7 @@ void AliAnalysisTaskdStar::UserCreateOutputObjects() {
 /// \param options Deprecated parameter
 /// \return void
 ///
-void AliAnalysisTaskdStar::UserExec(Option_t *){
+void AliAnalysisTaskdStar::UserExec(Option_t *) {
   /// The first check performed is on the particle type requested. If this type is AliPID::Unknown -
   /// the default one - the task does not process the information.
   AliVEvent *ev = InputEvent();
@@ -128,15 +121,12 @@ void AliAnalysisTaskdStar::UserExec(Option_t *){
   fPID = handl->GetPIDResponse();
 
   TClonesArray *stack = nullptr;
-  // get branch "mcparticles"
   stack = (TClonesArray*)ev->GetList()->FindObject(AliAODMCParticle::StdBranchName());
   if (!stack)
   ::Fatal("AliAnalysisTaskdStar::UserExec","MC analysis requested on a sample without the MC particle array.");
 
   /// Making the list of the dstar we want to measure
-  //std::cout << "LISTING ALL THE MOTHERS: "<<std::endl<<std::endl;
-
-  for (int iMC = 0; iMC < stack->GetEntriesFast(); ++iMC) {
+  for (int iMC = 0; iMC < stack->GetEntriesFast(); ++iMC){
 
     AliAODMCParticle *part = (AliAODMCParticle*)stack->UncheckedAt(iMC);
     const int pdg = TMath::Abs(part->GetPdgCode());
@@ -151,18 +141,21 @@ void AliAnalysisTaskdStar::UserExec(Option_t *){
       moth_vec+=tmp_vec;
     }
 
-    int part_n_daughters = part->GetDaughter(1)-part->GetDaughter(0);
-    fNDaughters->Fill(part_n_daughters); // check the number of daughter for dstar
     fProduction[iC]->Fill(part->M(),part->Pt());
-
-    if ( part->Y() < fRequireYmin || part->Y() > fRequireYmax ) continue;
+    if (part->Y() < fRequireYmin || part->Y() > fRequireYmax) continue;
     fTotal[iC]->Fill(moth_vec.M(),moth_vec.Pt());
   }
 
   /// Checking how many dstar in acceptance are reconstructed well
-  std::vector<mother_struct> mothers;
+
+  vector<mother_struct> mothers;
   mothers.reserve(40);
+
+  fDeuteronVector.clear();
+  fPiVector.clear();
+
   for (Int_t iT = 0; iT < (Int_t)ev->GetNumberOfTracks(); ++iT) {
+
     AliAODTrack *track = static_cast<AliAODTrack*>(ev->GetTrack(iT));
     if (track->GetID() <= 0) continue;
     if (!track->TestFilterBit(fFilterBit)) continue;
@@ -170,14 +163,35 @@ void AliAnalysisTaskdStar::UserExec(Option_t *){
     if (!part) continue;
     const int pdg = TMath::Abs(part->GetPdgCode());
     if (pdg != 211 && pdg != 1000010020) continue;
-
     const int mother_id = part->GetMother();
     AliAODMCParticle* mother = (mother_id >= 0) ? (AliAODMCParticle*)stack->At(mother_id) : nullptr;
     if (!mother) continue;
-    const int mother_pdg = TMath::Abs(mother->GetPdgCode());
+    const int mum_pdg = TMath::Abs(mother->GetPdgCode());
 
-    //Check wheter the track belongs to a deuteron
-    if (pdg == 1000010020 && mother_pdg == 900010020) {
+
+    // add deuterons and pions to the Tree for background analysis (ITS TPC only)
+    // if they are under 3 sigmas TPC response
+    if (TMath::Abs(fPID->NumberOfSigmas(AliPIDResponse::kTPC, track, AliPID::kDeuteron)) < 3.) {
+      daughter_struct deu;
+      deu.mother_pdg = mum_pdg;
+      FourVector_t tmp_deu = {(float)track->Pt(), (float)track->Eta(), (float)track->Phi(), (float)track->M(AliAODTrack::kDeuteron)};
+      deu.vec = tmp_deu;
+      deu.charge = (track->Charge() > 0) ? true : false;
+      fDeuteronVector.push_back(deu);
+    }
+
+    if (TMath::Abs(fPID->NumberOfSigmas(AliPIDResponse::kTPC, track, AliPID::kPion)) <  3.) {
+      daughter_struct pi;
+      pi.mother_pdg = mum_pdg;
+      FourVector_t tmp_pi = {(float)track->Pt(), (float)track->Eta(), (float)track->Phi(), (float)track->M(AliAODTrack::kPion)};
+      pi.vec = tmp_pi;
+      pi.charge = (track->Charge() > 0) ? true : false;
+      fPiVector.push_back(pi);
+    }
+
+
+    // Check wheter the track belongs to a deuteron
+    if (pdg == 1000010020 && mum_pdg == 900010020) {
       if(TMath::Abs(fPID->NumberOfSigmas(AliPIDResponse::kTPC,track,AliPID::kDeuteron))>3.) continue;
       FourVector_t tmp_vec = {(float)track->Pt(),(float)track->Eta(),(float)track->Phi(),(float)track->M(AliAODTrack::kDeuteron)};
       auto it = std::find(mothers.begin(),mothers.end(), mother_id);
@@ -196,8 +210,8 @@ void AliAnalysisTaskdStar::UserExec(Option_t *){
       }
     }
 
-    //Check wether the track belgons to a pion
-    if (pdg == 211 && mother_pdg == 900010020) {
+    // Check wether the track belgons to a pion
+    if (pdg == 211 && mum_pdg == 900010020) {
       if(TMath::Abs(fPID->NumberOfSigmas(AliPIDResponse::kTPC,track,AliPID::kPion))>3.) continue;
       FourVector_t tmp_vec = {(float)track->Pt(),(float)track->Eta(),(float)track->Phi(),(float)track->M(AliAODTrack::kPion)};
       auto it = std::find(mothers.begin(),mothers.end(), mother_id);
@@ -218,12 +232,15 @@ void AliAnalysisTaskdStar::UserExec(Option_t *){
 
   } // End AOD track loop
 
+  // Filling three
+  fTree->Fill();
+
+  // Filling histograms
   for (const auto& mum : mothers) {
     if (mum.n_daughters != 3) continue;
     if (mum.vec.Rapidity() < fRequireYmin || mum.vec.Rapidity() > fRequireYmax) continue;
     AliAODMCParticle *part = static_cast<AliAODMCParticle*>(stack->At(mum.id));
     const int iC = part->Charge() > 0 ? 1 : 0;
-    const int pdg = TMath::Abs(part->GetPdgCode());
     const float pt_rec = mum.vec.Pt();
     const float mass_rec = mum.vec.M();
     fReconstructed[iC][0]->Fill(mass_rec,pt_rec);
@@ -233,6 +250,7 @@ void AliAnalysisTaskdStar::UserExec(Option_t *){
 
   //  Post output data.
   PostData(1,fList);
+  PostData(2,fTree);
 }
 
 /// This function checks whether a track has or has not a prolongation in the TOF.

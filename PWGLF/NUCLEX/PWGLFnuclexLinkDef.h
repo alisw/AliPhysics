@@ -17,6 +17,11 @@
 #pragma link C++ class AliAnalysisTaskPsEfficiency+;
 /// * dStar
 #pragma link C++ class AliAnalysisTaskdStar+;
+#pragma link C++ class ROOT::Math::PtEtaPhiM4D<float>+;
+#pragma link C++ class ROOT::Math::LorentzVector<ROOT::Math::PtEtaPhiM4D<float>>+;
+#pragma link C++ class daughter_struct+;
+#pragma link C++ class std::vector<daughter_struct>+;
+#pragma link C++ typedef FourVector_t;
 
 /// Nuclei
 /// * DeltaMasses

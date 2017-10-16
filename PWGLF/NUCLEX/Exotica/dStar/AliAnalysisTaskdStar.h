@@ -18,10 +18,33 @@
 #include "AliEventCuts.h"
 #include "AliPIDResponse.h"
 #include "AliPID.h"
+#include <TMath.h>
+#include "Math/Vector3D.h"
+#include "Math/Vector4D.h"
+
+typedef ROOT::Math::LorentzVector<ROOT::Math::PtEtaPhiM4D<float>> FourVector_t ;
+using std::vector;
 
 class AliVTrack;
 class TH2F;
 class TList;
+
+
+struct mother_struct{
+  int id;
+  bool pi_tof;
+  bool deuteron_tof;
+  int n_daughters;
+  FourVector_t vec;
+  bool operator==(const int &id_comp) const {return id==id_comp;}
+};
+
+struct daughter_struct{
+  int mother_pdg;
+  bool charge;                     // true if is +, false if is -
+  FourVector_t vec;
+};
+
 
 class AliAnalysisTaskdStar : public AliAnalysisTaskSE {
 public:
@@ -49,9 +72,13 @@ private:
 
   // MC only histograms
   TH2F                 *fProduction[2];             //!<! *(MC only)* Total number of produced particles dStar state][Matter-Antimatter]
-  TH2F                 *fReconstructed[2][3];    //!<! *(MC only)* Positive and negative tracks reconstructed in the acceptance (ITS-TPC,ITS-TPC-TOF,ITS-TPC-(TOF)) [Ps state][Matter-Antimatter][Detector]
-  TH2F                 *fTotal[2];               //!<! *(MC only)* Positively and negatively charged particles in acceptance : [dStar state][Matter-Antimatter]
-  TH1F                 *fNDaughters;             //!<
+  TH2F                 *fReconstructed[2][3];       //!<! *(MC only)* Positive and negative tracks reconstructed in the acceptance (ITS-TPC,ITS-TPC-TOF,ITS-TPC-(TOF)) [Ps state][Matter-Antimatter][Detector]
+  TH2F                 *fTotal[2];                  //!<! *(MC only)* Positively and negatively charged particles in acceptance : [dStar state][Matter-Antimatter]
+  TTree                *fTree;                      //!<!
+
+  vector<daughter_struct>   fDeuteronVector;        //<
+  vector<daughter_struct>   fPiVector;              //<
+
 
   /// \cond CLASSDEF
   ClassDef(AliAnalysisTaskdStar,1)
