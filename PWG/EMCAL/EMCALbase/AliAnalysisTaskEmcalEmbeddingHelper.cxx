@@ -72,7 +72,6 @@ AliAnalysisTaskEmcalEmbeddingHelper::AliAnalysisTaskEmcalEmbeddingHelper() :
   fInitializedEmbedding(false),
   fWrappedAroundTree(false),
   fTreeName(""),
-  fAnchorRun(-1),
   fNPtHardBins(1),
   fPtHardBin(-1),
   fRandomEventNumberAccess(kFALSE),
@@ -87,6 +86,8 @@ AliAnalysisTaskEmcalEmbeddingHelper::AliAnalysisTaskEmcalEmbeddingHelper() :
   fFileListFilename(""),
   fFilenameIndex(-1),
   fFilenames(),
+  fConfigurationPath(""),
+  fEmbeddedRunlist(),
   fPythiaCrossSectionFilenames(),
   fExternalFile(nullptr),
   fChain(nullptr),
@@ -132,7 +133,6 @@ AliAnalysisTaskEmcalEmbeddingHelper::AliAnalysisTaskEmcalEmbeddingHelper(const c
   fInitializedEmbedding(false),
   fWrappedAroundTree(false),
   fTreeName("aodTree"),
-  fAnchorRun(-1),
   fNPtHardBins(1),
   fPtHardBin(-1),
   fRandomEventNumberAccess(kFALSE),
@@ -147,6 +147,8 @@ AliAnalysisTaskEmcalEmbeddingHelper::AliAnalysisTaskEmcalEmbeddingHelper(const c
   fFileListFilename(""),
   fFilenameIndex(-1),
   fFilenames(),
+  fConfigurationPath(""),
+  fEmbeddedRunlist(),
   fPythiaCrossSectionFilenames(),
   fExternalFile(nullptr),
   fChain(nullptr),
@@ -200,10 +202,13 @@ AliAnalysisTaskEmcalEmbeddingHelper::~AliAnalysisTaskEmcalEmbeddingHelper()
  */
 bool AliAnalysisTaskEmcalEmbeddingHelper::Initialize()
 {
+  // Initialize YAML configuration, if one is given
+  bool initializedYAML = InitializeYamlConfig();
+  
   // Get file list
   bool result = GetFilenames();
 
-  if (result) {
+  if (result && initializedYAML) {
     fInitializedConfiguration = true;
   }
 
@@ -263,15 +268,10 @@ bool AliAnalysisTaskEmcalEmbeddingHelper::GetFilenames()
       }
     }
 
-    // Handle if fPtHardBin or fAnchorRun are set
+    // Handle if fPtHardBin is set
     // This will require formatting the file pattern in the proper way to support these substitutions
     if (fPtHardBin != -1 && fFilePattern != "") {
-      if (fAnchorRun > 0) {
-        fFilePattern = TString::Format(fFilePattern, fAnchorRun, fPtHardBin);
-      }
-      else {
-        fFilePattern = TString::Format(fFilePattern, fPtHardBin);
-      }
+      fFilePattern = TString::Format(fFilePattern, fPtHardBin);
     }
 
     // Setup AliEn access if needed
@@ -309,8 +309,13 @@ bool AliAnalysisTaskEmcalEmbeddingHelper::GetFilenames()
         std::ofstream outFile(fFileListFilename);
         for (int i = 0; i < result->GetEntries(); i++)
         {
+          TString path = result->GetKey(i, "turl");
           // "turl" corresponds to the full AliEn url
-          outFile << result->GetKey(i, "turl") << "\n";
+          
+          // If a runlist is specified for good embedded runs, only include the file if it is in this runlist
+          if (IsGoodEmbeddedRun(path)) {
+            outFile << path << "\n";
+          }
         }
         outFile.close();
       }
@@ -371,6 +376,49 @@ bool AliAnalysisTaskEmcalEmbeddingHelper::GetFilenames()
   }
 
   AliInfoStream() << "Found " << fFilenames.size() << " files to embed\n";
+  return true;
+}
+
+/**
+ * Check if a given filename is from a run in the good embedded runlist.
+ *
+ * @param path path of a single filename
+ * @return true if the path contains a run in the good embedded runlist.
+ */
+bool AliAnalysisTaskEmcalEmbeddingHelper::IsGoodEmbeddedRun(TString path)
+{
+  if (fEmbeddedRunlist.size() == 0) {
+    return true;
+  }
+  
+  for (auto run : fEmbeddedRunlist) {
+    if (path.Contains(run)) {
+      return true;
+    }
+  }
+  return false;
+
+}
+
+bool AliAnalysisTaskEmcalEmbeddingHelper::InitializeYamlConfig()
+{
+  if (fConfigurationPath == "") {
+    AliInfo("No Embedding YAML configuration was provided");
+  }
+  else {
+    AliInfoStream() << "Embedding YAML configuration was provided: \"" << fConfigurationPath << "\".\n";
+
+    PWG::Tools::AliYAMLConfiguration config;
+    
+    int addedConfig = config.AddConfiguration(fConfigurationPath, "yamlConfig");
+    if (addedConfig < 0) {
+      AliError("YAML Configuration not found!");
+      return false;
+    }
+    
+    config.GetProperty("runlist", fEmbeddedRunlist, false);
+    
+  }
   return true;
 }
 
@@ -1371,7 +1419,6 @@ std::string AliAnalysisTaskEmcalEmbeddingHelper::toString(bool includeFileList) 
   tempSS << "Create histos: " << fCreateHisto << "\n";
   tempSS << "Pt Hard Bin: " << fPtHardBin << "\n";
   tempSS << "N Pt Hard Bins: " << fNPtHardBins << "\n";
-  tempSS << "Anchor Run: " << fAnchorRun << "\n";
   tempSS << "File pattern: \"" << fFilePattern << "\"\n";
   tempSS << "Input filename: \"" << fInputFilename << "\"\n";
   tempSS << "File list filename: \"" << fFileListFilename << "\"\n";
@@ -1380,6 +1427,7 @@ std::string AliAnalysisTaskEmcalEmbeddingHelper::toString(bool includeFileList) 
   tempSS << "Random file access: " << fRandomFileAccess << "\n";
   tempSS << "Starting file index: " << fFilenameIndex << "\n";
   tempSS << "Number of files to embed: " << fFilenames.size() << "\n";
+  tempSS << "YAML configuration path: " << fConfigurationPath << "\n";
 
   std::bitset<32> triggerMask(fTriggerMask);
   tempSS << "\nEmbedded event settings:\n";
