@@ -51,41 +51,41 @@ ClassImp(AliAnalysisTaskEmcalDijetImbalance);
  */
 AliAnalysisTaskEmcalDijetImbalance::AliAnalysisTaskEmcalDijetImbalance() : 
   AliAnalysisTaskEmcalJet(),
-  fHistManager(),
-  fEventCuts(0),
-  fEventCutList(0),
-  fUseManualEventCuts(kFALSE),
-  fUseAliEventCuts(kTRUE),
   fDeltaPhiMin(0),
   fMinTrigJetPt(0),
   fMinAssJetPt(0),
   fDijetLeadingHadronPt(0),
-  fMaxPt(200),
-  fNCentHistBins(0),
-  fCentHistBins(0),
-  fNPtHistBins(0),
-  fPtHistBins(0),
+  fMatchingJetR(0.2),
+  fTrackConstituentThreshold(0),
+  fClusterConstituentThreshold(0),
+  fNEtaBins(40),
+  fNPhiBins(200),
+  fBackgroundScalingWeights(0),
+  fGapJetScalingWeights(0),
   fPlotJetHistograms(kFALSE),
   fPlotDijetCandHistograms(kFALSE),
   fPlotDijetImbalanceHistograms(kFALSE),
   fComputeBackground(kFALSE),
   fDoMomentumBalance(kFALSE),
   fDoGeometricalMatching(kFALSE),
-  fMatchingJetR(0.2),
-  fTrackConstituentThreshold(0),
-  fClusterConstituentThreshold(0),
-  fMBUpscaleFactor(1.),
-  fNEtaBins(40),
-  fNPhiBins(200),
   fLoadBackgroundScalingWeights(kTRUE),
-  fBackgroundScalingWeights(0),
-  fGapJetScalingWeights(0),
   fComputeMBDownscaling(kFALSE),
   fDoTriggerSimulation(kFALSE),
+  fMaxPt(200),
+  fNCentHistBins(0),
+  fCentHistBins(0),
+  fNPtHistBins(0),
+  fPtHistBins(0),
+  fUseAliEventCuts(kTRUE),
+  fEventCuts(0),
+  fEventCutList(0),
+  fUseManualEventCuts(kFALSE),
+  fMBUpscaleFactor(1.),
   fMedianEMCal(0),
   fMedianDCal(0),
   fkEMCEJE(kFALSE),
-  fEmbeddingQA()
+  fEmbeddingQA(),
+  fHistManager()
 {
   GenerateHistoBins();
   Dijet_t fDijet;
@@ -99,41 +99,41 @@ AliAnalysisTaskEmcalDijetImbalance::AliAnalysisTaskEmcalDijetImbalance() :
  */
 AliAnalysisTaskEmcalDijetImbalance::AliAnalysisTaskEmcalDijetImbalance(const char *name) : 
   AliAnalysisTaskEmcalJet(name, kTRUE),
-  fHistManager(name),
-  fEventCuts(0),
-  fEventCutList(0),
-  fUseManualEventCuts(kFALSE),
-  fUseAliEventCuts(kTRUE),
   fDeltaPhiMin(0),
   fMinTrigJetPt(0),
   fMinAssJetPt(0),
   fDijetLeadingHadronPt(0),
-  fMaxPt(200),
-  fNCentHistBins(0),
-  fCentHistBins(0),
-  fNPtHistBins(0),
-  fPtHistBins(0),
+  fMatchingJetR(0.2),
+  fTrackConstituentThreshold(0),
+  fClusterConstituentThreshold(0),
+  fNEtaBins(40),
+  fNPhiBins(200),
+  fBackgroundScalingWeights(0),
+  fGapJetScalingWeights(0),
   fPlotJetHistograms(kFALSE),
   fPlotDijetCandHistograms(kFALSE),
   fPlotDijetImbalanceHistograms(kFALSE),
   fComputeBackground(kFALSE),
   fDoMomentumBalance(kFALSE),
   fDoGeometricalMatching(kFALSE),
-  fMatchingJetR(0.2),
-  fTrackConstituentThreshold(0),
-  fClusterConstituentThreshold(0),
-  fMBUpscaleFactor(1.),
-  fNEtaBins(40),
-  fNPhiBins(200),
   fLoadBackgroundScalingWeights(kTRUE),
-  fBackgroundScalingWeights(0),
-  fGapJetScalingWeights(0),
   fComputeMBDownscaling(kFALSE),
   fDoTriggerSimulation(kFALSE),
+  fMaxPt(200),
+  fNCentHistBins(0),
+  fCentHistBins(0),
+  fNPtHistBins(0),
+  fPtHistBins(0),
+  fUseAliEventCuts(kTRUE),
+  fEventCuts(0),
+  fEventCutList(0),
+  fUseManualEventCuts(kFALSE),
+  fMBUpscaleFactor(1.),
   fMedianEMCal(0),
   fMedianDCal(0),
   fkEMCEJE(kFALSE),
-  fEmbeddingQA()
+  fEmbeddingQA(),
+  fHistManager()
 {
   GenerateHistoBins();
   Dijet_t fDijet;
@@ -337,7 +337,7 @@ void AliAnalysisTaskEmcalDijetImbalance::AllocateJetHistograms()
   if (fComputeMBDownscaling) {
     histname = "Trigger/hMBDownscaleFactor";
     title = histname + ";Downscale factor;counts";
-    TH1* hist = fHistManager.CreateTH1(histname.Data(), title.Data(), 200, 0, 200);
+    fHistManager.CreateTH1(histname.Data(), title.Data(), 200, 0, 200);
   }
   
 }
@@ -350,8 +350,6 @@ void AliAnalysisTaskEmcalDijetImbalance::AllocateBackgroundHistograms()
 {
   TString histname;
   TString title;
-  
-  Int_t nPtBins = TMath::CeilNint(fMaxPt/2);
   
   AliJetContainer* jets = 0;
   TIter nextJetColl(&fJetCollArray);
@@ -746,7 +744,7 @@ void AliAnalysisTaskEmcalDijetImbalance::AllocateGeometricalMatchingHistograms()
   TString title;
   histname = "GeometricalMatchingEfficiency";
   title = histname + ";isMatched;counts";
-  TH1* hist = fHistManager.CreateTH1(histname.Data(), title.Data(), 2, -0.5, 1.5);
+  fHistManager.CreateTH1(histname.Data(), title.Data(), 2, -0.5, 1.5);
 }
 
 /*
@@ -1338,8 +1336,8 @@ void AliAnalysisTaskEmcalDijetImbalance::FindMatchingDijet(AliJetContainer* jetC
     AliEmcalJet* trigJet = matchingTrigJet;
     AliEmcalJet* assJet = matchingAssJet;
     if ( GetJetPt(jetCont, matchingTrigJet) < GetJetPt(jetCont, matchingAssJet) ) {
-      AliEmcalJet* trigJet = matchingAssJet;
-      AliEmcalJet* assJet = matchingTrigJet;
+      trigJet = matchingAssJet;
+      assJet = matchingTrigJet;
     }
     
     // Fill the dijet struct
@@ -1376,18 +1374,18 @@ void AliAnalysisTaskEmcalDijetImbalance::ComputeBackground()
   // Define the acceptance boundaries for the TPC and EMCal/DCal/PHOS
   Double_t etaTPC = 0.9;
   Double_t etaEMCal = 0.7;
-  Double_t etaMinDCal = 0.22;
-  Double_t etaMaxPHOS = 0.13;
+  //Double_t etaMinDCal = 0.22;
+  //Double_t etaMaxPHOS = 0.13;
   Double_t phiMinEMCal = fGeom->GetArm1PhiMin() * TMath::DegToRad(); // 80
   Double_t phiMaxEMCal = fGeom->GetEMCALPhiMax() * TMath::DegToRad(); // ~188
-  Double_t phiMinDCal = fGeom->GetDCALPhiMin() * TMath::DegToRad(); // 260
-  Double_t phiMaxDCal = fGeom->GetDCALPhiMax() * TMath::DegToRad(); // ~327 (1/3 SMs start at 320)
-  Double_t phiMinPHOS = 250 * TMath::DegToRad();
-  Double_t phiMaxPHOS = 320 * TMath::DegToRad();
+  //Double_t phiMinDCal = fGeom->GetDCALPhiMin() * TMath::DegToRad(); // 260
+  //Double_t phiMaxDCal = fGeom->GetDCALPhiMax() * TMath::DegToRad(); // ~327 (1/3 SMs start at 320)
+  //Double_t phiMinPHOS = 250 * TMath::DegToRad();
+  //Double_t phiMaxPHOS = 320 * TMath::DegToRad();
 
   Double_t accTPC = 2 * etaTPC * 2 * TMath::Pi();
   Double_t accEMCal = 2 * etaEMCal * (phiMaxEMCal - phiMinEMCal);
-  Double_t accDCalRegion = 2 * etaEMCal * (phiMaxDCal - phiMinDCal);
+  //Double_t accDCalRegion = 2 * etaEMCal * (phiMaxDCal - phiMinDCal);
   
   // Loop over jet containers
   AliJetContainer* jetCont = 0;
@@ -1401,8 +1399,6 @@ void AliAnalysisTaskEmcalDijetImbalance::ComputeBackground()
     Double_t etaEMCalfid = etaEMCal - jetR;
     Double_t phiMinEMCalfid = phiMinEMCal + jetR;
     Double_t phiMaxEMCalfid = phiMaxEMCal - jetR;
-    Double_t phiMinDCalRegionfid = phiMinDCal + jetR;
-    Double_t phiMaxDCalRegionfid = phiMaxDCal - jetR;
     
     // Generate EMCal random cone eta-phi
     Double_t etaEMCalRC = r->Uniform(-etaEMCalfid, etaEMCalfid);
