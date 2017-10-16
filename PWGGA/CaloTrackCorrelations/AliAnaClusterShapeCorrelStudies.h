@@ -480,6 +480,15 @@ public:
   TH3F *   fhColM02   [3];                        //!<! main cell column vs m02, n cell > 4
   TH3F *   fhRowM02   [3];                        //!<! main cell row vs m02, n cell > 4
   
+  TH3F *   fhSMMEtaNoCut    [3];                  //!<! SM number vs shower dispersion in eta, no cut
+  TH3F *   fhSMMEta         [3];                  //!<! SM number vs shower dispersion in eta, n cell > 4
+  TH3F *   fhSMMPhiNoCut    [3];                  //!<! SM number vs shower dispersion in phi, no cut
+  TH3F *   fhSMMPhi         [3];                  //!<! SM number vs shower dispersion in phi, n cell > 4
+  TH3F *   fhSMMEtaPhiNoCut [3];                  //!<! SM number vs shower dispersion, no cut
+  TH3F *   fhSMMEtaPhi      [3];                  //!<! SM number vs shower dispersion, n cell > 4
+  TH3F *   fhSMMEtaPhiANoCut[3];                  //!<! SM number vs shower dispersion eta-phi asymmetry, no cut
+  TH3F *   fhSMMEtaPhiA     [3];                  //!<! SM number vs shower dispersion eta-phi asymmetry, n cell > 4
+  
   TH3F *   fhEMaxCellTimeM02SM  ;                 //!<! m02 vs SM number vs max cell time
   TH3F *   fhEMaxCellTimeNCellSM;                 //!<! n cell vs SM number vs max cell time
   TH3F *   fhESecCellTimeNCellSM;                 //!<! n cell vs SM number vs secondary cell time
@@ -542,7 +551,7 @@ public:
   AliAnaClusterShapeCorrelStudies(              const AliAnaClusterShapeCorrelStudies & qa) ;
   
   /// \cond CLASSIMP
-  ClassDef(AliAnaClusterShapeCorrelStudies,4) ;
+  ClassDef(AliAnaClusterShapeCorrelStudies,5) ;
   /// \endcond
 
 } ;

@@ -106,9 +106,18 @@ fhECellTotalRatioMod(0),               fhECellTotalLogRatioMod(0)
     
     fhSMNCell              [i] = 0;
     fhSMNCellM02           [i] = 0;
-    fhSMM02                [i] = 0;
+    fhSMMEta                [i] = 0;
     fhSMM02NoCut           [i] = 0;
-   
+
+    fhSMMEta               [i] = 0;
+    fhSMMEtaNoCut          [i] = 0;
+    fhSMMPhi               [i] = 0;
+    fhSMMPhiNoCut          [i] = 0;
+    fhSMMEtaPhi            [i] = 0;
+    fhSMMEtaPhiNoCut       [i] = 0;
+    fhSMMEtaPhiA           [i] = 0;
+    fhSMMEtaPhiANoCut      [i] = 0;
+    
     fhSMM20LowM02          [i] = 0;
     fhSMM20LowM02NoCut     [i] = 0;
     fhSMM20HighM02         [i] = 0;
@@ -1610,7 +1619,8 @@ void AliAnaClusterShapeCorrelStudies::ClusterShapeHistograms
     }
   } // energy bin
   
-  if ( nCell > fNCellMinShape ) // it makes sense only for significant size histograms
+  // Select clusters with significant size
+  if ( nCell > fNCellMinShape ) 
   { 
     if      ( m02 > 0.1 && m02 < 0.3 )
       fhSMM20LowM02 [matchedPID]->Fill(energy, smMax  , m20  , GetEventWeight());
@@ -1622,7 +1632,9 @@ void AliAnaClusterShapeCorrelStudies::ClusterShapeHistograms
     fhRowM02[matchedPID]->Fill(energy, iphiMax, m02, GetEventWeight());
   }
 
+  //
   // Different shower shape parameters
+  //
   if ( fStudyShapeParam )
   {
     // cluster asymmetry
@@ -1688,10 +1700,26 @@ void AliAnaClusterShapeCorrelStudies::ClusterShapeHistograms
       fhNCellsPerClusterMPhi    [matchedPID]->Fill(energy, nCell, sPhi    , GetEventWeight());
       fhNCellsPerClusterMEtaPhi [matchedPID]->Fill(energy, nCell, sEtaPhi , GetEventWeight());
       fhNCellsPerClusterMEtaPhiA[matchedPID]->Fill(energy, nCell, sEtaPhiA, GetEventWeight());
+      
+      fhSMMEtaNoCut    [matchedPID]->Fill(energy, smMax, sEta    , GetEventWeight());
+      fhSMMPhiNoCut    [matchedPID]->Fill(energy, smMax, sPhi    , GetEventWeight());
+      fhSMMEtaPhiNoCut [matchedPID]->Fill(energy, smMax, sEtaPhi , GetEventWeight());
+      fhSMMEtaPhiANoCut[matchedPID]->Fill(energy, smMax, sEtaPhiA, GetEventWeight());
+      
+      // Select clusters with significant size
+      if ( nCell > fNCellMinShape ) 
+      { 
+        fhSMMEta    [matchedPID]->Fill(energy, smMax, sEta    , GetEventWeight());
+        fhSMMPhi    [matchedPID]->Fill(energy, smMax, sPhi    , GetEventWeight());
+        fhSMMEtaPhi [matchedPID]->Fill(energy, smMax, sEtaPhi , GetEventWeight());
+        fhSMMEtaPhiA[matchedPID]->Fill(energy, smMax, sEtaPhiA, GetEventWeight());
+      }
     }
   }
   
+  //
   // Invariant mass for clusters looking like photons, depending number of cells
+  //
   if ( matchedPID == 0 && energy > fEMinShape && energy < fEMaxShape &&
        m02 > fInvMassMinM02Cut && m02 < fInvMassMaxM02Cut )
   {
@@ -1745,7 +1773,9 @@ void AliAnaClusterShapeCorrelStudies::ClusterShapeHistograms
     }
   }
   
+  //
   // Check the origin.
+  //
   if ( IsDataMC() && mcIndex > -1 && mcIndex < 10)
   {
     fhOriginE  [matchedPID]->Fill(energy, mcIndex,      GetEventWeight());
@@ -4330,6 +4360,78 @@ TList * AliAnaClusterShapeCorrelStudies::GetCreateOutputObjects()
         fhNCellsPerClusterMEtaPhiA[imatch]->SetYTitle("#it{n}_{cells}^{w>0.01}");
         fhNCellsPerClusterMEtaPhiA[imatch]->SetZTitle("(#sigma_{#varphi}^{2}-#sigma_{#eta}^{2})/(#sigma_{#varphi}^{2}+#sigma_{#eta}^{2})");
         outputContainer->Add(fhNCellsPerClusterMEtaPhiA[imatch]); 
+        
+        fhSMMEta[imatch]  = new TH3F 
+        (Form("hSMMEta_%s",matchCase[imatch].Data()),
+         Form("#it{E} vs SM number vs #sigma_{#eta}^{2}, #it{n}_{cells}^{w>0.01}>%d, for ID %s",fNCellMinShape,matchCase[imatch].Data()),
+         nEbins,minE,maxE,fNModules,-0.5,fNModules-0.5,nShShBins,minShSh,maxShSh); 
+        fhSMMEta[imatch]->SetXTitle("#it{E} (GeV)");
+        fhSMMEta[imatch]->SetYTitle("SM number");
+        fhSMMEta[imatch]->SetZTitle("#sigma_{#eta}^{2}");
+        outputContainer->Add(fhSMMEta[imatch]); 
+        
+        fhSMMEtaNoCut[imatch]  = new TH3F 
+        (Form("hSMMEtaNoCut_%s",matchCase[imatch].Data()),
+         Form("#it{E} vs SM number vs #sigma_{#eta}^{2} for ID %s",matchCase[imatch].Data()),
+         nEbins,minE,maxE,fNModules,-0.5,fNModules-0.5,nShShBins,minShSh,maxShSh); 
+        fhSMMEtaNoCut[imatch]->SetXTitle("#it{E} (GeV)");
+        fhSMMEtaNoCut[imatch]->SetYTitle("SM number");
+        fhSMMEtaNoCut[imatch]->SetZTitle("#sigma_{#eta}^{2}");
+        outputContainer->Add(fhSMMEtaNoCut[imatch]); 
+
+        fhSMMPhi[imatch]  = new TH3F 
+        (Form("hSMMPhi_%s",matchCase[imatch].Data()),
+         Form("#it{E} vs SM number vs #sigma_{#varphi}^{2}, #it{n}_{cells}^{w>0.01}>%d, for ID %s",fNCellMinShape,matchCase[imatch].Data()),
+         nEbins,minE,maxE,fNModules,-0.5,fNModules-0.5,nShShBins,minShSh,maxShSh); 
+        fhSMMPhi[imatch]->SetXTitle("#it{E} (GeV)");
+        fhSMMPhi[imatch]->SetYTitle("SM number");
+        fhSMMPhi[imatch]->SetZTitle("#sigma_{#varphi}^{2}");
+        outputContainer->Add(fhSMMPhi[imatch]); 
+        
+        fhSMMPhiNoCut[imatch]  = new TH3F 
+        (Form("hSMMPhiNoCut_%s",matchCase[imatch].Data()),
+         Form("#it{E} vs SM number vs #sigma_{#varphi}^{2} for ID %s",matchCase[imatch].Data()),
+         nEbins,minE,maxE,fNModules,-0.5,fNModules-0.5,nShShBins,minShSh,maxShSh); 
+        fhSMMPhiNoCut[imatch]->SetXTitle("#it{E} (GeV)");
+        fhSMMPhiNoCut[imatch]->SetYTitle("SM number");
+        fhSMMPhiNoCut[imatch]->SetZTitle("#sigma_{#varphi}^{2}");
+        outputContainer->Add(fhSMMPhiNoCut[imatch]);   
+        
+        fhSMMEtaPhi[imatch]  = new TH3F 
+        (Form("hSMMEtaPhi_%s",matchCase[imatch].Data()),
+         Form("#it{E} vs SM number vs #sigma_{#eta#varphi}^{2}, #it{n}_{cells}^{w>0.01}>%d, for ID %s",fNCellMinShape,matchCase[imatch].Data()),
+         nEbins,minE,maxE,fNModules,-0.5,fNModules-0.5,nShShBins,minShSh,maxShSh); 
+        fhSMMEtaPhi[imatch]->SetXTitle("#it{E} (GeV)");
+        fhSMMEtaPhi[imatch]->SetYTitle("SM number");
+        fhSMMEtaPhi[imatch]->SetZTitle("#sigma_{#eta#varphi}^{2}");
+        outputContainer->Add(fhSMMEtaPhi[imatch]); 
+        
+        fhSMMEtaPhiNoCut[imatch]  = new TH3F 
+        (Form("hSMMEtaPhiNoCut_%s",matchCase[imatch].Data()),
+         Form("#it{E} vs SM number vs #sigma_{#eta#varphi}^{2} for ID %s",matchCase[imatch].Data()),
+         nEbins,minE,maxE,fNModules,-0.5,fNModules-0.5,nShShBins,minShSh,maxShSh); 
+        fhSMMEtaPhiNoCut[imatch]->SetXTitle("#it{E} (GeV)");
+        fhSMMEtaPhiNoCut[imatch]->SetYTitle("SM number");
+        fhSMMEtaPhiNoCut[imatch]->SetZTitle("#sigma_{#eta#varphi}^{2}");
+        outputContainer->Add(fhSMMEtaPhiNoCut[imatch]); 
+        
+        fhSMMEtaPhiA[imatch]  = new TH3F 
+        (Form("hSMMEtaPhiA_%s",matchCase[imatch].Data()),
+         Form("#it{E} vs SM number vs (#sigma_{#varphi}^{2}-#sigma_{#eta}^{2})/(#sigma_{#varphi}^{2}+#sigma_{#eta}^{2}), #it{n}_{cells}^{w>0.01}>%d, for ID %s",fNCellMinShape,matchCase[imatch].Data()),
+         nEbins,minE,maxE,fNModules,-0.5,fNModules-0.5,nShShBins,-1*maxShSh,maxShSh); 
+        fhSMMEtaPhiA[imatch]->SetXTitle("#it{E} (GeV)");
+        fhSMMEtaPhiA[imatch]->SetYTitle("SM number");
+        fhSMMEtaPhiA[imatch]->SetZTitle("(#sigma_{#varphi}^{2}-#sigma_{#eta}^{2})/(#sigma_{#varphi}^{2}+#sigma_{#eta}^{2})");
+        outputContainer->Add(fhSMMEtaPhiA[imatch]); 
+        
+        fhSMMEtaPhiANoCut[imatch]  = new TH3F 
+        (Form("hSMMEtaPhiANoCut_%s",matchCase[imatch].Data()),
+         Form("#it{E} vs SM number vs (#sigma_{#varphi}^{2}-#sigma_{#eta}^{2})/(#sigma_{#varphi}^{2}+#sigma_{#eta}^{2}) for ID %s",matchCase[imatch].Data()),
+         nEbins,minE,maxE,fNModules,-0.5,fNModules-0.5,nShShBins,-1*maxShSh,maxShSh); 
+        fhSMMEtaPhiANoCut[imatch]->SetXTitle("#it{E} (GeV)");
+        fhSMMEtaPhiANoCut[imatch]->SetYTitle("SM number");
+        fhSMMEtaPhiANoCut[imatch]->SetZTitle("(#sigma_{#varphi}^{2}-#sigma_{#eta}^{2})/(#sigma_{#varphi}^{2}+#sigma_{#eta}^{2})");
+        outputContainer->Add(fhSMMEtaPhiANoCut[imatch]); 
       }
       
       if ( IsDataMC() )
