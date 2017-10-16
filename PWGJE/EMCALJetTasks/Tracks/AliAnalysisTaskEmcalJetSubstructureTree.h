@@ -112,6 +112,13 @@ public:
 
     const char *what() const throw() { return "Error in reclusterizing in fastjet"; }
   };
+  class SubstructureException : public std::exception {
+  public:
+    SubstructureException() : std::exception() {}
+    virtual ~SubstructureException() throw() {}
+
+    const char *what() const throw() { return "Error in builing substructure observable"; }
+  };
   enum Reclusterizer_t {
     kCAAlgo = 0,
     kKTAlgo = 1,

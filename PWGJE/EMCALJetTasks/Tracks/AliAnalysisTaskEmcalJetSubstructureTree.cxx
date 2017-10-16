@@ -195,7 +195,7 @@ bool AliAnalysisTaskEmcalJetSubstructureTree::Run(){
   AliJetContainer *mcjets = GetJetContainer("mcjets");
   AliJetContainer *datajets = GetJetContainer("datajets");
 
-  //for(auto e : *(fInputEvent->GetList())) std::cout << e->GetName() << std::endl;
+  // for(auto e : *(fInputEvent->GetList())) std::cout << e->GetName() << std::endl;
 
   TString rhoTagData = datajets ? TString::Format("R%02d", static_cast<Int_t>(datajets->GetJetRadius() * 10.)) : "",
           rhoTagMC = mcjets ? TString::Format("R%02d", static_cast<Int_t>(mcjets->GetJetRadius() * 10.)) : "";
@@ -208,6 +208,8 @@ bool AliAnalysisTaskEmcalJetSubstructureTree::Run(){
   AliDebugStream(2) << "Found rho parameter for sim pt:              " << (rhoPtSim ? "yes" : "no") << ", value: " << (rhoPtSim ? rhoPtSim->GetVal() : 0.) << std::endl;
   AliDebugStream(2) << "Found rho parameter for reconstructed Mass:  " << (rhoMassRec ? "yes" : "no") << ", value: " << (rhoMassRec ? rhoMassRec->GetVal() : 0.) << std::endl;
   AliDebugStream(2) << "Found rho parameter for sim Mass:            " << (rhoMassSim ? "yes" : "no") << ", value: " << (rhoMassSim ? rhoMassSim->GetVal() : 0.) << std::endl;
+
+  AliDebugStream(1) << "Inspecting jet radius " << (datajets ? datajets->GetJetRadius() : mcjets->GetJetRadius()) << std::endl;
 
   double weight = 1.;
   if(fUseDownscaleWeight){
@@ -276,6 +278,8 @@ bool AliAnalysisTaskEmcalJetSubstructureTree::Run(){
           FillTree(datajets->GetJetRadius(), weight, jet, associatedJet, &(structureData.fSoftDrop), &(structureMC.fSoftDrop), &(structureData.fNsubjettiness), &(structureMC.fNsubjettiness), angularity, ptd, rhoparameters);
         } catch(ReclusterizerException &e) {
           AliErrorStream() << "Error in reclusterization - skipping jet" << std::endl;
+        } catch(SubstructureException &e) {
+          AliErrorStream() << "Error in substructure observable - skipping jet" << std::endl;
         }
       } else {
         try {
@@ -286,6 +290,8 @@ bool AliAnalysisTaskEmcalJetSubstructureTree::Run(){
           FillTree(datajets->GetJetRadius(), weight, jet, nullptr, &(structure.fSoftDrop), nullptr, &(structure.fNsubjettiness), nullptr, angularity, ptd, rhoparameters);
         } catch(ReclusterizerException &e) {
           AliErrorStream() << "Error in reclusterization - skipping jet" << std::endl;
+        } catch(SubstructureException &e) {
+          AliErrorStream() << "Error in substructure observable - skipping jet" << std::endl;
         }
       }
     }
@@ -306,6 +312,8 @@ bool AliAnalysisTaskEmcalJetSubstructureTree::Run(){
         FillTree(mcjets->GetJetRadius(), weight, nullptr, mcjet, nullptr, &(structure.fSoftDrop), nullptr, &(structure.fNsubjettiness), angularity, ptd, rhoparameters);
       } catch (ReclusterizerException &e) {
         AliErrorStream() << "Error in reclusterization - skipping jet" << std::endl;
+      } catch (SubstructureException &e) {
+        AliErrorStream() << "Error in substructure observable - skipping jet" << std::endl;
       }
     }
   }
@@ -418,6 +426,8 @@ void AliAnalysisTaskEmcalJetSubstructureTree::FillTree(double r, double weight,
 AliJetSubstructureData AliAnalysisTaskEmcalJetSubstructureTree::MakeJetSubstructure(const AliEmcalJet &jet, double jetradius, const AliParticleContainer *tracks, const AliClusterContainer *clusters, const AliJetSubstructureSettings &settings) const {
   const int kClusterOffset = 30000; // In order to handle tracks and clusters in the same index space the cluster index needs and offset, large enough so that there is no overlap with track indices
   std::vector<fastjet::PseudoJet> constituents;
+  bool isMC = dynamic_cast<const AliTrackContainer *>(tracks);
+  AliDebugStream(2) << "Make new jet substrucutre for " << (isMC ? "MC" : "data") << " jet: Number of tracks " << jet.GetNumberOfTracks() << ", clusters " << jet.GetNumberOfClusters() << std::endl;
   for(int itrk = 0; itrk < jet.GetNumberOfTracks(); itrk++){
     AliVTrack *track = static_cast<AliVTrack *>(jet.TrackAt(itrk, tracks->GetArray()));
     fastjet::PseudoJet constituentTrack(track->Px(), track->Py(), track->Pz(), track->E());
@@ -436,6 +446,9 @@ AliJetSubstructureData AliAnalysisTaskEmcalJetSubstructureTree::MakeJetSubstruct
     }
   }
 
+  AliDebugStream(3) << "Found " << constituents.size() << " constituents for jet with pt=" << jet.Pt() << " GeV/c" << std::endl;
+  if(!constituents.size())
+    throw ReclusterizerException();
   // Redo jet finding on constituents with a
   fastjet::JetDefinition jetdef(fastjet::antikt_algorithm, jetradius*2, static_cast<fastjet::RecombinationScheme>(0), fastjet::BestFJ30 );
   std::vector<fastjet::PseudoJet> outputjets;
@@ -455,6 +468,7 @@ AliSoftDropParameters AliAnalysisTaskEmcalJetSubstructureTree::MakeSoftDropParam
   softdropAlgorithm.set_verbose_structure(kTRUE);
   std::unique_ptr<fastjet::contrib::Recluster> reclusterizer(new fastjet::contrib::Recluster(cutparameters.fRecluserAlgo, 1, true));
   softdropAlgorithm.set_reclustering(kTRUE, reclusterizer.get());
+  AliDebugStream(4) << "Jet has " << jet.constituents().size() << " constituents" << std::endl;
   fastjet::PseudoJet groomed = softdropAlgorithm(jet);
 
   AliSoftDropParameters result({groomed.structure_of<fastjet::contrib::SoftDrop>().symmetry(),
@@ -475,7 +489,8 @@ AliNSubjettinessParameters AliAnalysisTaskEmcalJetSubstructureTree::MakeNsubjett
 }
 
 Double_t AliAnalysisTaskEmcalJetSubstructureTree::MakeAngularity(const AliEmcalJet &jet, const AliParticleContainer *tracks, const AliClusterContainer *clusters) const {
-  if(!jet.GetNumberOfTracks()) return 0;
+  if(!(jet.GetNumberOfTracks() || jet.GetNumberOfClusters()))
+    throw SubstructureException();
   TVector3 jetvec(jet.Px(), jet.Py(), jet.Pz());
   Double_t den(0.), num(0.);
   if(tracks){
@@ -509,7 +524,8 @@ Double_t AliAnalysisTaskEmcalJetSubstructureTree::MakeAngularity(const AliEmcalJ
 }
 
 Double_t AliAnalysisTaskEmcalJetSubstructureTree::MakePtD(const AliEmcalJet &jet, const AliParticleContainer *const particles, const AliClusterContainer *const clusters) const {
-  if (!jet.GetNumberOfTracks()) return 0;
+  if (!(jet.GetNumberOfTracks() || jet.GetNumberOfClusters()))
+    throw SubstructureException();
   Double_t den(0.), num(0.);
   if(particles){
     for(UInt_t itrk = 0; itrk < jet.GetNumberOfTracks(); itrk++) {
