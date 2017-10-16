@@ -2778,7 +2778,7 @@ Bool_t AliAnalysisAlien::CheckMergedFiles(const char *filename, const char *alie
    TGridResult *res = gGrid->Command(Form("find -x Stage_%d %s %s", stage, aliendir, pattern.Data()));
    if (res) delete res;
    // Write standard output to file
-   gROOT->ProcessLine(Form("gGrid->Stdout() > %s", Form("Stage_%d.xml",stage)));
+   gROOT->ProcessLine(Form("gGrid->Stdout(); > %s", Form("Stage_%d.xml",stage)));
    // Count the number of files inside
    ifstream ifile;
    ifile.open(Form("Stage_%d.xml",stage));
