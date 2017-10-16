@@ -548,13 +548,13 @@ Int_t AliTRDPIDResponse::GetResponse(Int_t n, const Double_t * const dedx, const
     //   number of tracklets used for PID, 0 if no PID
     //
     AliDebug(3,Form(" Response for PID method: %d",PIDmethod));
-    Int_t iCharge=0;
+    Int_t iCharge=AliPID::kNoCharge;
     if (track!=NULL){
         if (track->Charge()>0){
-            iCharge=1;
+            iCharge=AliPID::kPosCharge;
         }
         else {
-            iCharge=2;
+            iCharge=AliPID::kNegCharge;
         }
     }
     if(!fkPIDResponseObject){
@@ -625,10 +625,10 @@ Double_t AliTRDPIDResponse::GetProbabilitySingleLayer(Int_t species, Double_t pl
 
     AliTRDNDFast *refUpper = dynamic_cast<AliTRDNDFast *>(fkPIDResponseObject->GetUpperReference((AliPID::EParticleType)species, plocal, pUpper,PIDmethod,Charge)),
             *refLower = dynamic_cast<AliTRDNDFast *>(fkPIDResponseObject->GetLowerReference((AliPID::EParticleType)species, plocal, pLower,PIDmethod, Charge));
-    if ((!refLower)&&(!refUpper)&&(Charge!=0)){
+    if ((!refLower)&&(!refUpper)&&(Charge!=AliPID::kNoCharge)){
         AliDebug(3,Form("No references available for Charge; References for both Charges used"));
-        refUpper = dynamic_cast<AliTRDNDFast *>(fkPIDResponseObject->GetUpperReference((AliPID::EParticleType)species, plocal, pUpper,PIDmethod,0));
-        refLower = dynamic_cast<AliTRDNDFast *>(fkPIDResponseObject->GetLowerReference((AliPID::EParticleType)species, plocal, pLower,PIDmethod,0));
+        refUpper = dynamic_cast<AliTRDNDFast *>(fkPIDResponseObject->GetUpperReference((AliPID::EParticleType)species, plocal, pUpper,PIDmethod,AliPID::kNoCharge));
+        refLower = dynamic_cast<AliTRDNDFast *>(fkPIDResponseObject->GetLowerReference((AliPID::EParticleType)species, plocal, pLower,PIDmethod,AliPID::kNoCharge));
     }
     // Do Interpolation exept for underflow and overflow
     if(refLower && refUpper){
@@ -837,14 +837,14 @@ Bool_t AliTRDPIDResponse::IdentifiedAsElectron(Int_t nTracklets, const Double_t 
     //
     // If the function fails when the params are not accessible, the function returns true
     //
-    Int_t iCharge=0;
+    Int_t iCharge=AliPID::kNoCharge;
     if (vtrack!=NULL){
         Int_t vTrCharge=vtrack->Charge();
         if (vTrCharge>0){
-            iCharge=1;
+            iCharge=AliPID::kPosCharge;
         }
         else{
-            iCharge=2;
+            iCharge=AliPID::kNegCharge;
         }
     }
     if(!fkPIDResponseObject){
@@ -856,8 +856,8 @@ Bool_t AliTRDPIDResponse::IdentifiedAsElectron(Int_t nTracklets, const Double_t 
     Double_t params[4];
     if(!fkPIDResponseObject->GetThresholdParameters(nTracklets, level, params,centrality,PIDmethod,iCharge)){
         AliError("No Params found for the given configuration with chosen Charge");
-        if((!fkPIDResponseObject->GetThresholdParameters(nTracklets, level, params,centrality,PIDmethod,0))&&(iCharge!=0)){
-            AliError("Using Parameters for both charges");
+        AliError("Using Parameters for both charges");
+        if((iCharge!=AliPID::kNoCharge)&&(!fkPIDResponseObject->GetThresholdParameters(nTracklets, level, params,centrality,PIDmethod,AliPID::kNoCharge))){
             AliError("No Params found for the given configuration with charge 0");
         }
         return kTRUE;
