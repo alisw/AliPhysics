@@ -106,7 +106,7 @@ fhECellTotalRatioMod(0),               fhECellTotalLogRatioMod(0)
     
     fhSMNCell              [i] = 0;
     fhSMNCellM02           [i] = 0;
-    fhSMMEta                [i] = 0;
+    fhSMM02                [i] = 0;
     fhSMM02NoCut           [i] = 0;
 
     fhSMMEta               [i] = 0;
