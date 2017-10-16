@@ -8,8 +8,57 @@
 
 #include <AliVEvent.h>
 #include <AliLog.h>
+#include <AliAnalysisManager.h>
+#include <AliVEventHandler.h>
 
 #include "AliAnalysisTaskEmcalEmbeddingHelper.h"
+
+/**
+ * Determines the "usedefault" pattern using the Analysis Manager to determine the datatype automatically.
+ * This will often work fine, but it may not always. Note that the use cause for this function is assumed to
+ * be solely about returning the "usedefault" collection name and not the object type.
+ *
+ * @param[in] objType Type of the input object
+ *
+ * @return The name corresponding to the request branch name.
+ */
+std::string AliEmcalContainerUtils::DetermineUseDefaultName(InputObject_t objType)
+{
+  // Get the pointer to the existing analysis manager via the static access method.
+  //==============================================================================
+  AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
+  if (!mgr)
+  {
+    ::Error("AddTaskEmcalSample", "No analysis manager to connect to.");
+    return 0;
+  }
+
+  // Check the analysis type using the event handlers connected to the analysis manager.
+  //==============================================================================
+  AliVEventHandler* handler = mgr->GetInputEventHandler();
+  if (!handler)
+  {
+    ::Error("AddTaskEmcalSample", "This task requires an input event handler");
+    return 0;
+  }
+
+  enum EDataType_t {
+    kUnknown,
+    kESD,
+    kAOD
+  };
+
+  EDataType_t dataType = kUnknown;
+
+  if (handler->InheritsFrom("AliESDInputHandler")) {
+    dataType = kESD;
+  }
+  else if (handler->InheritsFrom("AliAODInputHandler")) {
+    dataType = kAOD;
+  }
+
+  return DetermineUseDefaultName(objType, dataType == kESD, false);
+}
 
 /**
  * Given a container type, it returns the proper default branch name based on the "usedefault" pattern.
