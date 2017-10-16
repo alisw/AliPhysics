@@ -88,7 +88,6 @@ class AliAnalysisTaskEmcalJetHCorrelations : public AliAnalysisTaskEmcalJet {
      // Jet options
      const Double_t trackBias         = 5,
      const Double_t clusterBias       = 5,
-     const Double_t minJetArea        = 0.4,
      // Mixed event options
      const Int_t nTracksMixedEvent    = 0,  // Additionally acts as a switch for enabling mixed events
      const Int_t minNTracksMixedEvent = 5000,
@@ -98,9 +97,8 @@ class AliAnalysisTaskEmcalJetHCorrelations : public AliAnalysisTaskEmcalJet {
      UInt_t trigEvent                 = AliVEvent::kAny,
      UInt_t mixEvent                  = AliVEvent::kAny,
      // Options
-     const Double_t trackEta          = 0.9,
-     const Bool_t lessSparseAxes      = 0,
-     const Bool_t widerTrackBin       = 0,
+     const Bool_t lessSparseAxes      = kFALSE,
+     const Bool_t widerTrackBin       = kFALSE,
      // Corrections
      const Int_t doEffCorrSW          = 0,
      const Bool_t JESCorrection = kFALSE,
@@ -108,6 +106,19 @@ class AliAnalysisTaskEmcalJetHCorrelations : public AliAnalysisTaskEmcalJet {
      const char * JESCorrectionHistName = "JESCorrection",
      const char *suffix               = "biased"
    );
+
+  bool ConfigureForStandardAnalysis(std::string trackName = "usedefault",
+    std::string clusName = "usedefault",
+    const double jetConstituentPtCut = 3,
+    const double trackEta = 0.8,
+    const double jetRadius = 0.2);
+
+  bool ConfigureForEmbeddingAnalysis(std::string trackName = "usedefault",
+    std::string clusName = "caloClustersCombined",
+    const double jetConstituentPtCut = 3,
+    const double trackEta = 0.8,
+    const double jetRadius = 0.2,
+    const std::string & jetTag = "hybridJets");
 
  protected:
 
@@ -128,6 +139,9 @@ class AliAnalysisTaskEmcalJetHCorrelations : public AliAnalysisTaskEmcalJet {
   // EMCal framework functions
   Bool_t                 Run();
 
+  // Utility functions
+  AliParticleContainer * CreateParticleOrTrackContainer(std::string const & collectionName) const;
+
   // Reduce event mixing memory usage
   TObjArray*             CloneAndReduceTrackList();
   // Histogram helper functions
@@ -137,6 +151,7 @@ class AliAnalysisTaskEmcalJetHCorrelations : public AliAnalysisTaskEmcalJet {
   Int_t                  GetEtaBin(Double_t eta) const;
   Int_t                  GetTrackPtBin(Double_t pt) const;
   Int_t                  GetJetPtBin(Double_t pt) const;
+  UInt_t                 RetrieveTriggerMask() const;
   // Helper functions
   void                   InitializeArraysToZero();
   void                   GetDeltaEtaDeltaPhiDeltaR(AliTLorentzVector & particleOne, AliVParticle * particleTwo, Double_t & deltaEta, Double_t & deltaPhi, Double_t & deltaR);
