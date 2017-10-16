@@ -120,6 +120,7 @@ class AliAnalysisTaskEMCALPhotonIsolation: public AliAnalysisTaskEmcal {
   void                         SetFiducialCut(Float_t fiducial)                                { fFiducialCut = fiducial; }
   void                         SetComputeConeAreaPerEvent(Bool_t eventCone)                    { fConeAreaPerEvent = eventCone; }
   void                         Set2012L1Analysis(Bool_t is2012L1)                              { f2012EGA = is2012L1; }
+
  protected:
   
   void                         FillQAHistograms(AliVCluster *coi, TLorentzVector vecCOI);                           // Fill some QA histograms
@@ -132,6 +133,7 @@ class AliAnalysisTaskEMCALPhotonIsolation: public AliAnalysisTaskEmcal {
   void                         PtIsoTrackOrthCones(TLorentzVector c, Double_t &ptIso, Double_t &cones);             // PIsoCone via Tracks UE via Orthogonal Cones in Phi
   void                         PtIsoTrackFullTPC(TLorentzVector c, Double_t &ptIso, Double_t &full);                // PIsoCone via Tracks UE via FullTPC - IsoCone - B2BEtaBand
   void                         ComputeConeArea(TLorentzVector c, Double_t &coneArea);                               // Isolation cone area depending on the cluster position
+  void                         ApplySmearing(AliVCluster *coi, Double_t &m02COI);                                   // Applying smearing on MC
 
   Bool_t                       ClustTrackMatching(AliVCluster *emccluster,Bool_t candidate);
 
@@ -315,7 +317,7 @@ class AliAnalysisTaskEMCALPhotonIsolation: public AliAnalysisTaskEmcal {
   TH3D                       * fInvMassM02noiso;                //!<!
   TH3D                       * fPtvsM02vsSumPi0;                //!<!
   TH3D                       * fPtvsM02vsSumEta;                //!<!
-  TH3D                       * fPtvsM02vsSum;                    //!<!
+  TH3D                       * fPtvsM02vsSum;                   //!<!
   TH3D                       * fPtvsM02vsSumUE;                 //!<!
   TH3D                       * fTrackMultvsSumChargedvsUE;      //!<!
   TH2D                       * fTrackMultvsPt;                  //!<!
@@ -368,7 +370,7 @@ class AliAnalysisTaskEMCALPhotonIsolation: public AliAnalysisTaskEmcal {
   AliAnalysisTaskEMCALPhotonIsolation&operator=(const AliAnalysisTaskEMCALPhotonIsolation&); // Not implemented
   
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskEMCALPhotonIsolation, 19);            // EMCal neutrals base analysis task
+  ClassDef(AliAnalysisTaskEMCALPhotonIsolation, 20);            // EMCal neutrals base analysis task
   /// \endcond
 };
 #endif
