@@ -302,7 +302,8 @@ AliAnalysisTaskDG::AliAnalysisTaskDG(const char *name)
   , fMCTracks("TLorentzVector", 2)
   , fTrackCuts(nullptr)
 {
-  std::fill_n(fHist, kNHist, nullptr);
+  const Int_t nHist = kNHist;
+  std::fill_n(fHist, nHist, nullptr);
 
   DefineOutput(1, TList::Class());
   DefineOutput(2, TTree::Class());
