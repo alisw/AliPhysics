@@ -49,7 +49,7 @@ AliAnalysisTaskSEITSsaSpectra* AddTaskITSsaSpectra(Int_t    pidMethod, // 0:kNSi
    0.80f,0.85f,0.90f,0.95f,1.00f
   };
   taskits->SetPtBins(nPtBins, ptBins);
-
+  
   taskits->Init();
 
   kContSuffix += suffix;
@@ -85,12 +85,13 @@ AliAnalysisTaskSEITSsaSpectra* AddTaskITSsaSpectra(Int_t    pidMethod, // 0:kNSi
   TString kNtupleContName("cListTreeInfo");
   kNtupleContName += kContSuffix;
 
-  AliAnalysisDataContainer* kNtupleDataCont;
-  kNtupleDataCont = mgr->CreateContainer(kNtupleContName.Data(),
-                                         TList::Class(),
-                                         AliAnalysisManager::kOutputContainer,
-                                         outputFileName);
-  mgr->ConnectOutput(taskits, 3, kNtupleDataCont);
-
+  if (optNtuple){
+    AliAnalysisDataContainer* kNtupleDataCont;
+    kNtupleDataCont = mgr->CreateContainer(kNtupleContName.Data(),
+                                           TList::Class(),
+                                           AliAnalysisManager::kOutputContainer,
+                                           outputFileName);
+    mgr->ConnectOutput(taskits, 3, kNtupleDataCont);
+  }
   return taskits;
 }

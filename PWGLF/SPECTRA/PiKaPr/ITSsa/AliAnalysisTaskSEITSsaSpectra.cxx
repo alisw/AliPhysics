@@ -229,7 +229,6 @@ AliAnalysisTaskSEITSsaSpectra::AliAnalysisTaskSEITSsaSpectra():
   DefineInput(0, TChain::Class());
   DefineOutput(1, TList::Class());
   DefineOutput(2, TList::Class());
-  DefineOutput(3, TList::Class());
   AliInfo("End of AliAnalysisTaskSEITSsaSpectra");
 }
 
@@ -695,8 +694,9 @@ void AliAnalysisTaskSEITSsaSpectra::CreateDCAcutFunctions()
 void AliAnalysisTaskSEITSsaSpectra::Init()
 {
   // Initialization
+  Printf("Inizializing Task, be sure to run after all configuration have been set...");
   if (!fUseDefaultPriors) DefineInput(1, TList::Class());
-
+  if (fFillNtuple) DefineOutput(3, TList::Class());
   AliInfo("Tracks selections");
   AliInfoF(" y = yLab + %.3f,  Ymin %.1f, Ymax %.1f, Eabs %.1f, DCAxyCut %.1f, DCAzCut %.1f, Chi2 %.1f,   nSPD %d,   nPID %d",
            fCMSRapFct, fMinRapCut, fMaxRapCut, fAbsEtaCut, fNSigmaDCAxy, fNSigmaDCAz, fMaxChi2Clu, fMinSPDPts, fMinNdEdxSamples);
