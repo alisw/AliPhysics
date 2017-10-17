@@ -51,7 +51,7 @@ void logbookAddMetadata(TTree*tree, Int_t verbose=0){
   // Index
   TStatToolkit::AddMetadata(tree,"run.class","Base Logbook Index");
   TStatToolkit::AddMetadata(tree,"LHCperiod.class","Base Logbook Index");
-  TStatToolkit::AddMetadata(tree,"LHCfillNumber.class","Base Logbook Index");
+  TStatToolkit::AddMetadata(tree,"LHCFillNumber.class","Base Logbook Index");
   // Stat
   TStatToolkit::AddMetadata(tree,"totalEvents.class","Base Logbook Stat");
   TStatToolkit::AddMetadata(tree,"totalEventsPhysics.class","Base Logbook Stat");

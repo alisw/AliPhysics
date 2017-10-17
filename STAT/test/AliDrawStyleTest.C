@@ -184,12 +184,17 @@ void AliDrawStyleTest_CSSReadWrite(){
 /// \param className
 /// \param attributeName
 /// \return
+/// Comments:
+///      * We will use root TRegexp for the pattern matching
+///      * tab
 Bool_t  AliDrawStyleTest_IsSelected(TString selector, TString className, TString attributeName){
   TString selector= ".TH*#*xxx .TH1*#yyy  ";
-  // AliDrawStyle::IsSelected(selector, "TGraph","xxx"); //should be flase
-  // AliDrawStyle::IsSelected(selector, "TH2","xxx");   //should be true
-  // AliDrawStyle::IsSelected(selector, "TH1","xxx");   //should be false
-  // AliDrawStyle::IsSelected(selector, "TH1","yyy");   //should be true
+  // AliDrawStyle::IsSelected(selector, "TGraph","xxx");  //should be false
+  // AliDrawStyle::IsSelected(selector, "TH2","xxx");     //should be true
+  // AliDrawStyle::IsSelected(selector, "TH2","yyy");     //should be false
+  // AliDrawStyle::IsSelected(selector, "TH1","xxx");     //should be true
+  // AliDrawStyle::IsSelected(selector, "TH1","yyy");     //should be true
+  // AliDrawStyle::IsSelected(selector, "TH1","yyy");     //should be true
   // TString className="TH2";
   // TString objectName="xxx";
   // Bool_t isSelected=0;

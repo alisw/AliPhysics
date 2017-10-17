@@ -110,7 +110,7 @@ Int_t AliTreeFormulaF::Compile(const char *expression) {
   fTextArray->AddAtAndExpand(new TObjString(stext.Data()), nVars);
 }
 
-/// Overwrite TTreeFormula PritValue
+/// Overwrite TTreeFormula PrintValue
 /// \param mode
 /// \param instance
 /// \param decform
@@ -142,32 +142,35 @@ void        AliTreeFormulaF::UpdateFormulaLeaves(){
 /// \param name
 /// \param title
 AliTreePlayer::AliTreePlayer(const char *name, const char *title)
-         :TNamed(name, title)
+        :TNamed(name, title)
 {
   //
   //
 }
 
-//_____________________________________________________________________________
 
 
-
-///
 /// Selected metadata fil filing query
-/// retun ObjArray of selected metadata
-/// param
-TObjArray  *  AliTreePlayer::selectMetadata(TTree * tree, TString query, Int_t verbose){
-  /*
-    query -  case sensitive matching is done using Contains method (e.g N(Axis)<=N(xis) )
-          -  WILL  be  case insesitive 
-   
+/// retun TObjArray of selected metadata
+/// \param tree
+/// \param query
+/// \param verbose
+/// \return         TObjArray of selected metadata
+/*!
     Example usage:
+    \code
     query="[AxisTitle]";                     // only metadata with metadata axis existing
     query="[class]";                         // only metadata with metadata class existing
     query="[class==\"Base&&Log&&Stat\"]";    // metadata class contains
     //
     AliTreePlayer::selectMetadata(treeLogbook, "[class==\"Logbook&&(Stat||Base)\"]",0)->Print();
     AliTreePlayer::selectMetadata(testTree, "[Axis==\"counts\"]",0)->Print();
+    \endcode
+ */
+TObjArray  *  AliTreePlayer::selectMetadata(TTree * tree, TString query, Int_t verbose, TString *idList){
+  /*
+    query -  case sensitive matching is done using Contains method (e.g N(Axis)<=N(xis) )
+          -  WILL  be  case insesitive 
   */
   //
   // 1. Parse query and map query to TFormula selection
@@ -209,44 +212,62 @@ TObjArray  *  AliTreePlayer::selectMetadata(TTree * tree, TString query, Int_t v
     Bool_t isSelected=kTRUE;
     if (queryArray->GetEntriesFast()>1){
       for (Int_t ipar=0; ipar< vecParam.GetNrows(); ipar++){
-	vecParam[ipar]=strstr(metaData->At(ientry)->GetTitle(),varArray->At(ipar)->GetName())!=NULL;
+        vecParam[ipar]=strstr(metaData->At(ientry)->GetTitle(),varArray->At(ipar)->GetName())!=NULL;
       }
       isSelected=pFormula->EvalPar(vecParam.GetMatrixArray());
       if (verbose&0x2){
-	vecParam.GetMatrixArray();
+        vecParam.GetMatrixArray();
       }
     }
     if (isSelected){
       selected->AddLast(metaData->At(ientry));
+      if (idList){
+        TString id=metaData->At(ientry)->GetName();
+        id.Remove(id.Last('.'),id.Length());
+        if (id.Length()>0) {
+          (*idList) += id;
+          (*idList) +=":";
+        }
+      }
       if (verbose&0x1){
-	printf("%s:%s:%d\n",metaData->At(ientry)->GetName(),metaData->At(ientry)->GetTitle(),isSelected);
+        printf("%s:%s:%d\n",metaData->At(ientry)->GetName(),metaData->At(ientry)->GetTitle(),isSelected);
       }
     }
+  }
+  if (idList!=NULL){
+    delete selected;
+    return NULL;
   }
   return selected;
 }
 
-TObjArray * AliTreePlayer::selectTreeInfo(TTree* tree, TString query,Int_t verbose){
-  /*
-    Find all branches containing "Data string" and having class base
-    search follow only branches - doesn not enter into classes
-    - WILL be not case sensitive (should be part of unit test) 
-    == - for exact match
-    :  - for contain
-    Implemented using TFormula interpeter:
-    TString query="([.name==Data])&&([.class==base]||[.class==Data])";
+
+/// Find all branches containing "Data string" and having class base
+///    search follow only branches - does not not enter into classes
+///   == - for exact match
+///    :  - for contain
+///  Implemented using TFormula interpreter:
+///    - TODO - not case sensitive (should be part of unit test)
+/// \param tree     - input tree
+/// \param query    - query string
+/// \param verbose  - verbosity
+/// \return
+/*!
+ ### Implementation using TFormula
+\code
+  TString query="([.name==Data])&&([.class==base]||[.class==Data])";
     ==>
     TFormula   (x[0])&&(x[1]||x[2])
-
-    Example cases :
+\endcode
+### Example cases :
+\code
       AliTreePlayer::selectTreeInfo(treeTPC, "([.name:mean] && [.name:MIP])",0)->Print();
       AliTreePlayer:: selectTreeInfo(treeLogbook, "([.name:ata] && [.AxisTitle:size])",0)->Print();
-    In case of problems unit test in separate file 
+    In case of problems unit test in separate file
         -- AliTreePlayerTest.C::testselectTreeInfo()
-    //
-
-
-  */
+\endcode
+ */
+TObjArray * AliTreePlayer::selectTreeInfo(TTree* tree, TString query,Int_t verbose){
   // 1.) Make a TFormula replacing logical operands with values
   TObjArray *queryArray=query.Tokenize("&|()!");
   Int_t formulaEntries=queryArray->GetEntries();
@@ -259,7 +280,6 @@ TObjArray * AliTreePlayer::selectTreeInfo(TTree* tree, TString query,Int_t verbo
     ::Error("selectTreeInfo","Empty or wrong selection %s", query.Data());
     return 0;
   }
-
 
   TString   stringFormula=query;
   TVectorD  formValue(formulaEntries);     // boolen or weight value
@@ -327,29 +347,29 @@ TObjArray * AliTreePlayer::selectTreeInfo(TTree* tree, TString query,Int_t verbo
       if (elemList==NULL) continue;
       Int_t elemEntries=elemList->GetEntries();
       for (Int_t ientry=0; ientry<elemEntries; ientry++){ // to be rewritten to TSeqColection iterator
-	TString elemName(elemList->At(ientry)->GetName());
-	//
-	for (Int_t icheck=0; icheck<formulaEntries; icheck++){ // check logical expression
-	  formValue[icheck]=0;
-	  if (formType[icheck]==0){  // check the name
-	    if (formExact[icheck]==1) formValue[icheck]=(elemName==formMatch.At(icheck)->GetName());
-	    if (formExact[icheck]==0) formValue[icheck]=(strstr(elemName.Data(),formMatch.UncheckedAt(icheck)->GetName())!=NULL);
-	  }
-	  if (formType[icheck]==1){  // check corresponding metadata
-	    TObject* metaObject = TStatToolkit::GetMetadata(cTree,TString::Format("%s%s",elemName.Data(), formMatchType.UncheckedAt(icheck)->GetName()).Data());
-	    if (metaObject){
-	      TString metaName(metaObject->GetTitle());
-	      if (formExact[icheck]==1) formValue[icheck]=(metaName==formMatch.At(icheck)->GetName());
-	      if (formExact[icheck]==0) formValue[icheck]=(strstr(metaName.Data(),formMatch.UncheckedAt(icheck)->GetName())!=NULL);
-	    }
-	  }
-	}
-	Bool_t isSelected=pFormula->EvalPar(formValue.GetMatrixArray());
-	if (isSelected){
-	  if (iTree==0) selected->AddLast(new TObjString(elemList->At(ientry)->GetName()));
-	  if (iTree>0) selected->AddLast(new TObjString(TString::Format("%s.%s",tree->GetListOfFriends()->At(iTree-1)->GetName(),elemList->At(ientry)->GetName())));
-	  if (verbose&0x1) printf("%s\n",elemName.Data());
-	}
+        TString elemName(elemList->At(ientry)->GetName());
+        //
+        for (Int_t icheck=0; icheck<formulaEntries; icheck++){ // check logical expression
+          formValue[icheck]=0;
+          if (formType[icheck]==0){  // check the name
+            if (formExact[icheck]==1) formValue[icheck]=(elemName==formMatch.At(icheck)->GetName());
+            if (formExact[icheck]==0) formValue[icheck]=(strstr(elemName.Data(),formMatch.UncheckedAt(icheck)->GetName())!=NULL);
+          }
+          if (formType[icheck]==1){  // check corresponding metadata
+            TObject* metaObject = TStatToolkit::GetMetadata(cTree,TString::Format("%s%s",elemName.Data(), formMatchType.UncheckedAt(icheck)->GetName()).Data());
+            if (metaObject){
+              TString metaName(metaObject->GetTitle());
+              if (formExact[icheck]==1) formValue[icheck]=(metaName==formMatch.At(icheck)->GetName());
+              if (formExact[icheck]==0) formValue[icheck]=(strstr(metaName.Data(),formMatch.UncheckedAt(icheck)->GetName())!=NULL);
+            }
+          }
+        }
+        Bool_t isSelected=pFormula->EvalPar(formValue.GetMatrixArray());
+        if (isSelected){
+          if (iTree==0) selected->AddLast(new TObjString(elemList->At(ientry)->GetName()));
+          if (iTree>0) selected->AddLast(new TObjString(TString::Format("%s.%s",tree->GetListOfFriends()->At(iTree-1)->GetName(),elemList->At(ientry)->GetName())));
+          if (verbose&0x1) printf("%s\n",elemName.Data());
+        }
       }
     }
   }
@@ -779,7 +799,10 @@ Int_t  AliTreePlayer::selectWhatWhereOrderBy(TTree * tree, TString what, TString
   return selected;
 }
 
-// Get the enumeration type from a string
+
+/// Get the enumeration type from a string
+/// \param stat     - enumuration tyle as a string
+/// \return         Get the enumeration type from a string
 Int_t AliTreePlayer::GetStatType(const TString &stat){
 
   if(!stat.CompareTo("median",TString::kIgnoreCase)){
@@ -791,210 +814,227 @@ Int_t AliTreePlayer::GetStatType(const TString &stat){
   } else if(!stat.CompareTo("RMS",TString::kIgnoreCase)){
     return kRMS;
   } else if(!stat.CompareTo("Mean",TString::kIgnoreCase)){
-      return kMean;
+    return kMean;
   }else if(!stat.CompareTo("Max",TString::kIgnoreCase)){
-      return kMax;
+    return kMax;
   }else if(!stat.CompareTo("Min",TString::kIgnoreCase)){
-      return kMin;
+    return kMin;
   } else if(stat.BeginsWith("LTMRMS",TString::kIgnoreCase)){ // Least trimmed RMS, argument is LTMRMS0.95 or similar
     return kLTMRMS;
   } else if(stat.BeginsWith("LTM",TString::kIgnoreCase)){ // Least trimmed mean, argument is LTM0.95 or similar
     return kLTM;
   } else {
     ::Error("GetStatType()","Cannot decode string \"%s\"."
-	    " Use one of \"median\", \"medianLeft\", \"medianRight\", \"RMS\", or \"Mean\". "
-	    " Also supported is \"LTM\", or \"LTMRMS\", which should be succeeded by a float like"
-	    " \"LTM0.95\" or an integer (interpreted as percentage) like \"LTMRMS95\" to specify "
-	    " the fraction of data to be kept."
-	    " Use a colon separated list like \"median:medianLeft:medianRight:RMS\"" 
-	    " as the fifth argument to the AddStatInfo().",stat.Data());
+            " Use one of \"median\", \"medianLeft\", \"medianRight\", \"RMS\", or \"Mean\". "
+            " Also supported is \"LTM\", or \"LTMRMS\", which should be succeeded by a float like"
+            " \"LTM0.95\" or an integer (interpreted as percentage) like \"LTMRMS95\" to specify "
+            " the fraction of data to be kept."
+            " Use a colon separated list like \"median:medianLeft:medianRight:RMS\""
+            " as the fifth argument to the AddStatInfo().",stat.Data());
     return kUndef;
   }
 }
-//__________________________________________________________
+///
+/// \param treeLeft
+/// \param treeRight
+/// \param refQuery
+/// \param deltaT
+/// \param statString
+/// \param maxEntries
 void  AliTreePlayer::AddStatInfo(TTree* treeLeft,  TTree * treeRight , const TString refQuery, Double_t deltaT,
                                  const TString statString,
                                  Int_t maxEntries){
 
-    //
-    // 1.) Get variables from the right tree, sort them according to the coordinate
-    //
-    Int_t entries  = treeRight->Draw(refQuery.Data(),"","goffpara",maxEntries);
-    if(entries<1){
-        ::Error("AddStatInfo","No matching entries for query");
-        return;
-    }else if (entries>treeRight->GetEstimate()){
-        treeRight->SetEstimate(entries*2);
-        entries  = treeRight->Draw(refQuery.Data(),"","goffpara",maxEntries);
-    }
-    Int_t * indexArr = new Int_t[entries];
-    TMath::Sort(entries, treeRight->GetV1(), indexArr,kFALSE);
-    Double_t * coordArray  = new Double_t[entries];
-    for (Int_t icoord=0; icoord<entries; icoord++) coordArray[icoord]=treeRight->GetV1()[indexArr[icoord]];
-    //
-    // 2.) Attach the median,.. of the variables to the left tree
-    //
-    // The first token is the coordinate
-    TString var;
-    Ssiz_t from=0;
-    if(!refQuery.Tokenize(var,from,":")){
-        ::Error("AddStatInfo","Cannot tokenize query \'%s\'. Use colon separated list"
-                ,refQuery.Data());
-        delete[]indexArr;indexArr=0;
-        delete[]coordArray;coordArray=0;
-        return;
-    }
-    Int_t entriesCoord =  treeLeft->GetEntries();
-    TBranch * br = treeLeft->GetBranch(var.Data());
-    Int_t coordValue;
-    br->SetAddress(&coordValue);
-    //TLeaf *coordLeaf = (TLeaf*)(br->GetListOfLeaves()->At(0));
-
-    while(refQuery.Tokenize(var,from,":")){
-        //   var="valueAnodeRaw.fElements[0]";
-        TString stat;
-        Ssiz_t fromStat=0;
-        while(statString.Tokenize(stat,fromStat,":")){
-            // stat = "median"; stat="medianLeft"; stat="medianRight";
-            //      Int_t statType=TStatToolkit::GetStatType(stat);
-            Int_t statType=GetStatType(stat);
-            if(statType==kUndef)continue;
-            //printf("\n\n\n--- StatType %d ---\n\n\n\n",statType);
-
-            // In case of LMS or LMR determine the fraction
-            Float_t frac=0.;
-            if(statType==kLTM || statType==kLTMRMS){ // stat="LTM0.95" or "LTMRMS0.95" similar
-                TString tmp= stat;
-                tmp.ReplaceAll("LTMRMS","");
-                tmp.ReplaceAll("LTM","");
-                frac = tmp.Atof(); // atof returns 0.0 on error
-                if(frac>1)frac/=100.; // allows "LTM95" for 95%
-            }
-
-            // Determine the offset in coordinate to the left and right
-            Double_t leftOffset=-1e99,rightOffset=-1e99;
-            if(statType==kMedian||statType==kRMS || statType==kMean
-               || statType==kLTM || statType==kLTMRMS || statType==kMin || statType==kMax ){ // symmetric
-                leftOffset=-deltaT;rightOffset=deltaT;
-            } else if(statType==kMedianLeft){ //left
-                leftOffset=-2.*deltaT;rightOffset=0.;
-            } else if(statType==kMedianRight){ //right
-                leftOffset=0.;rightOffset=2.*deltaT;
-            }
-
-            TString brName=Form("%s_%s",var.Data(),stat.Data());
-            brName.ReplaceAll("[","_");
-            brName.ReplaceAll("]","_");
-            brName.ReplaceAll(".","_");
-            Double_t statValue=0;
-            if (treeLeft->GetDirectory()) treeLeft->GetDirectory()->cd();
-            TBranch *brToFill = treeLeft->Branch(brName.Data(),&statValue, (brName+"/D").Data());
-            TVectorD dvalues(entries);
-
-            for (Int_t icoord=0; icoord<entriesCoord; icoord++){
-                // Int_t icoord=0
-                br->GetEntry(icoord);
-                Double_t startCoord=coordValue+leftOffset;
-                Double_t endCoord       =coordValue+rightOffset;
-                //Double_t startCoord=coordLeaf->GetValue()+leftOffset;
-                //Double_t endCoord	=coordLeaf->GetValue()+rightOffset;
-
-                // Binary search finds last element smaller or equal
-                Int_t index0=BinarySearchSmaller(entries, coordArray, startCoord)+1;
-                Int_t index1=TMath::BinarySearch(entries, coordArray, endCoord) +1;
-                statValue=0;
-                if (index1>=0 && index0>=0){
-                    //if (values.capacity()<index1-index0)  values.reserve(1.5*(index1-index0));     //resize of needed
-                    if (index1-index0<=0){
-                        index0--;
-                        index1++;
-                        if (index0<0) index0=0;
-                        if (index1>=entries) index1=entries-1;
-                    }
-                    for (Int_t i=0; i<index1-index0; i++){
-                        dvalues[i]=treeRight->GetV2()[indexArr[i+index0]];
-                    }
-                    // Calculate
-                    if(statType==kMedian||statType==kMedianLeft||statType==kMedianRight){
-                        statValue=TMath::Median(index1-index0, dvalues.GetMatrixArray());
-                    } else if(statType==kRMS){
-                        statValue=TMath::RMS(index1-index0, dvalues.GetMatrixArray());
-                    } else if(statType==kMean){
-                        statValue=TMath::Mean(index1-index0, dvalues.GetMatrixArray());
-                    }else if(statType==kMin){
-                        statValue=TMath::MinElement(index1-index0, dvalues.GetMatrixArray());
-                    }else if(statType==kMax){
-                        statValue=TMath::MaxElement(index1-index0, dvalues.GetMatrixArray());
-                    } else if(statType==kLTM){
-                        TVectorD params(7);
-                        try {
-                            TStatToolkit::LTMUnbinned(index1 - index0, dvalues.GetMatrixArray(), params, frac);
-                        }
-                        catch (int e)
-                        {
-                            cout << "TStatToolkit::LTMUnbinned. Catch Exception Nr. " << e << '\n';
-                            continue;
-                        }
-                        statValue = params[1];
-                    } else if(statType==kLTMRMS){
-                        TVectorD params(7);
-                        try {
-                            TStatToolkit::LTMUnbinned(index1 - index0, dvalues.GetMatrixArray(), params, frac);
-                        }
-                        catch (int e)
-                        {
-                            cout << "TStatToolkit::LTMUnbinned. Catch Exception Nr. " << e << '\n';
-                            continue;
-                        }
-                        statValue = params[2];
-                    } else{
-                        ::Error("AddStatInfo()","String %s StatType %d not implemented",stat.Data(),statType);
-                    }
-                }
-                brToFill->Fill();
-            } // Loop over cordinates
-            brToFill->FlushBaskets();
-        } // Loop over stat types
-    } // Loop over variables
-    treeLeft->Write();
+  //
+  // 1.) Get variables from the right tree, sort them according to the coordinate
+  //
+  Int_t entries  = treeRight->Draw(refQuery.Data(),"","goffpara",maxEntries);
+  if(entries<1){
+    ::Error("AddStatInfo","No matching entries for query");
+    return;
+  }else if (entries>treeRight->GetEstimate()){
+    treeRight->SetEstimate(entries*2);
+    entries  = treeRight->Draw(refQuery.Data(),"","goffpara",maxEntries);
+  }
+  Int_t * indexArr = new Int_t[entries];
+  TMath::Sort(entries, treeRight->GetV1(), indexArr,kFALSE);
+  Double_t * coordArray  = new Double_t[entries];
+  for (Int_t icoord=0; icoord<entries; icoord++) coordArray[icoord]=treeRight->GetV1()[indexArr[icoord]];
+  //
+  // 2.) Attach the median,.. of the variables to the left tree
+  //
+  // The first token is the coordinate
+  TString var;
+  Ssiz_t from=0;
+  if(!refQuery.Tokenize(var,from,":")){
+    ::Error("AddStatInfo","Cannot tokenize query \'%s\'. Use colon separated list"
+            ,refQuery.Data());
     delete[]indexArr;indexArr=0;
     delete[]coordArray;coordArray=0;
+    return;
+  }
+  Int_t entriesCoord =  treeLeft->GetEntries();
+  TBranch * br = treeLeft->GetBranch(var.Data());
+  Int_t coordValue;
+  br->SetAddress(&coordValue);
+  //TLeaf *coordLeaf = (TLeaf*)(br->GetListOfLeaves()->At(0));
+
+  while(refQuery.Tokenize(var,from,":")){
+    //   var="valueAnodeRaw.fElements[0]";
+    TString stat;
+    Ssiz_t fromStat=0;
+    while(statString.Tokenize(stat,fromStat,":")){
+      // stat = "median"; stat="medianLeft"; stat="medianRight";
+      //      Int_t statType=TStatToolkit::GetStatType(stat);
+      Int_t statType=GetStatType(stat);
+      if(statType==kUndef)continue;
+      //printf("\n\n\n--- StatType %d ---\n\n\n\n",statType);
+
+      // In case of LMS or LMR determine the fraction
+      Float_t frac=0.;
+      if(statType==kLTM || statType==kLTMRMS){ // stat="LTM0.95" or "LTMRMS0.95" similar
+        TString tmp= stat;
+        tmp.ReplaceAll("LTMRMS","");
+        tmp.ReplaceAll("LTM","");
+        frac = tmp.Atof(); // atof returns 0.0 on error
+        if(frac>1)frac/=100.; // allows "LTM95" for 95%
+      }
+
+      // Determine the offset in coordinate to the left and right
+      Double_t leftOffset=-1e99,rightOffset=-1e99;
+      if(statType==kMedian||statType==kRMS || statType==kMean
+         || statType==kLTM || statType==kLTMRMS || statType==kMin || statType==kMax ){ // symmetric
+        leftOffset=-deltaT;rightOffset=deltaT;
+      } else if(statType==kMedianLeft){ //left
+        leftOffset=-2.*deltaT;rightOffset=0.;
+      } else if(statType==kMedianRight){ //right
+        leftOffset=0.;rightOffset=2.*deltaT;
+      }
+
+      TString brName=Form("%s_%s",var.Data(),stat.Data());
+      brName.ReplaceAll("[","_");
+      brName.ReplaceAll("]","_");
+      brName.ReplaceAll(".","_");
+      Double_t statValue=0;
+      if (treeLeft->GetDirectory()) treeLeft->GetDirectory()->cd();
+      TBranch *brToFill = treeLeft->Branch(brName.Data(),&statValue, (brName+"/D").Data());
+      TVectorD dvalues(entries);
+
+      for (Int_t icoord=0; icoord<entriesCoord; icoord++){
+        // Int_t icoord=0
+        br->GetEntry(icoord);
+        Double_t startCoord=coordValue+leftOffset;
+        Double_t endCoord       =coordValue+rightOffset;
+        //Double_t startCoord=coordLeaf->GetValue()+leftOffset;
+        //Double_t endCoord	=coordLeaf->GetValue()+rightOffset;
+
+        // Binary search finds last element smaller or equal
+        Int_t index0=BinarySearchSmaller(entries, coordArray, startCoord)+1;
+        Int_t index1=TMath::BinarySearch(entries, coordArray, endCoord) +1;
+        statValue=0;
+        if (index1>=0 && index0>=0){
+          //if (values.capacity()<index1-index0)  values.reserve(1.5*(index1-index0));     //resize of needed
+          if (index1-index0<=0){
+            index0--;
+            index1++;
+            if (index0<0) index0=0;
+            if (index1>=entries) index1=entries-1;
+          }
+          for (Int_t i=0; i<index1-index0; i++){
+            dvalues[i]=treeRight->GetV2()[indexArr[i+index0]];
+          }
+          // Calculate
+          if(statType==kMedian||statType==kMedianLeft||statType==kMedianRight){
+            statValue=TMath::Median(index1-index0, dvalues.GetMatrixArray());
+          } else if(statType==kRMS){
+            statValue=TMath::RMS(index1-index0, dvalues.GetMatrixArray());
+          } else if(statType==kMean){
+            statValue=TMath::Mean(index1-index0, dvalues.GetMatrixArray());
+          }else if(statType==kMin){
+            statValue=TMath::MinElement(index1-index0, dvalues.GetMatrixArray());
+          }else if(statType==kMax){
+            statValue=TMath::MaxElement(index1-index0, dvalues.GetMatrixArray());
+          } else if(statType==kLTM){
+            TVectorD params(7);
+            try {
+              TStatToolkit::LTMUnbinned(index1 - index0, dvalues.GetMatrixArray(), params, frac);
+            }
+            catch (int e)
+            {
+              cout << "TStatToolkit::LTMUnbinned. Catch Exception Nr. " << e << '\n';
+              continue;
+            }
+            statValue = params[1];
+          } else if(statType==kLTMRMS){
+            TVectorD params(7);
+            try {
+              TStatToolkit::LTMUnbinned(index1 - index0, dvalues.GetMatrixArray(), params, frac);
+            }
+            catch (int e)
+            {
+              cout << "TStatToolkit::LTMUnbinned. Catch Exception Nr. " << e << '\n';
+              continue;
+            }
+            statValue = params[2];
+          } else{
+            ::Error("AddStatInfo()","String %s StatType %d not implemented",stat.Data(),statType);
+          }
+        }
+        brToFill->Fill();
+      } // Loop over coordinates
+      brToFill->FlushBaskets();
+    } // Loop over stat types
+  } // Loop over variables
+  treeLeft->Write();
+  delete[]indexArr;indexArr=0;
+  delete[]coordArray;coordArray=0;
 
 }
 
 
+/// Create list of histograms specified by selection
+/// Should be rough equivalent of the "ALICE train" TTree->Draw();
+///  a.) Data are read only once
+///  b.) values expression are reused (evaluated only once)
+///  c.) Axis labelling and names of variables extracted from the tree metadata (.AxisTitle)
+/// * default cut
+///   * default selection applied common for all histograms (can be empty)
+///
+/// * hisString : - semicolomn separated string
+///   * his0;his1; ...; hisN
+/// * histogram syntax:
+///    * var0:var1:...:<#weight>>>hisName(bins0,min0,max0,bins1,min0,min, minValue,maxValue)
+///    * Syntax:
+///      * vari are histogramming expression
+///      * weight (or cut) entry is optional
+///        * default cut is always applied, weight is applied on top
+///    * ranges syntax:
+///      *  nbins,max,min where max and min are double or format strings
+///        * in case format string % specified using (Fraction, mean,meanFraction, rms, rmsFraction)
+///          *  %fraction.sigma
+///          *  #cumulant
+///          *  range for bin content can be specified in the same format (by default is not set)
+/*!
+##### CPU time to process one histogram or set of histograms (in particular case of esdTrack queries) is the same - and it is determined (90 %) by tree->GetEntry
+\code
+  THn * his0= (THn*)hisArray->At(0);
+  his0->Projection(0)->Draw("");
+  tree->SetLineColor(2);
+  TStopwatch timer; tree->Draw("esdTrack.Pt()","(esdTrack.fFlags&0x40)>0&&esdTrack.fTPCncls>70","same",60000); timer.Print();
+\endcode
+*/
 
-
-TObjArray  * AliTreePlayer::MakeHistograms(TTree * tree, TString hisString, TString defaultCut, Int_t firstEntry, Int_t lastEntry, Int_t chunkSize, Int_t verbose){
-  //
-  // Return list of histograms specified by selection
-  // Should be rough equivalent of the "ALICE train" TTree->Draw();
-  //  a.) Data are read only once
-  //  b.) values expression are reused (evaluated only once)
-  // default cut 
-  //       default selection applied common for all histrograms (can be empty)
-  // 
-  // hislist:
-  //    his0;his1; ...; hisN 
-  // histogram syntax:
-  //    var0:var1:...:<#weight>>>hisName(bins0,min0,max0,bins1,min0,min, minValue,maxValue)
-  //    Syntax:
-  //            vari are histogramming expression
-  //            weight (or cut) entry is optional 
-  //                 - default cut is always applied, weight is applied on top
-  //    ranges syntax:
-  //           nbins,max,min where max and min are double or format strings
-  //           in case format string % specified using (Fraction, mean,meanFraction, rms, rmsFraction)
-  //              %fraction.sigma  
-  //              #cumulant
-  //           range for bin content can be specified in the same format (by default is not set)
-  //  Algortihm:
-  //  1.) Analyze formula, create minimal formula expression
-  //  2.) Event loop
-  //  3.) Filling of histograms
-  //            
-  // Example usage:
-  /*
+/// \param tree         - input tree
+/// \param hisString    - selection string
+/// \param defaultCut   - default selection applied common for all histograms (can be empty)
+/// \param firstEntry   - first entry to process
+/// \param lastEntry    - last entry to process
+/// \param chunkSize    - chunk size
+/// \param verbose      - verbosity
+/// \return             - TObjArray of N-dimensional histograms
+/*!
+#### Example usage:
+\code
     chunkSize=10000;
     verbose=7;
     chinput=gSystem->ExpandPathName("$NOTES/JIRA/PWGPP-227/data/2016/LHC16t/000267161/pass1_CENT_wSDD/filteredLocal.list");
@@ -1005,17 +1045,18 @@ TObjArray  * AliTreePlayer::MakeHistograms(TTree * tree, TString hisString, TStr
     hisString+="esdTrack.GetAlpha():#esdTrack.fTPCncls>70>>hisAlpha(90,-3.2,3.2);";
     hisString+="esdTrack.GetTgl():#esdTrack.fTPCncls>70>>hisTgl(20,-1.2,1.2);";
     hisString+="esdTrack.Pt():esdTrack.GetAlpha():esdTrack.GetTgl():#esdTrack.fTPCncls>70>>hisPtPhiThetaAll(100,0,30,90,-3.2,3.2,20,-1.2,1.2);";
-    hisString+="esdTrack.Pt():#(esdTrack.fFlags&0x4)>0>>hisPtITS(100,1,10);";    
-    hisString+="esdTrack.fIp.Pt():#(esdTrack.fFlags&0x4)>0>>hisPtTPCOnly(100,1,10);";    
+    hisString+="esdTrack.Pt():#(esdTrack.fFlags&0x4)>0>>hisPtITS(100,1,10);";
+    hisString+="esdTrack.fIp.Pt():#(esdTrack.fFlags&0x4)>0>>hisPtTPCOnly(100,1,10);";
     TStopwatch timer; hisArray = AliTreePlayer::MakeHistograms(tree, hisString, "(esdTrack.fFlags&0x40)>0&&esdTrack.fTPCncls>70",0,60000,100000); timer.Print();
-  */
-  // CPU time to process one histogram or set of histograms (in paricular case of esdTrack queries) is the same - and it is determined (90 %) by tree->GetEntry 
-  /*
-    THn * his0= (THn*)hisArray->At(0);
-    his0->Projection(0)->Draw("");
-    tree->SetLineColor(2);
-    TStopwatch timer; tree->Draw("esdTrack.Pt()","(esdTrack.fFlags&0x40)>0&&esdTrack.fTPCncls>70","same",60000); timer.Print();
-  */
+\endcode
+ */
+TObjArray  * AliTreePlayer::MakeHistograms(TTree * tree, TString hisString, TString defaultCut, Int_t firstEntry, Int_t lastEntry, Int_t chunkSize, Int_t verbose){
+  //  Algorithm:
+  //  1.) Analyze formula, create minimal formula expression
+  //  2.) Event loop
+  //  3.) Filling of histograms
+  //
+
   const Int_t kMaxDim=10;
   Int_t entriesAll=tree->GetEntriesFast();
   if (chunkSize<=0) chunkSize=entriesAll;
@@ -1038,15 +1079,15 @@ TObjArray  * AliTreePlayer::MakeHistograms(TTree * tree, TString hisString, TStr
   //
   Bool_t isOK=kTRUE;
   for (Int_t iHis=0; iHis<nHistograms; iHis++){
-    TString hisDescription = hisDescriptionList->At(iHis)->GetName(); 
-    Int_t hisIndex=hisDescription.Index(">>"); 
-    if (hisIndex<=0) {  
+    TString hisDescription = hisDescriptionList->At(iHis)->GetName();
+    Int_t hisIndex=hisDescription.Index(">>");
+    if (hisIndex<=0) {
       isOK=kFALSE;
       ::Error("AliTreePlayer::MakeHistograms","Invalid expression %s",hisDescription.Data());
       break;
     }else{
       hisDescriptionArray->AddAtAndExpand(new TObjString(((hisDescriptionList->At(iHis)->GetName()))+(hisIndex+2)),iHis);
-    }   
+    }
     hisDescription.Remove(hisIndex);
     TObjArray *hisDimArray=hisDescription.Tokenize(":");
     Int_t nDims=hisDimArray->GetEntries();
@@ -1063,15 +1104,15 @@ TObjArray  * AliTreePlayer::MakeHistograms(TTree * tree, TString hisString, TStr
       TObjString *tFormula = new TObjString(formulaName.Data());
       hisWeightArray->AddAt(tFormula,iHis);
       if (formulaArray->FindObject(formulaName.Data())==NULL){
-	formulaArray->AddLast(tFormula);
-	varArray->AddAt(tFormula,nDims);
+        formulaArray->AddLast(tFormula);
+        varArray->AddAt(tFormula,nDims);
       }
     }
     for (Int_t iDim=0; iDim<nDims;iDim++){
       TObjString *tFormula =  (TObjString*) (formulaArray->FindObject(hisDimArray->At(iDim)->GetName()));
-      if (tFormula==NULL){	
-	tFormula = new TObjString(hisDimArray->At(iDim)->GetName());
-	formulaArray->AddLast(tFormula);
+      if (tFormula==NULL){
+        tFormula = new TObjString(hisDimArray->At(iDim)->GetName());
+        formulaArray->AddLast(tFormula);
       }
       varArray->AddAt(tFormula,iDim);
     }
@@ -1079,7 +1120,7 @@ TObjArray  * AliTreePlayer::MakeHistograms(TTree * tree, TString hisString, TStr
     hisDims[iHis]=nDims;
     delete hisDimArray;
   }
-  queryString="";  
+  queryString="";
   Int_t nFormulas=formulaArray->GetEntries();
   for (Int_t iFor=0; iFor<nFormulas; iFor++){
     queryString+=formulaArray->At(iFor)->GetName();
@@ -1087,7 +1128,7 @@ TObjArray  * AliTreePlayer::MakeHistograms(TTree * tree, TString hisString, TStr
   }
   queryString+=formulaArray->At(nFormulas-1)->GetName();
   if (verbose&0x2) hisDescriptionArray->Print();
-  if (verbose&0x4) formulaArray->Print(); 
+  if (verbose&0x4) formulaArray->Print();
   //
   //  2.) Event loop
   //
@@ -1098,72 +1139,72 @@ TObjArray  * AliTreePlayer::MakeHistograms(TTree * tree, TString hisString, TStr
     Int_t qLength = tree->Draw(queryString,defaultCut,"goffpara",toQuery, bEntry); // query varaibles
     if (qLength>tree->GetEstimate()){
       tree->SetEstimate(qLength*1.5);
-      qLength = tree->Draw(queryString,defaultCut,"goffpara",chunkSize, bEntry); 
+      qLength = tree->Draw(queryString,defaultCut,"goffpara",chunkSize, bEntry);
     }
 
     //  2.2 fill histograms if  not yet done
     if (hisArray->GetEntriesFast()==0){  // book histograms if not yet done
       for (Int_t iHis=0; iHis<nHistograms; iHis++){
-	if (hisDescriptionArray->At(iHis)==NULL){
-	  ::Error("AliTreePlayer::MakeHistograms", "Empty description %d",iHis);
-	  continue;
-	}
-	TString hisDescription= hisDescriptionArray->At(iHis)->GetName();	
-	TString  varDecription=hisDescriptionList->At(iHis)->GetName();	
-	TObjArray * descriptionArray=hisDescription.Tokenize("(,)");
-	TObjArray * varArray= TString(hisDescriptionList->At(iHis)->GetName()).Tokenize(":");
-	Int_t nLength=descriptionArray->GetEntries();
-	if ((nLength-1)/3 < hisDims[iHis]){
-	  ::Error("AliTreePlayer::MakeHistograms", "Histogram dimension Mismatch %s", hisDescriptionArray->At(iHis)->GetName());
-	  return NULL; 
-	}
-	if (varArray->GetEntries()<hisDims[iHis]){
-	  ::Error("AliTreePlayer::MakeHistograms", "Variable mismatch %s", hisDescriptionArray->At(iHis)->GetName());
-	  return NULL; 
-	}
-	TString hName(descriptionArray->At(0)->GetName());
-	THnBase * his = 0;
-	Int_t nBins[kMaxDim];
-	Double_t xMin[kMaxDim], xMax[kMaxDim];   
-	for (Int_t iDim=0; iDim<hisDims[iHis]; iDim++){
-	  nBins[iDim]= TString(descriptionArray->At(3*iDim+1)->GetName()).Atoi();
-	  if (descriptionArray->At(3*iDim+2)->GetName()[0]!='%'){
-	    xMin[iDim]= TString(descriptionArray->At(3*iDim+2)->GetName()).Atof();	  
-	  }else{
-	    if (descriptionArray->At(3*iDim+2)->GetName()[1]=='A'){ // %A - alias describing range
-	      TTreeFormula falias("falias",&(descriptionArray->At(3*iDim+2)->GetName()[2]),tree);
-	      xMin[iDim]=falias.EvalInstance();	      
-	    }
-	  }
-	  if (descriptionArray->At(3*iDim+3)->GetName()[0]!='%'){
-	    xMax[iDim]= TString(descriptionArray->At(3*iDim+3)->GetName()).Atof();
-	  }else{
-	    if (descriptionArray->At(3*iDim+3)->GetName()[1]=='A'){ // %A - alias describing range
-	      TTreeFormula falias("falias",&(descriptionArray->At(3*iDim+3)->GetName()[2]),tree);
-	      xMax[iDim]=falias.EvalInstance();	      
-	    }
-	  }
-	  if (xMax[iDim]<=xMin[iDim]){
-	    ::Error("AliTreePlayer::MakeHistograms","Invalid hstogram range specification for histogram  %s: %s\t%s",hisDescription.Data(), \
+        if (hisDescriptionArray->At(iHis)==NULL){
+          ::Error("AliTreePlayer::MakeHistograms", "Empty description %d",iHis);
+          continue;
+        }
+        TString hisDescription= hisDescriptionArray->At(iHis)->GetName();
+        TString  varDecription=hisDescriptionList->At(iHis)->GetName();
+        TObjArray * descriptionArray=hisDescription.Tokenize("(,)");
+        TObjArray * varArray= TString(hisDescriptionList->At(iHis)->GetName()).Tokenize(":");
+        Int_t nLength=descriptionArray->GetEntries();
+        if ((nLength-1)/3 < hisDims[iHis]){
+          ::Error("AliTreePlayer::MakeHistograms", "Histogram dimension Mismatch %s", hisDescriptionArray->At(iHis)->GetName());
+          return NULL;
+        }
+        if (varArray->GetEntries()<hisDims[iHis]){
+          ::Error("AliTreePlayer::MakeHistograms", "Variable mismatch %s", hisDescriptionArray->At(iHis)->GetName());
+          return NULL;
+        }
+        TString hName(descriptionArray->At(0)->GetName());
+        THnBase * his = 0;
+        Int_t nBins[kMaxDim];
+        Double_t xMin[kMaxDim], xMax[kMaxDim];
+        for (Int_t iDim=0; iDim<hisDims[iHis]; iDim++){
+          nBins[iDim]= TString(descriptionArray->At(3*iDim+1)->GetName()).Atoi();
+          if (descriptionArray->At(3*iDim+2)->GetName()[0]!='%'){
+            xMin[iDim]= TString(descriptionArray->At(3*iDim+2)->GetName()).Atof();
+          }else{
+            if (descriptionArray->At(3*iDim+2)->GetName()[1]=='A'){ // %A - alias describing range
+              TTreeFormula falias("falias",&(descriptionArray->At(3*iDim+2)->GetName()[2]),tree);
+              xMin[iDim]=falias.EvalInstance();
+            }
+          }
+          if (descriptionArray->At(3*iDim+3)->GetName()[0]!='%'){
+            xMax[iDim]= TString(descriptionArray->At(3*iDim+3)->GetName()).Atof();
+          }else{
+            if (descriptionArray->At(3*iDim+3)->GetName()[1]=='A'){ // %A - alias describing range
+              TTreeFormula falias("falias",&(descriptionArray->At(3*iDim+3)->GetName()[2]),tree);
+              xMax[iDim]=falias.EvalInstance();
+            }
+          }
+          if (xMax[iDim]<=xMin[iDim]){
+            ::Error("AliTreePlayer::MakeHistograms","Invalid hstogram range specification for histogram  %s: %s\t%s",hisDescription.Data(), \
 		    descriptionArray->At(3*iDim+2)->GetName(), descriptionArray->At(3*iDim+3)->GetName() );
-	  }
-	}
-	THnF * phis = new THnF(hName.Data(),hName.Data(), hisDims[iHis],nBins, xMin,xMax);
-	hisArray->AddAt(phis,iHis);
-	AliSysInfo::AddStamp(hName.Data(),10, phis->GetNbins());
-	if (verbose&0x1) {
-	  ::Info("AliTreePlayer::MakeHistograms","%s: size=%lld",hisDescription.Data(), phis->GetNbins());
-	}
-	hisSizeFull+= phis->GetNbins();
-	for (Int_t iDim=0;iDim<hisDims[iHis]; iDim++){
-	  phis->GetAxis(iDim)->SetName(varArray->At(iDim)->GetName());	  
-	  phis->GetAxis(iDim)->SetTitle(varArray->At(iDim)->GetName());	  
-	  TNamed *axisTitle=TStatToolkit::GetMetadata(tree,TString::Format("%s.AxisTitle",varArray->At(iDim)->GetName()).Data());
-	  if (axisTitle)  phis->GetAxis(iDim)->SetTitle(axisTitle->GetTitle());	
-	}
+          }
+        }
+        THnF * phis = new THnF(hName.Data(),hName.Data(), hisDims[iHis],nBins, xMin,xMax);
+        hisArray->AddAt(phis,iHis);
+        AliSysInfo::AddStamp(hName.Data(),10, phis->GetNbins());
+        if (verbose&0x1) {
+          ::Info("AliTreePlayer::MakeHistograms","%s: size=%lld",hisDescription.Data(), phis->GetNbins());
+        }
+        hisSizeFull+= phis->GetNbins();
+        for (Int_t iDim=0;iDim<hisDims[iHis]; iDim++){
+          phis->GetAxis(iDim)->SetName(varArray->At(iDim)->GetName());
+          phis->GetAxis(iDim)->SetTitle(varArray->At(iDim)->GetName());
+          TNamed *axisTitle=TStatToolkit::GetMetadata(tree,TString::Format("%s.AxisTitle",varArray->At(iDim)->GetName()).Data());
+          if (axisTitle)  phis->GetAxis(iDim)->SetTitle(axisTitle->GetTitle());
+        }
       }
       if (verbose&0x1) {
-	::Info("AliTreePlayer::MakeHistograms","Total size=%d",hisSizeFull);
+        ::Info("AliTreePlayer::MakeHistograms","Total size=%d",hisSizeFull);
       }
     }
     //    2.3 fill histograms
@@ -1171,29 +1212,29 @@ TObjArray  * AliTreePlayer::MakeHistograms(TTree * tree, TString hisString, TStr
     for (Int_t iHis=0; iHis<nHistograms; iHis++){
       Int_t indeces[kMaxDim+1];
       TObjArray *formulaArrayHis = (TObjArray*) (hisFormulaArray->At(iHis));
-      for (Int_t iVec=0; iVec<formulaArrayHis->GetEntriesFast(); iVec++){      
-	indeces[iVec]= formulaArray->IndexOf(formulaArray->FindObject(formulaArrayHis->At(iVec)->GetName()));
+      for (Int_t iVec=0; iVec<formulaArrayHis->GetEntriesFast(); iVec++){
+        indeces[iVec]= formulaArray->IndexOf(formulaArray->FindObject(formulaArrayHis->At(iVec)->GetName()));
       }
       Int_t indexW=-1;
       if (hisWeightArray->GetEntriesFast()>=iHis){
-	if (hisWeightArray->UncheckedAt(iHis)!=NULL){
-	  if (hisWeightArray->UncheckedAt(iHis)->GetName()){
-	    indexW= formulaArray->IndexOf(formulaArray->FindObject(hisWeightArray->UncheckedAt(iHis)->GetName()));
-	  }else{
-	    ::Error("xxx","Problem to find %s", hisWeightArray->UncheckedAt(iHis)->GetName());
-	  }
-	}
-      }      
+        if (hisWeightArray->UncheckedAt(iHis)!=NULL){
+          if (hisWeightArray->UncheckedAt(iHis)->GetName()){
+            indexW= formulaArray->IndexOf(formulaArray->FindObject(hisWeightArray->UncheckedAt(iHis)->GetName()));
+          }else{
+            ::Error("xxx","Problem to find %s", hisWeightArray->UncheckedAt(iHis)->GetName());
+          }
+        }
+      }
       THnBase * his = (THnBase*) hisArray->UncheckedAt(iHis);
-      for (Int_t cEvent=0; cEvent<qLength; cEvent++){ 
-	for (Int_t iDim=0; iDim<hisDims[iHis]; iDim++){
-	  values[iDim]=tree->GetVal(indeces[iDim])[cEvent];	  
-	}
-	Double_t weight=(indexW<0)? 1: tree->GetVal(indexW)[cEvent]; 
-	if (weight>0) his->Fill(values,weight);
+      for (Int_t cEvent=0; cEvent<qLength; cEvent++){
+        for (Int_t iDim=0; iDim<hisDims[iHis]; iDim++){
+          values[iDim]=tree->GetVal(indeces[iDim])[cEvent];
+        }
+        Double_t weight=(indexW<0)? 1: tree->GetVal(indexW)[cEvent];
+        if (weight>0) his->Fill(values,weight);
       }
     }
-    AliSysInfo::AddStamp(TString::Format("End.%s",tree->GetName()).Data(),0, bEntry);    
+    AliSysInfo::AddStamp(TString::Format("End.%s",tree->GetName()).Data(),0, bEntry);
   }
   //
   delete hisDescriptionArray;
@@ -1216,10 +1257,10 @@ TPad *  AliTreePlayer::DrawHistograms(TPad  * pad, TObjArray * hisArray, TString
     drawExpression+="hisAlpha(-3.2,3.2)(0)(errpl);hisPtPhiThetaAll(0,10,-3.2,3.2,-1.2,1.2)(1)(err):";
     drawExpression+="hisTgl(-1,1)(0)(errpl);hisPtPhiThetaAll(0,10,-3.2,3.2,-1.2,1.2)(2)(err):";
     pad = AliTreePlayer::DrawHistograms(0,hisArray,drawExpression);
-  */  
+  */
   TString projType[8]={"f-mean","f-rms","f-ltm","f-ltmsigma","f-gmean","f-grms","f-median","f-gmean"};
 
-  TObjArray *drawList=drawExpression.Tokenize(":"); 
+  TObjArray *drawList=drawExpression.Tokenize(":");
   // structure pad
   TString padDescription=drawList->At(0)->GetName();
   if (pad==NULL){
@@ -1234,7 +1275,7 @@ TPad *  AliTreePlayer::DrawHistograms(TPad  * pad, TObjArray * hisArray, TString
   for (Int_t iRow=0; iRow<nRows; iRow++){
     Int_t nCols=TString(padRows->At(iRow)->GetName()).Atoi();
     for (Int_t iCol=0; iCol<nCols; iCol++){
-      pad->cd();      
+      pad->cd();
       TPad * newPad=new TPad(Form("pad%d",nPads),Form("pad%d",nPads),iCol/Double_t(nCols),(nRows-iRow-1)/Double_t(nRows),(iCol+1)/Double_t(nCols),(nRows-iRow)/Double_t(nRows));
       newPad->Draw();
       nPads++;
@@ -1250,30 +1291,30 @@ TPad *  AliTreePlayer::DrawHistograms(TPad  * pad, TObjArray * hisArray, TString
     Int_t nGraphs=0, nHistos=0;
     if (drawList->At(iPad+1)==NULL) break;
     //TVirtualPad  *cPad = 
-    TVirtualPad *cPad = pad->cd(iPad+1);    
+    TVirtualPad *cPad = pad->cd(iPad+1);
     TLegend * legend = new TLegend(cPad->GetLeftMargin()+0.02,0.7,1-cPad->GetRightMargin()-0.02 ,1-cPad->GetTopMargin()-0.02, TString::Format("Pad%d",iPad));
     legend->SetNColumns(2);
     legend->SetBorderSize(0);
     TString padSetup=drawList->At(iPad+1)->GetName();
     TString padOption="";
     Bool_t isTimeX=kFALSE, isTimeY=kFALSE;
-    
-    if (padSetup.Contains(isPadOption)){      
+
+    if (padSetup.Contains(isPadOption)){
       padOption=TString(&padSetup[2]);
       padOption.Remove(padOption.First(";"));
       padOption.ToLower();
       if (padOption.Contains("logy")) {
-	pad->cd(iPad+1)->SetLogy();
-	isLogY=kTRUE;
+        pad->cd(iPad+1)->SetLogy();
+        isLogY=kTRUE;
       }
       if (padOption.Contains("logx")) {
-	pad->cd(iPad+1)->SetLogx();
+        pad->cd(iPad+1)->SetLogx();
       }
       if (padOption.Contains("gridy")) pad->cd(iPad+1)->SetGridy();
       if (padOption.Contains("gridx")) pad->cd(iPad+1)->SetGridx();
       if (padOption.Contains("timex")) isTimeX=kTRUE;
       if (padOption.Contains("timey")) isTimeY=kTRUE;
-      padSetup.Remove(0,padSetup.First(';')+1);	
+      padSetup.Remove(0,padSetup.First(';')+1);
     }
 
     TObjArray * padDrawList= padSetup.Tokenize(";");
@@ -1283,35 +1324,35 @@ TPad *  AliTreePlayer::DrawHistograms(TPad  * pad, TObjArray * hisArray, TString
     //
     for (Int_t ihis=0; ihis<padDrawList->GetEntries(); ihis++){
       TObjArray *hisDescription= TString(padDrawList->At(ihis)->GetName()).Tokenize("()");
-      THn * his = (THn*)hisArray->FindObject(hisDescription->At(0)->GetName());   
+      THn * his = (THn*)hisArray->FindObject(hisDescription->At(0)->GetName());
       if (his==NULL) continue;
       if (verbose&0x4){
-	::Info("AliTreePlayer::DrawHistograms","Pad %d. Processing his %s",iPad, hisDescription->At(0)->GetName());
-      }    
-      Int_t ndim=his->GetNdimensions();      
+        ::Info("AliTreePlayer::DrawHistograms","Pad %d. Processing his %s",iPad, hisDescription->At(0)->GetName());
+      }
+      Int_t ndim=his->GetNdimensions();
       TString rangeDescription(hisDescription->At(1)->GetName());
       Int_t ndimRange= (rangeDescription.CountChar(','));
       if (ndimRange>0) ndimRange=ndimRange/2+1;
       if (ndimRange>0){
-	TObjArray *rangeArray=rangeDescription.Tokenize(",");
-	for (Int_t iDim=0; iDim<ndimRange; iDim++){
-	  if (rangeArray->At(iDim*2)->GetName()[0]=='U') {
-	    Double_t min=TString(&(rangeArray->At(iDim*2)->GetName()[1])).Atof();
-	    Double_t max=TString(&(rangeArray->At(iDim*2+1)->GetName()[1])).Atof();
-	    if (verbose&0x8){
-	      ::Info("AliTreePlayer::DrawHistograms","Pad %d. %s.GetAxis(%d).SetRangeUser(%f,%f).",iPad,hisDescription->At(0)->GetName(), iDim, min,max);
-	    }
-	    his->GetAxis(iDim)->SetRangeUser(min,max);
-	  }else{
-	    Int_t min=TString((rangeArray->At(iDim*2)->GetName())).Atoi();
-	    Int_t max=TString((rangeArray->At(iDim*2+1)->GetName())).Atoi();
-	    if (verbose&0x8){
-	      ::Info("AliTreePlayer::DrawHistograms","Pad %d. %s.GetAxis(%d).SetRange(%d,%d).",iPad,hisDescription->At(0)->GetName(), iDim, min,max);
-	    }
-	    his->GetAxis(iDim)->SetRange(min,max);
-	  }
-	}
-	delete rangeArray;
+        TObjArray *rangeArray=rangeDescription.Tokenize(",");
+        for (Int_t iDim=0; iDim<ndimRange; iDim++){
+          if (rangeArray->At(iDim*2)->GetName()[0]=='U') {
+            Double_t min=TString(&(rangeArray->At(iDim*2)->GetName()[1])).Atof();
+            Double_t max=TString(&(rangeArray->At(iDim*2+1)->GetName()[1])).Atof();
+            if (verbose&0x8){
+              ::Info("AliTreePlayer::DrawHistograms","Pad %d. %s.GetAxis(%d).SetRangeUser(%f,%f).",iPad,hisDescription->At(0)->GetName(), iDim, min,max);
+            }
+            his->GetAxis(iDim)->SetRangeUser(min,max);
+          }else{
+            Int_t min=TString((rangeArray->At(iDim*2)->GetName())).Atoi();
+            Int_t max=TString((rangeArray->At(iDim*2+1)->GetName())).Atoi();
+            if (verbose&0x8){
+              ::Info("AliTreePlayer::DrawHistograms","Pad %d. %s.GetAxis(%d).SetRange(%d,%d).",iPad,hisDescription->At(0)->GetName(), iDim, min,max);
+            }
+            his->GetAxis(iDim)->SetRange(min,max);
+          }
+        }
+        delete rangeArray;
       }
       TString drawOption = hisDescription->At(3)->GetName();
       drawOption.ToLower();
@@ -1321,79 +1362,79 @@ TPad *  AliTreePlayer::DrawHistograms(TPad  * pad, TObjArray * hisArray, TString
       TGraphErrors*gr=0;
       //
       if (nDims==1) {
-	hProj=his->Projection(projString.Atoi());
-	//hProj->SetName(Form("Pad%d_His%d",iPad,nHistos));  // 
-	nHistos++;
+        hProj=his->Projection(projString.Atoi());
+        //hProj->SetName(Form("Pad%d_His%d",iPad,nHistos));  //
+        nHistos++;
       }
       if (nDims==2) {
-	Int_t dim0 = projString.Atoi();
-	Int_t dim1 = TString(&(projString[2])).Atoi();
-	TH2* his2D =his->Projection(dim0,dim1);
-	for (Int_t iProj=0; iProj<8; iProj++){
-	  if (drawOption.Contains(projType[iProj])){
-	    gr=TStatToolkit::MakeStat1D(his2D,0,1.0,iProj,21+ihis,ihis+1);
-	    //gr->SetName(Form("gr_Pad%d_Graph%d",iPad,nGraphs));  // 
-	    nGraphs++;
-	    // gr->SetTitle(Form("gr_Pad%d_Graph%d",iPad,nGraphs));  // 
-	    gr->SetTitle(padDrawList->At(ihis)->GetName());
-	    gr->GetXaxis()->SetTitle(his2D->GetXaxis()->GetTitle());
-	    gr->GetYaxis()->SetTitle(his2D->GetYaxis()->GetTitle());
-	    drawOption.ReplaceAll(projType[iProj].Data(),"");
-	  }	
-	}
-	delete his2D;
+        Int_t dim0 = projString.Atoi();
+        Int_t dim1 = TString(&(projString[2])).Atoi();
+        TH2* his2D =his->Projection(dim0,dim1);
+        for (Int_t iProj=0; iProj<8; iProj++){
+          if (drawOption.Contains(projType[iProj])){
+            gr=TStatToolkit::MakeStat1D(his2D,0,1.0,iProj,21+ihis,ihis+1);
+            //gr->SetName(Form("gr_Pad%d_Graph%d",iPad,nGraphs));  //
+            nGraphs++;
+            // gr->SetTitle(Form("gr_Pad%d_Graph%d",iPad,nGraphs));  //
+            gr->SetTitle(padDrawList->At(ihis)->GetName());
+            gr->GetXaxis()->SetTitle(his2D->GetXaxis()->GetTitle());
+            gr->GetYaxis()->SetTitle(his2D->GetYaxis()->GetTitle());
+            drawOption.ReplaceAll(projType[iProj].Data(),"");
+          }
+        }
+        delete his2D;
       }
       if (gr){
-	Double_t grMinI=TMath::MinElement(gr->GetN(),gr->GetY())-3.*TMath::Median(gr->GetN(),gr->GetEY());
-	Double_t grMaxI=TMath::MaxElement(gr->GetN(),gr->GetY())+3.*TMath::Median(gr->GetN(),gr->GetEY());
-	if (hisMax<hisMin) {hisMin=grMinI;  hisMax=grMaxI;}
-	if (hisMax<grMaxI) hisMax=grMaxI;
-	if (hisMin>grMinI) hisMin=grMinI;		
-	if (ihis==0)  {
-	  grToDraw = gr;
-	  gr->Draw((drawOption+"a").Data());
-	  legend->AddEntry(gr,"","p");
-	}
-	else{
-	  gr->Draw(drawOption.Data());
-	  legend->AddEntry(gr,"", "p");
-	}
-	if (keepArray) keepArray->AddLast(gr);
+        Double_t grMinI=TMath::MinElement(gr->GetN(),gr->GetY())-3.*TMath::Median(gr->GetN(),gr->GetEY());
+        Double_t grMaxI=TMath::MaxElement(gr->GetN(),gr->GetY())+3.*TMath::Median(gr->GetN(),gr->GetEY());
+        if (hisMax<hisMin) {hisMin=grMinI;  hisMax=grMaxI;}
+        if (hisMax<grMaxI) hisMax=grMaxI;
+        if (hisMin>grMinI) hisMin=grMinI;
+        if (ihis==0)  {
+          grToDraw = gr;
+          gr->Draw((drawOption+"a").Data());
+          legend->AddEntry(gr,"","p");
+        }
+        else{
+          gr->Draw(drawOption.Data());
+          legend->AddEntry(gr,"", "p");
+        }
+        if (keepArray) keepArray->AddLast(gr);
       }
       if (hProj){
-	hProj->SetMarkerColor(ihis+1);
-	hProj->SetLineColor(ihis+1);
-	hProj->SetMarkerStyle(21+ihis);
-	if (keepArray) keepArray->AddLast(hProj);
-	//
-	if (hisMax<hisMin) {
-	  hisMin=hProj->GetMinimum();  
-	  hisMax=hProj->GetMaximum();
-	}
-	if (hisMax<hProj->GetMaximum()) hisMax=hProj->GetMaximum();
-	if (hisMin>hProj->GetMinimum()) hisMin=hProj->GetMinimum();		
-	if (ihis==0)  {
-	  hisToDraw = hProj;
-	  hProj->Draw((TString(hisDescription->At(3)->GetName())+"").Data());
-	  legend->AddEntry(hProj);
-	}
-	else{
-	  hProj->Draw((TString(hisDescription->At(3)->GetName())+"same").Data());
-	  legend->AddEntry(hProj);
-	}
+        hProj->SetMarkerColor(ihis+1);
+        hProj->SetLineColor(ihis+1);
+        hProj->SetMarkerStyle(21+ihis);
+        if (keepArray) keepArray->AddLast(hProj);
+        //
+        if (hisMax<hisMin) {
+          hisMin=hProj->GetMinimum();
+          hisMax=hProj->GetMaximum();
+        }
+        if (hisMax<hProj->GetMaximum()) hisMax=hProj->GetMaximum();
+        if (hisMin>hProj->GetMinimum()) hisMin=hProj->GetMinimum();
+        if (ihis==0)  {
+          hisToDraw = hProj;
+          hProj->Draw((TString(hisDescription->At(3)->GetName())+"").Data());
+          legend->AddEntry(hProj);
+        }
+        else{
+          hProj->Draw((TString(hisDescription->At(3)->GetName())+"same").Data());
+          legend->AddEntry(hProj);
+        }
       }
-    } 
+    }
     pad->cd(iPad+1);
-    if (hisToDraw!=NULL){      
+    if (hisToDraw!=NULL){
       hisToDraw->SetMaximum(hisMax+(hisMax-hisMin)/2.);
       if (hisMin<=0) hisMin=TMath::Min(0.01, hisMax*0.01);
       hisToDraw->SetMinimum(hisMin);
       if (isLogY){
-	hisToDraw->SetMaximum(hisMax*TMath::Max(10.,(hisMax/hisMin)/4.));
+        hisToDraw->SetMaximum(hisMax*TMath::Max(10.,(hisMax/hisMin)/4.));
       }
 
       if ((verbose&0x8)>0){
-	::Info("AliTreePlayer::DrawHistograms:","Pad %d. %s  SetMinimum(%f). SetMaximum(%f)",iPad,padDrawList->At(0)->GetName(), hisMin,hisMax+(hisMax-hisMin)/2.);
+        ::Info("AliTreePlayer::DrawHistograms:","Pad %d. %s  SetMinimum(%f). SetMaximum(%f)",iPad,padDrawList->At(0)->GetName(), hisMin,hisMax+(hisMax-hisMin)/2.);
       }
       if (isTimeX) hisToDraw->GetXaxis()->SetTimeDisplay(1);
       if (isTimeY) hisToDraw->GetYaxis()->SetTimeDisplay(1);
@@ -1401,16 +1442,16 @@ TPad *  AliTreePlayer::DrawHistograms(TPad  * pad, TObjArray * hisArray, TString
       pad->cd(iPad+1)->Update();
       legend->Draw("same");
     }
-    if (grToDraw!=NULL){      
+    if (grToDraw!=NULL){
       grToDraw->SetMaximum(hisMax+(hisMax-hisMin)/2.);
       grToDraw->SetMinimum(hisMin-(hisMax-hisMin)/3.);
       if (isTimeX) grToDraw->GetXaxis()->SetTimeDisplay(1);
       if (isTimeY) grToDraw->GetYaxis()->SetTimeDisplay(1);
 
       if ((verbose&0x8)>0){
-	::Info("AliTreePlayer::DrawHistograms:","Pad %d. %s  SetMinimum(%f). SetMaximum(%f)",iPad,padDrawList->At(0)->GetName(), hisMax+(hisMax-hisMin)/2.,hisMin-(hisMax-hisMin)/3.);
+        ::Info("AliTreePlayer::DrawHistograms:","Pad %d. %s  SetMinimum(%f). SetMaximum(%f)",iPad,padDrawList->At(0)->GetName(), hisMax+(hisMax-hisMin)/2.,hisMin-(hisMax-hisMin)/3.);
       }
-      
+
       pad->cd(iPad+1)->Modified();
       pad->cd(iPad+1)->Update();
       legend->Draw("same");
@@ -1447,8 +1488,8 @@ void AliTreePlayer::MakeCacheTree(TTree * tree, TString varList, TString outFile
       if (iPoint==0) (*pcstream)<<outTree.Data()<<TString::Format("%s=",varName->At(iVar)->GetName()).Data()<<vars[iVar];
     }
     if (iPoint==0) {
-       (*pcstream)<<outTree.Data()<<"\n";
-       treeOut=((*pcstream)<<outTree.Data()).GetTree();
+      (*pcstream)<<outTree.Data()<<"\n";
+      treeOut=((*pcstream)<<outTree.Data()).GetTree();
     }else{
       treeOut->Fill();
     }
