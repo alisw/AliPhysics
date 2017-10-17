@@ -1,6 +1,5 @@
 
 AliGenerator* AddMCGenPythia8_ModSettings(Float_t e_cms= 13000.
-					  , Int_t tune= 14
 					  , Bool_t kCR= kTRUE
 					  , Int_t kF= 1
 					  , Int_t kProcess= 0 
@@ -20,13 +19,12 @@ AliGenerator* AddMCGenPythia8_ModSettings(Float_t e_cms= 13000.
   gSystem->Load("liblhapdf");
     
   AliGenerator *myGen  = NULL;
-  myGen                = CreatePythia8Gen(e_cms, tune, kCR, kF, kProcess, ptHardMin, ptHardMax, ihalfMassForKT, ihalfScaleForKT, iprimordialKThard, iprimordialKTsoft);
+  myGen                = CreatePythia8Gen(e_cms, kCR, kF, kProcess, ptHardMin, ptHardMax, ihalfMassForKT, ihalfScaleForKT, iprimordialKThard, iprimordialKTsoft);
     
   return myGen;
 }
 
 AliGenerator* CreatePythia8Gen( Float_t e_cms 
-				, Int_t tune
 				, Bool_t kCR 
 				, Int_t kF
 				, Int_t kProcess
@@ -66,8 +64,7 @@ AliGenerator* CreatePythia8Gen( Float_t e_cms
   myGener->SetEventListRange(-1, -1);
 
   //Set tune
-  //(AliPythia8::Instance())->ReadString(Form("Tune:pp = %i", tune));  //CR
-  myGener->SetTune(tune);
+  // ... default (Monash 2013)
 
   //Set random seed (based on time)
   (AliPythia8::Instance())->ReadString("Random:setSeed = on");
@@ -86,9 +83,9 @@ AliGenerator* CreatePythia8Gen( Float_t e_cms
   //Additional settings
 
   (AliPythia8::Instance())->ReadString(Form("BeamRemnants:halfMassForKT = %f",ihalfMassForKT));
-  (AliPythia8::Instance())->ReadString(Form("BeamRemnants:halfScaleForKT= %f",ihalfScaleForKT));
-  (AliPythia8::Instance())->ReadString(Form("BeamRemnants:primordialKThard= %f",iprimordialKThard));
-  (AliPythia8::Instance())->ReadString(Form("BeamRemnants:primordialKTsoft= %f",iprimordialKTsoft));    
+  (AliPythia8::Instance())->ReadString(Form("BeamRemnants:halfScaleForKT = %f",ihalfScaleForKT));
+  (AliPythia8::Instance())->ReadString(Form("BeamRemnants:primordialKThard = %f",iprimordialKThard));
+  (AliPythia8::Instance())->ReadString(Form("BeamRemnants:primordialKTsoft = %f",iprimordialKTsoft));    
     
 /*    // for later use
 
