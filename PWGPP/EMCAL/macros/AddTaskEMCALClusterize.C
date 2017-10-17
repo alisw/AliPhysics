@@ -30,6 +30,8 @@
 /// \param nRowDiff: Integer, number of rows for NxM clusterizer
 /// \param nColDiff: Integer, number of collumns for NxM clusterizer
 /// \param skipOrReject: Bool, for unfolding (check)
+/// \param tCardMimic: option for TCard correlation emulation, MC only
+/// \param cellUpd: update cells list with cuts
 ///
 /// \author : Gustavo Conesa Balbastre <Gustavo.Conesa.Balbastre@cern.ch>, (LPSC-CNRS)
 ///
@@ -41,7 +43,7 @@ AliAnalysisTaskEMCALClusterize* AddTaskEMCALClusterize(
                                                        const Bool_t  exotic     = kTRUE,
                                                        const TString name       = "V1Unfold", // V1, V2, NxN, V1Unfold
                                                        const TString trigger    = "", 
-                                                       const Bool_t  tm         = kTRUE, 
+                                                       const Int_t   tm         = 1, 
                                                        const Int_t   minEcell   = 50,
                                                        const Int_t   minEseed   = 100,
                                                        const Int_t   maxDeltaT  = 250,
@@ -57,7 +59,9 @@ AliAnalysisTaskEMCALClusterize* AddTaskEMCALClusterize(
                                                        const Float_t clusterEnergyCutEvent = -1,
                                                        const Int_t   nRowDiff   = 1,
                                                        const Int_t   nColDiff   = 1,
-                                                       const Bool_t  skipOrReject = kFALSE
+                                                       const Bool_t  skipOrReject = kFALSE,
+                                                       const Int_t   tCardMimic = kFALSE,
+                                                       const Bool_t  cellUpd    = kTRUE
                                                        )
 {  
   // Get the pointer to the existing analysis manager via the static access method.
@@ -79,7 +83,8 @@ AliAnalysisTaskEMCALClusterize* AddTaskEMCALClusterize(
   
   printf("Passed Settings : mc %d, exo %d, name %s, trigger %s, tm %d\n",bMC,exotic,name.Data(),trigger.Data(),tm);
   printf("                  Ecell %d, Eseed %d, dT %d, wT %d, minUnf %d, minFrac %d \n",minEcell, minEseed,maxDeltaT,timeWindow,minEUnf,minFrac);
-  printf("                  recalE %d, bad %d, recalT %d, nonlin %d, minCen %d, maxCen %d, rowDiff %d, colDiff %d \n",bRecalE,bBad,bRecalT,bNonLine,minCen,maxCen,nRowDiff,nColDiff);
+  printf("                  recalE %d, bad %d, recalT %d, nonlin %d, minCen %d, maxCen %d, rowDiff %d, colDiff %d, t-card %d, cell update %d \n",
+         bRecalE,bBad,bRecalT,bNonLine,minCen,maxCen,nRowDiff,nColDiff,tCardMimic);
 
   // Create name of task and AOD branch depending on different settings
   
@@ -110,9 +115,8 @@ AliAnalysisTaskEMCALClusterize* AddTaskEMCALClusterize(
   clusterize->SwitchOffFillAODHeader();
   clusterize->FillAODFile(bFillAOD); // fill aod.root with clusters?, not really needed for analysis.
 
-  // Do track matching after clusterization
-  if(tm) clusterize->SwitchOnTrackMatching();
-  else   clusterize->SwitchOffTrackMatching();
+  // Update cells list after cuts
+  if ( cellUpd ) clusterize->SwitchOnUpdateCell();
   
   //-------------------------------------------------------
   // Set clusterization parameters via rec param
@@ -217,6 +221,17 @@ AliAnalysisTaskEMCALClusterize* AddTaskEMCALClusterize(
   
   ConfigureEMCALRecoUtils(reco,bMC,exotic,bNonLine,bRecalE,bBad,bRecalT);
   
+  // Do track matching after clusterization
+  if ( tm > 0 ) 
+  {
+    clusterize->SwitchOnTrackMatching();
+    if      ( tm == 2 ) clusterize->GetRecoUtils()->SwitchOnAODHybridTracksMatch();
+    else if ( tm == 1 ) clusterize->GetRecoUtils()->SwitchOnAODTPCOnlyTracksMatch();
+    else                clusterize->GetRecoUtils()->SetAODTrackFilterMask(tm);
+  }
+  else   clusterize->SwitchOffTrackMatching();
+
+  
   //-------------------------------------------------------
   // Alignment matrices
   //-------------------------------------------------------
@@ -243,7 +258,7 @@ AliAnalysisTaskEMCALClusterize* AddTaskEMCALClusterize(
   
   if(bMC)
   {
-    printf("Recalculate MC labels\n");
+    //printf("Recalculate MC labels\n");
     clusterize->SwitchOnUseClusterMCLabelForCell(0) ; // Take the cell MC label as basis (only possible in recent productions, from 2012?)
     clusterize->SwitchOnRemapMCLabelForAODs()  ;      // Only in case 0, and for productions where the re-mapping of cell label in AODs was not done (productions before March 2013?)
 
@@ -254,6 +269,33 @@ AliAnalysisTaskEMCALClusterize* AddTaskEMCALClusterize(
     
     // clusterize->SwitchOnUseMCEdepFracLabelForCell(); // For Run2 MC, switch all the above off
   
+  }
+  
+  //-------------------------------------------------------
+  // T-Card cell correlation
+  //-------------------------------------------------------
+  
+  clusterize->SwitchOffTCardCorrelation();
+
+  if(bMC && tCardMimic > 0)
+  {
+    if ( tCardMimic == 1 ) clusterize->SwitchOnTCardCorrelation(kFALSE);
+    else                   clusterize->SwitchOnTCardCorrelation(kTRUE);
+        
+    clusterize->SetInducedEnergyLossFraction     (0.00700, 0.00700, 0.00700, 0.00000);
+    clusterize->SetInducedEnergyLossFractionP1   (0.00060, 0.00060, 0.00060, 0.00000);
+    clusterize->SetInducedEnergyLossFractionWidth(0.00900, 0.00900, 0.00900, 0.00000);
+    
+    clusterize->SetInducedEnergyLossProbabilityPerSM(0.30, 0);
+    clusterize->SetInducedEnergyLossProbabilityPerSM(0.60, 1);
+    clusterize->SetInducedEnergyLossProbabilityPerSM(0.50, 2);
+    clusterize->SetInducedEnergyLossProbabilityPerSM(1.00, 3);
+    clusterize->SetInducedEnergyLossProbabilityPerSM(0.35, 4);
+    clusterize->SetInducedEnergyLossProbabilityPerSM(0.25, 5);
+    clusterize->SetInducedEnergyLossProbabilityPerSM(0.35, 6);
+    clusterize->SetInducedEnergyLossProbabilityPerSM(1.00, 7);
+    clusterize->SetInducedEnergyLossProbabilityPerSM(0.25, 8);
+    clusterize->SetInducedEnergyLossProbabilityPerSM(0.25, 9);
   }
   
   //-------------------------------------------------------

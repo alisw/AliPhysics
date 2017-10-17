@@ -91,7 +91,7 @@ AliAnalysisTaskEMCALClusterize::AliAnalysisTaskEMCALClusterize(const char *name)
 , fRemapMCLabelForAODs(0)
 , fInputFromFilter(0) 
 , fTCardCorrEmulation(0), fTCardCorrClusEnerConserv(0)
-, fRandom(0)
+, fRandom(0),             fPrintOnce(0)
 {
   for(Int_t i = 0; i < 22;    i++)  
   {
@@ -146,7 +146,7 @@ AliAnalysisTaskEMCALClusterize::AliAnalysisTaskEMCALClusterize()
 , fRemapMCLabelForAODs(0)
 , fInputFromFilter(0)
 , fTCardCorrEmulation(0),   fTCardCorrClusEnerConserv(0)
-, fRandom(0)
+, fRandom(0),               fPrintOnce(0)
 {
   for(Int_t i = 0; i < 22;    i++)  
   {
@@ -1425,18 +1425,19 @@ void AliAnalysisTaskEMCALClusterize::InitClusterization()
       fClusterizer->SetPar5  (i, fRecParam->GetPar5(i));
       fClusterizer->SetPar6  (i, fRecParam->GetPar6(i));
     }//end of loop over parameters
+   
     fClusterizer->SetRejectBelowThreshold(fRejectBelowThreshold);//here we set option of unfolding: split or reject energy
     fClusterizer->InitClusterUnfolding();
     
   }// to unfold
 }
 
-//_________________________________________________
+//________________________________________________________________
 /// Init geometry and set the geometry matrix,
 /// for the first event, skip the rest.
 /// Also set once the run dependent calibrations.
-//_________________________________________________
-void AliAnalysisTaskEMCALClusterize::InitGeometry()
+//________________________________________________________________
+void AliAnalysisTaskEMCALClusterize::InitGeometryAndCalibrations()
 {
   if(fGeomMatrixSet) return;
   
@@ -1518,7 +1519,7 @@ void AliAnalysisTaskEMCALClusterize::InitGeometry()
   }//Load matrices
   else if(!gGeoManager)
   {
-    AliInfo("AliAnalysisTaksEMCALClusterize::InitGeometry() - Get geo matrices from data");
+    AliInfo("Get geo matrices from data");
     //Still not implemented in AOD, just a workaround to be able to work at least with ESDs	
     if(!strcmp(fEvent->GetName(),"AliAODEvent")) 
     {
@@ -1845,6 +1846,64 @@ void AliAnalysisTaskEMCALClusterize::MakeCellTCardCorrelation()
   
   } // cell loop
   
+}
+
+//_______________________________________________________
+/// Print clusterization task parameters.
+//_______________________________________________________
+void AliAnalysisTaskEMCALClusterize::PrintParam()
+{
+  AliInfo(Form("Geometry: name <%s>, matrix set <%d>, load matrix <%d>, import geo <%d> from path <%s>",
+               fGeomName.Data(), fGeomMatrixSet, fLoadGeomMatrices, fImportGeometryFromFile, fImportGeometryFilePath.Data()));
+  
+  if ( fAccessOCDB ) AliInfo(Form("OCDB path name <%s>", fOCDBpath.Data()));
+  if ( fAccessOADB ) AliInfo(Form("OADB path name <%s>", fOADBFilePath.Data()));
+  
+  AliInfo(Form("Just Unfold clusters <%d>, new clusters list name <%s>", fJustUnfold, fOutputAODBranchName.Data()));
+  
+  if ( fFillAODFile ) AliInfo(Form("Fill new AOD file with: header <%d>, cells <%d>",fFillAODHeader,fFillAODCaloCells));
+  
+  AliInfo(Form("Use cell time for cluster <%d>, Apply constant time shift <%2.2f>, Do track-matching <%d>, Update cells <%d>, Input from ESD filter <%d>",
+               fRecalibrateWithClusterTime, fConstantTimeShift, fDoTrackMatching, fUpdateCell, fInputFromFilter));
+  
+  AliInfo(Form("Reject events: larger than <%d>, LED <%d>, exotics <%d>", fMaxEvent, fRemoveLEDEvents, fRemoveExoticEvents));
+  
+  if (fCentralityBin[0] != -1 && fCentralityBin[1] != -1 ) 
+    AliInfo(Form("Centrality bin [%2.2f,%2.2f], class <%s>, use AliCentrality? <%d>", 
+                 fCentralityBin[0], fCentralityBin[1], fCentralityClass.Data(), fUseAliCentrality));
+  
+  if ( fSelectEMCALEvent ) 
+    AliInfo(Form("Select events with signal in EMCal: E min <%2.2f>, n cell min <%d>", fEMCALEnergyCut, fEMCALNcellsCut));
+  
+  AliInfo(Form("MC label from cluster <%d>, Use EdepFrac <%d>, remap AODs <%d>",
+               fSetCellMCLabelFromCluster, fSetCellMCLabelFromEdepFrac, fRemapMCLabelForAODs));
+}
+
+//_______________________________________________________
+/// Print parameters for T-Card correlation emulation.
+//_______________________________________________________
+void AliAnalysisTaskEMCALClusterize::PrintTCardParam()
+{
+  if(!fTCardCorrEmulation)
+  {
+    AliInfo("T-Card emulation not activated");
+    return;
+  }
+  
+  AliInfo(Form("T-Card emulation activated, energy conservation <%d>, induced energy parameters:",fTCardCorrClusEnerConserv));
+  
+  for(Int_t icell = 0; icell < 4; icell++)
+  {
+    printf("\t cell type %d, p0 %2.2e, p1 %2.2e, sigma %2.2e \n",
+           icell,fTCardCorrInduceEnerFrac[icell],fTCardCorrInduceEnerFracP1[icell],fTCardCorrInduceEnerFracWidth[icell]);     
+  }
+  
+  AliInfo("T-Card emulation super-modules fraction:");
+  
+  for(Int_t ism = 0; ism < 22; ism++)
+  {
+    printf("\t sm %d, fraction %2.2f\n",ism, fTCardCorrInduceEnerProb[ism]);
+  }
 }
 
 //_______________________________________________________
@@ -2412,7 +2471,7 @@ void AliAnalysisTaskEMCALClusterize::UserExec(Option_t *)
   if(!fCaloClusterArr) fCaloClusterArr    = new TObjArray(10000);
   else                 fCaloClusterArr->Delete();//Clear("C"); it leaks?
 
-  InitGeometry(); // only once, must be done before OADB, geo OADB accessed here
+  InitGeometryAndCalibrations(); // only once, must be done before OADB, geo OADB accessed here
   
   // Get the event, do some checks and settings
   CheckAndGetEvent() ;
@@ -2429,6 +2488,18 @@ void AliAnalysisTaskEMCALClusterize::UserExec(Option_t *)
   if(fAccessOADB) AccessOADB(); // only once
   
   InitClusterization();
+  
+  // Print once the analysis parameters
+  if ( fDebug > 0 || !fPrintOnce )
+  {
+    fRecParam->Print("reco");
+    
+    PrintParam();
+    
+    PrintTCardParam();
+    
+    fPrintOnce = kTRUE;
+  }
   
   //-------
   // Step 2
