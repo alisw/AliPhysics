@@ -498,12 +498,17 @@ Float_t AliGRPObject::GetBeamEnergy() const {
 
 	//
 	// Getting the energy
-	// in case of BeamType = A-A, multiplying by 82/208 (for PbPb)
+	// in case of BeamType = A-A, multiplying by Z/A
 	//
 
 	Float_t energy = fBeamEnergy;
 	if (fBeamType=="A-A"){
-		energy = energy*82./208;
+	  int az = GetSingleBeamType(0).Atoi(), a = az/1000, z = az%1000;
+	  if (a<1 || z<1) {
+	    a = 82;
+	    z = 208;
+	  }
+	  energy = energy*float(z)/a;
 	}
 	return IsBeamEnergyIsSqrtSHalfGeV() ? energy : energy/2;
 }
