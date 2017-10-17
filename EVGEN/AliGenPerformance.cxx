@@ -312,8 +312,16 @@ void AliGenPerformance::Generate() {
             naccepted++;
         }
     }
-    //  AliGenEventHeader* header = new AliGenEventHeader("THn");
-    //gAlice->SetGenEventHeader(header);
+
+    // Passes header either to the container or to gAlice
+    AliGenEventHeader* header = new AliGenEventHeader("THn");
+    if (fContainer) {
+      header->SetName(fName);
+      fContainer->AddHeader(header);
+    } else {
+      gAlice->SetGenEventHeader(header);
+    }
+
     if (fStreamer){   // in standard simulation destructor of the streamer (and file->Close() is not called - force writing)
         ((*fStreamer)<<"testGener").GetTree()->Write();
         fStreamer->GetFile()->Flush();
