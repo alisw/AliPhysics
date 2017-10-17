@@ -25,7 +25,6 @@
 
 #include "AliZMQhelpers.h"
 #include "AliHLTDataTypes.h"
-#include <inttypes.h>
 #include <cstring>
 #include "TNamed.h"
 #include "TFile.h"

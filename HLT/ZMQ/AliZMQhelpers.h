@@ -24,7 +24,6 @@
 #include <string>
 #include <map>
 #include "TMessage.h"
-#include <inttypes.h>
 struct zmq_msg_t;
 class TVirtualStreamerInfo;
 
