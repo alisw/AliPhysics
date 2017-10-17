@@ -56,6 +56,7 @@ class AliHFEminiEventCreator : public AliAnalysisTaskSE{
     virtual void Terminate(Option_t *);
 
     // Setters for cuts
+    void SetIsMCEvent(Bool_t IsMCevent){ fHasMCdata = IsMCevent; }
     void SetChi2TPCCut( Double_t chi2TPC ){ fTPCChiSquare = chi2TPC; }
     void SetMinClusterTPC( Int_t TPCCluster ) { fNclustersTPC = TPCCluster; }
     void SetMinClusterTPCPID( Int_t MinTPCclusterPID ){ fNclustersTPCPID = MinTPCclusterPID; }

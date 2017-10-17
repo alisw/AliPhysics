@@ -213,8 +213,8 @@ void AliHFEminiEventCreator::UserCreateOutputObjects(){
     AliError("No PID response task found !!");
   }
 
-  if(AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler()) fHasMCdata = kTRUE;
-  else fHasMCdata = kFALSE;
+  //if(AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler()) fHasMCdata = kTRUE;
+  //else fHasMCdata = kFALSE;
 
   //Set the analysis type: AOD or ESD
   if(!TString(fInputHandler->IsA()->GetName()).CompareTo("AliAODInputHandler")) fAODanalysis = kTRUE;

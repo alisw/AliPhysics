@@ -187,7 +187,7 @@ void runHFEMiniTreeTask(  const char *runtype     = RunType,
   */
   
   gROOT->LoadMacro("AddTaskHFEminiEventCreator.C");
-  AddTaskHFEminiEventCreator(TPCchi2, MinTPCNcluster, MinTPCclusterPID, TPCclusterRatio, MinNclusterITS, checkITSLayerstatus, eta, ptMin, ptMax, Vz, dcaxy, dcaz, prodVz, spdResolution, nsigmaTPClow, nsigmaTPChigh, nsigmaTOF, collisionSystem, TaskName);
+  AddTaskHFEminiEventCreator(isMC, TPCchi2, MinTPCNcluster, MinTPCclusterPID, TPCclusterRatio, MinNclusterITS, checkITSLayerstatus, eta, ptMin, ptMax, Vz, dcaxy, dcaz, prodVz, spdResolution, nsigmaTPClow, nsigmaTPChigh, nsigmaTOF, collisionSystem, TaskName);
 
   //AddTaskHFEminiEventCreator(4., 100, 80, 0.6, 3, kFALSE, 0.8, 0.5, 100., 10., 1., 2., 0.5, 0.25, -1, 3., 3., "pp", "TestRun");
   
