@@ -103,6 +103,7 @@ ClassImp(AliAnalysisTaskBeautyCal)
   NpureMCproc(0),
   NembMCpi0(0),
   NembMCeta(0),
+  Bevt(kFALSE),
   //fPi3040(0),
   //fEta3040(0),
   fPi010(0),
@@ -251,6 +252,7 @@ AliAnalysisTaskBeautyCal::AliAnalysisTaskBeautyCal()
   NpureMCproc(0),
   NembMCpi0(0),
   NembMCeta(0),
+  Bevt(kFALSE),
   //fPi3040(0),
   //fEta3040(0),
   fPi010(0),
@@ -1005,7 +1007,7 @@ void AliAnalysisTaskBeautyCal::UserExec(Option_t *)
  
   Int_t MagSign = 1;
   if(fVevent->GetMagneticField()<0)MagSign = -1;
-  cout << "Mag F = " << fVevent->GetMagneticField() << endl;
+  //cout << "Mag F = " << fVevent->GetMagneticField() << endl;
 
   ////////////////////
   //event selection///
@@ -1013,12 +1015,13 @@ void AliAnalysisTaskBeautyCal::UserExec(Option_t *)
   if(TMath::Abs(Zvertex)>10.0)return;
   fNevents->Fill(2); //events after z vtx cut
   fCent->Fill(centrality); //centrality dist.
-  cout << "evPlane = " << evPlane << endl;
+  //cout << "evPlane = " << evPlane << endl;
   fEPV0->Fill(evPlane);
 
   //cout << "check MC in the event ....." << endl;
   if(fMCarray)CheckMCgen(fMCheader);
 
+  cout << " >>>>>>>>> B->e evt = " << Bevt << endl;
   /////////////////////////////
   //EMCAL cluster information//
   /////////////////////////////
@@ -1308,6 +1311,7 @@ void AliAnalysisTaskBeautyCal::UserExec(Option_t *)
     //if(abs(pdg)==11 && pid_eleD)cout << " pid_ele from D = " << pid_ele << " ; pidM = " << pidM << endl;
     //if(abs(pdg)==11 && pid_eleB)cout << " pid_ele from B = " << pid_ele << " ; pidM = " << pidM << endl;
     //if(abs(pdg)==11 && (pid_eleD || pid_eleB))cout << " NpureMCproc = " << NpureMCproc << " ; ilabel = " << ilabel << endl;
+    /*
     if(abs(pdg)==11 && (pid_eleD || pid_eleB))
       {
        if(ilabel<NpureMCproc+1)
@@ -1339,6 +1343,7 @@ void AliAnalysisTaskBeautyCal::UserExec(Option_t *)
           if(pid_eleB)pid_eleB = kFALSE;
          }
       }
+    */ 
 
     Double_t WeightPho = -1.0;
     //if(iEmbPi0)WeightPho = fPi3040->Eval(pTmom);
@@ -1570,6 +1575,38 @@ void AliAnalysisTaskBeautyCal::UserExec(Option_t *)
       //cout << "itschi2 = " << fitschi2 << endl;
       if(atrack->GetITSchi2() > fitschi2) continue; 
  
+      if(abs(pdg)==11 && (pid_eleD || pid_eleB))
+       {
+        if(ilabel<NpureMCproc+1)
+         {
+          if(pid_eleD)
+             {
+              AliAODMCParticle* fMCparticleM = (AliAODMCParticle*) fMCarray->At(ilabelM);
+              Int_t ilabelGM = -1; Int_t pidGM = -1; Double_t pTGmom = -99.9;
+              FindMother(fMCparticleM, ilabelGM, pidGM, pTGmom);
+              cout << "check D->e ;" << pidGM << " ; Bevt = " << Bevt << endl;
+              if(Bevt) // B->D->e
+                 {
+                  fHistDCAbeEnhance->Fill(track->Pt(),DCAxy);
+                 }
+              else  // D->e
+                 {
+                  fHistDCAdeEnhance->Fill(track->Pt(),DCAxy);
+                 } 
+               }
+          if(pid_eleB)fHistDCAbeEnhance->Fill(track->Pt(),DCAxy);
+          fHistHFmcCheck->Fill(1);
+         }
+       else
+         {
+          if(pid_eleD)fHistDCAdePureMC->Fill(track->Pt(),DCAxy);
+          if(pid_eleB)fHistDCAbePureMC->Fill(track->Pt(),DCAxy);
+          fHistHFmcCheck->Fill(0);
+          if(pid_eleD)pid_eleD = kFALSE;
+          if(pid_eleB)pid_eleB = kFALSE;
+         }
+       }
+
       if(fTPCnSigma > fmimSig && fTPCnSigma < fmaxSig && m20>m20mim && m20<m20max)fHistEop->Fill(track->Pt(),eop);
       if(fTPCnSigma < -3.5 && m20>m20mim && m20<m20max)fHistEopHad->Fill(track->Pt(),eop);
       if(fTPCnSigma < -3.5)fHistEopHad2->Fill(track->Pt(),eop);
@@ -2018,9 +2055,13 @@ void AliAnalysisTaskBeautyCal::CheckMCgen(AliAODMCHeader* fMCheader)
  NpureMCproc = 0;
  NembMCpi0 = 0;
  NembMCeta = 0;
+ Int_t NembMCbe = 0;
  TString MCgen;
  TString embpi0("pi");
  TString embeta("eta");
+ TString embBe("bele");
+
+ Bevt = kFALSE;
 
  if(lh)
     {     
@@ -2040,11 +2081,15 @@ void AliAnalysisTaskBeautyCal::CheckMCgen(AliAODMCHeader* fMCheader)
             //if(MCgen.Contains(embeta))cout << MCgen << endl;
             if(MCgen.Contains(embpi0))NembMCpi0 = NpureMCproc;
             if(MCgen.Contains(embeta))NembMCeta = NpureMCproc;
+            if(MCgen.Contains(embBe))NembMCbe++;
 
             NpureMCproc += gh->NProduced();  // generate by PYTHIA or HIJING
            }
         }
     }
+
+ if(NembMCbe>1)Bevt = kTRUE;
+ cout << "B->e ; NembMCbe = " << NembMCbe << " ; Bevt = " << Bevt << endl;
 
  //cout << "NpureMC =" << NpureMC << endl;
  //cout << "NembMCpi0 =" << NembMCpi0 << endl;

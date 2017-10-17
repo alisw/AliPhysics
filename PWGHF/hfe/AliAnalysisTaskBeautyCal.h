@@ -132,7 +132,8 @@ private:
     Int_t NpureMCproc; // # of process in MC (no GEANT process)
     Int_t NembMCpi0; // # of process in MC (no GEANT process)
     Int_t NembMCeta; // # of process in MC (no GEANT process)
-   
+    Bool_t Bevt; // B->e enahnce evt   
+
     TF1 *fPi010;
     TF1 *fEta010;
     TF1 *fPi3040_0;
