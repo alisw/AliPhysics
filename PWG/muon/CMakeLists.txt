@@ -50,8 +50,7 @@ set(SRCS
   AliAnalysisMuMuGlobal.cxx
   AliAnalysisMuMuMCGene.cxx
   AliAnalysisMuMuMinv.cxx
-  AliAnalysisMuMuFlowEP.cxx
-  AliAnalysisMuMuFlowSP.cxx
+  AliAnalysisMuMuFlow.cxx
   AliAnalysisMuMuNch.cxx
   AliAnalysisMuMuSingle.cxx
   AliAnalysisMuMuTriggerResponse.cxx
