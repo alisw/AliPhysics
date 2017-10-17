@@ -49,7 +49,8 @@ class AliAnalysisTaskEMCALClusterize : public AliAnalysisTaskSE {
   virtual void   UserExec(Option_t *option);
   virtual void   Init();
   virtual void   LocalInit()                                   { Init()                        ; }
-    
+  void           PrintParam();
+  
   // Event methods, settings
   
   Bool_t         AcceptCell(Int_t absID);
@@ -81,7 +82,7 @@ class AliAnalysisTaskEMCALClusterize : public AliAnalysisTaskSE {
   
   // Geometry methods
     
-  void           InitGeometry();
+  void           InitGeometryAndCalibrations();
   void           SetGeometryName(TString &name)                 { fGeomName = name             ; }
   TString        GeometryName()                          const  { return fGeomName             ; }  
   void           SwitchOnLoadOwnGeometryMatrices()              { fLoadGeomMatrices = kTRUE    ; }
@@ -218,6 +219,8 @@ class AliAnalysisTaskEMCALClusterize : public AliAnalysisTaskSE {
   /// \param prob probability per event, from 0 to 1
   /// \param sm   probability assigned to this super-module number
   void           SetInducedEnergyLossProbabilityPerSM(Float_t prob, Int_t sm) { if ( sm < 22 && sm >= 0 ) fTCardCorrInduceEnerProb[sm] = prob ; }  
+  
+  void PrintTCardParam();
   //------------------------------------------
   
 private:
@@ -334,6 +337,8 @@ private:
   Float_t               fTCardCorrInduceEnerProb[22];      ///< Probability to induce energy loss per SM   
   TRandom3              fRandom   ;                ///<  Random generator
   
+  Bool_t                fPrintOnce;                ///< Print once analysis parameters
+  
   /// Copy constructor not implemented.
   AliAnalysisTaskEMCALClusterize(           const AliAnalysisTaskEMCALClusterize&) ;
     
@@ -341,7 +346,7 @@ private:
   AliAnalysisTaskEMCALClusterize& operator=(const AliAnalysisTaskEMCALClusterize&) ;
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskEMCALClusterize, 35) ;
+  ClassDef(AliAnalysisTaskEMCALClusterize, 36) ;
   /// \endcond
 
 };
