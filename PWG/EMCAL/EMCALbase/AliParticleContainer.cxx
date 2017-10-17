@@ -431,18 +431,7 @@ Int_t AliParticleContainer::GetNAcceptedParticles() const
  */
 const char* AliParticleContainer::GetTitle() const
 {
-  static TString trackString;
-
-  if (GetMinPt() == 0) {
-    trackString = TString::Format("%s_pT0000", GetArrayName().Data());
-  }
-  else if (GetMinPt() < 1.0) {
-    trackString = TString::Format("%s_pT0%3.0f", GetArrayName().Data(), GetMinPt()*1000.0);
-  }
-  else {
-    trackString = TString::Format("%s_pT%4.0f", GetArrayName().Data(), GetMinPt()*1000.0);
-  }
-
+  static TString trackString = TString::Format("%s_pT%04d", GetArrayName().Data(), static_cast<int>(GetMinPt()*1000.0));
   return trackString.Data();
 }
 

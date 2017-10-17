@@ -13,6 +13,8 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
+#include <sstream>
+#include <string>
 #include "AliAnalysisTaskEmcalJet.h"
 
 #include <TClonesArray.h>
@@ -174,7 +176,18 @@ void AliAnalysisTaskEmcalJet::ExecOnce()
   if (!cont->GetArrayName().IsNull()) {
     fJets = cont->GetArray();
     if(!fJets && fJetCollArray.GetEntriesFast()>0) {
-      AliError(Form("%s: Could not retrieve first jet branch!", GetName()));
+      AliErrorStream() << GetName() << ": Could not retrieve first jet branch!\n";
+      std::stringstream foundbranches;
+      bool first(true);
+      for(auto e : *(fInputEvent->GetList())){
+        if(!first){
+          foundbranches << ", ";
+          first = false;
+        }
+        foundbranches << e->GetName();
+      }
+      std::string fbstring = foundbranches.str();
+      AliErrorStream() << "Found branches: " << fbstring << std::endl;
       fLocalInitialized = kFALSE;
       return;
     }
