@@ -1,22 +1,24 @@
-AliAnalysisTask *AddTaskHFEminiEventCreator(  Double_t TPCchi2 = 4.,
-					      Int_t MinTPCNcluster = 100,
-					      Int_t MinTPCclusterPID = 80,
-					      Double_t TPCclusterRatio = 0.6,
-					      Int_t MinNclusterITS = 3,
-					      Bool_t checkITSLayerstatus = kFALSE,
-					      Double_t eta = 0.8,
-					      Double_t ptMin = 0.5,
-					      Double_t ptMax = 100.,
-					      Double_t Vz = 10.,
-					      Double_t dcaxy = 1.,
-					      Double_t dcaz = 2.,
-					      Double_t prodVz = 0.5,
-					      Double_t spdResolution = 0.25,
-					      Double_t nsigmaTPClow = -1.,
-					      Double_t nsigmaTPChigh = 3.,
-					      Double_t nsigmaTOF = 3.,
-					      TString collisionSystem = "pp",
-					      TString taskName = "Test" ){
+AliAnalysisTask *AddTaskHFEminiEventCreator(
+					    Bool_t IsMCevent = kTRUE,
+					    Double_t TPCchi2 = 4.,
+					    Int_t MinTPCNcluster = 100,
+					    Int_t MinTPCclusterPID = 80,
+					    Double_t TPCclusterRatio = 0.6,
+					    Int_t MinNclusterITS = 3,
+					    Bool_t checkITSLayerstatus = kFALSE,
+					    Double_t eta = 0.8,
+					    Double_t ptMin = 0.5,
+					    Double_t ptMax = 100.,
+					    Double_t Vz = 10.,
+					    Double_t dcaxy = 1.,
+					    Double_t dcaz = 2.,
+					    Double_t prodVz = 0.5,
+					    Double_t spdResolution = 0.25,
+					    Double_t nsigmaTPClow = -1.,
+					    Double_t nsigmaTPChigh = 3.,
+					    Double_t nsigmaTOF = 3.,
+					    TString collisionSystem = "pp",
+					    TString taskName = "Test" ){
   
   printf("Adding mini event creator\n");
   
@@ -42,6 +44,7 @@ AliAnalysisTask *AddTaskHFEminiEventCreator(  Double_t TPCchi2 = 4.,
   
   AliHFEminiEventCreator *miniEventCreator = new AliHFEminiEventCreator(commontaskName);
 
+  miniEventCreator->SetIsMCEvent(IsMCevent);
   miniEventCreator->SetChi2TPCCut( TPCchi2 );
   miniEventCreator->SetMinClusterTPC( MinTPCNcluster );
   miniEventCreator->SetMinClusterTPCPID( MinTPCclusterPID );
