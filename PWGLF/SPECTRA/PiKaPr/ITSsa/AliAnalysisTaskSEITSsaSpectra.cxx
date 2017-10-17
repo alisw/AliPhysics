@@ -227,6 +227,7 @@ AliAnalysisTaskSEITSsaSpectra::AliAnalysisTaskSEITSsaSpectra():
   fHistMCNegPrHypProt    = NULL;
 
   DefineInput(0, TChain::Class());
+  DefineInput(1, TList::Class()); //for external Bayesian Priors (empty list if flat priors used) 
   DefineOutput(1, TList::Class());
   DefineOutput(2, TList::Class());
   DefineOutput(3, TList::Class());
@@ -290,7 +291,7 @@ void AliAnalysisTaskSEITSsaSpectra::UserCreateOutputObjects()
     //Histograms for event Selection
     fEventCuts.AddQAplotsToList(fOutput);
   }
-  
+
   const int nPtBins = fPtBins.GetSize() - 1;
   const int nCentBins = fCentBins.GetSize() - 1;
   const int nDCABins = fDCABins.GetSize() - 1;
@@ -526,7 +527,7 @@ void AliAnalysisTaskSEITSsaSpectra::UserCreateOutputObjects()
   }
 
   if (fFillIntDistHist) {
- 
+
     //dEdx distributions
 
     fHistPosHypPi = new TH2F("fHistPosHypPi", "fHistPosHypPi", nPtBins,ptBins,nDCABins,dcaBins); //DCA distr. with NSigma PID
@@ -695,8 +696,6 @@ void AliAnalysisTaskSEITSsaSpectra::CreateDCAcutFunctions()
 void AliAnalysisTaskSEITSsaSpectra::Init()
 {
   // Initialization
-  if (!fUseDefaultPriors) DefineInput(1, TList::Class());
-
   AliInfo("Tracks selections");
   AliInfoF(" y = yLab + %.3f,  Ymin %.1f, Ymax %.1f, Eabs %.1f, DCAxyCut %.1f, DCAzCut %.1f, Chi2 %.1f,   nSPD %d,   nPID %d",
            fCMSRapFct, fMinRapCut, fMaxRapCut, fAbsEtaCut, fNSigmaDCAxy, fNSigmaDCAz, fMaxChi2Clu, fMinSPDPts, fMinNdEdxSamples);
