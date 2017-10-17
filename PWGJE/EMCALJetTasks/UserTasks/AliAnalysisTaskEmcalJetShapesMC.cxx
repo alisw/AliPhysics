@@ -298,9 +298,9 @@ AliAnalysisTaskEmcalJetShapesMC::~AliAnalysisTaskEmcalJetShapesMC()
 
   //log(1/theta),log(z*theta),jetpT,algo// 
    const Int_t dimSpec   = 4;
-   const Int_t nBinsSpec[4]     = {100,100,20,2};
+   const Int_t nBinsSpec[4]     = {100,100,20,3};
    const Double_t lowBinSpec[4] = {0.0,-10,  0,0};
-   const Double_t hiBinSpec[4]  = {5.0,  0,200,2};
+   const Double_t hiBinSpec[4]  = {5.0,  0,200,3};
    fHLundIterative = new THnSparseF("fHLundIterative",
                    "LundIterativePlot [log(1/theta),log(z*theta),pTjet,algo]",
                    dimSpec,nBinsSpec,lowBinSpec,hiBinSpec);
@@ -501,6 +501,7 @@ Bool_t AliAnalysisTaskEmcalJetShapesMC::FillHistograms()
       SoftDrop(jet1,jetCont,0.002,-2.0,0);
       RecursiveParents(jet1,jetCont,0);
       RecursiveParents(jet1,jetCont,1);
+      RecursiveParents(jet1,jetCont,2);
       // Float_t nTFractions[8]={0.,0.,0.,0.,0.,0.,0.,0.};
       //NTValues(jet1, 0, nTFractions);
       //shape 13 is pythia weight!
@@ -1355,8 +1356,9 @@ void AliAnalysisTaskEmcalJetShapesMC::RecursiveParents(AliEmcalJet *fJet,AliJetC
   fastjet::ClusterSequence              *fClustSeqSA;
   if(ReclusterAlgo==0) xflagalgo=0.5;
   if(ReclusterAlgo==1) xflagalgo=1.5;
+  if(ReclusterAlgo==2) xflagalgo=2.5;
   if(ReclusterAlgo==0) fJetDef = new fastjet::JetDefinition(fastjet::kt_algorithm, fJetRadius*2, static_cast<fastjet::RecombinationScheme>(0), fastjet::BestFJ30 ); 
-  if(ReclusterAlgo==1) fJetDef = new fastjet::JetDefinition(fastjet::cambridge_algorithm, fJetRadius*2, static_cast<fastjet::RecombinationScheme>(0), fastjet::BestFJ30 ); 
+  if(ReclusterAlgo==1) fJetDef = new fastjet::JetDefinition(fastjet::cambridge_algorithm, fJetRadius*2, static_cast<fastjet::RecombinationScheme>(0), fastjet::BestFJ30 );   if(ReclusterAlgo==2) fJetDef = new fastjet::JetDefinition(fastjet::akt_algorithm, fJetRadius*2, static_cast<fastjet::RecombinationScheme>(0), fastjet::BestFJ30 ); 
 
   try {
     fClustSeqSA = new fastjet::ClusterSequence(fInputVectors, *fJetDef);

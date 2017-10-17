@@ -188,9 +188,9 @@ AliAnalysisTaskEmcalQGTagging::~AliAnalysisTaskEmcalQGTagging()
 
    //log(1/theta),log(z*theta),jetpT,algo// 
    const Int_t dimSpec   = 4;
-   const Int_t nBinsSpec[4]     = {100,100,20,2};
+   const Int_t nBinsSpec[4]     = {100,100,20,3};
    const Double_t lowBinSpec[4] = {0.0,-10,  0,0};
-   const Double_t hiBinSpec[4]  = {5.0,  0,200,2};
+   const Double_t hiBinSpec[4]  = {5.0,  0,200,3};
    fHLundIterative = new THnSparseF("fHLundIterative",
                    "LundIterativePlot [log(1/theta),log(z*theta),pTjet,algo]",
                    dimSpec,nBinsSpec,lowBinSpec,hiBinSpec);
@@ -534,6 +534,7 @@ Bool_t AliAnalysisTaskEmcalQGTagging::FillHistograms()
       fShapesVar[6] = GetJetCoronna(jet1,0);
       RecursiveParents(jet1,jetCont,0);
       RecursiveParents(jet1,jetCont,1);
+      RecursiveParents(jet1,jetCont,2);
       
       Float_t ptMatch=0., ptDMatch=0., massMatch=0., constMatch=0.,angulMatch=0.,circMatch=0., lesubMatch=0., sigma2Match=0., coronnaMatch=0;
       Int_t kMatched = 0;
@@ -1123,8 +1124,10 @@ void AliAnalysisTaskEmcalQGTagging::RecursiveParents(AliEmcalJet *fJet,AliJetCon
   fastjet::ClusterSequence              *fClustSeqSA;
   if(ReclusterAlgo==0) xflagalgo=0.5;
   if(ReclusterAlgo==1) xflagalgo=1.5;
+  if(ReclusterAlgo==2) xflagalgo=2.5;
   if(ReclusterAlgo==0) fJetDef = new fastjet::JetDefinition(fastjet::kt_algorithm, 1., static_cast<fastjet::RecombinationScheme>(0), fastjet::BestFJ30 ); 
   if(ReclusterAlgo==1) fJetDef = new fastjet::JetDefinition(fastjet::cambridge_algorithm, 1., static_cast<fastjet::RecombinationScheme>(0), fastjet::BestFJ30 ); 
+  if(ReclusterAlgo==2) fJetDef = new fastjet::JetDefinition(fastjet::akt_algorithm, 1., static_cast<fastjet::RecombinationScheme>(0), fastjet::BestFJ30 ); 
 
   try {
     fClustSeqSA = new fastjet::ClusterSequence(fInputVectors, *fJetDef);
