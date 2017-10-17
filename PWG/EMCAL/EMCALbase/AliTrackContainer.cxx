@@ -476,7 +476,7 @@ Bool_t AliTrackContainer::AcceptTrack(const AliVTrack *vp, UInt_t &rejectionReas
   if (!r) return kFALSE;
 
   AliTLorentzVector mom;
-  GetMomentumFromTrack(mom, vp);
+  if(!GetMomentumFromTrack(mom, vp)) return false;
 
   return ApplyKinematicCuts(mom, rejectionReason);
 }
@@ -498,7 +498,7 @@ Bool_t AliTrackContainer::AcceptTrack(Int_t i, UInt_t &rejectionReason) const
   if (!r) return kFALSE;
 
   AliTLorentzVector mom;
-  GetMomentum(mom, i);
+  if(!GetMomentum(mom, i)) return false;
 
   return ApplyKinematicCuts(mom, rejectionReason);
 }

@@ -276,12 +276,14 @@ Bool_t AliParticleContainer::AcceptParticle(const AliVParticle *vp, UInt_t &reje
   AliTLorentzVector mom;
 
   Int_t id = fClArray->IndexOf(vp);
+  bool status(true);
   if (id >= 0) {
-    GetMomentum(mom, id);
+    status = GetMomentum(mom, id);
   }
   else {
-    GetMomentumFromParticle(mom, vp);
+    status = GetMomentumFromParticle(mom, vp);
   }
+  if(!status) return false;
 
   return ApplyKinematicCuts(mom, rejectionReason);
 }
@@ -302,7 +304,7 @@ Bool_t AliParticleContainer::AcceptParticle(Int_t i, UInt_t &rejectionReason) co
   if (!r) return kFALSE;
 
   AliTLorentzVector mom;
-  GetMomentum(mom, i);
+  if(!GetMomentum(mom, i)) return false;
 
   return ApplyKinematicCuts(mom, rejectionReason);
 }

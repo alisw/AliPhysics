@@ -147,7 +147,7 @@ Bool_t AliMCParticleContainer::AcceptMCParticle(const AliAODMCParticle *vp, UInt
   if (!r) return kFALSE;
 
   AliTLorentzVector mom;
-  GetMomentumFromParticle(mom, vp);
+  if(!GetMomentumFromParticle(mom, vp)) return false;
 
   return ApplyKinematicCuts(mom, rejectionReason);
 }
@@ -168,7 +168,7 @@ Bool_t AliMCParticleContainer::AcceptMCParticle(Int_t i, UInt_t &rejectionReason
   if (!r) return kFALSE;
 
   AliTLorentzVector mom;
-  GetMomentum(mom, i);
+  if(!GetMomentum(mom, i)) return false;
 
   return ApplyKinematicCuts(mom, rejectionReason);
 }
