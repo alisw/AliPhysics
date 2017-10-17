@@ -133,7 +133,7 @@ class AliAnalysisTaskEbyeIterPID : public AliAnalysisTaskSE {
   void   SetCentralityBinning(const Int_t tmpCentbins, Float_t tmpfxCentBins[])
   {
     // Create the histograms to be used in the binning of eta, cent and momentum
-    cout << " !!!!!! Centrality binning is being set !!!!!!! " << endl;
+    std::cout << " !!!!!! Centrality binning is being set !!!!!!! " << std::endl;
     fhEta  =  new TH1F("fhEta" ,"Eta Bins"       ,fnEtaBins        ,fEtaDown, fEtaUp );
     fhPtot =  new TH1F("fhPtot","Momentum Bins"  ,fnMomBins        ,fMomDown, fMomUp ); 
     fhCent =  new TH1F("fhCent","Centrality Bins",tmpCentbins-1    ,tmpfxCentBins );
@@ -152,7 +152,7 @@ class AliAnalysisTaskEbyeIterPID : public AliAnalysisTaskSE {
   void SetMCEtaScanArray(const Int_t tmpEtaBinsMC, Float_t tmpetaDownArr[], Float_t tmpetaUpArr[])
   {    
     // set MC eta values to scan 
-    cout << " !!!!!! SetMCEtaScanArray is being set !!!!!!! " << endl;
+    std::cout << " !!!!!! SetMCEtaScanArray is being set !!!!!!! " << std::endl;
     fnEtaWinBinsMC = tmpEtaBinsMC;
     fetaDownArr = new Float_t[fnEtaWinBinsMC]; 
     fetaUpArr   = new Float_t[fnEtaWinBinsMC]; 
@@ -165,7 +165,7 @@ class AliAnalysisTaskEbyeIterPID : public AliAnalysisTaskSE {
   void SetMCResonanceArray(const Int_t tmpNRes, TString tmpResArr[])
   {    
     // set MC eta values to scan 
-    cout << " !!!!!! SetMCResonanceArray is being set !!!!!!! " << endl;
+    std::cout << " !!!!!! SetMCResonanceArray is being set !!!!!!! " << std::endl;
     fnResBins = tmpNRes;
     fResonances = new TString[fnResBins]; 
     for (Int_t i=0; i<fnResBins; i++) fResonances[i] = tmpResArr[i]; 
@@ -175,7 +175,7 @@ class AliAnalysisTaskEbyeIterPID : public AliAnalysisTaskSE {
   void SetMCMomScanArray(const Int_t tmpMomBinsMC, Float_t tmppDownArr[], Float_t tmppUpArr[])
   {       
     // set MC momentum values to scan
-    cout << " !!!!!! SetMCMomScanArray is being set !!!!!!! " << endl;
+    std::cout << " !!!!!! SetMCMomScanArray is being set !!!!!!! " << std::endl;
     fnMomBinsMC = tmpMomBinsMC;
     fpDownArr = new Float_t[fnMomBinsMC]; 
     fpUpArr   = new Float_t[fnMomBinsMC]; 
