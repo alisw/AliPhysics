@@ -8,9 +8,9 @@ Bool_t ConfigF0(AliRsnMiniAnalysisTask *task,
 		AliPIDResponse::EBeamType collSys = AliPIDResponse::kPP, //=0, kPPB=1, kPBPB=2
 		AliRsnCutSet           *cutsPair,             //cuts on the pair
 		Bool_t                 enaMultSel = kTRUE,    //enable multiplicity axis
-      		Float_t                masslow = 0.6,         //inv mass axis low edge 
-		Float_t                massup = 1.2,          //inv mass axis upper edge 
-		Int_t                  nbins = 600,           //inv mass axis n bins
+      		Float_t                masslow = 0.3,         //inv mass axis low edge 
+		Float_t                massup = 1.3,          //inv mass axis upper edge 
+		Int_t                  nbins = 1000,           //inv mass axis n bins
 		Int_t                  aodFilterBit = 5,      //filter bit for AOD analysis
 		AliRsnCutSetDaughterParticle::ERsnDaughterCutSet cutPid = AliRsnCutSetDaughterParticle::kTPCpidTOFveto3s, // pid cut set
 		Float_t                nsigma = 3.0,          //nsigma of TPC PID cut
@@ -34,6 +34,7 @@ Bool_t ConfigF0(AliRsnMiniAnalysisTask *task,
   //use default quality cuts std 2010 with crossed rows TPC
   Bool_t useCrossedRows = 1; 
   AliRsnCutSetDaughterParticle * cutSetPi = new AliRsnCutSetDaughterParticle("cutPi", cutPid, AliPID::kPion, nsigma, aodFilterBit, useCrossedRows);
+  cutSetPi->SetUse2011StdQualityCuts(kTRUE);
   Int_t icutPi = task->AddTrackCuts(cutSetPi);
 
   //set daughter cuts
