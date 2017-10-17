@@ -283,6 +283,8 @@ class AliAnalysisTaskEMCALPhotonIsolation: public AliAnalysisTaskEmcal {
   TH3F                       * fEtaPhiClusVsM02;                //!<! Cluster eta vs. phi vs. sigma_long squared (cluster energy from 14 to 16 GeV)
   TH3F                       * fEtaPhiClusVsEtIsoClus;          //!<! Cluster eta vs. phi vs. neutral contribution to the energy in isolation cone (cluster energy from 14 to 16 GeV)
   TH3F                       * fEtaPhiClusVsPtIsoTrack;         //!<! Cluster eta vs. phi vs. charged contribution to the energy in isolation cone (cluster energy from 14 to 16 GeV)
+  TH3F                       * fEtaPhiClusVsPtUETrackCside;     //!<! Cluster eta vs. phi vs. charged contribution to the energy in C-side UE (cluster energy from 14 to 16 GeV)
+  TH3F                       * fEtaPhiClusVsPtUETrackAside;     //!<! Cluster eta vs. phi vs. charged contribution to the energy in A-side UE (cluster energy from 14 to 16 GeV)
   TH1D                       * fDeltaETAClusTrack;              //!<! dEta Cluster-Track
   TH1D                       * fDeltaPHIClusTrack;              //!<! dPhi Cluster-Track
   TH1D                       * fDeltaETAClusTrackMatch;         //!<! dEta Cluster-Track matched
