@@ -13,17 +13,21 @@
 #include <TFile.h>
 #include <TGrid.h>
 
-#include "AliAnalysisManager.h"
-#include "AliInputEventHandler.h"
-#include "AliEventPoolManager.h"
-#include "AliBasicParticle.h"
-#include "AliVTrack.h"
+#include <AliAnalysisManager.h>
+#include <AliInputEventHandler.h>
+#include <AliEventPoolManager.h>
+#include <AliLog.h>
+#include <AliVAODHeader.h>
+#include <AliVTrack.h>
+
 #include "AliEmcalJet.h"
 #include "AliTLorentzVector.h"
-#include "AliLog.h"
-
+#include "AliBasicParticle.h"
+#include "AliEmcalContainerUtils.h"
 #include "AliClusterContainer.h"
 #include "AliTrackContainer.h"
+#include "AliJetContainer.h"
+#include "AliAnalysisTaskEmcalEmbeddingHelper.h"
 
 /// \cond CLASSIMP
 ClassImp(AliAnalysisTaskEmcalJetHCorrelations);
@@ -281,17 +285,41 @@ Int_t AliAnalysisTaskEmcalJetHCorrelations::GetJetPtBin(Double_t pt) const
 }
 
 /**
+ * Retrieve the trigger mask from the input event or embedding helper as approapriate.
+ *
+ * @return The event trigger mask.
+ */
+UInt_t AliAnalysisTaskEmcalJetHCorrelations::RetrieveTriggerMask() const
+{
+  UInt_t eventTrigger = 0;
+  if (fIsEmbedded) {
+    eventTrigger = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
+  }
+  else {
+    auto embeddingHelper = AliAnalysisTaskEmcalEmbeddingHelper::GetInstance();
+    if (embeddingHelper) {
+      auto aodHeader = dynamic_cast<AliVAODHeader *>(embeddingHelper->GetEventHeader());
+      if (aodHeader) {
+        eventTrigger = aodHeader->GetOfflineTrigger();
+      }
+      else {
+        AliErrorStream() << "Failed to retrieve requested AOD header from embedding helper\n";
+      }
+    }
+    else {
+      AliErrorStream() << "Failed to retrieve requested embedding helper\n";
+    }
+  }
+
+  return eventTrigger;
+}
+
+/**
  * Main loop called for each event by AliAnalysisTaskEmcal.
  */
 Bool_t AliAnalysisTaskEmcalJetHCorrelations::Run()
 {
-  // Retrieve clusters
-  AliClusterContainer * clusters = GetClusterContainer(0);
-  if (!clusters) {
-    AliError(Form("%s: Unable to retrieve clusters!", GetName()));
-    return kFALSE;
-  }
-
+  // NOTE: Clusters are never used directly in the task, so the container is neither created not retrieved
   // Retrieve tracks
   AliTrackContainer * tracks = static_cast<AliTrackContainer * >(GetParticleContainer("tracksForCorrelations"));
   if (!tracks) {
@@ -330,11 +358,11 @@ Bool_t AliAnalysisTaskEmcalJetHCorrelations::Run()
   AliTLorentzVector track;
 
   // Determine the trigger for the current event
-  UInt_t eventTrigger = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
+  UInt_t eventTrigger = RetrieveTriggerMask();
 
   // Handle fast partition if selected
   if ((eventTrigger & AliVEvent::kFastOnly) && fDisableFastPartition) {
-    AliDebug(4, TString::Format("%s: Fast partition disabled", GetName()));
+    AliDebugStream(4) << GetName() << ": Fast partition disabled\n";
     if (fGeneralHistograms) {
       fHistEventRejection->Fill("Fast Partition", 1);
     }
@@ -344,7 +372,19 @@ Bool_t AliAnalysisTaskEmcalJetHCorrelations::Run()
   for (auto jet : jets->accepted()) {
     // Selects only events that we are interested in (ie triggered)
     if (!(eventTrigger & fTriggerType)) continue;
-    AliDebug(5, TString::Format("%s: Jet accepted!\nJet: %s", GetName(), jet->toString().Data()));
+    AliDebugStream(5) << "Jet accepted!\nJet: " << jet->toString().Data() << "\n";
+
+    // Require the found jet to be matched
+    // This match should be between detector and particle level MC
+    if (fIsEmbedded) {
+      if (jet->MatchedJet()) {
+        AliDebugStream(4) << "Jet is matched!\nJet: " << jet->toString().Data() << "\n";
+      }
+      else {
+        AliDebugStream(5) << "Rejected jet because it was not matched to a external event jet.\n";
+        continue;
+      }
+    }
 
     // Jet properties
     // Determine if we have the lead jet
@@ -367,6 +407,7 @@ Bool_t AliAnalysisTaskEmcalJetHCorrelations::Run()
 
     if (jet->Pt() > 15) {
 
+      AliDebugStream(4) << "Passed min jet pt cut of 15. \nJet: " << jet->toString().Data() << "\n";
       for (auto trackIter : tracks->accepted_momentum()) {
 
         // Get proper track proeprties
@@ -381,13 +422,13 @@ Bool_t AliAnalysisTaskEmcalJetHCorrelations::Run()
         jetPtBin = GetJetPtBin(jet->Pt());
         if (jetPtBin < 0)
         {
-          AliError(Form("Jet Pt Bin negative: %f", jet->Pt()));
+          AliErrorStream() << "Jet Pt Bin negative: " << jet->Pt() << "\n";
           continue;
         }
         // eta
         etaBin = GetEtaBin(deltaEta);
         if (etaBin < 0) {
-          AliError(Form("Eta Bin negative: %f", deltaEta));
+          AliErrorStream() << "Eta Bin negative: " << deltaEta << "\n";
           continue;
         }
 
@@ -403,7 +444,7 @@ Bool_t AliAnalysisTaskEmcalJetHCorrelations::Run()
 
         // Calculate single particle tracking efficiency for correlations
         efficiency = EffCorrection(track.Eta(), track.Pt());
-        AliDebug(6, TString::Format("%s: efficiency: %f", GetName(), efficiency));
+        AliDebugStream(6) << GetName() << ": efficiency: " << efficiency << "\n";
 
         if (biasedJet == kTRUE) {
           fHistJetHBias[fCentBin][jetPtBin][etaBin]->Fill(deltaPhi, track.Pt());
@@ -1127,7 +1168,6 @@ AliAnalysisTaskEmcalJetHCorrelations * AliAnalysisTaskEmcalJetHCorrelations::Add
    // Jet options
    const Double_t trackBias,
    const Double_t clusterBias,
-   const Double_t minJetArea,
    // Mixed event options
    const Int_t nTracksMixedEvent,  // Additionally acts as a switch for enabling mixed events
    const Int_t minNTracksMixedEvent,
@@ -1137,7 +1177,6 @@ AliAnalysisTaskEmcalJetHCorrelations * AliAnalysisTaskEmcalJetHCorrelations::Add
    UInt_t trigEvent,
    UInt_t mixEvent,
    // Options
-   const Double_t trackEta,
    const Bool_t lessSparseAxes,
    const Bool_t widerTrackBin,
    // Corrections
@@ -1154,64 +1193,23 @@ AliAnalysisTaskEmcalJetHCorrelations * AliAnalysisTaskEmcalJetHCorrelations::Add
   if (!mgr)
   {
     AliErrorClass("No analysis manager to connect to.");
-    return NULL;
-  }
-
-  // Check the analysis type using the event handlers connected to the analysis manager.
-  //==============================================================================
-  AliVEventHandler* handler = mgr->GetInputEventHandler();
-  if (!handler)
-  {
-    AliErrorClass("This task requires an input event handler");
-    return NULL;
+    return nullptr;
   }
 
   //-------------------------------------------------------
   // Init the task and do settings
   //-------------------------------------------------------
 
-  // Determine data type
-  enum EDataType_t {
-    kUnknown,
-    kESD,
-    kAOD
-  };
-
-  EDataType_t dataType = kUnknown;
-
-  if (handler->InheritsFrom("AliESDInputHandler")) {
-    dataType = kESD;
-  }
-  else if (handler->InheritsFrom("AliAODInputHandler")) {
-    dataType = kAOD;
-  }
-
   // Determine cluster and track names
   TString trackName(nTracks);
   TString clusName(nCaloClusters);
 
   if (trackName == "usedefault") {
-    if (dataType == kESD) {
-      trackName = "Tracks";
-    }
-    else if (dataType == kAOD) {
-      trackName = "tracks";
-    }
-    else {
-      trackName = "";
-    }
+    trackName = AliEmcalContainerUtils::DetermineUseDefaultName(AliEmcalContainerUtils::kTrack);
   }
 
   if (clusName == "usedefault") {
-    if (dataType == kESD) {
-      clusName = "CaloClusters";
-    }
-    else if (dataType == kAOD) {
-      clusName = "caloClusters";
-    }
-    else {
-      clusName = "";
-    }
+    clusName = AliEmcalContainerUtils::DetermineUseDefaultName(AliEmcalContainerUtils::kCluster);
   }
 
   TString name("AliAnalysisTaskJetH");
@@ -1253,44 +1251,6 @@ AliAnalysisTaskEmcalJetHCorrelations * AliAnalysisTaskEmcalJetHCorrelations::Add
     }
   }
 
-  // Jet parameters determined by how we ran the jet finder
-  Double_t jetRadius = 0.2;
-  Double_t minClusterPt = 3;
-  Double_t minTrackPt = 3;
-
-  // Add Containers
-  // Clusters
-  AliClusterContainer * clusterContainer = correlationTask->AddClusterContainer(clusName);
-  clusterContainer->SetMinE(minClusterPt);
-
-  // Tracks
-  // For jet finding
-  AliTrackContainer * tracksForJets = new AliTrackContainer(trackName);
-  tracksForJets->SetName("tracksForJets");
-  tracksForJets->SetMinPt(minTrackPt);
-  tracksForJets->SetEtaLimits(-1.0*trackEta, trackEta);
-  // Adopt the container
-  correlationTask->AdoptParticleContainer(tracksForJets);
-  // For correlations
-  AliTrackContainer * tracksForCorrelations = new AliTrackContainer(trackName);
-  tracksForCorrelations->SetName("tracksForCorrelations");
-  tracksForCorrelations->SetMinPt(0.15);
-  tracksForCorrelations->SetEtaLimits(-1.0*trackEta, trackEta);
-  // Adopt the container
-  correlationTask->AdoptParticleContainer(tracksForCorrelations);
-
-  // Jets
-  AliJetContainer * jetContainer = correlationTask->AddJetContainer(AliJetContainer::kFullJet,
-                                   AliJetContainer::antikt_algorithm,
-                                   AliJetContainer::pt_scheme,
-                                   jetRadius,
-                                   AliEmcalJet::kEMCALfid,
-                                   tracksForJets,
-                                   clusterContainer);
-  jetContainer->SetJetAreaCut(minJetArea);
-  jetContainer->SetMaxTrackPt(100);
-  jetContainer->SetJetPtCut(0.1);
-
   //-------------------------------------------------------
   // Final settings, pass to manager and set the containers
   //-------------------------------------------------------
@@ -1308,3 +1268,173 @@ AliAnalysisTaskEmcalJetHCorrelations * AliAnalysisTaskEmcalJetHCorrelations::Add
   return correlationTask;
 }
 
+/**
+ * Call after the AddTask to setup the standard Jet-h configuration.
+ *
+ * @return true if sucessfully configured for the standard configuration
+ */
+bool AliAnalysisTaskEmcalJetHCorrelations::ConfigureForStandardAnalysis(std::string trackName,
+    std::string clusName,
+    const double jetConstituentPtCut,
+    const double trackEta,
+    const double jetRadius)
+{
+  bool returnValue = false;
+  AliInfoStream() << "Configuring Jet-H Correlations task for a standard analysis.\n";
+
+  // Add Containers
+  // Clusters
+  if (clusName == "usedefault") {
+    clusName = AliEmcalContainerUtils::DetermineUseDefaultName(AliEmcalContainerUtils::kCluster);
+  }
+  // For jet finding
+  AliClusterContainer * clustersForJets = new AliClusterContainer(clusName.c_str());
+  clustersForJets->SetName("clustersForJets");
+  clustersForJets->SetMinE(jetConstituentPtCut);
+
+  // Tracks
+  // For jet finding
+  if (trackName == "usedefault") {
+    trackName = AliEmcalContainerUtils::DetermineUseDefaultName(AliEmcalContainerUtils::kTrack);
+  }
+  AliParticleContainer * particlesForJets = CreateParticleOrTrackContainer(trackName.c_str());
+  particlesForJets->SetName("particlesForJets");
+  particlesForJets->SetMinPt(jetConstituentPtCut);
+  particlesForJets->SetEtaLimits(-1.0*trackEta, trackEta);
+  // Don't need to adopt the container - we'll just use it to find the right jet collection
+  // For correlations
+  AliParticleContainer * particlesForCorrelations = CreateParticleOrTrackContainer(trackName.c_str());
+  if (particlesForCorrelations)
+  {
+    particlesForCorrelations->SetName("tracksForCorrelations");
+    particlesForCorrelations->SetMinPt(0.15);
+    particlesForCorrelations->SetEtaLimits(-1.0*trackEta, trackEta);
+    // Adopt the container
+    this->AdoptParticleContainer(particlesForCorrelations);
+  }
+  else {
+    AliWarningStream() << "No particle container was successfully created!\n";
+  }
+
+  // Jets
+  AliJetContainer * jetContainer = this->AddJetContainer(AliJetContainer::kFullJet,
+                              AliJetContainer::antikt_algorithm,
+                              AliJetContainer::pt_scheme,
+                              jetRadius,
+                              AliEmcalJet::kEMCALfid,
+                              particlesForJets,
+                              clustersForJets);
+  // 0.6 * jet area
+  jetContainer->SetJetAreaCut(jetRadius * jetRadius * TMath::Pi() * 0.6);
+  jetContainer->SetMaxTrackPt(100);
+  jetContainer->SetJetPtCut(0.1);
+
+  // Successfully configured
+  returnValue = true;
+
+  return returnValue;
+}
+
+/**
+ * Call after the AddTask to setup the embedded Jet-h configuration.
+ *
+ * @return true if successfully configured for embedding
+ */
+bool AliAnalysisTaskEmcalJetHCorrelations::ConfigureForEmbeddingAnalysis(std::string trackName,
+    std::string clusName,
+    const double jetConstituentPtCut,
+    const double trackEta,
+    const double jetRadius,
+    const std::string & jetTag)
+{
+  bool returnValue = false;
+  AliInfoStream() << "Configuring Jet-H Correlations task for an embedding analysis.\n";
+
+  // Set the task to know it that is embedded
+  this->SetIsEmbedded(true);
+
+  // Add Containers
+  // Clusters
+  if (clusName == "usedefault") {
+    clusName = AliEmcalContainerUtils::DetermineUseDefaultName(AliEmcalContainerUtils::kCluster);
+  }
+  // For jet finding
+  AliClusterContainer * clustersForJets = new AliClusterContainer(clusName.c_str());
+  clustersForJets->SetName("clustersForJets");
+  clustersForJets->SetMinE(jetConstituentPtCut);
+  // We need the combined clusters, which should be available in the internal event.
+  // However, we don't need to adopt the container - we'll just use it to find the right jet collection
+  // For correlations
+  /*AliClusterContainer * clustersforCorrelations = new AliClusterContainer("usedefault");
+  clustersForCorrelations->SetName("clustersForCorrelations");
+  clustersForCorrelations->SetMinE(0.30);
+  clustersForCorrelations->SetIsEmbedding(true);
+  this->AdoptClusterContainer(clustersForCorrelations);*/
+
+  // Tracks
+  // For jet finding
+  if (trackName == "usedefault") {
+    trackName = AliEmcalContainerUtils::DetermineUseDefaultName(AliEmcalContainerUtils::kTrack);
+  }
+  AliParticleContainer * particlesForJets = CreateParticleOrTrackContainer(trackName.c_str());
+  particlesForJets->SetName("particlesForJets");
+  particlesForJets->SetMinPt(jetConstituentPtCut);
+  particlesForJets->SetEtaLimits(-1.0*trackEta, trackEta);
+  // Don't need to adopt the container - we'll just use it to find the right jet collection
+  // For correlations
+  AliParticleContainer * particlesForCorrelations = CreateParticleOrTrackContainer(trackName.c_str());
+  // Ensure that we don't operate on a null pointer
+  if (particlesForCorrelations)
+  {
+    particlesForCorrelations->SetName("tracksForCorrelations");
+    particlesForCorrelations->SetMinPt(0.15);
+    particlesForCorrelations->SetEtaLimits(-1.0*trackEta, trackEta);
+    particlesForCorrelations->SetIsEmbedding(true);
+    // Adopt the container
+    this->AdoptParticleContainer(particlesForCorrelations);
+  }
+  else {
+    AliWarningStream() << "No particle container was successfully created!\n";
+  }
+
+  // Jets
+  // The tag "hybridJets" is defined in the jet finder
+  AliJetContainer * jetContainer = this->AddJetContainer(AliJetContainer::kFullJet,
+                              AliJetContainer::antikt_algorithm,
+                              AliJetContainer::pt_scheme,
+                              jetRadius,
+                              AliEmcalJet::kEMCALfid,
+                              particlesForJets,
+                              clustersForJets,
+                              jetTag);
+  // 0.6 * jet area
+  jetContainer->SetJetAreaCut(jetRadius * jetRadius * TMath::Pi() * 0.6);
+  jetContainer->SetMaxTrackPt(100);
+  jetContainer->SetJetPtCut(0.1);
+
+  // Successfully configured
+  returnValue = true;
+
+  return returnValue;
+}
+
+/**
+ * Utility function to create a particle or track container given the collection name of the desired container.
+ *
+ * @param[in] collectionName Name of the particle or track collection name.
+ *
+ * @return A newly created particle or track container.
+ */
+AliParticleContainer * AliAnalysisTaskEmcalJetHCorrelations::CreateParticleOrTrackContainer(std::string const & collectionName) const
+{
+  AliParticleContainer * partCont = 0;
+  if (collectionName == AliEmcalContainerUtils::DetermineUseDefaultName(AliEmcalContainerUtils::kTrack)) {
+    AliTrackContainer * trackCont = new AliTrackContainer(collectionName.c_str());
+    partCont = trackCont;
+  }
+  else if (collectionName != "") {
+    partCont = new AliParticleContainer(collectionName.c_str());
+  }
+
+  return partCont;
+}
