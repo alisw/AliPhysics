@@ -133,12 +133,12 @@ fIncludeITS(kTRUE),
 fFillBayes(kFALSE),
 fFillCuts(kFALSE),
 fFillDeDxTree(kTRUE),
+fFillArmPodTree(kTRUE),
 fRunFastSimulation(kFALSE),
 fFillDnchDeta(kFALSE),
 fIncludeTOF(kFALSE),
 fUseThnSparse(kFALSE),
 fUseCouts(kFALSE),
-fFillArmPodTree(kTRUE),
 fnMomBins(0),
 fMomDown(0),                
 fMomUp(0), 
@@ -329,12 +329,12 @@ fIncludeITS(kTRUE),
 fFillBayes(kFALSE),
 fFillCuts(kFALSE),
 fFillDeDxTree(kTRUE),
+fFillArmPodTree(kTRUE),
 fRunFastSimulation(kFALSE),
 fFillDnchDeta(kFALSE),
 fIncludeTOF(kFALSE),
 fUseThnSparse(kFALSE),
 fUseCouts(kFALSE),
-fFillArmPodTree(kTRUE),
 fnMomBins(0),
 fMomDown(0),                
 fMomUp(0),                  
@@ -936,8 +936,8 @@ void AliAnalysisTaskEbyeIterPID::UserExec(Option_t *)
   }
   //
   // Get rid of "E-AliESDpid::GetTPCsignalTunedOnData: Tune On Data requested, but MC event not set. Call SetCurrentMCEvent before!" errors
-  if (!fPIDResponse) fPIDResponse = ((AliESDInputHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->GetESDpid();
-  if (fMCEvent) fPIDResponse->SetCurrentMCEvent(fMCEvent);  
+  if (!fPIDResponse && !fRunFastSimulation) fPIDResponse = ((AliESDInputHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->GetESDpid();
+  if (fMCEvent && !fRunFastSimulation) fPIDResponse->SetCurrentMCEvent(fMCEvent);  
   //
   if(fMCtrue){
       
