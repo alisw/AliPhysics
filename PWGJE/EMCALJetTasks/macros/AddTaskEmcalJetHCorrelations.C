@@ -4,7 +4,6 @@ AliAnalysisTaskEmcalJetHCorrelations* AddTaskEmcalJetHCorrelations(
    // Jet options
    const Double_t trackBias         = 5,
    const Double_t clusterBias       = 5,
-   const Double_t minJetArea        = 0.4,
    // Mixed event options
    const Int_t nTracksMixedEvent    = 0,  // Additionally acts as a switch for enabling mixed events
    const Int_t minNTracksMixedEvent = 5000,
@@ -14,9 +13,6 @@ AliAnalysisTaskEmcalJetHCorrelations* AddTaskEmcalJetHCorrelations(
    UInt_t trigEvent                 = AliVEvent::kAny,
    UInt_t mixEvent                  = AliVEvent::kAny,
    // Options
-   const char *CentEst              = "V0M",
-   const Int_t nCentBins            = 5,
-   const Double_t trackEta          = 0.9,
    const Bool_t lessSparseAxes      = 0,
    const Bool_t widerTrackBin       = 0,
    // Corrections
@@ -29,12 +25,10 @@ AliAnalysisTaskEmcalJetHCorrelations* AddTaskEmcalJetHCorrelations(
 {  
   AliAnalysisTaskEmcalJetHCorrelations * task = AliAnalysisTaskEmcalJetHCorrelations::AddTaskEmcalJetHCorrelations(
                           nTracks, nCaloClusters,
-                          trackBias, clusterBias, minJetArea,
+                          trackBias, clusterBias,
                           nTracksMixedEvent, minNTracksMixedEvent, minNEventsMixedEvent,
                           nCentBinsMixedEvent,
                           trigEvent, mixEvent,
-                          CentEst, nCentBins,
-                          trackEta,
                           lessSparseAxes,
                           widerTrackBin,
                           doEffCorrSW,
