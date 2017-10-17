@@ -163,6 +163,8 @@ fM02(0),
 fEtaPhiClusVsM02(0),
 fEtaPhiClusVsEtIsoClus(0),
 fEtaPhiClusVsPtIsoTrack(0),
+fEtaPhiClusVsPtUETrackCside(0),
+fEtaPhiClusVsPtUETrackAside(0),
 fDeltaETAClusTrack(0),
 fDeltaPHIClusTrack(0),
 fDeltaETAClusTrackMatch(0),
@@ -356,6 +358,8 @@ fM02(0),
 fEtaPhiClusVsM02(0),
 fEtaPhiClusVsEtIsoClus(0),
 fEtaPhiClusVsPtIsoTrack(0),
+fEtaPhiClusVsPtUETrackCside(0),
+fEtaPhiClusVsPtUETrackAside(0),
 fDeltaETAClusTrack(0),
 fDeltaPHIClusTrack(0),
 fDeltaETAClusTrackMatch(0),
@@ -677,6 +681,14 @@ void AliAnalysisTaskEMCALPhotonIsolation::UserCreateOutputObjects(){
 	fEtaPhiClusVsPtIsoTrack = new TH3F ("hEtaVsPhiVsPtIsoTrack", "#eta vs. #varphi vs. #Sigma #it{p}_{T}^{track, cone} for clusters with 14 < #it{E}_{T} < 16 GeV", netabins, etamin, etamax, nphibins, phimin, phimax, 60, 0., 30.);
         fEtaPhiClusVsPtIsoTrack->Sumw2();
 	fOutput->Add(fEtaPhiClusVsPtIsoTrack);
+
+	fEtaPhiClusVsPtUETrackCside = new TH3F ("hEtaVsPhiVsPtIsoTrack_Cside", "#eta vs. #varphi vs. #Sigma #it{p}_{T}^{track, UE} (tracks in C side) for clusters with 14 < #it{E}_{T} < 16 GeV", netabins, etamin, etamax, nphibins, phimin, phimax, 60, 0., 30.);
+        fEtaPhiClusVsPtUETrackCside->Sumw2();
+	fOutput->Add(fEtaPhiClusVsPtUETrackCside);
+
+	fEtaPhiClusVsPtUETrackAside = new TH3F ("hEtaVsPhiVsPtIsoTrack_Aside", "#eta vs. #varphi vs. #Sigma #it{p}_{T}^{track, UE} (tracks in A side) for clusters with 14 < #it{E}_{T} < 16 GeV", netabins, etamin, etamax, nphibins, phimin, phimax, 60, 0., 30.);
+        fEtaPhiClusVsPtUETrackAside->Sumw2();
+	fOutput->Add(fEtaPhiClusVsPtUETrackAside);
 
         fEtIsoClust = new TH2D("hEtIsoClus_NC","#Sigma #it{p}_{T}^{iso cone} in iso cone distribution for Neutral Clusters with EMCal Clusters",200,0.,100.,200,0.,100.);
         fEtIsoClust->SetYTitle("#Sigma #it{p}_{T}^{iso cone} (GeV/c)");
@@ -2232,7 +2244,7 @@ void AliAnalysisTaskEMCALPhotonIsolation::EtIsoClusEtaBand(TLorentzVector c, Dou
 
     // Underlying events study with clusters in eta band
 
-  Float_t sumEnergyEtaBandClus = 0., sumEnergyConeClus = 0., sumpTConeCharged = 0., sumpTEtaBandTracks = 0.;
+  Float_t sumEnergyEtaBandClus = 0., sumEnergyConeClus = 0., sumpTConeCharged = 0., sumpTEtaBandTracks = 0., sumpTEtaBandTracks_Cside = 0., sumpTEtaBandTracks_Aside = 0.;
   Double_t clustTOF = 0., phiClust = 0., etaClust = 0., radius = 0.;
   Double_t phiMin = 0., phiMax = 0., etaMin = 0., etaMax = 0.;
   Double_t isoConeArea = 0.; // Cluster (eta, phi)-dependent cone area
@@ -2371,8 +2383,14 @@ void AliAnalysisTaskEMCALPhotonIsolation::EtIsoClusEtaBand(TLorentzVector c, Dou
     if((phiTrack < phiMax) && (phiTrack > phiMin) && (etaTrack < etaMax) && (etaTrack > etaMin)){
       radius = TMath::Sqrt(TMath::Power(phiTrack - c.Phi(),2)+TMath::Power(etaTrack - c.Eta(),2)); // Define the radius between the leading cluster and the considered track
       if(radius > fIsoConeRadius){                                                                 // The track is outside the isolation cone -> add the track pT to pT_UE
-	if(TMath::Abs(phiTrack - c.Phi()) < fIsoConeRadius)
+	if(TMath::Abs(phiTrack - c.Phi()) < fIsoConeRadius){
 	  sumpTEtaBandTracks += eTrack->Pt();
+
+	  if(fWho == 2 && etaTrack < 0.)
+	    sumpTEtaBandTracks_Cside += eTrack->Pt();
+	  if(fWho == 2 && etaTrack > 0.)
+	    sumpTEtaBandTracks_Aside += eTrack->Pt();
+	}
       }
       else{                                                                                             // The track is inside the isolation cone -> add the track pT to pT_iso
 	sumpTConeCharged += eTrack->Pt();
@@ -2399,6 +2417,9 @@ void AliAnalysisTaskEMCALPhotonIsolation::EtIsoClusEtaBand(TLorentzVector c, Dou
   if(c.Pt()>14. && c.Pt()<16. && fWho == 2){
     fEtaPhiClusVsEtIsoClus->Fill(c.Eta(),c.Phi(),sumEnergyConeClus);
     fEtaPhiClusVsPtIsoTrack->Fill(c.Eta(),c.Phi(),sumpTConeCharged);
+
+    fEtaPhiClusVsPtUETrackCside->Fill(c.Eta(),c.Phi(),sumpTEtaBandTracks_Cside);
+    fEtaPhiClusVsPtUETrackAside->Fill(c.Eta(),c.Phi(),sumpTEtaBandTracks_Aside);
   }
 
   // Set smearing for MC
