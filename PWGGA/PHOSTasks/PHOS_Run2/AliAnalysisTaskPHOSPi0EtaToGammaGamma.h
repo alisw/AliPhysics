@@ -126,7 +126,6 @@ class AliAnalysisTaskPHOSPi0EtaToGammaGamma : public AliAnalysisTaskSE {
 
     TF1 *GetAdditionalPi0PtWeightFunction(Float_t centrality){
       if(fCentArrayPi0){
-        if(fCollisionSystem==0) centrality -= 0.5;//for pp, in case that centrality is defind by multiplicity 
         Int_t lastBinUpperIndex = fCentArrayPi0->GetSize()-1;
         Int_t index = TMath::BinarySearch<Double_t>( lastBinUpperIndex, fCentArrayPi0->GetArray(), centrality);
         return fAdditionalPi0PtWeight[index];
@@ -137,7 +136,6 @@ class AliAnalysisTaskPHOSPi0EtaToGammaGamma : public AliAnalysisTaskSE {
 
     TF1 *GetAdditionalK0SPtWeightFunction(Float_t centrality){
       if(fCentArrayK0S){
-        if(fCollisionSystem==0) centrality -= 0.5;//for pp, in case that centrality is defind by multiplicity 
         Int_t lastBinUpperIndex = fCentArrayK0S->GetSize()-1;
         Int_t index = TMath::BinarySearch<Double_t>( lastBinUpperIndex, fCentArrayK0S->GetArray(), centrality);
         return fAdditionalK0SPtWeight[index];
@@ -172,7 +170,7 @@ class AliAnalysisTaskPHOSPi0EtaToGammaGamma : public AliAnalysisTaskSE {
     AliESDtrackCuts *fESDtrackCutsGlobal;//good global track
     AliESDtrackCuts *fESDtrackCutsGlobalConstrained;//global track but constrained to IP because of SPD dead area
     TF1 *fAdditionalPi0PtWeight[10];//weight function for pT distribution
-    TF1 *fAdditionalK0SPtWeight[10];//weight function for pT distribution
+    TF1 *fAdditionalK0SPtWeight[10];//weight function for pT distribution. note that this weight is aiming to reproduce K/pi ratio.
     TArrayD *fCentArrayPi0;
     TArrayD *fCentArrayK0S;
 
@@ -187,7 +185,7 @@ class AliAnalysisTaskPHOSPi0EtaToGammaGamma : public AliAnalysisTaskSE {
     AliPHOSGeometry *fPHOSGeo;
     TList *fPHOSEvents[10][12];
     TClonesArray *fPHOSClusterArray;
-    TString fEstimator;
+    TString fEstimator;//V0[M|A|C], ZN[A|C], CL[0|1], HybridTrack, SPDTracklet
     AliMultSelection *fMultSelection;
     Float_t fCentralityMain;
     Float_t fCentralityMin;
@@ -218,7 +216,7 @@ class AliAnalysisTaskPHOSPi0EtaToGammaGamma : public AliAnalysisTaskSE {
     AliAnalysisTaskPHOSPi0EtaToGammaGamma(const AliAnalysisTaskPHOSPi0EtaToGammaGamma&);
     AliAnalysisTaskPHOSPi0EtaToGammaGamma& operator=(const AliAnalysisTaskPHOSPi0EtaToGammaGamma&);
 
-    ClassDef(AliAnalysisTaskPHOSPi0EtaToGammaGamma, 27);
+    ClassDef(AliAnalysisTaskPHOSPi0EtaToGammaGamma, 28);
 };
 
 #endif

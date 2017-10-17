@@ -269,16 +269,7 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::UserCreateOutputObjects()
   fOutputContainer->Add(new TH1F("hVertexZ","VertexZ",100,-50.,50.));
   fOutputContainer->Add(new TH1F("hVertexZSelectEvent","VertexZ SelectEvent",100,-50.,50.));
 
-  fOutputContainer->Add(new TH2F("hVertexXY","VertexXY",100,-0.5,0.5,100,-0.5,0.5));
-  fOutputContainer->Add(new TH2F("hVertexXYSelectEvent","VertexXY SelectEvent",100,-0.5,0.5,100,-0.5,0.5));
-
-  fOutputContainer->Add(new TH2F("hCentralityV0MvsNContibutor","Centrality V0M vs. Ncontributor",100,0.,100,101,-0.5,100.5));
-  fOutputContainer->Add(new TH2F("hCentralityCL0vsNContibutor","Centrality CL0 vs. Ncontributor",100,0.,100,101,-0.5,100.5));
-  fOutputContainer->Add(new TH2F("hCentralityCL1vsNContibutor","Centrality CL1 vs. Ncontributor",100,0.,100,101,-0.5,100.5));
-  fOutputContainer->Add(new TH2F("hCentralityV0AvsNContibutor","Centrality V0A vs. Ncontributor",100,0.,100,101,-0.5,100.5));
-  fOutputContainer->Add(new TH2F("hCentralityV0CvsNContibutor","Centrality V0C vs. Ncontributor",100,0.,100,101,-0.5,100.5));
-  fOutputContainer->Add(new TH2F("hCentralityZNAvsNContibutor","Centrality ZNA vs. Ncontributor",100,0.,100,101,-0.5,100.5));
-  fOutputContainer->Add(new TH2F("hCentralityZNCvsNContibutor","Centrality ZNC vs. Ncontributor",100,0.,100,101,-0.5,100.5));
+  fOutputContainer->Add(new TH2F(Form("hCentrality%svsNContributor",fEstimator.Data()),Form("Centrality %s vs. Ncontributor",fEstimator.Data()),100,0.,100,101,-0.5,100.5));
 
   fOutputContainer->Add(new TH2F("hCentralityV0MvsCL0","Centrality V0M vs. CL0",100,0.,100,100,0.,100.));
   fOutputContainer->Add(new TH2F("hCentralityV0MvsCL1","Centrality V0M vs. CL1",100,0.,100,100,0.,100.));
@@ -308,6 +299,7 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::UserCreateOutputObjects()
   fOutputContainer->Add(new TH2F(Form("hCentrality%svsPHOSClusterMultiplicity"   ,fEstimator.Data()),Form("Centrality %s vs. Cluster Multiplicity;centrality (%%);Ncluster"                  ,fEstimator.Data()),100,0,100,201,-0.5,200.5));
   fOutputContainer->Add(new TH2F(Form("hCentrality%svsPHOSClusterMultiplicityTOF",fEstimator.Data()),Form("Centrality %s vs. Cluster Multiplicity with TOF cut;centrality (%%);Ncluster"     ,fEstimator.Data()),100,0,100,201,-0.5,200.5));
 
+  fOutputContainer->Add(new TH2F(Form("hCentrality%svsSPDTracklet",fEstimator.Data()),Form("Centrality %s vs. SPD tracklet",fEstimator.Data()),100,0,100,5000,0,5000));
   fOutputContainer->Add(new TH2F(Form("hCentrality%svsTrackMultiplicity",fEstimator.Data()),Form("Centrality %s vs. track Multiplicity",fEstimator.Data()),100,0,100,5000,0,5000));
   fOutputContainer->Add(new TH2F("hPHOSClusterMultiplicityvsTrackMultiplicity"   ,"cluster multiplicity vs. track multiplicity"         ,500,0,5000,201,-0.5,200.5));
   fOutputContainer->Add(new TH2F("hPHOSClusterMultiplicityTOFvsTrackMultiplicity","cluster multiplicity with TOF vs. track multiplicity",500,0,5000,201,-0.5,200.5));
@@ -729,7 +721,6 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::UserExec(Option_t *option)
   fVertex[1] = vVertex->GetY();
   fVertex[2] = vVertex->GetZ();
   FillHistogramTH1(fOutputContainer,"hVertexZ" ,fVertex[2]);
-  FillHistogramTH2(fOutputContainer,"hVertexXY",fVertex[0],fVertex[1]);
   fZvtx = (Int_t)((fVertex[2]+10.)/2.);//it should be 0-9.
   if(fZvtx < 0) fZvtx = 0;//protection to avoid fZvtx = -1.
   if(fZvtx > 9) fZvtx = 9;//protection to avoid fZvtx = 10.
@@ -773,8 +764,10 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::UserExec(Option_t *option)
     if(!(fJJMCHandler->ComparePtHardWithSingleParticle(fEvent))) return;
   }
 
-
   Int_t Ncontributor  = vVertex->GetNContributors();
+
+  //centrality estimation
+
   Float_t fCentralityV0M = -1.;
   Float_t fCentralityCL0 = -1.;
   Float_t fCentralityCL1 = -1.;
@@ -783,12 +776,8 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::UserExec(Option_t *option)
   Float_t fCentralityZNA = -1.;
   Float_t fCentralityZNC = -1.;
 
-  if(fCollisionSystem==0){
-    //not centrality, but track multiplicity
-    //track QA to extrack number of hybrid track for centrality binning
+  if(fEstimator.Contains("V0") || fEstimator.Contains("ZN") || fEstimator.Contains("CL")){
 
-  }
-  else if(fCollisionSystem==1){//for PbPb
     //Get Centrality
     fMultSelection = (AliMultSelection*)fEvent->FindListObject("MultSelection");
     if(!fMultSelection){
@@ -797,62 +786,62 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::UserExec(Option_t *option)
       return;
     }
     else{
-      fCentralityV0M = fMultSelection->GetMultiplicityPercentile("V0M");
-      fCentralityCL0 = fMultSelection->GetMultiplicityPercentile("CL0");
-      fCentralityCL1 = fMultSelection->GetMultiplicityPercentile("CL1");
-      fCentralityV0A = fMultSelection->GetMultiplicityPercentile("V0A");
-      fCentralityV0C = fMultSelection->GetMultiplicityPercentile("V0C");
-      fCentralityZNA = fMultSelection->GetMultiplicityPercentile("ZNA");
-      fCentralityZNC = fMultSelection->GetMultiplicityPercentile("ZNC");
+      fCentralityV0M  = fMultSelection->GetMultiplicityPercentile("V0M");
+      fCentralityCL0  = fMultSelection->GetMultiplicityPercentile("CL0");
+      fCentralityCL1  = fMultSelection->GetMultiplicityPercentile("CL1");
+      fCentralityV0A  = fMultSelection->GetMultiplicityPercentile("V0A");
+      fCentralityV0C  = fMultSelection->GetMultiplicityPercentile("V0C");
+      fCentralityZNA  = fMultSelection->GetMultiplicityPercentile("ZNA");
+      fCentralityZNC  = fMultSelection->GetMultiplicityPercentile("ZNC");
       fCentralityMain = fMultSelection->GetMultiplicityPercentile(fEstimator);
     }
-
-
-    if(fCentralityMain < fCentralityMin || fCentralityMax < fCentralityMain){
-      AliInfo(Form("Reject this event because centrality %s %f %% is out of the configuration of this task.", fEstimator.Data(),fCentralityMain));
-      return;
-    }
-
 
   }
-  else if(fCollisionSystem==2){//for pPb,Pbp to be implemented
-    //Get Centrality
-    fMultSelection = (AliMultSelection*)fEvent->FindListObject("MultSelection");
-    if(!fMultSelection){
-      //If you get this warning (and fCentralityV0M 300) please check that the AliMultSelectionTask actually ran (before your task)
-      AliWarning("AliMultSelection object not found!");
-      return;
-    }
-    else{
-      fCentralityV0M = fMultSelection->GetMultiplicityPercentile("V0M");
-      fCentralityCL0 = fMultSelection->GetMultiplicityPercentile("CL0");
-      fCentralityCL1 = fMultSelection->GetMultiplicityPercentile("CL1");
-      fCentralityV0A = fMultSelection->GetMultiplicityPercentile("V0A");
-      fCentralityV0C = fMultSelection->GetMultiplicityPercentile("V0C");
-      fCentralityZNA = fMultSelection->GetMultiplicityPercentile("ZNA");
-      fCentralityZNC = fMultSelection->GetMultiplicityPercentile("ZNC");
-      fCentralityMain = fMultSelection->GetMultiplicityPercentile(fEstimator);
-    }
+  else if(fEstimator.Contains("HybridTrack")){
+    //hybrid track multiplicity 
+    //done manually in this task.
+    Int_t NHybrid = 0; 
+    const Int_t trackMult = fEvent->GetNumberOfTracks();
+    if(fESDEvent){
+      for(Int_t itrack=0;itrack<trackMult;itrack++){
+        AliESDtrack *esdtrack = (AliESDtrack*)fEvent->GetTrack(itrack);
+        if(TMath::Abs(esdtrack->Eta()) > 0.8) continue;
 
-    if(fCentralityMain < fCentralityMin || fCentralityMax < fCentralityMain){
-      AliInfo(Form("Reject this event because centrality %s %f %% is out of the configuration of this task.", fEstimator.Data(),fCentralityMain));
-      return;
-    }
+        if(fESDtrackCutsGlobal           ->AcceptTrack(esdtrack)//select global track
+        || fESDtrackCutsGlobalConstrained->AcceptTrack(esdtrack)){//select complementary track
+          NHybrid++;
+        }
 
+      }//end of track loop
+    }//end of ESD
+    else if(fAODEvent){
+      for(Int_t itrack=0;itrack<trackMult;itrack++){
+        AliAODTrack *aodtrack = (AliAODTrack*)fEvent->GetTrack(itrack);
+        if(TMath::Abs(aodtrack->Eta()) > 0.8) continue;
 
+        if(aodtrack->IsHybridGlobalConstrainedGlobal()){//hybrid track
+          NHybrid++;
+        }
+
+      }//end of track loop
+    }//end of AOD
+    fCentralityMain = (Float_t)NHybrid;
+  }
+  else if(fEstimator.Contains("SPDTracklet")){
+    //hybrid track multiplicity 
+    fCentralityMain = (Float_t)(fEvent->GetMultiplicity()->GetNumberOfTracklets());
   }
   else{
-    AliInfo("collision system shuold be 0-pp , 1-PbPb, 2-pPb/Pbp.");
+    AliInfo(Form("%s is not supported. return",fEstimator.Data()));
     return;
   }
 
-  FillHistogramTH2(fOutputContainer,"hCentralityV0MvsNContibutor",fCentralityV0M,Ncontributor);
-  FillHistogramTH2(fOutputContainer,"hCentralityCL0vsNContibutor",fCentralityCL0,Ncontributor);
-  FillHistogramTH2(fOutputContainer,"hCentralityCL1vsNContibutor",fCentralityCL1,Ncontributor);
-  FillHistogramTH2(fOutputContainer,"hCentralityV0AvsNContibutor",fCentralityV0A,Ncontributor);
-  FillHistogramTH2(fOutputContainer,"hCentralityV0CvsNContibutor",fCentralityV0C,Ncontributor);
-  FillHistogramTH2(fOutputContainer,"hCentralityZNAvsNContibutor",fCentralityZNA,Ncontributor);
-  FillHistogramTH2(fOutputContainer,"hCentralityZNCvsNContibutor",fCentralityZNC,Ncontributor);
+  if(fCentralityMain < fCentralityMin || fCentralityMax < fCentralityMain){
+    AliInfo(Form("Reject this event because centrality %s %f %% is out of the configuration of this task.", fEstimator.Data(),fCentralityMain));
+    return;
+  }
+
+  FillHistogramTH2(fOutputContainer,Form("hCentrality%svsNContributor",fEstimator.Data()),fCentralityMain,Ncontributor);
 
   UInt_t fSelectMask = fInputHandler->IsEventSelected();
   Bool_t isINT7selected = fSelectMask & AliVEvent::kINT7;
@@ -906,7 +895,6 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::UserExec(Option_t *option)
   FillHistogramTH2(fOutputContainer,"hCentralityZNAvsZNC",fCentralityZNA,fCentralityZNC);
 
   FillHistogramTH1(fOutputContainer,"hVertexZSelectEvent" ,fVertex[2]);
-  FillHistogramTH2(fOutputContainer,"hVertexXYSelectEvent",fVertex[0],fVertex[1]);
 
   FillHistogramTH1(fOutputContainer,"hEventSummary",2);//selected event
 
@@ -973,16 +961,11 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::UserExec(Option_t *option)
 
   fPIDResponse = fInputHandler->GetPIDResponse();
   if(!fPIDResponse){
-    AliWarning("fPIDResponse does not exist! This is not crucial in photon analysis.");
+    AliWarning("fPIDResponse does not exist! This is not crucial in photon analysis in calorimeters.");
   }
 
   //track QA
   TrackQA();
-  if(fCollisionSystem==0){
-    //not centrality, but track multiplicity
-    //track QA to extrack number of hybrid track for centrality binning
-    AliInfo(Form("This is pp analysis. Nybrid = %d , Zvtx = %f cm, fZvtx = %d.",fNHybridTrack,fVertex[2],fZvtx));
-  }
 
   if(fIsMC) ProcessMC();
 
@@ -993,7 +976,7 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::UserExec(Option_t *option)
       if(!fPHOSClusterCuts->AcceptPhoton(ph)) continue;
       multPHOSClustAll++;
     }
-    FillHistogramTH2(fOutputContainer,Form("hCentrality%svsPHOSClusterMultiplicityMC",fEstimator.Data()),fCentralityMain  ,multPHOSClustAll);
+    FillHistogramTH2(fOutputContainer,Form("hCentrality%svsPHOSClusterMultiplicityMC",fEstimator.Data()),fCentralityMain,multPHOSClustAll);
   }
 
   if(fIsMC && fIsJJMC){
@@ -1013,10 +996,8 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::UserExec(Option_t *option)
         AliCaloPhoton *ph = (AliCaloPhoton*)fPHOSClusterArray->At(i);
         Int_t primary = FindPrimaryMotherESD(ph->GetPrimary());
 
-        if(fIsJJMC){
-          if(fMCType.Contains("JJMC") && (primary < firstJetindex || lastJetindex < primary)) fPHOSClusterArray->Remove(ph);
-          if(fMCType.Contains("MBMC") && (primary < firstUEindex  || lastUEindex  < primary)) fPHOSClusterArray->Remove(ph);
-        }
+        if(fMCType.Contains("JJMC") && (primary < firstJetindex || lastJetindex < primary)) fPHOSClusterArray->Remove(ph);
+        if(fMCType.Contains("MBMC") && (primary < firstUEindex  || lastUEindex  < primary)) fPHOSClusterArray->Remove(ph);
 
       }
       fPHOSClusterArray->Compress();
@@ -1101,6 +1082,7 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::Terminate(Option_t *option)
 void AliAnalysisTaskPHOSPi0EtaToGammaGamma::TrackQA() 
 {
   const Int_t trackMult = fEvent->GetNumberOfTracks();
+  const Int_t Ntracklet = fEvent->GetMultiplicity()->GetNumberOfTracklets();
 
   Double_t pT=0, eta=0, phi=0, dEdx=0, p=0;
   Int_t NHybrid=0;
@@ -1183,6 +1165,7 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::TrackQA()
   FillHistogramTH1(fOutputContainer,"hComplementaryTrackMult",NComplementary);
 
   FillHistogramTH2(fOutputContainer,Form("hCentrality%svsTrackMultiplicity",fEstimator.Data()),fCentralityMain,NHybrid);
+  FillHistogramTH2(fOutputContainer,Form("hCentrality%svsSPDTracklet",fEstimator.Data()),fCentralityMain,Ntracklet);
   fNHybridTrack = NHybrid;
 
 }
@@ -2298,8 +2281,8 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::ProcessMC()
   TF1 *f1Pi0Weight = (TF1*)GetAdditionalPi0PtWeightFunction(fCentralityMain);
   TF1 *f1K0SWeight = (TF1*)GetAdditionalK0SPtWeightFunction(fCentralityMain);
 
-  Double_t TruePi0Pt = 1.;
-  Double_t TrueK0SPt = 0;
+  Double_t TruePi0Pt = 0.;
+  Double_t TrueK0SPt = 0.;
 
   Int_t genID = -1;
   Double_t pT=0, rapidity=0, phi=0;
@@ -2344,7 +2327,7 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::ProcessMC()
 
       if(pdg==111){//pi0
         parname = "Pi0";
-        if(IsFrom(i,TrueK0SPt,310)) weight = f1K0SWeight->Eval(TrueK0SPt);
+        if(IsFrom(i,TrueK0SPt,310)) weight = f1K0SWeight->Eval(TrueK0SPt) * f1Pi0Weight->Eval(TrueK0SPt);
         else                        weight = f1Pi0Weight->Eval(pT);
       }
       else if(pdg==221){//eta
@@ -2353,28 +2336,34 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::ProcessMC()
       else if(pdg==22){//gamma
         parname = "Gamma";
         if(IsFrom(i,TruePi0Pt,111)){
-          if(IsFrom(i,TrueK0SPt,310)) weight = f1K0SWeight->Eval(TrueK0SPt);
+          if(IsFrom(i,TrueK0SPt,310)) weight = f1K0SWeight->Eval(TrueK0SPt) * f1Pi0Weight->Eval(TrueK0SPt);
           else                        weight = f1Pi0Weight->Eval(TruePi0Pt);
         }
       }
       else if(pdg==211 || pdg==-211){//pi+ or pi-
         //c x tau = 7.8m
         parname = "ChargedPion";
+        //weight = f1Pi0Weight->Eval(pT);
+        if(IsFrom(i,TrueK0SPt,310)) weight = f1K0SWeight->Eval(TrueK0SPt) * f1Pi0Weight->Eval(TrueK0SPt);
+        else                        weight = f1Pi0Weight->Eval(pT);
       }
       else if(pdg==321 || pdg==-321){//K+ or K-
         //c x tau = 3.7m
         parname = "ChargedKaon";
-        weight = f1K0SWeight->Eval(pT);
+        weight = f1K0SWeight->Eval(pT) * f1Pi0Weight->Eval(pT);
       }
       else if(pdg==310){//K0S
+        //c x tau = 2.7cm
         parname = "K0S";
-        weight = f1K0SWeight->Eval(pT);
+        weight = f1K0SWeight->Eval(pT) * f1Pi0Weight->Eval(pT);
       }
       else if(pdg==130){//K0L
+        //c x tau = 15.34m
         parname = "K0L";
-        weight = f1K0SWeight->Eval(pT);
+        weight = f1K0SWeight->Eval(pT) * f1Pi0Weight->Eval(pT);
       }
       else if(pdg==3122){//Lmabda0
+        //c x tau = 7.89cm
         parname = "Lambda0";
       }
       else if(pdg==3212){//Sigma0
@@ -2425,7 +2414,7 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::ProcessMC()
 
       if(pdg==111){//pi0
         parname = "Pi0";
-        if(IsFrom(i,TrueK0SPt,310)) weight = f1K0SWeight->Eval(TrueK0SPt);
+        if(IsFrom(i,TrueK0SPt,310)) weight = f1K0SWeight->Eval(TrueK0SPt) * f1Pi0Weight->Eval(TrueK0SPt);
         else                        weight = f1Pi0Weight->Eval(pT);
       }
       else if(pdg==221){//eta
@@ -2434,25 +2423,28 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::ProcessMC()
       else if(pdg==22){//gamma
         parname = "Gamma";
         if(IsFrom(i,TruePi0Pt,111)){
-          if(IsFrom(i,TrueK0SPt,310)) weight = f1K0SWeight->Eval(TrueK0SPt);
+          if(IsFrom(i,TrueK0SPt,310)) weight = f1K0SWeight->Eval(TrueK0SPt) * f1Pi0Weight->Eval(TrueK0SPt);
           else                        weight = f1Pi0Weight->Eval(TruePi0Pt);
         }
 
       }
       else if(pdg==211 || pdg==-211){//pi+ or pi-
         parname = "ChargedPion";
+        if(IsFrom(i,TrueK0SPt,310)) weight = f1K0SWeight->Eval(TrueK0SPt) * f1Pi0Weight->Eval(TrueK0SPt);
+        else                        weight = f1Pi0Weight->Eval(pT);
+
       }
       else if(pdg==321 || pdg==-321){//K+ or K-
         parname = "ChargedKaon";
-        weight = f1K0SWeight->Eval(pT);
+        weight = f1K0SWeight->Eval(pT) * f1Pi0Weight->Eval(pT);
       }
       else if(pdg==310){//K0S
         parname = "K0S";
-        weight = f1K0SWeight->Eval(pT);
+        weight = f1K0SWeight->Eval(pT) * f1Pi0Weight->Eval(pT);
       }
       else if(pdg==130){//K0L
         parname = "K0L";
-        weight = f1K0SWeight->Eval(pT);
+        weight = f1K0SWeight->Eval(pT) * f1Pi0Weight->Eval(pT);
       }
       else if(pdg==3122){//Lmabda0
         parname = "Lambda0";
@@ -2829,7 +2821,7 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::SetMCWeight()
   TF1 *f1Pi0Weight = (TF1*)GetAdditionalPi0PtWeightFunction(fCentralityMain);
   TF1 *f1K0SWeight = (TF1*)GetAdditionalK0SPtWeightFunction(fCentralityMain);
   Int_t primary = -1;
-  Double_t TruePi0Pt = 1.;
+  Double_t TruePi0Pt = 0.;
   Double_t TrueK0SPt = 0;
   Double_t TrueL0Pt = 0;
 
@@ -2840,7 +2832,7 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::SetMCWeight()
 
     if(IsFrom(primary,TruePi0Pt,111)){//pi0
       //for feed down correction from K0S->pi0 + pi0
-      if(IsFrom(primary,TrueK0SPt,310)) weight *= f1K0SWeight->Eval(TrueK0SPt);
+      if(IsFrom(primary,TrueK0SPt,310)) weight *= f1K0SWeight->Eval(TrueK0SPt) * f1Pi0Weight->Eval(TrueK0SPt);
       else                              weight *= f1Pi0Weight->Eval(TruePi0Pt);
     }
 
