@@ -54,14 +54,6 @@ public:
         //Highly experimental, use with care!
         fkUseOnTheFlyV0Cascading = lUseOnTheFlyV0Cascading;
     }
-    void SetDoImprovedCascadeVertexFinding( Bool_t lOpt = kTRUE ){
-        //Highly experimental, use with care!
-        fkDoImprovedCascadeVertexFinding = lOpt;
-    }
-    void SetDoImprovedCascadePosition( Bool_t lOpt = kTRUE ){
-        //Highly experimental, use with care!
-        fkDoImprovedCascadePosition = lOpt;
-    }
     void SetDoImprovedDCAV0DauPropagation( Bool_t lOpt = kTRUE ){
         //Highly experimental, use with care!
         fkDoImprovedDCAV0DauPropagation = lOpt;
@@ -74,14 +66,18 @@ public:
         //Highly experimental, use with care!
         fkDoPureGeometricMinimization = lOpt;
     }
-    void SetIfImprovedPerformInitialLinearPropag( Bool_t lOpt = kTRUE ){
-        //Highly experimental, use with care!
-        fkIfImprovedPerformInitialLinearPropag = lOpt;
+    void SetDoV0Refit ( Bool_t lDoV0Refit = kTRUE) {
+        fkDoV0Refit = lDoV0Refit;
     }
-    void SetIfImprovedExtraPrecisionFactor( Double_t lOpt ){
-        //Highly experimental, use with care!
-        fkIfImprovedExtraPrecisionFactor = lOpt;
+    void SetDoCascadeRefit ( Bool_t lDoCascadeRefit = kTRUE) {
+        fkDoCascadeRefit = lDoCascadeRefit;
+        //WARNING: Requires V0 refit for covariance matrix
+        if( lDoCascadeRefit && !fkDoV0Refit ) fkDoV0Refit = kTRUE;
     }
+    void SetMaxIterations (Long_t lMaxIter = 100){
+        fMaxIterationsWhenMinimizing = lMaxIter;
+    }
+    
     
 //---------------------------------------------------------------------------------------
     //Task Configuration: trigger selection
@@ -99,9 +95,7 @@ public:
         //         The user has to take care... 
         fkUseUncheckedChargeCascadeVertexer = lOpt;
     }
-    void SetDoV0Refit ( Bool_t lDoV0Refit = kTRUE) {
-        fkDoV0Refit = lDoV0Refit;
-    }
+
     void SetExtraCleanup ( Bool_t lExtraCleanup = kTRUE) {
         fkExtraCleanup = lExtraCleanup;
     }
@@ -216,20 +210,19 @@ private:
     Bool_t fkPreselectDedx;
     Bool_t fkPreselectDedxLambda;
     Bool_t fkUseOnTheFlyV0Cascading;
-    Bool_t fkDoImprovedCascadeVertexFinding;
-    Bool_t fkDoImprovedCascadePosition;
     Bool_t fkDoImprovedDCAV0DauPropagation;
     Bool_t fkDoImprovedDCACascDauPropagation;
     Bool_t fkDoPureGeometricMinimization;
-    Bool_t fkIfImprovedPerformInitialLinearPropag;
-    Double_t fkIfImprovedExtraPrecisionFactor;
+    Bool_t fkDoV0Refit;
+    Bool_t fkDoCascadeRefit; //WARNING: needs DoV0Refit!
+    Long_t fMaxIterationsWhenMinimizing; 
+    
     Bool_t fkDoExtraEvSels; //if true, rely on AliEventCuts
 
     //Objects Controlling Task Behaviour: has to be streamed!
     Bool_t    fkRunV0Vertexer;           // if true, re-run V0 vertexer
     Bool_t    fkRunCascadeVertexer;      // if true, re-run cascade vertexer
     Bool_t    fkUseUncheckedChargeCascadeVertexer; //if true, use cascade vertexer that does not check bachelor charge
-    Bool_t    fkDoV0Refit;              // if true, will invoke AliESDv0::Refit in the vertexing procedure
     Bool_t    fkExtraCleanup;           //if true, perform pre-rejection of useless candidates before going through configs
 
     AliVEvent::EOfflineTriggerTypes fTrigType; // trigger type
