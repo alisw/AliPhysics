@@ -2099,10 +2099,10 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::EstimateTriggerEfficiency()
 
   Double_t position[3] = {};
   Double_t energy=0;
+
   Int_t module_tag=0,cellx_tag=0,cellz_tag=0,tru_tag=0;
   Int_t module=0,cellx=0,cellz=0,tru=0;
   Int_t relId[4]={};
-
   Int_t truch_tag = -1, chX_tag=-1, chZ_tag=-1;
   Int_t truch = -1, chX=-1, chZ=-1;
 
@@ -2200,14 +2200,14 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::EstimateTriggerEfficiency()
     AliCaloPhoton *ph1 = (AliCaloPhoton*)fPHOSClusterArray->At(i1);
     if(!fPHOSClusterCuts->AcceptPhoton(ph1)) continue;
     if(!ph1->IsTrig()) continue;
-    if(!ph1->IsTOFOK()) continue;
+    //if(!ph1->IsTOFOK()) continue;
 
     for(Int_t ev=0;ev<prevPHOS->GetSize();ev++){
       TClonesArray *mixPHOS = static_cast<TClonesArray*>(prevPHOS->At(ev));
 
       for(Int_t i2=0;i2<mixPHOS->GetEntriesFast();i2++){
         AliCaloPhoton *ph2 = (AliCaloPhoton*)mixPHOS->At(i2);
-        if(!ph2->IsTOFOK()) continue;
+        //if(!ph2->IsTOFOK()) continue;
 
         p12 = *ph1 + *ph2;
         m12 = p12.M();
