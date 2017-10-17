@@ -106,7 +106,7 @@ AliAnalysisTaskPHOSPi0EtaToGammaGamma* AddTaskPHOSPi0EtaToGammaGamma_pp_5TeV(
   task->SetHarmonics(harmonics);
 
   //centrality setting
-  task->SetCentralityEstimator("V0M");
+  task->SetCentralityEstimator("HybridTrack");
 
   //setting esd track selection for hybrid track
   gROOT->LoadMacro("$ALICE_PHYSICS/PWGJE/macros/CreateTrackCutsPWGJE.C");
@@ -125,13 +125,43 @@ AliAnalysisTaskPHOSPi0EtaToGammaGamma* AddTaskPHOSPi0EtaToGammaGamma_pp_5TeV(
   }
 
   if(isMC){
-    //TF1 *f1Pi0Weight = new TF1("f1Pi0Weight","1.",0,100);
-    //task->SetAdditionalPi0PtWeightFunction(f1Pi0Weight);
+    //for pi0 pT weighting
+    const Int_t Ncen_Pi0 = 2;
+    const Double_t centrality_Pi0[Ncen_Pi0] = {0,9999};
+    TArrayD *centarray_Pi0 = new TArrayD(Ncen_Pi0,centrality_Pi0);
 
-    //TF1 *f1K0SWeight = new TF1("f1K0SWeight","[0] * (2/(1+exp(-[1]*x)) - 1) - ( 0 + [2]/(exp( -(x-[3]) / [4] ) + 1)  )",0,100);//tuned by charged K/pi ratio
-    //f1K0SWeight->SetParameters(1.37,4.98,0.156,2.79,0.238);
-    //task->SetAdditionalK0SPtWeightFunction(f1K0SWeight);
+    TObjArray *farray_Pi0 = new TObjArray(Ncen_Pi0-1);
+    TF1 *f1weightPi0[Ncen_Pi0-1];
 
+    if(MCtype.Contains("P8") || MCtype.Contains("Pythia8")){
+      printf("Pythi8 is selected.\n");
+      const Double_t p0[Ncen_Pi0-1] = {-0.58};
+      const Double_t p1[Ncen_Pi0-1] = { 0.76};
+      const Double_t p2[Ncen_Pi0-1] = { 1.11};
+
+      for(Int_t icen=0;icen<Ncen_Pi0-1;icen++){
+        f1weightPi0[icen] = new TF1(Form("f1weightPi0_%d",icen),"[2]*(1.+[0]/(1. + TMath::Power(x/[1],2)))",0,100);
+        f1weightPi0[icen]->SetParameters(p0[icen],p1[icen],p2[icen]);
+        farray_Pi0->Add(f1weightPi0[icen]);
+      }
+      task->SetAdditionalPi0PtWeightFunction(centarray_Pi0,farray_Pi0);
+    }
+    else if(MCtype.Contains("P6") || MCtype.Contains("Pythia6")){
+      printf("Pythi6 is selected.\n");
+      const Double_t p0[Ncen_Pi0-1] = {0.22};
+      const Double_t p1[Ncen_Pi0-1] = { 2.2};
+      const Double_t p2[Ncen_Pi0-1] = { 1.2};
+      const Double_t p3[Ncen_Pi0-1] = { 0.8};
+
+      for(Int_t icen=0;icen<Ncen_Pi0-1;icen++){
+        f1weightPi0[icen] = new TF1(Form("f1weightPi0_%d",icen),"[0]*exp(-pow((x-[1]),2)/[2])+[3]",0,100);
+        f1weightPi0[icen]->SetParameters(p0[icen],p1[icen],p2[icen],p3[icen]);
+        farray_Pi0->Add(f1weightPi0[icen]);
+      }
+      task->SetAdditionalPi0PtWeightFunction(centarray_Pi0,farray_Pi0);
+    }
+
+    //for K/pi ratio
     const Int_t Ncen_K0S = 2;
     const Double_t centrality_K0S[Ncen_K0S] = {0,9999};
     TArrayD *centarray_K0S = new TArrayD(Ncen_K0S,centrality_K0S);
