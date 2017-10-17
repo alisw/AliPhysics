@@ -675,6 +675,7 @@ void MakeSlides ( TString period, TString pass, TString triggerList, TString aut
     trigList = triggerList.Tokenize(",");
 
     outFile.open(texFilename);
+    outFile << "% !TEX pdfSinglePage" << endl; // Useful for texshop
     outFile << "%TriggerList=" << triggerList.Data() << endl;
     MakePreamble(outFile);
     BeginSlides(period,pass,authors,outFile);
