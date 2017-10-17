@@ -3603,7 +3603,7 @@ TCanvas* cpu;
     if(h12->GetEntries()>0 && h12->GetBinContent(1)>0.) pdfFileNames+=" Frac_track_SA_trend.pdf";
 //    if(histoEvwSDD->GetEntries()>0 && histoEvwSDD->GetBinContent(1)>0.) pdfFileNames+=" NoFast_trend.pdf";
     if(histonEvents->GetEntries()>0 && histonEvents->GetBinContent(1)>0.) pdfFileNames+=" RunEvents_trend.pdf";
-    if(histoFracDead3->GetEntries()>0) pdfFileNames+=" SDDmodulesON_trend.pdf";
+    if(histoFracDead3->GetEntries()>0) pdfFileNames+=" SDDanodesON_trend.pdf";
     if(histodEdxLay5->GetEntries()>0) pdfFileNames+=" SDD_SSD_drift_charge_trend.pdf";
     if(histoFlagCR5->GetEntries()>0) pdfFileNames+=" SDDSSD_alarm_trend.pdf";
     if(histoFracBadn5->GetEntries()>0) pdfFileNames+=" SSD_BadStripsFrac_trend.pdf";
