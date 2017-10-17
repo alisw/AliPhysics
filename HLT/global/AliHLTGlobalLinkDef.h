@@ -1,5 +1,5 @@
 #if !defined(__CINT__) && !defined(__CLING__)
-# error Not for compilation
+#error Not for compilation
 #else 
 #pragma link off all globals;
 #pragma link off all classes;
