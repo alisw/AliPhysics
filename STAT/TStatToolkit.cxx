@@ -1644,8 +1644,8 @@ Int_t  TStatToolkit::SetStatusAlias(TTree * tree, const char * expr, const char 
   // dcaR resolution
   sTrendVars+="QA.TPC.dcarAP0,TPC.Anchor.dcarAP0,0.02,0.05,0.02;";     // dcarAP0;  warning 0.02cm; error 0.05 cm  (nominal ~ 0.2 cm)
 
-*/    
-void TStatToolkit::MakeAnchorAlias(TTree * tree, TString& sTrendVars, Int_t doCheck, Int_t verbose){  
+*/
+void TStatToolkit::MakeAnchorAlias(TTree * tree, TString& sTrendVars, Int_t doCheck, Int_t verbose){
   const char* aType[4]={"Warning","Outlier","PhysAcc"};
   TObjArray *aTrendVars  = sTrendVars.Tokenize(";");
   Int_t entries= aTrendVars->GetEntries();
@@ -1656,38 +1656,38 @@ void TStatToolkit::MakeAnchorAlias(TTree * tree, TString& sTrendVars, Int_t doCh
     TObjArray *descriptor=TString(aTrendVars->At(ientry)->GetName()).Tokenize(",");
     // check if valid sysntax
     if (descriptor->GetEntries()!=5){
-      ::Error("makeAnchorAlias"," Invalid status descriptor. %s has %d mebers instead of 5 (variable, deltaWarning,deltaError, PhysAcc) ",aTrendVars->At(ientry)->GetName(),descriptor->GetEntries());
+      ::Error("makeAnchorAlias"," Invalid status descriptor. %s has %d members instead of 5 (variable, deltaWarning,deltaError, PhysAcc) ",aTrendVars->At(ientry)->GetName(),descriptor->GetEntries());
       continue;
     }
     // check individual variables
     for (Int_t ivar=0; ivar<5; ivar++){
       variables[ivar]=descriptor->At(ivar)->GetName();
       if (doCheck&1>0){  // check input formulas in case specified
-	TTreeFormula *form=new TTreeFormula("dummy",descriptor->At(ivar)->GetName(),tree);
-	if (form->GetTree()==NULL){
-	  isOK=kFALSE;
-	  ::Error("makeAnchorAlias"," Invalid element %d,  %s in %s",ivar, descriptor->At(ivar)->GetName(),aTrendVars->At(ientry)->GetName());
-	  continue;
-	}      
+        TTreeFormula *form=new TTreeFormula("dummy",descriptor->At(ivar)->GetName(),tree);
+        if (form->GetTree()==NULL){
+          isOK=kFALSE;
+          ::Error("makeAnchorAlias"," Invalid element %d,  %s in %s",ivar, descriptor->At(ivar)->GetName(),aTrendVars->At(ientry)->GetName());
+          continue;
+        }
       }
     }
     if (!isOK) continue;
     for (Int_t itype=0; itype<3; itype++){
       TString aName=TString::Format("%s_%s",variables[1].Data(), aType[itype]);
-      TString aValue=TString::Format("abs(%s-%s)<%s",variables[0].Data(), variables[1].Data(),variables[2+itype].Data());
+      TString aValue=TString::Format("abs(%s-%s)>%s",variables[0].Data(), variables[1].Data(),variables[2+itype].Data());
       tree->SetAlias(aName.Data(),aValue.Data());
       if ((doCheck&2)>0){
-	TTreeFormula *form=new TTreeFormula("dummy",aName.Data(),tree);
-	if (form->GetTree()==NULL){
-	  isOK=kFALSE;
-	  ::Error("makeAnchorAlias","Alias not valid  \t%s\t%s", aName.Data(),aValue.Data());
-	}
+        TTreeFormula *form=new TTreeFormula("dummy",aName.Data(),tree);
+        if (form->GetTree()==NULL){
+          isOK=kFALSE;
+          ::Error("makeAnchorAlias","Alias not valid  \t%s\t%s", aName.Data(),aValue.Data());
+        }
       }
       if (verbose>0){
-	::Info("makeAnchorAlias","SetAlias\t%s\t%s", aName.Data(),aValue.Data());
-      }      
+        ::Info("makeAnchorAlias","SetAlias\t%s\t%s", aName.Data(),aValue.Data());
+      }
     }
-    
+
     delete descriptor;
   }
   delete aTrendVars;
