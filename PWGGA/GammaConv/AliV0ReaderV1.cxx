@@ -26,11 +26,11 @@
 //---------------------------------------------
 ////////////////////////////////////////////////
 
-// The AliAODConversionPhotons will return the Position (== ESDTrack->GetID())of the positive (negative) ESDTrack 
+// The AliAODConversionPhotons will return the Position (== ESDTrack->GetID())of the positive (negative) ESDTrack
 // in the Array of ESDTracks stored in the ESDEvent via GetTrackLabelPositive() (GetTrackLabelNagative()).
 // Since it is the Position in the Array it is always positive.
 // After the conversion ESD --> AOD each AOD track will give you the former Position in the ESDArray via the
-// Function AODTrack->GetID(). AODTracks are stored for different TrackParameter (e.g. HybridTracks, TPC only ...). No Standard 
+// Function AODTrack->GetID(). AODTracks are stored for different TrackParameter (e.g. HybridTracks, TPC only ...). No Standard
 // AODTracks (not copies of AliExternalTrackParam) will be stored with negative values of AODTrack->GetID() (Formula: (ESDTrack->GetID()+1)*-1)
 // This leads to the possibility of more than one AOD track with the same negative ID. For that reason all AOD tracks are additionally flaged.
 // In this analysis we should therefore only use AODTracks with positive values of AODTrack->GetID().
@@ -265,7 +265,7 @@ void AliV0ReaderV1::UserCreateOutputObjects()
 
   if(fCreateAOD){
     fPCMv0BitField = new TBits();
-    
+
     if (fEventCuts){
       fDeltaAODBranchName.Append("_");
       fDeltaAODBranchName.Append(fEventCuts->GetCutNumber());
@@ -324,7 +324,7 @@ void AliV0ReaderV1::UserCreateOutputObjects()
     fHistoPosTrackImpactParamYvsPt->SetYTitle("Y (cm)");
     fHistoPosTrackImpactParamYvsPt->SetXTitle("Pt (GeV)");
     fImpactParamHistograms->Add(fHistoPosTrackImpactParamYvsPt);
- 
+
     fHistoPosTrackImpactParamXvsPt = new TH2F("fHistoPosTrackImpactParamXvsPt","",100,0,10,30,-3,5);
     fHistoPosTrackImpactParamXvsPt->SetYTitle("X (cm)");
     fHistoPosTrackImpactParamXvsPt->SetXTitle("Pt (GeV)");
@@ -500,11 +500,11 @@ void AliV0ReaderV1::UserCreateOutputObjects()
 }
 //________________________________________________________________________
 Bool_t AliV0ReaderV1::Notify(){
-  
+
   // set file name to empty & reset check flag
   fCurrentFileName = "";
   fMCFileChecked   = kFALSE;
-  
+
   // obtain file name from analysis manager
   AliAnalysisManager *man=AliAnalysisManager::GetAnalysisManager();
   if(man) {
@@ -515,7 +515,7 @@ Bool_t AliV0ReaderV1::Notify(){
       fCurrentFileName = file->GetName();
     }
   }
-  
+
   // try to extract period name from file name if not given
   if (fPeriodName.CompareTo("") == 0){
     TObjArray *arr = fCurrentFileName.Tokenize("/");
@@ -537,29 +537,31 @@ Bool_t AliV0ReaderV1::Notify(){
         }
       }
     }
-    if (fPeriodName.CompareTo("") != 0 && fEventCuts->GetPeriodEnum() == AliConvEventCuts::kNoPeriod ){ 
+    if (fPeriodName.CompareTo("") != 0 && fEventCuts->GetPeriodEnum() == AliConvEventCuts::kNoPeriod ){
       fEventCuts->SetPeriodEnum (fPeriodName);
-    }  
+    }
   } else {
     if(fEventCuts->GetPeriodEnum() == AliConvEventCuts::kNoPeriod ){
       fEventCuts->SetPeriodEnum (fPeriodName);
-    }  
+    }
   }
   // set pt hard bin from file name
-  if (  fEventCuts->GetPeriodEnum() == AliConvEventCuts::kLHC15a3a  || fEventCuts->GetPeriodEnum() == AliConvEventCuts::kLHC15a3a_plus || 
+  if (  fEventCuts->GetPeriodEnum() == AliConvEventCuts::kLHC15a3a  || fEventCuts->GetPeriodEnum() == AliConvEventCuts::kLHC15a3a_plus ||
         fEventCuts->GetPeriodEnum() == AliConvEventCuts::kLHC15a3b  ||
-        fEventCuts->GetPeriodEnum() == AliConvEventCuts::kLHC15g1a  || fEventCuts->GetPeriodEnum() == AliConvEventCuts::kLHC15g1b || 
-        fEventCuts->GetPeriodEnum() == AliConvEventCuts::kLHC16c2  || fEventCuts->GetPeriodEnum() == AliConvEventCuts::kLHC16c2_plus  ||
-        fEventCuts->GetPeriodEnum() == AliConvEventCuts::kLHC16c3a  || fEventCuts->GetPeriodEnum() == AliConvEventCuts::kLHC16c3b || 
-        fEventCuts->GetPeriodEnum() == AliConvEventCuts::kLHC16c3c){
-    TObjArray *arr = fCurrentFileName.Tokenize("/");
-    fPtHardBin = -1;
-    for (Int_t i = 0; i < arr->GetEntriesFast();i++ ){
-      TObjString* testObjString = (TObjString*)arr->At(i);
-      if (testObjString->GetString().BeginsWith("LHC")){
-        TObjString* testObjString2 = (TObjString*)arr->At(i+1);
-        fPtHardBin = testObjString2->GetString().Atoi();
-        i = arr->GetEntriesFast();
+        fEventCuts->GetPeriodEnum() == AliConvEventCuts::kLHC15g1a  || fEventCuts->GetPeriodEnum() == AliConvEventCuts::kLHC15g1b ||
+        fEventCuts->GetPeriodEnum() == AliConvEventCuts::kLHC16c2   || fEventCuts->GetPeriodEnum() == AliConvEventCuts::kLHC16c2_plus  ||
+        fEventCuts->GetPeriodEnum() == AliConvEventCuts::kLHC16c3a  || fEventCuts->GetPeriodEnum() == AliConvEventCuts::kLHC16c3b ||
+        fEventCuts->GetPeriodEnum() == AliConvEventCuts::kLHC16c3c  ||
+        fEventCuts->GetPeriodEnum() == AliConvEventCuts::kLHC16P1JJ || fEventCuts->GetPeriodEnum() == AliConvEventCuts::kLHC16P1JJLow
+     ){
+        TObjArray *arr = fCurrentFileName.Tokenize("/");
+        fPtHardBin = -1;
+        for (Int_t i = 0; i < arr->GetEntriesFast();i++ ){
+          TObjString* testObjString = (TObjString*)arr->At(i);
+          if (testObjString->GetString().BeginsWith("LHC")){
+            TObjString* testObjString2 = (TObjString*)arr->At(i+1);
+            fPtHardBin = testObjString2->GetString().Atoi();
+            i = arr->GetEntriesFast();
       }
     }
   }
@@ -618,9 +620,9 @@ Bool_t AliV0ReaderV1::ProcessEvent(AliVEvent *inputEvent,AliMCEvent *mcEvent)
 
 
   // Count Primary Tracks Event
-  CountTracks();  
+  CountTracks();
 
-  //Count Tracks with TPCout flag 
+  //Count Tracks with TPCout flag
   CountTPCoutTracks();
 
 
@@ -629,9 +631,9 @@ Bool_t AliV0ReaderV1::ProcessEvent(AliVEvent *inputEvent,AliMCEvent *mcEvent)
     if (fEventCuts->GetEventQuality() == 2 && !fMCFileChecked ){
       cout << "ERROR with MC reading for: "<<  fCurrentFileName.Data() << endl;
       fMCFileChecked                  = kTRUE;
-    }  
+    }
     return kFALSE;
-  }  
+  }
   // Set Magnetic Field
   AliKFParticle::SetField(fInputEvent->GetMagneticField());
 
@@ -920,7 +922,7 @@ AliKFConversionPhoton *AliV0ReaderV1::ReconstructV0(AliESDv0 *fCurrentV0,Int_t c
     fCurrentMotherKF=NULL;
     return 0x0;
   }
-  
+
   // Apply Photon Cuts
   if(!fConversionCuts->PhotonCuts(fCurrentMotherKF,fInputEvent)){
     fConversionCuts->FillPhotonCutIndex(AliConversionPhotonCuts::kPhotonCuts);
@@ -956,7 +958,7 @@ Double_t AliV0ReaderV1::GetPsiPair(const AliESDv0* v0, const AliExternalTrackPar
     xyz[1]= convpos[1];
     xyz[2]= convpos[2];
   }
- 
+
 
   // Double_t pPlus[3]  = {pt.Px(),pt.Py(),pt.Pz()};
   // Double_t pMinus[3] = {nt.Px(),nt.Py(),nt.Pz()};
@@ -1333,11 +1335,11 @@ void AliV0ReaderV1::RelabelAODPhotonCandidates(AliAODConversionPhoton *PhotonCan
 }
 
 //************************************************************************
-// This function counts the number of primary tracks in the event, the 
+// This function counts the number of primary tracks in the event, the
 // implementation for ESD and AOD had to be different due to the different
-// filters which are already applied on AOD level the so-called filter 
-// bits, we tried to replicate the conditions in both but an exact match 
-// could not be reached. The cuts are similar to the ones used by the 
+// filters which are already applied on AOD level the so-called filter
+// bits, we tried to replicate the conditions in both but an exact match
+// could not be reached. The cuts are similar to the ones used by the
 // jet-group
 //************************************************************************
 //________________________________________________________________________
@@ -1373,7 +1375,7 @@ void AliV0ReaderV1::CountTracks(){
 	EsdTrackCuts = new AliESDtrackCuts();
 	// TPC; clusterCut = 1, cutAcceptanceEdges = kTRUE, removeDistortedRegions = kFALSE
 	EsdTrackCuts->AliESDtrackCuts::SetMinNCrossedRowsTPC(70);
-	EsdTrackCuts->AliESDtrackCuts::SetMinRatioCrossedRowsOverFindableClustersTPC(0.8); 
+	EsdTrackCuts->AliESDtrackCuts::SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);
 	EsdTrackCuts->SetCutGeoNcrNcl(2., 130., 1.5, 0.0, 0.0);  // only dead zone and not clusters per length
 	//EsdTrackCuts->AliESDtrackCuts::SetCutOutDistortedRegionsTPC(kTRUE);
 	EsdTrackCuts->AliESDtrackCuts::SetMaxChi2PerClusterTPC(4);
@@ -1619,9 +1621,9 @@ void AliV0ReaderV1::FillImpactParamHistograms( AliVTrack* pTrack, AliVTrack* nTr
   fCurrentV0->GetXYZ(convX,convY,convZ);
   Double_t convR = TMath::Sqrt(convX*convX+convY*convY);
   //recalculated conversion point
-  Double_t convXrecalc=fCurrentMotherKF->GetConversionX(); 
-  Double_t convYrecalc=fCurrentMotherKF->GetConversionY(); 
-  Double_t convZrecalc=fCurrentMotherKF->GetConversionZ(); 
+  Double_t convXrecalc=fCurrentMotherKF->GetConversionX();
+  Double_t convYrecalc=fCurrentMotherKF->GetConversionY();
+  Double_t convZrecalc=fCurrentMotherKF->GetConversionZ();
   Double_t convRrecalc = fCurrentMotherKF->GetConversionRadius();
 
   //count V0s
@@ -1641,16 +1643,16 @@ void AliV0ReaderV1::FillImpactParamHistograms( AliVTrack* pTrack, AliVTrack* nTr
 
   //count V0s which have...
   if(TPConly){
-    //not passed z cut:    pos.tr.     or           neg.tr. 
+    //not passed z cut:    pos.tr.     or           neg.tr.
     if(((TMath::Abs(positiveTrack->GetZ()))>fZmax) || ((TMath::Abs(negativeTrack->GetZ()))>fZmax)){
       fHistoImpactParameterStudy->Fill(2);
-      RemovedByZcut=kTRUE;  
+      RemovedByZcut=kTRUE;
     }
 
-    //not passed y cut:     pos.tr.     or           neg.tr.  
+    //not passed y cut:     pos.tr.     or           neg.tr.
     if(((TMath::Abs(positiveTrack->GetY()))>fYmax) || ((TMath::Abs(negativeTrack->GetY()))>fYmax)){
       fHistoImpactParameterStudy->Fill(3);
-      RemovedByYcut=kTRUE;  
+      RemovedByYcut=kTRUE;
     }
   }
 
@@ -1673,21 +1675,21 @@ void AliV0ReaderV1::FillImpactParamHistograms( AliVTrack* pTrack, AliVTrack* nTr
   // fill conversion radius histograms
     fHistoR->Fill(convR);
     fHistoRrecalc->Fill(convRrecalc);
-    Double_t alpha = TMath::ATan2(convY,convX);  
+    Double_t alpha = TMath::ATan2(convY,convX);
     if (alpha<0) alpha += TMath::Pi()*2;
     Int_t sec = alpha/(TMath::Pi()/9);
     alpha = (10.+sec*20.)*TMath::DegToRad();
     Double_t cs = TMath::Cos(alpha);
     Double_t sn = TMath::Sin(alpha);
-    Double_t xsV0 = convX*cs - convY*sn; 
+    Double_t xsV0 = convX*cs - convY*sn;
     fHistoRviaAlpha->Fill(xsV0);
-    Double_t alpha_r = TMath::ATan2(convYrecalc,convXrecalc);  
+    Double_t alpha_r = TMath::ATan2(convYrecalc,convXrecalc);
     if (alpha_r<0) alpha_r += TMath::Pi()*2;
     Int_t sec_r = alpha_r/(TMath::Pi()/9);
     alpha_r = (10.+sec_r*20.)*TMath::DegToRad();
     Double_t cs_r = TMath::Cos(alpha_r);
     Double_t sn_r = TMath::Sin(alpha_r);
-    Double_t xsV0_r = convXrecalc*cs_r - convYrecalc*sn_r;     
+    Double_t xsV0_r = convXrecalc*cs_r - convYrecalc*sn_r;
     fHistoRviaAlphaRecalc->Fill(xsV0_r);
 
   if (convR > 80) {  // conversion within TPC <-> TPC-only tracks
@@ -1699,7 +1701,7 @@ void AliV0ReaderV1::FillImpactParamHistograms( AliVTrack* pTrack, AliVTrack* nTr
       const TBits& bits = tr->GetTPCClusterMap();
       Int_t nConflict = 0;
       for (Int_t ic=0;ic<159;ic++) {
-        if (rTPC[ic]>(xsV0-kTPCMargin)) break;  
+        if (rTPC[ic]>(xsV0-kTPCMargin)) break;
         if (bits.TestBitNumber(ic)){
           nConflict++;
           fHistoRdiff->Fill(xsV0-rTPC[ic]);
@@ -1745,22 +1747,22 @@ void AliV0ReaderV1::FillImpactParamHistograms( AliVTrack* pTrack, AliVTrack* nTr
   fImpactParamTree->Fill();
 
   // fill impact parameter histograms
-  fHistoPosTrackImpactParamZ->Fill(posZ); 
+  fHistoPosTrackImpactParamZ->Fill(posZ);
   fHistoPosTrackImpactParamY->Fill(posY);
   fHistoPosTrackImpactParamX->Fill(posX);
-  fHistoPosTrackImpactParamZvsPt->Fill(posPt, posZ); 
+  fHistoPosTrackImpactParamZvsPt->Fill(posPt, posZ);
   fHistoPosTrackImpactParamYvsPt->Fill(posPt, posY);
-  fHistoPosTrackImpactParamXvsPt->Fill(posPt, posX); 
-  fHistoNegTrackImpactParamZ->Fill(negZ);  
+  fHistoPosTrackImpactParamXvsPt->Fill(posPt, posX);
+  fHistoNegTrackImpactParamZ->Fill(negZ);
   fHistoNegTrackImpactParamY->Fill(negY);
   fHistoNegTrackImpactParamX->Fill(negX);
-  fHistoNegTrackImpactParamZvsPt->Fill(negPt, negZ);  
+  fHistoNegTrackImpactParamZvsPt->Fill(negPt, negZ);
   fHistoNegTrackImpactParamYvsPt->Fill(negPt, negY);
   fHistoNegTrackImpactParamXvsPt->Fill(negPt, negX);
 
   // fill comparison histos before / after new cuts
   fHistoPt->Fill(positiveTrack->Pt());
-  fHistoImpactParamZvsR->Fill(convZrecalc,convRrecalc); 
+  fHistoImpactParamZvsR->Fill(convZrecalc,convRrecalc);
   //Float_t *DCAzPhoton;
   Float_t DCAzPhoton;
   //const AliVVertex *PrimVertex = fInputEvent->GetPrimaryVertex();
@@ -1771,7 +1773,7 @@ void AliV0ReaderV1::FillImpactParamHistograms( AliVTrack* pTrack, AliVTrack* nTr
   fHistoDCAzPhoton->Fill(DCAzPhoton);
   if(!RemovedByAnyCut) {
     fHistoPt2->Fill(positiveTrack->Pt());
-    fHistoImpactParamZvsR2->Fill(convZrecalc,convRrecalc);  
+    fHistoImpactParamZvsR2->Fill(convZrecalc,convRrecalc);
     fHistoDCAzPhoton2->Fill(DCAzPhoton);
   }
 
