@@ -48,7 +48,7 @@ class AliPID : public TObject {
     kNoCharge = 0,
     kPosCharge = 1,
     kNegCharge = 2
-  }
+  };
   static Int_t         ParticleCharge(Int_t iType) {
      if(!fgkParticleMass[0]) Init(); 
      return fgkParticleCharge[iType];
