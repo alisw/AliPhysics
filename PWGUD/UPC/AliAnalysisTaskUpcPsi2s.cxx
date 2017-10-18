@@ -71,7 +71,7 @@ AliAnalysisTaskUpcPsi2s::AliAnalysisTaskUpcPsi2s()
     fTOFmask(0),fIsPhysicsSelected(kFALSE),
     fVtxContrib(0),fVtxChi2(0),fVtxNDF(0),fSpdVtxContrib(0),
     fBCrossNum(0),fNtracklets(0),fNLooseTracks(0),
-    fZNAenergy(0),fZNCenergy(0), fZPAenergy(0),fZPCenergy(0),fZDCAtime(0),fZDCCtime(0),fV0Adecision(0),fV0Cdecision(0),fADAdecision(0),fADCdecision(0),
+    fZNAenergy(0),fZNCenergy(0), fZPAenergy(0),fZPCenergy(0),fV0Adecision(0),fV0Cdecision(0),fADAdecision(0),fADCdecision(0),
     fDataFilnam(0),fRecoPass(0),fEvtNum(0),fFOFiredChips(0),
     fJPsiAODTracks(0),fJPsiESDTracks(0),fPsi2sAODTracks(0),fPsi2sESDTracks(0),fGenPart(0),
     fEveTree(0),fPt(0), fY(0), fM(0), fDiLeptonM(0), fDiLeptonPt(0), fPIDsigma(0), fChannel(0),
@@ -80,7 +80,7 @@ AliAnalysisTaskUpcPsi2s::AliAnalysisTaskUpcPsi2s()
     fHistCTest58TriggersPerRun(0),fHistCTest59TriggersPerRun(0),fHistCTest60TriggersPerRun(0),fHistCTest61TriggersPerRun(0),
     fHistCcup8TriggersPerRun(0),fHistCcup9TriggersPerRun(0),fHistCcup10TriggersPerRun(0),fHistCcup11TriggersPerRun(0),fHistCcup12TriggersPerRun(0),fHistCtrueTriggersPerRun(0),
     fListHist(0),fHistNeventsJPsi(0),fHistTPCsignalJPsi(0),fHistDiLeptonPtJPsi(0),fHistDiElectronMass(0),fHistDiMuonMass(0),fHistDiLeptonMass(0),
-    fHistNeventsPsi2s(0),fHistPsi2sMassVsPt(0),fHistPsi2sMassCoherent(0),fHistZDCCuts(0),
+    fHistNeventsPsi2s(0),fHistPsi2sMassVsPt(0),fHistPsi2sMassCoherent(0),
     fListSystematics(0),fListJPsiLoose(0),fListJPsiTight(0),fListPsi2sLoose(0),fListPsi2sTight(0)
 
 {
@@ -97,7 +97,7 @@ AliAnalysisTaskUpcPsi2s::AliAnalysisTaskUpcPsi2s(const char *name)
     fTOFmask(0),fIsPhysicsSelected(kFALSE),
     fVtxContrib(0),fVtxChi2(0),fVtxNDF(0),fSpdVtxContrib(0),
     fBCrossNum(0),fNtracklets(0),fNLooseTracks(0),
-    fZNAenergy(0),fZNCenergy(0), fZPAenergy(0),fZPCenergy(0),fZDCAtime(0),fZDCCtime(0),fV0Adecision(0),fV0Cdecision(0),fADAdecision(0),fADCdecision(0),
+    fZNAenergy(0),fZNCenergy(0), fZPAenergy(0),fZPCenergy(0),fV0Adecision(0),fV0Cdecision(0),fADAdecision(0),fADCdecision(0),
     fDataFilnam(0),fRecoPass(0),fEvtNum(0),fFOFiredChips(0),
     fJPsiAODTracks(0),fJPsiESDTracks(0),fPsi2sAODTracks(0),fPsi2sESDTracks(0),fGenPart(0),
     fEveTree(0),fPt(0), fY(0), fM(0), fDiLeptonM(0), fDiLeptonPt(0), fPIDsigma(0), fChannel(0),
@@ -106,7 +106,7 @@ AliAnalysisTaskUpcPsi2s::AliAnalysisTaskUpcPsi2s(const char *name)
     fHistCTest58TriggersPerRun(0),fHistCTest59TriggersPerRun(0),fHistCTest60TriggersPerRun(0),fHistCTest61TriggersPerRun(0),
     fHistCcup8TriggersPerRun(0),fHistCcup9TriggersPerRun(0),fHistCcup10TriggersPerRun(0),fHistCcup11TriggersPerRun(0),fHistCcup12TriggersPerRun(0),fHistCtrueTriggersPerRun(0),
     fListHist(0),fHistNeventsJPsi(0),fHistTPCsignalJPsi(0),fHistDiLeptonPtJPsi(0),fHistDiElectronMass(0),fHistDiMuonMass(0),fHistDiLeptonMass(0),
-    fHistNeventsPsi2s(0),fHistPsi2sMassVsPt(0),fHistPsi2sMassCoherent(0),fHistZDCCuts(0),
+    fHistNeventsPsi2s(0),fHistPsi2sMassVsPt(0),fHistPsi2sMassCoherent(0),
     fListSystematics(0),fListJPsiLoose(0),fListJPsiTight(0),fListPsi2sLoose(0),fListPsi2sTight(0)
 
 {
@@ -146,6 +146,9 @@ void AliAnalysisTaskUpcPsi2s::Init()
 	fPIDTOFProton[i] = -666;
 	
 	fIsVtxContributor[i] = kFALSE;
+	
+	fZNATDCm[i] = -666;
+        fZNCTDCm[i] = -666;
 	}
   for(Int_t i=0; i<3; i++){
   	fVtxPos[i] = -666; 
@@ -219,34 +222,34 @@ void AliAnalysisTaskUpcPsi2s::UserCreateOutputObjects()
   
   fJPsiTree ->Branch("fIsPhysicsSelected", &fIsPhysicsSelected, "fIsPhysicsSelected/O");
   
-  fJPsiTree ->Branch("fPIDTPCMuon", &fPIDTPCMuon[0], "fPIDTPCMuon[2]/D");
-  fJPsiTree ->Branch("fPIDTPCElectron", &fPIDTPCElectron[0], "fPIDTPCElectron[2]/D");
-  fJPsiTree ->Branch("fPIDTPCPion", &fPIDTPCPion[0], "fPIDTPCPion[2]/D");
-  fJPsiTree ->Branch("fPIDTPCKaon", &fPIDTPCKaon[0], "fPIDTPCKaon[2]/D");
-  fJPsiTree ->Branch("fPIDTPCProton", &fPIDTPCProton[0], "fPIDTPCProton[2]/D");
+  fJPsiTree ->Branch("fPIDTPCMuon", &fPIDTPCMuon[0], "fPIDTPCMuon[2]/F");
+  fJPsiTree ->Branch("fPIDTPCElectron", &fPIDTPCElectron[0], "fPIDTPCElectron[2]/F");
+  fJPsiTree ->Branch("fPIDTPCPion", &fPIDTPCPion[0], "fPIDTPCPion[2]/F");
+  fJPsiTree ->Branch("fPIDTPCKaon", &fPIDTPCKaon[0], "fPIDTPCKaon[2]/F");
+  fJPsiTree ->Branch("fPIDTPCProton", &fPIDTPCProton[0], "fPIDTPCProton[2]/F");
   
-  fJPsiTree ->Branch("fPIDTOFMuon", &fPIDTOFMuon[0], "fPIDTOFMuon[2]/D");
-  fJPsiTree ->Branch("fPIDTOFElectron", &fPIDTOFElectron[0], "fPIDTOFElectron[2]/D");
-  fJPsiTree ->Branch("fPIDTOFPion", &fPIDTOFPion[0], "fPIDTOFPion[2]/D");
-  fJPsiTree ->Branch("fPIDTOFKaon", &fPIDTOFKaon[0], "fPIDTOFKaon[2]/D");
-  fJPsiTree ->Branch("fPIDTOFProton", &fPIDTOFProton[0], "fPIDTOFProton[2]/D");
+  fJPsiTree ->Branch("fPIDTOFMuon", &fPIDTOFMuon[0], "fPIDTOFMuon[2]/F");
+  fJPsiTree ->Branch("fPIDTOFElectron", &fPIDTOFElectron[0], "fPIDTOFElectron[2]/F");
+  fJPsiTree ->Branch("fPIDTOFPion", &fPIDTOFPion[0], "fPIDTOFPion[2]/F");
+  fJPsiTree ->Branch("fPIDTOFKaon", &fPIDTOFKaon[0], "fPIDTOFKaon[2]/F");
+  fJPsiTree ->Branch("fPIDTOFProton", &fPIDTOFProton[0], "fPIDTOFProton[2]/F");
   
   fJPsiTree ->Branch("fIsVtxContributor", &fIsVtxContributor[0], "fIsVtxContributor[2]/O");
   
-  fJPsiTree ->Branch("fVtxPos", &fVtxPos[0], "fVtxPos[3]/D");
-  fJPsiTree ->Branch("fVtxErr", &fVtxErr[0], "fVtxErr[3]/D");
-  fJPsiTree ->Branch("fVtxChi2", &fVtxChi2, "fVtxChi2/D");
-  fJPsiTree ->Branch("fVtxNDF", &fVtxNDF, "fVtxNDF/D");
+  fJPsiTree ->Branch("fVtxPos", &fVtxPos[0], "fVtxPos[3]/F");
+  fJPsiTree ->Branch("fVtxErr", &fVtxErr[0], "fVtxErr[3]/F");
+  fJPsiTree ->Branch("fVtxChi2", &fVtxChi2, "fVtxChi2/F");
+  fJPsiTree ->Branch("fVtxNDF", &fVtxNDF, "fVtxNDF/F");
   
-  fJPsiTree ->Branch("fKfVtxPos", &fKfVtxPos[0], "fKfVtxPos[3]/D");
-  fJPsiTree ->Branch("fSpdVtxPos", &fSpdVtxPos[0], "fSpdVtxPos[3]/D");
+  fJPsiTree ->Branch("fKfVtxPos", &fKfVtxPos[0], "fKfVtxPos[3]/F");
+  fJPsiTree ->Branch("fSpdVtxPos", &fSpdVtxPos[0], "fSpdVtxPos[3]/F");
   
-  fJPsiTree ->Branch("fZNAenergy", &fZNAenergy, "fZNAenergy/D");
-  fJPsiTree ->Branch("fZNCenergy", &fZNCenergy, "fZNCenergy/D");
-  fJPsiTree ->Branch("fZPAenergy", &fZPAenergy, "fZPAenergy/D");
-  fJPsiTree ->Branch("fZPCenergy", &fZPCenergy, "fZPCenergy/D");
-  fJPsiTree ->Branch("fZDCAtime", &fZDCAtime, "fZDCAtime/D");
-  fJPsiTree ->Branch("fZDCCtime", &fZDCCtime, "fZDCCtime/D");
+  fJPsiTree ->Branch("fZNAenergy", &fZNAenergy, "fZNAenergy/F");
+  fJPsiTree ->Branch("fZNCenergy", &fZNCenergy, "fZNCenergy/F");
+  fJPsiTree ->Branch("fZPAenergy", &fZPAenergy, "fZPAenergy/F");
+  fJPsiTree ->Branch("fZPCenergy", &fZPCenergy, "fZPCenergy/F");
+  fJPsiTree ->Branch("fZNATDCm", &fZNATDCm[0], "fZNATDCm[4]/F");
+  fJPsiTree ->Branch("fZNCTDCm", &fZNCTDCm[0], "fZNCTDCm[4]/F");
   fJPsiTree ->Branch("fV0Adecision", &fV0Adecision, "fV0Adecision/I");
   fJPsiTree ->Branch("fV0Cdecision", &fV0Cdecision, "fV0Cdecision/I"); 
   fJPsiTree ->Branch("fADAdecision", &fADAdecision, "fADAdecision/I");
@@ -263,7 +266,7 @@ void AliAnalysisTaskUpcPsi2s::UserCreateOutputObjects()
   if(isMC) {
     fJPsiTree ->Branch("fGenPart", &fGenPart);
     fJPsiTree ->Branch("fTriggerInputsMC", &fTriggerInputsMC[0], Form("fTriggerInputsMC[%i]/O", ntrg));
-    fJPsiTree ->Branch("fMCVtxPos", &fMCVtxPos[0], "fMCVtxPos[3]/D");
+    fJPsiTree ->Branch("fMCVtxPos", &fMCVtxPos[0], "fMCVtxPos[3]/F");
     fJPsiTree ->Branch("fFOFiredChips", &fFOFiredChips);
   }
 
@@ -287,34 +290,34 @@ void AliAnalysisTaskUpcPsi2s::UserCreateOutputObjects()
   
   fPsi2sTree ->Branch("fIsPhysicsSelected", &fIsPhysicsSelected, "fIsPhysicsSelected/O");
   
-  fPsi2sTree ->Branch("fPIDTPCMuon", &fPIDTPCMuon[0], "fPIDTPCMuon[4]/D");
-  fPsi2sTree ->Branch("fPIDTPCElectron", &fPIDTPCElectron[0], "fPIDTPCElectron[4]/D");
-  fPsi2sTree ->Branch("fPIDTPCPion", &fPIDTPCPion[0], "fPIDTPCPion[4]/D");
-  fPsi2sTree ->Branch("fPIDTPCKaon", &fPIDTPCKaon[0], "fPIDTPCKaon[4]/D");
-  fPsi2sTree ->Branch("fPIDTPCProton", &fPIDTPCProton[0], "fPIDTPCProton[4]/D");
+  fPsi2sTree ->Branch("fPIDTPCMuon", &fPIDTPCMuon[0], "fPIDTPCMuon[4]/F");
+  fPsi2sTree ->Branch("fPIDTPCElectron", &fPIDTPCElectron[0], "fPIDTPCElectron[4]/F");
+  fPsi2sTree ->Branch("fPIDTPCPion", &fPIDTPCPion[0], "fPIDTPCPion[4]/F");
+  fPsi2sTree ->Branch("fPIDTPCKaon", &fPIDTPCKaon[0], "fPIDTPCKaon[4]/F");
+  fPsi2sTree ->Branch("fPIDTPCProton", &fPIDTPCProton[0], "fPIDTPCProton[4]/F");
   
-  fPsi2sTree ->Branch("fPIDTOFMuon", &fPIDTOFMuon[0], "fPIDTOFMuon[4]/D");
-  fPsi2sTree ->Branch("fPIDTOFElectron", &fPIDTOFElectron[0], "fPIDTOFElectron[4]/D");
-  fPsi2sTree ->Branch("fPIDTOFPion", &fPIDTOFPion[0], "fPIDTOFPion[4]/D");
-  fPsi2sTree ->Branch("fPIDTOFKaon", &fPIDTOFKaon[0], "fPIDTOFKaon[4]/D");
-  fPsi2sTree ->Branch("fPIDTOFProton", &fPIDTOFProton[0], "fPIDTOFProton[4]/D");
+  fPsi2sTree ->Branch("fPIDTOFMuon", &fPIDTOFMuon[0], "fPIDTOFMuon[4]/F");
+  fPsi2sTree ->Branch("fPIDTOFElectron", &fPIDTOFElectron[0], "fPIDTOFElectron[4]/F");
+  fPsi2sTree ->Branch("fPIDTOFPion", &fPIDTOFPion[0], "fPIDTOFPion[4]/F");
+  fPsi2sTree ->Branch("fPIDTOFKaon", &fPIDTOFKaon[0], "fPIDTOFKaon[4]/F");
+  fPsi2sTree ->Branch("fPIDTOFProton", &fPIDTOFProton[0], "fPIDTOFProton[4]/F");
   
   fPsi2sTree ->Branch("fIsVtxContributor", &fIsVtxContributor[0], "fIsVtxContributor[4]/O");
   
-  fPsi2sTree ->Branch("fVtxPos", &fVtxPos[0], "fVtxPos[3]/D");
-  fPsi2sTree ->Branch("fVtxErr", &fVtxErr[0], "fVtxErr[3]/D");
-  fPsi2sTree ->Branch("fVtxChi2", &fVtxChi2, "fVtxChi2/D");
-  fPsi2sTree ->Branch("fVtxNDF", &fVtxNDF, "fVtxNDF/D");
+  fPsi2sTree ->Branch("fVtxPos", &fVtxPos[0], "fVtxPos[3]/F");
+  fPsi2sTree ->Branch("fVtxErr", &fVtxErr[0], "fVtxErr[3]/F");
+  fPsi2sTree ->Branch("fVtxChi2", &fVtxChi2, "fVtxChi2/F");
+  fPsi2sTree ->Branch("fVtxNDF", &fVtxNDF, "fVtxNDF/F");
   
-  fPsi2sTree ->Branch("fKfVtxPos", &fKfVtxPos[0], "fKfVtxPos[3]/D");
-  fPsi2sTree ->Branch("fSpdVtxPos", &fSpdVtxPos[0], "fSpdVtxPos[3]/D");
+  fPsi2sTree ->Branch("fKfVtxPos", &fKfVtxPos[0], "fKfVtxPos[3]/F");
+  fPsi2sTree ->Branch("fSpdVtxPos", &fSpdVtxPos[0], "fSpdVtxPos[3]/F");
   
-  fPsi2sTree ->Branch("fZNAenergy", &fZNAenergy, "fZNAenergy/D");
-  fPsi2sTree ->Branch("fZNCenergy", &fZNCenergy, "fZNCenergy/D");
-  fPsi2sTree ->Branch("fZPAenergy", &fZPAenergy, "fZPAenergy/D");
-  fPsi2sTree ->Branch("fZPCenergy", &fZPCenergy, "fZPCenergy/D");
-  fPsi2sTree ->Branch("fZDCAtime", &fZDCAtime, "fZDCAtime/D");
-  fPsi2sTree ->Branch("fZDCCtime", &fZDCCtime, "fZDCCtime/D");
+  fPsi2sTree ->Branch("fZNAenergy", &fZNAenergy, "fZNAenergy/F");
+  fPsi2sTree ->Branch("fZNCenergy", &fZNCenergy, "fZNCenergy/F");
+  fPsi2sTree ->Branch("fZPAenergy", &fZPAenergy, "fZPAenergy/F");
+  fPsi2sTree ->Branch("fZPCenergy", &fZPCenergy, "fZPCenergy/F");
+  fPsi2sTree ->Branch("fZNATDCm", &fZNATDCm[0], "fZNATDCm[4]/F");
+  fPsi2sTree ->Branch("fZNCTDCm", &fZNCTDCm[0], "fZNCTDCm[4]/F");
   fPsi2sTree ->Branch("fV0Adecision", &fV0Adecision, "fV0Adecision/I");
   fPsi2sTree ->Branch("fV0Cdecision", &fV0Cdecision, "fV0Cdecision/I"); 
   fPsi2sTree ->Branch("fADAdecision", &fADAdecision, "fADAdecision/I");
@@ -331,7 +334,7 @@ void AliAnalysisTaskUpcPsi2s::UserCreateOutputObjects()
   if(isMC) {
     fPsi2sTree ->Branch("fGenPart", &fGenPart);
     fPsi2sTree ->Branch("fTriggerInputsMC", &fTriggerInputsMC[0], Form("fTriggerInputsMC[%i]/O", ntrg));
-    fPsi2sTree ->Branch("fMCVtxPos", &fMCVtxPos[0], "fMCVtxPos[3]/D");
+    fPsi2sTree ->Branch("fMCVtxPos", &fMCVtxPos[0], "fMCVtxPos[3]/F");
     fPsi2sTree ->Branch("fFOFiredChips", &fFOFiredChips);
   }
   
@@ -444,21 +447,16 @@ void AliAnalysisTaskUpcPsi2s::UserCreateOutputObjects()
   fHistPsi2sMassCoherent->GetXaxis()->SetTitle("Invariant mass(l^{+}l^{-}#pi^{+}#pi^{-}) (GeV/c)");
   fListHist->Add(fHistPsi2sMassCoherent);
   
-  TString CutNameZDC[4] = {"CCUP4","< 8 neutrons","0 netrons","No timing"};
-  fHistZDCCuts = new TH1D("fHistZDCCuts","fHistZDCCuts",4,0.5,4.5);
-  for (Int_t i = 0; i<4; i++) fHistZDCCuts->GetXaxis()->SetBinLabel(i+1,CutNameZDC[i].Data());
-  fListHist->Add(fHistZDCCuts);
-  
   fEveTree = new TTree("fEveTree", "fEveTree");
-  fEveTree ->Branch("fPt", &fPt, "fPt/D");
-  fEveTree ->Branch("fY", &fY, "fY/D");
-  fEveTree ->Branch("fM", &fM, "fM/D");
+  fEveTree ->Branch("fPt", &fPt, "fPt/F");
+  fEveTree ->Branch("fY", &fY, "fY/F");
+  fEveTree ->Branch("fM", &fM, "fM/F");
   fEveTree ->Branch("fChannel", &fChannel, "fChannel/I");
-  fEveTree ->Branch("fDiLeptonM", &fDiLeptonM, "fDiLeptonM/D");
-  fEveTree ->Branch("fDiLeptonPt", &fDiLeptonPt, "fDiLeptonPt/D");
-  fEveTree ->Branch("fZNAenergy", &fZNAenergy,"fZNAenergy/D");
-  fEveTree ->Branch("fZNCenergy", &fZNCenergy,"fZNCenergy/D");
-  fEveTree ->Branch("fPIDsigma", &fPIDsigma,"fPIDsigma/D");
+  fEveTree ->Branch("fDiLeptonM", &fDiLeptonM, "fDiLeptonM/F");
+  fEveTree ->Branch("fDiLeptonPt", &fDiLeptonPt, "fDiLeptonPt/F");
+  fEveTree ->Branch("fZNAenergy", &fZNAenergy,"fZNAenergy/F");
+  fEveTree ->Branch("fZNCenergy", &fZNCenergy,"fZNCenergy/F");
+  fEveTree ->Branch("fPIDsigma", &fPIDsigma,"fPIDsigma/F");
   fEveTree ->Branch("fDataFilnam", &fDataFilnam);
   fEveTree ->Branch("fEvtNum", &fEvtNum, "fEvtNum/L"); 
   fListHist->Add(fEveTree);
@@ -666,22 +664,13 @@ void AliAnalysisTaskUpcPsi2s::RunAODhist()
   
   if(!isMC && !trigger.Contains("CCUP") ) return;
   
-  
-  
   fHistNeventsJPsi->Fill(2);
   fHistNeventsPsi2s->Fill(2);
   
   AliAODZDC *fZDCdata = aod->GetZDCData();
   fZNAenergy = fZDCdata->GetZNATowerEnergy()[0];
   fZNCenergy = fZDCdata->GetZNCTowerEnergy()[0];
-  fZDCAtime = fZDCdata->GetZNATime();
-  fZDCCtime = fZDCdata->GetZNCTime();
   
-  if(trigger.Contains("CCUP4-B"))fHistZDCCuts->Fill(1);
-  if(fZNAenergy < 8200 && fZNCenergy < 8200) fHistZDCCuts->Fill(2);
-  if(fZNAenergy < 683 && fZNCenergy < 683) fHistZDCCuts->Fill(3);
-  if(fZDCAtime == 0 && fZDCCtime == 0) fHistZDCCuts->Fill(4);
-
   //primary vertex
   AliAODVertex *fAODVertex = aod->GetPrimaryVertex();
   fVtxContrib = fAODVertex->GetNContributors();
@@ -1018,8 +1007,8 @@ void AliAnalysisTaskUpcPsi2s::RunAODtree()
   fZNCenergy = fZDCdata->GetZNCTowerEnergy()[0];
   fZPAenergy = fZDCdata->GetZPATowerEnergy()[0];
   fZPCenergy = fZDCdata->GetZPCTowerEnergy()[0];  
-  fZDCAtime = fZDCdata->GetZNATime();
-  fZDCCtime = fZDCdata->GetZNCTime();
+  for (Int_t i=0;i<4;i++) fZNATDCm[i] = fZDCdata->GetZNATDCm(i);
+  for (Int_t i=0;i<4;i++) fZNCTDCm[i] = fZDCdata->GetZNCTDCm(i);
   
   fNLooseTracks = 0;
   
@@ -1728,10 +1717,6 @@ void AliAnalysisTaskUpcPsi2s::RunESDtree()
   fZNCenergy = fZDCdata->GetZNCTowerEnergy()[0];
   fZPAenergy = fZDCdata->GetZPATowerEnergy()[0];
   fZPCenergy = fZDCdata->GetZPCTowerEnergy()[0];
-  if(fZDCdata->IsZNAhit()) fZDCAtime= fZDCdata->GetZDCTDCCorrected(12,0);
-  else fZDCAtime=-666;
-  if(fZDCdata->IsZNChit()) fZDCCtime= fZDCdata->GetZDCTDCCorrected(10,0);
-  else fZDCCtime=-666;
   
   fNLooseTracks = 0;
   

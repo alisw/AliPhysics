@@ -69,34 +69,35 @@ class AliAnalysisTaskUpcPsi2s : public AliAnalysisTaskSE {
   AliTOFTriggerMask *fTOFmask;
   Bool_t fIsPhysicsSelected;
   
-  Double_t fPIDTPCMuon[4];
-  Double_t fPIDTPCElectron[4];
-  Double_t fPIDTPCPion[4];
-  Double_t fPIDTPCKaon[4];
-  Double_t fPIDTPCProton[4];
+  Float_t fPIDTPCMuon[4];
+  Float_t fPIDTPCElectron[4];
+  Float_t fPIDTPCPion[4];
+  Float_t fPIDTPCKaon[4];
+  Float_t fPIDTPCProton[4];
   
-  Double_t fPIDTOFMuon[4];
-  Double_t fPIDTOFElectron[4];
-  Double_t fPIDTOFPion[4];
-  Double_t fPIDTOFKaon[4];
-  Double_t fPIDTOFProton[4];
+  Float_t fPIDTOFMuon[4];
+  Float_t fPIDTOFElectron[4];
+  Float_t fPIDTOFPion[4];
+  Float_t fPIDTOFKaon[4];
+  Float_t fPIDTOFProton[4];
   
   Int_t fVtxContrib;
-  Double_t fVtxPos[3];
-  Double_t fMCVtxPos[3];
-  Double_t fVtxErr[3];
-  Double_t fVtxChi2,fVtxNDF;
-  Double_t fKfVtxPos[3];
+  Float_t fVtxPos[3];
+  Float_t fMCVtxPos[3];
+  Float_t fVtxErr[3];
+  Float_t fVtxChi2,fVtxNDF;
+  Float_t fKfVtxPos[3];
   Int_t fSpdVtxContrib;
-  Double_t fSpdVtxPos[3];
+  Float_t fSpdVtxPos[3];
   
   Bool_t fIsVtxContributor[4];
   
   UShort_t fBCrossNum, fNtracklets, fNLooseTracks;
   //vzero, zdc
-  Double_t fZNAenergy, fZNCenergy;
-  Double_t fZPAenergy, fZPCenergy;
-  Double_t fZDCAtime, fZDCCtime;
+  Float_t fZNAenergy, fZNCenergy;
+  Float_t fZPAenergy, fZPCenergy;
+  Float_t fZNATDCm[4];
+  Float_t fZNCTDCm[4];
   Int_t fV0Adecision, fV0Cdecision;
   Int_t fADAdecision, fADCdecision;
   //input data
@@ -115,7 +116,7 @@ class AliAnalysisTaskUpcPsi2s : public AliAnalysisTaskSE {
   
   //EVE tree
   TTree *fEveTree;
-  Double_t fPt, fY, fM, fDiLeptonM, fDiLeptonPt, fPIDsigma;
+  Float_t fPt, fY, fM, fDiLeptonM, fDiLeptonPt, fPIDsigma;
   Int_t fChannel;
   
   TList *fListTrig;
@@ -154,8 +155,6 @@ class AliAnalysisTaskUpcPsi2s : public AliAnalysisTaskSE {
   TH1D *fHistNeventsPsi2s;
   TH2D *fHistPsi2sMassVsPt;
   TH1D *fHistPsi2sMassCoherent;
-  
-  TH1D *fHistZDCCuts;
   
   TList *fListSystematics;
   TList *fListJPsiLoose;
