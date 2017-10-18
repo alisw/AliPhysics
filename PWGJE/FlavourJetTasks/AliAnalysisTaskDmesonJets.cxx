@@ -13,6 +13,9 @@
 * provided "as is" without express or implied warranty.                  *
 **************************************************************************/
 
+//C++
+#include <sstream>
+
 // Root
 #include <TClonesArray.h>
 #include <TDatabasePDG.h>
@@ -50,6 +53,22 @@
 #include "AliRhoParameter.h"
 
 #include "AliAnalysisTaskDmesonJets.h"
+
+AliAnalysisTaskDmesonJets::AliEventNotFound::AliEventNotFound(const std::string& class_name, const std::string& method_name) :
+  std::exception(),
+  fClassName(class_name),
+  fAccessMethodName(method_name)
+{
+  std::stringstream what_str;
+  what_str << "ALICE event not found in class '" <<  fClassName << "' using method '" << method_name << "'.";
+  fWhat = what_str.str();
+}
+
+
+const char* AliAnalysisTaskDmesonJets::AliEventNotFound::what() const _NOEXCEPT
+{
+  return fWhat.c_str();
+}
 
 // Definitions of class AliAnalysisTaskDmesonJets::AliJetInfo
 
@@ -587,11 +606,19 @@ void AliAnalysisTaskDmesonJets::AliD0ExtendedInfoSummary::Set(const AliDmesonJet
         Double_t diffIP = 0., errdiffIP = 0.;
         recoDecay->Getd0MeasMinusExpProng(ipr, source.fEvent->GetMagneticField(), diffIP, errdiffIP);
         Double_t normdd0 = 0.;
-        if (errdiffIP > 0.) normdd0 = diffIP / errdiffIP;
-        if (TMath::Abs(normdd0) > TMath::Abs(fMaxNormd0)) {
+        if (errdiffIP > 0.) {
+          normdd0 = TMath::Abs(diffIP / errdiffIP);
+        }
+        else {
+          normdd0 = -1;
+        }
+        if (normdd0 > fMaxNormd0) {
           fMaxNormd0 = normdd0;
         }
       }
+    }
+    else {
+      throw AliAnalysisTaskDmesonJets::AliEventNotFound("AliAnalysisTaskDmesonJets::AliDmesonJetInfo", "fEvent");
     }
 
     fd0d0 = recoDecay->Prodd0d0();

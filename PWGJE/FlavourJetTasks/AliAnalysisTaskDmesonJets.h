@@ -48,6 +48,8 @@ class AliEMCALGeometry;
 class TRandom;
 class AliRhoParameter;
 
+//C++
+#include <exception>
 #include <list>
 #include <vector>
 #include <map>
@@ -61,6 +63,18 @@ class AliRhoParameter;
 class AliAnalysisTaskDmesonJets : public AliAnalysisTaskEmcalLight
 {
  public:
+
+  class AliEventNotFound : public std::exception
+  {
+  public:
+    AliEventNotFound(const std::string& class_name, const std::string& method_name);
+    const char* what() const _NOEXCEPT;
+
+  private:
+    std::string  fClassName        ; ///< Class name where the event was not found
+    std::string  fAccessMethodName ; ///< Access method name used to retrieve the event
+    std::string  fWhat             ; ///< Error message
+  };
 
   typedef AliJetContainer::EJetType_t EJetType_t;
   typedef AliJetContainer::EJetAlgo_t EJetAlgo_t;
@@ -351,7 +365,7 @@ class AliAnalysisTaskDmesonJets : public AliAnalysisTaskEmcalLight
     /// Cosine of the pointing angle
     Double32_t          fCosPointing   ; //[0,1.28,7]
     /// max norm d0
-    Double32_t          fMaxNormd0     ; //[0,102.4,10]
+    Double32_t          fMaxNormd0     ; //[-1,101.4,10]
 
     /// \cond CLASSIMP
     ClassDef(AliD0ExtendedInfoSummary, 1);
