@@ -110,7 +110,7 @@ class AliPID : public TObject {
   static const char*   fgkParticleLatexName[kSPECIESCN+1]; // particle names
   static const Int_t   fgkParticleCode[kSPECIESCN+1];      // particle codes
 
-  ClassDef(AliPID, 4)                                      // particle id probability densities
+  ClassDef(AliPID, 5)                                      // particle id probability densities
 };
 
 
