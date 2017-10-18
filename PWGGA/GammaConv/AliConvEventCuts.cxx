@@ -1895,7 +1895,7 @@ Bool_t AliConvEventCuts::GetUseNewMultiplicityFramework(){
       fPeriodEnum == kLHC16g1 || fPeriodEnum == kLHC16g1a || fPeriodEnum == kLHC16g1b || fPeriodEnum == kLHC16g1c ||       // MC PbPb 5TeV general purpose
       fPeriodEnum == kLHC16g2 || fPeriodEnum == kLHC16g3 ||
       fPeriodEnum == kLHC16h2a || fPeriodEnum ==  kLHC16h2b || fPeriodEnum ==  kLHC16h2c ||                                // MC PbPb 5TeV jet-jet
-      fPeriodEnum == kLHC15fm || fPeriodEnum == kLHC16NomB || fPeriodEnum == kLHC16LowB || fPeriodEnum == kLHC17NomB || fPeriodEnum == kLHC17Low  // pp 13TeV
+      fPeriodEnum == kLHC15fm || fPeriodEnum == kLHC16NomB || fPeriodEnum == kLHC16LowB || fPeriodEnum == kLHC17NomB || fPeriodEnum == kLHC17LowB || // pp 13TeV
       fPeriodEnum == kLHC15g3a3 || fPeriodEnum == kLHC15g3c3 ||                                                            // MC pp 13TeV
       fPeriodEnum == kLHC16q || fPeriodEnum == kLHC16t ||                                                                  // pPb 5TeV LHC16qt
       fPeriodEnum == kLHC16r || fPeriodEnum == kLHC16s ||                                                                  // pPb 8TeV LHC16rs
@@ -2288,7 +2288,7 @@ Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliMCEvent *mcEvent, Double_t& 
 
   if (  fPeriodEnum != kLHC17g8a_fast &&  fPeriodEnum != kLHC17g8a_cent_woSDD &&                    // LHC16qt pPb 5TeV JetJet MC's
         fPeriodEnum != kLHC17g8b &&  fPeriodEnum != kLHC17g8c &&                                    // LHC16sr pPb 8TeV JetJet MC's
-        fPeriodEnum != kLHC16P1JJ && fPeriodEnum != kLHC16P1JJLow &&                                // LHC16X Jet Jet MC's
+        fPeriodEnum != kLHC16P1JJ && fPeriodEnum != kLHC16P1JJLowB &&                               // LHC16X Jet Jet MC's
         fPeriodEnum != kLHC16h3  &&                                                                 // LHC15n Jet Jet MC's
         fPeriodEnum != kLHC15a3a && fPeriodEnum != kLHC15a3a_plus && fPeriodEnum != kLHC15a3b &&    // LHC13g Jet Jet MC's
         fPeriodEnum != kLHC15g1a && fPeriodEnum != kLHC15g1b &&                                     // LHC11a Jet Jet MC's
@@ -2674,7 +2674,7 @@ void AliConvEventCuts::GetXSectionAndNTrials(AliMCEvent *mcEvent, Float_t &XSect
 
   if (  fPeriodEnum != kLHC17g8a_fast &&  fPeriodEnum != kLHC17g8a_cent_woSDD &&                    // LHC16qt pPb 5TeV JetJet MC's
         fPeriodEnum != kLHC17g8b &&  fPeriodEnum != kLHC17g8c &&                                    // LHC16sr pPb 8TeV JetJet MC's
-        fPeriodEnum != kLHC16P1JJ && fPeriodEnum != kLHC16P1JJLow &&                                // LHC16X Jet Jet MC's
+        fPeriodEnum != kLHC16P1JJ && fPeriodEnum != kLHC16P1JJLowB &&                                // LHC16X Jet Jet MC's
         fPeriodEnum != kLHC16h3 &&                                                                  // LHC15n Jet Jet MC's
         fPeriodEnum != kLHC15a3a && fPeriodEnum != kLHC15a3a_plus && fPeriodEnum != kLHC15a3b &&    // LHC13g Jet Jet MC's
         fPeriodEnum != kLHC15g1a && fPeriodEnum != kLHC15g1b &&                                     // LHC11a Jet Jet MC's
@@ -2739,7 +2739,7 @@ Float_t AliConvEventCuts::GetPtHard(AliMCEvent *mcEvent){
 
   if (  fPeriodEnum != kLHC17g8a_fast &&  fPeriodEnum != kLHC17g8a_cent_woSDD &&                    // LHC16qt pPb 5TeV JetJet MC's
         fPeriodEnum != kLHC17g8b &&  fPeriodEnum != kLHC17g8c &&                                    // LHC16sr pPb 8TeV JetJet MC's
-        fPeriodEnum != kLHC16P1JJ && fPeriodEnum != kLHC16P1JJLow &&                                // LHC16X Jet Jet MC's
+        fPeriodEnum != kLHC16P1JJ && fPeriodEnum != kLHC16P1JJLowB &&                                // LHC16X Jet Jet MC's
         fPeriodEnum != kLHC16h3 &&                                                                  // LHC15n Jet Jet MC's
         fPeriodEnum != kLHC15a3a && fPeriodEnum != kLHC15a3a_plus && fPeriodEnum != kLHC15a3b &&    // LHC13g Jet Jet MC's
         fPeriodEnum != kLHC15g1a && fPeriodEnum != kLHC15g1b &&                                     // LHC11a Jet Jet MC's
@@ -4472,10 +4472,10 @@ void AliConvEventCuts::SetPeriodEnum (TString periodName){
             periodName.CompareTo("LHC17l") == 0 || periodName.CompareTo("LHC17m") == 0 || periodName.CompareTo("LHC17o") == 0 ){
     fPeriodEnum = kLHC17NomB;
     fEnergyEnum = k13TeV;
-  } else if ( periodName.CompareTo("LHC17g") == 0 )
+  } else if ( periodName.CompareTo("LHC17g") == 0 ){
     fPeriodEnum = kLHC17LowB;
     fEnergyEnum = k13TeVLowB;
-  } else if ( periodName.CompareTo("LHC17n") == 0 )
+  } else if ( periodName.CompareTo("LHC17n") == 0 ){
     fPeriodEnum = kLHC17n;
     fEnergyEnum = kXeXe5440GeV;
 
@@ -4772,7 +4772,7 @@ void AliConvEventCuts::SetPeriodEnum (TString periodName){
       fEnergyEnum = k13TeV;
   // 13TeV LHC16* anchors full field JJ Pythia 8 MB
   } else if ( periodName.CompareTo("LHC16P1JJ") == 0 || periodName.CompareTo("LHC17f8a") == 0 || periodName.CompareTo("LHC17f8c") == 0 || periodName.CompareTo("LHC17f8d") == 0 ||
-              periodName.CompareTo("LHC17f8e") == 0 || ){
+              periodName.CompareTo("LHC17f8e") == 0 ){
     fPeriodEnum = kLHC16P1JJ;
     fEnergyEnum = k13TeV;
   // 13TeV LHC16* anchors low field JJ Pythia 8 MB

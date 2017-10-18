@@ -212,10 +212,10 @@ class AliConvEventCuts : public AliAnalysisCuts {
         kLHC16t,            //!< pPb 5 TeV
         // MC's corresponding to 2016 data
         kLHC16P1Pyt8,       //!< anchored LHC16x pass 1 nom B-field - general purpose Pythia8
-        kLHC16P1Pyt8Low,    //!< anchored LHC16f pass 1 low B-field - general purpose Pythia8
+        kLHC16P1Pyt8LowB,   //!< anchored LHC16f pass 1 low B-field - general purpose Pythia8
         kLHC16P1EPOS,       //!< anchored LHC16x pass 1 nom B-field - general purpose EPOS
         kLHC16P1JJ,         //!< anchored LHC16x pass 1 nom B-field - Pythia8 JJ
-        kLHC16P1JJLow,      //!< anchored LHC16f pass 1 low B-field - Pythia8 JJ
+        kLHC16P1JJLowB,     //!< anchored LHC16f pass 1 low B-field - Pythia8 JJ
 
         //General purpose- pPb
         kLHC17a3a,            //!< anchored LHC16r pass 1 - general purpose EPOSLHC
@@ -287,7 +287,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
         k7TeV         = 4,  //!< pp 7 TeV
         k8TeV         = 5,  //!< pp 8 TeV
         k13TeV        = 6,  //!< pp 13 TeV
-        k13TeVLow     = 7,  //!< pp 13 TeV low B
+        k13TeVLowB     = 7,  //!< pp 13 TeV low B
         kpPb5TeV      = 8,  //!< pPb 5 TeV
         kpPb8TeV      = 9,  //!< pPb 8 TeV
         kPbPb2760GeV  = 10,  //!< PbPb 2.76TeV

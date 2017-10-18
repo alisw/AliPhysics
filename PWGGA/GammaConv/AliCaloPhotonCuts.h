@@ -157,10 +157,10 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
       k17g8c,
       // 13TeV MC anc 2016 pp
       k16P1Pyt8,       //
-      k16P1Pyt8Low,    //
+      k16P1Pyt8LowB,    //
       k16P1EPOS,       //
       k16P1JJ,         //
-      k16P1JJLow,      //
+      k16P1JJLowB,      //
 
       // Data starts here
       k10pp7TeV,
