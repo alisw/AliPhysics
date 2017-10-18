@@ -481,13 +481,13 @@ fHistArmPod(0)
   .L /u/marsland/PHD/macros/marsland_EbyeRatios/AliAnalysisTaskEbyeIterPID.cxx++
   .L /lustre/nyx/alice/users/marsland/train/trunk/marsland_EbyeRatios/AliAnalysisTaskEbyeIterPID.cxx++
   */
-  cout << "===================================================================================="<< endl;
-  cout << "===================================================================================="<< endl;
-  cout << "===================================================================================="<< endl;
-  cout << "***************** CONSTRUCTOR CALLED: AliAnalysisTaskEbyeIterPID  *****************"<< endl;
-  cout << "===================================================================================="<< endl;
-  cout << "===================================================================================="<< endl;
-  cout << "===================================================================================="<< endl;
+  std::cout << "===================================================================================="<< std::endl;
+  std::cout << "===================================================================================="<< std::endl;
+  std::cout << "===================================================================================="<< std::endl;
+  std::cout << "***************** CONSTRUCTOR CALLED: AliAnalysisTaskEbyeIterPID  *****************"<< std::endl;
+  std::cout << "===================================================================================="<< std::endl;
+  std::cout << "===================================================================================="<< std::endl;
+  std::cout << "===================================================================================="<< std::endl;
   // ==========================================
   //
   //   TFile cutGFile("/lustre/nyx/alice/users/marsland/pFluct/ArmPodGraphicalCuts_Tight.root");
@@ -535,7 +535,7 @@ AliAnalysisTaskEbyeIterPID::~AliAnalysisTaskEbyeIterPID() {
   //
   // Destructor
   //
-  cout << " ===== In the Destructor ===== " << endl;
+  std::cout << " ===== In the Destructor ===== " << std::endl;
   if (fHistPosEffMatrixRec) delete fHistPosEffMatrixRec;   
   if (fHistNegEffMatrixRec) delete fHistNegEffMatrixRec;  
   if (fHistPosEffMatrixGen) delete fHistPosEffMatrixGen;   
@@ -566,8 +566,8 @@ void AliAnalysisTaskEbyeIterPID::Initialize()
   //
   // updating parameters in case of changes (standard cuts and the eta window)
   //
-  cout << " ===== In the Initialize ===== " << endl;
-  if (fRunFastSimulation) { cout << " !!! We are running fast simulation return !!! " << endl; return; }
+  std::cout << " ===== In the Initialize ===== " << std::endl;
+  if (fRunFastSimulation) { std::cout << " !!! We are running fast simulation return !!! " << std::endl; return; }
   AliInfoClass("Creating track cuts for ITS+TPC (2010 definition).");
   // fESDtrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010(kTRUE,1);
   
@@ -644,9 +644,9 @@ void AliAnalysisTaskEbyeIterPID::Initialize()
   fESDtrackCutsV0   ->SetMaxDcaV0Daughters(1.0);
   // ------------------------------------------------
   //
-  cout << " ===================================================== " << endl;
-  cout << " =============== Summary of Track Cuts =============== " << endl;
-  cout << " ===================================================== " << endl;
+  std::cout << " ===================================================== " << std::endl;
+  std::cout << " =============== Summary of Track Cuts =============== " << std::endl;
+  std::cout << " ===================================================== " << std::endl;
   // fESDtrackCuts->Dump();
 }
 //________________________________________________________________________
@@ -655,7 +655,7 @@ void AliAnalysisTaskEbyeIterPID::UserCreateOutputObjects()
   //
   // Create output histograms, trees of the analysis (called once)
   //
-  cout << " ===== In the UserCreateOutputObjects ===== " << endl;
+  std::cout << " ===== In the UserCreateOutputObjects ===== " << std::endl;
   // ------------  setup PIDCombined  ---------------  
   fPIDCombined=new AliPIDCombined;
   fPIDCombined->SetDefaultTPCPriors();
@@ -669,7 +669,7 @@ void AliAnalysisTaskEbyeIterPID::UserCreateOutputObjects()
       AliFatal("Input handler needed");
     else {
       fPIDResponse = inputHandler->GetPIDResponse();       // PID response object
-      if (!fPIDResponse) cout << " ======= PIDResponse object was not created ====== " << endl;
+      if (!fPIDResponse) std::cout << " ======= PIDResponse object was not created ====== " << std::endl;
     }
   }
   // ************************************************************************ 
@@ -905,7 +905,7 @@ void AliAnalysisTaskEbyeIterPID::UserCreateOutputObjects()
   PostData(13, fTreeMCFullAcc);
   PostData(14, fTreeResonance);
 
-  cout << " ===== Out of UserCreateOutputObjects ===== " << endl;
+  std::cout << " ===== Out of UserCreateOutputObjects ===== " << std::endl;
 
 }
 //________________________________________________________________________
@@ -914,7 +914,7 @@ void AliAnalysisTaskEbyeIterPID::UserExec(Option_t *)
   //
   // main event loop
   //
-  cout << " ===== In the UserExec ===== " << endl;
+  std::cout << " ===== In the UserExec ===== " << std::endl;
   // Check Monte Carlo information and other access first:
   AliMCEventHandler* eventHandler = dynamic_cast<AliMCEventHandler*> (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler());
   if (!eventHandler) fMCtrue = kFALSE;
@@ -974,9 +974,9 @@ void AliAnalysisTaskEbyeIterPID::UserExec(Option_t *)
         if (fMCImpactParameter>=impParArr[7] && fMCImpactParameter<impParArr[8]) fCentrality=65.;
         if (fMCImpactParameter>=impParArr[8] && fMCImpactParameter<impParArr[9]) fCentrality=75.;
         if (fMCImpactParameter<impParArr[0]  || fMCImpactParameter>impParArr[9]) fCentrality=-10.;
-        if (fUseCouts) cout << "impact parameter = " << fMCImpactParameter << endl;
+        if (fUseCouts) std::cout << "impact parameter = " << fMCImpactParameter << std::endl;
     } else {
-        cout << " AAAAAAAAA there is no cent info " << endl;
+        std::cout << " AAAAAAAAA there is no cent info " << std::endl;
     }
     //
     // Use file name in Hashing to create unique event ID
@@ -991,10 +991,10 @@ void AliAnalysisTaskEbyeIterPID::UserExec(Option_t *)
     fEventGIDMC  = TMath::Abs(Int_t(TString::Hash(&fEventGIDMC,sizeof(Int_t))));    // uniqe event id for real data 
     fEventGID    = fEventGIDMC;
     if (fUseCouts) {
-    cout << " ====================================================================================================== " << endl; 
-    cout << fEventCountInFile << " ----- " << "eventIDMC = " << fEventGIDMC << "   " << chain->GetCurrentFile()->GetName() << endl;
-    cout << " Centrality = " << fCentrality << " ------ Impact Param = " << fMCImpactParameter << endl;
-    cout << " ====================================================================================================== " << endl; 
+    std::cout << " ====================================================================================================== " << std::endl; 
+    std::cout << fEventCountInFile << " ----- " << "eventIDMC = " << fEventGIDMC << "   " << chain->GetCurrentFile()->GetName() << std::endl;
+    std::cout << " Centrality = " << fCentrality << " ------ Impact Param = " << fMCImpactParameter << std::endl;
+    std::cout << " ====================================================================================================== " << std::endl; 
     }
     fEventCountInFile++; 
     //
@@ -1047,7 +1047,7 @@ void AliAnalysisTaskEbyeIterPID::UserExec(Option_t *)
           if (esdCentrality && fSystCentEstimatetor ==  0) fCentrality = esdCentrality->GetCentralityPercentile("V0M");
           if (esdCentrality && fSystCentEstimatetor ==  1) fCentrality = esdCentrality->GetCentralityPercentile("CL1");
       } else {
-          cout << " AAAAAAAAA there is no cent info " << endl;
+          std::cout << " AAAAAAAAA there is no cent info " << std::endl;
       }
     }
     fHistCentrality->Fill(fCentrality);  // count events after physics and vertex selection
@@ -1068,9 +1068,9 @@ void AliAnalysisTaskEbyeIterPID::UserExec(Option_t *)
     ULong64_t gid          = ((periodID << 36) | (orbitID << 12) | bunchCrossID); 
     fEventGID              = TMath::Abs(Int_t(TString::Hash(&gid,sizeof(Int_t))));    // uniqe event id for real data 
     if (fUseCouts) {
-        cout << " =============================================================================================== " << endl; 
-        cout << fEventCountInFile << " ----- " << fCentrality << " === gidreal =  " << gid << " hashed = " << fEventGID << endl;
-        cout << " ====================================================================================================== " << endl; 
+        std::cout << " =============================================================================================== " << std::endl; 
+        std::cout << fEventCountInFile << " ----- " << fCentrality << " === gidreal =  " << gid << " hashed = " << fEventGID << std::endl;
+        std::cout << " ====================================================================================================== " << std::endl; 
     }
   }
   
@@ -1106,12 +1106,12 @@ void AliAnalysisTaskEbyeIterPID::FillTPCdEdxReal()
   //
   // Fill dEdx information for the TPC and also clean kaon and protons
   //
-  if (fUseCouts) cout << " ===== In the FillTPCdEdxReal ===== " << endl;
+  if (fUseCouts) std::cout << " ===== In the FillTPCdEdxReal ===== " << std::endl;
   TTree *chain = (TChain*)GetInputData(0); 
   if(!chain) { Printf("ERROR: Could not receive input chain"); return; }
   TObjString fileName(chain->GetCurrentFile()->GetName());
   TString chunkName = fileName.GetString(); 
-  if ((fESD->GetEventNumberInFile())<10) cout << fESD->GetEventNumberInFile() << "  chunkName  " <<  chunkName << endl;
+  if ((fESD->GetEventNumberInFile())<10) std::cout << fESD->GetEventNumberInFile() << "  chunkName  " <<  chunkName << std::endl;
 
   // Array to hold bayesian probabilities from combined PID
   Double_t probTPC[AliPID::kSPECIES]={0.};
@@ -1419,7 +1419,7 @@ void AliAnalysisTaskEbyeIterPID::FillTPCdEdxCheck()
   //
   // Fill dEdx information for the TPC and also the clean kaon and protons
   //
-  if (fUseCouts) cout << " ===== In the FillTPCdEdxCheck ===== " << endl;
+  if (fUseCouts) std::cout << " ===== In the FillTPCdEdxCheck ===== " << std::endl;
   AliVEvent *event=InputEvent();
   //    
   // Main track loop
@@ -1460,7 +1460,7 @@ void AliAnalysisTaskEbyeIterPID::FillTPCdEdxMC()
   //
   // Fill dEdx information for the TPC and also the clean kaon and protons
   //
-  if (fUseCouts) cout << " ===== In the FillTPCdEdxMC ===== " << endl;
+  if (fUseCouts) std::cout << " ===== In the FillTPCdEdxMC ===== " << std::endl;
   AliMCEventHandler *eventHandler = dynamic_cast<AliMCEventHandler*>(AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler());
   TTree *chain = (TChain*)GetInputData(0);
   if(!chain) { Printf("ERROR: Could not receive input chain"); return; }
@@ -1920,14 +1920,14 @@ void AliAnalysisTaskEbyeIterPID::FillTPCdEdxMC()
                       pdgMom = fMCStack->Particle(labMom)->GetPdgCode();
                       momName = fMCStack->Particle(labMom)->GetName();
                   }
-                  //           if (pdgMom>0) cout << iTrack << "   "  << pdg << "  " << labMom << "   " << pdgMom << "   "<< parName.GetString() << "  " << momName.GetString() << endl;
+                  //           if (pdgMom>0) std::cout << iTrack << "   "  << pdg << "  " << labMom << "   " << pdgMom << "   "<< parName.GetString() << "  " << momName.GetString() << std::endl;
                     
                   // Check if the particle is in the black list of resonances
                   Bool_t acceptRes = kTRUE;
                   for (Int_t ires=0;ires<fnResBins;ires++){
                       if (momName.GetString().Contains(fResonances[ires])) {
                           acceptRes=kFALSE; 
-                          // if (fUseCouts) cout << ires << "  " << parName.GetString() << "  "  << momName.GetString() << "   "  << fResonances[ires] << endl;
+                          // if (fUseCouts) std::cout << ires << "  " << parName.GetString() << "  "  << momName.GetString() << "   "  << fResonances[ires] << std::endl;
                           break;
                       }
                   }
@@ -1989,7 +1989,7 @@ void AliAnalysisTaskEbyeIterPID::FillTPCdEdxMC()
                       
                       // reject resonances 
                       if ( acceptRes ) {
-                          // cout << pdg << "   " << parName.GetString() << " ---  " << pdgMom << "  " << momName.GetString() << endl;
+                          // std::cout << pdg << "   " << parName.GetString() << " ---  " << pdgMom << "  " << momName.GetString() << std::endl;
                           if ( fPiMCgen>-1 ) noResGenMoments[kPi]++;
                           if ( fKaMCgen>-1 ) noResGenMoments[kKa]++;
                           if ( fPrMCgen>-1 ) noResGenMoments[kPr]++;
@@ -2123,7 +2123,7 @@ void AliAnalysisTaskEbyeIterPID::FastGen()
   //
   // Fill dEdx information for the TPC and also the clean kaon and protons
   //
-  if (fUseCouts) cout << " ===== In the FastGen ===== " << endl;
+  if (fUseCouts) std::cout << " ===== In the FastGen ===== " << std::endl;
    
   Int_t dataType = 1, sampleNo = 0;  // dataType-> 1 for MCgen
   Int_t evtNuminFile = fMCEvent -> GetEventNumberInFile();
@@ -2386,7 +2386,7 @@ void AliAnalysisTaskEbyeIterPID::WeakAndMaterial()
   //
   // Fill dEdx information for the TPC and also the clean kaon and protons
   //
-  if (fUseCouts) cout << " ===== In the WeakAndMaterial ===== " << endl;
+  if (fUseCouts) std::cout << " ===== In the WeakAndMaterial ===== " << std::endl;
   //
   // ======================================================================
   // ======================================================================
@@ -2446,7 +2446,7 @@ void AliAnalysisTaskEbyeIterPID::FillDnchDeta()
   //
   // Fill dEdx information for the TPC and also the clean kaon and protons
   //
-  if (fUseCouts) cout << " ===== In the FillDnchDeta ===== " << endl;
+  if (fUseCouts) std::cout << " ===== In the FillDnchDeta ===== " << std::endl;
   //
   // ======================================================================
   // ======================================================================
@@ -2534,7 +2534,7 @@ void AliAnalysisTaskEbyeIterPID::FillTPCdEdxMCEffMatrix()
   //
   // Fill dEdx information for the TPC and also the clean kaon and protons
   //
-  if (fUseCouts) cout << " ===== In the FillTPCdEdxMCEffMatrix ===== " << endl;
+  if (fUseCouts) std::cout << " ===== In the FillTPCdEdxMCEffMatrix ===== " << std::endl;
   AliMCEventHandler *eventHandler = dynamic_cast<AliMCEventHandler*>(AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler());
   TTree *chain = (TChain*)GetInputData(0);
   if(!chain) { Printf("ERROR: Could not receive input chain"); return; }
@@ -2651,7 +2651,7 @@ void AliAnalysisTaskEbyeIterPID::FillCleanElectrons()
 {
 
 // Fill Clean Electrons from conversion
-  if (fUseCouts) cout << " ===== In the FillCleanElectrons ===== " << endl;
+  if (fUseCouts) std::cout << " ===== In the FillCleanElectrons ===== " << std::endl;
   if (fPIDResponse) {
     fPIDResponse->GetTPCResponse().SetBetheBlochParameters(1.28778e+00/50., 3.13539e+01, TMath::Exp(-3.16327e+01), 1.87901e+00, 6.41583e+00);
   }
@@ -2771,7 +2771,7 @@ void AliAnalysisTaskEbyeIterPID::FillCleanPions()
 {
 
   // Fill Clean Pions from K0s
-  if (fUseCouts) cout << " ===== In the FillCleanPions ===== " << endl;
+  if (fUseCouts) std::cout << " ===== In the FillCleanPions ===== " << std::endl;
   if (fPIDResponse) {
     fPIDResponse->GetTPCResponse().SetBetheBlochParameters(1.28778e+00/50., 3.13539e+01, TMath::Exp(-3.16327e+01), 1.87901e+00, 6.41583e+00);
   }
@@ -3088,7 +3088,7 @@ void AliAnalysisTaskEbyeIterPID::BinLogAxis(TH1 *h)
   //
   // Method for the correct logarithmic binning of histograms
   //
-  if (fUseCouts) cout << " ===== In the BinLogAxis ===== " << endl;
+  if (fUseCouts) std::cout << " ===== In the BinLogAxis ===== " << std::endl;
   TAxis *axis       = h->GetXaxis();
   Int_t bins        = axis->GetNbins();
 
@@ -3130,16 +3130,16 @@ Int_t AliAnalysisTaskEbyeIterPID::CountEmptyEvents(Int_t counterBin){
   // check if the event is empty
   if (emptyCount<1) { 
     fHistEmptyEvent->Fill(counterBin);
-    cout << "empty event in " << chain->GetCurrentFile()->GetName() << endl;
+    std::cout << "empty event in " << chain->GetCurrentFile()->GetName() << std::endl;
   }
-  if (fUseCouts) cout << " ====== EVENT IS COOL GO AHEAD ======= " << endl;
+  if (fUseCouts) std::cout << " ====== EVENT IS COOL GO AHEAD ======= " << std::endl;
   return emptyCount;
 
 }
 //________________________________________________________________________
 void AliAnalysisTaskEbyeIterPID::Terminate(Option_t *) 
 {
-  cout << " ===== In the Terminate ===== " << endl;
+  std::cout << " ===== In the Terminate ===== " << std::endl;
   // Draw result to the screen
   // Called once at the end of the query
   

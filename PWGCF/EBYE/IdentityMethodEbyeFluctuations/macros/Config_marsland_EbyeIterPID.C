@@ -50,7 +50,7 @@ AliAnalysisTaskEbyeIterPID* Config_marsland_EbyeIterPID(Int_t settingType, Int_t
   SetDefaults(task);
   if (lhcPeriod==1) task->SelectCollisionCandidates(AliVEvent::kMB);   // select minimum bias events for LHC10h
   if (lhcPeriod==2) task->SelectCollisionCandidates(AliVEvent::kINT7); // select minimum bias events for LHC15o
-  cout << " ===== In the Config --> Running with lhcPeriod =  " << lhcPeriod << " ===== " << endl;
+  std::cout << " ===== In the Config --> Running with lhcPeriod =  " << lhcPeriod << " ===== " << std::endl;
   // Other Specific settings
 
   switch (settingType) {
@@ -61,96 +61,96 @@ AliAnalysisTaskEbyeIterPID* Config_marsland_EbyeIterPID(Int_t settingType, Int_t
     // 
     // THnSparse is used: StandardTPCITScuts 16EtaBin_150pBins_9centBins (REFERENCE settings)
     case 0:{ 
-      cout << settingType << " THnSparse is used: StandardTPCITScuts 16EtaBin_150pBins_9centBins (REFERENCE settings) " << endl;
+      std::cout << settingType << " THnSparse is used: StandardTPCITScuts 16EtaBin_150pBins_9centBins (REFERENCE settings) " << std::endl;
       task->SetFillDeDxTree(kFALSE); 
     }
     break;
     case 1:{ 
-      cout << settingType << " THnSparse is used: (REFERENCE settings)  + TIGHTCUTS  (active length cut) " << endl;
+      std::cout << settingType << " THnSparse is used: (REFERENCE settings)  + TIGHTCUTS  (active length cut) " << std::endl;
       task->SetFillDeDxTree(kFALSE);  
       task->SetTightCuts(kTRUE); 
     }
     break;
     case 2:{ 
-      cout << settingType << " THnSparse is used: (REFERENCE settings)  + DCAxySmall " << endl;
+      std::cout << settingType << " THnSparse is used: (REFERENCE settings)  + DCAxySmall " << std::endl;
       task->SetFillDeDxTree(kFALSE);  
       task->SetSystDCAxy(-1); 
     }
     break;
     case 3:{ 
-      cout << settingType << " THnSparse is used: (REFERENCE settings)  + DCAxyLarge " << endl;
+      std::cout << settingType << " THnSparse is used: (REFERENCE settings)  + DCAxyLarge " << std::endl;
       task->SetFillDeDxTree(kFALSE);  
       task->SetSystDCAxy(1); 
     }
     break;
     case 4:{ 
-      cout << settingType << " THnSparse is used: (REFERENCE settings)  + cRows60 " << endl;
+      std::cout << settingType << " THnSparse is used: (REFERENCE settings)  + cRows60 " << std::endl;
       task->SetFillDeDxTree(kFALSE);  
       task->SetSystNCrossedRows(-1); 
     }
     break;
     case 5:{ 
-      cout << settingType << " THnSparse is used: (REFERENCE settings)  + cRows100 " << endl;
+      std::cout << settingType << " THnSparse is used: (REFERENCE settings)  + cRows100 " << std::endl;
       task->SetFillDeDxTree(kFALSE);  
       task->SetSystNCrossedRows(1); 
     }
     break;
     case 6:{ 
-      cout << settingType << " THnSparse is used: (REFERENCE settings)  + centEstCL1 " << endl;
+      std::cout << settingType << " THnSparse is used: (REFERENCE settings)  + centEstCL1 " << std::endl;
       task->SetFillDeDxTree(kFALSE);  
       task->SetSystCentEstimator(-1); 
     }
     break;
     case 7:{ 
-      cout << settingType << " THnSparse is used: (REFERENCE settings)  + centEstTRK " << endl;
+      std::cout << settingType << " THnSparse is used: (REFERENCE settings)  + centEstTRK " << std::endl;
       task->SetFillDeDxTree(kFALSE);  
       task->SetSystCentEstimator(1); 
     }
     break;
     case 8:{ 
-      cout << settingType << " THnSparse is used: (REFERENCE settings)  + Vz8 " << endl;
+      std::cout << settingType << " THnSparse is used: (REFERENCE settings)  + Vz8 " << std::endl;
       task->SetFillDeDxTree(kFALSE);  
       task->SetSystVz(-1); 
     }
     break;
     case 9:{ 
-      cout << settingType << " THnSparse is used: (REFERENCE settings)  + Vz12 " << endl;
+      std::cout << settingType << " THnSparse is used: (REFERENCE settings)  + Vz12 " << std::endl;
       task->SetFillDeDxTree(kFALSE);  
       task->SetSystVz(1); 
     }
     break;
     case 10:{ 
-      cout << settingType << " THnSparse is used: (REFERENCE settings)  + Chi2Small " << endl;
+      std::cout << settingType << " THnSparse is used: (REFERENCE settings)  + Chi2Small " << std::endl;
       task->SetFillDeDxTree(kFALSE); 
       task->SetSystTPCChi2(-1); 
     }
     break;
     case 11:{ 
-      cout << settingType << " THnSparse is used: (REFERENCE settings)  + Chi2Large " << endl;
+      std::cout << settingType << " THnSparse is used: (REFERENCE settings)  + Chi2Large " << std::endl;
       task->SetFillDeDxTree(kFALSE); 
       task->SetSystTPCChi2(1); 
     }
     break;
     case 12:{ 
-      cout << settingType << " THnSparse is used: (REFERENCE settings) + allCuts are filled " << endl;
+      std::cout << settingType << " THnSparse is used: (REFERENCE settings) + allCuts are filled " << std::endl;
       task->SetFillDeDxTree(kFALSE); 
       task->SetFillAllCutVariables(kTRUE); 
       task->SetFillArmPodTree(kTRUE); 
     }
     break;
     case 13:{ 
-      cout << settingType << " THnSparse is used: (REFERENCE settings) + Bayesian Probabilities are filled " << endl;
+      std::cout << settingType << " THnSparse is used: (REFERENCE settings) + Bayesian Probabilities are filled " << std::endl;
       task->SetFillDeDxTree(kFALSE); 
       task->SetFillBayesianProb(kTRUE); 
     }
     break;
     case 14:{ 
-      cout << settingType << " (REFERENCE settings) + dEdx Tree is filled " << endl;
+      std::cout << settingType << " (REFERENCE settings) + dEdx Tree is filled " << std::endl;
       task->SetFillDeDxTree(kTRUE); 
     }
     break;
     case 15:{ 
-      cout << settingType << " THnSparse is used: (REFERENCE settings) + 18centBins " << endl;
+      std::cout << settingType << " THnSparse is used: (REFERENCE settings) + 18centBins " << std::endl;
       task->SetFillDeDxTree(kFALSE); 
       const Int_t tmpCentbins = 19; 
       Float_t tmpfxCentBins[tmpCentbins] = {0,2.5,5,7.5,10,15,20,25,30,35,40,45,50,55,60,65,70,75,80}; 
@@ -158,7 +158,7 @@ AliAnalysisTaskEbyeIterPID* Config_marsland_EbyeIterPID(Int_t settingType, Int_t
     }
     break;
     case 16:{ 
-      cout << settingType << " THnSparse is used: (REFERENCE settings) + centBin 10 " << endl;
+      std::cout << settingType << " THnSparse is used: (REFERENCE settings) + centBin 10 " << std::endl;
       task->SetFillDeDxTree(kFALSE); 
       const Int_t tmpCentbins = 9;  
       Float_t tmpfxCentBins[tmpCentbins] = {0,10,20,30,40,50,60,70,80}; 
@@ -166,7 +166,7 @@ AliAnalysisTaskEbyeIterPID* Config_marsland_EbyeIterPID(Int_t settingType, Int_t
     }
     break;
     case 17:{ 
-      cout << settingType << " THnSparse is used: (REFERENCE settings) + centBin 5 " << endl;
+      std::cout << settingType << " THnSparse is used: (REFERENCE settings) + centBin 5 " << std::endl;
       task->SetFillDeDxTree(kFALSE); 
       const Int_t tmpCentbins = 17; 
       Float_t tmpfxCentBins[tmpCentbins] = {0,5,10,15,20,25,30,35,40,45,50,55,60,65,70,75,80}; 
@@ -174,14 +174,14 @@ AliAnalysisTaskEbyeIterPID* Config_marsland_EbyeIterPID(Int_t settingType, Int_t
     }
     break;
     case 18:{ 
-      cout << settingType << " THnSparse is used: ITS is OFF " << endl;
+      std::cout << settingType << " THnSparse is used: ITS is OFF " << std::endl;
       task->SetFillDeDxTree(kFALSE);
       task->SetSystDCAxy(1); 
       task->SetSystVz(1); 
     }
     break;
     case 19:{ 
-      cout << settingType << " THnSparse is used: (REFERENCE settings) + THnSparse is used: number of eta bins = 32 " << endl;
+      std::cout << settingType << " THnSparse is used: (REFERENCE settings) + THnSparse is used: number of eta bins = 32 " << std::endl;
       task->SetFillDeDxTree(kFALSE);
       task->SetNEtabins(32); 
       const Int_t tmpCentbins  = 10;   
@@ -190,7 +190,7 @@ AliAnalysisTaskEbyeIterPID* Config_marsland_EbyeIterPID(Int_t settingType, Int_t
     }
     break;
     case 20:{ 
-      cout << settingType << " THnSparse is used: StandardTPCITScuts + TightCuts TPC dEdx preliminary plot  " << endl;
+      std::cout << settingType << " THnSparse is used: StandardTPCITScuts + TightCuts TPC dEdx preliminary plot  " << std::endl;
       task->SetDeDxBinWidth(2.5);
       task->SetDeDxLowerEdge(20.);
       task->SetDeDxUpperEdge(1020.);
@@ -205,7 +205,7 @@ AliAnalysisTaskEbyeIterPID* Config_marsland_EbyeIterPID(Int_t settingType, Int_t
     }
     break;
     case 21:{ 
-      cout << settingType << " THnSparse is used: (REFERENCE settings) + allCuts + ArmPodTree filled + eta range extended  " << endl;
+      std::cout << settingType << " THnSparse is used: (REFERENCE settings) + allCuts + ArmPodTree filled + eta range extended  " << std::endl;
       task->SetFillAllCutVariables(kTRUE); 
       task->SetFillTIdenTrees(kTRUE);
       task->SetFillArmPodTree(kTRUE); 
@@ -221,7 +221,7 @@ AliAnalysisTaskEbyeIterPID* Config_marsland_EbyeIterPID(Int_t settingType, Int_t
     // ====================================================================================
     // 
     case 100:{ 
-      cout << settingType << " THnSparse is used: StandardTPCITScuts 8EtaBin_150pBins_9centBins (REFERENCE settings) MC CLOSURE " << endl;
+      std::cout << settingType << " THnSparse is used: StandardTPCITScuts 8EtaBin_150pBins_9centBins (REFERENCE settings) MC CLOSURE " << std::endl;
       task->SetFillDeDxTree(kFALSE);   
       task->SetIsMCtrue(kTRUE); 
       task->SetIncludeTOF(kFALSE); 
@@ -241,7 +241,7 @@ AliAnalysisTaskEbyeIterPID* Config_marsland_EbyeIterPID(Int_t settingType, Int_t
     }
     break;
     case 101:{ 
-      cout << settingType << " FastSimul is used: StandardTPCITScuts 8EtaBin_150pBins_9centBins (REFERENCE settings) " << endl;
+      std::cout << settingType << " FastSimul is used: StandardTPCITScuts 8EtaBin_150pBins_9centBins (REFERENCE settings) " << std::endl;
       task->SetIsMCtrue(kTRUE); 
       task->SetNEtabins(8);
       task->SetRunFastSimulation(kTRUE);
@@ -249,7 +249,7 @@ AliAnalysisTaskEbyeIterPID* Config_marsland_EbyeIterPID(Int_t settingType, Int_t
     }
     break;
     case 102:{ 
-      cout << settingType << " FastSimul is used: StandardTPCITScuts 8EtaBin_150pBins_9centBins ETA DEPENDENCE " << endl;
+      std::cout << settingType << " FastSimul is used: StandardTPCITScuts 8EtaBin_150pBins_9centBins ETA DEPENDENCE " << std::endl;
       task->SetIsMCtrue(kTRUE); 
       task->SetNEtabins(8);
       task->SetRunFastSimulation(kTRUE);
@@ -267,7 +267,7 @@ AliAnalysisTaskEbyeIterPID* Config_marsland_EbyeIterPID(Int_t settingType, Int_t
     }
     break;
     case 103:{ 
-      cout << settingType << " FastSimul is used: StandardTPCITScuts 8EtaBin_150pBins_9centBins Momentum DEPENDENCE " << endl;
+      std::cout << settingType << " FastSimul is used: StandardTPCITScuts 8EtaBin_150pBins_9centBins Momentum DEPENDENCE " << std::endl;
       task->SetIsMCtrue(kTRUE); 
       task->SetNEtabins(8);
       task->SetRunFastSimulation(kTRUE);
@@ -285,7 +285,7 @@ AliAnalysisTaskEbyeIterPID* Config_marsland_EbyeIterPID(Int_t settingType, Int_t
     }
     break;
     case 104:{ 
-      cout << settingType << " FullSimul is used: StandardTPCITScuts 8EtaBin_150pBins_9centBins EffMatrix " << endl;
+      std::cout << settingType << " FullSimul is used: StandardTPCITScuts 8EtaBin_150pBins_9centBins EffMatrix " << std::endl;
       task->SetEffMatrix(kTRUE);
       task->SetIsMCtrue(kTRUE); 
       task->SetTightCuts(kFALSE);
@@ -313,7 +313,7 @@ AliAnalysisTaskEbyeIterPID* Config_marsland_EbyeIterPID(Int_t settingType, Int_t
     }
     break;
     case 105:{ 
-      cout << settingType << " FullSimul is used: StandardTPCITScuts 8EtaBin_150pBins_9centBins EffMatrix " << endl;
+      std::cout << settingType << " FullSimul is used: StandardTPCITScuts 8EtaBin_150pBins_9centBins EffMatrix " << std::endl;
       task->SetEffMatrix(kTRUE);
       task->SetIsMCtrue(kTRUE); 
       task->SetTightCuts(kFALSE);
@@ -336,7 +336,7 @@ AliAnalysisTaskEbyeIterPID* Config_marsland_EbyeIterPID(Int_t settingType, Int_t
     }
     break;
     case 106:{ 
-      cout << settingType << " FullSimul is used: Tight Cuts 8EtaBin_150pBins_9centBins EffMatrix " << endl;
+      std::cout << settingType << " FullSimul is used: Tight Cuts 8EtaBin_150pBins_9centBins EffMatrix " << std::endl;
       task->SetEffMatrix(kTRUE);
       task->SetIsMCtrue(kTRUE); 
       task->SetNEtabins(8);
@@ -359,7 +359,7 @@ AliAnalysisTaskEbyeIterPID* Config_marsland_EbyeIterPID(Int_t settingType, Int_t
     }
     break;
     case 107:{ 
-      cout << settingType << " FastSimul is used: StandardTPCITScuts 8EtaBin_150pBins_9centBins (REFERENCE settings): Fill only DnchDeta " << endl;
+      std::cout << settingType << " FastSimul is used: StandardTPCITScuts 8EtaBin_150pBins_9centBins (REFERENCE settings): Fill only DnchDeta " << std::endl;
       task->SetIsMCtrue(kTRUE); 
       task->SetNEtabins(8);
       task->SetRunFastSimulation(kTRUE);
@@ -367,7 +367,7 @@ AliAnalysisTaskEbyeIterPID* Config_marsland_EbyeIterPID(Int_t settingType, Int_t
     }
     break;
     case 108:{ 
-      cout << settingType << " THnSparse is used: StandardTPCITScuts 8EtaBin_150pBins_9centBins (REFERENCE settings) MC CLOSURE with TOF cut " << endl;
+      std::cout << settingType << " THnSparse is used: StandardTPCITScuts 8EtaBin_150pBins_9centBins (REFERENCE settings) MC CLOSURE with TOF cut " << std::endl;
       task->SetFillDeDxTree(kFALSE);  
       task->SetIncludeTOF(kTRUE);   
       task->SetIsMCtrue(kTRUE); 
@@ -387,7 +387,7 @@ AliAnalysisTaskEbyeIterPID* Config_marsland_EbyeIterPID(Int_t settingType, Int_t
     }
     break;
     case 109:{ 
-      cout << settingType << " THnSparse is used: StandardTPCITScuts 8EtaBin_150pBins_9centBins (REFERENCE settings) MC CLOSURE with NO ITS cut " << endl;
+      std::cout << settingType << " THnSparse is used: StandardTPCITScuts 8EtaBin_150pBins_9centBins (REFERENCE settings) MC CLOSURE with NO ITS cut " << std::endl;
       task->SetFillDeDxTree(kFALSE);  
       task->SetIncludeTOF(kFALSE);  
       task->SetIsMCtrue(kTRUE); 
@@ -407,7 +407,7 @@ AliAnalysisTaskEbyeIterPID* Config_marsland_EbyeIterPID(Int_t settingType, Int_t
     }
     break;
     case 110:{ 
-      cout << settingType << " FULL MC --> eta and mom scan + removal of resonances + EffMatrix  " << endl;
+      std::cout << settingType << " FULL MC --> eta and mom scan + removal of resonances + EffMatrix  " << std::endl;
       task->SetIsMCtrue(kTRUE); 
       task->SetIncludeTOF(kFALSE); 
       task->SetEffMatrix(kTRUE);
@@ -435,7 +435,7 @@ AliAnalysisTaskEbyeIterPID* Config_marsland_EbyeIterPID(Int_t settingType, Int_t
     }
     break;
     case 111:{ 
-      cout << settingType << " Fast Gen --> eta and mom scan + removal of resonances  " << endl;
+      std::cout << settingType << " Fast Gen --> eta and mom scan + removal of resonances  " << std::endl;
       task->SetRunFastSimulation(kTRUE);
       task->SetIsMCtrue(kTRUE); 
       task->SetNEtabins(20);
@@ -465,7 +465,7 @@ AliAnalysisTaskEbyeIterPID* Config_marsland_EbyeIterPID(Int_t settingType, Int_t
     }
     break;
     case 112:{ 
-      cout << settingType << " Fast Gen --> eta and mom scan + removal of resonances  " << endl;
+      std::cout << settingType << " Fast Gen --> eta and mom scan + removal of resonances  " << std::endl;
       task->SetRunFastSimulation(kTRUE);
       task->SetIsMCtrue(kTRUE);
       task->SetNEtabins(20);
@@ -506,11 +506,11 @@ void SetDefaults(AliAnalysisTaskEbyeIterPID *defaultTask)
 {
   
   // Setters for the eta momentum dEdx and centrality bins 
-  cout << " ------------------------------------------------------------------------------------- " << endl;
-  cout << " ------------------------------------------------------------------------------------- " << endl;
-  cout << " ------------------- Set default settings for the task object ------------------------ " << endl;
-  cout << " ------------------------------------------------------------------------------------- " << endl;
-  cout << " ------------------------------------------------------------------------------------- " << endl;
+  std::cout << " ------------------------------------------------------------------------------------- " << std::endl;
+  std::cout << " ------------------------------------------------------------------------------------- " << std::endl;
+  std::cout << " ------------------- Set default settings for the task object ------------------------ " << std::endl;
+  std::cout << " ------------------------------------------------------------------------------------- " << std::endl;
+  std::cout << " ------------------------------------------------------------------------------------- " << std::endl;
 
   defaultTask->SetSampleDeDxUpperEdge(140.);
   defaultTask->SetDeDxBinWidth(2.5);
