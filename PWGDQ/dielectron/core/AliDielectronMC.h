@@ -121,7 +121,7 @@ private:
   Bool_t fHasMC;            // Do we have an MC handler?
   Bool_t fCheckHF;          // Do we look for HF correlated pairs?
   
-  std::map<Int_t,Int_t> fhfproc; // quark label and HF process
+  Int_t  fEvtHFtype;        // 0:no HF, 1:ccbar, 2:bbar
   
   mutable Int_t  fHasHijingHeader;  //! //mutable needed to change it in a const function.
 
@@ -149,8 +149,8 @@ private:
 
   //MC - Heavy Flavour related methods
   Bool_t LoadHFPairs();
-  Int_t  IsaBhadron(Int_t pdg) const;
-  
+  Bool_t IsaBorDhadron(Int_t PartPdg) const;
+
   ClassDef(AliDielectronMC, 2)
 };
 
