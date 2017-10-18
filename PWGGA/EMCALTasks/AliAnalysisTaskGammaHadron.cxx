@@ -59,8 +59,8 @@ fTriggerType(AliVEvent::kINT7), fMixingEventType(AliVEvent::kINT7),fCurrentEvent
 fParticleLevel(kFALSE),fIsMC(kFALSE),
 fEventCutList(0),
 
-fHistClusPairInvarMasspT(0),fHistPi0(0),fMAngle(0),fPtAngle(0),
-fRand(0),fClusEnergy(0),fDoRotBkg(0),fNRotBkgSamples(1),fPi0Cands(0),
+fHistClusPairInvarMasspT(0),fHistPi0(0),fMAngle(0),fPtAngle(0),fMassPtPionAcc(0),fMassPtPionRej(0),
+fRand(0),fClusEnergy(0),fDoRotBkg(0),fNRotBkgSamples(1),fPi0Cands(0),fPi0NSigma(2.),fPi0AsymCut(0.8),
 fHistEvsPt(0),fHistBinCheckPt(0),fHistBinCheckZt(0),fHistBinCheckXi(0),
 fHistDEtaDPhiGammaQA(0),fHistDEtaDPhiTrackQA(0), fHistClusterTime(0),
 
@@ -87,8 +87,8 @@ fTriggerType(AliVEvent::kINT7), fMixingEventType(AliVEvent::kINT7),fCurrentEvent
 fParticleLevel(kFALSE),fIsMC(kFALSE),
 fEventCutList(0),
 
-fHistClusPairInvarMasspT(0),fHistPi0(0),fMAngle(0),fPtAngle(0),
-fRand(0),fClusEnergy(0),fDoRotBkg(0),fNRotBkgSamples(1),fPi0Cands(0),
+fHistClusPairInvarMasspT(0),fHistPi0(0),fMAngle(0),fPtAngle(0),fMassPtPionAcc(0),fMassPtPionRej(0),
+fRand(0),fClusEnergy(0),fDoRotBkg(0),fNRotBkgSamples(1),fPi0Cands(0),fPi0NSigma(2.),fPi0AsymCut(0.8),
 fHistEvsPt(0),fHistBinCheckPt(0),fHistBinCheckZt(0),fHistBinCheckXi(0),
 fHistDEtaDPhiGammaQA(0),fHistDEtaDPhiTrackQA(0), fHistClusterTime(0),
 
@@ -176,6 +176,13 @@ void AliAnalysisTaskGammaHadron::InitArrays()
 	//..!!
 	//.. fPoolSize is an input that is ignored in the PoolManager Anyway
 	fPoolSize       = 1;     //1000 - Raymond/Megan value, says it is ignored anyway
+
+  // Pi0 Mass and Sigma Fit parameters (for mass window)
+  Double_t fPi0MassFitParsValue[5] = {10.49,0.13852,-1.17e-4,2.861e-3,0};
+  memcpy (fPi0MassFitPars, fPi0MassFitParsValue, sizeof(fPi0MassFitPars));
+  Double_t fPi0SigmaFitParsValue[5] = {8.34,9.90e-3,-1.09e-4,6.86e-4,0};
+  memcpy (fPi0SigmaFitPars, fPi0SigmaFitParsValue, sizeof(fPi0SigmaFitPars));
+
 
 	//..member function of AliAnalysisTaskEmcal
 	SetMakeGeneralHistograms(kTRUE);
@@ -748,7 +755,13 @@ void AliAnalysisTaskGammaHadron::UserCreateOutputObjects()
     	fClusEnergy = new TH1F("ClusEnergy","Cluster Energy",1000,0,50);
     	fClusEnergy->GetXaxis()->SetTitle("E (GeV)");
     	fOutput->Add(fClusEnergy);
+
+      fMassPtPionAcc = new TH2F("fMassPtPionAcc","Accepted Pi0 Candidates;M_{#gamma#gamma} (GeV/c^2);p_{T} (GeV/c)",3000,0,0.75,250,0,50);
+      fOutput->Add(fMassPtPionAcc);
+      fMassPtPionRej = new TH2F("fMassPtPionRej","Rejected Pi0 Candidates;M_{#gamma#gamma} (GeV/c^2);p_{T} (GeV/c)",3000,0,0.75,250,0,50);
+      fOutput->Add(fMassPtPionRej);
     }
+
 
 	// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     //   Tyler's Special Histograms
@@ -1194,7 +1207,7 @@ Int_t AliAnalysisTaskGammaHadron::CorrelateClusterAndTrack(AliParticleContainer*
 	AliClusterContainer* clusters  = GetClusterContainer(0);  //how do I know which cells are selected
 	if (!clusters) return 0;
 	Int_t NoOfClustersInEvent =clusters->GetNClusters();
-	Double_t EffWeight_Gamma;
+//	Double_t EffWeight_Gamma;
 	//Double_t EffWeight_Hadron;
 	Double_t Weight=1;    //weight to normalize mixed and same event distributions individually
 
@@ -1224,7 +1237,7 @@ Int_t AliAnalysisTaskGammaHadron::CorrelateClusterAndTrack(AliParticleContainer*
 		TLorentzVector CaloClusterVec;
 		clusters->GetMomentum(CaloClusterVec, cluster);
 		AliTLorentzVector aliCaloClusterVec = AliTLorentzVector(CaloClusterVec); //..can acess phi from
-		EffWeight_Gamma=GetEff(aliCaloClusterVec);
+	//	EffWeight_Gamma=GetEff(aliCaloClusterVec); //commenting out until used
 
 		//------------------------------------------------
         //..This section is for the moment to test
@@ -1321,9 +1334,9 @@ Int_t AliAnalysisTaskGammaHadron::CorrelatePi0AndTrack(AliParticleContainer* tra
 	Int_t NoOfClustersInEvent =clusters->GetNClusters();
 	Int_t nAccClusters = 0;
 	Int_t nAccPi0Clusters = 0;
-	Double_t Pi0Mass = 0.13487; // Hi Michael -> this center value should also be made flexible
-	Double_t Pi0Window = 0.02;  //0.03 // Hi Michael -> the width will vary with pT
-	Double_t EffWeight_Gamma;
+//	Double_t Pi0Mass = 0.13487; // Hi Michael -> this center value should also be made flexible
+//	Double_t Pi0Window = 0.02;  //0.03 // Hi Michael -> the width will vary with pT
+//	Double_t EffWeight_Gamma;
 	//	Double_t EffWeight_Hadron;
 	Double_t Weight;    //weight to normalize mixed and same event distributions individually
 
@@ -1373,13 +1386,20 @@ Int_t AliAnalysisTaskGammaHadron::CorrelatePi0AndTrack(AliParticleContainer* tra
 				//	{
 				CaloClusterVecpi0=CaloClusterVec+CaloClusterVec2;
 				fHistPi0->Fill(CaloClusterVecpi0.M());
-				FillPi0CandsHist(CaloClusterVec,CaloClusterVec2,CaloClusterVecpi0,fMaxClusM02,Weight);
+        if (fPlotQA) {
+          FillPi0CandsHist(CaloClusterVec,CaloClusterVec2,CaloClusterVecpi0,fMaxClusM02,Weight);
+        }
 				fHistClusPairInvarMasspT->Fill(CaloClusterVecpi0.M(),CaloClusterVecpi0.Pt());
 				fMAngle->Fill(CaloClusterVecpi0.M(), CaloClusterVec.Angle(CaloClusterVec2.Vect()),0.5);
 				fPtAngle->Fill(CaloClusterVecpi0.Pt(), CaloClusterVec.Angle(CaloClusterVec2.Vect()),0.5);
-				if((CaloClusterVecpi0.M()>=Pi0Mass-Pi0Window) && (CaloClusterVecpi0.M()<=Pi0Mass+Pi0Window)){
-					nAccPi0Clusters++; //need eventually to divide by 2, otherwise double counting the pi0's
-				}
+//        if(AccClusPairForAna(cluster,cluster2,CaloClusterVecpi0)) {
+//				if((CaloClusterVecpi0.M()>=Pi0Mass-Pi0Window) && (CaloClusterVecpi0.M()<=Pi0Mass+Pi0Window)){
+//					nAccPi0Clusters++; 
+//          fMassPtPionAcc->Fill(CaloClusterVecpi0.M(),CaloClusterVecpi0.Pt());
+//				}
+//        else {
+//          fMassPtPionRej->Fill(CaloClusterVecpi0.M(),CaloClusterVecpi0.Pt());
+//        }
 				//	}
 			}
 		}
@@ -1420,15 +1440,17 @@ Int_t AliAnalysisTaskGammaHadron::CorrelatePi0AndTrack(AliParticleContainer* tra
 			clusters->GetMomentum(CaloClusterVec2,cluster2); /// Vec+=2 2.1.17
 			AliTLorentzVector aliCaloClusterVec2 = AliTLorentzVector(CaloClusterVec2); //..can acess phi from
 
-			if(cluster2->GetNonLinCorrEnergy()>fClEnergyMin && cluster->GetNonLinCorrEnergy()>fClEnergyMin) //FIXME
+      aliCaloClusterVecpi0=aliCaloClusterVec+aliCaloClusterVec2;
+      if(AccClusPairForAna(cluster,cluster2,aliCaloClusterVecpi0))
+//			if(cluster2->GetNonLinCorrEnergy()>fClEnergyMin && cluster->GetNonLinCorrEnergy()>fClEnergyMin) //FIXME
 			{
-				aliCaloClusterVecpi0=aliCaloClusterVec+aliCaloClusterVec2;
-
-				if((aliCaloClusterVecpi0.M()<Pi0Mass-Pi0Window) || (aliCaloClusterVecpi0.M()>Pi0Mass+Pi0Window)) continue; /// 2.1.17
+        fMassPtPionAcc->Fill(aliCaloClusterVecpi0.M(),aliCaloClusterVecpi0.Pt());
+        nAccPi0Clusters++;
+			//	if((aliCaloClusterVecpi0.M()<Pi0Mass-Pi0Window) || (aliCaloClusterVecpi0.M()>Pi0Mass+Pi0Window)) continue; /// 2.1.17
 
 				//here I don't really know what to do in your case
 				//eff of pi0? or eff of gamma? or some mix up of the two ?
-				EffWeight_Gamma=GetEff(aliCaloClusterVecpi0);//currently just assigns 1!!! need eventually to input Pi0 efficiency histogram
+			//	EffWeight_Gamma=GetEff(aliCaloClusterVecpi0);//currently just assigns 1!!! need eventually to input Pi0 efficiency histogram
 				//...........................................
 				//..combine gammas with same event tracks
 				if(SameMix==1)
@@ -1445,7 +1467,7 @@ Int_t AliAnalysisTaskGammaHadron::CorrelatePi0AndTrack(AliParticleContainer* tra
 
 						//..fill here eventually a pi0 four-vector instead of CaloClusterVec
 						//EffWeight_Hadron=GetEff(TLorentzVector)track);
-						FillGhHisograms(1,aliCaloClusterVecpi0,track,5,Weight);
+						FillGhHisograms(0,aliCaloClusterVecpi0,track,5,Weight);
 					}
 				}
 				//...........................................
@@ -1482,11 +1504,11 @@ void AliAnalysisTaskGammaHadron::FillPi0CandsHist(AliTLorentzVector CaloClusterV
 
 	Double_t fE1 = CaloClusterVec.E();
 	Double_t fE2 = CaloClusterVec2.E();
-	Double_t fAssym = (fE1+fE2 > 0.000001) ? TMath::Abs(fE2-fE1)/(fE1+fE2) : 0; //Don't divide by zero
+	Double_t fAsym = (fE1+fE2 > 0.000001) ? TMath::Abs(fE2-fE1)/(fE1+fE2) : 0; //Don't divide by zero
 
 	valueArray[3]=fMaxClusM02;
 	valueArray[4]=TMath::Min(fE1,fE2);
-	valueArray[5]=fAssym;
+	valueArray[5]=fAsym;
 	valueArray[6]=0;
 
 	fPi0Cands->Fill(valueArray,Weight);
@@ -1537,7 +1559,7 @@ void AliAnalysisTaskGammaHadron::FillPi0CandsHist(AliTLorentzVector CaloClusterV
 		valueArray[2]=fOpeningAngle;
 		valueArray[3]=fMaxClusM02;
 		valueArray[4]=TMath::Min(fE1,fE2);
-		valueArray[5]=fAssym;
+		valueArray[5]=fAsym;
 		valueArray[6]=1;
 
 		fPi0Cands->Fill(valueArray,Weight);
@@ -1778,6 +1800,52 @@ Bool_t AliAnalysisTaskGammaHadron::AccClusterForAna(AliClusterContainer* cluster
 
 
 	 return Accepted;
+}
+//
+// Accept cluster pair cut for Pi0 analysis. More cuts besides in ApplyClusterCuts and ApplyKinematicCuts
+//
+//
+//________________________________________________________________________
+Bool_t AliAnalysisTaskGammaHadron::AccClusPairForAna(AliVCluster* cluster1, AliVCluster * cluster2, TLorentzVector vecPi0)
+{
+	//..Accepts clusters if certain conditions are fulfilled
+	Bool_t Accepted=1; //..By default accepted
+
+	Double_t fE1 = cluster1->GetNonLinCorrEnergy();
+	Double_t fE2 = cluster2->GetNonLinCorrEnergy();
+
+  if (fE1<fClEnergyMin || fE2<fClEnergyMin) return 0;  // Check cluster energy min.
+
+	Double_t fAsym = (fE1+fE2 > 0.000001) ? TMath::Abs(fE2-fE1)/(fE1+fE2) : 0; //Don't divide by zero
+
+  if (fAsym > fPi0AsymCut) return 0; // Apply asymmetry cut
+
+  // For reference
+  //fPi0MassFitPars  = {d,e,m1,m2,0}
+  //fPi0SigmaFitPars = {d,e,m1,m2,0}
+
+  Double_t Pi0Pt = vecPi0.Pt();
+  Double_t Pi0Mass = 0;
+  Double_t Pi0Sigma = 0;
+
+  // Estimate Mass Peak
+  if (Pi0Pt < fPi0MassFitPars[0]) {
+    Pi0Mass = fPi0MassFitPars[2]*Pi0Pt + fPi0MassFitPars[1] - fPi0MassFitPars[2]*fPi0MassFitPars[0];
+  } else {
+    Pi0Mass = fPi0MassFitPars[3]*Pi0Pt + fPi0MassFitPars[1] - fPi0MassFitPars[3]*fPi0MassFitPars[0];
+  }
+  // Estimate Mass Sigma
+  if (Pi0Pt < fPi0SigmaFitPars[0]) {
+    Pi0Sigma = fPi0SigmaFitPars[2]*Pi0Pt + fPi0SigmaFitPars[1] - fPi0SigmaFitPars[2]*fPi0SigmaFitPars[0];
+  } else {
+    Pi0Sigma = fPi0SigmaFitPars[3]*Pi0Pt + fPi0SigmaFitPars[1] - fPi0SigmaFitPars[3]*fPi0SigmaFitPars[0];
+  }
+  if (TMath::Abs(vecPi0.M() - Pi0Mass) > fPi0NSigma * Pi0Sigma) {
+    fMassPtPionRej->Fill(vecPi0.M(),vecPi0.Pt());
+    return 0;
+  }
+
+  return Accepted;
 }
 //________________________________________________________________________
 Double_t AliAnalysisTaskGammaHadron::DeltaPhi(AliTLorentzVector ClusterVec,AliVParticle* TrackVec)

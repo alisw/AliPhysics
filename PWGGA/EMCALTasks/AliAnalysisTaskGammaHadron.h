@@ -8,71 +8,74 @@
 #include "AliFiducialCut.h"
 #include "AliEMCALRecoUtils.h"
 #include <THn.h>
-#include <THnSparse.h>
+  #include <THnSparse.h>
 
-class TH1;
-class TH2;
-class TH3;
-class AliVVZERO;
-class AliEvtPoolManager;
+  class TH1;
+  class TH2;
+  class TH3;
+  class AliVVZERO;
+  class AliEvtPoolManager;
 
-using std::vector;
+  using std::vector;
 
-class AliAnalysisTaskGammaHadron : public AliAnalysisTaskEmcal {
- public:
-	AliAnalysisTaskGammaHadron();
-	AliAnalysisTaskGammaHadron(Bool_t InputGammaOrPi0,Bool_t InputSameEventAnalysis);
-virtual ~AliAnalysisTaskGammaHadron();
+  class AliAnalysisTaskGammaHadron : public AliAnalysisTaskEmcal {
+   public:
+    AliAnalysisTaskGammaHadron();
+    AliAnalysisTaskGammaHadron(Bool_t InputGammaOrPi0,Bool_t InputSameEventAnalysis);
+  virtual ~AliAnalysisTaskGammaHadron();
 
-  //setters for the analysis
-  void                        SetEffHistGamma(THnF *h)                              { fHistEffGamma    = h      ; }
-  void                        SetEffHistHadron(THnF *h)                             { fHistEffHadron   = h      ; }
-  void                        SetSavePool(Bool_t input)                             { fSavePool        = input  ; }
-  void                        SetPlotMore(Int_t input)                             { fPlotQA          = input  ; }
-  void                        SetEvtTriggerType(UInt_t input)                       { fTriggerType     = input  ; }
-  void                        SetEvtMixType(UInt_t input)                           { fMixingEventType = input  ; }
-//  void                        SetCutsId(Id, cent, ptCl,Ecl,,.... UInt_t input)      { fMixingEventType = input  ; }
-  void                        SetClEnergyMin(Int_t input)                           { fClEnergyMin = input;}
-  void                        SetNLM(Int_t input)                                   { fMaxNLM = input;}
-  void                        SetM02(Double_t inputMin,Double_t inputMax)           { fClShapeMin = inputMin; fClShapeMax = inputMax;}
-  void                        SetRmvMatchedTrack(Bool_t input, Double_t dEta=-1, Double_t dPhi=-1) { fRmvMTrack  = input; fTrackMatchEta=dEta; fTrackMatchPhi=dPhi;}
-  void                        SetUseManualEvtCuts(Bool_t input)                     { fUseManualEventCuts = input;}
-  void                        SetDoRotBkg(Bool_t input)                             { fDoRotBkg = input;}
-  void                        SetNRotBkgSamples(Int_t input)                        { fNRotBkgSamples = input;}
+    //setters for the analysis
+    void                        SetEffHistGamma(THnF *h)                              { fHistEffGamma    = h      ; }
+    void                        SetEffHistHadron(THnF *h)                             { fHistEffHadron   = h      ; }
+    void                        SetSavePool(Bool_t input)                             { fSavePool        = input  ; }
+    void                        SetPlotMore(Int_t input)                             { fPlotQA          = input  ; }
+    void                        SetEvtTriggerType(UInt_t input)                       { fTriggerType     = input  ; }
+    void                        SetEvtMixType(UInt_t input)                           { fMixingEventType = input  ; }
+  //  void                        SetCutsId(Id, cent, ptCl,Ecl,,.... UInt_t input)      { fMixingEventType = input  ; }
+    void                        SetClEnergyMin(Int_t input)                           { fClEnergyMin = input;}
+    void                        SetNLM(Int_t input)                                   { fMaxNLM = input;}
+    void                        SetM02(Double_t inputMin,Double_t inputMax)           { fClShapeMin = inputMin; fClShapeMax = inputMax;}
+    void                        SetRmvMatchedTrack(Bool_t input, Double_t dEta=-1, Double_t dPhi=-1) { fRmvMTrack  = input; fTrackMatchEta=dEta; fTrackMatchPhi=dPhi;}
+    void                        SetUseManualEvtCuts(Bool_t input)                     { fUseManualEventCuts = input;}
+    void                        SetDoRotBkg(Bool_t input)                             { fDoRotBkg = input;}
+    void                        SetNRotBkgSamples(Int_t input)                        { fNRotBkgSamples = input;}
+    void                        SetPi0NSigma(Float_t input)                           { fPi0NSigma = input;}
+    void                        SetPi0AsymCut(Float_t input)                          { fPi0AsymCut = input;} 
 
 
-  //Functions for mixed event purposes
-  void                        SetExternalEventPoolManager(AliEventPoolManager* mgr) {fPoolMgr = mgr;}
-  AliEventPoolManager*        GetEventPoolManager()                                 {return fPoolMgr;}
-  // Set which pools will be saved
-  void                        AddEventPoolsToOutput(Double_t minCent, Double_t maxCent,  Double_t minZvtx, Double_t maxZvtx, Double_t minPt, Double_t maxPt);
- private:
-  AliEventCuts                fEventCuts;                   ///< event selection utility
-  AliFiducialCut*             fFiducialCuts;                ///< fiducial cuts for the EMCal and DCal in terms of eta and phi
-  AliEMCALRecoUtils*          fFiducialCellCut;             ///< fiducial cut for EMCal+DCal in terms of rows and collumns
+    //Functions for mixed event purposes
+    void                        SetExternalEventPoolManager(AliEventPoolManager* mgr) {fPoolMgr = mgr;}
+    AliEventPoolManager*        GetEventPoolManager()                                 {return fPoolMgr;}
+    // Set which pools will be saved
+    void                        AddEventPoolsToOutput(Double_t minCent, Double_t maxCent,  Double_t minZvtx, Double_t maxZvtx, Double_t minPt, Double_t maxPt);
+   private:
+    AliEventCuts                fEventCuts;                   ///< event selection utility
+    AliFiducialCut*             fFiducialCuts;                ///< fiducial cuts for the EMCal and DCal in terms of eta and phi
+    AliEMCALRecoUtils*          fFiducialCellCut;             ///< fiducial cut for EMCal+DCal in terms of rows and collumns
 
- protected:
+   protected:
 
-  void                        InitArrays()                                                 ;
-  // overwritten EMCal base class functions
-  Bool_t                      Run()                             	                          ;
-  void                        ExecOnce()         									      ;
-  Bool_t                      IsEventSelected()											  ;
-  void                        UserCreateOutputObjects()        		                      ;
+    void                        InitArrays()                                                 ;
+    // overwritten EMCal base class functions
+    Bool_t                      Run()                             	                          ;
+    void                        ExecOnce()         									      ;
+    Bool_t                      IsEventSelected()											  ;
+    void                        UserCreateOutputObjects()        		                      ;
 
-  //Functions for mixed event purposes
-  void                        InitEventMixer()											  ;
-  TObjArray*                  CloneToCreateTObjArray(AliParticleContainer* tracks)          ;
+    //Functions for mixed event purposes
+    void                        InitEventMixer()											  ;
+    TObjArray*                  CloneToCreateTObjArray(AliParticleContainer* tracks)          ;
 
-  //..Correlate and fill
-  Bool_t                      FillHistograms()                                              ;
-  Int_t                       CorrelateClusterAndTrack(AliParticleContainer* tracks,TObjArray* bgTracks,Bool_t SameMix, Double_t Weight);
-  Int_t                       CorrelatePi0AndTrack(AliParticleContainer* tracks,TObjArray* bgTracks,Bool_t SameMix, Double_t Weight);
-  void                        FillPi0CandsHist(AliTLorentzVector CaloClusterVec,AliTLorentzVector CaloClusterVec2,AliTLorentzVector CaloClusterVecPi0,Double_t fMaxClusM02,Double_t Weight);
-  void                        FillGhHisograms(Int_t identifier,AliTLorentzVector ClusterVec,AliVParticle* TrackVec, Double_t ClusterEcut, Double_t Weight);
-  void                        FillQAHisograms(Int_t identifier,AliClusterContainer* clusters,AliVCluster* caloCluster,AliVParticle* TrackVec);
-  Bool_t                      AccClusterForAna(AliClusterContainer* clusters, AliVCluster* caloCluster);
-  Bool_t                      DetermineMatchedTrack(AliVCluster* caloCluster,Double_t &etadiff,Double_t & phidiff);
+    //..Correlate and fill
+    Bool_t                      FillHistograms()                                              ;
+    Int_t                       CorrelateClusterAndTrack(AliParticleContainer* tracks,TObjArray* bgTracks,Bool_t SameMix, Double_t Weight);
+    Int_t                       CorrelatePi0AndTrack(AliParticleContainer* tracks,TObjArray* bgTracks,Bool_t SameMix, Double_t Weight);
+    void                        FillPi0CandsHist(AliTLorentzVector CaloClusterVec,AliTLorentzVector CaloClusterVec2,AliTLorentzVector CaloClusterVecPi0,Double_t fMaxClusM02,Double_t Weight);
+    void                        FillGhHisograms(Int_t identifier,AliTLorentzVector ClusterVec,AliVParticle* TrackVec, Double_t ClusterEcut, Double_t Weight);
+    void                        FillQAHisograms(Int_t identifier,AliClusterContainer* clusters,AliVCluster* caloCluster,AliVParticle* TrackVec);
+    Bool_t                      AccClusterForAna(AliClusterContainer* clusters, AliVCluster* caloCluster);
+    Bool_t                      AccClusPairForAna(AliVCluster* cluster1, AliVCluster * cluster2, TLorentzVector vecPi0);
+    Bool_t                      DetermineMatchedTrack(AliVCluster* caloCluster,Double_t &etadiff,Double_t & phidiff);
 
   //..Delta phi does also exist in AliAnalysisTaskEmcal. It is overwritten here (ask Raymond)
   Double_t                    DeltaPhi(AliTLorentzVector ClusterVec,AliVParticle* TrackVec) ;
@@ -140,14 +143,20 @@ virtual ~AliAnalysisTaskGammaHadron();
   TH1 					    *fHistPi0;                 //!<! Tyler's histogram
   TH2                       *fMAngle;                  //!<! Tyler's histogram
   TH2                       *fPtAngle;                 //!<! Tyler's histogram
+  TH2             *fMassPtPionAcc; //!<! Histogram of Mass vs Pt for accepted Pi0 Candidates
+  TH2             *fMassPtPionRej; //!<! Histogram of Mass vs Pt for rejected Pi0 Candidates
 
 
-  TRandom3    *fRand;//!<! Random number generator.  Initialzed by rot background
-  TH1         *fClusEnergy; //!<! Energy of clusters accepted for pi0 analysis
-  Bool_t       fDoRotBkg; ///< Whether or not to calculate the rotational background
-  Int_t        fNRotBkgSamples; ///< How many samples to use in the rotational background
-  THnSparseF  *fPi0Cands; //!<! Michael's THnSparse for pi0 Candidates
+  TRandom3        *fRand;           //!<! Random number generator.  Initialzed by rot background
+  TH1             *fClusEnergy;     //!<! Energy of clusters accepted for pi0 analysis
+  Bool_t          fDoRotBkg;        ///< Whether or not to calculate the rotational background
+  Int_t           fNRotBkgSamples;  ///< How many samples to use in the rotational background
+  THnSparseF      *fPi0Cands;       //!<! Michael's THnSparse for pi0 Candidates
 
+  Double_t        fPi0MassFitPars[5];          ///< Fit Parameters for mass peak
+  Double_t        fPi0SigmaFitPars[5];         ///< Fit Parameters for sigma
+  Float_t         fPi0NSigma;                  ///< number of sigma to cut on peak
+  Float_t         fPi0AsymCut;                 ///< Asymmetry cut for Pi0 candidates
 
   TH1 					    *fHistEvsPt;               //!<! E vs pT
   TH1 					   **fHistBinCheckPt;          //!<! plot Pt distribution for ideal binning
