@@ -30,10 +30,12 @@ class AliPHOSGeometry;
     Int_t  GetNCells()            {return fNCells;}
     Int_t  GetNTracksMatched()    {return fNTracksMatched;}
 
-	 Bool_t IsFilled()             {return fIsFilled;}
+    Bool_t IsFilled()             {return fIsFilled;}
     Bool_t IsExotic()             {return fIsExotic;}
     Bool_t IsEMCAL()              {return fIsEMCAL;}
     Bool_t IsPHOS()               {return fIsPHOS;}
+
+    void  GetPosition(Float_t* x)   {x[0]=fPosition[0]; x[1]=fPosition[1]; x[2]=fPosition[2];}
 
     Double_t GetCoreEnergy()           {return fCoreEnergy;}
     Double_t GetDispersion()           {return fDispersion;}
@@ -57,7 +59,7 @@ class AliPHOSGeometry;
     Int_t GetVecSizeTrue() {return fCellAbsID.size();}
   protected:
 
-	 //Char_t
+	  //Char_t
     Char_t  fType;
 
     //Int_t
@@ -67,11 +69,14 @@ class AliPHOSGeometry;
 
     //Bool_t
     Bool_t  fIsFilled;      // is object filled with data
-	 Bool_t  fIsExotic;
-	 Bool_t  fIsEMCAL;
-	 Bool_t  fIsPHOS;
+	  Bool_t  fIsExotic;
+    Bool_t  fIsEMCAL;
+	  Bool_t  fIsPHOS;
 
-	 //Double_t
+	  //Float_t
+    Float_t  fPosition[3];              // Cluster center of gravity
+
+	  //Double_t
     Double_t  fCoreEnergy;            // Energy of the core of cluster
     Double_t  fDispersion;            // Dispersion of cluster
     Double_t  fDistanceToBadChannel;
@@ -90,9 +95,10 @@ class AliPHOSGeometry;
     std::vector<Int_t>    fCellRelIDZ;   // z cell ID in module
     std::vector<Double_t> fCellEnergy;   // Energy deposited in cell
     std::vector<Double_t> fCellTime;     // Cell timing
+    std::vector<Double_t> fCellAmpFrac;  // Cell amplitude fraction (== Cell energy AFTER(!) recalibration)
 
 
-    ClassDef(AliCaloClusterContent, 4);
+    ClassDef(AliCaloClusterContent, 7);
 
   };
 

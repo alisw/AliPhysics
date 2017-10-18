@@ -347,7 +347,7 @@ void AliAnalysisTaskPHOSCluster::UserExec(Option_t *){
     if(fCluster->IsPHOS()){ // analyse only PHOS cluster
       fClusterCuts->Fill(1.5);
 
-      if(fMinCells > fCluster->GetNCells()) continue; // remove clusters with less than 2 cells
+      if(fMinCells > fCluster->GetNCells()) continue; // remove clusters with less than fMincells (i.g. fMincells=3)
       fClusterCuts->Fill(2.5);
       if(0 ==  fCluster->E()) continue; // remove cluster with no energy (e.g. disabled by badmap)
       fClusterCuts->Fill(3.5);
