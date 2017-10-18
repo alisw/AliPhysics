@@ -64,11 +64,12 @@ AliAnalysisTaskDmesonJets::AliEventNotFound::AliEventNotFound(const std::string&
   fWhat = what_str.str();
 }
 
-
-const char* AliAnalysisTaskDmesonJets::AliEventNotFound::what() const _NOEXCEPT
+#if !(defined(__CINT__) || defined(__MAKECINT__))
+const char* AliAnalysisTaskDmesonJets::AliEventNotFound::what() const noexcept
 {
   return fWhat.c_str();
 }
+#endif
 
 // Definitions of class AliAnalysisTaskDmesonJets::AliJetInfo
 
