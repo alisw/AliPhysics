@@ -139,6 +139,13 @@ Int_t AliEventPool::UpdatePool(TObjArray *trk)
     fEventIndex.pop_front();
   }
 
+  Bool_t gLimitNbOfEvents = kFALSE;
+  if (fMixDepth < 1000) gLimitNbOfEvents = kTRUE;
+  if (gLimitNbOfEvents) {
+    if (fEvents.size()>fMixDepth)
+      return fEvents.size();
+  }
+
   fNTracksInEvent.push_back(mult);
   fEvents.push_back(trk);
   fEventIndex.push_back(iEvent);
