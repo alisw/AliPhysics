@@ -2223,7 +2223,14 @@ Int_t AliTOFGeometry::FromDDLtoLTM(Int_t ddl,Int_t chain){
   }
   iLTMindex+=2*(Int_t)(ddl/NDDL());
 
-  return iLTMindex;
+  // patch for channels with hardware cable links swapped
+  if(iLTMindex==20) return 21;
+  else if (iLTMindex==21) return 20;
+  else if (iLTMindex==22) return 23;
+  else if (iLTMindex==23) return 22;
+  else if (iLTMindex==28) return 29;
+  else if (iLTMindex==29) return 28;
+  else return iLTMindex;
 }
 //-----------------------------------------------------------------------------
 Int_t AliTOFGeometry::FromDDLtoChannelIndex(Int_t tdcChan,Int_t itdc){
