@@ -270,15 +270,50 @@ void AliEMCALTriggerRawDigitMaker::Add(const std::vector<AliCaloBunchInfo> &bunc
   }
 }
 
+bool AliEMCALTriggerRawDigitMaker::IsSTUIncluded(Int_t istu)
+{
+  const Int_t offsetEMCAL = AliDAQ::DdlIDOffset("EMCAL");
+
+  fRawReader->Reset();
+
+  AliRawVEvent *event = (AliRawEvent*)fRawReader->GetEvent();
+  if (!event)
+  {
+    AliError("Could not find raw event!");
+    return false;
+  }
+
+  bool isSTUin = false;
+
+  Int_t nSubEv = fRawReader->GetEvent()->GetNSubEvents();
+
+  for ( Int_t iSubEv=0; iSubEv<nSubEv; iSubEv++)
+  {
+    AliRawVEvent *subEv = ((AliRawEvent*)fRawReader->GetEvent())->GetSubEvent(iSubEv);
+    if ( !subEv ) return false;
+
+    for (Int_t iEquip = 0; iEquip < subEv->GetNEquipments(); iEquip++)
+    {
+      Int_t eqId = subEv->GetEquipment(iEquip)->GetEquipmentHeader()->GetId();
+
+      if (eqId == offsetEMCAL + istu) isSTUin = true;
+    }
+  }
+
+  fRawReader->Reset();
+
+  return isSTUin;
+}
+
 ///
 /// Post process digits
 //_______________
 void AliEMCALTriggerRawDigitMaker::PostProcess()
 {	  
 //   AliDebug(2,"Start post processing the raw digit maker");
-  Int_t idx;
-  const Int_t offsetEMCAL = AliDAQ::DdlIDOffset("EMCAL");
+  Int_t idx = 0;
   
+
   AliEMCALTriggerRawDigit* dig = 0x0;
   
   // Loop over both STU DDLs in order to read out both EMCAL and DCAL (if available)
@@ -289,36 +324,15 @@ void AliEMCALTriggerRawDigitMaker::PostProcess()
     
     AliEMCALTriggerData *trgData = (AliEMCALTriggerData*)fTriggerData->At(detectorID);
     
-    fRawReader->Reset();
     fRawReader->Select("EMCAL",istu,istu);
     
-    AliRawVEvent *event = (AliRawEvent*)fRawReader->GetEvent();
-    if (!event) 
-    {
+    bool isSTUin = IsSTUIncluded(istu);
+    if (!isSTUin) {
       AliError(Form("STU DDL# %d not available!",istu));
       continue;
     }
     
-    Bool_t isSTUin = kFALSE;
-    
-    Int_t nSubEv = fRawReader->GetEvent()->GetNSubEvents();
-    
-    for ( Int_t iSubEv=0; iSubEv<nSubEv; iSubEv++)
-    {
-      AliRawVEvent *subEv = ((AliRawEvent*)fRawReader->GetEvent())->GetSubEvent(iSubEv);
-      if ( !subEv ) continue;
-      
-      for (Int_t iEquip = 0; iEquip < subEv->GetNEquipments(); iEquip++)
-      {
-        Int_t eqId = subEv->GetEquipment(iEquip)->GetEquipmentHeader()->GetId();
-        
-        if (eqId == offsetEMCAL + istu) isSTUin = kTRUE;
-      }
-    }
-    
-    fRawReader->Reset();
-    
-    if (isSTUin && fSTURawStream && fSTURawStream->ReadPayLoad())
+    if (fSTURawStream && fSTURawStream->ReadPayLoad())
     {
       trgData->SetL1DataDecoded(1);
       

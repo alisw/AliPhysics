@@ -45,6 +45,8 @@ public:
   
   virtual void PostProcess();
   
+  virtual bool IsSTUIncluded(Int_t istu);
+
   virtual void Reset();
   
 protected:
