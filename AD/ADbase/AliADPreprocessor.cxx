@@ -193,7 +193,7 @@ UInt_t AliADPreprocessor::ProcessTimeSlewing()
       AliInfoF("Cannot open file %s",fileName.Data());
       return 1;}
 
-    fListSplines = (TList*)f->Get("fListSplines");
+    fListSplines = dynamic_cast<TList*>(f->Get("fListSplines"));
     if ( !fListSplines ) {
       Log("No Spline List in file");
       return 1;}

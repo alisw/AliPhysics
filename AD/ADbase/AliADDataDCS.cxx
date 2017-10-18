@@ -119,7 +119,7 @@ Bool_t AliADDataDCS::ProcessData(TMap& aliasMap){
 
   // starting loop on aliases
   for(int iAlias=0; iAlias<kNAliases; iAlias++){
-    aliasArr = (TObjArray*) aliasMap.GetValue(fAliasNames[iAlias].Data());
+    aliasArr = dynamic_cast<TObjArray*>(aliasMap.GetValue(fAliasNames[iAlias].Data()));
     if(!aliasArr){
       AliErrorF("Missing data points for alias %s!", fAliasNames[iAlias].Data());
       success = kFALSE;
@@ -141,7 +141,7 @@ Bool_t AliADDataDCS::ProcessData(TMap& aliasMap){
 
       UInt_t iValue=0;
       Float_t variation = 0.0;
-      while((aValue = (AliDCSValue*) iterarray.Next())) {
+      while((aValue = dynamic_cast<AliDCSValue*>(iterarray.Next()))) {
 	const UInt_t currentTime = aValue->GetTimeStamp();
 	if(currentTime>fCtpEndTime) break;
 
@@ -167,7 +167,7 @@ Bool_t AliADDataDCS::ProcessData(TMap& aliasMap){
       TVectorD times(nentries), values(nentries);
 
       UInt_t iValue=0;
-      while((aValue = (AliDCSValue*) iterarray.Next())) {
+      while((aValue = dynamic_cast<AliDCSValue*>(iterarray.Next()))) {
         const UInt_t currentTime = aValue->GetTimeStamp();
         if(currentTime>fCtpEndTime) break;
 
@@ -179,7 +179,7 @@ Bool_t AliADDataDCS::ProcessData(TMap& aliasMap){
     }
     else { // Treating FEE Parameters
       AliDCSValue * lastVal = NULL;
-      while((aValue = (AliDCSValue*) iterarray.Next())) lastVal = aValue; // Take only the last value
+      while((aValue = dynamic_cast<AliDCSValue*>(iterarray.Next()))) lastVal = aValue; // Take only the last value
       fFEEParameters->Add(new TObjString(fAliasNames[iAlias].Data()),lastVal);
     }
   }
