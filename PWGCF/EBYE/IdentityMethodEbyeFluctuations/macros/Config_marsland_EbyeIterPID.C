@@ -11,40 +11,40 @@ AliAnalysisTaskEbyeIterPID* Config_marsland_EbyeIterPID(Int_t settingType, Int_t
   //
   /*
    *    Real data --> settingType = 
-   *    0.)  THnSparse is used: StandardTPCITScuts              16EtaBin_150pBins_9centBins (REFERENCE settings)
-   *    1.)  THnSparse is used: StandardTPCITScuts + TIGHTCUTS  16EtaBin_150pBins_9centBins (active length cut)
-   *    2.)  THnSparse is used: StandardTPCITScuts + DCAxySmall 16EtaBin_150pBins_9centBins  
-   *    3.)  THnSparse is used: StandardTPCITScuts + DCAxyLarge 16EtaBin_150pBins_9centBins  
-   *    4.)  THnSparse is used: StandardTPCITScuts + cRows60    16EtaBin_150pBins_9centBins  
-   *    5.)  THnSparse is used: StandardTPCITScuts + cRows100   16EtaBin_150pBins_9centBins  
-   *    6.)  THnSparse is used: StandardTPCITScuts + centEstCL1 16EtaBin_150pBins_9centBins  
-   *    7.)  THnSparse is used: StandardTPCITScuts + centEstTRK 16EtaBin_150pBins_9centBins  
-   *    8.)  THnSparse is used: StandardTPCITScuts + Vz8        16EtaBin_150pBins_9centBins  
-   *    9.)  THnSparse is used: StandardTPCITScuts + Vz12       16EtaBin_150pBins_9centBins  
-   *    10.) THnSparse is used: StandardTPCITScuts + Chi2Small  16EtaBin_150pBins_9centBins  
-   *    11.) THnSparse is used: StandardTPCITScuts + Chi2Large  16EtaBin_150pBins_9centBins  
-   *    12.) THnSparse is used: (REFERENCE settings) + allCuts are filled  
-   *    13.) THnSparse is used: (REFERENCE settings) + Bayesian Probabilities are filled  
-   *    14.) THnSparse is used: (REFERENCE settings) + dEdxTree is filled
-   *    15.) THnSparse is used: (REFERENCE settings) + 18centBins  
-   *    16.) THnSparse is used: (REFERENCE settings) + centBin 10  
-   *    17.) THnSparse is used: (REFERENCE settings) + centBin 5  
-   *    18.) THnSparse is used: ITS is OFF 
-   *    19.) THnSparse is used: (REFERENCE settings) + THnSparse is used: number of eta bins = 32 
-   *    20.) THnSparse is used: StandardTPCITScuts + TightCuts TPC dEdx preliminary plot 
-   *    21.) THnSparse is used: (REFERENCE settings) + dEdx + allCuts + ArmPodTree filled + eta range extended 
+   *    0.)  THnSparse: StandardTPCITScuts              16EtaBin_150pBins_9centBins (REFERENCE settings)
+   *    1.)  THnSparse: StandardTPCITScuts + TIGHTCUTS  16EtaBin_150pBins_9centBins (active length cut)
+   *    2.)  THnSparse: StandardTPCITScuts + DCAxySmall 16EtaBin_150pBins_9centBins  
+   *    3.)  THnSparse: StandardTPCITScuts + DCAxyLarge 16EtaBin_150pBins_9centBins  
+   *    4.)  THnSparse: StandardTPCITScuts + cRows60    16EtaBin_150pBins_9centBins  
+   *    5.)  THnSparse: StandardTPCITScuts + cRows100   16EtaBin_150pBins_9centBins  
+   *    6.)  THnSparse: StandardTPCITScuts + centEstCL1 16EtaBin_150pBins_9centBins  
+   *    7.)  THnSparse: StandardTPCITScuts + centEstTRK 16EtaBin_150pBins_9centBins  
+   *    8.)  THnSparse: StandardTPCITScuts + Vz8        16EtaBin_150pBins_9centBins  
+   *    9.)  THnSparse: StandardTPCITScuts + Vz12       16EtaBin_150pBins_9centBins  
+   *    10.) THnSparse: StandardTPCITScuts + Chi2Small  16EtaBin_150pBins_9centBins  
+   *    11.) THnSparse: StandardTPCITScuts + Chi2Large  16EtaBin_150pBins_9centBins  
+   *    12.) THnSparse: (REFERENCE settings) + allCuts are filled  
+   *    13.) THnSparse: (REFERENCE settings) + Bayesian Probabilities are filled  
+   *    14.) THnSparse: (REFERENCE settings) + dEdxTree is filled
+   *    15.) THnSparse: (REFERENCE settings) + 18centBins  
+   *    16.) THnSparse: (REFERENCE settings) + centBin 10  
+   *    17.) THnSparse: (REFERENCE settings) + centBin 5  
+   *    18.) THnSparse: ITS is OFF 
+   *    19.) THnSparse: (REFERENCE settings) + THnSparse is used: number of eta bins = 32 
+   *    20.) THnSparse: StandardTPCITScuts + TightCuts TPC dEdx preliminary plot 
+   *    21.) THnSparse: (REFERENCE settings) + dEdx + allCuts + ArmPodTree filled + eta range extended 
    * 
    *    MC data --> settingType = 
-   *    100.) THnSparse is used: StandardTPCITScuts 8EtaBin_150pBins_9centBins (REFERENCE settings) MC CLOSURE
-   *    101.) FastSimul is used: StandardTPCITScuts 8EtaBin_150pBins_9centBins (REFERENCE settings)
-   *    102.) FastSimul is used: StandardTPCITScuts 8EtaBin_150pBins_9centBins ETA DEPENDENCE
-   *    103.) FastSimul is used: StandardTPCITScuts 8EtaBin_150pBins_9centBins Momentum DEPENDENCE
-   *    104.) FullSinul is used: StandardTPCITScuts 16EtaBin_150pBins_9centBins EffMatrix
-   *    105.) FullSinul is used: Tight Cuts         16EtaBin_150pBins_9centBins EffMatrix
-   *    106.) FastSimul is used: StandardTPCITScuts 8EtaBin_150pBins_9centBins (REFERENCE settings): Fill only DnchDeta
-   *    107.) THnSparse is used: StandardTPCITScuts 8EtaBin_150pBins_9centBins (REFERENCE settings) MC CLOSURE with TOF cut
-   *    108.) THnSparse is used: StandardTPCITScuts 8EtaBin_150pBins_9centBins (REFERENCE settings) MC CLOSURE with NO ITS cut 
-   *    109.) THnSparse is used: (REFERENCE settings) + dEdx + allCuts + ArmPodTree filled + eta range extended
+   *    100.) THnSparse: StandardTPCITScuts 8EtaBin_150pBins_9centBins (REFERENCE settings) MC CLOSURE
+   *    101.) FastSimul: StandardTPCITScuts 8EtaBin_150pBins_9centBins (REFERENCE settings)
+   *    102.) FastSimul: StandardTPCITScuts 8EtaBin_150pBins_9centBins ETA DEPENDENCE
+   *    103.) FastSimul: StandardTPCITScuts 8EtaBin_150pBins_9centBins Momentum DEPENDENCE
+   *    104.) FullSinul: StandardTPCITScuts 16EtaBin_150pBins_9centBins EffMatrix
+   *    105.) FullSinul: Tight Cuts         16EtaBin_150pBins_9centBins EffMatrix
+   *    106.) FastSimul: StandardTPCITScuts 8EtaBin_150pBins_9centBins (REFERENCE settings): Fill only DnchDeta
+   *    107.) THnSparse: StandardTPCITScuts 8EtaBin_150pBins_9centBins (REFERENCE settings) MC CLOSURE with TOF cut
+   *    108.) THnSparse: StandardTPCITScuts 8EtaBin_150pBins_9centBins (REFERENCE settings) MC CLOSURE with NO ITS cut 
+   *    109.) THnSparse: (REFERENCE settings) + dEdx + allCuts + ArmPodTree filled + eta range extended
    */
   AliAnalysisTaskEbyeIterPID *task = new AliAnalysisTaskEbyeIterPID("marslandEbyeIterPID");
   SetDefaults(task);
@@ -59,87 +59,87 @@ AliAnalysisTaskEbyeIterPID* Config_marsland_EbyeIterPID(Int_t settingType, Int_t
     // ============================= Real Data Settings ===================================
     // ====================================================================================
     // 
-    // THnSparse is used: StandardTPCITScuts 16EtaBin_150pBins_9centBins (REFERENCE settings)
+    // THnSparse: StandardTPCITScuts 16EtaBin_150pBins_9centBins (REFERENCE settings)
     case 0:{ 
-      std::cout << settingType << " THnSparse is used: StandardTPCITScuts 16EtaBin_150pBins_9centBins (REFERENCE settings) " << std::endl;
+      std::cout << settingType << " THnSparse: StandardTPCITScuts 16EtaBin_150pBins_9centBins (REFERENCE settings) " << std::endl;
       task->SetFillDeDxTree(kFALSE); 
     }
     break;
     case 1:{ 
-      std::cout << settingType << " THnSparse is used: (REFERENCE settings)  + TIGHTCUTS  (active length cut) " << std::endl;
+      std::cout << settingType << " THnSparse: (REFERENCE settings)  + TIGHTCUTS  (active length cut) " << std::endl;
       task->SetFillDeDxTree(kFALSE);  
       task->SetTightCuts(kTRUE); 
     }
     break;
     case 2:{ 
-      std::cout << settingType << " THnSparse is used: (REFERENCE settings)  + DCAxySmall " << std::endl;
+      std::cout << settingType << " THnSparse: (REFERENCE settings)  + DCAxySmall " << std::endl;
       task->SetFillDeDxTree(kFALSE);  
       task->SetSystDCAxy(-1); 
     }
     break;
     case 3:{ 
-      std::cout << settingType << " THnSparse is used: (REFERENCE settings)  + DCAxyLarge " << std::endl;
+      std::cout << settingType << " THnSparse: (REFERENCE settings)  + DCAxyLarge " << std::endl;
       task->SetFillDeDxTree(kFALSE);  
       task->SetSystDCAxy(1); 
     }
     break;
     case 4:{ 
-      std::cout << settingType << " THnSparse is used: (REFERENCE settings)  + cRows60 " << std::endl;
+      std::cout << settingType << " THnSparse: (REFERENCE settings)  + cRows60 " << std::endl;
       task->SetFillDeDxTree(kFALSE);  
       task->SetSystNCrossedRows(-1); 
     }
     break;
     case 5:{ 
-      std::cout << settingType << " THnSparse is used: (REFERENCE settings)  + cRows100 " << std::endl;
+      std::cout << settingType << " THnSparse: (REFERENCE settings)  + cRows100 " << std::endl;
       task->SetFillDeDxTree(kFALSE);  
       task->SetSystNCrossedRows(1); 
     }
     break;
     case 6:{ 
-      std::cout << settingType << " THnSparse is used: (REFERENCE settings)  + centEstCL1 " << std::endl;
+      std::cout << settingType << " THnSparse: (REFERENCE settings)  + centEstCL1 " << std::endl;
       task->SetFillDeDxTree(kFALSE);  
       task->SetSystCentEstimator(-1); 
     }
     break;
     case 7:{ 
-      std::cout << settingType << " THnSparse is used: (REFERENCE settings)  + centEstTRK " << std::endl;
+      std::cout << settingType << " THnSparse: (REFERENCE settings)  + centEstTRK " << std::endl;
       task->SetFillDeDxTree(kFALSE);  
       task->SetSystCentEstimator(1); 
     }
     break;
     case 8:{ 
-      std::cout << settingType << " THnSparse is used: (REFERENCE settings)  + Vz8 " << std::endl;
+      std::cout << settingType << " THnSparse: (REFERENCE settings)  + Vz8 " << std::endl;
       task->SetFillDeDxTree(kFALSE);  
       task->SetSystVz(-1); 
     }
     break;
     case 9:{ 
-      std::cout << settingType << " THnSparse is used: (REFERENCE settings)  + Vz12 " << std::endl;
+      std::cout << settingType << " THnSparse: (REFERENCE settings)  + Vz12 " << std::endl;
       task->SetFillDeDxTree(kFALSE);  
       task->SetSystVz(1); 
     }
     break;
     case 10:{ 
-      std::cout << settingType << " THnSparse is used: (REFERENCE settings)  + Chi2Small " << std::endl;
+      std::cout << settingType << " THnSparse: (REFERENCE settings)  + Chi2Small " << std::endl;
       task->SetFillDeDxTree(kFALSE); 
       task->SetSystTPCChi2(-1); 
     }
     break;
     case 11:{ 
-      std::cout << settingType << " THnSparse is used: (REFERENCE settings)  + Chi2Large " << std::endl;
+      std::cout << settingType << " THnSparse: (REFERENCE settings)  + Chi2Large " << std::endl;
       task->SetFillDeDxTree(kFALSE); 
       task->SetSystTPCChi2(1); 
     }
     break;
     case 12:{ 
-      std::cout << settingType << " THnSparse is used: (REFERENCE settings) + allCuts are filled " << std::endl;
+      std::cout << settingType << " THnSparse: (REFERENCE settings) + allCuts are filled " << std::endl;
       task->SetFillDeDxTree(kFALSE); 
       task->SetFillAllCutVariables(kTRUE); 
       task->SetFillArmPodTree(kTRUE); 
     }
     break;
     case 13:{ 
-      std::cout << settingType << " THnSparse is used: (REFERENCE settings) + Bayesian Probabilities are filled " << std::endl;
+      std::cout << settingType << " THnSparse: (REFERENCE settings) + Bayesian Probabilities are filled " << std::endl;
       task->SetFillDeDxTree(kFALSE); 
       task->SetFillBayesianProb(kTRUE); 
     }
@@ -150,7 +150,7 @@ AliAnalysisTaskEbyeIterPID* Config_marsland_EbyeIterPID(Int_t settingType, Int_t
     }
     break;
     case 15:{ 
-      std::cout << settingType << " THnSparse is used: (REFERENCE settings) + 18centBins " << std::endl;
+      std::cout << settingType << " THnSparse: (REFERENCE settings) + 18centBins " << std::endl;
       task->SetFillDeDxTree(kFALSE); 
       const Int_t tmpCentbins = 19; 
       Float_t tmpfxCentBins[tmpCentbins] = {0,2.5,5,7.5,10,15,20,25,30,35,40,45,50,55,60,65,70,75,80}; 
@@ -158,7 +158,7 @@ AliAnalysisTaskEbyeIterPID* Config_marsland_EbyeIterPID(Int_t settingType, Int_t
     }
     break;
     case 16:{ 
-      std::cout << settingType << " THnSparse is used: (REFERENCE settings) + centBin 10 " << std::endl;
+      std::cout << settingType << " THnSparse: (REFERENCE settings) + centBin 10 " << std::endl;
       task->SetFillDeDxTree(kFALSE); 
       const Int_t tmpCentbins = 9;  
       Float_t tmpfxCentBins[tmpCentbins] = {0,10,20,30,40,50,60,70,80}; 
@@ -166,7 +166,7 @@ AliAnalysisTaskEbyeIterPID* Config_marsland_EbyeIterPID(Int_t settingType, Int_t
     }
     break;
     case 17:{ 
-      std::cout << settingType << " THnSparse is used: (REFERENCE settings) + centBin 5 " << std::endl;
+      std::cout << settingType << " THnSparse: (REFERENCE settings) + centBin 5 " << std::endl;
       task->SetFillDeDxTree(kFALSE); 
       const Int_t tmpCentbins = 17; 
       Float_t tmpfxCentBins[tmpCentbins] = {0,5,10,15,20,25,30,35,40,45,50,55,60,65,70,75,80}; 
@@ -174,14 +174,14 @@ AliAnalysisTaskEbyeIterPID* Config_marsland_EbyeIterPID(Int_t settingType, Int_t
     }
     break;
     case 18:{ 
-      std::cout << settingType << " THnSparse is used: ITS is OFF " << std::endl;
+      std::cout << settingType << " THnSparse: ITS is OFF " << std::endl;
       task->SetFillDeDxTree(kFALSE);
       task->SetSystDCAxy(1); 
       task->SetSystVz(1); 
     }
     break;
     case 19:{ 
-      std::cout << settingType << " THnSparse is used: (REFERENCE settings) + THnSparse is used: number of eta bins = 32 " << std::endl;
+      std::cout << settingType << " THnSparse: (REFERENCE settings) + THnSparse is used: number of eta bins = 32 " << std::endl;
       task->SetFillDeDxTree(kFALSE);
       task->SetNEtabins(32); 
       const Int_t tmpCentbins  = 10;   
@@ -190,7 +190,7 @@ AliAnalysisTaskEbyeIterPID* Config_marsland_EbyeIterPID(Int_t settingType, Int_t
     }
     break;
     case 20:{ 
-      std::cout << settingType << " THnSparse is used: StandardTPCITScuts + TightCuts TPC dEdx preliminary plot  " << std::endl;
+      std::cout << settingType << " THnSparse: StandardTPCITScuts + TightCuts TPC dEdx preliminary plot  " << std::endl;
       task->SetDeDxBinWidth(2.5);
       task->SetDeDxLowerEdge(20.);
       task->SetDeDxUpperEdge(1020.);
@@ -205,7 +205,7 @@ AliAnalysisTaskEbyeIterPID* Config_marsland_EbyeIterPID(Int_t settingType, Int_t
     }
     break;
     case 21:{ 
-      std::cout << settingType << " THnSparse is used: (REFERENCE settings) + allCuts + ArmPodTree filled + eta range extended  " << std::endl;
+      std::cout << settingType << " THnSparse: (REFERENCE settings) + allCuts + ArmPodTree filled + eta range extended  " << std::endl;
       task->SetFillAllCutVariables(kTRUE); 
       task->SetFillTIdenTrees(kTRUE);
       task->SetFillArmPodTree(kTRUE); 
@@ -221,7 +221,7 @@ AliAnalysisTaskEbyeIterPID* Config_marsland_EbyeIterPID(Int_t settingType, Int_t
     // ====================================================================================
     // 
     case 100:{ 
-      std::cout << settingType << " THnSparse is used: StandardTPCITScuts 8EtaBin_150pBins_9centBins (REFERENCE settings) MC CLOSURE " << std::endl;
+      std::cout << settingType << " FullMC: StandardTPCITScuts 8EtaBin_150pBins_9centBins (REFERENCE settings) MC CLOSURE " << std::endl;
       task->SetFillDeDxTree(kFALSE);   
       task->SetIsMCtrue(kTRUE); 
       task->SetIncludeTOF(kFALSE); 
@@ -241,7 +241,7 @@ AliAnalysisTaskEbyeIterPID* Config_marsland_EbyeIterPID(Int_t settingType, Int_t
     }
     break;
     case 101:{ 
-      std::cout << settingType << " FastSimul is used: StandardTPCITScuts 8EtaBin_150pBins_9centBins (REFERENCE settings) " << std::endl;
+      std::cout << settingType << " FastSimul: StandardTPCITScuts 8EtaBin_150pBins_9centBins (REFERENCE settings) " << std::endl;
       task->SetIsMCtrue(kTRUE); 
       task->SetNEtabins(8);
       task->SetRunFastSimulation(kTRUE);
@@ -249,7 +249,7 @@ AliAnalysisTaskEbyeIterPID* Config_marsland_EbyeIterPID(Int_t settingType, Int_t
     }
     break;
     case 102:{ 
-      std::cout << settingType << " FastSimul is used: StandardTPCITScuts 8EtaBin_150pBins_9centBins ETA DEPENDENCE " << std::endl;
+      std::cout << settingType << " FastSimul: StandardTPCITScuts 8EtaBin_150pBins_9centBins ETA DEPENDENCE " << std::endl;
       task->SetIsMCtrue(kTRUE); 
       task->SetNEtabins(8);
       task->SetRunFastSimulation(kTRUE);
@@ -267,7 +267,7 @@ AliAnalysisTaskEbyeIterPID* Config_marsland_EbyeIterPID(Int_t settingType, Int_t
     }
     break;
     case 103:{ 
-      std::cout << settingType << " FastSimul is used: StandardTPCITScuts 8EtaBin_150pBins_9centBins Momentum DEPENDENCE " << std::endl;
+      std::cout << settingType << " FastSimul: StandardTPCITScuts 8EtaBin_150pBins_9centBins Momentum DEPENDENCE " << std::endl;
       task->SetIsMCtrue(kTRUE); 
       task->SetNEtabins(8);
       task->SetRunFastSimulation(kTRUE);
@@ -285,7 +285,7 @@ AliAnalysisTaskEbyeIterPID* Config_marsland_EbyeIterPID(Int_t settingType, Int_t
     }
     break;
     case 104:{ 
-      std::cout << settingType << " FullSimul is used: StandardTPCITScuts 8EtaBin_150pBins_9centBins EffMatrix " << std::endl;
+      std::cout << settingType << " FullSimul: StandardTPCITScuts 8EtaBin_150pBins_9centBins EffMatrix " << std::endl;
       task->SetEffMatrix(kTRUE);
       task->SetIsMCtrue(kTRUE); 
       task->SetTightCuts(kFALSE);
@@ -313,7 +313,7 @@ AliAnalysisTaskEbyeIterPID* Config_marsland_EbyeIterPID(Int_t settingType, Int_t
     }
     break;
     case 105:{ 
-      std::cout << settingType << " FullSimul is used: StandardTPCITScuts 8EtaBin_150pBins_9centBins EffMatrix " << std::endl;
+      std::cout << settingType << " FullSimul: StandardTPCITScuts 8EtaBin_150pBins_9centBins EffMatrix " << std::endl;
       task->SetEffMatrix(kTRUE);
       task->SetIsMCtrue(kTRUE); 
       task->SetTightCuts(kFALSE);
@@ -336,7 +336,7 @@ AliAnalysisTaskEbyeIterPID* Config_marsland_EbyeIterPID(Int_t settingType, Int_t
     }
     break;
     case 106:{ 
-      std::cout << settingType << " FullSimul is used: Tight Cuts 8EtaBin_150pBins_9centBins EffMatrix " << std::endl;
+      std::cout << settingType << " FullSimul: Tight Cuts 8EtaBin_150pBins_9centBins EffMatrix " << std::endl;
       task->SetEffMatrix(kTRUE);
       task->SetIsMCtrue(kTRUE); 
       task->SetNEtabins(8);
@@ -359,7 +359,7 @@ AliAnalysisTaskEbyeIterPID* Config_marsland_EbyeIterPID(Int_t settingType, Int_t
     }
     break;
     case 107:{ 
-      std::cout << settingType << " FastSimul is used: StandardTPCITScuts 8EtaBin_150pBins_9centBins (REFERENCE settings): Fill only DnchDeta " << std::endl;
+      std::cout << settingType << " FastSimul: StandardTPCITScuts 8EtaBin_150pBins_9centBins (REFERENCE settings): Fill only DnchDeta " << std::endl;
       task->SetIsMCtrue(kTRUE); 
       task->SetNEtabins(8);
       task->SetRunFastSimulation(kTRUE);
@@ -367,7 +367,7 @@ AliAnalysisTaskEbyeIterPID* Config_marsland_EbyeIterPID(Int_t settingType, Int_t
     }
     break;
     case 108:{ 
-      std::cout << settingType << " THnSparse is used: StandardTPCITScuts 8EtaBin_150pBins_9centBins (REFERENCE settings) MC CLOSURE with TOF cut " << std::endl;
+      std::cout << settingType << " THnSparse: StandardTPCITScuts 8EtaBin_150pBins_9centBins (REFERENCE settings) MC CLOSURE with TOF cut " << std::endl;
       task->SetFillDeDxTree(kFALSE);  
       task->SetIncludeTOF(kTRUE);   
       task->SetIsMCtrue(kTRUE); 
@@ -387,7 +387,7 @@ AliAnalysisTaskEbyeIterPID* Config_marsland_EbyeIterPID(Int_t settingType, Int_t
     }
     break;
     case 109:{ 
-      std::cout << settingType << " THnSparse is used: StandardTPCITScuts 8EtaBin_150pBins_9centBins (REFERENCE settings) MC CLOSURE with NO ITS cut " << std::endl;
+      std::cout << settingType << " THnSparse: StandardTPCITScuts 8EtaBin_150pBins_9centBins (REFERENCE settings) MC CLOSURE with NO ITS cut " << std::endl;
       task->SetFillDeDxTree(kFALSE);  
       task->SetIncludeTOF(kFALSE);  
       task->SetIsMCtrue(kTRUE); 
