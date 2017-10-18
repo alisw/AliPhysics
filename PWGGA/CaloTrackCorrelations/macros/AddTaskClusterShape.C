@@ -200,13 +200,20 @@ AliAnalysisTaskCaloTrackCorrelation * AddTaskClusterShape
   
   if(outputfile.Length()==0) outputfile = AliAnalysisManager::GetCommonFileName();
 
-  AliAnalysisDataContainer *cout_pc   = mgr->CreateContainer(trigger, TList::Class(),
-                                                             AliAnalysisManager::kOutputContainer, 
-                                                             Form("%s:%s",outputfile.Data(),Form("Shape_%s",calorimeter.Data())));
+  TString containerName = Form("Shape_%s",calorimeter.Data());
+  if(clustersArray.Length()>0) containerName = Form("%s_%s",containerName.Data(),clustersArray.Data());
   
-  AliAnalysisDataContainer *cout_cuts = mgr->CreateContainer(Form("Param_%s",trigger.Data()), TList::Class(),
+  TString subcontainerName = Form("%s",trigger.Data());
+  if(clustersArray.Length()>0) subcontainerName = Form("%s_%s",subcontainerName.Data(),clustersArray.Data());
+  
+  AliAnalysisDataContainer *cout_pc   = mgr->CreateContainer(subcontainerName, TList::Class(),
+                                                             AliAnalysisManager::kOutputContainer, 
+                                                             Form("%s:%s",outputfile.Data(),containerName.Data()));
+  
+  AliAnalysisDataContainer *cout_cuts = mgr->CreateContainer(Form("Param_%s",subcontainerName.Data()), TList::Class(),
                                                              AliAnalysisManager::kParamContainer, 
-                                                             Form("%s_Parameters.root",Form("Shape_%s",calorimeter.Data())));
+                                                             Form("%s_Parameters.root",containerName.Data()));
+
   
   // Create ONLY the output containers for the data produced by the task.
   // Get and connect other common input/output containers via the manager as below
@@ -879,7 +886,7 @@ Bool_t CheckAnalysisTrigger(Bool_t simulation, TString trigger, TString period, 
   //
   if ( simulation )
   {
-    printf("AddTaskPi0IMGammaCorrQA - CAREFUL : Triggered events not checked in simulation, SKIP trigger %s! \n", trigger.Data());
+    printf("AddTaskClusterShape - CAREFUL : Triggered events not checked in simulation, SKIP trigger %s! \n", trigger.Data());
     return kFALSE;
   }
   
@@ -887,7 +894,7 @@ Bool_t CheckAnalysisTrigger(Bool_t simulation, TString trigger, TString period, 
   //
   if ( year < 2011 && ( trigger.Contains("EMCAL") || trigger.Contains("DCAL") ) )
   {
-    printf("AddTaskPi0IMGammaCorrQA - CAREFUL : No triggered events for year < 2011, SKIP trigger %s! \n", trigger.Data());
+    printf("AddTaskClusterShape - CAREFUL : No triggered events for year < 2011, SKIP trigger %s! \n", trigger.Data());
     return kFALSE;
   }
   
@@ -895,7 +902,7 @@ Bool_t CheckAnalysisTrigger(Bool_t simulation, TString trigger, TString period, 
   //
   if ( year < 2014 && trigger.Contains("DCAL") )
   {
-    printf("AddTaskPi0IMGammaCorrQA - CAREFUL : No triggered events by DCal for year < 2014, SKIP trigger %s! \n", trigger.Data());
+    printf("AddTaskClusterShape - CAREFUL : No triggered events by DCal for year < 2014, SKIP trigger %s! \n", trigger.Data());
     return kFALSE;
   }
   
@@ -903,7 +910,7 @@ Bool_t CheckAnalysisTrigger(Bool_t simulation, TString trigger, TString period, 
   //
   if ( year  < 2013 && trigger.Contains("L2") )
   { 
-    printf("AddTaskPi0IMGammaCorrQA - CAREFUL : EG2 trigger not available for year < 2012, SKIP trigger %s in %s \n", trigger.Data(),period.Data());
+    printf("AAddTaskClusterShape - CAREFUL : EG2 trigger not available for year < 2012, SKIP trigger %s in %s \n", trigger.Data(),period.Data());
     return kFALSE;
   }
   
@@ -911,7 +918,7 @@ Bool_t CheckAnalysisTrigger(Bool_t simulation, TString trigger, TString period, 
   //
   if ( year == 2013 && trigger.Contains("L") && ( period.Contains("b") || period.Contains("c") ) )
   { 
-    printf("AddTaskPi0IMGammaCorrQA - CAREFUL : Triggers not available for year 2013 in period %s, SKIP trigger %s! \n",period.Data(), trigger.Data());
+    printf("AddTaskClusterShape - CAREFUL : Triggers not available for year 2013 in period %s, SKIP trigger %s! \n",period.Data(), trigger.Data());
     return kFALSE;
   }
   
@@ -919,7 +926,7 @@ Bool_t CheckAnalysisTrigger(Bool_t simulation, TString trigger, TString period, 
   //
   if ( year < 2014 && ( trigger.Contains("DCAL") ) )
   {
-    printf("AddTaskPi0IMGammaCorrQA - CAREFUL : No triggered events by DCal for year < 2014, SKIP trigger %s! \n", trigger.Data());
+    printf("AddTaskClusterShape - CAREFUL : No triggered events by DCal for year < 2014, SKIP trigger %s! \n", trigger.Data());
     return kFALSE;
   }
   
@@ -927,7 +934,7 @@ Bool_t CheckAnalysisTrigger(Bool_t simulation, TString trigger, TString period, 
   //
   if ( period == "LHC11h" && trigger.Contains("EMCAL_L0") )
   {
-    printf("AddTaskPi0IMGammaCorrQA - CAREFUL : No EMCAL_L0 triggered events by EMCal for period LHC11h, SKIP trigger %s! \n", trigger.Data());
+    printf("AddTaskClusterShape - CAREFUL : No EMCAL_L0 triggered events by EMCal for period LHC11h, SKIP trigger %s! \n", trigger.Data());
     return kFALSE;
   }
   
@@ -935,7 +942,7 @@ Bool_t CheckAnalysisTrigger(Bool_t simulation, TString trigger, TString period, 
   //
   if ( period.Contains("LHC11") && period != "LHC11h" && trigger.Contains("EMCAL_L1") )
   {
-    printf("AddTaskPi0IMGammaCorrQA - CAREFUL : No %s triggered events by EMCal for period %s, SKIP \n", trigger.Data(),period.Data());
+    printf("AddTaskClusterShape - CAREFUL : No %s triggered events by EMCal for period %s, SKIP \n", trigger.Data(),period.Data());
     return kFALSE;
   }
   
@@ -943,7 +950,7 @@ Bool_t CheckAnalysisTrigger(Bool_t simulation, TString trigger, TString period, 
   //
   if ( ( period == "LHC12a" ||  period == "LHC12b" ) && trigger.Contains("EMCAL_L1") )
   { 
-    printf("AddTaskPi0IMGammaCorrQA - CAREFUL : No %s triggered events by EMCal for period %s, SKIP \n", trigger.Data(),period.Data());
+    printf("AddTaskClusterShape - CAREFUL : No %s triggered events by EMCal for period %s, SKIP \n", trigger.Data(),period.Data());
     return kFALSE;
   }
   
@@ -952,7 +959,7 @@ Bool_t CheckAnalysisTrigger(Bool_t simulation, TString trigger, TString period, 
   if ( year == 2015 && ( period == "LHC15h" ||  period == "LHC15g" || period == "LHC15f" || period == "LHC15e" ||  
                         period == "LHC15d" ||  period == "LHC15c" || period == "LHC15b" || period == "LHC15a"    ) )
   { 
-    printf("AddTaskPi0IMGammaCorrQA - CAREFUL : No %s triggered events by EMCal for period %s, SKIP \n", trigger.Data(),period.Data());
+    printf("AddTaskClusterShape - CAREFUL : No %s triggered events by EMCal for period %s, SKIP \n", trigger.Data(),period.Data());
     return kFALSE;
   }
   
@@ -960,7 +967,7 @@ Bool_t CheckAnalysisTrigger(Bool_t simulation, TString trigger, TString period, 
   //
   if ( year == 2015 && period != "LHC15o" && !trigger.Contains("L0") )
   { 
-    printf("AddTaskPi0IMGammaCorrQA - CAREFUL : No %s triggered events by EMCal for period %s, SKIP \n", trigger.Data(),period.Data());
+    printf("AddTaskClusterShape - CAREFUL : No %s triggered events by EMCal for period %s, SKIP \n", trigger.Data(),period.Data());
     return kFALSE;
   }
   
@@ -968,7 +975,7 @@ Bool_t CheckAnalysisTrigger(Bool_t simulation, TString trigger, TString period, 
   //
   if ( year == 2015 && period == "LHC15o" && ( trigger.Contains("L0") || trigger.Contains("L2") ) )
   { 
-    printf("AddTaskPi0IMGammaCorrQA - CAREFUL : No %s triggered events by EMCal for period %s, SKIP \n", trigger.Data(),period.Data());
+    printf("AddTaskClusterShape - CAREFUL : No %s triggered events by EMCal for period %s, SKIP \n", trigger.Data(),period.Data());
     return kFALSE;
   }
   
