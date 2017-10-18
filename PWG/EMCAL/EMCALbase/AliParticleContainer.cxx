@@ -433,7 +433,8 @@ Int_t AliParticleContainer::GetNAcceptedParticles() const
  */
 const char* AliParticleContainer::GetTitle() const
 {
-  static TString trackString = TString::Format("%s_pT%04d", GetArrayName().Data(), static_cast<int>(GetMinPt()*1000.0));
+  static TString trackString;
+  trackString = TString::Format("%s_pT%04d", GetArrayName().Data(), static_cast<int>(GetMinPt()*1000.0));
   return trackString.Data();
 }
 

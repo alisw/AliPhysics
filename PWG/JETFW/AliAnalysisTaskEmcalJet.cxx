@@ -180,9 +180,12 @@ void AliAnalysisTaskEmcalJet::ExecOnce()
       std::stringstream foundbranches;
       bool first(true);
       for(auto e : *(fInputEvent->GetList())){
-        if(!first){
-          foundbranches << ", ";
+        if(first){
+          // Skip printing a comma on the first time through
           first = false;
+        }
+        else {
+          foundbranches << ", ";
         }
         foundbranches << e->GetName();
       }
