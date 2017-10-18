@@ -349,7 +349,7 @@ class AliAnalysisTaskDmesonJets : public AliAnalysisTaskEmcalLight
     virtual void Set(const AliDmesonJetInfo& source);
 
     /// Distance of closest approach
-    Double32_t          fDCA           ; //[0,4.096,9]
+    Double32_t          fDCA           ; //[0,2.56,9]
     /// Cosine of theta star
     Double32_t          fCosThetaStar  ; //[-1.28,1.28,8]
     /// Transverse momentum of the kaon
@@ -368,7 +368,7 @@ class AliAnalysisTaskDmesonJets : public AliAnalysisTaskEmcalLight
     Double32_t          fMaxNormd0     ; //[-1,101.4,10]
 
     /// \cond CLASSIMP
-    ClassDef(AliD0ExtendedInfoSummary, 1);
+    ClassDef(AliD0ExtendedInfoSummary, 2);
     /// \endcond
   };
 
