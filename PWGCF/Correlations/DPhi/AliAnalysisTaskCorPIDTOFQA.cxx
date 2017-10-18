@@ -93,16 +93,22 @@ AliAnalysisTaskCorPIDTOFQA::AliAnalysisTaskCorPIDTOFQA() : AliAnalysisTaskSE(),
 fAOD(0), fOutputList(0), fPIDResponse(0),
 
     fHistPt(0),                   //  1
+
     m2_pt_pos(0),                 //  2
     m2_pt_neg(0),                 //  3
+    
     m2_pt_pos_T(0),               //  4
     m2_pt_neg_T(0),               //  5
+
     m2_pt_pos_cut_T(0),           //  6
     m2_pt_neg_cut_T(0),           //  7
+
     m2_pt_pos_cut_A(0),           //  8
     m2_pt_neg_cut_A(0),           //  9
+
     m2_pt_pos_cut_B(0),           // 10
     m2_pt_neg_cut_B(0),           // 11
+    
     deut_per_event(0)             // 12
 
 {
@@ -114,16 +120,22 @@ AliAnalysisTaskCorPIDTOFQA::AliAnalysisTaskCorPIDTOFQA(const char* name) : AliAn
 fAOD(0), fOutputList(0), fPIDResponse(0),
 
     fHistPt(0),                   //  1
+
     m2_pt_pos(0),                 //  2
     m2_pt_neg(0),                 //  3
+    
     m2_pt_pos_T(0),               //  4
     m2_pt_neg_T(0),               //  5
+
     m2_pt_pos_cut_T(0),           //  6
     m2_pt_neg_cut_T(0),           //  7
+
     m2_pt_pos_cut_A(0),           //  8
     m2_pt_neg_cut_A(0),           //  9
+
     m2_pt_pos_cut_B(0),           // 10
     m2_pt_neg_cut_B(0),           // 11
+    
     deut_per_event(0)             // 12
 
 {
@@ -239,7 +251,7 @@ void AliAnalysisTaskCorPIDTOFQA::UserExec(Option_t *)
 
 
     int deut_count              = 0;
-//  int trig_05_track_count     = 0;
+    int trig_03_track_count     = 0;
 
 
     // loop over all these tracks
@@ -269,7 +281,8 @@ void AliAnalysisTaskCorPIDTOFQA::UserExec(Option_t *)
 	if(!tpcIsOk)	                                                                {    continue;    }
 
 	fHistPt->Fill(pt);
-	
+
+	if(pt >= 3.0)   trig_03_track_count++;
 	if(!tofIsOk)	                                                                {    continue;    }
 
 
@@ -356,14 +369,18 @@ void AliAnalysisTaskCorPIDTOFQA::UserExec(Option_t *)
 
     deut_per_event->Fill(deut_count);
 
+
+
+
+    
     AliAODHandler *oh = (AliAODHandler*)AliAnalysisManager::GetAnalysisManager()->GetOutputEventHandler();
     if (oh)
       oh->SetFillAOD(kFALSE);
 
-//  if ((deut_count>=1)  &&  (trig_05_track_count>0)  &&  oh)
-//  {
-    if ((deut_count >= 1) && oh)
+    if ((deut_count>=1)  &&  (trig_03_track_count>0)  &&  oh)
     {
+//  if ((deut_count >= 1) && oh)
+//  {
 	oh->SetFillAOD(kTRUE);
 	AliAODEvent *eout = dynamic_cast<AliAODEvent*>(oh->GetAOD());
 	AliAODEvent *evin = dynamic_cast<AliAODEvent*>(InputEvent());
