@@ -119,7 +119,7 @@ AliAnalysisTaskPHOSPi0EtaToGammaGamma* AddTaskPHOSPi0EtaToGammaGamma_pp_5TeV(
   task->SetBunchSpace(bs);//in unit of ns.
   if(!isMC && TOFcorrection){
     TF1 *f1tof = new TF1("f1TOFCutEfficiency","[0] * (2/(1+exp(-[1]*(x-[2]))) - 1) - ( 0 + [3]/(exp( -(x-[4]) / [5] ) + 1)  )",0,100);
-    f1tof->SetParameters(0.994,2.38,-1.78e-3,0.506,7.33,0.613);
+    f1tof->SetParameters(0.995,2.33,2.49e-3,0.511,7.62,0.659);
     task->SetTOFCutEfficiencyFunction(f1tof);
     printf("TOF cut efficiency as a function of E is %s\n",f1tof->GetTitle());
   }
@@ -145,6 +145,28 @@ AliAnalysisTaskPHOSPi0EtaToGammaGamma* AddTaskPHOSPi0EtaToGammaGamma_pp_5TeV(
         farray_Pi0->Add(f1weightPi0[icen]);
       }
       task->SetAdditionalPi0PtWeightFunction(centarray_Pi0,farray_Pi0);
+
+      //for K/pi ratio
+      const Int_t Ncen_K0S = 2;
+      const Double_t centrality_K0S[Ncen_K0S] = {0,9999};
+      TArrayD *centarray_K0S = new TArrayD(Ncen_K0S,centrality_K0S);
+
+      TObjArray *farray_K0S = new TObjArray(Ncen_K0S-1);
+      TF1 *f1weightK0S[Ncen_K0S-1];
+      const Double_t p0[Ncen_K0S-1] = { 1.37};
+      const Double_t p1[Ncen_K0S-1] = { 4.98};
+      const Double_t p2[Ncen_K0S-1] = {0.156};
+      const Double_t p3[Ncen_K0S-1] = { 2.79};
+      const Double_t p4[Ncen_K0S-1] = {0.239};
+
+      for(Int_t icen=0;icen<Ncen_K0S-1;icen++){
+        f1weightK0S[icen] = new TF1(Form("f1weightK0S_%d",icen),"[0] * (2/(1+exp(-[1]*x)) - 1) - ( 0 + [2]/(exp( -(x-[3]) / [4] ) + 1) )",0,100);
+        f1weightK0S[icen]->SetParameters(p0[icen],p1[icen],p2[icen],p3[icen],p4[icen]);
+        farray_K0S->Add(f1weightK0S[icen]);
+      }
+
+      task->SetAdditionalK0SPtWeightFunction(centarray_K0S,farray_K0S);
+
     }
     else if(MCtype.Contains("P6") || MCtype.Contains("Pythia6")){
       printf("Pythi6 is selected.\n");
@@ -159,28 +181,26 @@ AliAnalysisTaskPHOSPi0EtaToGammaGamma* AddTaskPHOSPi0EtaToGammaGamma_pp_5TeV(
         farray_Pi0->Add(f1weightPi0[icen]);
       }
       task->SetAdditionalPi0PtWeightFunction(centarray_Pi0,farray_Pi0);
+
+      //for K/pi ratio
+      const Int_t Ncen_K0S = 2;
+      const Double_t centrality_K0S[Ncen_K0S] = {0,9999};
+      TArrayD *centarray_K0S = new TArrayD(Ncen_K0S,centrality_K0S);
+
+      TObjArray *farray_K0S = new TObjArray(Ncen_K0S-1);
+      TF1 *f1weightK0S[Ncen_K0S-1];
+      const Double_t p0[Ncen_K0S-1] = { 1.44};
+      const Double_t p1[Ncen_K0S-1] = { 5.76};
+
+      for(Int_t icen=0;icen<Ncen_K0S-1;icen++){
+        f1weightK0S[icen] = new TF1(Form("f1weightK0S_%d",icen),"[0] * (2/(1+exp(-[1]*x)) - 1)",0,100);
+        f1weightK0S[icen]->SetParameters(p0[icen],p1[icen]);
+        farray_K0S->Add(f1weightK0S[icen]);
+      }
+
+      task->SetAdditionalK0SPtWeightFunction(centarray_K0S,farray_K0S);
     }
 
-    //for K/pi ratio
-    const Int_t Ncen_K0S = 2;
-    const Double_t centrality_K0S[Ncen_K0S] = {0,9999};
-    TArrayD *centarray_K0S = new TArrayD(Ncen_K0S,centrality_K0S);
-
-    TObjArray *farray_K0S = new TObjArray(Ncen_K0S-1);
-    TF1 *f1weightK0S[Ncen_K0S-1];
-    const Double_t p0[Ncen_K0S-1] = { 1.37};
-    const Double_t p1[Ncen_K0S-1] = { 4.98};
-    const Double_t p2[Ncen_K0S-1] = {0.156};
-    const Double_t p3[Ncen_K0S-1] = { 2.79};
-    const Double_t p4[Ncen_K0S-1] = {0.238};
-
-    for(Int_t icen=0;icen<Ncen_K0S-1;icen++){
-      f1weightK0S[icen] = new TF1(Form("f1weightK0S_%d",icen),"[0] * (2/(1+exp(-[1]*x)) - 1) - ( 0 + [2]/(exp( -(x-[3]) / [4] ) + 1) )",0,100);
-      f1weightK0S[icen]->SetParameters(p0[icen],p1[icen],p2[icen],p3[icen],p4[icen]);
-      farray_K0S->Add(f1weightK0S[icen]);
-    }
-
-    task->SetAdditionalK0SPtWeightFunction(centarray_K0S,farray_K0S);
   }
 
   mgr->AddTask(task);

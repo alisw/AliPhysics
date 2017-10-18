@@ -51,7 +51,8 @@ AliAnalysisTaskPHOSObjectCreator::AliAnalysisTaskPHOSObjectCreator(const char *n
   fObjectArrayName("PHOSClusterArray"),
   fMCArrayESD(0x0),
   fMCArrayAOD(0x0),
-  fIsM4Excluded(kTRUE)
+  fIsM4Excluded(kTRUE),
+  fEmin(0.2)
 {
   // Constructor
   for(Int_t i=0;i<3;i++){
@@ -202,7 +203,7 @@ void AliAnalysisTaskPHOSObjectCreator::UserExec(Option_t *option)
     cluster = (AliVCluster*)fEvent->GetCaloCluster(iclu);
 
     if(cluster->GetType() != AliVCluster::kPHOSNeutral
-        || cluster->E() < 0.2 // MIP cut
+        || cluster->E() < fEmin // MIP cut
 //        || cluster->GetNCells() < 2 //accidental noise, effectively remove exotic cluster
 //        || cluster->GetM02() < 0.2 //too small shower shape
       ) continue;
@@ -1009,7 +1010,7 @@ void AliAnalysisTaskPHOSObjectCreator::EstimateSTDCutEfficiency(TClonesArray *ar
 
   for(Int_t i1=0;i1<multClust;i1++){
     AliCaloPhoton *ph1 = (AliCaloPhoton*)array->At(i1);
-    if(ph1->GetNsigmaCoreDisp() > 2.5) continue;
+    if(ph1->GetNsigmaCoreDisp() > 3.0) continue;
 
     for(Int_t i2=0;i2<multClust;i2++){
       AliCaloPhoton *ph2 = (AliCaloPhoton*)array->At(i2);

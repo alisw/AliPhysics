@@ -37,6 +37,7 @@ class AliAnalysisTaskPHOSObjectCreator : public AliAnalysisTaskSE {
 
     void SetUserDefinedNonlinearity(TF1 *f1nonlin) {fUserNonLinCorr = f1nonlin;}
     void ExcludeM4(Bool_t flag) {fIsM4Excluded = flag;}
+    void SetEmin(Double_t Emin) {fEmin = Emin;}
 
   protected:
     void Init();
@@ -53,7 +54,6 @@ class AliAnalysisTaskPHOSObjectCreator : public AliAnalysisTaskSE {
     Double_t CoreEnergy(AliVCluster *clu);
     Int_t FindTrackMatching(Int_t mod,TVector3 *locpos,Double_t &dx, Double_t &dz, Double_t &pttrack, Int_t &charge);
     void DistanceToBadChannel(Int_t mod, TVector3 * locPos, Double_t &minDist) ;
-    //Int_t FindHighestAmplitudeCellAbsId(AliVCluster *clu, AliVCaloCells *cells);
     Int_t FindPrimary(AliCaloPhoton *ph,  Bool_t&sure);
 
     void EstimateSTDCutEfficiency(TClonesArray *array);
@@ -80,13 +80,13 @@ class AliAnalysisTaskPHOSObjectCreator : public AliAnalysisTaskSE {
     AliStack *fMCArrayESD;
     TClonesArray *fMCArrayAOD;
     Bool_t fIsM4Excluded;
-
+    Double_t fEmin;
 
   private:
     AliAnalysisTaskPHOSObjectCreator(const AliAnalysisTaskPHOSObjectCreator&);
     AliAnalysisTaskPHOSObjectCreator& operator=(const AliAnalysisTaskPHOSObjectCreator&);
 
-    ClassDef(AliAnalysisTaskPHOSObjectCreator, 13);
+    ClassDef(AliAnalysisTaskPHOSObjectCreator, 14);
 };
 
 #endif
