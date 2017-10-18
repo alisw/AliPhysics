@@ -146,7 +146,8 @@ public:
     kNoTrackFilter = 0,   ///< No filter (all tracks passing)
     kCustomTrackFilter,   ///< Custom (user-defined) tracks
     kHybridTracks,        ///< Hybrid tracks
-    kTPCOnlyTracks        ///< TPC-only tracks
+    kTPCOnlyTracks,       ///< TPC-only tracks
+    kITSPureTracks        ///< ITS stand-alone tracks
   };
 
   /**

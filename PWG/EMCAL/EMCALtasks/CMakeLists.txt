@@ -78,6 +78,7 @@ set(SRCS
   AliEmcalCorrectionClusterHadronicCorrection.cxx
   AliEmcalCorrectionPHOSCorrections.cxx
   AliAnalysisTaskEmcalOccupancy.cxx
+  TestAliEmcalAODFilterBitCuts.cxx
   )
 
 # Headers from sources
