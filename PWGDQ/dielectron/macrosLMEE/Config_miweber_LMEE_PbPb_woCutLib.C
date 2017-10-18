@@ -548,8 +548,9 @@ void SetupAODtrackCutsTight2(AliDielectron *die)
   trkFilter->SetAODFilterBit(AliDielectronTrackCuts::kTPCqualSPDany);
 
   /* vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv TRACK CUTS vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv */
-  AliDielectronVarCuts *varCuts   = new AliDielectronVarCuts("VarCuts","VarCuts");
-  AliDielectronTrackCuts *trkCuts = new AliDielectronTrackCuts("TrkCuts","TrkCuts");
+  AliDielectronVarCuts *varCuts    = new AliDielectronVarCuts("VarCuts","VarCuts");
+  AliDielectronVarCuts *varCuts2   = new AliDielectronVarCuts("VarCuts2","VarCuts2");
+  AliDielectronTrackCuts *trkCuts  = new AliDielectronTrackCuts("TrkCuts","TrkCuts");
   
   // specific cuts
   trkCuts->SetITSclusterCut(AliDielectronTrackCuts::kOneOf, 3); // SPD any
@@ -570,7 +571,7 @@ void SetupAODtrackCutsTight2(AliDielectron *die)
   varCuts->AddCut(AliDielectronVarManager::kKinkIndex0,   0.);
 
   // additional 
-  varCuts->AddCut(AliDielectronVarManager::kNFclsTPCfCross, 0.95, 1.05);
+  varCuts2->AddCut(AliDielectronVarManager::kNFclsTPCfCross, 0.95, 1.05);
 
   /* vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv PID CUTS vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv */
 
@@ -600,6 +601,8 @@ void SetupAODtrackCutsTight2(AliDielectron *die)
     die->GetTrackFilter().AddCuts(varCuts);
     cuts->AddCut(trkCuts);
     die->GetTrackFilter().AddCuts(trkCuts);
+    cuts->AddCut(varCuts2);
+    die->GetTrackFilter().AddCuts(varCuts2);
     cuts->AddCut(pidCuts);
     die->GetTrackFilter().AddCuts(pidCuts);
   }
@@ -610,6 +613,8 @@ void SetupAODtrackCutsTight2(AliDielectron *die)
     die->GetTrackFilter().AddCuts(varCuts);
     cuts->AddCut(trkCuts);
     die->GetTrackFilter().AddCuts(trkCuts);
+    cuts->AddCut(varCuts2);
+    die->GetTrackFilter().AddCuts(varCuts2);
     cuts->AddCut(pidCuts);
     die->GetTrackFilter().AddCuts(pidCuts);
   }
