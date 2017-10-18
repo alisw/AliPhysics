@@ -436,6 +436,11 @@ AliITSRecoParam *AliITSRecoParam::GetHighFluxParam()
  param->fSigmaXDeadZoneHit2 = 0.004/12.;
  param->fSigmaZDeadZoneHit2 = 0.001/12.;
  param->fXPassDeadZoneHits = 0.018;
+
+ // ITS SA tracker windows
+ param->SetNLoopsSA(20);
+ param->fMaxPhiSA = 0.07;
+ param->fMaxLambdaSA = 0.04;
  //
  // mult reco
  param->fMultCutPxDrSPDin = 0.1;
