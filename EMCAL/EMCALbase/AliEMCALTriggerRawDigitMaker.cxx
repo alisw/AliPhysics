@@ -58,7 +58,8 @@ fSTURawStream(0x0),
 fRawDigits(0x0),
 fRawAnalyzer(0x0),
 fDCSConfig(0x0),
-fTriggerData(0x0)
+fTriggerData(0x0),
+fIsRawRootFormat(kFALSE)
 {
   AliRunLoader* rl = AliRunLoader::Instance();
   if (rl && rl->GetAliRun())
@@ -100,6 +101,13 @@ void AliEMCALTriggerRawDigitMaker::SetIO(AliRawReader* reader, AliCaloRawStreamV
   fRawDigits     = digits;
   fSTURawStream  = &inSTU;
   fTriggerData   = data;
+
+  if (reader && reader->InheritsFrom("AliRawReaderRoot")) {
+    fIsRawRootFormat = kTRUE;
+  }
+  else {
+    fIsRawRootFormat = kFALSE;
+  }
 }
 
 ///
@@ -272,6 +280,8 @@ void AliEMCALTriggerRawDigitMaker::Add(const std::vector<AliCaloBunchInfo> &bunc
 
 bool AliEMCALTriggerRawDigitMaker::IsSTUIncluded(Int_t istu)
 {
+  if (!fIsRawRootFormat) return kTRUE;
+
   const Int_t offsetEMCAL = AliDAQ::DdlIDOffset("EMCAL");
 
   fRawReader->Reset();
@@ -299,8 +309,6 @@ bool AliEMCALTriggerRawDigitMaker::IsSTUIncluded(Int_t istu)
       if (eqId == offsetEMCAL + istu) isSTUin = true;
     }
   }
-
-  fRawReader->Reset();
 
   return isSTUin;
 }
@@ -332,6 +340,8 @@ void AliEMCALTriggerRawDigitMaker::PostProcess()
       continue;
     }
     
+    fRawReader->Reset();
+
     if (fSTURawStream && fSTURawStream->ReadPayLoad())
     {
       trgData->SetL1DataDecoded(1);

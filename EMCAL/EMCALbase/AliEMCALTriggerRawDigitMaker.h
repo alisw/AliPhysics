@@ -62,6 +62,8 @@ protected:
 	
   Int_t                        fRawDigitIndex[kMaxDigitIndex]; ///< Raw digit indexes
 
+  Bool_t                       fIsRawRootFormat; //!<! Whether the current input raw is in root format
+
 private:
 	
         AliEMCALTriggerRawDigitMaker(           const AliEMCALTriggerRawDigitMaker& rhs); // NOT implemented
