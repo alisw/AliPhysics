@@ -1886,6 +1886,8 @@ private:
   TProfile2D *fTPCQVecProTemp[2][4]; //!
   const static Int_t fkNv1evenCor = 6;
   TProfile2D *fFlowSPZDCv1evenCorPro[fkNv1evenCor]; //!
+  const static Int_t fkNZDCDistPro = 6;
+  TProfile2D *fFlowSPZDCDistPro[fkNv1evenCor]; //!
 
   // Flow QC
   TList *fFlowQCList;    //! QC List
