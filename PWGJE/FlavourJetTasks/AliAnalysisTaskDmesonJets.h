@@ -68,7 +68,12 @@ class AliAnalysisTaskDmesonJets : public AliAnalysisTaskEmcalLight
   {
   public:
     AliEventNotFound(const std::string& class_name, const std::string& method_name);
+#if __cplusplus <= 199711L
+    const char* what() const;
+#else
     const char* what() const _NOEXCEPT;
+#endif
+
 
   private:
     std::string  fClassName        ; ///< Class name where the event was not found

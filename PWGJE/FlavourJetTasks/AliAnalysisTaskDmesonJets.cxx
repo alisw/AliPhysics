@@ -64,8 +64,11 @@ AliAnalysisTaskDmesonJets::AliEventNotFound::AliEventNotFound(const std::string&
   fWhat = what_str.str();
 }
 
-
+#if __cplusplus <= 199711L
+const char* AliAnalysisTaskDmesonJets::AliEventNotFound::what() const
+#else
 const char* AliAnalysisTaskDmesonJets::AliEventNotFound::what() const _NOEXCEPT
+#endif
 {
   return fWhat.c_str();
 }
