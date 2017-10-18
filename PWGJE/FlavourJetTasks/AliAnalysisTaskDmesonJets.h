@@ -48,6 +48,8 @@ class AliEMCALGeometry;
 class TRandom;
 class AliRhoParameter;
 
+//C++
+#include <exception>
 #include <list>
 #include <vector>
 #include <map>
@@ -61,6 +63,23 @@ class AliRhoParameter;
 class AliAnalysisTaskDmesonJets : public AliAnalysisTaskEmcalLight
 {
  public:
+
+  class AliEventNotFound : public std::exception
+  {
+  public:
+    AliEventNotFound(const std::string& class_name, const std::string& method_name);
+#if __cplusplus <= 199711L
+    const char* what() const;
+#else
+    const char* what() const _NOEXCEPT;
+#endif
+
+
+  private:
+    std::string  fClassName        ; ///< Class name where the event was not found
+    std::string  fAccessMethodName ; ///< Access method name used to retrieve the event
+    std::string  fWhat             ; ///< Error message
+  };
 
   typedef AliJetContainer::EJetType_t EJetType_t;
   typedef AliJetContainer::EJetAlgo_t EJetAlgo_t;
@@ -335,7 +354,7 @@ class AliAnalysisTaskDmesonJets : public AliAnalysisTaskEmcalLight
     virtual void Set(const AliDmesonJetInfo& source);
 
     /// Distance of closest approach
-    Double32_t          fDCA           ; //[0,4.096,9]
+    Double32_t          fDCA           ; //[0,2.56,9]
     /// Cosine of theta star
     Double32_t          fCosThetaStar  ; //[-1.28,1.28,8]
     /// Transverse momentum of the kaon
@@ -351,10 +370,10 @@ class AliAnalysisTaskDmesonJets : public AliAnalysisTaskEmcalLight
     /// Cosine of the pointing angle
     Double32_t          fCosPointing   ; //[0,1.28,7]
     /// max norm d0
-    Double32_t          fMaxNormd0     ; //[0,102.4,10]
+    Double32_t          fMaxNormd0     ; //[-1,101.4,10]
 
     /// \cond CLASSIMP
-    ClassDef(AliD0ExtendedInfoSummary, 1);
+    ClassDef(AliD0ExtendedInfoSummary, 2);
     /// \endcond
   };
 
