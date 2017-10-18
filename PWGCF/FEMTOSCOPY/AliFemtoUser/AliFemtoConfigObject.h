@@ -231,15 +231,15 @@ public:
 #ifdef ENABLE_MOVE_SEMANTICS
     #define IMPL_BUILDITEM(__type, __a, __b) \
       BuildMap& operator()(const Key_t &key, const __type& val) { fMap[key] = val; return *this; }  \
-      BuildMap& operator()(const Key_t &key, __type && val) { fMap[key] = std::move(val); return *this; }
+      BuildMap& operator()(const Key_t &key, __type && val) { fMap.insert(std::make_pair(key, std::move(val))); return *this; }
     #define IMPL_CASTED_BUILDITEM(__type, __savedtype) \
       BuildMap& operator()(const Key_t &key, const __type& val) { fMap[key] = static_cast<__savedtype>(val); return *this; }  \
-      BuildMap& operator()(const Key_t &key, __type && val) { fMap[key] = std::move(static_cast<__savedtype>(val)); return *this; }
+      BuildMap& operator()(const Key_t &key, __type && val) { fMap.insert(std::make_pair(key, std::move(static_cast<__savedtype>(val)))); return *this; }
 #else
     #define IMPL_BUILDITEM(__type, __a, __b) \
-      BuildMap& operator()(const Key_t &key, const __type& val) { fMap[key] = val; return *this; }
+      BuildMap& operator()(const Key_t &key, const __type& val) { fMap.insert(std::make_pair(key, val)); return *this; }
     #define IMPL_CASTED_BUILDITEM(__type, __savedtype) \
-      BuildMap& operator()(const Key_t &key, const __type& val) { fMap[key] = static_cast<__savedtype>(val); return *this; }
+      BuildMap& operator()(const Key_t &key, const __type& val) { fMap.insert(std::make_pair(key, static_cast<__savedtype>(val))); return *this; }
 #endif
 
     FORWARD_STANDARD_TYPES(IMPL_BUILDITEM);
@@ -359,6 +359,13 @@ public:
   /// found or not a struct.
   template <typename ReturnType>
   AliFemtoConfigObject* pop(const Key_t &key, const ReturnType &default_);
+
+  /// Return copy of object with a key removed from map.
+  /// If not a map, or key not present, object is simply copied
+  AliFemtoConfigObject WithoutKey(const Key_t &key) const;
+
+  /// Return copy of object with given keys removed
+  AliFemtoConfigObject WithoutKeys(const std::vector<Key_t>&) const;
 
   /// \defgroup Pop&Load Methods
   /// @{
@@ -527,6 +534,9 @@ protected:
     return "--";
   }
 
+  static std::vector<std::string> split_key(Key_t key);
+  MapValue_t::iterator find_item(Key_t key);
+
 private:
 
   void _DeleteValue();
@@ -555,6 +565,7 @@ public:
 
 protected:
   TText fTitle;
+  TText fBody;
 };
 
 inline
