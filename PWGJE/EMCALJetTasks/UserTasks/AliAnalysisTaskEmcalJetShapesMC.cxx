@@ -1350,33 +1350,29 @@ void AliAnalysisTaskEmcalJetShapesMC::RecursiveParents(AliEmcalJet *fJet,AliJetC
      
     }
 
-    
+      fastjet::JetAlgorithm jetalgo(fastjet::antikt_algorithm);
+    if(ReclusterAlgo==0){ xflagalgo=0.5;
+      jetalgo=fastjet::kt_algorithm ;}
+      
+      if(ReclusterAlgo==1){ xflagalgo=1.5;
+	jetalgo=fastjet::cambridge_algorithm;}
+	if(ReclusterAlgo==2){ xflagalgo=2.5;
+	  jetalgo=fastjet::antikt_algorithm;} 
   
-  fastjet::JetDefinition                *fJetDef;         
-  fastjet::ClusterSequence              *fClustSeqSA;
-  if(ReclusterAlgo==0) xflagalgo=0.5;
-  if(ReclusterAlgo==1) xflagalgo=1.5;
-  if(ReclusterAlgo==2) xflagalgo=2.5;
-  if(ReclusterAlgo==0) fJetDef = new fastjet::JetDefinition(fastjet::kt_algorithm, fJetRadius*2, static_cast<fastjet::RecombinationScheme>(0), fastjet::BestFJ30 ); 
-  if(ReclusterAlgo==1) fJetDef = new fastjet::JetDefinition(fastjet::cambridge_algorithm, fJetRadius*2, static_cast<fastjet::RecombinationScheme>(0), fastjet::BestFJ30 );   if(ReclusterAlgo==2) fJetDef = new fastjet::JetDefinition(fastjet::akt_algorithm, fJetRadius*2, static_cast<fastjet::RecombinationScheme>(0), fastjet::BestFJ30 ); 
+  fastjet::JetDefinition = fJetDef(jetalgo, 1., static_cast<fastjet::RecombinationScheme>(0), fastjet::BestFJ30 ); 
 
   try {
-    fClustSeqSA = new fastjet::ClusterSequence(fInputVectors, *fJetDef);
-  } catch (fastjet::Error) {
-    AliError(" [w] FJ Exception caught.");
-    //return -1;
-  }
-
-  std::vector<fastjet::PseudoJet>   fOutputJets;
-  fOutputJets.clear();
-  fOutputJets=fClustSeqSA->inclusive_jets(0);
+    fastjet::ClusterSequence fClustSeqSA(fInputVectors, fJetDef);
+    std::vector<fastjet::PseudoJet>   fOutputJets;
+    fOutputJets.clear();
+    fOutputJets=fClustSeqSA->inclusive_jets(0);
   
    fastjet::PseudoJet jj;
    fastjet::PseudoJet j1;
    fastjet::PseudoJet j2;
    jj=fOutputJets[0];
    
-  while(jj.has_parents(j1,j2)){
+    while(jj.has_parents(j1,j2)){
     if(j1.perp() < j2.perp()) swap(j1,j2);
     double delta_R=j1.delta_R(j2);
     double z=j2.perp()/(j1.perp()+j2.perp());
@@ -1387,6 +1383,16 @@ void AliAnalysisTaskEmcalJetShapesMC::RecursiveParents(AliEmcalJet *fJet,AliJetC
     jj=j1;} 
 
 
+
+
+  } catch (fastjet::Error) {
+    AliError(" [w] FJ Exception caught.");
+    //return -1;
+  }
+
+ 
+  
+  
   return;
 
   
