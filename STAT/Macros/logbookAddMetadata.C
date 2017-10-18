@@ -65,6 +65,27 @@ void logbookAddMetadata(TTree*tree, Int_t verbose=0){
   TStatToolkit::AddMetadata(tree,"HLTmode.class","Base Logbook Setup");
   TStatToolkit::AddMetadata(tree,"numberOfDetectors.class","Base Logbook Setup");  
   //
+   // Logbook html metadata
+  TStatToolkit::AddMetadata(treeMC,"ctpDuration.thead","&Delta;T(s)");
+  TStatToolkit::AddMetadata(treeMC,"ctpDuration.tooltip","Logbook CTP duration ");
+  TStatToolkit::AddMetadata(treeMC,"ctpDuration.html","<a href=https://alice-logbook.cern.ch/logbook/date_online.php?p_cont=rund&p_run=%d{run}&p_tab=gi&p_subtab=rs>%d{ctpDuration}</a>");
+  TStatToolkit::AddMetadata(treeMC,"detectorMask.thead","mask");
+  TStatToolkit::AddMetadata(treeMC,"detectorMask.tooltip","Detector mask");
+  TStatToolkit::AddMetadata(treeMC,"DAQ_time_start.thead","T<sub>start</sub>");
+  TStatToolkit::AddMetadata(treeMC,"LHCperiod.thead","period");
+  TStatToolkit::AddMetadata(treeMC,"LHCFillNumber.thead","fill");
+  TStatToolkit::AddMetadata(treeMC,"HLTmode.thead","H L T");
+  TStatToolkit::AddMetadata(treeMC,"numberOfDetectors.thead","N<sub>det</sub>");
+  TStatToolkit::AddMetadata(treeMC,"numberOfDetectors.tooltip","Number of detectors");
+  TStatToolkit::AddMetadata(treeMC,"totalEventsPhysics.thead","N<sub>evphys</sub>");
+  TStatToolkit::AddMetadata(treeMC,"interactionRate.thead","rate(Hz)");
+
+  TStatToolkit::AddMetadata(treeMC,"DAQ_time_start.html","<a href=https://alice-logbook.cern.ch/logbook/date_online.php?p_cont=rund&p_run=%d{run}&p_tab=gi&p_subtab=rs>%t{DAQ_time_start}</a>");
+  TStatToolkit::AddMetadata(treeMC,"run.html","<a href=\"000%d{run}/index.html\">%d{run}</a>");
+  TStatToolkit::AddMetadata(treeMC,"detectorMask.html","%x{detectorMask&0xFFFF}");
+  TStatToolkit::AddMetadata(treeMC,"interactionRate.html","%2.2f{interactionRate}");
+
+  //
   TList * mlist = (TList*)(tree->GetUserInfo()->FindObject("metaTable"));
   mlist->Sort();
   if (verbose==1){

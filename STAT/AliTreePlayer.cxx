@@ -35,7 +35,8 @@
 #include "TBufferJSON.h"
 #include "AliSysInfo.h"
 #include <sstream>
-
+#include <bitset>
+#include "TTimeStamp.h"
 using namespace std;
 ClassImp(AliTreePlayer)
 ClassImp(AliTreeFormulaF)
@@ -75,7 +76,7 @@ Int_t AliTreeFormulaF::Compile(const char *expression) {
   TString fquery = expression;
   //
   // 1. GetList of %format{variables}  to query
-  //    format:   TString
+  //    format:   TStringf
   //    variable: TTreeFormula
   // 3. GetFormatted string
   //
@@ -122,6 +123,21 @@ char *AliTreeFormulaF::PrintValue(Int_t mode, Int_t instance, const char *decfor
     stream << fTextArray->At(iVar)->GetName();
     if (iVar < nVars) {
       TTreeFormula *treeFormula = (TTreeFormula *) fFormulaArray->At(iVar);
+      Bool_t isHex=(fFormatArray->At(iVar)->GetName()[0]=='x');
+      if ((fFormatArray->At(iVar)->GetName()[0]=='x')) {
+        stream<<std::uppercase<<std::hex <<treeFormula->EvalInstance64();
+        continue;
+      }
+      if ((fFormatArray->At(iVar)->GetName()[0]=='b')) { //TODO  parse number of bits
+        bitset<32> b(treeFormula->EvalInstance64());
+        stream<<b.to_string();
+        continue;
+      }
+      if ((fFormatArray->At(iVar)->GetName()[0]=='t')) { //TODO use formats
+        TTimeStamp stamp(treeFormula->EvalInstance64());
+        stream<<stamp.AsString("s");
+        continue;
+      }
       stream << treeFormula->PrintValue(0, instance, fFormatArray->At(iVar)->GetName());
     }
   }
@@ -537,12 +553,20 @@ Int_t  AliTreePlayer::selectWhatWhereOrderBy(TTree * tree, TString what, TString
       isParent[iCol]=kFALSE;
     }
     TTreeFormula * formula = NULL;
-    if (fieldName[0]!='#') {
+    TNamed* htmlTag=TStatToolkit::GetMetadata(tree,(fieldName+".html").Data());
+    Bool_t isFormulaF= (fieldName[0]=='#') || htmlTag!=NULL;
+
+    if (!isFormulaF) {
       formula=new TTreeFormula(fieldName.Data(), fieldName.Data(), tree);
-    }else{
-      TString fstring=fieldName;
-      if (tree->GetAlias(fieldName.Data())){
-        fstring=tree->GetAlias(fieldName.Data());
+    }else {
+      TString fstring = fieldName;
+      if (htmlTag) {
+        fstring=htmlTag->GetTitle();
+      } else {
+        fieldName.Replace(0, 1, "");
+        if (tree->GetAlias(fieldName.Data())) {
+          fstring = tree->GetAlias(fieldName.Data());
+        }
       }
       formula=new AliTreeFormulaF(fieldName.Data(), fstring.Data(), tree);
     }
@@ -614,7 +638,14 @@ Int_t  AliTreePlayer::selectWhatWhereOrderBy(TTree * tree, TString what, TString
     fprintf(default_fp,"\t<thead class=\"header\">\n"); // add metadata info
     fprintf(default_fp,"\t<tr>\n"); // add metadata info
     for (Int_t iCol=0; iCol<nCols; iCol++){
-      fprintf(default_fp,"\t\t<th>%s</th>\n",columnNameList[iCol]->GetName()); // add metadata info
+      TNamed *tHeadName = TStatToolkit::GetMetadata(tree,TString(columnNameList[iCol]->GetName())+".thead");
+      TNamed *tooltipName = TStatToolkit::GetMetadata(tree,TString(columnNameList[iCol]->GetName())+".tooltip");
+      TString sthName=(tHeadName!=NULL) ? tHeadName->GetTitle() : columnNameList[iCol]->GetName();
+      if (tooltipName==NULL){
+        fprintf(default_fp, "\t\t<th>%s</th>\n", sthName.Data()); // add metadata info
+      }else {
+        fprintf(default_fp, "\t\t<th class=\"tooltip\" data-tooltip=\"%s\">%s</th>\n", tooltipName->GetTitle(), sthName.Data()); // add metadata info
+      }
     }
     fprintf(default_fp,"\t</tr>\n"); // add metadata info
     fprintf(default_fp,"\t</thead>\n"); // add metadata info
