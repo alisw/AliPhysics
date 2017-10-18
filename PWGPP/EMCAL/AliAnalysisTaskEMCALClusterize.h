@@ -75,14 +75,14 @@ class AliAnalysisTaskEMCALClusterize : public AliAnalysisTaskSE {
   
   // OCDB, avoid acessing OCDB!
     
-  Bool_t         AccessOCDB();
+  void           AccessOCDB();
   void           SwitchOnAccessOCDB()                           { fAccessOCDB       = kTRUE    ; }
   void           SwitchOffAccessOCDB()                          { fAccessOCDB       = kFALSE   ; } 
   void           SetOCDBPath(const char *path)                  { fOCDBpath         = path     ; }
   
   // Geometry methods
     
-  void           InitGeometryAndCalibrations();
+  void           InitGeometry();
   void           SetGeometryName(TString &name)                 { fGeomName = name             ; }
   TString        GeometryName()                          const  { return fGeomName             ; }  
   void           SwitchOnLoadOwnGeometryMatrices()              { fLoadGeomMatrices = kTRUE    ; }

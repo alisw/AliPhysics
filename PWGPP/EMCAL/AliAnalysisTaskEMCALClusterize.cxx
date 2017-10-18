@@ -263,13 +263,12 @@ Bool_t AliAnalysisTaskEMCALClusterize::AcceptEventEMCAL()
 //_______________________________________________
 void AliAnalysisTaskEMCALClusterize::AccessOADB()
 {
-  //Set it only once
-  if(fOADBSet) return ; 
-  
-  Int_t   runnumber = InputEvent()->GetRunNumber() ;
+  // Set it only once, unless run changed
+  if ( fOADBSet ) return ; 
+    
   TString pass      = GetPass();
   
-  AliInfo(Form("Get AODB parameters from EMCAL in %s for run %d, and <%s>",fOADBFilePath.Data(),runnumber,pass.Data()));
+  AliInfo(Form("Get AODB parameters from EMCAL in %s for run %d, and <%s>",fOADBFilePath.Data(),fRun,pass.Data()));
   
   Int_t nSM = fGeom->GetNumberOfSuperModules();
   
@@ -279,7 +278,7 @@ void AliAnalysisTaskEMCALClusterize::AccessOADB()
     AliOADBContainer *contBC=new AliOADBContainer("");
     contBC->InitFromFile(Form("%s/EMCALBadChannels.root",fOADBFilePath.Data()),"AliEMCALBadChannels"); 
     
-    TObjArray *arrayBC=(TObjArray*)contBC->GetObject(runnumber);
+    TObjArray *arrayBC=(TObjArray*)contBC->GetObject(fRun);
     
     if(arrayBC)
     {
@@ -317,7 +316,7 @@ void AliAnalysisTaskEMCALClusterize::AccessOADB()
     
     contRF->InitFromFile(Form("%s/EMCALRecalib.root",fOADBFilePath.Data()),"AliEMCALRecalib");
     
-    TObjArray *recal=(TObjArray*)contRF->GetObject(runnumber); 
+    TObjArray *recal=(TObjArray*)contRF->GetObject(fRun); 
     
     if(recal)
     {
@@ -363,25 +362,25 @@ void AliAnalysisTaskEMCALClusterize::AccessOADB()
     
     contRFTD->InitFromFile(Form("%s/EMCALTemperatureCorrCalib.root",fOADBFilePath.Data()),"AliEMCALRunDepTempCalibCorrections");
     
-    TH1S *htd=(TH1S*)contRFTD->GetObject(runnumber); 
+    TH1S *htd=(TH1S*)contRFTD->GetObject(fRun); 
     
     //If it did not exist for this run, get closes one
     if (!htd)
     {
-      AliWarning(Form("No TemperatureCorrCalib Objects for run: %d",runnumber));
-      // let's get the closest runnumber instead then..
+      AliWarning(Form("No TemperatureCorrCalib Objects for run: %d",fRun));
+      // let's get the closest fRun instead then..
       Int_t lower = 0;
       Int_t ic = 0;
       Int_t maxEntry = contRFTD->GetNumberOfEntries();
       
-      while ( (ic < maxEntry) && (contRFTD->UpperLimit(ic) < runnumber) ) {
+      while ( (ic < maxEntry) && (contRFTD->UpperLimit(ic) < fRun) ) {
         lower = ic;
         ic++;
       }
       
       Int_t closest = lower;
       if ( (ic<maxEntry) &&
-          (contRFTD->LowerLimit(ic)-runnumber) < (runnumber - contRFTD->UpperLimit(lower)) ) {
+          (contRFTD->LowerLimit(ic)-fRun) < (fRun - contRFTD->UpperLimit(lower)) ) {
         closest = ic;
       }
       
@@ -421,15 +420,15 @@ void AliAnalysisTaskEMCALClusterize::AccessOADB()
     
     contTRF->InitFromFile(Form("%s/EMCALTimeCalib.root",fOADBFilePath.Data()),"AliEMCALTimeCalib");
     
-    TObjArray *trecal=(TObjArray*)contTRF->GetObject(runnumber); 
+    TObjArray *trecal=(TObjArray*)contTRF->GetObject(fRun); 
     
     if(trecal)
     {      
       // pass number should be pass1 except on Run1 and special cases
       TString passM = pass;
       if ( pass=="spc_calo"   ) passM = "pass3";
-      if ( runnumber > 209121 ) passM = "pass1"; // run2 periods
-      if ( pass == "muon_calo_pass1" && runnumber > 209121 && runnumber < 244284 ) 
+      if ( fRun > 209121 ) passM = "pass1"; // run2 periods
+      if ( pass == "muon_calo_pass1" && fRun > 209121 && fRun < 244284 ) 
         passM = "pass0";//period LHC15a-m
 
       TObjArray *trecalpass=(TObjArray*)trecal->FindObject(passM);
@@ -482,10 +481,10 @@ void AliAnalysisTaskEMCALClusterize::AccessOADB()
     
     contBC->InitFromFile(Form("%s/EMCALTimeL1PhaseCalib.root",fOADBFilePath.Data()),"AliEMCALTimeL1PhaseCalib");    
     
-    TObjArray *arrayBC=(TObjArray*)contBC->GetObject(runnumber);
+    TObjArray *arrayBC=(TObjArray*)contBC->GetObject(fRun);
     if (!arrayBC)
     {
-      AliError(Form("No external L1 phase in time calibration set for run number: %d", runnumber));
+      AliError(Form("No external L1 phase in time calibration set for run number: %d", fRun));
       fRecoUtils->SwitchOffL1PhaseInTimeRecalibration();
     }
     else
@@ -493,13 +492,13 @@ void AliAnalysisTaskEMCALClusterize::AccessOADB()
       // Only 1 L1 phase correction possible, except special cases
       TString pass2 =  "pass1"; 
       
-      if ( pass=="muon_calo_pass1" && runnumber > 209121 && runnumber < 244284 ) 
+      if ( pass=="muon_calo_pass1" && fRun > 209121 && fRun < 244284 ) 
         pass2 = "pass0"; // period LHC15a-m
 
       TObjArray *arrayBCpass=(TObjArray*)arrayBC->FindObject(pass2);
       if (!arrayBCpass)
       {
-        AliError(Form("No external L1 phase in time calibration set for: %d -%s", runnumber,pass2.Data()));
+        AliError(Form("No external L1 phase in time calibration set for: %d -%s", fRun,pass2.Data()));
         fRecoUtils->SwitchOffL1PhaseInTimeRecalibration();
       }
       else AliInfo("Recalibrate L1 Phase time");
@@ -511,11 +510,11 @@ void AliAnalysisTaskEMCALClusterize::AccessOADB()
         TH1C *h = fRecoUtils->GetEMCALL1PhaseInTimeRecalibrationForAllSM();
         if (h) delete h;
         
-        h = (TH1C*)arrayBCpass->FindObject(Form("h%d",runnumber));
+        h = (TH1C*)arrayBCpass->FindObject(Form("h%d",fRun));
         
         if (!h) 
         {
-          AliFatal(Form("There is no calibration histogram h%d for this run",runnumber));
+          AliFatal(Form("There is no calibration histogram h%d for this run",fRun));
           return;
         }
         
@@ -527,7 +526,7 @@ void AliAnalysisTaskEMCALClusterize::AccessOADB()
     delete contBC;
   }   // L1 Phase Time Recalibration
     
-  // Parameters already set once, so do not it again
+  // Parameters already set once, so do not it again, unless run changes
   fOADBSet = kTRUE;
 }  
 
@@ -535,23 +534,14 @@ void AliAnalysisTaskEMCALClusterize::AccessOADB()
 /// Access to OCDB stuff, avoid. 
 /// Not sure it works anymore.
 //_________________________________________________
-Bool_t AliAnalysisTaskEMCALClusterize::AccessOCDB()
+void AliAnalysisTaskEMCALClusterize::AccessOCDB()
 {
-  fEvent = InputEvent();
-  if (!fEvent)
-  {
-    Warning("AccessOCDB","Event not available!!!");
-    return kFALSE;
-  }
-  
-  if (fEvent->GetRunNumber()==fRun)
-    return kTRUE;
-  fRun = fEvent->GetRunNumber();
+  // Set once per run
+  if ( fOADBSet ) return;
   
   AliDebug(1,"Begin");
   
   AliCDBManager *cdb = AliCDBManager::Instance();
-  
   
   if (fOCDBpath.Length())
   {
@@ -559,7 +549,7 @@ Bool_t AliAnalysisTaskEMCALClusterize::AccessOCDB()
     AliInfo(Form("Default storage %s",fOCDBpath.Data()));
   }
   
-  cdb->SetRun(fEvent->GetRunNumber());
+  cdb->SetRun(fRun);
   
   //
   // EMCAL from RAW OCDB
@@ -572,7 +562,9 @@ Bool_t AliAnalysisTaskEMCALClusterize::AccessOCDB()
   
   TString path = cdb->GetDefaultStorage()->GetBaseFolder();
   
-  return kTRUE;
+  fOADBSet = kTRUE;
+  
+  return ;
 }
 
 //_____________________________________________________
@@ -691,9 +683,9 @@ void AliAnalysisTaskEMCALClusterize::CheckAndGetEvent()
   // Reject event if triggered by exotic cell and remove exotic cells if not triggered
   //-------------------------------------------------------------------------------------
   
-  if( IsLEDEvent( InputEvent()->GetRunNumber() ) ) { fEvent = 0x0 ; return ; }
+  if( IsLEDEvent( fRun ) ) { fEvent = 0x0 ; return ; }
   
-  if( IsExoticEvent() )                            { fEvent = 0x0 ; return ; }
+  if( IsExoticEvent() )    { fEvent = 0x0 ; return ; }
   
   //-------------------------------------------------------------------------------------
   // Set the cluster array in the event (output or input)
@@ -1076,7 +1068,7 @@ void AliAnalysisTaskEMCALClusterize::FillAODHeader()
   
   AliAODHeader* header = dynamic_cast<AliAODHeader*>(AODEvent()->GetHeader());
   if(!header) AliFatal("Not a standard AOD");
-  header->SetRunNumber(fEvent->GetRunNumber());
+  header->SetRunNumber(fRun);
   
   if(esdevent)
   {
@@ -1435,19 +1427,18 @@ void AliAnalysisTaskEMCALClusterize::InitClusterization()
 //________________________________________________________________
 /// Init geometry and set the geometry matrix,
 /// for the first event, skip the rest.
-/// Also set once the run dependent calibrations.
+/// Even if run number changes, geom only changes from year to year so first is enough.
 //________________________________________________________________
-void AliAnalysisTaskEMCALClusterize::InitGeometryAndCalibrations()
+void AliAnalysisTaskEMCALClusterize::InitGeometry()
 {
   if(fGeomMatrixSet) return;
   
-  Int_t runnumber = InputEvent()->GetRunNumber() ;
   if (!fGeom)
   {
     if(fGeomName=="")
     {
-      fGeom = AliEMCALGeometry::GetInstanceFromRunNumber(runnumber);
-      AliInfo(Form("Get EMCAL geometry name <%s> for run %d",fGeom->GetName(),runnumber));
+      fGeom = AliEMCALGeometry::GetInstanceFromRunNumber(fRun);
+      AliInfo(Form("Get EMCAL geometry name <%s> for run %d",fGeom->GetName(),fRun));
     }
     else
     {
@@ -1461,10 +1452,10 @@ void AliAnalysisTaskEMCALClusterize::InitGeometryAndCalibrations()
       if(fImportGeometryFilePath=="") // If not specified, set location depending on run number
       {
         // "$ALICE_ROOT/EVE/alice-data/default_geo.root"
-        if      (runnumber <  140000) fImportGeometryFilePath = "$ALICE_PHYSICS/OADB/EMCAL/geometry_2010.root";
-        else if (runnumber <  171000) fImportGeometryFilePath = "$ALICE_PHYSICS/OADB/EMCAL/geometry_2011.root";
-        else if (runnumber <  198000) fImportGeometryFilePath = "$ALICE_PHYSICS/OADB/EMCAL/geometry_2012.root"; // 2012-2013
-        else                          fImportGeometryFilePath = "$ALICE_PHYSICS/OADB/EMCAL/geometry_2015.root"; // >=2015
+        if      (fRun <  140000) fImportGeometryFilePath = "$ALICE_PHYSICS/OADB/EMCAL/geometry_2010.root";
+        else if (fRun <  171000) fImportGeometryFilePath = "$ALICE_PHYSICS/OADB/EMCAL/geometry_2011.root";
+        else if (fRun <  198000) fImportGeometryFilePath = "$ALICE_PHYSICS/OADB/EMCAL/geometry_2012.root"; // 2012-2013
+        else                     fImportGeometryFilePath = "$ALICE_PHYSICS/OADB/EMCAL/geometry_2015.root"; // >=2015
       }
       
       AliInfo(Form("Import %s",fImportGeometryFilePath.Data()));
@@ -1472,7 +1463,7 @@ void AliAnalysisTaskEMCALClusterize::InitGeometryAndCalibrations()
       TGeoManager::Import(fImportGeometryFilePath) ;
     }
 
-    AliDebug(1,Form("Init for run=%d",runnumber));
+    AliDebug(1,Form("Init for run=%d",fRun));
     if (!gGeoManager) AliDebug(1,"Careful!, gGeoManager not loaded, load misalign matrices");
 	} // geometry pointer did not exist before
   
@@ -1483,7 +1474,7 @@ void AliAnalysisTaskEMCALClusterize::InitGeometryAndCalibrations()
     // OADB if available
     AliOADBContainer emcGeoMat("AliEMCALgeo");
     emcGeoMat.InitFromFile(Form("%s/EMCALlocal2master.root",fOADBFilePath.Data()),"AliEMCALgeo");
-    TObjArray *matEMCAL=(TObjArray*)emcGeoMat.GetObject(runnumber,"EmcalMatrices");
+    TObjArray *matEMCAL=(TObjArray*)emcGeoMat.GetObject(fRun,"EmcalMatrices");
     
     for(Int_t mod=0; mod < (fGeom->GetEMCGeometry())->GetNumberOfSuperModules(); mod++)
     {
@@ -2471,7 +2462,18 @@ void AliAnalysisTaskEMCALClusterize::UserExec(Option_t *)
   if(!fCaloClusterArr) fCaloClusterArr    = new TObjArray(10000);
   else                 fCaloClusterArr->Delete();//Clear("C"); it leaks?
 
-  InitGeometryAndCalibrations(); // only once, must be done before OADB, geo OADB accessed here
+  
+  // In case of analysis in multiple runs, check the OADB again
+  if ( InputEvent()->GetRunNumber() != fRun )  
+  {
+    fRun = InputEvent()->GetRunNumber();
+    
+    fOADBSet = kFALSE; // recover the OADB for this run
+    
+    AliInfo(Form("Set run to %d",fRun));
+  }
+  
+  InitGeometry(); // only once, must be done before OADB, geo OADB accessed here
   
   // Get the event, do some checks and settings
   CheckAndGetEvent() ;
