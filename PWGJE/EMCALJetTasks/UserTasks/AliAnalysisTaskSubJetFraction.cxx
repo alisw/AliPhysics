@@ -1746,7 +1746,7 @@ Double_t AliAnalysisTaskSubJetFraction::FjNSubJettiness(AliEmcalJet *Jet, Int_t 
       else return Jet->GetShapeProperties()->GetSecondOrderSubtractedOpeningAngle_casd();
     } 
     else{
-      if (fJetShapeType != AliAnalysisTaskSubJetFraction::kGenOnTheFly) Algorithm=fReclusteringAlgorithm;   //Lazy programming!! Change this later, just a quick fix for now...it stops you being able to fill tree with two different reclutering algorithms or change algortihm inside this .cxx  (can only be changed via the external setter).
+      Algorithm=fReclusteringAlgorithm;
       AliJetContainer *JetCont = GetJetContainer(JetContNb);
       AliEmcalJetFinder JetFinder("Nsubjettiness");
       JetFinder.SetJetMaxEta(0.9-fJetRadius);
@@ -1845,25 +1845,8 @@ AliEmcalJet* AliAnalysisTaskSubJetFraction::ModifyJet(AliEmcalJet* Jet, Int_t Je
       PseudoTracks.set_user_index(Jet->TrackAt(i)+100); //100 is very arbitary....why is it here anyway?
       fInputVectors.push_back(PseudoTracks);
     }
-  // if (Modification=="Randomise") fInputVectors=RandomiseTracks(fInputVectors);
-  //if (Modification=="AddExtraProng_02_30") fInputVectors=AddExtraProng(fInputVectors,0.2,0.3);
-  /*
-  fastjet::JetDefinition *fJetDef;         
-  fastjet::ClusterSequence *fClustSeqSA;
-  fJetDef = new fastjet::JetDefinition(fastjet::antikt_algorithm, fJetRadius*2, static_cast<fastjet::RecombinationScheme>(0), fastjet::BestFJ30 ); 
-  try {
-    fClustSeqSA = new fastjet::ClusterSequence(fInputVectors, *fJetDef);
-  } catch (fastjet::Error) {
-    AliError(" [w] FJ Exception caught.");
-    //return -1;
-  }
-  std::vector<fastjet::PseudoJet> Modified_Jet;
-  Modified_Jet.clear();
-  Modified_Jet=fClustSeqSA->inclusive_jets(0);
-
-  AliEmcalJet *Modified_AliEmcalJet= new AliEmcalJet(Modified_Jet[0].perp(), Modified_Jet[0].pseudorapidity(), Modified_Jet[0].phi(), Modified_Jet[0].m());
-  return Modified_AliEmcalJet;
-  */
+  if (Modification=="Randomise") fInputVectors=RandomiseTracks(fInputVectors);
+  if (Modification=="AddExtraProng_02_30") fInputVectors=AddExtraProng(fInputVectors,0.2,0.3);
   AliEmcalJet *Modified_AliEmcalJet=0x0;
   try {
     fastjet::JetDefinition fJetDef(fastjet::antikt_algorithm, fJetRadius*2, static_cast<fastjet::RecombinationScheme>(0), fastjet::BestFJ30 );         
