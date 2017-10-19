@@ -145,7 +145,8 @@ class AliTPCClusterParam : public TObject {
   //
   TVectorD*& PosYcor(Int_t ind) {return fPosYcor[ind];}
   TVectorD*& PosZcor(Int_t ind) {return fPosZcor[ind];}
-  Float_t ParamS0Par(Int_t i, Int_t j, Int_t k) const {return fParamS0Par[i][j][k];}
+  Float_t GetParamS0Par(Int_t i, Int_t j, Int_t k) const {return fParamS0Par[i][j][k];}
+  Float_t GetParamRMS0(Int_t i, Int_t j, Int_t k) const {return fParamRMS0[i][j][k];}
   TVectorD* QpadTnorm() const {return fQpadTnorm;}
   TVectorD* QpadMnorm() const {return fQpadMnorm;}
 
