@@ -77,7 +77,8 @@ AliTRDNDFast::AliTRDNDFast(): TObject(),
     fTitle(""),
     fFunc(NULL),
     fHistos(NULL),
-    fPars()
+    fPars(),
+    iLangauFitOptionParameter(0)
 {
     // default constructor
 }
@@ -87,7 +88,8 @@ AliTRDNDFast::AliTRDNDFast(const char *name,Int_t ndim,Int_t nbins,Double_t xlow
     fTitle(name),
     fFunc(NULL),
     fHistos(NULL),
-    fPars()
+    fPars(),
+    iLangauFitOptionParameter(0)
 {
     Init();
     for(Int_t idim=0;idim<fNDim;idim++){
@@ -101,7 +103,8 @@ AliTRDNDFast::AliTRDNDFast(const AliTRDNDFast &ref) : TObject(ref),
     fTitle(ref.fTitle),
     fFunc(NULL),
     fHistos(NULL),
-    fPars()
+    fPars(),
+    iLangauFitOptionParameter(ref.iLangauFitOptionParameter)
 {
     Cleanup();
     Init();
@@ -121,6 +124,7 @@ AliTRDNDFast &AliTRDNDFast::operator=(const AliTRDNDFast &ref){
         fNDim=ref.fNDim;
         fTitle=ref.fTitle;
         fFunc = ref.fFunc;
+        iLangauFitOptionParameter=ref.iLangauFitOptionParameter;
         for(Int_t idim=0;idim<fNDim;idim++){
             fHistos[idim]=(TH1F*)ref.fHistos[idim]->Clone(Form("%s_axis_%d",GetName(),idim));
             fHistos[idim]->SetDirectory(0);
@@ -181,6 +185,10 @@ void AliTRDNDFast::PrintPars(){
 
 Int_t AliTRDNDFast::GetFitOptionParameter(){
     return iLangauFitOptionParameter;
+}
+
+void AliTRDNDFast::SetFitOptionParameter(Int_t iFitParameter){
+    iLangauFitOptionParameter=iFitParameter;
 }
 
 void AliTRDNDFast::ScaleLangauFun(TF1 *func,Double_t mpv){
@@ -246,9 +254,9 @@ TF1 *AliTRDNDFast::FitLandau(TString name,TH1F *htemp,Double_t range[2],TString 
     FitRes->GetCovarianceMatrix();
     TMatrixDSym TMatrCovFitRes=FitRes->GetCovarianceMatrix();
     TMatrixDSym TMatrCorFitRes=FitRes->GetCorrelationMatrix();
-    double dChi2=FitRes->Chi2();
-    double dNDF=FitRes->Ndf();
-    double dChiDivNdf=dChi2/dNDF;
+    Double_t dChi2=FitRes->Chi2();
+    Double_t dNDF=FitRes->Ndf();
+    Double_t dChiDivNdf=dChi2/dNDF;
     //cout<<"got Chi2()"<<endl;
     /*FileToDebugFit<<" Chi2 "<<dChiDivNdf<<endl;
     FileToDebugFit<<" CorrMatrix:"<<endl;
