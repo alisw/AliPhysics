@@ -153,7 +153,7 @@ class AliAnalysisTaskSEHFvn : public AliAnalysisTaskSE
   Double_t Getq2(TList* qnlist, Int_t q2meth, Double_t &mult);
   Bool_t isInMassRange(Double_t massCand, Double_t pt);
   Double_t GetTPCq2DauSubQnFramework(Double_t qVectWOcorr[2], Double_t multQvec, Int_t nDauRemoved, Double_t qVecDau[2], Double_t corrRec[2], Double_t LbTwist[2], Bool_t isTwistApplied);
-  void RemoveTracksInDeltaEtaFromOnTheFlyTPCq2(AliAODEvent* aod, Double_t etaD, Double_t etaLims[2], Double_t qVec[2], Double_t &M, vector<Int_t> daulab);
+  void RemoveTracksInDeltaEtaFromOnTheFlyTPCq2(AliAODEvent* aod, Double_t etaD, Double_t etaLims[2], Double_t qVec[2], Double_t &M, std::vector<Int_t> daulab);
 
   TH1F* fHistEvPlaneQncorrTPC[3];   //! histogram for EP
   TH1F* fHistEvPlaneQncorrVZERO[3]; //! histogram for EP
