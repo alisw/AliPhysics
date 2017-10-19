@@ -4760,11 +4760,12 @@ void AliConvEventCuts::SetPeriodEnum (TString periodName){
   // 13TeV LHC16* anchors full field Pythia 8 MB
   } else if ( periodName.CompareTo("LHC16P1Pyt8") == 0 || periodName.CompareTo("LHC17f6") == 0 || periodName.CompareTo("LHC17d17") == 0 || periodName.CompareTo("LHC17f5") == 0 ||
               periodName.CompareTo("LHC17d3") == 0 || periodName.CompareTo("LHC17e5") == 0 || periodName.CompareTo("LHC17d20a1") == 0 || periodName.CompareTo("LHC17d20a1_extra") == 0 ||
-              periodName.CompareTo("LHC17d20a2") == 0 || periodName.CompareTo("LHC17d20a2_extra") == 0 || periodName.CompareTo("LHC17d16") == 0 || periodName.CompareTo("LHC17d18") == 0 ){
+              periodName.CompareTo("LHC17d20a2") == 0 || periodName.CompareTo("LHC17d20a2_extra") == 0 || periodName.CompareTo("LHC17d16") == 0 || periodName.CompareTo("LHC17d18") == 0  ||
+              periodName.CompareTo("LHC17f9") == 0 || periodName.CompareTo("LHC17f9_test") == 0){
     fPeriodEnum = kLHC16P1Pyt8;
     fEnergyEnum = k13TeV;
   // 13TeV LHC16* anchors low field Pythia 8 MB
-  } else if ( periodName.CompareTo("LHC16P1Pyt8LowB") == 0 || periodName.CompareTo("LHC17d1") == 0 || periodName.CompareTo("LHC17f9") == 0 || periodName.CompareTo("LHC17f9_test") == 0){
+  } else if ( periodName.CompareTo("LHC16P1Pyt8LowB") == 0 || periodName.CompareTo("LHC17d1") == 0 ){
     fPeriodEnum = kLHC16P1Pyt8LowB;
     fEnergyEnum = k13TeVLowB;
   // 13TeV LHC16* anchors full field EPOS MB

@@ -5142,11 +5142,11 @@ AliCaloPhotonCuts::MCSet AliCaloPhotonCuts::FindEnumForMCSet(TString namePeriod)
             namePeriod.CompareTo("LHC17d20a2") == 0 ||
             namePeriod.CompareTo("LHC17d20a2_extra") == 0 ||
             namePeriod.CompareTo("LHC17d16") == 0 ||
-            namePeriod.CompareTo("LHC17d18") == 0 )       return k16P1Pyt8;
-  else if ( namePeriod.CompareTo("LHC16P1Pyt8LowB") == 0 ||
-            namePeriod.CompareTo("LHC17d1") == 0 ||
+            namePeriod.CompareTo("LHC17d18") == 0 ||
             namePeriod.CompareTo("LHC17f9") == 0 ||
-            namePeriod.CompareTo("LHC17f9_test") == 0 )   return k16P1Pyt8LowB;
+            namePeriod.CompareTo("LHC17f9_test") == 0 )   return k16P1Pyt8;
+  else if ( namePeriod.CompareTo("LHC16P1Pyt8LowB") == 0 ||
+            namePeriod.CompareTo("LHC17d1") == 0 )   return k16P1Pyt8LowB;
   else if ( namePeriod.CompareTo("LHC16P1EPOS") == 0 ||
             namePeriod.CompareTo("LHC17d20b1") == 0 ||
             namePeriod.CompareTo("LHC17d20b2") == 0 )     return k16P1EPOS;
