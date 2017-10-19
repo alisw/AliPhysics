@@ -682,14 +682,6 @@ void AliAnalysisTaskEMCALPhotonIsolation::UserCreateOutputObjects(){
         fEtaPhiClusVsPtIsoTrack->Sumw2();
 	fOutput->Add(fEtaPhiClusVsPtIsoTrack);
 
-	fEtaPhiClusVsPtUETrackCside = new TH3F ("hEtaVsPhiVsPtIsoTrack_Cside", "#eta vs. #varphi vs. #Sigma #it{p}_{T}^{track, UE} (tracks in C side) for clusters with 14 < #it{E}_{T} < 16 GeV", netabins, etamin, etamax, nphibins, phimin, phimax, 60, 0., 30.);
-        fEtaPhiClusVsPtUETrackCside->Sumw2();
-	fOutput->Add(fEtaPhiClusVsPtUETrackCside);
-
-	fEtaPhiClusVsPtUETrackAside = new TH3F ("hEtaVsPhiVsPtIsoTrack_Aside", "#eta vs. #varphi vs. #Sigma #it{p}_{T}^{track, UE} (tracks in A side) for clusters with 14 < #it{E}_{T} < 16 GeV", netabins, etamin, etamax, nphibins, phimin, phimax, 60, 0., 30.);
-        fEtaPhiClusVsPtUETrackAside->Sumw2();
-	fOutput->Add(fEtaPhiClusVsPtUETrackAside);
-
         fEtIsoClust = new TH2D("hEtIsoClus_NC","#Sigma #it{p}_{T}^{iso cone} in iso cone distribution for Neutral Clusters with EMCal Clusters",200,0.,100.,200,0.,100.);
         fEtIsoClust->SetYTitle("#Sigma #it{p}_{T}^{iso cone} (GeV/c)");
         fEtIsoClust->SetXTitle("#it{p}_{T}^{clust}");
@@ -836,6 +828,14 @@ void AliAnalysisTaskEMCALPhotonIsolation::UserCreateOutputObjects(){
 	  fTrackMultvsPt = new TH2D("hTrackMultvsPt","Track Multiplicity vs  #it{p}_{T}-UE distribution for clusters",100,0.,100.,200,0.,100.);
 	  fTrackMultvsPt->Sumw2();
 	  fOutput->Add(fTrackMultvsPt);
+
+	  fEtaPhiClusVsPtUETrackCside = new TH3F ("hEtaVsPhiVsPtUETrack_Cside", "#eta vs. #varphi vs. #Sigma #it{p}_{T}^{track, UE} (tracks in C side) for clusters with 14 < #it{E}_{T} < 16 GeV", netabins, etamin, etamax, nphibins, phimin, phimax, 60, 0., 30.);
+	  fEtaPhiClusVsPtUETrackCside->Sumw2();
+	  fOutput->Add(fEtaPhiClusVsPtUETrackCside);
+
+	  fEtaPhiClusVsPtUETrackAside = new TH3F ("hEtaVsPhiVsPtUETrack_Aside", "#eta vs. #varphi vs. #Sigma #it{p}_{T}^{track, UE} (tracks in A side) for clusters with 14 < #it{E}_{T} < 16 GeV", netabins, etamin, etamax, nphibins, phimin, phimax, 60, 0., 30.);
+	  fEtaPhiClusVsPtUETrackAside->Sumw2();
+	  fOutput->Add(fEtaPhiClusVsPtUETrackAside);
 	}
 
 	if(fIsMC){
@@ -2418,8 +2418,10 @@ void AliAnalysisTaskEMCALPhotonIsolation::EtIsoClusEtaBand(TLorentzVector c, Dou
     fEtaPhiClusVsEtIsoClus->Fill(c.Eta(),c.Phi(),sumEnergyConeClus);
     fEtaPhiClusVsPtIsoTrack->Fill(c.Eta(),c.Phi(),sumpTConeCharged);
 
-    fEtaPhiClusVsPtUETrackCside->Fill(c.Eta(),c.Phi(),sumpTEtaBandTracks_Cside);
-    fEtaPhiClusVsPtUETrackAside->Fill(c.Eta(),c.Phi(),sumpTEtaBandTracks_Aside);
+    if(!fLightOutput){
+      fEtaPhiClusVsPtUETrackCside->Fill(c.Eta(),c.Phi(),sumpTEtaBandTracks_Cside);
+      fEtaPhiClusVsPtUETrackAside->Fill(c.Eta(),c.Phi(),sumpTEtaBandTracks_Aside);
+    }
   }
 
   // Set smearing for MC
