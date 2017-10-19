@@ -271,6 +271,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
         kLHC17LowB,         //!< pp 13 TeV low B field
         kLHC17n,            //!< Xe-Xe 5.44 TeV
 
+        kLHC17j6,           //!< MC for Xe-Xe 5.44 TeV HIJING
         //
         kUnknownPeriod//!< kUnknownPeriod
       };
@@ -287,7 +288,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
         k7TeV         = 4,  //!< pp 7 TeV
         k8TeV         = 5,  //!< pp 8 TeV
         k13TeV        = 6,  //!< pp 13 TeV
-        k13TeVLowB     = 7,  //!< pp 13 TeV low B
+        k13TeVLowB    = 7,  //!< pp 13 TeV low B
         kpPb5TeV      = 8,  //!< pPb 5 TeV
         kpPb8TeV      = 9,  //!< pPb 8 TeV
         kPbPb2760GeV  = 10,  //!< PbPb 2.76TeV
