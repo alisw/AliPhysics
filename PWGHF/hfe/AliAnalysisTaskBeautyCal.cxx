@@ -151,9 +151,11 @@ ClassImp(AliAnalysisTaskBeautyCal)
   fM20EovP(0),
   fM02EovP(0),
   fInvmassULS(0),
+  fInvmassULSdca(0),
   fInvmassULSpi0(0),
   fInvmassULSeta(0),
   fInvmassLS(0),
+  fInvmassLSdca(0),
   fInvmassLSpi0(0),
   fInvmassLSeta(0),
   fInvmassHfULS(0),
@@ -589,6 +591,9 @@ void AliAnalysisTaskBeautyCal::UserCreateOutputObjects()
   fInvmassLS = new TH2F("fInvmassLS", "Invmass of LS (e,e) for pt^{e}>1; mass(GeV/c^2); counts;", 40,0,40,150,0,0.3);
   fOutputList->Add(fInvmassLS);
 
+  fInvmassLSdca = new TH2F("fInvmassLSdca", "Invmass of LS (e,e) for pt^{e}>1; mass(GeV/c^2); counts;", 2000,-0.2,0.2,150,0,0.3);
+  fOutputList->Add(fInvmassLSdca);
+
   fInvmassLSpi0 = new TH2F("fInvmassLSpi0", "Invmass of LS (e,e) for pt^{e}>1; mass(GeV/c^2); counts;", 40,0,40,150,0,0.3);
   fInvmassLSpi0->Sumw2();
   fOutputList->Add(fInvmassLSpi0);
@@ -599,6 +604,9 @@ void AliAnalysisTaskBeautyCal::UserCreateOutputObjects()
 
   fInvmassULS = new TH2F("fInvmassULS", "Invmass of ULS (e,e) for pt^{e}>1; mass(GeV/c^2); counts;", 40,0,40,150,0,0.3);
   fOutputList->Add(fInvmassULS);
+
+  fInvmassULSdca = new TH2F("fInvmassULSdca", "Invmass of LS (e,e) for pt^{e}>1; mass(GeV/c^2); counts;", 2000,-0.2,0.2,150,0,0.3);
+  fOutputList->Add(fInvmassULSdca);
 
   fInvmassULSpi0 = new TH2F("fInvmassULSpi0", "Invmass of LS (e,e) for pt^{e}>1; mass(GeV/c^2); counts;", 40,0,40,150,0,0.3);
   fInvmassULSpi0->Sumw2();
@@ -1623,7 +1631,7 @@ void AliAnalysisTaskBeautyCal::UserExec(Option_t *)
      
       //if(fTPCnSigma > -0.5 && fTPCnSigma < 3 && eop>0.9 && eop<1.3){ //rough cuts
         //-----Identify Non-HFE
-        SelectPhotonicElectron(iTracks,track,fFlagNonHFE,fFlagNonLsHFE,iEmbPi0,iEmbEta,WeightPho);
+        SelectPhotonicElectron(iTracks,track,fFlagNonHFE,fFlagNonLsHFE,iEmbPi0,iEmbEta,WeightPho,DCAxy);
         //cout << "ULS = " << fFlagNonHFE <<  " ; LS = " << fFlagNonLsHFE << endl;
         if(pid_eleP)
           {
@@ -1670,7 +1678,17 @@ void AliAnalysisTaskBeautyCal::UserExec(Option_t *)
 
           //----- MC
           //if(pid_eleD || pid_eleB)ElectronAway(iTracks,track); //e+e-
-          if(pid_eleD)fHistDCAdeSemi->Fill(track->Pt(),DCAxy);
+          if(pid_eleD)
+             {
+              if(Bevt)
+                {
+                 fHistDCAbeSemi->Fill(track->Pt(),DCAxy);
+                }
+               else
+                {
+                 fHistDCAdeSemi->Fill(track->Pt(),DCAxy);
+                } 
+             }
           if(pid_eleB)fHistDCAbeSemi->Fill(track->Pt(),DCAxy);
           if(pid_eleP)fHistDCApeSemi->Fill(track->Pt(),DCAxy);
           //cout << "pid_ele = "<< pid_ele << " ; pdg = " << pdg << endl;
@@ -1709,7 +1727,7 @@ Bool_t AliAnalysisTaskBeautyCal::ProcessCutStep(Int_t cutStep, AliVParticle *tra
 
 
 //________________________________________________________________________
-void AliAnalysisTaskBeautyCal::SelectPhotonicElectron(Int_t itrack, AliVTrack *track, Bool_t &fFlagULSElec, Bool_t &fFlagLSElec, Bool_t EmbPi0, Bool_t EmbEta, Double_t weight)
+void AliAnalysisTaskBeautyCal::SelectPhotonicElectron(Int_t itrack, AliVTrack *track, Bool_t &fFlagULSElec, Bool_t &fFlagLSElec, Bool_t EmbPi0, Bool_t EmbEta, Double_t weight, Double_t dcaxy)
 {
   ///////////////////////////////////////////
   //////Non-HFE - Invariant mass method//////
@@ -1799,12 +1817,14 @@ void AliAnalysisTaskBeautyCal::SelectPhotonicElectron(Int_t itrack, AliVTrack *t
     if(fFlagLS)
       {
        if(track->Pt()>1) fInvmassLS->Fill(track->Pt(),mass);
+       if(track->Pt()>3) fInvmassLSdca->Fill(dcaxy,mass);
        if(track->Pt()>1 && EmbPi0) fInvmassLSpi0->Fill(track->Pt(),mass,weight);
        if(track->Pt()>1 && EmbEta) fInvmassLSeta->Fill(track->Pt(),mass,weight);
       }
     if(fFlagULS)
       {
        if(track->Pt()>1) fInvmassULS->Fill(track->Pt(),mass);
+       if(track->Pt()>3) fInvmassULSdca->Fill(dcaxy,mass);
        if(track->Pt()>1 && EmbPi0) fInvmassULSpi0->Fill(track->Pt(),mass,weight);
        if(track->Pt()>1 && EmbEta) fInvmassULSeta->Fill(track->Pt(),mass,weight);
      }
