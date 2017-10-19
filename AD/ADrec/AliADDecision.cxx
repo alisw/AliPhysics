@@ -219,11 +219,11 @@ void AliADDecision::FillDecisions(AliESDAD *esdAD)
   if(weightRobustADC > 1) timeRobustADC /= weightRobustADC;
   else timeRobustADC = -1024.;
 
-  /*/Use basic time for decisions
+  /*Use basic time for decisions
     timeADA = timeBasicADA; timeADC = timeBasicADC;
     weightADA = weightBasicADA; weightADC = weightBasicADC;
     ntimeADA = ntimeBasicADA; ntimeADC = ntimeBasicADC;
-    for(Int_t i=0; i<8; ++i){itimeADA[i] = itimeBasicADA[i]; itimeADC[i] = itimeBasicADC[i];}/*/
+    for(Int_t i=0; i<8; ++i){itimeADA[i] = itimeBasicADA[i]; itimeADC[i] = itimeBasicADC[i];}*/
 
   //Use Robust time for decisions
   esdAD->SetBit(AliESDAD::kRobustMeanTime,kTRUE);
