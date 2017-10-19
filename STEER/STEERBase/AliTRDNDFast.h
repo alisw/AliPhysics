@@ -61,7 +61,7 @@ private:
     TF1 **fFunc; //! functions, do not store
     TH1F **fHistos; //[fNDim] Histograms
     TArrayF fPars[kNpar]; // parameters
-    int iLangauFitOptionParameter=0;//0 Use Standard, 1 dont use Exp
+    Int_t iLangauFitOptionParameter=0;//0 Use Standard, 1 dont use Exp
     ClassDef(AliTRDNDFast,3)  //Fast TRD ND class
 };
 
