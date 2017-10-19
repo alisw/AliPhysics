@@ -44,7 +44,7 @@ public:
     Double_t GetParam(Int_t dim,Int_t par){if((dim>=0)&&(dim<fNDim)&&(par>=0)&&(par<kNpar)){return fPars[par].GetAt(dim);}else{return 0;}};
     void PrintPars();
     static void Random(Double_t *point,AliTRDNDFast *nd0,AliTRDNDFast *nd1,Double_t w0,Double_t w1);
-    int GetFitOptionParameter();
+    Int_t GetFitOptionParameter();
 
 private:
 

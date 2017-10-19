@@ -179,7 +179,7 @@ void AliTRDNDFast::PrintPars(){
     }
 }
 
-int AliTRDNDFast::GetFitOptionParameter(){
+Int_t AliTRDNDFast::GetFitOptionParameter(){
     return iLangauFitOptionParameter;
 }
 
@@ -216,7 +216,7 @@ TF1 *AliTRDNDFast::GetLangauFun(TString funcname,Double_t range[2],Double_t scal
     TF1 *hlandauE=new TF1(funcname.Data(),langaufunc,0,range[1],kNpar);
     hlandauE->SetParameters(start);
     hlandauE->SetParNames("Width","MP","Area","GSigma","delta");
-    for (int i=0; i<kNpar; i++) {
+    for (Int_t i=0; i<kNpar; i++) {
         hlandauE->SetParLimits(i, low[i], high[i]);
     }
     if (iLangauFitOptionParameter==1){
@@ -252,8 +252,8 @@ TF1 *AliTRDNDFast::FitLandau(TString name,TH1F *htemp,Double_t range[2],TString 
     //cout<<"got Chi2()"<<endl;
     /*FileToDebugFit<<" Chi2 "<<dChiDivNdf<<endl;
     FileToDebugFit<<" CorrMatrix:"<<endl;
-    for (int i=0; i<kNpar; i++){
-        for (int j=0; j<kNpar; j++){
+    for (Int_ti=0; i<kNpar; i++){
+        for (Int_tj=0; j<kNpar; j++){
             FileToDebugFit<<TMatrCorFitRes(i,j)<<" ";
         }
         FileToDebugFit<<endl;

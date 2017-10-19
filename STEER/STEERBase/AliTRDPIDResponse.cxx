@@ -333,7 +333,7 @@ Double_t AliTRDPIDResponse::GetNumberOfSigmas(const AliVTrack *track, AliPID::EP
     //
 
     const Double_t badval = -9999;
-    Double_t info[5]; for(int i=0; i<5; i++){info[i]=badval;}
+    Double_t info[5]; for(Int_t i=0; i<5; i++){info[i]=badval;}
     const Double_t delta = GetSignalDelta(track, type, kFALSE, fCorrectEta, fCorrectCluster, fCorrectCentrality, info);
 
     const Double_t mean = info[0];
@@ -474,7 +474,7 @@ Double_t AliTRDPIDResponse::MeandEdxTR(const Double_t * xx,  const Float_t * pin
     //
 
     Float_t ptr[4]={0};
-    for(int ii=0; ii<3; ii++){
+    for(Int_t ii=0; ii<3; ii++){
         ptr[ii+1]=pin[ii];
     }
     return MeanTR(xx,ptr) + MeandEdx(xx,&(pin[3]));
