@@ -131,6 +131,14 @@ Int_t AliEventPool::UpdatePool(TObjArray *trk)
     if (diff>fTargetTrackDepth)
       removeFirstEvent = 1;
   }
+
+  Bool_t gLimitNbOfEvents = 0;
+  if (fMixDepth > 0) gLimitNbOfEvents = kTRUE;
+  if (gLimitNbOfEvents) {
+    if (fEvents.size()>fMixDepth)
+      removeFirstEvent = 1;
+  }
+
   if (removeFirstEvent) {
     TObjArray *fa = fEvents.front();
     delete fa;
@@ -139,12 +147,6 @@ Int_t AliEventPool::UpdatePool(TObjArray *trk)
     fEventIndex.pop_front();
   }
 
-  Bool_t gLimitNbOfEvents = kFALSE;
-  if (fMixDepth < 1000) gLimitNbOfEvents = kTRUE;
-  if (gLimitNbOfEvents) {
-    if (fEvents.size()>fMixDepth)
-      return fEvents.size();
-  }
 
   fNTracksInEvent.push_back(mult);
   fEvents.push_back(trk);
