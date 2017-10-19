@@ -225,7 +225,7 @@ void AliADTriggerSimulator::FillFlags(Bool_t *bbFlag, Bool_t *bgFlag, Float_t ti
     Bool_t inBBwindow = fBBGate[board]->IsInCoincidence(time[i]);
     Bool_t inBGwindow = fBGGate[board]->IsInCoincidence(time[i]);
 
-    /*/
+    /*
       Bool_t inBBwindow = kFALSE;
       Bool_t inBGwindow = kFALSE;
 
@@ -240,7 +240,7 @@ void AliADTriggerSimulator::FillFlags(Bool_t *bbFlag, Bool_t *bgFlag, Float_t ti
       if(fBBGateShifted.IsInCoincidence(time[i])) inBBwindow = kTRUE;
       if(fBGGateShifted.IsInCoincidence(time[i])) inBGwindow = kTRUE;
       }
-      /*/
+      */
     bbFlag[i] = inBBwindow;
     bgFlag[i] = inBGwindow;
     //AliInfo(Form("Ch %d Time=%.1f BCM=%d BB=%d BG=%d",i,time[i],inBCmask,bbFlag[i],bgFlag[i] ));

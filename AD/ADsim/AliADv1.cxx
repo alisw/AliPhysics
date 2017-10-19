@@ -1755,7 +1755,7 @@ TGeoVolume * AliADv1::Make_UProfileH(const char * volname, TGeoMedium * medium)
   return voprofile;
 }
 //_________________________________________________________
-/*/
+/*
 TGeoVolumeAssembly * AliADv1::CreatePmtBoxC() 
 {
   // Dimensions of the box:
@@ -1854,7 +1854,7 @@ TGeoVolumeAssembly * AliADv1::CreatePmtBoxC()
 
   return volBox;
 
-} /*/
+} */
 //_____________________________________________________________________________
 /* void AliADv1::CreateCurvedBundles(TGeoVolumeAssembly * ad)
 {
