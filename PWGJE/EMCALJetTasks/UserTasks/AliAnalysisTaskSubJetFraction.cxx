@@ -1334,11 +1334,11 @@ Bool_t AliAnalysisTaskSubJetFraction::FillHistograms()
 	    fShapesVar[26]=SubJetFraction(Jet1, Reclusterer1, 2, 0, kTRUE, kFALSE);
 	  }
 	  fShapesVar[1]=FjNSubJettiness(Jet1,0,1,0,1,0);
-	  fShapesVar[3]=FjNSubJettiness(ModifyJet(Jet1,0,"Randomise"),0,1,0,1,0);
-	  fShapesVar[5]=FjNSubJettiness(ModifyJet(Jet1,0,"AddExtraProng_02_30"),0,1,0,1,0);
+	  fShapesVar[3]=FjNSubJettiness(std::unique_ptr<AliEmcalJet>(ModifyJet(Jet1,0,"Randomise")).get(),0,1,0,1,0);
+	  fShapesVar[5]=FjNSubJettiness(std::unique_ptr<AliEmcalJet>(ModifyJet(Jet1,0,"AddExtraProng_02_30")).get(),0,1,0,1,0);
 	  fShapesVar[7]=FjNSubJettiness(Jet1,0,2,0,1,0);
-	  fShapesVar[9]=FjNSubJettiness(ModifyJet(Jet1,0,"Randomise"),0,2,0,1,0);
-	  fShapesVar[11]=FjNSubJettiness(ModifyJet(Jet1,0,"AddExtraProng_02_30"),0,2,0,1,0);
+	  fShapesVar[9]=FjNSubJettiness(std::unique_ptr<AliEmcalJet>(ModifyJet(Jet1,0,"Randomise")).get(),0,2,0,1,0);
+	  fShapesVar[11]=FjNSubJettiness(std::unique_ptr<AliEmcalJet>(ModifyJet(Jet1,0,"AddExtraProng_02_30")).get(),0,2,0,1,0);
 	  fShapesVar[13]=-2;
 	  fShapesVar[15]=-2;
 	  fShapesVar[17]=-2;
@@ -1534,13 +1534,13 @@ Double_t AliAnalysisTaskSubJetFraction::SubJetOrdering(AliEmcalJet *Jet, AliEmca
   AliEmcalJet *SubJet=NULL;
   Double_t SortingVariable;
   Int_t ArraySize =N+1;
-  TArrayD *JetSorter = new TArrayD(ArraySize);
-  TArrayD *JetIndexSorter = new TArrayD(ArraySize);
+  TArrayD JetSorter(ArraySize);
+  TArrayD JetIndexSorter(ArraySize);
   for (Int_t i=0; i<ArraySize; i++){
-    JetSorter->SetAt(0,i);
+    JetSorter[i]=0;
   }
   for (Int_t i=0; i<ArraySize; i++){
-    JetIndexSorter->SetAt(0,i);
+    JetIndexSorter[i]=0;
   }
   if(Reclusterer->GetNumberOfJets()<N) return -999;
   for (Int_t i=0; i<Reclusterer->GetNumberOfJets(); i++){
@@ -1549,19 +1549,19 @@ Double_t AliAnalysisTaskSubJetFraction::SubJetOrdering(AliEmcalJet *Jet, AliEmca
     else if (Type==1) SortingVariable=SubJet->E();
     else if (Type==2) SortingVariable=SubJet->M();
     for (Int_t j=0; j<N; j++){
-      if (SortingVariable>JetSorter->GetAt(j)){
+      if (SortingVariable>JetSorter[j]){
 	for (Int_t k=N-1; k>=j; k--){
-	  JetSorter->SetAt(JetSorter->GetAt(k),k+1);
-	  JetIndexSorter->SetAt(JetIndexSorter->GetAt(k),k+1);
+	  JetSorter[k+1]=JetSorter[k];
+	  JetIndexSorter[k+1]=JetIndexSorter[k];
 	}
-	JetSorter->SetAt(SortingVariable,j);
-	JetIndexSorter->SetAt(i,j);
+	JetSorter[j]=SortingVariable;
+	JetIndexSorter[j]=i;
 	break;
       }
     }
   }
-  if (!Index) return JetSorter->GetAt(N-1);
-  else return JetIndexSorter->GetAt(N-1);
+  if (!Index) return JetSorter[N-1];
+  else return JetIndexSorter[N-1];
 }
 
 
@@ -1748,25 +1748,25 @@ Double_t AliAnalysisTaskSubJetFraction::FjNSubJettiness(AliEmcalJet *Jet, Int_t 
     else{
       if (fJetShapeType != AliAnalysisTaskSubJetFraction::kGenOnTheFly) Algorithm=fReclusteringAlgorithm;   //Lazy programming!! Change this later, just a quick fix for now...it stops you being able to fill tree with two different reclutering algorithms or change algortihm inside this .cxx  (can only be changed via the external setter).
       AliJetContainer *JetCont = GetJetContainer(JetContNb);
-      AliEmcalJetFinder *JetFinder=new AliEmcalJetFinder("Nsubjettiness");
-      JetFinder->SetJetMaxEta(0.9-fJetRadius);
-      JetFinder->SetRadius(fJetRadius); 
-      JetFinder->SetJetAlgorithm(0); //0 for anti-kt     1 for kt  //this is for the JET!!!!!!!!!! Not the SubJets
-      JetFinder->SetRecombSheme(0);
-      JetFinder->SetJetMinPt(Jet->Pt());
+      AliEmcalJetFinder JetFinder("Nsubjettiness");
+      JetFinder.SetJetMaxEta(0.9-fJetRadius);
+      JetFinder.SetRadius(fJetRadius); 
+      JetFinder.SetJetAlgorithm(0); //0 for anti-kt     1 for kt  //this is for the JET!!!!!!!!!! Not the SubJets
+      JetFinder.SetRecombSheme(0);
+      JetFinder.SetJetMinPt(Jet->Pt());
       if(fJetShapeType != AliAnalysisTaskSubJetFraction::kGenOnTheFly){
 	const AliVVertex *vert = InputEvent()->GetPrimaryVertex();
 	Double_t dVtx[3]={vert->GetX(),vert->GetY(),vert->GetZ()};
-	return JetFinder->Nsubjettiness(Jet,JetCont,dVtx,N,Algorithm,fSubJetRadius,Beta,Option,0,Beta_SD,ZCut,fSoftDropOn);
+	return JetFinder.Nsubjettiness(Jet,JetCont,dVtx,N,Algorithm,fSubJetRadius,Beta,Option,0,Beta_SD,ZCut,fSoftDropOn);
       }
       else{
 	Double_t dVtx[3]={1,1,1};
 	if (!fNsubMeasure){
-	  return JetFinder->Nsubjettiness(Jet,JetCont,dVtx,N,Algorithm,fSubJetRadius,Beta,Option,0,Beta_SD,ZCut,fSoftDropOn);
+	  return JetFinder.Nsubjettiness(Jet,JetCont,dVtx,N,Algorithm,fSubJetRadius,Beta,Option,0,Beta_SD,ZCut,fSoftDropOn);
 	}
 	else{
-	  if (Option==3) return JetFinder->Nsubjettiness(Jet,JetCont,dVtx,N,Algorithm,fSubJetRadius,Beta,Option,0,Beta_SD,ZCut,fSoftDropOn);
-	  else return JetFinder->Nsubjettiness(Jet,JetCont,dVtx,N,Algorithm,fSubJetRadius,Beta,Option,1);
+	  if (Option==3) return JetFinder.Nsubjettiness(Jet,JetCont,dVtx,N,Algorithm,fSubJetRadius,Beta,Option,0,Beta_SD,ZCut,fSoftDropOn);
+	  else return JetFinder.Nsubjettiness(Jet,JetCont,dVtx,N,Algorithm,fSubJetRadius,Beta,Option,1);
 	}
       }
     }
@@ -1847,7 +1847,7 @@ AliEmcalJet* AliAnalysisTaskSubJetFraction::ModifyJet(AliEmcalJet* Jet, Int_t Je
     }
   // if (Modification=="Randomise") fInputVectors=RandomiseTracks(fInputVectors);
   //if (Modification=="AddExtraProng_02_30") fInputVectors=AddExtraProng(fInputVectors,0.2,0.3);
-
+  /*
   fastjet::JetDefinition *fJetDef;         
   fastjet::ClusterSequence *fClustSeqSA;
   fJetDef = new fastjet::JetDefinition(fastjet::antikt_algorithm, fJetRadius*2, static_cast<fastjet::RecombinationScheme>(0), fastjet::BestFJ30 ); 
@@ -1863,6 +1863,20 @@ AliEmcalJet* AliAnalysisTaskSubJetFraction::ModifyJet(AliEmcalJet* Jet, Int_t Je
 
   AliEmcalJet *Modified_AliEmcalJet= new AliEmcalJet(Modified_Jet[0].perp(), Modified_Jet[0].pseudorapidity(), Modified_Jet[0].phi(), Modified_Jet[0].m());
   return Modified_AliEmcalJet;
+  */
+  AliEmcalJet *Modified_AliEmcalJet=0x0;
+  try {
+    fastjet::JetDefinition fJetDef(fastjet::antikt_algorithm, fJetRadius*2, static_cast<fastjet::RecombinationScheme>(0), fastjet::BestFJ30 );         
+    fastjet::ClusterSequence fClustSeqSA(fInputVectors, fJetDef);
+    std::vector<fastjet::PseudoJet> Modified_Jet=fClustSeqSA.inclusive_jets(0);
+    Modified_AliEmcalJet= new AliEmcalJet(Modified_Jet[0].perp(), Modified_Jet[0].pseudorapidity(), Modified_Jet[0].phi(), Modified_Jet[0].m());
+  } catch (fastjet::Error) {
+    AliError(" [w] FJ Exception caught.");
+    //return -1;
+  }
+  return Modified_AliEmcalJet;
+
+  
 				
 }
 
@@ -1882,23 +1896,20 @@ std::vector<fastjet::PseudoJet> AliAnalysisTaskSubJetFraction::RandomiseTracks(s
     Random_Track.set_user_index(i);
    Random_Track_Vector.push_back(Random_Track); 
    }
-  return Random_Track_Vector;
+   return Random_Track_Vector;
 }
 
 std::vector<fastjet::PseudoJet> AliAnalysisTaskSubJetFraction::AddExtraProng(std::vector<fastjet::PseudoJet> fInputVectors, Double_t Distance, Double_t PtFrac){
-    fRandom->SetSeed(0);
-   fastjet::JetDefinition *fJetDef;         
-   fastjet::ClusterSequence *fClustSeqSA;
-   fJetDef = new fastjet::JetDefinition(fastjet::antikt_algorithm, fJetRadius*2, static_cast<fastjet::RecombinationScheme>(0), fastjet::BestFJ30 ); 
-  try {
-    fClustSeqSA = new fastjet::ClusterSequence(fInputVectors, *fJetDef);
-   } catch (fastjet::Error) {
-    AliError(" [w] FJ Exception caught.");
-  }
-  
+  fRandom->SetSeed(0);
   std::vector<fastjet::PseudoJet> Jet;
   Jet.clear();
-  Jet= fClustSeqSA->inclusive_jets(0);
+  try {
+    fastjet::JetDefinition fJetDef(fastjet::antikt_algorithm, fJetRadius*2, static_cast<fastjet::RecombinationScheme>(0), fastjet::BestFJ30 ); 
+    fastjet::ClusterSequence fClustSeqSA(fInputVectors, fJetDef);
+    Jet= fClustSeqSA.inclusive_jets(0);
+  } catch (fastjet::Error) {
+    AliError(" [w] FJ Exception caught.");
+  }
   Double_t Extra_Track_Phi=fRandom->Uniform(-1*Distance,Distance); 
   Double_t Extra_Track_Eta=TMath::Sqrt((Distance*Distance)-(Extra_Track_Phi*Extra_Track_Phi));
   Double_t Eta_Sign =  fRandom->Uniform(-1,1);
