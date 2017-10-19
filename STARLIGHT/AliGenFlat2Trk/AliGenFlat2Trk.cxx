@@ -26,8 +26,7 @@ ClassImp(AliGenFlat2Trk);
 //------------------------------------------------------------
 
 AliGenFlat2Trk::AliGenFlat2Trk()
-  : fPid(0)
-  , fMass(0)
+  : fMass(0)
   , fMinvMin(0)
   , fMinvMax(0)
   , fPtPairMin(0)
@@ -40,7 +39,9 @@ AliGenFlat2Trk::AliGenFlat2Trk()
   , fEvent(0)
   , fNpartProd(0)
   , fTheta(NULL)
-  , fHeader(NULL) {}
+  , fHeader(NULL) {
+  fPid[0] = fPid[1] = 0;
+}
 
 AliGenFlat2Trk::AliGenFlat2Trk(Int_t    pid,
 			       Double_t mInvMax,
@@ -51,9 +52,8 @@ AliGenFlat2Trk::AliGenFlat2Trk(Int_t    pid,
 			       Int_t    tries,
 			       Bool_t   runAsMCGenerator,
 			       TString  thetaFunction)
-  : fPid(pid)
-  , fMass(TDatabasePDG::Instance()->GetParticle(fPid)->Mass())
-  , fMinvMin(2*fMass) // default lower bound is at threshold
+  : fMass(0)
+  , fMinvMin(0) // default lower bound is at threshold
   , fMinvMax(mInvMax)
   , fPtPairMin(ptPairMin)
   , fPtPairMax(ptPairMax)
@@ -67,6 +67,8 @@ AliGenFlat2Trk::AliGenFlat2Trk(Int_t    pid,
   , fTheta(NULL)
   , fHeader(NULL)
 {
+  SetPid(pid);
+
   // Avoid zero pt
   if (fPtMin == 0.0) fPtMin = 1.E-04;
 
@@ -90,18 +92,24 @@ Double_t AliGenFlat2Trk::SetMinvMin(Double_t m) {
 }
 
 void AliGenFlat2Trk::SetPid(Int_t pid) {
-  fPid     = pid;
-  fMass    = TDatabasePDG::Instance()->GetParticle(fPid)->Mass();
+  TParticlePDG *pPlus  = TDatabasePDG::Instance()->GetParticle(+pid);
+  TParticlePDG *pMinus = TDatabasePDG::Instance()->GetParticle(-pid);
+  fPid[0] = pid;
+  fPid[1] = (pMinus ? -pid : pid);
+  if (!pPlus)
+    AliFatalF("particle with pdg code=%d not found", pid);
+
+  fMass    = TDatabasePDG::Instance()->GetParticle(fPid[0])->Mass();
   fMinvMin = TMath::Max(2*fMass, fMinvMin);
 }
 
 void AliGenFlat2Trk::Init()
 {
   // print configuration
-  TParticlePDG *pPlus  = TDatabasePDG::Instance()->GetParticle(+fPid);
-  TParticlePDG *pMinus = TDatabasePDG::Instance()->GetParticle(-fPid);
-  AliInfoF("produced particle species: +-%d (%s,%s)",
-	   fPid, pPlus->GetName(), pMinus->GetName());
+  TParticlePDG *pPlus  = TDatabasePDG::Instance()->GetParticle(fPid[0]);
+  TParticlePDG *pMinus = TDatabasePDG::Instance()->GetParticle(fPid[1]);
+  AliInfoF("produced particle species: %d,%d (%s,%s)",
+	   fPid[0], fPid[1], pPlus->GetName(), pMinus->GetName());
 
   TString form = (fTheta ? fTheta->GetExpFormula() : "theta function is not set");
   form.ReplaceAll("x", "theta");
@@ -193,7 +201,7 @@ void AliGenFlat2Trk::Generate()
 
   if (fRunAsMCGenerator) {
     Int_t ntr = 0;
-    PushTrack(fTrackIt, -1, fPid,
+    PushTrack(fTrackIt, -1, fPid[0],
 	      pp.fV0.Px(), pp.fV0.Py(), pp.fV0.Pz(), pp.fV0.E(), // 4-momentun
 	      origin[0], origin[1], origin[2], 0.0,      // vertex+tof
 	      0.0, 0.0, 0.0,                             // polarization
@@ -201,7 +209,7 @@ void AliGenFlat2Trk::Generate()
 	      pp.fWeight);
     ++fNpartProd;
 
-    PushTrack(fTrackIt, -1, -fPid,
+    PushTrack(fTrackIt, -1, fPid[1],
 	      pp.fV1.Px(), pp.fV1.Py(), pp.fV1.Pz(), pp.fV1.E(), // 4-momentun
 	      origin[0], origin[1], origin[2], 0.0,      // vertex+tof
 	      0.0, 0.0, 0.0,                             // polarization
