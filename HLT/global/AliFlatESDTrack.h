@@ -166,7 +166,7 @@ class AliFlatESDTrack :public AliVTrack {
   // AliVParticle interface
   ULong_t  GetStatus() const ;
   Bool_t IsOn(Int_t mask) const;
- virtual Double_t Pt() const {const AliFlatExternalTrackParam* p=GetFlatTrackParam(); return (p)?p->GetPt():kVeryBig;}
+  virtual Double_t Pt() const {const AliFlatExternalTrackParam* p=GetFlatTrackParam(); return (p)?p->GetPt():kVeryBig;}
   virtual Double_t GetTgl()  const {const AliFlatExternalTrackParam* p=GetFlatTrackParam(); return (p)?p->GetTgl():kVeryBig;}
   using AliVTrack::GetImpactParameters;
   
@@ -195,6 +195,24 @@ class AliFlatESDTrack :public AliVTrack {
   virtual UChar_t  GetITSClusterMap() const {return 0;}
   virtual Bool_t   GetCovarianceXYZPxPyPz(Double_t cv[21]) const {if (cv[0]){}; return kFALSE;}
   virtual Bool_t   PropagateToDCA(const AliVVertex* /*vtx*/, Double_t /*b*/, Double_t /*maxd*/, Double_t /*dz*/[2], Double_t /*covar*/[3]) { return kFALSE;}
+  
+  //TPC Signal
+  virtual Double_t GetTPCsignal() const {
+    if (fTPCdEdxInfoPointer == 0) return 0.;
+    const AliFlatTPCdEdxInfo* p = reinterpret_cast<const AliFlatTPCdEdxInfo*>(fContent + fTPCdEdxInfoPointer);
+    Float_t signal, rms;
+    UShort_t N;
+    p->GetTPCsignal(signal, rms, N);
+    return(signal);
+  }
+  virtual UShort_t GetTPCsignalN() const {
+    if (fTPCdEdxInfoPointer == 0) return 0.;
+    const AliFlatTPCdEdxInfo* p = reinterpret_cast<const AliFlatTPCdEdxInfo*>(fContent + fTPCdEdxInfoPointer);
+    Float_t signal, rms;
+    UShort_t N;
+    p->GetTPCsignal(signal, rms, N);
+    return(N);
+  }
 
  private:
 
