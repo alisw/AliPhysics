@@ -14,6 +14,7 @@ class AliMultSelection;
 class AliStack;
 class AliQnCorrectionsManager;
 
+#include "TVector2.h"
 #include "AliAnalysisTaskSE.h"
 #include "AliQnCorrectionsQnVector.h"
 
@@ -80,9 +81,17 @@ class AliAnalysisTaskPHOSPi0EtaToGammaGamma : public AliAnalysisTaskSE {
     void SetDepthNMixed(Int_t Nmix)    {fNMixed        = Nmix;}
     void SetCentralityEstimator(TString estimator) {fEstimator = estimator;}
     void SetQnEstimator(TString estimator) {fQnEstimator = estimator;}
+    void SetFlowMethod(TString method) {fFlowMethod = method;}
     void SetPHOSTriggerAnalysis(TString selection){
       fIsPHOSTriggerAnalysis = kTRUE;
       fPHOSTriggerHelper  = new AliPHOSTriggerHelper(selection);
+    }
+    void SetTriggerMatchingDeltaR(Double_t DeltaR){
+      //this is a default setting
+      fPHOSTriggerHelper->SetMatchingDeltaR(DeltaR);
+    }
+    void SetTriggerMatchingDXZ(Int_t xmin, Int_t zmin, Int_t xmax, Int_t zmax){
+      fPHOSTriggerHelper->SetMatchingDistance(xmin,zmin,xmax,zmax);
     }
 
   protected:
@@ -103,7 +112,7 @@ class AliAnalysisTaskPHOSPi0EtaToGammaGamma : public AliAnalysisTaskSE {
     void SelectTriggeredCluster();
     void FillRejectionFactorMB();
     void FillEpRatio();
-    const AliQnCorrectionsQnVector *GetQnVectorFromList(const TList *qnlist, const char* subdetector);
+    const AliQnCorrectionsQnVector *GetQnVectorFromList(const TList *qnlist, const char* subdetector, const char *expcorr, const char *altcorr);
 
     virtual void SetMCWeight();//set weight related to M.C. (pT slope of mother pi0/eta/K0S/gamma)
 
@@ -197,10 +206,15 @@ class AliAnalysisTaskPHOSPi0EtaToGammaGamma : public AliAnalysisTaskSE {
     Bool_t fIsFlowTask;
     Int_t fHarmonics;
     TString fQnEstimator;
+    TString fFlowMethod;//EP or SP
     AliQnCorrectionsManager *fFlowQnVectorMgr;
     TString fTPCEPName[3]; 
     TString fV0EPName[3]; 
     Double_t fEventPlane;
+    TVector2 fQVector1;//x,y
+    TVector2 fQVector2;//x,y
+    Double_t fQ1[2];//x,y
+    Double_t fQ2[2];//x,y
     Int_t fNHybridTrack;
     Bool_t fIsPHOSTriggerAnalysis;
     AliPHOSTriggerHelper *fPHOSTriggerHelper;//for real PHOS triggered data analysis
@@ -216,7 +230,7 @@ class AliAnalysisTaskPHOSPi0EtaToGammaGamma : public AliAnalysisTaskSE {
     AliAnalysisTaskPHOSPi0EtaToGammaGamma(const AliAnalysisTaskPHOSPi0EtaToGammaGamma&);
     AliAnalysisTaskPHOSPi0EtaToGammaGamma& operator=(const AliAnalysisTaskPHOSPi0EtaToGammaGamma&);
 
-    ClassDef(AliAnalysisTaskPHOSPi0EtaToGammaGamma, 28);
+    ClassDef(AliAnalysisTaskPHOSPi0EtaToGammaGamma, 31);
 };
 
 #endif

@@ -1,27 +1,13 @@
-#include "iostream"
-#include "TH2.h"
 #include "TMath.h"
-#include "TObjArray.h"
 #include "TString.h"
 
 #include "AliLog.h"
 #include "AliVEvent.h"
 #include "AliESDEvent.h"
 #include "AliAODEvent.h"
-#include "AliPHOSGeometry.h"
-#include "AliOADBContainer.h"
-
-#include "AliESDEvent.h"
-#include "AliAODEvent.h"
-#include "AliVEvent.h"
 #include "AliVHeader.h"
-#include "AliVCaloTrigger.h"
-#include "AliVCluster.h"
-#include "AliVCaloCells.h"
 #include "AliAnalysisUtils.h"
 
-#include "AliPHOSTriggerHelper.h"
-#include "AliPHOSClusterCuts.h"
 #include "AliPHOSEventCuts.h"
 
 using namespace std;
@@ -33,11 +19,9 @@ ClassImp(AliPHOSEventCuts)
 //________________________________________________________________________
 AliPHOSEventCuts::AliPHOSEventCuts(const char *name):
 	fIsMC(kFALSE),
-  fUsePHOSTender(kTRUE),
   fMaxAbsZvtx(10.),
   fRejectPileup(kTRUE),
-  fRejectDAQIncomplete(kTRUE),
-  fPHOSGeo(0x0)
+  fRejectDAQIncomplete(kTRUE)
 {
   // Constructor
 
@@ -65,35 +49,6 @@ Bool_t AliPHOSEventCuts::AcceptEvent(AliVEvent *event)
 
   Int_t run = event->GetRunNumber();
 
-  if(fUsePHOSTender){
-    if(run<209122) //Run1
-      fPHOSGeo = AliPHOSGeometry::GetInstance("IHEP");
-    else
-      fPHOSGeo = AliPHOSGeometry::GetInstance("Run2");
-  }
-  else{
-    if(run<209122) //Run1
-      fPHOSGeo = AliPHOSGeometry::GetInstance("IHEP");
-    else
-      fPHOSGeo = AliPHOSGeometry::GetInstance("Run2");
-
-    AliOADBContainer geomContainer("phosGeo");
-    geomContainer.InitFromFile("$ALICE_PHYSICS/OADB/PHOS/PHOSGeometry.root","PHOSRotationMatrixes");
-    TObjArray *matrixes = (TObjArray*)geomContainer.GetObject(run,"PHOSRotationMatrixes");
-
-    for(Int_t mod=0; mod<6; mod++) {
-      if(!matrixes->At(mod)) {
-        AliError(Form("No PHOS Matrix for mod:%d, geo=%p\n", mod, fPHOSGeo));
-        continue;
-      }
-      else {
-        fPHOSGeo->SetMisalMatrix(((TGeoHMatrix*)matrixes->At(mod)),mod) ;
-        AliInfo(Form("Adding PHOS Matrix for mod:%d, geo=%p\n", mod, fPHOSGeo));
-      }
-    }//end of module loop
-
-  }
-
   Bool_t IsZvtxOut       = kFALSE;
   Bool_t IsDAQIncomplete = kFALSE;
   Bool_t eventPileup     = kFALSE;
@@ -103,9 +58,9 @@ Bool_t AliPHOSEventCuts::AcceptEvent(AliVEvent *event)
     IsDAQIncomplete = kTRUE;
   }
 
-  const AliVVertex *vVertex    = event->GetPrimaryVertex();
+  const AliVVertex *vVertex = event->GetPrimaryVertex();
 
-  if(vVertex->GetNContributors()<1){
+  if(vVertex->GetNContributors() < 1){
     AliInfo("vertex N contributors is less than 1. reject.");
     return kFALSE;
   }
@@ -118,6 +73,23 @@ Bool_t AliPHOSEventCuts::AcceptEvent(AliVEvent *event)
   if(TMath::Abs(vertex[2]) > fMaxAbsZvtx){
     AliInfo(Form("Zvtx %f cm is out of threshold %f cm.", vertex[2], fMaxAbsZvtx));
     IsZvtxOut = kTRUE;
+  }
+
+  if(244917 <= run && run <= 246994){
+    const AliVVertex* vtTrc = event->GetPrimaryVertex();
+    const AliVVertex* vtSPD = event->GetPrimaryVertexSPD();
+    double covTrc[6],covSPD[6];
+    vtTrc->GetCovarianceMatrix(covTrc);
+    vtSPD->GetCovarianceMatrix(covSPD);
+    double dz = vtTrc->GetZ()-vtSPD->GetZ();
+    double errTot = TMath::Sqrt(covTrc[5]+covSPD[5]);
+    double errTrc = TMath::Sqrt(covTrc[5]);
+    double nsigTot = TMath::Abs(dz)/errTot, nsigTrc = TMath::Abs(dz)/errTrc;
+    if (TMath::Abs(dz)>0.2 || nsigTot>10 || nsigTrc>20){
+      // reject, bad reconstructed track vertex
+      AliInfo("reject, bad reconstructed track vertex");
+      return kFALSE;
+    }
   }
 
 //  AliAODEvent *fAODEvent = dynamic_cast<AliAODEvent*>(event);

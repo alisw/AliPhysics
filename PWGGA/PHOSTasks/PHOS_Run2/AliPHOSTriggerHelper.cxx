@@ -1,6 +1,11 @@
+#include <vector>
+
 #include <TObject.h>
 #include <TClonesArray.h>
 #include <TH2.h>
+#include <TVector3.h>
+#include <TMath.h>
+
 #include <AliLog.h>
 #include <AliPHOSGeometry.h>
 #include <AliVEvent.h>
@@ -14,6 +19,8 @@
 #include "AliPHOSClusterCuts.h"
 #include "AliPHOSTriggerHelper.h"
 
+using namespace std;
+
 // Author: Daiki Sekihata (Hiroshima University)
 ClassImp(AliPHOSTriggerHelper)
 
@@ -24,6 +31,7 @@ AliPHOSTriggerHelper::AliPHOSTriggerHelper():
   fXmax(3),
   fZmin(-3),
   fZmax(3),
+  fMatchingDeltaR(0.025),
   fEvent(0x0),
   fESDEvent(0x0),
   fAODEvent(0x0),
@@ -32,7 +40,8 @@ AliPHOSTriggerHelper::AliPHOSTriggerHelper():
   fIsMC(kFALSE),
   fCaloTrigger(0x0),
   fIsUserTRUBadMap(kFALSE),
-  fRunNumber(-1)
+  fRunNumber(-1),
+  fUseDeltaRMatching(kTRUE)
 {
   //Constructor
   
@@ -48,6 +57,7 @@ AliPHOSTriggerHelper::AliPHOSTriggerHelper(TString trigger):
   fXmax(3),
   fZmin(-3),
   fZmax(3),
+  fMatchingDeltaR(0.025),
   fEvent(0x0),
   fESDEvent(0x0),
   fAODEvent(0x0),
@@ -56,7 +66,8 @@ AliPHOSTriggerHelper::AliPHOSTriggerHelper(TString trigger):
   fIsMC(kFALSE),
   fCaloTrigger(0x0),
   fIsUserTRUBadMap(kFALSE),
-  fRunNumber(-1)
+  fRunNumber(-1),
+  fUseDeltaRMatching(kTRUE)
 {
   //Constructor
   
@@ -179,13 +190,14 @@ Bool_t AliPHOSTriggerHelper::IsPHI7(AliVEvent *event, AliPHOSClusterCuts *cuts)
     AliInfo("PHOSClusterArray is NOT found! return kFALSE");
     return kFALSE;
   }
-  AliVCaloCells *cells = dynamic_cast<AliVCaloCells*>(fEvent->GetPHOSCells());
+
+  //AliVCaloCells *cells = dynamic_cast<AliVCaloCells*>(fEvent->GetPHOSCells());//only for maxabsid
 
   Int_t trgrelId[4]={};
   Int_t tmod=0; //"Online" module number
   Int_t trgabsId=0; //bottom-left 4x4 edge cell absId [1-64], [1-56]
   Int_t relId[4]={};
-  AliVCluster *clu1;
+  Float_t position[3] = {};
 
   Int_t L1=-999;
   if(fTriggerInputL1 > 0){
@@ -210,7 +222,6 @@ Bool_t AliPHOSTriggerHelper::IsPHI7(AliVEvent *event, AliPHOSClusterCuts *cuts)
     fPHOSGeo->AbsToRelNumbering(trgabsId,trgrelId);
     //for offline numbering, relId should be used.
 
-
     AliInfo(Form("Fired trigger channel : M%d X%d Z%d",trgrelId[0],trgrelId[2],trgrelId[3]));
     //if(!IsGoodTRUChannel("PHOS",trgrelId[0],trgrelId[2],trgrelId[3])) return kFALSE;
 
@@ -219,14 +230,25 @@ Bool_t AliPHOSTriggerHelper::IsPHI7(AliVEvent *event, AliPHOSClusterCuts *cuts)
       AliCaloPhoton *ph = (AliCaloPhoton*)array->At(i);
       if(!cuts->AcceptPhoton(ph)) continue;
       //if(!ph->IsTOFOK()) continue;
-      clu1 = (AliVCluster*)ph->GetCluster();
 
-      Int_t maxAbsId = FindHighestAmplitudeCellAbsId(clu1,cells);
+      //AliVCluster *clu1 = (AliVCluster*)ph->GetCluster();//only for maxabsid
+      //Int_t maxAbsId = FindHighestAmplitudeCellAbsId(clu1,cells);
+      //fPHOSGeo->AbsToRelNumbering(maxAbsId,relId);
 
-      fPHOSGeo->AbsToRelNumbering(maxAbsId,relId);
+      position[0] = ph->EMCx();
+      position[1] = ph->EMCy();
+      position[2] = ph->EMCz();
 
-      if(IsMatched(trgrelId,relId)) return kTRUE;
+      relId[0] = 0; relId[1] = 0; relId[2] = 0; relId[3] = 0;
+      TVector3 global1(position);
+      fPHOSGeo->GlobalPos2RelId(global1,relId);
 
+      if(fUseDeltaRMatching){
+        if(IsMatchedDeltaR(trgrelId,global1)) return kTRUE;
+      }
+      else{
+        if(IsMatched(trgrelId,relId)) return kTRUE;
+      }
     }//end of fired trigger channel loop
 
   }
@@ -248,6 +270,36 @@ Bool_t AliPHOSTriggerHelper::IsMatched(Int_t *trgrelid, Int_t *clurelid)
   if(!IsGoodTRUChannel("PHOS",trgrelid[0],trgrelid[2],trgrelid[3])) return kFALSE;
 
   AliInfo(Form("Accepted : diffx = %d , diffz = %d | fXmin = %d , fZmin = %d , fXmax = %d , fZmax = %d.",diffx,diffz,fXmin,fZmin,fXmax,fZmax));
+  return kTRUE;
+}
+//________________________________________________________________________
+Bool_t AliPHOSTriggerHelper::IsMatchedDeltaR(Int_t *trgrelid, TVector3 position)
+{
+  //Returns kTRUE if cluster position (center of gravity) is close to fired TRU channel.
+  Float_t x = 0;
+  Float_t y = 0;
+  fPHOSGeo->RelPosInModule(trgrelid,x,y); 
+  TVector3 trgglobal;
+  fPHOSGeo->Local2Global(trgrelid[0],x,y,trgglobal);
+  Double_t eta_trigger = trgglobal.Eta();
+  Double_t phi_trigger = trgglobal.Phi();
+  if(phi_trigger < 0) phi_trigger += TMath::TwoPi();
+ 
+  Int_t clurelid[4] = {}; 
+  fPHOSGeo->GlobalPos2RelId(position,clurelid);
+  Double_t eta_cluster = position.Eta();
+  Double_t phi_cluster = position.Phi();
+  if(phi_cluster < 0) phi_cluster += TMath::TwoPi();
+
+  Double_t DeltaR = TMath::Sqrt( TMath::Power(eta_trigger - eta_cluster,2) +  TMath::Power(phi_trigger - phi_cluster,2) );
+  if(DeltaR > fMatchingDeltaR) return kFALSE;
+
+  if(trgrelid[0] != clurelid[0])     return kFALSE; // different modules!//be carefull! STU kindly detects high energy hits on the border beween 2 modules.
+  if(fTriggerInputL1 < 0 &&  (WhichTRU(trgrelid[2],trgrelid[3]) != WhichTRU(clurelid[2],clurelid[3]))) return kFALSE;// different TRU in case of L0.
+
+  if(!IsGoodTRUChannel("PHOS",trgrelid[0],trgrelid[2],trgrelid[3])) return kFALSE;
+
+  AliInfo(Form("Accepted : DeltaR = %e | Matching criterion is less than %4.3f",DeltaR,fMatchingDeltaR));
   return kTRUE;
 }
 //________________________________________________________________________
@@ -342,5 +394,102 @@ Bool_t AliPHOSTriggerHelper::IsGoodTRUChannel(const char * det, Int_t mod, Int_t
   return kTRUE ;
 }
 //________________________________________________________________________
+Bool_t AliPHOSTriggerHelper::IsOnActiveTRUChannel(AliCaloPhoton *ph)
+{
+  //Check if this channel belogs to the good ones
+  //this function is used to check cluster hit position is on active TRU channel,
+  //and to restrict hit acceptance where both FEE and TRU channels are active in trigger analysis
+  //matched or non-matched do not matter here, but IsGoodTRUChannel is called for the convinience.
+
+  Float_t position[3] = {};
+  position[0] = ph->EMCx();
+  position[1] = ph->EMCy();
+  position[2] = ph->EMCz();
+
+  Int_t relId[4] = {};
+  TVector3 global1(position);
+  fPHOSGeo->GlobalPos2RelId(global1,relId);
+  
+  Int_t module = relId[0];
+  Int_t cellx  = relId[2];
+  Int_t cellz  = relId[3];
+
+  //convert (cellx,cellz) in FEE to (TRUchX,TRUchZ) in TRU.
+
+  if(fTriggerInputL1 > 0){//L1 trigger analysis
+    if(cellx %2 == 0) cellx -= 1;
+    if(cellz %2 == 1) cellz += 1;
+  }
+  else if(fTriggerInputL0 >0){//L0 trigger analysis
+    //note that 2D TRU bad maps are filled in odd number bins.(1,1) (1,3) ... (55,53) (55,55)
+    if(cellx %2 == 0) cellx -= 1;
+    if(cellz %2 == 0) cellz -= 1;
+  }
+
+  return IsGoodTRUChannel("PHOS",module,cellx,cellz);
+
+}
+//________________________________________________________________________
+Double_t AliPHOSTriggerHelper::GetDistanceToClosestTRUChannel(AliCaloPhoton *ph)
+{
+  Float_t position[3] = {};
+  position[0] = ph->EMCx();
+  position[1] = ph->EMCy();
+  position[2] = ph->EMCz();
+  TVector3 global1(position); 
+  Double_t eta_cluster = global1.Eta();
+  Double_t phi_cluster = global1.Phi();
+  if(phi_cluster < 0) phi_cluster += TMath::TwoPi();
+
+  Int_t trgrelid[4]={};
+  Int_t tmod=0; //"Online" module number
+  Int_t trgabsId=0; //bottom-left 4x4 edge cell absId [1-64], [1-56]
+
+  vector<Double_t> vR;
+
+  Int_t L1=-999;
+  if(fTriggerInputL1 > 0){
+    if     (fTriggerInputL1 == 7) L1 = 0;//L1 high
+    else if(fTriggerInputL1 == 6) L1 = 1;//L1 medium
+    else if(fTriggerInputL1 == 5) L1 = 2;//L1 low
+  }
+  else if(fTriggerInputL0 > 0){
+    if(fTriggerInputL0 == 9) L1 = -1;//L0
+  }
+
+  fCaloTrigger->Reset();
+
+  while(fCaloTrigger->Next()){
+    // L1 threshold: -1-L0, 0-PHH, 1-PHM, 2-PHL
+
+    if(fCaloTrigger->GetL1TimeSum() != L1){
+      //AliInfo(Form("This patch fired as %d, which does not match with your choice %d.",fCaloTrigger->GetL1TimeSum(),L1));
+      continue;
+    }
+    fCaloTrigger->GetPosition(tmod,trgabsId);//tmod is online module numbering. i.e., tmod=1 means half module.
+
+    fPHOSGeo->AbsToRelNumbering(trgabsId,trgrelid);//for offline numbering, relId should be used.
+    if(!IsGoodTRUChannel("PHOS",trgrelid[0],trgrelid[2],trgrelid[3])) continue;
+
+    Float_t x = 0;
+    Float_t y = 0;
+    fPHOSGeo->RelPosInModule(trgrelid,x,y); 
+    TVector3 trgglobal;
+    fPHOSGeo->Local2Global(trgrelid[0],x,y,trgglobal);
+    Double_t eta_trigger = trgglobal.Eta();
+    Double_t phi_trigger = trgglobal.Phi();
+    if(phi_trigger < 0) phi_trigger += TMath::TwoPi();
+
+    Double_t DeltaR = TMath::Sqrt( TMath::Power(eta_trigger - eta_cluster,2) +  TMath::Power(phi_trigger - phi_cluster,2) );
+    vR.push_back(DeltaR);
+
+  }//end of trigger loop
+
+  if(vR.size() != 0){
+    Double_t min = *min_element(vR.begin(),vR.end());
+    return min;
+  }
+  else return 999;
+}
 //________________________________________________________________________
 //________________________________________________________________________

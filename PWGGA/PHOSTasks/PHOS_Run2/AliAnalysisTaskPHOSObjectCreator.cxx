@@ -161,8 +161,10 @@ void AliAnalysisTaskPHOSObjectCreator::UserExec(Option_t *option)
     }
     else if(fAODEvent){
       fMCArrayAOD = dynamic_cast<TClonesArray*>(fAODEvent->FindListObject(AliAODMCParticle::StdBranchName()));
-      if (!fMCArrayAOD) AliError("Could not retrieve MC array!");
-
+      if(!fMCArrayAOD){
+        AliError("Could not retrieve MC array!");
+        return;
+      }
     }
 
   }
@@ -956,7 +958,7 @@ Int_t AliAnalysisTaskPHOSObjectCreator::FindPrimary(AliCaloPhoton *ph,  Bool_t&s
 
   for(Int_t i=0;  i<n;  i++){
     Int_t label = clu->GetLabelAt(i);
-    AliAODMCParticle*  p =  (AliAODMCParticle*)fMCArrayAOD->At(label);
+    AliAODMCParticle *p =  (AliAODMCParticle*)fMCArrayAOD->At(label);
     Int_t pdg = p->PdgCode() ;
     if(pdg==22  ||  pdg==11 || pdg == -11){
       if(p->E()>emFraction*clu->E()){
@@ -966,7 +968,7 @@ Int_t AliAnalysisTaskPHOSObjectCreator::FindPrimary(AliCaloPhoton *ph,  Bool_t&s
     }
   }
 
-  Double_t*  Ekin=  new  Double_t[n] ;
+  Double_t *Ekin = new Double_t[n];
 
   for(Int_t i=0;  i<n;  i++){
     Int_t label = clu->GetLabelAt(i);
@@ -989,7 +991,9 @@ Int_t AliAnalysisTaskPHOSObjectCreator::FindPrimary(AliCaloPhoton *ph,  Bool_t&s
     sure=kFALSE;
   else
     sure=kTRUE;
+
   delete[]  Ekin;
+
   return clu->GetLabelAt(iMax);
 }
 //________________________________________________________________________
