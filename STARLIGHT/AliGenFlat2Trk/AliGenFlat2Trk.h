@@ -90,7 +90,7 @@ private:
  		     Double_t pt,
  		     Double_t mInv) const;
 
-  Int_t    fPid;       // particle ID
+  Int_t    fPid[2];    // particle ID of generated daughter particles
   Double_t fMass;      // particle mass
 
   Double_t fMinvMin;   // invariant-mass lower bound
@@ -112,7 +112,7 @@ private:
 
   AliGenEventHeader *fHeader; //!
 
-  ClassDef(AliGenFlat2Trk,2);
+  ClassDef(AliGenFlat2Trk, 4);
 } ;
 
 #endif // ALIGENFLAT2TRK_H_cm021218
