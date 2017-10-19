@@ -991,13 +991,13 @@ void AliAnalysisTaskEmcalVsPhos::FillClusterHistograms()
         if (fPlotExotics) {
           histname = TString::Format("%s/hFcrossEMCal", clusters->GetArrayName().Data());
           Double_t Fcross = GetFcross(clus, fCaloCells);
-          fHistManager.FillTH3(histname, fCent, Fcross, clus->E());
+          fHistManager.FillTH3(histname, fCent, Fcross, Enonlin);
         }
         
         Int_t sm = fGeom->GetSuperModuleNumber(clus->GetCellAbsId(0));
         if (sm >=0 && sm < 20) {
           histname = TString::Format("%s/BySM/hEmcalClusEnergy_SM%d", clusters->GetArrayName().Data(), sm);
-          fHistManager.FillTH1(histname, clus->E());
+          fHistManager.FillTH1(histname, Enonlin);
         }
         else {
           AliError(Form("Supermodule %d does not exist!", sm));
@@ -1186,17 +1186,16 @@ void AliAnalysisTaskEmcalVsPhos::FillJetPerformanceHistograms()
   
   // Loop through clusters, and plot M02 for each particle type
   AliClusterContainer* clusters = GetClusterContainer(0);
-  AliClusterIterableMomentumContainer itcont = clusters->accepted_momentum();
   const AliVCluster* clus;
-  for (AliClusterIterableMomentumContainer::iterator it = itcont.begin(); it != itcont.end(); it++) {
+  for (auto it : clusters->accepted_momentum()) {
       
-    clus = it->second;
+    clus = it.second;
     
     // Include only EMCal clusters (reject DCal and PHOS clusters)
     if (!clus->IsEMCAL()) {
       continue;
     }
-    if (it->first.Phi_0_2pi() > fgkEMCalDCalPhiDivide) {
+    if (it.first.Phi_0_2pi() > fgkEMCalDCalPhiDivide) {
       continue;
     }
     
@@ -1250,6 +1249,7 @@ void AliAnalysisTaskEmcalVsPhos::FillJetPerformanceHistograms()
       // If the cluster is a hadron, sum its energy to compute the jet's hadronic calo energy
       if (particleType1 == kHadron) {
         Bool_t hasMatchedTrack = (clus->GetNTracksMatched() > 0);
+        //Bool_t hasMatchedTrack = ((clus->GetNonLinCorrEnergy() - clus->GetHadCorrEnergy()) > 1e-3);
         if (hasMatchedTrack) {
           hadCaloEnergyMatchedNonlincorr += clus->GetNonLinCorrEnergy();
           hadCaloEnergyMatchedHadCorr += clus->GetHadCorrEnergy();
@@ -1372,7 +1372,7 @@ AliAnalysisTaskEmcalVsPhos::ParticleType AliAnalysisTaskEmcalVsPhos::GetParticle
     TString histname = TString::Format("%s/hClusterRejectionReasonMC", clusters->GetArrayName().Data());
     UInt_t rejectionReason = 0;
     if (!fGeneratorLevel->AcceptMCParticle(part, rejectionReason)) {
-      fHistManager.FillTH2(histname, fGeneratorLevel->GetRejectionReasonBitPosition(rejectionReason), clus->E());
+      fHistManager.FillTH2(histname, fGeneratorLevel->GetRejectionReasonBitPosition(rejectionReason), clus->GetNonLinCorrEnergy());
       return particleType;
     }
 
@@ -1644,11 +1644,11 @@ void AliAnalysisTaskEmcalVsPhos::FillClustersInJetsHistograms()
         clus = jet->Cluster(iClus);
         
         if (fForceBeamType != AliAnalysisTaskEmcal::kpp) {
-          Double_t x[5] = {fCent, clus->E(), GetJetPt(jet, rho), jet->Eta(), jet->Phi_0_2pi()};
+          Double_t x[5] = {fCent, clus->GetNonLinCorrEnergy(), GetJetPt(jet, rho), jet->Eta(), jet->Phi_0_2pi()};
           fHistManager.FillTHnSparse(histname, x);
         }
         else {
-          Double_t x[4] = {clus->E(), GetJetPt(jet, rho), jet->Eta(), jet->Phi_0_2pi()};
+          Double_t x[4] = {clus->GetNonLinCorrEnergy(), GetJetPt(jet, rho), jet->Eta(), jet->Phi_0_2pi()};
           fHistManager.FillTHnSparse(histname, x);
         }
 
@@ -1663,7 +1663,7 @@ void AliAnalysisTaskEmcalVsPhos::FillClustersInJetsHistograms()
         if (GetJetType(jet) > -0.5 && GetJetType(jet) < 1.5) {
           for (Int_t iClus = 0; iClus < nClusters; iClus++) {
             clus = jet->Cluster(iClus);
-            eclus = clus->E();
+            eclus = clus->GetNonLinCorrEnergy();
             if (eclus > 0.5) {
               shift = 0.79 * TMath::Exp(-0.5 * ((eclus - 3.81) / 1.50)*((eclus - 3.81) / 1.50) );
               shiftSum += shift;
