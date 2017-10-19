@@ -111,6 +111,7 @@ AliAnalysisTaskFemto* AddTaskPionPion(TString configuration,
   // reads a string when passing to the macro.
   const TString analysis_params = '"' + params.ReplaceAll("\\", "\\\\")
                                               .ReplaceAll("\n", "\\n")
+                                              .ReplaceAll("\"", "\\\"")
                                               .ReplaceAll("\t", "\\t") + '"';
 
   AliAnalysisTaskFemto *taskfemto = new AliAnalysisTaskFemto(

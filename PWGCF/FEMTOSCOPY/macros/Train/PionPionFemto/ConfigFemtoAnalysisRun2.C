@@ -166,11 +166,11 @@ ConfigFemtoAnalysis(const TString& param_str="")
   // loop over centrality ranges
   for (int cent_it = 0; cent_it + 1 < macro_config.centrality_ranges.size(); cent_it += 2) {
 
-    const int mult_low = macro_config.centrality_ranges[cent_it],
-             mult_high = macro_config.centrality_ranges[cent_it + 1];
+    const int cent_low = macro_config.centrality_ranges[cent_it],
+             cent_high = macro_config.centrality_ranges[cent_it + 1];
 
-    const TString mult_low_str = TString::Format("%0.2i", mult_low),
-                 mult_high_str = TString::Format("%0.2i", mult_high);
+    const TString cent_low_str = TString::Format("%0.2i", cent_low),
+                 cent_high_str = TString::Format("%0.2i", cent_high);
 
     // loop over pair types
     for (int pair_it = 0; pair_it < macro_config.pair_codes.size(); ++pair_it) {
@@ -200,14 +200,14 @@ ConfigFemtoAnalysis(const TString& param_str="")
 
       // build unique analysis name from centrality and pair types
       const TString analysis_name = TString::Format(
-        "PiPiAnalysis_%0.2i_%0.2i_%s", mult_low, mult_high, pair_type_str.Data()
+        "PiPiAnalysis_%0.2i_%0.2i_%s", cent_low, cent_high, pair_type_str.Data()
       );
 
       analysis_config.pion_type_1 = type_1;
       analysis_config.pion_type_2 = type_2;
 
-      cut_config.event_CentralityMin = mult_low;
-      cut_config.event_CentralityMax = mult_high;
+      cut_config.event_CentralityMin = cent_low;
+      cut_config.event_CentralityMax = cent_high;
 
       AliFemtoAnalysisPionPion *analysis = new AliFemtoAnalysisPionPion(analysis_name, analysis_config, cut_config);
 
@@ -235,7 +235,6 @@ ConfigFemtoAnalysis(const TString& param_str="")
       const int QINV_BIN_COUNT = TMath::Abs((QINV_MAX_VAL - QINV_MIN_VAL) * 1000 / macro_config.qinv_bin_size_MeV);
 
       if (macro_config.do_qinv_cf) {
-        // TString cf_title = TString("_qinv_") + pair_type_str;
         TString cf_title("_qinv");
         int bin_count = (int)TMath::Abs(macro_config.qinv_max_GeV * 1000 / macro_config.qinv_bin_size_MeV));
         AliFemtoCorrFctn *cf = new AliFemtoQinvCorrFctn(cf_title.Data(), bin_count, 0.0, macro_config.qinv_max_GeV);
@@ -275,7 +274,6 @@ ConfigFemtoAnalysis(const TString& param_str="")
       }
 
       if (macro_config.do_trueq3d_cf) {
-        // cf_title = TString("Trueq3D_") + pair_type_str;
         TString cf_title("Trueq3D_");
         AliFemtoModelCorrFctnTrueQ3D *m_cf = new AliFemtoModelCorrFctnTrueQ3D(cf_title, macro_config.q3d_bin_count, macro_config.q3d_maxq);
         m_cf->SetManager(model_manager);
@@ -283,6 +281,7 @@ ConfigFemtoAnalysis(const TString& param_str="")
       }
 
       if (macro_config.do_kt_qinv_cf) {
+        TString cf_title("_qinv");
         AliFemtoQinvCorrFctn *qinv_cf = new AliFemtoQinvCorrFctn(cf_title.Data(), bin_count, 0.0, macro_config.qinv_max_GeV);
         AliFemtoKtBinnedCorrFunc *kt_qinv = new AliFemtoKtBinnedCorrFunc("KT_Qinv", qinv_cf);
         // loop over (low,high) pairs in the kt_ranges vector
