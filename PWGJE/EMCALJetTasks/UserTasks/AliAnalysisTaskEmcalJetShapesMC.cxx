@@ -1226,34 +1226,30 @@ void AliAnalysisTaskEmcalJetShapesMC::SoftDrop(AliEmcalJet *fJet,AliJetContainer
   
   
  
-  fastjet::ClusterSequence              *fClustSeqSA;
+  
   
 
 
   fastjet::JetDefinition fJetDef(fastjet::antikt_algorithm, fJetRadius*2, static_cast<fastjet::RecombinationScheme>(0), fastjet::BestFJ30 ); 
-
+  fastjet::contrib::Recluster *recluster;
   try {
-    fClustSeqSA = new fastjet::ClusterSequence(fInputVectors, fJetDef);
-  } catch (fastjet::Error) {
-    AliError(" [w] FJ Exception caught.");
-    //return -1;
-  }
-
+    fastjet::ClusterSequence fClustSeqSA(fInputVectors, fJetDef);
   std::vector<fastjet::PseudoJet>       fOutputJets;
   fOutputJets.clear();
-  fOutputJets=fClustSeqSA->inclusive_jets(0);
+  fOutputJets=fClustSeqSA.inclusive_jets(0);
   
   //cout<<fOutputJets[0].perp()<<" "<<fJet->Pt()<<endl;
   
   fastjet::contrib::SoftDrop softdrop(beta, zcut);
  
   softdrop.set_verbose_structure(kTRUE);
- 
-  fastjet::contrib::Recluster *recluster;
-  if(ReclusterAlgo == 1) recluster = new fastjet::contrib::Recluster(fastjet::kt_algorithm,1,true);
-  if(ReclusterAlgo == 2) recluster = new fastjet::contrib::Recluster(fastjet::antikt_algorithm,1,true);
-  if(ReclusterAlgo == 0) recluster = new fastjet::contrib::Recluster(fastjet::cambridge_algorithm,1,true);  
-  softdrop.set_reclustering(true,recluster);
+  fastjet::JetAlgorithm jetalgo(fastjet::cambridge_algorithm);
+  if(ReclusterAlgo==2) jetalgo=fastjet::antikt_algorithm;
+  if(ReclusterAlgo==1) jetalgo=fastjet::kt_algorithm;
+  if(ReclusterAlgo==0) jetalgo=fastjet::cambridge_algorithm;
+  
+   recluster = new fastjet::contrib::Recluster(jetalgo,1,true);
+   softdrop.set_reclustering(true,recluster);
   fastjet::PseudoJet finaljet = softdrop(fOutputJets[0]);
    Int_t NDroppedTracks = fJet->GetNumberOfTracks()-finaljet.constituents().size();
  
@@ -1317,7 +1313,20 @@ void AliAnalysisTaskEmcalJetShapesMC::SoftDrop(AliEmcalJet *fJet,AliJetContainer
 
 
 
-   if(fClustSeqSA) { delete fClustSeqSA; fClustSeqSA = NULL; } 
+
+
+
+
+
+
+  } catch (fastjet::Error) {
+    AliError(" [w] FJ Exception caught.");
+    //return -1;
+  }
+
+
+
+   
    if(recluster) { delete recluster; recluster = NULL; } 
   
    if(fTf1Kt){ delete fTf1Kt;}
