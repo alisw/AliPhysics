@@ -3167,9 +3167,9 @@ void AliCaloPhotonCuts::PrintCutsWithValues() {
 
   printf("NonLinearity Correction: \n");
   printf("VO Reader name: %s \n",fV0ReaderName.Data());
-  TString periodName = ((AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask(fV0ReaderName.Data()))->GetPeriodName();
-  if (periodName.CompareTo("") != 0) fCurrentMC = FindEnumForMCSet(periodName);
-  if (fUseNonLinearity) printf("\t Chose NonLinearity cut '%i', Period name: %s, period-enum: %o \n", fSwitchNonLinearity, periodName.Data(), fCurrentMC );
+  TString namePeriod = ((AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask(fV0ReaderName.Data()))->GetPeriodName();
+  if (namePeriod.CompareTo("") != 0) fCurrentMC = FindEnumForMCSet(namePeriod);
+  if (fUseNonLinearity) printf("\t Chose NonLinearity cut '%i', Period name: %s, period-enum: %o \n", fSwitchNonLinearity, namePeriod.Data(), fCurrentMC );
   else printf("\t No NonLinearity Correction on AnalysisTask level has been chosen\n");
 
 }
@@ -4677,7 +4677,7 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC)
           }
         } else if( fCurrentMC==k16k5b ){
           if(fClusterType==1) energy /= (FunctionNL_DPOW(energy, 1.0193460981, -0.0851635674, -0.4984580141, 1.0588985795, -0.0957023147, -0.4999999998));
-          if(fClusterType==3) energy /= (FunctionNL_DPOW(energy, 0.9585012551,-0.0209179458,-0.0800028826,1.1452841028,-0.1999999982,-0.1791163557)); 
+          if(fClusterType==3) energy /= (FunctionNL_DPOW(energy, 0.9585012551,-0.0209179458,-0.0800028826,1.1452841028,-0.1999999982,-0.1791163557));
         } else fPeriodNameAvailable = kFALSE;
       }
       break;
@@ -5130,6 +5130,37 @@ AliCaloPhotonCuts::MCSet AliCaloPhotonCuts::FindEnumForMCSet(TString namePeriod)
   else if ( namePeriod.CompareTo("LHC17f4b") == 0  )     return k17f4b;
   else if ( namePeriod.CompareTo("LHC17g8b") == 0  )     return k17g8b;
   else if ( namePeriod.CompareTo("LHC17g8c") == 0  )     return k17g8c;
+
+  else if ( namePeriod.CompareTo("LHC16P1Pyt8") == 0 ||
+            namePeriod.CompareTo("LHC17f6") == 0 ||
+            namePeriod.CompareTo("LHC17d17") == 0 ||
+            namePeriod.CompareTo("LHC17f5") == 0 ||
+            namePeriod.CompareTo("LHC17d3") == 0 ||
+            namePeriod.CompareTo("LHC17e5") == 0 ||
+            namePeriod.CompareTo("LHC17d20a1") == 0 ||
+            namePeriod.CompareTo("LHC17d20a1_extra") == 0 ||
+            namePeriod.CompareTo("LHC17d20a2") == 0 ||
+            namePeriod.CompareTo("LHC17d20a2_extra") == 0 ||
+            namePeriod.CompareTo("LHC17d16") == 0 ||
+            namePeriod.CompareTo("LHC17d18") == 0 )       return k16P1Pyt8;
+  else if ( namePeriod.CompareTo("LHC16P1Pyt8LowB") == 0 ||
+            namePeriod.CompareTo("LHC17d1") == 0 ||
+            namePeriod.CompareTo("LHC17f9") == 0 ||
+            namePeriod.CompareTo("LHC17f9_test") == 0 )   return k16P1Pyt8LowB;
+  else if ( namePeriod.CompareTo("LHC16P1EPOS") == 0 ||
+            namePeriod.CompareTo("LHC17d20b1") == 0 ||
+            namePeriod.CompareTo("LHC17d20b2") == 0 )     return k16P1EPOS;
+  else if ( namePeriod.CompareTo("LHC16P1JJ") == 0 ||
+            namePeriod.CompareTo("LHC17f8a") == 0 ||
+            namePeriod.CompareTo("LHC17f8c") == 0 ||
+            namePeriod.CompareTo("LHC17f8d") == 0 ||
+            namePeriod.CompareTo("LHC17f8e") == 0  )      return k16P1JJ;
+  else if ( namePeriod.CompareTo("LHC16P1JJLowB") == 0 ||
+            namePeriod.CompareTo("LHC17f8b") == 0  )      return k16P1JJLowB;
+  else if ( namePeriod.CompareTo("LHC17j6") == 0 )        return k17j6;
+
+
+  // data starts here
   else if ( namePeriod.CompareTo("LHC10b") == 0 ||
             namePeriod.CompareTo("LHC10c") == 0 ||
             namePeriod.CompareTo("LHC10d") == 0 ||
@@ -5174,9 +5205,9 @@ AliCaloPhotonCuts::MCSet AliCaloPhotonCuts::FindEnumForMCSet(TString namePeriod)
             namePeriod.CompareTo("LHC16g1a") == 0 ||
             namePeriod.CompareTo("LHC16g1b") == 0 ||
             namePeriod.CompareTo("LHC16g1c") == 0)      return k15PbPb5TeV;
+  else if ( namePeriod.CompareTo("LHC16f") == 0 )       return k16pp13TeVLow;
   else if ( namePeriod.CompareTo("LHC16d") == 0 ||
             namePeriod.CompareTo("LHC16e") == 0 ||
-            namePeriod.CompareTo("LHC16f") == 0 ||
             namePeriod.CompareTo("LHC16g") == 0 ||
             namePeriod.CompareTo("LHC16h") == 0 ||
             namePeriod.CompareTo("LHC16i") == 0 ||
@@ -5191,11 +5222,19 @@ AliCaloPhotonCuts::MCSet AliCaloPhotonCuts::FindEnumForMCSet(TString namePeriod)
             namePeriod.CompareTo("LHC16t") == 0 )       return k16pPb5023GeV;
   else if ( namePeriod.CompareTo("LHC16r") == 0 ||
             namePeriod.CompareTo("LHC16s") == 0 )       return k16pPb8TeV;
-  else if ( namePeriod.CompareTo("LHC17d") == 0 ||
+  else if ( namePeriod.CompareTo("LHC17c") == 0 ||
+            namePeriod.CompareTo("LHC17d") == 0 ||
             namePeriod.CompareTo("LHC17e") == 0 ||
             namePeriod.CompareTo("LHC17f") == 0 ||
-            namePeriod.CompareTo("LHC17g") == 0 )       return k17pp13TeV;
-
+            namePeriod.CompareTo("LHC17h") == 0 ||
+            namePeriod.CompareTo("LHC17i") == 0 ||
+            namePeriod.CompareTo("LHC17j") == 0 ||
+            namePeriod.CompareTo("LHC17k") == 0 ||
+            namePeriod.CompareTo("LHC17l") == 0 ||
+            namePeriod.CompareTo("LHC17m") == 0 ||
+            namePeriod.CompareTo("LHC17o") == 0 )       return k17pp13TeV;
+  else if ( namePeriod.CompareTo("LHC17g") == 0 )       return k17pp13TeVLow;
+  else if ( namePeriod.CompareTo("LHC17n") == 0 )       return k17XeXe5440GeV;
   else return kNoMC;
 }
 

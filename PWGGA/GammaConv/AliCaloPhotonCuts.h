@@ -53,7 +53,7 @@ class AliAODMCParticle;
  * | Position in the cut string (from the end) | Cut type               |
  * |-------------------------------------------|------------------------|
  * |                  0                        | Cluster Type           |
- * |                  1                        | Eta Min                | 
+ * |                  1                        | Eta Min                |
  * |                  2                        | Eta Max                |
  * |                  3                        | Phi Min                |
  * |                  4                        | Phi Max                |
@@ -68,14 +68,14 @@ class AliAODMCParticle;
  * |                  13                       | MinM02                 |
  * |                  14                       | MaxM02                 |
  * |                  15                       | MinM20                 |
- * |                  16                       | MaxM20                 | 
+ * |                  16                       | MaxM20                 |
  * |                  17                       | MaximumDispersion      |
  * |                  18                       | NML                    |
 */
 
 class AliCaloPhotonCuts : public AliAnalysisCuts {
-    
-  public: 
+
+  public:
     enum cutIds {
       kClusterType,
       kEtaMin,
@@ -155,6 +155,15 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
       k17f4b,
       k17g8b,
       k17g8c,
+      // 13TeV MC anc 2016 pp
+      k16P1Pyt8,        //
+      k16P1Pyt8LowB,    //
+      k16P1EPOS,        //
+      k16P1JJ,          //
+      k16P1JJLowB,      //
+      // Xe-Xe MC
+      k17j6,            // HIJING
+
       // Data starts here
       k10pp7TeV,
       k10pp900GeV,
@@ -169,35 +178,38 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
       k15pp5TeV,
       k15PbPb5TeV,
       k16pp13TeV,
+      k16pp13TeVLow,
       k16pPb5023GeV,
       k16pPb8TeV,
-      k17pp13TeV
+      k17pp13TeV,
+      k17pp13TeVLow,
+      k17XeXe5440GeV
     };
 
-    
+
     //handeling of CutString
     static const char * fgkCutNames[kNCuts];
-    Bool_t      SetCutIds(TString cutString);  
+    Bool_t      SetCutIds(TString cutString);
     Int_t       fCuts[kNCuts];
     Bool_t      SetCut(cutIds cutID, Int_t cut);
     Bool_t      UpdateCutString();
     void        PrintCuts();
     void        PrintCutsWithValues();
-    
+
     Bool_t      InitializeCutsFromCutString(const TString analysisCutSelection);
     TString     GetCutNumber();
     Int_t       GetClusterType() {return fClusterType;}
     Int_t       GetMinNLMCut() {return fMinNLM;}
     Int_t       GetMaxNLMCut() {return fMaxNLM;}
     Bool_t      IsNLMCutUsed() {return fUseNLM;}
-    
+
     //Constructors
     AliCaloPhotonCuts(Int_t isJetJet=0, const char *name="ClusterCuts", const char * title="Cluster Cuts");
     AliCaloPhotonCuts(const AliCaloPhotonCuts&);
     AliCaloPhotonCuts& operator=(const AliCaloPhotonCuts&);
 
     //virtual destructor
-    virtual     ~AliCaloPhotonCuts();                          
+    virtual     ~AliCaloPhotonCuts();
 
     virtual Bool_t  IsSelected(TObject* /*obj*/)               {return kTRUE;}
     virtual Bool_t  IsSelected(TList* /*list*/)                {return kTRUE;}
@@ -208,7 +220,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
     Bool_t      ClusterIsSelectedElecMC(TParticle *particle,AliMCEvent *mcEvent);
     Bool_t      ClusterIsSelectedElecAODMC(AliAODMCParticle *particle,TClonesArray *aodmcArray);
     Bool_t      ClusterIsSelectedAODMC(AliAODMCParticle *particle,TClonesArray *aodmcArray);
-      
+
     void        SetLightOutput( Bool_t flag )                  {fDoLightOutput = flag; return;}
     //correct NonLinearity
     void        SetV0ReaderName(TString name)                  {fV0ReaderName = name; return;}
@@ -241,13 +253,13 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
     void        FillClusterCutIndex(Int_t photoncut)            {if(fHistCutIndex)fHistCutIndex->Fill(photoncut); return;}
     void        InitializeEMCAL(AliVEvent *event);
     void        InitializePHOS(AliVEvent *event);
-    
+
     void        SetExtendedMatchAndQA(Int_t extendedMatchAndQA) {fExtendedMatchAndQA = extendedMatchAndQA; return;}
     void        FillHistogramsExtendedQA(AliVEvent *event, Int_t isMC);
     void        SetIsPureCaloCut(Int_t merged)                  {fIsPureCalo = merged; return;}
     Int_t       GetIsPureCaloCut()                              {return fIsPureCalo;}
-    
-    
+
+
     // Cut functions
     Bool_t      AcceptanceCuts(AliVCluster* cluster, AliVEvent *event, Double_t weight);
     Bool_t      ClusterQualityCuts(AliVCluster* cluster,AliVEvent *event, AliMCEvent *mcEvent, Int_t isMC, Double_t weight, Long_t clusterID);
@@ -259,13 +271,13 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
     Int_t       GetNumberOfLocalMaxima(AliVCluster* cluster, AliVEvent * event,  Int_t *absCellIdList, Float_t* maxEList);
     Bool_t      AreNeighbours(Int_t absCellId1, Int_t absCellId2);
     Int_t       GetModuleNumberAndCellPosition(Int_t absCellId, Int_t & icol, Int_t & irow);
-    void        SplitEnergy(Int_t absCellId1, Int_t absCellId2, AliVCluster* cluster, AliVEvent* event, 
+    void        SplitEnergy(Int_t absCellId1, Int_t absCellId2, AliVCluster* cluster, AliVEvent* event,
                             Int_t isMC, AliAODCaloCluster* cluster1, AliAODCaloCluster* cluster2);
     Int_t       FindLargestCellInCluster(AliVCluster* cluster, AliVEvent* event);
     Int_t       FindSecondLargestCellInCluster(AliVCluster* cluster, AliVEvent* event);
     Bool_t      CheckDistanceToBadChannel(AliVCluster* cluster, AliVEvent* event);
     Int_t       ClassifyClusterForTMEffi(AliVCluster* cluster, AliVEvent* event, AliMCEvent* mcEvent, Bool_t isESD);
-    
+
     std::vector<Int_t> GetVectorMatchedTracksToCluster(AliVEvent* event, AliVCluster* cluster);
     Bool_t      GetClosestMatchedTrackToCluster(AliVEvent* event, AliVCluster* cluster, Int_t &trackLabel);
     Bool_t      GetHighestPtMatchedTrackToCluster(AliVEvent* event, AliVCluster* cluster, Int_t &trackLabel);
@@ -278,13 +290,13 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
     // Set basic merging cuts
     void        SetSeedEnergy(Double_t seed)                    {fSeedEnergy      = seed; return;}
     void        SetLocMaxCutEDiff(Double_t diffCut)             {fLocMaxCutEDiff  = diffCut; return;}
-    
+
     // Set Individual Cuts
     Bool_t      SetClusterTypeCut(Int_t);
     Bool_t      SetMinEtaCut(Int_t);
     Bool_t      SetMaxEtaCut(Int_t);
-    Bool_t      SetMinPhiCut(Int_t);    
-    Bool_t      SetMaxPhiCut(Int_t);    
+    Bool_t      SetMinPhiCut(Int_t);
+    Bool_t      SetMaxPhiCut(Int_t);
     Bool_t      SetDistanceToBadChannelCut(Int_t);
     Bool_t      SetTimingCut(Int_t);
     Bool_t      SetTrackMatchingCut(Int_t);
@@ -299,11 +311,11 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
     Bool_t      SetNLM(Int_t);
     Bool_t      SetNonLinearity1(Int_t);
     Bool_t      SetNonLinearity2(Int_t);
-    
-    
+
+
     Int_t       GetNonLinearity()                                {return fSwitchNonLinearity;}
     void        SetUseNonLinearitySwitch( Bool_t useNonLin)      { fUseNonLinearity = useNonLin;}
-    
+
     Float_t     FunctionM02 (Float_t E, Float_t a, Float_t b, Float_t c, Float_t d, Float_t e);
     Float_t     CalculateMaxM02 (Int_t maxM02, Float_t clusEnergy);
     Float_t     CalculateMinM02 (Int_t minM02, Float_t clusEnergy);
@@ -311,7 +323,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
     void        SetLogBinningXTH1 (TH1* histoRebin);
     void        SetLogBinningXTH2 (TH2* histoRebin);
     void        SetLogBinningYTH2 (TH2* histoRebin);
-      
+
     Bool_t      IsExoticCluster ( AliVCluster *cluster, AliVEvent *event, Float_t& energyStar );
     Float_t     GetECross ( Int_t absID, AliVCaloCells* cells );
     Bool_t      AcceptCellByBadChannelMap (Int_t absID );
@@ -320,7 +332,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
 
     AliEMCALGeometry* GetGeomEMCAL(){return fGeomEMCAL;}
     AliPHOSGeometry*  GetGeomPHOS() {return fGeomPHOS;}
-    
+
   protected:
     TList      *fHistograms;
     TList      *fHistExtQA;
@@ -349,7 +361,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
     TString   fCaloTrackMatcherName;                    // Name of global TrackMatching instance
     TString   fPeriodName;                              // PeriodName of MC
     MCSet     fCurrentMC;                               // enum for current MC set being processed
-    
+
     //cuts
     Int_t     fClusterType;                             // which cluster do we have
     Double_t  fMinEtaCut;                               // min eta cut
@@ -381,7 +393,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
     Double_t  fSeedEnergy;                              // seed energy for clusters
     Double_t  fLocMaxCutEDiff;                          // cut on energy difference between two cells
     Bool_t    fUseMinEnergy;                            // flag for switching on minimum energy cut
-    Int_t     fMinNCells;                               // minimum number of cells 
+    Int_t     fMinNCells;                               // minimum number of cells
     Bool_t    fUseNCells;                               // flag for switching on minimum N Cells cut
     Double_t  fMaxM02;                                  // maximum M02
     Double_t  fMinM02;                                  // minimum M02
@@ -401,7 +413,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
     Int_t     fSwitchNonLinearity;                      // selection (combined) of NonLinearity
     Bool_t    fUseNonLinearity;                         // flag for switching NonLinearity correction
     Int_t     fIsPureCalo;                              // flag for MergedCluster analysis
-    
+
     //vector
     std::vector<Int_t> fVectorMatchedClusterIDs;        // vector with cluster IDs that have been matched to tracks in merged cluster analysis
 
@@ -413,7 +425,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
     TH1F*     fHistCutIndex;                            // bookkeeping for cuts
     TH1F*     fHistAcceptanceCuts;                      // bookkeeping for acceptance cuts
     TH2F*     fHistClusterIdentificationCuts;           // bookkeeping for cluster identification cuts
-    
+
     TH2F*     fHistClusterEtavsPhiBeforeAcc;            // eta-phi-distribution before acceptance cuts
     TH2F*     fHistClusterEtavsPhiAfterAcc;             // eta-phi-distribution of all after acceptance cuts
     TH2F*     fHistClusterEtavsPhiAfterQA;              // eta-phi-distribution of all after cluster quality cuts
@@ -491,7 +503,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
     TH2F*     fHistClusterEM02Exotics;                  // 2-dim plot E vs. M02 for exotic clusters
     TH2F*     fHistClusterEnergyvsNCellsExotics;        // Cluster Energy vs NCells
     TH2F*     fHistClusterEEstarExotics;                // 2-dim plot E vs. Estar for exotic clusters
-    
+
     // histograms for track matching efficiency
     TH2F*     fHistClusterTMEffiInput;                  //
     TH2F*     fHistClusterEvsTrackECharged;             //
@@ -509,10 +521,10 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
     Int_t      fNMaxDCalModules;                        // max number of DCal Modules
     Int_t      fgkDCALCols;                             // Number of columns in DCal
 
-    
+
   private:
 
-    ClassDef(AliCaloPhotonCuts,49)
+    ClassDef(AliCaloPhotonCuts,50)
 };
 
 #endif
