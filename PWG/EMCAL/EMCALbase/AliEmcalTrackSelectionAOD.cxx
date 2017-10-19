@@ -136,9 +136,9 @@ bool AliEmcalTrackSelectionAOD::IsTrackAccepted(AliVTrack * const trk)
     for (auto cutIter : *fListOfCuts){
       AliVCuts *trackCuts = static_cast<AliVCuts*>(static_cast<AliEmcalManagedObject *>(cutIter)->GetObject());
       if (trackCuts->IsA() == AliESDtrackCuts::Class()) {
-        // If track cuts are AliESDtrackCuts, the track needs to be converted to an AliESDtrack before
-        AliESDtrack copyTrack(aodt);
-        if (trackCuts->IsSelected(&copyTrack)) fTrackBitmap.SetBitNumber(cutcounter);
+        // If track cuts are AliESDtrackCuts, AcceptVTrack needs to be called as the interface function IsSelected supports only AliESDtracks
+        AliESDtrackCuts *esdcuts = static_cast<AliESDtrackCuts *>(trackCuts);
+        if(esdcuts->AcceptVTrack(aodt)) fTrackBitmap.SetBitNumber(cutcounter);
       }
       else{
         if (trackCuts->IsSelected(aodt)) fTrackBitmap.SetBitNumber(cutcounter);
