@@ -79,7 +79,7 @@ class AliAnalysisTaskSEHFvn : public AliAnalysisTaskSE
     fUsePtWeights=usePtWei;
     fEtaGapInTPCHalves=etagap;
   }
-  void SetRecomputeTPCq2(Bool_t opt, Double_t fracKeep=1.1, Int_t removeDau=0, Bool_t removeNdaurandtracks=kFALSE, Bool_t requiremass=kFALSE){
+  void SetRecomputeTPCq2(Bool_t opt, Double_t fracKeep=1.1, Int_t removeDau=0, Bool_t removeNdaurandtracks=kFALSE, Bool_t requiremass=kFALSE, Double_t deltaeta=0.){
     fOnTheFlyTPCq2=opt;
     fFractionOfTracksForTPCq2=fracKeep;
     fRemoveDauFromq2=removeDau;
@@ -90,6 +90,13 @@ class AliAnalysisTaskSEHFvn : public AliAnalysisTaskSE
     }
     else {
       fRemoveNdauRandomTracks=removeNdaurandtracks;
+    }
+    if((fracKeep<1. || fRemoveNdauRandomTracks || removeDau==2) && deltaeta>0.) {
+      AliWarning("AliAnalysisTaskSEHFvn::Impossible to set fDeltaEtaDmesonq2>0 and fRemoveNdauRandomTracks or fFractionOfTracksForTPCq2<1 or fRemoveDauFromq2=2 at the same time! fDeltaEtaDmesonq2 setted to 0.\n");
+      fDeltaEtaDmesonq2=0.;
+    }
+    else {
+      fDeltaEtaDmesonq2=deltaeta;
     }
   }
   Float_t GetEventPlanesCompatibility()const {return fEventPlanesComp;}
@@ -117,7 +124,8 @@ class AliAnalysisTaskSEHFvn : public AliAnalysisTaskSE
   }
   void SetRemoveDaughtersFromq2(Int_t removeDau, Bool_t requiremass) {fRemoveDauFromq2=removeDau; fRequireMassForDauRemFromq2=requiremass;}
   void SetEnableQnFrameworkCorrForq2(Bool_t usecorr) {fUseQnFrameworkCorrq2=usecorr;}
-
+  void SetEnableEPVsq2VsCentHistos(Bool_t enablehistos) {fEPVsq2VsCent=enablehistos;}
+  
   // Implementation of interface methods
   virtual void UserCreateOutputObjects();
   virtual void LocalInit();// {Init();}
@@ -145,6 +153,7 @@ class AliAnalysisTaskSEHFvn : public AliAnalysisTaskSE
   Double_t Getq2(TList* qnlist, Int_t q2meth, Double_t &mult);
   Bool_t isInMassRange(Double_t massCand, Double_t pt);
   Double_t GetTPCq2DauSubQnFramework(Double_t qVectWOcorr[2], Double_t multQvec, Int_t nDauRemoved, Double_t qVecDau[2], Double_t corrRec[2], Double_t LbTwist[2], Bool_t isTwistApplied);
+  void RemoveTracksInDeltaEtaFromOnTheFlyTPCq2(AliAODEvent* aod, Double_t etaD, Double_t etaLims[2], Double_t qVec[2], Double_t &M, vector<Int_t> daulab);
 
   TH1F* fHistEvPlaneQncorrTPC[3];   //! histogram for EP
   TH1F* fHistEvPlaneQncorrVZERO[3]; //! histogram for EP
@@ -196,10 +205,12 @@ class AliAnalysisTaskSEHFvn : public AliAnalysisTaskSE
   Bool_t fRemoveNdauRandomTracks; // flag to activate the removal of nDau random tracks in the q2TPC computed on the fly
   Bool_t fUseQnFrameworkCorrq2; // flag to activate the Qn-framework corrections for the q2
   Bool_t fRequireMassForDauRemFromq2; // flag to activate mass range when removing daughter tracks from q2
+  Double_t fDeltaEtaDmesonq2; //eta gap between q2 and D mesons
+  Bool_t fEPVsq2VsCent; //flag to enable EP vs. q2 vs. centrality TH3F
 
   AliAnalysisTaskSEHFvn::FlowMethod fFlowMethod;
 
-  ClassDef(AliAnalysisTaskSEHFvn,11); // AliAnalysisTaskSE for the HF v2 analysis
+  ClassDef(AliAnalysisTaskSEHFvn,12); // AliAnalysisTaskSE for the HF v2 analysis
 };
 
 #endif
