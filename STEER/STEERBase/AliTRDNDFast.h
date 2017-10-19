@@ -44,6 +44,8 @@ public:
     Double_t GetParam(Int_t dim,Int_t par){if((dim>=0)&&(dim<fNDim)&&(par>=0)&&(par<kNpar)){return fPars[par].GetAt(dim);}else{return 0;}};
     void PrintPars();
     static void Random(Double_t *point,AliTRDNDFast *nd0,AliTRDNDFast *nd1,Double_t w0,Double_t w1);
+    Int_t GetFitOptionParameter();
+    void SetFitOptionParameter(Int_t iFitParameter=0);
 
 private:
 
@@ -55,14 +57,13 @@ private:
     
     static Int_t BinarySearchInterpolation(Int_t start,Int_t end,Double_t *a0,Double_t *a1,Double_t w0,Double_t w1,Double_t val);
     static Double_t GetRandomInterpolation(TH1F *hist0,TH1F *hist1,Double_t w0,Double_t w1);
-
     Int_t fNDim; // Dimensions
     TString fTitle; //title
     TF1 **fFunc; //! functions, do not store
     TH1F **fHistos; //[fNDim] Histograms
     TArrayF fPars[kNpar]; // parameters
-
-    ClassDef(AliTRDNDFast,1)  //Fast TRD ND class
+    Int_t iLangauFitOptionParameter;//0 Use Standard, 1 dont use Exp
+    ClassDef(AliTRDNDFast,3)  //Fast TRD ND class
 };
 
 #endif

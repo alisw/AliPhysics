@@ -82,7 +82,7 @@ class AliTRDPIDResponse : public TObject {
     static Double_t MeandEdxTR(const Double_t * xx, const Float_t * par);
     static Double_t ResolutiondEdxTR(const Double_t * xx,  const Float_t * par);
 
-    Int_t    GetResponse(Int_t n, const Double_t * const dedx, const Float_t * const p, Double_t prob[AliPID::kSPECIES],ETRDPIDMethod PIDmethod=kLQ1D, Bool_t kNorm=kTRUE) const;
+    Int_t    GetResponse(Int_t n, const Double_t * const dedx, const Float_t * const p, Double_t prob[AliPID::kSPECIES],ETRDPIDMethod PIDmethod=kLQ1D, Bool_t kNorm=kTRUE, const AliVTrack *track=NULL) const;
     inline ETRDNslices  GetNumberOfSlices(ETRDPIDMethod PIDmethod=kLQ1D) const;
 
     Bool_t    IsOwner() const {return TestBit(kIsOwner);}
@@ -108,7 +108,7 @@ class AliTRDPIDResponse : public TObject {
 
     Bool_t    Load(const Char_t *filename = NULL);
   
-    Bool_t    IdentifiedAsElectron(Int_t nTracklets, const Double_t *like, Double_t p, Double_t level,Double_t centrality=-1,ETRDPIDMethod PIDmethod=kLQ1D) const;
+    Bool_t    IdentifiedAsElectron(Int_t nTracklets, const Double_t *like, Double_t p, Double_t level,Double_t centrality=-1,ETRDPIDMethod PIDmethod=kLQ1D,const AliVTrack *vtrack=NULL) const;
     
     Double_t GetEtaCorrection(const AliVTrack *track, Double_t bg) const;
     Double_t GetClusterCorrection(const AliVTrack *track, Double_t bg) const;
@@ -117,7 +117,7 @@ class AliTRDPIDResponse : public TObject {
   
   private:
     Bool_t    CookdEdx(Int_t nSlice, const Double_t * const in, Double_t *out,ETRDPIDMethod PIDmethod=kLQ1D) const;
-    Double_t  GetProbabilitySingleLayer(Int_t species, Double_t plocal, Double_t *dEdx,ETRDPIDMethod PIDmethod=kLQ1D) const;
+    Double_t  GetProbabilitySingleLayer(Int_t species, Double_t plocal, Double_t *dEdx,ETRDPIDMethod PIDmethod=kLQ1D, Int_t Charge=0) const;
     
     const AliTRDPIDResponseObject *fkPIDResponseObject;   //! PID References and Params
     const AliTRDdEdxParams * fkTRDdEdxParams; //! parametrisation for truncated mean

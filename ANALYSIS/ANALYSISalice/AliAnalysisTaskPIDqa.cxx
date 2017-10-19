@@ -1435,6 +1435,7 @@ void AliAnalysisTaskPIDqa::FillTRDHistogramsLikelihood(TList *sublistTRD, Int_t 
   Int_t mvSpecie=0;     // "move Specie", needed for V0s, as Muons and Kaons are not filled
   Float_t fElectronEfficiency=0.9; // electron efficiency for QA
   Int_t ntracklets=3;   // for QA we only look at 4-6 tracklets
+  Int_t ntracklets2=2;   // for some part of the QA we only look at 5-6 tracklets
 
   // momentum calculated as average from TRD tracklets
   Int_t itracklets = 0;
@@ -1549,25 +1550,35 @@ void AliAnalysisTaskPIDqa::FillTRDHistogramsLikelihood(TList *sublistTRD, Int_t 
   nSigmaTOFele=fPIDResponse->NumberOfSigmas(AliPIDResponse::kTOF, track, AliPID::kElectron);
 
 
-  for(Int_t itl = 0; itl < ntracklets; itl++){
-      TH2 *hTPCnsigmaLQ1D=(TH2*)sublistTRD->At((2*ntracklets*nSpecies)+itl);
-      TH2 *hTPCnsigmaLQ2D=(TH2*)sublistTRD->At((2*ntracklets*nSpecies)+ntracklets+itl);  
-  
-      // IdentifiedAsElectron function assumes that a TOF PID cut was applied before
-      if(TMath::Abs(nSigmaTOFele)<3){
+  for(Int_t itl = 0; itl < ntracklets2; itl++){
+      for(Int_t icharge = 0; icharge < 2; icharge++){
+	  TH2 *hTPCnsigmaLQ1D=(TH2*)sublistTRD->At((2*ntracklets*nSpecies)+2*itl+icharge);
+	  TH2 *hTPCnsigmaLQ2D=(TH2*)sublistTRD->At((2*ntracklets*nSpecies)+ntracklets+2*itl+icharge+4); // muss mit 4 beginnen
 
-	  if ( hTPCnsigmaLQ1D ){
-	      Int_t ntrackletsPID=0;
-	      Bool_t iselectron=fPIDResponse->IdentifiedAsElectronTRD(track,ntrackletsPID,fElectronEfficiency,centrality,AliTRDPIDResponse::kLQ1D);
-	      if(iselectron&&(ntrackletsPID==(itl+4))) hTPCnsigmaLQ1D->Fill(mom,nSigmaTPCele);           // we only check for tracklets 4-6
-	  }
-	  if ( hTPCnsigmaLQ2D ){
-	      Int_t ntrackletsPID=0;
-	      Bool_t iselectron=fPIDResponse->IdentifiedAsElectronTRD(track,ntrackletsPID,fElectronEfficiency,centrality,AliTRDPIDResponse::kLQ2D);
-	      if(iselectron&&(ntrackletsPID==(itl+4))) hTPCnsigmaLQ2D->Fill(mom,nSigmaTPCele);           // we only check for tracklets 4-6
-	  }
+	  // IdentifiedAsElectron function assumes that a TOF PID cut was applied before
+	  if(TMath::Abs(nSigmaTOFele)<3){
 
-      }
+	      if ( hTPCnsigmaLQ1D ){
+		  Int_t ntrackletsPID=0;
+		  Bool_t iselectron=fPIDResponse->IdentifiedAsElectronTRD(track,ntrackletsPID,fElectronEfficiency,centrality,AliTRDPIDResponse::kLQ1D);
+		  if(icharge==0){
+		      if(iselectron&&(ntrackletsPID==(itl+5)&&(track->Charge()<0))) hTPCnsigmaLQ1D->Fill(mom,nSigmaTPCele);           // we only check for tracklets 5-6 // neg
+		  } else{
+		      if(iselectron&&(ntrackletsPID==(itl+5)&&(track->Charge()>0))) hTPCnsigmaLQ1D->Fill(mom,nSigmaTPCele);           // we only check for tracklets 5-6 // pos
+		  }
+	      }
+	      if ( hTPCnsigmaLQ2D ){
+		  Int_t ntrackletsPID=0;
+		  Bool_t iselectron=fPIDResponse->IdentifiedAsElectronTRD(track,ntrackletsPID,fElectronEfficiency,centrality,AliTRDPIDResponse::kLQ2D);
+		  if(icharge==0){
+		      if(iselectron&&(ntrackletsPID==(itl+5)&&(track->Charge()<0))) hTPCnsigmaLQ2D->Fill(mom,nSigmaTPCele);           // we only check for tracklets 5-6 // neg
+		  } else {
+		      if(iselectron&&(ntrackletsPID==(itl+5)&&(track->Charge()>0))) hTPCnsigmaLQ2D->Fill(mom,nSigmaTPCele);           // we only check for tracklets 5-6 // pos
+		  }
+	      }
+
+	  }
+      } // - End: charge loop
   } // - End: tracklet loop
 
 
@@ -2913,6 +2924,7 @@ void AliAnalysisTaskPIDqa::AddTRDHistogramsLikelihood(TList *sublistTRD, const c
   
   Int_t nSpecies=0;
   Int_t ntracklets=3;   // for QA we only look at 4-6 tracklets
+  Int_t ntracklets2=2;   // for some parts of the QA we only look at 5-6 tracklets
 
 
   // Likelihood Methods only support 5 particle species
@@ -2951,25 +2963,33 @@ void AliAnalysisTaskPIDqa::AddTRDHistogramsLikelihood(TList *sublistTRD, const c
       }
   }
 
-  for(Int_t itl = 0; itl < ntracklets; itl++){
-      itltemp=itl+4; // because we only look at tracklets 4-6 for QA
+  for(Int_t itl = 0; itl < ntracklets2; itl++){
+      itltemp=itl+5; // because we only look at tracklets 5-6 for QA
+      for(Int_t icharge = 0; icharge < 2; icharge++){
+      // 0 neg 1 pos
+
       // TPC nsigma for electrons after TRD PID LQ1D
-      TH2F *hTPCnsigmaPLQ1D = new TH2F(Form("hTPCnsigmaPLQ1D_%dtls_%s",itltemp,scenario),
-				       Form("TPC_%s e nsigma vs. p (LQ1D & TOF e Hypothesis <3) for tracks having %d %s;p (GeV/c); TPC nsigma ",scenario,itltemp, itltemp == 0 ? "tracklet" : "tracklets"),
+      TH2F *hTPCnsigmaPLQ1D = new TH2F(Form("hTPCnsigmaPLQ1D_%dtls_%dcharge_%s",itltemp,icharge,scenario),
+				       Form("TPC_%s e nsigma vs. p (LQ1D & TOF e Hypothesis <3) for tracks having %d %s charge %s ;p (GeV/c); TPC nsigma ",scenario,itltemp, itltemp == 0 ? "tracklet" : "tracklets", icharge == 0 ? "neg" : "pos"),
 				       vX->GetNrows()-1,vX->GetMatrixArray(),
 				       vY->GetNrows()-1,vY->GetMatrixArray());
       sublistTRD->Add(hTPCnsigmaPLQ1D);
+      }
   }
 
-  for(Int_t itl = 0; itl < ntracklets; itl++){
-      itltemp=itl+4;
+  for(Int_t itl = 0; itl < ntracklets2; itl++){
+      itltemp=itl+5;  // because we only look at tracklets 5-6 for QA
+      for(Int_t icharge = 0; icharge < 2; icharge++){
+      // 0 neg 1 pos
+
       // TPC nsigma for electrons after TRD PID LQ2D
-      TH2F *hTPCnsigmaPLQ2D = new TH2F(Form("hTPCnsigmaPLQ2D_%dtls_%s",itltemp,scenario),
-				       Form("TPC_%s e nsigma vs. p (LQ2D & TOF e Hypothesis <3) for tracks having %d %s;p (GeV/c); TPC nsigma ",scenario,itltemp, itltemp == 0 ? "tracklet" : "tracklets"),
+      TH2F *hTPCnsigmaPLQ2D = new TH2F(Form("hTPCnsigmaPLQ2D_%dtls_%dcharge_%s",itltemp,icharge,scenario),
+				       Form("TPC_%s e nsigma vs. p (LQ2D & TOF e Hypothesis <3) for tracks having %d %s charge %s ;p (GeV/c); TPC nsigma ",scenario,itltemp, itltemp == 0 ? "tracklet" : "tracklets", icharge == 0 ? "neg" : "pos"),
 				       vX->GetNrows()-1,vX->GetMatrixArray(),
 				       vY->GetNrows()-1,vY->GetMatrixArray());
 
       sublistTRD->Add(hTPCnsigmaPLQ2D);
+      }
   }
 
   // TPC nsigma for electrons no TRD PID

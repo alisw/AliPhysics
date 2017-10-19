@@ -22,6 +22,7 @@ class AliPID : public TObject {
     kSPECIES = 5,     // Number of default particle species recognized by the PID
     kSPECIESC = 9,    // Number of default particles + light nuclei recognized by the PID
     kSPECIESCN = 14,  // Number of charged+neutral particle species recognized by the PHOS/EMCAL PID
+    kCharges = 3      // Number of possible charge options for TRD Parameters
   };
   enum EParticleType {
     kElectron = 0, 
@@ -43,7 +44,11 @@ class AliPID : public TObject {
     
     kUnknown = 14
   };
-  
+  enum eTRDparticleCharge {
+    kNoCharge = 0,
+    kPosCharge = 1,
+    kNegCharge = 2
+  };
   static Int_t         ParticleCharge(Int_t iType) {
      if(!fgkParticleMass[0]) Init(); 
      return fgkParticleCharge[iType];
@@ -105,7 +110,7 @@ class AliPID : public TObject {
   static const char*   fgkParticleLatexName[kSPECIESCN+1]; // particle names
   static const Int_t   fgkParticleCode[kSPECIESCN+1];      // particle codes
 
-  ClassDef(AliPID, 4)                                      // particle id probability densities
+  ClassDef(AliPID, 5)                                      // particle id probability densities
 };
 
 
