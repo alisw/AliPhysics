@@ -316,9 +316,12 @@ AliForwardUtil::ParseMagneticField(Float_t v)
   // Return:
   //    Short integer value of magnetic field in kG 
   //
-  if (TMath::Abs(v - 5.) < 1 ) return +5;
-  if (TMath::Abs(v + 5.) < 1 ) return -5;
-  if (TMath::Abs(v) < 1)       return 0;
+  if (TMath::Abs(v - 5.)  < 1 ) return +5;
+  if (TMath::Abs(v - 2.5) < 1 ) return +2;
+  if (TMath::Abs(v - 2.5) < 1 ) return -2;
+  if (TMath::Abs(v + 5.)  < 1 ) return -5;
+  if (TMath::Abs(v) < 1)        return 0;
+  ::Warning("ParseMagneticfield", "Magnetic field value: %f not known", v);
   return 999;
 }
 //____________________________________________________________________
