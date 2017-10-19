@@ -1903,8 +1903,9 @@ Bool_t AliConvEventCuts::GetUseNewMultiplicityFramework(){
       fPeriodEnum == kLHC17f2a_fast_fix || fPeriodEnum == kLHC17f2a_cent_fix || fPeriodEnum == kLHC17f2a_cent_woSDD_fix                 || // MC pPb 5TeV LHC16qt
       fPeriodEnum == kLHC17f2b || fPeriodEnum == kLHC17f2b_fast || fPeriodEnum == kLHC17f2b_cent || fPeriodEnum == kLHC17f2b_cent_woSDD || // MC pPb 5TeV LHC16qt
       fPeriodEnum == kLHC17g8a_fast || fPeriodEnum == kLHC17g8a_cent_woSDD ||                                                              // MC pPb 5TeV LHC16qt
-      fPeriodEnum == kLHC17g8b || fPeriodEnum == kLHC17g8c                                                                                 // MC pPb 8TeV LHC16sr
-
+      fPeriodEnum == kLHC17g8b || fPeriodEnum == kLHC17g8c ||                                                                              // MC pPb 8TeV LHC16sr
+      fPeriodEnum == kLHC17n ||                                                                                             // Xe-Xe LHC17n
+      fPeriodEnum == kLHC17j6                                                                                               // MC Xe-Xe LHC17n
       ){
       return kTRUE;
   } else {
