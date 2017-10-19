@@ -143,6 +143,8 @@ class AliAnalysisTaskElectronEfficiency : public AliAnalysisTaskSE {
   void          SetDeltaThetaBinning(Int_t N, Double_t min, Double_t max) {fDeltaThetaNbins=N; fDeltaThetaMin=min; fDeltaThetaMax=max;}
   void          SetDeltaPhiBinning(Int_t N, Double_t min, Double_t max)   {fDeltaPhiNbins=N; fDeltaPhiMin=min; fDeltaPhiMax=max;}
   void          SetDeltaAngleBinning(Int_t N, Double_t min, Double_t max) {fDeltaAngleNbins=N; fDeltaAngleMin=min; fDeltaAngleMax=max;}
+  void          SetPtCut(Double_t ptMin, Double_t ptMax) {fPtMinCut = ptMin; fPtMaxCut = ptMax;}
+  void          SetEtaCut(Double_t etaMin, Double_t etaMax) {fEtaMinCut = etaMin; fEtaMaxCut = etaMax;}
 
   virtual void  CreateHistograms(TString names, Int_t cutInstance);
   void          CreateHistoGen();
@@ -189,6 +191,10 @@ class AliAnalysisTaskElectronEfficiency : public AliAnalysisTaskSE {
   Double_t          fCentMin;                 // should be fCentMin=-1 for pp and p-Pb
   Double_t          fCentMax;
   Bool_t            fUseMultSelection;
+  Double_t          fPtMinCut;
+  Double_t          fPtMaxCut;
+  Double_t          fEtaMinCut;
+  Double_t          fEtaMaxCut;
   Double_t          fEtaMinGEN;
   Double_t          fEtaMaxGEN;
   Double_t          fPtMinGEN;
