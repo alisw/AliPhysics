@@ -76,6 +76,8 @@ protected:
   Bool_t SetupTailVsTotalCharge();
   void   AdjustPulseShapeADC();
 
+  Int_t  SimulateLightYield(Int_t pmt, Int_t nPhot) const;
+
 private:
   AliADDigitizer(const AliADDigitizer& /*digitizer*/);
   AliADDigitizer& operator = (const AliADDigitizer& /*digitizer*/);
@@ -104,6 +106,7 @@ private:
   Float_t   fAdcPedestal[16][2];    //! Pedestals, one per integrator
   Float_t   fAdcSigma[16][2];       //! Sigma of pedestals
   Float_t   fPmGain[16];            //! PMT gains
+  Float_t   fLightYield[16];        //! Light Yields times photocatode efficiency
   Int_t     fNBins[16];             //! Number of bins in fTime container
   Int_t     fNBinsLT[16];           //! Number of bins in fTime container (match window only)
   Float_t   fBinSize[16];           //! Bin size in fTime container
@@ -119,7 +122,7 @@ private:
   DigiTask_t fTask;                 //! The task (to be) executed by the digitizer
   AliAD     *fAD;                   //! Pointer to AliDetector object
 
-  ClassDef(AliADDigitizer,6);       // digitizer for AD
+  ClassDef(AliADDigitizer,7);       // digitizer for AD
 } ;
 
 #endif // AliADDigitizer_H

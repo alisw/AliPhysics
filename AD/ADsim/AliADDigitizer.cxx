@@ -33,8 +33,7 @@
 #include <AliGeomManager.h>
 #include <TRandom.h>
 #include <TF1.h>
-#include <TH1F.h>
-#include <TH2F.h>
+#include <TH2.h>
 #include <TCanvas.h>
 #include <TGraph.h>
 #include <TTree.h>
@@ -136,30 +135,19 @@ AliADDigitizer::~AliADDigitizer()
   // destructor
   if (fDigits) {
     fDigits->Delete();
-    delete fDigits;
-    fDigits = NULL;
+    SafeDelete(fDigits);
   }
 
-  if (fTimeSignalShape) {
-    delete fTimeSignalShape;
-    fTimeSignalShape = NULL;
-  }
-  if (fChargeSignalShape) {
-    delete fChargeSignalShape;
-    fChargeSignalShape = NULL;
-  }
+  SafeDelete(fTimeSignalShape);
+  SafeDelete(fChargeSignalShape);
 
   for(Int_t ch=0; ch<16; ++ch) {
-    if (fTime[ch]) {
+    if (fTime[ch])
       delete [] fTime[ch];
-    }
     fTime[ch] = NULL;
 
-    for (Int_t centerBCint=0; centerBCint<2; ++centerBCint) {
-      if (fTailVsTotalCharge[ch][centerBCint])
-	delete fTailVsTotalCharge[ch][centerBCint];
-      fTailVsTotalCharge[ch][centerBCint] = NULL;
-    }
+    for (Int_t centerBCint=0; centerBCint<2; ++centerBCint)
+      SafeDelete(fTailVsTotalCharge[ch][centerBCint]);
   }
 }
 
@@ -224,22 +212,22 @@ Bool_t AliADDigitizer::SetupTailVsTotalCharge()
       Float_t charge0 = tail;
       Float_t charge1 = tail;
       for (Int_t bc=0; bc<fTailBegin; ++bc) {
-	if (!doExtrapolation[bc])
-	  continue;
-	const Bool_t integrator = ((bc%2) == 0); // bc=10 -> integrator=kTRUE
-	f0 = dynamic_cast<TF1*>(f_Int[!integrator]->At(bc));
-	f1 = dynamic_cast<TF1*>(f_Int[ integrator]->At(bc));
+        if (!doExtrapolation[bc])
+          continue;
+        const Bool_t integrator = ((bc%2) == 0); // bc=10 -> integrator=kTRUE
+        f0 = dynamic_cast<TF1*>(f_Int[!integrator]->At(bc));
+        f1 = dynamic_cast<TF1*>(f_Int[ integrator]->At(bc));
 
-	if (!f0 || !f1) {
-	  AliWarning("f0==NULL || f1==NULL");
-	  continue;
-	}
+        if (!f0 || !f1) {
+          AliWarning("f0==NULL || f1==NULL");
+          continue;
+        }
 #if ROOT_VERSION_CODE < ROOT_VERSION(5,99,0) // ROOT version <6
-	f0->Optimize();
-	f1->Optimize();
+        f0->Optimize();
+        f1->Optimize();
 #endif
-	charge0 += TMath::Max(0.0, f0->Eval(tail));
-	charge1 += TMath::Max(0.0, f1->Eval(tail));
+        charge0 += TMath::Max(0.0, f0->Eval(tail));
+        charge1 += TMath::Max(0.0, f1->Eval(tail));
       }
       fTailVsTotalCharge[ch][0]->SetPoint(fTailVsTotalCharge[ch][0]->GetN(), charge0, tail);
       fTailVsTotalCharge[ch][1]->SetPoint(fTailVsTotalCharge[ch][1]->GetN(), charge1, tail);
@@ -281,30 +269,30 @@ Bool_t AliADDigitizer::Init()
   entry = AliCDBManager::Instance()->Get("GRP/CTP/CTPtiming");
   if (!entry)
     AliFatal("CTP timing parameters are not found in OCDB !");
-  AliCTPTimeParams *ctpParams = (AliCTPTimeParams*)entry->GetObject();
+  AliCTPTimeParams *ctpParams = dynamic_cast<AliCTPTimeParams*>(entry->GetObject());
   Float_t l1Delay = (Float_t)ctpParams->GetDelayL1L0()*25.0;
 
   entry = AliCDBManager::Instance()->Get("GRP/CTP/TimeAlign");
   if (!entry)
     AliFatal("CTP time-alignment is not found in OCDB !");
-  AliCTPTimeParams *ctpTimeAlign = (AliCTPTimeParams*)entry->GetObject();
+  AliCTPTimeParams *ctpTimeAlign = dynamic_cast<AliCTPTimeParams*>(entry->GetObject());
   l1Delay += ((Float_t)ctpTimeAlign->GetDelayL1L0()*25.0);
 
   entry = AliCDBManager::Instance()->Get("AD/Calib/TimeDelays");
   if (!entry)
     AliFatal("AD time delays are not found in OCDB !");
-  TH1F *TimeDelays = (TH1F*)entry->GetObject();
+  TH1 *TimeDelays = dynamic_cast<TH1*>(entry->GetObject());
 
   entry = AliCDBManager::Instance()->Get("GRP/Calib/LHCClockPhase");
   if (!entry)
     AliFatal("LHC clock-phase shift is not found in OCDB !");
-  AliLHCClockPhase *phase = (AliLHCClockPhase*)entry->GetObject();
+  AliLHCClockPhase *phase = dynamic_cast<AliLHCClockPhase*>(entry->GetObject());
 
   // Get Pulse shape parameters
   entry = AliCDBManager::Instance()->Get("AD/Calib/PulseShapes");
   if (!entry)
     AliFatal("AD pulse shapes are not found in OCDB !");
-  TH2F *PulseShapes = (TH2F*)entry->GetObject();
+  TH2 *PulseShapes = dynamic_cast<TH2*>(entry->GetObject());
 
   // Time slewing splines
   GetTimeSlewingSplines();
@@ -317,10 +305,15 @@ Bool_t AliADDigitizer::Init()
     fCssTau[i]    = PulseShapes->GetBinContent(i+1,2);
     fCssSigma[i]  = PulseShapes->GetBinContent(i+1,3);
 
-    for(Int_t j=0; j<kADNClocks; ++j) fAdc[i][j] = 0;
+    for(Int_t j=0; j<kADNClocks; ++j)
+      fAdc[i][j] = 0;
+
     fLeadingTime[i] = fTimeWidth[i] = 0;
 
-    fPmGain[i]    = fCalibData->GetGain(i);
+    fPmGain[i]     = fCalibData->GetGain(i);
+    fLightYield[i] = fCalibData->GetLightYields(i);
+    if (fLightYield[i] <= 0.0f || fLightYield[i] > 1.0f)
+      AliFatalF("fLightYield[%d] = %f", i, fLightYield[i]);
 
     fAdcPedestal[i][0] = fCalibData->GetPedestal(i);
     fAdcSigma[i][0]    = fCalibData->GetSigma(i);
@@ -329,8 +322,8 @@ Bool_t AliADDigitizer::Init()
 
     const Int_t board = AliADCalibData::GetBoardNumber(i);
     fNBins[i]   = TMath::Nint(((Float_t)(fCalibData->GetMatchWindow(board)+1)*25.0+
-			       (Float_t)kADMaxTDCWidth*fCalibData->GetWidthResolution(board))/
-			      fCalibData->GetTimeResolution(board));
+                               (Float_t)kADMaxTDCWidth*fCalibData->GetWidthResolution(board))/
+                              fCalibData->GetTimeResolution(board));
     fNBinsLT[i] = TMath::Nint(((Float_t)(fCalibData->GetMatchWindow(board)+1)*25.0)/
                               fCalibData->GetTimeResolution(board));
     fBinSize[i] = fCalibData->GetTimeResolution(board);
@@ -401,14 +394,28 @@ void AliADDigitizer::Digitize(Option_t* /*option*/)
   }
 }
 
+Int_t AliADDigitizer::SimulateLightYield(Int_t pmt, Int_t nPhot) const
+{
+  const Float_t p = fLightYield[pmt];
+  if (p <= 0.0f || p > 1.0f)
+    AliFatalF("lightYield[%d]=%f", pmt, p);
+  if (p == 1.0f || nPhot == 0)
+    return nPhot;
+  const Int_t n = Int_t(0.5+1.0f/p*(nPhot < 100
+                                    ? gRandom->Binomial(nPhot, p)
+                                    : gRandom->Gaus(p*nPhot+0.5, TMath::Sqrt(p*(1-p)*nPhot))));
+  AliDebugF(5, "SimulateLightYield[%d]: nPhot=%d p=%.2e n=%d", pmt, nPhot, p, n);
+  return n;
+}
+
 //____________________________________________________________________________
 void AliADDigitizer::DigitizeHits()
 {
   // Digitize the hits to the level of
   // SDigits (fTime arrays)
-  Int_t nTotPhot[16];
-  Float_t PMTime[16];
-  Int_t nPMHits[16];
+  Int_t nTotPhot[16] = {0};
+  Float_t PMTime[16] = {0};
+  Int_t  nPMHits[16] = {0};
 
   for(Int_t i=0; i<16; ++i) {
     memset(fTime[i],0,fNBins[i]*sizeof(Float_t));
@@ -432,25 +439,23 @@ void AliADDigitizer::DigitizeHits()
   TClonesArray* hits = fAD->Hits();
 
   //Loop over hits
-  Int_t nTracks = (Int_t) treeH->GetEntries();
-  for(Int_t iTrack=0; iTrack<nTracks; iTrack++) {
+  for(Int_t iTrack=0,nTracks=treeH->GetEntries(); iTrack<nTracks; iTrack++) {
     fAD->ResetHits();
     treeH->GetEvent(iTrack);
-    Int_t nHits = hits->GetEntriesFast();
-    for (Int_t iHit=0; iHit<nHits; iHit++) {
-      AliADhit* hit = (AliADhit *)hits->UncheckedAt(iHit);
-      Int_t nPhot = hit->GetNphot();
-      Int_t pmt  = hit->GetCell();
+    for (Int_t iHit=0, nHits=hits->GetEntriesFast(); iHit<nHits; iHit++) {
+      AliADhit* hit = dynamic_cast<AliADhit*>(hits->UncheckedAt(iHit));
+      const Int_t pmt   = hit->GetCell();
       if (pmt < 0) continue;
-      Int_t trackLabel = hit->GetTrack();
+      const Int_t nPhot = SimulateLightYield(pmt, hit->GetNphot());
+      const Int_t trackLabel = hit->GetTrack();
       for(Int_t l=0; l<3; ++l) {
         if (fLabels[pmt][l] < 0) {
           fLabels[pmt][l] = trackLabel;
           break;
         }
       }
-      Float_t dt_scintillator = gRandom->Gaus(0,kADIntTimeRes);
-      Float_t t = dt_scintillator + hit->GetTof();
+      const Float_t dt_scintillator = gRandom->Gaus(0,kADIntTimeRes);
+      const Float_t t = dt_scintillator + hit->GetTof();
       nTotPhot[pmt] += nPhot;
       nPMHits[pmt]++;
       //PMTime[pmt] += t*nPhot*nPhot;
@@ -468,16 +473,12 @@ void AliADDigitizer::DigitizeHits()
     PMTime[iPM] += fHptdcOffset[iPM];
 
     fChargeSignalShape->SetParameters(fCssOffset[iPM],fCssTau[iPM],fCssSigma[iPM]);
-    Float_t integral = fChargeSignalShape->Integral(0,300);
-    //std::cout<<"Integral = "<<integral<<std::endl;
-
-    Float_t charge = nTotPhot[iPM]*fPmGain[iPM]*fBinSize[iPM]/integral;
-
-    Int_t firstBin = TMath::Max(0,(Int_t)((PMTime[iPM])/fBinSize[iPM]));
-    Int_t lastBin = fNBins[iPM]-1;
-    //std::cout<<"First Bin: "<<firstBin<<std::endl;
+    const Float_t integral = fChargeSignalShape->Integral(0,300);
+    const Float_t charge   = nTotPhot[iPM]*fPmGain[iPM]*fBinSize[iPM]/integral;
+    const Int_t firstBin   = TMath::Max(0,(Int_t)((PMTime[iPM])/fBinSize[iPM]));
+    const Int_t lastBin    = fNBins[iPM]-1;
     for(Int_t iBin = firstBin; iBin <= lastBin; ++iBin) {
-      Float_t tempT = fBinSize[iPM]*(0.5+iBin)-PMTime[iPM];
+      const Float_t tempT = fBinSize[iPM]*(0.5+iBin)-PMTime[iPM];
       if (tempT <= 0) continue;
       fTime[iPM][iBin] += charge*fChargeSignalShape->Eval(tempT);
     }
@@ -490,22 +491,23 @@ void AliADDigitizer::DigitizeSDigits()
 {
   // Digitize the fTime arrays (SDigits) to the level of
   // Digits (fAdc arrays)
-  Float_t fMCTime[16];
-  for(Int_t i=0; i<16; ++i) {
-    for(Int_t j=0; j<kADNClocks; ++j) fAdc[i][j] = 0;
+  Float_t fMCTime[16] = {0};
+  for (Int_t i=0; i<16; ++i) {
+    for (Int_t j=0; j<kADNClocks; ++j)
+      fAdc[i][j] = 0;
     fMCTime[i] = fLeadingTime[i] = fTimeWidth[i] = 0;
   }
 
   for (Int_t ipmt=0; ipmt<16; ++ipmt) {
     fChargeSignalShape->SetParameters(fCssOffset[ipmt],fCssTau[ipmt],fCssSigma[ipmt]);
-    Float_t maximum = 0.9*fChargeSignalShape->GetMaximum(0,300);
-    Float_t integral = fChargeSignalShape->Integral(0,300);
-    Float_t thr = fCalibData->GetCalibDiscriThr(ipmt)*kADChargePerADC*maximum*fBinSize[ipmt]/integral;
+    const Float_t maximum  = 0.9*fChargeSignalShape->GetMaximum(0,300);
+    const Float_t integral = fChargeSignalShape->Integral(0,300);
+    const Float_t thr      = fCalibData->GetCalibDiscriThr(ipmt)*kADChargePerADC*maximum*fBinSize[ipmt]/integral;
     //Float_t thr = 0;
 
     Bool_t ltFound = kFALSE, ttFound = kFALSE;
     for (Int_t iBin = 1; iBin<fNBins[ipmt]; ++iBin) {
-      Float_t t = fBinSize[ipmt]*Float_t(iBin);
+      const Float_t t = fBinSize[ipmt]*Float_t(iBin);
       if (fTime[ipmt][iBin] > 0.0) {
         if (!ltFound && (iBin < fNBinsLT[ipmt])) {
           ltFound = kTRUE;
@@ -546,14 +548,14 @@ void AliADDigitizer::DigitizeSDigits()
 
   for (Int_t j=0; j<16; ++j){
     Float_t adcSignal = 0.0;
-    Float_t adcClock = 0.0;
+    Float_t adcClock  = 0.0;
     for (Int_t iClock=0; iClock<kADNClocks; ++iClock) {
-      Int_t integrator = (iClock + fEvenOrOdd) % 2;
+      const Int_t integrator = (iClock + fEvenOrOdd) % 2;
       AliDebugF(1, "ADC %d %d %f",j,iClock,fAdc[j][iClock]);
       fAdc[j][iClock]  += gRandom->Gaus(fAdcPedestal[j][integrator], fAdcSigma[j][integrator]);
     }
     for (Int_t iClock=0; iClock<kADNClocks; ++iClock) {
-      Int_t integrator = (iClock + fEvenOrOdd) % 2;
+      const Int_t integrator = (iClock + fEvenOrOdd) % 2;
       adcClock = (Int_t)fAdc[j][iClock];
       if (fAdc[j][iClock]>1023) adcClock = 1023;
       adcClock -= fAdcPedestal[j][integrator];
@@ -605,7 +607,7 @@ void AliADDigitizer::AdjustPulseShapeADC()
     for (Int_t bc=0; bc<kADNClocks; ++bc) {
       newADC[bc] = 0.0;
       if (!doExtrapolation[bc])
-	continue;
+        continue;
       const Bool_t integrator = ((bc+fEvenOrOdd) % 2);
       TF1 *f = dynamic_cast<TF1*>(f_Int[integrator]->At(bc));
 #if ROOT_VERSION_CODE < ROOT_VERSION(5,99,0) // ROOT version <6
@@ -629,7 +631,7 @@ void AliADDigitizer::AdjustPulseShapeADC()
     const Float_t b =   ( (n+1)  *chargeLastBC - tail)/det;
     if (a < 0 || b < 0) {
       AliErrorF("charge redistribution failed for Ch%02d: n=%f a=%e b=%e chargeLastBC=%f tail=%f",
-		ch, n, a, b, chargeLastBC, tail);
+                ch, n, a, b, chargeLastBC, tail);
       continue;
     }
     // fill the tail BCs with linear function
@@ -638,9 +640,9 @@ void AliADDigitizer::AdjustPulseShapeADC()
     }
 
     AliDebugF(5, "OLD: Ch%02d %5.1f %5.1f %5.1f %5.1f %5.1f %5.1f", ch,
-	      fAdc[ch][20], fAdc[ch][19], fAdc[ch][18], fAdc[ch][17], fAdc[ch][16], fAdc[ch][15]);
+              fAdc[ch][20], fAdc[ch][19], fAdc[ch][18], fAdc[ch][17], fAdc[ch][16], fAdc[ch][15]);
     AliDebugF(5, "NEW: Ch%02d %5.1f %5.1f %5.1f %5.1f %5.1f %5.1f", ch,
-	      newADC[20], newADC[19], newADC[18], newADC[17], newADC[16], newADC[15]);
+              newADC[20], newADC[19], newADC[18], newADC[17], newADC[16], newADC[15]);
     Float_t newCharge=0.0;
     for (Int_t bc=0; bc<kADNClocks; ++bc) {
       fAdc[ch][bc] = newADC[bc];
@@ -666,8 +668,7 @@ void AliADDigitizer::ReadSDigits()
   }
 
   // Loop over input files
-  Int_t nFiles= fDigInput->GetNinputs();
-  for (Int_t inputFile=0; inputFile<nFiles; inputFile++) {
+  for (Int_t inputFile=0,nFiles=fDigInput->GetNinputs(); inputFile<nFiles; inputFile++) {
     // Get the current loader
     AliRunLoader* currentLoader =
       AliRunLoader::GetRunLoader(fDigInput->GetInputFolderName(inputFile));
@@ -693,32 +694,27 @@ void AliADDigitizer::ReadSDigits()
     TClonesArray *sdigitsArray = NULL;
     sdigitsBranch->SetAddress(&sdigitsArray);
 
-    int offset = fDigInput->GetMask(inputFile);
+    const Int_t offset = fDigInput->GetMask(inputFile);
 
     // Sum contributions from the sdigits
-    // Get number of entries in the tree
-    Int_t nentries  = Int_t(sdigitsBranch->GetEntries());
-    for (Int_t entry=0; entry<nentries; ++entry)  {
+    for (Int_t entry=0,nentries=sdigitsBranch->GetEntries(); entry<nentries; ++entry)  {
       sdigitsBranch->GetEntry(entry);
-      // Get the number of sdigits
-      Int_t nsdigits = sdigitsArray->GetEntries();
-
-      for (Int_t sdigit=0; sdigit<nsdigits; sdigit++) {
+      for (Int_t sdigit=0,nsdigits=sdigitsArray->GetEntries(); sdigit<nsdigits; ++sdigit) {
         AliADSDigit* sDigit = static_cast<AliADSDigit*>(sdigitsArray->UncheckedAt(sdigit));
-        Int_t pmNumber = sDigit->PMNumber();
-        Int_t nbins = sDigit->GetNBins();
+        const Int_t pmNumber = sDigit->PMNumber();
+        const Int_t nbins    = sDigit->GetNBins();
         if (nbins != fNBins[pmNumber]) {
           AliErrorF("Incompatible number of bins between digitizer (%d) and sdigit (%d) for PM %d! Skipping sdigit!",
-		    fNBins[pmNumber],nbins,pmNumber);
+                    fNBins[pmNumber],nbins,pmNumber);
           continue;
         }
         // Sum the charges
         Float_t *charges = sDigit->GetCharges();
-        for(Int_t iBin=0; iBin<nbins; ++iBin) fTime[pmNumber][iBin] += charges[iBin];
+        for(Int_t iBin=0; iBin<nbins; ++iBin)
+          fTime[pmNumber][iBin] += charges[iBin];
         // and the labels
         Int_t *labels = sDigit->GetTracks();
-        Int_t j = 0;
-        for(Int_t i=0; i<3; ++i) {
+        for(Int_t i=0,j=0; i<3; ++i) {
           if (fLabels[pmNumber][i] < 0) {
             if (labels[j] < 0) break;
             fLabels[pmNumber][i] = labels[j] + offset;
@@ -748,8 +744,8 @@ void AliADDigitizer::WriteDigits(AliLoader *loader)
   DigitsArray();
   treeD->Branch("ADDigit", &fDigits);
 
-  Short_t *chargeADC = new Short_t[kADNClocks];
-  for (Int_t i=0; i<16; i++) {
+  static Short_t chargeADC[kADNClocks];
+  for (Int_t i=0; i<16; ++i) {
     for (Int_t j=0; j < kADNClocks; ++j) {
       Int_t tempadc = Int_t(fAdc[i][j]);
       if (tempadc > 1023) tempadc = 1023;
@@ -757,7 +753,6 @@ void AliADDigitizer::WriteDigits(AliLoader *loader)
     }
     if(!fCalibData->IsChannelDead(i)) AddDigit(i, fLeadingTime[i], fTimeWidth[i], Bool_t((10+fEvenOrOdd)%2), chargeADC, fBBFlag[i], fBGFlag[i], fLabels[i]);
   }
-  delete [] chargeADC;
 
   treeD->Fill();
   loader->WriteDigits("OVERWRITE");
@@ -815,8 +810,7 @@ void AliADDigitizer::ResetDigits(Option_t *opt)
   fNdigits = 0;
   if (fDigits) {
     fDigits->Clear(opt);
-    delete fDigits;
-    fDigits = NULL;
+    SafeDelete(fDigits);
   }
 }
 
@@ -837,7 +831,7 @@ AliADCalibData* AliADDigitizer::GetCalibData() const
   AliADCalibData *calibdata = NULL;
 
   if (entry)
-    calibdata = (AliADCalibData*) entry->GetObject();
+    calibdata = dynamic_cast<AliADCalibData*>(entry->GetObject());
   if (!calibdata)
     AliFatal("No calibration data from calibration database !");
 
@@ -900,17 +894,17 @@ void AliADDigitizer::GetTimeSlewingSplines()
   AliCDBEntry *entry = man->Get("AD/Calib/TimeSlewing");
 
   TList *fListSplines = NULL;;
-  if (entry) fListSplines = (TList*) entry->GetObject();
+  if (entry) fListSplines = dynamic_cast<TList*>(entry->GetObject());
   if (!fListSplines)
     AliFatal("No time slewing correction from calibration database !");
 
   for (Int_t i=0; i<16; i++)
-    fTimeSlewingSpline[i] = (TSpline3*)(fListSplines->At(i));
+    fTimeSlewingSpline[i] = dynamic_cast<TSpline3*>(fListSplines->At(i));
 }
 //_____________________________________________________________________________
 void AliADDigitizer::ExtrapolateSplines()
 {
-  TH1F *hTimeVsSignal = NULL;
+  TH1 *hTimeVsSignal = NULL;
   for (Int_t i=0; i<16; i++) {
     TCanvas *c = new TCanvas("c", " ",0,0,1,1);
     c->cd();
@@ -930,7 +924,7 @@ void AliADDigitizer::ExtrapolateSplines()
     Int_t fitStatus =  hTimeVsSignal->Fit(TimeSlewingFitName.Data(),"R"," ",-2.5,-1.5);
     if(fitStatus != 0) {
       AliWarningF("Extrapolation of spline %d not succesfull",i);
-      fTimeSlewingExtpol[i] = 0x0;
+      fTimeSlewingExtpol[i] = NULL;
     }
     delete c;
   }

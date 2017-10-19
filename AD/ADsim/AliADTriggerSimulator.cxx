@@ -83,20 +83,10 @@ AliADTriggerSimulator::AliADTriggerSimulator()
 
 //_____________________________________________________________________________
 AliADTriggerSimulator::~AliADTriggerSimulator(){
-  // Destructor
   for (Int_t i=0; i<kNCIUBoards; i++) {
-    if (fBBGate[i]) {
-      delete fBBGate[i];
-      fBBGate[i] = NULL;
-    }
-    if (fBGGate[i]) {
-      delete fBGGate[i];
-      fBGGate[i] = NULL;
-    }
-    if (fBCMask[i]) {
-      delete fBCMask[i];
-      fBCMask[i] = NULL;
-    }
+    SafeDelete(fBBGate[i]);
+    SafeDelete(fBGGate[i]);
+    SafeDelete(fBCMask[i]);
   }
 }
 
@@ -180,7 +170,7 @@ AliADCalibData * AliADTriggerSimulator::LoadCalibData() const
 
   AliADCalibData *calibData = NULL;
 
-  if (entry) calibData = (AliADCalibData*) entry->GetObject();
+  if (entry) calibData = dynamic_cast<AliADCalibData*>(entry->GetObject());
   if (!calibData)  AliError("No Trigger data from database !");
 
   return calibData;
@@ -199,14 +189,14 @@ void AliADTriggerSimulator::LoadClockOffset()
     AliFatal("AD Calib object is not found in OCDB !");
     return;
   }
-  AliADCalibData *calibdata = (AliADCalibData*) entry0->GetObject();
+  AliADCalibData *calibdata = dynamic_cast<AliADCalibData*>(entry0->GetObject());
 
   AliCDBEntry *entry = AliCDBManager::Instance()->Get("GRP/CTP/CTPtiming");
   if (!entry) {
     AliFatal("CTP timing parameters are not found in OCDB !");
     return;
   }
-  AliCTPTimeParams *ctpParams = (AliCTPTimeParams*)entry->GetObject();
+  AliCTPTimeParams *ctpParams = dynamic_cast<AliCTPTimeParams*>(entry->GetObject());
   Float_t l1Delay = (Float_t)ctpParams->GetDelayL1L0()*25.0;
 
   AliCDBEntry *entry1 = AliCDBManager::Instance()->Get("GRP/CTP/TimeAlign");
@@ -214,7 +204,7 @@ void AliADTriggerSimulator::LoadClockOffset()
     AliFatal("CTP time-alignment is not found in OCDB !");
     return;
   }
-  AliCTPTimeParams *ctpTimeAlign = (AliCTPTimeParams*)entry1->GetObject();
+  AliCTPTimeParams *ctpTimeAlign = dynamic_cast<AliCTPTimeParams*>(entry1->GetObject());
   l1Delay += ((Float_t)ctpTimeAlign->GetDelayL1L0()*25.0);
   //Start of the central clock in HPTDC time
   for(Int_t board = 0; board < kNCIUBoards; ++board) {
@@ -268,11 +258,11 @@ void AliADTriggerSimulator::Run() {
 
     Int_t nDigits = fDigits->GetEntriesFast();
     for (Int_t iDigit=0; iDigit<nDigits; iDigit++) {
-      AliADdigit* digit = (AliADdigit*)fDigits->At(iDigit);
+      AliADdigit* digit = dynamic_cast<AliADdigit*>(fDigits->At(iDigit));
 
       Int_t integrator = digit->Integrator();
       Int_t pmNumber   = digit->PMNumber();
-      Int_t board   = AliADCalibData::GetBoardNumber(pmNumber);
+      Int_t board      = AliADCalibData::GetBoardNumber(pmNumber);
       if (board < 0) continue;
 
       if(fCalibData->GetEnableCharge(pmNumber)) {

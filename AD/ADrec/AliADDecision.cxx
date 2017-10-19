@@ -65,9 +65,7 @@ AliADDecision::AliADDecision()
 //______________________________________________________________________
 AliADDecision::~AliADDecision()
 {
-  if (fEarlyHitCutShape)
-    delete fEarlyHitCutShape;
-  fEarlyHitCutShape = NULL;
+  SafeDelete(fEarlyHitCutShape);
 }
 
 //________________________________________________________________________________
