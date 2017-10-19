@@ -45,6 +45,7 @@
 //#include "AliESDtrackCuts.h"
 //#include "CreateTrackCutsPWGJE.C"
 //#include "ConfigureEMCALRecoUtils.C"
+//#include "CheckActiveEMCalTriggerPerPeriod.C"
 //#endif
 //
 //// Declare methods for compilation
@@ -88,8 +89,6 @@
 //                                              TString calorimeter,   Bool_t caloType,
 //                                              TString collision,     Int_t year      );
 //
-//Bool_t CheckAnalysisTrigger                  (Bool_t simulation,     TString trigger, 
-//                                              TString period   ,     Int_t   year    );
 //
 //// Global variables, set externally, uncomment next lines for local tests and compilation.
 //const char* kPeriod   = "LHC16t"; // gSystem->Getenv("ALIEN_JDL_LPMPRODUCTIONTAG");
@@ -230,7 +229,8 @@ AliAnalysisTaskCaloTrackCorrelation *AddTaskPi0IMGammaCorrQA(const TString  calo
   // Do not configure the wagon for certain analysis combinations
   // But create the task so that the sub-wagon train can run
   //
-  Bool_t doAnalysis = CheckAnalysisTrigger(simulation,trigger,period,year);
+  gROOT->LoadMacro("$ALICE_PHYSICS/PWGGA/CaloTrackCorrelations/macros/CheckActiveEMCalTriggerPerPeriod.C");
+  Bool_t doAnalysis = CheckActiveEMCalTriggerPerPeriod(simulation,trigger,period,year);
   if(!doAnalysis) 
   {
     maker->SwitchOffProcessEvent();
@@ -1130,124 +1130,3 @@ void SetHistoRangeAndNBins (AliHistogramRanges* histoRanges, TString calorimeter
     histoRanges->SetHistoPtSumRangeAndNBins   (0, 500, 100);
 }
 
-///
-/// Check if the selected trigger is appropriate
-/// to run the analysis, depending on the period
-/// certain triggers were not available.
-///
-/// Run MC analysis for no trigger.
-///
-/// \param simulation: bool with data (0) or MC (1) condition
-/// \param trigger: trigger string name (EMCAL_L0, EMCAL_L1, EMCAL_L2, DCAL_L0, DCAL_L1, DCAL_L2)
-/// \param period: LHCXX
-/// \param year: 2011, ...
-///
-/// \return True if analysis can be done.
-///
-Bool_t CheckAnalysisTrigger(Bool_t simulation, TString trigger, TString period, Int_t year)
-{
-  // Accept directly all MB kind of events
-  //
-  if ( trigger.Contains("default") || trigger.Contains("INT") || trigger.Contains("MB") ) return kTRUE;
-
-  // MC analysis has no trigger dependence, execute only for the default case
-  //
-  if ( simulation )
-  {
-    printf("AddTaskPi0IMGammaCorrQA - CAREFUL : Triggered events not checked in simulation, SKIP trigger %s! \n", trigger.Data());
-    return kFALSE;
-  }
-    
-  // Triggers introduced in 2011
-  //
-  if ( year < 2011 && ( trigger.Contains("EMCAL") || trigger.Contains("DCAL") ) )
-  {
-    printf("AddTaskPi0IMGammaCorrQA - CAREFUL : No triggered events for year < 2011, SKIP trigger %s! \n", trigger.Data());
-    return kFALSE;
-  }
-  
-  // DCal Triggers introduced in 2015
-  //
-  if ( year < 2014 && trigger.Contains("DCAL") )
-  {
-    printf("AddTaskPi0IMGammaCorrQA - CAREFUL : No triggered events by DCal for year < 2014, SKIP trigger %s! \n", trigger.Data());
-    return kFALSE;
-  }
-
-  // EG2 trigger only activated from 2013
-  //
-  if ( year  < 2013 && trigger.Contains("L2") )
-  { 
-    printf("AddTaskPi0IMGammaCorrQA - CAREFUL : EG2 trigger not available for year < 2012, SKIP trigger %s in %s \n", trigger.Data(),period.Data());
-    return kFALSE;
-  }
-
-  // Triggers only activated in 2013 from LHC13d for physics (it might be there are in b and c but not taking data)
-  //
-  if ( year == 2013 && trigger.Contains("L") && ( period.Contains("b") || period.Contains("c") ) )
-  { 
-    printf("AddTaskPi0IMGammaCorrQA - CAREFUL : Triggers not available for year 2013 in period %s, SKIP trigger %s! \n",period.Data(), trigger.Data());
-    return kFALSE;
-  }
-  
-  // DCal Triggers introduced in 2015
-  //
-  if ( year < 2014 && ( trigger.Contains("DCAL") ) )
-  {
-    printf("AddTaskPi0IMGammaCorrQA - CAREFUL : No triggered events by DCal for year < 2014, SKIP trigger %s! \n", trigger.Data());
-    return kFALSE;
-  }
-
-  // L0 trigger used for periods below LHC11e? 
-  //
-  if ( period == "LHC11h" && trigger.Contains("EMCAL_L0") )
-  {
-    printf("AddTaskPi0IMGammaCorrQA - CAREFUL : No EMCAL_L0 triggered events by EMCal for period LHC11h, SKIP trigger %s! \n", trigger.Data());
-    return kFALSE;
-  }
-
-  // L1 trigger not used until LHC11e? period, what about LHC11f?
-  //
-  if ( period.Contains("LHC11") && period != "LHC11h" && trigger.Contains("EMCAL_L1") )
-  {
-    printf("AddTaskPi0IMGammaCorrQA - CAREFUL : No %s triggered events by EMCal for period %s, SKIP \n", trigger.Data(),period.Data());
-    return kFALSE;
-  }
-
-  // L1 trigger not used again until LHC12c period
-  //
-  if ( ( period == "LHC12a" ||  period == "LHC12b" ) && trigger.Contains("EMCAL_L1") )
-  { 
-    printf("AddTaskPi0IMGammaCorrQA - CAREFUL : No %s triggered events by EMCal for period %s, SKIP \n", trigger.Data(),period.Data());
-    return kFALSE;
-  }
-
-  // Run2: No trigger used again until LHC15i period
-  //
-  if ( year == 2015 && ( period == "LHC15h" ||  period == "LHC15g" || period == "LHC15f" || period == "LHC15e" ||  
-                         period == "LHC15d" ||  period == "LHC15c" || period == "LHC15b" || period == "LHC15a"    ) )
-  { 
-    printf("AddTaskPi0IMGammaCorrQA - CAREFUL : No %s triggered events by EMCal for period %s, SKIP \n", trigger.Data(),period.Data());
-    return kFALSE;
-  }
-  
-  // Run2: L1 trigger not used again until LHC15o period
-  //
-  if ( year == 2015 && period != "LHC15o" && !trigger.Contains("L0") )
-  { 
-    printf("AddTaskPi0IMGammaCorrQA - CAREFUL : No %s triggered events by EMCal for period %s, SKIP \n", trigger.Data(),period.Data());
-    return kFALSE;
-  }
-
-  // Run2: L1 trigger not used again until LHC15o period
-  //
-  if ( year == 2015 && period == "LHC15o" && ( trigger.Contains("L0") || trigger.Contains("L2") ) )
-  { 
-    printf("AddTaskPi0IMGammaCorrQA - CAREFUL : No %s triggered events by EMCal for period %s, SKIP \n", trigger.Data(),period.Data());
-    return kFALSE;
-  }
-
-  
-  return kTRUE;
-  
-}
