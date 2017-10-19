@@ -2756,10 +2756,15 @@ Bool_t AliAnalysisTaskTOFSpectra::SelectEvents(Int_t& binstart)
             if (fEventCut.PassedCut(AliEventCuts::kVertexPosition)) {
               hNEvt->Fill(binstart++);
             }
+            else binstart += 1;
           }
+          else binstart += 2;
         }
+        else binstart += 3;
       }
+      else binstart += 4;
     }
+    else binstart += 5;
 
     //Global cut
     if (!fEventCut.AcceptEvent(fESD))
