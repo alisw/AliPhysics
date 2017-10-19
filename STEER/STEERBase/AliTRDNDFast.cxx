@@ -260,8 +260,8 @@ TF1 *AliTRDNDFast::FitLandau(TString name,TH1F *htemp,Double_t range[2],TString 
     //cout<<"got Chi2()"<<endl;
     /*FileToDebugFit<<" Chi2 "<<dChiDivNdf<<endl;
     FileToDebugFit<<" CorrMatrix:"<<endl;
-    for (Int_ti=0; i<kNpar; i++){
-        for (Int_tj=0; j<kNpar; j++){
+    for (Int_t i=0; i<kNpar; i++){
+        for (Int_t j=0; j<kNpar; j++){
             FileToDebugFit<<TMatrCorFitRes(i,j)<<" ";
         }
         FileToDebugFit<<endl;

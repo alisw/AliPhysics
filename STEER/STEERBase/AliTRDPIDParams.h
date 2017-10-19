@@ -60,9 +60,9 @@ public:
 
     private:
         Int_t fNTracklets;          //
-        Int_t fCharge;              //
         Double_t fEfficiency[2];    //
         Double_t fParams[4];        //
+        Int_t fCharge;              //
 
 
         // #if ROOT_VERSION_CODE < ROOT_VERSION(5,99,0)

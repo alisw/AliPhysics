@@ -178,13 +178,32 @@ AliTRDPIDParams::AliTRDPIDThresholds::AliTRDPIDThresholds(Int_t nTracklets, Doub
     else memset(fParams, 0, sizeof(Double_t) * 4);
 }
 //____________________________________________________________
-AliTRDPIDParams::AliTRDPIDThresholds::AliTRDPIDThresholds(Int_t nTracklets, Double_t effMin, Double_t effMax, Double_t *params) : AliTRDPIDParams::AliTRDPIDThresholds::AliTRDPIDThresholds(nTracklets, effMin,  effMax, params, 0)
+AliTRDPIDParams::AliTRDPIDThresholds::AliTRDPIDThresholds(Int_t nTracklets, Double_t effMin, Double_t effMax, Double_t *params) :
+    TObject(),
+    fNTracklets(nTracklets),
+    fCharge(0)
 {
+    //
+    // Contructor to store params
+    //
+    fEfficiency[0] = effMin;
+    fEfficiency[1] = effMax;
+    if(params) memcpy(fParams, params, sizeof(Double_t) * 4);
+    else memset(fParams, 0, sizeof(Double_t) * 4);
 }
 
 //____________________________________________________________
-AliTRDPIDParams::AliTRDPIDThresholds::AliTRDPIDThresholds(Int_t nTracklets, Double_t eff, Double_t *params) : AliTRDPIDParams::AliTRDPIDThresholds::AliTRDPIDThresholds(nTracklets, eff, params, 0)
+AliTRDPIDParams::AliTRDPIDThresholds::AliTRDPIDThresholds(Int_t nTracklets, Double_t eff, Double_t *params) :
+  TObject(),
+  fNTracklets(nTracklets),
+  fCharge(0)
 {
+  //
+  // Constructor used to find object in sorted list
+  //
+  fEfficiency[0] = fEfficiency[1] = eff;
+  if(params) memcpy(fParams, params, sizeof(Double_t) * 4);
+  else memset(fParams, 0, sizeof(Double_t) * 4);
 }
 
 //____________________________________________________________
