@@ -52,7 +52,7 @@ public:
                    kBadDiamondXDistance,kBadDiamondYDistance,kBadDiamondZDistance};
     enum TTypeImpPar {kXY,kXYSig,kXYZ,kXYZSig,kXYZSigmaOnly,kZSig};
     enum EParticleType  {bPi0=111,bEta=221,bEtaPrime=331,bPhi=333,bRho=113,bOmega=223,bSigma0=3212,bK0s=310,bLambda=3122,bPi=211,bProton=2212,bKaon=321,bOmegaBaryon=3334,
-                         bAntiOmegaBaryon=-3334,bXiBaryon=3312,bAntiXiBaryon=-3312,bD0=411,bDPlus=421,bDStarPlus=413,bDSPlus=431,bK0l=130,bSigmaMinus = 3112,bSigmaPlus = 3222,bRhoPlus=213,
+                         bAntiOmegaBaryon=-3334,bXiBaryon=3312,bAntiXiBaryon=-3312,bD0=421,bDPlus=411,bDStarPlus=413,bDSPlus=431,bK0l=130,bSigmaMinus = 3112,bSigmaPlus = 3222,bRhoPlus=213,
                          bBPlus = 521,bB0 = 511,bLambdaB =5122,bLambdaC=4122,bBStarPlus=523,bK0S892 = 313,bK0S892plus = 323};
     enum EParticleArrayIdx
     {bIdxPi0=0,bIdxEta=1,bIdxEtaPrime=2,bIdxPhi=3,bIdxRho=4,bIdxOmega=5,bIdxK0s=6,bIdxLambda=7,bIdxPi=8,bIdxProton=9,bIdxKaon=10,bIdxD0=11,bIdxDPlus=12,
@@ -79,7 +79,7 @@ public:
         Double_t second;// to be compatible with std::pair
         Bool_t   is_electron; // added for electron contribution check
         Bool_t   is_fromB; // added for electron contribution check
-        Int_t trackLabel ;
+        Int_t trackLabel=-1 ;
     };
     //FUNCTION DEFINITIONS
     AliAnalysisTaskHFJetIPQA();
@@ -193,6 +193,7 @@ private:
     TH2D * GetHist2D(const char * name){return (TH2D*)fOutput->FindObject(name);}
 private:
     Bool_t   fUsePIDJetProb;//
+    Bool_t   fFillCorrelations;//
     Double_t fParam_Smear_Sigma;//
     Double_t fParam_Smear_Mean;//
     Bool_t   fRunSmearing;//

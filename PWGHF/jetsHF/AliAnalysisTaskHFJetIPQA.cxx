@@ -61,6 +61,7 @@ AliAnalysisTaskHFJetIPQA::AliAnalysisTaskHFJetIPQA():
     fEventVertex(nullptr),
     fPidResponse(nullptr),
     fUsePIDJetProb(kFALSE),
+    fFillCorrelations(kFALSE),
     fParam_Smear_Sigma(1.),
     fParam_Smear_Mean(0.),
     fRunSmearing(kTRUE),
@@ -110,6 +111,7 @@ AliAnalysisTaskHFJetIPQA::AliAnalysisTaskHFJetIPQA(const char *name):
     fEventVertex(nullptr),
     fPidResponse(nullptr),
     fUsePIDJetProb(kFALSE),
+    fFillCorrelations(kFALSE),
     fParam_Smear_Sigma(1.),
     fParam_Smear_Mean(0.),
     fRunSmearing(kTRUE),
@@ -423,10 +425,7 @@ Bool_t AliAnalysisTaskHFJetIPQA::Run(){
             return kFALSE;
         }
     IncHist("fh1dEventsAcceptedInRun",1);
-    /*
-Printf("fProductionNumberPtHard %i",fProductionNumberPtHard);
-Printf("Smearing %e %e %i",fParam_Smear_Sigma,fParam_Smear_Mean,fRunSmearing? 1: 0 );
-*/
+
     this->fXsectionWeightingFactor=1;
     if(fIsPythia){
             if(fProductionNumberPtHard>0){
@@ -992,10 +991,10 @@ Printf("Smearing %e %e %i",fParam_Smear_Sigma,fParam_Smear_Mean,fRunSmearing? 1:
                                     FillHist(Form("fh2dJetSignedImpParXY%s",subtype[jetflavour]),jetpt,cursImParXY,TrackWeight*this->fXsectionWeightingFactor );
                                     FillHist(Form("fh2dJetSignedImpParXYSignificance%s",subtype[jetflavour]),jetpt,cursImParXYSig,TrackWeight*this->fXsectionWeightingFactor );
                                 }
-                            SJetIpPati a(cursImParXY, TrackWeight,kFALSE,kFALSE,trackV->GetLabel()); sImpParXY.push_back(a);
-                            SJetIpPati b(cursImParXYZ, TrackWeight,kFALSE,kFALSE,trackV->GetLabel()); sImpParXYZ.push_back(b);
-                            SJetIpPati c(cursImParXYSig, TrackWeight,kFALSE,kFALSE,trackV->GetLabel());sImpParXYSig.push_back(c);
-                            SJetIpPati d(cursImParXYZSig, TrackWeight,kFALSE,kFALSE,trackV->GetLabel());sImpParXYZSig.push_back(d);
+                            SJetIpPati a(cursImParXY, TrackWeight,kFALSE,kFALSE,corridx); sImpParXY.push_back(a);
+                            SJetIpPati b(cursImParXYZ, TrackWeight,kFALSE,kFALSE,corridx); sImpParXYZ.push_back(b);
+                            SJetIpPati c(cursImParXYSig, TrackWeight,kFALSE,kFALSE,corridx);sImpParXYSig.push_back(c);
+                            SJetIpPati d(cursImParXYZSig, TrackWeight,kFALSE,kFALSE,corridx);sImpParXYZSig.push_back(d);
 
                         }
                 }
@@ -1019,13 +1018,13 @@ Printf("Smearing %e %e %i",fParam_Smear_Sigma,fParam_Smear_Mean,fRunSmearing? 1:
             if(hasIPs[2])ipval[2] =sImpParXY.at(2).first;
 
 
+            if(fFillCorrelations){
+                    FillCorrelations(hasIPs,ipval,jetpt);
 
-            FillCorrelations(hasIPs,ipval,jetpt);
-
-            if(!fIsMixSignalReady_n1 && hasIPs[0]) SetMixDCA(1,ipval[0] );
-            if(!fIsMixSignalReady_n2 && hasIPs[1]) SetMixDCA(2,ipval[1] );
-            if(!fIsMixSignalReady_n3 && hasIPs[2]) SetMixDCA(3,ipval[2] );
-
+                    if(!fIsMixSignalReady_n1 && hasIPs[0]) SetMixDCA(1,ipval[0] );
+                    if(!fIsMixSignalReady_n2 && hasIPs[1]) SetMixDCA(2,ipval[1] );
+                    if(!fIsMixSignalReady_n3 && hasIPs[2]) SetMixDCA(3,ipval[2] );
+                }
 
             for (Int_t ot = 0 ; ot <3 ;++ot){
                     if ((int)sImpParXY.size()>ot){
@@ -1049,8 +1048,12 @@ Printf("Smearing %e %e %i",fParam_Smear_Sigma,fParam_Smear_Mean,fRunSmearing? 1:
                                         }
                                     FillHist(Form("fh1dJetRecPt_n_%i_%s_Accepted",ot+1,"all"),jetpt,this->fXsectionWeightingFactor);
                                 }
+
+
                             Double_t params [4] ={sImpParXY.at(ot).first,sImpParXYSig.at(ot).first,sImpParXYZ.at(ot).first,sImpParXYZSig.at(ot).first};
                             Double_t weights[4] ={sImpParXY.at(ot).second,sImpParXYSig.at(ot).second,sImpParXYZ.at(ot).second,sImpParXYZSig.at(ot).second};
+                            Int_t    correctionwindex[4] ={sImpParXY.at(ot).trackLabel,sImpParXYSig.at(ot).trackLabel,sImpParXYZ.at(ot).trackLabel,sImpParXYZSig.at(ot).trackLabel};
+
                             for (Int_t ost = 0 ; ost <4 ;++ost){
                                     TString hname = Form("%s%s",stype[ost],subord[ot]);
                                     if(fIsPythia)   FillHist(hname.Data(),jetpt,params[ost],weights[ost] *  this->fXsectionWeightingFactor);
@@ -1059,6 +1062,62 @@ Printf("Smearing %e %e %i",fParam_Smear_Sigma,fParam_Smear_Mean,fRunSmearing? 1:
 
                                 }
                             if(fIsPythia){
+
+                                        if(ot ==0){//N=1
+                                              FillHist("fh2dNMCWeightSpeciesPerJetPtN1_IP_all",jetpt,correctionwindex[0]+0.5, this->fXsectionWeightingFactor  );
+                                              FillHist("fh2dNMCWeightSpeciesPerJetPtN1_SIP_all",jetpt,correctionwindex[1]+0.5, this->fXsectionWeightingFactor  );
+                                            if(jetflavour==3) {//b
+                                                FillHist("fh2dNMCWeightSpeciesPerJetPtN1_IP_b",jetpt,correctionwindex[0]+0.5, this->fXsectionWeightingFactor  );
+                                                FillHist("fh2dNMCWeightSpeciesPerJetPtN1_SIP_b",jetpt,correctionwindex[1]+0.5, this->fXsectionWeightingFactor  );
+                                            }
+                                        else   if(jetflavour==2) {//c
+                                                FillHist("fh2dNMCWeightSpeciesPerJetPtN1_IP_c",jetpt,correctionwindex[0]+0.5, this->fXsectionWeightingFactor  );
+                                                FillHist("fh2dNMCWeightSpeciesPerJetPtN1_SIP_c",jetpt,correctionwindex[1]+0.5, this->fXsectionWeightingFactor  );
+                                            }
+                                        else   if(jetflavour==1) {//lf
+                                                FillHist("fh2dNMCWeightSpeciesPerJetPtN1_IP_lf",jetpt,correctionwindex[0]+0.5, this->fXsectionWeightingFactor  );
+                                                FillHist("fh2dNMCWeightSpeciesPerJetPtN1_SIP_lf",jetpt,correctionwindex[1]+0.5, this->fXsectionWeightingFactor  );
+                                            }
+
+                                            }
+                                        else  if(ot ==1){//N=2
+                                                FillHist("fh2dNMCWeightSpeciesPerJetPtN2_IP_all",jetpt,correctionwindex[0]+0.5, this->fXsectionWeightingFactor  );
+                                                FillHist("fh2dNMCWeightSpeciesPerJetPtN2_SIP_all",jetpt,correctionwindex[1]+0.5, this->fXsectionWeightingFactor  );
+                                                if(jetflavour==3) {//b
+                                                        FillHist("fh2dNMCWeightSpeciesPerJetPtN2_IP_b",jetpt,correctionwindex[0]+0.5, this->fXsectionWeightingFactor  );
+                                                        FillHist("fh2dNMCWeightSpeciesPerJetPtN2_SIP_b",jetpt,correctionwindex[1]+0.5, this->fXsectionWeightingFactor  );
+                                                    }
+                                                else   if(jetflavour==2) {//c
+                                                        FillHist("fh2dNMCWeightSpeciesPerJetPtN2_IP_c",jetpt,correctionwindex[0]+0.5, this->fXsectionWeightingFactor  );
+                                                        FillHist("fh2dNMCWeightSpeciesPerJetPtN2_SIP_c",jetpt,correctionwindex[1]+0.5, this->fXsectionWeightingFactor  );
+                                                    }
+                                                else   if(jetflavour==1) {//lf
+                                                        FillHist("fh2dNMCWeightSpeciesPerJetPtN2_IP_lf",jetpt,correctionwindex[0]+0.5, this->fXsectionWeightingFactor  );
+                                                        FillHist("fh2dNMCWeightSpeciesPerJetPtN2_SIP_lf",jetpt,correctionwindex[1]+0.5, this->fXsectionWeightingFactor  );
+                                                    }
+
+                                            }
+
+                                        else  if(ot ==1){//N=3
+                                                FillHist("fh2dNMCWeightSpeciesPerJetPtN3_IP_all",jetpt,correctionwindex[0]+0.5, this->fXsectionWeightingFactor  );
+                                                FillHist("fh2dNMCWeightSpeciesPerJetPtN3_SIP_all",jetpt,correctionwindex[1]+0.5, this->fXsectionWeightingFactor  );
+                                                if(jetflavour==3) {//b
+                                                        FillHist("fh2dNMCWeightSpeciesPerJetPtN3_IP_b",jetpt,correctionwindex[0]+0.5, this->fXsectionWeightingFactor  );
+                                                        FillHist("fh2dNMCWeightSpeciesPerJetPtN3_SIP_b",jetpt,correctionwindex[1]+0.5, this->fXsectionWeightingFactor  );
+                                                    }
+                                                else   if(jetflavour==2) {//c
+                                                        FillHist("fh2dNMCWeightSpeciesPerJetPtN3_IP_c",jetpt,correctionwindex[0]+0.5, this->fXsectionWeightingFactor  );
+                                                        FillHist("fh2dNMCWeightSpeciesPerJetPtN3_SIP_c",jetpt,correctionwindex[1]+0.5, this->fXsectionWeightingFactor  );
+                                                    }
+                                                else   if(jetflavour==1) {//lf
+                                                        FillHist("fh2dNMCWeightSpeciesPerJetPtN3_IP_lf",jetpt,correctionwindex[0]+0.5, this->fXsectionWeightingFactor  );
+                                                        FillHist("fh2dNMCWeightSpeciesPerJetPtN3_SIP_lf",jetpt,correctionwindex[1]+0.5, this->fXsectionWeightingFactor  );
+                                                    }
+                                            }
+
+
+
+
                                     for (Int_t ost = 0 ; ost <4 ;++ost){
                                             TString hname = Form("%s%s%s",stype[ost],subtype[jetflavour],subord[ot]);
                                             FillHist(hname.Data(),jetpt,params[ost],weights[ost]* this->fXsectionWeightingFactor  );
@@ -1067,11 +1126,10 @@ Printf("Smearing %e %e %i",fParam_Smear_Sigma,fParam_Smear_Mean,fRunSmearing? 1:
                         }
                 }
             sImpParXY.clear();
-            sImpParXYSig.clear();
+            sImpParXYSig.clear();<
             sImpParXYZ.clear();
             sImpParXYZSig.clear();
         }
-
     return kTRUE;
 }
 
@@ -1368,9 +1426,9 @@ void AliAnalysisTaskHFJetIPQA::FillCorrelations(bool bn[3],double v[3], double j
                     if(jetpt>20 && jetpt <30)    FillHist("fh2dGreater20_30GeVCorrelationN2N3mix",v[1],n3);
                     if(jetpt>30 && jetpt <100)    FillHist("fh2dGreater30_100GeVCorrelationN2N3mix",v[1],n3);
                 }
-        }}
+        }
 
-return;
+    return;
 }
 
 void AliAnalysisTaskHFJetIPQA::UserCreateOutputObjects(){
@@ -1472,6 +1530,9 @@ void AliAnalysisTaskHFJetIPQA::UserCreateOutputObjects(){
     AddHistogramm("fh1dTracksAccepeted","# tracks before/after cuts;;",3,0,3);
 
 
+
+
+
     fHistManager.CreateTH1("fh1dEventsAcceptedInRun","fh1dEventsAcceptedInRun;Events Accepted;count",1,0,1,"s");
 
     TH1D * h1 = GetHist1D("fh1dTracksAccepeted");
@@ -1490,6 +1551,37 @@ void AliAnalysisTaskHFJetIPQA::UserCreateOutputObjects(){
 
 
     //***************************************
+
+    fHistManager.CreateTH2("fh2dNMCWeightSpeciesPerJetPtN1_IP_all","fh2dNMCWeightSpeciesPerJetPtN1_all (N used weights) ;species i;pt",22,0,22,150,0,150,"s");
+    fHistManager.CreateTH2("fh2dNMCWeightSpeciesPerJetPtN1_IP_b","fh2dNMCWeightSpeciesPerJetPtN1_b (N used weights) ;species i;pt",22,0,22,150,0,150,"s");
+    fHistManager.CreateTH2("fh2dNMCWeightSpeciesPerJetPtN1_IP_c","fh2dNMCWeightSpeciesPerJetPtN1_c (N used weights) ;species i;pt",22,0,22,150,0,150,"s");
+    fHistManager.CreateTH2("fh2dNMCWeightSpeciesPerJetPtN1_IP_lf","fh2dNMCWeightSpeciesPerJetPtN1_lf (N used weights) ;species i;pt",22,0,22,150,0,150,"s");
+
+    fHistManager.CreateTH2("fh2dNMCWeightSpeciesPerJetPtN2_IP_all","fh2dNMCWeightSpeciesPerJetPtN2_all (N used weights) ;species i;pt",22,0,22,150,0,150,"s");
+    fHistManager.CreateTH2("fh2dNMCWeightSpeciesPerJetPtN2_IP_b","fh2dNMCWeightSpeciesPerJetPtN2_b (N used weights) ;species i;pt",22,0,22,150,0,150,"s");
+    fHistManager.CreateTH2("fh2dNMCWeightSpeciesPerJetPtN2_IP_c","fh2dNMCWeightSpeciesPerJetPtN2_c (N used weights) ;species i;pt",22,0,22,150,0,150,"s");
+    fHistManager.CreateTH2("fh2dNMCWeightSpeciesPerJetPtN2_IP_lf","fh2dNMCWeightSpeciesPerJetPtN2_lf (N used weights) ;species i;pt",22,0,22,150,0,150,"s");
+
+    fHistManager.CreateTH2("fh2dNMCWeightSpeciesPerJetPtN3_IP_all","fh2dNMCWeightSpeciesPerJetPtN3_all (N used weights) ;species i;pt",22,0,22,150,0,150,"s");
+    fHistManager.CreateTH2("fh2dNMCWeightSpeciesPerJetPtN3_IP_b","fh2dNMCWeightSpeciesPerJetPtN3_b (N used weights) ;species i;pt",22,0,22,150,0,150,"s");
+    fHistManager.CreateTH2("fh2dNMCWeightSpeciesPerJetPtN3_IP_c","fh2dNMCWeightSpeciesPerJetPtN3_c (N used weights) ;species i;pt",22,0,22,150,0,150,"s");
+    fHistManager.CreateTH2("fh2dNMCWeightSpeciesPerJetPtN3_IP_lf","fh2dNMCWeightSpeciesPerJetPtN3_lf (N used weights) ;species i;pt",22,0,22,150,0,150,"s");
+
+    fHistManager.CreateTH2("fh2dNMCWeightSpeciesPerJetPtN1_SIP_all","fh2dNMCWeightSpeciesPerJetPtN1_all (N used weights) ;species i;pt",22,0,22,150,0,150,"s");
+    fHistManager.CreateTH2("fh2dNMCWeightSpeciesPerJetPtN1_SIP_b","fh2dNMCWeightSpeciesPerJetPtN1_b (N used weights) ;species i;pt",22,0,22,150,0,150,"s");
+    fHistManager.CreateTH2("fh2dNMCWeightSpeciesPerJetPtN1_SIP_c","fh2dNMCWeightSpeciesPerJetPtN1_c (N used weights) ;species i;pt",22,0,22,150,0,150,"s");
+    fHistManager.CreateTH2("fh2dNMCWeightSpeciesPerJetPtN1_SIP_lf","fh2dNMCWeightSpeciesPerJetPtN1_lf (N used weights) ;species i;pt",22,0,22,150,0,150,"s");
+
+    fHistManager.CreateTH2("fh2dNMCWeightSpeciesPerJetPtN2_SIP_all","fh2dNMCWeightSpeciesPerJetPtN2_all (N used weights) ;species i;pt",22,0,22,150,0,150,"s");
+    fHistManager.CreateTH2("fh2dNMCWeightSpeciesPerJetPtN2_SIP_b","fh2dNMCWeightSpeciesPerJetPtN2_b (N used weights) ;species i;pt",22,0,22,150,0,150,"s");
+    fHistManager.CreateTH2("fh2dNMCWeightSpeciesPerJetPtN2_SIP_c","fh2dNMCWeightSpeciesPerJetPtN2_c (N used weights) ;species i;pt",22,0,22,150,0,150,"s");
+    fHistManager.CreateTH2("fh2dNMCWeightSpeciesPerJetPtN2_SIP_lf","fh2dNMCWeightSpeciesPerJetPtN2_lf (N used weights) ;species i;pt",22,0,22,150,0,150,"s");
+
+    fHistManager.CreateTH2("fh2dNMCWeightSpeciesPerJetPtN3_SIP_all","fh2dNMCWeightSpeciesPerJetPtN3_all (N used weights) ;species i;pt",22,0,22,150,0,150,"s");
+    fHistManager.CreateTH2("fh2dNMCWeightSpeciesPerJetPtN3_SIP_b","fh2dNMCWeightSpeciesPerJetPtN3_b (N used weights) ;species i;pt",22,0,22,150,0,150,"s");
+    fHistManager.CreateTH2("fh2dNMCWeightSpeciesPerJetPtN3_SIP_c","fh2dNMCWeightSpeciesPerJetPtN3_c (N used weights) ;species i;pt",22,0,22,150,0,150,"s");
+    fHistManager.CreateTH2("fh2dNMCWeightSpeciesPerJetPtN3_SIP_lf","fh2dNMCWeightSpeciesPerJetPtN3_lf (N used weights) ;species i;pt",22,0,22,150,0,150,"s");
+
 
     //Same Jet
     fHistManager.CreateTH2("fh2dInclusiveCorrelationN1N2","fh2dInclusiveCorrelationN1N2 ;N1 impact parameter xy (cm);N2impact parameter xy (cm)",1000,lowIPxy,highIPxy,1000,lowIPxy,highIPxy,"s");
