@@ -259,6 +259,20 @@ AliAnalysisTaskHaHFECorrel::AliAnalysisTaskHaHFECorrel(const char *name)
 ,fMCPiPlusProd(0)
 ,fMCPiPlusProdV2(0)
 ,fMCLeadingParticle(0)
+,fV0cuts(0)
+,fV0electrons(0)
+,fV0pions(0)
+,fV0protons(0)
+,fhArmenteros(0)
+,fEventsPerRun(0)
+,fTRDnTrackRun(0)
+,fV0tags(0)
+,fTRDEtaPhi(0)
+,fTRDNTracklets(0)
+,fTRDV0NTracklets(0)
+,fTRDSpectra(0)
+,fTRDV0Spectra(0)
+,fTRDMCSpectra(0)
 {
     //Named constructor
    
@@ -426,6 +440,20 @@ AliAnalysisTaskHaHFECorrel::AliAnalysisTaskHaHFECorrel()
 ,fMCPiPlusProd(0)
 ,fMCPiPlusProdV2(0)
 ,fMCLeadingParticle(0)
+,fV0cuts(0)
+,fV0electrons(0)
+,fV0pions(0)
+,fV0protons(0)
+,fhArmenteros(0)
+,fEventsPerRun(0)
+,fTRDnTrackRun(0)
+,fV0tags(0)
+,fTRDEtaPhi(0)
+,fTRDNTracklets(0)
+,fTRDV0NTracklets(0)
+,fTRDSpectra(0)
+,fTRDV0Spectra(0)
+,fTRDMCSpectra(0)
 {
 
     // Default constructor
@@ -447,6 +475,7 @@ AliAnalysisTaskHaHFECorrel::~AliAnalysisTaskHaHFECorrel()
   delete fTracks_tender;
   delete fCaloClusters_tender;
   delete fPoolMgr;
+  delete fV0cuts;
   //delete fTrackCuts;
   //delete fAssTrackCuts;
 }
@@ -591,6 +620,11 @@ void AliAnalysisTaskHaHFECorrel::UserExec(Option_t*)
   AliAODTrack* LPtrack;
   fLParticle=kFALSE;
   LPtrack=FindLPAndHFE(RedTracksHFE, pVtx,nMotherKink,listofmotherkink);
+
+  FindV0Candidates(fAOD);
+  fEventsPerRun->Fill(fVevent->GetRunNumber());
+  TRDQA(fVevent->GetRunNumber(), pVtx,nMotherKink,listofmotherkink);
+
    //////////////////////////
   // Main analysis
   ///////////////////////////
@@ -623,6 +657,7 @@ void AliAnalysisTaskHaHFECorrel::UserExec(Option_t*)
     HFEPool->UpdatePool(RedTracksHFE);
   }
 
+  ClearV0PIDList();
 
   PostData(1, fOutputList);
 }
@@ -643,6 +678,14 @@ void AliAnalysisTaskHaHFECorrel::UserCreateOutputObjects()
   fOutputList->SetOwner();
 
   fEventCuts.AddQAplotsToList(fOutputList);
+
+  // V0 Kine cuts 
+  fV0cuts = new AliAODv0KineCuts();
+
+  // V0 PID Obj arrays
+  fV0electrons = new TObjArray;
+  fV0pions     = new TObjArray;
+  fV0protons   = new TObjArray;
 
   fNoEvents = new TH1F("fNoEvents","",4,0,4);
   fNoEvents->Sumw2();
@@ -1203,7 +1246,61 @@ void AliAnalysisTaskHaHFECorrel::UserCreateOutputObjects()
 
   }
 
+  fhArmenteros  = new TH2F("fhArmenteros","Armenteros plot",200,-1.,1.,200,0.,0.4);
+  fhArmenteros->Sumw2();
+  fOutputList->Add(fhArmenteros);
 
+  fEventsPerRun = new TH1F("fEventsPerRun", "EventsPerRun",300000, 100000,400000);
+  fEventsPerRun->Sumw2();
+  fOutputList->Add(fEventsPerRun);
+
+  fTRDnTrackRun = new TH3F("fTRDnTrackRun", "TrackletCharge, TrackletPID, Run", 6, 0.5, 6.5, 6, 0.5, 6.5, 300000, 100000, 400000);
+  fTRDnTrackRun->Sumw2();
+  fOutputList->Add(fTRDnTrackRun);
+
+
+
+
+  
+  Int_t TRDBins[6]={NBinsElectron, NBinsEta, NBinsPhi*2, 7, 3, 300000};
+  Double_t TRDBMin[6]={XminElectron, XminEta, 0, -0.5, -1.5, 100000.5};
+  Double_t TRDBMax[6]={XmaxElectron, XmaxEta, TMath::TwoPi(), 6.5, 1.5, 400000.5};
+
+
+  fTRDEtaPhi = new THnSparseF("fTRDEtaPhi", "fTRDEtaPhi: Pt, Eta, Phi, Layer, Charge, run", 6, TRDBins, TRDBMin, TRDBMax);
+  fTRDEtaPhi->Sumw2();
+  fOutputList->Add(fTRDEtaPhi);
+
+  Int_t TRDBins3[7]={NBinsElectron,   36       , 3,   14,     7, 3, 300000};
+  Double_t TRD3BMin[7]={XminElectron, XminEta,   0.5, -3,  -0.5, -1.5, 100000.5};
+  Double_t TRD3BMax[7]={XmaxElectron, XmaxEta,    3.5, 4,   6.5, 1.5 , 400000.5};
+
+  fTRDV0NTracklets = new THnSparseF("fTRDV0NTracklets", "fTRDnTracklets: Pt, Eta, PID, TPC, NTracklets, Charge, run", 7, TRDBins3, TRD3BMin, TRD3BMax);
+  fTRDV0NTracklets->Sumw2();
+  fOutputList->Add(fTRDV0NTracklets);
+  
+  fTRDNTracklets = new THnSparseF("fTRDNTracklets", "fTRDnTracklets: Pt, Eta, PID, TPC, NTracklets, Charge, run",  7, TRDBins3, TRD3BMin, TRD3BMax);
+  fTRDNTracklets->Sumw2();
+  fOutputList->Add(fTRDNTracklets);
+
+
+  Int_t TRDBins2[5]={NBinsElectron, 7, 3, 14, 3};
+  Double_t TRDB2Min[5]={XminElectron, -0.5, 0.5,  -3, -1.5};
+  Double_t TRDB2Max[5]={XmaxElectron,  6.5, 3.5,   4,  1.5};
+
+
+  fTRDV0Spectra = new THnSparseF("fTRDV0Spectra", "fTRDV0Spectra: Pt, NTracklets, PID, TPC, Charge", 5, TRDBins2, TRDB2Min, TRDB2Max);
+  fTRDV0Spectra->Sumw2();
+  fOutputList->Add(fTRDV0Spectra);
+
+  fTRDSpectra = new THnSparseF("fTRDSpectra", "fTRDSpectra: Pt, NTracklets, PID, TPC, Charge", 5, TRDBins2, TRDB2Min, TRDB2Max); 
+  fTRDSpectra->Sumw2();
+  fOutputList->Add(fTRDSpectra);
+
+  fTRDMCSpectra= new THnSparseF("fTRDMCSpectra","fTRDMCSpectra: Pt, NTracklets, PID, TPC, Charge", 5, TRDBins2, TRDB2Min, TRDB2Max);  
+  fTRDMCSpectra->Sumw2();
+  fOutputList->Add(fTRDMCSpectra);
+  
 
   Int_t    poolSize = 1000;
   Int_t    trackDepth = 2000; 
@@ -2663,4 +2760,240 @@ Bool_t AliAnalysisTaskHaHFECorrel::IsPhotonicElectron(Int_t Label1) const
      else return kFALSE;
   }
   else return kFALSE;
+}
+
+
+void AliAnalysisTaskHaHFECorrel::FindV0Candidates(AliAODEvent *event) 
+{
+
+  
+  fV0cuts->SetMode(AliAODv0KineCuts::kEffGamma,AliAODv0KineCuts::kPP); // set mode (maxEfficiency or Purity kPurity);
+  fV0cuts->SetEvent(event);
+
+  const Int_t numTracks = event->GetNumberOfTracks();
+  fV0tags = new Int_t[numTracks];
+  for (Int_t i = 0; i < numTracks; i++) fV0tags[i] = 0;
+
+  // loop over V0 particles
+  for(Int_t iv0=0; iv0<event->GetNumberOfV0s();iv0++){
+
+    AliAODv0 *v0 = (AliAODv0 *) event->GetV0(iv0);
+ 
+    if(!v0) continue;
+    if(v0->GetOnFlyStatus()) continue; 
+    // Get the particle selection 
+    Bool_t foundV0 = kFALSE;
+    Int_t pdgV0, pdgP, pdgN;
+    foundV0 = fV0cuts->ProcessV0(v0, pdgV0, pdgP, pdgN);
+    if(!foundV0) continue;
+    Int_t iTrackP = v0->GetPosID();  // positive track
+    Int_t iTrackN = v0->GetNegID();  // negative track
+
+    if (iTrackP<0 || iTrackN <0) {
+      cout << "negative ID" << endl;
+      continue;
+    }
+
+    // v0 Armenteros plot (QA)
+    Float_t armVar[2] = {0.0,0.0};
+    //  fV0cuts->Armenteros(v0, armVar);
+
+    fhArmenteros->Fill(v0->Alpha(),v0->QtProng());
+
+    // AliAODTrack (V0 Daughters)
+    AliAODVertex* vertex = v0->GetSecondaryVtx();
+    if (!vertex) {
+      Printf("ERROR: Could not retrieve vertex");
+      continue;
+    }
+    
+    AliAODTrack *pTrack=0, *nTrack=0;
+    Int_t NDaughters = vertex->GetNDaughters(); // should be only two from construction
+    for (Int_t i = 0; i<NDaughters; i++) {
+      if (((AliAODTrack*)vertex->GetDaughter(i))->GetID()==iTrackP) pTrack= (AliAODTrack*)vertex->GetDaughter(i);
+      else if  (((AliAODTrack*)vertex->GetDaughter(i))->GetID()==iTrackN) nTrack= (AliAODTrack*)vertex->GetDaughter(i);
+    }
+    if (pTrack==0 || nTrack ==0) continue;
+    // if (iTrackP<0 || iTrackN<0) continue;
+
+    // fill the Object arrays
+    // positive particles
+    if( pdgP == -11){
+      fV0electrons->Add(pTrack);
+      //     fV0tags[iTrackP] = 11;
+    }
+    else if( pdgP == 211){
+      fV0pions->Add(pTrack);
+      // fV0tags[iTrackP] = 211;
+    }
+    else if( pdgP == 2212){
+      fV0protons->Add(pTrack);
+      //	fV0tags[iTrackP] = 2212;
+    }
+
+    // negative particles
+    if( pdgN == 11){
+      fV0electrons->Add(nTrack);
+      // fV0tags[iTrackN] = -11;
+    }
+    else if( pdgN == -211){
+      fV0pions->Add(nTrack);
+      // fV0tags[iTrackN] = -211;
+    }
+    else if( pdgN == -2212){
+      fV0protons->Add(nTrack);
+      //fV0tags[iTrackN] = -2212;
+    }
+  }
+}
+
+void AliAnalysisTaskHaHFECorrel::ClearV0PIDList(){
+
+  //
+  // Clear the PID object arrays
+  //
+  
+  fV0electrons->Clear();
+  fV0pions->Clear();
+  fV0protons->Clear();
+  if (fV0tags!=0) delete[] fV0tags;
+  fV0tags = 0;
+}
+
+void AliAnalysisTaskHaHFECorrel::TRDQA(Int_t RunNumber, const AliAODVertex *pVtx, Int_t nMother, Double_t listMother[]) {
+
+  // Fill full Histograms
+  Int_t ntracks = -999;
+  if(!fUseTender) ntracks = fVevent->GetNumberOfTracks();
+  if(fUseTender)  ntracks = fTracks_tender->GetEntries();
+ 
+  // Loop over all tracks 
+  for(Int_t jTracks = 0; jTracks < ntracks; jTracks++){
+          
+    AliVParticle* VHtrack = 0x0;
+    if(!fUseTender) VHtrack  = fVevent->GetTrack(jTracks);
+    if(fUseTender) VHtrack = dynamic_cast<AliVTrack*>(fTracks_tender->At(jTracks));
+        
+    if (!VHtrack) {
+      printf("ERROR: Could not receive associated track %d\n", jTracks);
+      continue;
+    }
+    AliAODTrack *track = dynamic_cast<AliAODTrack*>(VHtrack);
+    if(!track) continue;
+
+    if(!track->TestFilterMask(AliAODTrack::kTrkGlobalNoDCA)) continue;
+
+    Bool_t passHFETrackCut=kFALSE;
+    passHFETrackCut= InclElecTrackCuts(pVtx,track,nMother,listMother);
+
+    Bool_t passHFEPIDCut=kFALSE;
+    if (passHFETrackCut) passHFEPIDCut=  InclElecPIDCuts(track, kFALSE);
+  
+    Double_t fillSparse[7];
+    fillSparse[0]=track->Pt();
+    fillSparse[1]=track->Eta();
+    fillSparse[2]=track->Phi();
+    fillSparse[4]=track->Charge();
+    fillSparse[5]=RunNumber;
+    
+    Int_t nTracklets=0;
+    for (Int_t i=0; i<6; i++) {
+      if (track->GetTRDmomentum(i)>0.01) { // TRDMomentumCriterion
+	nTracklets++;
+	fillSparse[3]=i+1;
+	fTRDEtaPhi->Fill(fillSparse);
+      }
+    }
+    
+    if (nTracklets>0) {
+      // if (track->GetTRDncls()/nTracklets<15) continue;
+    }  
+    
+    if (passHFETrackCut)  fillSparse[2]=1;
+    else fillSparse[2]=2;
+    fillSparse[3]=fpidResponse->NumberOfSigmasTPC(track, AliPID::kElectron);
+    fillSparse[4]=nTracklets;
+    fillSparse[5]=track->Charge();
+    fillSparse[6]=RunNumber;
+    fTRDNTracklets->Fill(fillSparse);
+    
+    if (track->Eta()>0.8 || track->Eta()<-0.8) continue;
+    fTRDnTrackRun->Fill(nTracklets,  (Int_t)track->GetTRDntrackletsPID(), RunNumber);
+
+    fillSparse[1]=nTracklets;
+    if (passHFETrackCut)  fillSparse[2]=1;
+    else fillSparse[2]=2;
+    fillSparse[3]=fpidResponse->NumberOfSigmasTPC(track, AliPID::kElectron);
+    fillSparse[4]=track->Charge();
+    fTRDSpectra->Fill(fillSparse);
+
+    if (fIsMC) {
+      Int_t MClabel=track->GetLabel();
+      AliAODMCParticle* MCParticle = (AliAODMCParticle*) fMC->GetTrack(abs(MClabel));     
+      Int_t PDGCode = abs(MCParticle->GetPdgCode());
+      if (PDGCode == 11) {
+	fillSparse[2]=1;
+	fTRDMCSpectra->Fill(fillSparse);
+      }
+      else if (PDGCode == 211) {
+	fillSparse[2]=3;
+	fTRDMCSpectra->Fill(fillSparse);
+      }
+      else if (PDGCode == 2212) {
+	fillSparse[2]=2;
+	fTRDMCSpectra->Fill(fillSparse);
+      }
+    }
+  }
+
+
+
+  for (Int_t i=0; i<fV0electrons->GetEntriesFast(); i++) {
+     AliAODTrack *track = (AliAODTrack*) fV0electrons->At(i);
+     FillV0Histograms(track, 1, RunNumber);
+  }
+  for (Int_t i=0; i<fV0protons->GetEntriesFast(); i++) {
+     AliAODTrack *track = (AliAODTrack*) fV0protons->At(i);
+     FillV0Histograms(track, 2, RunNumber);
+  }
+  for (Int_t i=0; i<fV0pions->GetEntriesFast(); i++) {
+     AliAODTrack *track = (AliAODTrack*) fV0pions->At(i);
+     FillV0Histograms(track, 3, RunNumber);
+  }
+
+  
+}
+
+
+
+void AliAnalysisTaskHaHFECorrel::FillV0Histograms(AliAODTrack* track, Int_t Species, Int_t RunNumber) {
+
+  if(!track->TestFilterMask(AliAODTrack::kTrkGlobalNoDCA)) return;
+
+  Double_t fillSparse[7];
+  fillSparse[0]=track->Pt();
+  fillSparse[1]=track->Eta();
+  fillSparse[2]=Species;
+  fillSparse[3]=fpidResponse->NumberOfSigmasTPC(track, AliPID::kElectron);
+  fillSparse[5]=track->Charge();
+  fillSparse[6]=RunNumber;
+  
+  Int_t nTracklets=0;
+  for (Int_t i=0; i<7; i++) {
+    if (track->GetTRDmomentum(i)>0.01) {
+      nTracklets++;
+    }
+  }
+  
+  fillSparse[4]=nTracklets;
+  fTRDV0NTracklets->Fill(fillSparse);
+  
+  if (track->Eta()>0.8 || track->Eta()<-0.8) return;
+  
+  fillSparse[1]=nTracklets;
+  fillSparse[2]=Species;
+  fillSparse[3]= fpidResponse->NumberOfSigmasTPC(track, AliPID::kElectron);
+  fillSparse[4]=track->Charge();
+  fTRDV0Spectra->Fill(fillSparse);
+    
 }

@@ -41,7 +41,9 @@ class AliCFManager;
 class AliPIDResponse;
 class AliMultSelection;
 class AliEventPoolManager;
+class AliAODv0KineCuts;
 
+#include "AliAODv0KineCuts.h"
 #include "AliMCEventHandler.h"
 #include "AliMCEvent.h"
 #include "AliMCParticle.h"
@@ -355,8 +357,25 @@ public:
     THnSparse             *fMCPiPlusProdV2;          //!
     THnSparse             *fMCLeadingParticle;       //!
 
-   
-       
+    AliAODv0KineCuts *fV0cuts;           //! ESD V0 cuts
+    TObjArray *fV0electrons;             //! array with pointer to identified particles from V0 decays (electrons)
+    TObjArray *fV0pions;                 //! array with pointer to identified particles from V0 decays (pions)
+    TObjArray *fV0protons;               //! array with pointer to identified particles from V0 decays (ptotons)
+    TH2F      *fhArmenteros;             //!
+    TH1F      *fEventsPerRun;            //!
+    TH3F      *fTRDnTrackRun;            //!
+    Int_t     *fV0tags;                  //!
+    void      FindV0Candidates(AliAODEvent *Event);
+    void      ClearV0PIDList();
+    void      TRDQA(Int_t RunNumber, const AliAODVertex *pVtx, Int_t nMother, Double_t listMother[]);
+    void      FillV0Histograms(AliAODTrack* track, Int_t Species, Int_t RunNumber);
+    THnSparse *fTRDEtaPhi;               //!
+    THnSparse *fTRDNTracklets;           //!
+    THnSparse *fTRDV0NTracklets;         //!
+    THnSparse *fTRDSpectra;              //!
+    THnSparse *fTRDV0Spectra;            //!
+    THnSparse *fTRDMCSpectra;            //!
+
     
     AliAnalysisTaskHaHFECorrel(const AliAnalysisTaskHaHFECorrel&);
     AliAnalysisTaskHaHFECorrel& operator=(const AliAnalysisTaskHaHFECorrel&);
