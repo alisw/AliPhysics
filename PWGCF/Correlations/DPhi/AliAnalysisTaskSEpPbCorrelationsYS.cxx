@@ -2962,10 +2962,7 @@ void AliAnalysisTaskSEpPbCorrelationsYS::FillCorrelationTracks( Double_t central
         binscont[2]=triggerEta;
         binscont[3]=centrality;
         binscont[4]=RangePhi_FMD(triggerPhi-associate->Phi());
-        //cout<<(triggerPhi-associate->Phi())/TMath::Pi()<<endl;
-        cout<<binscont[1]<<" "<<binscont[2]<<" "<<binscont[0]<<endl;
-        //if(binscont[4]/TMath::Pi()<-0.5)   cout<<binscont[4]/TMath::Pi()<<endl;
-        triggerEta-associate->Eta();
+	triggerEta-associate->Eta();
         Double_t dphivzero=triggerPhi-associate->Phi();
         if(triggerPhi==assophi && triggerEta==assoeta) continue;
         associateHist->Fill(binscont,0,(Double_t)triggerMultiplicity*associatemultiplicity);
