@@ -1126,7 +1126,7 @@ Bool_t AliAnalysisTaskHFJetIPQA::Run(){
                         }
                 }
             sImpParXY.clear();
-            sImpParXYSig.clear();<
+            sImpParXYSig.clear();
             sImpParXYZ.clear();
             sImpParXYZSig.clear();
         }
