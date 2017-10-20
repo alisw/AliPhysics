@@ -162,9 +162,7 @@ class AliEventPool : public TObject
   void        Clear(Option_t * /* option */ = "");
 
 protected:
-  Bool_t      IsReady(Int_t tracks, Int_t events) const {
-    if (fMixDepth > 0) return ((tracks >= fTargetFraction * fTargetTrackDepth) || ((fTargetEvents > 0) && (events >= fTargetEvents) && (events <= fMixDepth)));
-    else return ((tracks >= fTargetFraction * fTargetTrackDepth) || ((fTargetEvents > 0) && (events >= fTargetEvents))); }
+  Bool_t      IsReady(Int_t tracks, Int_t events) const { return ((tracks >= fTargetFraction * fTargetTrackDepth) || ((fTargetEvents > 0) && (events >= fTargetEvents)));}
   
   deque<TObjArray*>     fEvents;              //Holds TObjArrays of MyTracklets
   deque<int>            fNTracksInEvent;      //Tracks in event
