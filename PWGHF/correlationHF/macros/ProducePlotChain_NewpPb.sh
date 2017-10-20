@@ -181,18 +181,24 @@ if [ ${cpCode} = 1 ]; then
     cp ${ALICE_PHYSICS}/../../git/PWGHF/correlationHF/macros/DoPlotComparedot3to1pPb.C .
     cp ${ALICE_PHYSICS}/../../git/PWGHF/correlationHF/macros/DoPlotComparedot3to1pp.C .
     cp ${ALICE_PHYSICS}/../../git/PWGHF/correlationHF/macros/DoComparison_pPbVsMC.C .
+    cp ${ALICE_PHYSICS}/../../git/PWGHF/correlationHF/macros/DoComparison_pPbVsMC2016.C .
     cp ${ALICE_PHYSICS}/../../git/PWGHF/correlationHF/macros/DoComparison_ppVsMC.C .
     cp ${ALICE_PHYSICS}/../../git/PWGHF/correlationHF/macros/DoComparison_ppVspPb.C .
+    cp ${ALICE_PHYSICS}/../../git/PWGHF/correlationHF/macros/DoComparison_pPb2016VsMCallPanelsNew.C .
     cp ${ALICE_PHYSICS}/../../git/PWGHF/correlationHF/macros/FitSystematicsAverage_pp.C .
     cp ${ALICE_PHYSICS}/../../git/PWGHF/correlationHF/macros/FitSystematicsAverage_pPb.C .
+    cp ${ALICE_PHYSICS}/../../git/PWGHF/correlationHF/macros/FitSystematicsAverage_pPb2016.C .
     cp ${ALICE_PHYSICS}/../../git/PWGHF/correlationHF/macros/FitPlots.C .
     cp ${ALICE_PHYSICS}/../../git/PWGHF/correlationHF/macros/SubtractFD.C .
     cp ${ALICE_PHYSICS}/../../git/PWGHF/correlationHF/macros/DoNiceSpecieComparisonPlot.C .
     cp ${ALICE_PHYSICS}/../../git/PWGHF/correlationHF/macros/CompareFitResults.C .
+    cp ${ALICE_PHYSICS}/../../git/PWGHF/correlationHF/macros/CompareFitResultspPb2016.C .
     cp ${ALICE_PHYSICS}/../../git/PWGHF/correlationHF/macros/DoNiceFitPlots.C .
     cp ${ALICE_PHYSICS}/../../git/PWGHF/correlationHF/macros/DoComparison_ppVspPballPanels.C .
+    cp ${ALICE_PHYSICS}/../../git/PWGHF/correlationHF/macros/DoComparison_ppVspPballPanels2016.C .
     cp ${ALICE_PHYSICS}/../../git/PWGHF/correlationHF/macros/DoComparison_ppVsMCallPanelsNew.C .
     cp ${ALICE_PHYSICS}/../../git/PWGHF/correlationHF/macros/DoPlotInSingleCanvasNoSpaces.C .
+    cp ${ALICE_PHYSICS}/../../git/PWGHF/correlationHF/macros/Restyle_pPb2016_Prel_Plots.C .
     cp ${ALICE_PHYSICS}/../../git/PWGHF/correlationHF/macros/DoFitMC.sh .
     cp ${ALICE_PHYSICS}/../../git/PWGHF/correlationHF/macros/CheckDiff.sh .
 else 
