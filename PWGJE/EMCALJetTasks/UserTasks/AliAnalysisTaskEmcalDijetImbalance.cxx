@@ -133,7 +133,7 @@ AliAnalysisTaskEmcalDijetImbalance::AliAnalysisTaskEmcalDijetImbalance(const cha
   fMedianDCal(0),
   fkEMCEJE(kFALSE),
   fEmbeddingQA(),
-  fHistManager()
+  fHistManager(name)
 {
   GenerateHistoBins();
   Dijet_t fDijet;
