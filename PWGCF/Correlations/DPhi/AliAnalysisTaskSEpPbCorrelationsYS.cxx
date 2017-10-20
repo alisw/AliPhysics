@@ -1009,7 +1009,7 @@ void AliAnalysisTaskSEpPbCorrelationsYS::DefineCorrOutput() {
     //const Double_t binning_detafmdfmd={};
     fHistReconstTrack= new AliTHn("fHistReconstTrack", "fHistReconstTrack", nCFSteps, nTrackVars_fmdfmd,iTrackBin_fmdfmd);
     //fHistReconstTrack->SetBinLimits(1,binning_detafmdfmd);
-    fHistReconstTrack->SetBinLimits(0,3.4,8.4);
+    fHistReconstTrack->SetBinLimits(0,3.425,8.425);
     fHistReconstTrack->SetBinLimits(1,binning_etafmdc);
     fHistReconstTrack->SetBinLimits(2,binning_etafmd);
     fHistReconstTrack->SetBinLimits(3,binning_cent);
@@ -1020,7 +1020,7 @@ void AliAnalysisTaskSEpPbCorrelationsYS::DefineCorrOutput() {
     fHistReconstTrack->SetVarTitle(3,"centrality");
     fHistReconstTrack->SetVarTitle(4,"#Delta#phi");
     fHistReconstTrackMix= new AliTHn("fHistReconstTrackMix", "fHistReconstTrackMix", nCFSteps, nTrackVars_fmdfmd,iTrackBin_fmdfmd);
-    fHistReconstTrackMix->SetBinLimits(0,3.4,8.4);
+    fHistReconstTrackMix->SetBinLimits(0,3.425,8.425);
     fHistReconstTrackMix->SetBinLimits(1,binning_etafmdc);
     fHistReconstTrackMix->SetBinLimits(2,binning_etafmd);
     fHistReconstTrackMix->SetBinLimits(3,binning_cent);
@@ -2963,7 +2963,7 @@ void AliAnalysisTaskSEpPbCorrelationsYS::FillCorrelationTracks( Double_t central
         binscont[3]=centrality;
         binscont[4]=RangePhi_FMD(triggerPhi-associate->Phi());
         //cout<<(triggerPhi-associate->Phi())/TMath::Pi()<<endl;
-
+        cout<<binscont[1]<<" "<<binscont[2]<<" "<<binscont[0]<<endl;
         //if(binscont[4]/TMath::Pi()<-0.5)   cout<<binscont[4]/TMath::Pi()<<endl;
         triggerEta-associate->Eta();
         Double_t dphivzero=triggerPhi-associate->Phi();
