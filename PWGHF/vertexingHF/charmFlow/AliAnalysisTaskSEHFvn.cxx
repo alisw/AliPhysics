@@ -2604,7 +2604,7 @@ Double_t AliAnalysisTaskSEHFvn::GetTPCq2DauSubQnFramework(Double_t qVectWOcorr[2
 }
 
 //________________________________________________________________________
-void AliAnalysisTaskSEHFvn::RemoveTracksInDeltaEtaFromOnTheFlyTPCq2(AliAODEvent* aod, Double_t etaD, Double_t etaLims[2], Double_t qVec[2], Double_t &M, vector<Int_t> daulab) {
+void AliAnalysisTaskSEHFvn::RemoveTracksInDeltaEtaFromOnTheFlyTPCq2(AliAODEvent* aod, Double_t etaD, Double_t etaLims[2], Double_t qVec[2], Double_t &M, std::vector<Int_t> daulab) {
 
   if(2*fDeltaEtaDmesonq2>=etaLims[1]-etaLims[0]) {return;}
   if(etaD<etaLims[0] || etaD>etaLims[1]) {return;}
