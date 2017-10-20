@@ -28,7 +28,7 @@ class AliEventPool : public TObject
    : fEvents(0),
     fNTracksInEvent(0),
     fEventIndex(0),
-    fMixDepth(1000), 
+    fMixDepth(-1), 
     fMultMin(-999), 
     fMultMax(+999), 
     fZvtxMin(-999), 
@@ -133,6 +133,7 @@ class AliEventPool : public TObject
   void        SetDebug(Bool_t b)                 { fDebug = b; }
   void        SetTargetTrackDepth(Int_t d, Float_t fraction = 1.0) { fTargetTrackDepth = d; fTargetFraction = fraction; }
   void        SetTargetEvents(Int_t ev)          { fTargetEvents = ev; }
+  void        SetMaxNbMixEvents(Int_t ev)        { fMixDepth = ev; }
   Int_t       SetEventMultRange(Int_t    multMin, Int_t multMax);
   Int_t       SetEventMultRange(Double_t multMin, Double_t multMax);
   Int_t       SetEventZvtxRange(Double_t zvtxMin, Double_t zvtxMax);
@@ -161,7 +162,7 @@ class AliEventPool : public TObject
   void        Clear(Option_t * /* option */ = "");
 
 protected:
-  Bool_t      IsReady(Int_t tracks, Int_t events) const { return (tracks >= fTargetFraction * fTargetTrackDepth) || ((fTargetEvents > 0) && (events >= fTargetEvents)); }
+  Bool_t      IsReady(Int_t tracks, Int_t events) const { return ((tracks >= fTargetFraction * fTargetTrackDepth) || ((fTargetEvents > 0) && (events >= fTargetEvents)));}
   
   deque<TObjArray*>     fEvents;              //Holds TObjArrays of MyTracklets
   deque<int>            fNTracksInEvent;      //Tracks in event
