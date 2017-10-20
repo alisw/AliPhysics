@@ -4,17 +4,18 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-  ///////////////////////////////////////////////////////////////////////////
-  ///\class AliAnalysisTaskEMCALPhotonIsolation
-  ///\brief Task for Isolated Gamma in p-p,p-Pb and eventually g-h Correlation
-  ///
-  /// Task designed to study isolated photon using different methods to study underlying events and perform isolation
-  /// It is based on the jet framework
-  ///
-  /// \author Lucile Ronflette <lucile.ronflette@cern.ch>, SUBATECH, Nantes
-  /// \author Davide Francesco Lodato <davide.francesco.lodato@cern.ch>, Utrecht University
-  /// \author Marco Marquard <marco.marquard@cern.ch>, University Frankfurt am Main
-  ///////////////////////////////////////////////////////////////////////////
+//_________________________________________________________________________
+/// \class AliAnalysisTaskEMCALPhotonIsolation
+/// \ingroup EMCALTasks
+/// \brief Task for isolated photons in pp, p-Pb collisions and eventually g-h correlations.
+///
+/// Task designed to study isolated photons using different methods to study underlying events and perform isolation.
+/// It is based on the jet framework.
+///
+/// \author Lucile Ronflette <lucile.ronflette@cern.ch>, Subatech, Nantes
+/// \author Davide Francesco Lodato <davide.francesco.lodato@cern.ch>, Utrecht University
+/// \author Marco Marquard <marco.marquard@cern.ch>, University Frankfurt am Main
+///_________________________________________________________________________
 
 // ROOT System
 class TH1D;
