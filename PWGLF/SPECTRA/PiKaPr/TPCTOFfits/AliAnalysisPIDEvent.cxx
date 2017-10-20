@@ -535,5 +535,5 @@ void AliAnalysisPIDEvent::PrintEventSelection() {
   printf("No assym. in V0:     %s\n",(fgFlagToCheck&kNoV0Asym)?"Yes":"No");
   printf("2015 pp vertex cut:  %s\n",(fgFlagToCheck&kVertexSelected2015pp)?"Yes":"No");
   printf("Req. SPD & TRK vtx.: %s\n",(fgFlagToCheck&kSPDandTrkVtxExists)?"Yes":"No");
-  printf("Check proximity cut: %s\n",(fgFlagToCheck&(!kPassProximityCut))?"Yes":"No");
+  printf("Check proximity cut: %s\n",(fgFlagToCheck&kPassProximityCut)?"Yes":"No");
 };
