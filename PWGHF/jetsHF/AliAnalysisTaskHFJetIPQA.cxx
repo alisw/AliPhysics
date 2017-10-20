@@ -1064,54 +1064,54 @@ Bool_t AliAnalysisTaskHFJetIPQA::Run(){
                             if(fIsPythia){
 
                                         if(ot ==0){//N=1
-                                              FillHist("fh2dNMCWeightSpeciesPerJetPtN1_IP_all",jetpt,correctionwindex[0]+0.5, this->fXsectionWeightingFactor  );
-                                              FillHist("fh2dNMCWeightSpeciesPerJetPtN1_SIP_all",jetpt,correctionwindex[1]+0.5, this->fXsectionWeightingFactor  );
+                                              FillHist("fh2dNMCWeightSpeciesPerJetPtN1_IP_all",correctionwindex[0]+0.5,jetpt, this->fXsectionWeightingFactor  );
+                                              FillHist("fh2dNMCWeightSpeciesPerJetPtN1_SIP_all",correctionwindex[1]+0.5,jetpt, this->fXsectionWeightingFactor  );
                                             if(jetflavour==3) {//b
-                                                FillHist("fh2dNMCWeightSpeciesPerJetPtN1_IP_b",jetpt,correctionwindex[0]+0.5, this->fXsectionWeightingFactor  );
-                                                FillHist("fh2dNMCWeightSpeciesPerJetPtN1_SIP_b",jetpt,correctionwindex[1]+0.5, this->fXsectionWeightingFactor  );
+                                                FillHist("fh2dNMCWeightSpeciesPerJetPtN1_IP_b",correctionwindex[0]+0.5,jetpt, this->fXsectionWeightingFactor  );
+                                                FillHist("fh2dNMCWeightSpeciesPerJetPtN1_SIP_b",correctionwindex[1]+0.5,jetpt, this->fXsectionWeightingFactor  );
                                             }
                                         else   if(jetflavour==2) {//c
-                                                FillHist("fh2dNMCWeightSpeciesPerJetPtN1_IP_c",jetpt,correctionwindex[0]+0.5, this->fXsectionWeightingFactor  );
-                                                FillHist("fh2dNMCWeightSpeciesPerJetPtN1_SIP_c",jetpt,correctionwindex[1]+0.5, this->fXsectionWeightingFactor  );
+                                                FillHist("fh2dNMCWeightSpeciesPerJetPtN1_IP_c",correctionwindex[0]+0.5,jetpt, this->fXsectionWeightingFactor  );
+                                                FillHist("fh2dNMCWeightSpeciesPerJetPtN1_SIP_c",correctionwindex[1]+0.5,jetpt, this->fXsectionWeightingFactor  );
                                             }
                                         else   if(jetflavour==1) {//lf
-                                                FillHist("fh2dNMCWeightSpeciesPerJetPtN1_IP_lf",jetpt,correctionwindex[0]+0.5, this->fXsectionWeightingFactor  );
-                                                FillHist("fh2dNMCWeightSpeciesPerJetPtN1_SIP_lf",jetpt,correctionwindex[1]+0.5, this->fXsectionWeightingFactor  );
+                                                FillHist("fh2dNMCWeightSpeciesPerJetPtN1_IP_lf",correctionwindex[0]+0.5,jetpt, this->fXsectionWeightingFactor  );
+                                                FillHist("fh2dNMCWeightSpeciesPerJetPtN1_SIP_lf",correctionwindex[1]+0.5,jetpt, this->fXsectionWeightingFactor  );
                                             }
 
                                             }
                                         else  if(ot ==1){//N=2
-                                                FillHist("fh2dNMCWeightSpeciesPerJetPtN2_IP_all",jetpt,correctionwindex[0]+0.5, this->fXsectionWeightingFactor  );
-                                                FillHist("fh2dNMCWeightSpeciesPerJetPtN2_SIP_all",jetpt,correctionwindex[1]+0.5, this->fXsectionWeightingFactor  );
+                                                FillHist("fh2dNMCWeightSpeciesPerJetPtN2_IP_all",correctionwindex[0]+0.5,jetpt, this->fXsectionWeightingFactor  );
+                                                FillHist("fh2dNMCWeightSpeciesPerJetPtN2_SIP_all",correctionwindex[1]+0.5,jetpt, this->fXsectionWeightingFactor  );
                                                 if(jetflavour==3) {//b
-                                                        FillHist("fh2dNMCWeightSpeciesPerJetPtN2_IP_b",jetpt,correctionwindex[0]+0.5, this->fXsectionWeightingFactor  );
-                                                        FillHist("fh2dNMCWeightSpeciesPerJetPtN2_SIP_b",jetpt,correctionwindex[1]+0.5, this->fXsectionWeightingFactor  );
+                                                        FillHist("fh2dNMCWeightSpeciesPerJetPtN2_IP_b",correctionwindex[0]+0.5,jetpt, this->fXsectionWeightingFactor  );
+                                                        FillHist("fh2dNMCWeightSpeciesPerJetPtN2_SIP_b",correctionwindex[1]+0.5,jetpt, this->fXsectionWeightingFactor  );
                                                     }
                                                 else   if(jetflavour==2) {//c
-                                                        FillHist("fh2dNMCWeightSpeciesPerJetPtN2_IP_c",jetpt,correctionwindex[0]+0.5, this->fXsectionWeightingFactor  );
-                                                        FillHist("fh2dNMCWeightSpeciesPerJetPtN2_SIP_c",jetpt,correctionwindex[1]+0.5, this->fXsectionWeightingFactor  );
+                                                        FillHist("fh2dNMCWeightSpeciesPerJetPtN2_IP_c",correctionwindex[0]+0.5,jetpt, this->fXsectionWeightingFactor  );
+                                                        FillHist("fh2dNMCWeightSpeciesPerJetPtN2_SIP_c",correctionwindex[1]+0.5,jetpt, this->fXsectionWeightingFactor  );
                                                     }
                                                 else   if(jetflavour==1) {//lf
-                                                        FillHist("fh2dNMCWeightSpeciesPerJetPtN2_IP_lf",jetpt,correctionwindex[0]+0.5, this->fXsectionWeightingFactor  );
-                                                        FillHist("fh2dNMCWeightSpeciesPerJetPtN2_SIP_lf",jetpt,correctionwindex[1]+0.5, this->fXsectionWeightingFactor  );
+                                                        FillHist("fh2dNMCWeightSpeciesPerJetPtN2_IP_lf",correctionwindex[0]+0.5,jetpt, this->fXsectionWeightingFactor  );
+                                                        FillHist("fh2dNMCWeightSpeciesPerJetPtN2_SIP_lf",correctionwindex[1]+0.5,jetpt, this->fXsectionWeightingFactor  );
                                                     }
 
                                             }
 
                                         else  if(ot ==1){//N=3
-                                                FillHist("fh2dNMCWeightSpeciesPerJetPtN3_IP_all",jetpt,correctionwindex[0]+0.5, this->fXsectionWeightingFactor  );
-                                                FillHist("fh2dNMCWeightSpeciesPerJetPtN3_SIP_all",jetpt,correctionwindex[1]+0.5, this->fXsectionWeightingFactor  );
+                                                FillHist("fh2dNMCWeightSpeciesPerJetPtN3_IP_all",correctionwindex[0]+0.5,jetpt, this->fXsectionWeightingFactor  );
+                                                FillHist("fh2dNMCWeightSpeciesPerJetPtN3_SIP_all",correctionwindex[1]+0.5,jetpt, this->fXsectionWeightingFactor  );
                                                 if(jetflavour==3) {//b
-                                                        FillHist("fh2dNMCWeightSpeciesPerJetPtN3_IP_b",jetpt,correctionwindex[0]+0.5, this->fXsectionWeightingFactor  );
-                                                        FillHist("fh2dNMCWeightSpeciesPerJetPtN3_SIP_b",jetpt,correctionwindex[1]+0.5, this->fXsectionWeightingFactor  );
+                                                        FillHist("fh2dNMCWeightSpeciesPerJetPtN3_IP_b",correctionwindex[0]+0.5,jetpt, this->fXsectionWeightingFactor  );
+                                                        FillHist("fh2dNMCWeightSpeciesPerJetPtN3_SIP_b",correctionwindex[1]+0.5,jetpt, this->fXsectionWeightingFactor  );
                                                     }
                                                 else   if(jetflavour==2) {//c
-                                                        FillHist("fh2dNMCWeightSpeciesPerJetPtN3_IP_c",jetpt,correctionwindex[0]+0.5, this->fXsectionWeightingFactor  );
-                                                        FillHist("fh2dNMCWeightSpeciesPerJetPtN3_SIP_c",jetpt,correctionwindex[1]+0.5, this->fXsectionWeightingFactor  );
+                                                        FillHist("fh2dNMCWeightSpeciesPerJetPtN3_IP_c",correctionwindex[0]+0.5,jetpt, this->fXsectionWeightingFactor  );
+                                                        FillHist("fh2dNMCWeightSpeciesPerJetPtN3_SIP_c",correctionwindex[1]+0.5,jetpt, this->fXsectionWeightingFactor  );
                                                     }
                                                 else   if(jetflavour==1) {//lf
-                                                        FillHist("fh2dNMCWeightSpeciesPerJetPtN3_IP_lf",jetpt,correctionwindex[0]+0.5, this->fXsectionWeightingFactor  );
-                                                        FillHist("fh2dNMCWeightSpeciesPerJetPtN3_SIP_lf",jetpt,correctionwindex[1]+0.5, this->fXsectionWeightingFactor  );
+                                                        FillHist("fh2dNMCWeightSpeciesPerJetPtN3_IP_lf",correctionwindex[0]+0.5,jetpt, this->fXsectionWeightingFactor  );
+                                                        FillHist("fh2dNMCWeightSpeciesPerJetPtN3_SIP_lf",correctionwindex[1]+0.5,jetpt, this->fXsectionWeightingFactor  );
                                                     }
                                             }
 
