@@ -9,8 +9,9 @@ class AliAnalysisTaskCMEV0;
  TString sAnalysisFile = "AOD", TString sDataSet = "2010", TString sAnalysisType = "AUTOMATIC", TString sEventTrigger = "MB", Bool_t bEventCutsQA = kFALSE, 
  Bool_t bTrackCutsQA = kFALSE, Double_t dVertexRange = 10., Bool_t bPileUp = kFALSE, Bool_t bPileUpTight = kFALSE, TString sCentEstimator = "V0", 
  Bool_t bFBeffi = kFALSE, TString sEfficiencyFB = "alien:///alice/cern.ch/user/m/mhaque/calib_files/FB768_Hijing_LHC15o.root",
- Bool_t bApplyNUA= kFALSE, TString sNUAFile="alien:///alice/cern.ch/user/m/mhaque/calib_files/Run2015o_NUA_PosNeg_RunbyRun_Oct5.root", 
- Bool_t bFillTPCQn=kFALSE, Bool_t bFillNUAhist= kFALSE, Bool_t bApplyNUACorr = kFALSE, Float_t fSetHarmonic = 2.0,
+ Bool_t bApplyNUA= kFALSE, TString sNUAFile="alien:///alice/cern.ch/user/m/mhaque/gain/Run2015o_Pass1_FB768_pT0p2_5GeV_NUA_Wgt_PosNeg_Run.root", 
+ Bool_t bZDCGainEq= kFALSE, TString sZDCFile="alien:///alice/cern.ch/user/m/mhaque/gain/Run2015o_pass1_ZDNP_WgtTotEn_VsCentRun.root", 
+ Bool_t bFillTPCQn=kFALSE, Bool_t bFillNUAhist= kFALSE, Bool_t bApplyNUACorr = kFALSE, Float_t fSetHarmonic = 2.0,  Bool_t bUseNUAinEP = kFALSE,
  const char *suffix = "")
 {
 
@@ -191,7 +192,8 @@ class AliAnalysisTaskCMEV0;
   taskQC_prot->SetApplyNUACorr(bApplyNUACorr);
   taskQC_prot->SetStoreTPCQnAvg(bFillTPCQn);
   taskQC_prot->SetFillNUAHist(bFillNUAhist);
-
+  taskQC_prot->SetApplyZDCCorr(bZDCGainEq);
+  taskQC_prot->SetApplyNUAinEP(bUseNUAinEP);
 
 
   if(bFBeffi){
@@ -214,7 +216,7 @@ class AliAnalysisTaskCMEV0;
        printf("\n\n *** ERROR: NUA wgt file not found! **EXIT** \n\n");
        exit(1);
      } 
-     TList* fListNUA = dynamic_cast<TList*>(fNUAFile->FindObjectAny("fListTrkRecnter"));
+     TList* fListNUA = dynamic_cast<TList*>(fNUAFile->FindObjectAny("fNUA_ChPosChNeg"));
      if(fListNUA){
        taskQC_prot->SetInputListNUA(fListNUA);
      }
@@ -224,27 +226,26 @@ class AliAnalysisTaskCMEV0;
      }
   }
 
-  /*
-  if(bSetGainEq){
-     TFile* fZDCGainFile = TFile::Open(sGainEqFile,"READ");
+  if(bZDCGainEq){
+     TFile* fZDCGainFile = TFile::Open(sZDCFile,"READ");
      if(!fZDCGainFile) {
-       printf("\n\n *** ERROR: ZDC Channel wgt file not found! **EXIT** \n\n");
+       printf("\n\n *** ERROR: ZDC wgt file not found! **EXIT** \n\n");
        exit(1);
      } 
 
-     TList* fZDCChanWgtUse = dynamic_cast<TList*>(fZDCGainFile->FindObjectAny("recenterZDC"));
-
-   //fZDCGainFile->Close();
+     TList* fZDCWgtUse = dynamic_cast<TList*>(fZDCGainFile->FindObjectAny("fZDN_ZDP_Wgts"));
   
-     if(fZDCChanWgtUse) {
-       taskQC_prot->SetZDCChWgtList(fZDCChanWgtUse);
+     if(fZDCWgtUse) {
+       taskQC_prot->SetGainCorrZDNP(fZDCWgtUse);
      }
      else{
-       printf("\n\n !!!!**** ERROR:ZDC Channel wgt Histograms not found **EXIT**!!!\n\n");
+       printf("\n\n !!!!**** ERROR:ZDC Channel wgt List not found **EXIT**!!!\n\n");
        exit(1);
      }
   }
 
+
+  /*
   if(bApplyRecent){
      TFile* fRecentFile = TFile::Open(sRecentFile,"READ");
      if(!fRecentFile) {
