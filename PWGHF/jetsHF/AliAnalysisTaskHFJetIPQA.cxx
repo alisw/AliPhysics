@@ -1098,7 +1098,7 @@ Bool_t AliAnalysisTaskHFJetIPQA::Run(){
 
                                             }
 
-                                        else  if(ot ==1){//N=3
+                                        else  if(ot ==2){//N=3
                                                 FillHist("fh2dNMCWeightSpeciesPerJetPtN3_IP_all",correctionwindex[0]+0.5,jetpt, this->fXsectionWeightingFactor  );
                                                 FillHist("fh2dNMCWeightSpeciesPerJetPtN3_SIP_all",correctionwindex[1]+0.5,jetpt, this->fXsectionWeightingFactor  );
                                                 if(jetflavour==3) {//b
