@@ -258,7 +258,7 @@ TF1 *AliTRDNDFast::FitLandau(TString name,TH1F *htemp,Double_t range[2],TString 
     Double_t dNDF=FitRes->Ndf();
     Double_t dChiDivNdf=dChi2/dNDF;
     //cout<<"got Chi2()"<<endl;
-    /*FileToDebugFit<<" Chi2 "<<dChiDivNdf<<endl;
+    FileToDebugFit<<" Chi2 "<<dChiDivNdf<<endl;
     FileToDebugFit<<" CorrMatrix:"<<endl;
     for (Int_t i=0; i<kNpar; i++){
         for (Int_t j=0; j<kNpar; j++){
