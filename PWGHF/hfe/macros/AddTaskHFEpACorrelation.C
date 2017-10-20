@@ -88,7 +88,7 @@ AliAnalysisTaskHFEpACorrelation *AddTaskHFEpACorrelation(
     
     for (Int_t i = 0; i <= NBinsCentrality; i++)
     {
-        CentralityArray.SetAt(MultiplicityLow + (Double_t)i*(MultiplicityUp-MultiplicityLow)/NBinsCentrality, i)
+        CentralityArray.SetAt(MultiplicityLow + (Double_t)i*(MultiplicityUp-MultiplicityLow)/NBinsCentrality, i);
     }
     
     task->SetCentralityBins(NBinsCentrality+1,CentralityArray.GetArray());

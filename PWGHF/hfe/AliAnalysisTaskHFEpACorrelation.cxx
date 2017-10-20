@@ -2154,7 +2154,6 @@ void AliAnalysisTaskHFEpACorrelation::ElectronHadronCorrelation(AliVTrack *track
         //Double_t WeightBKG = 1./(GetBackgroundEfficiency(fPtH,fEtaH,fZvtx) * GetHadronEfficiency(fPtH,fEtaH,fZvtx));
         
         Double_t WeightHadron = 1./(GetHadronEfficiency(fPtH,fEtaH,fZvtx)*GetElectronEfficiency(fPtE,fEtaE,fZvtx));
-        printf("filling histograms\n");
         
         for(Int_t i = 0; i < fpTBins.GetSize()-1; i++)
         {
@@ -2290,8 +2289,6 @@ void AliAnalysisTaskHFEpACorrelation::DiHadronCorrelation(AliVTrack *track, Int_
             CentralityCurrentBin = i;
         }
     }
-    
-    printf("Centrality Value = %d Centrality bin = %d, in a total of %d bins\n",CentralityCurrentBin, fCentralityBins.GetSize()-1);
     
 
     
