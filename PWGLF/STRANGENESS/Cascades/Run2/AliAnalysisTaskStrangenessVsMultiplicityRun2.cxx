@@ -259,6 +259,8 @@ fTreeCascVarPosNSigmaPion(0),
 fTreeCascVarPosNSigmaProton(0),
 fTreeCascVarBachNSigmaPion(0),
 fTreeCascVarBachNSigmaKaon(0),
+fTreeCascVarChiSquareV0(1e+3),
+fTreeCascVarChiSquareCascade(1e+3),
 fTreeCascVarPosPIDForTracking(-1),
 fTreeCascVarNegPIDForTracking(-1),
 fTreeCascVarBachPIDForTracking(-1),
@@ -464,6 +466,8 @@ fTreeCascVarPosNSigmaPion(0),
 fTreeCascVarPosNSigmaProton(0),
 fTreeCascVarBachNSigmaPion(0),
 fTreeCascVarBachNSigmaKaon(0),
+fTreeCascVarChiSquareV0(1e+3),
+fTreeCascVarChiSquareCascade(1e+3),
 fTreeCascVarPosPIDForTracking(-1),
 fTreeCascVarNegPIDForTracking(-1),
 fTreeCascVarBachPIDForTracking(-1),
@@ -771,6 +775,9 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::UserCreateOutputObjects()
         fTreeCascade->Branch("fTreeCascVarPosNSigmaProton",&fTreeCascVarPosNSigmaProton,"fTreeCascVarPosNSigmaProton/F");
         fTreeCascade->Branch("fTreeCascVarBachNSigmaPion",&fTreeCascVarBachNSigmaPion,"fTreeCascVarBachNSigmaPion/F");
         fTreeCascade->Branch("fTreeCascVarBachNSigmaKaon",&fTreeCascVarBachNSigmaKaon,"fTreeCascVarBachNSigmaKaon/F");
+        //------------------------------------------------
+        fTreeCascade->Branch("fTreeCascVarChiSquareV0",&fTreeCascVarChiSquareV0,"fTreeCascVarChiSquareV0/F");
+        fTreeCascade->Branch("fTreeCascVarChiSquareCascade",&fTreeCascVarChiSquareCascade,"fTreeCascVarChiSquareCascade/F");
         //------------------------------------------------
         if ( fkDebugWrongPIDForTracking ){
             fTreeCascade->Branch("fTreeCascVarPosPIDForTracking",&fTreeCascVarPosPIDForTracking,"fTreeCascVarPosPIDForTracking/I");
@@ -1595,6 +1602,9 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::UserExec(Option_t *)
         Double_t lInvMassXiPlus     = 0.;
         Double_t lInvMassOmegaMinus = 0.;
         Double_t lInvMassOmegaPlus  = 0.;
+        
+        fTreeCascVarChiSquareV0      = 1e+3;
+        fTreeCascVarChiSquareCascade = 1e+3;
 
         // - 6th part of initialisation : extra info for QA
         Double_t lXiMomX       = 0. , lXiMomY = 0., lXiMomZ = 0.;
@@ -1639,7 +1649,11 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::UserExec(Option_t *)
         xi->ChangeMassHypothesis(lV0quality , 3312); // default working hypothesis : cascade = Xi- decay
 
         lEffMassXi  			= xi->GetEffMassXi();
-        //lChi2Xi 			    = xi->GetChi2Xi();
+        
+        //ChiSquare implementation
+        fTreeCascVarChiSquareV0      = xi->GetChi2V0();
+        fTreeCascVarChiSquareCascade = xi->GetChi2Xi();
+        
         lDcaXiDaughters 	= xi->GetDcaXiDaughters();
         lXiCosineOfPointingAngle 	            = xi->GetCascadeCosineOfPointingAngle( lBestPrimaryVtxPos[0],
                 lBestPrimaryVtxPos[1],
