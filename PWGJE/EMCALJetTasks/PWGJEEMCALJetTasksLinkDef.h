@@ -72,6 +72,7 @@
 #pragma link C++ class AliAnalysisTaskEmcalDiJetResponse+;
 #pragma link C++ class AliAnalysisTaskEmcalDijetImbalance+;
 #pragma link C++ class AliAnalysisTaskEmcalVsPhos+;
+#pragma link C++ class AliAnalysisTaskEmcalJetPerformance+;
 #pragma link C++ class AliAnalysisTaskEmcalHighMultTrigger+;
 #pragma link C++ namespace EmcalHJetMassAnalysis+;
 #pragma link C++ class EmcalHJetMassAnalysis::AliAnalysisTaskEmcalHJetMass+;

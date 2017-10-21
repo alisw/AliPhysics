@@ -54,18 +54,6 @@ class AliAnalysisTaskEmcalVsPhos : public AliAnalysisTaskEmcalJet {
     kDCal     = 1, //!< DCal
     kPHOS     = 2  //!< PHOS
   };
-  
-  enum ParticleType {
-    kUndefined      = -1, //!< Undefined
-    kPhoton         = 0,  //!< Photon (direct or decay)
-    kPi0            = 1,  //!< Pi0 (merged pi0)
-    kPi0Conversion  = 2,  //!< Pi0 (merged pi0) with conversion of one photon (may be only partially contained in cluster)
-    kEta            = 3,  //!< Eta (merged eta)
-    kHadron         = 4,  //!< Hadron (aside from pi0)
-    kElectron       = 5,  //!< Electron
-    kMuon           = 6,  //!< Muon
-    kOther          = 7   //!< Other
-  };
 
   AliAnalysisTaskEmcalVsPhos()                                          ;
   AliAnalysisTaskEmcalVsPhos(const char *name)                          ;
@@ -92,7 +80,6 @@ class AliAnalysisTaskEmcalVsPhos : public AliAnalysisTaskEmcalJet {
   void SetPlotCellSMDensity(Bool_t b)                       { fPlotCellSMDensity = b; }
   void SetExcludeRejectedCells(Bool_t b)                    { fExcludeRejectedCells = b; }
   void SetPlotFineGrainedCentrality(Bool_t b)               { fPlotFineGrainedCentrality = b; }
-  void SetPlotJetPerformanceHistograms(Bool_t b)            { fPlotJetPerformance = b; }
 
  protected:
   void                        ExecOnce()                                        ;
@@ -114,7 +101,7 @@ class AliAnalysisTaskEmcalVsPhos : public AliAnalysisTaskEmcalJet {
   void                        FillNeutralJetHistograms()                        ;
   void                        FillClustersInJetsHistograms()                    ;
   void                        FillJetPerformanceHistograms()                    ;
-  void                        FillClusterTHnSparse(TString clustersName, Double_t eta, Double_t phi, Double_t Enonlin, Double_t Ehadcorr, Int_t hasMatchedTrack, Double_t M02, Int_t nCells, Int_t passDispersionCut, Double_t distNN, Int_t isOddEta, Int_t particleType1 = -1, Int_t particleType2 = -1, Int_t coneType = 0, Double_t R = 0., Double_t Econe = 0.);
+  void                        FillClusterTHnSparse(TString clustersName, Double_t eta, Double_t phi, Double_t Enonlin, Double_t Ehadcorr, Int_t hasMatchedTrack, Double_t M02, Int_t nCells, Int_t passDispersionCut, Double_t distNN, Int_t isOddEta, Int_t coneType = 0, Double_t R = 0., Double_t Econe = 0.);
   void                        FillClusterTHnSparse(TString clustersName, Double_t eta, Double_t phi, Double_t Enonlin, Double_t eCellCone, Double_t eCellSM, Int_t nCellsCone, Int_t nCellsSM);
   
   // Utility functions
@@ -128,8 +115,6 @@ class AliAnalysisTaskEmcalVsPhos : public AliAnalysisTaskEmcalJet {
   Double_t                    GetConeCellEnergy(Double_t etaRef, Double_t phiRef, Double_t R, Bool_t returnNcells = kFALSE);
   Double_t                    GetSMCellEnergy(Int_t sm, Int_t clusType, Bool_t returnNcells = kFALSE);
   Bool_t                      IsCellRejected(Int_t absId, Int_t cellType);
-  ParticleType                GetParticleType1(const AliVCluster* clus, const AliMCEvent* mcevent, const TClonesArray* clusArray);
-  ParticleType                GetParticleType2(const AliVCluster* clus, const AliMCEvent* mcevent, Int_t label, const AliClusterContainer* clusters);
 
   // Analysis configuration and plotting options
   Bool_t                      fPlotClusterHistograms;               ///< Set whether to plot cluster histograms
@@ -147,7 +132,6 @@ class AliAnalysisTaskEmcalVsPhos : public AliAnalysisTaskEmcalJet {
   Bool_t                      fPlotCellSMDensity;                   ///< Set whether to plot SM cell density when computing local density
   Bool_t                      fExcludeRejectedCells;                ///< Set whether to exclude cells from rejected clusters in cone/SM studies
   Bool_t                      fPlotFineGrainedCentrality;           ///< Set whether to plot a more fine grained centrality binning
-  Bool_t                      fPlotJetPerformance;                  ///< Set whether to plot jet reconstruction studies with M02 cut
 
   // Plotting parameters
   Float_t                     fMaxPt;                               ///< Histogram pt limit
@@ -178,7 +162,7 @@ class AliAnalysisTaskEmcalVsPhos : public AliAnalysisTaskEmcalJet {
   AliAnalysisTaskEmcalVsPhos &operator=(const AliAnalysisTaskEmcalVsPhos&); // not implemented
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskEmcalVsPhos, 11);
+  ClassDef(AliAnalysisTaskEmcalVsPhos, 12);
   /// \endcond
 };
 #endif
