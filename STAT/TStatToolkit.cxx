@@ -1263,7 +1263,7 @@ TGraph * TStatToolkit::MakeGraphSparse(TTree * tree, const char * expr, const ch
 ///  \param markers    - "marker0:...; markerN"
 ///  \param colors     - "color0:...; colorN"
 ///  \param drawSparse - swith use sparse drawing
-///  \param comp       - swith: demanding that every variable in expr returened a plot OR accepting variables yielding no result 
+///  \param comp       - swith: demanding that every variable in expr returned a plot OR accepting variables yielding no result
 /// Example usage 
 /// \code
 /// Example usage of the TSTatToolkit::MakeMultGraph for T0 QA     :
@@ -1452,7 +1452,7 @@ TMultiGraph * TStatToolkit::MakeMultGraph(TTree * tree, const char *groupName, c
   }
   // multiGraph->GetXaxis()->SetLimits(xmin,xmax); // BUG/FEATURE mutli graph axis not defined in this moment  (pointer==0)
   for (Int_t igr=0; igr<multiGraph->GetListOfGraphs()->GetSize(); igr++) {
-    TGraph *gr = (TGraph * )(multiGraph->GetListOfGraphs()->At(igr));
+    TGraph *gr = (TGraph *)(multiGraph->GetListOfGraphs()->At(igr));
     if (gr!=NULL) gr->GetXaxis()->SetLimits(xmin,xmax);
   }
   multiGraph->SetMinimum(minValue);
@@ -1673,8 +1673,13 @@ void TStatToolkit::MakeAnchorAlias(TTree * tree, TString& sTrendVars, Int_t doCh
     }
     if (!isOK) continue;
     for (Int_t itype=0; itype<3; itype++){
-      TString aName=TString::Format("%s_%s",variables[1].Data(), aType[itype]);
-      TString aValue=TString::Format("abs(%s-%s)>%s",variables[0].Data(), variables[1].Data(),variables[2+itype].Data());
+      TString aName=TString::Format("absDiff.%s_%s",variables[0].Data(), aType[itype]);
+      TString aValue="";
+      if (itype<2){
+        aValue=TString::Format("abs(%s-%s)>%s",variables[0].Data(), variables[1].Data(),variables[2+itype].Data());  // Warning or Error
+      }else{
+        aValue=TString::Format("abs(%s-%s)<%s",variables[0].Data(), variables[1].Data(),variables[2+itype].Data());  // Physics acreptable inside
+      }
       tree->SetAlias(aName.Data(),aValue.Data());
       if ((doCheck&2)>0){
         TTreeFormula *form=new TTreeFormula("dummy",aName.Data(),tree);
@@ -2910,4 +2915,131 @@ void TStatToolkit::MakeDistortionMapFast(THnBase * histo, TTreeSRedirector *pcst
     if (i && (i%prc)==0) printf("Done %d%%\n",int(float(100*i)/prc));
   }
   */
+}
+
+
+/// Remap bin labels for sparse graphs
+/// \param graph0   - sparse graph to  be rebinned
+/// \param graph1   - graph with "template x axis"   (default)
+/// \param option   - TODO - implement merge option as an option
+/*!
+### Example - remap sparse run list of QA.EVS graph to be like as an Logbook run list
+\code
+  AliExternalInfo info; tree = info->GetTree("QA.TPC","LHC15o","pass1","Logbook;QA.TPC;QA.EVS")
+  graph = TStatToolkit::MakeMultGraph(tree,"","Logbook.run;QA.EVS.run:run","run>0","21;25","1;2",1.0,1,4,0);
+  graph1 = (TGraph*)graph->GetListOfGraphs()->At(0); graph0 = (TGraph*)graph->GetListOfGraphs()->At(1);
+  //
+  TStatToolkit::RebinSparseGraph(graph0,graph1,"");
+  TStatToolkit::DrawMultiGraph(graph,"ap");
+\endcode
+*/
+void TStatToolkit::RebinSparseGraph(TGraph * graph0, TGraph *graph1, Option_t * option){
+  if (graph0==NULL) throw std::invalid_argument( "RebinSparseGraph.graph0");
+  if (graph1==NULL) throw std::invalid_argument( "RebinSparseGraph.graph1");
+  TString opt = option;
+  opt.ToLower();
+  map<string,int> mapStrInt0, mapStrInt1;
+  map<int,string> mapIntStr0, mapIntStr1;
+  for (Int_t i=1; i<=graph0->GetXaxis()->GetNbins(); i++){
+    mapStrInt0[graph0->GetXaxis()->GetBinLabel(i)]=i;
+    mapIntStr0[i]=graph0->GetXaxis()->GetBinLabel(i);
+  }
+  for (Int_t i=1; i<=graph1->GetXaxis()->GetNbins(); i++){
+    mapStrInt1[graph1->GetXaxis()->GetBinLabel(i)]=i;
+    mapIntStr1[i]=graph1->GetXaxis()->GetBinLabel(i);
+  }
+  if (opt.Contains("merge")) {
+    ::Error("Not supported option","%s",opt.Data());
+  }
+  for (Int_t i=1; i<=graph0->GetXaxis()->GetNbins(); i++){
+    Int_t indexNew=mapStrInt1[mapIntStr0[i]];
+    graph0->GetX()[i-1]=indexNew-0.5;
+  }
+  graph0->GetXaxis()->Set(graph1->GetXaxis()->GetNbins(),graph1->GetXaxis()->GetXbins()->GetArray());
+  for (Int_t i=1; i<=graph0->GetXaxis()->GetNbins(); ++i){
+    graph0->GetXaxis()->SetBinLabel(i,graph1->GetXaxis()->GetBinLabel(i));
+  }
+}
+
+/// Rebin sparse MutliGraph to have the same granularity of x axis as in reference graphRef
+/// \param multiGraph   - multigraph to remap
+/// \param graphRef     - reference graph
+/*!
+  #### Used e.g to remap graphs in case of missing measurement in one of the sources
+  * e.g  run in the Logbook for period LHC15o  than in the QA.EVS and QA.TPC for reconstruction  pass3_lowIR_pidfix
+\code
+  AliExternalInfo info; tree = info->GetTree("Logbook","LHC15o","pass3_lowIR_pidfix","Logbook;QA.TPC;QA.EVS")
+  graph = TStatToolkit::MakeMultGraph(tree,"","Logbook.run;QA.TPC.run;QA.EVS.run:run","runDuration>600","25;21;24","1;2;4",1.5,1,4,0);
+  TStatToolkit::RebinSparseMultiGraph(graph,NULL);
+  TStatToolkit::DrawMultiGraph(graph,"ap");
+\endcode
+*/
+void TStatToolkit::RebinSparseMultiGraph(TMultiGraph *multiGraph, TGraph *graphRef){
+  if (multiGraph==NULL)            throw std::invalid_argument( "RebinSparseMultyGraph.multiGraph");
+  if (multiGraph->GetListOfGraphs()==NULL) throw std::invalid_argument( "RebinSparseMultyGraph.multiGraph empty");
+  if (graphRef==NULL) {
+    graphRef=(TGraph*)multiGraph->GetListOfGraphs()->At(0);
+  }
+  for (Int_t i=0; i<multiGraph->GetListOfGraphs()->GetEntries(); i++){
+    try {
+      RebinSparseGraph((TGraph*)multiGraph->GetListOfGraphs()->At(i),graphRef);
+    }catch(const std::invalid_argument& error){
+      ::Error("RebinSparseMultiGraph","%s",error.what());
+    }
+  }
+}
+
+/// MakeMultiGraphSparse  - transform TMultiGraph  using sparse representation for X axis
+/// * Currently the code is working only for the integer x values
+/// * TODO Support for the string x values
+/// \param multiGraph
+/*!
+ ### Example case: Rebin run lists
+  *Input graph with run list for the logbook, QA.TPC and QA.EVS
+    * Logbook runs list 192 entries
+    * QA.TPC run list has 11 runs
+    * QA.EVS has 8 runs
+  * Output multigraph
+    * x axis with 192 bins (superset of all runs)
+\code
+    AliExternalInfo info; tree = info->GetTree("Logbook","LHC15o","pass3_lowIR_pidfix","Logbook;QA.TPC;QA.EVS")
+    graph = TStatToolkit::MakeMultGraph(tree,"","Logbook.run;QA.EVS.run;QA.TPC.run:run","runDuration>600","25;21;24","1;2;4",0,1,10,0);
+    TStatToolkit::MakeMultiGraphSparse(graph);
+    TStatToolkit::DrawMultiGraph(graph,"ap");
+\endcode
+*/
+void TStatToolkit::MakeMultiGraphSparse(TMultiGraph *multiGraph) {
+  //map<string,int> mapStrInt0, mapStrInt1;
+  if (multiGraph == NULL) throw std::invalid_argument("MakeSparseMultiGraphInt.multiGraph");
+  map<int, int> intCounter;
+  map<int, int> intMap;
+  vector<int> valueArray;
+  const TList *grArray = multiGraph->GetListOfGraphs();
+  for (Int_t iGr = 0; iGr < grArray->GetEntries(); ++iGr) {
+    TGraph *iGraph = (TGraph *) grArray->At(iGr);
+    for (Int_t iPoint = 0; iPoint < iGraph->GetN(); ++iPoint) {
+      Int_t value = TMath::Nint(iGraph->GetX()[iPoint]);
+      intCounter[value]++;
+    }
+  }
+  for (std::map<int, int>::iterator iterator = intCounter.begin(); iterator != intCounter.end(); iterator++)
+    valueArray.push_back(iterator->first);
+  std::sort(valueArray.begin(), valueArray.begin());
+  //stdsort(valueArray);
+  for (UInt_t iValue = 0; iValue < valueArray.size(); iValue++) intMap[valueArray[iValue]] = iValue;
+  //
+  for (Int_t iGr = 0; iGr < grArray->GetEntries(); ++iGr) {
+    TGraph *iGraph = (TGraph *) grArray->At(iGr);
+    iGraph->GetXaxis()->Set(valueArray.size(), 0, valueArray.size());
+    for (UInt_t iValue = 0; iValue < valueArray.size(); iValue++)
+      iGraph->GetXaxis()->SetBinLabel(iValue + 1, TString::Format("%d", valueArray[iValue]).Data());
+    for (Int_t iPoint = 0; iPoint < iGraph->GetN(); ++iPoint) {
+      iGraph->GetX()[iPoint] = intMap[TMath::Nint(iGraph->GetX()[iPoint]) + 0.5];
+    }
+  }
+  if (multiGraph->GetXaxis()) {
+    multiGraph->GetXaxis()->Set(valueArray.size(), 0, valueArray.size());
+    for (UInt_t iValue = 0; iValue < valueArray.size(); iValue++)
+      multiGraph->GetXaxis()->SetBinLabel(iValue + 1, TString::Format("%d", valueArray[iValue]).Data());
+  }
 }

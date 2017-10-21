@@ -91,6 +91,9 @@ namespace TStatToolkit {
   TGraph * MakeGraphSparse(TTree * tree, const char * expr="Entry", const char * cut="1",  Int_t mstyle=25, Int_t mcolor=1, Float_t msize=-1, Float_t offset=0.0);
   TGraphErrors * MakeGraphErrors(TTree * tree, const char * expr="Entry", const char * cut="1",  Int_t mstyle=25, Int_t mcolor=1, Float_t msize=-1, Float_t offset=0.0, Int_t entries=10000000, Int_t firstEntry=0);
   TMultiGraph * MakeMultGraph(TTree * tree, const char *groupName, const char* expr, const char * cut, const char * markers, const char *colors, Bool_t drawSparse, Float_t msize, Float_t sigmaRange, TLegend * legend, Bool_t comp=kTRUE );
+  void RebinSparseGraph(TGraph * graph0, TGraph *graph1, Option_t * option="");
+  void RebinSparseMultiGraph(TMultiGraph *multiGraph, TGraph *graphRef);
+  void MakeMultiGraphSparse(TMultiGraph *multiGraph);
   //
   // Fitting function
   //

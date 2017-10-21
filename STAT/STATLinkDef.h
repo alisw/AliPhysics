@@ -58,7 +58,7 @@
 #pragma link C++ class std::map<UInt_t,THn*>+;
 #pragma link C++ class std::map<Int_t,TClonesArray*>+;
 #pragma link C++ class std::map<std::string,std::string>+;
-
+#pragma link C++ class std::map<Int_t,std::string>+;
 /*
 // RS At the moment is not recognized by the CINT...
 

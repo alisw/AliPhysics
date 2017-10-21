@@ -116,25 +116,35 @@ Int_t AliTreeFormulaF::Compile(const char *expression) {
 /// \param instance
 /// \param decform
 /// \return
+/// TODO  - proper treatment of the 64bits/32 bits integer
+/// TODO  - speed up evaluation caching information (e.g format type )
+///       - get rid of the root formating string and use sprintf  formating
 char *AliTreeFormulaF::PrintValue(Int_t mode, Int_t instance, const char *decform) const {
   std::stringstream stream;
   Int_t nVars = fFormulaArray->GetEntries();
+  const char *format=NULL;
   for (Int_t iVar = 0; iVar <= nVars; iVar++) {
     stream << fTextArray->At(iVar)->GetName();
     if (iVar < nVars) {
       TTreeFormula *treeFormula = (TTreeFormula *) fFormulaArray->At(iVar);
-      Bool_t isHex=(fFormatArray->At(iVar)->GetName()[0]=='x');
-      if ((fFormatArray->At(iVar)->GetName()[0]=='x')) {
-        stream<<std::uppercase<<std::hex <<treeFormula->EvalInstance64();
+      Bool_t isHex=TString(fFormatArray->At(iVar)->GetName()).Contains("x") || TString(fFormatArray->At(iVar)->GetName()).Contains("X");
+      if (isHex) { // TODO check 64bits/32 bits
+        char buffer[64];
+        Int_t value=treeFormula->EvalInstance();
+        //sprintf(format,"%s",fFormatArray->At(iVar)->GetName());
+        sprintf(buffer,"%X",(Int_t)value);
+        stream<<buffer;
         continue;
       }
       if ((fFormatArray->At(iVar)->GetName()[0]=='b')) { //TODO  parse number of bits
-        bitset<32> b(treeFormula->EvalInstance64());
+        Long64_t value=treeFormula->EvalInstance();
+        bitset<32> b(value);
         stream<<b.to_string();
         continue;
       }
       if ((fFormatArray->At(iVar)->GetName()[0]=='t')) { //TODO use formats
-        TTimeStamp stamp(treeFormula->EvalInstance64());
+        Long64_t value=treeFormula->EvalInstance64();
+        TTimeStamp stamp(value);
         stream<<stamp.AsString("s");
         continue;
       }

@@ -169,7 +169,7 @@ void AliDrawStyleTest_GetFloatValues(){
 ///          - diff between the files should be 0 except of the formatting
 /// TODO test - ignoring commented fields in selector and in the declaration
 void AliDrawStyleTest_CSSReadWrite(){
-  TObjArray *cssArray = AliDrawStyle::ReadCSSFile("$AliRoot_SRC/STAT/test/alirootTestStyle.css");
+  TObjArray *cssArray = AliDrawStyle::ReadCSSFile("$AliRoot_SRC/STAT/test/alirootTestStyle.css",0);
   AliDrawStyle::WriteCSSFile(cssArray,"test.css");
   TString diff = gSystem->GetFromPipe("diff -w -B    test.css  $AliRoot_SRC/STAT/test/alirootTestStyle.css");
   if (diff.Length()>0){
@@ -188,7 +188,7 @@ void AliDrawStyleTest_CSSReadWrite(){
 ///      * We will use root TRegexp for the pattern matching
 ///      * tab
 Bool_t  AliDrawStyleTest_IsSelected(TString selector, TString className, TString attributeName){
-  TString selector= ".TH*#*xxx .TH1*#yyy  ";
+  //TString selector= ".TH*#*xxx .TH1*#yyy  ";
   // AliDrawStyle::IsSelected(selector, "TGraph","xxx");  //should be false
   // AliDrawStyle::IsSelected(selector, "TH2","xxx");     //should be true
   // AliDrawStyle::IsSelected(selector, "TH2","yyy");     //should be false
