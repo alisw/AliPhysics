@@ -71,7 +71,6 @@ class AliAnalysisTaskEmcalDijetImbalance : public AliAnalysisTaskEmcalJet {
   // Setters
   void SetDeltaPhiCut(Double_t d)                           { fDeltaPhiMin = d; }
   void SetMaxPt(Double_t d)                                 { fMaxPt = d; }
-  void SetPlotJetHistograms(Bool_t b)                       { fPlotJetHistograms = b; }
   void SetPlotDijetCandHistograms(Bool_t b)                 { fPlotDijetCandHistograms = b; }
   void SetPlotDijetImbalanceHistograms(Bool_t b)            { fPlotDijetImbalanceHistograms = b; }
   void SetComputeBackground(Bool_t b)                       { fComputeBackground = b; }
@@ -98,7 +97,6 @@ class AliAnalysisTaskEmcalDijetImbalance : public AliAnalysisTaskEmcalJet {
 
   // Analysis and plotting functions
   void                        GenerateHistoBins()                               ;
-  void                        AllocateJetHistograms()                           ;
   void                        AllocateBackgroundHistograms()                    ;
   void                        AllocateDijetCandHistograms()                     ;
   void                        AllocateDijetImbalanceHistograms()                ;
@@ -111,7 +109,6 @@ class AliAnalysisTaskEmcalDijetImbalance : public AliAnalysisTaskEmcalJet {
   void                        DoGeometricalMatching()                           ;
   void                        DoTriggerSimulation()                             ;
   void                        FindMatchingDijet(AliJetContainer* jetCont)       ;
-  void                        FillJetHistograms()                               ;
   void                        FillDijetCandHistograms(AliJetContainer* jets)    ;
   void                        FillDijetImbalanceHistograms(AliJetContainer* jets);
   void                        FillMomentumBalanceHistograms(TString histname, Double_t deltaPhi, Double_t trackPt, Double_t balancePt);
@@ -141,7 +138,6 @@ class AliAnalysisTaskEmcalDijetImbalance : public AliAnalysisTaskEmcalJet {
   TH2D*                       fGapJetScalingWeights;                ///< Histogram storing eta-phi weights scaling jets near the gap region
 
   // Analysis configuration and plotting options
-  Bool_t                      fPlotJetHistograms;                   ///< Set whether to enable inclusive jet histograms
   Bool_t                      fPlotDijetCandHistograms;             ///< Set whether to enable dijet pair histograms
   Bool_t                      fPlotDijetImbalanceHistograms;        ///< Set whether to enable dijet imbalance histograms
   Bool_t                      fComputeBackground;                   ///< Set whether to enable study of background
