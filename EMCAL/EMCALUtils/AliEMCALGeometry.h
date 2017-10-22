@@ -278,6 +278,9 @@ public:
   void    GetCellPhiEtaIndexInSModule(Int_t nSupMod, Int_t nModule, Int_t nIphi, Int_t nIeta,
                                       Int_t &iphi, Int_t &ieta) const ;
   Int_t   GetSuperModuleNumber(Int_t absId)  const;
+  
+  /// \return number of modules in phi direction, it depends on the SM number, 24/2 default, 8/2 in 1/3 SMs
+  /// \param nSupMod super-module number to check
   Int_t   GetNumberOfModuleInPhiDirection(Int_t nSupMod)  const
   { 
     if(     GetSMType(nSupMod) == kEMCAL_Half) return fNPhi/2;
@@ -285,6 +288,25 @@ public:
     else if(GetSMType(nSupMod) == kDCAL_Ext)   return fNPhi/3;
     else                                       return fNPhi;
   } 
+  
+  /// \return number of cells in phi direction, it depends on the SM number, 24/2 default, 8/2 in 1/3 SMs
+  /// \param nSupMod super-module number to check
+  Int_t   GetNumberOfCellsInPhiDirection(Int_t nSupMod)  const 
+  { return 2*GetNumberOfModuleInPhiDirection(nSupMod) ; }
+  
+  /// \return number of modules in phi direction, it depends on the SM number, 48/2 default, 32/2 in DCal SMs
+  /// \param nSupMod super-module number to check
+  Int_t GetNumberOfModuleInEtaDirection(Int_t nSupMod)  const
+  { 
+    if ( GetSMType(nSupMod) == kDCAL_Standard ) return (fNZ*2)/3;
+    else                                        return fNZ;
+  } 
+
+  /// \return number of cells in phi direction, it depends on the SM number, 48/2 default, 32/2 in DCal SMs
+  /// \param nSupMod super-module number to check
+  Int_t   GetNumberOfCellsInEtaDirection(Int_t nSupMod)  const 
+  { return 2*GetNumberOfModuleInEtaDirection(nSupMod) ; }
+
   // From cell indexes to abs cell id
   void    GetModuleIndexesFromCellIndexesInSModule(Int_t nSupMod, Int_t iphi, Int_t ieta, 
 					      Int_t &iphim, Int_t &ietam, Int_t &nModule) const;
