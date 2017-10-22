@@ -220,6 +220,10 @@ class AliAnalysisTaskEMCALClusterize : public AliAnalysisTaskSE {
   /// \param sm   probability assigned to this super-module number
   void           SetInducedEnergyLossProbabilityPerSM(Float_t prob, Int_t sm) { if ( sm < 22 && sm >= 0 ) fTCardCorrInduceEnerProb[sm] = prob ; }  
   
+  void           SwitchOnRandomizeTCardInducedEnergy()          { fRandomizeTCard = kTRUE   ; } 
+  void           SwitchOffRandomizeTCardInducedEnergy()         { fRandomizeTCard = kFALSE  ; }  
+
+  
   void PrintTCardParam();
   //------------------------------------------
   
@@ -336,6 +340,7 @@ private:
   Float_t               fTCardCorrInduceEnerFracWidth[4 ]; ///< Induced energy loss gauss witdth on 0-same row, diff col, 1-up/down cells left/right col 2-left/righ col, and 2nd row cells  
   Float_t               fTCardCorrInduceEnerProb[22];      ///< Probability to induce energy loss per SM   
   TRandom3              fRandom   ;                ///<  Random generator
+  Bool_t                fRandomizeTCard ;          ///<  Use random induced energy
   
   Bool_t                fPrintOnce;                ///< Print once analysis parameters
   

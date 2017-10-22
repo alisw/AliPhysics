@@ -91,7 +91,9 @@ AliAnalysisTaskEMCALClusterize::AliAnalysisTaskEMCALClusterize(const char *name)
 , fRemapMCLabelForAODs(0)
 , fInputFromFilter(0) 
 , fTCardCorrEmulation(0), fTCardCorrClusEnerConserv(0)
-, fRandom(0),             fPrintOnce(0)
+, fRandom(0),             fRandomizeTCard(1)
+, fPrintOnce(0)
+
 {
   for(Int_t i = 0; i < 22;    i++)  
   {
@@ -146,7 +148,8 @@ AliAnalysisTaskEMCALClusterize::AliAnalysisTaskEMCALClusterize()
 , fRemapMCLabelForAODs(0)
 , fInputFromFilter(0)
 , fTCardCorrEmulation(0),   fTCardCorrClusEnerConserv(0)
-, fRandom(0),               fPrintOnce(0)
+, fRandom(0),               fRandomizeTCard(1)
+, fPrintOnce(0)
 {
   for(Int_t i = 0; i < 22;    i++)  
   {
@@ -1732,11 +1735,19 @@ void AliAnalysisTaskEMCALClusterize::MakeCellTCardCorrelation()
     //
     // Generate some energy for the nearby cells in same TCard , depending on this cell energy
     // Check if originally the tower had no or little energy, in which case tag it as new
-    Float_t fracupdown     = fRandom.Gaus(fTCardCorrInduceEnerFrac[0]+amp*fTCardCorrInduceEnerFracP1[0],fTCardCorrInduceEnerFracWidth[0]);
-    Float_t fracupdownleri = fRandom.Gaus(fTCardCorrInduceEnerFrac[1]+amp*fTCardCorrInduceEnerFracP1[1],fTCardCorrInduceEnerFracWidth[1]);
-    Float_t fracleri       = fRandom.Gaus(fTCardCorrInduceEnerFrac[2]+amp*fTCardCorrInduceEnerFracP1[2],fTCardCorrInduceEnerFracWidth[2]);
-    Float_t frac2nd        = fRandom.Gaus(fTCardCorrInduceEnerFrac[3]+amp*fTCardCorrInduceEnerFracP1[3],fTCardCorrInduceEnerFracWidth[3]);
-        
+    Float_t fracupdown     = fTCardCorrInduceEnerFrac[0]+amp*fTCardCorrInduceEnerFracP1[0];
+    Float_t fracupdownleri = fTCardCorrInduceEnerFrac[1]+amp*fTCardCorrInduceEnerFracP1[1];
+    Float_t fracleri       = fTCardCorrInduceEnerFrac[2]+amp*fTCardCorrInduceEnerFracP1[2];
+    Float_t frac2nd        = fTCardCorrInduceEnerFrac[3]+amp*fTCardCorrInduceEnerFracP1[3];
+       
+    if(fRandomizeTCard)
+    {
+      fracupdown     = fRandom.Gaus(fracupdown    ,fTCardCorrInduceEnerFracWidth[0]);
+      fracupdownleri = fRandom.Gaus(fracupdownleri,fTCardCorrInduceEnerFracWidth[1]);
+      fracleri       = fRandom.Gaus(fracleri      ,fTCardCorrInduceEnerFracWidth[2]);
+      frac2nd        = fRandom.Gaus(frac2nd       ,fTCardCorrInduceEnerFracWidth[3]);
+    }
+    
 //    // CAREFUL: <<Apply the same added shift to all>>.
 //    Float_t fracCupdown = fracRupdown;
 //    Float_t fracC       = fracRupdown;
@@ -1881,7 +1892,8 @@ void AliAnalysisTaskEMCALClusterize::PrintTCardParam()
     return;
   }
   
-  AliInfo(Form("T-Card emulation activated, energy conservation <%d>, induced energy parameters:",fTCardCorrClusEnerConserv));
+  AliInfo(Form("T-Card emulation activated, energy conservation <%d>, randomize E <%d>, induced energy parameters:",
+               fTCardCorrClusEnerConserv,fRandomizeTCard));
   
   for(Int_t icell = 0; icell < 4; icell++)
   {
