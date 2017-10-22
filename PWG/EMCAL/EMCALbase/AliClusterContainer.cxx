@@ -374,7 +374,7 @@ Bool_t AliClusterContainer::ApplyClusterCuts(const AliVCluster* clus, UInt_t &re
   }
   
   if (clus->IsEMCAL()) {
-    if (clus->E() < fEmcalMaxM02CutEnergy) {
+    if (clus->GetNonLinCorrEnergy() < fEmcalMaxM02CutEnergy) {
       if(clus->GetM02() < fEmcalMinM02 || clus->GetM02() > fEmcalMaxM02) {
         rejectionReason |= kExoticCut; // Not really true, but there is a lack of leftover bits
         return kFALSE;
