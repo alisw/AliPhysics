@@ -223,8 +223,11 @@ class AliAnalysisTaskEMCALClusterize : public AliAnalysisTaskSE {
   void           SwitchOnRandomizeTCardInducedEnergy()          { fRandomizeTCard = kTRUE   ; } 
   void           SwitchOffRandomizeTCardInducedEnergy()         { fRandomizeTCard = kFALSE  ; }  
 
+  void           SetInducedTCardMinimumCellEnergy(Float_t mi)   { fTCardCorrMinAmp     = mi ; }
+  void           SeInducedTCardMaximum(Float_t ma)              { fTCardCorrMaxInduced = ma ; }
   
-  void PrintTCardParam();
+  void           PrintTCardParam();
+  
   //------------------------------------------
   
 private:
@@ -339,8 +342,12 @@ private:
   Float_t               fTCardCorrInduceEnerFracP1   [4 ]; ///< Induced energy loss gauss mean on 0-same row, diff col, 1-up/down cells left/right col 2-left/righ col, and 2nd row cells, param1  
   Float_t               fTCardCorrInduceEnerFracWidth[4 ]; ///< Induced energy loss gauss witdth on 0-same row, diff col, 1-up/down cells left/right col 2-left/righ col, and 2nd row cells  
   Float_t               fTCardCorrInduceEnerProb[22];      ///< Probability to induce energy loss per SM   
+ 
   TRandom3              fRandom   ;                ///<  Random generator
   Bool_t                fRandomizeTCard ;          ///<  Use random induced energy
+  
+  Float_t               fTCardCorrMinAmp;          ///<  Minimum cell energy to induce signal on adjacent cells
+  Float_t               fTCardCorrMaxInduced;      ///<  Maximum induced energy signal on adjacent cells
   
   Bool_t                fPrintOnce;                ///< Print once analysis parameters
   
@@ -351,7 +358,7 @@ private:
   AliAnalysisTaskEMCALClusterize& operator=(const AliAnalysisTaskEMCALClusterize&) ;
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskEMCALClusterize, 36) ;
+  ClassDef(AliAnalysisTaskEMCALClusterize, 37) ;
   /// \endcond
 
 };
