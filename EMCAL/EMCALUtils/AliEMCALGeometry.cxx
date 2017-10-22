@@ -663,9 +663,9 @@ void  AliEMCALGeometry::GetModuleIndexesFromCellIndexesInSModule(Int_t nSupMod, 
 Int_t  AliEMCALGeometry::GetAbsCellIdFromCellIndexes(Int_t nSupMod, Int_t iphi, Int_t ieta) const
 {  
   // Check if the indeces correspond to existing SM or tower indeces
-  if(iphi    < 0 || iphi    >= AliEMCALGeoParams::fgkEMCALRows || 
-     ieta    < 0 || ieta    >= AliEMCALGeoParams::fgkEMCALCols ||
-     nSupMod < 0 || nSupMod >= GetNumberOfSuperModules()         )
+  if ( nSupMod < 0 || nSupMod >= GetNumberOfSuperModules()               ||
+       iphi    < 0 || iphi    >= GetNumberOfCellsInPhiDirection(nSupMod) || 
+       ieta    < 0 || ieta    >= GetNumberOfCellsInEtaDirection(nSupMod))
   {
     AliDebug(1,Form("Wrong cell indexes : SM %d, column (eta) %d, row (phi) %d", nSupMod,ieta,iphi));
     return -1 ;
@@ -929,10 +929,8 @@ Int_t  AliEMCALGeometry::GetSuperModuleNumber(Int_t absId)  const
 void AliEMCALGeometry::GetModulePhiEtaIndexInSModule(Int_t nSupMod, Int_t nModule,  int &iphim, int &ietam) const
 { 
   static Int_t nphi=-1;
-  if(      GetSMType(nSupMod) == kEMCAL_Half )  nphi = fNPhi/2; // halfSM
-  else if( GetSMType(nSupMod) == kEMCAL_3rd  )  nphi = fNPhi/3; // 1/3 SM
-  else if( GetSMType(nSupMod) == kDCAL_Ext   )  nphi = fNPhi/3; // 1/3 SM
-  else                                          nphi = fNPhi;   // full SM
+   
+  nphi = GetNumberOfModuleInPhiDirection(nSupMod);
   
   ietam = nModule/nphi;
   iphim = nModule%nphi;
@@ -960,6 +958,13 @@ void AliEMCALGeometry::GetCellPhiEtaIndexInSModule(Int_t nSupMod, Int_t nModule,
   ieta  = ietam*fNETAdiv + (fNETAdiv - 1 - nIeta); // x(module) = -z(SM) 
   iphi  = iphim*fNPHIdiv + nIphi;     // y(module) =  y(SM) 
 
+  if ( iphi > GetNumberOfCellsInPhiDirection(nSupMod) ||
+       ieta > GetNumberOfCellsInEtaDirection(nSupMod)   )
+  {
+    iphi = -1;
+    ieta = -1;
+  }
+  
   if(iphi<0 || ieta<0)
     AliDebug(1,Form(" nSupMod %i nModule %i nIphi %i nIeta %i => ieta %i iphi %i\n", 
                     nSupMod, nModule, nIphi, nIeta, ieta, iphi));
