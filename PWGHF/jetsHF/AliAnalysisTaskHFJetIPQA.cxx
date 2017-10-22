@@ -1098,7 +1098,7 @@ Bool_t AliAnalysisTaskHFJetIPQA::Run(){
 
                                             }
 
-                                        else  if(ot ==2){//N=3
+                                        else  if(ot==2){//N=3
                                                 FillHist("fh2dNMCWeightSpeciesPerJetPtN3_IP_all",correctionwindex[0]+0.5,jetpt, this->fXsectionWeightingFactor  );
                                                 FillHist("fh2dNMCWeightSpeciesPerJetPtN3_SIP_all",correctionwindex[1]+0.5,jetpt, this->fXsectionWeightingFactor  );
                                                 if(jetflavour==3) {//b
@@ -2264,7 +2264,7 @@ Double_t AliAnalysisTaskHFJetIPQA::GetWeightFactor( AliVTrack * track,Int_t &pCo
     Double_t _particlesourcept(0);
 
     AliVParticle * mcpartclone = mcpart;
-    while(mcpart){//omega and xi test
+    while(mcpart){//Strangenss
             if((abs(mcpart->PdgCode()) >0 && abs(mcpart->PdgCode()) <7)|| (abs(mcpart->PdgCode())  == 21)) break;
             _particlesourcept = mcpart->Pt();
             _particlesourcepdg = abs(mcpart->PdgCode());
@@ -2289,20 +2289,7 @@ Double_t AliAnalysisTaskHFJetIPQA::GetWeightFactor( AliVTrack * track,Int_t &pCo
                 }
         }
 
-    if (!_particlesourcefound) { //heavy mesons to improve templates
-            mcpart = mcpartclone;
-            while(mcpart){
-                    if((abs(mcpart->PdgCode()) >0 && abs(mcpart->PdgCode()) <7)|| (abs(mcpart->PdgCode())  == 21)) break;
-                    _particlesourcept = mcpart->Pt();
-                    _particlesourcepdg = abs(mcpart->PdgCode());
-                    if (IsSelectionParticleALICE(mcpart,_particlesourcepdg,_particlesourcept,_particlesourceidx)){
-                            _particlesourcefound = kTRUE;
-                            break;
-                        }
-                    mcpart = GetVParticleMother(mcpart);
-                }
-        }
-    if (!_particlesourcefound) { //charged hadrons
+    if (!_particlesourcefound) {
             mcpart = mcpartclone;
             while(mcpart){
                     if((abs(mcpart->PdgCode()) >0 && abs(mcpart->PdgCode()) <7)|| (abs(mcpart->PdgCode())  == 21)) break;
@@ -2315,12 +2302,25 @@ Double_t AliAnalysisTaskHFJetIPQA::GetWeightFactor( AliVTrack * track,Int_t &pCo
                     mcpart = GetVParticleMother(mcpart);
                 }
         }
+    if (!_particlesourcefound) { //charged hadrons
+            mcpart = mcpartclone;
+            while(mcpart){
+                    if((abs(mcpart->PdgCode()) >0 && abs(mcpart->PdgCode()) <7)|| (abs(mcpart->PdgCode())  == 21)) break;
+                    _particlesourcept = mcpart->Pt();
+                    _particlesourcepdg = abs(mcpart->PdgCode());
+                    if (IsSelectionParticleOmegaXiSigmaP(mcpart,_particlesourcepdg,_particlesourcept,_particlesourceidx)){
+                            _particlesourcefound = kTRUE;
+                            break;
+                        }
+                    mcpart = GetVParticleMother(mcpart);
+                }
+        }
     if (!_particlesourcefound) {
             mcpart = mcpartclone;
             while(mcpart){
                     if((abs(mcpart->PdgCode()) >0 && abs(mcpart->PdgCode()) <7)|| (abs(mcpart->PdgCode())  == 21)) break;
                     _particlesourcept = mcpart->Pt();
-                    if (IsSelectionParticleOmegaXiSigmaP(mcpart,_particlesourcepdg,_particlesourcept,_particlesourceidx)){
+                    if (IsSelectionParticleALICE(mcpart,_particlesourcepdg,_particlesourcept,_particlesourceidx)){
                             _particlesourcefound = kTRUE;
                             break;
                         }
