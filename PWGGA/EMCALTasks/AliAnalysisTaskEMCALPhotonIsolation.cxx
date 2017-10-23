@@ -140,7 +140,7 @@ fBinsDx(),
 fBinsDz(),
 fBinsDecay(),
 fTrackMult(0),
-fPtvsSum_MC(0),
+fPtvsSumUE_MC(0),
 fEtaPhiClus(0),
 fClusEvsClusT(0),
 fPT(0),
@@ -335,7 +335,7 @@ fBinsDx(),
 fBinsDz(),
 fBinsDecay(),
 fTrackMult(0),
-fPtvsSum_MC(0),
+fPtvsSumUE_MC(0),
 fEtaPhiClus(0),
 fClusEvsClusT(0),
 fPT(0),
@@ -839,9 +839,9 @@ void AliAnalysisTaskEMCALPhotonIsolation::UserCreateOutputObjects(){
 	}
 
 	if(fIsMC){
-	  fPtvsSum_MC = new TH2D("hPtvsSum_MC","#it{p}_{T} vs #Sigma E_{T}^{iso cone} distribution for isolated clusters",200,0.,100.,200,0.,100.);
-	  fPtvsSum_MC->Sumw2();
-	  fOutput->Add(fPtvsSum_MC);
+	  fPtvsSumUE_MC = new TH2D("hPtvsSum_MC","#it{p}_{T} vs #Sigma E_{T}^{iso cone}-UE distribution for isolated clusters",200,0.,100.,220,-10.,100.);
+	  fPtvsSumUE_MC->Sumw2();
+	  fOutput->Add(fPtvsSumUE_MC);
 	}
       }
         break;
@@ -3954,7 +3954,7 @@ void AliAnalysisTaskEMCALPhotonIsolation::CalculateUEDensityMC(Double_t& sumUE){
 
   Double_t isoConeArea   = TMath::Pi()*fIsoConeRadius*fIsoConeRadius;
   Double_t etaBandArea   = ((fGeom->GetArm1EtaMax()-0.03)-(fGeom->GetArm1EtaMin()+0.03))*2.*fIsoConeRadius-isoConeArea;
-  Double_t phiBandArea   = (5./9.)*TMath::Pi()*2.*fIsoConeRadius-isoConeArea;
+  Double_t phiBandArea   = ((5./9.)*TMath::Pi()-0.06)*2.*fIsoConeRadius-isoConeArea;
   Double_t etaBandAreaTr = 1.74*2.*fIsoConeRadius-isoConeArea;
   Double_t phiBandAreaTr = 2.*TMath::Pi()*2.*fIsoConeRadius-isoConeArea;
   Double_t perpConesArea = 2.*isoConeArea;
@@ -4225,7 +4225,7 @@ void AliAnalysisTaskEMCALPhotonIsolation::AnalyzeMC(){
       if(fWho==1)
         fOutMCTruth->Fill(outputValuesMC);
       if(fWho==2)
-	fPtvsSum_MC->Fill(eT, sumEiso);
+	fPtvsSumUE_MC->Fill(eT, sumEiso-sumUE);
     }
   }
   else{
@@ -4349,7 +4349,7 @@ void AliAnalysisTaskEMCALPhotonIsolation::AnalyzeMC(){
     if(fWho==1)
       fOutMCTruth->Fill(outputValuesMC);
     if(fWho==2)
-      fPtvsSum_MC->Fill(mcfirstEnergy, sumEiso);
+      fPtvsSumUE_MC->Fill(mcfirstEnergy, sumEiso-sumUE);
   }
 
   return;
