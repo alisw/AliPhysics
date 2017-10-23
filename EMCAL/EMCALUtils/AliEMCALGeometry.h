@@ -325,11 +325,11 @@ public:
 
   Int_t  * GetEMCSystem()            const { return fEMCGeometry->GetEMCSystem()          ; }     //EMC System, SM type list
   // Local Coordinates of SM
-  TArrayD  GetCentersOfCellsEtaDir() const { return fCentersOfCellsEtaDir ; }     // size fNEta*fNETAdiv (for TRD1 only) (eta or z in SM, in cm)
-  TArrayD  GetCentersOfCellsXDir()   const { return fCentersOfCellsXDir   ; }     // size fNEta*fNETAdiv (for TRD1 only) (       x in SM, in cm)
+  TArrayD  GetCentersOfCellsEtaDir() const { return fCentersOfCellsEtaDir ; }     // size fNZ*fNETAdiv (for TRD1 only) (eta or z in SM, in cm)
+  TArrayD  GetCentersOfCellsXDir()   const { return fCentersOfCellsXDir   ; }     // size fNZ*fNETAdiv (for TRD1 only) (       x in SM, in cm)
   TArrayD  GetCentersOfCellsPhiDir() const { return fCentersOfCellsPhiDir ; }     // size fNPhi*fNPHIdiv (for TRD1 only) (phi or y in SM, in cm)
   //
-  TArrayD  GetEtaCentersOfCells()    const { return fEtaCentersOfCells    ; }     // [fNEta*fNETAdiv*fNPhi*fNPHIdiv], positive direction (eta>0); eta depend from phi position; 
+  TArrayD  GetEtaCentersOfCells()    const { return fEtaCentersOfCells    ; }     // [fNZ*fNETAdiv*fNPhi*fNPHIdiv], positive direction (eta>0); eta depend from phi position; 
   TArrayD  GetPhiCentersOfCells()    const { return fPhiCentersOfCells    ; }     // [fNPhi*fNPHIdiv] from center of SM (-10. < phi < +10.)
 	
   ///////////////////
@@ -459,12 +459,12 @@ protected:
   
   // Local Coordinates of SM
   TArrayD  fPhiCentersOfCells;       ///< [fNPhi*fNPHIdiv] from center of SM (-10. < phi < +10.)
-  TArrayD  fCentersOfCellsEtaDir;    ///< Size fNEta*fNETAdiv (for TRD1 only) (eta or z in SM, in cm)
+  TArrayD  fCentersOfCellsEtaDir;    ///< Size fNZ*fNETAdiv (for TRD1 only) (eta or z in SM, in cm)
   TArrayD  fCentersOfCellsPhiDir;    ///< Size fNPhi*fNPHIdiv (for TRD1 only) (phi or y in SM, in cm)
-  TArrayD  fEtaCentersOfCells;       ///< [fNEta*fNETAdiv*fNPhi*fNPHIdiv], positive direction (eta>0); eta depend from phi position; 
+  TArrayD  fEtaCentersOfCells;       ///< [fNZ*fNETAdiv*fNPhi*fNPHIdiv], positive direction (eta>0); eta depend from phi position; 
   Int_t    fNCells;                  ///< Number of cells in calo
   Int_t    fNPhi;                    ///< Number of Towers in the PHI direction
-  TArrayD  fCentersOfCellsXDir;      ///< Size fNEta*fNETAdiv (for TRD1 only) (       x in SM, in cm)
+  TArrayD  fCentersOfCellsXDir;      ///< Size fNZ*fNETAdiv (for TRD1 only) (       x in SM, in cm)
   Float_t  fEnvelop[3];              ///< The GEANT TUB for the detector 
   Float_t  fArm1EtaMin;              ///< Minimum pseudorapidity position of EMCAL in Eta
   Float_t  fArm1EtaMax;              ///< Maximum pseudorapidity position of EMCAL in Eta
