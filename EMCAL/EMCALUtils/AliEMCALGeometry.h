@@ -292,7 +292,7 @@ public:
   /// \return number of cells in phi direction, it depends on the SM number, 24/2 default, 8/2 in 1/3 SMs
   /// \param nSupMod super-module number to check
   Int_t   GetNumberOfCellsInPhiDirection(Int_t nSupMod)  const 
-  { return 2*GetNumberOfModuleInPhiDirection(nSupMod) ; }
+  { return fNPHIdiv*GetNumberOfModuleInPhiDirection(nSupMod) ; }
   
   /// \return number of modules in phi direction, it depends on the SM number, 48/2 default, 32/2 in DCal SMs
   /// \param nSupMod super-module number to check
@@ -305,7 +305,7 @@ public:
   /// \return number of cells in phi direction, it depends on the SM number, 48/2 default, 32/2 in DCal SMs
   /// \param nSupMod super-module number to check
   Int_t   GetNumberOfCellsInEtaDirection(Int_t nSupMod)  const 
-  { return 2*GetNumberOfModuleInEtaDirection(nSupMod) ; }
+  { return fNETAdiv*GetNumberOfModuleInEtaDirection(nSupMod) ; }
 
   // From cell indexes to abs cell id
   void    GetModuleIndexesFromCellIndexesInSModule(Int_t nSupMod, Int_t iphi, Int_t ieta, 
