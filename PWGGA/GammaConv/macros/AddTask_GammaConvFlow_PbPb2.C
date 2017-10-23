@@ -341,6 +341,18 @@ void AddTask_GammaConvFlow_PbPb2(
     cuts.AddCut("50100013", "00200009007000008750400000"); //chi2cut = 10
   } else if (trainConfig == 71) { //for dir. photon purity studies
     cuts.AddCut("52400013", "00200009007000008750400000"); //chi2cut = 10
+
+  //Additional systematics 0-20% & 20-40%
+  } else if (trainConfig == 81) {
+    cuts.AddCut("50200013", "00300009007000008250400000"); // 10 < R < 70
+    cuts.AddCut("50200013", "00400009007000008250400000"); // 5 < R < 70
+    cuts.AddCut("52400013", "00300009007000008250400000"); // 10 < R < 70
+    cuts.AddCut("52400013", "00400009007000008250400000"); // 5 < R < 70
+  } else if (trainConfig == 82) {
+    cuts.AddCut("50200013", "05200009007000008250400000"); // |eta| < 0.5
+    cuts.AddCut("50200013", "08200009007000008250400000"); // |eta| < 0.4
+    cuts.AddCut("52400013", "05200009007000008250400000"); // |eta| < 0.5
+    cuts.AddCut("52400013", "08200009007000008250400000"); // |eta| < 0.4
   } else {
       Error(Form("GammaConvV1_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
       return;
