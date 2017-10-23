@@ -80,6 +80,9 @@ void tpcMCValidation(const char *mcPeriod, const char *outputDir) {
 /// \param doCheck - force check of the variables
 /// \param verbose - set verbosity for make alarms
 void makeTPCMCAlarms(TTree * treeMC, Bool_t doCheck,Int_t verbose){
+  //  TODO - Sebastian - add status bar for the dEdx - similar like int the standard QA
+  //  TODO - adding new combined status bar status plots of individual alarms to be provided
+  //  TODO - continue
   //  ==============================================================
   //  1.)  Partial alarms  (variable, variableAnchor deltaWarning,deltaError, PhysAcc)
   //                 deltaWarning and deltaError can be an expression which is understood by TTreeFormula
@@ -95,6 +98,7 @@ void makeTPCMCAlarms(TTree * treeMC, Bool_t doCheck,Int_t verbose){
     sTrendVars+="QA.TPC.dcarCP0,TPC.Anchor.dcarCP0,0.02,0.05,0.02;";     // dcarCP0;  warning 0.02cm; error 0.05 cm  (nominal ~ 0.2 cm)
     sTrendVars+="QA.TPC.dcarAP1,TPC.Anchor.dcarAP1,0.02,0.05,0.02;";     // dcarAP1;  warning 0.02cm; error 0.05 cm  (nominal ~ 0.2 cm)
     sTrendVars+="QA.TPC.dcarCP1,TPC.Anchor.dcarCP1,0.02,0.05,0.02;";     // dcarCP1;  warning 0.02cm; error 0.05 cm  (nominal ~ 0.2 cm)
+    //
     // Eff ITS: TPC->ITS
     sTrendVars+="QA.ITS.EffoneSPDPt02,ITS.Anchor.EffoneSPDPt02,0.05,0.1,0.07;";
     sTrendVars+="QA.ITS.EffoneSPDPt1,ITS.Anchor.EffoneSPDPt1,0.05,0.1,0.07;";
@@ -107,11 +111,16 @@ void makeTPCMCAlarms(TTree * treeMC, Bool_t doCheck,Int_t verbose){
   TStatToolkit::MakeAnchorAlias(treeMC,sTrendVars, doCheck, verbose);
 
   // 2.) Make aliases for Mean of MC-anchor of variables
-  treeMC->SetAlias("rDiff.meanTPCncl" , "(QA.TPC.meanTPCncl-TPC.Anchor.meanTPCncl)");
-  treeMC->SetAlias("rDiff.meanTPCnclF" ,"(QA.TPC.meanTPCnclF-TPC.Anchor.meanTPCnclF)");
+  treeMC->SetAlias("diff0.meanTPCncl" , "(QA.TPC.meanTPCncl-TPC.Anchor.meanTPCncl)");
+  treeMC->SetAlias("diff0.meanTPCnclF" ,"(QA.TPC.meanTPCnclF-TPC.Anchor.meanTPCnclF)");
+  treeMC->SetAlias("ratio.dcarAP0" ,    "(QA.TPC.dcarAP0/TPC.Anchor.dcarAP0)");
+  treeMC->SetAlias("ratio.dcarAP1" ,    "(QA.TPC.dcarAP1/TPC.Anchor.dcarAP1)");
+  treeMC->SetAlias("ratio.dcarCP0" ,    "(QA.TPC.dcarCP0/TPC.Anchor.dcarCP0)");
+  treeMC->SetAlias("ratio.dcarCP1" ,    "(QA.TPC.dcarCP1/TPC.Anchor.dcarCP1)");
+
   treeMC->SetAlias("statisticOK", "(meanTPCncl>0)");
   TString sDiffVars="";
-  sDiffVars+="rDiff.meanTPCncl;rDiff.meanTPCnclF";
+  sDiffVars+="diff0.meanTPCncl;diff0.meanTPCnclF;ratio.dcarAP0;ratio.dcarAP1;ratio.dcarCP0;ratio.dcarCP1";
   TObjArray* oaTrendVars = sDiffVars.Tokenize(";");
   Float_t entryFraction=0.8, nSigmaOutlier=6., nSigmaWarning=3., epsilon=1.0e-6, rangeFactor=0.1;
   for (Int_t iVar=0; iVar<oaTrendVars->GetEntriesFast(); iVar++) {
@@ -130,8 +139,8 @@ void makeTPCMCAlarms(TTree * treeMC, Bool_t doCheck,Int_t verbose){
 
   // 3.) Configure combined status. Default using logical OR of problems
   TString sCombinedStatus=";";
-  sCombinedStatus+="ncl,absDiff.QA.TPC.meanTPCncl,absDiff.QA.TPC.meanTPCnclF;rDiff.QA.TPC.meanTPCncl,rDiff.QA.TPC.meanTPCnclF;"; // Status number of clusters and findable clusters
-  sCombinedStatus+="dcarResol,absDiff.QA.TPC.dcarAP0,absDiff.QA.TPC.dcarAP1,absDiff.QA.TPC.dcarCP0,absDiff.QA.TPC.dcarCP1;";  // Status: DCA resolution
+  sCombinedStatus+="ncl,absDiff.QA.TPC.meanTPCncl,absDiff.QA.TPC.meanTPCnclF;diff0.QA.TPC.meanTPCncl,diff0.QA.TPC.meanTPCnclF;"; // Status number of clusters and findable clusters
+  sCombinedStatus+="dcarResol,absDiff.QA.TPC.dcarAP0,absDiff.QA.TPC.dcarAP1,absDiff.QA.TPC.dcarCP0,absDiff.QA.TPC.dcarCP1,ratio.dcarAP0,ratio.dcarAP1;";  // Status: DCA resolution
   sCombinedStatus+="itsEffStatus,absDiff.QA.ITS.EffoneSPDPt02,absDiff.QA.ITS.EffoneSPDPt1,absDiff.QA.ITS.EffoneSPDPt10,absDiff.QA.ITS.EffTOTPt02,absDiff.QA.ITS.EffTOTPt1,absDiff.QA.ITS.EffTOTPt10;";
   // Status: ITS:TPC-ITS matching efficiency
   TStatToolkit::MakeCombinedAlias(treeMC,sCombinedStatus,doCheck, verbose);
@@ -234,6 +243,7 @@ void MakeReport(const char *outputDir) {
   // DONE: In some cases different sources provided different run lists
   // DONE: MakeMultGraph should match "run graphs" and "rebinning graphs" if needed (Marian - in TStatToolkit)
   // DONE: Remove CLion convention warning (Marian)
+  // TODO: Optionally add offset to the X value in order to distinguish overlapped  graphs TStatToolkit::
   // TODO: Partially done. Add TMultiGraph "class?" to specify additional options (see bellow) (Boris, Marian) - groupName to be used for that
   // TODO: Optionally draw y value on top of the markers (for single graphs) can be coded in the class (lower priority)
   // TODO: For each tab we should provide status figure (decomposition of status to the components)
@@ -277,8 +287,9 @@ void MakeReport(const char *outputDir) {
   // 2.) Number of clusters comparison ($AliPhysic_SRC/PWGPP/TPC/macros/TPCQAWebpage/MCAnchor/tabNcl.html)
   // TODO: Add all estimators fo missing chambers (Ncl, Voltage, RawQA, tracks)
   trendingDraw->MakeStatusPlot(outputDir, "nclStatus.png",
-                               "absDiff.QA.TPC.meanTPCncl;absDiff.QA.TPC.meanTPCnclF;rDiff.meanTPCncl;rDiff.meanTPCnclF;run",
-  "#Delta^{A}_{ATPCncl};#Delta^{A}_{TPCnclF};#Delta^{R}_{TPCncl};#Delta^{R}_{TPCnclF};", "defaultCut", sCriteria);
+                               "absDiff.QA.TPC.meanTPCncl;absDiff.QA.TPC.meanTPCnclF;diff0.meanTPCncl;diff0.meanTPCnclF;run",
+                               "#Delta^{A}_{ATPCncl};#Delta^{A}_{TPCnclF};#Delta^{R}_{TPCncl};#Delta^{R}_{TPCnclF};",
+                               "defaultCut", sCriteria);
   trendingDraw->MakePlot(outputDir, "meanTPCncl.png", "Number of clusters", cRange, "",
                          "QA.TPC.meanTPCncl;TPC.Anchor.meanTPCncl:run", "defaultCut", "figTemplateTRDPair",
                          "figTemplateTRDPair", 1, 0.75, 5, kTRUE);
@@ -482,6 +493,7 @@ void MakeReport(const char *outputDir) {
                          "deltaPtA;TPC.Anchor.deltaPtA;deltaPtC;TPC.Anchor.deltaPtC:run", "defaultCut",
                          "figTemplateTRDPair", "figTemplateTRDPair", 1, 0.75, 6, kTRUE);
 
+
   // Status plots
   TString statusExpression,statusTitle;
 
@@ -495,10 +507,33 @@ void MakeReport(const char *outputDir) {
   trendingDraw->MakeStatusPlot("./", "dcarStatus.png", statusExpression, statusTitle, "defaultCut",sCriteria);
 
   //
-
-
   trendingDraw->fWorkingCanvas->Clear();
   trendingDraw->fWorkingCanvas->Print(TString(outputDir) + "/report.pdf]", "pdf");
+}
+
+///
+void MakeDCAStatusPlot(){  // Example
+   // Status plots
+  TString statusExpression,statusTitle;
+  // DCA status
+  statusExpression="absDiff.QA.TPC.dcarAP0;absDiff.QA.TPC.dcarCP0;absDiff.QA.TPC.dcarAP1;absDiff.QA.TPC.dcarCP1;";
+  statusTitle="#Delta^{MC-Anchor}_{dcarAP0};#Delta^{MC-Anchor}_{dcarCP0};#Delta^{MC-Anchor}_{dcarAP1};#Delta^{MC-Anchor}_{dcarCP1};";
+  statusExpression+="ratio.dcarAP0;ratio.dcarCP0;ratio.dcarAP1;ratio.dcarCP1;";
+  statusTitle+="#Delta^{MC/Anchor-#mu}_{dcarAP0};#Delta^{MC/Anchor-#mu}_{dcarCP0};#Delta^{MC/Anchor-#mu}_{dcarAP1};#Delta^{MC/Anchor-#mu}_{dcarCP1};";
+  statusExpression+="dcarAP0;dcarAP1;dcarCP0;dcarCP1;";
+  statusTitle+="MC_{dcarAP0};MC_{dcarAP1};MC_{dcarCP0};MC_{dcarCP1};";
+  statusExpression+="TPC.Anchor.dcarAP0;TPC.Anchor.dcarAP1;TPC.Anchor.dcarCP0;TPC.Anchor.dcarCP1;";
+  statusTitle+="Anchor_{dcarAP0};Anchor_{dcarAP1};Anchor_{dcarCP0};Anchor_{dcarCP1};";
+  statusExpression+="run;";
+  trendingDraw->MakeStatusPlot("./", "dcarStatus.png", statusExpression.Data(), statusTitle.Data(), "defaultCut",sCriteria);
+}
+
+///
+void MakedEdxStatusPlot() {  //TODO - Sebastian
+  // To get the list of warning for standard QA treeMC->GetListOfAliases()->Print("","*MIP*arning")
+  // Status plots
+  TString statusExpression, statusTitle;
+
 }
 
 
@@ -528,11 +563,11 @@ void makeHtml() {
   //
   TStatToolkit::AddMetadata(treeMC, "TPC.Anchor.dcarAP0.thead", "&sigma;<sup>A</sup><sub>Anchor DCA<sub>1/pt=0</sub></sub> (cm)");
   TStatToolkit::AddMetadata(treeMC, "TPC.Anchor.dcarAP0.tooltip", "DCA (r&phi;) at infinite pt");
-  TStatToolkit::AddMetadata(treeMC, "TPC.Anchor.dcarAP0.html", "<a href=\"http://aliqatpc.web.cern.ch/aliqatpc/data/%d{year}/%s{TPC.Anchor.period.GetName()}/{TPC.Anchor.pass.GetName()}/000%d{run}/dca_and_phi.png\">%2.2f{dcarCP0}</a>")
+  TStatToolkit::AddMetadata(treeMC, "TPC.Anchor.dcarAP0.html", "<a href=\"http://aliqatpc.web.cern.ch/aliqatpc/data/%d{year}/%s{TPC.Anchor.period.GetName()}/{TPC.Anchor.pass.GetName()}/000%d{run}/dca_and_phi.png\">%2.2f{dcarCP0}</a>");
   TStatToolkit::AddMetadata(treeMC, "TPC.Anchor.dcarCP0.thead", "&sigma;<sup>C</sup><sub>Anchor DCA<sub>1/pt=0</sub></sub> (cm)");
   TStatToolkit::AddMetadata(treeMC, "TPC.Anchor.dcarCP0.tooltip", "DCA (r&phi;) at infinite pt");
   TStatToolkit::AddMetadata(treeMC, "TPC.Anchor.dcarCP0.html", "<a href=\"http://aliqatpc.web.cern.ch/aliqatpc/data/%d{year}/%s{TPC.Anchor.period.GetName()}/passMC/000%d{run}/dca_and_phi.png\">%2.2f{dcarCP0}</a>");
-  TStatToolkit::AddMetadata(treeMC, "TPC.Anchor.dcarCP0.html", "<a href=\"http://aliqatpc.web.cern.ch/aliqatpc/data/%d{year}/%s{TPC.Anchor.period.GetName()}/{TPC.Anchor.pass.GetName()}/000%d{run}/dca_and_phi.png\">%2.2f{dcarCP0}</a>")
+  TStatToolkit::AddMetadata(treeMC, "TPC.Anchor.dcarCP0.html", "<a href=\"http://aliqatpc.web.cern.ch/aliqatpc/data/%d{year}/%s{TPC.Anchor.period.GetName()}/{TPC.Anchor.pass.GetName()}/000%d{run}/dca_and_phi.png\">%2.2f{dcarCP0}</a>");
 
 
   //
@@ -572,7 +607,7 @@ void makeHtml() {
 /// Test html link printing
 /// \param testHtml
 /*!
- Used to test correctnes of the format string e.g.:
+ Used to test correctness of the format string e.g.:
  \code
  PrintTestHtmlLink("<a href=\"http://aliqatpc.web.cern.ch/aliqatpc/data/%d{year}/%s{TPC.Anchor.period.GetName()}/{TPC.Anchor.pass.GetName()}/000%d{run}/dca_and_phi.png\">%2.2f{dcarCP0}</a>")
 \endcode
