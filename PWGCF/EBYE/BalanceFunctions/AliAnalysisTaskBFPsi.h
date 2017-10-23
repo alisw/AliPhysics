@@ -64,6 +64,7 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
   }
   void SetMixingWithEventPlane(Bool_t bMixingWithEventPlane = kTRUE) { fRunMixingEventPlane = bMixingWithEventPlane; }
   void SetMixingTracks(Int_t tracks) { fMixingTracks = tracks; }
+  void SetMaxNbMixedEvents(Int_t ev) { fMaxNbMixedEvents = ev; }
   void SetEbyEObject(AliBalanceEbyE *const analysisEbyE){
     fRunEbyE = kTRUE;
     fBalanceEbyE = analysisEbyE;
@@ -267,6 +268,7 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
   Bool_t fRunMixingEventPlane;//run mixing with Event Plane
   Bool_t fRunEbyE;//run balance function on an event-by-event basis
   Int_t  fMixingTracks;
+  Int_t  fMaxNbMixedEvents; 
   AliBalancePsi *fMixedBalance; //BF object (mixed)
   AliEventPoolManager*     fPoolMgr;         //! event pool manager
 
