@@ -299,11 +299,11 @@ private:
   Float_t fTrd1BondPaperThick;           ///< Thickness of the Bond Paper sheet  
   
   // Local Coordinates of SM
-  TArrayD fCentersOfCellsEtaDir;         ///< size fNEta*fNETAdiv (for TRD1 only) (eta or z in SM, in cm)
-  TArrayD fCentersOfCellsXDir;           ///< size fNEta*fNETAdiv (for TRD1 only) (       x in SM, in cm)
+  TArrayD fCentersOfCellsEtaDir;         ///< size fNZ*fNETAdiv (for TRD1 only) (eta or z in SM, in cm)
+  TArrayD fCentersOfCellsXDir;           ///< size fNZ*fNETAdiv (for TRD1 only) (       x in SM, in cm)
   TArrayD fCentersOfCellsPhiDir;         ///< size fNPhi*fNPHIdiv (for TRD1 only) (phi or y in SM, in cm)
   //
-  TArrayD fEtaCentersOfCells;            ///< [fNEta*fNETAdiv*fNPhi*fNPHIdiv], positive direction (eta>0); eta depend from phi position; 
+  TArrayD fEtaCentersOfCells;            ///< [fNZ*fNETAdiv*fNPhi*fNPHIdiv], positive direction (eta>0); eta depend from phi position; 
   TArrayD fPhiCentersOfCells;            ///< [fNPhi*fNPHIdiv] from center of SM (-10. < phi < +10.)
   
   // Move from AliEMCALv0 - Feb 19, 2006
