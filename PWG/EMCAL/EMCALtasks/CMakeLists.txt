@@ -79,6 +79,7 @@ set(SRCS
   AliEmcalCorrectionPHOSCorrections.cxx
   AliAnalysisTaskEmcalOccupancy.cxx
   TestAliEmcalAODFilterBitCuts.cxx
+  TestAliEmcalTrackSelection.cxx
   )
 
 # Headers from sources
