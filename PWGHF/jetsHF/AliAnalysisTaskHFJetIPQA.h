@@ -150,6 +150,8 @@ public:
 
     //virtual Bool_t IsEventSelected();
     void FillCorrelations(bool bn[3], double v[3], double jetpt);
+    void setFFillCorrelations(const Bool_t &value);
+
 private:
     THistManager         fHistManager    ;///< Histogram manager
     const AliAODVertex * fEventVertex;//!
@@ -294,7 +296,7 @@ private:
 
 
 
-    ClassDef(AliAnalysisTaskHFJetIPQA, 23)
+    ClassDef(AliAnalysisTaskHFJetIPQA, 25)
 };
 
 #endif

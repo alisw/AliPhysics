@@ -2288,20 +2288,6 @@ Double_t AliAnalysisTaskHFJetIPQA::GetWeightFactor( AliVTrack * track,Int_t &pCo
                     mcpart = GetVParticleMother(mcpart);
                 }
         }
-
-    if (!_particlesourcefound) {
-            mcpart = mcpartclone;
-            while(mcpart){
-                    if((abs(mcpart->PdgCode()) >0 && abs(mcpart->PdgCode()) <7)|| (abs(mcpart->PdgCode())  == 21)) break;
-                    _particlesourcept = mcpart->Pt();
-                    _particlesourcepdg = abs(mcpart->PdgCode());
-                    if (IsSelectionParticle(mcpart,_particlesourcepdg,_particlesourcept,_particlesourceidx)){
-                            _particlesourcefound = kTRUE;
-                            break;
-                        }
-                    mcpart = GetVParticleMother(mcpart);
-                }
-        }
     if (!_particlesourcefound) { //charged hadrons
             mcpart = mcpartclone;
             while(mcpart){
@@ -2309,6 +2295,19 @@ Double_t AliAnalysisTaskHFJetIPQA::GetWeightFactor( AliVTrack * track,Int_t &pCo
                     _particlesourcept = mcpart->Pt();
                     _particlesourcepdg = abs(mcpart->PdgCode());
                     if (IsSelectionParticleOmegaXiSigmaP(mcpart,_particlesourcepdg,_particlesourcept,_particlesourceidx)){
+                            _particlesourcefound = kTRUE;
+                            break;
+                        }
+                    mcpart = GetVParticleMother(mcpart);
+                }
+        }
+    if (!_particlesourcefound) {
+            mcpart = mcpartclone;
+            while(mcpart){
+                    if((abs(mcpart->PdgCode()) >0 && abs(mcpart->PdgCode()) <7)|| (abs(mcpart->PdgCode())  == 21)) break;
+                    _particlesourcept = mcpart->Pt();
+                    _particlesourcepdg = abs(mcpart->PdgCode());
+                    if (IsSelectionParticle(mcpart,_particlesourcepdg,_particlesourcept,_particlesourceidx)){
                             _particlesourcefound = kTRUE;
                             break;
                         }
@@ -2557,7 +2556,7 @@ Bool_t AliAnalysisTaskHFJetIPQA::IsSelectionParticleMeson( AliVParticle *  mcpar
     AliMCParticle * mother = nullptr;
     idx = -1;
     pdg = abs(mcpart->PdgCode());
-    if(!IsPhysicalPrimary(mcpart))return kFALSE;
+    //if(!IsPhysicalPrimary(mcpart))return kFALSE;
     switch(pdg){
         case bD0:
             idx = bIdxD0;
@@ -2609,7 +2608,7 @@ Bool_t AliAnalysisTaskHFJetIPQA::IsSelectionParticleOmegaXiSigmaP( AliVParticle 
     pT 	= mcpart->Pt();
     idx = -1;
     pdg = abs(mcpart->PdgCode());
-    if (!IsPhysicalPrimary(mcpart)) return kFALSE;
+    //if (!IsPhysicalPrimary(mcpart)) return kFALSE;
     switch(pdg){
         case bSigmaMinus:
             Printf("bSigmaMinus");
@@ -3042,6 +3041,11 @@ TH1 *AliAnalysisTaskHFJetIPQA::AddHistogramm(const char *name, const char *title
     fOutput->Add(phist);
     Printf("Adding %s to output list",phist->GetName());
     return (TH1*)phist;
+}
+
+void AliAnalysisTaskHFJetIPQA::setFFillCorrelations(const Bool_t &value)
+{
+    fFillCorrelations = value;
 }
 
 
