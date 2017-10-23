@@ -1551,7 +1551,7 @@ void AliAnalysisTaskHFJetIPQA::UserCreateOutputObjects(){
 
 
     //***************************************
-if (fFillCorrelations){
+
     fHistManager.CreateTH2("fh2dNMCWeightSpeciesPerJetPtN1_IP_all","fh2dNMCWeightSpeciesPerJetPtN1_all (N used weights) ;species i;pt",22,0,22,150,0,150,"s");
     fHistManager.CreateTH2("fh2dNMCWeightSpeciesPerJetPtN1_IP_b","fh2dNMCWeightSpeciesPerJetPtN1_b (N used weights) ;species i;pt",22,0,22,150,0,150,"s");
     fHistManager.CreateTH2("fh2dNMCWeightSpeciesPerJetPtN1_IP_c","fh2dNMCWeightSpeciesPerJetPtN1_c (N used weights) ;species i;pt",22,0,22,150,0,150,"s");
@@ -1581,7 +1581,7 @@ if (fFillCorrelations){
     fHistManager.CreateTH2("fh2dNMCWeightSpeciesPerJetPtN3_SIP_b","fh2dNMCWeightSpeciesPerJetPtN3_b (N used weights) ;species i;pt",22,0,22,150,0,150,"s");
     fHistManager.CreateTH2("fh2dNMCWeightSpeciesPerJetPtN3_SIP_c","fh2dNMCWeightSpeciesPerJetPtN3_c (N used weights) ;species i;pt",22,0,22,150,0,150,"s");
     fHistManager.CreateTH2("fh2dNMCWeightSpeciesPerJetPtN3_SIP_lf","fh2dNMCWeightSpeciesPerJetPtN3_lf (N used weights) ;species i;pt",22,0,22,150,0,150,"s");
-
+if (fFillCorrelations){
 
     //Same Jet
     fHistManager.CreateTH2("fh2dInclusiveCorrelationN1N2","fh2dInclusiveCorrelationN1N2 ;N1 impact parameter xy (cm);N2impact parameter xy (cm)",1000,lowIPxy,highIPxy,1000,lowIPxy,highIPxy,"s");
