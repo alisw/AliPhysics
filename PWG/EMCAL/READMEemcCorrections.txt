@@ -23,7 +23,7 @@ The following correction components are available:
 - [ClusterNonLinearity](\ref AliEmcalCorrectionClusterNonLinearity) -- Corrects cluster energy for non-linear response.
 - [ClusterTrackMatcher](\ref AliEmcalCorrectionClusterTrackMatcher) -- Matches each track to a single cluster, if they are in close enough proximity.
 - [ClusterHadronicCorrection](\ref AliEmcalCorrectionClusterHadronicCorrection) -- For clusters that have one or more matched tracks, reduces the cluster energy in order to avoid overestimating the particle's energy.
-- [PHOSCorrection](\ref AliEmcalCorrectionPHOSCorrection) -- Perform PHOS correction via an interface to the PHOS tender.
+- [PHOSCorrection](\ref AliEmcalCorrectionPHOSCorrections) -- Perform PHOS correction via an interface to the PHOS tender.
 
 This new correction task unifies what was previously done by tasks such as:
  - [EMCal Tender](\ref AliEmcalTenderTask)
@@ -105,7 +105,7 @@ The configuration is determined by two files: the base default file (located in 
 as well as the user configuration file. Any changes that you need to make should be done in the user configuration file!
 Note that any setting that you have in the user file will override the default file!
 
-## Introducing features of the configuration file
+## Features of the configuration file
 
 We will discuss a number of features including:
 - Setting cells, clusters, and tracks (input objects)
@@ -266,7 +266,7 @@ configured and created. Consequently, any additional configuration can be done m
 this approach is strongly discouraged. Instead, it is better to change the YAML configuration file so that
 there is a record of settings.
 
-#### Advanced usage options
+### Advanced usage options
 
 There are a number of useful advanced options to make the Corrections Framework simpler and more pleasant to use. These options are described below.
 
@@ -286,7 +286,7 @@ Correction2:
 
 In the example, any change to ``aMinimumValue`` will be propagated to ``exampleValue`` in ``Correction1`` and ``anotherExample`` in ``Correction2``. Note that the parameter name (here, ``aMinimumValu``) can be anything that the user desires. When setting the value, don't forget to prepend "sharedParameters:" (in our example, "sharedParameters:aMinimumValu")!
 
-#### Running multiple corrections at once ("specializing")                      {#emcCorrectionsSpecialization}
+## Running multiple corrections at once ("specializing")                      {#emcCorrectionsSpecialization}
 
 Often, a user would like to run two nearly identical corrections. For instance, one could run two clusterizers with the same configuration, but perhaps different input cells and output clusters. In such a case, the clusterizer can be "specialized", such that each of the two clusterizers will inherit the same settings except for the cells. Consider the following example YAML configuration file:
 
