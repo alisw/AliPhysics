@@ -296,7 +296,7 @@ private:
 
 
 
-    ClassDef(AliAnalysisTaskHFJetIPQA, 24)
+    ClassDef(AliAnalysisTaskHFJetIPQA, 25)
 };
 
 #endif
