@@ -468,7 +468,7 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
   AliAnalysisTaskBFPsi(const AliAnalysisTaskBFPsi&); // not implemented
   AliAnalysisTaskBFPsi& operator=(const AliAnalysisTaskBFPsi&); // not implemented
   
-  ClassDef(AliAnalysisTaskBFPsi, 10); // example of analysis
+  ClassDef(AliAnalysisTaskBFPsi, 11); // example of analysis
 };
 
 
