@@ -79,7 +79,6 @@ void AddTask_GammaCaloMerged_pp(  Int_t     trainConfig                 = 1,    
                                   Bool_t    runQAForExotics             = kFALSE,             // switch to run QA for exotic clusters
                                   TString   additionalTrainConfig       = "0"                 // additional counter for trainconfig, always has to be last parameter
 ) {
-
   TH1S* histoAcc = 0x0;         // histo for modified acceptance
   //parse additionalTrainConfig flag
   TObjArray *rAddConfigArr = additionalTrainConfig.Tokenize("_");
@@ -90,10 +89,7 @@ void AddTask_GammaCaloMerged_pp(  Int_t     trainConfig                 = 1,    
     else{
       TObjString* temp = (TObjString*) rAddConfigArr->At(i);
       TString tempStr = temp->GetString();
-      if(tempStr.CompareTo("EPCLUSTree") == 0){
-        cout << "INFO: AddTask_GammaCaloMerged_pp activating 'EPCLUSTree'" << endl;
-        doTreeEOverP = kTRUE;
-      }else if(tempStr.BeginsWith("MODIFYACC")){
+      if(tempStr.BeginsWith("MODIFYACC")){
         cout << "INFO: AddTask_GammaCaloMerged_pp activating 'MODIFYACC'" << endl;
         TString tempType = tempStr;
         tempType.Replace(0,9,"");
