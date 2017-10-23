@@ -75,7 +75,7 @@ class AliTreeFormulaF : public TTreeFormula {
 public:
   AliTreeFormulaF();
   ~AliTreeFormulaF();
-  AliTreeFormulaF(const char *name, const char *formula, TTree *tree);
+  AliTreeFormulaF(const char *name, const char *formula, TTree *tree, Int_t debug=0);
   virtual Int_t Compile(const char *expression = "");
   virtual char *PrintValue(Int_t mode = 0) const { PrintValue(mode, 0, ""); }
   virtual char *PrintValue(Int_t mode, Int_t instance, const char *decform = "9.9") const;
@@ -85,6 +85,8 @@ public:
   TObjArray *fTextArray;       /// array of text inputs
   TObjArray *fFormatArray;     /// array of format strings to draw
   TObjArray *fFormulaArray;    /// array of TFormulas
+  mutable TString    fValue;   /// current cache value of the formula
+  Int_t      fDebug;           /// debug level
   ClassDef(AliTreeFormulaF,1)  ///
 };
 

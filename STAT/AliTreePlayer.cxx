@@ -43,15 +43,15 @@ ClassImp(AliTreeFormulaF)
 
 
 /// Default constructor
-AliTreeFormulaF::AliTreeFormulaF() : TTreeFormula(), fTextArray(NULL), fFormatArray(NULL), fFormulaArray(NULL) {
+AliTreeFormulaF::AliTreeFormulaF() : TTreeFormula(), fTextArray(NULL), fFormatArray(NULL), fFormulaArray(NULL),fValue(""),fDebug(0) {
 }
 
 ///
 /// \param name
 /// \param formula
 /// \param tree
-AliTreeFormulaF::AliTreeFormulaF(const char *name, const char *formula, TTree *tree):
-        TTreeFormula(), fTextArray(NULL), fFormatArray(NULL), fFormulaArray(NULL) {
+AliTreeFormulaF::AliTreeFormulaF(const char *name, const char *formula, TTree *tree, Int_t debug):
+        TTreeFormula(), fTextArray(NULL), fFormatArray(NULL), fFormulaArray(NULL), fValue(""), fDebug(debug) {
   SetName(name);
   SetTitle(formula);
   SetTree(tree);
@@ -97,7 +97,7 @@ Int_t AliTreeFormulaF::Compile(const char *expression) {
     TString stext(fquery(lastI, iChar + deltaf - lastI));
     TString sformat(fquery(iChar + deltaf + 1, -(deltaf + 1)));
     TString sformula(fquery(iChar + 1, delta0 - 1));
-    if (0/*verbose*/) { ///TODO - add AliDebug
+    if (fDebug&4) { ///TODO - add AliDebug
       printf("%d\t%d\t%d\n", iChar, deltaf, delta0);
       printf("%d\t%s\t%s\t%s\n", nVars, stext.Data(), sformat.Data(), sformula.Data());
     }
@@ -118,13 +118,16 @@ Int_t AliTreeFormulaF::Compile(const char *expression) {
 /// \return
 /// TODO  - proper treatment of the 64bits/32 bits integer
 /// TODO  - speed up evaluation caching information (e.g format type )
-///       - get rid of the root formating string and use sprintf  formating
+///       - get rid of the root formatting string and use sprintf  formatting
+///       - e.g using t
 char *AliTreeFormulaF::PrintValue(Int_t mode, Int_t instance, const char *decform) const {
   std::stringstream stream;
   Int_t nVars = fFormulaArray->GetEntries();
   const char *format=NULL;
   for (Int_t iVar = 0; iVar <= nVars; iVar++) {
     stream << fTextArray->At(iVar)->GetName();
+    if (fDebug&2) cout<<"T"<<iVar<<"\t\t"<<fTextArray->At(iVar)->GetName()<<endl;
+    if (fDebug&4) cout<<"F"<<iVar<<"\t\t"<<stream.str().data()<<endl;
     if (iVar < nVars) {
       TTreeFormula *treeFormula = (TTreeFormula *) fFormulaArray->At(iVar);
       Bool_t isHex=TString(fFormatArray->At(iVar)->GetName()).Contains("x") || TString(fFormatArray->At(iVar)->GetName()).Contains("X");
@@ -148,10 +151,14 @@ char *AliTreeFormulaF::PrintValue(Int_t mode, Int_t instance, const char *decfor
         stream<<stamp.AsString("s");
         continue;
       }
-      stream << treeFormula->PrintValue(0, instance, fFormatArray->At(iVar)->GetName());
+      TString value=treeFormula->PrintValue(0, instance, fFormatArray->At(iVar)->GetName());
+      stream << value.Data();
+      if (fDebug&&1) cout<<"F"<<iVar<<"\t\t"<<value.Data()<<"\t"<<fFormatArray->At(iVar)->GetName()<<endl;
     }
   }
-  return (char *) (stream.str().data());  /// TODO - local cache value to be created
+  //const_cast<AliTreeFormulaF*>(this)->fValue=TString(stream.str().data());      /// TODO check compliation of mutable in old c++
+  fValue=stream.str().data();
+  return (char *) fValue.Data();
 }
 ///
 void        AliTreeFormulaF::UpdateFormulaLeaves(){
