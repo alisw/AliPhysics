@@ -18,5 +18,6 @@
 #pragma link C++ class AliAnalysisTaskFilterUPCNanoAOD+;
 #pragma link C++ class AliAnalysisTaskUpcTriggerCounter+;
 #pragma link C++ class AliAnalysisTaskUpcNano_MB+;
+#pragma link C++ class AliAnalysisTaskTransTask+;
 
 #endif
