@@ -100,11 +100,12 @@ class AliITSUv2Layer : public TObject {
     void CreateLayerTurbo(TGeoVolume *moth);
 
     TGeoVolume* CreateStave(const TGeoManager *mgr=gGeoManager);
-    //TGeoVolume* CreateChip(Double_t x, Double_t z, const TGeoManager *mgr=gGeoManager);
+    TGeoVolume* CreateChip(Double_t x,Double_t y, Double_t z, const TGeoManager *mgr=gGeoManager);
     TGeoVolume* CreateModuleInnerB(Double_t x,Double_t y, Double_t z, const TGeoManager *mgr=gGeoManager);
-    TGeoVolume* CreateChipInnerB(Double_t x,Double_t y, Double_t z, const TGeoManager *mgr=gGeoManager);
     TGeoVolume* CreateModuleOuterB(const TGeoManager *mgr=gGeoManager);
 
+    TGeoVolume* CreateIBFPCAlGnd(Double_t x, Double_t z, const TGeoManager *mgr=gGeoManager);
+    TGeoVolume* CreateIBFPCAlAnode(Double_t x, Double_t z, const TGeoManager *mgr=gGeoManager);
 
     TGeoVolume* CreateStaveInnerB(Double_t x, Double_t y, Double_t z, const TGeoManager *mgr=gGeoManager);
     TGeoVolume* CreateStaveStructInnerB(Double_t x,Double_t z, const TGeoManager *mgr=gGeoManager);
@@ -258,14 +259,22 @@ class AliITSUv2Layer : public TObject {
     static const Int_t    fgkNumberOfInnerLayers;// Number of IB Layers
 
     static const Double_t fgkDefaultSensorThick; // Default sensor thickness
-    static const Double_t fgkDefaultChipThick;   // Default chip thickness
+    static const Double_t fgkDefaultChipThick;   // Default IB chip thickness
+    static const Double_t fgkMetalLayerThick;    // Metal layer thickness
 
     // Inner Barrel Parameters
     static const Int_t    fgkIBChipsPerRow;      // IB chips per row in module
     static const Int_t    fgkIBNChipRows;        // IB chip rows in module
+    static const Double_t fgkIBChipZGap;         // Gap between IB chips on Z
 
+    static const Double_t fgkIBFPCWiderXPlus;    // FPC protrusion at X>0
+    static const Double_t fgkIBFPCWiderXNeg ;    // FPC protrusion at X<0
     static const Double_t fgkIBFlexCableAlThick; // Thickness of FPC Aluminum
+    static const Double_t fgkIBFPCAlGNDWidth;    // Width of total FPC Al Gnd
+    static const Double_t fgkIBFPCAlAnodeWidth1; // Width of FPC Al Anode
+    static const Double_t fgkIBFPCAlAnodeWidth2; // Width of FPC Al Anode
     static const Double_t fgkIBFlexCableKapThick;// Thickness of FPC Kapton
+    static const Double_t fgkIBFlexCablePolyThick;//Thickness of FPC Coverlay
     static const Double_t fgkIBGlueThick;        // IB glue thickness
     static const Double_t fgkIBCarbonFleeceThick;// IB carbon fleece thickness
     static const Double_t fgkIBCarbonPaperThick; // IB Carbon Paper Thickness
@@ -323,6 +332,8 @@ class AliITSUv2Layer : public TObject {
     // Outer Barrel Parameters
     static const Int_t    fgkOBChipsPerRow;      // OB chips per row in module
     static const Int_t    fgkOBNChipRows;        // OB chip rows in module
+
+    static const Double_t fgkOBChipThick;        // Default OB chip thickness
 
     static const Double_t fgkOBHalfStaveWidth;   // OB Half Stave Width
     static const Double_t fgkOBModuleWidth;      // OB Module Width

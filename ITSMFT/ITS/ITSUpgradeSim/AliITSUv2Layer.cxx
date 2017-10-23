@@ -56,14 +56,22 @@ const Int_t    AliITSUv2Layer::fgkNumberOfInnerLayers =   3;
 
 const Double_t AliITSUv2Layer::fgkDefaultSensorThick  =  18*fgkmicron;
 const Double_t AliITSUv2Layer::fgkDefaultChipThick    =  50*fgkmicron;
+const Double_t AliITSUv2Layer::fgkMetalLayerThick     =  15*fgkmicron;
 
 // Inner Barrel Parameters
 const Int_t    AliITSUv2Layer::fgkIBChipsPerRow       =   9;
 const Int_t    AliITSUv2Layer::fgkIBNChipRows         =   1;
+const Double_t AliITSUv2Layer::fgkIBChipZGap          =   0.01 *fgkcm;
 
-const Double_t AliITSUv2Layer::fgkIBFlexCableAlThick  =  50.0  *fgkmicron;
-const Double_t AliITSUv2Layer::fgkIBFlexCableKapThick = 125.0  *fgkmicron;
-const Double_t AliITSUv2Layer::fgkIBGlueThick         = 100.0  *fgkmicron;
+const Double_t AliITSUv2Layer::fgkIBFPCWiderXPlus     = 850.0  *fgkmicron;
+const Double_t AliITSUv2Layer::fgkIBFPCWiderXNeg      = 300.0  *fgkmicron;
+const Double_t AliITSUv2Layer::fgkIBFlexCableAlThick  =  25.0  *fgkmicron;
+const Double_t AliITSUv2Layer::fgkIBFPCAlGNDWidth     = (4.1+11.15)*fgkmm;
+const Double_t AliITSUv2Layer::fgkIBFPCAlAnodeWidth1  =  13.0  *fgkmm;
+const Double_t AliITSUv2Layer::fgkIBFPCAlAnodeWidth2  =  14.7  *fgkmm;
+const Double_t AliITSUv2Layer::fgkIBFlexCableKapThick =  75.0  *fgkmicron;
+const Double_t AliITSUv2Layer::fgkIBFlexCablePolyThick=  20.0  *fgkmicron;
+const Double_t AliITSUv2Layer::fgkIBGlueThick         =  50.0  *fgkmicron;
 const Double_t AliITSUv2Layer::fgkIBCarbonFleeceThick =  20.0  *fgkmicron;
 const Double_t AliITSUv2Layer::fgkIBCarbonPaperThick  =  30.0  *fgkmicron;
 const Double_t AliITSUv2Layer::fgkIBK13D2UThick       =  70.0  *fgkmicron;
@@ -120,6 +128,8 @@ const Double_t AliITSUv2Layer::fgkIBStaveHeight       =   0.5  *fgkcm;
 // Outer Barrel Parameters
 const Int_t    AliITSUv2Layer::fgkOBChipsPerRow       =   7;
 const Int_t    AliITSUv2Layer::fgkOBNChipRows         =   2;
+
+const Double_t AliITSUv2Layer::fgkOBChipThick         = 100.0  *fgkmicron;
 
 const Double_t AliITSUv2Layer::fgkOBHalfStaveWidth    =   3.01 *fgkcm;
 const Double_t AliITSUv2Layer::fgkOBModuleWidth       = fgkOBHalfStaveWidth;
@@ -851,63 +861,193 @@ TGeoVolume* AliITSUv2Layer::CreateModuleInnerB(Double_t xmod,
 //
 // Created:      06 Mar 2014  M. Sitta
 // Updated:      03 Mar 2015  Mario Sitta  FPC in right position (beyond chip)
+// Updated:      20 Oct 2017  Mario Sitta  Add a gap between chips
 //
 
-  Double_t ytot, zchip;
-  Double_t ypos, zpos;
+  Double_t xtot, ytot, ztot, zchip;
+  Double_t xpos, ypos, zpos;
   char volname[30];
 
   // First create the single chip
   zchip = zmod/fgkIBChipsPerRow;
-  TGeoVolume *chipVol = CreateChipInnerB(xmod, ymod, zchip);
+  TGeoVolume *chipVol = CreateChip(xmod, ymod, zchip);
 
-  // Then create the module and populate it with the chips
+  // Then create the Glue, the Kapton and the two Aluminum cables
+  xtot = xmod + (fgkIBFPCWiderXPlus + fgkIBFPCWiderXNeg)/2;
+  ztot = zmod + (fgkIBChipsPerRow-1)*fgkIBChipZGap/2;
+
+  TGeoBBox *glue = new TGeoBBox(xmod, fgkIBGlueThick/2, ztot);
+  TGeoBBox *kapCable = new TGeoBBox(xtot, fgkIBFlexCableKapThick/2, ztot);
+
+  TGeoVolume *aluGndCableVol   = CreateIBFPCAlGnd(xtot, ztot);
+  TGeoVolume *aluAnodeCableVol = CreateIBFPCAlAnode(xtot, ztot);
+
+  // Finally create the module and populate it with the chips
   // (and the FPC Kapton and Aluminum in the most recent IB model)
+  Double_t ygnd = ((TGeoBBox*)aluGndCableVol->GetShape())->GetDY();
+  Double_t yano = ((TGeoBBox*)aluAnodeCableVol->GetShape())->GetDY();
+
   ytot = ymod;
   if (fStaveModel == AliITSUv2::kIBModel4)
-    ytot += 0.5*(fgkIBFlexCableKapThick + fgkIBFlexCableAlThick);
+    ytot += (fgkIBGlueThick/2 + ygnd + fgkIBFlexCableKapThick/2 + yano);
 
-  TGeoBBox *module = new TGeoBBox(xmod, ytot, zmod);
+  TGeoBBox *module = new TGeoBBox(xtot, ytot, ztot);
 
-  TGeoBBox *kapCable = new TGeoBBox(xmod, fgkIBFlexCableKapThick/2, zmod);
-  TGeoBBox *aluCable = new TGeoBBox(xmod, fgkIBFlexCableAlThick /2, zmod);
-
+  // Now the volumes
   TGeoMedium *medAir      = mgr->GetMedium("ITS_AIR$");
   TGeoMedium *medKapton   = mgr->GetMedium("ITS_KAPTON(POLYCH2)$");
-  TGeoMedium *medAluminum = mgr->GetMedium("ITS_ALUMINUM$");
+  TGeoMedium *medGlue     = mgr->GetMedium("ITS_GLUE_IBFPC$");
 
   snprintf(volname, 30, "%s%d", AliITSUGeomTGeo::GetITSModulePattern(), fLayerNumber);
   TGeoVolume *modVol = new TGeoVolume(volname, module, medAir);
+
+  TGeoVolume *glueVol = new TGeoVolume("FPCGlue", glue, medGlue);
+  glueVol->SetLineColor(kBlack);
+  glueVol->SetFillColor(kBlack);
 
   TGeoVolume *kapCableVol = new TGeoVolume("FPCKapton", kapCable, medKapton);
   kapCableVol->SetLineColor(kBlue);
   kapCableVol->SetFillColor(kBlue);
 
-  TGeoVolume *aluCableVol = new TGeoVolume("FPCAluminum",
-					   aluCable, medAluminum);
-  aluCableVol->SetLineColor(kCyan);
-  aluCableVol->SetFillColor(kCyan);
-
-  // build up the module
+  // Build up the module
+  xpos = -xtot + ((TGeoBBox*)chipVol->GetShape())->GetDX() + fgkIBFPCWiderXNeg;
   ypos = -ytot + ymod; // = 0 if not kIBModel4
   for (Int_t j=0; j<fgkIBChipsPerRow; j++) {
-    zpos = -zmod + j*2*zchip + zchip;
-    modVol->AddNode(chipVol, j, new TGeoTranslation(0, ypos, zpos));
+    zpos = -ztot + j*(2*zchip + fgkIBChipZGap) + zchip;
+    modVol->AddNode(chipVol, j, new TGeoTranslation(xpos, ypos, zpos));
     fHierarchy[kChip]++;
   }
 
   if (fStaveModel == AliITSUv2::kIBModel4) {
-    ypos += (ymod + aluCable->GetDY());
-    if (fBuildLevel < 1)   // Aluminum
-      modVol->AddNode(aluCableVol, 1, new TGeoTranslation(0, ypos, 0));
+    ypos += (ymod + glue->GetDY());
+    if (fBuildLevel < 2)     // Glue
+      modVol->AddNode(glueVol, 1, new TGeoTranslation(xpos, ypos, 0));
+    ypos += glue->GetDY();
 
-    ypos += (aluCable->GetDY() + kapCable->GetDY());
-    if (fBuildLevel < 4)   // Kapton
+    if (fBuildLevel < 4) {   // Kapton
+      ypos += ygnd;
+      modVol->AddNode(aluGndCableVol, 1, new TGeoTranslation(0, ypos, 0));
+
+      ypos += (ygnd + kapCable->GetDY());
       modVol->AddNode(kapCableVol, 1, new TGeoTranslation(0, ypos, 0));
+
+      ypos += (kapCable->GetDY() + yano);
+      modVol->AddNode(aluAnodeCableVol, 1, new TGeoTranslation(0, ypos, 0));
+    }
   }
 
   // Done, return the module
   return modVol;
+}
+
+//________________________________________________________________________
+TGeoVolume* AliITSUv2Layer::CreateIBFPCAlGnd(const Double_t xcable,
+					     const Double_t zcable,
+					     const TGeoManager *mgr){
+//
+// Create the IB FPC Aluminum Ground cable
+//
+// Input:
+//         xcable, zcable : X and Z half lengths
+//         mgr  : the GeoManager (used only to get the proper material)
+//
+// Output:
+//
+// Return:
+//         a TGeoVolume
+//
+// Created:      20 Oct 2017  Mario Sitta
+//
+
+  Double_t ytot, ypos;
+
+  // First create al needed shapes
+  ytot = fgkIBFlexCablePolyThick + fgkIBFlexCableAlThick;
+  TGeoBBox *coverlay = new TGeoBBox(xcable, ytot/2, zcable);
+  TGeoBBox *aluminum = new TGeoBBox(xcable, fgkIBFlexCableAlThick/2, zcable);
+
+  // Then the volumes
+  TGeoMedium *medKapton   = mgr->GetMedium("ITS_KAPTON(POLYCH2)$");
+  TGeoMedium *medAluminum = mgr->GetMedium("ITS_ALUMINUM$");
+
+  TGeoVolume *coverlayVol = new TGeoVolume("FPCCoverlayGround",
+					   coverlay, medKapton);
+  coverlayVol->SetLineColor(kBlue);
+  coverlayVol->SetFillColor(kBlue);
+
+  TGeoVolume *aluminumVol = new TGeoVolume("FPCAluminumGround",
+					   aluminum, medAluminum);
+  aluminumVol->SetLineColor(kCyan);
+  aluminumVol->SetFillColor(kCyan);
+
+  ypos = coverlay->GetDY() - aluminum->GetDY();
+  if (fBuildLevel < 1)   // Aluminum
+    coverlayVol->AddNode(aluminumVol, 1, new TGeoTranslation(0, ypos, 0));
+
+  return coverlayVol;
+}
+
+//________________________________________________________________________
+TGeoVolume* AliITSUv2Layer::CreateIBFPCAlAnode(const Double_t xcable,
+					       const Double_t zcable,
+					       const TGeoManager *mgr){
+//
+// Create the IB FPC Aluminum Anode cable
+//
+// Input:
+//         xcable, zcable : X and Z half lengths
+//         mgr  : the GeoManager (used only to get the proper material)
+//
+// Output:
+//
+// Return:
+//         a TGeoVolume
+//
+// Created:      20 Oct 2017  Mario Sitta
+//
+
+  Double_t ytot, ypos;
+  Double_t xtru[4], ytru[4];
+
+  // First create al needed shapes
+  ytot = fgkIBFlexCablePolyThick + fgkIBFlexCableAlThick;
+  TGeoBBox *coverlay = new TGeoBBox(xcable, ytot/2, zcable);
+
+  // A trapezoid
+  xtru[0] = -fgkIBFPCAlAnodeWidth2/2;
+  ytru[0] = -zcable;
+  xtru[1] =  fgkIBFPCAlAnodeWidth2/2;
+  ytru[1] =  ytru[0];
+  xtru[2] =  xtru[1];
+  ytru[2] =  zcable;
+  xtru[3] =  xtru[2] - fgkIBFPCAlAnodeWidth1;
+  ytru[3] =  ytru[2];
+
+  TGeoXtru *aluminum = new TGeoXtru(2);
+  aluminum->DefinePolygon(4, xtru, ytru);
+  aluminum->DefineSection(0,-fgkIBFlexCableAlThick/2);
+  aluminum->DefineSection(1, fgkIBFlexCableAlThick/2);
+
+  // Then the volumes
+  TGeoMedium *medKapton   = mgr->GetMedium("ITS_KAPTON(POLYCH2)$");
+  TGeoMedium *medAluminum = mgr->GetMedium("ITS_ALUMINUM$");
+
+  TGeoVolume *coverlayVol = new TGeoVolume("FPCCoverlayAnode",
+					   coverlay, medKapton);
+  coverlayVol->SetLineColor(kBlue);
+  coverlayVol->SetFillColor(kBlue);
+
+  TGeoVolume *aluminumVol = new TGeoVolume("FPCAluminumAnode",
+					   aluminum, medAluminum);
+  aluminumVol->SetLineColor(kCyan);
+  aluminumVol->SetFillColor(kCyan);
+
+  ypos = -coverlay->GetDY() + aluminum->GetZ(1);
+  if (fBuildLevel < 1)   // Aluminum
+    coverlayVol->AddNode(aluminumVol, 1, new TGeoCombiTrans(0, ypos, 0,
+					     new TGeoRotation("",0,90,0)));
+
+  return coverlayVol;
 }
 
 //________________________________________________________________________
@@ -3205,7 +3345,7 @@ TGeoVolume* AliITSUv2Layer::CreateStaveModelOuterB0(const TGeoManager *mgr){
   ylen = 0.5*fChipThick;
   zlen = fgkOBModuleZLength/2;
 
-  TGeoVolume *chipVol = CreateChipInnerB(xlen, ylen, zlen);
+  TGeoVolume *chipVol = CreateChip(xlen, ylen, zlen);
 
   xmod = ((TGeoBBox*)chipVol->GetShape())->GetDX();
   ymod = ((TGeoBBox*)chipVol->GetShape())->GetDY();
@@ -4772,10 +4912,10 @@ void AliITSUv2Layer::CreateOBSpaceFrameObjects(const TGeoManager *mgr){
 }
 
 //________________________________________________________________________
-TGeoVolume* AliITSUv2Layer::CreateChipInnerB(const Double_t xchip,
-					     const Double_t ychip,   
-					     const Double_t zchip,
-					     const TGeoManager *mgr){
+TGeoVolume* AliITSUv2Layer::CreateChip(const Double_t xchip,
+				       const Double_t ychip,   
+				       const Double_t zchip,
+				       const TGeoManager *mgr){
 //
 // Creates the actual Chip
 //
@@ -4806,10 +4946,17 @@ TGeoVolume* AliITSUv2Layer::CreateChipInnerB(const Double_t xchip,
   zlen = chip->GetDZ();
   TGeoBBox *sensor = new TGeoBBox(xlen, ylen, zlen);
 
+  // The metal layer
+  xlen = chip->GetDX();
+  ylen = 0.5*fgkMetalLayerThick;
+  zlen = chip->GetDZ();
+  TGeoBBox *metallay = new TGeoBBox(xlen, ylen, zlen);
+
 
   // We have all shapes: now create the real volumes
-  TGeoMedium *medSi  = mgr->GetMedium("ITS_SI$");
-  TGeoMedium *medAir = mgr->GetMedium("ITS_AIR$");
+  TGeoMedium *medSi    = mgr->GetMedium("ITS_SI$");
+  TGeoMedium *medAir   = mgr->GetMedium("ITS_AIR$");
+  TGeoMedium *medMetal = mgr->GetMedium("ITS_METALSTACK$");
   TGeoMedium *medChip;
 
   if ( (fLayerNumber <  fgkNumberOfInnerLayers & fBuildLevel < 6) ||
@@ -4831,11 +4978,23 @@ TGeoVolume* AliITSUv2Layer::CreateChipInnerB(const Double_t xchip,
   sensVol->SetFillColor(sensVol->GetLineColor());
   sensVol->SetFillStyle(4000); // 0% transparent
 
+  snprintf(volname, 30, "%s%d", "MetalStack", fLayerNumber);
+  TGeoVolume *metalVol = new TGeoVolume(volname, metallay, medMetal);
+  metalVol->SetVisibility(kTRUE);
+  metalVol->SetLineColor(1);
+  metalVol->SetLineWidth(1);
+  metalVol->SetFillColor(metalVol->GetLineColor());
+  metalVol->SetFillStyle(4000); // 0% transparent
+
 
   // Now build up the chip
   xpos = 0.;
-  ypos = -chip->GetDY() + sensor->GetDY();
+  ypos = -chip->GetDY() + metallay->GetDY();
   zpos = 0.;
+
+  chipVol->AddNode(metalVol, 1, new TGeoTranslation(xpos, ypos, zpos));
+
+  ypos += (metallay->GetDY() + sensor->GetDY());
 
   chipVol->AddNode(sensVol, 1, new TGeoTranslation(xpos, ypos, zpos));
 
@@ -4876,10 +5035,10 @@ TGeoVolume* AliITSUv2Layer::CreateModuleOuterB(const TGeoManager *mgr){
 
   // The chip (the same as for IB)
   xlen = (fgkOBHalfStaveWidth/2-xGap/2)/fgkOBNChipRows;
-  ylen = 0.5*fChipThick;
+  ylen = 0.5*fgkOBChipThick;
   zlen = (fgkOBModuleZLength - (fgkOBChipsPerRow-1)*zGap)/(2*fgkOBChipsPerRow);
 
-  TGeoVolume *chipVol = CreateChipInnerB(xlen, ylen, zlen);
+  TGeoVolume *chipVol = CreateChip(xlen, ylen, zlen);
 
   xchip = ((TGeoBBox*)chipVol->GetShape())->GetDX();
   ychip = ((TGeoBBox*)chipVol->GetShape())->GetDY();
