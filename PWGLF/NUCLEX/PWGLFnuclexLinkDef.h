@@ -9,6 +9,8 @@
 #pragma link C++ class AliAnalysisTaskHdibaryonLPpi+;
 /// * LambdaN
 #pragma link C++ class AliAnalysisTaskLambdaNAOD+;
+/// * LambdaNN
+#pragma link C++ class AliAnalysisTaskLNNntuple+;
 /// * NOmega
 #pragma link C++ class AliAnalysisTaskNOmegaLPK+;
 #pragma link C++ class AliAnalysisTaskOmegaOmegaOX+;

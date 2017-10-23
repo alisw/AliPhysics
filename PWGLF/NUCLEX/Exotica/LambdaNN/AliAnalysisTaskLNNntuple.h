@@ -14,6 +14,8 @@ class TH3F;
 class TTree;
 class TNtupleD;
 class TVector3;
+class AliESDtrack;
+class AliESDv0;
 
 #include <AliPIDResponse.h>
 
@@ -38,7 +40,7 @@ class AliAnalysisTaskLNNntuple : public AliAnalysisTaskSE {
   Bool_t IsPionCandidate(AliESDtrack *tr);
   Bool_t IsTritonCandidate(AliESDtrack *tr);
 
-  Double_t SetPtLimits(Double_t pionMax, Double_t tritonMin) {fMaxPtPion=pionMax; fMinPtTriton=tritonMin;}
+  void SetPtLimits(Double_t pionMax, Double_t tritonMin) {fMaxPtPion=pionMax; fMinPtTriton=tritonMin;}
   Double_t fMaxPtPion;
   Double_t fMinPtTriton; 
 

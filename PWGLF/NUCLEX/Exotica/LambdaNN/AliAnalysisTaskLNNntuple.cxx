@@ -464,13 +464,8 @@ AliAnalysisTaskLNNntuple::UserExec (Option_t *)
 
   fHistEventMultiplicity->Fill (1);	// analyzed events with PV
 
-  Double_t xPrimaryVertex = 0., yPrimaryVertex = 0., zPrimaryVertex = 0.;
-  xPrimaryVertex = vtx->GetX ();
-  yPrimaryVertex = vtx->GetY ();
-  zPrimaryVertex = vtx->GetZ ();
 
-
-  if (TMath::Abs (zPrimaryVertex) > 10)  return;
+  if (TMath::Abs (vtx->GetX()) > 10)  return;
 
   // monitor event types
   if (eventtype == 1)
@@ -522,8 +517,6 @@ AliAnalysisTaskLNNntuple::UserExec (Option_t *)
 
 
  // *************** Loop over V0s ***************
-  Double_t xn, xp;
-  // Float_t nupleP[6]={-999,-999,-999,-999,-999,-999};
   for(Int_t iv=0; iv<lESDevent->GetNumberOfV0s(); iv++){
    AliESDv0 * v0s = lESDevent->GetV0(iv);
    if(!v0s) continue;
@@ -694,7 +687,6 @@ Double_t AliAnalysisTaskLNNntuple::GetTOFmass(AliESDtrack * tr)
  Double_t m = -999;		//mass
  Double_t b = -999;		//beta
  Double_t trackLeng = 0;
- Double_t tofSignal = 0;
  if ((tr->GetStatus () & AliESDtrack::kTOFout) == AliESDtrack::kTOFout)
  {
   trackLeng = tr->GetIntegratedLength ();
