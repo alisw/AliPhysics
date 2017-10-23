@@ -72,6 +72,7 @@ AliAnalysisTaskBFPsi::AliAnalysisTaskBFPsi(const char *name)
   fRunMixingEventPlane(kFALSE),
   fRunEbyE(kFALSE),
   fMixingTracks(50000),
+  fMaxNbMixedEvents(1000),
   fMixedBalance(0),
   fPoolMgr(0),
   fList(0),
@@ -557,7 +558,7 @@ fHistEtaPhiNeg  = new TH3F("fHistEtaPhiNeg","#eta-#phi distribution (-);#eta;#ph
   // Event Mixing
   if(fRunMixing){
     Int_t trackDepth = fMixingTracks; 
-    Int_t poolsize   = 1000;  // Maximum number of events, ignored in the present implemented of AliEventPoolManager
+    Int_t poolsize   = fMaxNbMixedEvents;  // Maximum number of events 
     
     // centrality bins
     Double_t* centbins = NULL;
