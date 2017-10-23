@@ -176,11 +176,11 @@ class AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero: public AliAnalysisTaskSE
     TH2F**                            fHistoGammaGammaInvMassPt;                          // array of histos of gamma-gamma, invMass, pT_{gamma gamma}
     TH2F**                            fHistoMotherInvMassPt;                              // array of histos of pi+pi-pi0 same event, invMass, pT_{pi+pi-pi0}
     TH2F**                            fHistoMotherInvMassPtRejectedKinematic;             // array of histos of rejected pi+pi-pi0 same event, invMass, pT_{pi+pi-pi0}
-    TH2F**                            fHistoMotherSameDiff1Diff2BackInvMassPt;            // array of histos of pi+pi-pi0 mixed event, invMass, pT_{pi+pi-pi0}
-    TH2F**                            fHistoMotherSameDiff1Diff1BackInvMassPt;            // array of histos of pi+pi-pi0 mixed event, invMass, pT_{pi+pi-pi0}
-    TH2F**                            fHistoMotherSameSameDiff2BackInvMassPt;             // array of histos of pi+pi-pi0 mixed event, invMass, pT_{pi+pi-pi0}
-    TH2F**                            fHistoMotherSameDiff1SameBackInvMassPt;             // array of histos of pi+pi-pi0 mixed event, invMass, pT_{pi+pi-pi0}
-    TH2F**                            fHistoMotherLikeSignBackInvMassPt;             // array of histos of pi+pi+pi0 likesign mixed event, invMass, pT_{pi+pi-pi0}
+    TH2F**                            fHistoBackInvMassPtGroup1;                          // Event mixing background group 1 (pi+ and pi- from same event)
+    TH2F**                            fHistoBackInvMassPtGroup2;                          // Event mixing background group 2 (pi+ and pi0 from same event)
+    TH2F**                            fHistoBackInvMassPtGroup3;                          // Event mixing background group 3 (pi- and pi0 from same event)
+    TH2F**                            fHistoBackInvMassPtGroup4;                          // Event mixing background group 4 (no pion from same event)
+    TH2F**                            fHistoMotherLikeSignBackInvMassPt;                  // array of histos of pi+pi+pi0 likesign mixed event, invMass, pT_{pi+pi-pi0}
 
     // angle distributions
     TH2F**                            fHistoAngleOmegaPiPlPiMi;                           // angle between combined Pi+ and Pi- and omega
@@ -194,20 +194,20 @@ class AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero: public AliAnalysisTaskSE
     TH2F**                            fHistoTrueAngleSum;
 
     TH2F**                            fHistoMotherInvMassSubPi0;                          // invariant mass of (pi+,pi-,pi0) - invariant mass of pi0
-    TH2F**                            fHistoMotherSameDiff1Diff2BackInvMassSubPi0Pt;      // array of histos of pi+pi-pi0 mixed event, invMass-invMass(pi0), pT_{pi+pi-pi0}
-    TH2F**                            fHistoMotherSameDiff1Diff1BackInvMassSubPi0Pt;      // array of histos of pi+pi-pi0 mixed event, invMass-invMass(pi0), pT_{pi+pi-pi0}
-    TH2F**                            fHistoMotherSameSameDiff2BackInvMassSubPi0Pt;       // array of histos of pi+pi-pi0 mixed event, invMass-invMass(pi0), pT_{pi+pi-pi0}
-    TH2F**                            fHistoMotherSameDiff1SameBackInvMassSubPi0Pt;       // array of histos of pi+pi-pi0 mixed event, invMass-invMass(pi0), pT_{pi+pi-pi0}
-    TH2F**                            fHistoMotherLikeSignBackInvMassSubPi0Pt;       // array of histos of pi+pi+pi0 likesign mixed event, invMass-invMass(pi0), pT_{pi+pi-pi0}
+    TH2F**                            fHistoBackInvMassPtGroup1SubPi0;                    // background group 1, invMass-invMass(pi0), pT_{pi+pi-pi0} (pi+ and pi- from same event)
+    TH2F**                            fHistoBackInvMassPtGroup2SubPi0;                    // background group 2, invMass-invMass(pi0), pT_{pi+pi-pi0} (pi+ and pi0 from same event)
+    TH2F**                            fHistoBackInvMassPtGroup3SubPi0;                    // background group 3, invMass-invMass(pi0), pT_{pi+pi-pi0} (pi+ and pi0 from same event)
+    TH2F**                            fHistoBackInvMassPtGroup4SubPi0;                    // background group 4, invMass-invMass(pi0), pT_{pi+pi-pi0} (no pion from same event)
+    TH2F**                            fHistoMotherLikeSignBackInvMassSubPi0Pt;            // array of histos of pi+pi+pi0 likesign mixed event, invMass-invMass(pi0), pT_{pi+pi-pi0}
 
     TH2F**                            fHistoMotherInvMassFixedPzPi0;                      // invariant mass of (pi+,pi-,pi0) - invariant mass of pi0
-    TH2F**                            fHistoMotherSameDiff1Diff2BackInvMassFixedPzPi0Pt;  // array of histos of pi+pi-pi0 mixed event, invMass, pT_{pi+pi-pi0}, the Pz of the pi0 was fixed such that
+    TH2F**                            fHistoBackInvMassPtGroup1FixedPzPi0;                // background group 1 mixed event, invMass, pT_{pi+pi-pi0}, the Pz of the pi0 was fixed such that
                                                                                           // its invMass matches the PDG value
-    TH2F**                            fHistoMotherSameDiff1Diff1BackInvMassFixedPzPi0Pt;  // array of histos of pi+pi-pi0 mixed event, invMass, pT_{pi+pi-pi0}, the Pz of the pi0 was fixed such that
+    TH2F**                            fHistoBackInvMassPtGroup2FixedPzPi0;                // background group 2 mixed event, invMass, pT_{pi+pi-pi0}, the Pz of the pi0 was fixed such that
                                                                                           // its invMass matches the PDG value
-    TH2F**                            fHistoMotherSameSameDiff2BackInvMassFixedPzPi0Pt;   // array of histos of pi+pi-pi0 mixed event, invMass, pT_{pi+pi-pi0}, the Pz of the pi0 was fixed such that
+    TH2F**                            fHistoBackInvMassPtGroup3FixedPzPi0;                // background group 3 mixed event, invMass, pT_{pi+pi-pi0}, the Pz of the pi0 was fixed such that
                                                                                           // its invMass matches the PDG value
-    TH2F**                            fHistoMotherSameDiff1SameBackInvMassFixedPzPi0Pt;   // array of histos of pi+pi-pi0 mixed event, invMass, pT_{pi+pi-pi0}, the Pz of the pi0 was fixed such that
+    TH2F**                            fHistoBackInvMassPtGroup4FixedPzPi0;                // background group 4 mixed event, invMass, pT_{pi+pi-pi0}, the Pz of the pi0 was fixed such that
                                                                                           // its invMass matches the PDG value
     TH2F**                            fHistoMotherLikeSignBackInvMassFixedPzPi0Pt;        // array of histos of pi+pi+pi0 likesign mixed event, invMass, pT_{pi+pi+pi0}, the Pz of the pi0 was fixed such that
                                                                                           // its invMass matches the PDG value
