@@ -661,11 +661,20 @@ AliAnalysisTaskDiffCrossSections::AliAnalysisTaskDiffCrossSections(const char *n
   , fTE(NULL)
   , fFastOrMap()
   , fFiredChipMap()
+  , fESDVZERO()
+  , fESDAD()
   , fTreeData()
   , fMCInfo()
   , fMeanVtxPos(3)
   , fMeanVtxCov(3,3)
   , fMeanVtxU(3,3)
+  , fEventType(0)
+  , fIdxEtaL(-1)
+  , fIdxEtaR(-1)
+  , fEtaL(0)
+  , fEtaR(0)
+  , fEtaGap(0)
+  , fEtaGapCenter(0)
 {
   fTimeChargeCuts.SetOwner(kTRUE);
   fTriggerAnalysis.SetAnalyzeMC(fIsMC);
