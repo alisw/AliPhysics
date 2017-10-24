@@ -312,20 +312,18 @@ void AliAnalysisTaskCorPIDTOFQA::UserExec(Option_t *)
 		    
 		    if(m2tof < deut_mean + cut_width * deut_sigma   &&   m2tof > deut_mean - cut_width * deut_sigma)
 		    {
-			deut_count++;
 			m2_pt_pos_cut_T->Fill(pt, m2tof);
 		    }
 		    else if(m2tof -1.2 < deut_mean + cut_width * deut_sigma   &&   m2tof -1.2 > deut_mean - cut_width * deut_sigma)
 		    {
-			deut_count++;
 			m2_pt_pos_cut_B->Fill(pt, m2tof);
 		    }
 
 		    else if(m2tof +1.2 < deut_mean + cut_width * deut_sigma   &&   m2tof +1.2 > deut_mean - cut_width * deut_sigma)
 		    {
-			deut_count++;
 			m2_pt_pos_cut_A->Fill(pt, m2tof);
 		    }
+		    if(m2tof >= 1.7  &&  m2tof < 5.5)    {   deut_count++;   }
 		}			    
 	    }
 	}
@@ -347,20 +345,18 @@ void AliAnalysisTaskCorPIDTOFQA::UserExec(Option_t *)
 		    
 		    if(m2tof < deut_mean + cut_width * deut_sigma   &&   m2tof > deut_mean - cut_width * deut_sigma)
 		    {
-			deut_count++;
 			m2_pt_neg_cut_T->Fill(pt, m2tof);
 		    }
 		    else if(m2tof -1.2 < deut_mean + cut_width * deut_sigma   &&   m2tof -1.2 > deut_mean - cut_width * deut_sigma)
 		    {
-			deut_count++;
 			m2_pt_neg_cut_B->Fill(pt, m2tof);
 		    }
 
 		    else if(m2tof +1.2 < deut_mean + cut_width * deut_sigma   &&   m2tof +1.2 > deut_mean - cut_width * deut_sigma)
 		    {
-			deut_count++;
 			m2_pt_neg_cut_A->Fill(pt, m2tof);
 		    }
+		    if(m2tof >= 1.7  &&  m2tof < 5.5)    {   deut_count++;   }
 		}
 	    }
 	}    //   end of neg charge if statement
@@ -377,10 +373,10 @@ void AliAnalysisTaskCorPIDTOFQA::UserExec(Option_t *)
     if (oh)
       oh->SetFillAOD(kFALSE);
 
-    if ((deut_count>=1)  &&  (trig_03_track_count>0)  &&  oh)
-    {
-//  if ((deut_count >= 1) && oh)
+//  if ((deut_count>=1)  &&  (trig_03_track_count>0)  &&  oh)
 //  {
+    if ((deut_count >= 1) && oh)
+    {
 	oh->SetFillAOD(kTRUE);
 	AliAODEvent *eout = dynamic_cast<AliAODEvent*>(oh->GetAOD());
 	AliAODEvent *evin = dynamic_cast<AliAODEvent*>(InputEvent());
