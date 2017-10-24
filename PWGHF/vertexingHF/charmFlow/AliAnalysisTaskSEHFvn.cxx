@@ -557,6 +557,10 @@ void AliAnalysisTaskSEHFvn::UserCreateOutputObjects()
       fOutput->Add(hEvPlaneReso2Vsq2);
       TH2F* hEvPlaneReso3Vsq2=new TH2F(Form("hEvPlaneReso3Vsq2%s",centrname.Data()),Form("Event plane angle Resolution vs. %s %s;cos2(#psi_{B}-#psi_{C});%s;Entries",q2axisname.Data(),centrname.Data(),q2axisname.Data()),220,-1.1,1.1,500,0.,10.);
       fOutput->Add(hEvPlaneReso3Vsq2);
+
+      //q2 candidate vs. q2 global event
+      TH2F* hq2CandVsq2Event=new TH2F("hq2CandVsq2Event",Form("%s candidate vs. %s global event;%s global event;%s candidate;Entries",q2axisname.Data(),q2axisname.Data(),q2axisname.Data(),q2axisname.Data()),500,0.,10.,500,0,10.);
+      fOutput->Add(hq2CandVsq2Event);
     }
   }
 
@@ -1263,6 +1267,30 @@ void AliAnalysisTaskSEHFvn::UserExec(Option_t */*option*/)
       else if(fq2Meth==kq2PosTPC) {q2=q2PosTPC;}
       else if(fq2Meth==kq2NegTPC) {q2=q2NegTPC;}
     }
+    else if((fq2Meth==kq2TPC || fq2Meth==kq2PosTPC || fq2Meth==kq2NegTPC) && fOnTheFlyTPCq2 && fDeltaEtaDmesonq2>0) { //remove a random delta eta from global q2 to have consistent multiplicity
+      std::vector<Int_t> daulab; //dummy -> not used
+      Double_t etaLims[2] = {fTPCEtaMin,fTPCEtaMax};
+      if(fq2Meth==kq2TPC) {
+        Double_t etarndm = fTPCEtaMin+gRandom->Rndm()*(fTPCEtaMax-fTPCEtaMin);
+        RemoveTracksInDeltaEtaFromOnTheFlyTPCq2(aod,etarndm,etaLims,qVecFullTPC,multQvecTPC[0],daulab);
+        if(multQvecTPC[0]>0) {q2=TMath::Sqrt(qVecFullTPC[0]*qVecFullTPC[0]+qVecFullTPC[1]*qVecFullTPC[1])/TMath::Sqrt(multQvecTPC[0]);}
+        else {q2=0;}
+      }
+      else if(fq2Meth==kq2PosTPC) {
+        Double_t etarndm = gRandom->Rndm()*fTPCEtaMax;
+        etaLims[0]=0.;
+        RemoveTracksInDeltaEtaFromOnTheFlyTPCq2(aod,etarndm,etaLims,qVecPosTPC,multQvecTPC[1],daulab);
+        if(multQvecTPC[1]>0) {q2=TMath::Sqrt(qVecPosTPC[0]*qVecPosTPC[0]+qVecPosTPC[1]*qVecPosTPC[1])/TMath::Sqrt(multQvecTPC[1]);}
+        else {q2=0;}
+      }
+      else if(fq2Meth==kq2NegTPC) {
+        Double_t etarndm = fTPCEtaMin+gRandom->Rndm()*(0-fTPCEtaMin);
+        etaLims[1]=0.;
+        RemoveTracksInDeltaEtaFromOnTheFlyTPCq2(aod,etarndm,etaLims,qVecNegTPC,multQvecTPC[2],daulab);
+        if(multQvecTPC[2]>0) {q2=TMath::Sqrt(qVecNegTPC[0]*qVecNegTPC[0]+qVecNegTPC[1]*qVecNegTPC[1])/TMath::Sqrt(multQvecTPC[2]);}
+        else {q2=0;}
+      }
+    }
 
     //If enabled, fill EP angle vs. q2 vs. centrality histograms
     if(fEPVsq2VsCent) {
@@ -1301,9 +1329,10 @@ void AliAnalysisTaskSEHFvn::UserExec(Option_t */*option*/)
       ((TH2F*)fOutput->FindObject(Form("hEvPlaneReso3Vsq2%s",fCentrBinName.Data())))->Fill(TMath::Cos(fHarmonic*deltaSubBC),q2);
     }
 
-    //fill the THnSparseF for event-shape engineering
+    //fill q2Cand vs. q2Event histo and THnSparseF for event-shape engineering
     for(UInt_t iSelCand=0; iSelCand<nSelCand; iSelCand++) {
       if(fRemoveDauFromq2==2) {q2Cand.push_back(q2);}
+      ((TH2F*)fOutput->FindObject("hq2CandVsq2Event"))->Fill(q2,q2Cand[iSelCand]);
 
       if((fDecChannel==0 || fDecChannel==2) && isSelectedCand[iSelCand]) {
         Double_t sparsearray[5] = {invMassCand[iSelCand],ptCand[iSelCand],deltaphiCand[iSelCand],q2Cand[iSelCand],centr};
@@ -2631,9 +2660,11 @@ void AliAnalysisTaskSEHFvn::RemoveTracksInDeltaEtaFromOnTheFlyTPCq2(AliAODEvent*
     AliAODTrack* track = (AliAODTrack*)aod->GetTrack(iTrack);
     if(!track || (!track->TestFilterBit(BIT(8)) && !track->TestFilterBit(BIT(9)))) {continue;}
     Int_t lab = track->GetLabel();
+    Bool_t isdau=kFALSE;
     for(UInt_t iDau=0; iDau<daulab.size(); iDau++) {
-      if(lab==daulab[iDau]) {continue;} //do not remove daughters twice!
+      if(lab==daulab[iDau]) {isdau=kTRUE; break;}
     }
+    if(isdau) {continue;} //do not remove daughters twice!
     Double_t eta = track->Eta();
     Double_t phi = track->Phi();
     Double_t pt = track->Pt();
