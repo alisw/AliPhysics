@@ -1655,8 +1655,8 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::ClustTrackMatching(AliVCluster *clus
 	  fDeltaETAClusTrackMatch->Fill(deta);
 	  fDeltaPHIClusTrackMatch->Fill(dphi);
 	}
-        matched=kTRUE;
       }
+        matched=kTRUE;
     }
   }
   if(!fLightOutput)
