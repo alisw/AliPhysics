@@ -1863,8 +1863,12 @@ void AliAnaClusterShapeCorrelStudies::ClusterLoopHistograms()
     AliVCluster* clus =  (AliVCluster*) fCaloClusList->At(iclus);
         
     // away from dead region
-    if ( clus->GetDistanceToBadChannel() < fMinDistToBad ) return ;  
-
+    if ( clus->GetDistanceToBadChannel() < fMinDistToBad ) 
+    {
+      AliDebug(1,Form("Small distance to bad channel %2.2f < %2.2f",clus->GetDistanceToBadChannel(),fMinDistToBad));
+      continue ; 
+    }
+    
     // SuperModule number of cluster
     nModule = GetModuleNumber(clus);
     if ( nModule < fFirstModule || nModule > fLastModule ) 
