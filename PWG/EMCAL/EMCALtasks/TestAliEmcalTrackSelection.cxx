@@ -1,3 +1,4 @@
+// clang-format off
 /************************************************************************************
  * Copyright (C) 2017, Copyright Holders of the ALICE Collaboration                 *
  * All rights reserved.                                                             *
@@ -16,7 +17,7 @@
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND  *
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED    *
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE           *
- * DISCLAIMED. IN NO EVENT SHALL ALICE COLLABORATION BE LIABLE FOR ANY              *
+ * DISCLAIMED. IN NO EVENT SHALL ALICE COLLABORATION BE LIABLE FOR ANY              *      
  * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES       *
  * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;     *
  * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND      *
@@ -24,14 +25,15 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS    *
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.                     *
  ************************************************************************************/
+// clang-format on
 #include <iostream>
 
 #include <THistManager.h>
 #include <TObjArray.h>
 
-#include "AliAnalysisManager.h"
 #include "AliAODEvent.h"
 #include "AliAODTrack.h"
+#include "AliAnalysisManager.h"
 #include "AliESDtrackCuts.h"
 #include "AliEmcalTrackSelectionAOD.h"
 #include "AliLog.h"
@@ -44,163 +46,151 @@ ClassImp(PWG::EMCAL::TestImplAliEmcalTrackSelection);
 /// \endcond
 
 namespace PWG {
-
 namespace EMCAL {
+TestAliEmcalTrackSelection::TestAliEmcalTrackSelection()
+  : AliAnalysisTaskEmcalLight(), fPeriod(), fTestSuite(nullptr), fTestResults(nullptr) {}
 
-TestAliEmcalTrackSelection::TestAliEmcalTrackSelection():
-    AliAnalysisTaskEmcalLight(),
-    fPeriod(),
-    fTestSuite(nullptr),
-    fTestResults(nullptr)
-{
+TestAliEmcalTrackSelection::TestAliEmcalTrackSelection(const char* name)
+  : AliAnalysisTaskEmcalLight(name, kTRUE), fPeriod(), fTestSuite(nullptr), fTestResults(nullptr) {}
+
+TestAliEmcalTrackSelection::~TestAliEmcalTrackSelection() {
+  if (fTestSuite)
+    delete fTestSuite;
 }
 
-TestAliEmcalTrackSelection::TestAliEmcalTrackSelection(const char *name):
-    AliAnalysisTaskEmcalLight(name, kTRUE),
-    fPeriod(),
-    fTestSuite(nullptr),
-    fTestResults(nullptr)
-{
+void TestAliEmcalTrackSelection::UserCreateOutputObjects() {
+  AliAnalysisTaskEmcalLight::UserCreateOutputObjects();
+
+  GenerateTestSuite();
+
+  fTestResults = new THistManager("testresults");
+  for (auto test : *fTestSuite)
+    fTestResults->CreateTH1(Form("TestStatus%s", test->GetName()), Form("Test Status %s", test->GetName()), 2, -0.5,
+                            1.5);
+  for (auto hist : *fTestResults->GetListOfHistograms())
+    fOutput->Add(hist);
+
+  PostData(1, fOutput);
 }
 
-TestAliEmcalTrackSelection::~TestAliEmcalTrackSelection(){
-    if(fTestSuite) delete fTestSuite;
+bool TestAliEmcalTrackSelection::Run() {
+  for (auto test : *fTestSuite) {
+    fTestResults->FillTH1(Form("TestStatus%s", test->GetName()),
+                          EvaluateTest(static_cast<TestImplAliEmcalTrackSelection*>(test)) ? 1 : 0);
+  }
+  return kTRUE;
 }
 
-void TestAliEmcalTrackSelection::UserCreateOutputObjects(){
-    AliAnalysisTaskEmcalLight::UserCreateOutputObjects();
-
-    GenerateTestSuite();
-
-    fTestResults = new THistManager("testresults");
-    for(auto test : *fTestSuite) fTestResults->CreateTH1(Form("TestStatus%s", test->GetName()), Form("Test Status %s", test->GetName()), 2, -0.5, 1.5);
-    for(auto hist : *fTestResults->GetListOfHistograms()) fOutput->Add(hist);
-
-    PostData(1, fOutput);
+void TestAliEmcalTrackSelection::AddTestImpl(TestImplAliEmcalTrackSelection* test) {
+  if (!fTestSuite) {
+    fTestSuite = new TObjArray;
+    fTestSuite->SetOwner(true);
+  }
+  AliInfoStream() << "Adding test " << test->GetName() << std::endl;
+  fTestSuite->Add(test);
 }
 
-bool TestAliEmcalTrackSelection::Run(){
-    for(auto test : *fTestSuite) {
-        fTestResults->FillTH1(Form("TestStatus%s", test->GetName()), EvaluateTest(static_cast<TestImplAliEmcalTrackSelection *>(test)) ? 1 : 0);
-    }
-    return kTRUE;
+void TestAliEmcalTrackSelection::GenerateTestSuite() {
+  AddTestImpl(new TestImplAliEmcalTrackSelectionHybrid("hybrid", fPeriod));
+  AddTestImpl(new TestImplAliEmcalTrackSelectionTPConly("tpconly", fPeriod));
+  AddTestImpl(new TestImplAliEmcalTrackSelectionITSpure("itspure", fPeriod));
 }
 
-void TestAliEmcalTrackSelection::AddTestImpl(TestImplAliEmcalTrackSelection *test) {
-    if(!fTestSuite) {
-        fTestSuite = new TObjArray;
-        fTestSuite->SetOwner(true);
-    }
-    AliInfoStream() << "Adding test " << test->GetName() << std::endl;
-    fTestSuite->Add(test);
+bool TestAliEmcalTrackSelection::EvaluateTest(TestImplAliEmcalTrackSelection* test) {
+  AliInfoStream() << "Evaluating test " << test->GetName() << std::endl;
+  return test->RunTest(static_cast<AliAODEvent*>(fInputEvent));
 }
 
-void TestAliEmcalTrackSelection::GenerateTestSuite(){
-    AddTestImpl(new TestImplAliEmcalTrackSelectionHybrid("hybrid", fPeriod));
-    AddTestImpl(new TestImplAliEmcalTrackSelectionTPConly("tpconly", fPeriod));
-    AddTestImpl(new TestImplAliEmcalTrackSelectionITSpure("itspure", fPeriod));
+TestAliEmcalTrackSelection* TestAliEmcalTrackSelection::AddTestAliEmcalTrackSelection(const char* name) {
+  AliAnalysisManager* mgr = AliAnalysisManager::GetAnalysisManager();
+  if (!mgr) {
+    std::cerr << "TestAliEmcalTrackSelection::AddTestEmcalTrackSelection: No "
+                 "analysis manager found. Not adding test!\n";
+    return nullptr;
+  }
+
+  TestAliEmcalTrackSelection* test = new TestAliEmcalTrackSelection(name);
+  mgr->AddTask(test);
+
+  TString outputdir(mgr->GetCommonFileName());
+  outputdir += ":TestResults" + TString(name);
+
+  mgr->ConnectInput(test, 0, mgr->GetCommonInputContainer());
+  mgr->ConnectOutput(
+    test, 1,
+    mgr->CreateContainer(Form("TestResults%s", name), TList::Class(), AliAnalysisManager::kOutputContainer, outputdir));
+
+  return test;
 }
 
-bool TestAliEmcalTrackSelection::EvaluateTest(TestImplAliEmcalTrackSelection *test) {
-    AliInfoStream() << "Evaluating test " << test->GetName() << std::endl;
-    return test->RunTest(static_cast<AliAODEvent *>(fInputEvent));
+TestImplAliEmcalTrackSelection::TestImplAliEmcalTrackSelection() : TNamed(), fTrackSelection(nullptr) {}
+
+TestImplAliEmcalTrackSelection::TestImplAliEmcalTrackSelection(const char* name)
+  : TNamed(name, ""), fTrackSelection(nullptr) {}
+
+TestImplAliEmcalTrackSelection::~TestImplAliEmcalTrackSelection() {
+  if (fTrackSelection)
+    delete fTrackSelection;
 }
 
-TestAliEmcalTrackSelection *TestAliEmcalTrackSelection::AddTestAliEmcalTrackSelection(const char *name){
-    AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
-    if(!mgr){
-        std::cerr << "TestAliEmcalTrackSelection::AddTestEmcalTrackSelection: No analysis manager found. Not adding test!\n";
-        return nullptr;
-    }
+bool TestImplAliEmcalTrackSelection::RunTest(const AliAODEvent* const ev) {
+  int nfailure(0);
+  for (int itrk = 0; itrk < ev->GetNumberOfTracks(); itrk++) {
+    auto track = static_cast<AliAODTrack*>(ev->GetTrack(itrk));
+    auto sel = fTrackSelection->IsTrackAccepted(track);
+    auto truth = IsTrueTrack(track);
+    if (sel != truth)
+      nfailure++;
+  }
 
-    TestAliEmcalTrackSelection *test = new TestAliEmcalTrackSelection(name);
-    mgr->AddTask(test);
-
-    TString outputdir(mgr->GetCommonFileName());
-    outputdir += ":TestResults" + TString(name);
-
-    mgr->ConnectInput(test, 0, mgr->GetCommonInputContainer());
-    mgr->ConnectOutput(test, 1, mgr->CreateContainer(Form("TestResults%s", name), TList::Class(), AliAnalysisManager::kOutputContainer, outputdir));
-
-    return test;
+  return nfailure == 0;
 }
 
-TestImplAliEmcalTrackSelection::TestImplAliEmcalTrackSelection():
-    TNamed(),
-    fTrackSelection(nullptr)
-{
+TestImplAliEmcalTrackSelectionITSpure::TestImplAliEmcalTrackSelectionITSpure()
+  : TestImplAliEmcalTrackSelection(), fRefCuts(nullptr) {}
+
+TestImplAliEmcalTrackSelectionITSpure::TestImplAliEmcalTrackSelectionITSpure(const char* name, const char* period)
+  : TestImplAliEmcalTrackSelection(name), fRefCuts(nullptr) {
+  fTrackSelection = new AliEmcalTrackSelectionAOD;
+  fTrackSelection->GenerateTrackCuts(AliEmcalTrackSelection::kITSPureTracks, period);
+  fRefCuts = AliESDtrackCuts::GetStandardITSPureSATrackCuts2010(true);
 }
 
-TestImplAliEmcalTrackSelection::TestImplAliEmcalTrackSelection(const char *name):
-    TNamed(name, ""),
-    fTrackSelection(nullptr)
-{
+TestImplAliEmcalTrackSelectionITSpure::~TestImplAliEmcalTrackSelectionITSpure() {
+  if (fRefCuts)
+    delete fRefCuts;
 }
 
-TestImplAliEmcalTrackSelection::~TestImplAliEmcalTrackSelection(){
-    if(fTrackSelection) delete fTrackSelection;
+bool TestImplAliEmcalTrackSelectionITSpure::IsTrueTrack(const AliAODTrack* const trk) const {
+  if (!(trk->GetStatus() & AliVTrack::kITSpureSA))
+    return false; // addditional test - make sure track is a true stand alone
+  // track
+  if (!(trk->GetStatus() & AliVTrack::kITSrefit))
+    return false;
+
+  if (!fRefCuts->AcceptVTrack(trk))
+    return false;
+  return true;
 }
 
-bool TestImplAliEmcalTrackSelection::RunTest(const AliAODEvent *const ev){
-    int nfailure(0);
-    for(int itrk = 0; itrk < ev->GetNumberOfTracks(); itrk++){
-        auto track = static_cast<AliAODTrack *>(ev->GetTrack(itrk));
-        auto sel = fTrackSelection->IsTrackAccepted(track);
-        auto truth = IsTrueTrack(track);
-        if(sel != truth) nfailure++;
-    }
-
-    return nfailure == 0;
+TestImplAliEmcalTrackSelectionHybrid::TestImplAliEmcalTrackSelectionHybrid(const char* name, const char* period)
+  : TestImplAliEmcalTrackSelection(name) {
+  fTrackSelection = new AliEmcalTrackSelectionAOD;
+  fTrackSelection->GenerateTrackCuts(AliEmcalTrackSelection::kHybridTracks, period);
 }
 
-TestImplAliEmcalTrackSelectionITSpure::TestImplAliEmcalTrackSelectionITSpure():
-    TestImplAliEmcalTrackSelection(),
-    fRefCuts(nullptr)
-{
+bool TestImplAliEmcalTrackSelectionHybrid::IsTrueTrack(const AliAODTrack* const track) const {
+  return track->IsHybridGlobalConstrainedGlobal();
 }
 
-TestImplAliEmcalTrackSelectionITSpure::TestImplAliEmcalTrackSelectionITSpure(const char *name, const char *period):
-    TestImplAliEmcalTrackSelection(name),
-    fRefCuts(nullptr)
-{
-    fTrackSelection = new AliEmcalTrackSelectionAOD;
-    fTrackSelection->GenerateTrackCuts(AliEmcalTrackSelection::kITSPureTracks, period);
-    fRefCuts =  AliESDtrackCuts::GetStandardITSPureSATrackCuts2010(true);
+TestImplAliEmcalTrackSelectionTPConly::TestImplAliEmcalTrackSelectionTPConly(const char* name, const char* period)
+  : TestImplAliEmcalTrackSelection(name) {
+  fTrackSelection = new AliEmcalTrackSelectionAOD;
+  fTrackSelection->GenerateTrackCuts(AliEmcalTrackSelection::kTPCOnlyTracks, period);
 }
 
-TestImplAliEmcalTrackSelectionITSpure::~TestImplAliEmcalTrackSelectionITSpure(){
-    if(fRefCuts) delete fRefCuts;
+bool TestImplAliEmcalTrackSelectionTPConly::IsTrueTrack(const AliAODTrack* const track) const {
+  return track->IsHybridTPCConstrainedGlobal();
 }
-
-bool TestImplAliEmcalTrackSelectionITSpure::IsTrueTrack(const AliAODTrack *const trk)  const {
-    if(!(trk->GetStatus() & AliVTrack::kITSpureSA)) return false;   // addditional test - make sure track is a true stand alone track
-    if(!(trk->GetStatus() & AliVTrack::kITSrefit)) return false;
- 
-    if(!fRefCuts->AcceptVTrack(trk)) return false;
-    return true;
-}
-
-TestImplAliEmcalTrackSelectionHybrid::TestImplAliEmcalTrackSelectionHybrid(const char *name, const char *period):
-    TestImplAliEmcalTrackSelection(name)
-{
-    fTrackSelection = new AliEmcalTrackSelectionAOD;
-    fTrackSelection->GenerateTrackCuts(AliEmcalTrackSelection::kHybridTracks, period);
-}
-
-bool TestImplAliEmcalTrackSelectionHybrid::IsTrueTrack(const AliAODTrack * const track) const {
-    return track->IsHybridGlobalConstrainedGlobal();
-}
-
-TestImplAliEmcalTrackSelectionTPConly::TestImplAliEmcalTrackSelectionTPConly(const char *name, const char *period):
-    TestImplAliEmcalTrackSelection(name)
-{
-    fTrackSelection = new AliEmcalTrackSelectionAOD;
-    fTrackSelection->GenerateTrackCuts(AliEmcalTrackSelection::kTPCOnlyTracks, period);
-}
-
-bool TestImplAliEmcalTrackSelectionTPConly::IsTrueTrack(const AliAODTrack *const track) const {
-    return track->IsHybridTPCConstrainedGlobal();
-}
-
 }
 }
