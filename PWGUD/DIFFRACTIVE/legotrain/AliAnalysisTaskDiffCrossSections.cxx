@@ -965,10 +965,7 @@ void AliAnalysisTaskDiffCrossSections::UserExec(Option_t *)
 	    fTreeData.fPseudoTracks.AddTrack(PseudoTrack(esdFMD->Eta(d, r, s, t),
 							 esdFMD->Phi(d, r, s, t)*TMath::Pi()/180.0,
 							 fmdMult,
-							 Float_t( UInt_t(t)      |
-                                                                 (UInt_t(s)<< 8) |
-                                                                 (UInt_t(r)<<16) |
-                                                                 (UInt_t(d)<<24)), // encode d,r,s,t
+							 Float_t( UInt_t(t) + (UInt_t(s) << 9)), // encode s,t
 							 (d==1)       *PseudoTracks::kFMD1  |
 							 (d==2)*(i==0)*PseudoTracks::kFMD2i |
 							 (d==2)*(i==1)*PseudoTracks::kFMD2o |
