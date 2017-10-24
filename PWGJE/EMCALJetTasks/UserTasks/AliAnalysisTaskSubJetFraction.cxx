@@ -1845,8 +1845,8 @@ AliEmcalJet* AliAnalysisTaskSubJetFraction::ModifyJet(AliEmcalJet* Jet, Int_t Je
       PseudoTracks.set_user_index(Jet->TrackAt(i)+100); //100 is very arbitary....why is it here anyway?
       fInputVectors.push_back(PseudoTracks);
     }
-  if (Modification=="Randomise") fInputVectors=RandomiseTracks(fInputVectors);
-  if (Modification=="AddExtraProng_02_30") fInputVectors=AddExtraProng(fInputVectors,0.2,0.3);
+  //  if (Modification=="Randomise") fInputVectors=RandomiseTracks(fInputVectors);
+  // if (Modification=="AddExtraProng_02_30") fInputVectors=AddExtraProng(fInputVectors,0.2,0.3);
   AliEmcalJet *Modified_AliEmcalJet=0x0;
   try {
     fastjet::JetDefinition fJetDef(fastjet::antikt_algorithm, fJetRadius*2, static_cast<fastjet::RecombinationScheme>(0), fastjet::BestFJ30 );         
@@ -1865,21 +1865,21 @@ AliEmcalJet* AliAnalysisTaskSubJetFraction::ModifyJet(AliEmcalJet* Jet, Int_t Je
 
 
 std::vector<fastjet::PseudoJet> AliAnalysisTaskSubJetFraction::RandomiseTracks(std::vector<fastjet::PseudoJet> fInputVectors){
-    fRandom->SetSeed(0);
-    Double_t Random_Phi=0.0;
-   Double_t Random_Eta=0.0;
-   Double_t Track_Pt=0.0;
+  fRandom->SetSeed(0);
+  Double_t Random_Phi=0.0;
+  Double_t Random_Eta=0.0;
+  Double_t Track_Pt=0.0;
   std::vector<fastjet::PseudoJet> Random_Track_Vector;
   Random_Track_Vector.clear();
-   for (Int_t i=0; i< fInputVectors.size(); i++){
-   Random_Phi=fRandom->Uniform(2*TMath::Pi());
+  for (Int_t i=0; i< fInputVectors.size(); i++){
+    Random_Phi=fRandom->Uniform(2*TMath::Pi());
     Random_Eta=fRandom->Uniform(-0.9,0.9);
     Track_Pt=fInputVectors[i].perp();
     fastjet::PseudoJet Random_Track(Track_Pt*TMath::Cos(Random_Phi),Track_Pt*TMath::Sin(Random_Phi),Track_Pt*TMath::SinH(Random_Eta),(fInputVectors[i].m()*fInputVectors[i].m())+(Track_Pt*TMath::CosH(Random_Eta)*Track_Pt*TMath::CosH(Random_Eta)));
     Random_Track.set_user_index(i);
-   Random_Track_Vector.push_back(Random_Track); 
-   }
-   return Random_Track_Vector;
+    Random_Track_Vector.push_back(Random_Track); 
+  }
+  return Random_Track_Vector;
 }
 
 std::vector<fastjet::PseudoJet> AliAnalysisTaskSubJetFraction::AddExtraProng(std::vector<fastjet::PseudoJet> fInputVectors, Double_t Distance, Double_t PtFrac){
