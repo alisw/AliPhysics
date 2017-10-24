@@ -38,118 +38,111 @@ class AliEmcalTrackSelection;
 class THistManager;
 class TObjArray;
 
-namespace PWG
-{
+namespace PWG {
 
-namespace EMCAL
-{
+namespace EMCAL {
 
-class TestImplAliEmcalTrackSelection : public TNamed
-{
-public:
+class TestImplAliEmcalTrackSelection : public TNamed {
+ public:
   TestImplAliEmcalTrackSelection();
-  TestImplAliEmcalTrackSelection(const char *name);
+  TestImplAliEmcalTrackSelection(const char* name);
   virtual ~TestImplAliEmcalTrackSelection();
 
-  bool RunTest(const AliAODEvent *const ev);
+  bool RunTest(const AliAODEvent* const ev);
 
-protected:
-  virtual bool IsTrueTrack(const AliAODTrack *const trk) const = 0;
+ protected:
+  virtual bool IsTrueTrack(const AliAODTrack* const trk) const = 0;
 
-  AliEmcalTrackSelection *fTrackSelection; ///< Object to be tested
+  AliEmcalTrackSelection* fTrackSelection; ///< Object to be tested
 
-private:
-  TestImplAliEmcalTrackSelection(const TestImplAliEmcalTrackSelection &);
-  TestImplAliEmcalTrackSelection *operator=(const TestImplAliEmcalTrackSelection &);
+ private:
+  TestImplAliEmcalTrackSelection(const TestImplAliEmcalTrackSelection&);
+  TestImplAliEmcalTrackSelection* operator=(const TestImplAliEmcalTrackSelection&);
 
   /// \cond CLASSIMP
   ClassDef(TestImplAliEmcalTrackSelection, 1);
   /// \endcond
 };
 
-class TestImplAliEmcalTrackSelectionITSpure : public TestImplAliEmcalTrackSelection
-{
-public:
+class TestImplAliEmcalTrackSelectionITSpure : public TestImplAliEmcalTrackSelection {
+ public:
   TestImplAliEmcalTrackSelectionITSpure();
-  TestImplAliEmcalTrackSelectionITSpure(const char *name, const char *period);
+  TestImplAliEmcalTrackSelectionITSpure(const char* name, const char* period);
   virtual ~TestImplAliEmcalTrackSelectionITSpure();
 
-protected:
-  virtual bool IsTrueTrack(const AliAODTrack *const trk) const;
+ protected:
+  virtual bool IsTrueTrack(const AliAODTrack* const trk) const;
 
-private:
-  AliESDtrackCuts *fRefCuts; ///< Reference cuts
+ private:
+  AliESDtrackCuts* fRefCuts; ///< Reference cuts
 
-  TestImplAliEmcalTrackSelectionITSpure(const TestImplAliEmcalTrackSelectionITSpure &);
-  TestImplAliEmcalTrackSelectionITSpure &operator=(const TestImplAliEmcalTrackSelectionITSpure &);
+  TestImplAliEmcalTrackSelectionITSpure(const TestImplAliEmcalTrackSelectionITSpure&);
+  TestImplAliEmcalTrackSelectionITSpure& operator=(const TestImplAliEmcalTrackSelectionITSpure&);
 
   /// \cond CLASSIMP
   ClassDef(TestImplAliEmcalTrackSelectionITSpure, 1);
   /// \endcond
 };
 
-class TestImplAliEmcalTrackSelectionHybrid : public TestImplAliEmcalTrackSelection
-{
-public:
+class TestImplAliEmcalTrackSelectionHybrid : public TestImplAliEmcalTrackSelection {
+ public:
   TestImplAliEmcalTrackSelectionHybrid() : TestImplAliEmcalTrackSelection() {}
-  TestImplAliEmcalTrackSelectionHybrid(const char *name, const char *period);
+  TestImplAliEmcalTrackSelectionHybrid(const char* name, const char* period);
   virtual ~TestImplAliEmcalTrackSelectionHybrid() {}
 
-protected:
-  virtual bool IsTrueTrack(const AliAODTrack *trk) const;
+ protected:
+  virtual bool IsTrueTrack(const AliAODTrack* trk) const;
 
-private:
-  TestImplAliEmcalTrackSelectionHybrid(const TestImplAliEmcalTrackSelectionHybrid &);
-  TestImplAliEmcalTrackSelectionHybrid &operator=(const TestImplAliEmcalTrackSelectionHybrid &);
+ private:
+  TestImplAliEmcalTrackSelectionHybrid(const TestImplAliEmcalTrackSelectionHybrid&);
+  TestImplAliEmcalTrackSelectionHybrid& operator=(const TestImplAliEmcalTrackSelectionHybrid&);
 
   /// \cond CLASSIMP
   ClassDef(TestImplAliEmcalTrackSelectionHybrid, 1);
   /// \endcond
 };
 
-class TestImplAliEmcalTrackSelectionTPConly : public TestImplAliEmcalTrackSelection
-{
-public:
+class TestImplAliEmcalTrackSelectionTPConly : public TestImplAliEmcalTrackSelection {
+ public:
   TestImplAliEmcalTrackSelectionTPConly() : TestImplAliEmcalTrackSelection() {}
-  TestImplAliEmcalTrackSelectionTPConly(const char *name, const char *period);
+  TestImplAliEmcalTrackSelectionTPConly(const char* name, const char* period);
   virtual ~TestImplAliEmcalTrackSelectionTPConly() {}
 
-protected:
-  virtual bool IsTrueTrack(const AliAODTrack *const trk) const;
+ protected:
+  virtual bool IsTrueTrack(const AliAODTrack* const trk) const;
 
-private:
-  TestImplAliEmcalTrackSelectionTPConly(const TestImplAliEmcalTrackSelectionTPConly &);
-  TestImplAliEmcalTrackSelectionTPConly &operator=(const TestImplAliEmcalTrackSelectionTPConly &);
+ private:
+  TestImplAliEmcalTrackSelectionTPConly(const TestImplAliEmcalTrackSelectionTPConly&);
+  TestImplAliEmcalTrackSelectionTPConly& operator=(const TestImplAliEmcalTrackSelectionTPConly&);
 
   /// \cond CLASSIMP
   ClassDef(TestImplAliEmcalTrackSelectionTPConly, 1);
   /// \endcond
 };
 
-class TestAliEmcalTrackSelection : public AliAnalysisTaskEmcalLight
-{
-public:
+class TestAliEmcalTrackSelection : public AliAnalysisTaskEmcalLight {
+ public:
   TestAliEmcalTrackSelection();
-  TestAliEmcalTrackSelection(const char *name);
+  TestAliEmcalTrackSelection(const char* name);
   virtual ~TestAliEmcalTrackSelection();
 
-  void SetPeriod(const char *period) { fPeriod = period; }
-  void AddTestImpl(TestImplAliEmcalTrackSelection *test);
+  void SetPeriod(const char* period) { fPeriod = period; }
+  void AddTestImpl(TestImplAliEmcalTrackSelection* test);
   void GenerateTestSuite();
-  static TestAliEmcalTrackSelection *AddTestAliEmcalTrackSelection(const char *name);
+  static TestAliEmcalTrackSelection* AddTestAliEmcalTrackSelection(const char* name);
 
-protected:
-  bool EvaluateTest(TestImplAliEmcalTrackSelection *test);
+ protected:
+  bool EvaluateTest(TestImplAliEmcalTrackSelection* test);
   virtual void UserCreateOutputObjects();
   virtual bool Run();
 
-private:
+ private:
   TString fPeriod;            ///< Period
-  TObjArray *fTestSuite;      ///< Test suite
-  THistManager *fTestResults; ///< Test result
+  TObjArray* fTestSuite;      ///< Test suite
+  THistManager* fTestResults; ///< Test result
 
-  TestAliEmcalTrackSelection(const TestAliEmcalTrackSelection &);
-  TestAliEmcalTrackSelection &operator=(const TestAliEmcalTrackSelection &);
+  TestAliEmcalTrackSelection(const TestAliEmcalTrackSelection&);
+  TestAliEmcalTrackSelection& operator=(const TestAliEmcalTrackSelection&);
 
   /// \cond CLASSIMP
   ClassDef(TestAliEmcalTrackSelection, 1);
