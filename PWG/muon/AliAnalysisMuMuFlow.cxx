@@ -46,16 +46,16 @@ fWeightMuon(kFALSE),
 fAccEffHisto(0x0),
 fMinvBinSeparator("+"),
 fsystLevel(systLevel),
+fPtFuncOld(0x0),
+fPtFuncNew(0x0),
+fYFuncOld(0x0),
+fYFuncNew(0x0),
 fBinsToFill(0x0),
 fMinvBinSize(0.025),
 fMinvMin(0.0),
 fMinvMax(16.0),
 fmcptcutmin(0.0),
 fmcptcutmax(12.0),
-fPtFuncOld(0x0),
-fPtFuncNew(0x0),
-fYFuncOld(0x0),
-fYFuncNew(0x0),
 fNDetectors(3),
 fHar(2)
 {
@@ -101,7 +101,7 @@ AliAnalysisMuMuFlow::DefineHistogramCollection(const char* eventSelection,
   Double_t minvMax = fMinvMax;
   Int_t nMinvBins = GetNbins(minvMin,minvMax,fMinvBinSize);
 
-  Int_t nMCMinvBins = GetNbins(minvMin,minvMax,0.1);
+  // Int_t nMCMinvBins = GetNbins(minvMin,minvMax,0.1);
   for(Int_t i=0; i<fNDetectors;i++){
     CreatePairHistos(kHistoForData| kHistoForMCInput,eventSelection,triggerClassName,centrality,Form("EVENTPLANE_%s",fDetectors[i].Data()),Form("#mu+#mu- event plane distributionwith %s",fDetectors[i].Data()),
                      600, -1.6, 1.6,-2);
@@ -345,22 +345,22 @@ void AliAnalysisMuMuFlow::FillHistosForPair(const char* eventSelection,
     AliWarning("MC is not implemented for flow analysis");
 
     // Get 4-vector pairs from MC stack
-    TLorentzVector mcpi(mcTracki->Px(),mcTracki->Py(),mcTracki->Pz(),TMath::Sqrt(AliAnalysisMuonUtility::MuonMass2()+mcTracki->P()*mcTracki->P()));
-    TLorentzVector mcpj(mcTrackj->Px(),mcTrackj->Py(),mcTrackj->Pz(),TMath::Sqrt(AliAnalysisMuonUtility::MuonMass2()+mcTrackj->P()*mcTrackj->P()));
-    mcpj+=mcpi;
+    // TLorentzVector mcpi(mcTracki->Px(),mcTracki->Py(),mcTracki->Pz(),TMath::Sqrt(AliAnalysisMuonUtility::MuonMass2()+mcTracki->P()*mcTracki->P()));
+    // TLorentzVector mcpj(mcTrackj->Px(),mcTrackj->Py(),mcTrackj->Pz(),TMath::Sqrt(AliAnalysisMuonUtility::MuonMass2()+mcTrackj->P()*mcTrackj->P()));
+    // mcpj+=mcpi;
 
-    TVector2 UMC(0.,0.);
+    // TVector2 UMC(0.,0.);
 
     // set pair4MomentumMC for the rest of the function
-    pair4MomentumMC = &mcpj;
-    UMC.Set(cos(fHar*pair4MomentumMC->Phi()),sin(fHar*pair4MomentumMC->Phi()));//Unitary Q vector of the dimuon
-    Double_t SPMC[3];//Scalar product
+    // pair4MomentumMC = &mcpj;
+    // UMC.Set(cos(fHar*pair4MomentumMC->Phi()),sin(fHar*pair4MomentumMC->Phi()));//Unitary Q vector of the dimuon
+    // Double_t SPMC[3];//Scalar product
 
     if ( !IsHistogramDisabled("U") )mcProxy->Histo("U")->Fill(U.X(),U.Y());
 
-    for(Int_t i=0; i<fNDetectors; i++){
-      SPMC[i] = UMC*Qn[i];
-    }
+    // for(Int_t i=0; i<fNDetectors; i++){
+    //   SPMC[i] = UMC*Qn[i];
+    // }
   }
 
   TIter nextBin(fBinsToFill);
@@ -491,20 +491,20 @@ void AliAnalysisMuMuFlow::FillHistosForPair(const char* eventSelection,
               if ( !IsHistogramDisabled(mUName.Data() )) proxy->Histo(mUName.Data())->Fill(U.X(),U.Y());
             }
 
-            if( okMC ){
-              TString hprofMCName("");
-              for(Int_t i=0; i<fNDetectors;i++){
-                hprofMCName= Form("SPMCvs%s_EP_%s",minvName.Data(),fDetectors[i].Data());
-                TProfile* hprofMC = Prof(eventSelection,triggerClassName,centrality,hprofMCName.Data());
-                if ( !hprofMC)AliError(Form("Could not get %s",hprofMCName.Data()));
-                else hprofMC->Fill(pair4Momentum.M(),SP[i],inputWeight);
-                TProfile* hprofMCcorr = Prof(eventSelection,triggerClassName,centrality,Form("%s_corr",hprofMCName.Data()));
-                if ( !hprofMCcorr)AliError(Form("Could not get %s",Form("%s_corr",hprofMCName.Data())));
-                else hprofMCcorr->Fill(pair4MomentumMC->M(),sqrt(SP[i]-Qn[i].X()*Qn[i].X()+Qn[i].Y()*Qn[i].Y()),inputWeight);//Correct
-              }
+            // if( okMC ){
+            //   TString hprofMCName("");
+            //   for(Int_t i=0; i<fNDetectors;i++){
+            //     hprofMCName= Form("SPMCvs%s_EP_%s",minvName.Data(),fDetectors[i].Data());
+            //     TProfile* hprofMC = Prof(eventSelection,triggerClassName,centrality,hprofMCName.Data());
+            //     if ( !hprofMC)AliError(Form("Could not get %s",hprofMCName.Data()));
+            //     else hprofMC->Fill(pair4Momentum.M(),SPMC[i],inputWeight);
+            //     TProfile* hprofMCcorr = Prof(eventSelection,triggerClassName,centrality,Form("%s_corr",hprofMCName.Data()));
+            //     if ( !hprofMCcorr)AliError(Form("Could not get %s",Form("%s_corr",hprofMCName.Data())));
+            //     else hprofMCcorr->Fill(pair4MomentumMC->M(),sqrt(SPMC[i]-Qn[i].X()*Qn[i].X()+Qn[i].Y()*Qn[i].Y()),inputWeight);//Correct
+            //   }
               // TString mUMCName(Form("UMC_%s",minvName.Data()));
               // if ( !IsHistogramDisabled(mUMCName.Data() )) proxy->Histo(mUMCName.Data())->Fill(UMC.X(),UMC.Y());
-            }
+            // }
           }
         }
       }
