@@ -88,11 +88,11 @@ fGeometry(0)
 
   // Checking Firmware from DCS config to choose algorithm
   fMedianMode = stuConf->GetMedianMode();
-
+  AliEMCALTriggerSTUDCSConfig* stuConfDCal = 0;
 
   if (iTriggerMapping >= 2) {
     rSize.Set( 40., 48. );  // This should be accurate
-    AliEMCALTriggerSTUDCSConfig* stuConfDCal = dcsConf->GetSTUDCSConfig(true);
+    stuConfDCal = dcsConf->GetSTUDCSConfig(true);
     if (stuConfDCal) {
       fSTUDCAL = new AliEMCALTriggerSTU(stuConfDCal, rSize);
       AliDebug(999,TString::Format("Found DCAL STU firmware %x.",stuConfDCal->GetFw()));
@@ -111,19 +111,19 @@ fGeometry(0)
 
   // Checking if the L1 thresholds are missing
   for (int ithr = 0; ithr < 2; ithr++) {
-    if (fSTU->GetThreshold(kL1GammaHigh + ithr) == 0) {
-      AliError(Form("EMCAL DCS STU has 0 threshold for EGA %d.  This trigger will not be simulated.  Check OCDB!!!",ithr));
+    if (stuConf->GetG(2,ithr) == 0) {
+      AliFatal(Form("EMCAL DCS STU has 0 threshold for EGA %d.  This trigger will not be simulated.  Check OCDB!!!",ithr));
     }
-    if (fSTU->GetThreshold(kL1JetHigh + ithr) == 0) {
-      AliError(Form("EMCAL DCS STU has 0 threshold for EJE %d.  This trigger will not be simulated.  Check OCDB!!!",ithr));
+    if (stuConf->GetJ(2,ithr) == 0) {
+      AliFatal(Form("EMCAL DCS STU has 0 threshold for EJE %d.  This trigger will not be simulated.  Check OCDB!!!",ithr));
     }
 
-    if (fSTUDCAL) {
-      if (fSTUDCAL->GetThreshold(kL1GammaHigh + ithr) == 0) {
-        AliError(Form("DCAL DCS STU has 0 threshold for EGA %d.  This trigger will not be simulated.  Check OCDB!!!",ithr));
+    if (stuConfDCal) {
+      if (stuConfDCal->GetG(2,ithr) == 0) {
+        AliFatal(Form("DCAL DCS STU has 0 threshold for EGA %d.  This trigger will not be simulated.  Check OCDB!!!",ithr));
       }
-      if (fSTUDCAL->GetThreshold(kL1JetHigh + ithr) == 0) {
-        AliError(Form("DCAL DCS STU has 0 threshold for EJE %d.  This trigger will not be simulated.  Check OCDB!!!",ithr));
+      if (stuConfDCal->GetG(2,ithr) == 0) {
+        AliFatal(Form("DCAL DCS STU has 0 threshold for EJE %d.  This trigger will not be simulated.  Check OCDB!!!",ithr));
       }
     }
   }
@@ -189,7 +189,7 @@ fGeometry(0)
 
       AliDebug(999,Form("Building TRU %d with dimensions %d x %d\n",iTRU,int(rSize.X()),int(rSize.Y())));
       if (truConf->GetGTHRL0() <= 1) { // Checking for the null L0 threshold
-        AliError(Form("TRU %d DCS config is missing L0 threshold.  L0 Trigger will not be simulated for this TRU.",iTRU));
+        AliFatal(Form("TRU %d DCS config is missing L0 threshold.  L0 Trigger will not be simulated for this TRU.",iTRU));
       }
 
       AliEMCALTriggerTRU *oTRU = static_cast<AliEMCALTriggerTRU*>(fTRU->At(i));
