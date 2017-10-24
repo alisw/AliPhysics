@@ -25,6 +25,7 @@
 #include <TFile.h>
 #include <TCanvas.h>
 #include <TLatex.h>
+#include <TLegend.h>
 #include <TStyle.h>
 
 // --- ANALYSIS system ---
@@ -33,6 +34,8 @@
 #include "AliAODEvent.h"               //include when compile
 #include "AliOADBContainer.h"          //include when compile
 
+void SetHisto(TH1 *Histo,TString Xtitel,TString Ytitel);
+void CanvasPartition(TCanvas *C,const Int_t Nx = 2,const Int_t Ny = 2, Float_t lMargin = 0.15, Float_t rMargin = 0.05, Float_t bMargin = 0.15, Float_t tMargin = 0.05);
 
 /// get all runnumbers from different groups
 /// and sort them to give a min and max range for the bad map.
@@ -120,7 +123,7 @@ void Test_OADB(TString period="LHC15n",Int_t trainNo=603,TString version="INT7Em
 	//......................................................
 	//..Get the OADB information
     //TString fBasePath="/Users/Eliane/Software/alice/sw/osx_x86-64/AliPhysics/latest-ali-master/OADB/EMCAL"; //..from AliPhysics
-    TString fBasePath="/Users/Eliane/Software/BadChannelAnalysis"; //..locally from OADB commit/e-mail to test quickly
+    TString fBasePath="."; //..locally from OADB commit/e-mail to test quickly
 
     AliOADBContainer *cont=new AliOADBContainer("");
 	cont->InitFromFile(Form("%s/EMCALBadChannels.root",fBasePath.Data()),"AliEMCALBadChannels");
@@ -128,7 +131,7 @@ void Test_OADB(TString period="LHC15n",Int_t trainNo=603,TString version="INT7Em
 	//..Get the .root file with the original histogram to compare if they coincide
 	//TString path        = Form("/Users/Eliane/Software/BadChannelAnalysis/AnalysisOutput/%s/Train_%i/VersionINT7Glob",period.Data(),trainNo);
 	//TString path        = Form("/Users/Eliane/Software/BadChannelAnalysis/AnalysisOutput/%s/Train_%i/Version4ManMasked",period.Data(),trainNo);
-	TString path        = Form("/Users/Eliane/Software/BadChannelAnalysis/AnalysisOutput/%s/Train_%i/Version%s",period.Data(),trainNo,version.Data());
+	TString path        = Form("./AnalysisOutput/%s/Train_%i/Version%s",period.Data(),trainNo,version.Data());
 	TString rootFileName= Form("%s_INT7_Histograms_V%s.root",period.Data(),version.Data());
 	TFile* outputRoot   = TFile::Open(Form("%s/%s",path.Data(),rootFileName.Data()));
 
@@ -294,9 +297,14 @@ void Test_OADB(TString period="LHC15n",Int_t trainNo=603,TString version="INT7Em
 ///________________________________________________________________________
 void Plot_CellList(TString period="LHC15n",Int_t trainNo=603,TString version="5",TString cellList="")
 {
+	gStyle->SetPadTopMargin(0.05);//0.05
+	gStyle->SetPadBottomMargin(0.18);//0.15
+	gStyle->SetPadRightMargin(0.05);
+	gStyle->SetPadLeftMargin(0.17);
+	gStyle->SetFrameFillColor(10);
 	//......................................................
 	//..open the text file and save the run IDs into the RunId[] array
-	cout<<"o o o Open .txt file with run indices. Name = " << cellList << endl;
+	cout<<"o o o Open .txt suggested cell IDs. Name = " << cellList << endl;
 	FILE *pFile = fopen(cellList.Data(), "r");
 	if(!pFile)
 	{
@@ -323,59 +331,121 @@ void Plot_CellList(TString period="LHC15n",Int_t trainNo=603,TString version="5"
 
 	//......................................................
 	//..Get the .root file with the original histogram to compare if they coincide
-	TString path        = Form("/Users/Eliane/Software/BadChannelAnalysis/AnalysisOutput/%s/Train_%i/Version%s",period.Data(),trainNo,version.Data());
-	TString rootFileName= Form("%s_INT7_Histograms_V%s.root",period.Data(),version.Data());
-	TFile* outputRoot   = TFile::Open(Form("%s/%s",path.Data(),rootFileName.Data()));
-	if(!outputRoot)cout<<"File "<<outputRoot->GetName()<<" does not exist"<<endl;
-	TH2F* h2DAmp   =(TH2F*)outputRoot->Get("hCellAmplitude");
-	TH2F* h2DRatio =(TH2F*)outputRoot->Get("ratio2DAmp");
+	TString path        = Form("./AnalysisOutput/%s/Train_%i",period.Data(),trainNo);
+	//TString rootFileName= Form("Version%s/%s_INT7_Histograms_V%s.root",period.Data(),version.Data());
+	TString rootFileName1= Form("Version1ManMasked/%s_INT7_Histograms_V1.root",period.Data());
+	TString rootFileName2= Form("Version2ManMasked/%s_INT7_Histograms_V2.root",period.Data());
+	TString rootFileName3= Form("Version3ManMasked/%s_INT7_Histograms_V3.root",period.Data());
+	TString rootFileName4= Form("Version4ManMasked/%s_INT7_Histograms_V4.root",period.Data());
+	TFile* outputRoot1   = TFile::Open(Form("%s/%s",path.Data(),rootFileName1.Data()));
+	if(!outputRoot1)cout<<"File "<<outputRoot1->GetName()<<" does not exist"<<endl;
+	TH2F* h2DAmp1   =(TH2F*)outputRoot1->Get("hCellAmplitude");
+	TH2F* h2DRatio1 =(TH2F*)outputRoot1->Get("ratio2DAmp");
+	TFile* outputRoot2   = TFile::Open(Form("%s/%s",path.Data(),rootFileName2.Data()));
+	if(!outputRoot2)cout<<"File "<<outputRoot2->GetName()<<" does not exist"<<endl;
+	TH2F* h2DAmp2   =(TH2F*)outputRoot2->Get("hCellAmplitude");
+	TH2F* h2DRatio2 =(TH2F*)outputRoot2->Get("ratio2DAmp");
+	TFile* outputRoot3   = TFile::Open(Form("%s/%s",path.Data(),rootFileName3.Data()));
+	if(!outputRoot3)cout<<"File "<<outputRoot3->GetName()<<" does not exist"<<endl;
+	TH2F* h2DAmp3   =(TH2F*)outputRoot3->Get("hCellAmplitude");
+	TH2F* h2DRatio3 =(TH2F*)outputRoot3->Get("ratio2DAmp");
+	TFile* outputRoot4   = TFile::Open(Form("%s/%s",path.Data(),rootFileName4.Data()));
+	if(!outputRoot3)cout<<"File "<<outputRoot4->GetName()<<" does not exist"<<endl;
+	TH2F* h2DAmp4   =(TH2F*)outputRoot4->Get("hCellAmplitude");
+	TH2F* h2DRatio4 =(TH2F*)outputRoot4->Get("ratio2DAmp");
 
 	TCanvas *c1 = new TCanvas(1);
 	c1->Divide(2);
 	c1->cd(1);
-	h2DAmp->Draw("colz");
+	SetHisto(h2DAmp1,"","");
+	h2DAmp1->Draw("colz");
 	c1->cd(2);
-	h2DRatio->Draw("colz");
+	SetHisto(h2DRatio1,"","");
+	h2DRatio1->Draw("colz");
 
-
-
-	Int_t totalperCv = 16;
+	//.. be aware of the special sturcture of the canvas
+	//.. canvas has totalperCv*2 pads
+//	Int_t totalperCv = 4;
+	Int_t totalperCv = 8;
 	Int_t nPad = TMath::Sqrt(totalperCv);
 	Int_t nCv  = nCells/totalperCv+1;
 	if(nCv<1)nCv=1;
 
 	cout<<"    o create: "<<nCv<<" Canvases with "<<nPad*nPad<<" pads"<<endl;
 	//..to compare specific cells over the runs
-	TCanvas **cComp     = new TCanvas*[nCv];
-	TCanvas **cCompR     = new TCanvas*[nCv];
+	TCanvas **cCompAll  = new TCanvas*[nCv];
 	for(Int_t i=0;i<nCv;i++)
 	{
-		cComp[i]    = new TCanvas(TString::Format("CompareGood%d", i), TString::Format("V) Candidates (%d/%d)", i+1, nCv), 1000,750);
-		cComp[i]    ->Divide(nPad,nPad,0.001,0.001);
-		cCompR[i]    = new TCanvas(TString::Format("CompareGoodR%d", i), TString::Format("V) Ratio (%d/%d)", i+1, nCv), 1000,750);
-		cCompR[i]    ->Divide(nPad,nPad,0.001,0.001);
+		cCompAll[i] = new TCanvas(TString::Format("CompareGoodAll%d", i), TString::Format("V) Both (%d/%d)", i+1, nCv), 1000,750);
+		CanvasPartition(cCompAll[i],4,totalperCv/2,0.15,0.02,0.13,0.05);
 	}
-	cout<<"    o Fill Canvases with bad cells canvases"<<endl;
+	TLegend *leg2 = new TLegend(0.60,0.60,0.9,0.85);
+	cout<<"    o Fill Canvases with bad cells histograms"<<endl;
 
+	Int_t zoomRange=20;
+	Double_t range=10;
+	Int_t shift=0;
+	cout<<"cell number: "<<endl;
 	for(Int_t icell = 0; icell < nCells; icell++)
 	{
-		TH1D *htmpCellAllRuns     =h2DAmp->ProjectionX(TString::Format("hIDProj_cell%d", icell), icell+1, icell+1);
-		cout<<"cell number:"<<cellIdVec.at(icell)<<endl;
-		cComp[(icell)/totalperCv]->cd(((icell)%totalperCv)+1)->SetLogy();
-		//SetHisto(htmpCellAllRuns,Form("Energy of cell %i",cellIdVec.at(icell)),"Number of Hits",0);
-		//htmpCellAllRuns->GetXaxis()->SetRangeUser(0,3);
-		htmpCellAllRuns->Draw("hist");
+		Int_t cellID=cellIdVec.at(icell);
+		cout<<cellID<<", "<<flush;
 
+		TH1D *htmpCellAllRuns1     =h2DAmp1->ProjectionX(TString::Format("hIDProj1_cell%d", cellID), cellID+1, cellID+1);
+		SetHisto(htmpCellAllRuns1,Form("Energy [cell %i]",cellID),"Number of Hits/Events");
 
-		TH1D *htmpCellRatioAllRuns     =h2DRatio->ProjectionX(TString::Format("hIDRatioProj_cell%d", icell), icell+1, icell+1);
-		cout<<"cell number:"<<cellIdVec.at(icell)<<endl;
-		cCompR[(icell)/totalperCv]->cd(((icell)%totalperCv)+1)->SetLogy();
-		//SetHisto(htmpCellAllRuns,Form("Energy of cell %i",cellIdVec.at(icell)),"Number of Hits",0);
-		//htmpCellAllRuns->GetXaxis()->SetRangeUser(0,3);
-		htmpCellRatioAllRuns->Draw("hist");
-}
+		TH1D *htmpCellRatioAllRuns1=h2DRatio1->ProjectionX(TString::Format("hIDRProj1_cell%d", cellID), cellID+1, cellID+1);
+		SetHisto(htmpCellRatioAllRuns1,Form("Energy [cell %i]",cellID),"No. Hits/av. No. Hits");
 
-	TString pdfName="MoreBadCellsCandidates.pdf";
+		TH1D *htmpCellAllRuns2     =h2DAmp2->ProjectionX(TString::Format("hIDProj2_cell%d", cellID), cellID+1, cellID+1);
+		TH1D *htmpCellRatioAllRuns2=h2DRatio2->ProjectionX(TString::Format("hIDRProj2_cell%d", cellID), cellID+1, cellID+1);
+		TH1D *htmpCellAllRuns3     =h2DAmp3->ProjectionX(TString::Format("hIDProj3_cell%d", cellID), cellID+1, cellID+1);
+		TH1D *htmpCellRatioAllRuns3=h2DRatio3->ProjectionX(TString::Format("hIDRProj3_cell%d", cellID), cellID+1, cellID+1);
+		TH1D *htmpCellAllRuns4     =h2DAmp4->ProjectionX(TString::Format("hIDProj4_cell%d", cellID), cellID+1, cellID+1);
+		TH1D *htmpCellRatioAllRuns4=h2DRatio4->ProjectionX(TString::Format("hIDRProj4_cell%d", cellID), cellID+1, cellID+1);
+
+		if(((icell)%8)<4) shift=0;
+		else              shift=8;
+		cCompAll[(icell)/totalperCv]->cd(((icell)%4)+1+shift)->SetLogy();
+		htmpCellAllRuns1->GetXaxis()->SetRangeUser(0,range);
+		htmpCellAllRuns1->Draw("hist");
+		htmpCellAllRuns2->SetLineColor(kBlue-7);
+		htmpCellAllRuns2->DrawCopy("same hist");
+		htmpCellAllRuns3->SetLineColor(kGreen-2);
+		htmpCellAllRuns3->DrawCopy("same hist");
+		htmpCellAllRuns4->SetLineColor(kViolet-1);
+		htmpCellAllRuns4->DrawCopy("same hist");
+
+		if(icell==0)
+		{
+			leg2->AddEntry(htmpCellAllRuns1,"Block1","l");
+			leg2->AddEntry(htmpCellAllRuns2,"Block2","l");
+			leg2->AddEntry(htmpCellAllRuns3,"Block3","l");
+			leg2->AddEntry(htmpCellAllRuns4,"Block4","l");
+			leg2->SetTextSize(0.07);
+			leg2->SetBorderSize(0);
+			leg2->SetFillColorAlpha(10, 0);
+			leg2->Draw("same");
+		}
+		else if((icell)%4==0)
+		{
+			leg2->Draw("same");
+		}
+
+		cCompAll[(icell)/totalperCv]->cd(((icell)%4)+5+shift)->SetLogy();
+		htmpCellRatioAllRuns1->GetXaxis()->SetRangeUser(0,range);
+		//htmpCellRatioAllRuns1->GetYaxis()->SetRangeUser(0,5);
+		htmpCellRatioAllRuns1->Draw("hist");
+		htmpCellRatioAllRuns2->SetLineColor(kBlue-7);
+		htmpCellRatioAllRuns2->Draw("same hist");
+		htmpCellRatioAllRuns3->SetLineColor(kGreen-2);
+		htmpCellRatioAllRuns3->Draw("same hist");
+		htmpCellRatioAllRuns4->SetLineColor(kViolet-1);
+		htmpCellRatioAllRuns4->Draw("same hist");
+
+	}
+	cout<<endl;
+	TString pdfName= Form("%s_MoreBadCellsCandidates.pdf",period.Data());
 	//..plot the canvases of cells into a .pdf file
 	for(Int_t can=0;can<nCv;can++)
 	{
@@ -383,24 +453,96 @@ void Plot_CellList(TString period="LHC15n",Int_t trainNo=603,TString version="5"
 		if(can==0)
 		{
 			//..first pad
-			//internal_pdfName1 +="(";
-			cComp[can]    ->Print(Form("%s(",pdfName.Data()));
+			cCompAll[can]    ->Print(Form("%s(",pdfName.Data()));
 		}
-		else if(can==(nCv-1))
+		else if(can==(nCv-1))//..last canvas
 		{
 			//..last pad
-			//internal_pdfName1 +=")";
-			cComp[can]    ->Print(Form("%s)",pdfName.Data()));
+			cCompAll[can]    ->Print(Form("%s)",pdfName.Data()));
 		}
 		else
 		{
 			//..all pads in between
-			cComp[can]    ->Print(Form("%s",pdfName.Data()));
+			cCompAll[can]    ->Print(Form("%s",pdfName.Data()));
 		}
 	}
-
-
-
 }
+///
+/// Funtion to set TH1 histograms to a similar style
+///
+//________________________________________________________________________
+void SetHisto(TH1 *Histo,TString Xtitel,TString Ytitel)
+{
+	Histo->SetStats(0);
+	Histo->SetTitle("");
 
+	Histo->GetYaxis()->SetTitleOffset(1.1);
+	Histo->GetXaxis()->SetTitleOffset(1.1);
+	Histo->GetXaxis()->SetLabelSize(0.05);
+	Histo->GetYaxis()->SetLabelSize(0.05);
+	Histo->GetXaxis()->SetTitleSize(0.06);
+	Histo->GetYaxis()->SetTitleSize(0.06);
+	Histo->GetXaxis()->SetNdivisions(505);
+	Histo->GetYaxis()->SetNdivisions(505);
 
+	Histo->GetXaxis()->SetLabelFont(42);
+	Histo->GetYaxis()->SetLabelFont(42);
+	Histo->GetXaxis()->SetTitleFont(42);
+	Histo->GetYaxis()->SetTitleFont(42);
+	if(Xtitel!="")Histo->GetXaxis()->SetTitle(Xtitel);
+	if(Ytitel!="")Histo->GetYaxis()->SetTitle(Ytitel);
+
+	Histo->SetLineColor(1);
+	Histo->SetMarkerColor(1);
+	Histo->SetMarkerStyle(20);
+	Histo->SetMarkerSize(0.5);
+}
+///
+/// Function to set up canvas pads such that they share a common axis
+///
+//___________________________________________
+void CanvasPartition(TCanvas *C,const Int_t Nx,const Int_t Ny,
+                     Float_t lMargin, Float_t rMargin,
+                     Float_t bMargin, Float_t tMargin)
+{
+   if (!C) return;
+
+   C->Divide(Nx,Ny,0.000,0.000);
+   //..Top row
+   for (Int_t i=0;i<Nx;i++)
+   {
+	   C->cd(i+1)->SetLogy();
+	   gPad->SetLeftMargin(lMargin);
+	   gPad->SetRightMargin(rMargin);
+	   gPad->SetBottomMargin(0);
+	   gPad->SetTopMargin(tMargin);
+       //pad->Draw();??
+  }
+   //..Bottom row
+   for (Int_t i=0;i<Nx;i++)
+   {
+	   C->cd(i+1+Nx);
+	   gPad->SetLeftMargin(lMargin);
+	   gPad->SetRightMargin(rMargin);
+	   gPad->SetBottomMargin(bMargin);
+	   gPad->SetTopMargin(0);
+   }
+   //..Top row
+   for (Int_t i=0;i<Nx;i++)
+   {
+	   C->cd(i+1+2*Nx)->SetLogy();
+	   gPad->SetLeftMargin(lMargin);
+	   gPad->SetRightMargin(rMargin);
+	   gPad->SetBottomMargin(0);
+	   gPad->SetTopMargin(tMargin);
+   }
+   //..Bottom row
+   for (Int_t i=0;i<Nx;i++)
+   {
+	   C->cd(i+1+3*Nx);
+	   gPad->SetLeftMargin(lMargin);
+	   gPad->SetRightMargin(rMargin);
+	   gPad->SetBottomMargin(bMargin);
+	   gPad->SetTopMargin(0);
+   }
+}
