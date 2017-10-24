@@ -37,6 +37,7 @@ public:
   virtual ~AliDielectronSignalFunc();
 
   virtual void Process(TObjArray * const arrhist);
+  void ProcessCombinatorialPlusFit(TObjArray * const arrhist);      // subtract the combinatorial bg, then fit the SE +- distribution
   void ProcessFit(TObjArray * const arrhist);      // fit the SE +- distribution
   void ProcessFitLS(TObjArray * const arrhist);       // substract the fitted SE like-sign background
   void ProcessFitEM(TObjArray * const arrhist);       // substract the fitted SE+ME like-sign background
@@ -65,6 +66,9 @@ public:
   Double_t PeakFunMC(const Double_t *x, const Double_t *par); // peak function from a mc histo
   Double_t PeakFunCB(const Double_t *x, const Double_t *par); // crystal ball function
   Double_t PeakFunGaus(const Double_t *x, const Double_t *par); // gaussian
+  
+  
+  TH1* GetCombinatorialBackgroundHistogram()      const {return fHistCombinatorialBackground;}
 
 protected:
 
@@ -85,9 +89,10 @@ protected:
   
   static Int_t    fNparPeak;              // number of parameters for peak function
   static Int_t    fNparBgnd;              // number of parameters for background function
+  TH1 *fHistCombinatorialBackground;     // histogram of combinatorial bg
 
   
-  ClassDef(AliDielectronSignalFunc,3)         // class for signal extraction using a combined bgrd+signal fit
+  ClassDef(AliDielectronSignalFunc, 4)         // class for signal extraction using a combined bgrd+signal fit
 };
 
 #endif
