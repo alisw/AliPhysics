@@ -413,7 +413,8 @@ bool AliYAMLConfiguration::IsSharedValue(std::string & value) const
 /**
  * Print a particular configuration.
  *
- * @param[in] index Index of the YAML configuration.
+ * @param[in, out] stream output stream.
+ * @param[in] configPair Pair of string and YAML::Node containing the configuration to be printed.
  */
 void AliYAMLConfiguration::PrintConfiguration(std::ostream & stream, const std::pair<std::string, YAML::Node> & configPair) const
 {
