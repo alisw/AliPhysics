@@ -94,6 +94,7 @@ protected:
 	  Int_t   fNoOfCells;                   ///< Number of cells in EMCal and DCal
 	  Int_t   fCellStartDCal;               ///< ID of the first cell in the DCal
 	  Int_t   fStartCell;                   ///< ID of the first cell you want to check
+	  Int_t   fStartCellSM[21];             ///< CellIDs of first cell in the  20SMs plus last cell ID
 
 	  //Genergal paths
 	  TString fAnalysisOutput;              ///< The list with bad channels and histograms are saved in this folder

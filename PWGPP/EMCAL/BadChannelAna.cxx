@@ -185,10 +185,13 @@ void BadChannelAna::Init()
 	fCaloUtils->SetRunNumber(fCurrentRunNumber);
 	fCaloUtils->AccessGeometry(aod);
 
-    fNoOfCells    =fCaloUtils->GetEMCALGeometry()->GetNCells(); //..Very important number, never change after that point!
-    Int_t nModules=fCaloUtils->GetEMCALGeometry()->GetNumberOfSuperModules();
+	fNoOfCells    =fCaloUtils->GetEMCALGeometry()->GetNCells(); //..Very important number, never change after that point!
+	Int_t nModules=fCaloUtils->GetEMCALGeometry()->GetNumberOfSuperModules();
+	//..These are the first cell IDs of each SM and a cell ID of a nonExsting SM20 to mark the end (17664)
+	Int_t array_StartCellSM_Value[21]   ={0,1152,2304,3456,4608,5760,6912,8064,9216,10368,11520,11904,12288,13056,13824,14592,15360,16128,16896,17280,17664};
+	memcpy (fStartCellSM, array_StartCellSM_Value, sizeof (fStartCellSM));
 
-    //..This is how the calorimeter looks like in the current period (defined by example run ID fCurrentRunNumber)
+	//..This is how the calorimeter looks like in the current period (defined by example run ID fCurrentRunNumber)
 	cout<<"Called geometry for run number: "<<fCurrentRunNumber<<endl;
 	cout<<"Number of supermod: "<<nModules<<endl;
 	cout<<"Number of cells: "<<fNoOfCells<<endl;
@@ -1260,7 +1263,7 @@ void BadChannelAna::SummarizeResults()
 	TH1* projEnergyMask = cellAmp_masked->ProjectionX(Form("%sMask_Proj",cellAmp_masked->GetName()),fStartCell,fNoOfCells);
 	projEnergyMask->SetXTitle("Cell Energy [GeV]");
 	projEnergyMask->GetYaxis()->SetTitleOffset(1.6);
-	projEnergyMask->SetLineColor(kTeal+3);
+	projEnergyMask->SetLineColor(kGreen+1);
 	projEnergyMask->DrawCopy(" hist");
 
 	TH1* projEnergy = fCellAmplitude->ProjectionX(Form("%s_Proj",fCellAmplitude->GetName()),fStartCell,fNoOfCells);
@@ -1276,10 +1279,74 @@ void BadChannelAna::SummarizeResults()
 	projTime->DrawCopy("same hist");
 	c1_proj->Update();
 
+
+	TCanvas *c1_projSM = new TCanvas("CellPropPProjSM","III summary of cell Energy per SM",1200,900);
+	c1_projSM->Divide(5,4,0.001,0.001);
+	TH1* projEnergyMaskSM[20];
+	TH1* projEnergySM[20];
+	for(Int_t iSM=0;iSM<20;iSM++)
+	{
+		c1_projSM->cd(iSM+1)->SetLogy();
+		gPad->SetTopMargin(0.03);
+		gPad->SetBottomMargin(0.11);
+		projEnergyMaskSM[iSM] = cellAmp_masked->ProjectionX(Form("%sMask_ProjSM%i",cellAmp_masked->GetName(),iSM),fStartCellSM[iSM],fStartCellSM[iSM+1]-1);
+		projEnergyMaskSM[iSM]->SetXTitle(Form("Cell Energy [GeV], SM%i",iSM));
+		projEnergyMaskSM[iSM]->GetYaxis()->SetTitleOffset(1.6);
+		projEnergyMaskSM[iSM]->GetYaxis()->SetLabelSize(0.06);
+		projEnergyMaskSM[iSM]->GetXaxis()->SetLabelSize(0.06);
+		projEnergyMaskSM[iSM]->GetXaxis()->SetRangeUser(0,20);
+		projEnergyMaskSM[iSM]->GetXaxis()->SetTitleSize(0.06);
+		projEnergyMaskSM[iSM]->SetLineColor(kGreen+1);
+		projEnergyMaskSM[iSM]->DrawCopy(" hist");
+
+		projEnergySM[iSM] = fCellAmplitude->ProjectionX(Form("%s_ProjSM%i",fCellAmplitude->GetName(),iSM),fStartCellSM[iSM],fStartCellSM[iSM+1]-1);
+		projEnergySM[iSM]->DrawCopy("same hist");
+	}
+
+	TCanvas *c1_projRSM = new TCanvas("CellPropPProjRSM","III summary of cell Energy Ratio per SM",1200,900);
+	c1_projRSM->Divide(5,4,0.001,0.001);
+	for(Int_t iSM=0;iSM<20;iSM++)
+	{
+		c1_projRSM->cd(iSM+1)->SetLogy();
+		gPad->SetTopMargin(0.03);
+		gPad->SetBottomMargin(0.11);
+		//projEnergyMaskSM[iSM]->GetXaxis()->SetRangeUser(0,10);
+		projEnergyMaskSM[iSM]->SetLineColor(kGray+1);
+		projEnergyMaskSM[iSM]->Divide(hRefDistr);
+		projEnergyMaskSM[iSM]->DrawCopy("hist");
+	}
+
+	TCanvas *c1_projTimeSM = new TCanvas("CellPropPProjTimeSM","III summary of cell Time per SM",1200,900);
+	c1_projTimeSM->Divide(5,4,0.001,0.001);
+	TH1* projTimeMaskSM[20];
+	TH1* projTimeSM[20];
+	for(Int_t iSM=0;iSM<20;iSM++)
+	{
+		c1_projTimeSM->cd(iSM+1)->SetLogy();
+		gPad->SetTopMargin(0.03);
+		gPad->SetBottomMargin(0.11);
+		projTimeMaskSM[iSM] = cellTime_masked->ProjectionX(Form("%sMask_ProjSMTime%i",cellAmp_masked->GetName(),iSM),fStartCellSM[iSM],fStartCellSM[iSM+1]-1);
+		projTimeMaskSM[iSM]->SetXTitle(Form("Cell Time [ns], SM%i",iSM));
+		projTimeMaskSM[iSM]->GetYaxis()->SetTitleOffset(1.6);
+		projTimeMaskSM[iSM]->GetYaxis()->SetLabelSize(0.06);
+		projTimeMaskSM[iSM]->GetXaxis()->SetLabelSize(0.06);
+		//projTimeMaskSM[iSM]->GetXaxis()->SetRangeUser(0,20);
+		projTimeMaskSM[iSM]->GetXaxis()->SetTitleSize(0.06);
+		projTimeMaskSM[iSM]->SetLineColor(kGreen+1);
+		projTimeMaskSM[iSM]->DrawCopy(" hist");
+
+		projTimeSM[iSM] = fCellTime->ProjectionX(Form("%s_ProjSMTime%i",fCellAmplitude->GetName(),iSM),fStartCellSM[iSM],fStartCellSM[iSM+1]-1);
+		projTimeSM[iSM]->DrawCopy("same hist");
+	}
+
 	//..save to a PDF
-	c1       ->Print(Form("%s(",cellProp.Data()));
-	c1_ratio ->Print(Form("%s",cellProp.Data()));
-	c1_proj  ->Print(Form("%s)",cellProp.Data()));
+	c1           ->Print(Form("%s(",cellProp.Data()));
+	c1_ratio     ->Print(Form("%s",cellProp.Data()));
+	c1_proj      ->Print(Form("%s",cellProp.Data()));
+	c1_projSM    ->Print(Form("%s",cellProp.Data()));
+	c1_projRSM   ->Print(Form("%s",cellProp.Data()));
+	c1_projTimeSM->Print(Form("%s)",cellProp.Data()));
+
 	//..Scale the histogtams by the number of events
 	//..so that they are more comparable for a run-by-run
 	//..analysis
@@ -1404,6 +1471,9 @@ void BadChannelAna::SummarizeResults()
 	fRootFile->WriteObject(c1,c1->GetName());
 	fRootFile->WriteObject(c1_ratio,c1_ratio->GetName());
 	fRootFile->WriteObject(c1_proj,c1_proj->GetName());
+	fRootFile->WriteObject(c1_projSM,c1_projSM->GetName());
+	fRootFile->WriteObject(c1_projRSM,c1_projRSM->GetName());
+	fRootFile->WriteObject(c1_projTimeSM,c1_projTimeSM->GetName());
 	fRootFile->WriteObject(c2,c2->GetName());
 	fRootFile->WriteObject(fCellAmplitude,fCellAmplitude->GetName());
 	fRootFile->WriteObject(cellAmp_masked,cellAmp_masked->GetName());
