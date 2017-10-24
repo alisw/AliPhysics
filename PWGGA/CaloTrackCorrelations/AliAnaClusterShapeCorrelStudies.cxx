@@ -1800,6 +1800,7 @@ void  AliAnaClusterShapeCorrelStudies::ClusterMatchedToTrackPID
   if(!track) 
   {
     matchedPID = -1;
+    AliDebug(1,Form("No track found with matches %d",clus->GetNTracksMatched()));
     return ;
   }
   
@@ -1825,16 +1826,14 @@ void  AliAnaClusterShapeCorrelStudies::ClusterMatchedToTrackPID
   
   if      ( dedx >= fdEdXMinEle && dedx < fdEdXMaxEle ) matchedPID = 1; 
   else if ( dedx >= fdEdXMinHad && dedx < fdEdXMaxHad ) matchedPID = 2;  
-  else
-  {
-    AliDebug(1,Form("dEdX out of range %2.2f",dedx));
-    matchedPID = -1;
-  }
+  else                                                  matchedPID =-1;
+  
+  AliDebug(1,Form("matches %d; dEdX %2.2f; matched PID %d",clus->GetNTracksMatched(),dedx,matchedPID));
 }
 
 //____________________________________________________________________________
 /// Fill clusters related histograms, execute here the loop of clusters
-/// apply basic selection cuts (track matching, gooness, exoticity, timing)
+/// apply basic selection cuts (track matching, goodness, exoticity, timing)
 /// and the call to the different methods
 /// filling different type of histograms:
 /// * Cluster Asymmetry
@@ -1945,7 +1944,7 @@ void AliAnaClusterShapeCorrelStudies::ClusterLoopHistograms()
     matched = GetCaloPID()->IsTrackMatched(clus,GetCaloUtils(), GetReader()->GetInputEvent());
  
     Int_t matchedPID = 0;
-    if ( matched && fStudyShape )
+    if ( matched && fStudyShape ) 
       ClusterMatchedToTrackPID(clus, matchedPID);
     
     // Get amp and time of max cell, recalibrate and calculate things
