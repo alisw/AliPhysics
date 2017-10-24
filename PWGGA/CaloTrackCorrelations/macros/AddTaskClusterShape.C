@@ -719,12 +719,13 @@ AliAnaCalorimeterQA* ConfigureQAAnalysis(TString col,           Bool_t  simulati
   //  ana->SwitchOffStudyWeight();
   //  ana->SwitchOnStudyTCardCorrelation() ;
   //  ana->SwitchOffStudyM02Dependence() ;
-  ana->SwitchOffFillAllTrackMatchingHistogram();
+  ana->SwitchOnFillAllTrackMatchingHistogram();
   //  ana->SwitchOnStudyExotic();
   
   ana->SwitchOffFillAllCellTimeHisto() ;
-  ana->SwitchOffFillAllCellHistogram();
   
+  ana->SwitchOnFillAllCellHistogram();
+    
   ana->AddToHistogramsName("QA_"); // Begining of histograms name
   
   SetAnalysisCommonParameters(ana,calorimeter,year,col,simulation,printSettings,debug); // see method below
