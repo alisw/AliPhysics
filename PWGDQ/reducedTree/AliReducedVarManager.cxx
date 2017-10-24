@@ -549,34 +549,36 @@ void AliReducedVarManager::FillEventInfo(BASEEVENT* baseEvent, Float_t* values, 
   for( Int_t iEstimator = 0; iEstimator < kNMultiplicityEstimators; ++iEstimator){
     Int_t estimator = kMultiplicity + iEstimator;
     if( estimator == kVZEROACTotalMult || estimator == kSPDnTracklets10EtaVtxCorr ){
-       for( Int_t iCorrection = 0; iCorrection < kNCorrections; ++iCorrection  ){
-          for(Int_t iReference = 0 ; iReference <  kNReferenceMultiplicities; ++iReference ){
-            Int_t indexNotSmeared = GetCorrectedMultiplicity( estimator, iCorrection, iReference, kNoSmearing );
-            Int_t indexSmeared    = GetCorrectedMultiplicity( estimator, iCorrection, iReference, kPoissonSmearing );
-            values[indexNotSmeared] = 0.;
-            values[indexSmeared] = 0.;
-            if( estimator == kSPDnTracklets10EtaVtxCorr ){
-              for( Int_t ieta=6; ieta<26; ++ieta ) {
-                Int_t indexBinNotSmeared = GetCorrectedMultiplicity( kSPDntrackletsEtaBin+ieta, iCorrection, iReference, kNoSmearing );
-                Int_t indexBinSmeared    = GetCorrectedMultiplicity( kSPDntrackletsEtaBin+ieta, iCorrection, iReference, kPoissonSmearing );
+       if( fgAvgMultVsVtxAndRun[iEstimator] ){
+         for( Int_t iCorrection = 0; iCorrection < kNCorrections; ++iCorrection  ){
+            for(Int_t iReference = 0 ; iReference <  kNReferenceMultiplicities; ++iReference ){
+               Int_t indexNotSmeared = GetCorrectedMultiplicity( estimator, iCorrection, iReference, kNoSmearing );
+               Int_t indexSmeared    = GetCorrectedMultiplicity( estimator, iCorrection, iReference, kPoissonSmearing );
+               values[indexNotSmeared] = 0.;
+               values[indexSmeared] = 0.;
+               if( estimator == kSPDnTracklets10EtaVtxCorr ){
+                  for( Int_t ieta=6; ieta<26; ++ieta ) {
+                     Int_t indexBinNotSmeared = GetCorrectedMultiplicity( kSPDntrackletsEtaBin+ieta, iCorrection, iReference, kNoSmearing );
+                     Int_t indexBinSmeared    = GetCorrectedMultiplicity( kSPDntrackletsEtaBin+ieta, iCorrection, iReference, kPoissonSmearing );
                 
-                if( fgUsedVars[indexBinNotSmeared]) values[ indexNotSmeared ] += values[ indexBinNotSmeared ];
-                if( fgUsedVars[indexBinSmeared]) values[ indexSmeared ] += values[ indexBinSmeared ];
-              }
-            }
-            else{
-              Int_t indexAnotSmeared = GetCorrectedMultiplicity( kVZEROATotalMult, iCorrection, iReference, kNoSmearing );
-              Int_t indexCnotSmeared = GetCorrectedMultiplicity( kVZEROCTotalMult, iCorrection, iReference, kNoSmearing );
+                     if( fgUsedVars[indexBinNotSmeared]) values[ indexNotSmeared ] += values[ indexBinNotSmeared ];
+                     if( fgUsedVars[indexBinSmeared]) values[ indexSmeared ] += values[ indexBinSmeared ];
+                  }
+               }
+               else{
+                  Int_t indexAnotSmeared = GetCorrectedMultiplicity( kVZEROATotalMult, iCorrection, iReference, kNoSmearing );
+                  Int_t indexCnotSmeared = GetCorrectedMultiplicity( kVZEROCTotalMult, iCorrection, iReference, kNoSmearing );
               
-              Int_t indexAsmeared = GetCorrectedMultiplicity( kVZEROATotalMult, iCorrection, iReference, kPoissonSmearing );
-              Int_t indexCsmeared = GetCorrectedMultiplicity( kVZEROCTotalMult, iCorrection, iReference, kPoissonSmearing );
+                  Int_t indexAsmeared = GetCorrectedMultiplicity( kVZEROATotalMult, iCorrection, iReference, kPoissonSmearing );
+                  Int_t indexCsmeared = GetCorrectedMultiplicity( kVZEROCTotalMult, iCorrection, iReference, kPoissonSmearing );
               
-              values[ indexNotSmeared ] = values[ indexAnotSmeared ] + values[ indexCnotSmeared ];
-              values[ indexSmeared ]    = values[ indexAsmeared ] + values[ indexCsmeared ];
+                  values[ indexNotSmeared ] = values[ indexAnotSmeared ] + values[ indexCnotSmeared ];
+                  values[ indexSmeared ]    = values[ indexAsmeared ] + values[ indexCsmeared ];
+               }
             }
-          }
-       }
-    }
+         }
+       } 
+    }  // end if VZEROAC || kSPDnTracklets10EtaVtxCorr estimators
     
     else{
       if( fgAvgMultVsVtxAndRun[iEstimator] ){
@@ -632,8 +634,8 @@ void AliReducedVarManager::FillEventInfo(BASEEVENT* baseEvent, Float_t* values, 
           }
         }
       }
-    }
-  }
+    }  // end else
+  }  // end loop over multiplicity estimators
 
   fgUsedVars[kNTracksITSoutVsSPDtracklets] = kTRUE;  
   fgUsedVars[kNTracksTPCoutVsSPDtracklets] = kTRUE;
