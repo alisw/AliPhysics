@@ -1636,9 +1636,9 @@ void AliAnalysisTaskEMCALClusterize::MakeCellTCardCorrelation()
   {
     id  = fCaloCells->GetCellNumber(icell);
     amp = fCaloCells->GetAmplitude (icell); // fCaloCells->GetCellAmplitude(id);
-
+    
     if ( amp <= fTCardCorrMinAmp ) continue ;
-  
+    
     //
     // First get the SM, col-row of this tower
     Int_t imod = -1, iphi =-1, ieta=-1,iTower = -1, iIphi = -1, iIeta = -1; 
@@ -1649,8 +1649,10 @@ void AliAnalysisTaskEMCALClusterize::MakeCellTCardCorrelation()
     // Determine randomly if we want to create a correlation for this cell, 
     // depending the SM number of the cell
     Float_t rand = fRandom.Uniform(0, 1);
-        
+    
     if ( rand > fTCardCorrInduceEnerProb[imod] ) continue;
+    
+    AliDebug(1,Form("Reference cell absId %d, iEta %d, iPhi %d, amp %2.3f",id,ieta,iphi,amp));
     
     //
     // Get the absId of the cells in the cross and same T-Card
@@ -1659,7 +1661,7 @@ void AliAnalysisTaskEMCALClusterize::MakeCellTCardCorrelation()
     Int_t absIDlr  = -1;
     Int_t absIDuplr = -1;
     Int_t absIDdolr = -1;
-
+    
     Int_t absIDup2 = -1;
     Int_t absIDup2lr = -1;
     Int_t absIDdo2 = -1;
@@ -1697,13 +1699,13 @@ void AliAnalysisTaskEMCALClusterize::MakeCellTCardCorrelation()
       absIDdo2   = fGeom->GetAbsCellIdFromCellIndexes(imod, iphi-2, ieta);
       absIDdo2lr = fGeom->GetAbsCellIdFromCellIndexes(imod, iphi-2, ieta+colShift); 
     }
-   
+    
     // In same T-Card?
     if ( TMath::FloorNint(iphi/8) != TMath::FloorNint((iphi+1)/8) ) { absIDup  = -1 ; absIDuplr  = -1 ; }
     if ( TMath::FloorNint(iphi/8) != TMath::FloorNint((iphi-1)/8) ) { absIDdo  = -1 ; absIDdolr  = -1 ; }
     if ( TMath::FloorNint(iphi/8) != TMath::FloorNint((iphi+2)/8) ) { absIDup2 = -1 ; absIDup2lr = -1 ; }
     if ( TMath::FloorNint(iphi/8) != TMath::FloorNint((iphi-2)/8) ) { absIDdo2 = -1 ; absIDdo2lr = -1 ; }
-
+    
     //
     // Check if they are not declared bad or exist
     Bool_t okup   = AcceptCell(absIDup   ); 
@@ -1715,7 +1717,12 @@ void AliAnalysisTaskEMCALClusterize::MakeCellTCardCorrelation()
     Bool_t okdo2  = AcceptCell(absIDdo2  ); 
     Bool_t okup2lr= AcceptCell(absIDup2lr); 
     Bool_t okdo2lr= AcceptCell(absIDdo2lr); 
-
+    
+    AliDebug(1,Form("Same T-Card cells:\n \t up %d (%d), down %d (%d), left-right %d (%d), up-lr %d (%d), down-lr %d (%d)\n"
+                    "\t up2 %d (%d), down2 %d (%d), up2-lr %d (%d), down2-lr %d (%d)",
+                    absIDup ,okup ,absIDdo ,okdo ,absIDlr,oklr,absIDuplr ,okuplr ,absIDdolr ,okdolr ,
+                    absIDup2,okup2,absIDdo2,okdo2,             absIDup2lr,okup2lr,absIDdo2lr,okdo2lr));
+    
     //
     // Generate some energy for the nearby cells in same TCard , depending on this cell energy
     // Check if originally the tower had no or little energy, in which case tag it as new
@@ -1723,7 +1730,16 @@ void AliAnalysisTaskEMCALClusterize::MakeCellTCardCorrelation()
     Float_t fracupdownleri = fTCardCorrInduceEnerFrac[1]+amp*fTCardCorrInduceEnerFracP1[1];
     Float_t fracleri       = fTCardCorrInduceEnerFrac[2]+amp*fTCardCorrInduceEnerFracP1[2];
     Float_t frac2nd        = fTCardCorrInduceEnerFrac[3]+amp*fTCardCorrInduceEnerFracP1[3];
-       
+    
+    AliDebug(1,Form("Fraction:\n\t up-down   : p1 %2.2e, p2 %2.2f, sig %2.2f, fraction %2.3f\n"
+                    "\t up-down-lr: p1 %2.2e, p2 %2.2f, sig %2.2f, fraction %2.3f\n"
+                    "\t left-right: p1 %2.2e, p2 %2.2f, sig %2.2f, fraction %2.3f\n"
+                    "\t 2nd row   : p1 %2.2e, p2 %2.2f, sig %2.2f, fraction %2.3f",
+                    fTCardCorrInduceEnerFrac[0],fTCardCorrInduceEnerFracP1[0],fTCardCorrInduceEnerFracWidth[0],fracupdown,
+                    fTCardCorrInduceEnerFrac[1],fTCardCorrInduceEnerFracP1[1],fTCardCorrInduceEnerFracWidth[1],fracupdownleri,
+                    fTCardCorrInduceEnerFrac[2],fTCardCorrInduceEnerFracP1[2],fTCardCorrInduceEnerFracWidth[2],fracleri,
+                    fTCardCorrInduceEnerFrac[3],fTCardCorrInduceEnerFracP1[3],fTCardCorrInduceEnerFracWidth[3],frac2nd));
+    
     // Randomize the induced fraction, if requested
     if(fRandomizeTCard)
     {
@@ -1731,6 +1747,9 @@ void AliAnalysisTaskEMCALClusterize::MakeCellTCardCorrelation()
       fracupdownleri = fRandom.Gaus(fracupdownleri,fTCardCorrInduceEnerFracWidth[1]);
       fracleri       = fRandom.Gaus(fracleri      ,fTCardCorrInduceEnerFracWidth[2]);
       frac2nd        = fRandom.Gaus(frac2nd       ,fTCardCorrInduceEnerFracWidth[3]);
+      
+      AliDebug(1,Form("Randomized fraction: up-down %2.3f; up-down-left-right %2.3f; left-right %2.3f; 2nd row %2.3f",
+                      fracupdown,fracupdownleri,fracleri,frac2nd));
     }
     
     // Calculate induced energy
@@ -1738,13 +1757,19 @@ void AliAnalysisTaskEMCALClusterize::MakeCellTCardCorrelation()
     Float_t indEupdownleri = amp*fracupdownleri;
     Float_t indEleri       = amp*fracleri;
     Float_t indE2nd        = amp*frac2nd;
-
+    
+    AliDebug(1,Form("Induced energy: up-down %2.3f; up-down-left-right %2.3f; left-right %2.3f; 2nd row %2.3f",
+                    indEupdown,indEupdownleri,indEleri,indE2nd));
+    
     // Check if we induce too much energy, in such case use a constant value
-    if ( fTCardCorrMaxInduced > indE2nd        ) indE2nd        = fTCardCorrMaxInduced;
-    if ( fTCardCorrMaxInduced > indEupdownleri ) indEupdownleri = fTCardCorrMaxInduced;
-    if ( fTCardCorrMaxInduced > indEupdown     ) indEupdown     = fTCardCorrMaxInduced;
-    if ( fTCardCorrMaxInduced > indEleri       ) indEleri       = fTCardCorrMaxInduced;
-
+    if ( fTCardCorrMaxInduced < indE2nd        ) indE2nd        = fTCardCorrMaxInduced;
+    if ( fTCardCorrMaxInduced < indEupdownleri ) indEupdownleri = fTCardCorrMaxInduced;
+    if ( fTCardCorrMaxInduced < indEupdown     ) indEupdown     = fTCardCorrMaxInduced;
+    if ( fTCardCorrMaxInduced < indEleri       ) indEleri       = fTCardCorrMaxInduced;
+    
+    AliDebug(1,Form("Induced energy, saturated?: up-down %2.3f; up-down-left-right %2.3f; left-right %2.3f; 2nd row %2.3f",
+                    indEupdown,indEupdownleri,indEleri,indE2nd));
+    
     //
     // Add the induced energy, check if cell existed
     if ( okup )
