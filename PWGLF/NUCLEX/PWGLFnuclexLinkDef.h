@@ -34,6 +34,8 @@
 #pragma link C++ class AliAnalysisDeuteronTree+;
 /// * He4
 #pragma link C++ class AliAnalysisTaskAntiHe4+;
+/// * He4pp
+#pragma link C++ class AliAnalysisHe4+;
 /// * NucleiPbPb
 #pragma link C++ class AliAnalysisTaskNucleiYield+;
 #pragma link C++ class AliAnalysisTaskNucleiYieldESD+;
