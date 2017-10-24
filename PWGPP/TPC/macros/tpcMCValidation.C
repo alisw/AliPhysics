@@ -98,7 +98,9 @@ void makeTPCMCAlarms(TTree * treeMC, Bool_t doCheck,Int_t verbose){
     sTrendVars+="QA.TPC.dcarCP0,TPC.Anchor.dcarCP0,0.02,0.05,0.02;";     // dcarCP0;  warning 0.02cm; error 0.05 cm  (nominal ~ 0.2 cm)
     sTrendVars+="QA.TPC.dcarAP1,TPC.Anchor.dcarAP1,0.02,0.05,0.02;";     // dcarAP1;  warning 0.02cm; error 0.05 cm  (nominal ~ 0.2 cm)
     sTrendVars+="QA.TPC.dcarCP1,TPC.Anchor.dcarCP1,0.02,0.05,0.02;";     // dcarCP1;  warning 0.02cm; error 0.05 cm  (nominal ~ 0.2 cm)
-    //
+//    sTrendVars+="QA.TPC.dcarCP0,TPC.Anchor.dcarCP0,0.02,0.05,0.02;";     // dcarCP0;  warning 0.02cm; error 0.05 cm  (nominal ~ 0.2 cm)
+//    sTrendVars+="QA.TPC.dcarAP1,TPC.Anchor.dcarAP1,0.02,0.05,0.02;";     // dcarAP1;  warning 0.02cm; error 0.05 cm  (nominal ~ 0.2 cm)
+//    sTrendVars+="QA.TPC.dcarCP1,TPC.Anchor.dcarCP1,0.02,0.05,0.02;";     // dcarCP1;  warning 0.02cm; error 0.05 cm  (nominal ~ 0.2 cm)
     // Eff ITS: TPC->ITS
     sTrendVars+="QA.ITS.EffoneSPDPt02,ITS.Anchor.EffoneSPDPt02,0.05,0.1,0.07;";
     sTrendVars+="QA.ITS.EffoneSPDPt1,ITS.Anchor.EffoneSPDPt1,0.05,0.1,0.07;";
@@ -106,7 +108,14 @@ void makeTPCMCAlarms(TTree * treeMC, Bool_t doCheck,Int_t verbose){
     sTrendVars+="QA.ITS.EffTOTPt02,ITS.Anchor.EffTOTPt02,0.05,0.1,0.07;";
     sTrendVars+="QA.ITS.EffTOTPt1,ITS.Anchor.EffTOTPt1,0.05,0.1,0.07;";
     sTrendVars+="QA.ITS.EffTOTPt10,ITS.Anchor.EffTOTPt10,0.05,0.1,0.07;";
-    // Eff TRD: TPC->TRD
+    // dEdX
+    sTrendVars+="QA.TPC.meanMIP,TPC.Anchor.meanMIP,1,2,1;";     // meanMIP;  warning 1; error 2; physics acceptable 1; (nominal ~ 50)
+    sTrendVars+="QA.TPC.resolutionMIP,TPC.Anchor.resolutionMIP,0.02,0.05,0.02;";     // resolutionMIP;  warning 0.01; error 0.02; physics acceptable 0.01; (nominal ~ 0.06)
+    sTrendVars+="QA.TPC.MIPattachSlopeA,TPC.Anchor.MIPattachSlopeA,0.02,0.05,0.02;";     // MIPattachSlopeA;  warning xxx; error xxx  (nominal ~ 0)
+    sTrendVars+="QA.TPC.MIPattachSlopeC,TPC.Anchor.MIPattachSlopeC,0.02,0.05,0.02;";     // MIPattachSlopeC;  warning xxx; error xxx  (nominal ~ 0)
+    sTrendVars+="QA.TPC.meanMIPele,TPC.Anchor.meanMIPele,0.02,0.05,0.02;";     // MIPattachSlopeA;  warning xxx; error xxx  (nominal ~ 0)
+    sTrendVars+="QA.TPC.resolutionMIPele,TPC.Anchor.resolutionMIPele,0.02,0.05,0.02;";     // MIPattachSlopeC;  warning xxx; error xxx  (nominal ~ 0)  
+ 
   }
   TStatToolkit::MakeAnchorAlias(treeMC,sTrendVars, doCheck, verbose);
 
@@ -117,10 +126,17 @@ void makeTPCMCAlarms(TTree * treeMC, Bool_t doCheck,Int_t verbose){
   treeMC->SetAlias("ratio.dcarAP1" ,    "(QA.TPC.dcarAP1/TPC.Anchor.dcarAP1)");
   treeMC->SetAlias("ratio.dcarCP0" ,    "(QA.TPC.dcarCP0/TPC.Anchor.dcarCP0)");
   treeMC->SetAlias("ratio.dcarCP1" ,    "(QA.TPC.dcarCP1/TPC.Anchor.dcarCP1)");
-
+  
+  treeMC->SetAlias("ratio.meanMIP" ,    "(QA.TPC.meanMIP/TPC.Anchor.meanMIP)");
+  treeMC->SetAlias("ratio.resolutionMIP" ,    "(QA.TPC.resolutionMIP/TPC.Anchor.resolutionMIP)");
+  treeMC->SetAlias("diff0.MIPattachSlopeA" ,    "(QA.TPC.MIPattachSlopeA-TPC.Anchor.MIPattachSlopeA)");
+  treeMC->SetAlias("diff0.MIPattachSlopeC" ,    "(QA.TPC.MIPattachSlopeC-TPC.Anchor.MIPattachSlopeC)");
+  treeMC->SetAlias("diff0.meanMIPele" ,    "(QA.TPC.meanMIPele-TPC.Anchor.meanMIPele)"); 
+  treeMC->SetAlias("diff0.resolutionMIPele" ,    "(QA.TPC.resolutionMIPele-TPC.Anchor.resolutionMIPele)");
+  
   treeMC->SetAlias("statisticOK", "(meanTPCncl>0)");
   TString sDiffVars="";
-  sDiffVars+="diff0.meanTPCncl;diff0.meanTPCnclF;ratio.dcarAP0;ratio.dcarAP1;ratio.dcarCP0;ratio.dcarCP1";
+  sDiffVars+="diff0.meanTPCncl;diff0.meanTPCnclF;ratio.dcarAP0;ratio.dcarAP1;ratio.dcarCP0;ratio.dcarCP1;ratio.meanMIP;ratio.resolutionMIP;diff0.MIPattachSlopeA;diff0.MIPattachSlopeC;diff0.meanMIPele;diff0.resolutionMIPele;";
   TObjArray* oaTrendVars = sDiffVars.Tokenize(";");
   Float_t entryFraction=0.8, nSigmaOutlier=6., nSigmaWarning=3., epsilon=1.0e-6, rangeFactor=0.1;
   for (Int_t iVar=0; iVar<oaTrendVars->GetEntriesFast(); iVar++) {
@@ -142,6 +158,8 @@ void makeTPCMCAlarms(TTree * treeMC, Bool_t doCheck,Int_t verbose){
   sCombinedStatus+="ncl,absDiff.QA.TPC.meanTPCncl,absDiff.QA.TPC.meanTPCnclF;diff0.QA.TPC.meanTPCncl,diff0.QA.TPC.meanTPCnclF;"; // Status number of clusters and findable clusters
   sCombinedStatus+="dcarResol,absDiff.QA.TPC.dcarAP0,absDiff.QA.TPC.dcarAP1,absDiff.QA.TPC.dcarCP0,absDiff.QA.TPC.dcarCP1,ratio.dcarAP0,ratio.dcarAP1;";  // Status: DCA resolution
   sCombinedStatus+="itsEffStatus,absDiff.QA.ITS.EffoneSPDPt02,absDiff.QA.ITS.EffoneSPDPt1,absDiff.QA.ITS.EffoneSPDPt10,absDiff.QA.ITS.EffTOTPt02,absDiff.QA.ITS.EffTOTPt1,absDiff.QA.ITS.EffTOTPt10;";
+  sCombinedStatus+="dEdX,ratio.meanMIP,ratio.resolutionMIP,diff0.MIPattachSlopeA,diff0.MIPattachSlopeC,diff0.meanMIPele,diff0.resolutionMIPele,absDiff.QA.TPC.meanMIP,absDiff.QA.TPC.resolutionMIP,absDiff.QA.TPC.MIPattachSlopeA,absDiff.QA.TPC.MIPattachSlopeC,absDiff.QA.TPC.meanMIPele,absDiff.QA.TPC.resolutionMIPele;";
+
   // Status: ITS:TPC-ITS matching efficiency
   TStatToolkit::MakeCombinedAlias(treeMC,sCombinedStatus,doCheck, verbose);
   ::Info("InitTPCMCValidation","Done with aliases");
@@ -212,8 +230,8 @@ Bool_t InitTPCMCValidation(TString mcPeriod, TString mcPass, TString anchorPerio
   }
   //
   makeTPCMCAlarms(treeMC, doCheck, verbose);
-  TString sStatusBarVars("ncl;dcarResol;itsEffStatus;");
-  TString sStatusBarNames("#(cl);dcar;itsEffStatus;");
+  TString sStatusBarVars("ncl;dcarResol;itsEffStatus;dEdX");
+  TString sStatusBarNames("#(cl);dcar;itsEffStatus;dEdX;");
   TString sCriteria("(1):(statisticOK):(varname_Warning):(varname_Outlier):(varname_PhysAcc)"); // status bar markers
   TString statusString[3];
   statusString[0] = sStatusBarVars;
@@ -529,10 +547,16 @@ void MakeDCAStatusPlot(){  // Example
 }
 
 ///
-void MakedEdxStatusPlot() {  //TODO - Sebastian
+void MakedEdXStatusPlot() {  //TODO - Sebastian
   // To get the list of warning for standard QA treeMC->GetListOfAliases()->Print("","*MIP*arning")
   // Status plots
-  TString statusExpression, statusTitle;
+  TString statusExpression,statusTitle;
+  // MIP status
+
+  statusExpression="ratio.meanMIP;ratio.resolutionMIP;diff0.MIPattachSlopeA;diff0.MIPattachSlopeC;diff0.resolutionMIPele;diff0.meanMIPele;absDiff.QA.TPC.meanMIP;absDiff.QA.TPC.resolutionMIP;absDiff.QA.TPC.MIPattachSlopeA;absDiff.QA.TPC.MIPattachSlopeC;";
+  statusTitle="ratio-meanMIP;ratio-resolutionMIP;diff0.MIPattachSlopeA;diff0.MIPattachSlopeC;diff0.resolutionMIPele;diff0.meanMIPele;#Delta^{MC/Anchor-#mu}_{meanMIP};#Delta^{MC/Anchor-#mu}_{resolutionMIP};#Delta^{MC/Anchor-#mu}_{MIPattachSlopeA};#Delta^{MC/Anchor-#mu}_{MIPattachSlopeC};";
+  statusExpression+="run;";
+  trendingDraw->MakeStatusPlot("./", "dEdXStatus.png", statusExpression.Data(), statusTitle.Data(), "defaultCut",sCriteria);
 
 }
 
