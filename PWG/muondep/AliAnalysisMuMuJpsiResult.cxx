@@ -33,6 +33,7 @@ ClassImp(AliAnalysisMuMuJpsiResult)
 #include "AliAnalysisMuMuBinning.h"
 #include "AliLog.h"
 #include <map>
+#include <iostream>
 
 #include "Fit/Fitter.h"
 #include "Fit/BinData.h"
@@ -2650,7 +2651,7 @@ void AliAnalysisMuMuJpsiResult::FitPSIPSIPRIMECB2VWG2()
   Double_t meanJPsi     = GetValue("meanJPsi");
   Double_t sigmaJPsi    = GetValue("sigmaJPsi");
   Double_t binNormJPsi  = GetValue("binNormJPsi");
-  Double_t binNormPsiP  = GetValue("binNormPsiP");
+  // Double_t binNormPsiP  = GetValue("binNormPsiP");
 
   Double_t mVWG2_init    = IsValidValue(GetValue("mVWG2_init"))  ? GetValue("mVWG2_init")  : 2.;
   Double_t s1VWG2_init   = IsValidValue(GetValue("s1VWG2_init")) ? GetValue("s1VWG2_init") : -0.5;
@@ -3264,8 +3265,8 @@ void AliAnalysisMuMuJpsiResult::FitPSIPSIPRIMECB2POL2POL3()
   Double_t fitRangeLow  = GetValue(kFitRangeLow);
   Double_t fitRangeHigh = GetValue(kFitRangeHigh);
   Double_t paramSPsiP   = GetValue("FSigmaPsiP");
-  Double_t meanJPsi     = GetValue("meanJPsi");
-  Double_t sigmaJPsi    = GetValue("sigmaJPsi");
+  // Double_t meanJPsi     = GetValue("meanJPsi");
+  // Double_t sigmaJPsi    = GetValue("sigmaJPsi");
 
   Double_t a_init    = IsValidValue(GetValue("a_init"))  ? GetValue("a_init")  : -130.;
   Double_t b_init    = IsValidValue(GetValue("b_init"))  ? GetValue("b_init")  : 350.;
@@ -8770,7 +8771,7 @@ void AliAnalysisMuMuJpsiResult::FitMV2PSIPSIPRIMECB2VWG_BKGMV2POL2EXP()
   //___________
 
   SetFitRejectRange();
-  cout << "range : " << fitRangeLow << " - " << fitRangeHigh << endl;
+  std::cout << "range : " << fitRangeLow << " - " << fitRangeHigh << std::endl;
   TF1* fitMeanv2 = new TF1("fitMeanv2",this,&AliAnalysisMuMuJpsiResult::FitFunctionMeanPtS2CB2VWGPOL2EXP,fitRangeLow,fitRangeHigh,18,"AliAnalysisMuMuJpsiResult","FitFunctionMeanPtS2CB2VWGPOL2EXP");
 
   fitMeanv2->SetParNames("kVWG","mVWG","sVWG1","sVWG2","kJPsi","mJPsi","sJPsi","alJPsi","nlJPsi","auJPsi","nuJPsi");
@@ -8815,7 +8816,7 @@ void AliAnalysisMuMuJpsiResult::FitMV2PSIPSIPRIMECB2VWG_BKGMV2POL2EXP()
   //  //  fitMeanv2->SetParLimits(15, 0.,1.);
 
   fitMeanv2->SetParameter(17, 0.01);
-  Double_t psipPtLim = 0.1;
+  // Double_t psipPtLim = 0.1;
   fitMeanv2->SetParLimits(17, -1.,1.);
 
   TFitResultPtr fitResult = p->Fit(fitMeanv2,fitOption,"");
@@ -9150,7 +9151,7 @@ void AliAnalysisMuMuJpsiResult::FitMV2PSIPSIPRIMECB2VWG_BKGMV2POL4()
   // Set("<v2>JPsi",fitMeanv2->GetParameter(12),fitMeanv2->GetParError(12));
   // Set("mv2PsiP",fitMeanv2->GetParameter(16),fitMeanv2->GetParError(16));
 
-  
+
   for ( Int_t i = 0; i < 5; ++i )
   {
     bck->SetParameter(i, fitMeanv2->GetParameter(i+13));
@@ -9369,7 +9370,7 @@ void AliAnalysisMuMuJpsiResult::FitMV2PSIPSIPRIMECB2VWG2_BKGMV2POLEXP()
   std::cout << "FitResultt=" << static_cast<int>(fitResult) << std::endl;
   std::cout << "CovMatrixStatus = " << fitResult->CovMatrixStatus() << std::endl;
 
-  cout << "FitChi2PerNDF = " << fitMeanv2->GetChisquare()<<"/"<<fitMeanv2->GetNDF() << endl;
+  std::cout << "FitChi2PerNDF = " << fitMeanv2->GetChisquare()<<"/"<<fitMeanv2->GetNDF() << std::endl;
     //___________ Further attempts to fit if the first one fails
   // if ( static_cast<int>(fitResult) ||  static_cast<int>(fitResult->CovMatrixStatus())!=3 ) ProcessMv2Fit(fitResult,fitMeanv2,bck,fitOption,12,4); // Int_t iParKPsip, Int_t iLastParBkg);
   //___________
@@ -9505,7 +9506,7 @@ void AliAnalysisMuMuJpsiResult::FitMV2PSIPSIPRIMECB2VWG2_BKGMV2POL2EXP()
 
   if ( static_cast<int>(fitResult) )
   {
-    cout << " ========= Refitting with bck param * 0.9 =========" << endl;
+    std::cout << " ========= Refitting with bck param * 0.9 =========" << std::endl;
     for ( Int_t i = 0; i < 4; ++i )
     {
       fitMeanv2->SetParameter(i + 14, bck->GetParameter(i)*0.9);
@@ -9518,7 +9519,7 @@ void AliAnalysisMuMuJpsiResult::FitMV2PSIPSIPRIMECB2VWG2_BKGMV2POL2EXP()
 
   if ( fitMeanv2->GetParameter(18) <= fitMeanv2->GetParError(18) || fitMeanv2->GetParError(18) >= 0.75*fitMeanv2->GetParameter(18) )
   {
-    cout << " ========= Refitting with bck param * 0.9 and v2(psi2S)=0 =========" << endl;
+    std::cout << " ========= Refitting with bck param * 0.9 and v2(psi2S)=0 =========" << std::endl;
     fitMeanv2->FixParameter(18, 0.);
     for ( Int_t i = 0; i < 4; ++i )
     {
@@ -9531,7 +9532,7 @@ void AliAnalysisMuMuJpsiResult::FitMV2PSIPSIPRIMECB2VWG2_BKGMV2POL2EXP()
   }
   if ( fitMeanv2->GetParameter(18) <= fitMeanv2->GetParError(18) || fitMeanv2->GetParError(18) >= 0.75*fitMeanv2->GetParameter(18) )
   {
-    cout << " ========= Refitting with bck param * 0.75 and v2(psi2S)=0 =========" << endl;
+    std::cout << " ========= Refitting with bck param * 0.75 and v2(psi2S)=0 =========" << std::endl;
     fitMeanv2->FixParameter(18, 0.);
     for ( Int_t i = 0; i < 4; ++i )
     {
@@ -9544,7 +9545,7 @@ void AliAnalysisMuMuJpsiResult::FitMV2PSIPSIPRIMECB2VWG2_BKGMV2POL2EXP()
   }
   if (  static_cast<int>(fitResult) ||  static_cast<int>(fitResult->CovMatrixStatus())!=3  )
   {
-    cout << " ========= Refitting with bck param * 0.6 and v2(psi2S)=0 =========" << endl;
+    std::cout << " ========= Refitting with bck param * 0.6 and v2(psi2S)=0 =========" << std::endl;
     fitMeanv2->FixParameter(18, 0.);
     for ( Int_t i = 0; i < 4; ++i )
     {
@@ -9557,7 +9558,7 @@ void AliAnalysisMuMuJpsiResult::FitMV2PSIPSIPRIMECB2VWG2_BKGMV2POL2EXP()
   }
   if ( static_cast<int>(fitResult) ||  static_cast<int>(fitResult->CovMatrixStatus())!=3  )
   {
-    cout << " ========= Refitting with bck param * 0.5 and v2(psi2S)=0 =========" << endl;
+    std::cout << " ========= Refitting with bck param * 0.5 and v2(psi2S)=0 =========" << std::endl;
     fitMeanv2->FixParameter(18, 0.);
     for ( Int_t i = 0; i < 3; ++i )
     {
@@ -9570,7 +9571,7 @@ void AliAnalysisMuMuJpsiResult::FitMV2PSIPSIPRIMECB2VWG2_BKGMV2POL2EXP()
   }
   std::cout << "FitResultt=" << static_cast<int>(fitResult) << std::endl;
   std::cout << "CovMatrixStatus = " << fitResult->CovMatrixStatus() << std::endl;
-  cout << "FitChi2PerNDF = " << fitMeanv2->GetChisquare()<<"/"<<fitMeanv2->GetNDF() << endl;
+  std::cout << "FitChi2PerNDF = " << fitMeanv2->GetChisquare()<<"/"<<fitMeanv2->GetNDF() << std::endl;
 
     //___________ Further attempts to fit if the first one fails
   // if ( static_cast<int>(fitResult) ||  static_cast<int>(fitResult->CovMatrixStatus())!=3 ) ProcessMv2Fit(fitResult,fitMeanv2,bck,fitOption,12,4); // Int_t iParKPsip, Int_t iLastParBkg);
@@ -9729,7 +9730,7 @@ void AliAnalysisMuMuJpsiResult::FitMV2PSIPSIPRIMECB2VWG2_BKGMV2POL4()
   std::cout << "FitResultt=" << static_cast<int>(fitResult) << std::endl;
   std::cout << "CovMatrixStatus = " << fitResult->CovMatrixStatus() << std::endl;
 
-  cout << "FitChi2PerNDF = " << fitMeanv2->GetChisquare()<<"/"<<fitMeanv2->GetNDF() << endl;
+  std::cout << "FitChi2PerNDF = " << fitMeanv2->GetChisquare()<<"/"<<fitMeanv2->GetNDF() << std::endl;
 
     //___________ Further attempts to fit if the first one fails
   // if ( static_cast<int>(fitResult) ||  static_cast<int>(fitResult->CovMatrixStatus())!=3 ) ProcessMv2Fit(fitResult,fitMeanv2,bck,fitOption,12,4); // Int_t iParKPsip, Int_t iLastParBkg);
@@ -9899,7 +9900,7 @@ void AliAnalysisMuMuJpsiResult::FitMV2PSIPSIPRIMECB2VWG2_BKGMV2POL4Cheb()
   std::cout << "FitResultt=" << static_cast<int>(fitResult) << std::endl;
   std::cout << "CovMatrixStatus = " << fitResult->CovMatrixStatus() << std::endl;
 
-  cout << "FitChi2PerNDF = " << fitMeanv2->GetChisquare()<<"/"<<fitMeanv2->GetNDF() << endl;
+  std::cout << "FitChi2PerNDF = " << fitMeanv2->GetChisquare()<<"/"<<fitMeanv2->GetNDF() << std::endl;
 
     //___________ Further attempts to fit if the first one fails
   // if ( static_cast<int>(fitResult) ||  static_cast<int>(fitResult->CovMatrixStatus())!=3 ) ProcessMv2Fit(fitResult,fitMeanv2,bck,fitOption,12,4); // Int_t iParKPsip, Int_t iLastParBkg);
@@ -10066,7 +10067,7 @@ void AliAnalysisMuMuJpsiResult::FitMV2PSIPSIPRIMECB2POL2POL3_BKGMV2POL2()
   std::cout << "FitResultt=" << static_cast<int>(fitResult) << std::endl;
   std::cout << "CovMatrixStatus = " << fitResult->CovMatrixStatus() << std::endl;
 
-  cout << "FitChi2PerNDF = " << fitMeanv2->GetChisquare()<<"/"<<fitMeanv2->GetNDF() << endl;
+  std::cout << "FitChi2PerNDF = " << fitMeanv2->GetChisquare()<<"/"<<fitMeanv2->GetNDF() << std::endl;
     //___________ Further attempts to fit if the first one fails
   // if ( static_cast<int>(fitResult) ||  static_cast<int>(fitResult->CovMatrixStatus())!=3 ) ProcessMv2Fit(fitResult,fitMeanv2,bck,fitOption,12,4); // Int_t iParKPsip, Int_t iLastParBkg);
   //___________
@@ -10231,7 +10232,7 @@ void AliAnalysisMuMuJpsiResult::FitMV2PSIPSIPRIMECB2POL2POL3_BKGMV2POLEXP()
   std::cout << "FitResultt=" << static_cast<int>(fitResult) << std::endl;
   std::cout << "CovMatrixStatus = " << fitResult->CovMatrixStatus() << std::endl;
 
-  cout << "FitChi2PerNDF = " << fitMeanv2->GetChisquare()<<"/"<<fitMeanv2->GetNDF() << endl;
+  std::cout << "FitChi2PerNDF = " << fitMeanv2->GetChisquare()<<"/"<<fitMeanv2->GetNDF() << std::endl;
     //___________ Further attempts to fit if the first one fails
   // if ( static_cast<int>(fitResult) ||  static_cast<int>(fitResult->CovMatrixStatus())!=3 ) ProcessMv2Fit(fitResult,fitMeanv2,bck,fitOption,12,4); // Int_t iParKPsip, Int_t iLastParBkg);
   //___________
@@ -10389,7 +10390,7 @@ void AliAnalysisMuMuJpsiResult::FitMV2PSIPSIPRIMECB2POL2POL3_BKGMV2POL2EXP()
   std::cout << "FitResultt=" << static_cast<int>(fitResult) << std::endl;
   std::cout << "CovMatrixStatus = " << fitResult->CovMatrixStatus() << std::endl;
 
-  cout << "FitChi2PerNDF = " << fitMeanv2->GetChisquare()<<"/"<<fitMeanv2->GetNDF() << endl;
+  std::cout << "FitChi2PerNDF = " << fitMeanv2->GetChisquare()<<"/"<<fitMeanv2->GetNDF() << std::endl;
     //___________ Further attempts to fit if the first one fails
   // if ( static_cast<int>(fitResult) ||  static_cast<int>(fitResult->CovMatrixStatus())!=3 ) ProcessMv2Fit(fitResult,fitMeanv2,bck,fitOption,12,4); // Int_t iParKPsip, Int_t iLastParBkg);
   //___________
@@ -10560,7 +10561,7 @@ void AliAnalysisMuMuJpsiResult::FitMV2PSIPSIPRIMECB2POL2POL3_BKGMV2POL4Cheb()
   std::cout << "FitResultt=" << static_cast<int>(fitResult) << std::endl;
   std::cout << "CovMatrixStatus = " << fitResult->CovMatrixStatus() << std::endl;
 
-  cout << "FitChi2PerNDF = " << fitMeanv2->GetChisquare()<<"/"<<fitMeanv2->GetNDF() << endl;
+  std::cout << "FitChi2PerNDF = " << fitMeanv2->GetChisquare()<<"/"<<fitMeanv2->GetNDF() << std::endl;
     //___________ Further attempts to fit if the first one fails
   // if ( static_cast<int>(fitResult) ||  static_cast<int>(fitResult->CovMatrixStatus())!=3 ) ProcessMv2Fit(fitResult,fitMeanv2,bck,fitOption,12,4); // Int_t iParKPsip, Int_t iLastParBkg);
   //___________
@@ -10719,7 +10720,7 @@ void AliAnalysisMuMuJpsiResult::FitMV2PSIPSIPRIMECB2POL2POL3_BKGMV2POL4()
   std::cout << "FitResultt=" << static_cast<int>(fitResult) << std::endl;
   std::cout << "CovMatrixStatus = " << fitResult->CovMatrixStatus() << std::endl;
 
-  cout << "FitChi2PerNDF = " << fitMeanv2->GetChisquare()<<"/"<<fitMeanv2->GetNDF() << endl;
+  std::cout << "FitChi2PerNDF = " << fitMeanv2->GetChisquare()<<"/"<<fitMeanv2->GetNDF() << std::endl;
     //___________ Further attempts to fit if the first one fails
   // if ( static_cast<int>(fitResult) ||  static_cast<int>(fitResult->CovMatrixStatus())!=3 ) ProcessMv2Fit(fitResult,fitMeanv2,bck,fitOption,12,4); // Int_t iParKPsip, Int_t iLastParBkg);
   //___________
@@ -10894,7 +10895,7 @@ void AliAnalysisMuMuJpsiResult::FitMV2PSIPSIPRIMENA60NEWVWG2_BKGMV2POL2()
   std::cout << "FitResultt=" << static_cast<int>(fitResult) << std::endl;
   std::cout << "CovMatrixStatus = " << fitResult->CovMatrixStatus() << std::endl;
 
-  cout << "FitChi2PerNDF = " << fitMeanv2->GetChisquare()<<"/"<<fitMeanv2->GetNDF() << endl;
+  std::cout << "FitChi2PerNDF = " << fitMeanv2->GetChisquare()<<"/"<<fitMeanv2->GetNDF() << std::endl;
     //___________ Further attempts to fit if the first one fails
   // if ( static_cast<int>(fitResult) ||  static_cast<int>(fitResult->CovMatrixStatus())!=3 ) ProcessMv2Fit(fitResult,fitMeanv2,bck,fitOption,12,4); // Int_t iParKPsip, Int_t iLastParBkg);
   //___________
@@ -11069,7 +11070,7 @@ void AliAnalysisMuMuJpsiResult::FitMV2PSIPSIPRIMENA60NEWVWG2_BKGMV2POLEXP()
   std::cout << "FitResultt=" << static_cast<int>(fitResult) << std::endl;
   std::cout << "CovMatrixStatus = " << fitResult->CovMatrixStatus() << std::endl;
 
-  cout << "FitChi2PerNDF = " << fitMeanv2->GetChisquare()<<"/"<<fitMeanv2->GetNDF() << endl;
+  std::cout << "FitChi2PerNDF = " << fitMeanv2->GetChisquare()<<"/"<<fitMeanv2->GetNDF() << std::endl;
     //___________ Further attempts to fit if the first one fails
   // if ( static_cast<int>(fitResult) ||  static_cast<int>(fitResult->CovMatrixStatus())!=3 ) ProcessMv2Fit(fitResult,fitMeanv2,bck,fitOption,12,4); // Int_t iParKPsip, Int_t iLastParBkg);
   //___________
@@ -11232,7 +11233,7 @@ void AliAnalysisMuMuJpsiResult::FitMV2PSIPSIPRIMENA60NEWVWG2_BKGMV2POL2EXP()
   std::cout << "FitResultt=" << static_cast<int>(fitResult) << std::endl;
   std::cout << "CovMatrixStatus = " << fitResult->CovMatrixStatus() << std::endl;
 
-  cout << "FitChi2PerNDF = " << fitMeanv2->GetChisquare()<<"/"<<fitMeanv2->GetNDF() << endl;
+  std::cout << "FitChi2PerNDF = " << fitMeanv2->GetChisquare()<<"/"<<fitMeanv2->GetNDF() << std::endl;
     //___________ Further attempts to fit if the first one fails
   // if ( static_cast<int>(fitResult) ||  static_cast<int>(fitResult->CovMatrixStatus())!=3 ) ProcessMv2Fit(fitResult,fitMeanv2,bck,fitOption,12,4); // Int_t iParKPsip, Int_t iLastParBkg);
   //___________
@@ -11398,7 +11399,7 @@ void AliAnalysisMuMuJpsiResult::FitMV2PSIPSIPRIMENA60NEWVWG2_BKGMV2POL4()
   std::cout << "FitResultt=" << static_cast<int>(fitResult) << std::endl;
   std::cout << "CovMatrixStatus = " << fitResult->CovMatrixStatus() << std::endl;
 
-  cout << "FitChi2PerNDF = " << fitMeanv2->GetChisquare()<<"/"<<fitMeanv2->GetNDF() << endl;
+  std::cout << "FitChi2PerNDF = " << fitMeanv2->GetChisquare()<<"/"<<fitMeanv2->GetNDF() << std::endl;
     //___________ Further attempts to fit if the first one fails
   // if ( static_cast<int>(fitResult) ||  static_cast<int>(fitResult->CovMatrixStatus())!=3 ) ProcessMv2Fit(fitResult,fitMeanv2,bck,fitOption,12,4); // Int_t iParKPsip, Int_t iLastParBkg);
   //___________
@@ -11572,7 +11573,7 @@ void AliAnalysisMuMuJpsiResult::FitMV2PSIPSIPRIMENA60NEWVWG2_BKGMV2POL4Cheb()
   std::cout << "FitResultt=" << static_cast<int>(fitResult) << std::endl;
   std::cout << "CovMatrixStatus = " << fitResult->CovMatrixStatus() << std::endl;
 
-  cout << "FitChi2PerNDF = " << fitMeanv2->GetChisquare()<<"/"<<fitMeanv2->GetNDF() << endl;
+  std::cout << "FitChi2PerNDF = " << fitMeanv2->GetChisquare()<<"/"<<fitMeanv2->GetNDF() << std::endl;
     //___________ Further attempts to fit if the first one fails
   // if ( static_cast<int>(fitResult) ||  static_cast<int>(fitResult->CovMatrixStatus())!=3 ) ProcessMv2Fit(fitResult,fitMeanv2,bck,fitOption,12,4); // Int_t iParKPsip, Int_t iLastParBkg);
   //___________
@@ -11752,7 +11753,7 @@ void AliAnalysisMuMuJpsiResult::FitMV2PSIPSIPRIMENA60NEWPOL2POL3_BKGMV2POL2()
   std::cout << "FitResultt=" << static_cast<int>(fitResult) << std::endl;
   std::cout << "CovMatrixStatus = " << fitResult->CovMatrixStatus() << std::endl;
 
-  cout << "FitChi2PerNDF = " << fitMeanv2->GetChisquare()<<"/"<<fitMeanv2->GetNDF() << endl;
+  std::cout << "FitChi2PerNDF = " << fitMeanv2->GetChisquare()<<"/"<<fitMeanv2->GetNDF() << std::endl;
     //___________ Further attempts to fit if the first one fails
   // if ( static_cast<int>(fitResult) ||  static_cast<int>(fitResult->CovMatrixStatus())!=3 ) ProcessMv2Fit(fitResult,fitMeanv2,bck,fitOption,12,4); // Int_t iParKPsip, Int_t iLastParBkg);
   //___________
@@ -11936,7 +11937,7 @@ void AliAnalysisMuMuJpsiResult::FitMV2PSIPSIPRIMENA60NEWPOL2POL3_BKGMV2POLEXP()
   std::cout << "FitResultt=" << static_cast<int>(fitResult) << std::endl;
   std::cout << "CovMatrixStatus = " << fitResult->CovMatrixStatus() << std::endl;
 
-  cout << "FitChi2PerNDF = " << fitMeanv2->GetChisquare()<<"/"<<fitMeanv2->GetNDF() << endl;
+  std::cout << "FitChi2PerNDF = " << fitMeanv2->GetChisquare()<<"/"<<fitMeanv2->GetNDF() << std::endl;
     //___________ Further attempts to fit if the first one fails
   // if ( static_cast<int>(fitResult) ||  static_cast<int>(fitResult->CovMatrixStatus())!=3 ) ProcessMv2Fit(fitResult,fitMeanv2,bck,fitOption,12,4); // Int_t iParKPsip, Int_t iLastParBkg);
   //___________
@@ -12111,7 +12112,7 @@ void AliAnalysisMuMuJpsiResult::FitMV2PSIPSIPRIMENA60NEWPOL2POL3_BKGMV2POL2EXP()
   std::cout << "FitResultt=" << static_cast<int>(fitResult) << std::endl;
   std::cout << "CovMatrixStatus = " << fitResult->CovMatrixStatus() << std::endl;
 
-  cout << "FitChi2PerNDF = " << fitMeanv2->GetChisquare()<<"/"<<fitMeanv2->GetNDF() << endl;
+  std::cout << "FitChi2PerNDF = " << fitMeanv2->GetChisquare()<<"/"<<fitMeanv2->GetNDF() << std::endl;
     //___________ Further attempts to fit if the first one fails
   // if ( static_cast<int>(fitResult) ||  static_cast<int>(fitResult->CovMatrixStatus())!=3 ) ProcessMv2Fit(fitResult,fitMeanv2,bck,fitOption,12,4); // Int_t iParKPsip, Int_t iLastParBkg);
   //___________
@@ -12287,7 +12288,7 @@ void AliAnalysisMuMuJpsiResult::FitMV2PSIPSIPRIMENA60NEWPOL2POL3_BKGMV2POL4()
   std::cout << "FitResultt=" << static_cast<int>(fitResult) << std::endl;
   std::cout << "CovMatrixStatus = " << fitResult->CovMatrixStatus() << std::endl;
 
-  cout << "FitChi2PerNDF = " << fitMeanv2->GetChisquare()<<"/"<<fitMeanv2->GetNDF() << endl;
+  std::cout << "FitChi2PerNDF = " << fitMeanv2->GetChisquare()<<"/"<<fitMeanv2->GetNDF() << std::endl;
     //___________ Further attempts to fit if the first one fails
   // if ( static_cast<int>(fitResult) ||  static_cast<int>(fitResult->CovMatrixStatus())!=3 ) ProcessMv2Fit(fitResult,fitMeanv2,bck,fitOption,12,4); // Int_t iParKPsip, Int_t iLastParBkg);
   //___________
@@ -12477,7 +12478,7 @@ void AliAnalysisMuMuJpsiResult::FitMV2PSIPSIPRIMENA60NEWPOL2POL3_BKGMV2POL4Cheb(
   std::cout << "FitResultt=" << static_cast<int>(fitResult) << std::endl;
   std::cout << "CovMatrixStatus = " << fitResult->CovMatrixStatus() << std::endl;
 
-  cout << "FitChi2PerNDF = " << fitMeanv2->GetChisquare()<<"/"<<fitMeanv2->GetNDF() << endl;
+  std::cout << "FitChi2PerNDF = " << fitMeanv2->GetChisquare()<<"/"<<fitMeanv2->GetNDF() << std::endl;
     //___________ Further attempts to fit if the first one fails
   // if ( static_cast<int>(fitResult) ||  static_cast<int>(fitResult->CovMatrixStatus())!=3 ) ProcessMv2Fit(fitResult,fitMeanv2,bck,fitOption,12,4); // Int_t iParKPsip, Int_t iLastParBkg);
   //___________
