@@ -563,12 +563,11 @@ void makeHtml() {
   //
   TStatToolkit::AddMetadata(treeMC, "TPC.Anchor.dcarAP0.thead", "&sigma;<sup>A</sup><sub>Anchor DCA<sub>1/pt=0</sub></sub> (cm)");
   TStatToolkit::AddMetadata(treeMC, "TPC.Anchor.dcarAP0.tooltip", "DCA (r&phi;) at infinite pt");
-  TStatToolkit::AddMetadata(treeMC, "TPC.Anchor.dcarAP0.html", "<a href=\"http://aliqatpc.web.cern.ch/aliqatpc/data/%d{year}/%s{TPC.Anchor.period.GetName()}/{TPC.Anchor.pass.GetName()}/000%d{run}/dca_and_phi.png\">%2.2f{dcarCP0}</a>");
+  TStatToolkit::AddMetadata(treeMC, "TPC.Anchor.dcarAP0.html", "<a href=\"http://aliqatpc.web.cern.ch/aliqatpc/data/%d{year}/%s{TPC.Anchor.period.GetName()}/%{TPC.Anchor.pass.GetName()}/000%d{run}/dca_and_phi.png\">%2.2f{dcarCP0}</a>");
   TStatToolkit::AddMetadata(treeMC, "TPC.Anchor.dcarCP0.thead", "&sigma;<sup>C</sup><sub>Anchor DCA<sub>1/pt=0</sub></sub> (cm)");
   TStatToolkit::AddMetadata(treeMC, "TPC.Anchor.dcarCP0.tooltip", "DCA (r&phi;) at infinite pt");
   TStatToolkit::AddMetadata(treeMC, "TPC.Anchor.dcarCP0.html", "<a href=\"http://aliqatpc.web.cern.ch/aliqatpc/data/%d{year}/%s{TPC.Anchor.period.GetName()}/passMC/000%d{run}/dca_and_phi.png\">%2.2f{dcarCP0}</a>");
-  TStatToolkit::AddMetadata(treeMC, "TPC.Anchor.dcarCP0.html", "<a href=\"http://aliqatpc.web.cern.ch/aliqatpc/data/%d{year}/%s{TPC.Anchor.period.GetName()}/{TPC.Anchor.pass.GetName()}/000%d{run}/dca_and_phi.png\">%2.2f{dcarCP0}</a>");
-
+  TStatToolkit::AddMetadata(treeMC, "TPC.Anchor.dcarCP0.html", "<a href=\"http://aliqatpc.web.cern.ch/aliqatpc/data/%d{year}/%s{TPC.Anchor.period.GetName()}/%{TPC.Anchor.pass.GetName()}/000%d{run}/dca_and_phi.png\">%2.2f{dcarCP0}</a>");
 
   //
   treeMC->SetAlias("dcarStatusOutlier",
@@ -594,7 +593,7 @@ void makeHtml() {
 
   // TObjArray *arrayLogbookBase = AliTreePlayer::selectMetadata(treeMC->GetFriend("Logbook"), "[class==\"Logbook&&Base\"]",0); //to get list of base logbook
   // tabDCA
-  TString tpcDCA = "dcarAP0:TPC.Anchor.dcarAP0:dcarCP0::TPC.Anchor.dcarCP0:TPC.Anchor.dcarAP0;2.2f";//:dcarStatusString:dcarRawStatusString";
+  TString tpcDCA = "dcarAP0:TPC.Anchor.dcarAP0:dcarCP0:TPC.Anchor.dcarCP0:TPC.Anchor.dcarAP0;2.2f";//:dcarStatusString:dcarRawStatusString";
   // TString tpcDCA="dcarAP1;2.2f:dcarStatusString:dcarStatusOutlier:dcarStatusWarning";
   // TObjArray *tpcDCAArray = AliTreePlayer::selectMetadata(treeMC->GetFriend("QA.TPC"), "[class==\"TPC&&DCAr&&!Err&&!Chi2\"]",0);
   AliTreePlayer::selectWhatWhereOrderBy(treeMC, (logbookBase + tpcDCA).Data(), runSelection.Data(), "", 0, 100000,
@@ -616,5 +615,13 @@ void PrintTestHtmlLink(TString testHtml){
   AliTreeFormulaF testLink("testLink",testHtml,treeMC,7);
   //testLink.fDebug=1;
   printf("\n %s \n",testLink.PrintValue());
-
 }
+
+/// html useful links
+///  - Monalisa - raw run details query - used on mouse over
+///     * http://alimonitor.cern.ch/raw/rawrun_details.jsp?run=280897
+///  - multi-line tooltip using title tag  - can be used for bitmask explanation
+///      http://jsfiddle.net/rzea/vsp6840b/3/
+///  usage of datalist:
+///   -https://www.w3schools.com/tags/tryit.asp?filename=tryhtml5_datalist
+///   https://www.w3schools.com/tags/tryit.asp?filename=tryhtml5_details
