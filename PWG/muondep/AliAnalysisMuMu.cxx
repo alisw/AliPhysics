@@ -43,7 +43,7 @@
 #include "TF1.h"
 #include "TFile.h"
 #include "TGraphErrors.h"
-#include "TMultigraph.h"
+#include "TMultiGraph.h"
 #include "TGrid.h"
 #include "TH1.h"
 #include "TH2.h"
