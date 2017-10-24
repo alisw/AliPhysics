@@ -15,7 +15,7 @@
 #include <AliLog.h>
 
 /**
- * @class AliYAMLConfiguration
+ * @class PWG::Tools::AliYAMLConfiguration
  * @brief YAML configuration class for AliPhysics.
  *
  * A class to handle generic reading and writing to YAML files. This can be used to configure tasks, coordinate trains,
@@ -554,7 +554,7 @@ bool AliYAMLConfiguration::GetProperty(YAML::Node & node, YAML::Node & sharedPar
  * Write a value to a YAML configuration. Note that the value is written to the YAML configuration, but then
  * the YAML configuration needs to explicitly be written to file if the changes should be persistent.
  *
- * @param[in] propertyPath Path to the property in the YAML file.
+ * @param[in] propertyName Path to the property in the YAML file.
  * @param[in] property Property to be written.
  * @param[in] configurationName Name of the YAML configuration file to which the property should be written.
  *
