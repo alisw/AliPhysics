@@ -1033,17 +1033,27 @@ void AliAnalysisTaskUpcPsi2s::RunAODtree()
   Int_t nGoodTracks=0;
   Int_t TrackIndex[5] = {-1,-1,-1,-1,-1};
   
+  Int_t nGoodTracksBit0=0;
+  Int_t TrackIndexBit0[5] = {-1,-1,-1,-1,-1};
+  
+  Int_t nGoodTracksBit4=0;
+  Int_t TrackIndexBit4[5] = {-1,-1,-1,-1,-1};
+  
   //Two track loop
   for(Int_t itr=0; itr<aod ->GetNumberOfTracks(); itr++) {
     AliAODTrack *trk = dynamic_cast<AliAODTrack*>(aod->GetTrack(itr));
     if( !trk ) continue;
     
     if(fTracking == 0){
-      if(!(trk->TestFilterBit(1<<4))) continue;
-      //if(!trk->HasPointOnITSLayer(0)||!trk->HasPointOnITSLayer(1)) continue;
+      if(trk->TestFilterBit(1<<0) && nGoodTracksBit0 < 4){
+      	TrackIndexBit0[nGoodTracksBit0] = itr;
+      	nGoodTracksBit0++;
+      	}
       
-      TrackIndex[nGoodTracks] = itr;
-      nGoodTracks++;
+      if(trk->TestFilterBit(1<<4) && nGoodTracksBit4 < 4){
+      	TrackIndexBit4[nGoodTracksBit4] = itr;
+      	nGoodTracksBit4++;
+      	}
       }
     if(fTracking == 1){
       if(!(trk->TestFilterBit(1<<1))) continue;
@@ -1059,9 +1069,21 @@ void AliAnalysisTaskUpcPsi2s::RunAODtree()
       nGoodTracks++;
       }
 				  
-      if(nGoodTracks > 2) break;  
+      if(nGoodTracks > 2) break;
+      if(nGoodTracksBit0 > 2 && nGoodTracksBit4 > 2) break; 
   }//Track loop
   
+  if(nGoodTracksBit4 == 2){
+  	TrackIndex[0] = TrackIndexBit4[0];
+	TrackIndex[1] = TrackIndexBit4[1];
+	nGoodTracks = 2;
+  	}
+   else if(nGoodTracksBit0 == 2){
+        TrackIndex[0] = TrackIndexBit0[0];
+	TrackIndex[1] = TrackIndexBit0[1];
+	nGoodTracks = 2;
+   	}
+   	
   fJPsiAODTracks->Clear("C");
   //if(0){
   if(nGoodTracks == 2){
