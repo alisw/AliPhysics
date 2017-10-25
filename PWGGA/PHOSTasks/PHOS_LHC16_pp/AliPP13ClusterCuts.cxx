@@ -26,5 +26,6 @@ AliPP13ClusterCuts AliPP13ClusterCuts::GetClusterCuts(Int_t ctype)
 	cuts.fClusterMinE = 0.3;
 	cuts.fTimingCut = 12.5e-9;
 	cuts.fAsymmetryCut = 1.0;
+	cuts.fNContributors = 1;
 	return cuts;
 }

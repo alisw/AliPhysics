@@ -18,6 +18,7 @@ struct AliPP13ClusterCuts
 	Float_t fAsymmetryCut;
 	Float_t fTimingCut;
 	Int_t fNCellsCut;
+    Int_t fNContributors;
 };
 
 #endif
