@@ -174,7 +174,10 @@ private:
 
   TH2D          *fHCorrectZDNP; //!
 
-
+  TList           *mListNUAPos; //!
+  TList           *mListNUANeg; //!
+  TFile            *fileNUApos; //!
+  TFile            *fileNUAneg; //!
 
 
 

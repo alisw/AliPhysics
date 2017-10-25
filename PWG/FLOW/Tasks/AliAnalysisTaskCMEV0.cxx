@@ -117,7 +117,11 @@ AliAnalysisTaskCMEV0::AliAnalysisTaskCMEV0(const TString name):AliAnalysisTaskSE
   hUnderOverBinNUApos(NULL),
   hUnderOverBinNUAneg(NULL),
   fHCentBinTrkRecenter(NULL),
-  fHCorrectZDNP(NULL)
+  fHCorrectZDNP(NULL),
+  mListNUAPos(NULL),
+  mListNUANeg(NULL),
+  fileNUApos(NULL),
+  fileNUAneg(NULL)
 {
   for(int i=0;i<90;i++){
     runNums[i] = 0;
@@ -249,7 +253,11 @@ AliAnalysisTaskCMEV0::AliAnalysisTaskCMEV0(): AliAnalysisTaskSE(),
   hUnderOverBinNUApos(NULL),
   hUnderOverBinNUAneg(NULL),
   fHCentBinTrkRecenter(NULL),
-  fHCorrectZDNP(NULL)
+  fHCorrectZDNP(NULL),
+  mListNUAPos(NULL),
+  mListNUANeg(NULL),
+  fileNUApos(NULL),
+  fileNUAneg(NULL)
 {
   for(int i=0;i<90;i++){
     runNums[i] = 0;
@@ -623,9 +631,9 @@ void AliAnalysisTaskCMEV0::UserExec(Option_t *)
      //get NUA weights: 
      if(dChrg1>0){
         iBinNUA = fHCorrectNUApos->FindBin(VtxZ,dPhi1,dEta1);
-        //w1NUA = 1.0/fHCorrectNUApos->GetBinContent(iBinNUA);  //Jacopo's 
-        w1NUA = fHCorrectNUApos->GetBinContent(iBinNUA);      //Rihan's
-
+        w1NUA = 1.0/fHCorrectNUApos->GetBinContent(iBinNUA);  //Jacopo's 
+        //w1NUA = fHCorrectNUApos->GetBinContent(iBinNUA);      //Rihan's
+	if(w1NUA > 1e5 ) w1NUA = 1.0;
         /*if(fabs(w1NUA)>1e5){
           fHCorrectNUApos->GetBinXYZ(iBinNUA,nBinVz,nBinPhi,nBinEta);         
 	  hUnderOverBinNUApos->Fill(nBinVz);
@@ -635,9 +643,9 @@ void AliAnalysisTaskCMEV0::UserExec(Option_t *)
       }
       else if(dChrg1<0){
         iBinNUA = fHCorrectNUAneg->FindBin(VtxZ,dPhi1,dEta1);
-      //w1NUA = 1.0/fHCorrectNUAneg->GetBinContent(iBinNUA); //Jacopo: bincontent = 1/Wgts 
-        w1NUA = fHCorrectNUAneg->GetBinContent(iBinNUA);     //Rihan: bincontent = Wgts
-
+        w1NUA = 1.0/fHCorrectNUAneg->GetBinContent(iBinNUA); //Jacopo: bincontent = 1/Wgts 
+        //w1NUA = fHCorrectNUAneg->GetBinContent(iBinNUA);     //Rihan: bincontent = Wgts
+	if(w1NUA > 1e5 ) w1NUA = 1.0;
         /*if(fabs(w1NUA)>1e5){
           fHCorrectNUAneg->GetBinXYZ(iBinNUA,nBinVz,nBinPhi,nBinEta);         
 	  hUnderOverBinNUAneg->Fill(nBinVz);
@@ -724,11 +732,13 @@ void AliAnalysisTaskCMEV0::UserExec(Option_t *)
        if(bApplyNUACorr){
          if(dChrg2>0){
            iBinNUA = fHCorrectNUApos->FindBin(VtxZ,dPhi2,dEta2);
-           w2NUA   = fHCorrectNUApos->GetBinContent(iBinNUA);    
+           w2NUA   = 1.0/fHCorrectNUApos->GetBinContent(iBinNUA);    
+  	   if(w2NUA > 1e5 ) w2NUA = 1.0;
 	 }
          else if(dChrg2<0){
            iBinNUA = fHCorrectNUApos->FindBin(VtxZ,dPhi2,dEta2);
-           w2NUA   = fHCorrectNUApos->GetBinContent(iBinNUA);    
+           w2NUA   = 1.0/fHCorrectNUApos->GetBinContent(iBinNUA);  
+  	   if(w2NUA > 1e5 ) w2NUA = 1.0;  
 	 }
        }
        WgtEP = ptw1*ptw2*w1NUA*w2NUA;
@@ -990,7 +1000,7 @@ void AliAnalysisTaskCMEV0::UserExec(Option_t *)
  //if(fievent%20==0) {
    //std::cout<<"irun = "<<runindex<<" n "<<n<<" cent= "<<EvtCent<<"\tsumMa= "<<sumMa<<"\tQxA = "<<QxanCor<<std::endl;
    //std::cout<<" cent= "<<EvtCent<<"\teZNC= "<<energyZNC<<"\teZPC = "<<energyZPC<<"\teZNA= "<<energyZNA<<"\teZPA = "<<energyZPA<<std::endl;
- //}
+   //}
 
  fievent++;
 
@@ -1102,7 +1112,7 @@ void AliAnalysisTaskCMEV0::GetNUACorrectionHist(Int_t run, Float_t cent)
   else if(cent>=10.0 && cent<20.0){centBin = 2;}
   else if(cent>=20.0) {centBin = 3;}
 
-
+  /*
   if(fListNUACorr){
     fHCorrectNUApos = (TH3D *) fListNUACorr->FindObject(Form("fHist_NUA_VzPhiEta_Pos_Cent%d_Run%d",centBin,run));
     fHCorrectNUAneg = (TH3D *) fListNUACorr->FindObject(Form("fHist_NUA_VzPhiEta_Neg_Cent%d_Run%d",centBin,run));
@@ -1113,13 +1123,14 @@ void AliAnalysisTaskCMEV0::GetNUACorrectionHist(Int_t run, Float_t cent)
     fHCorrectNUAneg = NULL;
     exit(1);
   }
+  */
 
-  /*
   if(!gGrid){
     TGrid::Connect("alien://");
   }
 
  //from Rihan's file:
+  /*
   TFile *fNUApn = NULL;
 
   fNUApn = TFile::Open("alien:///alice/cern.ch/user/m/mhaque/calib_files/Run2015o_NUA_PosNeg_RunbyRun_Oct5.root");
@@ -1137,22 +1148,22 @@ void AliAnalysisTaskCMEV0::GetNUACorrectionHist(Int_t run, Float_t cent)
   }
   */
 
-  /* //from Jacopo's NUA file:
-  TFile *fNUApos = NULL;
-  TFile *fNUAneg = NULL;
-
-  fNUApos = TFile::Open("alien:///alice/cern.ch/user/m/mhaque/calib_files/15oHI_FB768_PosCh_CenPhiEtaWeights_VtxRbR.root");
-  fNUAneg = TFile::Open("alien:///alice/cern.ch/user/m/mhaque/calib_files/15oHI_FB768_NegCh_CenPhiEtaWeights_VtxRbR.root");
-
-  TList  *mListPos = dynamic_cast<TList*> (fNUApos->FindObjectAny("CenPhiEta Weights"));
-  TList  *mListNeg = dynamic_cast<TList*> (fNUAneg->FindObjectAny("CenPhiEta Weights"));
-
-  if(mListPos){
-    fHCorrectNUApos = (TH3F *) mListPos->FindObject(Form("CRCQVecPhiHistVtx[%d][%d]",centBin,run));
+  //from Jacopo's NUA file:
+  if(!fileNUApos){
+    fileNUApos = TFile::Open("alien:///alice/cern.ch/user/m/mhaque/calib_files/15oHI_FB768_PosCh_CenPhiEtaWeights_VtxRbR.root");
+    mListNUAPos = dynamic_cast<TList*> (fileNUApos->FindObjectAny("CenPhiEta Weights"));
   }
-  if(mListNeg){
-    fHCorrectNUAneg = (TH3F *) mListNeg->FindObject(Form("CRCQVecPhiHistVtx[%d][%d]",centBin,run));
-  } */
+  if(!fileNUAneg){
+    fileNUAneg = TFile::Open("alien:///alice/cern.ch/user/m/mhaque/calib_files/15oHI_FB768_NegCh_CenPhiEtaWeights_VtxRbR.root");
+    mListNUANeg = dynamic_cast<TList*> (fileNUAneg->FindObjectAny("CenPhiEta Weights"));
+  }
+
+  if(mListNUAPos){
+    fHCorrectNUApos = (TH3D *) mListNUAPos->FindObject(Form("CRCQVecPhiHistVtx[%d][%d]",centBin,run));
+  }
+  if(mListNUANeg){
+    fHCorrectNUAneg = (TH3D *) mListNUANeg->FindObject(Form("CRCQVecPhiHistVtx[%d][%d]",centBin,run));
+  }
 
   if(!fHCorrectNUApos || !fHCorrectNUAneg){
     printf("\n\n ******** could not open NUA Histograms for run %d *********\n\n",run);
