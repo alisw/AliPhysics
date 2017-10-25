@@ -30,9 +30,18 @@ class AliHFInvMassFitter : public TNamed {
   AliHFInvMassFitter(const TH1F* histoToFit, Double_t minvalue, Double_t maxvalue, Int_t fittypeb=kExpo, Int_t fittypes=kGaus);
   ~AliHFInvMassFitter();
 
+  void     SetHistogramFit(const TH1F* histoToFit){
+    if (fHistoInvMass) delete fHistoInvMass;
+    fHistoInvMass=(TH1F*)histoToFit->Clone("fHistoInvMass");
+    fHistoInvMass->SetDirectory(0);
+  }
   void     SetRangeFit(Double_t minvalue, Double_t maxvalue){
     fMinMass=minvalue; fMaxMass=maxvalue;
   }   
+  void     SetFitFunctions(Int_t fittypeb, Int_t fittypes){
+    fTypeOfFit4Bkg=fittypeb; fTypeOfFit4Sgn=fittypes;
+    SetNumberOfParams();
+  }
 
   void SetUseLikelihoodFit(){fFitOption="L,E";}
   void SetUseLikelihoodWithWeightsFit(){fFitOption="WL,E";}
