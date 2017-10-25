@@ -658,11 +658,16 @@ Int_t  AliTreePlayer::selectWhatWhereOrderBy(TTree * tree, TString what, TString
       TNamed *tHeadName = TStatToolkit::GetMetadata(tree,TString(columnNameList[iCol]->GetName())+".thead");
       TNamed *tooltipName = TStatToolkit::GetMetadata(tree,TString(columnNameList[iCol]->GetName())+".tooltip");
       TString sthName=(tHeadName!=NULL) ? tHeadName->GetTitle() : columnNameList[iCol]->GetName();
-      if (tooltipName==NULL){
-        fprintf(default_fp, "\t\t<th>%s</th>\n", sthName.Data()); // add metadata info
-      }else {
-        fprintf(default_fp, "\t\t<th class=\"tooltip\" data-tooltip=\"%s\">%s</th>\n", tooltipName->GetTitle(), sthName.Data()); // add metadata info
-      }
+      TNamed *descriptionName = TStatToolkit::GetMetadata(tree,TString(columnNameList[iCol]->GetName())+".headerTooltip");
+      fprintf(default_fp, "\t\t<th");
+      if (tooltipName!=0)  fprintf(default_fp, " class=\"tooltip\" data-tooltip=\"%s\"", tooltipName->GetTitle());
+      if (descriptionName!=0)  fprintf(default_fp, " title=\"%s\"", descriptionName->GetTitle());
+      fprintf(default_fp, ">%s</th>\n",  sthName.Data()); // add metadata info
+//      if (tooltipName==NULL){
+//        fprintf(default_fp, "\t\t<th>%s</th>\n", sthName.Data()); // add metadata info
+//      }else {
+//        fprintf(default_fp, "\t\t<th class=\"tooltip\" data-tooltip=\"%s\">%s</th>\n", tooltipName->GetTitle(), sthName.Data()); // add metadata info
+//      }
     }
     fprintf(default_fp,"\t</tr>\n"); // add metadata info
     fprintf(default_fp,"\t</thead>\n"); // add metadata info

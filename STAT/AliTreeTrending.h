@@ -33,8 +33,9 @@ public:
   //
   void MakePlot(const char* outputDir, const char *figureName, const char *LegendTitle, std::vector<Double_t>& legendPos, const char *groupName, const char* expr, const char * cut, const char * markers, const char *colors, Bool_t drawSparse, Float_t markerSize, Float_t sigmaRange, Bool_t comp);
   void AppendBand(const char* outputDir, const char *figureName, const char* expr, const char * cut, const char * lineStyle, const char *colors, Bool_t drawSparse, Float_t sigmaRange, Bool_t comp) ;
-  void MakeStatusPlot(const char* outputDir, const char *figureName, TString expression, TString varTitle, TCut cutString, TString sCriteria);
+  void MakeStatusPlot(const char* outputDir, const char *figureName, TString expression, TString varTitle, TCut cutString, TString sCriteria, TString friendName="");
   static TMultiGraph * MakeMultiGraphStatus(TTree *fTree, TString mgrName, TString expression, TString varTitle, TCut cutString, TString sCriteria, Bool_t setAxis=kFALSE);
+  static void  DecomposeStatusAlias(TTree* tree, TString currentString, TString &statusVar, TString &statusTitle, TPRegexp &suffix, Int_t &counter);
   // TODO void MakeHtml(char *htmlName, char *varList)
 public:
   TObjArray *  GetTexDescription(TLatex *latex);  /// Currently only standard variables

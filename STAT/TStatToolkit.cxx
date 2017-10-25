@@ -1049,21 +1049,22 @@ TGraphErrors * TStatToolkit::MakeGraphErrors(TTree * tree, const char * expr, co
   
 }
 
+/// AddMetadata to the input tree - see https://alice.its.cern.ch/jira/browse/ATO-290
+/// \param tree         - input tree
+/// \param varTagName   - tag to register
+/// \param varTagValue  - value
+/// \return             - return has list
+/// Currently supported metadata
+///* Drawing  :
+///  * <varName>.AxisTitle
+///  *<varName>.Legend
+///  * <varname>.Color
+///  * <varname>.MarkerStyle
+///* This metadata than can be used by the TStatToolkit
+///  * TStatToolkit::MakeGraphSparse
+///  * TStatToolkit::MakeGraphErrors
+///
 THashList*  TStatToolkit::AddMetadata(TTree* tree, const char *varTagName,const char *varTagValue){
-  //
-  // Add metadata information as user info to the tree - see https://alice.its.cern.ch/jira/browse/ATO-290
-  // TTree metdata are used for the Drawing methods in the folling drawing functions
-  /*
-    Supported metadata:
-    - <varName>.AxisTitle
-    - <varName>.Legend
-    - <varname>.Color
-    - <varname>.MarkerStyle
-    This metadata than can be used by the TStatToolkit
-    - TStatToolkit::MakeGraphSparse
-    - TStatToolkit::MakeGraphErrors
-   */
-  // 
   if (!tree) return NULL;
   THashList * metaData = (THashList*) tree->GetUserInfo()->FindObject("metaTable");
   if (metaData == NULL){  
@@ -1072,7 +1073,7 @@ THashList*  TStatToolkit::AddMetadata(TTree* tree, const char *varTagName,const 
     tree->GetUserInfo()->AddLast(metaData);
   } 
   if (varTagName!=NULL && varTagValue!=NULL){
-    TNamed * named = TStatToolkit::GetMetadata(tree, varTagName);
+    TNamed * named = TStatToolkit::GetMetadata(tree, varTagName,NULL,kTRUE);
     if (named==NULL){
       metaData->AddLast(new TNamed(varTagName,varTagValue));
     }else{
@@ -1082,47 +1083,57 @@ THashList*  TStatToolkit::AddMetadata(TTree* tree, const char *varTagName,const 
   return metaData;
 }
 
-
-TNamed* TStatToolkit::GetMetadata(TTree* tree, const char *vartagName, TString * prefix){
+/// Get metadata description
+/// In case metadata contains friend part - friend path os returned as prefix
+/// Metadata are supposed to be added into tree using TStatToolkit::AddMetadata() function
+/// \param tree          - input tree
+/// \param varTagName    - tag name
+/// \param prefix        - friend prefix in case metadata are in friend tree
+/// \param fullMatch     - request full match in varTagName (to enable different metadata for tree and friend tree)
+/// \return              - metadata description
+/// TODO: too many string operations - to be speed up using char array arithmetic
+TNamed* TStatToolkit::GetMetadata(TTree* tree, const char *varTagName, TString * prefix,Bool_t fullMatch){
   //
-  //  Get metadata description  // too much sting operations - to be speed up using cahr array arithmetic
-  //  in case metadata contains friend part - frined path os returend as prefix
+
   if (!tree) return 0;
   TTree * treeMeta=tree;
-  TString metaName(vartagName);
+
+  THashList * metaData = (THashList*) treeMeta->GetUserInfo()->FindObject("metaTable");
+  if (metaData == NULL){
+    metaData=new THashList;
+    metaData->SetName("metaTable");
+    tree->GetUserInfo()->AddLast(metaData);
+    return 0;
+  }
+  TNamed * named = (TNamed*)metaData->FindObject(varTagName);
+  if (named || fullMatch) return named;
+
+  TString metaName(varTagName);
   Int_t nDots= metaName.CountChar('.');
   if (prefix!=NULL) *prefix="";
-  if (nDots>1){ //check if frien name exapansion needed
+  if (nDots>1){ //check if friend name expansion needed
     while (nDots>1){
-      TList *fList= treeMeta->GetListOfFriends();    
+      TList *fList= treeMeta->GetListOfFriends();
       if (fList!=NULL){
-	Int_t nFriends= fList->GetEntries();
-	for (Int_t kf=0; kf<nFriends; kf++){
-	  TPRegexp regFriend(TString::Format("^%s.",fList->At(kf)->GetName()).Data());
-	  if (metaName.Contains(regFriend)){
-	    treeMeta=treeMeta->GetFriend(fList->At(kf)->GetName());
-	    regFriend.Substitute(metaName,"");
-	    if (prefix!=NULL){
-	      (*prefix)+=fList->At(kf)->GetName();
-	      (*prefix)+=" ";
-	    }
-	  }	    
-	}
+        Int_t nFriends= fList->GetEntries();
+        for (Int_t kf=0; kf<nFriends; kf++){
+          TPRegexp regFriend(TString::Format("^%s.",fList->At(kf)->GetName()).Data());
+          if (metaName.Contains(regFriend)){
+            treeMeta=treeMeta->GetFriend(fList->At(kf)->GetName());
+            regFriend.Substitute(metaName,"");
+            if (prefix!=NULL){
+              (*prefix)+=fList->At(kf)->GetName();
+              (*prefix)+=" ";
+            }
+          }
+        }
       }
       if (nDots = metaName.CountChar('.')) break;
       nDots=metaName.CountChar('.');
     }
   }
 
-
-  THashList * metaData = (THashList*) treeMeta->GetUserInfo()->FindObject("metaTable");
-  if (metaData == NULL){  
-    metaData=new THashList;
-    metaData->SetName("metaTable");
-    tree->GetUserInfo()->AddLast(metaData);
-    return 0;
-  } 
-  TNamed * named = (TNamed*)metaData->FindObject(metaName.Data());
+  named = (TNamed*)metaData->FindObject(metaName.Data());
   return named;
 
 }
@@ -2923,10 +2934,10 @@ void TStatToolkit::MakeDistortionMapFast(THnBase * histo, TTreeSRedirector *pcst
 /// \param graph1   - graph with "template x axis"   (default)
 /// \param option   - TODO - implement merge option as an option
 /*!
-### Example - remap sparse run list of QA.EVS graph to be like as an Logbook run list
+### Example - remap sparse run list of QA.EVS graph to be like as in Logbook run list
 \code
   AliExternalInfo info; tree = info->GetTree("QA.TPC","LHC15o","pass1","Logbook;QA.TPC;QA.EVS")
-  graph = TStatToolkit::MakeMultGraph(tree,"","Logbook.run;QA.EVS.run:run","run>0","21;25","1;2",1.0,1,4,0);
+  graph = TStatToolkit::MakeMultGraph(tree,"","Logbook.run;QA.EVS.run:run","run>0","21;21","2;4",1.0,1,4,0);
   graph1 = (TGraph*)graph->GetListOfGraphs()->At(0); graph0 = (TGraph*)graph->GetListOfGraphs()->At(1);
   //
   TStatToolkit::RebinSparseGraph(graph0,graph1,"");
@@ -2953,7 +2964,8 @@ void TStatToolkit::RebinSparseGraph(TGraph * graph0, TGraph *graph1, Option_t * 
   }
   for (Int_t i=1; i<=graph0->GetXaxis()->GetNbins(); i++){
     Int_t indexNew=mapStrInt1[mapIntStr0[i]];
-    graph0->GetX()[i-1]=indexNew-0.5;
+    Double_t offset=graph0->GetX()[i-1]-int(graph0->GetX()[i-1]);
+    graph0->GetX()[i-1]=indexNew+offset-1;
   }
   graph0->GetXaxis()->Set(graph1->GetXaxis()->GetNbins(),graph1->GetXaxis()->GetXbins()->GetArray());
   for (Int_t i=1; i<=graph0->GetXaxis()->GetNbins(); ++i){
@@ -2961,12 +2973,13 @@ void TStatToolkit::RebinSparseGraph(TGraph * graph0, TGraph *graph1, Option_t * 
   }
 }
 
-/// Rebin sparse MutliGraph to have the same granularity of x axis as in reference graphRef
-/// \param multiGraph   - multigraph to remap
+/// Rebin sparse MultiGraph to have the same granularity of x axis as in reference graphRef
+/// \param multiGraph   - multiGraph to remap
 /// \param graphRef     - reference graph
+///
+/// Used e.g to remap graphs in case of missing measurement in one of the sources
+///  * e.g  Logbook run list for period LHC15o  is longer than run list for the QA.EVS and QA.TPC  "pass3_lowIR_pidfix"
 /*!
-  #### Used e.g to remap graphs in case of missing measurement in one of the sources
-  * e.g  run in the Logbook for period LHC15o  than in the QA.EVS and QA.TPC for reconstruction  pass3_lowIR_pidfix
 \code
   AliExternalInfo info; tree = info->GetTree("Logbook","LHC15o","pass3_lowIR_pidfix","Logbook;QA.TPC;QA.EVS")
   graph = TStatToolkit::MakeMultGraph(tree,"","Logbook.run;QA.TPC.run;QA.EVS.run:run","runDuration>600","25;21;24","1;2;4",1.5,1,4,0);
@@ -2993,14 +3006,15 @@ void TStatToolkit::RebinSparseMultiGraph(TMultiGraph *multiGraph, TGraph *graphR
 /// * Currently the code is working only for the integer x values
 /// * TODO Support for the string x values
 /// \param multiGraph
+///
+///Example case: Rebin run lists
+///* Input graph with run list for the logbook, QA.TPC and QA.EVS
+///  * Logbook runs list 192 entries
+///  * QA.TPC run list has 11 runs
+///  * QA.EVS has 8 runs
+///* Output multi graph
+///  * x axis with 192 bins (superset of all runs)
 /*!
- ### Example case: Rebin run lists
-  *Input graph with run list for the logbook, QA.TPC and QA.EVS
-    * Logbook runs list 192 entries
-    * QA.TPC run list has 11 runs
-    * QA.EVS has 8 runs
-  * Output multigraph
-    * x axis with 192 bins (superset of all runs)
 \code
     AliExternalInfo info; tree = info->GetTree("Logbook","LHC15o","pass3_lowIR_pidfix","Logbook;QA.TPC;QA.EVS")
     graph = TStatToolkit::MakeMultGraph(tree,"","Logbook.run;QA.EVS.run;QA.TPC.run:run","runDuration>600","25;21;24","1;2;4",0,1,10,0);

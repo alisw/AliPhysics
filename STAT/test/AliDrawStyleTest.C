@@ -6,8 +6,8 @@
 /*!
 \code
 .L $AliRoot_SRC/STAT/test/AliDrawStyleTest.C+
-AliDrawStyleTestGetArray();
-aliroot -b -q  $AliRoot_SRC/STAT/test/AliDrawStyleTest.C+ | tee AliDrawStyleTest.log
+AliDrawStyleTest();
+root.exe -b -q  $AliRoot_SRC/STAT/test/AliDrawStyleTest.C+ | tee AliDrawStyleTest.log
 \endcode
 */
 
@@ -17,19 +17,22 @@ aliroot -b -q  $AliRoot_SRC/STAT/test/AliDrawStyleTest.C+ | tee AliDrawStyleTest
 #include "Riostream.h"
 #include <iostream>
 #include "TSystem.h"
+#include "TStopwatch.h"
 
 void AliDrawStyleTest_StyleArray();
 void AliDrawStyleTest_Attributes();
 void AliDrawStyleTest_GetIntValues();
 void AliDrawStyleTest_GetFloatValues();
-void AliDrawStyleTest_CSSReadWrite();
+//void AliDrawStyleTest_CSSReadWrite();
+Bool_t AliDrawStyleTest_IsSelected();
 
 void AliDrawStyleTest(){
   AliDrawStyleTest_StyleArray();
   AliDrawStyleTest_Attributes();
   AliDrawStyleTest_GetIntValues();
   AliDrawStyleTest_GetFloatValues();
-  AliDrawStyleTest_CSSReadWrite();
+//  AliDrawStyleTest_CSSReadWrite();
+  AliDrawStyleTest_IsSelected();
 }
 
 /// Test acces to the style indexed array
@@ -60,18 +63,18 @@ void AliDrawStyleTest_StyleArray(){
   //
 }
 
-/// test AliDrawStyle::GetAttributeValue
+/// test AliDrawStyle::GetPropertyValue
 void AliDrawStyleTest_Attributes(){
   TString input="{\nmarker_style:25,21,22,23; \nmarker_color:1,2,4,5; \n}";
-  if ( AliDrawStyle::GetAttributeValue(input,"marker_color").Contains("1,2,4,5")){
-    ::Info("AliDrawStyleTest","AliDrawStyle::GetAttributeValue(input,\"marker_color\")- IsOK");
+  if ( AliDrawStyle::GetPropertyValue(input,"marker_color").Contains("1,2,4,5")){
+    ::Info("AliDrawStyleTest","AliDrawStyle::GetPropertyValue(input,\"marker_color\")- IsOK");
   }else{
-    ::Error("AliDrawStyleTest","AliDrawStyle::GetAttributeValue(input,\"marker_color\")- FAILED");
+    ::Error("AliDrawStyleTest","AliDrawStyle::GetPropertyValue(input,\"marker_color\")- FAILED");
   }
-  if ( AliDrawStyle::GetAttributeValue(input,"marker_style").Contains("25,21,22,23")){
-    ::Info("AliDrawStyleTest","AliDrawStyle::GetAttributeValue(input,\"marker_style\")- IsOK");
+  if ( AliDrawStyle::GetPropertyValue(input,"marker_style").Contains("25,21,22,23")){
+    ::Info("AliDrawStyleTest","AliDrawStyle::GetPropertyValue(input,\"marker_style\")- IsOK");
   }else{
-    ::Error("AliDrawStyleTest","AliDrawStyle::GetAttributeValue(input,\"marker_style\")- FAILED");
+    ::Error("AliDrawStyleTest","AliDrawStyle::GetPropertyValue(input,\"marker_style\")- FAILED");
   }
 }
 
@@ -168,38 +171,78 @@ void AliDrawStyleTest_GetFloatValues(){
 /// To test  - input CSS file to be read and than written
 ///          - diff between the files should be 0 except of the formatting
 /// TODO test - ignoring commented fields in selector and in the declaration
-void AliDrawStyleTest_CSSReadWrite(){
-  TObjArray *cssArray = AliDrawStyle::ReadCSSFile("$AliRoot_SRC/STAT/test/alirootTestStyle.css",0);
-  AliDrawStyle::WriteCSSFile(cssArray,"test.css");
-  TString diff = gSystem->GetFromPipe("diff -w -B    test.css  $AliRoot_SRC/STAT/test/alirootTestStyle.css");
-  if (diff.Length()>0){
-    ::Error("AliDrawStyleTest","AliDrawStyleTestStyle_CSSReadWrite- FAILED");
-  }else{
-    ::Info("AliDrawStyleTest","AliDrawStyleTestStyle_CSSReadWrite- IsOK");
-  }
-}
-/// TODO - add test for IsSelected
-/// Add benchnchamrk of is selected (timer, loop, print)
+// void AliDrawStyleTest_CSSReadWrite(){
+//   //TObjArray *cssArray = AliDrawStyle::ReadCSSFile("$AliRoot_SRC/STAT/test/alirootTestStyle.css");
+// TObjArray *cssArray = AliDrawStyle::ReadCSSFile("/Users/bdrum/Projects/alicesw/AliRoot/STAT/test/alirootTestStyle.css");
+//   AliDrawStyle::WriteCSSFile(cssArray,"test.css");
+//   TString diff = gSystem->GetFromPipe("diff -w -B    test.css  $AliRoot_SRC/STAT/test/alirootTestStyle.css");
+//   if (diff.Length()>0){
+//     ::Error("AliDrawStyleTest","AliDrawStyleTestStyle_CSSReadWrite- FAILED");
+//   }else{
+//     ::Info("AliDrawStyleTest","AliDrawStyleTestStyle_CSSReadWrite- IsOK");
+//   }
+// }
+/// TODO - add test for IsSelected @done
+/// Add benchmark of is selected (timer, loop, print) @done if I get you right.
+/// What time do we need?
+/// Now we have
+/// bench(100) = 0.001079.s || bench(1000) = 0.01162.s || bench(10000) == 0.06675.s bench(100000) = 0.6101.s
 /// \param selector
 /// \param className
 /// \param attributeName
 /// \return
-/// Comments:
-///      * We will use root TRegexp for the pattern matching
-///      * tab
-Bool_t  AliDrawStyleTest_IsSelected(TString selector, TString className, TString attributeName){
-  //TString selector= ".TH*#*xxx .TH1*#yyy  ";
-  // AliDrawStyle::IsSelected(selector, "TGraph","xxx");  //should be false
-  // AliDrawStyle::IsSelected(selector, "TH2","xxx");     //should be true
-  // AliDrawStyle::IsSelected(selector, "TH2","yyy");     //should be false
-  // AliDrawStyle::IsSelected(selector, "TH1","xxx");     //should be true
-  // AliDrawStyle::IsSelected(selector, "TH1","yyy");     //should be true
-  // AliDrawStyle::IsSelected(selector, "TH1","yyy");     //should be true
-  // TString className="TH2";
-  // TString objectName="xxx";
-  // Bool_t isSelected=0;
-  // TObjArray * subArray = selector.Tokenize(" \t");
-  // for (Int_t i=0; i<subArray->GetEntries(); i++){
-  //   TString subExp=subArray->At(i)->GetName();
+Bool_t  AliDrawStyleTest_IsSelected(){//TString selector, TString className, TString attributeName){
+  TString selectors = "TH1.Status#obj1, TH1.Warning#obj1, TH1.Warning#obj3 \tTGraph#obj1, TGraph.Status#TPC.QA.dcar_posA_1 \tTGraph.Warning#TPC.QA.dcar_posA_2 \tTF1.Status, .Status#obj1, #obj3";
+  std::cout << selectors << std::endl;
+  if (AliDrawStyle::IsSelected(selectors, "TF1", "Status", "anyObject")){
+    ::Info("AliDrawStyleTest","AliDrawStyle::IsSelected(selectors, \"TF1\", \"Status\", \"anyObject\")- IsOK");
+  }else{
+    ::Error("AliDrawStyleTest","AliDrawStyle::IsSelected(selectors, \"TF1\", \"Status\", \"anyObject\")- FAILED");
+  }
+  if (AliDrawStyle::IsSelected(selectors, "TGraphErrors", "AnyTag", "obj3")){
+    ::Info("AliDrawStyleTest","AliDrawStyle::IsSelected(selectors, \"TGraphErrors\", \"AnyTag\", \"obj3\")- IsOK");
+  }else{
+    ::Error("AliDrawStyleTest","AliDrawStyle::IsSelected(selectors, \"TGraphErrors\", \"AnyTag\", \"obj3\")- FAILED");
+  }
+  if (AliDrawStyle::IsSelected(selectors, "TGraph", "Warning", "TPC.QA.dcar_posA_2")){
+    ::Info("AliDrawStyleTest","AliDrawStyle::IsSelected(selectors, \"TGraph\", \"Warning\", \"TPC.QA.dcar_posA_2\")- IsOK");
+  }else{
+    ::Error("AliDrawStyleTest","AliDrawStyle::IsSelected(selectors, \"TGraph\", \"Warning\", \"TPC.QA.dcar_posA_2\")- FAILED");
+  }
+  if (!AliDrawStyle::IsSelected(selectors, "TH1", "Status", "obj2")){
+    ::Info("AliDrawStyleTest","!AliDrawStyle::IsSelected(selectors, \"TH1\", \"Status\", \"obj2\")- IsOK");
+  }else{
+    ::Error("AliDrawStyleTest","!AliDrawStyle::IsSelected(selectors, \"TH1\", \"Status\", \"obj2\")- FAILED");
+  }
+  if (!AliDrawStyle::IsSelected(selectors, "Graph", "Warning", "obj1")){
+    ::Info("AliDrawStyleTest","!AliDrawStyle::IsSelected(selectors, \"Graph\", \"Warning\", \"obj1\")- IsOK");
+  }else{
+    ::Error("AliDrawStyleTest","!AliDrawStyle::IsSelected(selectors, \"Graph\", \"Warning\", \"obj1\")- FAILED");
+  }
+
+  //should I make this like separate function?
+  // Int_t n = 100000;
+  // TStopwatch timer;
+  // timer.Start();
+  // for (Int_t i=0; i<n; i++){
+  //   AliDrawStyle::IsSelected(selector, "tag123", "TGraphErrors","yyy");
   // }
+  // timer.Stop();
+  //
+  // std::cout << "Benchmarking:" <<endl;
+  // std::cout.precision(4);
+  // std::cout << n << "calls of AliDrawStyle::IsSelected(tag*.TH*#*xxx \ttag*.*Errors#*yyy  , \"tag123\", \"TGraphErrors\",\"yyy\") tooks" << timer.RealTime() << ".s" <<endl;
+
+}
+
+Bool_t  AliDrawStyleTest_GetProperty(){
+  AliDrawStyle::SetCssStyle("alirootTestStyle.css",AliDrawStyle::ReadCSSFile("$AliRoot_SRC/STAT/test/alirootTestStyle.css",0));
+  if (AliDrawStyle::GetProperty("alirootTestStyle.css","marker_size", "TGraph", "Status", "TPC.QA.dcar_posA_1") == "   1,2,3,4"){
+    ::Info("AliDrawStyleTest","AliDrawStyle::GetProperty(\"alirootTestStyle.css\",\"marker_size\", \"TGraph\", \"Status\", \"TPC.QA.dcar_posA_1\")- IsOK");
+  }else{
+    ::Error("AliDrawStyleTest","AliDrawStyle::GetProperty(\"alirootTestStyle.css\",\"marker_size\", \"TGraph\", \"Status\", \"TPC.QA.dcar_posA_1\")- FAILED");
+  }
+
+
+
 }

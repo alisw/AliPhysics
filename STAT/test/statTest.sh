@@ -73,7 +73,7 @@ EOF
   N_GOOD=$(grep -cE 'Ali.*OK' AliDrawStyleTest.log)
   N_BAD=$(grep -c "E-Ali" AliDrawStyleTest.log)
   TEST_STATUS=0
-  if [[ $N_GOOD != 21 ]]; then
+  if [[ $N_GOOD != 25 ]]; then
     alilog_error "statTest.AliDrawStyleTest: Test FAILED"
     ((TEST_STATUS++))
   fi

@@ -55,10 +55,12 @@ class TPad;
 
 class AliDrawStyle : public TObject{
 public:
-  static void ApplyStyle(const char* styleName);
+  static void ApplyStyle(const char * styleName);
   static const TStyle *GetStyle(const char * styleName) {return fStyleAlice[styleName];}
+  static const TObjArray *GetCssStyle(const char *styleName){return fCssStyleAlice[styleName];}
+  static void  SetCssStyle(const char *styleName, TObjArray*array ){ fCssStyleAlice[styleName]=array;}
   static void SetDefaults();
-  static void SetDefaultStyles(const char * tstyleName, const char* arrayName);
+  static void SetDefaultStyles(const char * styleName, const char* arrayName);
   static TString GetLatexAlice(const char * symbol);
   static void AddLatexSymbol(const char * symbolName, const char * symbolTitle);
   static const std::vector<int> &    GetMarkerStyles(const char *style){return AliDrawStyle::fMarkerStyles[style];};
@@ -67,12 +69,13 @@ public:
   static const std::vector<float> &  GetLineWidth(const char *style){return AliDrawStyle::fLineWidth[style];};
   static const std::vector<int> &    GetFillColors(const char *style){return AliDrawStyle::fFillColors[style];};
   // CSS like attribute fields parsing
-  static TString  GetAttributeValue(TString input, TString tagName);
-  static Int_t    GetNamedIntegerAt(TString input, TString tagName, Int_t index);
-  static Float_t  GetNamedFloatAt(TString input, TString tagName, Int_t index);
-  static Bool_t  IsSelected(TString selector, TString className, TString objectName);
+  static TString GetProperty(const char * styleName, TString propertyName, TString elementName, TString className, TString objectName);
+  static TString  GetPropertyValue(TString input, TString propertyName);
+  static Int_t    GetNamedIntegerAt(TString input, TString propertyName, Int_t index);
+  static Float_t  GetNamedFloatAt(TString input, TString propertyName, Int_t index);
+  static Bool_t  IsSelected(TString selectors, TString elementName, TString className, TString objectName);
   static TObjArray * ReadCSSFile(const char *  inputName,Int_t verbose);
-  static void    WriteCSSFile(TObjArray * cssArray, const char *  outputName, fstream *pcssOut=NULL);
+  static void    WriteCSSFile(TObjArray * cssArray, const char *  outputName, fstream *cssOut=NULL);
   //
   //
   static Int_t   GetIntegerAt(const char * format, Int_t index, const char * separator=";");
@@ -81,22 +84,23 @@ public:
   static Float_t GetMarkerSize(const char *style, Int_t index);
   static Int_t   GetMarkerColor(const char *style, Int_t index);
   static Int_t   GetFillColor(const char *style, Int_t index);
-  static Int_t   GetLineStyle(const char *style, Int_t index);  
-  static Int_t   GetLineColor(const char *style, Int_t index);    
+  static Int_t   GetLineStyle(const char *style, Int_t index);
+  static Int_t   GetLineColor(const char *style, Int_t index);
   static Float_t GetLineWidth(const char *style, Int_t index);
   static void PrintLatexSymbols(Option_t *option,TPRegexp& regExp);
   static void PrintStyles(Option_t *option, TPRegexp& regExp);
 protected:
   static TString fDefaultTStyleID;                            ///< ID of the default TStyle
   static TString fDefaultArrayStyleID;                        ///< ID of the default array styles
-  static std::map<TString, TString> fLatexAlice;              ///< map of predefined latex symbols - fomatted according ALICE rules
+  static std::map<TString, TString> fLatexAlice;              ///< map of predefined latex symbols - formatted according ALICE rules
   static std::map<TString, TStyle*>  fStyleAlice;             ///< map of Alice predefined styles (+user defined)
+  static std::map<TString, TObjArray*>  fCssStyleAlice;       ///< map of Alice predefined styles corresponding to css notation
   static std::map<TString, std::vector<int> > fMarkerStyles;  ///< map of predefined marker styles arrays
   static std::map<TString, std::vector<int> > fMarkerColors;  ///< map of predefined colors  arrays
   static std::map<TString, std::vector<float> > fMarkerSize;  ///< map of predefined marker sizes ()
   static std::map<TString, std::vector<int> > fFillColors;    ///< map of predefined fill colors arrays
   static std::map<TString, std::vector<float> > fLineWidth;   ///< map of predefined line width
-  static std::map<TString, std::vector<float> > fLineStyle;   ///< map of predefined line style 
+  static std::map<TString, std::vector<float> > fLineStyle;   ///< map of predefined line style
   static std::map<TString, std::vector<float> > fLineColor;   ///< map of predefined line color
   //
   static void  RegisterDefaultLatexSymbols();                 ///< initialize default LatexSymbols
