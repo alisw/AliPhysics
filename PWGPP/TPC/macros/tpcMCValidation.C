@@ -552,48 +552,37 @@ void makeHtml() {
   TStatToolkit::AddMetadata(treeMC, "interactionRate.tooltip", "Interaction rate (source EVS)");
   TStatToolkit::AddMetadata(treeMC, "bz.thead", "B<sub>z</sub> (T)");
   TStatToolkit::AddMetadata(treeMC, "bz.tooltip", "Barrel field");
+  TStatToolkit::AddMetadata(treeMC, "detectorMask.html","%b{detectorMask&0x7F}");
+  TStatToolkit::AddMetadata(treeMC, "detectorMask.headerTooltip","Detector bit mask:\n* SPD\n* SDD\n* SSS\n* TPC\n* TRD");
+}
 
-  //TPC
+void makeHtmlDCA(){
+  //TString metaDCA="<a title
+  TString pathMC="<a href=\"http://aliqatpc.web.cern.ch/aliqatpc/sim/%d{year}/%s{period.GetName()}/passMC/000%d{run}/";
+  TString pathData="<a href=\"http://aliqatpc.web.cern.ch/aliqatpc/data/%d{TPC.Anchor.year}/%s{TPC.Anchor.period.GetName()}/%{TPC.Anchor.pass.GetName()}/000%d{run}/";
+  TStatToolkit::AddMetadata(treeMC, "dcarAP0.html", (pathMC+"dca_and_phi.png\">%2.4f{dcarAP0}</a>").Data());
+  TStatToolkit::AddMetadata(treeMC, "TPC.Anchor.dcarAP0.html", (pathData+"dca_and_phi.png\">%2.4f{TPC.Anchor.dcarAP0}</a>").Data());
+  TStatToolkit::AddMetadata(treeMC, "dcarCP0.html", (pathMC+"dca_and_phi.png\">%2.4f{dcarCP0}</a>").Data());
+  TStatToolkit::AddMetadata(treeMC, "TPC.Anchor.dcarAP0.html", (pathData+"dca_and_phi.png\">%2.4f{TPC.Anchor.dcarCP0}</a>").Data());
+
   TStatToolkit::AddMetadata(treeMC, "dcarAP0.thead", "&sigma;<sup>A</sup><sub>MC DCA<sub>1/pt=0</sub></sub> (cm)");
   TStatToolkit::AddMetadata(treeMC, "dcarAP0.tooltip", "DCA (r&phi;) at infinite pt");
-  TStatToolkit::AddMetadata(treeMC, "dcarAP0.html", "<a href=\"http://aliqatpc.web.cern.ch/aliqatpc/sim/%d{year}/%s{period.GetName()}/passMC/000%d{run}/dca_and_phi.png\">%2.2f{dcarAP0}</a>");
   TStatToolkit::AddMetadata(treeMC, "dcarCP0.thead", "&sigma;<sup>C</sup><sub>MC DCA<sub>1/pt=0</sub></sub> (cm)");
   TStatToolkit::AddMetadata(treeMC, "dcarCP0.tooltip", "DCA (r&phi;) at infinite pt");
-  TStatToolkit::AddMetadata(treeMC, "dcarCP0.html", "<a href=\"http://aliqatpc.web.cern.ch/aliqatpc/sim/%d{year}/%s{period.GetName()}/passMC/000%d{run}/dca_and_phi.png\">%2.2f{dcarCP0}</a>");
-  //
   TStatToolkit::AddMetadata(treeMC, "TPC.Anchor.dcarAP0.thead", "&sigma;<sup>A</sup><sub>Anchor DCA<sub>1/pt=0</sub></sub> (cm)");
   TStatToolkit::AddMetadata(treeMC, "TPC.Anchor.dcarAP0.tooltip", "DCA (r&phi;) at infinite pt");
-  TStatToolkit::AddMetadata(treeMC, "TPC.Anchor.dcarAP0.html", "<a href=\"http://aliqatpc.web.cern.ch/aliqatpc/data/%d{year}/%s{TPC.Anchor.period.GetName()}/%{TPC.Anchor.pass.GetName()}/000%d{run}/dca_and_phi.png\">%2.2f{dcarCP0}</a>");
   TStatToolkit::AddMetadata(treeMC, "TPC.Anchor.dcarCP0.thead", "&sigma;<sup>C</sup><sub>Anchor DCA<sub>1/pt=0</sub></sub> (cm)");
   TStatToolkit::AddMetadata(treeMC, "TPC.Anchor.dcarCP0.tooltip", "DCA (r&phi;) at infinite pt");
   TStatToolkit::AddMetadata(treeMC, "TPC.Anchor.dcarCP0.html", "<a href=\"http://aliqatpc.web.cern.ch/aliqatpc/data/%d{year}/%s{TPC.Anchor.period.GetName()}/passMC/000%d{run}/dca_and_phi.png\">%2.2f{dcarCP0}</a>");
-  TStatToolkit::AddMetadata(treeMC, "TPC.Anchor.dcarCP0.html", "<a href=\"http://aliqatpc.web.cern.ch/aliqatpc/data/%d{year}/%s{TPC.Anchor.period.GetName()}/%{TPC.Anchor.pass.GetName()}/000%d{run}/dca_and_phi.png\">%2.2f{dcarCP0}</a>");
 
-  //
-  treeMC->SetAlias("dcarStatusOutlier",
-                   "dcarFitpar_comb4_Outlier+2*dcar0_comb4_Outlier+4*dcar1_comb4_Outlier+8*dcar2_comb4_Outlier");
-  treeMC->SetAlias("dcarStatusWarning",
-                   "dcarFitpar_comb4_Warning+2*dcar0_comb4_Warning+4*dcar1_comb4_Warning+8*dcar2_comb4_Warning");
-  treeMC->SetAlias("dcarStatusString", "16*dcarStatusOutlier+dcarStatusWarning");
-  TStatToolkit::AddMetadata(treeMC, "dcarStatusString.thead", "DCAr MC status");
-  TStatToolkit::AddMetadata(treeMC, "dcarStatusString.tooltip", "DCAr MC status (Outlier mask| Warning mask)");
-  TStatToolkit::AddMetadata(treeMC, "dcarStatusString.html", "%b{dcarStatusOutlier+0}%b{dcarStatusWarning+0}");
-  //
-  treeMC->SetAlias("dcarRawStatusString", "1");
-  TStatToolkit::AddMetadata(treeMC, "dcarRawStatusString.thead", "DCAr RAW status");
-  TStatToolkit::AddMetadata(treeMC, "dcarRawStatusString.html",
-                            "%x{TPC.Anchor.dcarFitpar_comb4_Outlier+2*TPC.Anchor.dcar0_comb4_Outlier+4*TPC.Anchor.dcar1_comb4_Outlier+8*TPC.Anchor.dcar1_comb4_Outlier+0}%x{TPC.Anchor.dcarFitpar_comb4_Warning+2*TPC.Anchor.dcar0_comb4_Warning+4*TPC.Anchor.dcar1_comb4_Warning+8*TPC.Anchor.dcar1_comb4_Warning+0}");
 
   //
   TString runSelection = "defaultCut";
   TString varSelection = "";
   TString logbookBase = "";
   logbookBase = "run:LHCFillNumber:LHCperiod:detectorMask:HLTmode:DAQ_time_start:ctpDuration:totalEventsPhysics:interactionRate:bz;2.2:";
-  //logbookBase="run:";
-
-  // TObjArray *arrayLogbookBase = AliTreePlayer::selectMetadata(treeMC->GetFriend("Logbook"), "[class==\"Logbook&&Base\"]",0); //to get list of base logbook
   // tabDCA
-  TString tpcDCA = "dcarAP0:TPC.Anchor.dcarAP0:dcarCP0:TPC.Anchor.dcarCP0:TPC.Anchor.dcarAP0;2.2f";//:dcarStatusString:dcarRawStatusString";
+  TString tpcDCA = "dcarAP0:TPC.Anchor.dcarAP0:dcarCP0:TPC.Anchor.dcarCP0";//:dcarStatusString:dcarRawStatusString";
   // TString tpcDCA="dcarAP1;2.2f:dcarStatusString:dcarStatusOutlier:dcarStatusWarning";
   // TObjArray *tpcDCAArray = AliTreePlayer::selectMetadata(treeMC->GetFriend("QA.TPC"), "[class==\"TPC&&DCAr&&!Err&&!Chi2\"]",0);
   AliTreePlayer::selectWhatWhereOrderBy(treeMC, (logbookBase + tpcDCA).Data(), runSelection.Data(), "", 0, 100000,
@@ -625,3 +614,10 @@ void PrintTestHtmlLink(TString testHtml){
 ///  usage of datalist:
 ///   -https://www.w3schools.com/tags/tryit.asp?filename=tryhtml5_datalist
 ///   https://www.w3schools.com/tags/tryit.asp?filename=tryhtml5_details
+
+
+/// TODO - automatic decomposition status aliases
+/// TODO - get form logbook detailed per run information  (put into html metadata string)
+/// TODO - Ful name of the alias expression (maybe recursive)
+/// TODO - add html preview for table header
+/// tableHeader, tableHeader_Tooltip, tableHeader_Title, tableHeader_html
