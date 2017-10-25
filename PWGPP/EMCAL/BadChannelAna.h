@@ -56,7 +56,8 @@ public:
 
       //Setters
 	  void SetExternalMergedFile(TString inputName)        {fExternalFileName = inputName;}
-      void SetQAChecks(Bool_t inputBool)                   {fTestRoutine      = inputBool;}
+	  void SetExternalBadMap(TString inputName)            {fExternalBadMapName = inputName;}
+	  void SetQAChecks(Bool_t inputBool)                   {fTestRoutine      = inputBool;}
       void SetPrintOutput(Bool_t inputBool)                {fPrint            = inputBool;}
       void SetStartEndCell(Int_t start, Int_t end)         {fStartCell = start; fNoOfCells = end;}
       void AddManualMasking(std::vector<Int_t> cellVector) {fManualMask.swap(cellVector) ;}
@@ -67,6 +68,7 @@ protected:
 
 	  void Init();
 	  TString MergeRuns();
+	  void LoadExternalBadMap();
 	  void BCAnalysis();
 	  void PeriodAnalysis(Int_t criterum=7, Double_t nsigma = 4.0, Double_t emin=0.1, Double_t emax=2.0);
 
@@ -111,7 +113,8 @@ protected:
 	  //Things to be individualized by setters
 	  Int_t   fTrial;                       ///< Number of trial that this specific analyis is. By default '0' so one can try different settings without overwriting the outputs
 	  TString fExternalFileName;            ///< If you have already a file that contains many runs merged together you can place it in fMergeOutput and set it with SetExternalMergedFile(FileName)
-      Bool_t  fTestRoutine;                 ///< This is a flag, if set true will produce some extra quality check histograms
+	  TString fExternalBadMapName;          ///< Load an external bad map to test the effect on block or a given run
+	  Bool_t  fTestRoutine;                 ///< This is a flag, if set true will produce some extra quality check histograms
       Bool_t  fPrint;                       ///< If set true more couts with information of the excluded cells will be printed
 
 	  //histogram settings

@@ -170,10 +170,8 @@ void Test_OADB(TString period="LHC15n",Int_t trainNo=603,TString version="INT7Em
 
 	//.......................................................
 	//.. Read the Bad Channel map from OADB
-	TCanvas* C2 = new TCanvas("CompareCanvas","Compare OADB to LocalFile",900,900);
-	C2->Divide(2,2);
-	TCanvas* C4 = new TCanvas("Subtraction of OADB-Orig.","Subtraction of OADB-Orig.",900,900);
-	C4->Divide(2,2);
+	TCanvas* C2 = new TCanvas("CompareCanvas","Compare OADB to LocalFile",1400,800);
+	C2->Divide(4,2);
 	TLatex* textA = new TLatex(0.5,0.8,"If empty -> good!");
 	textA->SetTextSize(0.04);
 	textA->SetTextColor(1);
@@ -230,50 +228,49 @@ void Test_OADB(TString period="LHC15n",Int_t trainNo=603,TString version="INT7Em
 		text->SetTextColor(1);
 		text->SetTextAngle(0);
 
+
 		C2->cd(1);
-		plot2D_Bad_OADB->SetTitle("Bad Cells OADB");
-		plot2D_Bad_OADB->DrawCopy("colz");
-		text->Draw();
-		C2->cd(2);
 		plot2D_Dead_OADB->SetTitle("Dead Cells OADB");
 		plot2D_Dead_OADB->DrawCopy("colz");
-		C2->cd(3);
-		h2DChannelMap_FlagBad->SetTitle("Bad Cells LocalFile");
-		h2DChannelMap_FlagBad->DrawCopy("colz");
-		C2->cd(4);
+		text->Draw();
+		C2->cd(5);
+		plot2D_Bad_OADB->SetTitle("Bad Cells OADB");
+		plot2D_Bad_OADB->DrawCopy("colz");
+		C2->cd(2);
 		h2DChannelMap_FlagDead->SetTitle("Dead Cells LocalFile");
 		h2DChannelMap_FlagDead->DrawCopy("colz");
+		C2->cd(6);
+		h2DChannelMap_FlagBad->SetTitle("Bad Cells LocalFile");
+		h2DChannelMap_FlagBad->DrawCopy("colz");
 
 		//..................................................................
-		C4->cd(1);
-		plot2D_Bad_OADB->SetTitle("OADB-Local File (Bad)");
-		plot2D_Bad_OADB->Add(h2DChannelMap_FlagBad,-1);
-		plot2D_Bad_OADB->DrawCopy("colz");
-		plot2D_Bad_OADB->Add(h2DChannelMap_FlagBad,+1);
-		textA->Draw();
-		text->Draw();
-		C4->cd(2);
+		C2->cd(4);
 		plot2D_Dead_OADB->SetTitle("OADB-Local File (Dead)");
 		plot2D_Dead_OADB->Add(h2DChannelMap_FlagDead,-1);
 		plot2D_Dead_OADB->DrawCopy("colz");
 		plot2D_Dead_OADB->Add(h2DChannelMap_FlagDead,+1);
 		textA->Draw();
-		C4->cd(3);
-		plot2D_Bad_OADB->SetTitle("OADB/Local File (Bad)");
-		plot2D_Bad_OADB->Divide(h2DChannelMap_FlagBad);
+		C2->cd(8);
+		plot2D_Bad_OADB->SetTitle("OADB-Local File (Bad)");
+		plot2D_Bad_OADB->Add(h2DChannelMap_FlagBad,-1);
 		plot2D_Bad_OADB->DrawCopy("colz");
-		C4->cd(4);
+		plot2D_Bad_OADB->Add(h2DChannelMap_FlagBad,+1);
+		textA->Draw();
+		C2->cd(3);
 		plot2D_Dead_OADB->SetTitle("OADB/Local File (Dead)");
 		plot2D_Dead_OADB->Divide(h2DChannelMap_FlagDead);
 		plot2D_Dead_OADB->DrawCopy("colz");
+		C2->cd(7);
+		plot2D_Bad_OADB->SetTitle("OADB/Local File (Bad)");
+		plot2D_Bad_OADB->Divide(h2DChannelMap_FlagBad);
+		plot2D_Bad_OADB->DrawCopy("colz");
 
 		//..................................................................
         //..Save to PDF
 		//..Add figures to the summary canvas
-		if(iRun==0)C2   ->Print(Form("%s(",summaryPDF.Data()));
-		else       C2   ->Print(Form("%s(",summaryPDF.Data()));
-		if(iRun==nRuns-1)C4   ->Print(Form("%s)",summaryPDF.Data()));
-		else             C4   ->Print(Form("%s",summaryPDF.Data()));
+		if(iRun==0)             C2   ->Print(Form("%s(",summaryPDF.Data()));
+		else if (iRun==nRuns-1) C2   ->Print(Form("%s)",summaryPDF.Data()));
+		else                    C2   ->Print(Form("%s",summaryPDF.Data()));
 	}//end of run loop
 	cout<<"==Total Summary=="<<endl;
 	//..print runs without a correct map.
