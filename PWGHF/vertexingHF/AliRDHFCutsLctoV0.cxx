@@ -1066,7 +1066,7 @@ void AliRDHFCutsLctoV0::CheckPID(Int_t candPtBin, AliAODTrack *bachelor,
     tpcID = fPidHF->GetnSigmaTPC(bachelor,4,nTPCsigmas);
 
     isBachelorID1 = kFALSE;
-    if(TMath::Abs(nTPCsigmas)<3. && TMath::Abs(nTOFsigmas)<3.){
+    if((tpcID==1)&&(tofID==1)&&(TMath::Abs(nTPCsigmas)<3.)&&(TMath::Abs(nTOFsigmas)<3.)){
       isBachelorID1 = !(bachelor->Pt()>fLowPtCut&& nTOFsigmas<-2.) && !(bachelor->Pt()>fLowPtCut&& nTPCsigmas>2.);
     }
 
@@ -1075,7 +1075,7 @@ void AliRDHFCutsLctoV0::CheckPID(Int_t candPtBin, AliAODTrack *bachelor,
     nTPCsigmas = -999;
     tpcID = fPidHF->GetnSigmaTPC(bachelor,2,nTPCsigmas);
 
-    isBachelorID2 = TMath::Abs(nTPCsigmas)<3. && TMath::Abs(nTOFsigmas)<3.;
+    isBachelorID2 = TMath::Abs(nTPCsigmas)<3. && TMath::Abs(nTOFsigmas)<3. && (tpcID==1)&&(tofID==1);
     isBachelorID4 = isBachelorID2;
 
     break;
