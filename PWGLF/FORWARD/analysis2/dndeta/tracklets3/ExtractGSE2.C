@@ -167,8 +167,9 @@ TObject* MakeGSE(TDirectory* d,
   Color_t  col     = PbPbColor(c1,c2); // g->GetMarkerColor();
   // Double_t bg      = (1-c1/100)*(2-0.1)+0.1;
   // Double_t c       = TMath::Power(c1/100,2)*(6.2-0.4)+0.4;
-  Double_t cMin    = sNN == 5023 ? 0.005 : 0.004;
-  Double_t cMax    = sNN == 5023 ? 0.075 : 0.062;
+  // Preliminary centrality sys error for Xe-Xe 
+  Double_t cMin    = sNN == 5440 ? 0.0024 : sNN == 5023 ? 0.005 : 0.004;
+  Double_t cMax    = sNN == 5440 ? 0.0961 : sNN == 5023 ? 0.075 : 0.062;
   Double_t bg      = CSysEval(c2, 0.02, 0.001);
   Double_t c       = CSysEval(c2, cMin, cMax);
   GraphSysErr* gse = new GraphSysErr(g->GetNbinsX());
@@ -204,6 +205,7 @@ TObject* MakeGSE(TDirectory* d,
   MakeCommon(gse, "EG dependence",		0.02,   col);
   MakeCommon(gse, "Background subtraction",	bg,     col);
   MakeCommon(gse, "Centrality",			c,      col);
+  MakeCommon(gse, "EM contamination",		(c1>=70?0.04:0), col);
   if (eff) {
     MakeCommon(gse, "TRIGGER", 0.02, col);
   }

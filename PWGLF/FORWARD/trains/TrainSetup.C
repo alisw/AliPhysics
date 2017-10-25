@@ -770,8 +770,9 @@ protected:
     // explicitly stated.
     Bool_t isAOD = inp->IsA()->InheritsFrom(AliAODInputHandler::Class());
     if (isAOD && !fOptions.AsBool("aod-cent")) {
-       Info("CreateCentralitySelection","No multiplicity selection for AOD input");
-       return;
+      Info("CreateCentralitySelection",
+	   "No multiplicity selection for AOD input");
+      return;
     }
 
     // Possibly load as PAR
