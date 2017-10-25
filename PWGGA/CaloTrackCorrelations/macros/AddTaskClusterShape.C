@@ -276,12 +276,15 @@ AliAnalysisTaskCaloTrackCorrelation * AddTaskClusterShape
     // and fill xsec and trial histo. Sumw2 must be activated.
     //maker->GetReader()->GetWeightUtils()->SwitchOnMCCrossSectionCalculation(); 
     //maker->SwitchOnSumw2Histograms();
-    
-    // For recent productions where the cross sections and trials are not stored in separate file
-    //maker->GetReader()->GetWeightUtils()->SwitchOnMCCrossSectionFromEventHeader() ;
-    
+        
     // Just fill cross section and trials histograms.
     maker->GetReader()->GetWeightUtils()->SwitchOnMCCrossSectionHistoFill(); 
+    
+    // For recent productions where the cross sections and trials are not stored in separate file
+    if ( kPeriod.Contains("LHC16c") ) // add here any other affected periods, for the moment jet-jet 8 TeV
+    {
+      maker->GetReader()->GetWeightUtils()->SwitchOnMCCrossSectionFromEventHeader() ;
+    }
     
     // Add control histogram with pT hard to control aplication of weights 
     maker->SwitchOnPtHardHistogram();
