@@ -33,6 +33,9 @@ public:
   void Write();
   TList* GetOutputList();
   
+  AliFemtoString Report(){return "";}
+  void Finish(){}
+  
 private:
   AliFemtoTrioCut* fTrioCut;    //! this is a trio selection criteria for this distribution
   

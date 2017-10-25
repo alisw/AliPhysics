@@ -58,6 +58,7 @@ public:
   virtual TList* GetOutputList();        ///< Return a TList of objects to be written as
   
   
+  virtual AliFemtoString Report(){return "Report";}
   virtual void ProcessEvent(const AliFemtoEvent* EventToProcess);
   
   virtual void EventBegin(const AliFemtoEvent* TheEventToBegin){};

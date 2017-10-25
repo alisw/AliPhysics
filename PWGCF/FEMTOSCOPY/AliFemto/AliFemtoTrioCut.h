@@ -22,6 +22,7 @@ public:
 
   bool Pass(AliFemtoTrio *trio);
   
+  AliFemtoString Report(){return "";}
 private:
   int fNfailed;
   int fNpassed;

@@ -192,9 +192,9 @@ TList* AliFemtoBaryoniaAnalysis::GetOutputList()
     if(trioFunctionList) delete trioFunctionList;
   }
   
-  TH1D *nEvents = new TH1D("nEvents","nEvents",999999999,0,999999999);
-  nEvents->Fill(fNeventsPassed);
-  outputList->Add(nEvents);
+//  TH1D *nEvents = new TH1D("nEvents","nEvents",999999999,0,999999999);
+//  nEvents->Fill(fNeventsPassed);
+//  outputList->Add(nEvents);
   
   return outputList;
 }
