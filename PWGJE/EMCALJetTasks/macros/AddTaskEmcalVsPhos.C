@@ -1,7 +1,6 @@
 AliAnalysisTaskEmcalVsPhos* AddTaskEmcalVsPhos(
   const char *ntracks            = "usedefault",
   const char *nclusters          = "usedefault",
-  const char *nGenLev            = "mcparticles",
   const Double_t minTrPt         = 0.15,              // Minimum track pT in standard track container
   const Double_t minClPt         = 0.30,              // Minimum cluster E in standard cluster container
   const char *suffix             = ""
@@ -104,22 +103,14 @@ AliAnalysisTaskEmcalVsPhos* AddTaskEmcalVsPhos(
   if (partCont) partCont->SetParticlePtCut(minTrPt);
   if (partCont) task->AdoptParticleContainer(partCont);
   
-  // Add the generator-level container, if specified
-  if (nGenLev && strcmp(nGenLev,"")!=0) {
-    AliMCParticleContainer* mcpartCont = task->AddMCParticleContainer(nGenLev);
-    mcpartCont->SelectPhysicalPrimaries(kTRUE);
-    mcpartCont->SetParticlePtCut(0);
-  }
-  
   // Add the cluster container
   AliClusterContainer* clusCont = 0;
   if (!clusName.IsNull()) {
     clusCont = new AliClusterContainer(clusName);
     clusCont->SetClusECut(0.);
     clusCont->SetClusPtCut(0.);
-    clusCont->SetClusNonLinCorrEnergyCut(0.);
-    clusCont->SetClusHadCorrEnergyCut(minClPt);
-    clusCont->SetDefaultClusterEnergy(AliVCluster::kHadCorr);
+    clusCont->SetClusNonLinCorrEnergyCut(minClPt);
+    clusCont->SetClusHadCorrEnergyCut(0.);
     clusCont->SetIncludePHOS(kTRUE);
     clusCont->SetPhosMinNcells(3);
     clusCont->SetPhosMinM02(0.2);
