@@ -121,6 +121,7 @@ void runAnalysisBC(Int_t nversion = -1, TString period = "LHC15n", TString train
 
 	//..Start the bad channel analysis
 	Bool_t mergeOnly=0;//.. =1 do only merge and filter
+	//Analysis->SetExternalBadMap("Version1OADB/LHC16s_INT7_Histograms_V1.root");
 	Analysis->Run(mergeOnly);
 
 	watch.Stop();

@@ -1370,6 +1370,7 @@ void GetBestPeriodSplitting(TString period = "LHC15o", Int_t train = 771,Int_t N
 // Compares masked amplidudes from two different versions of masking cells
 // Version A sum all runs in a certrain range up and analyse the channels all together
 // Version B do a run-by-run analsis and check wheather channels are masked in almost all runs and maks them then entirely
+// --> For a method to compare two versions of the BC map see Compare2Blocks() in helperMacrosBC.C
 //________________________________________________________________________
 void CompareTwoBCstrategies(TString period="LHC15n",Int_t trainNo=603,Int_t version=5)
 {
@@ -1397,7 +1398,7 @@ void CompareTwoBCstrategies(TString period="LHC15n",Int_t trainNo=603,Int_t vers
     std::vector<Int_t> badcellsBlock2;
     std::vector<Int_t> badcellsBlock3;
     std::vector<Int_t> badcellsBlock4;
-
+ /*
     badcellsBlock1.insert(badcellsBlock1.end(),{14655,14622,14640,14728,14726});
 
     badcellsBlock2.insert(badcellsBlock2.end(),{6644,6655,10140,12036,12037,12038,12039,12040,12041,12926,13067,13066,13125});
@@ -1414,7 +1415,7 @@ void CompareTwoBCstrategies(TString period="LHC15n",Int_t trainNo=603,Int_t vers
     badcellsBlock4.insert(badcellsBlock4.end(),{8896,8897,8898,8899,8900,8901,8902,8903,8904,8905,89106,8907,8908,8909,8910});
     badcellsBlock4.insert(badcellsBlock4.end(),{11906,11907,11908,11909,11910,11911,11912,11913,11914,11915,11916,11917,11918,11919});
     badcellsBlock4.insert(badcellsBlock4.end(),{12034,12035,12036,12037,12038,12039,12040,12041,12042,12043,12044,12045,13469,13483,16427,16430});
-
+*/
     std::vector<Int_t> vOnlyMaskedInMergedA;
 	std::vector<Int_t> vOnlyMaskedInRunbRunA;
 	std::vector<Int_t> vOnlyMaskedInMergedB;
