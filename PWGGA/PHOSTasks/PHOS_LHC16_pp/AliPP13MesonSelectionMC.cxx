@@ -123,7 +123,7 @@ void AliPP13MesonSelectionMC::InitSelectionHistograms()
 	Int_t ptsize = sizeof(ptbins) / sizeof(Float_t);
 
 	// Sources of neutral pions, as a histogram
-	for (int i = 0; i < 2; ++i)
+	for (Int_t i = 0; i < 2; ++i)
 	{
 		Int_t sstart = -10000;
 		Int_t sstop = 10000 + 1;
@@ -150,7 +150,7 @@ void AliPP13MesonSelectionMC::InitSelectionHistograms()
 	fSecondaryPi0[kReconstructed] = new AliPP13ParticlesHistogram(hist5, fListOfHistos, fPi0SourcesNames);
 	fFeedDownPi0[kReconstructed]  = new AliPP13ParticlesHistogram(hist6, fListOfHistos, fPi0SourcesNames);
 
-
+	
 	for (EnumNames::iterator i = fPartNames.begin(); i != fPartNames.end(); ++i)
 	{
 		const char * n = (const char *) i->second.Data();
@@ -181,8 +181,9 @@ void AliPP13MesonSelectionMC::ConsiderGeneratedParticles(const EventFlags & flag
 		if (code != kGamma && code != kPi0 && code != kEta)
 			continue;
 
+
 		Double_t pt = particle->Pt();
-		fSpectrums[code]->fPtAllRange->Fill(pt);
+
 
 		// Use this to remove forward photons that can modify our true efficiency
 		if (TMath::Abs(particle->Y()) > 0.5) // NB: Use rapidity instead of pseudo rapidity!
@@ -194,11 +195,22 @@ void AliPP13MesonSelectionMC::ConsiderGeneratedParticles(const EventFlags & flag
 		fSpectrums[code]->fPtRadius->Fill(pt, r);
 
 		Bool_t primary = IsPrimary(particle);
+
+
+		if (primary && particle->E() > 0.3)
+		{
+			fSpectrums[code]->fPtAllRange->Fill(pt);
+			fSpectrums[code]->fEtaPhi->Fill(particle->Phi(), particle->Eta());
+		}
+
 		if (code != kPi0)
 		{
 			fSpectrums[code]->fPtPrimaries[Int_t(primary)]->Fill(pt);
 			continue;
 		}
+
+		// Scale input distribution
+		pt *= Weigh(particle->E());
 
 		ConsiderGeneratedPi0(i, pt, primary, flags);
 	}
@@ -271,3 +283,19 @@ Bool_t AliPP13MesonSelectionMC::IsPrimary(const AliAODMCParticle * particle) con
 	Double_t r2 = particle->Xv() * particle->Xv() + particle->Yv() * particle->Yv()	;
 	return r2 < rcut * rcut;
 }
+
+//________________________________________________________________
+TLorentzVector AliPP13MesonSelectionMC::ClusterMomentum(const AliVCluster * c1, const EventFlags & eflags) const
+{
+    Float_t energy = c1->E();
+	TLorentzVector p = AliPP13PhysPhotonSelectionMC::ClusterMomentum(c1, eflags);
+    p *= Weigh(energy);
+	return p;
+}
+
+//________________________________________________________________
+Float_t AliPP13MesonSelectionMC::Weigh(Float_t x) const
+{
+	return fWeighScale * (1. + fWeighA * TMath::Exp(-x / 2. * x / fWeighSigma / fWeighSigma));
+}
+
