@@ -93,7 +93,7 @@ AliAnalysisTaskFemto* AddTaskPionPion(TString configuration,
     subwagon_type.ToLower();
 
     if (subwagon_type == "centrality") {
-      params = TString::Format("subwagon_centrality='%s';", subwagon_suffix.Data()) + params.Data();
+      params = TString::Format("~use_subwagon_centrality=true; ~subwagon_centrality='%s';", subwagon_suffix.Data()) + params.Data();
     } else {
       std::cerr << "AddTaskPionPion - Unexpected subwagon_type '" << subwagon_type << "' - Ignoring\n";
     }
