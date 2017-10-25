@@ -609,12 +609,18 @@ struct CENTAdder : public SysErrorAdder
       fTrig = "CENT";
       fLookup = new TH1D("lookup", "Centrality error lookup", 100, 0, 100);
       Double_t min = 0.004, max = 0.062, top = 100; // 0.02
-      if (sNN == 5023) {
+      if (sNN == 5023) { 
 	min = 0.005;
 	max = 0.095;
 	top = 90;
 	fEM = 0.04;
 	// max = (7.5-min)/TMath::Power(80,2) * TMath::Power(100,2) + min;
+      }
+      else if (sNN == 5440) { // Preliminary values for Xe-Xe
+	min = 0.0024;
+	max = 0.0961;
+	top = 90;
+	fEM = 0.04;
       }
       for (Int_t i = 1; i <= 100; i++) {
 	Double_t c = fLookup->GetXaxis()->GetBinCenter(i);
