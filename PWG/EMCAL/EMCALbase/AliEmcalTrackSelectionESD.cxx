@@ -62,6 +62,10 @@ void AliEmcalTrackSelectionESD::GenerateTrackCuts(ETrackFilterType_t type, const
     AliEmcalESDTrackCutsGenerator::AddTPCOnlyTrackCuts(this, period);
     break;
 
+  case kITSPureTracks:
+    AddTrackCuts(AliESDtrackCuts::GetStandardITSPureSATrackCuts2010(kTRUE, kFALSE));
+    break;
+
   default:
     break;
   }
