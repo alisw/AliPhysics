@@ -20,7 +20,7 @@ AliAnalysisTask *AddTask_He4(){
       mgr->CreateContainer("List_He4", 
                            TList::Class(),
                            AliAnalysisManager::kOutputContainer,
-                           "AnalysisResult_He4.root");
+                           AliAnalysisManager::GetCommonFileName());
 
 
   //connect containers
