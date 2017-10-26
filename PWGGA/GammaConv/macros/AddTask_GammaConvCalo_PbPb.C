@@ -397,6 +397,13 @@ void AddTask_GammaConvCalo_PbPb(  Int_t     trainConfig                     = 1,
     cuts.AddCut("50910113","00200009327000008250400000","1111182003032230000","0163103100000010"); // 0-90 calocalo correction f1
     cuts.AddCut("50910113","00200009327000008250400000","1111191003032230000","0163103100000010"); // 0-90 convcalo correction f2
     cuts.AddCut("50910113","00200009327000008250400000","1111192003032230000","0163103100000010"); // 0-90 calocalo correction f2
+  } else if (trainConfig == 212){ // EMCAL clusters - 0-90% centrality for PbPb EMCal
+    cuts.AddCut("50910113","00200009327000008250400000","1111183053032230000","0163103100000010"); // 0-90 calo correction cent dep
+  } else if (trainConfig == 213){ // EMCAL clusters - centrality selection for PbPb EMCal
+    cuts.AddCut("50110113","00200009327000008250400000","1111184053032230000","0163103100000010"); //  0-10 calo correction cent dep
+    cuts.AddCut("51210113","00200009327000008250400000","1111185053032230000","0163103100000010"); // 10-20 calo correction cent dep
+    cuts.AddCut("52510113","00200009327000008250400000","1111186053032230000","0163103100000010"); // 20-50 calo correction cent dep
+    cuts.AddCut("55910113","00200009327000008250400000","1111187053032230000","0163103100000010"); // 50-90 calo correction cent dep
 
   // Xe-Xe configurations
   } else if (trainConfig == 300){ // EMCAL clusters - 0-90% centrality for PbPb EMCal cluster QA

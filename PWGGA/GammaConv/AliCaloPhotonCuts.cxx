@@ -4749,6 +4749,13 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC)
             energy /=  FunctionNL_kSDM(energy, 0.968868, -3.38407, -0.318188) ;
             energy /=  (FunctionNL_kSDM(energy, 0.987931, -4.13218, -0.583746)*0.9953479301) ;//with TM pt dep
           }
+        } else if( fCurrentMC==k17f2a ) {
+          if(fClusterType==1){
+            energy /= FunctionNL_kSDM(energy, 0.950536, -2.90823, -1.37953) ; //
+          }
+          if(fClusterType==2){
+            energy /= (0.949117) ; //first iteration with constant
+          }
         } else if( fCurrentMC==k17f2b ) {
           if(fClusterType==1){
             energy /= FunctionNL_kSDM(energy, 0.967546, -3.57657, -0.233837) ; // with TM pt dep
@@ -4831,7 +4838,7 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC)
           } else if(fClusterType==2){
             energy = FunctionNL_PHOS(energy, 0, 0, 0); // default MC PHOS correction
             energy /= ( 0.997*0.9965200155 ); // additional factors
-
+            energy /= ( 0.9969 ); // additional factors
           }
         } else if( fCurrentMC==k13e7 ) {
           if(fClusterType==1){
@@ -4841,6 +4848,13 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC)
             energy = FunctionNL_PHOS(energy, 0, 0, 0); // default MC PHOS correction
             energy /= ( 0.993485*0.9971126333 );
           }
+        } else if( fCurrentMC==k17f2a ) {
+          if(fClusterType==1){
+            energy /= FunctionNL_DExp(energy, 0.9865776309, 0.3997752883, -2.8763122761, 1.0380564894, 0.5547181697, -2.3668992581); //
+          }
+          if(fClusterType==2){
+            energy /= (0.949117) ; //first iteration with constant
+          }
         } else if( fCurrentMC==k17f2b ) {
           if(fClusterType==1){
             energy /= FunctionNL_DExp(energy, 0.9910691195, 0.4901455923, -3.6647921806, 1.0255088817, 0.3070452373, -2.9149185308); //with TM pt dep
@@ -4848,7 +4862,6 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC)
           } else if(fClusterType==2){
             energy = FunctionNL_PHOS(energy, 0, 0, 0); // default MC PHOS correction
             energy /= ( 0.997*0.9965200155 ); // additional factors
-
           }
         } else fPeriodNameAvailable = kFALSE;
       }
@@ -4929,6 +4942,66 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC)
         if( fCurrentMC== k15PbPb5TeV){
           if(fClusterType==1){
             energy /= FunctionNL_kSDM(energy, 0.095, -0.175739, 0.00776757) ;
+          }
+        } else {
+          fPeriodNameAvailable = kFALSE;
+        }
+      }
+      break;
+      // NonLinearity LHC15o PbPb Calo  - only shifting MC - MB
+    case 83:
+      if(isMC>0){
+        if( fCurrentMC== k15PbPb5TeV){
+          if(fClusterType==1){
+            energy /= (0.955001) ;
+          }
+        } else {
+          fPeriodNameAvailable = kFALSE;
+        }
+      }
+      break;
+      // NonLinearity LHC15o PbPb Calo  - only shifting MC - 0-10%
+    case 84:
+      if(isMC>0){
+        if( fCurrentMC== k15PbPb5TeV){
+          if(fClusterType==1){
+            energy /= (0.954566) ;
+          }
+        } else {
+          fPeriodNameAvailable = kFALSE;
+        }
+      }
+      break;
+      // NonLinearity LHC15o PbPb Calo  - only shifting MC - 10-20%
+    case 85:
+      if(isMC>0){
+        if( fCurrentMC== k15PbPb5TeV){
+          if(fClusterType==1){
+            energy /= (0.9365) ;
+          }
+        } else {
+          fPeriodNameAvailable = kFALSE;
+        }
+      }
+      break;
+      // NonLinearity LHC15o PbPb Calo  - only shifting MC - 20-50%
+    case 86:
+      if(isMC>0){
+        if( fCurrentMC== k15PbPb5TeV){
+          if(fClusterType==1){
+            energy /= (0.948553) ;
+          }
+        } else {
+          fPeriodNameAvailable = kFALSE;
+        }
+      }
+      break;
+      // NonLinearity LHC15o PbPb Calo  - only shifting MC - 50-90%
+    case 87:
+      if(isMC>0){
+        if( fCurrentMC== k15PbPb5TeV){
+          if(fClusterType==1){
+            energy /= (0.95306) ;
           }
         } else {
           fPeriodNameAvailable = kFALSE;
