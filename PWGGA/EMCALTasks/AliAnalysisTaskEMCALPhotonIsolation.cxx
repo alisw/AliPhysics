@@ -4126,35 +4126,36 @@ void AliAnalysisTaskEMCALPhotonIsolation::AnalyzeMC(){
 
       if(fWho == 1)
 	fphietaPhotons->Fill(eta,phi,eT);
-
-      bool foundmatch=kFALSE;
-      for(int m=0;m<nTracks && foundmatch==kFALSE;m++){
-        if(m==iTr)
-          continue;
-
-        matchingtrack = static_cast<AliAODMCParticle*>(fAODMCParticles->At(m));
-
-        if(! matchingtrack->IsPrimary())
-          continue;
-        if(! matchingtrack->IsPhysicalPrimary())
-          continue;
-        if(matchingtrack->GetStatus()> 10 )
-          continue;
-
-        Double_t etamatching = matchingtrack->Eta();
-        Double_t phimatching = matchingtrack->Phi();
-
-        if(TMath::Abs(eta-etamatching)<=fdetacut && TMath::Abs(phi-phimatching)<=fdphicut){
-          foundmatch=kTRUE;
-	  if(fWho == 1){
-	    fphietaOthers->Fill(matchingtrack->Eta(),matchingtrack->Phi(),eT);
-	    fphietaOthersBis->Fill(matchingtrack->Eta(),matchingtrack->Phi(),matchingtrack->Pt());
-	  }
-        }
-      }
-
-      if(foundmatch)
-        continue;
+        //Taking out this part of code since it introduces a bias in the efficiency
+        //computation
+//      bool foundmatch=kFALSE;
+//      for(int m=0;m<nTracks && foundmatch==kFALSE;m++){
+//        if(m==iTr)
+//          continue;
+//
+//        matchingtrack = static_cast<AliAODMCParticle*>(fAODMCParticles->At(m));
+//
+//        if(! matchingtrack->IsPrimary())
+//          continue;
+//        if(! matchingtrack->IsPhysicalPrimary())
+//          continue;
+//        if(matchingtrack->GetStatus()> 10 )
+//          continue;
+//
+//        Double_t etamatching = matchingtrack->Eta();
+//        Double_t phimatching = matchingtrack->Phi();
+//
+//        if(TMath::Abs(eta-etamatching)<=fdetacut && TMath::Abs(phi-phimatching)<=fdphicut){
+//          foundmatch=kTRUE;
+//	  if(fWho == 1){
+//	    fphietaOthers->Fill(matchingtrack->Eta(),matchingtrack->Phi(),eT);
+//	    fphietaOthersBis->Fill(matchingtrack->Eta(),matchingtrack->Phi(),matchingtrack->Pt());
+//	  }
+//        }
+//      }
+//
+//      if(foundmatch)
+//        continue;
 
       distance=0.;
       phip=0., etap=0.;
@@ -4169,7 +4170,7 @@ void AliAnalysisTaskEMCALPhotonIsolation::AnalyzeMC(){
         if(!mcpp)
           continue;
 
-        if(mcpp->Charge() != 0 && mcpp->GetStatus()>10)
+        if(mcpp->Charge() != 0 && mcpp->GetStatus()<10)
           fPtTracksVSpTNC_MC->Fill(eT,mcpp->Pt());
 
         if(fIsoMethod==2){
@@ -4177,7 +4178,7 @@ void AliAnalysisTaskEMCALPhotonIsolation::AnalyzeMC(){
             continue;
         }
 
-        if(mcpp->GetStatus()>10)
+        if(mcpp->GetStatus()>10 || (!mcpp->IsPhysicalPrimary() || (!mcpp->IsPrimary())))
           continue;
 
         int mumidx=mcpp->GetMother();
@@ -4185,7 +4186,7 @@ void AliAnalysisTaskEMCALPhotonIsolation::AnalyzeMC(){
           continue;
 
         mum = static_cast<AliAODMCParticle*>(fAODMCParticles->At(mumidx));
-        if(mumidx == photonlabel || mum->GetPdgCode()==22)
+        if(mumidx == photonlabel)
           continue;
 
         phip = mcpp->Phi();
@@ -4197,10 +4198,24 @@ void AliAnalysisTaskEMCALPhotonIsolation::AnalyzeMC(){
         if(distance <= fIsoConeRadius){
             // cout<<iTrack<<"\t"<<photonlabel<<endl;
             // mcpp->Print();
-          sumEiso += mcpp->E()*TMath::Sin(mcpp->Theta());
+          if(mcpp->E()<0.3)//minimum energy for clusters allowed at reconstructed level
+            continue;
+
+          if(mcpp->Charge!=0)//using pT for charged particles
+            sumEiso += mcpp->Pt();
+          else{
+            if(mcpp->GetPdgCode()==22) //using ET for photons
+              sumEiso += mcpp->E()*TMath::Sin(mcpp->Theta());
+            else //skipping neutral hadrons
+              continue;
+          }
         }
-        else
-          AddParticleToUEMC(sumUE,mcpp, eta, phi);
+        else{
+          if(mcpp->Charge()==0 && mcpp->GetPdgCode()!=22) //skipping neutral hadrons
+            continue;
+          else
+            AddParticleToUEMC(sumUE,mcpp, eta, phi);
+        }
       }
 
       CalculateUEDensityMC(sumUE);
