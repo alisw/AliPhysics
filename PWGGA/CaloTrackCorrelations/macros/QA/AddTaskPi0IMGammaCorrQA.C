@@ -361,7 +361,7 @@ AliCaloTrackReader * ConfigureReader(TString inputDataType, TString collision, B
   else if(inputDataType=="ESD")
     reader = new AliCaloTrackESDReader();
   else 
-    printf("AliCaloTrackReader::ConfigureReader() - Data combination not known input Data=%s\n",
+    printf("AddTaskPi0IMGammaCorrQA::ConfigureReader() - Data combination not known input Data=%s\n",
            inputDataType.Data());
   
   reader->SetDebug(debugLevel);//10 for lots of messages
@@ -557,7 +557,7 @@ AliCalorimeterUtils* ConfigureCaloUtils(TString calorimeter, TString trigger,
       cu->SetLastSuperModuleUsed (cu->GetNumberOfSuperModulesUsed()-1);
     }
     
-    printf("AddTaskPi0IMGammaCorrQA - CalorimeterUtils: nSM %d, first %d, last %d\n",
+    printf("AddTaskPi0IMGammaCorrQA::CalorimeterUtils() - nSM %d, first %d, last %d\n",
            cu->GetNumberOfSuperModulesUsed(),cu->GetFirstSuperModuleUsed(), cu->GetLastSuperModuleUsed());
   }
 
@@ -995,7 +995,7 @@ AliAnaCalorimeterQA* ConfigureQAAnalysis(TString calorimeter, TString collision,
   ana->SetDebug(debugLevel); //10 for lots of messages
   ana->SetCalorimeter(calorimeter);
   
-  //printf("QA: calorimeter %s, caloType %d, collision %s, simulation %d, fillCellTime %d, year %d, debugLevel  %d\n",
+  //printf("AddTaskPi0IMGammaCorrQA::CofigureQAAnalysis() - calorimeter %s, caloType %d, collision %s, simulation %d, fillCellTime %d, year %d, debugLevel  %d\n",
   //       calorimeter.Data(),caloType,collision.Data(),simulation,fillCellTime,year,debugLevel);
   
   ana->SetTimeCut(-1e10,1e10); // Open time cut
