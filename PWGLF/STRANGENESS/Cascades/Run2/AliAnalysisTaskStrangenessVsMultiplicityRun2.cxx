@@ -103,6 +103,7 @@ class AliAODv0;
 #include "AliMultInput.h"
 #include "AliMultSelection.h"
 
+#include "AliTriggerIR.h"
 #include "AliAODForwardMult.h"
 #include "AliForwardUtil.h"
 #include "AliCFContainer.h"
@@ -172,6 +173,7 @@ fAmplitudeV0A(-1.),
 fAmplitudeV0C(-1.),
 fNHitsFMDA(-1.),
 fNHitsFMDC(-1.),
+fClosestNonEmptyBC(-1),
 
 //---> Variables for fTreeV0
 fTreeVariableChi2V0(0),
@@ -220,6 +222,7 @@ fTreeVariableAmplitudeV0A(-1.),
 fTreeVariableAmplitudeV0C(-1.),
 fTreeVariableNHitsFMDA(-1.),
 fTreeVariableNHitsFMDC(-1.),
+fTreeVariableClosestNonEmptyBC(-1),
 
 fTreeVariableCentrality(0),
 fTreeVariableMVPileupFlag(kFALSE),
@@ -314,6 +317,7 @@ fTreeCascVarAmplitudeV0A(-1.),
 fTreeCascVarAmplitudeV0C(-1.),
 fTreeCascVarNHitsFMDA(-1.),
 fTreeCascVarNHitsFMDC(-1.),
+fTreeCascVarClosestNonEmptyBC(-1),
 
 fTreeCascVarCentrality(0),
 fTreeCascVarMVPileupFlag(kFALSE),
@@ -380,6 +384,7 @@ fAmplitudeV0A(-1.),
 fAmplitudeV0C(-1.),
 fNHitsFMDA(-1.),
 fNHitsFMDC(-1.),
+fClosestNonEmptyBC(-1),
 
 //---> Variables for fTreeV0
 fTreeVariableChi2V0(0),
@@ -428,6 +433,7 @@ fTreeVariableAmplitudeV0A(-1.),
 fTreeVariableAmplitudeV0C(-1.),
 fTreeVariableNHitsFMDA(-1.),
 fTreeVariableNHitsFMDC(-1.),
+fTreeVariableClosestNonEmptyBC(-1),
 
 fTreeVariableCentrality(0),
 fTreeVariableMVPileupFlag(kFALSE),
@@ -521,6 +527,7 @@ fTreeCascVarAmplitudeV0A(-1.),
 fTreeCascVarAmplitudeV0C(-1.),
 fTreeCascVarNHitsFMDA(-1.),
 fTreeCascVarNHitsFMDC(-1.),
+fTreeCascVarClosestNonEmptyBC(-1),
 
 fTreeCascVarCentrality(0),
 fTreeCascVarMVPileupFlag(kFALSE),
@@ -659,6 +666,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::UserCreateOutputObjects()
             fTreeEvent->Branch("fAmplitudeV0C",&fAmplitudeV0C,"fAmplitudeV0C/F");
             fTreeEvent->Branch("fNHitsFMDA",&fNHitsFMDA,"fNHitsFMDA/F");
             fTreeEvent->Branch("fNHitsFMDC",&fNHitsFMDC,"fNHitsFMDC/F");
+            fTreeEvent->Branch("fClosestNonEmptyBC",&fClosestNonEmptyBC,"fClosestNonEmptyBC/I");
         }
     }
 
@@ -720,6 +728,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::UserCreateOutputObjects()
             fTreeV0->Branch("fTreeVariableAmplitudeV0C",&fTreeVariableAmplitudeV0C,"fTreeVariableAmplitudeV0C/F");
             fTreeV0->Branch("fTreeVariableNHitsFMDA",&fTreeVariableNHitsFMDA,"fTreeVariableNHitsFMDA/F");
             fTreeV0->Branch("fTreeVariableNHitsFMDC",&fTreeVariableNHitsFMDC,"fTreeVariableNHitsFMDC/F");
+            fTreeV0->Branch("fTreeVariableClosestNonEmptyBC",&fTreeVariableClosestNonEmptyBC,"fTreeVariableClosestNonEmptyBC/I");
         }
         //------------------------------------------------
     }
@@ -836,6 +845,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::UserCreateOutputObjects()
             fTreeCascade->Branch("fTreeCascVarAmplitudeV0C",&fTreeCascVarAmplitudeV0C,"fTreeCascVarAmplitudeV0C/F");
             fTreeCascade->Branch("fTreeCascVarNHitsFMDA",&fTreeCascVarNHitsFMDA,"fTreeCascVarNHitsFMDA/F");
             fTreeCascade->Branch("fTreeCascVarNHitsFMDC",&fTreeCascVarNHitsFMDC,"fTreeCascVarNHitsFMDC/F");
+            fTreeCascade->Branch("fTreeCascVarClosestNonEmptyBC",&fTreeCascVarClosestNonEmptyBC,"fTreeCascVarClosestNonEmptyBC/I");
         }
         
         //Kink tagging
@@ -961,6 +971,52 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::UserExec(Option_t *)
     lMagneticField = lESDevent->GetMagneticField( );
 
     //------------------------------------------------
+    // Retrieving IR info for OOB Pileup rejection
+    //------------------------------------------------
+    if( fkDebugOOBPileup ) {
+        fClosestNonEmptyBC = 10*3564; // start with an isolated event
+        AliESDHeader* lESDHeader = (AliESDHeader*)lESDevent->GetHeader();
+        Int_t    nIRs       = lESDHeader->GetTriggerIREntries();
+        Long64_t lThisOrbit = lESDHeader->GetOrbitNumber();
+        Int_t    lThisBC    = lESDHeader->GetBunchCrossNumber();
+
+        const AliTriggerIR* lIR;
+        for(Int_t i=0; i<nIRs; i++) {
+
+            lIR = lESDHeader->GetTriggerIR(i);
+            Long64_t lOrbit     = lIR->GetOrbit();
+            UInt_t   lNWord     = lIR->GetNWord();
+            UShort_t *lBCsForIR = lIR->GetBCs();
+            Bool_t   *lInt1     = lIR->GetInt1s();
+            Bool_t   *lInt2     = lIR->GetInt2s();
+
+            for(UInt_t j=0; j<lNWord; j++) {
+
+                if( (lInt1[j]) || (lInt2[j]) ) {
+
+                    Int_t lBC = lBCsForIR[j];
+
+                    if((lOrbit == lThisOrbit) && (lBC != lThisBC)) {
+                        Int_t lClosestNonEmptyBC = lThisBC - lBC;
+                        if(TMath::Abs(lClosestNonEmptyBC)<TMath::Abs(fClosestNonEmptyBC)) fClosestNonEmptyBC = lClosestNonEmptyBC;
+                    }
+                					
+                    if(lOrbit == (lThisOrbit+1)) {
+                        Int_t lClosestNonEmptyBC = lThisBC - (lBC+3564);
+                        if(TMath::Abs(lClosestNonEmptyBC)<TMath::Abs(fClosestNonEmptyBC)) fClosestNonEmptyBC = lClosestNonEmptyBC;
+                    }
+
+                    if(lOrbit == (lThisOrbit-1)) {
+                        Int_t lClosestNonEmptyBC = lThisBC - (lBC-3564);
+                        if(TMath::Abs(lClosestNonEmptyBC)<TMath::Abs(fClosestNonEmptyBC)) fClosestNonEmptyBC = lClosestNonEmptyBC;
+                    }
+                }
+            }
+        }
+    }
+    // done with IR ----------------------------------
+
+    //------------------------------------------------
     // Event Selection ---
     //  --- Performed entirely via AliPPVsMultUtils
     // (except removal of incomplete events and SPDClusterVsTracklets cut)
@@ -1075,7 +1131,6 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::UserExec(Option_t *)
                 [](Float_t a, AliAnalysisTaskStrangenessVsMultiplicityRun2::FMDhit t) {
                 return a + ((-3.4 < t.eta && t.eta < 2.01) ? t.weight : 0.0f);
                 });
-
     }
 
     //Fill centrality histogram
@@ -1359,6 +1414,8 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::UserExec(Option_t *)
             //Copy FMD information for this event
             fTreeVariableNHitsFMDA = fNHitsFMDA;
             fTreeVariableNHitsFMDC = fNHitsFMDC;
+            //Copy IR information for this event
+            fTreeVariableClosestNonEmptyBC = fClosestNonEmptyBC;
         }
 
 
@@ -2132,6 +2189,8 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::UserExec(Option_t *)
             //Copy FMD information for this event
             fTreeCascVarNHitsFMDA = fNHitsFMDA;
             fTreeCascVarNHitsFMDC = fNHitsFMDC;
+            //Copy IR information for this event
+            fTreeCascVarClosestNonEmptyBC = fClosestNonEmptyBC;
         }
 
         if ( fkExtraCleanup ){
