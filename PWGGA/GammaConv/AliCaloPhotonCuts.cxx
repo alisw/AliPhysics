@@ -3240,7 +3240,7 @@ Bool_t AliCaloPhotonCuts::SetMinEtaCut(Int_t minEta)
     break;
   case 8:
     if (!fUseEtaCut) fUseEtaCut=1;
-    fMinEtaCut=-0.4;
+    fMinEtaCut=-0.66112;
     fMinEtaInnerEdge=-0.227579;
     break;
 
