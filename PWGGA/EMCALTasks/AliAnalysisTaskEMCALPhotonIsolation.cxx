@@ -4201,7 +4201,7 @@ void AliAnalysisTaskEMCALPhotonIsolation::AnalyzeMC(){
           if(mcpp->E()<0.3)//minimum energy for clusters allowed at reconstructed level
             continue;
 
-          if(mcpp->Charge!=0)//using pT for charged particles
+          if(mcpp->Charge()!=0)//using pT for charged particles
             sumEiso += mcpp->Pt();
           else{
             if(mcpp->GetPdgCode()==22) //using ET for photons
