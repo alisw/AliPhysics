@@ -20,6 +20,7 @@ class AliVCaloCells;
 class AliVCaloTrigger;
 class AliVEvent;
 class AliVVZERO;
+class AliEMCALTriggerBitConfig;
 template<class T> class AliEMCALTriggerDataGrid;
 template<class T> class AliEMCALTriggerAlgorithm;
 template<class T> class AliEMCALTriggerPatchFinder;
