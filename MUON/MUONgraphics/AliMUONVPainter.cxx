@@ -1346,19 +1346,19 @@ AliMUONVPainter::CreatePainter(const char* className,
     
     if ( call.IsValid() ) n = 2;
   }
-  
+
   Long_t returnLong(0x0);
   
   if ( n ==1 ) 
   {
     Long_t params[] = { (Long_t)(&att), (Long_t)(id1) };
-    call.SetParamPtrs((void*)(params));
+    call.SetParamPtrs((void*)(params),2);
     call.Execute((void*)(0x0),returnLong);
   }
   else if ( n == 2 ) 
   {
     Long_t params[] = { (Long_t)(&att), (Long_t)(id1), (Long_t)(id2) };
-    call.SetParamPtrs((void*)(params));
+    call.SetParamPtrs((void*)(params),3);
     call.Execute((void*)(0x0),returnLong);
   }
   
