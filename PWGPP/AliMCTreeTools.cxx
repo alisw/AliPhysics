@@ -93,7 +93,11 @@ void AliMCTreeTools::ClearCache(){
 
 void  AliMCTreeTools::InitStack(Int_t iEvent){
   if (rl==NULL){
-    rl = AliRunLoader::Open(Form("%s/galice.root", wdir.Data())); 
+    if (wdir.Contains(".zip")){
+      rl = AliRunLoader::Open(Form("%s#galice.root", wdir.Data()));
+    }else {
+      rl = AliRunLoader::Open(Form("%s/galice.root", wdir.Data()));
+    }
   }
   if (treeTR && rl->GetEventNumber()==iEvent) return; 
   rl->GetEvent(iEvent);
@@ -105,13 +109,22 @@ void  AliMCTreeTools::InitStack(Int_t iEvent){
   AliMCTreeTools::ClearCache();
 }
 
-
-Double_t  AliMCTreeTools::GetValueAt(Int_t iEvent, Int_t itrack, Double_t x, Double_t y, Double_t z, Int_t returnValue, Int_t interpolationType, Int_t verbose){
+///
+/// \param iEvent
+/// \param itrack
+/// \param x                - input global x
+/// \param y                - input global y
+/// \param z                - global z
+/// \param returnValue
+/// \param interpolationType
+/// \param verbose
+/// \return
+Double_t  AliMCTreeTools::GetValueAt(Int_t iEvent, Int_t itrack, Double_t x, Double_t y, Double_t z, Int_t returnValue, Int_t interpolationType, Int_t verbose,Double_t rotation){
   //
   // GetValueAt
   // return values 
-  //    0 - gx
-  //    1 - gy
+  //    0 - gx    - interpolated MC point
+  //    1 - gy    -
   //    2 - gz
   //    3 - r
   //    4 - phi
@@ -124,6 +137,18 @@ Double_t  AliMCTreeTools::GetValueAt(Int_t iEvent, Int_t itrack, Double_t x, Dou
   //    11 - pdg code
   //    12 - P at vertex
   //    13 - P at vertex
+  //    14 - lx
+  //    15 - ly
+  //    16 - gx of nearest reference
+  //    17 - gy of nearest reference
+  //    18 - gz of nearest reference
+  // rotate position vector local to global
+  {
+    Double_t rx=  x*TMath::Cos(rotation)-y*TMath::Sin(rotation);
+    Double_t ry=  x*TMath::Sin(rotation)+y*TMath::Cos(rotation);
+    x=rx;
+    y=ry;
+  }
 
   Int_t index= FindNearestReference(iEvent,itrack,x,y,z,0,verbose);
   if (returnValue==11 || returnValue==12 ||  returnValue==13){
@@ -148,6 +173,10 @@ Double_t  AliMCTreeTools::GetValueAt(Int_t iEvent, Int_t itrack, Double_t x, Dou
     wCounter++;
     return -1;
   }
+  if (returnValue==16) return ref0->X();
+  if (returnValue==17) return ref0->Y();
+  if (returnValue==18) return ref0->Z();
+
   Double_t d0=TMath::Sqrt((ref0->X()-x)*(ref0->X()-x)+(ref0->Y()-y)*(ref0->Y()-y)+(ref0->Z()-z)*(ref0->Z()-z));
   Double_t d1=TMath::Sqrt((ref1->X()-x)*(ref1->X()-x)+(ref1->Y()-y)*(ref1->Y()-y)+(ref1->Z()-z)*(ref1->Z()-z));
   Double_t w0=d1/(d1+d0);
@@ -220,6 +249,14 @@ Double_t  AliMCTreeTools::GetValueAt(Int_t iEvent, Int_t itrack, Double_t x, Dou
     }
   }
   if (returnValue<3) return xyz[returnValue];
+  if (returnValue==14 || returnValue==15 ){
+    // global to local
+    Double_t lx=  xyz[0]*TMath::Cos(rotation)+xyz[1]*TMath::Sin(rotation);
+    Double_t ly=  -xyz[0]*TMath::Sin(rotation)+xyz[1]*TMath::Cos(rotation);
+    if (returnValue==14) return lx;
+    if (returnValue==15) return ly;
+
+  }
   if (returnValue==3){
     return TMath::Sqrt(xyz[0]*xyz[0]+xyz[1]*xyz[1]);
   }
@@ -232,70 +269,81 @@ Double_t  AliMCTreeTools::GetValueAt(Int_t iEvent, Int_t itrack, Double_t x, Dou
 
 }
 
-
-Double_t AliMCTreeTools::FindNearestReference(Int_t iEvent, Int_t itrack, Double_t x, Double_t y, Double_t z, Int_t returnValue, Int_t verbose){
+///
+/// \param iEvent       - event number
+/// \param itrack       - track(particleID)
+/// \param x            - global x
+/// \param y            - global y
+/// \param z            - global z
+/// \param returnValue  -
+/// \param verbose      - verbosity flag
+/// \return             - index of closest reference (in case returnValue==0) or distance to closet reference (returnValue==0)
+Double_t AliMCTreeTools::FindNearestReference(Int_t iEvent, Int_t itrack, Double_t x, Double_t y, Double_t z, Int_t returnValue,
+                                     Int_t verbose) {
   //  
-  TDatabasePDG *pdg =  TDatabasePDG::Instance();
-  if (itrack<0) return 0;
-  InitStack(iEvent); 
-  TClonesArray *trefs=mapTR[itrack];
-  if (trefs==NULL){ // cache Trackrefs if not done before
-    treeTR->SetBranchAddress("TrackReferences", &trackRefs); 
+  TDatabasePDG *pdg = TDatabasePDG::Instance();
+  if (itrack < 0) return 0;
+  InitStack(iEvent);
+  TClonesArray *trefs = mapTR[itrack];
+  if (trefs == NULL) { // cache Trackrefs if not done before
+    treeTR->SetBranchAddress("TrackReferences", &trackRefs);
     treeTR->GetEntry(stack->TreeKEntry(itrack));
-    mapTR[itrack]=(TClonesArray*)trackRefs->Clone();
-    trefs= mapTR[itrack];
-    TClonesArray * helixArray = new TClonesArray("AliHelix",trackRefs->GetEntries());
+    mapTR[itrack] = (TClonesArray *) trackRefs->Clone();
+    trefs = mapTR[itrack];
+    TClonesArray *helixArray = new TClonesArray("AliHelix", trackRefs->GetEntries());
     helixArray->ExpandCreateFast(trackRefs->GetEntries());
     TParticle *particle = stack->Particle(itrack);
     TParticlePDG *mcparticle = pdg->GetParticle(particle->GetPdgCode());
-    if (mcparticle==NULL) return 0;
+    if (mcparticle == NULL) return 0;
     //
-    Float_t conversion = -1000/0.299792458/bz; // AliTracker::GetBz();
-    if (mcparticle->Charge()!=0){
-      for (Int_t itr=0; itr<trackRefs->GetEntriesFast(); itr++){
-	AliTrackReference *ref=  (AliTrackReference *)trackRefs->At(itr);
-	if (ref->GetTrack()!=itrack) continue; 
-	if ( ref->DetectorId()==AliTrackReference::kTPC  && mapFirstTr[itrack]==NULL){
-	  mapFirstTr[itrack]=(AliTrackReference*)ref->Clone();
-	}
-	Double_t xyz[3]={ref->X(),ref->Y(),ref->Z()};
-	Double_t pxyz[3]={ref->Px(),ref->Py(),ref->Pz()};
-	if (ref->P()==0) pxyz[0]+=0.00000000001; // create dummy track reference in case of 0 moment (track disappeared)
-	new ((*helixArray)[itr]) AliHelix(xyz,pxyz,mcparticle->Charge()/3.,conversion);
+    Float_t conversion = -1000 / 0.299792458 / bz; // AliTracker::GetBz();
+    if (mcparticle->Charge() != 0) {
+      for (Int_t itr = 0; itr < trackRefs->GetEntriesFast(); itr++) {
+        AliTrackReference *ref = (AliTrackReference *) trackRefs->At(itr);
+        if (ref->GetTrack() != itrack) continue;
+        if (ref->DetectorId() == AliTrackReference::kTPC && mapFirstTr[itrack] == NULL) {
+          mapFirstTr[itrack] = (AliTrackReference *) ref->Clone();
+        }
+        Double_t xyz[3] = {ref->X(), ref->Y(), ref->Z()};
+        Double_t pxyz[3] = {ref->Px(), ref->Py(), ref->Pz()};
+        if (ref->P() == 0)
+          pxyz[0] += 0.00000000001; // create dummy track reference in case of 0 moment (track disappeared)
+        new((*helixArray)[itr]) AliHelix(xyz, pxyz, mcparticle->Charge() / 3., conversion);
       }
-      mapHelix[itrack]=helixArray;
+      mapHelix[itrack] = helixArray;
     }
   }
 
   Int_t nTrackRefs = trefs->GetEntriesFast();
-  Int_t nTPCRef=0;
-  AliTrackReference *refNearest=0;
+  Int_t nTPCRef = 0;
+  AliTrackReference *refNearest = 0;
   TVectorF fdist(nTrackRefs);
   for (Int_t itrR = 0; itrR < nTrackRefs; ++itrR) {
-    AliTrackReference* ref = static_cast<AliTrackReference*>(trefs->UncheckedAt(itrR));	
-    Double_t lDist=(ref->X()-x)*(ref->X()-x)+(ref->Y()-y)*(ref->Y()-y)+(ref->Z()-z)*(ref->Z()-z);
-    fdist[itrR]=lDist;
+    AliTrackReference *ref = static_cast<AliTrackReference *>(trefs->UncheckedAt(itrR));
+    Double_t lDist =
+            (ref->X() - x) * (ref->X() - x) + (ref->Y() - y) * (ref->Y() - y) + (ref->Z() - z) * (ref->Z() - z);
+    fdist[itrR] = lDist;
   }
-  Double_t dist=250*250;
-  Int_t index0=0,index1=0;
-  for (Int_t itrR = 1; itrR < nTrackRefs-1; ++itrR){
-    if (fdist[itrR]<dist){      
-      dist=fdist[itrR];
-      if (fdist[itrR-1]<fdist[itrR+1]){
-	index0=itrR-1;
-	index1=itrR;	
-      }else{
-	index0=itrR;
-	index1=itrR+1;	
+  Double_t dist = 250 * 250;
+  Int_t index0 = 0, index1 = 0;
+  for (Int_t itrR = 1; itrR < nTrackRefs - 1; ++itrR) {
+    if (fdist[itrR] < dist) {
+      dist = fdist[itrR];
+      if (fdist[itrR - 1] < fdist[itrR + 1]) {
+        index0 = itrR - 1;
+        index1 = itrR;
+      } else {
+        index0 = itrR;
+        index1 = itrR + 1;
       }
     }
-    refNearest=static_cast<AliTrackReference*>(trefs->UncheckedAt(index0));
-    if (verbose ) {
+    refNearest = static_cast<AliTrackReference *>(trefs->UncheckedAt(index0));
+    if (verbose) {
       trefs->UncheckedAt(index0)->Print();
       trefs->UncheckedAt(index1)->Print();
     }
   }
-  if (returnValue==0) return  index0;
-  if (returnValue==1) return  TMath::Sqrt(dist);
+  if (returnValue == 0) return index0;
+  if (returnValue == 1) return TMath::Sqrt(dist);
 }
 

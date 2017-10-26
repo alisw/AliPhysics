@@ -1,11 +1,14 @@
 
-AliAnalysisTaskHaHFECorrel * ConfigHaHFECorrel(Int_t period, Bool_t CorrHadron, Bool_t CorrLP, Bool_t IsMC, Bool_t UseTender, Int_t ITSnCut, Int_t TPCnCut, Int_t TPCnCutdEdx, Double_t PhotElecPtCut, Int_t PhotElecTPCnCut, Bool_t PhotElecITSrefitCut, Double_t InvmassCut, Int_t HTPCnCut,Bool_t HITSrefitCut, Bool_t HTPCrefitCut,Bool_t UseITS, Double_t SigmaITScut, Double_t SigmaTOFcut, Double_t SigmaTPCcut)
+AliAnalysisTaskHaHFECorrel * ConfigHaHFECorrel(Int_t period, Bool_t CorrHadron, Bool_t CorrLP, Bool_t IsMC, Bool_t UseTender, Int_t ITSnCut, Int_t TPCnCut, Int_t TPCnCutdEdx, Double_t PhotElecPtCut, Int_t PhotElecTPCnCut, Bool_t PhotElecITSrefitCut, Double_t InvmassCut, Int_t HTPCnCut,Bool_t HITSrefitCut, Bool_t HTPCrefitCut,Bool_t UseITS, Double_t SigmaITScut, Double_t SigmaTOFcut, Double_t SigmaTPCcut, TString ID="")
 {
 
   //AliHFEcuts *hfecuts = new AliHFECuts("name", "title");
   //hfecuts->
 
-  AliAnalysisTaskHaHFECorrel *task = new AliAnalysisTaskHaHFECorrel("HaHFECorrel");
+  TString Name;
+  Name = "HaHFECorrel_";
+  Name+=ID;
+  AliAnalysisTaskHaHFECorrel *task = new AliAnalysisTaskHaHFECorrel(Name);
   printf("task ------------------------ %p\n ", task);
   task->SetPeriod(period);
   printf("\nRunning over period %i", period);

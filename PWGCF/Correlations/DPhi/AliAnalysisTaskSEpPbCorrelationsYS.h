@@ -104,6 +104,7 @@ private:
   Bool_t IsAcceptedCascadeOmega(const AliAODcascade *casc);
 
   Double_t RangePhi(Double_t DPhi);
+  Double_t RangePhi_FMD(Double_t DPhi);
   Double_t RangePhi2(Double_t DPhi);
 
 
@@ -235,7 +236,7 @@ private:
   TH2F*fFMDV0A_post;
   TH2F*fFMDV0C;
   TH2F*fFMDV0C_post;
-  
+
   TH2F *fHist_vzeromult;
   TH2F *fHist_vzeromultEqweighted;
   TH3F *fHist2dmult;

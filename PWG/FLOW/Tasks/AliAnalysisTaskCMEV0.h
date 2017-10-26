@@ -44,17 +44,19 @@ public:
 
 
   void    SetInputListNUA(TList *finputNUA)           {this->fListNUACorr       =    finputNUA;}
+  void    SetGainCorrZDNP(TList *finputZDN)           {this->fListZDNCorr       =    finputZDN;}
   void    SetFBEfficiencyList(TList *fFBlist)         {this->fListFBHijing      =      fFBlist;}
   void    SetRejectPileUp(Bool_t  pileup)             {this->fRejectPileUp      =       pileup;}
   void    SetRejectPileUpTight(Bool_t  pileupt8)      {this->fRejectPileUpTight =     pileupt8;}
   void    SetStoreTPCQnAvg(Bool_t bstoreTPCQn)        {this->bFillAvgTPCQn      =  bstoreTPCQn;} 
   void    SetFillNUAHist(Bool_t bfillNUAhist)         {this->bFillEtaPhiNUA     =  bfillNUAhist;} 
   void    SetApplyNUACorr(Bool_t fUseNUACorr)         {this->bApplyNUACorr      =  fUseNUACorr;}
+  void    SetApplyZDCCorr(Bool_t fUseZDCCorr)         {this->bApplyZDCCorr      =  fUseZDCCorr;}
   void    SetDataSet(TString fdataset)                {this->sDataSet           =     fdataset;}
   void    SetAnalysisSet(TString fanalysisSet)        {this->sAnalysisSet       = fanalysisSet;}
   void    SetCentEstimator(TString centEstim)         {this->sCentEstimator     =    centEstim;}
   void    SetHarmonic(Float_t harmonic)               {this->fHarmonic          =     harmonic;}
-
+  void    SetApplyNUAinEP(Bool_t bApplyNUAEP)         {this->bApplyNUAforEP     =  bApplyNUAEP;}
 
 
 
@@ -74,6 +76,7 @@ private:
   void GetV0QvectAndMult(const AliAODVZERO *aodV0,Double_t& Qxan,Double_t& Qyan,Double_t& sumMa,Double_t& Qxcn,Double_t& Qycn,Double_t& sumMc);
   void DefineHistograms();
   void GetNUACorrectionHist(Int_t run, Float_t cent);
+  void GetZDCCorrectionHist(Int_t run);
 
   void InitializeRunArray(TString sPeriod);
   Int_t GetCurrentRunIndex(Int_t  run);
@@ -87,12 +90,16 @@ private:
   TList*                 fListCalibs;         //! collection of Calib Histos
   TList*               fListFBHijing;         // Hijing Efficiency list
   TList*                fListNUACorr;         // NUA Correction List
+  TList*                fListZDNCorr;         // ZDC gain Correction Wgts
 
   Bool_t               fRejectPileUp;         //
   Bool_t          fRejectPileUpTight;         //
   Bool_t               bFillAvgTPCQn;         //
   Bool_t              bFillEtaPhiNUA;         //
   Bool_t               bApplyNUACorr;         //
+  Bool_t               bApplyZDCCorr;         //
+  Bool_t              bApplyNUAforEP;         //
+
 
   TString                   sDataSet;         // Dataset: 2010, 2011, or 2015.
   TString               sAnalysisSet;         // Values: recenter1,recenter2,analysis1
@@ -144,8 +151,8 @@ private:
   TH2F        *fHV0CEventPlaneVsCent;   //!
   TH2F        *fHTPCEventPlaneVsCent;   //!
 
-  TH3F        *fHCorrectNUApos; //!
-  TH3F        *fHCorrectNUAneg; //!
+  TH3D        *fHCorrectNUApos; //!
+  TH3D        *fHCorrectNUAneg; //!
 
   TH2F   *fHEnergyZNCvsCent;    //!
   TH2F   *fHEnergyZNAvsCent;    //!
@@ -164,6 +171,18 @@ private:
   TH1F *hUnderOverBinNUAneg; //!   //temporary Debug, remove for stable code
 
   TH1F   *fHCentBinTrkRecenter; //!
+
+  TH2D          *fHCorrectZDNP; //!
+
+  TList           *mListNUAPos; //!
+  TList           *mListNUANeg; //!
+  TFile            *fileNUApos; //!
+  TFile            *fileNUAneg; //!
+
+
+
+
+
 
 
   //  [ Arrays of Histrograms here: ]
@@ -192,16 +211,31 @@ private:
 
 
   //CME pT differential Histograms:
-/*
+
+  //(pT_A + pT_B)/2.0
+  TProfile     *fHist_Corr3p_pTSum_EP_V0A_PN[6]; //! 
+  TProfile     *fHist_Corr3p_pTSum_EP_V0A_PP[6]; //!
+  TProfile     *fHist_Corr3p_pTSum_EP_V0A_NN[6]; //!
+  TProfile     *fHist_Corr3p_pTSum_EP_V0C_PN[6]; //! 
+  TProfile     *fHist_Corr3p_pTSum_EP_V0C_PP[6]; //!
+  TProfile     *fHist_Corr3p_pTSum_EP_V0C_NN[6]; //!
+
+  // |(pT_A - pT_B)|
   TProfile     *fHist_Corr3p_pTDiff_EP_V0A_PN[6]; //! 
   TProfile     *fHist_Corr3p_pTDiff_EP_V0A_PP[6]; //!
   TProfile     *fHist_Corr3p_pTDiff_EP_V0A_NN[6]; //!
   TProfile     *fHist_Corr3p_pTDiff_EP_V0C_PN[6]; //! 
   TProfile     *fHist_Corr3p_pTDiff_EP_V0C_PP[6]; //!
   TProfile     *fHist_Corr3p_pTDiff_EP_V0C_NN[6]; //!
-*/
-
-
+ 
+  // |(Eta_A - Eta_B)|
+  TProfile     *fHist_Corr3p_EtaDiff_EP_V0A_PN[6]; //! 
+  TProfile     *fHist_Corr3p_EtaDiff_EP_V0A_PP[6]; //!
+  TProfile     *fHist_Corr3p_EtaDiff_EP_V0A_NN[6]; //!
+  TProfile     *fHist_Corr3p_EtaDiff_EP_V0C_PN[6]; //! 
+  TProfile     *fHist_Corr3p_EtaDiff_EP_V0C_PP[6]; //!
+  TProfile     *fHist_Corr3p_EtaDiff_EP_V0C_NN[6]; //!
+ 
 
 
 

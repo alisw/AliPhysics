@@ -33,12 +33,14 @@ ClassImp(AliAnalysisMuMuJpsiResult)
 #include "AliAnalysisMuMuBinning.h"
 #include "AliLog.h"
 #include <map>
+#include <iostream>
 
 #include "Fit/Fitter.h"
 #include "Fit/BinData.h"
 #include "Fit/Chi2FCN.h"
 #include "Math/WrappedMultiTF1.h"
 #include "HFitInterface.h"
+#include "TMinuit.h"
 #include "TCanvas.h"
 #include "TStyle.h"
 
@@ -145,6 +147,13 @@ fMinvRS("")
     else if ( name.BeginsWith("MPT") ) {
       name.ReplaceAll("MPTPSIPSIPRIME","");
       isMPt = kTRUE;
+    }
+    else if ( name.BeginsWith("MV2") ) {
+      name.ReplaceAll("MV2PSIPSIPRIME","");
+      isMPt = kTRUE;
+    }
+    if(( TString(fitType).Contains("AccEff") )){
+      name +="AccEff";
     }
 
     name += "_";
@@ -533,7 +542,46 @@ Double_t AliAnalysisMuMuJpsiResult::FitFunctionBackgroundPol4(Double_t *x, Doubl
   }
   return par[0]+par[1]*x[0]+par[2]*x[0]*x[0]+par[3]*x[0]*x[0]*x[0]+par[4]*x[0]*x[0]*x[0]*x[0];
 }
+//____________________________________________________________________________
+Double_t AliAnalysisMuMuJpsiResult::FitFunctionBackgroundPol4Cheb(Double_t *x, Double_t *par)
+{
+  if (fRejectFitPoints &&  x[0] > fFitRejectRangeLow && x[0] < fFitRejectRangeHigh )
+  {
+    TF1::RejectPoint();
+    return 0.;
+  }
+  Double_t xmin = 2.2;
+  Double_t xmax = 4.7;
+  double xx = (2.0 * x[0] - xmin -xmax)/(xmax-xmin);
+  const int order = 4;
+  Double_t fT[order+1] = {0};
+  if (order == 1) return par[0];
+  if (order == 2) return par[0] + xx*par[1];
+  // build the polynomials
+  fT[0] = 1;
+  fT[1] = xx;
+  for (int i = 1; i< order; ++i) {
+    fT[i+1] =  2 *xx * fT[i] - fT[i-1];
+  }
+  double sum = par[0]*fT[0];
+  for (int i = 1; i<= order; ++i) {
+    sum += par[i] * fT[i];
+  }
+  return sum;
+}
+//____________________________________________________________________________
+Double_t AliAnalysisMuMuJpsiResult::FitFunctionBackgroundPolExp(Double_t *x, Double_t *par)
+{
+  // pol2 x exp : 4 params
 
+  if (fRejectFitPoints &&  x[0] > fFitRejectRangeLow && x[0] < fFitRejectRangeHigh )
+  {
+    TF1::RejectPoint();
+    return 0.;
+  }
+//  return par[0]*(par[1]+par[2]*x[0]+par[3]*x[0]*x[0])*TMath::Exp(par[4]/x[0]);
+  return (par[0]+par[1]*x[0])*TMath::Exp(par[2]*x[0]);
+}
 //____________________________________________________________________________
 Double_t AliAnalysisMuMuJpsiResult::FitFunctionBackgroundPol2Exp(Double_t *x, Double_t *par)
 {
@@ -1039,13 +1087,21 @@ Double_t AliAnalysisMuMuJpsiResult::alphaCB2VWG(Double_t*x, Double_t* par)
 {
   return FitFunctionSignalCrystalBallExtended(x, &par[4])/(FitFunctionSignalCrystalBallExtended(x, &par[4]) + FitFunctionBackgroundVWG(x,par));
 }
-
+//------------------------------------------------------------------------------
+Double_t AliAnalysisMuMuJpsiResult::alphaCB2VWG2(Double_t*x, Double_t* par)
+{
+  return FitFunctionSignalCrystalBallExtended(x, &par[5])/(FitFunctionSignalCrystalBallExtended(x, &par[5]) + FitFunctionBackgroundVWG2(x,par));
+}
 //------------------------------------------------------------------------------
 Double_t AliAnalysisMuMuJpsiResult::alphaCB2POL1POL2(Double_t*x, Double_t* par)
 {
   return FitFunctionSignalCrystalBallExtended(x, &par[5])/(FitFunctionSignalCrystalBallExtended(x, &par[5]) + FitFunctionBackgroundPol1Pol2(x,par));
 }
-
+//------------------------------------------------------------------------------
+Double_t AliAnalysisMuMuJpsiResult::alphaCB2POL2POL3(Double_t*x, Double_t* par)
+{
+  return FitFunctionSignalCrystalBallExtended(x, &par[7])/(FitFunctionSignalCrystalBallExtended(x, &par[7]) + FitFunctionBackgroundPol2Pol3(x,par));
+}
 //------------------------------------------------------------------------------
 Double_t AliAnalysisMuMuJpsiResult::alphaCB2POL2EXP(Double_t*x, Double_t* par)
 {
@@ -1069,7 +1125,17 @@ Double_t AliAnalysisMuMuJpsiResult::alphaNA60NEWPOL2EXP(Double_t*x, Double_t* pa
 {
   return FitFunctionNA60New(x, &par[4])/(FitFunctionNA60New(x, &par[4]) + FitFunctionBackgroundPol2Exp(x,par));
 }
+//------------------------------------------------------------------------------
+Double_t AliAnalysisMuMuJpsiResult::alphaNA60NEWVWG2(Double_t*x, Double_t* par)
+{
+  return FitFunctionNA60New(x, &par[5])/(FitFunctionNA60New(x, &par[5]) + FitFunctionBackgroundVWG2(x,par));
+}
 
+//------------------------------------------------------------------------------
+Double_t AliAnalysisMuMuJpsiResult::alphaNA60NEWPOL2POL3(Double_t*x, Double_t* par)
+{
+  return FitFunctionNA60New(x, &par[7])/(FitFunctionNA60New(x, &par[7]) + FitFunctionBackgroundPol2Pol3(x,par));
+}
 
 //------------------------------------------------------------------------------
 Double_t AliAnalysisMuMuJpsiResult::FitFunctionMeanPtSCB2Lin(Double_t* x, Double_t* par)
@@ -1107,9 +1173,90 @@ Double_t AliAnalysisMuMuJpsiResult::FitFunctionMeanPtS2CB2Lin(Double_t *x, Doubl
 Double_t AliAnalysisMuMuJpsiResult::FitFunctionMeanPtSCB2VWGPOL2(Double_t* x, Double_t* par)
 {
   // Fit function for Jpsi(Psip) mean pt with alphaJpsi
+  AliDebug(2,Form("pol2 parameters in FitFunctionMeanPtSCB2VWGPOL2 : %f,%f,%f",par[13],par[14],par[15]));
   return alphaCB2VWG(x,par)*par[12] + (1. - alphaCB2VWG(x,par))*FitFunctionBackgroundPol2(x,&par[13]);
 }
+//------------------------------------------------------------------------------
+Double_t AliAnalysisMuMuJpsiResult::FitFunctionMeanPtSCB2VWG2POL2(Double_t* x, Double_t* par)
+{
+  // Fit function for Jpsi(Psip) mean pt with alphaJpsi
+  AliDebug(2,Form("pol2 parameters in FitFunctionMeanPtSCB2VWG2POL2 : %f,%f,%f",par[14],par[15],par[16]));
+  return alphaCB2VWG2(x,par)*par[13] + (1. - alphaCB2VWG2(x,par))*FitFunctionBackgroundPol2(x,&par[14]);
+}
+//------------------------------------------------------------------------------
+Double_t AliAnalysisMuMuJpsiResult::FitFunctionMeanPtSCB2VWG2POLEXP(Double_t* x, Double_t* par)
+{
+  // Fit function for Jpsi(Psip) mean pt with alphaJpsi
+  AliDebug(2,Form("pol2 parameters in FitFunctionMeanPtSCB2VWG2POL2 : %f,%f,%f",par[14],par[15],par[16]));
+  return alphaCB2VWG2(x,par)*par[13] + (1. - alphaCB2VWG2(x,par))*FitFunctionBackgroundPolExp(x,&par[14]);
+}
+//____________________________________________________________________________
+Double_t AliAnalysisMuMuJpsiResult::FitFunctionMeanPtSCB2VWG2POL2EXP(Double_t *x, Double_t *par)
+{
+  // Fit function for Jpsi(Psip) mean pt with alphaJpsi
+  AliDebug(2,Form("pol2 parameters in FitFunctionMeanPtSCB2VWG2POL2EXP : %f,%f,%f,%f",par[14],par[15],par[16],par[17]));
 
+  return alphaCB2VWG2(x,par)*par[13] + (1. - alphaCB2VWG2(x,par))*FitFunctionBackgroundPol2Exp(x,&par[14]);
+}
+
+//____________________________________________________________________________
+Double_t AliAnalysisMuMuJpsiResult::FitFunctionMeanPtSCB2VWG2POL4(Double_t *x, Double_t *par)
+{
+  // Fit function for Jpsi(Psip) mean pt with alphaJpsi
+  AliDebug(2,Form("pol2 parameters in FitFunctionMeanPtSCB2VWG2POL4 : %f,%f,%f,%f,%f",par[14],par[15],par[16],par[17],par[18]));
+
+  return alphaCB2VWG2(x,par)*par[13] + (1. - alphaCB2VWG2(x,par))*FitFunctionBackgroundPol4(x,&par[14]);
+}
+
+//____________________________________________________________________________
+Double_t AliAnalysisMuMuJpsiResult::FitFunctionMeanPtSCB2VWG2POL4Cheb(Double_t *x, Double_t *par)
+{
+  // Fit function for Jpsi(Psip) mean pt with alphaJpsi
+  AliDebug(2,Form("pol2 parameters in FitFunctionMeanPtSCB2VWG2POL4Cheb : %f,%f,%f,%f,%f",par[14],par[15],par[16],par[17],par[18]));
+
+  return alphaCB2VWG2(x,par)*par[13] + (1. - alphaCB2VWG2(x,par))*FitFunctionBackgroundPol4Cheb(x,&par[14]);
+}
+
+//____________________________________________________________________________
+Double_t AliAnalysisMuMuJpsiResult::FitFunctionMeanPtSCB2POL2POL3POL2(Double_t *x, Double_t *par)
+{
+  // Fit function for Jpsi(Psip) mean pt with alphaJpsi
+  AliDebug(2,Form("pol2 parameters in FitFunctionMeanPtSCB2POL2POL3POL2 : %f,%f,%f",par[16],par[17],par[18]));
+
+  return alphaCB2POL2POL3(x,par)*par[15] + (1. - alphaCB2POL2POL3(x,par))*FitFunctionBackgroundPol2(x,&par[16]);
+}
+//____________________________________________________________________________
+Double_t AliAnalysisMuMuJpsiResult::FitFunctionMeanPtSCB2POL2POL3_POLEXP(Double_t *x, Double_t *par)
+{
+  // Fit function for Jpsi(Psip) mean pt with alphaJpsi
+  AliDebug(2,Form("pol2 parameters in FitFunctionMeanPtSCB2POL2POL3POL2 : %f,%f,%f",par[16],par[17],par[18]));
+
+  return alphaCB2POL2POL3(x,par)*par[15] + (1. - alphaCB2POL2POL3(x,par))*FitFunctionBackgroundPolExp(x,&par[16]);
+}
+//____________________________________________________________________________
+Double_t AliAnalysisMuMuJpsiResult::FitFunctionMeanPtSCB2POL2POL3POL2EXP(Double_t *x, Double_t *par)
+{
+  // Fit function for Jpsi(Psip) mean pt with alphaJpsi
+  AliDebug(2,Form("pol2exp parameters in FitFunctionMeanPtSCB2POL2POL3POL2EXP : %f,%f,%f,%f",par[16],par[17],par[18],par[19]));
+
+  return alphaCB2POL2POL3(x,par)*par[15] + (1. - alphaCB2POL2POL3(x,par))*FitFunctionBackgroundPol2Exp(x,&par[16]);
+}
+//____________________________________________________________________________
+Double_t AliAnalysisMuMuJpsiResult::FitFunctionMeanPtSCB2POL2POL3POL4(Double_t *x, Double_t *par)
+{
+  // Fit function for Jpsi(Psip) mean pt with alphaJpsi
+  AliDebug(2,Form("pol4 parameters in FitFunctionMeanPtSCB2POL2POL3POL4 : %f,%f,%f,%f,%f",par[16],par[17],par[18],par[19],par[20]));
+
+  return alphaCB2POL2POL3(x,par)*par[15] + (1. - alphaCB2POL2POL3(x,par))*FitFunctionBackgroundPol4(x,&par[16]);
+}
+//____________________________________________________________________________
+Double_t AliAnalysisMuMuJpsiResult::FitFunctionMeanPtSCB2POL2POL3POL4Cheb(Double_t *x, Double_t *par)
+{
+  // Fit function for Jpsi(Psip) mean pt with alphaJpsi
+  AliDebug(2,Form("pol4 parameters in FitFunctionMeanPtSCB2POL2POL3POL4 : %f,%f,%f,%f,%f",par[16],par[17],par[18],par[19],par[20]));
+
+  return alphaCB2POL2POL3(x,par)*par[15] + (1. - alphaCB2POL2POL3(x,par))*FitFunctionBackgroundPol4Cheb(x,&par[16]);
+}
 //____________________________________________________________________________
 Double_t AliAnalysisMuMuJpsiResult::FitFunctionMeanPtS2CB2VWGPOL2(Double_t *x, Double_t *par)
 {
@@ -1285,36 +1432,68 @@ Double_t AliAnalysisMuMuJpsiResult::FitFunctionMeanPtS2NA60NEWVWGPOL2(Double_t *
   return alphaNA60NEWVWG(x,par)*par[16] + alphaNA60NEWVWG(x,par2)*par[20] + (1. - alphaNA60NEWVWG(x,par) - alphaNA60NEWVWG(x,par2))*FitFunctionBackgroundPol2(x,&par[17]);
 
 }
-
 //____________________________________________________________________________
-Double_t AliAnalysisMuMuJpsiResult::FitFunctionMeanPtS2NA60NEWPOL1POL2POL2(Double_t *x, Double_t *par)
+Double_t AliAnalysisMuMuJpsiResult::FitFunctionMeanPtSNA60NEWVWG2POLEXP(Double_t *x, Double_t *par)
 {
-  // Fit function for Jpsi(Psip) mean pt with alphaJpsi and alphaPsiP
-  Double_t SPsiPFactor = GetValue(kKeySPsiP);
-
-  Double_t par2[16] = {
-    par[0],//a
-    par[1],//b
-    par[2],//a'
-    par[3],//b'
-    par[4],//c'
-    par[16],//kPsiP
-    par[6]+(3.68609-3.096916),//mPsiP
-    par[7]*SPsiPFactor, // /3.096916*3.68609,
-    par[8],
-    par[9],
-    par[10],
-    par[11],
-    par[12],
-    par[13],
-    par[14],
-    par[15],
-  };
-
-  return alphaNA60NEWPOL1POL2(x,par)*par[17] + alphaNA60NEWPOL1POL2(x,par2)*par[21] + (1. - alphaNA60NEWPOL1POL2(x,par) - alphaNA60NEWPOL1POL2(x,par2))*FitFunctionBackgroundPol2(x,&par[18]);
-
+ AliDebug(2,Form("pol2 parameters in FitFunctionMeanPtSNA60NEWVWG2POLEXP : %f,%f,%f",par[18],par[19],par[20]));
+  return alphaNA60NEWVWG2(x,par)*par[17] + (1. - alphaNA60NEWVWG2(x,par))*FitFunctionBackgroundPolExp(x,&par[18]);
+}
+//____________________________________________________________________________
+Double_t AliAnalysisMuMuJpsiResult::FitFunctionMeanPtSNA60NEWVWG2POL2(Double_t *x, Double_t *par)
+{
+ AliDebug(2,Form("pol2 parameters in FitFunctionMeanPtSNA60NEWVWG2POL2 : %f,%f,%f",par[18],par[19],par[20]));
+  return alphaNA60NEWVWG2(x,par)*par[17] + (1. - alphaNA60NEWVWG2(x,par))*FitFunctionBackgroundPol2(x,&par[18]);
+}
+//____________________________________________________________________________
+Double_t AliAnalysisMuMuJpsiResult::FitFunctionMeanPtSNA60NEWVWG2POL2EXP(Double_t *x, Double_t *par)
+{
+ AliDebug(2,Form("pol2exp parameters in FitFunctionMeanPtSNA60NEWVWG2POL2EXP : %f,%f,%f,%f",par[18],par[19],par[20],par[21]));
+  return alphaNA60NEWVWG2(x,par)*par[17] + (1. - alphaNA60NEWVWG2(x,par))*FitFunctionBackgroundPol2Exp(x,&par[18]);
+}
+//____________________________________________________________________________
+Double_t AliAnalysisMuMuJpsiResult::FitFunctionMeanPtSNA60NEWVWG2POL4(Double_t *x, Double_t *par)
+{
+ AliDebug(2,Form("pol4 parameters in FitFunctionMeanPtSNA60NEWVWG2POL4 : %f,%f,%f,%f,%f",par[18],par[19],par[20],par[21],par[22]));
+  return alphaNA60NEWVWG2(x,par)*par[17] + (1. - alphaNA60NEWVWG2(x,par))*FitFunctionBackgroundPol4(x,&par[18]);
+}
+//____________________________________________________________________________
+Double_t AliAnalysisMuMuJpsiResult::FitFunctionMeanPtSNA60NEWVWG2POL4Cheb(Double_t *x, Double_t *par)
+{
+ AliDebug(2,Form("pol4 parameters in FitFunctionMeanPtSNA60NEWVWG2POL4 : %f,%f,%f,%f,%f",par[18],par[19],par[20],par[21],par[22]));
+  return alphaNA60NEWVWG2(x,par)*par[17] + (1. - alphaNA60NEWVWG2(x,par))*FitFunctionBackgroundPol4Cheb(x,&par[18]);
 }
 
+//____________________________________________________________________________
+Double_t AliAnalysisMuMuJpsiResult::FitFunctionMeanPtSNA60NEWPOL2POL3_POLEXP(Double_t *x, Double_t *par)
+{
+ AliDebug(2,Form("pol2 parameters in FitFunctionMeanPtSNA60NEWPOL2POL3_POLEXP : %f,%f,%f",par[20],par[21],par[22]));
+  return alphaNA60NEWPOL2POL3(x,par)*par[19] + (1. - alphaNA60NEWPOL2POL3(x,par))*FitFunctionBackgroundPolExp(x,&par[20]);
+}
+
+//____________________________________________________________________________
+Double_t AliAnalysisMuMuJpsiResult::FitFunctionMeanPtSNA60NEWPOL2POL3POL2(Double_t *x, Double_t *par)
+{
+ AliDebug(2,Form("pol2 parameters in FitFunctionMeanPtSNA60NEWPOL2POL3POL2 : %f,%f,%f",par[20],par[21],par[22]));
+  return alphaNA60NEWPOL2POL3(x,par)*par[19] + (1. - alphaNA60NEWPOL2POL3(x,par))*FitFunctionBackgroundPol2(x,&par[20]);
+}
+//____________________________________________________________________________
+Double_t AliAnalysisMuMuJpsiResult::FitFunctionMeanPtSNA60NEWPOL2POL3POL2EXP(Double_t *x, Double_t *par)
+{
+ AliDebug(2,Form("pol2exp parameters in FitFunctionMeanPtSNA60NEWPOL2POL3POL2EXP : %f,%f,%f,%f",par[20],par[21],par[22],par[23]));
+  return alphaNA60NEWPOL2POL3(x,par)*par[19] + (1. - alphaNA60NEWPOL2POL3(x,par))*FitFunctionBackgroundPol2Exp(x,&par[20]);
+}
+//____________________________________________________________________________
+Double_t AliAnalysisMuMuJpsiResult::FitFunctionMeanPtSNA60NEWPOL2POL3POL4(Double_t *x, Double_t *par)
+{
+ AliDebug(2,Form("pol4 parameters in FitFunctionMeanPtSNA60NEWPOL2POL3POL4 : %f,%f,%f,%f,%f",par[20],par[21],par[22],par[23],par[24]));
+  return alphaNA60NEWPOL2POL3(x,par)*par[19] + (1. - alphaNA60NEWPOL2POL3(x,par))*FitFunctionBackgroundPol4(x,&par[20]);
+}
+//____________________________________________________________________________
+Double_t AliAnalysisMuMuJpsiResult::FitFunctionMeanPtSNA60NEWPOL2POL3POL4Cheb(Double_t *x, Double_t *par)
+{
+ AliDebug(2,Form("pol4 parameters in FitFunctionMeanPtSNA60NEWPOL2POL3POL4 : %f,%f,%f,%f,%f",par[20],par[21],par[22],par[23],par[24]));
+  return alphaNA60NEWPOL2POL3(x,par)*par[19] + (1. - alphaNA60NEWPOL2POL3(x,par))*FitFunctionBackgroundPol4Cheb(x,&par[20]);
+}
 //____________________________________________________________________________
 Double_t AliAnalysisMuMuJpsiResult::FitFunctionMeanPtS2NA60NEWVWGPOL2EXP(Double_t *x, Double_t *par)
 {
@@ -1343,7 +1522,34 @@ Double_t AliAnalysisMuMuJpsiResult::FitFunctionMeanPtS2NA60NEWVWGPOL2EXP(Double_
   return alphaNA60NEWVWG(x,par)*par[16] + alphaNA60NEWVWG(x,par2)*par[21] + (1. - alphaNA60NEWVWG(x,par) - alphaNA60NEWVWG(x,par2))*FitFunctionBackgroundPol2Exp(x,&par[17]);
 
 }
+//____________________________________________________________________________
+Double_t AliAnalysisMuMuJpsiResult::FitFunctionMeanPtS2NA60NEWPOL1POL2POL2(Double_t *x, Double_t *par)
+{
+  // Fit function for Jpsi(Psip) mean pt with alphaJpsi and alphaPsiP
+  Double_t SPsiPFactor = GetValue(kKeySPsiP);
 
+  Double_t par2[16] = {
+    par[0],//a
+    par[1],//b
+    par[2],//a'
+    par[3],//b'
+    par[4],//c'
+    par[16],//kPsiP
+    par[6]+(3.68609-3.096916),//mPsiP
+    par[7]*SPsiPFactor, // /3.096916*3.68609,
+    par[8],
+    par[9],
+    par[10],
+    par[11],
+    par[12],
+    par[13],
+    par[14],
+    par[15],
+  };
+
+  return alphaNA60NEWPOL1POL2(x,par)*par[17] + alphaNA60NEWPOL1POL2(x,par2)*par[21] + (1. - alphaNA60NEWPOL1POL2(x,par) - alphaNA60NEWPOL1POL2(x,par2))*FitFunctionBackgroundPol2(x,&par[18]);
+
+}
 //____________________________________________________________________________
 Double_t AliAnalysisMuMuJpsiResult::FitFunctionMeanPtS2NA60NEWPOL1POL2POL2EXP(Double_t *x, Double_t *par)
 {
@@ -1612,7 +1818,9 @@ void AliAnalysisMuMuJpsiResult::FitPSICB2()
 
   signal->SetParameters(fitTotal->GetParameter(0),fitTotal->GetParameter(1),fitTotal->GetParameter(2),fitTotal->GetParameter(3),fitTotal->GetParameter(4),fitTotal->GetParameter(5),fitTotal->GetParameter(6));
 
-  Set("FitResult",static_cast<int>(fitResult)*1.0,0.0);
+  Int_t fitStatus = 0;
+  if(!CheckFitStatus(fitResult)) fitStatus =-1;
+  else Set("FitStatus",fitStatus,0.);
   Set("FitChi2PerNDF",fitTotal->GetChisquare()/fitTotal->GetNDF(),0.0);
   Set("FitNDF",fitTotal->GetNDF(),0.0);
 
@@ -1784,7 +1992,9 @@ void AliAnalysisMuMuJpsiResult::FitPSINA60NEW()
   signal->SetParameters(fitTotal->GetParameter(0),fitTotal->GetParameter(1),fitTotal->GetParameter(2),fitTotal->GetParameter(3),fitTotal->GetParameter(4),fitTotal->GetParameter(5),fitTotal->GetParameter(6),fitTotal->GetParameter(7),fitTotal->GetParameter(8),fitTotal->GetParameter(9));
   signal->SetParameter(10,fitTotal->GetParameter(10));
 
-  Set("FitResult",static_cast<int>(fitResult)*1.0,0.0);
+  Int_t fitStatus = 0;
+  if(!CheckFitStatus(fitResult)) fitStatus =-1;
+  else Set("FitStatus",fitStatus,0.);
   Set("FitChi2PerNDF",fitTotal->GetChisquare()/fitTotal->GetNDF(),0.0);
   Set("FitNDF",fitTotal->GetNDF(),0.0);
 
@@ -2123,9 +2333,9 @@ void AliAnalysisMuMuJpsiResult::FitPSIPSIPRIMECB2VWG()
   fHisto->GetListOfFunctions()->Delete();
 
   TString histoName       = fHisto->GetTitle();
-  TString sfitOption      = histoName.Contains("Corrected") ? "0SERL" : "NO0SRLM";
+  TString sfitOption      = histoName.Contains("Corrected") ? "0SERL" : "NO0SRLM"; //SERL
   const char* fitOption   = sfitOption.Data(); //We can add NO to avoid plotting
-  const char* fitOptionBg = "NOSR"; //We can add NO to avoid plotting
+  const char* fitOptionBg = "NOSR"; //We can add NO to avoid plotting //SER
 
 
   //__________ Get tails parameters, fitting range and SigmaPsiP
@@ -2287,6 +2497,9 @@ void AliAnalysisMuMuJpsiResult::FitPSIPSIPRIMECB2VWG()
   delete bckInit; //Delete the initial background funtion
 
   //___________Set parameters and fit functions to store in the result
+  Int_t fitStatus = 0;
+  if(!CheckFitStatus(fitResult)) fitStatus =-1;
+  else Set("FitStatus",fitStatus,0.);
   Set("FitChi2PerNDF",fitTotal->GetChisquare()/fitTotal->GetNDF(),0.0);
   Set("FitNDF",fitTotal->GetNDF(),0.0);
 
@@ -2422,9 +2635,9 @@ void AliAnalysisMuMuJpsiResult::FitPSIPSIPRIMECB2VWG2()
   fHisto->GetListOfFunctions()->Delete();
 
   TString histoName = fHisto->GetTitle();
-  TString sfitOption= histoName.Contains("Corrected") ? "0SERL" : "NO0SRLM";
+  TString sfitOption= histoName.Contains("Corrected") ? "0SERL" : "NO0SRLM"; //SERLM
   const char* fitOption = sfitOption.Data(); //We can add NO to avoid plotting
-  const char* fitOptionBg = "0LSR"; //We can add NO to avoid plotting
+  const char* fitOptionBg = "0LSR"; //We can add NO to avoid plotting//SER
 
 
   //__________ Get tails parameters, fitting range and SigmaPsiP
@@ -2435,6 +2648,18 @@ void AliAnalysisMuMuJpsiResult::FitPSIPSIPRIMECB2VWG2()
   Double_t fitRangeLow  = GetValue(kFitRangeLow);
   Double_t fitRangeHigh = GetValue(kFitRangeHigh);
   Double_t paramSPsiP   = GetValue("FSigmaPsiP");
+  Double_t meanJPsi     = GetValue("meanJPsi");
+  Double_t sigmaJPsi    = GetValue("sigmaJPsi");
+  Double_t binNormJPsi  = GetValue("binNormJPsi");
+  // Double_t binNormPsiP  = GetValue("binNormPsiP");
+
+  Double_t mVWG2_init    = IsValidValue(GetValue("mVWG2_init"))  ? GetValue("mVWG2_init")  : 2.;
+  Double_t s1VWG2_init   = IsValidValue(GetValue("s1VWG2_init")) ? GetValue("s1VWG2_init") : -0.5;
+  Double_t s2VWG2_init   = IsValidValue(GetValue("s2VWG2_init")) ? GetValue("s2VWG2_init") : -0.9;
+  Double_t gVWG2_init    = IsValidValue(GetValue("gVWG2_init"))  ? GetValue("gVWG2_init")  : 0.15;
+
+  Double_t rejRl    = IsValidValue(GetValue("rejRl"))  ? GetValue("rejRl")  : 2.2;
+  Double_t rejRh    = IsValidValue(GetValue("rejRh"))  ? GetValue("rejRh")  : 3.9;
 
   TString msg;
 
@@ -2442,6 +2667,10 @@ void AliAnalysisMuMuJpsiResult::FitPSIPSIPRIMECB2VWG2()
   if (IsValidValue(nLow)) msg     += TString::Format("nLow=%e ",nLow);
   if (IsValidValue(alphaUp)) msg  += TString::Format("alphaUp=%e ",alphaUp);
   if (IsValidValue(nUp)) msg      += TString::Format("nUp=%e ",nUp);
+  msg += TString::Format("mVWG2init=%.2f ",mVWG2_init);
+  msg += TString::Format("s1VWG2init=%.2f ",s1VWG2_init);
+  msg += TString::Format("s2VWG2init=%.2f ",s2VWG2_init);
+  msg += TString::Format("gVWG2init=%.2f ",gVWG2_init);
   //__________
 
 
@@ -2464,9 +2693,11 @@ void AliAnalysisMuMuJpsiResult::FitPSIPSIPRIMECB2VWG2()
   //__________ Fit background only for initial parameters
   TF1* bckInit = new TF1("bckInit",this,&AliAnalysisMuMuJpsiResult::FitFunctionBackgroundVWG2,1.8,6.,5,"AliAnalysisMuMuJpsiResult","FitFunctionBackgroundVWG2");
   Int_t bin = fHisto->FindBin(0.26);
-  bckInit->SetParameters(fHisto->GetBinContent(bin),2.,0.5,0.3,1.0);
 
-  SetFitRejectRange(2.5,3.4);
+
+  bckInit->SetParameters(fHisto->GetBinContent(bin),mVWG2_init,s1VWG2_init,s2VWG2_init,gVWG2_init);
+  SetFitRejectRange(rejRl,rejRh);
+
   TFitResultPtr fitResultInit = fHisto->Fit(bckInit,fitOptionBg);
   std::cout << "FitResultBkgInit=" << static_cast<int>(fitResultInit) << std::endl;
 
@@ -2477,14 +2708,22 @@ void AliAnalysisMuMuJpsiResult::FitPSIPSIPRIMECB2VWG2()
   //__________ Set initial parameters in fitting function
   for ( Int_t i = 0; i < 5; ++i ) fitTotal->SetParameter(i, bckInit->GetParameter(i));
 
-  bin = fHisto->FindBin(3.10);
-  fitTotal->SetParameter(5, fHisto->GetBinContent(bin)); // norm
+  if(IsValidValue(binNormJPsi)) bin = fHisto->FindBin(binNormJPsi); //
+  else bin = fHisto->FindBin(3.09);
+  fitTotal->SetParameter(5, fHisto->GetBinContent(bin)); // nor
 
-  fitTotal->SetParameter(6, 3.10); // mean
-  fitTotal->SetParLimits(6, 2.95, 3.2);
 
-  fitTotal->SetParameter(7, 0.08); // sigma
-  fitTotal->SetParLimits(7, 0.03, 0.2);
+  if(IsValidValue(meanJPsi)) fitTotal->FixParameter(6,meanJPsi); // mean
+  else {
+    fitTotal->SetParameter(6, 3.11); // mean
+    fitTotal->SetParLimits(6, 2.95, 3.2);
+  }
+
+  if(IsValidValue(sigmaJPsi))fitTotal->FixParameter(7,sigmaJPsi);
+  else {
+    fitTotal->SetParameter(7, 0.08); // sigma
+    fitTotal->SetParLimits(7, 0.03, 0.2);
+  }
 
   if ( IsValidValue(alphaLow) ) {
     fitTotal->FixParameter(8, alphaLow);
@@ -2540,6 +2779,9 @@ void AliAnalysisMuMuJpsiResult::FitPSIPSIPRIMECB2VWG2()
   delete bckInit; //Delete the initial background funtion
 
   //___________Set parameters and fit functions to store in the result
+  Int_t fitStatus = 0;
+  if(!CheckFitStatus(fitResult)) fitStatus =-1;
+  else Set("FitStatus",fitStatus,0.);
   Set("FitChi2PerNDF",fitTotal->GetChisquare()/fitTotal->GetNDF(),0.0);
   Set("FitNDF",fitTotal->GetNDF(),0.0);
 
@@ -2871,6 +3113,9 @@ void AliAnalysisMuMuJpsiResult::FitPSIPSIPRIMECB2POL1POL2()
   delete bckInit; //Delete the initial background funtion
 
   //___________Set parameters and fit functions to store in the result
+  Int_t fitStatus = 0;
+  if(!CheckFitStatus(fitResult)) fitStatus =-1;
+  else Set("FitStatus",fitStatus,0.);
   Set("FitChi2PerNDF",fitTotal->GetChisquare()/fitTotal->GetNDF(),0.0);
   Set("FitNDF",fitTotal->GetNDF(),0.0);
 
@@ -3020,6 +3265,17 @@ void AliAnalysisMuMuJpsiResult::FitPSIPSIPRIMECB2POL2POL3()
   Double_t fitRangeLow  = GetValue(kFitRangeLow);
   Double_t fitRangeHigh = GetValue(kFitRangeHigh);
   Double_t paramSPsiP   = GetValue("FSigmaPsiP");
+  // Double_t meanJPsi     = GetValue("meanJPsi");
+  // Double_t sigmaJPsi    = GetValue("sigmaJPsi");
+
+  Double_t a_init    = IsValidValue(GetValue("a_init"))  ? GetValue("a_init")  : -130.;
+  Double_t b_init    = IsValidValue(GetValue("b_init"))  ? GetValue("b_init")  : 350.;
+  Double_t ap_init   = IsValidValue(GetValue("ap_init")) ? GetValue("ap_init") : -0.05;
+  Double_t bp_init   = IsValidValue(GetValue("bp_init")) ? GetValue("bp_init") : 0.5;
+  Double_t cp_init   = IsValidValue(GetValue("cp_init")) ? GetValue("cp_init") : -1.;
+
+  Double_t rejRl    = IsValidValue(GetValue("rejRl"))  ? GetValue("rejRl")  : 2.2;
+  Double_t rejRh    = IsValidValue(GetValue("rejRh"))  ? GetValue("rejRh")  : 3.9;
 
   TString msg;
 
@@ -3027,6 +3283,11 @@ void AliAnalysisMuMuJpsiResult::FitPSIPSIPRIMECB2POL2POL3()
   if (IsValidValue(nLow))     msg += TString::Format("nLow=%e ",nLow);
   if (IsValidValue(alphaUp))  msg += TString::Format("alphaUp=%e ",alphaUp);
   if (IsValidValue(nUp))      msg += TString::Format("nUp=%e ",nUp);
+  msg += TString::Format("ainit=%.2f ",a_init);
+  msg += TString::Format("binit=%.2f ",b_init);
+  msg += TString::Format("a'init=%.2f ",ap_init);
+  msg += TString::Format("b'init=%.2f ",bp_init);
+  msg += TString::Format("c'init=%.2f ",cp_init);
   //__________
 
   AliDebug(1,Form("Fit with jpsi + psiprime POL2/POL3 %s",msg.Data()));
@@ -3053,7 +3314,8 @@ void AliAnalysisMuMuJpsiResult::FitPSIPSIPRIMECB2POL2POL3()
   TF1* bckInit = new TF1("bckInit",this,&AliAnalysisMuMuJpsiResult::FitFunctionBackgroundPol2Pol3,1.9,6.,7,"AliAnalysisMuMuJpsiResult","FitFunctionBackgroundPol2Pol3");
 
   Int_t bin = fHisto->FindBin(0.7);
-  bckInit->SetParameters(0.,1.,bin,0.,0.,1.,1.);
+
+  bckInit->SetParameters(a_init,b_init,bin,ap_init,bp_init,cp_init);
   bckInit->FixParameter(6.,1);
 
   // bckInit->SetParLimits(0.,-30,30);
@@ -3063,7 +3325,7 @@ void AliAnalysisMuMuJpsiResult::FitPSIPSIPRIMECB2POL2POL3()
   bckInit->SetParLimits(4.,-10,10);
   bckInit->SetParLimits(5.,-30,30);
 
-  SetFitRejectRange(2.5,3.6);
+  SetFitRejectRange(rejRl,rejRh);
 
   TFitResultPtr fitResultInit = fHisto->Fit(bckInit,fitOptionBg);
   if ( static_cast<int>(fitResultInit) ) ProcessBkgFit(fitResultInit,bckInit,"FitFunctionBackgroundPol2Pol3",fitOptionBg); // Further attempts to fit bkg if the first one fails
@@ -3136,6 +3398,9 @@ void AliAnalysisMuMuJpsiResult::FitPSIPSIPRIMECB2POL2POL3()
   delete bckInit; //Delete the initial background funtion
 
   //___________Set parameters and fit functions to store in the result
+  Int_t fitStatus = 0;
+  if(!CheckFitStatus(fitResult)) fitStatus =-1;
+  else Set("FitStatus",fitStatus,0.);
   Set("FitChi2PerNDF",fitTotal->GetChisquare()/fitTotal->GetNDF(),0.0);
   Set("FitNDF",fitTotal->GetNDF(),0.0);
 
@@ -3358,10 +3623,17 @@ void AliAnalysisMuMuJpsiResult::FitPSIPSIPRIMECB2POL2POL3V2()
   if ( static_cast<int>(fitResult) /*||  static_cast<int>(fitResult->CovMatrixStatus())!=3*/ ) ProcessMinvFit(fitResult,fitTotal,bckInit,fitOption,13,5); // Further attempts to fit if the first one fails
   //___________
 
+   new TCanvas;
+  fHisto->DrawCopy();
+  return;
+
 
   delete bckInit; //Delete the initial background funtion
 
   //___________Set parameters and fit functions to store in the result
+  Int_t fitStatus = 0;
+  if(!CheckFitStatus(fitResult)) fitStatus =-1;
+  else Set("FitStatus",fitStatus,0.);
   Set("FitChi2PerNDF",fitTotal->GetChisquare()/fitTotal->GetNDF(),0.0);
   Set("FitNDF",fitTotal->GetNDF(),0.0);
 
@@ -3732,7 +4004,9 @@ void AliAnalysisMuMuJpsiResult::FitPSIPSIPRIMECB2VWGINDEPTAILS()
     std::cout << "//-------Cannot fit properly, try something else..." << std::endl;
   }
 
-
+  Int_t fitStatus = 0;
+  if(!CheckFitStatus(fitResult)) fitStatus =-1;
+  else Set("FitStatus",fitStatus,0.);
   Set("FitChi2PerNDF",fitTotal->GetChisquare()/fitTotal->GetNDF(),0.0);
   Set("FitNDF",fitTotal->GetNDF(),0.0);
 
@@ -3978,6 +4252,9 @@ void AliAnalysisMuMuJpsiResult::FitPSIPSIPRIMECB2POL2EXP()
   delete bckInit; //Delete the initial background funtion
 
   //___________Set parameters and fit functions to store in the result
+  Int_t fitStatus = 0;
+  if(!CheckFitStatus(fitResult)) fitStatus =-1;
+  else Set("FitStatus",fitStatus,0.);
   Set("FitChi2PerNDF",fitTotal->GetChisquare()/fitTotal->GetNDF(),0.0);
   Set("FitNDF",fitTotal->GetNDF(),0.0);
 
@@ -4252,6 +4529,9 @@ void AliAnalysisMuMuJpsiResult::FitPSIPSIPRIMECB2POL4EXP()
 
 
   //___________Set parameters and fit functions to store in the result
+  Int_t fitStatus = 0;
+  if(!CheckFitStatus(fitResult)) fitStatus =-1;
+  else Set("FitStatus",fitStatus,0.);
   Set("FitChi2PerNDF",fitTotal->GetChisquare()/fitTotal->GetNDF(),0.0);
   Set("FitNDF",fitTotal->GetNDF(),0.0);
 
@@ -4564,7 +4844,9 @@ void AliAnalysisMuMuJpsiResult::FitPSIPSIPRIMENA60NEWVWG()
   bck->SetParameter(2,fitTotal->GetParameter(2));
   bck->SetParameter(3,fitTotal->GetParameter(3));
 
-  Set("FitResult",static_cast<int>(fitResult)*1.0,0.0);
+  Int_t fitStatus = 0;
+  if(!CheckFitStatus(fitResult)) fitStatus =-1;
+  else Set("FitStatus",fitStatus,0.);
   Set("FitChi2PerNDF",fitTotal->GetChisquare()/fitTotal->GetNDF(),0.0);
   Set("FitNDF",fitTotal->GetNDF(),0.0);
 
@@ -4695,9 +4977,18 @@ void AliAnalysisMuMuJpsiResult::FitPSIPSIPRIMENA60NEWVWG2()
   Double_t alphaRight   = GetValue("aRJPsi");
 
   Double_t paramSPsiP   = GetValue("FSigmaPsiP");
-
+  Double_t meanJPsi     = GetValue("meanJPsi");
+  Double_t sigmaJPsi    = GetValue("sigmaJPsi");
   Double_t fitRangeLow  = GetValue(kFitRangeLow);
   Double_t fitRangeHigh = GetValue(kFitRangeHigh);
+
+  Double_t mVWG2_init    = IsValidValue(GetValue("mVWG2_init"))  ? GetValue("mVWG2_init")  : 2.;
+  Double_t s1VWG2_init   = IsValidValue(GetValue("s1VWG2_init")) ? GetValue("s1VWG2_init") : -0.5;
+  Double_t s2VWG2_init   = IsValidValue(GetValue("s2VWG2_init")) ? GetValue("s2VWG2_init") : -0.9;
+  Double_t gVWG2_init    = IsValidValue(GetValue("gVWG2_init"))  ? GetValue("gVWG2_init")  : 0.15;
+
+  Double_t rejRl    = IsValidValue(GetValue("rejRl"))  ? GetValue("rejRl")  : 2.2;
+  Double_t rejRh    = IsValidValue(GetValue("rejRh"))  ? GetValue("rejRh")  : 3.9;
 
   TString msg;
 
@@ -4710,6 +5001,11 @@ void AliAnalysisMuMuJpsiResult::FitPSIPSIPRIMENA60NEWVWG2()
 
   if (IsValidValue(alphaLeft)) msg  += TString::Format("aL=%e ",alphaLeft);
   if (IsValidValue(alphaRight)) msg += TString::Format("aR=%e ",alphaRight);
+
+  msg += TString::Format("mVWG2init=%.2f ",mVWG2_init);
+  msg += TString::Format("s1VWG2init=%.2f ",s1VWG2_init);
+  msg += TString::Format("s2VWG2init=%.2f ",s2VWG2_init);
+  msg += TString::Format("gVWG2init=%.2f ",gVWG2_init);
   //__________
 
   AliDebug(1,Form("Fit with jpsi + psiprime NA60 new and VWG %s",msg.Data()));
@@ -4741,9 +5037,9 @@ void AliAnalysisMuMuJpsiResult::FitPSIPSIPRIMENA60NEWVWG2()
 
   Int_t bin = fHisto->FindBin(0.26);
 
-  bckInit->SetParameters(fHisto->GetBinContent(bin),2.,0.5,0.3,0.);
+  bckInit->SetParameters(fHisto->GetBinContent(bin),mVWG2_init,s1VWG2_init,s2VWG2_init,gVWG2_init);
 
-  SetFitRejectRange(2.6,4.0);
+  SetFitRejectRange(rejRl,rejRh);
 
   TFitResultPtr fitResultInit = fHisto->Fit(bckInit,fitOptionBg);
 
@@ -4762,11 +5058,17 @@ void AliAnalysisMuMuJpsiResult::FitPSIPSIPRIMENA60NEWVWG2()
     fitTotal->SetParameter(i, bckInit->GetParameter(i));
   }
 
-  fitTotal->SetParameter(6, 3.1); // mean
-  fitTotal->SetParLimits(6, 3.0, 3.2);
+  if (IsValidValue(meanJPsi)) fitTotal->FixParameter(6,meanJPsi);
+  else{
+    fitTotal->SetParameter(6, 3.1); // mean
+    fitTotal->SetParLimits(6, 3.0, 3.2);
+  }
 
-  fitTotal->SetParameter(7, 0.08); // sigma
-  fitTotal->SetParLimits(7, 0.03, 0.2);
+  if (IsValidValue(sigmaJPsi)) fitTotal->FixParameter(7, sigmaJPsi);
+  else{
+    fitTotal->SetParameter(7, 0.08); // sigma
+    fitTotal->SetParLimits(7, 0.03, 0.2);
+  }
 
   fitTotal->FixParameter(8, p1Left);
   fitTotal->FixParameter(9, p2Left);
@@ -4837,12 +5139,14 @@ void AliAnalysisMuMuJpsiResult::FitPSIPSIPRIMENA60NEWVWG2()
   bck->SetParameter(3,fitTotal->GetParameter(3));
   bck->SetParameter(4,fitTotal->GetParameter(4));
 
-  Set("FitResult",static_cast<int>(fitResult)*1.0,0.0);
+  Int_t fitStatus = 0;
+  if(!CheckFitStatus(fitResult)) fitStatus =-1;
+  else Set("FitStatus",fitStatus,0.);
   Set("FitChi2PerNDF",fitTotal->GetChisquare()/fitTotal->GetNDF(),0.0);
   Set("FitNDF",fitTotal->GetNDF(),0.0);
 
-  Set("kVWG",fitTotal->GetParameter(0),fitTotal->GetParError(0));
-  Set("mVWG",fitTotal->GetParameter(1),fitTotal->GetParError(1));
+  Set("kVWG2",fitTotal->GetParameter(0),fitTotal->GetParError(0));
+  Set("mVWG2",fitTotal->GetParameter(1),fitTotal->GetParError(1));
   Set("s1VWG2",fitTotal->GetParameter(2),fitTotal->GetParError(2));
   Set("s2VWG2",fitTotal->GetParameter(3),fitTotal->GetParError(3));
   Set("gVWG2",fitTotal->GetParameter(4),fitTotal->GetParError(4));
@@ -4938,10 +5242,8 @@ void AliAnalysisMuMuJpsiResult::FitPSIPSIPRIMENA60NEWPOL1POL2()
 
   fHisto->GetListOfFunctions()->Delete();
 
-  TString histoName = fHisto->GetTitle();
-  TString sfitOption= histoName.Contains("Corrected") ? "0SERL" : "NO0SRLM";
-  const char* fitOption = sfitOption.Data();
-  const char* fitOptionBg = "SR";
+  const char* fitOption = "SERL";
+  const char* fitOptionBg = "SERLI";
 
   //__________ Get tails parameters, fitting range and SigmaPsiP
   Double_t p1Left       = GetValue("p1LJPsi");
@@ -5124,7 +5426,9 @@ void AliAnalysisMuMuJpsiResult::FitPSIPSIPRIMENA60NEWPOL1POL2()
   bck->SetParameter(3,fitTotal->GetParameter(3));
   bck->SetParameter(4,fitTotal->GetParameter(4));
 
-  Set("FitResult",static_cast<int>(fitResult)*1.0,0.0);
+  Int_t fitStatus = 0;
+  if(!CheckFitStatus(fitResult)) fitStatus =-1;
+  else Set("FitStatus",fitStatus,0.);
   Set("FitChi2PerNDF",fitTotal->GetChisquare()/fitTotal->GetNDF(),0.0);
   Set("FitNDF",fitTotal->GetNDF(),0.0);
 
@@ -5250,9 +5554,18 @@ void AliAnalysisMuMuJpsiResult::FitPSIPSIPRIMENA60NEWPOL2POL3()
   Double_t alphaRight = GetValue("aRJPsi");
 
   Double_t paramSPsiP = GetValue("FSigmaPsiP");
-
+  Double_t meanJPsi     = GetValue("meanJPsi");
+  Double_t sigmaJPsi    = GetValue("sigmaJPsi");
   Double_t fitRangeLow = GetValue(kFitRangeLow);
   Double_t fitRangeHigh = GetValue(kFitRangeHigh);
+  Double_t a_init    = IsValidValue(GetValue("a_init"))  ? GetValue("a_init")  : -130.;
+  Double_t b_init    = IsValidValue(GetValue("b_init"))  ? GetValue("b_init")  : 350.;
+  Double_t ap_init   = IsValidValue(GetValue("ap_init")) ? GetValue("ap_init") : -0.05;
+  Double_t bp_init   = IsValidValue(GetValue("bp_init")) ? GetValue("bp_init") : 0.5;
+  Double_t cp_init   = IsValidValue(GetValue("cp_init")) ? GetValue("cp_init") : -1.;
+
+  Double_t rejRl    = IsValidValue(GetValue("rejRl"))  ? GetValue("rejRl")  : 2.2;
+  Double_t rejRh    = IsValidValue(GetValue("rejRh"))  ? GetValue("rejRh")  : 3.9;
 
   TString msg;
 
@@ -5265,6 +5578,11 @@ void AliAnalysisMuMuJpsiResult::FitPSIPSIPRIMENA60NEWPOL2POL3()
 
   if (IsValidValue(alphaLeft)) msg += TString::Format("aL=%e ",alphaLeft);
   if (IsValidValue(alphaRight)) msg += TString::Format("aR=%e ",alphaRight);
+  msg += TString::Format("ainit=%.2f",a_init);
+  msg += TString::Format("binit=%.2f",b_init);
+  msg += TString::Format("a'init=%.2f",ap_init);
+  msg += TString::Format("b'init=%.2f",bp_init);
+  msg += TString::Format("c'init=%.2f",cp_init);
   //__________
 
   AliDebug(1,Form("Fit with jpsi + psiprime NA60 new and pol2/pol3 %s",msg.Data()));
@@ -5301,7 +5619,7 @@ void AliAnalysisMuMuJpsiResult::FitPSIPSIPRIMENA60NEWPOL2POL3()
 
   Int_t bin = fHisto->FindBin(0.7);
 
-  bckInit->SetParameters(0.,0.,bin,0.,0.,1.,1.);
+  bckInit->SetParameters(a_init,b_init,bin,ap_init,bp_init,cp_init);
   bckInit->FixParameter(6.,1);
 
   // bckInit->SetParLimits(0.,-30,30);
@@ -5313,7 +5631,7 @@ void AliAnalysisMuMuJpsiResult::FitPSIPSIPRIMENA60NEWPOL2POL3()
 
 //  bckInit->SetParLimits(0,fHisto->GetBinContent(bin)*0.5,fHisto->GetBinContent(bin)*10);
 
-  SetFitRejectRange(2.2,3.5);
+  SetFitRejectRange(rejRl,rejRh);
 
   TFitResultPtr fitResultInit = fHisto->Fit(bckInit,fitOptionBg);
 
@@ -5333,11 +5651,17 @@ void AliAnalysisMuMuJpsiResult::FitPSIPSIPRIMENA60NEWPOL2POL3()
     if(i==6)fitTotal->FixParameter(i, 1.);
   }
 
-  fitTotal->SetParameter(8, 3.1); // mean
-  fitTotal->SetParLimits(8, 2.9, 3.2);
+  if (IsValidValue(meanJPsi)) fitTotal->FixParameter(8,meanJPsi);
+  else{
+    fitTotal->SetParameter(8, 3.1); // mean
+    fitTotal->SetParLimits(8, 3.0, 3.2);
+  }
 
-  fitTotal->SetParameter(9, 0.08); // sigma
-  fitTotal->SetParLimits(9, 0.03, 0.2);
+  if (IsValidValue(sigmaJPsi)) fitTotal->FixParameter(9, sigmaJPsi);
+  else{
+    fitTotal->SetParameter(9, 0.08); // sigma
+    fitTotal->SetParLimits(9, 0.03, 0.2);
+  }
 
   fitTotal->FixParameter(10, p1Left);
   fitTotal->FixParameter(11, p2Left);
@@ -5407,7 +5731,9 @@ void AliAnalysisMuMuJpsiResult::FitPSIPSIPRIMENA60NEWPOL2POL3()
   bck->SetParameter(5,fitTotal->GetParameter(5));
   bck->SetParameter(6,fitTotal->GetParameter(6));
 
-  Set("FitResult",static_cast<int>(fitResult)*1.0,0.0);
+  Int_t fitStatus = 0;
+  if(!CheckFitStatus(fitResult)) fitStatus =-1;
+  else Set("FitStatus",fitStatus,0.);
   Set("FitChi2PerNDF",fitTotal->GetChisquare()/fitTotal->GetNDF(),0.0);
   Set("FitNDF",fitTotal->GetNDF(),0.0);
 
@@ -5416,7 +5742,7 @@ void AliAnalysisMuMuJpsiResult::FitPSIPSIPRIMENA60NEWPOL2POL3()
   Set("c",fitTotal->GetParameter(2),fitTotal->GetParError(2));
   Set("a'",fitTotal->GetParameter(3),fitTotal->GetParError(3));
   Set("b'",fitTotal->GetParameter(4),fitTotal->GetParError(4));
-  Set("c''",fitTotal->GetParameter(5),fitTotal->GetParError(5));
+  Set("c'",fitTotal->GetParameter(5),fitTotal->GetParError(5));
   Set("d'",fitTotal->GetParameter(6),fitTotal->GetParError(6));
 
   Set("kJPsi",fitTotal->GetParameter(7),fitTotal->GetParError(7));
@@ -5689,7 +6015,9 @@ void AliAnalysisMuMuJpsiResult::FitPSIPSIPRIMENA60NEWPOL2EXP()
   }
 
 
-  Set("FitResult",static_cast<int>(fitResult)*1.0,0.0);
+  Int_t fitStatus = 0;
+  if(!CheckFitStatus(fitResult)) fitStatus =-1;
+  else Set("FitStatus",fitStatus,0.);
   Set("FitChi2PerNDF",fitTotal->GetChisquare()/fitTotal->GetNDF(),0.0);
   Set("FitNDF",fitTotal->GetNDF(),0.0);
 
@@ -5972,7 +6300,9 @@ void AliAnalysisMuMuJpsiResult::FitPSIPSIPRIMENA60NEWPOL4EXP()
   }
 
 
-  Set("FitResult",static_cast<int>(fitResult)*1.0,0.0);
+  Int_t fitStatus = 0;
+  if(!CheckFitStatus(fitResult)) fitStatus =-1;
+  else Set("FitStatus",fitStatus,0.);
   Set("FitChi2PerNDF",fitTotal->GetChisquare()/fitTotal->GetNDF(),0.0);
   Set("FitNDF",fitTotal->GetNDF(),0.0);
 
@@ -8227,6 +8557,613 @@ void AliAnalysisMuMuJpsiResult::FitMPTPSIPSIPRIMECB2VWG_BKGMPTPOL4()
 }
 
 //_____________________________________________________________________________
+void AliAnalysisMuMuJpsiResult::FitMV2PSIPSIPRIMECB2VWG_BKGMV2POL2()
+{
+  //Fit mean dimuon mean pt to get Jpsi mean pt using the CB2 signal parameters, VWG for the Bkg, Jpsi mpt = cte and Bkg mpt = pol4
+  //Fit mean dimuon mean pt to get Jpsi mean pt using the CB2 signal parameters, VWG for the Bkg, Jpsi mpt = cte and Bkg mpt = pol2
+
+  const char* fitOption = "SERI"; //We can add NO to avoid plotting
+  const char* fitOptionBg = "SERI"; //We can add NO to avoid plotting
+
+  fHisto->GetListOfFunctions()->Delete();
+
+  Double_t alphaLow = GetValue("alJPsi");
+  Double_t nLow = GetValue("nlJPsi");
+  Double_t alphaUp = GetValue("auJPsi");
+  Double_t nUp = GetValue("nuJPsi");
+
+  Double_t kVWG = GetValue("kVWG");
+  Double_t mVWG = GetValue("mVWG");
+  Double_t sVWG1 = GetValue("sVWG1");
+  Double_t sVWG2 = GetValue("sVWG2");
+  Double_t kJPsi = GetValue("kJPsi");
+  Double_t kPsiP = GetValue("kPsiP");
+  Double_t mJPsi = GetValue("mJPsi");
+  Double_t sJPsi = GetValue("sJPsi");
+  Double_t NofJPsi = GetValue("NofJPsi");
+  Double_t ErrStatNofJPsi = GetErrorStat("NofJPsi");
+
+  Double_t fitRangeLow = GetValue(kFitRangeLow);
+  Double_t fitRangeHigh = GetValue(kFitRangeHigh);
+
+  TProfile* p(0x0);
+  if ( fHisto->IsA() == TProfile::Class() ) p = static_cast<TProfile*>(fHisto);
+  else
+  {
+    AliError("Mean v2 histo has to be a TProfile");
+    return;
+  }
+
+  TProfile::Approximate();
+
+
+  TF1* bck = new TF1("bck",this,&AliAnalysisMuMuJpsiResult::FitFunctionBackgroundPol2,fitRangeLow,fitRangeHigh,3,"AliAnalysisMuMuJpsiResult","FitFunctionBackgroundPol2");
+
+  // bck->SetParameters(.3,-0.5,0.5,1.5,-0.01);
+  // bck->SetParameters(-5.,-90.,90.,-30,3.);
+  // bck->SetParameters(4.,-6.,3.);
+  bck->SetParameters(.3,-.17,.02);
+
+  // bck->SetParLimits(0, -1.,1.0);
+ // bck->SetParLimits(0, 1.,8.0);
+  // SetFitRejectRange(2.3,4.0);
+  SetFitRejectRange(2.5,3.5);
+  // SetFitRejectRange(2.6,4.0);
+
+  TFitResultPtr fitResultInit = p->Fit(bck,fitOptionBg,"");
+  std::cout << "FitResultmBkgInit=" << static_cast<int>(fitResultInit) << std::endl;
+
+    //___________ Further attempts to fit bkg if the first one fails
+  if ( static_cast<int>(fitResultInit) ) ProcessmBkgFit(fitResultInit,bck,"FitFunctionBackgroundPol2",fitOptionBg);
+  //___________
+
+  SetFitRejectRange();
+
+  TF1* fitMeanv2 = new TF1("fitMeanv2",this,&AliAnalysisMuMuJpsiResult::FitFunctionMeanPtS2CB2VWGPOL2,fitRangeLow,fitRangeHigh,17,"AliAnalysisMuMuJpsiResult","FitFunctionMeanPtS2CB2VWGPOL2");
+
+  fitMeanv2->SetParNames("kVWG","mVWG","sVWG1","sVWG2","kJPsi","mJPsi","sJPsi","alJPsi","nlJPsi","auJPsi","nuJPsi");
+  fitMeanv2->SetParName(11,"kPsiP");
+  fitMeanv2->SetParName(12,"<v2>JPsi");
+  fitMeanv2->SetParName(13,"<v2>BG0");
+  fitMeanv2->SetParName(14,"<v2>BG1");
+  fitMeanv2->SetParName(15,"<v2>BG2");
+  fitMeanv2->SetParName(16,"<v2>PsiP");
+
+  fitMeanv2->FixParameter(0,kVWG);
+  fitMeanv2->FixParameter(1,mVWG);
+  fitMeanv2->FixParameter(2,sVWG1);
+  fitMeanv2->FixParameter(3,sVWG2);
+  fitMeanv2->FixParameter(4,kJPsi);
+  fitMeanv2->FixParameter(5,mJPsi);
+  fitMeanv2->FixParameter(6,sJPsi);
+  fitMeanv2->FixParameter(7,alphaLow);
+  fitMeanv2->FixParameter(8,nLow);
+  fitMeanv2->FixParameter(9,alphaUp);
+  fitMeanv2->FixParameter(10,nUp);
+  fitMeanv2->FixParameter(11,kPsiP);
+
+  fitMeanv2->SetParameter(12, 0.01);
+  fitMeanv2->SetParLimits(12, -1.,1.);
+
+
+  for ( Int_t i = 0; i < 3; ++i )
+  {
+    fitMeanv2->SetParameter(i + 13, bck->GetParameter(i));
+  }
+
+  fitMeanv2->SetParameter(16, 0.01);
+  fitMeanv2->SetParLimits(16, -1.,1.);
+
+  TFitResultPtr fitResult = p->Fit(fitMeanv2,fitOption,"");
+
+  std::cout << "FitResultt=" << static_cast<int>(fitResult) << std::endl;
+
+  if ( static_cast<int>(fitResult) )
+  {
+    for ( Int_t i = 0; i < 3; ++i )
+    {
+      fitMeanv2->SetParameter(i + 13, bck->GetParameter(i)*0.9);
+    }
+    fitResult = p->Fit(fitMeanv2,fitOption,"");
+
+    std::cout << "FitResultt=" << static_cast<int>(fitResult) << std::endl;
+  }
+  // else if ( fitMeanv2->GetParameter(16) <= fitMeanv2->GetParError(16) || fitMeanv2->GetParError(16) >= 0.75*fitMeanv2->GetParameter(16) )
+  // {
+  //   fitMeanv2->FixParameter(16, 0.);
+  //   // for ( Int_t i = 0; i < 3; ++i )
+  //   // {
+  //   //   fitMeanv2->SetParameter(i + 13, bck->GetParameter(i)*0.6);
+  //   // }
+  //   fitResult = p->Fit(fitMeanv2,fitOption,"");
+
+  //   std::cout << "FitResultt=" << static_cast<int>(fitResult) << std::endl;
+  // }
+
+  std::cout << "FitResultt=" << static_cast<int>(fitResult) << std::endl;
+  std::cout << "CovMatrixStatus = " << fitResult->CovMatrixStatus() << std::endl;
+
+    //___________ Further attempts to fit if the first one fails
+  if ( static_cast<int>(fitResult) ||  static_cast<int>(fitResult->CovMatrixStatus())!=3 ) ProcessMv2Fit(fitResult,fitMeanv2,bck,fitOption,11,3); // Int_t iParKPsip, Int_t iLastParBkg);
+  //___________
+
+  //___________Set parameters and fit functions to store in the result
+  Int_t fitStatus = 0;
+  if(!CheckFitStatus(fitResult)) fitStatus =-1;
+  else Set("FitStatus",fitStatus,0.);
+  Set("FitChi2PerNDF",fitMeanv2->GetChisquare()/fitMeanv2->GetNDF(),0.0);
+  Set("FitNDF",fitMeanv2->GetNDF(),0.0);
+  Set("mJPsi",fitMeanv2->GetParameter(5),fitMeanv2->GetParError(5));
+  Set("sJPsi",fitMeanv2->GetParameter(6),fitMeanv2->GetParError(6));
+  // Set("<v2>JPsi",fitMeanv2->GetParameter(12),fitMeanv2->GetParError(12));
+  // Set("mv2PsiP",fitMeanv2->GetParameter(16),fitMeanv2->GetParError(16));
+
+  for ( Int_t i = 0; i < 3; ++i )
+  {
+    bck->SetParameter(i, fitMeanv2->GetParameter(i+13));
+  }
+  AttachFunctionsToHisto(0x0,0x0,bck,fitMeanv2,fitRangeLow,fitRangeHigh);//
+
+  Set("NofJPsi",NofJPsi,ErrStatNofJPsi);
+  Set("<v2>JPsi",fitMeanv2->GetParameter(12),fitMeanv2->GetParError(12));
+  Set("<v2>PsiP",fitMeanv2->GetParameter(16),fitMeanv2->GetParError(16));
+
+}
+//_____________________________________________________________________________
+void AliAnalysisMuMuJpsiResult::FitMV2PSIPSIPRIMECB2VWG_BKGMV2POL2EXP()
+{
+  const char* fitOption = "SERI"; //We can add NO to avoid plotting
+  const char* fitOptionBg = "SERI"; //We can add NO to avoid plotting
+
+  //Fit mean dimuon mean pt to get Jpsi mean pt using the CB2 signal parameters, VWG for the Bkg, Jpsi mpt = cte and Bkg mpt = pol2
+  fHisto->GetListOfFunctions()->Delete();
+
+  Double_t alphaLow = GetValue("alJPsi");
+  Double_t nLow = GetValue("nlJPsi");
+  Double_t alphaUp = GetValue("auJPsi");
+  Double_t nUp = GetValue("nuJPsi");
+
+  Double_t kVWG = GetValue("kVWG");
+  Double_t mVWG = GetValue("mVWG");
+  Double_t sVWG1 = GetValue("sVWG1");
+  Double_t sVWG2 = GetValue("sVWG2");
+  Double_t kJPsi = GetValue("kJPsi");
+  Double_t kPsiP = GetValue("kPsiP");
+  Double_t mJPsi = GetValue("mJPsi");
+  Double_t sJPsi = GetValue("sJPsi");
+  Double_t NofJPsi = GetValue("NofJPsi");
+  Double_t ErrStatNofJPsi = GetErrorStat("NofJPsi");
+
+  Double_t fitRangeLow = GetValue(kFitRangeLow);
+  Double_t fitRangeHigh = GetValue(kFitRangeHigh);
+
+  TProfile* p(0x0);
+  if ( fHisto->IsA() == TProfile::Class() ) p = static_cast<TProfile*>(fHisto);
+  else
+  {
+    AliError("Mean v2 histo has to be a TProfile");
+    return;
+  }
+
+  TProfile::Approximate();
+
+  TF1* bck = new TF1("bck",this,&AliAnalysisMuMuJpsiResult::FitFunctionBackgroundPol2Exp,fitRangeLow,fitRangeHigh,4,"AliAnalysisMuMuJpsiResult","FitFunctionBackgroundPol2Exp");
+
+  bck->SetParameters(.1,1.,0.4,-0.0);
+  // bck->SetParameters(.1,1.,0.);
+
+  bck->SetParLimits(0, -2.,2.);
+
+  // SetFitRejectRange(2.7,4.); //2.6,3.4
+  SetFitRejectRange(2.5,3.5);
+
+  //  TF1* bck = new TF1("bck",this,&AliAnalysisMuMuJpsiResult::FitFunctionBackgroundPol2Exp,fitRangeLow,fitRangeHigh,4,"AliAnalysisMuMuJpsiResult","FitFunctionBackgroundPol2Exp");
+  //
+  //  bck->SetParameters(1,0,0,0);
+
+
+  TFitResultPtr fitResultInit = p->Fit(bck,fitOptionBg,"",fitRangeLow,fitRangeHigh);
+
+  std::cout << "FitResultmBkgInit=" << static_cast<int>(fitResultInit) << std::endl;
+
+    //___________ Further attempts to fit bkg if the first one fails
+  if ( static_cast<int>(fitResultInit) ) ProcessmBkgFit(fitResultInit,bck,"FitFunctionBackgroundPol2Exp",fitOptionBg);
+  //___________
+
+  SetFitRejectRange();
+  std::cout << "range : " << fitRangeLow << " - " << fitRangeHigh << std::endl;
+  TF1* fitMeanv2 = new TF1("fitMeanv2",this,&AliAnalysisMuMuJpsiResult::FitFunctionMeanPtS2CB2VWGPOL2EXP,fitRangeLow,fitRangeHigh,18,"AliAnalysisMuMuJpsiResult","FitFunctionMeanPtS2CB2VWGPOL2EXP");
+
+  fitMeanv2->SetParNames("kVWG","mVWG","sVWG1","sVWG2","kJPsi","mJPsi","sJPsi","alJPsi","nlJPsi","auJPsi","nuJPsi");
+  //                        0      1      2       3       4       5       6       7         8        9        10
+  fitMeanv2->SetParName(11,"kPsiP");
+  fitMeanv2->SetParName(12,"<v2>JPsi");
+  fitMeanv2->SetParName(13,"<v2>BG0");
+  fitMeanv2->SetParName(14,"<v2>BG1");
+  fitMeanv2->SetParName(15,"<v2>BG2");
+  fitMeanv2->SetParName(16,"<v2>BGEXP");
+  fitMeanv2->SetParName(17,"<v2>PsiP");
+
+  fitMeanv2->FixParameter(0,kVWG);
+  fitMeanv2->FixParameter(1,mVWG);
+  fitMeanv2->FixParameter(2,sVWG1);
+  fitMeanv2->FixParameter(3,sVWG2);
+  fitMeanv2->FixParameter(4,kJPsi);
+  fitMeanv2->FixParameter(5,mJPsi);
+  fitMeanv2->FixParameter(6,sJPsi);
+  fitMeanv2->FixParameter(7,alphaLow);
+  fitMeanv2->FixParameter(8,nLow);
+  fitMeanv2->FixParameter(9,alphaUp);
+  fitMeanv2->FixParameter(10,nUp);
+  fitMeanv2->FixParameter(11,kPsiP);
+
+  fitMeanv2->SetParameter(12, 0.01);
+  fitMeanv2->SetParLimits(12, -1.0,1.);
+
+
+  for ( Int_t i = 0; i < 4; ++i )
+  {
+    fitMeanv2->SetParameter(i + 13, bck->GetParameter(i));
+  }
+
+  //  fitMeanv2->SetParameter(13, 3.);
+  //  fitMeanv2->SetParLimits(13, 0.5,10.);
+  //
+  //  fitMeanv2->SetParameter(14, 0.2);
+  //  //  fitMeanv2->SetParLimits(14, 0.1,0.2);
+  //
+  //  fitMeanv2->SetParameter(15, 0.1);
+  //  //  fitMeanv2->SetParLimits(15, 0.,1.);
+
+  fitMeanv2->SetParameter(17, 0.01);
+  // Double_t psipPtLim = 0.1;
+  fitMeanv2->SetParLimits(17, -1.,1.);
+
+  TFitResultPtr fitResult = p->Fit(fitMeanv2,fitOption,"");
+
+  std::cout << "FitResultt=" << static_cast<int>(fitResult) << std::endl;
+  if ( static_cast<int>(fitResult) )
+  {
+    for ( Int_t i = 0; i < 4; ++i )
+    {
+      fitMeanv2->SetParameter(i + 13, bck->GetParameter(i)*0.9);
+    }
+    fitResult = p->Fit(fitMeanv2,fitOption,"");
+
+    std::cout << "FitResultt=" << static_cast<int>(fitResult) << std::endl;
+  }
+
+  std::cout << "FitResultt=" << static_cast<int>(fitResult) << std::endl;
+  std::cout << "CovMatrixStatus = " << fitResult->CovMatrixStatus() << std::endl;
+
+    //___________ Further attempts to fit if the first one fails
+  if ( static_cast<int>(fitResult) ||  static_cast<int>(fitResult->CovMatrixStatus())!=3 ) ProcessMv2Fit(fitResult,fitMeanv2,bck,fitOption,11,3); // Int_t iParKPsip, Int_t iLastParBkg);
+  //___________
+
+  //___________Set parameters and fit functions to store in the result
+  Int_t fitStatus = 0;
+  if(!CheckFitStatus(fitResult)) fitStatus =-1;
+  else Set("FitStatus",fitStatus,0.);
+  Set("FitChi2PerNDF",fitMeanv2->GetChisquare()/fitMeanv2->GetNDF(),0.0);
+  Set("FitNDF",fitMeanv2->GetNDF(),0.0);
+  Set("mJPsi",fitMeanv2->GetParameter(5),fitMeanv2->GetParError(5));
+  Set("sJPsi",fitMeanv2->GetParameter(6),fitMeanv2->GetParError(6));
+  // Set("<v2>JPsi",fitMeanv2->GetParameter(12),fitMeanv2->GetParError(12));
+  // Set("mv2PsiP",fitMeanv2->GetParameter(16),fitMeanv2->GetParError(16));
+
+  //  TF1* bck = new TF1("bck",this,&AliAnalysisMuMuJpsiResult::FitFunctionBackgroundPol2,fitRangeLow,fitRangeHigh,3,"AliAnalysisMuMuJpsiResult","FitFunctionBackgroundPol2");
+
+  bck->SetParameters(fitMeanv2->GetParameter(13),fitMeanv2->GetParameter(14),fitMeanv2->GetParameter(15),fitMeanv2->GetParameter(16));
+
+  AttachFunctionsToHisto(0x0,bck,fitMeanv2,fitRangeLow,fitRangeHigh);//
+
+  Set("NofJPsi",NofJPsi,ErrStatNofJPsi);
+  Set("<v2>JPsi",fitMeanv2->GetParameter(12),fitMeanv2->GetParError(12));
+  Set("<v2>PsiP",fitMeanv2->GetParameter(16),fitMeanv2->GetParError(16));
+}
+
+
+//_____________________________________________________________________________
+void AliAnalysisMuMuJpsiResult::FitMV2PSIPSIPRIMECB2VWG_BKGMV2POL3()
+{
+
+  const char* fitOption = "SERL"; //We can add NO to avoid plotting
+  const char* fitOptionBg = "SER"; //We can add NO to avoid plotting
+  //Fit mean dimuon mean v2 to get Jpsi mean v2 using the CB2 signal parameters, VWG for the Bkg, Jpsi mv2 = cte and Bkg mv2 = pol2
+  fHisto->GetListOfFunctions()->Delete();
+
+  Double_t alphaLow = GetValue("alJPsi");
+  Double_t nLow = GetValue("nlJPsi");
+  Double_t alphaUp = GetValue("auJPsi");
+  Double_t nUp = GetValue("nuJPsi");
+
+  Double_t kVWG = GetValue("kVWG");
+  Double_t mVWG = GetValue("mVWG");
+  Double_t sVWG1 = GetValue("sVWG1");
+  Double_t sVWG2 = GetValue("sVWG2");
+  Double_t kJPsi = GetValue("kJPsi");
+  Double_t kPsiP = GetValue("kPsiP");
+  Double_t mJPsi = GetValue("mJPsi");
+  Double_t sJPsi = GetValue("sJPsi");
+  Double_t NofJPsi = GetValue("NofJPsi");
+  Double_t ErrStatNofJPsi = GetErrorStat("NofJPsi");
+
+  Double_t fitRangeLow = GetValue(kFitRangeLow);
+  Double_t fitRangeHigh = GetValue(kFitRangeHigh);
+
+  TProfile* p(0x0);
+  if ( fHisto->IsA() == TProfile::Class() ) p = static_cast<TProfile*>(fHisto);
+  else
+  {
+    AliError("Mean V2 histo has to be a TProfile");
+    return;
+  }
+
+  TProfile::Approximate();
+
+    TF1* bck = new TF1("bck",this,&AliAnalysisMuMuJpsiResult::FitFunctionBackgroundPol3,fitRangeLow,fitRangeHigh,4,"AliAnalysisMuMuJpsiResult","FitFunctionBackgroundPol3");
+
+  bck->SetParameters(3.,1.,0.,0.05);
+
+  bck->SetParLimits(0, 0.,5.0);
+  // bck->SetParLimits(0, 1.,8.0);
+
+  SetFitRejectRange(2.6,4.0);
+  // SetFitRejectRange(2.7,4.0);
+
+
+  TFitResultPtr fitResultInit = p->Fit(bck,fitOptionBg,"",fitRangeLow,fitRangeHigh);
+  std::cout << "FitResultmBkgInit=" << static_cast<int>(fitResultInit) << std::endl;
+
+    //___________ Further attempts to fit bkg if the first one fails
+  if ( static_cast<int>(fitResultInit) ) ProcessmBkgFit(fitResultInit,bck,"FitFunctionBackgroundPol2",fitOptionBg);
+  //___________
+
+  SetFitRejectRange();
+
+
+  TF1* fitMeanv2 = new TF1("fitMeanv2",this,&AliAnalysisMuMuJpsiResult::FitFunctionMeanPtS2CB2VWGPOL3,fitRangeLow,fitRangeHigh,18,"AliAnalysisMuMuJpsiResult","FitFunctionMeanPtS2CB2VWGPOL3");
+
+  fitMeanv2->SetParNames("kVWG","mVWG","sVWG1","sVWG2","kJPsi","mJPsi","sJPsi","alJPsi","nlJPsi","auJPsi","nuJPsi");
+  fitMeanv2->SetParName(11,"kPsiP");
+  fitMeanv2->SetParName(12,"<v2>JPsi");
+  fitMeanv2->SetParName(13,"<v2>BG0");
+  fitMeanv2->SetParName(14,"<v2>BG1");
+  fitMeanv2->SetParName(15,"<v2>BG2");
+  fitMeanv2->SetParName(16,"<v2>BG3");
+  fitMeanv2->SetParName(17,"<v2>PsiP");
+
+  fitMeanv2->FixParameter(0,kVWG);
+  fitMeanv2->FixParameter(1,mVWG);
+  fitMeanv2->FixParameter(2,sVWG1);
+  fitMeanv2->FixParameter(3,sVWG2);
+  fitMeanv2->FixParameter(4,kJPsi);
+  fitMeanv2->FixParameter(5,mJPsi);
+  fitMeanv2->FixParameter(6,sJPsi);
+  fitMeanv2->FixParameter(7,alphaLow);
+  fitMeanv2->FixParameter(8,nLow);
+  fitMeanv2->FixParameter(9,alphaUp);
+  fitMeanv2->FixParameter(10,nUp);
+  fitMeanv2->FixParameter(11,kPsiP);
+
+  fitMeanv2->SetParameter(12, 0.01);
+  fitMeanv2->SetParLimits(12, -1.0,1.);
+
+  for ( Int_t i = 0; i < 4; ++i )
+  {
+    fitMeanv2->SetParameter(i + 13, bck->GetParameter(i));
+  }
+    fitMeanv2->SetParameter(17, 0.01);
+  fitMeanv2->SetParLimits(17, -1.,1.);
+
+  TFitResultPtr fitResult = p->Fit(fitMeanv2,fitOption,"");
+
+  std::cout << "FitResultt=" << static_cast<int>(fitResult) << std::endl;
+
+  if ( static_cast<int>(fitResult) )
+  {
+    for ( Int_t i = 0; i < 4; ++i )
+    {
+      fitMeanv2->SetParameter(i + 13, bck->GetParameter(i)*0.9);
+    }
+    fitResult = p->Fit(fitMeanv2,fitOption,"");
+
+    std::cout << "FitResultt=" << static_cast<int>(fitResult) << std::endl;
+  }
+  if ( static_cast<int>(fitResult) && (fitMeanv2->GetParameter(17) <= fitMeanv2->GetParError(17) || fitMeanv2->GetParError(17) >= 0.75*fitMeanv2->GetParameter(17)) )
+  {
+    fitMeanv2->FixParameter(17, 0.);
+    for ( Int_t i = 0; i < 4; ++i )
+    {
+      fitMeanv2->SetParameter(i + 13, bck->GetParameter(i)*0.6);
+    }
+    fitResult = p->Fit(fitMeanv2,fitOption,"");
+
+    std::cout << "FitResultt=" << static_cast<int>(fitResult) << std::endl;
+  }
+
+  std::cout << "FitResultt=" << static_cast<int>(fitResult) << std::endl;
+  std::cout << "CovMatrixStatus = " << fitResult->CovMatrixStatus() << std::endl;
+
+    //___________ Further attempts to fit if the first one fails
+  if ( static_cast<int>(fitResult) ||  static_cast<int>(fitResult->CovMatrixStatus())!=3 ) ProcessMv2Fit(fitResult,fitMeanv2,bck,fitOption,11,3); // Int_t iParKPsip, Int_t iLastParBkg);
+  //___________
+
+  //___________Set parameters and fit functions to store in the result
+  Int_t fitStatus = 0;
+  if(!CheckFitStatus(fitResult)) fitStatus =-1;
+  else Set("FitStatus",fitStatus,0.);
+  Set("FitChi2PerNDF",fitMeanv2->GetChisquare()/fitMeanv2->GetNDF(),0.0);
+  Set("FitNDF",fitMeanv2->GetNDF(),0.0);
+  Set("mJPsi",fitMeanv2->GetParameter(5),fitMeanv2->GetParError(5));
+  Set("sJPsi",fitMeanv2->GetParameter(6),fitMeanv2->GetParError(6));
+  // Set("<v2>JPsi",fitMeanv2->GetParameter(12),fitMeanv2->GetParError(12));
+  // Set("mv2PsiP",fitMeanv2->GetParameter(16),fitMeanv2->GetParError(16));
+
+  //  TF1* bck = new TF1("bck",this,&AliAnalysisMuMuJpsiResult::FitFunctionBackgroundPol2,fitRangeLow,fitRangeHigh,3,"AliAnalysisMuMuJpsiResult","FitFunctionBackgroundPol2");
+
+  bck->SetParameters(fitMeanv2->GetParameter(13),fitMeanv2->GetParameter(14),fitMeanv2->GetParameter(15),fitMeanv2->GetParameter(16));
+
+  AttachFunctionsToHisto(0x0,0x0,bck,fitMeanv2,fitRangeLow,fitRangeHigh);//
+
+  Set("NofJPsi",NofJPsi,ErrStatNofJPsi);
+  Set("<v2>JPsi",fitMeanv2->GetParameter(12),fitMeanv2->GetParError(12));
+  Set("<v2>PsiP",fitMeanv2->GetParameter(17),fitMeanv2->GetParError(17));
+
+}
+//_____________________________________________________________________________
+void AliAnalysisMuMuJpsiResult::FitMV2PSIPSIPRIMECB2VWG_BKGMV2POL4()
+{
+  //Fit mean dimuon mean pt to get Jpsi mean pt using the CB2 signal parameters, VWG for the Bkg, Jpsi mpt = cte and Bkg mpt = pol4
+  //Fit mean dimuon mean pt to get Jpsi mean pt using the CB2 signal parameters, VWG for the Bkg, Jpsi mpt = cte and Bkg mpt = pol2
+
+  const char* fitOption = "SERL"; //We can add NO to avoid plotting
+  const char* fitOptionBg = "SER"; //We can add NO to avoid plotting
+
+  fHisto->GetListOfFunctions()->Delete();
+
+  Double_t alphaLow = GetValue("alJPsi");
+  Double_t nLow = GetValue("nlJPsi");
+  Double_t alphaUp = GetValue("auJPsi");
+  Double_t nUp = GetValue("nuJPsi");
+
+  Double_t kVWG = GetValue("kVWG");
+  Double_t mVWG = GetValue("mVWG");
+  Double_t sVWG1 = GetValue("sVWG1");
+  Double_t sVWG2 = GetValue("sVWG2");
+  Double_t kJPsi = GetValue("kJPsi");
+  Double_t kPsiP = GetValue("kPsiP");
+  Double_t mJPsi = GetValue("mJPsi");
+  Double_t sJPsi = GetValue("sJPsi");
+  Double_t NofJPsi = GetValue("NofJPsi");
+  Double_t ErrStatNofJPsi = GetErrorStat("NofJPsi");
+
+  Double_t fitRangeLow = GetValue(kFitRangeLow);
+  Double_t fitRangeHigh = GetValue(kFitRangeHigh);
+
+  TProfile* p(0x0);
+  if ( fHisto->IsA() == TProfile::Class() ) p = static_cast<TProfile*>(fHisto);
+  else
+  {
+    AliError("Mean v2 histo has to be a TProfile");
+    return;
+  }
+
+  TProfile::Approximate();
+
+  TF1* bck = new TF1("bck",this,&AliAnalysisMuMuJpsiResult::FitFunctionBackgroundPol4,fitRangeLow,fitRangeHigh,5,"AliAnalysisMuMuJpsiResult","FitFunctionBackgroundPol4");
+
+  // bck->SetParameters(.3,-0.5,0.5,1.5,-0.01);
+  // bck->SetParameters(-5.,-90.,90.,-30,3.);
+  bck->SetParameters(4.,-6.,3.,-.7,.02);
+  // bck->SetParLimits(0, -1.,1.0);
+ // bck->SetParLimits(0, 1.,8.0);
+  // SetFitRejectRange(2.3,4.0);
+  SetFitRejectRange(2.6,3.4);
+  // SetFitRejectRange(2.6,4.0);
+
+  TFitResultPtr fitResultInit = p->Fit(bck,fitOptionBg,"");
+  std::cout << "FitResultmBkgInit=" << static_cast<int>(fitResultInit) << std::endl;
+
+    //___________ Further attempts to fit bkg if the first one fails
+  if ( static_cast<int>(fitResultInit) ) ProcessmBkgFit(fitResultInit,bck,"FitFunctionBackgroundPol4",fitOptionBg);
+  //___________
+
+  SetFitRejectRange();
+
+  TF1* fitMeanv2 = new TF1("fitMeanv2",this,&AliAnalysisMuMuJpsiResult::FitFunctionMeanPtS2CB2VWGPOL4,fitRangeLow,fitRangeHigh,19,"AliAnalysisMuMuJpsiResult","FitFunctionMeanPtS2CB2VWGPOL4");
+
+  fitMeanv2->SetParNames("kVWG","mVWG","sVWG1","sVWG2","kJPsi","mJPsi","sJPsi","alJPsi","nlJPsi","auJPsi","nuJPsi");
+  fitMeanv2->SetParName(11,"kPsiP");
+  fitMeanv2->SetParName(12,"<v2>JPsi");
+  fitMeanv2->SetParName(13,"<v2>BG0");
+  fitMeanv2->SetParName(14,"<v2>BG1");
+  fitMeanv2->SetParName(15,"<v2>BG2");
+  fitMeanv2->SetParName(16,"<v2>BG3");
+  fitMeanv2->SetParName(17,"<v2>BG4");
+  fitMeanv2->SetParName(18,"<v2>PsiP");
+
+  fitMeanv2->FixParameter(0,kVWG);
+  fitMeanv2->FixParameter(1,mVWG);
+  fitMeanv2->FixParameter(2,sVWG1);
+  fitMeanv2->FixParameter(3,sVWG2);
+  fitMeanv2->FixParameter(4,kJPsi);
+  fitMeanv2->FixParameter(5,mJPsi);
+  fitMeanv2->FixParameter(6,sJPsi);
+  fitMeanv2->FixParameter(7,alphaLow);
+  fitMeanv2->FixParameter(8,nLow);
+  fitMeanv2->FixParameter(9,alphaUp);
+  fitMeanv2->FixParameter(10,nUp);
+  fitMeanv2->FixParameter(11,kPsiP);
+
+  fitMeanv2->SetParameter(12, 0.01);
+  fitMeanv2->SetParLimits(12, -1.,1.);
+
+  for ( Int_t i = 0; i < 5; ++i )
+  {
+    fitMeanv2->SetParameter(i + 13, bck->GetParameter(i));
+  }
+
+  fitMeanv2->SetParameter(18, 0.01);
+  fitMeanv2->SetParLimits(18, -1.,1.);
+
+  TFitResultPtr fitResult = p->Fit(fitMeanv2,fitOption,"");
+
+  std::cout << "FitResultt=" << static_cast<int>(fitResult) << std::endl;
+
+  if ( static_cast<int>(fitResult) )
+  {
+    for ( Int_t i = 0; i < 5; ++i )
+    {
+      fitMeanv2->SetParameter(i + 13, bck->GetParameter(i)*0.9);
+    }
+    fitResult = p->Fit(fitMeanv2,fitOption,"");
+
+    std::cout << "FitResultt=" << static_cast<int>(fitResult) << std::endl;
+  }
+  else if ( fitMeanv2->GetParameter(18) <= fitMeanv2->GetParError(18) || fitMeanv2->GetParError(18) >= 0.75*fitMeanv2->GetParameter(18) )
+  {
+    fitMeanv2->FixParameter(18, 0.);
+    for ( Int_t i = 0; i < 5; ++i )
+    {
+      fitMeanv2->SetParameter(i + 13, bck->GetParameter(i)*0.6);
+    }
+    fitResult = p->Fit(fitMeanv2,fitOption,"");
+
+    std::cout << "FitResultt=" << static_cast<int>(fitResult) << std::endl;
+  }
+
+  std::cout << "FitResultt=" << static_cast<int>(fitResult) << std::endl;
+  std::cout << "CovMatrixStatus = " << fitResult->CovMatrixStatus() << std::endl;
+
+    //___________ Further attempts to fit if the first one fails
+  if ( static_cast<int>(fitResult) ||  static_cast<int>(fitResult->CovMatrixStatus())!=3 ) ProcessMv2Fit(fitResult,fitMeanv2,bck,fitOption,11,3); // Int_t iParKPsip, Int_t iLastParBkg);
+  //___________
+
+  //___________Set parameters and fit functions to store in the result
+  Int_t fitStatus = 0;
+  if(!CheckFitStatus(fitResult)) fitStatus =-1;
+  else Set("FitStatus",fitStatus,0.);
+  Set("FitChi2PerNDF",fitMeanv2->GetChisquare()/fitMeanv2->GetNDF(),0.0);
+  Set("FitNDF",fitMeanv2->GetNDF(),0.0);
+  Set("mJPsi",fitMeanv2->GetParameter(5),fitMeanv2->GetParError(5));
+  Set("sJPsi",fitMeanv2->GetParameter(6),fitMeanv2->GetParError(6));
+  // Set("<v2>JPsi",fitMeanv2->GetParameter(12),fitMeanv2->GetParError(12));
+  // Set("mv2PsiP",fitMeanv2->GetParameter(16),fitMeanv2->GetParError(16));
+
+
+  for ( Int_t i = 0; i < 5; ++i )
+  {
+    bck->SetParameter(i, fitMeanv2->GetParameter(i+13));
+  }
+  AttachFunctionsToHisto(0x0,0x0,bck,fitMeanv2,fitRangeLow,fitRangeHigh);//
+
+  Set("NofJPsi",NofJPsi,ErrStatNofJPsi);
+  Set("<v2>JPsi",fitMeanv2->GetParameter(12),fitMeanv2->GetParError(12));
+  Set("<v2>PsiP",fitMeanv2->GetParameter(16),fitMeanv2->GetParError(16));
+
+}
+//_____________________________________________________________________________
 void AliAnalysisMuMuJpsiResult::FitMPTPSI_HFUNCTION()
 {
   //Fit mean dimuon mean pt to get Jpsi mean pt using the CB2 signal parameters, VWG for the Bkg, Jpsi mpt = cte and Bkg mpt = pol2
@@ -8305,6 +9242,3268 @@ void AliAnalysisMuMuJpsiResult::FitMPTPSI_HFUNCTION()
   Set("MeanPtJPsi",fitMeanpt->GetParameter(0),fitMeanpt->GetParError(0));
 }
 
+//_____________________________________________________________________________
+void AliAnalysisMuMuJpsiResult::FitMV2PSIPSIPRIMECB2VWG2_BKGMV2POLEXP()
+{
+  //Fit mean dimuon mean pt to get Jpsi mean pt using the CB2 signal parameters, VWG2 for the Bkg, Jpsi mpt = cte and Bkg mpt = pol4
+
+  const char* fitOption = "SER"; //We can add NO to avoid plotting
+  const char* fitOptionBg = "SER"; //We can add NO to avoid plotting
+
+  fHisto->GetListOfFunctions()->Delete();
+
+  Double_t alphaLow = GetValue("alJPsi");
+  Double_t nLow = GetValue("nlJPsi");
+  Double_t alphaUp = GetValue("auJPsi");
+  Double_t nUp = GetValue("nuJPsi");
+  Double_t kVWG2 = GetValue("kVWG2");
+  Double_t mVWG2 = GetValue("mVWG2");
+  Double_t s1VWG2 = GetValue("s1VWG2");
+  Double_t s2VWG2 = GetValue("s2VWG2");
+  Double_t gVWG2 = GetValue("gVWG2");
+  Double_t kJPsi = GetValue("kJPsi");
+  Double_t kPsiP = GetValue("kPsiP");
+  Double_t mJPsi = GetValue("mJPsi");
+  Double_t sJPsi = GetValue("sJPsi");
+  Double_t NofJPsi = GetValue("NofJPsi");
+  Double_t ErrStatNofJPsi = GetValue("ErrStatNofJPsi");
+
+
+
+  Double_t BG0_init    = IsValidValue(GetValue("BG0_init"))  ? GetValue("BG0_init")  : .4;
+  Double_t BG1_init    = IsValidValue(GetValue("BG1_init"))  ? GetValue("BG1_init")  : -.2;
+  Double_t BGexp_init    = IsValidValue(GetValue("BGexp_init"))  ? GetValue("BGexp_init")  : -.2;
+  Double_t rejRl    = IsValidValue(GetValue("rejRl"))  ? GetValue("rejRl")  : 2.6;
+  Double_t rejRh    = IsValidValue(GetValue("rejRh"))  ? GetValue("rejRh")  : 4.;
+
+  Double_t fitRangeLow = GetValue(kFitRangeLow);
+  Double_t fitRangeHigh = GetValue(kFitRangeHigh);
+
+  AliDebug(1,Form("values : alJPsi = %f nlJPsi = %f auJPsi = %f nuJPsi = %f",alphaLow,nLow,alphaUp,nUp));
+  AliDebug(1,Form("values : kVWG2 = %f mVG2 = %f s1VWG2 = %f s2VWG2 = %f gVWG2 = %f",kVWG2, mVWG2, s1VWG2,s2VWG2,gVWG2));
+  AliDebug(1,Form("values : kJPsi = %f mJPsi = %f sJPsi = %f kPsiP = %f NofJPsi= %f ErrStatNofJPsi = %f",kJPsi,mJPsi,sJPsi,kPsiP,NofJPsi,ErrStatNofJPsi));
+  if(IsValidValue(GetValue("BG0_init"))) AliInfo(Form("Bckg initialised using parameters : %f,%f,%f",BG0_init,BG1_init,BGexp_init));
+  if(IsValidValue(GetValue("rejRl"))) AliInfo(Form("Bckg initialised using reject range: %f - %f",rejRl,rejRh));
+  TProfile* p(0x0);
+  if ( fHisto->IsA() == TProfile::Class() ) p = static_cast<TProfile*>(fHisto);
+  else
+  {
+    AliError("Mean v2 histo has to be a TProfile");
+    return;
+  }
+
+  TProfile::Approximate();
+
+  TF1* bck = new TF1("bck",this,&AliAnalysisMuMuJpsiResult::FitFunctionBackgroundPolExp,fitRangeLow,fitRangeHigh,3,"AliAnalysisMuMuJpsiResult","FitFunctionBackgroundPolExp");
+   bck->SetParameters(BG0_init,BG1_init,BGexp_init);
+  SetFitRejectRange(rejRl,rejRh);
+
+  TFitResultPtr fitResultInit = p->Fit(bck,fitOptionBg,"");
+  std::cout << "FitResultmBkgInit=" << static_cast<int>(fitResultInit) << std::endl;
+
+    //___________ Further attempts to fit bkg if the first one fails
+  if ( static_cast<int>(fitResultInit) ) ProcessmBkgFit(fitResultInit,bck,"FitFunctionBackgroundPolExp",fitOptionBg);
+  //___________
+
+  SetFitRejectRange();
+
+  TF1* fitMeanv2 = new TF1("fitMeanv2",this,&AliAnalysisMuMuJpsiResult::FitFunctionMeanPtSCB2VWG2POLEXP,fitRangeLow,fitRangeHigh,18,"AliAnalysisMuMuJpsiResult","FitFunctionMeanPtSCB2VWG2POLEXP");
+
+  fitMeanv2->SetParNames("kVWG2","mVWG2","s1VWG2","s2VWG2","gVWG2","kJPsi","mJPsi","sJPsi","alJPsi","nlJPsi","auJPsi");
+  //                        0      1      2       3       4       5       6       7         8        9        10
+  fitMeanv2->SetParName(11,"nuJPsi");
+  fitMeanv2->SetParName(12,"kPsiP");
+  fitMeanv2->SetParName(13,"<v2>JPsi");
+  fitMeanv2->SetParName(14,"<v2>BG0");
+  fitMeanv2->SetParName(15,"<v2>BG1");
+  fitMeanv2->SetParName(16,"<v2>BGEXP");
+  fitMeanv2->SetParName(17,"<v2>PsiP");
+
+  fitMeanv2->FixParameter(0,kVWG2);
+  fitMeanv2->FixParameter(1,mVWG2);
+  fitMeanv2->FixParameter(2,s1VWG2);
+  fitMeanv2->FixParameter(3,s2VWG2);
+  fitMeanv2->FixParameter(4,gVWG2);
+  fitMeanv2->FixParameter(5,kJPsi);
+  fitMeanv2->FixParameter(6,mJPsi);
+  fitMeanv2->FixParameter(7,sJPsi);
+  fitMeanv2->FixParameter(8,alphaLow);
+  fitMeanv2->FixParameter(9,nLow);
+  fitMeanv2->FixParameter(10,alphaUp);
+  fitMeanv2->FixParameter(11,nUp);
+  fitMeanv2->FixParameter(12,kPsiP);
+
+  fitMeanv2->SetParameter(13, 0.01);
+  fitMeanv2->SetParLimits(13, -1.,1.);
+
+  for ( Int_t i = 0; i < 3; ++i )
+  {
+    fitMeanv2->SetParameter(i + 14, bck->GetParameter(i));
+  }
+
+  fitMeanv2->SetParameter(17, 0.01);
+  fitMeanv2->SetParLimits(17, -1.,1.);
+
+  TFitResultPtr fitResult = p->Fit(fitMeanv2,fitOption,"");
+
+  std::cout << "FitResult=" << static_cast<int>(fitResult) << std::endl;
+  std::cout << "CovMatrixStatus = " << fitResult->CovMatrixStatus() << std::endl;
+
+  if ( static_cast<int>(fitResult) )
+  {
+    for ( Int_t i = 0; i < 3; ++i )
+    {
+      fitMeanv2->SetParameter(i + 14, bck->GetParameter(i)*0.9);
+    }
+    fitResult = p->Fit(fitMeanv2,fitOption,"");
+  }
+  else if ( fitMeanv2->GetParameter(17) <= fitMeanv2->GetParError(17) || fitMeanv2->GetParError(17) >= 0.75*fitMeanv2->GetParameter(17) )
+  {
+    fitMeanv2->FixParameter(17, 0.);
+    for ( Int_t i = 0; i < 3; ++i )
+    {
+      fitMeanv2->SetParameter(i + 14, bck->GetParameter(i)*0.6);
+    }
+    fitResult = p->Fit(fitMeanv2,fitOption,"");
+  }
+
+  std::cout << "FitResultt=" << static_cast<int>(fitResult) << std::endl;
+  std::cout << "CovMatrixStatus = " << fitResult->CovMatrixStatus() << std::endl;
+
+  std::cout << "FitChi2PerNDF = " << fitMeanv2->GetChisquare()<<"/"<<fitMeanv2->GetNDF() << std::endl;
+    //___________ Further attempts to fit if the first one fails
+  // if ( static_cast<int>(fitResult) ||  static_cast<int>(fitResult->CovMatrixStatus())!=3 ) ProcessMv2Fit(fitResult,fitMeanv2,bck,fitOption,12,4); // Int_t iParKPsip, Int_t iLastParBkg);
+  //___________
+
+  //___________Set parameters and fit functions to store in the result
+  Int_t fitStatus = 0;
+  if(!CheckFitStatus(fitResult)) fitStatus =-1;
+  else Set("FitStatus",fitStatus,0.);
+  Set("FitChi2PerNDF",fitMeanv2->GetChisquare()/fitMeanv2->GetNDF(),0.0);
+  Set("FitNDF",fitMeanv2->GetNDF(),0.0);
+  Set("mJPsi",fitMeanv2->GetParameter(6),fitMeanv2->GetParError(6));
+  Set("sJPsi",fitMeanv2->GetParameter(7),fitMeanv2->GetParError(7));
+  // Set("mv2PsiP",fitMeanv2->GetParameter(16),fitMeanv2->GetParError(16));
+
+  for ( Int_t i = 0; i < 3; ++i )
+  {
+    bck->SetParameter(i, fitMeanv2->GetParameter(i+14));
+  }
+  AttachFunctionsToHisto(0x0,0x0,bck,fitMeanv2,fitRangeLow,fitRangeHigh);//
+
+  Set("NofJPsi",NofJPsi,ErrStatNofJPsi);
+  Set("<v2>JPsi",fitMeanv2->GetParameter(13),fitMeanv2->GetParError(13));
+  // Set("<v2>PsiP",fitMeanv2->GetParameter(17),fitMeanv2->GetParError(17));
+
+}
+
+//_____________________________________________________________________________
+void AliAnalysisMuMuJpsiResult::FitMV2PSIPSIPRIMECB2VWG2_BKGMV2POL2EXP()
+{
+  //Fit mean dimuon mean pt to get Jpsi mean pt using the CB2 signal parameters, VWG2 for the Bkg, Jpsi mpt = cte and Bkg mpt = pol2
+
+  const char* fitOption = "SERIM"; //We can add NO to avoid plotting
+  const char* fitOptionBg = "SER"; //We can add NO to avoid plotting
+
+  fHisto->GetListOfFunctions()->Delete();
+
+  Double_t alphaLow = GetValue("alJPsi");
+  Double_t nLow = GetValue("nlJPsi");
+  Double_t alphaUp = GetValue("auJPsi");
+  Double_t nUp = GetValue("nuJPsi");
+  Double_t kVWG2 = GetValue("kVWG2");
+  Double_t mVWG2 = GetValue("mVWG2");
+  Double_t s1VWG2 = GetValue("s1VWG2");
+  Double_t s2VWG2 = GetValue("s2VWG2");
+  Double_t gVWG2 = GetValue("gVWG2");
+  Double_t kJPsi = GetValue("kJPsi");
+  Double_t kPsiP = GetValue("kPsiP");
+  Double_t mJPsi = GetValue("mJPsi");
+  Double_t sJPsi = GetValue("sJPsi");
+  Double_t NofJPsi = GetValue("NofJPsi");
+  Double_t ErrStatNofJPsi = GetValue("ErrStatNofJPsi");
+
+  Double_t fitRangeLow = GetValue(kFitRangeLow);
+  Double_t fitRangeHigh = GetValue(kFitRangeHigh);
+
+  AliDebug(1,Form("values : alJPsi = %f nlJPsi = %f auJPsi = %f nuJPsi = %f",alphaLow,nLow,alphaUp,nUp));
+  AliDebug(1,Form("values : kVWG2 = %f mVG2 = %f s1VWG2 = %f s2VWG2 = %f gVWG2 = %f",kVWG2, mVWG2, s1VWG2,s2VWG2,gVWG2));
+  AliDebug(1,Form("values : kJPsi = %f mJPsi = %f sJPsi = %f kPsiP = %f NofJPsi= %f ErrStatNofJPsi = %f",kJPsi,mJPsi,sJPsi,kPsiP,NofJPsi,ErrStatNofJPsi));
+
+   TString msg;
+
+   if (IsValidValue(alphaLow)) msg += TString::Format("alphaLow=%e ",alphaLow);
+   if (IsValidValue(nLow)) msg += TString::Format("nLow=%e ",nLow);
+   if (IsValidValue(alphaUp)) msg += TString::Format("alphaUp=%e ",alphaUp);
+   if (IsValidValue(nUp)) msg += TString::Format("nUp=%e ",nUp);
+
+   AliDebug(1,Form("Mean pt fit with jpsi + psiprime (CB2),Bkg VWG and Pol2 for Bkg <pt> %s",msg.Data()));
+  TProfile* p(0x0);
+  if ( fHisto->IsA() == TProfile::Class() ) p = static_cast<TProfile*>(fHisto);
+  else
+  {
+    AliError("Mean v2 histo has to be a TProfile");
+    return;
+  }
+
+  TProfile::Approximate();
+  //_____________
+  TF1* bck = new TF1("bck",this,&AliAnalysisMuMuJpsiResult::FitFunctionBackgroundPol2Exp,fitRangeLow,fitRangeHigh,4,"AliAnalysisMuMuJpsiResult","FitFunctionBackgroundPol2Exp");
+  bck->SetParameters(1.7,-1.3,0.2,-0.7);
+  SetFitRejectRange(2.4,3.6);
+
+  TFitResultPtr fitResultInit = p->Fit(bck,fitOptionBg,"");
+  std::cout << "FitResultmBkgInit=" << static_cast<int>(fitResultInit) << std::endl;
+
+    //___________ Further attempts to fit bkg if the first one fails
+  if ( static_cast<int>(fitResultInit) ) ProcessmBkgFit(fitResultInit,bck,"FitFunctionBackgroundPol2Exp",fitOptionBg);
+  //___________
+
+  SetFitRejectRange();
+
+  TF1* fitMeanv2 = new TF1("fitMeanv2",this,&AliAnalysisMuMuJpsiResult::FitFunctionMeanPtSCB2VWG2POL2EXP,fitRangeLow,fitRangeHigh,19,"AliAnalysisMuMuJpsiResult","FitFunctionMeanPtSCB2VWG2POL2EXP");
+
+  fitMeanv2->SetParNames("kVWG2","mVWG2","s1VWG2","s2VWG2","gVWG2","kJPsi","mJPsi","sJPsi","alJPsi","nlJPsi","auJPsi");
+  //                        0      1      2       3       4       5       6       7         8        9        10
+  fitMeanv2->SetParName(11,"nuJPsi");
+  fitMeanv2->SetParName(12,"kPsiP");
+  fitMeanv2->SetParName(13,"<v2>JPsi");
+  fitMeanv2->SetParName(14,"<v2>BG0");
+  fitMeanv2->SetParName(15,"<v2>BG1");
+  fitMeanv2->SetParName(16,"<v2>BG2");
+  fitMeanv2->SetParName(17,"<v2>BGEXP");
+  fitMeanv2->SetParName(18,"<v2>PsiP");
+
+  fitMeanv2->FixParameter(0,kVWG2);
+  fitMeanv2->FixParameter(1,mVWG2);
+  fitMeanv2->FixParameter(2,s1VWG2);
+  fitMeanv2->FixParameter(3,s2VWG2);
+  fitMeanv2->FixParameter(4,gVWG2);
+  fitMeanv2->FixParameter(5,kJPsi);
+  fitMeanv2->FixParameter(6,mJPsi);
+  fitMeanv2->FixParameter(7,sJPsi);
+  fitMeanv2->FixParameter(8,alphaLow);
+  fitMeanv2->FixParameter(9,nLow);
+  fitMeanv2->FixParameter(10,alphaUp);
+  fitMeanv2->FixParameter(11,nUp);
+  fitMeanv2->FixParameter(12,kPsiP);
+
+  fitMeanv2->SetParameter(13, 0.01);
+  fitMeanv2->SetParLimits(13, -1.,1.);
+
+  for ( Int_t i = 0; i < 4; ++i )
+  {
+    fitMeanv2->SetParameter(i + 14, bck->GetParameter(i));
+  }
+  // fitMeanv2->FixParameter(17,0.);
+  fitMeanv2->SetParameter(18, 0.01);
+  fitMeanv2->SetParLimits(18, -1.,1.);
+
+  TFitResultPtr fitResult = p->Fit(fitMeanv2,fitOption,"");
+
+  std::cout << "FitResult=" << static_cast<int>(fitResult) << std::endl;
+  std::cout << "CovMatrixStatus = " << fitResult->CovMatrixStatus() << std::endl;
+
+  if ( static_cast<int>(fitResult) )
+  {
+    std::cout << " ========= Refitting with bck param * 0.9 =========" << std::endl;
+    for ( Int_t i = 0; i < 4; ++i )
+    {
+      fitMeanv2->SetParameter(i + 14, bck->GetParameter(i)*0.9);
+    }
+    fitResult = p->Fit(fitMeanv2,fitOption,"");
+
+    std::cout << "FitResultt=" << static_cast<int>(fitResult) << std::endl;
+    std::cout << "CovMatrixStatus = " << fitResult->CovMatrixStatus() << std::endl;
+  }
+
+  if ( fitMeanv2->GetParameter(18) <= fitMeanv2->GetParError(18) || fitMeanv2->GetParError(18) >= 0.75*fitMeanv2->GetParameter(18) )
+  {
+    std::cout << " ========= Refitting with bck param * 0.9 and v2(psi2S)=0 =========" << std::endl;
+    fitMeanv2->FixParameter(18, 0.);
+    for ( Int_t i = 0; i < 4; ++i )
+    {
+      fitMeanv2->SetParameter(i + 14, bck->GetParameter(i)*0.9);
+    }
+    fitResult = p->Fit(fitMeanv2,fitOption,"");
+
+    std::cout << "FitResultt=" << static_cast<int>(fitResult) << std::endl;
+    std::cout << "CovMatrixStatus = " << fitResult->CovMatrixStatus() << std::endl;
+  }
+  if ( fitMeanv2->GetParameter(18) <= fitMeanv2->GetParError(18) || fitMeanv2->GetParError(18) >= 0.75*fitMeanv2->GetParameter(18) )
+  {
+    std::cout << " ========= Refitting with bck param * 0.75 and v2(psi2S)=0 =========" << std::endl;
+    fitMeanv2->FixParameter(18, 0.);
+    for ( Int_t i = 0; i < 4; ++i )
+    {
+      fitMeanv2->SetParameter(i + 14, bck->GetParameter(i)*0.75);
+    }
+    fitResult = p->Fit(fitMeanv2,fitOption,"");
+
+    std::cout << "FitResultt=" << static_cast<int>(fitResult) << std::endl;
+    std::cout << "CovMatrixStatus = " << fitResult->CovMatrixStatus() << std::endl;
+  }
+  if (  static_cast<int>(fitResult) ||  static_cast<int>(fitResult->CovMatrixStatus())!=3  )
+  {
+    std::cout << " ========= Refitting with bck param * 0.6 and v2(psi2S)=0 =========" << std::endl;
+    fitMeanv2->FixParameter(18, 0.);
+    for ( Int_t i = 0; i < 4; ++i )
+    {
+      fitMeanv2->SetParameter(i + 14, bck->GetParameter(i)*0.6);
+    }
+    fitResult = p->Fit(fitMeanv2,fitOption,"");
+
+    std::cout << "FitResultt=" << static_cast<int>(fitResult) << std::endl;
+    std::cout << "CovMatrixStatus = " << fitResult->CovMatrixStatus() << std::endl;
+  }
+  if ( static_cast<int>(fitResult) ||  static_cast<int>(fitResult->CovMatrixStatus())!=3  )
+  {
+    std::cout << " ========= Refitting with bck param * 0.5 and v2(psi2S)=0 =========" << std::endl;
+    fitMeanv2->FixParameter(18, 0.);
+    for ( Int_t i = 0; i < 3; ++i )
+    {
+      fitMeanv2->SetParameter(i + 14, bck->GetParameter(i)*0.5);
+    }
+    fitResult = p->Fit(fitMeanv2,fitOption,"");
+
+    std::cout << "FitResultt=" << static_cast<int>(fitResult) << std::endl;
+    std::cout << "CovMatrixStatus = " << fitResult->CovMatrixStatus() << std::endl;
+  }
+  std::cout << "FitResultt=" << static_cast<int>(fitResult) << std::endl;
+  std::cout << "CovMatrixStatus = " << fitResult->CovMatrixStatus() << std::endl;
+  std::cout << "FitChi2PerNDF = " << fitMeanv2->GetChisquare()<<"/"<<fitMeanv2->GetNDF() << std::endl;
+
+    //___________ Further attempts to fit if the first one fails
+  // if ( static_cast<int>(fitResult) ||  static_cast<int>(fitResult->CovMatrixStatus())!=3 ) ProcessMv2Fit(fitResult,fitMeanv2,bck,fitOption,12,4); // Int_t iParKPsip, Int_t iLastParBkg);
+  //___________
+
+  //___________Set parameters and fit functions to store in the result
+  Int_t fitStatus = 0;
+  if(!CheckFitStatus(fitResult)) fitStatus =-1;
+  else Set("FitStatus",fitStatus,0.);
+  Set("FitChi2PerNDF",fitMeanv2->GetChisquare()/fitMeanv2->GetNDF(),0.0);
+  Set("FitNDF",fitMeanv2->GetNDF(),0.0);
+  Set("mJPsi",fitMeanv2->GetParameter(6),fitMeanv2->GetParError(6));
+  Set("sJPsi",fitMeanv2->GetParameter(7),fitMeanv2->GetParError(7));
+  Set("mv2PsiP",fitMeanv2->GetParameter(16),fitMeanv2->GetParError(16));
+
+  for ( Int_t i = 0; i < 4; ++i )
+  {
+    bck->SetParameter(i, fitMeanv2->GetParameter(i+14));
+  }
+  AttachFunctionsToHisto(0x0,0x0,bck,fitMeanv2,fitRangeLow,fitRangeHigh);//
+
+  Set("NofJPsi",NofJPsi,ErrStatNofJPsi);
+  Set("<v2>JPsi",fitMeanv2->GetParameter(13),fitMeanv2->GetParError(13));
+  Set("<v2>PsiP",fitMeanv2->GetParameter(18),fitMeanv2->GetParError(18));
+
+}
+//_____________________________________________________________________________
+void AliAnalysisMuMuJpsiResult::FitMV2PSIPSIPRIMECB2VWG2_BKGMV2POL4()
+{
+  //Fit mean dimuon mean pt to get Jpsi mean pt using the CB2 signal parameters, VWG2 for the Bkg, Jpsi mpt = cte and Bkg mpt = pol2
+
+  const char* fitOption = "SERI"; //We can add NO to avoid plotting
+  const char* fitOptionBg = "SERI"; //We can add NO to avoid plotting
+
+  fHisto->GetListOfFunctions()->Delete();
+
+  Double_t alphaLow = GetValue("alJPsi");
+  Double_t nLow = GetValue("nlJPsi");
+  Double_t alphaUp = GetValue("auJPsi");
+  Double_t nUp = GetValue("nuJPsi");
+  Double_t kVWG2 = GetValue("kVWG2");
+  Double_t mVWG2 = GetValue("mVWG2");
+  Double_t s1VWG2 = GetValue("s1VWG2");
+  Double_t s2VWG2 = GetValue("s2VWG2");
+  Double_t gVWG2 = GetValue("gVWG2");
+  Double_t kJPsi = GetValue("kJPsi");
+  Double_t kPsiP = GetValue("kPsiP");
+  Double_t mJPsi = GetValue("mJPsi");
+  Double_t sJPsi = GetValue("sJPsi");
+  Double_t NofJPsi = GetValue("NofJPsi");
+  Double_t ErrStatNofJPsi = GetValue("ErrStatNofJPsi");
+
+  Double_t fitRangeLow = GetValue(kFitRangeLow);
+  Double_t fitRangeHigh = GetValue(kFitRangeHigh);
+
+  AliDebug(1,Form("values : alJPsi = %f nlJPsi = %f auJPsi = %f nuJPsi = %f",alphaLow,nLow,alphaUp,nUp));
+  AliDebug(1,Form("values : kVWG2 = %f mVG2 = %f s1VWG2 = %f s2VWG2 = %f gVWG2 = %f",kVWG2, mVWG2, s1VWG2,s2VWG2,gVWG2));
+  AliDebug(1,Form("values : kJPsi = %f mJPsi = %f sJPsi = %f kPsiP = %f NofJPsi= %f ErrStatNofJPsi = %f",kJPsi,mJPsi,sJPsi,kPsiP,NofJPsi,ErrStatNofJPsi));
+
+   TString msg;
+
+   if (IsValidValue(alphaLow)) msg += TString::Format("alphaLow=%e ",alphaLow);
+   if (IsValidValue(nLow)) msg += TString::Format("nLow=%e ",nLow);
+   if (IsValidValue(alphaUp)) msg += TString::Format("alphaUp=%e ",alphaUp);
+   if (IsValidValue(nUp)) msg += TString::Format("nUp=%e ",nUp);
+
+   AliDebug(1,Form("Mean pt fit with jpsi + psiprime (CB2),Bkg VWG and Pol4 for Bkg <pt> %s",msg.Data()));
+  TProfile* p(0x0);
+  if ( fHisto->IsA() == TProfile::Class() ) p = static_cast<TProfile*>(fHisto);
+  else
+  {
+    AliError("Mean v2 histo has to be a TProfile");
+    return;
+  }
+
+  TProfile::Approximate();
+  //_____________
+  TF1* bck = new TF1("bck",this,&AliAnalysisMuMuJpsiResult::FitFunctionBackgroundPol4,fitRangeLow,fitRangeHigh,5,"AliAnalysisMuMuJpsiResult","FitFunctionBackgroundPol4");
+  bck->SetParameters(.1,-.1,.01,0.,0.);
+  SetFitRejectRange(2.5,3.5);
+
+  TFitResultPtr fitResultInit = p->Fit(bck,fitOptionBg,"");
+  std::cout << "FitResultmBkgInit=" << static_cast<int>(fitResultInit) << std::endl;
+
+    //___________ Further attempts to fit bkg if the first one fails
+  if ( static_cast<int>(fitResultInit) ) ProcessmBkgFit(fitResultInit,bck,"FitFunctionBackgroundPol4",fitOptionBg);
+  //___________
+
+  SetFitRejectRange();
+
+  TF1* fitMeanv2 = new TF1("fitMeanv2",this,&AliAnalysisMuMuJpsiResult::FitFunctionMeanPtSCB2VWG2POL4,fitRangeLow,fitRangeHigh,19,"AliAnalysisMuMuJpsiResult","FitFunctionMeanPtSCB2VWG2POL4");
+
+  fitMeanv2->SetParNames("kVWG2","mVWG2","s1VWG2","s2VWG2","gVWG2","kJPsi","mJPsi","sJPsi","alJPsi","nlJPsi","auJPsi");
+  //                        0      1      2       3       4       5       6       7         8        9        10
+  fitMeanv2->SetParName(11,"nuJPsi");
+  fitMeanv2->SetParName(12,"kPsiP");
+  fitMeanv2->SetParName(13,"<v2>JPsi");
+  fitMeanv2->SetParName(14,"<v2>BG0");
+  fitMeanv2->SetParName(15,"<v2>BG1");
+  fitMeanv2->SetParName(16,"<v2>BG2");
+  fitMeanv2->SetParName(17,"<v2>BG3");
+  fitMeanv2->SetParName(18,"<v2>BG4");
+  fitMeanv2->SetParName(19,"<v2>PsiP");
+
+  fitMeanv2->FixParameter(0,kVWG2);
+  fitMeanv2->FixParameter(1,mVWG2);
+  fitMeanv2->FixParameter(2,s1VWG2);
+  fitMeanv2->FixParameter(3,s2VWG2);
+  fitMeanv2->FixParameter(4,gVWG2);
+  fitMeanv2->FixParameter(5,kJPsi);
+  fitMeanv2->FixParameter(6,mJPsi);
+  fitMeanv2->FixParameter(7,sJPsi);
+  fitMeanv2->FixParameter(8,alphaLow);
+  fitMeanv2->FixParameter(9,nLow);
+  fitMeanv2->FixParameter(10,alphaUp);
+  fitMeanv2->FixParameter(11,nUp);
+  fitMeanv2->FixParameter(12,kPsiP);
+
+  fitMeanv2->SetParameter(13, 0.01);
+  fitMeanv2->SetParLimits(13, -1.,1.);
+
+  for ( Int_t i = 0; i < 5; ++i )
+  {
+    fitMeanv2->SetParameter(i + 14, bck->GetParameter(i));
+  }
+
+  fitMeanv2->SetParameter(19, 0.01);
+  fitMeanv2->SetParLimits(19, -1.,1.);
+
+  TFitResultPtr fitResult = p->Fit(fitMeanv2,fitOption,"");
+
+  std::cout << "FitResult=" << static_cast<int>(fitResult) << std::endl;
+
+  if ( static_cast<int>(fitResult) )
+  {
+    for ( Int_t i = 0; i < 5; ++i )
+    {
+      fitMeanv2->SetParameter(i + 14, bck->GetParameter(i)*0.9);
+    }
+    fitResult = p->Fit(fitMeanv2,fitOption,"");
+
+    std::cout << "FitResultt=" << static_cast<int>(fitResult) << std::endl;
+  }
+  else if (  static_cast<int>(fitResult) ||  static_cast<int>(fitResult->CovMatrixStatus())!=3  )
+  {
+    fitMeanv2->FixParameter(19, 0.);
+    for ( Int_t i = 0; i < 5; ++i )
+    {
+      fitMeanv2->SetParameter(i + 14, bck->GetParameter(i)*0.6);
+    }
+    fitResult = p->Fit(fitMeanv2,fitOption,"");
+
+    std::cout << "FitResultt=" << static_cast<int>(fitResult) << std::endl;
+  }
+
+  std::cout << "FitResultt=" << static_cast<int>(fitResult) << std::endl;
+  std::cout << "CovMatrixStatus = " << fitResult->CovMatrixStatus() << std::endl;
+
+  std::cout << "FitChi2PerNDF = " << fitMeanv2->GetChisquare()<<"/"<<fitMeanv2->GetNDF() << std::endl;
+
+    //___________ Further attempts to fit if the first one fails
+  // if ( static_cast<int>(fitResult) ||  static_cast<int>(fitResult->CovMatrixStatus())!=3 ) ProcessMv2Fit(fitResult,fitMeanv2,bck,fitOption,12,4); // Int_t iParKPsip, Int_t iLastParBkg);
+  //___________
+
+  //___________Set parameters and fit functions to store in the result
+  Int_t fitStatus = 0;
+  if(!CheckFitStatus(fitResult)) fitStatus =-1;
+  else Set("FitStatus",fitStatus,0.);
+  Set("FitChi2PerNDF",fitMeanv2->GetChisquare()/fitMeanv2->GetNDF(),0.0);
+  Set("FitNDF",fitMeanv2->GetNDF(),0.0);
+  Set("mJPsi",fitMeanv2->GetParameter(6),fitMeanv2->GetParError(6));
+  Set("sJPsi",fitMeanv2->GetParameter(7),fitMeanv2->GetParError(7));
+  Set("mv2PsiP",fitMeanv2->GetParameter(16),fitMeanv2->GetParError(16));
+
+  for ( Int_t i = 0; i < 5; ++i )
+  {
+    bck->SetParameter(i, fitMeanv2->GetParameter(i+14));
+  }
+  AttachFunctionsToHisto(0x0,0x0,bck,fitMeanv2,fitRangeLow,fitRangeHigh);//
+
+  Set("NofJPsi",NofJPsi,ErrStatNofJPsi);
+  Set("<v2>JPsi",fitMeanv2->GetParameter(13),fitMeanv2->GetParError(13));
+  Set("<v2>PsiP",fitMeanv2->GetParameter(19),fitMeanv2->GetParError(19));
+
+}
+//_____________________________________________________________________________
+void AliAnalysisMuMuJpsiResult::FitMV2PSIPSIPRIMECB2VWG2_BKGMV2POL4Cheb()
+{
+  //Fit mean dimuon mean pt to get Jpsi mean pt using the CB2 signal parameters, VWG2 for the Bkg, Jpsi mpt = cte and Bkg mpt = pol2
+
+  const char* fitOption = "SER"; //We can add NO to avoid plotting
+  const char* fitOptionBg = "SER"; //We can add NO to avoid plotting
+
+  fHisto->GetListOfFunctions()->Delete();
+
+  Double_t alphaLow = GetValue("alJPsi");
+  Double_t nLow = GetValue("nlJPsi");
+  Double_t alphaUp = GetValue("auJPsi");
+  Double_t nUp = GetValue("nuJPsi");
+  Double_t kVWG2 = GetValue("kVWG2");
+  Double_t mVWG2 = GetValue("mVWG2");
+  Double_t s1VWG2 = GetValue("s1VWG2");
+  Double_t s2VWG2 = GetValue("s2VWG2");
+  Double_t gVWG2 = GetValue("gVWG2");
+  Double_t kJPsi = GetValue("kJPsi");
+  Double_t kPsiP = GetValue("kPsiP");
+  Double_t mJPsi = GetValue("mJPsi");
+  Double_t sJPsi = GetValue("sJPsi");
+  Double_t NofJPsi = GetValue("NofJPsi");
+  Double_t ErrStatNofJPsi = GetValue("ErrStatNofJPsi");
+
+  Double_t BG0_init    = IsValidValue(GetValue("BG0_init"))  ? GetValue("BG0_init")  : .1;
+  Double_t BG1_init    = IsValidValue(GetValue("BG1_init"))  ? GetValue("BG1_init")  : -.1;
+  Double_t BG2_init    = IsValidValue(GetValue("BG2_init"))  ? GetValue("BG2_init")  : -.05;
+  Double_t BG3_init    = IsValidValue(GetValue("BG3_init"))  ? GetValue("BG3_init")  : 0.;
+  Double_t BG4_init    = IsValidValue(GetValue("BG4_init"))  ? GetValue("BG4_init")  : 0.;
+  Double_t rejRl    = IsValidValue(GetValue("rejRl"))  ? GetValue("rejRl")  : 2.5;
+  Double_t rejRh    = IsValidValue(GetValue("rejRh"))  ? GetValue("rejRh")  : 4.;
+
+  Double_t fitRangeLow = GetValue(kFitRangeLow);
+  Double_t fitRangeHigh = GetValue(kFitRangeHigh);
+
+  AliDebug(1,Form("values : alJPsi = %f nlJPsi = %f auJPsi = %f nuJPsi = %f",alphaLow,nLow,alphaUp,nUp));
+  AliDebug(1,Form("values : kVWG2 = %f mVG2 = %f s1VWG2 = %f s2VWG2 = %f gVWG2 = %f",kVWG2, mVWG2, s1VWG2,s2VWG2,gVWG2));
+  AliDebug(1,Form("values : kJPsi = %f mJPsi = %f sJPsi = %f kPsiP = %f NofJPsi= %f ErrStatNofJPsi = %f",kJPsi,mJPsi,sJPsi,kPsiP,NofJPsi,ErrStatNofJPsi));
+
+  TString msg;
+
+  if (IsValidValue(alphaLow)) msg += TString::Format("alphaLow=%e ",alphaLow);
+  if (IsValidValue(nLow)) msg += TString::Format("nLow=%e ",nLow);
+  if (IsValidValue(alphaUp)) msg += TString::Format("alphaUp=%e ",alphaUp);
+  if (IsValidValue(nUp)) msg += TString::Format("nUp=%e ",nUp);
+  if(IsValidValue(GetValue("BG0_init"))) AliInfo(Form("Bckg initialised using parameters : %f,%f,%f,%f",BG0_init,BG1_init,BG3_init,BG4_init));
+  if(IsValidValue(GetValue("rejRl"))) AliInfo(Form("Bckg initialised using reject range: %f - %f",rejRl,rejRh));
+
+   AliDebug(1,Form("Mean pt fit with jpsi + psiprime (CB2),Bkg VWG and Pol4Cheb for Bkg <pt> %s",msg.Data()));
+  TProfile* p(0x0);
+  if ( fHisto->IsA() == TProfile::Class() ) p = static_cast<TProfile*>(fHisto);
+  else
+  {
+    AliError("Mean v2 histo has to be a TProfile");
+    return;
+  }
+
+  TProfile::Approximate();
+  //_____________
+  TF1* bck = new TF1("bck",this,&AliAnalysisMuMuJpsiResult::FitFunctionBackgroundPol4Cheb,fitRangeLow,fitRangeHigh,5,"AliAnalysisMuMuJpsiResult","FitFunctionBackgroundPol4Cheb");
+
+
+  bck->SetParameters(BG0_init,BG1_init,BG2_init,BG3_init,BG4_init);
+  SetFitRejectRange(rejRl,rejRh);
+
+  TFitResultPtr fitResultInit = p->Fit(bck,fitOptionBg,"");
+  std::cout << "FitResultmBkgInit=" << static_cast<int>(fitResultInit) << std::endl;
+
+    //___________ Further attempts to fit bkg if the first one fails
+  if ( static_cast<int>(fitResultInit) ) ProcessmBkgFit(fitResultInit,bck,"FitFunctionBackgroundPol4Cheb",fitOptionBg);
+  //___________
+
+  SetFitRejectRange();
+
+  TF1* fitMeanv2 = new TF1("fitMeanv2",this,&AliAnalysisMuMuJpsiResult::FitFunctionMeanPtSCB2VWG2POL4Cheb,fitRangeLow,fitRangeHigh,19,"AliAnalysisMuMuJpsiResult","FitFunctionMeanPtSCB2VWG2POL4Cheb");
+
+  fitMeanv2->SetParNames("kVWG2","mVWG2","s1VWG2","s2VWG2","gVWG2","kJPsi","mJPsi","sJPsi","alJPsi","nlJPsi","auJPsi");
+  //                        0      1      2       3       4       5       6       7         8        9        10
+  fitMeanv2->SetParName(11,"nuJPsi");
+  fitMeanv2->SetParName(12,"kPsiP");
+  fitMeanv2->SetParName(13,"<v2>JPsi");
+  fitMeanv2->SetParName(14,"<v2>BGC0");
+  fitMeanv2->SetParName(15,"<v2>BGC1");
+  fitMeanv2->SetParName(16,"<v2>BGC2");
+  fitMeanv2->SetParName(17,"<v2>BGC3");
+  fitMeanv2->SetParName(18,"<v2>BGC4");
+  fitMeanv2->SetParName(19,"<v2>PsiP");
+
+  fitMeanv2->FixParameter(0,kVWG2);
+  fitMeanv2->FixParameter(1,mVWG2);
+  fitMeanv2->FixParameter(2,s1VWG2);
+  fitMeanv2->FixParameter(3,s2VWG2);
+  fitMeanv2->FixParameter(4,gVWG2);
+  fitMeanv2->FixParameter(5,kJPsi);
+  fitMeanv2->FixParameter(6,mJPsi);
+  fitMeanv2->FixParameter(7,sJPsi);
+  fitMeanv2->FixParameter(8,alphaLow);
+  fitMeanv2->FixParameter(9,nLow);
+  fitMeanv2->FixParameter(10,alphaUp);
+  fitMeanv2->FixParameter(11,nUp);
+  fitMeanv2->FixParameter(12,kPsiP);
+
+  fitMeanv2->SetParameter(13, 0.01);
+  fitMeanv2->SetParLimits(13, -1.,1.);
+
+  for ( Int_t i = 0; i < 5; ++i )
+  {
+    fitMeanv2->SetParameter(i + 14, bck->GetParameter(i));
+  }
+  // fitMeanv2->FixParameter(18,0.);
+  // fitMeanv2->FixParameter(17,0.);
+
+  fitMeanv2->SetParameter(19, 0.01);
+  fitMeanv2->SetParLimits(19, -1.,1.);
+
+  TFitResultPtr fitResult = p->Fit(fitMeanv2,fitOption,"");
+
+  std::cout << "FitResult=" << static_cast<int>(fitResult) << std::endl;
+  std::cout << "CovMatrixStatus = " << fitResult->CovMatrixStatus() << std::endl;
+
+  if ( static_cast<int>(fitResult) )
+  {
+    for ( Int_t i = 0; i < 5; ++i )
+    {
+      fitMeanv2->SetParameter(i + 14, bck->GetParameter(i)*0.9);
+    }
+    fitResult = p->Fit(fitMeanv2,fitOption,"");
+  }
+  else if ( fitMeanv2->GetParameter(19) <= fitMeanv2->GetParError(19) || fitMeanv2->GetParError(19) >= 0.75*fitMeanv2->GetParameter(19) )
+  {
+    fitMeanv2->FixParameter(19, 0.);
+    for ( Int_t i = 0; i < 5; ++i )
+    {
+      fitMeanv2->SetParameter(i + 14, bck->GetParameter(i)*0.6);
+    }
+    fitResult = p->Fit(fitMeanv2,fitOption,"");
+  }
+
+  std::cout << "FitResultt=" << static_cast<int>(fitResult) << std::endl;
+  std::cout << "CovMatrixStatus = " << fitResult->CovMatrixStatus() << std::endl;
+
+  std::cout << "FitChi2PerNDF = " << fitMeanv2->GetChisquare()<<"/"<<fitMeanv2->GetNDF() << std::endl;
+
+    //___________ Further attempts to fit if the first one fails
+  // if ( static_cast<int>(fitResult) ||  static_cast<int>(fitResult->CovMatrixStatus())!=3 ) ProcessMv2Fit(fitResult,fitMeanv2,bck,fitOption,12,4); // Int_t iParKPsip, Int_t iLastParBkg);
+  //___________
+
+  //___________Set parameters and fit functions to store in the result
+  Int_t fitStatus = 0;
+  if(!CheckFitStatus(fitResult)) fitStatus =-1;
+  else Set("FitStatus",fitStatus,0.);
+  Set("FitChi2PerNDF",fitMeanv2->GetChisquare()/fitMeanv2->GetNDF(),0.0);
+  Set("FitNDF",fitMeanv2->GetNDF(),0.0);
+  Set("mJPsi",fitMeanv2->GetParameter(6),fitMeanv2->GetParError(6));
+  Set("sJPsi",fitMeanv2->GetParameter(7),fitMeanv2->GetParError(7));
+  // Set("mv2PsiP",fitMeanv2->GetParameter(16),fitMeanv2->GetParError(16));
+
+  for ( Int_t i = 0; i < 5; ++i )
+  {
+    bck->SetParameter(i, fitMeanv2->GetParameter(i+14));
+  }
+  AttachFunctionsToHisto(0x0,0x0,bck,fitMeanv2,fitRangeLow,fitRangeHigh);//
+
+  Set("NofJPsi",NofJPsi,ErrStatNofJPsi);
+  Set("<v2>JPsi",fitMeanv2->GetParameter(13),fitMeanv2->GetParError(13));
+  Set("<v2>PsiP",fitMeanv2->GetParameter(19),fitMeanv2->GetParError(19));
+
+}
+//_____________________________________________________________________________
+void AliAnalysisMuMuJpsiResult::FitMV2PSIPSIPRIMECB2POL2POL3_BKGMV2POL2()
+{
+  //Fit mean dimuon mean pt to get Jpsi mean pt using the CB2 signal parameters, VWG2 for the Bkg, Jpsi mpt = cte and Bkg mpt = pol4
+
+  const char* fitOption = "SER"; //We can add NO to avoid plotting
+  const char* fitOptionBg = "SER"; //We can add NO to avoid plotting
+
+  fHisto->GetListOfFunctions()->Delete();
+
+  Double_t alphaLow = GetValue("alJPsi");
+  Double_t nLow = GetValue("nlJPsi");
+  Double_t alphaUp = GetValue("auJPsi");
+  Double_t nUp = GetValue("nuJPsi");
+
+  Double_t a  = GetValue("a");
+  Double_t b  = GetValue("b");
+  Double_t c  = GetValue("c");
+  Double_t ap = GetValue("a'");
+  Double_t bp = GetValue("b'");
+  Double_t cp = GetValue("c'");
+  Double_t dp = GetValue("d'");
+
+  Double_t kJPsi = GetValue("kJPsi");
+  Double_t kPsiP = GetValue("kPsiP");
+  Double_t mJPsi = GetValue("mJPsi");
+  Double_t sJPsi = GetValue("sJPsi");
+  Double_t NofJPsi = GetValue("NofJPsi");
+  Double_t ErrStatNofJPsi = GetValue("ErrStatNofJPsi");
+
+  Double_t BG0_init    = IsValidValue(GetValue("BG0_init"))  ? GetValue("BG0_init")  : -0.15;
+  Double_t BG1_init    = IsValidValue(GetValue("BG1_init"))  ? GetValue("BG1_init")  : .2;
+  Double_t BG2_init    = IsValidValue(GetValue("BG2_init"))  ? GetValue("BG2_init")  : -.004;
+  Double_t rejRl    = IsValidValue(GetValue("rejRl"))  ? GetValue("rejRl")  : 2.6;
+  Double_t rejRh    = IsValidValue(GetValue("rejRh"))  ? GetValue("rejRh")  : 3.6;
+
+  Double_t fitRangeLow = GetValue(kFitRangeLow);
+  Double_t fitRangeHigh = GetValue(kFitRangeHigh);
+
+  AliDebug(1,Form("values : alJPsi = %f nlJPsi = %f auJPsi = %f nuJPsi = %f",alphaLow,nLow,alphaUp,nUp));
+  AliDebug(1,Form("values : a = %f b = %f c = %f a' = %f b' = %f c' = %f d' = %f ",a,b,c,ap,bp,cp,dp));
+  AliDebug(1,Form("values : kJPsi = %f mJPsi = %f sJPsi = %f kPsiP = %f NofJPsi= %f ErrStatNofJPsi = %f",kJPsi,mJPsi,sJPsi,kPsiP,NofJPsi,ErrStatNofJPsi));
+  if(IsValidValue(GetValue("BG0_init"))) AliInfo(Form("Bckg initialised using parameters : %f,%f,%f",BG0_init,BG1_init,BG2_init));
+  if(IsValidValue(GetValue("rejRl"))) AliInfo(Form("Bckg initialised using reject range: %f - %f",rejRl,rejRh));
+
+  TProfile* p(0x0);
+  if ( fHisto->IsA() == TProfile::Class() ) p = static_cast<TProfile*>(fHisto);
+  else
+  {
+    AliError("Mean v2 histo has to be a TProfile");
+    return;
+  }
+
+  TProfile::Approximate();
+
+
+  //_____________
+
+  TF1* bck = new TF1("bck",this,&AliAnalysisMuMuJpsiResult::FitFunctionBackgroundPol2,fitRangeLow,fitRangeHigh,3,"AliAnalysisMuMuJpsiResult","FitFunctionBackgroundPol2");
+
+  bck->SetParameters(BG0_init,BG1_init,BG2_init);
+
+  SetFitRejectRange(rejRl,rejRh);
+
+  TFitResultPtr fitResultInit = p->Fit(bck,fitOptionBg,"");
+  std::cout << "FitResultmBkgInit=" << static_cast<int>(fitResultInit) << std::endl;
+
+    //___________ Further attempts to fit bkg if the first one fails
+  if ( static_cast<int>(fitResultInit) ) ProcessmBkgFit(fitResultInit,bck,"FitFunctionBackgroundPol2",fitOptionBg);
+  //___________
+
+  SetFitRejectRange();
+
+  TF1* fitMeanv2 = new TF1("fitMeanv2",this,&AliAnalysisMuMuJpsiResult::FitFunctionMeanPtSCB2POL2POL3POL2,fitRangeLow,fitRangeHigh,20,"AliAnalysisMuMuJpsiResult","FitFunctionMeanPtSCB2POL2POL3POL2");
+
+  fitMeanv2->SetParNames("a","b","c","ap","bp","cp","dp","kJPsi","mJPsi","sJPsi","alJPsi");
+  //                      0   1   2    3    4    5   6       7       8       9      10
+  fitMeanv2->SetParName(11,"nlJPsi");
+  fitMeanv2->SetParName(12,"auJPsi");
+  fitMeanv2->SetParName(13,"nuJPsi");
+  fitMeanv2->SetParName(14,"kPsiP");
+  fitMeanv2->SetParName(15,"<v2>JPsi");
+  fitMeanv2->SetParName(16,"<v2>BG0");
+  fitMeanv2->SetParName(17,"<v2>BG1");
+  fitMeanv2->SetParName(18,"<v2>BG2");
+  fitMeanv2->SetParName(19,"<v2>PsiP");
+
+  fitMeanv2->FixParameter(0,a);
+  fitMeanv2->FixParameter(1,b);
+  fitMeanv2->FixParameter(2,c);
+  fitMeanv2->FixParameter(3,ap);
+  fitMeanv2->FixParameter(4,bp);
+  fitMeanv2->FixParameter(5,cp);
+  fitMeanv2->FixParameter(6,dp);
+  fitMeanv2->FixParameter(7,kJPsi);
+  fitMeanv2->FixParameter(8,mJPsi);
+  fitMeanv2->FixParameter(9,sJPsi);
+  fitMeanv2->FixParameter(10,alphaLow);
+  fitMeanv2->FixParameter(11,nLow);
+  fitMeanv2->FixParameter(12,alphaUp);
+  fitMeanv2->FixParameter(13,nUp);
+  fitMeanv2->FixParameter(14,kPsiP);
+
+  fitMeanv2->SetParameter(15, 0.01);
+  fitMeanv2->SetParLimits(15, -1.,1.);
+
+  for ( Int_t i = 0; i < 3; ++i )
+  {
+    fitMeanv2->SetParameter(i + 16, bck->GetParameter(i));
+  }
+
+  fitMeanv2->SetParameter(19, 0.01);
+  fitMeanv2->SetParLimits(19, -1.,1.);
+
+  TFitResultPtr fitResult = p->Fit(fitMeanv2,fitOption,"");
+
+  std::cout << "FitResult=" << static_cast<int>(fitResult) << std::endl;
+  std::cout << "CovMatrixStatus = " << fitResult->CovMatrixStatus() << std::endl;
+
+  if ( static_cast<int>(fitResult) )
+  {
+    for ( Int_t i = 0; i < 3; ++i )
+    {
+      fitMeanv2->SetParameter(i + 16, bck->GetParameter(i)*0.9);
+    }
+    fitResult = p->Fit(fitMeanv2,fitOption,"");
+  }
+  else if ( fitMeanv2->GetParameter(19) <= fitMeanv2->GetParError(19) || fitMeanv2->GetParError(19) >= 0.75*fitMeanv2->GetParameter(19) )
+  {
+    fitMeanv2->FixParameter(19, 0.);
+    for ( Int_t i = 0; i < 3; ++i )
+    {
+      fitMeanv2->SetParameter(i + 16, bck->GetParameter(i)*0.6);
+    }
+    fitResult = p->Fit(fitMeanv2,fitOption,"");
+  }
+
+  std::cout << "FitResultt=" << static_cast<int>(fitResult) << std::endl;
+  std::cout << "CovMatrixStatus = " << fitResult->CovMatrixStatus() << std::endl;
+
+  std::cout << "FitChi2PerNDF = " << fitMeanv2->GetChisquare()<<"/"<<fitMeanv2->GetNDF() << std::endl;
+    //___________ Further attempts to fit if the first one fails
+  // if ( static_cast<int>(fitResult) ||  static_cast<int>(fitResult->CovMatrixStatus())!=3 ) ProcessMv2Fit(fitResult,fitMeanv2,bck,fitOption,12,4); // Int_t iParKPsip, Int_t iLastParBkg);
+  //___________
+
+  //___________Set parameters and fit functions to store in the result
+  Int_t fitStatus = 0;
+  if(!CheckFitStatus(fitResult)) fitStatus =-1;
+  else Set("FitStatus",fitStatus,0.);
+  Set("FitChi2PerNDF",fitMeanv2->GetChisquare()/fitMeanv2->GetNDF(),0.0);
+  Set("FitNDF",fitMeanv2->GetNDF(),0.0);
+  Set("mJPsi",fitMeanv2->GetParameter(8),fitMeanv2->GetParError(8));
+  Set("sJPsi",fitMeanv2->GetParameter(9),fitMeanv2->GetParError(9));
+  // Set("mv2PsiP",fitMeanv2->GetParameter(16),fitMeanv2->GetParError(16));
+
+  for ( Int_t i = 0; i < 3; ++i )
+  {
+    bck->SetParameter(i, fitMeanv2->GetParameter(i+16));
+  }
+  AttachFunctionsToHisto(0x0,0x0,bck,fitMeanv2,fitRangeLow,fitRangeHigh);//
+
+  Set("NofJPsi",NofJPsi,ErrStatNofJPsi);
+  Set("<v2>JPsi",fitMeanv2->GetParameter(15),fitMeanv2->GetParError(15));
+  // Set("<v2>PsiP",fitMeanv2->GetParameter(19),fitMeanv2->GetParError(19));
+
+}
+//_____________________________________________________________________________
+void AliAnalysisMuMuJpsiResult::FitMV2PSIPSIPRIMECB2POL2POL3_BKGMV2POLEXP()
+{
+  //Fit mean dimuon mean pt to get Jpsi mean pt using the CB2 signal parameters, VWG2 for the Bkg, Jpsi mpt = cte and Bkg mpt = pol4
+
+  const char* fitOption = "SER"; //We can add NO to avoid plotting
+  const char* fitOptionBg = "SER"; //We can add NO to avoid plotting
+
+  fHisto->GetListOfFunctions()->Delete();
+
+  Double_t alphaLow = GetValue("alJPsi");
+  Double_t nLow = GetValue("nlJPsi");
+  Double_t alphaUp = GetValue("auJPsi");
+  Double_t nUp = GetValue("nuJPsi");
+
+  Double_t a  = GetValue("a");
+  Double_t b  = GetValue("b");
+  Double_t c  = GetValue("c");
+  Double_t ap = GetValue("a'");
+  Double_t bp = GetValue("b'");
+  Double_t cp = GetValue("c'");
+  Double_t dp = GetValue("d'");
+
+  Double_t kJPsi = GetValue("kJPsi");
+  Double_t kPsiP = GetValue("kPsiP");
+  Double_t mJPsi = GetValue("mJPsi");
+  Double_t sJPsi = GetValue("sJPsi");
+  Double_t NofJPsi = GetValue("NofJPsi");
+  Double_t ErrStatNofJPsi = GetValue("ErrStatNofJPsi");
+
+
+  Double_t BG0_init    = IsValidValue(GetValue("BG0_init"))  ? GetValue("BG0_init")  : .3;
+  Double_t BG1_init    = IsValidValue(GetValue("BG1_init"))  ? GetValue("BG1_init")  : -.08;
+  Double_t BGexp_init    = IsValidValue(GetValue("BGexp_init"))  ? GetValue("BGexp_init")  : 0.;
+  Double_t rejRl    = IsValidValue(GetValue("rejRl"))  ? GetValue("rejRl")  : 2.6;
+  Double_t rejRh    = IsValidValue(GetValue("rejRh"))  ? GetValue("rejRh")  : 4.;
+
+  Double_t fitRangeLow = GetValue(kFitRangeLow);
+  Double_t fitRangeHigh = GetValue(kFitRangeHigh);
+
+  AliDebug(1,Form("values : alJPsi = %f nlJPsi = %f auJPsi = %f nuJPsi = %f",alphaLow,nLow,alphaUp,nUp));
+  AliDebug(1,Form("values : a = %f b = %f c = %f a' = %f b' = %f c' = %f d' = %f ",a,b,c,ap,bp,cp,dp));
+  AliDebug(1,Form("values : kJPsi = %f mJPsi = %f sJPsi = %f kPsiP = %f NofJPsi= %f ErrStatNofJPsi = %f",kJPsi,mJPsi,sJPsi,kPsiP,NofJPsi,ErrStatNofJPsi));
+  if(IsValidValue(GetValue("BG0_init"))) AliInfo(Form("Bckg initialised using parameters : %f,%f,%f",BG0_init,BG1_init,BGexp_init));
+  if(IsValidValue(GetValue("rejRl"))) AliInfo(Form("Bckg initialised using reject range: %f - %f",rejRl,rejRh));
+  TProfile* p(0x0);
+  if ( fHisto->IsA() == TProfile::Class() ) p = static_cast<TProfile*>(fHisto);
+  else
+  {
+    AliError("Mean v2 histo has to be a TProfile");
+    return;
+  }
+
+  TProfile::Approximate();
+
+
+  //_____________
+
+  TF1* bck = new TF1("bck",this,&AliAnalysisMuMuJpsiResult::FitFunctionBackgroundPolExp,fitRangeLow,fitRangeHigh,3,"AliAnalysisMuMuJpsiResult","FitFunctionBackgroundPolExp");
+  bck->SetParameters(BG0_init,BG1_init,BGexp_init);
+
+  SetFitRejectRange(rejRl,rejRh);
+
+  TFitResultPtr fitResultInit = p->Fit(bck,fitOptionBg,"");
+  std::cout << "FitResultmBkgInit=" << static_cast<int>(fitResultInit) << std::endl;
+
+    //___________ Further attempts to fit bkg if the first one fails
+  if ( static_cast<int>(fitResultInit) ) ProcessmBkgFit(fitResultInit,bck,"FitFunctionBackgroundPolExp",fitOptionBg);
+  //___________
+
+  SetFitRejectRange();
+
+  TF1* fitMeanv2 = new TF1("fitMeanv2",this,&AliAnalysisMuMuJpsiResult::FitFunctionMeanPtSCB2POL2POL3_POLEXP,fitRangeLow,fitRangeHigh,20,"AliAnalysisMuMuJpsiResult","FitFunctionMeanPtSCB2POL2POL3_POLEXP");
+
+  fitMeanv2->SetParNames("a","b","c","ap","bp","cp","dp","kJPsi","mJPsi","sJPsi","alJPsi");
+  //                      0   1   2    3    4    5   6       7       8       9      10
+  fitMeanv2->SetParName(11,"nlJPsi");
+  fitMeanv2->SetParName(12,"auJPsi");
+  fitMeanv2->SetParName(13,"nuJPsi");
+  fitMeanv2->SetParName(14,"kPsiP");
+  fitMeanv2->SetParName(15,"<v2>JPsi");
+  fitMeanv2->SetParName(16,"<v2>BG0");
+  fitMeanv2->SetParName(17,"<v2>BG1");
+  fitMeanv2->SetParName(18,"<v2>BGEXP");
+  fitMeanv2->SetParName(19,"<v2>PsiP");
+
+  fitMeanv2->FixParameter(0,a);
+  fitMeanv2->FixParameter(1,b);
+  fitMeanv2->FixParameter(2,c);
+  fitMeanv2->FixParameter(3,ap);
+  fitMeanv2->FixParameter(4,bp);
+  fitMeanv2->FixParameter(5,cp);
+  fitMeanv2->FixParameter(6,dp);
+  fitMeanv2->FixParameter(7,kJPsi);
+  fitMeanv2->FixParameter(8,mJPsi);
+  fitMeanv2->FixParameter(9,sJPsi);
+  fitMeanv2->FixParameter(10,alphaLow);
+  fitMeanv2->FixParameter(11,nLow);
+  fitMeanv2->FixParameter(12,alphaUp);
+  fitMeanv2->FixParameter(13,nUp);
+  fitMeanv2->FixParameter(14,kPsiP);
+
+  fitMeanv2->SetParameter(15, 0.01);
+  fitMeanv2->SetParLimits(15, -1.,1.);
+
+  for ( Int_t i = 0; i < 3; ++i )
+  {
+    fitMeanv2->SetParameter(i + 16, bck->GetParameter(i));
+  }
+
+  fitMeanv2->SetParameter(19, 0.01);
+  fitMeanv2->SetParLimits(19, -1.,1.);
+
+  TFitResultPtr fitResult = p->Fit(fitMeanv2,fitOption,"");
+
+  std::cout << "FitResult=" << static_cast<int>(fitResult) << std::endl;
+  std::cout << "CovMatrixStatus = " << fitResult->CovMatrixStatus() << std::endl;
+
+  if ( static_cast<int>(fitResult) )
+  {
+    for ( Int_t i = 0; i < 3; ++i )
+    {
+      fitMeanv2->SetParameter(i + 16, bck->GetParameter(i)*0.9);
+    }
+    fitResult = p->Fit(fitMeanv2,fitOption,"");
+  }
+  else if ( fitMeanv2->GetParameter(19) <= fitMeanv2->GetParError(19) || fitMeanv2->GetParError(19) >= 0.75*fitMeanv2->GetParameter(19) )
+  {
+    fitMeanv2->FixParameter(19, 0.);
+    for ( Int_t i = 0; i < 3; ++i )
+    {
+      fitMeanv2->SetParameter(i + 16, bck->GetParameter(i)*0.6);
+    }
+    fitResult = p->Fit(fitMeanv2,fitOption,"");
+  }
+
+  std::cout << "FitResultt=" << static_cast<int>(fitResult) << std::endl;
+  std::cout << "CovMatrixStatus = " << fitResult->CovMatrixStatus() << std::endl;
+
+  std::cout << "FitChi2PerNDF = " << fitMeanv2->GetChisquare()<<"/"<<fitMeanv2->GetNDF() << std::endl;
+    //___________ Further attempts to fit if the first one fails
+  // if ( static_cast<int>(fitResult) ||  static_cast<int>(fitResult->CovMatrixStatus())!=3 ) ProcessMv2Fit(fitResult,fitMeanv2,bck,fitOption,12,4); // Int_t iParKPsip, Int_t iLastParBkg);
+  //___________
+
+  //___________Set parameters and fit functions to store in the result
+  Int_t fitStatus = 0;
+  if(!CheckFitStatus(fitResult)) fitStatus =-1;
+  Set("FitStatus",fitStatus,0.);
+  Set("FitChi2PerNDF",fitMeanv2->GetChisquare()/fitMeanv2->GetNDF(),0.0);
+  Set("FitNDF",fitMeanv2->GetNDF(),0.0);
+  Set("mJPsi",fitMeanv2->GetParameter(8),fitMeanv2->GetParError(8));
+  Set("sJPsi",fitMeanv2->GetParameter(9),fitMeanv2->GetParError(9));
+  // Set("mv2PsiP",fitMeanv2->GetParameter(16),fitMeanv2->GetParError(16));
+
+  for ( Int_t i = 0; i < 3; ++i )
+  {
+    bck->SetParameter(i, fitMeanv2->GetParameter(i+16));
+  }
+  AttachFunctionsToHisto(0x0,0x0,bck,fitMeanv2,fitRangeLow,fitRangeHigh);//
+
+  Set("NofJPsi",NofJPsi,ErrStatNofJPsi);
+  Set("<v2>JPsi",fitMeanv2->GetParameter(15),fitMeanv2->GetParError(15));
+  // Set("<v2>PsiP",fitMeanv2->GetParameter(19),fitMeanv2->GetParError(19));
+
+}
+//_____________________________________________________________________________
+void AliAnalysisMuMuJpsiResult::FitMV2PSIPSIPRIMECB2POL2POL3_BKGMV2POL2EXP()
+{
+  //Fit mean dimuon mean pt to get Jpsi mean pt using the CB2 signal parameters, VWG2 for the Bkg, Jpsi mpt = cte and Bkg mpt = pol4
+
+  const char* fitOption = "SERI"; //We can add NO to avoid plotting
+  const char* fitOptionBg = "SERI"; //We can add NO to avoid plotting
+
+  fHisto->GetListOfFunctions()->Delete();
+
+  Double_t alphaLow = GetValue("alJPsi");
+  Double_t nLow = GetValue("nlJPsi");
+  Double_t alphaUp = GetValue("auJPsi");
+  Double_t nUp = GetValue("nuJPsi");
+
+  Double_t a  = GetValue("a");
+  Double_t b  = GetValue("b");
+  Double_t c  = GetValue("c");
+  Double_t ap = GetValue("a'");
+  Double_t bp = GetValue("b'");
+  Double_t cp = GetValue("c'");
+  Double_t dp = GetValue("d'");
+
+  Double_t kJPsi = GetValue("kJPsi");
+  Double_t kPsiP = GetValue("kPsiP");
+  Double_t mJPsi = GetValue("mJPsi");
+  Double_t sJPsi = GetValue("sJPsi");
+  Double_t NofJPsi = GetValue("NofJPsi");
+  Double_t ErrStatNofJPsi = GetValue("ErrStatNofJPsi");
+
+  Double_t fitRangeLow = GetValue(kFitRangeLow);
+  Double_t fitRangeHigh = GetValue(kFitRangeHigh);
+
+  AliDebug(1,Form("values : alJPsi = %f nlJPsi = %f auJPsi = %f nuJPsi = %f",alphaLow,nLow,alphaUp,nUp));
+  AliDebug(1,Form("values : a = %f b = %f c = %f a' = %f b' = %f c' = %f d' = %f ",a,b,c,ap,bp,cp,dp));
+  AliDebug(1,Form("values : kJPsi = %f mJPsi = %f sJPsi = %f kPsiP = %f NofJPsi= %f ErrStatNofJPsi = %f",kJPsi,mJPsi,sJPsi,kPsiP,NofJPsi,ErrStatNofJPsi));
+
+  TProfile* p(0x0);
+  if ( fHisto->IsA() == TProfile::Class() ) p = static_cast<TProfile*>(fHisto);
+  else
+  {
+    AliError("Mean v2 histo has to be a TProfile");
+    return;
+  }
+
+  TProfile::Approximate();
+
+
+  //_____________
+
+  TF1* bck = new TF1("bck",this,&AliAnalysisMuMuJpsiResult::FitFunctionBackgroundPol2Exp,fitRangeLow,fitRangeHigh,4,"AliAnalysisMuMuJpsiResult","FitFunctionBackgroundPol2Exp");
+
+  bck->SetParameters(.4,-.2,.02);
+  SetFitRejectRange(2.6,3.4);
+
+  TFitResultPtr fitResultInit = p->Fit(bck,fitOptionBg,"");
+  std::cout << "FitResultmBkgInit=" << static_cast<int>(fitResultInit) << std::endl;
+
+    //___________ Further attempts to fit bkg if the first one fails
+  if ( static_cast<int>(fitResultInit) ) ProcessmBkgFit(fitResultInit,bck,"FitFunctionBackgroundPol2",fitOptionBg);
+  //___________
+
+  SetFitRejectRange();
+
+  TF1* fitMeanv2 = new TF1("fitMeanv2",this,&AliAnalysisMuMuJpsiResult::FitFunctionMeanPtSCB2POL2POL3POL2EXP,fitRangeLow,fitRangeHigh,21,"AliAnalysisMuMuJpsiResult","FitFunctionMeanPtSCB2POL2POL3POL2EXP");
+
+  fitMeanv2->SetParNames("a","b","c","ap","bp","cp","dp","kJPsi","mJPsi","sJPsi","alJPsi");
+  //                      0   1   2    3    4    5   6       7       8       9      10
+  fitMeanv2->SetParName(11,"nlJPsi");
+  fitMeanv2->SetParName(12,"auJPsi");
+  fitMeanv2->SetParName(13,"nuJPsi");
+  fitMeanv2->SetParName(14,"kPsiP");
+  fitMeanv2->SetParName(15,"<v2>JPsi");
+  fitMeanv2->SetParName(16,"<v2>BG0");
+  fitMeanv2->SetParName(17,"<v2>BG1");
+  fitMeanv2->SetParName(18,"<v2>BG2");
+  fitMeanv2->SetParName(19,"<v2>BGEXP");
+  fitMeanv2->SetParName(20,"<v2>PsiP");
+
+  fitMeanv2->FixParameter(0,a);
+  fitMeanv2->FixParameter(1,b);
+  fitMeanv2->FixParameter(2,c);
+  fitMeanv2->FixParameter(3,ap);
+  fitMeanv2->FixParameter(4,bp);
+  fitMeanv2->FixParameter(5,cp);
+  fitMeanv2->FixParameter(6,dp);
+  fitMeanv2->FixParameter(7,kJPsi);
+  fitMeanv2->FixParameter(8,mJPsi);
+  fitMeanv2->FixParameter(9,sJPsi);
+  fitMeanv2->FixParameter(10,alphaLow);
+  fitMeanv2->FixParameter(11,nLow);
+  fitMeanv2->FixParameter(12,alphaUp);
+  fitMeanv2->FixParameter(13,nUp);
+  fitMeanv2->FixParameter(14,kPsiP);
+
+  fitMeanv2->SetParameter(15, 0.01);
+  fitMeanv2->SetParLimits(15, -1.,1.);
+
+  for ( Int_t i = 0; i < 4; ++i )
+  {
+    fitMeanv2->SetParameter(i + 16, bck->GetParameter(i));
+  }
+
+  fitMeanv2->SetParameter(20, 0.01);
+  fitMeanv2->SetParLimits(20, -1.,1.);
+
+  TFitResultPtr fitResult = p->Fit(fitMeanv2,fitOption,"");
+
+  std::cout << "FitResult=" << static_cast<int>(fitResult) << std::endl;
+  std::cout << "CovMatrixStatus = " << fitResult->CovMatrixStatus() << std::endl;
+
+  if ( static_cast<int>(fitResult) )
+  {
+    for ( Int_t i = 0; i < 4; ++i )
+    {
+      fitMeanv2->SetParameter(i + 16, bck->GetParameter(i)*0.9);
+    }
+    fitResult = p->Fit(fitMeanv2,fitOption,"");
+  }
+  else if ( fitMeanv2->GetParameter(20) <= fitMeanv2->GetParError(20) || fitMeanv2->GetParError(20) >= 0.75*fitMeanv2->GetParameter(20) )
+  {
+    fitMeanv2->FixParameter(20, 0.);
+    for ( Int_t i = 0; i < 4; ++i )
+    {
+      fitMeanv2->SetParameter(i + 16, bck->GetParameter(i)*0.6);
+    }
+    fitResult = p->Fit(fitMeanv2,fitOption,"");
+  }
+
+  std::cout << "FitResultt=" << static_cast<int>(fitResult) << std::endl;
+  std::cout << "CovMatrixStatus = " << fitResult->CovMatrixStatus() << std::endl;
+
+  std::cout << "FitChi2PerNDF = " << fitMeanv2->GetChisquare()<<"/"<<fitMeanv2->GetNDF() << std::endl;
+    //___________ Further attempts to fit if the first one fails
+  // if ( static_cast<int>(fitResult) ||  static_cast<int>(fitResult->CovMatrixStatus())!=3 ) ProcessMv2Fit(fitResult,fitMeanv2,bck,fitOption,12,4); // Int_t iParKPsip, Int_t iLastParBkg);
+  //___________
+
+  //___________Set parameters and fit functions to store in the result
+  Int_t fitStatus = 0;
+  if(!CheckFitStatus(fitResult)) fitStatus =-1;
+  Set("FitStatus",fitStatus,0.);
+  Set("FitChi2PerNDF",fitMeanv2->GetChisquare()/fitMeanv2->GetNDF(),0.0);
+  Set("FitNDF",fitMeanv2->GetNDF(),0.0);
+  Set("mJPsi",fitMeanv2->GetParameter(8),fitMeanv2->GetParError(8));
+  Set("sJPsi",fitMeanv2->GetParameter(9),fitMeanv2->GetParError(9));
+  // Set("mv2PsiP",fitMeanv2->GetParameter(16),fitMeanv2->GetParError(16));
+
+  for ( Int_t i = 0; i < 4; ++i )
+  {
+    bck->SetParameter(i, fitMeanv2->GetParameter(i+16));
+  }
+  AttachFunctionsToHisto(0x0,0x0,bck,fitMeanv2,fitRangeLow,fitRangeHigh);//
+
+  Set("NofJPsi",NofJPsi,ErrStatNofJPsi);
+  Set("<v2>JPsi",fitMeanv2->GetParameter(15),fitMeanv2->GetParError(15));
+  // Set("<v2>PsiP",fitMeanv2->GetParameter(20),fitMeanv2->GetParError(20));
+
+}
+
+//_____________________________________________________________________________
+void AliAnalysisMuMuJpsiResult::FitMV2PSIPSIPRIMECB2POL2POL3_BKGMV2POL4Cheb()
+{
+  //Fit mean dimuon mean pt to get Jpsi mean pt using the CB2 signal parameters, VWG2 for the Bkg, Jpsi mpt = cte and Bkg mpt = pol4
+
+  const char* fitOption = "SER"; //We can add NO to avoid plotting
+  const char* fitOptionBg = "SER"; //We can add NO to avoid plotting
+
+  fHisto->GetListOfFunctions()->Delete();
+
+  Double_t alphaLow = GetValue("alJPsi");
+  Double_t nLow = GetValue("nlJPsi");
+  Double_t alphaUp = GetValue("auJPsi");
+  Double_t nUp = GetValue("nuJPsi");
+
+  Double_t a  = GetValue("a");
+  Double_t b  = GetValue("b");
+  Double_t c  = GetValue("c");
+  Double_t ap = GetValue("a'");
+  Double_t bp = GetValue("b'");
+  Double_t cp = GetValue("c'");
+  Double_t dp = GetValue("d'");
+
+  Double_t kJPsi = GetValue("kJPsi");
+  Double_t kPsiP = GetValue("kPsiP");
+  Double_t mJPsi = GetValue("mJPsi");
+  Double_t sJPsi = GetValue("sJPsi");
+  Double_t NofJPsi = GetValue("NofJPsi");
+  Double_t ErrStatNofJPsi = GetValue("ErrStatNofJPsi");
+
+
+  Double_t BG0_init    = IsValidValue(GetValue("BG0_init"))  ? GetValue("BG0_init")  : .3;
+  Double_t BG1_init    = IsValidValue(GetValue("BG1_init"))  ? GetValue("BG1_init")  : -.08;
+  Double_t BG2_init    = IsValidValue(GetValue("BG2_init"))  ? GetValue("BG2_init")  : 0.;
+  Double_t BG3_init    = IsValidValue(GetValue("BG3_init"))  ? GetValue("BG3_init")  : 0.;
+  Double_t BG4_init    = IsValidValue(GetValue("BG4_init"))  ? GetValue("BG4_init")  : 0.;
+  Double_t rejRl    = IsValidValue(GetValue("rejRl"))  ? GetValue("rejRl")  : 2.6;
+  Double_t rejRh    = IsValidValue(GetValue("rejRh"))  ? GetValue("rejRh")  : 4.;
+
+  Double_t fitRangeLow = GetValue(kFitRangeLow);
+  Double_t fitRangeHigh = GetValue(kFitRangeHigh);
+
+  AliDebug(1,Form("values : alJPsi = %f nlJPsi = %f auJPsi = %f nuJPsi = %f",alphaLow,nLow,alphaUp,nUp));
+  AliDebug(1,Form("values : a = %f b = %f c = %f a' = %f b' = %f c' = %f d' = %f ",a,b,c,ap,bp,cp,dp));
+  AliDebug(1,Form("values : kJPsi = %f mJPsi = %f sJPsi = %f kPsiP = %f NofJPsi= %f ErrStatNofJPsi = %f",kJPsi,mJPsi,sJPsi,kPsiP,NofJPsi,ErrStatNofJPsi));
+  if(IsValidValue(GetValue("BG0_init"))) AliInfo(Form("Bckg initialised using parameters : %f,%f,%f,%f",BG0_init,BG1_init,BG3_init,BG4_init));
+  if(IsValidValue(GetValue("rejRl"))) AliInfo(Form("Bckg initialised using reject range: %f - %f",rejRl,rejRh));
+  TProfile* p(0x0);
+  if ( fHisto->IsA() == TProfile::Class() ) p = static_cast<TProfile*>(fHisto);
+  else
+  {
+    AliError("Mean v2 histo has to be a TProfile");
+    return;
+  }
+
+  TProfile::Approximate();
+
+
+  //_____________
+
+  TF1* bck = new TF1("bck",this,&AliAnalysisMuMuJpsiResult::FitFunctionBackgroundPol4Cheb,fitRangeLow,fitRangeHigh,5,"AliAnalysisMuMuJpsiResult","FitFunctionBackgroundPol4Cheb");
+
+  bck->SetParameters(BG0_init,BG1_init,BG2_init,BG3_init,BG4_init);
+
+  SetFitRejectRange(rejRl,rejRh);
+
+  TFitResultPtr fitResultInit = p->Fit(bck,fitOptionBg,"");
+  std::cout << "FitResultmBkgInit=" << static_cast<int>(fitResultInit) << std::endl;
+
+    //___________ Further attempts to fit bkg if the first one fails
+  if ( static_cast<int>(fitResultInit) ) ProcessmBkgFit(fitResultInit,bck,"FitFunctionBackgroundPol4Cheb",fitOptionBg);
+  //___________
+
+  SetFitRejectRange();
+
+  TF1* fitMeanv2 = new TF1("fitMeanv2",this,&AliAnalysisMuMuJpsiResult::FitFunctionMeanPtSCB2POL2POL3POL4Cheb,fitRangeLow,fitRangeHigh,22,"AliAnalysisMuMuJpsiResult","FitFunctionMeanPtSCB2POL2POL3POL4Cheb");
+
+  fitMeanv2->SetParNames("a","b","c","ap","bp","cp","dp","kJPsi","mJPsi","sJPsi","alJPsi");
+  //                      0   1   2    3    4    5   6       7       8       9      10
+  fitMeanv2->SetParName(11,"nlJPsi");
+  fitMeanv2->SetParName(12,"auJPsi");
+  fitMeanv2->SetParName(13,"nuJPsi");
+  fitMeanv2->SetParName(14,"kPsiP");
+  fitMeanv2->SetParName(15,"<v2>JPsi");
+  fitMeanv2->SetParName(16,"<v2>BGC0");
+  fitMeanv2->SetParName(17,"<v2>BGC1");
+  fitMeanv2->SetParName(18,"<v2>BGC2");
+  fitMeanv2->SetParName(19,"<v2>BGC3");
+  fitMeanv2->SetParName(20,"<v2>BGC4");
+  fitMeanv2->SetParName(21,"<v2>PsiP");
+
+  fitMeanv2->FixParameter(0,a);
+  fitMeanv2->FixParameter(1,b);
+  fitMeanv2->FixParameter(2,c);
+  fitMeanv2->FixParameter(3,ap);
+  fitMeanv2->FixParameter(4,bp);
+  fitMeanv2->FixParameter(5,cp);
+  fitMeanv2->FixParameter(6,dp);
+  fitMeanv2->FixParameter(7,kJPsi);
+  fitMeanv2->FixParameter(8,mJPsi);
+  fitMeanv2->FixParameter(9,sJPsi);
+  fitMeanv2->FixParameter(10,alphaLow);
+  fitMeanv2->FixParameter(11,nLow);
+  fitMeanv2->FixParameter(12,alphaUp);
+  fitMeanv2->FixParameter(13,nUp);
+  fitMeanv2->FixParameter(14,kPsiP);
+
+  fitMeanv2->SetParameter(15, 0.01);
+  fitMeanv2->SetParLimits(15, -1.,1.);
+
+  for ( Int_t i = 0; i < 5; ++i )
+  {
+    fitMeanv2->SetParameter(i + 16, bck->GetParameter(i));
+  }
+
+  fitMeanv2->SetParameter(21, 0.01);
+  fitMeanv2->SetParLimits(21, -1.,1.);
+
+  TFitResultPtr fitResult = p->Fit(fitMeanv2,fitOption,"");
+
+  std::cout << "FitResult=" << static_cast<int>(fitResult) << std::endl;
+  std::cout << "CovMatrixStatus = " << fitResult->CovMatrixStatus() << std::endl;
+
+  if ( static_cast<int>(fitResult) )
+  {
+    for ( Int_t i = 0; i < 5; ++i )
+    {
+      fitMeanv2->SetParameter(i + 16, bck->GetParameter(i)*0.9);
+    }
+    fitResult = p->Fit(fitMeanv2,fitOption,"");
+  }
+  else if ( fitMeanv2->GetParameter(21) <= fitMeanv2->GetParError(21) || fitMeanv2->GetParError(21) >= 0.75*fitMeanv2->GetParameter(21) )
+  {
+    fitMeanv2->FixParameter(21, 0.);
+    for ( Int_t i = 0; i < 5; ++i )
+    {
+      fitMeanv2->SetParameter(i + 16, bck->GetParameter(i)*0.6);
+    }
+    fitResult = p->Fit(fitMeanv2,fitOption,"");
+  }
+
+  std::cout << "FitResultt=" << static_cast<int>(fitResult) << std::endl;
+  std::cout << "CovMatrixStatus = " << fitResult->CovMatrixStatus() << std::endl;
+
+  std::cout << "FitChi2PerNDF = " << fitMeanv2->GetChisquare()<<"/"<<fitMeanv2->GetNDF() << std::endl;
+    //___________ Further attempts to fit if the first one fails
+  // if ( static_cast<int>(fitResult) ||  static_cast<int>(fitResult->CovMatrixStatus())!=3 ) ProcessMv2Fit(fitResult,fitMeanv2,bck,fitOption,12,4); // Int_t iParKPsip, Int_t iLastParBkg);
+  //___________
+
+  //___________Set parameters and fit functions to store in the result
+  Int_t fitStatus = 0;
+  if(!CheckFitStatus(fitResult)) fitStatus =-1;
+  else Set("FitStatus",fitStatus,0.);
+  Set("FitChi2PerNDF",fitMeanv2->GetChisquare()/fitMeanv2->GetNDF(),0.0);
+  Set("FitNDF",fitMeanv2->GetNDF(),0.0);
+  Set("mJPsi",fitMeanv2->GetParameter(8),fitMeanv2->GetParError(8));
+  Set("sJPsi",fitMeanv2->GetParameter(9),fitMeanv2->GetParError(9));
+  // Set("mv2PsiP",fitMeanv2->GetParameter(16),fitMeanv2->GetParError(16));
+
+  for ( Int_t i = 0; i < 5; ++i )
+  {
+    bck->SetParameter(i, fitMeanv2->GetParameter(i+16));
+  }
+  AttachFunctionsToHisto(0x0,0x0,bck,fitMeanv2,fitRangeLow,fitRangeHigh);//
+
+  Set("NofJPsi",NofJPsi,ErrStatNofJPsi);
+  Set("<v2>JPsi",fitMeanv2->GetParameter(15),fitMeanv2->GetParError(15));
+  // Set("<v2>PsiP",fitMeanv2->GetParameter(21),fitMeanv2->GetParError(21));
+
+}
+//_____________________________________________________________________________
+void AliAnalysisMuMuJpsiResult::FitMV2PSIPSIPRIMECB2POL2POL3_BKGMV2POL4()
+{
+  //Fit mean dimuon mean pt to get Jpsi mean pt using the CB2 signal parameters, VWG2 for the Bkg, Jpsi mpt = cte and Bkg mpt = pol4
+
+  const char* fitOption = "SERI"; //We can add NO to avoid plotting
+  const char* fitOptionBg = "SERI"; //We can add NO to avoid plotting
+
+  fHisto->GetListOfFunctions()->Delete();
+
+  Double_t alphaLow = GetValue("alJPsi");
+  Double_t nLow = GetValue("nlJPsi");
+  Double_t alphaUp = GetValue("auJPsi");
+  Double_t nUp = GetValue("nuJPsi");
+
+  Double_t a  = GetValue("a");
+  Double_t b  = GetValue("b");
+  Double_t c  = GetValue("c");
+  Double_t ap = GetValue("a'");
+  Double_t bp = GetValue("b'");
+  Double_t cp = GetValue("c'");
+  Double_t dp = GetValue("d'");
+
+  Double_t kJPsi = GetValue("kJPsi");
+  Double_t kPsiP = GetValue("kPsiP");
+  Double_t mJPsi = GetValue("mJPsi");
+  Double_t sJPsi = GetValue("sJPsi");
+  Double_t NofJPsi = GetValue("NofJPsi");
+  Double_t ErrStatNofJPsi = GetValue("ErrStatNofJPsi");
+
+  Double_t fitRangeLow = GetValue(kFitRangeLow);
+  Double_t fitRangeHigh = GetValue(kFitRangeHigh);
+
+  AliDebug(1,Form("values : alJPsi = %f nlJPsi = %f auJPsi = %f nuJPsi = %f",alphaLow,nLow,alphaUp,nUp));
+  AliDebug(1,Form("values : a = %f b = %f c = %f a' = %f b' = %f c' = %f d' = %f ",a,b,c,ap,bp,cp,dp));
+  AliDebug(1,Form("values : kJPsi = %f mJPsi = %f sJPsi = %f kPsiP = %f NofJPsi= %f ErrStatNofJPsi = %f",kJPsi,mJPsi,sJPsi,kPsiP,NofJPsi,ErrStatNofJPsi));
+
+  TProfile* p(0x0);
+  if ( fHisto->IsA() == TProfile::Class() ) p = static_cast<TProfile*>(fHisto);
+  else
+  {
+    AliError("Mean v2 histo has to be a TProfile");
+    return;
+  }
+
+  TProfile::Approximate();
+
+
+  //_____________
+
+  TF1* bck = new TF1("bck",this,&AliAnalysisMuMuJpsiResult::FitFunctionBackgroundPol4,fitRangeLow,fitRangeHigh,5,"AliAnalysisMuMuJpsiResult","FitFunctionBackgroundPol4");
+
+  bck->SetParameters(.4,-.2,.02);
+  SetFitRejectRange(2.6,3.4);
+
+  TFitResultPtr fitResultInit = p->Fit(bck,fitOptionBg,"");
+  std::cout << "FitResultmBkgInit=" << static_cast<int>(fitResultInit) << std::endl;
+
+    //___________ Further attempts to fit bkg if the first one fails
+  if ( static_cast<int>(fitResultInit) ) ProcessmBkgFit(fitResultInit,bck,"FitFunctionBackgroundPol2",fitOptionBg);
+  //___________
+
+  SetFitRejectRange();
+
+  TF1* fitMeanv2 = new TF1("fitMeanv2",this,&AliAnalysisMuMuJpsiResult::FitFunctionMeanPtSCB2POL2POL3POL4,fitRangeLow,fitRangeHigh,22,"AliAnalysisMuMuJpsiResult","FitFunctionMeanPtSCB2POL2POL3POL4");
+
+  fitMeanv2->SetParNames("a","b","c","ap","bp","cp","dp","kJPsi","mJPsi","sJPsi","alJPsi");
+  //                      0   1   2    3    4    5   6       7       8       9      10
+  fitMeanv2->SetParName(11,"nlJPsi");
+  fitMeanv2->SetParName(12,"auJPsi");
+  fitMeanv2->SetParName(13,"nuJPsi");
+  fitMeanv2->SetParName(14,"kPsiP");
+  fitMeanv2->SetParName(15,"<v2>JPsi");
+  fitMeanv2->SetParName(16,"<v2>BG0");
+  fitMeanv2->SetParName(17,"<v2>BG1");
+  fitMeanv2->SetParName(18,"<v2>BG2");
+  fitMeanv2->SetParName(19,"<v2>BG3");
+  fitMeanv2->SetParName(20,"<v2>BG4");
+  fitMeanv2->SetParName(21,"<v2>PsiP");
+
+  fitMeanv2->FixParameter(0,a);
+  fitMeanv2->FixParameter(1,b);
+  fitMeanv2->FixParameter(2,c);
+  fitMeanv2->FixParameter(3,ap);
+  fitMeanv2->FixParameter(4,bp);
+  fitMeanv2->FixParameter(5,cp);
+  fitMeanv2->FixParameter(6,dp);
+  fitMeanv2->FixParameter(7,kJPsi);
+  fitMeanv2->FixParameter(8,mJPsi);
+  fitMeanv2->FixParameter(9,sJPsi);
+  fitMeanv2->FixParameter(10,alphaLow);
+  fitMeanv2->FixParameter(11,nLow);
+  fitMeanv2->FixParameter(12,alphaUp);
+  fitMeanv2->FixParameter(13,nUp);
+  fitMeanv2->FixParameter(14,kPsiP);
+
+  fitMeanv2->SetParameter(15, 0.01);
+  fitMeanv2->SetParLimits(15, -1.,1.);
+
+  for ( Int_t i = 0; i < 5; ++i )
+  {
+    fitMeanv2->SetParameter(i + 16, bck->GetParameter(i));
+  }
+
+  fitMeanv2->SetParameter(21, 0.01);
+  fitMeanv2->SetParLimits(21, -1.,1.);
+
+  TFitResultPtr fitResult = p->Fit(fitMeanv2,fitOption,"");
+
+  std::cout << "FitResult=" << static_cast<int>(fitResult) << std::endl;
+  std::cout << "CovMatrixStatus = " << fitResult->CovMatrixStatus() << std::endl;
+
+  if ( static_cast<int>(fitResult) )
+  {
+    for ( Int_t i = 0; i < 5; ++i )
+    {
+      fitMeanv2->SetParameter(i + 16, bck->GetParameter(i)*0.9);
+    }
+    fitResult = p->Fit(fitMeanv2,fitOption,"");
+  }
+  else if ( fitMeanv2->GetParameter(21) <= fitMeanv2->GetParError(21) || fitMeanv2->GetParError(21) >= 0.75*fitMeanv2->GetParameter(21) )
+  {
+    fitMeanv2->FixParameter(21, 0.);
+    for ( Int_t i = 0; i < 5; ++i )
+    {
+      fitMeanv2->SetParameter(i + 16, bck->GetParameter(i)*0.6);
+    }
+    fitResult = p->Fit(fitMeanv2,fitOption,"");
+  }
+
+  std::cout << "FitResultt=" << static_cast<int>(fitResult) << std::endl;
+  std::cout << "CovMatrixStatus = " << fitResult->CovMatrixStatus() << std::endl;
+
+  std::cout << "FitChi2PerNDF = " << fitMeanv2->GetChisquare()<<"/"<<fitMeanv2->GetNDF() << std::endl;
+    //___________ Further attempts to fit if the first one fails
+  // if ( static_cast<int>(fitResult) ||  static_cast<int>(fitResult->CovMatrixStatus())!=3 ) ProcessMv2Fit(fitResult,fitMeanv2,bck,fitOption,12,4); // Int_t iParKPsip, Int_t iLastParBkg);
+  //___________
+
+  //___________Set parameters and fit functions to store in the result
+  Int_t fitStatus = 0;
+  if(!CheckFitStatus(fitResult)) fitStatus =-1;
+  else Set("FitStatus",fitStatus,0.);
+  Set("FitChi2PerNDF",fitMeanv2->GetChisquare()/fitMeanv2->GetNDF(),0.0);
+  Set("FitNDF",fitMeanv2->GetNDF(),0.0);
+  Set("mJPsi",fitMeanv2->GetParameter(8),fitMeanv2->GetParError(8));
+  Set("sJPsi",fitMeanv2->GetParameter(9),fitMeanv2->GetParError(9));
+  // Set("mv2PsiP",fitMeanv2->GetParameter(16),fitMeanv2->GetParError(16));
+
+  for ( Int_t i = 0; i < 5; ++i )
+  {
+    bck->SetParameter(i, fitMeanv2->GetParameter(i+16));
+  }
+  AttachFunctionsToHisto(0x0,0x0,bck,fitMeanv2,fitRangeLow,fitRangeHigh);//
+
+  Set("NofJPsi",NofJPsi,ErrStatNofJPsi);
+  Set("<v2>JPsi",fitMeanv2->GetParameter(15),fitMeanv2->GetParError(15));
+  // Set("<v2>PsiP",fitMeanv2->GetParameter(21),fitMeanv2->GetParError(21));
+
+}
+//_____________________________________________________________________________
+void AliAnalysisMuMuJpsiResult::FitMV2PSIPSIPRIMENA60NEWVWG2_BKGMV2POL2()
+{
+  //Fit mean dimuon mean pt to get Jpsi mean pt using the CB2 signal parameters, VWG2 for the Bkg, Jpsi mpt = cte and Bkg mpt = pol4
+
+  const char* fitOption = "SERI"; //We can add NO to avoid plotting
+  const char* fitOptionBg = "SERI"; //We can add NO to avoid plotting
+
+  fHisto->GetListOfFunctions()->Delete();
+
+  Double_t p1Left = GetValue("p1LJPsi");
+  Double_t p2Left = GetValue("p2LJPsi");
+  Double_t p3Left = GetValue("p3LJPsi");
+  Double_t p1Right = GetValue("p1RJPsi");
+  Double_t p2Right = GetValue("p2RJPsi");
+  Double_t p3Right = GetValue("p3RJPsi");
+  Double_t alphaLeft = GetValue("aLJPsi");
+  Double_t alphaRight = GetValue("aRJPsi");
+
+  Double_t kVWG2 = GetValue("kVWG2");
+  Double_t mVWG2 = GetValue("mVWG2");
+  Double_t s1VWG2 = GetValue("s1VWG2");
+  Double_t s2VWG2 = GetValue("s2VWG2");
+  Double_t gVWG2 = GetValue("gVWG2");
+  Double_t kJPsi = GetValue("kJPsi");
+  Double_t kPsiP = GetValue("kPsiP");
+  Double_t mJPsi = GetValue("mJPsi");
+  Double_t sJPsi = GetValue("sJPsi");
+  Double_t NofJPsi = GetValue("NofJPsi");
+  Double_t ErrStatNofJPsi = GetValue("ErrStatNofJPsi");
+
+
+  Double_t BG0_init    = IsValidValue(GetValue("BG0_init"))  ? GetValue("BG0_init")  : 0.4;
+  Double_t BG1_init    = IsValidValue(GetValue("BG1_init"))  ? GetValue("BG1_init")  : -.2;
+  Double_t BG2_init    = IsValidValue(GetValue("BG2_init"))  ? GetValue("BG2_init")  : .02;
+  Double_t rejRl    = IsValidValue(GetValue("rejRl"))  ? GetValue("rejRl")  : 2.6;
+  Double_t rejRh    = IsValidValue(GetValue("rejRh"))  ? GetValue("rejRh")  : 3.6;
+
+  Double_t fitRangeLow = GetValue(kFitRangeLow);
+  Double_t fitRangeHigh = GetValue(kFitRangeHigh);
+
+
+
+  AliDebug(1,Form("values : p1JPsi = %f p2LJPsi = %f p3LJPsi = %f p1RJPsi = %f p2RJPsi = %f p3RJPsi = %f  aLJPsi= %f  aRJPsi= %f",p1Left,p2Left,p3Left,p1Right,p2Right,p3Right,alphaLeft,alphaRight));
+  AliDebug(1,Form("values : kVWG2 = %f mVG2 = %f s1VWG2 = %f s2VWG2 = %f gVWG2 = %f",kVWG2, mVWG2, s1VWG2,s2VWG2,gVWG2));
+  AliDebug(1,Form("values : kJPsi = %f mJPsi = %f sJPsi = %f kPsiP = %f NofJPsi= %f ErrStatNofJPsi = %f",kJPsi,mJPsi,sJPsi,kPsiP,NofJPsi,ErrStatNofJPsi));
+  if(IsValidValue(GetValue("BG0_init"))) AliInfo(Form("Bckg initialised using parameters : %f,%f,%f",BG0_init,BG1_init,BG2_init));
+  if(IsValidValue(GetValue("rejRl"))) AliInfo(Form("Bckg initialised using reject range: %f - %f",rejRl,rejRh));
+
+  TProfile* p(0x0);
+  if ( fHisto->IsA() == TProfile::Class() ) p = static_cast<TProfile*>(fHisto);
+  else
+  {
+    AliError("Mean v2 histo has to be a TProfile");
+    return;
+  }
+
+  TProfile::Approximate();
+
+
+  //_____________
+
+  TF1* bck = new TF1("bck",this,&AliAnalysisMuMuJpsiResult::FitFunctionBackgroundPol2,fitRangeLow,fitRangeHigh,3,"AliAnalysisMuMuJpsiResult","FitFunctionBackgroundPol2");
+
+  bck->SetParameters(BG0_init,BG1_init,BG2_init);
+  SetFitRejectRange(rejRl,rejRh);
+
+  TFitResultPtr fitResultInit = p->Fit(bck,fitOptionBg,"");
+  std::cout << "FitResultmBkgInit=" << static_cast<int>(fitResultInit) << std::endl;
+
+    //___________ Further attempts to fit bkg if the first one fails
+  if ( static_cast<int>(fitResultInit) ) ProcessmBkgFit(fitResultInit,bck,"FitFunctionBackgroundPol2",fitOptionBg);
+  //___________
+
+  SetFitRejectRange();
+
+  TF1* fitMeanv2 = new TF1("fitMeanv2",this,&AliAnalysisMuMuJpsiResult::FitFunctionMeanPtSNA60NEWVWG2POL2,fitRangeLow,fitRangeHigh,22,"AliAnalysisMuMuJpsiResult","FitFunctionMeanPtSNA60NEWVWG2POL2");
+
+  fitMeanv2->SetParNames("kVWG2","mVWG2","s1VWG2","s2VWG2","gVWG2","kJPsi","mJPsi","sJPsi","p1LJPsi","p2LJPsi","p3LJPsi");
+  //                        0      1      2       3       4       5       6       7         8        9        10
+  fitMeanv2->SetParName(11,"p1RJPsi");
+  fitMeanv2->SetParName(12,"p2RJPsi");
+  fitMeanv2->SetParName(13,"p3RJPsi");
+  fitMeanv2->SetParName(14,"aLJPsi");
+  fitMeanv2->SetParName(15,"aRJPsi");
+  fitMeanv2->SetParName(16,"kPsiP");
+  fitMeanv2->SetParName(17,"<v2>JPsi");
+  fitMeanv2->SetParName(18,"<v2>BG0");
+  fitMeanv2->SetParName(19,"<v2>BG1");
+  fitMeanv2->SetParName(20,"<v2>BG2");
+  fitMeanv2->SetParName(21,"<v2>PsiP");
+
+  fitMeanv2->FixParameter(0,kVWG2);
+  fitMeanv2->FixParameter(1,mVWG2);
+  fitMeanv2->FixParameter(2,s1VWG2);
+  fitMeanv2->FixParameter(3,s2VWG2);
+  fitMeanv2->FixParameter(4,gVWG2);
+  fitMeanv2->FixParameter(5,kJPsi);
+  fitMeanv2->FixParameter(6,mJPsi);
+  fitMeanv2->FixParameter(7,sJPsi);
+
+  fitMeanv2->FixParameter(8,p1Left);
+  fitMeanv2->FixParameter(9,p2Left);
+  fitMeanv2->FixParameter(10,p3Left);
+  fitMeanv2->FixParameter(11,p1Right);
+  fitMeanv2->FixParameter(12,p2Right);
+  fitMeanv2->FixParameter(13,p3Right);
+  fitMeanv2->FixParameter(14,alphaLeft);
+  fitMeanv2->FixParameter(15,alphaRight);
+
+  fitMeanv2->FixParameter(16,kPsiP);
+
+  fitMeanv2->SetParameter(17, 0.01);
+  fitMeanv2->SetParLimits(17, -1.,1.);
+
+  for ( Int_t i = 0; i < 3; ++i )
+  {
+    fitMeanv2->SetParameter(i + 18, bck->GetParameter(i));
+  }
+
+  fitMeanv2->SetParameter(21, 0.01);
+  fitMeanv2->SetParLimits(21, -1.,1.);
+
+  TFitResultPtr fitResult = p->Fit(fitMeanv2,fitOption,"");
+
+  std::cout << "FitResult=" << static_cast<int>(fitResult) << std::endl;
+  std::cout << "CovMatrixStatus = " << fitResult->CovMatrixStatus() << std::endl;
+
+  if ( static_cast<int>(fitResult) )
+  {
+    for ( Int_t i = 0; i < 3; ++i )
+    {
+      fitMeanv2->SetParameter(i + 18, bck->GetParameter(i)*0.9);
+    }
+    fitResult = p->Fit(fitMeanv2,fitOption,"");
+  }
+  else if ( fitMeanv2->GetParameter(21) <= fitMeanv2->GetParError(21) || fitMeanv2->GetParError(21) >= 0.75*fitMeanv2->GetParameter(21) )
+  {
+    fitMeanv2->FixParameter(21, bck->Eval(3.68));
+    for ( Int_t i = 0; i < 3; ++i )
+    {
+      fitMeanv2->SetParameter(i + 18, bck->GetParameter(i)*0.6);
+    }
+    fitResult = p->Fit(fitMeanv2,fitOption,"");
+  }
+
+  std::cout << "FitResultt=" << static_cast<int>(fitResult) << std::endl;
+  std::cout << "CovMatrixStatus = " << fitResult->CovMatrixStatus() << std::endl;
+
+  std::cout << "FitChi2PerNDF = " << fitMeanv2->GetChisquare()<<"/"<<fitMeanv2->GetNDF() << std::endl;
+    //___________ Further attempts to fit if the first one fails
+  // if ( static_cast<int>(fitResult) ||  static_cast<int>(fitResult->CovMatrixStatus())!=3 ) ProcessMv2Fit(fitResult,fitMeanv2,bck,fitOption,12,4); // Int_t iParKPsip, Int_t iLastParBkg);
+  //___________
+
+  //___________Set parameters and fit functions to store in the result
+  Int_t fitStatus = 0;
+  if(!CheckFitStatus(fitResult)) fitStatus =-1;
+  else Set("FitStatus",fitStatus,0.);
+  Set("FitChi2PerNDF",fitMeanv2->GetChisquare()/fitMeanv2->GetNDF(),0.0);
+  Set("FitNDF",fitMeanv2->GetNDF(),0.0);
+  Set("mJPsi",fitMeanv2->GetParameter(6),fitMeanv2->GetParError(6));
+  Set("sJPsi",fitMeanv2->GetParameter(7),fitMeanv2->GetParError(7));
+  // Set("mv2PsiP",fitMeanv2->GetParameter(16),fitMeanv2->GetParError(16));
+
+  for ( Int_t i = 0; i < 3; ++i )
+  {
+    bck->SetParameter(i, fitMeanv2->GetParameter(i+18));
+  }
+  AttachFunctionsToHisto(0x0,0x0,bck,fitMeanv2,fitRangeLow,fitRangeHigh);//
+
+  Set("NofJPsi",NofJPsi,ErrStatNofJPsi);
+  Set("<v2>JPsi",fitMeanv2->GetParameter(17),fitMeanv2->GetParError(17));
+  // Set("<v2>PsiP",fitMeanv2->GetParameter(17),fitMeanv2->GetParError(17));
+
+}
+//_____________________________________________________________________________
+void AliAnalysisMuMuJpsiResult::FitMV2PSIPSIPRIMENA60NEWVWG2_BKGMV2POLEXP()
+{
+  //Fit mean dimuon mean pt to get Jpsi mean pt using the CB2 signal parameters, VWG2 for the Bkg, Jpsi mpt = cte and Bkg mpt = pol4
+
+  const char* fitOption = "SER"; //We can add NO to avoid plotting
+  const char* fitOptionBg = "SER"; //We can add NO to avoid plotting
+
+  fHisto->GetListOfFunctions()->Delete();
+
+  Double_t p1Left = GetValue("p1LJPsi");
+  Double_t p2Left = GetValue("p2LJPsi");
+  Double_t p3Left = GetValue("p3LJPsi");
+  Double_t p1Right = GetValue("p1RJPsi");
+  Double_t p2Right = GetValue("p2RJPsi");
+  Double_t p3Right = GetValue("p3RJPsi");
+  Double_t alphaLeft = GetValue("aLJPsi");
+  Double_t alphaRight = GetValue("aRJPsi");
+
+  Double_t kVWG2 = GetValue("kVWG2");
+  Double_t mVWG2 = GetValue("mVWG2");
+  Double_t s1VWG2 = GetValue("s1VWG2");
+  Double_t s2VWG2 = GetValue("s2VWG2");
+  Double_t gVWG2 = GetValue("gVWG2");
+  Double_t kJPsi = GetValue("kJPsi");
+  Double_t kPsiP = GetValue("kPsiP");
+  Double_t mJPsi = GetValue("mJPsi");
+  Double_t sJPsi = GetValue("sJPsi");
+  Double_t NofJPsi = GetValue("NofJPsi");
+  Double_t ErrStatNofJPsi = GetValue("ErrStatNofJPsi");
+
+  Double_t BG0_init    = IsValidValue(GetValue("BG0_init"))  ? GetValue("BG0_init")  : .2;
+  Double_t BG1_init    = IsValidValue(GetValue("BG1_init"))  ? GetValue("BG1_init")  : -.05;
+  Double_t BGexp_init    = IsValidValue(GetValue("BGexp_init"))  ? GetValue("BGexp_init")  : -0.4;
+  Double_t rejRl    = IsValidValue(GetValue("rejRl"))  ? GetValue("rejRl")  : 2.6;
+  Double_t rejRh    = IsValidValue(GetValue("rejRh"))  ? GetValue("rejRh")  : 4.;
+
+
+  Double_t fitRangeLow = GetValue(kFitRangeLow);
+  Double_t fitRangeHigh = GetValue(kFitRangeHigh);
+
+
+
+  AliDebug(1,Form("values : p1JPsi = %f p2LJPsi = %f p3LJPsi = %f p1RJPsi = %f p2RJPsi = %f p3RJPsi = %f  aLJPsi= %f  aRJPsi= %f",p1Left,p2Left,p3Left,p1Right,p2Right,p3Right,alphaLeft,alphaRight));
+  AliDebug(1,Form("values : kVWG2 = %f mVG2 = %f s1VWG2 = %f s2VWG2 = %f gVWG2 = %f",kVWG2, mVWG2, s1VWG2,s2VWG2,gVWG2));
+  AliDebug(1,Form("values : kJPsi = %f mJPsi = %f sJPsi = %f kPsiP = %f NofJPsi= %f ErrStatNofJPsi = %f",kJPsi,mJPsi,sJPsi,kPsiP,NofJPsi,ErrStatNofJPsi));
+  if(IsValidValue(GetValue("BG0_init"))) AliInfo(Form("Bckg initialised using parameters : %f,%f,%f",BG0_init,BG1_init,BGexp_init));
+  if(IsValidValue(GetValue("rejRl"))) AliInfo(Form("Bckg initialised using reject range: %f - %f",rejRl,rejRh));
+  //  TString resultName(Form("MEANV2FIT_%salphalow=%5.2fnlow=%5.2falphaup=%5.2fnup=%5.2f",fitName.Data(),par[7],par[8],par[9],par[10]));
+  TProfile* p(0x0);
+  if ( fHisto->IsA() == TProfile::Class() ) p = static_cast<TProfile*>(fHisto);
+  else
+  {
+    AliError("Mean v2 histo has to be a TProfile");
+    return;
+  }
+
+  TProfile::Approximate();
+
+
+  //_____________
+
+  TF1* bck = new TF1("bck",this,&AliAnalysisMuMuJpsiResult::FitFunctionBackgroundPolExp,fitRangeLow,fitRangeHigh,3,"AliAnalysisMuMuJpsiResult","FitFunctionBackgroundPolExp");
+
+  bck->SetParameters(BG0_init,BG1_init,BGexp_init);
+  SetFitRejectRange(rejRl,rejRh);
+
+  TFitResultPtr fitResultInit = p->Fit(bck,fitOptionBg,"");
+  std::cout << "FitResultmBkgInit=" << static_cast<int>(fitResultInit) << std::endl;
+
+    //___________ Further attempts to fit bkg if the first one fails
+  if ( static_cast<int>(fitResultInit) ) ProcessmBkgFit(fitResultInit,bck,"FitFunctionBackgroundPol2",fitOptionBg);
+  //___________
+
+  SetFitRejectRange();
+
+  TF1* fitMeanv2 = new TF1("fitMeanv2",this,&AliAnalysisMuMuJpsiResult::FitFunctionMeanPtSNA60NEWVWG2POLEXP,fitRangeLow,fitRangeHigh,22,"AliAnalysisMuMuJpsiResult","FitFunctionMeanPtSNA60NEWVWG2POLEXP");
+
+  fitMeanv2->SetParNames("kVWG2","mVWG2","s1VWG2","s2VWG2","gVWG2","kJPsi","mJPsi","sJPsi","p1LJPsi","p2LJPsi","p3LJPsi");
+  //                        0      1      2       3       4       5       6       7         8        9        10
+  fitMeanv2->SetParName(11,"p1RJPsi");
+  fitMeanv2->SetParName(12,"p2RJPsi");
+  fitMeanv2->SetParName(13,"p3RJPsi");
+  fitMeanv2->SetParName(14,"aLJPsi");
+  fitMeanv2->SetParName(15,"aRJPsi");
+  fitMeanv2->SetParName(16,"kPsiP");
+  fitMeanv2->SetParName(17,"<v2>JPsi");
+  fitMeanv2->SetParName(18,"<v2>BG0");
+  fitMeanv2->SetParName(19,"<v2>BG1");
+  fitMeanv2->SetParName(20,"<v2>BGEXP");
+  fitMeanv2->SetParName(21,"<v2>PsiP");
+
+  fitMeanv2->FixParameter(0,kVWG2);
+  fitMeanv2->FixParameter(1,mVWG2);
+  fitMeanv2->FixParameter(2,s1VWG2);
+  fitMeanv2->FixParameter(3,s2VWG2);
+  fitMeanv2->FixParameter(4,gVWG2);
+  fitMeanv2->FixParameter(5,kJPsi);
+  fitMeanv2->FixParameter(6,mJPsi);
+  fitMeanv2->FixParameter(7,sJPsi);
+
+  fitMeanv2->FixParameter(8,p1Left);
+  fitMeanv2->FixParameter(9,p2Left);
+  fitMeanv2->FixParameter(10,p3Left);
+  fitMeanv2->FixParameter(11,p1Right);
+  fitMeanv2->FixParameter(12,p2Right);
+  fitMeanv2->FixParameter(13,p3Right);
+  fitMeanv2->FixParameter(14,alphaLeft);
+  fitMeanv2->FixParameter(15,alphaRight);
+
+  fitMeanv2->FixParameter(16,kPsiP);
+
+  fitMeanv2->SetParameter(17, 0.01);
+  fitMeanv2->SetParLimits(17, -1.,1.);
+
+  for ( Int_t i = 0; i < 3; ++i )
+  {
+    fitMeanv2->SetParameter(i + 18, bck->GetParameter(i));
+  }
+
+  fitMeanv2->SetParameter(21, 0.01);
+  fitMeanv2->SetParLimits(21, -1.,1.);
+
+  TFitResultPtr fitResult = p->Fit(fitMeanv2,fitOption,"");
+
+  std::cout << "FitResult=" << static_cast<int>(fitResult) << std::endl;
+  std::cout << "CovMatrixStatus = " << fitResult->CovMatrixStatus() << std::endl;
+
+  if ( static_cast<int>(fitResult) )
+  {
+    for ( Int_t i = 0; i < 3; ++i )
+    {
+      fitMeanv2->SetParameter(i + 18, bck->GetParameter(i)*0.9);
+    }
+    fitResult = p->Fit(fitMeanv2,fitOption,"");
+  }
+  else if ( fitMeanv2->GetParameter(21) <= fitMeanv2->GetParError(21) || fitMeanv2->GetParError(21) >= 0.75*fitMeanv2->GetParameter(21) )
+  {
+    fitMeanv2->FixParameter(21, bck->Eval(3.68));
+    for ( Int_t i = 0; i < 3; ++i )
+    {
+      fitMeanv2->SetParameter(i + 18, bck->GetParameter(i)*0.6);
+    }
+    fitResult = p->Fit(fitMeanv2,fitOption,"");
+  }
+
+  std::cout << "FitResultt=" << static_cast<int>(fitResult) << std::endl;
+  std::cout << "CovMatrixStatus = " << fitResult->CovMatrixStatus() << std::endl;
+
+  std::cout << "FitChi2PerNDF = " << fitMeanv2->GetChisquare()<<"/"<<fitMeanv2->GetNDF() << std::endl;
+    //___________ Further attempts to fit if the first one fails
+  // if ( static_cast<int>(fitResult) ||  static_cast<int>(fitResult->CovMatrixStatus())!=3 ) ProcessMv2Fit(fitResult,fitMeanv2,bck,fitOption,12,4); // Int_t iParKPsip, Int_t iLastParBkg);
+  //___________
+
+  //___________Set parameters and fit functions to store in the result
+  Int_t fitStatus = 0;
+  if(!CheckFitStatus(fitResult)) fitStatus =-1;
+  else Set("FitStatus",fitStatus,0.);
+  Set("FitChi2PerNDF",fitMeanv2->GetChisquare()/fitMeanv2->GetNDF(),0.0);
+  Set("FitNDF",fitMeanv2->GetNDF(),0.0);
+  Set("mJPsi",fitMeanv2->GetParameter(6),fitMeanv2->GetParError(6));
+  Set("sJPsi",fitMeanv2->GetParameter(7),fitMeanv2->GetParError(7));
+  // Set("mv2PsiP",fitMeanv2->GetParameter(16),fitMeanv2->GetParError(16));
+
+  for ( Int_t i = 0; i < 3; ++i )
+  {
+    bck->SetParameter(i, fitMeanv2->GetParameter(i+18));
+  }
+  AttachFunctionsToHisto(0x0,0x0,bck,fitMeanv2,fitRangeLow,fitRangeHigh);//
+  Set("NofJPsi",NofJPsi,ErrStatNofJPsi);
+  Set("<v2>JPsi",fitMeanv2->GetParameter(17),fitMeanv2->GetParError(17));
+  // Set("<v2>PsiP",fitMeanv2->GetParameter(17),fitMeanv2->GetParError(17));
+
+}
+//_____________________________________________________________________________
+void AliAnalysisMuMuJpsiResult::FitMV2PSIPSIPRIMENA60NEWVWG2_BKGMV2POL2EXP()
+{
+  //Fit mean dimuon mean pt to get Jpsi mean pt using the CB2 signal parameters, VWG2 for the Bkg, Jpsi mpt = cte and Bkg mpt = pol4
+
+  const char* fitOption = "SERI"; //We can add NO to avoid plotting
+  const char* fitOptionBg = "SERI"; //We can add NO to avoid plotting
+
+  fHisto->GetListOfFunctions()->Delete();
+
+  Double_t p1Left = GetValue("p1LJPsi");
+  Double_t p2Left = GetValue("p2LJPsi");
+  Double_t p3Left = GetValue("p3LJPsi");
+  Double_t p1Right = GetValue("p1RJPsi");
+  Double_t p2Right = GetValue("p2RJPsi");
+  Double_t p3Right = GetValue("p3RJPsi");
+  Double_t alphaLeft = GetValue("aLJPsi");
+  Double_t alphaRight = GetValue("aRJPsi");
+
+  Double_t kVWG2 = GetValue("kVWG2");
+  Double_t mVWG2 = GetValue("mVWG2");
+  Double_t s1VWG2 = GetValue("s1VWG2");
+  Double_t s2VWG2 = GetValue("s2VWG2");
+  Double_t gVWG2 = GetValue("gVWG2");
+  Double_t kJPsi = GetValue("kJPsi");
+  Double_t kPsiP = GetValue("kPsiP");
+  Double_t mJPsi = GetValue("mJPsi");
+  Double_t sJPsi = GetValue("sJPsi");
+  Double_t NofJPsi = GetValue("NofJPsi");
+  Double_t ErrStatNofJPsi = GetValue("ErrStatNofJPsi");
+
+  Double_t fitRangeLow = GetValue(kFitRangeLow);
+  Double_t fitRangeHigh = GetValue(kFitRangeHigh);
+
+
+  //  TString resultName(Form("MEANV2FIT_%salphalow=%5.2fnlow=%5.2falphaup=%5.2fnup=%5.2f",fitName.Data(),par[7],par[8],par[9],par[10]));
+  TProfile* p(0x0);
+  if ( fHisto->IsA() == TProfile::Class() ) p = static_cast<TProfile*>(fHisto);
+  else
+  {
+    AliError("Mean v2 histo has to be a TProfile");
+    return;
+  }
+
+  TProfile::Approximate();
+
+
+  //_____________
+
+  TF1* bck = new TF1("bck",this,&AliAnalysisMuMuJpsiResult::FitFunctionBackgroundPol2Exp,fitRangeLow,fitRangeHigh,4,"AliAnalysisMuMuJpsiResult","FitFunctionBackgroundPol2Exp");
+
+  bck->SetParameters(1.8,-1.,.1,-.7);
+  bck->SetParLimits(0,0.,10.);
+  SetFitRejectRange(2.4,3.6);
+
+  TFitResultPtr fitResultInit = p->Fit(bck,fitOptionBg,"");
+  std::cout << "FitResultmBkgInit=" << static_cast<int>(fitResultInit) << std::endl;
+
+    //___________ Further attempts to fit bkg if the first one fails
+  if ( static_cast<int>(fitResultInit) ) ProcessmBkgFit(fitResultInit,bck,"FitFunctionBackgroundPol2Exp",fitOptionBg);
+  //___________
+
+  SetFitRejectRange();
+
+  TF1* fitMeanv2 = new TF1("fitMeanv2",this,&AliAnalysisMuMuJpsiResult::FitFunctionMeanPtSNA60NEWVWG2POL2EXP,fitRangeLow,fitRangeHigh,23,"AliAnalysisMuMuJpsiResult","FitFunctionMeanPtSNA60NEWVWG2POL2EXP");
+
+  fitMeanv2->SetParNames("kVWG2","mVWG2","s1VWG2","s2VWG2","gVWG2","kJPsi","mJPsi","sJPsi","p1LJPsi","p2LJPsi","p3LJPsi");
+  //                        0      1      2       3       4       5       6       7         8        9        10
+  fitMeanv2->SetParName(11,"p1RJPsi");
+  fitMeanv2->SetParName(12,"p2RJPsi");
+  fitMeanv2->SetParName(13,"p3RJPsi");
+  fitMeanv2->SetParName(14,"aLJPsi");
+  fitMeanv2->SetParName(15,"aRJPsi");
+  fitMeanv2->SetParName(16,"kPsiP");
+  fitMeanv2->SetParName(17,"<v2>JPsi");
+  fitMeanv2->SetParName(18,"<v2>BG0");
+  fitMeanv2->SetParName(19,"<v2>BG1");
+  fitMeanv2->SetParName(20,"<v2>BG2");
+  fitMeanv2->SetParName(21,"<v2>BGEXP");
+  fitMeanv2->SetParName(22,"<v2>PsiP");
+
+  fitMeanv2->FixParameter(0,kVWG2);
+  fitMeanv2->FixParameter(1,mVWG2);
+  fitMeanv2->FixParameter(2,s1VWG2);
+  fitMeanv2->FixParameter(3,s2VWG2);
+  fitMeanv2->FixParameter(4,gVWG2);
+  fitMeanv2->FixParameter(5,kJPsi);
+  fitMeanv2->FixParameter(6,mJPsi);
+  fitMeanv2->FixParameter(7,sJPsi);
+
+  fitMeanv2->FixParameter(8,p1Left);
+  fitMeanv2->FixParameter(9,p2Left);
+  fitMeanv2->FixParameter(10,p3Left);
+  fitMeanv2->FixParameter(11,p1Right);
+  fitMeanv2->FixParameter(12,p2Right);
+  fitMeanv2->FixParameter(13,p3Right);
+  fitMeanv2->FixParameter(14,alphaLeft);
+  fitMeanv2->FixParameter(15,alphaRight);
+
+  fitMeanv2->FixParameter(16,kPsiP);
+
+  fitMeanv2->SetParameter(17, 0.01);
+  fitMeanv2->SetParLimits(17, -1.,1.);
+
+  for ( Int_t i = 0; i < 4; ++i )
+  {
+    fitMeanv2->SetParameter(i + 18, bck->GetParameter(i));
+  }
+
+  fitMeanv2->SetParameter(22, 0.01);
+  fitMeanv2->SetParLimits(22, -1.,1.);
+
+  TFitResultPtr fitResult = p->Fit(fitMeanv2,fitOption,"");
+
+  std::cout << "FitResult=" << static_cast<int>(fitResult) << std::endl;
+  std::cout << "CovMatrixStatus = " << fitResult->CovMatrixStatus() << std::endl;
+
+  if ( static_cast<int>(fitResult) )
+  {
+    for ( Int_t i = 0; i < 4; ++i )
+    {
+      fitMeanv2->SetParameter(i + 18, bck->GetParameter(i)*0.9);
+    }
+    fitResult = p->Fit(fitMeanv2,fitOption,"");
+  }
+  else if ( fitMeanv2->GetParameter(22) <= fitMeanv2->GetParError(22) || fitMeanv2->GetParError(22) >= 0.75*fitMeanv2->GetParameter(22) )
+  {
+    fitMeanv2->FixParameter(22, 0.);
+    for ( Int_t i = 0; i < 4; ++i )
+    {
+      fitMeanv2->SetParameter(i + 18, bck->GetParameter(i)*0.6);
+    }
+    fitResult = p->Fit(fitMeanv2,fitOption,"");
+  }
+
+  std::cout << "FitResultt=" << static_cast<int>(fitResult) << std::endl;
+  std::cout << "CovMatrixStatus = " << fitResult->CovMatrixStatus() << std::endl;
+
+  std::cout << "FitChi2PerNDF = " << fitMeanv2->GetChisquare()<<"/"<<fitMeanv2->GetNDF() << std::endl;
+    //___________ Further attempts to fit if the first one fails
+  // if ( static_cast<int>(fitResult) ||  static_cast<int>(fitResult->CovMatrixStatus())!=3 ) ProcessMv2Fit(fitResult,fitMeanv2,bck,fitOption,12,4); // Int_t iParKPsip, Int_t iLastParBkg);
+  //___________
+
+  //___________Set parameters and fit functions to store in the result
+  Int_t fitStatus = 0;
+  if(!CheckFitStatus(fitResult)) fitStatus =-1;
+  else Set("FitStatus",fitStatus,0.);
+  Set("FitChi2PerNDF",fitMeanv2->GetChisquare()/fitMeanv2->GetNDF(),0.0);
+  Set("FitNDF",fitMeanv2->GetNDF(),0.0);
+  Set("mJPsi",fitMeanv2->GetParameter(6),fitMeanv2->GetParError(6));
+  Set("sJPsi",fitMeanv2->GetParameter(7),fitMeanv2->GetParError(7));
+  // Set("mv2PsiP",fitMeanv2->GetParameter(16),fitMeanv2->GetParError(16));
+
+  for ( Int_t i = 0; i < 4; ++i )
+  {
+    bck->SetParameter(i, fitMeanv2->GetParameter(i+18));
+  }
+  AttachFunctionsToHisto(0x0,0x0,bck,fitMeanv2,fitRangeLow,fitRangeHigh);//
+
+  Set("NofJPsi",NofJPsi,ErrStatNofJPsi);
+  Set("<v2>JPsi",fitMeanv2->GetParameter(17),fitMeanv2->GetParError(17));
+  // Set("<v2>PsiP",fitMeanv2->GetParameter(17),fitMeanv2->GetParError(17));
+
+}
+//_____________________________________________________________________________
+void AliAnalysisMuMuJpsiResult::FitMV2PSIPSIPRIMENA60NEWVWG2_BKGMV2POL4()
+{
+  //Fit mean dimuon mean pt to get Jpsi mean pt using the CB2 signal parameters, VWG2 for the Bkg, Jpsi mpt = cte and Bkg mpt = pol4
+
+  const char* fitOption = "SERI"; //We can add NO to avoid plotting
+  const char* fitOptionBg = "SERI"; //We can add NO to avoid plotting
+
+  fHisto->GetListOfFunctions()->Delete();
+
+  Double_t p1Left = GetValue("p1LJPsi");
+  Double_t p2Left = GetValue("p2LJPsi");
+  Double_t p3Left = GetValue("p3LJPsi");
+  Double_t p1Right = GetValue("p1RJPsi");
+  Double_t p2Right = GetValue("p2RJPsi");
+  Double_t p3Right = GetValue("p3RJPsi");
+  Double_t alphaLeft = GetValue("aLJPsi");
+  Double_t alphaRight = GetValue("aRJPsi");
+
+  Double_t kVWG2 = GetValue("kVWG2");
+  Double_t mVWG2 = GetValue("mVWG2");
+  Double_t s1VWG2 = GetValue("s1VWG2");
+  Double_t s2VWG2 = GetValue("s2VWG2");
+  Double_t gVWG2 = GetValue("gVWG2");
+  Double_t kJPsi = GetValue("kJPsi");
+  Double_t kPsiP = GetValue("kPsiP");
+  Double_t mJPsi = GetValue("mJPsi");
+  Double_t sJPsi = GetValue("sJPsi");
+  Double_t NofJPsi = GetValue("NofJPsi");
+  Double_t ErrStatNofJPsi = GetValue("ErrStatNofJPsi");
+
+  Double_t fitRangeLow = GetValue(kFitRangeLow);
+  Double_t fitRangeHigh = GetValue(kFitRangeHigh);
+
+
+  //  TString resultName(Form("MEANV2FIT_%salphalow=%5.2fnlow=%5.2falphaup=%5.2fnup=%5.2f",fitName.Data(),par[7],par[8],par[9],par[10]));
+  TProfile* p(0x0);
+  if ( fHisto->IsA() == TProfile::Class() ) p = static_cast<TProfile*>(fHisto);
+  else
+  {
+    AliError("Mean v2 histo has to be a TProfile");
+    return;
+  }
+
+  TProfile::Approximate();
+
+
+  //_____________
+
+  TF1* bck = new TF1("bck",this,&AliAnalysisMuMuJpsiResult::FitFunctionBackgroundPol4,fitRangeLow,fitRangeHigh,5,"AliAnalysisMuMuJpsiResult","FitFunctionBackgroundPol4");
+
+  bck->SetParameters(.6,-.4,.03,0.015,-0.003);
+  bck->SetParLimits(0,0.,2.);
+  SetFitRejectRange(2.5,3.5);
+  // SetFitRejectRange(2.6,4.0);
+
+  TFitResultPtr fitResultInit = p->Fit(bck,fitOptionBg,"");
+  std::cout << "FitResultmBkgInit=" << static_cast<int>(fitResultInit) << std::endl;
+
+    //___________ Further attempts to fit bkg if the first one fails
+  if ( static_cast<int>(fitResultInit) ) ProcessmBkgFit(fitResultInit,bck,"FitFunctionBackgroundPol4",fitOptionBg);
+  //___________
+
+  SetFitRejectRange();
+
+  TF1* fitMeanv2 = new TF1("fitMeanv2",this,&AliAnalysisMuMuJpsiResult::FitFunctionMeanPtSNA60NEWVWG2POL4,fitRangeLow,fitRangeHigh,24,"AliAnalysisMuMuJpsiResult","FitFunctionMeanPtSNA60NEWVWG2POL4");
+
+  fitMeanv2->SetParNames("kVWG2","mVWG2","s1VWG2","s2VWG2","gVWG2","kJPsi","mJPsi","sJPsi","p1LJPsi","p2LJPsi","p3LJPsi");
+  //                        0      1      2       3       4       5       6       7         8        9        10
+  fitMeanv2->SetParName(11,"p1RJPsi");
+  fitMeanv2->SetParName(12,"p2RJPsi");
+  fitMeanv2->SetParName(13,"p3RJPsi");
+  fitMeanv2->SetParName(14,"aLJPsi");
+  fitMeanv2->SetParName(15,"aRJPsi");
+  fitMeanv2->SetParName(16,"kPsiP");
+  fitMeanv2->SetParName(17,"<v2>JPsi");
+  fitMeanv2->SetParName(18,"<v2>BG0");
+  fitMeanv2->SetParName(19,"<v2>BG1");
+  fitMeanv2->SetParName(20,"<v2>BG2");
+  fitMeanv2->SetParName(21,"<v2>BG3");
+  fitMeanv2->SetParName(22,"<v2>BG4");
+  fitMeanv2->SetParName(23,"<v2>PsiP");
+
+  fitMeanv2->FixParameter(0,kVWG2);
+  fitMeanv2->FixParameter(1,mVWG2);
+  fitMeanv2->FixParameter(2,s1VWG2);
+  fitMeanv2->FixParameter(3,s2VWG2);
+  fitMeanv2->FixParameter(4,gVWG2);
+  fitMeanv2->FixParameter(5,kJPsi);
+  fitMeanv2->FixParameter(6,mJPsi);
+  fitMeanv2->FixParameter(7,sJPsi);
+
+  fitMeanv2->FixParameter(8,p1Left);
+  fitMeanv2->FixParameter(9,p2Left);
+  fitMeanv2->FixParameter(10,p3Left);
+  fitMeanv2->FixParameter(11,p1Right);
+  fitMeanv2->FixParameter(12,p2Right);
+  fitMeanv2->FixParameter(13,p3Right);
+  fitMeanv2->FixParameter(14,alphaLeft);
+  fitMeanv2->FixParameter(15,alphaRight);
+
+  fitMeanv2->FixParameter(16,kPsiP);
+
+  fitMeanv2->SetParameter(17, 0.01);
+  fitMeanv2->SetParLimits(17, -1.,1.);
+
+  for ( Int_t i = 0; i < 5; ++i )
+  {
+    fitMeanv2->SetParameter(i + 18, bck->GetParameter(i));
+  }
+
+  fitMeanv2->SetParameter(23, 0.01);
+  fitMeanv2->SetParLimits(23, -1.,1.);
+
+  TFitResultPtr fitResult = p->Fit(fitMeanv2,fitOption,"");
+
+  std::cout << "FitResult=" << static_cast<int>(fitResult) << std::endl;
+  std::cout << "CovMatrixStatus = " << fitResult->CovMatrixStatus() << std::endl;
+
+  if ( static_cast<int>(fitResult) )
+  {
+    for ( Int_t i = 0; i < 5; ++i )
+    {
+      fitMeanv2->SetParameter(i + 18, bck->GetParameter(i)*0.9);
+    }
+    fitResult = p->Fit(fitMeanv2,fitOption,"");
+  }
+  else if ( fitMeanv2->GetParameter(23) <= fitMeanv2->GetParError(23) || fitMeanv2->GetParError(23) >= 0.75*fitMeanv2->GetParameter(23) )
+  {
+    fitMeanv2->FixParameter(23, bck->Eval(3.68));
+    for ( Int_t i = 0; i < 5; ++i )
+    {
+      fitMeanv2->SetParameter(i + 18, bck->GetParameter(i)*0.6);
+    }
+    fitResult = p->Fit(fitMeanv2,fitOption,"");
+  }
+
+  std::cout << "FitResultt=" << static_cast<int>(fitResult) << std::endl;
+  std::cout << "CovMatrixStatus = " << fitResult->CovMatrixStatus() << std::endl;
+
+  std::cout << "FitChi2PerNDF = " << fitMeanv2->GetChisquare()<<"/"<<fitMeanv2->GetNDF() << std::endl;
+    //___________ Further attempts to fit if the first one fails
+  // if ( static_cast<int>(fitResult) ||  static_cast<int>(fitResult->CovMatrixStatus())!=3 ) ProcessMv2Fit(fitResult,fitMeanv2,bck,fitOption,12,4); // Int_t iParKPsip, Int_t iLastParBkg);
+  //___________
+
+  //___________Set parameters and fit functions to store in the result
+  Int_t fitStatus = 0;
+  if(!CheckFitStatus(fitResult)) fitStatus =-1;
+  else Set("FitStatus",fitStatus,0.);
+  Set("FitChi2PerNDF",fitMeanv2->GetChisquare()/fitMeanv2->GetNDF(),0.0);
+  Set("FitNDF",fitMeanv2->GetNDF(),0.0);
+  Set("mJPsi",fitMeanv2->GetParameter(6),fitMeanv2->GetParError(6));
+  Set("sJPsi",fitMeanv2->GetParameter(7),fitMeanv2->GetParError(7));
+  // Set("mv2PsiP",fitMeanv2->GetParameter(16),fitMeanv2->GetParError(16));
+
+  for ( Int_t i = 0; i < 5; ++i )
+  {
+    bck->SetParameter(i, fitMeanv2->GetParameter(i+18));
+  }
+  AttachFunctionsToHisto(0x0,0x0,bck,fitMeanv2,fitRangeLow,fitRangeHigh);//
+
+  Set("NofJPsi",NofJPsi,ErrStatNofJPsi);
+  Set("<v2>JPsi",fitMeanv2->GetParameter(17),fitMeanv2->GetParError(17));
+  // Set("<v2>PsiP",fitMeanv2->GetParameter(17),fitMeanv2->GetParError(17));
+
+}
+//_____________________________________________________________________________
+void AliAnalysisMuMuJpsiResult::FitMV2PSIPSIPRIMENA60NEWVWG2_BKGMV2POL4Cheb()
+{
+  //Fit mean dimuon mean pt to get Jpsi mean pt using the CB2 signal parameters, VWG2 for the Bkg, Jpsi mpt = cte and Bkg mpt = pol4
+
+  const char* fitOption = "SER"; //We can add NO to avoid plotting
+  const char* fitOptionBg = "SER"; //We can add NO to avoid plotting
+
+  fHisto->GetListOfFunctions()->Delete();
+
+  Double_t p1Left = GetValue("p1LJPsi");
+  Double_t p2Left = GetValue("p2LJPsi");
+  Double_t p3Left = GetValue("p3LJPsi");
+  Double_t p1Right = GetValue("p1RJPsi");
+  Double_t p2Right = GetValue("p2RJPsi");
+  Double_t p3Right = GetValue("p3RJPsi");
+  Double_t alphaLeft = GetValue("aLJPsi");
+  Double_t alphaRight = GetValue("aRJPsi");
+
+  Double_t kVWG2 = GetValue("kVWG2");
+  Double_t mVWG2 = GetValue("mVWG2");
+  Double_t s1VWG2 = GetValue("s1VWG2");
+  Double_t s2VWG2 = GetValue("s2VWG2");
+  Double_t gVWG2 = GetValue("gVWG2");
+  Double_t kJPsi = GetValue("kJPsi");
+  Double_t kPsiP = GetValue("kPsiP");
+  Double_t mJPsi = GetValue("mJPsi");
+  Double_t sJPsi = GetValue("sJPsi");
+  Double_t NofJPsi = GetValue("NofJPsi");
+  Double_t ErrStatNofJPsi = GetValue("ErrStatNofJPsi");
+
+  Double_t BG0_init    = IsValidValue(GetValue("BG0_init"))  ? GetValue("BG0_init")  : 0.4;
+  Double_t BG1_init    = IsValidValue(GetValue("BG1_init"))  ? GetValue("BG1_init")  : -.2;
+  Double_t BG2_init    = IsValidValue(GetValue("BG2_init"))  ? GetValue("BG2_init")  : .02;
+  Double_t BG3_init    = IsValidValue(GetValue("BG3_init"))  ? GetValue("BG3_init")  : -.2;
+  Double_t BG4_init    = IsValidValue(GetValue("BG4_init"))  ? GetValue("BG4_init")  : .02;
+  Double_t rejRl    = IsValidValue(GetValue("rejRl"))  ? GetValue("rejRl")  : 2.6;
+  Double_t rejRh    = IsValidValue(GetValue("rejRh"))  ? GetValue("rejRh")  : 3.6;
+  Double_t fitRangeLow = GetValue(kFitRangeLow);
+  Double_t fitRangeHigh = GetValue(kFitRangeHigh);
+
+  AliDebug(1,Form("values : p1JPsi = %f p2LJPsi = %f p3LJPsi = %f p1RJPsi = %f p2RJPsi = %f p3RJPsi = %f  aLJPsi= %f  aRJPsi= %f",p1Left,p2Left,p3Left,p1Right,p2Right,p3Right,alphaLeft,alphaRight));
+  AliDebug(1,Form("values : kVWG2 = %f mVG2 = %f s1VWG2 = %f s2VWG2 = %f gVWG2 = %f",kVWG2, mVWG2, s1VWG2,s2VWG2,gVWG2));
+  AliDebug(1,Form("values : kJPsi = %f mJPsi = %f sJPsi = %f kPsiP = %f NofJPsi= %f ErrStatNofJPsi = %f",kJPsi,mJPsi,sJPsi,kPsiP,NofJPsi,ErrStatNofJPsi));
+  if(IsValidValue(GetValue("BG0_init"))) AliInfo(Form("Bckg initialised using parameters : %f,%f,%f,%f",BG0_init,BG1_init,BG3_init,BG4_init));
+  if(IsValidValue(GetValue("rejRl"))) AliInfo(Form("Bckg initialised using reject range: %f - %f",rejRl,rejRh));
+  //  TString resultName(Form("MEANV2FIT_%salphalow=%5.2fnlow=%5.2falphaup=%5.2fnup=%5.2f",fitName.Data(),par[7],par[8],par[9],par[10]));
+  TProfile* p(0x0);
+  if ( fHisto->IsA() == TProfile::Class() ) p = static_cast<TProfile*>(fHisto);
+  else
+  {
+    AliError("Mean v2 histo has to be a TProfile");
+    return;
+  }
+
+  TProfile::Approximate();
+
+
+  //_____________
+
+  TF1* bck = new TF1("bck",this,&AliAnalysisMuMuJpsiResult::FitFunctionBackgroundPol4Cheb,fitRangeLow,fitRangeHigh,5,"AliAnalysisMuMuJpsiResult","FitFunctionBackgroundPol4Cheb");
+  bck->SetParameters(BG0_init,BG1_init,BG2_init,BG3_init,BG4_init);
+  SetFitRejectRange(rejRl,rejRh);
+
+  TFitResultPtr fitResultInit = p->Fit(bck,fitOptionBg,"");
+  std::cout << "FitResultmBkgInit=" << static_cast<int>(fitResultInit) << std::endl;
+
+    //___________ Further attempts to fit bkg if the first one fails
+  if ( static_cast<int>(fitResultInit) ) ProcessmBkgFit(fitResultInit,bck,"FitFunctionBackgroundPol4Cheb",fitOptionBg);
+  //___________
+
+  SetFitRejectRange();
+
+  TF1* fitMeanv2 = new TF1("fitMeanv2",this,&AliAnalysisMuMuJpsiResult::FitFunctionMeanPtSNA60NEWVWG2POL4Cheb,fitRangeLow,fitRangeHigh,24,"AliAnalysisMuMuJpsiResult","FitFunctionMeanPtSNA60NEWVWG2POL4Cheb");
+
+  fitMeanv2->SetParNames("kVWG2","mVWG2","s1VWG2","s2VWG2","gVWG2","kJPsi","mJPsi","sJPsi","p1LJPsi","p2LJPsi","p3LJPsi");
+  //                        0      1      2       3       4       5       6       7         8        9        10
+  fitMeanv2->SetParName(11,"p1RJPsi");
+  fitMeanv2->SetParName(12,"p2RJPsi");
+  fitMeanv2->SetParName(13,"p3RJPsi");
+  fitMeanv2->SetParName(14,"aLJPsi");
+  fitMeanv2->SetParName(15,"aRJPsi");
+  fitMeanv2->SetParName(16,"kPsiP");
+  fitMeanv2->SetParName(17,"<v2>JPsi");
+  fitMeanv2->SetParName(18,"<v2>BGC0");
+  fitMeanv2->SetParName(19,"<v2>BGC1");
+  fitMeanv2->SetParName(20,"<v2>BGC2");
+  fitMeanv2->SetParName(21,"<v2>BGC3");
+  fitMeanv2->SetParName(22,"<v2>BGC4");
+  fitMeanv2->SetParName(23,"<v2>PsiP");
+
+  fitMeanv2->FixParameter(0,kVWG2);
+  fitMeanv2->FixParameter(1,mVWG2);
+  fitMeanv2->FixParameter(2,s1VWG2);
+  fitMeanv2->FixParameter(3,s2VWG2);
+  fitMeanv2->FixParameter(4,gVWG2);
+  fitMeanv2->FixParameter(5,kJPsi);
+  fitMeanv2->FixParameter(6,mJPsi);
+  fitMeanv2->FixParameter(7,sJPsi);
+
+  fitMeanv2->FixParameter(8,p1Left);
+  fitMeanv2->FixParameter(9,p2Left);
+  fitMeanv2->FixParameter(10,p3Left);
+  fitMeanv2->FixParameter(11,p1Right);
+  fitMeanv2->FixParameter(12,p2Right);
+  fitMeanv2->FixParameter(13,p3Right);
+  fitMeanv2->FixParameter(14,alphaLeft);
+  fitMeanv2->FixParameter(15,alphaRight);
+
+  fitMeanv2->FixParameter(16,kPsiP);
+
+  fitMeanv2->SetParameter(17, 0.01);
+  fitMeanv2->SetParLimits(17, -1.,1.);
+
+  for ( Int_t i = 0; i < 5; ++i )
+  {
+    fitMeanv2->SetParameter(i + 18, bck->GetParameter(i));
+  }
+
+  fitMeanv2->SetParameter(23, 0.01);
+  fitMeanv2->SetParLimits(23, -1.,1.);
+
+  TFitResultPtr fitResult = p->Fit(fitMeanv2,fitOption,"");
+
+  std::cout << "FitResult=" << static_cast<int>(fitResult) << std::endl;
+  std::cout << "CovMatrixStatus = " << fitResult->CovMatrixStatus() << std::endl;
+
+  if ( static_cast<int>(fitResult) )
+  {
+    for ( Int_t i = 0; i < 5; ++i )
+    {
+      fitMeanv2->SetParameter(i + 18, bck->GetParameter(i)*0.9);
+    }
+    fitResult = p->Fit(fitMeanv2,fitOption,"");
+  }
+  else if ( fitMeanv2->GetParameter(23) <= fitMeanv2->GetParError(23) || fitMeanv2->GetParError(23) >= 0.75*fitMeanv2->GetParameter(23) )
+  {
+    fitMeanv2->FixParameter(23, bck->Eval(3.68));
+    for ( Int_t i = 0; i < 5; ++i )
+    {
+      fitMeanv2->SetParameter(i + 18, bck->GetParameter(i)*0.6);
+    }
+    fitResult = p->Fit(fitMeanv2,fitOption,"");
+  }
+
+  std::cout << "FitResultt=" << static_cast<int>(fitResult) << std::endl;
+  std::cout << "CovMatrixStatus = " << fitResult->CovMatrixStatus() << std::endl;
+
+  std::cout << "FitChi2PerNDF = " << fitMeanv2->GetChisquare()<<"/"<<fitMeanv2->GetNDF() << std::endl;
+    //___________ Further attempts to fit if the first one fails
+  // if ( static_cast<int>(fitResult) ||  static_cast<int>(fitResult->CovMatrixStatus())!=3 ) ProcessMv2Fit(fitResult,fitMeanv2,bck,fitOption,12,4); // Int_t iParKPsip, Int_t iLastParBkg);
+  //___________
+
+  //___________Set parameters and fit functions to store in the result
+  Int_t fitStatus = 0;
+  if(!CheckFitStatus(fitResult)) fitStatus =-1;
+  else Set("FitStatus",fitStatus,0.);
+  Set("FitChi2PerNDF",fitMeanv2->GetChisquare()/fitMeanv2->GetNDF(),0.0);
+  Set("FitNDF",fitMeanv2->GetNDF(),0.0);
+  Set("mJPsi",fitMeanv2->GetParameter(6),fitMeanv2->GetParError(6));
+  Set("sJPsi",fitMeanv2->GetParameter(7),fitMeanv2->GetParError(7));
+  // Set("mv2PsiP",fitMeanv2->GetParameter(16),fitMeanv2->GetParError(16));
+
+  for ( Int_t i = 0; i < 5; ++i )
+  {
+    bck->SetParameter(i, fitMeanv2->GetParameter(i+18));
+  }
+  AttachFunctionsToHisto(0x0,0x0,bck,fitMeanv2,fitRangeLow,fitRangeHigh);//
+
+  Set("NofJPsi",NofJPsi,ErrStatNofJPsi);
+  Set("<v2>JPsi",fitMeanv2->GetParameter(17),fitMeanv2->GetParError(17));
+  // Set("<v2>PsiP",fitMeanv2->GetParameter(17),fitMeanv2->GetParError(17));
+
+}
+//_____________________________________________________________________________
+void AliAnalysisMuMuJpsiResult::FitMV2PSIPSIPRIMENA60NEWPOL2POL3_BKGMV2POL2()
+{
+  //Fit mean dimuon mean pt to get Jpsi mean pt using the CB2 signal parameters, VWG2 for the Bkg, Jpsi mpt = cte and Bkg mpt = pol4
+
+  const char* fitOption = "SER"; //We can add NO to avoid plotting
+  const char* fitOptionBg = "SERI"; //We can add NO to avoid plotting
+
+  fHisto->GetListOfFunctions()->Delete();
+
+
+  Double_t p1Left = GetValue("p1LJPsi");
+  Double_t p2Left = GetValue("p2LJPsi");
+  Double_t p3Left = GetValue("p3LJPsi");
+  Double_t p1Right = GetValue("p1RJPsi");
+  Double_t p2Right = GetValue("p2RJPsi");
+  Double_t p3Right = GetValue("p3RJPsi");
+  Double_t alphaLeft = GetValue("aLJPsi");
+  Double_t alphaRight = GetValue("aRJPsi");
+
+  Double_t a  = GetValue("a");
+  Double_t b  = GetValue("b");
+  Double_t c  = GetValue("c");
+  Double_t ap = GetValue("a'");
+  Double_t bp = GetValue("b'");
+  Double_t cp = GetValue("c'");
+  Double_t dp = GetValue("d'");
+
+  Double_t kJPsi = GetValue("kJPsi");
+  Double_t kPsiP = GetValue("kPsiP");
+  Double_t mJPsi = GetValue("mJPsi");
+  Double_t sJPsi = GetValue("sJPsi");
+  Double_t NofJPsi = GetValue("NofJPsi");
+  Double_t ErrStatNofJPsi = GetValue("ErrStatNofJPsi");
+
+  Double_t BG0_init    = IsValidValue(GetValue("BG0_init"))  ? GetValue("BG0_init")  : 0.4;
+  Double_t BG1_init    = IsValidValue(GetValue("BG1_init"))  ? GetValue("BG1_init")  : -.2;
+  Double_t BG2_init    = IsValidValue(GetValue("BG2_init"))  ? GetValue("BG2_init")  : .03;
+  Double_t rejRl       = IsValidValue(GetValue("rejRl"))  ? GetValue("rejRl")  : 2.6;
+  Double_t rejRh       = IsValidValue(GetValue("rejRh"))  ? GetValue("rejRh")  : 3.6;
+
+  Double_t fitRangeLow = GetValue(kFitRangeLow);
+  Double_t fitRangeHigh = GetValue(kFitRangeHigh);
+
+  AliDebug(1,Form("values : p1JPsi = %f p2LJPsi = %f p3LJPsi = %f p1RJPsi = %f p2RJPsi = %f p3RJPsi = %f  aLJPsi= %f  aRJPsi= %f",p1Left,p2Left,p3Left,p1Right,p2Right,p3Right,alphaLeft,alphaRight));
+  AliDebug(1,Form("values : a = %f b = %f c = %f a' = %f b' = %f c' = %f d' = %f ",a,b,c,ap,bp,cp,dp));
+  AliDebug(1,Form("values : kJPsi = %f mJPsi = %f sJPsi = %f kPsiP = %f NofJPsi= %f ErrStatNofJPsi = %f",kJPsi,mJPsi,sJPsi,kPsiP,NofJPsi,ErrStatNofJPsi));
+  if(IsValidValue(GetValue("BG0_init"))) AliInfo(Form("Bckg initialised using parameters : %f,%f,%f",BG0_init,BG1_init,BG2_init));
+  if(IsValidValue(GetValue("rejRl"))) AliInfo(Form("Bckg initialised using reject range: %f - %f",rejRl,rejRh));
+  TProfile* p(0x0);
+  if ( fHisto->IsA() == TProfile::Class() ) p = static_cast<TProfile*>(fHisto);
+  else
+  {
+    AliError("Mean v2 histo has to be a TProfile");
+    return;
+  }
+
+  TProfile::Approximate();
+
+
+  //_____________
+
+  TF1* bck = new TF1("bck",this,&AliAnalysisMuMuJpsiResult::FitFunctionBackgroundPol2,fitRangeLow,fitRangeHigh,3,"AliAnalysisMuMuJpsiResult","FitFunctionBackgroundPol2");
+
+  bck->SetParameters(BG0_init,BG1_init,BG2_init);
+  SetFitRejectRange(rejRl,rejRh);
+
+  TFitResultPtr fitResultInit = p->Fit(bck,fitOptionBg,"");
+  std::cout << "FitResultmBkgInit=" << static_cast<int>(fitResultInit) << std::endl;
+
+    //___________ Further attempts to fit bkg if the first one fails
+  if ( static_cast<int>(fitResultInit) ) ProcessmBkgFit(fitResultInit,bck,"FitFunctionBackgroundPol2",fitOptionBg);
+  //___________
+
+  SetFitRejectRange();
+
+  TF1* fitMeanv2 = new TF1("fitMeanv2",this,&AliAnalysisMuMuJpsiResult::FitFunctionMeanPtSNA60NEWPOL2POL3POL2,fitRangeLow,fitRangeHigh,24,"AliAnalysisMuMuJpsiResult","FitFunctionMeanPtSNA60NEWPOL2POL3POL2");
+
+  fitMeanv2->SetParNames("a","b","c","ap","bp","cp","dp","kJPsi","mJPsi","sJPsi","p1LJPsi");
+  //                      0   1   2    3    4    5   6       7       8       9      10
+
+  fitMeanv2->SetParName(11,"p2LJPsi");
+  fitMeanv2->SetParName(12,"p3LJPsi");
+  fitMeanv2->SetParName(13,"p1RJPsi");
+  fitMeanv2->SetParName(14,"p2RJPsi");
+  fitMeanv2->SetParName(15,"p3RJPsi");
+  fitMeanv2->SetParName(16,"aLJPsi");
+  fitMeanv2->SetParName(17,"aRJPsi");
+
+  fitMeanv2->SetParName(18,"kPsiP");
+  fitMeanv2->SetParName(19,"<v2>JPsi");
+  fitMeanv2->SetParName(20,"<v2>BG0");
+  fitMeanv2->SetParName(21,"<v2>BG1");
+  fitMeanv2->SetParName(22,"<v2>BG2");
+  fitMeanv2->SetParName(23,"<v2>PsiP");
+
+  fitMeanv2->FixParameter(0,a);
+  fitMeanv2->FixParameter(1,b);
+  fitMeanv2->FixParameter(2,c);
+  fitMeanv2->FixParameter(3,ap);
+  fitMeanv2->FixParameter(4,bp);
+  fitMeanv2->FixParameter(5,cp);
+  fitMeanv2->FixParameter(6,dp);
+  fitMeanv2->FixParameter(7,kJPsi);
+  fitMeanv2->FixParameter(8,mJPsi);
+  fitMeanv2->FixParameter(9,sJPsi);
+  fitMeanv2->FixParameter(10,p1Left);
+  fitMeanv2->FixParameter(11,p2Left);
+  fitMeanv2->FixParameter(12,p3Left);
+  fitMeanv2->FixParameter(13,p1Right);
+  fitMeanv2->FixParameter(14,p2Right);
+  fitMeanv2->FixParameter(15,p3Right);
+  fitMeanv2->FixParameter(16,alphaLeft);
+  fitMeanv2->FixParameter(17,alphaRight);
+
+  fitMeanv2->FixParameter(18,kPsiP);
+
+  fitMeanv2->SetParameter(19, 0.01);
+  fitMeanv2->SetParLimits(19, -1.,1.);
+
+  for ( Int_t i = 0; i < 3; ++i )
+  {
+    fitMeanv2->SetParameter(i + 20, bck->GetParameter(i));
+  }
+
+  fitMeanv2->SetParameter(23, 0.01);
+  fitMeanv2->SetParLimits(23, -1.,1.);
+
+  TFitResultPtr fitResult = p->Fit(fitMeanv2,fitOption,"");
+
+  std::cout << "FitResult=" << static_cast<int>(fitResult) << std::endl;
+  std::cout << "CovMatrixStatus = " << fitResult->CovMatrixStatus() << std::endl;
+
+  if ( static_cast<int>(fitResult) )
+  {
+    for ( Int_t i = 0; i < 3; ++i )
+    {
+      fitMeanv2->SetParameter(i + 20, bck->GetParameter(i)*0.9);
+    }
+    fitResult = p->Fit(fitMeanv2,fitOption,"");
+  }
+  else if ( fitMeanv2->GetParameter(23) <= fitMeanv2->GetParError(23) || fitMeanv2->GetParError(23) >= 0.75*fitMeanv2->GetParameter(23) )
+  {
+    fitMeanv2->FixParameter(23, 0.);
+    for ( Int_t i = 0; i < 3; ++i )
+    {
+      fitMeanv2->SetParameter(i + 20, bck->GetParameter(i)*0.6);
+    }
+    fitResult = p->Fit(fitMeanv2,fitOption,"");
+  }
+
+  std::cout << "FitResultt=" << static_cast<int>(fitResult) << std::endl;
+  std::cout << "CovMatrixStatus = " << fitResult->CovMatrixStatus() << std::endl;
+
+  std::cout << "FitChi2PerNDF = " << fitMeanv2->GetChisquare()<<"/"<<fitMeanv2->GetNDF() << std::endl;
+    //___________ Further attempts to fit if the first one fails
+  // if ( static_cast<int>(fitResult) ||  static_cast<int>(fitResult->CovMatrixStatus())!=3 ) ProcessMv2Fit(fitResult,fitMeanv2,bck,fitOption,12,4); // Int_t iParKPsip, Int_t iLastParBkg);
+  //___________
+
+  //___________Set parameters and fit functions to store in the result
+  Int_t fitStatus = 0;
+  if(!CheckFitStatus(fitResult)) fitStatus =-1;
+  else Set("FitStatus",fitStatus,0.);
+  Set("FitChi2PerNDF",fitMeanv2->GetChisquare()/fitMeanv2->GetNDF(),0.0);
+  Set("FitNDF",fitMeanv2->GetNDF(),0.0);
+  Set("mJPsi",fitMeanv2->GetParameter(8),fitMeanv2->GetParError(8));
+  Set("sJPsi",fitMeanv2->GetParameter(9),fitMeanv2->GetParError(9));
+  // Set("mv2PsiP",fitMeanv2->GetParameter(23),fitMeanv2->GetParError(23));
+
+  for ( Int_t i = 0; i < 3; ++i )
+  {
+    bck->SetParameter(i, fitMeanv2->GetParameter(i+20));
+  }
+  AttachFunctionsToHisto(0x0,0x0,bck,fitMeanv2,fitRangeLow,fitRangeHigh);//
+
+  Set("NofJPsi",NofJPsi,ErrStatNofJPsi);
+  Set("<v2>JPsi",fitMeanv2->GetParameter(19),fitMeanv2->GetParError(19));
+  // Set("<v2>PsiP",fitMeanv2->GetParameter(23),fitMeanv2->GetParError(23));
+
+}
+//_____________________________________________________________________________
+void AliAnalysisMuMuJpsiResult::FitMV2PSIPSIPRIMENA60NEWPOL2POL3_BKGMV2POLEXP()
+{
+  //Fit mean dimuon mean pt to get Jpsi mean pt using the CB2 signal parameters, VWG2 for the Bkg, Jpsi mpt = cte and Bkg mpt = pol4
+
+  const char* fitOption = "SER"; //We can add NO to avoid plotting
+  const char* fitOptionBg = "SER"; //We can add NO to avoid plotting
+
+  fHisto->GetListOfFunctions()->Delete();
+
+
+  Double_t p1Left = GetValue("p1LJPsi");
+  Double_t p2Left = GetValue("p2LJPsi");
+  Double_t p3Left = GetValue("p3LJPsi");
+  Double_t p1Right = GetValue("p1RJPsi");
+  Double_t p2Right = GetValue("p2RJPsi");
+  Double_t p3Right = GetValue("p3RJPsi");
+  Double_t alphaLeft = GetValue("aLJPsi");
+  Double_t alphaRight = GetValue("aRJPsi");
+
+  Double_t a  = GetValue("a");
+  Double_t b  = GetValue("b");
+  Double_t c  = GetValue("c");
+  Double_t ap = GetValue("a'");
+  Double_t bp = GetValue("b'");
+  Double_t cp = GetValue("c'");
+  Double_t dp = GetValue("d'");
+
+  Double_t kJPsi = GetValue("kJPsi");
+  Double_t kPsiP = GetValue("kPsiP");
+  Double_t mJPsi = GetValue("mJPsi");
+  Double_t sJPsi = GetValue("sJPsi");
+  Double_t NofJPsi = GetValue("NofJPsi");
+  Double_t ErrStatNofJPsi = GetValue("ErrStatNofJPsi");
+
+  Double_t BG0_init    = IsValidValue(GetValue("BG0_init"))  ? GetValue("BG0_init")  : 1.;
+  Double_t BG1_init    = IsValidValue(GetValue("BG1_init"))  ? GetValue("BG1_init")  : -3.;
+  Double_t BGexp_init    = IsValidValue(GetValue("BGexp_init"))  ? GetValue("BGexp_init")  : -1.7;
+  Double_t rejRl    = IsValidValue(GetValue("rejRl"))  ? GetValue("rejRl")  : 2.6;
+  Double_t rejRh    = IsValidValue(GetValue("rejRh"))  ? GetValue("rejRh")  : 4.;
+
+  Double_t fitRangeLow = GetValue(kFitRangeLow);
+  Double_t fitRangeHigh = GetValue(kFitRangeHigh);
+
+  AliDebug(1,Form("values : p1JPsi = %f p2LJPsi = %f p3LJPsi = %f p1RJPsi = %f p2RJPsi = %f p3RJPsi = %f  aLJPsi= %f  aRJPsi= %f",p1Left,p2Left,p3Left,p1Right,p2Right,p3Right,alphaLeft,alphaRight));
+  AliDebug(1,Form("values : a = %f b = %f c = %f a' = %f b' = %f c' = %f d' = %f ",a,b,c,ap,bp,cp,dp));
+  AliDebug(1,Form("values : kJPsi = %f mJPsi = %f sJPsi = %f kPsiP = %f NofJPsi= %f ErrStatNofJPsi = %f",kJPsi,mJPsi,sJPsi,kPsiP,NofJPsi,ErrStatNofJPsi));
+  if(IsValidValue(GetValue("BG0_init"))) AliInfo(Form("Bckg initialised using parameters : %f,%f,%f",BG0_init,BG1_init,BGexp_init));
+  if(IsValidValue(GetValue("rejRl"))) AliInfo(Form("Bckg initialised using reject range: %f - %f",rejRl,rejRh));
+  TProfile* p(0x0);
+  if ( fHisto->IsA() == TProfile::Class() ) p = static_cast<TProfile*>(fHisto);
+  else
+  {
+    AliError("Mean v2 histo has to be a TProfile");
+    return;
+  }
+
+  TProfile::Approximate();
+
+
+  //_____________
+
+  TF1* bck = new TF1("bck",this,&AliAnalysisMuMuJpsiResult::FitFunctionBackgroundPolExp,fitRangeLow,fitRangeHigh,3,"AliAnalysisMuMuJpsiResult","FitFunctionBackgroundPolExp");
+
+  // bck->SetParameters(1.2,-.3,-1.);
+  bck->SetParameters(BG0_init,BG1_init,BGexp_init);
+
+   // bck->SetParameters(-.15,.2,-.004);
+
+  SetFitRejectRange(rejRl,rejRh);
+
+  TFitResultPtr fitResultInit = p->Fit(bck,fitOptionBg,"");
+  std::cout << "FitResultmBkgInit=" << static_cast<int>(fitResultInit) << std::endl;
+
+    //___________ Further attempts to fit bkg if the first one fails
+  if ( static_cast<int>(fitResultInit) ) ProcessmBkgFit(fitResultInit,bck,"FitFunctionBackgroundPolExp",fitOptionBg);
+  //___________
+
+  SetFitRejectRange();
+
+  TF1* fitMeanv2 = new TF1("fitMeanv2",this,&AliAnalysisMuMuJpsiResult::FitFunctionMeanPtSNA60NEWPOL2POL3_POLEXP,fitRangeLow,fitRangeHigh,24,"AliAnalysisMuMuJpsiResult","FitFunctionMeanPtSNA60NEWPOL2POL3_POLEXP");
+
+  fitMeanv2->SetParNames("a","b","c","ap","bp","cp","dp","kJPsi","mJPsi","sJPsi","p1LJPsi");
+  //                      0   1   2    3    4    5   6       7       8       9      10
+
+  fitMeanv2->SetParName(11,"p2LJPsi");
+  fitMeanv2->SetParName(12,"p3LJPsi");
+  fitMeanv2->SetParName(13,"p1RJPsi");
+  fitMeanv2->SetParName(14,"p2RJPsi");
+  fitMeanv2->SetParName(15,"p3RJPsi");
+  fitMeanv2->SetParName(16,"aLJPsi");
+  fitMeanv2->SetParName(17,"aRJPsi");
+
+  fitMeanv2->SetParName(18,"kPsiP");
+  fitMeanv2->SetParName(19,"<v2>JPsi");
+  fitMeanv2->SetParName(20,"<v2>BG0");
+  fitMeanv2->SetParName(21,"<v2>BG1");
+  fitMeanv2->SetParName(22,"<v2>BGEXP");
+  fitMeanv2->SetParName(23,"<v2>PsiP");
+
+  fitMeanv2->FixParameter(0,a);
+  fitMeanv2->FixParameter(1,b);
+  fitMeanv2->FixParameter(2,c);
+  fitMeanv2->FixParameter(3,ap);
+  fitMeanv2->FixParameter(4,bp);
+  fitMeanv2->FixParameter(5,cp);
+  fitMeanv2->FixParameter(6,dp);
+  fitMeanv2->FixParameter(7,kJPsi);
+  fitMeanv2->FixParameter(8,mJPsi);
+  fitMeanv2->FixParameter(9,sJPsi);
+  fitMeanv2->FixParameter(10,p1Left);
+  fitMeanv2->FixParameter(11,p2Left);
+  fitMeanv2->FixParameter(12,p3Left);
+  fitMeanv2->FixParameter(13,p1Right);
+  fitMeanv2->FixParameter(14,p2Right);
+  fitMeanv2->FixParameter(15,p3Right);
+  fitMeanv2->FixParameter(16,alphaLeft);
+  fitMeanv2->FixParameter(17,alphaRight);
+
+  fitMeanv2->FixParameter(18,kPsiP);
+
+  fitMeanv2->SetParameter(19, 0.01);
+  fitMeanv2->SetParLimits(19, -1.,1.);
+
+  for ( Int_t i = 0; i < 3; ++i )
+  {
+    fitMeanv2->SetParameter(i + 20, bck->GetParameter(i));
+  }
+
+  fitMeanv2->SetParameter(23, 0.01);
+  fitMeanv2->SetParLimits(23, -1.,1.);
+
+  TFitResultPtr fitResult = p->Fit(fitMeanv2,fitOption,"");
+
+  std::cout << "FitResult=" << static_cast<int>(fitResult) << std::endl;
+  std::cout << "CovMatrixStatus = " << fitResult->CovMatrixStatus() << std::endl;
+
+  if ( static_cast<int>(fitResult) )
+  {
+    for ( Int_t i = 0; i < 3; ++i )
+    {
+      fitMeanv2->SetParameter(i + 20, bck->GetParameter(i)*0.9);
+    }
+    fitResult = p->Fit(fitMeanv2,fitOption,"");
+  }
+  else if ( fitMeanv2->GetParameter(23) <= fitMeanv2->GetParError(23) || fitMeanv2->GetParError(23) >= 0.75*fitMeanv2->GetParameter(23) )
+  {
+    fitMeanv2->FixParameter(23, 0.);
+    for ( Int_t i = 0; i < 3; ++i )
+    {
+      fitMeanv2->SetParameter(i + 20, bck->GetParameter(i)*0.6);
+    }
+    fitResult = p->Fit(fitMeanv2,fitOption,"");
+  }
+
+  std::cout << "FitResultt=" << static_cast<int>(fitResult) << std::endl;
+  std::cout << "CovMatrixStatus = " << fitResult->CovMatrixStatus() << std::endl;
+
+  std::cout << "FitChi2PerNDF = " << fitMeanv2->GetChisquare()<<"/"<<fitMeanv2->GetNDF() << std::endl;
+    //___________ Further attempts to fit if the first one fails
+  // if ( static_cast<int>(fitResult) ||  static_cast<int>(fitResult->CovMatrixStatus())!=3 ) ProcessMv2Fit(fitResult,fitMeanv2,bck,fitOption,12,4); // Int_t iParKPsip, Int_t iLastParBkg);
+  //___________
+
+  //___________Set parameters and fit functions to store in the result
+  Int_t fitStatus = 0;
+  if(!CheckFitStatus(fitResult)) fitStatus =-1;
+  else Set("FitStatus",fitStatus,0.);
+  Set("FitChi2PerNDF",fitMeanv2->GetChisquare()/fitMeanv2->GetNDF(),0.0);
+  Set("FitNDF",fitMeanv2->GetNDF(),0.0);
+  Set("mJPsi",fitMeanv2->GetParameter(8),fitMeanv2->GetParError(8));
+  Set("sJPsi",fitMeanv2->GetParameter(9),fitMeanv2->GetParError(9));
+  // Set("mv2PsiP",fitMeanv2->GetParameter(23),fitMeanv2->GetParError(23));
+
+  for ( Int_t i = 0; i < 3; ++i )
+  {
+    bck->SetParameter(i, fitMeanv2->GetParameter(i+20));
+  }
+  AttachFunctionsToHisto(0x0,0x0,bck,fitMeanv2,fitRangeLow,fitRangeHigh);//
+
+  Set("NofJPsi",NofJPsi,ErrStatNofJPsi);
+  Set("<v2>JPsi",fitMeanv2->GetParameter(19),fitMeanv2->GetParError(19));
+  // Set("<v2>PsiP",fitMeanv2->GetParameter(23),fitMeanv2->GetParError(23));
+
+}
+//_____________________________________________________________________________
+void AliAnalysisMuMuJpsiResult::FitMV2PSIPSIPRIMENA60NEWPOL2POL3_BKGMV2POL2EXP()
+{
+  //Fit mean dimuon mean pt to get Jpsi mean pt using the CB2 signal parameters, VWG2 for the Bkg, Jpsi mpt = cte and Bkg mpt = pol4
+
+  const char* fitOption = "SERI"; //We can add NO to avoid plotting
+  const char* fitOptionBg = "SERI"; //We can add NO to avoid plotting
+
+  fHisto->GetListOfFunctions()->Delete();
+
+
+  Double_t p1Left = GetValue("p1LJPsi");
+  Double_t p2Left = GetValue("p2LJPsi");
+  Double_t p3Left = GetValue("p3LJPsi");
+  Double_t p1Right = GetValue("p1RJPsi");
+  Double_t p2Right = GetValue("p2RJPsi");
+  Double_t p3Right = GetValue("p3RJPsi");
+  Double_t alphaLeft = GetValue("aLJPsi");
+  Double_t alphaRight = GetValue("aRJPsi");
+
+  Double_t a  = GetValue("a");
+  Double_t b  = GetValue("b");
+  Double_t c  = GetValue("c");
+  Double_t ap = GetValue("a'");
+  Double_t bp = GetValue("b'");
+  Double_t cp = GetValue("c'");
+  Double_t dp = GetValue("d'");
+
+  Double_t kJPsi = GetValue("kJPsi");
+  Double_t kPsiP = GetValue("kPsiP");
+  Double_t mJPsi = GetValue("mJPsi");
+  Double_t sJPsi = GetValue("sJPsi");
+  Double_t NofJPsi = GetValue("NofJPsi");
+  Double_t ErrStatNofJPsi = GetValue("ErrStatNofJPsi");
+
+  Double_t fitRangeLow = GetValue(kFitRangeLow);
+  Double_t fitRangeHigh = GetValue(kFitRangeHigh);
+
+  AliDebug(1,Form("values : p1JPsi = %f p2LJPsi = %f p3LJPsi = %f p1RJPsi = %f p2RJPsi = %f p3RJPsi = %f  aLJPsi= %f  aRJPsi= %f",p1Left,p2Left,p3Left,p1Right,p2Right,p3Right,alphaLeft,alphaRight));
+  AliDebug(1,Form("values : a = %f b = %f c = %f a' = %f b' = %f c' = %f d' = %f ",a,b,c,ap,bp,cp,dp));
+  AliDebug(1,Form("values : kJPsi = %f mJPsi = %f sJPsi = %f kPsiP = %f NofJPsi= %f ErrStatNofJPsi = %f",kJPsi,mJPsi,sJPsi,kPsiP,NofJPsi,ErrStatNofJPsi));
+
+  TProfile* p(0x0);
+  if ( fHisto->IsA() == TProfile::Class() ) p = static_cast<TProfile*>(fHisto);
+  else
+  {
+    AliError("Mean v2 histo has to be a TProfile");
+    return;
+  }
+
+  TProfile::Approximate();
+
+
+  //_____________
+
+  TF1* bck = new TF1("bck",this,&AliAnalysisMuMuJpsiResult::FitFunctionBackgroundPol2Exp,fitRangeLow,fitRangeHigh,4,"AliAnalysisMuMuJpsiResult","FitFunctionBackgroundPol2Exp");
+
+  bck->SetParameters(1.8,-1.,.1,-.7);
+
+  SetFitRejectRange(2.6,3.4);
+
+  TFitResultPtr fitResultInit = p->Fit(bck,fitOptionBg,"");
+  std::cout << "FitResultmBkgInit=" << static_cast<int>(fitResultInit) << std::endl;
+
+    //___________ Further attempts to fit bkg if the first one fails
+  if ( static_cast<int>(fitResultInit) ) ProcessmBkgFit(fitResultInit,bck,"FitFunctionBackgroundPol2Exp",fitOptionBg);
+  //___________
+
+  SetFitRejectRange();
+
+  TF1* fitMeanv2 = new TF1("fitMeanv2",this,&AliAnalysisMuMuJpsiResult::FitFunctionMeanPtSNA60NEWPOL2POL3POL2EXP,fitRangeLow,fitRangeHigh,25,"AliAnalysisMuMuJpsiResult","FitFunctionMeanPtSNA60NEWPOL2POL3POL2EXP");
+
+  fitMeanv2->SetParNames("a","b","c","ap","bp","cp","dp","kJPsi","mJPsi","sJPsi","p1LJPsi");
+  //                      0   1   2    3    4    5   6       7       8       9      10
+
+  fitMeanv2->SetParName(11,"p2LJPsi");
+  fitMeanv2->SetParName(12,"p3LJPsi");
+  fitMeanv2->SetParName(13,"p1RJPsi");
+  fitMeanv2->SetParName(14,"p2RJPsi");
+  fitMeanv2->SetParName(15,"p3RJPsi");
+  fitMeanv2->SetParName(16,"aLJPsi");
+  fitMeanv2->SetParName(17,"aRJPsi");
+
+  fitMeanv2->SetParName(18,"kPsiP");
+  fitMeanv2->SetParName(19,"<v2>JPsi");
+  fitMeanv2->SetParName(20,"<v2>BG0");
+  fitMeanv2->SetParName(21,"<v2>BG1");
+  fitMeanv2->SetParName(22,"<v2>BG2");
+  fitMeanv2->SetParName(23,"<v2>BGEXP");
+  fitMeanv2->SetParName(24,"<v2>PsiP");
+
+  fitMeanv2->FixParameter(0,a);
+  fitMeanv2->FixParameter(1,b);
+  fitMeanv2->FixParameter(2,c);
+  fitMeanv2->FixParameter(3,ap);
+  fitMeanv2->FixParameter(4,bp);
+  fitMeanv2->FixParameter(5,cp);
+  fitMeanv2->FixParameter(6,dp);
+  fitMeanv2->FixParameter(7,kJPsi);
+  fitMeanv2->FixParameter(8,mJPsi);
+  fitMeanv2->FixParameter(9,sJPsi);
+  fitMeanv2->FixParameter(10,p1Left);
+  fitMeanv2->FixParameter(11,p2Left);
+  fitMeanv2->FixParameter(12,p3Left);
+  fitMeanv2->FixParameter(13,p1Right);
+  fitMeanv2->FixParameter(14,p2Right);
+  fitMeanv2->FixParameter(15,p3Right);
+  fitMeanv2->FixParameter(16,alphaLeft);
+  fitMeanv2->FixParameter(17,alphaRight);
+
+  fitMeanv2->FixParameter(18,kPsiP);
+
+  fitMeanv2->SetParameter(19, 0.01);
+  fitMeanv2->SetParLimits(19, -1.,1.);
+
+  for ( Int_t i = 0; i < 4; ++i )
+  {
+    fitMeanv2->SetParameter(i + 20, bck->GetParameter(i));
+  }
+
+  fitMeanv2->SetParameter(24, 0.01);
+  fitMeanv2->SetParLimits(24, -1.,1.);
+
+  TFitResultPtr fitResult = p->Fit(fitMeanv2,fitOption,"");
+
+  std::cout << "FitResult=" << static_cast<int>(fitResult) << std::endl;
+  std::cout << "CovMatrixStatus = " << fitResult->CovMatrixStatus() << std::endl;
+
+  if ( static_cast<int>(fitResult) )
+  {
+    for ( Int_t i = 0; i < 4; ++i )
+    {
+      fitMeanv2->SetParameter(i + 20, bck->GetParameter(i)*0.9);
+    }
+    fitResult = p->Fit(fitMeanv2,fitOption,"");
+  }
+  else if ( fitMeanv2->GetParameter(24) <= fitMeanv2->GetParError(24) || fitMeanv2->GetParError(24) >= 0.75*fitMeanv2->GetParameter(24) )
+  {
+    fitMeanv2->FixParameter(24, 0.);
+    for ( Int_t i = 0; i < 4; ++i )
+    {
+      fitMeanv2->SetParameter(i + 20, bck->GetParameter(i)*0.6);
+    }
+    fitResult = p->Fit(fitMeanv2,fitOption,"");
+  }
+
+  std::cout << "FitResultt=" << static_cast<int>(fitResult) << std::endl;
+  std::cout << "CovMatrixStatus = " << fitResult->CovMatrixStatus() << std::endl;
+
+  std::cout << "FitChi2PerNDF = " << fitMeanv2->GetChisquare()<<"/"<<fitMeanv2->GetNDF() << std::endl;
+    //___________ Further attempts to fit if the first one fails
+  // if ( static_cast<int>(fitResult) ||  static_cast<int>(fitResult->CovMatrixStatus())!=3 ) ProcessMv2Fit(fitResult,fitMeanv2,bck,fitOption,12,4); // Int_t iParKPsip, Int_t iLastParBkg);
+  //___________
+
+  //___________Set parameters and fit functions to store in the result
+  Int_t fitStatus = 0;
+  if(!CheckFitStatus(fitResult)) fitStatus =-1;
+  else Set("FitStatus",fitStatus,0.);
+  Set("FitChi2PerNDF",fitMeanv2->GetChisquare()/fitMeanv2->GetNDF(),0.0);
+  Set("FitNDF",fitMeanv2->GetNDF(),0.0);
+  Set("mJPsi",fitMeanv2->GetParameter(8),fitMeanv2->GetParError(8));
+  Set("sJPsi",fitMeanv2->GetParameter(9),fitMeanv2->GetParError(9));
+  // Set("mv2PsiP",fitMeanv2->GetParameter(23),fitMeanv2->GetParError(23));
+
+  for ( Int_t i = 0; i < 4; ++i )
+  {
+    bck->SetParameter(i, fitMeanv2->GetParameter(i+20));
+  }
+  AttachFunctionsToHisto(0x0,0x0,bck,fitMeanv2,fitRangeLow,fitRangeHigh);//
+
+  Set("NofJPsi",NofJPsi,ErrStatNofJPsi);
+  Set("<v2>JPsi",fitMeanv2->GetParameter(19),fitMeanv2->GetParError(19));
+  // Set("<v2>PsiP",fitMeanv2->GetParameter(24),fitMeanv2->GetParError(24));
+
+}
+//_____________________________________________________________________________
+void AliAnalysisMuMuJpsiResult::FitMV2PSIPSIPRIMENA60NEWPOL2POL3_BKGMV2POL4()
+{
+  //Fit mean dimuon mean pt to get Jpsi mean pt using the CB2 signal parameters, VWG2 for the Bkg, Jpsi mpt = cte and Bkg mpt = pol4
+
+  const char* fitOption = "SERI"; //We can add NO to avoid plotting
+  const char* fitOptionBg = "SERI"; //We can add NO to avoid plotting
+
+  fHisto->GetListOfFunctions()->Delete();
+
+
+  Double_t p1Left = GetValue("p1LJPsi");
+  Double_t p2Left = GetValue("p2LJPsi");
+  Double_t p3Left = GetValue("p3LJPsi");
+  Double_t p1Right = GetValue("p1RJPsi");
+  Double_t p2Right = GetValue("p2RJPsi");
+  Double_t p3Right = GetValue("p3RJPsi");
+  Double_t alphaLeft = GetValue("aLJPsi");
+  Double_t alphaRight = GetValue("aRJPsi");
+
+  Double_t a  = GetValue("a");
+  Double_t b  = GetValue("b");
+  Double_t c  = GetValue("c");
+  Double_t ap = GetValue("a'");
+  Double_t bp = GetValue("b'");
+  Double_t cp = GetValue("c'");
+  Double_t dp = GetValue("d'");
+
+  Double_t kJPsi = GetValue("kJPsi");
+  Double_t kPsiP = GetValue("kPsiP");
+  Double_t mJPsi = GetValue("mJPsi");
+  Double_t sJPsi = GetValue("sJPsi");
+  Double_t NofJPsi = GetValue("NofJPsi");
+  Double_t ErrStatNofJPsi = GetValue("ErrStatNofJPsi");
+
+  Double_t fitRangeLow = GetValue(kFitRangeLow);
+  Double_t fitRangeHigh = GetValue(kFitRangeHigh);
+
+  AliDebug(1,Form("values : p1JPsi = %f p2LJPsi = %f p3LJPsi = %f p1RJPsi = %f p2RJPsi = %f p3RJPsi = %f  aLJPsi= %f  aRJPsi= %f",p1Left,p2Left,p3Left,p1Right,p2Right,p3Right,alphaLeft,alphaRight));
+  AliDebug(1,Form("values : a = %f b = %f c = %f a' = %f b' = %f c' = %f d' = %f ",a,b,c,ap,bp,cp,dp));
+  AliDebug(1,Form("values : kJPsi = %f mJPsi = %f sJPsi = %f kPsiP = %f NofJPsi= %f ErrStatNofJPsi = %f",kJPsi,mJPsi,sJPsi,kPsiP,NofJPsi,ErrStatNofJPsi));
+
+  TProfile* p(0x0);
+  if ( fHisto->IsA() == TProfile::Class() ) p = static_cast<TProfile*>(fHisto);
+  else
+  {
+    AliError("Mean v2 histo has to be a TProfile");
+    return;
+  }
+
+  TProfile::Approximate();
+
+
+  //_____________
+
+  TF1* bck = new TF1("bck",this,&AliAnalysisMuMuJpsiResult::FitFunctionBackgroundPol4,fitRangeLow,fitRangeHigh,5,"AliAnalysisMuMuJpsiResult","FitFunctionBackgroundPol4");
+
+  bck->SetParameters(.4,-.2,.02,0.,0.);
+  SetFitRejectRange(2.6,3.4);
+
+  TFitResultPtr fitResultInit = p->Fit(bck,fitOptionBg,"");
+  std::cout << "FitResultmBkgInit=" << static_cast<int>(fitResultInit) << std::endl;
+
+    //___________ Further attempts to fit bkg if the first one fails
+  if ( static_cast<int>(fitResultInit) ) ProcessmBkgFit(fitResultInit,bck,"FitFunctionBackgroundPol4",fitOptionBg);
+  //___________
+
+  SetFitRejectRange();
+
+  TF1* fitMeanv2 = new TF1("fitMeanv2",this,&AliAnalysisMuMuJpsiResult::FitFunctionMeanPtSNA60NEWPOL2POL3POL2,fitRangeLow,fitRangeHigh,26,"AliAnalysisMuMuJpsiResult","FitFunctionMeanPtSNA60NEWPOL2POL3POL2");
+
+  fitMeanv2->SetParNames("a","b","c","ap","bp","cp","dp","kJPsi","mJPsi","sJPsi","p1LJPsi");
+  //                      0   1   2    3    4    5   6       7       8       9      10
+
+  fitMeanv2->SetParName(11,"p2LJPsi");
+  fitMeanv2->SetParName(12,"p3LJPsi");
+  fitMeanv2->SetParName(13,"p1RJPsi");
+  fitMeanv2->SetParName(14,"p2RJPsi");
+  fitMeanv2->SetParName(15,"p3RJPsi");
+  fitMeanv2->SetParName(16,"aLJPsi");
+  fitMeanv2->SetParName(17,"aRJPsi");
+
+  fitMeanv2->SetParName(18,"kPsiP");
+  fitMeanv2->SetParName(19,"<v2>JPsi");
+  fitMeanv2->SetParName(20,"<v2>BG0");
+  fitMeanv2->SetParName(21,"<v2>BG1");
+  fitMeanv2->SetParName(22,"<v2>BG2");
+  fitMeanv2->SetParName(23,"<v2>BG3");
+  fitMeanv2->SetParName(24,"<v2>BG4");
+  fitMeanv2->SetParName(25,"<v2>PsiP");
+
+  fitMeanv2->FixParameter(0,a);
+  fitMeanv2->FixParameter(1,b);
+  fitMeanv2->FixParameter(2,c);
+  fitMeanv2->FixParameter(3,ap);
+  fitMeanv2->FixParameter(4,bp);
+  fitMeanv2->FixParameter(5,cp);
+  fitMeanv2->FixParameter(6,dp);
+  fitMeanv2->FixParameter(7,kJPsi);
+  fitMeanv2->FixParameter(8,mJPsi);
+  fitMeanv2->FixParameter(9,sJPsi);
+
+  fitMeanv2->FixParameter(10,p1Left);
+  fitMeanv2->FixParameter(11,p2Left);
+  fitMeanv2->FixParameter(12,p3Left);
+  fitMeanv2->FixParameter(13,p1Right);
+  fitMeanv2->FixParameter(14,p2Right);
+  fitMeanv2->FixParameter(15,p3Right);
+  fitMeanv2->FixParameter(16,alphaLeft);
+  fitMeanv2->FixParameter(17,alphaRight);
+
+  fitMeanv2->FixParameter(18,kPsiP);
+
+  fitMeanv2->SetParameter(19, 0.01);
+  fitMeanv2->SetParLimits(19, -1.,1.);
+
+  for ( Int_t i = 0; i < 5; ++i )
+  {
+    fitMeanv2->SetParameter(i + 20, bck->GetParameter(i));
+  }
+
+  fitMeanv2->SetParameter(25, 0.01);
+  fitMeanv2->SetParLimits(25, -1.,1.);
+
+  TFitResultPtr fitResult = p->Fit(fitMeanv2,fitOption,"");
+
+  std::cout << "FitResult=" << static_cast<int>(fitResult) << std::endl;
+  std::cout << "CovMatrixStatus = " << fitResult->CovMatrixStatus() << std::endl;
+
+  if ( static_cast<int>(fitResult) )
+  {
+    for ( Int_t i = 0; i < 5; ++i )
+    {
+      fitMeanv2->SetParameter(i + 20, bck->GetParameter(i)*0.9);
+    }
+    fitResult = p->Fit(fitMeanv2,fitOption,"");
+  }
+  else if ( fitMeanv2->GetParameter(25) <= fitMeanv2->GetParError(25) || fitMeanv2->GetParError(25) >= 0.75*fitMeanv2->GetParameter(25) )
+  {
+    fitMeanv2->FixParameter(25, 0.);
+    for ( Int_t i = 0; i < 5; ++i )
+    {
+      fitMeanv2->SetParameter(i + 20, bck->GetParameter(i)*0.6);
+    }
+    fitResult = p->Fit(fitMeanv2,fitOption,"");
+  }
+
+  std::cout << "FitResultt=" << static_cast<int>(fitResult) << std::endl;
+  std::cout << "CovMatrixStatus = " << fitResult->CovMatrixStatus() << std::endl;
+
+  std::cout << "FitChi2PerNDF = " << fitMeanv2->GetChisquare()<<"/"<<fitMeanv2->GetNDF() << std::endl;
+    //___________ Further attempts to fit if the first one fails
+  // if ( static_cast<int>(fitResult) ||  static_cast<int>(fitResult->CovMatrixStatus())!=3 ) ProcessMv2Fit(fitResult,fitMeanv2,bck,fitOption,12,4); // Int_t iParKPsip, Int_t iLastParBkg);
+  //___________
+
+  //___________Set parameters and fit functions to store in the result
+  Int_t fitStatus = 0;
+  if(!CheckFitStatus(fitResult)) fitStatus =-1;
+  else Set("FitStatus",fitStatus,0.);
+  Set("FitChi2PerNDF",fitMeanv2->GetChisquare()/fitMeanv2->GetNDF(),0.0);
+  Set("FitNDF",fitMeanv2->GetNDF(),0.0);
+  Set("mJPsi",fitMeanv2->GetParameter(8),fitMeanv2->GetParError(8));
+  Set("sJPsi",fitMeanv2->GetParameter(9),fitMeanv2->GetParError(9));
+  // Set("mv2PsiP",fitMeanv2->GetParameter(25),fitMeanv2->GetParError(25));
+
+  for ( Int_t i = 0; i < 5; ++i )
+  {
+    bck->SetParameter(i, fitMeanv2->GetParameter(i+20));
+  }
+  AttachFunctionsToHisto(0x0,0x0,bck,fitMeanv2,fitRangeLow,fitRangeHigh);//
+
+  Set("NofJPsi",NofJPsi,ErrStatNofJPsi);
+  Set("<v2>JPsi",fitMeanv2->GetParameter(19),fitMeanv2->GetParError(19));
+  // Set("<v2>PsiP",fitMeanv2->GetParameter(23),fitMeanv2->GetParError(23));
+
+}
+//_____________________________________________________________________________
+void AliAnalysisMuMuJpsiResult::FitMV2PSIPSIPRIMENA60NEWPOL2POL3_BKGMV2POL4Cheb()
+{
+  //Fit mean dimuon mean pt to get Jpsi mean pt using the CB2 signal parameters, VWG2 for the Bkg, Jpsi mpt = cte and Bkg mpt = pol4
+
+  const char* fitOption = "SER"; //We can add NO to avoid plotting
+  const char* fitOptionBg = "SER"; //We can add NO to avoid plotting
+
+  fHisto->GetListOfFunctions()->Delete();
+
+
+  Double_t p1Left = GetValue("p1LJPsi");
+  Double_t p2Left = GetValue("p2LJPsi");
+  Double_t p3Left = GetValue("p3LJPsi");
+  Double_t p1Right = GetValue("p1RJPsi");
+  Double_t p2Right = GetValue("p2RJPsi");
+  Double_t p3Right = GetValue("p3RJPsi");
+  Double_t alphaLeft = GetValue("aLJPsi");
+  Double_t alphaRight = GetValue("aRJPsi");
+
+  Double_t a  = GetValue("a");
+  Double_t b  = GetValue("b");
+  Double_t c  = GetValue("c");
+  Double_t ap = GetValue("a'");
+  Double_t bp = GetValue("b'");
+  Double_t cp = GetValue("c'");
+  Double_t dp = GetValue("d'");
+
+  Double_t kJPsi = GetValue("kJPsi");
+  Double_t kPsiP = GetValue("kPsiP");
+  Double_t mJPsi = GetValue("mJPsi");
+  Double_t sJPsi = GetValue("sJPsi");
+  Double_t NofJPsi = GetValue("NofJPsi");
+  Double_t ErrStatNofJPsi = GetValue("ErrStatNofJPsi");
+
+
+  Double_t BG0_init    = IsValidValue(GetValue("BG0_init"))  ? GetValue("BG0_init")  : 0.4;
+  Double_t BG1_init    = IsValidValue(GetValue("BG1_init"))  ? GetValue("BG1_init")  : -.2;
+  Double_t BG2_init    = IsValidValue(GetValue("BG2_init"))  ? GetValue("BG2_init")  : .03;
+  Double_t BG3_init    = IsValidValue(GetValue("BG3_init"))  ? GetValue("BG3_init")  : -.2;
+  Double_t BG4_init    = IsValidValue(GetValue("BG4_init"))  ? GetValue("BG4_init")  : .03;
+  Double_t rejRl       = IsValidValue(GetValue("rejRl"))  ? GetValue("rejRl")  : 2.6;
+  Double_t rejRh       = IsValidValue(GetValue("rejRh"))  ? GetValue("rejRh")  : 3.6;
+
+  Double_t fitRangeLow = GetValue(kFitRangeLow);
+  Double_t fitRangeHigh = GetValue(kFitRangeHigh);
+
+  AliDebug(1,Form("values : p1JPsi = %f p2LJPsi = %f p3LJPsi = %f p1RJPsi = %f p2RJPsi = %f p3RJPsi = %f  aLJPsi= %f  aRJPsi= %f",p1Left,p2Left,p3Left,p1Right,p2Right,p3Right,alphaLeft,alphaRight));
+  AliDebug(1,Form("values : a = %f b = %f c = %f a' = %f b' = %f c' = %f d' = %f ",a,b,c,ap,bp,cp,dp));
+  AliDebug(1,Form("values : kJPsi = %f mJPsi = %f sJPsi = %f kPsiP = %f NofJPsi= %f ErrStatNofJPsi = %f",kJPsi,mJPsi,sJPsi,kPsiP,NofJPsi,ErrStatNofJPsi));
+  if(IsValidValue(GetValue("BG0_init"))) AliInfo(Form("Bckg initialised using parameters : %f,%f,%f,%f",BG0_init,BG1_init,BG3_init,BG4_init));
+  if(IsValidValue(GetValue("rejRl"))) AliInfo(Form("Bckg initialised using reject range: %f - %f",rejRl,rejRh));
+  TProfile* p(0x0);
+  if ( fHisto->IsA() == TProfile::Class() ) p = static_cast<TProfile*>(fHisto);
+  else
+  {
+    AliError("Mean v2 histo has to be a TProfile");
+    return;
+  }
+
+  TProfile::Approximate();
+
+
+  //_____________
+
+  TF1* bck = new TF1("bck",this,&AliAnalysisMuMuJpsiResult::FitFunctionBackgroundPol4Cheb,fitRangeLow,fitRangeHigh,5,"AliAnalysisMuMuJpsiResult","FitFunctionBackgroundPol4Cheb");
+
+  bck->SetParameters(.4,-.2,.02,0.,0.);
+  SetFitRejectRange(2.6,3.4);
+  bck->SetParameters(BG0_init,BG1_init,BG2_init,BG3_init,BG4_init);
+  // bck->SetParLimits(0, -1.,1.0);
+ // bck->SetParLimits(0, 1.,8.0);
+  // SetFitRejectRange(2.3,4.0);
+  SetFitRejectRange(rejRl,rejRh);
+  TFitResultPtr fitResultInit = p->Fit(bck,fitOptionBg,"");
+  std::cout << "FitResultmBkgInit=" << static_cast<int>(fitResultInit) << std::endl;
+
+    //___________ Further attempts to fit bkg if the first one fails
+  if ( static_cast<int>(fitResultInit) ) ProcessmBkgFit(fitResultInit,bck,"FitFunctionBackgroundPol4Cheb",fitOptionBg);
+  //___________
+
+  SetFitRejectRange();
+
+  TF1* fitMeanv2 = new TF1("fitMeanv2",this,&AliAnalysisMuMuJpsiResult::FitFunctionMeanPtSNA60NEWPOL2POL3POL4Cheb,fitRangeLow,fitRangeHigh,26,"AliAnalysisMuMuJpsiResult","FitFunctionMeanPtSNA60NEWPOL2POL3POL4Cheb");
+
+  fitMeanv2->SetParNames("a","b","c","ap","bp","cp","dp","kJPsi","mJPsi","sJPsi","p1LJPsi");
+  //                      0   1   2    3    4    5   6       7       8       9      10
+
+  fitMeanv2->SetParName(11,"p2LJPsi");
+  fitMeanv2->SetParName(12,"p3LJPsi");
+  fitMeanv2->SetParName(13,"p1RJPsi");
+  fitMeanv2->SetParName(14,"p2RJPsi");
+  fitMeanv2->SetParName(15,"p3RJPsi");
+  fitMeanv2->SetParName(16,"aLJPsi");
+  fitMeanv2->SetParName(17,"aRJPsi");
+
+  fitMeanv2->SetParName(18,"kPsiP");
+  fitMeanv2->SetParName(19,"<v2>JPsi");
+  fitMeanv2->SetParName(20,"<v2>BGC0");
+  fitMeanv2->SetParName(21,"<v2>BGC1");
+  fitMeanv2->SetParName(22,"<v2>BGC2");
+  fitMeanv2->SetParName(23,"<v2>BGC3");
+  fitMeanv2->SetParName(24,"<v2>BGC4");
+  fitMeanv2->SetParName(25,"<v2>PsiP");
+
+  fitMeanv2->FixParameter(0,a);
+  fitMeanv2->FixParameter(1,b);
+  fitMeanv2->FixParameter(2,c);
+  fitMeanv2->FixParameter(3,ap);
+  fitMeanv2->FixParameter(4,bp);
+  fitMeanv2->FixParameter(5,cp);
+  fitMeanv2->FixParameter(6,dp);
+  fitMeanv2->FixParameter(7,kJPsi);
+  fitMeanv2->FixParameter(8,mJPsi);
+  fitMeanv2->FixParameter(9,sJPsi);
+
+  fitMeanv2->FixParameter(10,p1Left);
+  fitMeanv2->FixParameter(11,p2Left);
+  fitMeanv2->FixParameter(12,p3Left);
+  fitMeanv2->FixParameter(13,p1Right);
+  fitMeanv2->FixParameter(14,p2Right);
+  fitMeanv2->FixParameter(15,p3Right);
+  fitMeanv2->FixParameter(16,alphaLeft);
+  fitMeanv2->FixParameter(17,alphaRight);
+
+  fitMeanv2->FixParameter(18,kPsiP);
+
+  fitMeanv2->SetParameter(19, 0.01);
+  fitMeanv2->SetParLimits(19, -1.,1.);
+
+  for ( Int_t i = 0; i < 5; ++i )
+  {
+    fitMeanv2->SetParameter(i + 20, bck->GetParameter(i));
+  }
+
+  fitMeanv2->SetParameter(25, 0.01);
+  fitMeanv2->SetParLimits(25, -1.,1.);
+
+  TFitResultPtr fitResult = p->Fit(fitMeanv2,fitOption,"");
+
+  std::cout << "FitResult=" << static_cast<int>(fitResult) << std::endl;
+  std::cout << "CovMatrixStatus = " << fitResult->CovMatrixStatus() << std::endl;
+
+  if ( static_cast<int>(fitResult) )
+  {
+    for ( Int_t i = 0; i < 5; ++i )
+    {
+      fitMeanv2->SetParameter(i + 20, bck->GetParameter(i)*0.9);
+    }
+    fitResult = p->Fit(fitMeanv2,fitOption,"");
+  }
+  else if ( fitMeanv2->GetParameter(25) <= fitMeanv2->GetParError(25) || fitMeanv2->GetParError(25) >= 0.75*fitMeanv2->GetParameter(25) )
+  {
+    fitMeanv2->FixParameter(25, 0.);
+    for ( Int_t i = 0; i < 5; ++i )
+    {
+      fitMeanv2->SetParameter(i + 20, bck->GetParameter(i)*0.6);
+    }
+    fitResult = p->Fit(fitMeanv2,fitOption,"");
+  }
+
+  std::cout << "FitResultt=" << static_cast<int>(fitResult) << std::endl;
+  std::cout << "CovMatrixStatus = " << fitResult->CovMatrixStatus() << std::endl;
+
+  std::cout << "FitChi2PerNDF = " << fitMeanv2->GetChisquare()<<"/"<<fitMeanv2->GetNDF() << std::endl;
+    //___________ Further attempts to fit if the first one fails
+  // if ( static_cast<int>(fitResult) ||  static_cast<int>(fitResult->CovMatrixStatus())!=3 ) ProcessMv2Fit(fitResult,fitMeanv2,bck,fitOption,12,4); // Int_t iParKPsip, Int_t iLastParBkg);
+  //___________
+
+  //___________Set parameters and fit functions to store in the result
+  Int_t fitStatus = 0;
+  if(!CheckFitStatus(fitResult)) fitStatus =-1;
+  else Set("FitStatus",fitStatus,0.);
+  Set("FitChi2PerNDF",fitMeanv2->GetChisquare()/fitMeanv2->GetNDF(),0.0);
+  Set("FitNDF",fitMeanv2->GetNDF(),0.0);
+  Set("mJPsi",fitMeanv2->GetParameter(8),fitMeanv2->GetParError(8));
+  Set("sJPsi",fitMeanv2->GetParameter(9),fitMeanv2->GetParError(9));
+  // Set("mv2PsiP",fitMeanv2->GetParameter(25),fitMeanv2->GetParError(25));
+
+  for ( Int_t i = 0; i < 5; ++i )
+  {
+    bck->SetParameter(i, fitMeanv2->GetParameter(i+20));
+  }
+  AttachFunctionsToHisto(0x0,0x0,bck,fitMeanv2,fitRangeLow,fitRangeHigh);//
+
+  Set("NofJPsi",NofJPsi,ErrStatNofJPsi);
+  Set("<v2>JPsi",fitMeanv2->GetParameter(19),fitMeanv2->GetParError(19));
+  // Set("<v2>PsiP",fitMeanv2->GetParameter(23),fitMeanv2->GetParError(23));
+
+}
 //_____________________________________________________________________________
 Bool_t AliAnalysisMuMuJpsiResult::AddFit(const char* fitType)
 {
@@ -8450,6 +12649,7 @@ void AliAnalysisMuMuJpsiResult::DecodeFitType(const char* fitType)
 
       if ( histoType.CompareTo("minv",TString::kIgnoreCase) == 0 ) Set(kKeyHistoType,0.,0.0); //histoType=0 means minv histo
       else if ( histoType.CompareTo("mpt",TString::kIgnoreCase) == 0 ) Set(kKeyHistoType,1.,0.0); //histoType=1 means mpt histo
+      else if ( histoType.CompareTo("mV2",TString::kIgnoreCase) == 0 ) Set(kKeyHistoType,1.,0.0); //histoType=1 means mpt histo
       else if ( histoType.CompareTo("minv&mpt",TString::kIgnoreCase) == 0 ) Set(kKeyHistoType,2.,0.0); //histoType=1 means combined fit minv and mpt
       else
       {
@@ -8896,6 +13096,21 @@ void AliAnalysisMuMuJpsiResult::ProcessBkgFit(TFitResultPtr &fitResultInit, TF1*
   }
 
   if ( static_cast<int>(fitResultInit) ) {
+    // Chage first initial parameter and change the fitting range
+    std::cout << "Fitting background again with range à la Momo" << std::endl;
+
+    for ( Int_t i = 0 ; i < nParsBkg ; i++ ) {
+      Double_t par = initPars->At(i);
+      if ( i == 0 ) par =2*par + 1.;
+      bckInit->SetParameter(i,par);
+    }
+    // SetFitRejectRange(2.7,4.0);
+
+    std::cout << "//======== Fitting background again =======\\" << std::endl;
+    fitResultInit = fHisto->Fit(bckInit,fitOption,"",2.2,2.8);
+    std::cout << "FitResultBkgInit=" << static_cast<int>(fitResultInit) << std::endl;
+  }
+  if ( static_cast<int>(fitResultInit) ) {
     std::cout << std::endl;
     std::cout << "Cannot fit background properly, try something else" << std::endl;
     std::cout << std::endl;
@@ -8903,7 +13118,260 @@ void AliAnalysisMuMuJpsiResult::ProcessBkgFit(TFitResultPtr &fitResultInit, TF1*
 
   delete initPars;
 }
+//________________________
+void AliAnalysisMuMuJpsiResult::ProcessMv2Fit(TFitResultPtr& fitResult, TF1* fitTotal, TF1* bckInit, const char* fitOption, Int_t iParKPsip, Int_t iLastParBkg)
+{
+  //
 
+  Int_t bin(0);
+  // TString minuitStatus = gMinuit->fCstatu;
+  // if ( static_cast<int>(fitResult) || static_cast<int>(fitResult->CovMatrixStatus())!=3 /*|| static_cast<int>(fitResult->CovMatrixStatus())!=2*/)
+  // {
+  //   if ( (0.5*fitTotal->GetParameter(iParKPsip) <= fitTotal->GetParError(iParKPsip))) { //kPsi'
+  //     std::cout << "-----------------------------------------------" << std::endl;
+  //     std::cout << "------- Setting Psi'norm= Psi' norm*0.8 -------" << std::endl;
+  //     std::cout << "-----------------------------------------------" << std::endl;
+  //     bin = fHisto->FindBin(3.68);
+  //     // fitTotal->SetParLimits(iParKPsip, 0.,fHisto->GetBinContent(bin)*1.5); // we further restrict the range of psi' norm
+  //     fitTotal->SetParameter(iParKPsip, fHisto->GetBinContent(bin)*0.8);
+  //   }
+
+  //   if ( 0.5*fitTotal->GetParameter(0) <= fitTotal->GetParError(0) ) {
+  //     std::cout << "-----------------------------------------------" << std::endl;
+  //     std::cout << "-------       Setting p0=MAX/2          -------" << std::endl;
+  //     std::cout << "-----------------------------------------------" << std::endl;
+  //   }
+
+  //   std::cout << "================================\\" << std::endl;
+  //   std::cout << "======== Refitting again =======\\" << std::endl;
+  //   std::cout << "================================\\" << std::endl;
+  //   fitResult = fHisto->Fit(fitTotal,fitOption,"");
+  //   std::cout << "FitResult = " << static_cast<int>(fitResult) << std::endl;
+  //   std::cout << "CovMatrixStatus = " << fitResult->CovMatrixStatus() << std::endl;
+
+  //   //Check if there are poles somewhere/
+  //   if(iLastParBkg == 6 )CheckRoots(fitResult,fitTotal,3,fitTotal->GetParameter(3),fitTotal->GetParameter(4),fitTotal->GetParameter(5),fitTotal->GetParameter(6),fitOption);
+  //   if(iLastParBkg == 5 )CheckRoots(fitResult,fitTotal,2,fitTotal->GetParameter(3),fitTotal->GetParameter(4),fitTotal->GetParameter(5),0.,fitOption);
+  // }
+
+  //  //
+
+  // if ( static_cast<int>(fitResult) || static_cast<int>(fitResult->CovMatrixStatus())!=3 /*|| static_cast<int>(fitResult->CovMatrixStatus())!=2*/)
+  // {
+  //   if ( (0.5*fitTotal->GetParameter(iParKPsip) <= fitTotal->GetParError(iParKPsip))  ){ //kPsi'
+  //     std::cout << "------------------------------------------------" << std::endl;
+  //     std::cout << "------- Setting Psi'norm= Psi' norm*0.5) -------" << std::endl;
+  //     std::cout << "------------------------------------------------" << std::endl;
+  //     bin = fHisto->FindBin(3.68);
+  //     // fitTotal->SetParLimits(iParKPsip, 0.,fHisto->GetBinContent(bin)*0.9); // we further restrict the range of psi' norm
+  //     fitTotal->SetParameter(iParKPsip, fHisto->GetBinContent(bin)*0.5);
+  //   }
+  //   if ( 0.5*fitTotal->GetParameter(0) <= fitTotal->GetParError(0) ) {
+  //     std::cout << "------------------------------------------------" << std::endl;
+  //     std::cout << "-------         Setting p0=MAX/2)        -------" << std::endl;
+  //     std::cout << "------------------------------------------------" << std::endl;
+  //     fitTotal->SetParameter(0, fHisto->GetMaximum()*2.); // kVWG
+  //   }
+
+  //   std::cout << "================================\\" << std::endl;
+  //   std::cout << "======== Refitting again =======\\" << std::endl;
+  //   std::cout << "================================\\" << std::endl;
+  //   fitResult = fHisto->Fit(fitTotal,fitOption,"");
+  //   std::cout << "FitResult = " << static_cast<int>(fitResult) << std::endl;
+  //   std::cout << "CovMatrixStatus = " << fitResult->CovMatrixStatus() << std::endl;
+
+  //    //Check if there are poles somewhere/
+  //   if(iLastParBkg == 6 )CheckRoots(fitResult,fitTotal,3,fitTotal->GetParameter(3),fitTotal->GetParameter(4),fitTotal->GetParameter(5),fitTotal->GetParameter(6),fitOption) ;
+  //   if(iLastParBkg == 5 )CheckRoots(fitResult,fitTotal,2,fitTotal->GetParameter(3),fitTotal->GetParameter(4),fitTotal->GetParameter(5),0.,fitOption);
+  // }
+
+  if ( static_cast<int>(fitResult) ||static_cast<int>(fitResult->CovMatrixStatus())!=3 /*|| static_cast<int>(fitResult->CovMatrixStatus())!=2*/) {
+    std::cout << "============================================================================================\\" << std::endl;
+    std::cout << "======== Refitting bkg again (setting range rejected 2.5-3.7, and fit range 1.7-4.5) =======\\" << std::endl;
+    std::cout << "============================================================================================\\" << std::endl;
+    SetFitRejectRange(2.5,3.7);
+    TFitResultPtr fitResultInit = fHisto->Fit(bckInit,fitOption,"",1.7,4.5);
+    SetFitRejectRange();
+
+    for ( Int_t i = 0; i < iLastParBkg+1 ; ++i ) fitTotal->SetParameter(i, bckInit->GetParameter(i)); //set initial background parameters
+
+    fitResult = fHisto->Fit(fitTotal,fitOption,"");
+    std::cout << "FitResult = " << static_cast<int>(fitResult) << std::endl;
+    std::cout << "CovMatrixStatus = " << fitResult->CovMatrixStatus() << std::endl;
+
+     //Check if there are poles somewhere/
+    // if(iLastParBkg == 6 )CheckRoots(fitResult,fitTotal,3,fitTotal->GetParameter(3),fitTotal->GetParameter(4),fitTotal->GetParameter(5),fitTotal->GetParameter(6),fitOption) ;
+    // if(iLastParBkg == 5 )CheckRoots(fitResult,fitTotal,2,fitTotal->GetParameter(3),fitTotal->GetParameter(4),fitTotal->GetParameter(5),0.,fitOption);
+  }
+
+  if ( static_cast<int>(fitResult) ||static_cast<int>(fitResult->CovMatrixStatus())!=3 /*|| static_cast<int>(fitResult->CovMatrixStatus())!=2*/) {
+    std::cout << "============================================================================================\\" << std::endl;
+    std::cout << "======== Refitting bkg again (setting range rejected 2.5-3.5, and fit range 1.5-5)  ========\\" << std::endl;
+    std::cout << "============================================================================================\\" << std::endl;
+
+    SetFitRejectRange(2.5,3.5);
+    TFitResultPtr fitResultInit = fHisto->Fit(bckInit,fitOption,"",1.5,5.);
+    SetFitRejectRange();
+
+    for ( Int_t i = 0; i < iLastParBkg+1 ; ++i ) fitTotal->SetParameter(i, bckInit->GetParameter(i)); //set initial background parameters
+
+    fitResult = fHisto->Fit(fitTotal,fitOption,"");
+    std::cout << "FitResult = " << static_cast<int>(fitResult) << std::endl;
+    std::cout << "CovMatrixStatus = " << fitResult->CovMatrixStatus() << std::endl;
+
+    if(iLastParBkg == 6 )CheckRoots(fitResult,fitTotal,3,fitTotal->GetParameter(3),fitTotal->GetParameter(4),fitTotal->GetParameter(5),fitTotal->GetParameter(6),fitOption) ;
+    if(iLastParBkg == 5 )CheckRoots(fitResult,fitTotal,2,fitTotal->GetParameter(3),fitTotal->GetParameter(4),fitTotal->GetParameter(5),0.,fitOption);
+  }
+
+  if ( static_cast<int>(fitResult) ||static_cast<int>(fitResult->CovMatrixStatus())!=3.)
+  {
+
+    for ( Int_t i = 0; i < iLastParBkg+1 ; ++i ) fitTotal->SetParameter(i, bckInit->GetParameter(i));
+
+    if ( (0.5*fitTotal->GetParameter(iParKPsip) <= fitTotal->GetParError(iParKPsip))  ) { //kPsi'
+      std::cout << "------------------------------------------------" << std::endl;
+      std::cout << "------- Setting Psi'norm= Psi' norm*0.3) -------" << std::endl;
+      std::cout << "------------------------------------------------" << std::endl;
+      bin = fHisto->FindBin(3.68);
+      // fitTotal->SetParLimits(iParKPsip, 0.,fHisto->GetBinContent(bin)*0.7); // we further restrict the range of psi' norm
+      fitTotal->SetParameter(iParKPsip, fHisto->GetBinContent(bin)*0.3);
+    }
+
+    if ( 0.5*fitTotal->GetParameter(0) <= fitTotal->GetParError(0) ){
+      std::cout << "------------------------------------------------" << std::endl;
+      std::cout << "-------         Setting p0=MAX*0.        -------" << std::endl;
+      std::cout << "------------------------------------------------" << std::endl;
+      // fitTotal->SetParLimits(0,bckInit->GetParameter(0)*0.1,bckInit->GetParameter(0)*1.5);
+      fitTotal->SetParameter(0, fHisto->GetMaximum()*0.6); // kVWG
+    }
+
+    std::cout << "================================\\" << std::endl;
+    std::cout << "======== Refitting again =======\\" << std::endl;
+    std::cout << "================================\\" << std::endl;    fitResult = fHisto->Fit(fitTotal,fitOption,"");
+
+    std::cout << "FitResult = " << static_cast<int>(fitResult) << std::endl;
+    std::cout << "CovMatrixStatus = " << fitResult->CovMatrixStatus() << std::endl;
+
+    if(iLastParBkg == 6 )CheckRoots(fitResult,fitTotal,3,fitTotal->GetParameter(3),fitTotal->GetParameter(4),fitTotal->GetParameter(5),fitTotal->GetParameter(6),fitOption) ;
+    if(iLastParBkg == 5 )CheckRoots(fitResult,fitTotal,2,fitTotal->GetParameter(3),fitTotal->GetParameter(4),fitTotal->GetParameter(5),0.,fitOption);
+  }
+
+  // if ( !static_cast<int>(fitResult) && static_cast<int>(fitResult->CovMatrixStatus())!=3.){
+  //   // change fit option if the only problem is the error calculation
+  //   std::cout << "//------- Erro estimation problem, changing fit option" << std::endl;
+  //   std::cout << "//======== Refitting again =======\\" << std::endl;
+
+  //   fitResult = fHisto->Fit(fitTotal,Form("%sM",fitOption),"");
+  //   std::cout << "FitResult = " << static_cast<int>(fitResult) << std::endl;
+  //   std::cout << "CovMatrixStatus = " << fitResult->CovMatrixStatus() << std::endl;
+  // }
+
+  if ( static_cast<int>(fitResult) ||static_cast<int>(fitResult->CovMatrixStatus())!=3.){
+    std::cout << "===========================================================\\" << std::endl;
+    std::cout << "======== Cannot fit properly, try something else... =======\\" << std::endl;
+    std::cout << "===========================================================\\" << std::endl;
+  }
+}
+//________________________
+void AliAnalysisMuMuJpsiResult::ProcessmBkgFit(TFitResultPtr &fitResultInit, TF1* bckInit, const char* bkgFuncName, const char* fitOption)
+{
+  // If a Bkg fit fails this algorithm changes some initial parameters or fitting range to get the fit converged. Can be refined
+
+  TString sbkgFuncName(bkgFuncName);
+  Int_t nParsBkg(0);
+  TArrayD* initPars(0x0);
+
+  Int_t bin = fHisto->FindBin(0.82); // We change the bin from where we get the initial value for 1st parameter
+  if ( !sbkgFuncName.CompareTo("FitFunctionBackgroundPol2")) {
+    nParsBkg = 3;
+    initPars = new TArrayD(nParsBkg);
+    initPars->AddAt(fHisto->GetBinContent(bin),0);
+    initPars->AddAt(2.,1);
+    initPars->AddAt(0.5,2);
+    initPars->AddAt(0.3,3);
+  } else if ( !sbkgFuncName.CompareTo("FitFunctionBackgroundPol2Exp") ) {
+    nParsBkg = 4;
+    initPars = new TArrayD(nParsBkg);
+    initPars->AddAt(fHisto->GetBinContent(bin),0);
+    initPars->AddAt(-fHisto->GetBinContent(bin)/3.,1);
+    initPars->AddAt(100.,2);
+    initPars->AddAt(0.05,3);
+  } else if ( !sbkgFuncName.CompareTo("FitFunctionBackgroundPol3") ) {
+    nParsBkg = 4;
+    bin = fHisto->FindBin(1.6);
+    bckInit->SetParameters(0.,1.,1.,1.,2.,0.5);
+    initPars = new TArrayD(nParsBkg);
+    initPars->AddAt(-fHisto->GetBinContent(bin),0);
+    initPars->AddAt(fHisto->GetBinContent(bin),1);
+    initPars->AddAt(-fHisto->GetBinContent(bin)/2.,2);
+    initPars->AddAt(fHisto->GetBinContent(bin)/10.,3);
+    initPars->AddAt(fHisto->GetBinContent(bin)/100.,4);
+    initPars->AddAt(-2.,5);
+  } else if ( !sbkgFuncName.CompareTo("FitFunctionBackgroundPol4") ) {
+    nParsBkg = 5;
+    initPars = new TArrayD(nParsBkg);
+
+    initPars->AddAt(0,0);
+    initPars->AddAt(fHisto->GetBinContent(bin),1);
+    initPars->AddAt(0.,2);
+    initPars->AddAt(1.,3);
+  } else {
+    AliError("Unrecognized Background function");
+    return;
+  }
+  if ( static_cast<int>(fitResultInit) ) {
+
+    std::cout << "//------- Resetting default initial parameters" << std::endl;
+
+    for ( Int_t i = 0 ; i < nParsBkg ; i++ ) {
+      Double_t par = initPars->At(i);
+      if ( i == 0 ) par =2*par + 1.;
+      bckInit->SetParameter(i,par);
+    }
+
+    std::cout << "//======== Fitting background again =======\\" << std::endl;
+    fitResultInit = fHisto->Fit(bckInit,fitOption);
+    std::cout << "FitResultBkgInit=" << static_cast<int>(fitResultInit) << std::endl;
+  }
+
+  if ( static_cast<int>(fitResultInit) ){
+    // Same initial parameters but change the fitting range
+
+    std::cout << "//------- Changing fitting range to (1.5,5.0)" << std::endl;
+
+    for ( Int_t i = 0 ; i < nParsBkg ; i++ ) bckInit->SetParameter(i,initPars->At(i));
+    SetFitRejectRange(2.6,3.5);
+
+    std::cout << "//======== Fitting background again =======\\" << std::endl;
+    fitResultInit = fHisto->Fit(bckInit,fitOption,"",1.5,5.);
+
+    std::cout << "FitResultBkgInit=" << static_cast<int>(fitResultInit) << std::endl;
+  }
+
+  if ( static_cast<int>(fitResultInit) ) {
+    // Chage first initial parameter and change the fitting range
+    std::cout << "Fitting background again" << std::endl;
+
+    for ( Int_t i = 0 ; i < nParsBkg ; i++ ) {
+      Double_t par = initPars->At(i);
+      if ( i == 0 ) par =2*par + 1.;
+      bckInit->SetParameter(i,par);
+    }
+    SetFitRejectRange(2.7,4.0);
+
+    std::cout << "//======== Fitting background again =======\\" << std::endl;
+    fitResultInit = fHisto->Fit(bckInit,fitOption,"",1.5,5.);
+    std::cout << "FitResultBkgInit=" << static_cast<int>(fitResultInit) << std::endl;
+  }
+
+  if ( static_cast<int>(fitResultInit) ) {
+    std::cout << std::endl;
+    std::cout << "Cannot fit background properly, try something else" << std::endl;
+    std::cout << std::endl;
+  }
+
+  delete initPars;
+}
 //_____________________________________________________________________________
 void AliAnalysisMuMuJpsiResult::SetBin(const AliAnalysisMuMuBinning::Range& bin)
 {
@@ -9061,7 +13529,7 @@ Bool_t AliAnalysisMuMuJpsiResult::CheckRoots(TFitResultPtr &fitResult, TF1* fitF
     Double_t x1 = (-b - TMath::Sqrt(delta ))/(2.*a);
     Double_t x2 = (-b + TMath::Sqrt(delta ))/(2.*a);
     if ((fitRangeLow < x1 && x1 < fitRangeHigh )){
-       printf(" !!!!!! Roots founded at %f !!!!!! \n",x1);
+       printf(" !!!!!! Found roots at %f !!!!!! \n",x1);
        fitFunction->SetParameters(2,a+a*epsilon);
        fitResult = fHisto->Fit(fitFunction,fitOption,"");
        printf("fit Result       = %d\n",static_cast<int>(fitResult) );
@@ -9069,7 +13537,7 @@ Bool_t AliAnalysisMuMuJpsiResult::CheckRoots(TFitResultPtr &fitResult, TF1* fitF
        return kFALSE;
     }
     if ((fitRangeLow < x2 && x2 < fitRangeHigh )){
-       printf(" !!!!!! Roots founded at %f !!!!!! \n",x2);
+       printf(" !!!!!! Found roots at %f !!!!!! \n",x2);
        fitFunction->SetParameters(2,a+a*epsilon);
        fitResult = fHisto->Fit(fitFunction,fitOption,"");
        printf("fit Result       = %d\n",static_cast<int>(fitResult) );
@@ -9115,7 +13583,7 @@ Bool_t AliAnalysisMuMuJpsiResult::CheckRoots(TFitResultPtr &fitResult, TF1* fitF
     }
 
     if (fitRangeLow < R1  && R1 < fitRangeHigh){
-      printf(" !!!!!! Roots founded at %f !!!!!! \n", R1);
+      printf(" !!!!!! Found roots at %f !!!!!! \n", R1);
       fitFunction->SetParameter(3,a+a*epsilon);
       printf("Parameter 3 = %f \n",fitFunction->GetParameter(3) );
       fitResult = fHisto->Fit(fitFunction,fitOption,"");
@@ -9125,7 +13593,7 @@ Bool_t AliAnalysisMuMuJpsiResult::CheckRoots(TFitResultPtr &fitResult, TF1* fitF
       return kFALSE;
     }
     if (fitRangeLow < R2  && R2 < fitRangeHigh){
-      printf(" !!!!!! Roots founded at %f !!!!!! \n", R2);
+      printf(" !!!!!! Found roots at %f !!!!!! \n", R2);
       fitFunction->SetParameter(3,a+a*epsilon);
       printf("Parameter 3 = %f \n",fitFunction->GetParameter(3) );
       fitResult = fHisto->Fit(fitFunction,fitOption,"");
@@ -9135,7 +13603,7 @@ Bool_t AliAnalysisMuMuJpsiResult::CheckRoots(TFitResultPtr &fitResult, TF1* fitF
       return kFALSE;
     }
     if (fitRangeLow < R3  && R3 < fitRangeHigh){
-      printf(" !!!!!! Roots founded at %f !!!!!! \n", R3);
+      printf(" !!!!!! Found roots at %f !!!!!! \n", R3);
       fitFunction->SetParameter(3,a+a*epsilon);
       printf("Parameter 3 = %f \n",fitFunction->GetParameter(3) );
       fitFunction->SetParameter(4,b+b*epsilon);
@@ -9150,7 +13618,26 @@ Bool_t AliAnalysisMuMuJpsiResult::CheckRoots(TFitResultPtr &fitResult, TF1* fitF
 
   return kTRUE;
 }
+//_____________________________________________________________________________
+Bool_t AliAnalysisMuMuJpsiResult::CheckFitStatus(TFitResultPtr &fitResult)
+{
+  Bool_t isok = kTRUE;
+  if ( static_cast<int>(fitResult) && static_cast<int>(fitResult)!=4000 ){
+    isok =kFALSE;
+    AliDebug(1,Form("Fit rejected because of fitresult : %d",static_cast<int>(fitResult)));
+  }
 
+  if(static_cast<int>(fitResult->CovMatrixStatus())!=3 ){
+    isok =kFALSE;
+    AliDebug(1,Form("Fit rejected because of covariant matrix : %d",fitResult->CovMatrixStatus()));
+  }
+  TString minuitStatus = gMinuit->fCstatu;
+  if(!minuitStatus.Contains("SUCCESSFUL") && !minuitStatus.Contains("OK") && !minuitStatus.Contains("PROBLEMS")){
+    isok =kFALSE;
+    AliDebug(1,"Minuit status is not ok !");
+  }
+  return isok;
+}
 //_____________________________________________________________________________
 Bool_t AliAnalysisMuMuJpsiResult::StrongCorrelation(TFitResultPtr& r,
                                                     TF1* fitFunction,

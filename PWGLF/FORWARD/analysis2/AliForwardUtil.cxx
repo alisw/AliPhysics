@@ -244,6 +244,7 @@ namespace {
     if (TMath::Abs(energy - 5022.)  < 10)  return 5023;
     if (TMath::Abs(energy - 5125.)  < 30)  return 5100;
     if (TMath::Abs(energy - 5200.)  < 50)  return 5200;
+    if (TMath::Abs(energy - 5440.)  < 20)  return 5440;
     if (TMath::Abs(energy - 5500.)  < 40)  return 5500;
     if (TMath::Abs(energy - 7000.)  < 10)  return 7000;
     if (TMath::Abs(energy - 8000.)  < 10)  return 8000;
@@ -279,6 +280,8 @@ AliForwardUtil::ParseCenterOfMassEnergy(UShort_t sys, Float_t beam)
     energy = CenterOfMassEnergy(beam, 1, 1, 82, 208);
   else if (sys == AliForwardUtil::kPbPb) 
     energy = CenterOfMassEnergy(beam, 82, 208, 82, 208);
+  else if (sys == AliForwardUtil::kXeXe) 
+    energy = CenterOfMassEnergy(beam, 54, 129, 54, 129);
   UShort_t ret = CheckSNN(energy);
   if (ret > 1) return ret;
   if (sys == AliForwardUtil::kPbPb ||
@@ -316,9 +319,12 @@ AliForwardUtil::ParseMagneticField(Float_t v)
   // Return:
   //    Short integer value of magnetic field in kG 
   //
-  if (TMath::Abs(v - 5.) < 1 ) return +5;
-  if (TMath::Abs(v + 5.) < 1 ) return -5;
-  if (TMath::Abs(v) < 1)       return 0;
+  if (TMath::Abs(v - 5.)  < 1 ) return +5;
+  if (TMath::Abs(v - 2.5) < 1 ) return +2;
+  if (TMath::Abs(v - 2.5) < 1 ) return -2;
+  if (TMath::Abs(v + 5.)  < 1 ) return -5;
+  if (TMath::Abs(v) < 1)        return 0;
+  ::Warning("ParseMagneticfield", "Magnetic field value: %f not known", v);
   return 999;
 }
 //____________________________________________________________________

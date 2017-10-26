@@ -99,8 +99,9 @@ class AliAnalysisTaskSubJetFraction : public AliAnalysisTaskEmcalJet {
   Double_t                            SubJetFraction(AliEmcalJet *Jet, AliEmcalJetFinder *Reclusterer, Int_t N, Int_t Type, Bool_t Add, Bool_t Loss);
   Double_t                            NSubJettiness(AliEmcalJet *Jet, Int_t JetContNb, Double_t JetRadius,  AliEmcalJetFinder *Reclusterer, Int_t N, Int_t A, Int_t B);
   Double_t                            FjNSubJettiness(AliEmcalJet *Jet, Int_t JetContNb, Int_t N, Int_t Algorithm, Double_t Beta, Int_t Option=0, Double_t Beta_SD=0, Double_t ZCut=0.1);
-  AliEmcalJet*                        ModifyJet(AliEmcalJet* Jet, Int_t JetContNb, TString Modification);
-  std::vector<fastjet::PseudoJet>     RandomiseTracks(std::vector<fastjet::PseudoJet> fInputVectors);
+  Double_t                            FjNSubJettinessFastJet(std::pair<fastjet::PseudoJet,fastjet::ClusterSequence *> Jet_ClusterSequence, Int_t JetContNb,Int_t N, Int_t Algorithm, Double_t Beta, Int_t Option=0, Double_t Beta_SD=0, Double_t ZCut=0.1);
+  std::pair<fastjet::PseudoJet,fastjet::ClusterSequence *>                  ModifyJet(AliEmcalJet* Jet, Int_t JetContNb, TString Modification);
+  std::vector<fastjet::PseudoJet>     RandomiseTracks(AliEmcalJet *Jet,std::vector<fastjet::PseudoJet> fInputVectors);
   std::vector<fastjet::PseudoJet>     AddExtraProng(std::vector<fastjet::PseudoJet> fInputVectors, Double_t Distance, Double_t PtFrac);
  
   Int_t                               fContainer;              // jets to be analyzed 0 for Base, 1 for subtracted. 

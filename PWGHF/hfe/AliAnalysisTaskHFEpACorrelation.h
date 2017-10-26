@@ -96,6 +96,7 @@ public:
     void SetEtaCut(Double_t EtaCutMin,Double_t EtaCutMax ) { fEtaCutMin = EtaCutMin; fEtaCutMax = EtaCutMax; };
     void SetpTBins(Int_t n, Float_t* array) { fpTBins.Set(n,array); };
     void SetZvtxBins(Int_t n, Double_t* array) { fZVtxBins.Set(n,array); };
+    void SetCentralityBins(Int_t n, Double_t* array) {fCentralityBins.Set(n,array);};
 
     
     void SetZVtxCut( Float_t VtxZMin, Float_t VtxZMax)
@@ -206,6 +207,7 @@ private:
     //General variables
     TArrayF                 fpTBins;
     TArrayD                 fZVtxBins;
+    TArrayD                 fCentralityBins;
     AliESDEvent 			*fESD; //!
     AliAODEvent 		   	*fAOD;//!
     AliVEvent 		      	*fVevent; //!
@@ -295,11 +297,11 @@ private:
     TH2F				**fTPCNcls_pid; //!
 
     //Electron-Hadron Correlation Histograms
-    TH2F				***fCEtaPhi_Inc; //!
-    TH2F				***fCEtaPhi_ULS_Weight; //!
-    TH2F				***fCEtaPhi_LS_Weight; //!
-    TH2F				***fCEtaPhi_ULS_NoP_Weight; //!
-    TH2F				***fCEtaPhi_LS_NoP_Weight; //!
+    TH2F				****fCEtaPhi_Inc; //!
+    TH2F				****fCEtaPhi_ULS_Weight; //!
+    TH2F				****fCEtaPhi_LS_Weight; //!
+    TH2F				****fCEtaPhi_ULS_NoP_Weight; //!
+    TH2F				****fCEtaPhi_LS_NoP_Weight; //!
     
     TH1F				**fInvMassULS; //!
     TH1F				**fInvMassLS; //!
@@ -382,14 +384,14 @@ private:
     TObjArray			*fTracksClone; //!
     TObjArray			*fTracks; //!
     
-    TH2F				***fCEtaPhi_Inc_EM; //!
+    TH2F				****fCEtaPhi_Inc_EM; //!
     
-    TH2F				***fCEtaPhi_ULS_Weight_EM; //!
-    TH2F				***fCEtaPhi_LS_Weight_EM; //!
+    TH2F				****fCEtaPhi_ULS_Weight_EM; //!
+    TH2F				****fCEtaPhi_LS_Weight_EM; //!
     
-    TH2F				***fCEtaPhi_Inc_NoULSP; //!
-    TH2F				***fCEtaPhi_Back_ULS_NoULSP; //!
-    TH2F				***fCEtaPhi_Back_LS_NoULSP; //!
+    TH2F				****fCEtaPhi_Inc_NoULSP; //!
+    TH2F				****fCEtaPhi_Back_ULS_NoULSP; //!
+    TH2F				****fCEtaPhi_Back_LS_NoULSP; //!
     
     TH2F				*fPoolNevents; //!
     
@@ -398,7 +400,7 @@ private:
     
     //______________________________________________________________________
     //Di-hadron correlation
-    TH2F				***fCEtaPhi_Inc_DiHadron;  //!
+    TH2F				****fCEtaPhi_Inc_DiHadron;  //!
     TH1F				*fPtTrigger_Inc;  //!
     AliAnalysisUtils *fAnalysisUtils;     //! Analysis Utils for pA pileup cut
     

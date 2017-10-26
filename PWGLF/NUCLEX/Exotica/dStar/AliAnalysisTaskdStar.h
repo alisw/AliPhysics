@@ -41,6 +41,7 @@ struct mother_struct{
 
 struct daughter_struct{
   int mother_pdg;
+  int mother_id;
   bool charge;                     // true if is +, false if is -
   FourVector_t vec;
 };

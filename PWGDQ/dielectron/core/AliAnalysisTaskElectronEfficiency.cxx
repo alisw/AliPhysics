@@ -98,6 +98,10 @@ fMaxVtxZ(0.),
 fCentMin( -1.),
 fCentMax(101.),
 fUseMultSelection(kFALSE),
+fPtMinCut(-1.),
+fPtMaxCut(1e30),
+fEtaMinCut(-1.),
+fEtaMaxCut(1.),
 fEtaMinGEN(-10.),
 fEtaMaxGEN( 10.),
 fPtMinGEN( -1.),
@@ -305,6 +309,10 @@ fMaxVtxZ(0.),
 fCentMin( -1.),
 fCentMax(101.),
 fUseMultSelection(kFALSE),
+fPtMinCut(-1.),
+fPtMaxCut(1e30),
+fEtaMinCut(-1.),
+fEtaMaxCut(1.),
 fEtaMinGEN(-10.),
 fEtaMaxGEN( 10.),
 fPtMinGEN( -1.),
@@ -1465,14 +1473,14 @@ void AliAnalysisTaskElectronEfficiency::UserExec(Option_t *)
       } // MC track loop
       if(LMEEelectrons.size() > 0 && LMEEpositrons.size() > 0){
         for(std::vector<LMEEparticle>::iterator it1 = LMEEelectrons.begin(); it1 != LMEEelectrons.end(); ++it1){
-          Bool_t bAccGen1 = it1->genPt > fPtMinGEN && TMath::Abs(it1->genEta) < 0.8;
-          Bool_t bAccRec1 = it1->recPt > fPtMinGEN && TMath::Abs(it1->recEta) < 0.8;
+          Bool_t bAccGen1 = it1->genPt > fPtMinCut && it1->genPt < fPtMaxCut && it1->genEta < fEtaMaxCut && it1->genEta > fEtaMinCut;
+          Bool_t bAccRec1 = it1->recPt > fPtMinCut && it1->recPt < fPtMaxCut && it1->recEta < fEtaMaxCut && it1->recEta > fEtaMinCut;
           if(!(bAccGen1 || bAccRec1)) continue;
           Bool_t charm1  =  TMath::Abs(it1->mPDG) > 400 && TMath::Abs(it1->mPDG) < 440 && !(TMath::Abs(it1->grmPDG) > 500 && TMath::Abs(it1->grmPDG) < 550);
           Bool_t beauty1 = (TMath::Abs(it1->mPDG) > 400 && TMath::Abs(it1->mPDG) < 440 && TMath::Abs(it1->grmPDG) > 500  && TMath::Abs(it1->grmPDG) < 550) || (TMath::Abs(it1->mPDG) > 500 && TMath::Abs(it1->mPDG) < 550);
           for(std::vector<LMEEparticle>::iterator it2 = LMEEpositrons.begin(); it2 != LMEEpositrons.end(); ++it2){
-            Bool_t bAccGen2 = it2->genPt > fPtMinGEN && TMath::Abs(it2->genEta) < 0.8;
-            Bool_t bAccRec2 = it2->recPt > fPtMinGEN && TMath::Abs(it2->recEta) < 0.8;
+            Bool_t bAccGen2 = it2->genPt > fPtMinCut && it2->genPt < fPtMaxCut && it2->genEta < fEtaMaxCut && it2->genEta > fEtaMinCut;
+            Bool_t bAccRec2 = it2->recPt > fPtMinCut && it2->recPt < fPtMaxCut && it2->recEta < fEtaMaxCut && it2->recEta > fEtaMinCut;
             if(!(bAccGen2 || bAccRec2)) continue;
             Bool_t charm2  =  TMath::Abs(it2->mPDG) > 400 && TMath::Abs(it2->mPDG) < 440 && !(TMath::Abs(it2->grmPDG) > 500 && TMath::Abs(it2->grmPDG) < 550);
             Bool_t beauty2 = (TMath::Abs(it2->mPDG) > 400 && TMath::Abs(it2->mPDG) < 440 && TMath::Abs(it2->grmPDG) > 500  && TMath::Abs(it2->grmPDG) < 550) || (TMath::Abs(it2->mPDG) > 500 && TMath::Abs(it2->mPDG) < 550);

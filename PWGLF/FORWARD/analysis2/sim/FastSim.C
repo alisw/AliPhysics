@@ -229,6 +229,7 @@ struct FastSim : public TSelector
       
     UShort_t   sNN      = (TMath::Abs(fsNN -  2760) < 10 ?  2760 :
 			   TMath::Abs(fsNN -  5023) < 10 ?  5023 :
+			   TMath::Abs(fsNN -  5440) < 10 ?  5440 :
 			   TMath::Abs(fsNN -  2360) < 10 ?  2360 :
 			   TMath::Abs(fsNN -   900) < 10 ?   900 :
 			   TMath::Abs(fsNN -  7000) < 10 ?  7000 :
@@ -441,6 +442,7 @@ struct FastSim : public TSelector
     TIter next(fCentEstimators);
     FastCentEstimator* estimator = 0;
     while ((estimator = static_cast<FastCentEstimator*>(next()))) {
+      Info("SetupOutput", "Setting up estimator %s", estimator->GetName());
       estimator->Setup(estimators, fTree,sNN,fIsTgtA,fIsProjA);
       estimator->SetVerbose(fVerbose);
       // estimator->Print("nah");
@@ -725,7 +727,7 @@ struct FastSim : public TSelector
 
     fBEstimator = new BCentEstimator;
     fCentEstimators = new TList;
-    // fCentEstimators->Add(new V0CentEstimator(-1));           //V0C
+    // fCentEstximators->Add(new V0CentEstimator(-1));           //V0C
     // fCentEstimators->Add(new V0CentEstimator( 0));           //V0M
     // fCentEstimators->Add(new V0CentEstimator(+1));           //V0A
     fCentEstimators->Add(fBEstimator);

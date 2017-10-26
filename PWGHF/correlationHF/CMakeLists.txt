@@ -46,6 +46,7 @@ set(SRCS
     AliReducedParticle.cxx
     AliD0hCutOptim.cxx
     AliDstarhCutOptim.cxx
+    AliDPlushCutOptim.cxx
     AliAnalysisTaskDStarCorrelations.cxx
     AliAnalysisTaskSED0Correlations.cxx
     AliAnalysisTaskSEDplusCorrelations.cxx

@@ -75,6 +75,7 @@ public:
       , fEventNumberInFile(0)
       , fRunNumber(0)
       , fnTrklet(0)
+      , fL2Inputs(0)
       , fOrbitID(0)
       , fInputFileName("") {
       fnSPDClusters[0] = fnSPDClusters[1] = 0;

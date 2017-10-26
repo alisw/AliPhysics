@@ -57,13 +57,13 @@ TObject(),
 	fAnalysisOutput(),
 	fAnalysisInput(),
 	fRunList(),
-	fRunListFileName(),
 	fWorkdir(),
 	fQADirect(),
 	fMergedFileName(),
 	fAnalysisVector(),
 	fTrial(),
-	fExternalFileName(),
+	fExternalFileName(""),
+	fExternalBadMapName(""),
 	fTestRoutine(),
 	fPrint(0),
 	fNMaxCols(48),
@@ -114,7 +114,8 @@ BadChannelAna::BadChannelAna(TString period, TString train, TString trigger, Int
 	fMergedFileName(),
 	fAnalysisVector(),
 	fTrial(),
-	fExternalFileName(),
+	fExternalFileName(""),
+	fExternalBadMapName(""),
 	fTestRoutine(),
 	fPrint(0),
 	fNMaxCols(48),
@@ -152,7 +153,6 @@ void BadChannelAna::Init()
 	gROOT->ProcessLine("gErrorIgnoreLevel = kWarning;"); //Does not work -
 	//......................................................
 	//..Default values - can be set by functions
-	fExternalFileName="";
 	fTestRoutine=0;
 
 	//..Settings for the input/output structure (hard coded)
@@ -185,10 +185,13 @@ void BadChannelAna::Init()
 	fCaloUtils->SetRunNumber(fCurrentRunNumber);
 	fCaloUtils->AccessGeometry(aod);
 
-    fNoOfCells    =fCaloUtils->GetEMCALGeometry()->GetNCells(); //..Very important number, never change after that point!
-    Int_t nModules=fCaloUtils->GetEMCALGeometry()->GetNumberOfSuperModules();
+	fNoOfCells    =fCaloUtils->GetEMCALGeometry()->GetNCells(); //..Very important number, never change after that point!
+	Int_t nModules=fCaloUtils->GetEMCALGeometry()->GetNumberOfSuperModules();
+	//..These are the first cell IDs of each SM and a cell ID of a nonExsting SM20 to mark the end (17664)
+	Int_t array_StartCellSM_Value[21]   ={0,1152,2304,3456,4608,5760,6912,8064,9216,10368,11520,11904,12288,13056,13824,14592,15360,16128,16896,17280,17664};
+	memcpy (fStartCellSM, array_StartCellSM_Value, sizeof (fStartCellSM));
 
-    //..This is how the calorimeter looks like in the current period (defined by example run ID fCurrentRunNumber)
+	//..This is how the calorimeter looks like in the current period (defined by example run ID fCurrentRunNumber)
 	cout<<"Called geometry for run number: "<<fCurrentRunNumber<<endl;
 	cout<<"Number of supermod: "<<nModules<<endl;
 	cout<<"Number of cells: "<<fNoOfCells<<endl;
@@ -249,7 +252,7 @@ void BadChannelAna::Init()
 //________________________________________________________________________
 void BadChannelAna::Run(Bool_t mergeOnly)
 {
-//	cout<<"fired trigger class"<<AliAODEvent::GetFiredTriggerClasses()<<endl;
+	//	cout<<"fired trigger class"<<AliAODEvent::GetFiredTriggerClasses()<<endl;
 
 	if(fExternalFileName=="")
 	{
@@ -289,53 +292,63 @@ void BadChannelAna::Run(Bool_t mergeOnly)
 		fCellTime        = (TH2F*) mergedFileInput->Get("hCellTime");
 		fProcessedEvents = (TH1F*) mergedFileInput->Get("hNEvents");
 
-		cout<<". . .Continue process by . . . . . . . . . . . ."<<endl;
-		//. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
-		//.. DEAD CELLS
-		//.. Flag dead cells with fFlag=1
-		//.. this excludes cells from analysis (will not appear in results)
-		//. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
-		cout<<"o o o Flag dead cells o o o"<<endl;
-		FlagAsDead();
-		if(fPrint==1)cout<<endl;
-		if(fPrint==1)cout<<endl;
+		//..if you have no external bad map provided that you want
+		//..to test then determine the bad maps here
+		if(fExternalBadMapName=="")
+		{
+			cout<<". . .Continue process by . . . . . . . . . . . ."<<endl;
+			//. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+			//.. DEAD CELLS
+			//.. Flag dead cells with fFlag=1
+			//.. this excludes cells from analysis (will not appear in results)
+			//. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+			cout<<"o o o Flag dead cells o o o"<<endl;
+			FlagAsDead();
+			if(fPrint==1)cout<<endl;
+			if(fPrint==1)cout<<endl;
 
-		//. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
-		//.. BAD CELLS
-		//.. Flag dead cells with fFlag=2 and bigger
-		//. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
-		cout<<"o o o Flag bad cells o o o"<<endl;
-		BCAnalysis();
+			//. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+			//.. BAD CELLS
+			//.. Flag dead cells with fFlag=2 and bigger
+			//. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+			cout<<"o o o Flag bad cells o o o"<<endl;
+			BCAnalysis();
 
-		//. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
-		//..In the end summarize results
-		//..in a .pdf and a .txt file
-		//. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
-		if(fPrint==1)cout<<"o o o Write .txt for each period analyis with bad cells  o o o"<<endl;
-		SummarizeResultsByFlag();
-
-		if(fPrint==1)cout<<"o o o Create summary documents for the entire analysis o o o"<<endl;
-		SummarizeResults();
-		fRootFile->WriteObject(fFlag,"FlagArray");
-		fRootFile->Close();
-		cout<<endl;
-
-		//..make a reccomendation about the used energy range to be investigated
-		//..and the binning
-		TH1D *hRefDistr = BuildMeanFromGood();
-		Double_t totalevents = fProcessedEvents->Integral();
-		//..Find bin where reference has value "totalevents" (means 1 hit/event), and the corresponding x-value
-		Int_t binHeightOne            = hRefDistr->FindLastBinAbove(1.0/totalevents);
-		Double_t binCentreHeightOne   = hRefDistr->GetBinCenter(binHeightOne);
-		cout<<". . .Recomendation:"<<endl;
-		cout<<". . .With the current statistic on average a cell has 1 hit at "<<binCentreHeightOne<<" GeV"<<endl;
-		cout<<". . .so it makes no sense to select energy ranges >"<<binCentreHeightOne<<" as cells will be"<<endl;
-		cout<<". . .marked bad just due to the lack of statistic"<<endl;
-		cout<<". . .End of process . . . . . . . . . . . . . . . . . . . . ."<<endl;
-		cout<<". . . . . . . . . . . . . . . . . . . . . . . . . . . . . . ."<<endl;
+			//. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+			//..In the end summarize results
+			//..in a .pdf and a .txt file
+			//. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+			if(fPrint==1)cout<<"o o o Write .txt for each period analyis with bad cells  o o o"<<endl;
+			SummarizeResultsByFlag();
+		}
+		//..if you have an external bad map provided load the flags and histograms
+		else
+		{
+			LoadExternalBadMap();
+		}
 	}
-}
 
+
+	if(fPrint==1)cout<<"o o o Create summary documents for the entire analysis o o o"<<endl;
+	SummarizeResults();
+	fRootFile->WriteObject(fFlag,"FlagArray");
+	fRootFile->Close();
+	cout<<endl;
+
+	//..make a reccomendation about the used energy range to be investigated
+	//..and the binning
+	TH1D *hRefDistr = BuildMeanFromGood();
+	Double_t totalevents = fProcessedEvents->Integral();
+	//..Find bin where reference has value "totalevents" (means 1 hit/event), and the corresponding x-value
+	Int_t binHeightOne            = hRefDistr->FindLastBinAbove(1.0/totalevents);
+	Double_t binCentreHeightOne   = hRefDistr->GetBinCenter(binHeightOne);
+	cout<<". . .Recomendation:"<<endl;
+	cout<<". . .With the current statistic on average a cell has 1 hit at "<<binCentreHeightOne<<" GeV"<<endl;
+	cout<<". . .so it makes no sense to select energy ranges >"<<binCentreHeightOne<<" as cells will be"<<endl;
+	cout<<". . .marked bad just due to the lack of statistic"<<endl;
+	cout<<". . .End of process . . . . . . . . . . . . . . . . . . . . ."<<endl;
+	cout<<". . . . . . . . . . . . . . . . . . . . . . . . . . . . . . ."<<endl;
+}
 ///
 /// This function takes the QA outputs from several runs and merges the histograms
 /// together, in case there were more than 100 events in this run.
@@ -519,8 +532,31 @@ TString BadChannelAna::MergeRuns()
 		return "";
 	}
 }
+///
+/// Load and external bad map and mask runs according to this map
+/// instead of running an analysis on this runs.
+//_________________________________________________________________________
+void BadChannelAna::LoadExternalBadMap()
+{
+	if(fExternalBadMapName=="")cout<<"Error - no external Bad Map provided"<<endl;
 
+	//..access the standart root output of a bad channel analysis to
+	//..get the necessary histogram
+	TString extRootFileName = Form("./AnalysisOutput/%s/%s/%s",fPeriod.Data(),fTrainNo.Data(),fExternalBadMapName.Data());
+	TFile* outputRoot       = TFile::Open(extRootFileName.Data());
 
+	TH1F* hFlags             =(TH1F*)outputRoot->Get("fhCellFlag");
+
+	//..set info from external source
+	//..Direction of cell ID
+	for (Int_t cell = fStartCell; cell < fNoOfCells; cell++)
+	{
+		Double_t extFlag = hFlags->GetBinContent(cell+1);
+		//..Cell flagged as dead.
+		//..Flag only if it hasn't been flagged before
+		fFlag[cell] =extFlag;
+	}
+}
 ///
 /// This function checks how many different criteria should be analysed.
 /// It checks how many period analyses criteria are stored in the fAnalysisVector
@@ -606,14 +642,14 @@ void BadChannelAna::PeriodAnalysis(Int_t criterion, Double_t nsigma, Double_t em
 	if(criterion==1)
 	{
 //		if(emin>=1.8)FlagAsBad(criterion, histogram, nsigma, -1);//..do not apply a lower boundary
-		if(emin>=0.5)FlagAsBad(criterion, histogram, nsigma, -1);//..do not apply a lower boundary
-		else      FlagAsBad(criterion, histogram, nsigma, 200);//400
+		if(emin>=1.8)FlagAsBad(criterion, histogram, nsigma, -1);//..do not apply a lower boundary
+		else         FlagAsBad(criterion, histogram, nsigma, 200);//400
 	}
 	if(criterion==2)
 	{
 //		if(emin>=1.8)FlagAsBad(criterion, histogram, nsigma, -1);//..do not narrow the integration window
-		if(emin>=0.5)FlagAsBad(criterion, histogram, nsigma, -1);//..do not narrow the integration window
-		else      FlagAsBad(criterion, histogram, nsigma, 601);
+		if(emin>=1.8)FlagAsBad(criterion, histogram, nsigma, -1);//..do not narrow the integration window
+		else         FlagAsBad(criterion, histogram, nsigma, 601);
 	}
 	if(criterion==3) FlagAsBad(criterion, histogram, nsigma, 602);
 }
@@ -1260,7 +1296,7 @@ void BadChannelAna::SummarizeResults()
 	TH1* projEnergyMask = cellAmp_masked->ProjectionX(Form("%sMask_Proj",cellAmp_masked->GetName()),fStartCell,fNoOfCells);
 	projEnergyMask->SetXTitle("Cell Energy [GeV]");
 	projEnergyMask->GetYaxis()->SetTitleOffset(1.6);
-	projEnergyMask->SetLineColor(kTeal+3);
+	projEnergyMask->SetLineColor(kGreen+1);
 	projEnergyMask->DrawCopy(" hist");
 
 	TH1* projEnergy = fCellAmplitude->ProjectionX(Form("%s_Proj",fCellAmplitude->GetName()),fStartCell,fNoOfCells);
@@ -1276,10 +1312,84 @@ void BadChannelAna::SummarizeResults()
 	projTime->DrawCopy("same hist");
 	c1_proj->Update();
 
+	TLatex* textSM = new TLatex(0.1,0.1,"*test*");
+	textSM->SetTextSize(0.06);
+	textSM->SetTextColor(1);
+	textSM->SetNDC();
+
+	TCanvas *c1_projSM = new TCanvas("CellPropPProjSM","III summary of cell Energy per SM",1200,900);
+	c1_projSM->Divide(5,4,0.001,0.001);
+	TH1* projEnergyMaskSM[20];
+	TH1* projEnergySM[20];
+	for(Int_t iSM=0;iSM<20;iSM++)
+	{
+		c1_projSM->cd(iSM+1)->SetLogy();
+		gPad->SetTopMargin(0.03);
+		gPad->SetBottomMargin(0.11);
+		projEnergyMaskSM[iSM] = cellAmp_masked->ProjectionX(Form("%sMask_ProjSM%i",cellAmp_masked->GetName(),iSM),fStartCellSM[iSM],fStartCellSM[iSM+1]-1);
+		projEnergyMaskSM[iSM]->SetTitle("");
+		projEnergyMaskSM[iSM]->SetXTitle(Form("Cell Energy [GeV], SM%i",iSM));
+		projEnergyMaskSM[iSM]->GetYaxis()->SetTitleOffset(1.6);
+		projEnergyMaskSM[iSM]->GetYaxis()->SetLabelSize(0.06);
+		projEnergyMaskSM[iSM]->GetXaxis()->SetLabelSize(0.06);
+		projEnergyMaskSM[iSM]->GetXaxis()->SetRangeUser(0,20);
+		projEnergyMaskSM[iSM]->GetXaxis()->SetTitleSize(0.06);
+		projEnergyMaskSM[iSM]->SetLineColor(kGreen+1);
+		projEnergyMaskSM[iSM]->DrawCopy(" hist");
+
+		projEnergySM[iSM] = fCellAmplitude->ProjectionX(Form("%s_ProjSM%i",fCellAmplitude->GetName(),iSM),fStartCellSM[iSM],fStartCellSM[iSM+1]-1);
+		projEnergySM[iSM]->DrawCopy("same hist");
+
+		//textSM->Draw();
+		textSM->SetTitle(Form("Includes cell IDs %d-%d",fStartCellSM[iSM],fStartCellSM[iSM+1]-1));
+		textSM->DrawLatex(0.2,0.8,Form("Includes cell IDs %d-%d",fStartCellSM[iSM],fStartCellSM[iSM+1]-1));
+	}
+
+	TCanvas *c1_projRSM = new TCanvas("CellPropPProjRSM","III summary of cell Energy Ratio per SM",1200,900);
+	c1_projRSM->Divide(5,4,0.001,0.001);
+	for(Int_t iSM=0;iSM<20;iSM++)
+	{
+		c1_projRSM->cd(iSM+1)->SetLogy();
+		gPad->SetTopMargin(0.03);
+		gPad->SetBottomMargin(0.11);
+  	//projEnergyMaskSM[iSM]->GetXaxis()->SetRangeUser(0,10);
+		projEnergyMaskSM[iSM]->SetLineColor(kGray+1);
+		projEnergyMaskSM[iSM]->Divide(hRefDistr);
+		projEnergyMaskSM[iSM]->DrawCopy("hist");
+	}
+
+	TCanvas *c1_projTimeSM = new TCanvas("CellPropPProjTimeSM","III summary of cell Time per SM",1200,900);
+	c1_projTimeSM->Divide(5,4,0.001,0.001);
+	TH1* projTimeMaskSM[20];
+	TH1* projTimeSM[20];
+	for(Int_t iSM=0;iSM<20;iSM++)
+	{
+		c1_projTimeSM->cd(iSM+1)->SetLogy();
+		gPad->SetTopMargin(0.03);
+		gPad->SetBottomMargin(0.11);
+		projTimeMaskSM[iSM] = cellTime_masked->ProjectionX(Form("%sMask_ProjSMTime%i",cellAmp_masked->GetName(),iSM),fStartCellSM[iSM],fStartCellSM[iSM+1]-1);
+		projTimeMaskSM[iSM]->SetTitle("");
+		projTimeMaskSM[iSM]->SetXTitle(Form("Cell Time [ns], SM%i",iSM));
+		projTimeMaskSM[iSM]->GetYaxis()->SetTitleOffset(1.6);
+		projTimeMaskSM[iSM]->GetYaxis()->SetLabelSize(0.06);
+		projTimeMaskSM[iSM]->GetXaxis()->SetLabelSize(0.06);
+		//projTimeMaskSM[iSM]->GetXaxis()->SetRangeUser(0,20);
+		projTimeMaskSM[iSM]->GetXaxis()->SetTitleSize(0.06);
+		projTimeMaskSM[iSM]->SetLineColor(kGreen+1);
+		projTimeMaskSM[iSM]->DrawCopy(" hist");
+
+		projTimeSM[iSM] = fCellTime->ProjectionX(Form("%s_ProjSMTime%i",fCellAmplitude->GetName(),iSM),fStartCellSM[iSM],fStartCellSM[iSM+1]-1);
+		projTimeSM[iSM]->DrawCopy("same hist");
+	}
+
 	//..save to a PDF
-	c1       ->Print(Form("%s(",cellProp.Data()));
-	c1_ratio ->Print(Form("%s",cellProp.Data()));
-	c1_proj  ->Print(Form("%s)",cellProp.Data()));
+	c1           ->Print(Form("%s(",cellProp.Data()));
+	c1_ratio     ->Print(Form("%s",cellProp.Data()));
+	c1_proj      ->Print(Form("%s",cellProp.Data()));
+	c1_projSM    ->Print(Form("%s",cellProp.Data()));
+	c1_projRSM   ->Print(Form("%s",cellProp.Data()));
+	c1_projTimeSM->Print(Form("%s)",cellProp.Data()));
+
 	//..Scale the histogtams by the number of events
 	//..so that they are more comparable for a run-by-run
 	//..analysis
@@ -1393,17 +1503,26 @@ void BadChannelAna::SummarizeResults()
 	//. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 	//..Add different histograms/canvases to the output root file
 	//. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
-	TString name1,name2,name3;
+	TString name1,name2,name3,name4,name5,name6;
 	name1   = Form("%s/%s/CellPropertiesRatio.gif", fWorkdir.Data(),fAnalysisOutput.Data());
 	c1_ratio->SaveAs(name1);
 	name2   = Form("%s/%s/CellProperties.gif", fWorkdir.Data(),fAnalysisOutput.Data());
 	c1->SaveAs(name2);
 	name3   = Form("%s/%s/CellPropertiesProj.gif", fWorkdir.Data(),fAnalysisOutput.Data());
 	c1_proj->SaveAs(name3);
+	name4   = Form("%s/%s/CellEnergySM.gif", fWorkdir.Data(),fAnalysisOutput.Data());
+	c1_projSM->SaveAs(name4);
+	name5   = Form("%s/%s/CellEnergySMratio.gif", fWorkdir.Data(),fAnalysisOutput.Data());
+	c1_projRSM->SaveAs(name5);
+	name6   = Form("%s/%s/CellTime.gif", fWorkdir.Data(),fAnalysisOutput.Data());
+	c1_projTimeSM->SaveAs(name6);
 
 	fRootFile->WriteObject(c1,c1->GetName());
 	fRootFile->WriteObject(c1_ratio,c1_ratio->GetName());
 	fRootFile->WriteObject(c1_proj,c1_proj->GetName());
+	fRootFile->WriteObject(c1_projSM,c1_projSM->GetName());
+	fRootFile->WriteObject(c1_projRSM,c1_projRSM->GetName());
+	fRootFile->WriteObject(c1_projTimeSM,c1_projTimeSM->GetName());
 	fRootFile->WriteObject(c2,c2->GetName());
 	fRootFile->WriteObject(fCellAmplitude,fCellAmplitude->GetName());
 	fRootFile->WriteObject(cellAmp_masked,cellAmp_masked->GetName());

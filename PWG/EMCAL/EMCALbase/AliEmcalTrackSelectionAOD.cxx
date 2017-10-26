@@ -19,8 +19,10 @@
 
 #include <AliAODEvent.h>
 #include <AliAODTrack.h>
+#include <AliEmcalAODFilterBitCuts.h>
 #include <AliEmcalTrackSelectionAOD.h>
 #include <AliESDtrack.h>
+#include <AliESDtrackCuts.h>
 #include <AliPicoTrack.h>
 
 /// \cond CLASSIMP
@@ -80,6 +82,15 @@ void AliEmcalTrackSelectionAOD::GenerateTrackCuts(ETrackFilterType_t type, const
     fFilterTPCTracks = kTRUE;
     break;
 
+  case AliEmcalTrackSelection::kITSPureTracks:
+    if (fListOfCuts) fListOfCuts->Clear();
+    AddTrackCuts(AliESDtrackCuts::GetStandardITSSATrackCuts2010());
+    fFilterHybridTracks = kFALSE;
+    fFilterTPCTracks = kFALSE;
+    fHybridFilterBits[0] = -1;
+    fHybridFilterBits[1] = -1;
+    break;
+
   default:
     break;
   }
@@ -125,9 +136,9 @@ bool AliEmcalTrackSelectionAOD::IsTrackAccepted(AliVTrack * const trk)
     for (auto cutIter : *fListOfCuts){
       AliVCuts *trackCuts = static_cast<AliVCuts*>(static_cast<AliEmcalManagedObject *>(cutIter)->GetObject());
       if (trackCuts->IsA() == AliESDtrackCuts::Class()) {
-        // If track cuts are AliESDtrackCuts, the track needs to be converted to an AliESDtrack before
-        AliESDtrack copyTrack(aodt);
-        if (trackCuts->IsSelected(&copyTrack)) fTrackBitmap.SetBitNumber(cutcounter);
+        // If track cuts are AliESDtrackCuts, AcceptVTrack needs to be called as the interface function IsSelected supports only AliESDtracks
+        AliESDtrackCuts *esdcuts = static_cast<AliESDtrackCuts *>(trackCuts);
+        if(esdcuts->AcceptVTrack(aodt)) fTrackBitmap.SetBitNumber(cutcounter);
       }
       else{
         if (trackCuts->IsSelected(aodt)) fTrackBitmap.SetBitNumber(cutcounter);
@@ -157,7 +168,7 @@ Bool_t AliEmcalTrackSelectionAOD::GetHybridFilterBits(Char_t bits[], TString per
       period == "lhc12i" || period == "lhc13b" || period == "lhc13c" ||
       period == "lhc13d" || period == "lhc13e" || period == "lhc13f" ||
       period == "lhc13g" ||
-      (period.Length() == 6 && period.BeginsWith("lhc15")) // all Run-2 data, excluding MC productions
+      (period.Length() == 6 && (period.BeginsWith("lhc15") || period.BeginsWith("lhc16") || period.BeginsWith("lhc17"))) // all Run-2 data, excluding MC productions
   ) {
     bits[0] = 8;
     bits[1] = 9;
@@ -166,7 +177,7 @@ Bool_t AliEmcalTrackSelectionAOD::GetHybridFilterBits(Char_t bits[], TString per
   else if (period == "lhc10f7a" || period == "lhc12a15e" || period.BeginsWith("lhc12a17") ||
       period == "lhc13b4" || period == "lhc13b4_fix" || period == "lhc13b4_plus" || period == "lhc14k1a" || period == "lhc14k1b" || period == "lhc13e4" ||
       period.BeginsWith("lhc14a1") || period.BeginsWith("lhc13b2_efix") ||
-      period.BeginsWith("lhc15g6")) {
+      period.BeginsWith("lhc15g6") || period.BeginsWith("lhc17f8")) {
     bits[0] = 8;
     bits[1] = 9;
   }

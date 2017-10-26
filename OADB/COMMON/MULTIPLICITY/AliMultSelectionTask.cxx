@@ -159,6 +159,7 @@ AliMultSelectionTask::AliMultSelectionTask()
       fEvSel_IsNotAsymmetricInVZERO(0),
       fEvSel_IsNotIncompleteDAQ(0),
       fEvSel_HasGoodVertex2016(0),
+      fEvSel_TriggerMask(0),
       fnContributors(0),
       fTrackCuts(0), fTrackCutsGlobal2015(0), fTrackCutsITSsa2010(0), 
       fZnaFired(0),
@@ -308,6 +309,7 @@ AliMultSelectionTask::AliMultSelectionTask(const char *name, TString lExtraOptio
       fEvSel_IsNotIncompleteDAQ(0),
       fEvSel_HasGoodVertex2016(0),
       fEvSel_VtxZ(0),
+      fEvSel_TriggerMask(0),
       fEvSelCode(0),
       fNDebug(1),
       fAliCentralityV0M(0),
@@ -586,6 +588,7 @@ void AliMultSelectionTask::UserCreateOutputObjects()
         fTreeEvent->Branch("fEvSel_IsNotAsymmetricInVZERO", &fEvSel_IsNotAsymmetricInVZERO, "fEvSel_IsNotAsymmetricInVZERO/O");
         fTreeEvent->Branch("fEvSel_IsNotIncompleteDAQ", &fEvSel_IsNotIncompleteDAQ, "fEvSel_IsNotIncompleteDAQ/O");
         fTreeEvent->Branch("fEvSel_HasGoodVertex2016", &fEvSel_HasGoodVertex2016, "fEvSel_HasGoodVertex2016/O");
+        fTreeEvent->Branch("fEvSel_TriggerMask", &fEvSel_TriggerMask, "fEvSel_TriggerMask/i");
         //A.T. FIXME change into AliMultVariable
         fTreeEvent->Branch("fnContributors", &fnContributors, "fnContributors/I");
 
@@ -1097,6 +1100,7 @@ void AliMultSelectionTask::UserExec(Option_t *)
     fEvSel_IsNotAsymmetricInVZERO    = IsNotAsymmetricInVZERO              (lVevent);
     fEvSel_IsNotIncompleteDAQ        = IsNotIncompleteDAQ                  (lVevent); 
     fEvSel_HasGoodVertex2016         = HasGoodVertex2016                   (lVevent);
+    fEvSel_TriggerMask               = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected(); //for full checks later
     
     //classical Proton-proton like selection
     const AliVVertex *lPrimaryBestESDVtx     = lVevent->GetPrimaryVertex();

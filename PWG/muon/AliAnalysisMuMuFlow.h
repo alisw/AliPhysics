@@ -1,5 +1,5 @@
-#ifndef ALIANALYSISMUMUFLOWEP_H
-#define ALIANALYSISMUMUFLOWEP_H
+#ifndef ALIANALYSISMUMUFLOW_H
+#define ALIANALYSISMUMUFLOW_H
 
 /**
  *
@@ -12,16 +12,17 @@
 #include "AliAnalysisMuMuBinning.h"
 #include "TString.h"
 #include "TH2.h"
+#include "TVector2.h"
 
 class TH2F;
 class AliVParticle;
 
-class AliAnalysisMuMuFlowEP : public AliAnalysisMuMuBase
+class AliAnalysisMuMuFlow : public AliAnalysisMuMuBase
 {
 public:
 
-  AliAnalysisMuMuFlowEP(TH2* AccEffHisto=0x0, Int_t systLevel=0);
-  virtual ~AliAnalysisMuMuFlowEP();
+  AliAnalysisMuMuFlow(TH2* AccEffHisto=0x0, Int_t systLevel=0);
+  virtual ~AliAnalysisMuMuFlow();
 
   Bool_t IsPtInRange(const AliVParticle& t1, const AliVParticle& t2,
                            Double_t& ptmin, Double_t& ptmax) const;
@@ -84,8 +85,12 @@ private:
 
   Double_t GetEventPlane(const char* detector, Int_t step = 3);
 
+  TVector2 GetQn(const char* detector, Int_t step = 3);
+
 private:
-  Bool_t fcomputeMeanV2;
+  Bool_t fcomputeMeanV2; //mv2 with EP method
+  Bool_t fcomputeEP; //dist in dphi bins
+  Bool_t fcomputeSP; //scalar product
   Bool_t fWeightMuon;
   TH2F     * fAccEffHisto;
   TString fMinvBinSeparator;
@@ -101,10 +106,11 @@ private:
   Double_t fmcptcutmin;
   Double_t fmcptcutmax;
   Int_t fNDetectors;
+  Int_t fHar;
   TString fEqSteps  [5] = {"raw", "plain", "rec", "align","twist"};
   TString fDetectors[3] = {"SPD","VZEROA", "VZEROC"};
 
-  ClassDef(AliAnalysisMuMuFlowEP,1) // implementation of AliAnalysisMuMuBase for muon pairs
+  ClassDef(AliAnalysisMuMuFlow,1) // implementation of AliAnalysisMuMuBase for muon pairs
 };
 
 #endif

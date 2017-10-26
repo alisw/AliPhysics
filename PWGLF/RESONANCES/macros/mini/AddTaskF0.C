@@ -132,8 +132,8 @@ AliRsnMiniAnalysisTask * AddTaskF0
   // -- EVENT SELECTION ---------------------------------------------------------------------------
   //-----------------------------------------------------------------------------------------------
    AliRsnCutPrimaryVertex *cutVertex = new AliRsnCutPrimaryVertex("cutVertex", 10.0, 0, kFALSE);
-  if (isPP && (!isMC)) cutVertex->SetCheckPileUp(rejectPileUp);   // set the check for pileup
-  cutVertex->SetCheckZResolutionSPD(); ::Info("AddTaskF0", Form("CheckZResolutionSPD:              ON"));
+   if ((collSys==AliPIDResponse::kPP) && (!isMC)) cutVertex->SetCheckPileUp(rejectPileUp);   // set the check for pileup
+   cutVertex->SetCheckZResolutionSPD(); ::Info("AddTaskF0", Form("CheckZResolutionSPD:              ON"));
   cutVertex->SetCheckDispersionSPD(); ::Info("AddTaskF0", Form("CheckDispersionSPD:               ON"));
   cutVertex->SetCheckZDifferenceSPDTrack(); ::Info("AddTaskF0", Form("CheckZDifferenceSPDTrack:         ON"));
   

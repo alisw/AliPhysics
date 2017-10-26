@@ -151,7 +151,7 @@ void AliPP13PhotonSelection::InitSummaryHistograms()
 	fEventCounter->GetXaxis()->SetBinLabel(1, "MB");
 	fEventCounter->GetXaxis()->SetBinLabel(2, "all good");
 	fEventCounter->GetXaxis()->SetBinLabel(3, "|Z_{vtx}| < 10");
-	fEventCounter->GetXaxis()->SetBinLabel(4, "N_{vtx contrib} > 0");
+	fEventCounter->GetXaxis()->SetBinLabel(4, Form("N_{vtx contrib} > %d", fCuts.fNContributors - 1));
 	fEventCounter->GetXaxis()->SetBinLabel(5, "N_{#gamma} > 2");
 	fListOfHistos->AddFirst(fEventCounter);
 
@@ -190,7 +190,7 @@ Bool_t AliPP13PhotonSelection::SelectEvent(const EventFlags & flgs)
 
 
 	// Number of contributors > 0
-	if(flgs.ncontributors < 1)
+	if(flgs.ncontributors < fCuts.fNContributors)
 		return kFALSE;
 
 	fEventCounter->Fill(EventFlags::kNcontributors);

@@ -1636,8 +1636,8 @@ Double32_t AliFJWrapper::NSubjettinessDerivativeSub(Int_t N, Int_t Algorithm, Do
       else if (Soft_Dropped_Jet.constituents().size()<N) return -1;
     }
   }
-
-  
+  Beta = 1.0;
+  JetR=0.4;
   if (Algorithm==0){
     fj::contrib::Nsubjettiness nSub(N, fj::contrib::KT_Axes(), fj::contrib::NormalizedMeasure(Beta,JetR));
     Result= nSub.result(jet);

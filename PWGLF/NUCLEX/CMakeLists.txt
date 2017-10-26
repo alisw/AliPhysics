@@ -38,6 +38,7 @@ include_directories(${ROOT_INCLUDE_DIRS}
 set(SRCS
   Exotica/Hdibaryon/AliAnalysisTaskHdibaryonLPpi.cxx
   Exotica/LambdaN/AliAnalysisTaskLambdaNAOD.cxx
+  Exotica/LambdaNN/AliAnalysisTaskLNNntuple.cxx
   Exotica/NOmega/AliAnalysisTaskNOmegaLPK.cxx
   Exotica/NOmega/AliAnalysisTaskOmegaOmegaOX.cxx
   Exotica/NOmega/AliAnalysisTaskNOmegaLX.cxx
@@ -57,6 +58,7 @@ set(SRCS
   Nuclei/DeuteronpA/AliAnalysisDeuteronpA.cxx
   Nuclei/DeuteronpA/AliAnalysisDeuteronTree.cxx
   Nuclei/He4/AliAnalysisTaskAntiHe4.cxx
+  Nuclei/He4pp/AliAnalysisHe4.cxx
   Nuclei/NucleiPbPb/AliAnalysisTaskNucleiYield.cxx
   Nuclei/NucleiPbPb/AliAnalysisTaskNucleiYieldESD.cxx
   Nuclei/NucleiPbPb/AliNuclexEventCuts.cxx

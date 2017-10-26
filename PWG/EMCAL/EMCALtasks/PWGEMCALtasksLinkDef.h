@@ -53,4 +53,15 @@
 #pragma link C++ class PWG::EMCAL::AliEmcalCellMonitorTask+;
 #pragma link C++ class PWG::EMCAL::AliEmcalFastOrMonitorTask+;
 #pragma link C++ class PWG::EMCAL::AliAnalysisTaskEmcalTriggerSelection+;
+
+// Unit tests
+#pragma link C++ class PWG::EMCAL::TestAliEmcalAODFilterBitCuts+;
+#pragma link C++ class PWG::EMCAL::TestImplAliEmcalAODFilterBitCuts+;
+#pragma link C++ class PWG::EMCAL::TestImplAliEmcalAODFilterBitCutsTPCconstrained+;
+#pragma link C++ class PWG::EMCAL::TestImplAliEmcalAODFilterBitCutsHybrid+;
+#pragma link C++ class PWG::EMCAL::TestAliEmcalTrackSelection+;
+#pragma link C++ class PWG::EMCAL::TestImplAliEmcalTrackSelection+;
+#pragma link C++ class PWG::EMCAL::TestImplAliEmcalTrackSelectionITSpure+;
+#pragma link C++ class PWG::EMCAL::TestImplAliEmcalTrackSelectionHybrid+;
+#pragma link C++ class PWG::EMCAL::TestImplAliEmcalTrackSelectionTPConly+;
 #endif

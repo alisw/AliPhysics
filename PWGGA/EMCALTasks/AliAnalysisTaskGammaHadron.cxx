@@ -514,7 +514,7 @@ void AliAnalysisTaskGammaHadron::UserCreateOutputObjects()
     //Double_t binWidth=(ptfinemax-ptfinemin)/nfineptbins;
     TCustomBinning xBinning;
     xBinning.SetMinimum(0);
-    xBinning.AddStep(0.5,0.005);   //100..first entries of the array are the set ranges and bins
+    xBinning.AddStep(0.5,0.01);   //50 (100)..first entries of the array are the set ranges and bins
     xBinning.AddStep(1,0.025);     //25..expand the previously defined range by 2 but increase the bin width
     xBinning.AddStep(4,0.05);      //50..expand the previously defined range by 4 but increase the bin width
 
@@ -522,9 +522,9 @@ void AliAnalysisTaskGammaHadron::UserCreateOutputObjects()
     xBinning.CreateBinEdges(xbinsArray);
 
     titleThnQA[dimThnQA] = "#lambda_{0}";
-    nbinsThnQA[dimThnQA] = 175;
-    Double_t ShapeArray[175+1];
-	for(Int_t i=0;i<176;i++)
+    nbinsThnQA[dimThnQA] = 125;
+    Double_t ShapeArray[125+1];
+	for(Int_t i=0;i<126;i++)
     {
     		ShapeArray[i]=xbinsArray.At(i);
     }

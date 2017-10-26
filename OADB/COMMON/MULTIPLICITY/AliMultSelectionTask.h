@@ -239,6 +239,10 @@ private:
     Bool_t fEvSel_IsNotAsymmetricInVZERO;   //!
     Bool_t fEvSel_IsNotIncompleteDAQ;       //!
     Bool_t fEvSel_HasGoodVertex2016;        //!
+    
+    //Full Physics Selection Trigger info
+    UInt_t fEvSel_TriggerMask; //! save full info for checking later
+    
     //Other Selections: more dedicated filtering to be studied!
 
     // A.T.
@@ -333,7 +337,7 @@ private:
     AliMultSelectionTask(const AliMultSelectionTask&);            // not implemented
     AliMultSelectionTask& operator=(const AliMultSelectionTask&); // not implemented
 
-    ClassDef(AliMultSelectionTask, 3);
+    ClassDef(AliMultSelectionTask, 4);
     //3 - extra QA histograms
 };
 

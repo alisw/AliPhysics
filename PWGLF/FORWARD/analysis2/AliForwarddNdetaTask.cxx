@@ -383,7 +383,7 @@ AliForwarddNdetaTask::CentralityBin::EmpiricalCorrection(TList* results)
   return h;
 }
 //____________________________________________________________________
-void
+bool
 AliForwarddNdetaTask::CentralityBin::End(TList*      sums, 
 					 TList*      results,
 					 UShort_t    scheme,
@@ -399,43 +399,45 @@ AliForwarddNdetaTask::CentralityBin::End(TList*      sums,
 {
   DGUARD(fDebug, 1,"In End of %s with corrEmpty=%d, rootProj=%d", 
 	 GetName(), corrEmpty, rootProj);
-  AliBasedNdetaTask::CentralityBin::End(sums, results, scheme, trigEff, 
-					trigEff0, rootProj, corrEmpty,
-					triggerMask, marker, color, mclist, 
-					truthlist);
+  if (!AliBasedNdetaTask::CentralityBin::End(sums, results, scheme, trigEff, 
+					     trigEff0, rootProj, corrEmpty,
+					     triggerMask,
+					     marker, color, mclist, 
+					     truthlist))
+    return false;
 
   TH1* h = EmpiricalCorrection(results);
   Info("End", "Applied empirical correction: %p (%s)",
        h, h ? h->GetName() : "");
   
-  if (!IsAllBin()) return;
+  if (!IsAllBin()) return true;
 
   THStack* res = 0;
   {
-    if (gSystem->AccessPathName("forward.root")) return;
+    if (gSystem->AccessPathName("forward.root")) return true;
 
     TFile* file = TFile::Open("forward.root", "READ");
-    if (!file) return;
+    if (!file) return false;
     
     TList* forward = static_cast<TList*>(file->Get("ForwardSums"));
     if (!forward) { 
       AliError("List Forward not found in forward.root");
-      return;
+      return true;
     }
     TList* rings = static_cast<TList*>(forward->FindObject("ringResults"));
     if (!rings) { 
       AliError("List ringResults not found in forward.root");
-      return;
+      return true;
     }
     res = static_cast<THStack*>(rings->FindObject("all"));
     if (!res) { 
       AliError(Form("Stack all not found in %s", rings->GetName()));
-      return;
+      return true;
     }
   }
   if (!fTriggers) { 
     AliError("Triggers histogram not set");
-    return;
+    return false;
   }
 
   Double_t ntotal   = 0;
@@ -457,6 +459,8 @@ AliForwarddNdetaTask::CentralityBin::End(TList*      sums,
   res->SetName("dndetaRings");
   fOutput->Add(res);
   fOutput->Add(new TNamed("normCalc", text.Data()));
+
+  return true;
 }
 
 //________________________________________________________________________

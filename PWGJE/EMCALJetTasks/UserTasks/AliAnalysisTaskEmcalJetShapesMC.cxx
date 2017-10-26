@@ -298,9 +298,9 @@ AliAnalysisTaskEmcalJetShapesMC::~AliAnalysisTaskEmcalJetShapesMC()
 
   //log(1/theta),log(z*theta),jetpT,algo// 
    const Int_t dimSpec   = 4;
-   const Int_t nBinsSpec[4]     = {100,100,20,2};
+   const Int_t nBinsSpec[4]     = {100,100,20,3};
    const Double_t lowBinSpec[4] = {0.0,-10,  0,0};
-   const Double_t hiBinSpec[4]  = {5.0,  0,200,2};
+   const Double_t hiBinSpec[4]  = {5.0,  0,200,3};
    fHLundIterative = new THnSparseF("fHLundIterative",
                    "LundIterativePlot [log(1/theta),log(z*theta),pTjet,algo]",
                    dimSpec,nBinsSpec,lowBinSpec,hiBinSpec);
@@ -501,6 +501,7 @@ Bool_t AliAnalysisTaskEmcalJetShapesMC::FillHistograms()
       SoftDrop(jet1,jetCont,0.002,-2.0,0);
       RecursiveParents(jet1,jetCont,0);
       RecursiveParents(jet1,jetCont,1);
+      RecursiveParents(jet1,jetCont,2);
       // Float_t nTFractions[8]={0.,0.,0.,0.,0.,0.,0.,0.};
       //NTValues(jet1, 0, nTFractions);
       //shape 13 is pythia weight!
@@ -1224,35 +1225,31 @@ void AliAnalysisTaskEmcalJetShapesMC::SoftDrop(AliEmcalJet *fJet,AliJetContainer
   
   
   
-  fastjet::JetDefinition                *fJetDef;         
-  fastjet::ClusterSequence              *fClustSeqSA;
+ 
+  
   
 
 
-  fJetDef = new fastjet::JetDefinition(fastjet::antikt_algorithm, fJetRadius*2, static_cast<fastjet::RecombinationScheme>(0), fastjet::BestFJ30 ); 
-
+  fastjet::JetDefinition fJetDef(fastjet::antikt_algorithm, fJetRadius*2, static_cast<fastjet::RecombinationScheme>(0), fastjet::BestFJ30 ); 
+  fastjet::contrib::Recluster *recluster;
   try {
-    fClustSeqSA = new fastjet::ClusterSequence(fInputVectors, *fJetDef);
-  } catch (fastjet::Error) {
-    AliError(" [w] FJ Exception caught.");
-    //return -1;
-  }
-
+    fastjet::ClusterSequence fClustSeqSA(fInputVectors, fJetDef);
   std::vector<fastjet::PseudoJet>       fOutputJets;
   fOutputJets.clear();
-  fOutputJets=fClustSeqSA->inclusive_jets(0);
+  fOutputJets=fClustSeqSA.inclusive_jets(0);
   
   //cout<<fOutputJets[0].perp()<<" "<<fJet->Pt()<<endl;
   
   fastjet::contrib::SoftDrop softdrop(beta, zcut);
  
   softdrop.set_verbose_structure(kTRUE);
- 
-  fastjet::contrib::Recluster *recluster;
-  if(ReclusterAlgo == 1) recluster = new fastjet::contrib::Recluster(fastjet::kt_algorithm,1,true);
-  if(ReclusterAlgo == 2) recluster = new fastjet::contrib::Recluster(fastjet::antikt_algorithm,1,true);
-  if(ReclusterAlgo == 0) recluster = new fastjet::contrib::Recluster(fastjet::cambridge_algorithm,1,true);  
-  softdrop.set_reclustering(true,recluster);
+  fastjet::JetAlgorithm jetalgo(fastjet::cambridge_algorithm);
+  if(ReclusterAlgo==2) jetalgo=fastjet::antikt_algorithm;
+  if(ReclusterAlgo==1) jetalgo=fastjet::kt_algorithm;
+  if(ReclusterAlgo==0) jetalgo=fastjet::cambridge_algorithm;
+  
+   recluster = new fastjet::contrib::Recluster(jetalgo,1,true);
+   softdrop.set_reclustering(true,recluster);
   fastjet::PseudoJet finaljet = softdrop(fOutputJets[0]);
    Int_t NDroppedTracks = fJet->GetNumberOfTracks()-finaljet.constituents().size();
  
@@ -1316,9 +1313,22 @@ void AliAnalysisTaskEmcalJetShapesMC::SoftDrop(AliEmcalJet *fJet,AliJetContainer
 
 
 
-   if(fClustSeqSA) { delete fClustSeqSA; fClustSeqSA = NULL; } 
+
+
+
+
+
+
+  } catch (fastjet::Error) {
+    AliError(" [w] FJ Exception caught.");
+    //return -1;
+  }
+
+
+
+   
    if(recluster) { delete recluster; recluster = NULL; } 
-   if(fJetDef){  delete fJetDef; fJetDef = NULL;}
+  
    if(fTf1Kt){ delete fTf1Kt;}
    if(fTf1Omega){ delete fTf1Omega;}
  
@@ -1349,32 +1359,29 @@ void AliAnalysisTaskEmcalJetShapesMC::RecursiveParents(AliEmcalJet *fJet,AliJetC
      
     }
 
-    
+      fastjet::JetAlgorithm jetalgo(fastjet::antikt_algorithm);
+    if(ReclusterAlgo==0){ xflagalgo=0.5;
+      jetalgo=fastjet::kt_algorithm ;}
+      
+      if(ReclusterAlgo==1){ xflagalgo=1.5;
+	jetalgo=fastjet::cambridge_algorithm;}
+	if(ReclusterAlgo==2){ xflagalgo=2.5;
+	  jetalgo=fastjet::antikt_algorithm;} 
   
-  fastjet::JetDefinition                *fJetDef;         
-  fastjet::ClusterSequence              *fClustSeqSA;
-  if(ReclusterAlgo==0) xflagalgo=0.5;
-  if(ReclusterAlgo==1) xflagalgo=1.5;
-  if(ReclusterAlgo==0) fJetDef = new fastjet::JetDefinition(fastjet::kt_algorithm, fJetRadius*2, static_cast<fastjet::RecombinationScheme>(0), fastjet::BestFJ30 ); 
-  if(ReclusterAlgo==1) fJetDef = new fastjet::JetDefinition(fastjet::cambridge_algorithm, fJetRadius*2, static_cast<fastjet::RecombinationScheme>(0), fastjet::BestFJ30 ); 
+  fastjet::JetDefinition fJetDef(jetalgo, 1., static_cast<fastjet::RecombinationScheme>(0), fastjet::BestFJ30 ); 
 
   try {
-    fClustSeqSA = new fastjet::ClusterSequence(fInputVectors, *fJetDef);
-  } catch (fastjet::Error) {
-    AliError(" [w] FJ Exception caught.");
-    //return -1;
-  }
-
-  std::vector<fastjet::PseudoJet>   fOutputJets;
-  fOutputJets.clear();
-  fOutputJets=fClustSeqSA->inclusive_jets(0);
+    fastjet::ClusterSequence fClustSeqSA(fInputVectors, fJetDef);
+    std::vector<fastjet::PseudoJet>   fOutputJets;
+    fOutputJets.clear();
+    fOutputJets=fClustSeqSA.inclusive_jets(0);
   
    fastjet::PseudoJet jj;
    fastjet::PseudoJet j1;
    fastjet::PseudoJet j2;
    jj=fOutputJets[0];
    
-  while(jj.has_parents(j1,j2)){
+    while(jj.has_parents(j1,j2)){
     if(j1.perp() < j2.perp()) swap(j1,j2);
     double delta_R=j1.delta_R(j2);
     double z=j2.perp()/(j1.perp()+j2.perp());
@@ -1385,6 +1392,16 @@ void AliAnalysisTaskEmcalJetShapesMC::RecursiveParents(AliEmcalJet *fJet,AliJetC
     jj=j1;} 
 
 
+
+
+  } catch (fastjet::Error) {
+    AliError(" [w] FJ Exception caught.");
+    //return -1;
+  }
+
+ 
+  
+  
   return;
 
   

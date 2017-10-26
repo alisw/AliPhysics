@@ -22,7 +22,7 @@ AliAnalysisTask *AddTaskHaHFECorrel(Double_t period,Bool_t CorrHadron, Bool_t Co
 
   gROOT->LoadMacro("$ALICE_PHYSICS/PWGHF/hfe/macros/configs/pp/ConfigHaHFECorrel.C");
   AliAnalysisTaskHaHFECorrel *taskMB = 
-    ConfigHaHFECorrel(period, CorrHadron, CorrLP, IsMC, UseTender, ITSnCut, TPCnCut, TPCnCutdEdx, PhotElecPtCut,PhotElecTPCnCut, PhotElecITSrefitCut,  InvmassCut,  HTPCnCut,  HITSrefitCut, HTPCrefitCut, UseITS, SigmaITScut, SigmaTOFcut, SigmaTPCcut);
+    ConfigHaHFECorrel(period, CorrHadron, CorrLP, IsMC, UseTender, ITSnCut, TPCnCut, TPCnCutdEdx, PhotElecPtCut,PhotElecTPCnCut, PhotElecITSrefitCut,  InvmassCut,  HTPCnCut,  HITSrefitCut, HTPCrefitCut, UseITS, SigmaITScut, SigmaTOFcut, SigmaTPCcut, ID);
   if (!taskMB) {
     Error("AddTaskHaHFECorrel", "No task found.");
   }
@@ -48,10 +48,10 @@ AliAnalysisTask *AddTaskHaHFECorrel(Double_t period,Bool_t CorrHadron, Bool_t Co
   mgr->AddTask(taskMB);
 
   TString containerName1 = mgr->GetCommonFileName();
-  containerName1 += ":PWGHF_HaHFECorrel_kINT7";
+  containerName1 += ":PWGHF_HaHFECorrel_kINT7_";
   containerName1 += ID;
         
-  TString name1 = "histMB";
+  TString name1 = "histMB_";
   name1 += ID;
         
   AliAnalysisDataContainer *cinput   = mgr->GetCommonInputContainer();

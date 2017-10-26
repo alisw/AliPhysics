@@ -608,12 +608,17 @@ void AliAnalysisTaskDmesonJets::AliD0ExtendedInfoSummary::Set(const AliDmesonJet
         recoDecay->Getd0MeasMinusExpProng(ipr, source.fEvent->GetMagneticField(), diffIP, errdiffIP);
         Double_t normdd0 = 0.;
         if (errdiffIP > 0.) {
-          normdd0 = TMath::Abs(diffIP / errdiffIP);
+          normdd0 = diffIP / errdiffIP;
         }
         else {
-          normdd0 = -1;
+          if (diffIP == 0) {
+            normdd0 = 0;
+          }
+          else {
+            normdd0 = diffIP > 0 ? 9999. : -9999.;
+          }
         }
-        if (normdd0 > fMaxNormd0) {
+        if (TMath::Abs(normdd0) > TMath::Abs(fMaxNormd0)) {
           fMaxNormd0 = normdd0;
         }
       }
@@ -978,6 +983,7 @@ AliAnalysisTaskDmesonJets::AnalysisEngine::AnalysisEngine(const AliAnalysisTaskD
   fJetDefinitions(source.fJetDefinitions),
   fPtBinWidth(source.fPtBinWidth),
   fMaxPt(source.fMaxPt),
+  fD0Extended(source.fD0Extended),
   fRandomGen(source.fRandomGen),
   fTrackEfficiency(source.fTrackEfficiency),
   fDataSlotNumber(-1),

@@ -91,7 +91,10 @@ AliAnalysisTaskEMCALClusterize::AliAnalysisTaskEMCALClusterize(const char *name)
 , fRemapMCLabelForAODs(0)
 , fInputFromFilter(0) 
 , fTCardCorrEmulation(0), fTCardCorrClusEnerConserv(0)
-, fRandom(0),             fPrintOnce(0)
+, fRandom(0),             fRandomizeTCard(1)
+, fTCardCorrMinAmp(0.01), fTCardCorrMaxInduced(100)
+, fPrintOnce(0)
+
 {
   for(Int_t i = 0; i < 22;    i++)  
   {
@@ -146,7 +149,9 @@ AliAnalysisTaskEMCALClusterize::AliAnalysisTaskEMCALClusterize()
 , fRemapMCLabelForAODs(0)
 , fInputFromFilter(0)
 , fTCardCorrEmulation(0),   fTCardCorrClusEnerConserv(0)
-, fRandom(0),               fPrintOnce(0)
+, fRandom(0),               fRandomizeTCard(1)
+, fTCardCorrMinAmp(0.01),   fTCardCorrMaxInduced(100)
+, fPrintOnce(0)
 {
   for(Int_t i = 0; i < 22;    i++)  
   {
@@ -1631,7 +1636,9 @@ void AliAnalysisTaskEMCALClusterize::MakeCellTCardCorrelation()
   {
     id  = fCaloCells->GetCellNumber(icell);
     amp = fCaloCells->GetAmplitude (icell); // fCaloCells->GetCellAmplitude(id);
-
+    
+    if ( amp <= fTCardCorrMinAmp ) continue ;
+    
     //
     // First get the SM, col-row of this tower
     Int_t imod = -1, iphi =-1, ieta=-1,iTower = -1, iIphi = -1, iIeta = -1; 
@@ -1643,10 +1650,9 @@ void AliAnalysisTaskEMCALClusterize::MakeCellTCardCorrelation()
     // depending the SM number of the cell
     Float_t rand = fRandom.Uniform(0, 1);
     
-//    printf("icell %d, absId %d, ism %d, icol %d, irow %d, random %2.2f > %2.2f ?; \n \t amp %2.3f added before %2.3f\n",
-//           icell,id,imod,ieta,iphi,rand,fTCardCorrInduceEnerProb[imod],amp,fTCardCorrCellsEner[id]);
-    
     if ( rand > fTCardCorrInduceEnerProb[imod] ) continue;
+    
+    AliDebug(1,Form("Reference cell absId %d, iEta %d, iPhi %d, amp %2.3f",id,ieta,iphi,amp));
     
     //
     // Get the absId of the cells in the cross and same T-Card
@@ -1655,7 +1661,7 @@ void AliAnalysisTaskEMCALClusterize::MakeCellTCardCorrelation()
     Int_t absIDlr  = -1;
     Int_t absIDuplr = -1;
     Int_t absIDdolr = -1;
-
+    
     Int_t absIDup2 = -1;
     Int_t absIDup2lr = -1;
     Int_t absIDdo2 = -1;
@@ -1693,24 +1699,13 @@ void AliAnalysisTaskEMCALClusterize::MakeCellTCardCorrelation()
       absIDdo2   = fGeom->GetAbsCellIdFromCellIndexes(imod, iphi-2, ieta);
       absIDdo2lr = fGeom->GetAbsCellIdFromCellIndexes(imod, iphi-2, ieta+colShift); 
     }
-   
+    
     // In same T-Card?
     if ( TMath::FloorNint(iphi/8) != TMath::FloorNint((iphi+1)/8) ) { absIDup  = -1 ; absIDuplr  = -1 ; }
     if ( TMath::FloorNint(iphi/8) != TMath::FloorNint((iphi-1)/8) ) { absIDdo  = -1 ; absIDdolr  = -1 ; }
     if ( TMath::FloorNint(iphi/8) != TMath::FloorNint((iphi+2)/8) ) { absIDup2 = -1 ; absIDup2lr = -1 ; }
     if ( TMath::FloorNint(iphi/8) != TMath::FloorNint((iphi-2)/8) ) { absIDdo2 = -1 ; absIDdo2lr = -1 ; }
-
     
-//    printf("\t cross absId: r1 %d, r2 %d, c %d\n",absIDup,absIDdo,absIDlr);
-//    if ( absIDlr < 0  )  printf( "\t \t *** ism %d, iphi %d, ieta %d; absId(ieta+1) %d, absId(ieta-1) %d, mod eta %d, max eta %d\n",imod,iphi,ieta, 
-//                               fGeom->GetAbsCellIdFromCellIndexes(imod, iphi, ieta+1),fGeom->GetAbsCellIdFromCellIndexes(imod, iphi, ieta-1),
-//                               ieta%2, AliEMCALGeoParams::fgkEMCALCols-1);
-//    if ( absIDup < 0 )  printf( "\t \t *** ism %d, iphi %d, ieta %d; absId(iphi+1) %d\n",imod,iphi,ieta, 
-//                              fGeom->GetAbsCellIdFromCellIndexes(imod, iphi, iphi+1));
-//
-//    if ( absIDdo < 0 )  printf( "\t \t *** ism %d, iphi %d, ieta %d; absId(iphi-1) %d\n",imod,iphi,ieta, 
-//                               fGeom->GetAbsCellIdFromCellIndexes(imod, iphi, iphi-1));
-
     //
     // Check if they are not declared bad or exist
     Bool_t okup   = AcceptCell(absIDup   ); 
@@ -1722,117 +1717,137 @@ void AliAnalysisTaskEMCALClusterize::MakeCellTCardCorrelation()
     Bool_t okdo2  = AcceptCell(absIDdo2  ); 
     Bool_t okup2lr= AcceptCell(absIDup2lr); 
     Bool_t okdo2lr= AcceptCell(absIDdo2lr); 
-
-//    if(amp > 2)
-//    printf("ecell %2.2f, amp %2.2f: F1 %2.2e, F2 %2.2e, F3 %2.2e; w1 %2.2e w2 %2.2e w3 %2.2e \n",ecell,amp, 
-//           fTCardCorrInduceEnerFrac[0]+amp*fTCardCorrInduceEnerFracP1[0],
-//           fTCardCorrInduceEnerFrac[1]+amp*fTCardCorrInduceEnerFracP1[1],
-//           fTCardCorrInduceEnerFrac[1]+amp*fTCardCorrInduceEnerFracP1[2],
-//           fTCardCorrInduceEnerFracWidth[0],fTCardCorrInduceEnerFracWidth[1],fTCardCorrInduceEnerFracWidth[2]);
+    
+    AliDebug(1,Form("Same T-Card cells:\n \t up %d (%d), down %d (%d), left-right %d (%d), up-lr %d (%d), down-lr %d (%d)\n"
+                    "\t up2 %d (%d), down2 %d (%d), up2-lr %d (%d), down2-lr %d (%d)",
+                    absIDup ,okup ,absIDdo ,okdo ,absIDlr,oklr,absIDuplr ,okuplr ,absIDdolr ,okdolr ,
+                    absIDup2,okup2,absIDdo2,okdo2,             absIDup2lr,okup2lr,absIDdo2lr,okdo2lr));
+    
     //
     // Generate some energy for the nearby cells in same TCard , depending on this cell energy
     // Check if originally the tower had no or little energy, in which case tag it as new
-    Float_t fracupdown     = fRandom.Gaus(fTCardCorrInduceEnerFrac[0]+amp*fTCardCorrInduceEnerFracP1[0],fTCardCorrInduceEnerFracWidth[0]);
-    Float_t fracupdownleri = fRandom.Gaus(fTCardCorrInduceEnerFrac[1]+amp*fTCardCorrInduceEnerFracP1[1],fTCardCorrInduceEnerFracWidth[1]);
-    Float_t fracleri       = fRandom.Gaus(fTCardCorrInduceEnerFrac[2]+amp*fTCardCorrInduceEnerFracP1[2],fTCardCorrInduceEnerFracWidth[2]);
-    Float_t frac2nd        = fRandom.Gaus(fTCardCorrInduceEnerFrac[3]+amp*fTCardCorrInduceEnerFracP1[3],fTCardCorrInduceEnerFracWidth[3]);
-        
-//    // CAREFUL: <<Apply the same added shift to all>>.
-//    Float_t fracCupdown = fracRupdown;
-//    Float_t fracC       = fracRupdown;
+    Float_t fracupdown     = fTCardCorrInduceEnerFrac[0]+amp*fTCardCorrInduceEnerFracP1[0];
+    Float_t fracupdownleri = fTCardCorrInduceEnerFrac[1]+amp*fTCardCorrInduceEnerFracP1[1];
+    Float_t fracleri       = fTCardCorrInduceEnerFrac[2]+amp*fTCardCorrInduceEnerFracP1[2];
+    Float_t frac2nd        = fTCardCorrInduceEnerFrac[3]+amp*fTCardCorrInduceEnerFracP1[3];
     
-//    printf("\t Added energy (fractions %2.3f-%2.3f-%2.3f) -> gaus (%2.3f-%2.3f-%2.3f) on top of previous %2.3f: \n",
-//           fTCardCorrInduceEnerFrac[0], fTCardCorrInduceEnerFrac[1], fTCardCorrInduceEnerFrac[2],
-//           fracRupdown,fracC,fracCupdown, fTCardCorrCellsEner[id]);
+    AliDebug(1,Form("Fraction:\n\t up-down   : p1 %2.2e, p2 %2.2f, sig %2.2f, fraction %2.3f\n"
+                    "\t up-down-lr: p1 %2.2e, p2 %2.2f, sig %2.2f, fraction %2.3f\n"
+                    "\t left-right: p1 %2.2e, p2 %2.2f, sig %2.2f, fraction %2.3f\n"
+                    "\t 2nd row   : p1 %2.2e, p2 %2.2f, sig %2.2f, fraction %2.3f",
+                    fTCardCorrInduceEnerFrac[0],fTCardCorrInduceEnerFracP1[0],fTCardCorrInduceEnerFracWidth[0],fracupdown,
+                    fTCardCorrInduceEnerFrac[1],fTCardCorrInduceEnerFracP1[1],fTCardCorrInduceEnerFracWidth[1],fracupdownleri,
+                    fTCardCorrInduceEnerFrac[2],fTCardCorrInduceEnerFracP1[2],fTCardCorrInduceEnerFracWidth[2],fracleri,
+                    fTCardCorrInduceEnerFrac[3],fTCardCorrInduceEnerFracP1[3],fTCardCorrInduceEnerFracWidth[3],frac2nd));
     
+    // Randomize the induced fraction, if requested
+    if(fRandomizeTCard)
+    {
+      fracupdown     = fRandom.Gaus(fracupdown    ,fTCardCorrInduceEnerFracWidth[0]);
+      fracupdownleri = fRandom.Gaus(fracupdownleri,fTCardCorrInduceEnerFracWidth[1]);
+      fracleri       = fRandom.Gaus(fracleri      ,fTCardCorrInduceEnerFracWidth[2]);
+      frac2nd        = fRandom.Gaus(frac2nd       ,fTCardCorrInduceEnerFracWidth[3]);
+      
+      AliDebug(1,Form("Randomized fraction: up-down %2.3f; up-down-left-right %2.3f; left-right %2.3f; 2nd row %2.3f",
+                      fracupdown,fracupdownleri,fracleri,frac2nd));
+    }
+    
+    // Calculate induced energy
+    Float_t indEupdown     = amp*fracupdown;
+    Float_t indEupdownleri = amp*fracupdownleri;
+    Float_t indEleri       = amp*fracleri;
+    Float_t indE2nd        = amp*frac2nd;
+    
+    AliDebug(1,Form("Induced energy: up-down %2.3f; up-down-left-right %2.3f; left-right %2.3f; 2nd row %2.3f",
+                    indEupdown,indEupdownleri,indEleri,indE2nd));
+    
+    // Check if we induce too much energy, in such case use a constant value
+    if ( fTCardCorrMaxInduced < indE2nd        ) indE2nd        = fTCardCorrMaxInduced;
+    if ( fTCardCorrMaxInduced < indEupdownleri ) indEupdownleri = fTCardCorrMaxInduced;
+    if ( fTCardCorrMaxInduced < indEupdown     ) indEupdown     = fTCardCorrMaxInduced;
+    if ( fTCardCorrMaxInduced < indEleri       ) indEleri       = fTCardCorrMaxInduced;
+    
+    AliDebug(1,Form("Induced energy, saturated?: up-down %2.3f; up-down-left-right %2.3f; left-right %2.3f; 2nd row %2.3f",
+                    indEupdown,indEupdownleri,indEleri,indE2nd));
+    
+    //
+    // Add the induced energy, check if cell existed
     if ( okup )
     {
-      fTCardCorrCellsEner[absIDup] += amp*fracupdown;
+      fTCardCorrCellsEner[absIDup] += indEupdown;
+      
       if ( fCaloCells->GetCellAmplitude(absIDup) < 0.01 ) fTCardCorrCellsNew[absIDup] = kTRUE;
-//      printf("\t \t r1 absId %d induced amp %2.3f, accumulated %2.3f (new %d); \n",
-//             absIDup,amp*fracRupdown,fTCardCorrCellsEner[absIDup],fTCardCorrCellsNew[absIDup]);
     }
     
     if ( okdo )
     {
-      fTCardCorrCellsEner[absIDdo] += amp*fracupdown;
+      fTCardCorrCellsEner[absIDdo] += indEupdown;
+      
       if ( fCaloCells->GetCellAmplitude(absIDdo) < 0.01 ) fTCardCorrCellsNew[absIDdo] = kTRUE;
-//      printf("\t \t r2 absId %d induced amp %2.3f, accumulated %2.3f (new %d);\n ",
-//             absIDdo,amp*fracRupdown,fTCardCorrCellsEner[absIDdo],fTCardCorrCellsNew[absIDdo]);
     }
     
     if ( oklr )
     {
-      fTCardCorrCellsEner[absIDlr] += amp*fracleri;
+      fTCardCorrCellsEner[absIDlr] += indEleri;
+
       if ( fCaloCells->GetCellAmplitude(absIDlr) < 0.01 ) fTCardCorrCellsNew[absIDlr]  = kTRUE;
-//      printf("\t \t c  absId %d induced amp %2.3f, accumulated %2.3f (new %d). \n",
-//             absIDlr,amp*fracC,fTCardCorrCellsEner[absIDlr],fTCardCorrCellsNew[absIDlr]);
     }
 
     if ( okuplr )
     {
-      fTCardCorrCellsEner[absIDuplr] += amp*fracupdownleri;
+      fTCardCorrCellsEner[absIDuplr] += indEupdownleri;
+
       if ( fCaloCells->GetCellAmplitude(absIDuplr ) < 0.01 ) fTCardCorrCellsNew[absIDuplr]  = kTRUE;
-      //      printf("\t \t c  absId %d induced amp %2.3f, accumulated %2.3f (new %d). \n",
-      //             absIDuplr,amp*fracCupdown,fTCardCorrCellsEner[absIDuplr],fTCardCorrCellsNew[absIDuplr]);
     }
     
     if ( okdolr )
     {
-      fTCardCorrCellsEner[absIDdolr] += amp*fracupdownleri;
+      fTCardCorrCellsEner[absIDdolr] += indEupdownleri;
+
       if ( fCaloCells->GetCellAmplitude(absIDdolr ) < 0.01 ) fTCardCorrCellsNew[absIDdolr]  = kTRUE;
-      //      printf("\t \t c  absId %d induced amp %2.3f, accumulated %2.3f (new %d). \n",
-      //             absIDdolr,amp*fracCupdown,fTCardCorrCellsEner[absIDdolr],fTCardCorrCellsNew[absIDdolr]);
     }
 
-    
     if ( okup2 )
     {
-      fTCardCorrCellsEner[absIDup2] += amp*frac2nd;
+      fTCardCorrCellsEner[absIDup2] += indE2nd;
+
       if ( fCaloCells->GetCellAmplitude(absIDup2) < 0.01 ) fTCardCorrCellsNew[absIDup2] = kTRUE;
-      //      printf("\t \t r1 absId %d induced amp %2.3f, accumulated %2.3f (new %d); \n",
-      //             absIDup2,amp*fracRupdown,fTCardCorrCellsEner[absIDup2],fTCardCorrCellsNew[absIDup2]);
     }
     
     if ( okup2lr )
     {
-      fTCardCorrCellsEner[absIDup2lr] += amp*frac2nd;
+      fTCardCorrCellsEner[absIDup2lr] += indE2nd;
+
       if ( fCaloCells->GetCellAmplitude(absIDup2lr) < 0.01 ) fTCardCorrCellsNew[absIDup2lr] = kTRUE;
-      //      printf("\t \t r2 absId %d induced amp %2.3f, accumulated %2.3f (new %d);\n ",
-      //             absIDr2,amp*fracRupdown,fTCardCorrCellsEner[absIDr2],fTCardCorrCellsNew[absIDr2]);
     }
 
     if ( okdo2 )
     {
-      fTCardCorrCellsEner[absIDdo2] += amp*frac2nd;
+      fTCardCorrCellsEner[absIDdo2] += indE2nd;
+
       if ( fCaloCells->GetCellAmplitude(absIDdo2) < 0.01 ) fTCardCorrCellsNew[absIDdo2] = kTRUE;
-      //      printf("\t \t r1 absId %d induced amp %2.3f, accumulated %2.3f (new %d); \n",
-      //             absIDdo2,amp*fracRupdown,fTCardCorrCellsEner[absIDdo2],fTCardCorrCellsNew[absIDdo2]);
     }
     
     if ( okdo2lr )
     {
-      fTCardCorrCellsEner[absIDdo2lr] += amp*frac2nd;
-      if ( fCaloCells->GetCellAmplitude(absIDdo2lr) < 0.01 ) fTCardCorrCellsNew[absIDdo2lr] = kTRUE;
-      //      printf("\t \t r2 absId %d induced amp %2.3f, accumulated %2.3f (new %d);\n ",
-      //             absIDr2,amp*fracRupdown,fTCardCorrCellsEner[absIDr2],fTCardCorrCellsNew[absIDr2]);
-    }
+      fTCardCorrCellsEner[absIDdo2lr] += indE2nd;
 
+      if ( fCaloCells->GetCellAmplitude(absIDdo2lr) < 0.01 ) fTCardCorrCellsNew[absIDdo2lr] = kTRUE;
+    }
     
     //
     // Subtract the added energy to main cell, if energy conservation is requested
     if ( fTCardCorrClusEnerConserv )
     {
-      if ( oklr    ) fTCardCorrCellsEner[id] -= amp*fracleri;
-      if ( okuplr  ) fTCardCorrCellsEner[id] -= amp*fracupdownleri;
-      if ( okdolr  ) fTCardCorrCellsEner[id] -= amp*fracupdownleri;
-      if ( okup    ) fTCardCorrCellsEner[id] -= amp*fracupdown;
-      if ( okdo    ) fTCardCorrCellsEner[id] -= amp*fracupdown;
-      if ( okup2   ) fTCardCorrCellsEner[id] -= amp*frac2nd;
-      if ( okup2lr ) fTCardCorrCellsEner[id] -= amp*frac2nd;
-      if ( okdo2   ) fTCardCorrCellsEner[id] -= amp*frac2nd;
-      if ( okdo2lr ) fTCardCorrCellsEner[id] -= amp*frac2nd;
-      //printf("\t conserve energy, remove %2.3f, from %d\n",fTCardCorrCellsEner[id],id);
+      if ( oklr    ) fTCardCorrCellsEner[id] -= indEleri;
+      if ( okuplr  ) fTCardCorrCellsEner[id] -= indEupdownleri;
+      if ( okdolr  ) fTCardCorrCellsEner[id] -= indEupdownleri;
+      if ( okup    ) fTCardCorrCellsEner[id] -= indEupdown;
+      if ( okdo    ) fTCardCorrCellsEner[id] -= indEupdown;
+      if ( okup2   ) fTCardCorrCellsEner[id] -= indE2nd;
+      if ( okup2lr ) fTCardCorrCellsEner[id] -= indE2nd;
+      if ( okdo2   ) fTCardCorrCellsEner[id] -= indE2nd;
+      if ( okdo2lr ) fTCardCorrCellsEner[id] -= indE2nd;
     } // conserve energy
   
   } // cell loop
@@ -1881,7 +1896,8 @@ void AliAnalysisTaskEMCALClusterize::PrintTCardParam()
     return;
   }
   
-  AliInfo(Form("T-Card emulation activated, energy conservation <%d>, induced energy parameters:",fTCardCorrClusEnerConserv));
+  AliInfo(Form("T-Card emulation activated, energy conservation <%d>, randomize E <%d>, induced energy parameters:",
+               fTCardCorrClusEnerConserv,fRandomizeTCard));
   
   for(Int_t icell = 0; icell < 4; icell++)
   {

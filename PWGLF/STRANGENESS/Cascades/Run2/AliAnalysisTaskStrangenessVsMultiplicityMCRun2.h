@@ -483,6 +483,10 @@ private:
     Float_t fTreeCascVarBachNSigmaPion;  //!
     Float_t fTreeCascVarBachNSigmaKaon;  //!
     
+    //ChiSquares
+    Float_t fTreeCascVarChiSquareV0;
+    Float_t fTreeCascVarChiSquareCascade;
+    
     //Variables for debugging Wrong PID hypothesis in tracking bug
     // more info at: https://alice.its.cern.ch/jira/browse/PWGPP-218
     Int_t fTreeCascVarPosPIDForTracking; //! uses AliPID EParticleType code (0=electron, 1=muon, 2=pion, etc)
@@ -628,6 +632,30 @@ private:
     Float_t fTreeCascVarBachSibV0InvMassLambda; //!
     Float_t fTreeCascVarBachSibV0InvMassAntiLambda; //!
     
+    //Negative Sibling Testing Variables
+    Float_t fTreeCascVarNegSibPt; //!
+    Float_t fTreeCascVarNegSibDcaV0ToPrimVertex; //!
+    Float_t fTreeCascVarNegSibDcaV0Daughters; //!
+    Float_t fTreeCascVarNegSibV0CosineOfPointingAngle; //!
+    Float_t fTreeCascVarNegSibV0V0Radius; //!
+    Float_t fTreeCascVarNegSibV0DcaPosToPrimVertex; //!
+    Float_t fTreeCascVarNegSibV0DcaNegToPrimVertex; //!
+    Float_t fTreeCascVarNegSibV0InvMassK0s; //!
+    Float_t fTreeCascVarNegSibV0InvMassLambda; //!
+    Float_t fTreeCascVarNegSibV0InvMassAntiLambda; //!
+    
+    //Positive Sibling Testing Variables
+    Float_t fTreeCascVarPosSibPt; //!
+    Float_t fTreeCascVarPosSibDcaV0ToPrimVertex; //!
+    Float_t fTreeCascVarPosSibDcaV0Daughters; //!
+    Float_t fTreeCascVarPosSibV0CosineOfPointingAngle; //!
+    Float_t fTreeCascVarPosSibV0V0Radius; //!
+    Float_t fTreeCascVarPosSibV0DcaPosToPrimVertex; //!
+    Float_t fTreeCascVarPosSibV0DcaNegToPrimVertex; //!
+    Float_t fTreeCascVarPosSibV0InvMassK0s; //!
+    Float_t fTreeCascVarPosSibV0InvMassLambda; //!
+    Float_t fTreeCascVarPosSibV0InvMassAntiLambda; //!
+    
     //MC-only Variables
     Int_t   fTreeCascVarIsPhysicalPrimary; //!
     Int_t   fTreeCascVarPID;         //!
@@ -643,6 +671,10 @@ private:
     Int_t   fTreeCascVarBachCousinStatus;         //!
     Int_t   fTreeCascVarV0BachSibIsValid;         //!
     Int_t   fTreeCascVarBachV0Tagging;         //!
+    Int_t   fTreeCascVarV0NegSibIsValid;         //!
+    Int_t   fTreeCascVarNegV0Tagging;         //!
+    Int_t   fTreeCascVarV0PosSibIsValid;         //!
+    Int_t   fTreeCascVarPosV0Tagging;         //!
     
     Bool_t fTreeCascVarIsPhysicalPrimaryNegative;
     Bool_t fTreeCascVarIsPhysicalPrimaryPositive;

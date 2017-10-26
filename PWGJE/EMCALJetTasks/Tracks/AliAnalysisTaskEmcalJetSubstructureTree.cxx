@@ -41,6 +41,7 @@
 #include <TString.h>
 #include <TVector3.h>
 
+#include "AliAODEvent.h"
 #include "AliAODInputHandler.h"
 #include "AliAnalysisManager.h"
 #include "AliAnalysisTaskEmcalJetSubstructureTree.h"
@@ -188,8 +189,8 @@ void AliAnalysisTaskEmcalJetSubstructureTree::RunChanged(Int_t newrun) {
 }
 
 bool AliAnalysisTaskEmcalJetSubstructureTree::Run(){
-  AliClusterContainer *clusters = GetClusterContainer("caloClusters");
-  AliTrackContainer *tracks = GetTrackContainer("tracks");
+  AliClusterContainer *clusters = GetClusterContainer(EMCalTriggerPtAnalysis::AliEmcalAnalysisFactory::ClusterContainerNameFactory(fInputEvent->IsA() == AliAODEvent::Class()));
+  AliTrackContainer *tracks = GetTrackContainer(EMCalTriggerPtAnalysis::AliEmcalAnalysisFactory::TrackContainerNameFactory(fInputEvent->IsA() == AliAODEvent::Class()));
   AliParticleContainer *particles = GetParticleContainer("mcparticles");
 
   AliJetContainer *mcjets = GetJetContainer("mcjets");
@@ -602,7 +603,12 @@ AliAnalysisTaskEmcalJetSubstructureTree *AliAnalysisTaskEmcalJetSubstructureTree
   Bool_t isAOD(kFALSE);
   AliInputEventHandler *inputhandler = static_cast<AliInputEventHandler *>(mgr->GetInputEventHandler());
   if(inputhandler) {
-    if(inputhandler->IsA() == AliAODInputHandler::Class()) isAOD = kTRUE;
+    if(inputhandler->IsA() == AliAODInputHandler::Class()){
+      std::cout << "Analysing AOD events\n";
+      isAOD = kTRUE;
+    } else {
+      std::cout << "Analysing ESD events\n";
+    }
   }
 
   AliAnalysisTaskEmcalJetSubstructureTree *treemaker = new AliAnalysisTaskEmcalJetSubstructureTree("JetSubstructureTreemaker_" + TString::Format("R%02d_", int(jetradius * 10.)) + trigger);
@@ -627,11 +633,13 @@ AliAnalysisTaskEmcalJetSubstructureTree *AliAnalysisTaskEmcalJetSubstructureTree
 
   if(isData) {
     AliTrackContainer *tracks = treemaker->AddTrackContainer(EMCalTriggerPtAnalysis::AliEmcalAnalysisFactory::TrackContainerNameFactory(isAOD));
+    std::cout << "Track container name: " << tracks->GetName() << std::endl;
     tracks->SetMinPt(0.15);
     AliClusterContainer *clusters(nullptr);
     if(jettype == kFull){
       std::cout << "Using full jets ..." << std::endl;
       clusters = treemaker->AddClusterContainer(EMCalTriggerPtAnalysis::AliEmcalAnalysisFactory::ClusterContainerNameFactory(isAOD));
+      std::cout << "Cluster container name: " << clusters->GetName() << std::endl;
       clusters->SetClusHadCorrEnergyCut(0.3); // 300 MeV E-cut
       clusters->SetDefaultClusterEnergy(AliVCluster::kHadCorr);
     } else {

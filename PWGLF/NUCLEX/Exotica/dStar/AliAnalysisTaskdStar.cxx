@@ -166,7 +166,7 @@ void AliAnalysisTaskdStar::UserExec(Option_t *) {
     const int mother_id = part->GetMother();
     AliAODMCParticle* mother = (mother_id >= 0) ? (AliAODMCParticle*)stack->At(mother_id) : nullptr;
     if (!mother) continue;
-    const int mum_pdg = TMath::Abs(mother->GetPdgCode());
+    const int mum_pdg = TMath::Abs(mother->GetPdgCode());   // IMPO!! for A/M analysis is necessary to take also the charge
 
 
     // add deuterons and pions to the Tree for background analysis (ITS TPC only)
@@ -174,6 +174,7 @@ void AliAnalysisTaskdStar::UserExec(Option_t *) {
     if (TMath::Abs(fPID->NumberOfSigmas(AliPIDResponse::kTPC, track, AliPID::kDeuteron)) < 3.) {
       daughter_struct deu;
       deu.mother_pdg = mum_pdg;
+      deu.mother_id  = mother_id;
       FourVector_t tmp_deu = {(float)track->Pt(), (float)track->Eta(), (float)track->Phi(), (float)track->M(AliAODTrack::kDeuteron)};
       deu.vec = tmp_deu;
       deu.charge = (track->Charge() > 0) ? true : false;
@@ -183,6 +184,7 @@ void AliAnalysisTaskdStar::UserExec(Option_t *) {
     if (TMath::Abs(fPID->NumberOfSigmas(AliPIDResponse::kTPC, track, AliPID::kPion)) <  3.) {
       daughter_struct pi;
       pi.mother_pdg = mum_pdg;
+      pi.mother_id  = mother_id;
       FourVector_t tmp_pi = {(float)track->Pt(), (float)track->Eta(), (float)track->Phi(), (float)track->M(AliAODTrack::kPion)};
       pi.vec = tmp_pi;
       pi.charge = (track->Charge() > 0) ? true : false;

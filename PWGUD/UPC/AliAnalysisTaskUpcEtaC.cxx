@@ -77,10 +77,11 @@ AliAnalysisTaskUpcEtaC::AliAnalysisTaskUpcEtaC()
     fListTrig(0),fHistCcup4TriggersPerRun(0), fHistCcup7TriggersPerRun(0), fHistCcup2TriggersPerRun(0),fHistCint1TriggersPerRun(0),fHistCint6TriggersPerRun(0), fHistC0tvxAndCint1TriggersPerRun(0),
     fHistZedTriggersPerRun(0),fHistCvlnTriggersPerRun(0), fHistMBTriggersPerRun(0),fHistCentralTriggersPerRun(0),fHistSemiCentralTriggersPerRun(0),
     fHistCTest58TriggersPerRun(0),fHistCTest59TriggersPerRun(0),fHistCTest60TriggersPerRun(0),fHistCTest61TriggersPerRun(0),fHistCcup8TriggersPerRun(0),fHistCcup9TriggersPerRun(0),fHistCcup10TriggersPerRun(0),fHistCcup11TriggersPerRun(0),fHistCcup12TriggersPerRun(0),fHistCtrueTriggersPerRun(0),
-  fListHist(0),fHistNeventsEtaC(0),fMPiKvsMPiK(0),f2KstarPtPiPlus(0),f2KstarPtPiMinus(0),f2KstarPtKPlus(0),f2KstarPtKMinus(0),f2KstarTPCsignalPion(0),f2KstarTPCsignalKaon(0),f2KstarDedxVsPtPion(0),f2KstarDedxVsPtKaon(0),f2KstarTPCsignalVsQPtPion(0),f2KstarTPCsignalVsQPtKaon(0),f2KstarPtVsMinvFirstKstar(0),f2KstarPtVsMinvSecondKstar(0),f2KstarPtVsMinvEtaC(0),
+  fListHist(0),fListHistKstar(0),fListHist2Rho4Pion(0),fListHistK0s3PiPi4K(0),
+  fHistNeventsEtaC(0),fMPiKvsMPiK(0),f2KstarPtPiPlus(0),f2KstarPtPiMinus(0),f2KstarPtKPlus(0),f2KstarPtKMinus(0),f2KstarTPCsignalPion(0),f2KstarTPCsignalKaon(0),f2KstarDedxVsPtPion(0),f2KstarDedxVsPtKaon(0),f2KstarTPCsignalVsQPtPion(0),f2KstarTPCsignalVsQPtKaon(0),f2KstarPtVsMinvFirstKstar(0),f2KstarPtVsMinvSecondKstar(0),f2KstarPtVsMinvEtaC(0),
   f1KstarPtPiPlus(0),f1KstarPtPiMinus(0),f1KstarPtKPlus(0),f1KstarPtKMinus(0),f1KstarTPCsignalPion(0),f1KstarTPCsignalKaon(0),f1KstarDedxVsPtPion(0),f1KstarDedxVsPtKaon(0),f1KstarTPCsignalVsQPtPion(0),f1KstarTPCsignalVsQPtKaon(0),f1KstarPtVsMinvKstar(0),f1KstarPtVsMinvOtherPiKcombo(0),f1KstarPtVsMinvEtaC(0),
   f0KstarPtPiPlus(0),f0KstarPtPiMinus(0),f0KstarPtKPlus(0),f0KstarPtKMinus(0),f0KstarTPCsignalPion(0),f0KstarTPCsignalKaon(0),f0KstarDedxVsPtPion(0),f0KstarDedxVsPtKaon(0),f0KstarTPCsignalVsQPtPion(0),f0KstarTPCsignalVsQPtKaon(0),f0KstarPtVsMinvFirstPiKcombo(0),f0KstarPtVsMinvSecondPiKcombo(0),f0KstarPtVsMinvEtaC(0),
-  fHistK0sCandidatesPerEvent(0),fK0sPosDaughterPt(0),fK0sNegDaughterPt(0),fK0sPosVsNegDaughterPt(0),fPionK0sChannelPt(0),fKaonK0sChannelPt(0),fK0sPtVsMinv(0),fKPiPtVsMinvK0sChannel(0),fMK0sVsMKPiK0sChannel(0),fEtaCPtVsMinvK0sChannel(0),fK0sDecayLength(0),
+  fHistK0sCandidatesPerEvent(0),fK0sPosDaughterPt(0),fK0sNegDaughterPt(0),fK0sPosVsNegDaughterPt(0),fK0sPionPt(0),fK0sKaonPt(0),fK0sPtVsMinvK0s(0),fKPiPtVsMinvK0sChannel(0),fMK0sVsMKPiK0sChannel(0),fK0sPtVsMinvEtaC(0),fK0sDecayLength(0),
   fHistNpion(0),fHistNK0sPion(0),fHistNkaon(0),fHistPiMinusK(0),
   fV0DaughterDca(0),fK0sDcaToPrimVertex(0),fK0sDaughterDcaToPrimVertex(0),fK0sMassDistribution(0),fV0DecayLength(0),fV0Eta(0),fCosPointingAngle(0),
     fHistNeventsEtaCK0sChannel(0),fHistEtaCMassVsPt(0),fHistEtaCMassCoherent(0),fHistZDCCuts(0),
@@ -92,13 +93,18 @@ AliAnalysisTaskUpcEtaC::AliAnalysisTaskUpcEtaC()
   fHistNeventsEtaCRhoChannel(0),f2RhoPtVsMinvRho(0),f4PionPtVsMinvRho(0),f2RhoPtVsMinvEtaC(0),f4PionPtVsMinvEtaC(0),
   fHistNeventsEtaC3PiPiChannel(0),f3PiPiPtVsMinvEtaC(0),
   f2RhoPtVsMinvOtherRho(0),f2RhoPtVsMinvNonRhoPairs(0),f4PiVs2PiMinv(0),f4PiVs2PiMinvSquared(0),
-  fKstarParentPx(0),fKstarParentPy(0),fKstarParentPz(0),fKstarDaughterParentAngle(0),fKstarDaughterDaughterAngle(0),fKstarDaughterDaughterCosAngle(0),fKstarDaughterPtotal(0),fKstarDaughterPtotalNorm(0),
-  fKstarParentPxCheck(0),fKstarParentPyCheck(0),fKstarParentPzCheck(0),fKstarDaughterParentAngleCheck(0),fKstarDaughterDaughterAngleCheck(0),fKstarDaughterDaughterCosAngleCheck(0),fKstarDaughterPtotalCheck(0),fKstarDaughterPtotalNormCheck(0),
-  f2RhoParentPx(0),f2RhoParentPy(0),f2RhoParentPz(0),f2RhoDaughterParentAngle(0),f2RhoDaughterDaughterAngle(0),f2RhoDaughterDaughterCosAngle(0),f2RhoDaughterPtotal(0),
-  f2RhoParentPxCheck(0),f2RhoParentPyCheck(0),f2RhoParentPzCheck(0),f2RhoDaughterParentAngleCheck(0),f2RhoDaughterDaughterAngleCheck(0),f2RhoDaughterDaughterCosAngleCheck(0),f2RhoDaughterPtotalCheck(0),
+  fKstarParentPx(0),fKstarParentPy(0),fKstarParentPz(0),fKstarDaughterParentAngle(0),fKstarDaughterParentCosAngle(0),fKstarDaughterDaughterAngle(0),fKstarDaughterDaughterCosAngle(0),fKstarDaughterPtotal(0),fKstarDaughterPtotalNorm(0),
+  fKstarParentPxCheck(0),fKstarParentPyCheck(0),fKstarParentPzCheck(0),fKstarDaughterParentAngleCheck(0),fKstarDaughterParentCosAngleCheck(0),fKstarDaughterDaughterAngleCheck(0),fKstarDaughterDaughterCosAngleCheck(0),fKstarDaughterPtotalCheck(0),fKstarDaughterPtotalNormCheck(0),
+  f2RhoParentPx(0),f2RhoParentPy(0),f2RhoParentPz(0),f2RhoDaughterParentAngle(0),f2RhoDaughterParentCosAngle(0),f2RhoDaughterDaughterAngle(0),f2RhoDaughterDaughterCosAngle(0),f2RhoDaughterPtotal(0),
+  f2RhoParentPxCheck(0),f2RhoParentPyCheck(0),f2RhoParentPzCheck(0),f2RhoDaughterParentAngleCheck(0),f2RhoDaughterParentCosAngleCheck(0),f2RhoDaughterDaughterAngleCheck(0),f2RhoDaughterDaughterCosAngleCheck(0),f2RhoDaughterPtotalCheck(0),
   fHistNeventsEtaC4KaonChannel(0),f4KaonPtVsMinvEtaC(0),f4KaonPtVsMinvKK(0),f4KVs2KMinv(0),f4KVs2KMinvSquared(0),
-  f2KstarEtaVsMinvEtaC(0),f1KstarEtaVsMinvEtaC(0),f0KstarEtaVsMinvEtaC(0),f2RhoEtaVsMinvEtaC(0),f4PionEtaVsMinvEtaC(0),f3PiPiEtaVsMinvEtaC(0),f4KaonEtaVsMinvEtaC(0),fEtaCEtaVsMinvK0sChannel(0),
-    fListSystematics(0),fListJPsiLoose(0),fListJPsiTight(0),fListEtaCLoose(0),fListEtaCTight(0)
+  f2KstarEtaVsMinvEtaC(0),f1KstarEtaVsMinvEtaC(0),f0KstarEtaVsMinvEtaC(0),f2RhoEtaVsMinvEtaC(0),f4PionEtaVsMinvEtaC(0),f3PiPiEtaVsMinvEtaC(0),f4KaonEtaVsMinvEtaC(0),fK0sEtaVsMinvEtaC(0),
+  f2KstarEtaVsMinvEtaC400MeVPtMax(0),f1KstarEtaVsMinvEtaC400MeVPtMax(0),f0KstarEtaVsMinvEtaC400MeVPtMax(0),f2RhoEtaVsMinvEtaC400MeVPtMax(0),f4PionEtaVsMinvEtaC400MeVPtMax(0),f3PiPiEtaVsMinvEtaC400MeVPtMax(0),f4KaonEtaVsMinvEtaC400MeVPtMax(0),fK0sEtaVsMinvEtaC400MeVPtMax(0),
+  f2KstarEtaVsMinvEtaC100MeVPtMax(0),f1KstarEtaVsMinvEtaC100MeVPtMax(0),f0KstarEtaVsMinvEtaC100MeVPtMax(0),f2RhoEtaVsMinvEtaC100MeVPtMax(0),f4PionEtaVsMinvEtaC100MeVPtMax(0),f3PiPiEtaVsMinvEtaC100MeVPtMax(0),f4KaonEtaVsMinvEtaC100MeVPtMax(0),fK0sEtaVsMinvEtaC100MeVPtMax(0),
+  f2KstarSumPzVsMinvEtaC(0),f1KstarSumPzVsMinvEtaC(0),f0KstarSumPzVsMinvEtaC(0),f2RhoSumPzVsMinvEtaC(0),f4PionSumPzVsMinvEtaC(0),f3PiPiSumPzVsMinvEtaC(0),f4KaonSumPzVsMinvEtaC(0),fK0sSumPzVsMinvEtaC(0),
+  f2KstarScalarSumP(0),f1KstarScalarSumP(0),f0KstarScalarSumP(0),f2RhoScalarSumP(0),f4PionScalarSumP(0),f3PiPiScalarSumP(0),f4KaonScalarSumP(0),fK0sScalarSumP(0),
+  f2KstarVectorSumPt(0),f1KstarVectorSumPt(0),f0KstarVectorSumPt(0),f2RhoVectorSumPt(0),f4PionVectorSumPt(0),f3PiPiVectorSumPt(0),f4KaonVectorSumPt(0),fK0sVectorSumPt(0),
+  fListSystematics(0),fListJPsiLoose(0),fListJPsiTight(0),fListEtaCLoose(0),fListEtaCTight(0)
 
 {
 
@@ -120,10 +126,11 @@ AliAnalysisTaskUpcEtaC::AliAnalysisTaskUpcEtaC(const char *name)
     fListTrig(0),fHistCcup4TriggersPerRun(0), fHistCcup7TriggersPerRun(0), fHistCcup2TriggersPerRun(0),fHistCint1TriggersPerRun(0), fHistCint6TriggersPerRun(0), fHistC0tvxAndCint1TriggersPerRun(0),
     fHistZedTriggersPerRun(0),fHistCvlnTriggersPerRun(0), fHistMBTriggersPerRun(0),fHistCentralTriggersPerRun(0),fHistSemiCentralTriggersPerRun(0),
   fHistCTest58TriggersPerRun(0),fHistCTest59TriggersPerRun(0),fHistCTest60TriggersPerRun(0),fHistCTest61TriggersPerRun(0),fHistCcup8TriggersPerRun(0),fHistCcup9TriggersPerRun(0),fHistCcup10TriggersPerRun(0),fHistCcup11TriggersPerRun(0),fHistCcup12TriggersPerRun(0),fHistCtrueTriggersPerRun(0),
-  fListHist(0),fHistNeventsEtaC(0),fMPiKvsMPiK(0),f2KstarPtPiPlus(0),f2KstarPtPiMinus(0),f2KstarPtKPlus(0),f2KstarPtKMinus(0),f2KstarTPCsignalPion(0),f2KstarTPCsignalKaon(0),f2KstarTPCsignalVsQPtPion(0),f2KstarTPCsignalVsQPtKaon(0),f2KstarDedxVsPtPion(0),f2KstarDedxVsPtKaon(0),f2KstarPtVsMinvFirstKstar(0),f2KstarPtVsMinvSecondKstar(0),f2KstarPtVsMinvEtaC(0),
+  fListHist(0),fListHistKstar(0),fListHist2Rho4Pion(0),fListHistK0s3PiPi4K(0),
+  fHistNeventsEtaC(0),fMPiKvsMPiK(0),f2KstarPtPiPlus(0),f2KstarPtPiMinus(0),f2KstarPtKPlus(0),f2KstarPtKMinus(0),f2KstarTPCsignalPion(0),f2KstarTPCsignalKaon(0),f2KstarTPCsignalVsQPtPion(0),f2KstarTPCsignalVsQPtKaon(0),f2KstarDedxVsPtPion(0),f2KstarDedxVsPtKaon(0),f2KstarPtVsMinvFirstKstar(0),f2KstarPtVsMinvSecondKstar(0),f2KstarPtVsMinvEtaC(0),
   f1KstarPtPiPlus(0),f1KstarPtPiMinus(0),f1KstarPtKPlus(0),f1KstarPtKMinus(0),f1KstarTPCsignalPion(0),f1KstarTPCsignalKaon(0),f1KstarDedxVsPtPion(0),f1KstarDedxVsPtKaon(0),f1KstarTPCsignalVsQPtPion(0),f1KstarTPCsignalVsQPtKaon(0),f1KstarPtVsMinvKstar(0),f1KstarPtVsMinvOtherPiKcombo(0),f1KstarPtVsMinvEtaC(0),
   f0KstarPtPiPlus(0),f0KstarPtPiMinus(0),f0KstarPtKPlus(0),f0KstarPtKMinus(0),f0KstarTPCsignalPion(0),f0KstarTPCsignalKaon(0),f0KstarDedxVsPtPion(0),f0KstarDedxVsPtKaon(0),f0KstarTPCsignalVsQPtPion(0),f0KstarTPCsignalVsQPtKaon(0),f0KstarPtVsMinvFirstPiKcombo(0),f0KstarPtVsMinvSecondPiKcombo(0),f0KstarPtVsMinvEtaC(0),
-  fHistK0sCandidatesPerEvent(0),fK0sPosDaughterPt(0),fK0sNegDaughterPt(0),fK0sPosVsNegDaughterPt(0),fPionK0sChannelPt(0),fKaonK0sChannelPt(0),fK0sPtVsMinv(0),fKPiPtVsMinvK0sChannel(0),fMK0sVsMKPiK0sChannel(0),fEtaCPtVsMinvK0sChannel(0),fK0sDecayLength(0),
+  fHistK0sCandidatesPerEvent(0),fK0sPosDaughterPt(0),fK0sNegDaughterPt(0),fK0sPosVsNegDaughterPt(0),fK0sPionPt(0),fK0sKaonPt(0),fK0sPtVsMinvK0s(0),fKPiPtVsMinvK0sChannel(0),fMK0sVsMKPiK0sChannel(0),fK0sPtVsMinvEtaC(0),fK0sDecayLength(0),
   fHistNpion(0),fHistNK0sPion(0),fHistNkaon(0),fHistPiMinusK(0),
   fV0DaughterDca(0),fK0sDcaToPrimVertex(0),fK0sDaughterDcaToPrimVertex(0),fK0sMassDistribution(0),fV0DecayLength(0),fV0Eta(0),fCosPointingAngle(0),
     fHistNeventsEtaCK0sChannel(0),fHistEtaCMassVsPt(0),fHistEtaCMassCoherent(0),fHistZDCCuts(0),
@@ -135,12 +142,17 @@ AliAnalysisTaskUpcEtaC::AliAnalysisTaskUpcEtaC(const char *name)
   fHistNeventsEtaCRhoChannel(0),f2RhoPtVsMinvRho(0),f4PionPtVsMinvRho(0),f2RhoPtVsMinvEtaC(0),f4PionPtVsMinvEtaC(0),
   fHistNeventsEtaC3PiPiChannel(0),f3PiPiPtVsMinvEtaC(0),
   f2RhoPtVsMinvOtherRho(0),f2RhoPtVsMinvNonRhoPairs(0),f4PiVs2PiMinv(0),f4PiVs2PiMinvSquared(0),
-  fKstarParentPx(0),fKstarParentPy(0),fKstarParentPz(0),fKstarDaughterParentAngle(0),fKstarDaughterDaughterAngle(0),fKstarDaughterDaughterCosAngle(0),fKstarDaughterPtotal(0),fKstarDaughterPtotalNorm(0),
-  fKstarParentPxCheck(0),fKstarParentPyCheck(0),fKstarParentPzCheck(0),fKstarDaughterParentAngleCheck(0),fKstarDaughterDaughterAngleCheck(0),fKstarDaughterDaughterCosAngleCheck(0),fKstarDaughterPtotalCheck(0),fKstarDaughterPtotalNormCheck(0),
-  f2RhoParentPx(0),f2RhoParentPy(0),f2RhoParentPz(0),f2RhoDaughterParentAngle(0),f2RhoDaughterDaughterAngle(0),f2RhoDaughterDaughterCosAngle(0),f2RhoDaughterPtotal(0),
-  f2RhoParentPxCheck(0),f2RhoParentPyCheck(0),f2RhoParentPzCheck(0),f2RhoDaughterParentAngleCheck(0),f2RhoDaughterDaughterAngleCheck(0),f2RhoDaughterDaughterCosAngleCheck(0),f2RhoDaughterPtotalCheck(0),
+  fKstarParentPx(0),fKstarParentPy(0),fKstarParentPz(0),fKstarDaughterParentAngle(0),fKstarDaughterParentCosAngle(0),fKstarDaughterDaughterAngle(0),fKstarDaughterDaughterCosAngle(0),fKstarDaughterPtotal(0),fKstarDaughterPtotalNorm(0),
+  fKstarParentPxCheck(0),fKstarParentPyCheck(0),fKstarParentPzCheck(0),fKstarDaughterParentAngleCheck(0),fKstarDaughterParentCosAngleCheck(0),fKstarDaughterDaughterAngleCheck(0),fKstarDaughterDaughterCosAngleCheck(0),fKstarDaughterPtotalCheck(0),fKstarDaughterPtotalNormCheck(0),
+  f2RhoParentPx(0),f2RhoParentPy(0),f2RhoParentPz(0),f2RhoDaughterParentAngle(0),f2RhoDaughterParentCosAngle(0),f2RhoDaughterDaughterAngle(0),f2RhoDaughterDaughterCosAngle(0),f2RhoDaughterPtotal(0),
+  f2RhoParentPxCheck(0),f2RhoParentPyCheck(0),f2RhoParentPzCheck(0),f2RhoDaughterParentAngleCheck(0),f2RhoDaughterParentCosAngleCheck(0),f2RhoDaughterDaughterAngleCheck(0),f2RhoDaughterDaughterCosAngleCheck(0),f2RhoDaughterPtotalCheck(0),
   fHistNeventsEtaC4KaonChannel(0),f4KaonPtVsMinvEtaC(0),f4KaonPtVsMinvKK(0),f4KVs2KMinv(0),f4KVs2KMinvSquared(0),
-  f2KstarEtaVsMinvEtaC(0),f1KstarEtaVsMinvEtaC(0),f0KstarEtaVsMinvEtaC(0),f2RhoEtaVsMinvEtaC(0),f4PionEtaVsMinvEtaC(0),f3PiPiEtaVsMinvEtaC(0),f4KaonEtaVsMinvEtaC(0),fEtaCEtaVsMinvK0sChannel(0),
+  f2KstarEtaVsMinvEtaC(0),f1KstarEtaVsMinvEtaC(0),f0KstarEtaVsMinvEtaC(0),f2RhoEtaVsMinvEtaC(0),f4PionEtaVsMinvEtaC(0),f3PiPiEtaVsMinvEtaC(0),f4KaonEtaVsMinvEtaC(0),fK0sEtaVsMinvEtaC(0),
+  f2KstarEtaVsMinvEtaC400MeVPtMax(0),f1KstarEtaVsMinvEtaC400MeVPtMax(0),f0KstarEtaVsMinvEtaC400MeVPtMax(0),f2RhoEtaVsMinvEtaC400MeVPtMax(0),f4PionEtaVsMinvEtaC400MeVPtMax(0),f3PiPiEtaVsMinvEtaC400MeVPtMax(0),f4KaonEtaVsMinvEtaC400MeVPtMax(0),fK0sEtaVsMinvEtaC400MeVPtMax(0),
+  f2KstarEtaVsMinvEtaC100MeVPtMax(0),f1KstarEtaVsMinvEtaC100MeVPtMax(0),f0KstarEtaVsMinvEtaC100MeVPtMax(0),f2RhoEtaVsMinvEtaC100MeVPtMax(0),f4PionEtaVsMinvEtaC100MeVPtMax(0),f3PiPiEtaVsMinvEtaC100MeVPtMax(0),f4KaonEtaVsMinvEtaC100MeVPtMax(0),fK0sEtaVsMinvEtaC100MeVPtMax(0),
+  f2KstarSumPzVsMinvEtaC(0),f1KstarSumPzVsMinvEtaC(0),f0KstarSumPzVsMinvEtaC(0),f2RhoSumPzVsMinvEtaC(0),f4PionSumPzVsMinvEtaC(0),f3PiPiSumPzVsMinvEtaC(0),f4KaonSumPzVsMinvEtaC(0),fK0sSumPzVsMinvEtaC(0),
+  f2KstarScalarSumP(0),f1KstarScalarSumP(0),f0KstarScalarSumP(0),f2RhoScalarSumP(0),f4PionScalarSumP(0),f3PiPiScalarSumP(0),f4KaonScalarSumP(0),fK0sScalarSumP(0),
+  f2KstarVectorSumPt(0),f1KstarVectorSumPt(0),f0KstarVectorSumPt(0),f2RhoVectorSumPt(0),f4PionVectorSumPt(0),f3PiPiVectorSumPt(0),f4KaonVectorSumPt(0),fK0sVectorSumPt(0),
   fListSystematics(0),fListJPsiLoose(0),fListJPsiTight(0),fListEtaCLoose(0),fListEtaCTight(0)
 
 {
@@ -159,7 +171,9 @@ AliAnalysisTaskUpcEtaC::AliAnalysisTaskUpcEtaC(const char *name)
   DefineOutput(2, TTree::Class());
   DefineOutput(3, TList::Class());
   DefineOutput(4, TList::Class());
-
+  DefineOutput(5, TList::Class());
+  DefineOutput(6, TList::Class());
+  DefineOutput(7, TList::Class());
 }//AliAnalysisTaskUpcEtaC
 
 //_____________________________________________________________________________
@@ -240,6 +254,18 @@ AliAnalysisTaskUpcEtaC::~AliAnalysisTaskUpcEtaC()
   if(fListHist){
      delete fListHist;
      fListHist = 0x0;
+  }
+  if(fListHistKstar){
+    delete fListHistKstar;
+    fListHistKstar = 0x0;
+  }
+  if(fListHist2Rho4Pion){
+    delete fListHist2Rho4Pion;
+    fListHist2Rho4Pion = 0x0;
+  }
+  if(fListHistK0s3PiPi4K){
+    delete fListHistK0s3PiPi4K;
+    fListHistK0s3PiPi4K = 0x0;
   }
 
 }//~AliAnalysisTaskUpcEtaC
@@ -535,101 +561,170 @@ void AliAnalysisTaskUpcEtaC::UserCreateOutputObjects()
   fListHist = new TList();
   fListHist ->SetOwner();
 
+  fListHistKstar = new TList();
+  fListHistKstar->SetOwner();
+
+  fListHist2Rho4Pion = new TList();
+  fListHist2Rho4Pion->SetOwner();
+
+  fListHistK0s3PiPi4K = new TList();
+  fListHistK0s3PiPi4K->SetOwner();
+
   cout << "##### Before fHistNevents... stuff is completed" << endl;
  
-  TString CutNameEtaCK0sChannel[13] = {"Analyzed","Triggered","Vertex cut","V0 decision","Neutron ZDC cut","1 or more K0s candidates",
+  TString CutNameEtaCK0sChannel[14] = {"Analyzed","Triggered","Vertex cut","V0 decision","Neutron ZDC cut","1 or more K0s candidates",
 				       "Four good tracks","KPi and two daughter Pions","qK<0 && Sum(qPi)<0 (bad)","qK>0 && Sum(qPi)>0 (bad)",
-				       "K-Pi+ && Opp sign daughters (good)","K+Pi- && Opp sign daughters","Total with correct charges"};
+				       "K-Pi+ && Opp sign daughters (good)","K+Pi- && Opp sign daughters","Total with correct charges","2+ tracks with pT>0.4"};
 
-  fHistNeventsEtaCK0sChannel = new TH1D("fHistNeventsEtaCK0sChannel","fHistNeventsEtaCK0sChannel",13,0.5,13.5);
-  for(Int_t i=0;i<13; i++) fHistNeventsEtaCK0sChannel->GetXaxis()->SetBinLabel(i+1,CutNameEtaCK0sChannel[i].Data());
-  fListHist->Add(fHistNeventsEtaCK0sChannel);
+  fHistNeventsEtaCK0sChannel = new TH1D("fHistNeventsEtaCK0sChannel","fHistNeventsEtaCK0sChannel",14,0.5,14.5);
+  for(Int_t i=0;i<14; i++) fHistNeventsEtaCK0sChannel->GetXaxis()->SetBinLabel(i+1,CutNameEtaCK0sChannel[i].Data());
+  fListHistK0s3PiPi4K->Add(fHistNeventsEtaCK0sChannel);
 
-  TString CutNameEtaC[15] = {"Analyzed","Triggered","Vertex cut","V0 decision","Neutron ZDC cut","Four good tracks",
+  TString CutNameEtaC[16] = {"Analyzed","Triggered","Vertex cut","V0 decision","Neutron ZDC cut","Four good tracks",
 			     "Two Kaons and Two Pions","Like sign kaons","Like sign pions","Like sign both","Opposite sign",
-			     "Pion and Kaon mass check","2Kstar events","1Kstar events","0Kstar events"};
+			     "Pion and Kaon mass check","2Kstar events","1Kstar events","0Kstar events","2+ tracks with pT>0.4"};
 
-  fHistNeventsEtaC = new TH1D("fHistNeventsEtaC","fHistNeventsEtaC",15,0.5,15.5);
-  for (Int_t i = 0; i<15; i++) fHistNeventsEtaC->GetXaxis()->SetBinLabel(i+1,CutNameEtaC[i].Data());
-  fListHist->Add(fHistNeventsEtaC);
+  fHistNeventsEtaC = new TH1D("fHistNeventsEtaC","fHistNeventsEtaC",16,0.5,16.5);
+  for (Int_t i = 0; i<16; i++) fHistNeventsEtaC->GetXaxis()->SetBinLabel(i+1,CutNameEtaC[i].Data());
+  fListHistKstar->Add(fHistNeventsEtaC);
 
-  TString CutNameEtaCRhoChannel[13] = {"Analyzed","Triggered","Vertex cut","V0 decision","Neutron ZDC cut","Four good tracks",
+  TString CutNameEtaCRhoChannel[15] = {"Analyzed","Triggered","Vertex cut","V0 decision","Neutron ZDC cut","Four good tracks",
 				       "Four Pions","non-zero net charge","zero net charge","no sets of #rho's","one set of #rho's",
-				       "two sets of #rho's","#eta_{C}->#rho#rho candidates"};
+				       "two sets of #rho's","#eta_{C}->#rho#rho candidates","2+ tracks with pT>0.4 rho0","2+ tracks with pT>0.4 4pi"};
 
-  fHistNeventsEtaCRhoChannel = new TH1D("fHistNeventsEtaCRhoChannel","fHistNeventsEtaCRhoChannel",13,0.5,13.5);
-  for (Int_t i = 0; i<13; i++) fHistNeventsEtaCRhoChannel->GetXaxis()->SetBinLabel(i+1,CutNameEtaCRhoChannel[i].Data());
-  fListHist->Add(fHistNeventsEtaCRhoChannel);
+  fHistNeventsEtaCRhoChannel = new TH1D("fHistNeventsEtaCRhoChannel","fHistNeventsEtaCRhoChannel",15,0.5,15.5);
+  for (Int_t i = 0; i<15; i++) fHistNeventsEtaCRhoChannel->GetXaxis()->SetBinLabel(i+1,CutNameEtaCRhoChannel[i].Data());
+  fListHist2Rho4Pion->Add(fHistNeventsEtaCRhoChannel);
 
   f2RhoPtVsMinvEtaC = new TH2D("f2RhoPtVsMinvEtaC","f2RhoPtVsMinvEtaC",1000, 0., 10.,1000, 0., 10.);
-  fListHist->Add(f2RhoPtVsMinvEtaC);
+  fListHist2Rho4Pion->Add(f2RhoPtVsMinvEtaC);
 
   f4PionPtVsMinvEtaC = new TH2D("f4PionPtVsMinvEtaC","f4PionPtVsMinvEtaC",1000, 0., 10.,1000, 0., 10.);
-  fListHist->Add(f4PionPtVsMinvEtaC);
+  fListHist2Rho4Pion->Add(f4PionPtVsMinvEtaC);
 
   f2RhoPtVsMinvRho = new TH2D("f2RhoPtVsMinvRho","f2RhoPtVsMinvRho",1000, 0., 10.,1000, 0., 10.);
-  fListHist->Add(f2RhoPtVsMinvRho);
+  fListHist2Rho4Pion->Add(f2RhoPtVsMinvRho);
 
   f4PionPtVsMinvRho = new TH2D("f4PionPtVsMinvRho","f4PionPtVsMinvRho",1000, 0., 10.,1000, 0., 10.);
-  fListHist->Add(f4PionPtVsMinvRho);
+  fListHist2Rho4Pion->Add(f4PionPtVsMinvRho);
   
 
   f2RhoPtVsMinvOtherRho = new TH2D("f2RhoPtVsMinvOtherRho","f2RhoPtVsMinvOtherRho",1000, 0., 10.,1000, 0., 10.);
-  fListHist->Add(f2RhoPtVsMinvOtherRho);
+  fListHist2Rho4Pion->Add(f2RhoPtVsMinvOtherRho);
 
   f2RhoPtVsMinvNonRhoPairs = new TH2D("f2RhoPtVsMinvNonRhoPairs","f2RhoPtVsMinvNonRhoPairs",1000, 0., 10.,1000, 0., 10.);
-  fListHist->Add(f2RhoPtVsMinvNonRhoPairs);
+  fListHist2Rho4Pion->Add(f2RhoPtVsMinvNonRhoPairs);
 
   f4PiVs2PiMinv = new TH2D("f4PiVs2PiMinv","f4PiVs2PiMinv",1000, 0., 10., 1000, 0., 10.);
-  fListHist->Add(f4PiVs2PiMinv);
+  fListHist2Rho4Pion->Add(f4PiVs2PiMinv);
 
   f4PiVs2PiMinvSquared = new TH2D("f4PiVs2PiMinvSquared","f4PiVs2PiMinvSquared",2500, 0., 25., 2500, 0., 25.);
-  fListHist->Add(f4PiVs2PiMinvSquared);
+  fListHist2Rho4Pion->Add(f4PiVs2PiMinvSquared);
+
+  f2RhoScalarSumP = new TH1D("f2RhoScalarSumP","f2RhoScalarSumP",1000, 0., 10.);
+  fListHist2Rho4Pion->Add(f2RhoScalarSumP);
+
+  f4PionScalarSumP = new TH1D("f4PionScalarSumP","f4PionScalarSumP",1000, 0., 10.);
+  fListHist2Rho4Pion->Add(f4PionScalarSumP);
+
+  f2RhoVectorSumPt = new TH1D("f2RhoVectorSumPt","f2RhoVectorSumPt",1000, 0., 1.);
+  fListHist2Rho4Pion->Add(f2RhoVectorSumPt);
+
+  f4PionVectorSumPt = new TH1D("f4PionVectorSumPt","f4PionVectorSumPt",1000, 0., 1.);
+  fListHist2Rho4Pion->Add(f4PionVectorSumPt);
 
   f2RhoEtaVsMinvEtaC = new TH2D("f2RhoEtaVsMinvEtaC","f2RhoEtaVsMinvEtaC",1000, 0., 10., 2000, -10., 10.);
-  fListHist->Add(f2RhoEtaVsMinvEtaC);
+  fListHist2Rho4Pion->Add(f2RhoEtaVsMinvEtaC);
 
   f4PionEtaVsMinvEtaC = new TH2D("f4PionEtaVsMinvEtaC","f4PionEtaVsMinvEtaC",1000, 0., 10., 2000, -10., 10.);
-  fListHist->Add(f4PionEtaVsMinvEtaC);
+  fListHist2Rho4Pion->Add(f4PionEtaVsMinvEtaC);
+
+  f2RhoEtaVsMinvEtaC400MeVPtMax = new TH2D("f2RhoEtaVsMinvEtaC400MeVPtMax","f2RhoEtaVsMinvEtaC400MeVPtMax",1000, 0., 10., 2000, -10., 10.);
+  fListHist2Rho4Pion->Add(f2RhoEtaVsMinvEtaC400MeVPtMax);
+
+  f4PionEtaVsMinvEtaC400MeVPtMax = new TH2D("f4PionEtaVsMinvEtaC400MeVPtMax","f4PionEtaVsMinvEtaC400MeVPtMax",1000, 0., 10., 2000, -10., 10.);
+  fListHist2Rho4Pion->Add(f4PionEtaVsMinvEtaC400MeVPtMax);
+
+  f2RhoEtaVsMinvEtaC100MeVPtMax = new TH2D("f2RhoEtaVsMinvEtaC100MeVPtMax","f2RhoEtaVsMinvEtaC100MeVPtMax",1000, 0., 10., 2000, -10., 10.);
+  fListHist2Rho4Pion->Add(f2RhoEtaVsMinvEtaC100MeVPtMax);
+
+  f4PionEtaVsMinvEtaC100MeVPtMax = new TH2D("f4PionEtaVsMinvEtaC100MeVPtMax","f4PionEtaVsMinvEtaC100MeVPtMax",1000, 0., 10., 2000, -10., 10.);
+  fListHist2Rho4Pion->Add(f4PionEtaVsMinvEtaC100MeVPtMax);
+
+  f2RhoSumPzVsMinvEtaC = new TH2D("f2RhoSumPzVsMinvEtaC","f2RhoSumPzVsMinvEtaC",1000, 0., 10., 2000, -10., 10.);
+  fListHist2Rho4Pion->Add(f2RhoSumPzVsMinvEtaC);
+
+  f4PionSumPzVsMinvEtaC = new TH2D("f4PionSumPzVsMinvEtaC","f4PionSumPzVsMinvEtaC",1000, 0., 10., 2000, -10., 10.);
+  fListHist2Rho4Pion->Add(f4PionSumPzVsMinvEtaC);
 
 
   //3PiPi channel
-  TString CutNameEtaC3PiPiChannel[9] = {"Analyzed","Triggered","Vertex cut","V0 decision","Neutron ZDC cut","Six good tracks",
-					"Six Pions","non-zero net charge","candidate (0 net charge)"};
+  TString CutNameEtaC3PiPiChannel[10] = {"Analyzed","Triggered","Vertex cut","V0 decision","Neutron ZDC cut","Six good tracks",
+					"Six Pions","non-zero net charge","candidate (0 net charge)","2+ tracks with pT>0.4"};
 
-  fHistNeventsEtaC3PiPiChannel = new TH1D("fHistNeventsEtaC3PiPiChannel","fHistNeventsEtaC3PiPiChannel",9,0.5,9.5);
-  for (Int_t i = 0; i<9; i++) fHistNeventsEtaC3PiPiChannel->GetXaxis()->SetBinLabel(i+1,CutNameEtaC3PiPiChannel[i].Data());
-  fListHist->Add(fHistNeventsEtaC3PiPiChannel);
+  fHistNeventsEtaC3PiPiChannel = new TH1D("fHistNeventsEtaC3PiPiChannel","fHistNeventsEtaC3PiPiChannel",10,0.5,10.5);
+  for (Int_t i = 0; i<10; i++) fHistNeventsEtaC3PiPiChannel->GetXaxis()->SetBinLabel(i+1,CutNameEtaC3PiPiChannel[i].Data());
+  fListHistK0s3PiPi4K->Add(fHistNeventsEtaC3PiPiChannel);
 
   
   f3PiPiPtVsMinvEtaC = new TH2D("f3PiPiPtVsMinvEtaC","f3PiPiPtVsMinvEtaC",1000, 0., 10.,1000, 0., 10.);
-  fListHist->Add(f3PiPiPtVsMinvEtaC);
+  fListHistK0s3PiPi4K->Add(f3PiPiPtVsMinvEtaC);
+
+  f3PiPiScalarSumP = new TH1D("f3PiPiScalarSumP","f3PiPiScalarSumP",1000, 0., 10.);
+  fListHistK0s3PiPi4K->Add(f3PiPiScalarSumP);
+
+  f3PiPiVectorSumPt = new TH1D("f3PiPiVectorSumPt","f3PiPiVectorSumP",1000, 0., 1.);
+  fListHistK0s3PiPi4K->Add(f3PiPiVectorSumPt);
 
   f3PiPiEtaVsMinvEtaC = new TH2D("f3PiPiEtaVsMinvEtaC","f3PiPiEtaVsMinvEtaC",1000, 0., 10., 2000, -10., 10.);
-  fListHist->Add(f3PiPiEtaVsMinvEtaC);
+  fListHistK0s3PiPi4K->Add(f3PiPiEtaVsMinvEtaC);
+
+  f3PiPiEtaVsMinvEtaC400MeVPtMax = new TH2D("f3PiPiEtaVsMinvEtaC400MeVPtMax","f3PiPiEtaVsMinvEtaC400MeVPtMax",1000, 0., 10., 2000, -10., 10.);
+  fListHistK0s3PiPi4K->Add(f3PiPiEtaVsMinvEtaC400MeVPtMax);
+
+  f3PiPiEtaVsMinvEtaC100MeVPtMax = new TH2D("f3PiPiEtaVsMinvEtaC100MeVPtMax","f3PiPiEtaVsMinvEtaC100MeVPtMax",1000, 0., 10., 2000, -10., 10.);
+  fListHistK0s3PiPi4K->Add(f3PiPiEtaVsMinvEtaC100MeVPtMax);
+
+  f3PiPiSumPzVsMinvEtaC = new TH2D("f3PiPiSumPzVsMinvEtaC","f3PiPiSumPzVsMinvEtaC",1000, 0., 10., 2000, -10., 10.);
+  fListHistK0s3PiPi4K->Add(f3PiPiSumPzVsMinvEtaC);
 
   //4 kaon channel
-  TString CutNameEtaC4KaonChannel[10] = {"Analyzed","Triggered","Vertex cut","V0 decision","Neutron ZDC cut","Four good tracks",
-					 "Four Kaons","non-zero net charge","zero net charge","#eta_{C} candidates"};
+  TString CutNameEtaC4KaonChannel[11] = {"Analyzed","Triggered","Vertex cut","V0 decision","Neutron ZDC cut","Four good tracks",
+					 "Four Kaons","non-zero net charge","zero net charge","#eta_{C} candidates","2+ tracks with pT>0.4"};
 
-  fHistNeventsEtaC4KaonChannel = new TH1D("fHistNeventsEtaC4KaonChannel","fHistNeventsEtaC4KaonChannel",10,0.5,10.5);
-  for (Int_t i = 0; i<10; i++) fHistNeventsEtaC4KaonChannel->GetXaxis()->SetBinLabel(i+1,CutNameEtaC4KaonChannel[i].Data());
-  fListHist->Add(fHistNeventsEtaC4KaonChannel);
+  fHistNeventsEtaC4KaonChannel = new TH1D("fHistNeventsEtaC4KaonChannel","fHistNeventsEtaC4KaonChannel",11,0.5,11.5);
+  for (Int_t i = 0; i<11; i++) fHistNeventsEtaC4KaonChannel->GetXaxis()->SetBinLabel(i+1,CutNameEtaC4KaonChannel[i].Data());
+  fListHistK0s3PiPi4K->Add(fHistNeventsEtaC4KaonChannel);
 
   f4KaonPtVsMinvEtaC = new TH2D("f4KaonPtVsMinvEtaC","f4KaonPtVsMinvEtaC",1000, 0., 10., 1000, 0., 10.);
-  fListHist->Add(f4KaonPtVsMinvEtaC);
+  fListHistK0s3PiPi4K->Add(f4KaonPtVsMinvEtaC);
 
   f4KaonPtVsMinvKK = new TH2D("f4KaonPtVsMinvKK","f4KaonPtVsMinvKK",1000, 0., 10., 1000, 0., 10.);
-  fListHist->Add(f4KaonPtVsMinvKK);
+  fListHistK0s3PiPi4K->Add(f4KaonPtVsMinvKK);
 
   f4KVs2KMinv = new TH2D("f4KVs2KMinv","f4KVs2KMinv",1000, 0., 10., 1000, 0., 10.);
-  fListHist->Add(f4KVs2KMinv);
+  fListHistK0s3PiPi4K->Add(f4KVs2KMinv);
 
   f4KVs2KMinvSquared = new TH2D("f4KVs2KMinvSquared","f4KVs2KMinvSquared",2500, 0., 25., 2500, 0., 25.);
-  fListHist->Add(f4KVs2KMinvSquared);
+  fListHistK0s3PiPi4K->Add(f4KVs2KMinvSquared);
+
+  f4KaonScalarSumP = new TH1D("f4KaonScalarSumP","f4KaonScalarSumP",1000, 0., 10.);
+  fListHistK0s3PiPi4K->Add(f4KaonScalarSumP);
+
+  f4KaonVectorSumPt = new TH1D("f4KaonVectorSumPt","f4KaonVectorSumPt",1000, 0., 1.);
+  fListHistK0s3PiPi4K->Add(f4KaonVectorSumPt);
 
   f4KaonEtaVsMinvEtaC = new TH2D("f4KaonEtaVsMinvEtaC","f4KaonEtaVsMinvEtaC",1000, 0., 10., 2000, -10., 10.);
-  fListHist->Add(f4KaonEtaVsMinvEtaC);
+  fListHistK0s3PiPi4K->Add(f4KaonEtaVsMinvEtaC);
+
+  f4KaonEtaVsMinvEtaC400MeVPtMax = new TH2D("f4KaonEtaVsMinvEtaC400MeVPtMax","f4KaonEtaVsMinvEtaC400MeVPtMax",1000, 0., 10., 2000, -10., 10.);
+  fListHistK0s3PiPi4K->Add(f4KaonEtaVsMinvEtaC400MeVPtMax);
+
+  f4KaonEtaVsMinvEtaC100MeVPtMax = new TH2D("f4KaonEtaVsMinvEtaC100MeVPtMax","f4KaonEtaVsMinvEtaC100MeVPtMax",1000, 0., 10., 2000, -10., 10.);
+  fListHistK0s3PiPi4K->Add(f4KaonEtaVsMinvEtaC100MeVPtMax);
+
+  f4KaonSumPzVsMinvEtaC = new TH2D("f4KaonSumPzVsMinvEtaC","f4KaonSumPzVsMinvEtaC",1000, 0., 10., 2000, -10., 10.);
+  fListHistK0s3PiPi4K->Add(f4KaonSumPzVsMinvEtaC);
 
   //f3PiPi3RhoPtVsMinvEtaC = new TH2D("f3PiPi3RhoPtVsMinvEtaC","f3PiPi3RhoPtVsMinvEtaC",1000, 0., 10.,1000, 0., 10.);
   //fListHist->Add(f3PiPi3RhoPtVsMinvEtaC);
@@ -645,167 +740,205 @@ void AliAnalysisTaskUpcEtaC::UserCreateOutputObjects()
 
   //Helicity Cut histograms
   fKstarParentPx = new TH1D("fKstarParentPx","Parent p_{x} in rest frame (k*(892) channels",200,-1.,1.);
-  fListHist->Add(fKstarParentPx);
+  fListHistKstar->Add(fKstarParentPx);
   fKstarParentPy = new TH1D("fKstarParentPy","Parent p_{y} in rest frame (k*(892) channels",200,-1.,1.);
-  fListHist->Add(fKstarParentPy);
+  fListHistKstar->Add(fKstarParentPy);
   fKstarParentPz = new TH1D("fKstarParentPz","Parent p_{z} in rest frame (k*(892) channels",200,-1.,1.);
-  fListHist->Add(fKstarParentPz);
+  fListHistKstar->Add(fKstarParentPz);
   fKstarDaughterParentAngle = new TH1D("fKstarDaughterParentAngle","Angle between daughter and parent",3800,-190.,190.);
-  fListHist->Add(fKstarDaughterParentAngle);
+  fListHistKstar->Add(fKstarDaughterParentAngle);
+  fKstarDaughterParentCosAngle = new TH1D("fKstarDaughterParentCosAngle","Cosine of angle between daughter and parent",2200,-1.1,1.1);
+  fListHistKstar->Add(fKstarDaughterParentCosAngle);
   fKstarDaughterDaughterAngle = new TH1D("fKstarDaughterDaughterAngle","Angle between the two daughters",2000,-10.,190.);
-  fListHist->Add(fKstarDaughterDaughterAngle);
+  fListHistKstar->Add(fKstarDaughterDaughterAngle);
   fKstarDaughterDaughterCosAngle = new TH1D("fKstarDaughterDaughterCosAngle","Cos(Angle) between two daughters",220,-1.1,1.1);
-  fListHist->Add(fKstarDaughterDaughterCosAngle);
+  fListHistKstar->Add(fKstarDaughterDaughterCosAngle);
   fKstarDaughterPtotal = new TH1D("fKstarDaughterPtotal","Momentum sum of two daughters",1000,-5.,5.);
-  fListHist->Add(fKstarDaughterPtotal);
+  fListHistKstar->Add(fKstarDaughterPtotal);
   fKstarDaughterPtotalNorm = new TH1D("fKstarDaughterPtotalNorm","Normalized momentum sum of two daughters",1000,-5.,5.);
-  fListHist->Add(fKstarDaughterPtotalNorm);
+  fListHistKstar->Add(fKstarDaughterPtotalNorm);
 
  //Helicity Cut histograms - Check histos
   fKstarParentPxCheck = new TH1D("fKstarParentPxCheck","Parent p_{x} in rest frame (k*(892) channels (cuts passed)",200,-1.,1.);
-  fListHist->Add(fKstarParentPxCheck);
+  fListHistKstar->Add(fKstarParentPxCheck);
   fKstarParentPyCheck = new TH1D("fKstarParentPyCheck","Parent p_{y} in rest frame (k*(892) channels (cuts passed)",200,-1.,1.);
-  fListHist->Add(fKstarParentPyCheck);
+  fListHistKstar->Add(fKstarParentPyCheck);
   fKstarParentPzCheck = new TH1D("fKstarParentPzCheck","Parent p_{z} in rest frame (k*(892) channels (cuts passed)",200,-1.,1.);
-  fListHist->Add(fKstarParentPzCheck);
+  fListHistKstar->Add(fKstarParentPzCheck);
   fKstarDaughterParentAngleCheck = new TH1D("fKstarDaughterParentAngleCheck","Angle between daughter and parent (cuts passed)",3800,-190.,190.);
-  fListHist->Add(fKstarDaughterParentAngleCheck);
+  fListHistKstar->Add(fKstarDaughterParentAngleCheck);
+  fKstarDaughterParentCosAngleCheck = new TH1D("fKstarDaughterParentCosAngleCheck","Cosine of angle between daughter and parent (cuts passed)",2200,-1.1,1.1);
+  fListHistKstar->Add(fKstarDaughterParentCosAngleCheck);
   fKstarDaughterDaughterAngleCheck = new TH1D("fKstarDaughterDaughterAngleCheck","Angle between the two daughters (cuts passed)",2000,-10.,190.);
-  fListHist->Add(fKstarDaughterDaughterAngleCheck);
+  fListHistKstar->Add(fKstarDaughterDaughterAngleCheck);
   fKstarDaughterDaughterCosAngleCheck = new TH1D("fKstarDaughterDaughterCosAngleCheck","Cos(Angle) between two daughters (cuts passed)",220,-1.1,1.1);
-  fListHist->Add(fKstarDaughterDaughterCosAngleCheck);
+  fListHistKstar->Add(fKstarDaughterDaughterCosAngleCheck);
   fKstarDaughterPtotalCheck = new TH1D("fKstarDaughterPtotalCheck","Momentum sum of two daughters (cuts passed)",1000,-5.,5.);
-  fListHist->Add(fKstarDaughterPtotalCheck);
+  fListHistKstar->Add(fKstarDaughterPtotalCheck);
   fKstarDaughterPtotalNormCheck = new TH1D("fKstarDaughterPtotalNormCheck","Normalized momentum sum of two daughters (cuts passed)",1000,-5.,5.);
-  fListHist->Add(fKstarDaughterPtotalNormCheck);
+  fListHistKstar->Add(fKstarDaughterPtotalNormCheck);
 
 
   //2Rho0 channel Helicity Cut histograms
   f2RhoParentPx = new TH1D("f2RhoParentPx","Parent p_{x} in rest frame (2#rho^{0} channel",200,-1.,1.);
-  fListHist->Add(f2RhoParentPx);
+  fListHist2Rho4Pion->Add(f2RhoParentPx);
   f2RhoParentPy = new TH1D("f2RhoParentPy","Parent p_{y} in rest frame (2#rho^{0} channel",200,-1.,1.);
-  fListHist->Add(f2RhoParentPy);
+  fListHist2Rho4Pion->Add(f2RhoParentPy);
   f2RhoParentPz = new TH1D("f2RhoParentPz","Parent p_{z} in rest frame (2#rho^{0} channel",200,-1.,1.);
-  fListHist->Add(f2RhoParentPz);
+  fListHist2Rho4Pion->Add(f2RhoParentPz);
   f2RhoDaughterParentAngle = new TH1D("f2RhoDaughterParentAngle","Angle between daughter and parent",3800,-190.,190.);
-  fListHist->Add(f2RhoDaughterParentAngle);
+  fListHist2Rho4Pion->Add(f2RhoDaughterParentAngle);
+  f2RhoDaughterParentCosAngle = new TH1D("f2RhoDaughterParentCosAngle","Cosine of angle between daughter and parent",2200,-1.1,1.1);
+  fListHist2Rho4Pion->Add(f2RhoDaughterParentCosAngle);
   f2RhoDaughterDaughterAngle = new TH1D("f2RhoDaughterDaughterAngle","Angle between the two daughters",2000,-10.,190.);
-  fListHist->Add(f2RhoDaughterDaughterAngle);
+  fListHist2Rho4Pion->Add(f2RhoDaughterDaughterAngle);
   f2RhoDaughterDaughterCosAngle = new TH1D("f2RhoDaughterDaughterCosAngle","Cos(Angle) between two daughters",220,-1.1,1.1);
-  fListHist->Add(f2RhoDaughterDaughterCosAngle);
+  fListHist2Rho4Pion->Add(f2RhoDaughterDaughterCosAngle);
   f2RhoDaughterPtotal = new TH1D("f2RhoDaughterPtotal","Momentum sum of two daughters",1000,-5.,5.);
-  fListHist->Add(f2RhoDaughterPtotal);
+  fListHist2Rho4Pion->Add(f2RhoDaughterPtotal);
 
  //2Rho0 channel Helicity Cut histograms - Check histos
   f2RhoParentPxCheck = new TH1D("f2RhoParentPxCheck","Parent p_{x} in rest frame (2#rho^{0} channel (cuts passed)",200,-1.,1.);
-  fListHist->Add(f2RhoParentPxCheck);
+  fListHist2Rho4Pion->Add(f2RhoParentPxCheck);
   f2RhoParentPyCheck = new TH1D("f2RhoParentPyCheck","Parent p_{y} in rest frame (2#rho^{0} channel (cuts passed)",200,-1.,1.);
-  fListHist->Add(f2RhoParentPyCheck);
+  fListHist2Rho4Pion->Add(f2RhoParentPyCheck);
   f2RhoParentPzCheck = new TH1D("f2RhoParentPzCheck","Parent p_{z} in rest frame (2#rho^{0} channel (cuts passed)",200,-1.,1.);
-  fListHist->Add(f2RhoParentPzCheck);
+  fListHist2Rho4Pion->Add(f2RhoParentPzCheck);
   f2RhoDaughterParentAngleCheck = new TH1D("f2RhoDaughterParentAngleCheck","Angle between daughter and parent (cuts passed)",3800,-190.,190.);
-  fListHist->Add(f2RhoDaughterParentAngleCheck);
+  fListHist2Rho4Pion->Add(f2RhoDaughterParentAngleCheck);
+  f2RhoDaughterParentCosAngleCheck = new TH1D("f2RhoDaughterParentCosAngleCheck","Cosine of angle between daughter and parent (cuts passed)",2200,-1.1,1.1);
+  fListHist2Rho4Pion->Add(f2RhoDaughterParentCosAngleCheck);
   f2RhoDaughterDaughterAngleCheck = new TH1D("f2RhoDaughterDaughterAngleCheck","Angle between the two daughters (cuts passed)",2000,-10.,190.);
-  fListHist->Add(f2RhoDaughterDaughterAngleCheck);
+  fListHist2Rho4Pion->Add(f2RhoDaughterDaughterAngleCheck);
   f2RhoDaughterDaughterCosAngleCheck = new TH1D("f2RhoDaughterDaughterCosAngleCheck","Cos(Angle) between two daughters (cuts passed)",220,-1.1,1.1);
-  fListHist->Add(f2RhoDaughterDaughterCosAngleCheck);
+  fListHist2Rho4Pion->Add(f2RhoDaughterDaughterCosAngleCheck);
   f2RhoDaughterPtotalCheck = new TH1D("f2RhoDaughterPtotalCheck","Momentum sum of two daughters (cuts passed)",1000,-5.,5.);
-  fListHist->Add(f2RhoDaughterPtotalCheck);
+  fListHist2Rho4Pion->Add(f2RhoDaughterPtotalCheck);
 
 
   fMPiKvsMPiK = new TH2D("fMPiKvsMPiK","fMPiKvsMPiK",4000, 0.0, 40., 4000, 0.0, 40.);
-  fListHist->Add(fMPiKvsMPiK);
+  fListHistKstar->Add(fMPiKvsMPiK);
 
   f2KstarPtPiPlus = new TH1D("f2KstarPtPiPlus","f2KstarPtPiPlus",300, 0., 3.);
-  fListHist->Add(f2KstarPtPiPlus);
+  fListHistKstar->Add(f2KstarPtPiPlus);
   f2KstarPtPiMinus = new TH1D("f2KstarPtPiMinus","f2KstarPtPiMinus",300, 0., 3.);
-  fListHist->Add(f2KstarPtPiMinus);
+  fListHistKstar->Add(f2KstarPtPiMinus);
   f2KstarPtKPlus = new TH1D("f2KstarPtKPlus","f2KstarPtKPlus",300, 0., 3.);
-  fListHist->Add(f2KstarPtKPlus);
-  f2KstarPtKMinus = new TH1D("2KstarPtKMinus","f2KstarPtKminus",300, 0., 3.);
-  fListHist->Add(f2KstarPtKMinus);
+  fListHistKstar->Add(f2KstarPtKPlus);
+  f2KstarPtKMinus = new TH1D("f2KstarPtKMinus","f2KstarPtKminus",300, 0., 3.);
+  fListHistKstar->Add(f2KstarPtKMinus);
   f2KstarTPCsignalPion = new TH2D("f2KstarTPCsignalPion","f2KstarTPCsignalPion",600, 0., 300., 600, 0., 300.);
-  fListHist->Add(f2KstarTPCsignalPion);
+  fListHistKstar->Add(f2KstarTPCsignalPion);
   f2KstarTPCsignalKaon = new TH2D("f2KstarTPCsignalKaon","f2KstarTPCsignalKaon",600, 0., 300., 600, 0., 300.);
-  fListHist->Add(f2KstarTPCsignalKaon);
+  fListHistKstar->Add(f2KstarTPCsignalKaon);
   f2KstarDedxVsPtPion = new TH2D("f2KstarDedxVsPtPion","f2KstarDedxVsPtPion",1000,0.,10., 3000,0.,300.);
-  fListHist->Add(f2KstarDedxVsPtPion);
+  fListHistKstar->Add(f2KstarDedxVsPtPion);
   f2KstarDedxVsPtKaon = new TH2D("f2KstarDedxVsPtKaon","f2KstarDedxVsPtKaon",1000,0.,10., 3000,0.,300.);
-  fListHist->Add(f2KstarDedxVsPtKaon);
+  fListHistKstar->Add(f2KstarDedxVsPtKaon);
   f2KstarPtVsMinvFirstKstar = new TH2D("f2KstarPtVsMinvFirstKstar","f2KstarPtVsMinvFirstKstar",1000, 0., 10., 1000, 0., 10.);
-  fListHist->Add(f2KstarPtVsMinvFirstKstar);
+  fListHistKstar->Add(f2KstarPtVsMinvFirstKstar);
   f2KstarPtVsMinvSecondKstar = new TH2D("f2KstarPtVsMinvSecondKstar","f2KstarPtVsMinvSecondKstar",1000, 0., 10., 1000, 0., 10.);
-  fListHist->Add(f2KstarPtVsMinvSecondKstar);
+  fListHistKstar->Add(f2KstarPtVsMinvSecondKstar);
   //f2KstarMinvFirstKstar = new TH1D("f2KstarMinvFirstKstar","f2KstarMinvFirstKstar",200, 0., 2.);
   //fListHist->Add(f2KstarMinvFirstKstar);
   //f2KstarMinvSecondKstar = new TH1D("f2KstarMinvSecondKstar","f2KstarMinvSecondKstar",200, 0., 2.);
   //fListHist->Add(f2KstarMinvSecondKstar);
   f2KstarPtVsMinvEtaC = new TH2D("f2KstarPtVsMinvEtaC","f2KstarPtVsMinvEtaC",1000, 0., 10.,1000, 0., 10.);
-  fListHist->Add(f2KstarPtVsMinvEtaC);
+  fListHistKstar->Add(f2KstarPtVsMinvEtaC);
   f2KstarEtaVsMinvEtaC = new TH2D("f2KstarEtaVsMinvEtaC","f2KstarEtaVsMinvEtaC",1000, 0., 10., 2000, -10., 10.);
-  fListHist->Add(f2KstarEtaVsMinvEtaC);
+  fListHistKstar->Add(f2KstarEtaVsMinvEtaC);
+  f2KstarEtaVsMinvEtaC400MeVPtMax = new TH2D("f2KstarEtaVsMinvEtaC400MeVPtMax","f2KstarEtaVsMinvEtaC400MeVPtMax",1000, 0., 10., 2000, -10., 10.);
+  fListHistKstar->Add(f2KstarEtaVsMinvEtaC400MeVPtMax);
+  f2KstarEtaVsMinvEtaC100MeVPtMax = new TH2D("f2KstarEtaVsMinvEtaC100MeVPtMax","f2KstarEtaVsMinvEtaC100MeVPtMax",1000, 0., 10., 2000, -10., 10.);
+  fListHistKstar->Add(f2KstarEtaVsMinvEtaC100MeVPtMax);
+  f2KstarSumPzVsMinvEtaC = new TH2D("f2KstarSumPzVsMinvEtaC","f2KstarSumPzVsMinvEtaC",1000, 0., 10., 2000, -10., 10.);
+  fListHistKstar->Add(f2KstarSumPzVsMinvEtaC);
+  f2KstarScalarSumP = new TH1D("f2KstarScalarSumP","f2KstarScalarSumP",1000, 0., 10.);
+  fListHistKstar->Add(f2KstarScalarSumP);
+  f2KstarVectorSumPt = new TH1D("f2KstarVectorSumPt","f2KstarVectorSumPt",1000, 0., 1.);
+  fListHistKstar->Add(f2KstarVectorSumPt);
   //f2KstarMinvEtaC = new TH1D("f2KstarMinvEtaC","f2KstarMinvEtaC",200, 2., 4.);
   //fListHist->Add(f2KstarMinvEtaC);
 
   f1KstarPtPiPlus = new TH1D("f1KstarPtPiPlus","f1KstarPtPiPlus",300,0.,3.);
-  fListHist->Add(f1KstarPtPiPlus);
+  fListHistKstar->Add(f1KstarPtPiPlus);
   f1KstarPtPiMinus = new TH1D("f1KstarPtPiMinus","f1KstarPtPiMinus",300,0.,3.);
-  fListHist->Add(f1KstarPtPiMinus);
+  fListHistKstar->Add(f1KstarPtPiMinus);
   f1KstarPtKPlus = new TH1D("f1KstarPtKPlus","f1KstarPtKPlus",300,0.,3.);
-  fListHist->Add(f1KstarPtKPlus);
+  fListHistKstar->Add(f1KstarPtKPlus);
   f1KstarPtKMinus = new TH1D("f1KstarPtKMinus","f1KstarPtKMinus",300,0.,3.);
-  fListHist->Add(f1KstarPtKMinus);
+  fListHistKstar->Add(f1KstarPtKMinus);
   f1KstarTPCsignalPion = new TH2D("f1KstarTPCsignalPion","f1KstarTPCsignalPion",600, 0., 300., 600, 0., 300.);
-  fListHist->Add(f1KstarTPCsignalPion);
+  fListHistKstar->Add(f1KstarTPCsignalPion);
   f1KstarTPCsignalKaon = new TH2D("f1KstarTPCsignalKaon","f1KstarTPCsignalKaon",600, 0., 300., 600, 0., 300.);
-  fListHist->Add(f1KstarTPCsignalKaon);
+  fListHistKstar->Add(f1KstarTPCsignalKaon);
   f1KstarDedxVsPtPion = new TH2D("f1KstarDedxVsPtPion","f1KstarDedxVsPtPion",1000,0.,10., 3000,0.,300.);
-  fListHist->Add(f1KstarDedxVsPtPion);
+  fListHistKstar->Add(f1KstarDedxVsPtPion);
   f1KstarDedxVsPtKaon = new TH2D("f1KstarDedxVsPtKaon","f1KstarDedxVsPtKaon",1000,0.,10., 3000,0.,300.);
-  fListHist->Add(f1KstarDedxVsPtKaon);
+  fListHistKstar->Add(f1KstarDedxVsPtKaon);
   f1KstarPtVsMinvKstar = new TH2D("f1KstarPtVsMinvKstar","f1KstarPtVsMinvKstar",1000, 0., 10.,1000, 0., 10.);
-  fListHist->Add(f1KstarPtVsMinvKstar);
+  fListHistKstar->Add(f1KstarPtVsMinvKstar);
   f1KstarPtVsMinvOtherPiKcombo = new TH2D("f1KstarPtVsMinvOtherPiKcombo","f1KstarPtVsMinvOtherPiKcombo", 1000, 0., 10., 1000, 0., 10.);
-  fListHist->Add(f1KstarPtVsMinvOtherPiKcombo);
+  fListHistKstar->Add(f1KstarPtVsMinvOtherPiKcombo);
   //f1KstarMinvKstar = new TH1D("f1KstarMinvKstar","f1KstarMinvKstar",200, 0., 2.);
   //fListHist->Add(f1KstarMinvKstar);
   //f1KstarMinvOtherPiKcombo = new TH1D("f1KstarMinvOtherPiKcombo","f1KstarMinvOtherPiKcombo",200, 0., 2.);
   //fListHist->Add(f1KstarMinvOtherPiKcombo);
   f1KstarPtVsMinvEtaC = new TH2D("f1KstarPtVsMinvEtaC","f1KstarPtVsMinvEtaC",1000, 0., 10., 1000, 0., 10.);
-  fListHist->Add(f1KstarPtVsMinvEtaC);
+  fListHistKstar->Add(f1KstarPtVsMinvEtaC);
   f1KstarEtaVsMinvEtaC = new TH2D("f1KstarEtaVsMinvEtaC","f1KstarEtaVsMinvEtaC",1000, 0., 10., 2000, -10., 10.);
-  fListHist->Add(f1KstarEtaVsMinvEtaC);
+  fListHistKstar->Add(f1KstarEtaVsMinvEtaC);
+  f1KstarEtaVsMinvEtaC400MeVPtMax = new TH2D("f1KstarEtaVsMinvEtaC400MeVPtMax","f1KstarEtaVsMinvEtaC400MeVPtMax",1000, 0., 10., 2000, -10., 10.);
+  fListHistKstar->Add(f1KstarEtaVsMinvEtaC400MeVPtMax);
+  f1KstarEtaVsMinvEtaC100MeVPtMax = new TH2D("f1KstarEtaVsMinvEtaC100MeVPtMax","f1KstarEtaVsMinvEtaC100MeVPtMax",1000, 0., 10., 2000, -10., 10.);
+  fListHistKstar->Add(f1KstarEtaVsMinvEtaC100MeVPtMax);
+  f1KstarSumPzVsMinvEtaC = new TH2D("f1KstarSumPzVsMinvEtaC","f1KstarSumPzVsMinvEtaC",1000, 0., 10., 2000, -10., 10.);
+  fListHistKstar->Add(f1KstarSumPzVsMinvEtaC);
+  f1KstarScalarSumP = new TH1D("f1KstarScalarSumP","f1KstarScalarSumP",1000, 0., 10.);
+  fListHistKstar->Add(f1KstarScalarSumP);
+  f1KstarVectorSumPt = new TH1D("f1KstarVectorSumPt","f1KstarVectorSumPt",1000, 0., 1.);
+  fListHistKstar->Add(f1KstarVectorSumPt);
   //f1KstarMinvEtaC = new TH1D("f1KstarMinvEtaC","f1KstarMinvEtaC",200, 2., 4.);
   //fListHist->Add(f1KstarMinvEtaC);
 
   f0KstarPtPiPlus = new TH1D("f0KstarPtPiPlus","f0KstarPtPiPlus",300,0.,3.);  
-  fListHist->Add(f0KstarPtPiPlus);
+  fListHistKstar->Add(f0KstarPtPiPlus);
   f0KstarPtPiMinus = new TH1D("f0KstarPtPiMinus","fK0starPtPiMinus",300,0.,3.);
-  fListHist->Add(f0KstarPtPiMinus);
+  fListHistKstar->Add(f0KstarPtPiMinus);
   f0KstarPtKPlus = new TH1D("f0KstarPtKPlus","f0KstarPtKPlus",300,0.,3.);
-  fListHist->Add(f0KstarPtKPlus);
+  fListHistKstar->Add(f0KstarPtKPlus);
   f0KstarPtKMinus = new TH1D("f0KstarPtKMinus","f0KstarPtKMinus",300,0.,3.);
-  fListHist->Add(f0KstarPtKMinus);
+  fListHistKstar->Add(f0KstarPtKMinus);
   f0KstarTPCsignalPion = new TH2D("f0KstarTPCsignalPion","f0KstarTPCsignalPion",600, 0., 300., 600, 0., 300.);
-  fListHist->Add(f0KstarTPCsignalPion);
+  fListHistKstar->Add(f0KstarTPCsignalPion);
   f0KstarTPCsignalKaon = new TH2D("f0KstarTPCsignalKaon","f0KstarTPCsignalKaon",600, 0., 300., 600, 0., 300.);
-  fListHist->Add(f0KstarTPCsignalKaon);
+  fListHistKstar->Add(f0KstarTPCsignalKaon);
   f0KstarDedxVsPtPion = new TH2D("f0KstarDedxVsPtPion","f0KstarDedxVsPtPion",1000,0.,10., 3000,0.,300.);
-  fListHist->Add(f0KstarDedxVsPtPion);
+  fListHistKstar->Add(f0KstarDedxVsPtPion);
   f0KstarDedxVsPtKaon = new TH2D("f0KstarDedxVsPtKaon","f0KstarDedxVsPtKaon",1000,0.,10., 3000,0.,300.);
-  fListHist->Add(f0KstarDedxVsPtKaon);
+  fListHistKstar->Add(f0KstarDedxVsPtKaon);
   f0KstarPtVsMinvFirstPiKcombo = new TH2D("f0KstarPtVsMinvFirstPiKcombo","f0KstarPtVsMinvFirstPiKcombo",1000, 0., 10., 1000, 0., 10.);
-  fListHist->Add(f0KstarPtVsMinvFirstPiKcombo);
+  fListHistKstar->Add(f0KstarPtVsMinvFirstPiKcombo);
   f0KstarPtVsMinvSecondPiKcombo = new TH2D("f0KstarPtVsMinvSecondPiKcombo","f0KstarPtVsMinvSecondPiKcombo",1000, 0., 10., 1000, 0., 10.);
-  fListHist->Add(f0KstarPtVsMinvSecondPiKcombo);
+  fListHistKstar->Add(f0KstarPtVsMinvSecondPiKcombo);
   //f0KstarMinvFirstPiKcombo = new TH1D("f0KstarMinvFirstPiKcombo","f0KstarMinvFirstPiKcombo",200, 0., 2.);
   //fListHist->Add(f0KstarMinvFirstPiKcombo);
   //f0KstarPtVsMinvSecondPiKcombo = new TH1D("f0KstarMinvSecondPiKcombo","f0KstarMinvSecondPiKcombo",200, 0., 2.);
   //fListHist->Add(f0KstarMinvSecondPiKcombo);
   f0KstarPtVsMinvEtaC = new TH2D("f0KstarPtVsMinvEtaC","f0KstarPtVsMinvEtaC",1000, 0., 10., 1000, 0., 10.);
-  fListHist->Add(f0KstarPtVsMinvEtaC);
+  fListHistKstar->Add(f0KstarPtVsMinvEtaC);
   f0KstarEtaVsMinvEtaC = new TH2D("f0KstarEtaVsMinvEtaC","f0KstarEtaVsMinvEtaC",1000, 0., 10., 2000, -10., 10.);
-  fListHist->Add(f0KstarEtaVsMinvEtaC);
+  fListHistKstar->Add(f0KstarEtaVsMinvEtaC);
+  f0KstarEtaVsMinvEtaC400MeVPtMax = new TH2D("f0KstarEtaVsMinvEtaC400MeVPtMax","f0KstarEtaVsMinvEtaC400MeVPtMax",1000, 0., 10., 2000, -10., 10.);
+  fListHistKstar->Add(f0KstarEtaVsMinvEtaC400MeVPtMax);
+  f0KstarEtaVsMinvEtaC100MeVPtMax = new TH2D("f0KstarEtaVsMinvEtaC100MeVPtMax","f0KstarEtaVsMinvEtaC100MeVPtMax",1000, 0., 10., 2000, -10., 10.);
+  fListHistKstar->Add(f0KstarEtaVsMinvEtaC100MeVPtMax);
+  f0KstarSumPzVsMinvEtaC = new TH2D("f0KstarSumPzVsMinvEtaC","f0KstarSumPzVsMinvEtaC",1000, 0., 10., 2000, -10., 10.);
+  fListHistKstar->Add(f0KstarSumPzVsMinvEtaC);
+  f0KstarScalarSumP = new TH1D("f0KstarScalarSumP","f0KstarScalarSumP",1000, 0., 10.);
+  fListHistKstar->Add(f0KstarScalarSumP);
+  f0KstarVectorSumPt = new TH1D("f0KstarVectorSumPt","f0KstarVectorSumPt",1000, 0., 1.);
+  fListHistKstar->Add(f0KstarVectorSumPt);
   //f0KstarMinvEtaC = new TH1D("f0KstarMinvEtaC","f0KstarMinvEtaC",200, 2., 4.);
   //fListHist->Add(f0KstarMinvEtaC);
 
@@ -857,35 +990,45 @@ void AliAnalysisTaskUpcEtaC::UserCreateOutputObjects()
   */
 
   fHistK0sCandidatesPerEvent = new TH1D("fHistK0sCandidatesPerEvent","fHistK0sCandidatesPerEvent",10,0.,10.);
-  fListHist->Add(fHistK0sCandidatesPerEvent);
+  fListHistK0s3PiPi4K->Add(fHistK0sCandidatesPerEvent);
   fK0sPosDaughterPt = new TH1D("fK0sPosDaughterPt","fK0sPosDaughterPt",1000, 0., 10.);
-  fListHist->Add(fK0sPosDaughterPt);
+  fListHistK0s3PiPi4K->Add(fK0sPosDaughterPt);
   fK0sNegDaughterPt = new TH1D("fK0sNegDaughterPt","fK0sNegDaughterPt",1000, 0., 10.);
-  fListHist->Add(fK0sNegDaughterPt);
+  fListHistK0s3PiPi4K->Add(fK0sNegDaughterPt);
   fK0sPosVsNegDaughterPt = new TH2D("fK0sPosVsNegDaughterPt","fK0sPosVsNegDaughterPt",1000, 0., 10.,100, 0., 10.);
-  fListHist->Add(fK0sPosVsNegDaughterPt);
-  fPionK0sChannelPt = new TH1D("fPionK0sChannelPt","fPionK0sChannelPt",1000, 0., 10.);
-  fListHist->Add(fPionK0sChannelPt);
-  fKaonK0sChannelPt = new TH1D("fKaonK0sChannelPt","fKaonK0sChannelPt",1000, 0., 10.);
-  fListHist->Add(fKaonK0sChannelPt);
-  fK0sPtVsMinv = new TH2D("fK0sPtVsMinv","fK0sPtVsMinv",1000, 0., 10., 1000, 0., 10.);
-  fListHist->Add(fK0sPtVsMinv);
+  fListHistK0s3PiPi4K->Add(fK0sPosVsNegDaughterPt);
+  fK0sPionPt = new TH1D("fK0sPionPt","fK0sPionPt",1000, 0., 10.);
+  fListHistK0s3PiPi4K->Add(fK0sPionPt);
+  fK0sKaonPt = new TH1D("fK0sKaonPt","fK0sKaonPt",1000, 0., 10.);
+  fListHistK0s3PiPi4K->Add(fK0sKaonPt);
+  fK0sPtVsMinvK0s = new TH2D("fK0sPtVsMinvK0s","fK0sPtVsMinvK0s",1000, 0., 10., 1000, 0., 10.);
+  fListHistK0s3PiPi4K->Add(fK0sPtVsMinvK0s);
   //fK0sMinv = new TH1D("fK0sMinv","fK0sMinv",200, 0.4, 0.6);
   //fListHist->Add(fK0sMinv);
   fKPiPtVsMinvK0sChannel = new TH2D("fKPiPtVsMinvK0sChannel","fKPiPtVsMinvK0sChannel",1000, 0., 10., 1000, 0., 10.);
-  fListHist->Add(fKPiPtVsMinvK0sChannel);
+  fListHistK0s3PiPi4K->Add(fKPiPtVsMinvK0sChannel);
   //fKPiMinvK0sChannel = new TH1D("fKPiMinvK0sChannel","fKPiMinvK0sChannel",500, 0.4, 0.9);
   //fListHist->Add(fKPiMinvK0sChannel);
   fMK0sVsMKPiK0sChannel = new TH2D("fMK0sVsMKPiK0sChannel","fMK0sVsMKPiK0sChannel",1000, 0., 1., 1000, 0., 1.);
-  fListHist->Add(fMK0sVsMKPiK0sChannel);
-  fEtaCPtVsMinvK0sChannel = new TH2D("fEtaCPtVsMinvK0sChannel","fEtaCPtVsMinvK0sChannel",1000, 0., 10., 1000, 0., 10.);
-  fListHist->Add(fEtaCPtVsMinvK0sChannel);
-  fEtaCEtaVsMinvK0sChannel = new TH2D("fEtaCEtaVsMinvK0sChannel","fEtaCEtaVsMinvK0sChannel",1000, 0., 10., 2000, -10., 10.);
-  fListHist->Add(fEtaCEtaVsMinvK0sChannel);
+  fListHistK0s3PiPi4K->Add(fMK0sVsMKPiK0sChannel);
+  fK0sPtVsMinvEtaC = new TH2D("fK0sPtVsMinvEtaC","fK0sPtVsMinvEtaC",1000, 0., 10., 1000, 0., 10.);
+  fListHistK0s3PiPi4K->Add(fK0sPtVsMinvEtaC);
+  fK0sEtaVsMinvEtaC = new TH2D("fK0sEtaVsMinvEtaC","fK0sEtaVsMinvEtaC",1000, 0., 10., 2000, -10., 10.);
+  fListHistK0s3PiPi4K->Add(fK0sEtaVsMinvEtaC);
+  fK0sEtaVsMinvEtaC400MeVPtMax = new TH2D("fK0sEtaVsMinvEtaC400MeVPtMax","fK0sEtaVsMinvEtaC400MeVPtMax",1000, 0., 10., 2000, -10., 10.);
+  fListHistK0s3PiPi4K->Add(fK0sEtaVsMinvEtaC400MeVPtMax);
+  fK0sEtaVsMinvEtaC100MeVPtMax = new TH2D("fK0sEtaVsMinvEtaC100MeVPtMax","fK0sEtaVsMinvEtaC100MeVPtMax",1000, 0., 10., 2000, -10., 10.);
+  fListHistK0s3PiPi4K->Add(fK0sEtaVsMinvEtaC100MeVPtMax);
+  fK0sSumPzVsMinvEtaC = new TH2D("fK0sSumPzVsMinvEtaC","fK0sSumPzVsMinvEtaC",1000, 0., 10., 2000, -10., 10.);
+  fListHistK0s3PiPi4K->Add(fK0sSumPzVsMinvEtaC);
+  fK0sScalarSumP = new TH1D("fK0sScalarSumP","fK0sScalarSumP",1000, 0., 10.);
+  fListHistK0s3PiPi4K->Add(fK0sScalarSumP);
+  fK0sVectorSumPt = new TH1D("fK0sVectorSumPt","fK0sVectorSumPt",1000, 0., 1.);
+  fListHistK0s3PiPi4K->Add(fK0sVectorSumPt);
   //fEtaCMinvK0sChannel = new TH1D("fEtaCMinvK0sChannel","fEtaCMinvK0sChannel",200, 2., 4.);
   //fListHist->Add(fEtaCMinvK0sChannel);
   fK0sDecayLength = new TH1D("fK0sDecayLength","fK0sDecayLength",300, 0., 30.);
-  fListHist->Add(fK0sDecayLength);
+  fListHistK0s3PiPi4K->Add(fK0sDecayLength);
   
   fHistNpion = new TH1D("fHistNpion","fHistNpion",10,0.,10.);
   fListHist->Add(fHistNpion);
@@ -897,19 +1040,19 @@ void AliAnalysisTaskUpcEtaC::UserCreateOutputObjects()
   fListHist->Add(fHistPiMinusK);
 
   fV0DaughterDca = new TH1D("fV0DaughterDca","fV0DaughterDca",1000,0.,100.);
-  fListHist->Add(fV0DaughterDca);
+  fListHistK0s3PiPi4K->Add(fV0DaughterDca);
   fK0sDcaToPrimVertex = new TH1D("fK0sDcaToPrimVertex","fK0sDcaToPrimVertex",100,0.,10.);
-  fListHist->Add(fK0sDcaToPrimVertex);
+  fListHistK0s3PiPi4K->Add(fK0sDcaToPrimVertex);
   fK0sDaughterDcaToPrimVertex = new TH1D("fK0sDaughterDcaToPrimVertex","fK0sDaughterDcaToPrimVertex",1000,0.,100.);
-  fListHist->Add(fK0sDaughterDcaToPrimVertex);
+  fListHistK0s3PiPi4K->Add(fK0sDaughterDcaToPrimVertex);
   fK0sMassDistribution = new TH1D("fK0sMassDistribution","fK0sMassDistribution",600,0.2,0.8);
-  fListHist->Add(fK0sMassDistribution);
+  fListHistK0s3PiPi4K->Add(fK0sMassDistribution);
   fV0DecayLength = new TH1D("fV0DecayLength","fV0DecayLength",200,0.,200.);
-  fListHist->Add(fV0DecayLength);
+  fListHistK0s3PiPi4K->Add(fV0DecayLength);
   fV0Eta = new TH1D("fV0Eta","fV0Eta",160,-0.8,0.8);
-  fListHist->Add(fV0Eta);
+  fListHistK0s3PiPi4K->Add(fV0Eta);
   fCosPointingAngle = new TH1D("fCosPointingAngle","fCosPointingAngle",500,0.,1.);
-  fListHist->Add(fCosPointingAngle);
+  fListHistK0s3PiPi4K->Add(fCosPointingAngle);
  
   TString CutNameZDC[4] = {"CCUP4","< 8 neutrons","0 netrons","No timing"};
   fHistZDCCuts = new TH1D("fHistZDCCuts","fHistZDCCuts",4,0.5,4.5);
@@ -929,7 +1072,9 @@ void AliAnalysisTaskUpcEtaC::UserCreateOutputObjects()
   PostData(2, fEtaCTree);
   PostData(3, fListTrig);
   PostData(4, fListHist);
-
+  PostData(5, fListHistKstar);
+  PostData(6, fListHist2Rho4Pion);
+  PostData(7, fListHistK0s3PiPi4K);
 }//UserCreateOutputObjects
 
 //_____________________________________________________________________________
@@ -1205,8 +1350,11 @@ void AliAnalysisTaskUpcEtaC::RunAODhist()
   Int_t missingTOFPIDK0s[7] = {-1,-1,-1,-1,-1,-1,-1};
   
   TLorentzVector vPion[7], vKaon[7], vK0sPion[7], vKPiK0sChannel, vK0s, vKstar[2], vCandidate, vPionMinus[4], vPionPlus[4], vRho[4], vKK[5];
+  TVector3 sumPtVector;
+  Int_t nHighPtTracks = 0;
   Short_t qKaon[7], qPion[7], qK0sPion[7];
   UInt_t nKaon=0, nPion=0, nK0sPion=0, nSpdHits=0;
+  Double_t SumPz=0, VectorSumPt=0, ScalarSumP=0;
   Double_t fRecTPCsignalPion[7], fRecTPCsignalKaon[7], fRecTPCsignalK0sPion[7];
   Int_t fChannel = 0;
   Double_t trackPt[7]={0,0,0,0,0,0,0};
@@ -1315,6 +1463,7 @@ void AliAnalysisTaskUpcEtaC::RunAODhist()
 
   //Kstar and 2pi2k channels
   nKaon=0; nPion=0;
+  SumPz=0; ScalarSumP=0; VectorSumPt=0; nHighPtTracks=0;
   Int_t nTracksWithoutTOFinfo = 0;
   Bool_t goodPairA = kFALSE;
   Bool_t goodPairB = kFALSE;
@@ -1403,6 +1552,20 @@ void AliAnalysisTaskUpcEtaC::RunAODhist()
 		vCandidate = vPion[0] + vPion[1] + vKaon[0] + vKaon[1];
 		//cout << "mEtaC " << vCandidate.M() << ", ptEtaC " << vCandidate.Pt() << endl;
 
+		//Sum Pz
+		SumPz = vPion[0].Pz() + vPion[1].Pz() + vKaon[0].Pz() + vKaon[1].Pz();
+		//Scalar Sum P
+		ScalarSumP = vPion[0].P() + vPion[1].P() + vKaon[0].P() + vKaon[1].P();
+		//Vector Sum Pt
+		sumPtVector = vPion[0].Vect() + vPion[1].Vect() + vKaon[0].Vect() + vKaon[1].Vect();
+		VectorSumPt = sumPtVector.Pt();
+		//Number of tracks with pT>0.4 GeV/c
+		for(Int_t aa = 0;aa < 2;aa++) {
+		  if(vPion[aa].Pt() > 0.4) nHighPtTracks++;
+		  if(vKaon[aa].Pt() > 0.4) nHighPtTracks++;
+		}
+		if(nHighPtTracks > 1) fHistNeventsEtaC->Fill(16);
+		
 		for(Int_t aa = 0;aa<13;aa++) {
 		  boostInfoA[aa] = -999.;
 		  boostInfoB[aa] = -999.;
@@ -1485,6 +1648,9 @@ void AliAnalysisTaskUpcEtaC::RunAODhist()
 		    fKstarDaughterPtotalNormCheck->Fill(boostInfoB[12]);
 		  }
 
+		  //##### Turn off Helicity Cut #####
+		  goodPairA = kTRUE;    goodPairB = kTRUE;
+
 		  //Fill Dalitz plot with PiK masses Pi-K+ vs Pi+K-
 		  if(qKaon[0] < 0) fMPiKvsMPiK->Fill(pow(vKstar[0].M(),2),pow(vKstar[1].M(),2));
 		  else fMPiKvsMPiK->Fill(pow(vKstar[1].M(),2),pow(vKstar[0].M(),2));
@@ -1524,6 +1690,11 @@ void AliAnalysisTaskUpcEtaC::RunAODhist()
 		    //Fill EtaC histos
 		    f2KstarPtVsMinvEtaC->Fill(vCandidate.M(),vCandidate.Pt());
 		    f2KstarEtaVsMinvEtaC->Fill(vCandidate.M(),vCandidate.Eta());
+		    if(vCandidate.Pt()<0.4) f2KstarEtaVsMinvEtaC400MeVPtMax->Fill(vCandidate.M(),vCandidate.Eta());
+		    if(vCandidate.Pt()<0.1) f2KstarEtaVsMinvEtaC100MeVPtMax->Fill(vCandidate.M(),vCandidate.Eta());
+		    f2KstarSumPzVsMinvEtaC->Fill(vCandidate.M(),SumPz);
+		    f2KstarScalarSumP->Fill(ScalarSumP);
+		    f2KstarVectorSumPt->Fill(VectorSumPt);
 		    //f2KstarMinvEtaC->Fill(vCandidate.M());
 		  }
 		  //1 Kstar case
@@ -1561,6 +1732,11 @@ void AliAnalysisTaskUpcEtaC::RunAODhist()
 		    //Fill EtaC histos
 		    f1KstarPtVsMinvEtaC->Fill(vCandidate.M(),vCandidate.Pt());
 		    f1KstarEtaVsMinvEtaC->Fill(vCandidate.M(),vCandidate.Eta());
+		    if(vCandidate.Pt()<0.4) f1KstarEtaVsMinvEtaC400MeVPtMax->Fill(vCandidate.M(),vCandidate.Eta());
+		    if(vCandidate.Pt()<0.1) f1KstarEtaVsMinvEtaC100MeVPtMax->Fill(vCandidate.M(),vCandidate.Eta());
+		    f1KstarSumPzVsMinvEtaC->Fill(vCandidate.M(),SumPz);
+		    f1KstarScalarSumP->Fill(ScalarSumP);
+		    f1KstarVectorSumPt->Fill(VectorSumPt);
 		    //f1KstarMinvEtaC->Fill(vCandidate.M());
 		  }
 		  else if ((vKstar[1].M() < (kStarMass + kStarWidth)) && (vKstar[1].M() > (kStarMass - kStarWidth)) &&
@@ -1597,6 +1773,11 @@ void AliAnalysisTaskUpcEtaC::RunAODhist()
 		    //Fill EtaC histos
 		    f1KstarPtVsMinvEtaC->Fill(vCandidate.M(),vCandidate.Pt());
 		    f1KstarEtaVsMinvEtaC->Fill(vCandidate.M(),vCandidate.Eta());
+		    if(vCandidate.Pt()<0.4) f1KstarEtaVsMinvEtaC400MeVPtMax->Fill(vCandidate.M(),vCandidate.Eta());
+		    if(vCandidate.Pt()<0.1) f1KstarEtaVsMinvEtaC100MeVPtMax->Fill(vCandidate.M(),vCandidate.Eta());
+		    f1KstarSumPzVsMinvEtaC->Fill(vCandidate.M(),SumPz);
+		    f1KstarScalarSumP->Fill(ScalarSumP);
+		    f1KstarVectorSumPt->Fill(VectorSumPt);
 		    //f1KstarMinvEtaC->Fill(vCandidate.M());
 		  }
 		  //0 Kstar case
@@ -1633,6 +1814,11 @@ void AliAnalysisTaskUpcEtaC::RunAODhist()
 		    //Fill EtaC histos
 		    f0KstarPtVsMinvEtaC->Fill(vCandidate.M(),vCandidate.Pt());
 		    f0KstarEtaVsMinvEtaC->Fill(vCandidate.M(),vCandidate.Eta());
+		    if(vCandidate.Pt()<0.4) f0KstarEtaVsMinvEtaC400MeVPtMax->Fill(vCandidate.M(),vCandidate.Eta());
+		    if(vCandidate.Pt()<0.1) f0KstarEtaVsMinvEtaC100MeVPtMax->Fill(vCandidate.M(),vCandidate.Eta());
+		    f0KstarSumPzVsMinvEtaC->Fill(vCandidate.M(),SumPz);
+		    f0KstarScalarSumP->Fill(ScalarSumP);
+		    f0KstarVectorSumPt->Fill(VectorSumPt);
 		    //f0KstarMinvEtaC->Fill(vCandidate.M());
 		  }
 
@@ -1645,6 +1831,7 @@ void AliAnalysisTaskUpcEtaC::RunAODhist()
 
   //EtaC->RhoRho Channel
   nKaon=0; nPion=0;
+  SumPz=0; ScalarSumP=0; VectorSumPt=0; nHighPtTracks=0;
   nTracksWithoutTOFinfo = 0;
   Int_t nPiMinus=0;
   Int_t nPiPlus=0;
@@ -1738,6 +1925,16 @@ void AliAnalysisTaskUpcEtaC::RunAODhist()
 		vCandidate = vPion[0] + vPion[1] + vPion[2] + vPion[3];
 		//cout << "mEtaC " << vCandidate.M() << ", ptEtaC " << vCandidate.Pt() << endl;
 
+		//Sum Pz
+		SumPz = vPion[0].Pz() + vPion[1].Pz() + vPion[2].Pz() + vPion[3].Pz();
+		//Scalar Sum P
+		ScalarSumP = vPion[0].P() + vPion[1].P() + vPion[2].P() + vPion[3].P();
+		//Vector Sum Pt
+		sumPtVector = vPion[0].Vect() + vPion[1].Vect() + vPion[2].Vect() + vPion[3].Vect();
+		VectorSumPt = sumPtVector.Pt();
+		//Number of tracks with pT>0.4 GeV/c
+		for(Int_t aa = 0;aa<4;aa++) if(vPion[aa].Pt() > 0.4) nHighPtTracks++;
+
 		for(Int_t aa = 0;aa<13;aa++) {
 		  boostInfoRhoZero[aa]  = -999.;
 		  boostInfoRhoOne[aa]   = -999.;
@@ -1793,6 +1990,8 @@ void AliAnalysisTaskUpcEtaC::RunAODhist()
                 f2RhoParentPz->Fill(boostInfoRhoZero[11]);                f2RhoParentPz->Fill(boostInfoRhoOne[11]);
                 f2RhoDaughterParentAngle->Fill(boostInfoRhoZero[4]);      f2RhoDaughterParentAngle->Fill(boostInfoRhoOne[4]);
                 f2RhoDaughterParentAngle->Fill(boostInfoRhoZero[5]);      f2RhoDaughterParentAngle->Fill(boostInfoRhoOne[5]);
+		f2RhoDaughterParentCosAngle->Fill( TMath::Cos(boostInfoRhoZero[4]*TMath::Pi()/180.) );      f2RhoDaughterParentCosAngle->Fill( TMath::Cos(boostInfoRhoOne[4]*TMath::Pi()/180.) );
+                f2RhoDaughterParentCosAngle->Fill( TMath::Cos(boostInfoRhoZero[5]*TMath::Pi()/180.) );      f2RhoDaughterParentCosAngle->Fill( TMath::Cos(boostInfoRhoOne[5]*TMath::Pi()/180.) );
                 f2RhoDaughterDaughterAngle->Fill(boostInfoRhoZero[6]);    f2RhoDaughterDaughterAngle->Fill(boostInfoRhoOne[6]);
                 f2RhoDaughterDaughterCosAngle->Fill(boostInfoRhoZero[7]); f2RhoDaughterDaughterCosAngle->Fill(boostInfoRhoOne[7]);
                 f2RhoDaughterPtotal->Fill(boostInfoRhoZero[8]);           f2RhoDaughterPtotal->Fill(boostInfoRhoOne[8]);
@@ -1804,6 +2003,8 @@ void AliAnalysisTaskUpcEtaC::RunAODhist()
 		f2RhoParentPz->Fill(boostInfoRhoTwo[11]);                f2RhoParentPz->Fill(boostInfoRhoThree[11]);
 		f2RhoDaughterParentAngle->Fill(boostInfoRhoTwo[4]);      f2RhoDaughterParentAngle->Fill(boostInfoRhoThree[4]);
 		f2RhoDaughterParentAngle->Fill(boostInfoRhoTwo[5]);      f2RhoDaughterParentAngle->Fill(boostInfoRhoThree[5]);
+		f2RhoDaughterParentCosAngle->Fill( TMath::Cos(boostInfoRhoTwo[4]*TMath::Pi()/180.) );      f2RhoDaughterParentCosAngle->Fill( TMath::Cos(boostInfoRhoThree[4]*TMath::Pi()/180.) );
+		f2RhoDaughterParentCosAngle->Fill( TMath::Cos(boostInfoRhoTwo[5]*TMath::Pi()/180.) );      f2RhoDaughterParentCosAngle->Fill( TMath::Cos(boostInfoRhoThree[5]*TMath::Pi()/180.) );
 		f2RhoDaughterDaughterAngle->Fill(boostInfoRhoTwo[6]);    f2RhoDaughterDaughterAngle->Fill(boostInfoRhoThree[6]);
 		f2RhoDaughterDaughterCosAngle->Fill(boostInfoRhoTwo[7]); f2RhoDaughterDaughterCosAngle->Fill(boostInfoRhoThree[7]);
 		f2RhoDaughterPtotal->Fill(boostInfoRhoTwo[8]);           f2RhoDaughterPtotal->Fill(boostInfoRhoThree[8]);
@@ -1825,6 +2026,8 @@ void AliAnalysisTaskUpcEtaC::RunAODhist()
 		  f2RhoParentPzCheck->Fill(boostInfoRhoZero[11]);
 		  f2RhoDaughterParentAngleCheck->Fill(boostInfoRhoZero[4]);
 		  f2RhoDaughterParentAngleCheck->Fill(boostInfoRhoZero[5]);
+		  f2RhoDaughterParentCosAngleCheck->Fill( TMath::Cos(boostInfoRhoZero[4]*TMath::Pi()/180.) );
+		  f2RhoDaughterParentCosAngleCheck->Fill( TMath::Cos(boostInfoRhoZero[5]*TMath::Pi()/180.) );
 		  f2RhoDaughterDaughterAngleCheck->Fill(boostInfoRhoZero[6]);
 		  f2RhoDaughterDaughterCosAngleCheck->Fill(boostInfoRhoZero[7]);
 		  f2RhoDaughterPtotalCheck->Fill(boostInfoRhoZero[8]);
@@ -1835,6 +2038,8 @@ void AliAnalysisTaskUpcEtaC::RunAODhist()
 		  f2RhoParentPzCheck->Fill(boostInfoRhoOne[11]);
 		  f2RhoDaughterParentAngleCheck->Fill(boostInfoRhoOne[4]);
 		  f2RhoDaughterParentAngleCheck->Fill(boostInfoRhoOne[5]);
+		  f2RhoDaughterParentCosAngleCheck->Fill( TMath::Cos(boostInfoRhoOne[4]*TMath::Pi()/180.) );
+		  f2RhoDaughterParentCosAngleCheck->Fill( TMath::Cos(boostInfoRhoOne[5]*TMath::Pi()/180.) );
 		  f2RhoDaughterDaughterAngleCheck->Fill(boostInfoRhoOne[6]);
 		  f2RhoDaughterDaughterCosAngleCheck->Fill(boostInfoRhoOne[7]);
 		  f2RhoDaughterPtotalCheck->Fill(boostInfoRhoOne[8]);
@@ -1845,6 +2050,8 @@ void AliAnalysisTaskUpcEtaC::RunAODhist()
 		  f2RhoParentPzCheck->Fill(boostInfoRhoTwo[11]);
 		  f2RhoDaughterParentAngleCheck->Fill(boostInfoRhoTwo[4]);
 		  f2RhoDaughterParentAngleCheck->Fill(boostInfoRhoTwo[5]);
+		  f2RhoDaughterParentCosAngleCheck->Fill( TMath::Cos(boostInfoRhoTwo[4]*TMath::Pi()/180.) );
+		  f2RhoDaughterParentCosAngleCheck->Fill( TMath::Cos(boostInfoRhoTwo[5]*TMath::Pi()/180.) );
 		  f2RhoDaughterDaughterAngleCheck->Fill(boostInfoRhoTwo[6]);
 		  f2RhoDaughterDaughterCosAngleCheck->Fill(boostInfoRhoTwo[7]);
 		  f2RhoDaughterPtotalCheck->Fill(boostInfoRhoTwo[8]);
@@ -1855,10 +2062,15 @@ void AliAnalysisTaskUpcEtaC::RunAODhist()
 		  f2RhoParentPzCheck->Fill(boostInfoRhoThree[11]);
 		  f2RhoDaughterParentAngleCheck->Fill(boostInfoRhoThree[4]);
 		  f2RhoDaughterParentAngleCheck->Fill(boostInfoRhoThree[5]);
+		  f2RhoDaughterParentCosAngleCheck->Fill( TMath::Cos(boostInfoRhoThree[4]*TMath::Pi()/180.) );
+		  f2RhoDaughterParentCosAngleCheck->Fill( TMath::Cos(boostInfoRhoThree[5]*TMath::Pi()/180.) );
 		  f2RhoDaughterDaughterAngleCheck->Fill(boostInfoRhoThree[6]);
 		  f2RhoDaughterDaughterCosAngleCheck->Fill(boostInfoRhoThree[7]);
 		  f2RhoDaughterPtotalCheck->Fill(boostInfoRhoThree[8]);
 		}
+
+		//##### Turn off Helicity Cut #####
+		goodRho[0] = kTRUE;    goodRho[1] = kTRUE;    goodRho[2] = kTRUE;    goodRho[3] = kTRUE;
 
 		//Identify sets with 2 rho0's
 		if(vRho[0].M() < (rhoMass+rhoWidth) && vRho[0].M() > (rhoMass-rhoWidth) && 
@@ -1906,9 +2118,21 @@ void AliAnalysisTaskUpcEtaC::RunAODhist()
 		  fHistNeventsEtaCRhoChannel->Fill(13);
 		  f2RhoPtVsMinvEtaC->Fill(vCandidate.M(),vCandidate.Pt()); //4Pi final states with 2 intermediate rho's.
 		  f2RhoEtaVsMinvEtaC->Fill(vCandidate.M(),vCandidate.Eta());
+		  if(vCandidate.Pt()<0.4) f2RhoEtaVsMinvEtaC400MeVPtMax->Fill(vCandidate.M(),vCandidate.Eta());
+		  if(vCandidate.Pt()<0.1) f2RhoEtaVsMinvEtaC100MeVPtMax->Fill(vCandidate.M(),vCandidate.Eta());
+		  f2RhoSumPzVsMinvEtaC->Fill(vCandidate.M(),SumPz);
+		  f2RhoScalarSumP->Fill(ScalarSumP);
+		  f2RhoVectorSumPt->Fill(VectorSumPt);
+		  if(nHighPtTracks > 1) fHistNeventsEtaCRhoChannel->Fill(14);
 		} else if(nRhoPairs == 0) {
 		  f4PionPtVsMinvEtaC->Fill(vCandidate.M(),vCandidate.Pt()); //All 4Pi final states.
 		  f4PionEtaVsMinvEtaC->Fill(vCandidate.M(),vCandidate.Eta());
+		  if(vCandidate.Pt()<0.4) f4PionEtaVsMinvEtaC400MeVPtMax->Fill(vCandidate.M(),vCandidate.Eta());
+		  if(vCandidate.Pt()<0.1) f4PionEtaVsMinvEtaC100MeVPtMax->Fill(vCandidate.M(),vCandidate.Eta());
+		  f4PionSumPzVsMinvEtaC->Fill(vCandidate.M(),SumPz);
+		  f4PionScalarSumP->Fill(ScalarSumP);
+		  f4PionVectorSumPt->Fill(VectorSumPt);
+		  if(nHighPtTracks > 1) fHistNeventsEtaCRhoChannel->Fill(15);
 		}
 
 		//For all cases look at 4pi vs 2pi minv
@@ -1930,6 +2154,7 @@ void AliAnalysisTaskUpcEtaC::RunAODhist()
  
   //EtaC->3(pi+pi-) Channel
   nKaon=0; nPion=0;
+  SumPz=0; ScalarSumP=0; VectorSumPt=0; nHighPtTracks=0;
   nTracksWithoutTOFinfo = 0;
   if(nGoodTracks == 6 && nSpdHits>1){
   	  fHistNeventsEtaC3PiPiChannel->Fill(6);
@@ -2010,8 +2235,25 @@ void AliAnalysisTaskUpcEtaC::RunAODhist()
 	      fHistNeventsEtaC3PiPiChannel->Fill(9); //zero net charge, candidate
 	      //TEMP if(vPion[0].M() == pionMass && vPion[1].M() == pionMass && vKaon[0].M() == kaonMass && vKaon[1].M() == kaonMass) {
 		vCandidate = vPion[0] + vPion[1] + vPion[2] + vPion[3] + vPion[4] + vPion[5];
+
+		//Sum Pz
+		SumPz = vPion[0].Pz() + vPion[1].Pz() + vPion[2].Pz() + vPion[3].Pz() + vPion[4].Pz() + vPion[5].Pz();
+		//Scalar Sum P
+		ScalarSumP = vPion[0].P() + vPion[1].P() + vPion[2].P() + vPion[3].P() + vPion[4].P() + vPion[5].P();
+		//Vector Sum Pt
+		sumPtVector = vPion[0].Vect() + vPion[1].Vect() + vPion[2].Vect() + vPion[3].Vect() + vPion[4].Vect() + vPion[5].Vect();
+		VectorSumPt = sumPtVector.Pt();
+		//Number of tracks with pT>0.4 GeV/c
+		for(Int_t aa = 0;aa<6;aa++) if(vPion[aa].Pt() > 0.4) nHighPtTracks++;
+
 		f3PiPiPtVsMinvEtaC->Fill(vCandidate.M(),vCandidate.Pt());
 		f3PiPiEtaVsMinvEtaC->Fill(vCandidate.M(),vCandidate.Eta());
+		if(vCandidate.Pt()<0.4) f3PiPiEtaVsMinvEtaC400MeVPtMax->Fill(vCandidate.M(),vCandidate.Eta());
+		if(vCandidate.Pt()<0.1) f3PiPiEtaVsMinvEtaC100MeVPtMax->Fill(vCandidate.M(),vCandidate.Eta());
+		f3PiPiSumPzVsMinvEtaC->Fill(vCandidate.M(),SumPz);
+		f3PiPiScalarSumP->Fill(ScalarSumP);
+		f3PiPiVectorSumPt->Fill(VectorSumPt);
+		if(nHighPtTracks > 1) fHistNeventsEtaC3PiPiChannel->Fill(10);
 		//cout << "mEtaC " << vCandidate.M() << ", ptEtaC " << vCandidate.Pt() << endl;
 
 		  
@@ -2027,6 +2269,7 @@ void AliAnalysisTaskUpcEtaC::RunAODhist()
 
   //EtaC->2(k+k-) Channel
   nKaon=0; nPion=0;
+  SumPz=0; ScalarSumP=0; VectorSumPt=0; nHighPtTracks++;
   Int_t nKK = 0;
   nTracksWithoutTOFinfo = 0;
   if(nGoodTracks == 4 && nSpdHits>1){
@@ -2109,12 +2352,30 @@ void AliAnalysisTaskUpcEtaC::RunAODhist()
 	      //fHistNeventsEtaC4KaonChannel->Fill(10); //zero net charge, candidate
 	      //TEMP if(vPion[0].M() == pionMass && vPion[1].M() == pionMass && vKaon[0].M() == kaonMass && vKaon[1].M() == kaonMass) {
 		vCandidate = vKaon[0] + vKaon[1] + vKaon[2] + vKaon[3];
+
+		//Sum Pz
+		SumPz = vKaon[0].Pz() + vKaon[1].Pz() + vKaon[2].Pz() + vKaon[3].Pz();
+		//Scalar Sum P
+		ScalarSumP = vKaon[0].P() + vKaon[1].P() + vKaon[2].P() + vKaon[3].P();
+		//Vector Sum Pt
+		sumPtVector = vKaon[0].Vect() + vKaon[1].Vect() + vKaon[2].Vect() + vKaon[3].Vect();
+		VectorSumPt = sumPtVector.Pt();
+		//Number of tracks with pT>0.4 GeV/c
+		for(Int_t aa = 0;aa<4;aa++) if(vKaon[aa].Pt() > 0.4) nHighPtTracks++;
+
 		f4KaonPtVsMinvEtaC->Fill(vCandidate.M(),vCandidate.Pt());
 		f4KaonEtaVsMinvEtaC->Fill(vCandidate.M(),vCandidate.Eta());
+		if(vCandidate.Pt()<0.4) f4KaonEtaVsMinvEtaC400MeVPtMax->Fill(vCandidate.M(),vCandidate.Eta());
+		if(vCandidate.Pt()<0.1) f4KaonEtaVsMinvEtaC100MeVPtMax->Fill(vCandidate.M(),vCandidate.Eta());
+		f4KaonSumPzVsMinvEtaC->Fill(vCandidate.M(),SumPz);
+		f4KaonScalarSumP->Fill(ScalarSumP);
+		f4KaonVectorSumPt->Fill(VectorSumPt);
+		if(nHighPtTracks > 1) fHistNeventsEtaC4KaonChannel->Fill(11);
 		//cout << "mEtaC " << vCandidate.M() << ", ptEtaC " << vCandidate.Pt() << endl;
 
 		//Now the intermediate K+K- pairs (all combinations)
 		nKK = 0;
+		for(Int_t numKK = 0; numKK < 4; numKK++) vKK[numKK].SetPtEtaPhiM(0.,0.,0.,0.);
 		if(qKaon[0]*qKaon[1] < 0.) { vKK[nKK] = vKaon[0] + vKaon[1]; nKK++; }
 		if(qKaon[0]*qKaon[2] < 0.) { vKK[nKK] = vKaon[0] + vKaon[2]; nKK++; }
 		if(qKaon[0]*qKaon[3] < 0.) { vKK[nKK] = vKaon[0] + vKaon[3]; nKK++; }
@@ -2514,6 +2775,7 @@ void AliAnalysisTaskUpcEtaC::RunAODhist()
 
     //now identify the additional kaon and pion, excluding the pions from K0s daughters by fID.
     nKaon=0; nPion=0; nK0sPion=0;
+    SumPz=0; ScalarSumP=0; VectorSumPt=0; nHighPtTracks=0;
     qK0sPion[0] = 0;
     qK0sPion[1] = 0;
     qPion[0] = 0;
@@ -2640,11 +2902,11 @@ void AliAnalysisTaskUpcEtaC::RunAODhist()
 	  fK0sPosDaughterPt->Fill(vK0sPion[0].Pt());
 	  fK0sNegDaughterPt->Fill(vK0sPion[1].Pt());
 	  fK0sPosVsNegDaughterPt->Fill(vK0sPion[1].Pt(),vK0sPion[0].Pt());
-	  fPionK0sChannelPt->Fill(vPion[0].Pt());
-	  fKaonK0sChannelPt->Fill(vKaon[0].Pt());
+	  fK0sPionPt->Fill(vPion[0].Pt());
+	  fK0sKaonPt->Fill(vKaon[0].Pt());
 	  //Compute K0s info
 	  vK0s = vK0sPion[0] + vK0sPion[1];
-	  fK0sPtVsMinv->Fill(vK0s.M(),vK0s.Pt());
+	  fK0sPtVsMinvK0s->Fill(vK0s.M(),vK0s.Pt());
 	  //fK0sMinv->Fill(vK0s.M());
 	  //Compute PiK info
 	  vKPiK0sChannel = vPion[0] + vKaon[0];
@@ -2654,8 +2916,27 @@ void AliAnalysisTaskUpcEtaC::RunAODhist()
 	  fMK0sVsMKPiK0sChannel->Fill(vKPiK0sChannel.M(),vK0s.M());
 	  //Compute EtaC info
 	  vCandidate = vK0sPion[0] + vK0sPion[1] + vPion[0] + vKaon[0];
-	  fEtaCPtVsMinvK0sChannel->Fill(vCandidate.M(),vCandidate.Pt());
-	  fEtaCEtaVsMinvK0sChannel->Fill(vCandidate.M(),vCandidate.Eta());
+
+	  //Sum Pz
+	  SumPz = vK0sPion[0].Pz() + vK0sPion[1].Pz() + vPion[0].Pz() + vKaon[0].Pz();
+	  //Scalar Sum P
+	  ScalarSumP = vK0sPion[0].P() + vK0sPion[1].P() + vPion[0].P() + vKaon[0].P();
+	  //Vector Sum Pt
+	  sumPtVector = vK0sPion[0].Vect() + vK0sPion[1].Vect() + vPion[0].Vect() + vKaon[0].Vect();
+	  VectorSumPt = sumPtVector.Pt();
+	  //Number of tracks with pT>0.4 GeV/c
+	  for(Int_t aa=0;aa<2;aa++) if(vK0sPion[aa].Pt() > 0.4) nHighPtTracks++;
+	  if(vPion[0].Pt() > 0.4) nHighPtTracks++;
+	  if(vKaon[0].Pt() > 0.4) nHighPtTracks++;
+
+	  fK0sPtVsMinvEtaC->Fill(vCandidate.M(),vCandidate.Pt());
+	  fK0sEtaVsMinvEtaC->Fill(vCandidate.M(),vCandidate.Eta());
+	  if(vCandidate.Pt()<0.4) fK0sEtaVsMinvEtaC400MeVPtMax->Fill(vCandidate.M(),vCandidate.Eta());
+	  if(vCandidate.Pt()<0.1) fK0sEtaVsMinvEtaC100MeVPtMax->Fill(vCandidate.M(),vCandidate.Eta());
+	  fK0sSumPzVsMinvEtaC->Fill(vCandidate.M(),SumPz);
+	  fK0sScalarSumP->Fill(ScalarSumP);
+	  fK0sVectorSumPt->Fill(VectorSumPt);
+	  if(nHighPtTracks > 1) fHistNeventsEtaCK0sChannel->Fill(14);
 	  //fEtaCMinvK0sChannel->Fill(vCandidate.M());
 	  fK0sDecayLength->Fill(v0->DecayLength(fAODVertex));
 	}
@@ -2668,7 +2949,9 @@ void AliAnalysisTaskUpcEtaC::RunAODhist()
   //  cout << "##### End of RunAODHist()" << endl;
 
   PostData(4, fListHist);
-
+  PostData(5, fListHistKstar);
+  PostData(6, fListHist2Rho4Pion);
+  PostData(7, fListHistK0s3PiPi4K);
  }
 
 //_____________________________________________________________________________
@@ -3782,8 +4065,8 @@ bool AliAnalysisTaskUpcEtaC::CheckMeritCutWinner(int cutChoice, double oldPars[3
    Double_t d2parMom = sqrt(d2_newSys.Vect().Mag2() - d2_newSys.Perp2(parent.Vect()));
 
    //Get angle relative to parent momentum (in degrees)
-   Double_t d1perpAngle = 180.*atan2(d1parMom, d1perpMom)/TMath::Pi();
-   Double_t d2perpAngle = 180.*atan2(d2parMom, d2perpMom)/TMath::Pi();
+   Double_t d1perpAngle = 180.*atan2(d1perpMom, d1parMom)/TMath::Pi();
+   Double_t d2perpAngle = 180.*atan2(d2perpMom, d2parMom)/TMath::Pi();
 
    //Get angle between two daughters in the parent rest frame
    Double_t d1d2angle = d1_newSys.Angle(d2_newSys.Vect());
