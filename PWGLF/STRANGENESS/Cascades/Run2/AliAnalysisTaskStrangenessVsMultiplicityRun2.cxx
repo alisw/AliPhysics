@@ -986,7 +986,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::UserExec(Option_t *)
             lIR = lESDHeader->GetTriggerIR(i);
             Long64_t lOrbit     = lIR->GetOrbit();
             UInt_t   lNWord     = lIR->GetNWord();
-            UShort_t *lBCsForIR = lIR->GetBCs();
+            UInt_t   *lBCsForIR = lIR->GetBCs();
             Bool_t   *lInt1     = lIR->GetInt1s();
             Bool_t   *lInt2     = lIR->GetInt2s();
 
@@ -997,17 +997,17 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::UserExec(Option_t *)
                     Int_t lBC = lBCsForIR[j];
 
                     if((lOrbit == lThisOrbit) && (lBC != lThisBC)) {
-                        Int_t lClosestNonEmptyBC = lThisBC - lBC;
+                        Int_t lClosestNonEmptyBC = lBC - lThisBC;
                         if(TMath::Abs(lClosestNonEmptyBC)<TMath::Abs(fClosestNonEmptyBC)) fClosestNonEmptyBC = lClosestNonEmptyBC;
                     }
                 					
                     if(lOrbit == (lThisOrbit+1)) {
-                        Int_t lClosestNonEmptyBC = lThisBC - (lBC+3564);
+                        Int_t lClosestNonEmptyBC = (lBC+3564) - lThisBC;
                         if(TMath::Abs(lClosestNonEmptyBC)<TMath::Abs(fClosestNonEmptyBC)) fClosestNonEmptyBC = lClosestNonEmptyBC;
                     }
 
                     if(lOrbit == (lThisOrbit-1)) {
-                        Int_t lClosestNonEmptyBC = lThisBC - (lBC-3564);
+                        Int_t lClosestNonEmptyBC = (lBC-3564) - lThisBC;
                         if(TMath::Abs(lClosestNonEmptyBC)<TMath::Abs(fClosestNonEmptyBC)) fClosestNonEmptyBC = lClosestNonEmptyBC;
                     }
                 }
