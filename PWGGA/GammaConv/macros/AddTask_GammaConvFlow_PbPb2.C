@@ -412,6 +412,16 @@ void AddTask_GammaConvFlow_PbPb2(
       NFilterBinValues[5] = 5;
       NFilterBinValues[6] = 11;
       NFilterBinValues[7] = 20;
+    } else if(FilterVariable==8 && NFilterBins == 4){
+      task->SetFilterVariable(2,MinFilter,MaxFilter);
+      NFilterBinValues[0] = -20;
+      NFilterBinValues[1] = -13;
+      NFilterBinValues[2] = -11;
+      NFilterBinValues[3] = -6;
+      NFilterBinValues[4] = 0;
+      NFilterBinValues[5] = 5;
+      NFilterBinValues[6] = 11;
+      NFilterBinValues[7] = 20;
     }else{
       task->SetFilterVariable(FilterVariable,MinFilter,MaxFilter);
       if(NFilterBins > 1){
