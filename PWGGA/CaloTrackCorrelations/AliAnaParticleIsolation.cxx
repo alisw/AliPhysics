@@ -7562,6 +7562,7 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
       
       //
       // Apply acceptance and energy/pt cut for particles in cone
+      // select only charged final particles and photons
       if(fSelectPrimariesInCone)
       {
         if( partInConeCharge > 0) // charged pT cut and acceptance
@@ -7572,9 +7573,11 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
           
           if(!GetReader()->GetFiducialCut()->IsInFiducialCut(fMomIso.Eta(),fMomIso.Phi(),kCTS)) continue ;
         }
-        else // neutrals E cut and acceptance
+        else  // photons E cut and acceptance, discard hadrons (neutron, k0L, ...)
         {
           if( GetIsolationCut()->GetParticleTypeInCone() == AliIsolationCut::kOnlyCharged ) continue;
+          
+          if( partInConePDG != 22 ) continue; // just photons
           
           if( partInConeE  <= minECalo ) continue;
           
