@@ -4177,7 +4177,7 @@ void AliAnalysisTaskEMCALPhotonIsolation::AnalyzeMC(){
           if((mcpp->Charge())==0)
             continue;
         }
-
+          //only final state PhysicalPrimary and primary particles
         if(mcpp->GetStatus()>10 || (!mcpp->IsPhysicalPrimary() || (!mcpp->IsPrimary())))
           continue;
 
