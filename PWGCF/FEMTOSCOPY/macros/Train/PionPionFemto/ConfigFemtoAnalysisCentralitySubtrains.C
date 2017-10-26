@@ -150,10 +150,12 @@ ConfigFemtoAnalysis(const TString& param_str="")
   manager->SetEventReader(rdr);
 
   if (macro_config.use_subwagon_centrality) {
+    TString c_range = macro_config.subwagon_centrality;
+
     int split = macro_config.subwagon_centrality.First("_");
 
-    int start = macro_config.subwagon_centrality(0, split).String().Atoi();
-    int stop = macro_config.subwagon_centrality(split+1, 3).String().Atoi();
+    int start = TString(c_range(0, split)).Atoi();
+    int stop = TString(c_range(split+1, c_range.Length()-1-split)).Atoi();
 
     macro_config.centrality_ranges.clear();
     macro_config.centrality_ranges.push_back(start);
