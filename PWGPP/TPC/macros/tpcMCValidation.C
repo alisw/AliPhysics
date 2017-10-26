@@ -5,7 +5,7 @@
 ///
 /*!
 \code
-   gSystem->AddIncludePath("-I$ALICE_ROOT/include/"); //couldn't add include path in .rootrc
+   gSystem->AddIncludePath("-I$ALICE_ROOT/include/"); //couldn't add include path in .rootr
   .L $AliPhysics_SRC/PWGPP/TPC/macros/tpcMCValidation.C+
   TString mcPeriod="LHC15k1a1";
   TString mcPass="passMC";
@@ -630,6 +630,52 @@ void PrintTestHtmlLink(TString testHtml){
   printf("\n %s \n",testLink.PrintValue());
 }
 
+
+
+/// Recursive function to decompose the status string into sub-contribution
+/// \param tree            - input tree
+/// \param currentString   - current status string
+/// \param statusVar       - resulting status variable
+/// \param statusTitle     - resulting status variable
+/// \param suffix          - suffix to parse status string "_Warning"
+/// \param counter         - counter for debug purposes
+/*!
+\code
+ TString currentString="dcar_Warning";
+ TString statusVar="", statusTitle="";
+ TPRegexp suffix("_Warning$");
+ Int_t counter=0;
+ AliTreeTrending::DecomposeStatusAlias(treeMC, currentString,statusVar,statusTitle,suffix,counter);
+ statusVar+="run";
+ trendingDraw->MakeStatusPlot("./", "dcarStatusMC.png", statusVar, statusTitle, "defaultCut",sCriteria);
+ trendingDraw->MakeStatusPlot("./", "dcarStatusAnchor.png", statusVar, statusTitle, "defaultCut",sCriteria,"TPC.Anchor");  //PROBLEM
+ \endcode
+*/
+void DecomposeStatusAlias(TTree* tree, TString currentString, TString &statusVar, TString &statusTitle, TPRegexp &suffix, Int_t &counter){
+  //
+  if (tree==NULL) throw std::invalid_argument("invalid tree argument");
+  TString toAdd=currentString;
+  suffix.Substitute(toAdd,"");
+  statusVar+=toAdd;
+  statusVar+=";";
+  TString title=toAdd;
+  if (TStatToolkit::GetMetadata(tree,(toAdd+".Title").Data())) title=TStatToolkit::GetMetadata(tree,toAdd+".Title")->GetTitle();
+  statusTitle+=title;
+  statusTitle+=";";
+  TString content=tree->GetAlias(currentString.Data());
+  TObjArray  * array = content.Tokenize("|&");
+  printf("%d\t%s\t%s\n",counter,toAdd.Data(), content.Data());
+  for (Int_t i=0; i<array->GetEntries(); i++){
+    TString cString=array->At(i)->GetName();
+    cString.ReplaceAll("(","");
+    cString.ReplaceAll(")","");
+    if (suffix.Match(cString,"")>0) {
+      DecomposeStatusAlias(tree, cString, statusVar, statusTitle,suffix,counter);
+      counter++;
+    }
+  }
+}
+
 /// html useful links
 ///  - Monalisa - raw run details query - used on mouse over
 ///     * http://alimonitor.cern.ch/raw/rawrun_details.jsp?run=280897
@@ -644,4 +690,8 @@ void PrintTestHtmlLink(TString testHtml){
 /// TODO - get form logbook detailed per run information  (put into html metadata string)
 /// TODO - Ful name of the alias expression (maybe recursive)
 /// TODO - add html preview for table header
-/// tableHeader, tableHeader_Tooltip, tableHeader_Title, tableHeader_html
+///          tableHeader, tableHeader_Tooltip, tableHeader_Title, tableHeader_html
+/// TODO - for the status graphs with friend - we need to use run list for other status -  rebin sparse graph destroys x offset  - to fix
+///      - RebinMultigraph should keep offsets
+/// TODO - Graph rebin to be extended to X,Y,Z
+
