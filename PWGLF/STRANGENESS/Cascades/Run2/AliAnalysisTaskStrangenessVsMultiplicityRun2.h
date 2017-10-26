@@ -303,6 +303,9 @@ private:
     Float_t fNHitsFMDA; //!
     Float_t fNHitsFMDC; //!
 
+    //IR info for OOB pileup study
+    Int_t fClosestNonEmptyBC; //!
+
 //===========================================================================================
 //   Variables for V0 Tree
 //===========================================================================================
@@ -358,6 +361,7 @@ private:
     Float_t fTreeVariableAmplitudeV0C; //!
     Float_t fTreeVariableNHitsFMDA; //!
     Float_t fTreeVariableNHitsFMDC; //!
+    Int_t   fTreeVariableClosestNonEmptyBC; //!
 
     //Event Multiplicity Variables
     Float_t fTreeVariableCentrality; //!
@@ -467,6 +471,7 @@ private:
     Float_t fTreeCascVarAmplitudeV0C; //!
     Float_t fTreeCascVarNHitsFMDA; //!
     Float_t fTreeCascVarNHitsFMDC; //!
+    Int_t   fTreeCascVarClosestNonEmptyBC; //!
 
     //Event Multiplicity Variables
     Float_t fTreeCascVarCentrality; //!
