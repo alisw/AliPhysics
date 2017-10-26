@@ -267,16 +267,16 @@ void AddTask_GammaConvFlow_PbPb2(
     cuts.AddCut("50200013", "30200009007000008250400000");
     cuts.AddCut("52400013", "30200009007000008250400000");
     cuts.AddCut("54800013", "30200009007000008250400000");
-  //Full standard cut output open TPC cuts duplicant for changed addtask parameters
+  //Full standard cut output open TPC cuts - var #1 for std cuts - TOF and chi2
   } else if (trainConfig == 58) {
-    cuts.AddCut("50200013", "00200009007000008250400000");
-    cuts.AddCut("52400013", "00200009007000008250400000");
-    cuts.AddCut("54800013", "00200009007000008250400000");
-  //Full standard cut output open TPC cuts duplicant for changed addtask parameters
+    cuts.AddCut("50200013", "00200009007002008750400000");
+    cuts.AddCut("52400013", "00200009007002008750400000");
+    cuts.AddCut("54800013", "00200009007002008750400000");
+  //Full standard cut output open TPC cuts - var #2 for std cuts - tightening all
   } else if (trainConfig == 59) {
-    cuts.AddCut("50200013", "00200009007000008250400000");
-    cuts.AddCut("52400013", "00200009007000008250400000");
-    cuts.AddCut("54800013", "00200009007000008250400000");
+    cuts.AddCut("50200013", "00200009007002009760600000");
+    cuts.AddCut("52400013", "00200009007002009760600000");
+    cuts.AddCut("54800013", "00200009007002009760600000");
   //systematics 0-20%
   } else if (trainConfig == 60) {
     cuts.AddCut("50200013", "04200009007000008250400000"); //eta cut: |eta| <0.75
