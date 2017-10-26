@@ -134,7 +134,7 @@ AliAnalysisTaskCaloTrackCorrelation * AddTaskClusterShape
     
     // print check on global settings once
     if(trigger.Contains("default") ||trigger.Contains("INT") || trigger.Contains("MB") )
-      printf("AddTaskClusterShape - Get the data features from global parameters: collision <%s>, period <%s>, mc <%d> \n",
+      printf("AddTaskClusterShape() - Get the data features from global parameters: collision <%s>, period <%s>, mc <%d> \n",
              kColType,kPeriod,kMC);
   }
   
@@ -240,10 +240,11 @@ AliAnalysisTaskCaloTrackCorrelation * AddTaskClusterShape
 
   // Print settings to check all is as expected
   //
-  printf("AddTaskClusterShape - Task NAME: %s \n",kAnaClusterShape.Data());
+  printf("AddTaskClusterShape() - Task NAME: %s; Passed settings\n",kAnaClusterShape.Data());
 
-  printf("Passed settings:\n calorimeter <%s>, simulation <%d>, year <%d>,\n collision <%s>, trigger <%s>, reject EMC <%d>,"
-         " clustersArray <%s>, tender <%d>, non linearity <%d>, TM dep <%d>, QA on <%d>\n outputfile <%s>, printSettings <%d>, debug <%d>\n",
+  printf("\t calorimeter <%s>, simulation <%d>, year <%d>, collision <%s>, trigger <%s>, reject EMC <%d>,\n"
+         "\t clustersArray <%s>, tender <%d>, non linearity <%d>, TM dep <%d>, QA on <%d>,\n"
+         "\t outputfile <%s>, printSettings <%d>, debug <%d>\n",
          calorimeter.Data(),simulation,year,collision.Data(),trigger.Data(), rejectEMCTrig, 
          clustersArray.Data(),tender, nonLinOn, tmDep, qaAn, outputfile.Data(),printSettings,debug);
 
@@ -281,8 +282,11 @@ AliAnalysisTaskCaloTrackCorrelation * AddTaskClusterShape
     maker->GetReader()->GetWeightUtils()->SwitchOnMCCrossSectionHistoFill(); 
     
     // For recent productions where the cross sections and trials are not stored in separate file
-    if ( kPeriod.Contains("LHC16c") ) // add here any other affected periods, for the moment jet-jet 8 TeV
-    {
+    TString prodName = gSystem->Getenv("ALIEN_JDL_LPMPRODUCTIONTAG");
+    printf("AddTaskClusterShape() - MC production name: %s\n",prodName.Data());
+    if ( prodName.Contains("LHC16c") ) // add here any other affected periods, for the moment jet-jet 8 TeV
+    {   
+      printf("\t use the cross section from EventHeader per Event\n");
       maker->GetReader()->GetWeightUtils()->SwitchOnMCCrossSectionFromEventHeader() ;
     }
     
@@ -292,7 +296,7 @@ AliAnalysisTaskCaloTrackCorrelation * AddTaskClusterShape
   
   if(printSettings) maker->Print("");
   
-  printf("<< End Configuration of %d analysis for calorimeter %s >>\n",n, calorimeter.Data());
+  printf("AddTaskClusterShape() - << End Configuration of %d analysis for calorimeter %s >>\n",n, calorimeter.Data());
   
   
   //
@@ -329,7 +333,7 @@ AliCaloTrackReader * ConfigureReader(TString col,           Bool_t simulation,
   AliCaloTrackReader * reader = 0;
   if     (inputDataType == "AOD") reader = new AliCaloTrackAODReader();
   else if(inputDataType == "ESD") reader = new AliCaloTrackESDReader();
-  else printf("AliCaloTrackReader::ConfigureReader() - Data not known InputData=%s\n",inputDataType.Data());
+  else printf("AddTaskClusterShape::ConfigureReader() - Data not known InputData=%s\n",inputDataType.Data());
   
   reader->SetDebug(debug);//10 for lots of messages
   
@@ -430,13 +434,13 @@ AliCaloTrackReader * ConfigureReader(TString col,           Bool_t simulation,
   //
   if(clustersArray == "" && !tender)
   {
-    printf("**************** Standard EMCAL clusters branch analysis **************** \n");
+    printf("AddTaskClusterShape::ConfigureReader() - **************** Standard EMCAL clusters branch analysis **************** \n");
     reader->SwitchOnClusterRecalculation();
     // Check in ConfigureCaloUtils that the recalibration and bad map are ON
   }
   else
   {
-    printf("**************** Input for analysis is Clusterizer %s **************** \n", clustersArray.Data());
+    printf("AddTaskClusterShape::ConfigureReader() - **************** Input for analysis is Clusterizer %s **************** \n", clustersArray.Data());
     reader->SetEMCALClusterListName(clustersArray);
     reader->SwitchOffClusterRecalculation();
   }
@@ -482,7 +486,7 @@ AliCaloTrackReader * ConfigureReader(TString col,           Bool_t simulation,
   
   if( rejectEMCTrig > 0 && !simulation && (trigger.Contains("EMC") || trigger.Contains("L")))
   {
-    printf("=== Remove bad triggers === \n");
+    printf("AddTaskClusterShape::ConfigureReader() === Remove bad triggers === \n");
     reader->SwitchOnTriggerPatchMatching();
     reader->SwitchOnBadTriggerEventsRemoval();
     
@@ -505,7 +509,7 @@ AliCaloTrackReader * ConfigureReader(TString col,           Bool_t simulation,
     
     if(clustersArray != "" || tender)
     {
-      printf("Trigger cluster calibration OFF\n");
+      printf("AddTaskClusterShape::ConfigureReader() - Trigger cluster calibration OFF\n");
       reader->SwitchOffTriggerClusterTimeRecal() ;
     }
     
@@ -563,7 +567,8 @@ AliCalorimeterUtils* ConfigureCaloUtils(TString col,           Bool_t simulation
   else if(year >  2013) cu->SetNumberOfSuperModulesUsed(20);
   else                  cu->SetNumberOfSuperModulesUsed(10);
   
-  printf("xxx Number of SM set to <%d> xxx\n",cu->GetNumberOfSuperModulesUsed());
+  printf("AddTaskClusterShape::ConfigureCaloUtils() xxx Number of SM set to <%d> xxx\n",
+         cu->GetNumberOfSuperModulesUsed());
   
   // Search of local maxima in cluster
   if(col=="pp")
@@ -625,8 +630,8 @@ AliCalorimeterUtils* ConfigureCaloUtils(TString col,           Bool_t simulation
   
   if( nonLinOn )  cu->SwitchOnCorrectClusterLinearity();
   
-  printf("ConfigureCaloUtils() - EMCAL Recalibration ON? %d %d\n",recou->IsRecalibrationOn(), cu->IsRecalibrationOn());
-  printf("ConfigureCaloUtils() - EMCAL BadMap        ON? %d %d\n",recou->IsBadChannelsRemovalSwitchedOn(), cu->IsBadChannelsRemovalSwitchedOn());
+  printf("AddTaskClusterShape::ConfigureCaloUtils() - EMCAL Recalibration ON? %d %d\n",recou->IsRecalibrationOn(), cu->IsRecalibrationOn());
+  printf("AddTaskClusterShape::ConfigureCaloUtils() - EMCAL BadMap        ON? %d %d\n",recou->IsBadChannelsRemovalSwitchedOn(), cu->IsBadChannelsRemovalSwitchedOn());
   
   // PHOS
   cu->SwitchOffLoadOwnPHOSGeometryMatrices();
