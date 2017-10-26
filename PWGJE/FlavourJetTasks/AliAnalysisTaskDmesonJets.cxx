@@ -983,6 +983,7 @@ AliAnalysisTaskDmesonJets::AnalysisEngine::AnalysisEngine(const AliAnalysisTaskD
   fJetDefinitions(source.fJetDefinitions),
   fPtBinWidth(source.fPtBinWidth),
   fMaxPt(source.fMaxPt),
+  fD0Extended(source.fD0Extended),
   fRandomGen(source.fRandomGen),
   fTrackEfficiency(source.fTrackEfficiency),
   fDataSlotNumber(-1),

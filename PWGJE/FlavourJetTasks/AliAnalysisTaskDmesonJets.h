@@ -339,7 +339,7 @@ class AliAnalysisTaskDmesonJets : public AliAnalysisTaskEmcalLight
   /// \brief Lightweight class that encapsulates D0
   ///
   /// This class encapsulates D0 jet
-  /// information in a very compact data structure (144 bits)
+  /// information in a very compact data structure (143 bits)
   /// This is an extended version with additional variables
   /// used to implement topological cuts
   class AliD0ExtendedInfoSummary : public AliD0InfoSummary {
@@ -366,12 +366,12 @@ class AliAnalysisTaskDmesonJets : public AliAnalysisTaskEmcalLight
     /// D0K * D0Pi
     Double32_t          fd0d0          ; //[-0.000524288,0.000524288,20]
     /// Cosine of the pointing angle
-    Double32_t          fCosPointing   ; //[-1.28,1.28,8]
+    Double32_t          fCosPointing   ; //[0,1.28,7]
     /// max norm d0
     Double32_t          fMaxNormd0     ; //[-102.4,102.4,11]
 
     /// \cond CLASSIMP
-    ClassDef(AliD0ExtendedInfoSummary, 3);
+    ClassDef(AliD0ExtendedInfoSummary, 4);
     /// \endcond
   };
 
