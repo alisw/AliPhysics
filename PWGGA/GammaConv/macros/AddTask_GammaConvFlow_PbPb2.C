@@ -436,7 +436,7 @@ void AddTask_GammaConvFlow_PbPb2(
 
     for(Int_t j=0;j<NFilterBins;j++){
       AliFlowTrackSimpleCuts *POIfilterVZERO = new AliFlowTrackSimpleCuts();
-      if(FilterVariable==7){
+      if(FilterVariable==7 || FilterVariable==8){
         POIfilterVZERO->SetMassMin(NFilterBinValues[2*j]); POIfilterVZERO->SetMassMax(NFilterBinValues[2*j+1]);
       }else{
         POIfilterVZERO->SetMassMin(NFilterBinValues[j]); POIfilterVZERO->SetMassMax(NFilterBinValues[j+1]);
