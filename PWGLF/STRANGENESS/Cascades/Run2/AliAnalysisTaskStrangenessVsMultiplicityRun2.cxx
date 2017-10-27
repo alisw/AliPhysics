@@ -997,17 +997,17 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::UserExec(Option_t *)
                     Int_t lBC = lBCsForIR[j];
 
                     if((lOrbit == lThisOrbit) && (lBC != lThisBC)) {
-                        Int_t lClosestNonEmptyBC = lThisBC - lBC;
+                        Int_t lClosestNonEmptyBC = lBC - lThisBC;
                         if(TMath::Abs(lClosestNonEmptyBC)<TMath::Abs(fClosestNonEmptyBC)) fClosestNonEmptyBC = lClosestNonEmptyBC;
                     }
                 					
                     if(lOrbit == (lThisOrbit+1)) {
-                        Int_t lClosestNonEmptyBC = lThisBC - (lBC+3564);
+                        Int_t lClosestNonEmptyBC = (lBC+3564) - lThisBC;
                         if(TMath::Abs(lClosestNonEmptyBC)<TMath::Abs(fClosestNonEmptyBC)) fClosestNonEmptyBC = lClosestNonEmptyBC;
                     }
 
                     if(lOrbit == (lThisOrbit-1)) {
-                        Int_t lClosestNonEmptyBC = lThisBC - (lBC-3564);
+                        Int_t lClosestNonEmptyBC = (lBC-3564) - lThisBC;
                         if(TMath::Abs(lClosestNonEmptyBC)<TMath::Abs(fClosestNonEmptyBC)) fClosestNonEmptyBC = lClosestNonEmptyBC;
                     }
                 }
