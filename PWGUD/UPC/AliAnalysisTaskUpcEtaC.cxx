@@ -572,28 +572,28 @@ void AliAnalysisTaskUpcEtaC::UserCreateOutputObjects()
 
   cout << "##### Before fHistNevents... stuff is completed" << endl;
  
-  TString CutNameEtaCK0sChannel[14] = {"Analyzed","Triggered","Vertex cut","V0 decision","Neutron ZDC cut","1 or more K0s candidates",
+  TString CutNameEtaCK0sChannel[15] = {"Analyzed","Triggered","Vertex cut","V0 decision","Neutron ZDC cut","1 or more K0s candidates",
 				       "Four good tracks","KPi and two daughter Pions","qK<0 && Sum(qPi)<0 (bad)","qK>0 && Sum(qPi)>0 (bad)",
-				       "K-Pi+ && Opp sign daughters (good)","K+Pi- && Opp sign daughters","Total with correct charges","2+ tracks with pT>0.4"};
+				       "K-Pi+ && Opp sign daughters (good)","K+Pi- && Opp sign daughters","Total with correct charges","2+ tracks with pT>0.4","Belle Cuts Passed"};
 
-  fHistNeventsEtaCK0sChannel = new TH1D("fHistNeventsEtaCK0sChannel","fHistNeventsEtaCK0sChannel",14,0.5,14.5);
-  for(Int_t i=0;i<14; i++) fHistNeventsEtaCK0sChannel->GetXaxis()->SetBinLabel(i+1,CutNameEtaCK0sChannel[i].Data());
+  fHistNeventsEtaCK0sChannel = new TH1D("fHistNeventsEtaCK0sChannel","fHistNeventsEtaCK0sChannel",15,0.5,15.5);
+  for(Int_t i=0;i<15; i++) fHistNeventsEtaCK0sChannel->GetXaxis()->SetBinLabel(i+1,CutNameEtaCK0sChannel[i].Data());
   fListHistK0s3PiPi4K->Add(fHistNeventsEtaCK0sChannel);
 
-  TString CutNameEtaC[16] = {"Analyzed","Triggered","Vertex cut","V0 decision","Neutron ZDC cut","Four good tracks",
+  TString CutNameEtaC[17] = {"Analyzed","Triggered","Vertex cut","V0 decision","Neutron ZDC cut","Four good tracks",
 			     "Two Kaons and Two Pions","Like sign kaons","Like sign pions","Like sign both","Opposite sign",
-			     "Pion and Kaon mass check","2Kstar events","1Kstar events","0Kstar events","2+ tracks with pT>0.4"};
+			     "Pion and Kaon mass check","2Kstar events","1Kstar events","0Kstar events","2+ tracks with pT>0.4","Belle Cuts Passed"};
 
-  fHistNeventsEtaC = new TH1D("fHistNeventsEtaC","fHistNeventsEtaC",16,0.5,16.5);
-  for (Int_t i = 0; i<16; i++) fHistNeventsEtaC->GetXaxis()->SetBinLabel(i+1,CutNameEtaC[i].Data());
+  fHistNeventsEtaC = new TH1D("fHistNeventsEtaC","fHistNeventsEtaC",17,0.5,17.5);
+  for (Int_t i = 0; i<17; i++) fHistNeventsEtaC->GetXaxis()->SetBinLabel(i+1,CutNameEtaC[i].Data());
   fListHistKstar->Add(fHistNeventsEtaC);
 
-  TString CutNameEtaCRhoChannel[15] = {"Analyzed","Triggered","Vertex cut","V0 decision","Neutron ZDC cut","Four good tracks",
+  TString CutNameEtaCRhoChannel[17] = {"Analyzed","Triggered","Vertex cut","V0 decision","Neutron ZDC cut","Four good tracks",
 				       "Four Pions","non-zero net charge","zero net charge","no sets of #rho's","one set of #rho's",
-				       "two sets of #rho's","#eta_{C}->#rho#rho candidates","2+ tracks with pT>0.4 rho0","2+ tracks with pT>0.4 4pi"};
+				       "two sets of #rho's","#eta_{C}->#rho#rho candidates","2+ tracks with pT>0.4 rho0","2+ tracks with pT>0.4 4pi","Belle Cuts Passed (w/o 2#rho's)","Belle Cuts Passed (All 4#pi)"};
 
-  fHistNeventsEtaCRhoChannel = new TH1D("fHistNeventsEtaCRhoChannel","fHistNeventsEtaCRhoChannel",15,0.5,15.5);
-  for (Int_t i = 0; i<15; i++) fHistNeventsEtaCRhoChannel->GetXaxis()->SetBinLabel(i+1,CutNameEtaCRhoChannel[i].Data());
+  fHistNeventsEtaCRhoChannel = new TH1D("fHistNeventsEtaCRhoChannel","fHistNeventsEtaCRhoChannel",17,0.5,17.5);
+  for (Int_t i = 0; i<17; i++) fHistNeventsEtaCRhoChannel->GetXaxis()->SetBinLabel(i+1,CutNameEtaCRhoChannel[i].Data());
   fListHist2Rho4Pion->Add(fHistNeventsEtaCRhoChannel);
 
   f2RhoPtVsMinvEtaC = new TH2D("f2RhoPtVsMinvEtaC","f2RhoPtVsMinvEtaC",1000, 0., 10.,1000, 0., 10.);
@@ -659,11 +659,11 @@ void AliAnalysisTaskUpcEtaC::UserCreateOutputObjects()
 
 
   //3PiPi channel
-  TString CutNameEtaC3PiPiChannel[10] = {"Analyzed","Triggered","Vertex cut","V0 decision","Neutron ZDC cut","Six good tracks",
-					"Six Pions","non-zero net charge","candidate (0 net charge)","2+ tracks with pT>0.4"};
+  TString CutNameEtaC3PiPiChannel[11] = {"Analyzed","Triggered","Vertex cut","V0 decision","Neutron ZDC cut","Six good tracks",
+					 "Six Pions","non-zero net charge","candidate (0 net charge)","2+ tracks with pT>0.4","Belle Cuts Passed"};
 
-  fHistNeventsEtaC3PiPiChannel = new TH1D("fHistNeventsEtaC3PiPiChannel","fHistNeventsEtaC3PiPiChannel",10,0.5,10.5);
-  for (Int_t i = 0; i<10; i++) fHistNeventsEtaC3PiPiChannel->GetXaxis()->SetBinLabel(i+1,CutNameEtaC3PiPiChannel[i].Data());
+  fHistNeventsEtaC3PiPiChannel = new TH1D("fHistNeventsEtaC3PiPiChannel","fHistNeventsEtaC3PiPiChannel",11,0.5,11.5);
+  for (Int_t i = 0; i<11; i++) fHistNeventsEtaC3PiPiChannel->GetXaxis()->SetBinLabel(i+1,CutNameEtaC3PiPiChannel[i].Data());
   fListHistK0s3PiPi4K->Add(fHistNeventsEtaC3PiPiChannel);
 
   
@@ -689,11 +689,11 @@ void AliAnalysisTaskUpcEtaC::UserCreateOutputObjects()
   fListHistK0s3PiPi4K->Add(f3PiPiSumPzVsMinvEtaC);
 
   //4 kaon channel
-  TString CutNameEtaC4KaonChannel[11] = {"Analyzed","Triggered","Vertex cut","V0 decision","Neutron ZDC cut","Four good tracks",
-					 "Four Kaons","non-zero net charge","zero net charge","#eta_{C} candidates","2+ tracks with pT>0.4"};
+  TString CutNameEtaC4KaonChannel[12] = {"Analyzed","Triggered","Vertex cut","V0 decision","Neutron ZDC cut","Four good tracks",
+					 "Four Kaons","non-zero net charge","zero net charge","#eta_{C} candidates","2+ tracks with pT>0.4","Belle Cuts Passed"};
 
-  fHistNeventsEtaC4KaonChannel = new TH1D("fHistNeventsEtaC4KaonChannel","fHistNeventsEtaC4KaonChannel",11,0.5,11.5);
-  for (Int_t i = 0; i<11; i++) fHistNeventsEtaC4KaonChannel->GetXaxis()->SetBinLabel(i+1,CutNameEtaC4KaonChannel[i].Data());
+  fHistNeventsEtaC4KaonChannel = new TH1D("fHistNeventsEtaC4KaonChannel","fHistNeventsEtaC4KaonChannel",12,0.5,12.5);
+  for (Int_t i = 0; i<12; i++) fHistNeventsEtaC4KaonChannel->GetXaxis()->SetBinLabel(i+1,CutNameEtaC4KaonChannel[i].Data());
   fListHistK0s3PiPi4K->Add(fHistNeventsEtaC4KaonChannel);
 
   f4KaonPtVsMinvEtaC = new TH2D("f4KaonPtVsMinvEtaC","f4KaonPtVsMinvEtaC",1000, 0., 10., 1000, 0., 10.);
@@ -1355,6 +1355,7 @@ void AliAnalysisTaskUpcEtaC::RunAODhist()
   Short_t qKaon[7], qPion[7], qK0sPion[7];
   UInt_t nKaon=0, nPion=0, nK0sPion=0, nSpdHits=0;
   Double_t SumPz=0, VectorSumPt=0, ScalarSumP=0;
+  Bool_t BelleCuts = kFALSE;
   Double_t fRecTPCsignalPion[7], fRecTPCsignalKaon[7], fRecTPCsignalK0sPion[7];
   Int_t fChannel = 0;
   Double_t trackPt[7]={0,0,0,0,0,0,0};
@@ -1463,7 +1464,7 @@ void AliAnalysisTaskUpcEtaC::RunAODhist()
 
   //Kstar and 2pi2k channels
   nKaon=0; nPion=0;
-  SumPz=0; ScalarSumP=0; VectorSumPt=0; nHighPtTracks=0;
+  SumPz=0; ScalarSumP=0; VectorSumPt=0; nHighPtTracks=0; BelleCuts=kFALSE;
   Int_t nTracksWithoutTOFinfo = 0;
   Bool_t goodPairA = kFALSE;
   Bool_t goodPairB = kFALSE;
@@ -1565,7 +1566,11 @@ void AliAnalysisTaskUpcEtaC::RunAODhist()
 		  if(vKaon[aa].Pt() > 0.4) nHighPtTracks++;
 		}
 		if(nHighPtTracks > 1) fHistNeventsEtaC->Fill(16);
-		
+		//Apply Belle Cuts
+		if(ScalarSumP < 6 && nHighPtTracks > 1) BelleCuts = kTRUE;
+		else BelleCuts = kFALSE;
+		if(BelleCuts) fHistNeventsEtaC->Fill(17);
+
 		for(Int_t aa = 0;aa<13;aa++) {
 		  boostInfoA[aa] = -999.;
 		  boostInfoB[aa] = -999.;
@@ -1648,9 +1653,6 @@ void AliAnalysisTaskUpcEtaC::RunAODhist()
 		    fKstarDaughterPtotalNormCheck->Fill(boostInfoB[12]);
 		  }
 
-		  //##### Turn off Helicity Cut #####
-		  goodPairA = kTRUE;    goodPairB = kTRUE;
-
 		  //Fill Dalitz plot with PiK masses Pi-K+ vs Pi+K-
 		  if(qKaon[0] < 0) fMPiKvsMPiK->Fill(pow(vKstar[0].M(),2),pow(vKstar[1].M(),2));
 		  else fMPiKvsMPiK->Fill(pow(vKstar[1].M(),2),pow(vKstar[0].M(),2));
@@ -1659,7 +1661,7 @@ void AliAnalysisTaskUpcEtaC::RunAODhist()
 		  //2 Kstar case
 		  if((vKstar[0].M() < (kStarMass + kStarWidth)) && (vKstar[0].M() > (kStarMass - kStarWidth)) &&
 		     (vKstar[1].M() < (kStarMass + kStarWidth)) && (vKstar[1].M() > (kStarMass - kStarWidth)) && 
-		     goodPairA && goodPairB) {
+		     goodPairA && goodPairB && BelleCuts) {
 		    fHistNeventsEtaC->Fill(13);
 		    if(qPion[0] > 0 && qPion[1] < 0) {
 		      f2KstarPtPiPlus->Fill(vPion[0].Pt());
@@ -1700,7 +1702,7 @@ void AliAnalysisTaskUpcEtaC::RunAODhist()
 		  //1 Kstar case
 		  else if ((vKstar[0].M() < (kStarMass + kStarWidth)) && (vKstar[0].M() > (kStarMass - kStarWidth)) &&
 			   ((vKstar[1].M() > (kStarMass + kStarWidth)) || (vKstar[1].M() < (kStarMass - kStarWidth))) &&
-			   goodPairA) {
+			   goodPairA && BelleCuts) {
 		    //Fill using first Kstar candidate
 		    fHistNeventsEtaC->Fill(14);
 		    if(qPion[0] > 0 && qPion[1] < 0) {
@@ -1741,7 +1743,7 @@ void AliAnalysisTaskUpcEtaC::RunAODhist()
 		  }
 		  else if ((vKstar[1].M() < (kStarMass + kStarWidth)) && (vKstar[1].M() > (kStarMass - kStarWidth)) &&
 			   ((vKstar[0].M() > (kStarMass + kStarWidth)) || (vKstar[0].M() < (kStarMass - kStarWidth))) &&
-			   goodPairB) {
+			   goodPairB && BelleCuts) {
 		    //Fill using second Kstar candidate
 		    fHistNeventsEtaC->Fill(14);
 		    if(qPion[0] > 0 && qPion[1] < 0) {
@@ -1781,7 +1783,7 @@ void AliAnalysisTaskUpcEtaC::RunAODhist()
 		    //f1KstarMinvEtaC->Fill(vCandidate.M());
 		  }
 		  //0 Kstar case
-		  else {
+		  else if(BelleCuts){
 		    //if(((vKstar[0].M() > (kStarMass+kStarWidth)) || (vKstar[0].M() < (kStarMass-kStarWidth))) &&
 		    //	  ((vKstar[1].M() > (kStarMass+kStarWidth)) || (vKstar[1].M() < (kStarMass-kStarWidth)))) {
 		    fHistNeventsEtaC->Fill(15);
@@ -1831,7 +1833,7 @@ void AliAnalysisTaskUpcEtaC::RunAODhist()
 
   //EtaC->RhoRho Channel
   nKaon=0; nPion=0;
-  SumPz=0; ScalarSumP=0; VectorSumPt=0; nHighPtTracks=0;
+  SumPz=0; ScalarSumP=0; VectorSumPt=0; nHighPtTracks=0; BelleCuts=kFALSE;
   nTracksWithoutTOFinfo = 0;
   Int_t nPiMinus=0;
   Int_t nPiPlus=0;
@@ -1934,6 +1936,10 @@ void AliAnalysisTaskUpcEtaC::RunAODhist()
 		VectorSumPt = sumPtVector.Pt();
 		//Number of tracks with pT>0.4 GeV/c
 		for(Int_t aa = 0;aa<4;aa++) if(vPion[aa].Pt() > 0.4) nHighPtTracks++;
+		//Apply Belle Cuts
+		if(ScalarSumP < 6 && nHighPtTracks > 1) BelleCuts = kTRUE;
+		else BelleCuts = kFALSE;
+		if(BelleCuts) fHistNeventsEtaCRhoChannel->Fill(17);
 
 		for(Int_t aa = 0;aa<13;aa++) {
 		  boostInfoRhoZero[aa]  = -999.;
@@ -2069,9 +2075,6 @@ void AliAnalysisTaskUpcEtaC::RunAODhist()
 		  f2RhoDaughterPtotalCheck->Fill(boostInfoRhoThree[8]);
 		}
 
-		//##### Turn off Helicity Cut #####
-		goodRho[0] = kTRUE;    goodRho[1] = kTRUE;    goodRho[2] = kTRUE;    goodRho[3] = kTRUE;
-
 		//Identify sets with 2 rho0's
 		if(vRho[0].M() < (rhoMass+rhoWidth) && vRho[0].M() > (rhoMass-rhoWidth) && 
 		   vRho[1].M() < (rhoMass+rhoWidth) && vRho[1].M() > (rhoMass-rhoWidth) && 
@@ -2114,7 +2117,8 @@ void AliAnalysisTaskUpcEtaC::RunAODhist()
 		if(nRhoPairs == 1) fHistNeventsEtaCRhoChannel->Fill(11);
 		if(nRhoPairs == 2) fHistNeventsEtaCRhoChannel->Fill(12);
 
-		if(nRhoPairs > 0) {
+		//##### NOTE: I will only apply the BelleCuts to the 4 particle final state to allow studying double rho0 production in intermediate case.
+		if(nRhoPairs > 0 && BelleCuts) {
 		  fHistNeventsEtaCRhoChannel->Fill(13);
 		  f2RhoPtVsMinvEtaC->Fill(vCandidate.M(),vCandidate.Pt()); //4Pi final states with 2 intermediate rho's.
 		  f2RhoEtaVsMinvEtaC->Fill(vCandidate.M(),vCandidate.Eta());
@@ -2124,7 +2128,8 @@ void AliAnalysisTaskUpcEtaC::RunAODhist()
 		  f2RhoScalarSumP->Fill(ScalarSumP);
 		  f2RhoVectorSumPt->Fill(VectorSumPt);
 		  if(nHighPtTracks > 1) fHistNeventsEtaCRhoChannel->Fill(14);
-		} else if(nRhoPairs == 0) {
+		} else if(nRhoPairs == 0 && BelleCuts) {
+		  fHistNeventsEtaCRhoChannel->Fill(16);
 		  f4PionPtVsMinvEtaC->Fill(vCandidate.M(),vCandidate.Pt()); //All 4Pi final states.
 		  f4PionEtaVsMinvEtaC->Fill(vCandidate.M(),vCandidate.Eta());
 		  if(vCandidate.Pt()<0.4) f4PionEtaVsMinvEtaC400MeVPtMax->Fill(vCandidate.M(),vCandidate.Eta());
@@ -2154,7 +2159,7 @@ void AliAnalysisTaskUpcEtaC::RunAODhist()
  
   //EtaC->3(pi+pi-) Channel
   nKaon=0; nPion=0;
-  SumPz=0; ScalarSumP=0; VectorSumPt=0; nHighPtTracks=0;
+  SumPz=0; ScalarSumP=0; VectorSumPt=0; nHighPtTracks=0; BelleCuts=kFALSE;
   nTracksWithoutTOFinfo = 0;
   if(nGoodTracks == 6 && nSpdHits>1){
   	  fHistNeventsEtaC3PiPiChannel->Fill(6);
@@ -2245,17 +2250,22 @@ void AliAnalysisTaskUpcEtaC::RunAODhist()
 		VectorSumPt = sumPtVector.Pt();
 		//Number of tracks with pT>0.4 GeV/c
 		for(Int_t aa = 0;aa<6;aa++) if(vPion[aa].Pt() > 0.4) nHighPtTracks++;
+		//Apply Belle Cuts
+		if(ScalarSumP < 6 && nHighPtTracks > 1) BelleCuts = kTRUE;
+		else BelleCuts = kFALSE;
+		if(BelleCuts) fHistNeventsEtaC3PiPiChannel->Fill(11);
 
-		f3PiPiPtVsMinvEtaC->Fill(vCandidate.M(),vCandidate.Pt());
-		f3PiPiEtaVsMinvEtaC->Fill(vCandidate.M(),vCandidate.Eta());
-		if(vCandidate.Pt()<0.4) f3PiPiEtaVsMinvEtaC400MeVPtMax->Fill(vCandidate.M(),vCandidate.Eta());
-		if(vCandidate.Pt()<0.1) f3PiPiEtaVsMinvEtaC100MeVPtMax->Fill(vCandidate.M(),vCandidate.Eta());
-		f3PiPiSumPzVsMinvEtaC->Fill(vCandidate.M(),SumPz);
-		f3PiPiScalarSumP->Fill(ScalarSumP);
-		f3PiPiVectorSumPt->Fill(VectorSumPt);
-		if(nHighPtTracks > 1) fHistNeventsEtaC3PiPiChannel->Fill(10);
-		//cout << "mEtaC " << vCandidate.M() << ", ptEtaC " << vCandidate.Pt() << endl;
-
+		if(BelleCuts) {
+		  f3PiPiPtVsMinvEtaC->Fill(vCandidate.M(),vCandidate.Pt());
+		  f3PiPiEtaVsMinvEtaC->Fill(vCandidate.M(),vCandidate.Eta());
+		  if(vCandidate.Pt()<0.4) f3PiPiEtaVsMinvEtaC400MeVPtMax->Fill(vCandidate.M(),vCandidate.Eta());
+		  if(vCandidate.Pt()<0.1) f3PiPiEtaVsMinvEtaC100MeVPtMax->Fill(vCandidate.M(),vCandidate.Eta());
+		  f3PiPiSumPzVsMinvEtaC->Fill(vCandidate.M(),SumPz);
+		  f3PiPiScalarSumP->Fill(ScalarSumP);
+		  f3PiPiVectorSumPt->Fill(VectorSumPt);
+		  if(nHighPtTracks > 1) fHistNeventsEtaC3PiPiChannel->Fill(10);
+		  //cout << "mEtaC " << vCandidate.M() << ", ptEtaC " << vCandidate.Pt() << endl;
+		}
 		  
 		////Fill Dalitz plot with PiK masses Pi-K+ vs Pi+K-
 		  //if(qKaon[0] < 0) fMPiKvsMPiK->Fill(pow(vRho[0].M(),2),pow(vRho[1].M(),2));
@@ -2269,7 +2279,7 @@ void AliAnalysisTaskUpcEtaC::RunAODhist()
 
   //EtaC->2(k+k-) Channel
   nKaon=0; nPion=0;
-  SumPz=0; ScalarSumP=0; VectorSumPt=0; nHighPtTracks++;
+  SumPz=0; ScalarSumP=0; VectorSumPt=0; nHighPtTracks++; BelleCuts=kFALSE;
   Int_t nKK = 0;
   nTracksWithoutTOFinfo = 0;
   if(nGoodTracks == 4 && nSpdHits>1){
@@ -2362,16 +2372,22 @@ void AliAnalysisTaskUpcEtaC::RunAODhist()
 		VectorSumPt = sumPtVector.Pt();
 		//Number of tracks with pT>0.4 GeV/c
 		for(Int_t aa = 0;aa<4;aa++) if(vKaon[aa].Pt() > 0.4) nHighPtTracks++;
+		//Apply Belle Cuts
+		if(ScalarSumP < 6 && nHighPtTracks > 1) BelleCuts = kTRUE;
+		else BelleCuts = kFALSE;
+		if(BelleCuts) fHistNeventsEtaCK0sChannel->Fill(12);
 
-		f4KaonPtVsMinvEtaC->Fill(vCandidate.M(),vCandidate.Pt());
-		f4KaonEtaVsMinvEtaC->Fill(vCandidate.M(),vCandidate.Eta());
-		if(vCandidate.Pt()<0.4) f4KaonEtaVsMinvEtaC400MeVPtMax->Fill(vCandidate.M(),vCandidate.Eta());
-		if(vCandidate.Pt()<0.1) f4KaonEtaVsMinvEtaC100MeVPtMax->Fill(vCandidate.M(),vCandidate.Eta());
-		f4KaonSumPzVsMinvEtaC->Fill(vCandidate.M(),SumPz);
-		f4KaonScalarSumP->Fill(ScalarSumP);
-		f4KaonVectorSumPt->Fill(VectorSumPt);
-		if(nHighPtTracks > 1) fHistNeventsEtaC4KaonChannel->Fill(11);
-		//cout << "mEtaC " << vCandidate.M() << ", ptEtaC " << vCandidate.Pt() << endl;
+		if(BelleCuts) {
+		  f4KaonPtVsMinvEtaC->Fill(vCandidate.M(),vCandidate.Pt());
+		  f4KaonEtaVsMinvEtaC->Fill(vCandidate.M(),vCandidate.Eta());
+		  if(vCandidate.Pt()<0.4) f4KaonEtaVsMinvEtaC400MeVPtMax->Fill(vCandidate.M(),vCandidate.Eta());
+		  if(vCandidate.Pt()<0.1) f4KaonEtaVsMinvEtaC100MeVPtMax->Fill(vCandidate.M(),vCandidate.Eta());
+		  f4KaonSumPzVsMinvEtaC->Fill(vCandidate.M(),SumPz);
+		  f4KaonScalarSumP->Fill(ScalarSumP);
+		  f4KaonVectorSumPt->Fill(VectorSumPt);
+		  if(nHighPtTracks > 1) fHistNeventsEtaC4KaonChannel->Fill(11);
+		  //cout << "mEtaC " << vCandidate.M() << ", ptEtaC " << vCandidate.Pt() << endl;
+		}
 
 		//Now the intermediate K+K- pairs (all combinations)
 		nKK = 0;
@@ -2389,8 +2405,10 @@ void AliAnalysisTaskUpcEtaC::RunAODhist()
 
 		//For all cases look at 4K vs 2K minv
 		for(Int_t KKIndex = 0;KKIndex < 4; KKIndex++) {
-		  f4KVs2KMinv->Fill(vCandidate.M(),vKK[KKIndex].M());
-		  f4KVs2KMinvSquared->Fill( (vCandidate.M()*vCandidate.M()) , (vRho[KKIndex].M()*vKK[KKIndex].M()) );
+		  if(BelleCuts) { //##### NOTE: Apply BelleCuts here too.
+		    f4KVs2KMinv->Fill(vCandidate.M(),vKK[KKIndex].M());
+		    f4KVs2KMinvSquared->Fill( (vCandidate.M()*vCandidate.M()) , (vRho[KKIndex].M()*vKK[KKIndex].M()) );
+		  }
 		}
 
 		////Fill Dalitz plot with PiK masses Pi-K+ vs Pi+K-
@@ -2775,7 +2793,7 @@ void AliAnalysisTaskUpcEtaC::RunAODhist()
 
     //now identify the additional kaon and pion, excluding the pions from K0s daughters by fID.
     nKaon=0; nPion=0; nK0sPion=0;
-    SumPz=0; ScalarSumP=0; VectorSumPt=0; nHighPtTracks=0;
+    SumPz=0; ScalarSumP=0; VectorSumPt=0; nHighPtTracks=0; BelleCuts=kFALSE;
     qK0sPion[0] = 0;
     qK0sPion[1] = 0;
     qPion[0] = 0;
@@ -2896,27 +2914,6 @@ void AliAnalysisTaskUpcEtaC::RunAODhist()
 
 	  //PRINT	  cout << "Filling K0s histos" << endl;
 
-	  fHistNeventsEtaCK0sChannel->Fill(13);
-	  //Now we need to use the V0s to identify a K0s and select best K0s candidate.
-	  //Individual Track Ptś
-	  fK0sPosDaughterPt->Fill(vK0sPion[0].Pt());
-	  fK0sNegDaughterPt->Fill(vK0sPion[1].Pt());
-	  fK0sPosVsNegDaughterPt->Fill(vK0sPion[1].Pt(),vK0sPion[0].Pt());
-	  fK0sPionPt->Fill(vPion[0].Pt());
-	  fK0sKaonPt->Fill(vKaon[0].Pt());
-	  //Compute K0s info
-	  vK0s = vK0sPion[0] + vK0sPion[1];
-	  fK0sPtVsMinvK0s->Fill(vK0s.M(),vK0s.Pt());
-	  //fK0sMinv->Fill(vK0s.M());
-	  //Compute PiK info
-	  vKPiK0sChannel = vPion[0] + vKaon[0];
-	  fKPiPtVsMinvK0sChannel->Fill(vKPiK0sChannel.M(),vKPiK0sChannel.Pt());
-	  //fKPiMinvK0sChannel->Fill(vKPiK0sChannel.M());
-	  //Dalitz plot K0s vs PiK combo
-	  fMK0sVsMKPiK0sChannel->Fill(vKPiK0sChannel.M(),vK0s.M());
-	  //Compute EtaC info
-	  vCandidate = vK0sPion[0] + vK0sPion[1] + vPion[0] + vKaon[0];
-
 	  //Sum Pz
 	  SumPz = vK0sPion[0].Pz() + vK0sPion[1].Pz() + vPion[0].Pz() + vKaon[0].Pz();
 	  //Scalar Sum P
@@ -2928,17 +2925,47 @@ void AliAnalysisTaskUpcEtaC::RunAODhist()
 	  for(Int_t aa=0;aa<2;aa++) if(vK0sPion[aa].Pt() > 0.4) nHighPtTracks++;
 	  if(vPion[0].Pt() > 0.4) nHighPtTracks++;
 	  if(vKaon[0].Pt() > 0.4) nHighPtTracks++;
+	  //Apply Belle Cuts
+	  if(ScalarSumP < 6 && nHighPtTracks > 1) BelleCuts = kTRUE;
+	  else BelleCuts = kFALSE;
+	  if(BelleCuts) fHistNeventsEtaCK0sChannel->Fill(15);
 
-	  fK0sPtVsMinvEtaC->Fill(vCandidate.M(),vCandidate.Pt());
-	  fK0sEtaVsMinvEtaC->Fill(vCandidate.M(),vCandidate.Eta());
-	  if(vCandidate.Pt()<0.4) fK0sEtaVsMinvEtaC400MeVPtMax->Fill(vCandidate.M(),vCandidate.Eta());
-	  if(vCandidate.Pt()<0.1) fK0sEtaVsMinvEtaC100MeVPtMax->Fill(vCandidate.M(),vCandidate.Eta());
-	  fK0sSumPzVsMinvEtaC->Fill(vCandidate.M(),SumPz);
-	  fK0sScalarSumP->Fill(ScalarSumP);
-	  fK0sVectorSumPt->Fill(VectorSumPt);
-	  if(nHighPtTracks > 1) fHistNeventsEtaCK0sChannel->Fill(14);
-	  //fEtaCMinvK0sChannel->Fill(vCandidate.M());
-	  fK0sDecayLength->Fill(v0->DecayLength(fAODVertex));
+	  fHistNeventsEtaCK0sChannel->Fill(13);
+
+	  if(BelleCuts) {
+	    //Now we need to use the V0s to identify a K0s and select best K0s candidate.
+	    //Individual Track Ptś
+	    fK0sPosDaughterPt->Fill(vK0sPion[0].Pt());
+	    fK0sNegDaughterPt->Fill(vK0sPion[1].Pt());
+	    fK0sPosVsNegDaughterPt->Fill(vK0sPion[1].Pt(),vK0sPion[0].Pt());
+	    fK0sPionPt->Fill(vPion[0].Pt());
+	    fK0sKaonPt->Fill(vKaon[0].Pt());
+	    //Compute K0s info
+	    vK0s = vK0sPion[0] + vK0sPion[1];
+	    fK0sPtVsMinvK0s->Fill(vK0s.M(),vK0s.Pt());
+	    //fK0sMinv->Fill(vK0s.M());
+	    //Compute PiK info
+	    vKPiK0sChannel = vPion[0] + vKaon[0];
+	    fKPiPtVsMinvK0sChannel->Fill(vKPiK0sChannel.M(),vKPiK0sChannel.Pt());
+	    //fKPiMinvK0sChannel->Fill(vKPiK0sChannel.M());
+	    //Dalitz plot K0s vs PiK combo
+	    fMK0sVsMKPiK0sChannel->Fill(vKPiK0sChannel.M(),vK0s.M());
+	    //Compute EtaC info
+	    vCandidate = vK0sPion[0] + vK0sPion[1] + vPion[0] + vKaon[0];
+
+
+	    fK0sPtVsMinvEtaC->Fill(vCandidate.M(),vCandidate.Pt());
+	    fK0sEtaVsMinvEtaC->Fill(vCandidate.M(),vCandidate.Eta());
+	    if(vCandidate.Pt()<0.4) fK0sEtaVsMinvEtaC400MeVPtMax->Fill(vCandidate.M(),vCandidate.Eta());
+	    if(vCandidate.Pt()<0.1) fK0sEtaVsMinvEtaC100MeVPtMax->Fill(vCandidate.M(),vCandidate.Eta());
+	    fK0sSumPzVsMinvEtaC->Fill(vCandidate.M(),SumPz);
+	    fK0sScalarSumP->Fill(ScalarSumP);
+	    fK0sVectorSumPt->Fill(VectorSumPt);
+	    if(nHighPtTracks > 1) fHistNeventsEtaCK0sChannel->Fill(14);
+	    //fEtaCMinvK0sChannel->Fill(vCandidate.M());
+	    fK0sDecayLength->Fill(v0->DecayLength(fAODVertex));
+	  }
+
 	}
       }
     }
