@@ -67,7 +67,6 @@ class AliAnalysisTaskEmcalJetPerformance : public AliAnalysisTaskEmcalJet {
     kNA       = -1,//!< Undefined
     kEMCal    = 0, //!< EMCal
     kDCal     = 1, //!< DCal
-    kPHOS     = 2  //!< PHOS
   };
 
   void UserCreateOutputObjects()                                                ;
