@@ -1468,10 +1468,9 @@ Double_t AliFJWrapper::NSubjettiness(Int_t N, Int_t Algorithm, Double_t Radius, 
     }
   }
 
-  
+  Beta = 1.0;
+  fR=0.4;
   if (Algorithm==0){
-    Beta = 1.0;
-    fR=0.4;
     if (Measure==0){
       fj::contrib::Nsubjettiness nSub(N, fj::contrib::KT_Axes(), fj::contrib::NormalizedMeasure(Beta,fR));
       Result= nSub.result(fFilteredJets[0]);
