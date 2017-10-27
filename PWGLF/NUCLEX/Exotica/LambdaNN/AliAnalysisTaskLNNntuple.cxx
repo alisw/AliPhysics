@@ -386,7 +386,7 @@ AliAnalysisTaskLNNntuple::UserExec (Option_t *)
   Bool_t isSelectedSemiCentral = (inputHandler->IsEventSelected () & AliVEvent::kSemiCentral);
   Bool_t isSelectedMB = (inputHandler->IsEventSelected () & AliVEvent::kMB);
   Bool_t isSelectedAny = (inputHandler->IsEventSelected () & AliVEvent::kAny);
-  Printf("isEventSelected %i : Central (%i) %i semicentral %i MB %i any %i \n",(Int_t)inputHandler->IsEventSelected (),(Int_t)AliVEvent::kCentral,(Int_t)isSelectedCentral,(Int_t)isSelectedSemiCentral,(Int_t)isSelectedMB,(Int_t)isSelectedAny);
+  //Printf("isEventSelected %i : Central (%i) %i semicentral %i MB %i any %i \n",(Int_t)inputHandler->IsEventSelected (),(Int_t)AliVEvent::kCentral,(Int_t)isSelectedCentral,(Int_t)isSelectedSemiCentral,(Int_t)isSelectedMB,(Int_t)isSelectedAny);
 
   if (isSelectedCentral)
   {
