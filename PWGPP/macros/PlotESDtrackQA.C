@@ -25,8 +25,10 @@ void DrawDistrib(TH1D* h1, TH1D* h2, TH1D* h3, Bool_t showStat);
 void FillMeanAndRms(TH2F* h2d, TGraphErrors* gMean, TGraphErrors* gRms);
 void InitFuncAndFit(TH1D* hm, TF1* fmass, Bool_t isK0s);
 Double_t maxPtHypoPlots=5.;
+Double_t maxPtMEPlots=20.;
 
 void PlotESDtrackQA(TString filename="QAresults.root", TString suffix="QA", Int_t runNumber=-1, TString outputForm="png"){
+
 
   TString pdfFileNames="";
   TString plotFileName="";
@@ -95,6 +97,12 @@ void PlotESDtrackQA(TString filename="QAresults.root", TString suffix="QA", Int_
   TH3F* hEtaPhiPtTPCselTOFbc=(TH3F*)l->FindObject("hEtaPhiPtTPCselTOFbc");
   TH3F* hEtaPhiPtTPCselITSrefTOFbc=(TH3F*)l->FindObject("hEtaPhiPtTPCselITSrefTOFbc");
   TH3F* hEtaPhiPtTPCselSPDanyTOFbc=(TH3F*)l->FindObject("hEtaPhiPtTPCselSPDanyTOFbc");
+  TH3F* hEtaPhiPtTPCselTPCpt=(TH3F*)l->FindObject("hEtaPhiPtInnerTPCsel");
+  TH3F* hEtaPhiPtTPCselITSrefTPCpt=(TH3F*)l->FindObject("hEtaPhiPtInnerTPCselITSref");
+  TH3F* hEtaPhiPtTPCselSPDanyTPCpt=(TH3F*)l->FindObject("hEtaPhiPtInnerTPCselSPDany");
+  TH3F* hEtaPhiPtTPCselTPCptTOFbc=(TH3F*)l->FindObject("hEtaPhiPtInnerTPCselTOFbc");
+  TH3F* hEtaPhiPtTPCselITSrefTPCptTOFbc=(TH3F*)l->FindObject("hEtaPhiPtInnerTPCselITSrefTOFbc");
+  TH3F* hEtaPhiPtTPCselSPDanyTPCptTOFbc=(TH3F*)l->FindObject("hEtaPhiPtInnerTPCselSPDanyTOFbc");
   TH3F* hEtaPhiPtPosChargeTPCsel=(TH3F*)l->FindObject("hEtaPhiPtPosChargeTPCsel");
   TH3F* hEtaPhiPtPosChargeTPCselITSref=(TH3F*)l->FindObject("hEtaPhiPtPosChargeTPCselITSref");
   TH3F* hEtaPhiPtPosChargeTPCselSPDany=(TH3F*)l->FindObject("hEtaPhiPtPosChargeTPCselSPDany");
@@ -166,6 +174,19 @@ void PlotESDtrackQA(TString filename="QAresults.root", TString suffix="QA", Int_
   TH1D* hPhiEtaNegTPCselSPDanyHighPtTOFbc=hEtaPhiPtTPCselSPDanyTOFbc->ProjectionY("hPhiEtaNegTPCselSPDanyHighPtTOFbc",etamin,eta0m,ptone,ptten);
   TH1D* hPhiEtaPosTPCselSPDanyHighPtTOFbc=hEtaPhiPtTPCselSPDanyTOFbc->ProjectionY("hPhiEtaPosTPCselSPDanyHighPtTOFbc",eta0p,etamax,ptone,ptten);
 
+  TH1D* hPtEtaNegTPCselTPCpt=hEtaPhiPtTPCselTPCpt->ProjectionZ("hPtEtaNegTPCselTPCpt",etamin,eta0m);
+  TH1D* hPtEtaPosTPCselTPCpt=hEtaPhiPtTPCselTPCpt->ProjectionZ("hPtEtaPosTPCselTPCpt",eta0p,etamax);
+  TH1D* hPtEtaNegTPCselITSrefTPCpt=hEtaPhiPtTPCselITSrefTPCpt->ProjectionZ("hPtEtaNegTPCselITSrefTPCpt",etamin,eta0m);
+  TH1D* hPtEtaPosTPCselITSrefTPCpt=hEtaPhiPtTPCselITSrefTPCpt->ProjectionZ("hPtEtaPosTPCselITSrefTPCpt",eta0p,etamax);
+  TH1D* hPtEtaNegTPCselSPDanyTPCpt=hEtaPhiPtTPCselSPDanyTPCpt->ProjectionZ("hPtEtaNegTPCselSPDanyTPCpt",etamin,eta0m);
+  TH1D* hPtEtaPosTPCselSPDanyTPCpt=hEtaPhiPtTPCselSPDanyTPCpt->ProjectionZ("hPtEtaPosTPCselSPDanyTPCpt",eta0p,etamax);
+
+  TH1D* hPtEtaNegTPCselTPCptTOFbc=hEtaPhiPtTPCselTPCptTOFbc->ProjectionZ("hPtEtaNegTPCselTPCptTOFbc",etamin,eta0m);
+  TH1D* hPtEtaPosTPCselTPCptTOFbc=hEtaPhiPtTPCselTPCptTOFbc->ProjectionZ("hPtEtaPosTPCselTPCptTOFbc",eta0p,etamax);
+  TH1D* hPtEtaNegTPCselITSrefTPCptTOFbc=hEtaPhiPtTPCselITSrefTPCptTOFbc->ProjectionZ("hPtEtaNegTPCselITSrefTPCptTOFbc",etamin,eta0m);
+  TH1D* hPtEtaPosTPCselITSrefTPCptTOFbc=hEtaPhiPtTPCselITSrefTPCptTOFbc->ProjectionZ("hPtEtaPosTPCselITSrefTPCptTOFbc",eta0p,etamax);
+  TH1D* hPtEtaNegTPCselSPDanyTPCptTOFbc=hEtaPhiPtTPCselSPDanyTPCptTOFbc->ProjectionZ("hPtEtaNegTPCselSPDanyTPCptTOFbc",etamin,eta0m);
+  TH1D* hPtEtaPosTPCselSPDanyTPCptTOFbc=hEtaPhiPtTPCselSPDanyTPCptTOFbc->ProjectionZ("hPtEtaPosTPCselSPDanyTPCptTOFbc",eta0p,etamax);
 
   hPhiEtaNegTPCsel->SetMinimum(0);
   hPhiEtaPosTPCsel->SetMinimum(0);
@@ -198,6 +219,12 @@ void PlotESDtrackQA(TString filename="QAresults.root", TString suffix="QA", Int_
   hPtEtaPosTPCsel->Sumw2();
   hPtEtaPosTPCselITSref->Sumw2();
   hPtEtaPosTPCselSPDany->Sumw2();
+  hPtEtaNegTPCselTPCpt->Sumw2();
+  hPtEtaNegTPCselITSrefTPCpt->Sumw2();
+  hPtEtaNegTPCselSPDanyTPCpt->Sumw2();
+  hPtEtaPosTPCselTPCpt->Sumw2();
+  hPtEtaPosTPCselITSrefTPCpt->Sumw2();
+  hPtEtaPosTPCselSPDanyTPCpt->Sumw2();
   hPhiEtaNegTPCsel->Sumw2();
   hPhiEtaNegTPCselITSref->Sumw2();
   hPhiEtaNegTPCselSPDany->Sumw2();
@@ -217,7 +244,6 @@ void PlotESDtrackQA(TString filename="QAresults.root", TString suffix="QA", Int_
   hPhiEtaPosTPCselITSrefHighPt->Sumw2();
   hPhiEtaPosTPCselSPDanyHighPt->Sumw2();
 
-
   TH1D* hMatchEffVsPtNegEta=ComputeMatchEff(hPtEtaNegTPCselITSref,hPtEtaNegTPCsel,"hMatchEffVsPtNegEta",1,20,"p_{T} (GeV/c)");
   TH1D* hMatchEffVsPtPosEta=ComputeMatchEff(hPtEtaPosTPCselITSref,hPtEtaPosTPCsel,"hMatchEffVsPtPosEta",1,20,"p_{T} (GeV/c)");
   TH1D* hMatchEffVsPtNegEtaSPDany=ComputeMatchEff(hPtEtaNegTPCselSPDany,hPtEtaNegTPCsel,"hMatchEffVsPtNegEtaSPDAny",kBlue-7,33,"p_{T} (GeV/c)");
@@ -227,6 +253,17 @@ void PlotESDtrackQA(TString filename="QAresults.root", TString suffix="QA", Int_
   TH1D* hMatchEffVsPtPosEtaTOFbc=ComputeMatchEff(hPtEtaPosTPCselITSrefTOFbc,hPtEtaPosTPCselTOFbc,"hMatchEffVsPtPosEtaTOFbc",kRed+1,20,"p_{T} (GeV/c)");
   TH1D* hMatchEffVsPtNegEtaSPDanyTOFbc=ComputeMatchEff(hPtEtaNegTPCselSPDanyTOFbc,hPtEtaNegTPCselTOFbc,"hMatchEffVsPtNegEtaSPDAnyTOFbc",kGreen+2,33,"p_{T} (GeV/c)");
   TH1D* hMatchEffVsPtPosEtaSPDanyTOFbc=ComputeMatchEff(hPtEtaPosTPCselSPDanyTOFbc,hPtEtaPosTPCselTOFbc,"hMatchEffVsPtPosEtaSPDAnyTOFbc",kGreen+2,33,"p_{T} (GeV/c)");
+
+  TH1D* hMatchEffVsPtNegEtaTPCpt=ComputeMatchEff(hPtEtaNegTPCselITSrefTPCpt,hPtEtaNegTPCselTPCpt,"hMatchEffVsPtNegEtaTPCpt",kGray+1,20,"p_{T}^{TPC} (GeV/c)");
+  TH1D* hMatchEffVsPtPosEtaTPCpt=ComputeMatchEff(hPtEtaPosTPCselITSrefTPCpt,hPtEtaPosTPCselTPCpt,"hMatchEffVsPtPosEtaTPCpt",kGray+1,20,"p_{T}^{TPC} (GeV/c)");
+  TH1D* hMatchEffVsPtNegEtaSPDanyTPCpt=ComputeMatchEff(hPtEtaNegTPCselSPDanyTPCpt,hPtEtaNegTPCselTPCpt,"hMatchEffVsPtNegEtaSPDAnyTPCpt",kBlue,33,"p_{T}^{TPC} (GeV/c)");
+  TH1D* hMatchEffVsPtPosEtaSPDanyTPCpt=ComputeMatchEff(hPtEtaPosTPCselSPDanyTPCpt,hPtEtaPosTPCselTPCpt,"hMatchEffVsPtPosEtaSPDAnyTPCpt",kBlue,33,"p_{T}^{TPC} (GeV/c)");
+
+  TH1D* hMatchEffVsPtNegEtaTPCptTOFbc=ComputeMatchEff(hPtEtaNegTPCselITSrefTPCptTOFbc,hPtEtaNegTPCselTPCptTOFbc,"hMatchEffVsPtNegEtaTPCptTOFbc",kRed-7,20,"p_{T}^{TPC} (GeV/c)");
+  TH1D* hMatchEffVsPtPosEtaTPCptTOFbc=ComputeMatchEff(hPtEtaPosTPCselITSrefTPCptTOFbc,hPtEtaPosTPCselTPCptTOFbc,"hMatchEffVsPtPosEtaTPCptTOFbc",kRed-7,20,"p_{T}^{TPC} (GeV/c)");
+  TH1D* hMatchEffVsPtNegEtaSPDanyTPCptTOFbc=ComputeMatchEff(hPtEtaNegTPCselSPDanyTPCptTOFbc,hPtEtaNegTPCselTPCptTOFbc,"hMatchEffVsPtNegEtaSPDAnyTPCptTOFbc",kSpring-7,33,"p_{T}^{TPC} (GeV/c)");
+  TH1D* hMatchEffVsPtPosEtaSPDanyTPCptTOFbc=ComputeMatchEff(hPtEtaPosTPCselSPDanyTPCptTOFbc,hPtEtaPosTPCselTPCptTOFbc,"hMatchEffVsPtPosEtaSPDAnyTPCptTOFbc",kSpring-7,33,"p_{T}^{TPC} (GeV/c)");
+
   hMatchEffVsPtNegEta->SetTitle("#eta<0");
   hMatchEffVsPtPosEta->SetTitle("#eta>0");
   hMatchEffVsPtNegEtaSPDany->SetTitle("#eta<0");
@@ -235,15 +272,35 @@ void PlotESDtrackQA(TString filename="QAresults.root", TString suffix="QA", Int_
   hMatchEffVsPtPosEtaTOFbc->SetTitle("#eta>0");
   hMatchEffVsPtNegEtaSPDanyTOFbc->SetTitle("#eta<0");
   hMatchEffVsPtPosEtaSPDanyTOFbc->SetTitle("#eta>0");
-  hMatchEffVsPtNegEta->GetXaxis()->SetRangeUser(0,10);
-  hMatchEffVsPtPosEta->GetXaxis()->SetRangeUser(0,10);
-  hMatchEffVsPtNegEtaSPDany->GetXaxis()->SetRangeUser(0,10);
-  hMatchEffVsPtPosEtaSPDany->GetXaxis()->SetRangeUser(0,10);
-  hMatchEffVsPtNegEtaTOFbc->GetXaxis()->SetRangeUser(0,10);
-  hMatchEffVsPtPosEtaTOFbc->GetXaxis()->SetRangeUser(0,10);
-  hMatchEffVsPtNegEtaSPDanyTOFbc->GetXaxis()->SetRangeUser(0,10);
-  hMatchEffVsPtPosEtaSPDanyTOFbc->GetXaxis()->SetRangeUser(0,10);
 
+  hMatchEffVsPtNegEtaTPCpt->SetTitle("#eta<0");
+  hMatchEffVsPtPosEtaTPCpt->SetTitle("#eta>0");
+  hMatchEffVsPtNegEtaSPDanyTPCpt->SetTitle("#eta<0");
+  hMatchEffVsPtPosEtaSPDanyTPCpt->SetTitle("#eta>0");
+  hMatchEffVsPtNegEtaTPCptTOFbc->SetTitle("#eta<0");
+  hMatchEffVsPtPosEtaTPCptTOFbc->SetTitle("#eta>0");
+  hMatchEffVsPtNegEtaSPDanyTPCptTOFbc->SetTitle("#eta<0");
+  hMatchEffVsPtPosEtaSPDanyTPCptTOFbc->SetTitle("#eta>0");
+
+
+  if(maxPtMEPlots<100){
+    hMatchEffVsPtNegEta->GetXaxis()->SetRangeUser(0,maxPtMEPlots);
+    hMatchEffVsPtPosEta->GetXaxis()->SetRangeUser(0,maxPtMEPlots);
+    hMatchEffVsPtNegEtaSPDany->GetXaxis()->SetRangeUser(0,maxPtMEPlots);
+    hMatchEffVsPtPosEtaSPDany->GetXaxis()->SetRangeUser(0,maxPtMEPlots);
+    hMatchEffVsPtNegEtaTOFbc->GetXaxis()->SetRangeUser(0,maxPtMEPlots);
+    hMatchEffVsPtPosEtaTOFbc->GetXaxis()->SetRangeUser(0,maxPtMEPlots);
+    hMatchEffVsPtNegEtaSPDanyTOFbc->GetXaxis()->SetRangeUser(0,maxPtMEPlots);
+    hMatchEffVsPtPosEtaSPDanyTOFbc->GetXaxis()->SetRangeUser(0,maxPtMEPlots);
+    hMatchEffVsPtNegEtaTPCpt->GetXaxis()->SetRangeUser(0,maxPtMEPlots);
+    hMatchEffVsPtPosEtaTPCpt->GetXaxis()->SetRangeUser(0,maxPtMEPlots);
+    hMatchEffVsPtNegEtaSPDanyTPCpt->GetXaxis()->SetRangeUser(0,maxPtMEPlots);
+    hMatchEffVsPtPosEtaSPDanyTPCpt->GetXaxis()->SetRangeUser(0,maxPtMEPlots);
+    hMatchEffVsPtNegEtaTPCptTOFbc->GetXaxis()->SetRangeUser(0,maxPtMEPlots);
+    hMatchEffVsPtPosEtaTPCptTOFbc->GetXaxis()->SetRangeUser(0,maxPtMEPlots);
+    hMatchEffVsPtNegEtaSPDanyTPCptTOFbc->GetXaxis()->SetRangeUser(0,maxPtMEPlots);
+    hMatchEffVsPtPosEtaSPDanyTPCptTOFbc->GetXaxis()->SetRangeUser(0,maxPtMEPlots);
+  }
   for(Int_t ipt=0; ipt<3; ipt++){
     Int_t thePtBin=hMatchEffVsPtNegEta->GetXaxis()->FindBin(ptForTrend[ipt]*0.9999);
     vecMatchEff[ipt]=hMatchEffVsPtPosEta->GetBinContent(thePtBin);
@@ -306,6 +363,47 @@ void PlotESDtrackQA(TString filename="QAresults.root", TString suffix="QA", Int_
   cme->SaveAs(plotFileName.Data());
   if(outputForm=="pdf") pdfFileNames+=Form("%s ",plotFileName.Data());
 
+  TCanvas* cmet=new TCanvas("cmet","MatchEff TPCpt",900,900);
+  cmet->Divide(2,2);
+  cmet->cd(1);
+  gPad->SetLeftMargin(0.12);
+  gPad->SetRightMargin(0.08);
+  gPad->SetTickx();
+  gPad->SetTicky();
+  hMatchEffVsPtNegEtaTPCpt->Draw("PE");
+  hMatchEffVsPtNegEtaSPDanyTPCpt->Draw("samepe");
+  TLegend* legnt=new TLegend(0.27,0.17,0.6,0.39);
+  legnt->AddEntry(hMatchEffVsPtNegEtaTPCpt,"ITSrefit","P");
+  legnt->AddEntry(hMatchEffVsPtNegEtaSPDanyTPCpt,"SPD any","P");
+  legnt->Draw();
+  cmet->cd(2);
+  gPad->SetLeftMargin(0.12);
+  gPad->SetRightMargin(0.08);
+  gPad->SetTickx();
+  gPad->SetTicky();
+  hMatchEffVsPtPosEtaTPCpt->Draw("PE");
+  hMatchEffVsPtPosEtaSPDanyTPCpt->Draw("samepe");
+  cmet->cd(3);
+  gPad->SetLeftMargin(0.12);
+  gPad->SetRightMargin(0.08);
+  gPad->SetTickx();
+  gPad->SetTicky();
+  hMatchEffVsPtNegEtaTPCptTOFbc->Draw("PE");
+  hMatchEffVsPtNegEtaSPDanyTPCptTOFbc->Draw("samepe");
+  TLegend* legtt=new TLegend(0.27,0.17,0.89,0.39);
+  legtt->AddEntry(hMatchEffVsPtNegEtaTPCptTOFbc,"ITSrefit, TOF bc=0","P");
+  legtt->AddEntry(hMatchEffVsPtNegEtaSPDanyTPCptTOFbc,"SPD any, TOF bc=0","P");
+  legtt->Draw();
+  cmet->cd(4);
+  gPad->SetLeftMargin(0.12);
+  gPad->SetRightMargin(0.08);
+  gPad->SetTickx();
+  gPad->SetTicky();
+  hMatchEffVsPtPosEtaTPCptTOFbc->Draw("PE");
+  hMatchEffVsPtPosEtaSPDanyTPCptTOFbc->Draw("samepe");
+  plotFileName=Form("MatchingEfficiency-TPCpt-AllCharged.%s",outputForm.Data());
+  cmet->SaveAs(plotFileName.Data());
+  if(outputForm=="pdf") pdfFileNames+=Form("%s ",plotFileName.Data());
 
   TH1D* hMatchEffVsPhiNegEtaLowPt=ComputeMatchEff(hPhiEtaNegTPCselITSrefLowPt,hPhiEtaNegTPCselLowPt,"hMatchEffVsPhiNegEtaLowPt",1,20,"#varphi (rad)");
   TH1D* hMatchEffVsPhiPosEtaLowPt=ComputeMatchEff(hPhiEtaPosTPCselITSrefLowPt,hPhiEtaPosTPCselLowPt,"hMatchEffVsPhiPosEtaLowPt",1,20,"#varphi (rad)");
@@ -402,6 +500,7 @@ void PlotESDtrackQA(TString filename="QAresults.root", TString suffix="QA", Int_
     hRatioPosNegEtaNegTPCselSPDany->GetYaxis()->SetTitle("Positive Charge / Negative Charge");
     TH1D* hRatioPosNegEtaPosTPCselSPDany=ComputeRatio(hPtEtaPosPosChargeTPCselSPDany,hPtEtaPosNegChargeTPCselSPDany,"hRatioPosNegEtaPosTPCsel",kGray+1,21,"p_{T} (GeV/c)");
     hRatioPosNegEtaPosTPCselSPDany->GetYaxis()->SetTitle("Positive Charge / Negative Charge");
+
 
     TCanvas* cdist=new TCanvas("cdist","Pt Distrib TPC sel",900,900);
     cdist->Divide(2,2);
@@ -661,7 +760,7 @@ void PlotESDtrackQA(TString filename="QAresults.root", TString suffix="QA", Int_
     gPad->SetRightMargin(0.08);
     gPad->SetTickx();
     gPad->SetTicky();
-    hMatchEffGoodVsPtEtaNeg[0][iSp]->GetXaxis()->SetRangeUser(0.,10.);
+    if(maxPtMEPlots<100) hMatchEffGoodVsPtEtaNeg[0][iSp]->GetXaxis()->SetRangeUser(0.,maxPtMEPlots);
     hMatchEffGoodVsPtEtaNeg[0][iSp]->Draw("PE");
     hMatchEffGoodVsPtEtaNeg[1][iSp]->Draw("samepe");
     hMatchEffBadVsPtEtaNeg[0][iSp]->Draw("samepe");
@@ -677,7 +776,7 @@ void PlotESDtrackQA(TString filename="QAresults.root", TString suffix="QA", Int_
     gPad->SetRightMargin(0.08);
     gPad->SetTickx();
     gPad->SetTicky();
-    hMatchEffGoodVsPtEtaPos[0][iSp]->GetXaxis()->SetRangeUser(0.,10.);
+    if(maxPtMEPlots<100) hMatchEffGoodVsPtEtaPos[0][iSp]->GetXaxis()->SetRangeUser(0.,maxPtMEPlots);
     hMatchEffGoodVsPtEtaPos[0][iSp]->Draw("PE");
     hMatchEffGoodVsPtEtaPos[1][iSp]->Draw("samepe");
     hMatchEffBadVsPtEtaPos[0][iSp]->Draw("samepe");
