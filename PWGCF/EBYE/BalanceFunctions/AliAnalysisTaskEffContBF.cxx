@@ -19,6 +19,7 @@
 #include "AliAODMCHeader.h"
 #include "AliCentrality.h"
 #include "AliGenEventHeader.h"
+#include "AliMultSelection.h"
 
 #include "AliLog.h"
 #include "AliAnalysisTaskEffContBF.h"
@@ -384,49 +385,62 @@ void AliAnalysisTaskEffContBF::UserExec(Option_t *) {
   //AliInfo(Form("%d %d",mcEvent->GetNumberOfTracks(),fAOD->GetNumberOfTracks()));
 
   fHistEventStats->Fill(1); //all events
-  
-  //Centrality stuff
-  Double_t nCentrality = 0;
-  if(fUseCentrality) {
-    
-    AliAODHeader *headerAOD = dynamic_cast<AliAODHeader*>(fAOD->GetHeader());
+
+  AliAODHeader *headerAOD = dynamic_cast<AliAODHeader*>(fAOD->GetHeader());
     if (!headerAOD){
       AliFatal("AOD header found");
       return;
     }
-
-    AliCentrality *centrality = headerAOD->GetCentralityP();
-    nCentrality =centrality->GetCentralityPercentile(fCentralityEstimator.Data());
     
-
-    if(!centrality->IsEventInCentralityClass(fCentralityPercentileMin,
-					     fCentralityPercentileMax,
-					     fCentralityEstimator.Data()))
-      return;
-    else {    
-      fHistEventStats->Fill(2); //triggered + centrality
-      fHistCentrality->Fill(nCentrality);
+    //Centrality stuff
+    Double_t nCentrality = 0;
+    
+    if(fUseCentrality){
+      if (fAOD->GetRunNumber()<244824) {
+      
+	AliCentrality *centrality = headerAOD->GetCentralityP();
+	nCentrality =centrality->GetCentralityPercentile(fCentralityEstimator.Data());
+	
+	if(!centrality->IsEventInCentralityClass(fCentralityPercentileMin,
+						 fCentralityPercentileMax,
+						 fCentralityEstimator.Data()))
+	  return;
+      }
+      
+      else {
+	AliMultSelection *multSelection = (AliMultSelection*) fAOD->FindListObject("MultSelection");
+	if(!multSelection) {
+	  AliWarning("AliMultSelection object not found!");
+	}
+	else nCentrality = multSelection->GetMultiplicityPercentile(fCentralityEstimator, kTRUE);
+	
+      }
+      
+    fHistEventStats->Fill(2); //triggered + centrality
+    fHistCentrality->Fill(nCentrality);
     }
-  }
-  //Printf("Centrality selection: %lf - %lf",fCentralityPercentileMin,fCentralityPercentileMax);
-
-  const AliAODVertex *vertex = fAOD->GetPrimaryVertex(); 
-  if(vertex) {
-    if(vertex->GetNContributors() > 0) {
-      Double32_t fCov[6];    
-      vertex->GetCovarianceMatrix(fCov);   
-      if(fCov[5] != 0) {
-	fHistEventStats->Fill(3); //events with a proper vertex
-	if(TMath::Abs(vertex->GetX()) < fVxMax) {    // antes Xv
-	  //Printf("X Vertex: %lf", vertex->GetX());
-	  //Printf("Y Vertex: %lf", vertex->GetY());
-	  if(TMath::Abs(vertex->GetY()) < fVyMax) {  // antes Yv
-	    if(TMath::Abs(vertex->GetZ()) < fVzMax) {  // antes Zv
-	      //Printf("Z Vertex: %lf", vertex->GetZ());
-	      
-	      fHistEventStats->Fill(4); //analyzed events
-	      fHistVz->Fill(vertex->GetZ()); 
-	      
+    
+    
+  
+    //Printf("Centrality selection: %lf - %lf",fCentralityPercentileMin,fCentralityPercentileMax);
+    
+    const AliAODVertex *vertex = fAOD->GetPrimaryVertex(); 
+    if(vertex) {
+      if(vertex->GetNContributors() > 0) {
+	Double32_t fCov[6];    
+	vertex->GetCovarianceMatrix(fCov);   
+	if(fCov[5] != 0) {
+	  fHistEventStats->Fill(3); //events with a proper vertex
+	  if(TMath::Abs(vertex->GetX()) < fVxMax) {    // antes Xv
+	    //Printf("X Vertex: %lf", vertex->GetX());
+	    //Printf("Y Vertex: %lf", vertex->GetY());
+	    if(TMath::Abs(vertex->GetY()) < fVyMax) {  // antes Yv
+	      if(TMath::Abs(vertex->GetZ()) < fVzMax) {  // antes Zv
+		//Printf("Z Vertex: %lf", vertex->GetZ());
+		
+		fHistEventStats->Fill(4); //analyzed events
+		fHistVz->Fill(vertex->GetZ()); 
+		
 	      //++++++++++++++++++CONTAMINATION++++++++++++++++++//
 	      Int_t nGoodAODTracks = fAOD->GetNumberOfTracks();
 	      Int_t nMCParticles = mcEvent->GetNumberOfTracks();
