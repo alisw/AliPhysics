@@ -88,7 +88,7 @@ void makeTPCMCAlarms(TTree * treeMC, Bool_t doCheck,Int_t verbose){
   //                 deltaWarning and deltaError can be an expression which is understood by TTreeFormula
   //  ==============================================================
   // 1.) Absolute aliases  alarms on |MC-Anchor|
-   TString sTrendVars=";";
+  TString sTrendVars=";";
   {
     // Ncl
     sTrendVars+="QA.TPC.meanTPCncl,TPC.Anchor.meanTPCncl,10,20,5;";       // delta Ncl  warning 10 ,  error 20     (nominal ~ 100-140)
@@ -593,14 +593,17 @@ void makeHtmlDCA(){
   TStatToolkit::AddMetadata(treeMC, "TPC.Anchor.dcarCP0.thead", "&sigma;<sup>C</sup><sub>Anchor DCA<sub>1/pt=0</sub></sub> (cm)");
   TStatToolkit::AddMetadata(treeMC, "TPC.Anchor.dcarCP0.tooltip", "DCA (r&phi;) at infinite pt");
   TStatToolkit::AddMetadata(treeMC, "TPC.Anchor.dcarCP0.html", "<a href=\"http://aliqatpc.web.cern.ch/aliqatpc/data/%d{year}/%s{TPC.Anchor.period.GetName()}/passMC/000%d{run}/dca_and_phi.png\">%2.2f{dcarCP0}</a>");
-
+  //
+  TStatToolkit::AddMetadata(treeMC, "dcar_MaskWarning.thead", "DCA<sub>MCWarning</sub></sub>");
+  TStatToolkit::AddMetadata(treeMC, "dcar_MaskWarning.tooltip", "DCAr status");
+  TStatToolkit::AddMetadata(treeMC, "dcar_MaskWarning.html","<a href=\"dcarStatusMC.png\">%x{dcar_MaskWarning}</a>");
   //
   TString runSelection = "defaultCut";
   TString varSelection = "";
   TString logbookBase = "";
   logbookBase = "run:LHCFillNumber:LHCperiod:detectorMask:HLTmode:DAQ_time_start:ctpDuration:totalEventsPhysics:interactionRate:bz;2.2:";
   // tabDCA
-  TString tpcDCA = "dcarAP0:TPC.Anchor.dcarAP0:dcarCP0:TPC.Anchor.dcarCP0";//:dcarStatusString:dcarRawStatusString";
+  TString tpcDCA = "dcarAP0:TPC.Anchor.dcarAP0:dcarCP0:TPC.Anchor.dcarCP0:dcar_MaskWarning";//:dcarStatusString:dcarRawStatusString";
   // TString tpcDCA="dcarAP1;2.2f:dcarStatusString:dcarStatusOutlier:dcarStatusWarning";
   // TObjArray *tpcDCAArray = AliTreePlayer::selectMetadata(treeMC->GetFriend("QA.TPC"), "[class==\"TPC&&DCAr&&!Err&&!Chi2\"]",0);
   AliTreePlayer::selectWhatWhereOrderBy(treeMC, (logbookBase + tpcDCA).Data(), runSelection.Data(), "", 0, 100000,
@@ -632,29 +635,47 @@ void PrintTestHtmlLink(TString testHtml){
 /// \param friendName
 void MakeStatusPlot(const char *path, TString figName, TString statusString, TString selection, TString friendName=""){
   TPRegexp suffix("_Warning$");
-  TString currentString="",statusVar="",statusTitle="";
+  TString currentString="",statusVar="",statusTitle="", statusMask="";
   Int_t counter=0;
-  AliTreeTrending::DecomposeStatusAlias(treeMC, statusString,statusVar,statusTitle,suffix,counter);
+  AliTreeTrending::DecomposeStatusAlias(treeMC, statusString,statusVar,statusTitle,suffix,counter,statusMask);
   statusVar+="run";
   trendingDraw->MakeStatusPlot(path, figName.Data(), statusVar, statusTitle, selection.Data(), sCriteria,friendName);
 }
 
-void MakeStatusPlots(){
-  //
-  MakeStatusPlot("./", "dcarStatusMC.png","dcar_Warning","1");
-  MakeStatusPlot("./", "dcarStatusAnchor.png","dcar_Warning","1","QA.TPC");
-  MakeStatusPlot("./", "dcarStatusMCToAnchor.png","mcAnchor.dcarResol_Warning","1");
 
-  MakeStatusPlot("./", "itsEffStatusMCToAnchor.png","mcAnchor.itsEffStatus_Warning","1");
-  
-//  MakeStatusPlot("./", "dEdxStatusMC.png","dEdx_Warning","1");
-  MakeStatusPlot("./", "dEdxStatusMCToAnchor.png","mcAnchor.dEdx_Warning","1");
-//  MakeStatusPlot("./", "dEdxStatusAnchor.png",".dEdx_Warning","1","QA.TPC"); 
-  
-  MakeStatusPlot("./", "nclStatusMCToAnchor.png","mcAnchor.ncl_Warning","1");
+///
+/// \param statusString
+/// \param selection
+/// \param friendName
+void MakeStatusBitMask(TString statusString){
+  TPRegexp suffix("_Warning$");
+  TString currentString="",statusVar="",statusTitle="",statusMask="";
+  Int_t counter=0;
+  AliTreeTrending::DecomposeStatusAlias(treeMC, statusString,statusVar,statusTitle,suffix,counter,statusMask);
+  statusString.ReplaceAll("_Warning","");
+  TString statusAliasName, statusAliasMask;
+  //
+  statusAliasName=statusString+"_MaskWarning";
+  statusAliasMask=statusMask;
+  statusAliasMask.ReplaceAll("_#","_Warning");
+  treeMC->SetAlias(statusAliasName.Data(),statusAliasMask.Data());
 
 }
 
+
+void MakeStatusPlots(){
+  MakeStatusPlot("./", "dcarStatusMC.png","dcar_Warning","1");
+  MakeStatusPlot("./", "dcarStatusAnchor.png","dcar_Warning","1","QA.TPC");
+  MakeStatusPlot("./", "dcarStatusMCToAnchor.png","mcAnchor.dcarResol_Warning","1");
+  MakeStatusPlot("./", "itsEffStatusMCToAnchor.png","mcAnchor.itsEffStatus_Warning","1");
+  MakeStatusPlot("./", "dEdxStatusMCToAnchor.png","mcAnchor.dEdx_Warning","1");
+  MakeStatusPlot("./", "nclStatusMCToAnchor.png","mcAnchor.ncl_Warning","1");
+}
+
+void MakeStatusBitMasks(){
+  MakeStatusBitMask("dcar_Warning");
+  MakeStatusBitMask("mcAnchor.dcarResol_Warning");
+}
 
 
 /// html useful links
