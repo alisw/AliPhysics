@@ -48,7 +48,7 @@ Bool_t InitTPCMCValidation(TString mcPeriod, TString mcPass, TString anchorPerio
                            Int_t doCheck);
 
 void MakeReport(const char *outputDir);
-
+void MakeStatusPlots();
 void tpcMCValidation(const char *mcPeriod = "LHC15k1a1", const char *outputDir = "./");
 
 
@@ -87,8 +87,8 @@ void makeTPCMCAlarms(TTree * treeMC, Bool_t doCheck,Int_t verbose){
   //  1.)  Partial alarms  (variable, variableAnchor deltaWarning,deltaError, PhysAcc)
   //                 deltaWarning and deltaError can be an expression which is understood by TTreeFormula
   //  ==============================================================
-  // 1.) Absolute aliases
-  TString sTrendVars=";";
+  // 1.) Absolute aliases  alarms on |MC-Anchor|
+  // TString sTrendVars=";";
   {
     // Ncl
     sTrendVars+="QA.TPC.meanTPCncl,TPC.Anchor.meanTPCncl,10,20,5;";       // delta Ncl  warning 10 ,  error 20     (nominal ~ 100-140)
@@ -108,25 +108,25 @@ void makeTPCMCAlarms(TTree * treeMC, Bool_t doCheck,Int_t verbose){
     sTrendVars+="QA.ITS.EffTOTPt02,ITS.Anchor.EffTOTPt02,0.05,0.1,0.07;";
     sTrendVars+="QA.ITS.EffTOTPt1,ITS.Anchor.EffTOTPt1,0.05,0.1,0.07;";
     sTrendVars+="QA.ITS.EffTOTPt10,ITS.Anchor.EffTOTPt10,0.05,0.1,0.07;";
-    // dEdX
+    // dEdx
     sTrendVars+="QA.TPC.meanMIP,TPC.Anchor.meanMIP,1,2,1;";     // meanMIP;  warning 1; error 2; physics acceptable 1; (nominal ~ 50)
     sTrendVars+="QA.TPC.resolutionMIP,TPC.Anchor.resolutionMIP,0.02,0.05,0.02;";     // resolutionMIP;  warning 0.01; error 0.02; physics acceptable 0.01; (nominal ~ 0.06)
-    sTrendVars+="QA.TPC.MIPattachSlopeA,TPC.Anchor.MIPattachSlopeA,0.02,0.05,0.02;";     // MIPattachSlopeA;  warning xxx; error xxx  (nominal ~ 0)
-    sTrendVars+="QA.TPC.MIPattachSlopeC,TPC.Anchor.MIPattachSlopeC,0.02,0.05,0.02;";     // MIPattachSlopeC;  warning xxx; error xxx  (nominal ~ 0)
-    sTrendVars+="QA.TPC.meanMIPele,TPC.Anchor.meanMIPele,0.02,0.05,0.02;";     // MIPattachSlopeA;  warning xxx; error xxx  (nominal ~ 0)
+    sTrendVars+="QA.TPC.MIPattachSlopeA,TPC.Anchor.MIPattachSlopeA,1,1.5,1;";     // MIPattachSlopeA;  warning 1; error 1.5, physics acceptable 1   (nominal ~ 0)
+    sTrendVars+="QA.TPC.MIPattachSlopeC,TPC.Anchor.MIPattachSlopeC,1,1.5,1;";     // MIPattachSlopeC;  warning 1; error 1.5, physics acceptable 1  (nominal ~ 0)
+    sTrendVars+="QA.TPC.meanMIPele,TPC.Anchor.meanMIPele,3,6,3;";                 // MIPattachSlopeA;  warning 3; error 6;  physics acceptable 3  (nominal ~ 30)
     sTrendVars+="QA.TPC.resolutionMIPele,TPC.Anchor.resolutionMIPele,0.02,0.05,0.02;";     // MIPattachSlopeC;  warning xxx; error xxx  (nominal ~ 0)  
  
   }
   TStatToolkit::MakeAnchorAlias(treeMC,sTrendVars, doCheck, verbose);
 
   // 2.) Make aliases for Mean of MC-anchor of variables
+  //     alarms on |(MC-Anchor)-<MC-Anchor)>|
   treeMC->SetAlias("diff0.meanTPCncl" , "(QA.TPC.meanTPCncl-TPC.Anchor.meanTPCncl)");
   treeMC->SetAlias("diff0.meanTPCnclF" ,"(QA.TPC.meanTPCnclF-TPC.Anchor.meanTPCnclF)");
   treeMC->SetAlias("ratio.dcarAP0" ,    "(QA.TPC.dcarAP0/TPC.Anchor.dcarAP0)");
   treeMC->SetAlias("ratio.dcarAP1" ,    "(QA.TPC.dcarAP1/TPC.Anchor.dcarAP1)");
   treeMC->SetAlias("ratio.dcarCP0" ,    "(QA.TPC.dcarCP0/TPC.Anchor.dcarCP0)");
   treeMC->SetAlias("ratio.dcarCP1" ,    "(QA.TPC.dcarCP1/TPC.Anchor.dcarCP1)");
-  
   treeMC->SetAlias("ratio.meanMIP" ,    "(QA.TPC.meanMIP/TPC.Anchor.meanMIP)");
   treeMC->SetAlias("ratio.resolutionMIP" ,    "(QA.TPC.resolutionMIP/TPC.Anchor.resolutionMIP)");
   treeMC->SetAlias("diff0.MIPattachSlopeA" ,    "(QA.TPC.MIPattachSlopeA-TPC.Anchor.MIPattachSlopeA)");
@@ -145,20 +145,23 @@ void makeTPCMCAlarms(TTree * treeMC, Bool_t doCheck,Int_t verbose){
     TStatToolkit::SetStatusAlias(treeMC, sVar.Data(),    "statisticOK", Form("varname_OutlierMax:(MeanEF+%f*RMSEF+%f):%f", nSigmaOutlier, epsilon, entryFraction));
     TStatToolkit::SetStatusAlias(treeMC, sVar.Data(),    "statisticOK", Form("varname_WarningMin:(MeanEF-%f*RMSEF-%f):%f", nSigmaWarning, epsilon, entryFraction));
     TStatToolkit::SetStatusAlias(treeMC, sVar.Data(),    "statisticOK", Form("varname_WarningMax:(MeanEF+%f*RMSEF+%f):%f", nSigmaWarning, epsilon, entryFraction));
-    TStatToolkit::SetStatusAlias(treeMC, sVar.Data(),    "statisticOK", Form("varname_PhysAccMin:(MeanEF-%f*MeanEF):%f",   rangeFactor, entryFraction));
-    TStatToolkit::SetStatusAlias(treeMC, sVar.Data(),    "statisticOK", Form("varname_PhysAccMax:(MeanEF+%f*MeanEF):%f",   rangeFactor, entryFraction));
+    TStatToolkit::SetStatusAlias(treeMC, sVar.Data(),    "statisticOK", Form("varname_PhysAccMin:(MeanEF-%f*MeanEF):%f", rangeFactor, entryFraction));
+    TStatToolkit::SetStatusAlias(treeMC, sVar.Data(),    "statisticOK", Form("varname_PhysAccMax:(MeanEF+%f*MeanEF):%f", rangeFactor, entryFraction));
+    //
     TStatToolkit::SetStatusAlias(treeMC, sVar.Data(),    "statisticOK", Form("varname_RobustMean:(MeanEF+0):%f", entryFraction));
     TStatToolkit::SetStatusAlias(treeMC, sVar.Data(),    "statisticOK", Form("varname_Outlier:(varname>varname_OutlierMax||varname<varname_OutlierMin)"));
     TStatToolkit::SetStatusAlias(treeMC, sVar.Data(),    "statisticOK", Form("varname_Warning:(varname>varname_WarningMax||varname<varname_WarningMin)"));
     TStatToolkit::SetStatusAlias(treeMC, sVar.Data(),    "statisticOK", Form("varname_PhysAcc:(varname>varname_PhysAccMin&&varname<varname_PhysAccMax)"));
   }
 
+
+
   // 3.) Configure combined status. Default using logical OR of problems
   TString sCombinedStatus=";";
-  sCombinedStatus+="ncl,absDiff.QA.TPC.meanTPCncl,absDiff.QA.TPC.meanTPCnclF;diff0.QA.TPC.meanTPCncl,diff0.QA.TPC.meanTPCnclF;"; // Status number of clusters and findable clusters
-  sCombinedStatus+="dcarResol,absDiff.QA.TPC.dcarAP0,absDiff.QA.TPC.dcarAP1,absDiff.QA.TPC.dcarCP0,absDiff.QA.TPC.dcarCP1,ratio.dcarAP0,ratio.dcarAP1;";  // Status: DCA resolution
-  sCombinedStatus+="itsEffStatus,absDiff.QA.ITS.EffoneSPDPt02,absDiff.QA.ITS.EffoneSPDPt1,absDiff.QA.ITS.EffoneSPDPt10,absDiff.QA.ITS.EffTOTPt02,absDiff.QA.ITS.EffTOTPt1,absDiff.QA.ITS.EffTOTPt10;";
-  sCombinedStatus+="dEdX,ratio.meanMIP,ratio.resolutionMIP,diff0.MIPattachSlopeA,diff0.MIPattachSlopeC,diff0.meanMIPele,diff0.resolutionMIPele,absDiff.QA.TPC.meanMIP,absDiff.QA.TPC.resolutionMIP,absDiff.QA.TPC.MIPattachSlopeA,absDiff.QA.TPC.MIPattachSlopeC,absDiff.QA.TPC.meanMIPele,absDiff.QA.TPC.resolutionMIPele;";
+  sCombinedStatus+="mcAnchor.ncl,absDiff.QA.TPC.meanTPCncl,absDiff.QA.TPC.meanTPCnclF,diff0.meanTPCncl,diff0.meanTPCnclF;"; // Status number of clusters and findable clusters
+  sCombinedStatus+="mcAnchor.dcarResol,absDiff.QA.TPC.dcarAP0,absDiff.QA.TPC.dcarAP1,absDiff.QA.TPC.dcarCP0,absDiff.QA.TPC.dcarCP1,ratio.dcarAP0,ratio.dcarAP1;";  // Status: DCA resolution
+  sCombinedStatus+="mcAnchor.itsEffStatus,absDiff.QA.ITS.EffoneSPDPt02,absDiff.QA.ITS.EffoneSPDPt1,absDiff.QA.ITS.EffoneSPDPt10,absDiff.QA.ITS.EffTOTPt02,absDiff.QA.ITS.EffTOTPt1,absDiff.QA.ITS.EffTOTPt10;";
+  sCombinedStatus+="mcAnchor.dEdx,ratio.meanMIP,ratio.resolutionMIP,diff0.MIPattachSlopeA,diff0.MIPattachSlopeC,diff0.meanMIPele,diff0.resolutionMIPele,absDiff.QA.TPC.meanMIP,absDiff.QA.TPC.resolutionMIP,absDiff.QA.TPC.MIPattachSlopeA,absDiff.QA.TPC.MIPattachSlopeC,absDiff.QA.TPC.meanMIPele,absDiff.QA.TPC.resolutionMIPele;";
 
   // Status: ITS:TPC-ITS matching efficiency
   TStatToolkit::MakeCombinedAlias(treeMC,sCombinedStatus,doCheck, verbose);
@@ -230,8 +233,8 @@ Bool_t InitTPCMCValidation(TString mcPeriod, TString mcPass, TString anchorPerio
   }
   //
   makeTPCMCAlarms(treeMC, doCheck, verbose);
-  TString sStatusBarVars("ncl;dcarResol;itsEffStatus;dEdX");
-  TString sStatusBarNames("#(cl);dcar;itsEffStatus;dEdX;");
+  TString sStatusBarVars("mcAnchor.ncl;mcAnchor.dcarResol;mcAnchor.itsEffStatus;mcAnchor.dEdx");
+  TString sStatusBarNames("#(cl)_{MC Anchor};dca_{R}_{MC Anchor};#epsilon_{ITS}_{MC Anchor};dEdx_{MC Anchor}");
   TString sCriteria("(1):(statisticOK):(varname_Warning):(varname_Outlier):(varname_PhysAcc)"); // status bar markers
   TString statusString[3];
   statusString[0] = sStatusBarVars;
@@ -547,7 +550,7 @@ void MakeDCAStatusPlot(){  // Example
 }
 
 ///
-void MakedEdXStatusPlot() {  //TODO - Sebastian
+void MakedEdxStatusPlot() {  //TODO - Sebastian
   // To get the list of warning for standard QA treeMC->GetListOfAliases()->Print("","*MIP*arning")
   // Status plots
   TString statusExpression,statusTitle;
@@ -556,7 +559,7 @@ void MakedEdXStatusPlot() {  //TODO - Sebastian
   statusExpression="ratio.meanMIP;ratio.resolutionMIP;diff0.MIPattachSlopeA;diff0.MIPattachSlopeC;diff0.resolutionMIPele;diff0.meanMIPele;absDiff.QA.TPC.meanMIP;absDiff.QA.TPC.resolutionMIP;absDiff.QA.TPC.MIPattachSlopeA;absDiff.QA.TPC.MIPattachSlopeC;";
   statusTitle="ratio-meanMIP;ratio-resolutionMIP;diff0.MIPattachSlopeA;diff0.MIPattachSlopeC;diff0.resolutionMIPele;diff0.meanMIPele;#Delta^{MC/Anchor-#mu}_{meanMIP};#Delta^{MC/Anchor-#mu}_{resolutionMIP};#Delta^{MC/Anchor-#mu}_{MIPattachSlopeA};#Delta^{MC/Anchor-#mu}_{MIPattachSlopeC};";
   statusExpression+="run;";
-  trendingDraw->MakeStatusPlot("./", "dEdXStatus.png", statusExpression.Data(), statusTitle.Data(), "defaultCut",sCriteria);
+  trendingDraw->MakeStatusPlot("./", "dEdxStatus.png", statusExpression.Data(), statusTitle.Data(), "defaultCut",sCriteria);
 
 }
 
@@ -577,7 +580,7 @@ void makeHtml() {
   TStatToolkit::AddMetadata(treeMC, "bz.thead", "B<sub>z</sub> (T)");
   TStatToolkit::AddMetadata(treeMC, "bz.tooltip", "Barrel field");
   TStatToolkit::AddMetadata(treeMC, "detectorMask.html","%b{detectorMask&0x7F}");
-  TStatToolkit::AddMetadata(treeMC, "detectorMask.headerTooltip","Detector bit mask:\n* SPD\n* SDD\n* SSS\n* TPC\n* TRD");
+  TStatToolkit::AddMetadata(treeMC, "detectorMask.headerTooltip","Detector bit mask:\n . SPD\n . SDD\n . SSS\n . TPC\n . TRD");
 }
 
 void makeHtmlDCA(){
@@ -598,7 +601,6 @@ void makeHtmlDCA(){
   TStatToolkit::AddMetadata(treeMC, "TPC.Anchor.dcarCP0.thead", "&sigma;<sup>C</sup><sub>Anchor DCA<sub>1/pt=0</sub></sub> (cm)");
   TStatToolkit::AddMetadata(treeMC, "TPC.Anchor.dcarCP0.tooltip", "DCA (r&phi;) at infinite pt");
   TStatToolkit::AddMetadata(treeMC, "TPC.Anchor.dcarCP0.html", "<a href=\"http://aliqatpc.web.cern.ch/aliqatpc/data/%d{year}/%s{TPC.Anchor.period.GetName()}/passMC/000%d{run}/dca_and_phi.png\">%2.2f{dcarCP0}</a>");
-
 
   //
   TString runSelection = "defaultCut";
@@ -630,51 +632,34 @@ void PrintTestHtmlLink(TString testHtml){
   printf("\n %s \n",testLink.PrintValue());
 }
 
-
-
-/// Recursive function to decompose the status string into sub-contribution
-/// \param tree            - input tree
-/// \param currentString   - current status string
-/// \param statusVar       - resulting status variable
-/// \param statusTitle     - resulting status variable
-/// \param suffix          - suffix to parse status string "_Warning"
-/// \param counter         - counter for debug purposes
-/*!
-\code
- TString currentString="dcar_Warning";
- TString statusVar="", statusTitle="";
- TPRegexp suffix("_Warning$");
- Int_t counter=0;
- AliTreeTrending::DecomposeStatusAlias(treeMC, currentString,statusVar,statusTitle,suffix,counter);
- statusVar+="run";
- trendingDraw->MakeStatusPlot("./", "dcarStatusMC.png", statusVar, statusTitle, "defaultCut",sCriteria);
- trendingDraw->MakeStatusPlot("./", "dcarStatusAnchor.png", statusVar, statusTitle, "defaultCut",sCriteria,"TPC.Anchor");  //PROBLEM
- \endcode
-*/
-void DecomposeStatusAlias(TTree* tree, TString currentString, TString &statusVar, TString &statusTitle, TPRegexp &suffix, Int_t &counter){
-  //
-  if (tree==NULL) throw std::invalid_argument("invalid tree argument");
-  TString toAdd=currentString;
-  suffix.Substitute(toAdd,"");
-  statusVar+=toAdd;
-  statusVar+=";";
-  TString title=toAdd;
-  if (TStatToolkit::GetMetadata(tree,(toAdd+".Title").Data())) title=TStatToolkit::GetMetadata(tree,toAdd+".Title")->GetTitle();
-  statusTitle+=title;
-  statusTitle+=";";
-  TString content=tree->GetAlias(currentString.Data());
-  TObjArray  * array = content.Tokenize("|&");
-  printf("%d\t%s\t%s\n",counter,toAdd.Data(), content.Data());
-  for (Int_t i=0; i<array->GetEntries(); i++){
-    TString cString=array->At(i)->GetName();
-    cString.ReplaceAll("(","");
-    cString.ReplaceAll(")","");
-    if (suffix.Match(cString,"")>0) {
-      DecomposeStatusAlias(tree, cString, statusVar, statusTitle,suffix,counter);
-      counter++;
-    }
-  }
+///
+/// \param path
+/// \param figName
+/// \param statusString
+/// \param selection
+/// \param friendName
+void MakeStatusPlot(const char *path, TString figName, TString statusString, TString selection, TString friendName=""){
+  TPRegexp suffix("_Warning$");
+  TString currentString="",statusVar="",statusTitle="";
+  Int_t counter=0;
+  AliTreeTrending::DecomposeStatusAlias(treeMC, statusString,statusVar,statusTitle,suffix,counter);
+  statusVar+="run";
+  trendingDraw->MakeStatusPlot(path, figName.Data(), statusVar, statusTitle, selection.Data(), sCriteria,friendName);
 }
+
+void MakeStatusPlots(){
+  //
+  MakeStatusPlot("./", "dcarStatusMC.png","dcar_Warning","1");
+  MakeStatusPlot("./", "dcarStatusAnchor.png","dcar_Warning","1","QA.TPC");
+  MakeStatusPlot("./", "dcarStatusMCToAnchor.png","mvAnchor.dcarResol_Warning","1");
+
+  MakeStatusPlot("./", "itsEffStatusMCToAnchor.png","mcAnchor.itsEffStatus_Warning","1");
+  MakeStatusPlot("./", "dEdxStatusMCToAnchor.png","mcAnchor.dEdx_Warning","1");
+  MakeStatusPlot("./", "nclStatusMCToAnchor.png","mcAnchor.ncl_Warning","1");
+
+}
+
+
 
 /// html useful links
 ///  - Monalisa - raw run details query - used on mouse over
@@ -691,7 +676,12 @@ void DecomposeStatusAlias(TTree* tree, TString currentString, TString &statusVar
 /// TODO - Ful name of the alias expression (maybe recursive)
 /// TODO - add html preview for table header
 ///          tableHeader, tableHeader_Tooltip, tableHeader_Title, tableHeader_html
-/// TODO - for the status graphs with friend - we need to use run list for other status -  rebin sparse graph destroys x offset  - to fix
-///      - RebinMultigraph should keep offsets
+/// TODO - DONE - for the status graphs with friend - we need to use run list for other status -  rebin sparse graph destroys x offset  - to fix
+///      - RebinMultiGraph should keep offsets
 /// TODO - Graph rebin to be extended to X,Y,Z
-
+/// TODO - tooltip/title- to make bullets using UTF printing
+//  
+/// TODO - make dEdx full QA (Sebastian)
+///      - all status(MC/Anchor, MC, Anchor) plots
+///      - add them to web page = modifying tabdEdx.html
+///      - add plot for all variables contributing to alarms
