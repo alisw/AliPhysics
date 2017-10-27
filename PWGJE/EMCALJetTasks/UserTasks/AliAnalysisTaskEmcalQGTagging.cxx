@@ -188,7 +188,7 @@ AliAnalysisTaskEmcalQGTagging::~AliAnalysisTaskEmcalQGTagging()
 
    //log(1/theta),log(z*theta),jetpT,algo// 
    const Int_t dimSpec   = 4;
-   const Int_t nBinsSpec[4]     = {100,100,20,3};
+   const Int_t nBinsSpec[4]     = {50,50,20,3};
    const Double_t lowBinSpec[4] = {0.0,-10,  0,0};
    const Double_t hiBinSpec[4]  = {5.0,  0,200,3};
    fHLundIterative = new THnSparseF("fHLundIterative",
@@ -212,7 +212,7 @@ AliAnalysisTaskEmcalQGTagging::~AliAnalysisTaskEmcalQGTagging()
 
  
   TH1::AddDirectory(oldStatus);
-  const Int_t nVar = 17;
+  const Int_t nVar = 12;
   const char* nameoutput = GetOutputSlot(2)->GetContainer()->GetName();
   fTreeObservableTagging = new TTree(nameoutput, nameoutput);
   
@@ -225,23 +225,23 @@ AliAnalysisTaskEmcalQGTagging::~AliAnalysisTaskEmcalQGTagging()
   fShapesVarNames[3] = "mJet";
   // fShapesVarNames[4] = "nbOfConst";
   fShapesVarNames[4] = "angularity";
-  fShapesVarNames[5] = "circularity";
-  fShapesVarNames[6] = "lesub";
-  fShapesVarNames[7] = "coronna";
+  //fShapesVarNames[5] = "circularity";
+  fShapesVarNames[5] = "lesub";
+  //fShapesVarNames[7] = "coronna";
 
-  fShapesVarNames[8] = "ptJetMatch"; 
-  fShapesVarNames[9] = "ptDJetMatch"; 
-  fShapesVarNames[10] = "mJetMatch";
+  fShapesVarNames[6] = "ptJetMatch"; 
+  fShapesVarNames[7] = "ptDJetMatch"; 
+  fShapesVarNames[8] = "mJetMatch";
   // fShapesVarNames[12] = "nbOfConstMatch";
-  fShapesVarNames[11] = "angularityMatch";
-  fShapesVarNames[12] = "circularityMatch";
-  fShapesVarNames[13] = "lesubMatch";
-  fShapesVarNames[14] = "coronnaMatch";
-  fShapesVarNames[15]="weightPythia";
+  fShapesVarNames[9] = "angularityMatch";
+  //fShapesVarNames[12] = "circularityMatch";
+  fShapesVarNames[10] = "lesubMatch";
+  //fShapesVarNames[14] = "coronnaMatch";
+  fShapesVarNames[11]="weightPythia";
   //fShapesVarNames[14]="ntrksEvt";
   //fShapesVarNames[16]="rhoVal";
   //fShapesVarNames[17]="rhoMassVal";
-  fShapesVarNames[16]="ptUnsub";
+  //fShapesVarNames[12]="ptUnsub";
 
    for(Int_t ivar=0; ivar < nVar; ivar++){
     cout<<"looping over variables"<<endl;
@@ -529,9 +529,9 @@ Bool_t AliAnalysisTaskEmcalQGTagging::FillHistograms()
       fShapesVar[2] = GetJetpTD(jet1,0);
       fShapesVar[3] = GetJetMass(jet1,0);
       fShapesVar[4] = GetJetAngularity(jet1,0);
-      fShapesVar[5] = GetJetCircularity(jet1,0);
-      fShapesVar[6] = GetJetLeSub(jet1,0);
-      fShapesVar[6] = GetJetCoronna(jet1,0);
+      //fShapesVar[5] = GetJetCircularity(jet1,0);
+      fShapesVar[5] = GetJetLeSub(jet1,0);
+      //fShapesVar[6] = GetJetCoronna(jet1,0);
       RecursiveParents(jet1,jetCont,0);
       RecursiveParents(jet1,jetCont,1);
       RecursiveParents(jet1,jetCont,2);
@@ -548,9 +548,9 @@ Bool_t AliAnalysisTaskEmcalQGTagging::FillHistograms()
          massMatch=GetJetMass(jet3,kMatched);
          //constMatch=1.*GetJetNumberOfConstituents(jet2,kMatched);
          angulMatch=GetJetAngularity(jet3, kMatched);
-        circMatch=GetJetCircularity(jet3, kMatched);
+	 //circMatch=GetJetCircularity(jet3, kMatched);
          lesubMatch=GetJetLeSub(jet3, kMatched);
-	 coronnaMatch=GetJetCoronna(jet3,kMatched); 
+	 //coronnaMatch=GetJetCoronna(jet3,kMatched); 
          //sigma2Match = GetSigma2(jet2, kMatched);
        }
       
@@ -562,9 +562,9 @@ Bool_t AliAnalysisTaskEmcalQGTagging::FillHistograms()
         massMatch=GetJetMass(jet3,kMatched);
         // constMatch=1.*GetJetNumberOfConstituents(jet3,kMatched);
         angulMatch=GetJetAngularity(jet3, kMatched);
-        circMatch=GetJetCircularity(jet3, kMatched);
+	// circMatch=GetJetCircularity(jet3, kMatched);
         lesubMatch=GetJetLeSub(jet3, kMatched);
-        coronnaMatch = GetJetCoronna(jet3, kMatched);
+        //coronnaMatch = GetJetCoronna(jet3, kMatched);
         
       }
 
@@ -577,26 +577,26 @@ Bool_t AliAnalysisTaskEmcalQGTagging::FillHistograms()
         massMatch=0.;
 	//constMatch=0.;
         angulMatch=0.;
-        circMatch=0.;
+	// circMatch=0.;
         lesubMatch=0.;
-        coronnaMatch =0.;
+        //coronnaMatch =0.;
         
       }
       
     
 
-      fShapesVar[8] = ptMatch;
-      fShapesVar[9] = ptDMatch;
-      fShapesVar[10] = massMatch;
-      fShapesVar[11] = angulMatch;
-      fShapesVar[12] = circMatch;
-      fShapesVar[13] = lesubMatch;
-       fShapesVar[14] = coronnaMatch;
-      fShapesVar[15] = kWeight;
+      fShapesVar[6] = ptMatch;
+      fShapesVar[7] = ptDMatch;
+      fShapesVar[8] = massMatch;
+      fShapesVar[9] = angulMatch;
+      //fShapesVar[12] = circMatch;
+      fShapesVar[10] = lesubMatch;
+      //  fShapesVar[14] = coronnaMatch;
+      fShapesVar[11] = kWeight;
       //fShapesVar[16] = ntracksEvt;
       // fShapesVar[16] = rhoVal;
       //fShapesVar[17] = rhoMassVal;
-      fShapesVar[16] = jet1->Pt();
+      //fShapesVar[16] = jet1->Pt();
 
 
       fTreeObservableTagging->Fill();
@@ -1118,6 +1118,7 @@ void AliAnalysisTaskEmcalQGTagging::RecursiveParents(AliEmcalJet *fJet,AliJetCon
      
     }
     fastjet::JetAlgorithm jetalgo(fastjet::antikt_algorithm);
+
     if(ReclusterAlgo==0){ xflagalgo=0.5;
       jetalgo=fastjet::kt_algorithm ;}
       
