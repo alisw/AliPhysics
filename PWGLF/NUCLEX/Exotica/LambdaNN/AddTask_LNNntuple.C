@@ -1,4 +1,4 @@
-AliAnalysisTask *AddTask_LNNntuple(){
+AliAnalysisTask *AddTask_LNNntuple(Bool_t isMC=kFALSE){
 
  //get the current analysis manager
  AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -15,7 +15,7 @@ AliAnalysisTask *AddTask_LNNntuple(){
 
  //========= Add task to the ANALYSIS manager =====
 
- AliAnalysisTaskLNNntuple *taskLNN = new AliAnalysisTaskLNNntuple("LNNntuple");
+ AliAnalysisTaskLNNntuple *taskLNN = new AliAnalysisTaskLNNntuple("LNNntuple",isMC);
 
  if(!taskLNN) printf("\n\n\n   *************** NO TASK LOADED!! ************ \n\n\n\n");
 
@@ -25,9 +25,10 @@ AliAnalysisTask *AddTask_LNNntuple(){
  //              data containers
  //================================================
  //            find input container
-
+ TString outputFileName = AliAnalysisManager::GetCommonFileName();
+ printf("Output filename %s \n",outputFileName.Data());
  AliAnalysisDataContainer *cinput   = mgr->GetCommonInputContainer();
- AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("LNNmc_list", TList::Class(), AliAnalysisManager::kOutputContainer, "LNN.Ntuple.MC.root");  
+ AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("LNNlist", TList::Class(), AliAnalysisManager::kOutputContainer, outputFileName.Data());  
 
  //           connect containers
  mgr->ConnectInput  (taskLNN,  0, cinput );

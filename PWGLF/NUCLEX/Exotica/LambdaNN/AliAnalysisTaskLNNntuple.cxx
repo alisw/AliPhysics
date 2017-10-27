@@ -79,7 +79,7 @@ ClassImp (AliAnalysisTaskLNNntuple)
   fhBBH3TofSel (0), fhTestNsigma (0), fhTestQ(0), fNt (0), fPIDResponse(0)
 {
  // Dummy Constructor
- //  Printf("Dummy Constructor");
+ //Printf("                   ****************** Default ctor \n");
 }
 
 //________________________________________________________________________
@@ -118,7 +118,7 @@ AliAnalysisTaskLNNntuple::AliAnalysisTaskLNNntuple (const char *name, Bool_t mc)
  DefineOutput (1, TList::Class ());
  //DefineOutput(2, TTree::Class());
  //DefineOutput(3, TTree::Class());
-
+ //Printf("                   ****************** Right ctor \n");
 }
 
 //_______________________________________________________
@@ -146,21 +146,15 @@ void AliAnalysisTaskLNNntuple::UserCreateOutputObjects ()
    new TH1F ("fHistEventMultiplicity", "Nb of Events", 12, -0.5, 11.5);
   fHistEventMultiplicity->GetXaxis ()->SetBinLabel (1, "All Events");
   fHistEventMultiplicity->GetXaxis ()->SetBinLabel (2, "Events w/PV");
-  fHistEventMultiplicity->GetXaxis ()->SetBinLabel (3,
-    "Events w/|Vz|<10cm");
+  fHistEventMultiplicity->GetXaxis ()->SetBinLabel (3, "Events w/|Vz|<10cm");
   fHistEventMultiplicity->GetXaxis ()->SetBinLabel (4, "Central Events");
-  fHistEventMultiplicity->GetXaxis ()->SetBinLabel (5,
-    "SemiCentral Events");
+  fHistEventMultiplicity->GetXaxis ()->SetBinLabel (5, "SemiCentral Events");
   fHistEventMultiplicity->GetXaxis ()->SetBinLabel (6, "MB Events");
-  fHistEventMultiplicity->GetXaxis ()->SetBinLabel (7,
-    "Central Events  w/|Vz|<10cm");
-  fHistEventMultiplicity->GetXaxis ()->SetBinLabel (8,
-    "SemiCentral Events  w/|Vz|<10cm");
-  fHistEventMultiplicity->GetXaxis ()->SetBinLabel (9,
-    "MB Events w/|Vz|<10cm");
-  fHistEventMultiplicity->GetXaxis ()->SetBinLabel (10, "Any Events");
-  fHistEventMultiplicity->GetXaxis ()->SetBinLabel (11,
-    "Any Events w/|Vz|<10cm");
+  fHistEventMultiplicity->GetXaxis ()->SetBinLabel (7, "Central Events  w/|Vz|<10cm");
+  fHistEventMultiplicity->GetXaxis ()->SetBinLabel (8, "SemiCentral Events  w/|Vz|<10cm");
+  fHistEventMultiplicity->GetXaxis ()->SetBinLabel (9, "MB Events w/|Vz|<10cm");
+  fHistEventMultiplicity->GetXaxis ()->SetBinLabel (10,"Any Events");
+  fHistEventMultiplicity->GetXaxis ()->SetBinLabel (11,"Any Events w/|Vz|<10cm");
 
   fListHist->Add (fHistEventMultiplicity);
  }
@@ -178,8 +172,7 @@ void AliAnalysisTaskLNNntuple::UserCreateOutputObjects ()
  if (!fHistTrackMultiplicityCent)
  {
   fHistTrackMultiplicityCent =
-   new TH2F ("fHistTrackMultiplicityCent", "Nb of Tracks Central Events",
-     2500, 0, 25000, 210, -1, 104);
+   new TH2F ("fHistTrackMultiplicityCent", "Nb of Tracks Central Events", 2500, 0, 25000, 210, -1, 104);
   fHistTrackMultiplicityCent->GetXaxis ()->SetTitle ("Number of tracks");
   fHistTrackMultiplicityCent->GetYaxis ()->SetTitle ("Percentile");
   fListHist->Add (fHistTrackMultiplicityCent);
@@ -187,12 +180,8 @@ void AliAnalysisTaskLNNntuple::UserCreateOutputObjects ()
 
  if (!fHistTrackMultiplicitySemiCent)
  {
-  fHistTrackMultiplicitySemiCent =
-   new TH2F ("fHistTrackMultiplicitySemiCent",
-     "Nb of Tracks SemiCentral Events", 2500, 0, 25000, 210, -1,
-     104);
-  fHistTrackMultiplicitySemiCent->GetXaxis ()->
-   SetTitle ("Number of tracks");
+  fHistTrackMultiplicitySemiCent = new TH2F ("fHistTrackMultiplicitySemiCent", "Nb of Tracks SemiCentral Events", 2500, 0, 25000, 210, -1, 104);
+  fHistTrackMultiplicitySemiCent->GetXaxis ()->SetTitle ("Number of tracks");
   fHistTrackMultiplicitySemiCent->GetYaxis ()->SetTitle ("Percentile");
   fListHist->Add (fHistTrackMultiplicitySemiCent);
  }
@@ -200,8 +189,7 @@ void AliAnalysisTaskLNNntuple::UserCreateOutputObjects ()
  if (!fHistTrackMultiplicityMB)
  {
   fHistTrackMultiplicityMB =
-   new TH2F ("fHistTrackMultiplicityMB", "Nb of Tracks MBral Events",
-     2500, 0, 25000, 210, -1, 104);
+   new TH2F ("fHistTrackMultiplicityMB", "Nb of Tracks MBral Events",2500, 0, 25000, 210, -1, 104);
   fHistTrackMultiplicityMB->GetXaxis ()->SetTitle ("Number of tracks");
   fHistTrackMultiplicityMB->GetYaxis ()->SetTitle ("Percentile");
   fListHist->Add (fHistTrackMultiplicityMB);
@@ -209,24 +197,16 @@ void AliAnalysisTaskLNNntuple::UserCreateOutputObjects ()
 
  if (!fHistTrackMultiplicityPVCent)
  {
-  fHistTrackMultiplicityPVCent =
-   new TH2F ("fHistTrackMultiplicityPVCent",
-     "Nb of Tracks Central Events", 2500, 0, 25000, 210, -1,
-     104);
-  fHistTrackMultiplicityPVCent->GetXaxis ()->
-   SetTitle ("Number of tracks");
+  fHistTrackMultiplicityPVCent = new TH2F ("fHistTrackMultiplicityPVCent","Nb of Tracks Central Events", 2500, 0, 25000, 210, -1,104);
+  fHistTrackMultiplicityPVCent->GetXaxis ()->SetTitle ("Number of tracks");
   fHistTrackMultiplicityPVCent->GetYaxis ()->SetTitle ("Percentile");
   fListHist->Add (fHistTrackMultiplicityPVCent);
  }
 
  if (!fHistTrackMultiplicityPVSemiCent)
  {
-  fHistTrackMultiplicityPVSemiCent =
-   new TH2F ("fHistTrackMultiplicityPVSemiCent",
-     "Nb of Tracks SemiCentral Events", 2500, 0, 25000, 210, -1,
-     104);
-  fHistTrackMultiplicityPVSemiCent->GetXaxis ()->
-   SetTitle ("Number of tracks");
+  fHistTrackMultiplicityPVSemiCent = new TH2F ("fHistTrackMultiplicityPVSemiCent","Nb of Tracks SemiCentral Events", 2500, 0, 25000, 210, -1,104);
+  fHistTrackMultiplicityPVSemiCent->GetXaxis ()->SetTitle ("Number of tracks");
   fHistTrackMultiplicityPVSemiCent->GetYaxis ()->SetTitle ("Percentile");
   fListHist->Add (fHistTrackMultiplicityPVSemiCent);
  }
@@ -234,8 +214,7 @@ void AliAnalysisTaskLNNntuple::UserCreateOutputObjects ()
  if (!fHistTrackMultiplicityPVMB)
  {
   fHistTrackMultiplicityPVMB =
-   new TH2F ("fHistTrackMultiplicityPVMB", "Nb of Tracks MBral Events",
-     2500, 0, 25000, 210, -1, 104);
+   new TH2F ("fHistTrackMultiplicityPVMB", "Nb of Tracks MBral Events",2500, 0, 25000, 210, -1, 104);
   fHistTrackMultiplicityPVMB->GetXaxis ()->SetTitle ("Number of tracks");
   fHistTrackMultiplicityPVMB->GetYaxis ()->SetTitle ("Percentile");
   fListHist->Add (fHistTrackMultiplicityPVMB);
@@ -247,8 +226,7 @@ void AliAnalysisTaskLNNntuple::UserCreateOutputObjects ()
 
  if (!fhBB)
  {
-  fhBB =
-   new TH2F ("fhBB", "BetheBlochTPC", nBinBB, -pMax, pMax, 400, 0, 1000);
+  fhBB = new TH2F ("fhBB", "BetheBlochTPC", nBinBB, -pMax, pMax, 400, 0, 1000);
   fhBB->GetXaxis ()->SetTitle ("p/z (GeV/#it{c})");
   fhBB->GetYaxis ()->SetTitle ("TPC Signal");
   fListHist->Add (fhBB);
@@ -256,9 +234,7 @@ void AliAnalysisTaskLNNntuple::UserCreateOutputObjects ()
 
  if (!fhTOF)
  {
-  fhTOF =
-   new TH2F ("fhTOF", "Scatter Plot TOF", nBinBB, -pMax, pMax, 100, 0,
-     1.2);
+  fhTOF = new TH2F ("fhTOF", "Scatter Plot TOF", nBinBB, -pMax, pMax, 100, 0,1.2);
   fhTOF->GetXaxis ()->SetTitle ("p/z (GeV/#it{c})");
   fhTOF->GetYaxis ()->SetTitle ("#beta");
   fListHist->Add (fhTOF);
@@ -267,8 +243,7 @@ void AliAnalysisTaskLNNntuple::UserCreateOutputObjects ()
  if (!fhMassTOF)
  {
   fhMassTOF =
-   new TH2F ("fhMassTOF", "Particle Mass - TOF", nBinBB, 0, pMax, 800, 0,
-     5);
+   new TH2F ("fhMassTOF", "Particle Mass - TOF", nBinBB, 0, pMax, 800, 0,5);
   fhMassTOF->GetYaxis ()->SetTitle ("Mass (GeV/#it{c}^{2})");
   fhMassTOF->GetXaxis ()->SetTitle ("P (GeV/#it{c})");
   fListHist->Add (fhMassTOF);
@@ -284,8 +259,7 @@ void AliAnalysisTaskLNNntuple::UserCreateOutputObjects ()
 
  if (!fhBBH3)
  {
-  fhBBH3 =
-   new TH2F ("fhBBH3", "Bethe-Bloch TPC ^3H", nBinBB, -pMax, pMax, 400, 0, 1000);
+  fhBBH3 = new TH2F ("fhBBH3", "Bethe-Bloch TPC ^3H", nBinBB, -pMax, pMax, 400, 0, 1000);
   fhBBH3->GetXaxis ()->SetTitle ("p/z (GeV/#it{c})");
   fhBBH3->GetYaxis ()->SetTitle ("TPC Signal");
   fListHist->Add (fhBBH3);
@@ -293,8 +267,7 @@ void AliAnalysisTaskLNNntuple::UserCreateOutputObjects ()
  if (!fhBBH3TofSel)
  {
   fhBBH3TofSel =
-   new TH2F ("fhBBH3TofSel",
-     "Bethe-Bloch TPC #^{3}H after TOF 3#sigma cut", nBinBB,-pMax, pMax, 400, 0, 1000);
+   new TH2F ("fhBBH3TofSel","Bethe-Bloch TPC #^{3}H after TOF 3#sigma cut", nBinBB,-pMax, pMax, 400, 0, 1000);
   fhBBH3TofSel->GetXaxis ()->SetTitle ("p/z (GeV/#it{c})");
   fhBBH3TofSel->GetYaxis ()->SetTitle ("TPC Signal");
   fListHist->Add (fhBBH3TofSel);
@@ -302,8 +275,7 @@ void AliAnalysisTaskLNNntuple::UserCreateOutputObjects ()
 
  if (!fhTestNsigma)
  {
-  fhTestNsigma =
-   new TH2F ("hNsigmaTri", "n #sigma distribution", 300, 0, 15, 100, -10, 10);
+  fhTestNsigma = new TH2F ("hNsigmaTri", "n #sigma distribution", 300, 0, 15, 100, -10, 10);
   fListHist->Add (fhTestNsigma);
  }
 
@@ -322,14 +294,11 @@ void AliAnalysisTaskLNNntuple::UserCreateOutputObjects ()
    fNt = new TNtupleD ("nt", "V0 ntuple","piPx:piPy:piPz:triPx:triPy:triPz:nSpi:nStri:triTOFmass:piTPCsig:triTPCsig:v0P:ptArm:alphaArm:triDcaXY:triDcaZ:v0DcaD:decayL:decayLxy:v0Dca:CosP:v0VtxErrSum:sign:dcaPi:dcaTriTot:nSPiFromPiTof:nSPrTof:nSPiTof:nITSclus");
    fListHist->Add (fNt);
   } else {
-
    fNt = new TNtupleD ("nt", "V0 ntuple","piPx:piPy:piPz:triPx:triPy:triPz:nSpi:nStri:triTOFmass:piTPCsig:triTPCsig:v0P:ptArm:alphaArm:triDcaXY:triDCAZ:v0DcaD:decayL:decayLxy:v0Dca:CosP:v0VtxErrSum:sign:dcaPi:dcaTriTot:nSPiFromPiTof:nSPrTof:nSPiTof:nITSclus:piPdgCode:triPdgCode:piMumPdgCode:triMumPdgCode");
    fListHist->Add (fNt);
 
   }
  }
-
-
 
 
  PostData (1, fListHist);
@@ -387,6 +356,12 @@ AliAnalysisTaskLNNntuple::UserExec (Option_t *)
  Double_t lMagneticField = lESDevent->GetMagneticField ();
  Int_t TrackNumber = -1;
 
+ AliAnalysisManager *man = AliAnalysisManager::GetAnalysisManager ();
+ AliInputEventHandler *inputHandler = (AliInputEventHandler *) (man->GetInputEventHandler ());
+ if(!inputHandler->IsEventSelected ()){
+ Printf("Event not selected, skipping... \n");
+ return;
+ }
 
  //*****************//  
  //*   Centrality  *//
@@ -400,12 +375,10 @@ AliAnalysisTaskLNNntuple::UserExec (Option_t *)
  //*******//
  //  PID  //
  //*******//
- AliAnalysisManager *man = AliAnalysisManager::GetAnalysisManager ();
- AliInputEventHandler *inputHandler = (AliInputEventHandler *) (man->GetInputEventHandler ());
  fPIDResponse = inputHandler->GetPIDResponse ();
  fPIDResponse->SetCachePID (kTRUE);
  //===========================================
-
+ 
  Int_t eventtype = -1;
  if(fMC) eventtype=1;
  else {
@@ -413,6 +386,7 @@ AliAnalysisTaskLNNntuple::UserExec (Option_t *)
   Bool_t isSelectedSemiCentral = (inputHandler->IsEventSelected () & AliVEvent::kSemiCentral);
   Bool_t isSelectedMB = (inputHandler->IsEventSelected () & AliVEvent::kMB);
   Bool_t isSelectedAny = (inputHandler->IsEventSelected () & AliVEvent::kAny);
+  //Printf("isEventSelected %i : Central (%i) %i semicentral %i MB %i any %i \n",(Int_t)inputHandler->IsEventSelected (),(Int_t)AliVEvent::kCentral,(Int_t)isSelectedCentral,(Int_t)isSelectedSemiCentral,(Int_t)isSelectedMB,(Int_t)isSelectedAny);
 
   if (isSelectedCentral)
   {
@@ -493,8 +467,6 @@ AliAnalysisTaskLNNntuple::UserExec (Option_t *)
 
   fHistEventMultiplicity->Fill (2);
 
-
-
   // track quality monitor plots
   for (Int_t j=0; j<TrackNumber; j++) { //loop on tracks
    AliESDtrack *esdtrack=lESDevent->GetTrack(j);
@@ -516,7 +488,7 @@ AliAnalysisTaskLNNntuple::UserExec (Option_t *)
   }
 
 
- // *************** Loop over V0s ***************
+  // *************** Loop over V0s ***************
   for(Int_t iv=0; iv<lESDevent->GetNumberOfV0s(); iv++){
    AliESDv0 * v0s = lESDevent->GetV0(iv);
    if(!v0s) continue;
@@ -633,13 +605,13 @@ AliAnalysisTaskLNNntuple::Terminate (Option_t *)
 //________________________________________________________________________
 Bool_t AliAnalysisTaskLNNntuple::PassTrackCuts (AliESDtrack * tr)
 {
- if(tr->GetTPCNcls() < 60 ) return false;
- if (!(tr->GetStatus () & AliESDtrack::kTPCrefit)) return false;
- if (Chi2perNDF (tr) > 5) return false;
- if (tr->GetKinkIndex (0) != 0) return false;
- if (TMath::Abs (tr->Eta ()) > 0.9) return false;
- if (tr->P () < 0.15) return false;
- if (tr->P () > 10) return false;
+ if(tr->GetTPCNcls() < 60 ) return kFALSE;
+ if (!(tr->GetStatus () & AliESDtrack::kTPCrefit)) return kFALSE;
+ if (Chi2perNDF (tr) > 5) return kFALSE;
+ if (tr->GetKinkIndex (0) != 0) return kFALSE;
+ if (TMath::Abs (tr->Eta ()) > 0.9) return kFALSE;
+ if (tr->P () < 0.15) return kFALSE;
+ if (tr->P () > 10) return kFALSE;
  return true;
 
 }
@@ -648,10 +620,10 @@ Bool_t AliAnalysisTaskLNNntuple::PassTrackCuts (AliESDtrack * tr)
 Bool_t AliAnalysisTaskLNNntuple::Passv0Cuts (AliESDv0 * v0, Double_t decayLength)
 {
  if(v0->GetOnFlyStatus()==kTRUE) return false;
- if (v0->P () < 0.7) return false;
- if (v0->P () > 10) return false;
- if (v0->GetDcaV0Daughters () > 0.8) return false;
- if (v0->GetV0CosineOfPointingAngle () < 0.9995) return false;
+ if (v0->P () < 0.7) return kFALSE;
+ if (v0->P () > 10) return kFALSE;
+ if (v0->GetDcaV0Daughters () > 0.8) return kFALSE;
+ if (v0->GetV0CosineOfPointingAngle () < 0.9995) return kFALSE;
  if (decayLength < 1) return false; // loose cut to reduce bkg of V0s coming from primary vertex( weak decay and the coice of 1 cm comes from MC study )
 
  return true;

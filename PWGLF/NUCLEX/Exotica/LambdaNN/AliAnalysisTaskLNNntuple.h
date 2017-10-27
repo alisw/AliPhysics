@@ -75,7 +75,7 @@ class AliAnalysisTaskLNNntuple : public AliAnalysisTaskSE {
   AliAnalysisTaskLNNntuple(const AliAnalysisTaskLNNntuple&);            // not implemented
   AliAnalysisTaskLNNntuple& operator=(const AliAnalysisTaskLNNntuple&); // not implemented
   
-  ClassDef(AliAnalysisTaskLNNntuple, 0);
+  ClassDef(AliAnalysisTaskLNNntuple, 1);
 };
 
 #endif
