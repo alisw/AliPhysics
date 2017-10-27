@@ -1522,63 +1522,57 @@ void AliAnalysisTaskEMCALPhotonIsolation::FillQAHistograms(AliVCluster *coi, TLo
   //___________________________________________________________________________________
 Bool_t AliAnalysisTaskEMCALPhotonIsolation::MCSimTrigger(AliVEvent *eventIn, Int_t triggerLevel){
 
-  if(triggerLevel<1 || triggerLevel>2){
+  if(triggerLevel < 1 || triggerLevel > 2){
     AliError(Form("No trigger level have been chosen for the MC analysis"));
     return kFALSE;
   }
-  Double_t threshold=0;
-  Double_t spread=0;
+  Double_t threshold = 0.;
+  Double_t spread    = 0.;
 
-    // Int_t runNumber = InputEvent()->GetRunNumber();
   Int_t runNumber = eventIn->GetRunNumber();
-    // AliError(Form("The run number is %d",runNumber));
-
   if(!runNumber)
     return kFALSE;
-
   if(runNumber < 195180 || runNumber > 197469) // LHC13a to LHC13f (to be replaced by a condition on fAnalysispPb?)
     return kFALSE;
 
-    // AliError(Form("The run is after %d",runNumber));
-    // TString fired = InputEvent()->GetFiredTriggerClasses();
-    // AliError(Form("Trigger used in the events %s",fired));
+  // TString fired = InputEvent()->GetFiredTriggerClasses();
+  // AliError(Form("Trigger used in the events %s",fired));
 
-  if(triggerLevel==1){
-    threshold = 11.5;
-    spread = 0.5;
+  if(triggerLevel == 1){
+    // threshold = 11.5;
+    // spread = 0.5;
+    threshold = 11.40; // Values obtained by fit on data (13d, 13e and 13f separately and averaged)
+    spread    = 1.85;
   }
 
-  if(triggerLevel==2){
-    threshold = 7.2;
-    spread = 0.3;
+  if(triggerLevel == 2){
+    // threshold = 7.2;
+    // spread = 0.3;
+    threshold = 7.03;
+    spread    = 1.30;
   }
 
   if(spread != 0.){
-    TF1* triggerSmearing =  new TF1("triggerSmearing","[0]*exp(-0.5*((x-[1])/[2])**2)",0,15);
-    triggerSmearing->SetParameter(0, 1/(spread*TMath::Sqrt(TMath::Pi()*2)));
+    TF1* triggerSmearing =  new TF1("triggerSmearing","[0]*exp(-0.5*((x-[1])/[2])**2)", 0., 20.);
+    triggerSmearing->SetParameter(0, 1./(spread*TMath::Sqrt(2.*TMath::Pi())));
     triggerSmearing->SetParameter(1, threshold);
     triggerSmearing->SetParameter(2, spread);
     threshold = triggerSmearing->GetRandom();
     delete triggerSmearing;
   }
 
-    // AliError(Form("Pass the trigger function definition"));
   AliClusterContainer *clusters = GetClusterContainer(0);
-//  Int_t localIndex=0;
 
   for(auto it : clusters->accepted()){
     AliVCluster* coi = static_cast<AliVCluster*>(it);
-      // AliError(Form("Retrieve clusters"));
 
     if(!coi)
       continue;
-      //  AliError(Form("Retrieve the cluster"));
 
-    if(coi->E() > threshold){
-        // AliError(Form("A cluster passes the energy criterion"));
+    if(coi->E() > threshold)
       return kTRUE;
-    }
   }
+
   return kFALSE;
 }
 
