@@ -129,23 +129,23 @@ private:
   //---------------------------------
 
   //--- profiles for TPC Q-vector recenter. (They are filled, not read)
-  TProfile2D     *fHCos1nEtaPosVzPos;   //!
-  TProfile2D     *fHCos1nEtaNegVzPos;   //!
-  TProfile2D     *fHCos1nEtaPosVzNeg;   //!
-  TProfile2D     *fHCos1nEtaNegVzNeg;   //!
-  TProfile2D     *fHSin1nEtaPosVzPos;   //!
-  TProfile2D     *fHSin1nEtaNegVzPos;   //!
-  TProfile2D     *fHSin1nEtaPosVzNeg;   //!
-  TProfile2D     *fHSin1nEtaNegVzNeg;   //!
+  TProfile2D     *fHCos1nPosChEtaPosVzPos;   //!
+  TProfile2D     *fHCos1nPosChEtaNegVzPos;   //!
+  TProfile2D     *fHCos1nPosChEtaPosVzNeg;   //!
+  TProfile2D     *fHCos1nPosChEtaNegVzNeg;   //!
+  TProfile2D     *fHSin1nPosChEtaPosVzPos;   //!
+  TProfile2D     *fHSin1nPosChEtaNegVzPos;   //!
+  TProfile2D     *fHSin1nPosChEtaPosVzNeg;   //!
+  TProfile2D     *fHSin1nPosChEtaNegVzNeg;   //!
 
-  TProfile2D     *fHCos2nEtaPosVzPos;   //!
-  TProfile2D     *fHCos2nEtaNegVzPos;   //!
-  TProfile2D     *fHCos2nEtaPosVzNeg;   //!
-  TProfile2D     *fHCos2nEtaNegVzNeg;   //!
-  TProfile2D     *fHSin2nEtaPosVzPos;   //!
-  TProfile2D     *fHSin2nEtaNegVzPos;   //!
-  TProfile2D     *fHSin2nEtaPosVzNeg;   //!
-  TProfile2D     *fHSin2nEtaNegVzNeg;   //!
+  TProfile2D     *fHCos1nNegChEtaPosVzPos;   //!
+  TProfile2D     *fHCos1nNegChEtaNegVzPos;   //!
+  TProfile2D     *fHCos1nNegChEtaPosVzNeg;   //!
+  TProfile2D     *fHCos1nNegChEtaNegVzNeg;   //!
+  TProfile2D     *fHSin1nNegChEtaPosVzPos;   //!
+  TProfile2D     *fHSin1nNegChEtaNegVzPos;   //!
+  TProfile2D     *fHSin1nNegChEtaPosVzNeg;   //!
+  TProfile2D     *fHSin1nNegChEtaNegVzNeg;   //!
 
   TH2F        *fHV0AEventPlaneVsCent;   //!
   TH2F        *fHV0CEventPlaneVsCent;   //!
@@ -173,6 +173,13 @@ private:
   TH1F   *fHCentBinTrkRecenter; //!
 
   TH2D          *fHCorrectZDNP; //!
+
+  TProfile2D  *fV0AQnxVsCentRun; //!
+  TProfile2D  *fV0AQnyVsCentRun; //!
+  TProfile2D  *fV0CQnxVsCentRun; //!
+  TProfile2D  *fV0CQnyVsCentRun; //!
+  TProfile2D  *fTPCQnxVsCentRun; //!
+  TProfile2D  *fTPCQnyVsCentRun; //!
 
   TList           *mListNUAPos; //!
   TList           *mListNUANeg; //!
@@ -237,6 +244,9 @@ private:
   TProfile     *fHist_Corr3p_EtaDiff_EP_V0C_NN[6]; //!
  
 
+  //QA: pos/neg ratio:
+  TH3F         *fHistChPosvsEtaPtRun[10];  //! 10 Centrality Bin
+  TH3F         *fHistChNegvsEtaPtRun[10];  //!
 
 
 
