@@ -986,7 +986,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::UserExec(Option_t *)
             lIR = lESDHeader->GetTriggerIR(i);
             Long64_t lOrbit     = lIR->GetOrbit();
             UInt_t   lNWord     = lIR->GetNWord();
-            UInt_t   *lBCsForIR = lIR->GetBCs();
+            UShort_t *lBCsForIR = lIR->GetBCs();
             Bool_t   *lInt1     = lIR->GetInt1s();
             Bool_t   *lInt2     = lIR->GetInt2s();
 
