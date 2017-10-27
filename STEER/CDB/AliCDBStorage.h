@@ -101,6 +101,7 @@ class AliCDBStorage: public TObject {
     void PrintQueryCDB();
     TObjArray* GetQueryCDBList() {return &fValidFileIds;}
     virtual void SetRetry(Int_t nretry, Int_t initsec) = 0;
+    void SetMaxDate(time_t maxDate) { fMaxDate = maxDate; }
 
   protected:
 
@@ -114,6 +115,7 @@ class AliCDBStorage: public TObject {
     virtual void   QueryValidFiles() = 0;
     void 	LoadTreeFromFile(AliCDBEntry* entry) const;
     //void 	SetTreeToFile(AliCDBEntry* entry, TFile* file) const;
+    time_t GuidToCreationTimestamp(const TString &guid) const;
 
     TObjArray fValidFileIds; 	// list of Id's of the files valid for a given run (cached as fRun)
     Int_t fRun;		        // run number, used to manage list of valid files
@@ -127,6 +129,8 @@ class AliCDBStorage: public TObject {
     TString fBaseFolder;    //! Local, Grid: base folder name - Dump: file name
     Short_t    fNretry;              // Number of retries in opening the file
     Short_t    fInitRetrySeconds;        // Seconds for first retry
+
+    time_t fMaxDate;  // max file timestamp to take into account upon queries
 
   private:
     AliCDBStorage(const AliCDBStorage & source);

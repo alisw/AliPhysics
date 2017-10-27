@@ -15,6 +15,7 @@
 #include <TMap.h>
 #include <TSystem.h>
 #include <TFile.h>
+#include <TTimeStamp.h>
 
 class AliCDBEntry;
 class AliCDBId;
@@ -111,6 +112,10 @@ class AliCDBManager: public TObject {
 
     void SetRun(Int_t run);
     Int_t GetRun() const {return fRun;}
+
+    void SetMaxDate(time_t maxDate) { fMaxDate = maxDate; }
+    void SetMaxDate(TTimeStamp &maxDate) { fMaxDate = maxDate.GetSec(); }
+    time_t GetMaxDate() const { return fMaxDate; }
 
     void SetMirrorSEs(const char* mirrors);
     const char* GetMirrorSEs() const;
@@ -221,6 +226,8 @@ class AliCDBManager: public TObject {
     Int_t fStartRunLHCPeriod; // 1st run of the LHC period set
     Int_t fEndRunLHCPeriod;   // last run of the LHC period set
     TString fLHCPeriod;       // LHC period alien folder
+
+    time_t fMaxDate;  //! max UNIX timestamp for OCDB objects
 
   private:
     ULong64_t fKey;  //! Key for locking/unlocking
