@@ -72,7 +72,7 @@ public:
     void CorrelateHadron(TObjArray* RedTracksHFE,  const AliAODVertex* pVtx, Int_t nMother, Double_t listMother[], Float_t mult);
     void CorrelateHadronMixedEvent(AliAODTrack* Htrack, Float_t mult, Float_t zVtx);
 
-    void CorrelateWithHadrons(AliAODTrack* TriggerTrack, const AliAODVertex* pVtx, Int_t nMother, Double_t listMother[], Bool_t FillHadron, Bool_t FillLP, Bool_t* NonElecIsTrigger, Double_t *NonElecIsTriggerPt, Int_t NumElectronsInEvent); 
+    void CorrelateWithHadrons(AliAODTrack* TriggerTrack, const AliAODVertex* pVtx, Int_t nMother, Double_t listMother[], Bool_t FillHadron, Bool_t FillLP, Bool_t(* NonElecIsTrigger)[15], Double_t *NonElecIsTriggerPt, Int_t NumElectronsInEvent); 
 
 
     //********************MC
@@ -95,15 +95,21 @@ public:
     Bool_t CloneAndReduceTrackList(TObjArray* RedTracks, AliAODTrack* track, Int_t LSPartner, Int_t ULSPartner, Int_t *LSPartnerID, Int_t *ULSPartnerID, Bool_t trueULSPartner, Bool_t isPhotonic, Bool_t isHadron);
 
     void BinLogX(TAxis *axis);
-    
+    void CheckHadronIsTrigger(Double_t ptE, Bool_t *HadronIsTrigger);
+    void CheckElectronIsTrigger(Double_t ptH, Bool_t *ElectronIsTrigger) ;
+    Bool_t PassEventBias( const AliAODVertex *pVtx, Int_t nMother, Double_t *listMother);    
 
 
     //**************  SETTINGS
-    void SetMC (Bool_t IsMC) {
-      fIsMC=IsMC;
-      printf("SetMC: %i and IsMc %i", fIsMC, IsMC);};
+    void SetMC (Bool_t IsMC) { fIsMC=IsMC;};
     void SetTender (Bool_t UseTender) {fUseTender = UseTender;};
     void SetPeriod (Double_t period) {fWhichPeriod = period;};
+
+    void SetTRDQA(Bool_t TRDQA) {fTRDQA=TRDQA;};
+    void SetPtMinEvent(Double_t PtMin) {fMinPtEvent=PtMin;};
+
+    void SetPtMaxEvent(Double_t PtMax) {fMaxPtEvent=PtMax;};
+
 
     void SetTPCnCut(Int_t TPCnCut) {fTPCnCut = TPCnCut;};
     void SetTPCnCutdEdx(Int_t TPCnCutdEdx) {fTPCndEdxCut = TPCnCutdEdx;};
@@ -136,6 +142,7 @@ public:
     void SetPi0WeightToData(TH1F &  WPion) {fCorrectPiontoData = WPion; fCorrectPiontoData.SetName("fCorrectPiontoData");}
     void SetEtaWeightToData(TH1F &  WEta)  {fCorrectEtatoData  = WEta; fCorrectEtatoData.SetName("fCorrectEtatoData");}
 
+  
 
 
  private:
@@ -145,11 +152,14 @@ public:
     Double_t              GetDeltaPhi(Double_t phiA,Double_t phiB) const;
     Double_t              GetDeltaEta(Double_t etaA,Double_t etaB) const;
     Double_t              Eta2y(Double_t pt, Double_t m, Double_t eta) const;
+
     
     Bool_t                fUseTender;               // Use tender
     Int_t                 fWhichPeriod;             // period
     Bool_t                fUseKFforPhotonicPartner; //default ist DCA
 
+    Float_t               fMaxPtEvent;              //
+    Float_t               fMinPtEvent;
 
     Double_t              fMaxElectronEta;          //
     Double_t              fMinElectronEta;          //
@@ -187,11 +197,12 @@ public:
     Double_t              fDCAcut;                  //! used?? DCA cut  for non-HFE selection
   
     // ******* Switch for analysis modes
+    Bool_t                fTRDQA;                   // TRDQA
     Bool_t                fCorrHadron;              // Choose Hadron-HFE Correl
     Bool_t                fCorrLParticle;           // Choose LP-HFE Correl
     Bool_t                fMixedEvent;              // Fill Mixed Event for the cases chosen above
     Bool_t                fLParticle;               //! Is LP found?
-    
+
 
     AliAODEvent           *fAOD;                    //! AOD object
     AliVEvent             *fVevent;                 //! VEvent
@@ -279,6 +290,16 @@ public:
     TH1F                  fCorrectPiontoData;      
     TH1F                  fCorrectEtatoData;       
 
+    Int_t                 fAssPtHad_Nbins;
+    TArrayF               fAssPtHad_Xmin;
+    TArrayF               fAssPtHad_Xmax;
+
+    Int_t                 fAssPtElec_Nbins;
+    TArrayF               fAssPtElec_Xmin;
+    TArrayF               fAssPtElec_Xmax;
+
+
+
     // HFE HFE
     TH1F                  *fElecTrigger;            //! trigger electron vs pt
     TH2F                  *fInclElecPhi;            //! electron (trigger): phi vs pt
@@ -293,17 +314,17 @@ public:
 
    
  
-    TH1F                  *fElecHadTrigger;         //!
-    TH1F                  *fElecHadTriggerLS;         //!
-    TH1F                  *fElecHadTriggerULS;         //!
-    TH1F                  *fHadContTrigger;         //!
-    TH1F                  *fHadElecTrigger;         //!
-    TH1F                  *fNonElecHadTrigger;      //!
-    TH1F                  *fHadNonElecTrigger;      //!
+    TH2F                  *fElecHadTrigger;         //!
+    TH2F                  *fElecHadTriggerLS;         //!
+    TH2F                  *fElecHadTriggerULS;         //!
+    TH2F                  *fHadContTrigger;         //!
+    TH2F                  *fHadElecTrigger;         //!
+    TH2F                  *fNonElecHadTrigger;      //!
+    TH2F                  *fHadNonElecTrigger;      //!
     THnSparse             *fInclElecHa;             //!
     THnSparse             *fLSElecHa;               //!
     THnSparse             *fULSElecHa;              //!
-     THnSparse            *fMCElecHaHadron;        //!
+    THnSparse            *fMCElecHaHadron;        //!
     THnSparse             *fElecHaHa;               //!
     THnSparse             *fElecHaLSNoPartner;      //!
     THnSparse             *fElecHaULSNoPartner;     //!
@@ -313,8 +334,8 @@ public:
 
     THnSparse             *fMCElecHaTruePartner;    //!
     THnSparse             *fMCElecHaNoPartner;      //!
-    TH1F                  *fMCElecHaTruePartnerTrigger;        //!
-    TH1F                  *fMCElecHaNoPartnerTrigger;          //!
+    TH2F                  *fMCElecHaTruePartnerTrigger;        //!
+    TH2F                  *fMCElecHaNoPartnerTrigger;          //!
     THnSparse             *fElecHaMixedEvent;       //!
     THnSparse             *fLSElecHaMixedEvent;     //!
     THnSparse             *fULSElecHaMixedEvent;    //!
@@ -322,7 +343,7 @@ public:
 
     TH1F                  *fElecLPTrigger;          //!
     TH1F                  *fLPElecTrigger;          //!
-    TH1F                  *fLPNonElecTrigger;       //!
+    TH2F                  *fLPNonElecTrigger;       //!
     TH1F                  *fNonElecLPTrigger;       //!
     THnSparse             *fInclElecLP;             //!
     THnSparse             *fLSElecLP;               //!
@@ -404,6 +425,35 @@ class AliBasicParticleHaHFE : public AliVParticle
     if (fIDLSPartner)  delete fIDLSPartner;
     if (fIDULSPartner) delete fIDULSPartner;
   }
+  AliBasicParticleHaHFE(const AliBasicParticleHaHFE &CopyClass) 
+    : fID(CopyClass.fID), fEta(CopyClass.fEta), fPhi(CopyClass.fPhi), fpT(CopyClass.fpT), fCharge(CopyClass.fCharge), fULSpartner(CopyClass.fULSpartner), fLSpartner(CopyClass.fLSpartner), fIDLSPartner(0), fIDULSPartner(0), fTrueULSPartner(CopyClass.fTrueULSPartner), fIsPhotonic(CopyClass.fIsPhotonic), fIsHadron(CopyClass.fIsHadron)
+    {
+      fIDLSPartner = new Int_t[CopyClass.fLSpartner];
+      fIDULSPartner = new Int_t[CopyClass.fULSpartner];
+      for (Int_t i=0; i<fLSpartner; i++) {fIDLSPartner[i]=CopyClass.fIDLSPartner[i];}
+      for (Int_t i=0; i<fULSpartner; i++) {fIDULSPartner[i]=CopyClass.fIDULSPartner[i];}
+    }
+  AliBasicParticleHaHFE& operator=(const AliBasicParticleHaHFE &CopyClass) 
+    {
+      if (this==&CopyClass) return *this;
+      if (fIDLSPartner) delete[] fIDLSPartner;
+      if (fIDULSPartner) delete[] fIDULSPartner;
+      fID=CopyClass.fID;
+      fEta=CopyClass.fEta;
+      fPhi=CopyClass.fPhi;
+      fpT=CopyClass.fpT;
+      fCharge=CopyClass.fCharge;
+      fULSpartner=CopyClass.fULSpartner;
+      fLSpartner=CopyClass.fLSpartner;
+      fTrueULSPartner=CopyClass.fTrueULSPartner;
+      fIsPhotonic=CopyClass.fIsPhotonic;
+      fIsHadron=CopyClass.fIsHadron;
+      fIDLSPartner = new Int_t[CopyClass.fLSpartner];
+      fIDULSPartner = new Int_t[CopyClass.fULSpartner];
+      for (Int_t i=0; i<fLSpartner; i++) {fIDLSPartner[i]=CopyClass.fIDLSPartner[i];}
+      for (Int_t i=0; i<fULSpartner; i++) {fIDULSPartner[i]=CopyClass.fIDULSPartner[i];}
+      return *this;
+    }
 
   // kinematics
   virtual Double_t Px() const { AliFatal("Not implemented"); return 0; }
