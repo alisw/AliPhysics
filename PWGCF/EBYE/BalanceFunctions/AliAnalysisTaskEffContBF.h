@@ -91,7 +91,9 @@ class AliAnalysisTaskEffContBF : public AliAnalysisTaskSE {
     fHistSurvived8EtaPtPhiPlus(0){}
     AliAnalysisTaskEffContBF(const char *name);
     virtual ~AliAnalysisTaskEffContBF() {}
-  
+
+    enum etriggerSel{kMB, kCentral, kINT7, kppHighMult};
+    
   virtual void   UserCreateOutputObjects();
   virtual void   UserExec(Option_t *option);
   virtual void   Terminate(Option_t *);
