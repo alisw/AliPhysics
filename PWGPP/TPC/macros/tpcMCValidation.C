@@ -88,7 +88,7 @@ void makeTPCMCAlarms(TTree * treeMC, Bool_t doCheck,Int_t verbose){
   //                 deltaWarning and deltaError can be an expression which is understood by TTreeFormula
   //  ==============================================================
   // 1.) Absolute aliases  alarms on |MC-Anchor|
-  // TString sTrendVars=";";
+   TString sTrendVars=";";
   {
     // Ncl
     sTrendVars+="QA.TPC.meanTPCncl,TPC.Anchor.meanTPCncl,10,20,5;";       // delta Ncl  warning 10 ,  error 20     (nominal ~ 100-140)
@@ -452,34 +452,26 @@ void MakeReport(const char *outputDir) {
   trendingDraw->MakePlot(outputDir, "MIPattachSlopeC.png", "MIPattachSlopeC", cRange, "",
                          "MIPattachSlopeC;TPC.Anchor.MIPattachSlopeC:run", "defaultCut", "figTemplateTRDPair",
                          "figTemplateTRDPair", 1, 0.75, 4, kTRUE);
-  //
+  trendingDraw->MakePlot(outputDir, "resolutionMIP.png", "resolutionMIP", cRange, "",
+                         "QA.TPC.resolutionMIP;TPC.Anchor.resolutionMIP:run", "defaultCut", "figTemplateTRDPair",
+                         "figTemplateTRDPair", 1, 0.75, 4, kTRUE);
+  trendingDraw->MakePlot(outputDir, "resolutionMIPele.png", "resolutionMIPele", cRange, "",
+                         "QA.TPC.resolutionMIPele;TPC.Anchor.resolutionMIPele:run", "defaultCut", "figTemplateTRDPair",
+                         "figTemplateTRDPair", 1, 0.75, 4, kTRUE);  
+  
+  
   queryString = "QA.TPC.meanMIP_Warning*1.1;QA.TPC.resolutionMIP_Warning*1.2;QA.TPC.MIPattachSlopeA_Warning*1.3;";
   queryString += "QA.TPC.MIPattachSlopeC_Warning*1.4;QA.TPC.meanMIPele_Warning*1.5;QA.TPC.resolutionMIPele_Warning*1.6;QA.TPC.electroMIPSeparation_Warning*1.7:run";
   trendingDraw->MakePlot(outputDir, "dEdxStatus.png", "dEdx status", cRange, "", queryString.Data(), "defaultCut",
                          "figTemplateTRDPair", "figTemplateTRDPair", 1, 0.75, 6, kTRUE);
 
-  { // MIP resolution  and separation
-    trendingDraw->fWorkingCanvas->Clear();
-    TLegend *legend = new TLegend(cRange[0], cRange[1], cRange[2], cRange[3], "DCA Resolution mult due MS:MC/Anchor");
-    legend->SetBorderSize(0);
-    graph = TStatToolkit::MakeMultGraph(treeMC, "", "meanMIPele/meanMIP;TPC.Anchor.meanMIPele/TPC.Anchor.meanMIP:run",
-                                        "defaultCut", "figTemplateTRDPair", "figTemplateTRDPair", 1, 0.75, 6, legend);
-    lines = TStatToolkit::MakeMultGraph(treeMC, "",
-                                        "meanMIPele_RobustMean/meanMIP_RobustMean;TPC.Anchor.meanMIPele_RobustMean/TPC.Anchor.meanMIP_RobustMean:run",
-                                        "defaultCut", "figTemplateTRDPair", "figTemplateTRDPair", 1, 0.75, 6, 0);
-    if (!graph) {
-      legend = new TLegend(cRange[0], cRange[1], cRange[2], cRange[3], "Plotting error!!");
-      ::Error("tpcMCValidation", "No plot returned -> dummy plot!");
-    } else {
-      TStatToolkit::DrawMultiGraph(graph, "alp");
-      trendingDraw->AppendStatusPad(0.3, 0.4, 0.05);
-    }
-    TStatToolkit::DrawMultiGraph(lines, "l");
-    legend->SetFillStyle(0);
-    legend->Draw();
-    trendingDraw->fWorkingCanvas->SaveAs(TString(outputDir) + "/mipToEleSeparation.png");
-    trendingDraw->fWorkingCanvas->Print(TString(outputDir) + "/report.pdf");
-  }
+
+  trendingDraw->MakePlot(outputDir, "mipToEleSeparation .png", "meanMIPele/meanMIP", cRange, "",
+                         "meanMIPele/meanMIP;TPC.Anchor.meanMIPele/TPC.Anchor.meanMIP:run", "defaultCut", "figTemplateTRDPair",
+                         "figTemplateTRDPair", 1, 0.75, 6, kTRUE);
+  trendingDraw->AppendBand(outputDir,"mipToEleSeparationNEW.png","meanMIPele_RobustMean/meanMIP_RobustMean;TPC.Anchor.meanMIPele_RobustMean/TPC.Anchor.meanMIP_RobustMean:run", "defaultCut", "figTemplateTRDPair",
+                         "figTemplateTRDPair", kTRUE, 0.75, kTRUE);
+
 
   //
   // 6.) matching (tabMatching.html))
@@ -651,10 +643,14 @@ void MakeStatusPlots(){
   //
   MakeStatusPlot("./", "dcarStatusMC.png","dcar_Warning","1");
   MakeStatusPlot("./", "dcarStatusAnchor.png","dcar_Warning","1","QA.TPC");
-  MakeStatusPlot("./", "dcarStatusMCToAnchor.png","mvAnchor.dcarResol_Warning","1");
+  MakeStatusPlot("./", "dcarStatusMCToAnchor.png","mcAnchor.dcarResol_Warning","1");
 
   MakeStatusPlot("./", "itsEffStatusMCToAnchor.png","mcAnchor.itsEffStatus_Warning","1");
+  
+//  MakeStatusPlot("./", "dEdxStatusMC.png","dEdx_Warning","1");
   MakeStatusPlot("./", "dEdxStatusMCToAnchor.png","mcAnchor.dEdx_Warning","1");
+//  MakeStatusPlot("./", "dEdxStatusAnchor.png",".dEdx_Warning","1","QA.TPC"); 
+  
   MakeStatusPlot("./", "nclStatusMCToAnchor.png","mcAnchor.ncl_Warning","1");
 
 }
