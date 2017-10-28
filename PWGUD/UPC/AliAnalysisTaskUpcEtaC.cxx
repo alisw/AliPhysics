@@ -1653,6 +1653,9 @@ void AliAnalysisTaskUpcEtaC::RunAODhist()
 		    fKstarDaughterPtotalNormCheck->Fill(boostInfoB[12]);
 		  }
 
+		  //##### Turn off Helicity Cut #####
+		  goodPairA = kTRUE;    goodPairB = kTRUE;
+
 		  //Fill Dalitz plot with PiK masses Pi-K+ vs Pi+K-
 		  if(qKaon[0] < 0) fMPiKvsMPiK->Fill(pow(vKstar[0].M(),2),pow(vKstar[1].M(),2));
 		  else fMPiKvsMPiK->Fill(pow(vKstar[1].M(),2),pow(vKstar[0].M(),2));
@@ -2075,6 +2078,9 @@ void AliAnalysisTaskUpcEtaC::RunAODhist()
 		  f2RhoDaughterPtotalCheck->Fill(boostInfoRhoThree[8]);
 		}
 
+		//##### Turn off Helicity Cut #####
+		goodRho[0] = kTRUE;    goodRho[1] = kTRUE;    goodRho[2] = kTRUE;    goodRho[3] = kTRUE;
+
 		//Identify sets with 2 rho0's
 		if(vRho[0].M() < (rhoMass+rhoWidth) && vRho[0].M() > (rhoMass-rhoWidth) && 
 		   vRho[1].M() < (rhoMass+rhoWidth) && vRho[1].M() > (rhoMass-rhoWidth) && 
@@ -2375,7 +2381,7 @@ void AliAnalysisTaskUpcEtaC::RunAODhist()
 		//Apply Belle Cuts
 		if(ScalarSumP < 6 && nHighPtTracks > 1) BelleCuts = kTRUE;
 		else BelleCuts = kFALSE;
-		if(BelleCuts) fHistNeventsEtaCK0sChannel->Fill(12);
+		if(BelleCuts) fHistNeventsEtaC4KaonChannel->Fill(12);
 
 		if(BelleCuts) {
 		  f4KaonPtVsMinvEtaC->Fill(vCandidate.M(),vCandidate.Pt());
