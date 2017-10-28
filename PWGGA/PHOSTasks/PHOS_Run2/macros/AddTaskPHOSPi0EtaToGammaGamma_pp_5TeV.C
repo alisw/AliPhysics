@@ -119,7 +119,7 @@ AliAnalysisTaskPHOSPi0EtaToGammaGamma* AddTaskPHOSPi0EtaToGammaGamma_pp_5TeV(
   task->SetBunchSpace(bs);//in unit of ns.
   if(!isMC && TOFcorrection){
     TF1 *f1tof = new TF1("f1TOFCutEfficiency","[0] * (2/(1+exp(-[1]*(x-[2]))) - 1) - ( 0 + [3]/(exp( -(x-[4]) / [5] ) + 1)  )",0,100);
-    f1tof->SetParameters(0.995,2.33,2.49e-3,0.511,7.62,0.659);
+    f1tof->SetParameters(0.996,2.33,4.15e-3,0.477,7.57,0.736);
     task->SetTOFCutEfficiencyFunction(f1tof);
     printf("TOF cut efficiency as a function of E is %s\n",f1tof->GetTitle());
   }
@@ -134,13 +134,13 @@ AliAnalysisTaskPHOSPi0EtaToGammaGamma* AddTaskPHOSPi0EtaToGammaGamma_pp_5TeV(
     TF1 *f1weightPi0[Ncen_Pi0-1];
 
     if(MCtype.Contains("P8") || MCtype.Contains("Pythia8")){
-      printf("Pythi8 is selected.\n");
+      printf("Pythia8 is selected.\n");
       const Double_t p0[Ncen_Pi0-1] = {-0.58};
       const Double_t p1[Ncen_Pi0-1] = { 0.76};
       const Double_t p2[Ncen_Pi0-1] = { 1.11};
 
       for(Int_t icen=0;icen<Ncen_Pi0-1;icen++){
-        f1weightPi0[icen] = new TF1(Form("f1weightPi0_%d",icen),"[2]*(1.+[0]/(1. + TMath::Power(x/[1],2)))",0,100);
+        f1weightPi0[icen] = new TF1(Form("f1weightPi0_%d",icen),"[2]*(1.+[0]/(1. + TMath::Power(x/[1],2)))",0,100);//this is iterative procedure.
         f1weightPi0[icen]->SetParameters(p0[icen],p1[icen],p2[icen]);
         farray_Pi0->Add(f1weightPi0[icen]);
       }
@@ -169,7 +169,7 @@ AliAnalysisTaskPHOSPi0EtaToGammaGamma* AddTaskPHOSPi0EtaToGammaGamma_pp_5TeV(
 
     }
     else if(MCtype.Contains("P6") || MCtype.Contains("Pythia6")){
-      printf("Pythi6 is selected.\n");
+      printf("Pythia6 is selected.\n");
       const Double_t p0[Ncen_Pi0-1] = {0.22};
       const Double_t p1[Ncen_Pi0-1] = { 2.2};
       const Double_t p2[Ncen_Pi0-1] = { 1.2};
