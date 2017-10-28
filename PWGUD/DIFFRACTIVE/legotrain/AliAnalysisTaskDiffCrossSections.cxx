@@ -665,6 +665,8 @@ AliAnalysisTaskDiffCrossSections::AliAnalysisTaskDiffCrossSections(const char *n
   , fESDAD()
   , fTreeData()
   , fMCInfo()
+  , fIR1InteractionMap()
+  , fIR2InteractionMap()
   , fMeanVtxPos(3)
   , fMeanVtxCov(3,3)
   , fMeanVtxU(3,3)
@@ -710,6 +712,10 @@ void AliAnalysisTaskDiffCrossSections::SetBranches(TTree* t) {
     t->Branch("ESDVZERO", &fESDVZERO, 32000, 0);
   if (fUseBranch.Contains("ESDAD"))
     t->Branch("ESDAD", &fESDAD, 32000, 0);
+  if (fUseBranch.Contains("IRMap")) {
+    t->Branch("IR1InteractionMap", &fIR1InteractionMap, 32000, 0);
+    t->Branch("IR2InteractionMap", &fIR2InteractionMap, 32000, 0);
+  }
   if (fIsMC)
     t->Branch("MCInfo", &fMCInfo);
 
@@ -885,6 +891,9 @@ void AliAnalysisTaskDiffCrossSections::UserExec(Option_t *)
 
   fFastOrMap    = mult->GetFastOrFiredChips();
   fFiredChipMap = mult->GetFiredChipMap();
+
+  fIR1InteractionMap = esdHeader->GetIRInt1InteractionMap();
+  fIR2InteractionMap = esdHeader->GetIRInt2InteractionMap();
 
   fTreeData.fEventInfo.fnTrklet         = mult->GetNumberOfTracklets();
   fTreeData.fEventInfo.fnSPDClusters[0] = mult->GetNumberOfITSClusters(0);

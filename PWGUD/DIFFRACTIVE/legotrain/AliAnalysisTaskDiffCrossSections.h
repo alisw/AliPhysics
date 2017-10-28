@@ -351,6 +351,9 @@ private:
   TreeData         fTreeData;            //!
   MCInfo           fMCInfo;              //!
 
+  TBits            fIR1InteractionMap;   //!
+  TBits            fIR2InteractionMap;   //!
+
   TVectorD         fMeanVtxPos;          //!
   TMatrixD         fMeanVtxCov;          //!
   TMatrixD         fMeanVtxU;            //!
@@ -362,7 +365,7 @@ private:
   Float_t          fEtaR;         //!
   Float_t          fEtaGap;       //!
   Float_t          fEtaGapCenter; //!
-  ClassDef(AliAnalysisTaskDiffCrossSections, 3);
+  ClassDef(AliAnalysisTaskDiffCrossSections, 4);
 } ;
 
 #endif // ALIANALYSISTASKDIFFCROSSSECTIONS_H
