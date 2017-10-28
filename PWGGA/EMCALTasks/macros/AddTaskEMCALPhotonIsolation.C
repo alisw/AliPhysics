@@ -94,10 +94,10 @@ AliAnalysisTaskEMCALPhotonIsolation* AddTaskEMCALPhotonIsolation(
 
   TString myContName("");
   if(bIsMC){
-    myContName = Form("Analysis_Neutrals_MC");
+    myContName = Form("Analysis_Neutrals_MC_%s",clusName.Data());
   }
   else{
-    myContName = Form("Analysis_Neutrals");
+    myContName = Form("Analysis_Neutrals_%s",clusName.Data());
   }
   
   // For the 2012 EGA/L1 Analysis, only events with EGA/L1 recalc patches are considered
