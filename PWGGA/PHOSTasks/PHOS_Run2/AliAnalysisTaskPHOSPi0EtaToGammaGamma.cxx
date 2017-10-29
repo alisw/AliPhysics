@@ -162,10 +162,10 @@ AliAnalysisTaskPHOSPi0EtaToGammaGamma::AliAnalysisTaskPHOSPi0EtaToGammaGamma(con
     fQ2[i] = -999.;//x,y
   }
 
-  fPHOSTriggerHelperL0  = new AliPHOSTriggerHelper("L0");
-  fPHOSTriggerHelperL1H = new AliPHOSTriggerHelper("L1H");
-  fPHOSTriggerHelperL1M = new AliPHOSTriggerHelper("L1M");
-  fPHOSTriggerHelperL1L = new AliPHOSTriggerHelper("L1L");
+  fPHOSTriggerHelperL0  = new AliPHOSTriggerHelper("L0" ,kFALSE);
+  fPHOSTriggerHelperL1H = new AliPHOSTriggerHelper("L1H",kFALSE);
+  fPHOSTriggerHelperL1M = new AliPHOSTriggerHelper("L1M",kFALSE);
+  fPHOSTriggerHelperL1L = new AliPHOSTriggerHelper("L1L",kFALSE);
 
   for(Int_t i=0;i<10;i++){
     fAdditionalPi0PtWeight[i] = new TF1(Form("fAdditionalPi0PtWeight_%d",i),"1.",0,100);
@@ -769,7 +769,7 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::UserExec(Option_t *option)
   }
 
   Bool_t isPHI7selected = fSelectMask & AliVEvent::kPHI7;
-  if(fIsPHOSTriggerAnalysis && !isPHI7selected){
+  if(!fIsMC && fIsPHOSTriggerAnalysis && !isPHI7selected){
     AliInfo("PHI7 Event is rejected by IsEventSelected()");
     return;
   }
