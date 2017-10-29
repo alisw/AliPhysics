@@ -44,6 +44,8 @@ class AliAnalysisTaskPHOSPi0EtaToGammaGamma : public AliAnalysisTaskSE {
     void SetTOFCutEfficiencyFunction(TF1 *f1) {fTOFEfficiency = f1;}
     void SetNonLinearityStudy(Bool_t flag) {fIsNonLinStudy = flag;}
 
+    void SetTriggerEfficiency(TF1 *f1) {fTriggerEfficiency = f1;}
+
     void SetEventCuts(Bool_t isMC){
       fPHOSEventCuts = new AliPHOSEventCuts("PHOSEventCuts");
       fPHOSEventCuts->SetMCFlag(isMC);
@@ -132,6 +134,7 @@ class AliAnalysisTaskPHOSPi0EtaToGammaGamma : public AliAnalysisTaskSE {
     void FillSparse(TList *list, const Char_t *name, Double_t *x, Double_t w=1.) const;
 
     TF1 *GetTOFCutEfficiencyFunction() {return fTOFEfficiency;}
+    TF1 *GetTriggerEfficiencyFunction() {return fTriggerEfficiency;}
 
     TF1 *GetAdditionalPi0PtWeightFunction(Float_t centrality){
       if(fCentArrayPi0){
@@ -176,6 +179,7 @@ class AliAnalysisTaskPHOSPi0EtaToGammaGamma : public AliAnalysisTaskSE {
     Double_t fBunchSpace;// in unit of ns.
     Int_t fCollisionSystem;//colliions system : pp=0, PbPb=1, pPb (Pbp)=2;
     TF1 *fTOFEfficiency;//TOF cut efficiency as a function of cluster energy;
+    TF1 *fTriggerEfficiency;//TOF cut efficiency as a function of cluster energy;
     AliESDtrackCuts *fESDtrackCutsGlobal;//good global track
     AliESDtrackCuts *fESDtrackCutsGlobalConstrained;//global track but constrained to IP because of SPD dead area
     TF1 *fAdditionalPi0PtWeight[10];//weight function for pT distribution
@@ -230,7 +234,7 @@ class AliAnalysisTaskPHOSPi0EtaToGammaGamma : public AliAnalysisTaskSE {
     AliAnalysisTaskPHOSPi0EtaToGammaGamma(const AliAnalysisTaskPHOSPi0EtaToGammaGamma&);
     AliAnalysisTaskPHOSPi0EtaToGammaGamma& operator=(const AliAnalysisTaskPHOSPi0EtaToGammaGamma&);
 
-    ClassDef(AliAnalysisTaskPHOSPi0EtaToGammaGamma, 31);
+    ClassDef(AliAnalysisTaskPHOSPi0EtaToGammaGamma, 32);
 };
 
 #endif
