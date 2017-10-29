@@ -299,14 +299,14 @@ Bool_t AliAnalysisTaskSoftDrop::FillHistograms()
 
       Double_t jetpt_ungrmd = jet->Pt() / ( jet->GetShapeProperties()->GetSoftDropPtfrac() );
 
-      vector<fastjet::PseudoJet> particles;
+      std::vector<fastjet::PseudoJet> particles;
       UShort_t ntracks = jet->GetNumberOfTracks();
       for (int j = 0; j < ntracks; j++) {
         particles.push_back( fastjet::PseudoJet( jet->Track(j)->Px(), jet->Track(j)->Py(), jet->Track(j)->Pz(), jet->Track(j)->E() ) );
       }
       fastjet::JetDefinition jet_def(fastjet::cambridge_algorithm, 0.4, fastjet::E_scheme);
       fastjet::ClusterSequence cs(particles, jet_def);
-      vector<fastjet::PseudoJet> jets = sorted_by_pt(cs.inclusive_jets());
+      std::vector<fastjet::PseudoJet> jets = sorted_by_pt(cs.inclusive_jets());
 
       if (jets.size() > 0) {
         SoftDropDeepDeclustering( jets[0], jets[0].pt() );
