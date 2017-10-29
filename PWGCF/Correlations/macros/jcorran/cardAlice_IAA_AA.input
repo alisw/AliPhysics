@@ -31,7 +31,7 @@ PairInvariantMassBins   20 30
 UpperPairPtCut          1.5 15
 EtaRange                1.0
 PhiGapThresholds        0 0.15708 0.314159 0.471239 0.628319 0.785398 0.942478 1.09956 1.25664 1.41372 1.5708 
-EtaGapThresholds        0 0.1 0.2 0.3 0.4 0.5 1.0 1.6
+EtaGapThresholds        0 0.1 0.2 0.3 0.4 0.5 1.0 1.6 2.0 # note the this has to be smaller/equal to EtaRange 
 RGapThresholds          0 0.8 1.0 1.2 1.4 1.6 2.3
 EtaGapSignalBin         1  #signal histos to R<0.6
 EtaBoost                -0.465 0
