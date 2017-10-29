@@ -89,6 +89,7 @@ AliAnalysisTaskPHOSPi0EtaToGammaGamma::AliAnalysisTaskPHOSPi0EtaToGammaGamma(con
   fBunchSpace(25.),
   fCollisionSystem(-1),
   fTOFEfficiency(0x0),
+  fTriggerEfficiency(0x0),
   fESDtrackCutsGlobal(0x0),
   fESDtrackCutsGlobalConstrained(0x0),
   fCentArrayPi0(0x0),
@@ -172,6 +173,7 @@ AliAnalysisTaskPHOSPi0EtaToGammaGamma::AliAnalysisTaskPHOSPi0EtaToGammaGamma(con
   }
 
   fTOFEfficiency = new TF1("fTOFEfficiency","1.",0,100);
+  fTriggerEfficiency = new TF1("fTriggerEfficiency","1.",0,100);
 
   // Define input and output slots here
   // Input slot #0 works with a TChain
@@ -1585,7 +1587,9 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::FillPhoton()
   Double_t pT=0,energy=0;
   Double_t phi = -999, dphi = -999.;
   Double_t eff=1;
+  Double_t trgeff=1;
   TF1 *f1tof = GetTOFCutEfficiencyFunction();
+  TF1 *f1trg = GetTriggerEfficiencyFunction();
   Double_t value[4] = {};
   Double_t sp1 = -999;
   Double_t sp2 = -999;
@@ -1616,6 +1620,7 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::FillPhoton()
     }
 
     eff = f1tof->Eval(energy);
+    if(!fIsMC && fIsPHOSTriggerAnalysis) trgeff = f1trg->Eval(energy);
 
     if(fIsMC){
       primary = ph->GetPrimary();
@@ -1645,11 +1650,11 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::FillPhoton()
     value[3] = sp2;//reserved by sp
 
     //FillHistogramTH2(fOutputContainer,"hPhotonPt",pT,TMath::Cos(fHarmonics * dphi),weight);
-    FillSparse(fOutputContainer,"hSparsePhoton",value,weight);
+    FillSparse(fOutputContainer,"hSparsePhoton",value,weight * 1/trgeff);
 
     if(ph->IsTOFOK()){
       //FillHistogramTH2(fOutputContainer,"hPhotonPt_TOF",pT,TMath::Cos(fHarmonics * dphi),1/eff * weight);
-      FillSparse(fOutputContainer,"hSparsePhoton_TOF",value,1/eff * weight);
+      FillSparse(fOutputContainer,"hSparsePhoton_TOF",value,1/eff * weight * 1/trgeff);
     }
 
   }//end of cluster loop
@@ -1671,6 +1676,11 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::FillMgg()
   Double_t eff1=1, eff2=1, eff12=1;
   TF1 *f1tof = GetTOFCutEfficiencyFunction();
   Double_t weight = 1., w1 = 1., w2 = 1.;
+
+  Double_t trgeff1=1;
+  Double_t trgeff2=1;
+  Double_t trgeff12=1;
+  TF1 *f1trg = GetTriggerEfficiencyFunction();
 
   Int_t primary1 = -1;
   Int_t primary2 = -1;
@@ -1730,6 +1740,12 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::FillMgg()
       eff2 = f1tof->Eval(e2);
       eff12 = eff1 * eff2;
 
+      if(!fIsMC && fIsPHOSTriggerAnalysis){
+        trgeff1  = f1trg->Eval(e1);
+        trgeff2  = f1trg->Eval(e2);
+        trgeff12 = trgeff1 + trgeff2 - (trgeff1 * trgeff2);//logical OR
+      }
+
       FillHistogramTH3(fOutputContainer,"hMggvsPtvsDeltaRgg",m12,pt12,DeltaR);
 
       weight = 1.;
@@ -1776,7 +1792,7 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::FillMgg()
       value[4] = sp1;//reserved by sp
       value[5] = sp2;//reserved by sp
 
-      if(TMath::Abs(ph1->Module()-ph2->Module()) < 2) FillHistogramTH2(fOutputContainer,Form("hMgg_M%d%d",TMath::Min(ph1->Module(),ph2->Module()), TMath::Max(ph1->Module(),ph2->Module())),m12,pt12,weight);
+      if(TMath::Abs(ph1->Module()-ph2->Module()) < 2) FillHistogramTH2(fOutputContainer,Form("hMgg_M%d%d",TMath::Min(ph1->Module(),ph2->Module()), TMath::Max(ph1->Module(),ph2->Module())),m12,pt12,weight * 1/trgeff12);
       //FillHistogramTH3(fOutputContainer,"hMgg",m12,pt12,TMath::Cos(fHarmonics * dphi),weight);
 
       //FillHistogramTH2(fOutputContainer,"hAsymvsMgg",asym,m12,weight);
@@ -1784,13 +1800,13 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::FillMgg()
 
       //if(asym < 0.8) FillHistogramTH3(fOutputContainer,"hMgg_asym08",m12,pt12,TMath::Cos(fHarmonics * dphi),weight);
 
-      FillSparse(fOutputContainer,"hSparseMgg",value,weight);
+      FillSparse(fOutputContainer,"hSparseMgg",value,weight * 1/trgeff12);
 
       if(ph1->IsTOFOK() && ph2->IsTOFOK()){
         //FillHistogramTH3(fOutputContainer,"hMgg_TOF",m12,pt12,TMath::Cos(fHarmonics * dphi),1/eff12 * weight);
-        FillSparse(fOutputContainer,"hSparseMgg_TOF",value,1/eff12 * weight);
+        FillSparse(fOutputContainer,"hSparseMgg_TOF",value,1/eff12 * weight * 1/trgeff12);
 
-        if(TMath::Abs(ph1->Module()-ph2->Module()) < 2) FillHistogramTH2(fOutputContainer,Form("hMgg_M%d%d_TOF",TMath::Min(ph1->Module(),ph2->Module()), TMath::Max(ph1->Module(),ph2->Module())),m12,pt12,1/eff12 * weight);
+        if(TMath::Abs(ph1->Module()-ph2->Module()) < 2) FillHistogramTH2(fOutputContainer,Form("hMgg_M%d%d_TOF",TMath::Min(ph1->Module(),ph2->Module()), TMath::Max(ph1->Module(),ph2->Module())),m12,pt12,1/eff12 * weight * 1/trgeff12);
 
         //if(asym < 0.8) FillHistogramTH3(fOutputContainer,"hMgg_TOF_asym08",m12,pt12,TMath::Cos(fHarmonics * dphi),1/eff12 * weight);
 
@@ -1820,6 +1836,11 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::FillMixMgg()
   Double_t eff1=1, eff2=1, eff12=1;
   Double_t e1=0,e2=0;
   TF1 *f1tof = GetTOFCutEfficiencyFunction();
+
+  Double_t trgeff1=1;
+  Double_t trgeff2=1;
+  Double_t trgeff12=1;
+  TF1 *f1trg = GetTriggerEfficiencyFunction();
 
   for(Int_t i1=0;i1<multClust;i1++){
     AliCaloPhoton *ph1 = (AliCaloPhoton*)fPHOSClusterArray->At(i1);
@@ -1862,6 +1883,12 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::FillMixMgg()
         eff12 = eff1 * eff2;
         weight = 1.;
 
+        if(!fIsMC && fIsPHOSTriggerAnalysis){
+          trgeff1  = f1trg->Eval(e1);
+          trgeff2  = f1trg->Eval(e2);
+          trgeff12 = trgeff1 + trgeff2 - (trgeff1 * trgeff2);//logical OR
+        }
+
         if(fIsMC){
           w1= ph1->GetWeight();
           w2 = ph2->GetWeight();
@@ -1890,17 +1917,17 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::FillMixMgg()
         value[4] = sp1;//reserved by sp
         value[5] = sp2;//reserved by sp
 
-        FillSparse(fOutputContainer,"hSparseMixMgg",value,weight);
+        FillSparse(fOutputContainer,"hSparseMixMgg",value,weight * 1/trgeff12);
 
         //FillHistogramTH3(fOutputContainer,"hMixMgg",m12,pt12,TMath::Cos(fHarmonics * dphi),weight);
-        if(TMath::Abs(ph1->Module()-ph2->Module()) < 2) FillHistogramTH2(fOutputContainer,Form("hMixMgg_M%d%d",TMath::Min(ph1->Module(),ph2->Module()), TMath::Max(ph1->Module(),ph2->Module())),m12,pt12);
+        if(TMath::Abs(ph1->Module()-ph2->Module()) < 2) FillHistogramTH2(fOutputContainer,Form("hMixMgg_M%d%d",TMath::Min(ph1->Module(),ph2->Module()), TMath::Max(ph1->Module(),ph2->Module())),m12,pt12, weight * 1/trgeff12);
 
         //if(asym < 0.8) FillHistogramTH3(fOutputContainer,"hMixMgg_asym08",m12,pt12,TMath::Cos(fHarmonics * dphi),weight);
 
         if(ph1->IsTOFOK() && ph2->IsTOFOK()){
           //FillHistogramTH3(fOutputContainer,"hMixMgg_TOF",m12,pt12,TMath::Cos(fHarmonics * dphi),1/eff12 * weight);
-          FillSparse(fOutputContainer,"hSparseMixMgg_TOF",value,1/eff12 * weight);
-          if(TMath::Abs(ph1->Module()-ph2->Module()) < 2) FillHistogramTH2(fOutputContainer,Form("hMixMgg_M%d%d_TOF",TMath::Min(ph1->Module(),ph2->Module()), TMath::Max(ph1->Module(),ph2->Module())),m12,pt12,1/eff12);
+          FillSparse(fOutputContainer,"hSparseMixMgg_TOF",value,1/eff12 * weight * 1/trgeff12);
+          if(TMath::Abs(ph1->Module()-ph2->Module()) < 2) FillHistogramTH2(fOutputContainer,Form("hMixMgg_M%d%d_TOF",TMath::Min(ph1->Module(),ph2->Module()), TMath::Max(ph1->Module(),ph2->Module())),m12,pt12,1/eff12 * weight * 1/trgeff12);
 
           //if(asym < 0.8) FillHistogramTH3(fOutputContainer,"hMixMgg_TOF_asym08",m12,pt12,TMath::Cos(fHarmonics * dphi),1/eff12 * weight);
 
