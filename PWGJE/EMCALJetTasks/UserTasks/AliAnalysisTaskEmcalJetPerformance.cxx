@@ -69,6 +69,7 @@ AliAnalysisTaskEmcalJetPerformance::AliAnalysisTaskEmcalJetPerformance() :
   fPlotClusterHistograms(kFALSE),
   fComputeBackground(kFALSE),
   fDoTriggerSimulation(kFALSE),
+  fPlotMatchedJetHistograms(kFALSE),
   fComputeMBDownscaling(kFALSE),
   fMaxPt(200),
   fNEtaBins(40),
@@ -105,6 +106,7 @@ AliAnalysisTaskEmcalJetPerformance::AliAnalysisTaskEmcalJetPerformance(const cha
   fPlotClusterHistograms(kFALSE),
   fComputeBackground(kFALSE),
   fDoTriggerSimulation(kFALSE),
+  fPlotMatchedJetHistograms(kFALSE),
   fComputeMBDownscaling(kFALSE),
   fMaxPt(200),
   fNEtaBins(40),
@@ -197,6 +199,7 @@ void AliAnalysisTaskEmcalJetPerformance::UserCreateOutputObjects()
   // Get the MC particle branch, in case it exists
   fGeneratorLevel = GetMCParticleContainer("mcparticles");
   
+  // Allocate histograms
   if (fPlotJetHistograms) {
     AllocateJetHistograms();
   }
@@ -208,6 +211,9 @@ void AliAnalysisTaskEmcalJetPerformance::UserCreateOutputObjects()
   }
   if (fDoTriggerSimulation) {
     AllocateTriggerSimHistograms();
+  }
+  if (fPlotMatchedJetHistograms) {
+    AllocateMatchedJetHistograms();
   }
   
   // Initialize embedding QA
@@ -256,23 +262,25 @@ void AliAnalysisTaskEmcalJetPerformance::AllocateJetHistograms()
       fHistManager.CreateTH2(histname.Data(), title.Data(), 50, 0, 100, 100, 0, 500);
     }
     
-    // (Centrality, pT, calo type)
-    histname = TString::Format("%s/JetHistograms/hCentVsPt", jets->GetArrayName().Data());
-    title = histname + ";Centrality (%);#it{p}_{T}^{corr} (GeV/#it{c});type";
-    fHistManager.CreateTH3(histname.Data(), title.Data(), 20, 0, 100, nPtBins, 0, fMaxPt, 3, -0.5, 2.5);
+    // (Centrality, pT, NEF)
+    Int_t nbinsx = 20; Int_t minx = 0; Int_t maxx = 100;
+    Int_t nbinsy = nPtBins; Int_t miny = 0; Int_t maxy = fMaxPt;
+    Int_t nbinsz = 50; Int_t minz = 0; Int_t maxz = 1.;
     
-    // (Centrality, eta, phi, pT, NEF, calo type)
-    histname = TString::Format("%s/JetHistograms/hNEFVsPtVsEtaVsPhi", jets->GetArrayName().Data());
-    title = histname + ";Centrality (%);#eta_{jet} (rad);#phi_{jet} (rad);#it{p}_{T}^{corr} (GeV/#it{c});NEF;type";
-    Int_t nbins1[6]  = {20, fNEtaBins, fNPhiBins, nPtBins, 50, 3};
-    Double_t min1[6] = {0, -0.5,1., 0, 0, -0.5};
-    Double_t max1[6] = {100, 0.5,6., fMaxPt, 1., 2.5};
-    fHistManager.CreateTHnSparse(histname.Data(), title.Data(), 6, nbins1, min1, max1);
+    histname = TString::Format("%s/JetHistograms/hNEFVsPtEMCal", jets->GetArrayName().Data());
+    title = histname + ";Centrality (%);#it{p}_{T}^{corr} (GeV/#it{c});NEF";
+    fHistManager.CreateTH3(histname.Data(), title.Data(), nbinsx, minx, maxx, nbinsy, miny, maxy, nbinsz, minz, maxz);
+    
+    histname = TString::Format("%s/JetHistograms/hNEFVsPtDCal", jets->GetArrayName().Data());
+    title = histname + ";Centrality (%);#it{p}_{T}^{corr} (GeV/#it{c});NEF";
+    fHistManager.CreateTH3(histname.Data(), title.Data(), nbinsx, minx, maxx, nbinsy, miny, maxy, nbinsz, minz, maxz);
     
     // (Centrality, pT upscaled, calo type)
-    histname = TString::Format("%s/JetHistograms/hPtUpscaledMB", jets->GetArrayName().Data());
-    title = histname + ";Centrality (%);#it{p}_{T}^{corr} (GeV/#it{c});type";
-    fHistManager.CreateTH3(histname.Data(), title.Data(), 20, 0, 100, nPtBins, 0, fMaxPt, 3, -0.5, 2.5, "s");
+    if (fComputeMBDownscaling) {
+      histname = TString::Format("%s/JetHistograms/hPtUpscaledMB", jets->GetArrayName().Data());
+      title = histname + ";Centrality (%);#it{p}_{T}^{corr} (GeV/#it{c});type";
+      fHistManager.CreateTH3(histname.Data(), title.Data(), 20, 0, 100, nPtBins, 0, fMaxPt, 2, -0.5, 1.5, "s");
+    }
     
     // pT-leading vs. pT
     histname = TString::Format("%s/JetHistograms/hPtLeadingVsPt", jets->GetArrayName().Data());
@@ -284,29 +292,44 @@ void AliAnalysisTaskEmcalJetPerformance::AllocateJetHistograms()
     title = histname + ";#it{p}_{T}^{corr} (GeV/#it{c});#it{A}_{jet}";
     fHistManager.CreateTH2(histname.Data(), title.Data(), nPtBins, 0, fMaxPt, fMaxPt/3, 0, 0.5);
     
-    // (Centrality, pT, z-leading (charged), calo type)
-    histname = TString::Format("%s/JetHistograms/hZLeadingVsPt", jets->GetArrayName().Data());
-    title = histname + ";Centrality (%);#it{p}_{T}^{corr} (GeV/#it{c});#it{z}_{leading};type";
-    Int_t nbins2[4]  = {20, nPtBins, 50, 3};
-    Double_t min2[4] = {0, 0, 0, -0.5};
-    Double_t max2[4] = {100, fMaxPt, 1., 2.5};
-    fHistManager.CreateTHnSparse(histname.Data(), title.Data(), 4, nbins2, min2, max2);
+    // (Centrality, pT, z-leading (charged))
+    nbinsx = 20; minx = 0; maxx = 100;
+    nbinsy = nPtBins; miny = 0; maxy = fMaxPt;
+    nbinsz = 50; minz = 0; maxz = 1.;
     
-    // (Centrality, pT, z (charged), calo type)
-    histname = TString::Format("%s/JetHistograms/hZVsPt", jets->GetArrayName().Data());
-    title = histname + ";Centrality (%);#it{p}_{T}^{corr} (GeV/#it{c});#it{z};type";
-    Int_t nbins3[4]  = {20, nPtBins, 50, 3};
-    Double_t min3[4] = {0, 0, 0, -0.5};
-    Double_t max3[4] = {100, fMaxPt, 1., 2.5};
-    fHistManager.CreateTHnSparse(histname.Data(), title.Data(), 4, nbins3, min3, max3);
+    histname = TString::Format("%s/JetHistograms/hZLeadingVsPtEMCal", jets->GetArrayName().Data());
+    title = histname + ";Centrality (%);#it{p}_{T}^{corr} (GeV/#it{c});#it{z}_{leading}";
+    fHistManager.CreateTH3(histname.Data(), title.Data(), nbinsx, minx, maxx, nbinsy, miny, maxy, nbinsz, minz, maxz);
+    
+    histname = TString::Format("%s/JetHistograms/hZLeadingVsPtDCal", jets->GetArrayName().Data());
+    title = histname + ";Centrality (%);#it{p}_{T}^{corr} (GeV/#it{c});#it{z}_{leading}";
+    fHistManager.CreateTH3(histname.Data(), title.Data(), nbinsx, minx, maxx, nbinsy, miny, maxy, nbinsz, minz, maxz);
+    
+    // (Centrality, pT, z (charged))
+    nbinsx = 20; minx = 0; maxx = 100;
+    nbinsy = nPtBins; miny = 0; maxy = fMaxPt;
+    nbinsz = 50; minz = 0; maxz = 1.;
+    
+    histname = TString::Format("%s/JetHistograms/hZVsPtEMCal", jets->GetArrayName().Data());
+    title = histname + ";Centrality (%);#it{p}_{T}^{corr} (GeV/#it{c});#it{z}";
+    fHistManager.CreateTH3(histname.Data(), title.Data(), nbinsx, minx, maxx, nbinsy, miny, maxy, nbinsz, minz, maxz);
+    
+    histname = TString::Format("%s/JetHistograms/hZVsPtDCal", jets->GetArrayName().Data());
+    title = histname + ";Centrality (%);#it{p}_{T}^{corr} (GeV/#it{c});#it{z}";
+    fHistManager.CreateTH3(histname.Data(), title.Data(), nbinsx, minx, maxx, nbinsy, miny, maxy, nbinsz, minz, maxz);
     
     // (Centrality, pT, Nconst, calo type)
-    histname = TString::Format("%s/JetHistograms/hNConstVsPt", jets->GetArrayName().Data());
-    title = histname + ";Centrality (%);#it{p}_{T}^{corr} (GeV/#it{c});No. of constituents;type";
-    Int_t nbins4[4]  = {20, nPtBins, 50, 3};
-    Double_t min4[4] = {0, 0, 0, -0.5};
-    Double_t max4[4] = {100, fMaxPt, fMaxPt, 2.5};
-    fHistManager.CreateTHnSparse(histname.Data(), title.Data(), 4, nbins4, min4, max4);
+    nbinsx = 20; minx = 0; maxx = 100;
+    nbinsy = nPtBins; miny = 0; maxy = fMaxPt;
+    nbinsz = 50; minz = 0; maxz = fMaxPt;
+    
+    histname = TString::Format("%s/JetHistograms/hNConstVsPtEMCal", jets->GetArrayName().Data());
+    title = histname + ";Centrality (%);#it{p}_{T}^{corr} (GeV/#it{c});No. of constituents";
+    fHistManager.CreateTH3(histname.Data(), title.Data(), nbinsx, minx, maxx, nbinsy, miny, maxy, nbinsz, minz, maxz);
+    
+    histname = TString::Format("%s/JetHistograms/hNConstVsPtDCal", jets->GetArrayName().Data());
+    title = histname + ";Centrality (%);#it{p}_{T}^{corr} (GeV/#it{c});No. of constituents";
+    fHistManager.CreateTH3(histname.Data(), title.Data(), nbinsx, minx, maxx, nbinsy, miny, maxy, nbinsz, minz, maxz);
     
     // (Median patch energy, calo type, jet pT, centrality)
     if (fDoTriggerSimulation) {
@@ -543,18 +566,18 @@ void AliAnalysisTaskEmcalJetPerformance::AllocateTriggerSimHistograms()
       fHistManager.CreateTH2(histname.Data(), title.Data(), 50, 0, 100, 100, 0, 500);
     }
     
-    // (Centrality, pT, calo type)
-    histname = TString::Format("%s/TriggerSimHistograms/hCentVsPt", jets->GetArrayName().Data());
-    title = histname + ";Centrality (%);#it{p}_{T}^{corr} (GeV/#it{c});type";
-    fHistManager.CreateTH3(histname.Data(), title.Data(), 20, 0, 100, nPtBins, 0, fMaxPt, 3, -0.5, 2.5);
+    // (Centrality, pT, NEF)
+    Int_t nbinsx = 20; Int_t minx = 0; Int_t maxx = 100;
+    Int_t nbinsy = nPtBins; Int_t miny = 0; Int_t maxy = fMaxPt;
+    Int_t nbinsz = 50; Int_t minz = 0; Int_t maxz = 1.;
     
-    // (Centrality, eta, phi, pT, NEF, calo type)
-    histname = TString::Format("%s/TriggerSimHistograms/hNEFVsPtVsEtaVsPhi", jets->GetArrayName().Data());
-    title = histname + ";Centrality (%);#eta_{jet} (rad);#phi_{jet} (rad);#it{p}_{T}^{corr} (GeV/#it{c});NEF;type";
-    Int_t nbins1[6]  = {20, fNEtaBins, fNPhiBins, nPtBins, 50, 3};
-    Double_t min1[6] = {0, -0.5,1., 0, 0, -0.5};
-    Double_t max1[6] = {100, 0.5,6., fMaxPt, 1., 2.5};
-    fHistManager.CreateTHnSparse(histname.Data(), title.Data(), 6, nbins1, min1, max1);
+    histname = TString::Format("%s/TriggerSimHistograms/hNEFVsPtEMCal", jets->GetArrayName().Data());
+    title = histname + ";Centrality (%);#it{p}_{T}^{corr} (GeV/#it{c});NEF";
+    fHistManager.CreateTH3(histname.Data(), title.Data(), nbinsx, minx, maxx, nbinsy, miny, maxy, nbinsz, minz, maxz);
+    
+    histname = TString::Format("%s/TriggerSimHistograms/hNEFVsPtDCal", jets->GetArrayName().Data());
+    title = histname + ";Centrality (%);#it{p}_{T}^{corr} (GeV/#it{c});NEF";
+    fHistManager.CreateTH3(histname.Data(), title.Data(), nbinsx, minx, maxx, nbinsy, miny, maxy, nbinsz, minz, maxz);
     
     // pT-leading vs. pT
     histname = TString::Format("%s/TriggerSimHistograms/hPtLeadingVsPt", jets->GetArrayName().Data());
@@ -566,31 +589,111 @@ void AliAnalysisTaskEmcalJetPerformance::AllocateTriggerSimHistograms()
     title = histname + ";#it{p}_{T}^{corr} (GeV/#it{c});#it{A}_{jet}";
     fHistManager.CreateTH2(histname.Data(), title.Data(), nPtBins, 0, fMaxPt, fMaxPt/3, 0, 0.5);
     
-    // (Centrality, pT, z-leading (charged), calo type)
-    histname = TString::Format("%s/TriggerSimHistograms/hZLeadingVsPt", jets->GetArrayName().Data());
-    title = histname + ";Centrality (%);#it{p}_{T}^{corr} (GeV/#it{c});#it{z}_{leading};type";
-    Int_t nbins2[4]  = {20, nPtBins, 50, 3};
-    Double_t min2[4] = {0, 0, 0, -0.5};
-    Double_t max2[4] = {100, fMaxPt, 1., 2.5};
-    fHistManager.CreateTHnSparse(histname.Data(), title.Data(), 4, nbins2, min2, max2);
+    // (Centrality, pT, z-leading (charged))
+    nbinsx = 20; minx = 0; maxx = 100;
+    nbinsy = nPtBins; miny = 0; maxy = fMaxPt;
+    nbinsz = 50; minz = 0; maxz = 1.;
+    
+    histname = TString::Format("%s/TriggerSimHistograms/hZLeadingVsPtEMCal", jets->GetArrayName().Data());
+    title = histname + ";Centrality (%);#it{p}_{T}^{corr} (GeV/#it{c});#it{z}_{leading}";
+    fHistManager.CreateTH3(histname.Data(), title.Data(), nbinsx, minx, maxx, nbinsy, miny, maxy, nbinsz, minz, maxz);
+    
+    histname = TString::Format("%s/TriggerSimHistograms/hZLeadingVsPtDCal", jets->GetArrayName().Data());
+    title = histname + ";Centrality (%);#it{p}_{T}^{corr} (GeV/#it{c});#it{z}_{leading}";
+    fHistManager.CreateTH3(histname.Data(), title.Data(), nbinsx, minx, maxx, nbinsy, miny, maxy, nbinsz, minz, maxz);
     
     // z (charged) vs. pT
-    histname = TString::Format("%s/TriggerSimHistograms/hZVsPt", jets->GetArrayName().Data());
-    title = histname + ";Centrality (%);#it{p}_{T}^{corr} (GeV/#it{c});#it{z};type";
-    Int_t nbins3[4]  = {20, nPtBins, 50, 3};
-    Double_t min3[4] = {0, 0, 0, -0.5};
-    Double_t max3[4] = {100, fMaxPt, 1., 2.5};
-    fHistManager.CreateTHnSparse(histname.Data(), title.Data(), 4, nbins3, min3, max3);
+    nbinsx = 20; minx = 0; maxx = 100;
+    nbinsy = nPtBins; miny = 0; maxy = fMaxPt;
+    nbinsz = 50; minz = 0; maxz = 1.;
     
-    // (Centrality, pT, Nconst, calo type)
-    histname = TString::Format("%s/TriggerSimHistograms/hNConstVsPt", jets->GetArrayName().Data());
-    title = histname + ";Centrality (%);#it{p}_{T}^{corr} (GeV/#it{c});No. of constituents;type";
-    Int_t nbins4[4]  = {20, nPtBins, 50, 3};
-    Double_t min4[4] = {0, 0, 0, -0.5};
-    Double_t max4[4] = {100, fMaxPt, fMaxPt, 2.5};
-    fHistManager.CreateTHnSparse(histname.Data(), title.Data(), 4, nbins4, min4, max4);
+    histname = TString::Format("%s/TriggerSimHistograms/hZVsPtEMCal", jets->GetArrayName().Data());
+    title = histname + ";Centrality (%);#it{p}_{T}^{corr} (GeV/#it{c});#it{z}";
+    fHistManager.CreateTH3(histname.Data(), title.Data(), nbinsx, minx, maxx, nbinsy, miny, maxy, nbinsz, minz, maxz);
+    
+    histname = TString::Format("%s/TriggerSimHistograms/hZVsPtDCal", jets->GetArrayName().Data());
+    title = histname + ";Centrality (%);#it{p}_{T}^{corr} (GeV/#it{c});#it{z}";
+    fHistManager.CreateTH3(histname.Data(), title.Data(), nbinsx, minx, maxx, nbinsy, miny, maxy, nbinsz, minz, maxz);
+    
+    // (Centrality, pT, Nconst)
+    nbinsx = 20; minx = 0; maxx = 100;
+    nbinsy = nPtBins; miny = 0; maxy = fMaxPt;
+    nbinsz = 50; minz = 0; maxz = fMaxPt;
+    
+    histname = TString::Format("%s/TriggerSimHistograms/hNConstVsPtEMCal", jets->GetArrayName().Data());
+    title = histname + ";Centrality (%);#it{p}_{T}^{corr} (GeV/#it{c});No. of constituents";
+    fHistManager.CreateTH3(histname.Data(), title.Data(), nbinsx, minx, maxx, nbinsy, miny, maxy, nbinsz, minz, maxz);
+    
+    histname = TString::Format("%s/TriggerSimHistograms/hNConstVsPtDCal", jets->GetArrayName().Data());
+    title = histname + ";Centrality (%);#it{p}_{T}^{corr} (GeV/#it{c});No. of constituents";
+    fHistManager.CreateTH3(histname.Data(), title.Data(), nbinsx, minx, maxx, nbinsy, miny, maxy, nbinsz, minz, maxz);
     
   }
+}
+
+/*
+ * This function allocates histograms for matched truth-det jets in the case of embedding.
+ * The jet matching information must be previously filled by another task, such as AliJetResponseMaker.
+ */
+void AliAnalysisTaskEmcalJetPerformance::AllocateMatchedJetHistograms()
+{
+  TString histname;
+  TString title;
+  Int_t nPtBins = TMath::CeilNint(fMaxPt/2);
+  
+  // Response matrix, (centrality, pT-truth, pT-det)
+  Int_t nbinsx = 20; Int_t minx = 0; Int_t maxx = 100;
+  Int_t nbinsy = nPtBins; Int_t miny = 0; Int_t maxy = fMaxPt;
+  Int_t nbinsz = nPtBins; Int_t minz = 0; Int_t maxz = fMaxPt;
+  
+  histname = "MatchedJetHistograms/hResponseMatrixEMCal";
+  title = histname + ";Centrality (%);#it{p}_{T}^{truth} (GeV/#it{c});#it{p}_{T,corr}^{det} (GeV/#it{c})";
+  fHistManager.CreateTH3(histname.Data(), title.Data(), nbinsx, minx, maxx, nbinsy, miny, maxy, nbinsz, minz, maxz);
+  
+  histname = "MatchedJetHistograms/hResponseMatrixDCal";
+  title = histname + ";Centrality (%);#it{p}_{T}^{truth} (GeV/#it{c});#it{p}_{T,corr}^{det} (GeV/#it{c})";
+  fHistManager.CreateTH3(histname.Data(), title.Data(), nbinsx, minx, maxx, nbinsy, miny, maxy, nbinsz, minz, maxz);
+  
+  // JES shift, (centrality, pT-truth, (pT-det - pT-truth) / pT-truth)
+  nbinsx = 20; minx = 0; maxx = 100;
+  nbinsy = nPtBins; miny = 0; maxy = fMaxPt;
+  nbinsz = 250; minz = -5.; maxz = 5.;
+  
+  histname = "MatchedJetHistograms/hJESshiftEMCal";
+  title = histname + ";Centrality (%);#it{p}_{T}^{truth} (GeV/#it{c});#frac{#it{p}_{T,corr}^{det} - #it{p}_{T}^{truth}}{#it{p}_{T}^{truth}}";
+  fHistManager.CreateTH3(histname.Data(), title.Data(), nbinsx, minx, maxx, nbinsy, miny, maxy, nbinsz, minz, maxz);
+  
+  histname = "MatchedJetHistograms/hJESshiftDCal";
+  title = histname + ";Centrality (%);#it{p}_{T}^{truth} (GeV/#it{c});#frac{#it{p}_{T,corr}^{det} - #it{p}_{T}^{truth}}{#it{p}_{T}^{truth}}";
+  fHistManager.CreateTH3(histname.Data(), title.Data(), nbinsx, minx, maxx, nbinsy, miny, maxy, nbinsz, minz, maxz);
+  
+  // NEF of det-level matched jets, (centrality, pT-truth, NEF)
+  nbinsx = 20; minx = 0; maxx = 100;
+  nbinsy = nPtBins; miny = 0; maxy = fMaxPt;
+  nbinsz = 50; minz = 0; maxz = 1.;
+  
+  histname = "MatchedJetHistograms/hNEFVsPt";
+  title = histname + ";Centrality (%);#it{p}_{T,corr}^{det} (GeV/#it{c});Calo energy fraction";
+  fHistManager.CreateTH3(histname.Data(), title.Data(), nbinsx, minx, maxx, nbinsy, miny, maxy, nbinsz, minz, maxz);
+  
+  // z-leading (charged) of det-level matched jets, (centrality, pT-truth, z-leading)
+  nbinsx = 20; minx = 0; maxx = 100;
+  nbinsy = nPtBins; miny = 0; maxy = fMaxPt;
+  nbinsz = 50; minz = 0; maxz = 1.;
+  
+  histname = "MatchedJetHistograms/hZLeadingVsPt";
+  title = histname + ";Centrality (%);#it{p}_{T,corr}^{det} (GeV/#it{c});#it{z}_{leading}";
+  fHistManager.CreateTH3(histname.Data(), title.Data(), nbinsx, minx, maxx, nbinsy, miny, maxy, nbinsz, minz, maxz);
+  
+  // Matching distance, (centrality, pT-truth, R)
+  nbinsx = 20; minx = 0; maxx = 100;
+  nbinsy = nPtBins; miny = 0; maxy = fMaxPt;
+  nbinsz = 50; minz = 0; maxz = 1.;
+  
+  histname = "MatchedJetHistograms/hMatchingDistance";
+  title = histname + ";Centrality (%);#it{p}_{T}^{truth} (GeV/#it{c});R";
+  fHistManager.CreateTH3(histname.Data(), title.Data(), nbinsx, minx, maxx, nbinsy, miny, maxy, nbinsz, minz, maxz);
+
 }
 
 /**
@@ -826,6 +929,9 @@ Bool_t AliAnalysisTaskEmcalJetPerformance::FillHistograms()
   if (fPlotClusterHistograms) {
     FillClusterHistograms();
   }
+  if (fPlotMatchedJetHistograms) {
+    FillMatchedJetHistograms();
+  }
   
   return kTRUE;
 }
@@ -869,47 +975,64 @@ void AliAnalysisTaskEmcalJetPerformance::FillJetHistograms()
       
       // compute jet acceptance type
       Double_t type = GetJetType(jet);
+      if ( (type != kEMCal) && (type != kDCal) ) {
+        continue;
+      }
       
-      // (Centrality, pT, calo type)
-      histname = TString::Format("%s/JetHistograms/hCentVsPt", jets->GetArrayName().Data());
-      fHistManager.FillTH3(histname.Data(), fCent, corrPt, type);
-      
-      // (Centrality, eta, phi, pT, NEF, calo type)
-      histname = TString::Format("%s/JetHistograms/hNEFVsPtVsEtaVsPhi", jets->GetArrayName().Data());
-      Double_t x[6] = {fCent, jet->Eta(), jet->Phi_0_2pi(), corrPt, jet->NEF(), type};
-      fHistManager.FillTHnSparse(histname, x);
+      // (Centrality, pT, NEF)
+      if (type == kEMCal) {
+        histname = TString::Format("%s/JetHistograms/hNEFVsPtEMCal", jets->GetArrayName().Data());
+      }
+      else if (type == kDCal) {
+        histname = TString::Format("%s/JetHistograms/hNEFVsPtDCal", jets->GetArrayName().Data());
+      }
+      fHistManager.FillTH3(histname, fCent, corrPt, jet->NEF());
       
       // (Centrality, pT upscaled, calo type)
-      histname = TString::Format("%s/JetHistograms/hPtUpscaledMB", jets->GetArrayName().Data());
-      fHistManager.FillTH3(histname.Data(), fCent, corrPt, type, fMBUpscaleFactor);
+      if (fComputeMBDownscaling) {
+        histname = TString::Format("%s/JetHistograms/hPtUpscaledMB", jets->GetArrayName().Data());
+        fHistManager.FillTH3(histname.Data(), fCent, corrPt, type, fMBUpscaleFactor);
+      }
       
       // pT-leading vs. pT
       histname = TString::Format("%s/JetHistograms/hPtLeadingVsPt", jets->GetArrayName().Data());
       fHistManager.FillTH2(histname.Data(), corrPt, ptLeading);
       
-      // (Centrality, pT, z-leading (charged), calo type)
+      // (Centrality, pT, z-leading (charged))
+      if (type == kEMCal) {
+        histname = TString::Format("%s/JetHistograms/hZLeadingVsPtEMCal", jets->GetArrayName().Data());
+      }
+      else if (type == kDCal) {
+        histname = TString::Format("%s/JetHistograms/hZLeadingVsPtDCal", jets->GetArrayName().Data());
+      }
       TLorentzVector leadPart;
       jets->GetLeadingHadronMomentum(leadPart, jet);
       Double_t z = GetParallelFraction(leadPart.Vect(), jet);
-      if (z == 1 || (z > 1 && z - 1 < 1e-3)) z = 0.999; // so that it will contribute to the bin 0.9-1 rather than 1-1.1
-      histname = TString::Format("%s/JetHistograms/hZLeadingVsPt", jets->GetArrayName().Data());
-      Double_t y[4] = {fCent, corrPt, z, type};
-      fHistManager.FillTHnSparse(histname, y);
+      if (z == 1 || (z > 1 && z - 1 < 1e-3)) z = 0.999; // so that it will contribute to the bin <1
+      fHistManager.FillTH3(histname, fCent, corrPt, z);
       
-      // (Centrality, pT, z (charged), calo type)
-      histname = TString::Format("%s/JetHistograms/hZVsPt", jets->GetArrayName().Data());
-      AliVTrack* track;
+      // (Centrality, pT, z (charged))
+      if (type == kEMCal) {
+        histname = TString::Format("%s/JetHistograms/hZVsPtEMCal", jets->GetArrayName().Data());
+      }
+      else if (type == kDCal) {
+        histname = TString::Format("%s/JetHistograms/hZVsPtDCal", jets->GetArrayName().Data());
+      }
+      const AliVTrack* track;
       for (Int_t i=0; i<jet->GetNumberOfTracks(); i++) {
         track = static_cast<AliVTrack*>(jet->Track(i));
         z = track->Pt() / TMath::Abs(corrPt);
-        Double_t y2[4] = {fCent, corrPt, z, type};
-        fHistManager.FillTHnSparse(histname, y2);
+        fHistManager.FillTH3(histname, fCent, corrPt, z);
       }
-      
-      // (Centrality, pT, Nconst, calo type)
-      histname = TString::Format("%s/JetHistograms/hNConstVsPt", jets->GetArrayName().Data());
-      Double_t a[4] = {fCent, corrPt, 1.*jet->GetNumberOfConstituents(), type};
-      fHistManager.FillTHnSparse(histname, a);
+ 
+      // (Centrality, pT, Nconst)
+      if (type == kEMCal) {
+        histname = TString::Format("%s/JetHistograms/hNConstVsPtEMCal", jets->GetArrayName().Data());
+      }
+      else if (type == kDCal) {
+        histname = TString::Format("%s/JetHistograms/hNConstVsPtDCal", jets->GetArrayName().Data());
+      }
+      fHistManager.FillTH3(histname, fCent, corrPt, 1.*jet->GetNumberOfConstituents());
       
       // (Median patch energy, calo type, jet pT, centrality)
       if (fDoTriggerSimulation) {
@@ -1232,46 +1355,139 @@ void AliAnalysisTaskEmcalJetPerformance::FillTriggerSimHistograms()
       
       // compute jet acceptance type
       Double_t type = GetJetType(jet);
+      if ( (type != kEMCal) && (type != kDCal) ) {
+        continue;
+      }
       
-      // Centrality vs. pT
-      histname = TString::Format("%s/TriggerSimHistograms/hCentVsPt", jets->GetArrayName().Data());
-      fHistManager.FillTH3(histname.Data(), fCent, corrPt, type);
-      
-      // (Centrality, eta, phi, pT, NEF, calo type)
-      histname = TString::Format("%s/TriggerSimHistograms/hNEFVsPtVsEtaVsPhi", jets->GetArrayName().Data());
-      Double_t x[6] = {fCent, jet->Eta(), jet->Phi_0_2pi(), corrPt, jet->NEF(), type};
-      fHistManager.FillTHnSparse(histname, x);
+      // (Centrality, pT, NEF, calo type)
+      if (type == kEMCal) {
+        histname = TString::Format("%s/TriggerSimHistograms/hNEFVsPtEMCal", jets->GetArrayName().Data());
+      }
+      else if (type == kDCal) {
+        histname = TString::Format("%s/TriggerSimHistograms/hNEFVsPtDCal", jets->GetArrayName().Data());
+      }
+      fHistManager.FillTH3(histname, fCent, corrPt, jet->NEF());
       
       // pT-leading vs. pT
       histname = TString::Format("%s/TriggerSimHistograms/hPtLeadingVsPt", jets->GetArrayName().Data());
       fHistManager.FillTH2(histname.Data(), corrPt, ptLeading);
       
       // (Centrality, pT, z-leading (charged), calo type)
+      if (type == kEMCal) {
+        histname = TString::Format("%s/TriggerSimHistograms/hZLeadingVsPtEMCal", jets->GetArrayName().Data());
+      }
+      else if (type == kDCal) {
+        histname = TString::Format("%s/TriggerSimHistograms/hZLeadingVsPtDCal", jets->GetArrayName().Data());
+      }
       TLorentzVector leadPart;
       jets->GetLeadingHadronMomentum(leadPart, jet);
       Double_t z = GetParallelFraction(leadPart.Vect(), jet);
-      if (z == 1 || (z > 1 && z - 1 < 1e-3)) z = 0.999; // so that it will contribute to the bin 0.9-1 rather than 1-1.1
-      histname = TString::Format("%s/TriggerSimHistograms/hZLeadingVsPt", jets->GetArrayName().Data());
-      Double_t y[4] = {fCent, corrPt, z, type};
-      fHistManager.FillTHnSparse(histname, y);
+      if (z == 1 || (z > 1 && z - 1 < 1e-3)) z = 0.999; // so that it will contribute to the bin <1
+      fHistManager.FillTH3(histname, fCent, corrPt, z);
       
       // (Centrality, pT, z (charged), calo type)
-      histname = TString::Format("%s/TriggerSimHistograms/hZVsPt", jets->GetArrayName().Data());
-      AliVTrack* track;
+      if (type == kEMCal) {
+        histname = TString::Format("%s/TriggerSimHistograms/hZVsPtEMCal", jets->GetArrayName().Data());
+      }
+      else if (type == kDCal) {
+        histname = TString::Format("%s/TriggerSimHistograms/hZVsPtDCal", jets->GetArrayName().Data());
+      }
+      const AliVTrack* track;
       for (Int_t i=0; i<jet->GetNumberOfTracks(); i++) {
         track = static_cast<AliVTrack*>(jet->Track(i));
         z = track->Pt() / TMath::Abs(corrPt);
-        Double_t y2[4] = {fCent, corrPt, z, type};
-        fHistManager.FillTHnSparse(histname, y2);
+        fHistManager.FillTH3(histname, fCent, corrPt, z);
       }
       
-      // (Centrality, pT, Nconst, calo type)
-      histname = TString::Format("%s/TriggerSimHistograms/hNConstVsPt", jets->GetArrayName().Data());
-      Double_t a[4] = {fCent, corrPt, 1.*jet->GetNumberOfConstituents(), type};
-      fHistManager.FillTHnSparse(histname, a);
+      // (Centrality, pT, Nconst)
+      if (type == kEMCal) {
+        histname = TString::Format("%s/TriggerSimHistograms/hNConstVsPtEMCal", jets->GetArrayName().Data());
+      }
+      else if (type == kDCal) {
+        histname = TString::Format("%s/TriggerSimHistograms/hNConstVsPtDCal", jets->GetArrayName().Data());
+      }
+      fHistManager.FillTH3(histname, fCent, corrPt, 1.*jet->GetNumberOfConstituents());
       
     } //jet loop
     
+  }
+}
+
+/**
+ * This function fills histograms for matched truth-det jets in the case of embedding.
+ * The jet matching information must be previously filled by another task, such as AliJetResponseMaker.
+ */
+void AliAnalysisTaskEmcalJetPerformance::FillMatchedJetHistograms()
+{
+  TString histname;
+  AliJetContainer* jets = 0;
+  const AliEmcalJet* matchedJet = nullptr;
+  TIter nextJetColl(&fJetCollArray);
+  while ((jets = static_cast<AliJetContainer*>(nextJetColl()))) {
+    TString jetContName = jets->GetName();
+    
+    // Only loop over jets in the detector-level jet container
+    if (jetContName.Contains("mcparticles")) {
+      continue;
+    }
+    
+    Double_t rhoVal = 0;
+    if (jets->GetRhoParameter()) {
+      rhoVal = jets->GetRhoVal();
+    }
+    
+    for (auto jet : jets->accepted()) {
+      
+      // Get the matched jet, if it exists
+      matchedJet = jet->MatchedJet();
+      if (!matchedJet) {
+        continue;
+      }
+      
+      // compute jet acceptance type
+      Double_t type = GetJetType(jet);
+      if ( (type != kEMCal) && (type != kDCal) ) {
+        continue;
+      }
+      
+      Float_t detPt = GetJetPt(jet, rhoVal);
+      Float_t truthPt = matchedJet->Pt();
+      
+      // Fill response matrix (centrality, pT-truth, pT-det)
+      if (type == kEMCal) {
+        histname = "MatchedJetHistograms/hResponseMatrixEMCal";
+      }
+      else if (type == kDCal) {
+        histname = "MatchedJetHistograms/hResponseMatrixDCal";
+      }
+      fHistManager.FillTH3(histname, fCent, truthPt, detPt);
+      
+      // Fill JES shift (centrality, pT-truth, (pT-det - pT-truth) / pT-truth)
+      if (type == kEMCal) {
+        histname = "MatchedJetHistograms/hJESshiftEMCal";
+      }
+      else if (type == kDCal) {
+        histname = "MatchedJetHistograms/hJESshiftDCal";
+      }
+      fHistManager.FillTH3(histname, fCent, truthPt, (detPt-truthPt)/truthPt );
+      
+      // Fill NEF of det-level matched jets (centrality, pT-truth, NEF)
+      histname = "MatchedJetHistograms/hNEFVsPt";
+      fHistManager.FillTH3(histname, fCent, truthPt, jet->NEF());
+
+      // Fill z-leading (charged) of det-level matched jets (centrality, pT-truth, z-leading)
+      histname = "MatchedJetHistograms/hZLeadingVsPt";
+      TLorentzVector leadPart;
+      jets->GetLeadingHadronMomentum(leadPart, jet);
+      Double_t z = GetParallelFraction(leadPart.Vect(), jet);
+      if (z == 1 || (z > 1 && z - 1 < 1e-3)) z = 0.999; // so that it will contribute to the bin <1
+      fHistManager.FillTH3(histname, fCent, truthPt, z);
+      
+      // Fill matching distance (centrality, pT-truth, R)
+      histname = "MatchedJetHistograms/hMatchingDistance";
+      fHistManager.FillTH3(histname, fCent, truthPt, jet->ClosestJetDistance());
+      
+    } //jet loop
   }
 }
 
