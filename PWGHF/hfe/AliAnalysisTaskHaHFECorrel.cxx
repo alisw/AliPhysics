@@ -799,17 +799,20 @@ void AliAnalysisTaskHaHFECorrel::UserCreateOutputObjects()
 
 
   // General  Binning 		    
+  // fAssPtHad_Nbins = 15;
+  const Int_t TmpHad_Nbins = 15;
   fAssPtHad_Nbins = 15;
-  Float_t TmpArrayLow[fAssPtHad_Nbins]= {0,  0.5, 0.5, 0.5, 1., 1., 1., 2,  2, 5, 5,  5, 10, 10, 15};
-  Float_t TmpArrayUp[fAssPtHad_Nbins]={ 999, 2.0, 5.0, 999, 2., 5.,999, 5,999,10,15,999, 15,999,999};
-  fAssPtHad_Xmin.Set(fAssPtHad_Nbins, TmpArrayLow);
-  fAssPtHad_Xmax.Set(fAssPtHad_Nbins, TmpArrayUp);
+  Float_t TmpArrayLow[15]= {0,  0.5, 0.5, 0.5, 1., 1., 1., 2,  2, 5, 5,  5, 10, 10, 15};
+  Float_t TmpArrayUp[15]={ 999, 2.0, 5.0, 999, 2., 5.,999, 5,999,10,15,999, 15,999,999};
+  fAssPtHad_Xmin.Set(TmpHad_Nbins, TmpArrayLow);
+  fAssPtHad_Xmax.Set(TmpHad_Nbins, TmpArrayUp);
   
-  fAssPtElec_Nbins = 12;
-  Float_t TmpArrayELow[fAssPtElec_Nbins]={0 ,  0.5, 0.5, 1., 1., 1., 2,  2, 4,  4,  6,  8};
-  Float_t TmpArrayEUp[fAssPtElec_Nbins]={999, 2.0, 999, 2., 4.,999, 4,999, 6,999, 10,999};
-  fAssPtElec_Xmin.Set(fAssPtElec_Nbins, TmpArrayELow);
-  fAssPtElec_Xmax.Set(fAssPtElec_Nbins, TmpArrayEUp);
+  const Int_t TmpElec_Nbins =12;
+  fAssPtElec_Nbins = TmpElec_Nbins;
+  Float_t TmpArrayELow[12]={0 ,  0.5, 0.5, 1., 1., 1., 2,  2, 4,  4,  6,  8};
+  Float_t TmpArrayEUp[12]={999, 2.0, 999, 2., 4.,999, 4,999, 6,999, 10,999};
+  fAssPtElec_Xmin.Set(TmpElec_Nbins, TmpArrayELow);
+  fAssPtElec_Xmax.Set(TmpElec_Nbins, TmpArrayEUp);
   
 
 
@@ -1819,16 +1822,24 @@ void AliAnalysisTaskHaHFECorrel::CorrelateHadron(TObjArray* RedTracksHFE,  const
   if(fUseTender)  ntracks = fTracks_tender->GetEntries();
 
 
-  Bool_t HadronTrigger[fAssPtElec_Nbins];
+  Bool_t *HadronTrigger = new Bool_t[fAssPtElec_Nbins];
   for (Int_t l=0; l<fAssPtElec_Nbins; l++) HadronTrigger[l]=kFALSE;
 
-  Bool_t ElectronIsTrigger[RedTracksHFE->GetEntriesFast()][fAssPtHad_Nbins];
-  Bool_t HadContIsTrigger[RedTracksHFE->GetEntriesFast()][fAssPtHad_Nbins];
-  Double_t ElectronIsTriggerPt[RedTracksHFE->GetEntriesFast()];
-  Bool_t PhotElecWPartnerTrigger[RedTracksHFE->GetEntriesFast()][fAssPtHad_Nbins];
-  Bool_t PhotElecWoPartnerTrigger[RedTracksHFE->GetEntriesFast()][fAssPtHad_Nbins];
-  Bool_t NonElectronIsTrigger[ntracks][15];
-  Double_t NonElectronIsTriggerPt[ntracks];
+  Bool_t **ElectronIsTrigger = new Bool_t*[RedTracksHFE->GetEntriesFast()];
+  Bool_t **HadContIsTrigger=new Bool_t*[RedTracksHFE->GetEntriesFast()];
+  Bool_t **PhotElecWPartnerTrigger=new Bool_t*[RedTracksHFE->GetEntriesFast()];
+  Bool_t **PhotElecWoPartnerTrigger=new Bool_t*[RedTracksHFE->GetEntriesFast()];
+  for (Int_t j=0; j<RedTracksHFE->GetEntriesFast(); j++)
+    {
+      ElectronIsTrigger[j]=new Bool_t[fAssPtHad_Nbins];
+      HadContIsTrigger[j]=new Bool_t[fAssPtHad_Nbins];
+      PhotElecWPartnerTrigger[j] = new Bool_t[fAssPtHad_Nbins];
+      PhotElecWoPartnerTrigger[j] = new Bool_t[fAssPtHad_Nbins];
+    }
+  Double_t *ElectronIsTriggerPt = new Double_t[RedTracksHFE->GetEntriesFast()];
+  Bool_t **NonElectronIsTrigger = new Bool_t*[ntracks];
+  for (Int_t j=0; j<ntracks; j++) { NonElectronIsTrigger[j]=new Bool_t[fAssPtHad_Nbins]; }
+  Double_t *NonElectronIsTriggerPt = new Double_t[ntracks];
   for (Int_t l=0; l<RedTracksHFE->GetEntriesFast(); l++) {
     for (Int_t m=0; m<fAssPtHad_Nbins; m++) {
       ElectronIsTrigger[l][m]=kFALSE;
@@ -1839,7 +1850,6 @@ void AliAnalysisTaskHaHFECorrel::CorrelateHadron(TObjArray* RedTracksHFE,  const
     }
   }
 
- 
   // Track loop for hadron correlations
   for(Int_t iTracks = 0; iTracks < ntracks; iTracks++) {     
 
@@ -1906,9 +1916,15 @@ void AliAnalysisTaskHaHFECorrel::CorrelateHadron(TObjArray* RedTracksHFE,  const
       fillSparse[2]=dphi;
       fillSparse[3]=deta;
 
+      Bool_t *TriggerTest = ElectronIsTrigger[k];
+      //cout << "EIsTrigger" << TriggerTest[0] << TriggerTest[1] << TriggerTest[2] << TriggerTest[3] << TriggerTest[4] << endl;
+      //cout << "ptH " << ptH <<  endl;
+      
+
       CheckElectronIsTrigger(ptH, ElectronIsTrigger[k]);
       ElectronIsTriggerPt[k]=pt;
-
+   
+      //cout << "EIsTrigger" << TriggerTest[0] << TriggerTest[1] << TriggerTest[2] << TriggerTest[3] << TriggerTest[4] << endl;
       CheckHadronIsTrigger(pt, HadronTrigger);
       
 
@@ -1975,6 +1991,26 @@ void AliAnalysisTaskHaHFECorrel::CorrelateHadron(TObjArray* RedTracksHFE,  const
       if (NonElectronIsTrigger[l][AssPtBin]) fNonElecHadTrigger->Fill(NonElectronIsTriggerPt[l], AssPtBin);
     }
   }
+
+  // Clear Trigger Arrays
+  for (Int_t j=0; j < RedTracksHFE->GetEntriesFast(); j++) {
+    delete [] ElectronIsTrigger[j];
+    delete [] HadContIsTrigger[j];
+    delete [] PhotElecWPartnerTrigger[j];
+    delete [] PhotElecWoPartnerTrigger[j];
+  }
+  delete [] ElectronIsTrigger;
+  delete [] HadContIsTrigger;
+  delete [] PhotElecWPartnerTrigger;
+  delete [] PhotElecWoPartnerTrigger;
+  delete [] HadronTrigger;
+  delete [] ElectronIsTriggerPt;
+  for (Int_t j=0; j<ntracks; j++) delete[] NonElectronIsTrigger[j];
+  delete [] NonElectronIsTrigger;
+  delete [] NonElectronIsTriggerPt;
+ 
+
+
 }
 
 
@@ -2039,7 +2075,7 @@ void AliAnalysisTaskHaHFECorrel::CorrelateHadronMixedEvent(AliAODTrack* Htrack, 
 
 /////////////--------------
 
-void AliAnalysisTaskHaHFECorrel::CorrelateWithHadrons(AliAODTrack* track, const AliAODVertex* pVtx, Int_t nMother, Double_t listMother[], Bool_t FillHadron, Bool_t FillLP, Bool_t (*NonElecIsTrigger)[15], Double_t *NonElecIsTriggerPt, Int_t NumElectronsInEvent) {
+void AliAnalysisTaskHaHFECorrel::CorrelateWithHadrons(AliAODTrack* track, const AliAODVertex* pVtx, Int_t nMother, Double_t listMother[], Bool_t FillHadron, Bool_t FillLP, Bool_t **NonElecIsTrigger, Double_t *NonElecIsTriggerPt, Int_t NumElectronsInEvent) {
   
   // Trigger Hadron
   Double_t ptH=-9.,etaH =-9.,phiH=-9.;
@@ -2130,8 +2166,9 @@ void AliAnalysisTaskHaHFECorrel::CorrelateLP(AliAODTrack* LPtrack,  const AliAOD
 { 
   Bool_t LPTrigger=kFALSE;
 
-  Bool_t   NonElectronIsTrigger[1][15];
-  Double_t NonElectronIsTriggerPt[10];
+  Bool_t   **NonElectronIsTrigger = new Bool_t*[1];
+  NonElectronIsTrigger[0]= new Bool_t[15];
+  Double_t *NonElectronIsTriggerPt = new Double_t[10];
 
 
   // leading Particle neq 
