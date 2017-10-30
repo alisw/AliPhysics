@@ -67,7 +67,8 @@ AliTreeTrending::AliTreeTrending():
   fTree(NULL),
   fUserDescription(NULL),
   fLatexDescription(NULL),
-  fStatusGraphM(NULL) {
+  fStatusGraphM(NULL),
+  fReport(NULL) {
 }
 //_____________________________________________________________________________
 AliTreeTrending::AliTreeTrending(const char *name, const char *title):
@@ -75,9 +76,9 @@ AliTreeTrending::AliTreeTrending(const char *name, const char *title):
   fTree(NULL),
   fUserDescription(NULL),
   fLatexDescription(NULL),
-  fStatusGraphM(NULL) {
+  fStatusGraphM(NULL),fReport(NULL) {
   //
-  //
+  fReport=new TFile("report.root","recreate");
 }
 
 ///
@@ -304,7 +305,7 @@ TMultiGraph * AliTreeTrending::MakeMultiGraphStatus(TTree *fTree, TString mgrNam
       ((TMultiGraph *) graphArray->At(iVar))->SetTitle(oaStatusBarNames->At(iVar)->GetName());
       for (Int_t igr = 0; igr < multGr->GetListOfGraphs()->GetEntries(); igr++) {  // Code names and codes to the object names
         TGraph *cgr = (TGraph *) multGr->GetListOfGraphs()->At(igr);
-        cgr->SetName(TString((oaStatusBarNames->At(iVar)->GetName())).Data());
+        //cgr->SetName(TString((oaStatusBarNames->At(iVar)->GetName())).Data());
       }
     } else {
       ::Error("AliTreeTrending::MakeMultiGraphStatus", "TStatToolkit::MakeStatusMultGr() returned with error -> next");
@@ -331,6 +332,7 @@ TMultiGraph * AliTreeTrending::MakeMultiGraphStatus(TTree *fTree, TString mgrNam
       mgrCombined->Add(cgr);
     }
   }
+  mgrCombined->SetMinimum(0); mgrCombined->SetMaximum(nVars);
   // TStatToolkit::DrawMultiGraph(mgrCombined,"ap");
   if (setAxis) {      //TODO  - to get axis graph has to be drawn - is there other option ?
     TGraph *gr0=(TGraph *) mgrCombined->GetListOfGraphs()->At(0);
@@ -391,6 +393,7 @@ void AliTreeTrending::MakePlot(const char* outputDir, const char *figureName, co
   if(outputDir!=0){
     fWorkingCanvas->SaveAs(TString(outputDir)+"/"+TString(figureName));
     fWorkingCanvas->Print(TString(outputDir)+"/report.pdf");
+    if (fReport) {fReport->cd(); fWorkingCanvas->Write(figureName); fReport->Flush();}
   }
 }
 
@@ -421,6 +424,7 @@ void AliTreeTrending::AppendBand(const char* outputDir, const char *figureName, 
   if(outputDir!=0){
     fWorkingCanvas->SaveAs(TString(outputDir)+"/"+TString(figureName));
     fWorkingCanvas->Print(TString(outputDir)+"/report.pdf");
+    if (fReport) {fReport->cd();fWorkingCanvas->Write(figureName);}
   }
   static Int_t counter=0;
   AliSysInfo::AddStamp(expr,2,counter++);
@@ -452,9 +456,9 @@ void AliTreeTrending::MakeStatusPlot(const char *outputDir, const char *figureNa
   fWorkingCanvas->Clear();
   TMultiGraph *multiGraph = NULL;
   if (friendName.Length() > 0 && fTree->GetFriend(friendName)){
-    multiGraph =  AliTreeTrending::MakeMultiGraphStatus(fTree->GetFriend(friendName), "", expression, varTitle, cutString, sCriteria);
+    multiGraph =  AliTreeTrending::MakeMultiGraphStatus(fTree->GetFriend(friendName), "", expression, varTitle, cutString, sCriteria,kTRUE);
   }else{
-    multiGraph =  AliTreeTrending::MakeMultiGraphStatus(fTree, "", expression, varTitle, cutString, sCriteria);
+    multiGraph =  AliTreeTrending::MakeMultiGraphStatus(fTree, "", expression, varTitle, cutString, sCriteria,kTRUE);
   }
 
   if(multiGraph==0) {
@@ -463,10 +467,12 @@ void AliTreeTrending::MakeStatusPlot(const char *outputDir, const char *figureNa
   }
   TStatToolkit::RebinSparseMultiGraph(multiGraph,(TGraph*)fStatusGraphM->GetListOfGraphs()->At(0)); // rebin to the fStatusBar
   TStatToolkit::DrawMultiGraph(multiGraph, "ap");
+  //multiGraph->Draw("ap");
   AppendStatusPad(0.3, 0.4, 0.05);
   if (outputDir != NULL) {
     fWorkingCanvas->SaveAs(TString(outputDir) + "/" + TString(figureName));
     fWorkingCanvas->Print(TString(outputDir) + "/report.pdf");
+    if (fReport) {fReport->cd();fWorkingCanvas->Write(figureName);}
   }
   static Int_t counter=0;
   AliSysInfo::AddStamp(expression.Data(),3,counter++);
@@ -483,23 +489,28 @@ void AliTreeTrending::MakeStatusPlot(const char *outputDir, const char *figureNa
 /*!
 \code
  TString currentString="dcar_Warning";
- TString statusVar="", statusTitle="";
+ TString statusVar="", statusTitle="", bitMaskAlias="";
  TPRegexp suffix("_Warning$");
  Int_t counter=0;
- AliTreeTrending::DecomposeStatusAlias(treeMC, currentString,statusVar,statusTitle,suffix,counter);
+ AliTreeTrending::DecomposeStatusAlias(treeMC, currentString,statusVar,statusTitle,suffix,counter, bitMaskAlias);
  statusVar+="run";
  trendingDraw->MakeStatusPlot("./", "dcarStatusMC.png", statusVar, statusTitle, "defaultCut",sCriteria);
 
  trendingDraw->MakeStatusPlot("./", "dcarStatusAnchor.png", statusVar, statusTitle, "defaultCut",sCriteria,"TPC.Anchor");
  \endcode
 */
-void AliTreeTrending::DecomposeStatusAlias(TTree* tree, TString currentString, TString &statusVar, TString &statusTitle, TPRegexp &suffix, Int_t &counter){
+void AliTreeTrending::DecomposeStatusAlias(TTree* tree, TString currentString, TString &statusVar, TString &statusTitle, TPRegexp &suffix, Int_t &counter, TString &bitMaskAlias){
   //
   if (tree==NULL) throw std::invalid_argument("invalid tree argument");
+  counter++;
   TString toAdd=currentString;
   suffix.Substitute(toAdd,"");
   statusVar+=toAdd;
   statusVar+=";";
+  if (counter>1) bitMaskAlias+="+";
+  bitMaskAlias+=toAdd;
+  bitMaskAlias+="_#";
+  bitMaskAlias+=TString::Format("*(1<<%d)",counter);
   TString title=toAdd;
   if (TStatToolkit::GetMetadata(tree,(toAdd+".Title").Data())) title=TStatToolkit::GetMetadata(tree,toAdd+".Title")->GetTitle();
   statusTitle+=title;
@@ -512,8 +523,7 @@ void AliTreeTrending::DecomposeStatusAlias(TTree* tree, TString currentString, T
     cString.ReplaceAll("(","");
     cString.ReplaceAll(")","");
     if (suffix.Match(cString,"")>0) {
-      DecomposeStatusAlias(tree, cString, statusVar, statusTitle,suffix,counter);
-      counter++;
+      DecomposeStatusAlias(tree, cString, statusVar, statusTitle,suffix,counter,bitMaskAlias);
     }
   }
 }

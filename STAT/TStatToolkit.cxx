@@ -1123,7 +1123,7 @@ TNamed* TStatToolkit::GetMetadata(TTree* tree, const char *varTagName, TString *
             regFriend.Substitute(metaName,"");
             if (prefix!=NULL){
               (*prefix)+=fList->At(kf)->GetName();
-              (*prefix)+=" ";
+              // (*prefix)+=""; /// FIX use prefix as it is
             }
           }
         }
@@ -1412,12 +1412,23 @@ TMultiGraph * TStatToolkit::MakeMultGraph(TTree * tree, const char *groupName, c
     vecMean[iGraph]=meanT;
     if (minValue>meanT-sigmaRange*rmsT) minValue=meanT-sigmaRange*rmsT;
     if (maxValue<meanT+sigmaRange*rmsT) maxValue=meanT+sigmaRange*rmsT;
+    TString prefix="";
+    gr->SetName(expName);
+    TNamed*named = TStatToolkit::GetMetadata(tree,TString::Format("%s.Title",expName).Data(),&prefix);
+    if (named)  {
+      gr->SetTitle(named->GetTitle());
+    } else{
+      gr->SetTitle(expName);
+    }
     if (legend){
-      TString prefix="";
       TString legendName="";
-      TNamed*named = TStatToolkit::GetMetadata(tree,TString::Format("%s.Legend",expName).Data(),&prefix);
+      named = TStatToolkit::GetMetadata(tree,TString::Format("%s.Legend",expName).Data(),&prefix);
       if (named) {
         if (prefix.Length()>0){
+          TString dummy=prefix+".Legend";
+          if (TStatToolkit::GetMetadata(tree,dummy.Data())) {
+            prefix=TStatToolkit::GetMetadata(tree,dummy.Data())->GetTitle();
+          }
           legendName+=prefix.Data();
           legendName+=" ";
         }
@@ -1434,8 +1445,10 @@ TMultiGraph * TStatToolkit::MakeMultGraph(TTree * tree, const char *groupName, c
           legendName=exprCutArray->At(iCut+1)->GetName();
         }
       }
-        legend->AddEntry(gr,legendName,"p");
+      legend->AddEntry(gr,legendName,"p");
     }
+
+
   }
 
   if(!flag){
@@ -1490,7 +1503,7 @@ void   TStatToolkit::DrawMultiGraph(TMultiGraph *graph, Option_t * option){
   Int_t ngr=grArray->GetEntries();
   TString option2(option);
   regAxis.Substitute(option2,"");
-  for (Int_t igr=0; igr<ngr; igr++){
+  for (Int_t igr=1; igr<ngr; igr++){
     grArray->At(igr)->Draw(option2.Data());
   }
 
@@ -1846,7 +1859,11 @@ TMultiGraph*  TStatToolkit::MakeStatusMultGr(TTree * tree, const char * expr, co
   for (Int_t i=0; i<ngr; i++){
     snprintf(query,200, "%f*(%s-0.5):%s", 1.+igr, oaAlias->At(i)->GetName(), var_x);
     TGraphErrors * gr = (TGraphErrors*) TStatToolkit::MakeGraphSparse(tree,query,cut,marArr[i],colArr[i],sizeArr[i],shiftArr[i]);
-    if (gr) multGr->Add(gr);
+    if (gr) {
+      multGr->Add(gr);
+      gr->SetName(oaAlias->At(i)->GetName());
+      gr->SetTitle(oaAlias->At(i)->GetName());
+    }
     else{
         ::Error("MakeGraphSparse"," returned with error -> returning");
         return 0;

@@ -35,7 +35,7 @@ public:
   void AppendBand(const char* outputDir, const char *figureName, const char* expr, const char * cut, const char * lineStyle, const char *colors, Bool_t drawSparse, Float_t sigmaRange, Bool_t comp) ;
   void MakeStatusPlot(const char* outputDir, const char *figureName, TString expression, TString varTitle, TCut cutString, TString sCriteria, TString friendName="");
   static TMultiGraph * MakeMultiGraphStatus(TTree *fTree, TString mgrName, TString expression, TString varTitle, TCut cutString, TString sCriteria, Bool_t setAxis=kFALSE);
-  static void  DecomposeStatusAlias(TTree* tree, TString currentString, TString &statusVar, TString &statusTitle, TPRegexp &suffix, Int_t &counter);
+  static void  DecomposeStatusAlias(TTree* tree, TString currentString, TString &statusVar, TString &statusTitle, TPRegexp &suffix, Int_t &counter, TString &maskAlias);
   // TODO void MakeHtml(char *htmlName, char *varList)
 public:
   TObjArray *  GetTexDescription(TLatex *latex);  /// Currently only standard variables
@@ -45,6 +45,7 @@ public:
   TCanvas   *  fWorkingCanvas;     /// default canvas
   TMultiGraph *fStatusGraphM;      /// status graph
   TStyle    *  fDrawStyle;         /// TreeTrending owner of drawing style - currently gStyle used
+  TFile     *  fReport;            /// root report file
   ClassDef(AliTreeTrending,2)
 };
 
