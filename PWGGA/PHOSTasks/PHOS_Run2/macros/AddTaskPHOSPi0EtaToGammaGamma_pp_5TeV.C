@@ -15,6 +15,7 @@ AliAnalysisTaskPHOSPi0EtaToGammaGamma* AddTaskPHOSPi0EtaToGammaGamma_pp_5TeV(
     const Double_t NsigmaDisp = 2.5,
     const Bool_t usePHOSTender = kTRUE,
     const Bool_t TOFcorrection = kTRUE,
+    const Bool_t Trgcorrection = kFALSE,
     const Bool_t NonLinStudy = kFALSE,
     const Double_t bs = 25.,//bunch space in ns.
     const Double_t distBC = 0,//minimum distance to bad channel.
@@ -36,7 +37,6 @@ AliAnalysisTaskPHOSPi0EtaToGammaGamma* AddTaskPHOSPi0EtaToGammaGamma_pp_5TeV(
     ::Error("AddTaskPHOSPi0EtaToGammaGamma", "This task requires an input event handler");
     return NULL;
   }
-  const Bool_t Trgcorrection = kTRUE;
 
 	TString TriggerName="";
 	if     (trigger == (UInt_t)AliVEvent::kAny)  TriggerName = "kAny";

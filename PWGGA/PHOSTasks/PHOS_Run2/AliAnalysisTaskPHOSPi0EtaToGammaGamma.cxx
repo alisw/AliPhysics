@@ -157,11 +157,6 @@ AliAnalysisTaskPHOSPi0EtaToGammaGamma::AliAnalysisTaskPHOSPi0EtaToGammaGamma(con
   fV0EPName[1] = "VZEROA";
   fV0EPName[2] = "VZEROC";
 
-  for(Int_t i=0;i<2;i++){
-    fQ1[i] = -999.;//x,y
-    fQ2[i] = -999.;//x,y
-  }
-
   fPHOSTriggerHelperL0  = new AliPHOSTriggerHelper("L0" ,kFALSE);
   fPHOSTriggerHelperL1H = new AliPHOSTriggerHelper("L1H",kFALSE);
   fPHOSTriggerHelperL1M = new AliPHOSTriggerHelper("L1M",kFALSE);
@@ -297,7 +292,12 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::UserCreateOutputObjects()
   for(Int_t i=0;i<3;i++){
     fOutputContainer->Add(new TH2F(Form("hCentrality%svsEventPlane%s%s",fEstimator.Data(),fV0EPName[i].Data(),fQnEstimator.Data()),Form("Centrality %s vs. EP %s %s;centrality (%%);#Psi_{EP}",fEstimator.Data(),fV0EPName[i].Data(),fQnEstimator.Data()),100,0,100,30,0,Pi));
   }
-  fOutputContainer->Add(new TH2F(Form("hCentrality%svsSPQ1Q2",fEstimator.Data()),Form("Centrality %s vs. SP #vec{Q_{1}} #upoint #vec{Q_{2}};centrality (%%);SP #vec{Q_{1}} #upoint #vec{Q_{2}}",fEstimator.Data()),100,0,100,20,-0.1,0.1));
+  fOutputContainer->Add(new TH2F(Form("hCentrality%svsSPQ1Q2",fEstimator.Data()),Form("Centrality %s vs. SP #vec{Q_{1}} #upoint #vec{Q_{2}};centrality (%%);SP #vec{Q_{1}} #upoint #vec{Q_{2}}",fEstimator.Data()),100,0,100,200,-0.01,0.01));
+
+  fOutputContainer->Add(new TH2F(Form("hCentrality%svsQ1x",fEstimator.Data()),Form("Centrality %s vs. Q_{1x};centrality (%%);Q_{1x}",fEstimator.Data()),100,0,100,100,-0.5,0.5));
+  fOutputContainer->Add(new TH2F(Form("hCentrality%svsQ1y",fEstimator.Data()),Form("Centrality %s vs. Q_{1y};centrality (%%);Q_{1y}",fEstimator.Data()),100,0,100,100,-0.5,0.5));
+  fOutputContainer->Add(new TH2F(Form("hCentrality%svsQ2x",fEstimator.Data()),Form("Centrality %s vs. Q_{2x};centrality (%%);Q_{2x}",fEstimator.Data()),100,0,100,100,-0.5,0.5));
+  fOutputContainer->Add(new TH2F(Form("hCentrality%svsQ2y",fEstimator.Data()),Form("Centrality %s vs. Q_{2y};centrality (%%);Q_{2y}",fEstimator.Data()),100,0,100,100,-0.5,0.5));
 
   fOutputContainer->Add(new TH2F(Form("hCentrality%svsCosDeltaEventPlane%s%s",fEstimator.Data(),fV0EPName[0].Data() ,fTPCEPName[1].Data()),Form("Centrality %s vs. cos(%d #Delta#Psi_{EP});centrality (%%);cos(%d #Delta#Psi_{EP})",fEstimator.Data(),fHarmonics,fHarmonics),100,0,100,20,-1,1));
   fOutputContainer->Add(new TH2F(Form("hCentrality%svsCosDeltaEventPlane%s%s",fEstimator.Data(),fV0EPName[0].Data() ,fTPCEPName[2].Data()),Form("Centrality %s vs. cos(%d #Delta#Psi_{EP});centrality (%%);cos(%d #Delta#Psi_{EP})",fEstimator.Data(),fHarmonics,fHarmonics),100,0,100,20,-1,1));
@@ -387,6 +387,8 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::UserCreateOutputObjects()
   //fOutputContainer->Add(new TH2F("hAsymvsMgg","asymmetry vs. M_{#gamma#gamma};asymmetry;M_{#gamma#gamma} (GeV/c^{2})",10,0,1,240,0,0.96));
   //fOutputContainer->Add(new TH2F("hAsymvsPt" ,"asymmetry vs. p_{T}^{#gamma#gamma};asymmetry;p_{T} (GeV/c)",10,0,1,100,0,50));
 
+  fOutputContainer->Add(new TH3F("hMggvsPtvsDeltaRgg","Mgg vs. p_{T} vs. #DeltaR_{#gamma#gamma};M_{#gamma#gamma} (GeV/c^{2});p_{T} (GeV/c);#DeltaR_{#gamma#gamma}",180,0,0.72,100,0,50,50,0,0.5));
+
   //<- histograms for QA
   //histograms for physics analysis ->
 
@@ -404,76 +406,122 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::UserCreateOutputObjects()
   const Int_t Nphi = 13;
   Double_t phibin[Nphi] = {};
   const Double_t delta = (1. - -1.)/Double_t(Nphi-1);
-  for(Int_t iphi=0;iphi<Nphi;iphi++) phibin[iphi] = (delta * iphi) -1;
+  for(Int_t iphi=0;iphi<Nphi;iphi++) phibin[iphi] = (delta * iphi) - 1;
+
+  //const Int_t Nsp = 21;
+  //Double_t spbin[Nsp] = {};
+  //const Double_t dsp = (0.2 - -0.2)/Double_t(Nsp-1);
+  //for(Int_t isp=0;isp<Nsp;isp++) spbin[isp] = (dsp * isp) - 0.2;
 
 //  //photon pT histograms
-//  TH2F *h2PhotonPt = new TH2F("hPhotonPt",Form("Photon Pt;p_{T} (GeV/c);cos(%d #Delta#phi)",fHarmonics),NpTgg-1,pTgg,Nphi-1,phibin);
-//  h2PhotonPt->Sumw2();
-//  fOutputContainer->Add(h2PhotonPt);
+//  TH2F *h2PhotonPt_EP  = new TH2F("hPhotonPt_EP" ,Form("Photon Pt;p_{T} (GeV/c);cos(%d #Delta#phi)"           ,fHarmonics),NpTgg-1,pTgg,Nphi-1,phibin);
+//  TH2F *h2PhotonPt_SP1 = new TH2F("hPhotonPt_SP1",Form("Photon Pt;p_{T} (GeV/c);#vec{u} #upoint #vec{Q_{%dA}}",fHarmonics),NpTgg-1,pTgg,Nsp-1,spbin);
+//  TH2F *h2PhotonPt_SP2 = new TH2F("hPhotonPt_SP2",Form("Photon Pt;p_{T} (GeV/c);#vec{u} #upoint #vec{Q_{%dC}}",fHarmonics),NpTgg-1,pTgg,Nsp-1,spbin);
+//  h2PhotonPt_EP ->Sumw2();
+//  h2PhotonPt_SP1->Sumw2();
+//  h2PhotonPt_SP2->Sumw2();
+//  fOutputContainer->Add(h2PhotonPt_EP );
+//  fOutputContainer->Add(h2PhotonPt_SP1);
+//  fOutputContainer->Add(h2PhotonPt_SP2);
 //
-//  TH2F *h2PhotonPt_TOF = new TH2F("hPhotonPt_TOF",Form("Photon Pt with TOF cut;p_{T} (GeV/c);cos(%d #Delta#phi)",fHarmonics),NpTgg-1,pTgg,Nphi-1,phibin);
-//  h2PhotonPt_TOF->Sumw2();
-//  fOutputContainer->Add(h2PhotonPt_TOF);
+//  TH2F *h2PhotonPt_TOF_EP  = new TH2F("hPhotonPt_TOF_EP" ,Form("Photon Pt with TOF cut;p_{T} (GeV/c);cos(%d #Delta#phi)"           ,fHarmonics),NpTgg-1,pTgg,Nphi-1,phibin);
+//  TH2F *h2PhotonPt_TOF_SP1 = new TH2F("hPhotonPt_TOF_SP1",Form("Photon Pt with TOF cut;p_{T} (GeV/c);#vec{u} #upoint #vec{Q_{%dA}}",fHarmonics),NpTgg-1,pTgg,Nsp-1,spbin);
+//  TH2F *h2PhotonPt_TOF_SP2 = new TH2F("hPhotonPt_TOF_SP2",Form("Photon Pt with TOF cut;p_{T} (GeV/c);#vec{u} #upoint #vec{Q_{%dC}}",fHarmonics),NpTgg-1,pTgg,Nsp-1,spbin);
+//  h2PhotonPt_TOF_EP ->Sumw2();
+//  h2PhotonPt_TOF_SP1->Sumw2();
+//  h2PhotonPt_TOF_SP2->Sumw2();
+//  fOutputContainer->Add(h2PhotonPt_TOF_EP );
+//  fOutputContainer->Add(h2PhotonPt_TOF_SP1);
+//  fOutputContainer->Add(h2PhotonPt_TOF_SP2);
 
   const Int_t Ndimg = 4;
   const Int_t Nbing[Ndimg]    = {500, 12,   20,   20};
-  const Double_t xming[Ndimg] = {  0, -1, -0.1, -0.1};
-  const Double_t xmaxg[Ndimg] = { 50,  1,  0.1,  0.1};
+  const Double_t xming[Ndimg] = {  0, -1, -0.3, -0.3};
+  const Double_t xmaxg[Ndimg] = { 50,  1,  0.3,  0.3};
 
   //photon pT
-  THnSparseF *hs_Photon = new THnSparseF("hSparsePhoton",Form("Photon;p_{T} (GeV/c);cos(%d #Delta#phi);#vec{u} #upoint #vec{Q_{A}};#vec{u} #upoint #vec{Q_{C}};",fHarmonics),Ndimg,Nbing,xming,xmaxg);
+  THnSparseF *hs_Photon = new THnSparseF("hSparsePhoton",Form("Photon;p_{T} (GeV/c);cos(%d #Delta#phi);#vec{u} #upoint #vec{Q_{%d A}};#vec{u} #upoint #vec{Q_{%d C}};",fHarmonics,fHarmonics,fHarmonics),Ndimg,Nbing,xming,xmaxg);
   hs_Photon->Sumw2();
   fOutputContainer->Add(hs_Photon);
 
-  THnSparseF *hs_Photon_TOF = new THnSparseF("hSparsePhoton_TOF",Form("Photon with TOF;p_{T} (GeV/c);cos(%d #Delta#phi);#vec{u} #upoint #vec{Q_{A}};#vec{u} #upoint #vec{Q_{C}};",fHarmonics),Ndimg,Nbing,xming,xmaxg);
+  THnSparseF *hs_Photon_TOF = new THnSparseF("hSparsePhoton_TOF",Form("Photon with TOF;p_{T} (GeV/c);cos(%d #Delta#phi);#vec{u} #upoint #vec{Q_{%d A}};#vec{u} #upoint #vec{Q_{%d C}};",fHarmonics,fHarmonics,fHarmonics),Ndimg,Nbing,xming,xmaxg);
   hs_Photon_TOF->Sumw2();
   fOutputContainer->Add(hs_Photon_TOF);
-
-  const Int_t Ndim = 6;
-  const Int_t Nbin[Ndim]    = { 240, 500, 10, 12,   20,   20};
-  const Double_t xmin[Ndim] = {   0,   0,  0, -1, -0.1, -0.1};
-  const Double_t xmax[Ndim] = {0.96,  50,  1,  1,  0.1,  0.1};
-
-  //same event
-  THnSparseF *hs_Mgg = new THnSparseF("hSparseMgg",Form("M_{#gamma#gamma};M_{#gamma#gamma} (GeV/c^{2});p_{T} (GeV/c);asymmetry;cos(%d #Delta#phi);#vec{u} #upoint #vec{Q_{A}};#vec{u} #upoint #vec{Q_{C}};",fHarmonics),Ndim,Nbin,xmin,xmax);
-  hs_Mgg->Sumw2();
-  fOutputContainer->Add(hs_Mgg);
-
-  THnSparseF *hs_Mgg_TOF = new THnSparseF("hSparseMgg_TOF",Form("M_{#gamma#gamma} with TOF;M_{#gamma#gamma} (GeV/c^{2});p_{T} (GeV/c);asymmetry;cos(%d #Delta#phi);#vec{u} #upoint #vec{Q_{A}};#vec{u} #upoint #vec{Q_{C}};",fHarmonics),Ndim,Nbin,xmin,xmax);
-  hs_Mgg_TOF->Sumw2();
-  fOutputContainer->Add(hs_Mgg_TOF);
-
-  //mixed event
-  THnSparseF *hs_MixMgg = new THnSparseF("hSparseMixMgg",Form("M_{#gamma#gamma}^{mix};M_{#gamma#gamma} (GeV/c^{2});p_{T} (GeV/c);asymmetry;cos(%d #Delta#phi);#vec{u} #upoint #vec{Q_{A}};#vec{u} #upoint #vec{Q_{C}};",fHarmonics),Ndim,Nbin,xmin,xmax);
-  hs_MixMgg->Sumw2();
-  fOutputContainer->Add(hs_MixMgg);
-
-  THnSparseF *hs_MixMgg_TOF = new THnSparseF("hSparseMixMgg_TOF",Form("M_{#gamma#gamma}^{mix} with TOF;M_{#gamma#gamma} (GeV/c^{2});p_{T} (GeV/c);asymmetry;cos(%d #Delta#phi);#vec{u} #upoint #vec{Q_{A}};#vec{u} #upoint #vec{Q_{C}};",fHarmonics),Ndim,Nbin,xmin,xmax);
-  hs_MixMgg_TOF->Sumw2();
-  fOutputContainer->Add(hs_MixMgg_TOF);
-
-  fOutputContainer->Add(new TH3F("hMggvsPtvsDeltaRgg","M vs. Pt vs. #DeltaR_{#gamma#gamma};M_{#gamma#gamma} (GeV/c^{2});p_{T} (GeV/c);#DeltaR_{#gamma#gamma}",240,0,0.96,100,0,50,100,0,0.5));
 
   const TString Asym[] = {"","_asym08"};
   const Int_t Nasym = sizeof(Asym)/sizeof(Asym[0]);
 
+  const Int_t Ndim = 6;
+  const Int_t Nbin[Ndim]    = { 240, 500, 10, 12,   20,   20};
+  const Double_t xmin[Ndim] = {   0,   0,  0, -1, -0.3, -0.3};
+  const Double_t xmax[Ndim] = {0.96,  50,  1,  1,  0.3,  0.3};
+
+  const Int_t Ndim_mix = 6;
+  const Int_t Nbin_mix[Ndim_mix]    = { 240, 500, 10, 12,   20,   20};
+  const Double_t xmin_mix[Ndim_mix] = {   0,   0,  0, -1, -0.3, -0.3};
+  const Double_t xmax_mix[Ndim_mix] = {0.96,  50,  1,  1,  0.3,  0.3};
+
+  //same event
+  THnSparseF *hs_Mgg = new THnSparseF("hSparseMgg",Form("M_{#gamma#gamma};M_{#gamma#gamma} (GeV/c^{2});p_{T} (GeV/c);asymmetry;cos(%d #Delta#phi);#vec{u} #upoint #vec{Q_{%d A}};#vec{u} #upoint #vec{Q_{%d C}};",fHarmonics,fHarmonics,fHarmonics),Ndim,Nbin,xmin,xmax);
+  hs_Mgg->Sumw2();
+  fOutputContainer->Add(hs_Mgg);
+
+  THnSparseF *hs_Mgg_TOF = new THnSparseF("hSparseMgg_TOF",Form("M_{#gamma#gamma} with TOF;M_{#gamma#gamma} (GeV/c^{2});p_{T} (GeV/c);asymmetry;cos(%d #Delta#phi);#vec{u} #upoint #vec{Q_{%d A}};#vec{u} #upoint #vec{Q_{%d C}};",fHarmonics,fHarmonics,fHarmonics),Ndim,Nbin,xmin,xmax);
+  hs_Mgg_TOF->Sumw2();
+  fOutputContainer->Add(hs_Mgg_TOF);
+
+  //mixed event
+  THnSparseF *hs_MixMgg = new THnSparseF("hSparseMixMgg",Form("M_{#gamma#gamma}^{mix};M_{#gamma#gamma} (GeV/c^{2});p_{T} (GeV/c);asymmetry;cos(%d #Delta#phi);#vec{u} #upoint #vec{Q_{%d A}};#vec{u} #upoint #vec{Q_{%d C}};",fHarmonics,fHarmonics,fHarmonics),Ndim_mix,Nbin_mix,xmin_mix,xmax_mix);
+  hs_MixMgg->Sumw2();
+  fOutputContainer->Add(hs_MixMgg);
+
+  THnSparseF *hs_MixMgg_TOF = new THnSparseF("hSparseMixMgg_TOF",Form("M_{#gamma#gamma}^{mix} with TOF;M_{#gamma#gamma} (GeV/c^{2});p_{T} (GeV/c);asymmetry;cos(%d #Delta#phi);#vec{u} #upoint #vec{Q_{%d A}};#vec{u} #upoint #vec{Q_{%d C}};",fHarmonics,fHarmonics,fHarmonics),Ndim_mix,Nbin_mix,xmin_mix,xmax_mix);
+  hs_MixMgg_TOF->Sumw2();
+  fOutputContainer->Add(hs_MixMgg_TOF);
+
+
 //  //Mgg vs. pT histogram
 //  for(Int_t iasym=0;iasym<Nasym;iasym++){
-//    TH3F *h3 = new TH3F(Form("hMgg%s",Asym[iasym].Data()),Form("Invariant Mass with 2#gamma;M_{#gamma#gamma} (GeV/c^{2});p_{T} (GeV/c);cos(%d #Delta#phi)",fHarmonics),Nm-1,mgg,NpTgg-1,pTgg,Nphi-1,phibin);
-//    h3->Sumw2();
-//    fOutputContainer->Add(h3);
+//    TH3F *h3_EP  = new TH3F(Form("hMgg_EP%s" ,Asym[iasym].Data()),Form("Invariant Mass with 2#gamma;M_{#gamma#gamma} (GeV/c^{2});p_{T} (GeV/c);cos(%d #Delta#phi)"           ,fHarmonics),Nm-1,mgg,NpTgg-1,pTgg,Nphi-1,phibin);
+//    TH3F *h3_SP1 = new TH3F(Form("hMgg_SP1%s",Asym[iasym].Data()),Form("Invariant Mass with 2#gamma;M_{#gamma#gamma} (GeV/c^{2});p_{T} (GeV/c);#vec{u} #upoint #vec{Q_{%dA}}",fHarmonics),Nm-1,mgg,NpTgg-1,pTgg,Nsp-1,spbin);
+//    TH3F *h3_SP2 = new TH3F(Form("hMgg_SP2%s",Asym[iasym].Data()),Form("Invariant Mass with 2#gamma;M_{#gamma#gamma} (GeV/c^{2});p_{T} (GeV/c);#vec{u} #upoint #vec{Q_{%dc}}",fHarmonics),Nm-1,mgg,NpTgg-1,pTgg,Nsp-1,spbin);
+//    h3_EP ->Sumw2();
+//    h3_SP1->Sumw2();
+//    h3_SP2->Sumw2();
+//    fOutputContainer->Add(h3_EP);
+//    fOutputContainer->Add(h3_SP1);
+//    fOutputContainer->Add(h3_SP2);
 //
-//    TH3F *h3_TOF = new TH3F(Form("hMgg_TOF%s",Asym[iasym].Data()),Form("Invariant Mass of 2#gamma with TOF cut;M_{#gamma#gamma} (GeV/c^{2});p_{T} (GeV/c);cos(%d #Delta#phi)",fHarmonics),Nm-1,mgg,NpTgg-1,pTgg,Nphi-1,phibin);
-//    h3_TOF->Sumw2();
-//    fOutputContainer->Add(h3_TOF);
+//    TH3F *h3_TOF_EP  = new TH3F(Form("hMgg_EP_TOF%s" ,Asym[iasym].Data()),Form("Invariant Mass of 2#gamma with TOF cut;M_{#gamma#gamma} (GeV/c^{2});p_{T} (GeV/c);cos(%d #Delta#phi)"           ,fHarmonics),Nm-1,mgg,NpTgg-1,pTgg,Nphi-1,phibin);
+//    TH3F *h3_TOF_SP1 = new TH3F(Form("hMgg_SP1_TOF%s",Asym[iasym].Data()),Form("Invariant Mass of 2#gamma with TOF cut;M_{#gamma#gamma} (GeV/c^{2});p_{T} (GeV/c);#vec{u} #upoint #vec{Q_{%dA}}",fHarmonics),Nm-1,mgg,NpTgg-1,pTgg,Nsp-1,spbin);
+//    TH3F *h3_TOF_SP2 = new TH3F(Form("hMgg_SP2_TOF%s",Asym[iasym].Data()),Form("Invariant Mass of 2#gamma with TOF cut;M_{#gamma#gamma} (GeV/c^{2});p_{T} (GeV/c);#vec{u} #upoint #vec{Q_{%dc}}",fHarmonics),Nm-1,mgg,NpTgg-1,pTgg,Nsp-1,spbin);
+//    h3_TOF_EP ->Sumw2();
+//    h3_TOF_SP1->Sumw2();
+//    h3_TOF_SP2->Sumw2();
+//    fOutputContainer->Add(h3_TOF_EP );
+//    fOutputContainer->Add(h3_TOF_SP1);
+//    fOutputContainer->Add(h3_TOF_SP2);
 //
-//    TH3F *h3Mix = new TH3F(Form("hMixMgg%s",Asym[iasym].Data()),Form("Mix Invariant Mass with 2#gamma;M_{#gamma#gamma} (GeV/c^{2});p_{T} (GeV/c);cos(%d #Delta#phi)",fHarmonics),Nm-1,mgg,NpTgg-1,pTgg,Nphi-1,phibin);
-//    h3Mix->Sumw2();
-//    fOutputContainer->Add(h3Mix);
+//    TH3F *h3Mix_EP  = new TH3F(Form("hMixMgg_EP%s" ,Asym[iasym].Data()),Form("Invariant Mass with 2#gamma;M_{#gamma#gamma} (GeV/c^{2});p_{T} (GeV/c);cos(%d #Delta#phi)"           ,fHarmonics),Nm-1,mgg,NpTgg-1,pTgg,Nphi-1,phibin);
+//    TH3F *h3Mix_SP1 = new TH3F(Form("hMixMgg_SP1%s",Asym[iasym].Data()),Form("Invariant Mass with 2#gamma;M_{#gamma#gamma} (GeV/c^{2});p_{T} (GeV/c);#vec{u} #upoint #vec{Q_{%dA}}",fHarmonics),Nm-1,mgg,NpTgg-1,pTgg,Nsp-1,spbin);
+//    TH3F *h3Mix_SP2 = new TH3F(Form("hMixMgg_SP2%s",Asym[iasym].Data()),Form("Invariant Mass with 2#gamma;M_{#gamma#gamma} (GeV/c^{2});p_{T} (GeV/c);#vec{u} #upoint #vec{Q_{%dc}}",fHarmonics),Nm-1,mgg,NpTgg-1,pTgg,Nsp-1,spbin);
+//    h3Mix_EP ->Sumw2();
+//    h3Mix_SP1->Sumw2();
+//    h3Mix_SP2->Sumw2();
+//    fOutputContainer->Add(h3Mix_EP);
+//    fOutputContainer->Add(h3Mix_SP1);
+//    fOutputContainer->Add(h3Mix_SP2);
 //
-//    TH3F *h3Mix_TOF = new TH3F(Form("hMixMgg_TOF%s",Asym[iasym].Data()),Form("Mix Invariant Mass of 2#gamma with TOF cut;M_{#gamma#gamma} (GeV/c^{2});p_{T} (GeV/c);cos(%d #Delta#phi)",fHarmonics),Nm-1,mgg,NpTgg-1,pTgg,Nphi-1,phibin);
-//    h3Mix_TOF->Sumw2();
-//    fOutputContainer->Add(h3Mix_TOF);
+//    TH3F *h3Mix_TOF_EP  = new TH3F(Form("hMixMgg_EP_TOF%s" ,Asym[iasym].Data()),Form("Invariant Mass of 2#gamma with TOF cut;M_{#gamma#gamma} (GeV/c^{2});p_{T} (GeV/c);cos(%d #Delta#phi)"           ,fHarmonics),Nm-1,mgg,NpTgg-1,pTgg,Nphi-1,phibin);
+//    TH3F *h3Mix_TOF_SP1 = new TH3F(Form("hMixMgg_SP1_TOF%s",Asym[iasym].Data()),Form("Invariant Mass of 2#gamma with TOF cut;M_{#gamma#gamma} (GeV/c^{2});p_{T} (GeV/c);#vec{u} #upoint #vec{Q_{%dA}}",fHarmonics),Nm-1,mgg,NpTgg-1,pTgg,Nsp-1,spbin);
+//    TH3F *h3Mix_TOF_SP2 = new TH3F(Form("hMixMgg_SP2_TOF%s",Asym[iasym].Data()),Form("Invariant Mass of 2#gamma with TOF cut;M_{#gamma#gamma} (GeV/c^{2});p_{T} (GeV/c);#vec{u} #upoint #vec{Q_{%dc}}",fHarmonics),Nm-1,mgg,NpTgg-1,pTgg,Nsp-1,spbin);
+//    h3Mix_TOF_EP ->Sumw2();
+//    h3Mix_TOF_SP1->Sumw2();
+//    h3Mix_TOF_SP2->Sumw2();
+//    fOutputContainer->Add(h3Mix_TOF_EP );
+//    fOutputContainer->Add(h3Mix_TOF_SP1);
+//    fOutputContainer->Add(h3Mix_TOF_SP2);
+//
 //  }//end of asymmetry loop
 
   //<- histograms for physics analysis
@@ -903,45 +951,17 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::UserExec(Option_t *option)
 
   FillHistogramTH2(fOutputContainer,Form("hCentrality%svsNContributor",fEstimator.Data()),fCentralityMain,Ncontributor);
 
-  //event selection
-  if(!(fPHOSEventCuts->AcceptEvent(fEvent))){
-    AliInfo("event is rejected.");
-    return;
-  }
-
-  //fill fired trigger statistics right after basic event selection, but before PHI7 event selection.
-  Bool_t Is0PH0fired = fEvent->GetHeader()->GetL0TriggerInputs() & 1 << (9 -1);//trigger input -1
-  Bool_t Is1PHHfired = fEvent->GetHeader()->GetL1TriggerInputs() & 1 << (7 -1);//trigger input -1
-  Bool_t Is1PHMfired = fEvent->GetHeader()->GetL1TriggerInputs() & 1 << (6 -1);//trigger input -1
-  Bool_t Is1PHLfired = fEvent->GetHeader()->GetL1TriggerInputs() & 1 << (5 -1);//trigger input -1
-
-  if(Is0PH0fired) FillHistogramTH1(fOutputContainer,"hEventSummary",3);//0PH0
-  if(Is1PHLfired) FillHistogramTH1(fOutputContainer,"hEventSummary",4);//1PHL
-  if(Is1PHMfired) FillHistogramTH1(fOutputContainer,"hEventSummary",5);//1PHM
-  if(Is1PHHfired) FillHistogramTH1(fOutputContainer,"hEventSummary",6);//1PHH
-
-  if(fIsPHOSTriggerAnalysis && !(fPHOSTriggerHelper->IsPHI7(fEvent,fPHOSClusterCuts))){
-    AliInfo("event is rejected. IsPHI7 = kFALSE.");
-    return;
-  }
-
   fPHOSClusterArray = (TClonesArray*)fEvent->FindListObject("PHOSClusterArray");
   if(!fPHOSClusterArray){
     AliWarning("fPHOSClusterArray object not found!");
     return;
   }
 
-  //<- end of event selection
-  //-> start physics analysis
-
-  FillHistogramTH2(fOutputContainer,"hCentralityV0MvsCL0",fCentralityV0M,fCentralityCL0);
-  FillHistogramTH2(fOutputContainer,"hCentralityV0MvsCL1",fCentralityV0M,fCentralityCL1);
-  FillHistogramTH2(fOutputContainer,"hCentralityCL0vsCL1",fCentralityCL0,fCentralityCL1);
-  FillHistogramTH2(fOutputContainer,"hCentralityV0AvsV0C",fCentralityV0A,fCentralityV0C);
-  FillHistogramTH2(fOutputContainer,"hCentralityZNAvsZNC",fCentralityZNA,fCentralityZNC);
-
-  FillHistogramTH1(fOutputContainer,"hVertexZSelectEvent" ,fVertex[2]);
-  FillHistogramTH1(fOutputContainer,"hEventSummary",2);//selected event
+  //event selection
+  if(!(fPHOSEventCuts->AcceptEvent(fEvent))){
+    AliInfo("event is rejected.");
+    return;
+  }
 
   if(fIsFlowTask){
     //fFlowQnVectorMgr->GetQnVectorList()->Print("",-1);
@@ -961,10 +981,10 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::UserExec(Option_t *option)
         AliInfo("Event is rejected because event plane is not found or bad event plane quality in TPC.");
         return;//Qn vector correction does not exist or bad quality.
       }
-      if(QnVectorTPCDet[i]) TPCEP[i] = QnVectorTPCDet[i]->EventPlane(fHarmonics);
+      TPCEP[i] = QnVectorTPCDet[i]->EventPlane(fHarmonics);
       if(TPCEP[i] < 0) TPCEP[i] += 2./(Double_t) fHarmonics * TMath::Pi();
       FillHistogramTH2(fOutputContainer,Form("hCentrality%svsEventPlane%s%s",fEstimator.Data(),fTPCEPName[i].Data(),fQnEstimator.Data()),fCentralityMain,TPCEP[i]);
-      AliInfo(Form("harmonics %d | TPC sub detector name %s : event plane = %f (rad).",fHarmonics,fTPCEPName[i].Data(),TPCEP[i]));
+      AliInfo(Form("harmonics %d | TPC sub detector name %s%s : event plane = %f (rad).",fHarmonics,fTPCEPName[i].Data(),fQnEstimator.Data(),TPCEP[i]));
     }
 
     const AliQnCorrectionsQnVector *QnVectorV0Det[3];
@@ -975,28 +995,36 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::UserExec(Option_t *option)
         AliInfo("Event is rejected because event plane is not found or bad event plane quality in VZERO.");
         return;//Qn vector correction does not exist or bad quality.
       }
-      if(QnVectorV0Det[i]) V0EP[i] = QnVectorV0Det[i]->EventPlane(fHarmonics);
+      V0EP[i] = QnVectorV0Det[i]->EventPlane(fHarmonics);
       if(V0EP[i] < 0)  V0EP[i]  += 2./(Double_t) fHarmonics * TMath::Pi();
       FillHistogramTH2(fOutputContainer,Form("hCentrality%svsEventPlane%s%s",fEstimator.Data(),fV0EPName[i].Data(),fQnEstimator.Data()),fCentralityMain,V0EP[i]);
-      AliInfo(Form("harmonics %d | V0  sub detector name %s : event plane = %f (rad).",fHarmonics,fV0EPName[i].Data() ,V0EP[i]));
+      AliInfo(Form("harmonics %d | V0  sub detector name %s%s : event plane = %f (rad).",fHarmonics,fV0EPName[i].Data(),fQnEstimator.Data(),V0EP[i]));
     }
 
     //0 < event plane < 2*pi/fHarmonics.
     //fEventPlane = TPCEP[0];//full acceptance of TPC
     fEventPlane = V0EP[0];//full V0
 
-    fQ1[0] = QnVectorV0Det[1]->Qx(fHarmonics);//V0A
-    fQ1[1] = QnVectorV0Det[1]->Qy(fHarmonics);//V0A
-    fQ2[0] = QnVectorV0Det[2]->Qx(fHarmonics);//V0C
-    fQ2[1] = QnVectorV0Det[2]->Qy(fHarmonics);//V0C
+    Double_t Q1[2] = {};
+    Double_t Q2[2] = {};
+
+    Q1[0] = QnVectorV0Det[1]->Qx(fHarmonics);//V0A
+    Q1[1] = QnVectorV0Det[1]->Qy(fHarmonics);//V0A
+    Q2[0] = QnVectorV0Det[2]->Qx(fHarmonics);//V0C
+    Q2[1] = QnVectorV0Det[2]->Qy(fHarmonics);//V0C
     
-    fQVector1.Set(fQ1[0],fQ1[1]);
-    fQVector2.Set(fQ2[0],fQ2[1]);
+    fQVector1.Set(Q1[0],Q1[1]);
+    fQVector2.Set(Q2[0],Q2[1]);
+
+    FillHistogramTH2(fOutputContainer,Form("hCentrality%svsQ1x",fEstimator.Data()),fCentralityMain,Q1[0]);
+    FillHistogramTH2(fOutputContainer,Form("hCentrality%svsQ1y",fEstimator.Data()),fCentralityMain,Q1[1]);
+    FillHistogramTH2(fOutputContainer,Form("hCentrality%svsQ2x",fEstimator.Data()),fCentralityMain,Q2[0]);
+    FillHistogramTH2(fOutputContainer,Form("hCentrality%svsQ2y",fEstimator.Data()),fCentralityMain,Q2[1]);
 
     //Double_t sp = fQ1[0] * fQ2[0] + fQ1[1] * fQ2[1];//scalar product between Q1 vector and Q2 vector
     Double_t sp = fQVector1 * fQVector2;//scalar product between Q1 vector and Q2 vector
     FillHistogramTH2(fOutputContainer,Form("hCentrality%svsSPQ1Q2",fEstimator.Data()),fCentralityMain,sp);//mean value of sp is denominator of vn{SP}
-    AliInfo(Form("Q1x = %e , Q1y = %e , Q2x = %e , Q2y = %e , SP = %e",fQ1[0],fQ1[1],fQ2[0],fQ2[1],sp));
+    AliInfo(Form("Q1x = %e , Q1y = %e , Q2x = %e , Q2y = %e , SP = %e",Q1[0],Q1[1],Q2[0],Q2[1],sp));
 
     const Double_t delta = 2. * TMath::Pi() / Double_t(fHarmonics) / 12.;
     fEPBin = (Int_t)((fEventPlane) / delta);//it should be 0-11.
@@ -1015,6 +1043,34 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::UserExec(Option_t *option)
     FillHistogramTH2(fOutputContainer,Form("hCentrality%svsCosDeltaEventPlane%s%s",fEstimator.Data(),fV0EPName[1].Data() ,fV0EPName[2].Data()),fCentralityMain,TMath::Cos(fHarmonics * (V0EP[1]  - V0EP[2])));
   }
   else fEPBin = 0;
+
+  //fill fired trigger statistics right after basic event selection, but before PHI7 event selection.
+  Bool_t Is0PH0fired = fEvent->GetHeader()->GetL0TriggerInputs() & 1 << (9 -1);//trigger input -1
+  Bool_t Is1PHHfired = fEvent->GetHeader()->GetL1TriggerInputs() & 1 << (7 -1);//trigger input -1
+  Bool_t Is1PHMfired = fEvent->GetHeader()->GetL1TriggerInputs() & 1 << (6 -1);//trigger input -1
+  Bool_t Is1PHLfired = fEvent->GetHeader()->GetL1TriggerInputs() & 1 << (5 -1);//trigger input -1
+
+  if(Is0PH0fired) FillHistogramTH1(fOutputContainer,"hEventSummary",3);//0PH0
+  if(Is1PHLfired) FillHistogramTH1(fOutputContainer,"hEventSummary",4);//1PHL
+  if(Is1PHMfired) FillHistogramTH1(fOutputContainer,"hEventSummary",5);//1PHM
+  if(Is1PHHfired) FillHistogramTH1(fOutputContainer,"hEventSummary",6);//1PHH
+
+  if(fIsPHOSTriggerAnalysis && !(fPHOSTriggerHelper->IsPHI7(fEvent,fPHOSClusterCuts))){
+    AliInfo("event is rejected. IsPHI7 = kFALSE.");
+    return;
+  }
+
+  //<- end of event selection
+  //-> start physics analysis
+
+  FillHistogramTH2(fOutputContainer,"hCentralityV0MvsCL0",fCentralityV0M,fCentralityCL0);
+  FillHistogramTH2(fOutputContainer,"hCentralityV0MvsCL1",fCentralityV0M,fCentralityCL1);
+  FillHistogramTH2(fOutputContainer,"hCentralityCL0vsCL1",fCentralityCL0,fCentralityCL1);
+  FillHistogramTH2(fOutputContainer,"hCentralityV0AvsV0C",fCentralityV0A,fCentralityV0C);
+  FillHistogramTH2(fOutputContainer,"hCentralityZNAvsZNC",fCentralityZNA,fCentralityZNC);
+
+  FillHistogramTH1(fOutputContainer,"hVertexZSelectEvent" ,fVertex[2]);
+  FillHistogramTH1(fOutputContainer,"hEventSummary",2);//selected event
  
   AliInfo(Form("Collision system = %d | fCentralityMain estimated by %s = %f %% | Zvtx = %f cm , fZvtx = %d | Harmonics = %d , fEventPlane = %f (rad.) , fEPBin = %d |",fCollisionSystem,fEstimator.Data(),fCentralityMain,fVertex[2],fZvtx,fHarmonics,fEventPlane,fEPBin));
  
@@ -1391,8 +1447,8 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::TriggerQA()
 
       Int_t diffx = trgcellx - cellx;
       Int_t diffz = trgcellz - cellz;
-      //DeltaR = TMath::Sqrt( TMath::Power(eta_trigger - eta_cluster,2) +  TMath::Power(phi_trigger - phi_cluster,2) );
-      DeltaR = fPHOSTriggerHelper->GetDistanceToClosestTRUChannel(ph);
+      DeltaR = TMath::Sqrt( TMath::Power(eta_trigger - eta_cluster,2) +  TMath::Power(phi_trigger - phi_cluster,2) );
+      //DeltaR = fPHOSTriggerHelper->GetDistanceToClosestTRUChannel(ph);
 
       FillHistogramTH3(fOutputContainer,Form("hDistanceXZM%dTRU%d",trgmodule,fPHOSTriggerHelper->WhichTRU(trgcellx,trgcellz)),diffx,diffz,energy);
       FillHistogramTH2(fOutputContainer,Form("hDeltaRM%dTRU%d",trgmodule,fPHOSTriggerHelper->WhichTRU(trgcellx,trgcellz)),DeltaR,energy);
@@ -1649,11 +1705,15 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::FillPhoton()
     value[2] = sp1;//reserved by sp
     value[3] = sp2;//reserved by sp
 
-    //FillHistogramTH2(fOutputContainer,"hPhotonPt",pT,TMath::Cos(fHarmonics * dphi),weight);
+    //FillHistogramTH2(fOutputContainer,"hPhotonPt_EP" ,pT,TMath::Cos(fHarmonics * dphi),weight);
+    //FillHistogramTH2(fOutputContainer,"hPhotonPt_SP1",pT,sp1,weight);
+    //FillHistogramTH2(fOutputContainer,"hPhotonPt_SP2",pT,sp2,weight);
     FillSparse(fOutputContainer,"hSparsePhoton",value,weight * 1/trgeff);
 
     if(ph->IsTOFOK()){
-      //FillHistogramTH2(fOutputContainer,"hPhotonPt_TOF",pT,TMath::Cos(fHarmonics * dphi),1/eff * weight);
+      //FillHistogramTH2(fOutputContainer,"hPhotonPt_TOF_EP" ,pT,TMath::Cos(fHarmonics * dphi),1/eff * weight);
+      //FillHistogramTH2(fOutputContainer,"hPhotonPt_TOF_SP1",pT,sp1                          ,1/eff * weight);
+      //FillHistogramTH2(fOutputContainer,"hPhotonPt_TOF_SP2",pT,sp2                          ,1/eff * weight);
       FillSparse(fOutputContainer,"hSparsePhoton_TOF",value,1/eff * weight * 1/trgeff);
     }
 
@@ -1774,6 +1834,7 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::FillMgg()
       }//end of if fIsMC
 
       if(phi < 0) phi += TMath::TwoPi();
+
       TVector2 vgg(TMath::Cos(fHarmonics * phi),TMath::Sin(fHarmonics * phi));
       if(fIsFlowTask){
         dphi = DeltaPhiIn0Pi(phi - fEventPlane);
@@ -1792,23 +1853,38 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::FillMgg()
       value[4] = sp1;//reserved by sp
       value[5] = sp2;//reserved by sp
 
+      if(m12 > 0.96) continue;//reduce entry in THnSparse
+
       if(TMath::Abs(ph1->Module()-ph2->Module()) < 2) FillHistogramTH2(fOutputContainer,Form("hMgg_M%d%d",TMath::Min(ph1->Module(),ph2->Module()), TMath::Max(ph1->Module(),ph2->Module())),m12,pt12,weight * 1/trgeff12);
-      //FillHistogramTH3(fOutputContainer,"hMgg",m12,pt12,TMath::Cos(fHarmonics * dphi),weight);
+      //FillHistogramTH3(fOutputContainer,"hMgg_EP" ,m12,pt12,TMath::Cos(fHarmonics * dphi),weight);
+      //FillHistogramTH3(fOutputContainer,"hMgg_SP1",m12,pt12,sp1                          ,weight);
+      //FillHistogramTH3(fOutputContainer,"hMgg_SP2",m12,pt12,sp2                          ,weight);
+      FillSparse(fOutputContainer,"hSparseMgg",value,weight * 1/trgeff12);
 
       //FillHistogramTH2(fOutputContainer,"hAsymvsMgg",asym,m12,weight);
       //if(0.12 < m12 && m12 < 0.15) FillHistogramTH2(fOutputContainer,"hAsymvsPt",asym,pt12,weight);
 
-      //if(asym < 0.8) FillHistogramTH3(fOutputContainer,"hMgg_asym08",m12,pt12,TMath::Cos(fHarmonics * dphi),weight);
-
-      FillSparse(fOutputContainer,"hSparseMgg",value,weight * 1/trgeff12);
+      if(asym < 0.8){
+        //FillHistogramTH3(fOutputContainer,"hMgg_EP_asym08" ,m12,pt12,TMath::Cos(fHarmonics * dphi),weight);
+        //FillHistogramTH3(fOutputContainer,"hMgg_SP1_asym08",m12,pt12,sp1                          ,weight);
+        //FillHistogramTH3(fOutputContainer,"hMgg_SP2_asym08",m12,pt12,sp2                          ,weight);
+        //FillSparse(fOutputContainer,"hSparseMgg_asym08",value,weight * 1/trgeff12);
+      }
 
       if(ph1->IsTOFOK() && ph2->IsTOFOK()){
-        //FillHistogramTH3(fOutputContainer,"hMgg_TOF",m12,pt12,TMath::Cos(fHarmonics * dphi),1/eff12 * weight);
+        //FillHistogramTH3(fOutputContainer,"hMgg_EP_TOF" ,m12,pt12,TMath::Cos(fHarmonics * dphi),1/eff12 * weight);
+        //FillHistogramTH3(fOutputContainer,"hMgg_SP1_TOF",m12,pt12,sp1                          ,1/eff12 * weight);
+        //FillHistogramTH3(fOutputContainer,"hMgg_SP2_TOF",m12,pt12,sp2                          ,1/eff12 * weight);
         FillSparse(fOutputContainer,"hSparseMgg_TOF",value,1/eff12 * weight * 1/trgeff12);
 
         if(TMath::Abs(ph1->Module()-ph2->Module()) < 2) FillHistogramTH2(fOutputContainer,Form("hMgg_M%d%d_TOF",TMath::Min(ph1->Module(),ph2->Module()), TMath::Max(ph1->Module(),ph2->Module())),m12,pt12,1/eff12 * weight * 1/trgeff12);
 
-        //if(asym < 0.8) FillHistogramTH3(fOutputContainer,"hMgg_TOF_asym08",m12,pt12,TMath::Cos(fHarmonics * dphi),1/eff12 * weight);
+        if(asym < 0.8){
+          //FillHistogramTH3(fOutputContainer,"hMgg_EP_TOF_asym08" ,m12,pt12,TMath::Cos(fHarmonics * dphi),1/eff12 * weight);
+          //FillHistogramTH3(fOutputContainer,"hMgg_SP1_TOF_asym08",m12,pt12,sp1                          ,1/eff12 * weight);
+          //FillHistogramTH3(fOutputContainer,"hMgg_SP2_TOF_asym08",m12,pt12,sp2                          ,1/eff12 * weight);
+          //FillSparse(fOutputContainer,"hSparseMgg_TOF_asym08",value,1/eff12 * weight * 1/trgeff12);
+        }
 
       }//end of TOF cut
 
@@ -1917,19 +1993,36 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::FillMixMgg()
         value[4] = sp1;//reserved by sp
         value[5] = sp2;//reserved by sp
 
-        FillSparse(fOutputContainer,"hSparseMixMgg",value,weight * 1/trgeff12);
+        if(m12 > 0.96) continue;//reduce entry in THnSparse
 
-        //FillHistogramTH3(fOutputContainer,"hMixMgg",m12,pt12,TMath::Cos(fHarmonics * dphi),weight);
+        //FillHistogramTH3(fOutputContainer,"hMixMgg_EP" ,m12,pt12,TMath::Cos(fHarmonics * dphi),weight);
+        //FillHistogramTH3(fOutputContainer,"hMixMgg_SP1",m12,pt12,sp1                          ,weight);
+        //FillHistogramTH3(fOutputContainer,"hMixMgg_SP2",m12,pt12,sp2                          ,weight);
+        FillSparse(fOutputContainer,"hSparseMixMgg",value,weight * 1/trgeff12);
         if(TMath::Abs(ph1->Module()-ph2->Module()) < 2) FillHistogramTH2(fOutputContainer,Form("hMixMgg_M%d%d",TMath::Min(ph1->Module(),ph2->Module()), TMath::Max(ph1->Module(),ph2->Module())),m12,pt12, weight * 1/trgeff12);
 
-        //if(asym < 0.8) FillHistogramTH3(fOutputContainer,"hMixMgg_asym08",m12,pt12,TMath::Cos(fHarmonics * dphi),weight);
+        if(asym < 0.8){
+          //FillSparse(fOutputContainer,"hSparseMixMgg_asym08",value,weight * 1/trgeff12);
+          //FillHistogramTH3(fOutputContainer,"hMixMgg_EP_asym08" ,m12,pt12,TMath::Cos(fHarmonics * dphi),weight);
+          //FillHistogramTH3(fOutputContainer,"hMixMgg_SP1_asym08",m12,pt12,sp1                          ,weight);
+          //FillHistogramTH3(fOutputContainer,"hMixMgg_SP2_asym08",m12,pt12,sp2                          ,weight);
+        }
 
         if(ph1->IsTOFOK() && ph2->IsTOFOK()){
-          //FillHistogramTH3(fOutputContainer,"hMixMgg_TOF",m12,pt12,TMath::Cos(fHarmonics * dphi),1/eff12 * weight);
           FillSparse(fOutputContainer,"hSparseMixMgg_TOF",value,1/eff12 * weight * 1/trgeff12);
+          //FillHistogramTH3(fOutputContainer,"hMixMgg_EP_TOF" ,m12,pt12,TMath::Cos(fHarmonics * dphi),1/eff12 * weight);
+          //FillHistogramTH3(fOutputContainer,"hMixMgg_SP1_TOF",m12,pt12,sp1                          ,1/eff12 * weight);
+          //FillHistogramTH3(fOutputContainer,"hMixMgg_SP2_TOF",m12,pt12,sp2                          ,1/eff12 * weight);
+
           if(TMath::Abs(ph1->Module()-ph2->Module()) < 2) FillHistogramTH2(fOutputContainer,Form("hMixMgg_M%d%d_TOF",TMath::Min(ph1->Module(),ph2->Module()), TMath::Max(ph1->Module(),ph2->Module())),m12,pt12,1/eff12 * weight * 1/trgeff12);
 
-          //if(asym < 0.8) FillHistogramTH3(fOutputContainer,"hMixMgg_TOF_asym08",m12,pt12,TMath::Cos(fHarmonics * dphi),1/eff12 * weight);
+          if(asym < 0.8){
+            //FillSparse(fOutputContainer,"hSparseMixMgg_TOF_asym08",value,1/eff12 * weight * 1/trgeff12);
+            //FillHistogramTH3(fOutputContainer,"hMixMgg_EP_TOF_asym08" ,m12,pt12,TMath::Cos(fHarmonics * dphi),1/eff12 * weight);
+            //FillHistogramTH3(fOutputContainer,"hMixMgg_SP1_TOF_asym08",m12,pt12,sp1                          ,1/eff12 * weight);
+            //FillHistogramTH3(fOutputContainer,"hMixMgg_SP2_TOF_asym08",m12,pt12,sp2                          ,1/eff12 * weight);
+          }
+
 
         }//end of TOF cut
 
