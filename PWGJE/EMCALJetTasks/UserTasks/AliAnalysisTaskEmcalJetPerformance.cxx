@@ -69,6 +69,7 @@ AliAnalysisTaskEmcalJetPerformance::AliAnalysisTaskEmcalJetPerformance() :
   fPlotClusterHistograms(kFALSE),
   fComputeBackground(kFALSE),
   fDoTriggerSimulation(kFALSE),
+  fPlotMatchedJetHistograms(kFALSE),
   fComputeMBDownscaling(kFALSE),
   fMaxPt(200),
   fNEtaBins(40),
@@ -105,6 +106,7 @@ AliAnalysisTaskEmcalJetPerformance::AliAnalysisTaskEmcalJetPerformance(const cha
   fPlotClusterHistograms(kFALSE),
   fComputeBackground(kFALSE),
   fDoTriggerSimulation(kFALSE),
+  fPlotMatchedJetHistograms(kFALSE),
   fComputeMBDownscaling(kFALSE),
   fMaxPt(200),
   fNEtaBins(40),
@@ -197,6 +199,7 @@ void AliAnalysisTaskEmcalJetPerformance::UserCreateOutputObjects()
   // Get the MC particle branch, in case it exists
   fGeneratorLevel = GetMCParticleContainer("mcparticles");
   
+  // Allocate histograms
   if (fPlotJetHistograms) {
     AllocateJetHistograms();
   }
@@ -208,6 +211,9 @@ void AliAnalysisTaskEmcalJetPerformance::UserCreateOutputObjects()
   }
   if (fDoTriggerSimulation) {
     AllocateTriggerSimHistograms();
+  }
+  if (fPlotMatchedJetHistograms) {
+    AllocateMatchedJetHistograms();
   }
   
   // Initialize embedding QA
@@ -625,6 +631,71 @@ void AliAnalysisTaskEmcalJetPerformance::AllocateTriggerSimHistograms()
   }
 }
 
+/*
+ * This function allocates histograms for matched truth-det jets in the case of embedding.
+ * The jet matching information must be previously filled by another task, such as AliJetResponseMaker.
+ */
+void AliAnalysisTaskEmcalJetPerformance::AllocateMatchedJetHistograms()
+{
+  TString histname;
+  TString title;
+  Int_t nPtBins = TMath::CeilNint(fMaxPt/2);
+  
+  // Response matrix, (centrality, pT-truth, pT-det)
+  Int_t nbinsx = 20; Int_t minx = 0; Int_t maxx = 100;
+  Int_t nbinsy = nPtBins; Int_t miny = 0; Int_t maxy = fMaxPt;
+  Int_t nbinsz = nPtBins; Int_t minz = 0; Int_t maxz = fMaxPt;
+  
+  histname = "MatchedJetHistograms/hResponseMatrixEMCal";
+  title = histname + ";Centrality (%);#it{p}_{T}^{truth} (GeV/#it{c});#it{p}_{T,corr}^{det} (GeV/#it{c})";
+  fHistManager.CreateTH3(histname.Data(), title.Data(), nbinsx, minx, maxx, nbinsy, miny, maxy, nbinsz, minz, maxz);
+  
+  histname = "MatchedJetHistograms/hResponseMatrixDCal";
+  title = histname + ";Centrality (%);#it{p}_{T}^{truth} (GeV/#it{c});#it{p}_{T,corr}^{det} (GeV/#it{c})";
+  fHistManager.CreateTH3(histname.Data(), title.Data(), nbinsx, minx, maxx, nbinsy, miny, maxy, nbinsz, minz, maxz);
+  
+  // JES shift, (centrality, pT-truth, (pT-det - pT-truth) / pT-truth)
+  nbinsx = 20; minx = 0; maxx = 100;
+  nbinsy = nPtBins; miny = 0; maxy = fMaxPt;
+  nbinsz = 250; minz = -5.; maxz = 5.;
+  
+  histname = "MatchedJetHistograms/hJESshiftEMCal";
+  title = histname + ";Centrality (%);#it{p}_{T}^{truth} (GeV/#it{c});#frac{#it{p}_{T,corr}^{det} - #it{p}_{T}^{truth}}{#it{p}_{T}^{truth}}";
+  fHistManager.CreateTH3(histname.Data(), title.Data(), nbinsx, minx, maxx, nbinsy, miny, maxy, nbinsz, minz, maxz);
+  
+  histname = "MatchedJetHistograms/hJESshiftDCal";
+  title = histname + ";Centrality (%);#it{p}_{T}^{truth} (GeV/#it{c});#frac{#it{p}_{T,corr}^{det} - #it{p}_{T}^{truth}}{#it{p}_{T}^{truth}}";
+  fHistManager.CreateTH3(histname.Data(), title.Data(), nbinsx, minx, maxx, nbinsy, miny, maxy, nbinsz, minz, maxz);
+  
+  // NEF of det-level matched jets, (centrality, pT-truth, NEF)
+  nbinsx = 20; minx = 0; maxx = 100;
+  nbinsy = nPtBins; miny = 0; maxy = fMaxPt;
+  nbinsz = 50; minz = 0; maxz = 1.;
+  
+  histname = "MatchedJetHistograms/hNEFVsPt";
+  title = histname + ";Centrality (%);#it{p}_{T,corr}^{det} (GeV/#it{c});Calo energy fraction";
+  fHistManager.CreateTH3(histname.Data(), title.Data(), nbinsx, minx, maxx, nbinsy, miny, maxy, nbinsz, minz, maxz);
+  
+  // z-leading (charged) of det-level matched jets, (centrality, pT-truth, z-leading)
+  nbinsx = 20; minx = 0; maxx = 100;
+  nbinsy = nPtBins; miny = 0; maxy = fMaxPt;
+  nbinsz = 50; minz = 0; maxz = 1.;
+  
+  histname = "MatchedJetHistograms/hZLeadingVsPt";
+  title = histname + ";Centrality (%);#it{p}_{T,corr}^{det} (GeV/#it{c});#it{z}_{leading}";
+  fHistManager.CreateTH3(histname.Data(), title.Data(), nbinsx, minx, maxx, nbinsy, miny, maxy, nbinsz, minz, maxz);
+  
+  // Matching distance, (centrality, pT-truth, R)
+  nbinsx = 20; minx = 0; maxx = 100;
+  nbinsy = nPtBins; miny = 0; maxy = fMaxPt;
+  nbinsz = 50; minz = 0; maxz = 1.;
+  
+  histname = "MatchedJetHistograms/hMatchingDistance";
+  title = histname + ";Centrality (%);#it{p}_{T}^{truth} (GeV/#it{c});R";
+  fHistManager.CreateTH3(histname.Data(), title.Data(), nbinsx, minx, maxx, nbinsy, miny, maxy, nbinsz, minz, maxz);
+
+}
+
 /**
  * This function is executed automatically for the first event.
  * Some extra initialization can be performed here.
@@ -857,6 +928,9 @@ Bool_t AliAnalysisTaskEmcalJetPerformance::FillHistograms()
   }
   if (fPlotClusterHistograms) {
     FillClusterHistograms();
+  }
+  if (fPlotMatchedJetHistograms) {
+    FillMatchedJetHistograms();
   }
   
   return kTRUE;
@@ -1336,6 +1410,84 @@ void AliAnalysisTaskEmcalJetPerformance::FillTriggerSimHistograms()
       
     } //jet loop
     
+  }
+}
+
+/**
+ * This function fills histograms for matched truth-det jets in the case of embedding.
+ * The jet matching information must be previously filled by another task, such as AliJetResponseMaker.
+ */
+void AliAnalysisTaskEmcalJetPerformance::FillMatchedJetHistograms()
+{
+  TString histname;
+  AliJetContainer* jets = 0;
+  const AliEmcalJet* matchedJet = nullptr;
+  TIter nextJetColl(&fJetCollArray);
+  while ((jets = static_cast<AliJetContainer*>(nextJetColl()))) {
+    TString jetContName = jets->GetName();
+    
+    // Only loop over jets in the detector-level jet container
+    if (jetContName.Contains("mcparticles")) {
+      continue;
+    }
+    
+    Double_t rhoVal = 0;
+    if (jets->GetRhoParameter()) {
+      rhoVal = jets->GetRhoVal();
+    }
+    
+    for (auto jet : jets->accepted()) {
+      
+      // Get the matched jet, if it exists
+      matchedJet = jet->MatchedJet();
+      if (!matchedJet) {
+        continue;
+      }
+      
+      // compute jet acceptance type
+      Double_t type = GetJetType(jet);
+      if ( (type != kEMCal) && (type != kDCal) ) {
+        continue;
+      }
+      
+      Float_t detPt = GetJetPt(jet, rhoVal);
+      Float_t truthPt = matchedJet->Pt();
+      
+      // Fill response matrix (centrality, pT-truth, pT-det)
+      if (type == kEMCal) {
+        histname = "MatchedJetHistograms/hResponseMatrixEMCal";
+      }
+      else if (type == kDCal) {
+        histname = "MatchedJetHistograms/hResponseMatrixDCal";
+      }
+      fHistManager.FillTH3(histname, fCent, truthPt, detPt);
+      
+      // Fill JES shift (centrality, pT-truth, (pT-det - pT-truth) / pT-truth)
+      if (type == kEMCal) {
+        histname = "MatchedJetHistograms/hJESshiftEMCal";
+      }
+      else if (type == kDCal) {
+        histname = "MatchedJetHistograms/hJESshiftDCal";
+      }
+      fHistManager.FillTH3(histname, fCent, truthPt, (detPt-truthPt)/truthPt );
+      
+      // Fill NEF of det-level matched jets (centrality, pT-truth, NEF)
+      histname = "MatchedJetHistograms/hNEFVsPt";
+      fHistManager.FillTH3(histname, fCent, truthPt, jet->NEF());
+
+      // Fill z-leading (charged) of det-level matched jets (centrality, pT-truth, z-leading)
+      histname = "MatchedJetHistograms/hZLeadingVsPt";
+      TLorentzVector leadPart;
+      jets->GetLeadingHadronMomentum(leadPart, jet);
+      Double_t z = GetParallelFraction(leadPart.Vect(), jet);
+      if (z == 1 || (z > 1 && z - 1 < 1e-3)) z = 0.999; // so that it will contribute to the bin <1
+      fHistManager.FillTH3(histname, fCent, truthPt, z);
+      
+      // Fill matching distance (centrality, pT-truth, R)
+      histname = "MatchedJetHistograms/hMatchingDistance";
+      fHistManager.FillTH3(histname, fCent, truthPt, jet->ClosestJetDistance());
+      
+    } //jet loop
   }
 }
 
