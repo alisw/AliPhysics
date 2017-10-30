@@ -9,7 +9,7 @@
 ///  Running the macro
 /// ---------------------
 /// use root -b to speed up (no canvas drawn)                                                  <br>
-/// root [1] .L runAnalysisBC.C++                                                    <br>
+/// root [1] .L $ALICE_WORK_DIR/../ali-master/AliPhysics/PWGPP/EMCAL/BCMacros/runAnalysisBC.C++                                                    <br>
 /// root [2] runAnalysisBC(1,"LHC15o","Train_771","INT7",244918,"","GloballyGood.txt")           //for merging to one runblock   <br>
 /// root [2] runAnalysisBC(-1,"LHC15o","Train_771","INT7",244918,"244918_INT7Filtered.root","")  //for single files              <br>
 ///
