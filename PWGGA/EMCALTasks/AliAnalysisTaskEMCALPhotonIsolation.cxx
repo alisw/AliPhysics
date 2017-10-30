@@ -2052,9 +2052,9 @@ void AliAnalysisTaskEMCALPhotonIsolation::EtIsoClusPhiBand(TLorentzVector c, Dou
     phiMin = (fGeom->GetArm1PhiMin())*TMath::DegToRad()+0.03;
 
     if(fPeriod.Contains("12") || fPeriod.Contains("13"))
-      phiMax = (fGeom->GetArm1PhiMax()-20.)*TMath::DegToRad()-0.03; // fGeom->GetArm1PhiMax()-20. = 180. deg (in order not to take the two disabled SM into account in 2012-2013)
+      phiMax = (fGeom->GetEMCALPhiMax()-20.)*TMath::DegToRad()-0.03; // fGeom->GetEMCALPhiMax()-20. = 180. deg (in order not to take the two disabled SM into account in 2012-2013)
     else
-      phiMax = (fGeom->GetArm1PhiMax())*TMath::DegToRad()-0.03;
+      phiMax = (fGeom->GetEMCALPhiMax())*TMath::DegToRad()-0.03;
   }
   else{
     phiMin = (4./9.)*TMath::Pi()+0.03;
@@ -2249,9 +2249,9 @@ void AliAnalysisTaskEMCALPhotonIsolation::EtIsoClusEtaBand(TLorentzVector c, Dou
     phiMin = (fGeom->GetArm1PhiMin())*TMath::DegToRad()+0.03;
 
     if(fPeriod.Contains("12") || fPeriod.Contains("13"))
-      phiMax = (fGeom->GetArm1PhiMax()-20.)*TMath::DegToRad()-0.03; // fGeom->GetArm1PhiMax()-20. = 180. deg (in order not to take the two disabled SM into account in 2012-2013)
+      phiMax = (fGeom->GetEMCALPhiMax()-20.)*TMath::DegToRad()-0.03; // fGeom->GetEMCALPhiMax()-20. = 180. deg (in order not to take the two disabled SM into account in 2012-2013)
     else
-      phiMax = (fGeom->GetArm1PhiMax())*TMath::DegToRad()-0.03;
+      phiMax = (fGeom->GetEMCALPhiMax())*TMath::DegToRad()-0.03;
   }
   else{
     phiMin = (4./9.)*TMath::Pi()+0.03;
@@ -2466,9 +2466,9 @@ void AliAnalysisTaskEMCALPhotonIsolation::PtIsoTrackPhiBand(TLorentzVector c, Do
       phiMin = (fGeom->GetArm1PhiMin())*TMath::DegToRad()+0.03;
 
       if(fPeriod.Contains("12") || fPeriod.Contains("13"))
-        phiMax = (fGeom->GetArm1PhiMax()-20.)*TMath::DegToRad()-0.03; // fGeom->GetArm1PhiMax()-20. = 180. deg (in order not to take the two disabled SM into account in 2012-2013)
+        phiMax = (fGeom->GetEMCALPhiMax()-20.)*TMath::DegToRad()-0.03; // fGeom->GetEMCALPhiMax()-20. = 180. deg (in order not to take the two disabled SM into account in 2012-2013)
       else
-        phiMax = (fGeom->GetArm1PhiMax())*TMath::DegToRad()-0.03;
+        phiMax = (fGeom->GetEMCALPhiMax())*TMath::DegToRad()-0.03;
     }
     else{
       etaMin = -0.67;
@@ -2566,9 +2566,9 @@ void AliAnalysisTaskEMCALPhotonIsolation::PtIsoTrackEtaBand(TLorentzVector c, Do
       phiMin = (fGeom->GetArm1PhiMin())*TMath::DegToRad()+0.03;
 
       if(fPeriod.Contains("12") || fPeriod.Contains("13"))
-        phiMax = (fGeom->GetArm1PhiMax()-20.)*TMath::DegToRad()-0.03; // fGeom->GetArm1PhiMax()-20. = 180. deg (in order not to take the two disabled SM into account in 2012-2013)
+        phiMax = (fGeom->GetEMCALPhiMax()-20.)*TMath::DegToRad()-0.03; // fGeom->GetEMCALPhiMax()-20. = 180. deg (in order not to take the two disabled SM into account in 2012-2013)
       else
-        phiMax = (fGeom->GetArm1PhiMax())*TMath::DegToRad()-0.03;
+        phiMax = (fGeom->GetEMCALPhiMax())*TMath::DegToRad()-0.03;
     }
     else{
       etaMin = -0.67;
@@ -3212,9 +3212,9 @@ void AliAnalysisTaskEMCALPhotonIsolation::IsolationAndUEinEMCAL(AliVCluster *coi
 
   if(fPeriod != ""){
     if(fPeriod.Contains("12") || fPeriod.Contains("13"))
-      phiBandArea = (((fGeom->GetArm1PhiMax()-20.)*TMath::DegToRad()-0.03)-((fGeom->GetArm1PhiMin())*TMath::DegToRad()+0.03))*2.*fIsoConeRadius-isoConeArea;
+      phiBandArea = (((fGeom->GetEMCALPhiMax()-20.)*TMath::DegToRad()-0.03)-((fGeom->GetArm1PhiMin())*TMath::DegToRad()+0.03))*2.*fIsoConeRadius-isoConeArea;
     else
-      phiBandArea = (((fGeom->GetArm1PhiMax())*TMath::DegToRad()-0.03)-((fGeom->GetArm1PhiMin())*TMath::DegToRad()+0.03))*2.*fIsoConeRadius-isoConeArea;
+      phiBandArea = (((fGeom->GetEMCALPhiMax())*TMath::DegToRad()-0.03)-((fGeom->GetArm1PhiMin())*TMath::DegToRad()+0.03))*2.*fIsoConeRadius-isoConeArea;
   }
   else{
     phiBandArea = (5./9.)*TMath::Pi()*2.*fIsoConeRadius-isoConeArea;
@@ -3734,9 +3734,9 @@ void AliAnalysisTaskEMCALPhotonIsolation::ComputeConeArea(TLorentzVector c, Doub
     phiMin = (fGeom->GetArm1PhiMin())*TMath::DegToRad()+0.03;
 
     if(fPeriod.Contains("12") || fPeriod.Contains("13"))
-      phiMax = (fGeom->GetArm1PhiMax()-20.)*TMath::DegToRad()-0.03;
+      phiMax = (fGeom->GetEMCALPhiMax()-20.)*TMath::DegToRad()-0.03;
     else
-      phiMax = (fGeom->GetArm1PhiMax())*TMath::DegToRad()-0.03;
+      phiMax = (fGeom->GetEMCALPhiMax())*TMath::DegToRad()-0.03;
   }
   else{
     phiMin = (4./9.)*TMath::Pi()+0.03;
