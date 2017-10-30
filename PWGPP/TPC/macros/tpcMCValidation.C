@@ -14,8 +14,14 @@
   AliDrawStyle::SetDefaults();
   AliDrawStyle::ApplyStyle("figTemplate");
   InitTPCMCValidation("LHC15k1a1","passMC","LHC15o", "pass3_lowIR_pidfix",0,0);
+  //
+  MakeReport();
+  MakeStatusPlots();
+  trendingDraw->fReport->Close();
+
 \endcode
 */
+
 #include <TError.h>
 #include "TCanvas.h"
 #include "TLatex.h"
@@ -39,23 +45,51 @@ TTree *treeMC;
 std::vector <Double_t> cRange;
 std::vector <Double_t> cRange2;
 std::vector <Double_t> cRange5;
-TString sCriteria("1-2*(varname_Warning):(statisticOK):(varname_Warning):(varname_Outlier):(varname_PhysAcc)");
+TString sCriteria("(present):(statisticOK):(varname_Warning):(varname_Outlier):(varname_PhysAcc)");
+// current variables - used instead of local variables to enable copy paste of part of code
 TString queryString, queryTitle; ///
+TMultiGraph *graph = 0, *lines = 0;
+const char *outputDir="./";
 
+
+/// \param treeMC
+/// \param doCheck
+/// \param verbose
 void makeTPCMCAlarms(TTree *treeMC, Bool_t doCheck, Int_t verbose);
 
 Bool_t InitTPCMCValidation(TString mcPeriod, TString mcPass, TString anchorPeriod, TString anchorPass, Int_t verbose,
                            Int_t doCheck);
 
-void MakeReport(const char *outputDir);
+void MakeReport();
 void MakeStatusPlots();
-void tpcMCValidation(const char *mcPeriod = "LHC15k1a1", const char *outputDir = "./");
+void tpcMCValidation(const char *mcPeriod = "LHC15k1a1", const char *soutputDir = "./");
+
+/// Print to the output string object names fulfilling criteria sRegExp
+/// \param array            - input TCollection
+/// \param regExp           - regular expression to select
+/// \param separator        -
+/// \return                 -
+TString ArrayNameToString(TCollection *array, TString sRegExp, TString separator){
+  TString output="";
+  TPRegexp regExp(sRegExp);
+  TIter next(array);
+  TObject *object;
+  while ( ( object =next())) {
+    if (regExp.Match(object->GetName())) {
+      output += object->GetName();
+      output += separator;
+    }
+  }
+  return output;
+}
+
 
 
 /// function to create a set of the comparison plots MC/AnchorRaw data
 /// \param mcPeriod    -  MC production name
 /// \param outputDir   -  directory where png and html files are stored
-void tpcMCValidation(const char *mcPeriod, const char *outputDir) {
+void tpcMCValidation(const char *mcPeriod, const char *sOutputDir) {
+  outputDir=sOutputDir;
   cout << "INITIALIZING TPC MC Validation" << endl;
   AliExternalInfo i;
   cout << mcPeriod << endl;
@@ -67,7 +101,7 @@ void tpcMCValidation(const char *mcPeriod, const char *outputDir) {
   subStrL = TPRegexp("([^ ])+$").MatchS(anchorProdNamePass);
   TString anchorPassName = ((TObjString *) subStrL->At(0))->GetString();
   if (InitTPCMCValidation(mcPeriod, "passMC", anchorProdName, anchorPassName, 0, 0)) {
-    MakeReport(outputDir);
+    MakeReport();
   } else ::Error("tpcMCValidation", "InitTPCMCValidation returned with error -> skip plotting!");
 }
 
@@ -80,9 +114,6 @@ void tpcMCValidation(const char *mcPeriod, const char *outputDir) {
 /// \param doCheck - force check of the variables
 /// \param verbose - set verbosity for make alarms
 void makeTPCMCAlarms(TTree * treeMC, Bool_t doCheck,Int_t verbose){
-  //  TODO - Sebastian - add status bar for the dEdx - similar like int the standard QA
-  //  TODO - adding new combined status bar status plots of individual alarms to be provided
-  //  TODO - continue
   //  ==============================================================
   //  1.)  Partial alarms  (variable, variableAnchor deltaWarning,deltaError, PhysAcc)
   //                 deltaWarning and deltaError can be an expression which is understood by TTreeFormula
@@ -133,8 +164,7 @@ void makeTPCMCAlarms(TTree * treeMC, Bool_t doCheck,Int_t verbose){
   treeMC->SetAlias("diff0.MIPattachSlopeC" ,    "(QA.TPC.MIPattachSlopeC-TPC.Anchor.MIPattachSlopeC)");
   treeMC->SetAlias("diff0.meanMIPele" ,    "(QA.TPC.meanMIPele-TPC.Anchor.meanMIPele)"); 
   treeMC->SetAlias("diff0.resolutionMIPele" ,    "(QA.TPC.resolutionMIPele-TPC.Anchor.resolutionMIPele)");
-  
-  treeMC->SetAlias("statisticOK", "(meanTPCncl>0)");
+
   TString sDiffVars="";
   sDiffVars+="diff0.meanTPCncl;diff0.meanTPCnclF;ratio.dcarAP0;ratio.dcarAP1;ratio.dcarCP0;ratio.dcarCP1;ratio.meanMIP;ratio.resolutionMIP;diff0.MIPattachSlopeA;diff0.MIPattachSlopeC;diff0.meanMIPele;diff0.resolutionMIPele;";
   TObjArray* oaTrendVars = sDiffVars.Tokenize(";");
@@ -182,7 +212,7 @@ Bool_t InitTPCMCValidation(TString mcPeriod, TString mcPass, TString anchorPerio
   cRange2 = std::vector < Double_t > {0.13, 0.01, 0.5, 0.3};
   cRange5 = std::vector < Double_t > {0.13, 0.01, 0.8, 0.3};
   externalInfo = new AliExternalInfo(".", "", verbose);
-  trendingDraw = new AliTreeTrending;
+  trendingDraw = new AliTreeTrending("mcAnchor","mcAnchor");
   trendingDraw->SetDefaultStyle();
   gStyle->SetOptTitle(0);
 
@@ -218,6 +248,11 @@ Bool_t InitTPCMCValidation(TString mcPeriod, TString mcPass, TString anchorPerio
   treeMC->AddFriend(treeAnchorITS0, "ITS.Anchor");
   treeMC->SetAlias("QA.TPC.nEvents", "QA.TPC.entriesVertX");
   treeMC->SetAlias("TPC.Anchor.nEvents", "TPC.Anchor.entriesVertX");
+  treeMC->SetAlias("statisticOK","QA.TPC.nEvents>100&&TPC.Anchor.nEvents>0");
+  treeMC->SetAlias("present","(run==TPC.Anchor.run)");      // check presence of reference detectors for MC tree
+  treeAnchorTPC->SetAlias("present","(run>0)");                                // define present alias for anchor tree
+  TStatToolkit::AddMetadata(treeMC,"QA.TPC.Legend",("MC: "+mcPeriod).Data());
+  TStatToolkit::AddMetadata(treeMC,"TPC.Anchor.Legend",(anchorPeriod+"/"+anchorPass).Data());
   // check the match between MC and MC anchor
   {
     Int_t entriesMatch = treeMC->Draw("QA.TPC.meanTPCncl-TPC.Anchor.meanTPCncl", "1");
@@ -235,7 +270,7 @@ Bool_t InitTPCMCValidation(TString mcPeriod, TString mcPass, TString anchorPerio
   makeTPCMCAlarms(treeMC, doCheck, verbose);
   TString sStatusBarVars("mcAnchor.ncl;mcAnchor.dcarResol;mcAnchor.itsEffStatus;mcAnchor.dEdx");
   TString sStatusBarNames("#(cl)_{MC Anchor};dca_{R}_{MC Anchor};#epsilon_{ITS}_{MC Anchor};dEdx_{MC Anchor}");
-  TString sCriteria("(1):(statisticOK):(varname_Warning):(varname_Outlier):(varname_PhysAcc)"); // status bar markers
+  TString sCriteria("(present):(statisticOK):(varname_Warning):(varname_Outlier):(varname_PhysAcc)"); // status bar markers
   TString statusString[3];
   statusString[0] = sStatusBarVars;
   statusString[1] = sStatusBarNames;
@@ -248,229 +283,211 @@ Bool_t InitTPCMCValidation(TString mcPeriod, TString mcPass, TString anchorPerio
   trendingDraw->SetTree(treeMC);
   treeMC->SetAlias("tagID", "run");
   treeMC->SetAlias("defaultCut", "run==TPC.Anchor.run");
-
-  if (trendingDraw->InitSummaryTrending(statusString, 0.015, "defaultCut")) return kTRUE;
+  // treeMC->SetAlias("defaultCut", "run>0");   // TODO enable all runs - need to make reorting of the multigraphs
+  if (trendingDraw->InitSummaryTrending(statusString, 0.015, "defaultCut")) {
+    trendingDraw->fWorkingCanvas->Print(TString(outputDir) + "/report.pdf[", "pdf");
+    return kTRUE;
+  }
   else return kFALSE;
 }
 
 /// ## MakeReport
 /// \param outputDir
-void MakeReport(const char *outputDir) {
-  TMultiGraph *graph = 0, *lines = 0;
-  TString queryString = "";
-  //outputDir=".";
-  trendingDraw->fWorkingCanvas->Print(TString(outputDir) + "/report.pdf[", "pdf");
+void MakeReport() {
+
   //
-  // DONE: In some cases different sources provided different run lists
-  // DONE: MakeMultGraph should match "run graphs" and "rebinning graphs" if needed (Marian - in TStatToolkit)
-  // DONE: Remove CLion convention warning (Marian)
-  // TODO: Optionally add offset to the X value in order to distinguish overlapped  graphs TStatToolkit::
   // TODO: Partially done. Add TMultiGraph "class?" to specify additional options (see bellow) (Boris, Marian) - groupName to be used for that
-  // TODO: Optionally draw y value on top of the markers (for single graphs) can be coded in the class (lower priority)
-  // TODO: For each tab we should provide status figure (decomposition of status to the components)
-
-  // TODO: For MC, Anchor and for MC/Anchor comparison (Marian, Sebastian)
-
+  // OLDTODO: Optionally draw y value on top of the markers - not needed with jsroot
+  // TODO - add time format to y axis - to do with class
   // 1.) Event properties  ($AliPhysic_SRC/PWGPP/TPC/macros/TPCQAWebpage/MCAnchor/tabEvent.html)
   trendingDraw->MakePlot(outputDir, "interactionRate.png", "Interaction rate", cRange, "",
                          "Logbook.averageEventsPerSecond;QA.EVS.interactionRate:run", "defaultCut", "figTemplateTRD",
                          "figTemplateTRD", 1, 1, 4, kTRUE);
   trendingDraw->MakePlot(outputDir, "runDuration.png", "Run duration ", cRange, "", "Logbook.runDuration:run",
-                         "defaultCut", "figTemplateTRD", "figTemplateTRD", 1, 0.75, 4, kTRUE);
+                         "defaultCut", "figTemplateTRD", "figTemplateTRD", 1, 1.0, 4, kTRUE);
   trendingDraw->MakePlot(outputDir, "bField.png", "Magnet current", cRange, "", "Logbook.L3_magnetCurrent:run",
-                         "defaultCut", "figTemplateTRD", "figTemplateTRD", 1, 0.75, 3, kTRUE);
+                         "defaultCut", "figTemplateTRD", "figTemplateTRD", 1, 1.0, 3, kTRUE);
   trendingDraw->MakePlot(outputDir, "eventCounters.png", "Event counters ", cRange, "",
                          "Logbook.totalEvents;totalEventsPhysics;totalEventsCalibration;Logbook.detector_TPC.eventCountPhysics;TPC.Anchor.nEvents;QA.TPC.nEvents:run",
-                         "defaultCut", "figTemplateTRD", "figTemplateTRD", 1, 0.75, 4, kTRUE);
-  //trendingDraw->MakePlot(outputDir,"runTime.png","Time ",cRange,"",":run","defaultCut","figTemplateTRDPair","figTemplateTRDPair",1,0.75,4,kTRUE); //TODO - add time format
+                         "defaultCut", "figTemplateTRD", "figTemplateTRD", 1, 1.0, 4, kTRUE);
+  //trendingDraw->MakePlot(outputDir,"runTime.png","Time ",cRange,"",":run","defaultCut","figTemplateTRDPair","figTemplateTRDPair",1,1.0,4,kTRUE);
   trendingDraw->MakePlot(outputDir, "meanMult.png", "Mean TPC multiplicity (|DCA|<3 cm)", cRange, "",
                          "QA.TPC.meanMult;TPC.Anchor.meanMult:run", "defaultCut", "figTemplateTRDPair",
-                         "figTemplateTRDPair", 1, 0.75, 4, kTRUE);
+                         "figTemplateTRDPair", 1, 1.0, 4, kTRUE);
   trendingDraw->MakePlot(outputDir, "meanMultPos.png", "Mean TPC multiplicity (q>0, |DCA|<3 cm)", cRange, "",
                          "QA.TPC.meanMultPos;TPC.Anchor.meanMultPos:run", "defaultCut", "figTemplateTRDPair",
-                         "figTemplateTRDPair", 1, 0.75, 4, kTRUE);
+                         "figTemplateTRDPair", 1, 1.0, 4, kTRUE);
   trendingDraw->MakePlot(outputDir, "meanMultNeg.png", "Mean TPC multiplicity (q<0, |DCA|<3 cm)", cRange, "",
                          "QA.TPC.meanMultNeg;TPC.Anchor.meanMultNeg:run", "defaultCut", "figTemplateTRDPair",
-                         "figTemplateTRDPair", 1, 0.75, 4, kTRUE);
+                         "figTemplateTRDPair", 1, 1.0, 4, kTRUE);
   trendingDraw->MakePlot(outputDir, "meanMult_comb2.png", "meanMult_comb2", cRange, "",
                          "meanMult_comb2;TPC.Anchor.meanMult_comb2:run", "defaultCut", "figTemplateTRDPair",
-                         "figTemplateTRDPair", 1, 0.75, 4, kTRUE);
+                         "figTemplateTRDPair", 1, 1.0, 4, kTRUE);
   trendingDraw->MakePlot(outputDir, "meanVertX.png", "meanVertX:run MC/Anchor", cRange, "",
                          "QA.TPC.meanVertX;TPC.Anchor.meanVertX:run", "defaultCut", "figTemplateTRDPair",
-                         "figTemplateTRDPair", 1, 0.75, 5, kTRUE);
+                         "figTemplateTRDPair", 1, 1.0, 5, kTRUE);
   trendingDraw->MakePlot(outputDir, "meanVertY.png", "meanVertY:run MC/Anchor", cRange, "",
                          "QA.TPC.meanVertY;TPC.Anchor.meanVertY:run", "defaultCut", "figTemplateTRDPair",
-                         "figTemplateTRDPair", 1, 0.75, 5, kTRUE);
+                         "figTemplateTRDPair", 1, 1.0, 5, kTRUE);
   trendingDraw->MakePlot(outputDir, "meanVertZ.png", "meanVertZ:run MC/Anchor", cRange, "",
                          "QA.TPC.meanVertZ;TPC.Anchor.meanVertZ:run", "defaultCut", "figTemplateTRDPair",
-                         "figTemplateTRDPair", 1, 0.75, 5, kTRUE);
+                         "figTemplateTRDPair", 1, 1.0, 5, kTRUE);
   //
   // 2.) Number of clusters comparison ($AliPhysic_SRC/PWGPP/TPC/macros/TPCQAWebpage/MCAnchor/tabNcl.html)
   // TODO: Add all estimators fo missing chambers (Ncl, Voltage, RawQA, tracks)
-  trendingDraw->MakeStatusPlot(outputDir, "nclStatus.png",
-                               "absDiff.QA.TPC.meanTPCncl;absDiff.QA.TPC.meanTPCnclF;diff0.meanTPCncl;diff0.meanTPCnclF;run",
-                               "#Delta^{A}_{ATPCncl};#Delta^{A}_{TPCnclF};#Delta^{R}_{TPCncl};#Delta^{R}_{TPCnclF};",
-                               "defaultCut", sCriteria);
   trendingDraw->MakePlot(outputDir, "meanTPCncl.png", "Number of clusters", cRange, "",
                          "QA.TPC.meanTPCncl;TPC.Anchor.meanTPCncl:run", "defaultCut", "figTemplateTRDPair",
-                         "figTemplateTRDPair", 1, 0.75, 5, kTRUE);
+                         "figTemplateTRDPair", 1, 1.0, 5, kTRUE);
   trendingDraw->MakePlot(outputDir, "meanTPCnclFindable.png", "Cluster fraction #left(#frac{N_{cl}}{N_{find.}}#right)",
                          cRange, "", "QA.TPC.meanTPCnclF;TPC.Anchor.meanTPCnclF:run", "defaultCut",
-                         "figTemplateTRDPair", "figTemplateTRDPair", 1, 0.75, 5, kTRUE);
+                         "figTemplateTRDPair", "figTemplateTRDPair", 1, 1.0, 5, kTRUE);
   trendingDraw->MakePlot(outputDir, "meanTPCNclRatioMCtoAnchor.png", "Number of clusters MC/Anchor", cRange, "",
                          "meanTPCncl/TPC.Anchor.meanTPCncl;meanTPCnclF/TPC.Anchor.meanTPCnclF:run", "defaultCut",
-                         "figTemplateTRDPair", "figTemplateTRDPair", 1, 0.75, 5, kTRUE);
+                         "figTemplateTRDPair", "figTemplateTRDPair", 1, 1.0, 5, kTRUE);
   trendingDraw->MakePlot(outputDir, "iroc.png", "IROC #chambers", cRange, "",
                          "iroc_A_side;TPC.Anchor.iroc_A_side;iroc_C_side;TPC.Anchor.iroc_C_side:run", "defaultCut",
-                         "figTemplateTRDPair", "figTemplateTRDPair", 1, 0.75, 4, kTRUE);
+                         "figTemplateTRDPair", "figTemplateTRDPair", 1, 1.0, 4, kTRUE);
   trendingDraw->MakePlot(outputDir, "oroc.png", "OROC #chambers", cRange, "",
                          "oroc_A_side;TPC.Anchor.oroc_A_side;oroc_C_side;TPC.Anchor.oroc_C_side:run", "defaultCut",
-                         "figTemplateTRDPair", "figTemplateTRDPair", 1, 0.75, 4, kTRUE);
+                         "figTemplateTRDPair", "figTemplateTRDPair", 1, 1.0, 4, kTRUE);
   //
   // 3.) Matching efficiency ($AliPhysic_SRC/PWGPP/TPC/macros/TPCQAWebpage/MCAnchor/tabEff.html)
-  // TODO: provide description of variables (Metadata attribute Description exist - where to place? )
   // TODO: Add ITS layer matching trending
   // TODO: Add TRD matching
   trendingDraw->MakePlot(outputDir, "matchingTPCITSEffNoPileUpCut.png", "Matching efficiency(no pileup cut):MC/Anchor",
                          cRange, "",
                          "QA.TPC.tpcItsMatchA;TPC.Anchor.tpcItsMatchA;QA.TPC.tpcItsMatchC;TPC.Anchor.tpcItsMatchC:run",
-                         "defaultCut", "figTemplateTRDPair", "figTemplateTRDPair", 1, 0.75, 4, kTRUE);
+                         "defaultCut", "figTemplateTRDPair", "figTemplateTRDPair", 1, 1.0, 4, kTRUE);
   trendingDraw->MakePlot(outputDir, "matchingTPCITSEffPileUpCut.png", "Matching efficiency (pileup cut):MC/Anchor",
                          cRange, "",
                          "QA.ITS.EffTOTPt02;ITS.Anchor.EffTOTPt02;QA.ITS.EffTOTPt1;ITS.Anchor.EffTOTPt1:run",
-                         "defaultCut", "figTemplateTRDPair", "figTemplateTRDPair", 1, 0.75, 6, kTRUE);
+                         "defaultCut", "figTemplateTRDPair", "figTemplateTRDPair", 1, 1.0, 6, kTRUE);
   trendingDraw->MakePlot(outputDir, "matchingTPCITSEffPileUpCutHighPt.png",
                          "Matching efficiency (pileup cut):MC/Anchor", cRange, "",
                          "QA.ITS.EffTOTPt1;ITS.Anchor.EffTOTPt1;QA.ITS.EffTOTPt10;ITS.Anchor.EffTOTPt10:run",
-                         "defaultCut", "figTemplateTRDPair", "figTemplateTRDPair", 1, 0.75, 6, kTRUE);
+                         "defaultCut", "figTemplateTRDPair", "figTemplateTRDPair", 1, 1.0, 6, kTRUE);
   trendingDraw->MakePlot(outputDir, "matchingTPCITSEffACRatio.png", "Matching efficiency A/C ratio:MC/Anchor", cRange,
                          "",
                          "QA.TPC.tpcItsMatchA/QA.TPC.tpcItsMatchC;TPC.Anchor.tpcItsMatchA/TPC.Anchor.tpcItsMatchC;QA.TPC.tpcItsMatchHighPtA/QA.TPC.tpcItsMatchHighPtC;TPC.Anchor.tpcItsMatchHighPtA/TPC.Anchor.tpcItsMatchHighPtC:run",
-                         "defaultCut", "figTemplateTRDPair", "figTemplateTRDPair", 1, 0.75, 4, kTRUE);
+                         "defaultCut", "figTemplateTRDPair", "figTemplateTRDPair", 1, 1.0, 4, kTRUE);
   trendingDraw->MakePlot(outputDir, "matchingTPCTRDEffPileUpCut.png", "Matching efficiency (pileup cut):MC/Anchor",
                          cRange, "",
                          "QA.TRD.TPCTRDmatchEffPosAll;TRD.Anchor.TPCTRDmatchEffPosAll;QA.TRD.TPCTRDmatchEffNegAll;TRD.Anchor.TPCTRDmatchEffNegAll:run",
-                         "defaultCut", "figTemplateTRDPair", "figTemplateTRDPair", 1, 0.75, 6, kTRUE);
+                         "defaultCut", "figTemplateTRDPair", "figTemplateTRDPair", 1, 1.0, 6, kTRUE);
   // TODO plots bellow not in the html (to be described or removed)
   trendingDraw->MakePlot(outputDir, "matchingTPC-ITSEff.png", "Matching efficiency:MC/Anchor", cRange, "",
                          "QA.TPC.tpcItsMatchA;QA.TPC.tpcItsMatchC;QA.ITS.EffTOTPt02;QA.ITS.EffTOTPt1;QA.ITS.EffTOTPt10;TPC.Anchor.tpcItsMatchA;TPC.Anchor.tpcItsMatchC;ITS.Anchor.EffTOTPt02;ITS.Anchor.EffTOTPt1;ITS.Anchor.EffTOTPt10:run",
-                         "defaultCut", "figTemplateTRDPair", "figTemplateTRDPair", 1, 0.75, 6, kTRUE);
+                         "defaultCut", "figTemplateTRDPair", "figTemplateTRDPair", 1, 1.0, 6, kTRUE);
   trendingDraw->MakePlot(outputDir, "tpcItsMatch.png", "TPC - ITS Match", cRange, "",
                          "tpcItsMatchHighPtA;TPC.Anchor.tpcItsMatchHighPtA;tpcItsMatchHighPtC;TPC.Anchor.tpcItsMatchHighPtC:run",
-                         "defaultCut", "figTemplateTRDPair", "figTemplateTRDPair", 1, 0.75, 6, kTRUE);
+                         "defaultCut", "figTemplateTRDPair", "figTemplateTRDPair", 1, 1.0, 6, kTRUE);
   trendingDraw->MakePlot(outputDir, "matchingTPC-ITSEff_1.png", "Matching efficiency x", cRange, "",
                          "QA.TPC.tpcItsMatchA;QA.TPC.tpcItsMatchC;QA.ITS.EffoneSPDPt02;QA.ITS.EffoneSPDPt1;QA.ITS.EffoneSPDPt10;TPC.Anchor.tpcItsMatchA;TPC.Anchor.tpcItsMatchC;ITS.Anchor.EffoneSPDPt02;ITS.Anchor.EffoneSPDPt1;ITS.Anchor.EffoneSPDPt10:run",
-                         "defaultCut", "21;24;25;27;28;21;24;25;27;28", "2;2;2;figTemplateTRDPair;4;4;4", 1, 0.75, 6,
+                         "defaultCut", "21;24;25;27;28;21;24;25;27;28", "2;2;2;figTemplateTRDPair;4;4;4", 1, 1.0, 6,
                          kTRUE);
   trendingDraw->MakePlot(outputDir, "matchingTPC-ITSEff_2.png", "Matching efficiency y", cRange, "",
                          "QA.TPC.tpcItsMatchA/TPC.Anchor.tpcItsMatchA;QA.TPC.tpcItsMatchC/TPC.Anchor.tpcItsMatchC;QA.ITS.EffTOTPt02/ITS.Anchor.EffTOTPt02;QA.ITS.EffTOTPt1/ITS.Anchor.EffTOTPt1;QA.ITS.EffTOTPt10/ITS.Anchor.EffTOTPt10:run",
-                         "defaultCut", "21;24;25;27;28;21;24;25;27;28", "1;2;4;3;6;2;4;4;4;4;4", 1, 0.75, 6, kTRUE);
+                         "defaultCut", "21;24;25;27;28;21;24;25;27;28", "1;2;4;3;6;2;4;4;4;4;4", 1, 1.0, 6, kTRUE);
   trendingDraw->MakePlot(outputDir, "tpcItsMatch.png", "tpcItsMatch", cRange, "",
                          "tpcItsMatchA;TPC.Anchor.tpcItsMatchA;tpcItsMatchC;TPC.Anchor.tpcItsMatchC:run", "defaultCut",
-                         "figTemplateTRDPair", "figTemplateTRDPair", 1, 0.75, 6, kTRUE);
+                         "figTemplateTRDPair", "figTemplateTRDPair", 1, 1.0, 6, kTRUE);
   trendingDraw->MakePlot(outputDir, "tpcItsMatchHighPt.png", "tpcItsMatchHighPt", cRange, "",
                          "tpcItsMatchHighPtA;TPC.Anchor.tpcItsMatchHighPtA;tpcItsMatchHighPtC;TPC.Anchor.tpcItsMatchHighPtC:run",
-                         "defaultCut", "figTemplateTRDPair", "figTemplateTRDPair", 1, 0.75, 6, kTRUE);
+                         "defaultCut", "figTemplateTRDPair", "figTemplateTRDPair", 1, 1.0, 6, kTRUE);
   //
   // 4.) DCA  ($AliPhysic_SRC/PWGPP/TPC/macros/TPCQAWebpage/MCAnchor/tabDCA.html)
   //
   trendingDraw->MakePlot(outputDir, "dcarP0.png",
                          "HighPt: DCA_{xy} #sigma_{0} (#sigma^{2}=#sigma_{0}^{2}+#sigma_{1}^{2}/p_{T}^{2}) ", cRange,
                          "", "QA.TPC.dcarAP0;TPC.Anchor.dcarAP0;QA.TPC.dcarCP0;TPC.Anchor.dcarCP0:run", "defaultCut",
-                         "figTemplateTRDPair", "figTemplateTRDPair", 1, 0.75, 6, kTRUE);
+                         "figTemplateTRDPair", "figTemplateTRDPair", 1, 1.0, 6, kTRUE);
   trendingDraw->MakePlot(outputDir, "dcarP1.png",
                          "MS: DCA_{xy} #sigma_{1} (#sigma^{2}=#sigma_{0}^{2}+#sigma_{1}^{2}/p_{T}^{2})", cRange, "",
                          "QA.TPC.dcarAP1;TPC.Anchor.dcarAP1;QA.TPC.dcarCP1;TPC.Anchor.dcarCP1:run", "defaultCut",
-                         "figTemplateTRDPair", "figTemplateTRDPair", 1, 0.75, 6, kTRUE);
+                         "figTemplateTRDPair", "figTemplateTRDPair", 1, 1.0, 6, kTRUE);
   trendingDraw->MakePlot(0, "offsetR.png", "Offset dR", cRange, "",
                          "offsetdRA;TPC.Anchor.offsetdRA;offsetdRC;TPC.Anchor.offsetdRC:run", "defaultCut",
-                         "figTemplateTRDPair", "figTemplateTRDPair", 1, 0.75, 6, kTRUE);
+                         "figTemplateTRDPair", "figTemplateTRDPair", 1, 1.0, 6, kTRUE);
   trendingDraw->AppendBand(outputDir, "offsetdR.png",
                            "offsetdRA_RobustMean;offsetdRA_OutlierMin;offsetdRA_OutlierMax;offsetdRA_WarningMin;offsetdRA_WarningMax:run",
                            "defaultCut", "1;1;1;1;1,1;2;2;3;3", "1;1;1;1;1,1;figTemplateTRDPair", 1, 6, kTRUE);
   trendingDraw->MakePlot(outputDir, "dcar_A_0.png", "dcar_A_0", cRange, "",
                          "dcar_posA_0;TPC.Anchor.dcar_posA_0;dcar_negA_0;TPC.Anchor.dcar_negA_0:run", "defaultCut",
-                         "figTemplateTRDPair", "figTemplateTRDPair", 1, 0.75, 6, kTRUE);
+                         "figTemplateTRDPair", "figTemplateTRDPair", 1, 1.0, 6, kTRUE);
   trendingDraw->MakePlot(outputDir, "dcar_C_0.png", "dcar_C_0", cRange, "",
                          "dcar_posC_0;TPC.Anchor.dcar_posC_0;dcar_negC_0;TPC.Anchor.dcar_negC_0:run", "defaultCut",
-                         "figTemplateTRDPair", "figTemplateTRDPair", 1, 0.75, 6, kTRUE);
+                         "figTemplateTRDPair", "figTemplateTRDPair", 1, 1.0, 6, kTRUE);
   trendingDraw->MakePlot(outputDir, "dcar_C_1.png", "dcar_C_1", cRange, "",
                          "dcar_posC_1;TPC.Anchor.dcar_posC_1;dcar_negC_1;TPC.Anchor.dcar_negC_1:run", "defaultCut",
-                         "figTemplateTRDPair", "figTemplateTRDPair", 1, 0.75, 6, kTRUE);
+                         "figTemplateTRDPair", "figTemplateTRDPair", 1, 1.0, 6, kTRUE);
   trendingDraw->MakePlot(outputDir, "dcar_A_1.png", "dcar_A_1", cRange, "",
                          "dcar_posA_1;TPC.Anchor.dcar_posA_1;dcar_negA_1;TPC.Anchor.dcar_negA_1:run", "defaultCut",
-                         "figTemplateTRDPair", "figTemplateTRDPair", 1, 0.75, 6, kTRUE);
+                         "figTemplateTRDPair", "figTemplateTRDPair", 1, 1.0, 6, kTRUE);
   trendingDraw->MakePlot(outputDir, "dcar_A_2.png", "dcar_A_2", cRange, "",
                          "dcar_posA_2;TPC.Anchor.dcar_posA_2;dcar_negA_2;TPC.Anchor.dcar_negA_2:run", "defaultCut",
-                         "figTemplateTRDPair", "figTemplateTRDPair", 1, 0.75, 6, kTRUE);
+                         "figTemplateTRDPair", "figTemplateTRDPair", 1, 1.0, 6, kTRUE);
   trendingDraw->MakePlot(outputDir, "dcar_C_2.png", "dcar_C_2", cRange, "",
                          "dcar_posC_2;TPC.Anchor.dcar_posC_2;dcar_negC_2;TPC.Anchor.dcar_negC_2:run", "defaultCut",
-                         "figTemplateTRDPair", "figTemplateTRDPair", 1, 0.75, 6, kTRUE);
+                         "figTemplateTRDPair", "figTemplateTRDPair", 1, 1.0, 6, kTRUE);
   trendingDraw->MakePlot(outputDir, "dcaz_A_0.png", "dcaz_A_0", cRange, "",
                          "dcaz_posA_0;TPC.Anchor.dcaz_posA_0;dcaz_negA_0;TPC.Anchor.dcaz_negA_0:run", "defaultCut",
-                         "figTemplateTRDPair", "figTemplateTRDPair", 1, 0.75, 6, kTRUE);
+                         "figTemplateTRDPair", "figTemplateTRDPair", 1, 1.0, 6, kTRUE);
   trendingDraw->MakePlot(outputDir, "dcaz_C_0.png", "dcaz_C_0", cRange, "",
                          "dcaz_posC_0;TPC.Anchor.dcaz_posC_0;dcaz_negC_0;TPC.Anchor.dcaz_negC_0:run", "defaultCut",
-                         "figTemplateTRDPair", "figTemplateTRDPair", 1, 0.75, 6, kTRUE);
+                         "figTemplateTRDPair", "figTemplateTRDPair", 1, 1.0, 6, kTRUE);
   trendingDraw->MakePlot(outputDir, "dcaz_C_1.png", "dcaz_C_1", cRange, "",
                          "dcaz_posC_1;TPC.Anchor.dcaz_posC_1;dcaz_negC_1;TPC.Anchor.dcaz_negC_1:run", "defaultCut",
-                         "figTemplateTRDPair", "figTemplateTRDPair", 1, 0.75, 6, kTRUE);
+                         "figTemplateTRDPair", "figTemplateTRDPair", 1, 1.0, 6, kTRUE);
   trendingDraw->MakePlot(outputDir, "dcaz_A_1.png", "dcaz_A_1", cRange, "",
                          "dcaz_posA_1;TPC.Anchor.dcaz_posA_1;dcaz_negA_1;TPC.Anchor.dcaz_negA_1:run", "defaultCut",
-                         "figTemplateTRDPair", "figTemplateTRDPair", 1, 0.75, 6, kTRUE);
+                         "figTemplateTRDPair", "figTemplateTRDPair", 1, 1.0, 6, kTRUE);
   trendingDraw->MakePlot(outputDir, "dcaz_A_2.png", "dcaz_A_2", cRange, "",
                          "dcaz_posA_2;TPC.Anchor.dcaz_posA_2;dcaz_negA_2;TPC.Anchor.dcaz_negA_2:run", "defaultCut",
-                         "figTemplateTRDPair", "figTemplateTRDPair", 1, 0.75, 6, kTRUE);
+                         "figTemplateTRDPair", "figTemplateTRDPair", 1, 1.0, 6, kTRUE);
   trendingDraw->MakePlot(outputDir, "dcaz_C_2.png", "dcaz_C_2", cRange, "",
                          "dcaz_posC_2;TPC.Anchor.dcaz_posC_2;dcaz_negC_2;TPC.Anchor.dcaz_negC_2:run", "defaultCut",
-                         "figTemplateTRDPair", "figTemplateTRDPair", 1, 0.75, 6, kTRUE);
+                         "figTemplateTRDPair", "figTemplateTRDPair", 1, 1.0, 6, kTRUE);
   trendingDraw->MakePlot(outputDir, "dcarFitPar_comb4.png", "dcarFitpar_comb4", cRange, "",
                          "dcarFitpar_comb4;TPC.Anchor.dcarFitpar_comb4:run", "defaultCut", "figTemplateTRDPair",
-                         "figTemplateTRDPair", 1, 0.75, 6, kTRUE);
-  //trendingDraw->MakePlot(outputDir,"rmsDCAMultParMCtoAnchor.png","DCA Resolution mult due MS:MC/Anchor",cRange,"","dcarAP1;dcarCP1;TPC.Anchor.dcarAP1;TPC.Anchor.dcarCP1:run","defaultCut","figTemplateTRDPair","figTemplateTRDPair",1,0.75,6,kTRUE);
+                         "figTemplateTRDPair", 1, 1.0, 6, kTRUE);
+  //trendingDraw->MakePlot(outputDir,"rmsDCAMultParMCtoAnchor.png","DCA Resolution mult due MS:MC/Anchor",cRange,"","dcarAP1;dcarCP1;TPC.Anchor.dcarAP1;TPC.Anchor.dcarCP1:run","defaultCut","figTemplateTRDPair","figTemplateTRDPair",1,1.0,6,kTRUE);
   //
   // 5.) dEdx ($AliPhysic_SRC/PWGPP/TPC/macros/TPCQAWebpage/MCAnchor/tabdEdx.html)
   // TODO: Add sub-status lines
   trendingDraw->MakePlot(outputDir, "meanMIP.png", "<Mean dEdx_{MIP}> (a.u) ", cRange, "",
-                         "QA.TPC.meanMIP;TPC.Anchor.meanMIP:run", "defaultCut", "figTemplateTRDPair",
-                         "figTemplateTRDPair", 1, 0.75, 6, kTRUE);
+                         "QA.TPC.meanMIP;TPC.Anchor.meanMIP:run:fitMIP.fElements[4];TPC.Anchor.fitMIP.fElements[4]", "defaultCut", "figTemplateTRDPair",
+                         "figTemplateTRDPair", 1, 1.0, 6, kTRUE);
   trendingDraw->MakePlot(outputDir, "meanElectron.png", "<dEdx_{el}> (a.u) ", cRange, "",
-                         "QA.TPC.meanMIPele;TPC.Anchor.meanMIPele:run", "defaultCut", "figTemplateTRDPair",
-                         "figTemplateTRDPair", 1, 0.75, 6, kTRUE);
+                         "QA.TPC.meanMIPele;TPC.Anchor.meanMIPele:run:fitElectron.fElements[4];TPC.Anchor.fitElectron.fElements[4]", "defaultCut", "figTemplateTRDPair",
+                         "figTemplateTRDPair", 1, 1.0, 6, kTRUE);
   trendingDraw->MakePlot(outputDir, "electronMIPSeparation.png", "<dEdx_{el}>-<dEdx_{MIP}>", cRange, "",
                          "QA.TPC.electroMIPSeparation;TPC.Anchor.electroMIPSeparation:run", "defaultCut",
-                         "figTemplateTRDPair", "figTemplateTRDPair", 1, 0.75, 6, kTRUE);
+                         "figTemplateTRDPair", "figTemplateTRDPair", 1, 1.0, 6, kTRUE);
   trendingDraw->MakePlot(outputDir, "electronMIPRatio.png", "<dEdx_{el}>/<dEdx_{MIP}>", cRange, "",
                          "QA.TPC.meanMIPele/QA.TPC.meanMIP;TPC.Anchor.meanMIPele/TPC.Anchor.meanMIP:run", "defaultCut",
-                         "figTemplateTRDPair", "figTemplateTRDPair", 1, 0.75, 6, kTRUE);
+                         "figTemplateTRDPair", "figTemplateTRDPair", 1, 1.0, 6, kTRUE);
   trendingDraw->MakePlot(outputDir, "MIPattachSlope.png", "MIPattachSlope", cRange, "",
                          "MIPattachSlopeA;TPC.Anchor.MIPattachSlopeA;MIPattachSlopeC;TPC.Anchor.MIPattachSlopeC:run",
-                         "defaultCut", "figTemplateTRDPair", "figTemplateTRDPair", 1, 0.75, 4, kTRUE);
+                         "defaultCut", "figTemplateTRDPair", "figTemplateTRDPair", 1, 1.0, 4, kTRUE);
   trendingDraw->MakePlot(outputDir, "MIPattachSlopeA.png", "MIPattachSlopeA", cRange, "",
                          "MIPattachSlopeA;TPC.Anchor.MIPattachSlopeA:run", "defaultCut", "figTemplateTRDPair",
-                         "figTemplateTRDPair", 1, 0.75, 4, kTRUE);
+                         "figTemplateTRDPair", 1, 1.0, 4, kTRUE);
   trendingDraw->MakePlot(outputDir, "MIPattachSlopeC.png", "MIPattachSlopeC", cRange, "",
                          "MIPattachSlopeC;TPC.Anchor.MIPattachSlopeC:run", "defaultCut", "figTemplateTRDPair",
-                         "figTemplateTRDPair", 1, 0.75, 4, kTRUE);
+                         "figTemplateTRDPair", 1, 1.0, 4, kTRUE);
   trendingDraw->MakePlot(outputDir, "resolutionMIP.png", "resolutionMIP", cRange, "",
                          "QA.TPC.resolutionMIP;TPC.Anchor.resolutionMIP:run", "defaultCut", "figTemplateTRDPair",
-                         "figTemplateTRDPair", 1, 0.75, 4, kTRUE);
+                         "figTemplateTRDPair", 1, 1.0, 4, kTRUE);
   trendingDraw->MakePlot(outputDir, "resolutionMIPele.png", "resolutionMIPele", cRange, "",
                          "QA.TPC.resolutionMIPele;TPC.Anchor.resolutionMIPele:run", "defaultCut", "figTemplateTRDPair",
-                         "figTemplateTRDPair", 1, 0.75, 4, kTRUE);  
-  
-  
-  queryString = "QA.TPC.meanMIP_Warning*1.1;QA.TPC.resolutionMIP_Warning*1.2;QA.TPC.MIPattachSlopeA_Warning*1.3;";
-  queryString += "QA.TPC.MIPattachSlopeC_Warning*1.4;QA.TPC.meanMIPele_Warning*1.5;QA.TPC.resolutionMIPele_Warning*1.6;QA.TPC.electroMIPSeparation_Warning*1.7:run";
-  trendingDraw->MakePlot(outputDir, "dEdxStatus.png", "dEdx status", cRange, "", queryString.Data(), "defaultCut",
-                         "figTemplateTRDPair", "figTemplateTRDPair", 1, 0.75, 6, kTRUE);
+                         "figTemplateTRDPair", 1, 1.0, 4, kTRUE);
 
 
   trendingDraw->MakePlot(outputDir, "mipToEleSeparation .png", "meanMIPele/meanMIP", cRange, "",
                          "meanMIPele/meanMIP;TPC.Anchor.meanMIPele/TPC.Anchor.meanMIP:run", "defaultCut", "figTemplateTRDPair",
-                         "figTemplateTRDPair", 1, 0.75, 6, kTRUE);
+                         "figTemplateTRDPair", 1, 1.0, 6, kTRUE);
   trendingDraw->AppendBand(outputDir,"mipToEleSeparationNEW.png","meanMIPele_RobustMean/meanMIP_RobustMean;TPC.Anchor.meanMIPele_RobustMean/TPC.Anchor.meanMIP_RobustMean:run", "defaultCut", "figTemplateTRDPair",
-                         "figTemplateTRDPair", kTRUE, 0.75, kTRUE);
+                         "figTemplateTRDPair", kTRUE, 1.0, kTRUE);
 
 
   //
@@ -478,90 +495,42 @@ void MakeReport(const char *outputDir) {
   //
   trendingDraw->MakePlot(outputDir, "offsetdZ.png", "offsetdZ", cRange, "",
                          "offsetdZA;TPC.Anchor.offsetdZA;offsetdZC;TPC.Anchor.offsetdZC:run", "defaultCut",
-                         "figTemplateTRDPair", "figTemplateTRDPair", 1, 0.75, 6, kTRUE);
+                         "figTemplateTRDPair", "figTemplateTRDPair", 1, 1.0, 6, kTRUE);
   trendingDraw->MakePlot(outputDir, "offsetd_comb4.png", "offsetd_comb4", cRange, "",
                          "offsetd_comb4;TPC.Anchor.offsetd_comb4:run", "defaultCut", "figTemplateTRDPair",
-                         "figTemplateTRDPair", 1, 0.75, 6, kTRUE);
+                         "figTemplateTRDPair", 1, 1.0, 6, kTRUE);
   trendingDraw->MakePlot(outputDir, "lambdaPull.png", "lambdaPull", cRange, "", "lambdaPull;TPC.Anchor.lambdaPull:run",
-                         "defaultCut", "figTemplateTRDPair", "figTemplateTRDPair", 1, 0.75, 6, kTRUE);
+                         "defaultCut", "figTemplateTRDPair", "figTemplateTRDPair", 1, 1.0, 6, kTRUE);
   trendingDraw->MakePlot(outputDir, "tpcConstrainPhiC.png", "tpcConstrainPhiC", cRange, "",
                          "tpcConstrainPhiC;TPC.Anchor.tpcConstrainPhiC:run", "defaultCut", "figTemplateTRDPair",
-                         "figTemplateTRDPair", 1, 0.75, 6, kTRUE);
+                         "figTemplateTRDPair", 1, 1.0, 6, kTRUE);
   trendingDraw->MakePlot(outputDir, "yPull.png", "yPull", cRange, "", "yPull;TPC.Anchor.yPull:run", "defaultCut",
-                         "figTemplateTRDPair", "figTemplateTRDPair", 1, 0.75, 6, kTRUE);
+                         "figTemplateTRDPair", "figTemplateTRDPair", 1, 1.0, 6, kTRUE);
   trendingDraw->MakePlot(outputDir, "zPull.png", "zPull", cRange, "", "zPull;TPC.Anchor.zPull:run", "defaultCut",
-                         "figTemplateTRDPair", "figTemplateTRDPair", 1, 0.75, 6, kTRUE);
+                         "figTemplateTRDPair", "figTemplateTRDPair", 1, 1.0, 6, kTRUE);
   trendingDraw->MakePlot(outputDir, "itsTpcPulls_comb4.png", "itsTpcPulls_comb4", cRange, "",
                          "itsTpcPulls_comb4;TPC.Anchor.itsTpcPulls_comb4:run", "defaultCut", "figTemplateTRDPair",
-                         "figTemplateTRDPair", 1, 0.75, 6, kTRUE);
+                         "figTemplateTRDPair", 1, 1.0, 6, kTRUE);
   trendingDraw->MakePlot(outputDir, "tpcConstrainPhi.png", "tpcConstrainPhi", cRange, "",
                          "tpcConstrainPhiA;TPC.Anchor.tpcConstrainPhiA;tpcConstrainPhiC;TPC.Anchor.tpcConstrainPhiC:run",
-                         "defaultCut", "figTemplateTRDPair", "figTemplateTRDPair", 1, 0.75, 6, kTRUE);
+                         "defaultCut", "figTemplateTRDPair", "figTemplateTRDPair", 1, 1.0, 6, kTRUE);
   trendingDraw->MakePlot(outputDir, "tpcConstrainPhi_comb2.png", "tpcConstrainPhi_comb2", cRange, "",
                          "tpcConstrainPhi_comb2;TPC.Anchor.tpcConstrainPhi_comb2:run", "defaultCut",
-                         "figTemplateTRDPair", "figTemplateTRDPair", 1, 0.75, 6, kTRUE);
+                         "figTemplateTRDPair", "figTemplateTRDPair", 1, 1.0, 6, kTRUE);
   trendingDraw->MakePlot(outputDir, "deltaPt.png", "deltaPt", cRange, "", "deltaPt;TPC.Anchor.deltaPt:run",
-                         "defaultCut", "figTemplateTRDPair", "figTemplateTRDPair", 1, 0.75, 6, kTRUE);
+                         "defaultCut", "figTemplateTRDPair", "figTemplateTRDPair", 1, 1.0, 6, kTRUE);
   trendingDraw->MakePlot(outputDir, "deltaPtAC.png", "deltaPtAC", cRange, "",
                          "deltaPtA;TPC.Anchor.deltaPtA;deltaPtC;TPC.Anchor.deltaPtC:run", "defaultCut",
-                         "figTemplateTRDPair", "figTemplateTRDPair", 1, 0.75, 6, kTRUE);
-
-
-  // Status plots
-  TString statusExpression,statusTitle;
-
-  // DCA status
-  statusExpression="absDiff.QA.TPC.dcarAP0;absDiff.QA.TPC.dcarCP0;absDiff.QA.TPC.dcarAP1;absDiff.QA.TPC.dcarCP1;";
-  statusTitle="absDiff.QA.TPC.dcarAP0;absDiff.QA.TPC.dcarCP0;absDiff.QA.TPC.dcarAP1;absDiff.QA.TPC.dcarCP1;";
-  statusExpression+="dcarAP0;dcarAP1;dcarCP0;dcarCP1;dcar_posA_0;dcar_posA_1;dcar_posA_2;dcar_posC_0;dcar_posC_1;dcar_posC_2;";
-  statusTitle+="dcarAP0;dcarAP1;dcarCP0;dcarCP1;dcar_posA_0;dcar_posA_1;dcar_posA_2;dcar_posC_0;dcar_posC_1;dcar_posC_2;";
-  statusExpression+="TPC.Anchor.dcarAP0;TPC.Anchor.dcarAP1;TPC.Anchor.dcarCP0;TPC.Anchor.dcarCP1;TPC.Anchor.dcar_posA_0;TPC.Anchor.dcar_posA_1;TPC.Anchor.dcar_posA_2;TPC.Anchor.dcar_posC_0;TPC.Anchor.dcar_posC_1;TPC.Anchor.dcar_posC_2;run";
-  statusTitle+="TPC.Anchor.dcarAP0;TPC.Anchor.dcarAP1;TPC.Anchor.dcarCP0;TPC.Anchor.dcarCP1;TPC.Anchor.dcar_posA_0;TPC.Anchor.dcar_posA_1;TPC.Anchor.dcar_posA_2;TPC.Anchor.dcar_posC_0;TPC.Anchor.dcar_posC_1;TPC.Anchor.dcar_posC_2";
-  trendingDraw->MakeStatusPlot("./", "dcarStatus.png", statusExpression, statusTitle, "defaultCut",sCriteria);
-
+                         "figTemplateTRDPair", "figTemplateTRDPair", 1, 1.0, 6, kTRUE);
   //
   trendingDraw->fWorkingCanvas->Clear();
   trendingDraw->fWorkingCanvas->Print(TString(outputDir) + "/report.pdf]", "pdf");
 }
 
-///
-void MakeDCAStatusPlot(){  // Example
-   // Status plots
-  TString statusExpression,statusTitle;
-  // DCA status
-  statusExpression="absDiff.QA.TPC.dcarAP0;absDiff.QA.TPC.dcarCP0;absDiff.QA.TPC.dcarAP1;absDiff.QA.TPC.dcarCP1;";
-  statusTitle="#Delta^{MC-Anchor}_{dcarAP0};#Delta^{MC-Anchor}_{dcarCP0};#Delta^{MC-Anchor}_{dcarAP1};#Delta^{MC-Anchor}_{dcarCP1};";
-  statusExpression+="ratio.dcarAP0;ratio.dcarCP0;ratio.dcarAP1;ratio.dcarCP1;";
-  statusTitle+="#Delta^{MC/Anchor-#mu}_{dcarAP0};#Delta^{MC/Anchor-#mu}_{dcarCP0};#Delta^{MC/Anchor-#mu}_{dcarAP1};#Delta^{MC/Anchor-#mu}_{dcarCP1};";
-  statusExpression+="dcarAP0;dcarAP1;dcarCP0;dcarCP1;";
-  statusTitle+="MC_{dcarAP0};MC_{dcarAP1};MC_{dcarCP0};MC_{dcarCP1};";
-  statusExpression+="TPC.Anchor.dcarAP0;TPC.Anchor.dcarAP1;TPC.Anchor.dcarCP0;TPC.Anchor.dcarCP1;";
-  statusTitle+="Anchor_{dcarAP0};Anchor_{dcarAP1};Anchor_{dcarCP0};Anchor_{dcarCP1};";
-  statusExpression+="run;";
-  trendingDraw->MakeStatusPlot("./", "dcarStatus.png", statusExpression.Data(), statusTitle.Data(), "defaultCut",sCriteria);
-}
-
-///
-void MakedEdxStatusPlot() {  //TODO - Sebastian
-  // To get the list of warning for standard QA treeMC->GetListOfAliases()->Print("","*MIP*arning")
-  // Status plots
-  TString statusExpression,statusTitle;
-  // MIP status
-
-  statusExpression="ratio.meanMIP;ratio.resolutionMIP;diff0.MIPattachSlopeA;diff0.MIPattachSlopeC;diff0.resolutionMIPele;diff0.meanMIPele;absDiff.QA.TPC.meanMIP;absDiff.QA.TPC.resolutionMIP;absDiff.QA.TPC.MIPattachSlopeA;absDiff.QA.TPC.MIPattachSlopeC;";
-  statusTitle="ratio-meanMIP;ratio-resolutionMIP;diff0.MIPattachSlopeA;diff0.MIPattachSlopeC;diff0.resolutionMIPele;diff0.meanMIPele;#Delta^{MC/Anchor-#mu}_{meanMIP};#Delta^{MC/Anchor-#mu}_{resolutionMIP};#Delta^{MC/Anchor-#mu}_{MIPattachSlopeA};#Delta^{MC/Anchor-#mu}_{MIPattachSlopeC};";
-  statusExpression+="run;";
-  trendingDraw->MakeStatusPlot("./", "dEdxStatus.png", statusExpression.Data(), statusTitle.Data(), "defaultCut",sCriteria);
-
-}
 
 
-/// TODO - use html hyperlinks + formatting
-/// TODO  - bug fix in the html
 /// TODO - alias for the html table names, hints
-/// TODO - table name and hints   metadata tag ".thead", ".tooltip"
 /// TODO - fix formatting in AliTreeFormulaF- in case of missing entry write undefined
-///
 /// TODO - tooltip - explaining status bits (detector mask, resp. status mask)
 void makeHtml() {
   //
@@ -582,7 +551,7 @@ void makeHtmlDCA(){
   TStatToolkit::AddMetadata(treeMC, "dcarAP0.html", (pathMC+"dca_and_phi.png\">%2.4f{dcarAP0}</a>").Data());
   TStatToolkit::AddMetadata(treeMC, "TPC.Anchor.dcarAP0.html", (pathData+"dca_and_phi.png\">%2.4f{TPC.Anchor.dcarAP0}</a>").Data());
   TStatToolkit::AddMetadata(treeMC, "dcarCP0.html", (pathMC+"dca_and_phi.png\">%2.4f{dcarCP0}</a>").Data());
-  TStatToolkit::AddMetadata(treeMC, "TPC.Anchor.dcarAP0.html", (pathData+"dca_and_phi.png\">%2.4f{TPC.Anchor.dcarCP0}</a>").Data());
+  TStatToolkit::AddMetadata(treeMC, "TPC.Anchor.dcarCP0.html", (pathData+"dca_and_phi.png\">%2.4f{TPC.Anchor.dcarCP0}</a>").Data());
 
   TStatToolkit::AddMetadata(treeMC, "dcarAP0.thead", "&sigma;<sup>A</sup><sub>MC DCA<sub>1/pt=0</sub></sub> (cm)");
   TStatToolkit::AddMetadata(treeMC, "dcarAP0.tooltip", "DCA (r&phi;) at infinite pt");
@@ -592,8 +561,7 @@ void makeHtmlDCA(){
   TStatToolkit::AddMetadata(treeMC, "TPC.Anchor.dcarAP0.tooltip", "DCA (r&phi;) at infinite pt");
   TStatToolkit::AddMetadata(treeMC, "TPC.Anchor.dcarCP0.thead", "&sigma;<sup>C</sup><sub>Anchor DCA<sub>1/pt=0</sub></sub> (cm)");
   TStatToolkit::AddMetadata(treeMC, "TPC.Anchor.dcarCP0.tooltip", "DCA (r&phi;) at infinite pt");
-  TStatToolkit::AddMetadata(treeMC, "TPC.Anchor.dcarCP0.html", "<a href=\"http://aliqatpc.web.cern.ch/aliqatpc/data/%d{year}/%s{TPC.Anchor.period.GetName()}/passMC/000%d{run}/dca_and_phi.png\">%2.2f{dcarCP0}</a>");
-  //
+   //
   TStatToolkit::AddMetadata(treeMC, "dcar_MaskWarning.thead", "DCA<sub>MCWarning</sub></sub>");
   TStatToolkit::AddMetadata(treeMC, "dcar_MaskWarning.tooltip", "DCAr status");
   TStatToolkit::AddMetadata(treeMC, "dcar_MaskWarning.html","<a href=\"dcarStatusMC.png\">%x{dcar_MaskWarning}</a>");
@@ -664,12 +632,26 @@ void MakeStatusBitMask(TString statusString){
 
 
 void MakeStatusPlots(){
-  MakeStatusPlot("./", "dcarStatusMC.png","dcar_Warning","1");
-  MakeStatusPlot("./", "dcarStatusAnchor.png","dcar_Warning","1","QA.TPC");
-  MakeStatusPlot("./", "dcarStatusMCToAnchor.png","mcAnchor.dcarResol_Warning","1");
-  MakeStatusPlot("./", "itsEffStatusMCToAnchor.png","mcAnchor.itsEffStatus_Warning","1");
-  MakeStatusPlot("./", "dEdxStatusMCToAnchor.png","mcAnchor.dEdx_Warning","1");
-  MakeStatusPlot("./", "nclStatusMCToAnchor.png","mcAnchor.ncl_Warning","1");
+  try {
+    MakeStatusPlot("./", "dcarStatusMC.png", "dcar_Warning", "1");
+    MakeStatusPlot("./", "dcarStatusAnchor.png", "dcar_Warning", "1", "TPC.Anchor");
+    MakeStatusPlot("./", "dcarStatusMCToAnchor.png", "mcAnchor.dcarResol_Warning", "1");
+
+    MakeStatusPlot("./", "dcazStatusMC.png", "dcaz_Warning", "1");
+    MakeStatusPlot("./", "dcazStatusAnchor.png", "dcaz_Warning", "1", "TPC.Anchor");
+//    MakeStatusPlot("./", "dcazStatusMCToAnchor.png", "mcAnchor.dcazResol_Warning", "1");
+
+    MakeStatusPlot("./", "itsEffStatusMCToAnchor.png", "mcAnchor.itsEffStatus_Warning", "1");
+    //
+    MakeStatusPlot("./", "dEdxStatusMC.png", "MIPquality_Warning", "1");
+    MakeStatusPlot("./", "dEdxStatusAnchor.png", "MIPquality_Warning", "1","TPC.Anchor");
+    MakeStatusPlot("./", "dEdxStatusMCToAnchor.png", "mcAnchor.dEdx_Warning", "1");
+
+    MakeStatusPlot("./", "nclStatusMCToAnchor.png", "mcAnchor.ncl_Warning", "1");
+  }
+  catch (const std::invalid_argument& ia) {
+	  std::cerr << "Invalid argument: " << ia.what() << '\n';
+  }
 }
 
 void MakeStatusBitMasks(){
@@ -678,27 +660,75 @@ void MakeStatusBitMasks(){
 }
 
 
-/// html useful links
-///  - Monalisa - raw run details query - used on mouse over
-///     * http://alimonitor.cern.ch/raw/rawrun_details.jsp?run=280897
-///  - multi-line tooltip using title tag  - can be used for bitmask explanation
-///      http://jsfiddle.net/rzea/vsp6840b/3/
-///  usage of datalist:
-///   -https://www.w3schools.com/tags/tryit.asp?filename=tryhtml5_datalist
-///   https://www.w3schools.com/tags/tryit.asp?filename=tryhtml5_details
+/// addHtmlLink - helepr function used in the  MakeJSROOTHTML
+/// \param pFile
+/// \param title
+/// \param prefix
+/// \param items
+void addHtmlLink(FILE * pFile, TString title,  TString prefix, TString items){
+  fprintf(pFile, "<b>%s</b>",title.Data());
+  fprintf (pFile, "<a href=\"%s&%s&layout=tabs\">[all,</a>",prefix.Data(),items.Data());
+  fprintf (pFile, "<a href=\"%s&%s&layout=collapsible&nobrowser\">col,</a>",prefix.Data(),items.Data());
+  fprintf (pFile, "<a href=\"%s&%s&layout=tabs&nobrowser\">tabs,</a>",prefix.Data(),items.Data());
+  fprintf (pFile, "<a href=\"%s&%s&layout=flex&nobrowser\">flex]</a>",prefix.Data(),items.Data());
+  fprintf(pFile, "<br>");
+}
+
+/*!
+ * MakeJSROOTHTML make hsroot html page - see alose READMEjsrootQA.md
+ * * plots from the report.root file divided into categories using regular exression
+ * @param prefix      - html prefix for jsroot see example testing jsroot on local node localhost
+ * @param outputName  - name of the output html file
+\code
+    TString outputName="jsrootMCAnchor.html";
+    TString prefix="http://localhost:90/data/jsroot/index.htm?file=http://localhost:90/data/alice-tpc-notes/JIRA/ATO-83/test/report.root"
+    MakeJSROOTHTML(prefix,outputName);
+\endcode
+*/
+void MakeJSROOTHTML(TString prefix, TString outputName){
+  TString description="";
+  TString figList="";
+  TString items;
+  TFile *fReport= TFile::Open("report.root");
+  FILE * pFile;
+  pFile = fopen (outputName.Data(),"w");
+  //
+  items=ArrayNameToString(fReport->GetListOfKeys(),".*tatus.*",","); addHtmlLink(pFile,"Status", prefix, Form("items=[%s]",items.Data()));
+  items=ArrayNameToString(fReport->GetListOfKeys(),"(.*vent.*|.*Mult.*|.*Vert.*)",","); addHtmlLink(pFile,"General", prefix, Form("items=[%s]",items.Data()));
+  items=ArrayNameToString(fReport->GetListOfKeys(),"ncl.*",","); addHtmlLink(pFile,"Ncl status", prefix, Form("items=[%s]",items.Data()));
+  items=ArrayNameToString(fReport->GetListOfKeys(),"dcar.*",","); addHtmlLink(pFile,"DCAr status", prefix, Form("items=[%s]",items.Data()));
+  items=ArrayNameToString(fReport->GetListOfKeys(),"dcaz.*",","); addHtmlLink(pFile,"DCAz status", prefix, Form("items=[%s]",items.Data()));
+  items=ArrayNameToString(fReport->GetListOfKeys(),".*Eff.*",","); addHtmlLink(pFile,"Efficiency", prefix, Form("items=[%s]",items.Data()));
+  items=ArrayNameToString(fReport->GetListOfKeys(),"(.*MIP.*|.*dEdx.*)",","); addHtmlLink(pFile,"dEdx", prefix, Form("items=[%s]",items.Data()));
+  fclose (pFile);
+}
 
 
-/// TODO - automatic decomposition status aliases
+/// DONE  - automatic decomposition status aliases
+/// DONE  - for the status graphs with friend - we need to use run list for other status
+///       - RebinMultiGraph should keep offsets
+/// DONE  (TO COMMIT) - assign proper names to generated graphs
+/// DONE  (TO COMMIT) - use anchor names in the legend
+/// DONE - FIX  Draw MakeMultiGraph drawing graph 2 times - Fix in TStatToolkit///
+/// TODO - (Ongoing) problem with the markers and y axis labels in JSROOT - trying to avoid it increasing marker size from0.75->1. - did not help
+///      - way around avoid marker style 20 - dow not work for status bar
+///      - jsroot responsible contacted https://alice.its.cern.ch/jira/browse/ATO-393
+
+
 /// TODO - get form logbook detailed per run information  (put into html metadata string)
 /// TODO - Ful name of the alias expression (maybe recursive)
 /// TODO - add html preview for table header
 ///          tableHeader, tableHeader_Tooltip, tableHeader_Title, tableHeader_html
-/// TODO - DONE - for the status graphs with friend - we need to use run list for other status -  rebin sparse graph destroys x offset  - to fix
-///      - RebinMultiGraph should keep offsets
+
 /// TODO - Graph rebin to be extended to X,Y,Z
 /// TODO - tooltip/title- to make bullets using UTF printing
-//  
-/// TODO - make dEdx full QA (Sebastian)
+///
+/// TODO  - make dEdx full QA (Sebastian)
 ///      - all status(MC/Anchor, MC, Anchor) plots
 ///      - add them to web page = modifying tabdEdx.html
 ///      - add plot for all variables contributing to alarms
+/// TOD0  - dcar, dcaz - including fits (currently only resolution)
+///       - TPC-ITS matching
+///
+/// TODO - add calibration trending plots and alarms (Marian)
+///      - html
