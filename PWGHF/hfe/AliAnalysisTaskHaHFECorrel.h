@@ -72,7 +72,7 @@ public:
     void CorrelateHadron(TObjArray* RedTracksHFE,  const AliAODVertex* pVtx, Int_t nMother, Double_t listMother[], Float_t mult);
     void CorrelateHadronMixedEvent(AliAODTrack* Htrack, Float_t mult, Float_t zVtx);
 
-    void CorrelateWithHadrons(AliAODTrack* TriggerTrack, const AliAODVertex* pVtx, Int_t nMother, Double_t listMother[], Bool_t FillHadron, Bool_t FillLP, Bool_t(* NonElecIsTrigger)[15], Double_t *NonElecIsTriggerPt, Int_t NumElectronsInEvent); 
+    void CorrelateWithHadrons(AliAODTrack* TriggerTrack, const AliAODVertex* pVtx, Int_t nMother, Double_t listMother[], Bool_t FillHadron, Bool_t FillLP,Bool_t** NonElecIsTrigger, Double_t *NonElecIsTriggerPt, Int_t NumElectronsInEvent); 
 
 
     //********************MC
