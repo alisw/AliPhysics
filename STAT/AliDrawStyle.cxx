@@ -354,7 +354,7 @@ void  AliDrawStyle::RegisterDefaultMarkers(){
   }
   // style inspired by TRD performance paper
   Int_t colorsTRD[12]={0};
-  const Int_t markersTRD[]    = {kOpenCircle,kFullCircle, kOpenSquare,kFullSquare, kOpenStar,kFullStar, kOpenDiamond,kFullDiamond, kOpenCross,kFullCross };
+  const Int_t markersTRD[]    = {kOpenSquare,kFullSquare, kOpenStar,kFullStar, kOpenCircle,kFullCircle, kOpenDiamond,kFullDiamond, kOpenCross,kFullCross };
   const Float_t markerTRDSize[]    = {1,1, 0.9,0.9, 1.4,1.4, 1.1,1.1, 1.2,1.2 };
   colorsTRD[0]=TColor::GetColor("#0000DD");
   colorsTRD[1]=TColor::GetColor("#00EE00");

@@ -24,7 +24,8 @@ void AliDrawStyleTest_Attributes();
 void AliDrawStyleTest_GetIntValues();
 void AliDrawStyleTest_GetFloatValues();
 //void AliDrawStyleTest_CSSReadWrite();
-Bool_t AliDrawStyleTest_IsSelected();
+void AliDrawStyleTest_IsSelected();
+void AliDrawStyleTest_GetProperty();
 
 void AliDrawStyleTest(){
   AliDrawStyleTest_StyleArray();
@@ -33,6 +34,7 @@ void AliDrawStyleTest(){
   AliDrawStyleTest_GetFloatValues();
 //  AliDrawStyleTest_CSSReadWrite();
   AliDrawStyleTest_IsSelected();
+  AliDrawStyleTest_GetProperty();
 }
 
 /// Test acces to the style indexed array
@@ -191,7 +193,7 @@ void AliDrawStyleTest_GetFloatValues(){
 /// \param className
 /// \param attributeName
 /// \return
-Bool_t  AliDrawStyleTest_IsSelected(){//TString selector, TString className, TString attributeName){
+void  AliDrawStyleTest_IsSelected(){//TString selector, TString className, TString attributeName){
   TString selectors = "TH1.Status#obj1, TH1.Warning#obj1, TH1.Warning#obj3 \tTGraph#obj1, TGraph.Status#TPC.QA.dcar_posA_1 \tTGraph.Warning#TPC.QA.dcar_posA_2 \tTF1.Status, .Status#obj1, #obj3";
   std::cout << selectors << std::endl;
   if (AliDrawStyle::IsSelected(selectors, "TF1", "Status", "anyObject")){
@@ -235,14 +237,32 @@ Bool_t  AliDrawStyleTest_IsSelected(){//TString selector, TString className, TSt
 
 }
 
-Bool_t  AliDrawStyleTest_GetProperty(){
+void  AliDrawStyleTest_GetProperty(){
   AliDrawStyle::SetCssStyle("alirootTestStyle.css",AliDrawStyle::ReadCSSFile("$AliRoot_SRC/STAT/test/alirootTestStyle.css",0));
-  if (AliDrawStyle::GetProperty("alirootTestStyle.css","marker_size", "TGraph", "Status", "TPC.QA.dcar_posA_1") == "   1,2,3,4"){
+  if (AliDrawStyle::GetProperty("alirootTestStyle.css","marker_size", "TGraph", "Status", "TPC.QA.dcar_posA_1") == "1,2,3,4"){
     ::Info("AliDrawStyleTest","AliDrawStyle::GetProperty(\"alirootTestStyle.css\",\"marker_size\", \"TGraph\", \"Status\", \"TPC.QA.dcar_posA_1\")- IsOK");
   }else{
     ::Error("AliDrawStyleTest","AliDrawStyle::GetProperty(\"alirootTestStyle.css\",\"marker_size\", \"TGraph\", \"Status\", \"TPC.QA.dcar_posA_1\")- FAILED");
   }
-
-
+  if (AliDrawStyle::GetProperty("alirootTestStyle.css","marker_size", "TF1", "Status", "obj4") == "17,18,19,20"){
+    ::Info("AliDrawStyleTest","AliDrawStyle::GetProperty(\"alirootTestStyle.css\",\"marker_size\", \"TF1\", \"Status\", \"obj4\")- IsOK");
+  }else{
+    ::Error("AliDrawStyleTest","AliDrawStyle::GetProperty(\"alirootTestStyle.css\",\"marker_size\", \"TF1\", \"Status\", \"obj4\")- FAILED");
+  }
+  if (AliDrawStyle::GetProperty("alirootTestStyle.css","line_color", "TGraphErrors", "Warning", "asdasobj56") == "41,42,43,44"){
+    ::Info("AliDrawStyleTest","AliDrawStyle::GetProperty(\"alirootTestStyle.css\",\"line_color\", \"TGraphErrors\", \"Warning\", \"asdasobj56\")- IsOK");
+  }else{
+    ::Error("AliDrawStyleTest","AliDrawStyle::GetProperty(\"alirootTestStyle.css\",\"line_color\", \"TGraphErrors\", \"Warning\", \"asdasobj56\")- FAILED");
+  }
+  if (AliDrawStyle::GetProperty("alirootTestStyle.css","marker_color", "SomeNotExistingClass", "SomeNotExistingStatus", "obj3") == "21,22,23,24"){
+    ::Info("AliDrawStyleTest","AliDrawStyle::GetProperty(\"alirootTestStyle.css\",\"marker_color\", \"SomeNotExistingClass\", \"SomeNotExistingStatus\", \"obj3\")- IsOK");
+  }else{
+    ::Error("AliDrawStyleTest","AliDrawStyle::GetProperty(\"alirootTestStyle.css\",\"marker_color\", \"SomeNotExistingClass\", \"SomeNotExistingStatus\", \"obj3\")- FAILED");
+  }
+  if (AliDrawStyle::GetProperty("alirootTestStyle.css","line_color", "TH1", "Warning", "obj1") == "57,58,59,60"){
+    ::Info("AliDrawStyleTest","AliDrawStyle::GetProperty(\"alirootTestStyle.css\",\"line_color\", \"TH1\", \"Warning\", \"obj1\")- IsOK");
+  }else{
+    ::Error("AliDrawStyleTest","AliDrawStyle::GetProperty(\"alirootTestStyle.css\",\"line_color\", \"TH1\", \"Warning\", \"obj1\")- FAILED");
+  }
 
 }
