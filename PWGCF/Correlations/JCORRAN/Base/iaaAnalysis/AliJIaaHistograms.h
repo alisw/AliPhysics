@@ -52,10 +52,10 @@ public:
 	// 1D correlation histograms
 	//==================================================
 
-	AliJTH1D fhDphiAssoc;
-	AliJTH1D fhDEtaNear;
-	AliJTH1D fhDEtaNearM;
-	AliJTH1D fhDetaNearMixAcceptance;   // Mixed event uncorrected deltaEta histogram for acceptance correction
+    //AliJTH1D fhDphiAssoc;
+    //AliJTH1D fhDEtaNear;
+    //AliJTH1D fhDEtaNearM;
+    //AliJTH1D fhDetaNearMixAcceptance;   // Mixed event uncorrected deltaEta histogram for acceptance correction
 
 
 	//==================================================

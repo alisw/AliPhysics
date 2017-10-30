@@ -8,7 +8,7 @@
 #include "../AliJConst.h"
 #include <TH1D.h>
 
-// jtAnalysis main class
+// iaaAnalysis main class
 // used in local and grid execution
 
 class AliJCard;

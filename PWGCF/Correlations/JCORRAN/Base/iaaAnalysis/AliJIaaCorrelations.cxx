@@ -68,7 +68,6 @@ AliJIaaCorrelations::AliJIaaCorrelations( AliJCard *cardIn, AliJIaaHistograms *h
     fHelicity = fcard->Get("Helicity"); // 0: all, 1: like-sign, -1: opposite-sign
     fUseTrackMergingCorr = fcard->Get("UseTrackMergingCorr"); // correct for track merging (1) or not (0)
     fTrackMergeCut = fcard->Get("TrackMergeCut"); // minimum of acceptable track separation
-
 }
 
 AliJIaaCorrelations::AliJIaaCorrelations() :
@@ -334,7 +333,7 @@ void AliJIaaCorrelations::FillCorrelationHistograms(fillType fTyp, int CentBin, 
 
 	if(ResonanceCut(ftk1,ftk2))
 	{
-		FillDeltaEtaHistograms(fTyp);  // Fill all the delta eta histograms
+        //FillDeltaEtaHistograms(fTyp);  // Fill all the delta eta histograms
 		FillDeltaEtaDeltaPhiHistograms(fTyp);  // Fill the 2D correlation functions
 	} else {
         FillResonanceHistograms(fTyp);
@@ -352,9 +351,9 @@ void AliJIaaCorrelations::FillDeltaEtaHistograms(fillType fTyp)
 
 	if( fNearSide ){
 		if( fTyp == 0 ) {
-            fhistos->fhDEtaNear[fCentralityBin][fZBin][fPhiGapBinNear][fpttBin][fptaBin]->Fill( fDeltaEta ,  fTrackPairEfficiency );
+            //fhistos->fhDEtaNear[fCentralityBin][fZBin][fPhiGapBinNear][fpttBin][fptaBin]->Fill( fDeltaEta ,  fTrackPairEfficiency );
 		} else {
-            fhistos->fhDEtaNearM[fCentralityBin][fZBin][fPhiGapBinNear][fpttBin][fptaBin]->Fill( fDeltaEta ,  fTrackPairEfficiency );
+            //fhistos->fhDEtaNearM[fCentralityBin][fZBin][fPhiGapBinNear][fpttBin][fptaBin]->Fill( fDeltaEta ,  fTrackPairEfficiency );
 		}
 	}
 }
