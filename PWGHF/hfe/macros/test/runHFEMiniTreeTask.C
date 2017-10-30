@@ -222,7 +222,7 @@ AliAnalysisGrid* CreateAlienHandler(const char *taskname, const char *gridmode, 
   if(isAOD){//---------AOD data set---------------------------------------------------------->>>
     if(isMC){
       //AOD MC-----
-      if(collisionSystem ="pp"){
+      if(collisionSystem =="pp"){
 	//for pp MC
 	plugin->SetGridDataDir("/alice/sim/2017/LHC17c3b2/");
 	plugin->SetDataPattern("/AOD/*/AliAOD.root");
@@ -238,7 +238,7 @@ AliAnalysisGrid* CreateAlienHandler(const char *taskname, const char *gridmode, 
     }
     else {
       //AOD Data-----------
-      if(collisionSystem ="pp"){
+      if(collisionSystem =="pp"){
 	//for AOD pp data
 	plugin->SetGridDataDir("/alice/data/2016/LHC16l/");
 	plugin->SetDataPattern("/pass1/AOD/*/AliAOD.root");
@@ -259,7 +259,7 @@ AliAnalysisGrid* CreateAlienHandler(const char *taskname, const char *gridmode, 
   else{//--------Set the ESD dataset------------------------------------------------------------->>>>
     
     if(isMC){
-      if(collisionSystem ="pp"){//ESD MC pp--
+      if(collisionSystem =="pp"){//ESD MC pp--
 	plugin->SetGridDataDir("/alice/sim/2017/LHC17c3b2/");
 	plugin->SetDataPattern("*AliESDs.root");
 	Int_t runNum[1] = { 259888 };
@@ -273,7 +273,7 @@ AliAnalysisGrid* CreateAlienHandler(const char *taskname, const char *gridmode, 
       }
     }
     else{//ESD Data-------
-      if(collisionSystem ="pp"){
+      if(collisionSystem =="pp"){
 	//for ESD pp data
 	plugin->SetGridDataDir("/alice/data/2016/LHC16l/");
 	plugin->SetDataPattern("/pass1/*AliESDs.root");
