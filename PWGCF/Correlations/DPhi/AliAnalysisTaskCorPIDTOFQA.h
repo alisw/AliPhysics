@@ -29,8 +29,8 @@ class AliAnalysisTaskCorPIDTOFQA : public AliAnalysisTaskSE
 	virtual Double_t      get_mass_squared(AliAODTrack *track);
 
 
-	Double_t deut_curves[2][2][3];  /* [charge][mean,sigma][par]  */
-	TF1 *fit_deut_curve = new TF1("fit_m_mean",   "[0] + [1]*x + [2]/sqrt(x)",  1.0, 4.4);
+//	Double_t deut_curves[2][2][3];  /* [charge][mean,sigma][par]  */
+//	TF1 *fit_deut_curve = new TF1("fit_m_mean",   "[0] + [1]*x + [2]/sqrt(x)",  1.0, 4.4);
 
 	Double_t cut_width  = 3.0;
 	

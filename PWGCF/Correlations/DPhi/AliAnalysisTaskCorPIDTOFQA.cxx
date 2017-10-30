@@ -94,7 +94,7 @@ fAOD(0), fOutputList(0), fPIDResponse(0),
 
 
     primary_vertex_z(0),          //  E  1 (event)
-    primary_vertex_z_cut(0)       //  E  2
+    primary_vertex_z_cut(0),      //  E  2
     deut_per_event(0),            //  E  3
 
     fHistPt(0),                   //  T  4 (track)
@@ -114,7 +114,7 @@ fAOD(0), fOutputList(0), fPIDResponse(0),
 
 
     primary_vertex_z(0),          //  E  1 (event)
-    primary_vertex_z_cut(0)       //  E  2
+    primary_vertex_z_cut(0),      //  E  2
     deut_per_event(0),            //  E  3
 
     fHistPt(0),                   //  T  4 (track)
@@ -248,8 +248,8 @@ void AliAnalysisTaskCorPIDTOFQA::UserExec(Option_t *)
 
 
 	Short_t charge        = track->Charge();
-	Float_t deut_mean     = 0.0;  // values set below using fit curves
-	Float_t deut_sigma    = 0.0;  // values set below using fit curves
+//	Float_t deut_mean     = 0.0;  // values set below using fit curves
+//	Float_t deut_sigma    = 0.0;  // values set below using fit curves
 
 
 	Float_t m2tof  = get_mass_squared(track);
