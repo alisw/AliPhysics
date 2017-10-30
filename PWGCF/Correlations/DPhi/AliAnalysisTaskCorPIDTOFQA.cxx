@@ -92,24 +92,17 @@ ClassImp(AliAnalysisTaskCorPIDTOFQA) // classimp: necessary for root
 AliAnalysisTaskCorPIDTOFQA::AliAnalysisTaskCorPIDTOFQA() : AliAnalysisTaskSE(), 
 fAOD(0), fOutputList(0), fPIDResponse(0),
 
-    fHistPt(0),                   //  1
 
-    m2_pt_pos(0),                 //  2
-    m2_pt_neg(0),                 //  3
+    primary_vertex_z(0),          //  E  1 (event)
+    primary_vertex_z_cut(0)       //  E  2
+    deut_per_event(0),            //  E  3
+
+    fHistPt(0),                   //  T  4 (track)
+    m2_pt_pos(0),                 //  T  5
+    m2_pt_neg(0),                 //  T  6
     
-    m2_pt_pos_T(0),               //  4
-    m2_pt_neg_T(0),               //  5
-
-    m2_pt_pos_cut_T(0),           //  6
-    m2_pt_neg_cut_T(0),           //  7
-
-    m2_pt_pos_cut_A(0),           //  8
-    m2_pt_neg_cut_A(0),           //  9
-
-    m2_pt_pos_cut_B(0),           // 10
-    m2_pt_neg_cut_B(0),           // 11
-    
-    deut_per_event(0)             // 12
+    m2_pt_pos_cut(0),             //  T  7
+    m2_pt_neg_cut(0)              //  T  8
 
 {
     // default constructor, don't allocate memory here!
@@ -119,24 +112,17 @@ fAOD(0), fOutputList(0), fPIDResponse(0),
 AliAnalysisTaskCorPIDTOFQA::AliAnalysisTaskCorPIDTOFQA(const char* name) : AliAnalysisTaskSE(name),
 fAOD(0), fOutputList(0), fPIDResponse(0),
 
-    fHistPt(0),                   //  1
 
-    m2_pt_pos(0),                 //  2
-    m2_pt_neg(0),                 //  3
+    primary_vertex_z(0),          //  E  1 (event)
+    primary_vertex_z_cut(0)       //  E  2
+    deut_per_event(0),            //  E  3
+
+    fHistPt(0),                   //  T  4 (track)
+    m2_pt_pos(0),                 //  T  5
+    m2_pt_neg(0),                 //  T  6
     
-    m2_pt_pos_T(0),               //  4
-    m2_pt_neg_T(0),               //  5
-
-    m2_pt_pos_cut_T(0),           //  6
-    m2_pt_neg_cut_T(0),           //  7
-
-    m2_pt_pos_cut_A(0),           //  8
-    m2_pt_neg_cut_A(0),           //  9
-
-    m2_pt_pos_cut_B(0),           // 10
-    m2_pt_neg_cut_B(0),           // 11
-    
-    deut_per_event(0)             // 12
+    m2_pt_pos_cut(0),             //  T  7
+    m2_pt_neg_cut(0)              //  T  8
 
 {
     // constructor
@@ -155,25 +141,7 @@ AliAnalysisTaskCorPIDTOFQA::~AliAnalysisTaskCorPIDTOFQA()
 //_____________________________________________________________________________
 void AliAnalysisTaskCorPIDTOFQA::UserCreateOutputObjects()
 {
-    // 2.88465 0.0761582 0.709281 0.124386 0.017642 -0.0316078 2.65738 0.115151 0.918566 0.0986592 0.0187545 0.00346519    // pp 2016 untriggered
-    
-    deut_curves[0][0][0] = 2.88465;     // pos deut mean curve
-    deut_curves[0][0][1] = 0.0761582;
-    deut_curves[0][0][2] = 0.709281;
 
-    deut_curves[0][1][0] = 0.124386;    // pos deut sigma curve
-    deut_curves[0][1][1] = 0.017642;
-    deut_curves[0][1][2] = -0.0316078;
-
-    deut_curves[1][0][0] = 2.65738;     // neg deut mean curve
-    deut_curves[1][0][1] = 0.115151;
-    deut_curves[1][0][2] = 0.918566;
-
-    deut_curves[1][1][0] = 0.0986592;   // neg deut sigma curve
-    deut_curves[1][1][1] = 0.0187545;
-    deut_curves[1][1][2] = 0.00346519;
-
-    
     fOutputList = new TList();          // this is a list which will contain all of your histograms
                                         // at the end of the analysis, the contents of this list are written
                                         // to the output file
@@ -191,36 +159,31 @@ void AliAnalysisTaskCorPIDTOFQA::UserCreateOutputObjects()
 
 
 
-    fHistPt                    = new TH1F("fHistPt",                    "Pt()",                       1300,       pt_binning);                              //  1
-    m2_pt_pos                  = new TH2F("m2_pt_pos",                  "m2_pt_pos",                   800,       pt_binning,    2400,    -1.0,     7.0);   //  2
-    m2_pt_neg                  = new TH2F("m2_pt_neg",                  "m2_pt_neg",                   800,       pt_binning,    2400,    -1.0,     7.0);   //  3
-    m2_pt_pos_T                = new TH2F("m2_pt_pos_T",                "m2_pt_pos_T",                 800,       pt_binning,    2400,    -1.0,     7.0);   //  4
-    m2_pt_neg_T                = new TH2F("m2_pt_neg_T",                "m2_pt_neg_T",                 800,       pt_binning,    2400,    -1.0,     7.0);   //  5
-    m2_pt_pos_cut_T            = new TH2F("m2_pt_pos_cut_T",            "m2_pt_pos_cut_T",             800,       pt_binning,    2400,    -1.0,     7.0);   //  6
-    m2_pt_neg_cut_T            = new TH2F("m2_pt_neg_cut_T",            "m2_pt_neg_cut_T",             800,       pt_binning,    2400,    -1.0,     7.0);   //  7
-    m2_pt_pos_cut_A            = new TH2F("m2_pt_pos_cut_A",            "m2_pt_pos_cut_A",             800,       pt_binning,    2400,    -1.0,     7.0);   //  8
-    m2_pt_neg_cut_A            = new TH2F("m2_pt_neg_cut_A",            "m2_pt_neg_cut_A",             800,       pt_binning,    2400,    -1.0,     7.0);   //  9
-    m2_pt_pos_cut_B            = new TH2F("m2_pt_pos_cut_B",            "m2_pt_pos_cut_B",             800,       pt_binning,    2400,    -1.0,     7.0);   // 10
-    m2_pt_neg_cut_B            = new TH2F("m2_pt_neg_cut_B",            "m2_pt_neg_cut_B",             800,       pt_binning,    2400,    -1.0,     7.0);   // 11
-    deut_per_event             = new TH1I("deut_per_event",             "deut_per_event",               12,        0,     12);                              // 12
+    primary_vertex_z           = new TH1F("primary_vertex_z",           "primary_vertex_z",            100,    -50.0,   50.0);                              //  1
+    primary_vertex_z_cut       = new TH1F("primary_vertex_z_cut",       "primary_vertex_z_cut",        100,    -50.0,   50.0);                              //  2
+    deut_per_event             = new TH1I("deut_per_event",             "deut_per_event",               12,        0,     12);                              //  3
+
+    fHistPt                    = new TH1F("fHistPt",                    "Pt()",                       1000,       0.0, 20.0);                               //  4
+    m2_pt_pos                  = new TH2F("m2_pt_pos",                  "m2_pt_pos",                   800,       pt_binning,    2400,    -1.0,     7.0);   //  5
+    m2_pt_neg                  = new TH2F("m2_pt_neg",                  "m2_pt_neg",                   800,       pt_binning,    2400,    -1.0,     7.0);   //  6
+    m2_pt_pos_cut              = new TH2F("m2_pt_pos_cut",              "m2_pt_pos_cut",               800,       pt_binning,    2400,    -1.0,     7.0);   //  7
+    m2_pt_neg_cut              = new TH2F("m2_pt_neg_cut",              "m2_pt_neg_cut",               800,       pt_binning,    2400,    -1.0,     7.0);   //  8
 
 
 
 
 
-    
-    fOutputList->Add(fHistPt);                     //  1
-    fOutputList->Add(m2_pt_pos);                   //  2
-    fOutputList->Add(m2_pt_neg);                   //  3
-    fOutputList->Add(m2_pt_pos_T);                 //  4
-    fOutputList->Add(m2_pt_neg_T);                 //  5
-    fOutputList->Add(m2_pt_pos_cut_T);             //  6
-    fOutputList->Add(m2_pt_neg_cut_T);             //  7
-    fOutputList->Add(m2_pt_pos_cut_A);             //  8
-    fOutputList->Add(m2_pt_neg_cut_A);             //  9
-    fOutputList->Add(m2_pt_pos_cut_B);             // 10
-    fOutputList->Add(m2_pt_neg_cut_B);             // 11
-    fOutputList->Add(deut_per_event);              // 12
+
+
+    fOutputList->Add(primary_vertex_z);            //  1
+    fOutputList->Add(primary_vertex_z_cut);        //  2
+    fOutputList->Add(deut_per_event);              //  3
+    fOutputList->Add(fHistPt);                     //  4
+    fOutputList->Add(m2_pt_pos);                   //  5
+    fOutputList->Add(m2_pt_neg);                   //  6
+    fOutputList->Add(m2_pt_pos_cut);               //  7
+    fOutputList->Add(m2_pt_neg_cut);               //  8
+
 
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -251,7 +214,7 @@ void AliAnalysisTaskCorPIDTOFQA::UserExec(Option_t *)
 
 
     int deut_count              = 0;
-    int trig_03_track_count     = 0;
+//  int trig_03_track_count     = 0;
 
 
     // loop over all these tracks
@@ -264,14 +227,12 @@ void AliAnalysisTaskCorPIDTOFQA::UserExec(Option_t *)
         AliAODTrack* track = static_cast<AliAODTrack*>(fAOD->GetTrack(i));
         if(!track)                                                                      {    continue;    }
 
-	Float_t pt            = track->Pt();
-	if(pt < 0.2)                                                                    {    continue;    }
-	Float_t dedx   = track->GetTPCsignal();
-	if(dedx > 1000)                                                                 {    continue;    }
-	if(!(track->IsHybridGlobalConstrainedGlobal()))                                 {    continue;    }
-	Float_t eta = track->Eta();	if(TMath::Abs(eta) > 0.8)                       {    continue;    }
+	Float_t pt            = track->Pt();	   if(pt   <  0.2)                      {    continue;    }
+//	Float_t dedx   = track->GetTPCsignal();    if(dedx > 1000)                      {    continue;    }
+//	if(!(track->IsHybridGlobalConstrainedGlobal()))                                 {    continue;    }
+//	Float_t eta = track->Eta();	if(TMath::Abs(eta) > 0.80)                      {    continue;    }
 
-	if(!track->IsPrimaryCandidate())                                                {    continue;    }
+//	if(!track->IsPrimaryCandidate())                                                {    continue;    }
 
 	Double_t nsigmaTPC = 999.0;	Double_t nsigmaTOF = 999.0;
 	AliPIDResponse::EDetPidStatus statusTPC = fPIDResponse->NumberOfSigmas(AliPIDResponse::kTPC, track, (AliPID::EParticleType) 0, nsigmaTPC);
@@ -282,7 +243,7 @@ void AliAnalysisTaskCorPIDTOFQA::UserExec(Option_t *)
 
 	fHistPt->Fill(pt);
 
-	if(pt >= 3.0)   trig_03_track_count++;
+//	if(pt >= 3.0)   trig_03_track_count++;
 	if(!tofIsOk)	                                                                {    continue;    }
 
 
@@ -298,31 +259,12 @@ void AliAnalysisTaskCorPIDTOFQA::UserExec(Option_t *)
 	{
 	    m2_pt_pos->Fill(pt, m2tof);
 	    Double_t nSigmaTPCDeut = fPIDResponse->NumberOfSigmasTPC(track,(AliPID::EParticleType) 5);  // 5 = deuteron
-//	    Double_t nSigmaTOFDeut = fPIDResponse->NumberOfSigmasTOF(track,(AliPID::EParticleType) 5);  // 5 = deuteron
-	    if(TMath::Abs(nSigmaTPCDeut) < 3.0) //  &&  nSigmaTOFDeut < 4.0)
+	    if(TMath::Abs(nSigmaTPCDeut) < 3.0)
 	    {
-		m2_pt_pos_T->Fill(pt, m2tof);
+		m2_pt_pos_cut->Fill(pt, m2tof);
 		
 		if(pt >= 1.0  &&  pt < 4.4)
 		{
-		    for(int w=0; w<3; w++){   fit_deut_curve->SetParameter(w, deut_curves[0][0][w]);   }
-		    deut_mean = fit_deut_curve->Eval(pt);
-		    for(int w=0; w<3; w++){   fit_deut_curve->SetParameter(w, deut_curves[0][1][w]);   }
-		    deut_sigma = fit_deut_curve->Eval(pt);
-		    
-		    if(m2tof < deut_mean + cut_width * deut_sigma   &&   m2tof > deut_mean - cut_width * deut_sigma)
-		    {
-			m2_pt_pos_cut_T->Fill(pt, m2tof);
-		    }
-		    else if(m2tof -1.2 < deut_mean + cut_width * deut_sigma   &&   m2tof -1.2 > deut_mean - cut_width * deut_sigma)
-		    {
-			m2_pt_pos_cut_B->Fill(pt, m2tof);
-		    }
-
-		    else if(m2tof +1.2 < deut_mean + cut_width * deut_sigma   &&   m2tof +1.2 > deut_mean - cut_width * deut_sigma)
-		    {
-			m2_pt_pos_cut_A->Fill(pt, m2tof);
-		    }
 		    if(m2tof >= 1.7  &&  m2tof < 5.5)    {   deut_count++;   }
 		}			    
 	    }
@@ -332,30 +274,11 @@ void AliAnalysisTaskCorPIDTOFQA::UserExec(Option_t *)
 	{
 	    m2_pt_neg->Fill(pt, m2tof);
 	    Double_t nSigmaTPCDeut = fPIDResponse->NumberOfSigmasTPC(track,(AliPID::EParticleType)5);  // 5 = deuteron
-//	    Double_t nSigmaTOFDeut = fPIDResponse->NumberOfSigmasTOF(track,(AliPID::EParticleType)5);  // 5 = deuteron
-	    if(TMath::Abs(nSigmaTPCDeut) < 3.0)  //  &&  nSigmaTOFDeut < 4.0)
+	    if(TMath::Abs(nSigmaTPCDeut) < 3.0)
 	    {
-		m2_pt_neg_T->Fill(pt, m2tof);
+		m2_pt_neg_cut->Fill(pt, m2tof);
 		if(pt >= 1.0  &&  pt < 4.4)
 		{
-		    for(int w=0; w<3; w++){   fit_deut_curve->SetParameter(w, deut_curves[1][0][w]);   }
-		    deut_mean = fit_deut_curve->Eval(pt);
-		    for(int w=0; w<3; w++){   fit_deut_curve->SetParameter(w, deut_curves[1][1][w]);   }
-		    deut_sigma = fit_deut_curve->Eval(pt);
-		    
-		    if(m2tof < deut_mean + cut_width * deut_sigma   &&   m2tof > deut_mean - cut_width * deut_sigma)
-		    {
-			m2_pt_neg_cut_T->Fill(pt, m2tof);
-		    }
-		    else if(m2tof -1.2 < deut_mean + cut_width * deut_sigma   &&   m2tof -1.2 > deut_mean - cut_width * deut_sigma)
-		    {
-			m2_pt_neg_cut_B->Fill(pt, m2tof);
-		    }
-
-		    else if(m2tof +1.2 < deut_mean + cut_width * deut_sigma   &&   m2tof +1.2 > deut_mean - cut_width * deut_sigma)
-		    {
-			m2_pt_neg_cut_A->Fill(pt, m2tof);
-		    }
 		    if(m2tof >= 1.7  &&  m2tof < 5.5)    {   deut_count++;   }
 		}
 	    }
