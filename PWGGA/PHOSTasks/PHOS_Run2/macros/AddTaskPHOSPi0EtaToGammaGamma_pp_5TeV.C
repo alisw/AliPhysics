@@ -1,6 +1,6 @@
 AliAnalysisTaskPHOSPi0EtaToGammaGamma* AddTaskPHOSPi0EtaToGammaGamma_pp_5TeV(
     const char* name     = "Pi0EtaToGammaGamma",
-    const UInt_t trigger = AliVEvent::kINT7,
+    UInt_t trigger = AliVEvent::kINT7,
     const TString CollisionSystem = "pp",
     const Bool_t isMC = kFALSE,
     const TString triggerinput = "",//L1H,L1M,L1L,L0
@@ -36,21 +36,16 @@ AliAnalysisTaskPHOSPi0EtaToGammaGamma* AddTaskPHOSPi0EtaToGammaGamma_pp_5TeV(
     ::Error("AddTaskPHOSPi0EtaToGammaGamma", "This task requires an input event handler");
     return NULL;
   }
+  const Bool_t Trgcorrection = kTRUE;
 
 	TString TriggerName="";
 	if     (trigger == (UInt_t)AliVEvent::kAny)  TriggerName = "kAny";
 	else if(trigger == (UInt_t)AliVEvent::kINT7) TriggerName = "kINT7";
 	else if(trigger == (UInt_t)AliVEvent::kPHI7) TriggerName = "kPHI7";
 
-  const Bool_t rejectPileup = kTRUE;
-  const Bool_t rejectDAQincomplete = kTRUE;
-  const Double_t MaxAbsZ = 10.;
-
-
   if(trigger == (UInt_t)AliVEvent::kPHI7){
     if(triggerinput.Contains("L1") || triggerinput.Contains("L0")){
       TriggerName = TriggerName + "_" + triggerinput;
-
     }
     else{
       ::Error("AddTaskPHOSPi0EtaToGammaGamma", "PHOS trigger analysis requires at least trigger input (L0 or L1[H,M,L]).");
@@ -83,9 +78,11 @@ AliAnalysisTaskPHOSPi0EtaToGammaGamma* AddTaskPHOSPi0EtaToGammaGamma_pp_5TeV(
   else taskname = Form("%s_%s_%s_Cen%d_%d%s_BS%dns_DBC%dcell",name,CollisionSystem.Data(),TriggerName.Data(),(Int_t)CenMin,(Int_t)CenMax,PIDname.Data(),(Int_t)bs,(Int_t)(distBC));
 
   AliAnalysisTaskPHOSPi0EtaToGammaGamma* task = new AliAnalysisTaskPHOSPi0EtaToGammaGamma(taskname);
-  task->SelectCollisionCandidates(trigger);
 
-  if(trigger == (UInt_t)AliVEvent::kPHI7) task->SetPHOSTriggerAnalysis(triggerinput);
+  if(trigger == (UInt_t)AliVEvent::kPHI7) task->SetPHOSTriggerAnalysis(triggerinput,isMC);
+  if(kMC && trigger == (UInt_t)AliVEvent::kPHI7) trigger = AliVEvent::kINT7;//change trigger selection in MC when you do PHOS trigger analysis.
+
+  task->SelectCollisionCandidates(trigger);
 
   task->SetCollisionSystem(systemID);//colliions system : pp=0, PbPb=1, pPb (Pbp)=2;
   task->SetJetJetMC(isJJMC);
@@ -119,9 +116,17 @@ AliAnalysisTaskPHOSPi0EtaToGammaGamma* AddTaskPHOSPi0EtaToGammaGamma_pp_5TeV(
   task->SetBunchSpace(bs);//in unit of ns.
   if(!isMC && TOFcorrection){
     TF1 *f1tof = new TF1("f1TOFCutEfficiency","[0] * (2/(1+exp(-[1]*(x-[2]))) - 1) - ( 0 + [3]/(exp( -(x-[4]) / [5] ) + 1)  )",0,100);
+    f1tof->SetNpx(1000);
     f1tof->SetParameters(0.996,2.33,4.15e-3,0.477,7.57,0.736);
     task->SetTOFCutEfficiencyFunction(f1tof);
-    printf("TOF cut efficiency as a function of E is %s\n",f1tof->GetTitle());
+    //printf("TOF cut efficiency as a function of E is %s\n",f1tof->GetTitle());
+  }
+  if(!isMC && Trgcorrection){
+    TF1 *f1trg = new TF1("f1TriggerEfficiency","[0]/(TMath::Exp(-(x-[1])/[2]) + 1)",0,100);
+    f1trg->SetNpx(1000);
+    f1trg->SetParameters(0.999,2.49,0.29);
+    task->SetTriggerEfficiency(f1trg);
+    //printf("TOF cut efficiency as a function of E is %s\n",f1tof->GetTitle());
   }
 
   if(isMC){

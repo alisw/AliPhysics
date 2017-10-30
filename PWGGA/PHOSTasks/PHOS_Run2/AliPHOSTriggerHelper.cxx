@@ -51,7 +51,7 @@ AliPHOSTriggerHelper::AliPHOSTriggerHelper():
 
 }
 //________________________________________________________________________
-AliPHOSTriggerHelper::AliPHOSTriggerHelper(TString trigger):
+AliPHOSTriggerHelper::AliPHOSTriggerHelper(TString trigger, Bool_t isMC):
   fPHOSGeo(0x0),
   fXmin(-3),
   fXmax(3),
@@ -70,10 +70,12 @@ AliPHOSTriggerHelper::AliPHOSTriggerHelper(TString trigger):
   fUseDeltaRMatching(kTRUE)
 {
   //Constructor
-  
+   
   for(Int_t i=0;i<6;i++){
     fPHOSTRUBadMap[i] = 0x0;
   }
+
+  fIsMC = isMC;
 
   trigger.ToUpper();
 
@@ -124,6 +126,11 @@ Bool_t AliPHOSTriggerHelper::IsPHI7(AliVEvent *event, AliPHOSClusterCuts *cuts)
   fAODEvent = dynamic_cast<AliAODEvent*>(event);
   Int_t run = fEvent->GetRunNumber();
 
+  if(run<209122) //Run1
+    fPHOSGeo = AliPHOSGeometry::GetInstance("IHEP");
+  else
+    fPHOSGeo = AliPHOSGeometry::GetInstance("Run2");
+
   //SetPHOSTRUBadmaps
   if(fRunNumber != run){
     fRunNumber = run;
@@ -147,6 +154,15 @@ Bool_t AliPHOSTriggerHelper::IsPHI7(AliVEvent *event, AliPHOSClusterCuts *cuts)
     }
   }
 
+  fCaloTrigger = (AliVCaloTrigger*)event->GetCaloTrigger("PHOS"); 
+  fCaloTrigger->Reset();
+
+  if(fIsMC){
+    //please call this line after AliVCaloTrigger and PHOSGeometry and  TRU bad maps are prepared.
+      AliInfo("This is MC analysis. Always accept event.");
+     return kTRUE;
+  }
+
   //if L1 trigger is used, L1 has higher priority
   Bool_t IsPHI7fired = kFALSE;
 
@@ -163,21 +179,6 @@ Bool_t AliPHOSTriggerHelper::IsPHI7(AliVEvent *event, AliPHOSClusterCuts *cuts)
 
   if(fTriggerInputL1 > 0)      AliInfo(Form("Your choice of L1 trigger input %d fired.",fTriggerInputL1));
   else if(fTriggerInputL0 > 0) AliInfo(Form("Your choice of L0 trigger input %d fired.",fTriggerInputL0));
-
-  //TString trigClasses = event->GetFiredTriggerClasses();
-  //if(245917 <= run && run <= 246994){//LHC15o
-  //  if(!fIsMC && fTriggerInputL1 == 7 && !trigClasses.Contains("CINT7PHH")) return kFALSE;
-  //  if(!fIsMC && fTriggerInputL1 == 6 && !trigClasses.Contains("CPER7PHM")) return kFALSE;
-  //}
-  //if(fTriggerInputL1 > 0) AliInfo(Form("Your choice of L1 trigger input %d matches with fired trigger classes : %s",fTriggerInputL1,trigClasses.Data()));
-
-  if(run<209122) //Run1
-    fPHOSGeo = AliPHOSGeometry::GetInstance("IHEP");
-  else
-    fPHOSGeo = AliPHOSGeometry::GetInstance("Run2");
-
-  fCaloTrigger = (AliVCaloTrigger*)event->GetCaloTrigger("PHOS"); 
-  fCaloTrigger->Reset();
 
   const Int_t Nfired = fCaloTrigger->GetEntries();
   AliInfo(Form("%d TRU patches fired in PHOS.",Nfired));
