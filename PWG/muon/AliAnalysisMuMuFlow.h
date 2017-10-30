@@ -24,14 +24,13 @@ public:
   AliAnalysisMuMuFlow(TH2* AccEffHisto=0x0, Int_t systLevel=0);
   virtual ~AliAnalysisMuMuFlow();
 
-  Bool_t IsPtInRange(const AliVParticle& t1, const AliVParticle& t2,
-                           Double_t& ptmin, Double_t& ptmax) const;
+  Bool_t IsQnInRange(const AliVEvent& event, Double_t& qnMin, Double_t& qnMax) const;
+  void NameOfIsQnInRange(TString& name, Double_t& qnmin, Double_t& qnmax) const;
 
-  void NameOfIsPtInRange(TString& name, Double_t& ymin, Double_t& ymax) const;
-
-  Bool_t IsRapidityInRange(const AliVParticle& t1, const AliVParticle& t2,
-                             Double_t& yMin, Double_t& yMax) const;
-  void NameOfIsRapidityInRange(TString& name, Double_t& ymin, Double_t& ymax) const;
+  Bool_t IsDPhiInPlane(const AliVParticle& t1, const AliVParticle& t2) const;
+  Bool_t IsDPhiOutOfPlane(const AliVParticle& t1, const AliVParticle& t2) const;
+  void NameOfIsDPhiInPlane(TString& name) const;
+  void NameOfIsDPhiOutOfPlane(TString& name) const;
 
   Bool_t ShouldCorrectDimuonForAccEff() { return (fAccEffHisto != 0x0); }
 
@@ -83,9 +82,9 @@ private:
 
   Double_t TriggerLptApt(Double_t *x, Double_t *par);
 
-  Double_t GetEventPlane(const char* detector, Int_t step = 3);
+  Double_t GetEventPlane(const char* detector, Int_t step = 3) const;
 
-  TVector2 GetQn(const char* detector, Int_t step = 3);
+  TVector2 GetQn(const char* detector, Int_t step = 3) const;
 
 private:
   Bool_t fcomputeMeanV2; //mv2 with EP method

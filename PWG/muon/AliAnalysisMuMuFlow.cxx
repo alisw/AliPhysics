@@ -730,43 +730,65 @@ Double_t AliAnalysisMuMuFlow::TriggerLptApt ( Double_t* xVal, Double_t* par )
 }
 
 //_____________________________________________________________________________
-Bool_t AliAnalysisMuMuFlow::IsPtInRange(const AliVParticle& t1, const AliVParticle& t2, Double_t& ptmin, Double_t& ptmax) const
+Bool_t AliAnalysisMuMuFlow::IsDPhiInPlane(const AliVParticle& t1, const AliVParticle& t2) const
 {
-  /// Whether the pair passes the pT cut
+  /// Whether the pair passes the dphi cut
 
-  TLorentzVector total(t1.Px(),t1.Py(),t1.Pz(),TMath::Sqrt(AliAnalysisMuonUtility::MuonMass2()+t1.P()*t1.P()));
-  TLorentzVector p2(t2.Px(),t2.Py(),t2.Pz(),TMath::Sqrt(AliAnalysisMuonUtility::MuonMass2()+t2.P()*t2.P()));
+  TLorentzVector pi(t1.Px(),t1.Py(),t1.Pz(),
+                    TMath::Sqrt(AliAnalysisMuonUtility::MuonMass2()+t1.P()*t1.P()));
+  TLorentzVector pair4Momentum(t2.Px(),t2.Py(),t2.Pz(),
+                               TMath::Sqrt(AliAnalysisMuonUtility::MuonMass2()+t2.P()*t2.P()));
+  pair4Momentum += pi;
 
-  total += p2;
+  Double_t dphi = GetEventPlane(fDetectors[0].Data(),4) - pair4Momentum.Phi();
+  if( dphi <  0 ) dphi+=2*TMath::Pi();
+  if( dphi >=TMath::Pi()) dphi-= TMath::Pi();
 
-  Double_t pt = total.Pt();
-
-  return  ( pt < ptmax && pt > ptmin );
+  return  (( dphi < 3.142 && dphi > 2.356  )||( dphi < 0.785 && dphi > 0 ));
 }
 
 //_____________________________________________________________________________
-void AliAnalysisMuMuFlow::NameOfIsPtInRange(TString& name, Double_t& ptmin, Double_t& ptmax) const
+Bool_t AliAnalysisMuMuFlow::IsDPhiOutOfPlane(const AliVParticle& t1, const AliVParticle& t2) const
 {
-  name.Form("PAIRPTIN-%2.1f_-%2.1f",ptmin,ptmax);
+  /// Whether the pair passes the dphi cut
+
+  TLorentzVector pi(t1.Px(),t1.Py(),t1.Pz(),
+                    TMath::Sqrt(AliAnalysisMuonUtility::MuonMass2()+t1.P()*t1.P()));
+  TLorentzVector pair4Momentum(t2.Px(),t2.Py(),t2.Pz(),
+                               TMath::Sqrt(AliAnalysisMuonUtility::MuonMass2()+t2.P()*t2.P()));
+  pair4Momentum += pi;
+
+  Double_t dphi = GetEventPlane(fDetectors[0].Data(),4) - pair4Momentum.Phi();
+  if( dphi <  0 ) dphi+=2*TMath::Pi();
+  if( dphi >=TMath::Pi()) dphi-= TMath::Pi();
+
+  return  ( dphi < 2.356 && dphi > 0.785 ); // dphi in [-pi/4,pi/4]
 }
 
 //_____________________________________________________________________________
-Bool_t AliAnalysisMuMuFlow::IsRapidityInRange(const AliVParticle& t1, const AliVParticle& t2, Double_t& yMin, Double_t& yMax) const
+void AliAnalysisMuMuFlow::NameOfIsDPhiInPlane(TString& name) const
 {
-  /// Whether the pair passes the rapidity cut
-  TLorentzVector total(t1.Px(),t1.Py(),t1.Pz(),TMath::Sqrt(AliAnalysisMuonUtility::MuonMass2()+t1.P()*t1.P()));
-  TLorentzVector p2(t2.Px(),t2.Py(),t2.Pz(),TMath::Sqrt(AliAnalysisMuonUtility::MuonMass2()+t2.P()*t2.P()));
-
-  total += p2;
-
-  Double_t y = total.Rapidity();
-
-  return  ( y < yMax && y > yMin );
+  name.Form("INPLANE");
 }
 //_____________________________________________________________________________
-void AliAnalysisMuMuFlow::NameOfIsRapidityInRange(TString& name, Double_t& ymin, Double_t& ymax) const
+void AliAnalysisMuMuFlow::NameOfIsDPhiOutOfPlane(TString& name) const
 {
-  name.Form("PAIRYIN%2.2f-%2.2f",-ymin,-ymax);
+  name.Form("OUTOFPLANE");
+}
+
+//_____________________________________________________________________________
+Bool_t AliAnalysisMuMuFlow::IsQnInRange(const AliVEvent& event, Double_t& qnMin, Double_t& qnMax) const
+{
+  /// Whether the event passes the flow Qn cut
+  TVector2 Qn = GetQn(fDetectors[0].Data(),4);
+  Double_t qnorm = sqrt(Qn.X()*Qn.X()+Qn.Y()*Qn.Y());
+
+  return  ( qnorm < qnMax && qnorm > qnMin );
+}
+//_____________________________________________________________________________
+void AliAnalysisMuMuFlow::NameOfIsQnInRange(TString& name, Double_t& qnmin, Double_t& qnmax) const
+{
+  name.Form("QNIN%2.2f-%2.2f",-qnmin,-qnmax);
 }
 //_____________________________________________________________________________
 void AliAnalysisMuMuFlow::SetBinsToFill(const char* particle, const char* bins)
@@ -775,7 +797,7 @@ void AliAnalysisMuMuFlow::SetBinsToFill(const char* particle, const char* bins)
   fBinsToFill = Binning()->CreateBinObjArray(particle,bins,"");
 }
 //_____________________________________________________________________________
-Double_t AliAnalysisMuMuFlow::GetEventPlane(const char* detector, Int_t step)
+Double_t AliAnalysisMuMuFlow::GetEventPlane(const char* detector, Int_t step) const
 {
   // The function access the corrected Qn vector from the Qn correction framework (PWGPP/EVCHAR/FlowVectorCorrections)
   // Check the documentation at https://twiki.cern.ch/twiki/bin/view/ALICE/StartUsingR2FlowVectorCorrections
@@ -813,7 +835,7 @@ Double_t AliAnalysisMuMuFlow::GetEventPlane(const char* detector, Int_t step)
   return phiEP;
 }
 //_____________________________________________________________________________
-TVector2 AliAnalysisMuMuFlow::GetQn(const char* detector, Int_t step)
+TVector2 AliAnalysisMuMuFlow::GetQn(const char* detector, Int_t step) const
 {
   // The function access the corrected Qn vector from the Qn correction framework (PWGPP/EVCHAR/FlowVectorCorrections)
   // Check the documentation at https://twiki.cern.ch/twiki/bin/view/ALICE/StartUsingR2FlowVectorCorrections
