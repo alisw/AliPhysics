@@ -35,6 +35,8 @@
 #include "AliEmcalJetUtility.h"
 #include "AliParticleContainer.h"
 #include "AliClusterContainer.h"
+#include "AliEmcalClusterJetConstituent.h"
+#include "AliEmcalParticleJetConstituent.h"
 
 #include "AliEmcalJetTask.h"
 
@@ -70,6 +72,7 @@ AliEmcalJetTask::AliEmcalJetTask() :
   fUtilities(0),
   fTrackEfficiencyOnlyForEmbedding(kFALSE),
   fLocked(0),
+  fFillConstituents(kTRUE),
   fJetsName(),
   fIsInit(0),
   fIsPSelSet(0),
@@ -105,6 +108,7 @@ AliEmcalJetTask::AliEmcalJetTask(const char *name) :
   fUtilities(0),
   fTrackEfficiencyOnlyForEmbedding(kFALSE),
   fLocked(0),
+  fFillConstituents(kTRUE),
   fJetsName(),
   fIsInit(0),
   fIsPSelSet(0),
@@ -493,6 +497,9 @@ void AliEmcalJetTask::FillJetConstituents(AliEmcalJet *jet, std::vector<fastjet:
         AliError(Form("Could not find track %d",tid));
         continue;
       }
+      if(fFillConstituents){
+        jet->AddParticleConstituent(t, partCont->GetIsEmbedding(), fParticleContainerIndexMap.GlobalIndexFromLocalIndex(partCont, tid));
+      }
 
       Double_t cEta = t->Eta();
       Double_t cPhi = t->Phi();
@@ -553,6 +560,8 @@ void AliEmcalJetTask::FillJetConstituents(AliEmcalJet *jet, std::vector<fastjet:
       Double_t cPhi = nP.Phi_0_2pi();
       Double_t cPt  = nP.Pt();
       Double_t cP   = nP.P();
+      Double_t pvec[3] = {nP.Px(), nP.Py(), nP.Pz()};
+      if(fFillConstituents) jet->AddClusterConstituent(c, (AliVCluster::VCluUserDefEnergy_t)clusCont->GetDefaultClusterEnergy(), pvec, clusCont->GetIsEmbedding(), fClusterContainerIndexMap.GlobalIndexFromLocalIndex(clusCont, cid));
 
       neutralE += cP;
       if (cPt > maxNe) maxNe = cPt;

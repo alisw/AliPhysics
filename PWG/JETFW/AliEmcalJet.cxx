@@ -62,7 +62,9 @@ AliEmcalJet::AliEmcalJet() :
   fHasGhost(kFALSE),
   fGhosts(),
   fJetShapeProperties(0),
-  fJetAcceptanceType(0)
+  fJetAcceptanceType(0),
+  fParticleConstituents(),
+  fClusterConstituents()
 {
   fClosestJets[0] = 0;
   fClosestJets[1] = 0;
@@ -112,7 +114,9 @@ AliEmcalJet::AliEmcalJet(Double_t px, Double_t py, Double_t pz) :
   fHasGhost(kFALSE),
   fGhosts(),
   fJetShapeProperties(0),
-  fJetAcceptanceType(0)
+  fJetAcceptanceType(0),
+  fParticleConstituents(),
+  fClusterConstituents()
 {
   if (fPt != 0) {
     fPhi = TVector2::Phi_0_2pi(TMath::ATan2(py, px));
@@ -167,7 +171,9 @@ AliEmcalJet::AliEmcalJet(Double_t pt, Double_t eta, Double_t phi, Double_t m) :
   fHasGhost(kFALSE),
   fGhosts(),
   fJetShapeProperties(0),
-  fJetAcceptanceType(0)
+  fJetAcceptanceType(0),
+  fParticleConstituents(),
+  fClusterConstituents()
 {
   fPhi = TVector2::Phi_0_2pi(fPhi);
 
@@ -216,7 +222,10 @@ AliEmcalJet::AliEmcalJet(const AliEmcalJet& jet) :
   fHasGhost(jet.fHasGhost),
   fGhosts(jet.fGhosts),
   fJetShapeProperties(0),
-  fJetAcceptanceType(jet.fJetAcceptanceType)
+  fJetAcceptanceType(jet.fJetAcceptanceType),
+  fParticleConstituents(jet.fParticleConstituents),
+  fClusterConstituents(jet.fClusterConstituents)
+
 {
   // Copy constructor.
   fClosestJets[0]     = jet.fClosestJets[0];
@@ -285,6 +294,8 @@ AliEmcalJet& AliEmcalJet::operator=(const AliEmcalJet& jet)
       fJetShapeProperties = new AliEmcalJetShapeProperties(*(jet.fJetShapeProperties));
     }
     fJetAcceptanceType  = jet.fJetAcceptanceType;
+    fParticleConstituents = jet.fParticleConstituents;
+    fClusterConstituents = jet.fClusterConstituents;
   }
 
   return *this;
@@ -664,6 +675,8 @@ void AliEmcalJet::Clear(Option_t */*option*/)
   fPtSub = 0;
   fGhosts.clear();
   fHasGhost = kFALSE;
+  fClusterConstituents.clear();
+  fParticleConstituents.clear();
 }
 
 /**
@@ -751,6 +764,65 @@ Int_t AliEmcalJet::ContainsCluster(AliVCluster* cluster, TClonesArray* clusters)
   return ContainsCluster(clusters->IndexOf(cluster));
 }
 
+const PWG::JETFW::AliEmcalClusterJetConstituent *AliEmcalJet::ClusterConstituentAt(unsigned int icl) const {
+  return (icl < fClusterConstituents.size()) ? &fClusterConstituents[icl] : nullptr;
+}
+
+const PWG::JETFW::AliEmcalParticleJetConstituent *AliEmcalJet::ParticleConstituentAt(unsigned int ipart) const {
+  return (ipart < fParticleConstituents.size()) ? &fParticleConstituents[ipart] : nullptr;
+}
+
+const PWG::JETFW::AliEmcalClusterJetConstituent *AliEmcalJet::GetLeadingClusterConstituent() const {
+  if(!fClusterConstituents.size()) return nullptr;
+  PWG::JETFW::AliEmcalClusterJetConstituent * leading(nullptr);
+  for(auto c : fClusterConstituents) {
+    PWG::JETFW::AliEmcalClusterJetConstituent *tmp = &c;
+    if(!leading) leading = tmp;
+    else {
+      if(tmp->E() > leading->E()) leading = tmp;
+    }
+  }
+  return leading;
+}
+
+const PWG::JETFW::AliEmcalParticleJetConstituent *AliEmcalJet::GetLeadingParticleConstituent() const {
+  if(!fParticleConstituents.size()) return nullptr;
+  PWG::JETFW::AliEmcalParticleJetConstituent *leading(nullptr);
+  for(auto p : fParticleConstituents) {
+    PWG::JETFW::AliEmcalParticleJetConstituent *tmp = &p;
+    if(!leading) leading = tmp;
+    else {
+      if(tmp->Pt() > leading->Pt()) leading = tmp;
+    }
+  }
+  return leading;
+}
+
+bool AliEmcalJet::HasClusterConstituent(const AliVCluster *const clust) const {
+  PWG::JETFW::AliEmcalClusterJetConstituent test(clust);
+  bool found(false);
+  for(auto c : fClusterConstituents) {
+    if(test == c) {
+      found = true;
+      break;
+    }
+  }
+  return found;
+}
+
+bool AliEmcalJet::HasParticleConstituent(const AliVParticle *const part) const {
+  PWG::JETFW::AliEmcalParticleJetConstituent test(part);
+  bool found(false);
+  for(auto p : fParticleConstituents) {
+    if(test == p) {
+      found = true;
+      break;
+    }
+  }
+  return found;
+}
+
+
 /**
  * Get Xi = Log(1 / z) of constituent track
  * @param trk Pointer to a constituent track
@@ -781,6 +853,29 @@ void AliEmcalJet::AddFlavourTrack(AliVParticle* hftrack)
 {
   if (!fFlavourTracks) fFlavourTracks = new TObjArray();
   fFlavourTracks->Add(hftrack);
+}
+
+void AliEmcalJet::AddParticleConstituent(const AliVParticle *const part, Bool_t isEmbedding, UInt_t globalIndex) {
+  PWG::JETFW::AliEmcalParticleJetConstituent constituent(part);
+  constituent.SetIsFromEmbeddedEvent(isEmbedding);
+  constituent.SetGlobalIndex(globalIndex);
+  AddParticleConstituent(constituent);
+}
+
+void AliEmcalJet::AddParticleConstituent(const PWG::JETFW::AliEmcalParticleJetConstituent &part){
+  fParticleConstituents.emplace_back(part);
+}
+
+
+void AliEmcalJet::AddClusterConstituent(const AliVCluster *const clust, AliVCluster::VCluUserDefEnergy_t endef, Double_t *pvec, Bool_t isEmbedding, UInt_t globalIndex) {
+  PWG::JETFW::AliEmcalClusterJetConstituent constituent(clust, endef, pvec);
+  constituent.SetIsFromEmbeddedEvent(isEmbedding);
+  constituent.SetGlobalIndex(globalIndex);
+  AddClusterConstituent(constituent);
+}
+
+void AliEmcalJet::AddClusterConstituent(const PWG::JETFW::AliEmcalClusterJetConstituent &clust) {
+  fClusterConstituents.emplace_back(clust);
 }
 
 /**

@@ -71,7 +71,7 @@ class AliClusterContainer : public AliEmcalContainer {
   void                        SetIncludePHOSonly(Bool_t b)                 { fIncludePHOSonly = b   ; }
   void                        SetPhosMinNcells(Int_t n)                    { fPhosMinNcells = n; }
   void                        SetPhosMinM02(Double_t m)                    { fPhosMinM02 = m; }
-  void 						 SetEmcalM02Range(Double_t min, Double_t max) { fEmcalMinM02 = min; fEmcalMaxM02 = max; }
+  void 						            SetEmcalM02Range(Double_t min, Double_t max) { fEmcalMinM02 = min; fEmcalMaxM02 = max; }
   void                        SetEmcalMaxM02Energy(Double_t max)           { fEmcalMaxM02CutEnergy = max; }
   void                        SetArray(const AliVEvent * event);
   void                        SetClusUserDefEnergyCut(Int_t t, Double_t cut);
