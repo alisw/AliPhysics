@@ -765,11 +765,11 @@ Int_t AliEmcalJet::ContainsCluster(AliVCluster* cluster, TClonesArray* clusters)
 }
 
 const PWG::JETFW::AliEmcalClusterJetConstituent *AliEmcalJet::ClusterConstituentAt(unsigned int icl) const {
-  return (static_cast<int>(icl) < fClusterConstituents.size()) ? &fClusterConstituents[icl] : nullptr;
+  return (icl < fClusterConstituents.size()) ? &fClusterConstituents[icl] : nullptr;
 }
 
 const PWG::JETFW::AliEmcalParticleJetConstituent *AliEmcalJet::ParticleConstituentAt(unsigned int ipart) const {
-  return (static_cast<int>(ipart) < fParticleConstituents.size()) ? &fParticleConstituents[ipart] : nullptr;
+  return (ipart < fParticleConstituents.size()) ? &fParticleConstituents[ipart] : nullptr;
 }
 
 const PWG::JETFW::AliEmcalClusterJetConstituent *AliEmcalJet::GetLeadingClusterConstituent() const {
