@@ -116,6 +116,14 @@ public:
   void SetL0Threshold(Int_t t)                                   { fL0Threshold              = t; }
 
   /**
+   * @brief Get L0 amplitude of a given trigger channel (in col-row space)
+   * @param[in] col Column of the trigger channel
+   * @param[in] row Row of the trigger channel
+   * @return L0 amplitude of the given trigger channel (0 for invalid channel IDs)
+   */
+  double GetL0TriggerChannelAmplitude(Int_t col, Int_t row) const;
+
+  /**
    * @brief Get ADC value of a given trigger channel (in col-row space)
    * @param[in] col Column of the trigger channel
    * @param[in] row Row of the trigger channel
