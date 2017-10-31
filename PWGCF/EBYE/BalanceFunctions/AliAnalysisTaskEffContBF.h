@@ -62,6 +62,9 @@ class AliAnalysisTaskEffContBF : public AliAnalysisTaskSE {
     fCentralityPercentileMin(0.0), 
     fCentralityPercentileMax(5.0), 
     fInjectedSignals(kFALSE),
+    fRejectLabelAboveThreshold(kFALSE),
+    fGenToBeKept("Hijing"),
+    fRejectCheckGenName(kFALSE),
     fPIDResponse(0),
     fElectronRejection(kFALSE),
     fElectronOnlyRejection(kFALSE),
@@ -120,6 +123,17 @@ class AliAnalysisTaskEffContBF : public AliAnalysisTaskSE {
 
   //Injected signals
   void SetRejectInjectedSignals() {fInjectedSignals = kTRUE;}
+
+  void SetRejectInjectedSignalsLabelAboveThreshold() {
+    fRejectLabelAboveThreshold=kTRUE;
+    fInjectedSignals = kTRUE; 
+  }
+  
+  void SetRejectInjectedSignalsGenName(TString genToBeKept) {
+    fGenToBeKept = genToBeKept; 
+    fRejectCheckGenName=kTRUE;
+    fInjectedSignals = kTRUE; 
+  }
 
   // electron rejection
   void SetElectronRejection(Double_t gMaxNSigma){
@@ -221,7 +235,11 @@ class AliAnalysisTaskEffContBF : public AliAnalysisTaskSE {
   Float_t fCentralityPercentileMin, fCentralityPercentileMax; //min-max centrality percentile
 
   Bool_t fInjectedSignals;//Flag for using the rejection of injected signals
+  Bool_t fRejectLabelAboveThreshold;// 
+  TString fGenToBeKept; //name of the generator that should be kept in the analysis (in case of rejection of injected signals)
+  Bool_t fRejectCheckGenName; //Flag for using the rejection of injected signals on a track by track base (different cocktails with respect to fInjectedSignals) 
 
+  
   AliPIDResponse *fPIDResponse;     //! PID response object
   Bool_t   fElectronRejection;//flag to use electron rejection
   Bool_t   fElectronOnlyRejection;//flag to use electron rejection with exclusive electron PID (no other particle in nsigma range)
@@ -255,7 +273,7 @@ class AliAnalysisTaskEffContBF : public AliAnalysisTaskSE {
   AliAnalysisTaskEffContBF(const AliAnalysisTaskEffContBF&); // not implemented
   AliAnalysisTaskEffContBF& operator=(const AliAnalysisTaskEffContBF&); // not implemented
   
-  ClassDef(AliAnalysisTaskEffContBF, 1); // example of analysis
+  ClassDef(AliAnalysisTaskEffContBF, 2); // example of analysis
 };
 
 #endif
