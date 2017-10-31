@@ -72,6 +72,7 @@ AliEmcalJetTask::AliEmcalJetTask() :
   fUtilities(0),
   fTrackEfficiencyOnlyForEmbedding(kFALSE),
   fLocked(0),
+  fFillConstituents(kTRUE),
   fJetsName(),
   fIsInit(0),
   fIsPSelSet(0),
@@ -107,6 +108,7 @@ AliEmcalJetTask::AliEmcalJetTask(const char *name) :
   fUtilities(0),
   fTrackEfficiencyOnlyForEmbedding(kFALSE),
   fLocked(0),
+  fFillConstituents(kTRUE),
   fJetsName(),
   fIsInit(0),
   fIsPSelSet(0),
@@ -495,7 +497,7 @@ void AliEmcalJetTask::FillJetConstituents(AliEmcalJet *jet, std::vector<fastjet:
         AliError(Form("Could not find track %d",tid));
         continue;
       }
-      jet->AddParticleConstituent(t);
+      if(fFillConstituents) jet->AddParticleConstituent(t);
 
       Double_t cEta = t->Eta();
       Double_t cPhi = t->Phi();
@@ -557,7 +559,7 @@ void AliEmcalJetTask::FillJetConstituents(AliEmcalJet *jet, std::vector<fastjet:
       Double_t cPt  = nP.Pt();
       Double_t cP   = nP.P();
       Double_t pvec[3] = {nP.Px(), nP.Py(), nP.Pz()};
-      jet->AddClusterConstituent(c, (AliVCluster::VCluUserDefEnergy_t)clusCont->GetDefaultClusterEnergy(), pvec);
+      if(fFillConstituents) jet->AddClusterConstituent(c, (AliVCluster::VCluUserDefEnergy_t)clusCont->GetDefaultClusterEnergy(), pvec);
 
       neutralE += cP;
       if (cPt > maxNe) maxNe = cPt;
