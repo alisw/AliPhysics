@@ -143,6 +143,8 @@ AliAnalysisTaskCorPIDTOFQA::~AliAnalysisTaskCorPIDTOFQA()
 void AliAnalysisTaskCorPIDTOFQA::UserCreateOutputObjects()
 {
     fAnalysisUtils = new AliAnalysisUtils;
+//  fAnalysisUtils−>SetCutOnZVertexSPD(0);
+    fAnalysisUtils->SetCutOnZVertexSPD(0);
     
     fOutputList = new TList();          // this is a list which will contain all of your histograms
                                         // at the end of the analysis, the contents of this list are written
@@ -223,6 +225,8 @@ void AliAnalysisTaskCorPIDTOFQA::UserExec(Option_t *)
 
 
     if(!fAnalysisUtils->IsVertexSelected2013pA(fAOD)) return;
+
+
     if(fAnalysisUtils->IsPileUpSPD(fAOD)) return;
 
     primary_vertex_z_cut->Fill(pv);
@@ -276,8 +280,6 @@ void AliAnalysisTaskCorPIDTOFQA::UserExec(Option_t *)
 
 
 	Short_t charge        = track->Charge();
-	Float_t deut_mean     = 0.0;  // values set below using fit curves
-	Float_t deut_sigma    = 0.0;  // values set below using fit curves
 
 
 	Float_t m2tof  = get_mass_squared(track);
