@@ -160,7 +160,7 @@ void AliMEStender::UserCreateOutputObjects()
   switch(fConfig.fTrackCuts){
   case AliMESconfigTender::kStandardITSTPCTrackCuts2010:
     lTrackCuts = new AliESDtrackCuts("std10TC", "Standard 2010");
-    lTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010(kFALSE,0);
+    lTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010(kTRUE,0);
     fTrackFilter->AddCuts(lTrackCuts);
     break;
   case AliMESconfigTender::kNoTC:
