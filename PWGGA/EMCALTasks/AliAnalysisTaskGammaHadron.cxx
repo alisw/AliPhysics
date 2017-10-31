@@ -500,31 +500,40 @@ void AliAnalysisTaskGammaHadron::UserCreateOutputObjects()
     Double_t maxThnQA[11] = {0.};
     Double_t *binEdgesThnQA[11] = {0};
 
+    //..E axis
+    TCustomBinning xBinningE;
+    xBinningE.SetMinimum(0);
+    xBinningE.AddStep(16,0.4); //40 bins
+    xBinningE.AddStep(25,0.6); //15 bins
+    TArrayD xbinsArrayE;
+    xBinningE.CreateBinEdges(xbinsArrayE);
+
     titleThnQA[dimThnQA] = "E_{#gamma}";
-    nbinsThnQA[dimThnQA] = 75;
-    Double_t EgArray[75+1];
+    nbinsThnQA[dimThnQA] = 55;
+    Double_t EgArray[55+1];
+	for(Int_t i=0;i<56;i++)
+    {
+		EgArray[i]=xbinsArrayE.At(i);
+    }
     binEdgesThnQA[dimThnQA] = EgArray;
-    GenerateFixedBinArray(75,0,25,EgArray);
     minThnQA[dimThnQA] = 0;
     maxThnQA[dimThnQA] = 25;
     dimThnQA++;
 
-    //..Create the fhAmpId TH2D with increasing binwidth
-    //..0-10 GeV (0.05), 10-20 GeV (0.2), 20-30 GeV (0.5)
-    //Double_t binWidth=(ptfinemax-ptfinemin)/nfineptbins;
+    //..L0 Axis
+    //..Create the L0 axis with increasing binwidth
     TCustomBinning xBinning;
     xBinning.SetMinimum(0);
-    xBinning.AddStep(0.5,0.01);   //50 (100)..first entries of the array are the set ranges and bins
-    xBinning.AddStep(1,0.025);     //25..expand the previously defined range by 2 but increase the bin width
-    xBinning.AddStep(4,0.05);      //50..expand the previously defined range by 4 but increase the bin width
-
+    xBinning.AddStep(0.4,0.01);  //40 (100)..first entries of the array are the set ranges and bins
+    xBinning.AddStep(1,0.025);   //24..expand the previously defined range but increase the bin width
+    xBinning.AddStep(4,0.1);     //30..expand the previously defined range but increase the bin width
     TArrayD xbinsArray;
     xBinning.CreateBinEdges(xbinsArray);
 
     titleThnQA[dimThnQA] = "#lambda_{0}";
-    nbinsThnQA[dimThnQA] = 125;
-    Double_t ShapeArray[125+1];
-	for(Int_t i=0;i<126;i++)
+    nbinsThnQA[dimThnQA] = 94;
+    Double_t ShapeArray[94+1];
+	for(Int_t i=0;i<95;i++)
     {
     		ShapeArray[i]=xbinsArray.At(i);
     }
