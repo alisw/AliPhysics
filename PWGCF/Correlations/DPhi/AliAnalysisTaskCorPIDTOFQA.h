@@ -7,6 +7,8 @@
 
 #include "AliAnalysisTaskSE.h"
 #include "AliPIDResponse.h"
+#include "AliAnalysisUtils.h"
+
 
 //#define AliAnalysisTaskCorPIDTOFQA AliAnalysisTaskCorPIDTOFQA2
 
@@ -29,8 +31,8 @@ class AliAnalysisTaskCorPIDTOFQA : public AliAnalysisTaskSE
 	virtual Double_t      get_mass_squared(AliAODTrack *track);
 
 
-//	Double_t deut_curves[2][2][3];  /* [charge][mean,sigma][par]  */
-//	TF1 *fit_deut_curve = new TF1("fit_m_mean",   "[0] + [1]*x + [2]/sqrt(x)",  1.0, 4.4);
+	Double_t deut_curves[2][2][3];  /* [charge][mean,sigma][par]  */
+	TF1 *fit_deut_curve = new TF1("fit_m_mean",   "[0] + [1]*x + [2]/sqrt(x)",  1.0, 4.4);
 
 	Double_t cut_width  = 3.0;
 	
@@ -39,6 +41,7 @@ class AliAnalysisTaskCorPIDTOFQA : public AliAnalysisTaskSE
         AliAODEvent*          fAOD;               //! input event
         TList*                fOutputList;        //! output list
 	AliPIDResponse*       fPIDResponse;
+	AliAnalysisUtils*     fAnalysisUtils;
 	
 	TH1F*                 primary_vertex_z;            //  1
 	TH1F*                 primary_vertex_z_cut;        //  2

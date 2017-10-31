@@ -90,7 +90,7 @@ using namespace std;            // std namespace: so you can do things like 'cou
 ClassImp(AliAnalysisTaskCorPIDTOFQA) // classimp: necessary for root
 
 AliAnalysisTaskCorPIDTOFQA::AliAnalysisTaskCorPIDTOFQA() : AliAnalysisTaskSE(), 
-fAOD(0), fOutputList(0), fPIDResponse(0),
+fAOD(0), fOutputList(0), fPIDResponse(0), fAnalysisUtils(0),
 
 
     primary_vertex_z(0),          //  E  1 (event)
@@ -110,7 +110,7 @@ fAOD(0), fOutputList(0), fPIDResponse(0),
 }
 //_____________________________________________________________________________
 AliAnalysisTaskCorPIDTOFQA::AliAnalysisTaskCorPIDTOFQA(const char* name) : AliAnalysisTaskSE(name),
-fAOD(0), fOutputList(0), fPIDResponse(0),
+fAOD(0), fOutputList(0), fPIDResponse(0), fAnalysisUtils(0),
 
 
     primary_vertex_z(0),          //  E  1 (event)
@@ -133,6 +133,7 @@ fAOD(0), fOutputList(0), fPIDResponse(0),
 AliAnalysisTaskCorPIDTOFQA::~AliAnalysisTaskCorPIDTOFQA()
 {
     // destructor
+    if(fAnalysisUtils) delete fAnalysisUtils;
     if(fOutputList)
     {
         delete fOutputList;     // at the end of your task, it is deleted from memory by calling this function
@@ -141,7 +142,8 @@ AliAnalysisTaskCorPIDTOFQA::~AliAnalysisTaskCorPIDTOFQA()
 //_____________________________________________________________________________
 void AliAnalysisTaskCorPIDTOFQA::UserCreateOutputObjects()
 {
-
+    fAnalysisUtils = new AliAnalysisUtils;
+    
     fOutputList = new TList();          // this is a list which will contain all of your histograms
                                         // at the end of the analysis, the contents of this list are written
                                         // to the output file
@@ -209,6 +211,29 @@ void AliAnalysisTaskCorPIDTOFQA::UserExec(Option_t *)
     fAOD = dynamic_cast<AliAODEvent*>(InputEvent());
     if(!fAOD) return;
 
+    if(fInputHandler->IsEventSelected() & AliVEvent::kINT7)   ;
+    else return;
+
+
+
+    const AliAODVertex *primVertex = fAOD->GetPrimaryVertex();
+    Double_t pv = primVertex->GetZ();
+    
+    primary_vertex_z->Fill(pv);
+
+
+    if(!fAnalysisUtils->IsVertexSelected2013pA(fAOD)) return;
+    if(fAnalysisUtils->IsPileUpSPD(fAOD)) return;
+
+    primary_vertex_z_cut->Fill(pv);
+    
+
+
+
+
+
+
+    
     Int_t iTracks(fAOD->GetNumberOfTracks());
 
 
@@ -230,10 +255,13 @@ void AliAnalysisTaskCorPIDTOFQA::UserExec(Option_t *)
 	Float_t pt            = track->Pt();	   if(pt   <  0.2)                      {    continue;    }
 //	Float_t dedx   = track->GetTPCsignal();    if(dedx > 1000)                      {    continue;    }
 //	if(!(track->IsHybridGlobalConstrainedGlobal()))                                 {    continue;    }
-//	Float_t eta = track->Eta();	if(TMath::Abs(eta) > 0.80)                      {    continue;    }
+	Float_t eta = track->Eta();	if(TMath::Abs(eta) > 0.92)                      {    continue;    }
 
 //	if(!track->IsPrimaryCandidate())                                                {    continue;    }
 
+
+
+	
 	Double_t nsigmaTPC = 999.0;	Double_t nsigmaTOF = 999.0;
 	AliPIDResponse::EDetPidStatus statusTPC = fPIDResponse->NumberOfSigmas(AliPIDResponse::kTPC, track, (AliPID::EParticleType) 0, nsigmaTPC);
 	AliPIDResponse::EDetPidStatus statusTOF = fPIDResponse->NumberOfSigmas(AliPIDResponse::kTOF, track, (AliPID::EParticleType) 0, nsigmaTOF);
@@ -248,8 +276,8 @@ void AliAnalysisTaskCorPIDTOFQA::UserExec(Option_t *)
 
 
 	Short_t charge        = track->Charge();
-//	Float_t deut_mean     = 0.0;  // values set below using fit curves
-//	Float_t deut_sigma    = 0.0;  // values set below using fit curves
+	Float_t deut_mean     = 0.0;  // values set below using fit curves
+	Float_t deut_sigma    = 0.0;  // values set below using fit curves
 
 
 	Float_t m2tof  = get_mass_squared(track);
