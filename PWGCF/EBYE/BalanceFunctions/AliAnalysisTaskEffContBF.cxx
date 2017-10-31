@@ -75,6 +75,9 @@ AliAnalysisTaskEffContBF::AliAnalysisTaskEffContBF(const char *name)
     fCentralityPercentileMin(0.0), 
     fCentralityPercentileMax(5.0), 
     fInjectedSignals(kFALSE),
+    fRejectLabelAboveThreshold(kFALSE),
+    fGenToBeKept("Hijing"),
+    fRejectCheckGenName(kFALSE),
     fPIDResponse(0),
     fElectronRejection(kFALSE),
     fElectronOnlyRejection(kFALSE),
@@ -342,7 +345,7 @@ void AliAnalysisTaskEffContBF::UserExec(Option_t *) {
   // Copy from AliAnalysisTaskPhiCorrelations:
   // For productions with injected signals, figure out above which label to skip particles/tracks
   Int_t skipParticlesAbove = 0;
-  if (fInjectedSignals)
+  if ((fInjectedSignals) && (fRejectLabelAboveThreshold))
   {
     AliGenEventHeader* eventHeader = 0;
     Int_t headers = 0;
@@ -371,6 +374,7 @@ void AliAnalysisTaskEffContBF::UserExec(Option_t *) {
   }
   // ==============================================================================================
 
+  
   
   // arrays for 2 particle histograms
   Int_t nMCLabelCounter         = 0;
@@ -474,45 +478,54 @@ void AliAnalysisTaskEffContBF::UserExec(Option_t *) {
 		// ==============================================================================================
 		// Partial copy from AliAnalyseLeadingTrackUE::RemoveInjectedSignals:
 		// Skip tracks that come from injected signals
-		if (fInjectedSignals)
-		  {    
-     
-		    AliAODMCParticle* mother = AODmcTrack;
-		    
-		    // find the primary mother (if not already physical primary)
-		    while (!((AliAODMCParticle*)mother)->IsPhysicalPrimary())
-		      {
-			if (((AliAODMCParticle*)mother)->GetMother() < 0)
-			  {
-			    mother = 0;
-			    break;
-			  }
-			
-			mother = (AliAODMCParticle*) fArrayMC->At(((AliAODMCParticle*)mother)->GetMother());
-			if (!mother)
+		if (fInjectedSignals){
+		  AliAODMCParticle* mother = AODmcTrack;
+		  
+		  // find the primary mother (if not already physical primary)
+		  while (!((AliAODMCParticle*)mother)->IsPhysicalPrimary())
+		    {
+		      if (((AliAODMCParticle*)mother)->GetMother() < 0)
+			{
+			  mother = 0;
 			  break;
-		      }
-		    
-		    
-		    if (!mother)
-		      {
-			AliError(Form("WARNING: No mother found for particle %d:", AODmcTrack->GetLabel()));
-			continue;
-		      }
-
+			}
+		      
+		      mother = (AliAODMCParticle*) fArrayMC->At(((AliAODMCParticle*)mother)->GetMother());
+		      if (!mother)
+			break;
+		    }
+		  
+		  if (!mother)
+		    {
+		      AliError(Form("WARNING: No mother found for particle %d:", AODmcTrack->GetLabel()));
+		      continue;
+		    }
+		  
+		  if (fRejectLabelAboveThreshold)
 		    if (mother->GetLabel() >= skipParticlesAbove)
 		      {
 			//AliInfo(Form("Remove particle %d (>= %d)",mother->GetLabel(),skipParticlesAbove));
 			continue;
 		      }
+		  
+		  if (fRejectCheckGenName){
+		    TString generatorName;
+		    Bool_t hasGenerator = mcEvent->GetCocktailGenerator(label,generatorName);
+		    if((!hasGenerator) || (!generatorName.Contains(fGenToBeKept.Data())))
+		      continue;
+		    
+		    //Printf("mother =%d, generatorName=%s", label, generatorName.Data()); 
+		    
+		    
 		  }
-		// ==============================================================================================
-
-		if (AODmcTrack->IsPhysicalPrimary()) {
-		  if(gAODmcCharge > 0){
-		    fHistContaminationPrimariesPlus->Fill(track->Eta(),track->Pt(),phiRad);
-		  }
-		  if(gAODmcCharge < 0){
+		}
+	      // ==============================================================================================
+	      
+	      if (AODmcTrack->IsPhysicalPrimary()) {
+		if(gAODmcCharge > 0){
+		  fHistContaminationPrimariesPlus->Fill(track->Eta(),track->Pt(),phiRad);
+		}
+		if(gAODmcCharge < 0){
 		    fHistContaminationPrimariesMinus->Fill(track->Eta(),track->Pt(),phiRad);
 		  }
 		}
@@ -544,7 +557,17 @@ void AliAnalysisTaskEffContBF::UserExec(Option_t *) {
 		if((mcTrack->Pt() > fMaxPt)||(mcTrack->Pt() < fMinPt)) 
 		  continue;
 		
-		if(!mcTrack->IsPhysicalPrimary()) continue;   
+		if(!mcTrack->IsPhysicalPrimary()) continue;
+
+		if (fInjectedSignals){
+		  if (fRejectCheckGenName){
+		    TString generatorName;
+		    Bool_t hasGenerator = mcEvent->GetCocktailGenerator(iTracks,generatorName);
+		    if((!hasGenerator) || (!generatorName.Contains(fGenToBeKept.Data())))
+		      continue;
+		    
+		  }  
+		}
 		
 		Short_t gMCCharge = mcTrack->Charge();
 		Double_t phiRad = mcTrack->Phi(); 
@@ -595,6 +618,15 @@ void AliAnalysisTaskEffContBF::UserExec(Option_t *) {
 		if(IsLabelUsed(labelArray,label)) continue;
 		labelArray.AddAt(label,labelCounter);
 		labelCounter += 1;
+
+		if (fInjectedSignals){
+		  if (fRejectCheckGenName){
+		    TString generatorName;
+		    Bool_t hasGenerator = mcEvent->GetCocktailGenerator(label,generatorName);
+		    if((!hasGenerator) || (!generatorName.Contains(fGenToBeKept.Data())))
+		      continue;	  
+		  }
+		}
 		
 		Int_t mcGoods = nMCLabelCounter;
 		for (Int_t k = 0; k < mcGoods; k++) {
