@@ -591,6 +591,15 @@ void AliEmcalTriggerMakerKernel::CreateTriggerPatches(const AliVEvent *inputeven
   // std::cout << "Finished finding trigger patches" << std::endl;
 }
 
+double AliEmcalTriggerMakerKernel::GetL0TriggerChannelAmplitude(Int_t col, Int_t row) const{
+  double amp = 0;
+  try {
+    amp = (*fPatchAmplitudes)(col, row);
+  } catch (AliEMCALTriggerDataGrid<double>::OutOfBoundsException &e) {
+
+  }
+  return amp;
+}
 
 double AliEmcalTriggerMakerKernel::GetTriggerChannelADC(Int_t col, Int_t row) const{
   double adc = 0;
