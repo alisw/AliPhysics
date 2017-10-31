@@ -1817,14 +1817,14 @@ void AliAnalysisTaskBeautyCal::SelectPhotonicElectron(Int_t itrack, AliVTrack *t
     if(fFlagLS)
       {
        if(track->Pt()>1) fInvmassLS->Fill(track->Pt(),mass);
-       if(track->Pt()>3) fInvmassLSdca->Fill(dcaxy,mass);
+       if(track->Pt()>2) fInvmassLSdca->Fill(dcaxy,mass);
        if(track->Pt()>1 && EmbPi0) fInvmassLSpi0->Fill(track->Pt(),mass,weight);
        if(track->Pt()>1 && EmbEta) fInvmassLSeta->Fill(track->Pt(),mass,weight);
       }
     if(fFlagULS)
       {
        if(track->Pt()>1) fInvmassULS->Fill(track->Pt(),mass);
-       if(track->Pt()>3) fInvmassULSdca->Fill(dcaxy,mass);
+       if(track->Pt()>2) fInvmassULSdca->Fill(dcaxy,mass);
        if(track->Pt()>1 && EmbPi0) fInvmassULSpi0->Fill(track->Pt(),mass,weight);
        if(track->Pt()>1 && EmbEta) fInvmassULSeta->Fill(track->Pt(),mass,weight);
      }
