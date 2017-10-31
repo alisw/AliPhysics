@@ -86,7 +86,7 @@ AliFemtoManager* ConfigFemtoAnalysis(bool mcAnalysis=false, bool sepCuts=false, 
     baryoniaAnalysis[anIter]->SetThirdParticleCut(thirdTrackCut);
     
     // create m_inv distribution and add to the analysis
-    distribution[anIter] = new AliFemtoTrioMinvFctn(sysNames[iSys],1000,0.0,5.0);
+    distribution[anIter] = new AliFemtoTrioMinvFctn(sysNames[iSys],1000,1.0,3.0);
     distribution[anIter]->SetTrioCut(trioCut);
     
     baryoniaAnalysis[anIter]->AddDistribution(distribution[anIter]);
@@ -134,7 +134,7 @@ AliFemtoBaryoniaAnalysis* GetAnalysis()
 AliFemtoBasicEventCut* GetEventCut()
 {
   AliFemtoBasicEventCut *eventCut = new AliFemtoBasicEventCut();
-  eventCut->SetEventMult(0,100000);
+  eventCut->SetEventMult(3,100000);
   eventCut->SetVertZPos(-8,8);
   eventCut->SetEPVZERO(-TMath::Pi()/2.,TMath::Pi()/2.);
   
@@ -157,10 +157,10 @@ AliFemtoESDTrackCut* GetTrackCut(EPart particle)
   if(particle == kKaonPlus || particle == kPionPlus){ particleCut->SetCharge( 1.0); }
   else                                              { particleCut->SetCharge(-1.0); }
   
-  particleCut->SetPt(0.14,1.5);
+  particleCut->SetPt(0.01,5.0);
   particleCut->SetEta(-0.8, 0.8);
-  particleCut->SetMaxImpactXY(0.2);
-  particleCut->SetMaxImpactZ(0.25);
+  particleCut->SetMaxImpactXY(0.1);
+  particleCut->SetMaxImpactZ(0.1);
   particleCut->SetStatus(AliESDtrack::kTPCin);
   particleCut->SetminTPCncls(80);
   particleCut->SetRemoveKinks(kTRUE);

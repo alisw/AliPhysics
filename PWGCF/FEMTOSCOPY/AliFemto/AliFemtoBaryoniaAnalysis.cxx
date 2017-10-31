@@ -108,15 +108,31 @@ void AliFemtoBaryoniaAnalysis::ProcessEvent(const AliFemtoEvent* currentEvent)
     collection3 = fMixingBuffer[2]->ThirdParticleCollection();
     AddParticles(collection1,collection2,collection3,mixing);
     
+    collection1 = fMixingBuffer[0]->FirstParticleCollection();
+    collection2 = fMixingBuffer[2]->SecondParticleCollection();
+    collection3 = fMixingBuffer[1]->ThirdParticleCollection();
+    AddParticles(collection1,collection2,collection3,mixing);
+    
     collection1 = fMixingBuffer[1]->FirstParticleCollection();
     collection2 = fMixingBuffer[2]->SecondParticleCollection();
     collection3 = fMixingBuffer[0]->ThirdParticleCollection();
+    AddParticles(collection1,collection2,collection3,mixing);
+    
+    collection1 = fMixingBuffer[1]->FirstParticleCollection();
+    collection2 = fMixingBuffer[0]->SecondParticleCollection();
+    collection3 = fMixingBuffer[2]->ThirdParticleCollection();
     AddParticles(collection1,collection2,collection3,mixing);
     
     collection1 = fMixingBuffer[2]->FirstParticleCollection();
     collection2 = fMixingBuffer[0]->SecondParticleCollection();
     collection3 = fMixingBuffer[1]->ThirdParticleCollection();
     AddParticles(collection1,collection2,collection3,mixing);
+    
+    collection1 = fMixingBuffer[2]->FirstParticleCollection();
+    collection2 = fMixingBuffer[1]->SecondParticleCollection();
+    collection3 = fMixingBuffer[0]->ThirdParticleCollection();
+    AddParticles(collection1,collection2,collection3,mixing);
+    
   }
   // delete the oldest event, shift others and save the current one in the buffer
   if(fMixingBuffer[2]) delete fMixingBuffer[2];
