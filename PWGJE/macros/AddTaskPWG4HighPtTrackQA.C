@@ -196,7 +196,7 @@ void AddTaskPWG4HighPtTrackQALHC11hLTS(const char *prodType, Bool_t isPbPb, Int_
   }
 }
 
-void AddTaskPWG4HighPtTrackQAAllReduced2011(const char *prodType = "LHC10h",Bool_t isPbPb=kTRUE, Int_t iAODanalysis = 0)
+void AddTaskPWG4HighPtTrackQAAllReduced2011(const char *prodType, Bool_t isPbPb, Int_t iAODanalysis)
 {    
 
   int cent = 10;
