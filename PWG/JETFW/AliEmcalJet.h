@@ -279,8 +279,10 @@ class AliEmcalJet : public AliVParticle
    * @brief Add new particle (track / mc particle) constituent to the given jet
    * Note: this will append the constituent. No sorting according to particle \f$ p_{t|\f$ is done
    * @param[in] part Particle constituent to be added to the jet
+   * @param[in] isFromEmbeddedEvent Flag whether particle is from embedded event
+   * @param[in] globalIndex Global index in particle container
    */
-  void              AddParticleConstituent(const AliVParticle *const part);
+  void              AddParticleConstituent(const AliVParticle *const part, Bool_t isFromEmbeddedEvent, UInt_t globalIndex);
 
   /**
    * @brief Add new particle (track / mc particle) constituent to the given jet
@@ -295,8 +297,10 @@ class AliEmcalJet : public AliVParticle
    * @param[in] clust Cluster constituent to be added to the jet
    * @param[in] endef Energy definition used in the jetfinder
    * @param[in] pvec Momentum vector calculated for the given cluster based on the primary vertex assumption
+   * @param[in] isFromEmbeddedEvent Flag whether particle is from embedded event
+   * @param[in] globalIndex Global index in particle container
    */
-  void              AddClusterConstituent(const AliVCluster *const clust, AliVCluster::VCluUserDefEnergy_t endef, Double_t *pvec);
+  void              AddClusterConstituent(const AliVCluster *const clust, AliVCluster::VCluUserDefEnergy_t endef, Double_t *pvec, Bool_t isFromEmbeddedEvent, UInt_t globalIndex);
 
   /**
    * @brief Add new cluster constituent to the given jet

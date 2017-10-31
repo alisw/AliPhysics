@@ -855,8 +855,11 @@ void AliEmcalJet::AddFlavourTrack(AliVParticle* hftrack)
   fFlavourTracks->Add(hftrack);
 }
 
-void AliEmcalJet::AddParticleConstituent(const AliVParticle *const part) {
-  AddParticleConstituent(PWG::JETFW::AliEmcalParticleJetConstituent(part));
+void AliEmcalJet::AddParticleConstituent(const AliVParticle *const part, Bool_t isEmbedding, UInt_t globalIndex) {
+  PWG::JETFW::AliEmcalParticleJetConstituent constituent(part);
+  constituent.SetIsFromEmbeddedEvent(isEmbedding);
+  constituent.SetGlobalIndex(globalIndex);
+  AddParticleConstituent(constituent);
 }
 
 void AliEmcalJet::AddParticleConstituent(const PWG::JETFW::AliEmcalParticleJetConstituent &part){
@@ -864,8 +867,11 @@ void AliEmcalJet::AddParticleConstituent(const PWG::JETFW::AliEmcalParticleJetCo
 }
 
 
-void AliEmcalJet::AddClusterConstituent(const AliVCluster *const clust, AliVCluster::VCluUserDefEnergy_t endef, Double_t *pvec) {
-  AddClusterConstituent(PWG::JETFW::AliEmcalClusterJetConstituent(clust, endef, pvec));
+void AliEmcalJet::AddClusterConstituent(const AliVCluster *const clust, AliVCluster::VCluUserDefEnergy_t endef, Double_t *pvec, Bool_t isEmbedding, UInt_t globalIndex) {
+  PWG::JETFW::AliEmcalClusterJetConstituent constituent(clust, endef, pvec);
+  constituent.SetIsFromEmbeddedEvent(isEmbedding);
+  constituent.SetGlobalIndex(globalIndex);
+  AddClusterConstituent(constituent);
 }
 
 void AliEmcalJet::AddClusterConstituent(const PWG::JETFW::AliEmcalClusterJetConstituent &clust) {
