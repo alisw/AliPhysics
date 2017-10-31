@@ -114,7 +114,7 @@ if(${CMAKE_SYSTEM} MATCHES Darwin AND X11_FOUND)
     "${CMAKE_EXE_LINKER_FLAGS} -L${X11_LIB_DIR}")
 else()
   message(WARNING "X11 libraries not found - will NOT build ZMQhistViewer")
-endif(${CMAKE_SYSTEM} MATCHES Darwin)
+endif(${CMAKE_SYSTEM} MATCHES Darwin AND X11_FOUND)
 
 # Installation
 install(TARGETS ${MODULE}
