@@ -67,6 +67,7 @@ AliAnalysisTaskEmcalJetPerformance::AliAnalysisTaskEmcalJetPerformance() :
   AliAnalysisTaskEmcalJet(),
   fPlotJetHistograms(kFALSE),
   fPlotClusterHistograms(kFALSE),
+  fPlotParticleCompositionHistograms(kFALSE),
   fComputeBackground(kFALSE),
   fDoTriggerSimulation(kFALSE),
   fPlotMatchedJetHistograms(kFALSE),
@@ -104,6 +105,7 @@ AliAnalysisTaskEmcalJetPerformance::AliAnalysisTaskEmcalJetPerformance(const cha
   AliAnalysisTaskEmcalJet(name, kTRUE),
   fPlotJetHistograms(kFALSE),
   fPlotClusterHistograms(kFALSE),
+  fPlotParticleCompositionHistograms(kFALSE),
   fComputeBackground(kFALSE),
   fDoTriggerSimulation(kFALSE),
   fPlotMatchedJetHistograms(kFALSE),
@@ -205,6 +207,9 @@ void AliAnalysisTaskEmcalJetPerformance::UserCreateOutputObjects()
   }
   if (fPlotClusterHistograms) {
     AllocateClusterHistograms();
+  }
+  if (fPlotParticleCompositionHistograms) {
+    AllocateParticleCompositionHistograms();
   }
   if (fComputeBackground) {
     AllocateBackgroundHistograms();
@@ -359,30 +364,71 @@ void AliAnalysisTaskEmcalJetPerformance::AllocateClusterHistograms()
 {
   TString histname;
   TString htitle;
+  
+  const Int_t nRcorrBins = 50;
+  Double_t *RcorrBins = GenerateFixedBinArray(nRcorrBins, 0., 1.);
+  
+  // Plot M02 distribution (centrality, Eclus nonlincorr, M02)
+  histname = "ClusterHistograms/hM02";
+  htitle = histname + ";Centrality (%);#it{E}_{clus} (GeV); M02";
+  fHistManager.CreateTH3(histname.Data(), htitle.Data(), fNCentHistBins, fCentHistBins, fNPtHistBins, fPtHistBins, fNM02HistBins, fM02HistBins);
+  
+  // Plot Rcorr distribution (centrality, trackPSum, Rcorr = (Enonlincorr - Ehadcorr) / trackPSum)
+  histname = "ClusterHistograms/hRcorrVsCent";
+  htitle = histname + ";Centrality (%);#Sigma#it{p}_{track} (GeV); R_{corr} = #frac{#DeltaE_{clus}}{#Sigmap_{track}}";
+  fHistManager.CreateTH3(histname.Data(), htitle.Data(), fNCentHistBins, fCentHistBins, fNPtHistBins, fPtHistBins, nRcorrBins, RcorrBins);
+  
+  // Plot Rcorr distribution for 0-10% centrality (Eclus nonlincorr, trackPSum, Rcorr)
+  histname = "ClusterHistograms/hRcorr0-10";
+  htitle = histname + ";#it{E}_{clus} (GeV);#Sigma#it{p}_{track} (GeV); R_{corr} = #frac{#DeltaE_{clus}}{#Sigmap_{track}}";
+  fHistManager.CreateTH3(histname.Data(), htitle.Data(), fNPtHistBins, fPtHistBins, fNPtHistBins, fPtHistBins, nRcorrBins, RcorrBins);
+  
+  // Plot Rcorr distribution for 50-90% centrality (Eclus nonlincorr, trackPSum, Rcorr)
+  histname = "ClusterHistograms/hRcorr50-90";
+  htitle = histname + ";#it{E}_{clus} (GeV);#Sigma#it{p}_{track} (GeV); R_{corr} = #frac{#DeltaE_{clus}}{#Sigmap_{track}}";
+  fHistManager.CreateTH3(histname.Data(), htitle.Data(), fNPtHistBins, fPtHistBins, fNPtHistBins, fPtHistBins, nRcorrBins, RcorrBins);
+  
+  // Plot also Rcorr-clus (centrality, trackPSum, Rcorr-clus = (Enonlincorr - Ehadcorr) / Enonlincorr )
+  histname = "ClusterHistograms/hRcorrClusVsCent";
+  htitle = histname + ";Centrality (%);#Sigma#it{p}_{track} (GeV); #frac{#DeltaE_{clus}}{E_{clus}}";
+  fHistManager.CreateTH3(histname.Data(), htitle.Data(), fNCentHistBins, fCentHistBins, fNPtHistBins, fPtHistBins, nRcorrBins, RcorrBins);
+  
+  // Rcorr-clus for 0-10% centrality (Eclus nonlincorr, trackPSum, Rcorr-clus = (Enonlincorr - Ehadcorr) / Enonlincorr )
+  histname = "ClusterHistograms/hRcorrClus0-10";
+  htitle = histname + ";#it{E}_{clus} (GeV);#Sigma#it{p}_{track} (GeV); #frac{#DeltaE_{clus}}{E_{clus}}";
+  fHistManager.CreateTH3(histname.Data(), htitle.Data(), fNPtHistBins, fPtHistBins, fNPtHistBins, fPtHistBins, nRcorrBins, RcorrBins);
+  
+  // Rcorr-clus for 50-90% centrality (Eclus nonlincorr, trackPSum, Rcorr-clus = (Enonlincorr - Ehadcorr) / Enonlincorr )
+  histname = "ClusterHistograms/hRcorrClus50-90";
+  htitle = histname + ";#it{E}_{clus} (GeV);#Sigma#it{p}_{track} (GeV); #frac{#DeltaE_{clus}}{E_{clus}}";
+  fHistManager.CreateTH3(histname.Data(), htitle.Data(), fNPtHistBins, fPtHistBins, fNPtHistBins, fPtHistBins, nRcorrBins, RcorrBins);
+  
+}
+
+/*
+ * This function allocates the histograms for the jet composition study.
+ */
+void AliAnalysisTaskEmcalJetPerformance::AllocateParticleCompositionHistograms()
+{
+  TString histname;
+  TString htitle;
   Int_t nPtBins = TMath::CeilNint(fMaxPt/2);
   
   const Int_t nRejBins = 32;
   Double_t* rejReasonBins = new Double_t[nRejBins+1];
   GenerateFixedBinArray(nRejBins, 0, nRejBins, rejReasonBins);
+  const Int_t nParticleTypes = 8;
+  Double_t *particleTypeBins = GenerateFixedBinArray(nParticleTypes, -0.5, 7.5);
   
   AliEmcalContainer* cont = 0;
   TIter nextClusColl(&fClusterCollArray);
   while ((cont = static_cast<AliEmcalContainer*>(nextClusColl()))) {
-  
-    // rejection reason plot, to make efficiency correction
-    histname = TString::Format("%s/hClusterRejectionReasonEMCal", cont->GetArrayName().Data());
-    htitle = histname + ";Rejection reason;#it{E}_{clus} (GeV/)";
-    TH2* hist = fHistManager.CreateTH2(histname.Data(), htitle.Data(), nRejBins, rejReasonBins, fNPtHistBins, fPtHistBins);
-    SetRejectionReasonLabels(hist->GetXaxis());
     
-    histname = TString::Format("%s/hClusterRejectionReasonMC", cont->GetArrayName().Data());
+    histname = "JetPerformance/hClusterRejectionReasonMC";
     htitle = histname + ";Rejection reason;#it{E}_{clus} (GeV/)";
     TH2* histMC = fHistManager.CreateTH2(histname.Data(), htitle.Data(), nRejBins, rejReasonBins, fNPtHistBins, fPtHistBins);
     SetRejectionReasonLabels(histMC->GetXaxis());
   }
-  
-  const Int_t nParticleTypes = 8;
-  Double_t *particleTypeBins = GenerateFixedBinArray(nParticleTypes, -0.5, 7.5);
   
   // M02 vs. Energy vs. Particle type
   histname = "JetPerformance/hM02VsParticleType";
@@ -929,6 +975,9 @@ Bool_t AliAnalysisTaskEmcalJetPerformance::FillHistograms()
   if (fPlotClusterHistograms) {
     FillClusterHistograms();
   }
+  if (fPlotParticleCompositionHistograms) {
+    FillParticleCompositionHistograms();
+  }
   if (fPlotMatchedJetHistograms) {
     FillMatchedJetHistograms();
   }
@@ -1052,6 +1101,83 @@ void AliAnalysisTaskEmcalJetPerformance::FillJetHistograms()
  * This function fills the histograms for the calorimeter performance study.
  */
 void AliAnalysisTaskEmcalJetPerformance::FillClusterHistograms()
+{
+  TString histname;
+  
+  // Loop through clusters
+  AliClusterContainer* clusters = GetClusterContainer(0);
+  const AliVCluster* clus;
+  for (auto it : clusters->accepted_momentum()) {
+    
+    clus = it.second;
+    
+    // Include only EMCal/DCal clusters
+    if (!clus->IsEMCAL()) {
+      continue;
+    }
+    
+    // Compute the sum of matched track momentum, and Rcorr quantities
+    Double_t trackPSum = 0;
+    const AliVTrack* track = nullptr;
+    for (Int_t itrack=0; itrack < clus->GetNTracksMatched(); itrack++) {
+      track = dynamic_cast<AliVTrack*>(clus->GetTrackMatched(itrack));
+      if (track) {
+        trackPSum += track->P();
+      }
+    }
+    
+    Double_t deltaE = clus->GetNonLinCorrEnergy() - clus->GetHadCorrEnergy();
+    Double_t Rcorr = 0;
+    if (trackPSum > 1e-3) {
+      Rcorr = deltaE / trackPSum;
+    }
+    
+    Double_t RcorrClus = deltaE / clus->GetNonLinCorrEnergy();
+    
+    // Fill M02 distribution (centrality, Eclus nonlincorr, M02)
+    histname = "ClusterHistograms/hM02";
+    fHistManager.FillTH3(histname, fCent, clus->GetNonLinCorrEnergy(), clus->GetM02());
+    
+    // Fill Rcorr distribution (centrality, trackPSum, Rcorr = (Enonlincorr - Ehadcorr) / trackPSum)
+    histname = "ClusterHistograms/hRcorrVsCent";
+    fHistManager.FillTH3(histname, fCent, trackPSum, Rcorr);
+    
+    // Fill Rcorr distribution for 0-10% centrality (Eclus nonlincorr, trackPSum, Rcorr)
+    if (fCent > 0 && fCent < 10) {
+      histname = "ClusterHistograms/hRcorr0-10";
+      fHistManager.FillTH3(histname, clus->GetNonLinCorrEnergy(), trackPSum, Rcorr);
+    }
+    
+    // Fill Rcorr distribution for 50-90% centrality (Eclus nonlincorr, trackPSum, Rcorr)
+    if (fCent > 50 && fCent < 90) {
+      histname = "ClusterHistograms/hRcorr50-90";
+      fHistManager.FillTH3(histname, clus->GetNonLinCorrEnergy(), trackPSum, Rcorr);
+    }
+    
+    // Fill also Rcorr-clus (centrality, trackPSum, Rcorr-clus = (Enonlincorr - Ehadcorr) / Enonlincorr )
+    histname = "ClusterHistograms/hRcorrClusVsCent";
+    fHistManager.FillTH3(histname, fCent, trackPSum, RcorrClus);
+    
+    // Fill Rcorr-clus for 0-10% centrality (Eclus nonlincorr, trackPSum, Rcorr-clus = (Enonlincorr - Ehadcorr) / Enonlincorr )
+    if (fCent > 0 && fCent < 10) {
+      histname = "ClusterHistograms/hRcorrClus0-10";
+      fHistManager.FillTH3(histname, clus->GetNonLinCorrEnergy(), trackPSum, RcorrClus);
+    }
+    
+    // Fill Rcorr-clus for 50-90% centrality (Eclus nonlincorr, trackPSum, Rcorr-clus = (Enonlincorr - Ehadcorr) / Enonlincorr )
+    if (fCent > 50 && fCent < 90) {
+      histname = "ClusterHistograms/hRcorrClus50-90";
+      fHistManager.FillTH3(histname, clus->GetNonLinCorrEnergy(), trackPSum, RcorrClus);
+    }
+    
+  }
+
+}
+
+/*
+ * This function fills the histograms for the calorimeter performance study.
+ */
+void AliAnalysisTaskEmcalJetPerformance::FillParticleCompositionHistograms()
 {
   TString histname;
   
