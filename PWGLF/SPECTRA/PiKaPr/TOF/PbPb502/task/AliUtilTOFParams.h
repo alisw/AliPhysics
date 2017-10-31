@@ -50,10 +50,10 @@ namespace AliUtilTOFParams {
   const TString multest[nMultEstimators] = {"RefMult", "V0Mult"};
   const TString mEstimator[nMultEstimators] = {"Reference Multiplicity", "V0M Percentile"};
   const Int_t nCharges = 2;
-  const TString pC[nCharges] = {"Pos", "Neg"};
-  const TString pc[nCharges] = {"pos", "neg"};
-  const TString pCharge[nCharges] = {"Positive", "Negative"};
-  const TString pSign[nCharges] = {"+", "-"};
+  const TString pC[nCharges + 1] = {"Pos", "Neg", "Sum"};
+  const TString pc[nCharges + 1] = {"pos", "neg", "sum"};
+  const TString pCharge[nCharges + 1] = {"Positive", "Negative", "Summed"};
+  const TString pSign[nCharges + 1] = {"+", "-", "+-"};
   const Int_t nSpecies = 4;
   const TString pS[nSpecies] = {"Pi", "K", "P", "D"};
   const TString ps[nSpecies] = {"pi", "k", "p", "d"};
