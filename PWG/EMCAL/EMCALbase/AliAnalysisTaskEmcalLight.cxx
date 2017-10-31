@@ -691,7 +691,7 @@ void AliAnalysisTaskEmcalLight::ExecOnce()
     return;
   }
 
-  if (fNeedEmcalGeom) {
+  if (fNeedEmcalGeom && !fGeom) {
     fGeom = AliEMCALGeometry::GetInstanceFromRunNumber(InputEvent()->GetRunNumber());
     if (!fGeom) {
       AliFatal(Form("%s: Can not get EMCal geometry instance. If you do not need the EMCal geometry, disable it by setting task->SetNeedEmcalGeometry(kFALSE).", GetName()));
