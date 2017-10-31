@@ -148,7 +148,7 @@ set(HDRS ${HDRS}
 get_directory_property(incdirs INCLUDE_DIRECTORIES)
 generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}")
 
-set(ROOT_DEPENDENCIES Core Geom Graf Hist MathCore Net RIO Tree XMLParser)
+set(ROOT_DEPENDENCIES Cint Core Geom Graf Hist MathCore Net RIO Tree XMLParser)
 set(ALIROOT_DEPENDENCIES STEERBase RAWDatabase AliHLTHOMER)
 # Generate the ROOT map
 # Dependecies
