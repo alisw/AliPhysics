@@ -23,18 +23,34 @@ void AliDrawStyleTest_StyleArray();
 void AliDrawStyleTest_Attributes();
 void AliDrawStyleTest_GetIntValues();
 void AliDrawStyleTest_GetFloatValues();
-//void AliDrawStyleTest_CSSReadWrite();
+//  void AliDrawStyleTest_CSSReadWrite();
 void AliDrawStyleTest_IsSelected();
 void AliDrawStyleTest_GetProperty();
+void AliDrawStyleTest_GetSelector();
+// void AliDrawStyleTest_CountObjects();
+// void AliDrawStyleTest_TGraphApplyStyle();
+// void AliDrawStyleTest_TH1ApplyStyle();
+// void AliDrawStyleTest_TF1ApplyStyle();
+// void AliDrawStyleTest_TPadApplyStyle();
+// void AliDrawStyleTest_TCanvasApplyCssStyle();
+// void AliDrawStyleTest_ApplyCssStyle();
 
 void AliDrawStyleTest(){
   AliDrawStyleTest_StyleArray();
   AliDrawStyleTest_Attributes();
   AliDrawStyleTest_GetIntValues();
   AliDrawStyleTest_GetFloatValues();
-//  AliDrawStyleTest_CSSReadWrite();
+  //  AliDrawStyleTest_CSSReadWrite();
   AliDrawStyleTest_IsSelected();
   AliDrawStyleTest_GetProperty();
+  AliDrawStyleTest_GetSelector();
+  // AliDrawStyleTest_CountObjects();
+  // AliDrawStyleTest_TGraphApplyStyle();
+  // AliDrawStyleTest_TH1ApplyStyle();
+  // AliDrawStyleTest_TF1ApplyStyle();
+  // AliDrawStyleTest_TPadApplyStyle();
+  // AliDrawStyleTest_TCanvasApplyCssStyle();
+  // AliDrawStyleTest_ApplyCssStyle();
 }
 
 /// Test acces to the style indexed array
@@ -266,3 +282,53 @@ void  AliDrawStyleTest_GetProperty(){
   }
 
 }
+
+
+void AliDrawStyleTest_GetSelector(){
+
+  if (AliDrawStyle::GetSelector("alirootTestStyle.css") == TString("\n\n\nTGraph#obj1, TGraph.Status#TPC.QA.dcar_posA_1    \t\n\n\n\nTF1.Status, .Status#obj1, #obj3    \t\n\n.Status#obj1, #obj3, TGraphErrors.Warning    \t\n\n\nTH1.Status#obj1, TH1.Warning#obj1, TH1.Warning#obj3    \t")){
+    ::Info("AliDrawStyleTest","AliDrawStyle::GetSelector(\"alirootTestStyle.css\")- IsOK");
+  }else{
+    ::Error("AliDrawStyleTest","AliDrawStyle::GetSelector(\"alirootTestStyle.css\")- FAILED");
+  }
+
+}
+//TODO: added generator of objects and check function
+//void AliDrawStyleTest_CountObjects(){
+  // const Int_t nHis = 10;
+  // TH1F *hisArray[nHis];
+  // TGraph *grArray[nHis];
+  // TF1  *fitArray[nHis];
+  // //TGraphErrors *grArray[nHis];
+  // //TF1  *fitArray[nHis];
+  // TList *oList = new TList();
+  //
+  // for (Int_t i=0; i<nHis; i++){
+  //   hisArray[i] = new TH1F(TString::Format("his%d.classRaw",i).Data(), "histo from a gaussian", 100, -3, 3);
+  //   fitArray[i] = new TF1(TString::Format("func%d.classRaw",i).Data(),"",0,3,6);
+  //   grArray[i] = new TGraph(10);
+  //   oList->AddLast(hisArray[i]);
+  //   oList->AddLast(fitArray[i]);
+  //   oList->AddLast(grArray[i]);
+  // }
+
+//}
+
+// void AliDrawStyleTest_TGraphApplyStyle(){
+//
+// }
+// void AliDrawStyleTest_TH1ApplyStyle(){
+//
+// }
+// void AliDrawStyleTest_TF1ApplyStyle(){
+//
+// }
+// void AliDrawStyleTest_TPadApplyStyle(){
+//
+// }
+// void AliDrawStyleTest_TCanvasApplyCssStyle(){
+//
+// }
+// void AliDrawStyleTest_ApplyCssStyle(){
+//
+// }
