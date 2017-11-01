@@ -1905,7 +1905,7 @@ Bool_t AliConvEventCuts::GetUseNewMultiplicityFramework(){
       fPeriodEnum == kLHC17g8a_fast || fPeriodEnum == kLHC17g8a_cent_woSDD ||                                                              // MC pPb 5TeV LHC16qt
       fPeriodEnum == kLHC17g8b || fPeriodEnum == kLHC17g8c ||                                                                              // MC pPb 8TeV LHC16sr
       fPeriodEnum == kLHC17n ||                                                                                             // Xe-Xe LHC17n
-      fPeriodEnum == kLHC17j6                                                                                               // MC Xe-Xe LHC17n
+      fPeriodEnum == kLHC17j7                                                                                               // MC Xe-Xe LHC17n
       ){
       return kTRUE;
   } else {
@@ -1962,7 +1962,8 @@ Float_t AliConvEventCuts::GetCentrality(AliVEvent *event)
 
 //_____________________________________________________________________________________
 Bool_t AliConvEventCuts::IsCentralitySelected(AliVEvent *event, AliMCEvent *mcEvent)
-{   // Centrality Selection
+{
+  // Centrality Selection
   if(!fIsHeavyIon){
     if ((fCentralityMin == 0 && fCentralityMax == 0) || (fCentralityMin > fCentralityMax) ){
       return kTRUE;
@@ -1982,7 +1983,7 @@ Bool_t AliConvEventCuts::IsCentralitySelected(AliVEvent *event, AliMCEvent *mcEv
   if(fCentralityMin == fCentralityMax ) return kTRUE;//0-100%
   else if ( fCentralityMax==0) fCentralityMax=10; //CentralityRange = fCentralityMin-10*multfactor
   Double_t centrality=GetCentrality(event);
-  if(centrality<0)return kFALSE;
+  if(centrality<0 && !mcEvent)return kFALSE;
 
   Int_t centralityC=0;
   if (fModCentralityClass == 0){
@@ -2089,16 +2090,38 @@ Bool_t AliConvEventCuts::IsCentralitySelected(AliVEvent *event, AliMCEvent *mcEv
       {   0,   0},  // 90
       {   0,   0}// 100 only max accessible
     };
+    Int_t PrimaryTracksLHC17n10[11][2] =
+    {
+        {9999,9999}, //  0 // 1500 max in hist but set to real max
+        { 800, 800}, // 10 // guess
+        { 628, 628}, // 20
+        { 350, 350}, // 30 // guess
+        { 268, 268}, // 40
+        { 200, 200}, // 50 // guess
+        { 100, 100}, // 60 // guess
+        {  51,  44}, // 70 // guess
+        {  21,  18}, // 80 // guess
+        {   0,   0}, // 90 // guess
+        {   0,   0}  // 100 // only max accessible
+    };
+
   Int_t column = 0;
   if(event->IsA()==AliESDEvent::Class()) column = 0;
   if(event->IsA()==AliAODEvent::Class()) column = 1;
 
   if (fModCentralityClass == 3){
     if(mcEvent){
+      // setting specific arry for LHC11h for MC track mult
       if(fPeriodEnum == kLHC14a1a || fPeriodEnum == kLHC14a1b || fPeriodEnum == kLHC14a1c){
         if(nprimaryTracks > PrimaryTracksLHC11h10[fCentralityMax][column] && nprimaryTracks <= PrimaryTracksLHC11h10[fCentralityMin][column])
           return kTRUE;
         else return kFALSE;
+      // setting specific arry for LHC17n for MC track mult
+      } else if(fPeriodEnum == kLHC17j7 ){
+        if(nprimaryTracks > PrimaryTracksLHC17n10[fCentralityMax][column] && nprimaryTracks <= PrimaryTracksLHC17n10[fCentralityMin][column])
+            return kTRUE;
+        else return kFALSE;
+      // setting specific arry for LHC10h for MC track mult
       } else {
         if(nprimaryTracks > PrimaryTracks10[fCentralityMax][column] && nprimaryTracks <= PrimaryTracks10[fCentralityMin][column])
           return kTRUE;
@@ -2114,10 +2137,12 @@ Bool_t AliConvEventCuts::IsCentralitySelected(AliVEvent *event, AliMCEvent *mcEv
   }
   else if (fModCentralityClass ==4){
     if(mcEvent){
+      // setting specific arry for LHC11h for MC track mult
       if(fPeriodEnum == kLHC14a1a || fPeriodEnum == kLHC14a1b || fPeriodEnum == kLHC14a1c){
         if(nprimaryTracks > PrimaryTracksLHC11h5a[fCentralityMax][column] && nprimaryTracks <= PrimaryTracksLHC11h5a[fCentralityMin][column])
           return kTRUE;
         else return kFALSE;
+      // setting specific arry for LHC10h for MC track mult
       } else {
         if(nprimaryTracks > PrimaryTracks5a[fCentralityMax][column] && nprimaryTracks <= PrimaryTracks5a[fCentralityMin][column])
           return kTRUE;
@@ -2133,10 +2158,12 @@ Bool_t AliConvEventCuts::IsCentralitySelected(AliVEvent *event, AliMCEvent *mcEv
   }
   else if (fModCentralityClass ==5){
     if(mcEvent){
+      // setting specific arry for LHC11h for MC track mult
       if(fPeriodEnum == kLHC14a1a || fPeriodEnum == kLHC14a1b || fPeriodEnum == kLHC14a1c){
         if(nprimaryTracks > PrimaryTracksLHC11h5b[fCentralityMax][column] && nprimaryTracks <= PrimaryTracksLHC11h5b[fCentralityMin][column])
           return kTRUE;
         else return kFALSE;
+      // setting specific arry for LHC10h for MC track mult
       } else {
         if(nprimaryTracks > PrimaryTracks5b[fCentralityMax][column] && nprimaryTracks <= PrimaryTracks5b[fCentralityMin][column])
           return kTRUE;
@@ -4928,8 +4955,8 @@ void AliConvEventCuts::SetPeriodEnum (TString periodName){
     fEnergyEnum = kpPb8TeV;
 
   // MC for Xe-Xe
-  } else if (periodName.CompareTo("LHC17j6") == 0){         // HIJING
-    fPeriodEnum = kLHC17j6;
+  } else if (periodName.CompareTo("LHC17j7") == 0){         // HIJING
+    fPeriodEnum = kLHC17j7;
     fEnergyEnum = kXeXe5440GeV;
 
 

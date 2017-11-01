@@ -271,7 +271,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
         kLHC17LowB,         //!< pp 13 TeV low B field
         kLHC17n,            //!< Xe-Xe 5.44 TeV
 
-        kLHC17j6,           //!< MC for Xe-Xe 5.44 TeV HIJING
+        kLHC17j7,           //!< MC for Xe-Xe 5.44 TeV HIJING
         //
         kUnknownPeriod//!< kUnknownPeriod
       };
@@ -633,7 +633,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
   private:
 
       /// \cond CLASSIMP
-      ClassDef(AliConvEventCuts,38)
+      ClassDef(AliConvEventCuts,39)
       /// \endcond
 };
 
