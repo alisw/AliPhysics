@@ -503,7 +503,7 @@ void AliAnalysisTaskHadronicCocktailMC::ProcessMCParticles(){
 
     if (!(TMath::Abs(particle->Energy()-particle->Pz())>0.)) continue;
     Double_t yPre = (particle->Energy()+particle->Pz())/(particle->Energy()-particle->Pz());
-    if (yPre == 0.) continue;
+    if( yPre <= 0 ) continue;
 
     Double_t y = 0.5*TMath::Log(yPre);
     if (TMath::Abs(y) > fMaxY) continue;

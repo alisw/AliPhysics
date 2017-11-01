@@ -163,7 +163,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
       k16P1JJ,          //
       k16P1JJLowB,      //
       // Xe-Xe MC
-      k17j6,            // HIJING
+      k17j7,            // HIJING
 
       // Data starts here
       k10pp7TeV,
@@ -525,7 +525,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
 
   private:
 
-    ClassDef(AliCaloPhotonCuts,51)
+    ClassDef(AliCaloPhotonCuts,52)
 };
 
 #endif
