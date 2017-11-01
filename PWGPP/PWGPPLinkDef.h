@@ -54,6 +54,7 @@
 #pragma link C++ class AliPerfAnalyzeInvPt+;
 #pragma link C++ class AliTPCPerformanceSummary+;
 #pragma link C++ class AliAnalysisNoiseTPC+;
+#pragma link C++ class AliMCTreeTools+;
 
 #pragma link C++ class AliIntSpotEstimator+;
 #pragma link C++ class AliAnalysisTaskIPInfo+;
