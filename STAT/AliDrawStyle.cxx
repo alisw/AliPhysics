@@ -74,6 +74,11 @@
 #include <iostream>
 #include <fstream>
 #include <iomanip>
+#include "TPad.h"
+#include "TGraph.h"
+#include "TMultiGraph.h"
+#include "TAxis.h"
+#include "TList.h"
 #include <ios>
 
 using namespace std;
