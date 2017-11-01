@@ -2274,11 +2274,13 @@ void AliAnalysisTaskGammaCaloMerged::ProcessMCParticles()
         if(isMCFromMBHeader == 0 && ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetSignalRejection() != 3) continue;
       }
 
-      Double_t mesonY   = 0;
-      if(particle->Energy() - particle->Pz() == 0 || particle->Energy() + particle->Pz() == 0){
-          mesonY  = 10.-((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift();
-      }else{
-          mesonY  = 0.5*(TMath::Log((particle->Energy()+particle->Pz()) / (particle->Energy()-particle->Pz())))-((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift();
+      Double_t mesonY = 1.e30;
+      Double_t ratio  = 0;
+      if (particle->Energy() != TMath::Abs(particle->Pz())){
+        ratio         = (particle->Energy()+particle->Pz()) / (particle->Energy()-particle->Pz());
+      }
+      if( !(ratio <= 0) ){
+        mesonY = particle->Y()-((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift();
       }
 
       // fill Primary Y hist
@@ -2538,11 +2540,13 @@ void AliAnalysisTaskGammaCaloMerged::ProcessAODMCParticles()
         if(isMCFromMBHeader == 0 && ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetSignalRejection() != 3) continue;
       }
 
-      Double_t mesonY   = 0;
-      if(particle->E() - particle->Pz() == 0 || particle->E() + particle->Pz() == 0){
-          mesonY  = 10.-((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift();
-      }else{
-          mesonY  = 0.5*(TMath::Log((particle->E()+particle->Pz()) / (particle->E()-particle->Pz())))-((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift();
+      Double_t mesonY = 1.e30;
+      Double_t ratio  = 0;
+      if (particle->E() != TMath::Abs(particle->Pz())){
+        ratio         = (particle->E()+particle->Pz()) / (particle->E()-particle->Pz());
+      }
+      if( !(ratio <= 0) ){
+        mesonY = particle->Y()-((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift();
       }
 
       // fill Primary Y hist

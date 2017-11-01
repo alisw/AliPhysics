@@ -2767,11 +2767,13 @@ void AliAnalysisTaskGammaCalo::ProcessAODMCParticles()
       }
       // Converted MC Gamma
       if(fDoMesonAnalysis){
-        Double_t mesonY = 10.;
-        if(particle->E() - particle->Pz() == 0 || particle->E() + particle->Pz() == 0){
-          mesonY=10.-((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift();
-        } else {
-          mesonY = 0.5*(TMath::Log((particle->E()+particle->Pz()) / (particle->E()-particle->Pz())))-((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift();
+        Double_t mesonY = 1.e30;
+        Double_t ratio  = 0;
+        if (particle->E() != TMath::Abs(particle->Pz())){
+          ratio         = (particle->E()+particle->Pz()) / (particle->E()-particle->Pz());
+        }
+        if( !(ratio <= 0) ){
+          mesonY = particle->Y()-((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift();
         }
 
         if (TMath::Abs(mesonY) < ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->GetRapidityCutValue()){
@@ -2803,11 +2805,13 @@ void AliAnalysisTaskGammaCalo::ProcessAODMCParticles()
             }
           }
 
-          Double_t mesonY = 10.;
-          if(particle->E() - particle->Pz() == 0 || particle->E() + particle->Pz() == 0){
-            mesonY=10.-((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift();
-          } else{
-            mesonY = 0.5*(TMath::Log((particle->E()+particle->Pz()) / (particle->E()-particle->Pz())))-((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift();
+          Double_t mesonY = 1.e30;
+          Double_t ratio  = 0;
+          if (particle->E() != TMath::Abs(particle->Pz())){
+            ratio         = (particle->E()+particle->Pz()) / (particle->E()-particle->Pz());
+          }
+          if( !(ratio <= 0) ){
+            mesonY = particle->Y()-((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift();
           }
           Double_t alpha = -1;
           if (particle->GetPdgCode() == 111 || particle->GetPdgCode() == 221){
@@ -2965,11 +2969,13 @@ void AliAnalysisTaskGammaCalo::ProcessMCParticles()
       }
       if(fDoMesonAnalysis){
 
-        Double_t mesonY = 10.;
-        if(particle->Energy() - particle->Pz() == 0 || particle->Energy() + particle->Pz() == 0){
-          mesonY=10.-((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift();
-        } else{
-          mesonY = 0.5*(TMath::Log((particle->Energy()+particle->Pz()) / (particle->Energy()-particle->Pz())))-((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift();
+        Double_t mesonY = 1.e30;
+        Double_t ratio  = 0;
+        if (particle->Energy() != TMath::Abs(particle->Pz())){
+          ratio         = (particle->Energy()+particle->Pz()) / (particle->Energy()-particle->Pz());
+        }
+        if( !(ratio <= 0) ){
+          mesonY = particle->Y()-((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift();
         }
 
         if (TMath::Abs(mesonY) < ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->GetRapidityCutValue()){
@@ -3001,13 +3007,14 @@ void AliAnalysisTaskGammaCalo::ProcessMCParticles()
               weighted= ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetWeightForMeson(i, fMCEvent, fInputEvent);
             }
           }
-          Double_t mesonY = 10.;
-          if(particle->Energy() - particle->Pz() == 0 || particle->Energy() + particle->Pz() == 0){
-            mesonY=10.-((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift();
-          } else{
-            mesonY = 0.5*(TMath::Log((particle->Energy()+particle->Pz()) / (particle->Energy()-particle->Pz())))-((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift();
+          Double_t mesonY = 1.e30;
+          Double_t ratio  = 0;
+          if (particle->Energy() != TMath::Abs(particle->Pz())){
+            ratio         = (particle->Energy()+particle->Pz()) / (particle->Energy()-particle->Pz());
           }
-
+          if( !(ratio <= 0) ){
+            mesonY = particle->Y()-((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift();
+          }
           Double_t alpha = -1;
           if (particle->GetPdgCode() == 111 || particle->GetPdgCode() == 221){
             alpha = TMath::Abs((daughter0->Energy() - daughter1->Energy()))/(daughter0->Energy() + daughter1->Energy());
