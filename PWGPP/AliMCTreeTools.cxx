@@ -29,11 +29,11 @@
 
 
 /*
-  .L $AliPhysics_SRC/PWGPP/AliMCTreeTools.cxx+
   AliMCTreeTools::SetWDir(gSystem->pwd());
   TFile * f = TFile::Open("AliESDs.root");
   esdTree->Draw("Tracks[].fIp.Pt()/AliMCTreeTools::GetValueAt(Entry$,abs(Tracks[].fLabel),0,0,0,8,1,0)","(Tracks[].fTPCncls)>80&&Tracks[].fITSncls>3","")
-
+  //
+  AliMCTreeTools::MakeChains();
 */
 
 
@@ -75,7 +75,8 @@ TTree *treeTR=0;
 TTree * treeCl=0;
 TTree * treeMC=0;
 Double_t bz=-5;
-
+TChain *AliMCTreeTools::fKineChain=0;
+TChain *AliMCTreeTools::fTRChain=0;
 
 void AliMCTreeTools::SetWDir(TString dir){
   wdir=dir;
@@ -347,3 +348,36 @@ Double_t AliMCTreeTools::FindNearestReference(Int_t iEvent, Int_t itrack, Double
   if (returnValue == 1) return TMath::Sqrt(dist);
 }
 
+/// Mak kinematic chain and add as a friend TrackReferences chain
+/// \param inputList
+/// \return
+TChain *  AliMCTreeTools::MakeKineChain(const char *inputList){
+  TChain * fKineChain = new TChain("KineChain","KineChain");
+  TChain * fTRChain = new TChain("TRChain","TRChain");
+  TObjArray *kineArray = NULL;
+  if (inputList) {
+    kineArray = gSystem->GetFromPipe("cat kinematics.list").Tokenize("\n");
+  }else{
+    kineArray=new TObjArray();
+    kineArray->AddLast(new TObjString("Kinematics.root"));
+  }
+  Int_t nFiles=kineArray->GetEntries();
+  for (Int_t iFile=0; iFile<nFiles; iFile++){
+    TFile * fkine = TFile::Open(kineArray->At(iFile)->GetName());
+    if (fkine==NULL) continue;
+    TList * kineList = fkine->GetListOfKeys();
+    for (Int_t iKey=0; iKey<kineList->GetEntries();iKey++){
+      fKineChain->AddFile(kineArray->At(iFile)->GetName(), TChain::kBigNumber, TString::Format("%s/TreeK",kineList->At(iKey)->GetName()).Data());
+    }
+    TString refName=kineArray->At(iFile)->GetName();
+    refName.ReplaceAll("Kinematics.root", "TrackRefs.root");
+    TFile * ftr = TFile::Open(refName.Data());
+    TList * trList = ftr->GetListOfKeys();
+    for (Int_t iKey=0; iKey<trList->GetEntries();iKey++){
+      fTRChain->AddFile(refName.Data(), TChain::kBigNumber, TString::Format("%s/TreeTR",trList->At(iKey)->GetName()).Data());
+    }
+  }
+  fKineChain->AddFriend(fTRChain,"TR");
+  fTRChain->AddFriend(fKineChain,"K.");
+  return fKineChain;
+}
