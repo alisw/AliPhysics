@@ -3074,3 +3074,29 @@ void TStatToolkit::MakeMultiGraphSparse(TMultiGraph *multiGraph) {
       multiGraph->GetXaxis()->SetBinLabel(iValue + 1, TString::Format("%d", valueArray[iValue]).Data());
   }
 }
+
+
+/// Adapt style for histogram created by TTree queries
+/// \param tree          - input tree (owner of metadata)
+/// \param histogram     - pointer to histogram to AdaptStyle
+///                       if NULL tree->GetHistogram used
+/// \param option        - draw option
+/// \return
+Int_t TStatToolkit::AdaptHistoMetadata(TTree* tree, TH1 *histogram, TString option){
+  if (histogram==NULL) histogram= tree->GetHistogram();
+  if (histogram==NULL) return -1;
+  TNamed *named=0;
+  named = TStatToolkit::GetMetadata(tree,TString(histogram->GetXaxis()->GetTitle())+".AxisTitle");
+  if (named) histogram->GetXaxis()->SetTitle(named->GetTitle());
+  named = TStatToolkit::GetMetadata(tree,TString(histogram->GetYaxis()->GetTitle())+".AxisTitle");
+  if (named) histogram->GetYaxis()->SetTitle(named->GetTitle());
+  if (histogram->GetZaxis()){
+    named = TStatToolkit::GetMetadata(tree,TString(histogram->GetZaxis()->GetTitle())+".AxisTitle");
+    if (named) histogram->GetZaxis()->SetTitle(named->GetTitle());
+  }
+  /// TODO - TEMPORARY -make z tilte vissible  - using pallet size  should be done using CSS
+  TPaletteAxis *palette = (TPaletteAxis*)histogram->GetListOfFunctions()->FindObject("palette");
+  if (palette) palette->SetX2NDC(0.92);
+  histogram->Draw(option.Data());
+  return 1;
+}

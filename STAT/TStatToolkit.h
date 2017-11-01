@@ -30,6 +30,7 @@
 #include "THashList.h"
 #include "TFitResultPtr.h"
 #include "TFitResult.h"
+#include "TPaletteAxis.h"
 //
 // includes necessary for test functions
 //
@@ -143,6 +144,7 @@ namespace TStatToolkit {
   // TTree function for robust draw
   //
   TH1* DrawHistogram(TTree * tree, const char* drawCommand, const char* cuts = "1", const char* hname = "histo", const char* htitle = "histo", Int_t nsigma = 4, Float_t fraction = 0.75, TObjArray *description=0 );
+  Int_t AdaptHistoMetadata(TTree* tree, TH1 *histogram, TString option);
   //
   // TestFunctions:
   //
