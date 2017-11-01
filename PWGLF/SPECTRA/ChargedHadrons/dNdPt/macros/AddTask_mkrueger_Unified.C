@@ -58,7 +58,7 @@ AlidNdPtUnifiedAnalysisTask* AddTask_mkrueger_Unified(TString controlstring, Int
     // general cuts
     task->SelectCollisionCandidates(offlineTriggerMask);
     task->SetTriggerMask(offlineTriggerMask);
-    if(isPbPbAnalysis) task->SetCentralityCut(60., 80.);
+//    if(isPbPbAnalysis) task->SetCentralityCut(60., 80.);
 
     task->SetUseMC(hasMC);
     if(type.Contains("ESD")) task->SetUseESD();
