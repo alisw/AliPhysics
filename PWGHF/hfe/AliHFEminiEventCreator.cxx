@@ -252,7 +252,7 @@ void AliHFEminiEventCreator::UserCreateOutputObjects(){
   fHFEevent = new AliHFEminiEvent;
   //OpenFile(1);
   fHFEtree = new TTree("HFEtree", "HFE event tree");
-  fHFEtree->Branch("HFEevent", "AliHFEminiEvent", fHFEevent, 256000, 99);
+  fHFEtree->Branch("HFEevent", "AliHFEminiEvent", fHFEevent, 256000, 0);
   fHFEtree->SetAutoSave(100000000);
   fList->Add(fHFEtree);
   
