@@ -31,10 +31,10 @@ public:
     kCovarFailed=0x0001     // flag - problem to extract covariance matrix 
   };
 
-  AliTMinuitToolkit(const char *streamerName=0);
+  AliTMinuitToolkit(const char *streamerName=0, const char *mode="recreate");
   virtual ~AliTMinuitToolkit();  
   // streaming intermediate results
-  void  SetStreamer(const char *streamerName);
+  void  SetStreamer(const char *streamerName, const char *mode="recreate");
   TTreeSRedirector *GetStreamer(){return fStreamer;}
   
   //
@@ -44,7 +44,7 @@ public:
   void  FitGraph(TGraph *const gr, Option_t* option = "");
   //  Int_t UnbinnedFit(TTree * inputTree, TString values, TString variables, TString selection, Int_t firstEntry, Int_t nentries);
   Int_t FillFitter(TTree * inputTree, TString values, TString variables, TString selection, Int_t firstEntry, Int_t nentries, Bool_t doReset=kTRUE);
-  TString GetFitFunctionAsAlias();
+  TString GetFitFunctionAsAlias(Option_t *option="", TTree * tree=NULL);
   void Bootstrap(Int_t nIter, const char* reportName, Option_t  *option=0);
   void TwoFoldCrossValidation(Int_t nIter, const char*reportName, Option_t *option=0);
   void MISAC(Int_t nFitPoints, Int_t nIter, const char*reportName, Option_t *option=0);
