@@ -45,6 +45,8 @@ public:
   
   virtual void PostProcess();
   
+  virtual bool IsSTUIncluded(Int_t istu);
+
   virtual void Reset();
   
 protected:
@@ -59,6 +61,8 @@ protected:
   TClonesArray*                fTriggerData;   ///< Trigger data
 	
   Int_t                        fRawDigitIndex[kMaxDigitIndex]; ///< Raw digit indexes
+
+  Bool_t                       fIsRawRootFormat; //!<! Whether the current input raw is in root format
 
 private:
 	
