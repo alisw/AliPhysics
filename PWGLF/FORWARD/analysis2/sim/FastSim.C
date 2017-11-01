@@ -1882,7 +1882,20 @@ struct EPosSim : public FastSim
     }
     return true;
   }
-  const char* GetEGTitle() const { return "EPOS-LHC"; }
+  const char* GetEGTitle() const
+  {
+    static TString tmp;
+    if (!tmp.IsNull()) return tmp.Data();
+    tmp = "EPOS-LHC ";
+    Long_t ret =
+      gROOT->ProcessLine("Form(\"%s(%d,%d)+%s(%d,%d) @ %5d b in[%4.1f,%4.1f]\","
+			 "grp->beam1.Name(), grp->beam1.a, grp->beam1.z,"
+			 "grp->beam2.Name(), grp->beam2.a, grp->beam2.z,"
+			 "Int_t(grp->energy))");
+    tmp.Append(reinterpret_cast<const char*>(ret));
+    Printf("EG title set to %s", tmp.Data());
+    return tmp.Data();
+  }
   void SetupSeed() {}
   Bool_t SetupGen()
   {
