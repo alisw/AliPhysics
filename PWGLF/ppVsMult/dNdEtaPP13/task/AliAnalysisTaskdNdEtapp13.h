@@ -229,7 +229,7 @@ enum {kDummyBin,
   void       SetUseBCMod(Bool_t bc = kFALSE)              {fUseBCMod = bc;}
   void       SetMCCalib(Bool_t calib = kFALSE)              {fMCCalib = calib;}
   void       SetBCMod(Int_t mod=2)        {fBCMod4 = mod;}
-  void       SetCutOnPhi(Bool_t p=kFALSE)   {fCutOnPhi = p;}
+  void       SetCutOnPhi(const char* v="phi0")   {fCutOnPhi = v;}
   void SetCalibfilePath(TString CalibfilePath) {fCalibfilePath=CalibfilePath;}
   void SetCalibHisto(TH1D *calibhisto=0x0);
 
@@ -321,7 +321,7 @@ protected:
   Bool_t fUseBCMod;                         //! flag to use bunch crossing mod 4 events
   Bool_t fMCCalib;                         //! flag to use mc calibrated V0M boundries
   Int_t      fBCMod4;                        //! Select BC Mod4
-  Bool_t fCutOnPhi;                          //! Set cut on affected phi regions
+  TString fCutOnPhi;                          //! Set cut on affected phi regions and for systematics studies
   TString fCalibfilePath;                     //! Set V0M MC calibration file name path
 
 
