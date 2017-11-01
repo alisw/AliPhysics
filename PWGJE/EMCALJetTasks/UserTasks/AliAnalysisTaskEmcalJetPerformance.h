@@ -132,6 +132,8 @@ class AliAnalysisTaskEmcalJetPerformance : public AliAnalysisTaskEmcalJet {
   Double_t*                   fPtHistBins;                          //!<! variable pt bins
   Int_t                       fNM02HistBins;                        //!<! number of variable M02 bins
   Double_t*                   fM02HistBins;                         //!<! variable M02 bins
+  Int_t                       fNEoverPBins;                         //!<! number of variable E/p bins
+  Double_t*                   fEoverPBins;                          //!<! variable E/p bins
   
   // Trigger parameters
   Double_t                    fMBUpscaleFactor;                     //!<! inverse of downscale factor, for MB trigger

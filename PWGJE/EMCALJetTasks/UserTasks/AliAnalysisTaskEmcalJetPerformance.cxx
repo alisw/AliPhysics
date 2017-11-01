@@ -81,6 +81,8 @@ AliAnalysisTaskEmcalJetPerformance::AliAnalysisTaskEmcalJetPerformance() :
   fPtHistBins(0),
   fNM02HistBins(0),
   fM02HistBins(0),
+  fNEoverPBins(0),
+  fEoverPBins(0),
   fMBUpscaleFactor(1.),
   fMedianEMCal(0.),
   fMedianDCal(0.),
@@ -119,6 +121,8 @@ AliAnalysisTaskEmcalJetPerformance::AliAnalysisTaskEmcalJetPerformance(const cha
   fPtHistBins(0),
   fNM02HistBins(0),
   fM02HistBins(0),
+  fNEoverPBins(0),
+  fEoverPBins(0),
   fMBUpscaleFactor(1.),
   fMedianEMCal(0.),
   fMedianDCal(0.),
@@ -171,6 +175,12 @@ void AliAnalysisTaskEmcalJetPerformance::GenerateHistoBins()
   GenerateFixedBinArray(20, 1., 3., fM02HistBins+41);
   GenerateFixedBinArray(10, 3., 5., fM02HistBins+61);
   GenerateFixedBinArray(10, 5., 10., fM02HistBins+71);
+  
+  fNEoverPBins = 47;
+  fEoverPBins = new Double_t[fNEoverPBins+1];
+  GenerateFixedBinArray(30, 0, 1.5, fEoverPBins);
+  GenerateFixedBinArray(10, 1.5, 3.5, fEoverPBins+35);
+  GenerateFixedBinArray(7, 3.5, 10.5, fEoverPBins+41);
 }
 
 /**
@@ -367,11 +377,66 @@ void AliAnalysisTaskEmcalJetPerformance::AllocateClusterHistograms()
   
   const Int_t nRcorrBins = 50;
   Double_t *RcorrBins = GenerateFixedBinArray(nRcorrBins, 0., 1.);
+  const Int_t nCellBins = 30;
+  Double_t *cellBins = GenerateFixedBinArray(nCellBins, -0.5, 29.5);
+  const Int_t nMatchedTrackBins = 10;
+  Double_t *matchedTrackBins = GenerateFixedBinArray(nMatchedTrackBins, -0.5, 4.5);
+  
+  //////////////////////////////////////////////
+  ////// Plot M02 studies
   
   // Plot M02 distribution (centrality, Eclus nonlincorr, M02)
   histname = "ClusterHistograms/hM02";
   htitle = histname + ";Centrality (%);#it{E}_{clus} (GeV); M02";
   fHistManager.CreateTH3(histname.Data(), htitle.Data(), fNCentHistBins, fCentHistBins, fNPtHistBins, fPtHistBins, fNM02HistBins, fM02HistBins);
+  
+  // Plot Ncell distribution for M02 > 0.4 and M02 < 0.4 (centrality, Eclus nonlincorr, Ncells)
+  histname = "ClusterHistograms/hNcellsM02G04";
+  htitle = histname + ";Centrality (%);#it{E}_{clus} (GeV); Ncells";
+  fHistManager.CreateTH3(histname.Data(), htitle.Data(), fNCentHistBins, fCentHistBins, fNPtHistBins, fPtHistBins, nCellBins, cellBins);
+  
+  histname = "ClusterHistograms/hNcellsM02L04";
+  htitle = histname + ";Centrality (%);#it{E}_{clus} (GeV); Ncells";
+  fHistManager.CreateTH3(histname.Data(), htitle.Data(), fNCentHistBins, fCentHistBins, fNPtHistBins, fPtHistBins, nCellBins, cellBins);
+  
+  //////////////////////////////////////////////
+  ////// Plot track matching studies
+  
+  // Plot matched track pT (centrality, Eclus nonlincorr, trackPsum)
+  histname = "ClusterHistograms/hMatchedTrackPt";
+  htitle = histname + ";Centrality (%);#it{E}_{clus} (GeV); #Sigma#it{p}_{track} (GeV)";
+  fHistManager.CreateTH3(histname.Data(), htitle.Data(), fNCentHistBins, fCentHistBins, fNPtHistBins, fPtHistBins, fNPtHistBins, fPtHistBins);
+  
+  // Plot number of matched tracks (centrality, Eclus nonlincorr, N matches)
+  histname = "ClusterHistograms/hMatchedTrackN";
+  htitle = histname + ";Centrality (%);#it{E}_{clus} (GeV); N_{tracks}";
+  fHistManager.CreateTH3(histname.Data(), htitle.Data(), fNCentHistBins, fCentHistBins, fNPtHistBins, fPtHistBins, nMatchedTrackBins, matchedTrackBins);
+  
+  // Plot M02 distribution for clusters with matched tracks (centrality, Eclus nonlincorr, M02)
+  histname = "ClusterHistograms/hM02Matched";
+  htitle = histname + ";Centrality (%);#it{E}_{clus} (GeV); M02";
+  fHistManager.CreateTH3(histname.Data(), htitle.Data(), fNCentHistBins, fCentHistBins, fNPtHistBins, fPtHistBins, fNM02HistBins, fM02HistBins);
+  
+  // Plot M02 distribution for clusters without matched tracks (centrality, Eclus nonlincorr, M02)
+  histname = "ClusterHistograms/hM02Unmatched";
+  htitle = histname + ";Centrality (%);#it{E}_{clus} (GeV); M02";
+  fHistManager.CreateTH3(histname.Data(), htitle.Data(), fNCentHistBins, fCentHistBins, fNPtHistBins, fPtHistBins, fNM02HistBins, fM02HistBins);
+  
+  //////////////////////////////////////////////
+  ////// Plot E/p studies
+  
+  // Plot E/p (centrality, Eclus nonlincorr, Eclus nonlincorr / trackPsum)
+  histname = "ClusterHistograms/hEoverP";
+  htitle = histname + ";Centrality (%);#it{E}_{clus} (GeV); #it{E}_{clus} / #Sigma#it{p}_{track} (GeV)";
+  fHistManager.CreateTH3(histname.Data(), htitle.Data(), fNCentHistBins, fCentHistBins, fNPtHistBins, fPtHistBins, fNEoverPBins, fEoverPBins);
+  
+  // Plot E/p vs. M02 for 0-10% (Eclus nonlincorr, Eclus nonlincorr / trackPsum, M02)
+  histname = "ClusterHistograms/hEoverPM02";
+  htitle = histname + ";#it{E}_{clus} (GeV); #it{E}_{clus} / #Sigma#it{p}_{track} (GeV); M02";
+  fHistManager.CreateTH3(histname.Data(), htitle.Data(), fNPtHistBins, fPtHistBins, fNEoverPBins, fEoverPBins, fNM02HistBins, fM02HistBins);
+  
+  //////////////////////////////////////////////
+  ////// Plot hadronic correction studies
   
   // Plot Rcorr distribution (centrality, trackPSum, Rcorr = (Enonlincorr - Ehadcorr) / trackPSum)
   histname = "ClusterHistograms/hRcorrVsCent";
@@ -1116,7 +1181,7 @@ void AliAnalysisTaskEmcalJetPerformance::FillClusterHistograms()
       continue;
     }
     
-    // Compute the sum of matched track momentum, and Rcorr quantities
+    // Compute the sum of matched track momentum, and various track matching / hadronic corretion quantities
     Double_t trackPSum = 0;
     const AliVTrack* track = nullptr;
     for (Int_t itrack=0; itrack < clus->GetNTracksMatched(); itrack++) {
@@ -1126,17 +1191,73 @@ void AliAnalysisTaskEmcalJetPerformance::FillClusterHistograms()
       }
     }
     
+    Double_t EoverP = 0;
+    if (trackPSum > 1e-3) {
+      EoverP = clus->GetNonLinCorrEnergy() / trackPSum;
+    }
+    
     Double_t deltaE = clus->GetNonLinCorrEnergy() - clus->GetHadCorrEnergy();
     Double_t Rcorr = 0;
     if (trackPSum > 1e-3) {
       Rcorr = deltaE / trackPSum;
     }
-    
     Double_t RcorrClus = deltaE / clus->GetNonLinCorrEnergy();
     
+    //////////////////////////////////////////////
+    ////// Plot M02 studies
+
     // Fill M02 distribution (centrality, Eclus nonlincorr, M02)
     histname = "ClusterHistograms/hM02";
     fHistManager.FillTH3(histname, fCent, clus->GetNonLinCorrEnergy(), clus->GetM02());
+    
+    // Plot Ncell distribution for M02 > 0.4 or M02 < 0.4 (centrality, Eclus nonlincorr, Ncells)
+    if (clus->GetM02() > 0.4) {
+      histname = "ClusterHistograms/hNcellsM02G04";
+      fHistManager.FillTH3(histname, fCent, clus->GetNonLinCorrEnergy(), clus->GetNCells());
+    }
+    if (clus->GetM02() < 0.4) {
+      histname = "ClusterHistograms/hNcellsM02L04";
+      fHistManager.FillTH3(histname, fCent, clus->GetNonLinCorrEnergy(), clus->GetNCells());
+    }
+    
+    //////////////////////////////////////////////
+    ////// Plot track matching studies
+  
+    // Plot matched track pT (centrality, Eclus nonlincorr, trackPsum)
+    histname = "ClusterHistograms/hMatchedTrackPt";
+    fHistManager.FillTH3(histname, fCent, clus->GetNonLinCorrEnergy(), trackPSum);
+    
+    // Plot number of matched tracks (centrality, Eclus nonlincorr, N matches)
+    histname = "ClusterHistograms/hMatchedTrackN";
+    fHistManager.FillTH3(histname, fCent, clus->GetNonLinCorrEnergy(), clus->GetNTracksMatched());
+    
+    // Plot M02 distribution for clusters with matched tracks (centrality, Eclus nonlincorr, M02)
+    histname = "ClusterHistograms/hM02Matched";
+    if (clus->GetNTracksMatched() > 0) {
+      fHistManager.FillTH3(histname, fCent, clus->GetNonLinCorrEnergy(), clus->GetM02());
+    }
+    
+    // Plot M02 distribution for clusters without matched tracks (centrality, Eclus nonlincorr, M02)
+    histname = "ClusterHistograms/hM02Unmatched";
+    if (clus->GetNTracksMatched() == 0) {
+      fHistManager.FillTH3(histname, fCent, clus->GetNonLinCorrEnergy(), clus->GetM02());
+    }
+    
+    //////////////////////////////////////////////
+    ////// Plot E/p studies
+    
+    // Plot E/p (centrality, Eclus nonlincorr, Eclus nonlincorr / trackPsum)
+    histname = "ClusterHistograms/hEoverP";
+    fHistManager.FillTH3(histname, fCent, clus->GetNonLinCorrEnergy(), EoverP);
+
+    // Plot E/p vs. M02 for 0-10% (Eclus nonlincorr, Eclus nonlincorr / trackPsum, M02)
+    histname = "ClusterHistograms/hEoverPM02";
+    if (fCent < 10) {
+      fHistManager.FillTH3(histname, clus->GetNonLinCorrEnergy(), EoverP, clus->GetM02());
+    }
+    
+    //////////////////////////////////////////////
+    ////// Plot hadronic correction studies
     
     // Fill Rcorr distribution (centrality, trackPSum, Rcorr = (Enonlincorr - Ehadcorr) / trackPSum)
     histname = "ClusterHistograms/hRcorrVsCent";
