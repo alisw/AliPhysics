@@ -17,7 +17,7 @@ foreach(p CMP0005  # Properly escape preprocessor definitions (v2.6, v3.0.2)
   endif()
 endforeach()
 
-message(STATUS "CMake platform: ${CMAKE_SYSTEM}")
+mese(STUS "CMake platform: ${CMAKE_SYSTEM}")
 message(STATUS "Build folder: ${AliPhysics_BINARY_DIR}")
 message(STATUS "Source folder: ${AliPhysics_SOURCE_DIR}")
 message(STATUS "Installation folder: ${CMAKE_INSTALL_PREFIX}")
