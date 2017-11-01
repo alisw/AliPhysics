@@ -52,12 +52,24 @@
 class TPRegexp;
 class TStyle;
 class TPad;
+class TCanvas;
+class TF1;
+class TH1;
+class TGraph;
 
 class AliDrawStyle : public TObject{
 public:
   static void ApplyStyle(const char * styleName);
   static const TStyle *GetStyle(const char * styleName) {return fStyleAlice[styleName];}
   static const TObjArray *GetCssStyle(const char *styleName){return fCssStyleAlice[styleName];}
+  static TString GetSelector(const char *styleName);
+  static Int_t CountObjects(TPad *cPad, TString className);
+  static void TGraphApplyStyle(const char* styleName, TGraph *tempGraph, TString elementName, TString className, TString objName, Int_t objNum);
+  static void TH1ApplyStyle(const char* styleName, TH1 *tempHis, TString elementName, TString className, TString objName, Int_t objNum);
+  static void TF1ApplyStyle(const char* styleName, TF1 *tempFunc, TString elementName, TString className, TString objName, Int_t objNum);
+  static void TPadApplyStyle(const char* styleName, TPad *tempPad, TString elementName, TString className, TString objName);
+  static void TCanvasApplyCssStyle(const char* styleName, TCanvas *tempCanvas, TString elementName, TString className, TString objName);
+  static void ApplyCssStyle(TPad *pad, const char* styleName);
   static void  SetCssStyle(const char *styleName, TObjArray*array ){ fCssStyleAlice[styleName]=array;}
   static void SetDefaults();
   static void SetDefaultStyles(const char * styleName, const char* arrayName);
