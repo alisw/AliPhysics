@@ -714,6 +714,110 @@ TH2F* AliTPCCorrection::CreateHistoDZinZR(Float_t phi,Int_t nz,Int_t nr) {
 
 }
 
+TH2F* AliTPCCorrection::CreateHistoDRinPhiR(Float_t z,Int_t nPhi,Int_t nR, Bool_t useSector, Float_t shift) {
+  /// Simple plot functionality.
+  /// Returns a 2d hisogram which represents the corrections in radial direction (dr)
+  /// in respect to position z within the PhiR plane.
+  /// The histogramm has nPhi times nR entries.
+
+  Double_t phiMin = 0.f;
+  Double_t phiMax = (useSector)?18.:TMath::TwoPi();
+  if (TMath::Abs(shift)>0) {
+    phiMax-=shift;
+    phiMin-=shift;
+  }
+
+  TH2F *h=CreateTH2F("dr_rphi", TString::Format("%s: DRinPhiR Z=%2.0f", GetTitle(),z).Data(),useSector?"sector":"#varphi [rad]","r [cm]","dr [cm]",
+                     nPhi,phiMin,phiMax,nR,85.,250.);
+  Float_t x[3],dx[3];
+  x[2]=z;
+  const Int_t roc=z>0.?0:18; // FIXME
+  for (Int_t ir=1;ir<=nR;++ir) {
+    const Float_t r0=h->GetYaxis()->GetBinCenter(ir);
+    for (Int_t iphi=1;iphi<=nPhi;++iphi) {
+      Float_t phi=h->GetXaxis()->GetBinCenter(iphi);
+      if (useSector) phi=phi/18*TMath::TwoPi();
+      x[0]=r0*TMath::Cos(phi);
+      x[1]=r0*TMath::Sin(phi);
+      GetCorrection(x,roc,dx);
+      const Float_t r1=TMath::Sqrt((x[0]+dx[0])*(x[0]+dx[0])+(x[1]+dx[1])*(x[1]+dx[1]));
+      h->SetBinContent(iphi,ir,r1-r0);
+    }
+  }
+  return h;
+}
+
+TH2F* AliTPCCorrection::CreateHistoDRPhiinPhiR(Float_t z, Int_t nPhi, Int_t nR, Bool_t useSector, Float_t shift) {
+  /// Simple plot functionality.
+  /// Returns a 2d hisogram which represents the corrections in rphi direction (drphi)
+  /// in respect to position z within the PhiR plane.
+  /// The histogramm has nPhi times nR entries.
+
+  Double_t phiMin = 0.f;
+  Double_t phiMax = (useSector)?18.:TMath::TwoPi();
+  if (TMath::Abs(shift)>0) {
+    phiMax-=shift;
+    phiMin-=shift;
+  }
+
+  TH2F *h=CreateTH2F("drphi_xy",TString::Format("%s: DRPhiinPhiR Z=%2.0f", GetTitle(),z).Data(),useSector?"sector":"#varphi [rad]","r [cm]","rd#varphi [cm]",
+                     nPhi,phiMin,phiMax,nR,85.,250.);
+  Float_t x[3],dx[3];
+  x[2]=z;
+  const Int_t roc=z>0.?0:18; // FIXME
+  for (Int_t ir=1;ir<=nR;++ir) {
+    const Float_t r0=h->GetYaxis()->GetBinCenter(ir);
+    for (Int_t iphi=1;iphi<=nPhi;++iphi) {
+      Float_t phi=h->GetXaxis()->GetBinCenter(iphi);
+      if (useSector) phi=phi/18*TMath::TwoPi();
+      x[0]=r0*TMath::Cos(phi);
+      x[1]=r0*TMath::Sin(phi);
+      GetCorrection(x,roc,dx);
+      const Float_t phi0=TMath::ATan2(x[1]      ,x[0]      );
+      const Float_t phi1=TMath::ATan2(x[1]+dx[1],x[0]+dx[0]);
+
+      Float_t dphi=phi1-phi0;
+      if (dphi<TMath::Pi()) dphi+=TMath::TwoPi();
+      if (dphi>TMath::Pi()) dphi-=TMath::TwoPi();
+
+      h->SetBinContent(iphi,ir,r0*dphi);
+    }
+  }
+  return h;
+}
+
+TH2F* AliTPCCorrection::CreateHistoDZinPhiR(Float_t z, Int_t nPhi, Int_t nR, Bool_t useSector, Float_t shift) {
+  /// Simple plot functionality.
+  /// Returns a 2d hisogram which represents the corrections in longitudinal direction (dz)
+  /// in respect to position z within the PhiR plane.
+  /// The histogramm has nPhi times nR entries.
+
+  Double_t phiMin = 0.f;
+  Double_t phiMax = (useSector)?18.:TMath::TwoPi();
+  if (TMath::Abs(shift)>0) {
+    phiMax-=shift;
+    phiMin-=shift;
+  }
+
+  TH2F *h=CreateTH2F("dz_xy",TString::Format("%s: DZinPhiR Z=%2.0f", GetTitle(),z).Data(),useSector?"sector":"#varphi [rad]","r [cm]","dz [cm]",
+                     nPhi,phiMin,phiMax,nR,85.,250.);
+  Float_t x[3],dx[3];
+  x[2]=z;
+  const Int_t roc=z>0.?0:18; // FIXME
+  for (Int_t ir=1;ir<=nR;++ir) {
+    const Float_t r0=h->GetYaxis()->GetBinCenter(ir);
+    for (Int_t iphi=1;iphi<=nPhi;++iphi) {
+      Float_t phi=h->GetXaxis()->GetBinCenter(iphi);
+      if (useSector) phi=phi/18*TMath::TwoPi();
+      x[0]=r0*TMath::Cos(phi);
+      x[1]=r0*TMath::Sin(phi);
+      GetCorrection(x,roc,dx);
+      h->SetBinContent(iphi,ir,dx[2]);
+    }
+  }
+  return h;
+}
+
 
 TH2F* AliTPCCorrection::CreateTH2F(const char *name,const char *title,
 				   const char *xlabel,const char *ylabel,const char *zlabel,
