@@ -49,7 +49,6 @@
 #pragma link C++ class AliHLTTPCCAStartHitsFinder+;
 #pragma link C++ class AliHLTTPCCATrackletConstructor+;
 #pragma link C++ class AliHLTTPCCATrackletSelector+;
-#pragma link C++ class AliHLTTPCCADisplay+;
 #pragma link C++ class AliHLTTPCCAMCTrack+;
 #pragma link C++ class AliHLTTPCCAPerformance+;
 #pragma link C++ class AliHLTTPCCAMerger+;

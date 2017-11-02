@@ -126,7 +126,6 @@ set(SRCS
     offline/AliHLTTPCOfflineCluster.cxx
     tracking-ca/AliHLTTPCCABaseTrackParam.cxx
     tracking-ca/AliHLTTPCCAClusterData.cxx
-    tracking-ca/AliHLTTPCCADisplay.cxx
     tracking-ca/AliHLTTPCCAGlobalMergerComponent.cxx
     tracking-ca/AliHLTTPCCAGPUTracker.cxx
     tracking-ca/AliHLTTPCCAGrid.cxx
