@@ -57,7 +57,7 @@ AliFemtoManager* ConfigFemtoAnalysis() {
   double PionMass = 0.13956995;
   double KaonMass = 0.493677;
   const int cMu=4;
-  const int cKt=4;//8;
+  const int cKt=7;//8;
 
   //-------Single track cuts------------------------------------------------->
   double DCAxy=2.4; //0.2;// cm // our standard is 0.20 cm; super narrow was 0.015cm
@@ -91,9 +91,10 @@ AliFemtoManager* ConfigFemtoAnalysis() {
   
   int runktdep = 1;
 //YS  double ktrng[cKt+1] = {0.2, 0.36, 0.48, 0.6, 1.0, 1.5};
-  // double ktrng[cKt+1] = {0.2, 0.3, 0.4, 0.5, 0.6, 0.8, 1.0, 1.5};
+  
+  double ktrng[cKt+1] = {0.2, 0.3, 0.4, 0.5, 0.6, 0.8, 1.0, 1.5};
 
-  double ktrng[cKt+1] = {0.2, 0.4, 0.6, 0.8, 1.3};
+ ///// double ktrng[cKt+1] = {0.2, 0.4, 0.6, 0.8, 1.3};
 
 // double ktrng[8] = {0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 2.0};
 
@@ -206,7 +207,7 @@ AliFemtoEventReaderAOD *Reader = new AliFemtoEventReaderAODMultSelection();
 	  aniter = ichg*cMu+imult;
 
 	  anetaphitpc[aniter] = new AliFemtoVertexMultAnalysis(4, -8.0, 8.0, 5, multbins[imult], multbins[imult+1]);
-	  anetaphitpc[aniter]->SetNumEventsToMix(10);
+	  anetaphitpc[aniter]->SetNumEventsToMix(20);
 	  anetaphitpc[aniter]->SetMinSizePartCollection(1);
 
 	  mecetaphitpc[aniter] = new AliFemtoBasicEventCut();
@@ -439,6 +440,8 @@ AliFemtoEventReaderAOD *Reader = new AliFemtoEventReaderAODMultSelection();
 	    for (int ikt=0; ikt<cKt/*8*/; ikt++) {
 	      ktm = aniter*cKt/*8*/ + ikt;
 	      ktpcuts[ktm] = new AliFemtoKTPairCut(ktrng[ikt], ktrng[ikt+1]);
+
+	     
 	      
 ////////  	      cylmkttpc[ktm] = new AliFemtoCorrFctnDirectYlm(Form("cylm%stpcM%ikT%i", chrgs[ichg], imult, ikt),3,
 ///////							     nbinssh, 0.0,
