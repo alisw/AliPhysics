@@ -136,7 +136,6 @@ set(SRCS
     tracking-ca/AliHLTTPCCANeighboursCleaner.cxx
     tracking-ca/AliHLTTPCCANeighboursFinder.cxx
     tracking-ca/AliHLTTPCCAParam.cxx
-    tracking-ca/AliHLTTPCCAPerformance.cxx
     tracking-ca/AliHLTTPCCARow.cxx
     tracking-ca/AliHLTTPCCASliceData.cxx
     tracking-ca/AliHLTTPCCASliceOutput.cxx

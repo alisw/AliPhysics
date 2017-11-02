@@ -50,7 +50,6 @@
 #pragma link C++ class AliHLTTPCCATrackletConstructor+;
 #pragma link C++ class AliHLTTPCCATrackletSelector+;
 #pragma link C++ class AliHLTTPCCAMCTrack+;
-#pragma link C++ class AliHLTTPCCAPerformance+;
 #pragma link C++ class AliHLTTPCCAMerger+;
 #pragma link C++ class AliHLTTPCCAGlobalMergerComponent+;
 #pragma link C++ class AliHLTTPCCAClusterData+;
