@@ -83,6 +83,8 @@ AliAnalysisTaskEmcalJetPerformance::AliAnalysisTaskEmcalJetPerformance() :
   fM02HistBins(0),
   fNEoverPBins(0),
   fEoverPBins(0),
+  fTrackMatchingDeltaEtaMax(0.015),
+  fTrackMatchingDeltaPhiMax(0.030),
   fMBUpscaleFactor(1.),
   fMedianEMCal(0.),
   fMedianDCal(0.),
@@ -123,6 +125,8 @@ AliAnalysisTaskEmcalJetPerformance::AliAnalysisTaskEmcalJetPerformance(const cha
   fM02HistBins(0),
   fNEoverPBins(0),
   fEoverPBins(0),
+  fTrackMatchingDeltaEtaMax(0.015),
+  fTrackMatchingDeltaPhiMax(0.030),
   fMBUpscaleFactor(1.),
   fMedianEMCal(0.),
   fMedianDCal(0.),
@@ -1175,6 +1179,8 @@ void AliAnalysisTaskEmcalJetPerformance::FillClusterHistograms()
   for (auto it : clusters->accepted_momentum()) {
     
     clus = it.second;
+    Double_t clusPhi = it.first.Phi_0_2pi();
+    Double_t clusEta = it.first.Eta();
     
     // Include only EMCal/DCal clusters
     if (!clus->IsEMCAL()) {
@@ -1183,11 +1189,22 @@ void AliAnalysisTaskEmcalJetPerformance::FillClusterHistograms()
     
     // Compute the sum of matched track momentum, and various track matching / hadronic corretion quantities
     Double_t trackPSum = 0;
+    Int_t nTracksMatched = 0;
     const AliVTrack* track = nullptr;
     for (Int_t itrack=0; itrack < clus->GetNTracksMatched(); itrack++) {
       track = dynamic_cast<AliVTrack*>(clus->GetTrackMatched(itrack));
-      if (track) {
+      if (!track) {
+        continue;
+      }
+      
+      Double_t trackPhi = TVector2::Phi_0_2pi(track->GetTrackPhiOnEMCal());
+      Double_t trackEta = track->GetTrackEtaOnEMCal();
+      Double_t deta = TMath::Abs(clusPhi - trackPhi);
+      Double_t dphi = TMath::Abs(clusEta - trackEta);
+      
+      if (deta < fTrackMatchingDeltaEtaMax && dphi < fTrackMatchingDeltaPhiMax) {
         trackPSum += track->P();
+        nTracksMatched++;
       }
     }
     
@@ -1229,17 +1246,17 @@ void AliAnalysisTaskEmcalJetPerformance::FillClusterHistograms()
     
     // Plot number of matched tracks (centrality, Eclus nonlincorr, N matches)
     histname = "ClusterHistograms/hMatchedTrackN";
-    fHistManager.FillTH3(histname, fCent, clus->GetNonLinCorrEnergy(), clus->GetNTracksMatched());
+    fHistManager.FillTH3(histname, fCent, clus->GetNonLinCorrEnergy(), nTracksMatched);
     
     // Plot M02 distribution for clusters with matched tracks (centrality, Eclus nonlincorr, M02)
     histname = "ClusterHistograms/hM02Matched";
-    if (clus->GetNTracksMatched() > 0) {
+    if (nTracksMatched > 0) {
       fHistManager.FillTH3(histname, fCent, clus->GetNonLinCorrEnergy(), clus->GetM02());
     }
     
     // Plot M02 distribution for clusters without matched tracks (centrality, Eclus nonlincorr, M02)
     histname = "ClusterHistograms/hM02Unmatched";
-    if (clus->GetNTracksMatched() == 0) {
+    if (nTracksMatched == 0) {
       fHistManager.FillTH3(histname, fCent, clus->GetNonLinCorrEnergy(), clus->GetM02());
     }
     
