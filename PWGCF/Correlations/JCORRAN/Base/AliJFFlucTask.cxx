@@ -331,7 +331,6 @@ void AliJFFlucTask::ReadAODTracks( AliAODEvent *aod , TClonesArray *TrackList)
 				// insert AMTP weak decay switch here
 				if(IsExcludeWeakDecay == kTRUE){
 					//cout << "finding weak decaying particle ... " << endl;
-					Bool_t kExcludeParticle = kFALSE;
 					Int_t gMotherIndex = track->GetMother(); // check and ask about this to DJ changed to mother from firstmother
 					if(gMotherIndex != -1) {
 						//cout << "this mother is " << gMotherIndex << endl;
@@ -339,13 +338,11 @@ void AliJFFlucTask::ReadAODTracks( AliAODEvent *aod , TClonesArray *TrackList)
 						//cout << "mother pdg code is " << motherParticle->GetPdgCode() << endl;
 						if(motherParticle) {
 							if(IsThisAWeakDecayingParticle(motherParticle)){
-								kExcludeParticle = kTRUE;
+								//Exclude the decay products of weakly decaying particles
+								continue;
 							}
 						}
 					}
-					//Exclude from the analysis decay products of weakly decaying particles
-					if(kExcludeParticle)
-						continue;
 				} // weak decay particles are exclude
 
 				if( fPt_min > 0){
@@ -552,14 +549,12 @@ Bool_t AliJFFlucTask::IsThisAWeakDecayingParticle(AliMCParticle *thisGuy)
 		3122, 3112, // Lambda0 Sigma+-
 		130, 310 // K_L0 K_S0
 	};
-	Bool_t found = kFALSE;
 	for(Int_t i=0; i!=7; ++i)
 		if( myWeakParticles[i] == pdgcode ){
-			found = kTRUE;
-			break;
+			return kTRUE;
 		}
 
-	return found;
+	return kFALSE;
 }
 //===============================================================================
 Bool_t AliJFFlucTask::IsThisAWeakDecayingParticle(AliAODMCParticle *thisGuy)
@@ -571,13 +566,11 @@ Bool_t AliJFFlucTask::IsThisAWeakDecayingParticle(AliAODMCParticle *thisGuy)
 		3122, 3112, // Lambda0 Sigma+-
 		130, 310 // K_L0 K_S0
 	};
-	Bool_t found = kFALSE;
 	for(Int_t i=0; i!=7; ++i)
 		if( myWeakParticles[i] == pdgcode ) {
-			found = kTRUE;
-			break;
+			return kTRUE;
 		}
-	return found;
+	return kFALSE;
 }
 //______________________________________________________________________________
 void AliJFFlucTask::SetEffConfig( int effMode, int FilterBit)
@@ -862,24 +855,27 @@ void AliJFFlucTask::ReadKineTracks( AliMCEvent *mcEvent, TClonesArray *TrackList
 				continue;
 
 			if( IsExcludeWeakDecay == kTRUE){
-				Bool_t kExcludeParticle = kFALSE;
 				Int_t gMotherIndex = particle->GetFirstMother(); //
-				if(gMotherIndex != -1){ // -1 means don't have mother.
+				if(gMotherIndex != -1){
 					DEBUG( 4,  "this particle has a mother " );
 					AliMCParticle* motherParticle= dynamic_cast<AliMCParticle *>(mcEvent->GetTrack(gMotherIndex));
 					if(motherParticle){
 						if(IsThisAWeakDecayingParticle( motherParticle)){
-							kExcludeParticle = kTRUE;
 							DEBUG ( 4, Form("this particle will be removed because it comes from : %d", motherParticle->PdgCode() ));
+							continue;
 						}
 					}
 				}
-				if(kExcludeParticle)
-					continue;
 			}
 
 			Int_t pdg = particle->GetPdgCode();
 			Char_t ch = (Char_t) track->Charge();
+			if(fPcharge != 0){ // fPcharge 0 : all particle
+				if(fPcharge == 1 && ch < 0)
+					continue; // 1 for + particle
+				if(fPcharge == -1 && ch > 0)
+					continue; // -1 for - particle
+			}
 			Int_t label = track->GetLabel();
 			AliJBaseTrack *itrack = new ((*TrackList)[ntrack++])AliJBaseTrack;
 			itrack->SetLabel( label );
@@ -905,13 +901,13 @@ b(fm) ALICE   &0.00-3.50&3.50-4.94&4.94-6.98&6.98-    &    -9.88 &9.81-      &  
  \url{https://twiki.cern.ch/twiki/bin/viewauth/ALICE/CentStudies}
     \end{tablenotes}
 */
-	double bmin[10]={0.0,3.72,5.23,7.31,8.88,10.20,11.38,12.47,14.51,100};
-	double centmean[10]={2.5,7.5,15,25,35,45,55,65,75,90};
-	int iC = -1;
+	static double bmin[10]={0.0,3.72,5.23,7.31,8.88,10.20,11.38,12.47,14.51,100};
+	static double centmean[10]={2.5,7.5,15,25,35,45,55,65,75,90};
 	for(int i=0;i<9;i++){
-		if(bmin[i]<ip&&ip<=bmin[i+1]) {iC=i;  break;}
+		if(bmin[i] < ip && ip <= bmin[i+1])
+			return centmean[i];
 	}
-	return centmean[iC];
+	return 0.0;
 }
 
 
