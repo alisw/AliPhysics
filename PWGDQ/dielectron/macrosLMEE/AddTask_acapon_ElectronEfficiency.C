@@ -15,8 +15,7 @@ AliAnalysisTask *AddTask_acapon_ElectronEfficiency(Bool_t getFromAlien=kFALSE,
 	}
 
 	//Base Directory for GRID / LEGO Train  
-	//TString configBasePath= "$ALICE_PHYSICS/PWGDQ/dielectron/macrosLMEE/";
-	TString configBasePath= "/home/aaron/analyses/LHC16q/effCalcDiElec/";
+	TString configBasePath= "$ALICE_PHYSICS/PWGDQ/dielectron/macrosLMEE/";
 	if(getFromAlien && (!gSystem->Exec(Form("alien_cp alien:///alice/cern.ch/user/i/acapon/PWGDQ/dielectron/macrosLMEE/%s .",cFileName.Data()))) ){
 		
 		configBasePath=Form("%s/",gSystem->pwd());
