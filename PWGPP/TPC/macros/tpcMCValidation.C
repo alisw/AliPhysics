@@ -5,7 +5,7 @@
 ///
 /*!
 \code
-   gSystem->AddIncludePath("-I$ALICE_ROOT/include/"); //couldn't add include path in .rootr
+  gSystem->AddIncludePath("-I$ALICE_ROOT/include/"); //couldn't add include path in .rootr
   .L $AliPhysics_SRC/PWGPP/TPC/macros/tpcMCValidation.C+
   TString mcPeriod="LHC15k1a1";
   TString mcPass="passMC";
@@ -13,16 +13,22 @@
   TString anchorPass="pass3_lowIR_pidfix";
   AliDrawStyle::SetDefaults();
   AliDrawStyle::ApplyStyle("figTemplate");
-  InitTPCMCValidation("LHC15k1a1","passMC","LHC15o", "pass3_lowIR_pidfix",0,0);
+  //
+  InitTPCMCValidation("LHC15k1a1","passMC","LHC15o", "pass3_lowIR_pidfix",0,0); //short period
+//  InitTPCMCValidation("LHC16g1c","passMC","LHC15o", "pass1",0,0);   // long period example
   //
   MakeReport();
+ 
   MakeStatusPlots();
   trendingDraw->fReport->Close();
+  //
+  makeHtml();
 
 \endcode
 */
 
 #include <TError.h>
+#include <TMultiGraph.h>
 #include "TCanvas.h"
 #include "TLatex.h"
 #include "TTree.h"
@@ -51,7 +57,6 @@ TString queryString, queryTitle; ///
 TMultiGraph *graph = 0, *lines = 0;
 const char *outputDir="./";
 
-
 /// \param treeMC
 /// \param doCheck
 /// \param verbose
@@ -63,26 +68,7 @@ Bool_t InitTPCMCValidation(TString mcPeriod, TString mcPass, TString anchorPerio
 void MakeReport();
 void MakeStatusPlots();
 void tpcMCValidation(const char *mcPeriod = "LHC15k1a1", const char *soutputDir = "./");
-
-/// Print to the output string object names fulfilling criteria sRegExp
-/// \param array            - input TCollection
-/// \param regExp           - regular expression to select
-/// \param separator        -
-/// \return                 -
-TString ArrayNameToString(TCollection *array, TString sRegExp, TString separator){
-  TString output="";
-  TPRegexp regExp(sRegExp);
-  TIter next(array);
-  TObject *object;
-  while ( ( object =next())) {
-    if (regExp.Match(object->GetName())) {
-      output += object->GetName();
-      output += separator;
-    }
-  }
-  return output;
-}
-
+void makeHtmlDCA();
 
 
 /// function to create a set of the comparison plots MC/AnchorRaw data
@@ -125,10 +111,10 @@ void makeTPCMCAlarms(TTree * treeMC, Bool_t doCheck,Int_t verbose){
     sTrendVars+="QA.TPC.meanTPCncl,TPC.Anchor.meanTPCncl,10,20,5;";       // delta Ncl  warning 10 ,  error 20     (nominal ~ 100-140)
     sTrendVars+="QA.TPC.meanTPCnclF,TPC.Anchor.meanTPCnclF,0.05,0.10,0.05;"; // delta NclF  warning 5%,  error 10%    (nominal ~ 90%)
     // dcaR resolution
-    sTrendVars+="QA.TPC.dcarAP0,TPC.Anchor.dcarAP0,0.02,0.05,0.02;";     // dcarAP0;  warning 0.02 cm; error 0.05 cm  (nominal ~ 0.02 cm)
-    sTrendVars+="QA.TPC.dcarCP0,TPC.Anchor.dcarCP0,0.02,0.05,0.02;";     // dcarCP0;  warning 0.02 cm; error 0.05 cm  (nominal ~ 0.02 cm)
-    sTrendVars+="QA.TPC.dcarAP1,TPC.Anchor.dcarAP1,0.02,0.05,0.02;";     // dcarAP1;  warning 0.02 cm; error 0.05 cm  (nominal ~ 0.02 cm)
-    sTrendVars+="QA.TPC.dcarCP1,TPC.Anchor.dcarCP1,0.02,0.05,0.02;";     // dcarCP1;  warning 0.02 cm; error 0.05 cm  (nominal ~ 0.02 cm)
+    sTrendVars+="QA.TPC.dcarAP0,TPC.Anchor.dcarAP0,0.02,0.05,0.02;";     // dcar;  warning 0.02 cm; error 0.05 cm  (nominal ~ 0.02 cm)
+    sTrendVars+="QA.TPC.dcarCP0,TPC.Anchor.dcarCP0,0.02,0.05,0.02;";     // dcar;  warning 0.02 cm; error 0.05 cm  (nominal ~ 0.02 cm)
+    sTrendVars+="QA.TPC.dcarAP1,TPC.Anchor.dcarAP1,0.02,0.05,0.02;";     // dcar;  warning 0.02 cm; error 0.05 cm  (nominal ~ 0.02 cm)
+    sTrendVars+="QA.TPC.dcarCP1,TPC.Anchor.dcarCP1,0.02,0.05,0.02;";     // dcar;  warning 0.02 cm; error 0.05 cm  (nominal ~ 0.02 cm)
     
     sTrendVars+="QA.TPC.dcar_posA_0,TPC.Anchor.dcar_posA_0,0.2,1.0,0.2;";     // dcar;  warning 0.1 cm; error 0.15 cm  (nominal ~ 0.2 cm)
     sTrendVars+="QA.TPC.dcar_negA_0,TPC.Anchor.dcar_negA_0,0.2,1.0,0.2;";     // dcar;  warning 0.1 cm; error 0.15 cm  (nominal ~ 0.2 cm)
@@ -140,17 +126,17 @@ void makeTPCMCAlarms(TTree * treeMC, Bool_t doCheck,Int_t verbose){
     sTrendVars+="QA.TPC.dcaz_posC_0,TPC.Anchor.dcaz_posC_0,0.2,1.0,0.2;";     // dcaz;  warning 0.1 cm; error 0.15 cm  (nominal ~ 0.2 cm)
     sTrendVars+="QA.TPC.dcaz_negC_0,TPC.Anchor.dcaz_negC_0,0.2,1.0,0.2;";     // dcaz;  warning 0.1 cm; error 0.15 cm  (nominal ~ 0.2 cm)
 
-    // Eff ITS: TPC->ITS
-    sTrendVars+="QA.ITS.EffoneSPDPt02,ITS.Anchor.EffoneSPDPt02,0.05,0.1,0.07;";
-    sTrendVars+="QA.ITS.EffoneSPDPt1,ITS.Anchor.EffoneSPDPt1,0.05,0.1,0.07;";
-    sTrendVars+="QA.ITS.EffoneSPDPt10,ITS.Anchor.EffoneSPDPt10,0.05,0.1,0.07;";
-    sTrendVars+="QA.ITS.EffTOTPt02,ITS.Anchor.EffTOTPt02,0.05,0.1,0.07;";
-    sTrendVars+="QA.ITS.EffTOTPt1,ITS.Anchor.EffTOTPt1,0.05,0.1,0.07;";
-    sTrendVars+="QA.ITS.EffTOTPt10,ITS.Anchor.EffTOTPt10,0.05,0.1,0.07;";
+    // Eff ITS: TPC->ITS //TODO add comment for each cut variable  (Sebastian)
+    sTrendVars+="QA.ITS.EffoneSPDPt02,ITS.Anchor.EffoneSPDPt02,0.05,0.1,0.07;"; // ITSeff warning+-5%, error+-10%; acceptable +-7%
+    sTrendVars+="QA.ITS.EffoneSPDPt1,ITS.Anchor.EffoneSPDPt1,0.05,0.1,0.07;";   // ITSeff warning+-5%, error+-10%; acceptable +-7% 
+    sTrendVars+="QA.ITS.EffoneSPDPt10,ITS.Anchor.EffoneSPDPt10,0.05,0.1,0.07;"; // ITSeff warning+-5%, error+-10%; acceptable +-7% 
+    sTrendVars+="QA.ITS.EffTOTPt02,ITS.Anchor.EffTOTPt02,0.05,0.1,0.07;";       // ITSeff warning+-5%, error+-10%; acceptable +-7%
+    sTrendVars+="QA.ITS.EffTOTPt1,ITS.Anchor.EffTOTPt1,0.05,0.1,0.07;";         // ITSeff warning+-5%, error+-10%; acceptable +-7%
+    sTrendVars+="QA.ITS.EffTOTPt10,ITS.Anchor.EffTOTPt10,0.05,0.1,0.07;";       // ITSeff warning+-5%, error+-10%; acceptable +-7%
     
     // Eff TRD: TPC->TRD
-    sTrendVars+="QA.TRD.TPCTRDmatchEffPosAll,TRD.Anchor.TPCTRDmatchEffPosAll,0.05,0.1,0.07;";
-    sTrendVars+="QA.TRD.TPCTRDmatchEffNegAll,TRD.Anchor.TPCTRDmatchEffNegAll,0.05,0.1,0.07;"; 
+    sTrendVars+="QA.TRD.TPCTRDmatchEffPosAll,TRD.Anchor.TPCTRDmatchEffPosAll,0.05,0.1,0.07;";  //
+    sTrendVars+="QA.TRD.TPCTRDmatchEffNegAll,TRD.Anchor.TPCTRDmatchEffNegAll,0.05,0.1,0.07;";  //
     
     // dEdx
     sTrendVars+="QA.TPC.meanMIP,TPC.Anchor.meanMIP,1,2,1;";     // meanMIP;  warning 1; error 2; physics acceptable 1; (nominal ~ 50)
@@ -164,7 +150,7 @@ void makeTPCMCAlarms(TTree * treeMC, Bool_t doCheck,Int_t verbose){
   TStatToolkit::MakeAnchorAlias(treeMC,sTrendVars, doCheck, verbose);
 
   // 2.) Make aliases for Mean of MC-anchor of variables
-  //     alarms on |(MC-Anchor)-<MC-Anchor)>|
+  //     alarms on |(MC-Anchor)-<MC-Anchor)>| (diff0)    // and |(MC/Anchor)-<MC/Anchor)>| (ratio)
   treeMC->SetAlias("diff0.meanTPCncl" , "(QA.TPC.meanTPCncl-TPC.Anchor.meanTPCncl)");
   treeMC->SetAlias("diff0.meanTPCnclF" ,"(QA.TPC.meanTPCnclF-TPC.Anchor.meanTPCnclF)");
   treeMC->SetAlias("ratio.dcarAP0" ,    "(QA.TPC.dcarAP0/TPC.Anchor.dcarAP0)");
@@ -208,9 +194,32 @@ void makeTPCMCAlarms(TTree * treeMC, Bool_t doCheck,Int_t verbose){
     TStatToolkit::SetStatusAlias(treeMC, sVar.Data(),    "statisticOK", Form("varname_Warning:(varname>varname_WarningMax||varname<varname_WarningMin)"));
     TStatToolkit::SetStatusAlias(treeMC, sVar.Data(),    "statisticOK", Form("varname_PhysAcc:(varname>varname_PhysAccMin&&varname<varname_PhysAccMax)"));
   }
-
-
-
+  // TODO Setup physics acceptable in case default+-0.1 is not acceptable (Sebastian)
+  //    All variable with units
+  //    ratios for which default 10 % cut is not appropriate
+  //    In some case e.g efficiency we should allow higher efficiency ... - could be asymmetric
+  treeMC->SetAlias("diff0.MIPattachSlopeA_PhysAcc","abs(diff0.MIPattachSlopeA-diff0.MIPattachSlopeA_RobustMean)<0.5");      // phys. acceptable +-0.5
+  treeMC->SetAlias("diff0.MIPattachSlopeC_PhysAcc","abs(diff0.MIPattachSlopeC-diff0.MIPattachSlopeC_RobustMean)<0.5");      // phys. acceptable +-0.5
+  treeMC->SetAlias("diff0.meanMIPele_PhysAcc","abs(diff0.meanMIPele-diff0.meanMIPele_RobustMean)<0.5");                     // phys. acceptable +-0.5
+  treeMC->SetAlias("diff0.resolutionMIPele_PhysAcc","abs(diff0.resolutionMIPele-diff0.resolutionMIPele_RobustMean)<0.5");   // phys. acceptable +-0.5
+  treeMC->SetAlias("diff0.dcar_posA_0_PhysAcc","abs(diff0.dcar_posA_0-diff0.dcar_posA_0_RobustMean)<0.5");                  // phys. acceptable +-0.5
+  treeMC->SetAlias("diff0.dcar_posC_0_PhysAcc","abs(diff0.dcar_posC_0-diff0.dcar_posC_0_RobustMean)<0.5");                  // phys. acceptable +-0.5
+  treeMC->SetAlias("diff0.dcar_negA_0_PhysAcc","abs(diff0.dcar_negA_0-diff0.dcar_negA_0_RobustMean)<0.5");                  // phys. acceptable +-0.5
+  treeMC->SetAlias("diff0.dcar_negC_0_PhysAcc","abs(diff0.dcar_negC_0-diff0.dcar_negC_0_RobustMean)<0.5");                  // phys. acceptable +-0.5
+  treeMC->SetAlias("diff0.dcaz_posA_0_PhysAcc","abs(diff0.dcaz_posA_0-diff0.dcaz_posA_0_RobustMean)<0.5");                  // phys. acceptable +-0.5
+  treeMC->SetAlias("diff0.dcaz_posC_0_PhysAcc","abs(diff0.dcaz_posC_0-diff0.dcaz_posC_0_RobustMean)<0.5");                  // phys. acceptable +-0.5
+  treeMC->SetAlias("diff0.dcaz_negA_0_PhysAcc","abs(diff0.dcaz_negA_0-diff0.dcaz_negA_0_RobustMean)<0.5");                  // phys. acceptable +-0.5
+  treeMC->SetAlias("diff0.dcaz_negC_0_PhysAcc","abs(diff0.dcaz_negC_0-diff0.dcaz_negC_0_RobustMean)<0.5");                  // phys. acceptable +-0.5  
+  treeMC->SetAlias("diff0.meanTPCncl_PhysAcc","abs(diff0.meanTPCncl-diff0.meanTPCncl_RobustMean)<0.5");                     // phys. acceptable +-0.5
+  treeMC->SetAlias("diff0.meanTPCnclF_PhysAcc","abs(diff0.meanTPCnclF-diff0.meanTPCnclF_RobustMean)<0.5");                  // phys. acceptable +-0.5  
+  treeMC->SetAlias("ratio.dcarAP0_PhysAcc","abs(ratio.dcarAP0-ratio.dcarAP0_RobustMean)<0.5");                              // phys. acceptable +-0.5
+  treeMC->SetAlias("ratio.dcarAP1_PhysAcc","abs(ratio.dcarAP1-ratio.dcarAP1_RobustMean)<0.5");                              // phys. acceptable +-0.5   
+  treeMC->SetAlias("ratio.dcarCP0_PhysAcc","abs(ratio.dcarCP0-ratio.dcarCP0_RobustMean)<0.5");                              // phys. acceptable +-0.5
+  treeMC->SetAlias("ratio.dcarCP1_PhysAcc","abs(ratio.dcarCP1-ratio.dcarCP1_RobustMean)<0.5");                              // phys. acceptable +-0.5   
+  treeMC->SetAlias("ratio.meanMIP_PhysAcc","abs(ratio.meanMIP-ratio.meanMIP_RobustMean)<0.5");                        // phys. acceptable +-0.5
+  treeMC->SetAlias("ratio.resolutionMIP_PhysAcc","abs(ratio.resolutionMIP-ratio.resolutionMIP_RobustMean)<0.5");            // phys. acceptable +-0.5
+  
+  
   // 3.) Configure combined status. Default using logical OR of problems
   TString sCombinedStatus=";";
   sCombinedStatus+="mcAnchor.ncl,absDiff.QA.TPC.meanTPCncl,absDiff.QA.TPC.meanTPCnclF,diff0.meanTPCncl,diff0.meanTPCnclF;"; // Status number of clusters and findable clusters
@@ -243,6 +252,7 @@ Bool_t InitTPCMCValidation(TString mcPeriod, TString mcPass, TString anchorPerio
   externalInfo = new AliExternalInfo(".", "", verbose);
   trendingDraw = new AliTreeTrending("mcAnchor","mcAnchor");
   trendingDraw->SetDefaultStyle();
+  
   gStyle->SetOptTitle(0);
 
   treeMC = externalInfo->GetTree("QA.TPC", mcPeriod, mcPass, "QA.TPC;QA.TRD;QA.TOF;QA.ITS");
@@ -370,9 +380,13 @@ void MakeReport() {
   trendingDraw->MakePlot(outputDir, "meanTPCncl.png", "Number of clusters", cRange, "",
                          "QA.TPC.meanTPCncl;TPC.Anchor.meanTPCncl:run", "defaultCut", "figTemplateTRDPair",
                          "figTemplateTRDPair", 1, 1.0, 5, kTRUE);
+  trendingDraw->AppendDefaultBands(outputDir,"meanTPCncl.png","QA.TPC.meanTPCncl", "absDiff.QA.TPC.meanTPCncl", "defaultCut","");
+  
   trendingDraw->MakePlot(outputDir, "meanTPCnclFindable.png", "Cluster fraction #left(#frac{N_{cl}}{N_{find.}}#right)",
                          cRange, "", "QA.TPC.meanTPCnclF;TPC.Anchor.meanTPCnclF:run", "defaultCut",
                          "figTemplateTRDPair", "figTemplateTRDPair", 1, 1.0, 5, kTRUE);
+  trendingDraw->AppendDefaultBands(outputDir,"meanTPCnclFindable.png","QA.TPC.meanTPCnclF", "absDiff.QA.TPC.meanTPCnclF", "defaultCut","");
+    
   trendingDraw->MakePlot(outputDir, "meanTPCNclRatioMCtoAnchor.png", "Number of clusters MC/Anchor", cRange, "",
                          "meanTPCncl/TPC.Anchor.meanTPCncl;meanTPCnclF/TPC.Anchor.meanTPCnclF:run", "defaultCut",
                          "figTemplateTRDPair", "figTemplateTRDPair", 1, 1.0, 5, kTRUE);
@@ -489,9 +503,13 @@ void MakeReport() {
   trendingDraw->MakePlot(outputDir, "meanMIP.png", "<Mean dEdx_{MIP}> (a.u) ", cRange, "",
                          "QA.TPC.meanMIP;TPC.Anchor.meanMIP:run:fitMIP.fElements[4];TPC.Anchor.fitMIP.fElements[4]", "defaultCut", "figTemplateTRDPair",
                          "figTemplateTRDPair", 1, 1.0, 6, kTRUE);
+  trendingDraw->AppendDefaultBands(outputDir,"meanMIP.png","QA.TPC.meanMIP", "absDiff.QA.TPC.meanMIP", "defaultCut","");
+  
   trendingDraw->MakePlot(outputDir, "meanElectron.png", "<dEdx_{el}> (a.u) ", cRange, "",
                          "QA.TPC.meanMIPele;TPC.Anchor.meanMIPele:run:fitElectron.fElements[4];TPC.Anchor.fitElectron.fElements[4]", "defaultCut", "figTemplateTRDPair",
                          "figTemplateTRDPair", 1, 1.0, 6, kTRUE);
+  trendingDraw->AppendDefaultBands(outputDir,"meanElectron.png","QA.TPC.meanMIPele", "absDiff.QA.TPC.meanMIPele", "defaultCut","");
+    
   trendingDraw->MakePlot(outputDir, "electronMIPSeparation.png", "<dEdx_{el}>-<dEdx_{MIP}>", cRange, "",
                          "QA.TPC.electroMIPSeparation;TPC.Anchor.electroMIPSeparation:run", "defaultCut",
                          "figTemplateTRDPair", "figTemplateTRDPair", 1, 1.0, 6, kTRUE);
@@ -558,7 +576,6 @@ void MakeReport() {
 }
 
 
-
 /// TODO - alias for the html table names, hints
 /// TODO - fix formatting in AliTreeFormulaF- in case of missing entry write undefined
 /// TODO - tooltip - explaining status bits (detector mask, resp. status mask)
@@ -572,9 +589,12 @@ void makeHtml() {
   TStatToolkit::AddMetadata(treeMC, "bz.tooltip", "Barrel field");
   TStatToolkit::AddMetadata(treeMC, "detectorMask.html","%b{detectorMask&0x7F}");
   TStatToolkit::AddMetadata(treeMC, "detectorMask.headerTooltip","Detector bit mask:\n . SPD\n . SDD\n . SSS\n . TPC\n . TRD");
+  //MakeStatusBitMasks();
+  makeHtmlDCA();
 }
 
 void makeHtmlDCA(){
+
   //TString metaDCA="<a title
   TString pathMC="<a href=\"http://aliqatpc.web.cern.ch/aliqatpc/sim/%d{year}/%s{period.GetName()}/passMC/000%d{run}/";
   TString pathData="<a href=\"http://aliqatpc.web.cern.ch/aliqatpc/data/%d{TPC.Anchor.year}/%s{TPC.Anchor.period.GetName()}/%{TPC.Anchor.pass.GetName()}/000%d{run}/";
@@ -694,20 +714,6 @@ void MakeStatusBitMasks(){
 }
 
 
-/// addHtmlLink - helepr function used in the  MakeJSROOTHTML
-/// \param pFile
-/// \param title
-/// \param prefix
-/// \param items
-void addHtmlLink(FILE * pFile, TString title,  TString prefix, TString items){
-  fprintf(pFile, "<b>%s</b>",title.Data());
-  fprintf (pFile, "<a href=\"%s&%s&layout=tabs\">[all,</a>",prefix.Data(),items.Data());
-  fprintf (pFile, "<a href=\"%s&%s&layout=collapsible&nobrowser\">col,</a>",prefix.Data(),items.Data());
-  fprintf (pFile, "<a href=\"%s&%s&layout=tabs&nobrowser\">tabs,</a>",prefix.Data(),items.Data());
-  fprintf (pFile, "<a href=\"%s&%s&layout=flex&nobrowser\">flex]</a>",prefix.Data(),items.Data());
-  fprintf(pFile, "<br>");
-}
-
 /*!
  * MakeJSROOTHTML make hsroot html page - see alose READMEjsrootQA.md
  * * plots from the report.root file divided into categories using regular exression
@@ -715,7 +721,7 @@ void addHtmlLink(FILE * pFile, TString title,  TString prefix, TString items){
  * @param outputName  - name of the output html file
 \code
     TString outputName="jsrootMCAnchor.html";
-    TString prefix="http://localhost:90/data/jsroot/index.htm?file=http://localhost:90/data/alice-tpc-notes/JIRA/ATO-83/test/report.root"
+    TString prefix="http://localhost:90/data/jsroot/jsroot/index.htm?file=http://localhost:90/data/alice-tpc-notes/JIRA/ATO-83/test/report.root"
     MakeJSROOTHTML(prefix,outputName);
 \endcode
 */
@@ -727,15 +733,24 @@ void MakeJSROOTHTML(TString prefix, TString outputName){
   FILE * pFile;
   pFile = fopen (outputName.Data(),"w");
   //
-  items=ArrayNameToString(fReport->GetListOfKeys(),".*tatus.*",","); addHtmlLink(pFile,"Status", prefix, Form("items=[%s]",items.Data()));
-  items=ArrayNameToString(fReport->GetListOfKeys(),"(.*vent.*|.*Mult.*|.*Vert.*)",","); addHtmlLink(pFile,"General", prefix, Form("items=[%s]",items.Data()));
-  items=ArrayNameToString(fReport->GetListOfKeys(),"ncl.*",","); addHtmlLink(pFile,"Ncl status", prefix, Form("items=[%s]",items.Data()));
-  items=ArrayNameToString(fReport->GetListOfKeys(),"dcar.*",","); addHtmlLink(pFile,"DCAr status", prefix, Form("items=[%s]",items.Data()));
-  items=ArrayNameToString(fReport->GetListOfKeys(),"dcaz.*",","); addHtmlLink(pFile,"DCAz status", prefix, Form("items=[%s]",items.Data()));
-  items=ArrayNameToString(fReport->GetListOfKeys(),".*Eff.*",","); addHtmlLink(pFile,"Efficiency", prefix, Form("items=[%s]",items.Data()));
-  items=ArrayNameToString(fReport->GetListOfKeys(),"(.*MIP.*|.*dEdx.*)",","); addHtmlLink(pFile,"dEdx", prefix, Form("items=[%s]",items.Data()));
+  items=AliTreeTrending::ArrayNameToString(fReport->GetListOfKeys(),".*tatus.*",",");
+  AliTreeTrending::AddJSROOTHtmlLink(pFile,"Status", prefix, Form("items=[%s]",items.Data()));
+  items=AliTreeTrending::ArrayNameToString(fReport->GetListOfKeys(),"(.*vent.*|.*Mult.*|.*Vert.*)",",");
+  AliTreeTrending::AddJSROOTHtmlLink(pFile,"General", prefix, Form("items=[%s]",items.Data()));
+  items=AliTreeTrending::ArrayNameToString(fReport->GetListOfKeys(),"ncl.*",",");
+  AliTreeTrending::AddJSROOTHtmlLink(pFile,"Ncl status", prefix, Form("items=[%s]",items.Data()));
+  items=AliTreeTrending::ArrayNameToString(fReport->GetListOfKeys(),"dcar.*",",");
+  AliTreeTrending::AddJSROOTHtmlLink(pFile,"DCAr status", prefix, Form("items=[%s]",items.Data()));
+  items=AliTreeTrending::ArrayNameToString(fReport->GetListOfKeys(),"dcaz.*",",");
+  AliTreeTrending::AddJSROOTHtmlLink(pFile,"DCAz status", prefix, Form("items=[%s]",items.Data()));
+  items=AliTreeTrending::ArrayNameToString(fReport->GetListOfKeys(),".*Eff.*",",");
+  AliTreeTrending::AddJSROOTHtmlLink(pFile,"Efficiency", prefix, Form("items=[%s]",items.Data()));
+  items=AliTreeTrending::ArrayNameToString(fReport->GetListOfKeys(),"(.*MIP.*|.*dEdx.*)",",");
+  AliTreeTrending::AddJSROOTHtmlLink(pFile,"dEdx", prefix, Form("items=[%s]",items.Data()));
   fclose (pFile);
 }
+
+
 
 
 /// DONE  - automatic decomposition status aliases
@@ -763,6 +778,8 @@ void MakeJSROOTHTML(TString prefix, TString outputName){
 ///      - add plot for all variables contributing to alarms
 ///      - for TRD eff see the variables in treeMC->GetFriend("QA.TRD")->GetListOfBranches()->Print("","*ff*")
 ///      - plot is there can be added to the alarms
+///      
+///      - for plots with only one variable plot band 
 ///
 /// TOD0  - dcar, dcaz - including fits (currently only resolution)
 ///       - TPC-ITS matching
@@ -770,3 +787,6 @@ void MakeJSROOTHTML(TString prefix, TString outputName){
 /// TODO - add calibration trending plots and alarms (Marian)
 ///      - TStatToolkit::AddMetadata(treeMC,"status2.Legend","TPC ON")
 ///      - TStatToolkit::GetMetadata(treeMC,"status2.Legend")->GetTitle()
+
+
+/// TODO - AddAppendBandDefault - adding warning outlier and phys acceptable around reference data;
