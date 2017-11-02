@@ -63,9 +63,9 @@ ClassImp(AliMCTreeTools)
 
 const Double_t kMaxRadius=300; 
 TClonesArray* trackRefs = 0;
-map<Int_t, TClonesArray*> mapTR;
-map<Int_t, AliTrackReference*> mapFirstTr;
-map<Int_t, TClonesArray*> mapHelix;
+std::map<Int_t, TClonesArray*> mapTR;
+std::map<Int_t, AliTrackReference*> mapFirstTr;
+std::map<Int_t, TClonesArray*> mapHelix;
 //
 
 TString wdir="";
