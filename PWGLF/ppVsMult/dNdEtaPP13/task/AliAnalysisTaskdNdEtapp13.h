@@ -321,7 +321,7 @@ protected:
   Bool_t fUseBCMod;                         //! flag to use bunch crossing mod 4 events
   Bool_t fMCCalib;                         //! flag to use mc calibrated V0M boundries
   Int_t      fBCMod4;                        //! Select BC Mod4
-  TString fCutOnPhi;                          //! Set cut on affected phi regions and for systematics studies
+  TString fCutOnPhi;                          // Set cut on affected phi regions and for systematics studies
   TString fCalibfilePath;                     //! Set V0M MC calibration file name path
 
 
