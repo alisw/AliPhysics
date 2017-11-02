@@ -831,3 +831,46 @@ void AliDrawStyle::ApplyCssStyle(TPad *pad, const char* styleName){
   }
    pad->Modified();
 }
+
+
+
+///
+/// \param pad
+/// \param division
+/// \param token
+void AliDrawStyle::DivideTPad(TPad*pad, const char *division, const char *token) {
+  // divide pads
+  Int_t nPads = 0, nRows = 0;
+  TObjArray *padRows = TString(division).Tokenize("[](),");
+  nRows = padRows->GetEntries();
+  for (Int_t iRow = 0; iRow < nRows; iRow++) {
+    Int_t nCols = TString(padRows->At(iRow)->GetName()).Atoi();
+    for (Int_t iCol = 0; iCol < nCols; iCol++) {
+      pad->cd();
+      TPad *newPad = new TPad(Form("pad%d", nPads), Form("pad%d", nPads), iCol / Double_t(nCols),
+                              (nRows - iRow - 1) / Double_t(nRows), (iCol + 1) / Double_t(nCols),
+                              (nRows - iRow) / Double_t(nRows));
+      newPad->Draw();
+      nPads++;
+      newPad->SetNumber(nPads);
+    }
+  }
+}
+
+
+///
+/// \param graph
+/// \param option
+void AliDrawStyle::SetMultiGraphTimeAxis(TMultiGraph *graph, TString option){
+  TAxis *axis = NULL;
+  for (Int_t i=0; i<graph->GetListOfGraphs()->GetEntries(); i++) {
+    TGraph *cGraph=(TGraph *) graph->GetListOfGraphs()->At(i);
+    if (option.Contains("X")) axis = cGraph->GetXaxis();
+    if (option.Contains("Y")) axis = cGraph->GetYaxis();
+    if (axis) {
+      axis->SetNdivisions(510, kFALSE);
+      axis->SetTimeDisplay(1);
+      axis->SetTimeFormat("%d/%m");
+    }
+  }
+}
