@@ -7,12 +7,13 @@
 \code
    gSystem->AddIncludePath("-I$ALICE_ROOT/include/"); //couldn't add include path in .rootr
   .L $AliPhysics_SRC/PWGPP/TPC/macros/tpcMCValidation.C+
-  TString mcPeriod="LHC15k1a1"; TString mcPass="passMC"; TString anchorPeriod="LHC15o"; TString anchorPass="pass3_lowIR_pidfix";
-
+  TString mcPeriod="LHC15k1a1";
+  TString mcPass="passMC";
+  TString anchorPeriod="LHC15o";
+  TString anchorPass="pass3_lowIR_pidfix";
   AliDrawStyle::SetDefaults();
   AliDrawStyle::ApplyStyle("figTemplate");
   InitTPCMCValidation("LHC15k1a1","passMC","LHC15o", "pass3_lowIR_pidfix",0,0);
-  // InitTPCMCValidation("LHC16g1c","passMC","LHC15o", "pass1",0,0);   // long period example
   //
   MakeReport();
   MakeStatusPlots();
@@ -146,6 +147,11 @@ void makeTPCMCAlarms(TTree * treeMC, Bool_t doCheck,Int_t verbose){
     sTrendVars+="QA.ITS.EffTOTPt02,ITS.Anchor.EffTOTPt02,0.05,0.1,0.07;";
     sTrendVars+="QA.ITS.EffTOTPt1,ITS.Anchor.EffTOTPt1,0.05,0.1,0.07;";
     sTrendVars+="QA.ITS.EffTOTPt10,ITS.Anchor.EffTOTPt10,0.05,0.1,0.07;";
+    
+    // Eff TRD: TPC->TRD
+    sTrendVars+="QA.TRD.TPCTRDmatchEffPosAll,TRD.Anchor.TPCTRDmatchEffPosAll,0.05,0.1,0.07;";
+    sTrendVars+="QA.TRD.TPCTRDmatchEffNegAll,TRD.Anchor.TPCTRDmatchEffNegAll,0.05,0.1,0.07;"; 
+    
     // dEdx
     sTrendVars+="QA.TPC.meanMIP,TPC.Anchor.meanMIP,1,2,1;";     // meanMIP;  warning 1; error 2; physics acceptable 1; (nominal ~ 50)
     sTrendVars+="QA.TPC.resolutionMIP,TPC.Anchor.resolutionMIP,0.02,0.05,0.02;";     // resolutionMIP;  warning 0.01; error 0.02; physics acceptable 0.01; (nominal ~ 0.06)
@@ -210,7 +216,10 @@ void makeTPCMCAlarms(TTree * treeMC, Bool_t doCheck,Int_t verbose){
   sCombinedStatus+="mcAnchor.ncl,absDiff.QA.TPC.meanTPCncl,absDiff.QA.TPC.meanTPCnclF,diff0.meanTPCncl,diff0.meanTPCnclF;"; // Status number of clusters and findable clusters
   sCombinedStatus+="mcAnchor.dcarResol,absDiff.QA.TPC.dcarAP0,absDiff.QA.TPC.dcarAP1,absDiff.QA.TPC.dcarCP0,absDiff.QA.TPC.dcarCP1,ratio.dcarAP0,ratio.dcarAP1,ratio.dcarCP0,ratio.dcarCP1,diff0.dcar_posA_0,diff0.dcar_posC_0,diff0.dcar_negA_0,diff0.dcar_negC_0;";  // Status: DCAr resolution
   sCombinedStatus+="mcAnchor.dcazResol,absDiff.QA.TPC.dcaz_posA_0,absDiff.QA.TPC.dcaz_posC_0,absDiff.QA.TPC.dcaz_negA_0,absDiff.QA.TPC.dcaz_negC_0,diff0.dcaz_posA_0,diff0.dcaz_posC_0,diff0.dcaz_negA_0,diff0.dcaz_negC_0;";  // Status: DCAz resolution
-  sCombinedStatus+="mcAnchor.itsEffStatus,absDiff.QA.ITS.EffoneSPDPt02,absDiff.QA.ITS.EffoneSPDPt1,absDiff.QA.ITS.EffoneSPDPt10,absDiff.QA.ITS.EffTOTPt02,absDiff.QA.ITS.EffTOTPt1,absDiff.QA.ITS.EffTOTPt10;";
+  
+  sCombinedStatus+="mcAnchor.itsEffStatus,absDiff.QA.ITS.EffoneSPDPt02,absDiff.QA.ITS.EffoneSPDPt1,absDiff.QA.ITS.EffoneSPDPt10,absDiff.QA.ITS.EffTOTPt02,absDiff.QA.ITS.EffTOTPt1,";
+  sCombinedStatus+="absDiff.QA.TRD.TPCTRDmatchEffPosAll,absDiff.QA.TRD.TPCTRDmatchEffNegAll;";
+  
   sCombinedStatus+="mcAnchor.dEdx,ratio.meanMIP,ratio.resolutionMIP,diff0.MIPattachSlopeA,diff0.MIPattachSlopeC,diff0.meanMIPele,diff0.resolutionMIPele,absDiff.QA.TPC.meanMIP,absDiff.QA.TPC.resolutionMIP,absDiff.QA.TPC.MIPattachSlopeA,absDiff.QA.TPC.MIPattachSlopeC,absDiff.QA.TPC.meanMIPele,absDiff.QA.TPC.resolutionMIPele;";
 
   // Status: ITS:TPC-ITS matching efficiency
@@ -240,7 +249,7 @@ Bool_t InitTPCMCValidation(TString mcPeriod, TString mcPass, TString anchorPerio
 
   TTree *treeAnchorTPC = NULL;
   treeAnchorTPC = externalInfo->GetTree("QA.TPC", anchorPeriod, anchorPass,
-                                        "Logbook;QA.EVS;Logbook.detector:TPC:detector==\"TPC\";QA.rawTPC");
+                                        "Logbook;QA.EVS;Logbook.detector:TPC:detector==\"TPC\"");
   if (treeAnchorTPC == NULL) {
     ::Error("InitTPCMCValidation", "Failed to get QA.TPC tree");
     return kFALSE;
@@ -474,7 +483,7 @@ void MakeReport() {
                          "dcarFitpar_comb4;TPC.Anchor.dcarFitpar_comb4:run", "defaultCut", "figTemplateTRDPair",
                          "figTemplateTRDPair", 1, 1.0, 6, kTRUE);
   //trendingDraw->MakePlot(outputDir,"rmsDCAMultParMCtoAnchor.png","DCA Resolution mult due MS:MC/Anchor",cRange,"","dcarAP1;dcarCP1;TPC.Anchor.dcarAP1;TPC.Anchor.dcarCP1:run","defaultCut","figTemplateTRDPair","figTemplateTRDPair",1,1.0,6,kTRUE);
-  //
+
   // 5.) dEdx ($AliPhysic_SRC/PWGPP/TPC/macros/TPCQAWebpage/MCAnchor/tabdEdx.html)
   // TODO: Add sub-status lines
   trendingDraw->MakePlot(outputDir, "meanMIP.png", "<Mean dEdx_{MIP}> (a.u) ", cRange, "",
@@ -504,12 +513,10 @@ void MakeReport() {
   trendingDraw->MakePlot(outputDir, "resolutionMIPele.png", "resolutionMIPele", cRange, "",
                          "QA.TPC.resolutionMIPele;TPC.Anchor.resolutionMIPele:run", "defaultCut", "figTemplateTRDPair",
                          "figTemplateTRDPair", 1, 1.0, 4, kTRUE);
-
-
-  trendingDraw->MakePlot(outputDir, "mipToEleSeparation .png", "meanMIPele/meanMIP", cRange, "",
-                         "meanMIPele/meanMIP;TPC.Anchor.meanMIPele/TPC.Anchor.meanMIP:run", "defaultCut", "figTemplateTRDPair",
-                         "figTemplateTRDPair", 1, 1.0, 6, kTRUE);
-  trendingDraw->AppendBand(outputDir,"mipToEleSeparationNEW.png","meanMIPele_RobustMean/meanMIP_RobustMean;TPC.Anchor.meanMIPele_RobustMean/TPC.Anchor.meanMIP_RobustMean:run", "defaultCut", "figTemplateTRDPair",
+//  trendingDraw->MakePlot(outputDir, "mipToEleSeparation.png", "meanMIPele/meanMIP", cRange, "",
+//                         "meanMIPele/meanMIP;TPC.Anchor.meanMIPele/TPC.Anchor.meanMIP:run", "defaultCut", "figTemplateTRDPair",
+//                         "figTemplateTRDPair", 1, 1.0, 6, kTRUE);
+  trendingDraw->AppendBand(outputDir,"mipToEleSeparation.png","meanMIPele_RobustMean/meanMIP_RobustMean;TPC.Anchor.meanMIPele_RobustMean/TPC.Anchor.meanMIP_RobustMean:run", "defaultCut", "figTemplateTRDPair",
                          "figTemplateTRDPair", kTRUE, 1.0, kTRUE);
 
 
@@ -550,9 +557,7 @@ void MakeReport() {
   trendingDraw->fWorkingCanvas->Print(TString(outputDir) + "/report.pdf]", "pdf");
 }
 
-void MakeReportCalibration(){
 
-}
 
 /// TODO - alias for the html table names, hints
 /// TODO - fix formatting in AliTreeFormulaF- in case of missing entry write undefined
@@ -655,11 +660,6 @@ void MakeStatusBitMask(TString statusString){
 
 }
 
-void MakeStatusBitMasks(){
-  MakeStatusBitMask("dcar_Warning");
-  MakeStatusBitMask("mcAnchor.dcarResol_Warning");
-}
-
 
 void MakeStatusPlots(){
   try {
@@ -670,31 +670,27 @@ void MakeStatusPlots(){
     MakeStatusPlot("./", "dcazStatusMC.png", "dcaz_Warning", "1");
     MakeStatusPlot("./", "dcazStatusAnchor.png", "dcaz_Warning", "1", "TPC.Anchor");
     MakeStatusPlot("./", "dcazStatusMCToAnchor.png", "mcAnchor.dcazResol_Warning", "1");
-
+    
     MakeStatusPlot("./", "itsEffStatusMCToAnchor.png", "mcAnchor.itsEffStatus_Warning", "1");
+//    MakeStatusPlot("./", "itsEffStatusMC.png", "itsEffStatus_Warning", "1");                  //missing corresponding alias in MC tree
+//    MakeStatusPlot("./", "itsEffStatusAnchor.png", "itsEffStatus_Warning", "1","TRD.Anchor"); //missing corresponding alias in Anchor tree
     //
     MakeStatusPlot("./", "dEdxStatusMC.png", "MIPquality_Warning", "1");
     MakeStatusPlot("./", "dEdxStatusAnchor.png", "MIPquality_Warning", "1","TPC.Anchor");
     MakeStatusPlot("./", "dEdxStatusMCToAnchor.png", "mcAnchor.dEdx_Warning", "1");
 
     MakeStatusPlot("./", "nclStatusMCToAnchor.png", "mcAnchor.ncl_Warning", "1");
+//    MakeStatusPlot("./", "nclStatusAnchor.png", "ncl_Warning", "1","TPC.Anchor");    //missing corresponding alias
+//    MakeStatusPlot("./", "nclStatusMC.png", "ncl_Warning", "1");                     //missing corresponding alias    
   }
   catch (const std::invalid_argument& ia) {
 	  std::cerr << "Invalid argument: " << ia.what() << '\n';
   }
 }
 
-void DrawCalibrationReport(){
-  //
-  //
-  Int_t nPoints=0;
-  Double_t chi2;
-  TVectorD fitParam;
-  TMatrixD covMatrix;
-  TString fitStringBzRate="";
-  fitStringBzRate="(bz<0)++QA.EVS.interactionRate";
-
-
+void MakeStatusBitMasks(){
+  MakeStatusBitMask("dcar_Warning");
+  MakeStatusBitMask("mcAnchor.dcarResol_Warning");
 }
 
 
