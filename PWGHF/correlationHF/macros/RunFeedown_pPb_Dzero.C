@@ -1,10 +1,8 @@
 //*******************************************************************************/
-//*******************************************************************************/
 //  MACRO TO PERFORM THE FD SUBTRACTION FOR D0-hadron correlations in pPb
 //   Jitendra.Kumar (jitendra.kumar@cern.ch)  
 //
 //*******************************************************************************/
-
 TString inputfc = "./Dzero/HFPtSpectrum_pp.root"; // input fprompt
 TString templatedir = "./Templates_pp/"; // template path
 TString inputcorrelationDir = "./Input_Plots_pp/";// directory where input files are stored
@@ -28,18 +26,16 @@ void SetInputFileNameRoot(TString fileinputroot){
   inputfileroot=fileinputroot;
 }
 
-
-void RunFeedown_pPb_Dzero(Int_t collsyst, Bool_t subtrMCclos){
-  GetEnvelopeForEachV2(collsyst,subtrMCclos);
-  GetTotalEnvelopeFromV2(collsyst,subtrMCclos);
+void RunFeedown_pPb_Dzero(Int_t collsyst, Bool_t subtrMCclos, Bool_t oldnames){
+  GetEnvelopeForEachV2(collsyst,subtrMCclos,oldnames);
+  GetTotalEnvelopeFromV2(collsyst,subtrMCclos,oldnames);
 }
-
 void SetFDtemplateSystemString(TString str){
   strSystemFDtempl=str;
 }
 
 //_____________________________________________________________
-void GetEnvelopeForEachV2(Int_t collsyst, Bool_t subtrMCclos){
+void GetEnvelopeForEachV2(Int_t collsyst, Bool_t subtrMCclos, Bool_t oldnames){
     
     //**********************************
     // This function loops on all the templates, creating 5 envelopes for different v2 values.
@@ -51,9 +47,8 @@ void GetEnvelopeForEachV2(Int_t collsyst, Bool_t subtrMCclos){
       gROOT->LoadMacro(Form("%s/SubtractFD.C",fdsubtrmacrodir.Data()));
       isLoadedFDsubtract=kTRUE;
     }
-
-
     SetSystemStringForTemplateFDnames(strSystemFDtempl.Data());
+
     Double_t v2hadmin, v2hadmax, v2Dmin, v2Dmax;
     v2Dmin = 0.05; v2Dmax = 0.13;
     
@@ -62,8 +57,6 @@ void GetEnvelopeForEachV2(Int_t collsyst, Bool_t subtrMCclos){
     //    TString templatedir = "./Templates_pPb/"; // template path
   
     TString outputfilename = ""; //  (not needed here)
-
-    Int_t oldnames=1; if(collsyst!=0 && collsyst!=1) oldnames=0;
 
     Double_t Dpt[] = {3,5,8,16,24}; // set D meson pt bins
     Double_t hadpt[] = {0.3,0.3,1.0,2.0,3.0,1.0,2.0}; // set associated tracks pt bins (lower) //03-99, 03-1, 1-99, 2-99, 3-99, 1-2, 2-3
@@ -127,7 +120,7 @@ void GetEnvelopeForEachV2(Int_t collsyst, Bool_t subtrMCclos){
 
             // set correct paths
             inputcorrelation = Form("%s/%s%dto%d_Limits_2_4_TreshPt_%.1f_to_%.2f_Data.root",inputcorrelationDir.Data(),inputfileroot.Data(),(int)Dptbin[0], (int)Dptbin[1], hadpt[ihadpt],hadptMaxInput[ihadpt]); // I guess all your input data files have
-            if(collsyst>=2) inputcorrelation = Form("%s/%s%dto%d_PoolInt_thr%.1fto%.1f.root",inputcorrelationDir.Data(),inputfileroot.Data(),(int)Dptbin[0], (int)Dptbin[1], hadpt[ihadpt],hadptMaxInput[ihadpt]); // I guess all your input data files have
+            if(!oldnames) inputcorrelation = Form("%s/%s%dto%d_PoolInt_thr%.1fto%.1f.root",inputcorrelationDir.Data(),inputfileroot.Data(),(int)Dptbin[0], (int)Dptbin[1], hadpt[ihadpt],hadptMaxInput[ihadpt]); // I guess all your input data files have
             
             cout << " inputcorrelation = " << inputcorrelation.Data() << endl;
             
@@ -177,7 +170,7 @@ void GetEnvelopeForEachV2(Int_t collsyst, Bool_t subtrMCclos){
     
 } // end function
 //___________________________________________________________
-void GetTotalEnvelopeFromV2(Int_t collsyst, Bool_t subtrMCclos){
+void GetTotalEnvelopeFromV2(Int_t collsyst, Bool_t subtrMCclos, Bool_t oldnames){
     // note - this functions has to be runned only on p-Pb... setting it by mistake to pp should abort the process
     //Int_t collsyst = 2; // 0 is pp, 1 is p-Pb 2013, 2 is pPb 2016 (note that if you run on pp, it will perform only the v2=0 feeddown
  
@@ -196,9 +189,7 @@ void GetTotalEnvelopeFromV2(Int_t collsyst, Bool_t subtrMCclos){
     //TString templatedir = "./Templates_pPb"; // template path
     
     TString outputfilename = "";
-   
-    Int_t oldnames=1; if(collsyst!=0 && collsyst!=1) oldnames=0;   
-   
+      
     Double_t Dpt[] = {3,5,8,16,24}; // set D meson pt bins
     Double_t hadpt[] = {0.3,0.3,1.0,2.0,3.0,1.0,2.0}; // set associated tracks pt bins (lower) //03-99, 03-1, 1-99, 2-99, 3-99, 1-2, 2-3
     Double_t hadptMaxInput[] = {99.0,0.99,99.0,99.0,99.0,1.99,2.99}; // set associated tracks pt bins (upper) //03-99, 03-1, 1-99, 2-99, 3-99, 1-2, 2-3
@@ -264,7 +255,7 @@ void GetTotalEnvelopeFromV2(Int_t collsyst, Bool_t subtrMCclos){
              //1D_pPb_DplusCorr_3_5_0.3_1.0
             // set correct paths
             inputcorrelation = Form("%s/%s%dto%d_Limits_2_4_TreshPt_%.1f_to_%.2f_Data.root",inputcorrelationDir.Data(),inputfileroot.Data(),(int)Dptbin[0], (int)Dptbin[1], hadpt[ihadpt],hadptMaxInput[ihadpt]); // I guess all your input data files have
-            if(collsyst>=2) inputcorrelation = Form("%s/%s%dto%d_PoolInt_thr%.1fto%.1f.root",inputcorrelationDir.Data(),inputfileroot.Data(),(int)Dptbin[0], (int)Dptbin[1], hadpt[ihadpt],hadptMaxInput[ihadpt]); // I guess all your input data files have
+            if(!oldnames) inputcorrelation = Form("%s/%s%dto%d_PoolInt_thr%.1fto%.1f.root",inputcorrelationDir.Data(),inputfileroot.Data(),(int)Dptbin[0], (int)Dptbin[1], hadpt[ihadpt],hadptMaxInput[ihadpt]); // I guess all your input data files have
             cout << " inputcorrelation = " << inputcorrelation.Data() << endl;
 
             // set correct paths

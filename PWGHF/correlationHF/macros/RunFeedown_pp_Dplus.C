@@ -25,15 +25,15 @@ void SetInputFileNameRoot(TString fileinputroot){
   inputfileroot=fileinputroot;
 }
 
-void RunFeedown_pp_Dplus(Int_t collsyst, Bool_t subtrMCclos){
-    GetEnvelopeForEachV2(collsyst,subtrMCclos);
+void RunFeedown_pp_Dplus(Int_t collsyst, Bool_t subtrMCclos, Bool_t oldnames){
+    GetEnvelopeForEachV2(collsyst,subtrMCclos,oldnames);
 }
 void SetFDtemplateSystemString(TString str){
   strSystemFDtempl=str;
 }
 
 //_____________________________________________________________
-void GetEnvelopeForEachV2(Int_t collsyst, Bool_t subtrMCclos){
+void GetEnvelopeForEachV2(Int_t collsyst, Bool_t subtrMCclos, Bool_t oldnames){
     
 
     Int_t collsyst = 0; // 0 is pp, 1 is p-Pb
@@ -41,8 +41,6 @@ void GetEnvelopeForEachV2(Int_t collsyst, Bool_t subtrMCclos){
     SetSystemStringForTemplateFDnames(strSystemFDtempl.Data());
       
     TString inputcorrelation = ""; // input data file (not needed here)
-
-    Int_t oldnames=1; if(collsyst!=0 && collsyst!=1) oldnames=0;
 
     TString outputfilename = ""; //  (not needed here)
     
@@ -90,7 +88,7 @@ void GetEnvelopeForEachV2(Int_t collsyst, Bool_t subtrMCclos){
            
             // set correct paths
             inputcorrelation = Form("%s/%s%.0f_%.0f_%.1f_%.1f.root",inputcorrelationDir.Data(),inputfileroot.Data(),Dptbin[0],Dptbin[1], hadpt[ihadpt],hadptMaxInput[ihadpt]); // I guess all your input data files have
-
+            if(!oldnames) inputcorrelation = Form("%s/%s%dto%d_PoolInt_thr%.1fto%.1f.root",inputcorrelationDir.Data(),inputfileroot.Data(),(int)Dptbin[0], (int)Dptbin[1], hadpt[ihadpt],hadptMaxInput[ihadpt]); // I guess all your input data files have
             cout << " inputcorrelation = " << inputcorrelation.Data() << endl;
             
             

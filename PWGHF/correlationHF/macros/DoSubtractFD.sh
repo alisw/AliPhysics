@@ -12,6 +12,7 @@ declare inputfileroot=$6
 declare -i localcode=$7
 declare suffixTemplSystm=$8
 declare -i subtrMCclos=$9
+declare -i useoldFilenames=${10}
 declare dirmacroRun="${ALICE_PHYSICS}/../src/PWGHF/correlationHF/macros"
 declare dirmacroFD="${ALICE_PHYSICS}/../src/PWGHF/correlationHF/macros"
 if [ ${localcode} = 1 ]; then
@@ -40,7 +41,7 @@ SetFDtemplateSystemString("${suffixTemplSystm}")
 //Printf("Analyzing file: %s",${file})
 Printf("Coll syst=%d",${collsyst})
 Printf("Meson: %d",$mesonIndex)
-${macrosPP[$mesonIndex]}($collsyst,$subtrMCclos)
+${macrosPP[$mesonIndex]}($collsyst,$subtrMCclos,$useoldFilenames)
 .q
 EOF
     
@@ -60,7 +61,7 @@ SetFDtemplateSystemString("${suffixTemplSystm}")
 //Printf("Analyzing file: %s",${file})
 Printf("Coll syst=%d",${collsyst})
 Printf("Meson: %d",$mesonIndex)
-${macrosPPb[$mesonIndex]}($collsyst,$subtrMCclos)
+${macrosPPb[$mesonIndex]}($collsyst,$subtrMCclos,$useoldFilenames)
 .q
 EOF
 
@@ -80,7 +81,7 @@ SetFDtemplateSystemString("${suffixTemplSystm}")
 //Printf("Analyzing file: %s",${file})
 Printf("Coll syst=%d",${collsyst})
 Printf("Meson: %d",$mesonIndex)
-${macrosPPb[$mesonIndex]}($collsyst,$subtrMCclos)
+${macrosPPb[$mesonIndex]}($collsyst,$subtrMCclos,$useoldFilenames)
 .q
 EOF
 echo "DoSubtractFD: done"  
