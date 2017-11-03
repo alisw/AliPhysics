@@ -176,7 +176,8 @@ class AliAnalysisTaskEmcalJetShapesMC : public AliAnalysisTaskEmcalJet {
   TH2F                                *fhpTjetpT; //
   TH1F                                *fhPt;//
   TH1F                                *fhPhi;//
-  THnSparse                           *fHLundIterative;// 
+  THnSparse                           *fHLundIterative;//
+   THnSparse                           *fHLundIterativeInject;//
   TH2F                                *fNbOfConstvspT;//
 
   TTree           *fTreeObservableTagging;//!<! Tree with tagging variables subtracted MC or true MC or raw
