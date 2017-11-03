@@ -217,8 +217,6 @@ class AliAnalysisTaskPHOSPi0EtaToGammaGamma : public AliAnalysisTaskSE {
     Double_t fEventPlane;
     TVector2 fQVector1;//x,y
     TVector2 fQVector2;//x,y
-    Double_t fQ1[2];//x,y
-    Double_t fQ2[2];//x,y
     Int_t fNHybridTrack;
     Bool_t fIsPHOSTriggerAnalysis;
     AliPHOSTriggerHelper *fPHOSTriggerHelper;//for real PHOS triggered data analysis
@@ -234,7 +232,7 @@ class AliAnalysisTaskPHOSPi0EtaToGammaGamma : public AliAnalysisTaskSE {
     AliAnalysisTaskPHOSPi0EtaToGammaGamma(const AliAnalysisTaskPHOSPi0EtaToGammaGamma&);
     AliAnalysisTaskPHOSPi0EtaToGammaGamma& operator=(const AliAnalysisTaskPHOSPi0EtaToGammaGamma&);
 
-    ClassDef(AliAnalysisTaskPHOSPi0EtaToGammaGamma, 33);
+    ClassDef(AliAnalysisTaskPHOSPi0EtaToGammaGamma, 36);
 };
 
 #endif

@@ -15,6 +15,7 @@ AliAnalysisTaskPHOSPi0EtaToGammaGamma* AddTaskPHOSPi0EtaToGammaGamma_PbPb_5TeV(
     const Double_t NsigmaDisp = 2.5,
     const Bool_t usePHOSTender = kTRUE,
     const Bool_t TOFcorrection = kTRUE,
+    const Bool_t Trgcorrection = kFALSE,
     const Bool_t NonLinStudy = kFALSE,
     const Double_t bs = 100.,//bunch space in ns.
     const Double_t distBC = -1,//minimum distance to bad channel.
