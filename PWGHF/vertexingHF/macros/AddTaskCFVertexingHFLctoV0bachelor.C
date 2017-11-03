@@ -82,7 +82,7 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHFLctoV0bachelor(const char* cutFile = "
     printf("The configuration is set to be FAST --> using only pt, y, ct, phi, zvtx, centrality, fake, multiplicity to fill the CF\n");
   }
   else if (configuration == AliCFTaskVertexingHF::kFalcon){
-    printf("The configuration is set to be FAST --> using only pt, y, centrality to fill the CF\n");
+    printf("The configuration is set to be FAST --> using only pt, y, centrality, multiplicity to fill the CF\n");
   }
   else{
     printf("The configuration is not defined! returning\n");

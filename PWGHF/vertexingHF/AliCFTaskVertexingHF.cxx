@@ -380,7 +380,7 @@ void AliCFTaskVertexingHF::Init()
       fNvar = 8;
       break;
     case kFalcon:// super fast configuration: only pt_candidate, y, centrality
-      AliFatal("Falcon is not implemented for Dstar->Kpipi. Use Cheetah or Snail. Exiting...");
+      fNvar = 4;
       break;
     }
     fPartName="Dstar";
@@ -416,7 +416,7 @@ void AliCFTaskVertexingHF::Init()
       fNvar = 8;
       break;
     case kFalcon:// super fast configuration: only pt_candidate, y, centrality
-      AliFatal("Falcon is not implemented for Dplus->Kpipi. Use Cheetah or Snail. Exiting...");
+      fNvar = 4;
       break;
     }
     fPartName="Dplus";
@@ -434,7 +434,7 @@ void AliCFTaskVertexingHF::Init()
       fNvar = 8;
       break;
     case kFalcon:// super fast configuration: only pt_candidate, y, centrality
-      AliFatal("Falcon is not implemented for Dstar->Kpipi. Use Cheetah or Snail. Exiting...");
+      fNvar = 4;
       break;
     }
     fPartName="Lambdac";
@@ -452,7 +452,7 @@ void AliCFTaskVertexingHF::Init()
       fNvar = 8;
       break;
     case kFalcon:// super fast configuration: only pt_candidate, y, centrality
-      AliFatal("Falcon is not implemented for Ds->KKpi. Use Cheetah or Snail. Exiting...");
+      fNvar = 4;
       break;
     }
     fPartName="Ds";
@@ -470,7 +470,7 @@ void AliCFTaskVertexingHF::Init()
       fNvar = 8;
       break;
     case kFalcon:// super fast configuration: only pt_candidate, y, centrality
-      AliFatal("Falcon is not implemented for D0->Kpipipi. Use Cheetah or Snail. Exiting...");
+      fNvar = 4;
       break;
     }
     fPartName="D0";
@@ -1448,16 +1448,18 @@ void AliCFTaskVertexingHF::Terminate(Option_t*)
     }
   }
   else if(fConfiguration == kFalcon){
-    //nvarToPlot = 3;
+    //nvarToPlot = 4;
     titles = new TString[nvarToPlot];
     if (fDecayChannel==22) {
       titles[0]="p_{T}(#Lambda_{c}) [GeV/c]";
       titles[1]="y(#Lambda_{c})";
       titles[2]="centrality";
+      titles[3]="multiplicity";
     } else {
       titles[0]="pT_candidate (GeV/c)";
       titles[1]="rapidity";
       titles[2]="centrality";
+      titles[3]="multiplicity";
     }
   }
 
