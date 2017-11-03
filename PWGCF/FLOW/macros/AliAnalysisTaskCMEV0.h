@@ -186,7 +186,6 @@ private:
   TFile            *fileNUApos; //!
   TFile            *fileNUAneg; //!
 
-  TH1D         *fEtaBinFinderForQA; //!
 
 
 
@@ -249,34 +248,6 @@ private:
   TH3F         *fHistChPosvsEtaPtRun[10];  //! 10 Centrality Bin
   TH3F         *fHistChNegvsEtaPtRun[10];  //!
 
-  //QA eta dependence:
-  TProfile  *fHist_Corr3p_QAEta_EP_V0C_PN[2]; //!  Pos and Neg Mag field.
-  TProfile  *fHist_Corr3p_QAEta_EP_V0C_PP[2]; //!
-  TProfile  *fHist_Corr3p_QAEta_EP_V0C_NN[2]; //!
-
-  //--- profiles for TPC <Q> (They are filled)
-  TProfile2D     *fHCos1nPosChEtaVz[4];   //!
-  TProfile2D     *fHCos2nPosChEtaVz[4];   //!
-  TProfile2D     *fHCos3nPosChEtaVz[4];   //!
-  TProfile2D     *fHCos4nPosChEtaVz[4];   //!
-  TProfile2D     *fHSin1nPosChEtaVz[4];   //!
-  TProfile2D     *fHSin2nPosChEtaVz[4];   //!
-  TProfile2D     *fHSin3nPosChEtaVz[4];   //!
-  TProfile2D     *fHSin4nPosChEtaVz[4];   //!
-
-  TProfile2D     *fHCos1nNegChEtaVz[4];   //!
-  TProfile2D     *fHCos2nNegChEtaVz[4];   //!
-  TProfile2D     *fHCos3nNegChEtaVz[4];   //!
-  TProfile2D     *fHCos4nNegChEtaVz[4];   //!
-  TProfile2D     *fHSin1nNegChEtaVz[4];   //!
-  TProfile2D     *fHSin2nNegChEtaVz[4];   //!
-  TProfile2D     *fHSin3nNegChEtaVz[4];   //!
-  TProfile2D     *fHSin4nNegChEtaVz[4];   //!
-
-  TProfile2D     *fHCos2nDWPosChEtaVz[4];   //!
-  TProfile2D     *fHSin2nDWPosChEtaVz[4];   //!
-  TProfile2D     *fHCos2nDWNegChEtaVz[4];   //!
-  TProfile2D     *fHSin2nDWNegChEtaVz[4];   //!
 
 
 

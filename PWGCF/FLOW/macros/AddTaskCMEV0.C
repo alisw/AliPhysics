@@ -8,10 +8,10 @@ class AliAnalysisTaskCMEV0;
  Double_t fpTLow = 0.2, Double_t fpTHigh = 10.0, Double_t fEtaLow = -0.8, Double_t fEtaHigh = 0.8, Double_t dDCAxy = 2.4, Double_t dDCAz  = 3.2,
  TString sAnalysisFile = "AOD", TString sDataSet = "2010", TString sAnalysisType = "AUTOMATIC", TString sEventTrigger = "MB", Bool_t bEventCutsQA = kFALSE, 
  Bool_t bTrackCutsQA = kFALSE, Double_t dVertexRange = 10., Bool_t bPileUp = kFALSE, Bool_t bPileUpTight = kFALSE, TString sCentEstimator = "V0", 
- Bool_t bFBeffi = kFALSE, TString sEfficiencyFB = "alien:///alice/cern.ch/user/m/mhaque/calib_files/FB768_Hijing_LHC15o.root",
- Bool_t bApplyNUA= kFALSE, TString sNUAFile="alien:///alice/cern.ch/user/m/mhaque/gain/Run2015o_Pass1_FB768_pT0p2_5GeV_NUA_Wgt_PosNeg_Run.root", 
+ Bool_t bFBeffi = kFALSE,  TString sEfficiencyFB = "alien:///alice/cern.ch/user/m/mhaque/calib_files/FB768_Hijing_LHC15o.root",
+ Bool_t bApplyNUA = kFALSE, TString sNUAFile="alien:///alice/cern.ch/user/m/mhaque/gain/Run2015o_Pass1_FB768_pT0p2_5GeV_NUA_Wgt_PosNeg_Run.root", 
  Bool_t bZDCGainEq= kFALSE, TString sZDCFile="alien:///alice/cern.ch/user/m/mhaque/gain/Run2015o_pass1_ZDNP_WgtTotEn_VsCentRun.root", 
- Bool_t bFillTPCQn=kFALSE, Bool_t bFillNUAhist= kFALSE, Bool_t bApplyNUACorr = kFALSE, Float_t fSetHarmonic = 2.0,  Bool_t bUseNUAinEP = kFALSE,
+ Bool_t bFillTPCQn=kFALSE, Bool_t bFillNUAhist= kFALSE, Float_t fSetHarmonic = 2.0,  Bool_t bUseNUAinEP = kFALSE,
  const char *suffix = "")
 {
 
@@ -189,7 +189,7 @@ class AliAnalysisTaskCMEV0;
   taskQC_prot->SetRejectPileUpTight(bPileUpTight); //kTRUE:700,kFALSE:15000
   taskQC_prot->SetDataSet(sDataSet);   
 //taskQC_prot->SetAnalysisSet(sAnalysisDef); 
-  taskQC_prot->SetApplyNUACorr(bApplyNUACorr);
+  taskQC_prot->SetApplyNUACorr(bApplyNUA);
   taskQC_prot->SetStoreTPCQnAvg(bFillTPCQn);
   taskQC_prot->SetFillNUAHist(bFillNUAhist);
   taskQC_prot->SetApplyZDCCorr(bZDCGainEq);
@@ -210,20 +210,22 @@ class AliAnalysisTaskCMEV0;
     }
   }
 
-  if(bApplyNUA){
-     TFile* fNUAFile = TFile::Open(sNUAFile,"READ");
-     if(!fNUAFile) {
-       printf("\n\n *** ERROR: NUA wgt file not found! **EXIT** \n\n");
-       exit(1);
-     } 
-     TList* fListNUA = dynamic_cast<TList*>(fNUAFile->FindObjectAny("fNUA_ChPosChNeg"));
-     if(fListNUA){
-       taskQC_prot->SetInputListNUA(fListNUA);
-     }
-     else{
-       printf("\n\n *** ERROR: NUA wgt List not found! **EXIT** \n\n");
-       return NULL;
-     }
+  if(bApplyNUA) {
+    TFile* fNUAFile = TFile::Open(sNUAFile,"READ");
+    if(fNUAFile){
+      TList* fListNUA = dynamic_cast<TList*>(fNUAFile->FindObjectAny("fNUA_ChPosChNeg"));
+      if(fListNUA){
+        taskQC_prot->SetInputListNUA(fListNUA);
+      }
+      else{
+       printf("\n\n *** ERROR: NUA File present but List not found! **** \n\n");
+       //return NULL;
+      }
+    }
+    else if(!fNUAFile) {
+      printf("\n\n *** ERROR: NUA wgt file not found! **** \n\n");
+      //exit(1);
+    } 
   }
 
   if(bZDCGainEq){
