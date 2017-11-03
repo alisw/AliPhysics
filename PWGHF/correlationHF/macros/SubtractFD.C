@@ -1269,6 +1269,8 @@ void OpenOutputFileAndDrawReflect(TString strfile,Double_t ptminD,Double_t ptmax
 
 //______________________________________________________________________________________________
 void SubtractMCclosureModulation(TH1D *h, Double_t ptD, Double_t ptTrmin, Double_t ptTrmax) {
+   
+   printf("Number of deltaPhi bins where we apply modulation: %d (it HAS to be 32)\n",h->GetNbinsX());
 
    Int_t bin1L = h->GetXaxis()->FindBin(0.1);
    Int_t bin1R = h->GetXaxis()->FindBin(-0.1);
@@ -1280,12 +1282,14 @@ void SubtractMCclosureModulation(TH1D *h, Double_t ptD, Double_t ptTrmin, Double
    Int_t bin4R = h->GetXaxis()->FindBin(-0.7);
    Int_t bin5L = h->GetXaxis()->FindBin(0.9);
    Int_t bin5R = h->GetXaxis()->FindBin(-0.9);
+   Int_t bin6L = h->GetXaxis()->FindBin(1.1);
+   Int_t bin6R = h->GetXaxis()->FindBin(-1.1);
 
-   Double_t mod[5] = {0.,0.,0.,0.,0.};
+   Double_t mod[6] = {0.,0.,0.,0.,0.,0.};
    AliHFCorrelationUtils::GetMCClosureModulation(ptD,ptTrmin,ptTrmax,mod);
    if(mod[0]==-999) printf("Error in retrieving MC closure modulation! Results will be not corrected by it\n");
 
-   printf("Applying modulations of %1.4f, %1.4f, %1.4f, %1.4f, %1.4f\n",mod[0],mod[1],mod[2],mod[3],mod[4]);
+   printf("Applying modulations of %1.4f, %1.4f, %1.4f, %1.4f, %1.4f, %1.4f\n",mod[0],mod[1],mod[2],mod[3],mod[4],mod[5]);
    printf("Bin1L old data %1.5f\n",h->GetBinContent(bin1L));
    printf("Bin1R old data %1.5f\n",h->GetBinContent(bin1R));
    printf("Bin2L old data %1.5f\n",h->GetBinContent(bin2L));
@@ -1296,8 +1300,10 @@ void SubtractMCclosureModulation(TH1D *h, Double_t ptD, Double_t ptTrmin, Double
    printf("Bin4R old data %1.5f\n",h->GetBinContent(bin4R));
    printf("Bin5L old data %1.5f\n",h->GetBinContent(bin5L));
    printf("Bin5R old data %1.5f\n",h->GetBinContent(bin5R));
+   printf("Bin6L old data %1.5f\n",h->GetBinContent(bin6L));
+   printf("Bin6R old data %1.5f\n",h->GetBinContent(bin6R));
    
-   //Note that the modulation is applyied, bin-by-bin, for the five three bins next to deltaPhi=0, before template correction, and after purity correction!
+   //Note that the modulation is applied, bin-by-bin, for the first six bins next to deltaPhi=0, before template correction, and after purity correction!
    //The modulation is SUBTRACTED from data (so, if negative, as in the shoulders, it's actually added to data)
 
    h->SetBinContent(bin1L,h->GetBinContent(bin1L)*(mod[0]));
@@ -1310,6 +1316,8 @@ void SubtractMCclosureModulation(TH1D *h, Double_t ptD, Double_t ptTrmin, Double
    h->SetBinContent(bin4R,h->GetBinContent(bin4R)*(mod[3]));
    h->SetBinContent(bin5L,h->GetBinContent(bin5L)*(mod[4]));
    h->SetBinContent(bin5R,h->GetBinContent(bin5R)*(mod[4]));	
+   h->SetBinContent(bin6L,h->GetBinContent(bin6L)*(mod[5]));
+   h->SetBinContent(bin6R,h->GetBinContent(bin6R)*(mod[5]));
    h->SetBinError(bin1L,h->GetBinError(bin1L)*(mod[0]));
    h->SetBinError(bin1R,h->GetBinError(bin1R)*(mod[0]));
    h->SetBinError(bin2L,h->GetBinError(bin2L)*(mod[1]));
@@ -1320,6 +1328,8 @@ void SubtractMCclosureModulation(TH1D *h, Double_t ptD, Double_t ptTrmin, Double
    h->SetBinError(bin4R,h->GetBinError(bin4R)*(mod[3]));
    h->SetBinError(bin5L,h->GetBinError(bin5L)*(mod[4]));
    h->SetBinError(bin5R,h->GetBinError(bin5R)*(mod[4]));
+   h->SetBinError(bin6L,h->GetBinError(bin6L)*(mod[5]));
+   h->SetBinError(bin6R,h->GetBinError(bin6R)*(mod[5]));
 
    printf("Bin1L new data %1.5f\n",h->GetBinContent(bin1L));
    printf("Bin1R new data %1.5f\n",h->GetBinContent(bin1R));
@@ -1331,6 +1341,8 @@ void SubtractMCclosureModulation(TH1D *h, Double_t ptD, Double_t ptTrmin, Double
    printf("Bin4R new data %1.5f\n",h->GetBinContent(bin4R));
    printf("Bin5L new data %1.5f\n",h->GetBinContent(bin5L));
    printf("Bin5R new data %1.5f\n",h->GetBinContent(bin5R));
+   printf("Bin6L new data %1.5f\n",h->GetBinContent(bin6L));
+   printf("Bin6R new data %1.5f\n",h->GetBinContent(bin6R));
 
    return;
 }

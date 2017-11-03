@@ -107,7 +107,7 @@ TH1D* AliHFCorrelationUtils::DuplicateHistoTo2piRange(TH1D *h,Double_t scale){
 
 //________________________________________________________________________________________________
 void AliHFCorrelationUtils::GetMCClosureModulation(Double_t ptD, Double_t ptTrmin, Double_t ptTrmax, Double_t mod[]) {
-printf("prova\n");
+
   Int_t ptbinD = 0;
   if(ptD>3 && ptD<5) ptbinD = 1;
   if(ptD>5 && ptD<8) ptbinD = 2;
@@ -123,6 +123,7 @@ printf("prova\n");
         mod[2]=1.;
         mod[3]=1.0015;
         mod[4]=1.0013;
+        mod[5]=1.;
       }
       else if(ptTrmin==0.3 && ptTrmax==1.) {
         mod[0]=0.9979;
@@ -130,6 +131,7 @@ printf("prova\n");
         mod[2]=0.999;
         mod[3]=1.;
         mod[4]=1.;
+        mod[5]=1.;
       }
       else if(ptTrmin==1. && ptTrmax==99.) {
         mod[0]=0.9809;
@@ -137,6 +139,7 @@ printf("prova\n");
         mod[2]=1.0035;
         mod[3]=1.0045;
         mod[4]=1.;
+        mod[5]=1.;
       }
       else if(ptTrmin==1. && ptTrmax==2.) {
         mod[0]=0.9860;
@@ -144,6 +147,7 @@ printf("prova\n");
         mod[2]=1.;
         mod[3]=1.004;
         mod[4]=1.003;
+        mod[5]=1.;
       }
       else if(ptTrmin==2. && ptTrmax==3.) {
         mod[0]=0.971;
@@ -151,6 +155,7 @@ printf("prova\n");
         mod[2]=1.0073;
         mod[3]=1.0114;
         mod[4]=1.0105;
+        mod[5]=1.;
       }
       else if(ptTrmin==2. && ptTrmax==99.) {
         mod[0]=0.971;
@@ -158,6 +163,7 @@ printf("prova\n");
         mod[2]=1.0073;
         mod[3]=1.0114;
         mod[4]=1.0105;
+        mod[5]=1.;
       }
       else if(ptTrmin==3. && ptTrmax==99.) {
         mod[0]=0.9561;
@@ -165,6 +171,7 @@ printf("prova\n");
         mod[2]=1.002;
         mod[3]=1.002;
         mod[4]=1.0012;
+        mod[5]=1.;
       }                        
     break;
 
@@ -175,6 +182,7 @@ printf("prova\n");
         mod[2]=1.;
         mod[3]=1.;
         mod[4]=1.;
+        mod[5]=1.;
       }
       else if(ptTrmin==0.3 && ptTrmax==1.) {
         mod[0]=1.;
@@ -182,6 +190,7 @@ printf("prova\n");
         mod[2]=1.;
         mod[3]=1.;
         mod[4]=1.;
+        mod[5]=1.;
       }
       else if(ptTrmin==1. && ptTrmax==99.) {
         mod[0]=0.9871;
@@ -189,6 +198,7 @@ printf("prova\n");
         mod[2]=1.0073;
         mod[3]=1.0061;
         mod[4]=1.0033;
+        mod[5]=1.;
       }
       else if(ptTrmin==1. && ptTrmax==2.) {
         mod[0]=0.9919;
@@ -196,6 +206,7 @@ printf("prova\n");
         mod[2]=1.0033;
         mod[3]=1.0042;
         mod[4]=1.0028;
+        mod[5]=1.;
       }
       else if(ptTrmin==2. && ptTrmax==3.) {
         mod[0]=0.9814;
@@ -203,6 +214,7 @@ printf("prova\n");
         mod[2]=1.013;
         mod[3]=1.011;
         mod[4]=1.0075;
+        mod[5]=1.;
       }
       else if(ptTrmin==2. && ptTrmax==99.) {
         mod[0]=0.9814;
@@ -210,6 +222,7 @@ printf("prova\n");
         mod[2]=1.013;
         mod[3]=1.011;
         mod[4]=1.0075;
+        mod[5]=1.;
       }
       else if(ptTrmin==3. && ptTrmax==99.) {
         mod[0]=0.9659;
@@ -217,6 +230,7 @@ printf("prova\n");
         mod[2]=1.0335;
         mod[3]=1.0141;
         mod[4]=1.;
+        mod[5]=1.;
       }  
     break;
 
@@ -227,6 +241,7 @@ printf("prova\n");
         mod[2]=1.;
         mod[3]=1.;
         mod[4]=1.;
+        mod[5]=1.;
       }
       else if(ptTrmin==0.3 && ptTrmax==1.) {
         mod[0]=1.;
@@ -234,6 +249,7 @@ printf("prova\n");
         mod[2]=1.;
         mod[3]=1.;
         mod[4]=1.;
+        mod[5]=1.;
       }
       else if(ptTrmin==1. && ptTrmax==99.) {
         mod[0]=0.9922;
@@ -241,6 +257,7 @@ printf("prova\n");
         mod[2]=1.0072;
         mod[3]=1.0035;
         mod[4]=1.001;
+        mod[5]=1.;
       }
       else if(ptTrmin==1. && ptTrmax==2.) {
         mod[0]=0.996;
@@ -248,6 +265,7 @@ printf("prova\n");
         mod[2]=1.0033;
         mod[3]=1.0024;
         mod[4]=1.002;
+        mod[5]=1.;
       }
       else if(ptTrmin==2. && ptTrmax==3.) {
         mod[0]=0.990;
@@ -255,6 +273,7 @@ printf("prova\n");
         mod[2]=1.013;
         mod[3]=1.009;
         mod[4]=1.;
+        mod[5]=1.;
       }
       else if(ptTrmin==2. && ptTrmax==99.) {
         mod[0]=0.990;
@@ -262,6 +281,7 @@ printf("prova\n");
         mod[2]=1.013;
         mod[3]=1.009;
         mod[4]=1.;
+        mod[5]=1.;
       }
       else if(ptTrmin==3. && ptTrmax==99.) {
         mod[0]=0.9787;
@@ -269,6 +289,7 @@ printf("prova\n");
         mod[2]=1.0262;
         mod[3]=1.004;
         mod[4]=1.;
+        mod[5]=1.;
       }  
     break;
 
@@ -279,6 +300,7 @@ printf("prova\n");
         mod[2]=1.;
         mod[3]=1.;
         mod[4]=1.;
+        mod[5]=1.;
       }
       else if(ptTrmin==0.3 && ptTrmax==1.) {
         mod[0]=1.;
@@ -286,6 +308,7 @@ printf("prova\n");
         mod[2]=1.;
         mod[3]=1.;
         mod[4]=1.;
+        mod[5]=1.;
       }
       else if(ptTrmin==1. && ptTrmax==99.) {
         mod[0]=1.;
@@ -293,6 +316,7 @@ printf("prova\n");
         mod[2]=1.;
         mod[3]=1.;
         mod[4]=1.;
+        mod[5]=1.;
       }
       else if(ptTrmin==1. && ptTrmax==2.) {
         mod[0]=1.;
@@ -300,6 +324,7 @@ printf("prova\n");
         mod[2]=1.;
         mod[3]=1.;
         mod[4]=1.;
+        mod[5]=1.;
       }
       else if(ptTrmin==2. && ptTrmax==3.) {
         mod[0]=1.;
@@ -307,6 +332,7 @@ printf("prova\n");
         mod[2]=1.;
         mod[3]=1.;
         mod[4]=1.;
+        mod[5]=1.;
       }
       else if(ptTrmin==2. && ptTrmax==99.) {
         mod[0]=1.;
@@ -314,6 +340,7 @@ printf("prova\n");
         mod[2]=1.;
         mod[3]=1.;
         mod[4]=1.;
+        mod[5]=1.;
       }
       else if(ptTrmin==3. && ptTrmax==99.) {
         mod[0]=1.;
@@ -321,6 +348,7 @@ printf("prova\n");
         mod[2]=1.;
         mod[3]=1.;
         mod[4]=1.;
+        mod[5]=1.;
       }  
     break;
 
