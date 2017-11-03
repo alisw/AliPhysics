@@ -40,7 +40,7 @@ SetFDtemplateSystemString("${suffixTemplSystm}")
 //Printf("Analyzing file: %s",${file})
 Printf("Coll syst=%d",${collsyst})
 Printf("Meson: %d",$mesonIndex)
-${macrosPP[$mesonIndex]}()
+${macrosPP[$mesonIndex]}($collsyst,$subtrMCclos)
 .q
 EOF
     

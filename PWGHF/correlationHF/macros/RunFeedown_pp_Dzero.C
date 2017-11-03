@@ -24,8 +24,8 @@ void SetDirectoryInputFiles(TString inputdir){
 void SetInputFileNameRoot(TString fileinputroot){
   inputfileroot=fileinputroot;
 }
-void RunFeedown_pp_Dzero(){
-    GetEnvelopeForEachV2();
+void RunFeedown_pp_Dzero(Int_t collsyst, Bool_t subtrMCclos){
+    GetEnvelopeForEachV2(collsyst,subtrMCclos);
 }
 
 void SetFDtemplateSystemString(TString str){
@@ -33,7 +33,7 @@ void SetFDtemplateSystemString(TString str){
 }
 
 //_____________________________________________________________
-void GetEnvelopeForEachV2(){
+void GetEnvelopeForEachV2(Int_t collsyst, Bool_t subtrMCclos){
     
     //**********************************
     // This function loops on all the templates, creating 5 envelopes for different v2 values.
@@ -45,7 +45,7 @@ void GetEnvelopeForEachV2(){
     SetSystemStringForTemplateFDnames(strSystemFDtempl.Data());
     TString inputcorrelation;
 
-
+    Int_t oldnames=1; if(collsyst!=0 && collsyst!=1) oldnames=0;
   
     TString outputfilename = ""; //  (not needed here)
     
@@ -97,9 +97,9 @@ void GetEnvelopeForEachV2(){
             outputfilename = "./Final_Plots_pp/Singlev2Envelope/pp_FDsubDzero";
             outputfilename += Form("Pt%dto%dassoc%1.1fto%1.1f",(int)Dpt[iDpt], (int)Dpt[iDpt+1], hadpt[ihadpt],hadptMax[ihadpt]);
                         
-      
+
             // first one - no v2
-            SubtractFDexploitingClassDzero(Dpt[iDpt],Dpt[iDpt+1],hadpt[ihadpt],hadptMax[ihadpt],outputfilename.Data(),2,purities[ihadpt],1,inputcorrelation.Data(),inputfc.Data(),templatedir.Data(),collsyst,0,0,systmode);
+            SubtractFDexploitingClassDzero(Dpt[iDpt],Dpt[iDpt+1],hadpt[ihadpt],hadptMax[ihadpt],outputfilename.Data(),2,purities[ihadpt],1,inputcorrelation.Data(),inputfc.Data(),templatedir.Data(),collsyst,0,0,systmode,oldnames,subtrMCclos);
 
             if(collsyst) cout << "Check: This is not pp" << endl; // if pp, stop here
             

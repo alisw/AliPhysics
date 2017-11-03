@@ -1,7 +1,7 @@
 TString localcode=gSystem->ExpandPathName("$ALICE_PHYSICS/../src/PWGHF/correlationHF/macros/");
 TString strsystem="none";
 Bool_t fitcodeIsLoaded=kFALSE;
-void SubtractMCclosureModulation(TH1D *h, Double_t ptD, Double_t ptTrmin, Double_t ptTrmax);
+void SubtractMCclosureModulation(TH1D *h, Double_t ptD, Double_t ptTrmin, Double_t ptTrmax, Int_t system);
 void SetSystemStringForTemplateFDnames(TString str){
   strsystem=str;
 }
@@ -396,7 +396,7 @@ void SubtractFDexploitingClass(Int_t meson,TH1D *hData,TGraphAsymmErrors *grFpro
     hData->Scale(purity*1./(Double_t)rebin);
 
     //Apply modulation from MC closure test (as correction on data points! pPb2016 preliminary approach!)
-    if(subtrMCclos) SubtractMCclosureModulation(hData,0.5*(ptmin+ptmax),ptassoc,ptassocMax);
+    if(subtrMCclos) SubtractMCclosureModulation(hData,0.5*(ptmin+ptmax),ptassoc,ptassocMax,system);
 
     TString strmes;
     if(meson==0){
@@ -700,7 +700,7 @@ void SubtractFDexploitingClassv2Modulations(const Int_t meson,TH1D *hData,TGraph
     hData->Scale(purity*1./(Double_t)rebin);
 
     //Apply modulation from MC closure test (as correction on data points! pPb2016 preliminary approach!)
-    if(subtrMCclos) SubtractMCclosureModulation(hData,0.5*(ptmin+ptmax),ptassoc,ptassocMax);
+    if(subtrMCclos) SubtractMCclosureModulation(hData,0.5*(ptmin+ptmax),ptassoc,ptassocMax,system);
 
     TString strmes;
     if(meson==0)strmes="Dzero";
@@ -1268,7 +1268,7 @@ void OpenOutputFileAndDrawReflect(TString strfile,Double_t ptminD,Double_t ptmax
 }
 
 //______________________________________________________________________________________________
-void SubtractMCclosureModulation(TH1D *h, Double_t ptD, Double_t ptTrmin, Double_t ptTrmax) {
+void SubtractMCclosureModulation(TH1D *h, Double_t ptD, Double_t ptTrmin, Double_t ptTrmax, Int_t system) {
    
    printf("Number of deltaPhi bins where we apply modulation: %d (it HAS to be 32)\n",h->GetNbinsX());
 
@@ -1286,7 +1286,7 @@ void SubtractMCclosureModulation(TH1D *h, Double_t ptD, Double_t ptTrmin, Double
    Int_t bin6R = h->GetXaxis()->FindBin(-1.1);
 
    Double_t mod[6] = {0.,0.,0.,0.,0.,0.};
-   AliHFCorrelationUtils::GetMCClosureModulation(ptD,ptTrmin,ptTrmax,mod);
+   AliHFCorrelationUtils::GetMCClosureModulation(ptD,ptTrmin,ptTrmax,mod,system);
    if(mod[0]==-999) printf("Error in retrieving MC closure modulation! Results will be not corrected by it\n");
 
    printf("Applying modulations of %1.4f, %1.4f, %1.4f, %1.4f, %1.4f, %1.4f\n",mod[0],mod[1],mod[2],mod[3],mod[4],mod[5]);
