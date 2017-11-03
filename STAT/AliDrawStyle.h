@@ -86,7 +86,7 @@ public:
   static Int_t    GetNamedIntegerAt(TString input, TString propertyName, Int_t index);
   static Float_t  GetNamedFloatAt(TString input, TString propertyName, Int_t index);
   static Bool_t  IsSelected(TString selectors, TString elementName, TString className, TString objectName);
-  static TObjArray * ReadCSSFile(const char *  inputName,Int_t verbose);
+  static TObjArray * ReadCSSFile(const char *  inputName, TObjArray * array=NULL, Int_t verbose=0);
   static void    WriteCSSFile(TObjArray * cssArray, const char *  outputName, fstream *cssOut=NULL);
   //
   //

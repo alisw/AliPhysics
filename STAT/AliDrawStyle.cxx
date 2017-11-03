@@ -538,7 +538,7 @@ Float_t  AliDrawStyle::GetNamedFloatAt(TString input, TString propertyName, Int_
 /// \param inputName     - input file to read
 /// \param verbose       - specify verbose level for ::error and ::info (Int_t should be interpreted as an bit-mask)
 /// \return              - TObjArray  with the pairs TNamed of the CSS <Selector, declaration> or  TObjArray (recursive structure like includes)
-TObjArray * AliDrawStyle::ReadCSSFile(const char *  inputName, Int_t verbose){
+TObjArray * AliDrawStyle::ReadCSSFile(const char *  inputName, TObjArray * cssArray, Int_t verbose){
   //check file exist
   TString inputCSS = gSystem->GetFromPipe(TString::Format("cat %s",inputName).Data());     // I expect this variable is defined
   //remove comments:
@@ -548,7 +548,9 @@ TObjArray * AliDrawStyle::ReadCSSFile(const char *  inputName, Int_t verbose){
     //inputCSS.ReplaceAll("\n", ""); we can add this, in the other case ClassName will be like "\n .TH*", but I suppose it doesn't matter.
   TObjArray *tokenArray = inputCSS.Tokenize("{}");   //assuming we can not use {} symbols in the style IDS
   Int_t entries = tokenArray->GetEntries();
-  TObjArray *cssArray = new TObjArray(entries / 2);
+  if (cssArray==NULL) {
+    cssArray = new TObjArray(entries / 2);
+  }
   for (Int_t i = 0; i < entries; i += 2) {
     if (i + 1 >= entries) continue;
     TString selector = tokenArray->At(i)->GetName();
@@ -687,16 +689,22 @@ Int_t AliDrawStyle::CountObjects(TPad *cPad, TString className){
   return cnt;
 }
 
-
+///
+/// \param styleName
+/// \param tempGraph
+/// \param elementName
+/// \param className
+/// \param objName
+/// \param objNum
 void AliDrawStyle::TGraphApplyStyle(const char* styleName, TGraph *tempGraph, TString elementName, TString className, TString objName, Int_t objNum){
   // if styleName not exist use defaults?
   if(AliDrawStyle::IsSelected(AliDrawStyle::GetSelector(styleName),elementName, className, objName)){
     tempGraph->SetMarkerColor(AliDrawStyle::GetNamedIntegerAt(AliDrawStyle::GetProperty(styleName, "marker_color", elementName, className, objName), "", objNum));
-    tempGraph->SetMarkerSize(AliDrawStyle::GetNamedIntegerAt(AliDrawStyle::GetProperty(styleName, "marker_size", elementName, className, objName), "", objNum));
+    tempGraph->SetMarkerSize(AliDrawStyle::GetNamedFloatAt(AliDrawStyle::GetProperty(styleName, "marker_size", elementName, className, objName), "", objNum));
     tempGraph->SetMarkerStyle(AliDrawStyle::GetNamedIntegerAt(AliDrawStyle::GetProperty(styleName, "marker_style", elementName, className, objName), "", objNum));
     /// lines
     tempGraph->SetLineColor(AliDrawStyle::GetNamedIntegerAt(AliDrawStyle::GetProperty(styleName, "line_color", elementName, className, objName), "", objNum));
-    tempGraph->SetLineWidth(AliDrawStyle::GetNamedIntegerAt(AliDrawStyle::GetProperty(styleName, "line_width", elementName, className, objName), "", objNum));
+    tempGraph->SetLineWidth(AliDrawStyle::GetNamedFloatAt(AliDrawStyle::GetProperty(styleName, "line_width", elementName, className, objName), "", objNum));
     tempGraph->SetLineStyle(AliDrawStyle::GetNamedIntegerAt(AliDrawStyle::GetProperty(styleName, "line_style", elementName, className, objName), "", objNum));
     /// area
     tempGraph->SetFillColor(AliDrawStyle::GetNamedIntegerAt(AliDrawStyle::GetProperty(styleName, "fill_color", elementName, className, objName), "", objNum));
@@ -704,10 +712,17 @@ void AliDrawStyle::TGraphApplyStyle(const char* styleName, TGraph *tempGraph, TS
   }
 }
 
+///
+/// \param styleName
+/// \param tempHis
+/// \param elementName
+/// \param className
+/// \param objName
+/// \param objNum
 void AliDrawStyle::TH1ApplyStyle(const char* styleName, TH1 *tempHis, TString elementName, TString className, TString objName, Int_t objNum){
   if(AliDrawStyle::IsSelected(AliDrawStyle::GetSelector(styleName),elementName, className, objName)){
     tempHis->SetMarkerColor(AliDrawStyle::GetNamedIntegerAt(AliDrawStyle::GetProperty(styleName, "marker_color", elementName, className, objName), "", objNum));
-    tempHis->SetMarkerSize(AliDrawStyle::GetNamedIntegerAt(AliDrawStyle::GetProperty(styleName, "marker_size", elementName, className, objName), "", objNum));
+    tempHis->SetMarkerSize(AliDrawStyle::GetNamedFloatAt(AliDrawStyle::GetProperty(styleName, "marker_size", elementName, className, objName), "", objNum));
     tempHis->SetMarkerStyle(AliDrawStyle::GetNamedIntegerAt(AliDrawStyle::GetProperty(styleName, "marker_style", elementName, className, objName), "", objNum));
     /// lines
     tempHis->SetLineColor(AliDrawStyle::GetNamedIntegerAt(AliDrawStyle::GetProperty(styleName, "line_color", elementName, className, objName), "", objNum));
@@ -719,6 +734,13 @@ void AliDrawStyle::TH1ApplyStyle(const char* styleName, TH1 *tempHis, TString el
   }
 }
 
+///
+/// \param styleName
+/// \param tempFunc
+/// \param elementName
+/// \param className
+/// \param objName
+/// \param objNum
 void AliDrawStyle::TF1ApplyStyle(const char* styleName, TF1 *tempFunc, TString elementName, TString className, TString objName, Int_t objNum){
   //still not implemented applyStyle for fitFunction for TH1
   if(AliDrawStyle::IsSelected(AliDrawStyle::GetSelector(styleName),elementName, className, objName)){
@@ -735,6 +757,12 @@ void AliDrawStyle::TF1ApplyStyle(const char* styleName, TF1 *tempFunc, TString e
   }
 }
 
+///
+/// \param styleName
+/// \param tempPad
+/// \param elementName
+/// \param className
+/// \param objName
 void AliDrawStyle::TPadApplyStyle(const char* styleName, TPad *tempPad, TString elementName, TString className, TString objName){
   if(AliDrawStyle::IsSelected(AliDrawStyle::GetSelector(styleName),elementName, className, objName)){
     tempPad->SetFillColor(AliDrawStyle::GetNamedIntegerAt(AliDrawStyle::GetProperty(styleName, "fill_color", elementName, className, objName), "", 0));
@@ -754,15 +782,23 @@ void AliDrawStyle::TPadApplyStyle(const char* styleName, TPad *tempPad, TString 
   }
 }
 
+///
+/// \param styleName
+/// \param tempCanvas
+/// \param elementName
+/// \param className
+/// \param objName
 void AliDrawStyle::TCanvasApplyCssStyle(const char* styleName, TCanvas *tempCanvas, TString elementName, TString className, TString objName){
   if(AliDrawStyle::IsSelected(AliDrawStyle::GetSelector(styleName),elementName, className, objName)){
     tempCanvas->SetFillColor(AliDrawStyle::GetNamedIntegerAt(AliDrawStyle::GetProperty(styleName, "fill_color", elementName, className, objName), "", 0));
     tempCanvas->SetBorderSize(AliDrawStyle::GetNamedIntegerAt(AliDrawStyle::GetProperty(styleName, "border_size", elementName, className, objName), "", 0));
     tempCanvas->SetBorderMode(AliDrawStyle::GetNamedIntegerAt(AliDrawStyle::GetProperty(styleName, "border_mode", elementName, className, objName), "", 0));
   }
-
 }
 
+///
+/// \param pad
+/// \param styleName
 void AliDrawStyle::ApplyCssStyle(TPad *pad, const char* styleName){
   /// if property not found nothig will be
   TObjArray *pads = NULL;
