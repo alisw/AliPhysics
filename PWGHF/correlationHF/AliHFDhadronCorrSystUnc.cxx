@@ -10789,9 +10789,9 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2013DplusHighPtAss1(){
 }
 
 
-/******************************************************/
-/*****  METHODS FOR pPb 2016 - TO BE UPDATED!!!!  *****/
-/******************************************************/
+/************************************************************/
+/*****  METHODS FOR pPb 2016 - FOR PRELIMINARY SQM 2017 *****/
+/************************************************************/
 
 
 void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DzeroLowPtAss03to99(){ 
@@ -10859,7 +10859,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DzeroLowPtAss03to9
 
 
   // MC CLOSURE TEST (as flat contribution + modulation/sqrt(12) bilateral, i.e. total spread is modulation/sqrt(3))
-  Double_t mod[5] = {0.,0.,0.,0.,0.};
+  Double_t mod[6] = {0.,0.,0.,0.,0.,0.};
   AliHFCorrelationUtils::GetMCClosureModulation(4,0.3,99.,mod); //retrieve modulation value
 
   fhMCclosureTestMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMin");
@@ -10867,7 +10867,10 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DzeroLowPtAss03to9
     x=fhMCclosureTestMin->GetBinCenter(j);
     fhMCclosureTestMin->SetBinContent(j,-0.00); //flat contribution
     
-    if(-1.<x&&x<=-0.8){    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
     }
     else if(-0.8<x&&x<=-0.6){    
@@ -10894,8 +10897,11 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DzeroLowPtAss03to9
     else if(0.6<x&&x<=0.8){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
     }
-    else if(0.8<x&&x<=1.){    
+    else if(0.8<x&&x<=1.0){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
     }
   }
 
@@ -10904,7 +10910,10 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DzeroLowPtAss03to9
     x=fhMCclosureTestMax->GetBinCenter(j);
     fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
     
-    if(-1.<x&&x<=-0.8){    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
     }
     else if(-0.8<x&&x<=-0.6){    
@@ -10931,8 +10940,11 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DzeroLowPtAss03to9
     else if(0.6<x&&x<=0.8){    
       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
     }
-    else if(0.8<x&&x<=1.){    
+    else if(0.8<x&&x<=1.0){    
       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
     }
   }
  
@@ -11056,7 +11068,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DzeroLowPtAss03to1
 
 
   // MC CLOSURE TEST (as flat contribution + modulation/sqrt(12) bilateral, i.e. total spread is modulation/sqrt(3))
-  Double_t mod[5] = {0.,0.,0.,0.,0.};
+  Double_t mod[6] = {0.,0.,0.,0.,0.,0.};
   AliHFCorrelationUtils::GetMCClosureModulation(4,0.3,1.,mod); //retrieve modulation value
 
   fhMCclosureTestMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMin");
@@ -11064,7 +11076,10 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DzeroLowPtAss03to1
     x=fhMCclosureTestMin->GetBinCenter(j);
     fhMCclosureTestMin->SetBinContent(j,-0.00); //flat contribution
     
-    if(-1.<x&&x<=-0.8){    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
     }
     else if(-0.8<x&&x<=-0.6){    
@@ -11091,8 +11106,11 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DzeroLowPtAss03to1
     else if(0.6<x&&x<=0.8){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
     }
-    else if(0.8<x&&x<=1.){    
+    else if(0.8<x&&x<=1.0){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
     }
   }
 
@@ -11101,7 +11119,10 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DzeroLowPtAss03to1
     x=fhMCclosureTestMax->GetBinCenter(j);
     fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
     
-    if(-1.<x&&x<=-0.8){    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
     }
     else if(-0.8<x&&x<=-0.6){    
@@ -11128,8 +11149,11 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DzeroLowPtAss03to1
     else if(0.6<x&&x<=0.8){    
       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
     }
-    else if(0.8<x&&x<=1.){    
+    else if(0.8<x&&x<=1.0){    
       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
     }
   }
   
@@ -11253,7 +11277,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DzeroLowPtAss1to99
 
 
   // MC CLOSURE TEST (as flat contribution + modulation/sqrt(12) bilateral, i.e. total spread is modulation/sqrt(3))
-  Double_t mod[5] = {0.,0.,0.,0.,0.};
+  Double_t mod[6] = {0.,0.,0.,0.,0.,0.};
   AliHFCorrelationUtils::GetMCClosureModulation(4,1,99.,mod); //retrieve modulation value
 
   fhMCclosureTestMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMin");
@@ -11261,7 +11285,10 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DzeroLowPtAss1to99
     x=fhMCclosureTestMin->GetBinCenter(j);
     fhMCclosureTestMin->SetBinContent(j,-0.00); //flat contribution
     
-    if(-1.<x&&x<=-0.8){    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
     }
     else if(-0.8<x&&x<=-0.6){    
@@ -11288,8 +11315,11 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DzeroLowPtAss1to99
     else if(0.6<x&&x<=0.8){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
     }
-    else if(0.8<x&&x<=1.){    
+    else if(0.8<x&&x<=1.0){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
     }
   }
 
@@ -11298,7 +11328,10 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DzeroLowPtAss1to99
     x=fhMCclosureTestMax->GetBinCenter(j);
     fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
     
-    if(-1.<x&&x<=-0.8){    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
     }
     else if(-0.8<x&&x<=-0.6){    
@@ -11325,8 +11358,11 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DzeroLowPtAss1to99
     else if(0.6<x&&x<=0.8){    
       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
     }
-    else if(0.8<x&&x<=1.){    
+    else if(0.8<x&&x<=1.0){    
       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
     }
   }
   
@@ -11450,7 +11486,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DzeroLowPtAss2to99
 
 
   // MC CLOSURE TEST (as flat contribution + modulation/sqrt(12) bilateral, i.e. total spread is modulation/sqrt(3))
-  Double_t mod[5] = {0.,0.,0.,0.,0.};
+  Double_t mod[6] = {0.,0.,0.,0.,0.,0.};
   AliHFCorrelationUtils::GetMCClosureModulation(4,2,99.,mod); //retrieve modulation value
 
   fhMCclosureTestMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMin");
@@ -11458,7 +11494,10 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DzeroLowPtAss2to99
     x=fhMCclosureTestMin->GetBinCenter(j);
     fhMCclosureTestMin->SetBinContent(j,-0.00); //flat contribution
     
-    if(-1.<x&&x<=-0.8){    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
     }
     else if(-0.8<x&&x<=-0.6){    
@@ -11485,8 +11524,11 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DzeroLowPtAss2to99
     else if(0.6<x&&x<=0.8){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
     }
-    else if(0.8<x&&x<=1.){    
+    else if(0.8<x&&x<=1.0){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
     }
   }
 
@@ -11495,7 +11537,10 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DzeroLowPtAss2to99
     x=fhMCclosureTestMax->GetBinCenter(j);
     fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
     
-    if(-1.<x&&x<=-0.8){    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
     }
     else if(-0.8<x&&x<=-0.6){    
@@ -11522,8 +11567,11 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DzeroLowPtAss2to99
     else if(0.6<x&&x<=0.8){    
       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
     }
-    else if(0.8<x&&x<=1.){    
+    else if(0.8<x&&x<=1.0){    
       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
     }
   }
   
@@ -11647,7 +11695,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DzeroLowPtAss3to99
 
 
    // MC CLOSURE TEST (as flat contribution + modulation/sqrt(12) bilateral, i.e. total spread is modulation/sqrt(3))
-  Double_t mod[5] = {0.,0.,0.,0.,0.};
+  Double_t mod[6] = {0.,0.,0.,0.,0.,0.};
   AliHFCorrelationUtils::GetMCClosureModulation(4,3,99.,mod); //retrieve modulation value
 
   fhMCclosureTestMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMin");
@@ -11655,7 +11703,10 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DzeroLowPtAss3to99
     x=fhMCclosureTestMin->GetBinCenter(j);
     fhMCclosureTestMin->SetBinContent(j,-0.00); //flat contribution
     
-    if(-1.<x&&x<=-0.8){    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
     }
     else if(-0.8<x&&x<=-0.6){    
@@ -11682,8 +11733,11 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DzeroLowPtAss3to99
     else if(0.6<x&&x<=0.8){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
     }
-    else if(0.8<x&&x<=1.){    
+    else if(0.8<x&&x<=1.0){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
     }
   }
 
@@ -11692,7 +11746,10 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DzeroLowPtAss3to99
     x=fhMCclosureTestMax->GetBinCenter(j);
     fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
     
-    if(-1.<x&&x<=-0.8){    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
     }
     else if(-0.8<x&&x<=-0.6){    
@@ -11719,8 +11776,11 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DzeroLowPtAss3to99
     else if(0.6<x&&x<=0.8){    
       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
     }
-    else if(0.8<x&&x<=1.){    
+    else if(0.8<x&&x<=1.0){    
       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
     }
   }
   
@@ -11844,7 +11904,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DzeroLowPtAss1to2(
 
 
   // MC CLOSURE TEST (as flat contribution + modulation/sqrt(12) bilateral, i.e. total spread is modulation/sqrt(3))
-  Double_t mod[5] = {0.,0.,0.,0.,0.};
+  Double_t mod[6] = {0.,0.,0.,0.,0.,0.};
   AliHFCorrelationUtils::GetMCClosureModulation(4,1,2.,mod); //retrieve modulation value
 
   fhMCclosureTestMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMin");
@@ -11852,7 +11912,10 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DzeroLowPtAss1to2(
     x=fhMCclosureTestMin->GetBinCenter(j);
     fhMCclosureTestMin->SetBinContent(j,-0.00); //flat contribution
     
-    if(-1.<x&&x<=-0.8){    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
     }
     else if(-0.8<x&&x<=-0.6){    
@@ -11879,8 +11942,11 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DzeroLowPtAss1to2(
     else if(0.6<x&&x<=0.8){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
     }
-    else if(0.8<x&&x<=1.){    
+    else if(0.8<x&&x<=1.0){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
     }
   }
 
@@ -11889,7 +11955,10 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DzeroLowPtAss1to2(
     x=fhMCclosureTestMax->GetBinCenter(j);
     fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
     
-    if(-1.<x&&x<=-0.8){    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
     }
     else if(-0.8<x&&x<=-0.6){    
@@ -11916,8 +11985,11 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DzeroLowPtAss1to2(
     else if(0.6<x&&x<=0.8){    
       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
     }
-    else if(0.8<x&&x<=1.){    
+    else if(0.8<x&&x<=1.0){    
       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
     }
   }
   
@@ -12041,7 +12113,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DzeroLowPtAss2to3(
 
 
   // MC CLOSURE TEST (as flat contribution + modulation/sqrt(12) bilateral, i.e. total spread is modulation/sqrt(3))
-  Double_t mod[5] = {0.,0.,0.,0.,0.};
+  Double_t mod[6] = {0.,0.,0.,0.,0.,0.};
   AliHFCorrelationUtils::GetMCClosureModulation(4,2,3.,mod); //retrieve modulation value
 
   fhMCclosureTestMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMin");
@@ -12049,7 +12121,10 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DzeroLowPtAss2to3(
     x=fhMCclosureTestMin->GetBinCenter(j);
     fhMCclosureTestMin->SetBinContent(j,-0.00); //flat contribution
     
-    if(-1.<x&&x<=-0.8){    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
     }
     else if(-0.8<x&&x<=-0.6){    
@@ -12076,8 +12151,11 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DzeroLowPtAss2to3(
     else if(0.6<x&&x<=0.8){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
     }
-    else if(0.8<x&&x<=1.){    
+    else if(0.8<x&&x<=1.0){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
     }
   }
 
@@ -12086,7 +12164,10 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DzeroLowPtAss2to3(
     x=fhMCclosureTestMax->GetBinCenter(j);
     fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
     
-    if(-1.<x&&x<=-0.8){    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
     }
     else if(-0.8<x&&x<=-0.6){    
@@ -12113,8 +12194,11 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DzeroLowPtAss2to3(
     else if(0.6<x&&x<=0.8){    
       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
     }
-    else if(0.8<x&&x<=1.){    
+    else if(0.8<x&&x<=1.0){    
       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
     }
   }
   
@@ -12239,7 +12323,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DzeroMidPtAss03to9
 
 
   // MC CLOSURE TEST (as flat contribution + modulation/sqrt(12) bilateral, i.e. total spread is modulation/sqrt(3))
-  Double_t mod[5] = {0.,0.,0.,0.,0.};
+  Double_t mod[6] = {0.,0.,0.,0.,0.,0.};
   AliHFCorrelationUtils::GetMCClosureModulation(6.5,0.3,99.,mod); //retrieve modulation value
 
   fhMCclosureTestMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMin");
@@ -12247,7 +12331,10 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DzeroMidPtAss03to9
     x=fhMCclosureTestMin->GetBinCenter(j);
     fhMCclosureTestMin->SetBinContent(j,-0.00); //flat contribution
     
-    if(-1.<x&&x<=-0.8){    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
     }
     else if(-0.8<x&&x<=-0.6){    
@@ -12274,8 +12361,11 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DzeroMidPtAss03to9
     else if(0.6<x&&x<=0.8){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
     }
-    else if(0.8<x&&x<=1.){    
+    else if(0.8<x&&x<=1.0){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
     }
   }
 
@@ -12284,7 +12374,10 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DzeroMidPtAss03to9
     x=fhMCclosureTestMax->GetBinCenter(j);
     fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
     
-    if(-1.<x&&x<=-0.8){    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
     }
     else if(-0.8<x&&x<=-0.6){    
@@ -12311,8 +12404,11 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DzeroMidPtAss03to9
     else if(0.6<x&&x<=0.8){    
       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
     }
-    else if(0.8<x&&x<=1.){    
+    else if(0.8<x&&x<=1.0){    
       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
     }
   }
   
@@ -12436,7 +12532,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DzeroMidPtAss03to1
 
 
   // MC CLOSURE TEST (as flat contribution + modulation/sqrt(12) bilateral, i.e. total spread is modulation/sqrt(3))
-  Double_t mod[5] = {0.,0.,0.,0.,0.};
+  Double_t mod[6] = {0.,0.,0.,0.,0.,0.};
   AliHFCorrelationUtils::GetMCClosureModulation(6.5,0.3,1.,mod); //retrieve modulation value
 
   fhMCclosureTestMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMin");
@@ -12444,7 +12540,10 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DzeroMidPtAss03to1
     x=fhMCclosureTestMin->GetBinCenter(j);
     fhMCclosureTestMin->SetBinContent(j,-0.00); //flat contribution
     
-    if(-1.<x&&x<=-0.8){    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
     }
     else if(-0.8<x&&x<=-0.6){    
@@ -12471,8 +12570,11 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DzeroMidPtAss03to1
     else if(0.6<x&&x<=0.8){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
     }
-    else if(0.8<x&&x<=1.){    
+    else if(0.8<x&&x<=1.0){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
     }
   }
 
@@ -12481,7 +12583,10 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DzeroMidPtAss03to1
     x=fhMCclosureTestMax->GetBinCenter(j);
     fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
     
-    if(-1.<x&&x<=-0.8){    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
     }
     else if(-0.8<x&&x<=-0.6){    
@@ -12508,8 +12613,11 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DzeroMidPtAss03to1
     else if(0.6<x&&x<=0.8){    
       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
     }
-    else if(0.8<x&&x<=1.){    
+    else if(0.8<x&&x<=1.0){    
       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
     }
   }
   
@@ -12633,7 +12741,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DzeroMidPtAss1to99
 
 
    // MC CLOSURE TEST (as flat contribution + modulation/sqrt(12) bilateral, i.e. total spread is modulation/sqrt(3))
-  Double_t mod[5] = {0.,0.,0.,0.,0.};
+  Double_t mod[6] = {0.,0.,0.,0.,0.,0.};
   AliHFCorrelationUtils::GetMCClosureModulation(6.5,1,99.,mod); //retrieve modulation value
 
   fhMCclosureTestMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMin");
@@ -12641,7 +12749,10 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DzeroMidPtAss1to99
     x=fhMCclosureTestMin->GetBinCenter(j);
     fhMCclosureTestMin->SetBinContent(j,-0.00); //flat contribution
     
-    if(-1.<x&&x<=-0.8){    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
     }
     else if(-0.8<x&&x<=-0.6){    
@@ -12668,8 +12779,11 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DzeroMidPtAss1to99
     else if(0.6<x&&x<=0.8){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
     }
-    else if(0.8<x&&x<=1.){    
+    else if(0.8<x&&x<=1.0){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
     }
   }
 
@@ -12678,7 +12792,10 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DzeroMidPtAss1to99
     x=fhMCclosureTestMax->GetBinCenter(j);
     fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
     
-    if(-1.<x&&x<=-0.8){    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
     }
     else if(-0.8<x&&x<=-0.6){    
@@ -12705,8 +12822,11 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DzeroMidPtAss1to99
     else if(0.6<x&&x<=0.8){    
       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
     }
-    else if(0.8<x&&x<=1.){    
+    else if(0.8<x&&x<=1.0){    
       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
     }
   }
   
@@ -12830,7 +12950,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DzeroMidPtAss2to99
 
 
    // MC CLOSURE TEST (as flat contribution + modulation/sqrt(12) bilateral, i.e. total spread is modulation/sqrt(3))
-  Double_t mod[5] = {0.,0.,0.,0.,0.};
+  Double_t mod[6] = {0.,0.,0.,0.,0.,0.};
   AliHFCorrelationUtils::GetMCClosureModulation(6.5,2,99.,mod); //retrieve modulation value
 
   fhMCclosureTestMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMin");
@@ -12838,7 +12958,10 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DzeroMidPtAss2to99
     x=fhMCclosureTestMin->GetBinCenter(j);
     fhMCclosureTestMin->SetBinContent(j,-0.00); //flat contribution
     
-    if(-1.<x&&x<=-0.8){    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
     }
     else if(-0.8<x&&x<=-0.6){    
@@ -12865,8 +12988,11 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DzeroMidPtAss2to99
     else if(0.6<x&&x<=0.8){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
     }
-    else if(0.8<x&&x<=1.){    
+    else if(0.8<x&&x<=1.0){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
     }
   }
 
@@ -12875,7 +13001,10 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DzeroMidPtAss2to99
     x=fhMCclosureTestMax->GetBinCenter(j);
     fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
     
-    if(-1.<x&&x<=-0.8){    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
     }
     else if(-0.8<x&&x<=-0.6){    
@@ -12902,8 +13031,11 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DzeroMidPtAss2to99
     else if(0.6<x&&x<=0.8){    
       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
     }
-    else if(0.8<x&&x<=1.){    
+    else if(0.8<x&&x<=1.0){    
       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
     }
   }
   
@@ -13027,7 +13159,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DzeroMidPtAss3to99
 
 
    // MC CLOSURE TEST (as flat contribution + modulation/sqrt(12) bilateral, i.e. total spread is modulation/sqrt(3))
-  Double_t mod[5] = {0.,0.,0.,0.,0.};
+  Double_t mod[6] = {0.,0.,0.,0.,0.,0.};
   AliHFCorrelationUtils::GetMCClosureModulation(6.5,3,99.,mod); //retrieve modulation value
 
   fhMCclosureTestMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMin");
@@ -13035,7 +13167,10 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DzeroMidPtAss3to99
     x=fhMCclosureTestMin->GetBinCenter(j);
     fhMCclosureTestMin->SetBinContent(j,-0.00); //flat contribution
     
-    if(-1.<x&&x<=-0.8){    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
     }
     else if(-0.8<x&&x<=-0.6){    
@@ -13062,8 +13197,11 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DzeroMidPtAss3to99
     else if(0.6<x&&x<=0.8){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
     }
-    else if(0.8<x&&x<=1.){    
+    else if(0.8<x&&x<=1.0){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
     }
   }
 
@@ -13072,7 +13210,10 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DzeroMidPtAss3to99
     x=fhMCclosureTestMax->GetBinCenter(j);
     fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
     
-    if(-1.<x&&x<=-0.8){    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
     }
     else if(-0.8<x&&x<=-0.6){    
@@ -13099,8 +13240,11 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DzeroMidPtAss3to99
     else if(0.6<x&&x<=0.8){    
       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
     }
-    else if(0.8<x&&x<=1.){    
+    else if(0.8<x&&x<=1.0){    
       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
     }
   }
   
@@ -13224,7 +13368,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DzeroMidPtAss1to2(
 
 
    // MC CLOSURE TEST (as flat contribution + modulation/sqrt(12) bilateral, i.e. total spread is modulation/sqrt(3))
-  Double_t mod[5] = {0.,0.,0.,0.,0.};
+  Double_t mod[6] = {0.,0.,0.,0.,0.,0.};
   AliHFCorrelationUtils::GetMCClosureModulation(6.5,1,2.,mod); //retrieve modulation value
 
   fhMCclosureTestMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMin");
@@ -13232,7 +13376,10 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DzeroMidPtAss1to2(
     x=fhMCclosureTestMin->GetBinCenter(j);
     fhMCclosureTestMin->SetBinContent(j,-0.00); //flat contribution
     
-    if(-1.<x&&x<=-0.8){    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
     }
     else if(-0.8<x&&x<=-0.6){    
@@ -13259,8 +13406,11 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DzeroMidPtAss1to2(
     else if(0.6<x&&x<=0.8){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
     }
-    else if(0.8<x&&x<=1.){    
+    else if(0.8<x&&x<=1.0){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
     }
   }
 
@@ -13269,7 +13419,10 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DzeroMidPtAss1to2(
     x=fhMCclosureTestMax->GetBinCenter(j);
     fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
     
-    if(-1.<x&&x<=-0.8){    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
     }
     else if(-0.8<x&&x<=-0.6){    
@@ -13296,8 +13449,11 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DzeroMidPtAss1to2(
     else if(0.6<x&&x<=0.8){    
       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
     }
-    else if(0.8<x&&x<=1.){    
+    else if(0.8<x&&x<=1.0){    
       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
     }
   }
   
@@ -13421,7 +13577,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DzeroMidPtAss2to3(
 
 
   // MC CLOSURE TEST (as flat contribution + modulation/sqrt(12) bilateral, i.e. total spread is modulation/sqrt(3))
-  Double_t mod[5] = {0.,0.,0.,0.,0.};
+  Double_t mod[6] = {0.,0.,0.,0.,0.,0.};
   AliHFCorrelationUtils::GetMCClosureModulation(6.5,2,3.,mod); //retrieve modulation value
 
   fhMCclosureTestMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMin");
@@ -13429,7 +13585,10 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DzeroMidPtAss2to3(
     x=fhMCclosureTestMin->GetBinCenter(j);
     fhMCclosureTestMin->SetBinContent(j,-0.00); //flat contribution
     
-    if(-1.<x&&x<=-0.8){    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
     }
     else if(-0.8<x&&x<=-0.6){    
@@ -13456,8 +13615,11 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DzeroMidPtAss2to3(
     else if(0.6<x&&x<=0.8){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
     }
-    else if(0.8<x&&x<=1.){    
+    else if(0.8<x&&x<=1.0){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
     }
   }
 
@@ -13466,7 +13628,10 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DzeroMidPtAss2to3(
     x=fhMCclosureTestMax->GetBinCenter(j);
     fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
     
-    if(-1.<x&&x<=-0.8){    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
     }
     else if(-0.8<x&&x<=-0.6){    
@@ -13493,8 +13658,11 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DzeroMidPtAss2to3(
     else if(0.6<x&&x<=0.8){    
       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
     }
-    else if(0.8<x&&x<=1.){    
+    else if(0.8<x&&x<=1.0){    
       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
     }
   }
   
@@ -13619,7 +13787,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DzeroHighPtAss03to
 
 
    // MC CLOSURE TEST (as flat contribution + modulation/sqrt(12) bilateral, i.e. total spread is modulation/sqrt(3))
-  Double_t mod[5] = {0.,0.,0.,0.,0.};
+  Double_t mod[6] = {0.,0.,0.,0.,0.,0.};
   AliHFCorrelationUtils::GetMCClosureModulation(12,0.3,99.,mod); //retrieve modulation value
 
   fhMCclosureTestMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMin");
@@ -13627,7 +13795,10 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DzeroHighPtAss03to
     x=fhMCclosureTestMin->GetBinCenter(j);
     fhMCclosureTestMin->SetBinContent(j,-0.00); //flat contribution
     
-    if(-1.<x&&x<=-0.8){    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
     }
     else if(-0.8<x&&x<=-0.6){    
@@ -13654,8 +13825,11 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DzeroHighPtAss03to
     else if(0.6<x&&x<=0.8){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
     }
-    else if(0.8<x&&x<=1.){    
+    else if(0.8<x&&x<=1.0){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
     }
   }
 
@@ -13664,7 +13838,10 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DzeroHighPtAss03to
     x=fhMCclosureTestMax->GetBinCenter(j);
     fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
     
-    if(-1.<x&&x<=-0.8){    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
     }
     else if(-0.8<x&&x<=-0.6){    
@@ -13691,8 +13868,11 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DzeroHighPtAss03to
     else if(0.6<x&&x<=0.8){    
       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
     }
-    else if(0.8<x&&x<=1.){    
+    else if(0.8<x&&x<=1.0){    
       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
     }
   }
   
@@ -13816,7 +13996,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DzeroHighPtAss03to
 
 
    // MC CLOSURE TEST (as flat contribution + modulation/sqrt(12) bilateral, i.e. total spread is modulation/sqrt(3))
-  Double_t mod[5] = {0.,0.,0.,0.,0.};
+  Double_t mod[6] = {0.,0.,0.,0.,0.,0.};
   AliHFCorrelationUtils::GetMCClosureModulation(12,0.3,1.,mod); //retrieve modulation value
 
   fhMCclosureTestMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMin");
@@ -13824,7 +14004,10 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DzeroHighPtAss03to
     x=fhMCclosureTestMin->GetBinCenter(j);
     fhMCclosureTestMin->SetBinContent(j,-0.00); //flat contribution
     
-    if(-1.<x&&x<=-0.8){    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
     }
     else if(-0.8<x&&x<=-0.6){    
@@ -13851,8 +14034,11 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DzeroHighPtAss03to
     else if(0.6<x&&x<=0.8){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
     }
-    else if(0.8<x&&x<=1.){    
+    else if(0.8<x&&x<=1.0){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
     }
   }
 
@@ -13861,7 +14047,10 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DzeroHighPtAss03to
     x=fhMCclosureTestMax->GetBinCenter(j);
     fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
     
-    if(-1.<x&&x<=-0.8){    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
     }
     else if(-0.8<x&&x<=-0.6){    
@@ -13888,8 +14077,11 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DzeroHighPtAss03to
     else if(0.6<x&&x<=0.8){    
       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
     }
-    else if(0.8<x&&x<=1.){    
+    else if(0.8<x&&x<=1.0){    
       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
     }
   }
   
@@ -14013,7 +14205,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DzeroHighPtAss1to9
 
 
    // MC CLOSURE TEST (as flat contribution + modulation/sqrt(12) bilateral, i.e. total spread is modulation/sqrt(3))
-  Double_t mod[5] = {0.,0.,0.,0.,0.};
+  Double_t mod[6] = {0.,0.,0.,0.,0.,0.};
   AliHFCorrelationUtils::GetMCClosureModulation(12,1,99.,mod); //retrieve modulation value
 
   fhMCclosureTestMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMin");
@@ -14021,7 +14213,10 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DzeroHighPtAss1to9
     x=fhMCclosureTestMin->GetBinCenter(j);
     fhMCclosureTestMin->SetBinContent(j,-0.00); //flat contribution
     
-    if(-1.<x&&x<=-0.8){    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
     }
     else if(-0.8<x&&x<=-0.6){    
@@ -14048,8 +14243,11 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DzeroHighPtAss1to9
     else if(0.6<x&&x<=0.8){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
     }
-    else if(0.8<x&&x<=1.){    
+    else if(0.8<x&&x<=1.0){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
     }
   }
 
@@ -14058,7 +14256,10 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DzeroHighPtAss1to9
     x=fhMCclosureTestMax->GetBinCenter(j);
     fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
     
-    if(-1.<x&&x<=-0.8){    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
     }
     else if(-0.8<x&&x<=-0.6){    
@@ -14085,8 +14286,11 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DzeroHighPtAss1to9
     else if(0.6<x&&x<=0.8){    
       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
     }
-    else if(0.8<x&&x<=1.){    
+    else if(0.8<x&&x<=1.0){    
       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
     }
   }
   
@@ -14210,7 +14414,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DzeroHighPtAss2to9
 
 
    // MC CLOSURE TEST (as flat contribution + modulation/sqrt(12) bilateral, i.e. total spread is modulation/sqrt(3))
-  Double_t mod[5] = {0.,0.,0.,0.,0.};
+  Double_t mod[6] = {0.,0.,0.,0.,0.,0.};
   AliHFCorrelationUtils::GetMCClosureModulation(12,2,99.,mod); //retrieve modulation value
 
   fhMCclosureTestMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMin");
@@ -14218,7 +14422,10 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DzeroHighPtAss2to9
     x=fhMCclosureTestMin->GetBinCenter(j);
     fhMCclosureTestMin->SetBinContent(j,-0.00); //flat contribution
     
-    if(-1.<x&&x<=-0.8){    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
     }
     else if(-0.8<x&&x<=-0.6){    
@@ -14245,8 +14452,11 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DzeroHighPtAss2to9
     else if(0.6<x&&x<=0.8){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
     }
-    else if(0.8<x&&x<=1.){    
+    else if(0.8<x&&x<=1.0){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
     }
   }
 
@@ -14255,7 +14465,10 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DzeroHighPtAss2to9
     x=fhMCclosureTestMax->GetBinCenter(j);
     fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
     
-    if(-1.<x&&x<=-0.8){    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
     }
     else if(-0.8<x&&x<=-0.6){    
@@ -14282,8 +14495,11 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DzeroHighPtAss2to9
     else if(0.6<x&&x<=0.8){    
       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
     }
-    else if(0.8<x&&x<=1.){    
+    else if(0.8<x&&x<=1.0){    
       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
     }
   }
   
@@ -14407,7 +14623,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DzeroHighPtAss3to9
 
 
   // MC CLOSURE TEST (as flat contribution + modulation/sqrt(12) bilateral, i.e. total spread is modulation/sqrt(3))
-  Double_t mod[5] = {0.,0.,0.,0.,0.};
+  Double_t mod[6] = {0.,0.,0.,0.,0.,0.};
   AliHFCorrelationUtils::GetMCClosureModulation(12,3,99.,mod); //retrieve modulation value
 
   fhMCclosureTestMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMin");
@@ -14415,7 +14631,10 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DzeroHighPtAss3to9
     x=fhMCclosureTestMin->GetBinCenter(j);
     fhMCclosureTestMin->SetBinContent(j,-0.00); //flat contribution
     
-    if(-1.<x&&x<=-0.8){    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
     }
     else if(-0.8<x&&x<=-0.6){    
@@ -14442,8 +14661,11 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DzeroHighPtAss3to9
     else if(0.6<x&&x<=0.8){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
     }
-    else if(0.8<x&&x<=1.){    
+    else if(0.8<x&&x<=1.0){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
     }
   }
 
@@ -14452,7 +14674,10 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DzeroHighPtAss3to9
     x=fhMCclosureTestMax->GetBinCenter(j);
     fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
     
-    if(-1.<x&&x<=-0.8){    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
     }
     else if(-0.8<x&&x<=-0.6){    
@@ -14479,8 +14704,11 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DzeroHighPtAss3to9
     else if(0.6<x&&x<=0.8){    
       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
     }
-    else if(0.8<x&&x<=1.){    
+    else if(0.8<x&&x<=1.0){    
       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
     }
   }
   
@@ -14604,7 +14832,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DzeroHighPtAss1to2
 
 
   // MC CLOSURE TEST (as flat contribution + modulation/sqrt(12) bilateral, i.e. total spread is modulation/sqrt(3))
-  Double_t mod[5] = {0.,0.,0.,0.,0.};
+  Double_t mod[6] = {0.,0.,0.,0.,0.,0.};
   AliHFCorrelationUtils::GetMCClosureModulation(12,1,2.,mod); //retrieve modulation value
 
   fhMCclosureTestMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMin");
@@ -14612,7 +14840,10 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DzeroHighPtAss1to2
     x=fhMCclosureTestMin->GetBinCenter(j);
     fhMCclosureTestMin->SetBinContent(j,-0.00); //flat contribution
     
-    if(-1.<x&&x<=-0.8){    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
     }
     else if(-0.8<x&&x<=-0.6){    
@@ -14639,8 +14870,11 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DzeroHighPtAss1to2
     else if(0.6<x&&x<=0.8){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
     }
-    else if(0.8<x&&x<=1.){    
+    else if(0.8<x&&x<=1.0){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
     }
   }
 
@@ -14649,7 +14883,10 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DzeroHighPtAss1to2
     x=fhMCclosureTestMax->GetBinCenter(j);
     fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
     
-    if(-1.<x&&x<=-0.8){    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
     }
     else if(-0.8<x&&x<=-0.6){    
@@ -14676,8 +14913,11 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DzeroHighPtAss1to2
     else if(0.6<x&&x<=0.8){    
       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
     }
-    else if(0.8<x&&x<=1.){    
+    else if(0.8<x&&x<=1.0){    
       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
     }
   }
   
@@ -14801,7 +15041,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DzeroHighPtAss2to3
 
 
   // MC CLOSURE TEST (as flat contribution + modulation/sqrt(12) bilateral, i.e. total spread is modulation/sqrt(3))
-  Double_t mod[5] = {0.,0.,0.,0.,0.};
+  Double_t mod[6] = {0.,0.,0.,0.,0.,0.};
   AliHFCorrelationUtils::GetMCClosureModulation(12,2,3.,mod); //retrieve modulation value
 
   fhMCclosureTestMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMin");
@@ -14809,7 +15049,10 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DzeroHighPtAss2to3
     x=fhMCclosureTestMin->GetBinCenter(j);
     fhMCclosureTestMin->SetBinContent(j,-0.00); //flat contribution
     
-    if(-1.<x&&x<=-0.8){    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
     }
     else if(-0.8<x&&x<=-0.6){    
@@ -14836,8 +15079,11 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DzeroHighPtAss2to3
     else if(0.6<x&&x<=0.8){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
     }
-    else if(0.8<x&&x<=1.){    
+    else if(0.8<x&&x<=1.0){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
     }
   }
 
@@ -14846,7 +15092,10 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DzeroHighPtAss2to3
     x=fhMCclosureTestMax->GetBinCenter(j);
     fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
     
-    if(-1.<x&&x<=-0.8){    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
     }
     else if(-0.8<x&&x<=-0.6){    
@@ -14873,8 +15122,11 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DzeroHighPtAss2to3
     else if(0.6<x&&x<=0.8){    
       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
     }
-    else if(0.8<x&&x<=1.){    
+    else if(0.8<x&&x<=1.0){    
       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
     }
   }
   
@@ -15001,7 +15253,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DzeroVeryHighPtAss
 
 
   // MC CLOSURE TEST (as flat contribution + modulation/sqrt(12) bilateral, i.e. total spread is modulation/sqrt(3))
-  Double_t mod[5] = {0.,0.,0.,0.,0.};
+  Double_t mod[6] = {0.,0.,0.,0.,0.,0.};
   AliHFCorrelationUtils::GetMCClosureModulation(20,0.3,99.,mod); //retrieve modulation value
 
   fhMCclosureTestMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMin");
@@ -15009,7 +15261,10 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DzeroVeryHighPtAss
     x=fhMCclosureTestMin->GetBinCenter(j);
     fhMCclosureTestMin->SetBinContent(j,-0.00); //flat contribution
     
-    if(-1.<x&&x<=-0.8){    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
     }
     else if(-0.8<x&&x<=-0.6){    
@@ -15036,8 +15291,11 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DzeroVeryHighPtAss
     else if(0.6<x&&x<=0.8){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
     }
-    else if(0.8<x&&x<=1.){    
+    else if(0.8<x&&x<=1.0){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
     }
   }
 
@@ -15046,7 +15304,10 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DzeroVeryHighPtAss
     x=fhMCclosureTestMax->GetBinCenter(j);
     fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
     
-    if(-1.<x&&x<=-0.8){    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
     }
     else if(-0.8<x&&x<=-0.6){    
@@ -15073,8 +15334,11 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DzeroVeryHighPtAss
     else if(0.6<x&&x<=0.8){    
       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
     }
-    else if(0.8<x&&x<=1.){    
+    else if(0.8<x&&x<=1.0){    
       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
     }
   }
   
@@ -15198,7 +15462,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DzeroVeryHighPtAss
 
 
    // MC CLOSURE TEST (as flat contribution + modulation/sqrt(12) bilateral, i.e. total spread is modulation/sqrt(3))
-  Double_t mod[5] = {0.,0.,0.,0.,0.};
+  Double_t mod[6] = {0.,0.,0.,0.,0.,0.};
   AliHFCorrelationUtils::GetMCClosureModulation(20,0.3,1.,mod); //retrieve modulation value
 
   fhMCclosureTestMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMin");
@@ -15206,7 +15470,10 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DzeroVeryHighPtAss
     x=fhMCclosureTestMin->GetBinCenter(j);
     fhMCclosureTestMin->SetBinContent(j,-0.00); //flat contribution
     
-    if(-1.<x&&x<=-0.8){    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
     }
     else if(-0.8<x&&x<=-0.6){    
@@ -15233,8 +15500,11 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DzeroVeryHighPtAss
     else if(0.6<x&&x<=0.8){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
     }
-    else if(0.8<x&&x<=1.){    
+    else if(0.8<x&&x<=1.0){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
     }
   }
 
@@ -15243,7 +15513,10 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DzeroVeryHighPtAss
     x=fhMCclosureTestMax->GetBinCenter(j);
     fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
     
-    if(-1.<x&&x<=-0.8){    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
     }
     else if(-0.8<x&&x<=-0.6){    
@@ -15270,8 +15543,11 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DzeroVeryHighPtAss
     else if(0.6<x&&x<=0.8){    
       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
     }
-    else if(0.8<x&&x<=1.){    
+    else if(0.8<x&&x<=1.0){    
       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
     }
   }
   
@@ -15395,7 +15671,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DzeroVeryHighPtAss
 
 
    // MC CLOSURE TEST (as flat contribution + modulation/sqrt(12) bilateral, i.e. total spread is modulation/sqrt(3))
-  Double_t mod[5] = {0.,0.,0.,0.,0.};
+  Double_t mod[6] = {0.,0.,0.,0.,0.,0.};
   AliHFCorrelationUtils::GetMCClosureModulation(20,1,99.,mod); //retrieve modulation value
 
   fhMCclosureTestMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMin");
@@ -15403,7 +15679,10 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DzeroVeryHighPtAss
     x=fhMCclosureTestMin->GetBinCenter(j);
     fhMCclosureTestMin->SetBinContent(j,-0.00); //flat contribution
     
-    if(-1.<x&&x<=-0.8){    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
     }
     else if(-0.8<x&&x<=-0.6){    
@@ -15430,8 +15709,11 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DzeroVeryHighPtAss
     else if(0.6<x&&x<=0.8){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
     }
-    else if(0.8<x&&x<=1.){    
+    else if(0.8<x&&x<=1.0){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
     }
   }
 
@@ -15440,7 +15722,10 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DzeroVeryHighPtAss
     x=fhMCclosureTestMax->GetBinCenter(j);
     fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
     
-    if(-1.<x&&x<=-0.8){    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
     }
     else if(-0.8<x&&x<=-0.6){    
@@ -15467,8 +15752,11 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DzeroVeryHighPtAss
     else if(0.6<x&&x<=0.8){    
       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
     }
-    else if(0.8<x&&x<=1.){    
+    else if(0.8<x&&x<=1.0){    
       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
     }
   }
   
@@ -15592,7 +15880,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DzeroVeryHighPtAss
 
 
   // MC CLOSURE TEST (as flat contribution + modulation/sqrt(12) bilateral, i.e. total spread is modulation/sqrt(3))
-  Double_t mod[5] = {0.,0.,0.,0.,0.};
+  Double_t mod[6] = {0.,0.,0.,0.,0.,0.};
   AliHFCorrelationUtils::GetMCClosureModulation(20,2,99.,mod); //retrieve modulation value
 
   fhMCclosureTestMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMin");
@@ -15600,7 +15888,10 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DzeroVeryHighPtAss
     x=fhMCclosureTestMin->GetBinCenter(j);
     fhMCclosureTestMin->SetBinContent(j,-0.00); //flat contribution
     
-    if(-1.<x&&x<=-0.8){    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
     }
     else if(-0.8<x&&x<=-0.6){    
@@ -15627,8 +15918,11 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DzeroVeryHighPtAss
     else if(0.6<x&&x<=0.8){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
     }
-    else if(0.8<x&&x<=1.){    
+    else if(0.8<x&&x<=1.0){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
     }
   }
 
@@ -15637,7 +15931,10 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DzeroVeryHighPtAss
     x=fhMCclosureTestMax->GetBinCenter(j);
     fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
     
-    if(-1.<x&&x<=-0.8){    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
     }
     else if(-0.8<x&&x<=-0.6){    
@@ -15664,8 +15961,11 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DzeroVeryHighPtAss
     else if(0.6<x&&x<=0.8){    
       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
     }
-    else if(0.8<x&&x<=1.){    
+    else if(0.8<x&&x<=1.0){    
       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
     }
   }
   
@@ -15789,7 +16089,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DzeroVeryHighPtAss
 
 
   // MC CLOSURE TEST (as flat contribution + modulation/sqrt(12) bilateral, i.e. total spread is modulation/sqrt(3))
-  Double_t mod[5] = {0.,0.,0.,0.,0.};
+  Double_t mod[6] = {0.,0.,0.,0.,0.,0.};
   AliHFCorrelationUtils::GetMCClosureModulation(20,3,99.,mod); //retrieve modulation value
 
   fhMCclosureTestMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMin");
@@ -15797,7 +16097,10 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DzeroVeryHighPtAss
     x=fhMCclosureTestMin->GetBinCenter(j);
     fhMCclosureTestMin->SetBinContent(j,-0.00); //flat contribution
     
-    if(-1.<x&&x<=-0.8){    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
     }
     else if(-0.8<x&&x<=-0.6){    
@@ -15824,8 +16127,11 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DzeroVeryHighPtAss
     else if(0.6<x&&x<=0.8){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
     }
-    else if(0.8<x&&x<=1.){    
+    else if(0.8<x&&x<=1.0){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
     }
   }
 
@@ -15834,7 +16140,10 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DzeroVeryHighPtAss
     x=fhMCclosureTestMax->GetBinCenter(j);
     fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
     
-    if(-1.<x&&x<=-0.8){    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
     }
     else if(-0.8<x&&x<=-0.6){    
@@ -15861,8 +16170,11 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DzeroVeryHighPtAss
     else if(0.6<x&&x<=0.8){    
       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
     }
-    else if(0.8<x&&x<=1.){    
+    else if(0.8<x&&x<=1.0){    
       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
     }
   }
   
@@ -15986,7 +16298,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DzeroVeryHighPtAss
 
 
   // MC CLOSURE TEST (as flat contribution + modulation/sqrt(12) bilateral, i.e. total spread is modulation/sqrt(3))
-  Double_t mod[5] = {0.,0.,0.,0.,0.};
+  Double_t mod[6] = {0.,0.,0.,0.,0.,0.};
   AliHFCorrelationUtils::GetMCClosureModulation(20,1,2.,mod); //retrieve modulation value
 
   fhMCclosureTestMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMin");
@@ -15994,7 +16306,10 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DzeroVeryHighPtAss
     x=fhMCclosureTestMin->GetBinCenter(j);
     fhMCclosureTestMin->SetBinContent(j,-0.00); //flat contribution
     
-    if(-1.<x&&x<=-0.8){    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
     }
     else if(-0.8<x&&x<=-0.6){    
@@ -16021,8 +16336,11 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DzeroVeryHighPtAss
     else if(0.6<x&&x<=0.8){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
     }
-    else if(0.8<x&&x<=1.){    
+    else if(0.8<x&&x<=1.0){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
     }
   }
 
@@ -16031,7 +16349,10 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DzeroVeryHighPtAss
     x=fhMCclosureTestMax->GetBinCenter(j);
     fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
     
-    if(-1.<x&&x<=-0.8){    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
     }
     else if(-0.8<x&&x<=-0.6){    
@@ -16058,8 +16379,11 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DzeroVeryHighPtAss
     else if(0.6<x&&x<=0.8){    
       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
     }
-    else if(0.8<x&&x<=1.){    
+    else if(0.8<x&&x<=1.0){    
       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
     }
   }
   
@@ -16183,7 +16507,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DzeroVeryHighPtAss
 
 
   // MC CLOSURE TEST (as flat contribution + modulation/sqrt(12) bilateral, i.e. total spread is modulation/sqrt(3))
-  Double_t mod[5] = {0.,0.,0.,0.,0.};
+  Double_t mod[6] = {0.,0.,0.,0.,0.,0.};
   AliHFCorrelationUtils::GetMCClosureModulation(20,2,3.,mod); //retrieve modulation value
 
   fhMCclosureTestMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMin");
@@ -16191,7 +16515,10 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DzeroVeryHighPtAss
     x=fhMCclosureTestMin->GetBinCenter(j);
     fhMCclosureTestMin->SetBinContent(j,-0.00); //flat contribution
     
-    if(-1.<x&&x<=-0.8){    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
     }
     else if(-0.8<x&&x<=-0.6){    
@@ -16218,8 +16545,11 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DzeroVeryHighPtAss
     else if(0.6<x&&x<=0.8){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
     }
-    else if(0.8<x&&x<=1.){    
+    else if(0.8<x&&x<=1.0){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
     }
   }
 
@@ -16228,7 +16558,10 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DzeroVeryHighPtAss
     x=fhMCclosureTestMax->GetBinCenter(j);
     fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
     
-    if(-1.<x&&x<=-0.8){    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
     }
     else if(-0.8<x&&x<=-0.6){    
@@ -16255,8 +16588,11 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DzeroVeryHighPtAss
     else if(0.6<x&&x<=0.8){    
       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
     }
-    else if(0.8<x&&x<=1.){    
+    else if(0.8<x&&x<=1.0){    
       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
     }
   }
   
@@ -16382,7 +16718,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DstarLowPtAss03to9
 
 
    // MC CLOSURE TEST (as flat contribution + modulation/sqrt(12) bilateral, i.e. total spread is modulation/sqrt(3))
-  Double_t mod[5] = {0.,0.,0.,0.,0.};
+  Double_t mod[6] = {0.,0.,0.,0.,0.,0.};
   AliHFCorrelationUtils::GetMCClosureModulation(4,0.3,99.,mod); //retrieve modulation value
 
   fhMCclosureTestMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMin");
@@ -16390,7 +16726,10 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DstarLowPtAss03to9
     x=fhMCclosureTestMin->GetBinCenter(j);
     fhMCclosureTestMin->SetBinContent(j,-0.00); //flat contribution
     
-    if(-1.<x&&x<=-0.8){    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
     }
     else if(-0.8<x&&x<=-0.6){    
@@ -16417,8 +16756,11 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DstarLowPtAss03to9
     else if(0.6<x&&x<=0.8){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
     }
-    else if(0.8<x&&x<=1.){    
+    else if(0.8<x&&x<=1.0){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
     }
   }
 
@@ -16427,7 +16769,10 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DstarLowPtAss03to9
     x=fhMCclosureTestMax->GetBinCenter(j);
     fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
     
-    if(-1.<x&&x<=-0.8){    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
     }
     else if(-0.8<x&&x<=-0.6){    
@@ -16454,8 +16799,11 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DstarLowPtAss03to9
     else if(0.6<x&&x<=0.8){    
       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
     }
-    else if(0.8<x&&x<=1.){    
+    else if(0.8<x&&x<=1.0){    
       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
     }
   }
   
@@ -16579,7 +16927,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DstarLowPtAss03to1
 
 
    // MC CLOSURE TEST (as flat contribution + modulation/sqrt(12) bilateral, i.e. total spread is modulation/sqrt(3))
-  Double_t mod[5] = {0.,0.,0.,0.,0.};
+  Double_t mod[6] = {0.,0.,0.,0.,0.,0.};
   AliHFCorrelationUtils::GetMCClosureModulation(4,0.3,1.,mod); //retrieve modulation value
 
   fhMCclosureTestMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMin");
@@ -16587,7 +16935,10 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DstarLowPtAss03to1
     x=fhMCclosureTestMin->GetBinCenter(j);
     fhMCclosureTestMin->SetBinContent(j,-0.00); //flat contribution
     
-    if(-1.<x&&x<=-0.8){    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
     }
     else if(-0.8<x&&x<=-0.6){    
@@ -16614,8 +16965,11 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DstarLowPtAss03to1
     else if(0.6<x&&x<=0.8){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
     }
-    else if(0.8<x&&x<=1.){    
+    else if(0.8<x&&x<=1.0){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
     }
   }
 
@@ -16624,7 +16978,10 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DstarLowPtAss03to1
     x=fhMCclosureTestMax->GetBinCenter(j);
     fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
     
-    if(-1.<x&&x<=-0.8){    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
     }
     else if(-0.8<x&&x<=-0.6){    
@@ -16651,8 +17008,11 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DstarLowPtAss03to1
     else if(0.6<x&&x<=0.8){    
       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
     }
-    else if(0.8<x&&x<=1.){    
+    else if(0.8<x&&x<=1.0){    
       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
     }
   }
   
@@ -16776,7 +17136,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DstarLowPtAss1to99
 
 
    // MC CLOSURE TEST (as flat contribution + modulation/sqrt(12) bilateral, i.e. total spread is modulation/sqrt(3))
-  Double_t mod[5] = {0.,0.,0.,0.,0.};
+  Double_t mod[6] = {0.,0.,0.,0.,0.,0.};
   AliHFCorrelationUtils::GetMCClosureModulation(4,1,99.,mod); //retrieve modulation value
 
   fhMCclosureTestMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMin");
@@ -16784,7 +17144,10 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DstarLowPtAss1to99
     x=fhMCclosureTestMin->GetBinCenter(j);
     fhMCclosureTestMin->SetBinContent(j,-0.00); //flat contribution
     
-    if(-1.<x&&x<=-0.8){    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
     }
     else if(-0.8<x&&x<=-0.6){    
@@ -16811,8 +17174,11 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DstarLowPtAss1to99
     else if(0.6<x&&x<=0.8){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
     }
-    else if(0.8<x&&x<=1.){    
+    else if(0.8<x&&x<=1.0){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
     }
   }
 
@@ -16821,7 +17187,10 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DstarLowPtAss1to99
     x=fhMCclosureTestMax->GetBinCenter(j);
     fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
     
-    if(-1.<x&&x<=-0.8){    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
     }
     else if(-0.8<x&&x<=-0.6){    
@@ -16848,8 +17217,11 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DstarLowPtAss1to99
     else if(0.6<x&&x<=0.8){    
       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
     }
-    else if(0.8<x&&x<=1.){    
+    else if(0.8<x&&x<=1.0){    
       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
     }
   }
   
@@ -16973,7 +17345,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DstarLowPtAss2to99
 
 
   // MC CLOSURE TEST (as flat contribution + modulation/sqrt(12) bilateral, i.e. total spread is modulation/sqrt(3))
-  Double_t mod[5] = {0.,0.,0.,0.,0.};
+  Double_t mod[6] = {0.,0.,0.,0.,0.,0.};
   AliHFCorrelationUtils::GetMCClosureModulation(4,2,99.,mod); //retrieve modulation value
 
   fhMCclosureTestMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMin");
@@ -16981,7 +17353,10 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DstarLowPtAss2to99
     x=fhMCclosureTestMin->GetBinCenter(j);
     fhMCclosureTestMin->SetBinContent(j,-0.00); //flat contribution
     
-    if(-1.<x&&x<=-0.8){    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
     }
     else if(-0.8<x&&x<=-0.6){    
@@ -17008,8 +17383,11 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DstarLowPtAss2to99
     else if(0.6<x&&x<=0.8){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
     }
-    else if(0.8<x&&x<=1.){    
+    else if(0.8<x&&x<=1.0){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
     }
   }
 
@@ -17018,7 +17396,10 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DstarLowPtAss2to99
     x=fhMCclosureTestMax->GetBinCenter(j);
     fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
     
-    if(-1.<x&&x<=-0.8){    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
     }
     else if(-0.8<x&&x<=-0.6){    
@@ -17045,8 +17426,11 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DstarLowPtAss2to99
     else if(0.6<x&&x<=0.8){    
       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
     }
-    else if(0.8<x&&x<=1.){    
+    else if(0.8<x&&x<=1.0){    
       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
     }
   }
   
@@ -17170,7 +17554,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DstarLowPtAss3to99
 
 
   // MC CLOSURE TEST (as flat contribution + modulation/sqrt(12) bilateral, i.e. total spread is modulation/sqrt(3))
-  Double_t mod[5] = {0.,0.,0.,0.,0.};
+  Double_t mod[6] = {0.,0.,0.,0.,0.,0.};
   AliHFCorrelationUtils::GetMCClosureModulation(4,3,99.,mod); //retrieve modulation value
 
   fhMCclosureTestMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMin");
@@ -17178,7 +17562,10 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DstarLowPtAss3to99
     x=fhMCclosureTestMin->GetBinCenter(j);
     fhMCclosureTestMin->SetBinContent(j,-0.00); //flat contribution
     
-    if(-1.<x&&x<=-0.8){    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
     }
     else if(-0.8<x&&x<=-0.6){    
@@ -17205,8 +17592,11 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DstarLowPtAss3to99
     else if(0.6<x&&x<=0.8){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
     }
-    else if(0.8<x&&x<=1.){    
+    else if(0.8<x&&x<=1.0){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
     }
   }
 
@@ -17215,7 +17605,10 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DstarLowPtAss3to99
     x=fhMCclosureTestMax->GetBinCenter(j);
     fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
     
-    if(-1.<x&&x<=-0.8){    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
     }
     else if(-0.8<x&&x<=-0.6){    
@@ -17242,8 +17635,11 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DstarLowPtAss3to99
     else if(0.6<x&&x<=0.8){    
       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
     }
-    else if(0.8<x&&x<=1.){    
+    else if(0.8<x&&x<=1.0){    
       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
     }
   }
   
@@ -17367,7 +17763,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DstarLowPtAss1to2(
 
 
   // MC CLOSURE TEST (as flat contribution + modulation/sqrt(12) bilateral, i.e. total spread is modulation/sqrt(3))
-  Double_t mod[5] = {0.,0.,0.,0.,0.};
+  Double_t mod[6] = {0.,0.,0.,0.,0.,0.};
   AliHFCorrelationUtils::GetMCClosureModulation(4,1,2.,mod); //retrieve modulation value
 
   fhMCclosureTestMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMin");
@@ -17375,7 +17771,10 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DstarLowPtAss1to2(
     x=fhMCclosureTestMin->GetBinCenter(j);
     fhMCclosureTestMin->SetBinContent(j,-0.00); //flat contribution
     
-    if(-1.<x&&x<=-0.8){    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
     }
     else if(-0.8<x&&x<=-0.6){    
@@ -17402,8 +17801,11 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DstarLowPtAss1to2(
     else if(0.6<x&&x<=0.8){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
     }
-    else if(0.8<x&&x<=1.){    
+    else if(0.8<x&&x<=1.0){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
     }
   }
 
@@ -17412,7 +17814,10 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DstarLowPtAss1to2(
     x=fhMCclosureTestMax->GetBinCenter(j);
     fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
     
-    if(-1.<x&&x<=-0.8){    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
     }
     else if(-0.8<x&&x<=-0.6){    
@@ -17439,8 +17844,11 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DstarLowPtAss1to2(
     else if(0.6<x&&x<=0.8){    
       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
     }
-    else if(0.8<x&&x<=1.){    
+    else if(0.8<x&&x<=1.0){    
       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
     }
   }
   
@@ -17564,7 +17972,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DstarLowPtAss2to3(
 
 
   // MC CLOSURE TEST (as flat contribution + modulation/sqrt(12) bilateral, i.e. total spread is modulation/sqrt(3))
-  Double_t mod[5] = {0.,0.,0.,0.,0.};
+  Double_t mod[6] = {0.,0.,0.,0.,0.,0.};
   AliHFCorrelationUtils::GetMCClosureModulation(4,2,3.,mod); //retrieve modulation value
 
   fhMCclosureTestMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMin");
@@ -17572,7 +17980,10 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DstarLowPtAss2to3(
     x=fhMCclosureTestMin->GetBinCenter(j);
     fhMCclosureTestMin->SetBinContent(j,-0.00); //flat contribution
     
-    if(-1.<x&&x<=-0.8){    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
     }
     else if(-0.8<x&&x<=-0.6){    
@@ -17599,8 +18010,11 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DstarLowPtAss2to3(
     else if(0.6<x&&x<=0.8){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
     }
-    else if(0.8<x&&x<=1.){    
+    else if(0.8<x&&x<=1.0){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
     }
   }
 
@@ -17609,7 +18023,10 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DstarLowPtAss2to3(
     x=fhMCclosureTestMax->GetBinCenter(j);
     fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
     
-    if(-1.<x&&x<=-0.8){    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
     }
     else if(-0.8<x&&x<=-0.6){    
@@ -17636,8 +18053,11 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DstarLowPtAss2to3(
     else if(0.6<x&&x<=0.8){    
       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
     }
-    else if(0.8<x&&x<=1.){    
+    else if(0.8<x&&x<=1.0){    
       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
     }
   }
   
@@ -17762,7 +18182,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DstarMidPtAss03to9
 
 
    // MC CLOSURE TEST (as flat contribution + modulation/sqrt(12) bilateral, i.e. total spread is modulation/sqrt(3))
-  Double_t mod[5] = {0.,0.,0.,0.,0.};
+  Double_t mod[6] = {0.,0.,0.,0.,0.,0.};
   AliHFCorrelationUtils::GetMCClosureModulation(6.5,0.3,99.,mod); //retrieve modulation value
 
   fhMCclosureTestMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMin");
@@ -17770,7 +18190,10 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DstarMidPtAss03to9
     x=fhMCclosureTestMin->GetBinCenter(j);
     fhMCclosureTestMin->SetBinContent(j,-0.00); //flat contribution
     
-    if(-1.<x&&x<=-0.8){    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
     }
     else if(-0.8<x&&x<=-0.6){    
@@ -17797,8 +18220,11 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DstarMidPtAss03to9
     else if(0.6<x&&x<=0.8){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
     }
-    else if(0.8<x&&x<=1.){    
+    else if(0.8<x&&x<=1.0){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
     }
   }
 
@@ -17807,7 +18233,10 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DstarMidPtAss03to9
     x=fhMCclosureTestMax->GetBinCenter(j);
     fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
     
-    if(-1.<x&&x<=-0.8){    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
     }
     else if(-0.8<x&&x<=-0.6){    
@@ -17834,8 +18263,11 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DstarMidPtAss03to9
     else if(0.6<x&&x<=0.8){    
       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
     }
-    else if(0.8<x&&x<=1.){    
+    else if(0.8<x&&x<=1.0){    
       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
     }
   }
   
@@ -17958,7 +18390,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DstarMidPtAss03to1
   } 
 
   // MC CLOSURE TEST (as flat contribution + modulation/sqrt(12) bilateral, i.e. total spread is modulation/sqrt(3))
-  Double_t mod[5] = {0.,0.,0.,0.,0.};
+  Double_t mod[6] = {0.,0.,0.,0.,0.,0.};
   AliHFCorrelationUtils::GetMCClosureModulation(6.5,0.3,1.,mod); //retrieve modulation value
 
   fhMCclosureTestMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMin");
@@ -17966,7 +18398,10 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DstarMidPtAss03to1
     x=fhMCclosureTestMin->GetBinCenter(j);
     fhMCclosureTestMin->SetBinContent(j,-0.00); //flat contribution
     
-    if(-1.<x&&x<=-0.8){    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
     }
     else if(-0.8<x&&x<=-0.6){    
@@ -17993,8 +18428,11 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DstarMidPtAss03to1
     else if(0.6<x&&x<=0.8){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
     }
-    else if(0.8<x&&x<=1.){    
+    else if(0.8<x&&x<=1.0){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
     }
   }
 
@@ -18003,7 +18441,10 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DstarMidPtAss03to1
     x=fhMCclosureTestMax->GetBinCenter(j);
     fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
     
-    if(-1.<x&&x<=-0.8){    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
     }
     else if(-0.8<x&&x<=-0.6){    
@@ -18030,8 +18471,11 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DstarMidPtAss03to1
     else if(0.6<x&&x<=0.8){    
       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
     }
-    else if(0.8<x&&x<=1.){    
+    else if(0.8<x&&x<=1.0){    
       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
     }
   }
   
@@ -18155,7 +18599,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DstarMidPtAss1to99
 
 
   // MC CLOSURE TEST (as flat contribution + modulation/sqrt(12) bilateral, i.e. total spread is modulation/sqrt(3))
-  Double_t mod[5] = {0.,0.,0.,0.,0.};
+  Double_t mod[6] = {0.,0.,0.,0.,0.,0.};
   AliHFCorrelationUtils::GetMCClosureModulation(6.5,1,99.,mod); //retrieve modulation value
 
   fhMCclosureTestMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMin");
@@ -18163,7 +18607,10 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DstarMidPtAss1to99
     x=fhMCclosureTestMin->GetBinCenter(j);
     fhMCclosureTestMin->SetBinContent(j,-0.00); //flat contribution
     
-    if(-1.<x&&x<=-0.8){    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
     }
     else if(-0.8<x&&x<=-0.6){    
@@ -18190,8 +18637,11 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DstarMidPtAss1to99
     else if(0.6<x&&x<=0.8){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
     }
-    else if(0.8<x&&x<=1.){    
+    else if(0.8<x&&x<=1.0){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
     }
   }
 
@@ -18200,7 +18650,10 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DstarMidPtAss1to99
     x=fhMCclosureTestMax->GetBinCenter(j);
     fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
     
-    if(-1.<x&&x<=-0.8){    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
     }
     else if(-0.8<x&&x<=-0.6){    
@@ -18227,8 +18680,11 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DstarMidPtAss1to99
     else if(0.6<x&&x<=0.8){    
       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
     }
-    else if(0.8<x&&x<=1.){    
+    else if(0.8<x&&x<=1.0){    
       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
     }
   }
   
@@ -18352,7 +18808,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DstarMidPtAss2to99
 
 
   // MC CLOSURE TEST (as flat contribution + modulation/sqrt(12) bilateral, i.e. total spread is modulation/sqrt(3))
-  Double_t mod[5] = {0.,0.,0.,0.,0.};
+  Double_t mod[6] = {0.,0.,0.,0.,0.,0.};
   AliHFCorrelationUtils::GetMCClosureModulation(6.5,2,99.,mod); //retrieve modulation value
 
   fhMCclosureTestMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMin");
@@ -18360,7 +18816,10 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DstarMidPtAss2to99
     x=fhMCclosureTestMin->GetBinCenter(j);
     fhMCclosureTestMin->SetBinContent(j,-0.00); //flat contribution
     
-    if(-1.<x&&x<=-0.8){    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
     }
     else if(-0.8<x&&x<=-0.6){    
@@ -18387,8 +18846,11 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DstarMidPtAss2to99
     else if(0.6<x&&x<=0.8){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
     }
-    else if(0.8<x&&x<=1.){    
+    else if(0.8<x&&x<=1.0){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
     }
   }
 
@@ -18397,7 +18859,10 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DstarMidPtAss2to99
     x=fhMCclosureTestMax->GetBinCenter(j);
     fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
     
-    if(-1.<x&&x<=-0.8){    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
     }
     else if(-0.8<x&&x<=-0.6){    
@@ -18424,8 +18889,11 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DstarMidPtAss2to99
     else if(0.6<x&&x<=0.8){    
       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
     }
-    else if(0.8<x&&x<=1.){    
+    else if(0.8<x&&x<=1.0){    
       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
     }
   }
   
@@ -18549,7 +19017,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DstarMidPtAss3to99
 
 
    // MC CLOSURE TEST (as flat contribution + modulation/sqrt(12) bilateral, i.e. total spread is modulation/sqrt(3))
-  Double_t mod[5] = {0.,0.,0.,0.,0.};
+  Double_t mod[6] = {0.,0.,0.,0.,0.,0.};
   AliHFCorrelationUtils::GetMCClosureModulation(6.5,3,99.,mod); //retrieve modulation value
 
   fhMCclosureTestMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMin");
@@ -18557,7 +19025,10 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DstarMidPtAss3to99
     x=fhMCclosureTestMin->GetBinCenter(j);
     fhMCclosureTestMin->SetBinContent(j,-0.00); //flat contribution
     
-    if(-1.<x&&x<=-0.8){    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
     }
     else if(-0.8<x&&x<=-0.6){    
@@ -18584,8 +19055,11 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DstarMidPtAss3to99
     else if(0.6<x&&x<=0.8){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
     }
-    else if(0.8<x&&x<=1.){    
+    else if(0.8<x&&x<=1.0){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
     }
   }
 
@@ -18594,7 +19068,10 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DstarMidPtAss3to99
     x=fhMCclosureTestMax->GetBinCenter(j);
     fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
     
-    if(-1.<x&&x<=-0.8){    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
     }
     else if(-0.8<x&&x<=-0.6){    
@@ -18621,8 +19098,11 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DstarMidPtAss3to99
     else if(0.6<x&&x<=0.8){    
       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
     }
-    else if(0.8<x&&x<=1.){    
+    else if(0.8<x&&x<=1.0){    
       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
     }
   }
   
@@ -18746,7 +19226,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DstarMidPtAss1to2(
 
 
    // MC CLOSURE TEST (as flat contribution + modulation/sqrt(12) bilateral, i.e. total spread is modulation/sqrt(3))
-  Double_t mod[5] = {0.,0.,0.,0.,0.};
+  Double_t mod[6] = {0.,0.,0.,0.,0.,0.};
   AliHFCorrelationUtils::GetMCClosureModulation(6.5,1,2.,mod); //retrieve modulation value
 
   fhMCclosureTestMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMin");
@@ -18754,7 +19234,10 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DstarMidPtAss1to2(
     x=fhMCclosureTestMin->GetBinCenter(j);
     fhMCclosureTestMin->SetBinContent(j,-0.00); //flat contribution
     
-    if(-1.<x&&x<=-0.8){    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
     }
     else if(-0.8<x&&x<=-0.6){    
@@ -18781,8 +19264,11 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DstarMidPtAss1to2(
     else if(0.6<x&&x<=0.8){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
     }
-    else if(0.8<x&&x<=1.){    
+    else if(0.8<x&&x<=1.0){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
     }
   }
 
@@ -18791,7 +19277,10 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DstarMidPtAss1to2(
     x=fhMCclosureTestMax->GetBinCenter(j);
     fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
     
-    if(-1.<x&&x<=-0.8){    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
     }
     else if(-0.8<x&&x<=-0.6){    
@@ -18818,8 +19307,11 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DstarMidPtAss1to2(
     else if(0.6<x&&x<=0.8){    
       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
     }
-    else if(0.8<x&&x<=1.){    
+    else if(0.8<x&&x<=1.0){    
       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
     }
   }
   
@@ -18943,7 +19435,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DstarMidPtAss2to3(
 
 
   // MC CLOSURE TEST (as flat contribution + modulation/sqrt(12) bilateral, i.e. total spread is modulation/sqrt(3))
-  Double_t mod[5] = {0.,0.,0.,0.,0.};
+  Double_t mod[6] = {0.,0.,0.,0.,0.,0.};
   AliHFCorrelationUtils::GetMCClosureModulation(6.5,2,3.,mod); //retrieve modulation value
 
   fhMCclosureTestMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMin");
@@ -18951,7 +19443,10 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DstarMidPtAss2to3(
     x=fhMCclosureTestMin->GetBinCenter(j);
     fhMCclosureTestMin->SetBinContent(j,-0.00); //flat contribution
     
-    if(-1.<x&&x<=-0.8){    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
     }
     else if(-0.8<x&&x<=-0.6){    
@@ -18978,8 +19473,11 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DstarMidPtAss2to3(
     else if(0.6<x&&x<=0.8){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
     }
-    else if(0.8<x&&x<=1.){    
+    else if(0.8<x&&x<=1.0){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
     }
   }
 
@@ -18988,7 +19486,10 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DstarMidPtAss2to3(
     x=fhMCclosureTestMax->GetBinCenter(j);
     fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
     
-    if(-1.<x&&x<=-0.8){    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
     }
     else if(-0.8<x&&x<=-0.6){    
@@ -19015,8 +19516,11 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DstarMidPtAss2to3(
     else if(0.6<x&&x<=0.8){    
       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
     }
-    else if(0.8<x&&x<=1.){    
+    else if(0.8<x&&x<=1.0){    
       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
     }
   }
   
@@ -19141,7 +19645,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DstarHighPtAss03to
 
 
   // MC CLOSURE TEST (as flat contribution + modulation/sqrt(12) bilateral, i.e. total spread is modulation/sqrt(3))
-  Double_t mod[5] = {0.,0.,0.,0.,0.};
+  Double_t mod[6] = {0.,0.,0.,0.,0.,0.};
   AliHFCorrelationUtils::GetMCClosureModulation(10,0.3,99.,mod); //retrieve modulation value
 
   fhMCclosureTestMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMin");
@@ -19149,7 +19653,10 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DstarHighPtAss03to
     x=fhMCclosureTestMin->GetBinCenter(j);
     fhMCclosureTestMin->SetBinContent(j,-0.00); //flat contribution
     
-    if(-1.<x&&x<=-0.8){    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
     }
     else if(-0.8<x&&x<=-0.6){    
@@ -19176,8 +19683,11 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DstarHighPtAss03to
     else if(0.6<x&&x<=0.8){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
     }
-    else if(0.8<x&&x<=1.){    
+    else if(0.8<x&&x<=1.0){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
     }
   }
 
@@ -19186,7 +19696,10 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DstarHighPtAss03to
     x=fhMCclosureTestMax->GetBinCenter(j);
     fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
     
-    if(-1.<x&&x<=-0.8){    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
     }
     else if(-0.8<x&&x<=-0.6){    
@@ -19213,8 +19726,11 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DstarHighPtAss03to
     else if(0.6<x&&x<=0.8){    
       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
     }
-    else if(0.8<x&&x<=1.){    
+    else if(0.8<x&&x<=1.0){    
       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
     }
   }
   
@@ -19338,7 +19854,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DstarHighPtAss03to
 
 
   // MC CLOSURE TEST (as flat contribution + modulation/sqrt(12) bilateral, i.e. total spread is modulation/sqrt(3))
-  Double_t mod[5] = {0.,0.,0.,0.,0.};
+  Double_t mod[6] = {0.,0.,0.,0.,0.,0.};
   AliHFCorrelationUtils::GetMCClosureModulation(10,0.3,1.,mod); //retrieve modulation value
 
   fhMCclosureTestMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMin");
@@ -19346,7 +19862,10 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DstarHighPtAss03to
     x=fhMCclosureTestMin->GetBinCenter(j);
     fhMCclosureTestMin->SetBinContent(j,-0.00); //flat contribution
     
-    if(-1.<x&&x<=-0.8){    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
     }
     else if(-0.8<x&&x<=-0.6){    
@@ -19373,8 +19892,11 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DstarHighPtAss03to
     else if(0.6<x&&x<=0.8){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
     }
-    else if(0.8<x&&x<=1.){    
+    else if(0.8<x&&x<=1.0){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
     }
   }
 
@@ -19383,7 +19905,10 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DstarHighPtAss03to
     x=fhMCclosureTestMax->GetBinCenter(j);
     fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
     
-    if(-1.<x&&x<=-0.8){    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
     }
     else if(-0.8<x&&x<=-0.6){    
@@ -19410,8 +19935,11 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DstarHighPtAss03to
     else if(0.6<x&&x<=0.8){    
       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
     }
-    else if(0.8<x&&x<=1.){    
+    else if(0.8<x&&x<=1.0){    
       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
     }
   }
   
@@ -19535,7 +20063,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DstarHighPtAss1to9
 
 
   // MC CLOSURE TEST (as flat contribution + modulation/sqrt(12) bilateral, i.e. total spread is modulation/sqrt(3))
-  Double_t mod[5] = {0.,0.,0.,0.,0.};
+  Double_t mod[6] = {0.,0.,0.,0.,0.,0.};
   AliHFCorrelationUtils::GetMCClosureModulation(10,1,99.,mod); //retrieve modulation value
 
   fhMCclosureTestMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMin");
@@ -19543,7 +20071,10 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DstarHighPtAss1to9
     x=fhMCclosureTestMin->GetBinCenter(j);
     fhMCclosureTestMin->SetBinContent(j,-0.00); //flat contribution
     
-    if(-1.<x&&x<=-0.8){    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
     }
     else if(-0.8<x&&x<=-0.6){    
@@ -19570,8 +20101,11 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DstarHighPtAss1to9
     else if(0.6<x&&x<=0.8){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
     }
-    else if(0.8<x&&x<=1.){    
+    else if(0.8<x&&x<=1.0){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
     }
   }
 
@@ -19580,7 +20114,10 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DstarHighPtAss1to9
     x=fhMCclosureTestMax->GetBinCenter(j);
     fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
     
-    if(-1.<x&&x<=-0.8){    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
     }
     else if(-0.8<x&&x<=-0.6){    
@@ -19607,8 +20144,11 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DstarHighPtAss1to9
     else if(0.6<x&&x<=0.8){    
       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
     }
-    else if(0.8<x&&x<=1.){    
+    else if(0.8<x&&x<=1.0){    
       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
     }
   }
   
@@ -19732,7 +20272,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DstarHighPtAss2to9
 
 
    // MC CLOSURE TEST (as flat contribution + modulation/sqrt(12) bilateral, i.e. total spread is modulation/sqrt(3))
-  Double_t mod[5] = {0.,0.,0.,0.,0.};
+  Double_t mod[6] = {0.,0.,0.,0.,0.,0.};
   AliHFCorrelationUtils::GetMCClosureModulation(10,2,99.,mod); //retrieve modulation value
 
   fhMCclosureTestMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMin");
@@ -19740,7 +20280,10 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DstarHighPtAss2to9
     x=fhMCclosureTestMin->GetBinCenter(j);
     fhMCclosureTestMin->SetBinContent(j,-0.00); //flat contribution
     
-    if(-1.<x&&x<=-0.8){    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
     }
     else if(-0.8<x&&x<=-0.6){    
@@ -19767,8 +20310,11 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DstarHighPtAss2to9
     else if(0.6<x&&x<=0.8){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
     }
-    else if(0.8<x&&x<=1.){    
+    else if(0.8<x&&x<=1.0){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
     }
   }
 
@@ -19777,7 +20323,10 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DstarHighPtAss2to9
     x=fhMCclosureTestMax->GetBinCenter(j);
     fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
     
-    if(-1.<x&&x<=-0.8){    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
     }
     else if(-0.8<x&&x<=-0.6){    
@@ -19804,8 +20353,11 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DstarHighPtAss2to9
     else if(0.6<x&&x<=0.8){    
       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
     }
-    else if(0.8<x&&x<=1.){    
+    else if(0.8<x&&x<=1.0){    
       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
     }
   }
   
@@ -19929,7 +20481,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DstarHighPtAss3to9
 
 
   // MC CLOSURE TEST (as flat contribution + modulation/sqrt(12) bilateral, i.e. total spread is modulation/sqrt(3))
-  Double_t mod[5] = {0.,0.,0.,0.,0.};
+  Double_t mod[6] = {0.,0.,0.,0.,0.,0.};
   AliHFCorrelationUtils::GetMCClosureModulation(10,3,99.,mod); //retrieve modulation value
 
   fhMCclosureTestMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMin");
@@ -19937,7 +20489,10 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DstarHighPtAss3to9
     x=fhMCclosureTestMin->GetBinCenter(j);
     fhMCclosureTestMin->SetBinContent(j,-0.00); //flat contribution
     
-    if(-1.<x&&x<=-0.8){    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
     }
     else if(-0.8<x&&x<=-0.6){    
@@ -19964,8 +20519,11 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DstarHighPtAss3to9
     else if(0.6<x&&x<=0.8){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
     }
-    else if(0.8<x&&x<=1.){    
+    else if(0.8<x&&x<=1.0){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
     }
   }
 
@@ -19974,7 +20532,10 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DstarHighPtAss3to9
     x=fhMCclosureTestMax->GetBinCenter(j);
     fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
     
-    if(-1.<x&&x<=-0.8){    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
     }
     else if(-0.8<x&&x<=-0.6){    
@@ -20001,8 +20562,11 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DstarHighPtAss3to9
     else if(0.6<x&&x<=0.8){    
       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
     }
-    else if(0.8<x&&x<=1.){    
+    else if(0.8<x&&x<=1.0){    
       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
     }
   }
   
@@ -20126,7 +20690,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DstarHighPtAss1to2
 
 
   // MC CLOSURE TEST (as flat contribution + modulation/sqrt(12) bilateral, i.e. total spread is modulation/sqrt(3))
-  Double_t mod[5] = {0.,0.,0.,0.,0.};
+  Double_t mod[6] = {0.,0.,0.,0.,0.,0.};
   AliHFCorrelationUtils::GetMCClosureModulation(10,1,2.,mod); //retrieve modulation value
 
   fhMCclosureTestMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMin");
@@ -20134,7 +20698,10 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DstarHighPtAss1to2
     x=fhMCclosureTestMin->GetBinCenter(j);
     fhMCclosureTestMin->SetBinContent(j,-0.00); //flat contribution
     
-    if(-1.<x&&x<=-0.8){    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
     }
     else if(-0.8<x&&x<=-0.6){    
@@ -20161,8 +20728,11 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DstarHighPtAss1to2
     else if(0.6<x&&x<=0.8){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
     }
-    else if(0.8<x&&x<=1.){    
+    else if(0.8<x&&x<=1.0){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
     }
   }
 
@@ -20171,7 +20741,10 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DstarHighPtAss1to2
     x=fhMCclosureTestMax->GetBinCenter(j);
     fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
     
-    if(-1.<x&&x<=-0.8){    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
     }
     else if(-0.8<x&&x<=-0.6){    
@@ -20198,8 +20771,11 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DstarHighPtAss1to2
     else if(0.6<x&&x<=0.8){    
       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
     }
-    else if(0.8<x&&x<=1.){    
+    else if(0.8<x&&x<=1.0){    
       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
     }
   }
   
@@ -20323,7 +20899,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DstarHighPtAss2to3
 
 
   // MC CLOSURE TEST (as flat contribution + modulation/sqrt(12) bilateral, i.e. total spread is modulation/sqrt(3))
-  Double_t mod[5] = {0.,0.,0.,0.,0.};
+  Double_t mod[6] = {0.,0.,0.,0.,0.,0.};
   AliHFCorrelationUtils::GetMCClosureModulation(10,2,3.,mod); //retrieve modulation value
 
   fhMCclosureTestMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMin");
@@ -20331,7 +20907,10 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DstarHighPtAss2to3
     x=fhMCclosureTestMin->GetBinCenter(j);
     fhMCclosureTestMin->SetBinContent(j,-0.00); //flat contribution
     
-    if(-1.<x&&x<=-0.8){    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
     }
     else if(-0.8<x&&x<=-0.6){    
@@ -20358,8 +20937,11 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DstarHighPtAss2to3
     else if(0.6<x&&x<=0.8){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
     }
-    else if(0.8<x&&x<=1.){    
+    else if(0.8<x&&x<=1.0){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
     }
   }
 
@@ -20368,7 +20950,10 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DstarHighPtAss2to3
     x=fhMCclosureTestMax->GetBinCenter(j);
     fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
     
-    if(-1.<x&&x<=-0.8){    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
     }
     else if(-0.8<x&&x<=-0.6){    
@@ -20395,8 +20980,11 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DstarHighPtAss2to3
     else if(0.6<x&&x<=0.8){    
       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
     }
-    else if(0.8<x&&x<=1.){    
+    else if(0.8<x&&x<=1.0){    
       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
     }
   }
   
@@ -20523,7 +21111,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DstarVeryHighPtAss
 
 
   // MC CLOSURE TEST (as flat contribution + modulation/sqrt(12) bilateral, i.e. total spread is modulation/sqrt(3))
-  Double_t mod[5] = {0.,0.,0.,0.,0.};
+  Double_t mod[6] = {0.,0.,0.,0.,0.,0.};
   AliHFCorrelationUtils::GetMCClosureModulation(20,0.3,99.,mod); //retrieve modulation value
 
   fhMCclosureTestMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMin");
@@ -20531,7 +21119,10 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DstarVeryHighPtAss
     x=fhMCclosureTestMin->GetBinCenter(j);
     fhMCclosureTestMin->SetBinContent(j,-0.00); //flat contribution
     
-    if(-1.<x&&x<=-0.8){    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
     }
     else if(-0.8<x&&x<=-0.6){    
@@ -20558,8 +21149,11 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DstarVeryHighPtAss
     else if(0.6<x&&x<=0.8){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
     }
-    else if(0.8<x&&x<=1.){    
+    else if(0.8<x&&x<=1.0){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
     }
   }
 
@@ -20568,7 +21162,10 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DstarVeryHighPtAss
     x=fhMCclosureTestMax->GetBinCenter(j);
     fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
     
-    if(-1.<x&&x<=-0.8){    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
     }
     else if(-0.8<x&&x<=-0.6){    
@@ -20595,8 +21192,11 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DstarVeryHighPtAss
     else if(0.6<x&&x<=0.8){    
       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
     }
-    else if(0.8<x&&x<=1.){    
+    else if(0.8<x&&x<=1.0){    
       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
     }
   }
   
@@ -20719,7 +21319,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DstarVeryHighPtAss
   }
 
    // MC CLOSURE TEST (as flat contribution + modulation/sqrt(12) bilateral, i.e. total spread is modulation/sqrt(3))
-  Double_t mod[5] = {0.,0.,0.,0.,0.};
+  Double_t mod[6] = {0.,0.,0.,0.,0.,0.};
   AliHFCorrelationUtils::GetMCClosureModulation(20,0.3,1.,mod); //retrieve modulation value
 
   fhMCclosureTestMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMin");
@@ -20727,7 +21327,10 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DstarVeryHighPtAss
     x=fhMCclosureTestMin->GetBinCenter(j);
     fhMCclosureTestMin->SetBinContent(j,-0.00); //flat contribution
     
-    if(-1.<x&&x<=-0.8){    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
     }
     else if(-0.8<x&&x<=-0.6){    
@@ -20754,8 +21357,11 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DstarVeryHighPtAss
     else if(0.6<x&&x<=0.8){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
     }
-    else if(0.8<x&&x<=1.){    
+    else if(0.8<x&&x<=1.0){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
     }
   }
 
@@ -20764,7 +21370,10 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DstarVeryHighPtAss
     x=fhMCclosureTestMax->GetBinCenter(j);
     fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
     
-    if(-1.<x&&x<=-0.8){    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
     }
     else if(-0.8<x&&x<=-0.6){    
@@ -20791,8 +21400,11 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DstarVeryHighPtAss
     else if(0.6<x&&x<=0.8){    
       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
     }
-    else if(0.8<x&&x<=1.){    
+    else if(0.8<x&&x<=1.0){    
       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
     }
   }
   
@@ -20916,7 +21528,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DstarVeryHighPtAss
 
 
    // MC CLOSURE TEST (as flat contribution + modulation/sqrt(12) bilateral, i.e. total spread is modulation/sqrt(3))
-  Double_t mod[5] = {0.,0.,0.,0.,0.};
+  Double_t mod[6] = {0.,0.,0.,0.,0.,0.};
   AliHFCorrelationUtils::GetMCClosureModulation(20,1,99.,mod); //retrieve modulation value
 
   fhMCclosureTestMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMin");
@@ -20924,7 +21536,10 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DstarVeryHighPtAss
     x=fhMCclosureTestMin->GetBinCenter(j);
     fhMCclosureTestMin->SetBinContent(j,-0.00); //flat contribution
     
-    if(-1.<x&&x<=-0.8){    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
     }
     else if(-0.8<x&&x<=-0.6){    
@@ -20951,8 +21566,11 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DstarVeryHighPtAss
     else if(0.6<x&&x<=0.8){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
     }
-    else if(0.8<x&&x<=1.){    
+    else if(0.8<x&&x<=1.0){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
     }
   }
 
@@ -20961,7 +21579,10 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DstarVeryHighPtAss
     x=fhMCclosureTestMax->GetBinCenter(j);
     fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
     
-    if(-1.<x&&x<=-0.8){    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
     }
     else if(-0.8<x&&x<=-0.6){    
@@ -20988,8 +21609,11 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DstarVeryHighPtAss
     else if(0.6<x&&x<=0.8){    
       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
     }
-    else if(0.8<x&&x<=1.){    
+    else if(0.8<x&&x<=1.0){    
       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
     }
   }
   
@@ -21113,7 +21737,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DstarVeryHighPtAss
 
 
   // MC CLOSURE TEST (as flat contribution + modulation/sqrt(12) bilateral, i.e. total spread is modulation/sqrt(3))
-  Double_t mod[5] = {0.,0.,0.,0.,0.};
+  Double_t mod[6] = {0.,0.,0.,0.,0.,0.};
   AliHFCorrelationUtils::GetMCClosureModulation(20,2,99.,mod); //retrieve modulation value
 
   fhMCclosureTestMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMin");
@@ -21121,7 +21745,10 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DstarVeryHighPtAss
     x=fhMCclosureTestMin->GetBinCenter(j);
     fhMCclosureTestMin->SetBinContent(j,-0.00); //flat contribution
     
-    if(-1.<x&&x<=-0.8){    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
     }
     else if(-0.8<x&&x<=-0.6){    
@@ -21148,8 +21775,11 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DstarVeryHighPtAss
     else if(0.6<x&&x<=0.8){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
     }
-    else if(0.8<x&&x<=1.){    
+    else if(0.8<x&&x<=1.0){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
     }
   }
 
@@ -21158,7 +21788,10 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DstarVeryHighPtAss
     x=fhMCclosureTestMax->GetBinCenter(j);
     fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
     
-    if(-1.<x&&x<=-0.8){    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
     }
     else if(-0.8<x&&x<=-0.6){    
@@ -21185,8 +21818,11 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DstarVeryHighPtAss
     else if(0.6<x&&x<=0.8){    
       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
     }
-    else if(0.8<x&&x<=1.){    
+    else if(0.8<x&&x<=1.0){    
       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
     }
   }
   
@@ -21310,7 +21946,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DstarVeryHighPtAss
 
 
   // MC CLOSURE TEST (as flat contribution + modulation/sqrt(12) bilateral, i.e. total spread is modulation/sqrt(3))
-  Double_t mod[5] = {0.,0.,0.,0.,0.};
+  Double_t mod[6] = {0.,0.,0.,0.,0.,0.};
   AliHFCorrelationUtils::GetMCClosureModulation(20,3,99.,mod); //retrieve modulation value
 
   fhMCclosureTestMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMin");
@@ -21318,7 +21954,10 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DstarVeryHighPtAss
     x=fhMCclosureTestMin->GetBinCenter(j);
     fhMCclosureTestMin->SetBinContent(j,-0.00); //flat contribution
     
-    if(-1.<x&&x<=-0.8){    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
     }
     else if(-0.8<x&&x<=-0.6){    
@@ -21345,8 +21984,11 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DstarVeryHighPtAss
     else if(0.6<x&&x<=0.8){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
     }
-    else if(0.8<x&&x<=1.){    
+    else if(0.8<x&&x<=1.0){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
     }
   }
 
@@ -21355,7 +21997,10 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DstarVeryHighPtAss
     x=fhMCclosureTestMax->GetBinCenter(j);
     fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
     
-    if(-1.<x&&x<=-0.8){    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
     }
     else if(-0.8<x&&x<=-0.6){    
@@ -21382,8 +22027,11 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DstarVeryHighPtAss
     else if(0.6<x&&x<=0.8){    
       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
     }
-    else if(0.8<x&&x<=1.){    
+    else if(0.8<x&&x<=1.0){    
       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
     }
   }
   
@@ -21507,7 +22155,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DstarVeryHighPtAss
 
 
   // MC CLOSURE TEST (as flat contribution + modulation/sqrt(12) bilateral, i.e. total spread is modulation/sqrt(3))
-  Double_t mod[5] = {0.,0.,0.,0.,0.};
+  Double_t mod[6] = {0.,0.,0.,0.,0.,0.};
   AliHFCorrelationUtils::GetMCClosureModulation(20,1,2.,mod); //retrieve modulation value
 
   fhMCclosureTestMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMin");
@@ -21515,7 +22163,10 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DstarVeryHighPtAss
     x=fhMCclosureTestMin->GetBinCenter(j);
     fhMCclosureTestMin->SetBinContent(j,-0.00); //flat contribution
     
-    if(-1.<x&&x<=-0.8){    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
     }
     else if(-0.8<x&&x<=-0.6){    
@@ -21542,8 +22193,11 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DstarVeryHighPtAss
     else if(0.6<x&&x<=0.8){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
     }
-    else if(0.8<x&&x<=1.){    
+    else if(0.8<x&&x<=1.0){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
     }
   }
 
@@ -21552,7 +22206,10 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DstarVeryHighPtAss
     x=fhMCclosureTestMax->GetBinCenter(j);
     fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
     
-    if(-1.<x&&x<=-0.8){    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
     }
     else if(-0.8<x&&x<=-0.6){    
@@ -21579,8 +22236,11 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DstarVeryHighPtAss
     else if(0.6<x&&x<=0.8){    
       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
     }
-    else if(0.8<x&&x<=1.){    
+    else if(0.8<x&&x<=1.0){    
       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
     }
   }
   
@@ -21704,7 +22364,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DstarVeryHighPtAss
 
 
    // MC CLOSURE TEST (as flat contribution + modulation/sqrt(12) bilateral, i.e. total spread is modulation/sqrt(3))
-  Double_t mod[5] = {0.,0.,0.,0.,0.};
+  Double_t mod[6] = {0.,0.,0.,0.,0.,0.};
   AliHFCorrelationUtils::GetMCClosureModulation(20,2,3.,mod); //retrieve modulation value
 
   fhMCclosureTestMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMin");
@@ -21712,7 +22372,10 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DstarVeryHighPtAss
     x=fhMCclosureTestMin->GetBinCenter(j);
     fhMCclosureTestMin->SetBinContent(j,-0.00); //flat contribution
     
-    if(-1.<x&&x<=-0.8){    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
     }
     else if(-0.8<x&&x<=-0.6){    
@@ -21739,8 +22402,11 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DstarVeryHighPtAss
     else if(0.6<x&&x<=0.8){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
     }
-    else if(0.8<x&&x<=1.){    
+    else if(0.8<x&&x<=1.0){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
     }
   }
 
@@ -21749,7 +22415,10 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DstarVeryHighPtAss
     x=fhMCclosureTestMax->GetBinCenter(j);
     fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
     
-    if(-1.<x&&x<=-0.8){    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
     }
     else if(-0.8<x&&x<=-0.6){    
@@ -21776,8 +22445,11 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DstarVeryHighPtAss
     else if(0.6<x&&x<=0.8){    
       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
     }
-    else if(0.8<x&&x<=1.){    
+    else if(0.8<x&&x<=1.0){    
       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
     }
   }
   
@@ -21903,7 +22575,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DplusLowPtAss03to9
 
 
   // MC CLOSURE TEST (as flat contribution + modulation/sqrt(12) bilateral, i.e. total spread is modulation/sqrt(3))
-  Double_t mod[5] = {0.,0.,0.,0.,0.};
+  Double_t mod[6] = {0.,0.,0.,0.,0.,0.};
   AliHFCorrelationUtils::GetMCClosureModulation(4,0.3,99.,mod); //retrieve modulation value
 
   fhMCclosureTestMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMin");
@@ -21911,7 +22583,10 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DplusLowPtAss03to9
     x=fhMCclosureTestMin->GetBinCenter(j);
     fhMCclosureTestMin->SetBinContent(j,-0.00); //flat contribution
     
-    if(-1.<x&&x<=-0.8){    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
     }
     else if(-0.8<x&&x<=-0.6){    
@@ -21938,8 +22613,11 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DplusLowPtAss03to9
     else if(0.6<x&&x<=0.8){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
     }
-    else if(0.8<x&&x<=1.){    
+    else if(0.8<x&&x<=1.0){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
     }
   }
 
@@ -21948,7 +22626,10 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DplusLowPtAss03to9
     x=fhMCclosureTestMax->GetBinCenter(j);
     fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
     
-    if(-1.<x&&x<=-0.8){    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
     }
     else if(-0.8<x&&x<=-0.6){    
@@ -21975,8 +22656,11 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DplusLowPtAss03to9
     else if(0.6<x&&x<=0.8){    
       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
     }
-    else if(0.8<x&&x<=1.){    
+    else if(0.8<x&&x<=1.0){    
       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
     }
   }
   
@@ -22100,7 +22784,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DplusLowPtAss03to1
 
 
   // MC CLOSURE TEST (as flat contribution + modulation/sqrt(12) bilateral, i.e. total spread is modulation/sqrt(3))
-  Double_t mod[5] = {0.,0.,0.,0.,0.};
+  Double_t mod[6] = {0.,0.,0.,0.,0.,0.};
   AliHFCorrelationUtils::GetMCClosureModulation(4,0.3,1.,mod); //retrieve modulation value
 
   fhMCclosureTestMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMin");
@@ -22108,7 +22792,10 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DplusLowPtAss03to1
     x=fhMCclosureTestMin->GetBinCenter(j);
     fhMCclosureTestMin->SetBinContent(j,-0.00); //flat contribution
     
-    if(-1.<x&&x<=-0.8){    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
     }
     else if(-0.8<x&&x<=-0.6){    
@@ -22135,8 +22822,11 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DplusLowPtAss03to1
     else if(0.6<x&&x<=0.8){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
     }
-    else if(0.8<x&&x<=1.){    
+    else if(0.8<x&&x<=1.0){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
     }
   }
 
@@ -22145,7 +22835,10 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DplusLowPtAss03to1
     x=fhMCclosureTestMax->GetBinCenter(j);
     fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
     
-    if(-1.<x&&x<=-0.8){    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
     }
     else if(-0.8<x&&x<=-0.6){    
@@ -22172,8 +22865,11 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DplusLowPtAss03to1
     else if(0.6<x&&x<=0.8){    
       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
     }
-    else if(0.8<x&&x<=1.){    
+    else if(0.8<x&&x<=1.0){    
       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
     }
   }
   
@@ -22297,7 +22993,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DplusLowPtAss1to99
 
 
   // MC CLOSURE TEST (as flat contribution + modulation/sqrt(12) bilateral, i.e. total spread is modulation/sqrt(3))
-  Double_t mod[5] = {0.,0.,0.,0.,0.};
+  Double_t mod[6] = {0.,0.,0.,0.,0.,0.};
   AliHFCorrelationUtils::GetMCClosureModulation(4,1,99.,mod); //retrieve modulation value
 
   fhMCclosureTestMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMin");
@@ -22305,7 +23001,10 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DplusLowPtAss1to99
     x=fhMCclosureTestMin->GetBinCenter(j);
     fhMCclosureTestMin->SetBinContent(j,-0.00); //flat contribution
     
-    if(-1.<x&&x<=-0.8){    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
     }
     else if(-0.8<x&&x<=-0.6){    
@@ -22332,8 +23031,11 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DplusLowPtAss1to99
     else if(0.6<x&&x<=0.8){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
     }
-    else if(0.8<x&&x<=1.){    
+    else if(0.8<x&&x<=1.0){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
     }
   }
 
@@ -22342,7 +23044,10 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DplusLowPtAss1to99
     x=fhMCclosureTestMax->GetBinCenter(j);
     fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
     
-    if(-1.<x&&x<=-0.8){    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
     }
     else if(-0.8<x&&x<=-0.6){    
@@ -22369,8 +23074,11 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DplusLowPtAss1to99
     else if(0.6<x&&x<=0.8){    
       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
     }
-    else if(0.8<x&&x<=1.){    
+    else if(0.8<x&&x<=1.0){    
       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
     }
   }
   
@@ -22494,7 +23202,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DplusLowPtAss2to99
 
 
   // MC CLOSURE TEST (as flat contribution + modulation/sqrt(12) bilateral, i.e. total spread is modulation/sqrt(3))
-  Double_t mod[5] = {0.,0.,0.,0.,0.};
+  Double_t mod[6] = {0.,0.,0.,0.,0.,0.};
   AliHFCorrelationUtils::GetMCClosureModulation(4,2,99.,mod); //retrieve modulation value
 
   fhMCclosureTestMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMin");
@@ -22502,7 +23210,10 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DplusLowPtAss2to99
     x=fhMCclosureTestMin->GetBinCenter(j);
     fhMCclosureTestMin->SetBinContent(j,-0.00); //flat contribution
     
-    if(-1.<x&&x<=-0.8){    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
     }
     else if(-0.8<x&&x<=-0.6){    
@@ -22529,8 +23240,11 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DplusLowPtAss2to99
     else if(0.6<x&&x<=0.8){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
     }
-    else if(0.8<x&&x<=1.){    
+    else if(0.8<x&&x<=1.0){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
     }
   }
 
@@ -22539,7 +23253,10 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DplusLowPtAss2to99
     x=fhMCclosureTestMax->GetBinCenter(j);
     fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
     
-    if(-1.<x&&x<=-0.8){    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
     }
     else if(-0.8<x&&x<=-0.6){    
@@ -22566,8 +23283,11 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DplusLowPtAss2to99
     else if(0.6<x&&x<=0.8){    
       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
     }
-    else if(0.8<x&&x<=1.){    
+    else if(0.8<x&&x<=1.0){    
       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
     }
   }
   
@@ -22691,7 +23411,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DplusLowPtAss3to99
 
 
   // MC CLOSURE TEST (as flat contribution + modulation/sqrt(12) bilateral, i.e. total spread is modulation/sqrt(3))
-  Double_t mod[5] = {0.,0.,0.,0.,0.};
+  Double_t mod[6] = {0.,0.,0.,0.,0.,0.};
   AliHFCorrelationUtils::GetMCClosureModulation(4,3,99.,mod); //retrieve modulation value
 
   fhMCclosureTestMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMin");
@@ -22699,7 +23419,10 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DplusLowPtAss3to99
     x=fhMCclosureTestMin->GetBinCenter(j);
     fhMCclosureTestMin->SetBinContent(j,-0.00); //flat contribution
     
-    if(-1.<x&&x<=-0.8){    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
     }
     else if(-0.8<x&&x<=-0.6){    
@@ -22726,8 +23449,11 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DplusLowPtAss3to99
     else if(0.6<x&&x<=0.8){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
     }
-    else if(0.8<x&&x<=1.){    
+    else if(0.8<x&&x<=1.0){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
     }
   }
 
@@ -22736,7 +23462,10 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DplusLowPtAss3to99
     x=fhMCclosureTestMax->GetBinCenter(j);
     fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
     
-    if(-1.<x&&x<=-0.8){    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
     }
     else if(-0.8<x&&x<=-0.6){    
@@ -22763,8 +23492,11 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DplusLowPtAss3to99
     else if(0.6<x&&x<=0.8){    
       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
     }
-    else if(0.8<x&&x<=1.){    
+    else if(0.8<x&&x<=1.0){    
       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
     }
   }
   
@@ -22888,7 +23620,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DplusLowPtAss1to2(
 
 
    // MC CLOSURE TEST (as flat contribution + modulation/sqrt(12) bilateral, i.e. total spread is modulation/sqrt(3))
-  Double_t mod[5] = {0.,0.,0.,0.,0.};
+  Double_t mod[6] = {0.,0.,0.,0.,0.,0.};
   AliHFCorrelationUtils::GetMCClosureModulation(4,1,2.,mod); //retrieve modulation value
 
   fhMCclosureTestMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMin");
@@ -22896,7 +23628,10 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DplusLowPtAss1to2(
     x=fhMCclosureTestMin->GetBinCenter(j);
     fhMCclosureTestMin->SetBinContent(j,-0.00); //flat contribution
     
-    if(-1.<x&&x<=-0.8){    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
     }
     else if(-0.8<x&&x<=-0.6){    
@@ -22923,8 +23658,11 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DplusLowPtAss1to2(
     else if(0.6<x&&x<=0.8){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
     }
-    else if(0.8<x&&x<=1.){    
+    else if(0.8<x&&x<=1.0){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
     }
   }
 
@@ -22933,7 +23671,10 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DplusLowPtAss1to2(
     x=fhMCclosureTestMax->GetBinCenter(j);
     fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
     
-    if(-1.<x&&x<=-0.8){    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
     }
     else if(-0.8<x&&x<=-0.6){    
@@ -22960,8 +23701,11 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DplusLowPtAss1to2(
     else if(0.6<x&&x<=0.8){    
       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
     }
-    else if(0.8<x&&x<=1.){    
+    else if(0.8<x&&x<=1.0){    
       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
     }
   }
   
@@ -23084,7 +23828,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DplusLowPtAss2to3(
   }
 
    // MC CLOSURE TEST (as flat contribution + modulation/sqrt(12) bilateral, i.e. total spread is modulation/sqrt(3))
-  Double_t mod[5] = {0.,0.,0.,0.,0.};
+  Double_t mod[6] = {0.,0.,0.,0.,0.,0.};
   AliHFCorrelationUtils::GetMCClosureModulation(4,2,3.,mod); //retrieve modulation value
 
   fhMCclosureTestMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMin");
@@ -23092,7 +23836,10 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DplusLowPtAss2to3(
     x=fhMCclosureTestMin->GetBinCenter(j);
     fhMCclosureTestMin->SetBinContent(j,-0.00); //flat contribution
     
-    if(-1.<x&&x<=-0.8){    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
     }
     else if(-0.8<x&&x<=-0.6){    
@@ -23119,8 +23866,11 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DplusLowPtAss2to3(
     else if(0.6<x&&x<=0.8){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
     }
-    else if(0.8<x&&x<=1.){    
+    else if(0.8<x&&x<=1.0){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
     }
   }
 
@@ -23129,7 +23879,10 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DplusLowPtAss2to3(
     x=fhMCclosureTestMax->GetBinCenter(j);
     fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
     
-    if(-1.<x&&x<=-0.8){    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
     }
     else if(-0.8<x&&x<=-0.6){    
@@ -23156,8 +23909,11 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DplusLowPtAss2to3(
     else if(0.6<x&&x<=0.8){    
       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
     }
-    else if(0.8<x&&x<=1.){    
+    else if(0.8<x&&x<=1.0){    
       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
     }
   }
   
@@ -23282,7 +24038,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DplusMidPtAss03to9
 
 
   // MC CLOSURE TEST (as flat contribution + modulation/sqrt(12) bilateral, i.e. total spread is modulation/sqrt(3))
-  Double_t mod[5] = {0.,0.,0.,0.,0.};
+  Double_t mod[6] = {0.,0.,0.,0.,0.,0.};
   AliHFCorrelationUtils::GetMCClosureModulation(6.5,0.3,99.,mod); //retrieve modulation value
 
   fhMCclosureTestMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMin");
@@ -23290,7 +24046,10 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DplusMidPtAss03to9
     x=fhMCclosureTestMin->GetBinCenter(j);
     fhMCclosureTestMin->SetBinContent(j,-0.00); //flat contribution
     
-    if(-1.<x&&x<=-0.8){    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
     }
     else if(-0.8<x&&x<=-0.6){    
@@ -23317,8 +24076,11 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DplusMidPtAss03to9
     else if(0.6<x&&x<=0.8){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
     }
-    else if(0.8<x&&x<=1.){    
+    else if(0.8<x&&x<=1.0){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
     }
   }
 
@@ -23327,7 +24089,10 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DplusMidPtAss03to9
     x=fhMCclosureTestMax->GetBinCenter(j);
     fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
     
-    if(-1.<x&&x<=-0.8){    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
     }
     else if(-0.8<x&&x<=-0.6){    
@@ -23354,8 +24119,11 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DplusMidPtAss03to9
     else if(0.6<x&&x<=0.8){    
       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
     }
-    else if(0.8<x&&x<=1.){    
+    else if(0.8<x&&x<=1.0){    
       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
     }
   }
   
@@ -23479,7 +24247,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DplusMidPtAss03to1
 
 
    // MC CLOSURE TEST (as flat contribution + modulation/sqrt(12) bilateral, i.e. total spread is modulation/sqrt(3))
-  Double_t mod[5] = {0.,0.,0.,0.,0.};
+  Double_t mod[6] = {0.,0.,0.,0.,0.,0.};
   AliHFCorrelationUtils::GetMCClosureModulation(6.5,0.3,1.,mod); //retrieve modulation value
 
   fhMCclosureTestMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMin");
@@ -23487,7 +24255,10 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DplusMidPtAss03to1
     x=fhMCclosureTestMin->GetBinCenter(j);
     fhMCclosureTestMin->SetBinContent(j,-0.00); //flat contribution
     
-    if(-1.<x&&x<=-0.8){    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
     }
     else if(-0.8<x&&x<=-0.6){    
@@ -23514,8 +24285,11 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DplusMidPtAss03to1
     else if(0.6<x&&x<=0.8){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
     }
-    else if(0.8<x&&x<=1.){    
+    else if(0.8<x&&x<=1.0){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
     }
   }
 
@@ -23524,7 +24298,10 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DplusMidPtAss03to1
     x=fhMCclosureTestMax->GetBinCenter(j);
     fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
     
-    if(-1.<x&&x<=-0.8){    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
     }
     else if(-0.8<x&&x<=-0.6){    
@@ -23551,8 +24328,11 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DplusMidPtAss03to1
     else if(0.6<x&&x<=0.8){    
       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
     }
-    else if(0.8<x&&x<=1.){    
+    else if(0.8<x&&x<=1.0){    
       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
     }
   }
   
@@ -23676,7 +24456,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DplusMidPtAss1to99
 
 
   // MC CLOSURE TEST (as flat contribution + modulation/sqrt(12) bilateral, i.e. total spread is modulation/sqrt(3))
-  Double_t mod[5] = {0.,0.,0.,0.,0.};
+  Double_t mod[6] = {0.,0.,0.,0.,0.,0.};
   AliHFCorrelationUtils::GetMCClosureModulation(6.5,1,99.,mod); //retrieve modulation value
 
   fhMCclosureTestMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMin");
@@ -23684,7 +24464,10 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DplusMidPtAss1to99
     x=fhMCclosureTestMin->GetBinCenter(j);
     fhMCclosureTestMin->SetBinContent(j,-0.00); //flat contribution
     
-    if(-1.<x&&x<=-0.8){    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
     }
     else if(-0.8<x&&x<=-0.6){    
@@ -23711,8 +24494,11 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DplusMidPtAss1to99
     else if(0.6<x&&x<=0.8){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
     }
-    else if(0.8<x&&x<=1.){    
+    else if(0.8<x&&x<=1.0){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
     }
   }
 
@@ -23721,7 +24507,10 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DplusMidPtAss1to99
     x=fhMCclosureTestMax->GetBinCenter(j);
     fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
     
-    if(-1.<x&&x<=-0.8){    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
     }
     else if(-0.8<x&&x<=-0.6){    
@@ -23748,8 +24537,11 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DplusMidPtAss1to99
     else if(0.6<x&&x<=0.8){    
       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
     }
-    else if(0.8<x&&x<=1.){    
+    else if(0.8<x&&x<=1.0){    
       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
     }
   }
   
@@ -23873,7 +24665,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DplusMidPtAss2to99
 
 
    // MC CLOSURE TEST (as flat contribution + modulation/sqrt(12) bilateral, i.e. total spread is modulation/sqrt(3))
-  Double_t mod[5] = {0.,0.,0.,0.,0.};
+  Double_t mod[6] = {0.,0.,0.,0.,0.,0.};
   AliHFCorrelationUtils::GetMCClosureModulation(6.5,2,99.,mod); //retrieve modulation value
 
   fhMCclosureTestMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMin");
@@ -23881,7 +24673,10 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DplusMidPtAss2to99
     x=fhMCclosureTestMin->GetBinCenter(j);
     fhMCclosureTestMin->SetBinContent(j,-0.00); //flat contribution
     
-    if(-1.<x&&x<=-0.8){    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
     }
     else if(-0.8<x&&x<=-0.6){    
@@ -23908,8 +24703,11 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DplusMidPtAss2to99
     else if(0.6<x&&x<=0.8){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
     }
-    else if(0.8<x&&x<=1.){    
+    else if(0.8<x&&x<=1.0){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
     }
   }
 
@@ -23918,7 +24716,10 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DplusMidPtAss2to99
     x=fhMCclosureTestMax->GetBinCenter(j);
     fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
     
-    if(-1.<x&&x<=-0.8){    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
     }
     else if(-0.8<x&&x<=-0.6){    
@@ -23945,8 +24746,11 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DplusMidPtAss2to99
     else if(0.6<x&&x<=0.8){    
       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
     }
-    else if(0.8<x&&x<=1.){    
+    else if(0.8<x&&x<=1.0){    
       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
     }
   }
   
@@ -24069,7 +24873,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DplusMidPtAss3to99
   }
 
    // MC CLOSURE TEST (as flat contribution + modulation/sqrt(12) bilateral, i.e. total spread is modulation/sqrt(3))
-  Double_t mod[5] = {0.,0.,0.,0.,0.};
+  Double_t mod[6] = {0.,0.,0.,0.,0.,0.};
   AliHFCorrelationUtils::GetMCClosureModulation(6.5,3,99.,mod); //retrieve modulation value
 
   fhMCclosureTestMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMin");
@@ -24077,7 +24881,10 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DplusMidPtAss3to99
     x=fhMCclosureTestMin->GetBinCenter(j);
     fhMCclosureTestMin->SetBinContent(j,-0.00); //flat contribution
     
-    if(-1.<x&&x<=-0.8){    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
     }
     else if(-0.8<x&&x<=-0.6){    
@@ -24104,8 +24911,11 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DplusMidPtAss3to99
     else if(0.6<x&&x<=0.8){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
     }
-    else if(0.8<x&&x<=1.){    
+    else if(0.8<x&&x<=1.0){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
     }
   }
 
@@ -24114,7 +24924,10 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DplusMidPtAss3to99
     x=fhMCclosureTestMax->GetBinCenter(j);
     fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
     
-    if(-1.<x&&x<=-0.8){    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
     }
     else if(-0.8<x&&x<=-0.6){    
@@ -24141,8 +24954,11 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DplusMidPtAss3to99
     else if(0.6<x&&x<=0.8){    
       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
     }
-    else if(0.8<x&&x<=1.){    
+    else if(0.8<x&&x<=1.0){    
       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
     }
   }
   
@@ -24266,7 +25082,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DplusMidPtAss1to2(
 
 
    // MC CLOSURE TEST (as flat contribution + modulation/sqrt(12) bilateral, i.e. total spread is modulation/sqrt(3))
-  Double_t mod[5] = {0.,0.,0.,0.,0.};
+  Double_t mod[6] = {0.,0.,0.,0.,0.,0.};
   AliHFCorrelationUtils::GetMCClosureModulation(6.5,1,2.,mod); //retrieve modulation value
 
   fhMCclosureTestMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMin");
@@ -24274,7 +25090,10 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DplusMidPtAss1to2(
     x=fhMCclosureTestMin->GetBinCenter(j);
     fhMCclosureTestMin->SetBinContent(j,-0.00); //flat contribution
     
-    if(-1.<x&&x<=-0.8){    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
     }
     else if(-0.8<x&&x<=-0.6){    
@@ -24301,8 +25120,11 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DplusMidPtAss1to2(
     else if(0.6<x&&x<=0.8){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
     }
-    else if(0.8<x&&x<=1.){    
+    else if(0.8<x&&x<=1.0){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
     }
   }
 
@@ -24311,7 +25133,10 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DplusMidPtAss1to2(
     x=fhMCclosureTestMax->GetBinCenter(j);
     fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
     
-    if(-1.<x&&x<=-0.8){    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
     }
     else if(-0.8<x&&x<=-0.6){    
@@ -24338,8 +25163,11 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DplusMidPtAss1to2(
     else if(0.6<x&&x<=0.8){    
       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
     }
-    else if(0.8<x&&x<=1.){    
+    else if(0.8<x&&x<=1.0){    
       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
     }
   }
   
@@ -24463,7 +25291,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DplusMidPtAss2to3(
 
 
   // MC CLOSURE TEST (as flat contribution + modulation/sqrt(12) bilateral, i.e. total spread is modulation/sqrt(3))
-  Double_t mod[5] = {0.,0.,0.,0.,0.};
+  Double_t mod[6] = {0.,0.,0.,0.,0.,0.};
   AliHFCorrelationUtils::GetMCClosureModulation(6.5,2,3.,mod); //retrieve modulation value
 
   fhMCclosureTestMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMin");
@@ -24471,7 +25299,10 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DplusMidPtAss2to3(
     x=fhMCclosureTestMin->GetBinCenter(j);
     fhMCclosureTestMin->SetBinContent(j,-0.00); //flat contribution
     
-    if(-1.<x&&x<=-0.8){    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
     }
     else if(-0.8<x&&x<=-0.6){    
@@ -24498,8 +25329,11 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DplusMidPtAss2to3(
     else if(0.6<x&&x<=0.8){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
     }
-    else if(0.8<x&&x<=1.){    
+    else if(0.8<x&&x<=1.0){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
     }
   }
 
@@ -24508,7 +25342,10 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DplusMidPtAss2to3(
     x=fhMCclosureTestMax->GetBinCenter(j);
     fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
     
-    if(-1.<x&&x<=-0.8){    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
     }
     else if(-0.8<x&&x<=-0.6){    
@@ -24535,8 +25372,11 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DplusMidPtAss2to3(
     else if(0.6<x&&x<=0.8){    
       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
     }
-    else if(0.8<x&&x<=1.){    
+    else if(0.8<x&&x<=1.0){    
       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
     }
   }
   
@@ -24661,7 +25501,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DplusHighPtAss03to
 
 
   // MC CLOSURE TEST (as flat contribution + modulation/sqrt(12) bilateral, i.e. total spread is modulation/sqrt(3))
-  Double_t mod[5] = {0.,0.,0.,0.,0.};
+  Double_t mod[6] = {0.,0.,0.,0.,0.,0.};
   AliHFCorrelationUtils::GetMCClosureModulation(12,0.3,99.,mod); //retrieve modulation value
 
   fhMCclosureTestMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMin");
@@ -24669,7 +25509,10 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DplusHighPtAss03to
     x=fhMCclosureTestMin->GetBinCenter(j);
     fhMCclosureTestMin->SetBinContent(j,-0.00); //flat contribution
     
-    if(-1.<x&&x<=-0.8){    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
     }
     else if(-0.8<x&&x<=-0.6){    
@@ -24696,8 +25539,11 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DplusHighPtAss03to
     else if(0.6<x&&x<=0.8){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
     }
-    else if(0.8<x&&x<=1.){    
+    else if(0.8<x&&x<=1.0){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
     }
   }
 
@@ -24706,7 +25552,10 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DplusHighPtAss03to
     x=fhMCclosureTestMax->GetBinCenter(j);
     fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
     
-    if(-1.<x&&x<=-0.8){    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
     }
     else if(-0.8<x&&x<=-0.6){    
@@ -24733,8 +25582,11 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DplusHighPtAss03to
     else if(0.6<x&&x<=0.8){    
       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
     }
-    else if(0.8<x&&x<=1.){    
+    else if(0.8<x&&x<=1.0){    
       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
     }
   }
   
@@ -24858,7 +25710,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DplusHighPtAss03to
 
 
   // MC CLOSURE TEST (as flat contribution + modulation/sqrt(12) bilateral, i.e. total spread is modulation/sqrt(3))
-  Double_t mod[5] = {0.,0.,0.,0.,0.};
+  Double_t mod[6] = {0.,0.,0.,0.,0.,0.};
   AliHFCorrelationUtils::GetMCClosureModulation(12,0.3,1.,mod); //retrieve modulation value
 
   fhMCclosureTestMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMin");
@@ -24866,7 +25718,10 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DplusHighPtAss03to
     x=fhMCclosureTestMin->GetBinCenter(j);
     fhMCclosureTestMin->SetBinContent(j,-0.00); //flat contribution
     
-    if(-1.<x&&x<=-0.8){    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
     }
     else if(-0.8<x&&x<=-0.6){    
@@ -24893,8 +25748,11 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DplusHighPtAss03to
     else if(0.6<x&&x<=0.8){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
     }
-    else if(0.8<x&&x<=1.){    
+    else if(0.8<x&&x<=1.0){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
     }
   }
 
@@ -24903,7 +25761,10 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DplusHighPtAss03to
     x=fhMCclosureTestMax->GetBinCenter(j);
     fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
     
-    if(-1.<x&&x<=-0.8){    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
     }
     else if(-0.8<x&&x<=-0.6){    
@@ -24930,8 +25791,11 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DplusHighPtAss03to
     else if(0.6<x&&x<=0.8){    
       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
     }
-    else if(0.8<x&&x<=1.){    
+    else if(0.8<x&&x<=1.0){    
       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
     }
   }
   
@@ -25055,7 +25919,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DplusHighPtAss1to9
 
 
    // MC CLOSURE TEST (as flat contribution + modulation/sqrt(12) bilateral, i.e. total spread is modulation/sqrt(3))
-  Double_t mod[5] = {0.,0.,0.,0.,0.};
+  Double_t mod[6] = {0.,0.,0.,0.,0.,0.};
   AliHFCorrelationUtils::GetMCClosureModulation(12,1,99.,mod); //retrieve modulation value
 
   fhMCclosureTestMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMin");
@@ -25063,7 +25927,10 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DplusHighPtAss1to9
     x=fhMCclosureTestMin->GetBinCenter(j);
     fhMCclosureTestMin->SetBinContent(j,-0.00); //flat contribution
     
-    if(-1.<x&&x<=-0.8){    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
     }
     else if(-0.8<x&&x<=-0.6){    
@@ -25090,8 +25957,11 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DplusHighPtAss1to9
     else if(0.6<x&&x<=0.8){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
     }
-    else if(0.8<x&&x<=1.){    
+    else if(0.8<x&&x<=1.0){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
     }
   }
 
@@ -25100,7 +25970,10 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DplusHighPtAss1to9
     x=fhMCclosureTestMax->GetBinCenter(j);
     fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
     
-    if(-1.<x&&x<=-0.8){    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
     }
     else if(-0.8<x&&x<=-0.6){    
@@ -25127,8 +26000,11 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DplusHighPtAss1to9
     else if(0.6<x&&x<=0.8){    
       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
     }
-    else if(0.8<x&&x<=1.){    
+    else if(0.8<x&&x<=1.0){    
       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
     }
   }
   
@@ -25252,7 +26128,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DplusHighPtAss2to9
 
 
   // MC CLOSURE TEST (as flat contribution + modulation/sqrt(12) bilateral, i.e. total spread is modulation/sqrt(3))
-  Double_t mod[5] = {0.,0.,0.,0.,0.};
+  Double_t mod[6] = {0.,0.,0.,0.,0.,0.};
   AliHFCorrelationUtils::GetMCClosureModulation(12,2,99.,mod); //retrieve modulation value
 
   fhMCclosureTestMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMin");
@@ -25260,7 +26136,10 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DplusHighPtAss2to9
     x=fhMCclosureTestMin->GetBinCenter(j);
     fhMCclosureTestMin->SetBinContent(j,-0.00); //flat contribution
     
-    if(-1.<x&&x<=-0.8){    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
     }
     else if(-0.8<x&&x<=-0.6){    
@@ -25287,8 +26166,11 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DplusHighPtAss2to9
     else if(0.6<x&&x<=0.8){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
     }
-    else if(0.8<x&&x<=1.){    
+    else if(0.8<x&&x<=1.0){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
     }
   }
 
@@ -25297,7 +26179,10 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DplusHighPtAss2to9
     x=fhMCclosureTestMax->GetBinCenter(j);
     fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
     
-    if(-1.<x&&x<=-0.8){    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
     }
     else if(-0.8<x&&x<=-0.6){    
@@ -25324,8 +26209,11 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DplusHighPtAss2to9
     else if(0.6<x&&x<=0.8){    
       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
     }
-    else if(0.8<x&&x<=1.){    
+    else if(0.8<x&&x<=1.0){    
       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
     }
   }
   
@@ -25449,7 +26337,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DplusHighPtAss3to9
 
 
   // MC CLOSURE TEST (as flat contribution + modulation/sqrt(12) bilateral, i.e. total spread is modulation/sqrt(3))
-  Double_t mod[5] = {0.,0.,0.,0.,0.};
+  Double_t mod[6] = {0.,0.,0.,0.,0.,0.};
   AliHFCorrelationUtils::GetMCClosureModulation(12,3,99.,mod); //retrieve modulation value
 
   fhMCclosureTestMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMin");
@@ -25457,7 +26345,10 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DplusHighPtAss3to9
     x=fhMCclosureTestMin->GetBinCenter(j);
     fhMCclosureTestMin->SetBinContent(j,-0.00); //flat contribution
     
-    if(-1.<x&&x<=-0.8){    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
     }
     else if(-0.8<x&&x<=-0.6){    
@@ -25484,8 +26375,11 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DplusHighPtAss3to9
     else if(0.6<x&&x<=0.8){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
     }
-    else if(0.8<x&&x<=1.){    
+    else if(0.8<x&&x<=1.0){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
     }
   }
 
@@ -25494,7 +26388,10 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DplusHighPtAss3to9
     x=fhMCclosureTestMax->GetBinCenter(j);
     fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
     
-    if(-1.<x&&x<=-0.8){    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
     }
     else if(-0.8<x&&x<=-0.6){    
@@ -25521,8 +26418,11 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DplusHighPtAss3to9
     else if(0.6<x&&x<=0.8){    
       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
     }
-    else if(0.8<x&&x<=1.){    
+    else if(0.8<x&&x<=1.0){    
       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
     }
   }
   
@@ -25646,7 +26546,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DplusHighPtAss1to2
 
 
    // MC CLOSURE TEST (as flat contribution + modulation/sqrt(12) bilateral, i.e. total spread is modulation/sqrt(3))
-  Double_t mod[5] = {0.,0.,0.,0.,0.};
+  Double_t mod[6] = {0.,0.,0.,0.,0.,0.};
   AliHFCorrelationUtils::GetMCClosureModulation(12,1,2.,mod); //retrieve modulation value
 
   fhMCclosureTestMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMin");
@@ -25654,7 +26554,10 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DplusHighPtAss1to2
     x=fhMCclosureTestMin->GetBinCenter(j);
     fhMCclosureTestMin->SetBinContent(j,-0.00); //flat contribution
     
-    if(-1.<x&&x<=-0.8){    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
     }
     else if(-0.8<x&&x<=-0.6){    
@@ -25681,8 +26584,11 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DplusHighPtAss1to2
     else if(0.6<x&&x<=0.8){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
     }
-    else if(0.8<x&&x<=1.){    
+    else if(0.8<x&&x<=1.0){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
     }
   }
 
@@ -25691,7 +26597,10 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DplusHighPtAss1to2
     x=fhMCclosureTestMax->GetBinCenter(j);
     fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
     
-    if(-1.<x&&x<=-0.8){    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
     }
     else if(-0.8<x&&x<=-0.6){    
@@ -25718,8 +26627,11 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DplusHighPtAss1to2
     else if(0.6<x&&x<=0.8){    
       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
     }
-    else if(0.8<x&&x<=1.){    
+    else if(0.8<x&&x<=1.0){    
       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
     }
   }
   
@@ -25843,7 +26755,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DplusHighPtAss2to3
 
 
   // MC CLOSURE TEST (as flat contribution + modulation/sqrt(12) bilateral, i.e. total spread is modulation/sqrt(3))
-  Double_t mod[5] = {0.,0.,0.,0.,0.};
+  Double_t mod[6] = {0.,0.,0.,0.,0.,0.};
   AliHFCorrelationUtils::GetMCClosureModulation(12,2,3.,mod); //retrieve modulation value
 
   fhMCclosureTestMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMin");
@@ -25851,7 +26763,10 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DplusHighPtAss2to3
     x=fhMCclosureTestMin->GetBinCenter(j);
     fhMCclosureTestMin->SetBinContent(j,-0.00); //flat contribution
     
-    if(-1.<x&&x<=-0.8){    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
     }
     else if(-0.8<x&&x<=-0.6){    
@@ -25878,8 +26793,11 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DplusHighPtAss2to3
     else if(0.6<x&&x<=0.8){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
     }
-    else if(0.8<x&&x<=1.){    
+    else if(0.8<x&&x<=1.0){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
     }
   }
 
@@ -25888,7 +26806,10 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DplusHighPtAss2to3
     x=fhMCclosureTestMax->GetBinCenter(j);
     fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
     
-    if(-1.<x&&x<=-0.8){    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
     }
     else if(-0.8<x&&x<=-0.6){    
@@ -25915,8 +26836,11 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DplusHighPtAss2to3
     else if(0.6<x&&x<=0.8){    
       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
     }
-    else if(0.8<x&&x<=1.){    
+    else if(0.8<x&&x<=1.0){    
       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
     }
   }
   
@@ -26043,7 +26967,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DplusVeryHighPtAss
 
 
   // MC CLOSURE TEST (as flat contribution + modulation/sqrt(12) bilateral, i.e. total spread is modulation/sqrt(3))
-  Double_t mod[5] = {0.,0.,0.,0.,0.};
+  Double_t mod[6] = {0.,0.,0.,0.,0.,0.};
   AliHFCorrelationUtils::GetMCClosureModulation(20,0.3,99.,mod); //retrieve modulation value
 
   fhMCclosureTestMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMin");
@@ -26051,7 +26975,10 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DplusVeryHighPtAss
     x=fhMCclosureTestMin->GetBinCenter(j);
     fhMCclosureTestMin->SetBinContent(j,-0.00); //flat contribution
     
-    if(-1.<x&&x<=-0.8){    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
     }
     else if(-0.8<x&&x<=-0.6){    
@@ -26078,8 +27005,11 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DplusVeryHighPtAss
     else if(0.6<x&&x<=0.8){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
     }
-    else if(0.8<x&&x<=1.){    
+    else if(0.8<x&&x<=1.0){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
     }
   }
 
@@ -26088,7 +27018,10 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DplusVeryHighPtAss
     x=fhMCclosureTestMax->GetBinCenter(j);
     fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
     
-    if(-1.<x&&x<=-0.8){    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
     }
     else if(-0.8<x&&x<=-0.6){    
@@ -26115,8 +27048,11 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DplusVeryHighPtAss
     else if(0.6<x&&x<=0.8){    
       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
     }
-    else if(0.8<x&&x<=1.){    
+    else if(0.8<x&&x<=1.0){    
       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
     }
   }
   
@@ -26240,7 +27176,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DplusVeryHighPtAss
 
 
   // MC CLOSURE TEST (as flat contribution + modulation/sqrt(12) bilateral, i.e. total spread is modulation/sqrt(3))
-  Double_t mod[5] = {0.,0.,0.,0.,0.};
+  Double_t mod[6] = {0.,0.,0.,0.,0.,0.};
   AliHFCorrelationUtils::GetMCClosureModulation(20,0.3,1.,mod); //retrieve modulation value
 
   fhMCclosureTestMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMin");
@@ -26248,7 +27184,10 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DplusVeryHighPtAss
     x=fhMCclosureTestMin->GetBinCenter(j);
     fhMCclosureTestMin->SetBinContent(j,-0.00); //flat contribution
     
-    if(-1.<x&&x<=-0.8){    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
     }
     else if(-0.8<x&&x<=-0.6){    
@@ -26275,8 +27214,11 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DplusVeryHighPtAss
     else if(0.6<x&&x<=0.8){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
     }
-    else if(0.8<x&&x<=1.){    
+    else if(0.8<x&&x<=1.0){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
     }
   }
 
@@ -26285,7 +27227,10 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DplusVeryHighPtAss
     x=fhMCclosureTestMax->GetBinCenter(j);
     fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
     
-    if(-1.<x&&x<=-0.8){    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
     }
     else if(-0.8<x&&x<=-0.6){    
@@ -26312,8 +27257,11 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DplusVeryHighPtAss
     else if(0.6<x&&x<=0.8){    
       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
     }
-    else if(0.8<x&&x<=1.){    
+    else if(0.8<x&&x<=1.0){    
       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
     }
   }
   
@@ -26437,7 +27385,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DplusVeryHighPtAss
 
 
    // MC CLOSURE TEST (as flat contribution + modulation/sqrt(12) bilateral, i.e. total spread is modulation/sqrt(3))
-  Double_t mod[5] = {0.,0.,0.,0.,0.};
+  Double_t mod[6] = {0.,0.,0.,0.,0.,0.};
   AliHFCorrelationUtils::GetMCClosureModulation(20,1,99.,mod); //retrieve modulation value
 
   fhMCclosureTestMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMin");
@@ -26445,7 +27393,10 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DplusVeryHighPtAss
     x=fhMCclosureTestMin->GetBinCenter(j);
     fhMCclosureTestMin->SetBinContent(j,-0.00); //flat contribution
     
-    if(-1.<x&&x<=-0.8){    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
     }
     else if(-0.8<x&&x<=-0.6){    
@@ -26472,8 +27423,11 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DplusVeryHighPtAss
     else if(0.6<x&&x<=0.8){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
     }
-    else if(0.8<x&&x<=1.){    
+    else if(0.8<x&&x<=1.0){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
     }
   }
 
@@ -26482,7 +27436,10 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DplusVeryHighPtAss
     x=fhMCclosureTestMax->GetBinCenter(j);
     fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
     
-    if(-1.<x&&x<=-0.8){    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
     }
     else if(-0.8<x&&x<=-0.6){    
@@ -26509,8 +27466,11 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DplusVeryHighPtAss
     else if(0.6<x&&x<=0.8){    
       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
     }
-    else if(0.8<x&&x<=1.){    
+    else if(0.8<x&&x<=1.0){    
       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
     }
   }
   
@@ -26634,7 +27594,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DplusVeryHighPtAss
 
 
   // MC CLOSURE TEST (as flat contribution + modulation/sqrt(12) bilateral, i.e. total spread is modulation/sqrt(3))
-  Double_t mod[5] = {0.,0.,0.,0.,0.};
+  Double_t mod[6] = {0.,0.,0.,0.,0.,0.};
   AliHFCorrelationUtils::GetMCClosureModulation(20,2,99.,mod); //retrieve modulation value
 
   fhMCclosureTestMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMin");
@@ -26642,7 +27602,10 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DplusVeryHighPtAss
     x=fhMCclosureTestMin->GetBinCenter(j);
     fhMCclosureTestMin->SetBinContent(j,-0.00); //flat contribution
     
-    if(-1.<x&&x<=-0.8){    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
     }
     else if(-0.8<x&&x<=-0.6){    
@@ -26669,8 +27632,11 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DplusVeryHighPtAss
     else if(0.6<x&&x<=0.8){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
     }
-    else if(0.8<x&&x<=1.){    
+    else if(0.8<x&&x<=1.0){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
     }
   }
 
@@ -26679,7 +27645,10 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DplusVeryHighPtAss
     x=fhMCclosureTestMax->GetBinCenter(j);
     fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
     
-    if(-1.<x&&x<=-0.8){    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
     }
     else if(-0.8<x&&x<=-0.6){    
@@ -26706,8 +27675,11 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DplusVeryHighPtAss
     else if(0.6<x&&x<=0.8){    
       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
     }
-    else if(0.8<x&&x<=1.){    
+    else if(0.8<x&&x<=1.0){    
       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
     }
   }
   
@@ -26831,7 +27803,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DplusVeryHighPtAss
 
 
   // MC CLOSURE TEST (as flat contribution + modulation/sqrt(12) bilateral, i.e. total spread is modulation/sqrt(3))
-  Double_t mod[5] = {0.,0.,0.,0.,0.};
+  Double_t mod[6] = {0.,0.,0.,0.,0.,0.};
   AliHFCorrelationUtils::GetMCClosureModulation(20,3,99.,mod); //retrieve modulation value
 
   fhMCclosureTestMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMin");
@@ -26839,7 +27811,10 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DplusVeryHighPtAss
     x=fhMCclosureTestMin->GetBinCenter(j);
     fhMCclosureTestMin->SetBinContent(j,-0.00); //flat contribution
     
-    if(-1.<x&&x<=-0.8){    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
     }
     else if(-0.8<x&&x<=-0.6){    
@@ -26866,8 +27841,11 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DplusVeryHighPtAss
     else if(0.6<x&&x<=0.8){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
     }
-    else if(0.8<x&&x<=1.){    
+    else if(0.8<x&&x<=1.0){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
     }
   }
 
@@ -26876,7 +27854,10 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DplusVeryHighPtAss
     x=fhMCclosureTestMax->GetBinCenter(j);
     fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
     
-    if(-1.<x&&x<=-0.8){    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
     }
     else if(-0.8<x&&x<=-0.6){    
@@ -26903,8 +27884,11 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DplusVeryHighPtAss
     else if(0.6<x&&x<=0.8){    
       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
     }
-    else if(0.8<x&&x<=1.){    
+    else if(0.8<x&&x<=1.0){    
       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
     }
   }
   
@@ -27028,7 +28012,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DplusVeryHighPtAss
 
 
   // MC CLOSURE TEST (as flat contribution + modulation/sqrt(12) bilateral, i.e. total spread is modulation/sqrt(3))
-  Double_t mod[5] = {0.,0.,0.,0.,0.};
+  Double_t mod[6] = {0.,0.,0.,0.,0.,0.};
   AliHFCorrelationUtils::GetMCClosureModulation(20,1,2.,mod); //retrieve modulation value
 
   fhMCclosureTestMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMin");
@@ -27036,7 +28020,10 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DplusVeryHighPtAss
     x=fhMCclosureTestMin->GetBinCenter(j);
     fhMCclosureTestMin->SetBinContent(j,-0.00); //flat contribution
     
-    if(-1.<x&&x<=-0.8){    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
     }
     else if(-0.8<x&&x<=-0.6){    
@@ -27063,8 +28050,11 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DplusVeryHighPtAss
     else if(0.6<x&&x<=0.8){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
     }
-    else if(0.8<x&&x<=1.){    
+    else if(0.8<x&&x<=1.0){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
     }
   }
 
@@ -27073,7 +28063,10 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DplusVeryHighPtAss
     x=fhMCclosureTestMax->GetBinCenter(j);
     fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
     
-    if(-1.<x&&x<=-0.8){    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
     }
     else if(-0.8<x&&x<=-0.6){    
@@ -27100,8 +28093,11 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DplusVeryHighPtAss
     else if(0.6<x&&x<=0.8){    
       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
     }
-    else if(0.8<x&&x<=1.){    
+    else if(0.8<x&&x<=1.0){    
       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
     }
   }
   
@@ -27225,7 +28221,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DplusVeryHighPtAss
 
 
   // MC CLOSURE TEST (as flat contribution + modulation/sqrt(12) bilateral, i.e. total spread is modulation/sqrt(3))
-  Double_t mod[5] = {0.,0.,0.,0.,0.};
+  Double_t mod[6] = {0.,0.,0.,0.,0.,0.};
   AliHFCorrelationUtils::GetMCClosureModulation(20,2,3.,mod); //retrieve modulation value
 
   fhMCclosureTestMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMin");
@@ -27233,7 +28229,10 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DplusVeryHighPtAss
     x=fhMCclosureTestMin->GetBinCenter(j);
     fhMCclosureTestMin->SetBinContent(j,-0.00); //flat contribution
     
-    if(-1.<x&&x<=-0.8){    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
     }
     else if(-0.8<x&&x<=-0.6){    
@@ -27260,8 +28259,11 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DplusVeryHighPtAss
     else if(0.6<x&&x<=0.8){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
     }
-    else if(0.8<x&&x<=1.){    
+    else if(0.8<x&&x<=1.0){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
     }
   }
 
@@ -27270,7 +28272,10 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DplusVeryHighPtAss
     x=fhMCclosureTestMax->GetBinCenter(j);
     fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
     
-    if(-1.<x&&x<=-0.8){    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
     }
     else if(-0.8<x&&x<=-0.6){    
@@ -27297,8 +28302,11 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DplusVeryHighPtAss
     else if(0.6<x&&x<=0.8){    
       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
     }
-    else if(0.8<x&&x<=1.){    
+    else if(0.8<x&&x<=1.0){    
       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
     }
   }
   
