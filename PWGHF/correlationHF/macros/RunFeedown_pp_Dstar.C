@@ -3,7 +3,6 @@
 //   Jitendra.Kumar (jitendra.kumar@cern.ch)  
 //
 //*******************************************************************************/
-
 TString inputfc = "./Dstar/HFPtSpectrum_pp.root"; // input fprompt
 TString templatedir = "./Templates_pp/"; // template path
 TString inputcorrelationDir = "./Input_Plots_pp/";// directory where input files are stored
@@ -25,16 +24,16 @@ void SetDirectoryInputFiles(TString inputdir){
 void SetInputFileNameRoot(TString fileinputroot){
   inputfileroot=fileinputroot;
 }
-void RunFeedown_pp_Dstar(Int_t collsyst, Bool_t subtrMCclos){
-    GetEnvelopeForEachV2(collsyst,subtrMCclos);
+
+void RunFeedown_pp_Dstar(Int_t collsyst, Bool_t subtrMCclos, Bool_t oldnames){
+    GetEnvelopeForEachV2(collsyst,subtrMCclos,oldnames);
 }
 void SetFDtemplateSystemString(TString str){
   strSystemFDtempl=str;
 }
 
-
 //_____________________________________________________________
-void GetEnvelopeForEachV2(Int_t collsyst, Bool_t subtrMCclos){
+void GetEnvelopeForEachV2(Int_t collsyst, Bool_t subtrMCclos, Bool_t oldnames){
     
     //**********************************
     // This function loops on all the templates, creating 5 envelopes for different v2 values.
@@ -46,8 +45,6 @@ void GetEnvelopeForEachV2(Int_t collsyst, Bool_t subtrMCclos){
     SetSystemStringForTemplateFDnames(strSystemFDtempl.Data());
     
     TString inputcorrelation;
-
-    Int_t oldnames=1; if(collsyst!=0 && collsyst!=1) oldnames=0;
   
     TString outputfilename = ""; //  (not needed here)
     
@@ -86,12 +83,13 @@ void GetEnvelopeForEachV2(Int_t collsyst, Bool_t subtrMCclos){
  
             //For D0 input filenames! (bins and not pt)
             Double_t Dptbin[2] = {0,0};
-             if(iDpt == 0) {Dptbin[0] = 3; Dptbin[1] = 5;}
+            if(iDpt == 0) {Dptbin[0] = 3; Dptbin[1] = 5;}
             if(iDpt == 1) {Dptbin[0] = 5; Dptbin[1] = 8;}
             if(iDpt == 2) {Dptbin[0] = 8; Dptbin[1] = 16;}
            
             // set correct paths
             inputcorrelation = Form("%s/%s%d_%d_%.0f_%.0f.root",inputcorrelationDir.Data(),inputfileroot.Data(),(int)Dptbin[0], (int)Dptbin[1], hadpt[ihadpt]*10,hadptMaxInput[ihadpt]*10); // I guess all your input data files have
+            if(!oldnames) inputcorrelation = Form("%s/%s%dto%d_PoolInt_thr%.1fto%.1f.root",inputcorrelationDir.Data(),inputfileroot.Data(),(int)Dptbin[0], (int)Dptbin[1], hadpt[ihadpt],hadptMaxInput[ihadpt]); // I guess all your input data files have
             cout << " inputcorrelation = " << inputcorrelation.Data() << endl;
             
             

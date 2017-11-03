@@ -24,16 +24,16 @@ void SetDirectoryInputFiles(TString inputdir){
 void SetInputFileNameRoot(TString fileinputroot){
   inputfileroot=fileinputroot;
 }
-void RunFeedown_pp_Dzero(Int_t collsyst, Bool_t subtrMCclos){
-    GetEnvelopeForEachV2(collsyst,subtrMCclos);
-}
 
+void RunFeedown_pp_Dzero(Int_t collsyst, Bool_t subtrMCclos, Bool_t oldnames){
+    GetEnvelopeForEachV2(collsyst,subtrMCclos,oldnames);
+}
 void SetFDtemplateSystemString(TString str){
   strSystemFDtempl=str;
 }
 
 //_____________________________________________________________
-void GetEnvelopeForEachV2(Int_t collsyst, Bool_t subtrMCclos){
+void GetEnvelopeForEachV2(Int_t collsyst, Bool_t subtrMCclos, Bool_t oldnames){
     
     //**********************************
     // This function loops on all the templates, creating 5 envelopes for different v2 values.
@@ -44,8 +44,6 @@ void GetEnvelopeForEachV2(Int_t collsyst, Bool_t subtrMCclos){
     gROOT->LoadMacro(Form("%s/SubtractFD.C",fdsubtrmacrodir.Data()));
     SetSystemStringForTemplateFDnames(strSystemFDtempl.Data());
     TString inputcorrelation;
-
-    Int_t oldnames=1; if(collsyst!=0 && collsyst!=1) oldnames=0;
   
     TString outputfilename = ""; //  (not needed here)
     
@@ -90,6 +88,7 @@ void GetEnvelopeForEachV2(Int_t collsyst, Bool_t subtrMCclos){
            
             // set correct paths
             inputcorrelation = Form("%s/%s%dto%d_Limits_2_4_TreshPt_%.1f_to_%.2f_Data.root",inputcorrelationDir.Data(),inputfileroot.Data(),(int)Dptbin[0], (int)Dptbin[1], hadpt[ihadpt],hadptMaxInput[ihadpt]); // I guess all your input data files have
+            if(!oldnames) inputcorrelation = Form("%s/%s%dto%d_PoolInt_thr%.1fto%.1f.root",inputcorrelationDir.Data(),inputfileroot.Data(),(int)Dptbin[0], (int)Dptbin[1], hadpt[ihadpt],hadptMaxInput[ihadpt]); // I guess all your input data files have
             cout << " inputcorrelation = " << inputcorrelation.Data() << endl;
             
             
