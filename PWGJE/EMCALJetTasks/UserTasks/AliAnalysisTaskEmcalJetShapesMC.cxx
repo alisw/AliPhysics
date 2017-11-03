@@ -91,6 +91,7 @@ AliAnalysisTaskEmcalJetShapesMC::AliAnalysisTaskEmcalJetShapesMC() :
   fhPt(0x0),
   fhPhi(0x0),
   fHLundIterative(0x0),
+  fHLundIterativeInject(0x0),
   fNbOfConstvspT(0x0),
   fTreeObservableTagging(0x0),
   fTf1Omega(0x0),
@@ -143,6 +144,7 @@ AliAnalysisTaskEmcalJetShapesMC::AliAnalysisTaskEmcalJetShapesMC(const char *nam
   fhPt(0x0),
   fhPhi(0x0),
   fHLundIterative(0x0),
+  fHLundIterativeInject(0x0),
   fNbOfConstvspT(0x0),
   fTreeObservableTagging(0x0),
     fTf1Omega(0x0),
@@ -298,13 +300,25 @@ AliAnalysisTaskEmcalJetShapesMC::~AliAnalysisTaskEmcalJetShapesMC()
 
   //log(1/theta),log(z*theta),jetpT,algo// 
    const Int_t dimSpec   = 4;
-   const Int_t nBinsSpec[4]     = {100,100,20,3};
+   const Int_t nBinsSpec[4]     = {50,50,20,3};
    const Double_t lowBinSpec[4] = {0.0,-10,  0,0};
    const Double_t hiBinSpec[4]  = {5.0,  0,200,3};
    fHLundIterative = new THnSparseF("fHLundIterative",
                    "LundIterativePlot [log(1/theta),log(z*theta),pTjet,algo]",
                    dimSpec,nBinsSpec,lowBinSpec,hiBinSpec);
-  fOutput->Add(fHLundIterative);  
+  fOutput->Add(fHLundIterative);
+
+  if(fAdditionalTracks>0){
+  //log(1/theta),log(z*theta),jetpT of added tracks
+   const Int_t dimSpecb   = 3;
+   const Int_t nBinsSpecb[3]     = {50,50,20};
+   const Double_t lowBinSpecb[3] = {0.0,-10,  0};
+   const Double_t hiBinSpecb[3]  = {5.0,  0,200};
+   fHLundIterativeInject = new THnSparseF("fHLundIterativeInject",
+                   "LundIterativePlotInject [log(1/theta),log(z*theta),pTjet,algo]",
+                   dimSpecb,nBinsSpecb,lowBinSpecb,hiBinSpecb);
+   fOutput->Add(fHLundIterativeInject);}
+
    
   fNbOfConstvspT=new TH2F("fNbOfConstvspT", "fNbOfConstvspT", 100, 0, 100, 200, 0, 200);
   fOutput->Add(fNbOfConstvspT);
@@ -1347,7 +1361,13 @@ void AliAnalysisTaskEmcalJetShapesMC::RecursiveParents(AliEmcalJet *fJet,AliJetC
   std::vector<fastjet::PseudoJet>  fInputVectors;
   fInputVectors.clear();
   fastjet::PseudoJet  PseudoTracks;
-  double xflagalgo=0; 
+  double xflagalgo=0;
+  double lnpt_relinject=0;
+  double yinject=0;
+  int xflagAdded=0;
+  double zinject,angleinject,pptheta,sinpptheta,omega;
+  fastjet::PseudoJet MyJet;
+  fastjet::PseudoJet PseudoTracksCMS;
   AliParticleContainer *fTrackCont = fJetCont->GetParticleContainer();
   
     if (fTrackCont) for (Int_t i=0; i<fJet->GetNumberOfTracks(); i++) {
@@ -1359,7 +1379,49 @@ void AliAnalysisTaskEmcalJetShapesMC::RecursiveParents(AliEmcalJet *fJet,AliJetC
      
     }
 
-      fastjet::JetAlgorithm jetalgo(fastjet::antikt_algorithm);
+    //add tracks to the jet prior to the reclusterer in case of iterative mapping of splittings
+    MyJet.reset(fJet->Px(),fJet->Py(),fJet->Pz(),fJet->E());
+    Double_t omegac=0.5*fqhat*fxlength*fxlength/0.2;
+    Double_t thetac=TMath::Sqrt(12*0.2/(fqhat*TMath::Power(fxlength,3)));
+    Double_t xQs=TMath::Sqrt(fqhat*fxlength);				
+   
+
+   for(Int_t i=0;i<fAdditionalTracks;i++){
+
+    Double_t ppx,ppy,ppz,kTscale,lim2o,lim1o;
+    Double_t lim2=xQs;   
+    Double_t lim1=10000;
+    
+    //generation of kT according to 1/kT^4, with minimum QS=2 GeV and maximum ~sqrt(ptjet*T)	
+     fTf1Kt= new TF1("fTf1Kt","1/(x*x*x*x)",lim2,lim1);
+     kTscale=fTf1Kt->GetRandom();
+     //generation within the jet cone
+    
+     //generation of w according to 1/w, with minimum wc
+     //omega needs to be larger than kT so to have well defined angles
+     lim2o=kTscale;
+     lim1o=kTscale/TMath::Sin(0.1);
+     fTf1Omega= new TF1("fTf1Omega","1/x",lim2o,lim1o);
+     omega=fTf1Omega->GetRandom();
+     
+     sinpptheta=kTscale/omega;
+     pptheta=TMath::ASin(sinpptheta);
+     //cout<<"angle_omega_kt"<<pptheta<<" "<<omega<<" "<<kTscale<<endl;
+     if(pptheta>fJetRadius) continue;
+     
+     PseudoTracksCMS.reset(kTscale/TMath::Sqrt(2),kTscale/TMath::Sqrt(2),omega*TMath::Cos(pptheta),omega);
+     //boost the particle in the rest frame of the jet to the lab frame
+     fastjet::PseudoJet PseudoTracksLab=PseudoTracksCMS.boost(MyJet);
+     PseudoTracksLab.set_user_index(i+fJet->GetNumberOfTracks()+100);											 
+     fInputVectors.push_back(PseudoTracksLab);
+     //in the frame of the jet 
+     xflagAdded=1;
+   }
+
+
+
+
+    fastjet::JetAlgorithm jetalgo(fastjet::antikt_algorithm);
     if(ReclusterAlgo==0){ xflagalgo=0.5;
       jetalgo=fastjet::kt_algorithm ;}
       
@@ -1391,7 +1453,14 @@ void AliAnalysisTaskEmcalJetShapesMC::RecursiveParents(AliEmcalJet *fJet,AliJetC
     fHLundIterative->Fill(LundEntries);
     jj=j1;} 
 
-
+    if(fAdditionalTracks>0 && xflagAdded>0){
+     zinject=omega/fOutputJets[0].perp();  
+     angleinject=pptheta;
+     cout<<"angle"<<pptheta<<endl;
+     yinject =log(1.0/angleinject);
+     lnpt_relinject=log(zinject*angleinject);
+     Double_t LundEntriesInject[3] = {yinject,lnpt_relinject,fOutputJets[0].perp()};  
+     fHLundIterativeInject->Fill(LundEntriesInject);}
 
 
   } catch (fastjet::Error) {
@@ -1401,6 +1470,9 @@ void AliAnalysisTaskEmcalJetShapesMC::RecursiveParents(AliEmcalJet *fJet,AliJetC
 
  
   
+   if(fTf1Kt){ delete fTf1Kt;}
+   if(fTf1Omega){ delete fTf1Omega;}
+ 
   
   return;
 
