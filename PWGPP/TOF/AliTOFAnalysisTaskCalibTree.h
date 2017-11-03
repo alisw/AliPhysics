@@ -63,6 +63,7 @@ public AliAnalysisTaskSE
   void SetSpecificStorageFineSlewing(Char_t *value) {fSpecificStorageFineSlewing = value;}; // set specific storage FineSlewing
   void SetSaveCoordinates(Bool_t value = kTRUE) {fSaveCoordinates = value;}; // set flag to save hit coordinates in tree
 
+  void SetClusterFlags(AliESDtrack *track, Int_t itrack); // set clusterisation flags in output tree
  protected:
 
   AliTOFAnalysisTaskCalibTree(const AliTOFAnalysisTaskCalibTree &); // copy constructor
@@ -94,6 +95,7 @@ public AliAnalysisTaskSE
   AliESDEvent *fESDEvent;             //!<! ESD event
   AliPhysicsSelection *fEventCuts;    //!<! event cuts
   AliESDtrackCuts *fTrackCuts;        //!<! track cuts
+  AliESDtrackCuts *fAuxTrackCuts;     //!<! standard track cuts for primary candidates
   AliESDpid *fESDpid;                 //!<! ESD PID
   UInt_t fStartTime;                  // start time
   UInt_t fEndTime;                    // end time
@@ -131,11 +133,13 @@ public AliAnalysisTaskSE
   Float_t* fDeltaz;         //[fMaxHits] delta-z
   Float_t* fDeltat;         //[fMaxHits] delta-t
   Float_t* fDeltaraw;       //[fMaxHits] delta-raw
+  UChar_t* fHitFlag;        //[fMaxHits] hit flag. 1 = multiple hit; 2 = adj. cluster in x; 4 = adj. cluster in z; 8 = track primary candidate; 16 = good track Nclusters in TPC; 32 = track good TPC chi2; 64 = good T0
   Bool_t fSaveCoordinates;
+  TClonesArray* fTOFClusters; //!<! array of TOF clusters
 
   TTree* fOutputTree;                 //!<! output tree
 
-  ClassDef(AliTOFAnalysisTaskCalibTree, 4);
+  ClassDef(AliTOFAnalysisTaskCalibTree, 5);
 };
 
 #endif /* ALIANALYSISTASKTOFCOMPACTCALIB_H */
