@@ -157,7 +157,7 @@ Bool_t AliHFDmesonCorrAverage::InitSystematicUncertainty(Int_t system,Int_t year
 	if(fincludeDzero){
 	  if(year==2010){
 	    fSystDzero=new AliHFDhadronCorrSystUnc("fSystDzero");
-	    fSystDzero->InitStandardUncertaintiesPP2010(0,(fptminD+fptmaxD)*0.5,fptminAsso);  
+	    fSystDzero->InitStandardUncertaintiesPP2010(0,(fptminD+fptmaxD)*0.5,fptminAsso,fptmaxAsso);  
 	    fSystDzero->BuildTotalUncHisto();
 	    fSystDzero->BuildTotalNonFDUncHisto();
 	    fSystDzero->BuildGraphsUnc(fhDzero);
@@ -171,7 +171,7 @@ Bool_t AliHFDmesonCorrAverage::InitSystematicUncertainty(Int_t system,Int_t year
 	if(fincludeDstar){
 	  if(year==2010){
 	    fSystDstar=new AliHFDhadronCorrSystUnc("fSystDstar");
-	    fSystDstar->InitStandardUncertaintiesPP2010(1,(fptminD+fptmaxD)*0.5,fptminAsso);  
+	    fSystDstar->InitStandardUncertaintiesPP2010(1,(fptminD+fptmaxD)*0.5,fptminAsso,fptmaxAsso);  
 	    fSystDstar->BuildTotalUncHisto();
 	    fSystDstar->BuildTotalNonFDUncHisto();
 	    fSystDstar->BuildGraphsUnc(fhDstar);
@@ -185,7 +185,7 @@ Bool_t AliHFDmesonCorrAverage::InitSystematicUncertainty(Int_t system,Int_t year
 	if(fincludeDplus){
 	  if(year==2010){
 	    fSystDplus=new AliHFDhadronCorrSystUnc("fSystDplus");
-	    fSystDplus->InitStandardUncertaintiesPP2010(2,(fptminD+fptmaxD)*0.5,fptminAsso);  
+	    fSystDplus->InitStandardUncertaintiesPP2010(2,(fptminD+fptmaxD)*0.5,fptminAsso,fptmaxAsso);  
 	    fSystDplus->BuildTotalUncHisto();
 	    fSystDplus->BuildTotalNonFDUncHisto();
 	    fSystDplus->BuildGraphsUnc(fhDplus);
@@ -200,7 +200,7 @@ Bool_t AliHFDmesonCorrAverage::InitSystematicUncertainty(Int_t system,Int_t year
 	if(fincludeDzero){
 	  if(year==2013){
 	    fSystDzero=new AliHFDhadronCorrSystUnc("fSystDzero");
-	    fSystDzero->InitStandardUncertaintiesPPb2013(0,(fptminD+fptmaxD)*0.5,fptminAsso);  
+	    fSystDzero->InitStandardUncertaintiesPPb2013(0,(fptminD+fptmaxD)*0.5,fptminAsso,fptmaxAsso);  
 	    fSystDzero->BuildTotalUncHisto();
 	    fSystDzero->BuildTotalNonFDUncHisto();
 	    fSystDzero->BuildGraphsUnc(fhDzero);
@@ -213,7 +213,7 @@ Bool_t AliHFDmesonCorrAverage::InitSystematicUncertainty(Int_t system,Int_t year
 	if(fincludeDstar){
 	  if(year==2013){
 	    fSystDstar=new AliHFDhadronCorrSystUnc("fSystDstar");
-	    fSystDstar->InitStandardUncertaintiesPPb2013(1,(fptminD+fptmaxD)*0.5,fptminAsso);  
+	    fSystDstar->InitStandardUncertaintiesPPb2013(1,(fptminD+fptmaxD)*0.5,fptminAsso,fptmaxAsso);  
 	    fSystDstar->BuildTotalUncHisto();
 	    fSystDstar->BuildTotalNonFDUncHisto();
 	    fSystDstar->BuildGraphsUnc(fhDstar);
@@ -227,7 +227,7 @@ Bool_t AliHFDmesonCorrAverage::InitSystematicUncertainty(Int_t system,Int_t year
 	if(fincludeDplus){
 	  if(year==2013){
 	    fSystDplus=new AliHFDhadronCorrSystUnc("fSystDplus");
-	    fSystDplus->InitStandardUncertaintiesPPb2013(2,(fptminD+fptmaxD)*0.5,fptminAsso);  
+	    fSystDplus->InitStandardUncertaintiesPPb2013(2,(fptminD+fptmaxD)*0.5,fptminAsso,fptmaxAsso);  
 	    fSystDplus->BuildTotalUncHisto();
 	    fSystDplus->BuildTotalNonFDUncHisto();
 	    fSystDplus->BuildGraphsUnc(fhDplus);

@@ -261,7 +261,7 @@ void SubtractFDexploitingClassDplus(Double_t ptmin, Double_t ptmax, Double_t pta
 }
 
 //______________________________________________________________________________________________
-void SubtractFDexploitingClassDzerov2Modulations(Double_t ptmin, Double_t ptmax, Double_t ptassoc,Double_t ptassocmax,
+void SubtractFDexploitingClassDzerov2Modulations(Double_t ptmin, Double_t ptmax, Double_t ptassoc,Double_t ptassocMax,
                                                  TString strfileout="output.root",Int_t methodSubtr=2,Double_t purity=0.965,
                                                  Int_t rebin=1,TString correlationDataFile="1Dcorr.root",
                                                  TString spectraMacroOutput="HFPtSpectrum_Nb.root", TString strdirTempl="temp",
@@ -281,7 +281,7 @@ void SubtractFDexploitingClassDzerov2Modulations(Double_t ptmin, Double_t ptmax,
 		cData=(TCanvas*)fDataCorr->Get("c3");
 		hData=(TH1D*)cData->FindObject("hsubtract_norm");
 	} else {
-		cData=(TCanvas*)fDataCorr->Get(Form("cFinal_%1.1fto%1.1f",ptassoc,ptassocmax));
+		cData=(TCanvas*)fDataCorr->Get(Form("cFinal_%1.1fto%1.1f",ptassoc,ptassocMax));
 		hData=(TH1D*)cData->FindObject("h1D_SubtrNorm");
 	} 
     
@@ -291,12 +291,12 @@ void SubtractFDexploitingClassDzerov2Modulations(Double_t ptmin, Double_t ptmax,
     TGraphAsymmErrors *gr=(TGraphAsymmErrors*)fSpectrum->Get(namefpr.Data());
     
     const Int_t Dzero = 0;
-    SubtractFDexploitingClassv2Modulations(Dzero,hData,gr,ptmin,ptmax,ptassoc,ptassocmax,strdirTempl,strfileout,purity,methodSubtr,1,system,systoption,subtrMCclos);
+    SubtractFDexploitingClassv2Modulations(Dzero,hData,gr,ptmin,ptmax,ptassoc,ptassocMax,strdirTempl,strfileout,purity,methodSubtr,1,system,systoption,subtrMCclos);
 }
 
 
 //______________________________________________________________________________________________
-void SubtractFDexploitingClassDstarv2Modulations(Double_t ptmin,Double_t ptmax,Double_t ptassoc,Double_t ptassocmax,
+void SubtractFDexploitingClassDstarv2Modulations(Double_t ptmin,Double_t ptmax,Double_t ptassoc,Double_t ptassocMax,
                                                  TString strfileout="output.root",Int_t methodSubtr=2,Double_t purity=0.965,
                                                  Int_t rebin=1,TString correlationDataFile="1Dcorr.root",
                                                  TString spectraMacroOutput="HFPtSpectrum_Nb.root", TString strdirTempl="temp",
@@ -316,7 +316,7 @@ void SubtractFDexploitingClassDstarv2Modulations(Double_t ptmin,Double_t ptmax,D
 		cData=(TCanvas*)fDataCorr->Get("FinalDphiCorrelationsCanvas");
 		hData=(TH1D*)cData->FindObject("DMesonHadronDPhi");
 	} else {
-		cData=(TCanvas*)fDataCorr->Get(Form("cFinal_%1.1fto%1.1f",ptassoc,ptassocmax));
+		cData=(TCanvas*)fDataCorr->Get(Form("cFinal_%1.1fto%1.1f",ptassoc,ptassocMax));
 		hData=(TH1D*)cData->FindObject("h1D_SubtrNorm");
 	} 
     
@@ -326,13 +326,13 @@ void SubtractFDexploitingClassDstarv2Modulations(Double_t ptmin,Double_t ptmax,D
     TGraphAsymmErrors *gr=(TGraphAsymmErrors*)fSpectrum->Get(namefpr.Data());
     
     const Int_t Dstar = 1;
-    SubtractFDexploitingClassv2Modulations(Dstar,hData,gr,ptmin,ptmax,ptassoc,ptassocmax,strdirTempl,strfileout,purity,methodSubtr,1,system,systoption,subtrMCclos);
+    SubtractFDexploitingClassv2Modulations(Dstar,hData,gr,ptmin,ptmax,ptassoc,ptassocMax,strdirTempl,strfileout,purity,methodSubtr,1,system,systoption,subtrMCclos);
     fDataCorr->Close();
     fSpectrum->Close();
 }
 
 //______________________________________________________________________________________________
-void SubtractFDexploitingClassDplusv2Modulations(Double_t ptmin,Double_t ptmax,Double_t ptassoc,Double_t ptassocmax,
+void SubtractFDexploitingClassDplusv2Modulations(Double_t ptmin,Double_t ptmax,Double_t ptassoc,Double_t ptassocMax,
                                                  TString strfileout="output.root",Int_t methodSubtr=2,Double_t purity=0.965,
                                                  Int_t rebin=1,TString correlationDataFile="1Dcorr.root",
                                                  TString spectraMacroOutput="HFPtSpectrum_Nb.root", TString strdirTempl="temp",
@@ -352,7 +352,7 @@ void SubtractFDexploitingClassDplusv2Modulations(Double_t ptmin,Double_t ptmax,D
 		cData=(TCanvas*)fDataCorr->Get("corrCorrected1D");
 		hData=(TH1D*)cData->FindObject("ME_Corrected_1D");
 	} else {
-		cData=(TCanvas*)fDataCorr->Get(Form("cFinal_%1.1fto%1.1f",ptassoc,ptassocmax));
+		cData=(TCanvas*)fDataCorr->Get(Form("cFinal_%1.1fto%1.1f",ptassoc,ptassocMax));
 		hData=(TH1D*)cData->FindObject("h1D_SubtrNorm");
 	} 
     
@@ -362,7 +362,7 @@ void SubtractFDexploitingClassDplusv2Modulations(Double_t ptmin,Double_t ptmax,D
     TGraphAsymmErrors *gr=(TGraphAsymmErrors*)fSpectrum->Get(namefpr.Data());
 
     const Int_t Dplus = 2;
-    SubtractFDexploitingClassv2Modulations(Dplus,hData,gr,ptmin,ptmax,ptassoc,ptassocmax,strdirTempl,strfileout,purity,methodSubtr,1,system,systoption,subtrMCclos);
+    SubtractFDexploitingClassv2Modulations(Dplus,hData,gr,ptmin,ptmax,ptassoc,ptassocMax,strdirTempl,strfileout,purity,methodSubtr,1,system,systoption,subtrMCclos);
     fDataCorr->Close();
     fSpectrum->Close();
 }
@@ -628,8 +628,8 @@ void SubtractFDexploitingClass(Int_t meson,TH1D *hData,TGraphAsymmErrors *grFpro
 
     AliHFDhadronCorrSystUnc *oUnc=new AliHFDhadronCorrSystUnc();
     oUnc->SetName("SystematicUncertainty");
-    if(system == 0)oUnc->InitStandardUncertaintiesPP2010(meson,0.5*(ptmin+ptmax),ptassoc); // load pp uncertainties
-    if(system == 1)oUnc->InitStandardUncertaintiesPPb2013(meson,0.5*(ptmin+ptmax),ptassoc); // load p-Pb uncertainties
+    if(system == 0)oUnc->InitStandardUncertaintiesPP2010(meson,0.5*(ptmin+ptmax),ptassoc,ptassocMax); // load pp uncertainties
+    if(system == 1)oUnc->InitStandardUncertaintiesPPb2013(meson,0.5*(ptmin+ptmax),ptassoc,ptassocMax); // load p-Pb uncertainties
     if(system == 2)oUnc->InitStandardUncertaintiesPPb2016(meson,0.5*(ptmin+ptmax),ptassoc,ptassocMax); // load p-Pb uncertainties
     oUnc->SetHistoBeautyFDmin(fdSubtracter->GetHistoRelSystUncMin(),"",kTRUE);
     oUnc->SetHistoBeautyFDmax(fdSubtracter->GetHistoRelSystUncMax(),"",kTRUE);
@@ -666,7 +666,7 @@ void SubtractFDexploitingClass(Int_t meson,TH1D *hData,TGraphAsymmErrors *grFpro
 }
 
 //______________________________________________________________________________________________
-void SubtractFDexploitingClassv2Modulations(const Int_t meson,TH1D *hData,TGraphAsymmErrors *grFprompt,Double_t ptmin,Double_t ptmax,Double_t ptassoc,Double_t ptassocmax,TString strdirTempl,TString strfileout="FDoutput",Double_t purity=0.963,Int_t methodSubtr=2,Int_t rebin=1, Int_t system =0, Int_t systoption =3, Bool_t subtrMCclos = kFALSE){
+void SubtractFDexploitingClassv2Modulations(const Int_t meson,TH1D *hData,TGraphAsymmErrors *grFprompt,Double_t ptmin,Double_t ptmax,Double_t ptassoc,Double_t ptassocMax,TString strdirTempl,TString strfileout="FDoutput",Double_t purity=0.963,Int_t methodSubtr=2,Int_t rebin=1, Int_t system =0, Int_t systoption =3, Bool_t subtrMCclos = kFALSE){
     
     cout << "This might take a while - go and get a coffee, you deserved it :) " << endl;
     gSystem->Sleep(2000);
@@ -700,7 +700,7 @@ void SubtractFDexploitingClassv2Modulations(const Int_t meson,TH1D *hData,TGraph
     hData->Scale(purity*1./(Double_t)rebin);
 
     //Apply modulation from MC closure test (as correction on data points! pPb2016 preliminary approach!)
-    if(subtrMCclos) SubtractMCclosureModulation(hData,0.5*(ptmin+ptmax),ptassoc,ptassocmax);
+    if(subtrMCclos) SubtractMCclosureModulation(hData,0.5*(ptmin+ptmax),ptassoc,ptassocMax);
 
     TString strmes;
     if(meson==0)strmes="Dzero";
@@ -733,12 +733,12 @@ void SubtractFDexploitingClassv2Modulations(const Int_t meson,TH1D *hData,TGraph
       else {
 	strsystnametempl=strsystem;
       }
-        templPromptPerugia0=Form("%s/%sCorrelationPlotsPerugia0wBoostPt%sfromC%.0fTo%.0f_ptAssall%.1fto%.1f_DeltaEta10.root",strdirTempl.Data(),strsystnametempl.Data(),strmes.Data(),ptmin,ptmax,ptassoc,ptassocmax);
-        templPromptPerugia2010=Form("%s/%sCorrelationPlotsPerugia2010wBoostPt%sfromC%.0fTo%.0f_ptAssall%.1fto%.1f_DeltaEta10.root",strdirTempl.Data(),strsystnametempl.Data(),strmes.Data(),ptmin,ptmax,ptassoc,ptassocmax);
-        templPromptPerugia2011=Form("%s/%sCorrelationPlotsPerugia2011wBoostPt%sfromC%.0fTo%.0f_ptAssall%.1fto%.1f_DeltaEta10.root",strdirTempl.Data(),strsystnametempl.Data(),strmes.Data(),ptmin,ptmax,ptassoc,ptassocmax);
-        templPerugia0=Form("%s/%sCorrelationPlotsPerugia0wBoostPt%sfromB%.0fTo%.0f_ptAssall%.1fto%.1f_DeltaEta10.root",strdirTempl.Data(),strsystnametempl.Data(),strmes.Data(),ptmin,ptmax,ptassoc,ptassocmax);
-        templPerugia2010=Form("%s/%sCorrelationPlotsPerugia2010wBoostPt%sfromB%.0fTo%.0f_ptAssall%.1fto%.1f_DeltaEta10.root",strdirTempl.Data(),strsystnametempl.Data(),strmes.Data(),ptmin,ptmax,ptassoc,ptassocmax);
-        templPerugia2011=Form("%s/%sCorrelationPlotsPerugia2011wBoostPt%sfromB%.0fTo%.0f_ptAssall%.1fto%.1f_DeltaEta10.root",strdirTempl.Data(),strsystnametempl.Data(),strmes.Data(),ptmin,ptmax,ptassoc,ptassocmax);
+        templPromptPerugia0=Form("%s/%sCorrelationPlotsPerugia0wBoostPt%sfromC%.0fTo%.0f_ptAssall%.1fto%.1f_DeltaEta10.root",strdirTempl.Data(),strsystnametempl.Data(),strmes.Data(),ptmin,ptmax,ptassoc,ptassocMax);
+        templPromptPerugia2010=Form("%s/%sCorrelationPlotsPerugia2010wBoostPt%sfromC%.0fTo%.0f_ptAssall%.1fto%.1f_DeltaEta10.root",strdirTempl.Data(),strsystnametempl.Data(),strmes.Data(),ptmin,ptmax,ptassoc,ptassocMax);
+        templPromptPerugia2011=Form("%s/%sCorrelationPlotsPerugia2011wBoostPt%sfromC%.0fTo%.0f_ptAssall%.1fto%.1f_DeltaEta10.root",strdirTempl.Data(),strsystnametempl.Data(),strmes.Data(),ptmin,ptmax,ptassoc,ptassocMax);
+        templPerugia0=Form("%s/%sCorrelationPlotsPerugia0wBoostPt%sfromB%.0fTo%.0f_ptAssall%.1fto%.1f_DeltaEta10.root",strdirTempl.Data(),strsystnametempl.Data(),strmes.Data(),ptmin,ptmax,ptassoc,ptassocMax);
+        templPerugia2010=Form("%s/%sCorrelationPlotsPerugia2010wBoostPt%sfromB%.0fTo%.0f_ptAssall%.1fto%.1f_DeltaEta10.root",strdirTempl.Data(),strsystnametempl.Data(),strmes.Data(),ptmin,ptmax,ptassoc,ptassocMax);
+        templPerugia2011=Form("%s/%sCorrelationPlotsPerugia2011wBoostPt%sfromB%.0fTo%.0f_ptAssall%.1fto%.1f_DeltaEta10.root",strdirTempl.Data(),strsystnametempl.Data(),strmes.Data(),ptmin,ptmax,ptassoc,ptassocMax);
     }
     if(system ==2){
         cout << "Templates for pPb... Loading PYTHIA8, Perugia2011, Perugia2010" << endl;
@@ -748,12 +748,12 @@ void SubtractFDexploitingClassv2Modulations(const Int_t meson,TH1D *hData,TGraph
       else {
         strsystnametempl=strsystem;
       }
-        templPromptPerugia0=Form("%s/%sCorrelationPlotsPYTHIA8wBoostPt%sfromC%.0fTo%.0f_ptAssall%.1fto%.1f_DeltaEta10.root",strdirTempl.Data(),strsystnametempl.Data(),strmes.Data(),ptmin,ptmax,ptassoc,ptassocmax);
-        templPromptPerugia2010=Form("%s/%sCorrelationPlotsPerugia2011wBoostPt%sfromC%.0fTo%.0f_ptAssall%.1fto%.1f_DeltaEta10.root",strdirTempl.Data(),strsystnametempl.Data(),strmes.Data(),ptmin,ptmax,ptassoc,ptassocmax);
-        templPromptPerugia2011=Form("%s/%sCorrelationPlotsPerugia2010wBoostPt%sfromC%.0fTo%.0f_ptAssall%.1fto%.1f_DeltaEta10.root",strdirTempl.Data(),strsystnametempl.Data(),strmes.Data(),ptmin,ptmax,ptassoc,ptassocmax);
-        templPerugia0=Form("%s/%sCorrelationPlotsPYTHIA8wBoostPt%sfromB%.0fTo%.0f_ptAssall%.1fto%.1f_DeltaEta10.root",strdirTempl.Data(),strsystnametempl.Data(),strmes.Data(),ptmin,ptmax,ptassoc,ptassocmax);
-        templPerugia2010=Form("%s/%sCorrelationPlotsPerugia2011wBoostPt%sfromB%.0fTo%.0f_ptAssall%.1fto%.1f_DeltaEta10.root",strdirTempl.Data(),strsystnametempl.Data(),strmes.Data(),ptmin,ptmax,ptassoc,ptassocmax);
-        templPerugia2011=Form("%s/%sCorrelationPlotsPerugia2010wBoostPt%sfromB%.0fTo%.0f_ptAssall%.1fto%.1f_DeltaEta10.root",strdirTempl.Data(),strsystnametempl.Data(),strmes.Data(),ptmin,ptmax,ptassoc,ptassocmax);
+        templPromptPerugia0=Form("%s/%sCorrelationPlotsPYTHIA8wBoostPt%sfromC%.0fTo%.0f_ptAssall%.1fto%.1f_DeltaEta10.root",strdirTempl.Data(),strsystnametempl.Data(),strmes.Data(),ptmin,ptmax,ptassoc,ptassocMax);
+        templPromptPerugia2010=Form("%s/%sCorrelationPlotsPerugia2011wBoostPt%sfromC%.0fTo%.0f_ptAssall%.1fto%.1f_DeltaEta10.root",strdirTempl.Data(),strsystnametempl.Data(),strmes.Data(),ptmin,ptmax,ptassoc,ptassocMax);
+        templPromptPerugia2011=Form("%s/%sCorrelationPlotsPerugia2010wBoostPt%sfromC%.0fTo%.0f_ptAssall%.1fto%.1f_DeltaEta10.root",strdirTempl.Data(),strsystnametempl.Data(),strmes.Data(),ptmin,ptmax,ptassoc,ptassocMax);
+        templPerugia0=Form("%s/%sCorrelationPlotsPYTHIA8wBoostPt%sfromB%.0fTo%.0f_ptAssall%.1fto%.1f_DeltaEta10.root",strdirTempl.Data(),strsystnametempl.Data(),strmes.Data(),ptmin,ptmax,ptassoc,ptassocMax);
+        templPerugia2010=Form("%s/%sCorrelationPlotsPerugia2011wBoostPt%sfromB%.0fTo%.0f_ptAssall%.1fto%.1f_DeltaEta10.root",strdirTempl.Data(),strsystnametempl.Data(),strmes.Data(),ptmin,ptmax,ptassoc,ptassocMax);
+        templPerugia2011=Form("%s/%sCorrelationPlotsPerugia2010wBoostPt%sfromB%.0fTo%.0f_ptAssall%.1fto%.1f_DeltaEta10.root",strdirTempl.Data(),strsystnametempl.Data(),strmes.Data(),ptmin,ptmax,ptassoc,ptassocMax);
     }    
     else cout<< "Not pPb - Where is your files ?? " << endl;
 
@@ -902,9 +902,9 @@ void SubtractFDexploitingClassv2Modulations(const Int_t meson,TH1D *hData,TGraph
     
     AliHFDhadronCorrSystUnc *oUnc=new AliHFDhadronCorrSystUnc();
     oUnc->SetName("SystematicUncertainty");
-    if(system ==0) oUnc->InitStandardUncertainties2010(meson,0.5*(ptmin+ptmax),ptassoc); // load pp uncertainties
-    if(system ==1) oUnc->InitStandardUncertaintiesPPb2013(meson,0.5*(ptmin+ptmax),ptassoc); // load p-Pb uncertainties
-    if(system ==2) oUnc->InitStandardUncertaintiesPPb2016(meson,0.5*(ptmin+ptmax),ptassoc,ptassocmax); // load p-Pb uncertainties
+    if(system ==0) oUnc->InitStandardUncertainties2010(meson,0.5*(ptmin+ptmax),ptassoc,ptassocMax); // load pp uncertainties
+    if(system ==1) oUnc->InitStandardUncertaintiesPPb2013(meson,0.5*(ptmin+ptmax),ptassoc,ptassocMax); // load p-Pb uncertainties
+    if(system ==2) oUnc->InitStandardUncertaintiesPPb2016(meson,0.5*(ptmin+ptmax),ptassoc,ptassocMax); // load p-Pb uncertainties
     oUnc->SetHistoBeautyFDmin(fdSubtracter->GetHistoRelSystUncMin(),"",kTRUE);
     oUnc->SetHistoBeautyFDmax(fdSubtracter->GetHistoRelSystUncMax(),"",kTRUE);
     
@@ -1123,8 +1123,8 @@ void OpenOutputFileAndDrawReflect(TString strfile,Double_t ptminD,Double_t ptmax
   }
   syst->SetHistoTemplate(hFDsub);
   if(system==2)syst->InitStandardUncertaintiesPPb2016(meson,(ptmaxD+ptminD)/2.,ptminAss,ptmaxAss);
-  if(system==AliHFCorrelationUtils::kpPb)syst->InitStandardUncertaintiesPPb2013(meson,(ptmaxD+ptminD)/2.,ptminAss);
-  else if(system==AliHFCorrelationUtils::kpp)syst->InitStandardUncertaintiesPP2010(meson,(ptmaxD+ptminD)/2.,ptminAss);
+  if(system==AliHFCorrelationUtils::kpPb)syst->InitStandardUncertaintiesPPb2013(meson,(ptmaxD+ptminD)/2.,ptminAss,ptmaxAss);
+  else if(system==AliHFCorrelationUtils::kpp)syst->InitStandardUncertaintiesPP2010(meson,(ptmaxD+ptminD)/2.,ptminAss,ptmaxAss);
   syst->SetHistoBeautyFDmin(hFDm2,"",kTRUE);
   syst->SetHistoBeautyFDmax(hFDM2,"",kTRUE);
   
