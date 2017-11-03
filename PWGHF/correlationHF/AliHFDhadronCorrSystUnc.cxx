@@ -201,7 +201,7 @@ AliHFDhadronCorrSystUnc::~AliHFDhadronCorrSystUnc(){
 }
 
 
-void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2010DzeroLowPtAss03HP(){ 
+void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2010DzeroLowPtAss03(){ 
   Printf("Loading syst unc for D0 pp2010 3-5 0.3 thr");
   fmeson=AliHFCorrelationUtils::kDzero;
   fstrmeson="Dzero";
@@ -369,7 +369,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2010DzeroLowPtAss03HP()
   
 }
 
-void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2010DzeroMidPtAss03HP(){ 
+void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2010DzeroMidPtAss03(){ 
   Printf("Loading syst unc for D0 pp2010 5-8 0.3 thr");
 
   fmeson=AliHFCorrelationUtils::kDzero;
@@ -537,7 +537,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2010DzeroMidPtAss03HP()
 }
 
 
-void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2010DzeroHighPtAss03HP(){ 
+void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2010DzeroHighPtAss03(){ 
 
   Printf("Loading syst unc for D0 pp2010 8-16 0.3 thr");
   
@@ -711,7 +711,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2010DzeroHighPtAss03HP(
 
 
 //--------------------------------------------------
-void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2010DstarLowPtAss03HP(){
+void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2010DstarLowPtAss03(){
   Printf("Loading syst unc for D*+ pp 2010, 3<pt(D)<5 GeV/c, pt(assoc)>0.3");
   fmeson=AliHFCorrelationUtils::kDstar;
   fstrmeson="Dstar";
@@ -879,7 +879,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2010DstarLowPtAss03HP()
 
 }
 
-void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2010DstarMidPtAss03HP(){
+void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2010DstarMidPtAss03(){
   Printf("Loading syst unc for D*+ pp 2010, 5<pt(D)<8 GeV/c, pt(assoc)>0.3");
   fmeson=AliHFCorrelationUtils::kDstar;
   fstrmeson="Dstar";
@@ -1069,7 +1069,7 @@ void AliHFDhadronCorrSystUnc::InitEmptyHistosFromTemplate(){
 
 
 
-void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2010DstarHighPtAss03HP(){
+void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2010DstarHighPtAss03(){
   Printf("Loading syst unc for D*+ pp 2010, 8<pt(D)<16 GeV/c, pt(assoc)>0.3");  
   fmeson=AliHFCorrelationUtils::kDstar;
   fstrmeson="Dstar";
@@ -1577,35 +1577,35 @@ void AliHFDhadronCorrSystUnc::BuildTotalNonFDUncHisto(){
 }
 
 
-void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2010(Int_t meson,Double_t ptD,Double_t minptAss){
+void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2010(Int_t meson,Double_t ptD,Double_t minptAss, Double_t maxptAss){
   
   if(meson==AliHFCorrelationUtils::kDzero){
     
     // 0.3 GeV/c
-    if(TMath::Abs(minptAss-0.3)<0.0001){
+    if(TMath::Abs(minptAss-0.3)<0.0001 && maxptAss>90.){
       if(ptD>2&&ptD<5){
-	InitStandardUncertaintiesPP2010DzeroLowPtAss03HP();
+	InitStandardUncertaintiesPP2010DzeroLowPtAss03();
       }
       else if(ptD>5&&ptD<8){
-	InitStandardUncertaintiesPP2010DzeroMidPtAss03HP();        
+	InitStandardUncertaintiesPP2010DzeroMidPtAss03();        
       }
       else if(ptD>8&&ptD<16){
-	InitStandardUncertaintiesPP2010DzeroHighPtAss03HP();
+	InitStandardUncertaintiesPP2010DzeroHighPtAss03();
       }
       else {
 	printf("Methods for syst unc not ready yet for this pt(ass) bin  \n");
       }
     }     
-    // 0.5 GeV/c
-    else if(TMath::Abs(minptAss-0.5)<0.0001){
+    // 0.3-1 GeV/c
+    else if(TMath::Abs(minptAss-0.3)<0.0001 && maxptAss==1.){
       if(ptD>3&&ptD<5){
-	InitStandardUncertaintiesPP2010DzeroLowPtAss05();
+	InitStandardUncertaintiesPP2010DzeroLowPtAss03to1();
       }
       else if(ptD>5&&ptD<8){
-	InitStandardUncertaintiesPP2010DzeroMidPtAss05();               
+	InitStandardUncertaintiesPP2010DzeroMidPtAss03to1();               
       }
       else if(ptD>8&&ptD<16){
-	InitStandardUncertaintiesPP2010DzeroHighPtAss05();
+	InitStandardUncertaintiesPP2010DzeroHighPtAss03to1();
       }      
       else {
 	printf("Methods for syst unc not ready yet for this pt(ass) bin  \n");
@@ -1632,30 +1632,30 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2010(Int_t meson,Double
   }    
   else if(meson==AliHFCorrelationUtils::kDstar){
     // 0.3 GeV/c
-    if(TMath::Abs(minptAss-0.3)<0.0001){
+    if(TMath::Abs(minptAss-0.3)<0.0001 && maxptAss>90.){
       if(ptD>3&&ptD<5){
-	InitStandardUncertaintiesPP2010DstarLowPtAss03HP();	
+	InitStandardUncertaintiesPP2010DstarLowPtAss03();	
       }
       else if(ptD>5&&ptD<8){
-	InitStandardUncertaintiesPP2010DstarMidPtAss03HP();
+	InitStandardUncertaintiesPP2010DstarMidPtAss03();
       }
       else if(ptD>8&&ptD<16){
-	InitStandardUncertaintiesPP2010DstarHighPtAss03HP();
+	InitStandardUncertaintiesPP2010DstarHighPtAss03();
       }
       else {
 	printf("Methods for syst unc not ready yet for this pt(ass) bin  \n");
       }
     }
-    // 0.5 GeV/c
-    else if(TMath::Abs(minptAss-0.5)<0.0001){
+    // 0.3-1 GeV/c
+    else if(TMath::Abs(minptAss-0.3)<0.0001 && maxptAss==1.){
       if(ptD>3&&ptD<5){
-	InitStandardUncertaintiesPP2010DstarLowPtAss05();
+	InitStandardUncertaintiesPP2010DstarLowPtAss03to1();
       }
       else if(ptD>5&&ptD<8){
-	InitStandardUncertaintiesPP2010DstarMidPtAss05();
+	InitStandardUncertaintiesPP2010DstarMidPtAss03to1();
       }
       else if(ptD>8&&ptD<16){
-	InitStandardUncertaintiesPP2010DstarHighPtAss05();
+	InitStandardUncertaintiesPP2010DstarHighPtAss03to1();
       }
       else {
 	printf("Methods for syst unc not ready yet for this pt(ass) bin  \n");
@@ -1683,7 +1683,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2010(Int_t meson,Double
   }
   else if(meson==AliHFCorrelationUtils::kDplus){
     // 0.3 GeV/c
-    if(TMath::Abs(minptAss-0.3)<0.0001){
+    if(TMath::Abs(minptAss-0.3)<0.0001 && maxptAss>90.){
       if(ptD>3&&ptD<5){
 	InitStandardUncertaintiesPP2010DplusLowPtAss03();
       }
@@ -1697,16 +1697,16 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2010(Int_t meson,Double
 	printf("Methods for syst unc not ready yet for this pt(ass) bin  \n");
       }
     }
-    // 0.5 GeV/c
-    else if(TMath::Abs(minptAss-0.5)<0.0001){
+    // 0.3-1 GeV/c
+    else if(TMath::Abs(minptAss-0.3)<0.0001 && maxptAss==1.){
       if(ptD>3&&ptD<5){
-	InitStandardUncertaintiesPP2010DplusLowPtAss05();
+	InitStandardUncertaintiesPP2010DplusLowPtAss03to1();
       }
       else if(ptD>5&&ptD<8){
-	InitStandardUncertaintiesPP2010DplusMidPtAss05();
+	InitStandardUncertaintiesPP2010DplusMidPtAss03to1();
       }
       else if(ptD>8&&ptD<16){
-	InitStandardUncertaintiesPP2010DplusHighPtAss05();
+	InitStandardUncertaintiesPP2010DplusHighPtAss03to1();
       }
       else {
 	printf("Methods for syst unc not ready yet for this pt(ass) bin  \n");
@@ -1736,11 +1736,11 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2010(Int_t meson,Double
   }
 }
 
-void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2013(Int_t meson,Double_t ptD,Double_t minptAss){
+void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2013(Int_t meson,Double_t ptD,Double_t minptAss, Double_t maxptAss){
   
   if(meson==AliHFCorrelationUtils::kDzero){
     // 0.3 GeV/c
-    if(TMath::Abs(minptAss-0.3)<0.0001){
+    if(TMath::Abs(minptAss-0.3)<0.0001 && maxptAss>90.){
       if(ptD>3&&ptD<5){
 	InitStandardUncertaintiesPPb2013DzeroLowPtAss03();
       }
@@ -1755,16 +1755,16 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2013(Int_t meson,Doubl
 	printf("Methods for syst unc not ready yet for this pt(ass) bin  \n");
       }
     }
-    // 0.5 GeV/c
-    else if(TMath::Abs(minptAss-0.5)<0.0001){
+    // 0.3-1 GeV/c
+    else if(TMath::Abs(minptAss-0.3)<0.0001 && maxptAss==1.){
       if(ptD>3&&ptD<5){
-	InitStandardUncertaintiesPPb2013DzeroLowPtAss05();
+	InitStandardUncertaintiesPPb2013DzeroLowPtAss03to1();
       }
       else if(ptD>5&&ptD<8){
-	InitStandardUncertaintiesPPb2013DzeroMidPtAss05();
+	InitStandardUncertaintiesPPb2013DzeroMidPtAss03to1();
       }
       else if(ptD>8&&ptD<16){
-	InitStandardUncertaintiesPPb2013DzeroHighPtAss05();
+	InitStandardUncertaintiesPPb2013DzeroHighPtAss03to1();
       }
       
       else {
@@ -1793,7 +1793,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2013(Int_t meson,Doubl
   }
   else if(meson==AliHFCorrelationUtils::kDstar){
     // 0.3 GeV/c
-    if(TMath::Abs(minptAss-0.3)<0.0001){
+    if(TMath::Abs(minptAss-0.3)<0.0001 && maxptAss>90.){
       if(ptD>3&&ptD<5){
 	InitStandardUncertaintiesPPb2013DstarLowPtAss03();
       }
@@ -1807,16 +1807,16 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2013(Int_t meson,Doubl
 	printf("Methods for syst unc not ready yet for this pt(ass) bin  \n");
       }
     }
-    // 0.5 GeV/c
-    else if(TMath::Abs(minptAss-0.5)<0.0001){
+    // 0.3-1 GeV/c
+    else if(TMath::Abs(minptAss-0.3)<0.0001 && maxptAss==1.){
       if(ptD>3&&ptD<5){
-	InitStandardUncertaintiesPPb2013DstarLowPtAss05();
+	InitStandardUncertaintiesPPb2013DstarLowPtAss03to1();
       }
       else if(ptD>5&&ptD<8){
-	InitStandardUncertaintiesPPb2013DstarMidPtAss05();
+	InitStandardUncertaintiesPPb2013DstarMidPtAss03to1();
       }
       else if(ptD>8&&ptD<16){
-	InitStandardUncertaintiesPPb2013DstarHighPtAss05();
+	InitStandardUncertaintiesPPb2013DstarHighPtAss03to1();
       }
       else {
 	printf("Methods for syst unc not ready yet for this pt(ass) bin  \n");
@@ -1843,7 +1843,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2013(Int_t meson,Doubl
   }
   else if(meson==AliHFCorrelationUtils::kDplus){
     // 0.3 GeV/c
-    if(TMath::Abs(minptAss-0.3)<0.0001){
+    if(TMath::Abs(minptAss-0.3)<0.0001 && maxptAss>90.){
       if(ptD>3&&ptD<5){
 	InitStandardUncertaintiesPPb2013DplusLowPtAss03();
       }
@@ -1857,16 +1857,16 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2013(Int_t meson,Doubl
 	printf("Methods for syst unc not ready yet for this pt(ass) bin  \n");
       }
     }
-    // 0.5 GeV/c
-    else if(TMath::Abs(minptAss-0.5)<0.0001){
+    // 0.3-1 GeV/c
+    else if(TMath::Abs(minptAss-0.3)<0.0001 && maxptAss==1.){
       if(ptD>3&&ptD<5){
-	InitStandardUncertaintiesPPb2013DplusLowPtAss05();
+	InitStandardUncertaintiesPPb2013DplusLowPtAss03to1();
       }
       else if(ptD>5&&ptD<8){
-	InitStandardUncertaintiesPPb2013DplusMidPtAss05();
+	InitStandardUncertaintiesPPb2013DplusMidPtAss03to1();
       }
       else if(ptD>8&&ptD<16){
-	InitStandardUncertaintiesPPb2013DplusHighPtAss05();
+	InitStandardUncertaintiesPPb2013DplusHighPtAss03to1();
       }      
       else {
 	printf("Methods for syst unc not ready yet for this pt(ass) bin  \n");
@@ -2694,7 +2694,7 @@ TH1D* AliHFDhadronCorrSystUnc::GetVariedHisto(const TH1D *hIn,const TGraphAsymmE
 
 
 // START FROM DPLUS FOR PT(ASSOC)>0.3
-void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2010DplusLowPtAss03(){ Printf("TEMPORARY VALUES (PP 2010 ass 03)");
+void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2010DplusLowPtAss03(){ 
   fmeson=AliHFCorrelationUtils::kDzero;
   fstrmeson="Dplus";
   fstrptAss="ptAsMore03";
@@ -2861,7 +2861,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2010DplusLowPtAss03(){ 
   
 }
 
-void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2010DplusMidPtAss03(){ Printf("TEMPORARY VALUES (PP 2010 ass 03)");
+void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2010DplusMidPtAss03(){ 
 
   fmeson=AliHFCorrelationUtils::kDzero;
   fstrmeson="Dplus";
@@ -3028,7 +3028,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2010DplusMidPtAss03(){ 
 }
 
 
-void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2010DplusHighPtAss03(){ Printf("TEMPORARY VALUES (PP 2010 ass 03)");
+void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2010DplusHighPtAss03(){ 
   
   fmeson=AliHFCorrelationUtils::kDzero;
   fstrmeson="Dplus";
@@ -3200,7 +3200,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2010DplusHighPtAss03(){
 
 //////// HIGHER PT ASS THRESHOLDS
 
-void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2010DzeroLowPtAss05(){ 
+void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2010DzeroLowPtAss03to1(){ 
   Printf("Setting syst for D0 pp 2010 3-5 0.5 thr");
   fmeson=AliHFCorrelationUtils::kDzero;
   fstrmeson="Dzero";
@@ -3368,7 +3368,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2010DzeroLowPtAss05(){
   
 }
 
-void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2010DzeroMidPtAss05(){ 
+void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2010DzeroMidPtAss03to1(){ 
   Printf("Setting syst for D0 pp 2010 5-8 0.5 thr");
 
   fmeson=AliHFCorrelationUtils::kDzero;
@@ -3536,7 +3536,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2010DzeroMidPtAss05(){
 }
 
 
-void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2010DzeroHighPtAss05(){ 
+void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2010DzeroHighPtAss03to1(){ 
   Printf("Setting syst for D0 pp 2010 8-16 0.5 thr");
   
   fmeson=AliHFCorrelationUtils::kDzero;
@@ -3709,8 +3709,8 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2010DzeroHighPtAss05(){
 
 
 //--------------------------------------------------
-void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2010DstarLowPtAss05(){ 
-  Printf("Setting uncertainties for Dstar pp 2010, 3<pt(D)<5, pt(assoc)>0.5 GeV/c ");
+void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2010DstarLowPtAss03to1(){ 
+  Printf("Setting uncertainties for Dstar pp 2010, 3<pt(D)<5, 0.3<pt(assoc)<1 GeV/c ");
   fmeson=AliHFCorrelationUtils::kDstar;
   fstrmeson="Dstar";
   fstrptAss="ptAsMore05";
@@ -3877,8 +3877,8 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2010DstarLowPtAss05(){
 
 }
 
-void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2010DstarMidPtAss05(){ 
-  Printf("Setting uncertainties for Dstar pp 2010, 5<pt(D)<8, pt(assoc)>0.5 GeV/c ");
+void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2010DstarMidPtAss03to1(){ 
+  Printf("Setting uncertainties for Dstar pp 2010, 5<pt(D)<8, 0.3<pt(assoc)<1 GeV/c ");
   fmeson=AliHFCorrelationUtils::kDstar;
   fstrmeson="Dstar";
   fstrptAss="ptAsMore05";
@@ -4044,8 +4044,8 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2010DstarMidPtAss05(){
 
 
 
-void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2010DstarHighPtAss05(){
-  Printf("Setting uncertainties for Dstar pp 2010, 8<pt(D)<16, pt(assoc)>0.5 GeV/c ");  
+void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2010DstarHighPtAss03to1(){
+  Printf("Setting uncertainties for Dstar pp 2010, 8<pt(D)<16, 0.3<pt(assoc)<1 GeV/c ");  
   fmeson=AliHFCorrelationUtils::kDstar;
   fstrmeson="Dstar";
   fstrptAss="ptAsMore05";
@@ -4211,8 +4211,8 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2010DstarHighPtAss05(){
 
 
 
-void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2010DplusLowPtAss05(){ 
-  Printf("Setting uncertainties for Dplus pp 2010, 3<pt(D)<5, pt(assoc)>0.5 GeV/c ");
+void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2010DplusLowPtAss03to1(){ 
+  Printf("Setting uncertainties for Dplus pp 2010, 3<pt(D)<5, 0.3<pt(assoc)<1 GeV/c ");
   fmeson=AliHFCorrelationUtils::kDplus;
   fstrmeson="Dplus";
   fstrptAss="ptAsMore05";
@@ -4379,8 +4379,8 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2010DplusLowPtAss05(){
   
 }
 
-void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2010DplusMidPtAss05(){ Printf("TEMPORARY VALUES (PP 2010 ass 03)");
-  Printf("Setting uncertainties for Dstar pp 2010, 5<pt(D)<8, pt(assoc)>0.5 GeV/c ");
+void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2010DplusMidPtAss03to1(){ 
+  Printf("Setting uncertainties for Dstar pp 2010, 5<pt(D)<8, 0.3<pt(assoc)<1 GeV/c ");
   fmeson=AliHFCorrelationUtils::kDplus;
   fstrmeson="Dplus";
   fstrptAss="ptAsMore05";
@@ -4546,8 +4546,8 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2010DplusMidPtAss05(){ 
 }
 
 
-void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2010DplusHighPtAss05(){ Printf("TEMPORARY VALUES (PP 2010 ass 03)");
-  Printf("Setting uncertainties for Dstar pp 2010, 8<pt(D)<16, pt(assoc)>0.5 GeV/c ");  
+void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2010DplusHighPtAss03to1(){ 
+  Printf("Setting uncertainties for Dstar pp 2010, 8<pt(D)<16, 0.3<pt(assoc)<1 GeV/c ");  
   fmeson=AliHFCorrelationUtils::kDplus;
   fstrmeson="Dplus";
   fstrptAss="ptAsMore05";
@@ -5224,7 +5224,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2010DzeroHighPtAss1(){
 
 
 //--------------------------------------------------
-void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2010DstarLowPtAss1(){ Printf("TEMPORARY VALUES (PP 2010 ass 03)");
+void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2010DstarLowPtAss1(){ 
   Printf("Setting uncertainties for Dstar pp 2010, 3<pt(D)<5, pt(assoc)>1 GeV/c ");
   fmeson=AliHFCorrelationUtils::kDstar;
   fstrmeson="Dstar";
@@ -7761,8 +7761,8 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2013DplusHighPtAss03()
 
 //////// HIGHER PT ASS THRESHOLDS
 
-void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2013DzeroLowPtAss05(){ 
-  Printf("Setting uncertainties for Dzero pPb 2013, 3<pt(D)<5, pt(assoc)>0.5 GeV/c ");    
+void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2013DzeroLowPtAss03to1(){ 
+  Printf("Setting uncertainties for Dzero pPb 2013, 3<pt(D)<5, 0.3<pt(assoc)<1 GeV/c ");    
   fmeson=AliHFCorrelationUtils::kDzero;
   fstrmeson="Dzero";
   fstrptAss="ptAsMore05";
@@ -7929,8 +7929,8 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2013DzeroLowPtAss05(){
   
 }
 
-void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2013DzeroMidPtAss05(){ 
-  Printf("Setting uncertainties for Dzero pPb 2013, 5<pt(D)<8, pt(assoc)>0.5 GeV/c ");    
+void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2013DzeroMidPtAss03to1(){ 
+  Printf("Setting uncertainties for Dzero pPb 2013, 5<pt(D)<8, 0.3<pt(assoc)<1 GeV/c ");    
   fmeson=AliHFCorrelationUtils::kDzero;
   fstrmeson="Dzero";
   fstrptAss="ptAsMore05";
@@ -8096,8 +8096,8 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2013DzeroMidPtAss05(){
 }
 
 
-void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2013DzeroHighPtAss05(){ 
-  Printf("Setting uncertainties for Dzero pPb 2013, 8<pt(D)<16, pt(assoc)>0.5 GeV/c ");      
+void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2013DzeroHighPtAss03to1(){ 
+  Printf("Setting uncertainties for Dzero pPb 2013, 8<pt(D)<16, 0.3<pt(assoc)<1 GeV/c ");      
   fmeson=AliHFCorrelationUtils::kDzero;
   fstrmeson="Dzero";
   fstrptAss="ptAsMore05";
@@ -8268,8 +8268,8 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2013DzeroHighPtAss05()
 
 
 //--------------------------------------------------
-void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2013DstarLowPtAss05(){ 
-  Printf("Setting uncertainties for Dstar pPb 2013, 3<pt(D)<5, pt(assoc)>0.5 GeV/c ");      
+void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2013DstarLowPtAss03to1(){ 
+  Printf("Setting uncertainties for Dstar pPb 2013, 3<pt(D)<5, 0.3<pt(assoc)<1 GeV/c ");      
   fmeson=AliHFCorrelationUtils::kDstar;
   fstrmeson="Dstar";
   fstrptAss="ptAsMore05";
@@ -8436,8 +8436,8 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2013DstarLowPtAss05(){
 
 }
 
-void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2013DstarMidPtAss05(){ 
-  Printf("Setting uncertainties for Dstar pPb 2013, 5<pt(D)<8, pt(assoc)>0.5 GeV/c ");      
+void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2013DstarMidPtAss03to1(){ 
+  Printf("Setting uncertainties for Dstar pPb 2013, 5<pt(D)<8, 0.3<pt(assoc)<1 GeV/c ");      
   fmeson=AliHFCorrelationUtils::kDstar;
   fstrmeson="Dstar";
   fstrptAss="ptAsMore05";
@@ -8603,8 +8603,8 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2013DstarMidPtAss05(){
 
 
 
-void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2013DstarHighPtAss05(){ 
-  Printf("Setting uncertainties for Dstar pPb 2013, 8<pt(D)<16, pt(assoc)>0.5 GeV/c ");        
+void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2013DstarHighPtAss03to1(){ 
+  Printf("Setting uncertainties for Dstar pPb 2013, 8<pt(D)<16, 0.3<pt(assoc)<1 GeV/c ");        
   fmeson=AliHFCorrelationUtils::kDstar;
   fstrmeson="Dstar";
   fstrptAss="ptAsMore05";
@@ -8770,8 +8770,8 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2013DstarHighPtAss05()
 
 
 
-void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2013DplusLowPtAss05(){ 
-  Printf("Setting uncertainties for Dplus pPb 2013, 3<pt(D)<5, pt(assoc)>0.5 GeV/c ");        
+void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2013DplusLowPtAss03to1(){ 
+  Printf("Setting uncertainties for Dplus pPb 2013, 3<pt(D)<5, 0.3<pt(assoc)<1 GeV/c ");        
   fmeson=AliHFCorrelationUtils::kDplus;
   fstrmeson="Dplus";
   fstrptAss="ptAsMore05";
@@ -8938,8 +8938,8 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2013DplusLowPtAss05(){
   
 }
 
-void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2013DplusMidPtAss05(){ 
-  Printf("Setting uncertainties for Dplus pPb 2013, 5<pt(D)<8, pt(assoc)>0.5 GeV/c ");        
+void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2013DplusMidPtAss03to1(){ 
+  Printf("Setting uncertainties for Dplus pPb 2013, 5<pt(D)<8, 0.3<pt(assoc)<1 GeV/c ");        
   fmeson=AliHFCorrelationUtils::kDplus;
   fstrmeson="Dplus";
   fstrptAss="ptAsMore05";
@@ -9105,8 +9105,8 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2013DplusMidPtAss05(){
 }
 
 
-void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2013DplusHighPtAss05(){ 
-  Printf("Setting uncertainties for Dplus pPb 2013, 8<pt(D)<16, pt(assoc)>0.5 GeV/c ");          
+void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2013DplusHighPtAss03to1(){ 
+  Printf("Setting uncertainties for Dplus pPb 2013, 8<pt(D)<16, 0.3<pt(assoc)<1 GeV/c ");          
   fmeson=AliHFCorrelationUtils::kDplus;
   fstrmeson="Dplus";
   fstrptAss="ptAsMore05";

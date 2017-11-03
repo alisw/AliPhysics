@@ -28,17 +28,17 @@ class AliHFDhadronCorrSystUnc : public TNamed{
   AliHFDhadronCorrSystUnc(const char* name);
   ~AliHFDhadronCorrSystUnc();
   void InitEmptyHistosFromTemplate();
-  void InitStandardUncertaintiesPP2010(Int_t meson,Double_t ptD,Double_t minptAss);
-  void InitStandardUncertaintiesPPb2013(Int_t meson,Double_t ptD,Double_t minptAss);
+  void InitStandardUncertaintiesPP2010(Int_t meson,Double_t ptD,Double_t minptAss,Double_t maxptAss);
+  void InitStandardUncertaintiesPPb2013(Int_t meson,Double_t ptD,Double_t minptAss,Double_t maxptAss);
   void InitStandardUncertaintiesPPb2016(Int_t meson,Double_t ptD,Double_t minptAss,Double_t maxptAss);
   // Method with uncertainties for pp 2010, Dzero and D*+ and pt assoc> 0.3 GeV/c, with values used for HP2013
-  void InitStandardUncertaintiesPP2010DzeroLowPtAss03HP();
-  void InitStandardUncertaintiesPP2010DzeroMidPtAss03HP();
-  void InitStandardUncertaintiesPP2010DzeroHighPtAss03HP();
+  void InitStandardUncertaintiesPP2010DzeroLowPtAss03();
+  void InitStandardUncertaintiesPP2010DzeroMidPtAss03();
+  void InitStandardUncertaintiesPP2010DzeroHighPtAss03();
   
-  void InitStandardUncertaintiesPP2010DstarLowPtAss03HP();
-  void InitStandardUncertaintiesPP2010DstarMidPtAss03HP();
-  void InitStandardUncertaintiesPP2010DstarHighPtAss03HP();
+  void InitStandardUncertaintiesPP2010DstarLowPtAss03();
+  void InitStandardUncertaintiesPP2010DstarMidPtAss03();
+  void InitStandardUncertaintiesPP2010DstarHighPtAss03();
 
 
   // Method with uncertainties for pp 2010, all kinematic cases but those approved for HP2013
@@ -46,17 +46,17 @@ class AliHFDhadronCorrSystUnc : public TNamed{
   void InitStandardUncertaintiesPP2010DplusMidPtAss03();
   void InitStandardUncertaintiesPP2010DplusHighPtAss03();
 
-  void InitStandardUncertaintiesPP2010DzeroLowPtAss05();
-  void InitStandardUncertaintiesPP2010DzeroMidPtAss05();
-  void InitStandardUncertaintiesPP2010DzeroHighPtAss05();
+  void InitStandardUncertaintiesPP2010DzeroLowPtAss03to1();
+  void InitStandardUncertaintiesPP2010DzeroMidPtAss03to1();
+  void InitStandardUncertaintiesPP2010DzeroHighPtAss03to1();
 
-  void InitStandardUncertaintiesPP2010DstarLowPtAss05();
-  void InitStandardUncertaintiesPP2010DstarMidPtAss05();
-  void InitStandardUncertaintiesPP2010DstarHighPtAss05();
+  void InitStandardUncertaintiesPP2010DstarLowPtAss03to1();
+  void InitStandardUncertaintiesPP2010DstarMidPtAss03to1();
+  void InitStandardUncertaintiesPP2010DstarHighPtAss03to1();
 
-  void InitStandardUncertaintiesPP2010DplusLowPtAss05();
-  void InitStandardUncertaintiesPP2010DplusMidPtAss05();
-  void InitStandardUncertaintiesPP2010DplusHighPtAss05();
+  void InitStandardUncertaintiesPP2010DplusLowPtAss03to1();
+  void InitStandardUncertaintiesPP2010DplusMidPtAss03to1();
+  void InitStandardUncertaintiesPP2010DplusHighPtAss03to1();
 
 
   void InitStandardUncertaintiesPP2010DzeroLowPtAss1();
@@ -85,17 +85,17 @@ class AliHFDhadronCorrSystUnc : public TNamed{
   void InitStandardUncertaintiesPPb2013DplusMidPtAss03();
   void InitStandardUncertaintiesPPb2013DplusHighPtAss03();
 
-  void InitStandardUncertaintiesPPb2013DzeroLowPtAss05();
-  void InitStandardUncertaintiesPPb2013DzeroMidPtAss05();
-  void InitStandardUncertaintiesPPb2013DzeroHighPtAss05();
+  void InitStandardUncertaintiesPPb2013DzeroLowPtAss03to1();
+  void InitStandardUncertaintiesPPb2013DzeroMidPtAss03to1();
+  void InitStandardUncertaintiesPPb2013DzeroHighPtAss03to1();
 
-  void InitStandardUncertaintiesPPb2013DstarLowPtAss05();
-  void InitStandardUncertaintiesPPb2013DstarMidPtAss05();
-  void InitStandardUncertaintiesPPb2013DstarHighPtAss05();
+  void InitStandardUncertaintiesPPb2013DstarLowPtAss03to1();
+  void InitStandardUncertaintiesPPb2013DstarMidPtAss03to1();
+  void InitStandardUncertaintiesPPb2013DstarHighPtAss03to1();
 
-  void InitStandardUncertaintiesPPb2013DplusLowPtAss05();
-  void InitStandardUncertaintiesPPb2013DplusMidPtAss05();
-  void InitStandardUncertaintiesPPb2013DplusHighPtAss05();
+  void InitStandardUncertaintiesPPb2013DplusLowPtAss03to1();
+  void InitStandardUncertaintiesPPb2013DplusMidPtAss03to1();
+  void InitStandardUncertaintiesPPb2013DplusHighPtAss03to1();
 
 
   void InitStandardUncertaintiesPPb2013DzeroLowPtAss1();
