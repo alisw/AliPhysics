@@ -19,9 +19,11 @@
 #include <TString.h>
 #include <TText.h>
 
+
 #if false && __cplusplus >= 201103L
 #define ENABLE_MOVE_SEMANTICS 1
 #endif
+
 
 #define FORWARD_STANDARD_TYPES(__FUNC)          \
   __FUNC(BoolValue_t, kBOOL, fValueBool);       \
@@ -154,6 +156,10 @@ public:
   /// Create object by parsing string
   static AliFemtoConfigObject Parse(const std::string &);
 
+  /// Create object from string; if a map, also parse defaults and
+  /// insert any values missing in object with defaults.
+  static AliFemtoConfigObject ParseWithDefaults(const std::string &, const std::string &defaults);
+
   /// Create object in empty state
   AliFemtoConfigObject();
 
@@ -214,21 +220,33 @@ public:
 
 #endif // move-semantics
 
+  typedef std::pair<float,float> pair_of_floats;
 
   /// \class BuildStruct
   /// \brief helper class for building a mapping object
   class BuildMap {
   public:
+    BuildMap() {}
+
 #ifdef ENABLE_MOVE_SEMANTICS
     #define IMPL_BUILDITEM(__type, __a, __b) \
       BuildMap& operator()(const Key_t &key, const __type& val) { fMap[key] = val; return *this; }  \
-      BuildMap& operator()(const Key_t &key, __type && val) { fMap[key] = std::move(val); return *this; }
+      BuildMap& operator()(const Key_t &key, __type && val) { fMap.insert(std::make_pair(key, std::move(val))); return *this; }
+    #define IMPL_CASTED_BUILDITEM(__type, __savedtype) \
+      BuildMap& operator()(const Key_t &key, const __type& val) { fMap[key] = static_cast<__savedtype>(val); return *this; }  \
+      BuildMap& operator()(const Key_t &key, __type && val) { fMap.insert(std::make_pair(key, std::move(static_cast<__savedtype>(val)))); return *this; }
 #else
     #define IMPL_BUILDITEM(__type, __a, __b) \
-      BuildMap& operator()(const Key_t &key, const __type& val) { fMap[key] = val; return *this; }
+      BuildMap& operator()(const Key_t &key, const __type& val) { fMap.insert(std::make_pair(key, val)); return *this; }
+    #define IMPL_CASTED_BUILDITEM(__type, __savedtype) \
+      BuildMap& operator()(const Key_t &key, const __type& val) { fMap.insert(std::make_pair(key, static_cast<__savedtype>(val))); return *this; }
 #endif
 
     FORWARD_STANDARD_TYPES(IMPL_BUILDITEM);
+
+    IMPL_CASTED_BUILDITEM(Int_t, IntValue_t);
+    IMPL_CASTED_BUILDITEM(UInt_t, IntValue_t);
+    IMPL_CASTED_BUILDITEM(pair_of_floats, RangeValue_t);
 
     IMPL_BUILDITEM(AliFemtoConfigObject, 0, 0);
     #undef IMPL_BUILDITEM
@@ -285,7 +303,40 @@ public:
   bool load_rangelist(RangeListValue_t &r) const {
     return is_rangelist() ? r = fValueRangeList, true : load_rangelist(r); }
   bool load_ranges(RangeListValue_t &r) const {
-    return is_range() ? r = RangeListValue_t({fValueRange}), true : load_rangelist(r); }
+    if (is_range()) {
+      r.clear();
+      r.push_back(fValueRange);
+      return true;
+    } else {
+      return load_rangelist(r);
+    }
+    // return is_range() ? r.clear(), r.push_back(fValueRange), true : load_rangelist(r);
+  }
+
+  bool load_range(std::pair<float, float> &r) const { return is_range() ? r = fValueRange, true : false; }
+
+
+
+  /// \defgroup Find&Load Methods
+  /// @{
+  /// Copies item identified by *key*, returns true if found
+  #define IMPL_FINDANDLOAD(__dest_type, __tag, __source)            \
+    bool find_and_load(const Key_t &key, __dest_type &dest) const { \
+      if (!is_map()) { return false; }                        \
+      auto found = fValueMap.find(key);                       \
+      if (found == fValueMap.end()) { return false; }         \
+      if (found->second.fTypeTag != __tag) { return false; }  \
+      dest = found->second. __source;                         \
+      return true; }
+
+    FORWARD_STANDARD_TYPES(IMPL_FINDANDLOAD)
+
+    IMPL_FINDANDLOAD(pair_of_floats, kRANGE, fValueRange);
+    IMPL_FINDANDLOAD(int, kINT, fValueInt);
+    IMPL_FINDANDLOAD(unsigned int, kINT, fValueInt);
+
+  #undef IMPL_FINDANDLOAD
+  /// @}
 
 
   /// Remove and returns pointer to object at *index* if an array
@@ -309,27 +360,61 @@ public:
   template <typename ReturnType>
   AliFemtoConfigObject* pop(const Key_t &key, const ReturnType &default_);
 
+  /// Return copy of object with a key removed from map.
+  /// If not a map, or key not present, object is simply copied
+  AliFemtoConfigObject WithoutKey(const Key_t &key) const;
+
+  /// Return copy of object with given keys removed
+  AliFemtoConfigObject WithoutKeys(const std::vector<Key_t>&) const;
+
   /// \defgroup Pop&Load Methods
   /// @{
   /// Removes item identified by *key*
 
-#define IMPL_POPANDLOAD(__dest_type, __tag, __source)      \
-  bool pop_and_load(const Key_t &key, __dest_type &dest) { \
-    if (!is_map()) { return false; }                       \
-    auto found = fValueMap.find(key);                      \
-    if (found == fValueMap.end()) { return false; }        \
-    if (found->second.fTypeTag != __tag) { return false; } \
-    dest = found->second. __source;                        \
-    fValueMap.erase(found); return true; }
+  #define IMPL_POPANDLOAD(__dest_type, __tag, __source)      \
+    bool pop_and_load(const Key_t &key, __dest_type &dest) { \
+      if (!is_map()) { return false; }                       \
+      auto found = fValueMap.find(key);                      \
+      if (found == fValueMap.end()) { return false; }        \
+      if (found->second.fTypeTag != __tag) { return false; } \
+      dest = found->second. __source;                        \
+      fValueMap.erase(found); return true; }
 
-  FORWARD_STANDARD_TYPES(IMPL_POPANDLOAD)
+    FORWARD_STANDARD_TYPES(IMPL_POPANDLOAD)
 
-  typedef std::pair<float,float> pair_of_floats;
-  IMPL_POPANDLOAD(pair_of_floats, kRANGE, fValueRange);
+    IMPL_POPANDLOAD(pair_of_floats, kRANGE, fValueRange);
+    IMPL_POPANDLOAD(int, kINT, fValueInt);
+    IMPL_POPANDLOAD(unsigned int, kINT, fValueInt);
 
-#undef IMPL_POPANDLOAD
+  #undef IMPL_POPANDLOAD
 
-  /// }@
+  /// @}
+
+  /// \class Popper
+  /// \brief Struct used for 'poping' many values from object
+  struct Popper {
+    AliFemtoConfigObject* src;
+    Popper(const AliFemtoConfigObject &obj);
+    virtual ~Popper();
+
+    template <typename T>
+    Popper& operator()(const Key_t &key, T &dest) {
+      src->pop_and_load(key, dest); return *this; }
+
+    Popper& WarnOfRemainingItems() {
+      src->WarnOfRemainingItems();
+      return *this;
+    }
+  };
+
+  Popper pop_all() const { return Popper(*this); }
+
+  /// return a string of valid JSON that may be parsed by other
+  /// languages into their equivalent data types.
+  ///
+  /// Similar to Stringify method, this output is valid JSON.
+  ///
+  std::string as_JSON_string() const;
 
   /// A general template method for building objects with config object
   ///
@@ -338,10 +423,31 @@ public:
   template <typename T>
   T* Construct() const;
 
+  /// Consume this config object while constructing new class
+  ///
+  /// \param warn Will print warning if there are remaining elements
+  ///   in this config object. This is the only way to be notified of
+  ///   key "typos" in the config definition
+  ///
+  /// \return New object of type whatever
+  template <typename T>
+  T* Into(bool warn=true);
+
   /// Pretty-print the value
   TString Stringify(const bool pretty=true) const;
 
-  /// Print warning that multiple
+  /// Perform a "deep" update of object into this map object.
+  /// If either is not a map, do nothing.
+  /// Loop through keys in "default" object, if any key is missing
+  /// in `this`, copy value over. If both keys point to maps, recursively
+  /// call SetDefault on thses sub-objects.
+  ///
+  void SetDefault(const AliFemtoConfigObject &default_mapobj);
+#ifdef ENABLE_MOVE_SEMANTICS
+  void SetDefault(AliFemtoConfigObject &&default_mapobj);
+#endif
+
+/// Print warning that multiple
   void WarnOfRemainingItems(std::ostream& out=std::cerr) const;
 
   // ========================
@@ -428,6 +534,9 @@ protected:
     return "--";
   }
 
+  static std::vector<std::string> split_key(Key_t key);
+  MapValue_t::iterator find_item(Key_t key);
+
 private:
 
   void _DeleteValue();
@@ -456,7 +565,20 @@ public:
 
 protected:
   TText fTitle;
+  TText fBody;
 };
+
+inline
+AliFemtoConfigObject::Popper::Popper(const AliFemtoConfigObject &obj)
+: src(new AliFemtoConfigObject(obj))
+{}
+
+inline
+AliFemtoConfigObject::Popper::~Popper()
+{
+  delete src;
+}
+
 
 inline
 void
@@ -668,13 +790,25 @@ AliFemtoConfigObject* AliFemtoConfigObject::pop(const Key_t &key, const ReturnTy
   return new AliFemtoConfigObject(default_);
 }
 
-
 template <typename T>
 T* AliFemtoConfigObject::Construct() const
 {
   return new T(*this);
 }
 
+
+/*
+template <>
+AliFemtoConfigObject::Popper&
+AliFemtoConfigObject::Popper::operator()<int>(const Key_t &key, int &dest) {
+  src->pop_and_load(key, (Int_t&)dest); return *this; }
+
+template <>
+AliFemtoConfigObject::Popper&
+AliFemtoConfigObject::Popper::operator()<UInt_t>(const Key_t &key, UInt_t &dest) {
+  src->pop_and_load(key, (Int_t&)dest); return *this; }
+
+*/
 
 #undef FORWARD_STANDARD_TYPES
 

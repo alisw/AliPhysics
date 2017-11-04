@@ -167,11 +167,12 @@ AliFemtoConfigObject*
 AliFemtoConfigObject::pop(const Key_t &key)
 {
   AliFemtoConfigObject *result = nullptr;
+
   if (is_map()) {
-    auto it = fValueMap.find(key);
-    if (it != fValueMap.end()) {
-      result = new AliFemtoConfigObject(std::move(it->second));
-      fValueMap.erase(it);
+    auto found = fValueMap.find(key);
+    if (found != fValueMap.end()) {
+      result = new AliFemtoConfigObject(std::move(found->second));
+      fValueMap.erase(found);
     }
   }
   return result;
@@ -395,8 +396,10 @@ AliFemtoConfigObject::Streamer(TBuffer &buff)
 AliFemtoConfigObject::Painter::Painter(AliFemtoConfigObject &data):
 fData(&data)
 , fTitle(0.3, 0.9, "[-] AliFemtoConfigObject")
+, fBody(0.3, 0.8, "")
 {
   // std::cout << "[AliFemtoConfigObjectPainter::AliFemtoConfigObjectPainter]\n";
+  fBody.SetTextSize(18);
 }
 
 void
@@ -416,6 +419,26 @@ AliFemtoConfigObject::Painter::Paint()
   // t->SetTextAngle(45);
   t->Draw();
 
+
+  TString result(fData->Stringify(true));
+/*
+  if (fData->is_map()) {
+    for (auto &pair : fData->fValueMap) {
+      result += pair.first + ": ";
+      if (pair.second.is_map()) {
+        aresult += "{ [+] }\n";
+      } if (pair.second.is_float()) {
+        pair += TString::Format("%f", )
+      }
+
+    }
+
+  }
+*/
+
+
+  fBody.SetText(0.3, 0.8, result);
+  fBody.Draw();
 }
 
 
@@ -483,6 +506,35 @@ AliFemtoConfigObject::Parse(const std::string &src)
 
 }
 
+AliFemtoConfigObject
+AliFemtoConfigObject::ParseWithDefaults(const std::string &src, const std::string &defaults)
+{
+  AliFemtoConfigObject obj = Parse(src);
+  if (obj.is_map()) {
+    auto d = Parse(defaults);
+    obj.SetDefault(d);
+  }
+  return obj;
+}
+
+void
+AliFemtoConfigObject::SetDefault(const AliFemtoConfigObject &d)
+{
+  // only proceed if both are maps
+  if (!is_map() || !d.is_map()) {
+    return;
+  }
+
+  for (auto &kv_pair : d.fValueMap) {
+    auto found = fValueMap.find(kv_pair.first);
+    if (found == fValueMap.end()) {
+      fValueMap.emplace(kv_pair.first, kv_pair.second);
+    }
+    else if (found->second.is_map() && kv_pair.second.is_map()) {
+      found->second.SetDefault(kv_pair.second);
+    }
+  }
+}
 
 #define INT_PATTERN "\\-?\\d+"
 #define FLT_PATTERN "\\-?(?:inf|nan|(?:\\d+\\.\\d*|\\.\\d+)(?:e[+\\-]?\\d+)?|\\d+e[+\\-]?\\d+)"
@@ -560,6 +612,25 @@ static const std::regex
 #endif
 
 std::vector<std::string>
+AliFemtoConfigObject::split_key(Key_t key)
+{
+  std::smatch match;
+  std::vector<std::string> result;
+  if (std::regex_match(key.cbegin(), key.cend(), match, KEY_RX)) {
+    for (auto ptr = match[0].first, stop = match[0].second;
+         std::regex_search(ptr, stop, match, ID_RX);
+         ptr = match[0].second + 1) {
+      result.emplace_back(match[0].first, match[0].second);
+      if (match[0].second == key.cend()) {
+        break;
+      }
+    }
+  }
+  return result;
+}
+
+
+std::vector<AliFemtoConfigObject::Key_t>
 parse_map_key_unchecked(const StringIter_t& it, const StringIter_t stop)
 {
   std::smatch match;
@@ -637,7 +708,6 @@ AliFemtoConfigObject::ParseMap(StringIter_t& it, const StringIter_t stop)
       // load key
       if (!std::regex_search(it, stop, match, KEY_RX)) {
         // throw std::runtime_error("Expected a Key or '}", it);
-
       }
 
       std::string key = match.str();
@@ -645,17 +715,12 @@ AliFemtoConfigObject::ParseMap(StringIter_t& it, const StringIter_t stop)
 
       auto keys = parse_map_key_unchecked(match[0].first, match[0].second);
 
-      // std::cout << " Matched key " << key << "\n";
-
       if (!std::regex_search(match[0].second, stop, match, COLON_RX)) {
           // throw std::runtime_error("Expected colon after key");
           throw UnexpectedCharacter(START, "Map", "colon after key");
       }
       it = match[0].second;
-
-      // std::cout << " parsing rest: " << std::string(it, stop) << "\n";
       AliFemtoConfigObject value = Parse(it, stop);
-      // std::cout << " parsed " << value << "\n";
 
       if (std::regex_search(it, stop, match, COMMA_RX)) {
           it = match[0].second;
@@ -781,16 +846,22 @@ namespace std {
              ^ (std::hash<Range_t::second_type>{}(pair.second) << 1);
     }
 
+    ULong_t operator()(AliFemtoConfigObject::ArrayValue_t const& array) const {
+      using Item_t = AliFemtoConfigObject::ArrayValue_t::value_type;
+
+      return std::accumulate(
+        array.cbegin(), array.cend(), 0,
+        [] (ULong_t hash, const Item_t &obj) { return obj.Hash() ^ (hash << 1); });
+    }
 
     ULong_t operator()(AliFemtoConfigObject::RangeListValue_t const& list) const {
       using Item_t = AliFemtoConfigObject::RangeListValue_t::value_type;
 
       return std::accumulate(
         list.cbegin(), list.cend(), 0,
-        [&] (ULong_t a, const Item_t &pair) { return a ^ (operator()(pair) << 1);
-      });
+        [&] (ULong_t a, const Item_t &pair) {
+          return operator()(pair) ^ (a << 1); });
     }
-
   };
 }
 
@@ -798,7 +869,9 @@ namespace std {
 ULong_t
 AliFemtoConfigObject::Hash() const
 {
-  ULong_t result = TObject::Hash() ^ std::hash<int>{}(fTypeTag);
+  static const ULong_t MAGIC_HASH_NUMBER = 3527539;
+
+  ULong_t result = MAGIC_HASH_NUMBER ^ std::hash<int>{}(fTypeTag);
 
   switch (fTypeTag) {
     case kEMPTY: return result;
@@ -810,10 +883,6 @@ AliFemtoConfigObject::Hash() const
     case kRANGELIST: return result ^ std::hash<AliFemtoConfigObject>{}(fValueRangeList);
 
     case kARRAY:
-      return std::accumulate(
-        fValueArray.cbegin(), fValueArray.cend(), result,
-        [] (ULong_t hash, const AliFemtoConfigObject &obj) {
-          return hash ^ (obj.Hash() << 1); });
 
     case kMAP:
       return std::accumulate(
@@ -825,5 +894,134 @@ AliFemtoConfigObject::Hash() const
   }
 
   return 0;
+}
+
+
+std::string AliFemtoConfigObject::as_JSON_string() const
+{
+  if (is_empty()) {
+    return "null";
+  }
+
+  std::stringstream ss;
+  if (is_map()) {
+    ss << "{";
+    std::string seperator = "";
+    for (const auto &pair : fValueMap) {
+      ss << seperator << "\"" << pair.first << "\": "
+         << pair.second.as_JSON_string();
+      seperator = ", ";
+    }
+    ss << "}";
+  }
+  else if (is_array()) {
+    ss << "[";
+    std::string seperator = "";
+    for (const auto &item : fValueArray) {
+      ss << seperator << item.as_JSON_string();
+      seperator = ", ";
+    }
+    ss << "]";
+  }
+  else if (is_range()) {
+    ss << "{\"MIN\": " << std::get<0>(fValueRange)
+       << ", \"MAX\": " << std::get<1>(fValueRange)
+       << "}";
+  }
+  else if (is_rangelist()) {
+    ss << "[";
+    std::string seperator = "";
+    for (const auto &item : fValueRangeList) {
+      ss << "{\"MIN\": " << std::get<0>(item)
+         << ", \"MAX\": " << std::get<1>(item)
+         << "}";
+      seperator = ", ";
+    }
+    ss << "]";
+  }
+  else if (is_int()) {
+    ss << fValueInt;
+  }
+  else if (is_float()) {
+    ss << fValueFloat;
+  }
+  else if (is_bool()) {
+    ss << (fValueBool ? "true" : "false");
+  }
+  else if (is_str()) {\
+    ss << '"' << fValueString << '"';
+  }
+
+  return ss.str();
+}
+
+AliFemtoConfigObject::MapValue_t::iterator
+AliFemtoConfigObject::find_item(const AliFemtoConfigObject::Key_t key)
+{
+  auto it = key.begin(),
+       stop = key.end();
+
+  std::smatch match;
+  if (!is_map() || !std::regex_search(it, stop, match, KEY_RX)) {
+    return AliFemtoConfigObject::MapValue_t::iterator();
+  }
+
+  auto keys = parse_map_key_unchecked(match[0].first, match[0].second);
+  auto next_key = keys.begin();
+
+  AliFemtoConfigObject::MapValue_t::iterator found = fValueMap.find(*next_key);
+
+  while (++next_key != keys.end()) {
+    if (!found->second.is_map()) {
+      return AliFemtoConfigObject::MapValue_t::iterator();
+    }
+    found = found->second.fValueMap.find(*next_key);
+  }
+
+  return found;
+}
+
+
+AliFemtoConfigObject
+AliFemtoConfigObject::WithoutKey(const Key_t &key) const
+{
+  AliFemtoConfigObject result(*this);
+
+  AliFemtoConfigObject *ptr = &result,
+                       *container = nullptr;
+
+  auto keys = split_key(key);
+
+  for (auto &subkey : keys) {
+    if (ptr->is_map()) {
+      auto found = ptr->fValueMap.find(subkey);
+      if (found == ptr->fValueMap.end()) {
+        container = nullptr;
+        break;
+      }
+      container = ptr;
+      ptr = &found->second;
+    } else {
+      container = nullptr;
+      break;
+    }
+  }
+
+  if (container) {
+    auto it = container->fValueMap.find(keys.back());
+    container->fValueMap.erase(it);
+  }
+
+  return result;
+}
+
+AliFemtoConfigObject
+AliFemtoConfigObject::WithoutKeys(const std::vector<Key_t> &keys) const
+{
+  AliFemtoConfigObject result(*this);
+  for (auto &key : keys) {
+    delete result.pop(key);
+  }
+  return result;
 }
 
