@@ -507,6 +507,35 @@ if(fReadMC){
  if(fCalculateWeight) GetPi0EtaWeight(fSprsPi0EtaWeightCal);
 
  }
+
+  //////////////////
+  // Tigger Check //
+  /////////////////
+
+
+  //-------------------selecting trigger for calorimeter( EMCAL + DCAL )
+  TString firedTrigger;
+  TString TriggerEG1("EG1");
+  TString TriggerEG2("EG2");
+  TString TriggerDG1("DG1");
+  TString TriggerDG2("DG2");
+    
+  if(fAOD) firedTrigger = fAOD->GetFiredTriggerClasses();
+    
+  Bool_t EG1tr = kFALSE;
+  Bool_t EG2tr = kFALSE;
+  if(firedTrigger.Contains(TriggerEG1))EG1tr = kTRUE;
+  if(firedTrigger.Contains(TriggerEG2))EG2tr = kTRUE;
+    
+  if(fEMCEG1){if(!firedTrigger.Contains(TriggerEG1))return;}
+  if(fEMCEG2){if(!firedTrigger.Contains(TriggerEG2))return;}
+  if(fDCalDG1){if(!firedTrigger.Contains(TriggerDG1))return;}
+  if(fDCalDG2){if(!firedTrigger.Contains(TriggerDG2))return;}
+
+  fNevents->Fill(3);
+
+
+
   //////////////////
   // Multiplicity //
   /////////////////
@@ -578,31 +607,7 @@ if(fReadMC){
   fSparseMulti->Fill(fvalueMulti);    // multiplicity from tracklets only, not from class alimultselection
 
 
-   //////////////////
-  // Tigger Check //
-  /////////////////
 
-
-  //-------------------selecting trigger for calorimeter( EMCAL + DCAL )
-  TString firedTrigger;
-  TString TriggerEG1("EG1");
-  TString TriggerEG2("EG2");
-  TString TriggerDG1("DG1");
-  TString TriggerDG2("DG2");
-    
-  if(fAOD) firedTrigger = fAOD->GetFiredTriggerClasses();
-    
-  Bool_t EG1tr = kFALSE;
-  Bool_t EG2tr = kFALSE;
-  if(firedTrigger.Contains(TriggerEG1))EG1tr = kTRUE;
-  if(firedTrigger.Contains(TriggerEG2))EG2tr = kTRUE;
-    
-  if(fEMCEG1){if(!firedTrigger.Contains(TriggerEG1))return;}
-  if(fEMCEG2){if(!firedTrigger.Contains(TriggerEG2))return;}
-  if(fDCalDG1){if(!firedTrigger.Contains(TriggerDG1))return;}
-  if(fDCalDG2){if(!firedTrigger.Contains(TriggerDG2))return;}
-
-  fNevents->Fill(3);
         
  
   fpidResponse = fInputHandler->GetPIDResponse();
@@ -1177,3 +1182,4 @@ void AliAnalysisTaskHFEMultiplicity::Terminate(Option_t *)
   
 }
 //_________________________________________________________________________
+
