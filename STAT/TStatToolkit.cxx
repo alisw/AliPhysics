@@ -1696,26 +1696,32 @@ void TStatToolkit::MakeAnchorAlias(TTree * tree, TString& sTrendVars, Int_t doCh
       }
     }
     if (!isOK) continue;
-    for (Int_t itype=0; itype<3; itype++){
-      TString aName=TString::Format("absDiff.%s_%s",variables[0].Data(), aType[itype]);
-      TString aValue="";
-      if (itype<2){
-        aValue=TString::Format("abs(%s-%s)>%s",variables[0].Data(), variables[1].Data(),variables[2+itype].Data());  // Warning or Error
-      }else{
-        aValue=TString::Format("abs(%s-%s)<%s",variables[0].Data(), variables[1].Data(),variables[2+itype].Data());  // Physics acreptable inside
+    for (Int_t itype=0; itype<3; itype++) {
+      TString aName = TString::Format("absDiff.%s_%s", variables[0].Data(), aType[itype]);
+      TString aValue = "";
+      if (itype < 2) {
+        aValue = TString::Format("abs(%s-%s)>%s", variables[0].Data(), variables[1].Data(),
+                                 variables[2 + itype].Data());  // Warning or Error
+      } else {
+        aValue = TString::Format("abs(%s-%s)<%s", variables[0].Data(), variables[1].Data(),
+                                 variables[2 + itype].Data());  // Physics acceptable inside
       }
-      tree->SetAlias(aName.Data(),aValue.Data());
-      if ((doCheck&2)>0){
-        TTreeFormula *form=new TTreeFormula("dummy",aName.Data(),tree);
-        if (form->GetTree()==NULL){
-          isOK=kFALSE;
-          ::Error("makeAnchorAlias","Alias not valid  \t%s\t%s", aName.Data(),aValue.Data());
+      tree->SetAlias(aName.Data(), aValue.Data());
+      if ((doCheck & 2) > 0) {
+        TTreeFormula *form = new TTreeFormula("dummy", aName.Data(), tree);
+        if (form->GetTree() == NULL) {
+          isOK = kFALSE;
+          ::Error("makeAnchorAlias", "Alias not valid  \t%s\t%s", aName.Data(), aValue.Data());
         }
       }
-      if (verbose>0){
-        ::Info("makeAnchorAlias","SetAlias\t%s\t%s", aName.Data(),aValue.Data());
+      if (verbose > 0) {
+        ::Info("makeAnchorAlias", "SetAlias\t%s\t%s", aName.Data(), aValue.Data());
       }
     }
+    TString aName = TString::Format("absDiff.%s_", variables[0].Data());
+    tree->SetAlias((aName+"_WarningBand").Data(), variables[2+0].Data());
+    tree->SetAlias((aName+"_OutlierBand").Data(), variables[2+1].Data());
+    tree->SetAlias((aName+"_PhyAccBand").Data(), variables[2+2].Data());
 
     delete descriptor;
   }
