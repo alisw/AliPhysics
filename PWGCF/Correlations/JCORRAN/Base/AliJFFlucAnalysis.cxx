@@ -901,16 +901,16 @@ void AliJFFlucAnalysis::CalculateQvectorsQC(){
 		/////////////////////////////////////////////////
 
 		for(int ih=0; ih<kNH; ih++){
-			for(int ik=0; ik<nKL; ik++){
-				TComplex q = TComplex( TMath::Cos(ih*phi), TMath::Sin(ih*phi) );
-				QvectorQC[ih] += q;
-				if( TMath::Abs(eta) > 0.4 ){  // this is for normalized SC ( denominator needs an eta gap )
-					int isub = 0;
-					if( eta > 0 )
-						isub = 1;
-					QvectorQCeta10[ih][isub] += q;
-				}
+			//for(int ik=0; ik<nKL; ik++){
+			TComplex q = TComplex( TMath::Cos(ih*phi), TMath::Sin(ih*phi) );
+			QvectorQC[ih] += q;
+			if( TMath::Abs(eta) > 0.4 ){  // this is for normalized SC ( denominator needs an eta gap )
+				int isub = 0;
+				if( eta > 0 )
+					isub = 1;
+				QvectorQCeta10[ih][isub] += q;
 			}
+			//}
 		}
 	} // track loop done.
 }
