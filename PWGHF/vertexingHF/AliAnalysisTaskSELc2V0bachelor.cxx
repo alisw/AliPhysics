@@ -85,6 +85,7 @@ AliAnalysisTaskSELc2V0bachelor::AliAnalysisTaskSELc2V0bachelor() : AliAnalysisTa
   fOutputAll(0),
   fOutputPIDBach(0),
   fCEvents(0),
+  fEventCounter(0),
   fCounter(0),
   fAnalCuts(0),
   fUseOnTheFlyV0(kFALSE),
@@ -96,6 +97,7 @@ AliAnalysisTaskSELc2V0bachelor::AliAnalysisTaskSELc2V0bachelor() : AliAnalysisTa
   fVtx1(0),
   fBzkG(0),
   fAdditionalChecks(kFALSE),
+  fFillSubSampleHist(kFALSE),
   fTrackRotation(kFALSE),
   fOutputPIDBachTR(0),
   fMinAngleForRot(5*TMath::Pi()/6),
@@ -130,6 +132,7 @@ AliAnalysisTaskSELc2V0bachelor::AliAnalysisTaskSELc2V0bachelor(const Char_t* nam
   fOutputAll(0),
   fOutputPIDBach(0),
   fCEvents(0),
+  fEventCounter(0),
   fCounter(0),
   fAnalCuts(analCuts),
   fUseOnTheFlyV0(useOnTheFly),
@@ -141,6 +144,7 @@ AliAnalysisTaskSELc2V0bachelor::AliAnalysisTaskSELc2V0bachelor(const Char_t* nam
   fVtx1(0),
   fBzkG(0),
   fAdditionalChecks(additionalChecks),
+  fFillSubSampleHist(kFALSE),
   fTrackRotation(trackRotation),
   fOutputPIDBachTR(0),
   fMinAngleForRot(5*TMath::Pi()/6),
@@ -367,6 +371,8 @@ void AliAnalysisTaskSELc2V0bachelor::UserExec(Option_t *)
     MakeSingleAnalysisForSystK0SP(aodEvent,mcArray,fAnalCuts);
     if(fDoSingleAnalysisForSystK0SP==2) return;
   }
+
+  fEventCounter++;
 
   Int_t nSelectedAnal = 0;
   MakeAnalysisForLc2prK0S(aodEvent,arrayLctopKos,mcArray, nSelectedAnal, fAnalCuts);
@@ -1185,6 +1191,16 @@ void AliAnalysisTaskSELc2V0bachelor::DefineK0SHistos()
   fOutputPIDBach->Add(pidBachmomentumDistributionK0SvspOffline);
   fOutputPIDBach->Add(pidBachArmenterosPodK0SOffline);
   fOutputPIDBach->Add(pidBachArmenterosPodLcOffline);
+
+  if(fFillSubSampleHist){
+    nameHisto="histLcMassByK0SSubSampleOffline";
+    titleHisto="#Lambda_{c} invariant mass (by K^{0}_{S}) vs p_{T} vs Sub ID";
+    Int_t bins_subsample[3]=		{1000,24,25};
+    Double_t xmin_subsample[3]={mLcPDG-0.25,0,-0.5};
+    Double_t xmax_subsample[3]={mLcPDG+0.25,24.,24.5};
+    THnSparse *spectrumLcMassOfflineByK0SSubSample = new THnSparseF(nameHisto.Data(),titleHisto.Data(),3,bins_subsample,xmin_subsample,xmax_subsample);
+    fOutputPIDBach->Add(spectrumLcMassOfflineByK0SSubSample);
+  }
 
   nameHisto="histArmPodK0SOffline0";
   titleHisto="V0-candidate Armenteros-Podolanski distribution; #frac{p_{L}^{+}-p_{L}^{-}}{p_{L}^{+}+p_{L}^{-}}; p_{T}^{+} [GeV/c]";
@@ -2234,15 +2250,23 @@ void AliAnalysisTaskSELc2V0bachelor::DefineK0SHistos()
     TH2D *hMassvsPtInclusiveK0S = new TH2D("hMassvsPtInclusiveK0S","",100,mK0SPDG-0.05,mK0SPDG+0.05,20,0.,10.);
     TH2D *hMassvsPtInclusiveK0SSgn = new TH2D("hMassvsPtInclusiveK0SSgn","",100,mK0SPDG-0.05,mK0SPDG+0.05,20,0.,10.);
     TH3D *hMassvsPtInclusiveLambda = new TH3D("hMassvsPtInclusiveLambda","",100,mLPDG-0.025,mLPDG+0.025,20,0.,10.,62,0.,62);
+    TH3D *hMassvsPtInclusiveLambdaLoosePID = new TH3D("hMassvsPtInclusiveLambdaLoosePID","",100,mLPDG-0.025,mLPDG+0.025,20,0.,10.,62,0.,62);
     TH3D *hMassvsPtInclusiveLambdaSgn = new TH3D("hMassvsPtInclusiveLambdaSgn","",100,mLPDG-0.025,mLPDG+0.025,20,0.,10.,62,0.,62);
+    TH3D *hMassvsPtInclusiveLambdaLoosePIDSgn = new TH3D("hMassvsPtInclusiveLambdaLoosePIDSgn","",100,mLPDG-0.025,mLPDG+0.025,20,0.,10.,62,0.,62);
     TH3D *hMassvsPtInclusiveLambdaPID = (TH3D*)hMassvsPtInclusiveLambda->Clone();
     TH3D *hMassvsPtInclusiveLambdaPIDSgn = (TH3D*)hMassvsPtInclusiveLambdaSgn->Clone();
+    TH3D *hMassvsPtInclusiveLambdaCosThetaStarPID = new TH3D("hMassvsPtInclusiveLambdaCosThetaStarPID","",100,mLPDG-0.025,mLPDG+0.025,20,0.,10.,40,-1.,1.);
+    TH3D *hMassvsPtInclusiveLambdaCosThetaStarPIDSgn = new TH3D("hMassvsPtInclusiveLambdaCosThetaStarPIDSgn","",100,mLPDG-0.025,mLPDG+0.025,20,0.,10.,40,-1.,1.);
     fOutputAll->Add(hMassvsPtInclusiveK0S);
     fOutputAll->Add(hMassvsPtInclusiveK0SSgn);
     fOutputAll->Add(hMassvsPtInclusiveLambda);
+    fOutputAll->Add(hMassvsPtInclusiveLambdaLoosePID);
     fOutputPIDBach->Add(hMassvsPtInclusiveLambdaPID);
     fOutputAll->Add(hMassvsPtInclusiveLambdaSgn);
+    fOutputAll->Add(hMassvsPtInclusiveLambdaLoosePIDSgn);
     fOutputPIDBach->Add(hMassvsPtInclusiveLambdaPIDSgn);
+    fOutputPIDBach->Add(hMassvsPtInclusiveLambdaCosThetaStarPID);
+    fOutputPIDBach->Add(hMassvsPtInclusiveLambdaCosThetaStarPIDSgn);
   }
 
   /*
@@ -2449,6 +2473,12 @@ void AliAnalysisTaskSELc2V0bachelor::MakeSingleAnalysisForSystK0SP(AliAODEvent *
     //Should decay before TPC 
     Double_t dR = TMath::Sqrt(v0->DecayVertexV0X()*v0->DecayVertexV0X()+v0->DecayVertexV0Y()*v0->DecayVertexV0Y());
     if(dR>40.) continue;
+    if(dR<2.) continue;
+
+    //Use the topological cuts for K0s to improve S/B
+    if(v0->GetDCA()>cutVars[fAnalCuts->GetGlobalIndex(8,0)]) continue;
+    if(v0->CosPointingAngle(pos)<cutVars[fAnalCuts->GetGlobalIndex(9,0)]) continue;
+
 
     Int_t LType = 0;
     if(TMath::Abs(v0->MassLambda()-mLPDG)<0.02) LType += 1;
@@ -2580,11 +2610,32 @@ void AliAnalysisTaskSELc2V0bachelor::MakeSingleAnalysisForSystK0SP(AliAODEvent *
           break;
       }
       ((TH3D*)(fOutputAll->FindObject("hMassvsPtInclusiveLambda")))->Fill(v0->MassLambda(),ptrk->Pt(),dR);
-      if(PIDOK) ((TH3D*)(fOutputPIDBach->FindObject("hMassvsPtInclusiveLambda")))->Fill(v0->MassLambda(),ptrk->Pt(),dR);
+      if(TMath::Abs(nTPCsigmas)<5&&TMath::Abs(nTOFsigmas)<5){
+        ((TH3D*)(fOutputAll->FindObject("hMassvsPtInclusiveLambdaLoosePID")))->Fill(v0->MassLambda(),ptrk->Pt(),dR);
+      }
+
+      Double_t bachcosthe = -9999;
+      if(PIDOK){
+        ((TH3D*)(fOutputPIDBach->FindObject("hMassvsPtInclusiveLambda")))->Fill(v0->MassLambda(),ptrk->Pt(),dR);
+        TLorentzVector vpr, vpi,vlam;
+        vpr.SetXYZM(ptrk->Px(),ptrk->Py(),ptrk->Pz(),0.938272081);
+        vpi.SetXYZM(ntrk->Px(),ntrk->Py(),ntrk->Pz(),0.13957061);
+        vlam = vpr + vpi;
+        TVector3 vboost = vlam.BoostVector();
+        vpr.Boost(-vboost);
+        bachcosthe = cos(vpr.Angle(vlam.Vect()));
+        ((TH3D*)(fOutputPIDBach->FindObject("hMassvsPtInclusiveLambdaCosThetaStarPID")))->Fill(v0->MassLambda(),ptrk->Pt(),bachcosthe);
+      }
 
       if(fUseMCInfo && mcv0){
         ((TH3D*)(fOutputAll->FindObject("hMassvsPtInclusiveLambdaSgn")))->Fill(v0->MassLambda(),ptrk->Pt(),dR);
-        if(PIDOK) ((TH3D*)(fOutputPIDBach->FindObject("hMassvsPtInclusiveLambdaSgn")))->Fill(v0->MassLambda(),ptrk->Pt(),dR);
+        if(TMath::Abs(nTPCsigmas)<5&&TMath::Abs(nTOFsigmas)<5){
+          ((TH3D*)(fOutputAll->FindObject("hMassvsPtInclusiveLambdaLoosePIDSgn")))->Fill(v0->MassLambda(),ptrk->Pt(),dR);
+        }
+        if(PIDOK){
+          ((TH3D*)(fOutputPIDBach->FindObject("hMassvsPtInclusiveLambdaSgn")))->Fill(v0->MassLambda(),ptrk->Pt(),dR);
+          ((TH3D*)(fOutputPIDBach->FindObject("hMassvsPtInclusiveLambdaCosThetaStarPIDSgn")))->Fill(v0->MassLambda(),ptrk->Pt(),bachcosthe);
+        }
 
       }
     }
@@ -2601,10 +2652,31 @@ void AliAnalysisTaskSELc2V0bachelor::MakeSingleAnalysisForSystK0SP(AliAODEvent *
           break;
       }
       ((TH3D*)(fOutputAll->FindObject("hMassvsPtInclusiveLambda")))->Fill(v0->MassAntiLambda(),ntrk->Pt(),dR);
-      if(PIDOK) ((TH3D*)(fOutputPIDBach->FindObject("hMassvsPtInclusiveLambda")))->Fill(v0->MassAntiLambda(),ntrk->Pt(),dR);
+      if(TMath::Abs(nTPCsigmas)<5&&TMath::Abs(nTOFsigmas)<5){
+        ((TH3D*)(fOutputAll->FindObject("hMassvsPtInclusiveLambdaLoosePID")))->Fill(v0->MassAntiLambda(),ntrk->Pt(),dR);
+      }
+
+      Double_t bachcosthe = -9999;
+      if(PIDOK){
+        ((TH3D*)(fOutputPIDBach->FindObject("hMassvsPtInclusiveLambda")))->Fill(v0->MassAntiLambda(),ntrk->Pt(),dR);
+        TLorentzVector vpr, vpi,vlam;
+        vpr.SetXYZM(ntrk->Px(),ntrk->Py(),ntrk->Pz(),0.938272081);
+        vpi.SetXYZM(ptrk->Px(),ptrk->Py(),ptrk->Pz(),0.13957061);
+        vlam = vpr + vpi;
+        TVector3 vboost = vlam.BoostVector();
+        vpr.Boost(-vboost);
+        bachcosthe = cos(vpr.Angle(vlam.Vect()));
+        ((TH3D*)(fOutputPIDBach->FindObject("hMassvsPtInclusiveLambdaCosThetaStarPID")))->Fill(v0->MassLambda(),ntrk->Pt(),bachcosthe);
+      }
       if(fUseMCInfo && mcv0){
         ((TH3D*)(fOutputAll->FindObject("hMassvsPtInclusiveLambdaSgn")))->Fill(v0->MassAntiLambda(),ntrk->Pt(),dR);
-        if(PIDOK) ((TH3D*)(fOutputPIDBach->FindObject("hMassvsPtInclusiveLambdaSgn")))->Fill(v0->MassAntiLambda(),ntrk->Pt(),dR);
+        if(TMath::Abs(nTPCsigmas)<5&&TMath::Abs(nTOFsigmas)<5){
+          ((TH3D*)(fOutputAll->FindObject("hMassvsPtInclusiveLambdaLoosePIDSgn")))->Fill(v0->MassAntiLambda(),ntrk->Pt(),dR);
+        }
+        if(PIDOK){
+          ((TH3D*)(fOutputPIDBach->FindObject("hMassvsPtInclusiveLambdaSgn")))->Fill(v0->MassAntiLambda(),ntrk->Pt(),dR);
+          ((TH3D*)(fOutputPIDBach->FindObject("hMassvsPtInclusiveLambdaCosThetaStarPIDSgn")))->Fill(v0->MassLambda(),ntrk->Pt(),bachcosthe);
+        }
       }
     }
   }
@@ -3953,6 +4025,14 @@ void  AliAnalysisTaskSELc2V0bachelor::FillAnalysisHistograms(AliAODRecoCascadeHF
   if ( ((cutsAnal->IsSelected(part,AliRDHFCuts::kCandidate))&(AliRDHFCutsLctoV0::kLcToK0Spr)) == (AliRDHFCutsLctoV0::kLcToK0Spr) ) {
     ((TH2F*)(fOutputAll->FindObject(fillthis)))->Fill(invmassLc,lambdacpt);
     if (isBachelorID)((TH2F*)(fOutputPIDBach->FindObject(fillthis)))->Fill(invmassLc,lambdacpt);
+  }
+
+  if(fFillSubSampleHist && appendthis=="Offline"){
+    fillthis="histLcMassByK0SSubSample"+appendthis;
+    if ( ((cutsAnal->IsSelected(part,AliRDHFCuts::kCandidate))&(AliRDHFCutsLctoV0::kLcToK0Spr)) == (AliRDHFCutsLctoV0::kLcToK0Spr) ) {
+      Double_t contsp[3];contsp[0]=invmassLc;contsp[1]=lambdacpt;contsp[2]=(Double_t)(fEventCounter%24);
+      if (isBachelorID)((THnSparse*)(fOutputPIDBach->FindObject(fillthis)))->Fill(contsp);
+    }
   }
 
   if (!appendthis.Contains("SgnC") && !appendthis.Contains("SgnB") && !appendthis.Contains("SgnNoQ")) {

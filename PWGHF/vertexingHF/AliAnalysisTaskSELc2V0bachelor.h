@@ -70,6 +70,9 @@ class AliAnalysisTaskSELc2V0bachelor : public AliAnalysisTaskSE
   void SetAdditionalChecks(Bool_t additionalChecks) {fAdditionalChecks = additionalChecks;}
   Bool_t GetAdditionalChecks() const {return fAdditionalChecks;}
 
+  void SetFillSubSampleHist(Bool_t subChecks) {fFillSubSampleHist = subChecks;}
+  Bool_t GetFillSubSampleHist() const {return fFillSubSampleHist;}
+
   void FillArmPodDistribution(AliAODRecoDecay *vZero,TString histoTitle, Bool_t isCandidateSelectedCuts, Bool_t isBachelorID);
 
   void SetUseOnTheFlyV0(Bool_t a) { fUseOnTheFlyV0=a; }
@@ -154,6 +157,7 @@ class AliAnalysisTaskSELc2V0bachelor : public AliAnalysisTaskSE
   TList *fOutputPIDBach;      /// User output slot 5 // histos with PID on Bachelor
 
   TH1F *fCEvents;                    /// Histogram to check selected events
+  Int_t fEventCounter; /// Event counter for sub sample test
   AliNormalizationCounter *fCounter; /// AliNormalizationCounter on output slot 2
   AliRDHFCutsLctoV0 *fAnalCuts;      /// Cuts - sent to output slot 3
   Bool_t fUseOnTheFlyV0;             /// flag to analyze also on-the-fly V0 candidates
@@ -166,6 +170,7 @@ class AliAnalysisTaskSELc2V0bachelor : public AliAnalysisTaskSE
   AliAODVertex *fVtx1;                /// primary vertex
   Float_t fBzkG;                      /// magnetic field value [kG]
   Bool_t fAdditionalChecks;           /// flag to fill additional histograms
+  Bool_t fFillSubSampleHist;           /// flag to fill subsample histograms
 
   Bool_t fTrackRotation;              /// flag to check track rotation
   TList *fOutputPIDBachTR;            /// User output slot 6 // histos with PID on Bachelor and track rotation
@@ -185,7 +190,7 @@ class AliAnalysisTaskSELc2V0bachelor : public AliAnalysisTaskSE
   Int_t fDoSingleAnalysisForSystK0SP; /// Analyze p,K,D for syst (0:off, 1:on, 2:only single ana)
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskSELc2V0bachelor,12); /// class for Lc->p K0
+  ClassDef(AliAnalysisTaskSELc2V0bachelor,13); /// class for Lc->p K0
   /// \endcond
 };
 
