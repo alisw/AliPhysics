@@ -335,7 +335,8 @@ AliAnalysisTaskPIDBFDptDpt::AliAnalysisTaskPIDBFDptDpt()
   _s2PtPtNw_12_vsM   ( 0),
   _s2PtNNw_12_vsM    ( 0),
   _s2NPtNw_12_vsM    ( 0),
-  _invMass           ( 0),
+  _invMassKaon       ( 0),
+  _invMassKaonSq     ( 0),
   _invMassElec       ( 0),
   n1Name("NA"),
   n1NwName("NA"),
@@ -710,7 +711,8 @@ AliAnalysisTaskPIDBFDptDpt::AliAnalysisTaskPIDBFDptDpt(const TString & name)
   _s2PtPtNw_12_vsM   ( 0),
   _s2PtNNw_12_vsM    ( 0),
   _s2NPtNw_12_vsM    ( 0),
-  _invMass           ( 0),
+  _invMassKaon       ( 0),
+  _invMassKaonSq     ( 0),
   _invMassElec       ( 0),
   n1Name("NA"),
   n1NwName("NA"),
@@ -1191,7 +1193,8 @@ void  AliAnalysisTaskPIDBFDptDpt::createHistograms()
       name = s2PtPtNwName+pair_12_Name + vsM;   _s2PtPtNw_12_vsM      = createProfile(name,name, _nBins_M4, _min_M4, _max_M4, _title_m4, _title_AvgSumPtPt_12);
       name = s2PtNNwName+pair_12_Name + vsM;    _s2PtNNw_12_vsM       = createProfile(name,name, _nBins_M4, _min_M4, _max_M4, _title_m4, _title_AvgSumPtN_12);
       name = s2NPtNwName+pair_12_Name + vsM;    _s2NPtNw_12_vsM       = createProfile(name,name, _nBins_M4, _min_M4, _max_M4, _title_m4, _title_AvgNSumPt_12);        
-      name = "mInv";     _invMass     = createHisto1F(name,name, 50, 0.41, 0.55, "M_{inv}","counts");
+      name = "mInvKaon";   _invMassKaon   = createHisto1F(name,name, 80, 0.98, 1.06, "M_{KK}","counts");
+      name = "mInvKaonSq"; _invMassKaonSq = createHisto1F(name,name, 120, 0.98, 1.10, "M_{KK}^2","counts");
       name = "mInvElec"; _invMassElec = createHisto1F(name,name, 500, 0., 1.000, "M_{inv}","counts");
     }
     
@@ -1263,7 +1266,7 @@ void  AliAnalysisTaskPIDBFDptDpt::UserExec(Option_t */*option*/)
   float  ptpt;
   int    iVertex, iVertexP1, iVertexP2;
   int    iZEtaPhiPt;
-  float  massElecSq = 1.94797849000000016e-02;
+  float  massElecSq = 1.94797849000000016e-02;  
   //double b[2];
   //double bCov[3];
   const  AliAODVertex*	vertex;
@@ -1271,6 +1274,7 @@ void  AliAnalysisTaskPIDBFDptDpt::UserExec(Option_t */*option*/)
   bool   bitOK;
   const float mpion   = 0.139570; // GeV/c2
   const float mkaon   = 0.493677; // GeV/c2
+  const float massKaonSq = 0.2437169803; // GeV/c2
   const float mproton = 0.938272; // GeV/c2
   Double_t c = TMath::C() * 1.E-9;// m/ns
   double EP = 0;
@@ -2156,6 +2160,10 @@ void  AliAnalysisTaskPIDBFDptDpt::UserExec(Option_t */*option*/)
 		  corr_1    = _correction_1[i1];   ////cout << "     corr_1:" << corr_1 << endl;
 		  pt_1      = _pt_1[i1];           ////cout << "       pt_1:" << pt_1 << endl;
 		  dedx_1    = _dedx_1[i1];         ////cout << "     dedx_1:" << dedx_1 << endl;
+		  px_1      = _px_1[i1];          ////cout << "      px_1:" << px_1 << endl;
+		  py_1      = _py_1[i1];          ////cout << "      py_1:" << py_1 << endl;
+		  pz_1      = _pz_1[i1];          ////cout << "      pz_1:" << pz_1 << endl;
+		  
 		  //1 and 2
 		  for (int i2=i1+1; i2<k1; i2++)
                     {
@@ -2169,6 +2177,20 @@ void  AliAnalysisTaskPIDBFDptDpt::UserExec(Option_t */*option*/)
 			  corr_2    = _correction_1[i2]; ////cout << "     corr_1:" << corr_1 << endl;
 			  pt_2      = _pt_1[i2];         ////cout << "       pt_1:" << pt_1 << endl;
 			  dedx_2    = _dedx_1[i2];       ////cout << "     dedx_2:" << dedx_2 << endl;
+			  px_2      = _px_2[i2];          ////cout << "      px_2:" << px_2 << endl;
+			  py_2      = _py_2[i2];          ////cout << "      py_2:" << py_2 << endl;
+			  pz_2      = _pz_2[i2];          ////cout << "      pz_2:" << pz_2 << endl;
+			  
+			  if ( particleSpecies == 1 )  // invariant mass for kaon-kaon pairs
+			    {
+			      float EngyKaon1Sq = massKaonSq + pt_1*pt_1 + pz_1*pz_1;
+			      float EngyKaon2Sq = massKaonSq + pt_2*pt_2 + pz_2*pz_2;
+			      float mInvKaonSq = 2*(massKaonSq + sqrt(EngyKaon1Sq*EngyKaon2Sq) - px_1*px_2 - py_1*py_2 - pz_1*pz_2 );
+			      float mInvKaon = sqrt(mInvKaonSq);
+			      _invMassKaonSq->Fill(mInvKaonSq);
+			      _invMassKaon->Fill(mInvKaon);
+			    }
+
 			  corr      = corr_1*corr_2;
 			  if (q_2>q_1 || (q_1>0 && q_2>0 && pt_2<=pt_1) || (q_1<0 && q_2<0 && pt_2>=pt_1))
                             {
@@ -2211,6 +2233,10 @@ void  AliAnalysisTaskPIDBFDptDpt::UserExec(Option_t */*option*/)
 		  corr_1    = _correction_1[i1];   ////cout << "     corr_1:" << corr_1 << endl;
 		  pt_1      = _pt_1[i1];           ////cout << "       pt_1:" << pt_1 << endl;
 		  dedx_1    = _dedx_1[i1];         ////cout << "     dedx_1:" << dedx_1 << endl;
+		  px_1      = _px_1[i1];          ////cout << "      px_1:" << px_1 << endl;
+		  py_1      = _py_1[i1];          ////cout << "      py_1:" << py_1 << endl;
+		  pz_1      = _pz_1[i1];          ////cout << "      pz_1:" << pz_1 << endl;
+
 		  //1 and 2
 		  for (int i2=i1+1; i2<k1; i2++)
                     {
@@ -2224,6 +2250,20 @@ void  AliAnalysisTaskPIDBFDptDpt::UserExec(Option_t */*option*/)
 			  corr_2    = _correction_1[i2]; ////cout << "     corr_2:" << corr_2 << endl;
 			  pt_2      = _pt_1[i2];         ////cout << "       pt_2:" << pt_2 << endl;
 			  dedx_2    = _dedx_1[i2];       ////cout << "     dedx_2:" << dedx_2 << endl;
+			  px_2      = _px_2[i2];          ////cout << "      px_2:" << px_2 << endl;
+			  py_2      = _py_2[i2];          ////cout << "      py_2:" << py_2 << endl;
+			  pz_2      = _pz_2[i2];          ////cout << "      pz_2:" << pz_2 << endl;
+			      
+			  if ( particleSpecies == 1 )  // invariant mass for kaon-kaon pairs
+			    {
+			      float EngyKaon1Sq = massKaonSq + pt_1*pt_1 + pz_1*pz_1;
+			      float EngyKaon2Sq = massKaonSq + pt_2*pt_2 + pz_2*pz_2;
+			      float mInvKaonSq = 2*(massKaonSq + sqrt(EngyKaon1Sq*EngyKaon2Sq) - px_1*px_2 - py_1*py_2 - pz_1*pz_2 );
+			      float mInvKaon = sqrt(mInvKaonSq);
+			      _invMassKaonSq->Fill(mInvKaonSq);
+			      _invMassKaon->Fill(mInvKaon);
+			    }
+			  
 			  corr      = corr_1*corr_2;
 			  if ( q_2<q_1 || (q_1>0 && q_2>0 && pt_2>=pt_1) || (q_1<0 && q_2<0 && pt_2<=pt_1))
                             {
@@ -2299,6 +2339,16 @@ void  AliAnalysisTaskPIDBFDptDpt::UserExec(Option_t */*option*/)
 		      pz_2      = _pz_2[i2];          ////cout << "      pz_2:" << pz_2 << endl;
 		      dedx_2    = _dedx_2[i2];        ////cout << "     dedx_2:" << dedx_2 << endl;                   
 
+		      if ( particleSpecies == 1 ) // invariant mass for kaon-kaon pairs
+			{
+			  float EngyKaon1Sq = massKaonSq + pt_1*pt_1 + pz_1*pz_1;
+			  float EngyKaon2Sq = massKaonSq + pt_2*pt_2 + pz_2*pz_2;
+			  float mInvKaonSq = 2*(massKaonSq + sqrt(EngyKaon1Sq*EngyKaon2Sq) - px_1*px_2 - py_1*py_2 - pz_1*pz_2 );
+			  float mInvKaon = sqrt(mInvKaonSq);
+			  _invMassKaonSq->Fill(mInvKaonSq);
+			  _invMassKaon->Fill(mInvKaon);
+			}		
+		      
 		      corr      = corr_1*corr_2;
 		      ij        = iEtaPhi_1*_nBins_etaPhi_1 + iEtaPhi_2;   ////cout << " ij:" << ij<< endl;
 		      __n2_12                  += corr;
