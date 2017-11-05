@@ -498,8 +498,9 @@ protected:
     TProfile * _s2PtNNw_12_vsM;
     TProfile * _s2NPtNw_12_vsM;
     
-    TH1F      * _invMass;
-    TH1F      * _invMassElec;
+    TH1F     * _invMassKaon;
+    TH1F     * _invMassKaonSq;
+    TH1F     * _invMassElec;
     
     TString n1Name;
     TString n1NwName;
