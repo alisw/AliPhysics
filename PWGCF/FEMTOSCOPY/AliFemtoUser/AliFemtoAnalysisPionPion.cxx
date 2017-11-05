@@ -64,7 +64,7 @@ struct CutConfig_Event {
 
     Int_t trigger_selection = 0;
     Bool_t accept_bad_vertex = false;
-    Bool_t accept_only_physics = false;
+    Bool_t accept_only_physics = true;
 
     UInt_t min_coll_size = 10;
 
@@ -346,6 +346,8 @@ AliFemtoAnalysisPionPion::AliFemtoAnalysisPionPion(const char *name,
       centrality: %f:%f,
       zVertex: %f:%f,
       trigger: %d,
+      accept_bad_vertex: %s,
+      accept_only_physics: %s,
     },
     track: {
       pt: %f:%f,
@@ -355,6 +357,8 @@ AliFemtoAnalysisPionPion::AliFemtoAnalysisPionPion(const char *name,
       impact_xy: %f,
       impact_z: %f,
       min_tpc_ncls: %d,
+      remove_kinks: %s,
+      set_label: %s,
     },
     pair: {
       max_share_quality: %f,
@@ -370,6 +374,8 @@ AliFemtoAnalysisPionPion::AliFemtoAnalysisPionPion(const char *name,
     cut_params.event_CentralityMin, cut_params.event_CentralityMax,
     cut_params.event_VertexZMin, cut_params.event_VertexZMax,
     cut_params.event_TriggerSelection,
+    (cut_params.event_AcceptBadVertex ? "true" : "false"),
+    (cut_params.event_AcceptOnlyPhysics ? "true" : "false"),
 
     cut_params.pion_1_PtMin, cut_params.pion_1_PtMax,
     cut_params.pion_1_EtaMin, cut_params.pion_1_EtaMax,
@@ -377,6 +383,8 @@ AliFemtoAnalysisPionPion::AliFemtoAnalysisPionPion(const char *name,
     cut_params.pion_1_NSigmaMin, cut_params.pion_1_NSigmaMax,
     cut_params.pion_1_max_impact_xy, cut_params.pion_1_max_impact_z,
     cut_params.pion_1_min_tpc_ncls,
+    (cut_params.pion_1_remove_kinks ? "true" : "false"),
+    (cut_params.pion_1_set_label ? "true" : "false"),
 
     cut_params.pair_max_share_quality, cut_params.pair_max_share_fraction,
     cut_params.pair_delta_eta_min, cut_params.pair_delta_phi_min,
@@ -432,6 +440,7 @@ AliFemtoAnalysisPionPion::DefaultCutConfig()
   , default_event.EP_VZero.second
   , default_event.trigger_selection
   , default_event.accept_bad_vertex
+  , default_event.accept_only_physics
 
     // Pion 1
   , default_pion.pt.first
@@ -611,7 +620,7 @@ AliFemtoAnalysisPionPion::BuildEventCut(const AliFemtoAnalysisPionPion::CutParam
   cut->SetTriggerSelection(p.event_TriggerSelection);
 
 //   if (!fMCAnalysis) {
-//     cut->SetAcceptOnlyPhysics(kTRUE);
+  cut->SetAcceptOnlyPhysics(p.event_AcceptOnlyPhysics);
 //   }
 
   return cut;

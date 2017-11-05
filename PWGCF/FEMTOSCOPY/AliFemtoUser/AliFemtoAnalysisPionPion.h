@@ -199,7 +199,7 @@ struct AliFemtoAnalysisPionPion::CutParams {
 
   Int_t   event_TriggerSelection;
   Bool_t  event_AcceptBadVertex;
-
+  Bool_t  event_AcceptOnlyPhysics;
 
   // PION - 1
   Float_t pion_1_PtMin,
