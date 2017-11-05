@@ -313,7 +313,8 @@ public:
     TH2F                  *fLSElecDphiDiffMethod;   //! electron from LS pairs: dPhi vs pt of triggered electron
 
    
- 
+    TH1F                  *fNoPartnerNoT; //!
+    TH1F                  *fTPartnerNoT; //!
     TH2F                  *fElecHadTrigger;         //!
     TH2F                  *fElecHadTriggerLS;         //!
     TH2F                  *fElecHadTriggerULS;         //!
@@ -324,14 +325,10 @@ public:
     THnSparse             *fInclElecHa;             //!
     THnSparse             *fLSElecHa;               //!
     THnSparse             *fULSElecHa;              //!
-    THnSparse            *fMCElecHaHadron;        //!
+    THnSparse              *fMCElecHaHadron;        //!
     THnSparse             *fElecHaHa;               //!
     THnSparse             *fElecHaLSNoPartner;      //!
     THnSparse             *fElecHaULSNoPartner;     //!
-
-
-
-
     THnSparse             *fMCElecHaTruePartner;    //!
     THnSparse             *fMCElecHaNoPartner;      //!
     TH2F                  *fMCElecHaTruePartnerTrigger;        //!
@@ -341,10 +338,10 @@ public:
     THnSparse             *fULSElecHaMixedEvent;    //!
 
 
-    TH1F                  *fElecLPTrigger;          //!
-    TH1F                  *fLPElecTrigger;          //!
+    TH2F                  *fElecLPTrigger;          //!
+    TH2F                  *fLPElecTrigger;          //!
     TH2F                  *fLPNonElecTrigger;       //!
-    TH1F                  *fNonElecLPTrigger;       //!
+    TH2F                  *fNonElecLPTrigger;       //!
     THnSparse             *fInclElecLP;             //!
     THnSparse             *fLSElecLP;               //!
     THnSparse             *fULSElecLP;              //!
@@ -401,7 +398,7 @@ public:
     AliAnalysisTaskHaHFECorrel(const AliAnalysisTaskHaHFECorrel&);
     AliAnalysisTaskHaHFECorrel& operator=(const AliAnalysisTaskHaHFECorrel&);
     
-    ClassDef(AliAnalysisTaskHaHFECorrel, 1);
+    ClassDef(AliAnalysisTaskHaHFECorrel, 2);
 };
 
 
@@ -511,7 +508,7 @@ class AliBasicParticleHaHFE : public AliVParticle
   Bool_t  fIsPhotonic;     //
   Bool_t  fIsHadron;            // only for MC
 
-  ClassDef(AliBasicParticleHaHFE, 1); // class which contains only quantities requires for this analysis to reduce memory consumption for event mixing
+  ClassDef(AliBasicParticleHaHFE, 2); // class which contains only quantities requires for this analysis to reduce memory consumption for event mixing
 };
 
 
