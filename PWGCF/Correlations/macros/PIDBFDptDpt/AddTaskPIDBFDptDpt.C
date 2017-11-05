@@ -44,7 +44,6 @@ AliAnalysisTaskPIDBFDptDpt * AddTaskPIDBFDptDpt
  double dcaXYMax                =  2.4,
  int nCentrality                =  6,
  int particleID                 =  1,   // Pion=0, Kaon=1, Proton=2
- bool Use_AliHelperPID          =  0,   // 0: Not Use_AliHelperPID       1: Use_AliHelperPID
  bool Use_CircularCutPID        =  1,   // 0: Not Use_CircularCutPID     1: Use_CircularCutPID TPC+TOF
  double nSigmaCut               =  2.0,
  double nSigmaCut_veto          =  3.0,
@@ -74,6 +73,7 @@ AliAnalysisTaskPIDBFDptDpt * AddTaskPIDBFDptDpt
   double  EventPlaneMin         = -3.1415927/6;
   double  EventPlaneMax         =  3.1415927/6;
   double ptMax                  =  3.0; // pt range upper limit for histos; NOT pt cut!!!
+  bool Use_AliHelperPID         =  0;   // 0: Not Use_AliHelperPID       1: Use_AliHelperPID
   int pidType                   =  2;  // kNSigmaTPC,kNSigmaTOF, kNSigmaTPCTOF // for AliHelperPID
   Bool_t requestTOFPID          =  1;  // for AliHelperPID
   Bool_t isMC                   =  0;  // for AliHelperPID
