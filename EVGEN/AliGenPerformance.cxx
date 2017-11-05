@@ -200,7 +200,7 @@ void AliGenPerformance::Generate() {
       fFPosition->GetRandom3(pos[0], pos[1], pos[2]);
     }else{  /// use external vertex
       Vertex();
-      for (j=0; j < 3; j++) pos[j] = fVertex[j];
+      for (Int_t j=0; j < 3; j++) pos[j] = fVertex[j];
     }
     //
     posf[0] = pos[0];
