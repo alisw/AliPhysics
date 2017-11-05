@@ -207,7 +207,7 @@ class AliEmcalJetTask : public AliAnalysisTaskEmcal {
   AliEmcalJetTask &operator=(const AliEmcalJetTask&); // not implemented
 
   /// \cond CLASSIMP
-  ClassDef(AliEmcalJetTask, 25);
+  ClassDef(AliEmcalJetTask, 26);
   /// \endcond
 };
 #endif
