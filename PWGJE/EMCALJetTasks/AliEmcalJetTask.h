@@ -189,7 +189,7 @@ class AliEmcalJetTask : public AliAnalysisTaskEmcal {
   Bool_t                 fIsPSelSet;              //!<!=true if physics selection was set
   Bool_t                 fIsEmcPart;              //!<!=true if emcal particles are given as input (for clusters)
   Bool_t                 fLegacyMode;             //!<!=true to enable FJ 2.x behavior
-  Bool_t                 fFillGhost;              //!<!=true ghost particles will be filled in AliEmcalJet obj
+  Bool_t                 fFillGhost;              ///< =true ghost particles will be filled in AliEmcalJet obj
 
   TClonesArray          *fJets;                   //!<!jet collection
   AliFJWrapper           fFastJetWrapper;         //!<!fastjet wrapper
