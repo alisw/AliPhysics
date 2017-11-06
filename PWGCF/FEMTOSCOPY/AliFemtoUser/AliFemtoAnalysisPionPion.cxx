@@ -620,7 +620,7 @@ AliFemtoAnalysisPionPion::BuildEventCut(const AliFemtoAnalysisPionPion::CutParam
   cut->SetTriggerSelection(p.event_TriggerSelection);
 
 //   if (!fMCAnalysis) {
-  cut->SetAcceptOnlyPhysics(p.event_AcceptOnlyPhysics);
+//  cut->SetAcceptOnlyPhysics(p.event_AcceptOnlyPhysics);
 //   }
 
   return cut;
