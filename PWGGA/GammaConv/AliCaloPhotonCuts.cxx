@@ -3777,6 +3777,10 @@ Bool_t AliCaloPhotonCuts::SetMinEnergyCut(Int_t minEnergy)
           if (!fUseMinEnergy) fUseMinEnergy=1;
           fMinEnergy=6.0;
           break;
+        case 10:
+          if (!fUseMinEnergy) fUseMinEnergy=1;
+          fMinEnergy=1.5;
+          break;
         default:
           AliError(Form("Minimum Energy Cut not defined %d",minEnergy));
           return kFALSE;
@@ -4939,6 +4943,32 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC)
 
 // *************** 70 + x **** default tender Settings - PbPb
 
+    // NonLinearity LHC11h - PbPb 2.76TeV - 0-10% centrality
+    case 71:
+      label_case_71:
+      if(isMC>0){
+        if( fCurrentMC==k14a1 ){
+          if(fClusterType==1){
+            energy /= 0.972607; //
+          }
+        } else {
+          fPeriodNameAvailable = kFALSE;
+        }
+      }
+      break;
+    // NonLinearity LHC11h - PbPb 2.76TeV - 20-50% centrality
+    case 72:
+      label_case_72:
+      if(isMC>0){
+        if( fCurrentMC==k14a1 ){
+          if(fClusterType==1){
+            energy /= FunctionNL_kSDM(energy, 1.00926, -2.42107, -1.60995);
+          }
+        } else {
+          fPeriodNameAvailable = kFALSE;
+        }
+      }
+      break;
 
 // *************** 80 + x **** modified tender Settings 1 - PbPb
 
