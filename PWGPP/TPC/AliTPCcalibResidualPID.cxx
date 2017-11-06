@@ -1173,6 +1173,7 @@ Bool_t AliTPCcalibResidualPID::ProcessV0Tree(TTree* tree, THnSparseF* h, const I
       const TString &runStr=((TObjString*)arr->At(irun))->String();
       if (!runStr.IsDigit()) continue;
       runMap.Add(runStr.Atoi(), 1);
+      cout << "run" << runStr << " added" << endl;
     }
     delete arr;
   }
@@ -1181,7 +1182,6 @@ Bool_t AliTPCcalibResidualPID::ProcessV0Tree(TTree* tree, THnSparseF* h, const I
     tree->GetEntry(i);
     // skip runs
     if (runMap.GetSize() && !(runMap.GetValue(runNumber)^excludeRuns)) continue;
-
     // set dummy esd track multiplicity
     arrTracks->Clear();
     arrTracks->ConstructedAt(ntracks);
@@ -1208,7 +1208,6 @@ Bool_t AliTPCcalibResidualPID::ProcessV0Tree(TTree* tree, THnSparseF* h, const I
 
       if (!trk)
         continue;
-
       //tpcsignal = trk->fTPCsignal;
       //tanTheta = trk->fIp->fP[3];
       //precin = trk->fIp->P();
@@ -1310,6 +1309,7 @@ Bool_t AliTPCcalibResidualPID::ProcessV0Tree(TTree* tree, THnSparseF* h, const I
 
         Double_t vecHistQA[7] = {precin, processedTPCsignal[iPart], (Double_t)particleID, (Double_t)iPart, tpcQA[iPart], tofQA[iPart],
                                 (Double_t)nTotESDTracks};
+        //cout << vecHistQA[0] << "\t" <<  vecHistQA[1] << "\t" <<  vecHistQA[2] << "\t" <<  vecHistQA[3] << "\t" <<  vecHistQA[4] << "\t" <<  vecHistQA[5] <<  endl;                      
         h->Fill(vecHistQA);
       }
     }
@@ -1401,6 +1401,32 @@ void AliTPCcalibResidualPID::BinLogAxis(THnSparseF *h, Int_t axisNumber)
   
 }
 
+void AliTPCcalibResidualPID::CreatePlotWithOwnParameters(THnSparseF * histPidQA, const Bool_t useV0s, const Char_t * type, const Char_t * system, const Double_t* parameters, AliTPCcalibResidualPID::FitType fitType, Float_t from, Float_t to) {
+
+  TObjArray * arr = 0x0;
+  
+  Bool_t isMC = kFALSE;
+  if (strcmp(type, "MC") == 0) {
+    arr = GetResidualGraphsMC(histPidQA, system);
+    isMC = kTRUE;
+  }
+  else if (strcmp(type, "DATA") == 0) {
+    arr = GetResidualGraphs(histPidQA, system, useV0s);
+  }
+  else {
+    Printf("ERROR - ExtractResidualPID: Unknown type \"%s\" - must be \"MC\" or \"DATA\"!", type);
+    
+    return;
+  }
+  
+  TF1* func = SetUpFitFunction(parameters, fitType, from, to, kFALSE, isMC, 0x0);
+  
+  TGraphErrors * graphAll = (TGraphErrors *) arr->FindObject("beamDataPoints");
+  
+  TCanvas* canvDelta_2 = CreateResidualCanvas(graphAll, func); 
+  TCanvas* canvDelta_1 = CreateBBCanvas(arr, isMC, func); 
+  return;
+}
 
 //________________________________________________________________________
 Double_t* AliTPCcalibResidualPID::ExtractResidualPID(THnSparseF * histPidQA, const Bool_t useV0s, const Char_t * outFile,
@@ -1443,12 +1469,12 @@ Double_t* AliTPCcalibResidualPID::ExtractResidualPID(THnSparseF * histPidQA, con
   //
   // (4.) write results to file and exit
   //
+  
   if (arrResponse) {
     TFile outputFile(outFile,"RECREATE");
     arrResponse->Write();
     outputFile.Close();
   }
-  //
   
   return parametrisation->GetParameters();
 }
@@ -2555,11 +2581,11 @@ TObjArray * AliTPCcalibResidualPID::GetResidualGraphs(THnSparseF * histPidQA, co
   }
   else {
     listColl->Add(pionV0GraphForBBfit);
-    //listColl->Add(electronV0GraphForBBfit);
+    //listColl->Add(electronV0GraphForBBfit);//nschmidt2016 for PbPb was commented for pp 
     listColl->Add(protonV0GraphForBBfit);
     
     //listColl->Add(pionV0plusTOFGraphForBBfit);
-    listColl->Add(electronV0plusTOFGraphForBBfit);
+    listColl->Add(electronV0plusTOFGraphForBBfit);//nschmidt2016 for PbPb was uncommented for pp
     //listColl->Add(protonV0plusTOFGraphForBBfit);
   }
   MergeGraphErrors(graphAll, listColl);
@@ -3173,7 +3199,7 @@ TObjArray * AliTPCcalibResidualPID::GetResponseFunctions(TF1* parametrisation, T
     return 0x0;
   }
   graphProtonTPC->Sort(); // Sort points along x. Next, the very first point will be used to determine the starting point of the correction function
-  TF1 * funcCorrProton = new TF1("funcCorrProton", fitFuncString2.Data(), TMath::Max(graphProtonTPC->GetX()[0], 0.15),1.0); // TODO BEN was 0.18 - 0.85
+  TF1 * funcCorrProton = new TF1("funcCorrProton", fitFuncString2.Data(), TMath::Max(graphProtonTPC->GetX()[0], 0.15),1.0); // TODO BEN was 0.18 - 0.85 //nschmidt2016 was ...,1.0); //was then 2.0
   graphProtonTPC->Fit(funcCorrProton, "QREX0M");
   //
   // 2. extract kaon corrections
@@ -3274,7 +3300,8 @@ TObjArray * AliTPCcalibResidualPID::GetResponseFunctions(TF1* parametrisation, T
   }
   graphPionTPC->Sort(); // Sort points along x. Next, the very first point will be used to determine the starting point of the correction function
   // In case of PbPb (data, not MC) only correct down to 0.2 GeV/c; otherwise: contamination due to electrons
-  TF1 * funcCorrPion = new TF1("funcCorrPion", fitFuncString.Data(), ((isPbPb && !isMC) ? (0.2 / AliPID::ParticleMass(AliPID::kPion)) : graphPionTPC->GetX()[0]), isMC ? (isPPb ? 12.8 : (isPbPb ? 12.8 : 7.1)) : (isPPb ? 7.68 : 7.1)); 
+  //~ TF1 * funcCorrPion = new TF1("funcCorrPion", fitFuncString.Data(), ((isPbPb && !isMC) ? (0.2 / AliPID::ParticleMass(AliPID::kPion)) : graphPionTPC->GetX()[0]), isMC ? (isPPb ? 12.8 : (isPbPb ? 12.8 : 7.1)) : (isPPb ? 7.68 : 7.1)); 
+  TF1 * funcCorrPion = new TF1("funcCorrPion", fitFuncString.Data(), ((isPbPb && !isMC) ? (0.2 / AliPID::ParticleMass(AliPID::kPion)) : graphPionTPC->GetX()[0]), isMC ? (isPPb ? 12.8 : (isPbPb ? 12.8 : 7.1)) : (isPPb ? 7.68 : (isPbPb ? 15.5 : 7.1))); //nschmidt2016 was 12.8 : 7.1 // was then 27.5
   graphPionTPC->Fit(funcCorrPion, "QREX0M");
   //
   // 4. extract electron corrections
@@ -3306,7 +3333,7 @@ TObjArray * AliTPCcalibResidualPID::GetResponseFunctions(TF1* parametrisation, T
   }
   graphElectronTPC->Sort(); // Sort points along x. Next, the very first point will be used to determine the starting point of the correction function
   // In case of PbPb (data, not MC) only correct down to 0.2 GeV/c; otherwise: contamination due to pions
-  TF1 * funcCorrElectron = new TF1("funcCorrElectron", fitFuncString.Data(), (!isMC && isPbPb ? (0.2 / AliPID::ParticleMass(AliPID::kElectron)) :graphElectronTPC->GetX()[0]), (isMC ? 3565 : (isPPb ? 2900 : 1920/*970*/)));// TODO was 1800 for pp data
+  TF1 * funcCorrElectron = new TF1("funcCorrElectron", fitFuncString.Data(), (!isMC && isPbPb ? (0.2 / AliPID::ParticleMass(AliPID::kElectron)) :graphElectronTPC->GetX()[0]), (isMC ? 3565 : (isPPb ? 2900 : (isPbPb ? 2500 : 1920/*970*/))));// TODO was 1800 for pp data
   // NOTE: For data, the results are almost the same for fitFuncString and fitFuncString2. Maybe, fitFuncString2 is slightly better.
   graphElectronTPC->Fit(funcCorrElectron, "QREX0M");
   //
@@ -3468,46 +3495,32 @@ TObjArray * AliTPCcalibResidualPID::GetResponseFunctions(TF1* parametrisation, T
   
   TFile* fSave = TFile::Open("splines_QA_ResidualPolynomials.root", "RECREATE");
   fSave->cd();
-  for (Int_t i = 0; i < 4; i++)
+  for (Int_t i = 0; i < 4; i++){
     canvasQA[i]->Write();  
-  
+    canvasQA[i]->SaveAs(Form("polynomials%d.pdf",i));  
+  }
   fSave->Close();
   //canvasQA->SaveAs("splines_QA_ResidualPolynomials.root");
   
-  
   delete funcBB;
-  
   return arrResponse;
 }
 
-
-//________________________________________________________________________
-TF1* AliTPCcalibResidualPID::FitBB(TObjArray* inputGraphs, Bool_t isMC, Bool_t isPPb, const Bool_t useV0s, 
-                                   const Double_t * initialParameters, AliTPCcalibResidualPID::FitType fitType) {
-  //
-  // Fit Bethe-Bloch parametrisation to data points (inputGraphs)
-  //
+TF1* AliTPCcalibResidualPID::SetUpFitFunction(const Double_t* initialParameters, AliTPCcalibResidualPID::FitType fitType, Float_t from, Float_t to, Bool_t isPPb, Bool_t isMC, Double_t* parametersBBForward) {
+  
   const Int_t nPar = 6;
-  TGraphErrors * graphAll = (TGraphErrors *) inputGraphs->FindObject("beamDataPoints");
-  //
-  Float_t from = 0.9; //TODO ADJUST -> Very important
-  Float_t to = graphAll->GetXaxis()->GetXmax() * 2;
   
+  parametersBBForward = new Double_t[nPar];
   
-  
-  TF1* funcBB = 0x0;
-  
-  Double_t parametersBBForward[nPar] = { 0, };
-  
-  TVirtualFitter::SetMaxIterations(5e6);
-  
+  TF1* funcBB;
+
   if (fitType == AliTPCcalibResidualPID::kSaturatedLund) {
     printf("Fit function: Saturated Lund\n");
     
     funcBB = new TF1("SaturatedLund", SaturatedLund, from, to, nPar);
     //Double_t parametersBB[nPar] = {34.0446, 8.42221, 4.16724, 1.29473, 80.6663, 0}; //Xianguos values
     //Double_t parametersBB[nPar] = {35.5, 8.7, 2.0, 1.09, 75.6, 0}; // No saturation
-    Double_t parametersBB[nPar] = {61.0, 8.7, 1.86, 0.85, 113.4, -38}; // Yields reasonable results for data and MC ~ all periods
+    Double_t parametersBB[nPar] = {61.0, 8.7, 0.1, 0.85, 113.4, -38}; // Yields reasonable results for data and MC ~ all periods
     
     if (isPPb && !isMC) {
       parametersBB[0] = 51.6;
@@ -3624,14 +3637,11 @@ TF1* AliTPCcalibResidualPID::FitBB(TObjArray* inputGraphs, Bool_t isMC, Bool_t i
     funcBB->SetParameters(initialParameters);
   }
   
-  //
-  //
-  //
-  TGraphErrors * graphDelta = new TGraphErrors(*graphAll);
-  graphDelta->SetName("graphDelta");
-  
-  // In MC case: Remove errors from fit -> Some data points with extremely small errors otherwise completely dominate the fit,
-  // but these points could still be wrong due to systematics (low p effects, e.g.)
+  return funcBB;
+}
+
+void AliTPCcalibResidualPID::SetUpInputGraph(TGraphErrors* graphAll, Bool_t isMC, Bool_t useV0s) {
+
   if (isMC) {
     for(Int_t ip = 0; ip < graphAll->GetN(); ip++) {
       graphAll->SetPointError(ip, 0, 0);
@@ -3653,46 +3663,28 @@ TF1* AliTPCcalibResidualPID::FitBB(TObjArray* inputGraphs, Bool_t isMC, Bool_t i
       }
     }
   }
-  graphAll->Fit(funcBB, "REX0M");  
-  funcBB->SetRange(from, to);
-  funcBB->GetParameters(parametersBBForward);
-  //
-  //
-  //
-  for(Int_t ip = 0; ip < graphDelta->GetN(); ip++) {
-    graphDelta->GetY()[ip] -= funcBB->Eval(graphDelta->GetX()[ip]);
-    graphDelta->GetY()[ip] /= funcBB->Eval(graphDelta->GetX()[ip]);
-    graphDelta->GetEY()[ip] /= funcBB->Eval(graphDelta->GetX()[ip]);
-  }
-  TCanvas * canvDelta_1 = new TCanvas("canvDelta_1","control histogram for Bethe-Bloch fit 1",100,10,1380,800);
-  TCanvas * canvDelta_2 = new TCanvas("canvDelta_2","control histogram for Bethe-Bloch fit 2",100,10,1380,800);
-  canvDelta_1->SetGrid(1, 1);
-  canvDelta_1->SetLogx();
-  canvDelta_2->SetGrid(1, 1);
-  canvDelta_2->SetLogx();
-  /*
-  canvDelta->Divide(2, 1);
-  canvDelta->GetPad(1)->SetGrid(1, 1);
-  canvDelta->GetPad(1)->SetLogx();
-  canvDelta->GetPad(2)->SetGrid(1, 1);
-  canvDelta->GetPad(2)->SetLogx();
-  */
+}
 
+TCanvas* AliTPCcalibResidualPID::CreateBBCanvas(TObjArray* inputGraphs, Bool_t isMC, TF1* func) {
+  
+  TGraphErrors * graphAll = (TGraphErrors *) inputGraphs->FindObject("beamDataPoints");
+  TCanvas * canvDelta_1 = new TCanvas("canvDelta_1","control histogram for Bethe-Bloch fit 1",100,10,1380,800);
+  canvDelta_1->SetGrid(1, 1);
+  canvDelta_1->SetLogx();  
   canvDelta_1->cd();
-  //canvDelta->cd(1);
   TH1F *hBBdummy=new TH1F("hBBdummy","BB fit;#beta#gamma;#LTdE/dx#GT (arb. unit)",100,.8,1e4);
   hBBdummy->SetMinimum(45);
   hBBdummy->SetMaximum(120);
   hBBdummy->GetXaxis()->SetTitleOffset(1.1);
   hBBdummy->SetStats(kFALSE);
-  hBBdummy->Draw();
-
+  hBBdummy->Draw();  
+  
   graphAll->SetTitle("BB multi-graph fit");
   graphAll->SetMarkerStyle(22);
   graphAll->SetMarkerColor(kMagenta);
   graphAll->Draw("p");
 
-  TLegend *leg=new TLegend(.7,.12,.89,isMC?.4:.6);
+  TLegend *leg=new TLegend(.2,0.3,0.36,isMC?.5:0.7);
   leg->SetFillColor(10);
   leg->SetBorderSize(1);
 
@@ -3791,14 +3783,29 @@ TF1* AliTPCcalibResidualPID::FitBB(TObjArray* inputGraphs, Bool_t isMC, Bool_t i
   graphAll->GetXaxis()->SetTitle("#beta#gamma");
   graphAll->GetYaxis()->SetTitle("<dE/dx> (arb. unit)");
   graphAll->Draw("p");
-  funcBB->GetHistogram()->DrawClone("csame");
+  func->GetHistogram()->DrawClone("csame");
  
   leg->AddEntry(graphAll,"used","p");
-  leg->AddEntry(funcBB,"fit","l");
-  leg->Draw("same");
+  leg->AddEntry(func,"fit","l");
+  leg->Draw("same"); 
+  return canvDelta_1;
+}
 
-  canvDelta_2->cd();
-  //canvDelta->cd(2);
+TCanvas* AliTPCcalibResidualPID::CreateResidualCanvas(TGraphErrors * graphAll, TF1* func) {
+  TGraphErrors * graphDelta = new TGraphErrors(*graphAll);
+  graphDelta->SetName("graphDelta");
+
+  for(Int_t ip = 0; ip < graphDelta->GetN(); ip++) {
+    graphDelta->GetY()[ip] -= func->Eval(graphDelta->GetX()[ip]);
+    graphDelta->GetY()[ip] /= func->Eval(graphDelta->GetX()[ip]);
+    graphDelta->GetEY()[ip] /= func->Eval(graphDelta->GetX()[ip]);
+  }  
+  
+  TCanvas * canvDelta_2 = new TCanvas("canvDelta_2","control histogram for Bethe-Bloch fit 2",100,10,1380,800);
+  canvDelta_2->SetGrid(1, 1);
+  canvDelta_2->SetLogx();
+  canvDelta_2->cd();   
+  
   TH1F *hBBresdummy=new TH1F("hBBresdummy","residuals of BB fit;#beta#gamma;(data-fit)/fit",100,.8,1e4);
   hBBresdummy->SetMinimum(-0.04);
   hBBresdummy->SetMaximum(0.04);
@@ -3812,15 +3819,50 @@ TF1* AliTPCcalibResidualPID::FitBB(TObjArray* inputGraphs, Bool_t isMC, Bool_t i
   graphDelta->GetYaxis()->SetTitle("(data - fit) / fit");
   graphDelta->SetMarkerStyle(22);
   graphDelta->SetMarkerColor(4);
-  graphDelta->Draw("p");
+  graphDelta->Draw("p"); 
   
+  return canvDelta_2;
+}
+
+
+//________________________________________________________________________
+TF1* AliTPCcalibResidualPID::FitBB(TObjArray* inputGraphs, Bool_t isMC, Bool_t isPPb, const Bool_t useV0s, 
+                                   const Double_t * initialParameters, AliTPCcalibResidualPID::FitType fitType) {
+  //
+  // Fit Bethe-Bloch parametrisation to data points (inputGraphs)
+  //
+  TGraphErrors * graphAll = (TGraphErrors *) inputGraphs->FindObject("beamDataPoints");
+  //
+  Float_t from = 0.9; //TODO ADJUST -> Very important
+  Float_t to = graphAll->GetXaxis()->GetXmax() * 2;
+  
+  Double_t* parametersBBForward = 0x0;
+  
+  TVirtualFitter::SetMaxIterations(5e6);
+  
+  TF1* funcBB = SetUpFitFunction(initialParameters, fitType, from, to, isPPb, isMC, parametersBBForward);
+  
+  // In MC case: Remove errors from fit -> Some data points with extremely small errors otherwise completely dominate the fit,
+  // but these points could still be wrong due to systematics (low p effects, e.g.)
+  SetUpInputGraph(graphAll, isMC, useV0s);
+
+  graphAll->Fit(funcBB, "REX0M");  
+  funcBB->SetRange(from, to);
+//   funcBB->GetParameters(parametersBBForward);
+  
+  TCanvas * canvDelta_1 = CreateBBCanvas(inputGraphs, isMC, funcBB);
+  TCanvas * canvDelta_2 = CreateResidualCanvas(graphAll, funcBB);
+   
   TFile* fSave = TFile::Open("splines_QA_BetheBlochFit.root", "RECREATE");
   fSave->cd();
   canvDelta_1->Write();
+  printf("Save canvas");
+  canvDelta_1->SaveAs("bethebloch.pdf");
   canvDelta_2->Write();
+  canvDelta_2->SaveAs("betheblochresidual.pdf");
   
   TString fitResults = "Fit results:\n";
-  for (Int_t i = 0; i < nPar; i++) {
+  for (Int_t i = 0; i < funcBB->GetNpar(); i++) {
     fitResults.Append(Form("par%d:\t%f +- %f\n", i, funcBB->GetParameters()[i], funcBB->GetParErrors()[i]));
   }
   
