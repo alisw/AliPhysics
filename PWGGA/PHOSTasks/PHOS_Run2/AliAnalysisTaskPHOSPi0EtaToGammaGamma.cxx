@@ -435,9 +435,9 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::UserCreateOutputObjects()
   //fOutputContainer->Add(h2PhotonPt_TOF_SP2);
 
   const Int_t Ndimg = 4;
-  const Int_t Nbing[Ndimg]    = {500, 12,   30,   30};
-  const Double_t xming[Ndimg] = {  0, -1, -0.3, -0.3};
-  const Double_t xmaxg[Ndimg] = { 50,  1,  0.3,  0.3};
+  const Int_t Nbing[Ndimg]    = {500, 12,  100,  100};
+  const Double_t xming[Ndimg] = {  0, -1, -0.5, -0.5};
+  const Double_t xmaxg[Ndimg] = { 50,  1,  0.5,  0.5};
 
   //const Int_t Ndimg = 2;
   //const Int_t Nbing[Ndimg]    = {500, 12};
@@ -457,14 +457,14 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::UserCreateOutputObjects()
   const Int_t Nasym = sizeof(Asym)/sizeof(Asym[0]);
 
   const Int_t Ndim = 6;
-  const Int_t Nbin[Ndim]    = { 240, 500, 10, 12,   30,   30};
-  const Double_t xmin[Ndim] = {   0,   0,  0, -1, -0.3, -0.3};
-  const Double_t xmax[Ndim] = {0.96,  50,  1,  1,  0.3,  0.3};
+  const Int_t Nbin[Ndim]    = { 240, 500, 10, 12,  100,  100};
+  const Double_t xmin[Ndim] = {   0,   0,  0, -1, -0.5, -0.5};
+  const Double_t xmax[Ndim] = {0.96,  50,  1,  1,  0.5,  0.5};
 
   const Int_t Ndim_mix = 6;
-  const Int_t Nbin_mix[Ndim_mix]    = { 240, 500, 10, 12,   30,   30};
-  const Double_t xmin_mix[Ndim_mix] = {   0,   0,  0, -1, -0.3, -0.3};
-  const Double_t xmax_mix[Ndim_mix] = {0.96,  50,  1,  1,  0.3,  0.3};
+  const Int_t Nbin_mix[Ndim_mix]    = { 240, 500, 10, 12,  100,  100};
+  const Double_t xmin_mix[Ndim_mix] = {   0,   0,  0, -1, -0.5, -0.5};
+  const Double_t xmax_mix[Ndim_mix] = {0.96,  50,  1,  1,  0.5,  0.5};
 
   //same event
   THnSparseF *hs_Mgg = new THnSparseF("hSparseMgg",Form("M_{#gamma#gamma};M_{#gamma#gamma} (GeV/c^{2});p_{T} (GeV/c);asymmetry;cos(%d #Delta#phi);#vec{u} #upoint #vec{Q_{%d A}};#vec{u} #upoint #vec{Q_{%d C}};",fHarmonics,fHarmonics,fHarmonics),Ndim,Nbin,xmin,xmax);
