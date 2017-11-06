@@ -59,13 +59,13 @@ namespace AliUtilTOFParams {
   const TString ps[nSpecies] = {"pi", "k", "p", "d"};
   const TString pSpecies[nSpecies] = {"Pion", "Kaon", "Proton", "Deuteron"};
   const TString pspecies[nSpecies] = {"pion", "kaon", "proton", "deuteron"};
-  const TString speciesRoot[nSpecies*2] = {"#pi^{+}", "#pi^{-}", "K^{+}", "K^{-}", "p", "#bar{p}", "D", "#bar{D}"};
+  const TString speciesRoot[nSpecies * 3] = { "#pi^{+}", "#pi^{-}", "#pi^{+}+#pi^{-}", "K^{+}", "K^{-}", "K^{+}+K^{-}", "p", "#bar{p}", "p+#bar{p}", "D", "#bar{D}", "D+#bar{D}" };
   const TString speciesRootNoSign[nSpecies] = {"#pi", "K", "p", "D"};
   const TString pS_all[kExpSpecies] = {"El", "Mu", "Pi", "K", "P", "D"};
   const TString ps_all[kExpSpecies] = {"el", "mu", "pi", "k", "p", "d"};
   const TString pSpecies_all[kExpSpecies] = {"Electron", "Muon", "Pion", "Kaon", "Proton", "Deuteron"};
   const TString pspecies_all[kExpSpecies] = {"electron", "muon", "pion", "kaon", "proton", "deuteron"};
-  const TString speciesRoot_all[kExpSpecies*2] = {"e^{+}", "e^{-}", "#mu^{+}", "#bar{#mu}", "#pi^{+}", "#pi^{-}", "K^{+}", "K^{-}", "p", "#bar{p}", "D", "#bar{D}"};
+  const TString speciesRoot_all[kExpSpecies * 3] = { "e^{+}", "e^{-}", "e^{+}+e^{-}", "#mu^{+}", "#bar{#mu}", "#mu^{+}+#bar{#mu}", "#pi^{+}", "#pi^{-}", "#pi^{+}+#pi^{-}", "K^{+}", "K^{-}", "K^{+}+K^{-}", "p", "#bar{p}", "p+#bar{p}", "D", "#bar{D}", "D+#bar{D}" };
   const TString speciesRootNoSign_all[kExpSpecies] = {"e", "#mu", "#pi", "K", "p", "d"};
   
   const TString gevoverc = "GeV/#it{c}";
