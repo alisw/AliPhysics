@@ -214,6 +214,7 @@
 #pragma link C++ class VPart+;
 #pragma link C++ namespace PWGJE;
 #pragma link C++ namespace PWGJE::EMCALJetTasks;
+#pragma link C++ class PWGJE::EMCALJetTasks::AliEmcalJetTaggerTaskFast+;
 #pragma link C++ namespace PWGJE::EMCALJetTasks::Test;
 #pragma link C++ class PWGJE::EMCALJetTasks::Test::AliAnalysisTaskEmcalTriggerSelectionTest+;
 

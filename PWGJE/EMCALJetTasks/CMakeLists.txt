@@ -202,6 +202,7 @@ set(SRCS
     UserTasks/AliAnalysisTaskTriggerRejection.cxx
     UserTasks/AliAnalysisTaskV0sInJetsEmcal.cxx
     UserTasks/AliEmcalPicoTrackFromJetMaker.cxx
+    UserTasks/AliEmcalJetTaggerTaskFast.cxx
     UserTasks/AliAnalysisTaskPi0Hadron.cxx
     UserTasks/AliAnalysisTaskEmcalJetTree.cxx
     UserTasks/AliJetEmbeddingSelRhoTask.cxx
