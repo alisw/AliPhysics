@@ -96,16 +96,18 @@ public:
   AliFemtoEventCut* BuildEventCut(const CutParams&) const;
   AliFemtoPairCut* BuildPairCut(const CutParams&) const;
 
-  /// For each cut already set (i.e. pointer is not NULL) this function
-  /// creates two "standard" cut monitor (for pass/fail) and adds them to the
-  /// cut. These cut monitors are found within the AliFemtoCutMonitorPionPion
-  /// nam.
+  /// For each cut already set (i.e. pointer is not NULL) this
+  /// function creates two "standard" cut monitor (for pass/fail) and
+  /// adds them to the cut.
+  /// These cut monitors are found within the AliFemtoCutMonitorPionPion
+  /// namespace.
   void AddStanardCutMonitors();
 
   /// Returns a TList of all objects
   virtual TList* GetOutputList();
 
-  /// Returns a TList of TObjStrings containing the settings of the analysis.
+  /// Returns a TList of TObjStrings containing the settings of the
+  /// analysis.
   virtual TList* ListSettings();
 
 protected:
@@ -199,7 +201,7 @@ struct AliFemtoAnalysisPionPion::CutParams {
 
   Int_t   event_TriggerSelection;
   Bool_t  event_AcceptBadVertex;
-
+  Bool_t  event_AcceptOnlyPhysics;
 
   // PION - 1
   Float_t pion_1_PtMin,

@@ -125,6 +125,7 @@ ConfigFemtoAnalysis(const TString& param_str="")
     macro_config.pair_codes.push_back(0);
   }
 
+  AliFemtoModelManager *model_manager = NULL;
 
   AFAPP::PionType PI_PLUS = AliFemtoAnalysisPionPion::kPiPlus,
                  PI_MINUS = AliFemtoAnalysisPionPion::kPiMinus,
@@ -180,7 +181,10 @@ ConfigFemtoAnalysis(const TString& param_str="")
 
       analysis->AddStanardCutMonitors();
 
-      AliFemtoModelManager *model_manager = NULL;
+      const float QINV_MIN_VAL = 0.0,
+                  QINV_MAX_VAL = macro_config.qinv_max_GeV;
+
+      const int QINV_BIN_COUNT = TMath::Abs((QINV_MAX_VAL - QINV_MIN_VAL) * 1000 / macro_config.qinv_bin_size_MeV);
 
       // setup MC model manager
       if (analysis_config.is_mc_analysis) {

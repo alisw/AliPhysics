@@ -133,8 +133,9 @@ AliFemtoModelCorrFctnQinv::AliFemtoModelCorrFctnQinv(const AliFemtoModelCorrFctn
 {
 }
 
-AliFemtoModelCorrFctnQinv*
-AliFemtoModelCorrFctnQinv::Clone() const
+AliFemtoModelCorrFctn*
+// AliFemtoModelCorrFctnQinv::Clone() const
+AliFemtoModelCorrFctnQinv::Clone()
 {
   AliFemtoModelCorrFctnQinv *result = new AliFemtoModelCorrFctnQinv(*this);
   result->fRecNum->Reset();
