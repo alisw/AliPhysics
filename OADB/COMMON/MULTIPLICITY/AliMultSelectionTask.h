@@ -81,6 +81,7 @@ public:
     TString GetPeriodNameByLPM(TString lTag); //try userInfo first
     TString GetPeriodNameByPath( const TString lPath ) const; //no input required, will have all info in globals...
     TString GetPeriodNameByRunNumber()  const; //no input required, use fCurrentRun
+    TString GetSystemTypeByRunNumber()  const; //no input required, use fCurrentRun
     Bool_t CheckOADB( TString lProdName ) const;
     
     //Check MC type
