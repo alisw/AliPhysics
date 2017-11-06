@@ -471,6 +471,7 @@ class AliReducedVarManager : public TObject {
     kOpAngDcaPtCorr,            // opening angle, corrected for DCA and pT effects
     kPairEff,                     // pair efficiency
     kOneOverPairEff,             // 1 / pair efficiency (correction factor) 
+    kOneOverPairEffSq,             // 1 / pair efficiency squared (correction factor)
     kPairLegITSchi2,              // the ITS chi2 for the pair legs, used in correlations between pair legs
     kPairLegTPCchi2=kPairLegITSchi2+2,              // the TPC chi2 for the pair legs, used in correlations between pair legs
 
