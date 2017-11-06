@@ -183,8 +183,8 @@ void AliAnalysisTaskEmcalJetPerformance::GenerateHistoBins()
   fNEoverPBins = 47;
   fEoverPBins = new Double_t[fNEoverPBins+1];
   GenerateFixedBinArray(30, 0, 1.5, fEoverPBins);
-  GenerateFixedBinArray(10, 1.5, 3.5, fEoverPBins+35);
-  GenerateFixedBinArray(7, 3.5, 10.5, fEoverPBins+41);
+  GenerateFixedBinArray(10, 1.5, 3.5, fEoverPBins+30);
+  GenerateFixedBinArray(7, 3.5, 10.5, fEoverPBins+40);
 }
 
 /**
@@ -1232,7 +1232,7 @@ void AliAnalysisTaskEmcalJetPerformance::FillClusterHistograms()
       histname = "ClusterHistograms/hNcellsM02G04";
       fHistManager.FillTH3(histname, fCent, clus->GetNonLinCorrEnergy(), clus->GetNCells());
     }
-    if (clus->GetM02() < 0.4) {
+    if (clus->GetM02() > 0.1 && clus->GetM02() < 0.4) {
       histname = "ClusterHistograms/hNcellsM02L04";
       fHistManager.FillTH3(histname, fCent, clus->GetNonLinCorrEnergy(), clus->GetNCells());
     }
