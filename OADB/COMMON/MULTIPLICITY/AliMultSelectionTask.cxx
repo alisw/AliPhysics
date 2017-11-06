@@ -1822,7 +1822,7 @@ Int_t AliMultSelectionTask::SetupRun(const AliVEvent* const esd)
         return -1;
     }
     
-    if ( fAlternateOADBForEstimators.EqualTo("")==kTRUE && lPeriodName.EqualTo(lProductionName.Data()) == kFALSE ) {
+    if ( fAlternateOADBForEstimators.EqualTo("")==kTRUE && lPeriodName.EqualTo(lProductionName.Data()) == kFALSE && !GetSystemTypeByRunNumber().EqualTo("pp") ) {
         if ( fAlternateOADBFullManualBypass.EqualTo("")==kTRUE )
             AliWarning(" Auto-detected that this is MC, but you didn't provide a production name!");
         AliWarning(Form(" Auto-detected production name is %s, checking if there...",lProductionName.Data()));
@@ -1850,9 +1850,18 @@ Int_t AliMultSelectionTask::SetupRun(const AliVEvent* const esd)
             }
         }else{
             AliWarning(" OADB for this period exists. Proceeding as usual.");
-        }	
+        }
         fAlternateOADBForEstimators = lProductionName;
-        AliInfo("==================================================");
+        AliWarning("==================================================");
+    }
+    
+    if ( fAlternateOADBForEstimators.EqualTo("")==kTRUE && lPeriodName.EqualTo(lProductionName.Data()) == kFALSE && GetSystemTypeByRunNumber().EqualTo("pp") ) {
+        AliWarning("==================================================");
+        AliWarning(" Auto-detected that this looks like pp MC.") ;
+        AliWarning(" Will now use data OADB as MC OADB, meaning you'll use the same") ;
+        AliWarning(" boundaries in data and Monte Carlo. You should take special ") ;
+        AliWarning(" care if you really need the same <Nch> as in data! ") ;
+        AliWarning("==================================================");
     }
 
     //Determine location of file to open: default OADB
@@ -2424,6 +2433,69 @@ TString AliMultSelectionTask::GetPeriodNameByRunNumber() const
     if ( fCurrentRun >= 280234 && fCurrentRun <= 280235 ) lProductionName = "LHC17n";
     
     return lProductionName;
+}
+//______________________________________________________________________
+TString AliMultSelectionTask::GetSystemTypeByRunNumber() const
+{
+    //============================================================
+    //
+    // This function is meant to get the colliding system.
+    // There should (or might?) be a better way of doing this but
+    // for sure this will always work even on old productions...
+    //
+    // N.B. This will require some bookkeeping of all enabled productions
+    //
+    //============================================================
+    
+    //Will make anything return AliMultSelectionCuts::kNoCalib
+    TString lSystemType = "pp"; //default unless told otherwise
+    
+    //Registered Productions : Run 1 pp
+    if ( fCurrentRun >= 114751 && fCurrentRun <= 117222 ) lSystemType = "pp";
+    if ( fCurrentRun >= 118903 && fCurrentRun <= 120829 ) lSystemType = "pp";
+    if ( fCurrentRun >= 122374 && fCurrentRun <= 126437 ) lSystemType = "pp";
+    if ( fCurrentRun >= 127712 && fCurrentRun <= 130840 ) lSystemType = "pp";
+    
+    //Registered Productions : Run 1 Pb-Pb
+    if ( fCurrentRun >= 136851 && fCurrentRun <= 139517 ) lSystemType = "Pb-Pb";
+    
+    //Registered Productions : Run 2 pp
+    if ( fCurrentRun >= 225000 && fCurrentRun <= 226606 ) lSystemType = "pp";
+    if ( fCurrentRun >= 232914 && fCurrentRun <= 234050 ) lSystemType = "pp";
+    if ( fCurrentRun >= 235196 && fCurrentRun <= 236866 ) lSystemType = "pp";
+    if ( fCurrentRun >= 237003 && fCurrentRun <= 238622 ) lSystemType = "pp";
+    if ( fCurrentRun >= 239319 && fCurrentRun <= 241541 ) lSystemType = "pp";
+    if ( fCurrentRun >= 244340 && fCurrentRun <= 244628 ) lSystemType = "pp";
+    
+    //2016
+    if ( fCurrentRun >= 254124 && fCurrentRun <= 254332 ) lSystemType = "pp";
+    if ( fCurrentRun >= 254378 && fCurrentRun <= 255467 ) lSystemType = "pp";
+    if ( fCurrentRun >= 255515 && fCurrentRun <= 255618 ) lSystemType = "pp";
+    if ( fCurrentRun >= 256146 && fCurrentRun <= 256420 ) lSystemType = "pp";
+    if ( fCurrentRun >= 256504 && fCurrentRun <= 258537 ) lSystemType = "pp";
+    if ( fCurrentRun >= 258883 && fCurrentRun <= 260187 ) lSystemType = "pp";
+    if ( fCurrentRun >= 260218 && fCurrentRun <= 260647 ) lSystemType = "pp";
+    if ( fCurrentRun >= 262395 && fCurrentRun <= 264035 ) lSystemType = "pp";
+    if ( fCurrentRun >= 264076 && fCurrentRun <= 264347 ) lSystemType = "pp";
+    
+    //2017
+    if ( fCurrentRun >= 270822 && fCurrentRun <= 270830 ) lSystemType = "pp";
+    
+    //Registered Productions : Run 2 Pb-Pb
+    if ( fCurrentRun >= 243395 && fCurrentRun <= 243984 ) lSystemType = "Pb-Pb";
+    if ( fCurrentRun >= 244917 && fCurrentRun <= 246994 ) lSystemType = "Pb-Pb";
+    
+    //Registered Productions : Run 2 p-Pb
+    //warning: no distinction between p-Pb and Pb-p so far
+    if ( fCurrentRun >= 265115 && fCurrentRun <= 265525 ) lSystemType = "p-Pb";
+    if ( fCurrentRun >= 265589 && fCurrentRun <= 266318 ) lSystemType = "p-Pb";
+    if ( fCurrentRun >= 266405 && fCurrentRun <= 267131 ) lSystemType = "p-Pb";
+    if ( fCurrentRun >= 267161 && fCurrentRun <= 267166 ) lSystemType = "p-Pb";
+    
+    //Registered production: Run 2 Xe-Xe
+    if ( fCurrentRun >= 280234 && fCurrentRun <= 280235 ) lSystemType = "Xe-Xe";
+    
+    return lSystemType;
 }
 //______________________________________________________________________
 Bool_t AliMultSelectionTask::CheckOADB(TString lProdName) const { 
