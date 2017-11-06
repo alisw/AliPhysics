@@ -295,7 +295,7 @@ void AliReducedVarManager::SetVariableDependencies() {
      fgUsedVars[fgVarDependencyX] = kTRUE; 
      fgUsedVars[fgVarDependencyY] = kTRUE;
   }
-  if(fgUsedVars[kPairEff] || fgUsedVars[kOneOverPairEff]){
+  if(fgUsedVars[kPairEff] || fgUsedVars[kOneOverPairEff] || fgUsedVars[kOneOverPairEffSq]){
     fgUsedVars[fgEffMapVarDependencyX] = kTRUE;
     fgUsedVars[fgEffMapVarDependencyY] = kTRUE;
   }
@@ -1147,7 +1147,7 @@ void AliReducedVarManager::FillTrackInfo(BASETRACK* p, Float_t* values) {
   }
 
   //pair efficiency variables
-  if((fgUsedVars[kPairEff] || fgUsedVars[kOneOverPairEff]) && fgPairEffMap) {
+  if((fgUsedVars[kPairEff] || fgUsedVars[kOneOverPairEff] || fgUsedVars[kOneOverPairEffSq]) && fgPairEffMap) {
     Int_t binX = fgPairEffMap->GetXaxis()->FindBin(values[fgEffMapVarDependencyX]);
     if(binX==0) binX = 1;
     if(binX==fgPairEffMap->GetXaxis()->GetNbins()+1) binX -= 1;
@@ -1159,6 +1159,7 @@ void AliReducedVarManager::FillTrackInfo(BASETRACK* p, Float_t* values) {
     if (pairEff > 1.0e-6) oneOverPairEff = 1/pairEff;
     values[kPairEff] = pairEff;
     values[kOneOverPairEff] = oneOverPairEff;
+    values[kOneOverPairEffSq] = oneOverPairEff*oneOverPairEff;
   }
   
   // Fill VZERO flow variables
@@ -1801,7 +1802,7 @@ void AliReducedVarManager::FillPairInfoME(BASETRACK* t1, BASETRACK* t2, Int_t ty
   if(fgUsedVars[kPhi]) values[kPhi] = p.Phi();
   if(fgUsedVars[kTheta]) values[kTheta] = p.Theta();
 
-  if((fgUsedVars[kPairEff] || fgUsedVars[kOneOverPairEff]) && fgPairEffMap) {
+  if((fgUsedVars[kPairEff] || fgUsedVars[kOneOverPairEff] || fgUsedVars[kOneOverPairEffSq]) && fgPairEffMap) {
     Int_t binX = fgPairEffMap->GetXaxis()->FindBin(values[fgEffMapVarDependencyX]); //make sure the values[XVar] are filled for EM
     if(binX==0) binX = 1;
     if(binX==fgPairEffMap->GetXaxis()->GetNbins()+1) binX -= 1;
@@ -1813,6 +1814,7 @@ void AliReducedVarManager::FillPairInfoME(BASETRACK* t1, BASETRACK* t2, Int_t ty
     if (pairEff > 1.0e-6) oneOverPairEff = 1/pairEff;
     values[kPairEff] = pairEff;
     values[kOneOverPairEff] = oneOverPairEff;
+    values[kOneOverPairEffSq] = oneOverPairEff*oneOverPairEff;
   }
 
   values[kDeltaEta] = TMath::Abs( t1->Eta() - t2->Eta()  );
@@ -2451,7 +2453,8 @@ void AliReducedVarManager::SetDefaultVarNames() {
   fgVariableNames[kPairPhiV]          = "#varphi^{*}_{v}";       fgVariableUnits[kPairPhiV]          = "rad.";
   fgVariableNames[kPairEff]           = "pair eff.";             fgVariableUnits[kPairEff]           = "";
   fgVariableNames[kOneOverPairEff]    = "1/pair eff.";           fgVariableUnits[kOneOverPairEff]    = "";
-    for(Int_t i=0;i<2;++i) {
+  fgVariableNames[kOneOverPairEffSq]  = "1/pair eff. squared";   fgVariableUnits[kOneOverPairEffSq]  = "";
+  for(Int_t i=0;i<2;++i) {
      fgVariableNames[kPairLegTPCchi2+i] = Form("TPC #chi^{2}, leg %d", i+1);
      fgVariableUnits[kPairLegTPCchi2+i] = "";
      fgVariableNames[kPairLegITSchi2+i] = Form("ITS #chi^{2}, leg %d", i+1);
