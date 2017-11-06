@@ -79,6 +79,7 @@ AliAnalysisTrackingUncertaintiesAOT::AliAnalysisTrackingUncertaintiesAOT()
   fMC(0),
   fRequireVtxTracks(kTRUE),
   fUsePtLogAxis(kFALSE),
+  fUseFinePtAxis(kFALSE),
   fUseGenPt(kFALSE),
   fDoCutV0multTPCout(kFALSE),
   fListHist(0x0),
@@ -114,6 +115,7 @@ AliAnalysisTrackingUncertaintiesAOT::AliAnalysisTrackingUncertaintiesAOT(const c
     fMC(0),
     fRequireVtxTracks(kTRUE),
     fUsePtLogAxis(kFALSE),
+    fUseFinePtAxis(kFALSE),
     fUseGenPt(kFALSE),
     fDoCutV0multTPCout(kFALSE),
     fListHist(0x0),
@@ -628,7 +630,7 @@ void AliAnalysisTrackingUncertaintiesAOT::BinLogAxis(const THnSparseF *h, Int_t 
   TAxis *axis = h->GetAxis(axisNumber);
   int bins = axis->GetNbins();
     
-  Double_t from = axis->GetXmin();
+  Double_t from = 0.1;
   Double_t to = axis->GetXmax();
   Double_t *newBins = new Double_t[bins + 1];
     
@@ -640,6 +642,35 @@ void AliAnalysisTrackingUncertaintiesAOT::BinLogAxis(const THnSparseF *h, Int_t 
   }
   axis->Set(bins, newBins);
   delete [] newBins;
+    
+}
+
+
+
+
+//________________________________________________________________________
+void AliAnalysisTrackingUncertaintiesAOT::BinFinePt(const THnSparseF *h, Int_t axisNumber) {
+    //
+    // Method for the correct logarithmic binning of histograms
+    //
+    TAxis *axis = h->GetAxis(axisNumber);
+    int bins = 16;
+    
+    Double_t from = 0.1;
+    Double_t to = axis->GetXmax();
+    Double_t *newBins = new Double_t[bins + 1];
+    
+    newBins[0] = from;
+    for (int i = 1;  i < 10; i++) newBins[i] = 0.1*i + newBins[0];//w=0.1 from 0.1-1 GeV/c
+    for (int i = 10; i < 13; i++) newBins[i] = 1. + newBins[i-1]; //w=1.  from 1-4 GeV/c
+
+    newBins[13] = 6.;
+    newBins[14] = 8.;
+    newBins[15] = 11.;
+    newBins[16] = to;
+
+    axis->Set(bins, newBins);
+    delete [] newBins;
     
 }
 
@@ -785,6 +816,7 @@ void AliAnalysisTrackingUncertaintiesAOT::InitializeTrackCutHistograms() {
   //
   THnSparseF * histTpcItsMatch = new THnSparseF("histTpcItsMatch","TPC -> ITS matching",kNumberOfAxes, binsTpcItsMatch, minTpcItsMatch, maxTpcItsMatch);
   if(fUsePtLogAxis)BinLogAxis(histTpcItsMatch, 1);
+  if(fUseFinePtAxis)BinFinePt(histTpcItsMatch, 1);
   fListHist->Add(histTpcItsMatch);
   //
   for (Int_t iaxis=0; iaxis<kNumberOfAxes;iaxis++){
