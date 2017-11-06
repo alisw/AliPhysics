@@ -186,7 +186,18 @@ private:
   TFile            *fileNUApos; //!
   TFile            *fileNUAneg; //!
 
-  TH1D         *fEtaBinFinderForQA; //!
+  TProfile2D     *fAvgMultCentRun;   //!
+  TProfile2D  *fAvgWgtMultCentRun;   //!
+  TProfile2D   *fAvgPOIposCentRun;   //!
+  TProfile2D   *fAvgPOInegCentRun;   //!
+  TProfile2D    *fAvgPOIPPCentRun;   //! same sign Pos-Pos pairs
+  TProfile2D    *fAvgPOINNCentRun;   //! same sign Neg-Neg pairs
+  TProfile2D    *fAvgPOIOSCentRun;   //! opposite sign pairs
+
+  TProfile2D      *fV0MultChVsRun;   //!
+
+  TH1F           *fEventStatvsRun;   //!
+  TH1D        *fEtaBinFinderForQA;   //!
 
 
 

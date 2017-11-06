@@ -209,23 +209,20 @@ class AliAnalysisTaskCMEV0;
       //exit(1);
     }
   }
-
-  if(bApplyNUA) {
-    TFile* fNUAFile = TFile::Open(sNUAFile,"READ");
-    if(fNUAFile){
-      TList* fListNUA = dynamic_cast<TList*>(fNUAFile->FindObjectAny("fNUA_ChPosChNeg"));
-      if(fListNUA){
-        taskQC_prot->SetInputListNUA(fListNUA);
-      }
-      else{
-       printf("\n\n *** ERROR: NUA File present but List not found! **** \n\n");
+  if(bApplyNUA){
+     TFile* fNUAFile = TFile::Open(sNUAFile,"READ");
+     if(!fNUAFile) {
+       printf("\n\n *** ERROR: NUA wgt file not found! **EXIT** \n\n");
+       //exit(1);
+     } 
+     TList* fListNUA = dynamic_cast<TList*>(fNUAFile->FindObjectAny("fNUA_ChPosChNeg"));
+     if(fListNUA){
+       taskQC_prot->SetInputListNUA(fListNUA);
+     }
+     else{
+       printf("\n\n *** ERROR: NUA wgt List not found! **EXIT** \n\n");
        //return NULL;
-      }
-    }
-    else if(!fNUAFile) {
-      printf("\n\n *** ERROR: NUA wgt file not found! **** \n\n");
-      //exit(1);
-    } 
+     }
   }
 
   if(bZDCGainEq){

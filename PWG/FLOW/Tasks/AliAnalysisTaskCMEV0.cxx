@@ -112,6 +112,15 @@ AliAnalysisTaskCMEV0::AliAnalysisTaskCMEV0(const TString name):AliAnalysisTaskSE
   mListNUANeg(NULL),
   fileNUApos(NULL),
   fileNUAneg(NULL),
+  fAvgMultCentRun(NULL),
+  fAvgWgtMultCentRun(NULL),
+  fAvgPOIposCentRun(NULL),
+  fAvgPOInegCentRun(NULL),
+  fAvgPOIPPCentRun(NULL),
+  fAvgPOINNCentRun(NULL),
+  fAvgPOIOSCentRun(NULL),
+  fV0MultChVsRun(NULL),
+  fEventStatvsRun(NULL),
   fEtaBinFinderForQA(NULL)
 {
   for(int i=0;i<90;i++){
@@ -273,6 +282,15 @@ AliAnalysisTaskCMEV0::AliAnalysisTaskCMEV0(): AliAnalysisTaskSE(),
   mListNUANeg(NULL),
   fileNUApos(NULL),
   fileNUAneg(NULL),
+  fAvgMultCentRun(NULL),
+  fAvgWgtMultCentRun(NULL),
+  fAvgPOIposCentRun(NULL),
+  fAvgPOInegCentRun(NULL),
+  fAvgPOIPPCentRun(NULL),
+  fAvgPOINNCentRun(NULL),
+  fAvgPOIOSCentRun(NULL),
+  fV0MultChVsRun(NULL),
+  fEventStatvsRun(NULL),
   fEtaBinFinderForQA(NULL)
 {
   for(int i=0;i<90;i++){
@@ -524,7 +542,10 @@ void AliAnalysisTaskCMEV0::UserExec(Option_t *)
  runindex = GetCurrentRunIndex(runNumber);
 
  if(runNumber!=fOldRunNum){ 
-   OpenInfoCalbration(runNumber);
+
+   if(sDataSet=="2015" || sDataSet=="2015PbPb")
+     OpenInfoCalbration(runNumber);
+
    if(bApplyNUACorr){
      GetNUACorrectionHist(runNumber,EvtCent);
    }
@@ -540,23 +561,57 @@ void AliAnalysisTaskCMEV0::UserExec(Option_t *)
 //-------- V0 info ---------------
  const AliAODVZERO *fAODV0 = aod->GetVZEROData();
 
- Double_t Qxan  = 0, Qyan  = 0;
- Double_t Qxcn  = 0, Qycn  = 0;
- Double_t sumMa = 0, sumMc = 0;
 
- GetV0QvectAndMult(fAODV0, Qxan, Qyan, sumMa, Qxcn, Qycn, sumMc);
+ Double_t QyanCor = 0., QycnCor = 0.;
+ Double_t QxanCor = 0., QxcnCor = 0.;
+ Double_t Qxan  = 0., Qyan  = 0.;
+ Double_t Qxcn  = 0., Qycn  = 0.;
+ Double_t sumMa = 0., sumMc = 0.;
+ Double_t fMultv0 = 0.;
+ Double_t phiV0 = 0.;
 
 
- Double_t QyanCor = (Qyan - fQynmV0A->GetBinContent(iCentSPD+1))/fQynsV0A->GetBinContent(iCentSPD+1);
- Double_t QycnCor = (Qycn - fQynmV0C->GetBinContent(iCentSPD+1))/fQynsV0C->GetBinContent(iCentSPD+1);
+ if(sDataSet=="2015" || sDataSet=="2015PbPb") {
+   GetV0QvectAndMult(fAODV0, Qxan, Qyan, sumMa, Qxcn, Qycn, sumMc);
 
- Double_t QxanCor = Qxan;
- Double_t QxcnCor = Qxcn;
+   QyanCor = (Qyan - fQynmV0A->GetBinContent(iCentSPD+1))/fQynsV0A->GetBinContent(iCentSPD+1);
+   QycnCor = (Qycn - fQynmV0C->GetBinContent(iCentSPD+1))/fQynsV0C->GetBinContent(iCentSPD+1);
 
- if(fHarmonic != 4.){
-   QxanCor = (Qxan - fQxnmV0A->GetBinContent(iCentSPD+1))/fQxnsV0A->GetBinContent(iCentSPD+1);
-   QxcnCor = (Qxcn - fQxnmV0C->GetBinContent(iCentSPD+1))/fQxnsV0C->GetBinContent(iCentSPD+1);
+   QxanCor = Qxan;
+   QxcnCor = Qxcn;
+
+   if(fHarmonic != 4.){
+     QxanCor = (Qxan - fQxnmV0A->GetBinContent(iCentSPD+1))/fQxnsV0A->GetBinContent(iCentSPD+1);
+     QxcnCor = (Qxcn - fQxnmV0C->GetBinContent(iCentSPD+1))/fQxnsV0C->GetBinContent(iCentSPD+1);
+   }
  }
+ else{
+
+  for(int iV0 = 0; iV0 < 64; iV0++) { //0-31 is V0C, 32-63 VOA
+
+    fMultv0 = fAODV0->GetMultiplicity(iV0);
+    fV0MultChVsRun->Fill(iV0+0.5,runindex,fMultv0);
+
+    phiV0 = TMath::PiOver4()*(0.5 + iV0 % 8);
+ 
+    if(iV0 < 32){
+      Qxcn += TMath::Cos(fHarmonic*phiV0) * fMultv0;
+      Qycn += TMath::Sin(fHarmonic*phiV0) * fMultv0;
+      sumMc += fMultv0;
+    }
+    else if(iV0 >= 32){
+      Qxan += TMath::Cos(fHarmonic*phiV0) * fMultv0;
+      Qyan += TMath::Sin(fHarmonic*phiV0) * fMultv0;
+      sumMa += fMultv0;
+    }
+  }
+   QxanCor = Qxan;
+   QxcnCor = Qxcn;
+   QyanCor = Qyan;
+   QycnCor = Qycn;
+ }
+
+
 
  if(sumMa < 0 || sumMc < 0)   return;
  fHist_Event_count->Fill(stepCount); //5
@@ -585,12 +640,12 @@ void AliAnalysisTaskCMEV0::UserExec(Option_t *)
    energyZPA = energyZPA * fHCorrectZDNP->GetBinContent((abs(EvtCent)+1),4);
  }
 
+ /*
  fHEnergyZNCvsCent->Fill(EvtCent,energyZNC);
  fHEnergyZNAvsCent->Fill(EvtCent,energyZNA);
  fHEnergyZPCvsCent->Fill(EvtCent,energyZPC);
  fHEnergyZPAvsCent->Fill(EvtCent,energyZPA);
  
- /*
  fHEnergyZNCvsCentRun->Fill(EvtCent,runindex,energyZNC);
  fHEnergyZNAvsCentRun->Fill(EvtCent,runindex,energyZNA);
  fHEnergyZPCvsCentRun->Fill(EvtCent,runindex,energyZPC);
@@ -666,7 +721,8 @@ void AliAnalysisTaskCMEV0::UserExec(Option_t *)
  Int_t ptBin;
  Int_t nRefMult = 0;
  Int_t n = fHarmonic/2.0;  // Because, cos(nphi1 + nphi2 - 2nPsi)//
- 
+ Double_t nRefMultWgt = 0.;
+
  Int_t iCentRec = 0;  //centrality bin for track recenter 
  iCentRec = fHCentBinTrkRecenter->FindBin(EvtCent);
 
@@ -863,8 +919,6 @@ void AliAnalysisTaskCMEV0::UserExec(Option_t *)
 
 
 
-
-
    iEtaQA = fEtaBinFinderForQA->FindBin(dEta1) - 1;
 
    if(dChrg1>0){
@@ -874,7 +928,7 @@ void AliAnalysisTaskCMEV0::UserExec(Option_t *)
      QyAutoPos[0] += (ptw1*ptw1*w1NUA*w1NUA*TMath::Sin(2.*n*dPhi1) - AvgDWSin2n);
      MPOIpos += w1NUA*ptw1;
      //QA: eta dependence
-     if(EvtCent>=20 && EvtCent<30){
+     if(EvtCent>=10 && EvtCent<20){
        QxPosQAEta[iEtaQA] +=  (ptw1*w1NUA*TMath::Cos(n*dPhi1) - AvgCos1n);
        QyPosQAEta[iEtaQA] +=  (ptw1*w1NUA*TMath::Sin(n*dPhi1) - AvgSin1n);
        QxAutoPosQAEta[iEtaQA] += (ptw1*ptw1*w1NUA*w1NUA*TMath::Cos(2.*n*dPhi1) - AvgDWCos2n);
@@ -889,7 +943,7 @@ void AliAnalysisTaskCMEV0::UserExec(Option_t *)
      QyAutoNeg[0] += (ptw1*ptw1*w1NUA*w1NUA*TMath::Sin(2.*n*dPhi1) - AvgDWSin2n);
      MPOIneg += w1NUA*ptw1;
      //QA: eta dependence
-     if(EvtCent>=20 && EvtCent<30){
+     if(EvtCent>=10 && EvtCent<20){
        QxNegQAEta[iEtaQA] +=  (ptw1*TMath::Cos(n*dPhi1) - AvgCos1n);
        QyNegQAEta[iEtaQA] +=  (ptw1*TMath::Sin(n*dPhi1) - AvgSin1n);
        QxAutoNegQAEta[iEtaQA] += (ptw1*ptw1*TMath::Cos(2.*n*dPhi1) - AvgDWCos2n);
@@ -904,7 +958,8 @@ void AliAnalysisTaskCMEV0::UserExec(Option_t *)
    QyTPC[1] += ptw1*w1NUA*TMath::Sin(2.*n*dPhi1);
 
    nRefMult++;
-
+   nRefMultWgt += ptw1*w1NUA;
+  
 
    //if(fabs(w1NUA)>2.0){
    //  std::cout<<" track = "<<i<<" Ch = "<<dChrg1<<"\tPt = "<<dPt1<<"\tptw = "<<ptw1<<"\tw1NUA = "<<w1NUA<<"\tVtxZ = "<<VtxZ<<std::endl;
@@ -993,8 +1048,13 @@ void AliAnalysisTaskCMEV0::UserExec(Option_t *)
 
 
 
+ fEventStatvsRun->Fill(runindex);
 
  if(isBadRun) return;
+ fHist_Event_count->Fill(stepCount); //6
+ stepCount++;
+
+
 
  Double_t QTPCRe = 0.;
  Double_t QTPCIm = 0.;
@@ -1039,7 +1099,7 @@ void AliAnalysisTaskCMEV0::UserExec(Option_t *)
 
  Double_t TwoQpQnV = 0.,TwoQpQpV=0.,TwoQnQnV=0.;
 
- if(uPM > 1 && uNM > 1){
+ if(uPM > 1 && uNM > 1) {
    //CME w.r.t V0A EP:
    TwoQpQnV = ((uPRe*uNRe-uPIm*uNIm)*QxanCor + (uPRe*uNIm+uPIm*uNRe)*QyanCor) / (uPM*uNM) ;
    TwoQpQpV = ((uPRe*uPRe-uPIm*uPIm-uP2Re)*QxanCor + (2.*uPRe*uPIm-uP2Im)*QyanCor) / (uPM*(uPM-1.)) ;
@@ -1152,6 +1212,15 @@ void AliAnalysisTaskCMEV0::UserExec(Option_t *)
    //-----------------------------------------
 
 
+   //Fill Mult, POIs vs cent:
+
+   fAvgMultCentRun->Fill(EvtCent,runindex,nRefMult); 
+   fAvgWgtMultCentRun->Fill(EvtCent,runindex,nRefMultWgt);
+   fAvgPOIposCentRun->Fill(EvtCent,runindex,uPM); 
+   fAvgPOInegCentRun->Fill(EvtCent,runindex,uNM); 
+   fAvgPOIPPCentRun->Fill(EvtCent,runindex,uPM*(uPM-1.));
+   fAvgPOINNCentRun->Fill(EvtCent,runindex,uNM*(uNM-1.));
+   fAvgPOIOSCentRun->Fill(EvtCent,runindex,uPM*uNM);
 
 
    //------------ eta depedence -----------------
@@ -1231,6 +1300,7 @@ void AliAnalysisTaskCMEV0::UserExec(Option_t *)
    fHist_Reso2n_ZDN_SP_Det[2]->Fill(EvtCent, 1., (QTPCRe*QxcnCor+QTPCIm*QycnCor)*energyZNA);
    fHist_Reso2n_ZDN_SP_Det[2]->Fill(EvtCent, 2., (QTPCRe*QxcnCor+QTPCIm*QycnCor)*energyZNC);
    fHist_Reso2n_ZDN_SP_Det[2]->Fill(EvtCent, 3., (QTPCRe*QxcnCor+QTPCIm*QycnCor)*(energyZNA+energyZNC));
+
 
  }
 
@@ -1902,6 +1972,8 @@ void AliAnalysisTaskCMEV0::InitializeRunArray(TString sPeriod){
 
  Int_t runArray_2015[90] = {246994, 246991, 246989, 246984, 246982, 246980, 246948, 246945, 246928, 246871, 246870, 246867, 246865, 246864, 246859, 246858, 246851, 246847, 246846, 246845, 246844, 246810, 246809, 246808, 246807, 246805, 246804, 246766, 246765, 246763, 246760, 246759, 246758, 246757, 246751, 246750, 246676, 246675, 246540, 246495, 246493, 246488, 246487, 246434, 246431, 246428, 246424, 246276, 246275, 246272, 246271, 246225, 246222, 246217, 246185, 246182, 246181, 246180, 246178, 246153, 246152, 246151, 246148, 246115, 246113, 246089, 246087, 246053, 246052, 246049, 246048, 246042, 246037, 246036, 246012, 246003, 246001, 245963, 245954, 245952, 245949, 245923, 245833, 245831, 245829, 245705, 245702, 245700, 245692, 245683};
 
+ Int_t runArray_pPb_13cpass2[14] = {195677, 195675, 195673, 195644, 195635, 195633, 195596, 195593, 195592, 195568, 195567, 195566, 195531, 195529};
+
  if(sPeriod=="2010"){
   fRunFlag = 89;
   for(int i=0;i<fRunFlag;i++)
@@ -1912,11 +1984,18 @@ void AliAnalysisTaskCMEV0::InitializeRunArray(TString sPeriod){
   for(int i=0;i<fRunFlag;i++)
     runNums[i] = runArray_2011[i];
  }
- else if(sPeriod=="2015"){
+ else if(sPeriod=="2015" || sPeriod=="2015PbPb"){
   fRunFlag = 90;
   for(int i=0;i<fRunFlag;i++)
     runNums[i] = runArray_2015[i];
  }
+ else if(sPeriod=="2015pPb" || sPeriod=="pPb"){
+  fRunFlag = 14;
+  for(int i=0;i<fRunFlag;i++)
+    runNums[i] = runArray_pPb_13cpass2[i];
+ }
+
+
  else{
    printf("\n\n ***** Run Number not defined for this data set. *******\n\n Please modify code..\n\n");
    exit(1);
@@ -1934,7 +2013,8 @@ void AliAnalysisTaskCMEV0::DefineHistograms(){
   fHist_Event_count->GetXaxis()->SetBinLabel(3,"PileUp");
   fHist_Event_count->GetXaxis()->SetBinLabel(4,"iCentSPD<90");
   fHist_Event_count->GetXaxis()->SetBinLabel(5,"V0 Mult>0");
-  fHist_Event_count->GetXaxis()->SetBinLabel(6,"..TBA..");
+  fHist_Event_count->GetXaxis()->SetBinLabel(6,"Bad Runs");
+  fHist_Event_count->GetXaxis()->SetBinLabel(7,"..TBA..");
 
   fHist_Event_count->GetXaxis()->SetBinLabel(10,"Final Event");
   fListHistos->Add(fHist_Event_count);
@@ -2041,9 +2121,11 @@ void AliAnalysisTaskCMEV0::DefineHistograms(){
   fListHistos->Add(fHTPCEventPlaneVsCent);
 
 
+  TH1::SetDefaultSumw2();
+
   Char_t name[100], title[100];
  
-  TH1::SetDefaultSumw2();
+
 
   //Differential in pT:
   //Double_t pTRange[24] = {0,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1.,1.2,1.4,1.6,1.8,2.,2.33,2.66,3.,3.5,4.,5.,6.,8.,10.};
@@ -2154,8 +2236,17 @@ void AliAnalysisTaskCMEV0::DefineHistograms(){
 
 
 
+
+
+
+
+
+
   //=========== Calibtation Histograms etc ==================
   fListCalibs->Add(fHist_Event_count);
+
+  fEventStatvsRun = new TH1F("fEventStatvsRun","Event stat per run",fRunFlag,0,fRunFlag);
+  fListCalibs->Add(fEventStatvsRun);
 
   //for debug only, remove after stable code
   hUnderOverBinNUApos = new TH1F("hUnderOverBinNUApos","",90,0,90);
@@ -2265,6 +2356,8 @@ void AliAnalysisTaskCMEV0::DefineHistograms(){
   }
 
 
+  fV0MultChVsRun = new TProfile2D("fV0MultChVsRun","1-32 V0C, 33-64 V0A",64,0,64,fRunFlag,0,fRunFlag,"");
+  fListCalibs->Add(fV0MultChVsRun);
 
 
 
@@ -2282,6 +2375,28 @@ void AliAnalysisTaskCMEV0::DefineHistograms(){
   fListCalibs->Add(fTPCQnxVsCentRun);
   fTPCQnyVsCentRun = new TProfile2D("fTPCSin2nVsCentRun","<Sin2> vs cent,Run",90,0,90,fRunFlag,0,fRunFlag,"s");
   fListCalibs->Add(fTPCQnyVsCentRun);
+
+
+  //Average Multiplicity, same-sign, opposite-sign pair vs Centrality 1% :
+
+  fAvgMultCentRun = new TProfile2D("fAvgMultCentRun","<Mult> vs cent,Run",90,0,90,fRunFlag,0,fRunFlag,"s");
+  fListCalibs->Add(fAvgMultCentRun);
+  fAvgWgtMultCentRun = new TProfile2D("fAvgWgtMultCentRun","<wgt*Mult> vs cent,Run",90,0,90,fRunFlag,0,fRunFlag,"s");
+  fListCalibs->Add(fAvgWgtMultCentRun);
+  fAvgPOIposCentRun = new TProfile2D("fAvgPOIposCentRun","<wgt*POIs> ch-pos vs cent,Run",90,0,90,fRunFlag,0,fRunFlag,"s");
+  fListCalibs->Add(fAvgPOIposCentRun);
+  fAvgPOInegCentRun = new TProfile2D("fAvgPOInegCentRun","<wgt*POIs> ch-neg vs cent,Run",90,0,90,fRunFlag,0,fRunFlag,"s");
+  fListCalibs->Add(fAvgPOInegCentRun);
+  fAvgPOIPPCentRun = new TProfile2D("fAvgPOIPPCentRun","<wgt*POIs> Pos-Pos vs cent,Run",90,0,90,fRunFlag,0,fRunFlag,"s");
+  fListCalibs->Add(fAvgPOIPPCentRun);
+  fAvgPOINNCentRun = new TProfile2D("fAvgPOINNCentRun","<wgt*POIs> Neg-Neg vs cent,Run",90,0,90,fRunFlag,0,fRunFlag,"s");
+  fListCalibs->Add(fAvgPOINNCentRun);
+  fAvgPOIOSCentRun = new TProfile2D("fAvgPOIOSCentRun","<wgt*POIs> oppo.-sign vs cent,Run",90,0,90,fRunFlag,0,fRunFlag,"s");
+  fListCalibs->Add(fAvgPOIOSCentRun);
+
+
+
+
 
 
   for(int i=0;i<10;i++){
