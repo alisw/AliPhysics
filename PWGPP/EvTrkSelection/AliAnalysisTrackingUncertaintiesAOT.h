@@ -124,7 +124,7 @@ class AliAnalysisTrackingUncertaintiesAOT : public AliAnalysisTaskSE {
   AliAnalysisTrackingUncertaintiesAOT(const AliAnalysisTrackingUncertaintiesAOT&);
   AliAnalysisTrackingUncertaintiesAOT& operator=(const AliAnalysisTrackingUncertaintiesAOT&);
     
-  ClassDef(AliAnalysisTrackingUncertaintiesAOT, 6);
+  ClassDef(AliAnalysisTrackingUncertaintiesAOT, 7);
 };
 
 #endif
