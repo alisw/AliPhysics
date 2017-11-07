@@ -798,11 +798,11 @@ void AddTask_GammaCalo_pp(  Int_t     trainConfig                   = 1,        
     cuts.AddCut("00010113","2444400040013300000","0163103100000010");
   } else if (trainConfig == 382){ // PHOS clusters
     cuts.AddCut("00062113","2444400040013300000","0163103100000010");
+
   // PHOS clusters RUN2 config pp 5 TeV
   } else if (trainConfig == 383){ // PHOS clusters with larger acceptance
-    cuts.AddCut("00010113","2446600040013300000","0163803100000010");
-    cuts.AddCut("00062113","2446600040013300000","0163803100000010");
-
+    cuts.AddCut("00010113","2446600040013300000","0163103100000010");
+    cuts.AddCut("00062113","2446600040013300000","0163103100000010");
 
   // *********************************************************************************************************
   // 5 TeV  pp Run2 - EMC configurations
@@ -927,8 +927,8 @@ void AddTask_GammaCalo_pp(  Int_t     trainConfig                   = 1,        
   // *********************************************************************************************************
   // 13 TeV  pp Run2 - EMC configurations
   // *********************************************************************************************************
-  
-  } else if (trainConfig == 500){ // EMCAL clusters 
+
+  } else if (trainConfig == 500){ // EMCAL clusters
     cuts.AddCut("00010113","1111100017032220000","01631031000000d0"); // 1000ns timing cut, no NL INT7
     cuts.AddCut("00010113","1111100067032220000","01631031000000d0"); // -30ns, 35ns timing cut, no NL INT7
   } else if (trainConfig == 501){ // EMCAL clusters
