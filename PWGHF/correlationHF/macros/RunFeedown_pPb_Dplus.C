@@ -26,16 +26,16 @@ void SetInputFileNameRoot(TString fileinputroot){
   inputfileroot=fileinputroot;
 }
 
-void RunFeedown_pPb_Dplus(Int_t collsyst, Bool_t subtrMCclos, Bool_t oldnames){
-  GetEnvelopeForEachV2(collsyst,subtrMCclos,oldnames);
-  GetTotalEnvelopeFromV2(collsyst,subtrMCclos,oldnames);
+void RunFeedown_pPb_Dplus(Int_t collsyst, Bool_t subtrMCclos, Bool_t oldnames, Int_t centbin){
+  GetEnvelopeForEachV2(collsyst,subtrMCclos,oldnames,centbin);
+  GetTotalEnvelopeFromV2(collsyst,subtrMCclos,oldnames,centbin);
 }
 void SetFDtemplateSystemString(TString str){
   strSystemFDtempl=str;
 }
 
 //_____________________________________________________________
-void GetEnvelopeForEachV2(Int_t collsyst, Bool_t subtrMCclos, Bool_t oldnames){
+void GetEnvelopeForEachV2(Int_t collsyst, Bool_t subtrMCclos, Bool_t oldnames, Int_t centbin){
     
     //**********************************
     // This function loops on all the templates, creating 5 envelopes for different v2 values.
@@ -132,7 +132,7 @@ void GetEnvelopeForEachV2(Int_t collsyst, Bool_t subtrMCclos, Bool_t oldnames){
             
       
             // first one - no v2
-            SubtractFDexploitingClassDplus(Dpt[iDpt],Dpt[iDpt+1],hadpt[ihadpt],hadptMax[ihadpt],outputfilename.Data(),2,purities[ihadpt],1,inputcorrelation.Data(),inputfc.Data(),templatedir.Data(),collsyst,0,0,systmode,oldnames,subtrMCclos);
+            SubtractFDexploitingClassDplus(Dpt[iDpt],Dpt[iDpt+1],hadpt[ihadpt],hadptMax[ihadpt],outputfilename.Data(),2,purities[ihadpt],1,inputcorrelation.Data(),inputfc.Data(),templatedir.Data(),collsyst,0,0,systmode,oldnames,subtrMCclos,centbin);
             if(!collsyst) continue; // if pp, stop here
             
         
@@ -140,34 +140,34 @@ void GetEnvelopeForEachV2(Int_t collsyst, Bool_t subtrMCclos, Bool_t oldnames){
             // v2 combination 1
             outputfilename = "./Final_Plots_pPb/Singlev2Envelope/pPb_FDsubDplus";
             outputfilename += Form("Pt%dto%dassoc%1.1fto%1.1f",(int)Dpt[iDpt], (int)Dpt[iDpt+1], hadpt[ihadpt],hadptMax[ihadpt]);
-            SubtractFDexploitingClassDplus(Dpt[iDpt],Dpt[iDpt+1],hadpt[ihadpt],hadptMax[ihadpt],outputfilename.Data(),2,purities[ihadpt],1,inputcorrelation.Data(),inputfc.Data(),templatedir.Data(),collsyst,v2Dmax,v2hadmax,systmode,oldnames,subtrMCclos);
+            SubtractFDexploitingClassDplus(Dpt[iDpt],Dpt[iDpt+1],hadpt[ihadpt],hadptMax[ihadpt],outputfilename.Data(),2,purities[ihadpt],1,inputcorrelation.Data(),inputfc.Data(),templatedir.Data(),collsyst,v2Dmax,v2hadmax,systmode,oldnames,subtrMCclos,centbin);
            
            
             //________________________________________________________________
             // v2 combination 2
             outputfilename = "./Final_Plots_pPb/Singlev2Envelope/pPb_FDsubDplus";
             outputfilename += Form("Pt%dto%dassoc%1.1fto%1.1f",(int)Dpt[iDpt], (int)Dpt[iDpt+1], hadpt[ihadpt],hadptMax[ihadpt]);
-            SubtractFDexploitingClassDplus(Dpt[iDpt],Dpt[iDpt+1],hadpt[ihadpt],hadptMax[ihadpt],outputfilename.Data(),2,purities[ihadpt],1,inputcorrelation.Data(),inputfc.Data(),templatedir.Data(),collsyst,v2Dmin,v2hadmax,systmode,oldnames,subtrMCclos);
+            SubtractFDexploitingClassDplus(Dpt[iDpt],Dpt[iDpt+1],hadpt[ihadpt],hadptMax[ihadpt],outputfilename.Data(),2,purities[ihadpt],1,inputcorrelation.Data(),inputfc.Data(),templatedir.Data(),collsyst,v2Dmin,v2hadmax,systmode,oldnames,subtrMCclos,centbin);
             
             
             //________________________________________________________________
             // v2 combination 3
             outputfilename = "./Final_Plots_pPb/Singlev2Envelope/pPb_FDsubDplus";
             outputfilename += Form("Pt%dto%dassoc%1.1fto%1.1f",(int)Dpt[iDpt], (int)Dpt[iDpt+1], hadpt[ihadpt],hadptMax[ihadpt]);
-            SubtractFDexploitingClassDplus(Dpt[iDpt],Dpt[iDpt+1],hadpt[ihadpt],hadptMax[ihadpt],outputfilename.Data(),2,purities[ihadpt],1,inputcorrelation.Data(),inputfc.Data(),templatedir.Data(),collsyst,v2Dmax,v2hadmin,systmode,oldnames,subtrMCclos);
+            SubtractFDexploitingClassDplus(Dpt[iDpt],Dpt[iDpt+1],hadpt[ihadpt],hadptMax[ihadpt],outputfilename.Data(),2,purities[ihadpt],1,inputcorrelation.Data(),inputfc.Data(),templatedir.Data(),collsyst,v2Dmax,v2hadmin,systmode,oldnames,subtrMCclos,centbin);
             
             //________________________________________________________________
             // v2 combination 4
             outputfilename = "./Final_Plots_pPb/Singlev2Envelope/pPb_FDsubDplus";
             outputfilename += Form("Pt%dto%dassoc%1.1fto%1.1f",(int)Dpt[iDpt], (int)Dpt[iDpt+1], hadpt[ihadpt],hadptMax[ihadpt]);
-            SubtractFDexploitingClassDplus(Dpt[iDpt],Dpt[iDpt+1],hadpt[ihadpt],hadptMax[ihadpt],outputfilename.Data(),2,purities[ihadpt],1,inputcorrelation.Data(),inputfc.Data(),templatedir.Data(),collsyst,v2Dmin,v2hadmin,systmode,oldnames,subtrMCclos);
+            SubtractFDexploitingClassDplus(Dpt[iDpt],Dpt[iDpt+1],hadpt[ihadpt],hadptMax[ihadpt],outputfilename.Data(),2,purities[ihadpt],1,inputcorrelation.Data(),inputfc.Data(),templatedir.Data(),collsyst,v2Dmin,v2hadmin,systmode,oldnames,subtrMCclos,centbin);
         }
         
     }
     
 } // end function
 //___________________________________________________________
-void GetTotalEnvelopeFromV2(Int_t collsyst, Bool_t subtrMCclos, Bool_t oldnames){
+void GetTotalEnvelopeFromV2(Int_t collsyst, Bool_t subtrMCclos, Bool_t oldnames, Int_t centbin){
     // note - this functions has to be runned only on p-Pb... setting it by mistake to pp should abort the process
     //Int_t collsyst = 2; // 0 is pp, 1 is p-Pb 2013, 2 is pPb 2016 (note that if you run on pp, it will perform only the v2=0 feeddown
     
@@ -258,7 +258,7 @@ void GetTotalEnvelopeFromV2(Int_t collsyst, Bool_t subtrMCclos, Bool_t oldnames)
             // GetTemplateFromFit(hFDtemplFile[0],hFDtempl[0],"cFitFD",0,v2D,v2Had);
 
             // running everything
-            SubtractFDexploitingClassDplusv2Modulations(Dpt[iDpt],Dpt[iDpt+1],hadpt[ihadpt],hadptMax[ihadpt],outputfilename.Data(),2,purities[ihadpt],1,inputcorrelation.Data(),inputfc.Data(),templatedir.Data(),collsyst,systmode,oldnames,subtrMCclos); // collsyst is always set to 1!
+            SubtractFDexploitingClassDplusv2Modulations(Dpt[iDpt],Dpt[iDpt+1],hadpt[ihadpt],hadptMax[ihadpt],outputfilename.Data(),2,purities[ihadpt],1,inputcorrelation.Data(),inputfc.Data(),templatedir.Data(),collsyst,systmode,oldnames,subtrMCclos,centbin); // collsyst is always set to 1!
             
         }
         

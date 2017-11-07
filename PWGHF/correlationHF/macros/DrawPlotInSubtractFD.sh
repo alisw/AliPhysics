@@ -9,6 +9,7 @@ declare -i ptAssoc=$5
 declare -i reflect=$6
 declare -i rebinAzi=$7
 declare -i localcode=$8
+declare -i centralitybin=$9
 declare dirmacroFD="${ALICE_PHYSICS}/../src/PWGHF/correlationHF/macros"
 
 declare -ai ptTrigMin=(3 5 8 16) 
@@ -32,6 +33,6 @@ Printf("Meson: %d",$mesonIndex);
 Printf("Trig pt: %f to %f",(Double_t)(${ptTrigMin[$ptTrig]}),(Double_t)(${ptTrigMax[$ptTrig]}));
 Printf("Min pt assoc: %f",(Double_t)(${ptAssocMin[$ptAssoc]})/10.);
 Printf("Coll syst=%d",${collsyst})
-OpenOutputFileAndDrawReflect("$file",(Double_t)(${ptTrigMin[$ptTrig]}),(Double_t)(${ptTrigMax[$ptTrig]}),${mesonIndex},(Double_t)(${ptAssocMin[$ptAssoc]})/10.,(Double_t)(${ptAssocMax[$ptAssoc]})/10.,1,${collsyst},${reflect},${maxrange[${collsyst}]},${rebinAzi})
+OpenOutputFileAndDrawReflect("$file",(Double_t)(${ptTrigMin[$ptTrig]}),(Double_t)(${ptTrigMax[$ptTrig]}),${mesonIndex},(Double_t)(${ptAssocMin[$ptAssoc]})/10.,(Double_t)(${ptAssocMax[$ptAssoc]})/10.,1,${collsyst},${reflect},${maxrange[${collsyst}]},${rebinAzi},0,$centralitybin)
 .q
 EOF

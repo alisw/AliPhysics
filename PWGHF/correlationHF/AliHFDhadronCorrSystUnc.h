@@ -31,6 +31,10 @@ class AliHFDhadronCorrSystUnc : public TNamed{
   void InitStandardUncertaintiesPP2010(Int_t meson,Double_t ptD,Double_t minptAss,Double_t maxptAss);
   void InitStandardUncertaintiesPPb2013(Int_t meson,Double_t ptD,Double_t minptAss,Double_t maxptAss);
   void InitStandardUncertaintiesPPb2016(Int_t meson,Double_t ptD,Double_t minptAss,Double_t maxptAss);
+  void InitStandardUncertaintiesPPb2016in020(Int_t meson,Double_t ptD,Double_t minptAss,Double_t maxptAss);
+  void InitStandardUncertaintiesPPb2016in2060(Int_t meson,Double_t ptD,Double_t minptAss,Double_t maxptAss);
+  void InitStandardUncertaintiesPPb2016in60100(Int_t meson,Double_t ptD,Double_t minptAss,Double_t maxptAss);
+  
   // Method with uncertainties for pp 2010, Dzero and D*+ and pt assoc> 0.3 GeV/c, with values used for HP2013
   void InitStandardUncertaintiesPP2010DzeroLowPtAss03();
   void InitStandardUncertaintiesPP2010DzeroMidPtAss03();
@@ -216,6 +220,146 @@ class AliHFDhadronCorrSystUnc : public TNamed{
   void InitStandardUncertaintiesPPb2016DplusMidPtAss2to3();
   void InitStandardUncertaintiesPPb2016DplusHighPtAss2to3();
   void InitStandardUncertaintiesPPb2016DplusVeryHighPtAss2to3();  
+
+  // Method with uncertainties for pPb 2016 0-20%
+  void InitStandardUncertaintiesPPb2016DzeroLowPtAss03to99in020();
+  void InitStandardUncertaintiesPPb2016DzeroMidPtAss03to99in020();
+  void InitStandardUncertaintiesPPb2016DzeroHighPtAss03to99in020();
+  void InitStandardUncertaintiesPPb2016DzeroVeryHighPtAss03to99in020();
+
+  void InitStandardUncertaintiesPPb2016DstarLowPtAss03to99in020();
+  void InitStandardUncertaintiesPPb2016DstarMidPtAss03to99in020();
+  void InitStandardUncertaintiesPPb2016DstarHighPtAss03to99in020();
+  void InitStandardUncertaintiesPPb2016DstarVeryHighPtAss03to99in020();
+
+  void InitStandardUncertaintiesPPb2016DplusLowPtAss03to99in020();
+  void InitStandardUncertaintiesPPb2016DplusMidPtAss03to99in020();
+  void InitStandardUncertaintiesPPb2016DplusHighPtAss03to99in020();
+  void InitStandardUncertaintiesPPb2016DplusVeryHighPtAss03to99in020();
+
+  void InitStandardUncertaintiesPPb2016DzeroLowPtAss03to1in020();
+  void InitStandardUncertaintiesPPb2016DzeroMidPtAss03to1in020();
+  void InitStandardUncertaintiesPPb2016DzeroHighPtAss03to1in020();
+  void InitStandardUncertaintiesPPb2016DzeroVeryHighPtAss03to1in020();
+
+  void InitStandardUncertaintiesPPb2016DstarLowPtAss03to1in020();
+  void InitStandardUncertaintiesPPb2016DstarMidPtAss03to1in020();
+  void InitStandardUncertaintiesPPb2016DstarHighPtAss03to1in020();
+  void InitStandardUncertaintiesPPb2016DstarVeryHighPtAss03to1in020();
+
+  void InitStandardUncertaintiesPPb2016DplusLowPtAss03to1in020();
+  void InitStandardUncertaintiesPPb2016DplusMidPtAss03to1in020();
+  void InitStandardUncertaintiesPPb2016DplusHighPtAss03to1in020();
+  void InitStandardUncertaintiesPPb2016DplusVeryHighPtAss03to1in020();
+
+  void InitStandardUncertaintiesPPb2016DzeroLowPtAss1to99in020();
+  void InitStandardUncertaintiesPPb2016DzeroMidPtAss1to99in020();
+  void InitStandardUncertaintiesPPb2016DzeroHighPtAss1to99in020();
+  void InitStandardUncertaintiesPPb2016DzeroVeryHighPtAss1to99in020();
+
+  void InitStandardUncertaintiesPPb2016DstarLowPtAss1to99in020();
+  void InitStandardUncertaintiesPPb2016DstarMidPtAss1to99in020();
+  void InitStandardUncertaintiesPPb2016DstarHighPtAss1to99in020();
+  void InitStandardUncertaintiesPPb2016DstarVeryHighPtAss1to99in020();
+
+  void InitStandardUncertaintiesPPb2016DplusLowPtAss1to99in020();
+  void InitStandardUncertaintiesPPb2016DplusMidPtAss1to99in020();
+  void InitStandardUncertaintiesPPb2016DplusHighPtAss1to99in020();
+  void InitStandardUncertaintiesPPb2016DplusVeryHighPtAss1to99in020();
+
+    // Method with uncertainties for pPb 2016 20-60%
+  void InitStandardUncertaintiesPPb2016DzeroLowPtAss03to99in2060();
+  void InitStandardUncertaintiesPPb2016DzeroMidPtAss03to99in2060();
+  void InitStandardUncertaintiesPPb2016DzeroHighPtAss03to99in2060();
+  void InitStandardUncertaintiesPPb2016DzeroVeryHighPtAss03to99in2060();
+
+  void InitStandardUncertaintiesPPb2016DstarLowPtAss03to99in2060();
+  void InitStandardUncertaintiesPPb2016DstarMidPtAss03to99in2060();
+  void InitStandardUncertaintiesPPb2016DstarHighPtAss03to99in2060();
+  void InitStandardUncertaintiesPPb2016DstarVeryHighPtAss03to99in2060();
+
+  void InitStandardUncertaintiesPPb2016DplusLowPtAss03to99in2060();
+  void InitStandardUncertaintiesPPb2016DplusMidPtAss03to99in2060();
+  void InitStandardUncertaintiesPPb2016DplusHighPtAss03to99in2060();
+  void InitStandardUncertaintiesPPb2016DplusVeryHighPtAss03to99in2060();
+
+  void InitStandardUncertaintiesPPb2016DzeroLowPtAss03to1in2060();
+  void InitStandardUncertaintiesPPb2016DzeroMidPtAss03to1in2060();
+  void InitStandardUncertaintiesPPb2016DzeroHighPtAss03to1in2060();
+  void InitStandardUncertaintiesPPb2016DzeroVeryHighPtAss03to1in2060();
+
+  void InitStandardUncertaintiesPPb2016DstarLowPtAss03to1in2060();
+  void InitStandardUncertaintiesPPb2016DstarMidPtAss03to1in2060();
+  void InitStandardUncertaintiesPPb2016DstarHighPtAss03to1in2060();
+  void InitStandardUncertaintiesPPb2016DstarVeryHighPtAss03to1in2060();
+
+  void InitStandardUncertaintiesPPb2016DplusLowPtAss03to1in2060();
+  void InitStandardUncertaintiesPPb2016DplusMidPtAss03to1in2060();
+  void InitStandardUncertaintiesPPb2016DplusHighPtAss03to1in2060();
+  void InitStandardUncertaintiesPPb2016DplusVeryHighPtAss03to1in2060();
+
+  void InitStandardUncertaintiesPPb2016DzeroLowPtAss1to99in2060();
+  void InitStandardUncertaintiesPPb2016DzeroMidPtAss1to99in2060();
+  void InitStandardUncertaintiesPPb2016DzeroHighPtAss1to99in2060();
+  void InitStandardUncertaintiesPPb2016DzeroVeryHighPtAss1to99in2060();
+
+  void InitStandardUncertaintiesPPb2016DstarLowPtAss1to99in2060();
+  void InitStandardUncertaintiesPPb2016DstarMidPtAss1to99in2060();
+  void InitStandardUncertaintiesPPb2016DstarHighPtAss1to99in2060();
+  void InitStandardUncertaintiesPPb2016DstarVeryHighPtAss1to99in2060();
+
+  void InitStandardUncertaintiesPPb2016DplusLowPtAss1to99in2060();
+  void InitStandardUncertaintiesPPb2016DplusMidPtAss1to99in2060();
+  void InitStandardUncertaintiesPPb2016DplusHighPtAss1to99in2060();
+  void InitStandardUncertaintiesPPb2016DplusVeryHighPtAss1to99in2060();
+
+    // Method with uncertainties for pPb 2016 60-100%
+  void InitStandardUncertaintiesPPb2016DzeroLowPtAss03to99in60100();
+  void InitStandardUncertaintiesPPb2016DzeroMidPtAss03to99in60100();
+  void InitStandardUncertaintiesPPb2016DzeroHighPtAss03to99in60100();
+  void InitStandardUncertaintiesPPb2016DzeroVeryHighPtAss03to99in60100();
+
+  void InitStandardUncertaintiesPPb2016DstarLowPtAss03to99in60100();
+  void InitStandardUncertaintiesPPb2016DstarMidPtAss03to99in60100();
+  void InitStandardUncertaintiesPPb2016DstarHighPtAss03to99in60100();
+  void InitStandardUncertaintiesPPb2016DstarVeryHighPtAss03to99in60100();
+
+  void InitStandardUncertaintiesPPb2016DplusLowPtAss03to99in60100();
+  void InitStandardUncertaintiesPPb2016DplusMidPtAss03to99in60100();
+  void InitStandardUncertaintiesPPb2016DplusHighPtAss03to99in60100();
+  void InitStandardUncertaintiesPPb2016DplusVeryHighPtAss03to99in60100();
+
+  void InitStandardUncertaintiesPPb2016DzeroLowPtAss03to1in60100();
+  void InitStandardUncertaintiesPPb2016DzeroMidPtAss03to1in60100();
+  void InitStandardUncertaintiesPPb2016DzeroHighPtAss03to1in60100();
+  void InitStandardUncertaintiesPPb2016DzeroVeryHighPtAss03to1in60100();
+
+  void InitStandardUncertaintiesPPb2016DstarLowPtAss03to1in60100();
+  void InitStandardUncertaintiesPPb2016DstarMidPtAss03to1in60100();
+  void InitStandardUncertaintiesPPb2016DstarHighPtAss03to1in60100();
+  void InitStandardUncertaintiesPPb2016DstarVeryHighPtAss03to1in60100();
+
+  void InitStandardUncertaintiesPPb2016DplusLowPtAss03to1in60100();
+  void InitStandardUncertaintiesPPb2016DplusMidPtAss03to1in60100();
+  void InitStandardUncertaintiesPPb2016DplusHighPtAss03to1in60100();
+  void InitStandardUncertaintiesPPb2016DplusVeryHighPtAss03to1in60100();
+
+  void InitStandardUncertaintiesPPb2016DzeroLowPtAss1to99in60100();
+  void InitStandardUncertaintiesPPb2016DzeroMidPtAss1to99in60100();
+  void InitStandardUncertaintiesPPb2016DzeroHighPtAss1to99in60100();
+  void InitStandardUncertaintiesPPb2016DzeroVeryHighPtAss1to99in60100();
+
+  void InitStandardUncertaintiesPPb2016DstarLowPtAss1to99in60100();
+  void InitStandardUncertaintiesPPb2016DstarMidPtAss1to99in60100();
+  void InitStandardUncertaintiesPPb2016DstarHighPtAss1to99in60100();
+  void InitStandardUncertaintiesPPb2016DstarVeryHighPtAss1to99in60100();
+
+  void InitStandardUncertaintiesPPb2016DplusLowPtAss1to99in60100();
+  void InitStandardUncertaintiesPPb2016DplusMidPtAss1to99in60100();
+  void InitStandardUncertaintiesPPb2016DplusHighPtAss1to99in60100();
+  void InitStandardUncertaintiesPPb2016DplusVeryHighPtAss1to99in60100();
+
+  void InitStandardUncertaintiesPPb2016DummyValues();
 
   /////////////
 
