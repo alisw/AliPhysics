@@ -14,7 +14,7 @@
 /// * Generated photon pT spectra, considering also those falling in the EMCal or DCal acceptance
 /// * Reconstructed invariant mass plots 2D and projections for EMCal/DCal
 ///
-/// To execute:root -q -b -l DrawPtHardBins.C'(1,50,kFALSE)'
+/// To execute:root -q -b -l DrawPtHardBins.C'(1,50,20,1,kFALSE)'
 ///
 /// The input files Scaled.root and NotScaled.root are obtained executing the script:
 /// * DownloadExtractScaleMergePtHardAnalysisFiles.sh
@@ -54,54 +54,59 @@
 /// Input:
 /// \param minE: minimum energy/pT on plots with E/pT spectra 
 /// \param maxE: maximum energy/pT on plots with E/pT spectra 
+/// \param nBin: total number of pT hard bins
+/// \param firstBin: first pT hard bin (sometimes it is 0)
 /// \param scaleHisto: bool, if true the do the scaling of the unscaled plots
 //_______________________________________________________________________
-void DrawPtHardBins(  
-                    Int_t minE = 1,
-                    Int_t maxE = 50,
-                    Bool_t scaleHisto = kFALSE
-                    )
+void DrawPtHardBins
+(  
+ Int_t minE = 1,
+ Int_t maxE = 70,
+ const Int_t nBin = 20,
+ Int_t firstBin = 1,
+ Bool_t scaleHisto = kFALSE
+ )
 {
   TH1F * hNEvents;
   TH1F * hXsec;
   TH1F * hTrials;
 
-  TH1F * hPtHard[20][2];
+  TH1F * hPtHard[nBin][2];
   TH1F * hPtHardSum[2];
   
-  TH1F * hClusterE[20][2];
+  TH1F * hClusterE[nBin][2];
   TH1F * hClusterESum[2];
   
-  TH1F * hClusterD[20][2];
+  TH1F * hClusterD[nBin][2];
   TH1F * hClusterDSum[2];
 
-  TH1F * hTrackPt[20][2][3];
+  TH1F * hTrackPt[nBin][2][3];
   TH1F * hTrackPtSum[2][3];
 
-  TH1F * hPi0[20][2];
+  TH1F * hPi0[nBin][2];
   TH1F * hPi0Sum[2];
   
-  TH1F * hPi0E[20][2];
+  TH1F * hPi0E[nBin][2];
   TH1F * hPi0ESum[2];
 
-  TH1F * hPi0D[20][2];
+  TH1F * hPi0D[nBin][2];
   TH1F * hPi0DSum[2];
 
-  TH1F * hGam[20][2];
+  TH1F * hGam[nBin][2];
   TH1F * hGamSum[2];
 
-  TH1F * hGamE[20][2];
+  TH1F * hGamE[nBin][2];
   TH1F * hGamESum[2];
   
-  TH1F * hGamD[20][2];
+  TH1F * hGamD[nBin][2];
   TH1F * hGamDSum[2];
   
-  TH2F * hEtaPhi     [20][2];
-  TH2F * hCellEtaPhi [20][2];
-  TH2F * hTrackEtaPhi[20][2];
+  TH2F * hEtaPhi     [nBin][2];
+  TH2F * hCellEtaPhi [nBin][2];
+  TH2F * hTrackEtaPhi[nBin][2];
   
-  TH2F * hIMEMCal[20][2];
-  TH2F * hIMDCal [20][2];
+  TH2F * hIMEMCal[nBin][2];
+  TH2F * hIMDCal [nBin][2];
   
   TH2F * hEtaPhiSum     [2];
   TH2F * hCellEtaPhiSum [2];
@@ -110,13 +115,13 @@ void DrawPtHardBins(
   TH2F * hIMEMCalSum[2];
   TH2F * hIMDCalSum [2];
     
-  TH2F* hTrackPhiGlobal[20][2];
-  TH2F* hTrackPhiNoSPD [20][2];  
+  TH2F* hTrackPhiGlobal[nBin][2];
+  TH2F* hTrackPhiNoSPD [nBin][2];  
   
   TH2F* hTrackPhiGlobalSum[2];
   TH2F* hTrackPhiNoSPDSum [2];
   
-  TFile * f[20][2];
+  TFile * f[nBin][2];
   TFile * fTot [2];
   
   Int_t color[] = 
@@ -124,20 +129,21 @@ void DrawPtHardBins(
     kViolet-3, kViolet, kViolet+3, kOrange-3, kOrange, kOrange+3, kYellow-3, kYellow, kYellow+3,
     kMagenta-3, kMagenta,kMagenta+3};
   
-  Double_t scale[20];
+  Double_t scale[nBin];
 
   for(Int_t k = 0; k < 2; k++)
   {
     if ( k==1 ) fTot[k] = TFile::Open("Scaled.root"   ,"read");
     else        fTot[k] = TFile::Open("NotScaled.root","read");
     
-    for(Int_t i = 0; i < 20; i++)
+    for(Int_t i = 0; i < nBin; i++)
     {
-      if ( k==1 ) f[i][k] = TFile::Open(Form("%d/ScaledMerged.root"   ,i+1),"read");
-      else        f[i][k] = TFile::Open(Form("%d/NotScaledMerged.root",i+1),"read");
-      //printf("i %d, f %p\n",i,f);
+      if ( k==1 ) f[i][k] = TFile::Open(Form("%d/ScaledMerged.root"   ,i+firstBin),"read");
+      else        f[i][k] = TFile::Open(Form("%d/NotScaledMerged.root",i+firstBin),"read");
+    
+      if(!f[i][k]) continue;
       
-      if(!f[k]) continue;
+      //printf("i %d, k %d, f %p\n",i,k,f[i][k]);
       
       hPtHard[i][k] = (TH1F*) f[i][k]->Get("hPtHard");
       hPtHard[i][k]->SetLineColor(color[i]);
@@ -182,6 +188,7 @@ void DrawPtHardBins(
       
       for(Int_t j=0; j<3; j++)
       {
+        if(!hTrackPt[i][k][j]) continue;
         if(j==0) hTrackPt[i][k][j] = (TH1F*) f[i][k]->Get("AnaHadrons_hPt");
         if(j==1) hTrackPt[i][k][j] = (TH1F*) f[i][k]->Get("AnaHadrons_hPtSPDRefit");
         if(j==2) hTrackPt[i][k][j] = (TH1F*) f[i][k]->Get("AnaHadrons_hPtNoSPDRefit");
@@ -264,7 +271,7 @@ void DrawPtHardBins(
       if ( k==1 || (k==0 && !scaleHisto))
       {
         hPtHardSum[k] = (TH1F*) fTot[k]->Get("hPtHard");
-        hPtHardSum[k]->SetLineColor(color[i]);
+        hPtHardSum[k]->SetLineColor(1);
         hPtHardSum[k]->SetLineWidth(2);
         //hPtHardSum[k]->SetAxisRange(minE, maxE,"X");
         
@@ -283,6 +290,7 @@ void DrawPtHardBins(
         
         for(Int_t j = 0; j < 3; j++)
         {
+          if(!hTrackPtSum[k][j]) continue;
           if(j==0) hTrackPtSum[k][j] = (TH1F*) fTot[k]->Get("AnaHadrons_hPt");
           if(j==1) hTrackPtSum[k][j] = (TH1F*) fTot[k]->Get("AnaHadrons_hPtSPDRefit");
           if(j==2) hTrackPtSum[k][j] = (TH1F*) fTot[k]->Get("AnaHadrons_hPtNoSPDRefit");
@@ -503,11 +511,14 @@ void DrawPtHardBins(
     //hClusterESum[k]->SetMinimum(1);
     l.AddEntry(hClusterESum[k],"Sum","L");
     
-    for(Int_t i = 0; i < 20; i++)
+    for(Int_t i = 0; i < nBin; i++)
     {
+      if(!hClusterE[i][k]) continue;
       hClusterE[i][k]->Draw("H same");
-      l.AddEntry(hClusterE[i][k],Form("Bin %d",i),"L");
+      l.AddEntry(hClusterE[i][k],Form("Bin %d",i+firstBin),"L");
     }
+    
+    hClusterESum[k]->Draw("H same");
     
     l.Draw();
     
@@ -525,11 +536,13 @@ void DrawPtHardBins(
       hClusterDSum[k]->Draw("H");
       //hClusterDSum[k]->SetMinimum(1);
       
-      for(Int_t i = 0; i < 20; i++)
+      for(Int_t i = 0; i < nBin; i++)
       {
         hClusterD[i][k]->Draw("H same");
       }
       
+      hClusterDSum[k]->Draw("H same");
+
       l.Draw();
       
       cD->Print(Form("Cluster_Energy_DCal_%s.eps",scaleCase[k].Data()));
@@ -545,14 +558,16 @@ void DrawPtHardBins(
     
     hPtHardSum[k]->SetTitle(Form("Generated parton hard-pT, %s",scaleTitle[k].Data()));
     hPtHardSum[k]->Draw("H");
-    //hClusterESum[k]->SetMinimum(1);
-    l.AddEntry(hPtHardSum[k],"Sum","L");
+    //hPtHardSum[k]->SetMinimum(1);
     
-    for(Int_t i = 0; i < 20; i++)
+    for(Int_t i = 0; i < nBin; i++)
     {
+      if(!hPtHard[i][k]) continue;
       hPtHard[i][k]->Draw("H same");
     }
     
+    hPtHardSum[k]->Draw("H same");
+
     l.Draw();
     
     cHard->Print(Form("PtHard_%s.eps",scaleCase[k].Data()));
@@ -571,8 +586,9 @@ void DrawPtHardBins(
       hTrackPtSum[k][j]->SetTitle(Form("Hybrid tracks, %s",scaleTitle[k].Data()));
       hTrackPtSum[k][j]->Draw("H");
       //hTrackPtSum[k][j]->SetMinimum(1);  
-      for(Int_t i = 0; i < 20; i++)
+      for(Int_t i = 0; i < nBin; i++)
       {
+        if(!hTrackPt[i][k][j]) continue;
         hTrackPt[i][k][j]->Draw("H same");
       }
       
@@ -594,8 +610,9 @@ void DrawPtHardBins(
     hPi0Sum[k]->Draw("H");
     //hPi0Sum[k]->SetMinimum(1);
     
-    for(Int_t i = 0; i < 20; i++)
+    for(Int_t i = 0; i < nBin; i++)
     {
+      if(!hPi0[i][k]) continue;
       hPi0[i][k]->Draw("H same");
     }
     
@@ -613,8 +630,9 @@ void DrawPtHardBins(
     hPi0ESum[k]->Draw("H");
     //hPi0ESum[k]->SetMinimum(1);
     
-    for(Int_t i = 0; i < 20; i++)
+    for(Int_t i = 0; i < nBin; i++)
     {
+      if(!hPi0E[i][k]) continue;
       hPi0E[i][k]->Draw("H same");
     }
     
@@ -623,24 +641,28 @@ void DrawPtHardBins(
     cPi0E->Print(Form("GeneratedPi0_EMCal_Pt_%s.eps",scaleCase[k].Data()));
     
     // DCal
-    TCanvas * cPi0D = new TCanvas(Form("cPi0D%d",k),Form("Generated Pi0 in DCal acceptance %s", scaleCase[k].Data()), 200,200);
-    
-    gPad->SetLogy();
-    //gPad->SetLogx();
-    
-    hPi0DSum[k]->SetTitle(Form("Generated #pi^{0} in DCal, %s",scaleTitle[k].Data()));
-    hPi0DSum[k]->Draw("H");
-    //hPi0DSum[k]->SetMinimum(1);
-    
-    for(Int_t i = 0; i < 20; i++)
+    if(hPi0DSum[k])
     {
-      hPi0D[i][k]->Draw("H same");
+      TCanvas * cPi0D = new TCanvas(Form("cPi0D%d",k),Form("Generated Pi0 in DCal acceptance %s", scaleCase[k].Data()), 200,200);
+      
+      gPad->SetLogy();
+      //gPad->SetLogx();
+      
+      hPi0DSum[k]->SetTitle(Form("Generated #pi^{0} in DCal, %s",scaleTitle[k].Data()));
+      hPi0DSum[k]->Draw("H");
+      //hPi0DSum[k]->SetMinimum(1);
+      
+      for(Int_t i = 0; i < nBin; i++)
+      {
+        if(!hPi0D[i][k]) continue;
+        hPi0D[i][k]->Draw("H same");
+      }
+      
+      l.Draw();
+      
+      cPi0D->Print(Form("GeneratedPi0_DCal_Pt_%s.eps",scaleCase[k].Data()));
     }
     
-    l.Draw();
-    
-    cPi0D->Print(Form("GeneratedPi0_DCal_Pt_%s.eps",scaleCase[k].Data()));
-
     //
     // Generated Gamma spectrum
     //
@@ -654,8 +676,9 @@ void DrawPtHardBins(
     hGamSum[k]->Draw("H");
     //hGamSum[k]->SetMinimum(1);
     
-    for(Int_t i = 0; i < 20; i++)
+    for(Int_t i = 0; i < nBin; i++)
     {
+      if(!hGam[i][k]) continue;
       hGam[i][k]->Draw("H same");
     }
     
@@ -673,8 +696,9 @@ void DrawPtHardBins(
     hGamESum[k]->Draw("H");
     //hGamESum[k]->SetMinimum(1);
     
-    for(Int_t i = 0; i < 20; i++)
+    for(Int_t i = 0; i < nBin; i++)
     {
+      if(!hGamE[i][k]) continue;
       hGamE[i][k]->Draw("H same");
     }
     
@@ -683,24 +707,28 @@ void DrawPtHardBins(
     cGamE->Print(Form("GeneratedGamma_EMCal_Pt_%s.eps",scaleCase[k].Data()));
     
     // DCal
-    TCanvas * cGamD = new TCanvas(Form("cGammaD%d",k),Form("Generated Gamma in DCal acceptance %s", scaleCase[k].Data()), 200,200);
-    
-    gPad->SetLogy();
-    //gPad->SetLogx();
-    
-    hGamDSum[k]->SetTitle(Form("Generated #gamma in DCal acceptance, %s",scaleTitle[k].Data()));
-    hGamDSum[k]->Draw("H");
-    //hGamDSum[k]->SetMinimum(1);
-    
-    for(Int_t i = 0; i < 20; i++)
+    if(hGamDSum[k])
     {
-      hGamD[i][k]->Draw("H same");
+      TCanvas * cGamD = new TCanvas(Form("cGammaD%d",k),Form("Generated Gamma in DCal acceptance %s", scaleCase[k].Data()), 200,200);
+      
+      gPad->SetLogy();
+      //gPad->SetLogx();
+      
+      hGamDSum[k]->SetTitle(Form("Generated #gamma in DCal acceptance, %s",scaleTitle[k].Data()));
+      hGamDSum[k]->Draw("H");
+      //hGamDSum[k]->SetMinimum(1);
+      
+      for(Int_t i = 0; i < nBin; i++)
+      {
+        if(!hGamD[i][k]) continue;
+        hGamD[i][k]->Draw("H same");
+      }
+      
+      l.Draw();
+      
+      cGamD->Print(Form("GeneratedGamma_DCal_Pt_%s.eps",scaleCase[k].Data()));
     }
     
-    l.Draw();
-    
-    cGamD->Print(Form("GeneratedGamma_DCal_Pt_%s.eps",scaleCase[k].Data()));
-
     ////////////////////////////
     // Inv. Mass. Projections //
     ////////////////////////////
