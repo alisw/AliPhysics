@@ -23,6 +23,20 @@ enum eventMixConfig { kDisabled = -1,
 		      k5Cent,          //=2 //10 events, Dvz = 1cm, DC = 5
 };
 
+enum eventCutSet { kEvtDefault=0,
+		   kNoPileUpCut, //=1
+		   kDefaultVtx12,//=2
+		   kDefaultVtx8, //=3
+		   kDefaultVtx5, //=4                    
+		   kMCEvtDefault, //=5
+		   kSpecial1, //=6                   
+		   kSpecial2, //=7
+		   kNoEvtSel, //=8 
+		   kSpecial3,//=9
+		   kSpecial4, //=10
+		   kSpecial5 //=11
+};
+
 
 AliRsnMiniAnalysisTask *AddTaskKStarPlusMinus8TeVpp
 (
@@ -30,6 +44,7 @@ AliRsnMiniAnalysisTask *AddTaskKStarPlusMinus8TeVpp
  Bool_t      isPP,
  UInt_t      triggerMask=AliVEvent::kINT7,
  Float_t     cutV = 10.0,
+ Int_t       evtCutSetID = 0,
  Int_t       mixingConfigID = 0,
  Int_t       aodFilterBit = 5,
  Bool_t      enableSys = kFALSE,
@@ -70,6 +85,16 @@ AliRsnMiniAnalysisTask *AddTaskKStarPlusMinus8TeVpp
   Double_t    vtxZcut=10.0;//cm, default cut on vtx z                                                   
   if(isMC) rejectPileUp=kFALSE;
   
+  if (evtCutSetID==eventCutSet::kDefaultVtx12){vtxZcut = 12.0;} //cm
+  
+  if (evtCutSetID==eventCutSet::kDefaultVtx8){vtxZcut = 8.0;} //cm
+  
+  if (evtCutSetID==eventCutSet::kDefaultVtx5){vtxZcut = 5.0;}//cm
+  
+  if (evtCutSetID==eventCutSet::kNoPileUpCut){rejectPileUp=kFALSE;}//cm
+  
+  if(evtCutSetID==eventCutSet::kSpecial2) vtxZcut=1.e6;//off
+  
   //-------------------------------------------
   //mixing settings
   //-------------------------------------------
@@ -92,13 +117,15 @@ AliRsnMiniAnalysisTask *AddTaskKStarPlusMinus8TeVpp
    
    // create the task and configure 
    TString taskName = Form("KStarPlusMinus%s%s_%.1f_%d_%.1f_%.1f_%.2f_%.4f_%.2f_%.2f_%.1f", (isPP? "pp" : "PbPb"), (isMC ? "MC" : "Data"),cutV,NTPCcluster,piPIDCut,pi_k0s_PIDCut,massTol,k0sDCA,k0sCosPoinAn,k0sDaughDCA);
-   //TString taskName=Form("TOFKstar%s%s_%i%i",(isPP? "pp" : "PbPb"),(isMC ? "MC" : "Data"),(Int_t)cutKaCandidate);
    AliRsnMiniAnalysisTask* task = new AliRsnMiniAnalysisTask(taskName.Data(),isMC);                   
-   task->UseESDTriggerMask(triggerMask);
+   // task->UseESDTriggerMask(triggerMask);
 
-   //if(isPP) 
+   if(evtCutSetID==eventCutSet::kSpecial4 || evtCutSetID==eventCutSet::kSpecial5) task->UseESDTriggerMask(triggerMask); //ESD ****** check this *****
+   if(evtCutSetID!=eventCutSet::kNoEvtSel && evtCutSetID!=eventCutSet::kSpecial3 && evtCutSetID!=eventCutSet::kSpecial4) task->SelectCollisionCandidates(triggerMask); //AOD
+  
+   
    task->UseMultiplicity("QUALITY");
-   //else task->UseCentrality("V0M");
+
 
    // set event mixing options                                                                                                               
    task->UseContinuousMix();
@@ -118,20 +145,29 @@ AliRsnMiniAnalysisTask *AddTaskKStarPlusMinus8TeVpp
    // - 3rd argument --> minimum required number of contributors
    // - 4th argument --> tells if TPC stand-alone vertexes must be accepted
 
-   AliRsnCutPrimaryVertex *cutVertex = new AliRsnCutPrimaryVertex("cutVertex", cutV, 0, kFALSE, kTRUE);
-   
-   if(isPP && (!isMC)){ //assume pp data
-     cutVertex->SetCheckPileUp(rejectPileUp);// set the check for pileup                                                                  
+
+    AliRsnCutPrimaryVertex *cutVertex=0;
+   if (evtCutSetID!=eventCutSet::kSpecial1 && evtCutSetID!=eventCutSet::kNoEvtSel){
+     cutVertex = new AliRsnCutPrimaryVertex("cutVertex", vtxZcut, 0, kFALSE);
+     if (evtCutSetID==eventCutSet::kSpecial3) cutVertex->SetCheckGeneratedVertexZ();
+   }//vertex loop
+
+
+   if (isPP && (!isMC) && cutVertex) { 
+     cutVertex->SetCheckPileUp(rejectPileUp);   // set the check for pileup  
      ::Info("AddAnalysisTaskTOFKStar", Form(":::::::::::::::::: Pile-up rejection mode: %s", (rejectPileUp)?"ON":"OFF"));
    }
+
+   // define and fill cut set for event cut
+
+   AliRsnCutSet* eventCuts=0;
+   if(cutVertex){
+     eventCuts = new AliRsnCutSet("eventCuts", AliRsnTarget::kEvent);
+     eventCuts->AddCut(cutVertex);
+     eventCuts->SetCutScheme(Form("%s", cutVertex->GetName()));
+     task->SetEventCuts(eventCuts);
+   }
    
-   
-   // define and fill cut set for event cut                                                                                          
-   AliRsnCutSet* eventCuts=new AliRsnCutSet("eventCuts",AliRsnTarget::kEvent);
-   //eventCuts->AddCut(cutEventUtils);
-   eventCuts->AddCut(cutVertex);
-   eventCuts->SetCutScheme(Form("%s",cutVertex->GetName()));
-   task->SetEventCuts(eventCuts);
 
    // -- EVENT-ONLY COMPUTATIONS -------------------------------------------------------------------                                       
    //vertex                                                                                                                                

@@ -208,6 +208,8 @@ Bool_t ConfigKStarPlusMinus8TeVpp
    Int_t   cutID2  [6] = { iCutPi         ,iCutPi           ,iCutPi             ,iCutPi              ,iCutPi           ,iCutPi            };
    Int_t   ipdg    [6] = {323             ,-323             ,323                ,-323                ,323              ,-323              };
    Double_t mass   [6] = { 0.89166        ,0.89166          ,0.89166            ,0.89166             ,0.89166          ,0.89166           };
+   AliRsnCutSet* paircuts[6] = {PairCutsSame,  PairCutsSame,   PairCutsMix,    PairCutsMix,    PairCutsSame,   PairCutsSame              };
+
    
    for (Int_t i = 0; i < 6; i++) {
      if (!use[i]) continue;
@@ -224,12 +226,13 @@ Bool_t ConfigKStarPlusMinus8TeVpp
      out->SetMotherPDG(ipdg[i]);
      out->SetMotherMass(mass[i]);
      // pair cuts
-     if(i <= 1){
+     out->SetPairCuts(paircuts[i]);
+     /*if(i <= 1){
        out->SetPairCuts(PairCutsSame);
      }
      else{
        out->SetPairCuts(PairCutsMix);
-     }
+     }*/
      // axis X: invmass
      if (useIM[i]) 
        out->AddAxis(imID, 90, 0.6, 1.5);
@@ -280,7 +283,7 @@ Bool_t ConfigKStarPlusMinus8TeVpp
      out->SetMotherPDG(323);
      out->SetMotherMass(0.89166);
      // pair cuts
-     out->SetPairCuts(PairCutsMix);
+     out->SetPairCuts(PairCutsSame);
      // binnings
      out->AddAxis(imID, 90, 0.6, 1.5);
      out->AddAxis(ptID, 300, 0.0, 30.0);
@@ -298,7 +301,7 @@ Bool_t ConfigKStarPlusMinus8TeVpp
      out->SetMotherPDG(-323);
      out->SetMotherMass(0.89166);
      // pair cuts
-     out->SetPairCuts(PairCutsMix);
+     out->SetPairCuts(PairCutsSame);
      // binnings
      out->AddAxis(imID, 90, 0.6, 1.5);
      out->AddAxis(ptID, 300, 0.0, 30.0);
