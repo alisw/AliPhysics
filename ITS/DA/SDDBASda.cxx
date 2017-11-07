@@ -86,13 +86,14 @@ int main(int argc, char **argv) {
 
 
   Int_t maxNEvents=10; // maximum number of events to be analyzed
+  Int_t minNEvents=4; // minimum number of events to be analyzed
   const Int_t kTotDDL=24;
   const Int_t kModPerDDL=12;
   const Int_t kSides=2;
   UInt_t amSamplFreq=40;
 
   gSystem->Exec("rm -f SDDbase_*.data");
-  gSystem->Exec("rm -f  SDDbase_step2_LDC.tar");
+  gSystem->Exec("mv -f  SDDbase_step2_LDC.tar SDDbase_step2_LDC_Previous.tar");
   
   AliITSOnlineSDDBase **base=new AliITSOnlineSDDBase*[kTotDDL*kModPerDDL*kSides];
   AliITSOnlineSDDCMN **corr=new AliITSOnlineSDDCMN*[kTotDDL*kModPerDDL*kSides];
@@ -259,6 +260,12 @@ int main(int argc, char **argv) {
       }
     }
 
+    printf("Step %d, analysed calibration events = %d\n",iStep,ievUsed);
+    if(ievUsed<minNEvents){
+      printf("Too few events for calibration\n");
+      return -2;
+    }
+
     if(iStep==0){
       for(Int_t iddl=0; iddl<kTotDDL;iddl++){
 	for(Int_t imod=0; imod<kModPerDDL;imod++){
@@ -284,6 +291,8 @@ int main(int argc, char **argv) {
   printf("Run #%s, received %d calibration events, time %s\n",getenv("DATE_RUN_NUMBER"),ievUsed,timeinfo.GetString().Data());
   if(allEvOK) printf("All events were OK for calibration\n");
   else printf("WARNING: some events were empty\n");
+
+
   /* report progress */
   daqDA_progressReport(90);
 
