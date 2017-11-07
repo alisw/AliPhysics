@@ -139,6 +139,8 @@ ClusterHadronicCorrection:                          # Cluster hadronic correctio
     hadCorr: 2.                                     # Hadronic correction mode. See the task for further details
     Eexcl: 0                                        # Cell energy that cannot be subtracted
     doTrackClus: true                               # Loop over tracks first
+    plotOversubtractionHistograms: false            # Compute and plot oversubtracted energy from embedded/signal matches (embedding only)
+    doNotOversubtract: false                        # Do not oversubtract energy from cluster (embedding only)
     cellsNames:                                     # Names of the cells input objects which should be attached to the correction
         - defaultCells                              # This object is defined above in the cells section of the input objects
     clusterContainersNames:                         # Names of the cluster input objects which should be attached to the correction
