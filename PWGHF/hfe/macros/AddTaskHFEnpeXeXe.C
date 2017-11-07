@@ -1,6 +1,6 @@
 AliAnalysisTask *AddTaskHFEnpeXeXe(
-                                   Double_t centrMin = 0;
-                                   Double_t centrMax = 100;
+                                   Double_t centrMin = 0,
+                                   Double_t centrMax = 100,
                                    Bool_t MCthere = kFALSE,       // DATA false
                                    Bool_t kNPERef = kTRUE,
                                    Bool_t kNPETOFITS = kTRUE,
