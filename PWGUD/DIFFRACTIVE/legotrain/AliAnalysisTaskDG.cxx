@@ -617,50 +617,6 @@ void AliAnalysisTaskDG::UserExec(Option_t *)
 
   PostData(1, fList);
 
-  Bool_t cutNotV0           = kFALSE;
-  Bool_t useOnly2Trk        = kFALSE;
-  Bool_t useOnly4Trk        = kFALSE;
-  Bool_t requireAtLeast2Trk = kFALSE;
-
-  Bool_t selected = (fTriggerSelection == "");
-
-  if (!selected) {
-    // fTriggerSelection can be "CLASS1|CLASS2&NotV0|CLASS3&Only2Trk|CLASS4&AtLeast2Trk"
-    Int_t sumCutNotV0(0);
-    Int_t sumUseOnly2Trk(0);
-    Int_t sumUseOnly4Trk(0);
-    Int_t sumRequireAtLeast2Trk(0);
-
-    Int_t   counter     = 0;
-    TString tcName      = "";
-    Ssiz_t  from_tcName = 0;
-    while (fTriggerSelection.Tokenize(tcName, from_tcName, "|")) {
-      TString tok      = "";
-      Ssiz_t  from_tok = 0;
-      if (!tcName.Tokenize(tok, from_tok, "&")) continue;
-      if (!vEvent->GetFiredTriggerClasses().Contains(tok)) continue;
-      if ( tcName.Tokenize(tok, from_tok, "&")) {
-	sumCutNotV0           += (tok == "NotV0");
-	sumUseOnly2Trk        += (tok == "Only2Trk");
-	sumUseOnly4Trk        += (tok == "Only4Trk");
-	sumRequireAtLeast2Trk += (tok == "AtLeast2Trk");
-	++counter;
-      }
-    }
-
-    selected           = (counter != 0);
-    cutNotV0           = (counter == sumCutNotV0);
-    useOnly2Trk        = (counter == sumUseOnly2Trk);
-    useOnly4Trk        = (counter == sumUseOnly4Trk);
-    requireAtLeast2Trk = (counter == sumRequireAtLeast2Trk);
-  }
-
-  AliDebugF(5, "selected: %d (%d,%d,%d,%d) %s ", selected,
-	    cutNotV0, useOnly2Trk, useOnly4Trk, requireAtLeast2Trk,
-	    vEvent->GetFiredTriggerClasses().Data());
-  if (!selected)
-    return;
-
   fTreeData.fEventInfo.Fill(vEvent);
 
   fTreeData.fIsIncompleteDAQ          = vEvent->IsIncompleteDAQ();
@@ -671,10 +627,8 @@ void AliAnalysisTaskDG::UserExec(Option_t *)
   fTreeData.fV0Info.FillV0(vEvent, fTriggerAnalysis);
   fTreeData.fADInfo.FillAD(vEvent, fTriggerAnalysis);
 
-  if (cutNotV0 &&
-      (fTreeData.fV0Info.fDecisionOnline[0] != 0 ||
-       fTreeData.fV0Info.fDecisionOnline[1] != 0))
-    return;
+  const Bool_t isNotV0(fTreeData.fV0Info.fDecisionOnline[0] == 0 &&
+                       fTreeData.fV0Info.fDecisionOnline[1] == 0);
 
   if (isESD) {
     fVertexSPD.first    = *esdEvent->GetPrimaryVertexSPD();
@@ -725,13 +679,32 @@ void AliAnalysisTaskDG::UserExec(Option_t *)
   fTreeData.fEventInfo.fnTrk   = oa->GetEntries();
   fTreeData.fEventInfo.fCharge = 0;
 
-  if (useOnly2Trk && fTreeData.fEventInfo.fnTrk != 2)
-    return;
+  Bool_t selected(fTriggerSelection == "");
 
-  if (useOnly4Trk && fTreeData.fEventInfo.fnTrk != 4)
-    return;
+  if (!selected) {
+    // fTriggerSelection can be "CLASS1|CLASS2&NotV0|CLASS3&Only2Trk|CLASS4&AtLeast2Trk"
+    TString tcName = "";
+    for (Ssiz_t i=0; fTriggerSelection.Tokenize(tcName, i, "|") && !selected;) {
+      Ssiz_t j=0;
+      TString className = "";
+      if (!tcName.Tokenize(className, j, "&")) continue;
+      if (!vEvent->GetFiredTriggerClasses().Contains(className)) continue;
 
-  if (requireAtLeast2Trk && fTreeData.fEventInfo.fnTrk < 2)
+      TString condition = "";
+      Int_t condition_counter=0, conditions_matched=0;
+      while (tcName.Tokenize(condition, j, "&")) {
+        conditions_matched += ((condition == "NotV0")       && isNotV0);
+        conditions_matched += ((condition == "Only2Trk")    && fTreeData.fEventInfo.fnTrk == 2);
+        conditions_matched += ((condition == "Only4Trk")    && fTreeData.fEventInfo.fnTrk == 4);
+        conditions_matched += ((condition == "AtLeast2Trk") && fTreeData.fEventInfo.fnTrk >= 2);
+        ++condition_counter;
+      }
+      selected = (condition_counter == conditions_matched);
+      AliDebugF(5, "class=%s %d/%d matched selected=%d", className.Data(), conditions_matched, condition_counter, selected);
+    }
+  }
+
+  if (!selected)
     return;
 
   for (Int_t i=0, n=oa->GetEntries(); i<n; ++i)
