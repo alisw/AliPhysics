@@ -1870,11 +1870,10 @@ void AddTask_GammaConvV1_PbPb(  Int_t     trainConfig                     = 1,  
     cuts.AddCut("53400013", "00216609247002008850404000", "0152501500000000"); //
     cuts.AddCut("54500013", "00216609247002008850404000", "0152501500000000"); //
 
-
   // Xe-Xe configurations
-  } else if (trainConfig == 400){ // EMCAL clusters - 0-90% centrality for PbPb EMCal cluster QA
+  } else if (trainConfig == 400){
     cuts.AddCut("10910113","00200009327000008250400000","0163103100000000"); // 0-90
-  } else if (trainConfig == 401){ // EMCAL clusters - 0-90% centrality for PbPb
+  } else if (trainConfig == 401){
     cuts.AddCut("10210113","00200009327000008250400000","0163103100000000"); // 0-20
     cuts.AddCut("12410113","00200009327000008250400000","0163103100000000"); // 20-40
     cuts.AddCut("10410113","00200009327000008250400000","0163103100000000"); // 0-40
