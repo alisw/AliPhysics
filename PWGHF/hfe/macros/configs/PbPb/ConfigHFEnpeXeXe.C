@@ -68,7 +68,7 @@ AliAnalysisTaskHFE* ConfigHFEnpeXeXe(Bool_t useMC, Bool_t isAOD, TString appendi
                                      UChar_t ITScl=3, Double_t DCAxy=1000., Double_t DCAz=1000.,
                                      Double_t* tpcdEdxcutlow=NULL, Double_t* tpcdEdxcuthigh=NULL,
                                      Double_t TOFs=3., Int_t TOFmis=0,
-                                     Double_t ITSs=0.,
+                                     Double_t ITSsmin=0., Double_t ITSsmax=0.,
                                      Int_t itshitpixel = 0, Double_t itsChi2PerClusters, Double_t tpcClShared,
                                      Bool_t etacor = kFALSE, Bool_t multicor = kFALSE, Bool_t toflast = kFALSE,
                                      Double_t etami=-0.8, Double_t etama=0.8,
@@ -77,7 +77,7 @@ AliAnalysisTaskHFE* ConfigHFEnpeXeXe(Bool_t useMC, Bool_t isAOD, TString appendi
                                      Int_t assTPCcl=100, Int_t assTPCPIDcl=80,
                                      Double_t assDCAr=1.0, Double_t assDCAz=2.0,
                                      Double_t *assTPCSminus=NULL, Double_t *assTPCSplus=NULL,
-                                     Bool_t useCat1Tracks = kTRUE, Bool_t useCat2Tracks = kTRUE,
+                                     Bool_t useCat1Tracks = kTRUE, Bool_t useCat2Tracks = kFALSE,
                                      Int_t weightlevelback = -1
                                      )
 {
@@ -140,7 +140,7 @@ AliAnalysisTaskHFE* ConfigHFEnpeXeXe(Bool_t useMC, Bool_t isAOD, TString appendi
     
     // ITS settings:
     Int_t useits=0;
-    if (ITSs>0.){
+    if (ITSsmax>0.){
         useits = 1;
         printf("CONFIGURATION FILE: ITS is used \n");
     }
@@ -275,7 +275,7 @@ AliAnalysisTaskHFE* ConfigHFEnpeXeXe(Bool_t useMC, Bool_t isAOD, TString appendi
     // Configure ITS PID
     if (useits>0){
         AliHFEpidITS *itspid = pid->GetDetPID(AliHFEpid::kITSpid);
-        itspid->SetITSnSigma(ITSs); // ***** modified 11/06/2017 (mfaggin)
+        itspid->SetITSnSigma(ITSsmin, ITSsmax); //
     }
     
     // To make different upper TOF cut to see contamination effect
@@ -289,12 +289,8 @@ AliAnalysisTaskHFE* ConfigHFEnpeXeXe(Bool_t useMC, Bool_t isAOD, TString appendi
     if(!useMC){
         Bool_t status = kTRUE;
         TF1 *hBackground[12];                                                                                // TOF sigma and ITS sigma added
-        status = ReadContaminationFunctions("hadronContamination_PbPb5TeV.root", hBackground, tpcdEdxcutlow[0], TOFs, ITSs);
-        //status = ReadContaminationFunctions("hadronContamination_PbPb5TeV_attempt19072017.root", hBackground, tpcdEdxcutlow[0], TOFs, ITSs);        // attempt 19/07/2017
-        //status = ReadContaminationFunctions("hadronContamination_PbPb5TeV_22072017attempt.root", hBackground, tpcdEdxcutlow[0], TOFs, ITSs);        // attempt 22/07/2017
-        //status = ReadContaminationFunctions("hadronContamination_PbPb5TeV_24072017attempt.root", hBackground, tpcdEdxcutlow[0], TOFs, ITSs);        // attempt 24/07/2017
-        // status = ReadContaminationFunctions("hadronContamination_PbPb5TeV_24072017attempt_newParametrisation.root", hBackground, tpcdEdxcutlow[0], TOFs, ITSs);        // attempt 24/07/2017 with new parametrisation done on 28/07/2017
-        
+        status = ReadContaminationFunctions("hadronContamination_PbPb5TeV.root", hBackground, tpcdEdxcutlow[0], TOFs, ITSsmax);
+ 
         for(Int_t a=0;a<12;a++) {
             //printf("back %f \n",hBackground[a]);
             if(status) task->SetBackGroundFactorsFunction(hBackground[a],a);
