@@ -725,7 +725,8 @@ void MakeSlides ( TString period, TString pass, TString triggerList, TString aut
     MakeSingleFigureSlide(Form("AsymMatchedtrigger%s",currTrig.Data()),trackerQA,Form("Charge asymmetry in %s events",shortTrig.Data()),outFile);
     MakeSingleFigureSlide(Form("BeamGasMatchedtrigger%s",currTrig.Data()),trackerQA,Form("Rel. num. of beam-gas tracks (id. by p$\\times$DCA cuts) in %s events",shortTrig.Data()),outFile,currTrig);
   }
-  MakeSingleFigureSlide("cNClusters",trackerQA,"Average number of clusters per track and dispersion",outFile);    MakeSingleFigureSlide("cNClustersPerCh",trackerQA,"Average number of clusters per chamber",outFile,"","clustersPerChamber");
+  MakeSingleFigureSlide("cNClusters",trackerQA,"Average number of clusters per track and dispersion",outFile);
+  MakeSingleFigureSlide("cNClustersPerCh",trackerQA,"Average number of clusters per chamber",outFile,"","clustersPerChamber");
 
   if ( outFile.is_open() ) StartAppendix(outFile);
   MakeSingleFigureSlide("PhysSelCutOnCollTrigger",trackerQA,"Physics selection effects",outFile);
