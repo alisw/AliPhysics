@@ -138,8 +138,8 @@ void DrawPtHardBins
     
     for(Int_t i = 0; i < nBin; i++)
     {
-      if ( k==1 ) f[i][k] = TFile::Open(Form("%d/ScaledMerged.root"   ,i+1),"read");
-      else        f[i][k] = TFile::Open(Form("%d/NotScaledMerged.root",i+1),"read");
+      if ( k==1 ) f[i][k] = TFile::Open(Form("%d/ScaledMerged.root"   ,i+firstBin),"read");
+      else        f[i][k] = TFile::Open(Form("%d/NotScaledMerged.root",i+firstBin),"read");
     
       if(!f[i][k]) continue;
       
