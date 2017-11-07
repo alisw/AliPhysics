@@ -44,6 +44,7 @@ const AliHLTComponentDataType AliHLTTPCDefinitions::fgkHWClustersDataType = AliH
 const AliHLTComponentDataType AliHLTTPCDefinitions::fgkVertexDataType = AliHLTComponentDataTypeInitializer("VERTEX  ", kAliHLTDataOriginTPC);
 const AliHLTComponentDataType AliHLTTPCDefinitions::fgkTrackSegmentsDataType = AliHLTComponentDataTypeInitializer("TRAKSEGS", kAliHLTDataOriginTPC);
 const AliHLTComponentDataType AliHLTTPCDefinitions::fgkTracksDataType = AliHLTComponentDataTypeInitializer("TRACKS  ", kAliHLTDataOriginTPC);
+const AliHLTComponentDataType AliHLTTPCDefinitions::fgkTracksOuterDataType = AliHLTComponentDataTypeInitializer("TRACKSOU", kAliHLTDataOriginTPC);
 
 const AliHLTComponentDataType AliHLTTPCDefinitions::fgkDataCompressionDescriptorDataType = AliHLTComponentDataTypeInitializer("COMPDESC", kAliHLTDataOriginTPC);
 const AliHLTComponentDataType AliHLTTPCDefinitions::fgkClusterTracksModelDataType = AliHLTComponentDataTypeInitializer("CLSTRKMD", kAliHLTDataOriginTPC); 
@@ -106,6 +107,10 @@ const AliHLTComponentDataType& AliHLTTPCDefinitions::TrackSegmentsDataType() {
 }
 const AliHLTComponentDataType& AliHLTTPCDefinitions::TracksDataType() {
   static AliHLTComponentDataType dt = AliHLTComponentDataTypeInitializer("TRACKS  ", kAliHLTDataOriginTPC);
+  return dt;
+}
+const AliHLTComponentDataType& AliHLTTPCDefinitions::TracksOuterDataType() {
+  static AliHLTComponentDataType dt = AliHLTComponentDataTypeInitializer("TRACKSOU", kAliHLTDataOriginTPC);
   return dt;
 }
 const AliHLTComponentDataType& AliHLTTPCDefinitions::DataCompressionDescriptorDataType() {

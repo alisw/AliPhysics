@@ -146,6 +146,7 @@ void AliHLTGlobalEsdConverterComponent::GetInputDataTypes(AliHLTComponentDataTyp
   list.push_back(AliHLTTRDDefinitions::fgkTRDTrackPointDataType);
   list.push_back(kAliHLTDataTypeITSTrackPoint|kAliHLTDataOriginITS);
   list.push_back(kAliHLTDataTypeITSSAPTrackPoint|kAliHLTDataOriginITS);
+  list.push_back( AliHLTTPCDefinitions::TracksDataType() | kAliHLTDataOriginTPC );
 }
 
 AliHLTComponentDataType AliHLTGlobalEsdConverterComponent::GetOutputDataType()
@@ -696,6 +697,16 @@ int AliHLTGlobalEsdConverterComponent::ProcessBlocks(TTree* pTree, AliESDEvent* 
   }
   
   std::map<int,int> mapTpcId2esdId;
+  
+  const AliHLTTracksData* tpcTrackOuterParam = NULL;
+  for (const AliHLTComponentBlockData* pBlock=GetFirstInputBlock(AliHLTTPCDefinitions::TracksDataType()|kAliHLTDataOriginTPC); pBlock!=NULL; pBlock=GetNextInputBlock()) {
+    if (tpcTrackOuterParam) {
+      HLTWarning("Multiple instances of outer TPC tracks found!!!");
+      tpcTrackOuterParam = NULL;
+      break;
+    }
+    tpcTrackOuterParam = (AliHLTTracksData*) pBlock->fPtr;
+  }
 
   // 2) convert the TPC tracks to ESD tracks
   if (storeTracks) for (const AliHLTComponentBlockData* pBlock=GetFirstInputBlock(kAliHLTDataTypeTrack|kAliHLTDataOriginTPC);
@@ -745,13 +756,21 @@ int AliHLTGlobalEsdConverterComponent::ProcessBlocks(TTree* pTree, AliESDEvent* 
 	// HLT does not provide such standalone tracking
 	AliHLTGlobalBarrelTrack outPar(*element);	  
 	{
-	  //outPar.AliExternalTrackParam::PropagateTo( element->GetLastPointX(), fSolenoidBz );
-	  const Int_t N=10; // number of steps.
-	  const Float_t xRange = element->GetLastPointX() - element->GetX();
-	  const Float_t xStep = xRange / N ;
-	  for(int i = 1; i <= N; ++i) {
-	    if(!outPar.AliExternalTrackParam::PropagateTo(element->GetX() + xStep * i, fSolenoidBz)) break;
-	  }
+      if (tpcTrackOuterParam && tpcTrackOuterParam->fCount > iTrack)
+      {
+        const AliHLTExternalTrackParam& tpcOutTrack = tpcTrackOuterParam->fTracklets[iTrack];
+        float tmp[5] = {tpcOutTrack.fY, tpcOutTrack.fZ, tpcOutTrack.fSinPhi, tpcOutTrack.fTgl, tpcOutTrack.fq1Pt};
+        outPar.Set(tpcOutTrack.fX, tpcOutTrack.fAlpha, tmp, tpcOutTrack.fC);
+      }
+      else
+      {
+        const Int_t N=10; // number of steps.
+        const Float_t xRange = element->GetLastPointX() - element->GetX();
+        const Float_t xStep = xRange / N ;
+        for(int i = 1; i <= N; ++i) { 
+          if(!outPar.AliExternalTrackParam::PropagateTo(element->GetX() + xStep * i, fSolenoidBz)) break;
+        }
+      }
 	  outPar.SetLabel(element->GetLabel());
 	  iotrack.UpdateTrackParams(&outPar,AliESDtrack::kTPCout);
 	}

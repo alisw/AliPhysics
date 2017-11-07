@@ -450,7 +450,7 @@ int AliHLTTPCTrackGeometry::Write(const AliHLTGlobalBarrelTrack& track,
   pTrackBlock->fX      = track.GetX();
   pTrackBlock->fY      = track.GetY();
   pTrackBlock->fZ      = track.GetZ();
-  pTrackBlock->fSinPsi = track.GetSnp();
+  pTrackBlock->fSinPhi = track.GetSnp();
   pTrackBlock->fTgl    = track.GetTgl();
   pTrackBlock->fq1Pt   = track.GetSigned1Pt();
 
@@ -701,7 +701,7 @@ int AliHLTTPCTrackGeometry::Read(const AliHLTUInt8_t* buffer,
   param.fX       = pTrackBlock->fX;
   param.fY       = pTrackBlock->fY;
   param.fZ       = pTrackBlock->fZ;
-  param.fSinPsi  = pTrackBlock->fSinPsi;
+  param.fSinPhi  = pTrackBlock->fSinPhi;
   param.fTgl     = pTrackBlock->fTgl;
   param.fq1Pt    = pTrackBlock->fq1Pt;
   AliHLTGlobalBarrelTrack track(param);

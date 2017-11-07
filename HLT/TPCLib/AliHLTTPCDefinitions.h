@@ -129,6 +129,9 @@ public:
   /** track segments in local coordinates */
   static const AliHLTComponentDataType fgkTrackSegmentsDataType;        // see above
   static const AliHLTComponentDataType& TrackSegmentsDataType();
+  /** outer tracks in global koordinates */
+  static const AliHLTComponentDataType fgkTracksOuterDataType;               // see above
+  static const AliHLTComponentDataType& TracksOuterDataType();
   /** tracks in global koordinates */
   static const AliHLTComponentDataType fgkTracksDataType;               // see above
   static const AliHLTComponentDataType& TracksDataType();

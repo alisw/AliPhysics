@@ -28,7 +28,7 @@ struct AliHLTExternalTrackParam
       Float_t fX;      // x: radial distance
       Float_t fY;      // local Y-coordinate of a track (cm)
       Float_t fZ;      // local Z-coordinate of a track (cm)
-      Float_t fSinPsi; // local sine of the track momentum azimuthal angle
+      Float_t fSinPhi; // local sine of the track momentum azimuthal angle
       Float_t fTgl;    // tangent of the track momentum dip angle
       Float_t fq1Pt;   // 1/pt (1/(GeV/c))
       Float_t fC[15];  // covariance matrix

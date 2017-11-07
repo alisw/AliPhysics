@@ -177,6 +177,7 @@ void AliHLTGlobalFlatEsdConverterComponent::GetInputDataTypes(AliHLTComponentDat
   list.push_back(AliHLTTPCDefinitions::ClustersXYZDataType() );
   list.push_back(kAliHLTDataTypeFlatESDVertex); // VertexTracks resonctructed using SAP ITS tracks
   list.push_back(kAliHLTDataTypeITSSAPData);    // SAP ITS tracks
+  list.push_back( AliHLTTPCDefinitions::TracksDataType() | kAliHLTDataOriginTPC );
 }
 
 AliHLTComponentDataType AliHLTGlobalFlatEsdConverterComponent::GetOutputDataType()
@@ -328,6 +329,7 @@ int AliHLTGlobalFlatEsdConverterComponent::DoEvent( const AliHLTComponentEventDa
   vector<AliHLTGlobalBarrelTrack> tracksTPCOut;
   vector<AliHLTGlobalBarrelTrack> tracksITS;
   vector<AliHLTGlobalBarrelTrack> tracksITSOut;
+  const AliHLTTracksData* tpcTrackOuterParam = NULL;
 
   if( iResult>=0 ){
     const AliHLTComponentBlockData* pBlock=GetFirstInputBlock(kAliHLTDataTypeTrack|kAliHLTDataOriginTPC);
@@ -354,6 +356,8 @@ int AliHLTGlobalFlatEsdConverterComponent::DoEvent( const AliHLTComponentEventDa
       HLTError("can not extract tracks from data block of type %s (specification %08x) of size %d: error %d",
 	       DataType2Text(pBlock->fDataType).c_str(), pBlock->fSpecification, pBlock->fSize, iResult);
     }
+    pBlock=GetFirstInputBlock(AliHLTTPCDefinitions::TracksDataType()|kAliHLTDataOriginITSOut);
+    if (pBlock) tpcTrackOuterParam = (AliHLTTracksData*) pBlock->fPtr;
   }
 
   // Set TPC MC labels to tracks
@@ -364,15 +368,24 @@ int AliHLTGlobalFlatEsdConverterComponent::DoEvent( const AliHLTComponentEventDa
     else track.SetLabel( -1 );
   }
 
-  // Create TPC Out tracks - just propagate to the outermost TPC cluster
+  // Create TPC Out tracks
   for( UInt_t itr=0; itr < tracksTPC.size(); itr++) {
     tracksTPCOut.push_back( tracksTPC[itr] );
     AliHLTGlobalBarrelTrack &track = tracksTPCOut.back();
-    const Int_t N=10; // number of steps.
-    const Float_t xRange = track.GetLastPointX() - track.GetX();
-    const Float_t xStep = xRange / N ;
-    for(int i = 1; i <= N; ++i) {
-      if(!track.AliExternalTrackParam::PropagateTo(track.GetX() + xStep, GetBz() )) break;
+    if (tpcTrackOuterParam && tpcTrackOuterParam->fCount > itr)
+    {
+      const AliHLTExternalTrackParam& tpcOutTrack = tpcTrackOuterParam->fTracklets[itr];
+      float tmp[5] = {tpcOutTrack.fY, tpcOutTrack.fZ, tpcOutTrack.fSinPhi, tpcOutTrack.fTgl, tpcOutTrack.fq1Pt};
+      track.Set(tpcOutTrack.fX, tpcOutTrack.fAlpha, tmp, tpcOutTrack.fC);
+    }
+    else
+    { //just propagate to the outermost TPC cluster
+      const Int_t N=10; // number of steps.
+      const Float_t xRange = track.GetLastPointX() - track.GetX();
+      const Float_t xStep = xRange / N ;
+      for(int i = 1; i <= N; ++i) {
+        if(!track.AliExternalTrackParam::PropagateTo(track.GetX() + xStep, GetBz() )) break;
+      }
     }
   }
 
@@ -1091,4 +1104,3 @@ int AliHLTGlobalFlatEsdConverterComponent::DoEvent( const AliHLTComponentEventDa
 
   return 0;
 }
-

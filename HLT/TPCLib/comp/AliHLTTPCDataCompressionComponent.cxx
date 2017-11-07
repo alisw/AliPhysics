@@ -307,7 +307,7 @@ int AliHLTTPCDataCompressionComponent::DoEvent( const AliHLTComponentEventData& 
     param.fX       = track->GetX();
     param.fY       = track->GetY();
     param.fZ       = track->GetZ();
-    param.fSinPsi  = track->GetSnp();
+    param.fSinPhi  = track->GetSnp();
     param.fTgl     = track->GetTgl();
     param.fq1Pt    = track->GetSigned1Pt();
     AliHLTGlobalBarrelTrack ctrack(param);

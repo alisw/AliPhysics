@@ -521,7 +521,7 @@ int AliHLTITSTrackerComponent::DoEvent
 	currOutTrack->fLastY = 0;
 	currOutTrack->fLastZ = 0;      
 	currOutTrack->fq1Pt = t.GetSigned1Pt();
-	currOutTrack->fSinPsi = t.GetSnp();
+	currOutTrack->fSinPhi = t.GetSnp();
 	currOutTrack->fTgl = t.GetTgl();
 	for( int i=0; i<15; i++ ) currOutTrack->fC[i] = t.GetCovariance()[i];
 	currOutTrack->fTrackID = id;

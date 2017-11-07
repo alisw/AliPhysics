@@ -59,14 +59,14 @@ int testAliHLTGlobalBarrelTrack()
   memset(&hltparam, 0, sizeof(AliHLTExternalTrackParam));
   hltparam.fY=GetRandom(0, 100000);
   hltparam.fZ=GetRandom(0, 100000);
-  hltparam.fSinPsi=GetRandom(0, 100000);
+  hltparam.fSinPhi=GetRandom(0, 100000);
   hltparam.fTgl=GetRandom(0, 100000);
   hltparam.fq1Pt=GetRandom(0, 100000);
 
   AliHLTGlobalBarrelTrack t(hltparam);
   if (TMath::Abs(hltparam.fY-t.GetY())>=1 ||
       TMath::Abs(hltparam.fZ-t.GetZ())>=1 ||
-      TMath::Abs(hltparam.fSinPsi-t.GetSnp())>=1 ||
+      TMath::Abs(hltparam.fSinPhi-t.GetSnp())>=1 ||
       TMath::Abs(hltparam.fTgl-t.GetTgl())>=1 ||
       TMath::Abs(hltparam.fq1Pt-t.GetSigned1Pt())) {
 	cerr << "parameter sequence of AliExternalTrackParam and AliHLTExternalTrackParam does not match" << endl;
