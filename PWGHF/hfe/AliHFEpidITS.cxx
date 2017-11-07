@@ -147,7 +147,7 @@ Double_t AliHFEpidITS::GetITSNsigmaCorrected(const AliVTrack *track) const {
     return fkPIDResponse->NumberOfSigmasITS(track, AliPID::kElectron) - fMeanShift;
 }
 //___________________________________________________________________
-Double_t AliHFEpidITS::SetITSnSigma(Float_t nSigmalow, Float_t nSigmahigh) {
+void AliHFEpidITS::SetITSnSigma(Float_t nSigmalow, Float_t nSigmahigh) {
     //
     //Set nSigma cut
     //
