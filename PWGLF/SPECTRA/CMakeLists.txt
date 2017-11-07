@@ -58,6 +58,7 @@ set(SRCS
   ChargedHadrons/dNdPt/AlimPtAnalysis.cxx
   ChargedHadrons/dNdPt/AlimPtMatrix.cxx
   ChargedHadrons/dNdPt/AlimPtMatrixZDC.cxx
+  ChargedHadrons/dNdPtVsMultpp/AliAnalysisTaskPPvsMultINEL0.cxx
   PiKaPr/ITSsa/AliAnalysisTaskSEITSsaSpectra.cxx
   PiKaPr/ITSsa/AliAnalysisTaskSEITSsaSpectraMultiplicity.cxx
   PiKaPr/TPCTOF/AliAnalysisCombinedHadronSpectra.cxx
@@ -187,6 +188,7 @@ install(FILES ${HDRS} DESTINATION include)
 install(DIRECTORY ChargedHadrons/dNdPt/macros DESTINATION  PWGLF/SPECTRA/ChargedHadrons/dNdPt)
 install(DIRECTORY ChargedHadrons/dNdPt/MeanPtRaw/macros DESTINATION
   PWGLF/SPECTRA/ChargedHadrons/dNdPt/MeanPtRaw)
+install(DIRECTORY ChargedHadrons/dNdPtVsMultpp/macros DESTINATION  PWGLF/SPECTRA/ChargedHadrons/dNdPtVsMultpp)
 install(DIRECTORY IdentifiedHighPt/train/macros DESTINATION  PWGLF/SPECTRA/IdentifiedHighPt/train)
 install(DIRECTORY IdentifiedHighPt/train/macros1 DESTINATION  PWGLF/SPECTRA/IdentifiedHighPt/train)
 install(DIRECTORY Kinks/macros DESTINATION  PWGLF/SPECTRA/Kinks)

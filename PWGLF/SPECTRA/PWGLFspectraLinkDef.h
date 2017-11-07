@@ -2,6 +2,7 @@
 
 #pragma link C++ class AlidNdPtUnifiedAnalysisTask+;
 #pragma link C++ class AliAnalysisTaskMeanPtRaw+;
+#pragma link C++ class AliAnalysisTaskPPvsMultINEL0+;
 #pragma link C++ class AlidNdPtAcceptanceCuts+;
 #pragma link C++ class AlidNdPtAnalysis+;
 #pragma link C++ class AlidNdPtAnalysisPbPb+;
