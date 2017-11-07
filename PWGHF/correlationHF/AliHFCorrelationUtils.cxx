@@ -106,7 +106,7 @@ TH1D* AliHFCorrelationUtils::DuplicateHistoTo2piRange(TH1D *h,Double_t scale){
 }
 
 //________________________________________________________________________________________________
-void AliHFCorrelationUtils::GetMCClosureModulation(Double_t ptD, Double_t ptTrmin, Double_t ptTrmax, Double_t mod[], Int_t system) {
+void AliHFCorrelationUtils::GetMCClosureModulation(Double_t ptD, Double_t ptTrmin, Double_t ptTrmax, Double_t mod[], Int_t system, Int_t centbin) {
 
 printf("Getting MC closure modulations -> Choosen system = %d\n",system);
 
@@ -312,7 +312,7 @@ if(system==1) { //start system 1 (usually pPb2013 - if so, the modulations are a
 } //end system 1
 
 /***********************************************/
-if(system==2) { //start system 2
+if(system==2 && centbin == 0) { //start system 2, 0-100%
 
   Int_t ptbinD = 0;
   if(ptD>3 && ptD<5) ptbinD = 1;
@@ -567,5 +567,485 @@ if(system==2) { //start system 2
   
 } //end system 2
 
+/***********************************************/
+if(system==2 && centbin == 1) { //start system 2, 0-20%
+
+  Int_t ptbinD = 0;
+  if(ptD>3 && ptD<5) ptbinD = 1;
+  if(ptD>5 && ptD<8) ptbinD = 2;
+  if(ptD>8 && ptD<16) ptbinD = 3;
+  if(ptD>16 && ptD<24) ptbinD = 4;
+
+  switch(ptbinD) {
+
+    case(1): //ptD 3 to 5
+      if(ptTrmin==0.3 && ptTrmax==99.) {
+        mod[0]=0.9936;
+        mod[1]=0.9979;
+        mod[2]=1.;
+        mod[3]=1.0015;
+        mod[4]=1.0013;
+        mod[5]=1.;
+      }
+      else if(ptTrmin==0.3 && ptTrmax==1.) {
+        mod[0]=0.9979;
+        mod[1]=0.9983;
+        mod[2]=0.999;
+        mod[3]=1.;
+        mod[4]=1.;
+        mod[5]=1.;
+      }
+      else if(ptTrmin==1. && ptTrmax==99.) {
+        mod[0]=0.9809;
+        mod[1]=0.9967;
+        mod[2]=1.0035;
+        mod[3]=1.0045;
+        mod[4]=1.;
+        mod[5]=1.;
+      }
+      else { //dummy
+        mod[0]=1.;
+        mod[1]=1.;
+        mod[2]=1.;
+        mod[3]=1.;
+        mod[4]=1.;
+        mod[5]=1.;
+      }
+    break;
+
+    case(2): //ptD 5 to 8
+      if(ptTrmin==0.3 && ptTrmax==99.) {
+        mod[0]=0.9962;
+        mod[1]=1.;
+        mod[2]=1.;
+        mod[3]=1.;
+        mod[4]=1.;
+        mod[5]=1.;
+      }
+      else if(ptTrmin==0.3 && ptTrmax==1.) {
+        mod[0]=1.;
+        mod[1]=1.;
+        mod[2]=1.;
+        mod[3]=1.;
+        mod[4]=1.;
+        mod[5]=1.;
+      }
+      else if(ptTrmin==1. && ptTrmax==99.) {
+        mod[0]=0.9871;
+        mod[1]=1.0022;
+        mod[2]=1.0073;
+        mod[3]=1.0061;
+        mod[4]=1.0033;
+        mod[5]=1.;
+      }
+      else { //dummy
+        mod[0]=1.;
+        mod[1]=1.;
+        mod[2]=1.;
+        mod[3]=1.;
+        mod[4]=1.;
+        mod[5]=1.;
+      }      
+    break;
+
+    case(3): //ptD 8 to 16
+      if(ptTrmin==0.3 && ptTrmax==99.) {
+        mod[0]=1.;
+        mod[1]=1.;
+        mod[2]=1.;
+        mod[3]=1.;
+        mod[4]=1.;
+        mod[5]=1.;
+      }
+      else if(ptTrmin==0.3 && ptTrmax==1.) {
+        mod[0]=1.;
+        mod[1]=1.;
+        mod[2]=1.;
+        mod[3]=1.;
+        mod[4]=1.;
+        mod[5]=1.;
+      }
+      else if(ptTrmin==1. && ptTrmax==99.) {
+        mod[0]=0.9922;
+        mod[1]=1.0089;
+        mod[2]=1.0072;
+        mod[3]=1.0035;
+        mod[4]=1.001;
+        mod[5]=1.;
+      }
+      else { //dummy
+        mod[0]=1.;
+        mod[1]=1.;
+        mod[2]=1.;
+        mod[3]=1.;
+        mod[4]=1.;
+        mod[5]=1.;
+      } 
+    break;
+
+    case(4): //ptD 16 to 24
+      if(ptTrmin==0.3 && ptTrmax==99.) {
+        mod[0]=1.;
+        mod[1]=1.;
+        mod[2]=1.;
+        mod[3]=1.;
+        mod[4]=1.;
+        mod[5]=1.;
+      }
+      else if(ptTrmin==0.3 && ptTrmax==1.) {
+        mod[0]=1.;
+        mod[1]=1.;
+        mod[2]=1.;
+        mod[3]=1.;
+        mod[4]=1.;
+        mod[5]=1.;
+      }
+      else if(ptTrmin==1. && ptTrmax==99.) {
+        mod[0]=1.;
+        mod[1]=1.;
+        mod[2]=1.;
+        mod[3]=1.;
+        mod[4]=1.;
+        mod[5]=1.;
+      }
+      else { //dummy
+        mod[0]=1.;
+        mod[1]=1.;
+        mod[2]=1.;
+        mod[3]=1.;
+        mod[4]=1.;
+        mod[5]=1.;
+      } 
+    break;
+
+    default:
+      printf("Error! Incorrect definition of pT(D) range!\n");
+      mod[0] = -999;
+      return;
+      
+  }
+  
+} //end system 2 - 0-20%
+
+
+/***********************************************/
+if(system==2 && centbin == 2) { //start system 2, 20-60%
+
+  Int_t ptbinD = 0;
+  if(ptD>3 && ptD<5) ptbinD = 1;
+  if(ptD>5 && ptD<8) ptbinD = 2;
+  if(ptD>8 && ptD<16) ptbinD = 3;
+  if(ptD>16 && ptD<24) ptbinD = 4;
+
+  switch(ptbinD) {
+
+    case(1): //ptD 3 to 5
+      if(ptTrmin==0.3 && ptTrmax==99.) {
+        mod[0]=0.9936;
+        mod[1]=0.9979;
+        mod[2]=1.;
+        mod[3]=1.0015;
+        mod[4]=1.0013;
+        mod[5]=1.;
+      }
+      else if(ptTrmin==0.3 && ptTrmax==1.) {
+        mod[0]=0.9979;
+        mod[1]=0.9983;
+        mod[2]=0.999;
+        mod[3]=1.;
+        mod[4]=1.;
+        mod[5]=1.;
+      }
+      else if(ptTrmin==1. && ptTrmax==99.) {
+        mod[0]=0.9809;
+        mod[1]=0.9967;
+        mod[2]=1.0035;
+        mod[3]=1.0045;
+        mod[4]=1.;
+        mod[5]=1.;
+      }
+      else { //dummy
+        mod[0]=1.;
+        mod[1]=1.;
+        mod[2]=1.;
+        mod[3]=1.;
+        mod[4]=1.;
+        mod[5]=1.;
+      } 
+    break;
+
+    case(2): //ptD 5 to 8
+      if(ptTrmin==0.3 && ptTrmax==99.) {
+        mod[0]=0.9962;
+        mod[1]=1.;
+        mod[2]=1.;
+        mod[3]=1.;
+        mod[4]=1.;
+        mod[5]=1.;
+      }
+      else if(ptTrmin==0.3 && ptTrmax==1.) {
+        mod[0]=1.;
+        mod[1]=1.;
+        mod[2]=1.;
+        mod[3]=1.;
+        mod[4]=1.;
+        mod[5]=1.;
+      }
+      else if(ptTrmin==1. && ptTrmax==99.) {
+        mod[0]=0.9871;
+        mod[1]=1.0022;
+        mod[2]=1.0073;
+        mod[3]=1.0061;
+        mod[4]=1.0033;
+        mod[5]=1.;
+      }
+      else { //dummy
+        mod[0]=1.;
+        mod[1]=1.;
+        mod[2]=1.;
+        mod[3]=1.;
+        mod[4]=1.;
+        mod[5]=1.;
+      } 
+    break;
+
+    case(3): //ptD 8 to 16
+      if(ptTrmin==0.3 && ptTrmax==99.) {
+        mod[0]=1.;
+        mod[1]=1.;
+        mod[2]=1.;
+        mod[3]=1.;
+        mod[4]=1.;
+        mod[5]=1.;
+      }
+      else if(ptTrmin==0.3 && ptTrmax==1.) {
+        mod[0]=1.;
+        mod[1]=1.;
+        mod[2]=1.;
+        mod[3]=1.;
+        mod[4]=1.;
+        mod[5]=1.;
+      }
+      else if(ptTrmin==1. && ptTrmax==99.) {
+        mod[0]=0.9922;
+        mod[1]=1.0089;
+        mod[2]=1.0072;
+        mod[3]=1.0035;
+        mod[4]=1.001;
+        mod[5]=1.;
+      }
+      else { //dummy
+        mod[0]=1.;
+        mod[1]=1.;
+        mod[2]=1.;
+        mod[3]=1.;
+        mod[4]=1.;
+        mod[5]=1.;
+      } 
+    break;
+
+    case(4): //ptD 16 to 24
+      if(ptTrmin==0.3 && ptTrmax==99.) {
+        mod[0]=1.;
+        mod[1]=1.;
+        mod[2]=1.;
+        mod[3]=1.;
+        mod[4]=1.;
+        mod[5]=1.;
+      }
+      else if(ptTrmin==0.3 && ptTrmax==1.) {
+        mod[0]=1.;
+        mod[1]=1.;
+        mod[2]=1.;
+        mod[3]=1.;
+        mod[4]=1.;
+        mod[5]=1.;
+      }
+      else if(ptTrmin==1. && ptTrmax==99.) {
+        mod[0]=1.;
+        mod[1]=1.;
+        mod[2]=1.;
+        mod[3]=1.;
+        mod[4]=1.;
+        mod[5]=1.;
+      }
+      else { //dummy
+        mod[0]=1.;
+        mod[1]=1.;
+        mod[2]=1.;
+        mod[3]=1.;
+        mod[4]=1.;
+        mod[5]=1.;
+      } 
+    break;
+
+    default:
+      printf("Error! Incorrect definition of pT(D) range!\n");
+      mod[0] = -999;
+      return;
+      
+  }
+  
+} //end system 2 - 20-60%
+
+/***********************************************/
+if(system==2 && centbin == 3) { //start system 2, 60-100%
+
+  Int_t ptbinD = 0;
+  if(ptD>3 && ptD<5) ptbinD = 1;
+  if(ptD>5 && ptD<8) ptbinD = 2;
+  if(ptD>8 && ptD<16) ptbinD = 3;
+  if(ptD>16 && ptD<24) ptbinD = 4;
+
+  switch(ptbinD) {
+
+    case(1): //ptD 3 to 5
+      if(ptTrmin==0.3 && ptTrmax==99.) {
+        mod[0]=0.9936;
+        mod[1]=0.9979;
+        mod[2]=1.;
+        mod[3]=1.0015;
+        mod[4]=1.0013;
+        mod[5]=1.;
+      }
+      else if(ptTrmin==0.3 && ptTrmax==1.) {
+        mod[0]=0.9979;
+        mod[1]=0.9983;
+        mod[2]=0.999;
+        mod[3]=1.;
+        mod[4]=1.;
+        mod[5]=1.;
+      }
+      else if(ptTrmin==1. && ptTrmax==99.) {
+        mod[0]=0.9809;
+        mod[1]=0.9967;
+        mod[2]=1.0035;
+        mod[3]=1.0045;
+        mod[4]=1.;
+        mod[5]=1.;
+      }
+      else { //dummy
+        mod[0]=1.;
+        mod[1]=1.;
+        mod[2]=1.;
+        mod[3]=1.;
+        mod[4]=1.;
+        mod[5]=1.;
+      } 
+    break;
+
+    case(2): //ptD 5 to 8
+      if(ptTrmin==0.3 && ptTrmax==99.) {
+        mod[0]=0.9962;
+        mod[1]=1.;
+        mod[2]=1.;
+        mod[3]=1.;
+        mod[4]=1.;
+        mod[5]=1.;
+      }
+      else if(ptTrmin==0.3 && ptTrmax==1.) {
+        mod[0]=1.;
+        mod[1]=1.;
+        mod[2]=1.;
+        mod[3]=1.;
+        mod[4]=1.;
+        mod[5]=1.;
+      }
+      else if(ptTrmin==1. && ptTrmax==99.) {
+        mod[0]=0.9871;
+        mod[1]=1.0022;
+        mod[2]=1.0073;
+        mod[3]=1.0061;
+        mod[4]=1.0033;
+        mod[5]=1.;
+      }
+      else { //dummy
+        mod[0]=1.;
+        mod[1]=1.;
+        mod[2]=1.;
+        mod[3]=1.;
+        mod[4]=1.;
+        mod[5]=1.;
+      } 
+    break;
+
+    case(3): //ptD 8 to 16
+      if(ptTrmin==0.3 && ptTrmax==99.) {
+        mod[0]=1.;
+        mod[1]=1.;
+        mod[2]=1.;
+        mod[3]=1.;
+        mod[4]=1.;
+        mod[5]=1.;
+      }
+      else if(ptTrmin==0.3 && ptTrmax==1.) {
+        mod[0]=1.;
+        mod[1]=1.;
+        mod[2]=1.;
+        mod[3]=1.;
+        mod[4]=1.;
+        mod[5]=1.;
+      }
+      else if(ptTrmin==1. && ptTrmax==99.) {
+        mod[0]=0.9922;
+        mod[1]=1.0089;
+        mod[2]=1.0072;
+        mod[3]=1.0035;
+        mod[4]=1.001;
+        mod[5]=1.;
+      }
+      else { //dummy
+        mod[0]=1.;
+        mod[1]=1.;
+        mod[2]=1.;
+        mod[3]=1.;
+        mod[4]=1.;
+        mod[5]=1.;
+      } 
+    break;
+
+    case(4): //ptD 16 to 24
+      if(ptTrmin==0.3 && ptTrmax==99.) {
+        mod[0]=1.;
+        mod[1]=1.;
+        mod[2]=1.;
+        mod[3]=1.;
+        mod[4]=1.;
+        mod[5]=1.;
+      }
+      else if(ptTrmin==0.3 && ptTrmax==1.) {
+        mod[0]=1.;
+        mod[1]=1.;
+        mod[2]=1.;
+        mod[3]=1.;
+        mod[4]=1.;
+        mod[5]=1.;
+      }
+      else if(ptTrmin==1. && ptTrmax==99.) {
+        mod[0]=1.;
+        mod[1]=1.;
+        mod[2]=1.;
+        mod[3]=1.;
+        mod[4]=1.;
+        mod[5]=1.;
+      }
+      else { //dummy
+        mod[0]=1.;
+        mod[1]=1.;
+        mod[2]=1.;
+        mod[3]=1.;
+        mod[4]=1.;
+        mod[5]=1.;
+      } 
+    break;
+
+    default:
+      printf("Error! Incorrect definition of pT(D) range!\n");
+      mod[0] = -999;
+      return;
+      
+  }
+  
+} //end system 2 - 60-100%
 
 }

@@ -68,6 +68,7 @@ TNamed(),
   fnbinsphi(),  
   fsys(-2),
   fyear(-2),
+  fCentBin(0),
   fSystAlreadySet(kFALSE),
   fArithmeticAverage(kFALSE),
   fhUsedWeightsDzero(0x0),
@@ -111,6 +112,7 @@ AliHFDmesonCorrAverage::AliHFDmesonCorrAverage(const char* name) :
   fnbinsphi(),
   fsys(-2),
   fyear(-2),
+  fCentBin(0),
   fSystAlreadySet(kFALSE),
   fArithmeticAverage(kFALSE),
   fhUsedWeightsDzero(0x0),
@@ -142,7 +144,7 @@ AliHFDmesonCorrAverage::~AliHFDmesonCorrAverage(){
   delete fweightsDzeroSystBkg;
   delete fweightsDstarSystBkg;
   delete fweightsDplusSystBkg;
-  delete  fhUsedWeightsDzero;
+  delete fhUsedWeightsDzero;
   delete fhUsedWeightsDstar;
   delete fhUsedWeightsDplus;
 
@@ -150,7 +152,7 @@ AliHFDmesonCorrAverage::~AliHFDmesonCorrAverage(){
 
 
 
-Bool_t AliHFDmesonCorrAverage::InitSystematicUncertainty(Int_t system,Int_t year){
+Bool_t AliHFDmesonCorrAverage::InitSystematicUncertainty(Int_t system,Int_t year,Int_t centbin){
   if(!fSystAlreadySet){
     if(system!=-1){
       if(system==0){ //pp
@@ -238,48 +240,171 @@ Bool_t AliHFDmesonCorrAverage::InitSystematicUncertainty(Int_t system,Int_t year
 	  }
 	}
       }
-      else if(system==2){ //p-Pb 2016
-  if(fincludeDzero){
-    if(year==2016){
-      fSystDzero=new AliHFDhadronCorrSystUnc("fSystDzero");
-      fSystDzero->InitStandardUncertaintiesPPb2016(0,(fptminD+fptmaxD)*0.5,fptminAsso,fptmaxAsso);  
-      fSystDzero->BuildTotalUncHisto();
-      fSystDzero->BuildTotalNonFDUncHisto();
-      fSystDzero->BuildGraphsUnc(fhDzero);
-      fSystDzero->BuildGraphsRelUnc();
-    }
-    else {
-      Printf("No values for syst unc foreseen for this dataset");
-    }
-  }
-  if(fincludeDstar){
-    if(year==2016){
-      fSystDstar=new AliHFDhadronCorrSystUnc("fSystDstar");
-      fSystDstar->InitStandardUncertaintiesPPb2016(1,(fptminD+fptmaxD)*0.5,fptminAsso,fptmaxAsso);  
-      fSystDstar->BuildTotalUncHisto();
-      fSystDstar->BuildTotalNonFDUncHisto();
-      fSystDstar->BuildGraphsUnc(fhDstar);
-      fSystDstar->BuildGraphsRelUnc();
-    }
-    else {
-      Printf("No values for syst unc foreseen for this dataset");
-    }
-  }
-  
-  if(fincludeDplus){
-    if(year==2016){
-      fSystDplus=new AliHFDhadronCorrSystUnc("fSystDplus");
-      fSystDplus->InitStandardUncertaintiesPPb2016(2,(fptminD+fptmaxD)*0.5,fptminAsso,fptmaxAsso);  
-      fSystDplus->BuildTotalUncHisto();
-      fSystDplus->BuildTotalNonFDUncHisto();
-      fSystDplus->BuildGraphsUnc(fhDplus);
-      fSystDplus->BuildGraphsRelUnc();
-    }
-    else {
-      Printf("No values for syst unc foreseen for this dataset");
-    }
-  }
+      else if(system==2 && centbin==0){ //p-Pb 2016 0-100%
+        if(fincludeDzero){
+          if(year==2016){
+            fSystDzero=new AliHFDhadronCorrSystUnc("fSystDzero");
+            fSystDzero->InitStandardUncertaintiesPPb2016(0,(fptminD+fptmaxD)*0.5,fptminAsso,fptmaxAsso);  
+            fSystDzero->BuildTotalUncHisto();
+            fSystDzero->BuildTotalNonFDUncHisto();
+            fSystDzero->BuildGraphsUnc(fhDzero);
+            fSystDzero->BuildGraphsRelUnc();
+          }
+          else {
+            Printf("No values for syst unc foreseen for this dataset");
+          }
+        }
+        if(fincludeDstar){
+          if(year==2016){
+            fSystDstar=new AliHFDhadronCorrSystUnc("fSystDstar");
+            fSystDstar->InitStandardUncertaintiesPPb2016(1,(fptminD+fptmaxD)*0.5,fptminAsso,fptmaxAsso);  
+            fSystDstar->BuildTotalUncHisto();
+            fSystDstar->BuildTotalNonFDUncHisto();
+            fSystDstar->BuildGraphsUnc(fhDstar);
+            fSystDstar->BuildGraphsRelUnc();
+          }
+          else {
+            Printf("No values for syst unc foreseen for this dataset");
+          }
+        }
+        if(fincludeDplus){
+          if(year==2016){
+            fSystDplus=new AliHFDhadronCorrSystUnc("fSystDplus");
+            fSystDplus->InitStandardUncertaintiesPPb2016(2,(fptminD+fptmaxD)*0.5,fptminAsso,fptmaxAsso);  
+            fSystDplus->BuildTotalUncHisto();
+            fSystDplus->BuildTotalNonFDUncHisto();
+            fSystDplus->BuildGraphsUnc(fhDplus);
+            fSystDplus->BuildGraphsRelUnc();
+          }
+          else {
+            Printf("No values for syst unc foreseen for this dataset");
+          }
+        }
       }
+      else if(system==2 && centbin==1){ //p-Pb 2016 0-20%
+        if(fincludeDzero){
+          if(year==2016){
+            fSystDzero=new AliHFDhadronCorrSystUnc("fSystDzero");
+            fSystDzero->InitStandardUncertaintiesPPb2016in020(0,(fptminD+fptmaxD)*0.5,fptminAsso,fptmaxAsso);  
+            fSystDzero->BuildTotalUncHisto();
+            fSystDzero->BuildTotalNonFDUncHisto();
+            fSystDzero->BuildGraphsUnc(fhDzero);
+            fSystDzero->BuildGraphsRelUnc();
+          }
+          else {
+            Printf("No values for syst unc foreseen for this dataset");
+          }
+        }
+        if(fincludeDstar){
+          if(year==2016){
+            fSystDstar=new AliHFDhadronCorrSystUnc("fSystDstar");
+            fSystDstar->InitStandardUncertaintiesPPb2016in020(1,(fptminD+fptmaxD)*0.5,fptminAsso,fptmaxAsso);  
+            fSystDstar->BuildTotalUncHisto();
+            fSystDstar->BuildTotalNonFDUncHisto();
+            fSystDstar->BuildGraphsUnc(fhDstar);
+            fSystDstar->BuildGraphsRelUnc();
+          }
+          else {
+            Printf("No values for syst unc foreseen for this dataset");
+          }
+        }
+        if(fincludeDplus){
+          if(year==2016){
+            fSystDplus=new AliHFDhadronCorrSystUnc("fSystDplus");
+            fSystDplus->InitStandardUncertaintiesPPb2016in020(2,(fptminD+fptmaxD)*0.5,fptminAsso,fptmaxAsso);  
+            fSystDplus->BuildTotalUncHisto();
+            fSystDplus->BuildTotalNonFDUncHisto();
+            fSystDplus->BuildGraphsUnc(fhDplus);
+            fSystDplus->BuildGraphsRelUnc();
+          }
+          else {
+            Printf("No values for syst unc foreseen for this dataset");
+          }
+        }
+      }
+      else if(system==2 && centbin==2){ //p-Pb 2016 20-60%
+        if(fincludeDzero){
+          if(year==2016){
+            fSystDzero=new AliHFDhadronCorrSystUnc("fSystDzero");
+            fSystDzero->InitStandardUncertaintiesPPb2016in2060(0,(fptminD+fptmaxD)*0.5,fptminAsso,fptmaxAsso);  
+            fSystDzero->BuildTotalUncHisto();
+            fSystDzero->BuildTotalNonFDUncHisto();
+            fSystDzero->BuildGraphsUnc(fhDzero);
+            fSystDzero->BuildGraphsRelUnc();
+          }
+          else {
+            Printf("No values for syst unc foreseen for this dataset");
+          }
+        }
+        if(fincludeDstar){
+          if(year==2016){
+            fSystDstar=new AliHFDhadronCorrSystUnc("fSystDstar");
+            fSystDstar->InitStandardUncertaintiesPPb2016in2060(1,(fptminD+fptmaxD)*0.5,fptminAsso,fptmaxAsso);  
+            fSystDstar->BuildTotalUncHisto();
+            fSystDstar->BuildTotalNonFDUncHisto();
+            fSystDstar->BuildGraphsUnc(fhDstar);
+            fSystDstar->BuildGraphsRelUnc();
+          }
+          else {
+            Printf("No values for syst unc foreseen for this dataset");
+          }
+        }
+        if(fincludeDplus){
+          if(year==2016){
+            fSystDplus=new AliHFDhadronCorrSystUnc("fSystDplus");
+            fSystDplus->InitStandardUncertaintiesPPb2016in2060(2,(fptminD+fptmaxD)*0.5,fptminAsso,fptmaxAsso);  
+            fSystDplus->BuildTotalUncHisto();
+            fSystDplus->BuildTotalNonFDUncHisto();
+            fSystDplus->BuildGraphsUnc(fhDplus);
+            fSystDplus->BuildGraphsRelUnc();
+          }
+          else {
+            Printf("No values for syst unc foreseen for this dataset");
+          }
+        }
+      }
+      else if(system==2 && centbin==3){ //p-Pb 2016 60-100%
+        if(fincludeDzero){
+          if(year==2016){
+            fSystDzero=new AliHFDhadronCorrSystUnc("fSystDzero");
+            fSystDzero->InitStandardUncertaintiesPPb2016in60100(0,(fptminD+fptmaxD)*0.5,fptminAsso,fptmaxAsso);  
+            fSystDzero->BuildTotalUncHisto();
+            fSystDzero->BuildTotalNonFDUncHisto();
+            fSystDzero->BuildGraphsUnc(fhDzero);
+            fSystDzero->BuildGraphsRelUnc();
+          }
+          else {
+            Printf("No values for syst unc foreseen for this dataset");
+          }
+        }
+        if(fincludeDstar){
+          if(year==2016){
+            fSystDstar=new AliHFDhadronCorrSystUnc("fSystDstar");
+            fSystDstar->InitStandardUncertaintiesPPb2016in60100(1,(fptminD+fptmaxD)*0.5,fptminAsso,fptmaxAsso);  
+            fSystDstar->BuildTotalUncHisto();
+            fSystDstar->BuildTotalNonFDUncHisto();
+            fSystDstar->BuildGraphsUnc(fhDstar);
+            fSystDstar->BuildGraphsRelUnc();
+          }
+          else {
+            Printf("No values for syst unc foreseen for this dataset");
+          }
+        }
+        if(fincludeDplus){
+          if(year==2016){
+            fSystDplus=new AliHFDhadronCorrSystUnc("fSystDplus");
+            fSystDplus->InitStandardUncertaintiesPPb2016in60100(2,(fptminD+fptmaxD)*0.5,fptminAsso,fptmaxAsso);  
+            fSystDplus->BuildTotalUncHisto();
+            fSystDplus->BuildTotalNonFDUncHisto();
+            fSystDplus->BuildGraphsUnc(fhDplus);
+            fSystDplus->BuildGraphsRelUnc();
+          }
+          else {
+            Printf("No values for syst unc foreseen for this dataset");
+          }
+        }
+      }
+
       else {
 	Printf("Cannot initiate syst uncertainties: wrong system selected");
 	return kFALSE;
@@ -407,7 +532,7 @@ void AliHFDmesonCorrAverage::CalculateAverage(){
   
   printf("Settin syst \n");
 
-  if(!InitSystematicUncertainty(fsys,fyear)){
+  if(!InitSystematicUncertainty(fsys,fyear,fCentBin)){
     Printf("Cannot init syst uncertainties \n");
     return;
   }

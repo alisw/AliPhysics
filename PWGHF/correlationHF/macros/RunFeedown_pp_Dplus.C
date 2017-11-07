@@ -25,15 +25,15 @@ void SetInputFileNameRoot(TString fileinputroot){
   inputfileroot=fileinputroot;
 }
 
-void RunFeedown_pp_Dplus(Int_t collsyst, Bool_t subtrMCclos, Bool_t oldnames){
-    GetEnvelopeForEachV2(collsyst,subtrMCclos,oldnames);
+void RunFeedown_pp_Dplus(Int_t collsyst, Bool_t subtrMCclos, Bool_t oldnames, Int_t centbin){
+    GetEnvelopeForEachV2(collsyst,subtrMCclos,oldnames,centbin);
 }
 void SetFDtemplateSystemString(TString str){
   strSystemFDtempl=str;
 }
 
 //_____________________________________________________________
-void GetEnvelopeForEachV2(Int_t collsyst, Bool_t subtrMCclos, Bool_t oldnames){
+void GetEnvelopeForEachV2(Int_t collsyst, Bool_t subtrMCclos, Bool_t oldnames, Int_t centbin){
     
 
     Int_t collsyst = 0; // 0 is pp, 1 is p-Pb
@@ -98,7 +98,7 @@ void GetEnvelopeForEachV2(Int_t collsyst, Bool_t subtrMCclos, Bool_t oldnames){
             //FDsubDstarPt3to5assoc0.3to1.0_v2D0.00_v2had0.00.root
 
             // first one - no v2
-            SubtractFDexploitingClassDplus(Dpt[iDpt],Dpt[iDpt+1],hadpt[ihadpt],hadptMax[ihadpt],outputfilename.Data(),2,purities[ihadpt],1,inputcorrelation.Data(),inputfc.Data(),templatedir.Data(),collsyst,0,0,systmode,oldnames,subtrMCclos);
+            SubtractFDexploitingClassDplus(Dpt[iDpt],Dpt[iDpt+1],hadpt[ihadpt],hadptMax[ihadpt],outputfilename.Data(),2,purities[ihadpt],1,inputcorrelation.Data(),inputfc.Data(),templatedir.Data(),collsyst,0,0,systmode,oldnames,subtrMCclos,centbin);
             if(collsyst) cout << "Check: This is not pp" << endl; // if pp, stop here
             
         }

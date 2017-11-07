@@ -17,7 +17,7 @@ void DrawPlotWithSystUnc(TH1D *h){
   
 }
 
-void MakeAverage(Double_t ptmin,Double_t ptmax,Double_t ptassocmin,Double_t ptassocmax,Int_t system=0/*0=pp, 1= pPb*/,Int_t year=2010,Int_t reflected=0,Double_t maxH=7./*just for graphics*/,Bool_t doArithmeticAv=kFALSE,Int_t baselineOpt=5,TString strDzero="/Users/administrator/ALICE/CHARM/HFCJ/DCorrelations_Test/2014Nov9paperProp/InputPlotsDzero/pp/Singlev2Envelope",TString strDplus="/Users/administrator/ALICE/CHARM/HFCJ/DCorrelations_Test/2014Nov9paperProp/InputPlotsDplus/pp",TString strDstar="/Users/administrator/ALICE/CHARM/HFCJ/DCorrelations_Test/2014Nov9paperProp/InputPlotsDStar/pp/CorrectedPlots",TString v2suffix="_v2D0.00_v2had0.00"){
+void MakeAverage(Double_t ptmin,Double_t ptmax,Double_t ptassocmin,Double_t ptassocmax,Int_t system=0/*0=pp, 1= pPb*/,Int_t year=2010,Int_t reflected=0,Double_t maxH=7./*just for graphics*/,Bool_t doArithmeticAv=kFALSE,Int_t baselineOpt=5,TString strDzero="/Users/administrator/ALICE/CHARM/HFCJ/DCorrelations_Test/2014Nov9paperProp/InputPlotsDzero/pp/Singlev2Envelope",TString strDplus="/Users/administrator/ALICE/CHARM/HFCJ/DCorrelations_Test/2014Nov9paperProp/InputPlotsDplus/pp",TString strDstar="/Users/administrator/ALICE/CHARM/HFCJ/DCorrelations_Test/2014Nov9paperProp/InputPlotsDStar/pp/CorrectedPlots",TString v2suffix="_v2D0.00_v2had0.00",Int_t centbin=0){
 
   gInterpreter->ExecuteMacro("$ALICE_PHYSICS/../src/PWGHF/correlationHF/macros/LoadLibraries.C");
   gROOT->LoadMacro(Form("%s/FitPlots.C",codeDir.Data()));
@@ -73,6 +73,7 @@ void MakeAverage(Double_t ptmin,Double_t ptmax,Double_t ptassocmin,Double_t ptas
 
   AliHFDmesonCorrAverage *av=new AliHFDmesonCorrAverage();
   av->SetSystem(system,year);
+  av->SetCentBin(centbin);
   av->SetMethod(10);
   av->SetArithmeticAverage(doArithmeticAv);
   av->SetMomentumRanges(ptmin,ptmax,ptassocmin,ptassocmax);

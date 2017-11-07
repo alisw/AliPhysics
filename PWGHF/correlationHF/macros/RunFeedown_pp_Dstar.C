@@ -25,15 +25,15 @@ void SetInputFileNameRoot(TString fileinputroot){
   inputfileroot=fileinputroot;
 }
 
-void RunFeedown_pp_Dstar(Int_t collsyst, Bool_t subtrMCclos, Bool_t oldnames){
-    GetEnvelopeForEachV2(collsyst,subtrMCclos,oldnames);
+void RunFeedown_pp_Dstar(Int_t collsyst, Bool_t subtrMCclos, Bool_t oldnames, Int_t centbin){
+    GetEnvelopeForEachV2(collsyst,subtrMCclos,oldnames,centbin);
 }
 void SetFDtemplateSystemString(TString str){
   strSystemFDtempl=str;
 }
 
 //_____________________________________________________________
-void GetEnvelopeForEachV2(Int_t collsyst, Bool_t subtrMCclos, Bool_t oldnames){
+void GetEnvelopeForEachV2(Int_t collsyst, Bool_t subtrMCclos, Bool_t oldnames, Int_t centbin){
     
     //**********************************
     // This function loops on all the templates, creating 5 envelopes for different v2 values.
@@ -99,7 +99,7 @@ void GetEnvelopeForEachV2(Int_t collsyst, Bool_t subtrMCclos, Bool_t oldnames){
                         
       
             // first one - no v2
-            SubtractFDexploitingClassDstar(Dpt[iDpt],Dpt[iDpt+1],hadpt[ihadpt],hadptMax[ihadpt],outputfilename.Data(),2,purities[ihadpt],1,inputcorrelation.Data(),inputfc.Data(),templatedir.Data(),collsyst,0,0,systmode,oldnames,subtrMCclos);
+            SubtractFDexploitingClassDstar(Dpt[iDpt],Dpt[iDpt+1],hadpt[ihadpt],hadptMax[ihadpt],outputfilename.Data(),2,purities[ihadpt],1,inputcorrelation.Data(),inputfc.Data(),templatedir.Data(),collsyst,0,0,systmode,oldnames,subtrMCclos,centbin);
 
             if(collsyst) cout << "Check: This is not pp" << endl; // if pp, stop here
             

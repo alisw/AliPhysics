@@ -10,6 +10,7 @@ declare dirDzero=$7
 declare dirDstar=$8
 declare dirDplus=$9
 declare -i localCode=${10}
+declare -i centralitybin=${11}
 declare -ai ptTrigMin=(3 5 8 16) 
 declare -ai ptTrigMax=(5 8 16 24) 
 
@@ -56,7 +57,7 @@ Printf("Trig pt: %f to %f",(Double_t)(${ptTrigMin[$ptTrig]}),(Double_t)(${ptTrig
 Printf("Min pt assoc: %f",(Double_t)(${ptAssocMin[$ptAssoc]})/10.);
 Printf("Coll syst=%d",${collsyst})
 SetFitPlotMacroPath("${dirmacroAverage}")
-MakeAverage(${ptTrigMin[$ptTrig]},${ptTrigMax[$ptTrig]},${ptAssocMin[$ptAssoc]}/10.,${ptAssocMax[$ptAssoc]}/10,$collsyst,$year,$reflOpt,$heightPlot,$averOpt,$baselineOpt,"$dirDzero","$dirDplus","$dirDstar","")
+MakeAverage(${ptTrigMin[$ptTrig]},${ptTrigMax[$ptTrig]},${ptAssocMin[$ptAssoc]}/10.,${ptAssocMax[$ptAssoc]}/10,$collsyst,$year,$reflOpt,$heightPlot,$averOpt,$baselineOpt,"$dirDzero","$dirDplus","$dirDstar","",$centralitybin)
 
 .q
 EOF
