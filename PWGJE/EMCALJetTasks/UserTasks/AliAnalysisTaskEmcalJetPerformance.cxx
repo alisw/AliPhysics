@@ -350,6 +350,15 @@ void AliAnalysisTaskEmcalJetPerformance::AllocateJetHistograms()
     title = histname + ";Centrality (%);#it{p}_{T}^{corr} (GeV/#it{c});No. of constituents";
     fHistManager.CreateTH3(histname.Data(), title.Data(), nbinsx, minx, maxx, nbinsy, miny, maxy, nbinsz, minz, maxz);
     
+    // (Centrality, jet pT, Enonlincorr - Ehadcorr)
+    nbinsx = 20; minx = 0; maxx = 100;
+    nbinsy = nPtBins; miny = 0; maxy = fMaxPt;
+    nbinsz = nPtBins; minz = 0; maxz = fMaxPt;
+    
+    histname = TString::Format("%s/JetHistograms/hDeltaEHadCorr", jets->GetArrayName().Data());
+    title = histname + ";Centrality (%);#it{p}_{T}^{corr} (GeV/#it{c});#sum#it{E}_{nonlincorr} - #it{E}_{hadcorr}";
+    fHistManager.CreateTH3(histname.Data(), title.Data(), nbinsx, minx, maxx, nbinsy, miny, maxy, nbinsz, minz, maxz);
+    
     // (Median patch energy, calo type, jet pT, centrality)
     if (fDoTriggerSimulation) {
       histname = TString::Format("%s/JetHistograms/hMedPatchJet", jets->GetArrayName().Data());
@@ -1151,6 +1160,19 @@ void AliAnalysisTaskEmcalJetPerformance::FillJetHistograms()
         histname = TString::Format("%s/JetHistograms/hNConstVsPtDCal", jets->GetArrayName().Data());
       }
       fHistManager.FillTH3(histname, fCent, corrPt, 1.*jet->GetNumberOfConstituents());
+      
+      // (Centrality, jet pT, Enonlincorr - Ehadcorr)
+      Double_t deltaEhadcorr = 0;
+      const AliVCluster* clus = nullptr;
+      Int_t nClusters = jet->GetNumberOfClusters();
+      for (Int_t iClus = 0; iClus < nClusters; iClus++) {
+        clus = jet->Cluster(iClus);
+        deltaEhadcorr += (clus->GetNonLinCorrEnergy() - clus->GetHadCorrEnergy());
+      }
+      
+      histname = TString::Format("%s/JetHistograms/hDeltaEHadCorr", jets->GetArrayName().Data());
+      fHistManager.FillTH3(histname, fCent, corrPt, deltaEhadcorr);
+      
       
       // (Median patch energy, calo type, jet pT, centrality)
       if (fDoTriggerSimulation) {
