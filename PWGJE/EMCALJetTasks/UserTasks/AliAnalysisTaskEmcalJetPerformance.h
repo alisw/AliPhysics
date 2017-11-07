@@ -82,6 +82,8 @@ class AliAnalysisTaskEmcalJetPerformance : public AliAnalysisTaskEmcalJet {
   void SetDoTriggerSimulation(Bool_t b)                     { fDoTriggerSimulation = b; }
   void SetPlotMatchedJetHistograms(Bool_t b)                { fPlotMatchedJetHistograms = b; }
   void SetComputeMBDownscaling(Bool_t b)                    { fComputeMBDownscaling = b; }
+  void SetTrackMatchingDeltaEtaMax(Double_t deta)           { fTrackMatchingDeltaEtaMax = deta; }
+  void SetTrackMatchingDeltaPhiMax(Double_t dphi)           { fTrackMatchingDeltaPhiMax = dphi; }
 
  protected:
   void                        ExecOnce()                                        ;
@@ -135,6 +137,10 @@ class AliAnalysisTaskEmcalJetPerformance : public AliAnalysisTaskEmcalJet {
   Int_t                       fNEoverPBins;                         //!<! number of variable E/p bins
   Double_t*                   fEoverPBins;                          //!<! variable E/p bins
   
+  // Track matching parameters (for cluster histogram plots)
+  Double_t                    fTrackMatchingDeltaEtaMax;            ///< Maximum delta-eta to consider a track to be matched to a cluster
+  Double_t                    fTrackMatchingDeltaPhiMax;            ///< Maximum delta-phi to consider a track to be matched to a cluster
+  
   // Trigger parameters
   Double_t                    fMBUpscaleFactor;                     //!<! inverse of downscale factor, for MB trigger
   Double_t                    fMedianEMCal;                         //!<! median patch energy in EMCal, per event
@@ -161,7 +167,7 @@ class AliAnalysisTaskEmcalJetPerformance : public AliAnalysisTaskEmcalJet {
   AliAnalysisTaskEmcalJetPerformance &operator=(const AliAnalysisTaskEmcalJetPerformance&); // not implemented
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskEmcalJetPerformance, 3);
+  ClassDef(AliAnalysisTaskEmcalJetPerformance, 4);
   /// \endcond
 };
 #endif

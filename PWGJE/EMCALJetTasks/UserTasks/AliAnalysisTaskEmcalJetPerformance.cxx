@@ -83,6 +83,8 @@ AliAnalysisTaskEmcalJetPerformance::AliAnalysisTaskEmcalJetPerformance() :
   fM02HistBins(0),
   fNEoverPBins(0),
   fEoverPBins(0),
+  fTrackMatchingDeltaEtaMax(0.015),
+  fTrackMatchingDeltaPhiMax(0.030),
   fMBUpscaleFactor(1.),
   fMedianEMCal(0.),
   fMedianDCal(0.),
@@ -123,6 +125,8 @@ AliAnalysisTaskEmcalJetPerformance::AliAnalysisTaskEmcalJetPerformance(const cha
   fM02HistBins(0),
   fNEoverPBins(0),
   fEoverPBins(0),
+  fTrackMatchingDeltaEtaMax(0.015),
+  fTrackMatchingDeltaPhiMax(0.030),
   fMBUpscaleFactor(1.),
   fMedianEMCal(0.),
   fMedianDCal(0.),
@@ -179,8 +183,8 @@ void AliAnalysisTaskEmcalJetPerformance::GenerateHistoBins()
   fNEoverPBins = 47;
   fEoverPBins = new Double_t[fNEoverPBins+1];
   GenerateFixedBinArray(30, 0, 1.5, fEoverPBins);
-  GenerateFixedBinArray(10, 1.5, 3.5, fEoverPBins+35);
-  GenerateFixedBinArray(7, 3.5, 10.5, fEoverPBins+41);
+  GenerateFixedBinArray(10, 1.5, 3.5, fEoverPBins+30);
+  GenerateFixedBinArray(7, 3.5, 10.5, fEoverPBins+40);
 }
 
 /**
@@ -344,6 +348,15 @@ void AliAnalysisTaskEmcalJetPerformance::AllocateJetHistograms()
     
     histname = TString::Format("%s/JetHistograms/hNConstVsPtDCal", jets->GetArrayName().Data());
     title = histname + ";Centrality (%);#it{p}_{T}^{corr} (GeV/#it{c});No. of constituents";
+    fHistManager.CreateTH3(histname.Data(), title.Data(), nbinsx, minx, maxx, nbinsy, miny, maxy, nbinsz, minz, maxz);
+    
+    // (Centrality, jet pT, Enonlincorr - Ehadcorr)
+    nbinsx = 20; minx = 0; maxx = 100;
+    nbinsy = nPtBins; miny = 0; maxy = fMaxPt;
+    nbinsz = nPtBins; minz = 0; maxz = fMaxPt;
+    
+    histname = TString::Format("%s/JetHistograms/hDeltaEHadCorr", jets->GetArrayName().Data());
+    title = histname + ";Centrality (%);#it{p}_{T}^{corr} (GeV/#it{c});#sum#it{E}_{nonlincorr} - #it{E}_{hadcorr}";
     fHistManager.CreateTH3(histname.Data(), title.Data(), nbinsx, minx, maxx, nbinsy, miny, maxy, nbinsz, minz, maxz);
     
     // (Median patch energy, calo type, jet pT, centrality)
@@ -1148,6 +1161,19 @@ void AliAnalysisTaskEmcalJetPerformance::FillJetHistograms()
       }
       fHistManager.FillTH3(histname, fCent, corrPt, 1.*jet->GetNumberOfConstituents());
       
+      // (Centrality, jet pT, Enonlincorr - Ehadcorr)
+      Double_t deltaEhadcorr = 0;
+      const AliVCluster* clus = nullptr;
+      Int_t nClusters = jet->GetNumberOfClusters();
+      for (Int_t iClus = 0; iClus < nClusters; iClus++) {
+        clus = jet->Cluster(iClus);
+        deltaEhadcorr += (clus->GetNonLinCorrEnergy() - clus->GetHadCorrEnergy());
+      }
+      
+      histname = TString::Format("%s/JetHistograms/hDeltaEHadCorr", jets->GetArrayName().Data());
+      fHistManager.FillTH3(histname, fCent, corrPt, deltaEhadcorr);
+      
+      
       // (Median patch energy, calo type, jet pT, centrality)
       if (fDoTriggerSimulation) {
         histname = TString::Format("%s/JetHistograms/hMedPatchJet", jets->GetArrayName().Data());
@@ -1175,6 +1201,8 @@ void AliAnalysisTaskEmcalJetPerformance::FillClusterHistograms()
   for (auto it : clusters->accepted_momentum()) {
     
     clus = it.second;
+    Double_t clusPhi = it.first.Phi_0_2pi();
+    Double_t clusEta = it.first.Eta();
     
     // Include only EMCal/DCal clusters
     if (!clus->IsEMCAL()) {
@@ -1183,11 +1211,22 @@ void AliAnalysisTaskEmcalJetPerformance::FillClusterHistograms()
     
     // Compute the sum of matched track momentum, and various track matching / hadronic corretion quantities
     Double_t trackPSum = 0;
+    Int_t nTracksMatched = 0;
     const AliVTrack* track = nullptr;
     for (Int_t itrack=0; itrack < clus->GetNTracksMatched(); itrack++) {
       track = dynamic_cast<AliVTrack*>(clus->GetTrackMatched(itrack));
-      if (track) {
+      if (!track) {
+        continue;
+      }
+      
+      Double_t trackPhi = TVector2::Phi_0_2pi(track->GetTrackPhiOnEMCal());
+      Double_t trackEta = track->GetTrackEtaOnEMCal();
+      Double_t deta = TMath::Abs(clusPhi - trackPhi);
+      Double_t dphi = TMath::Abs(clusEta - trackEta);
+      
+      if (deta < fTrackMatchingDeltaEtaMax && dphi < fTrackMatchingDeltaPhiMax) {
         trackPSum += track->P();
+        nTracksMatched++;
       }
     }
     
@@ -1215,7 +1254,7 @@ void AliAnalysisTaskEmcalJetPerformance::FillClusterHistograms()
       histname = "ClusterHistograms/hNcellsM02G04";
       fHistManager.FillTH3(histname, fCent, clus->GetNonLinCorrEnergy(), clus->GetNCells());
     }
-    if (clus->GetM02() < 0.4) {
+    if (clus->GetM02() > 0.1 && clus->GetM02() < 0.4) {
       histname = "ClusterHistograms/hNcellsM02L04";
       fHistManager.FillTH3(histname, fCent, clus->GetNonLinCorrEnergy(), clus->GetNCells());
     }
@@ -1229,17 +1268,17 @@ void AliAnalysisTaskEmcalJetPerformance::FillClusterHistograms()
     
     // Plot number of matched tracks (centrality, Eclus nonlincorr, N matches)
     histname = "ClusterHistograms/hMatchedTrackN";
-    fHistManager.FillTH3(histname, fCent, clus->GetNonLinCorrEnergy(), clus->GetNTracksMatched());
+    fHistManager.FillTH3(histname, fCent, clus->GetNonLinCorrEnergy(), nTracksMatched);
     
     // Plot M02 distribution for clusters with matched tracks (centrality, Eclus nonlincorr, M02)
     histname = "ClusterHistograms/hM02Matched";
-    if (clus->GetNTracksMatched() > 0) {
+    if (nTracksMatched > 0) {
       fHistManager.FillTH3(histname, fCent, clus->GetNonLinCorrEnergy(), clus->GetM02());
     }
     
     // Plot M02 distribution for clusters without matched tracks (centrality, Eclus nonlincorr, M02)
     histname = "ClusterHistograms/hM02Unmatched";
-    if (clus->GetNTracksMatched() == 0) {
+    if (nTracksMatched == 0) {
       fHistManager.FillTH3(histname, fCent, clus->GetNonLinCorrEnergy(), clus->GetM02());
     }
     
