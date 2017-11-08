@@ -4,7 +4,7 @@
 /**
  *
  * \class AliAnalysisMuMuEP
- * \brief Elliptic dimuon analysis with the event plane method
+ * \brief Elliptic dimuon analysis with the event plane or scalar product method
  * \author A. Francisco (Subatech)
  */
 
@@ -50,6 +50,11 @@ public:
 
   void DefineMinvRange(Double_t minvMin, Double_t minvMax, Double_t minvBinSize);
 
+  void ComputeMeanV2(Bool_t b){fcomputeMeanV2=b;}
+  void UseEventPlaneMethod(Bool_t b){fcomputeEP=b;}
+  void UseScalarProductMethod(Bool_t b){fcomputeSP=b;}
+  void UsSESEMethod(Bool_t b){fESE=b;}
+
 
 protected:
 
@@ -63,6 +68,7 @@ protected:
                                  const AliVParticle& part2,
                                  const Bool_t IsMixedHisto);
 
+  void FillHistosForEvent(const char* eventSelection,const char* triggerClassName,const char* centrality);
   void FillHistosForMCEvent(const char* eventSelection,const char* triggerClassName,const char* centrality);
 
 private:
@@ -82,14 +88,18 @@ private:
 
   Double_t TriggerLptApt(Double_t *x, Double_t *par);
 
-  Double_t GetEventPlane(const char* detector, Int_t step = 3) const;
+  // TVector2 GetQn(Int_t detector) const { return Q2[detector]; }
+  // void SetQn(Int_t detector, TVector2 Qn) { Q2[detector].Set(Qn); }
+  // Double_t GetEventPlane(Int_t detector) const { return phiEP[detector]; }
+  // void SetEventPlane(Int_t detector, Double_t psi) { phiEP[detector]=psi; }
 
-  TVector2 GetQn(const char* detector, Int_t step = 3) const;
+  Double_t GetCentrality();
 
 private:
   Bool_t fcomputeMeanV2; //mv2 with EP method
   Bool_t fcomputeEP; //dist in dphi bins
   Bool_t fcomputeSP; //scalar product
+  Bool_t fESE; //event shape engineering
   Bool_t fWeightMuon;
   TH2F     * fAccEffHisto;
   TString fMinvBinSeparator;
@@ -106,10 +116,12 @@ private:
   Double_t fmcptcutmax;
   Int_t fNDetectors;
   Int_t fHar;
+  Double_t EP[3];
+  Double_t Q2[3][2];
   TString fEqSteps  [5] = {"raw", "plain", "rec", "align","twist"};
   TString fDetectors[3] = {"SPD","VZEROA", "VZEROC"};
 
-  ClassDef(AliAnalysisMuMuFlow,1) // implementation of AliAnalysisMuMuBase for muon pairs
+  ClassDef(AliAnalysisMuMuFlow,2) // implementation of AliAnalysisMuMuFlow for muon pairs
 };
 
 #endif
