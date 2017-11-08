@@ -2952,7 +2952,7 @@ Bool_t AliAnalysisTaskTOFSpectra::AnalyseCutVariation(const AliESDtrack* track)
 }
 
 //________________________________________________________________________
-void AliAnalysisTaskTOFSpectra::FillCutVariable(const Bool_t pass = kFALSE);
+void AliAnalysisTaskTOFSpectra::FillCutVariable(const Bool_t pass)
 {
   hTrkTPCCls[pass]->Fill(fTPCClusters);
   hTrkTPCRows[pass]->Fill(fTPCCrossedRows);
@@ -2993,6 +2993,7 @@ void AliAnalysisTaskTOFSpectra::FillCutVariable(const Bool_t pass = kFALSE);
   }
 #endif
 }
+
 //________________________________________________________________________
 void AliAnalysisTaskTOFSpectra::SetCutVar()
 {
