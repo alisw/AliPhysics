@@ -38,7 +38,8 @@ AliCDBStorage::AliCDBStorage():
   fType(),
   fBaseFolder(),
   fNretry(0),
-  fInitRetrySeconds(0)
+  fInitRetrySeconds(0),
+  fMaxDate(0)
 {
   // constructor
 
