@@ -211,16 +211,16 @@ private:
   TH1D         *fFB_Efficiency_Cent[10];  //!
 
   //CME using scalar product method:
-  TProfile     *fHist_Corr3p_SP_Norm_PN[3];  //! Norm = 10 centrality bins along X
-  TProfile     *fHist_Corr3p_SP_Norm_PP[3];  //!
-  TProfile     *fHist_Corr3p_SP_Norm_NN[3];  //!
-  TProfile     *fHist_Reso2n_SP_Norm_Det[3]; //! 
+  TProfile     *fHist_Corr3p_SP_Norm_PN[2][3];  //! Norm = 10 centrality bins along X
+  TProfile     *fHist_Corr3p_SP_Norm_PP[2][3];  //!
+  TProfile     *fHist_Corr3p_SP_Norm_NN[2][3];  //!
+  TProfile     *fHist_Reso2n_SP_Norm_Det[2][3]; //! 
 
   //CME Using Event plane method:
-  TProfile     *fHist_Corr3p_EP_Norm_PN[3];  //! 
-  TProfile     *fHist_Corr3p_EP_Norm_PP[3];  //!
-  TProfile     *fHist_Corr3p_EP_Norm_NN[3];  //!
-  TProfile     *fHist_Reso2n_EP_Norm_Det[3]; //! 
+  TProfile     *fHist_Corr3p_EP_Norm_PN[2][3];  //! 
+  TProfile     *fHist_Corr3p_EP_Norm_PP[2][3];  //!
+  TProfile     *fHist_Corr3p_EP_Norm_NN[2][3];  //!
+  TProfile     *fHist_Reso2n_EP_Norm_Det[2][3]; //! 
 
   //CME ZDN correlator: Spectator neutron
   TProfile2D     *fHist_Corr3p_ZDN_SP_PN[3];  //! Norm = 10 centrality bins along X
@@ -232,28 +232,28 @@ private:
   //CME pT differential Histograms:
 
   //(pT_A + pT_B)/2.0
-  TProfile     *fHist_Corr3p_pTSum_EP_V0A_PN[6]; //! 
-  TProfile     *fHist_Corr3p_pTSum_EP_V0A_PP[6]; //!
-  TProfile     *fHist_Corr3p_pTSum_EP_V0A_NN[6]; //!
-  TProfile     *fHist_Corr3p_pTSum_EP_V0C_PN[6]; //! 
-  TProfile     *fHist_Corr3p_pTSum_EP_V0C_PP[6]; //!
-  TProfile     *fHist_Corr3p_pTSum_EP_V0C_NN[6]; //!
+  TProfile     *fHist_Corr3p_pTSum_EP_V0A_PN[2][6]; //! 
+  TProfile     *fHist_Corr3p_pTSum_EP_V0A_PP[2][6]; //!
+  TProfile     *fHist_Corr3p_pTSum_EP_V0A_NN[2][6]; //!
+  TProfile     *fHist_Corr3p_pTSum_EP_V0C_PN[2][6]; //! 
+  TProfile     *fHist_Corr3p_pTSum_EP_V0C_PP[2][6]; //!
+  TProfile     *fHist_Corr3p_pTSum_EP_V0C_NN[2][6]; //!
 
   // |(pT_A - pT_B)|
-  TProfile     *fHist_Corr3p_pTDiff_EP_V0A_PN[6]; //! 
-  TProfile     *fHist_Corr3p_pTDiff_EP_V0A_PP[6]; //!
-  TProfile     *fHist_Corr3p_pTDiff_EP_V0A_NN[6]; //!
-  TProfile     *fHist_Corr3p_pTDiff_EP_V0C_PN[6]; //! 
-  TProfile     *fHist_Corr3p_pTDiff_EP_V0C_PP[6]; //!
-  TProfile     *fHist_Corr3p_pTDiff_EP_V0C_NN[6]; //!
+  TProfile     *fHist_Corr3p_pTDiff_EP_V0A_PN[2][6]; //! 
+  TProfile     *fHist_Corr3p_pTDiff_EP_V0A_PP[2][6]; //!
+  TProfile     *fHist_Corr3p_pTDiff_EP_V0A_NN[2][6]; //!
+  TProfile     *fHist_Corr3p_pTDiff_EP_V0C_PN[2][6]; //! 
+  TProfile     *fHist_Corr3p_pTDiff_EP_V0C_PP[2][6]; //!
+  TProfile     *fHist_Corr3p_pTDiff_EP_V0C_NN[2][6]; //!
  
   // |(Eta_A - Eta_B)|
-  TProfile     *fHist_Corr3p_EtaDiff_EP_V0A_PN[6]; //! 
-  TProfile     *fHist_Corr3p_EtaDiff_EP_V0A_PP[6]; //!
-  TProfile     *fHist_Corr3p_EtaDiff_EP_V0A_NN[6]; //!
-  TProfile     *fHist_Corr3p_EtaDiff_EP_V0C_PN[6]; //! 
-  TProfile     *fHist_Corr3p_EtaDiff_EP_V0C_PP[6]; //!
-  TProfile     *fHist_Corr3p_EtaDiff_EP_V0C_NN[6]; //!
+  TProfile     *fHist_Corr3p_EtaDiff_EP_V0A_PN[2][6]; //! 
+  TProfile     *fHist_Corr3p_EtaDiff_EP_V0A_PP[2][6]; //!
+  TProfile     *fHist_Corr3p_EtaDiff_EP_V0A_NN[2][6]; //!
+  TProfile     *fHist_Corr3p_EtaDiff_EP_V0C_PN[2][6]; //! 
+  TProfile     *fHist_Corr3p_EtaDiff_EP_V0C_PP[2][6]; //!
+  TProfile     *fHist_Corr3p_EtaDiff_EP_V0C_NN[2][6]; //!
  
 
   //QA: pos/neg ratio:
