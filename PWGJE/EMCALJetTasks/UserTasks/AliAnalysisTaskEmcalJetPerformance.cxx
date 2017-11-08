@@ -392,7 +392,7 @@ void AliAnalysisTaskEmcalJetPerformance::AllocateClusterHistograms()
   Double_t *RcorrBins = GenerateFixedBinArray(nRcorrBins, 0., 1.);
   const Int_t nCellBins = 30;
   Double_t *cellBins = GenerateFixedBinArray(nCellBins, -0.5, 29.5);
-  const Int_t nMatchedTrackBins = 10;
+  const Int_t nMatchedTrackBins = 5;
   Double_t *matchedTrackBins = GenerateFixedBinArray(nMatchedTrackBins, -0.5, 4.5);
   
   //////////////////////////////////////////////
