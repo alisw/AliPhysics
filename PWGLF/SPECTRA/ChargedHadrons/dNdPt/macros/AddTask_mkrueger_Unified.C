@@ -1,4 +1,4 @@
-AlidNdPtUnifiedAnalysisTask* AddTask_mkrueger_Unified(TString controlstring, Int_t cutModeLow = 100, Int_t cutModeHigh = 120)
+AlidNdPtUnifiedAnalysisTask* AddTask_mkrueger_Unified(TString controlstring, Int_t cutModeLow = 100, Int_t cutModeHigh = 101)
 {
   // INFO: for MC use 4 different trains (cutModeLow, cutModeHigh) = (100,105), (105,109), (109,113), (113,116), (116,120)
 
@@ -20,8 +20,8 @@ AlidNdPtUnifiedAnalysisTask* AddTask_mkrueger_Unified(TString controlstring, Int
     if(controlstring.Contains("5TeV")) is2015Data = kTRUE;
     if(controlstring.Contains("7TeV")) offlineTriggerMask = AliVEvent::kMB;
   }
-  if(controlstring.Contains("pPb"))  {nBinsMultiplicity = 150; colsys = "pPb";}
-  if(controlstring.Contains("PbPb")) {nBinsMultiplicity = 500; isPbPbAnalysis = kTRUE; is2015Data = kTRUE; colsys = "PbPb";}
+  if(controlstring.Contains("pPb"))  {nBinsMultiplicity = 200; colsys = "pPb";}
+  if(controlstring.Contains("PbPb")) {nBinsMultiplicity = 200; isPbPbAnalysis = kTRUE; is2015Data = kTRUE; colsys = "PbPb";}
   if(controlstring.Contains("excludeSigmas")) includeSigmas = kFALSE;
 
   // Binning in Multiplicity
@@ -44,6 +44,7 @@ AlidNdPtUnifiedAnalysisTask* AddTask_mkrueger_Unified(TString controlstring, Int
   TString type = mgr->GetInputEventHandler()->GetDataType(); // can be "ESD" or "AOD"
   Bool_t hasMC = (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler() != 0x0);
 
+  if(controlstring.Contains("PbPb") && hasMC) offlineTriggerMask = AliVEvent::kMB;
 
   AlidNdPtUnifiedAnalysisTask* mainTask = NULL;
 
@@ -58,7 +59,6 @@ AlidNdPtUnifiedAnalysisTask* AddTask_mkrueger_Unified(TString controlstring, Int
     // general cuts
     task->SelectCollisionCandidates(offlineTriggerMask);
     task->SetTriggerMask(offlineTriggerMask);
-//    if(isPbPbAnalysis) task->SetCentralityCut(60., 80.);
 
     task->SetUseMC(hasMC);
     if(type.Contains("ESD")) task->SetUseESD();
