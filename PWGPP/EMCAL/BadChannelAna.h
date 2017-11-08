@@ -55,13 +55,15 @@ public:
 	  void Run(Bool_t mergeOnly=0);
 
       //Setters
-	  void SetExternalMergedFile(TString inputName)        {fExternalFileName = inputName;}
+	  void SetExternalMergedFile(TString inputName)        {fExternalFileName   = inputName;}
 	  void SetExternalBadMap(TString inputName)            {fExternalBadMapName = inputName;}
-	  void SetQAChecks(Bool_t inputBool)                   {fTestRoutine      = inputBool;}
-      void SetPrintOutput(Bool_t inputBool)                {fPrint            = inputBool;}
+	  void SetQAChecks(Bool_t inputBool)                   {fTestRoutine        = inputBool;}
+      void SetPrintOutput(Bool_t inputBool)                {fPrint              = inputBool;}
       void SetStartEndCell(Int_t start, Int_t end)         {fStartCell = start; fNoOfCells = end;}
+      void SetLowerBound(Double_t input)                   {fEndLowerBound      = input;}
       void AddManualMasking(std::vector<Int_t> cellVector) {fManualMask.swap(cellVector) ;}
-	  void AddPeriodAnalysis(Int_t criteria, Double_t nsigma, Double_t emin, Double_t emax);
+	  void AddMaskSM(Int_t iSM);
+      void AddPeriodAnalysis(Int_t criteria, Double_t nsigma, Double_t emin, Double_t emax);
 
 
 protected:
@@ -87,7 +89,6 @@ protected:
 	  void PlotFlaggedCells2D(Int_t flagBegin,Int_t flagEnd=-1);
 	  void SaveHistoToFile();
 
-	  //Test Test
 	  //Settings for analysed period
 	  Int_t   fCurrentRunNumber;            ///< A run number of an analyzed period. This is important for the AliCalorimeterUtils initialization
       TString fPeriod;                      ///< The name of the analyzed period
@@ -97,6 +98,7 @@ protected:
 	  Int_t   fCellStartDCal;               ///< ID of the first cell in the DCal
 	  Int_t   fStartCell;                   ///< ID of the first cell you want to check
 	  Int_t   fStartCellSM[21];             ///< CellIDs of first cell in the  20SMs plus last cell ID
+	  Double_t fEndLowerBound;              ///< Lower bound
 
 	  //Genergal paths
 	  TString fAnalysisOutput;              ///< The list with bad channels and histograms are saved in this folder
@@ -118,10 +120,10 @@ protected:
       Bool_t  fPrint;                       ///< If set true more couts with information of the excluded cells will be printed
 
 	  //histogram settings
-	  Int_t fNMaxCols;                      ///< Maximum No of colums in module (eta direction)
-	  Int_t fNMaxRows;                      ///< Maximum No of rows in module   (phi direction)
-	  Int_t fNMaxColsAbs;                   ///< Maximum No of colums in Calorimeter
-	  Int_t fNMaxRowsAbs;                   ///< Maximum No of rows in Calorimeter
+	  Int_t   fNMaxCols;                    ///< Maximum No of colums in module (eta direction)
+	  Int_t   fNMaxRows;                    ///< Maximum No of rows in module   (phi direction)
+	  Int_t   fNMaxColsAbs;                 ///< Maximum No of colums in Calorimeter
+	  Int_t   fNMaxRowsAbs;                 ///< Maximum No of rows in Calorimeter
 
 	  //arrays to store information
 	  Double_t fnEventsInRange;

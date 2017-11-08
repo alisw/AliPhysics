@@ -80,13 +80,20 @@ void runAnalysisBC(Int_t nversion = -1, TString period = "LHC15n", TString train
 	BadChannelAna* Analysis;
 	Analysis=new BadChannelAna(period,train,trigger,runNum,nversion,workDir,listName);
 
-	//..Settings
+	//. . . . . . . . . . . . . . . . . . . . . . . .
+	//. . Settings
+	//. . . . . . . . . . . . . . . . . . . . . . . .
 	Analysis->SetExternalMergedFile(externalFile);
     Analysis->AddManualMasking(badcellsManual);
-    //Analysis->SetStartEndCell(0,12288);     //..only EMCal
-    //Analysis->SetStartEndCell(12288,17664);//..only DCal
-    //Analysis->SetQAChecks(1);     //1= Perform QA checks - takes a long time! Prints all good cells for cross check
-	//Analysis->SetPrintOutput(1);  //1= prints more information about excluded cells
+	//Analysis->AddMaskSM(7);                     //..switch off entire SMs
+	//Analysis->AddMaskSM(9);                     //..switch off entire SMs
+	//Analysis->AddMaskSM(11);                    //..switch off entire SMs
+	Analysis->SetLowerBound(0.3);                 //..If the Emin of the energy range (Emin-Emax) is higher than X GeV then dont apply a lower cut on the distribution
+    //Analysis->SetStartEndCell(0,12288);       //..only EMCal
+    //Analysis->SetStartEndCell(12288,17664);   //..only DCal
+    //Analysis->SetQAChecks(1);                 //..1= Perform QA checks - takes a long time! Saves all good cells for cross check to pdf
+	//Analysis->SetPrintOutput(1);              //..1= prints more information about excluded cells
+	//Analysis->SetExternalBadMap("Version1OADB/LHC16s_INT7_Histograms_V1.root");
 
 	//. . . . . . . . . . . . . . . . . . . . . . . .
 	//. . Add different period analyses
@@ -97,16 +104,13 @@ void runAnalysisBC(Int_t nversion = -1, TString period = "LHC15n", TString train
 	Analysis->AddPeriodAnalysis(1, 4.0,0.1,0.3);  // energy/hit in range Emin Emax
 	Analysis->AddPeriodAnalysis(2, 5.5,0.2,0.5);  // hits in cell range Emin Emax
 	Analysis->AddPeriodAnalysis(1, 4.5,0.2,0.5);  // energy/hit in range Emin Emax
-	//Analysis->AddPeriodAnalysis(2, 5.5,0.3,0.6);  //neu* hits in cell range Emin Emax
-	//Analysis->AddPeriodAnalysis(1, 4.5,0.3,0.6);  //neu* energy/hit in range Emin Emax
 	Analysis->AddPeriodAnalysis(2, 5.5,0.5,1.0);  // hits in cell range Emin Emax
 	Analysis->AddPeriodAnalysis(1, 4.5,0.5,1.0);  // energy/hit in range Emin Emax
-	//Analysis->AddPeriodAnalysis(2, 5.5,1.0,2.0);  //neu* hits in cell range Emin Emax
-	//Analysis->AddPeriodAnalysis(1, 4.5,1.0,2.0);  //neu* mean energy in range Emin Emax
 	Analysis->AddPeriodAnalysis(2, 5.5,1.0,4.0);  // hits in cell range Emin Emax
-	Analysis->AddPeriodAnalysis(1, 4.5,1.0,4.0);  // mean energy in range Emin Emax
+    Analysis->AddPeriodAnalysis(1, 4.5,1.0,4.0);  // mean energy in range Emin Emax
 	Analysis->AddPeriodAnalysis(2, 5.5,1.0,10.0); // hits in cell in range Emin Emax
 	Analysis->AddPeriodAnalysis(1, 4.5,1.0,10.0); // energy/hit in range Emin Emax
+	Analysis->AddPeriodAnalysis(2, 5.5,0.11,0.29);  // hits in cell in range Emin Emax
 
 
 	//..special test for extra high energy fluctuations
@@ -119,9 +123,10 @@ void runAnalysisBC(Int_t nversion = -1, TString period = "LHC15n", TString train
 
 	//*test time stuff*/	Analysis->AddPeriodAnalysis(3, 6,-20,+20);// energy/hit in range Emin Emax
 
-	//..Start the bad channel analysis
+	//. . . . . . . . . . . . . . . . . . . . . . . .
+	//. . Start the bad channel analysis
+	//. . . . . . . . . . . . . . . . . . . . . . . .
 	Bool_t mergeOnly=0;//.. =1 do only merge and filter
-	//Analysis->SetExternalBadMap("Version1OADB/LHC16s_INT7_Histograms_V1.root");
 	Analysis->Run(mergeOnly);
 
 	watch.Stop();

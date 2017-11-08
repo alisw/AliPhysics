@@ -54,6 +54,7 @@ TObject(),
 	fNoOfCells(),
 	fCellStartDCal(12288),
 	fStartCell(0),
+	fEndLowerBound(1),
 	fAnalysisOutput(),
 	fAnalysisInput(),
 	fRunList(),
@@ -105,6 +106,7 @@ BadChannelAna::BadChannelAna(TString period, TString train, TString trigger, Int
 	fNoOfCells(),
 	fCellStartDCal(12288),
 	fStartCell(0),
+	fEndLowerBound(1),
 	fAnalysisOutput(),
 	fAnalysisInput(),
 	fRunList(),
@@ -344,8 +346,11 @@ void BadChannelAna::Run(Bool_t mergeOnly)
 	Double_t binCentreHeightOne   = hRefDistr->GetBinCenter(binHeightOne);
 	cout<<". . .Recomendation:"<<endl;
 	cout<<". . .With the current statistic on average a cell has 1 hit at "<<binCentreHeightOne<<" GeV"<<endl;
-	cout<<". . .so it makes no sense to select energy ranges >"<<binCentreHeightOne<<" as cells will be"<<endl;
+	cout<<". . .so it makes no sense to select energy ranges >"<<binCentreHeightOne<<"GeV as cells will be"<<endl;
 	cout<<". . .marked bad just due to the lack of statistic"<<endl;
+	cout<<". . .your selected lower bond is "<<fEndLowerBound<<" GeV"<<endl;
+    if(binCentreHeightOne>=fEndLowerBound)	cout<<". . .This means you are OK!"<<endl;
+    if(binCentreHeightOne< fEndLowerBound)  	cout<<". . .#!#!#!#! CAREFUL THIS COULD CAUSE TROUBLE AND THROW OUT MORE CELLS THAN NECESSARY #!#!#!#! "<<endl;
 	cout<<". . .End of process . . . . . . . . . . . . . . . . . . . . ."<<endl;
 	cout<<". . . . . . . . . . . . . . . . . . . . . . . . . . . . . . ."<<endl;
 }
@@ -581,7 +586,25 @@ void BadChannelAna::BCAnalysis()
 	}
 	cout<<"o o o End of bad channel analysis o o o"<<endl;
 }
-
+//
+// Mask an entire SM before doing the BC analysis
+// This is useful when you get info from QA that there are problems with one SM
+// and you want to clean up your bad channels beforehand
+//
+//________________________________________________________________________
+void BadChannelAna::AddMaskSM(Int_t iSM)
+{
+	cout<<"o o o Manually mask SM "<<iSM<<" o o o"<<endl;
+	//..Loop over cell ID
+	for (Int_t cell = fStartCell; cell < fNoOfCells; cell++)
+	{
+		//..check to which SM the cell belongs
+		if(cell>=fStartCellSM[iSM] && cell<fStartCellSM[iSM+1])
+		{
+			fFlag[cell] =1;
+		}
+	}
+}
 ///
 /// This function adds period analyses to the Bad Channel analysis.
 /// Each period analysis needs to be specified with four parameters.
@@ -642,13 +665,13 @@ void BadChannelAna::PeriodAnalysis(Int_t criterion, Double_t nsigma, Double_t em
 	if(criterion==1)
 	{
 //		if(emin>=1.8)FlagAsBad(criterion, histogram, nsigma, -1);//..do not apply a lower boundary
-		if(emin>=1.8)FlagAsBad(criterion, histogram, nsigma, -1);//..do not apply a lower boundary
+		if(emin>=fEndLowerBound)FlagAsBad(criterion, histogram, nsigma, -1);//..do not apply a lower boundary
 		else         FlagAsBad(criterion, histogram, nsigma, 200);//400
 	}
 	if(criterion==2)
 	{
 //		if(emin>=1.8)FlagAsBad(criterion, histogram, nsigma, -1);//..do not narrow the integration window
-		if(emin>=1.8)FlagAsBad(criterion, histogram, nsigma, -1);//..do not narrow the integration window
+		if(emin>=fEndLowerBound)FlagAsBad(criterion, histogram, nsigma, -1);//..do not narrow the integration window
 		else         FlagAsBad(criterion, histogram, nsigma, 601);
 	}
 	if(criterion==3) FlagAsBad(criterion, histogram, nsigma, 602);
@@ -1326,7 +1349,7 @@ void BadChannelAna::SummarizeResults()
 		c1_projSM->cd(iSM+1)->SetLogy();
 		gPad->SetTopMargin(0.03);
 		gPad->SetBottomMargin(0.11);
-		projEnergyMaskSM[iSM] = cellAmp_masked->ProjectionX(Form("%sMask_ProjSM%i",cellAmp_masked->GetName(),iSM),fStartCellSM[iSM],fStartCellSM[iSM+1]-1);
+		projEnergyMaskSM[iSM] = cellAmp_masked->ProjectionX(Form("%sMask_ProjSM%i",cellAmp_masked->GetName(),iSM),fStartCellSM[iSM]+1,fStartCellSM[iSM+1]); //histogram bin 1 has cell ID0
 		projEnergyMaskSM[iSM]->SetTitle("");
 		projEnergyMaskSM[iSM]->SetXTitle(Form("Cell Energy [GeV], SM%i",iSM));
 		projEnergyMaskSM[iSM]->GetYaxis()->SetTitleOffset(1.6);
@@ -1367,7 +1390,7 @@ void BadChannelAna::SummarizeResults()
 		c1_projTimeSM->cd(iSM+1)->SetLogy();
 		gPad->SetTopMargin(0.03);
 		gPad->SetBottomMargin(0.11);
-		projTimeMaskSM[iSM] = cellTime_masked->ProjectionX(Form("%sMask_ProjSMTime%i",cellAmp_masked->GetName(),iSM),fStartCellSM[iSM],fStartCellSM[iSM+1]-1);
+		projTimeMaskSM[iSM] = cellTime_masked->ProjectionX(Form("%sMask_ProjSMTime%i",cellAmp_masked->GetName(),iSM),fStartCellSM[iSM]+1,fStartCellSM[iSM+1]);
 		projTimeMaskSM[iSM]->SetTitle("");
 		projTimeMaskSM[iSM]->SetXTitle(Form("Cell Time [ns], SM%i",iSM));
 		projTimeMaskSM[iSM]->GetYaxis()->SetTitleOffset(1.6);
