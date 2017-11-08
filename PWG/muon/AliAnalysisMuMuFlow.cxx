@@ -63,7 +63,6 @@ fHar(2),
 EP{0.,0.,0.},
 Q2{{0,0},{0,0},{0,0}}
 {
-  cout << "hello mumuflow" << endl;
   // FIXME ? find the AccxEff histogram from HistogramCollection()->Histo("/EXCHANGE/JpsiAccEff")
   if ( accEffHisto )
   {
@@ -89,7 +88,6 @@ AliAnalysisMuMuFlow::DefineHistogramCollection(const char* eventSelection,
 {
   /// Define the histograms this analysis will use
 
- cout << "defining" << endl;
   // Check if histo is not already here
   if ( ExistSemaphoreHistogram(eventSelection,triggerClassName,centrality) )
   {
@@ -110,13 +108,7 @@ AliAnalysisMuMuFlow::DefineHistogramCollection(const char* eventSelection,
   // Int_t nMCMinvBins = GetNbins(minvMin,minvMax,0.1);
   //Event shape : ThnSparses
   const Int_t nDimThNS = 8;
-
-  // std::string ctr(centrality);
-  // string centMin = ctr.substr(4,5);
-
-  // cout << "centr : "<< ctr <<" sub "<< ctr.substr(4,5) <<" subs "<<  ctr.substr(10,11)<< endl;
-
-  // //                     minv   pt dphi cos2dphi  q2     cent    EPp  EPev
+  // //                   minv   pt dphi cos2dp q2 cent EPp  EPev
   Int_t nBins[nDimThNS]={nMinvBins,200,200,500,500,200,100,100};
   Double_t xMin[nDimThNS]={minvMin,0.,0.,-1.,0.,20.,-1.,-1.};
   Double_t xMax[nDimThNS]={minvMax,12.,3.2,1.,10.,40.,1.,1.};
@@ -124,7 +116,6 @@ AliAnalysisMuMuFlow::DefineHistogramCollection(const char* eventSelection,
   CreatePairTHnSparse(kHistoForData | kHistoForMCInput,eventSelection,triggerClassName,centrality,"ESE_SPD","#mu+#mu+ v2 distribution",nDimThNS,nBins,xMin,xMax);
   CreatePairTHnSparse(kHistoForData | kHistoForMCInput,eventSelection,triggerClassName,centrality,"ESE_V0A","#mu+#mu+ v2 distribution",nDimThNS,nBins,xMin,xMax);
 
- cout << "after thn" << endl;
   for(Int_t i=0; i<fNDetectors;i++){
     CreateEventHistos(kHistoForData| kHistoForMCInput,eventSelection,triggerClassName,centrality,Form("EVENTPLANE_%s",fDetectors[i].Data()),Form("#mu+#mu- event plane distributionwith %s",fDetectors[i].Data()),
                      500, -1.6, 1.6,-2);
@@ -166,7 +157,6 @@ AliAnalysisMuMuFlow::DefineHistogramCollection(const char* eventSelection,
   }
 
 
- cout << "before bining" << endl;
   TIter next(fBinsToFill);
   AliAnalysisMuMuBinning::Range* r;
   Int_t nb(0);
@@ -257,7 +247,6 @@ AliAnalysisMuMuFlow::DefineHistogramCollection(const char* eventSelection,
       }
     }
   }
-  cout << "histos defined "<< endl;
 }
 
 //_____________________________________________________________________________
@@ -283,7 +272,6 @@ void AliAnalysisMuMuFlow::FillHistosForPair(const char* eventSelection,
   /// For the MC case, we check that only tracks with an associated MC label are selected (usefull when running on embedding).
   /// A weight is also applied for MC case at the pair or the muon track level according to SetMuonWeight() and systLevel.
 
- cout << "fill for pairs" << endl;
   // Usual cuts
   if ( ( tracki.Charge() == trackj.Charge() ) ) return;
   if (!AliAnalysisMuonUtility::IsMuonTrack(&tracki) ) return;
@@ -878,7 +866,6 @@ void AliAnalysisMuMuFlow::FillHistosForEvent(const char* eventSelection,
   // The function access the corrected Qn vector from the Qn correction framework (PWGPP/EVCHAR/FlowVectorCorrections)
   // Check the documentation at https://twiki.cern.ch/twiki/bin/view/ALICE/StartUsingR2FlowVectorCorrections
 
- cout << "fill for event" << endl;
   AliQnCorrectionsManager *flowQnMgr;
   AliAnalysisTaskFlowVectorCorrections *flowQnVectorTask =
       static_cast<AliAnalysisTaskFlowVectorCorrections *>(AliAnalysisManager::GetAnalysisManager()->GetTask("FlowQnVectorCorrections"));
@@ -924,26 +911,16 @@ void AliAnalysisMuMuFlow::FillHistosForEvent(const char* eventSelection,
       }
     }
   }
-  cout << "924" << endl;
   //Filling the histos
   for(Int_t i=0;i<3;i++){
-     cout << "bef" << endl;
-
     if( !IsHistogramDisabled(Form("EVENTPLANE_%s",fDetectors[i].Data())) ) Histo(eventSelection,triggerClassName,centrality,Form("EVENTPLANE_%s",fDetectors[i].Data()))->Fill(phiEP[i]);
-    cout << "928" << endl;
     if( !IsHistogramDisabled(Form("Cos2EP_%s",fDetectors[i].Data())) ) Histo(eventSelection,triggerClassName,centrality,Form("Cos2EP_%s",fDetectors[i].Data()))->Fill(TMath::Cos(2*phiEP[i]));
-    cout << "930" << endl;
     if( !IsHistogramDisabled(Form("Sin2EP_%s",fDetectors[i].Data())) ) Histo(eventSelection,triggerClassName,centrality,Form("Sin2EP_%s",fDetectors[i].Data()))->Fill(TMath::Sin(2*phiEP[i]));
-    cout << "932" << endl;
     if( !IsHistogramDisabled(Form("Qn_%s",fDetectors[i].Data()))) Histo(eventSelection,triggerClassName,centrality,Form("Qn_%s",fDetectors[i].Data()))->Fill(sqrt(Qn[i]*Qn[i]));
-    cout << "934" << endl;
     if( !IsHistogramDisabled(Form("Qnvscent_%s",fDetectors[i].Data()))) Histo(eventSelection,triggerClassName,centrality,Form("Qnvscent_%s",fDetectors[i].Data()))->Fill(GetCentrality(),sqrt(Qn[i]*Qn[i]));
-    cout << "936" << endl;
 
     for(Int_t j=i+1; j<3;j++){
       //EP
-      cout << "EP stuff" << endl;
-
       Double_t deltaEP =phiEP[i]-phiEP[j];
       if(TMath::Abs(deltaEP)>TMath::Pi()/fHar){
         if(deltaEP>0.) deltaEP-=2.*TMath::Pi()/fHar;
@@ -956,14 +933,11 @@ void AliAnalysisMuMuFlow::FillHistosForEvent(const char* eventSelection,
       if(!IsHistogramDisabled(Form("hEvPlaneReso%s_%svsQnSPD",fDetectors[i].Data(),fDetectors[j].Data())))
         Histo(eventSelection,triggerClassName,centrality,Form("hEvPlaneReso%s_%svsQnSPD",fDetectors[i].Data(),fDetectors[j].Data()))->Fill(TMath::Cos(fHar*deltaEP),sqrt(Qn[0]*Qn[0]));
       //Fill Qn vector histos
-          cout << "Qn stuff" << endl;
-
       if ( !IsHistogramDisabled(Form("EP%svsEP%s",fDetectors[i].Data(),fDetectors[j].Data()) )) Histo(eventSelection,triggerClassName,centrality,Form("EP%svsEP%s",fDetectors[i].Data(),fDetectors[j].Data()))->Fill(phiEP[i],phiEP[j]);
       if ( !IsHistogramDisabled(Form("Qn%svsQn%s",fDetectors[i].Data(),fDetectors[j].Data())) ) Histo(eventSelection,triggerClassName,centrality,Form("Qn%svsQn%s",fDetectors[i].Data(),fDetectors[j].Data()))->Fill(sqrt(Qn[i]*Qn[i]),sqrt(Qn[j]*Qn[j]));
 
     }
   }
-  cout << "filled event" << endl;
 }
   //________________________________________________________________________
 void AliAnalysisMuMuFlow::SetOriginPtFunc(TString formula, const Double_t *param,Double_t xMin, Double_t xMax)
