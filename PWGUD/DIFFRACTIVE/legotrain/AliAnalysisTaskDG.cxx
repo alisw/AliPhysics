@@ -456,6 +456,11 @@ void AliAnalysisTaskDG::UserCreateOutputObjects()
   fHist[kHistSPDFOTrk]->SetStats(0);
   fList->Add(fHist[kHistSPDFOTrk]);
 
+  fHist[kHistSPDFOFiredTrk] = new TH3D("HSPDFOFiredTrk", fTriggerSelectionSPD+";chip key;BCmod4;mult",
+                                       1200, -0.5, 1199.5, 4, -0.5, 3.5, 10, -0.5, 9.5);
+  fHist[kHistSPDFOFiredTrk]->SetStats(0);
+  fList->Add(fHist[kHistSPDFOFiredTrk]);
+
   fHist[kHistSPDFiredTrkVsMult] = new TH3D("HSPDFiredTrkVsMult", fTriggerSelectionSPD+";chip key;BCmod4;log_{10}(number of tracklets)",
 					   1200, -0.5, 1199.5, 4, -0.5, 3.5, 25, 0.0, 5.0);
   fHist[kHistSPDFiredTrkVsMult]->SetStats(0);
@@ -466,6 +471,11 @@ void AliAnalysisTaskDG::UserCreateOutputObjects()
   fHist[kHistSPDFOTrkVsMult]->SetStats(0);
   fList->Add(fHist[kHistSPDFOTrkVsMult]);
 
+  fHist[kHistSPDFOFiredTrkVsMult] = new TH3D("HSPDFOFiredTrkVsMult", fTriggerSelectionSPD+";chip key;BCmod4;log_{10}(number of tracklets)",
+                                             1200, -0.5, 1199.5, 4, -0.5, 3.5, 25, 0.0, 5.0);
+  fHist[kHistSPDFOFiredTrkVsMult]->SetStats(0);
+  fList->Add(fHist[kHistSPDFOFiredTrkVsMult]);
+
   fHist[kHistSPDFiredVsMult] = new TH3D("HSPDFiredVsMult", fTriggerSelectionSPD+";chip key;BCmod4;log_{10}(number of tracklets)",
 					1200, -0.5, 1199.5, 4, -0.5, 3.5, 25, 0.0, 5.0);
   fHist[kHistSPDFiredVsMult]->SetStats(0);
@@ -475,6 +485,11 @@ void AliAnalysisTaskDG::UserCreateOutputObjects()
 				     1200, -0.5, 1199.5, 4, -0.5, 3.5, 25, 0.0, 5.0);
   fHist[kHistSPDFOVsMult]->SetStats(0);
   fList->Add(fHist[kHistSPDFOVsMult]);
+
+  fHist[kHistSPDFOFiredVsMult] = new TH3D("HSPDFOFiredVsMult", fTriggerSelectionSPD+";chip key;BCmod4;log_{10}(number of tracklets)",
+                                          1200, -0.5, 1199.5, 4, -0.5, 3.5, 25, 0.0, 5.0);
+  fHist[kHistSPDFOFiredVsMult]->SetStats(0);
+  fList->Add(fHist[kHistSPDFOFiredVsMult]);
 
   PostData(1, fList);
 
@@ -572,6 +587,11 @@ void AliAnalysisTaskDG::FillSPDFOEffiencyHistograms(const AliESDEvent *esdEvent)
 	  FillTH3(kHistSPDFOTrk,       chipKey, bcMod4, matched[chipKey]);
 	  FillTH3(kHistSPDFOTrkVsMult, chipKey, bcMod4, log10Tracklets, (matched[chipKey]>0));
 	  FillTH3(kHistSPDFOVsMult,    chipKey, bcMod4, log10Tracklets);
+	}
+	if (mult->TestFastOrFiredChips(chipKey) && mult->TestFiredChipMap(chipKey)) {
+	  FillTH3(kHistSPDFOFiredTrk,       chipKey, bcMod4, matched[chipKey]);
+	  FillTH3(kHistSPDFOFiredTrkVsMult, chipKey, bcMod4, log10Tracklets, (matched[chipKey]>0));
+	  FillTH3(kHistSPDFOFiredVsMult,    chipKey, bcMod4, log10Tracklets);
 	}
       }
     }

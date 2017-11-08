@@ -248,10 +248,13 @@ protected:
     kHistTrig,
     kHistSPDFiredTrk,
     kHistSPDFOTrk,
+    kHistSPDFOFiredTrk,
     kHistSPDFiredTrkVsMult,
     kHistSPDFOTrkVsMult,
+    kHistSPDFOFiredTrkVsMult,
     kHistSPDFiredVsMult,
     kHistSPDFOVsMult,
+    kHistSPDFOFiredVsMult,
     kNHist
   };
 
@@ -291,7 +294,7 @@ private:
   TClonesArray     fMCTracks;            //!
   AliESDtrackCuts *fTrackCuts;           //!
 
-  ClassDef(AliAnalysisTaskDG, 15);
+  ClassDef(AliAnalysisTaskDG, 16);
 } ;
 
 #endif // ALIANALYSISTASKDG_H
