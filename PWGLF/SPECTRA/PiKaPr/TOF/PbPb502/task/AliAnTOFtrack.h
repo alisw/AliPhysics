@@ -3,10 +3,11 @@
 
 #include "AliUtilTOFParams.h"
 #include "TMath.h"
+#include "iostream"
+using std::cout;
+using std::endl;
 
 using namespace AliUtilTOFParams;
-
-
 
 ///////////////////////////////////////////////////////////////////////////////
 ///                                                                          //
@@ -17,40 +18,39 @@ using namespace AliUtilTOFParams;
 /// N. Jacazio,  nicolo.jacazio[AROBASe]bo.infn.it                           //
 ///////////////////////////////////////////////////////////////////////////////
 
-class TObject;
-
-class AliAnTOFtrack : public TObject{
-public:
+class AliAnTOFtrack {
+  public:
   //Constructors and destructor
   AliAnTOFtrack();
   virtual ~AliAnTOFtrack();
 
-  //Masks
-  UShort_t        fTrkMask;                 //Mask for track information
-  UChar_t         fTPCPIDMask;              //Mask for TPC PID information
-  UShort_t        fTrkCutMask;              //Mask for Track cuts information
-  UShort_t        fDCAXYIndex;              //Binned version of the XY impact parameters
-  UShort_t        fDCAZIndex;               //Binned version of the Z impact parameters
-  Double_t        fLength;                  //Track length
-  Float_t         fLengthRatio;             //Ratio of length of the track matched and the one from a distant cluster
-  Double_t        fTOFTime;                 //Time measured by TOF
-  Float_t         fTOFMismatchTime;         //Time measured by TOF from a distant cluster
-  Float_t         fTOFExpTime[kExpSpecies]; //Expected time for all species
-  Float_t         fTOFExpSigma[kExpSpecies];//Expected sigmas for all species
-  Float_t         fT0TrkTime;               //T0 best for the event
-  Int_t           fTOFchan;                 //Channel of the matched track
-  Float_t         fEta;                     //Eta distribution of the track
-  Float_t         fPhi;                     //Phi distribution of the track
-  Double_t        fPt;                      //Transverse momentum
-  Double_t        fPTPC;                    //Momentum in the TPC
-  Int_t           fNTOFClusters;            //Number of clusters matchable to the one matched
-  Float_t         fTPCSignal;               //Signal in the TPC
+  //***************************
+  ////////Data Members/////////
+  //***************************
 
+  UShort_t fTrkMask;                 //Mask for track information
+  UChar_t fTPCPIDMask;               //Mask for TPC PID information
+  UShort_t fTrkCutMask;              //Mask for Track cuts information
+  UShort_t fDCAXYIndex;              //Binned version of the XY impact parameters
+  UShort_t fDCAZIndex;               //Binned version of the Z impact parameters
+  Double_t fLength;                  //Track length
+  Float_t fLengthRatio;              //Ratio of length of the track matched and the one from a distant cluster
+  Double_t fTOFTime;                 //Time measured by TOF
+  Float_t fTOFMismatchTime;          //Time measured by TOF from a distant cluster
+  Float_t fTOFExpTime[kExpSpecies];  //Expected time for all species
+  Float_t fTOFExpSigma[kExpSpecies]; //Expected sigmas for all species
+  Float_t fT0TrkTime;                //T0 best for the event
+  Int_t fTOFchan;                    //Channel of the matched track
+  Float_t fEta;                      //Eta distribution of the track
+  Float_t fPhi;                      //Phi distribution of the track
+  Double_t fPt;                      //Transverse momentum
+  Double_t fPTPC;                    //Momentum in the TPC
+  Int_t fNTOFClusters;               //Number of clusters matchable to the one matched
+  Float_t fTPCSignal;                //Signal in the TPC
 
   //******************************
   ////////Utility methods/////////
   //******************************
-
 
   //DCA binning
   ///
@@ -64,10 +64,6 @@ public:
   ///
   /// Method to put the DCAxy and DCAz of the class into bins
   void ComputeDCABin(const Double_t dcaxy, const Double_t dcaz);
-
-  ///
-  /// Method to convert compute the bin limits of the DCA binning
-  void GetBinnedDCA(Double_t &down, Double_t &up, const Bool_t xy);
 
   ///
   /// Method to get the value of the track DCA
@@ -171,13 +167,38 @@ public:
 
   ///
   /// Method to get the particle theta
-  Double_t GetTheta() const { return 2.*TMath::ATan(TMath::Exp(-fEta)); }
+  Double_t GetTheta() const { return 2. * TMath::ATan(TMath::Exp(-fEta)); }
 
   ///
   /// Method to get the particle momentum
-  Double_t GetMomentum() const { return fPt/TMath::Sin(GetTheta()); }
+  Double_t GetMomentum() const { return fPt / TMath::Sin(GetTheta()); }
 
-  ClassDef(AliAnTOFtrack, 7);//AliAnTOFtrack : TOF analysis container class
+  ///
+  /// Method to get the particle momentum
+  void Print()
+  {
+    cout << "fTrkMask " << fTrkMask << endl;
+    cout << "fTPCPIDMask " << fTPCPIDMask << endl;
+    cout << "fTrkCutMask " << fTrkCutMask << endl;
+    cout << "fDCAXYIndex " << fDCAXYIndex << endl;
+    cout << "fDCAZIndex " << fDCAZIndex << endl;
+    cout << "fLength " << fLength << endl;
+    cout << "fLengthRatio " << fLengthRatio << endl;
+    cout << "fTOFTime " << fTOFTime << endl;
+    cout << "fTOFMismatchTime " << fTOFMismatchTime << endl;
+    for (Int_t i = 0; i < kExpSpecies; i++) {
+      cout << "fTOFExpTime[" << i << "] " << fTOFExpTime[i] << endl;
+      cout << "fTOFExpSigma[" << i << "] " << fTOFExpSigma[i] << endl;
+    }
+    cout << "fT0TrkTime " << fT0TrkTime << endl;
+    cout << "fTOFchan " << fTOFchan << endl;
+    cout << "fEta " << fEta << endl;
+    cout << "fPhi " << fPhi << endl;
+    cout << "fPt " << fPt << endl;
+    cout << "fPTPC " << fPTPC << endl;
+    cout << "fNTOFClusters " << fNTOFClusters << endl;
+    cout << "fTPCSignal " << fTPCSignal << endl;
+  };
 };
 
 #endif

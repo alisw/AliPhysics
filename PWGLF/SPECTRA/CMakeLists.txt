@@ -72,6 +72,7 @@ set(SRCS
   PiKaPr/TOF/pp7/AliAnalysisCombinedHadronSpectra2MC.cxx
   PiKaPr/TOF/PbPb502/task/AliUtilTOFParams.cxx
   PiKaPr/TOF/PbPb502/task/AliAnTOFtrack.cxx
+  PiKaPr/TOF/PbPb502/task/AliAnTOFevent.cxx
   PiKaPr/TOF/PbPb502/task/AliAnalysisTaskTOFSpectra.cxx
   ParticleEfficiency/AliAnalysisTaskParticleEfficiencyLF.cxx
   PiKaPr/TestAOD/AliSpectraAODTrackCuts.cxx

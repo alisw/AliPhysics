@@ -24,8 +24,11 @@
 ////////////////////////////////////////////////////////////////////////////
 
 #define LOG_NO_INFO
+
 #define LOG_NO_DEBUG
+
 #define LOG_NO_WARNING
+
 #include "AliAnalysisTaskTOFSpectra.h"
 #include "AliAnalysisManager.h"
 #include "AliCDBManager.h"
@@ -55,6 +58,7 @@
 #include "TTree.h"
 #include <iostream>
 #ifdef USETREECLASS
+#include "AliAnTOFevent.h"
 #include "AliAnTOFtrack.h"
 #include "TClonesArray.h"
 #endif
@@ -85,7 +89,7 @@ AliAnalysisTaskTOFSpectra::AliAnalysisTaskTOFSpectra(const TString taskname, Boo
     //Output containers
     , fListHist(0x0)
     , fTreeTrack(0x0)
-    , ArrayAnTrk(0x0)
+    , fAnTOFevent()
     , fTreeTrackMC(0x0)
     //Task configuration flags
     , fHImode(hi)
@@ -308,10 +312,6 @@ AliAnalysisTaskTOFSpectra::~AliAnalysisTaskTOFSpectra()
     fTreeTrack = 0;
   }
 
-  if (ArrayAnTrk) {
-    delete ArrayAnTrk;
-    ArrayAnTrk = 0;
-  }
 
   if (fTreeTrackMC) {
     delete fTreeTrackMC;
@@ -645,6 +645,8 @@ void AliAnalysisTaskTOFSpectra::Init()
   for (Int_t species = 0; species < kExpSpecies; species++) { //Species loop
     hBetaExpected[species] = 0x0;
     hBetaExpectedTOFPID[species] = 0x0;
+
+    hdEdxExpected[species] = 0x0;
   }
 
   AliDebug(2, "Init()\t END");
@@ -1369,10 +1371,7 @@ void AliAnalysisTaskTOFSpectra::UserCreateOutputObjects()
 //
 //Track variables
 #ifdef USETREECLASS
-      ArrayAnTrk = new TClonesArray("AliAnTOFtrack");
-      ArrayAnTrk->SetOwner();
-      AliAnTOFtrack::Class()->IgnoreTObjectStreamer();
-      fTreeTrack->Branch("AliAnTOFtrack", "TClonesArray", &ArrayAnTrk, 8000, 0);
+      fTreeTrack->Branch("AliAnTOFevent", "AliAnTOFevent", &fAnTOFevent, 8000, 0);
 #else
       //       fTreeTrack->Branch("fDCAXY", &fDCAXY, "fDCAXY/F");
       //       fTreeTrack->Branch("fDCAZ", &fDCAZ, "fDCAZ/F");
@@ -1603,6 +1602,8 @@ void AliAnalysisTaskTOFSpectra::UserExec(Option_t*)
   StartTimePerformance(2);
   fEvtSelected = SelectEvents(EvtStart); //Perform the cuts for the event selection
   StopTimePerformance(2);
+  if (!vertex && fEvtSelected)
+    AliFatal("Accepted event does not have vertex according to cuts!");
 
   StartTimePerformance(3);
   ComputeEvtMultiplicityBin(); //Calculate in the handy binning the Multiplicity bin of the event. Event selection needs to be defined already as no outliers are accepted!
@@ -2082,7 +2083,7 @@ void AliAnalysisTaskTOFSpectra::UserExec(Option_t*)
       if (fCutmode)
         AnalyseCutVariation(track);
 #ifdef USETREECLASS
-      AliAnTOFtrack* AnTrk = (AliAnTOFtrack*)ArrayAnTrk->ConstructedAt(ArrayAnTrk->GetEntries());
+      AliAnTOFtrack* AnTrk = fAnTOFevent->GetTrack(fAnTOFevent->GetNtracks());
       AnTrk->ComputeDCABin(fDCAXY, fDCAZ); //Convert Impact parameters to binning
       AnTrk->fTrkMask = fTrkMask;
       AnTrk->fTPCPIDMask = fTPCPIDMask;
@@ -2197,7 +2198,7 @@ void AliAnalysisTaskTOFSpectra::UserExec(Option_t*)
         hNumMatchNoTRDOut[fSign]->Fill(fPt); //Tracks without TRDout
 
       //Performance plots
-      FillPerformanceHistograms();
+      FillPerformanceHistograms(track);
 
       //====================//
       // TOF geometry plots //
@@ -2245,13 +2246,14 @@ void AliAnalysisTaskTOFSpectra::UserExec(Option_t*)
 #ifdef USETREECLASS
   if (fTreemode) {
     StartTimePerformance(5);
+    fAnTOFevent->fEvtMultBin = fEvtMultBin;
     fTreeTrack->Fill();
     StopTimePerformance(5);
 
     //
     //Prepare the array for new event
     StartTimePerformance(6);
-    ArrayAnTrk->Clear();
+    fAnTOFevent->Reset();
     StopTimePerformance(6);
   }
 #endif
@@ -2399,6 +2401,19 @@ void AliAnalysisTaskTOFSpectra::InitializeEventVar()
 
   //   AliDebug(2, "InitializeEventVar\t END");
 }
+
+//________________________________________________________________________
+void AliAnalysisTaskTOFSpectra::PrintStatus()
+{
+  AliInfo("- PrintStatus -");
+  AliInfo(Form("Using fHImode %i", fHImode));
+  AliInfo(Form("Using fMCmode %i", fMCmode));
+  AliInfo(Form("Using fTreemode %i", fTreemode));
+  AliInfo(Form("Using fChannelmode %i", fChannelmode));
+  AliInfo(Form("Using fCutmode %i", fCutmode));
+  AliInfo(Form("Using fSimpleCutmode %i", fSimpleCutmode));
+  AliInfo(Form("Using fUseTPCShift %i\n", fUseTPCShift));
+};
 
 //________________________________________________________________________
 void AliAnalysisTaskTOFSpectra::Terminate(Option_t*)
@@ -2755,11 +2770,16 @@ Bool_t AliAnalysisTaskTOFSpectra::SelectEvents(Int_t& binstart)
             hNEvt->Fill(binstart++);
             if (fEventCut.PassedCut(AliEventCuts::kVertexPosition)) {
               hNEvt->Fill(binstart++);
-            }
-          }
-        }
-      }
-    }
+            } else
+              binstart += 1;
+          } else
+            binstart += 2;
+        } else
+          binstart += 3;
+      } else
+        binstart += 4;
+    } else
+      binstart += 5;
 
     //Global cut
     if (!fEventCut.AcceptEvent(fESD))
@@ -2932,6 +2952,49 @@ Bool_t AliAnalysisTaskTOFSpectra::AnalyseCutVariation(const AliESDtrack* track)
 }
 
 //________________________________________________________________________
+void AliAnalysisTaskTOFSpectra::FillCutVariable(const Bool_t pass)
+{
+  hTrkTPCCls[pass]->Fill(fTPCClusters);
+  hTrkTPCRows[pass]->Fill(fTPCCrossedRows);
+  hTrkTPCRatioRowsFindCls[pass]->Fill(fTPCCrossedRows / fTPCFindClusters);
+  hTrkTPCChi2NDF[pass]->Fill(fTPCChi2PerNDF);
+  hTrkITSChi2NDF[pass]->Fill(fITSChi2PerNDF);
+  hTrkActiveLength[pass]->Fill(fLengthActiveZone);
+  hTrkITSTPCMatch[pass]->Fill(fITSTPCMatch);
+  hTrkDCAxy[pass]->Fill(fDCAXY);
+  hTrkDCAz[pass]->Fill(fDCAZ);
+#ifdef CHECKTRACKCUTS //Only if required
+  for (Int_t i = 0; i < 3; i++) {
+    Double_t x = 0;
+    switch (i) {
+    case 0:
+      x = fPt;
+      break;
+    case 1:
+      x = fEta;
+      break;
+    case 2:
+      x = fPhi;
+      break;
+    default:
+      AliFatal("index out of bound!");
+      break;
+    }
+
+    hTrkTPCClsCorr[pass][i]->Fill(fTPCClusters, x);
+    hTrkTPCRowsCorr[pass][i]->Fill(fTPCCrossedRows, x);
+    hTrkTPCRatioRowsFindClsCorr[pass][i]->Fill(fTPCCrossedRows / fTPCFindClusters, x);
+    hTrkTPCChi2NDFCorr[pass][i]->Fill(fTPCChi2PerNDF, x);
+    hTrkITSChi2NDFCorr[pass][i]->Fill(fITSChi2PerNDF, x);
+    hTrkActiveLengthCorr[pass][i]->Fill(fLengthActiveZone, x);
+    hTrkITSTPCMatchCorr[pass][i]->Fill(fITSTPCMatch, x);
+    hTrkDCAxyCorr[pass][i]->Fill(fDCAXY, x);
+    hTrkDCAzCorr[pass][i]->Fill(fDCAZ, x);
+  }
+#endif
+}
+
+//________________________________________________________________________
 void AliAnalysisTaskTOFSpectra::SetCutVar()
 {
   AliInfo("SetCutVar");
@@ -3000,6 +3063,68 @@ void AliAnalysisTaskTOFSpectra::SetCutVar()
         } else
           AliInfo(Form("Setting Cut %s (%s) to accept loose cuts for %s value: #%i %s", cuts->GetName(), cuts->GetTitle(), Cuts[cut].Data(), i, c.Data()));
       }
+    }
+  }
+}
+
+//________________________________________________________________________
+void AliAnalysisTaskTOFSpectra::PrintCutVariables()
+{
+  AliInfo("- PrintCutVariables -");
+  AliInfo(Form("Simple cut : %i", fSimpleCutmode));
+  AliInfo(Form("fESDtrackCuts->GetMinNCrossedRowsTPC() : %f", fESDtrackCuts->GetMinNCrossedRowsTPC()));
+  AliInfo(Form("fESDtrackCuts->GetMaxChi2PerClusterTPC() : %f", fESDtrackCuts->GetMaxChi2PerClusterTPC()));
+  AliInfo(Form("fESDtrackCuts->GetMaxDCAToVertexZ() : %f", fESDtrackCuts->GetMaxDCAToVertexZ()));
+  AliInfo(Form("fESDtrackCutsPrm->GetMaxDCAToVertexXYPtDep() : %s", fESDtrackCutsPrm->GetMaxDCAToVertexXYPtDep()));
+  fESDtrackCuts->Print();
+  fESDtrackCutsPrm->Print();
+}
+
+void AliAnalysisTaskTOFSpectra::PrintCutVariablesForTree()
+{
+  if (!fTreemode || !fCutmode)
+    return;
+  AliInfo("- PrintCutVariablesForTree -");
+  AliInfo(Form("fCutmode cut : %i fTreemode : %i", fCutmode, fTreemode));
+
+  Int_t index = 0;
+  for (UInt_t cut = 0; cut < nCuts; cut++) {
+    for (UInt_t i = 0; i < CutIndex[cut]; i++) {
+      TString c = "";
+      switch (cut) {
+      case kTPCrows: {
+        c += Form("%f", CutValues[cut][i]);
+        break;
+      }
+      case kTrkChi2: {
+        c += Form("%f", CutValues[cut][i]);
+        break;
+      }
+      case kDCAz: {
+        c += Form("%f", CutValues[cut][i]);
+        break;
+      }
+      case kDCAxy: {
+        const TString dep = Form("%f*(%s)", CutValues[cut][i], primfunct.Data());
+        c += dep;
+        break;
+      }
+      case kGeo: {
+        c = "(";
+        for (Int_t j = 0; j < 5; j++)
+          c += Form("%f%s", CutValues[cut][5 * i + j], j < 4 ? ", " : "");
+        c += ")";
+        break;
+      }
+
+      default:
+        AliFatal(Form("Requested %i set for track cuts not implemented!!", cut));
+        break;
+      }
+
+      AliInfo(Form("CutValue%s[%i] : %s", Cuts[cut].Data(), i, c.Data()));
+      if (i != 0)
+        fCutVar[index++]->Print();
     }
   }
 }
@@ -3351,6 +3476,9 @@ void AliAnalysisTaskTOFSpectra::DefinePerformanceHistograms()
     const Int_t Bnbins = 4000;
     const Double_t Blim[2] = { 0., 1.5 };
     const Double_t Bplim[2] = { 0., 10. };
+    const Int_t Enbins = 4000;
+    const Double_t Elim[2] = { 0., 1000 };
+    const Double_t Eplim[2] = { 0.1, 30. };
 
     hBeta = new TH2I("hBeta", Form("Distribution of the beta;%s;TOF #beta", pstring.Data()), Bnbins, Bplim[0], Bplim[1], Bnbins, Blim[0], Blim[1]);
     fListHist->AddLast(hBeta);
@@ -3361,6 +3489,9 @@ void AliAnalysisTaskTOFSpectra::DefinePerformanceHistograms()
 
       hBetaExpectedTOFPID[i] = new TProfile(Form("hBetaExpectedTOFPID%s", pSpecies_all[i].Data()), Form("Profile of the beta for hypo %s with TOF PID;%s;TOF #beta", pSpecies_all[i].Data(), pstring.Data()), Bnbins, Bplim[0], Bplim[1], Blim[0], Blim[1]);
       fListHist->AddLast(hBetaExpectedTOFPID[i]);
+
+      hdEdxExpected[i] = new TProfile(Form("hdEdxExpected%s", pSpecies_all[i].Data()), Form("Profile of the dEdx for hypo %s with TOF PID;%s;TOF #dEdx", pSpecies_all[i].Data(), pstring.Data()), Enbins, Eplim[0], Eplim[1], Elim[0], Elim[1]);
+      fListHist->AddLast(hdEdxExpected[i]);
     }
 
     hBetaNoMismatch = new TH2I("hBetaNoMismatch", Form("Distribution of the beta w/o Mismatch;%s;TOF #beta", pstring.Data()), Bnbins, Bplim[0], Bplim[1], Bnbins, Blim[0], Blim[1]);
@@ -3384,13 +3515,13 @@ void AliAnalysisTaskTOFSpectra::DefinePerformanceHistograms()
     hBetaNoMismatchCentralEtaCutOut = new TH2I("hBetaNoMismatchCentralEtaCutOut", Form("Distribution of the beta w/o Mismatch Central Events and a |#eta| > 0.2;%s;TOF #beta", pstring.Data()), Bnbins, Bplim[0], Bplim[1], Bnbins, Blim[0], Blim[1]);
     fListHist->AddLast(hBetaNoMismatchCentralEtaCutOut);
 
-    hTPCdEdx = new TH2I("hTPCdEdx", Form("Distribution of the TPC dE/dx;%s;d#it{E}/d#it{x} in TPC (arb. units)", pstring.Data()), 1000, 0.25, 30., 1000, 0., 1000);
+    hTPCdEdx = new TH2I("hTPCdEdx", Form("Distribution of the TPC dE/dx;%s;d#it{E}/d#it{x} in TPC (arb. units)", pstring.Data()), Enbins, Eplim[0], Eplim[1], Enbins, Elim[0], Elim[1]);
     fListHist->AddLast(hTPCdEdx);
   }
 }
 
 //________________________________________________________________________
-void AliAnalysisTaskTOFSpectra::FillPerformanceHistograms()
+void AliAnalysisTaskTOFSpectra::FillPerformanceHistograms(const AliVTrack* track)
 {
   if (fPerformance) {
     //TOF
@@ -3401,6 +3532,7 @@ void AliAnalysisTaskTOFSpectra::FillPerformanceHistograms()
       hBetaExpected[i]->Fill(fP, betaHypo);
       if (TMath::Abs(fTOFSigma[i]) < 3.0)
         hBetaExpectedTOFPID[i]->Fill(fP, betaHypo);
+      hdEdxExpected[i]->Fill(fP, fPIDResponse->GetTPCResponse().GetExpectedSignal(track, static_cast<AliPID::EParticleType>(i)));
     }
     if (fNTOFClusters < 2) {
       hBetaNoMismatch->Fill(fP, beta);
@@ -3425,3 +3557,121 @@ void AliAnalysisTaskTOFSpectra::FillPerformanceHistograms()
     hTPCdEdx->Fill(fP, fTPCSignal);
   }
 }
+
+//________________________________________________________________________
+void AliAnalysisTaskTOFSpectra::FindPtBin()
+{
+  if (fBinPtIndex != -999) {
+    AliFatal(Form("Pt bin already assigned to value %i!", fBinPtIndex));
+    return;
+  }
+  for (Int_t ptbin = 0; ptbin < kPtBins; ptbin++) { ///<  Computes the pt bin
+    if (fPt < fBinPt[ptbin] || fPt >= fBinPt[ptbin + 1])
+      continue;
+    //       AliInfo(Form("Requirement %i : %f < fPt %f < %f", ptbin, fBinPt[ptbin], fPt, fBinPt[ptbin+1]));
+    fBinPtIndex = ptbin;
+    break;
+  }
+  if (fBinPtIndex < 0)
+    AliWarning(Form("Pt bin not assigned, fPt value: %f!", fPt));
+  //if(fBinPtIndex >= 0 && fBinPtIndex + 1 != hNumMatch[0]->GetXaxis()->FindBin(fPt)) AliFatal(Form("Pt bin is different than intendend: %i vs %i!", fBinPtIndex, hNumMatch[0]->GetXaxis()->FindBin(fPt)));
+};
+
+//________________________________________________________________________
+void AliAnalysisTaskTOFSpectra::SetEvtMaskBit(fEvtMaskIndex bit, Bool_t value)
+{
+  if (bit >= kLimitfEvtMask)
+    AliFatal("Bit exceeds limits for fEvtMask");
+  else
+    SetMaskBit(fEvtMask, (Int_t)bit, value);
+};
+
+//________________________________________________________________________
+void AliAnalysisTaskTOFSpectra::SetTrkMaskBit(fTrkMaskIndex bit, Bool_t value)
+{
+  if (bit >= kLimitfTrkMask)
+    AliFatal("Bit exceeds limits for fTrkMask");
+  else
+    SetMaskBit(fTrkMask, (Int_t)bit, value);
+};
+
+//________________________________________________________________________
+void AliAnalysisTaskTOFSpectra::SetTPCPIDMaskBit(fTPCPIDMaskIndex bit, Bool_t value)
+{
+  if (bit >= kLimitfTPCPIDMask)
+    AliFatal("Bit exceeds limits for fTPCPIDMask");
+  else
+    SetMaskBit(fTPCPIDMask, (Int_t)bit, value);
+};
+
+//________________________________________________________________________
+void AliAnalysisTaskTOFSpectra::SetTrkCutMaskBit(fTrkCutMaskIndex bit, Bool_t value)
+{
+  if (bit >= kLimitfTrkCutMask)
+    AliFatal("Bit exceeds limits for fTrkCutMask");
+  else
+    SetMaskBit(fTrkCutMask, (Int_t)bit, value);
+};
+
+//________________________________________________________________________
+void AliAnalysisTaskTOFSpectra::SetMCTrkMaskBit(fMCTrkMaskIndex bit, Bool_t value)
+{
+  if (bit >= kLimitfMCTrkMask)
+    AliFatal("Bit exceeds limits for fMCTrkMask");
+  else
+    SetMaskBit(fMCTrkMask, (Int_t)bit, value);
+};
+
+//________________________________________________________________________
+void AliAnalysisTaskTOFSpectra::SetTPCRowsCut(Double_t cut)
+{
+  fESDtrackCuts->SetMinNCrossedRowsTPC(cut);
+  AliDebug(2, Form("Setting SetMinNCrossedRowsTPC(%f) : %f", cut, fESDtrackCuts->GetMinNCrossedRowsTPC()));
+};
+
+//________________________________________________________________________
+void AliAnalysisTaskTOFSpectra::SetTrkChi2Cut(Double_t cut)
+{
+  fESDtrackCuts->SetMaxChi2PerClusterTPC(cut);
+  AliDebug(2, Form("Setting SetMaxChi2PerClusterTPC(%f) : %f", cut, fESDtrackCuts->GetMaxChi2PerClusterTPC()));
+};
+
+//________________________________________________________________________
+void AliAnalysisTaskTOFSpectra::SetTrkChi2CutITS(Double_t cut)
+{
+  fESDtrackCuts->SetMaxChi2PerClusterITS(cut);
+  AliDebug(2, Form("Setting SetMaxChi2PerClusterITS(%f) : %f", cut, fESDtrackCuts->GetMaxChi2PerClusterITS()));
+};
+
+//________________________________________________________________________
+void AliAnalysisTaskTOFSpectra::SetDCAxyCut(Double_t cut)
+{
+  fESDtrackCutsPrm->SetMaxDCAToVertexXYPtDep(Form("%f*(%s)", cut, fESDtrackCutsPrm->GetMaxDCAToVertexXYPtDep()));
+  AliDebug(2, Form("Setting SetMaxDCAToVertexXYPtDep(%f) : %s", cut, fESDtrackCutsPrm->GetMaxDCAToVertexXYPtDep()));
+};
+
+//________________________________________________________________________
+void AliAnalysisTaskTOFSpectra::SetDCAzCut(Double_t cut)
+{
+  fESDtrackCuts->SetMaxDCAToVertexZ(cut);
+  AliDebug(2, Form("Setting SetMaxDCAToVertexZ(%f) : %f", cut, fESDtrackCuts->GetMaxDCAToVertexZ()));
+};
+
+//________________________________________________________________________
+void AliAnalysisTaskTOFSpectra::SetGeoCut(Double_t fDeadZoneWidth, Double_t fCutGeoNcrNclLength, Double_t fCutGeoNcrNclGeom1Pt, Double_t fCutGeoNcrNclFractionNcr, Double_t fCutGeoNcrNclFractionNcl)
+{
+  //Float_t fDeadZoneWidth;             // width of the TPC dead zone (missing pads + PRF +ExB)
+  //Float_t fCutGeoNcrNclLength;        // cut on the geometical length  condition Ngeom(cm)>cutGeoNcrNclLength default=130
+  //Float_t fCutGeoNcrNclGeom1Pt;       // 1/pt dependence slope  cutGeoNcrNclLength:=fCutGeoNcrNclLength-abs(1/pt)^fCutGeoNcrNclGeom1Pt
+  //Float_t fCutGeoNcrNclFractionNcr;   // relative fraction cut Ncr  condition Ncr>cutGeoNcrNclFractionNcr*fCutGeoNcrNclLength
+  //Float_t fCutGeoNcrNclFractionNcl;   // ralative fraction cut Ncr  condition Ncl>cutGeoNcrNclFractionNcl
+  fESDtrackCuts->SetCutGeoNcrNcl(fDeadZoneWidth, fCutGeoNcrNclLength, fCutGeoNcrNclGeom1Pt, fCutGeoNcrNclFractionNcr, fCutGeoNcrNclFractionNcl);
+  AliDebug(2, Form("Setting SetCutGeoNcrNcl(%f, %f, %f, %f, %f)", fDeadZoneWidth, fCutGeoNcrNclLength, fCutGeoNcrNclGeom1Pt, fCutGeoNcrNclFractionNcr, fCutGeoNcrNclFractionNcl));
+}
+
+//________________________________________________________________________
+void AliAnalysisTaskTOFSpectra::SetRatioCrossedRowsFindableCls(Double_t cut)
+{
+  fESDtrackCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(cut);
+  AliDebug(2, Form("Setting SetMinRatioCrossedRowsOverFindableClustersTPC(%f) : %f", cut, fESDtrackCuts->GetMinRatioCrossedRowsOverFindableClustersTPC()));
+};
