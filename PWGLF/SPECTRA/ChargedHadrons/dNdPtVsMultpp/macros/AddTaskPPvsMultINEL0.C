@@ -3,10 +3,40 @@
 
 AliAnalysisTask* AddTaskPPvsMultINEL0(
 		Bool_t AnalysisMC = kTRUE,
-		TString  type ="ESD",
-		UInt_t kTriggerInt = AliVEvent::kINT7, //kINT7 is the good trigger
-		Bool_t ispileuprej = kTRUE)
+		Bool_t is13TeV = kTRUE)
 {
+	
+	// Mult selection task -------------------------------------------------------------------
+	
+	gROOT->LoadMacro("$ALICE_PHYSICS/OADB/COMMON/MULTIPLICITY/macros/AddTaskMultSelection.C");
+	
+	//AddTask: Should take care of everything transparently...
+	AliMultSelectionTask *task = AddTaskMultSelection();
+	
+
+	
+	//User Case
+	task->SetAddInfo(kTRUE);
+	//task->SetSaveCalibInfo(kTRUE); //cross-check information for debugging
+	if (AnalysisMC && is13TeV)
+	{
+	  task->SetUseDefaultMCCalib(kTRUE); // MC *
+	  task->SetAlternateOADBforEstimators("LHC15f");
+	}
+	
+	
+	if (AnalysisMC && (!is13TeV) )
+	{
+	  task->SetUseDefaultMCCalib(kTRUE); // MC *
+	  task->SetAlternateOADBforEstimators("LHC15n");
+	}
+	
+	//---------------------- Tracklets calibration ------------------------------------------
+	
+	cout<<"********************************************* calibration missing at the moment ************************************************"<<endl;
+	
+	//---------------------------------------------------------------------------------------
+	
 	// Get the pointer to the existing analysis manager via the static
 	//access method
 	//=========================================================================
@@ -48,8 +78,8 @@ AliAnalysisTask* AddTaskPPvsMultINEL0(
 	taskPPvsMultINEL0->SetDebugLevel(0);
 	taskPPvsMultINEL0->SetEtaCut(0.8);
 	taskPPvsMultINEL0->SetVtxCut(10.0);
-	taskPPvsMultINEL0->SetTrigger(kTriggerInt);
-	taskPPvsMultINEL0->SetPileUpRej(ispileuprej);		
+	taskPPvsMultINEL0->SetTrigger(AliVEvent::kINT7);
+	taskPPvsMultINEL0->SetPileUpRej(kTRUE);		
 
 	mgr->AddTask(taskPPvsMultINEL0);
 
