@@ -976,8 +976,8 @@ void AliAnalysisTaskCMEV0::UserExec(Option_t *)
    nRefMultWgt += ptw1*w1NUA;
   
 
-   if(i%10==0)
-   cout<<" track "<<i<<" eta = "<<dEta1<<"\tvz = "<<VtxZ<<"\tptw1 = "<<ptw1<<"\tw1NUA = "<<w1NUA<<"\tAvgCos1n = "<<AvgCos1n<<endl;
+   //if(i%10==0)
+   //cout<<" track "<<i<<" eta = "<<dEta1<<"\tvz = "<<VtxZ<<"\tptw1 = "<<ptw1<<"\tw1NUA = "<<w1NUA<<"\tAvgCos1n = "<<AvgCos1n<<endl;
 
 
 
