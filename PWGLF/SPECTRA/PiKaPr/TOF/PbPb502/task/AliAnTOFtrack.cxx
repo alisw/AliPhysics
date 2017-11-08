@@ -26,11 +26,8 @@
 #define LOG_NO_INFO
 #define LOG_NO_DEBUG
 #include "AliAnTOFtrack.h"
-#include "AliLog.h"
-#include "TObject.h"
+#include "TError.h"
 #include <iostream>
-
-ClassImp(AliAnTOFtrack);
 
 //________________________________________________________________________
 AliAnTOFtrack::AliAnTOFtrack()
@@ -57,21 +54,21 @@ AliAnTOFtrack::AliAnTOFtrack()
   //
   // standard constructur which should be used
   //
-  AliInfo("**** CONSTRUCTOR CALLED ****");
+  ::Info("AliAnTOFtrack::AliAnTOFtrack", "**** CONSTRUCTOR CALLED ****");
   for (Int_t i = 0; i < kExpSpecies; i++) {
     fTOFExpTime[i] = -999;
     fTOFExpSigma[i] = -999;
   }
 
-  AliInfo("**** END OF CONSTRUCTOR ****");
+  ::Info("AliAnTOFtrack::AliAnTOFtrack", "**** END OF CONSTRUCTOR ****");
 }
 
 //________________________________________________________________________
 AliAnTOFtrack::~AliAnTOFtrack()
 { //Destructor
-  AliInfo("**** DESTRUCTOR CALLED ****");
+  ::Info("AliAnTOFtrack::~AliAnTOFtrack", "**** DESTRUCTOR CALLED ****");
 
-  AliInfo("**** END OF DESTRUCTOR ****");
+  ::Info("AliAnTOFtrack::~AliAnTOFtrack", "**** END OF DESTRUCTOR ****");
 }
 
 ///////////////////
@@ -91,7 +88,8 @@ Bool_t AliAnTOFtrack::PassStdCut()
 Bool_t AliAnTOFtrack::PassCut(const Int_t cut)
 {
   if (cut < -1 || cut >= nCutVars)
-    AliFatal("requested cut is out of bound");
+    ::Fatal("AliAnTOFtrack::PassCut", "requested cut is out of bound");
+  //
   //Always apply standard cuts except if requiring one different cut
   if (cut == -1)
     return PassStdCut();
@@ -129,7 +127,7 @@ Bool_t AliAnTOFtrack::PassCut(const Int_t cut)
 Float_t AliAnTOFtrack::GetDeltaT(const UInt_t id)
 {
   if (id > kExpSpecies)
-    AliFatal("Index required is out of bound");
+    ::Fatal(" AliAnTOFtrack::GetDeltaT", "Index required is out of bound");
   return fTOFTime - fTOFExpTime[id] - fT0TrkTime;
 }
 
@@ -137,7 +135,7 @@ Float_t AliAnTOFtrack::GetDeltaT(const UInt_t id)
 Float_t AliAnTOFtrack::GetDeltaSigma(const UInt_t id, const UInt_t hypo)
 {
   if (id > kExpSpecies || hypo > kExpSpecies)
-    AliFatal("Index required is out of bound");
+    ::Fatal(" AliAnTOFtrack::GetDeltaSigma", "Index required is out of bound");
   return GetDeltaT(hypo) / fTOFExpSigma[id];
 }
 
@@ -153,7 +151,7 @@ Bool_t AliAnTOFtrack::IsTPCElectron()
 Bool_t AliAnTOFtrack::IsTPCPiKP(const UInt_t i)
 {
   if (i >= 3)
-    AliFatal("Wrong index required");
+    ::Fatal("AliAnTOFtrack::IsTPCPiKP", "Wrong index required");
   if (GetMaskBit(fTPCPIDMask, kIsTPCPion + i))
     return kTRUE; //5 sigma cut for Pi/K/P in TPC
   return kFALSE;
@@ -224,15 +222,8 @@ void AliAnTOFtrack::TestDCAXYBinning()
     //       Double_t rnd = 2.*fDCAXYRange*gRandom->Rndm()-1;
     Double_t rnd = 2. * fDCAXYRange * (Double_t)var / 20. - fDCAXYRange;
     ComputeDCABin(rnd, kTRUE);
-
-    Double_t binlow, binup;
-    GetBinnedDCA(binlow, binup, 1);
-
-    std::cout << rnd << " Index: " << fDCAXYIndex << "   [" << binlow << " ; " << binup << "] --> Diff --> [" << binlow - rnd << " ; " << binup - rnd << "]" << std::endl;
-    //       cout<<rnd<<"  "<<TMath::Abs((rnd+fDCAXYRange)*kDCAXYBins/(2*fDCAXYRange))<<" Index: "<<fDCAXYIndex<<"   ["<<binlow<<" ; "<<binup<<"] -->  ["<< binlow - rnd <<" ; "<<binup - rnd<<"]"<<endl;
+    std::cout << rnd << " Index: " << fDCAXYIndex << " binned is " << GetDCA(kTRUE) << " --> Diff --> " << GetDCA(kTRUE) - rnd << std::endl;
   }
-
-  //     for (Int_t c = 0 ; c <= kDCAXYBins; ++c) cout<<c<<"  "<<-fDCAXYRange+2.*fDCAXYRange*c/kDCAXYBins<<endl;
 }
 
 ///////////////////////////
@@ -243,30 +234,15 @@ void AliAnTOFtrack::TestDCAXYBinning()
 void AliAnTOFtrack::ComputeDCABin(const Double_t dca, const Bool_t xy)
 {
   if (xy) {
-    if (dca > fDCAXYRange) { //Overflow
-      fDCAXYIndex = kDCAXYBins + 2;
-      return;
-    } else if (dca <= -fDCAXYRange) { //Underflow
-      fDCAXYIndex = kDCAXYBins + 1;
-      return;
-    }
-    fDCAXYIndex = static_cast<UShort_t>(TMath::Ceil((dca + fDCAXYRange) / ((2 * fDCAXYRange) / kDCAXYBins)) - 1);
+    fDCAXYIndex = static_cast<UShort_t>(BinData(dca, -fDCAXYRange, fDCAXYRange, 256));
   } else {
-    if (dca > fDCAZRange) { //Overflow
-      fDCAZIndex = kDCAZBins + 2;
-      return;
-    } else if (dca <= -fDCAZRange) { //Underflow
-      fDCAZIndex = kDCAZBins + 1;
-      return;
-    }
-    fDCAZIndex = static_cast<UShort_t>(TMath::Ceil((dca + fDCAZRange) / ((2 * fDCAZRange) / kDCAZBins)) - 1);
+    fDCAZIndex = static_cast<UShort_t>(BinData(dca, -fDCAZRange, fDCAZRange, 256));
   }
 };
 
 //________________________________________________________________________
 void AliAnTOFtrack::ComputeDCABin(const Double_t dcaxy, const Double_t dcaz)
 {
-
   ComputeDCABin(dcaxy, (Bool_t)kTRUE);
   ComputeDCABin(dcaz, (Bool_t)kFALSE);
 };

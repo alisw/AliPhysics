@@ -15,9 +15,7 @@ using namespace AliUtilTOFParams;
 /// N. Jacazio,  nicolo.jacazio[AROBASe]bo.infn.it                           //
 ///////////////////////////////////////////////////////////////////////////////
 
-class TObject;
-
-class AliAnTOFtrack : public TObject {
+class AliAnTOFtrack {
   public:
   //Constructors and destructor
   AliAnTOFtrack();
@@ -172,7 +170,6 @@ class AliAnTOFtrack : public TObject {
   /// Method to get the particle momentum
   Double_t GetMomentum() const { return fPt / TMath::Sin(GetTheta()); }
 
-  ClassDef(AliAnTOFtrack, 7); //AliAnTOFtrack : TOF analysis container class
 };
 
 #endif
