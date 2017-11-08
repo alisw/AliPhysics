@@ -29,9 +29,9 @@
 #include "AliESDEvent.h"
 #include "AliESDVertex.h"
 #include "AliLog.h"
+#include "TError.h"
+#include <iostream>
 #include <vector>
-
-ClassImp(AliAnTOFevent);
 
 //________________________________________________________________________
 AliAnTOFevent::AliAnTOFevent()

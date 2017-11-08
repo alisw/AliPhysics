@@ -45,7 +45,6 @@ class AliAnTOFevent {
   ///Method to get a track from the event, if the index is not given (or negative) it returns the last element of the vector
   AliAnTOFtrack* GetTrack(Int_t i = -1);
 
-  ClassDef(AliAnTOFevent, 1); //AliAnTOFevent : TOF analysis event container class
 };
 
 #endif
