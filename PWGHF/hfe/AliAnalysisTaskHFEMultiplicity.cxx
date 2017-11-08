@@ -149,7 +149,7 @@ AliAnalysisTaskHFEMultiplicity::AliAnalysisTaskHFEMultiplicity() : AliAnalysisTa
   fSprsPi0EtaWeightCal(0),
   ftype(-1),
   fWeight(1),
-  fRejectPUFromSPD(kFALSE),
+  fRejectPUFromSPD(kTRUE),
   fRefMult(61.26),
   gRandom(new TRandom3(0)),
   fInvmassLS(0),
@@ -229,7 +229,7 @@ AliAnalysisTaskHFEMultiplicity::AliAnalysisTaskHFEMultiplicity(const char* name)
   fSprsPi0EtaWeightCal(0),
   ftype(-1),
   fWeight(1),
-  fRejectPUFromSPD(kFALSE),
+  fRejectPUFromSPD(kTRUE),
   fRefMult(61.26),
   gRandom(new TRandom3(0)),
   fInvmassLS(0),
@@ -397,7 +397,8 @@ void AliAnalysisTaskHFEMultiplicity::UserCreateOutputObjects()
   Int_t binsm[6]	=      	{1000,1000,1000,1000,1000,400};
   Double_t xminm[6]	=	{-50,0,0,0,0,0};
   Double_t xmaxm[6]	=	{ 50,2000,1000,2000,1000,400};
-  fSparseMulti 		= new THnSparseD ("Multiplicity","Multiplicity;zvtx;V0M_data;SPDTracklets_data;Corrected_SPDTracklets;Corrected_V0M;ncharge;",6,binsm,xminm,xmaxm);
+  
+fSparseMulti 		= new THnSparseD ("Multiplicity","Multiplicity;zvtx;V0M_data;SPDTracklets_data;Corrected_V0M;Corrected_SPDTracklets;ncharge;",6,binsm,xminm,xmaxm);
     
  
    Int_t binw[4] = {500,3,2,7}; //pT, PDG, HijingOrNot, pi0etaType
@@ -595,6 +596,7 @@ if(fReadMC){
   vzeroMultCorr = vzeroMultACorr + vzeroMultCCorr;
  
 
+  
   
   fvalueMulti[0] = Zvertex1;
   fvalueMulti[1] = V0Mult;
