@@ -242,7 +242,7 @@ void AliJHSInterplayTask::UserCreateOutputObjects(){
 	fOutput->cd();
 	fFFlucAna->UserCreateOutputObjects();
 
-	fCard->WriteCard(fOutput);
+	//fCard->WriteCard(fOutput);
 	fHistos->fHMG->WriteConfig();
 	fFirstEvent = kTRUE;
 	fevt = -1;
