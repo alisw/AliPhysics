@@ -645,6 +645,8 @@ void AliAnalysisTaskTOFSpectra::Init()
   for (Int_t species = 0; species < kExpSpecies; species++) { //Species loop
     hBetaExpected[species] = 0x0;
     hBetaExpectedTOFPID[species] = 0x0;
+
+    hdEdxExpected[species] = 0x0;
   }
 
   AliDebug(2, "Init()\t END");
@@ -1603,6 +1605,8 @@ void AliAnalysisTaskTOFSpectra::UserExec(Option_t*)
   StartTimePerformance(2);
   fEvtSelected = SelectEvents(EvtStart); //Perform the cuts for the event selection
   StopTimePerformance(2);
+  if (!vertex && fEvtSelected)
+    AliFatal("Accepted event does not have vertex according to cuts!");
 
   StartTimePerformance(3);
   ComputeEvtMultiplicityBin(); //Calculate in the handy binning the Multiplicity bin of the event. Event selection needs to be defined already as no outliers are accepted!
@@ -2197,7 +2201,7 @@ void AliAnalysisTaskTOFSpectra::UserExec(Option_t*)
         hNumMatchNoTRDOut[fSign]->Fill(fPt); //Tracks without TRDout
 
       //Performance plots
-      FillPerformanceHistograms();
+      FillPerformanceHistograms(track);
 
       //====================//
       // TOF geometry plots //
@@ -2755,16 +2759,16 @@ Bool_t AliAnalysisTaskTOFSpectra::SelectEvents(Int_t& binstart)
             hNEvt->Fill(binstart++);
             if (fEventCut.PassedCut(AliEventCuts::kVertexPosition)) {
               hNEvt->Fill(binstart++);
-            }
-            else binstart += 1;
-          }
-          else binstart += 2;
-        }
-        else binstart += 3;
-      }
-      else binstart += 4;
-    }
-    else binstart += 5;
+            } else
+              binstart += 1;
+          } else
+            binstart += 2;
+        } else
+          binstart += 3;
+      } else
+        binstart += 4;
+    } else
+      binstart += 5;
 
     //Global cut
     if (!fEventCut.AcceptEvent(fESD))
@@ -3356,6 +3360,9 @@ void AliAnalysisTaskTOFSpectra::DefinePerformanceHistograms()
     const Int_t Bnbins = 4000;
     const Double_t Blim[2] = { 0., 1.5 };
     const Double_t Bplim[2] = { 0., 10. };
+    const Int_t Enbins = 4000;
+    const Double_t Elim[2] = { 0., 1000 };
+    const Double_t Eplim[2] = { 0.1, 30. };
 
     hBeta = new TH2I("hBeta", Form("Distribution of the beta;%s;TOF #beta", pstring.Data()), Bnbins, Bplim[0], Bplim[1], Bnbins, Blim[0], Blim[1]);
     fListHist->AddLast(hBeta);
@@ -3366,6 +3373,9 @@ void AliAnalysisTaskTOFSpectra::DefinePerformanceHistograms()
 
       hBetaExpectedTOFPID[i] = new TProfile(Form("hBetaExpectedTOFPID%s", pSpecies_all[i].Data()), Form("Profile of the beta for hypo %s with TOF PID;%s;TOF #beta", pSpecies_all[i].Data(), pstring.Data()), Bnbins, Bplim[0], Bplim[1], Blim[0], Blim[1]);
       fListHist->AddLast(hBetaExpectedTOFPID[i]);
+
+      hdEdxExpected[i] = new TProfile(Form("hdEdxExpected%s", pSpecies_all[i].Data()), Form("Profile of the dEdx for hypo %s with TOF PID;%s;TOF #dEdx", pSpecies_all[i].Data(), pstring.Data()), Enbins, Eplim[0], Eplim[1], Elim[0], Elim[1]);
+      fListHist->AddLast(hdEdxExpected[i]);
     }
 
     hBetaNoMismatch = new TH2I("hBetaNoMismatch", Form("Distribution of the beta w/o Mismatch;%s;TOF #beta", pstring.Data()), Bnbins, Bplim[0], Bplim[1], Bnbins, Blim[0], Blim[1]);
@@ -3389,13 +3399,13 @@ void AliAnalysisTaskTOFSpectra::DefinePerformanceHistograms()
     hBetaNoMismatchCentralEtaCutOut = new TH2I("hBetaNoMismatchCentralEtaCutOut", Form("Distribution of the beta w/o Mismatch Central Events and a |#eta| > 0.2;%s;TOF #beta", pstring.Data()), Bnbins, Bplim[0], Bplim[1], Bnbins, Blim[0], Blim[1]);
     fListHist->AddLast(hBetaNoMismatchCentralEtaCutOut);
 
-    hTPCdEdx = new TH2I("hTPCdEdx", Form("Distribution of the TPC dE/dx;%s;d#it{E}/d#it{x} in TPC (arb. units)", pstring.Data()), 1000, 0.25, 30., 1000, 0., 1000);
+    hTPCdEdx = new TH2I("hTPCdEdx", Form("Distribution of the TPC dE/dx;%s;d#it{E}/d#it{x} in TPC (arb. units)", pstring.Data()), Enbins, Eplim[0], Eplim[1], Enbins, Elim[0], Elim[1]);
     fListHist->AddLast(hTPCdEdx);
   }
 }
 
 //________________________________________________________________________
-void AliAnalysisTaskTOFSpectra::FillPerformanceHistograms()
+void AliAnalysisTaskTOFSpectra::FillPerformanceHistograms(const AliVTrack* track)
 {
   if (fPerformance) {
     //TOF
@@ -3406,6 +3416,7 @@ void AliAnalysisTaskTOFSpectra::FillPerformanceHistograms()
       hBetaExpected[i]->Fill(fP, betaHypo);
       if (TMath::Abs(fTOFSigma[i]) < 3.0)
         hBetaExpectedTOFPID[i]->Fill(fP, betaHypo);
+      hdEdxExpected[i]->Fill(fP, fPIDResponse->GetTPCResponse().GetExpectedSignal(track, static_cast<AliPID::EParticleType>(i)));
     }
     if (fNTOFClusters < 2) {
       hBetaNoMismatch->Fill(fP, beta);

@@ -409,7 +409,7 @@ class AliAnalysisTaskTOFSpectra : public AliAnalysisTaskSE {
 
   ///
   /// Method to fill the histograms used for the Performance
-  void FillPerformanceHistograms();
+  void FillPerformanceHistograms(const AliVTrack * track);
 
   //Setter methods
   void SetHeavyIonFlag(Bool_t mode = kTRUE) { fHImode = mode; };
@@ -823,7 +823,7 @@ class AliAnalysisTaskTOFSpectra : public AliAnalysisTaskSE {
   TH2F* hTimeOfFlightResFine;                 ///<  Histogram to compute the Time Of Flight resolution as a function of the matched tracks to TOF
   TH1F* hTimeOfFlightResFinePerEvent;         ///<  Histogram to compute the Time Of Flight resolution per event, this particular one should not be added to the output list as it yields no information but it is rather auxiliary to the computation of the TOF resolution as a function of the TOF tracks
   TH2I* hBeta;                                ///<  Histogram with the track beta vs the track momentum
-  TProfile* hBetaExpected[kExpSpecies];       ///<  TProfile with the track beta vs the track momentum obtained with the exoected time
+  TProfile* hBetaExpected[kExpSpecies];       ///<  TProfile with the track beta vs the track momentum obtained with the expected time
   TProfile* hBetaExpectedTOFPID[kExpSpecies]; ///<  TProfile with the track beta vs the track momentum obtained with the expected time but with the 3sigma TOF PID on the particle hypothesis
   TH2I* hBetaNoMismatch;                      ///<  Histogram with the track beta vs the track momentum with a cut on the maximum number of clusters to reduce the mismatch
   TH2I* hBetaNoMismatchEtaCut;                ///<  Histogram with the track beta vs the track momentum with a cut on the maximum number of clusters to reduce the mismatch and a cut on the eta range
@@ -839,7 +839,8 @@ class AliAnalysisTaskTOFSpectra : public AliAnalysisTaskSE {
   TH1F* hTOFClusters;                         ///<  Histogram with the number of TOF clusters per track
   TH1F* hTOFClustersDCApass;                  ///<  Histogram with the number of TOF clusters per track, for tracks which passed the DCA cut for primaries
   //->TPC information
-  TH2I* hTPCdEdx; ///<  Histogram with the track energy loss in the TOC vs the track momentum
+  TH2I* hTPCdEdx;                             ///<  Histogram with the track energy loss in the TOC vs the track momentum
+  TProfile* hdEdxExpected[kExpSpecies];       ///<  TProfile with the track dEdx vs the track momentum
   //->TPC + TOF information
   TH2F* hTPCTOFSeparation[kExpSpecies][kPtBins]; ///<  Histogram with the PID separation of the TPC and TOF signal
 #ifdef CHECKCOMPUTEDVALUES                       // Only if checks on computed values are required
