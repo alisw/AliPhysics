@@ -30,6 +30,9 @@
 #include "AliRawEventHeaderBase.h"
 #include "AliVVZERO.h"
 #include "AliVAD.h"
+#include "AliVZDC.h"
+#include "AliESDZDC.h"
+#include "AliAODZDC.h"
 #include "AliESDtrack.h"
 #include "AliESDtrackCuts.h"
 
@@ -144,6 +147,38 @@ void AliAnalysisTaskDG::ADV0::FillV0(const AliVEvent *vEvent, AliTriggerAnalysis
 void AliAnalysisTaskDG::FMD::Fill(const AliVEvent *vEvent, AliTriggerAnalysis &trigAna) {
   fA = trigAna.FMDTrigger(vEvent, AliTriggerAnalysis::kASide);
   fC = trigAna.FMDTrigger(vEvent, AliTriggerAnalysis::kCSide);
+}
+
+void AliAnalysisTaskDG::ZDC::Fill(AliVZDC *vZDC) {
+  // taken from $ALCIE_PHYSICS/PWGUD/UPC/AliAnalysisTaskUpcTree.cxx
+  fZNenergy[0]  = vZDC->GetZNCEnergy();
+  fZNenergy[1]  = vZDC->GetZNAEnergy();
+  fZPenergy[0]  = vZDC->GetZPCEnergy();
+  fZPenergy[1]  = vZDC->GetZPAEnergy();
+  fZEMenergy[0] = vZDC->GetZEM1Energy();
+  fZEMenergy[1] = vZDC->GetZEM2Energy();
+  fZNtower0[0]  = vZDC->GetZNCTowerEnergy()[0];
+  fZNtower0[1]  = vZDC->GetZNATowerEnergy()[0];
+  fZPtower0[0]  = vZDC->GetZPCTowerEnergy()[0];
+  fZPtower0[1]  = vZDC->GetZPATowerEnergy()[0];
+
+  AliESDZDC *esdZDC = dynamic_cast<AliESDZDC*>(vZDC);
+  if (esdZDC) {
+    Int_t detChZNA  = esdZDC->GetZNATDCChannel();
+    Int_t detChZNC  = esdZDC->GetZNCTDCChannel();
+    // if (esd->GetRunNumber()>=245726 && esd->GetRunNumber()<=245793) detChZNA = 10; // use  timing from the common ZNA PMT
+    for (Int_t i=0;i<4;i++) {
+      fZNTDC[0][i] = esdZDC->GetZDCTDCCorrected(detChZNC,i);
+      fZNTDC[1][i] = esdZDC->GetZDCTDCCorrected(detChZNA,i);
+    }
+  }
+  AliAODZDC *aodZDC = dynamic_cast<AliAODZDC*>(vZDC);
+  if (aodZDC) {
+    for (Int_t i=0;i<4;i++) {
+      fZNTDC[0][i] = aodZDC->GetZNCTDCm(i);
+      fZNTDC[1][i] = aodZDC->GetZNATDCm(i);
+    }
+  }
 }
 
 template<typename A>
@@ -366,6 +401,10 @@ void AliAnalysisTaskDG::SetBranches(TTree* t, Bool_t isAOD) {
 
   if (fTreeBranchNames.Contains("Tracks")) {
     t->Branch("AliAnalysisTaskDG::TrackData", &fTrackData);
+  }
+
+  if (!fTreeBranchNames.Contains("ZDC")) {
+    t->SetBranchStatus("fZDCInfo.*", 0);
   }
 
   if (fIsMC) {
@@ -626,6 +665,8 @@ void AliAnalysisTaskDG::UserExec(Option_t *)
 					 : kFALSE);
   fTreeData.fV0Info.FillV0(vEvent, fTriggerAnalysis);
   fTreeData.fADInfo.FillAD(vEvent, fTriggerAnalysis);
+
+  fTreeData.fZDCInfo.Fill(vEvent->GetZDCData());
 
   const Bool_t isNotV0(fTreeData.fV0Info.fDecisionOnline[0] == 0 &&
                        fTreeData.fV0Info.fDecisionOnline[1] == 0);
