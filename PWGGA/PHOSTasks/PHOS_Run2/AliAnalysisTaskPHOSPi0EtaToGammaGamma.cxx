@@ -435,9 +435,10 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::UserCreateOutputObjects()
   //fOutputContainer->Add(h2PhotonPt_TOF_SP2);
 
   const Int_t Ndimg = 4;
-  const Int_t Nbing[Ndimg]    = {500, 12,  100,  100};
-  const Double_t xming[Ndimg] = {  0, -1, -0.5, -0.5};
-  const Double_t xmaxg[Ndimg] = { 50,  1,  0.5,  0.5};
+  const Int_t Nbing[Ndimg]    = {500, 12,   30,   30};
+  const Double_t xming[Ndimg] = {  0, -1, -0.3, -0.3};
+  const Double_t xmaxg[Ndimg] = { 50,  1,  0.3,  0.3};
+  //+/-0.3 is optimized for centrality 10-30, 30-50.
 
   //const Int_t Ndimg = 2;
   //const Int_t Nbing[Ndimg]    = {500, 12};
@@ -457,14 +458,14 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::UserCreateOutputObjects()
   const Int_t Nasym = sizeof(Asym)/sizeof(Asym[0]);
 
   const Int_t Ndim = 6;
-  const Int_t Nbin[Ndim]    = { 240, 500, 10, 12,  100,  100};
-  const Double_t xmin[Ndim] = {   0,   0,  0, -1, -0.5, -0.5};
-  const Double_t xmax[Ndim] = {0.96,  50,  1,  1,  0.5,  0.5};
+  const Int_t Nbin[Ndim]    = { 240, 500, 10, 12,   30,   30};
+  const Double_t xmin[Ndim] = {   0,   0,  0, -1, -0.3, -0.3};
+  const Double_t xmax[Ndim] = {0.96,  50,  1,  1,  0.3,  0.3};
 
-  const Int_t Ndim_mix = 6;
-  const Int_t Nbin_mix[Ndim_mix]    = { 240, 500, 10, 12,  100,  100};
-  const Double_t xmin_mix[Ndim_mix] = {   0,   0,  0, -1, -0.5, -0.5};
-  const Double_t xmax_mix[Ndim_mix] = {0.96,  50,  1,  1,  0.5,  0.5};
+  const Int_t Ndim_mix = 4;//it is meaningless to compute SP mixed event;
+  const Int_t Nbin_mix[Ndim_mix]    = { 240, 500, 10, 12};
+  const Double_t xmin_mix[Ndim_mix] = {   0,   0,  0, -1};
+  const Double_t xmax_mix[Ndim_mix] = {0.96,  50,  1,  1};
 
   //same event
   THnSparseF *hs_Mgg = new THnSparseF("hSparseMgg",Form("M_{#gamma#gamma};M_{#gamma#gamma} (GeV/c^{2});p_{T} (GeV/c);asymmetry;cos(%d #Delta#phi);#vec{u} #upoint #vec{Q_{%d A}};#vec{u} #upoint #vec{Q_{%d C}};",fHarmonics,fHarmonics,fHarmonics),Ndim,Nbin,xmin,xmax);
@@ -1907,7 +1908,7 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::FillMixMgg()
   Double_t m12=0,pt12=0,asym=0;
   Double_t phi = -999, dphi = -999.;
   Double_t weight = 1., w1 = 1., w2 = 1.;
-  Double_t value[6] = {};
+  Double_t value[4] = {};
   Double_t sp1 = -999;
   Double_t sp2 = -999;
 
@@ -1992,8 +1993,8 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::FillMixMgg()
         value[1] = pt12;
         value[2] = asym;
         value[3] = TMath::Cos(fHarmonics * dphi);
-        value[4] = sp1;//reserved by sp
-        value[5] = sp2;//reserved by sp
+        //value[4] = sp1;//reserved by sp
+        //value[5] = sp2;//reserved by sp
 
         if(m12 > 0.96) continue;//reduce entry in THnSparse
 
