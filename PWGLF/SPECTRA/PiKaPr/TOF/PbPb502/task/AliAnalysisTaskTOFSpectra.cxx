@@ -55,6 +55,7 @@
 #include "TTree.h"
 #include <iostream>
 #ifdef USETREECLASS
+#include "AliAnTOFevent.h"
 #include "AliAnTOFtrack.h"
 #include "TClonesArray.h"
 #endif
@@ -85,7 +86,7 @@ AliAnalysisTaskTOFSpectra::AliAnalysisTaskTOFSpectra(const TString taskname, Boo
     //Output containers
     , fListHist(0x0)
     , fTreeTrack(0x0)
-    , ArrayAnTrk(0x0)
+    , fAnTOFevent()
     , fTreeTrackMC(0x0)
     //Task configuration flags
     , fHImode(hi)
@@ -308,10 +309,6 @@ AliAnalysisTaskTOFSpectra::~AliAnalysisTaskTOFSpectra()
     fTreeTrack = 0;
   }
 
-  if (ArrayAnTrk) {
-    delete ArrayAnTrk;
-    ArrayAnTrk = 0;
-  }
 
   if (fTreeTrackMC) {
     delete fTreeTrackMC;
@@ -1371,10 +1368,7 @@ void AliAnalysisTaskTOFSpectra::UserCreateOutputObjects()
 //
 //Track variables
 #ifdef USETREECLASS
-      ArrayAnTrk = new TClonesArray("AliAnTOFtrack");
-      ArrayAnTrk->SetOwner();
-      AliAnTOFtrack::Class()->IgnoreTObjectStreamer();
-      fTreeTrack->Branch("AliAnTOFtrack", "TClonesArray", &ArrayAnTrk, 8000, 0);
+      fTreeTrack->Branch("AliAnTOFevent", "AliAnTOFevent", &fAnTOFevent, 8000, 0);
 #else
       //       fTreeTrack->Branch("fDCAXY", &fDCAXY, "fDCAXY/F");
       //       fTreeTrack->Branch("fDCAZ", &fDCAZ, "fDCAZ/F");
@@ -2086,7 +2080,7 @@ void AliAnalysisTaskTOFSpectra::UserExec(Option_t*)
       if (fCutmode)
         AnalyseCutVariation(track);
 #ifdef USETREECLASS
-      AliAnTOFtrack* AnTrk = (AliAnTOFtrack*)ArrayAnTrk->ConstructedAt(ArrayAnTrk->GetEntries());
+      AliAnTOFtrack* AnTrk = fAnTOFevent->GetTrack(fAnTOFevent->GetNtracks());
       AnTrk->ComputeDCABin(fDCAXY, fDCAZ); //Convert Impact parameters to binning
       AnTrk->fTrkMask = fTrkMask;
       AnTrk->fTPCPIDMask = fTPCPIDMask;
@@ -2249,13 +2243,14 @@ void AliAnalysisTaskTOFSpectra::UserExec(Option_t*)
 #ifdef USETREECLASS
   if (fTreemode) {
     StartTimePerformance(5);
+    fAnTOFevent->fEvtMultBin = fEvtMultBin;
     fTreeTrack->Fill();
     StopTimePerformance(5);
 
     //
     //Prepare the array for new event
     StartTimePerformance(6);
-    ArrayAnTrk->Clear();
+    fAnTOFevent->Reset();
     StopTimePerformance(6);
   }
 #endif

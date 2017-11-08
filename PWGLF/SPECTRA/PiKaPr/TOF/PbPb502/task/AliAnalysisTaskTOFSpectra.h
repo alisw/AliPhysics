@@ -29,7 +29,7 @@ class AliAnalysisFilter;
 class AliCFContainer;
 class TDatabasePDG;
 class AliESDVertex;
-class TClonesArray;
+class AliAnTOFevent;
 class TProfile;
 class TTree;
 class AliTOFT0maker;
@@ -409,7 +409,7 @@ class AliAnalysisTaskTOFSpectra : public AliAnalysisTaskSE {
 
   ///
   /// Method to fill the histograms used for the Performance
-  void FillPerformanceHistograms(const AliVTrack * track);
+  void FillPerformanceHistograms(const AliVTrack* track);
 
   //Setter methods
   void SetHeavyIonFlag(Bool_t mode = kTRUE) { fHImode = mode; };
@@ -578,10 +578,10 @@ class AliAnalysisTaskTOFSpectra : public AliAnalysisTaskSE {
   ///////////////////////
   // Output containers //
   ///////////////////////
-  TList* fListHist;         //!<! TList for histograms
-  TTree* fTreeTrack;        //!<! TTree to store information of the single track
-  TClonesArray* ArrayAnTrk; //!<! Array containing all tracks from one event in the format of AliAnTOFtrack
-  TTree* fTreeTrackMC;      //!<! TTree to store MC information of the single track
+  TList* fListHist;           //!<! TList for histograms
+  TTree* fTreeTrack;          //!<! TTree to store information of the single track
+  AliAnTOFevent* fAnTOFevent; //!<! Event container containing all tracks from one event in the format of AliAnTOFtrack
+  TTree* fTreeTrackMC;        //!<! TTree to store MC information of the single track
 
   /////////////////////////
   // Configuration Flags //
@@ -839,8 +839,8 @@ class AliAnalysisTaskTOFSpectra : public AliAnalysisTaskSE {
   TH1F* hTOFClusters;                         ///<  Histogram with the number of TOF clusters per track
   TH1F* hTOFClustersDCApass;                  ///<  Histogram with the number of TOF clusters per track, for tracks which passed the DCA cut for primaries
   //->TPC information
-  TH2I* hTPCdEdx;                             ///<  Histogram with the track energy loss in the TOC vs the track momentum
-  TProfile* hdEdxExpected[kExpSpecies];       ///<  TProfile with the track dEdx vs the track momentum
+  TH2I* hTPCdEdx;                       ///<  Histogram with the track energy loss in the TOC vs the track momentum
+  TProfile* hdEdxExpected[kExpSpecies]; ///<  TProfile with the track dEdx vs the track momentum
   //->TPC + TOF information
   TH2F* hTPCTOFSeparation[kExpSpecies][kPtBins]; ///<  Histogram with the PID separation of the TPC and TOF signal
 #ifdef CHECKCOMPUTEDVALUES                       // Only if checks on computed values are required
@@ -925,7 +925,7 @@ class AliAnalysisTaskTOFSpectra : public AliAnalysisTaskSE {
   AliAnalysisTaskTOFSpectra(const AliAnalysisTaskTOFSpectra&);            //! Not implemented
   AliAnalysisTaskTOFSpectra& operator=(const AliAnalysisTaskTOFSpectra&); //! Not implemented
 
-  ClassDef(AliAnalysisTaskTOFSpectra, 9); //AliAnalysisTaskTOFSpectra used for the Pi/K/p analysis with TOF
+  ClassDef(AliAnalysisTaskTOFSpectra, 10); //AliAnalysisTaskTOFSpectra used for the Pi/K/p analysis with TOF
 };
 
 #endif
