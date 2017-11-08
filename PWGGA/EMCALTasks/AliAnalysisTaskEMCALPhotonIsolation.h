@@ -119,7 +119,7 @@ class AliAnalysisTaskEMCALPhotonIsolation: public AliAnalysisTaskEmcal {
   void                         SetNcontributorsToPileUp (Int_t nCtoPU)                         { fNContrToPileUp = nCtoPU; }
   void                         SetLightenOutput (Bool_t light)                                 { fLightOutput = light; }
   void                         SetFiducialCut(Float_t fiducial)                                { fFiducialCut = fiducial; }
-  void                         SetComputeConeAreaPerEvent(Bool_t eventCone)                    { fConeAreaPerEvent = eventCone; }
+  void                         SetComputeAreasPerEvent(Bool_t eventAreas)                      { fAreasPerEvent = eventAreas; }
   void                         Set2012L1Analysis(Bool_t is2012L1)                              { f2012EGA = is2012L1; }
 
  protected:
@@ -134,6 +134,7 @@ class AliAnalysisTaskEMCALPhotonIsolation: public AliAnalysisTaskEmcal {
   void                         PtIsoTrackOrthCones(TLorentzVector c, Double_t &ptIso, Double_t &cones);             // PIsoCone via Tracks UE via Orthogonal Cones in Phi
   void                         PtIsoTrackFullTPC(TLorentzVector c, Double_t &ptIso, Double_t &full);                // PIsoCone via Tracks UE via FullTPC - IsoCone - B2BEtaBand
   void                         ComputeConeArea(TLorentzVector c, Double_t &coneArea);                               // Isolation cone area depending on the cluster position
+  void                         ComputeEtaBandArea(TLorentzVector c, Double_t &etaBandArea_InclCone);                // Eta-band area depending on the cluster position
   void                         ApplySmearing(AliVCluster *coi, Double_t &m02COI);                                   // Applying smearing on MC
 
   Bool_t                       ClustTrackMatching(AliVCluster *emccluster,Bool_t candidate);
@@ -219,7 +220,7 @@ class AliAnalysisTaskEMCALPhotonIsolation: public AliAnalysisTaskEmcal {
   Bool_t                       fMCtruth;                        // Enable/disable MC truth analysis
   TString                      fPeriod;                         // String containing the LHC period
   Float_t                      fFiducialCut;                    // Variable fiducial cut from the border of the EMCal/TPC acceptance
-  Bool_t                       fConeAreaPerEvent;               // Enable/disable the event-by-event cone area computation
+  Bool_t                       fAreasPerEvent;                  // Enable/disable the event-by-event cone area computation
   
   // Initialization for TTree variables
   Double_t                     fEClustersT;                     // E for all clusters
@@ -315,6 +316,8 @@ class AliAnalysisTaskEMCALPhotonIsolation: public AliAnalysisTaskEmcal {
   TH2D                       * fTestLocalIndexE;                //!<! Local index vs cluster energy test
   TH3F                       * fTestEnergyCone;                 //!<! Energy cone clusters vs tracks test
   TH3F                       * fTestEnergyConeNorm;             //!<! Energy cone clusters vs tracks test (area normalised)
+  TH3F                       * fTestEnergyEtaBand;              //!<! Energy eta-band clusters vs tracks test
+  TH3F                       * fTestEnergyEtaBandNorm;          //!<! Energy eta-band clusters vs tracks test (area normalised)
   TH2D                       * fTestEtaPhiCone;                 //!<! Eta vs phi test for clusters in cone
   TH3D                       * fInvMassM02iso;                  //!<!
   TH3D                       * fInvMassM02noiso;                //!<!
@@ -342,6 +345,8 @@ class AliAnalysisTaskEMCALPhotonIsolation: public AliAnalysisTaskEmcal {
   TH2F                       * fTracksEtaVsPt;                  //!<!
   TH2F                       * fTrackResolutionPtMC;            //!<!
   TH1D                       * fVzBeforecut;                    //!<!
+  TH1D                       * fConeArea;                       //!<! Cone area distribution (depending on the cluster position)
+  TH1D                       * fEtaBandArea;                    //!<! Eta-band area distribution (depending on the cluster position)
   
   THnSparse                  * fOutputTHnS;                     //!<! 1st Method 4 Output
   THnSparse                  * fOutMCTruth;                     //!<! 1st Method 4 MC truth Output // Isolation on pTMax
