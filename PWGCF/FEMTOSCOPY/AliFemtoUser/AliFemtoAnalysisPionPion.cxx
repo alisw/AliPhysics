@@ -165,6 +165,9 @@ struct CutConfig_Pion {
           , max_tpc_chi_ndof = 0.032
           , max_its_chi_ndof = 0.032
           ;
+
+    /// default constructor required to use default initialized members
+    CutConfig_Pion(){};
 };
 
 
@@ -173,7 +176,6 @@ AliFemtoPairCutDetaDphi*
 AliFemtoConfigObject::Construct<AliFemtoPairCutDetaDphi>() const
 {
   CutConfig_Pion cfg;
-
 
 
   auto cut = new AliFemtoPairCutDetaDphi();
