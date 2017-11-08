@@ -3,6 +3,9 @@
 
 #include "AliUtilTOFParams.h"
 #include "TMath.h"
+#include "iostream"
+using std::cout;
+using std::endl;
 
 using namespace AliUtilTOFParams;
 
@@ -170,6 +173,32 @@ class AliAnTOFtrack {
   /// Method to get the particle momentum
   Double_t GetMomentum() const { return fPt / TMath::Sin(GetTheta()); }
 
+  ///
+  /// Method to get the particle momentum
+  void Print()
+  {
+    cout << "fTrkMask " << fTrkMask << endl;
+    cout << "fTPCPIDMask " << fTPCPIDMask << endl;
+    cout << "fTrkCutMask " << fTrkCutMask << endl;
+    cout << "fDCAXYIndex " << fDCAXYIndex << endl;
+    cout << "fDCAZIndex " << fDCAZIndex << endl;
+    cout << "fLength " << fLength << endl;
+    cout << "fLengthRatio " << fLengthRatio << endl;
+    cout << "fTOFTime " << fTOFTime << endl;
+    cout << "fTOFMismatchTime " << fTOFMismatchTime << endl;
+    for (Int_t i = 0; i < kExpSpecies; i++) {
+      cout << "fTOFExpTime[" << i << "] " << fTOFExpTime[i] << endl;
+      cout << "fTOFExpSigma[" << i << "] " << fTOFExpSigma[i] << endl;
+    }
+    cout << "fT0TrkTime " << fT0TrkTime << endl;
+    cout << "fTOFchan " << fTOFchan << endl;
+    cout << "fEta " << fEta << endl;
+    cout << "fPhi " << fPhi << endl;
+    cout << "fPt " << fPt << endl;
+    cout << "fPTPC " << fPTPC << endl;
+    cout << "fNTOFClusters " << fNTOFClusters << endl;
+    cout << "fTPCSignal " << fTPCSignal << endl;
+  };
 };
 
 #endif
