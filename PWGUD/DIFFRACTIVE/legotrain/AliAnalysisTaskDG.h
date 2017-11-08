@@ -134,6 +134,25 @@ public:
     Bool_t fC;
   };
 
+  struct ZDC {
+    ZDC()
+      : fZNenergy()
+      , fZPenergy()
+      , fZEMenergy()
+      , fZNtower0()
+      , fZPtower0()
+      , fZNTDC() {}
+
+    void Fill(AliVZDC*);
+
+    Float_t fZNenergy[2];
+    Float_t fZPenergy[2];
+    Float_t fZEMenergy[2];
+    Float_t fZNtower0[2];
+    Float_t fZPtower0[2];
+    Float_t fZNTDC[2][4];
+  } ;
+
   class TreeData : public TObject {
   public:
     TreeData()
@@ -142,6 +161,7 @@ public:
       , fV0Info()
       , fADInfo()
       , fFMDInfo()
+      , fZDCInfo()
       , fIsIncompleteDAQ(kFALSE)
       , fIsSPDClusterVsTrackletBG(kFALSE)
       , fIskMB(kFALSE) {}
@@ -150,10 +170,11 @@ public:
     ADV0      fV0Info;
     ADV0      fADInfo;
     FMD       fFMDInfo;
+    ZDC       fZDCInfo;
     Bool_t    fIsIncompleteDAQ;
     Bool_t    fIsSPDClusterVsTrackletBG;
     Bool_t    fIskMB;
-    ClassDef(TreeData, 8);
+    ClassDef(TreeData, 9);
   } ;
 
   struct TrackData : public TObject {
@@ -227,10 +248,13 @@ protected:
     kHistTrig,
     kHistSPDFiredTrk,
     kHistSPDFOTrk,
+    kHistSPDFOFiredTrk,
     kHistSPDFiredTrkVsMult,
     kHistSPDFOTrkVsMult,
+    kHistSPDFOFiredTrkVsMult,
     kHistSPDFiredVsMult,
     kHistSPDFOVsMult,
+    kHistSPDFOFiredVsMult,
     kNHist
   };
 
@@ -270,7 +294,7 @@ private:
   TClonesArray     fMCTracks;            //!
   AliESDtrackCuts *fTrackCuts;           //!
 
-  ClassDef(AliAnalysisTaskDG, 15);
+  ClassDef(AliAnalysisTaskDG, 16);
 } ;
 
 #endif // ALIANALYSISTASKDG_H

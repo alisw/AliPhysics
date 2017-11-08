@@ -30,6 +30,9 @@
 #include "AliRawEventHeaderBase.h"
 #include "AliVVZERO.h"
 #include "AliVAD.h"
+#include "AliVZDC.h"
+#include "AliESDZDC.h"
+#include "AliAODZDC.h"
 #include "AliESDtrack.h"
 #include "AliESDtrackCuts.h"
 
@@ -144,6 +147,38 @@ void AliAnalysisTaskDG::ADV0::FillV0(const AliVEvent *vEvent, AliTriggerAnalysis
 void AliAnalysisTaskDG::FMD::Fill(const AliVEvent *vEvent, AliTriggerAnalysis &trigAna) {
   fA = trigAna.FMDTrigger(vEvent, AliTriggerAnalysis::kASide);
   fC = trigAna.FMDTrigger(vEvent, AliTriggerAnalysis::kCSide);
+}
+
+void AliAnalysisTaskDG::ZDC::Fill(AliVZDC *vZDC) {
+  // taken from $ALCIE_PHYSICS/PWGUD/UPC/AliAnalysisTaskUpcTree.cxx
+  fZNenergy[0]  = vZDC->GetZNCEnergy();
+  fZNenergy[1]  = vZDC->GetZNAEnergy();
+  fZPenergy[0]  = vZDC->GetZPCEnergy();
+  fZPenergy[1]  = vZDC->GetZPAEnergy();
+  fZEMenergy[0] = vZDC->GetZEM1Energy();
+  fZEMenergy[1] = vZDC->GetZEM2Energy();
+  fZNtower0[0]  = vZDC->GetZNCTowerEnergy()[0];
+  fZNtower0[1]  = vZDC->GetZNATowerEnergy()[0];
+  fZPtower0[0]  = vZDC->GetZPCTowerEnergy()[0];
+  fZPtower0[1]  = vZDC->GetZPATowerEnergy()[0];
+
+  AliESDZDC *esdZDC = dynamic_cast<AliESDZDC*>(vZDC);
+  if (esdZDC) {
+    Int_t detChZNA  = esdZDC->GetZNATDCChannel();
+    Int_t detChZNC  = esdZDC->GetZNCTDCChannel();
+    // if (esd->GetRunNumber()>=245726 && esd->GetRunNumber()<=245793) detChZNA = 10; // use  timing from the common ZNA PMT
+    for (Int_t i=0;i<4;i++) {
+      fZNTDC[0][i] = esdZDC->GetZDCTDCCorrected(detChZNC,i);
+      fZNTDC[1][i] = esdZDC->GetZDCTDCCorrected(detChZNA,i);
+    }
+  }
+  AliAODZDC *aodZDC = dynamic_cast<AliAODZDC*>(vZDC);
+  if (aodZDC) {
+    for (Int_t i=0;i<4;i++) {
+      fZNTDC[0][i] = aodZDC->GetZNCTDCm(i);
+      fZNTDC[1][i] = aodZDC->GetZNATDCm(i);
+    }
+  }
 }
 
 template<typename A>
@@ -368,6 +403,10 @@ void AliAnalysisTaskDG::SetBranches(TTree* t, Bool_t isAOD) {
     t->Branch("AliAnalysisTaskDG::TrackData", &fTrackData);
   }
 
+  if (!fTreeBranchNames.Contains("ZDC")) {
+    t->SetBranchStatus("fZDCInfo.*", 0);
+  }
+
   if (fIsMC) {
     t->Branch("TLorentzVector", &fMCTracks, 32000, 0);
   }
@@ -417,6 +456,11 @@ void AliAnalysisTaskDG::UserCreateOutputObjects()
   fHist[kHistSPDFOTrk]->SetStats(0);
   fList->Add(fHist[kHistSPDFOTrk]);
 
+  fHist[kHistSPDFOFiredTrk] = new TH3D("HSPDFOFiredTrk", fTriggerSelectionSPD+";chip key;BCmod4;mult",
+                                       1200, -0.5, 1199.5, 4, -0.5, 3.5, 10, -0.5, 9.5);
+  fHist[kHistSPDFOFiredTrk]->SetStats(0);
+  fList->Add(fHist[kHistSPDFOFiredTrk]);
+
   fHist[kHistSPDFiredTrkVsMult] = new TH3D("HSPDFiredTrkVsMult", fTriggerSelectionSPD+";chip key;BCmod4;log_{10}(number of tracklets)",
 					   1200, -0.5, 1199.5, 4, -0.5, 3.5, 25, 0.0, 5.0);
   fHist[kHistSPDFiredTrkVsMult]->SetStats(0);
@@ -427,6 +471,11 @@ void AliAnalysisTaskDG::UserCreateOutputObjects()
   fHist[kHistSPDFOTrkVsMult]->SetStats(0);
   fList->Add(fHist[kHistSPDFOTrkVsMult]);
 
+  fHist[kHistSPDFOFiredTrkVsMult] = new TH3D("HSPDFOFiredTrkVsMult", fTriggerSelectionSPD+";chip key;BCmod4;log_{10}(number of tracklets)",
+                                             1200, -0.5, 1199.5, 4, -0.5, 3.5, 25, 0.0, 5.0);
+  fHist[kHistSPDFOFiredTrkVsMult]->SetStats(0);
+  fList->Add(fHist[kHistSPDFOFiredTrkVsMult]);
+
   fHist[kHistSPDFiredVsMult] = new TH3D("HSPDFiredVsMult", fTriggerSelectionSPD+";chip key;BCmod4;log_{10}(number of tracklets)",
 					1200, -0.5, 1199.5, 4, -0.5, 3.5, 25, 0.0, 5.0);
   fHist[kHistSPDFiredVsMult]->SetStats(0);
@@ -436,6 +485,11 @@ void AliAnalysisTaskDG::UserCreateOutputObjects()
 				     1200, -0.5, 1199.5, 4, -0.5, 3.5, 25, 0.0, 5.0);
   fHist[kHistSPDFOVsMult]->SetStats(0);
   fList->Add(fHist[kHistSPDFOVsMult]);
+
+  fHist[kHistSPDFOFiredVsMult] = new TH3D("HSPDFOFiredVsMult", fTriggerSelectionSPD+";chip key;BCmod4;log_{10}(number of tracklets)",
+                                          1200, -0.5, 1199.5, 4, -0.5, 3.5, 25, 0.0, 5.0);
+  fHist[kHistSPDFOFiredVsMult]->SetStats(0);
+  fList->Add(fHist[kHistSPDFOFiredVsMult]);
 
   PostData(1, fList);
 
@@ -534,6 +588,11 @@ void AliAnalysisTaskDG::FillSPDFOEffiencyHistograms(const AliESDEvent *esdEvent)
 	  FillTH3(kHistSPDFOTrkVsMult, chipKey, bcMod4, log10Tracklets, (matched[chipKey]>0));
 	  FillTH3(kHistSPDFOVsMult,    chipKey, bcMod4, log10Tracklets);
 	}
+	if (mult->TestFastOrFiredChips(chipKey) && mult->TestFiredChipMap(chipKey)) {
+	  FillTH3(kHistSPDFOFiredTrk,       chipKey, bcMod4, matched[chipKey]);
+	  FillTH3(kHistSPDFOFiredTrkVsMult, chipKey, bcMod4, log10Tracklets, (matched[chipKey]>0));
+	  FillTH3(kHistSPDFOFiredVsMult,    chipKey, bcMod4, log10Tracklets);
+	}
       }
     }
   }
@@ -626,6 +685,8 @@ void AliAnalysisTaskDG::UserExec(Option_t *)
 					 : kFALSE);
   fTreeData.fV0Info.FillV0(vEvent, fTriggerAnalysis);
   fTreeData.fADInfo.FillAD(vEvent, fTriggerAnalysis);
+
+  fTreeData.fZDCInfo.Fill(vEvent->GetZDCData());
 
   const Bool_t isNotV0(fTreeData.fV0Info.fDecisionOnline[0] == 0 &&
                        fTreeData.fV0Info.fDecisionOnline[1] == 0);
