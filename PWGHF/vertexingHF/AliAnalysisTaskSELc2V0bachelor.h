@@ -19,6 +19,7 @@
 
 #include "TROOT.h"
 #include "TSystem.h"
+#include "TVector.h"
 
 #include "AliAnalysisTaskSE.h"
 #include "AliAODEvent.h"
@@ -26,6 +27,7 @@
 #include "AliAODTrack.h"
 #include "AliRDHFCutsLctoV0.h"
 #include "AliNormalizationCounter.h"
+#include <vector>
 
 /// \class AliAnalysisTaskSELc2V0bachelor
 
@@ -61,6 +63,12 @@ class AliAnalysisTaskSELc2V0bachelor : public AliAnalysisTaskSE
  
   void MakeSingleAnalysisForSystK0SP(AliAODEvent* aodEvent,TClonesArray *mcArray, 
       AliRDHFCutsLctoV0 *cutsAnal);
+
+  void SetGenerateBGEventFromTracks(Int_t a){fGenerateBGEventFromTracks=a;}
+  Int_t GetPoolIndex(Double_t zvert, Double_t mult);
+  void DoEventMixing(AliAODEvent* aodEvent,TClonesArray *mcArray, AliRDHFCutsLctoV0 *cutsAnal);
+  void FillMixedBackground(std::vector<TVector * > mixTypePVars, AliAODEvent *aod, AliRDHFCutsLctoV0 *cutsAnal);
+  void DoRotationFromTrack(AliAODEvent* aodEvent,TClonesArray *mcArray, AliRDHFCutsLctoV0 *cutsAnal);
 
   /// set MC usage
   void SetMC(Bool_t theMCon) {fUseMCInfo = theMCon;}
@@ -189,8 +197,21 @@ class AliAnalysisTaskSELc2V0bachelor : public AliAnalysisTaskSE
 
   Int_t fDoSingleAnalysisForSystK0SP; /// Analyze p,K,D for syst (0:off, 1:on, 2:only single ana)
 
+  // Mixed event (track level)
+  Int_t fGenerateBGEventFromTracks; /// flag for (1) event mixing or (2) track rotation from tracks
+  Int_t  fNumberOfEventsForMixing; /// maximum number of events to be used in event mixing
+  Int_t fNzVtxBins;								/// number of z vrtx bins
+  Double_t fZvtxBins[100];						// [fNzVtxBinsDim]
+  Int_t fNCentBins;								/// number of centrality bins
+  Double_t fCentBins[100];						// [fNCentBinsDim]
+  Int_t  fNOfPools; /// number of pools
+  Int_t fPoolIndex; /// pool index
+  std::vector<Int_t> fNextResVec; //!<! Vector storing next reservoir ID
+  std::vector<Bool_t> fReservoirsReady; //!<! Vector storing if the reservoirs are ready
+  std::vector<std::vector< std::vector< TVector * > > > fReservoirP; //!<! reservoir
+
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskSELc2V0bachelor,13); /// class for Lc->p K0
+  ClassDef(AliAnalysisTaskSELc2V0bachelor,14); /// class for Lc->p K0
   /// \endcond
 };
 
