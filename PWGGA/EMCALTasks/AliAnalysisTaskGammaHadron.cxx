@@ -617,7 +617,6 @@ void AliAnalysisTaskGammaHadron::UserCreateOutputObjects()
     }
 
     Double_t EPArray[100+1];
-    Double_t NTracksArray[5+1];
     static const Int_t nCentHistBins=4;
     Double_t centBinArray[nCentHistBins+1]  = {0.0,10.0,30.0,60.0,100.0};
 
@@ -630,15 +629,6 @@ void AliAnalysisTaskGammaHadron::UserCreateOutputObjects()
         GenerateFixedBinArray(100,0,2,EPArray);
         minThnQA[dimThnQA] = 0;
         maxThnQA[dimThnQA] = 2;
-        dimThnQA++;
-
-        //..number of tracks matched to a cluster within 0.1
-        titleThnQA[dimThnQA] = "No. of matched tracks (0.1)";
-        nbinsThnQA[dimThnQA] = 5;
-        binEdgesThnQA[dimThnQA] = NTracksArray;
-        GenerateFixedBinArray(5,0,5,NTracksArray);
-        minThnQA[dimThnQA] = 0;
-        maxThnQA[dimThnQA] = 5;
         dimThnQA++;
 
         //..Centrality
@@ -1680,12 +1670,14 @@ void AliAnalysisTaskGammaHadron::FillQAHisograms(Int_t identifier,AliClusterCont
 		if(fPlotQA==2)
 		{
 			Int_t Ntrks = caloCluster->GetNTracksMatched();
-			Double_t etadiff=100;
-			Double_t phidiff=100;
+			//Double_t etadiff=100;
+			//Double_t phidiff=100;
 			Double_t etadiffTrack;
 			Double_t phidiffTrack;
-			Double_t mom=0;
+			//Double_t mom=0;
 			Double_t momTrack;
+			Double_t valueArray[6];
+
 			//..loop over matched tracks
 			for (Int_t i = 0; i < Ntrks; ++i)
 			{
@@ -1703,23 +1695,33 @@ void AliAnalysisTaskGammaHadron::FillQAHisograms(Int_t identifier,AliClusterCont
 
 				etadiffTrack  = veta-ceta;
 				phidiffTrack  = TVector2::Phi_mpi_pi(vphi-cphi);
-				if(sqrt(pow(etadiffTrack,2)+pow(phidiffTrack,2))<sqrt(pow(etadiff,2)+pow(phidiff,2)))
+				/* only closest track
+			 	if(sqrt(pow(etadiffTrack,2)+pow(phidiffTrack,2))<sqrt(pow(etadiff,2)+pow(phidiff,2)))
 				{
 					etadiff = etadiffTrack;
 					phidiff = phidiffTrack;
 					mom     = momTrack;
 				}
+			    }*/
+				//..Fill for every track
+				valueArray[0] = energy;
+				valueArray[1] = caloCluster->GetM02();
+				valueArray[2] = fabs(etadiffTrack);
+				valueArray[3] = fabs(phidiffTrack);
+				valueArray[4] = energy/momTrack;
+				valueArray[5] = fCent;
+				fClusterProp->Fill(valueArray); //..all clusters - no cuts
 			}
-
-			Double_t valueArray[7];
-			valueArray[0] = energy;
-			valueArray[1] = caloCluster->GetM02();
-			valueArray[2] = fabs(etadiff);
-			valueArray[3] = fabs(phidiff);
-			valueArray[4] = energy/mom;
-			valueArray[5] = Ntrks;
-			valueArray[6] = fCent;
-			fClusterProp->Fill(valueArray); //..all clusters - no cuts
+			if(Ntrks==0)
+			{
+				valueArray[0] = energy;
+				valueArray[1] = caloCluster->GetM02();
+				valueArray[2] = 1;
+				valueArray[3] = 1;
+				valueArray[4] = 0;
+				valueArray[5] = fCent;
+				fClusterProp->Fill(valueArray); //..all clusters - no cuts
+			}
 
 		}
 		//valueArray[6] = phiDistMatched;
