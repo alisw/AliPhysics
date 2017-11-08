@@ -48,6 +48,7 @@ AliAnTOFtrack::AliAnTOFtrack()
     , fEta(-999)
     , fPhi(-999)
     , fPt(-999)
+    , fPTPC(-999)
     , fNTOFClusters(-999)
     , fTPCSignal(-999)
 // fT0TrkSigma(-999)
@@ -194,9 +195,10 @@ Bool_t AliAnTOFtrack::IsNegative()
 //________________________________________________________________________
 Double_t AliAnTOFtrack::GetDCA(const Bool_t xy)
 {
-  Double_t u, d;
-  GetBinnedDCA(d, u, xy);
-  return d + (u - d) / 2;
+  if (xy)
+    return GetBinnedData(fDCAXYIndex, -fDCAXYRange, fDCAXYRange, 256);
+  else
+    return GetBinnedData(fDCAZIndex, -fDCAZRange, fDCAZRange, 256);
 }
 
 ////////////////////////

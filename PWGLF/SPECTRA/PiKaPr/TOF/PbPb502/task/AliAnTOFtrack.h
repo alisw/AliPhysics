@@ -23,7 +23,10 @@ class AliAnTOFtrack : public TObject {
   AliAnTOFtrack();
   virtual ~AliAnTOFtrack();
 
-  //Masks
+  //***************************
+  ////////Data Members/////////
+  //***************************
+
   UShort_t fTrkMask;                 //Mask for track information
   UChar_t fTPCPIDMask;               //Mask for TPC PID information
   UShort_t fTrkCutMask;              //Mask for Track cuts information
@@ -60,10 +63,6 @@ class AliAnTOFtrack : public TObject {
   ///
   /// Method to put the DCAxy and DCAz of the class into bins
   void ComputeDCABin(const Double_t dcaxy, const Double_t dcaz);
-
-  ///
-  /// Method to convert compute the bin limits of the DCA binning
-  void GetBinnedDCA(Double_t& down, Double_t& up, const Bool_t xy);
 
   ///
   /// Method to get the value of the track DCA
