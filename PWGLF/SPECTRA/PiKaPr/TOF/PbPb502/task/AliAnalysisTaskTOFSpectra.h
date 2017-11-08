@@ -42,7 +42,6 @@ class AliESDTOFCluster;
 #include "AliAnalysisTaskSE.h"
 #include "AliESDtrackCuts.h"
 #include "AliEventCuts.h"
-#include "AliLog.h"
 #include "AliMultSelection.h"
 #include "AliTOFPIDResponse.h"
 #include "AliUtilTOFParams.h"
@@ -112,17 +111,7 @@ class AliAnalysisTaskTOFSpectra : public AliAnalysisTaskSE {
 
   ///
   /// Method to print out the configuration flags of the task
-  void PrintStatus()
-  {
-    AliInfo("- PrintStatus -");
-    AliInfo(Form("Using fHImode %i", fHImode));
-    AliInfo(Form("Using fMCmode %i", fMCmode));
-    AliInfo(Form("Using fTreemode %i", fTreemode));
-    AliInfo(Form("Using fChannelmode %i", fChannelmode));
-    AliInfo(Form("Using fCutmode %i", fCutmode));
-    AliInfo(Form("Using fSimpleCutmode %i", fSimpleCutmode));
-    AliInfo(Form("Using fUseTPCShift %i\n", fUseTPCShift));
-  };
+  void PrintStatus();
 
   ///
   /// Method to obtain the output list for histograms, this is intended so as to check the data size of output
@@ -198,49 +187,19 @@ class AliAnalysisTaskTOFSpectra : public AliAnalysisTaskSE {
     kLimitfMCTrkMask }; //MC information fMCTrkMask
 
   //Implementation of mask read/write
-  void SetEvtMaskBit(fEvtMaskIndex bit, Bool_t value)
-  {
-    if (bit >= kLimitfEvtMask)
-      AliFatal("Bit exceeds limits for fEvtMask");
-    else
-      SetMaskBit(fEvtMask, (Int_t)bit, value);
-  };
+  void SetEvtMaskBit(fEvtMaskIndex bit, Bool_t value);
   void ResetEvtMaskBit() { ResetMask(fEvtMask); };
 
-  void SetTrkMaskBit(fTrkMaskIndex bit, Bool_t value)
-  {
-    if (bit >= kLimitfTrkMask)
-      AliFatal("Bit exceeds limits for fTrkMask");
-    else
-      SetMaskBit(fTrkMask, (Int_t)bit, value);
-  };
+  void SetTrkMaskBit(fTrkMaskIndex bit, Bool_t value);
   void ResetTrkMaskBit() { ResetMask(fTrkMask); };
 
-  void SetTPCPIDMaskBit(fTPCPIDMaskIndex bit, Bool_t value)
-  {
-    if (bit >= kLimitfTPCPIDMask)
-      AliFatal("Bit exceeds limits for fTPCPIDMask");
-    else
-      SetMaskBit(fTPCPIDMask, (Int_t)bit, value);
-  };
+  void SetTPCPIDMaskBit(fTPCPIDMaskIndex bit, Bool_t value);
   void ResetTPCPIDMaskBit() { ResetMask(fTPCPIDMask); };
 
-  void SetTrkCutMaskBit(fTrkCutMaskIndex bit, Bool_t value)
-  {
-    if (bit >= kLimitfTrkCutMask)
-      AliFatal("Bit exceeds limits for fTrkCutMask");
-    else
-      SetMaskBit(fTrkCutMask, (Int_t)bit, value);
-  };
+  void SetTrkCutMaskBit(fTrkCutMaskIndex bit, Bool_t value);
   void ResetTrkCutMaskBit() { ResetMask(fTrkCutMask); };
 
-  void SetMCTrkMaskBit(fMCTrkMaskIndex bit, Bool_t value)
-  {
-    if (bit >= kLimitfMCTrkMask)
-      AliFatal("Bit exceeds limits for fMCTrkMask");
-    else
-      SetMaskBit(fMCTrkMask, (Int_t)bit, value);
-  };
+  void SetMCTrkMaskBit(fMCTrkMaskIndex bit, Bool_t value);
   void ResetMCTrkMaskBit() { ResetMask(fMCTrkMask); };
 
   //Particle kinematics
@@ -256,23 +215,7 @@ class AliAnalysisTaskTOFSpectra : public AliAnalysisTaskSE {
 
   ///
   /// Find the index of the pt bin of the track
-  void FindPtBin()
-  {
-    if (fBinPtIndex != -999) {
-      AliFatal(Form("Pt bin already assigned to value %i!", fBinPtIndex));
-      return;
-    }
-    for (Int_t ptbin = 0; ptbin < kPtBins; ptbin++) { ///<  Computes the pt bin
-      if (fPt < fBinPt[ptbin] || fPt >= fBinPt[ptbin + 1])
-        continue;
-      //       AliInfo(Form("Requirement %i : %f < fPt %f < %f", ptbin, fBinPt[ptbin], fPt, fBinPt[ptbin+1]));
-      fBinPtIndex = ptbin;
-      break;
-    }
-    if (fBinPtIndex < 0)
-      AliWarning(Form("Pt bin not assigned, fPt value: %f!", fPt));
-    //if(fBinPtIndex >= 0 && fBinPtIndex + 1 != hNumMatch[0]->GetXaxis()->FindBin(fPt)) AliFatal(Form("Pt bin is different than intendend: %i vs %i!", fBinPtIndex, hNumMatch[0]->GetXaxis()->FindBin(fPt)));
-  };
+  void FindPtBin();
 
   ///
   /// Method to compute the expected time of a particle from the integrated track length
@@ -307,47 +250,7 @@ class AliAnalysisTaskTOFSpectra : public AliAnalysisTaskSE {
 
   ///
   /// Method to fill the histograms containing the values of the variables under cut, the flag is to fill the ones before and after the flag
-  void FillCutVariable(const Bool_t pass = kFALSE)
-  {
-    hTrkTPCCls[pass]->Fill(fTPCClusters);
-    hTrkTPCRows[pass]->Fill(fTPCCrossedRows);
-    hTrkTPCRatioRowsFindCls[pass]->Fill(fTPCCrossedRows / fTPCFindClusters);
-    hTrkTPCChi2NDF[pass]->Fill(fTPCChi2PerNDF);
-    hTrkITSChi2NDF[pass]->Fill(fITSChi2PerNDF);
-    hTrkActiveLength[pass]->Fill(fLengthActiveZone);
-    hTrkITSTPCMatch[pass]->Fill(fITSTPCMatch);
-    hTrkDCAxy[pass]->Fill(fDCAXY);
-    hTrkDCAz[pass]->Fill(fDCAZ);
-#ifdef CHECKTRACKCUTS //Only if required
-    for (Int_t i = 0; i < 3; i++) {
-      Double_t x = 0;
-      switch (i) {
-      case 0:
-        x = fPt;
-        break;
-      case 1:
-        x = fEta;
-        break;
-      case 2:
-        x = fPhi;
-        break;
-      default:
-        AliFatal("index out of bound!");
-        break;
-      }
-
-      hTrkTPCClsCorr[pass][i]->Fill(fTPCClusters, x);
-      hTrkTPCRowsCorr[pass][i]->Fill(fTPCCrossedRows, x);
-      hTrkTPCRatioRowsFindClsCorr[pass][i]->Fill(fTPCCrossedRows / fTPCFindClusters, x);
-      hTrkTPCChi2NDFCorr[pass][i]->Fill(fTPCChi2PerNDF, x);
-      hTrkITSChi2NDFCorr[pass][i]->Fill(fITSChi2PerNDF, x);
-      hTrkActiveLengthCorr[pass][i]->Fill(fLengthActiveZone, x);
-      hTrkITSTPCMatchCorr[pass][i]->Fill(fITSTPCMatch, x);
-      hTrkDCAxyCorr[pass][i]->Fill(fDCAXY, x);
-      hTrkDCAzCorr[pass][i]->Fill(fDCAZ, x);
-    }
-#endif
-  }
+  void FillCutVariable(const Bool_t pass = kFALSE);
 
   ///
   /// Method to start the time usage
@@ -421,46 +324,13 @@ class AliAnalysisTaskTOFSpectra : public AliAnalysisTaskSE {
 
   //
   //Single cuts
-  void SetTPCRowsCut(Double_t cut)
-  {
-    fESDtrackCuts->SetMinNCrossedRowsTPC(cut);
-    AliDebug(2, Form("Setting SetMinNCrossedRowsTPC(%f) : %f", cut, fESDtrackCuts->GetMinNCrossedRowsTPC()));
-  };
-  void SetTrkChi2Cut(Double_t cut)
-  {
-    fESDtrackCuts->SetMaxChi2PerClusterTPC(cut);
-    AliDebug(2, Form("Setting SetMaxChi2PerClusterTPC(%f) : %f", cut, fESDtrackCuts->GetMaxChi2PerClusterTPC()));
-  };
-  void SetTrkChi2CutITS(Double_t cut)
-  {
-    fESDtrackCuts->SetMaxChi2PerClusterITS(cut);
-    AliDebug(2, Form("Setting SetMaxChi2PerClusterITS(%f) : %f", cut, fESDtrackCuts->GetMaxChi2PerClusterITS()));
-  };
-  void SetDCAxyCut(Double_t cut)
-  {
-    fESDtrackCutsPrm->SetMaxDCAToVertexXYPtDep(Form("%f*(%s)", cut, fESDtrackCutsPrm->GetMaxDCAToVertexXYPtDep()));
-    AliDebug(2, Form("Setting SetMaxDCAToVertexXYPtDep(%f) : %s", cut, fESDtrackCutsPrm->GetMaxDCAToVertexXYPtDep()));
-  };
-  void SetDCAzCut(Double_t cut)
-  {
-    fESDtrackCuts->SetMaxDCAToVertexZ(cut);
-    AliDebug(2, Form("Setting SetMaxDCAToVertexZ(%f) : %f", cut, fESDtrackCuts->GetMaxDCAToVertexZ()));
-  };
-  void SetGeoCut(Double_t fDeadZoneWidth, Double_t fCutGeoNcrNclLength, Double_t fCutGeoNcrNclGeom1Pt, Double_t fCutGeoNcrNclFractionNcr, Double_t fCutGeoNcrNclFractionNcl)
-  {
-    //Float_t fDeadZoneWidth;             // width of the TPC dead zone (missing pads + PRF +ExB)
-    //Float_t fCutGeoNcrNclLength;        // cut on the geometical length  condition Ngeom(cm)>cutGeoNcrNclLength default=130
-    //Float_t fCutGeoNcrNclGeom1Pt;       // 1/pt dependence slope  cutGeoNcrNclLength:=fCutGeoNcrNclLength-abs(1/pt)^fCutGeoNcrNclGeom1Pt
-    //Float_t fCutGeoNcrNclFractionNcr;   // relative fraction cut Ncr  condition Ncr>cutGeoNcrNclFractionNcr*fCutGeoNcrNclLength
-    //Float_t fCutGeoNcrNclFractionNcl;   // ralative fraction cut Ncr  condition Ncl>cutGeoNcrNclFractionNcl
-    fESDtrackCuts->SetCutGeoNcrNcl(fDeadZoneWidth, fCutGeoNcrNclLength, fCutGeoNcrNclGeom1Pt, fCutGeoNcrNclFractionNcr, fCutGeoNcrNclFractionNcl);
-    AliDebug(2, Form("Setting SetCutGeoNcrNcl(%f, %f, %f, %f, %f)", fDeadZoneWidth, fCutGeoNcrNclLength, fCutGeoNcrNclGeom1Pt, fCutGeoNcrNclFractionNcr, fCutGeoNcrNclFractionNcl));
-  }
-  void SetRatioCrossedRowsFindableCls(Double_t cut)
-  {
-    fESDtrackCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(cut);
-    AliDebug(2, Form("Setting SetMinRatioCrossedRowsOverFindableClustersTPC(%f) : %f", cut, fESDtrackCuts->GetMinRatioCrossedRowsOverFindableClustersTPC()));
-  };
+  void SetTPCRowsCut(Double_t cut);
+  void SetTrkChi2Cut(Double_t cut);
+  void SetTrkChi2CutITS(Double_t cut);
+  void SetDCAxyCut(Double_t cut);
+  void SetDCAzCut(Double_t cut);
+  void SetGeoCut(Double_t fDeadZoneWidth, Double_t fCutGeoNcrNclLength, Double_t fCutGeoNcrNclGeom1Pt, Double_t fCutGeoNcrNclFractionNcr, Double_t fCutGeoNcrNclFractionNcl);
+  void SetRatioCrossedRowsFindableCls(Double_t cut);
 
   ///
   /// Method to initialize the standard cuts
@@ -476,68 +346,11 @@ class AliAnalysisTaskTOFSpectra : public AliAnalysisTaskSE {
 
   ///
   /// Method to print the cut variables for the whole list
-  void PrintCutVariables()
-  {
-    AliInfo("- PrintCutVariables -");
-    AliInfo(Form("Simple cut : %i", fSimpleCutmode));
-    AliInfo(Form("fESDtrackCuts->GetMinNCrossedRowsTPC() : %f", fESDtrackCuts->GetMinNCrossedRowsTPC()));
-    AliInfo(Form("fESDtrackCuts->GetMaxChi2PerClusterTPC() : %f", fESDtrackCuts->GetMaxChi2PerClusterTPC()));
-    AliInfo(Form("fESDtrackCuts->GetMaxDCAToVertexZ() : %f", fESDtrackCuts->GetMaxDCAToVertexZ()));
-    AliInfo(Form("fESDtrackCutsPrm->GetMaxDCAToVertexXYPtDep() : %s", fESDtrackCutsPrm->GetMaxDCAToVertexXYPtDep()));
-    fESDtrackCuts->Print();
-    fESDtrackCutsPrm->Print();
-  };
+  void PrintCutVariables();
 
   ///
   /// Method to print the cut variables for the tree only
-  void PrintCutVariablesForTree()
-  {
-    if (!fTreemode || !fCutmode)
-      return;
-    AliInfo("- PrintCutVariablesForTree -");
-    AliInfo(Form("fCutmode cut : %i fTreemode : %i", fCutmode, fTreemode));
-
-    Int_t index = 0;
-    for (UInt_t cut = 0; cut < nCuts; cut++) {
-      for (UInt_t i = 0; i < CutIndex[cut]; i++) {
-        TString c = "";
-        switch (cut) {
-        case kTPCrows: {
-          c += Form("%f", CutValues[cut][i]);
-          break;
-        }
-        case kTrkChi2: {
-          c += Form("%f", CutValues[cut][i]);
-          break;
-        }
-        case kDCAz: {
-          c += Form("%f", CutValues[cut][i]);
-          break;
-        }
-        case kDCAxy: {
-          const TString dep = Form("%f*(%s)", CutValues[cut][i], primfunct.Data());
-          c += dep;
-          break;
-        }
-        case kGeo: {
-          c = "(";
-          for (Int_t j = 0; j < 5; j++)
-            c += Form("%f%s", CutValues[cut][5 * i + j], j < 4 ? ", " : "");
-          c += ")";
-          break;
-        }
-
-        default:
-          AliFatal(Form("Requested %i set for track cuts not implemented!!", cut));
-          break;
-        }
-
-        AliInfo(Form("CutValue%s[%i] : %s", Cuts[cut].Data(), i, c.Data()));
-        if (i != 0)
-          fCutVar[index++]->Print();
-      }
-    }
-  };
+  void PrintCutVariablesForTree();
 
   ///
   ///Bins numbers
