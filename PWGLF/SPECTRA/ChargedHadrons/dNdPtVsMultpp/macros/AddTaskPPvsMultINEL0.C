@@ -1,10 +1,10 @@
 //Authors: Sergio Iga ,sergio.iga@correo.nucleares.unam.mx
 
 
-AliAnalysisTask* AddTaskPPvsMultINEL0(
-		Bool_t AnalysisMC = kTRUE,
-		Bool_t is13TeV = kTRUE)
+AliAnalysisTask* AddTaskPPvsMultINEL0(Bool_t is13TeV = kTRUE)
 {
+	
+	Bool_t AnalysisMC=(AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler()!=0x0);
 	
 	// Mult selection task -------------------------------------------------------------------
 	
@@ -13,8 +13,6 @@ AliAnalysisTask* AddTaskPPvsMultINEL0(
 	//AddTask: Should take care of everything transparently...
 	AliMultSelectionTask *task = AddTaskMultSelection();
 	
-
-	
 	//User Case
 	task->SetAddInfo(kTRUE);
 	//task->SetSaveCalibInfo(kTRUE); //cross-check information for debugging
@@ -22,8 +20,7 @@ AliAnalysisTask* AddTaskPPvsMultINEL0(
 	{
 	  task->SetUseDefaultMCCalib(kTRUE); // MC *
 	  task->SetAlternateOADBforEstimators("LHC15f");
-	}
-	
+	}	
 	
 	if (AnalysisMC && (!is13TeV) )
 	{
