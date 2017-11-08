@@ -17,7 +17,7 @@ enum eventCutSet { kOld = -1,
 		   kDefaultVtx8,
 		   kDefaultVtx5,
 		   kMCEvt,
-		   kMCEvtDefault,
+		   kMCEvtDefault, //
 		   kpAEvtDefault,		
 		   kpANoPileUpCut,
 		   kpAPileUpMV,
@@ -59,11 +59,11 @@ Bool_t ConfigSuperOutput(AliRsnMiniAnalysisTask *task,
 			 Int_t                  icut2 = 0);
 
 AliRsnMiniAnalysisTask * AddSuperTaskMC(Bool_t      isPP = kFALSE,
-					TString     outNameSuffix = "q2010",
+					TString     outNameSuffix = "q2011",
 					Int_t       evtCutSetID = 0,
 					Int_t       pairCutSetID = 0,
 					Int_t       aodFilterBit = 5,
-					Bool_t      enableMonitor = kTRUE,
+					Bool_t      enableMonitor = kFALSE,
 					TString     monitorOpt = "NoSIGN")
 {  
 
@@ -215,10 +215,6 @@ AliRsnMiniAnalysisTask * AddSuperTaskMC(Bool_t      isPP = kFALSE,
    task->UseESDTriggerMask(triggerMask); //ESD
    // task->SelectCollisionCandidates(triggerMask); //AOD
    
-   if (isPP) 
-     task->UseMultiplicity("QUALITY");
-   else
-     task->UseCentrality("V0M");   
    // set event mixing options
    task->UseContinuousMix();
    task->SetNMix(nmix);
@@ -262,38 +258,9 @@ AliRsnMiniAnalysisTask * AddSuperTaskMC(Bool_t      isPP = kFALSE,
    //   
    //vertex
    Int_t vtxID = task->CreateValue(AliRsnMiniValue::kVz, kFALSE);
-   //multiplicity or centrality
-   Int_t multID = task->CreateValue(AliRsnMiniValue::kMult, kFALSE);
-   //reference multiplicity (default with global tracks with good quality, if not available uses tracklets)
-   Int_t multRefID = task->CreateValue(AliRsnMiniValue::kRefMult, kFALSE);
-
    AliRsnMiniOutput *outVtx = task->CreateOutput("eventVtx", "HIST", "EVENT");
    outVtx->AddAxis(vtxID, 500, -50.0, 50.0);
    
-   AliRsnMiniOutput *outMult = task->CreateOutput("eventMult", "HIST", "EVENT");
-   if (isPP) 
-     outMult->AddAxis(multID, 400, 0.0, 400.0);
-   else
-     outMult->AddAxis(multID, 101, 0.0, 101.0);
-   
-   AliRsnMiniOutput *outRefMult = task->CreateOutput("eventRefMult", "HIST", "EVENT");
-   outRefMult->AddAxis(multRefID, 400, 0.0, 400.0);
-   
-   TH2F* hvz = new TH2F("hVzVsCent",Form("Vertex position vs centrality"), 101, 0., 101., 500, -50.0, 50.0);
-   hvz->GetXaxis()->SetTitle("V0A");
-   hvz->GetYaxis()->SetTitle("z_{vtx} (cm)");
-   task->SetEventQAHist("vz", hvz);
-
-   TH2F* hRefMultiVsCent = new TH2F("hRefMultiVsCent",Form("Reference multiplicity vs centrality"), 101, 0., 101., 400, 0., 400.);
-   hRefMultiVsCent->GetXaxis()->SetTitle("V0A");
-   hRefMultiVsCent->GetYaxis()->SetTitle("GLOBAL");
-   task->SetEventQAHist("refmulti",hRefMultiVsCent);
-
-   TH2F* hMultiVsCent = new TH2F("hMultiVsCent",Form("Multiplicity vs centrality"), 101, 0., 101., 400, 0., 400.);
-   hMultiVsCent->GetXaxis()->SetTitle("V0A");
-   hMultiVsCent->GetYaxis()->SetTitle("QUALITY");
-   task->SetEventQAHist("multicent",hMultiVsCent);
-
    // -- PAIR CUTS (common to all resonances) ------------------------------------------------------
    //
    AliRsnCutMiniPair *cutY = new AliRsnCutMiniPair("cutRapidity", AliRsnCutMiniPair::kRapidityRange);
@@ -394,17 +361,12 @@ Bool_t ConfigSuperOutput(AliRsnMiniAnalysisTask *task,
   /* invariant mass   */ Int_t imID   = task->CreateValue(AliRsnMiniValue::kInvMass, kFALSE);
   /* IM resolution    */ Int_t resID  = task->CreateValue(AliRsnMiniValue::kInvMassRes, kTRUE);
   /* transv. momentum */ Int_t ptID   = task->CreateValue(AliRsnMiniValue::kPt, kFALSE);
-  /* centrality       */ Int_t centID = task->CreateValue(AliRsnMiniValue::kMult, kFALSE);
   /* pseudorapidity   */ Int_t etaID  = task->CreateValue(AliRsnMiniValue::kEta, kFALSE);
-  /* rapidity         */ Int_t yID    = task->CreateValue(AliRsnMiniValue::kY, kFALSE);
-  /* 1st daughter pt  */ Int_t fdpt   = task->CreateValue(AliRsnMiniValue::kFirstDaughterPt, kFALSE);
-  /* 2nd daughter pt  */ Int_t sdpt   = task->CreateValue(AliRsnMiniValue::kSecondDaughterPt, kFALSE);
-  /* 1st daughter p   */ Int_t fdp    = task->CreateValue(AliRsnMiniValue::kFirstDaughterP, kFALSE);
-  /* 2nd daughter p   */ Int_t sdp    = task->CreateValue(AliRsnMiniValue::kSecondDaughterP, kFALSE);
-  TString output = "SPARSE";
+  /* rapidity         */ Int_t yID    = task->CreateValue(AliRsnMiniValue::kY, kTRUE);
+  TString output = "HIST";
 
-  //TRUE RECO PAIRS - MASS
-  AliRsnMiniOutput * outtrue = task->CreateOutput(Form("true_%s", partname.Data()), output.Data(),"TRUE");
+  //TRUE RECO PAIRS - MASS vs PT
+  AliRsnMiniOutput * outtrue = task->CreateOutput(Form("true_pt_%s", partname.Data()), output.Data(),"TRUE");
   outtrue->SetCutID(0, icut1);
   outtrue->SetCutID(1, icut2);
   outtrue->SetCharge(0, charge1);
@@ -414,18 +376,23 @@ Bool_t ConfigSuperOutput(AliRsnMiniAnalysisTask *task,
   outtrue->SetMotherPDG(pdgCode);
   outtrue->SetMotherMass(mass);
   outtrue->SetPairCuts(cutsPair);
-  // axis X: invmass 
-  outtrue->AddAxis(imID, nbins, masslow, massup);
-  //axis Y: mother pt
   outtrue->AddAxis(ptID, 200, 0.0, 20.0); //default use mother pt
-  // axis Z: centrality-multiplicity
-  if (!isPP)
-    outtrue->AddAxis(centID, 100, 0.0, 100.0);
-  else 
-    outtrue->AddAxis(centID, 400, 0.0, 400.0);
-
+ 
+  //TRUE RECO PAIRS - MASS vs eta
+  AliRsnMiniOutput * outtrueEta = task->CreateOutput(Form("true_eta_%s", partname.Data()), output.Data(),"TRUE");
+  outtrueEta->SetCutID(0, icut1);
+  outtrueEta->SetCutID(1, icut2);
+  outtrueEta->SetCharge(0, charge1);
+  outtrueEta->SetCharge(1, charge2);
+  outtrueEta->SetDaughter(0, d1);
+  outtrueEta->SetDaughter(1, d2);
+  outtrueEta->SetMotherPDG(pdgCode);
+  outtrueEta->SetMotherMass(mass);
+  outtrueEta->SetPairCuts(cutsPair);
+  outtrueEta->AddAxis(etaID, 40, -1.0, 1.0); 
+  
   //TRUE RECO PAIRS - MASS RESOLUTION
-  AliRsnMiniOutput * outres = task->CreateOutput(Form("res_%s", partname.Data()), output.Data(),"TRUE");
+  AliRsnMiniOutput * outres = task->CreateOutput(Form("res_pt_%s", partname.Data()), output.Data(),"TRUE");
   outres->SetCutID(0, icut1);
   outres->SetCutID(1, icut2);
   outres->SetCharge(0, charge1);
@@ -435,30 +402,33 @@ Bool_t ConfigSuperOutput(AliRsnMiniAnalysisTask *task,
   outres->SetMotherPDG(pdgCode);
   outres->SetMotherMass(mass);
   outres->SetPairCuts(cutsPair);
-  // axis X: invmass resolution
   outres->AddAxis(resID, 200, -0.01, 0.01);
-  //axis Y: mother pt
   outres->AddAxis(ptID, 200, 0.0, 20.0);
-  // axis Z: centrality-multiplicity
-  if (!isPP)
-    outres->AddAxis(centID, 100, 0.0, 100.0);
-  else 
-    outres->AddAxis(centID, 400, 0.0, 400.0);
-    
+     
   //GENERATED PAIRS
-  AliRsnMiniOutput * outm = task->CreateOutput(Form("mother_%s", partname.Data()), output.Data(),"MOTHER");
+  AliRsnMiniOutput * outm = task->CreateOutput(Form("mother_pt_%s", partname.Data()), output.Data(),"MOTHER");
   outm->SetDaughter(0, d1);
   outm->SetDaughter(1, d2);
   outm->SetMotherPDG(pdgCode);
   outm->SetMotherMass(mass);
   outm->SetPairCuts(cutsPair);
-  outm->AddAxis(imID, nbins, masslow, massup);
   outm->AddAxis(ptID, 200, 0.0, 20.0);
-  if (!isPP){
-    outm->AddAxis(centID, 100, 0.0, 100.0);
-  }   else    { 
-    outm->AddAxis(centID, 400, 0.0, 400.0);
-  }
+
+  AliRsnMiniOutput * outmEta = task->CreateOutput(Form("mother_eta_%s", partname.Data()), output.Data(),"MOTHER");
+  outmEta->SetDaughter(0, d1);
+  outmEta->SetDaughter(1, d2);
+  outmEta->SetMotherPDG(pdgCode);
+  outmEta->SetMotherMass(mass);
+  outmEta->SetPairCuts(cutsPair);
+  outmEta->AddAxis(etaID, 40, -1., 1.);
+  
+  AliRsnMiniOutput * outmY = task->CreateOutput(Form("mother_y_%s", partname.Data()), output.Data(),"MOTHER");
+  outmY->SetDaughter(0, d1);
+  outmY->SetDaughter(1, d2);
+  outmY->SetMotherPDG(pdgCode);
+  outmY->SetMotherMass(mass);
+  outmY->SetPairCuts(cutsPair);
+  outmY->AddAxis(yID, 40, -1.0, 1.0); 
 
   return kTRUE;
 }
