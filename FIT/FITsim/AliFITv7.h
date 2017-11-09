@@ -3,26 +3,27 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-////////////////////////////////////////////////
-// Full geomrtry  hits classes for detector: FIT    //
-////////////////////////////////////////////////
+///////////////////////////////////////////////////
+// Full geometry hits classes for detector: FIT //
+///////////////////////////////////////////////////
  
 #include "AliFIT.h"
 #include "TGraph.h"
 #include "TGeoVolume.h"
+#include <string>
 #include <sstream>
+#include <vector>
+
 class AliFITv7 : public AliFIT {
   
 public:
 
   enum constants {kAir=1, kVac=3, kGlass=6, kOpAir=7, kAl=15, kOpGlass=16, kOpGlassCathode=19,kSensAir=22};
-
  
   AliFITv7();
   AliFITv7(const char *name, const char *title);
   AliFITv7(const AliFITv7& o):AliFIT(),
-    fIdSens1(0),fIdSens2(0),
-    fPMTeff(0x0) {((AliFITv7 &) o).Copy(*this);}
+    fIdSens1(0), fIdSens2(0), fPMTeff(0x0) {((AliFITv7 &) o).Copy(*this);}
   
   AliFITv7& operator=(const AliFITv7&) { return *this; }
   virtual       ~AliFITv7();
@@ -32,26 +33,26 @@ public:
   virtual void   CreateMaterials() ;
   virtual void   Init();
   virtual Int_t  IsVersion() const {return 0;}
-  Bool_t RegisterPhotoE(Double_t energy);
-  void SetVZEROGeo(TGeoVolume *alice);
-  void SetOneMCP(TGeoVolume *stl);
+  Bool_t         RegisterPhotoE(Double_t energy);
+  void           SetVZEROGeo(TGeoVolume *alice);
+  void           SetOneMCP(TGeoVolume *stl);
   virtual void   StepManager();
-  // void SetPMTeff();
 
 protected:
-  Int_t fIdSens1; // Sensetive volume  in T0
-  Int_t fIdSens2; // Sensetive volume  in T0
-  TGraph *fPMTeff; //pmt registration effeicincy
-  Int_t GetCellId(Int_t *vol);
+  // T0+
+  Int_t fIdSens1;  // Sensitive volume in FIT
+  Int_t fIdSens2;  // Sensitive volume in FIT
+  TGraph *fPMTeff; // MCP-PMT detection efficiency
+  Int_t fSenseless;// Senseless hit entry
 
-  //V0+
+  // V0+
+  Int_t GetCellId(Int_t *vol);
   Int_t nSectors, nRings;
-  Int_t fIdV0Plus[16][5];//Sensitive volumes [nSectors][nRings], if modified then update the construct in .cxx
-  Int_t fCellId;//Scintillator cell number
-  Int_t fSenseless;//Senseless for T0+
+  Int_t fIdV0Plus[16][5]; // Sensitive volumes [nSectors][nRings], if modified then update the construct in .cxx
+  Int_t fCellId;          // Scintillator cell number
 
 private: 
- // Optical properties reader: e-Energy, abs-AbsorptionLength[cm], n-refractive index
+  // Optical properties reader: e-Energy, abs-AbsorptionLength[cm], n-refractive index
   Int_t ReadOptProperties(const std::string inputFilePath, Float_t **e,
 			  Double_t **de, Float_t **abs, Float_t **n, Float_t **qe, Int_t &kNbins) const;
   void FillOtherOptProperties(Float_t **efficAll, Float_t **rindexAir,
@@ -62,12 +63,12 @@ private:
     Float_t **rindexCathodeNext, Float_t **absorbCathodeNext,
     Double_t **efficMet, Double_t **aReflMet) const; // should be called at the very end of the simulation to free the memory
   
-  //V0+ parameters related to geometry
+  // V0+ parameters related to geometry
   Double_t fV0PlusR0, fV0PlusR1, fV0PlusR2, fV0PlusR3, fV0PlusR4, fV0PlusR5, fV0PlusR6;
   Double_t fV0PlusSciWd, fV0PlusFraWd, fV0PlusZposition;
   Float_t fV0PlusnMeters; 
   
-  //V0+ parameters related to light production:
+  // V0+ parameters related to light production:
   Double_t fV0PlusLightYield;       // Lightyield in BC404 (from V0A)
   Double_t fV0PlusLightAttenuation; // LightAttenuation in fibers (from V0A)
   Double_t fV0PlusFibToPhot;        // Loss in Fibers - Photocathode Connection (from V0A)
