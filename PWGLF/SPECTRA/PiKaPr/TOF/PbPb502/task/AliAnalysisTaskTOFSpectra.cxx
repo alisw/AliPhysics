@@ -255,6 +255,7 @@ AliAnalysisTaskTOFSpectra::AliAnalysisTaskTOFSpectra(const TString taskname, Boo
     , hTOFClustersDCApass(0x0)
     //TPC energy loss
     , hTPCdEdx(0x0)
+    , hTPCdEdxTPCp(0x0)
 {
 
   //
@@ -642,11 +643,16 @@ void AliAnalysisTaskTOFSpectra::Init()
     }
   }
 
+  //TOF expected
   for (Int_t species = 0; species < kExpSpecies; species++) { //Species loop
     hBetaExpected[species] = 0x0;
     hBetaExpectedTOFPID[species] = 0x0;
+  }
 
+  //TPC expected
+  for (Int_t species = 0; species < kExpSpecies + 2; species++) { //Species loop
     hdEdxExpected[species] = 0x0;
+    hdEdxExpectedTPCp[species] = 0x0;
   }
 
   AliDebug(2, "Init()\t END");
@@ -3490,9 +3496,24 @@ void AliAnalysisTaskTOFSpectra::DefinePerformanceHistograms()
       hBetaExpectedTOFPID[i] = new TProfile(Form("hBetaExpectedTOFPID%s", pSpecies_all[i].Data()), Form("Profile of the beta for hypo %s with TOF PID;%s;TOF #beta", pSpecies_all[i].Data(), pstring.Data()), Bnbins, Bplim[0], Bplim[1], Blim[0], Blim[1]);
       fListHist->AddLast(hBetaExpectedTOFPID[i]);
 
-      hdEdxExpected[i] = new TProfile(Form("hdEdxExpected%s", pSpecies_all[i].Data()), Form("Profile of the dEdx for hypo %s with TOF PID;%s;TOF #dEdx", pSpecies_all[i].Data(), pstring.Data()), Enbins, Eplim[0], Eplim[1], Elim[0], Elim[1]);
+      hdEdxExpected[i] = new TProfile(Form("hdEdxExpected%s", pSpecies_all[i].Data()), Form("Profile of the dEdx for hypo %s;%s;TPC #dEdx", pSpecies_all[i].Data(), pstring.Data()), Enbins, Eplim[0], Eplim[1], Elim[0], Elim[1]);
       fListHist->AddLast(hdEdxExpected[i]);
+
+      hdEdxExpectedTPCp[i] = new TProfile(Form("hdEdxExpectedTPCp%s", pSpecies_all[i].Data()), Form("Profile of the dEdx for hypo %s;%s;TPC #dEdx", pSpecies_all[i].Data(), pstring.Data()), Enbins, Eplim[0], Eplim[1], Elim[0], Elim[1]);
+      fListHist->AddLast(hdEdxExpectedTPCp[i]);
     }
+
+    hdEdxExpected[kExpSpecies] = new TProfile("hdEdxExpectedTriton", Form("Profile of the dEdx for hypo Triton;%s;TPC #dEdx", pstring.Data()), Enbins, Eplim[0], Eplim[1], Elim[0], Elim[1]);
+    fListHist->AddLast(hdEdxExpected[kExpSpecies]);
+
+    hdEdxExpected[kExpSpecies + 1] = new TProfile("hdEdxExpectedHelium3", Form("Profile of the dEdx for hypo Helium3;%s;TPC #dEdx", pstring.Data()), Enbins, Eplim[0], Eplim[1], Elim[0], Elim[1]);
+    fListHist->AddLast(hdEdxExpected[kExpSpecies + 1]);
+
+    hdEdxExpectedTPCp[kExpSpecies] = new TProfile("hdEdxExpectedTPCpTriton", Form("Profile of the dEdx for hypo Triton;%s;TPC #dEdx", pstring.Data()), Enbins, Eplim[0], Eplim[1], Elim[0], Elim[1]);
+    fListHist->AddLast(hdEdxExpectedTPCp[kExpSpecies]);
+
+    hdEdxExpectedTPCp[kExpSpecies + 1] = new TProfile("hdEdxExpectedTPCpHelium3", Form("Profile of the dEdx for hypo Helium3;%s;TPC #dEdx", pstring.Data()), Enbins, Eplim[0], Eplim[1], Elim[0], Elim[1]);
+    fListHist->AddLast(hdEdxExpectedTPCp[kExpSpecies + 1]);
 
     hBetaNoMismatch = new TH2I("hBetaNoMismatch", Form("Distribution of the beta w/o Mismatch;%s;TOF #beta", pstring.Data()), Bnbins, Bplim[0], Bplim[1], Bnbins, Blim[0], Blim[1]);
     fListHist->AddLast(hBetaNoMismatch);
@@ -3517,6 +3538,9 @@ void AliAnalysisTaskTOFSpectra::DefinePerformanceHistograms()
 
     hTPCdEdx = new TH2I("hTPCdEdx", Form("Distribution of the TPC dE/dx;%s;d#it{E}/d#it{x} in TPC (arb. units)", pstring.Data()), Enbins, Eplim[0], Eplim[1], Enbins, Elim[0], Elim[1]);
     fListHist->AddLast(hTPCdEdx);
+
+    hTPCdEdxTPCp = new TH2I("hTPCdEdxTPCp", Form("Distribution of the TPC dE/dx;%s;d#it{E}/d#it{x} in TPC (arb. units)", pstring.Data()), Enbins, Eplim[0], Eplim[1], Enbins, Elim[0], Elim[1]);
+    fListHist->AddLast(hTPCdEdxTPCp);
   }
 }
 
@@ -3532,7 +3556,6 @@ void AliAnalysisTaskTOFSpectra::FillPerformanceHistograms(const AliVTrack* track
       hBetaExpected[i]->Fill(fP, betaHypo);
       if (TMath::Abs(fTOFSigma[i]) < 3.0)
         hBetaExpectedTOFPID[i]->Fill(fP, betaHypo);
-      hdEdxExpected[i]->Fill(fP, fPIDResponse->GetTPCResponse().GetExpectedSignal(track, static_cast<AliPID::EParticleType>(i)));
     }
     if (fNTOFClusters < 2) {
       hBetaNoMismatch->Fill(fP, beta);
@@ -3555,6 +3578,11 @@ void AliAnalysisTaskTOFSpectra::FillPerformanceHistograms(const AliVTrack* track
 
     //TPC
     hTPCdEdx->Fill(fP, fTPCSignal);
+    hTPCdEdxTPCp->Fill(fPTPC, fTPCSignal);
+    for (Int_t i = 0; i < kExpSpecies + 2; i++) {
+      hdEdxExpected[i]->Fill(fP, fPIDResponse->GetTPCResponse().GetExpectedSignal(track, static_cast<AliPID::EParticleType>(i)));
+      hdEdxExpectedTPCp[i]->Fill(fPTPC, fPIDResponse->GetTPCResponse().GetExpectedSignal(track, static_cast<AliPID::EParticleType>(i)));
+    }
   }
 }
 
