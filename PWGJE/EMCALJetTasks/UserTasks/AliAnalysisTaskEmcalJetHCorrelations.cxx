@@ -516,6 +516,17 @@ Bool_t AliAnalysisTaskEmcalJetHCorrelations::Run()
       if (pool->IsReady() || pool->NTracksInPool() >= fMinNTracksMixedEvents || nMix >= fMinNEventsMixedEvents) {
 
         for (auto jet : jets->accepted()) {
+          // Require the found jet to be matched
+          // This match should be between detector and particle level MC
+          if (fIsEmbedded) {
+            if (jet->MatchedJet()) {
+              AliDebugStream(4) << "Jet is matched!\nJet: " << jet->toString().Data() << "\n";
+            }
+            else {
+              AliDebugStream(5) << "Rejected jet because it was not matched to a external event jet.\n";
+              continue;
+            }
+          }
 
           // Jet properties
           // Determine if we have the lead jet
