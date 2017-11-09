@@ -255,7 +255,9 @@ class AliAnalysisTaskUpcEtaC : public AliAnalysisTaskSE {
   //  TH1D *fK0sMinv;
   TH2D *fKPiPtVsMinvK0sChannel;
   //  TH1D *fKPiMinvK0sChannel;
-  TH2D *fMK0sVsMKPiK0sChannel; //Dalitz Plot, Mass K0s vs Mass of PiK combo
+  TH2D *fM2K0sVsM2KPiK0sChannel; //Dalitz Plot, Mass K0s vs Mass of PiK combo
+  TH2D *fM2K0sPiVsM2KPiK0sChannel; //Dalitz Plot, Mass K0sPi vs Mass of PiK combo
+  TH2D *fM2K0sKVsM2KPiK0sChannel; //Dalitz Plot, Mass K0sK vs Mass of PiK combo
   TH2D *fK0sPtVsMinvEtaC;
   //  TH1D *fEtaCMinvK0sChannel;
   TH1D *fK0sDecayLength;
@@ -315,6 +317,7 @@ class AliAnalysisTaskUpcEtaC : public AliAnalysisTaskSE {
   TH2D *f2RhoPtVsMinvNonRhoPairs;
   TH2D *f4PiVs2PiMinv;
   TH2D *f4PiVs2PiMinvSquared;
+  TH2D *fM2PiPiVsM2PiPi;
   TH2D *f2RhoEtaVsMinvEtaC;
   TH2D *f4PionEtaVsMinvEtaC;
   TH2D *f2RhoEtaVsMinvEtaC400MeVPtMax;
@@ -386,6 +389,7 @@ class AliAnalysisTaskUpcEtaC : public AliAnalysisTaskSE {
   TH2D *f4KaonPtVsMinvKK;
   TH2D *f4KVs2KMinv;
   TH2D *f4KVs2KMinvSquared;
+  TH2D *fM2KKVsM2KK;
   TH2D *f4KaonEtaVsMinvEtaC;
   TH2D *f4KaonEtaVsMinvEtaC400MeVPtMax;
   TH2D *f4KaonEtaVsMinvEtaC100MeVPtMax;
