@@ -31,6 +31,14 @@ AliAnalysisTask *AddTask_jjung_lowmass(Bool_t getFromAlien=kFALSE,
   AliAnalysisTaskMultiDielectron *task = new AliAnalysisTaskMultiDielectron("MultiDielectron");
   if (!hasMC) task->UsePhysicsSelection();
   task->SetTriggerMask(triggerMask);
+
+  if(nSetV0ANDTrigger)
+    task->SetTriggerOnV0AND(kTRUE); // only for cross-check
+  
+  // SPD pile-up rejection with 3 contributors is applied only for min.bias analysis
+  if(nSetPileupRejection)
+    task->SetRejectPileup(kTRUE); // rejectPileup == kTRUE by default for min.bias
+
   task->SetRandomizeDaughters(randomizeDau); //default kFALSE
 
   //Add event filter

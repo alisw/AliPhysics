@@ -204,11 +204,11 @@ void AlimPtMatrix::UserCreateOutputObjects()
 	//fNaccNchCent->GetAxis(1)->SetTitle("n_{ch}");
 	//fNaccNchCent->GetAxis(2)->SetTitle("Centrality");
 
-	fNaccCent = new TH2F("fNaccCent","N_acc:Centrality",3500,-0.5,3499.5,12,-0.5,11.5);
+	fNaccCent = new TH2F("fNaccCent","N_acc:Centrality",3500,-0.5,3499.5,12,-1.5,10.5);
 	fNaccCent->GetXaxis()->SetTitle("n_{acc}");
 	fNaccCent->GetYaxis()->SetTitle("Centrality");
 
-	fNchCent = new TH2F("fNchCent","N_ch:Centrality",3500,-0.5,3499.5,11,-0.5,10.5);
+	fNchCent = new TH2F("fNchCent","N_ch:Centrality",3500,-0.5,3499.5,12,-1.5,10.5);
 	fNchCent->GetXaxis()->SetTitle("n_{ch}");
 	fNchCent->GetYaxis()->SetTitle("Centrality");
 
@@ -217,7 +217,7 @@ void AlimPtMatrix::UserCreateOutputObjects()
 	fNaccNch->GetYaxis()->SetTitle("n_{acc}");
 
 
-	fEvtsCent = new TH1F("fEvtsCent",";Centrality;Number of Events",11,0,11);
+	fEvtsCent = new TH1F("fEvtsCent","Centrality;Number of Events",12,-1.5,10.5);
 
 	// Add Histos, Profiles etc to List
 	fOutputList->Add(fNaccCent);

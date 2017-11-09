@@ -34,7 +34,7 @@ ClassImp(AliAnalysisTaskParticleRandomizer)
 
 //_____________________________________________________________________________________________________
 AliAnalysisTaskParticleRandomizer::AliAnalysisTaskParticleRandomizer() :
-  AliAnalysisTaskEmcal("AliAnalysisTaskParticleRandomizer", kFALSE), fRandomizeInPhi(1), fRandomizeInEta(0), fRandomizeInTheta(0), fRandomizeInPt(0), fMinPhi(0), fMaxPhi(TMath::TwoPi()), fMinEta(-0.9), fMaxEta(+0.9), fMinPt(0), fMaxPt(120), fDistributionV2(0), fDistributionV3(0), fDistributionV4(0), fDistributionV5(0), fInputArrayName(), fOutputArrayName(), fInputArray(0), fOutputArray(0), fJetRemovalRhoObj(), fJetRemovalArrayName(), fJetRemovalArray(0), fJetRemovalPtThreshold(999.), fJetEmbeddingArrayName(), fJetEmbeddingArray(0), fRandomPsi3(0), fRandom()
+  AliAnalysisTaskEmcal("AliAnalysisTaskParticleRandomizer", kFALSE), fRandomizeInPhi(1), fRandomizeInEta(0), fRandomizeInTheta(0), fRandomizeInPt(0), fMinPhi(0), fMaxPhi(TMath::TwoPi()), fMinEta(-0.9), fMaxEta(+0.9), fMinPt(0), fMaxPt(120), fDistributionV2(0), fDistributionV3(0), fDistributionV4(0), fDistributionV5(0), fInputArrayName(), fOutputArrayName(), fInputArray(0), fOutputArray(0), fJetRemovalRhoObj(), fJetRemovalArrayName(), fJetRemovalArray(0), fJetRemovalPtThreshold(999.), fJetRemovalNLeadingJets(0), fJetEmbeddingArrayName(), fJetEmbeddingArray(0), fRandomPsi3(0), fLeadingJet(0), fSubleadingJet(0), fRandom()
 {
 // constructor
 }
@@ -103,6 +103,10 @@ Bool_t AliAnalysisTaskParticleRandomizer::Run()
   fRandomPsi3 = fRandom->Rndm()*TMath::Pi(); // once per event, create a random value dedicated for Psi3
   fRandomPsi4 = fRandom->Rndm()*TMath::Pi(); // once per event, create a random value dedicated for Psi4
   fRandomPsi5 = fRandom->Rndm()*TMath::Pi(); // once per event, create a random value dedicated for Psi5
+
+  // Get leading jets on demand
+  if(fJetRemovalNLeadingJets)
+    GetLeadingJets(fLeadingJet, fSubleadingJet);
 
   Int_t accTracks = 0;
 
@@ -199,16 +203,39 @@ AliAODTrack* AliAnalysisTaskParticleRandomizer::GetAODTrack(AliPicoTrack* track)
 //_____________________________________________________________________________________________________
 Bool_t AliAnalysisTaskParticleRandomizer::IsParticleInJet(Int_t part)
 {
+  // Check if particle w/ index 'part' is contained in one of the removal jets
+  // The removal jets can be jets with a pt theshold or the leading jets
   for(Int_t i=0; i<fJetRemovalArray->GetEntries(); i++)
   {
     AliEmcalJet* tmpJet = static_cast<AliEmcalJet*>(fJetRemovalArray->At(i));
-    Double_t tmpPt = tmpJet->Pt() - tmpJet->Area()*GetExternalRho();
 
-    if(tmpPt >= fJetRemovalPtThreshold)
-      if(tmpJet->ContainsTrack(part)>=0)
-        return kTRUE;
+    // Check if to remove leading jets
+    if (fJetRemovalNLeadingJets)
+    {
+      // leading jet removal mode
+      if( (fJetRemovalNLeadingJets == 1) && (tmpJet == fLeadingJet))
+      {
+        if(tmpJet->ContainsTrack(part)>=0)
+          return kTRUE;
+        else
+          return kFALSE; // we know we are done here: the track is not contained in leading jet
+      }
+      // leading or leading removal mode
+      else if ( (fJetRemovalNLeadingJets == 2) && ((tmpJet == fLeadingJet) || (tmpJet == fSubleadingJet)))
+      {
+        if(tmpJet->ContainsTrack(part)>=0)
+          return kTRUE;
+      }
+    }
+    // Check if to remove jets above threshold
+    else
+    {
+      Double_t tmpPt = tmpJet->Pt() - tmpJet->Area()*GetExternalRho();
+      if(tmpPt >= fJetRemovalPtThreshold)
+        if(tmpJet->ContainsTrack(part)>=0)
+          return kTRUE;
+    }
   }
-
   return kFALSE;
 }
 
@@ -310,4 +337,34 @@ Double_t AliAnalysisTaskParticleRandomizer::AddFlow(Double_t phi, Double_t pt)
   }
 
   return phi;
+}
+
+//_____________________________________________________________________________________________________
+void AliAnalysisTaskParticleRandomizer::GetLeadingJets(AliEmcalJet*& jetLeading, AliEmcalJet*& jetSubLeading)
+{
+  // Customized from AliJetContainer::GetLeadingJet()
+  // Get the leading+subleading jet; the sorting is according to pt-A*rho
+
+  jetLeading = 0;
+  jetSubLeading = 0;
+
+  Double_t     tmpLeadingPt = 0;
+  Double_t     tmpSubleadingPt = 0;
+
+  for(Int_t i=0; i<fJetRemovalArray->GetEntries(); i++)
+  {
+    AliEmcalJet* jet = static_cast<AliEmcalJet*>(fJetRemovalArray->At(i));
+    if      ( (jet->Pt()-jet->Area()*GetExternalRho()) > tmpLeadingPt )
+    {
+      jetSubLeading = jetLeading;
+      jetLeading = jet;
+      tmpSubleadingPt = tmpLeadingPt;
+      tmpLeadingPt = jet->Pt()-jet->Area()*GetExternalRho();
+    }
+    else if ( (jet->Pt()-jet->Area()*GetExternalRho()) > tmpSubleadingPt )
+    {
+      jetSubLeading = jet;
+      tmpSubleadingPt = jet->Pt()-jet->Area()*GetExternalRho();
+    }
+  }
 }

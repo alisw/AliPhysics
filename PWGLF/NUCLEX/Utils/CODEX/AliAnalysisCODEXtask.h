@@ -21,7 +21,7 @@ using std::vector;
 
 class AliAnalysisCODEXtask : public AliAnalysisTaskSE {
   public:
-    AliAnalysisCODEXtask(const char *name = "FilterTree");
+    AliAnalysisCODEXtask(const char *name = "AliCODEX");
     virtual ~AliAnalysisCODEXtask();
 
     virtual void   UserCreateOutputObjects();
@@ -30,19 +30,24 @@ class AliAnalysisCODEXtask : public AliAnalysisTaskSE {
 
     long GetParticleMask(TParticle* part);
 
-    /// You know why I am putting these members as public?
-    /// Because I am sick of writing down setter and getter
-    /// for classes that I, and only I, use.
-    /// If you don't like it, write 3x lines of code for each
-    /// of these members...
     bool            mMCtrue;
     UInt_t          mCentralityMode;
     AliESDtrackCuts Cuts;
     AliEventCuts    mEventCuts;
+    double          mPtCut;                 /// Minimum pt stored in the output trees
+    unsigned char   mPOI;                   /// Particles Of Interest (POI) to be stored in the output
+    double          mNsigmaTPCselectionPOI; /// Maximum number of sigmas in the TPC from the expected signal of a POI
+    double          mNsigmaTOFselectionPOI; /// Maximum number of sigmas in the TPC from the expected signal of a POI
+    double          mStartingPtTOFselection;/// pt at which the TOF selection starts
+    bool            mSkipEmptyEvents;       /// If true events without any tracks are not stored in the output tree
+
+    void Discard(const TString discard) { mToDiscard = discard;};
+
   private:
     // Private methods
     AliAnalysisCODEXtask(const AliAnalysisCODEXtask&);            //! Not implemented
     AliAnalysisCODEXtask& operator=(const AliAnalysisCODEXtask&); //! Not implemented
+    void Discard();                                               /// Method to discard a branch of the filtered tree
 
     TList*   mOutput; //!
     TTree*   mTree;   //!
@@ -54,9 +59,11 @@ class AliAnalysisCODEXtask : public AliAnalysisTaskSE {
     vector<AliAnalysisCODEX::Track> mTracks; /// Tracks
 
     ///
-    TH2I* mTimeChan;                                    /// 2D histogram with the Time/Channel correlation
+    TH2I* mTimeChan;                                    //! 2D histogram with the Time/Channel correlation
+    //
+    TString mToDiscard; /// List of the branches to discard
 
-    ClassDef(AliAnalysisCODEXtask,1)
+    ClassDef(AliAnalysisCODEXtask,2)
 };
 
 #endif

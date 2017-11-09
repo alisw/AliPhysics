@@ -11,6 +11,7 @@ using std::string;
 #include "AliVEvent.h"
 #include "AliAnalysisUtils.h"
 
+class AliESDtrackCuts;
 class TList;
 class TH1D;
 class TH1I;
@@ -25,7 +26,9 @@ class AliEventCutsContainer : public TNamed {
     fMultTrkFB32(-1),
     fMultTrkFB32Acc(-1),
     fMultTrkFB32TOF(-1),
-    fMultTrkTPC(-1) {}
+    fMultTrkTPC(-1),
+    fMultTrkTPCout(-1),
+    fMultVZERO(-1.) {}
 
     unsigned long fEventId;
     int fMultESD;
@@ -33,29 +36,45 @@ class AliEventCutsContainer : public TNamed {
     int fMultTrkFB32Acc;
     int fMultTrkFB32TOF;
     int fMultTrkTPC;
-  ClassDef(AliEventCutsContainer,1)
+    int fMultTrkTPCout;
+    double fMultVZERO;
+  ClassDef(AliEventCutsContainer,2)
 };
 
 class AliEventCuts : public TList {
   public:
     AliEventCuts(bool savePlots = false);
-    virtual ~AliEventCuts() { if (fMultiplicityV0McorrCut) delete fMultiplicityV0McorrCut; }
+    virtual ~AliEventCuts();
     enum CutsBin {
       kNoCuts = 0,
       kDAQincomplete,
       kBfield,
       kTrigger,
+      kVertexSPD,
+      kVertexTracks,
+      kVertex,
+      kVertexPositionSPD,
+      kVertexPositionTracks,
       kVertexPosition,
       kVertexQuality,
       kPileUp,
       kMultiplicity,
+      kINELgt0,
       kCorrelations,
       kAllCuts
+    };
+
+    enum NormMask {
+      kAnyEvent = BIT(kNoCuts),
+      kPassesAllCuts = (BIT(kAllCuts) - 1) ^ (BIT(kVertexPositionSPD) | BIT(kVertexPositionTracks) | BIT(kVertexSPD) | BIT(kVertexTracks)),
+      kPassesNonVertexRelatedSelections = kPassesAllCuts ^ (BIT(kVertex) | BIT(kVertexPosition) | BIT(kVertexQuality)),
+      kHasReconstructedVertex = kPassesAllCuts ^ BIT(kVertexPosition)
     };
 
 
     bool   AcceptEvent (AliVEvent *ev);
     bool   PassedCut (AliEventCuts::CutsBin cut) { return fFlag & BIT(cut); }
+    bool   CheckNormalisationMask (AliEventCuts::NormMask mask) { return (fFlag & mask) == mask; }
     void   AddQAplotsToList(TList *qaList = 0x0, bool addCorrelationPlots = false);
     void   OverrideAutomaticTriggerSelection(unsigned long tr, bool ov = true) { fTriggerMask = tr; fOverrideAutoTriggerMask = ov; }
     void   OverridePileUpCuts(int minContrib, float minZdist, float nSigmaZdist, float nSigmaDiamXY, float nSigmaDiamZ, bool ov = true);
@@ -64,8 +83,11 @@ class AliEventCuts : public TList {
     void   SetupLHC15o();
     void   SetupRun2pp();
     void   SetupRun2pA(int iPeriod);
+    void   UseMultSelectionEventSelection(bool useIt = true);
 
-    /// While the general philosophy here is to avoid setters and getters (this is not an API we expose)
+    static bool GoodPrimaryAODVertex(AliVEvent *ev);
+
+    /// While the general philosophy here is to avoid setters and getters
     /// for some variables (like the max z vertex position) standard the cuts usually follow some patterns
     /// (e.g. the max vertex z position is always symmetric wrt the nominal beam collision point) thus
     /// is convenient having special setters in this case.
@@ -79,7 +101,9 @@ class AliEventCuts : public TList {
 
     AliAnalysisUtils fUtils;                      ///< Analysis utils for the pileup rejection
 
+    bool          fGreenLight;                    ///< If true it will bypass all the selections.
     bool          fMC;                            ///< Set to true by the automatic setup when analysing MC (in manual mode *you* are responsible for it). In MC the correlations cuts are disabled.
+
     bool          fRequireTrackVertex;            ///< if true all the events with only the SPD vertex are rejected
     float         fMinVtz;                        ///< Min z position for the primary vertex
     float         fMaxVtz;                        ///< Max z position for the primary vertex
@@ -87,6 +111,7 @@ class AliEventCuts : public TList {
     float         fMaxDeltaSpdTrackNsigmaSPD;     ///<
     float         fMaxDeltaSpdTrackNsigmaTrack;   ///<
     float         fMaxResolutionSPDvertex;        ///<
+    bool          fCheckAODvertex;                ///< if true it rejects the AOD primary vertices coming from TPC ESD vertices or SPD placeholder vertices
 
     bool          fRejectDAQincomplete;           ///< Reject events that have incomplete information
 
@@ -105,10 +130,11 @@ class AliEventCuts : public TList {
     unsigned int  fCentralityFramework;           ///< 0: skip centrality checks, 1: multiplicity framework, 2: legacy centrality framework
     float         fMinCentrality;                 ///< Minimum centrality to be analised
     float         fMaxCentrality;                 ///< Maximum centrality to be analised
-    bool          fMultSelectionEvCuts;           ///< Enable/Disable the event selection applied in the AliMultSelection framework
+    bool          fSelectInelGt0;                 ///< Select only INEL > 0 events
 
     bool          fUseVariablesCorrelationCuts;   ///< Switch on/off the cuts on the correlation between event variables
     bool          fUseEstimatorsCorrelationCut;   ///< Switch on/off the cut on the correlation between centrality estimators
+    bool          fUseStrongVarCorrelationCut;    ///< Switch on/off the strong cuts on the correlation between event variables
     double        fEstimatorsCorrelationCoef[2];  ///< fCentEstimators[0] = [0] + [1] * fCentEstimators[1]
     double        fEstimatorsSigmaPars[4];        ///< Sigma parametrisation fCentEstimators[1] vs fCentEstimators[0]
     double        fDeltaEstimatorNsigma[2];       ///< Number of sigma to cut on fCentEstimators[1] vs fCentEstimators[0]
@@ -118,6 +144,7 @@ class AliEventCuts : public TList {
     double        fESDvsTPConlyLinearCut[2];      ///< Linear cut in the ESD track vs TPC only track plane
     TF1          *fMultiplicityV0McorrCut;        //!<! Cut on the FB128 vs V0M plane
     double        fFB128vsTrklLinearCut[2];       ///< Cut on the FB128 vs Tracklet plane
+    double        fVZEROvsTPCoutPolCut[5];        ///< Cut on VZERO multipliciy vs the number of tracks with kTPCout on
 
     bool          fRequireExactTriggerMask;       ///< If true the event selection mask is required to be equal to fTriggerMask
     unsigned long fTriggerMask;                   ///< Trigger mask
@@ -126,8 +153,8 @@ class AliEventCuts : public TList {
     const string  fkLabels[2];                    ///< Histograms labels (raw/selected)
 
   private:
-    AliEventCuts(const AliEventCuts& copy) {}
-    AliEventCuts operator=(const AliEventCuts& copy) {return *this;}
+    AliEventCuts(const AliEventCuts& copy);
+    AliEventCuts operator=(const AliEventCuts& copy);
     void          AutomaticSetup (AliVEvent *ev);
     void          ComputeTrackMultiplicity(AliVEvent *ev);
     template<typename F> F PolN(F x, F* coef, int n);
@@ -146,9 +173,13 @@ class AliEventCuts : public TList {
     /// Overrides
     bool          fOverrideAutoTriggerMask;       ///<  If true the trigger mask chosen by the user is not overridden by the Automatic Setup
     bool          fOverrideAutoPileUpCuts;        ///<  If true the pile-up cuts are defined by the user.
-
+    bool          fMultSelectionEvCuts;           ///< Enable/Disable the event selection applied in the AliMultSelection framework
+    
     /// The following pointers are used to avoid the intense usage of FindObject. The objects pointed are owned by (TList*)this.
-    TH1I* fCutStats;               //!<! Cuts statistics
+    TH1D* fCutStats;               //!<! Cuts statistics: every column keeps track of how many times a cut is passed independently from the other cuts.
+    TH1D* fCutStatsAfterTrigger;   //!<! Cuts statistics: every column keeps track of how many times a cut is passed for events that pass the trigger selection
+    TH1D* fCutStatsAfterMultSelection; //!<! Cuts statistics: every column keeps track of how many times a cut is passed for events that pass the multiplicity selection
+    TH1D* fNormalisationHist;      //!<! Cuts statistics: every column keeps track of how many times a cut is passed once that all the other are passed.
     TH1D* fVtz[2];                 //!<! Vertex z distribution
     TH1D* fDeltaTrackSPDvtz[2];    //!<! Difference between the vertex computed using SPD and the track vertex
     TH1D* fCentrality[2];          //!<! Centrality percentile distribution
@@ -159,8 +190,12 @@ class AliEventCuts : public TList {
     TH2F* fTPCvsAll[2];            //!<!
     TH2F* fMultvsV0M[2];           //!<!
     TH2F* fTPCvsTrkl[2];           //!<!
+    TH2F* fVZEROvsTPCout[2];       //!<!
 
-    ClassDef(AliEventCuts,1)
+    AliESDtrackCuts* fFB32trackCuts; //!<! Cuts corresponding to FB32 in the ESD (used only for correlations cuts in ESDs)
+    AliESDtrackCuts* fTPConlyCuts;   //!<! Cuts corresponding to the standalone TPC cuts in the ESDs (used only for correlations cuts in ESDs)
+
+    ClassDef(AliEventCuts,6)
 };
 
 template<typename F> F AliEventCuts::PolN(F x,F* coef, int n) {

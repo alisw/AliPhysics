@@ -5,14 +5,14 @@
 void runQA(){
 //  runQA_period("/afs/cern.ch/work/a/aliqaevs/www/data/2012/LHC12h/manual/");
 
-  runQA_period("/afs/cern.ch/work/a/aliqaevs/www/data/2016/LHC16d/manual/");
-  runQA_period("/afs/cern.ch/work/a/aliqaevs/www/data/2016/LHC16e/manual/");
-  runQA_period("/afs/cern.ch/work/a/aliqaevs/www/data/2016/LHC16f/manual/");
-  runQA_period("/afs/cern.ch/work/a/aliqaevs/www/data/2016/LHC16g/manual/");
-  runQA_period("/afs/cern.ch/work/a/aliqaevs/www/data/2016/LHC16h/manual/");
-  runQA_period("/afs/cern.ch/work/a/aliqaevs/www/data/2016/LHC16i/manual/");
-  runQA_period("/afs/cern.ch/work/a/aliqaevs/www/data/2016/LHC16j/manual/");
-  runQA_period("/afs/cern.ch/work/a/aliqaevs/www/data/2016/LHC16k/manual/");
+//  runQA_period("/afs/cern.ch/work/a/aliqaevs/www/data/2016/LHC16d/manual/");
+//  runQA_period("/afs/cern.ch/work/a/aliqaevs/www/data/2016/LHC16e/manual/");
+//  runQA_period("/afs/cern.ch/work/a/aliqaevs/www/data/2016/LHC16f/manual/");
+//  runQA_period("/afs/cern.ch/work/a/aliqaevs/www/data/2016/LHC16g/manual/");
+//  runQA_period("/afs/cern.ch/work/a/aliqaevs/www/data/2016/LHC16h/manual/");
+//  runQA_period("/afs/cern.ch/work/a/aliqaevs/www/data/2016/LHC16i/manual/");
+//  runQA_period("/afs/cern.ch/work/a/aliqaevs/www/data/2016/LHC16j/manual/");
+//  runQA_period("/afs/cern.ch/work/a/aliqaevs/www/data/2016/LHC16k/manual/");
 //  runQA_period("/afs/cern.ch/work/a/aliqaevs/www/data/2016/manual/");
 //  runQA_period("/afs/cern.ch/work/a/aliqaevs/www/data/2015/LHC15f/manual/");
 //  runQA_period("/afs/cern.ch/work/a/aliqaevs/www/data/2015/LHC15h/manual/");
@@ -21,10 +21,12 @@ void runQA(){
 //  runQA_period("/afs/cern.ch/work/a/aliqaevs/www/data/2015/LHC15l/manual/");
 //  runQA_period("/afs/cern.ch/work/a/aliqaevs/www/data/2015/LHC15l/manual/");
 //  runQA_period("/afs/cern.ch/work/a/aliqaevs/www/data/2015/LHC15o/manual/");
+  runQA_period("/afs/cern.ch/work/a/aliqaevs/www/data/2016/LHC16r/16r_old/");
 }
 void runQA_period(TString path="/afs/cern.ch/work/a/aliqaevs/www/data/2016/LHC16k/manual/"){
   gSystem->Exec(Form("ls %s > run.list",path.Data()));
   ifstream f;
+
   f.open("run.list");
   Char_t buffer[1000];
   while (!f.eof()){

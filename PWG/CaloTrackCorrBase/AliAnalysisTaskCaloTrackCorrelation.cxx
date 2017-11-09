@@ -62,7 +62,7 @@ AliAnalysisTaskCaloTrackCorrelation::AliAnalysisTaskCaloTrackCorrelation(const c
   fFirstEvent(0),
   fLastEvent(0),
   fStoreEventSummary(0)
-{  
+{ 
   DefineOutput(1, TList::Class());
   DefineOutput(2, TList::Class());  // will contain cuts or local params
 }
@@ -135,7 +135,6 @@ void AliAnalysisTaskCaloTrackCorrelation::LocalInit()
 //______________________________________________
 void AliAnalysisTaskCaloTrackCorrelation::Init()
 {
-  
   AliDebug(1,"Begin");
   
   if( fDebug >= 0 )
@@ -181,12 +180,14 @@ void AliAnalysisTaskCaloTrackCorrelation::Init()
 //______________________________________________________________________
 void AliAnalysisTaskCaloTrackCorrelation::UserExec(Option_t */*option*/)
 {  
+  if ( !fAna->IsEventProcessed() ) return;
+  
   if ( (fLastEvent  > 0 && Entry() > fLastEvent )  || 
        (fFirstEvent > 0 && Entry() < fFirstEvent)     ) return ;
   
   AliDebug(1,Form("Begin event %d", (Int_t) Entry()));
     
-  //Get the type of data, check if type is correct
+  // Get the type of data, check if type is correct
   Int_t  datatype = fAna->GetReader()->GetDataType();
   if(datatype != AliCaloTrackReader::kESD && datatype != AliCaloTrackReader::kAOD &&
      datatype != AliCaloTrackReader::kMC)
@@ -197,7 +198,7 @@ void AliAnalysisTaskCaloTrackCorrelation::UserExec(Option_t */*option*/)
   
   fAna->GetReader()->SetInputOutputMCEvent(InputEvent(), AODEvent(), MCEvent());
   
-  //Process event
+  // Process event
   fAna->ProcessEvent((Int_t) Entry(), CurrentFileName());
   
   PostData(1, fOutputContainer);

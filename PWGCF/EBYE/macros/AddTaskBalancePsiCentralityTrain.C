@@ -39,7 +39,7 @@ AliAnalysisTaskBFPsi *AddTaskBalancePsiCentralityTrain(Double_t centrMin=0.,
 						       Bool_t bMomentumDifferenceCut = kTRUE,
 						       Double_t fQCutMin = 0.0,
 						       Int_t AODfilterBit = 128,
-						       Bool_t bCentralTrigger = kFALSE,
+						       AliAnalysisTaskBFPsi::etriggerSel triggerSel = AliAnalysisTaskBFPsi::kINT7,
 						       TString fileNameBase="AnalysisResults",
 						       TString dirNameExtra="",
 						       TString fArgEventClass="Centrality",
@@ -136,7 +136,8 @@ AliAnalysisTaskBFPsi *AddTaskBalancePsiCentralityTrain(Double_t centrMin=0.,
   //taskBF->SetCustomBinning("multiplicity:0,260");
   
   if(fArgEventClass == "Multiplicity") {
-    taskBF->SetMultiplicityRange(centrMin,centrMax);
+    taskBF->SetPercentileRange(centrMin,centrMax);
+    //taskBF->SetMultiplicityRange(centrMin,centrMax);
     taskBF->SetMultiplicityEstimator(centralityEstimator);
     cout<<"Multiplicity estimator "<<centralityEstimator.Data()<<endl;
   }
@@ -144,7 +145,8 @@ AliAnalysisTaskBFPsi *AddTaskBalancePsiCentralityTrain(Double_t centrMin=0.,
     if(analysisType == "MC")
       taskBF->SetImpactParameterRange(centrMin,centrMax);
     else {
-      taskBF->SetCentralityPercentileRange(centrMin,centrMax);
+      taskBF->SetPercentileRange(centrMin,centrMax);
+      //taskBF->SetCentralityPercentileRange(centrMin,centrMax);
       // centrality estimator (default = V0M)
       taskBF->SetCentralityEstimator(centralityEstimator);
       cout<<"Centrality estimator "<<centralityEstimator.Data()<<endl;
@@ -241,8 +243,11 @@ AliAnalysisTaskBFPsi *AddTaskBalancePsiCentralityTrain(Double_t centrMin=0.,
   // taskBF->UseOfflineTrigger(); // NOT used (selection is done with the AliAnalysisTaskSE::SelectCollisionCandidates()) 
   // with this only selected events are analyzed (first 2 bins in event QA histogram are the same))
   // documentation in https://twiki.cern.ch/twiki/bin/viewauth/ALICE/PWG1EvSelDocumentation
-  if(bCentralTrigger) taskBF->SelectCollisionCandidates(AliVEvent::kMB | AliVEvent::kCentral | AliVEvent::kSemiCentral);
-  else                taskBF->SelectCollisionCandidates(AliVEvent::kMB);
+
+  
+  if(triggerSel == AliAnalysisTaskBFPsi::kCentral) taskBF->SelectCollisionCandidates(AliVEvent::kMB | AliVEvent::kCentral | AliVEvent::kSemiCentral);
+  else if(triggerSel == AliAnalysisTaskBFPsi::kMB) taskBF->SelectCollisionCandidates(AliVEvent::kMB);
+  else if(triggerSel == AliAnalysisTaskBFPsi::kINT7) taskBF->SelectCollisionCandidates(AliVEvent::kINT7);
 
   // centrality estimator (default = V0M)
   taskBF->SetCentralityEstimator(centralityEstimator);

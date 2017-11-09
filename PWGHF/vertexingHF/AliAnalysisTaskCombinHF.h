@@ -68,6 +68,12 @@ public:
   void SetCutOnKKInvMass(Double_t cut){
     fPhiMassCut=cut;
   }
+  void SetCutOnCos3PiKPhiRFrame(Double_t cut){
+    fCutCos3PiKPhiRFrame=cut;
+  }
+  void SetCutCosPiDsLabFrame(Double_t cut){
+    fCutCosPiDsLabFrame=cut;
+  }
   void SetPIDHF(AliAODPidHF* pid){
     if(fPidHF) delete fPidHF;
     fPidHF=new AliAODPidHF(*pid);
@@ -169,6 +175,8 @@ private:
   AliESDtrackCuts* fTrackCutsPion; /// pion track selection
   AliESDtrackCuts* fTrackCutsKaon; /// kaon track selection
   Double_t fPhiMassCut;   /// cut on the KK inv mass for phi selection
+  Double_t fCutCos3PiKPhiRFrame; // cut on the Ds decay angles
+  Double_t fCutCosPiDsLabFrame;  // cut on the Ds decay angles
   AliAODPidHF* fPidHF; /// PID configuration
   AliRDHFCuts *fAnalysisCuts; /// Cuts for candidates
   
@@ -223,7 +231,7 @@ private:
   TObjArray* fPionTracks; /// array of pion-compatible tracks (TLorentzVectors)
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskCombinHF,12); /// D0D+ task from AOD tracks
+  ClassDef(AliAnalysisTaskCombinHF,13); /// D0D+ task from AOD tracks
   /// \endcond
 };
 

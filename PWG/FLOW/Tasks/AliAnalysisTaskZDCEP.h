@@ -69,23 +69,34 @@ private:
   TProfile* fZDCQHist[4];         //!
   TProfile3D* fZDCVtxHist[4];     //!
   TProfile2D* fZDCEcomTotHist[4]; //!
+  TH3D *fZDCVtxFitHist[4];        //!
+  TH1D *fZDCVtxFitCenProjHist[4][3]; //!
+  TProfile3D *fZDCVtxCenHistMagPol[10][8]; //! 
   TProfile3D* fZDCVtxCenHist[10][4]; //!
+  TH1D* fCRCZDCQVecDummyEZDCBins[10]; //!
+  
+  TH3D *fZDCQVecVtxCenEZDC3D[10][10][4]; //!
   TH1D *fTowerGainEq[2][5];       //!
   
   AliFlowVector* fZDCFlowVect[2]; //! ZDC q-vectors
   Int_t fCachedRunNum;            //
-  const static Int_t fnRun = 90;  //
+  const static Int_t fnRun = 125; //
   Int_t fRunList[fnRun];          // run list
   TList *fQVecListRun[fnRun];     //! run-by-run list
   TArrayD fAvVtxPosX;             // average vx position vs run number
   TArrayD fAvVtxPosY;             // average vy position vs run number
   TArrayD fAvVtxPosZ;             // average vz position vs run number
+  Bool_t fbFlagIsPosMagField;     //
   AliFlowEvent* fFlowEvent;       // flowevent
   
   AliAnalysisUtils* fAnalysisUtils; //!
   AliMultSelection* fMultSelection; //!
-  
-  ClassDef(AliAnalysisTaskZDCEP,1);
+
+
+  AliAnalysisTaskZDCEP(const AliAnalysisTaskZDCEP&);
+  AliAnalysisTaskZDCEP& operator=(const AliAnalysisTaskZDCEP&);
+
+  ClassDef(AliAnalysisTaskZDCEP,3);
 };
 
 #endif

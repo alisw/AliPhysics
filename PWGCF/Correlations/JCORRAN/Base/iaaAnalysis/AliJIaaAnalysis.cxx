@@ -13,7 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-// jtAnalysis main class
+// iaaAnalysis main class
 // used in local and grid execution
 
 #include <TH1D.h>

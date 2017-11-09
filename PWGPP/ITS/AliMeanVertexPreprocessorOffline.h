@@ -23,7 +23,8 @@ class AliMeanVertexPreprocessorOffline: public TNamed
 	Int_t GetStatus();
 
 	void SetShowPlots(Bool_t showPlots){fShowPlots = showPlots;}
-	
+
+	void ModObject(const char* url, double zv, double zs, const char* commentAdd);
 
   private:
 	AliMeanVertexPreprocessorOffline(const AliMeanVertexPreprocessorOffline & proc); // copy constructor	
@@ -37,6 +38,7 @@ class AliMeanVertexPreprocessorOffline: public TNamed
 	  kWriteMeanVertexSPD, /*write MeanVertex computed online*/
 	  kUseOfflineSPDvtx,  /*write SPD vtx offline*/
 	  kLumiRegCovMatrixProblem, /*lumi region or cov matrix computation problems, default values set*/
+	  kFitUpdateZFailed, /*problem in fitting the Z for the update in  CPass1*/
 	  kNStatusCodes
 	};
 

@@ -36,24 +36,9 @@ AliAnalysisTaskQAMultistrange *AddTaskQAMultistrange(Bool_t isMC = kFALSE) {
                                                              TList::Class(),
                                                              AliAnalysisManager::kOutputContainer,
                                                              outputFileName );
-   AliAnalysisDataContainer *coutput2 = mgr->CreateContainer("cfcontCuts",
-                                                             AliCFContainer::Class(),
-                                                             AliAnalysisManager::kOutputContainer,
-                                                             outputFileName );
-   AliAnalysisDataContainer *coutput3 = mgr->CreateContainer("cfcontMCCuts",
-                                                             AliCFContainer::Class(),
-                                                             AliAnalysisManager::kOutputContainer,
-                                                             outputFileName );
-   AliAnalysisDataContainer *coutput4 = mgr->CreateContainer("cfcontMCgen",
-                                                             AliCFContainer::Class(),
-                                                             AliAnalysisManager::kOutputContainer,
-                                                             outputFileName );
    
    mgr->ConnectInput( taskcheckcascade, 0, mgr->GetCommonInputContainer());
    mgr->ConnectOutput(taskcheckcascade, 1, coutput1);
-   mgr->ConnectOutput(taskcheckcascade, 2, coutput2);  
-   mgr->ConnectOutput(taskcheckcascade, 3, coutput3);  
-   mgr->ConnectOutput(taskcheckcascade, 4, coutput4);
  
    return taskcheckcascade;
 }   

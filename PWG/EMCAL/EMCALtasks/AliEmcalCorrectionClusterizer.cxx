@@ -51,12 +51,6 @@ ClassImp(AliEmcalCorrectionClusterizer);
 // Actually registers the class with the base class
 RegisterCorrectionComponent<AliEmcalCorrectionClusterizer> AliEmcalCorrectionClusterizer::reg("AliEmcalCorrectionClusterizer");
 
-const std::map <std::string, AliEmcalCorrectionClusterizer::EmbeddedCellEnergyType> AliEmcalCorrectionClusterizer::fgkEmbeddedCellEnergyTypeMap = {
-  {"kNonEmbedded", EmbeddedCellEnergyType::kNonEmbedded },
-  {"kEmbeddedDataMCOnly", EmbeddedCellEnergyType::kEmbeddedDataMCOnly },
-  {"kEmbeddedDataExcludeMC", EmbeddedCellEnergyType::kEmbeddedDataExcludeMC }
-};
-
 const std::map <std::string, AliEMCALRecParam::AliEMCALClusterizerFlag> AliEmcalCorrectionClusterizer::fgkClusterizerTypeMap = {
   {"kClusterizerv1", AliEMCALRecParam::kClusterizerv1 },
   {"kClusterizerNxN", AliEMCALRecParam::kClusterizerNxN },
@@ -69,6 +63,9 @@ const std::map <std::string, AliEMCALRecParam::AliEMCALClusterizerFlag> AliEmcal
  */
 AliEmcalCorrectionClusterizer::AliEmcalCorrectionClusterizer() :
   AliEmcalCorrectionComponent("AliEmcalCorrectionClusterizer"),
+  fHistCPUTime(nullptr),
+  fHistRealTime(nullptr),
+  fTimer(nullptr),
   fDigitsArr(0),
   fClusterArr(0),
   fRecParam(new AliEMCALRecParam),
@@ -89,16 +86,15 @@ AliEmcalCorrectionClusterizer::AliEmcalCorrectionClusterizer() :
   fShiftPhi(2),
   fShiftEta(2),
   fTRUShift(0),
-  fEmbeddedCellEnergyType(kNonEmbedded),
   fTestPatternInput(kFALSE),
   fSetCellMCLabelFromCluster(0),
   fSetCellMCLabelFromEdepFrac(0),
   fRemapMCLabelForAODs(0),
+  fRecalDistToBadChannels(kFALSE),
+  fRecalShowerShape(kFALSE),
   fCaloClusters(0),
   fEsd(0),
-  fAod(0),
-  fRecalDistToBadChannels(kFALSE),
-  fRecalShowerShape(kFALSE)
+  fAod(0)
 {
   for(Int_t i = 0; i < AliEMCALGeoParams::fgkEMCALModules; i++) fGeomMatrix[i] = 0 ;
   for(Int_t j = 0; j < fgkTotalCellNumber;                 j++)
@@ -191,11 +187,6 @@ Bool_t AliEmcalCorrectionClusterizer::Initialize()
     }
   }
   
-  std::string embeddedCellEnergyTypeStr = "";
-  GetProperty("embeddedCellEnergyType", embeddedCellEnergyTypeStr);
-  fEmbeddedCellEnergyType = fgkEmbeddedCellEnergyTypeMap.at(embeddedCellEnergyTypeStr);
-  //Printf("embeddedCellEnergyType: %d",fEmbeddedCellEnergyType);
-
   // Only support one cluster container for the clusterizer!
   if (fClusterCollArray.GetEntries() > 1) {
     AliFatal("Passed more than one cluster container to the clusterizer, but the clusterizer only supports one cluster container!");
@@ -234,8 +225,8 @@ Bool_t AliEmcalCorrectionClusterizer::Run()
 
   AliEmcalCorrectionComponent::Run();
   
-  fEsd = dynamic_cast<AliESDEvent*>(fEvent);
-  fAod = dynamic_cast<AliAODEvent*>(fEvent);
+  fEsd = dynamic_cast<AliESDEvent*>(fEventManager.InputEvent());
+  fAod = dynamic_cast<AliAODEvent*>(fEventManager.InputEvent());
 
   // Only support one cluster container in the clusterizer!
   AliClusterContainer * clusCont = GetClusterContainer(0);
@@ -357,10 +348,10 @@ void AliEmcalCorrectionClusterizer::FillDigitsArray()
         fOrgClusterCellId[i] =-1 ;
       }
       
-      Int_t nClusters = fEvent->GetNumberOfCaloClusters();
+      Int_t nClusters = fEventManager.InputEvent()->GetNumberOfCaloClusters();
       for (Int_t i = 0; i < nClusters; i++)
       {
-        AliVCluster *clus =  fEvent->GetCaloCluster(i);
+        AliVCluster *clus =  fEventManager.InputEvent()->GetCaloCluster(i);
         
         if (!clus) continue;
         
@@ -405,23 +396,6 @@ void AliEmcalCorrectionClusterizer::FillDigitsArray()
       if (cellAmplitude < 1e-6 || cellNumber < 0)
         continue;
 
-      if (fEmbeddedCellEnergyType == kEmbeddedDataMCOnly) {
-        if (cellMCLabel <= 0)
-          continue;
-        else {
-          cellAmplitude *= cellEFrac;
-          cellEFrac = 1;
-        }
-      }
-      else if (fEmbeddedCellEnergyType == kEmbeddedDataExcludeMC) {
-        if (cellMCLabel > 0)
-          continue;
-        else {
-          cellAmplitude *= 1 - cellEFrac;
-          cellEFrac = 0;
-        }
-      }
-
       // New way to set the cell MC labels,
       // valid only for MC productions with aliroot > v5-07-21
       //
@@ -443,7 +417,7 @@ void AliEmcalCorrectionClusterizer::FillDigitsArray()
           continue;
         }
 
-        AliVCluster* clus = fEvent->GetCaloCluster(iclus);
+        AliVCluster* clus = fEventManager.InputEvent()->GetCaloCluster(iclus);
 
         for(Int_t icluscell=0; icluscell < clus->GetNCells(); icluscell++ )
         {
@@ -654,8 +628,12 @@ void AliEmcalCorrectionClusterizer::CalibrateClusters()
   Int_t nclusters = fCaloClusters->GetEntriesFast();
   for (Int_t icluster=0; icluster < nclusters; ++icluster) {
     AliVCluster *clust = static_cast<AliVCluster*>(fCaloClusters->At(icluster));
-    if (!clust)
+    if (!clust) {
       continue;
+    }
+    if (!clust->IsEMCAL()) {
+      continue;
+    }
     
     // SHOWER SHAPE -----------------------------------------------
     if (fRecalShowerShape)
@@ -747,10 +725,10 @@ void AliEmcalCorrectionClusterizer::SetClustersMCLabelFromOriginalClusters()
         if (set && idCluster >= 0)
         {
           clArray.SetAt(idCluster,nClu++);
-          nLabTotOrg+=(fEvent->GetCaloCluster(idCluster))->GetNLabels();
+          nLabTotOrg+=(fEventManager.InputEvent()->GetCaloCluster(idCluster))->GetNLabels();
           
           //Search highest E cluster
-          AliVCluster * clOrg = fEvent->GetCaloCluster(idCluster);
+          AliVCluster * clOrg = fEventManager.InputEvent()->GetCaloCluster(idCluster);
           if (emax < clOrg->E())
           {
             emax  = clOrg->E();
@@ -785,7 +763,7 @@ void AliEmcalCorrectionClusterizer::SetClustersMCLabelFromOriginalClusters()
     for (Int_t iLoopCluster = 0 ; iLoopCluster < nClu ; iLoopCluster++)
     {
       Int_t idCluster = (Int_t) clArray.GetAt(iLoopCluster);
-      AliVCluster * clOrg = fEvent->GetCaloCluster(idCluster);
+      AliVCluster * clOrg = fEventManager.InputEvent()->GetCaloCluster(idCluster);
       Int_t nLab = clOrg->GetNLabels();
       
       for (Int_t iLab = 0 ; iLab < nLab ; iLab++)
@@ -952,7 +930,7 @@ Bool_t AliEmcalCorrectionClusterizer::CheckIfRunChanged()
       AliWarning("InitBadChannels OK");
     }
     if (fInitBC>1) {
-      AliWarning(Form("No external hot channel set: %d - %s", fEvent->GetRunNumber(), fFilepass.Data()));
+      AliWarning(Form("No external hot channel set: %d - %s", fEventManager.InputEvent()->GetRunNumber(), fFilepass.Data()));
     }
   }
   return runChanged;

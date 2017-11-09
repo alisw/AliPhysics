@@ -61,6 +61,10 @@ class AliAnaCaloTrackCorrMaker : public TObject {
   Int_t   GetAnaDebug()              const { return fAnaDebug      ; }
   void    SetAnaDebug(Int_t d)             { fAnaDebug = d         ; }
 	
+  Bool_t  IsEventProcessed()         const { return fProcessEvent  ; }
+  void    SwitchOnProcessEvent()           { fProcessEvent = kTRUE ; }
+  void    SwitchOffProcessEvent()          { fProcessEvent = kFALSE; }
+  
   Bool_t  AreHistogramsMade()        const { return fMakeHisto     ; }
   void    SwitchOnHistogramsMaker()        { fMakeHisto = kTRUE    ; }
   void    SwitchOffHistogramsMaker()       { fMakeHisto = kFALSE   ; }
@@ -82,7 +86,6 @@ class AliAnaCaloTrackCorrMaker : public TObject {
 
   void    SetCaloUtils(AliCalorimeterUtils * cu) { fCaloUtils = cu ; }
   void    SetReader(AliCaloTrackReader * re)     { fReader = re    ; }
-
   
   AliCaloTrackReader  * GetReader()        { if (!fReader)    fReader    = new AliCaloTrackReader () ;
                                              return fReader        ; }
@@ -115,6 +118,8 @@ class AliAnaCaloTrackCorrMaker : public TObject {
     
   TList *  fAnalysisContainer ;                      ///<  List with analysis pointers.
     
+  Bool_t   fProcessEvent ;                           ///< In case of automatic wagon configuration, do not process analysis, but init stuff expected by manager
+  
   Bool_t   fMakeHisto ;                              ///<  If true makes final analysis with histograms as output.
     
   Bool_t   fMakeAOD ;                                ///<  If true makes analysis generating AODs.
@@ -130,7 +135,7 @@ class AliAnaCaloTrackCorrMaker : public TObject {
   Bool_t   fSumw2 ;                                  ///<  Call the histograms method Sumw2() after initialization, off by default, too large memory booking, use carefully
     
   Bool_t   fCheckPtHard ;                            ///< For MC done in pT-Hard bins, plot specific histogram
-  
+    
   // Control histograms
   
   TH1F *   fhNEventsIn;                              //!<! Number of input events counter histogram.
@@ -201,7 +206,7 @@ class AliAnaCaloTrackCorrMaker : public TObject {
   AliAnaCaloTrackCorrMaker & operator = (const AliAnaCaloTrackCorrMaker & ) ; 
   
   /// \cond CLASSIMP
-  ClassDef(AliAnaCaloTrackCorrMaker,26) ;
+  ClassDef(AliAnaCaloTrackCorrMaker,27) ;
   /// \endcond
 
 } ;

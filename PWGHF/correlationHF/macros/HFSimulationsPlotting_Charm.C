@@ -18,9 +18,9 @@
 
 //using namespace std::
 TString directory = "";
-Int_t nhistos=9; //pPb=6 !! IMPORTANT to change -->9 for pp
+Int_t nhistos=12; //pPb2016 = 32, pPb2013 = 6, pp 2013 = 9 - it's N_Dspecies*N_pT(D)
 TString * filenames = new TString[nhistos];
-TString genName = "Perugia2011";
+TString genName = "Pythia8wBoost";
 
 Int_t HFSimulationsPlotting_Charm(){
     
@@ -34,7 +34,7 @@ Int_t HFSimulationsPlotting_Charm(){
     LoadLibraries();
     
     //Step 2: Correlations + thr options + name ?
-    TString filename="AnalysisResults_Perugia2011_5TeV_Boost.root";
+    TString filename="AnalysisResults_pPb5TeV_Pythia8_Boost.root";
     Bool_t Savingfiles= kTRUE; //Want to save your files ?
     
     DoCorreleations(filename, Savingfiles);
@@ -52,23 +52,26 @@ void DoCorreleations(const char *infile="", Bool_t fSave){
         cout<< " No Sim Corr directory "<< Form("KineSimulations") << " found, exiting... "<<endl;
     }
     
-    TString objectoutputSpecific ="SpecificPerugia2011WBoost";
+    TString objectoutputSpecific ="SpecificPythia8wBoost";
     TList *SimCorrSpecificlist = (TList*)Simulationsdirectory->Get(objectoutputSpecific);
     if(!SimCorrSpecificlist){
         cout<< " No Sim Specific Plots list  "<< Form(SimCorrSpecificlist) << " found, exiting... "<<endl;
     }
     
     
-    for (Int_t pTasso = 1; pTasso <= 6; pTasso++){
+    for (Int_t pTasso = 1; pTasso <= 8; pTasso++){
         CalculateDHadronCorrelations(SimCorrSpecificlist, "Dzero", "3To5",  pTasso, fSave); // PDGofDMeson = #
         CalculateDHadronCorrelations(SimCorrSpecificlist, "Dzero", "5To8",  pTasso, fSave); // PDGofDMeson = #
         CalculateDHadronCorrelations(SimCorrSpecificlist, "Dzero", "8To16", pTasso, fSave); // PDGofDMeson = #
+        CalculateDHadronCorrelations(SimCorrSpecificlist, "Dzero", "16To24", pTasso, fSave); // PDGofDMeson = #
         CalculateDHadronCorrelations(SimCorrSpecificlist, "Dplus", "3To5",  pTasso, fSave); // PDGofDMeson = #
         CalculateDHadronCorrelations(SimCorrSpecificlist, "Dplus", "5To8",  pTasso, fSave); // PDGofDMeson = #
         CalculateDHadronCorrelations(SimCorrSpecificlist, "Dplus", "8To16", pTasso, fSave); // PDGofDMeson = #
+        CalculateDHadronCorrelations(SimCorrSpecificlist, "Dplus", "16To24", pTasso, fSave); // PDGofDMeson = #
         CalculateDHadronCorrelations(SimCorrSpecificlist, "Dstar", "3To5",  pTasso, fSave); // PDGofDMeson = #
         CalculateDHadronCorrelations(SimCorrSpecificlist, "Dstar", "5To8",  pTasso, fSave); // PDGofDMeson = #
         CalculateDHadronCorrelations(SimCorrSpecificlist, "Dstar", "8To16", pTasso, fSave); // PDGofDMeson = #
+        CalculateDHadronCorrelations(SimCorrSpecificlist, "Dstar", "16To24", pTasso, fSave); // PDGofDMeson = #
     }
 }
 
@@ -77,17 +80,20 @@ void CalculateDHadronCorrelations(TList *CorrelationListtemp, TString DMeson, TS
     
     
     TString pTRange = "";
-    if(pTasso == 1)pTRange = "ptAssall0.3to0.5";
+    if(pTasso == 1)     pTRange = "ptAssall0.3to99.0";
     else if(pTasso == 2)pTRange = "ptAssall0.3to1.0";
-    else if(pTasso == 3)pTRange = "ptAssall0.5to1.0";
-    else if(pTasso == 4)pTRange = "ptAssall0.3to99.0";
-    else if(pTasso == 5)pTRange = "ptAssall0.5to99.0";
-    else if(pTasso == 6)pTRange = "ptAssall1.0to99.0";
-    
+    else if(pTasso == 3)pTRange = "ptAssall1.0to99.0";
+    else if(pTasso == 4)pTRange = "ptAssall2.0to99.0";
+    else if(pTasso == 5)pTRange = "ptAssall3.0to99.0";
+    else if(pTasso == 6)pTRange = "ptAssall1.0to2.0";
+    else if(pTasso == 7)pTRange = "ptAssall1.0to3.0";
+    else if(pTasso == 8)pTRange = "ptAssall2.0to3.0";
+
     Double_t DpTmin = 0, DpTmax = 0;
     if(DMesonpTRange == "3To5")       DpTmin = 3.00, DpTmax = 5.00;
     else if(DMesonpTRange == "5To8")  DpTmin = 5.00, DpTmax = 8.00;
     else if(DMesonpTRange == "8To16") DpTmin = 8.00, DpTmax = 16.00;
+    else if(DMesonpTRange == "16To24") DpTmin = 16.00, DpTmax = 24.00;
     else cout << "Select Proper pT of D Meson" << endl;
     
     TString DrwType = "surf1";
@@ -116,16 +122,22 @@ void CalculateDHadronCorrelations(TList *CorrelationListtemp, TString DMeson, TS
     THnSparseD *HFCorrelations = (THnSparseD*)CorrelationListtemp->FindObject("2PCorrBtwn_HF-hadron");
     if(!HFCorrelations)return;
     THnSparseD *HFCorrelationsSoftPi =  (THnSparseD *)HFCorrelations->Clone(FileName.Data());
+    THnSparseD *HFCorrelationsSecEl =   (THnSparseD *)HFCorrelations->Clone(FileName.Data());
     THnSparseD *HFCorrelationsCorr   =  (THnSparseD *)HFCorrelations->Clone(FileName.Data());
     
     //Correlations
     TCanvas *Corr2D = new TCanvas("cDeltaPhiEta","cDeltaPhiEta",800,800);
     TH2D *Correlations2D = ComputeCorrelations(HFCorrelationsCorr, DMeson.Data(), DMesonpTRange.Data(), pTasso , FileName);
-    if(DMeson == "Dzero"){
+    if(DMeson == "Dzero"){ //deactivate softpi removal, since we already just project for primary pi,K,p,e,mu!
         //Soft Pions Case of D0
-        TH2D *SoftCorrelations2D = SoftPionRemoval(HFCorrelationsSoftPi, DMeson.Data(), DMesonpTRange.Data(), pTasso , FileName);
-        Correlations2D->Add(SoftCorrelations2D, -1);
+//        TH2D *SoftCorrelations2D = SoftPionRemoval(HFCorrelationsSoftPi, DMeson.Data(), DMesonpTRange.Data(), pTasso , FileName);
+//        Correlations2D->Add(SoftCorrelations2D, -1);
     }
+    
+    //Secondary electrons removal
+    TH2D *SecElCorrelations2D = SecondaryElectronRemoval(HFCorrelationsSecEl, DMeson.Data(), DMesonpTRange.Data(), pTasso , FileName);
+    Correlations2D->Add(SecElCorrelations2D, -1);
+    
     Correlations2D->GetYaxis()->SetTitle("#Delta #eta");
     Correlations2D->GetYaxis()->SetTitleOffset(1.3);
     Correlations2D->GetXaxis()->SetTitle("#Delta #phi");
@@ -191,20 +203,24 @@ TH2D *ComputeCorrelations(THnSparse *sparse, const TString DMesonType, const TSt
     if(DpTrange == "3To5")       DpTmin = 3.00 , DpTmax = 5.00;
     else if(DpTrange == "5To8")  DpTmin = 5.00 , DpTmax = 8.00;
     else if(DpTrange == "8To16") DpTmin = 8.00 , DpTmax = 16.00;
+    else if(DpTrange == "16To24") DpTmin = 16.00 , DpTmax = 24.00;
     else cout << "Select Proper pT of D Meson" << endl;
     
     Double_t AssopTmin = 0., AssopTmax = 0.;
-    if(pTthrAss == 1)       AssopTmin = 0.00 , AssopTmax = 0.50;
+    if(pTthrAss == 1)       AssopTmin = 0.00 , AssopTmax = 5.00; //0 means 0.3 since there's an hardcoded lower pt cut! 5 is the upper edge of THnSparse for pTassoc axis!
     else if(pTthrAss == 2)  AssopTmin = 0.00 , AssopTmax = 1.00;
-    else if(pTthrAss == 3)  AssopTmin = 0.50 , AssopTmax = 1.00;
-    else if(pTthrAss == 4)  AssopTmin = 0.00 , AssopTmax = 3.00;
-    else if(pTthrAss == 5)  AssopTmin = 0.50 , AssopTmax = 3.00;
-    else if(pTthrAss == 6)  AssopTmin = 1.00 , AssopTmax = 3.00;
+    else if(pTthrAss == 3)  AssopTmin = 1.00 , AssopTmax = 5.00;
+    else if(pTthrAss == 4)  AssopTmin = 2.00 , AssopTmax = 5.00;
+    else if(pTthrAss == 5)  AssopTmin = 3.00 , AssopTmax = 5.00;
+    else if(pTthrAss == 6)  AssopTmin = 1.00 , AssopTmax = 2.00;
+    else if(pTthrAss == 7)  AssopTmin = 1.00 , AssopTmax = 3.00;
+    else if(pTthrAss == 8)  AssopTmin = 2.00 , AssopTmax = 3.00;
     else {cout << "Select Proper pT of Associated Tracks" << endl;}
     
     sparse->GetAxis(0)->SetRange(Particle, Particle);
     sparse->GetAxis(1)->SetRangeUser(DpTmin*1.001, DpTmax*0.999);
     sparse->GetAxis(3)->SetRangeUser(AssopTmin*1.0001, AssopTmax*0.9999);
+    sparse->GetAxis(7)->SetRangeUser(3,10); //take only primary pi,K,p,e,mu, flaggeed as 1-5, so bins 3 to 7!
     
     TH2D *h = sparse->Projection(6,5);
     h->SetName(hname.Data());
@@ -255,22 +271,23 @@ void LoadLibraries() {
 }
 
 TH2D *SoftPionRemoval(THnSparse *sparseSoftPi, const TString DMesonType, const TString DpTrange, const Double_t pTSoftPi, const TString hname = "hnamePro"){
-    
-    
-    
+       
     Double_t DpTmin = 0, DpTmax = 0;
     if(DpTrange == "3To5")       DpTmin = 3.00 , DpTmax = 5.00;
     else if(DpTrange == "5To8")  DpTmin = 5.00 , DpTmax = 8.00;
     else if(DpTrange == "8To16") DpTmin = 8.00 , DpTmax = 16.00;
+    else if(DpTrange == "16To24") DpTmin = 16.00 , DpTmax = 24.00;
     else {cout << "Select Proper pT of D Meson" << endl;}
     
     Double_t AssopTmin = 0, AssopTmax = 0;
-    if(pTSoftPi == 1)       AssopTmin = 0.00 , AssopTmax = 0.50;
+    if(pTSoftPi == 1)       AssopTmin = 0.00 , AssopTmax = 5.00;
     else if(pTSoftPi == 2)  AssopTmin = 0.00 , AssopTmax = 1.00;
-    else if(pTSoftPi == 3)  AssopTmin = 0.50 , AssopTmax = 1.00;
-    else if(pTSoftPi == 4)  AssopTmin = 0.00 , AssopTmax = 3.00;
-    else if(pTSoftPi == 5)  AssopTmin = 0.50 , AssopTmax = 3.00;
-    else if(pTSoftPi == 6)  AssopTmin = 1.00 , AssopTmax = 3.00;
+    else if(pTSoftPi == 3)  AssopTmin = 1.00 , AssopTmax = 5.00;
+    else if(pTSoftPi == 4)  AssopTmin = 2.00 , AssopTmax = 5.00;
+    else if(pTSoftPi == 5)  AssopTmin = 3.00 , AssopTmax = 5.00;
+    else if(pTSoftPi == 6)  AssopTmin = 1.00 , AssopTmax = 2.00;
+    else if(pTSoftPi == 7)  AssopTmin = 1.00 , AssopTmax = 3.00;
+    else if(pTSoftPi == 8)  AssopTmin = 2.00 , AssopTmax = 3.00;
     else {cout << "Select Proper pT of Assocated Tracks " << endl;}
     
     cout << "SoftPion: Assoc --> Min pT = " << AssopTmin<< " and Max pT =  " << AssopTmax<< endl;
@@ -291,6 +308,42 @@ TH2D *SoftPionRemoval(THnSparse *sparseSoftPi, const TString DMesonType, const T
 }
 
 
+TH2D *SecondaryElectronRemoval(THnSparse *sparseSecEl, const TString DMesonType, const TString DpTrange, const Double_t pTSecEl, const TString hname = "hnamePro"){
+       
+    Double_t DpTmin = 0, DpTmax = 0;
+    if(DpTrange == "3To5")       DpTmin = 3.00 , DpTmax = 5.00;
+    else if(DpTrange == "5To8")  DpTmin = 5.00 , DpTmax = 8.00;
+    else if(DpTrange == "8To16") DpTmin = 8.00 , DpTmax = 16.00;
+    else if(DpTrange == "16To24") DpTmin = 16.00 , DpTmax = 24.00;
+    else {cout << "Select Proper pT of D Meson" << endl;}
+    
+    Double_t AssopTmin = 0, AssopTmax = 0;
+    if(pTSecEl == 1)       AssopTmin = 0.00 , AssopTmax = 5.00;
+    else if(pTSecEl == 2)  AssopTmin = 0.00 , AssopTmax = 1.00;
+    else if(pTSecEl == 3)  AssopTmin = 1.00 , AssopTmax = 5.00;
+    else if(pTSecEl == 4)  AssopTmin = 2.00 , AssopTmax = 5.00;
+    else if(pTSecEl == 5)  AssopTmin = 3.00 , AssopTmax = 5.00;
+    else if(pTSecEl == 6)  AssopTmin = 1.00 , AssopTmax = 2.00;
+    else if(pTSecEl == 7)  AssopTmin = 1.00 , AssopTmax = 3.00;
+    else if(pTSecEl == 8)  AssopTmin = 2.00 , AssopTmax = 3.00;
+    else {cout << "Select Proper pT of Assocated Tracks " << endl;}
+    
+    cout << "SecElon: Assoc --> Min pT = " << AssopTmin<< " and Max pT =  " << AssopTmax<< endl;
+    
+    sparseSecEl->GetAxis(0)->SetRange(9, 11); //D0
+    sparseSecEl->GetAxis(1)->SetRangeUser(DpTmin*1.001, DpTmax*0.999);
+    sparseSecEl->GetAxis(3)->SetRangeUser(AssopTmin*1.0001, AssopTmax*0.999);
+    sparseSecEl->GetAxis(7)->SetRange(9, 9); //gamma conversion
+    
+    TH2D *hSecEl = sparseSecEl->Projection(6,5);
+    cout<<"Number of Soft Entries ------> = "<<hSecEl->GetEntries()<<endl;
+    
+    hSecEl->SetName(hname.Data());
+    hSecEl->SetMarkerColor(kRed);
+    hSecEl->SetMarkerStyle(20);
+    hSecEl->SetMarkerSize(1.3);
+    return hSecEl;
+}
 
 // Plot comparison..
 
@@ -311,6 +364,11 @@ void LoadFileNamesDMeson(TString Origin="fromC", TString pTthrAss){
     filenames[6] = Form("ppCorrelationPlots%sPtDzero%s8To16_ptAssall%s_DeltaEta10.root",genName.Data(),Origin.Data(), pTthrAss.Data());
     filenames[7] = Form("ppCorrelationPlots%sPtDplus%s8To16_ptAssall%s_DeltaEta10.root",genName.Data(),Origin.Data(), pTthrAss.Data());
     filenames[8] = Form("ppCorrelationPlots%sPtDstar%s8To16_ptAssall%s_DeltaEta10.root",genName.Data(),Origin.Data(), pTthrAss.Data());
+
+
+    filenames[9] = Form("ppCorrelationPlots%sPtDzero%s16To24_ptAssall%s_DeltaEta10.root",genName.Data(),Origin.Data(), pTthrAss.Data());
+    filenames[10] = Form("ppCorrelationPlots%sPtDplus%s16To24_ptAssall%s_DeltaEta10.root",genName.Data(),Origin.Data(), pTthrAss.Data());
+    filenames[11] = Form("ppCorrelationPlots%sPtDstar%s16To24_ptAssall%s_DeltaEta10.root",genName.Data(),Origin.Data(), pTthrAss.Data());
 }
 
 
@@ -324,13 +382,13 @@ void CompareInSingleCanvas(TString Orgn= "NULL", TString pTth){
     CanName1D.Form("1DCompare_allpT_CorrFor_AssoParticle_Pt_>_%sGeVc_%s", pTth.Data(),Orgn.Data());
     
     
-    TH1D     *ThCorr[9];
+    TH1D     *ThCorr[12];
     
-    const Int_t i=3;
+    const Int_t i=4;
     TCanvas* cnew= new TCanvas(CanName1D.Data(), CanName1D.Data(),1200,400);
-    cnew->Divide(3,1);
+    cnew->Divide(4,1);
     
-    for(Int_t f=0; f<9; f++){
+    for(Int_t f=0; f<12; f++){
         TString path = filenames[f];
         cout << "Reading File from path: " << path << endl;
         TFile * file = TFile::Open(path.Data(),"WRITE");
@@ -361,6 +419,13 @@ void CompareInSingleCanvas(TString Orgn= "NULL", TString pTth){
     ThCorr[6]->SetMinimum(ThCorr[6]->GetMinimum()*0.85);
     ThCorr[7]->Draw("samep");
     ThCorr[8]->Draw("samep");
+
+    cnew->cd(4);
+    ThCorr[9]->Draw("p");
+    ThCorr[9]->SetMaximum(ThCorr[9]->GetMaximum()*1.15);
+    ThCorr[9]->SetMinimum(ThCorr[9]->GetMinimum()*0.85);
+    ThCorr[10]->Draw("samep");
+    ThCorr[11]->Draw("samep");    
     
     cnew->SaveAs(Form("plots_Compare/png/1DCompare_allDpT%s_AssoPt_%sGeVc_%s.png",Orgn.Data(), pTth.Data(),genName.Data()));
     
@@ -370,20 +435,23 @@ void CompareInSingleCanvas(TString Orgn= "NULL", TString pTth){
 void DoCompareInSingleCanvas(){
     
     gSystem->Exec("mkdir -p plots_Compare/png");
-    CompareInSingleCanvas("fromC","0.3to0.5");
-    CompareInSingleCanvas("fromC","0.3to1.0");
-    CompareInSingleCanvas("fromC","0.5to1.0");
     CompareInSingleCanvas("fromC","0.3to99.0");
-    CompareInSingleCanvas("fromC","0.5to99.0");
+    CompareInSingleCanvas("fromC","0.3to1.0");
     CompareInSingleCanvas("fromC","1.0to99.0");
+    CompareInSingleCanvas("fromC","2.0to99.0");
+    CompareInSingleCanvas("fromC","3.0to99.0");
+    CompareInSingleCanvas("fromC","1.0to2.0");
+    CompareInSingleCanvas("fromC","1.0to3.0");
+    CompareInSingleCanvas("fromC","2.0to3.0");
 
-    CompareInSingleCanvas("fromB","0.3to0.5");
-    CompareInSingleCanvas("fromB","0.3to1.0");
-    CompareInSingleCanvas("fromB","0.5to1.0");
     CompareInSingleCanvas("fromB","0.3to99.0");
-    CompareInSingleCanvas("fromB","0.5to99.0");
+    CompareInSingleCanvas("fromB","0.3to1.0");
     CompareInSingleCanvas("fromB","1.0to99.0");
-
+    CompareInSingleCanvas("fromB","2.0to99.0");
+    CompareInSingleCanvas("fromB","3.0to99.0");
+    CompareInSingleCanvas("fromB","1.0to2.0");
+    CompareInSingleCanvas("fromB","1.0to3.0");
+    CompareInSingleCanvas("fromB","2.0to3.0");
     
 }
 

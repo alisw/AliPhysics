@@ -11,6 +11,9 @@ declare inputfiledir=$5
 declare inputfileroot=$6
 declare -i localcode=$7
 declare suffixTemplSystm=$8
+declare -i subtrMCclos=$9
+declare -i useoldFilenames=${10}
+declare -i centralitybin=${11}
 declare dirmacroRun="${ALICE_PHYSICS}/../src/PWGHF/correlationHF/macros"
 declare dirmacroFD="${ALICE_PHYSICS}/../src/PWGHF/correlationHF/macros"
 if [ ${localcode} = 1 ]; then
@@ -39,7 +42,7 @@ SetFDtemplateSystemString("${suffixTemplSystm}")
 //Printf("Analyzing file: %s",${file})
 Printf("Coll syst=%d",${collsyst})
 Printf("Meson: %d",$mesonIndex)
-${macrosPP[$mesonIndex]}()
+${macrosPP[$mesonIndex]}($collsyst,$subtrMCclos,$useoldFilenames,$centralitybin)
 .q
 EOF
     
@@ -59,10 +62,30 @@ SetFDtemplateSystemString("${suffixTemplSystm}")
 //Printf("Analyzing file: %s",${file})
 Printf("Coll syst=%d",${collsyst})
 Printf("Meson: %d",$mesonIndex)
-${macrosPPb[$mesonIndex]}()
+${macrosPPb[$mesonIndex]}($collsyst,$subtrMCclos,$useoldFilenames,$centralitybin)
 .q
 EOF
-echo "DoSubtractFD: done"    
+
+echo "DoSubtractFD: done"
+elif [ $collsyst = 2 ]; then
+    echo "DoSubtractFD: subtracting FD for meson $mesonIndex in coll system $collsyst (2016)"
+    root -b <<EOF &> out.log
+Printf("inside root");
+.L ${dirmacroRun}/${macrosPPb[$mesonIndex]}.C
+SetFDmacroDirectory("${dirmacroFD}")
+SetFpromptInputFile("$fpromptfile")
+SetTemplateDir("${templatedir}")
+SetDirectoryInputFiles("${inputfiledir}")
+SetInputFileNameRoot("$inputfileroot")
+SetFDtemplateSystemString("${suffixTemplSystm}")
+//cout<<"file: "<<$file<<endl
+//Printf("Analyzing file: %s",${file})
+Printf("Coll syst=%d",${collsyst})
+Printf("Meson: %d",$mesonIndex)
+${macrosPPb[$mesonIndex]}($collsyst,$subtrMCclos,$useoldFilenames,$centralitybin)
+.q
+EOF
+echo "DoSubtractFD: done"  
 fi
 
 exit 0

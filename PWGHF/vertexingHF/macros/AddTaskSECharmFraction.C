@@ -1,4 +1,4 @@
-AliAnalysisTaskSECharmFraction* AddTaskSECharmFraction(TString fileout="d0D0.root",Int_t *switchMC=0x0,Int_t readmc=0,Bool_t usepid=kTRUE,Bool_t likesign=kFALSE,TString cutfile="D0toKpiCharmFractCuts.root",TString containerprefix="c",Int_t ppPbPb=0,Int_t analysLevel=2, Float_t minC=0., Float_t maxC=7.5,Float_t minCloose=20., Float_t maxCloose=50.,Bool_t useWeight=kFALSE,Bool_t fillTree=kFALSE,Bool_t checkBitD0=kTRUE)
+AliAnalysisTaskSECharmFraction* AddTaskSECharmFraction(TString out="d0D0.root",Int_t *switchMC=0x0,Int_t readmc=0,Bool_t usepid=kTRUE,Bool_t likesign=kFALSE,TString cutfile="D0toKpiCharmFractCuts.root",TString containerprefix="c",Int_t ppPbPb=0,Int_t analysLevel=2, Float_t minC=0., Float_t maxC=7.5,Float_t minCloose=20., Float_t maxCloose=50.,Bool_t useWeight=kFALSE,Bool_t fillTree=kFALSE,Bool_t checkBitD0=kTRUE,Bool_t lightOutput=kFALSE)
 {  
   //
   // Configuration macro for the task to analyze the fraction of prompt charm
@@ -22,21 +22,23 @@ AliAnalysisTaskSECharmFraction* AddTaskSECharmFraction(TString fileout="d0D0.roo
     ::Error("AddTaskCharmFraction", "No analysis manager to connect to.");
     return NULL;
   }   
-  
+  TString fileout; 
   TString str,containername;
-  if(fileout=="standard"){
+  if(out.Contains("standard")){
     fileout=AliAnalysisManager::GetCommonFileName();
     fileout+=":PWG3_D2H_";
     fileout+="d0D0";
     if(containerprefix!="c")fileout+=containerprefix;
-    str="d0D0";
+    str="d0D0";    
+    str+=out.Data();
   }
-  else if(fileout=="standardUp"){
+  else if(out=="standardUp"){
     fileout=AliAnalysisManager::GetCommonFileName();
     fileout+=":PWG3_D2H_Up_";
     fileout+="d0D0";
     if(containerprefix!="c")fileout+=containerprefix;
     str="d0D0";    
+    str+=out.Data();
   }
   else {
     str=fileout;
@@ -123,6 +125,7 @@ AliAnalysisTaskSECharmFraction* AddTaskSECharmFraction(TString fileout="d0D0.roo
   hfTask->SetStudyPureBackground(setStudyPureBack);*/
   //  hfTask->SetSideBands(0);
   //  hfTask->SetDebugLevel(2);
+  hfTask->SetLightOutput(lightOutput);
   mgr->AddTask(hfTask);
  
  

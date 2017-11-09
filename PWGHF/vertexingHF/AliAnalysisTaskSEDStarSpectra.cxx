@@ -90,6 +90,9 @@ AliAnalysisTaskSEDStarSpectra::AliAnalysisTaskSEDStarSpectra():
   fNImpParBins(400),
   fLowerImpPar(-2000.),
   fHigherImpPar(2000.),
+  fNPtBins(0),
+  fAllhist(0x0),
+  fPIDhist(0x0),
   fDoDStarVsY(kFALSE)
 {
   //
@@ -97,6 +100,7 @@ AliAnalysisTaskSEDStarSpectra::AliAnalysisTaskSEDStarSpectra():
   //
   for(Int_t i=0;i<5;i++) fHistMassPtImpParTCDs[i]=0;
 }
+
 //___________________________________________________________________________
 AliAnalysisTaskSEDStarSpectra::AliAnalysisTaskSEDStarSpectra(const Char_t* name, AliRDHFCutsDStartoKpipi* cuts) :
   AliAnalysisTaskSE(name),
@@ -120,7 +124,10 @@ AliAnalysisTaskSEDStarSpectra::AliAnalysisTaskSEDStarSpectra(const Char_t* name,
   fNImpParBins(400),
   fLowerImpPar(-2000.),
   fHigherImpPar(2000.),
-  fDoDStarVsY(kFALSE)
+  fNPtBins(0),
+  fAllhist(0x0),
+  fPIDhist(0x0),
+    fDoDStarVsY(kFALSE)
 {
   //
   /// Constructor. Initialization of Inputs and Outputs
@@ -130,7 +137,8 @@ AliAnalysisTaskSEDStarSpectra::AliAnalysisTaskSEDStarSpectra(const Char_t* name,
   fCuts=cuts;
   for(Int_t i=0;i<5;i++) fHistMassPtImpParTCDs[i]=0;
 
-  DefineOutput(1,TList::Class());  //conters
+
+  DefineOutput(1,TList::Class());  //counters
   DefineOutput(2,TList::Class());  //All Entries output
   DefineOutput(3,TList::Class());  //3sigma PID output
   DefineOutput(4,AliRDHFCutsDStartoKpipi::Class());   //My private output
@@ -153,6 +161,13 @@ AliAnalysisTaskSEDStarSpectra::~AliAnalysisTaskSEDStarSpectra() {
   for(Int_t i=0; i<5; i++){
     delete fHistMassPtImpParTCDs[i];
   }
+  for(Int_t i=0; i<((fNPtBins+2)*18); i++){
+    delete fAllhist[i];
+    delete fPIDhist[i];
+  }
+  delete [] fAllhist;
+  delete [] fPIDhist;
+
 }
 //_________________________________________________
 void AliAnalysisTaskSEDStarSpectra::Init(){
@@ -162,6 +177,7 @@ void AliAnalysisTaskSEDStarSpectra::Init(){
 
   if(fDebug > 1) printf("AnalysisTaskSEDStarSpectra::Init() \n");
    AliRDHFCutsDStartoKpipi* copyfCuts=new AliRDHFCutsDStartoKpipi(*fCuts);
+ fNPtBins=fCuts->GetNPtBins();
   // Post the data
   PostData(4,copyfCuts);
 
@@ -321,7 +337,7 @@ void AliAnalysisTaskSEDStarSpectra::UserExec(Option_t *)
    
     if(pdgCode==-1) AliDebug(2,"No particle assigned! check\n");
 
-    Int_t ptbin=fCuts->PtBin(dstarD0pi->Pt());
+    Double_t Dstarpt = dstarD0pi->Pt();
     
     // quality selction on tracks and region of interest
     Int_t isTkSelected = fCuts->IsSelected(dstarD0pi,AliRDHFCuts::kTracks); // quality cuts on tracks
@@ -339,7 +355,7 @@ void AliAnalysisTaskSEDStarSpectra::UserExec(Option_t *)
     Double_t arrayForSparseTrue[3]={invMass,ptCand,trueImpParXY};
    
   // set the D0 search window bin by bin - useful to calculate side band bkg
-    if (ptbin==0){
+    if (0<=Dstarpt && Dstarpt<0.5){
       if(fAnalysis==1){
 	fD0Window=0.035;
 	fPeakWindow=0.03;
@@ -348,7 +364,7 @@ void AliAnalysisTaskSEDStarSpectra::UserExec(Option_t *)
 	fPeakWindow=0.0018;
       }
     }
-    if (ptbin==1){
+    if (0.5<=Dstarpt && Dstarpt<1.0){
       if(fAnalysis==1){
 	fD0Window=0.035;
 	fPeakWindow=0.03;
@@ -357,7 +373,7 @@ void AliAnalysisTaskSEDStarSpectra::UserExec(Option_t *)
 	fPeakWindow=0.0018;
       }
     }
-    if (ptbin==2){
+    if (1.0<=Dstarpt && Dstarpt<2.0){
       if(fAnalysis==1){
 	fD0Window=0.035;
 	fPeakWindow=0.03;
@@ -366,7 +382,7 @@ void AliAnalysisTaskSEDStarSpectra::UserExec(Option_t *)
 	fPeakWindow=0.0018;
       }
     }
-    if (ptbin==3){
+    if (2.0<=Dstarpt && Dstarpt<3.0){
       if(fAnalysis==1){
 	fD0Window=0.035;
 	fPeakWindow=0.03;
@@ -375,7 +391,7 @@ void AliAnalysisTaskSEDStarSpectra::UserExec(Option_t *)
 	fPeakWindow=0.0016;
       }
     }
-    if (ptbin==4){ 
+    if (3.0<=Dstarpt && Dstarpt<4.0){ 
       if(fAnalysis==1){
 	fD0Window=0.035;
 	fPeakWindow=0.03;
@@ -384,7 +400,7 @@ void AliAnalysisTaskSEDStarSpectra::UserExec(Option_t *)
 	fPeakWindow=0.0014;
       }
     }
-    if (ptbin==5){
+    if (4.0<=Dstarpt && Dstarpt<5.0){
       if(fAnalysis==1){
 	fD0Window=0.045;
 	fPeakWindow=0.03;
@@ -393,7 +409,7 @@ void AliAnalysisTaskSEDStarSpectra::UserExec(Option_t *)
 	fPeakWindow=0.0014;
       }
     } 
-   if (ptbin==6){
+   if (5.0<=Dstarpt && Dstarpt<6.0){
       if(fAnalysis==1){
 	fD0Window=0.045;
 	fPeakWindow=0.03;
@@ -402,7 +418,7 @@ void AliAnalysisTaskSEDStarSpectra::UserExec(Option_t *)
 	fPeakWindow=0.006;
       }
     } 
-    if (ptbin==7){
+    if (6.0<=Dstarpt && Dstarpt<7.0){
       if(fAnalysis==1){
 	fD0Window=0.055;
 	fPeakWindow=0.03;
@@ -411,7 +427,7 @@ void AliAnalysisTaskSEDStarSpectra::UserExec(Option_t *)
 	fPeakWindow=0.006;
       }
     }
-    if (ptbin>7){
+    if (Dstarpt>=7.0){
       if(fAnalysis==1){
 	fD0Window=0.074;
 	fPeakWindow=0.03;
@@ -448,8 +464,8 @@ void AliAnalysisTaskSEDStarSpectra::UserExec(Option_t *)
 
     
     // fill PID
-    FillSpectrum(dstarD0pi,isDStar,fCuts,isSelected,fOutputPID);
-    SideBandBackground(dstarD0pi,fCuts,isSelected, fOutputPID);
+    FillSpectrum(dstarD0pi,isDStar,fCuts,isSelected,fOutputPID, fPIDhist);
+    SideBandBackground(dstarD0pi,fCuts,isSelected, fOutputPID, fPIDhist);
     //WrongSignForDStar(dstarD0pi,fCuts,fOutputPID);
 
     //swich off the PID selection
@@ -457,7 +473,7 @@ void AliAnalysisTaskSEDStarSpectra::UserExec(Option_t *)
     Int_t isSelectedNoPID=fCuts->IsSelected(dstarD0pi,AliRDHFCuts::kCandidate, aodEvent); //selected
     fCuts->SetUsePID(kTRUE);
 
-    FillSpectrum(dstarD0pi,isDStar,fCuts,isSelectedNoPID,fOutputAll);
+    FillSpectrum(dstarD0pi,isDStar,fCuts,isSelectedNoPID,fOutputAll, fAllhist);
     //    SideBandBackground(dstarD0pi,fCuts,isSelectedNoPID, fOutputAll);
 
     // rare D search ------ 
@@ -576,7 +592,7 @@ void AliAnalysisTaskSEDStarSpectra::UserCreateOutputObjects() {
 void  AliAnalysisTaskSEDStarSpectra::DefineHistograms(){
   /// Create histograms
 
-  fCEvents = new TH1F("fCEvents","conter",13,0,13);
+  fCEvents = new TH1F("fCEvents","counter",13,0,13);
   fCEvents->SetStats(kTRUE);
   fCEvents->GetXaxis()->SetTitle("1");
   fCEvents->GetYaxis()->SetTitle("counts");
@@ -594,11 +610,14 @@ void  AliAnalysisTaskSEDStarSpectra::DefineHistograms(){
 
   fDeltaMassD1 = new TH1F("DeltaMassD1","delta mass d1",600,0,0.8);
   fOutput->Add(fDeltaMassD1);
+  //temp a
 
-  const Int_t nhist=99;
+  fAllhist = new TH1F*[(fNPtBins+2)*18];
+  fPIDhist = new TH1F*[(fNPtBins+2)*18];
+
   TString nameMass=" ", nameSgn=" ", nameBkg=" ";
 
-  for(Int_t i=-2;i<nhist;i++){
+  for(Int_t i=-2;i<fNPtBins;i++){
     nameMass="histDeltaMass_";
     nameMass+=i+1;
     nameSgn="histDeltaSgn_";
@@ -744,10 +763,16 @@ void  AliAnalysisTaskSEDStarSpectra::DefineHistograms(){
     fOutputAll->Add(allMass);
     fOutputAll->Add(allSgn);
     fOutputAll->Add(allBkg);
+    fAllhist[i+2+((fNPtBins+2)*kDeltaMass)]=allMass;
+    fAllhist[i+2+((fNPtBins+2)*kDeltaSgn)]=allSgn;
+    fAllhist[i+2+((fNPtBins+2)*kDeltaBkg)]=allBkg;
 
     fOutputPID->Add(pidMass);
     fOutputPID->Add(pidSgn);
     fOutputPID->Add(pidBkg);
+    fPIDhist[i+2+((fNPtBins+2)*kDeltaMass)]=pidMass;
+    fPIDhist[i+2+((fNPtBins+2)*kDeltaSgn)]=pidSgn;
+    fPIDhist[i+2+((fNPtBins+2)*kDeltaBkg)]=pidBkg;
 
     TH1F* allD0Mass = (TH1F*)spectrumD0Mass->Clone();
     TH1F* allD0Sgn  = (TH1F*)spectrumD0Sgn->Clone();
@@ -760,10 +785,16 @@ void  AliAnalysisTaskSEDStarSpectra::DefineHistograms(){
     fOutputAll->Add(allD0Mass);
     fOutputAll->Add(allD0Sgn);
     fOutputAll->Add(allD0Bkg);
+    fAllhist[i+2+((fNPtBins+2)*kDzMass)]=allD0Mass;
+    fAllhist[i+2+((fNPtBins+2)*kDzSgn)]=allD0Sgn;
+    fAllhist[i+2+((fNPtBins+2)*kDzBkg)]=allD0Bkg;
 
     fOutputPID->Add(pidD0Mass);
     fOutputPID->Add(pidD0Sgn);
     fOutputPID->Add(pidD0Bkg);
+    fPIDhist[i+2+((fNPtBins+2)*kDzMass)]=pidD0Mass;
+    fPIDhist[i+2+((fNPtBins+2)*kDzSgn)]=pidD0Sgn;
+    fPIDhist[i+2+((fNPtBins+2)*kDzBkg)]=pidD0Bkg;
   
     TH1F* allDstarMass = (TH1F*)spectrumDstarMass->Clone();
     TH1F* allDstarSgn = (TH1F*)spectrumDstarSgn->Clone();
@@ -776,33 +807,43 @@ void  AliAnalysisTaskSEDStarSpectra::DefineHistograms(){
     fOutputAll->Add(allDstarMass);
     fOutputAll->Add(allDstarSgn);
     fOutputAll->Add(allDstarBkg);
+    fAllhist[i+2+((fNPtBins+2)*kDstarMass)]=allDstarMass;
+    fAllhist[i+2+((fNPtBins+2)*kDstarSgn)]=allDstarSgn;
+    fAllhist[i+2+((fNPtBins+2)*kDstarBkg)]=allDstarBkg;
 
     fOutputPID->Add(pidDstarMass);
     fOutputPID->Add(pidDstarSgn);
     fOutputPID->Add(pidDstarBkg);
+    fPIDhist[i+2+((fNPtBins+2)*kDstarMass)]=pidDstarMass;
+    fPIDhist[i+2+((fNPtBins+2)*kDstarSgn)]=pidDstarSgn;
+    fPIDhist[i+2+((fNPtBins+2)*kDstarBkg)]=pidDstarBkg;
 
     TH1F* allSideBandMass = (TH1F*)spectrumSideBandMass->Clone();
     TH1F* pidSideBandMass = (TH1F*)spectrumSideBandMass->Clone();
 
     fOutputAll->Add(allSideBandMass);
     fOutputPID->Add(pidSideBandMass);
+    fAllhist[i+2+((fNPtBins+2)*kSideBandMass)]=allSideBandMass;
+    fPIDhist[i+2+((fNPtBins+2)*kSideBandMass)]=pidSideBandMass;
    
     TH1F* allWrongSignMass = (TH1F*)spectrumWrongSignMass->Clone();
     TH1F* pidWrongSignMass = (TH1F*)spectrumWrongSignMass->Clone();
 
     fOutputAll->Add(allWrongSignMass);
     fOutputPID->Add(pidWrongSignMass);
+    fAllhist[i+2+((fNPtBins+2)*kWrongSignMass)]=allWrongSignMass;
+    fPIDhist[i+2+((fNPtBins+2)*kWrongSignMass)]=pidWrongSignMass;
    
   }
-  
+
   // pt spectra
   nameMass="ptMass";
   nameSgn="ptSgn";
   nameBkg="ptBkg";
   
-  TH1F* ptspectrumMass = new TH1F(nameMass.Data(),"D^{*} p_{T}; p_{T} [GeV]; Entries",200,0,10);
-  TH1F* ptspectrumSgn = new TH1F(nameSgn.Data(), "D^{*} Signal p_{T} - MC; p_{T} [GeV]; Entries",200,0,10);
-  TH1F* ptspectrumBkg = new TH1F(nameBkg.Data(), "D^{*} Background p_{T} - MC; p_{T} [GeV]; Entries",200,0,10);
+  TH1F* ptspectrumMass = new TH1F(nameMass.Data(),"D^{*} p_{T}; p_{T} [GeV]; Entries",400,0,50);
+  TH1F* ptspectrumSgn = new TH1F(nameSgn.Data(), "D^{*} Signal p_{T} - MC; p_{T} [GeV]; Entries",400,0,50);
+  TH1F* ptspectrumBkg = new TH1F(nameBkg.Data(), "D^{*} Background p_{T} - MC; p_{T} [GeV]; Entries",400,0,50);
   
   ptspectrumMass->Sumw2();
   ptspectrumSgn->Sumw2();
@@ -833,11 +874,16 @@ void  AliAnalysisTaskSEDStarSpectra::DefineHistograms(){
   fOutputAll->Add(ptallMass);
   fOutputAll->Add(ptallSgn);
   fOutputAll->Add(ptallBkg);
-  
+  fAllhist[((fNPtBins+2)*kptMass)]=ptallMass;
+  fAllhist[((fNPtBins+2)*kptSgn)]=ptallSgn;
+  fAllhist[((fNPtBins+2)*kptBkg)]=ptallBkg;
+
   fOutputPID->Add(ptpidMass);
   fOutputPID->Add(ptpidSgn);
   fOutputPID->Add(ptpidBkg);
-  
+  fPIDhist[(fNPtBins+2)*kptMass]=ptpidMass;
+  fPIDhist[(fNPtBins+2)*kptSgn]=ptpidSgn;
+  fPIDhist[(fNPtBins+2)*kptBkg]=ptpidBkg;
   // eta spectra
   nameMass="etaMass";
   nameSgn="etaSgn";
@@ -876,10 +922,16 @@ void  AliAnalysisTaskSEDStarSpectra::DefineHistograms(){
   fOutputAll->Add(etaallMass);
   fOutputAll->Add(etaallSgn);
   fOutputAll->Add(etaallBkg);
+  fAllhist[(fNPtBins+2)*ketaMass]=etaallMass;
+  fAllhist[(fNPtBins+2)*ketaSgn]=etaallSgn;
+  fAllhist[(fNPtBins+2)*ketaBkg]=etaallBkg;
   
   fOutputPID->Add(etapidMass);
   fOutputPID->Add(etapidSgn);
   fOutputPID->Add(etapidBkg);
+  fPIDhist[(fNPtBins+2)*ketaMass]=etapidMass;
+  fPIDhist[(fNPtBins+2)*ketaSgn]=etapidSgn;
+  fPIDhist[(fNPtBins+2)*ketaBkg]=etapidBkg;
 
   if (fDoDStarVsY){  
     TH3F* deltamassVsyVsPtPID = new TH3F("deltamassVsyVsPt", "delta mass Vs y Vs pT;  #DeltaM [GeV/c^{2}]; y; p_{T} [GeV/c]", 700,0.13,0.2, 40, -1, 1, 36, 0., 36.);
@@ -888,7 +940,7 @@ void  AliAnalysisTaskSEDStarSpectra::DefineHistograms(){
   return;
 }
 //________________________________________________________________________
-void AliAnalysisTaskSEDStarSpectra::FillSpectrum(AliAODRecoCascadeHF *part, Int_t isDStar, AliRDHFCutsDStartoKpipi *cuts,Int_t isSel, TList *listout){
+void AliAnalysisTaskSEDStarSpectra::FillSpectrum(AliAODRecoCascadeHF *part, Int_t isDStar, AliRDHFCutsDStartoKpipi *cuts,Int_t isSel, TList *listout, TH1F** histlist){
   //
   /// Fill histos for D* spectrum
   //
@@ -918,80 +970,47 @@ void AliAnalysisTaskSEDStarSpectra::FillSpectrum(AliAODRecoCascadeHF *part, Int_
   
   if(fUseMCInfo) {
     if(isDStar==1) {
-      fillthis="histD0Sgn_";
-      fillthis+=ptbin;
-      ((TH1F*)(listout->FindObject(fillthis)))->Fill(invmassD0);
-      fillthis="histD0Sgn";
-      ((TH1F*)(listout->FindObject(fillthis)))->Fill(invmassD0);
-      fillthis="histDstarSgn_";
-      fillthis+=ptbin;
-      ((TH1F*)(listout->FindObject(fillthis)))->Fill(invmassDstar);
-      fillthis="histDstarSgn";
-      ((TH1F*)(listout->FindObject(fillthis)))->Fill(invmassDstar);
-      fillthis="histDeltaSgn_";
-      fillthis+=ptbin;
-      ((TH1F*)(listout->FindObject(fillthis)))->Fill(invmassDelta);
-      fillthis="histDeltaSgn";
-      ((TH1F*)(listout->FindObject(fillthis)))->Fill(invmassDelta);
+      histlist[ptbin+1+((fNPtBins+2)*kDzSgn)]->Fill(invmassD0);
+      histlist[(fNPtBins+2)*kDzSgn]->Fill(invmassD0);
+      histlist[ptbin+1+((fNPtBins+2)*kDstarSgn)]->Fill(invmassDstar);
+      histlist[(fNPtBins+2)*kDstarSgn]->Fill(invmassDstar);
+      histlist[ptbin+1+((fNPtBins+2)*kDeltaSgn)]->Fill(invmassDelta);
+      histlist[(fNPtBins+2)*kDeltaSgn]->Fill(invmassDelta);
     if (massInRange) {
-	fillthis="ptSgn";
-	((TH1F*)(listout->FindObject(fillthis)))->Fill(pt);
-	fillthis="etaSgn";
-	((TH1F*)(listout->FindObject(fillthis)))->Fill(eta);
+	histlist[(fNPtBins+2)*kptSgn]->Fill(pt);
+        histlist[(fNPtBins+2)*ketaSgn]->Fill(eta);
       }
     }
     else {//background
-      fillthis="histD0Bkg_";
-      fillthis+=ptbin;
-      ((TH1F*)(listout->FindObject(fillthis)))->Fill(invmassD0);
-      fillthis="histD0Bkg";
-      ((TH1F*)(listout->FindObject(fillthis)))->Fill(invmassD0);
-      fillthis="histDstarBkg_";
-      fillthis+=ptbin;
-      ((TH1F*)(listout->FindObject(fillthis)))->Fill(invmassDstar);
-      fillthis="histDstarBkg";
-      ((TH1F*)(listout->FindObject(fillthis)))->Fill(invmassDstar);
-      fillthis="histDeltaBkg_";
-      fillthis+=ptbin;
-      ((TH1F*)(listout->FindObject(fillthis)))->Fill(invmassDelta);
-      fillthis="histDeltaBkg";
-      ((TH1F*)(listout->FindObject(fillthis)))->Fill(invmassDelta);
+      histlist[ptbin+1+((fNPtBins+2)*kDzBkg)]->Fill(invmassD0);
+      histlist[(fNPtBins+2)*kDzBkg]->Fill(invmassD0);
+      histlist[ptbin+1+((fNPtBins+2)*kDstarBkg)]->Fill(invmassDstar);
+      histlist[(fNPtBins+2)*kDstarBkg]->Fill(invmassDstar);
+      histlist[ptbin+1+((fNPtBins+2)*kDeltaBkg)]->Fill(invmassDelta);
+      histlist[(fNPtBins+2)*kDeltaBkg]->Fill(invmassDelta);
      if (massInRange) {
-	fillthis="ptBkg";
-	((TH1F*)(listout->FindObject(fillthis)))->Fill(pt);
-	fillthis="etaBkg";
-	((TH1F*)(listout->FindObject(fillthis)))->Fill(eta);
+        histlist[(fNPtBins+2)*kptBkg]->Fill(pt);
+        histlist[(fNPtBins+2)*ketaBkg]->Fill(eta);
       }
     }
   }
   //no MC info, just cut selection
-  fillthis="histD0Mass_";
-  fillthis+=ptbin;
-  ((TH1F*)(listout->FindObject(fillthis)))->Fill(invmassD0);
-  fillthis="histD0Mass";
-  ((TH1F*)(listout->FindObject(fillthis)))->Fill(invmassD0);
-  fillthis="histDstarMass_";
-  fillthis+=ptbin;
-  ((TH1F*)(listout->FindObject(fillthis)))->Fill(invmassDstar);
-  fillthis="histDstarMass";
-  ((TH1F*)(listout->FindObject(fillthis)))->Fill(invmassDstar);
-  fillthis="histDeltaMass_";
-  fillthis+=ptbin;
-  ((TH1F*)(listout->FindObject(fillthis)))->Fill(invmassDelta);
-  fillthis="histDeltaMass";
-  ((TH1F*)(listout->FindObject(fillthis)))->Fill(invmassDelta);
+  histlist[ptbin+1+((fNPtBins+2)*kDzMass)]->Fill(invmassD0);
+  histlist[(fNPtBins+2)*kDzMass]->Fill(invmassD0);
+  histlist[ptbin+1+((fNPtBins+2)*kDstarMass)]->Fill(invmassDstar);
+  histlist[(fNPtBins+2)*kDstarMass]->Fill(invmassDstar);
+  histlist[ptbin+1+((fNPtBins+2)*kDeltaMass)]->Fill(invmassDelta);
+  histlist[(fNPtBins+2)*kDeltaMass]->Fill(invmassDelta);
   
   if (massInRange) {
-    fillthis="ptMass";
-    ((TH1F*)(listout->FindObject(fillthis)))->Fill(pt);
-    fillthis="etaMass";
-    ((TH1F*)(listout->FindObject(fillthis)))->Fill(eta);
+    histlist[(fNPtBins+2)*kptMass]->Fill(pt);
+    histlist[(fNPtBins+2)*ketaMass]->Fill(eta);
   }
  
   return;
 }
 //______________________________ side band background for D*___________________________________
-void AliAnalysisTaskSEDStarSpectra::SideBandBackground(AliAODRecoCascadeHF *part,  AliRDHFCutsDStartoKpipi *cuts, Int_t isSel, TList *listout){
+void AliAnalysisTaskSEDStarSpectra::SideBandBackground(AliAODRecoCascadeHF *part,  AliRDHFCutsDStartoKpipi *cuts, Int_t isSel, TList *listout, TH1F** histlist){
 
   ///  D* side band background method. Two side bands, in M(Kpi) are taken at ~6 sigmas
   /// (expected detector resolution) on the left and right frm the D0 mass. Each band
@@ -1008,12 +1027,9 @@ void AliAnalysisTaskSEDStarSpectra::SideBandBackground(AliAODRecoCascadeHF *part
     // for pt and eta
     Double_t invmassDelta = part->DeltaInvMass();
     
-    TString fillthis="";
-    fillthis="histSideBandMass_";
-    fillthis+=ptbin;
-    ((TH1F*)(listout->FindObject(fillthis)))->Fill(invmassDelta);
-    fillthis="histSideBandMass";
-    ((TH1F*)(listout->FindObject(fillthis)))->Fill(invmassDelta);
+    histlist[ptbin+1+((fNPtBins+2)*kSideBandMass)]->Fill(invmassDelta);
+    histlist[(fNPtBins+2)*kSideBandMass]->Fill(invmassDelta);
+    
     
   }
 }
@@ -1030,7 +1046,7 @@ void AliAnalysisTaskSEDStarSpectra::WrongSignForDStar(AliAODRecoCascadeHF *part,
 
   AliAODRecoDecayHF2Prong* theD0particle = (AliAODRecoDecayHF2Prong*)part->Get2Prong();
 
-  Int_t okD0WrongSign;
+  Int_t okDzWrongSign;
   Double_t wrongMassD0=0.;
   
   Int_t isSelected=cuts->IsSelected(part,AliRDHFCuts::kCandidate); //selected
@@ -1038,22 +1054,22 @@ void AliAnalysisTaskSEDStarSpectra::WrongSignForDStar(AliAODRecoCascadeHF *part,
     return;
   }
 
-  okD0WrongSign =  1;
+  okDzWrongSign =  1;
   
   //if is D*+ than assume D0bar
   if(part->Charge()>0 && (isSelected ==1)) { 
-    okD0WrongSign = 0;
+    okDzWrongSign = 0;
   }
   
   // assign the wrong mass in case the cuts return both D0 and D0bar
   if(part->Charge()>0 && (isSelected ==3)) { 
-    okD0WrongSign = 0;
+    okDzWrongSign = 0;
   }
   
   //wrong D0 inv mass
-  if(okD0WrongSign!=0){
+  if(okDzWrongSign!=0){
     wrongMassD0 = theD0particle->InvMassD0();
-  }else if(okD0WrongSign==0){
+  }else if(okDzWrongSign==0){
     wrongMassD0 = theD0particle->InvMassD0bar();
   }
   

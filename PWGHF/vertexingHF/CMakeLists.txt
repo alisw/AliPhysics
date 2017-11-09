@@ -103,6 +103,7 @@ set(SRCS
   AliHFMassFitterVAR.cxx
   AliHFInvMassFitter.cxx
   AliHFMultiTrials.cxx
+  AliHFInvMassMultiTrialFit.cxx
   AliHFPtSpectrum.cxx
   AliHFsubtractBFDcuts.cxx
   AliNormalizationCounter.cxx
@@ -111,7 +112,6 @@ set(SRCS
   AliAnalysisTaskSEImproveITS.cxx
   AliAnalysisTaskCombinHF.cxx
   charmFlow/AliEventPlaneResolutionHandler.cxx
-  charmFlow/AliAnalysisTaskSEHFv2.cxx
   charmFlow/AliAnalysisTaskSEHFvn.cxx
   charmFlow/AliAnalysisTaskHFv1.cxx
   charmFlow/AliHFAfterBurner.cxx
@@ -131,6 +131,7 @@ set(SRCS
   AliAnalysisTaskSELc2V0bachelorTMVA.cxx
   AliAnalysisTaskSEOmegac2eleOmegafromAODtracks.cxx
   AliAnalysisTaskSEXic2eleXifromAODtracks.cxx
+  AliAnalysisTaskCharmBaryonsMC.cxx
   AliAnalysisTaskSEDvsEventShapes.cxx
   AliAnalysisTaskSEB0toDminuspi.cxx
   AliAnalysisTaskSEDstoK0sK.cxx

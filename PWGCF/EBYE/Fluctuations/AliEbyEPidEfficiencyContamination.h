@@ -80,6 +80,7 @@ AliEbyEPidEfficiencyContamination( const char *name );
   static const Int_t kTrack = 15000;
   
   void SetPidType(Int_t i);
+  void SetPidStrategy(Int_t i)                       {fPidStrategy         = i;}
   void SetNSigmaMaxITS(Float_t f)                    {fNSigmaMaxITS        = f;}
   void SetNSigmaMaxTPC(Float_t f)                    {fNSigmaMaxTPC        = f;}
   void SetNSigmaMaxTOF(Float_t f)                    {fNSigmaMaxTOF        = f;}
@@ -137,8 +138,9 @@ AliEbyEPidEfficiencyContamination( const char *name );
   AliPIDResponse   *fPIDResponse;              //! Ptr to PID response Object
   AliPIDCombined   *fPIDCombined;              //
 
-  Int_t fPidType; //
-  Int_t fMcPid; //
+  Int_t            fPidType;                  // 0=charge, 1=pion, 2=kaon, 3=proton
+  Int_t            fMcPid;                    // MC PDG PID
+  Int_t            fPidStrategy;              // 0: default, 1: ITS+TPC, 2: TPC+TOF
   Float_t          fNSigmaMaxITS;             //  N Sigma for ITS PID
   Float_t          fNSigmaMaxTPC;             //  N Sigma for TPC PID
   Float_t          fNSigmaMaxTPClow;          //  N Sigma for TPC PID lower part

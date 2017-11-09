@@ -1,4 +1,4 @@
-AliAnalysisTask *AddTask_marsland_EbyeIterPID(Bool_t getFromAlien=kFALSE,TString configFileName = "Config_marsland_EbyeIterPID.C",Int_t settingType = 0)
+AliAnalysisTask *AddTask_marsland_EbyeIterPID(Bool_t getFromAlien=kFALSE,TString configFileName = "Config_marsland_EbyeIterPID.C",Int_t settingType = 0,Int_t lhcPeriod = 1)
 {
   //  
   //get the current analysis manager
@@ -30,18 +30,29 @@ AliAnalysisTask *AddTask_marsland_EbyeIterPID(Bool_t getFromAlien=kFALSE,TString
    *    15.) THnSparse is used: (REFERENCE settings) + 18centBins  
    *    16.) THnSparse is used: (REFERENCE settings) + centBin 10  
    *    17.) THnSparse is used: (REFERENCE settings) + centBin 5  
-   *    18.) THnSparse is used: ITS OFF 
+   *    18.) THnSparse is used: ITS is OFF 
    *    19.) THnSparse is used: (REFERENCE settings) + THnSparse is used: number of eta bins = 32 
+   *    20.) THnSparse is used: StandardTPCITScuts + TightCuts TPC dEdx preliminary plot 
+   *    21.) THnSparse is used: (REFERENCE settings) + allCuts + ArmPodTree filled + eta range extended 
    * 
    *    MC data --> settingType = 
-   *    20.) THnSparse is used: StandardTPCITScuts 8EtaBin_150pBins_9centBins (REFERENCE settings) MC CLOSURE
-   *    21.) FastSimul is used: StandardTPCITScuts 8EtaBin_150pBins_9centBins (REFERENCE settings)
-   *    22.) FastSimul is used: StandardTPCITScuts 8EtaBin_150pBins_9centBins ETA DEPENDENCE
-   *    23.) FastSimul is used: StandardTPCITScuts 8EtaBin_150pBins_9centBins Momentum DEPENDENCE
-   *    24.) FullSinul is used: StandardTPCITScuts 16EtaBin_150pBins_9centBins EffMatrix
-   *    25.) FullSinul is used: Tight Cuts         16EtaBin_150pBins_9centBins EffMatrix
+   *    100.) THnSparse is used: StandardTPCITScuts 8EtaBin_150pBins_9centBins (REFERENCE settings) MC CLOSURE
+   *    101.) FastSimul is used: StandardTPCITScuts 8EtaBin_150pBins_9centBins (REFERENCE settings)
+   *    102.) FastSimul is used: StandardTPCITScuts 8EtaBin_150pBins_9centBins ETA DEPENDENCE
+   *    103.) FastSimul is used: StandardTPCITScuts 8EtaBin_150pBins_9centBins Momentum DEPENDENCE
+   *    104.) FullSinul is used: StandardTPCITScuts 16EtaBin_150pBins_9centBins EffMatrix
+   *    105.) FullSinul is used: Tight Cuts         16EtaBin_150pBins_9centBins EffMatrix
+   *    106.) FastSimul is used: StandardTPCITScuts 8EtaBin_150pBins_9centBins (REFERENCE settings): Fill only DnchDeta
+   *    107.) THnSparse is used: StandardTPCITScuts 8EtaBin_150pBins_9centBins (REFERENCE settings) MC CLOSURE with TOF cut
+   *    108.) THnSparse is used: StandardTPCITScuts 8EtaBin_150pBins_9centBins (REFERENCE settings) MC CLOSURE with NO ITS cut 
+   *    109.) THnSparse is used: (REFERENCE settings) + allCuts + ArmPodTree filled + eta range extended
    */
-  cout << " ===== In the AddTask_marsland_EbyeIterPID ===== " << endl;
+  std::cout << " ===== In the AddTask_marsland_EbyeIterPID ===== " << std::endl;
+  //   if (!getFromAlien) {
+  //       settingType = 109;
+  //       lhcPeriod = 1;
+  //   }
+  
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
     Error("AddTask_marsland_EbyeIterPID", "No analysis manager found.");
@@ -49,7 +60,7 @@ AliAnalysisTask *AddTask_marsland_EbyeIterPID(Bool_t getFromAlien=kFALSE,TString
   }
   mgr->SetDebugLevel(0);
   //   
-  //==================================================
+  //================================================== 
   //      Add task to the ANALYSIS manager 
   //==================================================
   //   
@@ -60,12 +71,18 @@ AliAnalysisTask *AddTask_marsland_EbyeIterPID(Bool_t getFromAlien=kFALSE,TString
     gSystem->Exec(Form("alien_cp alien:///alice/cern.ch/user/m/marsland/PWGCF/EBYE/IdentityMethodEbyeFluctuations/macros/%s .",configFileName.Data()));
     configBasePath=Form("%s/",gSystem->pwd());
   } else {
-    configBasePath = "/hera/alice/marsland/train/trunk/marsland_EbyeRatios/";
+    configBasePath = "";
   }
   TString configFilePath(configBasePath+configFileName);
   std::cout << "Configpath:  " << configFilePath << std::endl;  
   gROOT->LoadMacro(configFilePath.Data());
-  AliAnalysisTaskEbyeIterPID* task = Config_marsland_EbyeIterPID(settingType);
+  
+  //   gSystem->Load("libANALYSIS");
+  //   gSystem->Load("libANALYSISalice");
+  //   gSystem->AddIncludePath("-I$ALICE_ROOT/include"); 
+  //   gSystem->AddIncludePath("-I$ALICE_PHYSICS/include");
+  
+  AliAnalysisTaskEbyeIterPID* task = Config_marsland_EbyeIterPID(settingType,lhcPeriod);
   Bool_t hasMC = (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler()!=0x0);
   task->SetIsMCtrue(hasMC);
   printf(" ========================= MC info %d ========================= \n",hasMC);
@@ -107,6 +124,7 @@ AliAnalysisTask *AddTask_marsland_EbyeIterPID(Bool_t getFromAlien=kFALSE,TString
   coutput11 = mgr->CreateContainer("fTreeCuts",     TTree::Class(), AliAnalysisManager::kOutputContainer ,results.Data());
   coutput12 = mgr->CreateContainer("dnchdeta",      TTree::Class(), AliAnalysisManager::kOutputContainer ,results.Data());
   coutput13 = mgr->CreateContainer("fullacc",       TTree::Class(), AliAnalysisManager::kOutputContainer ,results.Data());
+  coutput14 = mgr->CreateContainer("resonance",       TTree::Class(), AliAnalysisManager::kOutputContainer ,results.Data());
   mgr->ConnectOutput (task,  1, coutput1);
   mgr->ConnectOutput (task,  2, coutput2);
   mgr->ConnectOutput (task,  3, coutput3);
@@ -120,6 +138,7 @@ AliAnalysisTask *AddTask_marsland_EbyeIterPID(Bool_t getFromAlien=kFALSE,TString
   mgr->ConnectOutput (task,  11, coutput11);
   mgr->ConnectOutput (task,  12, coutput12);
   mgr->ConnectOutput (task,  13, coutput13);
-  cout << " === Containers are ready === " << endl;
+  mgr->ConnectOutput (task,  14, coutput14);
+  std::cout << " === Containers are ready === " << std::endl;
   return task;
 }

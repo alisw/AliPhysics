@@ -84,6 +84,11 @@ class AliAODv0;
 #include "AliAnalysisTaskSE.h"
 #include "AliAnalysisUtils.h"
 #include "AliAnalysisTaskPPVsMultCrossCheckMC.h"
+////
+#include "AliMultEstimator.h"
+#include "AliMultVariable.h"
+#include "AliMultInput.h"
+#include "AliMultSelection.h"
 
 
 using std::cout;
@@ -97,7 +102,19 @@ fHistEventCounter(0),lPureMonteCarlo(kFALSE), fCheckVtxZMC(kTRUE), fAlternateMCS
 fHistV0M_DataSelection(0), fHistV0M_MCSelection(0), fHistV0MAmplitude_DataSelection(0), fHistV0MAmplitude_MCSelection(0),
 fHistV0MTrue_DataSelection(0), fHistV0MTrue_MCSelection(0),
 fHistV0MVsMidRapidityTrue_DataSelection(0), fHistV0MAmplitudeVsMidRapidityTrue_DataSelection(0), fHistV0MTrueVsMidRapidityTrue_DataSelection(0),
-fHistV0MVsMidRapidityTrue_MCSelection(0), fHistV0MAmplitudeVsMidRapidityTrue_MCSelection(0), fHistV0MTrueVsMidRapidityTrue_MCSelection(0)
+fHistV0MVsMidRapidityTrue_MCSelection(0), fHistV0MAmplitudeVsMidRapidityTrue_MCSelection(0), fHistV0MTrueVsMidRapidityTrue_MCSelection(0),
+/////
+fHistTracklets08Cent_DataSelection(0), fHistTracklets08Cent_MCSelection(0), fHistTracklets08_DataSelection(0), fHistTracklets08_MCSelection(0),
+fHistTracklets08True_DataSelection(0), fHistTracklets08True_MCSelection(0),
+fHistTracklets08CentVsMidRapidityTrue_DataSelection(0), fHistTracklets08VsMidRapidityTrue_DataSelection(0), fHistTracklets08TrueVsMidRapidityTrue_DataSelection(0),
+fHistTracklets08CentVsMidRapidityTrue_MCSelection(0), fHistTracklets08VsMidRapidityTrue_MCSelection(0), fHistTracklets08TrueVsMidRapidityTrue_MCSelection(0),
+/////
+fHistTracklets0815Cent_DataSelection(0), fHistTracklets0815Cent_MCSelection(0), fHistTracklets0815_DataSelection(0), fHistTracklets0815_MCSelection(0),
+fHistTracklets0815True_DataSelection(0), fHistTracklets0815True_MCSelection(0),
+fHistTracklets0815CentVsMidRapidityTrue_DataSelection(0), fHistTracklets0815VsMidRapidityTrue_DataSelection(0), fHistTracklets0815TrueVsMidRapidityTrue_DataSelection(0),
+fHistTracklets0815CentVsMidRapidityTrue_MCSelection(0), fHistTracklets0815VsMidRapidityTrue_MCSelection(0), fHistTracklets0815TrueVsMidRapidityTrue_MCSelection(0),
+////
+fkMultSelection ( kFALSE ), fTrigType(AliVEvent::kMB), fTrigName(""), fkSelectTriggerByName ( kFALSE )
 {
     //Empty constructor (not to be used, always pass name...)
     for(Int_t ih=0; ih<9; ih++){
@@ -113,7 +130,27 @@ fHistV0MVsMidRapidityTrue_MCSelection(0), fHistV0MAmplitudeVsMidRapidityTrue_MCS
         fHistPtVsV0MTrue_Generated[ih] = 0x0;
         fHistPtVsV0MTrue_DataSelection[ih] = 0x0;
         fHistPtVsV0MTrue_MCSelection[ih] = 0x0;
-    }
+        /////
+        fHistPtVsTracklets08Cent_Generated[ih] = 0x0;
+        fHistPtVsTracklets08Cent_DataSelection[ih] = 0x0;
+        fHistPtVsTracklets08Cent_MCSelection[ih] = 0x0;
+        fHistPtVsTracklets08_Generated[ih] = 0x0;
+        fHistPtVsTracklets08_DataSelection[ih] = 0x0;
+        fHistPtVsTracklets08_MCSelection[ih] = 0x0;
+        fHistPtVsTracklets08True_Generated[ih] = 0x0;
+        fHistPtVsTracklets08True_DataSelection[ih] = 0x0;
+        fHistPtVsTracklets08True_MCSelection[ih] = 0x0; 
+        /////
+        fHistPtVsTracklets0815Cent_Generated[ih] = 0x0;
+        fHistPtVsTracklets0815Cent_DataSelection[ih] = 0x0;
+        fHistPtVsTracklets0815Cent_MCSelection[ih] = 0x0;
+        fHistPtVsTracklets0815_Generated[ih] = 0x0;
+        fHistPtVsTracklets0815_DataSelection[ih] = 0x0;
+        fHistPtVsTracklets0815_MCSelection[ih] = 0x0;
+        fHistPtVsTracklets0815True_Generated[ih] = 0x0;
+        fHistPtVsTracklets0815True_DataSelection[ih] = 0x0;
+        fHistPtVsTracklets0815True_MCSelection[ih] = 0x0;
+   }
 }
 
 AliAnalysisTaskPPVsMultCrossCheckMC::AliAnalysisTaskPPVsMultCrossCheckMC(const char *name)
@@ -122,7 +159,19 @@ fHistEventCounter(0),lPureMonteCarlo(kFALSE), fCheckVtxZMC(kTRUE), fAlternateMCS
 fHistV0M_DataSelection(0), fHistV0M_MCSelection(0), fHistV0MAmplitude_DataSelection(0), fHistV0MAmplitude_MCSelection(0),
 fHistV0MTrue_DataSelection(0), fHistV0MTrue_MCSelection(0),
 fHistV0MVsMidRapidityTrue_DataSelection(0), fHistV0MAmplitudeVsMidRapidityTrue_DataSelection(0), fHistV0MTrueVsMidRapidityTrue_DataSelection(0),
-fHistV0MVsMidRapidityTrue_MCSelection(0), fHistV0MAmplitudeVsMidRapidityTrue_MCSelection(0), fHistV0MTrueVsMidRapidityTrue_MCSelection(0)
+fHistV0MVsMidRapidityTrue_MCSelection(0), fHistV0MAmplitudeVsMidRapidityTrue_MCSelection(0), fHistV0MTrueVsMidRapidityTrue_MCSelection(0),
+/////
+fHistTracklets08Cent_DataSelection(0), fHistTracklets08Cent_MCSelection(0), fHistTracklets08_DataSelection(0), fHistTracklets08_MCSelection(0),
+fHistTracklets08True_DataSelection(0), fHistTracklets08True_MCSelection(0),
+fHistTracklets08CentVsMidRapidityTrue_DataSelection(0), fHistTracklets08VsMidRapidityTrue_DataSelection(0), fHistTracklets08TrueVsMidRapidityTrue_DataSelection(0),
+fHistTracklets08CentVsMidRapidityTrue_MCSelection(0), fHistTracklets08VsMidRapidityTrue_MCSelection(0), fHistTracklets08TrueVsMidRapidityTrue_MCSelection(0),
+/////
+fHistTracklets0815Cent_DataSelection(0), fHistTracklets0815Cent_MCSelection(0), fHistTracklets0815_DataSelection(0), fHistTracklets0815_MCSelection(0),
+fHistTracklets0815True_DataSelection(0), fHistTracklets0815True_MCSelection(0),
+fHistTracklets0815CentVsMidRapidityTrue_DataSelection(0), fHistTracklets0815VsMidRapidityTrue_DataSelection(0), fHistTracklets0815TrueVsMidRapidityTrue_DataSelection(0),
+fHistTracklets0815CentVsMidRapidityTrue_MCSelection(0), fHistTracklets0815VsMidRapidityTrue_MCSelection(0), fHistTracklets0815TrueVsMidRapidityTrue_MCSelection(0),
+////
+fkMultSelection ( kFALSE ), fTrigType(AliVEvent::kMB), fTrigName(""), fkSelectTriggerByName ( kFALSE )
 {
     for(Int_t ih=0; ih<9; ih++){
         fHistPt_Generated[ih] = 0x0;
@@ -137,6 +186,26 @@ fHistV0MVsMidRapidityTrue_MCSelection(0), fHistV0MAmplitudeVsMidRapidityTrue_MCS
         fHistPtVsV0MTrue_Generated[ih] = 0x0;
         fHistPtVsV0MTrue_DataSelection[ih] = 0x0;
         fHistPtVsV0MTrue_MCSelection[ih] = 0x0;
+        /////
+        fHistPtVsTracklets08Cent_Generated[ih] = 0x0;
+        fHistPtVsTracklets08Cent_DataSelection[ih] = 0x0;
+        fHistPtVsTracklets08Cent_MCSelection[ih] = 0x0;
+        fHistPtVsTracklets08_Generated[ih] = 0x0;
+        fHistPtVsTracklets08_DataSelection[ih] = 0x0;
+        fHistPtVsTracklets08_MCSelection[ih] = 0x0;
+        fHistPtVsTracklets08True_Generated[ih] = 0x0;
+        fHistPtVsTracklets08True_DataSelection[ih] = 0x0;
+        fHistPtVsTracklets08True_MCSelection[ih] = 0x0;
+        /////
+        fHistPtVsTracklets0815Cent_Generated[ih] = 0x0;
+        fHistPtVsTracklets0815Cent_DataSelection[ih] = 0x0;
+        fHistPtVsTracklets0815Cent_MCSelection[ih] = 0x0;
+        fHistPtVsTracklets0815_Generated[ih] = 0x0;
+        fHistPtVsTracklets0815_DataSelection[ih] = 0x0;
+        fHistPtVsTracklets0815_MCSelection[ih] = 0x0;
+        fHistPtVsTracklets0815True_Generated[ih] = 0x0;
+        fHistPtVsTracklets0815True_DataSelection[ih] = 0x0;
+        fHistPtVsTracklets0815True_MCSelection[ih] = 0x0;
     }
     DefineOutput(1, TList::Class()); // Event Counter Histo
 }
@@ -227,33 +296,89 @@ void AliAnalysisTaskPPVsMultCrossCheckMC::UserCreateOutputObjects()
     //Settings for V0M amplitudes (floating points)
     Int_t lNAmplitudeBins = 2000;
     Double_t lUpperAmplitude = 2000; //may require tuning
-    
+ 
+    //Setting for tracklets
+    Int_t nTracklBins = 200;
+    Double_t lUpperLimit = 200;
+   
     //Main Output: Histograms
-    if(! fHistV0M_DataSelection ) {
+    // V0M
+    if(! fHistV0M_DataSelection ) { 
         fHistV0M_DataSelection = new TH1F("fHistV0M_DataSelection","",100,0,100);
         fListHist->Add(fHistV0M_DataSelection);
     }
-    if(! fHistV0M_MCSelection ) {
+    if(! fHistV0M_MCSelection ) { 
         fHistV0M_MCSelection = new TH1F("fHistV0M_MCSelection","",100,0,100);
         fListHist->Add(fHistV0M_MCSelection);
     }
-    if(! fHistV0MAmplitude_DataSelection ) {
+    if(! fHistV0MAmplitude_DataSelection ) { 
         fHistV0MAmplitude_DataSelection = new TH1F("fHistV0MAmplitude_DataSelection","",lNAmplitudeBins,0,lUpperAmplitude);
         fListHist->Add(fHistV0MAmplitude_DataSelection);
     }
-    if(! fHistV0MAmplitude_MCSelection ) {
+    if(! fHistV0MAmplitude_MCSelection ) { 
         fHistV0MAmplitude_MCSelection = new TH1F("fHistV0MAmplitude_MCSelection","",lNAmplitudeBins,0,lUpperAmplitude);
         fListHist->Add(fHistV0MAmplitude_MCSelection);
     }
-    if(! fHistV0MTrue_DataSelection ) {
+    if(! fHistV0MTrue_DataSelection ) { 
         fHistV0MTrue_DataSelection = new TH1F("fHistV0MTrue_DataSelection","",lNNchBins,lLowNchBound,lHighNchBound);
         fListHist->Add(fHistV0MTrue_DataSelection);
     }
-    if(! fHistV0MTrue_MCSelection ) {
+    if(! fHistV0MTrue_MCSelection ) { 
         fHistV0MTrue_MCSelection = new TH1F("fHistV0MTrue_MCSelection","",lNNchBins,lLowNchBound,lHighNchBound);
         fListHist->Add(fHistV0MTrue_MCSelection);
     }
+    // |Ntrckl| < 0.8
+    if(! fHistTracklets08Cent_DataSelection ) { 
+        fHistTracklets08Cent_DataSelection = new TH1F("fHistTracklets08Cent_DataSelection","",100,0,100);
+        fListHist->Add(fHistTracklets08Cent_DataSelection);
+    }
+    if(! fHistTracklets08Cent_MCSelection ) {
+        fHistTracklets08Cent_MCSelection = new TH1F("fHistTracklets08Cent_MCSelection","",100,0,100);
+        fListHist->Add(fHistTracklets08Cent_MCSelection);
+    }
+    if(! fHistTracklets08_DataSelection ) { 
+        fHistTracklets08_DataSelection = new TH1F("fHistTracklets08_DataSelection","",nTracklBins,0,lUpperLimit);
+        fListHist->Add(fHistTracklets08_DataSelection);
+    }
+    if(! fHistTracklets08_MCSelection ) { 
+        fHistTracklets08_MCSelection = new TH1F("fHistTracklets08_MCSelection","",nTracklBins,0,lUpperLimit);
+        fListHist->Add(fHistTracklets08_MCSelection);
+    }
+    if(! fHistTracklets08True_DataSelection ) { 
+        fHistTracklets08True_DataSelection = new TH1F("fHistTracklets08True_DataSelection","",lNNchBins,lLowNchBound,lHighNchBound);
+        fListHist->Add(fHistTracklets08True_DataSelection);
+    }
+    if(! fHistTracklets08True_MCSelection ) { 
+        fHistTracklets08True_MCSelection = new TH1F("fHistTracklets08True_MCSelection","",lNNchBins,lLowNchBound,lHighNchBound);
+        fListHist->Add(fHistTracklets08True_MCSelection);
+    }
+    // 0.8 < |Ntrckl| < 1.5
+    if(! fHistTracklets0815Cent_DataSelection ) { 
+        fHistTracklets0815Cent_DataSelection = new TH1F("fHistTracklets0815Cent_DataSelection","",100,0,100);
+        fListHist->Add(fHistTracklets0815Cent_DataSelection);
+    }
+    if(! fHistTracklets0815Cent_MCSelection ) { 
+        fHistTracklets0815Cent_MCSelection = new TH1F("fHistTracklets0815Cent_MCSelection","",100,0,100);
+        fListHist->Add(fHistTracklets0815Cent_MCSelection);
+    }
+    if(! fHistTracklets0815_DataSelection ) { 
+        fHistTracklets0815_DataSelection = new TH1F("fHistTracklets0815_DataSelection","",nTracklBins,0,lUpperLimit);
+        fListHist->Add(fHistTracklets0815_DataSelection);
+    }
+    if(! fHistTracklets0815_MCSelection ) { 
+        fHistTracklets0815_MCSelection = new TH1F("fHistTracklets0815_MCSelection","",nTracklBins,0,lUpperLimit);
+        fListHist->Add(fHistTracklets0815_MCSelection);
+    }
+    if(! fHistTracklets0815True_DataSelection ) { 
+        fHistTracklets0815True_DataSelection = new TH1F("fHistTracklets0815True_DataSelection","",lNNchBins,lLowNchBound,lHighNchBound);
+        fListHist->Add(fHistTracklets0815True_DataSelection);
+    }
+    if(! fHistTracklets0815True_MCSelection ) { 
+        fHistTracklets0815True_MCSelection = new TH1F("fHistTracklets0815True_MCSelection","",lNNchBins,lLowNchBound,lHighNchBound);
+        fListHist->Add(fHistTracklets0815True_MCSelection);
+    }
 
+    // Correlations V0M 
     //Correlation between mid-rapidity and forward V0M percentile
     if(! fHistV0MVsMidRapidityTrue_DataSelection ) {
         fHistV0MVsMidRapidityTrue_DataSelection = new TH2F("fHistV0MVsMidRapidityTrue_DataSelection","",100,0,100,lNNchBins,lLowNchBound,lHighNchBound);
@@ -286,6 +411,72 @@ void AliAnalysisTaskPPVsMultCrossCheckMC::UserCreateOutputObjects()
         fListHist->Add(fHistV0MTrueVsMidRapidityTrue_MCSelection);
     }
     
+    // Correlations |Ntrackl| < 0.8
+    //Correlation between mid-rapidity and central Ntrkl08 percentile
+    if(! fHistTracklets08CentVsMidRapidityTrue_DataSelection ) {
+        fHistTracklets08CentVsMidRapidityTrue_DataSelection = new TH2F("fHistTracklets08CentVsMidRapidityTrue_DataSelection","",100,0,100,lNNchBins,lLowNchBound,lHighNchBound);
+        fListHist->Add(fHistTracklets08CentVsMidRapidityTrue_DataSelection);
+    }
+    //Correlation between mid-rapidity and central Ntrkl08 percentile
+    if(! fHistTracklets08VsMidRapidityTrue_DataSelection ) {
+        fHistTracklets08VsMidRapidityTrue_DataSelection = new TH2F("fHistTracklets08VsMidRapidityTrue_DataSelection","",nTracklBins,0,lUpperLimit,lNNchBins,lLowNchBound,lHighNchBound);
+        fListHist->Add(fHistTracklets08VsMidRapidityTrue_DataSelection);
+    }
+    //Correlation between mid-rapidity and central true (|eta|<0.8) multiplicity
+    if(! fHistTracklets08TrueVsMidRapidityTrue_DataSelection ) {
+        fHistTracklets08TrueVsMidRapidityTrue_DataSelection = new TH2F("fHistTracklets08TrueVsMidRapidityTrue_DataSelection","",lNNchBins,lLowNchBound,lHighNchBound,lNNchBins,lLowNchBound,lHighNchBound);
+        fListHist->Add(fHistTracklets08TrueVsMidRapidityTrue_DataSelection);
+    }
+
+    //Correlation between mid-rapidity and central Ntrkl08 percentile
+    if(! fHistTracklets08CentVsMidRapidityTrue_MCSelection ) {
+        fHistTracklets08CentVsMidRapidityTrue_MCSelection = new TH2F("fHistTracklets08CentVsMidRapidityTrue_MCSelection","",100,0,100,lNNchBins,lLowNchBound,lHighNchBound);
+        fListHist->Add(fHistTracklets08CentVsMidRapidityTrue_MCSelection);
+    }
+    //Correlation between mid-rapidity and central Ntrkl08 percentile
+    if(! fHistTracklets08VsMidRapidityTrue_MCSelection ) {
+        fHistTracklets08VsMidRapidityTrue_MCSelection = new TH2F("fHistTracklets08VsMidRapidityTrue_MCSelection","",nTracklBins,0,lUpperLimit,lNNchBins,lLowNchBound,lHighNchBound);
+        fListHist->Add(fHistTracklets08VsMidRapidityTrue_MCSelection);
+    }
+    //Correlation between mid-rapidity and central true (|eta|<0.8) multiplicity
+    if(! fHistTracklets08TrueVsMidRapidityTrue_MCSelection ) {
+        fHistTracklets08TrueVsMidRapidityTrue_MCSelection = new TH2F("fHistTracklets08TrueVsMidRapidityTrue_MCSelection","",lNNchBins,lLowNchBound,lHighNchBound,lNNchBins,lLowNchBound,lHighNchBound);
+        fListHist->Add(fHistTracklets08TrueVsMidRapidityTrue_MCSelection);
+    }
+    
+    // Correlations 0.8 < |Ntrackl| < 1.5
+    //Correlation between mid-rapidity and central Ntrkl0815 percentile
+    if(! fHistTracklets0815CentVsMidRapidityTrue_DataSelection ) {
+        fHistTracklets0815CentVsMidRapidityTrue_DataSelection = new TH2F("fHistTracklets0815CentVsMidRapidityTrue_DataSelection","",100,0,100,lNNchBins,lLowNchBound,lHighNchBound);
+        fListHist->Add(fHistTracklets0815CentVsMidRapidityTrue_DataSelection);
+    }
+    //Correlation between mid-rapidity and central Ntrkl0815 percentile
+    if(! fHistTracklets0815VsMidRapidityTrue_DataSelection ) {
+        fHistTracklets0815VsMidRapidityTrue_DataSelection = new TH2F("fHistTracklets0815VsMidRapidityTrue_DataSelection","",nTracklBins,0,lUpperLimit,lNNchBins,lLowNchBound,lHighNchBound);
+        fListHist->Add(fHistTracklets0815VsMidRapidityTrue_DataSelection);
+    }
+    //Correlation between mid-rapidity and central true (|eta|<0.8) multiplicity
+    if(! fHistTracklets0815TrueVsMidRapidityTrue_DataSelection ) {
+        fHistTracklets0815TrueVsMidRapidityTrue_DataSelection = new TH2F("fHistTracklets0815TrueVsMidRapidityTrue_DataSelection","",lNNchBins,lLowNchBound,lHighNchBound,lNNchBins,lLowNchBound,lHighNchBound);
+        fListHist->Add(fHistTracklets0815TrueVsMidRapidityTrue_DataSelection);
+    }
+
+    //Correlation between mid-rapidity and central Ntrkl0815 percentile
+    if(! fHistTracklets0815CentVsMidRapidityTrue_MCSelection ) {
+        fHistTracklets0815CentVsMidRapidityTrue_MCSelection = new TH2F("fHistTracklets0815CentVsMidRapidityTrue_MCSelection","",100,0,100,lNNchBins,lLowNchBound,lHighNchBound);
+        fListHist->Add(fHistTracklets0815CentVsMidRapidityTrue_MCSelection);
+    }
+    //Correlation between mid-rapidity and central Ntrkl0815 percentile
+    if(! fHistTracklets0815VsMidRapidityTrue_MCSelection ) {
+        fHistTracklets0815VsMidRapidityTrue_MCSelection = new TH2F("fHistTracklets0815VsMidRapidityTrue_MCSelection","",nTracklBins,0,lUpperLimit,lNNchBins,lLowNchBound,lHighNchBound);
+        fListHist->Add(fHistTracklets0815VsMidRapidityTrue_MCSelection);
+    }
+    //Correlation between mid-rapidity and central true (|eta|<0.8) multiplicity
+    if(! fHistTracklets0815TrueVsMidRapidityTrue_MCSelection ) {
+        fHistTracklets0815TrueVsMidRapidityTrue_MCSelection = new TH2F("fHistTracklets0815TrueVsMidRapidityTrue_MCSelection","",lNNchBins,lLowNchBound,lHighNchBound,lNNchBins,lLowNchBound,lHighNchBound);
+        fListHist->Add(fHistTracklets0815TrueVsMidRapidityTrue_MCSelection);
+    }
+ 
     //Main Output: Histograms
     for(Int_t ih=0; ih<9; ih++){
         if(! fHistPt_Generated[ih] ) {
@@ -325,7 +516,8 @@ void AliAnalysisTaskPPVsMultCrossCheckMC::UserCreateOutputObjects()
             fListHist->Add(fHistPtVsV0M_MCSelection[ih]);
         }
     }
-    
+   
+ 
     //2-Dimensional Histograms with V0M Amplitudes
     for(Int_t ih=0; ih<9; ih++){
         if(! fHistPtVsV0MAmplitude_Generated[ih] ) {
@@ -366,6 +558,88 @@ void AliAnalysisTaskPPVsMultCrossCheckMC::UserCreateOutputObjects()
         }
     }
     
+    //// Ntrackl08
+    //2-Dimensional Histograms
+    for(Int_t ih=0; ih<9; ih++){
+        if(! fHistPtVsTracklets08Cent_Generated[ih] ) {
+            fHistPtVsTracklets08Cent_Generated[ih] = new TH2F(Form("fHistPtVsTracklets08Cent_Generated_%s",lPartNames[ih].Data()),    "Generated;p_{T} (GeV/c)",lNPtBins,0,lMaxPt,100,0,100);
+            fListHist->Add(fHistPtVsTracklets08Cent_Generated[ih]);
+        } 
+        if(! fHistPtVsTracklets08Cent_DataSelection[ih] ) {
+            fHistPtVsTracklets08Cent_DataSelection[ih] = new TH2F(Form("fHistPtVsTracklets08Cent_DataSelection_%s",lPartNames[ih].Data()),    "Generated;p_{T} (GeV/c)",lNPtBins,0,lMaxPt,100,0,100);
+            fListHist->Add(fHistPtVsTracklets08Cent_DataSelection[ih]);
+        }
+        if(! fHistPtVsTracklets08Cent_MCSelection[ih] ) {
+            fHistPtVsTracklets08Cent_MCSelection[ih] = new TH2F(Form("fHistPtVsTracklets08Cent_MCSelection_%s",lPartNames[ih].Data()),    "Generated;p_{T} (GeV/c)",lNPtBins,0,lMaxPt,100,0,100);
+            fListHist->Add(fHistPtVsTracklets08Cent_MCSelection[ih]);
+        }
+       if(! fHistPtVsTracklets08_Generated[ih] ) {
+            fHistPtVsTracklets08_Generated[ih] = new TH2F(Form("fHistPtVsTracklets08_Generated_%s",lPartNames[ih].Data()),    "Generated;p_{T} (GeV/c)",lNPtBins,0,lMaxPt,nTracklBins,0,lUpperLimit);
+            fListHist->Add(fHistPtVsTracklets08_Generated[ih]);
+        }
+        if(! fHistPtVsTracklets08_DataSelection[ih] ) {
+            fHistPtVsTracklets08_DataSelection[ih] = new TH2F(Form("fHistPtVsTracklets08_DataSelection_%s",lPartNames[ih].Data()),    "Generated;p_{T} (GeV/c)",lNPtBins,0,lMaxPt,nTracklBins,0,lUpperLimit);
+            fListHist->Add(fHistPtVsTracklets08_DataSelection[ih]);
+        }
+        if(! fHistPtVsTracklets08_MCSelection[ih] ) {
+            fHistPtVsTracklets08_MCSelection[ih] = new TH2F(Form("fHistPtVsTracklets08_MCSelection_%s",lPartNames[ih].Data()),    "Generated;p_{T} (GeV/c)",lNPtBins,0,lMaxPt,nTracklBins,0,lUpperLimit);
+            fListHist->Add(fHistPtVsTracklets08_MCSelection[ih]);
+        }
+        if(! fHistPtVsTracklets08True_Generated[ih] ) {
+            fHistPtVsTracklets08True_Generated[ih] = new TH2F(Form("fHistPtVsTracklets08True_Generated_%s",lPartNames[ih].Data()),    "Generated;p_{T} (GeV/c)",lNPtBins,0,lMaxPt,lNNchBins,lLowNchBound,lHighNchBound);
+            fListHist->Add(fHistPtVsTracklets08True_Generated[ih]);
+        }
+        if(! fHistPtVsTracklets08True_DataSelection[ih] ) {
+            fHistPtVsTracklets08True_DataSelection[ih] = new TH2F(Form("fHistPtVsTracklets08True_DataSelection_%s",lPartNames[ih].Data()),    "Generated;p_{T} (GeV/c)",lNPtBins,0,lMaxPt,lNNchBins,lLowNchBound,lHighNchBound);
+            fListHist->Add(fHistPtVsTracklets08True_DataSelection[ih]);
+        }
+        if(! fHistPtVsTracklets08True_MCSelection[ih] ) {
+            fHistPtVsTracklets08True_MCSelection[ih] = new TH2F(Form("fHistPtVsTracklets08True_MCSelection_%s",lPartNames[ih].Data()),    "Generated;p_{T} (GeV/c)",lNPtBins,0,lMaxPt,lNNchBins,lLowNchBound,lHighNchBound);
+            fListHist->Add(fHistPtVsTracklets08True_MCSelection[ih]);
+        }
+    }
+     //// Ntrackl0815
+    //2-Dimensional Histograms
+    for(Int_t ih=0; ih<9; ih++){
+        if(! fHistPtVsTracklets0815Cent_Generated[ih] ) {
+            fHistPtVsTracklets0815Cent_Generated[ih] = new TH2F(Form("fHistPtVsTracklets0815Cent_Generated_%s",lPartNames[ih].Data()),    "Generated;p_{T} (GeV/c)",lNPtBins,0,lMaxPt,100,0,100);
+            fListHist->Add(fHistPtVsTracklets0815Cent_Generated[ih]);
+        }
+        if(! fHistPtVsTracklets0815Cent_DataSelection[ih] ) {
+            fHistPtVsTracklets0815Cent_DataSelection[ih] = new TH2F(Form("fHistPtVsTracklets0815Cent_DataSelection_%s",lPartNames[ih].Data()),    "Generated;p_{T} (GeV/c)",lNPtBins,0,lMaxPt,100,0,100);
+            fListHist->Add(fHistPtVsTracklets0815Cent_DataSelection[ih]);
+        }
+        if(! fHistPtVsTracklets0815Cent_MCSelection[ih] ) {
+            fHistPtVsTracklets0815Cent_MCSelection[ih] = new TH2F(Form("fHistPtVsTracklets0815Cent_MCSelection_%s",lPartNames[ih].Data()),    "Generated;p_{T} (GeV/c)",lNPtBins,0,lMaxPt,100,0,100);
+            fListHist->Add(fHistPtVsTracklets0815Cent_MCSelection[ih]);
+        }
+       if(! fHistPtVsTracklets0815_Generated[ih] ) {
+            fHistPtVsTracklets0815_Generated[ih] = new TH2F(Form("fHistPtVsTracklets0815_Generated_%s",lPartNames[ih].Data()),    "Generated;p_{T} (GeV/c)",lNPtBins,0,lMaxPt,nTracklBins,0,lUpperLimit);
+            fListHist->Add(fHistPtVsTracklets0815_Generated[ih]);
+        }
+        if(! fHistPtVsTracklets0815_DataSelection[ih] ) {
+            fHistPtVsTracklets0815_DataSelection[ih] = new TH2F(Form("fHistPtVsTracklets0815_DataSelection_%s",lPartNames[ih].Data()),    "Generated;p_{T} (GeV/c)",lNPtBins,0,lMaxPt,nTracklBins,0,lUpperLimit);
+            fListHist->Add(fHistPtVsTracklets0815_DataSelection[ih]);
+        }
+        if(! fHistPtVsTracklets0815_MCSelection[ih] ) {
+            fHistPtVsTracklets0815_MCSelection[ih] = new TH2F(Form("fHistPtVsTracklets0815_MCSelection_%s",lPartNames[ih].Data()),    "Generated;p_{T} (GeV/c)",lNPtBins,0,lMaxPt,nTracklBins,0,lUpperLimit);
+            fListHist->Add(fHistPtVsTracklets0815_MCSelection[ih]);
+        }
+        if(! fHistPtVsTracklets0815True_Generated[ih] ) {
+            fHistPtVsTracklets0815True_Generated[ih] = new TH2F(Form("fHistPtVsTracklets0815True_Generated_%s",lPartNames[ih].Data()),    "Generated;p_{T} (GeV/c)",lNPtBins,0,lMaxPt,lNNchBins,lLowNchBound,lHighNchBound);
+            fListHist->Add(fHistPtVsTracklets0815True_Generated[ih]);
+        }
+        if(! fHistPtVsTracklets0815True_DataSelection[ih] ) {
+            fHistPtVsTracklets0815True_DataSelection[ih] = new TH2F(Form("fHistPtVsTracklets0815True_DataSelection_%s",lPartNames[ih].Data()),    "Generated;p_{T} (GeV/c)",lNPtBins,0,lMaxPt,lNNchBins,lLowNchBound,lHighNchBound);
+            fListHist->Add(fHistPtVsTracklets0815True_DataSelection[ih]);
+        }
+        if(! fHistPtVsTracklets0815True_MCSelection[ih] ) {
+            fHistPtVsTracklets0815True_MCSelection[ih] = new TH2F(Form("fHistPtVsTracklets0815True_MCSelection_%s",lPartNames[ih].Data()),    "Generated;p_{T} (GeV/c)",lNPtBins,0,lMaxPt,lNNchBins,lLowNchBound,lHighNchBound);
+            fListHist->Add(fHistPtVsTracklets0815True_MCSelection[ih]);
+        }
+    }
+
+
     //List of Histograms: Normal
     PostData(1, fListHist);
     
@@ -438,9 +712,10 @@ void AliAnalysisTaskPPVsMultCrossCheckMC::UserExec(Option_t *)
     Bool_t lEvSel_Triggered = kFALSE;
     
     if( !lPureMonteCarlo ) {
-        UInt_t maskIsSelected = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
-        isSelected = (maskIsSelected & AliVEvent::kMB) == AliVEvent::kMB;
+        if(fkSelectTriggerByName) isSelected = AliPPVsMultUtils::IsSelectedTrigger (lESDevent, fTrigName);
+        else isSelected = AliPPVsMultUtils::IsSelectedTrigger (lESDevent, fTrigType);
     }
+
     //Physics Selection
     lEvSel_Triggered = isSelected;
     
@@ -480,6 +755,7 @@ void AliAnalysisTaskPPVsMultCrossCheckMC::UserExec(Option_t *)
     
     Long_t lNchEta5   = 0;
     Long_t lNchEta8   = 0;
+    Long_t lNchEta8to15   = 0;
     Long_t lNchEta10  = 0;
     Long_t lNchVZEROA = 0;
     Long_t lNchVZEROC = 0;
@@ -500,6 +776,7 @@ void AliAnalysisTaskPPVsMultCrossCheckMC::UserExec(Option_t *)
         
         if( TMath::Abs(geta) < 0.5 ) lNchEta5++;
         if( TMath::Abs(geta) < 0.8 ) lNchEta8++;
+        if( (TMath::Abs(geta) > 0.8) && (TMath::Abs(geta) < 1.5) ) lNchEta8to15++;
         if( TMath::Abs(geta) < 1.0 ) lNchEta10++;
         if( TMath::Abs(geta) < 1.0 ) lEvSel_INELgtZEROStackPrimaries = kTRUE;
         if( 2.8 < geta && geta < 5.1 ) lNchVZEROA++;
@@ -510,14 +787,43 @@ void AliAnalysisTaskPPVsMultCrossCheckMC::UserExec(Option_t *)
     //Standard GetReferenceMultiplicity Estimator (0.5 and 0.8)
     
     Float_t fCentrality_V0M   = -100;
-    if ( ! lPureMonteCarlo ) fCentrality_V0M   = fPPVsMultUtils -> GetMultiplicityPercentile(lESDevent, "V0M"   );
     Float_t fCentrality_V0MUnselected = -100;
-    if ( ! lPureMonteCarlo ) fCentrality_V0MUnselected = fPPVsMultUtils -> GetMultiplicityPercentile(lESDevent, "V0M" , kFALSE );
-    
+    Float_t fCentrality_Tracklets08   = -100;
+    Float_t fCentrality_Tracklets08Unselected = -100;
+    Float_t fCentrality_Tracklets0815   = -100;
+    Float_t fCentrality_Tracklets0815Unselected = -100;
+ 
+    if ( ! lPureMonteCarlo ) {
+     if(!fkMultSelection){
+     fCentrality_V0M   = fPPVsMultUtils -> GetMultiplicityPercentile(lESDevent, "V0M"   );
+     fCentrality_V0MUnselected = fPPVsMultUtils -> GetMultiplicityPercentile(lESDevent, "V0M" , kFALSE );
+     }else{
+       AliMultSelection *MultSelection = (AliMultSelection*) lESDevent -> FindListObject("MultSelection");
+        if( MultSelection ){
+            fCentrality_V0M = MultSelection->GetMultiplicityPercentile("V0M",kTRUE);
+            fCentrality_V0MUnselected = MultSelection->GetMultiplicityPercentile("V0M",kFALSE);
+            fCentrality_Tracklets08 = MultSelection->GetMultiplicityPercentile("SPDTracklets08Corr",kTRUE);
+            fCentrality_Tracklets08Unselected = MultSelection->GetMultiplicityPercentile("SPDTracklets08Corr",kFALSE);
+            fCentrality_Tracklets0815 = MultSelection->GetMultiplicityPercentile("SPDTracklets08to15Corr",kTRUE);
+            fCentrality_Tracklets0815Unselected = MultSelection->GetMultiplicityPercentile("SPDTracklets08to15Corr",kFALSE);
+            }
+          }
+     } 
+
     //Amplitude if not pure
     Float_t fV0MAmplitude = -1;
-    if ( !lPureMonteCarlo ) fV0MAmplitude = GetV0MAmplitude( lESDevent );
-    
+    Int_t nSPDtrackl08 = -1;
+    Int_t nSPDtrackl0815 = -1;
+    if ( !lPureMonteCarlo ) 
+    {
+     fV0MAmplitude = GetV0MAmplitude( lESDevent );
+     if(fkMultSelection){
+       AliMultSelection *MultSelection = (AliMultSelection*) lESDevent -> FindListObject("MultSelection");
+       nSPDtrackl08 = MultSelection->GetEstimator("SPDTracklets08")->GetValue(); // raw value not corrected for z-vtx
+       nSPDtrackl0815 = MultSelection->GetEstimator("SPDTracklets08to15")->GetValue(); // raw value not corrected for z-vtx
+     }
+     
+    }
     //------------------------------------------------
     // Get All Conditionals
     //------------------------------------------------
@@ -525,6 +831,8 @@ void AliAnalysisTaskPPVsMultCrossCheckMC::UserExec(Option_t *)
     Bool_t lIsAcceptedVertexPosition = kFALSE;
     Bool_t lIsNotPileupInMultBins    = kFALSE;
     Bool_t lConsistentVertices       = kFALSE;
+    Bool_t lIsNotSPDClusterVsTrackletBG = kFALSE; // (used only for 13 TeV analysis) set it as optional cut ? 
+
 
     if( !lPureMonteCarlo ){
         //1) Physics Selection
@@ -537,6 +845,8 @@ void AliAnalysisTaskPPVsMultCrossCheckMC::UserExec(Option_t *)
         lIsNotPileupInMultBins = AliPPVsMultUtils::IsNotPileupSPDInMultBins( lESDevent );
         //5) Consistent track / SPD vertices
         lConsistentVertices    = AliPPVsMultUtils::HasNoInconsistentSPDandTrackVertices( lESDevent );
+        //6) Tracklets vs Cluster SPD
+        lIsNotSPDClusterVsTrackletBG = ! ( fUtils->IsSPDClusterVsTrackletBG( lESDevent) );
     }
     
     //Monte-Carlo Specifics
@@ -548,7 +858,7 @@ void AliAnalysisTaskPPVsMultCrossCheckMC::UserExec(Option_t *)
     if( fUseRecoVtxZ ) lIsAcceptedVertexPositionMC = lIsAcceptedVertexPosition; //override!
     
     //Merge all conditionals
-    Bool_t lDataSelection = ( lEvSel_Triggered && lIsINELgtZEROtracklets && lIsAcceptedVertexPosition && lIsNotPileupInMultBins && lConsistentVertices );
+    Bool_t lDataSelection = ( lEvSel_Triggered && lIsINELgtZEROtracklets && lIsAcceptedVertexPosition && lIsNotPileupInMultBins && lConsistentVertices && lIsNotSPDClusterVsTrackletBG );
     Bool_t lMCSelection   = ( ( fSkipPS ||lEvSel_Triggered ) && lEvSel_INELgtZEROStackPrimaries && lIsAcceptedVertexPositionMC );
     
     //Alternate Selection: Factor out only INEL>0 selection (extra cross-check) 
@@ -568,24 +878,56 @@ void AliAnalysisTaskPPVsMultCrossCheckMC::UserExec(Option_t *)
     if( lDataSelection ) {
         fHistV0M_DataSelection -> Fill( fCentrality_V0MUnselected );
         fHistV0MAmplitude_DataSelection -> Fill( fV0MAmplitude );
-        fHistV0MTrue_DataSelection -> Fill( lNchVZEROA+lNchVZEROC );
+        fHistV0MTrue_DataSelection -> Fill( lNchVZEROA+lNchVZEROC ); 
+        ////
+        fHistTracklets08Cent_DataSelection -> Fill( fCentrality_Tracklets08Unselected );
+        fHistTracklets08_DataSelection -> Fill( nSPDtrackl08);
+        fHistTracklets08True_DataSelection -> Fill( lNchEta8 ); 
+        ////
+        fHistTracklets0815Cent_DataSelection -> Fill( fCentrality_Tracklets0815Unselected );
+        fHistTracklets0815_DataSelection -> Fill( nSPDtrackl0815);
+        fHistTracklets0815True_DataSelection -> Fill( lNchEta8to15 ); 
     }
     if( lMCSelection   ){
         fHistV0M_MCSelection   -> Fill( fCentrality_V0MUnselected );
         fHistV0MAmplitude_MCSelection -> Fill( fV0MAmplitude );
         fHistV0MTrue_MCSelection -> Fill( lNchVZEROA+lNchVZEROC );
+        ////
+        fHistTracklets08Cent_MCSelection -> Fill( fCentrality_Tracklets08Unselected );
+        fHistTracklets08_MCSelection -> Fill( nSPDtrackl08);
+        fHistTracklets08True_MCSelection -> Fill( lNchEta8 );
+        ////
+        fHistTracklets0815Cent_MCSelection -> Fill( fCentrality_Tracklets0815Unselected );
+        fHistTracklets0815_MCSelection -> Fill( nSPDtrackl0815);
+        fHistTracklets0815True_MCSelection -> Fill( lNchEta8to15 );
     }
 
     if( lDataSelection ) {
         fHistV0MVsMidRapidityTrue_DataSelection->Fill( fCentrality_V0MUnselected, lNchEta5 );
         fHistV0MTrueVsMidRapidityTrue_DataSelection->Fill( lNchVZEROA+lNchVZEROC, lNchEta5 );
         fHistV0MAmplitudeVsMidRapidityTrue_DataSelection->Fill( fV0MAmplitude, lNchEta5 );
+        ////
+        fHistTracklets08CentVsMidRapidityTrue_DataSelection->Fill( fCentrality_Tracklets08Unselected, lNchEta5 );
+        fHistTracklets08TrueVsMidRapidityTrue_DataSelection->Fill( lNchEta8, lNchEta5 );
+        fHistTracklets08VsMidRapidityTrue_DataSelection->Fill( nSPDtrackl08, lNchEta5 );
+        ////
+        fHistTracklets0815CentVsMidRapidityTrue_DataSelection->Fill( fCentrality_Tracklets0815Unselected, lNchEta5 );
+        fHistTracklets0815TrueVsMidRapidityTrue_DataSelection->Fill( lNchEta8to15, lNchEta5 );
+        fHistTracklets0815VsMidRapidityTrue_DataSelection->Fill( nSPDtrackl0815, lNchEta5 );
     }
     
     if( lMCSelection ) {
         fHistV0MVsMidRapidityTrue_MCSelection->Fill( fCentrality_V0MUnselected, lNchEta5 );
         fHistV0MTrueVsMidRapidityTrue_MCSelection->Fill( lNchVZEROA+lNchVZEROC, lNchEta5 );
         fHistV0MAmplitudeVsMidRapidityTrue_MCSelection->Fill( fV0MAmplitude, lNchEta5 );
+        ////
+        fHistTracklets08CentVsMidRapidityTrue_MCSelection->Fill( fCentrality_Tracklets08Unselected, lNchEta5 );
+        fHistTracklets08TrueVsMidRapidityTrue_MCSelection->Fill( lNchEta8, lNchEta5 );
+        fHistTracklets08VsMidRapidityTrue_MCSelection->Fill( nSPDtrackl08, lNchEta5 );
+        ////
+        fHistTracklets0815CentVsMidRapidityTrue_MCSelection->Fill( fCentrality_Tracklets0815Unselected, lNchEta5 );
+        fHistTracklets0815TrueVsMidRapidityTrue_MCSelection->Fill( lNchEta8to15, lNchEta5 );
+        fHistTracklets0815VsMidRapidityTrue_MCSelection->Fill( nSPDtrackl0815, lNchEta5 );
     }
     
     //------------------------------------------------
@@ -638,17 +980,41 @@ void AliAnalysisTaskPPVsMultCrossCheckMC::UserExec(Option_t *)
                 fHistPtVsV0M_Generated[ih] -> Fill(lThisPt,fCentrality_V0MUnselected);
                 fHistPtVsV0MAmplitude_Generated[ih] -> Fill(lThisPt,fV0MAmplitude);
                 fHistPtVsV0MTrue_Generated     [ih] -> Fill(lThisPt,lNchVZEROA+lNchVZEROC);
+                ///// 
+                fHistPtVsTracklets08Cent_Generated[ih] -> Fill(lThisPt,fCentrality_Tracklets08Unselected);
+                fHistPtVsTracklets08_Generated[ih] -> Fill(lThisPt, nSPDtrackl08);
+                fHistPtVsTracklets08True_Generated     [ih] -> Fill(lThisPt, lNchEta8);
+                ///// 
+                fHistPtVsTracklets0815Cent_Generated[ih] -> Fill(lThisPt,fCentrality_Tracklets0815Unselected);
+                fHistPtVsTracklets0815_Generated[ih] -> Fill(lThisPt, nSPDtrackl0815);
+                fHistPtVsTracklets0815True_Generated     [ih] -> Fill(lThisPt, lNchEta8to15);
                 if( lDataSelection ){
                     fHistPt_DataSelection     [ih] -> Fill(lThisPt);
                     fHistPtVsV0M_DataSelection[ih] -> Fill(lThisPt,fCentrality_V0MUnselected);
                     fHistPtVsV0MAmplitude_DataSelection[ih] -> Fill(lThisPt,fV0MAmplitude);
                     fHistPtVsV0MTrue_DataSelection     [ih] -> Fill(lThisPt,lNchVZEROA+lNchVZEROC);
+                    ////
+                    fHistPtVsTracklets08Cent_DataSelection[ih] -> Fill(lThisPt,fCentrality_Tracklets08Unselected);
+                    fHistPtVsTracklets08_DataSelection[ih] -> Fill(lThisPt,nSPDtrackl08);
+                    fHistPtVsTracklets08True_DataSelection     [ih] -> Fill(lThisPt,lNchEta8);
+                    ////
+                    fHistPtVsTracklets0815Cent_DataSelection[ih] -> Fill(lThisPt,fCentrality_Tracklets0815Unselected);
+                    fHistPtVsTracklets0815_DataSelection[ih] -> Fill(lThisPt,nSPDtrackl0815);
+                    fHistPtVsTracklets0815True_DataSelection     [ih] -> Fill(lThisPt,lNchEta8to15);
                 }
                 if( lMCSelection   ){
                     fHistPt_MCSelection       [ih] -> Fill(lThisPt);
                     fHistPtVsV0M_MCSelection  [ih] -> Fill(lThisPt,fCentrality_V0MUnselected);
                     fHistPtVsV0MAmplitude_MCSelection  [ih] -> Fill(lThisPt,fV0MAmplitude);
                     fHistPtVsV0MTrue_MCSelection       [ih] -> Fill(lThisPt,lNchVZEROA+lNchVZEROC);
+                    ////
+                    fHistPtVsTracklets08Cent_MCSelection[ih] -> Fill(lThisPt,fCentrality_Tracklets08Unselected);
+                    fHistPtVsTracklets08_MCSelection[ih] -> Fill(lThisPt,nSPDtrackl08);
+                    fHistPtVsTracklets08True_MCSelection     [ih] -> Fill(lThisPt,lNchEta8);
+                    ////
+                    fHistPtVsTracklets0815Cent_MCSelection[ih] -> Fill(lThisPt,fCentrality_Tracklets0815Unselected);
+                    fHistPtVsTracklets0815_MCSelection[ih] -> Fill(lThisPt,nSPDtrackl0815);
+                    fHistPtVsTracklets0815True_MCSelection     [ih] -> Fill(lThisPt,lNchEta8to15);
                 }
             }
         }

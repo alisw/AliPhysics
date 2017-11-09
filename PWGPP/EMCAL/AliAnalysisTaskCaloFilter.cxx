@@ -223,7 +223,7 @@ Bool_t AliAnalysisTaskCaloFilter::AcceptEventTrack()
   
   if( fTrackPtCut <= 0 ) return kTRUE; // accept
   
-  Double_t pTrack[3] = {0,0,0};
+  //Double_t pTrack[3] = {0,0,0};
   
   for (Int_t nTrack = 0; nTrack < fEvent->GetNumberOfTracks(); ++nTrack) 
   {

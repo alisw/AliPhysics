@@ -761,13 +761,20 @@ protected:
   {
     AliAnalysisManager* mgr = AliAnalysisManager::GetAnalysisManager();
     AliVEventHandler*   inp = mgr->GetInputEventHandler();
-    if (!inp) return;
+    if (!inp) {
+      Warning("CreateCentralitySelection","No input handler");
+      return;
+    }
 
     // Check if input is AOD.  Do not add MultSelection task, unless
     // explicitly stated.
     Bool_t isAOD = inp->IsA()->InheritsFrom(AliAODInputHandler::Class());
-    if (isAOD && !fOptions.AsBool("aod-cent")) return;
-    
+    if (isAOD && !fOptions.AsBool("aod-cent")) {
+      Info("CreateCentralitySelection",
+	   "No multiplicity selection for AOD input");
+      return;
+    }
+
     // Possibly load as PAR
     LoadOADB();
     

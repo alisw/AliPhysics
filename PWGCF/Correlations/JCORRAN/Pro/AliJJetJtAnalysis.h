@@ -1,14 +1,14 @@
 /// \class AliJJetJtAnalysis
 /// \brief Class for jT analysis in jets
-///
-/// This is a longer description of the class. This longer description is
-/// formatted using the Markdown syntax (see below) and can span on multiple
-/// lines.
+/// Class for doing \f$j_T\f$ analysis of jets. Suitable for both charged and full jets depending on the jet finder. 
+/// By default calculates \f$j_T\f$ for all jets above a threshold in event. With the fLeadingJets one can limit the calculation only to leading jets.
+///  
+/// For MC events the FillCorrelation function takes care of filling response matrices for \f$j_T\f$ and jet \f$p_T\f$
 /// 
 /// \author Tomas Snellman, tsnellma@cern.ch
 /// \author Beomkyu Kim
 /// \author Dongjo Kim
-/// \date Nov 11, 2016
+/// \date Aug 03, 2017
 
 
 #ifndef ALIJJETJTANALYSIS_H
@@ -75,6 +75,7 @@ class AliJJetJtAnalysis{
     void SetMCJetList(TObjArray* jetlist){ fMCJetList=jetlist; }
     void SetInputList(TObjArray * ilist){ fInputList = ilist;}
     void SetTrackOrMCParticle( UInt_t i, int v ){ fTrackOrMCParticle[i] = v; }
+    void SetLeadingJets(UInt_t i){fLeadingJets = i;}
     int  GetTrackOrMCParticle( UInt_t i ){ return fTrackOrMCParticle.at( i ); }
     //void SetTrackJetMap(std::vector<int> * v){ fTrackJetMap=v;}
     //void SetJetPtBin( TVector * b){ fJetPtBins=b; }
@@ -126,6 +127,7 @@ class AliJJetJtAnalysis{
     void SetNrandom(int nRndm) { Nrandom = nRndm;}
     void SetMoveJet(int move) { moveJet = move;}
     void SetMC(int mc) {fDoMC = mc;};
+    void SetLog(bool doLog) {fDoLog = doLog;}
     void SetNumberOfJetFinders( int njfinder ) { nJetContainer = njfinder;}
     AliJEfficiency* GetAliJEfficiency() { return fEfficiency;}
 
@@ -142,6 +144,7 @@ class AliJJetJtAnalysis{
     vector<TClonesArray>      fJetBgListOfList;
     TClonesArray     fpythiaJets;
     double fJetEtaCut;
+    int fLeadingJets;
     TRandom3 *frandom; // comment me
 
     TVector  *fJetTriggPtBorders; ///< Jet pT bin borders
@@ -174,6 +177,7 @@ class AliJJetJtAnalysis{
     TVector *fConstLabels; 
     TVector *fJetPt; ///< Store jet pT values
     TVector *fJetPt2; ///< Comment needed
+    TVector *fDiJetMjj; ///< Store di-jet invariant mass values
     TVector *fTrackFound; ///< Keep track of which tracks were matched with MC tracks
     TVector *fConstFound; ///< Keep track of which constituents were matched with MC tracks
     TVector *fBin2;
@@ -183,6 +187,7 @@ class AliJJetJtAnalysis{
     int Nrandom;
     int moveJet;
     int fDoMC;
+    bool fDoLog;
     //Histograms
     AliJHistManager * fHMG;
     AliJHistManager * fHMGMC;
@@ -207,6 +212,7 @@ class AliJJetJtAnalysis{
     AliJBin fiHist2MC;
     AliJTH1D fhNumber;
     AliJTH1D fhKNumber;
+    AliJTH1D fhDiJetM; /// Di-jet invariant mass
     AliJTH1D fhJetPt; /// Jet pT distribution
     AliJTH1D fhJetPtBin; /// Jet pT distribution in jet pT bins
     AliJTH1D fhJetPtMultiplicityCutBin; /// Jet pT distribution in jet multiplicity bins
@@ -233,11 +239,16 @@ class AliJJetJtAnalysis{
     AliJTH1D fhJtWeightBinLimBin; /// Comment needed 
     AliJTH1D fhLogJtWeightBinLimBin;
     AliJTH1D fhLogJtWeight2BinLimBin;
+    AliJTH1D fhLeadingJt; /// jt dist for leading track
+    AliJTH1D fhLeadingJtBin; /// jt as fn of jet pt for leading track
+    AliJTH1D fhLeadingJtWeightBin; /// jt in P.S as fn of jet pt for leading track
+    AliJTH1D fhLeadingJtWithPtCutWeightBinBin; /// jt in P.S as fns of jet pt, const pt for leading track
 
 
     //Histograms for jt in event
-    AliJTH1D fhEventJtWithPtCutWeightBinBin; ///Distribution of track jT for all tracks
-    AliJTH1D fhEventJtWeightBin; ///Distribution of track jT for all tracks
+    AliJTH1D fhEventJtWithPtCutWeightBinBin; ///Distribution of track jT for all tracks with 1/jT weight in track pT bins
+    AliJTH1D fhEventJtWeightBin; ///Distribution of track jT for all tracks with 1/jT weight
+    AliJTH1D fhEventJtBin; ///Distribution of track jT for all tracks without weight
 
 
     //Histograms for jt in cone
@@ -249,8 +260,6 @@ class AliJJetJtAnalysis{
     AliJTH1D fhJetConeJt; /// Total jT distribution for tracks inside constant cone around jet axis
     AliJTH1D fhJetConeJtBin; /// jT distribution for tracks inside constant cone around jet axis in jet pT bins
     AliJTH1D fhJetConeJtWeightBin; /// jT distribution with \f$ \frac{1}{j_T} \f$ weight for tracks inside constant cone around jet axis in jet pT bins
-    AliJTH1D fhJetConeJtWeightBinTest;
-    AliJTH1D fhJetConeJtWeightBinTest2;
     AliJTH1D fhJetConeJtWeightWithTrackCutBinBin; /// jT distribution with \f$ \frac{1}{j_T} \f$ weight for tracks inside constant cone around jet axis in jet pT bins and leading track pT bins
     AliJTH1D fhJetConeJtWeightWithMultiplicityCutBinBin; /// jT distribution with \f$ \frac{1}{j_T} \f$ weight for tracks inside constant cone around jet axis in jet pT and jet multiplicity bins
     AliJTH1D fhJetConeLogJtWeightBin; /// log(jT) distribution with \f$ \frac{1}{j_T} \f$ weight for tracks inside constant cone around jet axis in jet pT bins
@@ -311,7 +320,9 @@ class AliJJetJtAnalysis{
     AliJTH1D fhBgRndmZ;
     AliJTH1D fhBgRndmRBin; /// R distribution in random background in jet pT bins \f$ R = \sqrt{\left(\Delta \phi\right)^2 + \left(\Delta \eta\right)^2}
     AliJTH1D fhBgRndmJt; /// Random background jT distribution
-    AliJTH1D fhBgRndmJtBin; /// Random background jT distribution in jet pT bins
+    AliJTH1D fhBgRndmJtBin; /// Random background jT distribution
+    AliJTH1D fhBgRndmJtWeight; /// Random background jT distribution
+    AliJTH1D fhBgRndmJtWeightBin; /// Random background jT distribution in jet pT bins
     AliJTH1D fhBgRndmLogJt;
     AliJTH1D fhBgRndmJtWithPtCutWeightBin;
     AliJTH1D fhBgRndmLogJtWithPtCutWeight2Bin;
@@ -344,6 +355,9 @@ class AliJJetJtAnalysis{
     AliJTH1D fhTrackMatchSuccess;
     AliJTH2D fhConstJtCorrBin;	
     AliJTH1D fhConstMatchSuccess;
+
+    //Di-jet correlation histogram
+    AliJTH2D fhDiJetMjjCorr;
 
     //PYthia correlation histograms
     AliJTH2D fhTrackJtCorrBinPythia; /// Track jT correlation in jet pT bins between Pythia jets and measured jets

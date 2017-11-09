@@ -30,6 +30,7 @@ class AliAnalysisTaskTrackingSysPropagation : public AliAnalysisTaskSE {
   virtual void   Terminate(Option_t *);
 
   void SetAODMismatchProtection(Int_t opt=1) {fAODProtection=opt;}
+  void SetMaximumPt(Double_t maxpt) {fMaxPt = maxpt;}
     
   DecChannel GetDecayChannel()const {return fDecayChannel;}
 
@@ -53,9 +54,10 @@ class AliAnalysisTaskTrackingSysPropagation : public AliAnalysisTaskSE {
   Int_t fPDGcode;
   Int_t fAODProtection;         /// flag to activate protection against AOD-dAOD mismatch.
     
+  Double_t fMaxPt;              /// max pt in the outputs histos
   AliRDHFCuts* fAnalysisCuts;   /// cuts
     
-  ClassDef(AliAnalysisTaskTrackingSysPropagation, 1);
+  ClassDef(AliAnalysisTaskTrackingSysPropagation, 2);
 };
 
 #endif

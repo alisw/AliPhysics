@@ -35,14 +35,14 @@ AliAnalysisTaskCaloTrackCorrelation *AddTaskCalorimeterQA(const char *suffix="de
   //==============================================================================
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
-    ::Error("AddTaskPartCorr", "No analysis manager to connect to.");
+    ::Error("AddTaskCalorimeterQA", "No analysis manager to connect to.");
     return NULL;
   }  
   
   // Check the analysis type using the event handlers connected to the analysis manager.
   //==============================================================================
   if (!mgr->GetInputEventHandler()) {
-    ::Error("AddTaskPartCorr", "This task requires an input event handler");
+    ::Error("AddTaskCalorimeter", "This task requires an input event handler");
     return NULL;
   }
   
@@ -78,20 +78,6 @@ AliAnalysisTaskCaloTrackCorrelation *AddTaskCalorimeterQA(const char *suffix="de
   reader->SwitchOnCTS();
   reader->SetCTSPtMin  (0.);
   reader->SetZvertexCut(10.);
-  
-  if(simulation)
-  {
-    if(inputDataType == "ESD")
-    {
-      reader->SwitchOnStack();          
-      reader->SwitchOffAODMCParticles(); 
-    }
-    else if(inputDataType == "AOD")
-    {
-      reader->SwitchOffStack();          
-      reader->SwitchOnAODMCParticles(); 
-    }
-  }
   
   reader->SetDeltaAODFileName(""); //Do not create deltaAOD file, this analysis do not create branches.
   reader->SwitchOffWriteDeltaAOD()  ;
@@ -167,7 +153,9 @@ AliAnalysisTaskCaloTrackCorrelation *AddTaskCalorimeterQA(const char *suffix="de
   emcalQA->SetCalorimeter("EMCAL");
   if(simulation)
   {
-    emcalQA->SwitchOnDataMC() ;//Access MC stack and fill more histograms, AOD MC not implemented yet.
+    // Access MC stack and fill more histograms
+    emcalQA->SwitchOnDataMC() ;
+    
     emcalQA->SwitchOffStudyBadClusters();
     emcalQA->SwitchOffFillAllCellTimeHisto();
   }
@@ -263,7 +251,7 @@ AliAnalysisTaskCaloTrackCorrelation *AddTaskCalorimeterQA(const char *suffix="de
   if(printSettings) maker->Print("");
   
   printf("======================== \n");
-  printf(" End Configuration of Calorimeter QA \n");
+  printf("AddTaskCalorimeterQA() - End Configuration \n");
   printf("======================== \n");
   
   // Create task

@@ -43,7 +43,7 @@ class AlidNdPtUnifiedAnalysisTask : public AliAnalysisTaskSE {
     virtual void   Terminate(Option_t *);
 
     // Getters
-    
+
     // Binning
     TArrayD* GetBinsPt() {return fBinsPt;}
     TArrayD* GetBinsEta(){return fBinsEta;}
@@ -146,8 +146,8 @@ class AlidNdPtUnifiedAnalysisTask : public AliAnalysisTaskSE {
 
     void InitESDTrackCuts();
     void InitdNdPtEventCuts();
-    
-    
+
+
     void SetCentralityCut(Double_t lowerCut, Double_t upperCut){fUseCentralityCut = kTRUE; fLowerCentralityBound = lowerCut; fUpperCentralityBound = upperCut;}
     Bool_t IsSelectedCentrality();
     
@@ -166,7 +166,6 @@ class AlidNdPtUnifiedAnalysisTask : public AliAnalysisTaskSE {
 
     TF1               *fFunTrkEff;
 
-    TH1D* fHistV0Amp;
     THnF* fHistMCMultPt;
     Double_t fLowerCentralityBound;
     Double_t fUpperCentralityBound;
@@ -199,6 +198,10 @@ class AlidNdPtUnifiedAnalysisTask : public AliAnalysisTaskSE {
     THnF        	*fHistMCTrigINEL0Event;   	///<  Histogram for triggered INEL>0 MC events (Zv,mult/cent)
     THnF        	*fHistMCRecINEL0Event;    	///<  Histogram for reconstructed INEL>0 MC events (Zv,mult/cent)
     THnF        	*fHistMCResponseMat;    	///<  Histogram for Detector Response N_ch vs. N_acc
+    THnF        	*fHistMCTrackMult;		///<  Histogram for tracks vs multiplicity (pt,Nacc,Nch)
+    THnF        	*fHistMCTrackMultGen;		///<  Histogram for true tracks vs multiplicity (pt,Nacc,Nch)
+    
+    THnF                *fHistResPt;                    ///<  Histogram for pT_gen vs pT_rec for resolution chrosschecks (pt,pt,eta,vz)
 
     //   THnF	      *fHistMCGenTrackINEL0;    ///<  Histogram for generated MC tracks for INEL>0 events (pt,eta,mult/cent)
 
@@ -233,21 +236,21 @@ class AlidNdPtUnifiedAnalysisTask : public AliAnalysisTaskSE {
     Float_t     	fMinRatioCrossedRowsOverFindableClustersTPC;
     Float_t     	fMaxFractionSharedClustersTPC;
     Float_t     	fMaxChi2PerTPCCluster;
-    Bool_t        fRequiresClusterITS;
+    Bool_t        	fRequiresClusterITS;
     Float_t     	fMaxChi2PerITSCluster;
     Bool_t      	fDCAToVertex2D;
     Bool_t      	fSigmaToVertex;
     Float_t     	fMaxDCAzITSTPC;
-    TString       fDCAToVertexXYPtDep;
-    Float_t       fDCAToVertexXY;
+    TString      	fDCAToVertexXYPtDep;
+    Float_t       	fDCAToVertexXY;
     Float_t     	fMaxChi2TPCConstrained;
     Int_t       	fMinActiveLength;
     Bool_t      	fUseGeomCut;
-    Float_t       fDeadZoneWidth;
-    Float_t       fCutGeoNcrNclLenght;
-    Float_t       fCutGeoNcrNclGeom1Pt;
-    Float_t       fCutGeoNcrNclFractionNcr;
-    Float_t       fCutGeoNcrNclFractionNcl;
+    Float_t       	fDeadZoneWidth;
+    Float_t       	fCutGeoNcrNclLenght;
+    Float_t       	fCutGeoNcrNclGeom1Pt;
+    Float_t       	fCutGeoNcrNclFractionNcr;
+    Float_t       	fCutGeoNcrNclFractionNcl;
 
     AliAnalysisUtils* fUtils;
     Bool_t fIs2013pA;

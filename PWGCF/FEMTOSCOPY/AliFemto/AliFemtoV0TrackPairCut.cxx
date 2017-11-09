@@ -315,28 +315,29 @@ bool AliFemtoV0TrackPairCut::Pass(const AliFemtoPair *pair)
   //
   if (fMinRad > 0.0) {
 
-    AliFemtoV0 *V0 = const_cast<AliFemtoV0*>(V0);
-    double thetas1_pos = TMath::Pi()/2. - TMath::ATan(V0->NominalTpcPointPosShifted().z()/(fMinRad*1e2));
-    double thetas2_pos = TMath::Pi()/2. - TMath::ATan(track->NominalTpcPointShifted().z()/(fMinRad*1e2));
-    double etas1_pos = -TMath::Log( TMath::Tan(thetas1_pos/2.) );
-    double etas2_pos = -TMath::Log( TMath::Tan(thetas2_pos/2.) );
-    double detas_pos = etas1_pos - etas2_pos;
-    double distSft_pos = TMath::Sqrt(TMath::Power(V0->NominalTpcPointPosShifted().x() -
-						  track->NominalTpcPointShifted().x(),2) +
-				     TMath::Power(V0->NominalTpcPointPosShifted().y() -
-						  track->NominalTpcPointShifted().y(),2));
-    double dPhiS_pos = 2.0 * TMath::ATan(distSft_pos/2./((fMinRad*1e2)));
+    const auto v0_shifted_tpc_point_pos = V0->NominalTpcPointPosShifted(),
+               v0_shifted_tpc_point_neg = V0->NominalTpcPointNegShifted(),
+               track_shifted_tpc_point = track->NominalTpcPointShifted();
 
-    double thetas1_neg = TMath::Pi()/2. - TMath::ATan(V0->NominalTpcPointNegShifted().z()/(fMinRad*1e2));
-    double thetas2_neg = TMath::Pi()/2. - TMath::ATan(track->NominalTpcPointShifted().z()/(fMinRad*1e2));
-    double etas1_neg = -TMath::Log( TMath::Tan(thetas1_neg/2.) );
-    double etas2_neg = -TMath::Log( TMath::Tan(thetas2_neg/2.) );
-    double detas_neg = etas1_neg - etas2_neg;
-    double distSft_neg = TMath::Sqrt(TMath::Power(V0->NominalTpcPointNegShifted().x() -
-						  track->NominalTpcPointShifted().x(),2) +
-				     TMath::Power(V0->NominalTpcPointNegShifted().y() -
-						  track->NominalTpcPointShifted().y(),2));
-    double dPhiS_neg = 2.0 * TMath::ATan(distSft_neg/2./((fMinRad*1e2)));
+    const auto diff_point_pos = v0_shifted_tpc_point_pos - track_shifted_tpc_point,
+               diff_point_neg = v0_shifted_tpc_point_neg - track_shifted_tpc_point;
+
+    const double thetas1_pos = TMath::Pi()/2. - TMath::ATan(v0_shifted_tpc_point_pos.z()/(fMinRad*1e2)),
+                 thetas1_neg = TMath::Pi()/2. - TMath::ATan(v0_shifted_tpc_point_neg.z()/(fMinRad*1e2)),
+                     thetas2 = TMath::Pi()/2. - TMath::ATan(track_shifted_tpc_point.z()/(fMinRad*1e2));
+
+    const double etas1_pos = -TMath::Log( TMath::Tan(thetas1_pos/2.) ),
+                 etas1_neg = -TMath::Log( TMath::Tan(thetas1_neg/2.) ),
+                     etas2 = -TMath::Log( TMath::Tan(thetas2/2.) );
+
+    const double detas_pos = etas1_pos - etas2,
+                 detas_neg = etas1_neg - etas2;
+
+    const double distSft_pos = diff_point_pos.Perp(),
+                 distSft_neg = diff_point_neg.Perp();
+
+    const double dPhiS_pos = 2.0 * TMath::ATan(distSft_pos/2./((fMinRad*1e2))),
+                 dPhiS_neg = 2.0 * TMath::ATan(distSft_neg/2./((fMinRad*1e2)));
 
     if ( (TMath::Abs(detas_pos) < fMinDEtaStarPos &&
 	  TMath::Abs(dPhiS_pos) < fMinDPhiStarPos) ||
@@ -356,7 +357,7 @@ AliFemtoString AliFemtoV0TrackPairCut::Report()
   TString report = "AliFemtoV0 Pair Cut - remove shared and split pairs\n";
   report += TString::Format("Number of pairs which passed:\t%ld  Number which failed:\t%ld\n", fNPairsPassed, fNPairsFailed);
 
-  return AliFemtoString(report);
+  return AliFemtoString((const char *)report);
 }
 //__________________
 
@@ -378,7 +379,7 @@ TList *AliFemtoV0TrackPairCut::ListSettings()
 
   // The TString format patterns (F is float, I is integer, L is long)
   const char ptrnF[] = "AliFemtoV0TrackPairCut.%s=%f",
-             ptrnI[] = "AliFemtoV0TrackPairCut.%s=%d",
+             //ptrnI[] = "AliFemtoV0TrackPairCut.%s=%d",
              ptrnL[] = "AliFemtoV0TrackPairCut.%s=%ld";
 
   list->Add(new TObjString(TString::Format(ptrnF, "sharequalitymax", fShareQualityMax)));

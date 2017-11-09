@@ -73,6 +73,8 @@ class AliAnalysisTaskEHCorrel : public AliAnalysisTaskSE {
     void    SetTriggerElePtCut(Bool_t trigElePtcut) {fTrigElePtCut = trigElePtcut;};
     void    GetVtxZCentralityBin();
     Bool_t  GetTenderSwitch() {return fUseTender;};
+    Double_t GetElecEffi(AliVTrack *track);
+    
     void    SetTenderSwitch(Bool_t usetender){fUseTender = usetender;};
     
     void    SetClusterTypeEMC(Bool_t flagClsEMC) {fFlagClsTypeEMC = flagClsEMC;};
@@ -93,7 +95,12 @@ class AliAnalysisTaskEHCorrel : public AliAnalysisTaskSE {
     void    SetMEBinChange(Bool_t MEBinChange) {fFlagMEBinChange = MEBinChange;};
     void    SetElecSPDkFirst(Bool_t EleSPDkFirst) {fFlagEleSPDkFirst = EleSPDkFirst;};
     
+    void    SetEMCClsTimeCut(Bool_t EMCtimeCut) {fEMCClsTimeCut = EMCtimeCut;};
+    
     void    SetAdditionalPileUpCuts(Bool_t addpilupcuts) {fApplyAddPileUpCuts = addpilupcuts;};
+    
+    void    SetElecEffi(Bool_t applyElectronEffi){fApplyElectronEffi = applyElectronEffi;};
+    void    SetElectronEffiMap(TH1 *HistElecEffi) {fHistElecEffi = (TH1D*)HistElecEffi->Clone();}
     
     void    IsPbPb(Bool_t isPbPb) {fIsPbPb = isPbPb;};
 
@@ -103,6 +110,8 @@ class AliAnalysisTaskEHCorrel : public AliAnalysisTaskSE {
     const AliVVertex    *fpVtx; //!
     AliPIDResponse      *fpidResponse; //!pid response
     AliMultSelection    *fMultSelection;//!
+    
+    TH1D                *fHistElecEffi;//
     
     TClonesArray        *fTracks_tender;//Tender tracks
     TClonesArray        *fCaloClusters_tender;//Tender cluster
@@ -147,6 +156,10 @@ class AliAnalysisTaskEHCorrel : public AliAnalysisTaskSE {
     Double_t            fCentBin;//!
     Bool_t              fFlagMEBinChange;//
     Bool_t              fIsPbPb;//
+    Bool_t              fEMCClsTimeCut;//
+    Bool_t              fApplyElectronEffi;//
+    Double_t            fEffi;//!
+    Double_t            fWeight;//!
 
     TList       	   	*fOutputList;		//!output list
     TH1F                *fNevents;		//!no of events

@@ -95,8 +95,10 @@ public:
   //void SetFillBayesianPIDInfo(Bool_t flag=kTRUE)  {fFillBayesianPIDInfo = flag;}
   void SetFillEventPlaneInfo(Bool_t flag=kTRUE)    {fFillEventPlaneInfo = flag;}
   void SetFillMCInfo(Bool_t flag=kTRUE)               {fFillMCInfo = flag;}
+  void SetFillHFInfo(Bool_t flag=kTRUE)               {fFillHFInfo = flag;}
+  void SetFillTRDMatchedTracks(Bool_t flag1=kTRUE, Bool_t flag2=kFALSE)   {fFillTRDMatchedTracks = flag1; fFillAllTRDMatchedTracks=flag2;}
   void SetWriteEventsWithNoSelectedTracks(Bool_t flag=kTRUE)   {fWriteEventsWithNoSelectedTracks = flag;}
-  
+    
  private:
 
   Double_t Rapidity(Double_t r, Double_t z);
@@ -127,8 +129,11 @@ public:
   //Bool_t fFillBayesianPIDInfo;   // fill the bayesian PID information
   Bool_t fFillEventPlaneInfo;     // Write event plane information
   Bool_t fFillMCInfo;                  // Write MC truth information
+  Bool_t fFillHFInfo;                  // Write HF Process information
+  Bool_t fFillTRDMatchedTracks;  // Write global tracks with matched TRD tracks
+  Bool_t fFillAllTRDMatchedTracks;  // if true, fill all global tracks matched in TRD; if false, fill just those global tracks which were selected with the track of V0 filters
 
-  AliAnalysisCuts *fEventFilter;     //! event filter
+  AliAnalysisCuts *fEventFilter;     // event filter
   AliAnalysisCuts *fTrackFilter;     // filter for the hadrons to be correlated with the dielectrons
   AliAnalysisCuts *fFlowTrackFilter; // filter for the barrel tracks to be used for the Q-vector
   
@@ -176,6 +181,6 @@ public:
   AliAnalysisTaskReducedTreeMaker(const AliAnalysisTaskReducedTreeMaker &c);
   AliAnalysisTaskReducedTreeMaker& operator= (const AliAnalysisTaskReducedTreeMaker &c);
 
-  ClassDef(AliAnalysisTaskReducedTreeMaker, 3); //Analysis Task for creating a reduced event information tree 
+  ClassDef(AliAnalysisTaskReducedTreeMaker, 4); //Analysis Task for creating a reduced event information tree 
 };
 #endif

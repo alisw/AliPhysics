@@ -21,8 +21,7 @@
 
 // --- ROOT ---
 class TH2F ;
-class TParticle ;
-class AliStack ;
+//class TParticle ;
 class TLorentzVector ;
 
 // --- ANALYSIS ---
@@ -97,9 +96,6 @@ private:
   Float_t          fMinChargedPt;           //!<! Minimum energy for charged particles in correlation
   Float_t          fMinNeutralPt;           //!<! Minimum energy for neutral particles in correlation
   
-  AliStack       * fStack;                  //!<! access ESD stack
-  TClonesArray   * fAODMCparticles ;        //!<! access AOD stack
-
 //  TParticle      * fParton2;              //!<! Initial state Parton
 //  TParticle      * fParton3;              //!<! Initial state Parton
   

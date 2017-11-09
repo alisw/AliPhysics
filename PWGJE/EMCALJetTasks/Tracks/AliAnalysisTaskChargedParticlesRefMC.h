@@ -149,6 +149,17 @@ public:
   void SetOfflineTriggerSelection(AliEmcalTriggerOfflineSelection *sel) { fTriggerSelection = sel; }
 
   /**
+   * @brief Require bunch crossing information of track obtained from TOF (if available)
+   * matches the bunch crossing ID of the event
+   *
+   * Pileup is not simulated in ALICE. This means on simulation level only the TOF matching is required
+   * in order to check the efficiency of the TOF matching
+   *
+   * @param[in] doRequire If true the track is only selected if it has a TOF match
+   */
+  void SetRequireTOFBunchCrossing(Bool_t doRequire) { fRequireTOFBunchCrossing = doRequire; }
+
+  /**
    * @brief Get the trigger offline selection.
    *
    * Providing access to the trigger offline selection. Note that
@@ -348,6 +359,7 @@ private:
   Bool_t                                fEnableSumw2;               ///< Enable sumw2 when filling histograms (by default off)
   Bool_t                                fStudyPID;                  ///< Fill kinematics histograms with information of true particle species (default: off)
   Bool_t                                fStudyEMCALgeo;             ///< Add histograms for tracks pointing to the EMCAL acceptance
+  Bool_t                                fRequireTOFBunchCrossing;   ///< Require TOF bunch crossing information (reducing to simple TOF matching in simulation)
 
   TString                               fNameAcceptanceOADB;        ///< Name of the OADB container with trigger acceptance maps
 

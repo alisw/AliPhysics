@@ -14,14 +14,18 @@ class AliFemtoPairCutDetaDphi;
 class TList;
 
 
+#include "AliFemtoConfigObject.h"
+
+
 #include "AliFemtoVertexMultAnalysis.h"
 
 
 /// \class AliFemtoAnalysisPionPion
-/// \brief A simple analysis for studying femtoscopic systems of charged pions
+/// \brief A simple analysis for studying femtoscopic systems of
+///        charged pions
 ///
-/// This class reduces boilerplate code required to cut on specific variations
-/// of pion-pion femtoscopy.
+/// This class reduces boilerplate code required to cut on specific
+/// variations of pion-pion femtoscopy.
 ///
 /// \author Andrew Kubera, Ohio State University <andrew.kubera@cern.ch>
 ///
@@ -78,15 +82,13 @@ public:
   virtual void EventEnd(const AliFemtoEvent*);
 
   /// Create a Cut-Parameter object with default options.
-  ///
   static CutParams DefaultCutConfig();
 
-  /**
-   * Create an analysis-parameter object with default options. This is used
-   * internally when using the default constructor. It is recommended to call
-   * this method to constrcut the AnalysisParams object, and modify that to
-   * create a custom AliFemtoAnalysisPionPion.
-   */
+  /// Create an analysis-parameter object with default options.
+  /// This is used internally when using the default constructor.
+  /// It is recommended to call this method to constrcut the
+  /// AnalysisParams object, and modify that to create a custom
+  /// AliFemtoAnalysisPionPion.
   static AnalysisParams DefaultConfig();
 
   AliFemtoTrackCut* BuildPionCut1(const CutParams&) const;
@@ -94,22 +96,18 @@ public:
   AliFemtoEventCut* BuildEventCut(const CutParams&) const;
   AliFemtoPairCut* BuildPairCut(const CutParams&) const;
 
-  /**
-   * For each cut already set (i.e. pointer is not NULL) this function
-   * creates two "standard" cut monitor (for pass/fail) and adds them to the
-   * cut. These cut monitors are found within the AliFemtoCutMonitorPionPion
-   * nam.
-   */
+  /// For each cut already set (i.e. pointer is not NULL) this
+  /// function creates two "standard" cut monitor (for pass/fail) and
+  /// adds them to the cut.
+  /// These cut monitors are found within the AliFemtoCutMonitorPionPion
+  /// namespace.
   void AddStanardCutMonitors();
 
-  /**
-   * Returns a TList of all objects
-   */
+  /// Returns a TList of all objects
   virtual TList* GetOutputList();
 
-  /**
-   * Returns a TList of TObjStrings containing the settings of the analysis.
-   */
+  /// Returns a TList of TObjStrings containing the settings of the
+  /// analysis.
   virtual TList* ListSettings();
 
 protected:
@@ -120,8 +118,8 @@ protected:
   /// The type of Pion particles this analysis will search for
   PionType fPionType_1;
 
-  /// The type of Lambda particles this analysis will search for.
-  /// This determines which V0 daughter (pos or neg) will pass proton vs pion daughter cuts
+  /// The 2nd type of pion particles this analysis will search for
+  /// If kNone, this is an identical-pion analysis.
   PionType fPionType_2;
 
   /// Output objects in multiple TObjArrays instead of one TList
@@ -133,6 +131,8 @@ protected:
   /// This is a Monte Carlo analysis
   Bool_t fMCAnalysis;
 
+  /// Saved Configuration
+  AliFemtoConfigObject fConfiguration;
 };
 
 /// \class AliFemtoAnalysisPionPion::AnalysisParams
@@ -201,7 +201,7 @@ struct AliFemtoAnalysisPionPion::CutParams {
 
   Int_t   event_TriggerSelection;
   Bool_t  event_AcceptBadVertex;
-
+  Bool_t  event_AcceptOnlyPhysics;
 
   // PION - 1
   Float_t pion_1_PtMin,
@@ -268,5 +268,16 @@ struct AliFemtoAnalysisPionPion::CutParams {
   Bool_t pair_remove_same_label;
 
 };
+
+/*
+template<>
+AliFemtoAnalysisPionPion*
+AliFemtoConfigObject::Construct<AliFemtoAnalysisPionPion>() const
+{
+  // AliFemtoAnalysisPionPion* AliFemtoConfigObject::Construct() const {
+
+  return nullptr;
+}
+*/
 
 #endif

@@ -137,6 +137,7 @@ AliFemtoManager* ConfigFemtoAnalysis(const TString& aParamString="")
     //rdr->SetCentralityPreSelection(0, 900);
     if(tAnalysisConfig.analysisType==AFALK::kXiKchP || tAnalysisConfig.analysisType==AFALK::kAXiKchP ||
        tAnalysisConfig.analysisType==AFALK::kXiKchM || tAnalysisConfig.analysisType==AFALK::kAXiKchM) rdr->SetReadCascade(1);
+    else if(tAnalysisConfig.analysisType==AFALK::kXiK0   || tAnalysisConfig.analysisType==AFALK::kAXiK0) {rdr->SetReadV0(1); rdr->SetReadCascade(1);}
     else if(tAnalysisConfig.analysisType==AFALK::kProtPiM || tAnalysisConfig.analysisType==AFALK::kAProtPiP ||
             tAnalysisConfig.analysisType==AFALK::kPiPPiM) rdr->SetReadV0(0); 
     else rdr->SetReadV0(1);  //Read V0 information from the AOD and put it into V0Collection
@@ -259,6 +260,13 @@ void SetPairCodes(AFALK::AnalysisParams &aAnConfig, MacroParams &aMacroConfig)
     aMacroConfig.pair_codes.push_back(AFALK::kXiKchM);
     aMacroConfig.pair_codes.push_back(AFALK::kAXiKchM);
     aAnConfig.generalAnalysisType = AFALK::kXiTrack;
+    break;
+
+  case AFALK::kXiK0:
+  case AFALK::kAXiK0:
+    aMacroConfig.pair_codes.push_back(AFALK::kXiK0);
+    aMacroConfig.pair_codes.push_back(AFALK::kAXiK0);
+    aAnConfig.generalAnalysisType = AFALK::kXiV0;
     break;
 
   case AFALK::kProtPiM:
@@ -409,6 +417,23 @@ CreateCorrectAnalysis(
     BuildParticleConfiguration(aText,tXiCutConfig);
     BuildParticleConfiguration(aText,tESDCutConfig1);
     tAnalysis = new AliFemtoAnalysisLambdaKaon(aAnParams,aEvCutParams,aPairCutParams,tXiCutConfig,tESDCutConfig1,aDirNameModifier);
+    break;
+
+  case AFALK::kXiV0:
+    switch(aAnType) {
+    case AFALK::kXiK0:
+      tXiCutConfig = AFALK::DefaultXiCutParams();
+      tV0CutConfig1 = AFALK::DefaultK0ShortCutParams();
+      break;
+
+    case AFALK::kAXiK0:
+      tXiCutConfig = AFALK::DefaultAXiCutParams();
+      tV0CutConfig1 = AFALK::DefaultK0ShortCutParams();
+      break;
+    }
+    BuildParticleConfiguration(aText,tXiCutConfig);
+    BuildParticleConfiguration(aText,tV0CutConfig1);
+    tAnalysis = new AliFemtoAnalysisLambdaKaon(aAnParams,aEvCutParams,aPairCutParams,tXiCutConfig,tV0CutConfig1);
     break;
 
   case AFALK::kTrackTrack:
@@ -609,9 +634,7 @@ BuildParticleConfiguration(
       const TString tParticleType = ((TObjString*)tCutFullLine->At(1))->String().Strip(TString::kBoth, ' ');
       const TString tParticleCut = ((TObjString*)tCutFullLine->At(2))->String().Strip(TString::kBoth, ' ');
 
-      if(tParticleType.EqualTo("ALL")) tDesiredName = TString("ALL");
-      if(tParticleType.EqualTo("ALLV0S")) tDesiredName = TString("ALLV0S");
-      if(tParticleType.EqualTo(tDesiredName)) tCmd = tV0CutVarName + "." + tParticleCut(0, tParticleCut.Length());
+      if(tParticleType.EqualTo(tDesiredName) || tParticleType.EqualTo("ALL") || tParticleType.EqualTo("ALLV0S")) tCmd = tV0CutVarName + "." + tParticleCut(0, tParticleCut.Length());
 
       if(tParticleType.EqualTo("CLAM"))  //do for both Lam and ALam
       {
@@ -686,9 +709,7 @@ BuildParticleConfiguration(
       const TString tParticleType = ((TObjString*)tCutFullLine->At(1))->String().Strip(TString::kBoth, ' ');
       const TString tParticleCut = ((TObjString*)tCutFullLine->At(2))->String().Strip(TString::kBoth, ' ');
 
-      if(tParticleType.EqualTo("ALL")) tDesiredName = TString("ALL");
-      if(tParticleType.EqualTo("ALLTRACKS")) tDesiredName = TString("ALLTRACKS");
-      if(tParticleType.EqualTo(tDesiredName)) tCmd = tESDCutVarName + "." + tParticleCut(0, tParticleCut.Length());
+      if(tParticleType.EqualTo(tDesiredName) || tParticleType.EqualTo("ALL") || tParticleType.EqualTo("ALLTRACKS")) tCmd = tESDCutVarName + "." + tParticleCut(0, tParticleCut.Length());
     }
 
     if(!tCmd.IsNull())
@@ -742,9 +763,7 @@ BuildParticleConfiguration(
       const TString tParticleType = ((TObjString*)tCutFullLine->At(1))->String().Strip(TString::kBoth, ' ');
       const TString tParticleCut = ((TObjString*)tCutFullLine->At(2))->String().Strip(TString::kBoth, ' ');
 
-      if(tParticleType.EqualTo("ALL")) tDesiredName = TString("ALL");
-      if(tParticleType.EqualTo("ALLXIS")) tDesiredName = TString("ALLXIS");
-      if(tParticleType.EqualTo(tDesiredName)) tCmd = tXiCutVarName + "." + tParticleCut(0, tParticleCut.Length());
+      if(tParticleType.EqualTo(tDesiredName) || tParticleType.EqualTo("ALL") || tParticleType.EqualTo("ALLXIS")) tCmd = tXiCutVarName + "." + tParticleCut(0, tParticleCut.Length());
     }
 
     if(!tCmd.IsNull())

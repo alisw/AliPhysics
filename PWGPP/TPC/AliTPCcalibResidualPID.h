@@ -55,6 +55,8 @@ class TH2;
 class TF1;
 class TH1;
 class TObjArray;
+class TCanvas;
+class TGraph;
 
 
 class AliTPCcalibResidualPID : public AliAnalysisTaskSE {
@@ -118,6 +120,7 @@ class AliTPCcalibResidualPID : public AliAnalysisTaskSE {
   Bool_t ProcessV0Tree(TTree* tree, THnSparseF* h, const Int_t recoPass=4, const TString runList="", const Bool_t excludeRuns=kFALSE);
   THnSparseF* ProcessV0TreeFile(TString filePathName, const Int_t recoPass=4, const TString runList="", const Bool_t excludeRuns=kFALSE);
 
+  static void CreatePlotWithOwnParameters(THnSparseF * histPidQA, const Bool_t useV0s, const Char_t * type, const Char_t * system, const Double_t* parameters, AliTPCcalibResidualPID::FitType fitType, Float_t from = 0.9, Float_t to = 10e4);
   static Double_t* ExtractResidualPID(THnSparseF * histPidQA,
                                       const Bool_t useV0s = kTRUE,
                                       const Char_t * outFile = "out.root",
@@ -132,6 +135,12 @@ class AliTPCcalibResidualPID : public AliAnalysisTaskSE {
   static  TObjArray * GetResidualGraphsMC(THnSparseF * histPidQA, const Char_t * system);
   static  TObjArray * GetSeparation(THnSparseF * histPidQA, Int_t kParticle1, Int_t kParticle2);
   static  TObjArray * GetResponseFunctions(TF1* parametrisation, TObjArray* inputGraphs, const Char_t * type, const Char_t * period, const Char_t * pass, const Char_t * system, const Char_t * dedxtype);
+  
+  static TF1* SetUpFitFunction(const Double_t * initialParameters, AliTPCcalibResidualPID::FitType fitType, Float_t from, Float_t to, Bool_t isPPb, Bool_t isMC, Double_t* parametersBBForward);
+  static void SetUpInputGraph(TGraphErrors* graphAll, Bool_t isMC, Bool_t useV0s);
+  static TCanvas* CreateBBCanvas(TObjArray* inputGraphs, Bool_t isMC, TF1* func);
+  static TCanvas* CreateResidualCanvas(TGraphErrors* graphAll, TF1* func);
+  
   static  TF1*        FitBB(TObjArray* inputGraphs, Bool_t isMC, Bool_t isPPb, const Bool_t useV0s,
                             const Double_t * initialParameters = 0x0, FitType = kSaturatedLund);
   static Int_t MergeGraphErrors(TGraphErrors* mergedGraph, TCollection* li);

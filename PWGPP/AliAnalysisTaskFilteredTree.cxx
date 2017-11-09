@@ -15,21 +15,21 @@
 
 /*
    Class to process/filter reconstruction information from ESD, ESD friends, MC and provide them for later reprocessing
-   Filtering schema - low pt part is downscaled - to have flat pt specatra of selected topologies (tracks and V0s)
+   Filtering schema - low pt part is downscaled - to have flat pt spectra of selected topologies (tracks and V0s)
    Downscaling schema is controlled by downscaling factors
    Usage: 
      1.) Filtering on Lego train
-     2.) expert QA for tracking (resolution efficnecy)
-     3.) pt reoslution studies using V0s 
+     2.) expert QA for tracking (resolution efficiency)
+     3.) pt resolution studies using V0s
      4.) dEdx calibration using V0s
      5.) pt resolution and dEdx studies using cosmic
      +
      6.) Info used for later raw data OFFLINE triggering  (highPt, V0, laser, cosmic, high dEdx)
 
-   Exported trees (with full objects and dereived variables):
+   Exported trees (with full objects and derived variables):
    1.) "highPt"     - filtered trees with esd tracks, derived variables(propagated tracks), optional MC info +optional space points
-   2.) "V0s" -      - filtered trees with selected V0s (rough KF chi2 cut), KF particle and corresponding esd tracks + optionla space points
-   3.) "Laser"      - dump laser tracks with space points if exests 
+   2.) "V0s" -      - filtered trees with selected V0s (rough KF chi2 cut), KF particle and corresponding esd tracks + optional space points
+   3.) "Laser"      - dump laser tracks with space points if exists
    4.) "CosmicTree" - cosmic track candidate (random or triggered) + esdTracks(up/down)+ optional points
    5.) "dEdx"       - tree with high dEdx tpc tracks
 */
@@ -86,7 +86,7 @@
 #include "AliPID.h"
 #include "AliPIDResponse.h"
 #include "TVectorD.h"
-
+#include "TStatToolkit.h"
 using namespace std;
 
 ClassImp(AliAnalysisTaskFilteredTree)
@@ -372,7 +372,10 @@ void AliAnalysisTaskFilteredTree::UserExec(Option_t *)
   ProcessLaser(fESD,fMC,fESDfriend);
   ProcessdEdx(fESD,fMC,fESDfriend);
   if (fProcessCosmics) { ProcessCosmics(fESD,fESDfriend); }
-  if(fMC) { ProcessMCEff(fESD,fMC,fESDfriend);}
+  if(fMC) {
+    ProcessMCEff(fESD,fMC,fESDfriend);
+    //ProcessMC();  //TODO - enable MC detailed view switch after holidays
+  }
   if (fProcessITSTPCmatchOut) ProcessITSTPCmatchOut(fESD, fESDfriend);
   printf("processed event %d\n", Int_t(Entry()));
 }
@@ -1041,8 +1044,7 @@ void AliAnalysisTaskFilteredTree::ProcessAll(AliESDEvent *const esdEvent, AliMCE
         isOKtrackInnerC&= ConstrainTrackInner(trackInnerC,vtxESD,track->GetMass(),b);
         isOKtrackInnerC&= trackInnerC->Rotate(track->GetAlpha());
         isOKtrackInnerC&= trackInnerC->PropagateTo(track->GetX(),esdEvent->GetMagneticField());
-      } 
-
+      }       
       //
       // calculate chi2 between vi and vj vectors
       // with covi and covj covariance matrices
@@ -1082,8 +1084,17 @@ void AliAnalysisTaskFilteredTree::ProcessAll(AliESDEvent *const esdEvent, AliMCE
         chi2trackC = deltatrackC*mat2trackC; 
         //chi2trackC.Print();
       }
-
-
+      //
+      // Find nearest combined and ITS standaalone tracks
+      AliExternalTrackParam paramITS;     // nearest ITS track  -   chi2 distance at vertex
+      AliExternalTrackParam paramITSC;    // nearest ITS track  -   to constrained track   chi2 distance at vertex
+      AliExternalTrackParam paramComb;    // nearest comb. tack -   chi2 distance at inner wall
+      Int_t indexNearestITS   = GetNearestTrack((trackInnerV!=NULL)? trackInnerV:track, iTrack, esdEvent,0,0,paramITS); 
+      if (indexNearestITS<0)  indexNearestITS   = GetNearestTrack((trackInnerV!=NULL)? trackInnerV:track, iTrack, esdEvent,2,0,paramITS);
+      Int_t indexNearestITSC  = GetNearestTrack((trackInnerC!=NULL)? trackInnerC:track, iTrack, esdEvent,0,0,paramITSC);  
+      if (indexNearestITSC<0)  indexNearestITS   = GetNearestTrack((trackInnerC!=NULL)? trackInnerC:track, iTrack, esdEvent,2,0,paramITSC);
+      Int_t indexNearestComb  = GetNearestTrack(track->GetInnerParam(), iTrack, esdEvent,1,1,paramComb);  
+      
       //
       // Propagate ITSout to TPC inner wall 
       // and calculate chi2 distance to track (InnerParams)
@@ -1223,7 +1234,7 @@ void AliAnalysisTaskFilteredTree::ProcessAll(AliESDEvent *const esdEvent, AliMCE
           TClonesArray *trefs=0;
           Int_t status = mcEvent->GetParticleAndTR(TMath::Abs(labelTPC), part, trefs);
 
-          if(status>0 && part && trefs && part->GetPDG() && part->GetPDG()->Charge()!=0.) 
+          if(status>0 && part && trefs && part->GetPDG() && part->GetPDG()->Charge()!=0.)
           {
             Int_t nTrackRef = trefs->GetEntries();
             //printf("nTrackRef %d \n",nTrackRef);
@@ -1463,6 +1474,16 @@ void AliAnalysisTaskFilteredTree::ProcessAll(AliESDEvent *const esdEvent, AliMCE
             "chi2InnerC="<<chi2trackC(0,0)<<        // chi2s  of tracks TPCinner to the combined
             "chi2OuterITS="<<chi2OuterITS(0,0)<<    // chi2s  of tracks TPC at inner wall to the ITSout
             "centralityF="<<centralityF;
+	  // info for 2 track resolution studies and matching efficency studies 
+	  //
+	  (*fTreeSRedirector)<<"highPt"<<
+	    "paramITS.="<<&paramITS<<                // nearest ITS track  -   chi2 distance at vertex
+	    "paramITSC.="<<&paramITSC<<              // nearest ITS track  -  to constrained track   chi2 distance at vertex
+	    "paramComb.="<<&paramComb<<              // nearest comb. tack -   chi2 distance at inner wall
+	    "indexNearestITS="<<indexNearestITS<<    // index of  nearest ITS track
+	    "indexNearestITSC="<<indexNearestITSC<<  // index of  nearest ITS track for constrained track
+	    "indexNearestComb="<<indexNearestComb;   // index of  nearest track for constrained track
+
           if (mcEvent){
             static AliTrackReference refDummy;
             if (!refITS) refITS = &refDummy;
@@ -1610,7 +1631,7 @@ void AliAnalysisTaskFilteredTree::ProcessMCEff(AliESDEvent *const esdEvent, AliM
   }
   genHeader->PrimaryVertex(vtxMC);
 
-  // multipliticy of all MC primary tracks
+  // multiplicity of all MC primary tracks
   // in Zv, pt and eta ranges)
   multMCTrueTracks = GetMCTrueTrackMult(mcEvent,evtCuts,accCuts);
 
@@ -1649,8 +1670,6 @@ void AliAnalysisTaskFilteredTree::ProcessMCEff(AliESDEvent *const esdEvent, AliM
   }
 
   Bool_t isEventOK = evtCuts->AcceptEvent(esdEvent,mcEvent,vtxESD); 
-  //printf("isEventOK %d, isEventTriggered %d \n",isEventOK, isEventTriggered);
-  //printf("GetAnalysisMode() %d \n",GetAnalysisMode());
 
   TObjString triggerClass = esdEvent->GetFiredTriggerClasses().Data();
 
@@ -1666,7 +1685,7 @@ void AliAnalysisTaskFilteredTree::ProcessMCEff(AliESDEvent *const esdEvent, AliM
     TParticle *particleMother=NULL;
     Int_t mech=-1;
 
-    // reco event info
+    // reconstruction  event info
     Double_t vert[3] = {0}; 
     vert[0] = vtxESD->GetX();
     vert[1] = vtxESD->GetY();
@@ -2876,8 +2895,68 @@ void AliAnalysisTaskFilteredTree::ProcessTrackMatch(AliESDEvent *const /*esdEven
            }
 
        2.) Overlap tracks - Refit with doUnfold
-
 */
+}
+
+Int_t   AliAnalysisTaskFilteredTree::GetNearestTrack(const AliExternalTrackParam * trackMatch, Int_t indexSkip, AliESDEvent*event, Int_t trackType, Int_t paramType, AliExternalTrackParam & paramNearest){
+  //
+  // Find track with closest chi2 distance  (assume all track ae propagated to the DCA)
+  //   trackType = 0 - find closets ITS standalone
+  //               1 - find closest track with TPC
+  //               2 - closest track with ITS and TPC
+  //   paramType = 0 - global track
+  //               1 - track at inner wall of TPC
+  //
+  //          
+  if (trackMatch==NULL){
+    ::Error("AliAnalysisTaskFilteredTree::GetNearestTrack","invalid track pointer");
+    return -1;
+  }
+  Int_t ntracks=event->GetNumberOfTracks();
+  const Double_t ktglCut=0.1;
+  const Double_t kqptCut=0.4;
+  const Double_t kAlphaCut=0.2;
+  //
+  Double_t chi2Min=100000;
+  Int_t indexMin=-1;
+  for (Int_t itrack=0; itrack<ntracks; itrack++){
+    if (itrack==indexSkip) continue;
+    AliESDtrack *ptrack=event->GetTrack(itrack);
+    if (ptrack==NULL) continue;
+    if (trackType==0 && (ptrack->IsOn(0x1)==kFALSE || ptrack->IsOn(0x10)==kTRUE))  continue;     // looks for track without TPC information
+    if (trackType==1 && (ptrack->IsOn(0x10)==kFALSE))   continue;                                // looks for tracks with   TPC information
+    if (trackType==2 && (ptrack->IsOn(0x1)==kFALSE || ptrack->IsOn(0x10)==kFALSE)) continue;      // looks for tracks with   TPC+ITS information
+    
+    if (ptrack->GetKinkIndex(0)<0) continue;              // skip kink daughters
+    const AliExternalTrackParam * track=0;                // 
+    if (paramType==0) track=ptrack;                       // Global track         
+    if (paramType==1) track=ptrack->GetInnerParam();      // TPC only track at inner wall of TPC
+    if (track==NULL) {
+      continue;
+    }
+    // first rough cuts
+    // fP3 cut
+    if (TMath::Abs((track->GetTgl()-trackMatch->GetTgl()))>ktglCut) continue; 
+    // fP4 cut 
+    if (TMath::Abs((track->GetSigned1Pt()-trackMatch->GetSigned1Pt()))>kqptCut) continue; 
+    // fAlpha cut
+    //Double_t alphaDist=TMath::Abs((track->GetAlpha()-trackMatch->GetAlpha()));
+    Double_t alphaDist=TMath::Abs(TMath::ATan2(track->Py(),track->Px())-TMath::ATan2(trackMatch->Py(),trackMatch->Py()));
+    if (alphaDist>TMath::Pi()) alphaDist-=TMath::TwoPi();
+    if (alphaDist>kAlphaCut) continue;
+    // calculate and extract track with smallest chi2 distance
+    AliExternalTrackParam param(*track);
+    if (param.Rotate(trackMatch->GetAlpha())==kFALSE) continue;
+    if (param.PropagateTo(trackMatch->GetX(),trackMatch->GetBz())==kFALSE) continue;
+    Double_t chi2=trackMatch->GetPredictedChi2(&param);
+    if (chi2<chi2Min){
+      indexMin=itrack;
+      chi2Min=chi2;
+      paramNearest=param;
+    }
+  }
+  return indexMin;
+
 }
 
 
@@ -2954,5 +3033,335 @@ void  AliAnalysisTaskFilteredTree::SetDefaultAliasesV0(TTree *tree){
   tree->SetAlias("ALLike","ALLike0/(K0Like0+LLike0+ALLike0+ELike0+BkgLike)");
   //
   tree->SetAlias("K0PIDPull","(abs(track0.fTPCsignal/dEdx0DPion-50)+abs(track1.fTPCsignal/dEdx1DPion-50))/5.");
+  tree->SetAlias("mpt","1/v0.Pt()");                 // 
+  tree->SetAlias("tglV0","v0.Pz()/v0.Pt()");                 // 
+  tree->SetAlias("alphaV0","atan2(v0.Py(),v0.Px()+0)");
+  tree->SetAlias("dalphaV0","alphaV0-((int(36+9*(alphaV0/pi))-36)*pi/9.)");
 
+}
+
+void  AliAnalysisTaskFilteredTree::SetDefaultAliasesHighPt(TTree *tree){
+  //
+  // set shortcut aliases for some variables
+  //
+  tree->SetAlias("phiInner","atan2(esdTrack.fIp.Py(),esdTrack.fIp.Px()+0)");
+  tree->SetAlias("secInner","9*(atan2(esdTrack.fIp.Py(),esdTrack.fIp.Px()+0)/pi)+18*(esdTrack.fIp.Py()<0)");
+  tree->SetAlias("tgl","esdTrack.fP[3]");
+  tree->SetAlias("alphaV","esdTrack.fAlpha");
+  tree->SetAlias("qPt","esdTrack.fP[4]");
+  tree->SetAlias("dalphaQ","sign(esdTrack.fP[4])*(esdTrack.fIp.fP[0]/esdTrack.fIp.fX)");
+  TStatToolkit::AddMetadata(tree,"phiInner.Title","#phi_{TPCin}");
+  TStatToolkit::AddMetadata(tree,"secInner.Title","sector_{TPCin}");
+  TStatToolkit::AddMetadata(tree,"tgl.Title","#it{p_{z}}/#it{p}_{T}");
+  TStatToolkit::AddMetadata(tree,"alphaV.Title","#phi_{vertex}");
+  TStatToolkit::AddMetadata(tree,"qPt.Title","q/#it{p}_{T}");
+  TStatToolkit::AddMetadata(tree,"phiInner.AxisTitle","#it{#phi}_{TPCin}");
+  TStatToolkit::AddMetadata(tree,"secInner.AxisTitle","sector_{TPCin}");
+  TStatToolkit::AddMetadata(tree,"tgl.AxisTitle","#it{p}_{z}/#it{p}_{t}");
+  TStatToolkit::AddMetadata(tree,"alphaV.AxisTitle","#it{#phi}_{vertex}");
+  TStatToolkit::AddMetadata(tree,"qPt.AxisTitle","q/#it{p}_{T} (1/GeV)");
+  
+  //
+  tree->SetAlias("normChi2ITS","sqrt(esdTrack.fITSchi2/esdTrack.fITSncls)");
+  tree->SetAlias("normChi2TPC","esdTrack.fTPCchi2/esdTrack.fTPCncls");
+  tree->SetAlias("normChi2TRD","esdTrack.fTRDchi2/esdTrack.fTRDncls");
+  tree->SetAlias("normDCAR","esdTrack.fdTPC/sqrt(1+esdTrack.fP[4]**2)");
+  tree->SetAlias("normDCAZ","esdTrack.fzTPC/sqrt(1+esdTrack.fP[4]**2)");
+  TStatToolkit::AddMetadata(tree,"normChi2ITS.Title","#sqrt{#chi2_{ITS}/N_{clITS}}");
+  TStatToolkit::AddMetadata(tree,"normChi2TPC.Title","#chi2_{TPC}/N_{clTPC}");
+  TStatToolkit::AddMetadata(tree,"normChi2ITS.AxisTitle","#sqrt{#chi2_{ITS}/N_{clITS}}");
+  TStatToolkit::AddMetadata(tree,"normChi2TPC.AxisTitle","#chi2_{TPC}/N_{clTPC}");
+  //
+  tree->SetAlias("TPCASide","esdTrack.fIp.fP[1]>0");
+  tree->SetAlias("TPCCSide","esdTrack.fIp.fP[1]<0");
+  tree->SetAlias("TPCCross","esdTrack.fIp.fP[1]*esdTrack.fIp.fP[3]<0");
+  tree->SetAlias("ITSOn","((esdTrack.fFlags&0x1)>0)");
+  tree->SetAlias("TPCOn","((esdTrack.fFlags&0x10)>0)");
+  tree->SetAlias("ITSRefit","((esdTrack.fFlags&0x4)>0)");
+  tree->SetAlias("TPCRefit","((esdTrack.fFlags&0x40)>0)");
+  tree->SetAlias("TOFOn","((esdTrack.fFlags&0x2000)>0)");
+  tree->SetAlias("TRDOn","((esdTrack.fFlags&0x400)>0)");
+  tree->SetAlias("ITSOn0","esdTrack.fITSncls>4&&esdTrack.HasPointOnITSLayer(0)&&esdTrack.HasPointOnITSLayer(1)");
+  tree->SetAlias("ITSOn01","esdTrack.fITSncls>3&&(esdTrack.HasPointOnITSLayer(0)||esdTrack.HasPointOnITSLayer(1))");
+  tree->SetAlias("nclCut","(esdTrack.GetTPCClusterInfo(3,1)+esdTrack.fTRDncls)>140-5*(abs(esdTrack.fP[4]))");
+  tree->SetAlias("IsPrim4","sqrt((esdTrack.fD**2)/esdTrack.fCdd+(esdTrack.fZ**2)/esdTrack.fCzz)<4");
+  tree->SetAlias("IsPrim4TPC","sqrt((esdTrack.fdTPC**2)/esdTrack.fCddTPC+(esdTrack.fzTPC**2)/esdTrack.fCzzTPC)<4");
+  
+
+  const char * chName[5]={"#it{r#phi}","#it{z}","sin(#phi)","tan(#it{#theta})", "q/#it{p}_{t}"};
+  const char * chUnit[5]={"cm","cm","","", "(1/GeV)"};
+  const char * refBranch=(tree->GetBranch("extInnerParamV."))? "extInnerParamV":"esdTrack.fTPCInner";
+
+  for (Int_t iPar=0; iPar<5; iPar++){
+    tree->SetAlias(TString::Format("covarP%dITS",iPar).Data(),TString::Format("sqrt(esdTrack.fC[%d]+0)",AliExternalTrackParam::GetIndex(iPar,iPar)).Data());    
+    tree->SetAlias(TString::Format("covarP%d",iPar).Data(),TString::Format("sqrt(%s.fC[%d]+0)",refBranch,AliExternalTrackParam::GetIndex(iPar,iPar)).Data());
+    tree->SetAlias(TString::Format("covarPC%d",iPar).Data(),TString::Format("sqrt(extInnerParamC.fC[%d]+0)",AliExternalTrackParam::GetIndex(iPar,iPar)).Data());
+    tree->SetAlias(TString::Format("covarP%dNorm",iPar).Data(),TString::Format("sqrt(%s.fC[%d]+0)/sqrt(1+(1*esdTrack.fP[4])**2)/sqrt(1+(1*esdTrack.fP[4])**2)",refBranch,AliExternalTrackParam::GetIndex(iPar,iPar)).Data());
+    tree->SetAlias(TString::Format("covarPC%dNorm",iPar).Data(),TString::Format("sqrt(extInnerParamC.fC[%d]+0)/sqrt(1+(5*esdTrack.fP[4])**2)",AliExternalTrackParam::GetIndex(iPar,iPar)).Data());
+
+    tree->SetAlias(TString::Format("deltaP%d",iPar).Data(),TString::Format("(%s.fP[%d]-esdTrack.fCp.fP[%d])",refBranch,iPar,iPar).Data());
+    tree->SetAlias(TString::Format("deltaPC%d",iPar).Data(),TString::Format("(extInnerParamC.fP[%d]-esdTrack.fCp.fP[%d])",iPar,iPar).Data());
+    // rough  normalization of the residual sigma ~ sqrt(1+*k/pt)^2) 
+    // histogram pt normalized deltas enable us to use wider bins in q/pt and also less bins in deltas
+    tree->SetAlias(TString::Format("deltaP%dNorm",iPar).Data(),TString::Format("(%s.fP[%d]-esdTrack.fCp.fP[%d])/sqrt(1+(1*esdTrack.fP[4])**2)",refBranch,iPar,iPar).Data());
+    tree->SetAlias(TString::Format("deltaPC%dNorm",iPar).Data(),TString::Format("(extInnerParamC.fP[%d]-esdTrack.fCp.fP[%d])/sqrt(1.+(5.*esdTrack.fP[4])**2)",iPar,iPar).Data());
+    //
+    tree->SetAlias(TString::Format("pullP%d",iPar).Data(),
+		   TString::Format("(%s.fP[%d]-esdTrack.fCp.fP[%d])/sqrt(%s.fC[%d]+esdTrack.fCp.fC[%d])",refBranch,
+				   iPar,iPar,refBranch,AliExternalTrackParam::GetIndex(iPar,iPar),AliExternalTrackParam::GetIndex(iPar,iPar)).Data());
+    tree->SetAlias(TString::Format("pullPC%d",iPar).Data(),
+		   TString::Format("(extInnerParamC.fP[%d]-esdTrack.fCp.fP[%d])/sqrt(extInnerParamC.fC[%d]+esdTrack.fCp.fC[%d])",
+				   iPar,iPar,AliExternalTrackParam::GetIndex(iPar,iPar),AliExternalTrackParam::GetIndex(iPar,iPar)).Data());
+    TStatToolkit::AddMetadata(tree,TString::Format("deltaP%d.AxisTitle",iPar).Data(),TString::Format("%s (%s)",chName[iPar], chUnit[iPar]).Data());
+    TStatToolkit::AddMetadata(tree,TString::Format("deltaPC%d.AxisTitle",iPar).Data(),TString::Format("%s (%s)",chName[iPar], chUnit[iPar]).Data());
+    TStatToolkit::AddMetadata(tree,TString::Format("pullP%d.AxisTitle",iPar).Data(),TString::Format("pull %s (unit)",chName[iPar]).Data());
+    TStatToolkit::AddMetadata(tree,TString::Format("pullPC%d.AxisTitle",iPar).Data(),TString::Format("pull %s (unit)",chName[iPar]).Data());
+    //
+    TStatToolkit::AddMetadata(tree,TString::Format("deltaP%d.Title",iPar).Data(),TString::Format("%s",chName[iPar]).Data());
+    TStatToolkit::AddMetadata(tree,TString::Format("deltaPC%d.Title",iPar).Data(),TString::Format("%s",chName[iPar]).Data());
+    TStatToolkit::AddMetadata(tree,TString::Format("pullP%d.Title",iPar).Data(),TString::Format("pull %s",chName[iPar]).Data());
+    TStatToolkit::AddMetadata(tree,TString::Format("pullPC%d.Title",iPar).Data(),TString::Format("pull %s",chName[iPar]).Data());
+  }
+  TStatToolkit::AddMetadata(tree, "mult.Title","N_{prim}");
+  TStatToolkit::AddMetadata(tree, "mult.AxisTitle","N_{prim}");
+  TStatToolkit::AddMetadata(tree, "ntracks.Title","N_{tr}");
+  TStatToolkit::AddMetadata(tree, "ntracks.AxisTitle","N_{tr} (prim+sec+pile-up)");
+}
+
+/// ## Calculate diff between MC snapshot (AliTrackReference)  and reconstructed reco parameters (AliExternalTrackParam)
+///      Snapshots and reconstructed parameters are stored in different reference position resp. rotation frame
+/// ### Comparison:
+///    MC interpolation between 2 snapshot at reference plane/position/frame of the reconstructed track
+/// \param param           - reconstructed parameters
+/// \param trackRefArray   - MC snapshot of particle trajectory
+/// \param mcDiff          - MC-reco difference vector at reference frame of track
+/// \return                - 0 OK, >0 error code
+Int_t AliAnalysisTaskFilteredTree::GetMCTrackDiff(const TParticle &particle, const AliExternalTrackParam &param, TClonesArray &trackRefArray, TVectorF &mcDiff){
+  Double_t xyz[3]={0};
+  param.GetXYZ(xyz);
+  // 1.) Find nearest reference
+  Int_t nTrackRefs = trackRefArray.GetEntriesFast();
+  Int_t nTPCRef=0;
+  AliTrackReference *refNearest=0;
+  TVectorF fdist(nTrackRefs);
+  for (Int_t itrR = 0; itrR < nTrackRefs; ++itrR) {
+    AliTrackReference* ref = static_cast<AliTrackReference*>(trackRefArray.UncheckedAt(itrR));
+    Double_t lDist=(ref->X()-xyz[0])*(ref->X()-xyz[0])+(ref->Y()-xyz[1])*(ref->Y()-xyz[1])+(ref->Z()-xyz[2])*(ref->Z()-xyz[2]);
+    fdist[itrR]=lDist;
+  }
+  Double_t dist=250*250;
+  Int_t index0=0,index1=0;
+  for (Int_t itrR = 1; itrR < nTrackRefs-1; ++itrR){
+    if (fdist[itrR]<dist){
+      dist=fdist[itrR];
+      if (fdist[itrR-1]<fdist[itrR+1]){
+        index0=itrR-1;
+        index1=itrR;
+      }else{
+        index0=itrR;
+        index1=itrR+1;
+      }
+    }
+    refNearest=static_cast<AliTrackReference*>(trackRefArray.UncheckedAt(index0));
+  }
+  // 2.) Get MC snapshot interpolation
+  if (index0<0) return -1;
+  AliTrackReference *ref0=static_cast<AliTrackReference*>(trackRefArray.UncheckedAt(index0));
+  AliTrackReference *ref1=static_cast<AliTrackReference*>(trackRefArray.UncheckedAt(index0));
+  Double_t xyz0[3]={ref0->X(), ref0->Y(), ref0->Z()};
+  Double_t pxyz0[3]={ref0->Px(), ref0->Py(), ref0->Pz()};
+  Double_t xyz1[3]={ref1->X(), ref1->Y(), ref1->Z()};
+  Double_t pxyz1[3]={ref1->Px(), ref1->Py(), ref1->Pz()};
+  AliExternalTrackParam param0(xyz0,pxyz0,(Double_t*)param.GetCovariance(),param.GetSign()); // TODO - fix constructor in AliExternalTrackParam using constant pointers
+  AliExternalTrackParam param1(xyz1,pxyz1,(Double_t*)param.GetCovariance(),param.GetSign());
+  Int_t errorCode=0;
+  errorCode+=(param0.Rotate(param.GetAlpha())==kFALSE);
+  errorCode+=(param1.Rotate(param.GetAlpha())==kFALSE);
+  if (errorCode>0){
+    return 100+errorCode;
+  }
+  errorCode+=(AliTrackerBase::PropagateTrackToBxByBz(&param0,param.GetX(),particle.GetMass(),5.,kFALSE,0.9999)==kFALSE);
+  errorCode+=(AliTrackerBase::PropagateTrackToBxByBz(&param1,param.GetX(),particle.GetMass(),5.,kFALSE,0.9999)==kFALSE);
+  if  (errorCode>0){
+    return 1000 +errorCode;
+  }
+  AliTrackerBase::UpdateTrack(param0,param1);
+  // 3.) fill diff
+  for (Int_t iPar=0; iPar<5; iPar++){
+    mcDiff[iPar]=param.GetParameter()[iPar]-param0.GetParameter()[iPar];
+  }
+  return 0;
+}
+
+/// # AliAnalysisTaskFilteredTree::GetMCInfoTrack - attach MC track info into map
+/// combine MC and reconstruction particle information and calculate derived information
+/// \param label        - track label
+/// \param trackInfoF   - std map with
+/// \param trackInfoO   - std map with object information, map is OWNER of all containing information (shared pointers can be used because of alice C++ limitation)
+/// \return             - 0 OK - >0 error code
+///
+/// ### Information collected
+///    * 1.) particle information
+///    * 2.) particle trajectory information (based on array o AliTrackReference)
+///    * 3.) reconstruction information (based on the MC label information)
+///    * 4.) diff between MC and real data at reference planes
+Int_t AliAnalysisTaskFilteredTree::GetMCInfoTrack(Int_t label,  std::map<std::string,float> &trackInfoF, std::map<std::string,TObject*> &trackInfoO){
+   // 0.)  define some constants
+  const Double_t kTPCOutR=245; // used in loop counters
+  AliStack * stack = fMC->Stack();
+  Int_t mcStackSize=stack->GetNtrack();
+  if (label>mcStackSize){
+    return 1;
+  }
+  // 1.) particle information
+  TParticle *particle=NULL;
+  TClonesArray *trackRefs=0;
+  Int_t status = fMC->GetParticleAndTR(label, particle, trackRefs);
+  trackInfoO["p"]=particle;    // particle information
+  if (particle==NULL || particle->GetPDG() ==NULL || particle->GetPDG()->Charge()!=0.) {
+    return 2;
+  }
+  // 2.) particle trajectory information
+  Int_t nTrackRef = trackRefs->GetEntries();
+  trackInfoF["nRef"]=nTrackRef;  // number of references
+  if (nTrackRef==0){
+    return 4;
+  }
+  TVectorF refCounter(21);  // counter of references
+  TVectorF detLength(21);   // track length defined as distance between first and the last track reference in detector
+  Double_t maxRadius=0;
+  AliTrackReference*detRef[21]={NULL};
+  Int_t loopCounter=0;     // turning point counter to check loopers
+  AliTrackReference *lastLoopRef = NULL;
+  for (Int_t iRef = 0; iRef < nTrackRef; iRef++) {
+    AliTrackReference *ref = (AliTrackReference *) trackRefs->At(iRef);
+    if (ref->Label() != label) continue;
+    Int_t detID=ref->DetectorId();
+    if (detID < 0) {
+      trackInfoO["refDecay"] = ref;
+      break;
+    }
+    if (ref->R()>maxRadius) maxRadius=ref->R();
+    refCounter[detID]++;
+    if (lastLoopRef!=NULL && ref->R()<kTPCOutR){ //loop counter
+      Double_t dir0=ref->Px()*ref->X()+ref->Py()*ref->Y();
+      Double_t dir1=lastLoopRef->Px()*lastLoopRef->X()+lastLoopRef->Py()*lastLoopRef->Y();
+      if (dir0*dir1<0) {
+        loopCounter++;
+        lastLoopRef=ref;
+      }
+    }
+    if (lastLoopRef==NULL) lastLoopRef=ref;
+    if (refCounter[detID] >0){
+      detLength[detID]=ref->GetLength()-detRef[detID]->GetLength();
+    }else{
+      detRef[detID]=ref;
+    }
+  }
+  trackInfoO["refCounter"]=new TVectorF(refCounter);
+  trackInfoO["detLength"]=new TVectorF(detLength);
+  trackInfoF["loopCounter"]=loopCounter;
+  trackInfoF["maxRadius"]=maxRadius;
+  // 3.) Assign - reconstruction information
+  //     In case particle reconstructed more than once - use the best
+  //     Distance definition ???
+  Int_t ntracks=fESD->GetNumberOfTracks();
+  Int_t nRecITS=0, nRecTPC=0, nRecTRD=0, nRecTOF=0;
+  AliESDtrack * esdTrack=NULL;
+  AliESDtrack * itsTrack=0;
+  Int_t detRecLength=0, trackIndex=-1;
+  for (Int_t iTrack=0;iTrack<ntracks;iTrack++) {
+    AliESDtrack *track = fESD->GetTrack(iTrack);
+    if (track == NULL) continue;
+    Int_t recoLabel = TMath::Abs(track->GetLabel());
+    if (recoLabel != label) continue;
+    // find longest combined track - only "non fake legs" counted
+    Int_t detRecLength0 = 0;
+    if (TMath::Abs(track->GetITSLabel()) == label) detRecLength += track->IsOn(AliESDtrack::kITSin) +
+                                                                track->IsOn(AliESDtrack::kITSrefit);
+    if (TMath::Abs(track->GetTPCLabel()) == label) detRecLength += track->IsOn(AliESDtrack::kTPCin) +
+                                                                track->IsOn(AliESDtrack::kTPCrefit);
+    if (TMath::Abs(track->GetTRDLabel()) == label) detRecLength += track->IsOn(AliESDtrack::kTRDout) +
+                                                                track->IsOn(AliESDtrack::kTRDrefit);
+    if (track->IsOn(AliESDtrack::kITSin)) nRecITS++;
+    if (track->IsOn(AliESDtrack::kTPCin)) nRecTPC++;
+    if (track->IsOn(AliESDtrack::kTRDout)) nRecTRD++;
+    // in case the same "detector length" use most precise angular pz/pt determination
+    // TODO - pz/pt chosen because valid also for secondary particles, better to use combined chi2, More complex - closest reference to be used in that case
+    if (detRecLength == detRecLength0) {
+      Double_t tglParticle = particle->Pz() / particle->Pt();
+      Double_t deltaTgl0 = esdTrack->Pz() / esdTrack->Pt() - tglParticle;
+      Double_t deltaTgl1 = track->Pz() / track->Pt() - tglParticle;
+      if (TMath::Abs(deltaTgl1) < TMath::Abs(deltaTgl0)) {
+        esdTrack = track;
+        trackIndex = iTrack;
+      }
+    }
+    if (detRecLength < detRecLength0) {
+      detRecLength = detRecLength0;
+      esdTrack = track;
+      trackIndex = iTrack;
+    }
+    if (!track->IsOn(AliESDtrack::kTPCin) && track->IsOn(AliESDtrack::kITSin)) {
+      itsTrack = track;
+    }
+  }
+  trackInfoO["esdTrack"]=esdTrack;
+  trackInfoO["itsTrack"]=itsTrack;
+  //4.) diff between MC and real data at reference planes
+  TVectorF mcDiff(5);
+  if (esdTrack!=NULL){
+    if (GetMCTrackDiff(*particle,*(esdTrack), *trackRefs, mcDiff)==0){
+        trackInfoO["diffesdTrack"]=new TVectorF(mcDiff);
+    };
+    if (esdTrack->GetTPCInnerParam()){
+      if (GetMCTrackDiff(*particle,*(esdTrack->GetTPCInnerParam()), *trackRefs, mcDiff)==0){
+        trackInfoO["diffTPCInnerParam"]=new TVectorF(mcDiff);
+      };
+    }
+    if (esdTrack->GetInnerParam()){
+      if (GetMCTrackDiff(*particle,*(esdTrack->GetInnerParam()), *trackRefs, mcDiff)==0){
+        trackInfoO["diffInnerParam"]=new TVectorF(mcDiff);
+      };
+    }
+    if (esdTrack->GetOuterParam()){
+      if (GetMCTrackDiff(*particle,*(esdTrack->GetOuterParam()), *trackRefs, mcDiff)==0){
+        trackInfoO["diffOuterParam"]=new TVectorF(mcDiff);
+      };
+    }
+    if (esdTrack->GetOuterHmpParam()){
+      if (GetMCTrackDiff(*particle,*(esdTrack->GetOuterHmpParam()), *trackRefs, mcDiff)==0){
+        trackInfoO["diffOuterHmpParam"]=new TVectorF(mcDiff);
+      };
+    }
+  }
+  return 0;
+}
+
+Int_t AliAnalysisTaskFilteredTree::GetMCInfoKink(Int_t label, std::map<std::string,float> &kinkInfoF, std::map<std::string,TObject*> &kinkInfoO){
+
+}
+
+/// ProcessMC() information
+/// WORK in progress
+/// TODO use parametrization (event and particle selection)
+void AliAnalysisTaskFilteredTree::ProcessMC(){
+  //
+  AliStack * stack = fMC->Stack();
+  if (!stack) return;
+  Int_t mcStackSize=stack->GetNtrack();
+  std::map<std::string,float> trackInfoF;
+  std::map<std::string,TObject*> trackInfoO;
+  static Int_t downscaleCounter=0;
+  for (Int_t iMc = 0; iMc < mcStackSize; ++iMc) {
+    TParticle *particle = stack->Particle(iMc);
+    if (!particle) continue;
+    // apply downscaling function
+    Double_t scalempt= TMath::Min(particle->Pt(),10.);
+    Double_t downscaleF = gRandom->Rndm();
+    downscaleF *= fLowPtTrackDownscaligF;
+    if (downscaleCounter>0 && TMath::Exp(2*scalempt)<downscaleF) continue;
+    Int_t result = GetMCInfoTrack(iMc, trackInfoF,trackInfoO);
+
+  }
 }

@@ -51,12 +51,12 @@ bool AliEmcalEmbeddingQA::Initialize()
   // Cross section
   histName = "fHistXsectionAfterSel";
   histTitle = "Pythia Cross Section After Event Selection;p_{T} hard bin; XSection";
-  fHistManager.CreateTProfile(histName, histTitle, nPtHardBins + 1, -1, nPtHardBins);
+  fHistManager.CreateTProfile(histName, histTitle, nPtHardBins, 0, nPtHardBins);
 
   // Trials
   histName = "fHistTrialsAfterSel";
   histTitle = "Number of Pythia Trials After Event Selecdtion;p_{T} hard bin;Trials";
-  fHistManager.CreateTH1(histName, histTitle, nPtHardBins + 1, -1, nPtHardBins);
+  fHistManager.CreateTH1(histName, histTitle, nPtHardBins, 0, nPtHardBins);
 
   // Pt hard spectra
   histName = "fHistPtHardAfterSel";
@@ -81,7 +81,7 @@ bool AliEmcalEmbeddingQA::AddQAPlotsToList(TList * list)
 
   if (!fInitialized) {
     AliWarning("Embedding QA histograms are not initialized! Attempting to initialize...");
-    bool res = Initialize();
+    Initialize();
     if (!fInitialized) {
       AliFatal("Unable to initialize the embedding QA hists!");
       // No need to return here, as it will crash anyway

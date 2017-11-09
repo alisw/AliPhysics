@@ -54,6 +54,7 @@ set(SRCS
   AliEmcalTrackPropagatorTask.cxx
   AliEmcalCellMonitorTask.cxx
   AliEmcalFastOrMonitorTask.cxx
+  AliEmcalTriggerRejectionMaker.cxx
   AliEsdSkimTask.cxx
   AliEsdTrackExt.cxx
   AliHadCorrTask.cxx
@@ -63,6 +64,7 @@ set(SRCS
   AliAnalysisTaskEmcalTriggerSelection.cxx
   AliAnalysisTaskEmcalIteratorTest.cxx
   AliEmcalCopyCollection.cxx
+  AliEmcalCorrectionEventManager.cxx
   AliEmcalCorrectionTask.cxx
   AliEmcalCorrectionComponent.cxx
   AliEmcalCorrectionCellBadChannel.cxx
@@ -74,7 +76,10 @@ set(SRCS
   AliEmcalCorrectionClusterExotics.cxx
   AliEmcalCorrectionClusterTrackMatcher.cxx
   AliEmcalCorrectionClusterHadronicCorrection.cxx
+  AliEmcalCorrectionPHOSCorrections.cxx
   AliAnalysisTaskEmcalOccupancy.cxx
+  TestAliEmcalAODFilterBitCuts.cxx
+  TestAliEmcalTrackSelection.cxx
   )
 
 # Headers from sources

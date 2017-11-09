@@ -2,6 +2,7 @@
 
 #pragma link C++ class AlidNdPtUnifiedAnalysisTask+;
 #pragma link C++ class AliAnalysisTaskMeanPtRaw+;
+#pragma link C++ class AliAnalysisTaskPPvsMultINEL0+;
 #pragma link C++ class AlidNdPtAcceptanceCuts+;
 #pragma link C++ class AlidNdPtAnalysis+;
 #pragma link C++ class AlidNdPtAnalysisPbPb+;
@@ -28,6 +29,7 @@
 #pragma link C++ class AliAnalysisTPCTOFpA+;
 #pragma link C++ class TOFSpectrappAnalysis+;
 #pragma link C++ class AliAnTOFtrack+;
+#pragma link C++ class AliAnTOFevent+;
 #pragma link C++ class AliAnalysisTaskTOFSpectra+;
 #pragma link C++ class AliAnalysisCombinedHadronSpectra2MC+;
 #pragma link C++ class AliAnalysisTaskParticleEfficiencyLF+;
@@ -45,6 +47,10 @@
 #pragma link C++ class AliAnalysisTaskKinksFilimon+;
 #pragma link C++ class AliAnalysisKinkESDat13+;
 #pragma link C++ class AliAnalysisKinkESDMC13+;
+#pragma link C++ class AliAnalysisTaskKinkpp5TeV+;
+#pragma link C++ class AliAnalysisTaskKinkpp5TeVMC+;
+#pragma link C++ class AliAnalysisTaskKinkPbPb+;
+#pragma link C++ class AliAnalysisTaskKinkPbPbMC+;
 
 #pragma link C++ class AliAnalysisTaskSpectraBoth+;
 #pragma link C++ class AliSpectraBothEventCuts+;
@@ -85,8 +91,7 @@
 #pragma link C++ class AliMESpidTask+;
 #pragma link C++ class AliMESchgTask+;
 #pragma link C++ class AliMESppColTask+;
-#pragma link C++ class AliMESppColTask::AliMESppColTaskExchange+; 
-#pragma link C++ class AliMESppColTask::AliMESppColMixEvent+; 
+
 
 // AntiprotonToProton
 #pragma link C++ class AliProtonAnalysis+;

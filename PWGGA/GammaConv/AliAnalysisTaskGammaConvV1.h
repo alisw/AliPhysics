@@ -92,7 +92,6 @@ class AliAnalysisTaskGammaConvV1 : public AliAnalysisTaskSE {
     AliConversionAODBGHandlerRP**     fBGHandlerRP;                               //
     AliVEvent*                        fInputEvent;                                //
     AliMCEvent*                       fMCEvent;                                   //
-    AliStack*                         fMCStack;                                   //
     TList**                           fCutFolder;                                 //
     TList**                           fESDList;                                   //
     TList**                           fBackList;                                  //
@@ -190,8 +189,8 @@ class AliAnalysisTaskGammaConvV1 : public AliAnalysisTaskSE {
     TH2F**                            fHistoTruePrimaryEtaMCPtResolPt;              //!
     TH2F**                            fHistoTrueSecondaryMotherInvMassPt;           //!
     TH2F**                            fHistoTrueSecondaryMotherFromK0sInvMassPt;    //!
-    TH2F**                            fHistoTrueSecondaryMotherFromK0lInvMassPt;    //!
     TH1F**                            fHistoTrueK0sWithPi0DaughterMCPt;             //!
+    TH2F**                            fHistoTrueSecondaryMotherFromK0lInvMassPt;    //!
     TH1F**                            fHistoTrueK0lWithPi0DaughterMCPt;             //!
     TH2F**                            fHistoTrueSecondaryMotherFromEtaInvMassPt;    //!
     TH1F**                            fHistoTrueEtaWithPi0DaughterMCPt;             //!
@@ -247,12 +246,14 @@ class AliAnalysisTaskGammaConvV1 : public AliAnalysisTaskSE {
     TH1F**                            fHistoNGoodESDTracksWeighted;                    //!
     TH1F**                            fHistoVertexZ;                                   //!
     TH1F**                            fHistoVertexZWeighted;                           //!
+    Int_t                             fDoCentralityFlat;                               //flag for centrality flattening
     TH1F**                            fHistoCentrality;                                //!
     TH1F**                            fHistoCentralityFlattened;                       //!
     TH2F**                            fHistoCentralityVsPrimaryTracks;                 //!
     TH1F**                            fHistoNGammaCandidates;                          //!
     TH2F**                            fHistoNGoodESDTracksVsNGammaCandidates;          //!
     TH2F**                            fHistoSPDClusterTrackletBackground;         //! array of histos with SPD tracklets vs SPD clusters for background rejection
+    TH2F**                            fHistoV0MultVsNumberTPCoutTracks;           //! correlation V=Mult vs number TPC out Tracks
     TH1F**                            fHistoNV0Tracks;                            //!
     TProfile**                        fProfileEtaShift;                           //! array of profiles with eta shift
     TProfile**                        fProfileJetJetXSection;                     //! array of profiles with xsection for jetjet
@@ -279,8 +280,8 @@ class AliAnalysisTaskGammaConvV1 : public AliAnalysisTaskSE {
     Double_t*                         fUnsmearedPy;                               //[fnGammaCandidates]
     Double_t*                         fUnsmearedPz;                               //[fnGammaCandidates]
     Double_t*                         fUnsmearedE;                                //[fnGammaCandidates]
-    Int_t*                            fMCStackPos;                                //[fnGammaCandidates]
-    Int_t*                            fMCStackNeg;                                //[fnGammaCandidates]
+    Int_t*                            fMCEventPos;                                //[fnGammaCandidates]
+    Int_t*                            fMCEventNeg;                                //[fnGammaCandidates]
     Int_t*                            fESDArrayPos;                               //[fnGammaCandidates]
     Int_t*                            fESDArrayNeg;                               //[fnGammaCandidates]
     Int_t                             fnCuts;                                     //
@@ -295,7 +296,6 @@ class AliAnalysisTaskGammaConvV1 : public AliAnalysisTaskSE {
     Bool_t                            fIsFromSelectedHeader;                      //
     Int_t                             fIsMC;                                      //
     Bool_t                            fDoTHnSparse;                               // flag for using THnSparses for background estimation
-    Int_t                             fDoCentralityFlat;                          //flag for centrality flattening
     Double_t                          fWeightJetJetMC;                            // weight for Jet-Jet MC
     Double_t*                         fWeightCentrality;                          //[fnCuts], weight for centrality flattening
     Bool_t                            fEnableClusterCutsForTrigger;               //enables ClusterCuts for Trigger
@@ -307,7 +307,7 @@ class AliAnalysisTaskGammaConvV1 : public AliAnalysisTaskSE {
 
     AliAnalysisTaskGammaConvV1(const AliAnalysisTaskGammaConvV1&); // Prevent copy-construction
     AliAnalysisTaskGammaConvV1 &operator=(const AliAnalysisTaskGammaConvV1&); // Prevent assignment
-    ClassDef(AliAnalysisTaskGammaConvV1, 40);
+    ClassDef(AliAnalysisTaskGammaConvV1, 42);
 };
 
 #endif

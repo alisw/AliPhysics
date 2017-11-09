@@ -26,8 +26,8 @@
 //______________________________________________________________________________
 AliJIaaHistograms::AliJIaaHistograms(AliJCard* cardP) :
 	AliJHistogramInterface(cardP),
-	fhDEtaNear(),
-	fhDEtaNearM(),
+    //fhDEtaNear(),
+    //fhDEtaNearM(),
 	fhDphiDetaPta(),
 	fhIphiTrigg(),
 	fhIetaTrigg(),
@@ -59,8 +59,8 @@ AliJIaaHistograms::AliJIaaHistograms(AliJCard* cardP) :
 //______________________________________________________________________________
 AliJIaaHistograms::AliJIaaHistograms(const AliJIaaHistograms& obj) :
 	AliJHistogramInterface(obj),
-	fhDEtaNear(obj.fhDEtaNear),
-	fhDEtaNearM(obj.fhDEtaNearM),
+    //fhDEtaNear(obj.fhDEtaNear),
+    //fhDEtaNearM(obj.fhDEtaNearM),
 	fhDphiDetaPta(obj.fhDphiDetaPta),
 	fhIphiTrigg(obj.fhIphiTrigg),
 	fhIetaTrigg(obj.fhIetaTrigg),
@@ -164,13 +164,13 @@ void AliJIaaHistograms::CreateCorrelationHistograms()
 	// correlation histos (and mixed event)
 	//======================================
 
-	fhDEtaNear
-			<< TH1D( "hDEtaNear", "",  160, -2*fmaxEtaRange, 2*fmaxEtaRange)
-            <<  fCentBin << fVtxBin << fPhiGapBin << fPTtBin << fPTaBin  << "END";
+    //fhDEtaNear
+    //		<< TH1D( "hDEtaNear", "",  160, -2*fmaxEtaRange, 2*fmaxEtaRange)
+    //        <<  fCentBin << fVtxBin << fPhiGapBin << fPTtBin << fPTaBin  << "END";
 
-	fhDEtaNearM
-			<< TH1D( "hDEtaNearM", "",  160, -2*fmaxEtaRange, 2*fmaxEtaRange)
-            <<  fCentBin << fVtxBin << fPhiGapBin << fPTtBin << fPTaBin  << "END";
+    //fhDEtaNearM
+    //		<< TH1D( "hDEtaNearM", "",  160, -2*fmaxEtaRange, 2*fmaxEtaRange)
+    //        <<  fCentBin << fVtxBin << fPhiGapBin << fPTtBin << fPTaBin  << "END";
 
 	fhDphiDetaPta
             << TH2D( "hDphiDetaPta", "", 160, -2*fmaxEtaRange, 2*fmaxEtaRange, 80, -0.5*kJPi, 1.5*kJPi)

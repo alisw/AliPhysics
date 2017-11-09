@@ -1,23 +1,23 @@
 /**************************************************************************
-* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
-*                                                                        *
-* Author: The ALICE Off-line Project.                                    *
-* Contributors are mentioned in the code where appropriate.              *
-*                                                                        *
-* Permission to use, copy, modify and distribute this software and its   *
-* documentation strictly for non-commercial purposes is hereby granted   *
-* without fee, provided that the above copyright notice appears in all   *
-* copies and that both the copyright notice and this permission notice   *
-* appear in the supporting documentation. The authors make no claims     *
-* about the suitability of this software for any purpose. It is          *
-* provided "as is" without express or implied warranty.                  *
-**************************************************************************/
+ * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ *                                                                        *
+ * Author: The ALICE Off-line Project.                                    *
+ * Contributors are mentioned in the code where appropriate.              *
+ *                                                                        *
+ * Permission to use, copy, modify and distribute this software and its   *
+ * documentation strictly for non-commercial purposes is hereby granted   *
+ * without fee, provided that the above copyright notice appears in all   *
+ * copies and that both the copyright notice and this permission notice   *
+ * appear in the supporting documentation. The authors make no claims     *
+ * about the suitability of this software for any purpose. It is          *
+ * provided "as is" without express or implied warranty.                  *
+ **************************************************************************/
 //
 // The analysis task:
 // Filling an AliCFContainer with the quantities pt, eta and phi
 // for tracks which survivied the particle cuts (MC resp. ESD tracks)
 // Track selection is done using the AliHFE package
-// 
+//
 // Author:
 //  Raphaelle Bailhache <R.Bailhache@gsi.de>
 //  Markus Fasel <M.Fasel@gsi.de>
@@ -89,73 +89,79 @@
 #include "AliAODMCHeader.h"
 #include "TClonesArray.h"
 
+#include "AliMultSelection.h"
+
 ClassImp(AliAnalysisTaskHFE)
 
 //____________________________________________________________
 AliAnalysisTaskHFE::AliAnalysisTaskHFE():
 AliAnalysisTaskSE("PID efficiency Analysis")
-  , fAODMCHeader(NULL)
-  , fAODArrayMCInfo(NULL)
-  , fQAlevel(0)
-  , fPlugins(0)
-  , fCollisionSystem(3)
-  , fFillSignalOnly(kTRUE)
-  , fRejectMCFakeTracks(kFALSE)
-  , fFillNoCuts(kFALSE)
-  , fBackGroundFactorApply(kFALSE)
-  , fRemovePileUp(kFALSE)
-  , fIdentifiedAsPileUp(kFALSE)
-  , fIdentifiedAsOutInz(kFALSE)
-  , fPassTheEventCut(kFALSE)
-  , fRejectKinkMother(kFALSE)
-  , fisppMultiBin(kFALSE)
-  , fPbPbUserCentralityBinning(kFALSE)
-  , fRemoveFirstEvent(kFALSE)
-  , fisNonHFEsystematics(kFALSE)
-  , fCalcContamBeauty(kFALSE)
-  , fvtxAna(0)
-  , fVtxMixed(kFALSE)
-  , fVtxTrack(kFALSE)
-  , fVtxSPD(kFALSE)
-  , fSpecialTrigger(NULL)
-  , fCentralityF(-1)
-  , fCentralityPercent(-1)
-  , fCentralityEstimator("V0M")
-  , fContributors(0.5)
-  , fWeightBackGround(0.)
-  , fVz(0.0)
-  , fContainer(NULL)
-  , fVarManager(NULL)
-  , fSignalCuts(NULL)
-  , fCFM(NULL)
-  , fTriggerAnalysis(NULL)
-  , fPID(NULL)
-  , fPIDqa(NULL)
-  , fTRDTriggerAnalysismb(NULL)
-  , fTRDTriggerAnalysistrg(NULL)
-  , fPIDpreselect(NULL)
-  , fCuts(NULL)
-  , fTaggedTrackCuts(NULL)
-  , fCleanTaggedTrack(kFALSE)
-  , fVariablesTRDTaggedTrack(kFALSE)
-  , fAnalysisUtils(NULL)
-  , fCutspreselect(NULL)
-  , fSecVtx(NULL)
-  , fElecBackGround(NULL)
-  , fMCQA(NULL)
-  , fTaggedTrackAnalysis(NULL)
-  , fExtraCuts(NULL)
-  , fBackgroundSubtraction(NULL)
-  , fTRDTrigger(kFALSE)
-  , fWhichTRDTrigger(0)
-  , fV0Tagger(NULL)
-  , fPIDResponse(NULL)
-  , fQA(NULL)
-  , fOutput(NULL)
-  , fHistMCQA(NULL)
-  , fHistSECVTX(NULL)
-  , fHistELECBACKGROUND(NULL)
-  , fQACollection(NULL)
+, fAODMCHeader(NULL)
+, fAODArrayMCInfo(NULL)
+, fQAlevel(0)
+, fPlugins(0)
+, fCollisionSystem(3)
+, fFillSignalOnly(kTRUE)
+, fRejectMCFakeTracks(kFALSE)
+, fFillNoCuts(kFALSE)
+, fBackGroundFactorApply(kFALSE)
+, fRemovePileUp(kFALSE)
+, fIdentifiedAsPileUp(kFALSE)
+, fIdentifiedAsOutInz(kFALSE)
+, fPassTheEventCut(kFALSE)
+, fRejectKinkMother(kFALSE)
+, fisppMultiBin(kFALSE)
+, fPbPbUserCentralityBinning(kFALSE)
+, fRemoveFirstEvent(kFALSE)
+, fisNonHFEsystematics(kFALSE)
+, fCalcContamBeauty(kFALSE)
+, fvtxAna(0)
+, fVtxMixed(kFALSE)
+, fVtxTrack(kFALSE)
+, fVtxSPD(kFALSE)
+, fSpecialTrigger(NULL)
+, fCentralityF(-1)
+, fCentralityPercent(-1)
+, fCentralityEstimator("V0M")
+, fContributors(0.5)
+, fWeightBackGround(0.)
+, fVz(0.0)
+, fContainer(NULL)
+, fVarManager(NULL)
+, fSignalCuts(NULL)
+, fCFM(NULL)
+, fTriggerAnalysis(NULL)
+, fPID(NULL)
+, fPIDqa(NULL)
+, fTRDTriggerAnalysismb(NULL)
+, fTRDTriggerAnalysistrg(NULL)
+, fPIDpreselect(NULL)
+, fCuts(NULL)
+, fTaggedTrackCuts(NULL)
+, fCleanTaggedTrack(kFALSE)
+, fVariablesTRDTaggedTrack(kFALSE)
+, fAnalysisUtils(NULL)
+, fCutspreselect(NULL)
+, fSecVtx(NULL)
+, fElecBackGround(NULL)
+, fMCQA(NULL)
+, fTaggedTrackAnalysis(NULL)
+, fExtraCuts(NULL)
+, fBackgroundSubtraction(NULL)
+, fTRDTrigger(kFALSE)
+, fWhichTRDTrigger(0)
+, fV0Tagger(NULL)
+, fPIDResponse(NULL)
+, fQA(NULL)
+, fOutput(NULL)
+, fHistMCQA(NULL)
+, fHistSECVTX(NULL)
+, fHistELECBACKGROUND(NULL)
+, fQACollection(NULL)
+, fNewFrame(kTRUE)
+, fkCentralityMethod(0)
+, fCentrMin(0)
+, fCentrMax(100)
 {
   //
   // Dummy constructor
@@ -171,73 +177,77 @@ AliAnalysisTaskSE("PID efficiency Analysis")
 
 //____________________________________________________________
 AliAnalysisTaskHFE::AliAnalysisTaskHFE(const char * name):
-  AliAnalysisTaskSE(name)
-  , fAODMCHeader(NULL)
-  , fAODArrayMCInfo(NULL)
-  , fQAlevel(0)
-  , fPlugins(0)
-  , fCollisionSystem(3)
-  , fFillSignalOnly(kTRUE)
-  , fRejectMCFakeTracks(kFALSE)
-  , fFillNoCuts(kFALSE)
-  , fBackGroundFactorApply(kFALSE)
-  , fRemovePileUp(kFALSE)
-  , fIdentifiedAsPileUp(kFALSE)
-  , fIdentifiedAsOutInz(kFALSE)
-  , fPassTheEventCut(kFALSE)  
-  , fRejectKinkMother(kFALSE)
-  , fisppMultiBin(kFALSE)
-  , fPbPbUserCentralityBinning(kFALSE)
-  , fRemoveFirstEvent(kFALSE)
-  , fisNonHFEsystematics(kFALSE)
-  , fCalcContamBeauty(kFALSE)
-  , fvtxAna(0)
-  , fVtxMixed(kFALSE)
-  , fVtxTrack(kFALSE)
-  , fVtxSPD(kFALSE)
-  , fSpecialTrigger(NULL)
-  , fCentralityF(-1)
-  , fCentralityPercent(-1)
-  , fCentralityEstimator("V0M")
-  , fContributors(0.5)
-  , fWeightBackGround(0.)
-  , fVz(0.0)
-  , fContainer(NULL)
-  , fVarManager(NULL)
-  , fSignalCuts(NULL)
-  , fCFM(NULL)
-  , fTriggerAnalysis(NULL)
-  , fPID(NULL)
-  , fPIDqa(NULL)
-  , fTRDTriggerAnalysismb(NULL)
-  , fTRDTriggerAnalysistrg(NULL)
-  , fPIDpreselect(NULL)
-  , fCuts(NULL)
-  , fTaggedTrackCuts(NULL)
-  , fCleanTaggedTrack(kFALSE)
-  , fVariablesTRDTaggedTrack(kFALSE)
-  , fAnalysisUtils(NULL)
-  , fCutspreselect(NULL)
-  , fSecVtx(NULL)
-  , fElecBackGround(NULL)
-  , fMCQA(NULL)
-  , fTaggedTrackAnalysis(NULL)
-  , fExtraCuts(NULL)
-  , fBackgroundSubtraction(NULL)
-  , fTRDTrigger(kFALSE)
-  , fWhichTRDTrigger(0)
-  , fV0Tagger(NULL)
-  , fPIDResponse(NULL)
-  , fQA(NULL)
-  , fOutput(NULL)
-  , fHistMCQA(NULL)
-  , fHistSECVTX(NULL)
-  , fHistELECBACKGROUND(NULL)
-  , fQACollection(0x0)
+AliAnalysisTaskSE(name)
+, fAODMCHeader(NULL)
+, fAODArrayMCInfo(NULL)
+, fQAlevel(0)
+, fPlugins(0)
+, fCollisionSystem(3)
+, fFillSignalOnly(kTRUE)
+, fRejectMCFakeTracks(kFALSE)
+, fFillNoCuts(kFALSE)
+, fBackGroundFactorApply(kFALSE)
+, fRemovePileUp(kFALSE)
+, fIdentifiedAsPileUp(kFALSE)
+, fIdentifiedAsOutInz(kFALSE)
+, fPassTheEventCut(kFALSE)
+, fRejectKinkMother(kFALSE)
+, fisppMultiBin(kFALSE)
+, fPbPbUserCentralityBinning(kFALSE)
+, fRemoveFirstEvent(kFALSE)
+, fisNonHFEsystematics(kFALSE)
+, fCalcContamBeauty(kFALSE)
+, fvtxAna(0)
+, fVtxMixed(kFALSE)
+, fVtxTrack(kFALSE)
+, fVtxSPD(kFALSE)
+, fSpecialTrigger(NULL)
+, fCentralityF(-1)
+, fCentralityPercent(-1)
+, fCentralityEstimator("V0M")
+, fContributors(0.5)
+, fWeightBackGround(0.)
+, fVz(0.0)
+, fContainer(NULL)
+, fVarManager(NULL)
+, fSignalCuts(NULL)
+, fCFM(NULL)
+, fTriggerAnalysis(NULL)
+, fPID(NULL)
+, fPIDqa(NULL)
+, fTRDTriggerAnalysismb(NULL)
+, fTRDTriggerAnalysistrg(NULL)
+, fPIDpreselect(NULL)
+, fCuts(NULL)
+, fTaggedTrackCuts(NULL)
+, fCleanTaggedTrack(kFALSE)
+, fVariablesTRDTaggedTrack(kFALSE)
+, fAnalysisUtils(NULL)
+, fCutspreselect(NULL)
+, fSecVtx(NULL)
+, fElecBackGround(NULL)
+, fMCQA(NULL)
+, fTaggedTrackAnalysis(NULL)
+, fExtraCuts(NULL)
+, fBackgroundSubtraction(NULL)
+, fTRDTrigger(kFALSE)
+, fWhichTRDTrigger(0)
+, fV0Tagger(NULL)
+, fPIDResponse(NULL)
+, fQA(NULL)
+, fOutput(NULL)
+, fHistMCQA(NULL)
+, fHistSECVTX(NULL)
+, fHistELECBACKGROUND(NULL)
+, fQACollection(0x0)
+, fNewFrame(kTRUE)
+, fkCentralityMethod(0)
+, fCentrMin(0)
+, fCentrMax(100)
 {
   //
   // Default constructor
-  // 
+  //
   DefineOutput(1, TList::Class());
   DefineOutput(2, TList::Class());
 
@@ -261,69 +271,73 @@ AliAnalysisTaskHFE::AliAnalysisTaskHFE(const char * name):
 
 //____________________________________________________________
 AliAnalysisTaskHFE::AliAnalysisTaskHFE(const AliAnalysisTaskHFE &ref):
-  AliAnalysisTaskSE(ref)
-  , fAODMCHeader(NULL)
-  , fAODArrayMCInfo(NULL)
-  , fQAlevel(0)
-  , fPlugins(0)
-  , fCollisionSystem(ref.fCollisionSystem)
-  , fFillSignalOnly(ref.fFillSignalOnly)
-  , fRejectMCFakeTracks(ref.fRejectMCFakeTracks)
-  , fFillNoCuts(ref.fFillNoCuts)
-  , fBackGroundFactorApply(ref.fBackGroundFactorApply)
-  , fRemovePileUp(ref.fRemovePileUp)
-  , fIdentifiedAsPileUp(ref.fIdentifiedAsPileUp)
-  , fIdentifiedAsOutInz(ref.fIdentifiedAsOutInz)
-  , fPassTheEventCut(ref.fPassTheEventCut)
-  , fRejectKinkMother(ref.fRejectKinkMother)
-  , fisppMultiBin(ref.fisppMultiBin)
-  , fPbPbUserCentralityBinning(ref.fPbPbUserCentralityBinning)
-  , fRemoveFirstEvent(ref.fRemoveFirstEvent)
-  , fisNonHFEsystematics(ref.fisNonHFEsystematics)
-  , fCalcContamBeauty(ref.fCalcContamBeauty)
-  , fvtxAna(0)
-  , fVtxMixed(kFALSE)
-  , fVtxTrack(kFALSE)
-  , fVtxSPD(kFALSE)
-  , fSpecialTrigger(ref.fSpecialTrigger)
-  , fCentralityF(ref.fCentralityF)
-  , fCentralityPercent(ref.fCentralityPercent)
-  , fCentralityEstimator(ref.fCentralityEstimator)
-  , fContributors(ref.fContributors)
-  , fWeightBackGround(ref.fWeightBackGround)
-  , fVz(ref.fVz)
-  , fContainer(NULL)
-  , fVarManager(NULL)
-  , fSignalCuts(NULL)
-  , fCFM(NULL)
-  , fTriggerAnalysis(NULL)
-  , fPID(NULL)
-  , fPIDqa(NULL)
-  , fTRDTriggerAnalysismb(NULL)
-  , fTRDTriggerAnalysistrg(NULL)
-  , fPIDpreselect(NULL)
-  , fCuts(NULL)
-  , fTaggedTrackCuts(NULL)
-  , fCleanTaggedTrack(ref.fCleanTaggedTrack)
-  , fVariablesTRDTaggedTrack(ref.fVariablesTRDTaggedTrack)
-  , fAnalysisUtils(NULL)
-  , fCutspreselect(NULL)
-  , fSecVtx(NULL)
-  , fElecBackGround(NULL)
-  , fMCQA(NULL)
-  , fTaggedTrackAnalysis(NULL)
-  , fExtraCuts(NULL)
-  , fBackgroundSubtraction(NULL)
-  , fTRDTrigger(ref.fTRDTrigger)
-  , fWhichTRDTrigger(ref.fWhichTRDTrigger)
-  , fV0Tagger(NULL)
-  , fPIDResponse(ref.fPIDResponse)
-  , fQA(NULL)
-  , fOutput(NULL)
-  , fHistMCQA(NULL)
-  , fHistSECVTX(NULL)
-  , fHistELECBACKGROUND(NULL)
-  , fQACollection(NULL)
+AliAnalysisTaskSE(ref)
+, fAODMCHeader(NULL)
+, fAODArrayMCInfo(NULL)
+, fQAlevel(0)
+, fPlugins(0)
+, fCollisionSystem(ref.fCollisionSystem)
+, fFillSignalOnly(ref.fFillSignalOnly)
+, fRejectMCFakeTracks(ref.fRejectMCFakeTracks)
+, fFillNoCuts(ref.fFillNoCuts)
+, fBackGroundFactorApply(ref.fBackGroundFactorApply)
+, fRemovePileUp(ref.fRemovePileUp)
+, fIdentifiedAsPileUp(ref.fIdentifiedAsPileUp)
+, fIdentifiedAsOutInz(ref.fIdentifiedAsOutInz)
+, fPassTheEventCut(ref.fPassTheEventCut)
+, fRejectKinkMother(ref.fRejectKinkMother)
+, fisppMultiBin(ref.fisppMultiBin)
+, fPbPbUserCentralityBinning(ref.fPbPbUserCentralityBinning)
+, fRemoveFirstEvent(ref.fRemoveFirstEvent)
+, fisNonHFEsystematics(ref.fisNonHFEsystematics)
+, fCalcContamBeauty(ref.fCalcContamBeauty)
+, fvtxAna(0)
+, fVtxMixed(kFALSE)
+, fVtxTrack(kFALSE)
+, fVtxSPD(kFALSE)
+, fSpecialTrigger(ref.fSpecialTrigger)
+, fCentralityF(ref.fCentralityF)
+, fCentralityPercent(ref.fCentralityPercent)
+, fCentralityEstimator(ref.fCentralityEstimator)
+, fContributors(ref.fContributors)
+, fWeightBackGround(ref.fWeightBackGround)
+, fVz(ref.fVz)
+, fContainer(NULL)
+, fVarManager(NULL)
+, fSignalCuts(NULL)
+, fCFM(NULL)
+, fTriggerAnalysis(NULL)
+, fPID(NULL)
+, fPIDqa(NULL)
+, fTRDTriggerAnalysismb(NULL)
+, fTRDTriggerAnalysistrg(NULL)
+, fPIDpreselect(NULL)
+, fCuts(NULL)
+, fTaggedTrackCuts(NULL)
+, fCleanTaggedTrack(ref.fCleanTaggedTrack)
+, fVariablesTRDTaggedTrack(ref.fVariablesTRDTaggedTrack)
+, fAnalysisUtils(NULL)
+, fCutspreselect(NULL)
+, fSecVtx(NULL)
+, fElecBackGround(NULL)
+, fMCQA(NULL)
+, fTaggedTrackAnalysis(NULL)
+, fExtraCuts(NULL)
+, fBackgroundSubtraction(NULL)
+, fTRDTrigger(ref.fTRDTrigger)
+, fWhichTRDTrigger(ref.fWhichTRDTrigger)
+, fV0Tagger(NULL)
+, fPIDResponse(ref.fPIDResponse)
+, fQA(NULL)
+, fOutput(NULL)
+, fHistMCQA(NULL)
+, fHistSECVTX(NULL)
+, fHistELECBACKGROUND(NULL)
+, fQACollection(NULL)
+, fNewFrame(kTRUE)
+, fkCentralityMethod(0)
+, fCentrMin(0)
+, fCentrMax(100)
 {
   //
   // Copy Constructor
@@ -336,14 +350,14 @@ AliAnalysisTaskHFE &AliAnalysisTaskHFE::operator=(const AliAnalysisTaskHFE &ref)
   //
   // Assignment operator
   //
-  if(this == &ref) 
+  if(this == &ref)
     ref.Copy(*this);
   return *this;
 }
 
 //____________________________________________________________
 void AliAnalysisTaskHFE::Copy(TObject &o) const {
-  // 
+  //
   // Copy into object o
   //
   AliAnalysisTaskHFE &target = dynamic_cast<AliAnalysisTaskHFE &>(o);
@@ -444,7 +458,7 @@ AliAnalysisTaskHFE::~AliAnalysisTaskHFE(){
 void AliAnalysisTaskHFE::UserCreateOutputObjects(){
   //
   // Creating output container and output objects
-  // Here we also Initialize the correction framework container and 
+  // Here we also Initialize the correction framework container and
   // the objects for
   // - PID
   // - MC QA
@@ -453,13 +467,13 @@ void AliAnalysisTaskHFE::UserCreateOutputObjects(){
   // Called once per worker
   //
   AliDebug(3, "Creating Output Objects");
-  
+
   // Make lists for Output
   if(!fQA) fQA = new TList;
   fQA->SetOwner();
   if(!fOutput) fOutput = new TList;
   fOutput->SetOwner();
-  
+
   // Automatic determination of the analysis mode
   AliVEventHandler *inputHandler = dynamic_cast<AliVEventHandler *>(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
   if(!TString(inputHandler->IsA()->GetName()).CompareTo("AliAODInputHandler")){
@@ -541,11 +555,11 @@ void AliAnalysisTaskHFE::UserCreateOutputObjects(){
   if(fCuts->IsQAOn()) fQA->Add(fCuts->GetQAhistograms());
   fSignalCuts = new AliHFEsignalCuts("HFEsignalCuts", "HFE MC Signal definition");
   fVarManager->SetSignalCuts(fSignalCuts);
- 
+
   // add output objects to the List
   fOutput->AddAt(fContainer, 0);
   fOutput->AddAt(fCFM->GetEventContainer(), 1);
-  
+
   // mcQA----------------------------------
   if (HasMCData() && IsQAOn(kMCqa)) {
     AliInfo("MC QA on");
@@ -563,7 +577,7 @@ void AliAnalysisTaskHFE::UserCreateOutputObjects(){
     fMCQA->CreatDefaultHistograms(fHistMCQA);
     fMCQA->SetBackgroundWeightFactor(fElecBackgroundFactor[0][0][0],fBinLimit);
     fQA->Add(fHistMCQA);
-  } 
+  }
 
   // secvtx----------------------------------
   if (GetPlugin(kSecVtx)) {
@@ -590,7 +604,7 @@ void AliAnalysisTaskHFE::UserCreateOutputObjects(){
     fHistELECBACKGROUND->SetOwner();
     fElecBackGround->CreateHistograms(fHistELECBACKGROUND);
     fOutput->Add(fHistELECBACKGROUND);
-  }  
+  }
 
   // tagged tracks
   if(GetPlugin(kTaggedTrackAnalysis)){
@@ -617,7 +631,7 @@ void AliAnalysisTaskHFE::UserCreateOutputObjects(){
       }
       //printf("For AliTaggedTrackAnalysis, had the variable %s and the one used %s\n",(const char*)variable->GetName(),(const char*) namee);
     }
-    if(fPIDqa->HasHighResolutionHistos()) 
+    if(fPIDqa->HasHighResolutionHistos())
       fTaggedTrackAnalysis->GetPIDqa()->SetHighResolutionHistos();
     fTaggedTrackAnalysis->SetPID(fPID);
     fTaggedTrackAnalysis->SetVariablesTRD(fVariablesTRDTaggedTrack);
@@ -640,7 +654,7 @@ void AliAnalysisTaskHFE::UserCreateOutputObjects(){
 void AliAnalysisTaskHFE::UserExec(Option_t *){
   //
   // Run the analysis
-  // 
+  //
 
   //printf("test00\n");
 
@@ -675,17 +689,17 @@ void AliAnalysisTaskHFE::UserExec(Option_t *){
   AliESDEvent *ev = dynamic_cast<AliESDEvent *>(fInputEvent);
   if(ev && fTRDTrigger && (fWhichTRDTrigger<6))
   {
-      if(!CheckTRDTriggerESD(ev)) return;
+    if(!CheckTRDTriggerESD(ev)) return;
   }
   if(fInputEvent && fTRDTrigger && (fWhichTRDTrigger>5))
   {
-      if(!CheckTRDTrigger(fInputEvent)) return;
+    if(!CheckTRDTrigger(fInputEvent)) return;
   }
 
   if(IsESDanalysis() && HasMCData()){
     // Protect against missing MC trees
     AliMCEventHandler *mcH = dynamic_cast<AliMCEventHandler *>(AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler());
-    if(!mcH){ 
+    if(!mcH){
       AliError("No MC Event Handler available");
       return;
     }
@@ -701,18 +715,18 @@ void AliAnalysisTaskHFE::UserExec(Option_t *){
   if(IsAODanalysis() && HasMCData()){
     // take MC info
     AliAODEvent *aodE = dynamic_cast<AliAODEvent *>(fInputEvent);
-    if(!aodE){ 
+    if(!aodE){
       AliError("No AOD Event");
       return;
     }
     fAODMCHeader = dynamic_cast<AliAODMCHeader *>(fInputEvent->FindListObject(AliAODMCHeader::StdBranchName()));
-    if(!fAODMCHeader){ 
+    if(!fAODMCHeader){
       AliError("No AliAODMCHeader");
       //printf("No AliAODMCHeader");
       return;
     }
     fAODArrayMCInfo = dynamic_cast<TClonesArray *>(fInputEvent->FindListObject(AliAODMCParticle::StdBranchName()));
-    if(!fAODArrayMCInfo){ 
+    if(!fAODArrayMCInfo){
       AliError("No AOD MC particles");
       //printf("No AOD MC particles");
       return;
@@ -723,10 +737,10 @@ void AliAnalysisTaskHFE::UserExec(Option_t *){
     //------------------------------------------------------------------------------------------
   }
 
-    
-    // Get PrimaryVertex for analysis
-    
-    fvtxAna = GetPrimaryVertexAnalysis(fInputEvent);
+
+  // Get PrimaryVertex for analysis
+
+  fvtxAna = GetPrimaryVertexAnalysis(fInputEvent);
   //printf("test2\n");
 
   // need the centrality for everything (MC also)
@@ -734,19 +748,19 @@ void AliAnalysisTaskHFE::UserExec(Option_t *){
   if(!ReadCentrality()) fCentralityF = -1;
   //printf("pass centrality\n");
   //printf("Reading fCentralityF %d\n",fCentralityF);
-  
+
   // See if pile up and z in the range
   RejectionPileUpVertexRangeEventCut();
 
   //printf("test3\n");
 
-  // Protect agains missing 
+  // Protect agains missing
   if(HasMCData()){
     //printf("Has MC data\n");
     fSignalCuts->SetMCEvent(fMCEvent);
     ProcessMC();  // Run the MC loop + MC QA in case MC Data are available
   }
-  
+
   AliPIDResponse *pidResponse = fPIDResponse;
   if(!pidResponse){
     AliDebug(1, "Using default PID Response");
@@ -769,11 +783,11 @@ void AliAnalysisTaskHFE::UserExec(Option_t *){
     if(specialTrigger){
       AliDebug(2, Form("Special Trigger requested: %s", specialTrigger));
       if(!(ev && ev->IsTriggerClassFired(specialTrigger))){
-        AliDebug(2, "Event not selected"); 
+        AliDebug(2, "Event not selected");
         return;
       } else AliDebug(2, "Event Selected");
     } else AliDebug(2, "No Special Trigger requested");
-    
+
     ProcessESD();
   }
   // Done!!!
@@ -808,10 +822,10 @@ Bool_t AliAnalysisTaskHFE::IsEventInBinZero() { // not used???
   // check tracks
   if(fInputEvent->GetNumberOfTracks()<=0) return kTRUE;
   //if(fInputEvent->GetNumberOfTracks()>0) return kTRUE;
-  
-  
+
+
   return kFALSE;
-  
+
 }
 //____________________________________________________________
 void AliAnalysisTaskHFE::ProcessMC(){
@@ -827,50 +841,50 @@ void AliAnalysisTaskHFE::ProcessMC(){
   eventContainer[3] = fContributors;
   fVz = eventContainer[0];
   //printf("z position is %f\n",eventContainer[0]);
-  //if(fCFM->CheckEventCuts(AliHFEcuts::kEventStepGenerated, fMCEvent)) 
+  //if(fCFM->CheckEventCuts(AliHFEcuts::kEventStepGenerated, fMCEvent))
   fCFM->GetEventContainer()->Fill(eventContainer,AliHFEcuts::kEventStepGenerated);
   Int_t nElectrons = 0;
   if(IsESDanalysis()){
-   if(!((fIdentifiedAsPileUp) || (TMath::Abs(fVz) > fCuts->GetVertexRange()) || (fCentralityF < 0))){ //kStepMCGeneratedZOutNoPileUpCentralityFine
-    if (HasMCData() && IsQAOn(kMCqa)) {
-      AliDebug(2, "Running MC QA");
+    if(!((fIdentifiedAsPileUp) || (TMath::Abs(fVz) > fCuts->GetVertexRange()) || (fCentralityF < 0))){ //kStepMCGeneratedZOutNoPileUpCentralityFine
+      if (HasMCData() && IsQAOn(kMCqa)) {
+        AliDebug(2, "Running MC QA");
 
-      if(fMCEvent->Stack()){
-        fMCQA->SetMCEvent(fMCEvent);
-        fMCQA->SetGenEventHeader(fMCEvent->GenEventHeader());
-        fMCQA->SetCentrality(fCentralityF);
-        fMCQA->SetPercentrality(static_cast<Int_t>(fCentralityPercent));
-        if(IsPbPb()) { fMCQA->SetPbPb();}
-        else
-        {
+        if(fMCEvent->Stack()){
+          fMCQA->SetMCEvent(fMCEvent);
+          fMCQA->SetGenEventHeader(fMCEvent->GenEventHeader());
+          fMCQA->SetCentrality(fCentralityF);
+          fMCQA->SetPercentrality(static_cast<Int_t>(fCentralityPercent));
+          if(IsPbPb()) { fMCQA->SetPbPb();}
+          else
+          {
             if(fisppMultiBin) fMCQA->SetPPMultiBin();
             else fMCQA->SetPP();
+          }
+          fMCQA->Init();
+
+          fMCQA->GetMesonKine();
+
+          // loop over all tracks for decayed electrons
+          for (Int_t igen = 0; igen < fMCEvent->GetNumberOfTracks(); igen++){
+            TParticle* mcpart = fMCEvent->Stack()->Particle(igen);
+            if(!mcpart) continue;
+            fMCQA->GetQuarkKine(mcpart, igen, AliHFEmcQA::kCharm);
+            fMCQA->GetQuarkKine(mcpart, igen, AliHFEmcQA::kBeauty);
+            fMCQA->GetHadronKine(mcpart, AliHFEmcQA::kCharm);
+            fMCQA->GetHadronKine(mcpart, AliHFEmcQA::kBeauty);
+            fMCQA->GetDecayedKine(mcpart, AliHFEmcQA::kCharm,  AliHFEmcQA::kElectronPDG); // no accept cut
+            fMCQA->GetDecayedKine(mcpart, AliHFEmcQA::kBeauty, AliHFEmcQA::kElectronPDG); // no accept cut
+            fMCQA->GetDecayedKine(mcpart, AliHFEmcQA::kOthers, AliHFEmcQA::kElectronPDG); // no accept cut
+          }
+          //fMCQA->EndOfEventAna(AliHFEmcQA::kCharm);
+          //fMCQA->EndOfEventAna(AliHFEmcQA::kBeauty);
         }
-        fMCQA->Init();
 
-        fMCQA->GetMesonKine();
-
-        // loop over all tracks for decayed electrons
-        for (Int_t igen = 0; igen < fMCEvent->GetNumberOfTracks(); igen++){
-          TParticle* mcpart = fMCEvent->Stack()->Particle(igen);
-          if(!mcpart) continue;
-          fMCQA->GetQuarkKine(mcpart, igen, AliHFEmcQA::kCharm);
-          fMCQA->GetQuarkKine(mcpart, igen, AliHFEmcQA::kBeauty);
-          fMCQA->GetHadronKine(mcpart, AliHFEmcQA::kCharm);
-          fMCQA->GetHadronKine(mcpart, AliHFEmcQA::kBeauty);
-          fMCQA->GetDecayedKine(mcpart, AliHFEmcQA::kCharm,  AliHFEmcQA::kElectronPDG); // no accept cut
-          fMCQA->GetDecayedKine(mcpart, AliHFEmcQA::kBeauty, AliHFEmcQA::kElectronPDG); // no accept cut
-          fMCQA->GetDecayedKine(mcpart, AliHFEmcQA::kOthers, AliHFEmcQA::kElectronPDG); // no accept cut
-        }
-        //fMCQA->EndOfEventAna(AliHFEmcQA::kCharm);
-        //fMCQA->EndOfEventAna(AliHFEmcQA::kBeauty);
-      }
-
-    } // end of MC QA loop
-   }
-   // -----------------------------------------------------------------
-   fCFM->SetMCEventInfo(fMCEvent);
-   // fCFM->CheckEventCuts(AliCFManager::kEvtRecCuts, fESD);
+      } // end of MC QA loop
+    }
+    // -----------------------------------------------------------------
+    fCFM->SetMCEventInfo(fMCEvent);
+    // fCFM->CheckEventCuts(AliCFManager::kEvtRecCuts, fESD);
   } else {
     fMCQA->SetMCArray(fAODArrayMCInfo);
 
@@ -884,8 +898,8 @@ void AliAnalysisTaskHFE::ProcessMC(){
         if(IsPbPb()) { fMCQA->SetPbPb();}
         else
         {
-            if(fisppMultiBin) fMCQA->SetPPMultiBin();
-            else fMCQA->SetPP();
+          if(fisppMultiBin) fMCQA->SetPPMultiBin();
+          else fMCQA->SetPP();
         }
         fMCQA->Init();
 
@@ -958,17 +972,17 @@ void AliAnalysisTaskHFE::ProcessESD(){
     fTaggedTrackAnalysis->SetCentrality(fCentralityF);
     if(IsPbPb()) fTaggedTrackAnalysis->SetPbPb();
     else {
-	    if(IspPb()) fTaggedTrackAnalysis->SetpPb();
-	    else fTaggedTrackAnalysis->SetPP();
+      if(IspPb()) fTaggedTrackAnalysis->SetpPb();
+      else fTaggedTrackAnalysis->SetPP();
     }
   }
 
   // Do event Normalization
   Double_t eventContainer[4];
-  eventContainer[0] = 0.; 
+  eventContainer[0] = 0.;
   if(HasMCData()) eventContainer[0] = fVz;
   else {
-        if(fvtxAna) eventContainer[0] = fvtxAna->GetZ();
+    if(fvtxAna) eventContainer[0] = fvtxAna->GetZ();
   }
   eventContainer[1] = 0.;
   eventContainer[2] = fCentralityF;
@@ -978,25 +992,25 @@ void AliAnalysisTaskHFE::ProcessESD(){
 
   //
   fCFM->GetEventContainer()->Fill(eventContainer, AliHFEcuts::kEventStepRecNoCut);
-    
-    // sma July 2016: add rejection of noise (from SPD cluster vs tracklets correlation)
-    // to the same step as SPD pile up -> to STEP 2
-    Bool_t bg = fAnalysisUtils->IsSPDClusterVsTrackletBG(fInputEvent);
-    //printf("########## SPD background %d \n", bg);
-    if (bg) return;
+
+  // sma July 2016: add rejection of noise (from SPD cluster vs tracklets correlation)
+  // to the same step as SPD pile up -> to STEP 2
+  Bool_t bg = fAnalysisUtils->IsSPDClusterVsTrackletBG(fInputEvent);
+  //printf("########## SPD background %d \n", bg);
+  if (bg) return;
 
   //
-  if(fIdentifiedAsPileUp) return; 
+  if(fIdentifiedAsPileUp) return;
   fCFM->GetEventContainer()->Fill(eventContainer, AliHFEcuts::kEventStepRecNoPileUp);
 
   //
-  if(TMath::Abs(fCentralityF) < 0) return; 
+  if(TMath::Abs(fCentralityF) < 0) return;
   fCFM->GetEventContainer()->Fill(eventContainer, AliHFEcuts::kEventStepRecCentralityOk);
   //printf("In ProcessESD %f\n",fCentralityF);
 
   //
   if(fIdentifiedAsOutInz) return;
-  fCFM->GetEventContainer()->Fill(eventContainer, AliHFEcuts::kEventStepZRange);  
+  fCFM->GetEventContainer()->Fill(eventContainer, AliHFEcuts::kEventStepZRange);
 
   //
   if(!fPassTheEventCut) return;
@@ -1005,7 +1019,7 @@ void AliAnalysisTaskHFE::ProcessESD(){
 
   fContainer->NewEvent();
 
-  if (GetPlugin(kIsElecBackGround)) { 
+  if (GetPlugin(kIsElecBackGround)) {
     fElecBackGround->SetEvent(fESD);
   }
   if (GetPlugin(kSecVtx)) {
@@ -1014,11 +1028,11 @@ void AliAnalysisTaskHFE::ProcessESD(){
   }
 
   if(HasMCData()){
-    if (GetPlugin(kSecVtx)) { 
+    if (GetPlugin(kSecVtx)) {
       fSecVtx->SetMCEvent(fMCEvent);
-      fSecVtx->SetMCQA(fMCQA); 
+      fSecVtx->SetMCQA(fMCQA);
     }
-    if (GetPlugin(kIsElecBackGround)) { 
+    if (GetPlugin(kIsElecBackGround)) {
       fElecBackGround->SetMCEvent(fMCEvent);
     }
   }
@@ -1038,8 +1052,8 @@ void AliAnalysisTaskHFE::ProcessESD(){
 
   // Get Number of contributors to the primary vertex for multiplicity-dependent correction
   Int_t ncontribVtx = 0;
-    if(fvtxAna){
-        ncontribVtx = fvtxAna->GetNContributors();
+  if(fvtxAna){
+    ncontribVtx = fvtxAna->GetNContributors();
   }
 
   // minjung for IP QA(temporary ~ 2weeks)
@@ -1048,7 +1062,7 @@ void AliAnalysisTaskHFE::ProcessESD(){
   }
   fExtraCuts->SetRecEventInfo(fESD);
 
-  // Electron background analysis 
+  // Electron background analysis
   if (GetPlugin(kIsElecBackGround)) {
 
     AliDebug(2, "Running BackGround Analysis");
@@ -1079,12 +1093,12 @@ void AliAnalysisTaskHFE::ProcessESD(){
     // fill counts of v0-identified particles
     AliPID::EParticleType v0pid = fV0Tagger ? fV0Tagger->GetV0Info(track->GetID()) : AliPID::kUnknown;
     // here the tagged track analysis will run
-    if(fTaggedTrackAnalysis && v0pid != AliPID::kUnknown){ 
+    if(fTaggedTrackAnalysis && v0pid != AliPID::kUnknown){
       AliDebug(1, Form("Track identified as %s", AliPID::ParticleName(v0pid)));
       fTaggedTrackAnalysis->ProcessTrack(track, v0pid);
       AliDebug(1, "V0 PID done");
     }
- 
+
 
     //Fill non-HFE source containers at reconstructed events cut step
     AliDebug(3, Form("Doing track %d, %p", itrack, track));
@@ -1098,21 +1112,21 @@ void AliAnalysisTaskHFE::ProcessESD(){
     }
 
     signal = kTRUE;
-    
+
     // Fill step without any cut
-          
+
     if(HasMCData()){
       // Check if it is electrons near the vertex
       if(!(mctrack = dynamic_cast<AliMCParticle *>(fMCEvent->GetTrack(TMath::Abs(track->GetLabel()))))) continue;
 
-      if(fFillSignalOnly && !fCFM->CheckParticleCuts(AliHFEcuts::kStepMCGenerated, mctrack)) signal = kFALSE; 
+      if(fFillSignalOnly && !fCFM->CheckParticleCuts(AliHFEcuts::kStepMCGenerated, mctrack)) signal = kFALSE;
       if(fRejectMCFakeTracks && IsMCFakeTrack(track)) signal = kFALSE;
       else AliDebug(3, "Signal Electron");
 
       // Fill K pt for Ke3 contributions
       if(mctrack && (TMath::Abs(mctrack->Particle()->GetPdgCode())==321)) fQACollection->Fill("Kptspectra",mctrack->Pt());
       else if(mctrack && (TMath::Abs(mctrack->Particle()->GetPdgCode())==130)) fQACollection->Fill("K0Lptspectra",mctrack->Pt());
-    } 
+    }
     // Cache new Track information inside the var manager
     fVarManager->NewTrack(track, mctrack, fCentralityF, -1, signal);
 
@@ -1122,16 +1136,16 @@ void AliAnalysisTaskHFE::ProcessESD(){
         fVarManager->FillContainer(fContainer, "recTrackContMC", AliHFEcuts::kStepRecNoCut, kTRUE);
       }
     }
-  
-    // RecKine: ITSTPC cuts  
+
+    // RecKine: ITSTPC cuts
     if(!ProcessCutStep(AliHFEcuts::kStepRecKineITSTPC, track)) continue;
-    
-    fQACollection->Fill("Kinkbefore", track->Pt(), kinkstatus); 
+
+    fQACollection->Fill("Kinkbefore", track->Pt(), kinkstatus);
     // RecPrim
-    if(fRejectKinkMother) { 
+    if(fRejectKinkMother) {
       if(track->GetKinkIndex(0) != 0) continue; } // Quick and dirty fix to reject both kink mothers and daughters
     if(!ProcessCutStep(AliHFEcuts::kStepRecPrim, track)) continue;
-    fQACollection->Fill("Kinkafter", track->Pt(), kinkstatus); 
+    fQACollection->Fill("Kinkafter", track->Pt(), kinkstatus);
 
     // production radius
     Double_t pradius[3] = {(Double_t)fCentralityF,track->Pt(),-1.};
@@ -1139,34 +1153,34 @@ void AliAnalysisTaskHFE::ProcessESD(){
     if(HasMCData()){
       Int_t labelr = track->GetLabel();
       if(labelr >=0) {
-	AliMCParticle *mctrackk = dynamic_cast<AliMCParticle *>(fMCEvent->GetTrack(labelr));
-	if(mctrackk && (TMath::Abs(mctrackk->Particle()->GetPdgCode()) == 11)) {
-	  Int_t motherlabel = mctrackk->Particle()->GetFirstMother();
-	  if(motherlabel >= 0){
-	    AliMCParticle *mothertrack = NULL;
-	    if((mothertrack = dynamic_cast<AliMCParticle *>(fMCEvent->GetTrack(motherlabel)))){
-	      TParticle * mother = mothertrack->Particle();
-	      Int_t  pdgmother = mother->GetPdgCode();
-	      if(pdgmother == 22) {
-		pradius[2] = mctrackk->Particle()->R();
-		fill = kTRUE;
-	      }
-	    }
-	  }
-	}
+        AliMCParticle *mctrackk = dynamic_cast<AliMCParticle *>(fMCEvent->GetTrack(labelr));
+        if(mctrackk && (TMath::Abs(mctrackk->Particle()->GetPdgCode()) == 11)) {
+          Int_t motherlabel = mctrackk->Particle()->GetFirstMother();
+          if(motherlabel >= 0){
+            AliMCParticle *mothertrack = NULL;
+            if((mothertrack = dynamic_cast<AliMCParticle *>(fMCEvent->GetTrack(motherlabel)))){
+              TParticle * mother = mothertrack->Particle();
+              Int_t  pdgmother = mother->GetPdgCode();
+              if(pdgmother == 22) {
+                pradius[2] = mctrackk->Particle()->R();
+                fill = kTRUE;
+              }
+            }
+          }
+        }
       }
-      if(fill)  fQACollection->Fill("RadiusBefore", pradius); 
+      if(fill)  fQACollection->Fill("RadiusBefore", pradius);
     }
 
     // HFEcuts: ITS layers cuts
     if(!ProcessCutStep(AliHFEcuts::kStepHFEcutsITS, track)) continue;
-  
+
     // production vertex
     if(fill)  {
-      fQACollection->Fill("RadiusAfter", pradius); 
+      fQACollection->Fill("RadiusAfter", pradius);
       FillProductionVertex(track);
     }
-  
+
     // HFE cuts: TOF PID and mismatch flag
     if(!ProcessCutStep(AliHFEcuts::kStepHFEcutsTOF, track)) continue;
 
@@ -1188,62 +1202,62 @@ void AliAnalysisTaskHFE::ProcessESD(){
       if(fMCQA && signal){
         fMCQA->SetCentrality(fCentralityF);
         if(mctrack && (TMath::Abs(mctrack->Particle()->GetPdgCode()) == 11)){
-         Double_t weightElecBgV0[kBgLevels] = {0.,0.,0.};
-         Double_t hfeimpactRtmp=0., hfeimpactnsigmaRtmp=0.;
-         fExtraCuts->GetHFEImpactParameters(track, hfeimpactRtmp, hfeimpactnsigmaRtmp);
-         UChar_t itsPixel = track->GetITSClusterMap();
-         Double_t ilyrhit=0, ilyrstat=0;
-         for(Int_t ilyr=0; ilyr<6; ilyr++){
-           if(TESTBIT(itsPixel, ilyr)) ilyrhit += TMath::Power(2,ilyr);
-           if(fExtraCuts->CheckITSstatus(fExtraCuts->GetITSstatus(track,ilyr))) ilyrstat += TMath::Power(2,ilyr);
-         }
-         fMCQA->SetITSInfo(ilyrhit,ilyrstat);
-         fMCQA->SetHFEImpactParameters(hfeimpactRtmp, hfeimpactnsigmaRtmp);
-         fMCQA->SetTrkKine(track->Pt(),track->Eta(), track->Phi());
-         fMCQA->SetContainerStep(3);
-         for(Int_t iLevel = 0; iLevel < kBgLevels; iLevel++){
-           weightElecBgV0[iLevel] = fMCQA->GetWeightFactor(mctrack, iLevel); // positive:conversion e, negative: nonHFE 
-           if(!fisNonHFEsystematics || IsPbPb())break;   
-         }
-         
-         if(fisNonHFEsystematics){
-           //Fill additional containers for electron source distinction
-           Int_t elecSource = 0;
-           elecSource = fMCQA->GetElecSource(mctrack->Particle(), kTRUE);
-           const Char_t *sourceName[kElecBgSpecies]={"Pion","Eta","Omega","Phi","EtaPrime","Rho","Kaon","K0s","Lambda"};
-           const Char_t *levelName[kBgLevels]={"Best","Lower","Upper"};
-               for(Int_t iLevel = 0; iLevel < kBgLevels; iLevel++){
-				   if(elecSource == 5)fVarManager->FillContainer(fContainer,Form("mesonElecs%s%s",sourceName[0],levelName[iLevel]), 3, kFALSE, -1*weightElecBgV0[iLevel]);
-				   else if(elecSource == 8)fVarManager->FillContainer(fContainer,Form("mesonElecs%s%s",sourceName[1], levelName[iLevel]), 3, kFALSE, -1*weightElecBgV0[iLevel]);
-				   else if(elecSource == 9)fVarManager->FillContainer(fContainer,Form("mesonElecs%s%s",sourceName[2], levelName[iLevel]), 3, kFALSE, -1*weightElecBgV0[iLevel]);
-				   else if(elecSource == 10)fVarManager->FillContainer(fContainer,Form("mesonElecs%s%s",sourceName[3], levelName[iLevel]), 3, kFALSE, -1*weightElecBgV0[iLevel]);
-				   else if(elecSource == 11)fVarManager->FillContainer(fContainer,Form("mesonElecs%s%s",sourceName[4], levelName[iLevel]), 3, kFALSE, -1*weightElecBgV0[iLevel]);
-				   else if(elecSource == 12)fVarManager->FillContainer(fContainer,Form("mesonElecs%s%s",sourceName[5], levelName[iLevel]), 3, kFALSE, -1*weightElecBgV0[iLevel]);
-				   else if(elecSource == 21||elecSource == 39)fVarManager->FillContainer(fContainer,Form("mesonElecs%s%s",sourceName[6], levelName[iLevel]), 3, kFALSE, -1*weightElecBgV0[iLevel]);
-				   else if(elecSource == 28||elecSource == 30||elecSource==31)fVarManager->FillContainer(fContainer,Form("mesonElecs%s%s",sourceName[7], levelName[iLevel]), 3, kFALSE, -1*weightElecBgV0[iLevel]);
-				   else if(elecSource ==33)fVarManager->FillContainer(fContainer,Form("mesonElecs%s%s",sourceName[8], levelName[iLevel]), 3, kFALSE, -1*weightElecBgV0[iLevel]);
-				    
-				   else if(elecSource == 13)fVarManager->FillContainer(fContainer,Form("conversionElecs%s%s",sourceName[0], levelName[iLevel]), 3, kFALSE, weightElecBgV0[iLevel]);
-				   else if(elecSource == 14)fVarManager->FillContainer(fContainer,Form("conversionElecs%s%s",sourceName[1], levelName[iLevel]), 3, kFALSE, weightElecBgV0[iLevel]);
-				   else if(elecSource == 15)fVarManager->FillContainer(fContainer,Form("conversionElecs%s%s",sourceName[2], levelName[iLevel]), 3, kFALSE, weightElecBgV0[iLevel]);
-				   else if(elecSource == 16)fVarManager->FillContainer(fContainer,Form("conversionElecs%s%s",sourceName[3], levelName[iLevel]), 3, kFALSE, weightElecBgV0[iLevel]);
-				   else if(elecSource == 17)fVarManager->FillContainer(fContainer,Form("conversionElecs%s%s",sourceName[4], levelName[iLevel]), 3, kFALSE, weightElecBgV0[iLevel]);
-				   else if(elecSource == 18)fVarManager->FillContainer(fContainer,Form("conversionElecs%s%s",sourceName[5], levelName[iLevel]), 3, kFALSE, weightElecBgV0[iLevel]);
-				   else if(elecSource == 40)fVarManager->FillContainer(fContainer,Form("conversionElecs%s%s",sourceName[6], levelName[iLevel]), 3, kFALSE, weightElecBgV0[iLevel]);
-				   else if(elecSource == 35)fVarManager->FillContainer(fContainer,Form("conversionElecs%s%s",sourceName[7], levelName[iLevel]), 3, kFALSE, weightElecBgV0[iLevel]);
-				   else if(elecSource ==37)fVarManager->FillContainer(fContainer,Form("conversionElecs%s%s",sourceName[8], levelName[iLevel]), 3, kFALSE, weightElecBgV0[iLevel]);
-				 }
-         }
-         //else{
-           if(weightElecBgV0[0]>0) {
-	     fVarManager->FillContainer(fContainer, "conversionElecs", 3, kFALSE, weightElecBgV0[0]);
-	     fVarManager->FillContainer(fContainer, "conversionElecs", 4, kTRUE, weightElecBgV0[0]);
-	   }
-           else if(weightElecBgV0[0]<0) {
-	     fVarManager->FillContainer(fContainer, "mesonElecs", 3, kFALSE, -1*weightElecBgV0[0]);
-	     fVarManager->FillContainer(fContainer, "mesonElecs", 4, kTRUE, -1*weightElecBgV0[0]);
-	   }
-           //}
+          Double_t weightElecBgV0[kBgLevels] = {0.,0.,0.};
+          Double_t hfeimpactRtmp=0., hfeimpactnsigmaRtmp=0.;
+          fExtraCuts->GetHFEImpactParameters(track, hfeimpactRtmp, hfeimpactnsigmaRtmp);
+          UChar_t itsPixel = track->GetITSClusterMap();
+          Double_t ilyrhit=0, ilyrstat=0;
+          for(Int_t ilyr=0; ilyr<6; ilyr++){
+            if(TESTBIT(itsPixel, ilyr)) ilyrhit += TMath::Power(2,ilyr);
+            if(fExtraCuts->CheckITSstatus(fExtraCuts->GetITSstatus(track,ilyr))) ilyrstat += TMath::Power(2,ilyr);
+          }
+          fMCQA->SetITSInfo(ilyrhit,ilyrstat);
+          fMCQA->SetHFEImpactParameters(hfeimpactRtmp, hfeimpactnsigmaRtmp);
+          fMCQA->SetTrkKine(track->Pt(),track->Eta(), track->Phi());
+          fMCQA->SetContainerStep(3);
+          for(Int_t iLevel = 0; iLevel < kBgLevels; iLevel++){
+            weightElecBgV0[iLevel] = fMCQA->GetWeightFactor(mctrack, iLevel); // positive:conversion e, negative: nonHFE
+            if(!fisNonHFEsystematics || IsPbPb())break;
+          }
+
+          if(fisNonHFEsystematics){
+            //Fill additional containers for electron source distinction
+            Int_t elecSource = 0;
+            elecSource = fMCQA->GetElecSource(mctrack->Particle(), kTRUE);
+            const Char_t *sourceName[kElecBgSpecies]={"Pion","Eta","Omega","Phi","EtaPrime","Rho","Kaon","K0s","Lambda"};
+            const Char_t *levelName[kBgLevels]={"Best","Lower","Upper"};
+            for(Int_t iLevel = 0; iLevel < kBgLevels; iLevel++){
+              if(elecSource == 5)fVarManager->FillContainer(fContainer,Form("mesonElecs%s%s",sourceName[0],levelName[iLevel]), 3, kFALSE, -1*weightElecBgV0[iLevel]);
+              else if(elecSource == 8)fVarManager->FillContainer(fContainer,Form("mesonElecs%s%s",sourceName[1], levelName[iLevel]), 3, kFALSE, -1*weightElecBgV0[iLevel]);
+              else if(elecSource == 9)fVarManager->FillContainer(fContainer,Form("mesonElecs%s%s",sourceName[2], levelName[iLevel]), 3, kFALSE, -1*weightElecBgV0[iLevel]);
+              else if(elecSource == 10)fVarManager->FillContainer(fContainer,Form("mesonElecs%s%s",sourceName[3], levelName[iLevel]), 3, kFALSE, -1*weightElecBgV0[iLevel]);
+              else if(elecSource == 11)fVarManager->FillContainer(fContainer,Form("mesonElecs%s%s",sourceName[4], levelName[iLevel]), 3, kFALSE, -1*weightElecBgV0[iLevel]);
+              else if(elecSource == 12)fVarManager->FillContainer(fContainer,Form("mesonElecs%s%s",sourceName[5], levelName[iLevel]), 3, kFALSE, -1*weightElecBgV0[iLevel]);
+              else if(elecSource == 21||elecSource == 39)fVarManager->FillContainer(fContainer,Form("mesonElecs%s%s",sourceName[6], levelName[iLevel]), 3, kFALSE, -1*weightElecBgV0[iLevel]);
+              else if(elecSource == 28||elecSource == 30||elecSource==31)fVarManager->FillContainer(fContainer,Form("mesonElecs%s%s",sourceName[7], levelName[iLevel]), 3, kFALSE, -1*weightElecBgV0[iLevel]);
+              else if(elecSource ==33)fVarManager->FillContainer(fContainer,Form("mesonElecs%s%s",sourceName[8], levelName[iLevel]), 3, kFALSE, -1*weightElecBgV0[iLevel]);
+
+              else if(elecSource == 13)fVarManager->FillContainer(fContainer,Form("conversionElecs%s%s",sourceName[0], levelName[iLevel]), 3, kFALSE, weightElecBgV0[iLevel]);
+              else if(elecSource == 14)fVarManager->FillContainer(fContainer,Form("conversionElecs%s%s",sourceName[1], levelName[iLevel]), 3, kFALSE, weightElecBgV0[iLevel]);
+              else if(elecSource == 15)fVarManager->FillContainer(fContainer,Form("conversionElecs%s%s",sourceName[2], levelName[iLevel]), 3, kFALSE, weightElecBgV0[iLevel]);
+              else if(elecSource == 16)fVarManager->FillContainer(fContainer,Form("conversionElecs%s%s",sourceName[3], levelName[iLevel]), 3, kFALSE, weightElecBgV0[iLevel]);
+              else if(elecSource == 17)fVarManager->FillContainer(fContainer,Form("conversionElecs%s%s",sourceName[4], levelName[iLevel]), 3, kFALSE, weightElecBgV0[iLevel]);
+              else if(elecSource == 18)fVarManager->FillContainer(fContainer,Form("conversionElecs%s%s",sourceName[5], levelName[iLevel]), 3, kFALSE, weightElecBgV0[iLevel]);
+              else if(elecSource == 40)fVarManager->FillContainer(fContainer,Form("conversionElecs%s%s",sourceName[6], levelName[iLevel]), 3, kFALSE, weightElecBgV0[iLevel]);
+              else if(elecSource == 35)fVarManager->FillContainer(fContainer,Form("conversionElecs%s%s",sourceName[7], levelName[iLevel]), 3, kFALSE, weightElecBgV0[iLevel]);
+              else if(elecSource ==37)fVarManager->FillContainer(fContainer,Form("conversionElecs%s%s",sourceName[8], levelName[iLevel]), 3, kFALSE, weightElecBgV0[iLevel]);
+            }
+          }
+          //else{
+          if(weightElecBgV0[0]>0) {
+            fVarManager->FillContainer(fContainer, "conversionElecs", 3, kFALSE, weightElecBgV0[0]);
+            fVarManager->FillContainer(fContainer, "conversionElecs", 4, kTRUE, weightElecBgV0[0]);
+          }
+          else if(weightElecBgV0[0]<0) {
+            fVarManager->FillContainer(fContainer, "mesonElecs", 3, kFALSE, -1*weightElecBgV0[0]);
+            fVarManager->FillContainer(fContainer, "mesonElecs", 4, kTRUE, -1*weightElecBgV0[0]);
+          }
+          //}
         }
       }
 
@@ -1301,8 +1315,8 @@ void AliAnalysisTaskHFE::ProcessESD(){
     hfetrack.SetMulitplicity(ncontribVtx);
     if(IsPbPb()) hfetrack.SetPbPb();
     else {
-	if(IspPb()) hfetrack.SetpPb();
-	else hfetrack.SetPP();
+      if(IspPb()) hfetrack.SetpPb();
+      else hfetrack.SetPP();
     }
     fPID->SetVarManager(fVarManager);
     if(fCalcContamBeauty) {
@@ -1310,24 +1324,24 @@ void AliAnalysisTaskHFE::ProcessESD(){
     }
     if(!fPID->IsSelected(&hfetrack, fContainer, "recTrackCont", fPIDqa)) continue;
     nElectronCandidates++;
-    
+
     // Background subtraction------------------------------------------------------------------------------------------
     if (GetPlugin(kNonPhotonicElectron)&&!GetPlugin(kNonPhotonicElectronBeauty)) {
       Int_t indexmother = -1;
       Int_t mcsource = -1;
       Int_t mcQAsource = -1;
-      Double_t weightNonPhotonicFactor = 1.; 
+      Double_t weightNonPhotonicFactor = 1.;
       if(HasMCData()){
-	mcsource = fBackgroundSubtraction->FindMother(mctrack->GetLabel(),indexmother);
-	if(fBackgroundSubtraction->GetLevelBack()>=0) {
-	  if(fMCQA) {
-	    fMCQA->SetCentrality(fCentralityF);
-	    fMCQA->SetPercentrality(static_cast<Int_t>(fCentralityPercent));
-	    mcQAsource = fMCQA->GetElecSource(mctrack, kTRUE);
+        mcsource = fBackgroundSubtraction->FindMother(mctrack->GetLabel(),indexmother);
+        if(fBackgroundSubtraction->GetLevelBack()>=0) {
+          if(fMCQA) {
+            fMCQA->SetCentrality(fCentralityF);
+            fMCQA->SetPercentrality(static_cast<Int_t>(fCentralityPercent));
+            mcQAsource = fMCQA->GetElecSource(mctrack, kTRUE);
             fMCQA->SetContainerStep(2);
-	    weightNonPhotonicFactor = TMath::Abs(fMCQA->GetWeightFactor(mctrack, fBackgroundSubtraction->GetLevelBack())); // positive:conversion e, negative: nonHFE 
-	  }
-	}
+            weightNonPhotonicFactor = TMath::Abs(fMCQA->GetWeightFactor(mctrack, fBackgroundSubtraction->GetLevelBack())); // positive:conversion e, negative: nonHFE
+          }
+        }
       }
       fBackgroundSubtraction->LookAtNonHFE(itrack, track, fInputEvent, weightNonPhotonicFactor, fCentralityF, -1, mcsource, indexmother,mcQAsource);
     }
@@ -1336,15 +1350,15 @@ void AliAnalysisTaskHFE::ProcessESD(){
     // Temporary histogram for chi2/ITS cluster
     if(IsPbPb()) {
       TBits shared = track->GetTPCSharedMap();
-	    Int_t sharebit=0;
+      Int_t sharebit=0;
       if(shared.CountBits() >= 2) sharebit=1;
 
-	    Double_t itschi2percluster = 0.0;
-	    Double_t itsnbcls = static_cast<Double_t>(track->GetNcls(0));
-	    if(itsnbcls > 0) itschi2percluster = track->GetITSchi2()/itsnbcls;
+      Double_t itschi2percluster = 0.0;
+      Double_t itsnbcls = static_cast<Double_t>(track->GetNcls(0));
+      if(itsnbcls > 0) itschi2percluster = track->GetITSchi2()/itsnbcls;
 
       Double_t itsChi2[7] = {track->Pt(),track->Eta(), track->Phi(),
-			static_cast<Double_t>(fCentralityF),static_cast<Double_t>(track->GetTPCsignalN()), static_cast<Double_t>(sharebit),itschi2percluster};
+        static_cast<Double_t>(fCentralityF),static_cast<Double_t>(track->GetTPCsignalN()), static_cast<Double_t>(sharebit),itschi2percluster};
       fQACollection->Fill("fChi2perITScluster", itsChi2);
     }
     else{
@@ -1398,19 +1412,19 @@ void AliAnalysisTaskHFE::ProcessESD(){
       }
     }
 
-    // Electron background analysis 
+    // Electron background analysis
     if (GetPlugin(kIsElecBackGround)) {
-      
+
       AliDebug(2, "Running BackGround Analysis");
-      
+
       for(Int_t jtrack = 0; jtrack < fESD->GetNumberOfTracks(); jtrack++){
         htrack = fESD->GetTrack(jtrack);
-        if ( itrack == jtrack ) continue;  
-        fElecBackGround->PairAnalysis(track, htrack); 
+        if ( itrack == jtrack ) continue;
+        fElecBackGround->PairAnalysis(track, htrack);
       }
     } // end of electron background analysis
 
-    if (GetPlugin(kDEstep)) { 
+    if (GetPlugin(kDEstep)) {
       Double_t weightElecBgV0[kBgLevels] = {0.,0.,0.,};
       Int_t elecSource = 0;
       Double_t hfeimpactR=0., hfeimpactnsigmaR=0.;
@@ -1418,52 +1432,52 @@ void AliAnalysisTaskHFE::ProcessESD(){
       if(HasMCData())
       {
         if(mctrack && (TMath::Abs(mctrack->Particle()->GetPdgCode()) != 11)){
-            fQACollection->Fill("hadronsBeforeIPcut",track->Pt());
-        } 
+          fQACollection->Fill("hadronsBeforeIPcut",track->Pt());
+        }
         if(fMCQA && signal) {
-          
+
           fMCQA->SetContainerStep(0);
           for(Int_t iLevel = 0; iLevel < kBgLevels; iLevel++){
-            weightElecBgV0[iLevel] = fMCQA->GetWeightFactor(mctrack, iLevel); // positive:conversion e, negative: nonHFE 
-            if(!fisNonHFEsystematics || IsPbPb())break;        
+            weightElecBgV0[iLevel] = fMCQA->GetWeightFactor(mctrack, iLevel); // positive:conversion e, negative: nonHFE
+            if(!fisNonHFEsystematics || IsPbPb())break;
           }
-          
+
           if(fisNonHFEsystematics){
-            //Fill additional containers for electron source distinction           
+            //Fill additional containers for electron source distinction
             elecSource = fMCQA->GetElecSource(mctrack->Particle(), kTRUE);
-           const Char_t *sourceName[kElecBgSpecies]={"Pion","Eta","Omega","Phi","EtaPrime","Rho","Kaon","K0s","Lambda"};
-           const Char_t *levelName[kBgLevels]={"Best","Lower","Upper"};
- 		   for(Int_t iLevel = 0; iLevel < kBgLevels; iLevel++){
-				   if(elecSource == 5)fVarManager->FillContainer(fContainer,Form("mesonElecs%s%s",sourceName[0], levelName[iLevel]), 0, kFALSE, -1*weightElecBgV0[iLevel]);
-				   else if(elecSource == 8)fVarManager->FillContainer(fContainer,Form("mesonElecs%s%s",sourceName[1], levelName[iLevel]), 0, kFALSE, -1*weightElecBgV0[iLevel]);
-				   else if(elecSource == 9)fVarManager->FillContainer(fContainer,Form("mesonElecs%s%s",sourceName[2], levelName[iLevel]), 0, kFALSE, -1*weightElecBgV0[iLevel]);
-				   else if(elecSource == 10)fVarManager->FillContainer(fContainer,Form("mesonElecs%s%s",sourceName[3], levelName[iLevel]), 0, kFALSE, -1*weightElecBgV0[iLevel]);
-				   else if(elecSource == 11)fVarManager->FillContainer(fContainer,Form("mesonElecs%s%s",sourceName[4], levelName[iLevel]), 0, kFALSE, -1*weightElecBgV0[iLevel]);
-				   else if(elecSource == 12)fVarManager->FillContainer(fContainer,Form("mesonElecs%s%s",sourceName[5], levelName[iLevel]), 0, kFALSE, -1*weightElecBgV0[iLevel]);
-				   else if(elecSource == 21||elecSource == 39)fVarManager->FillContainer(fContainer,Form("mesonElecs%s%s",sourceName[6], levelName[iLevel]), 0, kFALSE, -1*weightElecBgV0[iLevel]);
-				   else if(elecSource == 28||elecSource == 30||elecSource==31)fVarManager->FillContainer(fContainer,Form("mesonElecs%s%s",sourceName[7], levelName[iLevel]), 0, kFALSE, -1*weightElecBgV0[iLevel]);
-				   else if(elecSource ==33)fVarManager->FillContainer(fContainer,Form("mesonElecs%s%s",sourceName[8], levelName[iLevel]), 0, kFALSE, -1*weightElecBgV0[iLevel]);
-				    
-				   else if(elecSource == 13)fVarManager->FillContainer(fContainer,Form("conversionElecs%s%s",sourceName[0], levelName[iLevel]), 0, kFALSE, weightElecBgV0[iLevel]);
-				   else if(elecSource == 14)fVarManager->FillContainer(fContainer,Form("conversionElecs%s%s",sourceName[1], levelName[iLevel]), 0, kFALSE, weightElecBgV0[iLevel]);
-				   else if(elecSource == 15)fVarManager->FillContainer(fContainer,Form("conversionElecs%s%s",sourceName[2], levelName[iLevel]), 0, kFALSE, weightElecBgV0[iLevel]);
-				   else if(elecSource == 16)fVarManager->FillContainer(fContainer,Form("conversionElecs%s%s",sourceName[3], levelName[iLevel]), 0, kFALSE, weightElecBgV0[iLevel]);
-				   else if(elecSource == 17)fVarManager->FillContainer(fContainer,Form("conversionElecs%s%s",sourceName[4], levelName[iLevel]), 0, kFALSE, weightElecBgV0[iLevel]);
-				   else if(elecSource == 18)fVarManager->FillContainer(fContainer,Form("conversionElecs%s%s",sourceName[5], levelName[iLevel]), 0, kFALSE, weightElecBgV0[iLevel]);
-				   else if(elecSource == 40)fVarManager->FillContainer(fContainer,Form("conversionElecs%s%s",sourceName[6], levelName[iLevel]), 0, kFALSE, weightElecBgV0[iLevel]);
-				   else if(elecSource == 35)fVarManager->FillContainer(fContainer,Form("conversionElecs%s%s",sourceName[7], levelName[iLevel]), 0, kFALSE, weightElecBgV0[iLevel]);
-				   else if(elecSource ==37)fVarManager->FillContainer(fContainer,Form("conversionElecs%s%s",sourceName[8], levelName[iLevel]), 0, kFALSE, weightElecBgV0[iLevel]);
-				 }
+            const Char_t *sourceName[kElecBgSpecies]={"Pion","Eta","Omega","Phi","EtaPrime","Rho","Kaon","K0s","Lambda"};
+            const Char_t *levelName[kBgLevels]={"Best","Lower","Upper"};
+            for(Int_t iLevel = 0; iLevel < kBgLevels; iLevel++){
+              if(elecSource == 5)fVarManager->FillContainer(fContainer,Form("mesonElecs%s%s",sourceName[0], levelName[iLevel]), 0, kFALSE, -1*weightElecBgV0[iLevel]);
+              else if(elecSource == 8)fVarManager->FillContainer(fContainer,Form("mesonElecs%s%s",sourceName[1], levelName[iLevel]), 0, kFALSE, -1*weightElecBgV0[iLevel]);
+              else if(elecSource == 9)fVarManager->FillContainer(fContainer,Form("mesonElecs%s%s",sourceName[2], levelName[iLevel]), 0, kFALSE, -1*weightElecBgV0[iLevel]);
+              else if(elecSource == 10)fVarManager->FillContainer(fContainer,Form("mesonElecs%s%s",sourceName[3], levelName[iLevel]), 0, kFALSE, -1*weightElecBgV0[iLevel]);
+              else if(elecSource == 11)fVarManager->FillContainer(fContainer,Form("mesonElecs%s%s",sourceName[4], levelName[iLevel]), 0, kFALSE, -1*weightElecBgV0[iLevel]);
+              else if(elecSource == 12)fVarManager->FillContainer(fContainer,Form("mesonElecs%s%s",sourceName[5], levelName[iLevel]), 0, kFALSE, -1*weightElecBgV0[iLevel]);
+              else if(elecSource == 21||elecSource == 39)fVarManager->FillContainer(fContainer,Form("mesonElecs%s%s",sourceName[6], levelName[iLevel]), 0, kFALSE, -1*weightElecBgV0[iLevel]);
+              else if(elecSource == 28||elecSource == 30||elecSource==31)fVarManager->FillContainer(fContainer,Form("mesonElecs%s%s",sourceName[7], levelName[iLevel]), 0, kFALSE, -1*weightElecBgV0[iLevel]);
+              else if(elecSource ==33)fVarManager->FillContainer(fContainer,Form("mesonElecs%s%s",sourceName[8], levelName[iLevel]), 0, kFALSE, -1*weightElecBgV0[iLevel]);
+
+              else if(elecSource == 13)fVarManager->FillContainer(fContainer,Form("conversionElecs%s%s",sourceName[0], levelName[iLevel]), 0, kFALSE, weightElecBgV0[iLevel]);
+              else if(elecSource == 14)fVarManager->FillContainer(fContainer,Form("conversionElecs%s%s",sourceName[1], levelName[iLevel]), 0, kFALSE, weightElecBgV0[iLevel]);
+              else if(elecSource == 15)fVarManager->FillContainer(fContainer,Form("conversionElecs%s%s",sourceName[2], levelName[iLevel]), 0, kFALSE, weightElecBgV0[iLevel]);
+              else if(elecSource == 16)fVarManager->FillContainer(fContainer,Form("conversionElecs%s%s",sourceName[3], levelName[iLevel]), 0, kFALSE, weightElecBgV0[iLevel]);
+              else if(elecSource == 17)fVarManager->FillContainer(fContainer,Form("conversionElecs%s%s",sourceName[4], levelName[iLevel]), 0, kFALSE, weightElecBgV0[iLevel]);
+              else if(elecSource == 18)fVarManager->FillContainer(fContainer,Form("conversionElecs%s%s",sourceName[5], levelName[iLevel]), 0, kFALSE, weightElecBgV0[iLevel]);
+              else if(elecSource == 40)fVarManager->FillContainer(fContainer,Form("conversionElecs%s%s",sourceName[6], levelName[iLevel]), 0, kFALSE, weightElecBgV0[iLevel]);
+              else if(elecSource == 35)fVarManager->FillContainer(fContainer,Form("conversionElecs%s%s",sourceName[7], levelName[iLevel]), 0, kFALSE, weightElecBgV0[iLevel]);
+              else if(elecSource ==37)fVarManager->FillContainer(fContainer,Form("conversionElecs%s%s",sourceName[8], levelName[iLevel]), 0, kFALSE, weightElecBgV0[iLevel]);
+            }
           }
           //else{
           if(weightElecBgV0[0]>0) {
-	    fVarManager->FillContainer(fContainer, "conversionElecs", 0, kFALSE, weightElecBgV0[0]);
-	    fVarManager->FillContainer(fContainer, "conversionElecs", 5, kTRUE, weightElecBgV0[0]);
-	  }
+            fVarManager->FillContainer(fContainer, "conversionElecs", 0, kFALSE, weightElecBgV0[0]);
+            fVarManager->FillContainer(fContainer, "conversionElecs", 5, kTRUE, weightElecBgV0[0]);
+          }
           else if(weightElecBgV0[0]<0) {
-	    fVarManager->FillContainer(fContainer, "mesonElecs", 0, kFALSE, -1*weightElecBgV0[0]);
-	    fVarManager->FillContainer(fContainer, "mesonElecs", 5, kTRUE, -1*weightElecBgV0[0]);
-	  }  
+            fVarManager->FillContainer(fContainer, "mesonElecs", 0, kFALSE, -1*weightElecBgV0[0]);
+            fVarManager->FillContainer(fContainer, "mesonElecs", 5, kTRUE, -1*weightElecBgV0[0]);
+          }
           //}
           if(bTagged){ // bg estimation for the secondary vertex tagged signals
             if(weightElecBgV0[0]>0) fVarManager->FillContainer(fContainer, "conversionElecs", 2, kFALSE, weightElecBgV0[0]);
@@ -1485,11 +1499,11 @@ void AliAnalysisTaskHFE::ProcessESD(){
       if(signal) {
         // Apply weight for background contamination after ip cut
         if(fBackGroundFactorApply) {
-              fWeightBackGround =  fkBackGroundFactorArray[0]->Eval(TMath::Abs(track->P())); // pp case
-              if(fWeightBackGround < 0.0) fWeightBackGround = 0.0;
-              else if(fWeightBackGround > 1.0) fWeightBackGround = 1.0;
-              // weightBackGround as special weight
-              fVarManager->FillContainer(fContainer, "hadronicBackground", 2, kFALSE, fWeightBackGround);
+          fWeightBackGround =  fkBackGroundFactorArray[0]->Eval(TMath::Abs(track->P())); // pp case
+          if(fWeightBackGround < 0.0) fWeightBackGround = 0.0;
+          else if(fWeightBackGround > 1.0) fWeightBackGround = 1.0;
+          // weightBackGround as special weight
+          fVarManager->FillContainer(fContainer, "hadronicBackground", 2, kFALSE, fWeightBackGround);
         }
       }
 
@@ -1497,46 +1511,46 @@ void AliAnalysisTaskHFE::ProcessESD(){
         if(fMCQA && signal) {
           fMCQA->SetContainerStep(1);
           for(Int_t iLevel = 0; iLevel < kBgLevels; iLevel++){
-            weightElecBgV0[iLevel] = fMCQA->GetWeightFactor(mctrack, iLevel); // positive:conversion e, negative: nonHFE 
-            if(!fisNonHFEsystematics || IsPbPb())break;        
-          }       
+            weightElecBgV0[iLevel] = fMCQA->GetWeightFactor(mctrack, iLevel); // positive:conversion e, negative: nonHFE
+            if(!fisNonHFEsystematics || IsPbPb())break;
+          }
           if(fisNonHFEsystematics){
-            //Fill additional containers for electron source distinction             
+            //Fill additional containers for electron source distinction
             elecSource = fMCQA->GetElecSource(mctrack->Particle(), kTRUE);
-          const Char_t *sourceName[kElecBgSpecies]={"Pion","Eta","Omega","Phi","EtaPrime","Rho","Kaon","K0s","Lambda"};
-           const Char_t *levelName[kBgLevels]={"Best","Lower","Upper"};
-           for(Int_t iLevel = 0; iLevel < kBgLevels; iLevel++){
-				   if(elecSource == 5)fVarManager->FillContainer(fContainer,Form("mesonElecs%s%s",sourceName[0], levelName[iLevel]), 1, kFALSE, -1*weightElecBgV0[iLevel]);
-				   else if(elecSource == 8)fVarManager->FillContainer(fContainer,Form("mesonElecs%s%s",sourceName[1], levelName[iLevel]), 1, kFALSE, -1*weightElecBgV0[iLevel]);
-				   else if(elecSource == 9)fVarManager->FillContainer(fContainer,Form("mesonElecs%s%s",sourceName[2], levelName[iLevel]), 1, kFALSE, -1*weightElecBgV0[iLevel]);
-				   else if(elecSource == 10)fVarManager->FillContainer(fContainer,Form("mesonElecs%s%s",sourceName[3], levelName[iLevel]), 1, kFALSE, -1*weightElecBgV0[iLevel]);
-				   else if(elecSource == 11)fVarManager->FillContainer(fContainer,Form("mesonElecs%s%s",sourceName[4], levelName[iLevel]), 1, kFALSE, -1*weightElecBgV0[iLevel]);
-				   else if(elecSource == 12)fVarManager->FillContainer(fContainer,Form("mesonElecs%s%s",sourceName[5], levelName[iLevel]), 1, kFALSE, -1*weightElecBgV0[iLevel]);
-				   else if(elecSource == 21||elecSource == 39)fVarManager->FillContainer(fContainer,Form("mesonElecs%s%s",sourceName[6], levelName[iLevel]), 1, kFALSE, -1*weightElecBgV0[iLevel]);
-				   else if(elecSource == 28||elecSource == 30||elecSource==31)fVarManager->FillContainer(fContainer,Form("mesonElecs%s%s",sourceName[7], levelName[iLevel]), 1, kFALSE, -1*weightElecBgV0[iLevel]);
-				   else if(elecSource ==33)fVarManager->FillContainer(fContainer,Form("mesonElecs%s%s",sourceName[8], levelName[iLevel]), 1, kFALSE, -1*weightElecBgV0[iLevel]);
-				    
-				   else if(elecSource == 13)fVarManager->FillContainer(fContainer,Form("conversionElecs%s%s",sourceName[0], levelName[iLevel]), 1, kFALSE, weightElecBgV0[iLevel]);
-				   else if(elecSource == 14)fVarManager->FillContainer(fContainer,Form("conversionElecs%s%s",sourceName[1], levelName[iLevel]), 1, kFALSE, weightElecBgV0[iLevel]);
-				   else if(elecSource == 15)fVarManager->FillContainer(fContainer,Form("conversionElecs%s%s",sourceName[2], levelName[iLevel]), 1, kFALSE, weightElecBgV0[iLevel]);
-				   else if(elecSource == 16)fVarManager->FillContainer(fContainer,Form("conversionElecs%s%s",sourceName[3], levelName[iLevel]), 1, kFALSE, weightElecBgV0[iLevel]);
-				   else if(elecSource == 17)fVarManager->FillContainer(fContainer,Form("conversionElecs%s%s",sourceName[4], levelName[iLevel]), 1, kFALSE, weightElecBgV0[iLevel]);
-				   else if(elecSource == 18)fVarManager->FillContainer(fContainer,Form("conversionElecs%s%s",sourceName[5], levelName[iLevel]), 1, kFALSE, weightElecBgV0[iLevel]);
-				   else if(elecSource == 40)fVarManager->FillContainer(fContainer,Form("conversionElecs%s%s",sourceName[6], levelName[iLevel]), 1, kFALSE, weightElecBgV0[iLevel]);
-				   else if(elecSource == 35)fVarManager->FillContainer(fContainer,Form("conversionElecs%s%s",sourceName[7], levelName[iLevel]), 1, kFALSE, weightElecBgV0[iLevel]);
-				   else if(elecSource ==37)fVarManager->FillContainer(fContainer,Form("conversionElecs%s%s",sourceName[8], levelName[iLevel]), 1, kFALSE, weightElecBgV0[iLevel]);
-				 }
+            const Char_t *sourceName[kElecBgSpecies]={"Pion","Eta","Omega","Phi","EtaPrime","Rho","Kaon","K0s","Lambda"};
+            const Char_t *levelName[kBgLevels]={"Best","Lower","Upper"};
+            for(Int_t iLevel = 0; iLevel < kBgLevels; iLevel++){
+              if(elecSource == 5)fVarManager->FillContainer(fContainer,Form("mesonElecs%s%s",sourceName[0], levelName[iLevel]), 1, kFALSE, -1*weightElecBgV0[iLevel]);
+              else if(elecSource == 8)fVarManager->FillContainer(fContainer,Form("mesonElecs%s%s",sourceName[1], levelName[iLevel]), 1, kFALSE, -1*weightElecBgV0[iLevel]);
+              else if(elecSource == 9)fVarManager->FillContainer(fContainer,Form("mesonElecs%s%s",sourceName[2], levelName[iLevel]), 1, kFALSE, -1*weightElecBgV0[iLevel]);
+              else if(elecSource == 10)fVarManager->FillContainer(fContainer,Form("mesonElecs%s%s",sourceName[3], levelName[iLevel]), 1, kFALSE, -1*weightElecBgV0[iLevel]);
+              else if(elecSource == 11)fVarManager->FillContainer(fContainer,Form("mesonElecs%s%s",sourceName[4], levelName[iLevel]), 1, kFALSE, -1*weightElecBgV0[iLevel]);
+              else if(elecSource == 12)fVarManager->FillContainer(fContainer,Form("mesonElecs%s%s",sourceName[5], levelName[iLevel]), 1, kFALSE, -1*weightElecBgV0[iLevel]);
+              else if(elecSource == 21||elecSource == 39)fVarManager->FillContainer(fContainer,Form("mesonElecs%s%s",sourceName[6], levelName[iLevel]), 1, kFALSE, -1*weightElecBgV0[iLevel]);
+              else if(elecSource == 28||elecSource == 30||elecSource==31)fVarManager->FillContainer(fContainer,Form("mesonElecs%s%s",sourceName[7], levelName[iLevel]), 1, kFALSE, -1*weightElecBgV0[iLevel]);
+              else if(elecSource ==33)fVarManager->FillContainer(fContainer,Form("mesonElecs%s%s",sourceName[8], levelName[iLevel]), 1, kFALSE, -1*weightElecBgV0[iLevel]);
+
+              else if(elecSource == 13)fVarManager->FillContainer(fContainer,Form("conversionElecs%s%s",sourceName[0], levelName[iLevel]), 1, kFALSE, weightElecBgV0[iLevel]);
+              else if(elecSource == 14)fVarManager->FillContainer(fContainer,Form("conversionElecs%s%s",sourceName[1], levelName[iLevel]), 1, kFALSE, weightElecBgV0[iLevel]);
+              else if(elecSource == 15)fVarManager->FillContainer(fContainer,Form("conversionElecs%s%s",sourceName[2], levelName[iLevel]), 1, kFALSE, weightElecBgV0[iLevel]);
+              else if(elecSource == 16)fVarManager->FillContainer(fContainer,Form("conversionElecs%s%s",sourceName[3], levelName[iLevel]), 1, kFALSE, weightElecBgV0[iLevel]);
+              else if(elecSource == 17)fVarManager->FillContainer(fContainer,Form("conversionElecs%s%s",sourceName[4], levelName[iLevel]), 1, kFALSE, weightElecBgV0[iLevel]);
+              else if(elecSource == 18)fVarManager->FillContainer(fContainer,Form("conversionElecs%s%s",sourceName[5], levelName[iLevel]), 1, kFALSE, weightElecBgV0[iLevel]);
+              else if(elecSource == 40)fVarManager->FillContainer(fContainer,Form("conversionElecs%s%s",sourceName[6], levelName[iLevel]), 1, kFALSE, weightElecBgV0[iLevel]);
+              else if(elecSource == 35)fVarManager->FillContainer(fContainer,Form("conversionElecs%s%s",sourceName[7], levelName[iLevel]), 1, kFALSE, weightElecBgV0[iLevel]);
+              else if(elecSource ==37)fVarManager->FillContainer(fContainer,Form("conversionElecs%s%s",sourceName[8], levelName[iLevel]), 1, kFALSE, weightElecBgV0[iLevel]);
+            }
           }
           // else{
-            if(weightElecBgV0[0]>0) {
-	      fVarManager->FillContainer(fContainer, "conversionElecs", 1, kFALSE, weightElecBgV0[0]);
-	      fVarManager->FillContainer(fContainer, "conversionElecs", 6, kTRUE, weightElecBgV0[0]);
-	    }
-            else if(weightElecBgV0[0]<0) {
-	      fVarManager->FillContainer(fContainer, "mesonElecs", 1, kFALSE, -1*weightElecBgV0[0]);
-	      fVarManager->FillContainer(fContainer, "mesonElecs", 6, kTRUE, -1*weightElecBgV0[0]);
-            }
-            //}
+          if(weightElecBgV0[0]>0) {
+            fVarManager->FillContainer(fContainer, "conversionElecs", 1, kFALSE, weightElecBgV0[0]);
+            fVarManager->FillContainer(fContainer, "conversionElecs", 6, kTRUE, weightElecBgV0[0]);
+          }
+          else if(weightElecBgV0[0]<0) {
+            fVarManager->FillContainer(fContainer, "mesonElecs", 1, kFALSE, -1*weightElecBgV0[0]);
+            fVarManager->FillContainer(fContainer, "mesonElecs", 6, kTRUE, -1*weightElecBgV0[0]);
+          }
+          //}
         }
       }
       if(signal) {
@@ -1565,7 +1579,7 @@ void AliAnalysisTaskHFE::ProcessESD(){
             fMCQA->SetPercentrality(static_cast<Int_t>(fCentralityPercent));
             mcQAsource = fMCQA->GetElecSource(mctrack, kTRUE);
             fMCQA->SetContainerStep(4);
-            weightNonPhotonicFactor = TMath::Abs(fMCQA->GetWeightFactor(mctrack, fBackgroundSubtraction->GetLevelBack())); // positive:conversion e, negative: nonHFE 
+            weightNonPhotonicFactor = TMath::Abs(fMCQA->GetWeightFactor(mctrack, fBackgroundSubtraction->GetLevelBack())); // positive:conversion e, negative: nonHFE
           }
         }
       }
@@ -1591,21 +1605,21 @@ void AliAnalysisTaskHFE::ProcessAOD(){
   AliDebug(3, "Processing AOD Event");
   Double_t eventContainer[4];
   eventContainer[0] = 0.0;
-    
-    AliAODEvent *fAOD = dynamic_cast<AliAODEvent *>(fInputEvent);
-    if(!fAOD){
-        AliError("AOD Event required for AOD Analysis");
-        return;
-    }
-    
+
+  AliAODEvent *fAOD = dynamic_cast<AliAODEvent *>(fInputEvent);
+  if(!fAOD){
+    AliError("AOD Event required for AOD Analysis");
+    return;
+  }
+
   if(HasMCData()) eventContainer[0] = fVz;
   else {
-        if(fvtxAna) eventContainer[0] = fvtxAna->GetZ();
+    if(fvtxAna) eventContainer[0] = fvtxAna->GetZ();
   }
   eventContainer[1] = 1.; // No Information available in AOD analysis, assume all events have V0AND
-  eventContainer[2] = fCentralityF; 
-  eventContainer[3] = fContributors; 
-  
+  eventContainer[2] = fCentralityF;
+  eventContainer[3] = fContributors;
+
   //printf("value event container %f, %f, %f, %f\n",eventContainer[0],eventContainer[1],eventContainer[2],eventContainer[3]);
 
   // Set magnetic field if V0 task on
@@ -1623,18 +1637,18 @@ void AliAnalysisTaskHFE::ProcessAOD(){
       else fTaggedTrackAnalysis->SetPP();
     }
   }
-  
+
   //printf("Will fill\n");
   //
   fCFM->GetEventContainer()->Fill(eventContainer, AliHFEcuts::kEventStepRecNoCut);
   //printf("Fill\n");
   //
-  if(fIdentifiedAsPileUp) return; 
+  if(fIdentifiedAsPileUp) return;
   fCFM->GetEventContainer()->Fill(eventContainer, AliHFEcuts::kEventStepRecNoPileUp);
 
   //
   if(fIdentifiedAsOutInz) return;
-  fCFM->GetEventContainer()->Fill(eventContainer, AliHFEcuts::kEventStepZRange);  
+  fCFM->GetEventContainer()->Fill(eventContainer, AliHFEcuts::kEventStepZRange);
 
   //
   if(!fPassTheEventCut) return;
@@ -1652,8 +1666,8 @@ void AliAnalysisTaskHFE::ProcessAOD(){
 
   // Get Number of contributors to the primary vertex for multiplicity-dependent correction
   Int_t ncontribVtx = 0;
-    if(fvtxAna){
-        ncontribVtx = fvtxAna->GetNContributors();
+  if(fvtxAna){
+    ncontribVtx = fvtxAna->GetNContributors();
   }
 
   // Look for kink mother
@@ -1709,23 +1723,23 @@ void AliAnalysisTaskHFE::ProcessAOD(){
     // fill counts of v0-identified particles
     AliPID::EParticleType v0pid = fV0Tagger ? fV0Tagger->GetV0Info(track->GetID()) : AliPID::kUnknown;
     // here the tagged track analysis will run
-    if(fTaggedTrackAnalysis && v0pid != AliPID::kUnknown){ 
+    if(fTaggedTrackAnalysis && v0pid != AliPID::kUnknown){
       AliDebug(1, Form("Track identified as %s", AliPID::ParticleName(v0pid)));
       fTaggedTrackAnalysis->ProcessTrack(track, v0pid);
       AliDebug(1, "V0 PID done");
     }
-    
+
     signal = kTRUE;
     if(HasMCData()){
       Int_t label = TMath::Abs(track->GetLabel());
       if(label && label < fAODArrayMCInfo->GetEntriesFast())
         mctrack = dynamic_cast<AliAODMCParticle *>(fAODArrayMCInfo->At(label));
-        if(fFillSignalOnly && !fCFM->CheckParticleCuts(AliHFEcuts::kStepMCGenerated, mctrack)) signal = kFALSE;
-        if(fRejectMCFakeTracks && IsMCFakeTrack(track)) signal = kFALSE;
+      if(fFillSignalOnly && !fCFM->CheckParticleCuts(AliHFEcuts::kStepMCGenerated, mctrack)) signal = kFALSE;
+      if(fRejectMCFakeTracks && IsMCFakeTrack(track)) signal = kFALSE;
     }
-    
+
     fVarManager->NewTrack(track, mctrack, fCentralityF, -1, signal);
-    
+
     if(fFillNoCuts) {
       if(signal || !fFillSignalOnly){
         fVarManager->FillContainer(fContainer, "recTrackContReco", AliHFEcuts::kStepRecNoCut, kFALSE);
@@ -1734,18 +1748,18 @@ void AliAnalysisTaskHFE::ProcessAOD(){
     }
 
     // begin AOD QA
-    fQACollection->Fill("Filterbegin", -1);  
+    fQACollection->Fill("Filterbegin", -1);
     for(Int_t k=0; k<20; k++) {
       Int_t u = 1<<k;
       if((track->TestFilterBit(u))) {
-	    fQACollection->Fill("Filterbegin", k);
+        fQACollection->Fill("Filterbegin", k);
       }
     }
 
-    // RecKine: ITSTPC cuts  
+    // RecKine: ITSTPC cuts
     if(!ProcessCutStep(AliHFEcuts::kStepRecKineITSTPC, track)) continue;
 
-    fQACollection->Fill("Kinkbefore", track->Pt(), kinkstatus); 
+    fQACollection->Fill("Kinkbefore", track->Pt(), kinkstatus);
     // Reject kink mother
     if(fRejectKinkMother) {
       Bool_t kinkmotherpass = kTRUE;
@@ -1756,11 +1770,11 @@ void AliAnalysisTaskHFE::ProcessAOD(){
         }
       }
       if(!kinkmotherpass) continue;
-    }       
+    }
 
     // RecPrim
     if(!ProcessCutStep(AliHFEcuts::kStepRecPrim, track)) continue;
-    fQACollection->Fill("Kinkafter", track->Pt(), kinkstatus); 
+    fQACollection->Fill("Kinkafter", track->Pt(), kinkstatus);
 
     // production radius
     Double_t pradius[3] = {(Double_t)fCentralityF,track->Pt(),-1.};
@@ -1768,33 +1782,33 @@ void AliAnalysisTaskHFE::ProcessAOD(){
     if(HasMCData()){
       Int_t labelr = track->GetLabel();
       if(labelr>=0) {
-	AliAODMCParticle *mctrackk = dynamic_cast<AliAODMCParticle *>(fAODArrayMCInfo->At(labelr));
-	if(mctrackk && (TMath::Abs(mctrackk->GetPdgCode()) == 11)) {
-	  Int_t motherlabel = mctrackk->GetMother();
-	  if((motherlabel>=0) && (motherlabel < fAODArrayMCInfo->GetEntriesFast())) {
-	    AliAODMCParticle *mcmothertrack = dynamic_cast<AliAODMCParticle *>(fAODArrayMCInfo->At(motherlabel));
-	    if(mcmothertrack && (TMath::Abs(mcmothertrack->GetPdgCode()) == 22)) {
-	      pradius[2] = TMath::Sqrt(mctrackk->Xv()*mctrackk->Xv()+mctrackk->Yv()*mctrackk->Yv());
-	      fill = kTRUE;
-	    }
-	  }
-	}
+        AliAODMCParticle *mctrackk = dynamic_cast<AliAODMCParticle *>(fAODArrayMCInfo->At(labelr));
+        if(mctrackk && (TMath::Abs(mctrackk->GetPdgCode()) == 11)) {
+          Int_t motherlabel = mctrackk->GetMother();
+          if((motherlabel>=0) && (motherlabel < fAODArrayMCInfo->GetEntriesFast())) {
+            AliAODMCParticle *mcmothertrack = dynamic_cast<AliAODMCParticle *>(fAODArrayMCInfo->At(motherlabel));
+            if(mcmothertrack && (TMath::Abs(mcmothertrack->GetPdgCode()) == 22)) {
+              pradius[2] = TMath::Sqrt(mctrackk->Xv()*mctrackk->Xv()+mctrackk->Yv()*mctrackk->Yv());
+              fill = kTRUE;
+            }
+          }
+        }
       }
-      if(fill)  fQACollection->Fill("RadiusBefore", pradius); 
+      if(fill)  fQACollection->Fill("RadiusBefore", pradius);
     }
 
     // HFEcuts: ITS layers cuts
     if(!ProcessCutStep(AliHFEcuts::kStepHFEcutsITS, track)) continue;
 
     // production radius
-    if(fill) fQACollection->Fill("RadiusAfter", pradius); 
-      
+    if(fill) fQACollection->Fill("RadiusAfter", pradius);
+
     // HFE cuts: TOF PID and mismatch flag
     if(!ProcessCutStep(AliHFEcuts::kStepHFEcutsTOF, track)) continue;
-      
+
     // HFE cuts: TPC PID cleanup
     if(!ProcessCutStep(AliHFEcuts::kStepHFEcutsTPC, track)) continue;
-    
+
     // HFEcuts: Nb of tracklets TRD0
     if(!ProcessCutStep(AliHFEcuts::kStepHFEcutsTRD, track)) continue;
 
@@ -1809,19 +1823,19 @@ void AliAnalysisTaskHFE::ProcessAOD(){
       if(fMCQA && signal){
         fMCQA->SetCentrality(fCentralityF);
         if(mctrack && (TMath::Abs(mctrack->GetPdgCode()) == 11)){
-         Double_t weightElecBgV0[kBgLevels] = {0.,0.,0.};
-         fMCQA->SetContainerStep(3);
-         for(Int_t iLevel = 0; iLevel < kBgLevels; iLevel++){
-           weightElecBgV0[iLevel] = fMCQA->GetWeightFactor(mctrack, iLevel); // positive:conversion e, negative: nonHFE 
-         }
-         if(weightElecBgV0[0]>0) {
-             fVarManager->FillContainer(fContainer, "conversionElecs", 3, kFALSE, weightElecBgV0[0]);
-             fVarManager->FillContainer(fContainer, "conversionElecs", 4, kTRUE, weightElecBgV0[0]);
-         }
-         else if(weightElecBgV0[0]<0) {
-             fVarManager->FillContainer(fContainer, "mesonElecs", 3, kFALSE, -1*weightElecBgV0[0]);
-             fVarManager->FillContainer(fContainer, "mesonElecs", 4, kTRUE, -1*weightElecBgV0[0]);
-         }
+          Double_t weightElecBgV0[kBgLevels] = {0.,0.,0.};
+          fMCQA->SetContainerStep(3);
+          for(Int_t iLevel = 0; iLevel < kBgLevels; iLevel++){
+            weightElecBgV0[iLevel] = fMCQA->GetWeightFactor(mctrack, iLevel); // positive:conversion e, negative: nonHFE
+          }
+          if(weightElecBgV0[0]>0) {
+            fVarManager->FillContainer(fContainer, "conversionElecs", 3, kFALSE, weightElecBgV0[0]);
+            fVarManager->FillContainer(fContainer, "conversionElecs", 4, kTRUE, weightElecBgV0[0]);
+          }
+          else if(weightElecBgV0[0]<0) {
+            fVarManager->FillContainer(fContainer, "mesonElecs", 3, kFALSE, -1*weightElecBgV0[0]);
+            fVarManager->FillContainer(fContainer, "mesonElecs", 4, kTRUE, -1*weightElecBgV0[0]);
+          }
         }
       }
 
@@ -1886,59 +1900,59 @@ void AliAnalysisTaskHFE::ProcessAOD(){
       else hfetrack.SetPP();
     }
     fPID->SetVarManager(fVarManager);
-    if(!fPID->IsSelected(&hfetrack, fContainer, "recTrackCont", fPIDqa)) continue;   
+    if(!fPID->IsSelected(&hfetrack, fContainer, "recTrackCont", fPIDqa)) continue;
     // we will do PID here as soon as possible
 
     // Background subtraction----------------------------------------------------------------------------------------------
     if (GetPlugin(kNonPhotonicElectron)&&!GetPlugin(kNonPhotonicElectronBeauty)) {
       Int_t indexmother = -1;
-      Int_t mcsource = -1;  
+      Int_t mcsource = -1;
       Int_t mcQAsource = -1;
-      Double_t weightNonPhotonicFactor = 1.; 
+      Double_t weightNonPhotonicFactor = 1.;
       //printf("weight %f \n",weightNonPhotonicFactor);
-      if(HasMCData() && mctrack){  
+      if(HasMCData() && mctrack){
         mcsource = fBackgroundSubtraction->FindMother(TMath::Abs(track->GetLabel()),indexmother);
-	if(fBackgroundSubtraction->GetLevelBack()>=0) {
-	  if(fMCQA) {
-	    fMCQA->SetCentrality(fCentralityF);
-	    fMCQA->SetPercentrality(static_cast<Int_t>(fCentralityPercent));
-	    mcQAsource = fMCQA->GetElecSource(mctrack, kTRUE);
+        if(fBackgroundSubtraction->GetLevelBack()>=0) {
+          if(fMCQA) {
+            fMCQA->SetCentrality(fCentralityF);
+            fMCQA->SetPercentrality(static_cast<Int_t>(fCentralityPercent));
+            mcQAsource = fMCQA->GetElecSource(mctrack, kTRUE);
             fMCQA->SetContainerStep(2);
-	    weightNonPhotonicFactor = TMath::Abs(fMCQA->GetWeightFactor(mctrack, fBackgroundSubtraction->GetLevelBack())); // positive:conversion e, negative: nonHFE 
-	    //weightNonPhotonicFactor = TMath::Abs(fMCQA->GetWeightFactorForPrimaries(mctrack, fBackgroundSubtraction->GetLevelBack())); // positive:conversion e, negative: nonHFE 
-	  }
-	}
+            weightNonPhotonicFactor = TMath::Abs(fMCQA->GetWeightFactor(mctrack, fBackgroundSubtraction->GetLevelBack())); // positive:conversion e, negative: nonHFE
+            //weightNonPhotonicFactor = TMath::Abs(fMCQA->GetWeightFactorForPrimaries(mctrack, fBackgroundSubtraction->GetLevelBack())); // positive:conversion e, negative: nonHFE
+          }
+        }
       }
-	fBackgroundSubtraction->LookAtNonHFE(itrack, track, fInputEvent, weightNonPhotonicFactor, fCentralityF, -1,mcsource, indexmother,mcQAsource);
+      fBackgroundSubtraction->LookAtNonHFE(itrack, track, fInputEvent, weightNonPhotonicFactor, fCentralityF, -1,mcsource, indexmother,mcQAsource);
     }
     //---------------------------------------------------------------------------------------------------------------------
 
     // end AOD QA
-    fQACollection->Fill("Filterend", -1);  
+    fQACollection->Fill("Filterend", -1);
     for(Int_t k=0; k<20; k++) {
       Int_t u = 1<<k;
       if((track->TestFilterBit(u))) {
-	      fQACollection->Fill("Filterend", k);
+        fQACollection->Fill("Filterend", k);
       }
     }
-       
+
     // Apply weight for background contamination
     //Double_t weightBackGround = 1.0;
     if(signal) {
       // Apply weight for background contamination
       if(fBackGroundFactorApply) {
-	      if(IsPbPb() && fCentralityF >= 0) fWeightBackGround =  fkBackGroundFactorArray[fCentralityF >= 0 ? fCentralityF : 0]->Eval(TMath::Abs(track->P()));
-	      else    fWeightBackGround =  fkBackGroundFactorArray[0]->Eval(TMath::Abs(track->P())); // pp case
-	
-	      if(fWeightBackGround < 0.0) fWeightBackGround = 0.0;
-	      else if(fWeightBackGround > 1.0) fWeightBackGround = 1.0;
+        if(IsPbPb() && fCentralityF >= 0) fWeightBackGround =  fkBackGroundFactorArray[fCentralityF >= 0 ? fCentralityF : 0]->Eval(TMath::Abs(track->P()));
+        else    fWeightBackGround =  fkBackGroundFactorArray[0]->Eval(TMath::Abs(track->P())); // pp case
+
+        if(fWeightBackGround < 0.0) fWeightBackGround = 0.0;
+        else if(fWeightBackGround > 1.0) fWeightBackGround = 1.0;
         // weightBackGround as special weight
         fVarManager->FillContainer(fContainer, "hadronicBackground", 1, kFALSE, fWeightBackGround);
       }
       fVarManager->FillCorrelationMatrix(fContainer->GetCorrelationMatrix("correlationstepafterPID"));
     }
-    
-    nElectronCandidates++;    
+
+    nElectronCandidates++;
 
     if (GetPlugin(kDEstep)) {
       if (!HasMCData()){
@@ -1958,11 +1972,11 @@ void AliAnalysisTaskHFE::ProcessAOD(){
       if(signal) {
         // Apply weight for background contamination after ip cut
         if(fBackGroundFactorApply) {
-              fWeightBackGround =  fkBackGroundFactorArray[0]->Eval(TMath::Abs(track->P())); // pp case
-              if(fWeightBackGround < 0.0) fWeightBackGround = 0.0;
-              else if(fWeightBackGround > 1.0) fWeightBackGround = 1.0;
-              // weightBackGround as special weight
-              fVarManager->FillContainer(fContainer, "hadronicBackground", 2, kFALSE, fWeightBackGround);
+          fWeightBackGround =  fkBackGroundFactorArray[0]->Eval(TMath::Abs(track->P())); // pp case
+          if(fWeightBackGround < 0.0) fWeightBackGround = 0.0;
+          else if(fWeightBackGround > 1.0) fWeightBackGround = 1.0;
+          // weightBackGround as special weight
+          fVarManager->FillContainer(fContainer, "hadronicBackground", 2, kFALSE, fWeightBackGround);
         }
 
         fVarManager->FillContainer(fContainer, "recTrackContDEReco", AliHFEcuts::kStepHFEcutsDca, kFALSE);
@@ -1974,21 +1988,21 @@ void AliAnalysisTaskHFE::ProcessAOD(){
     // Background subtraction----------------------------------------------------------------------------------------------
     if (!GetPlugin(kNonPhotonicElectron)&&GetPlugin(kNonPhotonicElectronBeauty)) {
       Int_t indexmother = -1;
-      Int_t mcsource = -1;  
+      Int_t mcsource = -1;
       Int_t mcQAsource = -1;
-      Double_t weightNonPhotonicFactor = 1.; 
+      Double_t weightNonPhotonicFactor = 1.;
       //printf("weight %f \n",weightNonPhotonicFactor);
-      if(HasMCData() && mctrack){  
+      if(HasMCData() && mctrack){
         mcsource = fBackgroundSubtraction->FindMother(TMath::Abs(track->GetLabel()),indexmother);
-	if(fBackgroundSubtraction->GetLevelBack()>=0) {
-	  if(fMCQA) {
-	    fMCQA->SetCentrality(fCentralityF);
-	    fMCQA->SetPercentrality(static_cast<Int_t>(fCentralityPercent));
-	    mcQAsource = fMCQA->GetElecSource(mctrack, kTRUE);
+        if(fBackgroundSubtraction->GetLevelBack()>=0) {
+          if(fMCQA) {
+            fMCQA->SetCentrality(fCentralityF);
+            fMCQA->SetPercentrality(static_cast<Int_t>(fCentralityPercent));
+            mcQAsource = fMCQA->GetElecSource(mctrack, kTRUE);
             fMCQA->SetContainerStep(4);
-	    weightNonPhotonicFactor = TMath::Abs(fMCQA->GetWeightFactor(mctrack, fBackgroundSubtraction->GetLevelBack())); // positive:conversion e, negative: nonHFE 
-	  }
-	}
+            weightNonPhotonicFactor = TMath::Abs(fMCQA->GetWeightFactor(mctrack, fBackgroundSubtraction->GetLevelBack())); // positive:conversion e, negative: nonHFE
+          }
+        }
       }
       fBackgroundSubtraction->LookAtNonHFE(itrack, track, fInputEvent, weightNonPhotonicFactor, fCentralityF, -1,mcsource, indexmother,mcQAsource);
     }
@@ -2052,7 +2066,7 @@ Bool_t AliAnalysisTaskHFE::PreSelectTrack(AliESDtrack *track) const {
   //
   // Preselect tracks
   //
-  
+
 
   Bool_t survived = kTRUE;
 
@@ -2061,7 +2075,7 @@ Bool_t AliAnalysisTaskHFE::PreSelectTrack(AliESDtrack *track) const {
     if(!fCutspreselect->IsSelected(track)) survived=kFALSE;
   }
   //printf("survived %d\n",(Int_t)survived);
-  
+
   if(survived && fPIDpreselect){
     // Apply PID
     AliHFEpidObject hfetrack;
@@ -2074,8 +2088,8 @@ Bool_t AliAnalysisTaskHFE::PreSelectTrack(AliESDtrack *track) const {
     //else printf("Pass AliHFEcuts::kPID\n");
   }
 
-  return survived; 
-      
+  return survived;
+
 }
 //____________________________________________________________
 void AliAnalysisTaskHFE::MakeEventContainer(){
@@ -2086,14 +2100,14 @@ void AliAnalysisTaskHFE::MakeEventContainer(){
   // 3rd bin: Centrality class (for pp defined as number of contributors in vertex.)
   // 4th bin: Number of contributors > 0
   //
-  
-  const Int_t kNvar = 4;  // number of variables on the grid: 
+
+  const Int_t kNvar = 4;  // number of variables on the grid:
   Int_t nBins[kNvar] = {120, 2, 11, 2};
   Double_t binMin[kNvar] = {-30. , 0., 0.0, 0.};
   Double_t binMax[kNvar] = {30., 2., 11.0, 2.};
-  
+
   AliCFContainer *evCont = new AliCFContainer("eventContainer", "Container for events", AliHFEcuts::kNcutStepsEvent, kNvar, nBins);
-  
+
   Double_t *vertexBins = AliHFEtools::MakeLinearBinning(nBins[0], binMin[0], binMax[0]);
   Double_t *v0andBins = AliHFEtools::MakeLinearBinning(nBins[1], binMin[1], binMax[1]);
   Double_t *centralityBins = AliHFEtools::MakeLinearBinning(nBins[2], binMin[2], binMax[2]);
@@ -2103,14 +2117,14 @@ void AliAnalysisTaskHFE::MakeEventContainer(){
   evCont->SetBinLimits(2, centralityBins);
   evCont->SetBinLimits(3, contributorsBins);
   delete[] vertexBins; delete[] v0andBins; delete[] centralityBins; delete[] contributorsBins;
-    
+
   fCFM->SetEventContainer(evCont);
 }
 
 //____________________________________________________________
 void AliAnalysisTaskHFE::MakeParticleContainer(){
   //
-  // Create the particle container for the correction framework manager and 
+  // Create the particle container for the correction framework manager and
   // link it
   //
   if(!fContainer) fContainer = new AliHFEcontainer("trackContainer");
@@ -2120,7 +2134,7 @@ void AliAnalysisTaskHFE::MakeParticleContainer(){
   fContainer->CreateContainer("MCTrackCont", "Track Container filled with MC information", AliHFEcuts::kNcutStepsMCTrack);
   fContainer->CreateContainer("recTrackContReco", "Track Container filled with MC information", AliHFEcuts::kNcutStepsRecTrack + fPID->GetNumberOfPIDdetectors());
   fContainer->CreateContainer("recTrackContMC", "Track Container filled with MC information", AliHFEcuts::kNcutStepsRecTrack + fPID->GetNumberOfPIDdetectors());
-  
+
   fContainer->CreateContainer("hadronicBackground", "Container for Hadronic Background", 3);
   fContainer->CreateContainer("recTrackContDEReco", "Container for displaced electron analysis with Reco information", 1);
   fContainer->CreateContainer("recTrackContDEMC", "Container for displaced electron analysis with MC information", 1);
@@ -2132,7 +2146,7 @@ void AliAnalysisTaskHFE::MakeParticleContainer(){
     fContainer->CreateContainer("mesonElecs", "Container for weighted electrons from meson decays",7);
     fContainer->Sumw2("conversionElecs");
     fContainer->Sumw2("mesonElecs");
-   
+
     if(fisNonHFEsystematics){
       const Char_t *sourceName[kElecBgSpecies]={"Pion","Eta","Omega","Phi","EtaPrime","Rho","Kaon","K0s","Lambda"};
       const Char_t *levelName[kBgLevels]={"Best","Lower","Upper"};
@@ -2172,7 +2186,7 @@ void AliAnalysisTaskHFE::MakeParticleContainer(){
 }
 //____________________________________________________________
 void AliAnalysisTaskHFE::InitContaminationQA(){
-  // 
+  //
   // Add QA for Impact Parameter cut
   //
 
@@ -2216,15 +2230,15 @@ void AliAnalysisTaskHFE::InitContaminationQA(){
       ((THnSparse*)(fQACollection->Get("Dca")))->SetBinEdges(5, chargeBins);
 
       break;
-    }  
+    }
   }
 
 }
 //____________________________________________________________
 void AliAnalysisTaskHFE::InitHistoRadius(){
   //
-  
-  // Before   
+
+  // Before
   const Int_t kNDim = 3;
   const Int_t kNBins[kNDim] = {11, 35, 25};
   const Double_t kMin[kNDim] = {0,0.1,0.01};
@@ -2244,24 +2258,24 @@ void AliAnalysisTaskHFE::InitHistoRadius(){
 //____________________________________________________________
 void AliAnalysisTaskHFE::InitHistoITScluster(){
   //
-    // Initialize a temporary histogram to monitor the chi2/ITS cluster
-    if(IsPbPb()) {
-        const Int_t kNDim = 7;
-        const Int_t kNBins[kNDim] = {88, 20,90,11, 160, 2, 1000};
-        const Double_t kMin[kNDim] = {0.1, -1,0,  0.,0., 0,  0.};
-        const Double_t kMax[kNDim] = {20., 1, 2.*TMath::Pi(), 11.,160, 2, 100.};
-        fQACollection->CreateTHnSparse("fChi2perITScluster", "chi2/ITS cluster; p_{T} (GeV/c);eta;phi; centrality class;nclus;sharebit; #chi^{2}/ITS cluster", kNDim, kNBins, kMin, kMax);
-        fQACollection->BinLogAxis("fChi2perITScluster", 0);
-    }
-    else
-    {
-        const Int_t kNDim = 3;
-        const Int_t kNBins[kNDim] = {44, 11, 1000};
-        const Double_t kMin[kNDim] = {0.1, 0., 0.};
-        const Double_t kMax[kNDim] = {20., 11., 100.};
-        fQACollection->CreateTHnSparse("fChi2perITScluster", "chi2/ITS cluster; p_{T} (GeV/c); centrality class; #chi^{2}/ITS cluster", kNDim, kNBins, kMin, kMax);
-        fQACollection->BinLogAxis("fChi2perITScluster", 0);
-    }
+  // Initialize a temporary histogram to monitor the chi2/ITS cluster
+  if(IsPbPb()) {
+    const Int_t kNDim = 7;
+    const Int_t kNBins[kNDim] = {88, 20,90,11, 160, 2, 1000};
+    const Double_t kMin[kNDim] = {0.1, -1,0,  0.,0., 0,  0.};
+    const Double_t kMax[kNDim] = {20., 1, 2.*TMath::Pi(), 11.,160, 2, 100.};
+    fQACollection->CreateTHnSparse("fChi2perITScluster", "chi2/ITS cluster; p_{T} (GeV/c);eta;phi; centrality class;nclus;sharebit; #chi^{2}/ITS cluster", kNDim, kNBins, kMin, kMax);
+    fQACollection->BinLogAxis("fChi2perITScluster", 0);
+  }
+  else
+  {
+    const Int_t kNDim = 3;
+    const Int_t kNBins[kNDim] = {44, 11, 1000};
+    const Double_t kMin[kNDim] = {0.1, 0., 0.};
+    const Double_t kMax[kNDim] = {20., 11., 100.};
+    fQACollection->CreateTHnSparse("fChi2perITScluster", "chi2/ITS cluster; p_{T} (GeV/c); centrality class; #chi^{2}/ITS cluster", kNDim, kNBins, kMin, kMax);
+    fQACollection->BinLogAxis("fChi2perITScluster", 0);
+  }
 }
 
 //____________________________________________________________
@@ -2325,7 +2339,7 @@ Bool_t AliAnalysisTaskHFE::FillProductionVertex(const AliVParticle * const track
 
   Double_t xv = 0.0;
   Double_t yv = 0.0;
- 
+
   if(TString(mctrack->IsA()->GetName()).CompareTo("AliMCParticle") == 0){
     // case MCParticle
     const AliMCParticle *mcpart = dynamic_cast<const AliMCParticle *>(mctrack);
@@ -2364,8 +2378,8 @@ void AliAnalysisTaskHFE::SwitchOnPlugin(Int_t plug){
     case kPostProcess: SETBIT(fPlugins, plug); break;
     case kDEstep: SETBIT(fPlugins, plug); break;
     case kTaggedTrackAnalysis: SETBIT(fPlugins, plug); break;
-    case kNonPhotonicElectron: SETBIT(fPlugins, plug); break; 
-    case kNonPhotonicElectronBeauty: SETBIT(fPlugins, plug); break; 
+    case kNonPhotonicElectron: SETBIT(fPlugins, plug); break;
+    case kNonPhotonicElectronBeauty: SETBIT(fPlugins, plug); break;
     default: AliError("Unknown Plugin");
   };
 }
@@ -2388,34 +2402,51 @@ Bool_t AliAnalysisTaskHFE::ReadCentrality() {
   //
   // Recover the centrality of the event from ESD or AOD
   //
-  
+
   Float_t fCentralityLimitstemp[12];
   Float_t fCentralityLimitsdefault[12]= {0.,5.,10., 20., 30., 40., 50., 60.,70.,80., 90., 100.00001};
   if(!fPbPbUserCentralityBinning) memcpy(fCentralityLimitstemp,fCentralityLimitsdefault,sizeof(fCentralityLimitsdefault));
   else memcpy(fCentralityLimitstemp,fCentralityLimits,sizeof(fCentralityLimitsdefault));
-  
+
 
   Int_t bin = -1;
   if(IsPbPb()||IspPb()) {
-    // Centrality
-    AliCentrality *centrality = fInputEvent->GetCentrality();
-    fCentralityPercent = centrality->GetCentralityPercentile(fCentralityEstimator.Data());
-    //printf("centrality %f\n",fCentralityPercent);
+
+    // ------------- centrality selection -------------------------------------------------------------------------
+    if(!fNewFrame)          // old framework
+    {
+      AliCentrality *centrality = fInputEvent->GetCentrality();
+      fCentralityPercent = centrality->GetCentralityPercentile(fCentralityEstimator.Data());
+      //printf("centrality %f\n",fCentralityPercent);
+    }
+    else                   // new framework
+    {
+      //AliAODEvent *fAOD = dynamic_cast<AliAODEvent *>(fInputEvent);
+      AliMultSelection *multSelection = (AliMultSelection*) fInputEvent->FindListObject("MultSelection");
+      if(!multSelection ) {
+        AliWarning("AliMultSelection object not found!");
+      }
+      else{
+        fCentralityPercent = multSelection->GetMultiplicityPercentile(fkCentralityMethod,kFALSE);
+      }
+    }
+    if(fCentralityPercent<fCentrMin || fCentralityPercent>fCentrMax)  return kFALSE;                // centrality window selected
+    // ------------------------------------------------------------------------------------------------------------
 
     for(Int_t ibin = 0; ibin < 11; ibin++){
       if(fCentralityPercent >= fCentralityLimitstemp[ibin] && fCentralityPercent < fCentralityLimitstemp[ibin+1]){
         bin = ibin;
-	//printf("test bin %f, low %f, high %f, %d\n",fCentralityPercent,fCentralityLimitstemp[ibin],fCentralityLimitstemp[ibin+1],ibin);
+        //printf("test bin %f, low %f, high %f, %d\n",fCentralityPercent,fCentralityLimitstemp[ibin],fCentralityLimitstemp[ibin+1],ibin);
         break;
       }
     }
-    
+
     if(bin == -1) bin = 11; // Overflow
   } else {
     // PP: Tracklet multiplicity, use common definition
     Int_t itsMultiplicity = GetITSMultiplicity(fInputEvent);
     Int_t multiplicityLimits[8] = {0, 1, 9, 17, 25, 36, 60, 500};
-    for(Int_t ibin = 0; ibin < 7; ibin++){  
+    for(Int_t ibin = 0; ibin < 7; ibin++){
       if(itsMultiplicity >= multiplicityLimits[ibin] && itsMultiplicity < multiplicityLimits[ibin + 1]){
         bin = ibin;
         break;
@@ -2426,7 +2457,7 @@ Bool_t AliAnalysisTaskHFE::ReadCentrality() {
   fCentralityF = bin;
   AliDebug(2, Form("Centrality class %d\n", fCentralityF));
 
- 
+
   // contributors, to be outsourced
   if(IsAODanalysis()){
     AliAODEvent *fAOD = dynamic_cast<AliAODEvent *>(fInputEvent);
@@ -2434,7 +2465,7 @@ Bool_t AliAnalysisTaskHFE::ReadCentrality() {
       AliError("AOD Event required for AOD Analysis");
       return kFALSE;
     }
-        
+
   } else {
     AliESDEvent *fESD = dynamic_cast<AliESDEvent *>(fInputEvent);
     if(!fESD){
@@ -2442,13 +2473,13 @@ Bool_t AliAnalysisTaskHFE::ReadCentrality() {
       return kFALSE;
     }
   }
-    
-    if(!fvtxAna){
+
+  if(!fvtxAna){
     fContributors = 0.5;
     return kFALSE;
   }
   else {
-        Int_t contributorstemp = fvtxAna->GetNContributors();
+    Int_t contributorstemp = fvtxAna->GetNContributors();
     if( contributorstemp <=  0) {
       fContributors =  0.5;
       //printf("Number of contributors %d and vz %f\n",contributorstemp,vtx->GetZ());
@@ -2479,7 +2510,7 @@ Int_t AliAnalysisTaskHFE::GetITSMultiplicity(AliVEvent *ev){
   } else if (ev->IsA() == AliESDEvent::Class()) {
     nTracklets = ((AliESDEvent*)ev)->GetMultiplicity()->GetNumberOfTracklets();
     for (Int_t nn = 0; nn < nTracklets; nn++) {
-       Double_t eta = ((AliESDEvent*)ev)->GetMultiplicity()->GetEta(nn);
+      Double_t eta = ((AliESDEvent*)ev)->GetMultiplicity()->GetEta(nn);
       if (TMath::Abs(eta) < etaRange) nAcc++;
     }
   } else return -1;
@@ -2492,529 +2523,496 @@ void AliAnalysisTaskHFE::RejectionPileUpVertexRangeEventCut() {
   //
   // Recover the centrality of the event from ESD or AOD
   //
-    //
-    //
-    if(IsAODanalysis()){
+  //
+  //
 
-        AliAODEvent *fAOD = dynamic_cast<AliAODEvent *>(fInputEvent);
-        if(!fAOD){
-            AliError("AOD Event required for AOD Analysis");
-            return;
-        }
+  AliAODEvent *fAOD = NULL;
+  AliESDEvent *fESD = NULL;
 
-        // PileUp
-        fIdentifiedAsPileUp = kFALSE;
-        if(fRemovePileUp && fAOD->IsPileupFromSPD()) fIdentifiedAsPileUp = kTRUE;
+  if(IsAODanalysis()){
 
-        // Z vertex
-        fIdentifiedAsOutInz = kFALSE;
-        Bool_t findvertex = kTRUE;
-        if((!fvtxAna) || (fvtxAna->GetNContributors() <= 0)) findvertex = kFALSE;
-        if(findvertex) {
-            if(TMath::Abs(fvtxAna->GetZ()) > fCuts->GetVertexRange()) fIdentifiedAsOutInz = kTRUE;
-        }
-        // Event Cut
-        fPassTheEventCut = kTRUE;
-        if(!fCFM->CheckEventCuts(AliHFEcuts::kEventStepReconstructed, fAOD)) fPassTheEventCut = kFALSE;
-
-
-    } else {
-
-        AliDebug(3, "Processing ESD Centrality");
-        AliESDEvent *fESD = dynamic_cast<AliESDEvent *>(fInputEvent);
-        if(!fESD){
-            AliError("ESD Event required for ESD Analysis");
-            return;
-        }
-
-        // PileUp
-        fIdentifiedAsPileUp = kFALSE;
-        if(fRemovePileUp && fESD->IsPileupFromSPD()) fIdentifiedAsPileUp = kTRUE;
-
-
-        // Z vertex
-        fIdentifiedAsOutInz = kFALSE;
-        Bool_t findvertex = kTRUE;
-        if((!fvtxAna) || (fvtxAna->GetNContributors() <= 0)) findvertex = kFALSE;
-        if(findvertex) {
-            if(TMath::Abs(fvtxAna->GetZ()) > fCuts->GetVertexRange()) fIdentifiedAsOutInz = kTRUE;
-        }
-
-        //Event Cut
-        fPassTheEventCut = kTRUE;
-        if(!fCFM->CheckEventCuts(AliHFEcuts::kEventStepReconstructed, fESD)) fPassTheEventCut = kFALSE;   
-
+    AliAODEvent *fAOD = dynamic_cast<AliAODEvent *>(fInputEvent);
+    if(!fAOD){
+      AliError("AOD Event required for AOD Analysis");
+      return;
     }
 
-}
+    // PileUp
+    fIdentifiedAsPileUp = kFALSE;
+    if(fRemovePileUp && fAOD->IsPileupFromSPDInMultBins()) fIdentifiedAsPileUp = kTRUE;
 
+  } else {
 
-/*
-    AliAODEvent *fAOD = NULL;
-    AliESDEvent *fESD = NULL;
-
- if(IsAODanalysis()){
-   AliAODEvent *fAOD = dynamic_cast<AliAODEvent *>(fInputEvent);
-   if(!fAOD){
-     AliError("AOD Event required for AOD Analysis");
-       return;
-   }  
- } else {
-   
-   AliDebug(3, "Processing ESD Centrality");
-   AliESDEvent *fESD = dynamic_cast<AliESDEvent *>(fInputEvent);
-   if(!fESD){
-     AliError("ESD Event required for ESD Analysis");
-       return;
-   }
+    AliDebug(3, "Processing ESD Centrality");
+    AliESDEvent *fESD = dynamic_cast<AliESDEvent *>(fInputEvent);
+    if(!fESD){
+      AliError("ESD Event required for ESD Analysis");
+      return;
     }
 
-   // PileUp
-   fIdentifiedAsPileUp = kFALSE;
-    if(fRemovePileUp){
-        if(IsAODanalysis()){
-            fIdentifiedAsPileUp = fAOD->IsPileupFromSPD();
-        } else {
-            fIdentifiedAsPileUp = fESD->IsPileupFromSPD();
-        }
-    }
+    // PileUp
+    fIdentifiedAsPileUp = kFALSE;
+    if(fRemovePileUp && fESD->IsPileupFromSPDInMultBins()) fIdentifiedAsPileUp = kTRUE;
 
-   // Z vertex
-   fIdentifiedAsOutInz = kFALSE;
-    if((fvtxAna) && (TMath::Abs(fvtxAna->GetZ()) > fCuts->GetVertexRange())) fIdentifiedAsOutInz = kTRUE;
-   
-   //Event Cut
-   fPassTheEventCut = kTRUE;
-    if(!fCFM->CheckEventCuts(AliHFEcuts::kEventStepReconstructed, fInputEvent)) fPassTheEventCut = kFALSE;   
-  
+  }
+
+  // additional PileUp check for pp and pPb
+  if(!IsPbPb()){
+    Int_t minContributors=5;
+    Float_t minChi2=5.;
+    Float_t minWeiZDiff=15;
+    Bool_t checkPlpFromDifferentBC=kFALSE;
+    fAnalysisUtils->SetMinPlpContribMV(minContributors);
+    fAnalysisUtils->SetMaxPlpChi2MV(minChi2);
+    fAnalysisUtils->SetMinWDistMV(minWeiZDiff);
+    fAnalysisUtils->SetCheckPlpFromDifferentBCMV(checkPlpFromDifferentBC);
+    if(fRemovePileUp && fAnalysisUtils->IsPileUpMV(fInputEvent)) fIdentifiedAsPileUp = kTRUE;
+  }
+     // Z vertex
+     fIdentifiedAsOutInz = kFALSE;
+     if((fvtxAna) && (TMath::Abs(fvtxAna->GetZ()) > fCuts->GetVertexRange())) fIdentifiedAsOutInz = kTRUE;
+
+     //Event Cut
+     fPassTheEventCut = kTRUE;
+     if(!fCFM->CheckEventCuts(AliHFEcuts::kEventStepReconstructed, fInputEvent)) fPassTheEventCut = kFALSE;
+
+     }
+
+
+     //___________________________________________________
+     Bool_t AliAnalysisTaskHFE::CheckTRDTriggerESD(AliESDEvent *ev) {
+       //
+       // Check TRD trigger; pPb settings
+       //
+       Bool_t cint8=kFALSE;
+       Bool_t cint7=kFALSE;
+       Bool_t cint5=kFALSE;
+       Bool_t cint8s=kFALSE;
+       Bool_t cint7s=kFALSE;
+       Bool_t cint7ppb=kFALSE;
+       Bool_t trdtrgevent=kFALSE;
+
+       //  printf("TRIGGERS %s \n",ev->GetFiredTriggerClasses().Data());
+
+       if(fWhichTRDTrigger==4) fTRDTriggerAnalysistrg->CalcTriggers(ev);
+       else fTRDTriggerAnalysismb->CalcTriggers(ev);
+
+
+       // mb selection of WU events
+       if(fWhichTRDTrigger==1)
+       {
+         //	if(ev->IsTriggerClassFired("CINT7WU-B-NOPF-ALL"))
+         if((ev->IsTriggerClassFired("CINT7WU-B-NOPF-ALL"))||(ev->IsTriggerClassFired("CINT7WU-S-NOPF-ALL"))||(ev->IsTriggerClassFired("CINT8WU-S-NOPF-ALL")))
+         {
+           DrawTRDTrigger(ev);
+           DrawTRDTriggerAnalysis(ev);
+           return kTRUE;
+         }
+         else return kFALSE;
+       }
+
+
+       // HSE no cleanup
+       if(fWhichTRDTrigger==2)
+       {
+         cint8= ev->IsTriggerClassFired("CINT8WUHSE-B-NOPF-CENT");
+         cint7= ev->IsTriggerClassFired("CINT7WUHSE-B-NOPF-CENT");  // pPb rare
+         cint7ppb= ev->IsTriggerClassFired("CINT7WUHSE-B-NOPF-ALL"); // pPb mb
+         cint8s= ev->IsTriggerClassFired("CINT7WUHSE-S-NOPF-CENT");
+         cint7s= ev->IsTriggerClassFired("CINT8WUHSE-S-NOPF-CENT");
+         cint5= (ev->IsTriggerClassFired("CINT5WU-B-NOPF-ALL")) &&
+         (ev->GetHeader()->GetL1TriggerInputs() & (1 << 10));
+         //        printf("hse trigger %i %i %i %i %i \n",cint7,cint7ppb,cint8,cint7s,cint8s);
+         if((cint7==kFALSE)&&(cint7ppb==kFALSE)&&(cint8==kFALSE)&&(cint7s==kFALSE)&&(cint8s==kFALSE)&&(cint5==kFALSE)) return kFALSE;
+         else
+         {
+           DrawTRDTrigger(ev);
+           DrawTRDTriggerAnalysis(ev);
+           return kTRUE;
+         }
+       }
+
+
+
+       //HQU no cleanup
+       if(fWhichTRDTrigger==3)
+       {
+         cint8= ev->IsTriggerClassFired("CINT8WUHQU-B-NOPF-CENT");
+         cint7= ev->IsTriggerClassFired("CINT7WUHQU-B-NOPF-CENT");    // pPb rare
+         cint7ppb= ev->IsTriggerClassFired("CINT7WUHQU-B-NOPF-ALL"); // pPb mb
+         cint8s= ev->IsTriggerClassFired("CINT7WUHQU-S-NOPF-CENT");
+         cint7s= ev->IsTriggerClassFired("CINT8WUHQU-S-NOPF-CENT");
+         cint5= (ev->IsTriggerClassFired("CINT5WU-B-NOPF-ALL")) &&
+         (ev->GetHeader()->GetL1TriggerInputs() & (1 << 12));
+         //       printf("hqu trigger %i %i %i %i %i \n",cint7,cint7ppb,cint8,cint7s,cint8s);
+         if((cint7==kFALSE)&&(cint7ppb==kFALSE)&&(cint8==kFALSE)&&(cint7s==kFALSE)&&(cint8s==kFALSE)&&(cint5==kFALSE)) return kFALSE;
+         else
+         {
+           DrawTRDTrigger(ev);
+           DrawTRDTriggerAnalysis(ev);
+           return kTRUE;
+         }
+       }
+
+       if(fWhichTRDTrigger==4)
+       {
+         //	printf("trigger %i %i \n", ev->GetHeader()->IsTriggerInputFired("1HSE"),(ev->GetHeader()->GetL1TriggerInputs() & (1 << 10))); // bug in IsTriggerInputFired; reported in savannah
+
+         //	if(ev->IsTriggerClassFired("CINT7WU-B-NOPF-ALL"))
+         //	{
+         //	    Int_t trginput=0;
+         //	    trginput=ev->GetHeader()->GetL1TriggerInputs() & (1 << 10);  // HSE
+         //	    if(trginput==1024)
+         //	    if(fTRDTriggerAnalysismb->CheckCondition(AliTRDTriggerAnalysis::kHSE))
+         //	    if(fTRDTriggerAnalysismb->HasTriggered(AliTRDTriggerAnalysis::kHSE))
+
+         //	if(fTRDTriggerAnalysismb->HasFired(AliTRDTriggerAnalysis::kHSE)) // for mb analysis
+         if(fTRDTriggerAnalysistrg->HasFired(AliTRDTriggerAnalysis::kHSE)) // just to check clean-up effect
+         {
+           // check if pre-trigger fired
+           if((ev->IsTriggerClassFired("CINT7WU-B-NOPF-ALL"))||(ev->IsTriggerClassFired("CINT7WU-S-NOPF-ALL"))||(ev->IsTriggerClassFired("CINT8WU-S-NOPF-ALL")))
+           {
+             DrawTRDTrigger(ev);
+             DrawTRDTriggerAnalysis(ev);
+             return kTRUE;
+           } else return kFALSE;
+         }
+       }// else return kFALSE;
+       //    }
+       if(fWhichTRDTrigger==5)
+       {
+         //	printf("trigger %i %i \n", ev->GetHeader()->IsTriggerInputFired("1HQU"),(ev->GetHeader()->GetL1TriggerInputs() & (1 << 12))); // bug in IsTriggerInputFired; reported in savannah
+         //	if(ev->IsTriggerClassFired("CINT7WU-B-NOPF-ALL"))
+         //	{
+
+         //	    Int_t trginput=0;
+         //	    trginput=ev->GetHeader()->GetL1TriggerInputs() & (1 << 12);  //HQU
+         //        printf("triggerinput %i \n",trginput);
+         //	    if(trginput==4096)
+         //	    if(fTRDTriggerAnalysismb->CheckCondition(AliTRDTriggerAnalysis::kHQU))
+         //	if(fTRDTriggerAnalysismb->HasTriggered(AliTRDTriggerAnalysis::kHQU))
+         if(fTRDTriggerAnalysismb->HasFired(AliTRDTriggerAnalysis::kHQU)) // for mb analysis
+         {
+           // check if pre-trigger fired
+           if((ev->IsTriggerClassFired("CINT7WU-B-NOPF-ALL"))||(ev->IsTriggerClassFired("CINT7WU-S-NOPF-ALL"))||(ev->IsTriggerClassFired("CINT8WU-S-NOPF-ALL")))
+           {
+             DrawTRDTrigger(ev);
+             DrawTRDTriggerAnalysis(ev);
+             return kTRUE;
+           } else return kFALSE;
+         }
+       } //else return kFALSE;
+       //    }
+
+
+
+
+
+
+       return trdtrgevent;
+
+     }
+
+
+     //___________________________________________________
+     Bool_t AliAnalysisTaskHFE::CheckTRDTrigger(AliVEvent *ev) {
+       //
+       // Check TRD trigger; pPb settings
+       //
+
+       if(fWhichTRDTrigger<10) fTRDTriggerAnalysistrg->CalcTriggers(ev);
+       else fTRDTriggerAnalysismb->CalcTriggers(ev);
+
+       // HSE cleanup
+       if(fWhichTRDTrigger==6)
+       {
+         if(fTRDTriggerAnalysistrg->HasTriggeredConfirmed(AliTRDTriggerAnalysis::kHSE)) // for rare period physics analysis
+         {
+           //   DrawTRDTrigger(ev);
+           DrawTRDTriggerAnalysis(ev);
+           return kTRUE;
+         } else return kFALSE;
+       }
+
+
+
+       // HQU cleanup
+       if(fWhichTRDTrigger==7)
+       {
+
+         if(fTRDTriggerAnalysistrg->HasTriggeredConfirmed(AliTRDTriggerAnalysis::kHQU)) // for rare period physics analysis
+         {
+           //     DrawTRDTrigger(ev);
+           DrawTRDTriggerAnalysis(ev);
+           return kTRUE;
+         } else return kFALSE;
+       }
+
+       // HSE or HQU cleanup
+       if(fWhichTRDTrigger==8)
+       {
+         if((fTRDTriggerAnalysistrg->HasTriggeredConfirmed(AliTRDTriggerAnalysis::kHSE))||(fTRDTriggerAnalysistrg->HasTriggeredConfirmed(AliTRDTriggerAnalysis::kHQU)))
+         {
+           //    DrawTRDTrigger(ev);
+           DrawTRDTriggerAnalysis(ev);
+           return kTRUE;
+         }
+         else
+         {
+           return kFALSE;
+         }
+       }
+
+       // HEE cleanup
+       if(fWhichTRDTrigger==9)
+       {
+
+         if(fTRDTriggerAnalysistrg->HasTriggeredConfirmed(AliTRDTriggerAnalysis::kHEE)) // for rare period physics analysis
+         {
+           //     DrawTRDTrigger(ev);
+           DrawTRDTriggerAnalysis(ev);
+           return kTRUE;
+         } else return kFALSE;
+       }
+
+
+       if(fWhichTRDTrigger==11)
+       {
+         if(fTRDTriggerAnalysismb->HasTriggered(AliTRDTriggerAnalysis::kHSE))
+         {
+           //  DrawTRDTrigger(ev);
+           DrawTRDTriggerAnalysis(ev);
+           return kTRUE;
+         }   else return kFALSE;
+       }
+       if(fWhichTRDTrigger==12)
+       {
+         if(fTRDTriggerAnalysismb->HasTriggered(AliTRDTriggerAnalysis::kHQU))
+         {
+           //  DrawTRDTrigger(ev);
+           DrawTRDTriggerAnalysis(ev);
+           return kTRUE;
+         }   else return kFALSE;
+       }
+       if(fWhichTRDTrigger==13)
+       {
+         if(fTRDTriggerAnalysismb->HasTriggered(AliTRDTriggerAnalysis::kHEE))
+         {
+           //  DrawTRDTrigger(ev);
+           DrawTRDTriggerAnalysis(ev);
+           return kTRUE;
+         }   else return kFALSE;
+       }
+
+       return kFALSE;
+
+     }
+
+     //___________________________________________________
+     void AliAnalysisTaskHFE::DrawTRDTrigger(AliESDEvent *ev) {
+
+       Int_t ntriggerbit=0;
+       fQACollection->Fill("nTriggerBit",ntriggerbit);
+       if(ev->IsTriggerClassFired("CINT7-B-NOPF-ALLNOTRD"))
+       {
+         ntriggerbit=2;
+         fQACollection->Fill("nTriggerBit",ntriggerbit);
+       }
+       if(ev->IsTriggerClassFired("CINT7WU-B-NOPF-ALL"))
+       {
+         ntriggerbit=3;
+         fQACollection->Fill("nTriggerBit",ntriggerbit);
+         if(ev->IsTriggerClassFired("CINT7WUHSE-B-NOPF-CENT")) {
+           ntriggerbit=18;
+           fQACollection->Fill("nTriggerBit",ntriggerbit);
+         }
+         if(ev->IsTriggerClassFired("CINT7WUHQU-B-NOPF-CENT")) {
+           ntriggerbit=19;
+           fQACollection->Fill("nTriggerBit",ntriggerbit);
+         }
+       }
+       if(ev->IsTriggerClassFired("CINT7WUHJT-B-NOPF-CENT"))
+       {
+         ntriggerbit=4;
+         fQACollection->Fill("nTriggerBit",ntriggerbit);
+
+         if(ev->IsTriggerClassFired("CINT7WUHSE-B-NOPF-CENT")) {
+           ntriggerbit=13;
+           fQACollection->Fill("nTriggerBit",ntriggerbit);
+         }
+         if(ev->IsTriggerClassFired("CINT7WUHQU-B-NOPF-CENT")) {
+           ntriggerbit=14;
+           fQACollection->Fill("nTriggerBit",ntriggerbit);
+           if(ev->IsTriggerClassFired("CINT7WUHSE-B-NOPF-CENT")) {
+             ntriggerbit=17;
+             fQACollection->Fill("nTriggerBit",ntriggerbit);
+           }
+         }
+       }
+       if(ev->IsTriggerClassFired("CINT7WUHQU-B-NOPF-CENT"))
+       {
+         ntriggerbit=5;
+         fQACollection->Fill("nTriggerBit",ntriggerbit);
+         if(ev->IsTriggerClassFired("CINT7WUHSE-B-NOPF-CENT")) {
+           ntriggerbit=11;
+           fQACollection->Fill("nTriggerBit",ntriggerbit);
+         }
+         if((!(ev->IsTriggerClassFired("CINT7WUHSE-B-NOPF-CENT")))&&(!(ev->IsTriggerClassFired("CINT7WUHJT-B-NOPF-CENT")))) {
+           ntriggerbit=21;
+           fQACollection->Fill("nTriggerBit",ntriggerbit);
+
+           /*
+            Int_t nTrdTracks = ev->GetNumberOfTrdTracks();
+            for (Int_t iTrack = 0; iTrack < nTrdTracks; ++iTrack) {
+            AliESDTrdTrack* trdTrack = ev->GetTrdTrack(iTrack);
+            printf("GTU track %3i: pt = %5.1f, PID = %3i\n", iTrack, trdTrack->Pt(), trdTrack->GetPID());
+            }*/
+
+
+         }
+
+       }
+       if(ev->IsTriggerClassFired("CINT7WUHSE-B-NOPF-CENT"))
+       {
+         ntriggerbit=6;
+         fQACollection->Fill("nTriggerBit",ntriggerbit);
+         if(ev->IsTriggerClassFired("CINT7WUHQU-B-NOPF-CENT")) {
+           ntriggerbit=12;
+           fQACollection->Fill("nTriggerBit",ntriggerbit);
+         }
+         if(ev->IsTriggerClassFired("CINT7WUHSE-B-NOPF-FAST")){
+           ntriggerbit=15;
+           fQACollection->Fill("nTriggerBit",ntriggerbit);
+
+           if((!(ev->IsTriggerClassFired("CINT7WUHQU-B-NOPF-CENT")))&&(!(ev->IsTriggerClassFired("CINT7WUHJT-B-NOPF-CENT")))) {
+             ntriggerbit=20;
+             fQACollection->Fill("nTriggerBit",ntriggerbit);
+             /*
+              Int_t nTrdTracks = ev->GetNumberOfTrdTracks();
+              for (Int_t iTrack = 0; iTrack < nTrdTracks; ++iTrack) {
+              AliESDTrdTrack* trdTrack = ev->GetTrdTrack(iTrack);
+              printf("HSE GTU track %3i: pt = %5.1f, PID = %3i\n", iTrack, trdTrack->Pt(), trdTrack->GetPID());
+              }                          */
+
+           }
+
+         }
+
+       }
+       if(ev->IsTriggerClassFired("CEMC7WUHEE-B-NOPF-CENT")) {
+         ntriggerbit=7;
+         fQACollection->Fill("nTriggerBit",ntriggerbit);
+       }
+       if(ev->IsTriggerClassFired("CINT7WUHJT-B-NOPF-FAST")){
+         ntriggerbit=8;
+         fQACollection->Fill("nTriggerBit",ntriggerbit);
+       }
+       if(ev->IsTriggerClassFired("CINT7WUHQU-B-NOPF-FAST")){
+         ntriggerbit=9;
+         fQACollection->Fill("nTriggerBit",ntriggerbit);
+       }
+       if(ev->IsTriggerClassFired("CINT7WUHSE-B-NOPF-FAST")){
+         ntriggerbit=10;
+         fQACollection->Fill("nTriggerBit",ntriggerbit);
+         if(ev->IsTriggerClassFired("CINT7WUHSE-B-NOPF-CENT")) {
+           ntriggerbit=16;
+           fQACollection->Fill("nTriggerBit",ntriggerbit);
+         }
+       }
+       if(ntriggerbit==0) fQACollection->Fill("nTriggerBit",1);
+
+     }
+
+
+     //___________________________________________________
+     void AliAnalysisTaskHFE::DrawTRDTriggerAnalysis(AliVEvent *ev) {
+
+       fTRDTriggerAnalysistrg->CalcTriggers(ev);
+       for(Int_t itrg=0;itrg<AliTRDTriggerAnalysis::kHlast;itrg++)
+       {
+         Int_t trdtrgstatus=0;
+         if(fTRDTriggerAnalysistrg->CheckCondition((AliTRDTriggerAnalysis::TRDTrigger_t) itrg))trdtrgstatus=1;
+         if(fTRDTriggerAnalysistrg->HasFired((AliTRDTriggerAnalysis::TRDTrigger_t) itrg))trdtrgstatus=2;
+         if(fTRDTriggerAnalysistrg->HasTriggered((AliTRDTriggerAnalysis::TRDTrigger_t) itrg))trdtrgstatus=3;
+         if(fTRDTriggerAnalysistrg->HasTriggeredConfirmed((AliTRDTriggerAnalysis::TRDTrigger_t) itrg))trdtrgstatus=4;
+         fQACollection->Fill("TriggerAnalysis",(Float_t)itrg,(Float_t)trdtrgstatus);
+       }
+     }
+     
+     //___________________________________________________
+     Bool_t AliAnalysisTaskHFE::IsMCFakeTrack(const AliVTrack *const trk) const {
+       //
+       // Check whether track is MC Fake track using the sign of the track label
+       //
+       return trk->GetLabel() < 0;
+     }
+     
+     
+     //___________________________________________________
+     const AliVVertex *AliAnalysisTaskHFE::GetPrimaryVertexAnalysis(const AliVEvent * const inputEvent){
+       //
+       // Get vertex for analysis from event
+       //
+       const AliVVertex *vtxTracks = GetPrimaryVertexTracks(inputEvent),
+       *vtxSPD = GetPrimaryVertexSPD(inputEvent),
+       *fvtxAna(NULL);
+       
+       // fVtxMixed set as kTRUE in fVtxMixed = fCuts->GetUseMixedVertex() -- which calls --> AliHFEextraEventCuts::SetUseMixedVertex {fVtxMixed=kTRUE;fVtxTrack=kFALSE; fVtxSPD=kFALSE;}
+       if(fVtxMixed){
+         // Use mixed vertex: Prefer vertex with tracks, in case not available use SPD vertex
+         if(vtxTracks && vtxTracks->GetNContributors() > 0) fvtxAna = vtxTracks;
+         else if(vtxSPD && vtxSPD->GetNContributors() > 0) fvtxAna = vtxSPD;
+       } else if(fVtxSPD){
+         if(vtxSPD && vtxSPD->GetNContributors () > 0) fvtxAna = vtxSPD;
+       } else if(fVtxTrack) {
+         if(vtxTracks && vtxTracks->GetNContributors() > 0) fvtxAna = vtxTracks;
+       }
+       
+       return fvtxAna;
+     }
+     
+     //_____________________________________________________________________________
+     const AliVVertex *AliAnalysisTaskHFE::GetPrimaryVertexSPD(const AliVEvent * const inputEvent){
+       //
+       // Get SPD vertex from event
+       //
+       const AliVVertex *spdvtx(NULL);
+       const AliESDEvent *esd(NULL);
+       const AliAODEvent *aod(NULL);
+       if((esd = dynamic_cast<const AliESDEvent *>(inputEvent))){
+         spdvtx = esd->GetPrimaryVertexSPD();
+       } else if((aod = dynamic_cast<const AliAODEvent *>(inputEvent))){
+         spdvtx = aod->GetPrimaryVertexSPD();
+       }
+       return spdvtx;
+     }
+     
+     //_____________________________________________________________________________
+     const AliVVertex *AliAnalysisTaskHFE::GetPrimaryVertexTracks(const AliVEvent *const inputEvent){
+       //
+       // Get Primary Vertex from tracks
+       //
+       const AliVVertex *trkvtx(NULL);
+       const AliESDEvent *esd(NULL);
+       const AliAODEvent *aod(NULL);
+       if((esd = dynamic_cast<const AliESDEvent *>(inputEvent))){
+         trkvtx = esd->GetPrimaryVertexTracks();
+       } else if((aod = dynamic_cast<const AliAODEvent *>(inputEvent))){
+         const AliVVertex *vtxTmp = aod->GetPrimaryVertex();
+         // check whether the primary vertex is the vertex from tracks
+         TString vtxTtl = vtxTmp->GetTitle();
+         if(vtxTtl.Contains("VertexerTracks")){
+           trkvtx = vtxTmp;
+         }
+       }
+       return trkvtx;
+     }
+     
+     //_____________________________________________________________________________
+     void AliAnalysisTaskHFE::SetCentralityCheck(Bool_t centrCheck, char* centrMethod)
+  {
+    fNewFrame = centrCheck;
+    fkCentralityMethod = centrMethod;
+    fCentralityEstimator = centrMethod;
     return;
-}
-*/
-
-//___________________________________________________
-Bool_t AliAnalysisTaskHFE::CheckTRDTriggerESD(AliESDEvent *ev) {
-//
-// Check TRD trigger; pPb settings
-//
-    Bool_t cint8=kFALSE;
-    Bool_t cint7=kFALSE;
-    Bool_t cint5=kFALSE;
-    Bool_t cint8s=kFALSE;
-    Bool_t cint7s=kFALSE;
-    Bool_t cint7ppb=kFALSE;
-    Bool_t trdtrgevent=kFALSE;
-
-  //  printf("TRIGGERS %s \n",ev->GetFiredTriggerClasses().Data());
-
-    if(fWhichTRDTrigger==4) fTRDTriggerAnalysistrg->CalcTriggers(ev);
-    else fTRDTriggerAnalysismb->CalcTriggers(ev);
-
-
-    // mb selection of WU events
-    if(fWhichTRDTrigger==1)
-    {
-//	if(ev->IsTriggerClassFired("CINT7WU-B-NOPF-ALL"))
-	if((ev->IsTriggerClassFired("CINT7WU-B-NOPF-ALL"))||(ev->IsTriggerClassFired("CINT7WU-S-NOPF-ALL"))||(ev->IsTriggerClassFired("CINT8WU-S-NOPF-ALL")))
-	{
-	    DrawTRDTrigger(ev);
-	    DrawTRDTriggerAnalysis(ev);
-	    return kTRUE;
-	}
-        else return kFALSE;
-    }
-
-
-    // HSE no cleanup
-    if(fWhichTRDTrigger==2)
-    {
-	cint8= ev->IsTriggerClassFired("CINT8WUHSE-B-NOPF-CENT");
-	cint7= ev->IsTriggerClassFired("CINT7WUHSE-B-NOPF-CENT");  // pPb rare
-	cint7ppb= ev->IsTriggerClassFired("CINT7WUHSE-B-NOPF-ALL"); // pPb mb
-	cint8s= ev->IsTriggerClassFired("CINT7WUHSE-S-NOPF-CENT");
-	cint7s= ev->IsTriggerClassFired("CINT8WUHSE-S-NOPF-CENT");
-	cint5= (ev->IsTriggerClassFired("CINT5WU-B-NOPF-ALL")) &&
-	    (ev->GetHeader()->GetL1TriggerInputs() & (1 << 10));
-//        printf("hse trigger %i %i %i %i %i \n",cint7,cint7ppb,cint8,cint7s,cint8s);
-	if((cint7==kFALSE)&&(cint7ppb==kFALSE)&&(cint8==kFALSE)&&(cint7s==kFALSE)&&(cint8s==kFALSE)&&(cint5==kFALSE)) return kFALSE;
-	else
-	{
-	    DrawTRDTrigger(ev);
-	    DrawTRDTriggerAnalysis(ev);
-	    return kTRUE;
-	}
-    }
-
-   
-
-    //HQU no cleanup
-    if(fWhichTRDTrigger==3)
-    {
-	cint8= ev->IsTriggerClassFired("CINT8WUHQU-B-NOPF-CENT");
-	cint7= ev->IsTriggerClassFired("CINT7WUHQU-B-NOPF-CENT");    // pPb rare
-	cint7ppb= ev->IsTriggerClassFired("CINT7WUHQU-B-NOPF-ALL"); // pPb mb
-	cint8s= ev->IsTriggerClassFired("CINT7WUHQU-S-NOPF-CENT");
-	cint7s= ev->IsTriggerClassFired("CINT8WUHQU-S-NOPF-CENT");
-	cint5= (ev->IsTriggerClassFired("CINT5WU-B-NOPF-ALL")) &&
-	    (ev->GetHeader()->GetL1TriggerInputs() & (1 << 12));
- //       printf("hqu trigger %i %i %i %i %i \n",cint7,cint7ppb,cint8,cint7s,cint8s);
-	if((cint7==kFALSE)&&(cint7ppb==kFALSE)&&(cint8==kFALSE)&&(cint7s==kFALSE)&&(cint8s==kFALSE)&&(cint5==kFALSE)) return kFALSE;
-	else
-	{
-	    DrawTRDTrigger(ev);
-	    DrawTRDTriggerAnalysis(ev);
-	    return kTRUE;
-	}
-    }
-
-    if(fWhichTRDTrigger==4)
-    {
-//	printf("trigger %i %i \n", ev->GetHeader()->IsTriggerInputFired("1HSE"),(ev->GetHeader()->GetL1TriggerInputs() & (1 << 10))); // bug in IsTriggerInputFired; reported in savannah
-
-//	if(ev->IsTriggerClassFired("CINT7WU-B-NOPF-ALL"))
-//	{
-//	    Int_t trginput=0;
-//	    trginput=ev->GetHeader()->GetL1TriggerInputs() & (1 << 10);  // HSE
-	    //	    if(trginput==1024)
-//	    if(fTRDTriggerAnalysismb->CheckCondition(AliTRDTriggerAnalysis::kHSE))
-	//	    if(fTRDTriggerAnalysismb->HasTriggered(AliTRDTriggerAnalysis::kHSE))
-
-//	if(fTRDTriggerAnalysismb->HasFired(AliTRDTriggerAnalysis::kHSE)) // for mb analysis
-	if(fTRDTriggerAnalysistrg->HasFired(AliTRDTriggerAnalysis::kHSE)) // just to check clean-up effect
-	{
-            // check if pre-trigger fired
-	    if((ev->IsTriggerClassFired("CINT7WU-B-NOPF-ALL"))||(ev->IsTriggerClassFired("CINT7WU-S-NOPF-ALL"))||(ev->IsTriggerClassFired("CINT8WU-S-NOPF-ALL")))
-	    {
-		DrawTRDTrigger(ev);
-		DrawTRDTriggerAnalysis(ev);
-		return kTRUE;
-	    } else return kFALSE;
-	}
-    }// else return kFALSE;
-//    }
-    if(fWhichTRDTrigger==5)
-    {
-//	printf("trigger %i %i \n", ev->GetHeader()->IsTriggerInputFired("1HQU"),(ev->GetHeader()->GetL1TriggerInputs() & (1 << 12))); // bug in IsTriggerInputFired; reported in savannah
-//	if(ev->IsTriggerClassFired("CINT7WU-B-NOPF-ALL"))
-//	{
-
-//	    Int_t trginput=0;
-//	    trginput=ev->GetHeader()->GetL1TriggerInputs() & (1 << 12);  //HQU
-	    //        printf("triggerinput %i \n",trginput);
-	    //	    if(trginput==4096)
-//	    if(fTRDTriggerAnalysismb->CheckCondition(AliTRDTriggerAnalysis::kHQU))
-//	if(fTRDTriggerAnalysismb->HasTriggered(AliTRDTriggerAnalysis::kHQU))
-        if(fTRDTriggerAnalysismb->HasFired(AliTRDTriggerAnalysis::kHQU)) // for mb analysis
-	    {
-		// check if pre-trigger fired
-		if((ev->IsTriggerClassFired("CINT7WU-B-NOPF-ALL"))||(ev->IsTriggerClassFired("CINT7WU-S-NOPF-ALL"))||(ev->IsTriggerClassFired("CINT8WU-S-NOPF-ALL")))
-		{
-		    DrawTRDTrigger(ev);
-		    DrawTRDTriggerAnalysis(ev);
-		    return kTRUE;
-		} else return kFALSE;
-	    }
-    } //else return kFALSE;
-//    }
-
-  
-
-
-
-
-    return trdtrgevent;
-
-}
-
-
-//___________________________________________________
-Bool_t AliAnalysisTaskHFE::CheckTRDTrigger(AliVEvent *ev) {
-//
-// Check TRD trigger; pPb settings
-//
-
-    if(fWhichTRDTrigger<10) fTRDTriggerAnalysistrg->CalcTriggers(ev);
-    else fTRDTriggerAnalysismb->CalcTriggers(ev);
-
-    // HSE cleanup
-    if(fWhichTRDTrigger==6)
-    {
-	if(fTRDTriggerAnalysistrg->HasTriggeredConfirmed(AliTRDTriggerAnalysis::kHSE)) // for rare period physics analysis
-	{
-	    //   DrawTRDTrigger(ev);
-	    DrawTRDTriggerAnalysis(ev);
-	    return kTRUE;
-	} else return kFALSE;
-    }
-
- 
-
-    // HQU cleanup
-    if(fWhichTRDTrigger==7)
-    {
-
-	if(fTRDTriggerAnalysistrg->HasTriggeredConfirmed(AliTRDTriggerAnalysis::kHQU)) // for rare period physics analysis
-	{
-	    //     DrawTRDTrigger(ev);
-	    DrawTRDTriggerAnalysis(ev);
-	    return kTRUE;
-	} else return kFALSE;
-    }
-
-    // HSE or HQU cleanup
-    if(fWhichTRDTrigger==8)
-    {
-	if((fTRDTriggerAnalysistrg->HasTriggeredConfirmed(AliTRDTriggerAnalysis::kHSE))||(fTRDTriggerAnalysistrg->HasTriggeredConfirmed(AliTRDTriggerAnalysis::kHQU)))
-	{
-	    //    DrawTRDTrigger(ev);
-	    DrawTRDTriggerAnalysis(ev);
-	    return kTRUE;
-	}
-	else
-	{
-	    return kFALSE; 
-	}
-    }
-
-    // HEE cleanup
-    if(fWhichTRDTrigger==9)
-    {
-
-	if(fTRDTriggerAnalysistrg->HasTriggeredConfirmed(AliTRDTriggerAnalysis::kHEE)) // for rare period physics analysis
-	{
-	    //     DrawTRDTrigger(ev);
-	    DrawTRDTriggerAnalysis(ev);
-	    return kTRUE;
-	} else return kFALSE;
-    }
-
-
-    if(fWhichTRDTrigger==11)
-    {
-	if(fTRDTriggerAnalysismb->HasTriggered(AliTRDTriggerAnalysis::kHSE))
-	{
-	  //  DrawTRDTrigger(ev);
-	    DrawTRDTriggerAnalysis(ev);
-	    return kTRUE;
-	}   else return kFALSE;
-    }
-    if(fWhichTRDTrigger==12)
-    {
-	if(fTRDTriggerAnalysismb->HasTriggered(AliTRDTriggerAnalysis::kHQU))
-	{
-	  //  DrawTRDTrigger(ev);
-	    DrawTRDTriggerAnalysis(ev);
-	    return kTRUE;
-	}   else return kFALSE;
-    }
-    if(fWhichTRDTrigger==13)
-    {
-	if(fTRDTriggerAnalysismb->HasTriggered(AliTRDTriggerAnalysis::kHEE))
-	{
-	  //  DrawTRDTrigger(ev);
-	    DrawTRDTriggerAnalysis(ev);
-	    return kTRUE;
-	}   else return kFALSE;
-    }
-
-    return kFALSE;
-
-}
-
-//___________________________________________________
-void AliAnalysisTaskHFE::DrawTRDTrigger(AliESDEvent *ev) {
-
-    Int_t ntriggerbit=0;
-    fQACollection->Fill("nTriggerBit",ntriggerbit);
-    if(ev->IsTriggerClassFired("CINT7-B-NOPF-ALLNOTRD"))
-    {
-	ntriggerbit=2;
-	fQACollection->Fill("nTriggerBit",ntriggerbit);
-    }
-    if(ev->IsTriggerClassFired("CINT7WU-B-NOPF-ALL"))
-    {
-	ntriggerbit=3;
-	fQACollection->Fill("nTriggerBit",ntriggerbit);
-	if(ev->IsTriggerClassFired("CINT7WUHSE-B-NOPF-CENT")) {
-	    ntriggerbit=18;
-	    fQACollection->Fill("nTriggerBit",ntriggerbit);
-	}
-	if(ev->IsTriggerClassFired("CINT7WUHQU-B-NOPF-CENT")) {
-	    ntriggerbit=19;
-	    fQACollection->Fill("nTriggerBit",ntriggerbit);
-	}
-    }
-    if(ev->IsTriggerClassFired("CINT7WUHJT-B-NOPF-CENT"))
-    {
-	ntriggerbit=4;
-	fQACollection->Fill("nTriggerBit",ntriggerbit);
-
-	if(ev->IsTriggerClassFired("CINT7WUHSE-B-NOPF-CENT")) {
-	    ntriggerbit=13;
-	    fQACollection->Fill("nTriggerBit",ntriggerbit);
-	}
-	if(ev->IsTriggerClassFired("CINT7WUHQU-B-NOPF-CENT")) {
-	    ntriggerbit=14;
-	    fQACollection->Fill("nTriggerBit",ntriggerbit);
-	    if(ev->IsTriggerClassFired("CINT7WUHSE-B-NOPF-CENT")) {
-		ntriggerbit=17;
-		fQACollection->Fill("nTriggerBit",ntriggerbit);
-	    }
-	}
-    }
-    if(ev->IsTriggerClassFired("CINT7WUHQU-B-NOPF-CENT"))
-    {
-	ntriggerbit=5;
-	fQACollection->Fill("nTriggerBit",ntriggerbit);
-	if(ev->IsTriggerClassFired("CINT7WUHSE-B-NOPF-CENT")) {
-	    ntriggerbit=11;
-	    fQACollection->Fill("nTriggerBit",ntriggerbit);
-	}
-	if((!(ev->IsTriggerClassFired("CINT7WUHSE-B-NOPF-CENT")))&&(!(ev->IsTriggerClassFired("CINT7WUHJT-B-NOPF-CENT")))) {
-	    ntriggerbit=21;
-	    fQACollection->Fill("nTriggerBit",ntriggerbit);
-
-            /*
-	    Int_t nTrdTracks = ev->GetNumberOfTrdTracks();
-	    for (Int_t iTrack = 0; iTrack < nTrdTracks; ++iTrack) {
-		AliESDTrdTrack* trdTrack = ev->GetTrdTrack(iTrack);
-		printf("GTU track %3i: pt = %5.1f, PID = %3i\n", iTrack, trdTrack->Pt(), trdTrack->GetPID());
-	    }*/
-
-
-	}
-
-    }
-    if(ev->IsTriggerClassFired("CINT7WUHSE-B-NOPF-CENT"))
-    {
-	ntriggerbit=6;
-	fQACollection->Fill("nTriggerBit",ntriggerbit);
-	if(ev->IsTriggerClassFired("CINT7WUHQU-B-NOPF-CENT")) {
-	    ntriggerbit=12;
-	    fQACollection->Fill("nTriggerBit",ntriggerbit);
-	}
-	if(ev->IsTriggerClassFired("CINT7WUHSE-B-NOPF-FAST")){
-	    ntriggerbit=15;
-	    fQACollection->Fill("nTriggerBit",ntriggerbit);
-
-	    if((!(ev->IsTriggerClassFired("CINT7WUHQU-B-NOPF-CENT")))&&(!(ev->IsTriggerClassFired("CINT7WUHJT-B-NOPF-CENT")))) {
-		ntriggerbit=20;
-		fQACollection->Fill("nTriggerBit",ntriggerbit);
-		/*
-		 Int_t nTrdTracks = ev->GetNumberOfTrdTracks();
-		 for (Int_t iTrack = 0; iTrack < nTrdTracks; ++iTrack) {
-		 AliESDTrdTrack* trdTrack = ev->GetTrdTrack(iTrack);
-		 printf("HSE GTU track %3i: pt = %5.1f, PID = %3i\n", iTrack, trdTrack->Pt(), trdTrack->GetPID());
-		 }                          */
-
-	    }
-
-	}
-
-    }
-    if(ev->IsTriggerClassFired("CEMC7WUHEE-B-NOPF-CENT")) {
-	ntriggerbit=7;
-	fQACollection->Fill("nTriggerBit",ntriggerbit);
-    }
-    if(ev->IsTriggerClassFired("CINT7WUHJT-B-NOPF-FAST")){
-	ntriggerbit=8;
-	fQACollection->Fill("nTriggerBit",ntriggerbit);
-    }
-    if(ev->IsTriggerClassFired("CINT7WUHQU-B-NOPF-FAST")){
-	ntriggerbit=9;
-	fQACollection->Fill("nTriggerBit",ntriggerbit);
-    }
-    if(ev->IsTriggerClassFired("CINT7WUHSE-B-NOPF-FAST")){
-	ntriggerbit=10;
-	fQACollection->Fill("nTriggerBit",ntriggerbit);
-	if(ev->IsTriggerClassFired("CINT7WUHSE-B-NOPF-CENT")) {
-	    ntriggerbit=16;
-	    fQACollection->Fill("nTriggerBit",ntriggerbit);
-	}
-    }
-    if(ntriggerbit==0) fQACollection->Fill("nTriggerBit",1);
-
-}
-
-
-//___________________________________________________
-void AliAnalysisTaskHFE::DrawTRDTriggerAnalysis(AliVEvent *ev) {
-
-    fTRDTriggerAnalysistrg->CalcTriggers(ev);
-    for(Int_t itrg=0;itrg<AliTRDTriggerAnalysis::kHlast;itrg++)
-    {
-        Int_t trdtrgstatus=0;
-	if(fTRDTriggerAnalysistrg->CheckCondition((AliTRDTriggerAnalysis::TRDTrigger_t) itrg))trdtrgstatus=1;
-	if(fTRDTriggerAnalysistrg->HasFired((AliTRDTriggerAnalysis::TRDTrigger_t) itrg))trdtrgstatus=2;
-	if(fTRDTriggerAnalysistrg->HasTriggered((AliTRDTriggerAnalysis::TRDTrigger_t) itrg))trdtrgstatus=3;
-	if(fTRDTriggerAnalysistrg->HasTriggeredConfirmed((AliTRDTriggerAnalysis::TRDTrigger_t) itrg))trdtrgstatus=4;
-        fQACollection->Fill("TriggerAnalysis",(Float_t)itrg,(Float_t)trdtrgstatus);
-    }
-}
-
-//___________________________________________________
-Bool_t AliAnalysisTaskHFE::IsMCFakeTrack(const AliVTrack *const trk) const {
-  //
-  // Check whether track is MC Fake track using the sign of the track label
-  //
-  return trk->GetLabel() < 0;
-}
-
-
-//___________________________________________________
-const AliVVertex *AliAnalysisTaskHFE::GetPrimaryVertexAnalysis(const AliVEvent * const inputEvent){
-    //
-    // Get vertex for analysis from event
-    //
-    const AliVVertex *vtxTracks = GetPrimaryVertexTracks(inputEvent),
-    *vtxSPD = GetPrimaryVertexSPD(inputEvent),
-    *fvtxAna(NULL);
-
-    if(fVtxMixed){
-        // Use mixed vertex: Prefer vertex with tracks, in case not available use SPD vertex
-        if(vtxTracks && vtxTracks->GetNContributors() > 0) fvtxAna = vtxTracks;
-        else if(vtxSPD && vtxSPD->GetNContributors() > 0) fvtxAna = vtxSPD;
-    } else if(fVtxSPD){
-        if(vtxSPD && vtxSPD->GetNContributors () > 0) fvtxAna = vtxSPD;
-    } else if(fVtxTrack) {
-        if(vtxTracks && vtxTracks->GetNContributors() > 0) fvtxAna = vtxTracks;
-    }
-    
-    return fvtxAna;
-}
-
-//_____________________________________________________________________________
-const AliVVertex *AliAnalysisTaskHFE::GetPrimaryVertexSPD(const AliVEvent * const inputEvent){
-    //
-    // Get SPD vertex from event
-    //
-    const AliVVertex *spdvtx(NULL);
-    const AliESDEvent *esd(NULL);
-    const AliAODEvent *aod(NULL);
-    if((esd = dynamic_cast<const AliESDEvent *>(inputEvent))){
-        spdvtx = esd->GetPrimaryVertexSPD();
-    } else if((aod = dynamic_cast<const AliAODEvent *>(inputEvent))){
-        spdvtx = aod->GetPrimaryVertexSPD();
-    }
-    return spdvtx;
-}
-
-//_____________________________________________________________________________
-const AliVVertex *AliAnalysisTaskHFE::GetPrimaryVertexTracks(const AliVEvent *const inputEvent){
-    //
-    // Get Primary Vertex from tracks
-    //
-    const AliVVertex *trkvtx(NULL);
-    const AliESDEvent *esd(NULL);
-    const AliAODEvent *aod(NULL);
-    if((esd = dynamic_cast<const AliESDEvent *>(inputEvent))){
-        trkvtx = esd->GetPrimaryVertexTracks();
-    } else if((aod = dynamic_cast<const AliAODEvent *>(inputEvent))){
-        const AliVVertex *vtxTmp = aod->GetPrimaryVertex();
-        // check whether the primary vertex is the vertex from tracks
-        TString vtxTtl = vtxTmp->GetTitle();
-        if(vtxTtl.Contains("VertexerTracks")){
-            trkvtx = vtxTmp;
-        }
-    }
-    return trkvtx;
-}
+  }

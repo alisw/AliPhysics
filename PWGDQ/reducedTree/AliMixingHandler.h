@@ -16,6 +16,7 @@
 
 #include "AliHistogramManager.h"
 #include "AliReducedVarManager.h"
+#include "AliReducedInfoCut.h"
 
 class AliMixingHandler : public TNamed {
 
@@ -37,6 +38,17 @@ public:
   void SetHistogramManager(AliHistogramManager* histos) {fHistos = histos;}
   void SetHistClassNames(const Char_t* names) {fHistClassNames = names;}
   void SetEventVariables(AliReducedVarManager::Variables centVar, AliReducedVarManager::Variables vtxVar, AliReducedVarManager::Variables epVar);
+  void AddCrossPairsCut(AliReducedInfoCut* cut) {fCrossPairsCuts.Add(cut);}
+  void AddOppositeSignPairsCut(AliReducedInfoCut* cut) {fCrossPairsCuts.Add(cut);}    // synonim function to AddCrossPairsCut() used for charged legs
+  void AddLikePairsLeg1Cut(AliReducedInfoCut* cut) {fLikePairsLeg1Cuts.Add(cut);}
+  void AddLikeSignPairsPPCut(AliReducedInfoCut* cut) {fLikePairsLeg1Cuts.Add(cut);}  // synonim function to AddLikePairsLeg1Cut() used for charged legs
+  void AddLikePairsLeg2Cut(AliReducedInfoCut* cut) {fLikePairsLeg2Cuts.Add(cut);}
+  void AddLikeSignPairsMMCut(AliReducedInfoCut* cut) {fLikePairsLeg2Cuts.Add(cut);}  // synonim function to AddLikePairsLeg2Cut() used for charged legs
+  void AddPairsCut(AliReducedInfoCut* cut) {
+    fCrossPairsCuts.Add(cut);
+    fLikePairsLeg1Cuts.Add(cut);
+    fLikePairsLeg2Cuts.Add(cut);
+  }
   
   // getters
   Int_t GetDepth() const {return fPoolDepth;}
@@ -57,6 +69,7 @@ public:
   Bool_t AcceptTrack();    // randomly accept/reject a track for mixing
   void RunLeftoverMixing(Int_t type);
   void PrintMixingLists(Int_t debug);  
+  Bool_t IsPairSelected(Float_t* values, Int_t pairType);
   
 private:
    AliMixingHandler(const AliMixingHandler& handler);             
@@ -84,6 +97,10 @@ private:
   AliReducedVarManager::Variables fEventPlaneVariable;
   
   AliHistogramManager* fHistos;    // histogram manager
+  
+  TList fCrossPairsCuts;         // cut object for cross pairs 
+  TList fLikePairsLeg1Cuts;    // cut object for LEG1 like pairs
+  TList fLikePairsLeg2Cuts;    // cut object for LEG2 like pairs
   
   void RunEventMixing(TClonesArray* leg1Pool, TClonesArray* leg2Pool, ULong_t mixingMask, Int_t type, Float_t* values);
   ULong_t IncrementPoolSizes(TList* list1, TList* list2, Int_t eventCategory);

@@ -15,7 +15,7 @@
 
 //______________________________________________________________________________
 // Analysis task for high pt particle correlations 
-// author: Jussi Viinikainen
+// author: Jussi Viinikainen, Marton Vargyas
 // ALICE Group University of Jyvaskyla 
 // Finland 
 // Fill the analysis containers for ESD or AOD

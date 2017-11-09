@@ -98,6 +98,7 @@ AliAnalysisHadEtReconstructed::AliAnalysisHadEtReconstructed() :
   ,kIsOfflineV0AND(0)
   ,kDoTriggerChecks(0)
   ,kDoTriggerChecksOnly(0)
+  ,useOldCentrality(0)
 {
 }
 
@@ -140,19 +141,27 @@ Int_t AliAnalysisHadEtReconstructed::AnalyseEvent(AliVEvent* ev, Int_t eventtype
 //   }
      //if( fDataSet==2015){
  if(fDataSet==20100||fDataSet==2011 ||  fDataSet==2015){//If this is Pb+Pb or pPb
-    AliMultSelection *MultSelection = (AliMultSelection * ) realEvent->FindListObject("MultSelection");
-    fCentBin = GetCentralityBin(fNCentBins, MultSelection);
-    if(fCentBin ==-1){
-      fGoodEvent = kFALSE;//but for Pb+Pb events we don't want to count events where we did not find a centrality
-      if(fDataSet==2013){
-	fCentBin = 19;//For pPb we don't want to throw these events out but there is no CB 19
-      }
-      else{
-	fGoodEvent = kFALSE;//but for Pb+Pb events we don't want to count events where we did not find a centrality
-      }
-    }
- }
-    //}
+   AliCentrality *centrality = realEvent->GetCentrality();//if the centrality task exists, use it!
+   if(centrality && useOldCentrality){
+     //if(centrality){
+    fCentBin = GetCentralityBin(fNCentBins, centrality);
+   }
+   //else{
+   AliMultSelection *MultSelection = (AliMultSelection * ) realEvent->FindListObject("MultSelection");
+   if(MultSelection && !useOldCentrality){//if the centrality class returns nothing it still exists!
+     fCentBin = GetCentralityBin(fNCentBins, MultSelection);
+     if(fCentBin ==-1){
+       fGoodEvent = kFALSE;//but for Pb+Pb events we don't want to count events where we did not find a centrality
+       if(fDataSet==2013){
+	 fCentBin = 19;//For pPb we don't want to throw these events out but there is no CB 19
+       }
+       else{
+	 fGoodEvent = kFALSE;//but for Pb+Pb events we don't want to count events where we did not find a centrality
+       }
+     }
+     }
+   }
+ //}
   //for PID
 //   AliESDpid *pID = new AliESDpid();
 //   pID->MakePID(realEvent);

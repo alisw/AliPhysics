@@ -9,10 +9,21 @@
 #pragma link C++ class AliAnalysisTaskHdibaryonLPpi+;
 /// * LambdaN
 #pragma link C++ class AliAnalysisTaskLambdaNAOD+;
+/// * LambdaNN
+#pragma link C++ class AliAnalysisTaskLNNntuple+;
 /// * NOmega
 #pragma link C++ class AliAnalysisTaskNOmegaLPK+;
 #pragma link C++ class AliAnalysisTaskOmegaOmegaOX+;
 #pragma link C++ class AliAnalysisTaskNOmegaLX+;
+/// * Ps
+#pragma link C++ class AliAnalysisTaskPsEfficiency+;
+/// * dStar
+#pragma link C++ class AliAnalysisTaskdStar+;
+#pragma link C++ class ROOT::Math::PtEtaPhiM4D<float>+;
+#pragma link C++ class ROOT::Math::LorentzVector<ROOT::Math::PtEtaPhiM4D<float>>+;
+#pragma link C++ class daughter_struct+;
+#pragma link C++ class std::vector<daughter_struct>+;
+#pragma link C++ typedef FourVector_t;
 
 /// Nuclei
 /// * DeltaMasses
@@ -23,6 +34,8 @@
 #pragma link C++ class AliAnalysisDeuteronTree+;
 /// * He4
 #pragma link C++ class AliAnalysisTaskAntiHe4+;
+/// * He4pp
+#pragma link C++ class AliAnalysisHe4+;
 /// * NucleiPbPb
 #pragma link C++ class AliAnalysisTaskNucleiYield+;
 #pragma link C++ class AliAnalysisTaskNucleiYieldESD+;
@@ -40,6 +53,8 @@
 /// * v2
 #pragma link C++ class AliAnalysisTaskNucleiv2+;
 #pragma link C++ class AliAnalysisTaskNucleiv2SP+;
+#pragma link C++ class AliAnalysisTaskNucleiv2pPb+;
+#pragma link C++ class AliAnalysisTaskAllPtcv2+;
 /// * NucleiKine
 #pragma link C++ class AliAnalysisTaskNucleiKine+;
 
@@ -56,6 +71,7 @@
 
 /// * Hyp3body
 #pragma link C++ class AliAnalysisTaskHypertriton3+;
+#pragma link C++ class AliAnalysisTaskHypertriton3Dev+;
 #pragma link C++ class AliAnalysisTaskHypertriton3AOD+;
 
 /// Utils
@@ -74,4 +90,3 @@
 #pragma link C++ class std::vector<AliAnalysisCODEX::Track>+;
 #pragma link C++ class AliAnalysisCODEXtask+;
 #endif
-

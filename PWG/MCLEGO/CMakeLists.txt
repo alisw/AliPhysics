@@ -53,3 +53,21 @@ install(DIRECTORY TunedOnPbPb
   DESTINATION PWG/MCLEGO
   FILES_MATCHING PATTERN "*.C"
   )
+
+# install Herwig configurations
+install(DIRECTORY Herwig
+  DESTINATION PWG/MCLEGO
+  FILES_MATCHING PATTERN "*.in"
+  )
+
+# install AMPT configurations
+install(DIRECTORY AMPT
+  DESTINATION PWG/MCLEGO
+  FILES_MATCHING PATTERN "*.ampt"
+  )
+
+# install THERMINATOR2 configurations
+install(DIRECTORY Therminator2
+  DESTINATION PWG/MCLEGO
+  FILES_MATCHING PATTERN "*.ini"
+  )

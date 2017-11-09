@@ -431,13 +431,13 @@ Float_t AliAnalysisHadEtCorrections::GetTPCEfficiencyCorrectionPion(const float 
   if(cb ==-1){//pp
     if(!fEfficiencyPionTPC){cerr<<"No histogram fEfficiencyPionTPC!"<<endl; return -1.0;}
     eff = fEfficiencyPionTPC->GetBinContent(fEfficiencyPionTPC->FindBin(pT));
-    if(eff<=0.0){AliInfo("Efficiency is zero!");  return 0.0;}
+    //if(eff<=0.0){AliInfo("Efficiency is zero!");  return 0.0;}
   }
   else{
     TH1D *fEfficiency = (TH1D*) fEfficiencyTPC->FindObject(Form("fEfficiencyPionTPC%i",cb));
     if(!fEfficiency){cerr<<"No histogram "<<Form("fEfficiencyPionTPC%i",cb)<<endl; return -1.0;}
     eff = fEfficiency->GetBinContent(fEfficiency->FindBin(pT));
-    if(eff<=0.0){AliInfo(Form("Pion efficiency is zero for centrality bin %i!",cb));  return 0.0;}
+    //if(eff<=0.0){AliInfo(Form("Pion efficiency is zero for centrality bin %i!",cb));  return 0.0;}
   }
   return 1.0/eff;
 }
@@ -446,13 +446,13 @@ Float_t AliAnalysisHadEtCorrections::GetTPCEfficiencyCorrectionKaon(const float 
   if(cb ==-1){//pp
     if(!fEfficiencyKaonTPC){cerr<<"No histogram fEfficiencyKaonTPC!"<<endl; return -1.0;}
     eff = fEfficiencyKaonTPC->GetBinContent(fEfficiencyKaonTPC->FindBin(pT));
-    if(eff<=0.0){AliInfo("Efficiency is zero!");  return 0.0;}
+    //if(eff<=0.0){AliInfo("Efficiency is zero!");  return 0.0;}
   }
   else{
     TH1D *fEfficiency = (TH1D*) fEfficiencyTPC->FindObject(Form("fEfficiencyKaonTPC%i",cb));
     if(!fEfficiency){cerr<<"No histogram "<<Form("fEfficiencyKaonTPC%i",cb)<<endl; return -1.0;}
     eff = fEfficiency->GetBinContent(fEfficiency->FindBin(pT));
-    if(eff<=0.0){AliInfo(Form("Pion efficiency is zero for centrality bin %i!",cb));  return 0.0;}
+    //if(eff<=0.0){AliInfo(Form("Pion efficiency is zero for centrality bin %i!",cb));  return 0.0;}
   }
   return 1.0/eff;
 }
@@ -461,13 +461,13 @@ Float_t AliAnalysisHadEtCorrections::GetTPCEfficiencyCorrectionProton(const floa
   if(cb ==-1){//pp
     if(!fEfficiencyProtonTPC){cerr<<"No histogram fEfficiencyProtonTPC!"<<endl; return -1.0;}
     eff = fEfficiencyProtonTPC->GetBinContent(fEfficiencyProtonTPC->FindBin(pT));
-    if(eff<=0.0){AliInfo("Efficiency is zero!");  return 0.0;}
+    //if(eff<=0.0){AliInfo("Efficiency is zero!");  return 0.0;}
   }
   else{
     TH1D *fEfficiency = (TH1D*) fEfficiencyTPC->FindObject(Form("fEfficiencyProtonTPC%i",cb));
     if(!fEfficiency){cerr<<"No histogram "<<Form("fEfficiencyProtonTPC%i",cb)<<endl; return -1.0;}
     eff = fEfficiency->GetBinContent(fEfficiency->FindBin(pT));
-    if(eff<=0.0){AliInfo(Form("Pion efficiency is zero for centrality bin %i!",cb));  return 0.0;}
+    //if(eff<=0.0){AliInfo(Form("Pion efficiency is zero for centrality bin %i!",cb));  return 0.0;}
   }
   return 1.0/eff;
 }
@@ -476,13 +476,13 @@ Float_t AliAnalysisHadEtCorrections::GetTPCEfficiencyCorrectionHadron(const floa
   if(cb ==-1){//pp
     if(!fEfficiencyHadronTPC){cerr<<"No histogram fEfficiencyHadronTPC!"<<endl; return -1.0;}
     eff = fEfficiencyHadronTPC->GetBinContent(fEfficiencyHadronTPC->FindBin(pT));
-    if(eff<=0.0){AliInfo("Efficiency is zero!");  return 0.0;}
+    //if(eff<=0.0){AliInfo("Efficiency is zero!");  return 0.0;}
   }
   else{
     TH1D *fEfficiency = (TH1D*) fEfficiencyTPC->FindObject(Form("fEfficiencyHadronTPC%i",cb));
     if(!fEfficiency){cerr<<"No histogram "<<Form("fEfficiencyHadronTPC%i",cb)<<endl; return -1.0;}
     eff = fEfficiency->GetBinContent(fEfficiency->FindBin(pT));
-    if(eff<=0.0){AliInfo(Form("Pion efficiency is zero for centrality bin %i!",cb));  return 0.0;}
+    //if(eff<=0.0){AliInfo(Form("Pion efficiency is zero for centrality bin %i!",cb));  return 0.0;}
   }
   return 1.0/eff;
 }
@@ -491,13 +491,13 @@ Float_t AliAnalysisHadEtCorrections::GetITSEfficiencyCorrectionPion(const float 
   if(cb ==-1){//pp
     if(!fEfficiencyPionITS){cerr<<"No histogram fEfficiencyPionITS!"<<endl; return -1.0;}
     eff = fEfficiencyPionITS->GetBinContent(fEfficiencyPionITS->FindBin(pT));
-    if(eff<=0.0){AliInfo("Efficiency is zero!");  return 0.0;}
+    //if(eff<=0.0){AliInfo("Efficiency is zero!");  return 0.0;}
   }
   else{
     TH1D *fEfficiency = (TH1D*) fEfficiencyITS->FindObject(Form("fEfficiencyPionITS%i",cb));
     if(!fEfficiency){cerr<<"No histogram "<<Form("fEfficiencyPionITS%i",cb)<<endl; return -1.0;}
     eff = fEfficiency->GetBinContent(fEfficiency->FindBin(pT));
-    if(eff<=0.0){AliInfo(Form("Pion efficiency is zero for centrality bin %i!",cb));  return 0.0;}
+    //if(eff<=0.0){AliInfo(Form("Pion efficiency is zero for centrality bin %i!",cb));  return 0.0;}
   }
   return 1.0/eff;
 }
@@ -506,13 +506,13 @@ Float_t AliAnalysisHadEtCorrections::GetITSEfficiencyCorrectionKaon(const float 
   if(cb ==-1){//pp
     if(!fEfficiencyKaonITS){cerr<<"No histogram fEfficiencyKaonITS!"<<endl; return -1.0;}
     eff = fEfficiencyKaonITS->GetBinContent(fEfficiencyKaonITS->FindBin(pT));
-    if(eff<=0.0){AliInfo("Efficiency is zero!");  return 0.0;}
+    //if(eff<=0.0){AliInfo("Efficiency is zero!");  return 0.0;}
   }
   else{
     TH1D *fEfficiency = (TH1D*) fEfficiencyITS->FindObject(Form("fEfficiencyKaonITS%i",cb));
     if(!fEfficiency){cerr<<"No histogram "<<Form("fEfficiencyKaonITS%i",cb)<<endl; return -1.0;}
     eff = fEfficiency->GetBinContent(fEfficiency->FindBin(pT));
-    if(eff<=0.0){AliInfo(Form("Pion efficiency is zero for centrality bin %i!",cb));  return 0.0;}
+    //if(eff<=0.0){AliInfo(Form("Pion efficiency is zero for centrality bin %i!",cb));  return 0.0;}
   }
   return 1.0/eff;
 }
@@ -521,13 +521,13 @@ Float_t AliAnalysisHadEtCorrections::GetITSEfficiencyCorrectionProton(const floa
   if(cb ==-1){//pp
     if(!fEfficiencyProtonITS){cerr<<"No histogram fEfficiencyProtonITS!"<<endl; return -1.0;}
     eff = fEfficiencyProtonITS->GetBinContent(fEfficiencyProtonITS->FindBin(pT));
-    if(eff<=0.0){AliInfo("Efficiency is zero!");  return 0.0;}
+    //if(eff<=0.0){AliInfo("Efficiency is zero!");  return 0.0;}
   }
   else{
     TH1D *fEfficiency = (TH1D*) fEfficiencyITS->FindObject(Form("fEfficiencyProtonITS%i",cb));
     if(!fEfficiency){cerr<<"No histogram "<<Form("fEfficiencyProtonITS%i",cb)<<endl; return -1.0;}
     eff = fEfficiency->GetBinContent(fEfficiency->FindBin(pT));
-    if(eff<=0.0){AliInfo(Form("Pion efficiency is zero for centrality bin %i!",cb));  return 0.0;}
+    //if(eff<=0.0){AliInfo(Form("Pion efficiency is zero for centrality bin %i!",cb));  return 0.0;}
   }
   return 1.0/eff;
 }
@@ -536,13 +536,13 @@ Float_t AliAnalysisHadEtCorrections::GetITSEfficiencyCorrectionHadron(const floa
   if(cb ==-1){//pp
     if(!fEfficiencyHadronITS){cerr<<"No histogram fEfficiencyHadronITS!"<<endl; return -1.0;}
     eff = fEfficiencyHadronITS->GetBinContent(fEfficiencyHadronITS->FindBin(pT));
-    if(eff<=0.0){AliInfo("Efficiency is zero!");  return 0.0;}
+    //if(eff<=0.0){AliInfo("Efficiency is zero!");  return 0.0;}
   }
   else{
     TH1D *fEfficiency = (TH1D*) fEfficiencyITS->FindObject(Form("fEfficiencyHadronITS%i",cb));
     if(!fEfficiency){cerr<<"No histogram "<<Form("fEfficiencyHadronITS%i",cb)<<endl; return -1.0;}
     eff = fEfficiency->GetBinContent(fEfficiency->FindBin(pT));
-    if(eff<=0.0){AliInfo(Form("Pion efficiency is zero for centrality bin %i!",cb));  return 0.0;}
+    //if(eff<=0.0){AliInfo(Form("Pion efficiency is zero for centrality bin %i!",cb));  return 0.0;}
   }
   return 1.0/eff;
 }

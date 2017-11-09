@@ -493,7 +493,40 @@ TList *AliHFEtools::GetHFEResultList(const TString str){
     f->Close(); delete f;
     return returnlist;
 }
+//_________________________________________________________________________
+TList* AliHFEtools::GetHFEResultListGRID(const TString str,const TString dir){
 
+   TFile *f = TFile::Open(str.Data());
+   if(!f || f->IsZombie()){
+      AliErrorClassF("Could not read file %s\n",str.Data());
+      return NULL ;
+   }
+   if(f->TestBit(TFile::kRecovered)){
+      AliErrorClassF("File \"%s\" is corrupt!\n",str.Data());
+   }
+   TDirectory *d = f->GetDirectory(dir.Data());
+   if(!d || d->IsZombie()){
+      AliErrorClassF("Could not read file %s\n",dir.Data());
+      return NULL ;
+   }
+   if(d->TestBit(TFile::kRecovered)){
+      AliErrorClassF("File \"%s\" is corrupt!\n",dir.Data());
+   }
+   gROOT->cd();
+
+   TKey *k;
+   TIter next(d->GetListOfKeys());
+   while ((k = dynamic_cast<TKey *>(next()))){TString s(k->GetName()); if(s.Contains("Results")) break;}
+   if(!k){
+      //AliError("Output container not found\n");
+      AliErrorClass("Output container not found\n");
+      f->Close(); delete f;
+      return NULL;
+   }
+   TList *returnlist = dynamic_cast<TList *>(k->ReadObj());
+   f->Close(); delete f;
+   return returnlist;
+}
 
 //_________________________________________________________________________
 //Function  AliHFEtools::GetHFEQAList() - opens file from argument and returns TList Object containing String "QA"
@@ -523,6 +556,43 @@ TList *AliHFEtools::GetHFEQAList(const TString str){
     TList *returnlist = dynamic_cast<TList *>(k->ReadObj());
     f->Close(); delete f;
     return returnlist;
+}
+
+//_________________________________________________________________________
+TList *AliHFEtools::GetHFEQAListGRID(const TString str,const TString dir){
+
+   TFile *f = TFile::Open(str.Data());
+   if(!f || f->IsZombie()){
+      AliErrorClassF("Could not read file %s\n",str.Data());
+      return NULL ;
+   }
+   if(f->TestBit(TFile::kRecovered)){
+      AliErrorClassF("File \"%s\" is corrupt!\n",str.Data());
+   }
+   TDirectory *d = f->GetDirectory(dir.Data());
+   if(!d || d->IsZombie()){
+      AliErrorClassF("Could not read file %s\n",dir.Data());
+      return NULL ;
+   }
+   if(d->TestBit(TFile::kRecovered)){
+      AliErrorClassF("File \"%s\" is corrupt!\n",dir.Data());
+   }
+
+   gROOT->cd();
+   TKey *k;
+   TIter next(d->GetListOfKeys());
+   while ((k = dynamic_cast<TKey *>(next()))){
+      TString s(k->GetName());
+      if(s.Contains("QA")) break;
+   }
+   if(!k){
+      AliErrorClass("Output container not found\n");
+      f->Close(); delete f;
+      return NULL;
+   }
+   TList *returnlist = dynamic_cast<TList *>(k->ReadObj());
+   f->Close(); delete f;
+   return returnlist;
 }
 
 //__________________________________________

@@ -147,7 +147,6 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
     AliConversionAODBGHandlerRP**       fBGClusHandlerRP;       // BG handler for Cluster (possibility to mix with respect to RP)
     AliVEvent*                          fInputEvent;            // current event
     AliMCEvent*                         fMCEvent;               // corresponding MC event
-    AliStack*                           fMCStack;               // stack belonging to MC event
     TList**                             fCutFolder;             // Array of lists for containers belonging to cut
     TList**                             fESDList;               // Array of lists with histograms with reconstructed properties   
     TList**                             fBackList;              // Array of lists with BG THnSparseF
@@ -339,6 +338,8 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
     TH2F**                  fHistoTrueSecondaryPi0FromLambdaInvMassPt;          //! array of histos with validated secondary mothers from Lambda, invMass, pt
     TH1F**                  fHistoTrueLambdaWithPi0DaughterMCPt;                //! array of histos with lambda with reconstructed pi0 as daughter, pt
     TH2F**                  fHistoTrueBckGGInvMassPt;                           //! array of histos with pure gamma gamma combinatorial BG, invMass, pt
+    TH2F**                  fHistoTrueBckFullMesonContainedInOneClusterInvMassPt; //! array of histos with pi0 fully contained in one cluster, invMass, pt
+    TH2F**                  fHistoTrueBckAsymEClustersInvMassPt;                  //! array of histos with asymmetry energy distributions of clusters, invMass, pt
     TH2F**                  fHistoTrueBckContInvMassPt;                         //! array of histos with contamination BG, invMass, pt
     TH2F**                  fHistoTruePi0PtY;                                   //! array of histos with validated pi0, pt, Y
     TH2F**                  fHistoTrueEtaPtY;                                   //! array of histos with validated eta, pt, Y
@@ -447,8 +448,8 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
     Double_t*               fUnsmearedPy;                                       //[fNGammaCandidates]
     Double_t*               fUnsmearedPz;                                       //[fNGammaCandidates]
     Double_t*               fUnsmearedE;                                        //[fNGammaCandidates]
-    Int_t*                  fMCStackPos;                                        //[fNGammaCandidates]
-    Int_t*                  fMCStackNeg;                                        //[fNGammaCandidates]
+    Int_t*                  fMCEventPos;                                        //[fNGammaCandidates]
+    Int_t*                  fMCEventNeg;                                        //[fNGammaCandidates]
     Int_t*                  fESDArrayPos;                                       //[fNGammaCandidates]
     Int_t*                  fESDArrayNeg;                                       //[fNGammaCandidates]
     Int_t                   fnCuts;                                             // number of cuts to be analysed in parallel
@@ -478,7 +479,7 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
     AliAnalysisTaskGammaConvCalo(const AliAnalysisTaskGammaConvCalo&); // Prevent copy-construction
     AliAnalysisTaskGammaConvCalo &operator=(const AliAnalysisTaskGammaConvCalo&); // Prevent assignment
 
-    ClassDef(AliAnalysisTaskGammaConvCalo, 39);
+    ClassDef(AliAnalysisTaskGammaConvCalo, 41);
 };
 
 #endif

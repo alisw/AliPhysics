@@ -19,6 +19,7 @@
 
 #include "AliFemtoXiTrackCut.h"
 #include "AliFemtoXiTrackPairCut.h"
+#include "AliFemtoXiV0PairCut.h"
 
 #include "AliFemtoV0PairCut.h"
 #include "AliFemtoV0TrackPairCut.h"
@@ -55,9 +56,10 @@ public:
                      kLamLam=6, kALamALam=7, kLamALam=8, 
                      kLamPiP=9, kALamPiP=10, kLamPiM=11, kALamPiM=12, 
                      kXiKchP=13, kAXiKchP=14, kXiKchM=15, kAXiKchM=16,
-                     kProtPiM=17, kAProtPiP=18, kPiPPiM=19};
+                     kXiK0=17, kAXiK0=18,
+                     kProtPiM=19, kAProtPiP=20, kPiPPiM=21};
 
-  enum GeneralAnalysisType {kV0V0=0, kV0Track=1, kXiTrack=2, kTrackTrack=3};
+  enum GeneralAnalysisType {kV0V0=0, kV0Track=1, kXiTrack=2, kXiV0=3, kTrackTrack=4};
 
   enum ParticlePDGType {kPDGProt   = 2212,  kPDGAntiProt = -2212, 
 		        kPDGPiP    = 211,   kPDGPiM      = -211, 
@@ -165,6 +167,11 @@ struct V0CutParams
   double maxDcaV0Daughters;
   double minPosDaughterToPrimVertex,
          minNegDaughterToPrimVertex;
+
+  double radiusV0Min,
+         radiusV0Max;
+
+  bool ignoreOnFlyStatus;
 };
 
 struct ESDCutParams
@@ -231,6 +238,9 @@ struct XiCutParams
   double minPtBac,
          maxPtBac;
 
+  double radiusXiMin,
+         radiusXiMax;
+
   int v0Type;
   double minDcaV0;
   double minInvMassV0,
@@ -250,12 +260,17 @@ struct XiCutParams
   double minPtNegV0Daughter,
          maxPtNegV0Daughter;
 
+  double radiusV0Min,
+         radiusV0Max;
+
   int minTPCnclsV0Daughters;
 
   bool useCustomV0Filter;
   bool useCustomV0MisID;
   bool useCustomBacPionFilter;
   bool useCustomBacPionMisID;
+
+  bool ignoreOnFlyStatusV0;
 };
 
 struct PairCutParams
@@ -277,6 +292,9 @@ struct PairCutParams
          minAvgSepTrackNeg;  // will automatically be handled by AliFemtoAnalysisLambdaKaon::CreateV0TrackPairCut
 
   double minAvgSepTrackBacPion;
+
+  double minAvgSepBacPos;
+  double minAvgSepBacNeg;
 };
 
 //----------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -289,6 +307,7 @@ struct PairCutParams
   AliFemtoAnalysisLambdaKaon(AnalysisParams &aAnParams, EventCutParams &aEvCutParams, PairCutParams &aPairCutParams, V0CutParams &aV0CutParams1, V0CutParams &aV0CutParams2, TString aDirNameModifier="");
   AliFemtoAnalysisLambdaKaon(AnalysisParams &aAnParams, EventCutParams &aEvCutParams, PairCutParams &aPairCutParams, V0CutParams &aV0CutParams1, ESDCutParams &aESDCutParams2, TString aDirNameModifier="");
   AliFemtoAnalysisLambdaKaon(AnalysisParams &aAnParams, EventCutParams &aEvCutParams, PairCutParams &aPairCutParams, XiCutParams &aXiCutParams1, ESDCutParams &aESDCutParams2, TString aDirNameModifier="");
+  AliFemtoAnalysisLambdaKaon(AnalysisParams &aAnParams, EventCutParams &aEvCutParams, PairCutParams &aPairCutParams, XiCutParams &aXiCutParams1, V0CutParams &aV0CutParams1, TString aDirNameModifier="");
   AliFemtoAnalysisLambdaKaon(AnalysisParams &aAnParams, EventCutParams &aEvCutParams, PairCutParams &aPairCutParams, ESDCutParams &aESDCutParams1, ESDCutParams &aESDCutParams2, TString aDirNameModifier="");
 
     //Since I am using rdr->SetUseMultiplicity(AliFemtoEventReaderAOD::kCentrality), 
@@ -327,6 +346,7 @@ struct PairCutParams
   AliFemtoV0PairCut* CreateV0PairCut(PairCutParams &aPairCutParams);
   AliFemtoV0TrackPairCut* CreateV0TrackPairCut(PairCutParams &aPairCutParams);
   AliFemtoXiTrackPairCut* CreateXiTrackPairCut(PairCutParams &aPairCutParams);
+  AliFemtoXiV0PairCut* CreateXiV0PairCut(PairCutParams &aPairCutParams);
 
   AliFemtoCorrFctnKStar* CreateCorrFctnKStar(const char* name, unsigned int bins, double min, double max);
   AliFemtoAvgSepCorrFctn* CreateAvgSepCorrFctn(const char* name, unsigned int bins, double min, double max);

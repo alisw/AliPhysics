@@ -80,8 +80,8 @@ AliFemtoEventReaderAOD::AliFemtoEventReaderAOD():
   fMinPlpContribSPD(0),
   fDCAglobalTrack(0),
   fFlatCent(kFALSE),
-  fShiftPosition(0.),
   fPrimaryVertexCorrectionTPCPoints(kFALSE),
+  fShiftPosition(0.),
   f1DcorrectionsPions(0),
   f1DcorrectionsKaons(0),
   f1DcorrectionsProtons(0),
@@ -134,8 +134,8 @@ AliFemtoEventReaderAOD::AliFemtoEventReaderAOD(const AliFemtoEventReaderAOD &aRe
   fMinPlpContribSPD(aReader.fMinPlpContribSPD),
   fDCAglobalTrack(aReader.fDCAglobalTrack),
   fFlatCent(aReader.fFlatCent),
-  fShiftPosition(aReader.fShiftPosition),
   fPrimaryVertexCorrectionTPCPoints(aReader.fPrimaryVertexCorrectionTPCPoints),
+  fShiftPosition(aReader.fShiftPosition),
   f1DcorrectionsPions(aReader.f1DcorrectionsPions),
   f1DcorrectionsKaons(aReader.f1DcorrectionsKaons),
   f1DcorrectionsProtons(aReader.f1DcorrectionsProtons),
@@ -208,8 +208,8 @@ AliFemtoEventReaderAOD &AliFemtoEventReaderAOD::operator=(const AliFemtoEventRea
   fMinPlpContribSPD = aReader.fMinPlpContribSPD;
   fDCAglobalTrack = aReader.fDCAglobalTrack;
   fFlatCent = aReader.fFlatCent;
-  fShiftPosition = aReader.fShiftPosition;
   fPrimaryVertexCorrectionTPCPoints = aReader.fPrimaryVertexCorrectionTPCPoints;
+  fShiftPosition = aReader.fShiftPosition;
   f1DcorrectionsPions = aReader.f1DcorrectionsPions;
   f1DcorrectionsKaons = aReader.f1DcorrectionsKaons;
   f1DcorrectionsProtons = aReader.f1DcorrectionsProtons;
@@ -442,6 +442,7 @@ AliFemtoEvent *AliFemtoEventReaderAOD::CopyAODtoFemtoEvent()
   }
 
   int tNormMult = 0;
+  Int_t norm_mult = 0;
   for (int i = 0; i < nofTracks; i++) {
 
     //  const AliAODTrack *aodtrack=dynamic_cast<AliAODTrack*>(fEvent->GetTrack(i));
@@ -470,8 +471,72 @@ AliFemtoEvent *AliFemtoEventReaderAOD::CopyAODtoFemtoEvent()
               tNormMult++;
     }
 
-    AliFemtoTrack *trackCopy = CopyAODtoFemtoTrack(aodtrack);
+    norm_mult = tracksPrim;
 
+    if (cent) {
+      switch (fEstEventMult) {
+      case kCentrality:
+        norm_mult = lrint(10 * cent->GetCentralityPercentile("V0M"));
+        break;
+      case kCentralityV0A:
+        norm_mult = lrint(10 * cent->GetCentralityPercentile("V0A"));
+        break;
+      case kCentralityV0C:
+        norm_mult = lrint(10 * cent->GetCentralityPercentile("V0C"));
+        break;
+      case kCentralityZNA:
+        norm_mult = lrint(10 * cent->GetCentralityPercentile("ZNA"));
+        break;
+      case kCentralityZNC:
+        norm_mult = lrint(10 * cent->GetCentralityPercentile("ZNC"));
+        break;
+      case kCentralityCL1:
+        norm_mult = lrint(10 * cent->GetCentralityPercentile("CL1"));
+        break;
+      case kCentralityCL0:
+        norm_mult = lrint(10 * cent->GetCentralityPercentile("CL0"));
+        break;
+      case kCentralityTRK:
+        norm_mult = lrint(10 * cent->GetCentralityPercentile("TRK"));
+        break;
+      case kCentralityTKL:
+        norm_mult = lrint(10 * cent->GetCentralityPercentile("TKL"));
+        break;
+      case kCentralityCND:
+        norm_mult = lrint(10 * cent->GetCentralityPercentile("CND"));
+        break;
+      case kCentralityNPA:
+        norm_mult = lrint(10 * cent->GetCentralityPercentile("NPA"));
+        break;
+      case kCentralityFMD:
+        norm_mult = lrint(10 * cent->GetCentralityPercentile("FMD"));
+        break;
+      case kGlobalCount:
+        norm_mult = tNormMult; // Particles counted in the loop, trying to reproduce GetReferenceMultiplicity. If better (default) method appears it should be changed
+        break;
+      case kReference:{
+        norm_mult = fAODheader->GetRefMultiplicity();
+        break;}
+      case kTPCOnlyRef:
+        norm_mult = fAODheader->GetTPConlyRefMultiplicity();
+        break;
+      case kVZERO:
+        Float_t multV0 = 0.0;
+        for (Int_t i = 0; i < 64; i++)
+          multV0 += fEvent->GetVZEROData()->GetMultiplicity(i);
+        norm_mult = lrint(multV0);
+      }
+    }
+  
+   
+    tEvent->SetNormalizedMult(norm_mult);
+
+    
+    AliFemtoTrack *trackCopy = CopyAODtoFemtoTrack(aodtrack);
+   
+    trackCopy->SetMultiplicity(norm_mult);
+    trackCopy->SetZvtx(fV1[2]);
+    
     // copying PID information from the correspondent track
     //  const AliAODTrack *aodtrackpid = fEvent->GetTrack(labels[-1-fEvent->GetTrack(i)->GetID()]);
 
@@ -555,6 +620,7 @@ AliFemtoEvent *AliFemtoEventReaderAOD::CopyAODtoFemtoEvent()
 
             } else { //particle's mother exists and the information about it can be added to hiddeninfo:
               tInfo->SetMotherPdgCode(mother->GetPdgCode());
+              tInfo->SetMotherMomentum(mother->Px(),mother->Py(),mother->Pz());
             }
           }
         }
@@ -677,67 +743,7 @@ AliFemtoEvent *AliFemtoEventReaderAOD::CopyAODtoFemtoEvent()
   }
 
 
-  Int_t norm_mult = tracksPrim;
-
-  if (cent) {
-    switch (fEstEventMult) {
-      case kCentrality:
-        norm_mult = lrint(10 * cent->GetCentralityPercentile("V0M"));
-        break;
-      case kCentralityV0A:
-        norm_mult = lrint(10 * cent->GetCentralityPercentile("V0A"));
-        break;
-      case kCentralityV0C:
-        norm_mult = lrint(10 * cent->GetCentralityPercentile("V0C"));
-        break;
-      case kCentralityZNA:
-        norm_mult = lrint(10 * cent->GetCentralityPercentile("ZNA"));
-        break;
-      case kCentralityZNC:
-        norm_mult = lrint(10 * cent->GetCentralityPercentile("ZNC"));
-        break;
-      case kCentralityCL1:
-        norm_mult = lrint(10 * cent->GetCentralityPercentile("CL1"));
-        break;
-      case kCentralityCL0:
-        norm_mult = lrint(10 * cent->GetCentralityPercentile("CL0"));
-        break;
-      case kCentralityTRK:
-        norm_mult = lrint(10 * cent->GetCentralityPercentile("TRK"));
-        break;
-      case kCentralityTKL:
-        norm_mult = lrint(10 * cent->GetCentralityPercentile("TKL"));
-        break;
-      case kCentralityCND:
-        norm_mult = lrint(10 * cent->GetCentralityPercentile("CND"));
-        break;
-      case kCentralityNPA:
-        norm_mult = lrint(10 * cent->GetCentralityPercentile("NPA"));
-        break;
-      case kCentralityFMD:
-        norm_mult = lrint(10 * cent->GetCentralityPercentile("FMD"));
-        break;
-    }
-  } else {
-    switch (fEstEventMult) {
-      case kGlobalCount:
-        norm_mult = tNormMult; // Particles counted in the loop, trying to reproduce GetReferenceMultiplicity. If better (default) method appears it should be changed
-        break;
-      case kReference:
-        norm_mult = fAODheader->GetRefMultiplicity();
-        break;
-      case kTPCOnlyRef:
-        norm_mult = fAODheader->GetTPConlyRefMultiplicity();
-        break;
-      case kVZERO:
-        Float_t multV0 = 0.0;
-        for (Int_t i = 0; i < 64; i++)
-          multV0 += fEvent->GetVZEROData()->GetMultiplicity(i);
-        norm_mult = lrint(multV0);
-    }
-  }
-
-  tEvent->SetNormalizedMult(norm_mult);
+ 
 
   if (fReadV0) {
     int count_pass = 0;
@@ -764,6 +770,11 @@ AliFemtoEvent *AliFemtoEventReaderAOD::CopyAODtoFemtoEvent()
       }
 
       AliFemtoV0 *trackCopyV0 = CopyAODtoFemtoV0(aodv0);
+      trackCopyV0->SetMultiplicity(norm_mult);
+      trackCopyV0->SetZvtx(fV1[2]);
+    
+      
+      
       if (mcP) {
         daughterTrackPos->SetAODEvent(fEvent);
         daughterTrackNeg->SetAODEvent(fEvent);
@@ -989,9 +1000,9 @@ AliFemtoTrack *AliFemtoEventReaderAOD::CopyAODtoFemtoTrack(AliAODTrack *tAodTrac
     tFemtoTrack->SetZatDCA(tAodTrack->ZAtDCA());
   }
 
-  tFemtoTrack->SetCdd(covmat[0]);
-  tFemtoTrack->SetCdz(covmat[1]);
-  tFemtoTrack->SetCzz(covmat[2]);
+//  tFemtoTrack->SetCdd(covmat[0]);
+//  tFemtoTrack->SetCdz(covmat[1]);
+//  tFemtoTrack->SetCzz(covmat[2]);
   tFemtoTrack->SetITSchi2(tAodTrack->Chi2perNDF());
   tFemtoTrack->SetITSncls(tAodTrack->GetITSNcls());
   tFemtoTrack->SetTPCchi2(tAodTrack->Chi2perNDF());
@@ -1471,6 +1482,7 @@ AliFemtoXi *AliFemtoEventReaderAOD::CopyAODtoFemtoXi(AliAODcascade *tAODxi)
   tFemtoXi->SetmomXiZ(tAODxi->MomXiZ());
   AliFemtoThreeVector momxi(tAODxi->MomXiX(), tAODxi->MomXiY(), tAODxi->MomXiZ());
   tFemtoXi->SetmomXi(momxi);
+  tFemtoXi->SetRadiusXi(TMath::Sqrt(tAODxi->DecayVertexXiX()*tAODxi->DecayVertexXiX()+tAODxi->DecayVertexXiY()*tAODxi->DecayVertexXiY()));
 
   tFemtoXi->SetidBac(tAODxi->GetBachID());
 

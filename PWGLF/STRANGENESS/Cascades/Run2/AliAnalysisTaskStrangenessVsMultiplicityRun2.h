@@ -99,6 +99,10 @@ public:
         fkDoExtraEvSels = lUseExtraEvSels;
     }
 //---------------------------------------------------------------------------------------
+    void SetSelectCharge ( Int_t lCharge = -1) {
+        fkSelectCharge = lCharge;
+    }
+//---------------------------------------------------------------------------------------
     //Task Configuration: Skip Event Selections after trigger (VZERO test)
     void SetDownScaleV0 ( Bool_t lOpt = kTRUE, Float_t lVal = 0.001) {
         fkDownScaleV0 = lOpt;
@@ -299,6 +303,9 @@ private:
     Float_t fNHitsFMDA; //!
     Float_t fNHitsFMDC; //!
 
+    //IR info for OOB pileup study
+    Int_t fClosestNonEmptyBC; //!
+
 //===========================================================================================
 //   Variables for V0 Tree
 //===========================================================================================
@@ -354,6 +361,7 @@ private:
     Float_t fTreeVariableAmplitudeV0C; //!
     Float_t fTreeVariableNHitsFMDA; //!
     Float_t fTreeVariableNHitsFMDC; //!
+    Int_t   fTreeVariableClosestNonEmptyBC; //!
 
     //Event Multiplicity Variables
     Float_t fTreeVariableCentrality; //!
@@ -379,8 +387,12 @@ private:
     Float_t fTreeCascVarDCAPosToPrimVtx;  //!
     Float_t fTreeCascVarDCANegToPrimVtx;  //!
     Float_t fTreeCascVarCascCosPointingAngle;         //!
+    Float_t fTreeCascVarCascDCAtoPVxy;         //!
+    Float_t fTreeCascVarCascDCAtoPVz;         //!
     Float_t fTreeCascVarCascRadius;                   //!
     Float_t fTreeCascVarV0Mass;                       //!
+    Float_t fTreeCascVarV0MassLambda;                       //!
+    Float_t fTreeCascVarV0MassAntiLambda;                       //!
     Float_t fTreeCascVarV0CosPointingAngle;           //!
     Float_t fTreeCascVarV0CosPointingAngleSpecial;    //!
     Float_t fTreeCascVarV0Radius;                     //!
@@ -398,6 +410,10 @@ private:
     Float_t fTreeCascVarPosNSigmaProton; //!
     Float_t fTreeCascVarBachNSigmaPion;  //!
     Float_t fTreeCascVarBachNSigmaKaon;  //!
+    
+    //ChiSquares
+    Float_t fTreeCascVarChiSquareV0;
+    Float_t fTreeCascVarChiSquareCascade;
 
     //Variables for debugging Wrong PID hypothesis in tracking bug
     // more info at: https://alice.its.cern.ch/jira/browse/PWGPP-218
@@ -455,11 +471,20 @@ private:
     Float_t fTreeCascVarAmplitudeV0C; //!
     Float_t fTreeCascVarNHitsFMDA; //!
     Float_t fTreeCascVarNHitsFMDC; //!
+    Int_t   fTreeCascVarClosestNonEmptyBC; //!
 
     //Event Multiplicity Variables
     Float_t fTreeCascVarCentrality; //!
     Bool_t fTreeCascVarMVPileupFlag; //!
     Bool_t fTreeCascVarOOBPileupFlag; //!
+    
+    //Kink tagging
+    Bool_t fTreeCascVarBachIsKink;
+    Bool_t fTreeCascVarPosIsKink;
+    Bool_t fTreeCascVarNegIsKink;
+    
+    //Select charge (testing / checks)
+    Int_t fkSelectCharge; 
 
 //===========================================================================================
 //   Histograms

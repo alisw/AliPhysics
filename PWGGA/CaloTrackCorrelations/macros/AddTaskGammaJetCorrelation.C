@@ -238,18 +238,6 @@ AliCaloTrackReader * ConfigureReader(TString inputDataType = "AOD",TString calor
   //reader->SetDeltaAODFileName("");
   //if(kOutputAOD) reader->SwitchOnWriteDeltaAOD()  ;
   
-  // MC settings
-  if(useKinematics){
-    if(inputDataType == "ESD"){
-      reader->SwitchOnStack();          
-      reader->SwitchOffAODMCParticles(); 
-    }
-    else if(inputDataType == "AOD"){
-      reader->SwitchOffStack();          
-      reader->SwitchOnAODMCParticles(); 
-    }
-  }  
-  
   //------------------------
   // Detector input filling
   //------------------------
@@ -646,8 +634,7 @@ AliAnaPhoton* ConfigurePhotonAnalysis(TString calorimeter = "EMCAL",Bool_t tm = 
   //if(!kData.Contains("delta")) 
   //{
   ana->SetOutputAODName(Form("Photon%s",kGammaJetCorrelationName.Data()));
-  ana->SetOutputAODClassName("AliAODPWG4ParticleCorrelation");
-  //  //ana->SetOutputAODClassName("AliAODPWG4Particle"); // use if no correlation done
+  ana->SetOutputAODClassName("AliCaloTrackParticleCorrelation");
   //}
   //else 
   ana->SetInputAODName(Form("Photon%s",kGammaJetCorrelationName.Data()));

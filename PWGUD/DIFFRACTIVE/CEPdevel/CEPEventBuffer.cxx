@@ -33,7 +33,8 @@ CEPEventBuffer::CEPEventBuffer()
   , fisPileup(kFALSE)
   , fisClusterCut(kFALSE)
   , fisDGTrigger(kFALSE)
-  , fEventCondition(AliCEPBase::kBitBaseLine)
+  , fnTOFmaxipads(0)
+  , fEventCondition(AliCEPBase::kETBaseLine)
   , fnTracklets(0)
   , fnTracks(0)
   , fnTracksCombined(0)
@@ -43,11 +44,13 @@ CEPEventBuffer::CEPEventBuffer()
   , fnV0(0)
   , fVtxType(-1)
   , fVtxPos(TVector3(CEPTrackBuffer::kdumval,CEPTrackBuffer::kdumval,CEPTrackBuffer::kdumval))
-  , fMCProcessType(AliCEPBase::kdumval)
   , fMCGenerator("")
+  , fMCProcessType(AliCEPBase::kdumval)
   , fMCVtxPos(TVector3(CEPTrackBuffer::kdumval,CEPTrackBuffer::kdumval,CEPTrackBuffer::kdumval))
   , fCEPTracks(new TObjArray())
 {
+
+  for (Int_t ii=0; ii<4; ii++) fFiredChips[ii] = 0;
 
 }
 
@@ -79,6 +82,7 @@ void CEPEventBuffer::Reset()
   fCollissionType  = AliCEPBase::kBinEventUnknown;
   fMagnField       = AliCEPBase::kdumval;
   fFiredTriggerClasses = TString("");
+  for (Int_t ii=0; ii<4; ii++) fFiredChips[ii] = 0;
 
   // general event features
   fEventCutsel     = kFALSE;

@@ -324,6 +324,7 @@ void AliAnalysisMuMuCutElement::Init(ECutType expectedType) const
   if ( !fIsTriggerClassCutter )
   {
     scutMethodPrototype.ReplaceAll("const AliVEvent&","");
+    scutMethodPrototype.ReplaceAll("AliVEvent&","");
     scutMethodPrototype.ReplaceAll("const AliVParticle&","");
     scutMethodPrototype.ReplaceAll("const AliInputEventHandler&","");
     scutMethodPrototype.ReplaceAll("const AliVEventHandler&","");

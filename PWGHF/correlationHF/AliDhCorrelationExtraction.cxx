@@ -1,4 +1,3 @@
-
 /**************************************************************************
  * Copyright(c) 1998-2016, ALICE Experiment at CERN, All rights reserved. *
  *                                                                        *
@@ -796,9 +795,8 @@ Bool_t AliDhCorrelationExtraction::ExtractNumberOfTriggers_MC() {
 //___________________________________________________________________________________________
 Bool_t AliDhCorrelationExtraction::ExtractCorrelations(Double_t thrMin, Double_t thrMax) {
 
-  if(fSubtractSoftPiME && fReadTreeME) {
-    printf("Fake softPi subtraction in ME via extraction code MUST BE DISABLED for offline ME! Exiting...\n");
-    return kFALSE;
+  if(fSubtractSoftPiME) {
+    printf("Fake softPi subtraction in ME via extraction code is enabled!\n");
   }
 
   if(!fCorrectPoolsSeparately && (fReadTreeSE || fReadTreeME)) {
@@ -1499,6 +1497,8 @@ Bool_t AliDhCorrelationExtraction::DoSingleCanvasMCPlot(Double_t thrMin, Double_
 	
   Bool_t success = kTRUE;
   
+  Int_t colors[10] = {1,2,8,4,46,30,9,41};
+
   TString mode;
   if(fMCmode==kKine) mode = "_Kine";
   if(fMCmode==kReco) mode = "_Reco";
@@ -1518,8 +1518,8 @@ Bool_t AliDhCorrelationExtraction::DoSingleCanvasMCPlot(Double_t thrMin, Double_
     if(!hIn) {std::cout << "Cannot superimpose output plots! Input histogram missing!" << std::endl; return kFALSE;}	  
         	  
     cOut->cd();
-    hDraw->SetLineColor(1+iOrig);
-    hDraw->SetMarkerColor(1+iOrig);
+    hDraw->SetLineColor(colors[iOrig]);
+    hDraw->SetMarkerColor(colors[iOrig]);
     if(!iOrig) hDraw->Draw();
     else hDraw->Draw("same");
     
@@ -1545,7 +1545,7 @@ TH2D* AliDhCorrelationExtraction::GetCorrelHisto(Int_t SEorME, Int_t SorSB, Int_
   switch(fDmesonSpecies) {
 
     case (kD0toKpi): {  //in this case, it can also extract fake softpions from ME analysis (from online correl analysis only)
-      if((fReadTreeSE && SEorME==kSE) || (fReadTreeME && SEorME==kME)) return GetCorrelHistoDzeroTTree(SEorME,SorSB,pool,pTbin,thrMin,thrMax);
+      if((fReadTreeSE && SEorME==kSE) || (fReadTreeME && SEorME==kME)) return GetCorrelHistoDzeroTTree(SEorME,SorSB,pool,pTbin,thrMin,thrMax,softPiME);
       else return GetCorrelHistoDzero(SEorME,SorSB,pool,pTbin,thrMin,thrMax,softPiME);
       break;
     } //end case D0
@@ -1821,15 +1821,18 @@ TH2D* AliDhCorrelationExtraction::GetCorrelHistoDxHFE(Int_t SEorME, Int_t SorSB,
 }
 
 //___________________________________________________________________________________________
-TH2D* AliDhCorrelationExtraction::GetCorrelHistoDzeroTTree(Int_t SEorME, Int_t SorSB, Int_t pool, Int_t pTbin, Double_t thrMin, Double_t thrMax) {
+TH2D* AliDhCorrelationExtraction::GetCorrelHistoDzeroTTree(Int_t SEorME, Int_t SorSB, Int_t pool, Int_t pTbin, Double_t thrMin, Double_t thrMax, Int_t softPiME) {
 //For TTree case, no need to differentiate the code btw SE and ME cases (histograms names and structures is the same, the only difference is the input file)
+
+  TString suffixforsoftpiME = "";
 
   TH2D* h2D = new TH2D(); //pointer to be returned
 
   TH3D* h3D; //for projecting the TH2Sparse onto
+  if(SEorME==kME && softPiME==2) suffixforsoftpiME = "_softpiME";
   if(!fIntegratePtBins) {
-    if(SEorME==kSE) h3D = (TH3D*)fFileSE->Get(Form("h3DCorrelations_Bin%d_%1.1fto%1.1f_p%d",pTbin+fFirstpTbin,thrMin,thrMax,pool));
-    if(SEorME==kME) h3D = (TH3D*)fFileME->Get(Form("h3DCorrelations_Bin%d_%1.1fto%1.1f_p%d",pTbin+fFirstpTbin,thrMin,thrMax,pool));
+    if(SEorME==kSE) h3D = (TH3D*)fFileSE->Get(Form("h3DCorrelations_Bin%d_%1.1fto%1.1f_p%d%s",pTbin+fFirstpTbin,thrMin,thrMax,pool,suffixforsoftpiME.Data()));
+    if(SEorME==kME) h3D = (TH3D*)fFileME->Get(Form("h3DCorrelations_Bin%d_%1.1fto%1.1f_p%d%s",pTbin+fFirstpTbin,thrMin,thrMax,pool,suffixforsoftpiME.Data()));
   } else MergeCorrelPlotsVsPtTTree(h3D,SEorME,SorSB,pool,thrMin,thrMax);
   if(!h3D) {printf("ERROR! Input histogram not found! Check the macro configuration!\n"); return 0x0;}
   Int_t etaLowBin = (Int_t)(h3D->GetYaxis()->FindBin(fDeltaEtaMin+0.01));
@@ -2350,8 +2353,10 @@ void AliDhCorrelationExtraction::SetD0Source(Int_t type, THnSparse* thn, Int_t d
 }
 
 //___________________________________________________________________________________________
-void AliDhCorrelationExtraction::DrawMCClosure(Int_t nOrig, Int_t binMin, Int_t binMax, Double_t thrMin, Double_t thrMax) {
+void AliDhCorrelationExtraction::DrawMCClosure(Int_t nOrig, Int_t binMin, Int_t binMax, Double_t thrMin, Double_t thrMax, Bool_t reflect) {
 	
+  Int_t colors[10] = {1,2,8,4,46,30,9,41};
+
   TCanvas *cOut = new TCanvas(Form("cMCClosure_%s_%dto%d_%1.1fto%1.1f",fDmesonLabel.Data(),binMin,binMax,thrMin,thrMax),Form("MCClosure_%s_%dto%d_%1.1fto%1.1f",fDmesonLabel.Data(),binMin,binMax,thrMin,thrMax),100,100,1200,900);	
   
   TFile *fInK = TFile::Open(Form("Output_Root/AzimCorrDistr_%s_Canvas_PtIntBins%dto%d_PoolInt_thr%1.1fto%1.1f_Superimposed_Kine.root",fDmesonLabel.Data(),binMin,binMax,thrMin,thrMax));
@@ -2361,27 +2366,58 @@ void AliDhCorrelationExtraction::DrawMCClosure(Int_t nOrig, Int_t binMin, Int_t 
   TCanvas *cInR = (TCanvas*)fInR->Get(Form("cOutSuperimp_%dto%d_%1.1fto%1.1f_Reco",binMin,binMax,thrMin,thrMax));
   if(!cInK || !cInR) {std::cout << "Cannot do MC closure ratio output plots! Input canvas missing!" << std::endl; return;}	  
   
+  Double_t fitVal[nOrig], fitErr[nOrig];
+  TPaveText *pt = new TPaveText(1.8,1.3,3,1.78);
+  pt->SetFillColor(kWhite);
+
   for(Int_t iOrig=0; iOrig<nOrig; iOrig++) {  
-    TH1D *hInK = ((TH1D*)cInK->FindObject(Form("h1D_SubtrNorm_Orig%d",iOrig)));
-    hInK->SetName("hKine");
-    TH1D *hInR = ((TH1D*)cInR->FindObject(Form("h1D_SubtrNorm_Orig%d",iOrig)));
-    hInR->SetName("hReco");
-    if(!hInK || !hInR) {std::cout << "Cannot superimpose output plots! Input histogram missing!" << std::endl; return;}	  
+    TH1D *hInKinp = ((TH1D*)cInK->FindObject(Form("h1D_SubtrNorm_Orig%d",iOrig)));
+    hInKinp->SetName("hKineinp");
+    TH1D *hInRinp = ((TH1D*)cInR->FindObject(Form("h1D_SubtrNorm_Orig%d",iOrig)));
+    hInRinp->SetName("hRecoinp");
+    if(!hInKinp || !hInRinp) {std::cout << "Cannot superimpose output plots! Input histogram missing!" << std::endl; return;}	  
+    TH1D *hInK, *hInR;
+    if(reflect) {
+      hInK = AliHFCorrelationUtils::ReflectHisto(hInKinp,0.5);
+      hInR = AliHFCorrelationUtils::ReflectHisto(hInRinp,0.5);
+    }
+    else {
+      hInK = (TH1D*)hInKinp->Clone("hKine");
+      hInR = (TH1D*)hInKinp->Clone("hReco");
+    }
+
     TH1D *hDraw = (TH1D*)hInR->Clone(Form("h1D_MCClosure_Orig%d",iOrig));
     hDraw->Divide(hInK);
     
     cOut->cd();
-    hDraw->GetYaxis()->SetRangeUser(0.5,1.5);
+    hDraw->GetYaxis()->SetRangeUser(0.2,1.8);
+    hDraw->SetLineColor(colors[iOrig]);
+    hDraw->SetMarkerColor(colors[iOrig]);
+    hDraw->SetMarkerStyle(20);
+    hDraw->SetLineStyle(1);
+    hDraw->SetStats(kFALSE);
+    hDraw->SetTitle("");
     if(!iOrig) hDraw->Draw();
     else hDraw->Draw("same");
     
-    TF1 *fitf = new TF1("fitf","[0]",-TMath::Pi()/2.,3*TMath::Pi()/2.);
-    fitf->SetLineColor(1+iOrig);
+    TF1 *fitf = new TF1("fitf","[0]",0.,TMath::Pi()/2.);
+    fitf->SetLineColor(colors[iOrig]);
     fitf->SetLineWidth(1);
     hDraw->Fit(fitf);
-    printf("Fit outcome for Orig%d = %1.3f\n",iOrig,fitf->GetParameter(0));
+
+    fitVal[iOrig] = fitf->GetParameter(0);
+    fitErr[iOrig] = fitf->GetParError(0);
+    printf("Fit outcome for Orig%d = %1.3f #pm %1.3f\n",iOrig,fitVal[iOrig],fitErr[iOrig]);
+
+    TString suffixOrig = fMCOriginSuffix.at(iOrig);
+    if(suffixOrig=="") suffixOrig="All";
+    if(suffixOrig=="_HF_From_c") suffixOrig="_From_c,_c_track";
+    if(suffixOrig=="_HF_From_b") suffixOrig="_From_b,_b_track";
+    pt->AddText(Form("%s = %1.3f #pm %1.3f",suffixOrig.Data(),fitVal[iOrig],fitErr[iOrig]));
   }
   
+  pt->Draw("same");
+
   cOut->SaveAs(Form("Output_png/MCClosure_%s_Canvas_PtIntBins%dto%d_PoolInt_thr%1.1fto%1.1f.png",fDmesonLabel.Data(),binMin,binMax,thrMin,thrMax));
   cOut->SaveAs(Form("Output_Root/MCClosure_%s_Canvas_PtIntBins%dto%d_PoolInt_thr%1.1fto%1.1f.root",fDmesonLabel.Data(),binMin,binMax,thrMin,thrMax));
   

@@ -82,9 +82,9 @@ public:
 
   void            Print(Option_t *o = "") const;         // *MENU*
   // Bool_t          MakeShape(TObjArray* tracks);
-  Bool_t          MakeDirectivity(TObjArray* tracks);
+  void            MakeDirectivity(TObjArray* tracks);
   Bool_t          MakeThrust(TObjArray* tracks);
-  Bool_t          MakeSphericity(TObjArray* tracks);
+  void            MakeSphericity(TObjArray* tracks);
   Bool_t          MakeRecoil(TObjArray* tracks);
   Bool_t          MakeFoxWolframMoments(TObjArray* tracks);
   Bool_t          FindLeadingParticle(TObjArray* tracks);
@@ -115,7 +115,7 @@ private:
   Double_t       fMultiplicity[kNmult]; // multiplicity estimators
   Double_t       fVertexZ;              // z coordinate of vertex
   AliMESevShape  fEvShape;              // event shape descriptor
-  ClassDef(AliMESeventInfo, 1)          // Event summary data for MultiEvShape
+  ClassDef(AliMESeventInfo, 2)          // Event summary data for MultiEvShape
 };
 
 #endif

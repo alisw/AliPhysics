@@ -38,6 +38,11 @@ class AliAnalysisTaskdEdxSSDQA : public AliAnalysisTaskSE {
   TH2F*   fHist4;         // Q on chips
   TH2F*   fHist5;         // Q on chips corrected
   TH2F*   fHist6;         // QNvQP not corrected for track inclinaition 
+  TH2F*   fHist7;         // zeta-phi of points in lay 5 
+  TH2F*   fHist8;         // zeta-phi of points in lay 6 
+  TH2F*   fHist9;         // detec-lad of points in lay 5
+  TH2F*   fHist10;         // detec-lad of points in lay 6
+
 
   TH2F*   fHist1sa;         // SA tracks: CR for each module
   TH2F*   fHist2sa;         // SA tracks: landau distributions for each module	
@@ -45,6 +50,10 @@ class AliAnalysisTaskdEdxSSDQA : public AliAnalysisTaskSE {
   TH2F*   fHist4sa;         // SA tracks: Q on chips
   TH2F*   fHist5sa;         // SA tracks: Q on chips corrected
   TH2F*   fHist6sa;         // SA tracks: QNvQP not corrected for track inclinaition 
+  TH2F*   fHist7sa;         // zeta-phi of points in lay 5 
+  TH2F*   fHist8sa;         // zeta-phi of points in lay 6 
+  TH2F*   fHist9sa;         // detec-lad of points in lay 5
+  TH2F*   fHist10sa;         // detec-lad of points in lay 6
 
   TList*  fListOfHistos;  // output list	
   Float_t fPcut;          // Momentum cut
@@ -60,7 +69,8 @@ class AliAnalysisTaskdEdxSSDQA : public AliAnalysisTaskSE {
  Int_t Pstrip6(Float_t x,Float_t z) const;
  Int_t Nstrip5(Float_t x,Float_t z) const;
  Int_t Nstrip6(Float_t x,Float_t z) const;
- ClassDef(AliAnalysisTaskdEdxSSDQA, 3); // example of analysis
+
+ ClassDef(AliAnalysisTaskdEdxSSDQA, 4); // example of analysis
 };
 
 #endif

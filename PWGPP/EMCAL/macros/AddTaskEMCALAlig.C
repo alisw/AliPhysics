@@ -1,5 +1,5 @@
 /// \file AddTaskEmcalAlig
-/// \ingroup EMCALPerformanceMacros
+/// \ingroup EMCALPerfAddTaskMacros
 /// \brief Configuration analysis task on alignment checks.
 ///
 /// The configuration of alignment checks analysis
@@ -7,7 +7,7 @@
 /// \author Henrique Zanoli <Henrique.Zanoli@cern.ch>, University of Sao Paulo and Utrecht University
 ///
 
-AliAnalysisTaskEMCALAlig* AddTaskEmcalAlig(
+AliAnalysisTaskEMCALAlig* AddTaskEMCALAlig(
                                            const char *ntracks            = "usedefault",
                                            const char *nclusters          = "usedefault",
                                            const char* ncells             = "usedefault",

@@ -386,16 +386,16 @@ Bool_t AliCFVertexingHFLctoV0bachelor::GetRecoValuesFromCandidate(Double_t *vect
 
   }
 
-  vectorReco[0]  = pt;
-  vectorReco[1]  = rapidity;
-  vectorReco[2]  = phi;
-  vectorReco[3]  = onTheFlyStatus;
-  vectorReco[4]  = fzPrimVertex;
-  vectorReco[5]  = fCentValue;
-  vectorReco[6]  = fFake; // whether the reconstructed candidate was a fake (fFake = 0) or not (fFake = 2) 
-  vectorReco[7]  = fMultiplicity;
 
   if (fConfiguration==AliCFTaskVertexingHF::kSnail) {
+    vectorReco[0]  = pt;
+    vectorReco[1]  = rapidity;
+    vectorReco[2]  = phi;
+    vectorReco[3]  = onTheFlyStatus;
+    vectorReco[4]  = fzPrimVertex;
+    vectorReco[5]  = fCentValue;
+    vectorReco[6]  = fFake; // whether the reconstructed candidate was a fake (fFake = 0) or not (fFake = 2) 
+    vectorReco[7]  = fMultiplicity;
     //vectorReco[8]  = pTbachelor;
     vectorReco[8]  = pbachelor;
     vectorReco[9]  = v0toDaughters->Pt();
@@ -411,6 +411,22 @@ Bool_t AliCFVertexingHFLctoV0bachelor::GetRecoValuesFromCandidate(Double_t *vect
     vectorReco[15] = cosPointingAngleLc;
     //vectorReco[16] = cTV0*1.E4; // in micron
     //vectorReco[17] = cTLc*1.E4; // in micron
+  }
+  else if (fConfiguration==AliCFTaskVertexingHF::kCheetah) {
+    vectorReco[0]  = pt;
+    vectorReco[1]  = rapidity;
+    vectorReco[2]  = phi;
+    vectorReco[3]  = onTheFlyStatus;
+    vectorReco[4]  = fzPrimVertex;
+    vectorReco[5]  = fCentValue;
+    vectorReco[6]  = fFake; // whether the reconstructed candidate was a fake (fFake = 0) or not (fFake = 2) 
+    vectorReco[7]  = fMultiplicity;
+  }
+  else if (fConfiguration==AliCFTaskVertexingHF::kFalcon) {
+    vectorReco[0]  = pt;
+    vectorReco[1]  = rapidity;
+    vectorReco[2]  = fCentValue;
+    vectorReco[3]  = fMultiplicity;
   }
 
   bFillRecoValues = kTRUE;
@@ -1074,16 +1090,16 @@ Bool_t AliCFVertexingHFLctoV0bachelor::FillVectorFromMCarray(AliAODMCParticle *m
   }
   delete decay;
 
-  vectorMC[0]  = fmcPartCandidate->Pt();
-  vectorMC[1]  = fmcPartCandidate->Y() ;
-  vectorMC[2]  = fmcPartCandidate->Phi();
-  vectorMC[3]  = 0; // dummy value x MC, onTheFlyStatus
-  vectorMC[4]  = fzMCVertex;
-  vectorMC[5]  = fCentValue; // reconstructed centrality
-  vectorMC[6]  = 1; // dummy value x MC, fFake
-  vectorMC[7]  = fMultiplicity; // reconstructed multiplicity
 
   if (fConfiguration==AliCFTaskVertexingHF::kSnail) {
+    vectorMC[0]  = fmcPartCandidate->Pt();
+    vectorMC[1]  = fmcPartCandidate->Y() ;
+    vectorMC[2]  = fmcPartCandidate->Phi();
+    vectorMC[3]  = 0; // dummy value x MC, onTheFlyStatus
+    vectorMC[4]  = fzMCVertex;
+    vectorMC[5]  = fCentValue; // reconstructed centrality
+    vectorMC[6]  = 1; // dummy value x MC, fFake
+    vectorMC[7]  = fMultiplicity; // reconstructed multiplicity
     //vectorMC[8]  = pTbach;
     vectorMC[8]  = pbach;
     vectorMC[9]  = mcPartDaughterV0->Pt();
@@ -1095,6 +1111,22 @@ Bool_t AliCFVertexingHFLctoV0bachelor::FillVectorFromMCarray(AliAODMCParticle *m
     vectorMC[15] = cosPAwrtPrimVtxLc;
     //vectorMC[16] = cTV0*1.E4; // in micron
     //vectorMC[17] = cTLc*1.E4; // in micron
+  }
+  else if (fConfiguration==AliCFTaskVertexingHF::kCheetah) {
+    vectorMC[0]  = fmcPartCandidate->Pt();
+    vectorMC[1]  = fmcPartCandidate->Y() ;
+    vectorMC[2]  = fmcPartCandidate->Phi();
+    vectorMC[3]  = 0; // dummy value x MC, onTheFlyStatus
+    vectorMC[4]  = fzMCVertex;
+    vectorMC[5]  = fCentValue; // reconstructed centrality
+    vectorMC[6]  = 1; // dummy value x MC, fFake
+    vectorMC[7]  = fMultiplicity; // reconstructed multiplicity
+  }
+  else if (fConfiguration==AliCFTaskVertexingHF::kFalcon) {
+    vectorMC[0]  = fmcPartCandidate->Pt();
+    vectorMC[1]  = fmcPartCandidate->Y() ;
+    vectorMC[2]  = fCentValue; // reconstructed centrality
+    vectorMC[3]  = fMultiplicity; // reconstructed multiplicity
   }
 
   bGenValues = kTRUE;

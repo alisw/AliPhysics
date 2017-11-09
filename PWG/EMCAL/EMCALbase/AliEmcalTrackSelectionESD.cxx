@@ -62,6 +62,10 @@ void AliEmcalTrackSelectionESD::GenerateTrackCuts(ETrackFilterType_t type, const
     AliEmcalESDTrackCutsGenerator::AddTPCOnlyTrackCuts(this, period);
     break;
 
+  case kITSPureTracks:
+    AddTrackCuts(AliESDtrackCuts::GetStandardITSPureSATrackCuts2010(kTRUE, kFALSE));
+    break;
+
   default:
     break;
   }
@@ -82,7 +86,7 @@ bool AliEmcalTrackSelectionESD::IsTrackAccepted(AliVTrack* const trk) {
   }
 
   fTrackBitmap.ResetAllBits();
-  Int_t cutcounter = 0;
+  UInt_t cutcounter = 0;
   for(auto cutIter : *fListOfCuts){
     if((static_cast<AliVCuts *>(static_cast<AliEmcalManagedObject *>(cutIter)->GetObject()))->IsSelected(esdt)) fTrackBitmap.SetBitNumber(cutcounter);
     cutcounter++;

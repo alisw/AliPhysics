@@ -23,6 +23,7 @@ public:
 
   AliFemtoModelHiddenInfo& operator=(const AliFemtoModelHiddenInfo& aInfo);
   AliFemtoThreeVector   *GetTrueMomentum() const;
+  AliFemtoThreeVector   *GetMotherMomentum() const;
   AliFemtoLorentzVector *GetEmissionPoint() const;
   Int_t                  GetPDGPid() const;
   Int_t                  GetMotherPdgCode() const;
@@ -43,6 +44,12 @@ public:
   void                   SetTrueMomentum(AliFemtoThreeVector *aMom);
   void                   SetTrueMomentum(const AliFemtoThreeVector& aMom);
   void                   SetTrueMomentum(Double_t aPx, Double_t aPy, Double_t aPz);
+    
+    void                   SetMotherMomentum(AliFemtoThreeVector *aMom);
+    void                   SetMotherMomentum(const AliFemtoThreeVector& aMom);
+    void                   SetMotherMomentum(Double_t aPx, Double_t aPy, Double_t aPz);
+    
+    
   void                   SetEmissionPoint(AliFemtoLorentzVector *aPos);
   void                   SetEmissionPoint(const AliFemtoLorentzVector& aPos);
   void                   SetEmissionPoint(Double_t aRx, Double_t aRy, Double_t aRz, Double_t aT);
@@ -78,6 +85,7 @@ protected:
   virtual AliFemtoHiddenInfo* GetParticleHiddenInfo() const;
 
   AliFemtoThreeVector   *fTrueMomentum;  ///< True (simulated) momentum
+  AliFemtoThreeVector   *fMotherMomentum;///< Momentum of mother particle
   AliFemtoLorentzVector *fEmissionPoint; ///< Emission point coordinates
   Int_t                  fPDGPid;        ///< True PID of the particle
   Int_t                  fMotherPdg;     ///< PDG code of particle's mother

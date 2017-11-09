@@ -21,7 +21,7 @@ add_subdirectory(EVCHAR/FlowVectorCorrections/QnCorrectionsInterface)
 add_subdirectory(MUON)
 add_subdirectory(EMCAL)
 add_subdirectory(Alignment)
-
+add_subdirectory(scripts)
 #Module
 set(MODULE PWGPP)
 add_definitions(-D_MODULE_="${MODULE}")
@@ -56,12 +56,14 @@ set ( SRCS1
   AliTrackComparison.cxx
   AliTrackComparisonESD.cxx
   AliOfflineTrigger.cxx
+		AliMCTreeTools.cxx
   )
 #file ( GLOB SRCS2 "global/*.cxx" )
 set ( SRCS2
   global/AliAnalysisTaskGlobalQA.cxx
   global/AliAnalysisTaskVertexESD.cxx
   global/AliAnalysisTaskCheckPileup.cxx
+  global/AliAnalysisTaskCheckVertexAOD.cxx
   global/AliAnalysisTaskCheckESDTracks.cxx
   global/AliAnalysisTaskCheckAODTracks.cxx
   global/AliGlobalFBFqa.cxx
@@ -104,6 +106,7 @@ set ( SRCS7
   TRD/AliTRDcheckTRK.cxx
   TRD/AliTRDclusterResolution.cxx
   TRD/AliTRDdigitsFilter.cxx
+  TRD/AliTRDdigitsTask.cxx
   TRD/AliTRDefficiency.cxx
   TRD/AliTRDefficiencyMC.cxx
   TRD/AliTRDinfoGen.cxx
@@ -239,6 +242,10 @@ set ( SRCS20
   HMTFqa/AliAnalysisTaskLeadingPt.cxx
   HMTFqa/AliAnalysisMultCorrTaskQAPF.cxx
   )
+set ( SRCS21
+  vdM/AliAnalysisTaskVdM.cxx
+  vdM/AliXMLEngine.cxx
+  )
 
 list ( APPEND SRCS
   ${SRCS1}
@@ -261,6 +268,7 @@ list ( APPEND SRCS
   ${SRCS18}
   ${SRCS19}
   ${SRCS20}
+  ${SRCS21}
   )
 
 ###add_subdirectory(Alignment)
@@ -303,7 +311,7 @@ install(DIRECTORY macros DESTINATION PWGPP)
 install(DIRECTORY CalibMacros DESTINATION PWGPP)
 install(DIRECTORY PilotTrain DESTINATION PWGPP)
 install(DIRECTORY CalibMacros DESTINATION PWGPP)
-install(DIRECTORY EMCAL/QA/macros DESTINATION PWGPP/EMCAL/QA USE_SOURCE_PERMISSIONS)
+install(DIRECTORY EMCAL/QAMacros DESTINATION PWGPP/EMCAL USE_SOURCE_PERMISSIONS)
 install(DIRECTORY EMCAL/macros DESTINATION PWGPP/EMCAL)
 
 install(DIRECTORY HMTFqa/macros DESTINATION PWGPP/HMTFqa)
@@ -397,5 +405,7 @@ install(FILES BeamGasMonitoring/macros/AddTaskMBVeto.C
               BeamGasMonitoring/macros/AddTaskBGMonitorQAHLT.C
 	      BeamGasMonitoring/macros/AddTaskBGMonitorQATrain.C
 	      DESTINATION PWGPP/BeamGasMonitoring/macros)
+install(FILES vdM/AddAnalysisTaskVdM.C
+              DESTINATION PWGPP/vdM)
 
 message(STATUS "PWGPP enabled")

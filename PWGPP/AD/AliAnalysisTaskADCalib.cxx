@@ -63,13 +63,11 @@ AliAnalysisTaskADCalib::AliAnalysisTaskADCalib(const char *name)
 }
 
 AliAnalysisTaskADCalib::~AliAnalysisTaskADCalib() {
-  if (AliAnalysisManager::GetAnalysisManager()->GetAnalysisType() == AliAnalysisManager::kProofAnalysis) {
-    delete fList;
-    fList = NULL;
+  if (AliAnalysisManager::GetAnalysisManager()->GetAnalysisType() == AliAnalysisManager::kProofAnalysis)
+    return;
 
-    delete fADESDFriendUtils;
-    fADESDFriendUtils = NULL;
-  }
+  SafeDelete(fList);
+  SafeDelete(fADESDFriendUtils);
 }
 
 Bool_t AliAnalysisTaskADCalib::FillHist(TString name, Double_t x, Double_t y) {
@@ -293,10 +291,7 @@ void AliAnalysisTaskADCalib::ProcessOutput(const Char_t  *fileName,
   fStatus = kOk;
 
   // if necessary clean up
-  if (NULL != fList) {
-    delete fList;
-    fList = NULL;
-  }
+  SafeDelete(fList);
 
   // (0) get and set up the OCDB manager
   AliCDBManager *man = AliCDBManager::Instance();
@@ -481,7 +476,11 @@ Bool_t AliAnalysisTaskADCalib::MakeExtrapolationFit(TH2 *h, TF1 *f, Int_t ch, In
   // (1c) set up the TF1 depending on the BC
   switch (bc) {
   case  9:
-    f->SetParameters(1024.0, slope/1024.0, 0.0, 0.0);
+    f->SetParameters(1000.0, slope, 0.0, 0.0);
+    f->SetParLimits(0, 512.0*1.9, 1024.0);
+    f->SetParLimits(1,   1.0,   40.0);
+    f->SetParLimits(2,  -5.0,    5.0);
+    f->SetParLimits(3,  -5.0,    5.0);
     break;
   case 10:
     f->SetParameters(0, slope);
@@ -494,13 +493,13 @@ Bool_t AliAnalysisTaskADCalib::MakeExtrapolationFit(TH2 *h, TF1 *f, Int_t ch, In
   case 13:
   case 14:
   case 15:
-    f->SetParameters(0, slope, 0.1, 1.5);
     f->SetParNames("offset", "slope", "p_{0}", "power");
     f->SetParLimits(0,-20.0,20.0);
     f->SetParLimits(1, 0.0, 10.0);
     f->SetParLimits(2, 0.0,  1.0);
-    f->SetParLimits(3, 1.1,  4.0);
-    if (bc >= 13 && slope < 0.6) {
+    f->SetParLimits(3, 1.1,  1.5);
+    f->SetParameters(0, slope, 0.01, 1.2);
+    if (bc >= 13 && slope < 0.7) {
       f->FixParameter(2, 0.0);
       f->FixParameter(3, 1.1);
     }
@@ -519,9 +518,15 @@ Bool_t AliAnalysisTaskADCalib::MakeExtrapolationFit(TH2 *h, TF1 *f, Int_t ch, In
   // (2b) fit the profile
   f->FixParameter(1, f->GetParameter(1));
   if (bc == 9) {
-    Double_t q, p=0.9999;
+    Double_t q=0, p=0.9999;
     h->ProjectionX()->GetQuantiles(1, &q, &p);
     h_pfx->Fit(f, "Q0", "", 0, q);
+    AliDebugF(9, "q=%f yMax=%f (%f %f %f %f)",
+              q, yMax,
+              f->GetParameter(0),
+              f->GetParameter(1),
+              f->GetParameter(2),
+              f->GetParameter(3));
   } else {
     h_pfx->Fit(f, "Q0", "", 0, xMax);
   }
@@ -622,8 +627,8 @@ TTree* AliAnalysisTaskADCalib::MakeSaturationCalibObject(AliADCalibData* calibDa
 
   // (3) fill TTree
   for (Int_t ch=0; ch<16; ++ch) { // offline channel number
-    f_Int0.Clear("C");
-    f_Int1.Clear("C");
+    f_Int0.Delete();
+    f_Int1.Delete();
 
     chOffline = ch;
     chOnline  = gOffline2Online[ch];
@@ -634,9 +639,9 @@ TTree* AliAnalysisTaskADCalib::MakeSaturationCalibObject(AliADCalibData* calibDa
     const Double_t largeThr = 1e5;
     for (Int_t bc=0; bc<21; ++bc) {
       switch (bc) {
-      case 9: {
-	new (f_Int0[bc]) TF1(GetFcnName(ch, bc, 0), "[0]*TMath::TanH([1]*(x-[2]))+[3]", 0, 600);
-	new (f_Int1[bc]) TF1(GetFcnName(ch, bc, 1), "[0]*TMath::TanH([1]*(x-[2]))+[3]", 0, 600);
+      case  9: {
+	new (f_Int0[bc]) TF1(GetFcnName(ch, bc, 0), "[0]*TMath::TanH([1]/[0]*(x-[2]))+[3]", 0, 600);
+	new (f_Int1[bc]) TF1(GetFcnName(ch, bc, 1), "[0]*TMath::TanH([1]/[0]*(x-[2]))+[3]", 0, 600);
 	doExtrapolation[bc] = kTRUE;
 	break;
       }

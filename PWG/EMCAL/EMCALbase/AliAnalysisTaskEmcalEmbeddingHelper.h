@@ -77,6 +77,10 @@ class AliAnalysisTaskEmcalEmbeddingHelper : public AliAnalysisTaskSE {
 
   static const AliAnalysisTaskEmcalEmbeddingHelper* GetInstance() { return fgInstance       ; }
 
+  /**
+   * @brief Retrieve the embedded event from the embedding helper
+   * @return The embedded event
+   */
   AliVEvent* GetExternalEvent()                             const { return fExternalEvent   ; }
 
   /**
@@ -88,7 +92,6 @@ class AliAnalysisTaskEmcalEmbeddingHelper : public AliAnalysisTaskSE {
   // Get
   Int_t GetPtHardBin()                                      const { return fPtHardBin; }
   Int_t GetNPtHardBins()                                    const { return fNPtHardBins; }
-  Int_t GetAnchorRun()                                      const { return fAnchorRun; }
   TString GetTreeName()                                     const { return fTreeName; }
   Bool_t GetRandomEventNumberAccess()                       const { return fRandomEventNumberAccess; }
   Bool_t GetRandomFileAccess()                              const { return fRandomFileAccess; }
@@ -103,8 +106,6 @@ class AliAnalysisTaskEmcalEmbeddingHelper : public AliAnalysisTaskSE {
   void SetPtHardBin(Int_t n)                                      { fPtHardBin           = n; }
   /// Set the number of pt hard bins in the production to properly format the histograms
   void SetNPtHardBins(Int_t n)                                    { fNPtHardBins         = n; }
-  /// Sets the anchor run which will be added into the file pattern. Can also be omitted and set directly in the pattern.
-  void SetAnchorRun(Int_t r)                                      { fAnchorRun           = r; }
   /// Set to embed from ESD
   void SetESD(const char * treeName = "esdTree")                  { fTreeName     = treeName; }
   /// Set to embed from AOD
@@ -129,6 +130,8 @@ class AliAnalysisTaskEmcalEmbeddingHelper : public AliAnalysisTaskSE {
   void SetFileListFilename(const char * filename)                 { fFileListFilename = filename; }
   /// Create QA histograms. These are necessary for proper scaling, so be careful disabling them!
   void SetCreateHistos(bool b)                                    { fCreateHisto = b; }
+  /// Set path to YAML configuration file
+  void SetConfigurationPath(const char * path)                    { fConfigurationPath = path; }
   /* @} */
 
   /**
@@ -136,10 +139,14 @@ class AliAnalysisTaskEmcalEmbeddingHelper : public AliAnalysisTaskSE {
    * @name Options for the embedded event
    */
   UInt_t GetTriggerMask()                                   const { return fTriggerMask; }
+  bool GetMCRejectOutliers()                                const { return fMCRejectOutliers; }
+  Double_t GetPtHardJetPtRejectionFactor()                  const { return fPtHardJetPtRejectionFactor; }
   Double_t GetZVertexCut()                                  const { return fZVertexCut; }
   Double_t GetMaxVertexDistance()                           const { return fMaxVertexDist; }
 
   void SetTriggerMask(UInt_t triggerMask)                         { fTriggerMask = triggerMask; }
+  void SetMCRejectOutliers(bool reject = true)                    { fMCRejectOutliers = reject; }
+  void SetPtHardJetPtRejectionFactor(double factor)               { fPtHardJetPtRejectionFactor = factor; }
   void SetZVertexCut(Double_t zVertex)                            { fZVertexCut = zVertex; }
   void SetMaxVertexDistance(Double_t distance)                    { fMaxVertexDist = distance; }
   /* @} */
@@ -157,6 +164,22 @@ class AliAnalysisTaskEmcalEmbeddingHelper : public AliAnalysisTaskSE {
 
   /**
    * @{
+   * @name pT hard bin auto configuration
+   * @brief Setup pt hard bin auto configuration to be used on the LEGO train. See AutoConfigurePtHardBins() and the variable definitions for the purpose of each variable.
+   */
+  bool GetAutoConfigurePtHardBins()                         const { return fAutoConfigurePtHardBins; }
+  std::string GetAutoConfigureBasePath()                    const { return fAutoConfigureBasePath; }
+  std::string GetAutoConfigureTrainTypePath()               const { return fAutoConfigureTrainTypePath; }
+  std::string GetAutoConfigureIdentifier()                  const { return fAutoConfigureIdentifier; }
+
+  void SetAutoConfigurePtHardBins(bool configure = true)          { fAutoConfigurePtHardBins = configure; }
+  void SetAutoConfigureBasePath(std::string path)                 { fAutoConfigureBasePath = path; }
+  void SetAutoConfigureTrainTypePath(std::string path)            { fAutoConfigureTrainTypePath = path; }
+  void SetAutoConfigureIdentifier(std::string path)               { fAutoConfigureIdentifier = path; }
+  /* @} */
+
+  /**
+   * @{
    * @name Utility functions
    */
   // AddTask
@@ -169,23 +192,42 @@ class AliAnalysisTaskEmcalEmbeddingHelper : public AliAnalysisTaskSE {
   std::string toString(bool includeFileList = false) const;
   /* @} */
 
+  /**
+   * @brief **SHOULD NOT BE USED! Use GetExternalEvent()!**
+   * **SHOULD NOT BE USED! Use GetExternalEvent()!**
+   * Returns the external event by overloading InputEvent() defined in AliAnalysisTaskSE.
+   * This is used by AliEmcalCorrectionEventManager, but it should not be used by the user!
+   * Instead, use GetExternalEvent().
+   *
+   * Note that it cannot be protected, because we need to call it externally.
+   *
+   * @return The external event
+   */
+  AliVEvent* InputEvent()                                   const { return GetExternalEvent(); }
+
  protected:
   bool            GetFilenames()        ;
-  std::string     GenerateUniqueFileListFilename();
+  bool            InitializeYamlConfig();
+  bool            AutoConfigurePtHardBins();
+  std::string     GenerateUniqueFileListFilename() const;
+  std::string     RemoveTrailingSlashes(std::string filename) const;
   void            DetermineFirstFileToEmbed();
   void            SetupEmbedding()      ;
   Bool_t          SetupInputFiles()     ;
-  std::string     DeterminePythiaXSecFilename(TString baseFileName, TString pythiaBaseFilename, bool testIfExists);
+  std::string     DeterminePythiaXSecFilename(TString baseFileName, TString pythiaBaseFilename, bool testIfExists) const;
   Bool_t          GetNextEntry()        ;
   void            SetEmbeddedEventProperties();
   void            RecordEmbeddedEventProperties();
   Bool_t          IsEventSelected()     ;
-  Bool_t          CheckIsEmbeddedEventIsSelected();
+  Bool_t          CheckIsEmbeddedEventSelected();
   Bool_t          InitEvent()           ;
   void            InitTree()            ;
   bool            PythiaInfoFromCrossSectionFile(std::string filename);
+  Bool_t          IsGoodEmbeddedRun(TString path);
 
   UInt_t                                        fTriggerMask;       ///<  Trigger selection mask
+  bool                                          fMCRejectOutliers;  ///<  If true, MC outliers will be rejected
+  Double_t                                      fPtHardJetPtRejectionFactor; ///<  Factor which the pt hard bin is multiplied by to compare against pythia header jets pt
   Double_t                                      fZVertexCut;        ///<  Z vertex cut on embedded event
   Double_t                                      fMaxVertexDist;     ///<  Max distance between Z vertex of internal and embedded event
 
@@ -195,18 +237,24 @@ class AliAnalysisTaskEmcalEmbeddingHelper : public AliAnalysisTaskSE {
   bool                                          fWrappedAroundTree; //!<! Notes whether we have wrapped around the tree, which is important if the offset into the tree is non-zero
 
   TString                                       fTreeName         ; ///<  Name of the ESD/AOD tree where the events are to be found
-  Int_t                                         fAnchorRun        ; ///<  Anchor run for the given pythia production
   Int_t                                         fNPtHardBins      ; ///<  Total number of pt hard bins
   Int_t                                         fPtHardBin        ; ///<  ptHard bin for the given pythia production
   Bool_t                                        fRandomEventNumberAccess; ///<  If true, it will start embedding from a random entry in the file rather than from the first
-  Bool_t                                        fRandomFileAccess ; ///< If true, it will start embedding from a random file in the input files list
-  bool                                          fCreateHisto      ; ///< If true, create QA histograms
+  Bool_t                                        fRandomFileAccess ; ///<  If true, it will start embedding from a random file in the input files list
+  bool                                          fCreateHisto      ; ///<  If true, create QA histograms
+
+  bool                                    fAutoConfigurePtHardBins; ///<  If true, attempt to auto configure pt hard bins. Only works on the LEGO train.
+  std::string                               fAutoConfigureBasePath; ///<  The base path to the auto configuration (for example, "/alice/cern.ch/user/a/alitrain/")
+  std::string                          fAutoConfigureTrainTypePath; ///<  The path associated with the train type (for example, "PWGJE/Jets_EMC_PbPb/")
+  std::string                             fAutoConfigureIdentifier; ///<  How the auto configuration YAML file should be identified. (for example, "rehlersTrain")
 
   TString                                       fFilePattern      ; ///<  File pattern to select AliEn files using alien_find
   TString                                       fInputFilename    ; ///<  Filename of input root files
   TString                                       fFileListFilename ; ///<  Name of the file list containing paths to files to embed
   Int_t                                         fFilenameIndex    ; ///<  Index of vector containing paths to files to embed
   std::vector <std::string>                     fFilenames        ; ///<  Paths to the files to embed
+  std::string                                   fConfigurationPath; ///<  Path to YAML configuration
+  std::vector <std::string>                     fEmbeddedRunlist  ; ///<  Good runlist for files to embed
   std::vector <std::string>                     fPythiaCrossSectionFilenames; ///< Paths to the pythia xsection files
   TFile                                        *fExternalFile     ; //!<! External file used for embedding
   TChain                                       *fChain            ; //!<! External TChain (tree) containing the events available for embedding
@@ -214,8 +262,8 @@ class AliAnalysisTaskEmcalEmbeddingHelper : public AliAnalysisTaskSE {
   Int_t                                         fLowerEntry       ; //!<! First entry of the current tree to be used for embedding
   Int_t                                         fUpperEntry       ; //!<! Last entry of the current tree to be used for embedding
   Int_t                                         fOffset           ; //!<! Offset from fLowerEntry where the loop over the tree should start
-  Int_t                                         fMaxNumberOfFiles ; //!<! Max number of files that are in the TChain
-  Int_t                                         fFileNumber       ; //!<! File number corresponding to the current tree
+  UInt_t                                        fMaxNumberOfFiles ; //!<! Max number of files that are in the TChain
+  UInt_t                                        fFileNumber       ; //!<! File number corresponding to the current tree
   THistManager                                  fHistManager      ; ///< Manages access to all histograms
   AliEmcalList                                 *fOutput           ; //!<! List which owns the output histograms to be saved
   AliVEvent                                    *fExternalEvent    ; //!<! Current external event available for embedding
@@ -223,9 +271,9 @@ class AliAnalysisTaskEmcalEmbeddingHelper : public AliAnalysisTaskSE {
   AliGenPythiaEventHeader                      *fPythiaHeader     ; //!<! Pythia header of the current external event
 
   int                                           fPythiaTrials     ; //!<! Number of pythia trials for the current event (extracted from the pythia header).
-  int                                           fPythiaTrialsAvg  ; //!<! Average number of trials extracted from a xsec file.
+  int                                           fPythiaTrialsFromFile; //!<! Average number of trials extracted from a xsec file.
   double                                        fPythiaCrossSection; //!<! Pythia cross section for the current event (extracted from the pythia header).
-  double                                        fPythiaCrossSectionAvg; //!<! Average pythia cross section extracted from a xsec file.
+  double                                        fPythiaCrossSectionFromFile; //!<! Average pythia cross section extracted from a xsec file.
   double                                        fPythiaPtHard     ; //!<! Pt hard of the current event (extracted from the pythia header).
 
   static AliAnalysisTaskEmcalEmbeddingHelper   *fgInstance        ; //!<! Global instance of this class
@@ -235,7 +283,7 @@ class AliAnalysisTaskEmcalEmbeddingHelper : public AliAnalysisTaskSE {
   AliAnalysisTaskEmcalEmbeddingHelper &operator=(const AliAnalysisTaskEmcalEmbeddingHelper&); // not implemented
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskEmcalEmbeddingHelper, 3);
+  ClassDef(AliAnalysisTaskEmcalEmbeddingHelper, 8);
   /// \endcond
 };
 #endif

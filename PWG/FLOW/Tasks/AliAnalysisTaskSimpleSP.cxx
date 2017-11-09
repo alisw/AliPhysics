@@ -88,7 +88,7 @@ AliAnalysisTaskSimpleSP::AliAnalysisTaskSimpleSP() :
   fListWeights(NULL),
   fRelDiffMsub(1.0),
   fApplyCorrectionForNUA(kFALSE),
-  fHarmonic(0),
+  fHarmonic(2),
   fWeights(kFALSE),
   fScaling(kTRUE),
   fNormalizationType(1),

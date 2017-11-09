@@ -49,7 +49,9 @@ class AliEmcalContainerUtils {
   };
 
   // Utility functions
+  static std::string DetermineUseDefaultName(InputObject_t objType);
   static std::string DetermineUseDefaultName(InputObject_t objType, bool esdMode, bool returnObjectType = false);
+  static const AliVEvent * GetEvent(const AliVEvent * inputEvent, bool isEmbedding = false);
   static AliVEvent * GetEvent(AliVEvent * inputEvent, bool isEmbedding = false);
 
 #if !(defined(__CINT__) || defined(__MAKECINT__))

@@ -129,8 +129,9 @@ AliFemtoManager* ConfigFemtoAnalysis() {
 
     //Generate freeze-out coordinates as a 3D gaussian sphere in PRF
     AliFemtoModelGausRinvFreezeOutGenerator *tFreeze = new AliFemtoModelGausRinvFreezeOutGenerator();
-    tFreeze->SetSizeInv(3.0*TMath::Sqrt(2.0));//r_0=3fm it should be time to sqrt(2) !!!!KM
-    
+    //tFreeze->SetSizeInv(3.0*TMath::Sqrt(2.0));//r_0=3fm it should be time to sqrt(2) !!!!KM
+    //tFreeze->SetSizeInv(5.0*TMath::Sqrt(2.0));//r_0=5fm it should be time to sqrt(2) !!!!KM
+    tFreeze->SetSizeInv(4.0*TMath::Sqrt(2.0));//r_0=4fm it should be time to sqrt(2) !!!!KM
     
     AliFemtoModelWeightGeneratorLednicky *tWeight = new AliFemtoModelWeightGeneratorLednicky();
     tWeight->SetPairType(AliFemtoModelWeightGenerator::KaonPlusKaonMinus());
@@ -207,7 +208,8 @@ AliFemtoManager* ConfigFemtoAnalysis() {
 	  aniter = ichg*5+imult;
 
 	  anetaphitpc[aniter] = new AliFemtoVertexMultAnalysis(4, -8.0, 8.0, 5, multbins[imult], multbins[imult+1]);
-	  anetaphitpc[aniter]->SetNumEventsToMix(3);
+	  anetaphitpc[aniter]->SetNumEventsToMix(30);//for MR
+	  //anetaphitpc[aniter]->SetNumEventsToMix(3);
 	  anetaphitpc[aniter]->SetMinSizePartCollection(1);
 
 	  mecetaphitpc[aniter] = new AliFemtoBasicEventCut();

@@ -229,6 +229,7 @@ struct FastSim : public TSelector
       
     UShort_t   sNN      = (TMath::Abs(fsNN -  2760) < 10 ?  2760 :
 			   TMath::Abs(fsNN -  5023) < 10 ?  5023 :
+			   TMath::Abs(fsNN -  5440) < 10 ?  5440 :
 			   TMath::Abs(fsNN -  2360) < 10 ?  2360 :
 			   TMath::Abs(fsNN -   900) < 10 ?   900 :
 			   TMath::Abs(fsNN -  7000) < 10 ?  7000 :
@@ -441,6 +442,7 @@ struct FastSim : public TSelector
     TIter next(fCentEstimators);
     FastCentEstimator* estimator = 0;
     while ((estimator = static_cast<FastCentEstimator*>(next()))) {
+      Info("SetupOutput", "Setting up estimator %s", estimator->GetName());
       estimator->Setup(estimators, fTree,sNN,fIsTgtA,fIsProjA);
       estimator->SetVerbose(fVerbose);
       // estimator->Print("nah");
@@ -725,7 +727,7 @@ struct FastSim : public TSelector
 
     fBEstimator = new BCentEstimator;
     fCentEstimators = new TList;
-    // fCentEstimators->Add(new V0CentEstimator(-1));           //V0C
+    // fCentEstximators->Add(new V0CentEstimator(-1));           //V0C
     // fCentEstimators->Add(new V0CentEstimator( 0));           //V0M
     // fCentEstimators->Add(new V0CentEstimator(+1));           //V0A
     fCentEstimators->Add(fBEstimator);
@@ -1880,7 +1882,20 @@ struct EPosSim : public FastSim
     }
     return true;
   }
-  const char* GetEGTitle() const { return "EPOS-LHC"; }
+  const char* GetEGTitle() const
+  {
+    static TString tmp;
+    if (!tmp.IsNull()) return tmp.Data();
+    tmp = "EPOS-LHC ";
+    Long_t ret =
+      gROOT->ProcessLine("Form(\"%s(%d,%d)+%s(%d,%d) @ %5d b in[%4.1f,%4.1f]\","
+			 "grp->beam1.Name(), grp->beam1.a, grp->beam1.z,"
+			 "grp->beam2.Name(), grp->beam2.a, grp->beam2.z,"
+			 "Int_t(grp->energy))");
+    tmp.Append(reinterpret_cast<const char*>(ret));
+    Printf("EG title set to %s", tmp.Data());
+    return tmp.Data();
+  }
   void SetupSeed() {}
   Bool_t SetupGen()
   {

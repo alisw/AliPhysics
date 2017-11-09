@@ -69,7 +69,8 @@ AliFemtoV0TrackCut::AliFemtoV0TrackCut():
   fInvMassRejectAntiLambdaMax(0.0),
   fK0sMassOfMisIDV0(0),
   fLambdaMassOfMisIDV0(0),
-  fAntiLambdaMassOfMisIDV0(0)
+  fAntiLambdaMassOfMisIDV0(0),
+  fIgnoreOnFlyStatus(false)
 
 {
   // Default constructor
@@ -141,7 +142,8 @@ AliFemtoV0TrackCut::AliFemtoV0TrackCut(const AliFemtoV0TrackCut& aCut) :
   fInvMassRejectLambdaMin(aCut.fInvMassRejectLambdaMin),
   fInvMassRejectLambdaMax(aCut.fInvMassRejectLambdaMax),
   fInvMassRejectAntiLambdaMin(aCut.fInvMassRejectAntiLambdaMin),
-  fInvMassRejectAntiLambdaMax(aCut.fInvMassRejectAntiLambdaMax)
+  fInvMassRejectAntiLambdaMax(aCut.fInvMassRejectAntiLambdaMax),
+  fIgnoreOnFlyStatus(aCut.fIgnoreOnFlyStatus)
 {
   //copy constructor
   if(aCut.fMinvPurityAidHistoV0) fMinvPurityAidHistoV0 = new TH1D(*aCut.fMinvPurityAidHistoV0);
@@ -230,6 +232,8 @@ AliFemtoV0TrackCut& AliFemtoV0TrackCut::operator=(const AliFemtoV0TrackCut& aCut
   if(aCut.fAntiLambdaMassOfMisIDV0) fAntiLambdaMassOfMisIDV0 = new TH1D(*aCut.fAntiLambdaMassOfMisIDV0);
     else fAntiLambdaMassOfMisIDV0 = 0;
 
+  fIgnoreOnFlyStatus = aCut.fIgnoreOnFlyStatus;
+
   return *this;
 }
 
@@ -286,7 +290,7 @@ bool AliFemtoV0TrackCut::Pass(const AliFemtoV0* aV0)
 
 
   //quality cuts
-  if (aV0->OnFlyStatusV0() != fOnFlyStatus) return false;
+  if(!fIgnoreOnFlyStatus) {if (aV0->OnFlyStatusV0() != fOnFlyStatus) return false;}
   if (aV0->StatusNeg() == 999 || aV0->StatusPos() == 999) return false;
   if (aV0->TPCNclsPos() < fTPCNclsDaughters) return false;
   if (aV0->TPCNclsNeg() < fTPCNclsDaughters) return false;

@@ -1,10 +1,10 @@
 /////////////////////////////////////////////////////////////////////////////////////
 //                                                                                 //
-// AliFemtoEventReaderAODKinematicsChain - the reader class for the Alice AOD and     //
+// AliFemtoEventReaderAODKinematicsChain - the reader class for the Alice AOD and  //
 // the model Kinematics information tailored for the Task framework and the        //
 // Authors: Malgorzata Janik, Warsaw University of Technology, majanik@cern.ch     //
 //          Lukasz Graczykowski, Warsaw University of Technology, lgraczyk@cern.ch //
-//  	       				                                           //
+//                                                                                 //
 /////////////////////////////////////////////////////////////////////////////////////
 
 
@@ -12,21 +12,18 @@
 #define ALIFEMTOEVENTREADERAODKINEMATICSCHAIN_H
 
 #include "AliFemtoEventReader.h"
-#include "AliFemtoEnumeration.h"
 #include "AliFemtoV0.h"
 
+#include <AliAODEvent.h>
+#include <AliGenEventHeader.h>
+
+#include <list>
 #include <string>
 #include <vector>
-#include <TTree.h>
-#include <AliStack.h>
-#include <AliAODEvent.h>
-#include <list>
-#include <AliGenEventHeader.h>
-#include <AliAODMCParticle.h>
 
 class AliFemtoEvent;
 
-class AliFemtoEventReaderAODKinematicsChain : public AliFemtoEventReader 
+class AliFemtoEventReaderAODKinematicsChain : public AliFemtoEventReader
 {
  public:
   enum EventMult {kGlobalCount=0, kVZERO=1};
@@ -52,7 +49,7 @@ class AliFemtoEventReaderAODKinematicsChain : public AliFemtoEventReader
 
   void ReadOnlyPrimaries(bool primaries);
   void ReadPrimariesSecWeakMaterial(bool primaries);
- 
+
  protected:
   AliAODHeader *fAODheader;
  private:
@@ -77,8 +74,6 @@ class AliFemtoEventReaderAODKinematicsChain : public AliFemtoEventReader
   /// \endcond
 #endif
 
-    };
-  
+};
+
 #endif
-
-

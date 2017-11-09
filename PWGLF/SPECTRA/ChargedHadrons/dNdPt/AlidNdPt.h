@@ -132,7 +132,7 @@ private:
 
   UInt_t fTriggerMask;    // trigger mask
 
-  ClassDef(AlidNdPt,7);
+  ClassDef(AlidNdPt,8);
 };
 
 #endif

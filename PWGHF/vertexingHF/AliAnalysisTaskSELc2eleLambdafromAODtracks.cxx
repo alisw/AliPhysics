@@ -1750,7 +1750,7 @@ void AliAnalysisTaskSELc2eleLambdafromAODtracks::MakeAnalysis
 	fHistonElevsRunNumber->Fill(runnumber-runnumber_offset,nSeleTrks);
 	fHistonLambdavsRunNumber->Fill(runnumber-runnumber_offset,nSeleV0);
 
-  if(nSeleTrks==0 || nSeleV0 ==0) return;
+  //if(nSeleTrks==0 && nSeleV0 ==0) return;
 
   //------------------------------------------------
   // Fill Pools and single Root Objects

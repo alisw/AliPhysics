@@ -28,7 +28,6 @@ class THnSparse;
  
 class AliESDEvent;
 class AliPhysicsSelection;
-class AliCFContainer;
 class AliPIDResponse;
 
 #include "TString.h"
@@ -69,23 +68,108 @@ class AliAnalysisTaskQAMultistrange : public AliAnalysisTaskSE {
        
         TList  *fListHistMultistrangeQA;                //! List of Cascade histograms
         TH1F *fHistEventSel;                            //! Gives the number of the events after each event selection
-        TH1F *fHistMassXiMinus;                         //! Gives the invariant mass distr. for the Xi minus without PID info on daughter tracks
-        TH1F *fHistMassXiPlus;                          //! Gives the invariant mass distr. for the Xi plus without PID info on daughter tracks
-        TH1F *fHistMassOmegaMinus;                      //! Gives the invariant mass distr. for the Omega minus without PID info on daughter tracks
-        TH1F *fHistMassOmegaPlus;                       //! Gives the invariant mass distr. for the Omega plus without PID info on daughter tracks
         TH1F *fHistCascadeMultiplicityXiMinus;          //! Gives the distribution of the number of Xi minus per event
         TH1F *fHistCascadeMultiplicityXiPlus;           //! Gives the distribution of the number of Xi plus per event
         TH1F *fHistCascadeMultiplicityOmegaMinus;       //! Gives the distribution of the number of Omega minus per event
         TH1F *fHistCascadeMultiplicityOmegaPlus;        //! Gives the distribution of the number of Omega plus per event  
-	AliCFContainer  *fCFContCascadeCuts;            //! Container meant to store all the relevant distributions corresponding to the cut variables
-        AliCFContainer  *fCFContCascadeMCCuts;          //! Container meant to store all the relevant distributions corresponding to the cut variables with Association for MC productions
-        AliCFContainer  *fCFContCascadeMCgen;           //! Container meant to store general variables for MC generated particles 
-	
+
+        TH2F *fHistVarDcaCascDaughtXiMinus;               //!
+        TH2F *fHistVarDcaBachToPrimVertexXiMinus;         //!
+        TH2F *fHistVarCascCosineOfPointingAngleXiMinus;   //!
+        TH2F *fHistVarCascRadiusXiMinus;                  //!
+        TH2F *fHistVarInvMassLambdaAsCascDghterXiMinus;   //!
+        TH2F *fHistVarDcaV0DaughtersXiMinus;              //!
+        TH2F *fHistVarV0CosineOfPAToCascVertexXiMinus;    //!
+        TH2F *fHistVarV0RadiusXiMinus;                    //!
+        TH2F *fHistVarDcaV0ToPrimVertexXiMinus;           //!
+        TH2F *fHistVarDcaPosToPrimVertexXiMinus;          //!
+        TH2F *fHistVarDcaNegToPrimVertexXiMinus;          //!
+        TH1F *fHistMassXiMinus;                           //!
+        TH1F *fHistVarTransvMomentumXiMinus;              //!
+        TH1F *fHistVarRapidityXiMinus;                    //!
+        TH2F *fHistVarCascProperLengthXiMinus;            //!
+        TH2F *fHistVarV0ProperLengthXiMinus;              //!
+        TH1F *fHistGenVarTotMomXiMinus;                   //!
+        TH1F *fHistGenVarTransvMomXiMinus;                //!
+        TH1F *fHistGenVarYXiMinus;                        //! 
+        TH1F *fHistGenVarEtaXiMinus;                      //!
+        TH1F *fHistGenVarThetaXiMinus;                    //!
+        TH1F *fHistGenVarPhiXiMinus;                      //!
+ 
+        TH2F *fHistVarDcaCascDaughtXiPlus;                //!
+        TH2F *fHistVarDcaBachToPrimVertexXiPlus;          //!
+        TH2F *fHistVarCascCosineOfPointingAngleXiPlus;    //!
+        TH2F *fHistVarCascRadiusXiPlus;                   //!
+        TH2F *fHistVarInvMassLambdaAsCascDghterXiPlus;    //!
+        TH2F *fHistVarDcaV0DaughtersXiPlus;               //! 
+        TH2F *fHistVarV0CosineOfPAToCascVertexXiPlus;     //!
+        TH2F *fHistVarV0RadiusXiPlus;                     //!
+        TH2F *fHistVarDcaV0ToPrimVertexXiPlus;            //!
+        TH2F *fHistVarDcaPosToPrimVertexXiPlus;           //!
+        TH2F *fHistVarDcaNegToPrimVertexXiPlus;           //!
+        TH1F *fHistMassXiPlus;                            //! 
+        TH1F *fHistVarTransvMomentumXiPlus;               //!
+        TH1F *fHistVarRapidityXiPlus;                     //!
+        TH2F *fHistVarCascProperLengthXiPlus;             //!
+        TH2F *fHistVarV0ProperLengthXiPlus;               //!
+        TH1F *fHistGenVarTotMomXiPlus;                    //!
+        TH1F *fHistGenVarTransvMomXiPlus;                 //!
+        TH1F *fHistGenVarYXiPlus;                         //!
+        TH1F *fHistGenVarEtaXiPlus;                       //!
+        TH1F *fHistGenVarThetaXiPlus;                     //!
+        TH1F *fHistGenVarPhiXiPlus;                       //!
+
+        TH2F *fHistVarDcaCascDaughtOmegaMinus;            //!
+        TH2F *fHistVarDcaBachToPrimVertexOmegaMinus;      //!
+        TH2F *fHistVarCascCosineOfPointingAngleOmegaMinus;//!  
+        TH2F *fHistVarCascRadiusOmegaMinus;               //!
+        TH2F *fHistVarInvMassLambdaAsCascDghterOmegaMinus;//! 
+        TH2F *fHistVarDcaV0DaughtersOmegaMinus;           //!
+        TH2F *fHistVarV0CosineOfPAToCascVertexOmegaMinus; //!
+        TH2F *fHistVarV0RadiusOmegaMinus;                 //!
+        TH2F *fHistVarDcaV0ToPrimVertexOmegaMinus;        //!
+        TH2F *fHistVarDcaPosToPrimVertexOmegaMinus;       //!
+        TH2F *fHistVarDcaNegToPrimVertexOmegaMinus;       //!
+        TH1F *fHistMassOmegaMinus;                        //!
+        TH1F *fHistVarTransvMomentumOmegaMinus;           //!
+        TH1F *fHistVarRapidityOmegaMinus;                 //!
+        TH2F *fHistVarCascProperLengthOmegaMinus;         //!
+        TH2F *fHistVarV0ProperLengthOmegaMinus;           //!
+        TH1F *fHistGenVarTotMomOmegaMinus;                //!
+        TH1F *fHistGenVarTransvMomOmegaMinus;             //!
+        TH1F *fHistGenVarYOmegaMinus;                     //!
+        TH1F *fHistGenVarEtaOmegaMinus;                   //!
+        TH1F *fHistGenVarThetaOmegaMinus;                 //!
+        TH1F *fHistGenVarPhiOmegaMinus;                   //!
+ 
+        TH2F *fHistVarDcaCascDaughtOmegaPlus;             //!
+        TH2F *fHistVarDcaBachToPrimVertexOmegaPlus;       //!
+        TH2F *fHistVarCascCosineOfPointingAngleOmegaPlus; //! 
+        TH2F *fHistVarCascRadiusOmegaPlus;                //!
+        TH2F *fHistVarInvMassLambdaAsCascDghterOmegaPlus; //!
+        TH2F *fHistVarDcaV0DaughtersOmegaPlus;            //!
+        TH2F *fHistVarV0CosineOfPAToCascVertexOmegaPlus;  //! 
+        TH2F *fHistVarV0RadiusOmegaPlus;                  //!
+        TH2F *fHistVarDcaV0ToPrimVertexOmegaPlus;         //!
+        TH2F *fHistVarDcaPosToPrimVertexOmegaPlus;        //!
+        TH2F *fHistVarDcaNegToPrimVertexOmegaPlus;        //!
+        TH1F *fHistMassOmegaPlus;                         //!
+        TH1F *fHistVarTransvMomentumOmegaPlus;            //!
+        TH1F *fHistVarRapidityOmegaPlus;                  //!
+        TH2F *fHistVarCascProperLengthOmegaPlus;          //!
+        TH2F *fHistVarV0ProperLengthOmegaPlus;            //!
+        TH1F *fHistGenVarTotMomOmegaPlus;                 //!
+        TH1F *fHistGenVarTransvMomOmegaPlus;              //!
+        TH1F *fHistGenVarYOmegaPlus;                      //!
+        TH1F *fHistGenVarEtaOmegaPlus;                    //!
+        TH1F *fHistGenVarThetaOmegaPlus;                  //!
+        TH1F *fHistGenVarPhiOmegaPlus;                    //! 
+
 
   AliAnalysisTaskQAMultistrange(const AliAnalysisTaskQAMultistrange&);            // not implemented
   AliAnalysisTaskQAMultistrange& operator=(const AliAnalysisTaskQAMultistrange&); // not implemented
   
-  ClassDef(AliAnalysisTaskQAMultistrange, 10);
+  ClassDef(AliAnalysisTaskQAMultistrange, 12);
 };
 
 #endif

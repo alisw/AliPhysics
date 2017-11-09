@@ -74,12 +74,9 @@ AliAnalysisTaskSE(),
   fRSBUppLim(),
   fDaughTrackID(),
   fDaughTrigNum(),
-  fSoftPiTrackID(),
-  fSoftPiTrigNum(),
   fEvents(0),
   fAlreadyFilled(kFALSE),
   fNtrigD(0),
-  fNsoftPi(0),
   fOutputMass(0),
   fOutputCorr(0),
   fOutputStudy(0),
@@ -121,6 +118,10 @@ AliAnalysisTaskSE(),
   fFillTrees(kNoTrees),
   fFractAccME(100),
   fAODProtection(1),
+  fPurityStudies(kFALSE),
+  fUseNtrklWeight(kFALSE),
+  fHistNtrklWeight(0x0),
+  fWeight(1.),
   fBranchD(),
   fBranchTr(),
   fBranchDCutVars(),
@@ -146,12 +147,9 @@ AliAnalysisTaskSED0Correlations::AliAnalysisTaskSED0Correlations(const char *nam
   fRSBUppLim(),
   fDaughTrackID(),
   fDaughTrigNum(),
-  fSoftPiTrackID(),
-  fSoftPiTrigNum(),
   fEvents(0),
   fAlreadyFilled(kFALSE),
   fNtrigD(0),
-  fNsoftPi(0),
   fOutputMass(0),
   fOutputCorr(0),
   fOutputStudy(0),
@@ -193,6 +191,10 @@ AliAnalysisTaskSED0Correlations::AliAnalysisTaskSED0Correlations(const char *nam
   fFillTrees(kNoTrees),
   fFractAccME(100),
   fAODProtection(1),
+  fPurityStudies(kFALSE),
+  fUseNtrklWeight(kFALSE),
+  fHistNtrklWeight(0x0),
+  fWeight(1.),
   fBranchD(),
   fBranchTr(),
   fBranchDCutVars(),
@@ -240,12 +242,9 @@ AliAnalysisTaskSED0Correlations::AliAnalysisTaskSED0Correlations(const AliAnalys
   fRSBUppLim(source.fRSBUppLim),
   fDaughTrackID(source.fDaughTrackID),
   fDaughTrigNum(source.fDaughTrigNum),
-  fSoftPiTrackID(source.fSoftPiTrackID),
-  fSoftPiTrigNum(source.fSoftPiTrigNum),
   fEvents(source.fEvents),
   fAlreadyFilled(source.fAlreadyFilled),
   fNtrigD(source.fNtrigD),
-  fNsoftPi(source.fNsoftPi),
   fOutputMass(source.fOutputMass),
   fOutputCorr(source.fOutputCorr),
   fOutputStudy(source.fOutputStudy),
@@ -287,6 +286,10 @@ AliAnalysisTaskSED0Correlations::AliAnalysisTaskSED0Correlations(const AliAnalys
   fFillTrees(source.fFillTrees),
   fFractAccME(source.fFractAccME),
   fAODProtection(source.fAODProtection),
+  fPurityStudies(source.fPurityStudies),
+  fUseNtrklWeight(source.fUseNtrklWeight),
+  fHistNtrklWeight(source.fHistNtrklWeight),
+  fWeight(source.fWeight),
   fBranchD(source.fBranchD),
   fBranchTr(source.fBranchTr),
   fBranchDCutVars(source.fBranchDCutVars), 
@@ -356,12 +359,9 @@ AliAnalysisTaskSED0Correlations& AliAnalysisTaskSED0Correlations::operator=(cons
   fRSBUppLim = orig.fRSBUppLim; 
   fDaughTrackID = orig.fDaughTrackID;
   fDaughTrigNum = orig.fDaughTrigNum;
-  fSoftPiTrackID = orig.fSoftPiTrackID;
-  fSoftPiTrigNum = orig.fSoftPiTrigNum;
   fEvents = orig.fEvents;
   fAlreadyFilled = orig.fAlreadyFilled;
   fNtrigD = orig.fNtrigD;
-  fNsoftPi = orig.fNsoftPi;
   fOutputMass = orig.fOutputMass;
   fOutputCorr = orig.fOutputCorr;
   fOutputStudy = orig.fOutputStudy;
@@ -403,6 +403,10 @@ AliAnalysisTaskSED0Correlations& AliAnalysisTaskSED0Correlations::operator=(cons
   fFillTrees = orig.fFillTrees;
   fFractAccME = orig.fFractAccME; 
   fAODProtection = orig.fAODProtection;
+  fPurityStudies = orig.fPurityStudies;
+  fUseNtrklWeight = orig.fUseNtrklWeight;
+  fHistNtrklWeight = orig.fHistNtrklWeight;
+  fWeight = orig.fWeight;
   fBranchD = orig.fBranchD;
   fBranchTr = orig.fBranchTr;
   fBranchDCutVars = orig.fBranchDCutVars;
@@ -707,8 +711,6 @@ void AliAnalysisTaskSED0Correlations::UserExec(Option_t */*option*/)
 
   fDaughTrackID.clear(); //removes daugher IDs from previous event
   fDaughTrigNum.clear(); //removes daugher trigger matchings from previous event
-  fSoftPiTrackID.clear(); //removes soft pion IDs from previous event
-  fSoftPiTrigNum.clear(); //removes soft pion trtigger matchings from previous event
   fTrackArray->Clear(); //removes associated tracks selected from previous event
   fTrackArrayFilled = kFALSE; //associated track array is now not filled
   
@@ -873,7 +875,14 @@ void AliAnalysisTaskSED0Correlations::UserExec(Option_t */*option*/)
   //Reset flag for tracks distributions fill and counter of D0 triggers and of Soft pions
   fAlreadyFilled=kFALSE;
   fNtrigD=0;
-  fNsoftPi=0;
+
+  //Reset (and, in case, evaluate), Ntrkl event weights
+  fWeight=1.;
+  if(fReadMC && fUseNtrklWeight) {
+    Int_t nTracklets = static_cast<Int_t>(AliVertexingHFUtils::GetNumberOfTrackletsInEtaRange(aod,-1.,1.));
+    fWeight *= GetNtrklWeight(nTracklets);
+    printf("Using Ntrkl weights, tracklets=%d, Weight=%f\n",nTracklets,fWeight);
+  }
 
   //***** Loop over D0 candidates *****
   Int_t nInD0toKpi = inputArray->GetEntriesFast();
@@ -917,7 +926,7 @@ void AliAnalysisTaskSED0Correlations::UserExec(Option_t */*option*/)
   // if they have been deleted in dAOD reconstruction phase
   // in order to reduce the size of the file
   AliAnalysisVertexingHF *vHF = new AliAnalysisVertexingHF();
-  
+
   //Fill Event Multiplicity (needed only in Reco)
   fMultEv = (Double_t)(AliVertexingHFUtils::GetNumberOfTrackletsInEtaRange(aod,-1.,1.));
 
@@ -2033,7 +2042,71 @@ void AliAnalysisTaskSED0Correlations::CreateCorrelationsObjs() {
       hPhysPrim->GetXaxis()->SetBinLabel(2,"NO");
       fOutputStudy->Add(hPhysPrim);
     }
-  }
+  } //end of for on pTbins
+
+  if(fPurityStudies) {
+    
+    TString namebinD[4] = {"3to5","5to8","8to16","16to24"};
+    TString namebinAss[6] = {"03to99","03to1","1to99","1to2","2to3","3to99"};
+
+    for(int i=0; i<4; i++) { //pTD
+      for(int j=0; j<6; j++) { //pTass
+	namePlot=Form("hPurityCount_PrimAccepted_pTD%s_pTass%s",namebinD[i].Data(),namebinAss[j].Data());
+        TH1F *hpurity_prim = new TH1F(namePlot.Data(), "Prim accepted",1,-0.5,0.5);
+        hpurity_prim->SetMinimum(0);
+        hpurity_prim->Sumw2();
+        hpurity_prim->GetXaxis()->SetBinLabel(1,"Accepted");
+        fOutputStudy->Add(hpurity_prim);
+
+	namePlot=Form("hPurityCount_SecAccepted_pTD%s_pTass%s",namebinD[i].Data(),namebinAss[j].Data());
+        TH1F *hpurity_sec = new TH1F(namePlot.Data(), "Sec accepted",1,-0.5,0.5);
+        hpurity_sec->SetMinimum(0);
+        hpurity_sec->Sumw2();
+        hpurity_sec->GetXaxis()->SetBinLabel(1,"Accepted");
+        fOutputStudy->Add(hpurity_sec);
+
+	namePlot=Form("hPurityCount_CharmAccepted_pTD%s_pTass%s",namebinD[i].Data(),namebinAss[j].Data());
+        TH1F *hpurity_c = new TH1F(namePlot.Data(), "Charm accepted",1,-0.5,0.5);
+        hpurity_c->SetMinimum(0);
+        hpurity_c->Sumw2();
+        hpurity_c->GetXaxis()->SetBinLabel(1,"Accepted");
+        fOutputStudy->Add(hpurity_c);
+
+	namePlot=Form("hPurityCount_BeautyAccepted_pTD%s_pTass%s",namebinD[i].Data(),namebinAss[j].Data());
+        TH1F *hpurity_b = new TH1F(namePlot.Data(), "Beauty accepted",1,-0.5,0.5);
+        hpurity_b->SetMinimum(0);
+        hpurity_b->Sumw2();
+        hpurity_b->GetXaxis()->SetBinLabel(1,"Accepted");
+        fOutputStudy->Add(hpurity_b);
+
+	namePlot=Form("hPuritydPhi_PrimAccepted_pTD%s_pTass%s",namebinD[i].Data(),namebinAss[j].Data());
+        TH1F *hpuritydphi_prim = new TH1F(namePlot.Data(), "Prim accepted vs dPhi",32,-TMath::Pi()/2.,3*TMath::Pi()/2.);
+        hpuritydphi_prim->SetMinimum(0);
+        hpuritydphi_prim->Sumw2();
+        fOutputStudy->Add(hpuritydphi_prim);
+
+	namePlot=Form("hPuritydPhi_SecAccepted_pTD%s_pTass%s",namebinD[i].Data(),namebinAss[j].Data());
+        TH1F *hpuritydphi_sec = new TH1F(namePlot.Data(), "Sec accepted vs dPhi",32,-TMath::Pi()/2.,3*TMath::Pi()/2.);
+        hpuritydphi_sec->SetMinimum(0);
+        hpuritydphi_sec->Sumw2();
+        fOutputStudy->Add(hpuritydphi_sec);
+
+	namePlot=Form("hPuritydPhi_CharmAccepted_pTD%s_pTass%s",namebinD[i].Data(),namebinAss[j].Data());
+        TH1F *hpuritydphi_c = new TH1F(namePlot.Data(), "Charm accepted vs dPhi",32,-TMath::Pi()/2.,3*TMath::Pi()/2.);
+        hpuritydphi_c->SetMinimum(0);
+        hpuritydphi_c->Sumw2();
+        fOutputStudy->Add(hpuritydphi_c);
+
+	namePlot=Form("hPuritydPhi_BeautyAccepted_pTD%s_pTass%s",namebinD[i].Data(),namebinAss[j].Data());
+        TH1F *hpuritydphi_b = new TH1F(namePlot.Data(), "Beauty accepted vs dPhi",32,-TMath::Pi()/2.,3*TMath::Pi()/2.);
+        hpuritydphi_b->SetMinimum(0);
+        hpuritydphi_b->Sumw2();
+        fOutputStudy->Add(hpuritydphi_b);
+      }
+    }
+
+  } //end of purity studies
+
 }
 
 //________________________________________________________________________
@@ -2116,7 +2189,7 @@ void AliAnalysisTaskSED0Correlations::CalculateCorrelations(AliAODRecoDecayHF2Pr
         if (!trkKine) continue;
         if (!trkKine->IsPhysicalPrimary()) {
  	  ((TH1F*)fOutputStudy->FindObject(Form("hPhysPrim_Bin%d",ptbin)))->Fill(1.);  
-  	  continue; //reject the Reco track if correspondent Kine track is not primary
+  	  if(!fPurityStudies) continue; //reject the Reco track if correspondent Kine track is not primary
         } else ((TH1F*)fOutputStudy->FindObject(Form("hPhysPrim_Bin%d",ptbin)))->Fill(0.);
       }
 
@@ -2242,12 +2315,6 @@ void AliAnalysisTaskSED0Correlations::CalculateCorrelations(AliAODRecoDecayHF2Pr
         }
       }
        
-      
-      
-      
-      
-      
-
       FillSparsePlots(mcArray,mInv,origD0,PDGD0,kCharg,ptbin,kKCharg,0); //fills for charged tracks
 
       if(!fMixing) N_KCharg++;
@@ -2534,6 +2601,9 @@ void AliAnalysisTaskSED0Correlations::FillSparsePlots(TClonesArray* mcArray, Dou
   //fills the THnSparse for correlations, calculating the variables
   //
 
+  //for MC, in case Ntrkl reweight is active, add the event weights to THnSparse
+  if(fReadMC && fUseNtrklWeight) wg*=fWeight;
+
   //Initialization of variables
   Double_t mD0, mD0bar, deltaphi = 0., deltaeta = 0.;
   mD0 = mInv[0];
@@ -2672,6 +2742,8 @@ void AliAnalysisTaskSED0Correlations::FillSparsePlots(TClonesArray* mcArray, Dou
  	((TH1F*)fOutputStudy->FindObject(Form("hist_EtaDistr_%s",part.Data())))->Fill(etaTr);
  	((TH2F*)fOutputStudy->FindObject(Form("hist_PhiVsEtaDistr_%s",part.Data())))->Fill(phiTr,etaTr);
       }
+
+      if(fPurityStudies) FillPurityPlots(mcArray,track,ptbin,deltaphi);
     }//end MC case
 
   } //end of SE fill
@@ -2922,6 +2994,8 @@ Bool_t AliAnalysisTaskSED0Correlations::IsSoftPion_MCKine(AliAODMCParticle* d, A
 //________________________________________________________________________
 void AliAnalysisTaskSED0Correlations::FillTreeD0(AliAODRecoDecayHF2Prong* d, AliAODEvent* aod) {
 
+  //NOTE: Soft pi rejection is done in the offline correlator, not here!
+
   Int_t ptbin = PtBinCorr(d->Pt());
   if(ptbin < 0) return;
 
@@ -2990,22 +3064,7 @@ void AliAnalysisTaskSED0Correlations::FillTreeD0(AliAODRecoDecayHF2Prong* d, Ali
     fDaughTrigNum.push_back(fNtrigD);
     fDaughTrackID.push_back(((AliVTrack*)d->GetDaughter(1))->GetID());
     fDaughTrigNum.push_back(fNtrigD);
-
-    if(!fTrackArrayFilled) {
-      fTrackArray = fCorrelatorTr->AcceptAndReduceTracks(aod); //track selection, needed for soft pion rejection (for the first trigger only)
-      fTrackArrayFilled = kTRUE;
-    }
- 
-    //soft pion rejection (for SE, in ME it's done in the AliHFOfflineCorrelator class
-    for(Int_t iTrack = 0; iTrack<fTrackArray->GetEntriesFast(); iTrack++) { // looping on track candidates
-      AliReducedParticle* track = (AliReducedParticle*)fTrackArray->At(iTrack);
-      if(fSoftPiCut && !track->CheckSoftPi()) {  //identifies soft pions for the trigger under analysis and associate it to the track
-        fSoftPiTrackID.push_back(track->GetID()); //tags tha track id as a soft pion
-        fSoftPiTrigNum.push_back(fNtrigD); //identifies whose trigger the track is a softpion
-        fNsoftPi++;
-      }
-    }
-
+    
     fNtrigD++; //increase by 1 the index of D0 triggers in the event
   } //end of if for tree filling
 
@@ -3017,6 +3076,8 @@ void AliAnalysisTaskSED0Correlations::FillTreeD0(AliAODRecoDecayHF2Prong* d, Ali
 
 //________________________________________________________________________
 void AliAnalysisTaskSED0Correlations::FillTreeTracks(AliAODEvent* aod) {
+
+  //NOTE: Soft pi rejection is done in the offline correlator, not here!
 
   if(!fTrackArrayFilled) {
     fTrackArray = fCorrelatorTr->AcceptAndReduceTracks(aod); //track selection, if not already done in FillTreeD0
@@ -3063,29 +3124,6 @@ void AliAnalysisTaskSED0Correlations::FillTreeTracks(AliAODEvent* aod) {
 	trackIsTrig=kTRUE;
       }	
       if(trackIsTrig==kTRUE) FoundTrig++; //if track is a trigger, next track has to be stored in another position, for IDTrig!
-    }
-    
-    //tags soft pions in the same way as daughter tracks (for the corresponding trigger)
-    Bool_t trackIssoftPi=kFALSE;
-    for(Int_t iID=0; iID<(int)fSoftPiTrackID.size(); iID++) {
-      trackIssoftPi=kFALSE; //reset flag to signal that the track is a soft pion
-      if(FoundTrig==0 && track->GetID() == fSoftPiTrackID.at(iID)) {
-	trigID = fSoftPiTrigNum.at(iID); //associates corresponding trigID to daughters
-	trackIssoftPi=kTRUE;
-      }
-      if(FoundTrig==1 && track->GetID() == fSoftPiTrackID.at(iID)) {
-	trigID2 = fSoftPiTrigNum.at(iID); //associates corresponding trigID to daughters
-	trackIssoftPi=kTRUE;
-      }
-      if(FoundTrig==2 && track->GetID() == fSoftPiTrackID.at(iID)) {
-	trigID3 = fSoftPiTrigNum.at(iID); //associates corresponding trigID to daughters
-	trackIssoftPi=kTRUE;
-      } 
-      if(FoundTrig==3 && track->GetID() == fSoftPiTrackID.at(iID)) {
-	trigID4 = fSoftPiTrigNum.at(iID); //associates corresponding trigID to daughters
-	trackIssoftPi=kTRUE;
-      }	 
-      if(trackIssoftPi==kTRUE) FoundTrig++;	//if track is a soft pion, next track has to be stored in another position, for IDTrig!
     }
     
     if(!AcceptTrackForMEOffline(track->Pt())) continue;
@@ -3273,6 +3311,75 @@ Bool_t AliAnalysisTaskSED0Correlations::AcceptTrackForMEOffline(Double_t pt) {
 }
 
 //________________________________________________________________________
+void AliAnalysisTaskSED0Correlations::FillPurityPlots(TClonesArray* mcArray, AliReducedParticle* track, Int_t ptbin, Double_t deltaphi) {
+
+  //Purity studies (only in MC reco mode)
+
+  if(!fReadMC || !fRecoD0 || !fRecoTr) return;
+
+  TString namebinD[4] = {"3to5","5to8","8to16","16to24"};
+  TString namebinAss[6] = {"03to99","03to1","1to99","1to2","2to3","3to99"};
+
+  AliAODMCParticle* trkKine = (AliAODMCParticle*)mcArray->At(track->GetLabel());
+  if (!trkKine) return;
+  Double_t origTr = CheckTrackOrigin(mcArray,trkKine);  
+  Bool_t primTrack = trkKine->IsPhysicalPrimary();
+  Double_t pTtr = track->Pt();
+
+  Bool_t fillAssocRange[6] = {kFALSE,kFALSE,kFALSE,kFALSE,kFALSE,kFALSE};
+  TString stringpTD = "";
+  Bool_t okpTD = kFALSE;
+  if(fBinLimsCorr.at(ptbin) >= 3 && fBinLimsCorr.at(ptbin) < 5)   {stringpTD = namebinD[0]; okpTD = kTRUE;}
+  if(fBinLimsCorr.at(ptbin) >= 5 && fBinLimsCorr.at(ptbin) < 8)   {stringpTD = namebinD[1]; okpTD = kTRUE;}
+  if(fBinLimsCorr.at(ptbin) >= 8 && fBinLimsCorr.at(ptbin) < 16)  {stringpTD = namebinD[2]; okpTD = kTRUE;}
+  if(fBinLimsCorr.at(ptbin) >= 16 && fBinLimsCorr.at(ptbin) < 24) {stringpTD = namebinD[3]; okpTD = kTRUE;}
+
+  if(pTtr >= 0.3) fillAssocRange[0] = kTRUE;
+  if(pTtr >= 0.3 && pTtr < 1) fillAssocRange[1] = kTRUE;
+  if(pTtr >= 1) fillAssocRange[2] = kTRUE;
+  if(pTtr >= 1 && pTtr < 2) fillAssocRange[3] = kTRUE;
+  if(pTtr >= 2 && pTtr < 3) fillAssocRange[4] = kTRUE;
+  if(pTtr >= 3) fillAssocRange[5] = kTRUE;
+
+  if(!okpTD) return;
+  for(int j=0; j<6; j++) {
+    if(fillAssocRange[j]==kTRUE) {
+      if(primTrack) {
+        ((TH1F*)fOutputStudy->FindObject(Form("hPurityCount_PrimAccepted_pTD%s_pTass%s",stringpTD.Data(),namebinAss[j].Data())))->Fill(0.,fWeight); 
+        ((TH1F*)fOutputStudy->FindObject(Form("hPuritydPhi_PrimAccepted_pTD%s_pTass%s",stringpTD.Data(),namebinAss[j].Data())))->Fill(deltaphi,fWeight); 
+      }
+      if(!primTrack) {
+        ((TH1F*)fOutputStudy->FindObject(Form("hPurityCount_SecAccepted_pTD%s_pTass%s",stringpTD.Data(),namebinAss[j].Data())))->Fill(0.,fWeight); 
+        ((TH1F*)fOutputStudy->FindObject(Form("hPuritydPhi_SecAccepted_pTD%s_pTass%s",stringpTD.Data(),namebinAss[j].Data())))->Fill(deltaphi,fWeight); 
+      }
+      if(primTrack && origTr>=1&&origTr<=3) {  //fill for acccepted primary charm tracks
+        ((TH1F*)fOutputStudy->FindObject(Form("hPurityCount_CharmAccepted_pTD%s_pTass%s",stringpTD.Data(),namebinAss[j].Data())))->Fill(0.,fWeight); 
+        ((TH1F*)fOutputStudy->FindObject(Form("hPuritydPhi_CharmAccepted_pTD%s_pTass%s",stringpTD.Data(),namebinAss[j].Data())))->Fill(deltaphi,fWeight); 
+      }
+      if(primTrack && origTr>=4&&origTr<=8) {  //fill for accepted primary beauty tracks
+        ((TH1F*)fOutputStudy->FindObject(Form("hPurityCount_BeautyAccepted_pTD%s_pTass%s",stringpTD.Data(),namebinAss[j].Data())))->Fill(0.,fWeight); 
+        ((TH1F*)fOutputStudy->FindObject(Form("hPuritydPhi_BeautyAccepted_pTD%s_pTass%s",stringpTD.Data(),namebinAss[j].Data())))->Fill(deltaphi,fWeight); 
+      }
+    }
+  }
+  
+  return;
+}
+
+//__________________________________________________________________________________________________
+Double_t AliAnalysisTaskSED0Correlations::GetNtrklWeight(Int_t ntrkl){
+  //
+  //  extracts the Ntrkl weight using the histo with data/MC Ntracklets ratio
+  //
+  if(ntrkl<=0) return 1.;
+  if(!fHistNtrklWeight) { AliError("Input histogram to evaluate Ntrkl weight missing"); return 0.; }
+  Double_t histweight=fHistNtrklWeight->GetBinContent(fHistNtrklWeight->FindBin(ntrkl));
+  Double_t weight = histweight>0 ? histweight : 0.;
+  return weight;
+}
+
+
+//________________________________________________________________________
 void AliAnalysisTaskSED0Correlations::PrintBinsAndLimits() {
 
   cout << "--------------------------\n";
@@ -3330,5 +3437,17 @@ void AliAnalysisTaskSED0Correlations::PrintBinsAndLimits() {
   cout << "--------------------------\n";  
   cout << "TTree filling = "<<fFillTrees<<"\n";
   cout << "--------------------------\n";  
+  cout << "Purity studies (for MC) = "<<fPurityStudies<<"\n";
+  cout << "--------------------------\n";  
+  cout << "Ntrkl reweighting (for MC) = "<<fUseNtrklWeight<<"\n";
+  cout << "--------------------------\n";  
+
+  if(fPurityStudies) {
+  cout << "---------------------------------------------------------------------------------------------------------------------------------------------------\n";  
+  cout << "WARNING! Task launched in 'purity studies' mode! If on MC, secondary tracks at reco will NOT be discarded, in the THnSparse! On data, no effects...\n";
+  cout << "---------------------------------------------------------------------------------------------------------------------------------------------------\n"; 
+  getchar();
+  }
+
 }
 

@@ -8,6 +8,7 @@
  */
 
 #include "AliReducedAnalysisTaskSE.h"
+#include "AliReducedEventInfo.h"
 
 ClassImp(AliReducedAnalysisTaskSE);
 
@@ -15,16 +16,19 @@ ClassImp(AliReducedAnalysisTaskSE);
 //___________________________________________________________________________
 AliReducedAnalysisTaskSE::AliReducedAnalysisTaskSE() :
   TObject(),
-//  fHistosManager(new AliHistogramManager("Histogram Manager", AliReducedVarManager::kNVars)),
   fName(""),
   fTitle(""),
-  fEvent(0x0)
+  fEvent(0x0),
+  fFilteredTree(0x0),
+  fActiveBranches(""),
+  fInactiveBranches(""),
+  fFilteredEvent(0x0),
+  fFilteredTreeWritingOption(kBaseEventsWithBaseTracks),
+  fEventCounter(0)
 {
   //
   // default constructor
   //
-   //fHistosManager->SetUseDefaultVariableNames(kTRUE);
-   //fHistosManager->SetDefaultVarNames(AliReducedVarManager::fgVariableNames,AliReducedVarManager::fgVariableUnits);
   for(Int_t i=0; i<AliReducedVarManager::kNVars; ++i)
     fValues[i] = 0.0;
 }
@@ -36,13 +40,17 @@ AliReducedAnalysisTaskSE::AliReducedAnalysisTaskSE(const Char_t* name, const Cha
   //fHistosManager(new AliHistogramManager("Histogram Manager", AliReducedVarManager::kNVars)),
   fName(name),
   fTitle(title),
-  fEvent(0x0)
+  fEvent(0x0),
+  fFilteredTree(0x0),
+  fActiveBranches(""),
+  fInactiveBranches(""),
+  fFilteredEvent(0x0),
+  fFilteredTreeWritingOption(kBaseEventsWithBaseTracks),
+  fEventCounter(0)
 {
   //
   // named constructor
   //
-   //fHistosManager->SetUseDefaultVariableNames(kTRUE);
-   //fHistosManager->SetDefaultVarNames(AliReducedVarManager::fgVariableNames,AliReducedVarManager::fgVariableUnits);
   for(Int_t i=0; i<AliReducedVarManager::kNVars; ++i)
     fValues[i] = 0.0;
 }
@@ -54,10 +62,47 @@ AliReducedAnalysisTaskSE::~AliReducedAnalysisTaskSE()
   //
   // destructor
   //
-  /*if(fEventCuts) {fEventCuts->Clear("C"); delete fEventCuts;}
-  if(fTrackCuts) {fTrackCuts->Clear("C"); delete fTrackCuts;}
-  if(fPairCuts) {fPairCuts->Clear("C"); delete fPairCuts;}*/
-  //if(fHistosManager) delete fHistosManager;
+}
+
+//___________________________________________________________________________
+void AliReducedAnalysisTaskSE::InitFilteredTree() {
+   //
+   //
+   //
+   if(fFilteredTree) return; //already initialised
+   fFilteredTree = new TTree("DstTree","Reduced ESD/AOD information");
+   
+   switch(fFilteredTreeWritingOption) {
+      case kBaseEventsWithBaseTracks:
+         fFilteredEvent = new AliReducedBaseEvent("DstEvent", AliReducedBaseEvent::kUseBaseTracks);
+         break;
+      case kBaseEventsWithFullTracks:
+         fFilteredEvent = new AliReducedBaseEvent("DstEvent", AliReducedBaseEvent::kUseReducedTracks);
+         break;
+      case kFullEventsWithBaseTracks:
+         fFilteredEvent = new AliReducedEventInfo("DstEvent", AliReducedBaseEvent::kUseBaseTracks);   
+         break;
+      case kFullEventsWithFullTracks:
+         fFilteredEvent = new AliReducedEventInfo("DstEvent", AliReducedBaseEvent::kUseReducedTracks);   
+         break;
+      default:
+         break;
+   };
+   
+   fFilteredTree->Branch("Event",&fFilteredEvent,16000,99);
+   
+   // if user set active branches
+   TObjArray* aractive=fActiveBranches.Tokenize(";");
+   if(aractive->GetEntries()>0) {fFilteredTree->SetBranchStatus("*", 0);}
+   for(Int_t i=0; i<aractive->GetEntries(); i++){
+      fFilteredTree->SetBranchStatus(aractive->At(i)->GetName(), 1);
+   }
+   
+   // if user set inactive branches
+   TObjArray* arinactive=fInactiveBranches.Tokenize(";");
+   for(Int_t i=0; i<arinactive->GetEntries(); i++){
+      fFilteredTree->SetBranchStatus(arinactive->At(i)->GetName(), 0);
+   }
 }
 
 //___________________________________________________________________________

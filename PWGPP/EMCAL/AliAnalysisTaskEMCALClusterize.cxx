@@ -65,7 +65,8 @@ AliAnalysisTaskEMCALClusterize::AliAnalysisTaskEMCALClusterize(const char *name)
 , fGeom(0),               fGeomName("") 
 , fGeomMatrixSet(kFALSE), fLoadGeomMatrices(kFALSE)
 , fOCDBpath(""),          fAccessOCDB(kFALSE)
-, fDigitsArr(0),          fClusterArr(0),             fCaloClusterArr(0)
+, fDigitsArr(0),          fClusterArr(0)             
+, fCaloClusterArr(0),     fCaloCells(0)
 , fRecParam(0),           fClusterizer(0)
 , fUnfolder(0),           fJustUnfold(kFALSE) 
 , fOutputAODBranch(0),    fOutputAODBranchName(""),   fOutputAODBranchSet(0)
@@ -76,7 +77,7 @@ AliAnalysisTaskEMCALClusterize::AliAnalysisTaskEMCALClusterize(const char *name)
 , fCellLabels(),          fCellSecondLabels(),        fCellTime()
 , fCellMatchdEta(),       fCellMatchdPhi()
 , fRecalibrateWithClusterTime(0)
-, fMaxEvent(0),           fDoTrackMatching(kFALSE)
+, fMaxEvent(0),           fDoTrackMatching(kFALSE),   fUpdateCell(0)
 , fSelectCell(kFALSE),    fSelectCellMinE(0),         fSelectCellMinFrac(0)
 , fRejectBelowThreshold(kFALSE)
 , fRemoveLEDEvents(kTRUE),fRemoveExoticEvents(kFALSE)
@@ -88,13 +89,29 @@ AliAnalysisTaskEMCALClusterize::AliAnalysisTaskEMCALClusterize(const char *name)
 , fSetCellMCLabelFromCluster(0)
 , fSetCellMCLabelFromEdepFrac(0)
 , fRemapMCLabelForAODs(0)
-, fInputFromFilter(0)
+, fInputFromFilter(0) 
+, fTCardCorrEmulation(0), fTCardCorrClusEnerConserv(0)
+, fRandom(0),             fRandomizeTCard(1)
+, fTCardCorrMinAmp(0.01), fTCardCorrMaxInduced(100)
+, fPrintOnce(0)
+
 {
-  for(Int_t i = 0; i < 22;    i++)  fGeomMatrix[i] =  0;
+  for(Int_t i = 0; i < 22;    i++)  
+  {
+    fGeomMatrix[i] = 0;
+    fTCardCorrInduceEnerProb[i] = 0;
+  }
   
   ResetArrays();
   
   fCentralityBin[0] = fCentralityBin[1]=-1;
+  
+  for(Int_t i = 0; i < 4 ; i++)
+  {
+    fTCardCorrInduceEnerFrac     [i] =  0 ;   
+    fTCardCorrInduceEnerFracP1   [i] =  0 ;   
+    fTCardCorrInduceEnerFracWidth[i] =  0 ;   
+  }
 }
 
 //______________________________________________________________
@@ -106,7 +123,8 @@ AliAnalysisTaskEMCALClusterize::AliAnalysisTaskEMCALClusterize()
 , fGeom(0),                 fGeomName("") 
 , fGeomMatrixSet(kFALSE),   fLoadGeomMatrices(kFALSE)
 , fOCDBpath(""),            fAccessOCDB(kFALSE)
-, fDigitsArr(0),            fClusterArr(0),             fCaloClusterArr(0)
+, fDigitsArr(0),            fClusterArr(0)             
+, fCaloClusterArr(0),       fCaloCells(0)
 , fRecParam(0),             fClusterizer(0)
 , fUnfolder(0),             fJustUnfold(kFALSE) 
 , fOutputAODBranch(0),      fOutputAODBranchName(""),   fOutputAODBranchSet(0)
@@ -117,7 +135,7 @@ AliAnalysisTaskEMCALClusterize::AliAnalysisTaskEMCALClusterize()
 , fCellLabels(),            fCellSecondLabels(),        fCellTime()
 , fCellMatchdEta(),         fCellMatchdPhi()
 , fRecalibrateWithClusterTime(0)
-, fMaxEvent(0),             fDoTrackMatching(kFALSE)
+, fMaxEvent(0),             fDoTrackMatching(kFALSE),   fUpdateCell(0)
 , fSelectCell(kFALSE),      fSelectCellMinE(0),         fSelectCellMinFrac(0)
 , fRejectBelowThreshold(kFALSE)
 , fRemoveLEDEvents(kTRUE),  fRemoveExoticEvents(kFALSE)
@@ -130,12 +148,27 @@ AliAnalysisTaskEMCALClusterize::AliAnalysisTaskEMCALClusterize()
 , fSetCellMCLabelFromEdepFrac(0)
 , fRemapMCLabelForAODs(0)
 , fInputFromFilter(0)
+, fTCardCorrEmulation(0),   fTCardCorrClusEnerConserv(0)
+, fRandom(0),               fRandomizeTCard(1)
+, fTCardCorrMinAmp(0.01),   fTCardCorrMaxInduced(100)
+, fPrintOnce(0)
 {
-  for(Int_t i = 0; i < 22;    i++)  fGeomMatrix[i] =  0;
-
+  for(Int_t i = 0; i < 22;    i++)  
+  {
+    fGeomMatrix[i] = 0;
+    fTCardCorrInduceEnerProb[i] = 0;
+  }
+  
   ResetArrays();
   
   fCentralityBin[0] = fCentralityBin[1]=-1;
+
+  for(Int_t i = 0; i < 4 ; i++)
+  {
+    fTCardCorrInduceEnerFrac     [i] =  0 ;   
+    fTCardCorrInduceEnerFracP1   [i] =  0 ;   
+    fTCardCorrInduceEnerFracWidth[i] =  0 ;   
+  }
 }
 
 //_______________________________________________________________
@@ -167,6 +200,34 @@ AliAnalysisTaskEMCALClusterize::~AliAnalysisTaskEMCALClusterize()
 }
 
 //_______________________________________________________
+/// Reject cell if acceptance criteria not passed: 
+///   * correct cell number
+///   * is it bad channel 
+///
+/// \param absID: absolute cell ID number
+///
+/// \return bool quality of cell, exists or not 
+//_______________________________________________________________________________
+Bool_t AliAnalysisTaskEMCALClusterize::AcceptCell(Int_t absID) 
+{  
+  if ( absID < 0 || absID >= 24*48*fGeom->GetNumberOfSuperModules() ) 
+    return kFALSE;
+  
+  Int_t imod = -1, iphi =-1, ieta=-1,iTower = -1, iIphi = -1, iIeta = -1; 
+  if (!fGeom->GetCellIndex(absID,imod,iTower,iIphi,iIeta)) 
+    return kFALSE; 
+  
+  fGeom->GetCellPhiEtaIndexInSModule(imod,iTower,iIphi, iIeta,iphi,ieta);  
+  
+  // Do not include bad channels found in analysis,
+  if ( fRecoUtils->IsBadChannelsRemovalSwitchedOn() && 
+       fRecoUtils->GetEMCALChannelStatus(imod, ieta, iphi) ) 
+    return kFALSE;
+  
+  return kTRUE;
+}
+
+//_______________________________________________________
 /// \return True if there is in the event an EMCal cluster with enough energy and with good quality.
 /// Accept event given there is a EMCAL cluster with enough energy,
 /// number of cells and not noisy, exotic.
@@ -178,7 +239,6 @@ Bool_t AliAnalysisTaskEMCALClusterize::AcceptEventEMCAL()
   if(fEMCALEnergyCut <= 0) return kTRUE; // accept
   
   Int_t           nCluster = fEvent -> GetNumberOfCaloClusters();
-  AliVCaloCells * caloCell = fEvent -> GetEMCALCells();
   Int_t           bc       = fEvent -> GetBunchCrossNumber();
   
   for(Int_t icalo = 0; icalo < nCluster; icalo++)
@@ -186,7 +246,7 @@ Bool_t AliAnalysisTaskEMCALClusterize::AcceptEventEMCAL()
     AliVCluster *clus = (AliVCluster*) (fEvent->GetCaloCluster(icalo));
     
     if( ( clus->IsEMCAL() ) && ( clus->GetNCells() > fEMCALNcellsCut ) && ( clus->E() > fEMCALEnergyCut ) &&
-       fRecoUtils->IsGoodCluster(clus,fGeom,caloCell,bc))
+       fRecoUtils->IsGoodCluster(clus,fGeom,fCaloCells,bc))
     {
       
       AliDebug(1, Form("Accept :  E %2.2f > %2.2f, nCells %d > %d",
@@ -208,13 +268,12 @@ Bool_t AliAnalysisTaskEMCALClusterize::AcceptEventEMCAL()
 //_______________________________________________
 void AliAnalysisTaskEMCALClusterize::AccessOADB()
 {
-  //Set it only once
-  if(fOADBSet) return ; 
-  
-  Int_t   runnumber = InputEvent()->GetRunNumber() ;
+  // Set it only once, unless run changed
+  if ( fOADBSet ) return ; 
+    
   TString pass      = GetPass();
   
-  AliInfo(Form("Get AODB parameters from EMCAL in %s for run %d, and <%s>",fOADBFilePath.Data(),runnumber,pass.Data()));
+  AliInfo(Form("Get AODB parameters from EMCAL in %s for run %d, and <%s>",fOADBFilePath.Data(),fRun,pass.Data()));
   
   Int_t nSM = fGeom->GetNumberOfSuperModules();
   
@@ -224,7 +283,7 @@ void AliAnalysisTaskEMCALClusterize::AccessOADB()
     AliOADBContainer *contBC=new AliOADBContainer("");
     contBC->InitFromFile(Form("%s/EMCALBadChannels.root",fOADBFilePath.Data()),"AliEMCALBadChannels"); 
     
-    TObjArray *arrayBC=(TObjArray*)contBC->GetObject(runnumber);
+    TObjArray *arrayBC=(TObjArray*)contBC->GetObject(fRun);
     
     if(arrayBC)
     {
@@ -262,7 +321,7 @@ void AliAnalysisTaskEMCALClusterize::AccessOADB()
     
     contRF->InitFromFile(Form("%s/EMCALRecalib.root",fOADBFilePath.Data()),"AliEMCALRecalib");
     
-    TObjArray *recal=(TObjArray*)contRF->GetObject(runnumber); 
+    TObjArray *recal=(TObjArray*)contRF->GetObject(fRun); 
     
     if(recal)
     {
@@ -308,25 +367,25 @@ void AliAnalysisTaskEMCALClusterize::AccessOADB()
     
     contRFTD->InitFromFile(Form("%s/EMCALTemperatureCorrCalib.root",fOADBFilePath.Data()),"AliEMCALRunDepTempCalibCorrections");
     
-    TH1S *htd=(TH1S*)contRFTD->GetObject(runnumber); 
+    TH1S *htd=(TH1S*)contRFTD->GetObject(fRun); 
     
     //If it did not exist for this run, get closes one
     if (!htd)
     {
-      AliWarning(Form("No TemperatureCorrCalib Objects for run: %d",runnumber));
-      // let's get the closest runnumber instead then..
+      AliWarning(Form("No TemperatureCorrCalib Objects for run: %d",fRun));
+      // let's get the closest fRun instead then..
       Int_t lower = 0;
       Int_t ic = 0;
       Int_t maxEntry = contRFTD->GetNumberOfEntries();
       
-      while ( (ic < maxEntry) && (contRFTD->UpperLimit(ic) < runnumber) ) {
+      while ( (ic < maxEntry) && (contRFTD->UpperLimit(ic) < fRun) ) {
         lower = ic;
         ic++;
       }
       
       Int_t closest = lower;
       if ( (ic<maxEntry) &&
-          (contRFTD->LowerLimit(ic)-runnumber) < (runnumber - contRFTD->UpperLimit(lower)) ) {
+          (contRFTD->LowerLimit(ic)-fRun) < (fRun - contRFTD->UpperLimit(lower)) ) {
         closest = ic;
       }
       
@@ -366,12 +425,17 @@ void AliAnalysisTaskEMCALClusterize::AccessOADB()
     
     contTRF->InitFromFile(Form("%s/EMCALTimeCalib.root",fOADBFilePath.Data()),"AliEMCALTimeCalib");
     
-    TObjArray *trecal=(TObjArray*)contTRF->GetObject(runnumber); 
+    TObjArray *trecal=(TObjArray*)contTRF->GetObject(fRun); 
     
     if(trecal)
-    {
+    {      
+      // pass number should be pass1 except on Run1 and special cases
       TString passM = pass;
-      if(pass=="spc_calo") passM = "pass1";
+      if ( pass=="spc_calo"   ) passM = "pass3";
+      if ( fRun > 209121 ) passM = "pass1"; // run2 periods
+      if ( pass == "muon_calo_pass1" && fRun > 209121 && fRun < 244284 ) 
+        passM = "pass0";//period LHC15a-m
+
       TObjArray *trecalpass=(TObjArray*)trecal->FindObject(passM);
 
       if(trecalpass)
@@ -422,10 +486,10 @@ void AliAnalysisTaskEMCALClusterize::AccessOADB()
     
     contBC->InitFromFile(Form("%s/EMCALTimeL1PhaseCalib.root",fOADBFilePath.Data()),"AliEMCALTimeL1PhaseCalib");    
     
-    TObjArray *arrayBC=(TObjArray*)contBC->GetObject(runnumber);
+    TObjArray *arrayBC=(TObjArray*)contBC->GetObject(fRun);
     if (!arrayBC)
     {
-      AliError(Form("No external L1 phase in time calibration set for run number: %d", runnumber));
+      AliError(Form("No external L1 phase in time calibration set for run number: %d", fRun));
       fRecoUtils->SwitchOffL1PhaseInTimeRecalibration();
     }
     else
@@ -433,13 +497,13 @@ void AliAnalysisTaskEMCALClusterize::AccessOADB()
       // Only 1 L1 phase correction possible, except special cases
       TString pass2 =  "pass1"; 
       
-      if ( pass=="muon_calo_pass1" && runnumber > 209121 && runnumber < 244284 ) 
+      if ( pass=="muon_calo_pass1" && fRun > 209121 && fRun < 244284 ) 
         pass2 = "pass0"; // period LHC15a-m
 
       TObjArray *arrayBCpass=(TObjArray*)arrayBC->FindObject(pass2);
       if (!arrayBCpass)
       {
-        AliError(Form("No external L1 phase in time calibration set for: %d -%s", runnumber,pass2.Data()));
+        AliError(Form("No external L1 phase in time calibration set for: %d -%s", fRun,pass2.Data()));
         fRecoUtils->SwitchOffL1PhaseInTimeRecalibration();
       }
       else AliInfo("Recalibrate L1 Phase time");
@@ -451,11 +515,11 @@ void AliAnalysisTaskEMCALClusterize::AccessOADB()
         TH1C *h = fRecoUtils->GetEMCALL1PhaseInTimeRecalibrationForAllSM();
         if (h) delete h;
         
-        h = (TH1C*)arrayBCpass->FindObject(Form("h%d",runnumber));
+        h = (TH1C*)arrayBCpass->FindObject(Form("h%d",fRun));
         
         if (!h) 
         {
-          AliFatal(Form("There is no calibration histogram h%d for this run",runnumber));
+          AliFatal(Form("There is no calibration histogram h%d for this run",fRun));
           return;
         }
         
@@ -467,7 +531,7 @@ void AliAnalysisTaskEMCALClusterize::AccessOADB()
     delete contBC;
   }   // L1 Phase Time Recalibration
     
-  // Parameters already set once, so do not it again
+  // Parameters already set once, so do not it again, unless run changes
   fOADBSet = kTRUE;
 }  
 
@@ -475,23 +539,14 @@ void AliAnalysisTaskEMCALClusterize::AccessOADB()
 /// Access to OCDB stuff, avoid. 
 /// Not sure it works anymore.
 //_________________________________________________
-Bool_t AliAnalysisTaskEMCALClusterize::AccessOCDB()
+void AliAnalysisTaskEMCALClusterize::AccessOCDB()
 {
-  fEvent = InputEvent();
-  if (!fEvent)
-  {
-    Warning("AccessOCDB","Event not available!!!");
-    return kFALSE;
-  }
-  
-  if (fEvent->GetRunNumber()==fRun)
-    return kTRUE;
-  fRun = fEvent->GetRunNumber();
+  // Set once per run
+  if ( fOADBSet ) return;
   
   AliDebug(1,"Begin");
   
   AliCDBManager *cdb = AliCDBManager::Instance();
-  
   
   if (fOCDBpath.Length())
   {
@@ -499,7 +554,7 @@ Bool_t AliAnalysisTaskEMCALClusterize::AccessOCDB()
     AliInfo(Form("Default storage %s",fOCDBpath.Data()));
   }
   
-  cdb->SetRun(fEvent->GetRunNumber());
+  cdb->SetRun(fRun);
   
   //
   // EMCAL from RAW OCDB
@@ -512,8 +567,49 @@ Bool_t AliAnalysisTaskEMCALClusterize::AccessOCDB()
   
   TString path = cdb->GetDefaultStorage()->GetBaseFolder();
   
-  return kTRUE;
+  fOADBSet = kTRUE;
+  
+  return ;
 }
+
+//_____________________________________________________
+/// Add to the digits the found induced energies in  MakeCellTCardCorrelation()
+/// to new cells that before had no signal if new signal is larger than 10 MeV.
+/// It is MC, but no MC label is assigned, just -2 to signal a new created energy
+//_____________________________________________________
+void AliAnalysisTaskEMCALClusterize::AddNewTCardInducedCellsToDigit() 
+{
+  // Get the number of stored digits, to assign the index of the new ones
+  Int_t idigit = fDigitsArr->GetEntriesFast();
+  
+  Double_t fixTime =  615.*1e-9;
+  
+  for(Int_t j = 0; j < fgkNEMCalCells; j++)
+  {
+    // Newly created?
+    if ( !fTCardCorrCellsNew[j] ) continue;
+    
+    // Accept only if at least 10 MeV
+    if (  fTCardCorrCellsEner[j] < 0.01 ) continue; 
+    
+    // Check if it was not masked
+    Float_t  amp  = 0;
+    Double_t time = 0;
+    if ( !fRecoUtils->AcceptCalibrateCell(j,0,amp,time,fCaloCells) ) continue;
+    
+//    printf("add new digit absId %d, accept? %d, digit %d, induced amp %2.2f\n",
+//           j,fRecoUtils->AcceptCalibrateCell(j,0,amp,time,fCaloCells),idigit,fTCardCorrCellsEner[j]);
+    
+    // Now add the cell to the digits list
+    //AliEMCALDigit* digit = 
+    new((*fDigitsArr)[idigit]) AliEMCALDigit( -2, -2, j, fTCardCorrCellsEner[j], fixTime,AliEMCALDigit::kHG,idigit, 0, 0, 0);
+    
+    //digit->SetListOfParents(0,0x0,0x0); // not needed
+        
+    idigit++;
+  }// loop on all possible cells
+}
+
 
 //_____________________________________________________
 /// Get the input event, it can depend in embedded events what you want to get.
@@ -581,6 +677,9 @@ void AliAnalysisTaskEMCALClusterize::CheckAndGetEvent()
     return ;
   }
   
+  //Recover the pointer to CaloCells container
+  fCaloCells = fEvent->GetEMCALCells();
+  
   //Process events if there is a high energy cluster
   if(!AcceptEventEMCAL())  { fEvent = 0x0 ; return ; }
   
@@ -589,9 +688,9 @@ void AliAnalysisTaskEMCALClusterize::CheckAndGetEvent()
   // Reject event if triggered by exotic cell and remove exotic cells if not triggered
   //-------------------------------------------------------------------------------------
   
-  if( IsLEDEvent( InputEvent()->GetRunNumber() ) ) { fEvent = 0x0 ; return ; }
+  if( IsLEDEvent( fRun ) ) { fEvent = 0x0 ; return ; }
   
-  if( IsExoticEvent() )                            { fEvent = 0x0 ; return ; }
+  if( IsExoticEvent() )    { fEvent = 0x0 ; return ; }
   
   //-------------------------------------------------------------------------------------
   // Set the cluster array in the event (output or input)
@@ -675,22 +774,24 @@ void AliAnalysisTaskEMCALClusterize::ClusterizeCells()
     } 
   }
   
+  // Do here induced cell energy assignation by T-Card correlation emulation, ONLY MC
+  if(fTCardCorrEmulation) MakeCellTCardCorrelation();
+
+  //  
   // Transform CaloCells into Digits
-  
+  //
   Int_t    idigit =  0;
   Int_t    id     = -1;
   Float_t  amp    = -1; 
   Double_t time   = -1; 
   
-  AliVCaloCells * cells = fEvent->GetEMCALCells();
-  
   Int_t bc = InputEvent()->GetBunchCrossNumber();
 
-  for (Int_t icell = 0; icell < cells->GetNumberOfCells(); icell++)
+  for (Int_t icell = 0; icell < fCaloCells->GetNumberOfCells(); icell++)
   {
     // Get cell values, recalibrate and not include bad channels found in analysis, nor cells with too low energy, nor exotic cell
-    id = cells->GetCellNumber(icell);
-    Bool_t accept = fRecoUtils->AcceptCalibrateCell(id,bc,amp,time,cells);
+    id = fCaloCells->GetCellNumber(icell);
+    Bool_t accept = fRecoUtils->AcceptCalibrateCell(id,bc,amp,time,fCaloCells);
     time-=fConstantTimeShift*1e-9; // only in case of simulations done before 2015
 
     // Do not include cells with too low energy, nor exotic cell
@@ -708,13 +809,13 @@ void AliAnalysisTaskEMCALClusterize::ClusterizeCells()
     }
     
     //Exotic?
-    if (accept && fRecoUtils->IsExoticCell(id,cells,bc))
+    if (accept && fRecoUtils->IsExoticCell(id,fCaloCells,bc))
         accept = kFALSE;
     
     if( !accept )
     {
       AliDebug(2,Form("Remove channel absId %d, index %d of %d, amp %f, time %f",
-               id,icell, cells->GetNumberOfCells(), amp, time*1.e9));
+               id,icell, fCaloCells->GetNumberOfCells(), amp, time*1.e9));
       continue;
     }
     
@@ -723,7 +824,7 @@ void AliAnalysisTaskEMCALClusterize::ClusterizeCells()
     //
     
     // Old way
-    Int_t mcLabel = cells->GetMCLabel(icell);
+    Int_t mcLabel = fCaloCells->GetMCLabel(icell);
     Float_t eDep = amp;
     
     //printf("--- Selected cell %d--- amp %f\n",id,amp);
@@ -749,7 +850,7 @@ void AliAnalysisTaskEMCALClusterize::ClusterizeCells()
       // since it is not available in aliroot before year 2016, add just the cell amplitude so that
       // we give more weight to the MC label of the cell with highest energy in the cluster
             
-      Float_t efrac = cells->GetEFraction(icell);
+      Float_t efrac = fCaloCells->GetEFraction(icell);
       
       // When checking the MC of digits, give weight to cells with embedded signal
       if (mcLabel > 0 && efrac < 1.e-6) efrac = 1;
@@ -786,6 +887,14 @@ void AliAnalysisTaskEMCALClusterize::ClusterizeCells()
 
     } // cell MC label, new
     
+    // Apply here the found induced energies
+    if ( fTCardCorrEmulation )
+    {
+//      if( TMath::Abs(fTCardCorrCellsEner[id]) > 0.001 ) 
+//        printf("add energy to digit %d, absId %d: amp %2.2f + %2.2f\n",idigit,id,amp,fTCardCorrCellsEner[id]);
+      amp+=fTCardCorrCellsEner[id];
+    }
+    
     //
     // Create the digit
     //
@@ -801,9 +910,13 @@ void AliAnalysisTaskEMCALClusterize::ClusterizeCells()
     idigit++;
     
   }
-
+  
   fDigitsArr->Sort();
   
+  // Call after Sort, if not it screws up digits index order in clusterization
+  if ( fTCardCorrEmulation ) AddNewTCardInducedCellsToDigit();
+
+
   //-------------------------------------------------------------------------------------
   // Do the clusterization
   //-------------------------------------------------------------------------------------        
@@ -839,7 +952,6 @@ void AliAnalysisTaskEMCALClusterize::ClusterizeCells()
 //_____________________________________________________
 void AliAnalysisTaskEMCALClusterize::ClusterUnfolding()
 {
-  AliVCaloCells *cells   = fEvent->GetEMCALCells();
   Double_t cellAmplitude = 0;
   Double_t cellTime      = 0;
   Short_t  cellNumber    = 0;
@@ -862,12 +974,12 @@ void AliAnalysisTaskEMCALClusterize::ClusterUnfolding()
       if(fRecoUtils->IsRecalibrationOn())
       {
         //Calibrate cluster
-        fRecoUtils->RecalibrateClusterEnergy(fGeom, clus, cells);
+        fRecoUtils->RecalibrateClusterEnergy(fGeom, clus, fCaloCells);
         
         //CalibrateCells
-        for (Int_t icell = 0; icell < cells->GetNumberOfCells(); icell++)
+        for (Int_t icell = 0; icell < fCaloCells->GetNumberOfCells(); icell++)
         {
-          if (cells->GetCell(icell, cellNumber, cellAmplitude, cellTime, cellMCLabel, cellEFrac) != kTRUE)
+          if (fCaloCells->GetCell(icell, cellNumber, cellAmplitude, cellTime, cellMCLabel, cellEFrac) != kTRUE)
             break;
           
           Int_t imod = -1, iphi =-1, ieta=-1,iTower = -1, iIphi = -1, iIeta = -1; 
@@ -879,7 +991,7 @@ void AliAnalysisTaskEMCALClusterize::ClusterUnfolding()
               fRecoUtils->GetEMCALChannelStatus(imod, ieta, iphi))
             continue;
           
-          cells->SetCell(icell, cellNumber, cellAmplitude*fRecoUtils->GetEMCALChannelRecalibrationFactor(imod,ieta,iphi),cellTime);
+          fCaloCells->SetCell(icell, cellNumber, cellAmplitude*fRecoUtils->GetEMCALChannelRecalibrationFactor(imod,ieta,iphi),cellTime);
           
         }// cells loop            
       }// recalibrate
@@ -904,7 +1016,7 @@ void AliAnalysisTaskEMCALClusterize::ClusterUnfolding()
   }
   
   //Do the unfolding
-  fUnfolder->UnfoldClusters(fCaloClusterArr, cells);
+  fUnfolder->UnfoldClusters(fCaloClusterArr, fCaloCells);
   
   //CLEAN-UP
   fUnfolder->Clear();
@@ -961,7 +1073,7 @@ void AliAnalysisTaskEMCALClusterize::FillAODHeader()
   
   AliAODHeader* header = dynamic_cast<AliAODHeader*>(AODEvent()->GetHeader());
   if(!header) AliFatal("Not a standard AOD");
-  header->SetRunNumber(fEvent->GetRunNumber());
+  header->SetRunNumber(fRun);
   
   if(esdevent)
   {
@@ -1119,7 +1231,7 @@ void AliAnalysisTaskEMCALClusterize::FillCaloClusterInEvent()
     //if(newCluster->GetNLabels() > 0) printf("\n");
     
     // Calculate distance to bad channel for new cluster. Make sure you give the list of bad channels.
-    fRecoUtils->RecalculateClusterDistanceToBadChannel(fGeom, fEvent->GetEMCALCells(), newCluster);
+    fRecoUtils->RecalculateClusterDistanceToBadChannel(fGeom, fCaloCells, newCluster);
     
     new((*fOutputAODBranch)[i])  AliAODCaloCluster(*newCluster);
     
@@ -1237,6 +1349,7 @@ void AliAnalysisTaskEMCALClusterize::Init()
     fConfigName       = clus->fConfigName;
     fMaxEvent         = clus->fMaxEvent;
     fDoTrackMatching  = clus->fDoTrackMatching;
+    fUpdateCell       = clus->fUpdateCell;
     fOutputAODBranchName = clus->fOutputAODBranchName;
     for(Int_t i = 0; i < 22; i++) fGeomMatrix[i] = clus->fGeomMatrix[i] ;
     fCentralityClass  = clus->fCentralityClass;
@@ -1309,28 +1422,28 @@ void AliAnalysisTaskEMCALClusterize::InitClusterization()
       fClusterizer->SetPar5  (i, fRecParam->GetPar5(i));
       fClusterizer->SetPar6  (i, fRecParam->GetPar6(i));
     }//end of loop over parameters
+   
     fClusterizer->SetRejectBelowThreshold(fRejectBelowThreshold);//here we set option of unfolding: split or reject energy
     fClusterizer->InitClusterUnfolding();
     
   }// to unfold
 }
 
-//_________________________________________________
+//________________________________________________________________
 /// Init geometry and set the geometry matrix,
 /// for the first event, skip the rest.
-/// Also set once the run dependent calibrations.
-//_________________________________________________
+/// Even if run number changes, geom only changes from year to year so first is enough.
+//________________________________________________________________
 void AliAnalysisTaskEMCALClusterize::InitGeometry()
 {
   if(fGeomMatrixSet) return;
   
-  Int_t runnumber = InputEvent()->GetRunNumber() ;
   if (!fGeom)
   {
     if(fGeomName=="")
     {
-      fGeom = AliEMCALGeometry::GetInstanceFromRunNumber(runnumber);
-      AliInfo(Form("Get EMCAL geometry name <%s> for run %d",fGeom->GetName(),runnumber));
+      fGeom = AliEMCALGeometry::GetInstanceFromRunNumber(fRun);
+      AliInfo(Form("Get EMCAL geometry name <%s> for run %d",fGeom->GetName(),fRun));
     }
     else
     {
@@ -1344,10 +1457,10 @@ void AliAnalysisTaskEMCALClusterize::InitGeometry()
       if(fImportGeometryFilePath=="") // If not specified, set location depending on run number
       {
         // "$ALICE_ROOT/EVE/alice-data/default_geo.root"
-        if      (runnumber <  140000) fImportGeometryFilePath = "$ALICE_PHYSICS/OADB/EMCAL/geometry_2010.root";
-        else if (runnumber <  171000) fImportGeometryFilePath = "$ALICE_PHYSICS/OADB/EMCAL/geometry_2011.root";
-        else if (runnumber <  198000) fImportGeometryFilePath = "$ALICE_PHYSICS/OADB/EMCAL/geometry_2012.root"; // 2012-2013
-        else                          fImportGeometryFilePath = "$ALICE_PHYSICS/OADB/EMCAL/geometry_2015.root"; // >=2015
+        if      (fRun <  140000) fImportGeometryFilePath = "$ALICE_PHYSICS/OADB/EMCAL/geometry_2010.root";
+        else if (fRun <  171000) fImportGeometryFilePath = "$ALICE_PHYSICS/OADB/EMCAL/geometry_2011.root";
+        else if (fRun <  198000) fImportGeometryFilePath = "$ALICE_PHYSICS/OADB/EMCAL/geometry_2012.root"; // 2012-2013
+        else                     fImportGeometryFilePath = "$ALICE_PHYSICS/OADB/EMCAL/geometry_2015.root"; // >=2015
       }
       
       AliInfo(Form("Import %s",fImportGeometryFilePath.Data()));
@@ -1355,7 +1468,7 @@ void AliAnalysisTaskEMCALClusterize::InitGeometry()
       TGeoManager::Import(fImportGeometryFilePath) ;
     }
 
-    AliDebug(1,Form("Init for run=%d",runnumber));
+    AliDebug(1,Form("Init for run=%d",fRun));
     if (!gGeoManager) AliDebug(1,"Careful!, gGeoManager not loaded, load misalign matrices");
 	} // geometry pointer did not exist before
   
@@ -1366,7 +1479,7 @@ void AliAnalysisTaskEMCALClusterize::InitGeometry()
     // OADB if available
     AliOADBContainer emcGeoMat("AliEMCALgeo");
     emcGeoMat.InitFromFile(Form("%s/EMCALlocal2master.root",fOADBFilePath.Data()),"AliEMCALgeo");
-    TObjArray *matEMCAL=(TObjArray*)emcGeoMat.GetObject(runnumber,"EmcalMatrices");
+    TObjArray *matEMCAL=(TObjArray*)emcGeoMat.GetObject(fRun,"EmcalMatrices");
     
     for(Int_t mod=0; mod < (fGeom->GetEMCGeometry())->GetNumberOfSuperModules(); mod++)
     {
@@ -1402,7 +1515,7 @@ void AliAnalysisTaskEMCALClusterize::InitGeometry()
   }//Load matrices
   else if(!gGeoManager)
   {
-    AliInfo("AliAnalysisTaksEMCALClusterize::InitGeometry() - Get geo matrices from data");
+    AliInfo("Get geo matrices from data");
     //Still not implemented in AOD, just a workaround to be able to work at least with ESDs	
     if(!strcmp(fEvent->GetName(),"AliAODEvent")) 
     {
@@ -1448,20 +1561,19 @@ Bool_t AliAnalysisTaskEMCALClusterize::IsExoticEvent()
   
   // Loop on cells
     
-  AliVCaloCells * cells = fEvent->GetEMCALCells();
   Float_t totCellE = 0;
   Int_t bc = InputEvent()->GetBunchCrossNumber();
     
-  for(Int_t icell = 0; icell < cells->GetNumberOfCells(); icell++)
+  for(Int_t icell = 0; icell < fCaloCells->GetNumberOfCells(); icell++)
   {
     Float_t  ecell = 0 ;
     Double_t tcell = 0 ;
     
-    Int_t absID   = cells->GetCellNumber(icell);
-    Bool_t accept = fRecoUtils->AcceptCalibrateCell(absID,bc,ecell,tcell,cells);
+    Int_t absID   = fCaloCells->GetCellNumber(icell);
+    Bool_t accept = fRecoUtils->AcceptCalibrateCell(absID,bc,ecell,tcell,fCaloCells);
     tcell-=fConstantTimeShift*1e-9;// Only for MC simulations done before 2015
 
-    if(accept && !fRecoUtils->IsExoticCell(absID,cells,bc)) totCellE += ecell;
+    if(accept && !fRecoUtils->IsExoticCell(absID,fCaloCells,bc)) totCellE += ecell;
   }
   
   //  TString triggerclasses = event->GetFiredTriggerClasses();
@@ -1488,10 +1600,10 @@ Bool_t AliAnalysisTaskEMCALClusterize::IsLEDEvent(const Int_t run)
   
   // Count number of cells with energy larger than 0.1 in SM3, cut on this number
   Int_t ncellsSM3 = 0;
-  AliVCaloCells * cells = fEvent->GetEMCALCells();
-  for(Int_t icell = 0; icell < cells->GetNumberOfCells(); icell++)
+  for(Int_t icell = 0; icell < fCaloCells->GetNumberOfCells(); icell++)
   {
-    if(cells->GetAmplitude(icell) > 0.1 && cells->GetCellNumber(icell)/(24*48)==3) ncellsSM3++;
+    if ( fCaloCells->GetAmplitude (icell) > 0.1 && 
+         fCaloCells->GetCellNumber(icell)/(24*48)==3 ) ncellsSM3++;
   }
   
   TString triggerclasses = fEvent->GetFiredTriggerClasses();
@@ -1507,6 +1619,298 @@ Bool_t AliAnalysisTaskEMCALClusterize::IsLEDEvent(const Int_t run)
   }
   
   return kFALSE;
+}
+
+
+//_______________________________________________________
+/// Recover each cell amplitude and absId and induce energy 
+/// in cells in cross of the same T-Card
+//_______________________________________________________
+void AliAnalysisTaskEMCALClusterize::MakeCellTCardCorrelation()
+{
+  Int_t    id     = -1;
+  Float_t  amp    = -1; 
+  
+  // Loop on all cells with signal
+  for (Int_t icell = 0; icell < fCaloCells->GetNumberOfCells(); icell++)
+  {
+    id  = fCaloCells->GetCellNumber(icell);
+    amp = fCaloCells->GetAmplitude (icell); // fCaloCells->GetCellAmplitude(id);
+    
+    if ( amp <= fTCardCorrMinAmp ) continue ;
+    
+    //
+    // First get the SM, col-row of this tower
+    Int_t imod = -1, iphi =-1, ieta=-1,iTower = -1, iIphi = -1, iIeta = -1; 
+    fGeom->GetCellIndex(id,imod,iTower,iIphi,iIeta); 
+    fGeom->GetCellPhiEtaIndexInSModule(imod,iTower,iIphi, iIeta,iphi,ieta);  
+    
+    //
+    // Determine randomly if we want to create a correlation for this cell, 
+    // depending the SM number of the cell
+    Float_t rand = fRandom.Uniform(0, 1);
+    
+    if ( rand > fTCardCorrInduceEnerProb[imod] ) continue;
+    
+    AliDebug(1,Form("Reference cell absId %d, iEta %d, iPhi %d, amp %2.3f",id,ieta,iphi,amp));
+    
+    //
+    // Get the absId of the cells in the cross and same T-Card
+    Int_t absIDup = -1;
+    Int_t absIDdo = -1;
+    Int_t absIDlr  = -1;
+    Int_t absIDuplr = -1;
+    Int_t absIDdolr = -1;
+    
+    Int_t absIDup2 = -1;
+    Int_t absIDup2lr = -1;
+    Int_t absIDdo2 = -1;
+    Int_t absIDdo2lr = -1;
+    
+    // Only 2 columns in the T-Card, +1 for even and -1 for odd with respect reference cell
+    Int_t colShift = 0;
+    if (  (ieta%2) && ieta <= AliEMCALGeoParams::fgkEMCALCols-1 ) colShift = -1; 
+    if ( !(ieta%2) && ieta >= 0 )                                 colShift = +1;               
+    
+    absIDlr = fGeom->GetAbsCellIdFromCellIndexes(imod, iphi, ieta+colShift); 
+    
+    // Check up / down cells from reference cell not out of SM and in same T-Card
+    if (  iphi < AliEMCALGeoParams::fgkEMCALRows-1 ) 
+    {
+      absIDup   = fGeom->GetAbsCellIdFromCellIndexes(imod, iphi+1, ieta);
+      absIDuplr = fGeom->GetAbsCellIdFromCellIndexes(imod, iphi+1, ieta+colShift); 
+    }
+    
+    if (  iphi > 0 ) 
+    {
+      absIDdo   = fGeom->GetAbsCellIdFromCellIndexes(imod, iphi-1, ieta);
+      absIDdolr = fGeom->GetAbsCellIdFromCellIndexes(imod, iphi-1, ieta+colShift); 
+    }
+    
+    // Check 2 up / 2 down cells from reference cell not out of SM
+    if (  iphi < AliEMCALGeoParams::fgkEMCALRows-2 ) 
+    {
+      absIDup2   = fGeom->GetAbsCellIdFromCellIndexes(imod, iphi+2, ieta);
+      absIDup2lr = fGeom->GetAbsCellIdFromCellIndexes(imod, iphi+2, ieta+colShift); 
+    }
+    
+    if (  iphi > 1 )   
+    {
+      absIDdo2   = fGeom->GetAbsCellIdFromCellIndexes(imod, iphi-2, ieta);
+      absIDdo2lr = fGeom->GetAbsCellIdFromCellIndexes(imod, iphi-2, ieta+colShift); 
+    }
+    
+    // In same T-Card?
+    if ( TMath::FloorNint(iphi/8) != TMath::FloorNint((iphi+1)/8) ) { absIDup  = -1 ; absIDuplr  = -1 ; }
+    if ( TMath::FloorNint(iphi/8) != TMath::FloorNint((iphi-1)/8) ) { absIDdo  = -1 ; absIDdolr  = -1 ; }
+    if ( TMath::FloorNint(iphi/8) != TMath::FloorNint((iphi+2)/8) ) { absIDup2 = -1 ; absIDup2lr = -1 ; }
+    if ( TMath::FloorNint(iphi/8) != TMath::FloorNint((iphi-2)/8) ) { absIDdo2 = -1 ; absIDdo2lr = -1 ; }
+    
+    //
+    // Check if they are not declared bad or exist
+    Bool_t okup   = AcceptCell(absIDup   ); 
+    Bool_t okdo   = AcceptCell(absIDdo   ); 
+    Bool_t oklr   = AcceptCell(absIDlr   ); 
+    Bool_t okuplr = AcceptCell(absIDuplr ); 
+    Bool_t okdolr = AcceptCell(absIDdolr ); 
+    Bool_t okup2  = AcceptCell(absIDup2  ); 
+    Bool_t okdo2  = AcceptCell(absIDdo2  ); 
+    Bool_t okup2lr= AcceptCell(absIDup2lr); 
+    Bool_t okdo2lr= AcceptCell(absIDdo2lr); 
+    
+    AliDebug(1,Form("Same T-Card cells:\n \t up %d (%d), down %d (%d), left-right %d (%d), up-lr %d (%d), down-lr %d (%d)\n"
+                    "\t up2 %d (%d), down2 %d (%d), up2-lr %d (%d), down2-lr %d (%d)",
+                    absIDup ,okup ,absIDdo ,okdo ,absIDlr,oklr,absIDuplr ,okuplr ,absIDdolr ,okdolr ,
+                    absIDup2,okup2,absIDdo2,okdo2,             absIDup2lr,okup2lr,absIDdo2lr,okdo2lr));
+    
+    //
+    // Generate some energy for the nearby cells in same TCard , depending on this cell energy
+    // Check if originally the tower had no or little energy, in which case tag it as new
+    Float_t fracupdown     = fTCardCorrInduceEnerFrac[0]+amp*fTCardCorrInduceEnerFracP1[0];
+    Float_t fracupdownleri = fTCardCorrInduceEnerFrac[1]+amp*fTCardCorrInduceEnerFracP1[1];
+    Float_t fracleri       = fTCardCorrInduceEnerFrac[2]+amp*fTCardCorrInduceEnerFracP1[2];
+    Float_t frac2nd        = fTCardCorrInduceEnerFrac[3]+amp*fTCardCorrInduceEnerFracP1[3];
+    
+    AliDebug(1,Form("Fraction:\n\t up-down   : p1 %2.2e, p2 %2.2f, sig %2.2f, fraction %2.3f\n"
+                    "\t up-down-lr: p1 %2.2e, p2 %2.2f, sig %2.2f, fraction %2.3f\n"
+                    "\t left-right: p1 %2.2e, p2 %2.2f, sig %2.2f, fraction %2.3f\n"
+                    "\t 2nd row   : p1 %2.2e, p2 %2.2f, sig %2.2f, fraction %2.3f",
+                    fTCardCorrInduceEnerFrac[0],fTCardCorrInduceEnerFracP1[0],fTCardCorrInduceEnerFracWidth[0],fracupdown,
+                    fTCardCorrInduceEnerFrac[1],fTCardCorrInduceEnerFracP1[1],fTCardCorrInduceEnerFracWidth[1],fracupdownleri,
+                    fTCardCorrInduceEnerFrac[2],fTCardCorrInduceEnerFracP1[2],fTCardCorrInduceEnerFracWidth[2],fracleri,
+                    fTCardCorrInduceEnerFrac[3],fTCardCorrInduceEnerFracP1[3],fTCardCorrInduceEnerFracWidth[3],frac2nd));
+    
+    // Randomize the induced fraction, if requested
+    if(fRandomizeTCard)
+    {
+      fracupdown     = fRandom.Gaus(fracupdown    ,fTCardCorrInduceEnerFracWidth[0]);
+      fracupdownleri = fRandom.Gaus(fracupdownleri,fTCardCorrInduceEnerFracWidth[1]);
+      fracleri       = fRandom.Gaus(fracleri      ,fTCardCorrInduceEnerFracWidth[2]);
+      frac2nd        = fRandom.Gaus(frac2nd       ,fTCardCorrInduceEnerFracWidth[3]);
+      
+      AliDebug(1,Form("Randomized fraction: up-down %2.3f; up-down-left-right %2.3f; left-right %2.3f; 2nd row %2.3f",
+                      fracupdown,fracupdownleri,fracleri,frac2nd));
+    }
+    
+    // Calculate induced energy
+    Float_t indEupdown     = amp*fracupdown;
+    Float_t indEupdownleri = amp*fracupdownleri;
+    Float_t indEleri       = amp*fracleri;
+    Float_t indE2nd        = amp*frac2nd;
+    
+    AliDebug(1,Form("Induced energy: up-down %2.3f; up-down-left-right %2.3f; left-right %2.3f; 2nd row %2.3f",
+                    indEupdown,indEupdownleri,indEleri,indE2nd));
+    
+    // Check if we induce too much energy, in such case use a constant value
+    if ( fTCardCorrMaxInduced < indE2nd        ) indE2nd        = fTCardCorrMaxInduced;
+    if ( fTCardCorrMaxInduced < indEupdownleri ) indEupdownleri = fTCardCorrMaxInduced;
+    if ( fTCardCorrMaxInduced < indEupdown     ) indEupdown     = fTCardCorrMaxInduced;
+    if ( fTCardCorrMaxInduced < indEleri       ) indEleri       = fTCardCorrMaxInduced;
+    
+    AliDebug(1,Form("Induced energy, saturated?: up-down %2.3f; up-down-left-right %2.3f; left-right %2.3f; 2nd row %2.3f",
+                    indEupdown,indEupdownleri,indEleri,indE2nd));
+    
+    //
+    // Add the induced energy, check if cell existed
+    if ( okup )
+    {
+      fTCardCorrCellsEner[absIDup] += indEupdown;
+      
+      if ( fCaloCells->GetCellAmplitude(absIDup) < 0.01 ) fTCardCorrCellsNew[absIDup] = kTRUE;
+    }
+    
+    if ( okdo )
+    {
+      fTCardCorrCellsEner[absIDdo] += indEupdown;
+      
+      if ( fCaloCells->GetCellAmplitude(absIDdo) < 0.01 ) fTCardCorrCellsNew[absIDdo] = kTRUE;
+    }
+    
+    if ( oklr )
+    {
+      fTCardCorrCellsEner[absIDlr] += indEleri;
+
+      if ( fCaloCells->GetCellAmplitude(absIDlr) < 0.01 ) fTCardCorrCellsNew[absIDlr]  = kTRUE;
+    }
+
+    if ( okuplr )
+    {
+      fTCardCorrCellsEner[absIDuplr] += indEupdownleri;
+
+      if ( fCaloCells->GetCellAmplitude(absIDuplr ) < 0.01 ) fTCardCorrCellsNew[absIDuplr]  = kTRUE;
+    }
+    
+    if ( okdolr )
+    {
+      fTCardCorrCellsEner[absIDdolr] += indEupdownleri;
+
+      if ( fCaloCells->GetCellAmplitude(absIDdolr ) < 0.01 ) fTCardCorrCellsNew[absIDdolr]  = kTRUE;
+    }
+
+    if ( okup2 )
+    {
+      fTCardCorrCellsEner[absIDup2] += indE2nd;
+
+      if ( fCaloCells->GetCellAmplitude(absIDup2) < 0.01 ) fTCardCorrCellsNew[absIDup2] = kTRUE;
+    }
+    
+    if ( okup2lr )
+    {
+      fTCardCorrCellsEner[absIDup2lr] += indE2nd;
+
+      if ( fCaloCells->GetCellAmplitude(absIDup2lr) < 0.01 ) fTCardCorrCellsNew[absIDup2lr] = kTRUE;
+    }
+
+    if ( okdo2 )
+    {
+      fTCardCorrCellsEner[absIDdo2] += indE2nd;
+
+      if ( fCaloCells->GetCellAmplitude(absIDdo2) < 0.01 ) fTCardCorrCellsNew[absIDdo2] = kTRUE;
+    }
+    
+    if ( okdo2lr )
+    {
+      fTCardCorrCellsEner[absIDdo2lr] += indE2nd;
+
+      if ( fCaloCells->GetCellAmplitude(absIDdo2lr) < 0.01 ) fTCardCorrCellsNew[absIDdo2lr] = kTRUE;
+    }
+    
+    //
+    // Subtract the added energy to main cell, if energy conservation is requested
+    if ( fTCardCorrClusEnerConserv )
+    {
+      if ( oklr    ) fTCardCorrCellsEner[id] -= indEleri;
+      if ( okuplr  ) fTCardCorrCellsEner[id] -= indEupdownleri;
+      if ( okdolr  ) fTCardCorrCellsEner[id] -= indEupdownleri;
+      if ( okup    ) fTCardCorrCellsEner[id] -= indEupdown;
+      if ( okdo    ) fTCardCorrCellsEner[id] -= indEupdown;
+      if ( okup2   ) fTCardCorrCellsEner[id] -= indE2nd;
+      if ( okup2lr ) fTCardCorrCellsEner[id] -= indE2nd;
+      if ( okdo2   ) fTCardCorrCellsEner[id] -= indE2nd;
+      if ( okdo2lr ) fTCardCorrCellsEner[id] -= indE2nd;
+    } // conserve energy
+  
+  } // cell loop
+  
+}
+
+//_______________________________________________________
+/// Print clusterization task parameters.
+//_______________________________________________________
+void AliAnalysisTaskEMCALClusterize::PrintParam()
+{
+  AliInfo(Form("Geometry: name <%s>, matrix set <%d>, load matrix <%d>, import geo <%d> from path <%s>",
+               fGeomName.Data(), fGeomMatrixSet, fLoadGeomMatrices, fImportGeometryFromFile, fImportGeometryFilePath.Data()));
+  
+  if ( fAccessOCDB ) AliInfo(Form("OCDB path name <%s>", fOCDBpath.Data()));
+  if ( fAccessOADB ) AliInfo(Form("OADB path name <%s>", fOADBFilePath.Data()));
+  
+  AliInfo(Form("Just Unfold clusters <%d>, new clusters list name <%s>", fJustUnfold, fOutputAODBranchName.Data()));
+  
+  if ( fFillAODFile ) AliInfo(Form("Fill new AOD file with: header <%d>, cells <%d>",fFillAODHeader,fFillAODCaloCells));
+  
+  AliInfo(Form("Use cell time for cluster <%d>, Apply constant time shift <%2.2f>, Do track-matching <%d>, Update cells <%d>, Input from ESD filter <%d>",
+               fRecalibrateWithClusterTime, fConstantTimeShift, fDoTrackMatching, fUpdateCell, fInputFromFilter));
+  
+  AliInfo(Form("Reject events: larger than <%d>, LED <%d>, exotics <%d>", fMaxEvent, fRemoveLEDEvents, fRemoveExoticEvents));
+  
+  if (fCentralityBin[0] != -1 && fCentralityBin[1] != -1 ) 
+    AliInfo(Form("Centrality bin [%2.2f,%2.2f], class <%s>, use AliCentrality? <%d>", 
+                 fCentralityBin[0], fCentralityBin[1], fCentralityClass.Data(), fUseAliCentrality));
+  
+  if ( fSelectEMCALEvent ) 
+    AliInfo(Form("Select events with signal in EMCal: E min <%2.2f>, n cell min <%d>", fEMCALEnergyCut, fEMCALNcellsCut));
+  
+  AliInfo(Form("MC label from cluster <%d>, Use EdepFrac <%d>, remap AODs <%d>",
+               fSetCellMCLabelFromCluster, fSetCellMCLabelFromEdepFrac, fRemapMCLabelForAODs));
+}
+
+//_______________________________________________________
+/// Print parameters for T-Card correlation emulation.
+//_______________________________________________________
+void AliAnalysisTaskEMCALClusterize::PrintTCardParam()
+{
+  if(!fTCardCorrEmulation)
+  {
+    AliInfo("T-Card emulation not activated");
+    return;
+  }
+  
+  AliInfo(Form("T-Card emulation activated, energy conservation <%d>, randomize E <%d>, induced energy parameters:",
+               fTCardCorrClusEnerConserv,fRandomizeTCard));
+  
+  for(Int_t icell = 0; icell < 4; icell++)
+  {
+    printf("\t cell type %d, p0 %2.2e, p1 %2.2e, sigma %2.2e \n",
+           icell,fTCardCorrInduceEnerFrac[icell],fTCardCorrInduceEnerFracP1[icell],fTCardCorrInduceEnerFracWidth[icell]);     
+  }
+  
+  AliInfo("T-Card emulation super-modules fraction:");
+  
+  for(Int_t ism = 0; ism < 22; ism++)
+  {
+    printf("\t sm %d, fraction %2.2f\n",ism, fTCardCorrInduceEnerProb[ism]);
+  }
 }
 
 //_______________________________________________________
@@ -1540,7 +1944,10 @@ void AliAnalysisTaskEMCALClusterize::RecPoints2Clusters()
       
       absIds[ncellsTrue] = digit->GetId();
       ratios[ncellsTrue] = recPoint->GetEnergiesList()[c]/digit->GetAmplitude();
-            
+      
+      if ( !fRecParam->GetUnfold() && (ratios[ncellsTrue] > 1 || ratios[ncellsTrue] < 1)  ) 
+        AliWarning(Form("recpoint cell E %2.3f but digit E %2.3f and no unfolding", recPoint->GetEnergiesList()[c], digit->GetAmplitude()));
+      
       // In case of unfolding, remove digits with unfolded energy too low      
       if(fSelectCell)
       {
@@ -1665,9 +2072,9 @@ void AliAnalysisTaskEMCALClusterize::RecPoints2Clusters()
         UInt_t * mcEdepFracPerCell = new UInt_t[ncellsTrue];
         
         // Get the digit that originated this cell cluster
-        AliVCaloCells* cells = 0x0; 
-        if (aodIH && aodIH->GetMergeEvents()) cells = AODEvent()  ->GetEMCALCells();
-        else                                  cells = InputEvent()->GetEMCALCells();
+//        AliVCaloCells* cells = 0x0; 
+//        if (aodIH && aodIH->GetMergeEvents()) cells = AODEvent()  ->GetEMCALCells();
+//        else                                  cells = InputEvent()->GetEMCALCells();
         
         for(Int_t icell = 0; icell < ncellsTrue ; icell++) 
         {
@@ -1775,7 +2182,10 @@ void AliAnalysisTaskEMCALClusterize::ResetArrays()
     fCellTime[j]         =  0.;
     fCellMatchdEta[j]    = -999;
     fCellMatchdPhi[j]    = -999;
-  }
+    
+    fTCardCorrCellsEner[j] = 0.; 
+    fTCardCorrCellsNew [j] = kFALSE; 
+   }
 }
 
 //_____________________________________________________________________________________________________
@@ -1974,6 +2384,66 @@ void AliAnalysisTaskEMCALClusterize::UserCreateOutputObjects()
   }
 }
 
+//_______________________________________________________________________
+/// Create a new CaloCells container if calibration or some changes were applied.
+/// Delete previouly existing content in the container.
+//________________________________________________________________________
+void AliAnalysisTaskEMCALClusterize::UpdateCells()
+{
+  if ( !fUpdateCell ) return;
+  
+  // Update cells only in case re-calibration was done 
+  // or bad map applied or additional T-Card cells added.
+  if(!fRecoUtils->IsBadChannelsRemovalSwitchedOn() && 
+     !fRecoUtils->IsRecalibrationOn()              && 
+     !fRecoUtils->IsRunDepRecalibrationOn()        && 
+     !fRecoUtils->IsTimeRecalibrationOn()          && 
+     !fRecoUtils->IsL1PhaseInTimeRecalibrationOn() &&
+     !fTCardCorrEmulation                            ) return;
+  
+  const Int_t   ncells = fCaloCells->GetNumberOfCells();
+  const Int_t   ndigis = fDigitsArr->GetEntries();
+  if ( ncells != ndigis ) 
+  {
+    fCaloCells->DeleteContainer();
+    fCaloCells->CreateContainer(ndigis);
+  }
+  
+  for (Int_t idigit = 0; idigit < ndigis; ++idigit) 
+  {
+    AliEMCALDigit *digit = static_cast<AliEMCALDigit*>(fDigitsArr->At(idigit));
+    
+    Double_t cellAmplitude  = digit->GetAmplitude();
+    Short_t  cellNumber     = digit->GetId();
+    Double_t cellTime       = digit->GetTime();
+    
+    Bool_t highGain = kFALSE;
+    if( digit->GetType() == AliEMCALDigit::kHG ) highGain = kTRUE;
+    
+    // Only for MC
+    // Get the label of the primary particle that generated the cell
+    // Assign the particle that deposited more energy
+    Int_t   nparents  = digit->GetNiparent();
+    Int_t   cellMcEDepFrac =-1 ;
+    Float_t cellMcLabel    =-1.;
+    if ( nparents > 0 )
+    {
+      for ( Int_t jndex = 0 ; jndex < nparents ; jndex++ ) 
+      { 
+        if(cellMcEDepFrac >= digit->GetDEParent(jndex+1)) continue ;
+        
+        cellMcLabel   = digit->GetIparent (jndex+1);
+        cellMcEDepFrac= digit->GetDEParent(jndex+1);          
+      } // all primaries in digit      
+    } // select primary label
+    
+    if ( cellMcEDepFrac < 0 ) cellMcEDepFrac = 0.;
+      
+    fCaloCells->SetCell(idigit, cellNumber, cellAmplitude, cellTime, cellMcLabel, cellMcEDepFrac, highGain);
+  }
+}
+
+
 //_______________________________________________________
 /// Do clusterization event by event, execute different steps
 ///  * 1) Do some checks on the kind of events (ESD, AOD) or if some filtering is needed, initializations
@@ -2008,6 +2478,17 @@ void AliAnalysisTaskEMCALClusterize::UserExec(Option_t *)
   if(!fCaloClusterArr) fCaloClusterArr    = new TObjArray(10000);
   else                 fCaloClusterArr->Delete();//Clear("C"); it leaks?
 
+  
+  // In case of analysis in multiple runs, check the OADB again
+  if ( InputEvent()->GetRunNumber() != fRun )  
+  {
+    fRun = InputEvent()->GetRunNumber();
+    
+    fOADBSet = kFALSE; // recover the OADB for this run
+    
+    AliInfo(Form("Set run to %d",fRun));
+  }
+  
   InitGeometry(); // only once, must be done before OADB, geo OADB accessed here
   
   // Get the event, do some checks and settings
@@ -2026,6 +2507,18 @@ void AliAnalysisTaskEMCALClusterize::UserExec(Option_t *)
   
   InitClusterization();
   
+  // Print once the analysis parameters
+  if ( fDebug > 0 || !fPrintOnce )
+  {
+    fRecParam->Print("reco");
+    
+    PrintParam();
+    
+    PrintTCardParam();
+    
+    fPrintOnce = kTRUE;
+  }
+  
   //-------
   // Step 2
   
@@ -2037,6 +2530,8 @@ void AliAnalysisTaskEMCALClusterize::UserExec(Option_t *)
   // Step 3
   
   FillCaloClusterInEvent();
+  
+  UpdateCells();
 }
 
 

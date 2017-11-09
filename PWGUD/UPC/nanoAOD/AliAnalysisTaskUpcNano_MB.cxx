@@ -38,6 +38,7 @@
 #include "AliAODPid.h"
 #include "AliAODVertex.h"
 #include "AliAODMCParticle.h"
+#include "AliTOFTriggerMask.h"
 
 // my headers
 #include "AliAnalysisTaskUpcNano_MB.h"
@@ -51,7 +52,7 @@ using std::endl;
 
 //_____________________________________________________________________________
 AliAnalysisTaskUpcNano_MB::AliAnalysisTaskUpcNano_MB() 
-  : AliAnalysisTaskSE(),fOutputList(0),isMC(kFALSE),cutEta(kFALSE),fPIDResponse(0),
+  : AliAnalysisTaskSE(),fPIDResponse(0),isMC(kFALSE),cutEta(kFALSE),fOutputList(0),
     	fHistEvents(0),
 	fHistMCTriggers(0),
     	fTreePhi(0),
@@ -60,16 +61,18 @@ AliAnalysisTaskUpcNano_MB::AliAnalysisTaskUpcNano_MB()
 	fTreeRho(0),
 	fTreeGen(0),
 	hTPCPIDMuonCorr(0),
+    	hTPCPIDMuon(0),
         hTPCPIDElectronCorr(0),
-	hTPCPIDPionCorr(0),
-	hTOFPIDProtonCorr(0),
-	hTPCPIDMuon(0),
         hTPCPIDElectron(0),
 	hTPCPIDPion(0),
+	hTPCPIDPionCorr(0),
 	hTOFPIDProton(0),
+	hTOFPIDProtonCorr(0),
 	hITSPIDKaon(0),
 	hITSPIDKaonCorr(0),
-	hTPCdEdxCorr(0) 
+	hTPCdEdxCorr(0),
+	hNLooseTracks(0),
+	fTOFmask(0) 
 
 {
 
@@ -80,7 +83,7 @@ AliAnalysisTaskUpcNano_MB::AliAnalysisTaskUpcNano_MB()
 
 //_____________________________________________________________________________
 AliAnalysisTaskUpcNano_MB::AliAnalysisTaskUpcNano_MB(const char *name) 
-  : AliAnalysisTaskSE(name),fOutputList(0),isMC(kFALSE),cutEta(kFALSE),fPIDResponse(0),
+  : AliAnalysisTaskSE(name),fPIDResponse(0),isMC(kFALSE),cutEta(kFALSE),fOutputList(0),
     	fHistEvents(0),
 	fHistMCTriggers(0),
     	fTreePhi(0),
@@ -89,16 +92,18 @@ AliAnalysisTaskUpcNano_MB::AliAnalysisTaskUpcNano_MB(const char *name)
 	fTreeRho(0),
 	fTreeGen(0),
 	hTPCPIDMuonCorr(0),
+    	hTPCPIDMuon(0),
         hTPCPIDElectronCorr(0),
-	hTPCPIDPionCorr(0),
-	hTOFPIDProtonCorr(0),
-	hTPCPIDMuon(0),
         hTPCPIDElectron(0),
 	hTPCPIDPion(0),
+	hTPCPIDPionCorr(0),
 	hTOFPIDProton(0),
+	hTOFPIDProtonCorr(0),
 	hITSPIDKaon(0),
 	hITSPIDKaonCorr(0),
-	hTPCdEdxCorr(0)  
+	hTPCdEdxCorr(0),
+	hNLooseTracks(0),
+	fTOFmask(0)  
 
 {
   for(Int_t i = 0; i<10; i++) fTriggerInputsMC[i] = kFALSE;
@@ -128,10 +133,6 @@ void AliAnalysisTaskUpcNano_MB::UserCreateOutputObjects()
   AliInputEventHandler *inputHandler = (AliInputEventHandler*) (man->GetInputEventHandler());
   fPIDResponse = inputHandler->GetPIDResponse();
 
-  static  int      myDarkRed     = TColor::GetColor(128,0,0);
-  static  int      myDarkGreen   = TColor::GetColor(0,128,0);
-  static  int      myDarkBlue    = TColor::GetColor(0,0,128);
-
   fOutputList = new TList();
   fOutputList ->SetOwner();
 
@@ -157,6 +158,8 @@ void AliAnalysisTaskUpcNano_MB::UserCreateOutputObjects()
   fTreeJPsi ->Branch("fZNCtime", &fZNCtime,"fZNCtime/D");
   fTreeJPsi ->Branch("fPIDsigma", &fPIDsigma,"fPIDsigma/D");
   fTreeJPsi ->Branch("fRunNumber", &fRunNumber, "fRunNumber/I");
+  fTreeJPsi ->Branch("fTOFmask", &fTOFmask);
+  fTreeJPsi ->Branch("fNLooseTracks", &fNLooseTracks, "fNLooseTracks/I");
   if(isMC){
   	fTreeJPsi ->Branch("fFOFiredChips", &fFOFiredChips);
 	fTreeJPsi ->Branch("fTriggerInputsMC", &fTriggerInputsMC[0], "fTriggerInputsMC[10]/O");
@@ -190,6 +193,8 @@ void AliAnalysisTaskUpcNano_MB::UserCreateOutputObjects()
   fTreeRho ->Branch("fZNCtime", &fZNCtime,"fZNCtime/D");
   fTreeRho ->Branch("fPIDsigma", &fPIDsigma,"fPIDsigma/D");
   fTreeRho ->Branch("fRunNumber", &fRunNumber, "fRunNumber/I");
+  fTreeRho ->Branch("fNLooseTracks", &fNLooseTracks, "fNLooseTracks/I");
+  fTreeRho ->Branch("fTOFmask", &fTOFmask);
   if(isMC) fTreeRho ->Branch("fTriggerInputsMC", &fTriggerInputsMC[0], "fTriggerInputsMC[10]/O");
   fOutputList->Add(fTreeRho);
 
@@ -270,6 +275,9 @@ void AliAnalysisTaskUpcNano_MB::UserCreateOutputObjects()
   hTPCdEdxCorr->GetYaxis()->SetTitle("dE/dx^{TPC} (a.u.)");
   fOutputList->Add(hTPCdEdxCorr);
   
+  hNLooseTracks = new TH1D("hNLooseTracks"," ",10000,0,10000);
+  fOutputList->Add(hNLooseTracks);
+  
   PostData(1, fOutputList);
 
 }//UserCreateOutputObjects
@@ -287,6 +295,9 @@ void AliAnalysisTaskUpcNano_MB::UserExec(Option_t *)
   if(isMC) RunMC(aod);
   
   for(Int_t i = 0; i<10; i++)if(fTriggerInputsMC[i])fHistMCTriggers->Fill(i+1);
+  
+  const AliTOFHeader *tofH = aod->GetTOFHeader();
+  fTOFmask = tofH->GetTriggerMask();
     
   TString trigger = aod->GetFiredTriggerClasses();
   fHistEvents->Fill(1);
@@ -314,11 +325,10 @@ void AliAnalysisTaskUpcNano_MB::UserExec(Option_t *)
   TLorentzVector vPion[5], vRhoCandidate;
 
   Float_t nSigmaMuon[5], nSigmaElectron[5], nSigmaPion[5], nSigmaProton[5],  nSigmaKaon[5], dEdx[5];
-  Float_t fTPCsignal[5];
   Short_t qPion[5];
   TLorentzVector vLepton[5], vDilepton, vPsi2sCandidate;
   Short_t qLepton[5];
-  UInt_t nPion = 0, nElectron = 0, nMuon = 0, nLepton = 0, nProton = 0, nKaon = 0, nHighPt = 0;
+  UInt_t nPion = 0, nLepton = 0, nHighPt = 0;
   UInt_t nGoodTracksTPC=0;
   UInt_t nGoodTracksITS=0;
   UInt_t nGoodTracksSPD=0;
@@ -328,9 +338,10 @@ void AliAnalysisTaskUpcNano_MB::UserExec(Option_t *)
   Double_t TrackPtTPC[5]={0,0,0,0,0};
   Double_t TrackPtALL[7]={0,0,0,0,0,0,0};
   Double_t MeanPt = -1;
-  Int_t nSpdHits = 0;
   
-  AliAODVertex *fAODVertex = aod->GetPrimaryVertex();
+  fNLooseTracks = aod->GetNumberOfESDTracks();
+  if(trigger.Contains("CCUP8-B"))hNLooseTracks->Fill(fNLooseTracks);
+  
   //Track loop
   for(Int_t iTrack=0; iTrack<aod ->GetNumberOfTracks(); iTrack++) {
     AliAODTrack *trk = dynamic_cast<AliAODTrack*>(aod->GetTrack(iTrack));
@@ -340,7 +351,7 @@ void AliAnalysisTaskUpcNano_MB::UserExec(Option_t *)
     
     if(cutEta && TMath::Abs(trk->Eta())>0.9)continue;
     
-    if(!(trk->TestFilterBit(1<<4))) goodTPCTrack = kFALSE;
+    if(!(trk->TestFilterBit(1<<5))) goodTPCTrack = kFALSE;
     else{
     	if(trk->HasPointOnITSLayer(0) && trk->HasPointOnITSLayer(1))nGoodTracksSPD++;
     	}
@@ -463,7 +474,6 @@ void AliAnalysisTaskUpcNano_MB::UserExec(Option_t *)
   //Two track loop
   nHighPt = 0;
   if(nGoodTracksTPC == 2){
-  Float_t fTOFphi[2];
   	for(Int_t iTrack=0; iTrack<2; iTrack++) {
     	AliAODTrack *trk = dynamic_cast<AliAODTrack*>(aod->GetTrack(TrackIndexTPC[iTrack]));
 	    	
@@ -661,7 +671,6 @@ void AliAnalysisTaskUpcNano_MB::RunMC(AliAODEvent *aod)
   TClonesArray *arrayMC = (TClonesArray*) aod->GetList()->FindObject(AliAODMCParticle::StdBranchName());
   if(!arrayMC) return;
 
-  Int_t nmc=0;
   vGenerated.SetXYZM(0.,0.,0.,0.);
   //loop over mc particles
   for(Int_t imc=0; imc<arrayMC->GetEntriesFast(); imc++) {

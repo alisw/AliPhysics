@@ -46,7 +46,6 @@ class AliAODv0;
 #include "AliAnalysisManager.h"
 #include "AliESDInputHandler.h" 
 #include "AliAODInputHandler.h"
-#include "AliCFContainer.h"
 #include "AliMultiplicity.h"
 
 #include "AliGenEventHeader.h"         //for MC
@@ -84,11 +83,31 @@ AliAnalysisTaskQAMultistrange::AliAnalysisTaskQAMultistrange()
 
     fListHistMultistrangeQA(0),
       fHistEventSel(0),
-      fHistMassXiMinus(0), fHistMassXiPlus(0), fHistMassOmegaMinus(0), fHistMassOmegaPlus(0),
       fHistCascadeMultiplicityXiMinus(0), fHistCascadeMultiplicityXiPlus(0), fHistCascadeMultiplicityOmegaMinus(0), fHistCascadeMultiplicityOmegaPlus(0),
-      fCFContCascadeCuts(0),
-      fCFContCascadeMCCuts(0),
-      fCFContCascadeMCgen(0)
+      fHistVarDcaCascDaughtXiMinus(0), fHistVarDcaCascDaughtXiPlus(0), fHistVarDcaCascDaughtOmegaMinus(0), fHistVarDcaCascDaughtOmegaPlus(0),
+      fHistVarDcaBachToPrimVertexXiMinus(0), fHistVarDcaBachToPrimVertexXiPlus(0), fHistVarDcaBachToPrimVertexOmegaMinus(0), fHistVarDcaBachToPrimVertexOmegaPlus(0),
+      fHistVarCascCosineOfPointingAngleXiMinus(0), fHistVarCascCosineOfPointingAngleXiPlus(0), fHistVarCascCosineOfPointingAngleOmegaMinus(0), fHistVarCascCosineOfPointingAngleOmegaPlus(0),
+      fHistVarCascRadiusXiMinus(0), fHistVarCascRadiusXiPlus(0), fHistVarCascRadiusOmegaMinus(0), fHistVarCascRadiusOmegaPlus(0),
+      fHistVarInvMassLambdaAsCascDghterXiMinus(0), fHistVarInvMassLambdaAsCascDghterXiPlus(0), fHistVarInvMassLambdaAsCascDghterOmegaMinus(0), fHistVarInvMassLambdaAsCascDghterOmegaPlus(0),
+      fHistVarDcaV0DaughtersXiMinus(0), fHistVarDcaV0DaughtersXiPlus(0), fHistVarDcaV0DaughtersOmegaMinus(0), fHistVarDcaV0DaughtersOmegaPlus(0),
+      fHistVarV0CosineOfPAToCascVertexXiMinus(0), fHistVarV0CosineOfPAToCascVertexXiPlus(0), fHistVarV0CosineOfPAToCascVertexOmegaMinus(0), fHistVarV0CosineOfPAToCascVertexOmegaPlus(0),
+      fHistVarV0RadiusXiMinus(0), fHistVarV0RadiusXiPlus(0), fHistVarV0RadiusOmegaMinus(0), fHistVarV0RadiusOmegaPlus(0),
+      fHistVarDcaV0ToPrimVertexXiMinus(0), fHistVarDcaV0ToPrimVertexXiPlus(0), fHistVarDcaV0ToPrimVertexOmegaMinus(0), fHistVarDcaV0ToPrimVertexOmegaPlus(0),
+      fHistVarDcaPosToPrimVertexXiMinus(0), fHistVarDcaPosToPrimVertexXiPlus(0), fHistVarDcaPosToPrimVertexOmegaMinus(0), fHistVarDcaPosToPrimVertexOmegaPlus(0),
+      fHistVarDcaNegToPrimVertexXiMinus(0), fHistVarDcaNegToPrimVertexXiPlus(0), fHistVarDcaNegToPrimVertexOmegaMinus(0), fHistVarDcaNegToPrimVertexOmegaPlus(0),
+      fHistMassXiMinus(0), fHistMassXiPlus(0), fHistMassOmegaMinus(0), fHistMassOmegaPlus(0),
+      fHistVarTransvMomentumXiMinus(0), fHistVarTransvMomentumXiPlus(0), fHistVarTransvMomentumOmegaMinus(0), fHistVarTransvMomentumOmegaPlus(0),
+      fHistVarRapidityXiMinus(0), fHistVarRapidityXiPlus(0), fHistVarRapidityOmegaMinus(0), fHistVarRapidityOmegaPlus(0),
+      fHistVarCascProperLengthXiMinus(0), fHistVarCascProperLengthXiPlus(0), fHistVarCascProperLengthOmegaMinus(0), fHistVarCascProperLengthOmegaPlus(0),
+      fHistVarV0ProperLengthXiMinus(0), fHistVarV0ProperLengthXiPlus(0), fHistVarV0ProperLengthOmegaMinus(0), fHistVarV0ProperLengthOmegaPlus(0),
+      fHistGenVarTotMomXiMinus(0),fHistGenVarTotMomXiPlus(0), fHistGenVarTotMomOmegaMinus(0), fHistGenVarTotMomOmegaPlus(0),
+      fHistGenVarTransvMomXiMinus(0), fHistGenVarTransvMomXiPlus(0), fHistGenVarTransvMomOmegaMinus (0), fHistGenVarTransvMomOmegaPlus(0),
+      fHistGenVarYXiMinus(0), fHistGenVarYXiPlus(0), fHistGenVarYOmegaMinus(0), fHistGenVarYOmegaPlus(0),
+      fHistGenVarEtaXiMinus(0), fHistGenVarEtaXiPlus(0), fHistGenVarEtaOmegaMinus(0), fHistGenVarEtaOmegaPlus(0),
+      fHistGenVarThetaXiMinus(0), fHistGenVarThetaXiPlus(0), fHistGenVarThetaOmegaMinus(0), fHistGenVarThetaOmegaPlus(0),
+      fHistGenVarPhiXiMinus(0), fHistGenVarPhiXiPlus(0), fHistGenVarPhiOmegaMinus(0), fHistGenVarPhiOmegaPlus(0)
+
+
 
 {
   // Dummy Constructor
@@ -110,19 +129,36 @@ AliAnalysisTaskQAMultistrange::AliAnalysisTaskQAMultistrange(const char *name)
 
     fListHistMultistrangeQA(0),
       fHistEventSel(0),
-      fHistMassXiMinus(0), fHistMassXiPlus(0), fHistMassOmegaMinus(0), fHistMassOmegaPlus(0),
       fHistCascadeMultiplicityXiMinus(0), fHistCascadeMultiplicityXiPlus(0), fHistCascadeMultiplicityOmegaMinus(0), fHistCascadeMultiplicityOmegaPlus(0),
-      fCFContCascadeCuts(0),
-      fCFContCascadeMCCuts(0),
-      fCFContCascadeMCgen(0) 
+      fHistVarDcaCascDaughtXiMinus(0), fHistVarDcaCascDaughtXiPlus(0), fHistVarDcaCascDaughtOmegaMinus(0), fHistVarDcaCascDaughtOmegaPlus(0),
+      fHistVarDcaBachToPrimVertexXiMinus(0), fHistVarDcaBachToPrimVertexXiPlus(0), fHistVarDcaBachToPrimVertexOmegaMinus(0), fHistVarDcaBachToPrimVertexOmegaPlus(0),
+      fHistVarCascCosineOfPointingAngleXiMinus(0), fHistVarCascCosineOfPointingAngleXiPlus(0), fHistVarCascCosineOfPointingAngleOmegaMinus(0), fHistVarCascCosineOfPointingAngleOmegaPlus(0),
+      fHistVarCascRadiusXiMinus(0), fHistVarCascRadiusXiPlus(0), fHistVarCascRadiusOmegaMinus(0), fHistVarCascRadiusOmegaPlus(0),
+      fHistVarInvMassLambdaAsCascDghterXiMinus(0), fHistVarInvMassLambdaAsCascDghterXiPlus(0), fHistVarInvMassLambdaAsCascDghterOmegaMinus(0), fHistVarInvMassLambdaAsCascDghterOmegaPlus(0),
+      fHistVarDcaV0DaughtersXiMinus(0), fHistVarDcaV0DaughtersXiPlus(0), fHistVarDcaV0DaughtersOmegaMinus(0), fHistVarDcaV0DaughtersOmegaPlus(0),
+      fHistVarV0CosineOfPAToCascVertexXiMinus(0), fHistVarV0CosineOfPAToCascVertexXiPlus(0), fHistVarV0CosineOfPAToCascVertexOmegaMinus(0), fHistVarV0CosineOfPAToCascVertexOmegaPlus(0),
+      fHistVarV0RadiusXiMinus(0), fHistVarV0RadiusXiPlus(0), fHistVarV0RadiusOmegaMinus(0), fHistVarV0RadiusOmegaPlus(0),
+      fHistVarDcaV0ToPrimVertexXiMinus(0), fHistVarDcaV0ToPrimVertexXiPlus(0), fHistVarDcaV0ToPrimVertexOmegaMinus(0), fHistVarDcaV0ToPrimVertexOmegaPlus(0),
+      fHistVarDcaPosToPrimVertexXiMinus(0), fHistVarDcaPosToPrimVertexXiPlus(0), fHistVarDcaPosToPrimVertexOmegaMinus(0), fHistVarDcaPosToPrimVertexOmegaPlus(0),
+      fHistVarDcaNegToPrimVertexXiMinus(0), fHistVarDcaNegToPrimVertexXiPlus(0), fHistVarDcaNegToPrimVertexOmegaMinus(0), fHistVarDcaNegToPrimVertexOmegaPlus(0),
+      fHistMassXiMinus(0), fHistMassXiPlus(0), fHistMassOmegaMinus(0), fHistMassOmegaPlus(0),
+      fHistVarTransvMomentumXiMinus(0), fHistVarTransvMomentumXiPlus(0), fHistVarTransvMomentumOmegaMinus(0), fHistVarTransvMomentumOmegaPlus(0),
+      fHistVarRapidityXiMinus(0), fHistVarRapidityXiPlus(0), fHistVarRapidityOmegaMinus(0), fHistVarRapidityOmegaPlus(0),
+      fHistVarCascProperLengthXiMinus(0), fHistVarCascProperLengthXiPlus(0), fHistVarCascProperLengthOmegaMinus(0), fHistVarCascProperLengthOmegaPlus(0),
+      fHistVarV0ProperLengthXiMinus(0), fHistVarV0ProperLengthXiPlus(0), fHistVarV0ProperLengthOmegaMinus(0), fHistVarV0ProperLengthOmegaPlus(0),
+      fHistGenVarTotMomXiMinus(0),fHistGenVarTotMomXiPlus(0), fHistGenVarTotMomOmegaMinus(0), fHistGenVarTotMomOmegaPlus(0),
+      fHistGenVarTransvMomXiMinus(0), fHistGenVarTransvMomXiPlus(0), fHistGenVarTransvMomOmegaMinus (0), fHistGenVarTransvMomOmegaPlus(0),
+      fHistGenVarYXiMinus(0), fHistGenVarYXiPlus(0), fHistGenVarYOmegaMinus(0), fHistGenVarYOmegaPlus(0),
+      fHistGenVarEtaXiMinus(0), fHistGenVarEtaXiPlus(0), fHistGenVarEtaOmegaMinus(0), fHistGenVarEtaOmegaPlus(0),
+      fHistGenVarThetaXiMinus(0), fHistGenVarThetaXiPlus(0), fHistGenVarThetaOmegaMinus(0), fHistGenVarThetaOmegaPlus(0),
+      fHistGenVarPhiXiMinus(0), fHistGenVarPhiXiPlus(0), fHistGenVarPhiOmegaMinus(0), fHistGenVarPhiOmegaPlus(0)
+
+
 
 {
   // Constructor
   // Output slot #0 writes into a TList container (Cascade)
   DefineOutput(1, TList::Class());
-  DefineOutput(2, AliCFContainer::Class());
-  DefineOutput(3, AliCFContainer::Class());
-  DefineOutput(4, AliCFContainer::Class());
 
   AliLog::SetClassDebugLevel("AliAnalysisTaskQAMultistrange",1);
 }
@@ -139,9 +175,6 @@ AliAnalysisTaskQAMultistrange::~AliAnalysisTaskQAMultistrange()
   // They will be deleted when fListCascade is deleted by the TSelector dtor
   // Because of TList::SetOwner() ...
   if (fListHistMultistrangeQA && !AliAnalysisManager::GetAnalysisManager()->IsProofMode()) { delete fListHistMultistrangeQA; fListHistMultistrangeQA = 0x0; }
-  if (fCFContCascadeCuts && !AliAnalysisManager::GetAnalysisManager()->IsProofMode())      { delete fCFContCascadeCuts;      fCFContCascadeCuts      = 0x0; }
-  if (fCFContCascadeMCCuts && !AliAnalysisManager::GetAnalysisManager()->IsProofMode())    { delete fCFContCascadeMCCuts;    fCFContCascadeMCCuts    = 0x0; }
-  if (fCFContCascadeMCgen && !AliAnalysisManager::GetAnalysisManager()->IsProofMode())     { delete fCFContCascadeMCgen;     fCFContCascadeMCgen     = 0x0; }
 }
 
 
@@ -170,348 +203,409 @@ void AliAnalysisTaskQAMultistrange::UserCreateOutputObjects()
 
   //__________________
   // Define the Histos
-  if(! fHistEventSel) {
+  // -- Event selection distribution
+  if (! fHistEventSel) {
         fHistEventSel = new TH1F("fHistEventSel", "Event selection;Evt. Sel. Step;Count",2, 0, 2);
         fHistEventSel->GetXaxis()->SetBinLabel(1, "Processed");
         fHistEventSel->GetXaxis()->SetBinLabel(2, "Selected");
         fListHistMultistrangeQA->Add(fHistEventSel);
   }
-  if(! fHistMassXiMinus) {
+  // -- Cascade multiplicity distributions (for MC generated particles)
+  if (! fHistCascadeMultiplicityXiMinus) {
+     fHistCascadeMultiplicityXiMinus = new TH1F("fHistCascadeMultiplicityMCXiMinus","Xi Minus per event;Nbr of Xi Minus/Evt;Events", 50, 0, 50);
+     fListHistMultistrangeQA->Add(fHistCascadeMultiplicityXiMinus);
+  } 
+  if (! fHistCascadeMultiplicityXiPlus) {
+     fHistCascadeMultiplicityXiPlus = new TH1F("fHistCascadeMultiplicityMCXiPlus","Xi Plus per event;Nbr of Xi Plus/Evt;Events", 50, 0, 50);
+     fListHistMultistrangeQA->Add(fHistCascadeMultiplicityXiPlus);
+  }
+  if (! fHistCascadeMultiplicityOmegaMinus) {
+     fHistCascadeMultiplicityOmegaMinus = new TH1F("fHistCascadeMultiplicityMCOmegaMinus","Omega Minus per event;Nbr of Omega Minus/Evt;Events", 50, 0, 50);
+     fListHistMultistrangeQA->Add(fHistCascadeMultiplicityOmegaMinus);
+  }
+  if (! fHistCascadeMultiplicityOmegaPlus) {
+     fHistCascadeMultiplicityOmegaPlus = new TH1F("fHistCascadeMultiplicityMCOmegaPlus","Omega Plus per event;Nbr of Omega Plus/Evt;Events", 50, 0, 50);
+     fListHistMultistrangeQA->Add(fHistCascadeMultiplicityOmegaPlus);
+  }
+  // -- Cascade variable distributions for reconstructed particles (in case of MC the association is required)
+  // --- DcaCascDaught  (25 bins, [0.0,2.5])
+  if (!fHistVarDcaCascDaughtXiMinus) {
+     fHistVarDcaCascDaughtXiMinus = new TH2F("fHistVarDcaCascDaughtXiMinus",";#it{p_{T}} (GeV/#it{c});DCA cascade daughters (cm)", 250, 0.0, 25.0, 25, 0.0, 2.5);
+     fListHistMultistrangeQA->Add(fHistVarDcaCascDaughtXiMinus);
+  }
+  if (!fHistVarDcaCascDaughtXiPlus) {
+     fHistVarDcaCascDaughtXiPlus = new TH2F("fHistVarDcaCascDaughtXiPlus",";#it{p_{T}} (GeV/#it{c});DCA cascade daughters (cm)", 250, 0.0, 25.0, 25, 0.0, 2.5);
+     fListHistMultistrangeQA->Add(fHistVarDcaCascDaughtXiPlus);
+  }
+  if (!fHistVarDcaCascDaughtOmegaMinus) {
+     fHistVarDcaCascDaughtOmegaMinus = new TH2F("fHistVarDcaCascDaughtOmegaMinus",";#it{p_{T}} (GeV/#it{c});DCA cascade daughters (cm)", 250, 0.0, 25.0, 25, 0.0, 2.5);
+     fListHistMultistrangeQA->Add(fHistVarDcaCascDaughtOmegaMinus);
+  }
+  if (!fHistVarDcaCascDaughtOmegaPlus) {
+     fHistVarDcaCascDaughtOmegaPlus = new TH2F("fHistVarDcaCascDaughtOmegaPlus",";#it{p_{T}} (GeV/#it{c});DCA cascade daughters (cm)", 250, 0.0, 25.0, 25, 0.0, 2.5);
+     fListHistMultistrangeQA->Add(fHistVarDcaCascDaughtOmegaPlus);
+  }
+  // --- DcaBachToPrimVertex (25 bins, [0.0,0.25])
+  if (!fHistVarDcaBachToPrimVertexXiMinus) {
+     fHistVarDcaBachToPrimVertexXiMinus = new TH2F("fHistVarDcaBachToPrimVertexXiMinus",";#it{p_{T}} (GeV/#it{c});DCA bachelor to PV (cm)", 250, 0.0, 25.0, 25, 0.0, 0.25);
+     fListHistMultistrangeQA->Add(fHistVarDcaBachToPrimVertexXiMinus);
+  }
+  if (!fHistVarDcaBachToPrimVertexXiPlus) {
+     fHistVarDcaBachToPrimVertexXiPlus = new TH2F("fHistVarDcaBachToPrimVertexXiPlus",";#it{p_{T}} (GeV/#it{c});DCA bachelor to PV (cm)", 250, 0.0, 25.0, 25, 0.0, 0.25);
+     fListHistMultistrangeQA->Add(fHistVarDcaBachToPrimVertexXiPlus);
+  }
+  if (!fHistVarDcaBachToPrimVertexOmegaMinus) {
+     fHistVarDcaBachToPrimVertexOmegaMinus = new TH2F("fHistVarDcaBachToPrimVertexOmegaMinus",";#it{p_{T}} (GeV/#it{c});DCA bachelor to PV (cm)", 250, 0.0, 25.0, 25, 0.0, 0.25);
+     fListHistMultistrangeQA->Add(fHistVarDcaBachToPrimVertexOmegaMinus);
+  }
+  if (!fHistVarDcaBachToPrimVertexOmegaPlus) {
+     fHistVarDcaBachToPrimVertexOmegaPlus = new TH2F("fHistVarDcaBachToPrimVertexOmegaPlus",";#it{p_{T}} (GeV/#it{c});DCA bachelor to PV (cm)", 250, 0.0, 25.0, 25, 0.0, 0.25);
+     fListHistMultistrangeQA->Add(fHistVarDcaBachToPrimVertexOmegaPlus);
+  }
+  // --- CascCosineOfPointingAngle (30 bins, [0.97,1.0])
+  if (!fHistVarCascCosineOfPointingAngleXiMinus) {
+     fHistVarCascCosineOfPointingAngleXiMinus = new TH2F("fHistVarCascCosineOfPointingAngleXiMinus",";#it{p_{T}} (GeV/#it{c});Cascade cosine of PA", 250, 0.0, 25.0, 120, 0.97, 1.0);
+     fListHistMultistrangeQA->Add(fHistVarCascCosineOfPointingAngleXiMinus);
+  }
+  if (!fHistVarCascCosineOfPointingAngleXiPlus) {
+     fHistVarCascCosineOfPointingAngleXiPlus = new TH2F("fHistVarCascCosineOfPointingAngleXiPlus",";#it{p_{T}} (GeV/#it{c});Cascade cosine of PA", 250, 0.0, 25.0, 120, 0.97, 1.0);
+     fListHistMultistrangeQA->Add(fHistVarCascCosineOfPointingAngleXiPlus);
+  }
+  if (!fHistVarCascCosineOfPointingAngleOmegaMinus) {
+     fHistVarCascCosineOfPointingAngleOmegaMinus = new TH2F("fHistVarCascCosineOfPointingAngleOmegaMinus",";#it{p_{T}} (GeV/#it{c});Cascade cosine of PA", 250, 0.0, 25.0, 120, 0.97, 1.0);
+     fListHistMultistrangeQA->Add(fHistVarCascCosineOfPointingAngleOmegaMinus);
+  }
+  if (!fHistVarCascCosineOfPointingAngleOmegaPlus) {
+     fHistVarCascCosineOfPointingAngleOmegaPlus = new TH2F("fHistVarCascCosineOfPointingAngleOmegaPlus",";#it{p_{T}} (GeV/#it{c});Cascade cosine of PA", 250, 0.0, 25.0, 120, 0.97, 1.0);
+     fListHistMultistrangeQA->Add(fHistVarCascCosineOfPointingAngleOmegaPlus);
+  }
+  // --- CascRadius (40 bins, [0.0,4.0)
+  if (!fHistVarCascRadiusXiMinus) {
+     fHistVarCascRadiusXiMinus = new TH2F("fHistVarCascRadiusXiMinus",";#it{p_{T}} (GeV/#it{c});Cascade fiducial volume radius (cm)", 250, 0.0, 25.0, 40, 0.0, 4.0);
+     fListHistMultistrangeQA->Add(fHistVarCascRadiusXiMinus);
+  }
+  if (!fHistVarCascRadiusXiPlus) {
+     fHistVarCascRadiusXiPlus = new TH2F("fHistVarCascRadiusXiPlus",";#it{p_{T}} (GeV/#it{c});Cascade fiducial volume radius (cm)", 250, 0.0, 25.0, 40, 0.0, 4.0);
+     fListHistMultistrangeQA->Add(fHistVarCascRadiusXiPlus);
+  }
+  if (!fHistVarCascRadiusOmegaMinus) {
+     fHistVarCascRadiusOmegaMinus = new TH2F("fHistVarCascRadiusOmegaMinus",";#it{p_{T}} (GeV/#it{c});Cascade fiducial volume radius (cm)", 250, 0.0, 25.0, 40, 0.0, 4.0);
+     fListHistMultistrangeQA->Add(fHistVarCascRadiusOmegaMinus);
+  }
+  if (!fHistVarCascRadiusOmegaPlus) {
+     fHistVarCascRadiusOmegaPlus = new TH2F("fHistVarCascRadiusOmegaPlus",";#it{p_{T}} (GeV/#it{c});Cascade fiducial volume radius (cm)", 250, 0.0, 25.0, 40, 0.0, 4.0);
+     fListHistMultistrangeQA->Add(fHistVarCascRadiusOmegaPlus);
+  }
+  // --- InvMassLambdaAsCascDghter (30 bins, [1.1,1.3])
+  if (!fHistVarInvMassLambdaAsCascDghterXiMinus) {
+     fHistVarInvMassLambdaAsCascDghterXiMinus = new TH2F("fHistVarInvMassLambdaAsCascDghterXiMinus",";#it{p_{T}} (GeV/#it{c});V^{0} invariant mass (GeV/c^{2})", 250, 0.0, 25.0, 30, 1.10, 1.13);
+     fListHistMultistrangeQA->Add(fHistVarInvMassLambdaAsCascDghterXiMinus);
+  }
+  if (!fHistVarInvMassLambdaAsCascDghterXiPlus) {
+     fHistVarInvMassLambdaAsCascDghterXiPlus = new TH2F("fHistVarInvMassLambdaAsCascDghterXiPlus",";#it{p_{T}} (GeV/#it{c});V^{0} invariant mass (GeV/c^{2})", 250, 0.0, 25.0, 30, 1.10, 1.13);
+     fListHistMultistrangeQA->Add(fHistVarInvMassLambdaAsCascDghterXiPlus);
+  }
+  if (!fHistVarInvMassLambdaAsCascDghterOmegaMinus) {
+     fHistVarInvMassLambdaAsCascDghterOmegaMinus = new TH2F("fHistVarInvMassLambdaAsCascDghterOmegaMinus",";#it{p_{T}} (GeV/#it{c});V^{0} invariant mass (GeV/c^{2})", 250, 0.0, 25.0, 30, 1.10, 1.13);
+     fListHistMultistrangeQA->Add(fHistVarInvMassLambdaAsCascDghterOmegaMinus);
+  }
+  if (!fHistVarInvMassLambdaAsCascDghterOmegaPlus) {
+     fHistVarInvMassLambdaAsCascDghterOmegaPlus = new TH2F("fHistVarInvMassLambdaAsCascDghterOmegaPlus",";#it{p_{T}} (GeV/#it{c});V^{0} invariant mass (GeV/c^{2})", 250, 0.0, 25.0, 30, 1.10, 1.13);
+     fListHistMultistrangeQA->Add(fHistVarInvMassLambdaAsCascDghterOmegaPlus);
+  }
+  // --- DcaV0Daughters (20 bins, [0.0,2.0])
+  if (!fHistVarDcaV0DaughtersXiMinus) {
+     fHistVarDcaV0DaughtersXiMinus = new TH2F("fHistVarDcaV0DaughtersXiMinus",";#it{p_{T}} (GeV/#it{c});DCA V^{0} daughters (cm)", 250, 0.0, 25.0, 20, 0.0, 2.0);
+     fListHistMultistrangeQA->Add(fHistVarDcaV0DaughtersXiMinus);
+  }
+  if (!fHistVarDcaV0DaughtersXiPlus) {
+     fHistVarDcaV0DaughtersXiPlus = new TH2F("fHistVarDcaV0DaughtersXiPlus",";#it{p_{T}} (GeV/#it{c});DCA V^{0} daughters (cm)", 250, 0.0, 25.0, 20, 0.0, 2.0);
+     fListHistMultistrangeQA->Add(fHistVarDcaV0DaughtersXiPlus);
+  }
+  if (!fHistVarDcaV0DaughtersOmegaMinus) {
+     fHistVarDcaV0DaughtersOmegaMinus = new TH2F("fHistVarDcaV0DaughtersOmegaMinus",";#it{p_{T}} (GeV/#it{c});DCA V^{0} daughters (cm)", 250, 0.0, 25.0, 20, 0.0, 2.0);
+     fListHistMultistrangeQA->Add(fHistVarDcaV0DaughtersOmegaMinus);
+  }
+  if (!fHistVarDcaV0DaughtersOmegaPlus) {
+     fHistVarDcaV0DaughtersOmegaPlus = new TH2F("fHistVarDcaV0DaughtersOmegaPlus",";#it{p_{T}} (GeV/#it{c});DCA V^{0} daughters (cm)", 250, 0.0, 25.0, 20, 0.0, 2.0);
+     fListHistMultistrangeQA->Add(fHistVarDcaV0DaughtersOmegaPlus);
+  }
+  // --- V0CosineOfPointingAngleToCascVertex (100 bins, [0.9,1.0])
+  if (!fHistVarV0CosineOfPAToCascVertexXiMinus) {
+     fHistVarV0CosineOfPAToCascVertexXiMinus = new TH2F("fHistVarV0CosineOfPAToCascVertexXiMinus",";#it{p_{T}} (GeV/#it{c});V^{0} cosine of PA (to cascade vertex)", 250, 0.0, 25.0, 100, 0.9, 1.0);
+     fListHistMultistrangeQA->Add(fHistVarV0CosineOfPAToCascVertexXiMinus);
+  }
+  if (!fHistVarV0CosineOfPAToCascVertexXiPlus) {
+     fHistVarV0CosineOfPAToCascVertexXiPlus = new TH2F("fHistVarV0CosineOfPAToCascVertexXiPlus",";#it{p_{T}} (GeV/#it{c});V^{0} cosine of PA (to cascade vertex)", 250, 0.0, 25.0, 100, 0.9, 1.0);
+     fListHistMultistrangeQA->Add(fHistVarV0CosineOfPAToCascVertexXiPlus);
+  }
+  if (!fHistVarV0CosineOfPAToCascVertexOmegaMinus) {
+     fHistVarV0CosineOfPAToCascVertexOmegaMinus = new TH2F("fHistVarV0CosineOfPAToCascVertexOmegaMinus",";#it{p_{T}} (GeV/#it{c});V^{0} cosine of PA (to cascade vertex)", 250, 0.0, 25.0, 100, 0.9, 1.0);
+     fListHistMultistrangeQA->Add(fHistVarV0CosineOfPAToCascVertexOmegaMinus);
+  }
+  if (!fHistVarV0CosineOfPAToCascVertexOmegaPlus) {
+     fHistVarV0CosineOfPAToCascVertexOmegaPlus = new TH2F("fHistVarV0CosineOfPAToCascVertexOmegaPlus",";#it{p_{T}} (GeV/#it{c});V^{0} cosine of PA (to cascade vertex)", 250, 0.0, 25.0, 100, 0.9, 1.0);
+     fListHistMultistrangeQA->Add(fHistVarV0CosineOfPAToCascVertexOmegaPlus);
+  }
+  // --- V0Radius (40 bins, [0.0,4.0])
+  if (!fHistVarV0RadiusXiMinus) {
+     fHistVarV0RadiusXiMinus = new TH2F("fHistVarV0RadiusXiMinus",";#it{p_{T}} (GeV/#it{c});V^{0} fiducial volume radius (cm)", 250, 0.0, 25.0, 40, 0.0, 4.0);
+     fListHistMultistrangeQA->Add(fHistVarV0RadiusXiMinus);
+  }
+  if (!fHistVarV0RadiusXiPlus) {
+     fHistVarV0RadiusXiPlus = new TH2F("fHistVarV0RadiusXiPlus",";#it{p_{T}} (GeV/#it{c});V^{0} fiducial volume radius (cm)", 250, 0.0, 25.0, 40, 0.0, 4.0);
+     fListHistMultistrangeQA->Add(fHistVarV0RadiusXiPlus);
+  }
+  if (!fHistVarV0RadiusOmegaMinus) {
+     fHistVarV0RadiusOmegaMinus = new TH2F("fHistVarV0RadiusOmegaMinus",";#it{p_{T}} (GeV/#it{c});V^{0} fiducial volume radius (cm)", 250, 0.0, 25.0, 40, 0.0, 4.0);
+     fListHistMultistrangeQA->Add(fHistVarV0RadiusOmegaMinus);
+  }
+  if (!fHistVarV0RadiusOmegaPlus) {
+     fHistVarV0RadiusOmegaPlus = new TH2F("fHistVarV0RadiusOmegaPlus",";#it{p_{T}} (GeV/#it{c});V^{0} fiducial volume radius (cm)", 250, 0.0, 25.0, 40, 0.0, 4.0);
+     fListHistMultistrangeQA->Add(fHistVarV0RadiusOmegaPlus);
+  }
+  // --- DcaV0ToPrimVertex (40 bins, [0.0,0.4])
+  if (!fHistVarDcaV0ToPrimVertexXiMinus) {
+     fHistVarDcaV0ToPrimVertexXiMinus = new TH2F("fHistVarDcaV0ToPrimVertexXiMinus",";#it{p_{T}} (GeV/#it{c});V^{0} DCA to PV (cm)", 250, 0.0, 25.0, 40, 0.0, 0.4);
+     fListHistMultistrangeQA->Add(fHistVarDcaV0ToPrimVertexXiMinus);
+  }
+  if (!fHistVarDcaV0ToPrimVertexXiPlus) {
+     fHistVarDcaV0ToPrimVertexXiPlus = new TH2F("fHistVarDcaV0ToPrimVertexXiPlus",";#it{p_{T}} (GeV/#it{c});V^{0} DCA to PV (cm)", 250, 0.0, 25.0, 40, 0.0, 0.4);
+     fListHistMultistrangeQA->Add(fHistVarDcaV0ToPrimVertexXiPlus);
+  }
+  if (!fHistVarDcaV0ToPrimVertexOmegaMinus) {
+     fHistVarDcaV0ToPrimVertexOmegaMinus = new TH2F("fHistVarDcaV0ToPrimVertexOmegaMinus",";#it{p_{T}} (GeV/#it{c});V^{0} DCA to PV (cm)", 250, 0.0, 25.0, 40, 0.0, 0.4);
+     fListHistMultistrangeQA->Add(fHistVarDcaV0ToPrimVertexOmegaMinus);
+  }
+  if (!fHistVarDcaV0ToPrimVertexOmegaPlus) {
+     fHistVarDcaV0ToPrimVertexOmegaPlus = new TH2F("fHistVarDcaV0ToPrimVertexOmegaPlus",";#it{p_{T}} (GeV/#it{c});V^{0} DCA to PV (cm)", 250, 0.0, 25.0, 40, 0.0, 0.4);
+     fListHistMultistrangeQA->Add(fHistVarDcaV0ToPrimVertexOmegaPlus);
+  }
+  // --- DcaPosToPrimVertex (25 bins, [0.0,0.25])
+  if (!fHistVarDcaPosToPrimVertexXiMinus) {
+     fHistVarDcaPosToPrimVertexXiMinus = new TH2F("fHistVarDcaPosToPrimVertexXiMinus",";#it{p_{T}} (GeV/#it{c});Positive V^{0} daughter DCA to PV (cm)", 250, 0.0, 25.0, 25, 0.0, 0.25);
+     fListHistMultistrangeQA->Add(fHistVarDcaPosToPrimVertexXiMinus);
+  }
+  if (!fHistVarDcaPosToPrimVertexXiPlus) {
+     fHistVarDcaPosToPrimVertexXiPlus = new TH2F("fHistVarDcaPosToPrimVertexXiPlus",";#it{p_{T}} (GeV/#it{c});Positive V^{0} daughter DCA to PV (cm)", 250, 0.0, 25.0, 25, 0.0, 0.25);
+     fListHistMultistrangeQA->Add(fHistVarDcaPosToPrimVertexXiPlus);
+  }
+  if (!fHistVarDcaPosToPrimVertexOmegaMinus) {
+     fHistVarDcaPosToPrimVertexOmegaMinus = new TH2F("fHistVarDcaPosToPrimVertexOmegaMinus",";#it{p_{T}} (GeV/#it{c});Positive V^{0} daughter DCA to PV (cm)", 250, 0.0, 25.0, 25, 0.0, 0.25);
+     fListHistMultistrangeQA->Add(fHistVarDcaPosToPrimVertexOmegaMinus);
+  }
+  if (!fHistVarDcaPosToPrimVertexOmegaPlus) {
+     fHistVarDcaPosToPrimVertexOmegaPlus = new TH2F("fHistVarDcaPosToPrimVertexOmegaPlus",";#it{p_{T}} (GeV/#it{c});Positive V^{0} daughter DCA to PV (cm)", 250, 0.0, 25.0, 25, 0.0, 0.25);
+     fListHistMultistrangeQA->Add(fHistVarDcaPosToPrimVertexOmegaPlus);
+  }  
+  // --- DcaNegToPrimVertex (25 bins, [0.0,0.25])
+  if (!fHistVarDcaNegToPrimVertexXiMinus) {
+     fHistVarDcaNegToPrimVertexXiMinus = new TH2F("fHistVarDcaNegToPrimVertexXiMinus",";#it{p_{T}} (GeV/#it{c});Negative V^{0} daughter DCA to PV (cm)", 250, 0.0, 25.0, 25, 0.0, 0.25);
+     fListHistMultistrangeQA->Add(fHistVarDcaNegToPrimVertexXiMinus);
+  }
+  if (!fHistVarDcaNegToPrimVertexXiPlus) {
+     fHistVarDcaNegToPrimVertexXiPlus = new TH2F("fHistVarDcaNegToPrimVertexXiPlus",";#it{p_{T}} (GeV/#it{c});Negative V^{0} daughter DCA to PV (cm)", 250, 0.0, 25.0, 25, 0.0, 0.25);
+     fListHistMultistrangeQA->Add(fHistVarDcaNegToPrimVertexXiPlus);
+  }
+  if (!fHistVarDcaNegToPrimVertexOmegaMinus) {
+     fHistVarDcaNegToPrimVertexOmegaMinus = new TH2F("fHistVarDcaNegToPrimVertexOmegaMinus",";#it{p_{T}} (GeV/#it{c});Negative V^{0} daughter DCA to PV (cm)", 250, 0.0, 25.0, 25, 0.0, 0.25);
+     fListHistMultistrangeQA->Add(fHistVarDcaNegToPrimVertexOmegaMinus);
+  }
+  if (!fHistVarDcaNegToPrimVertexOmegaPlus) {
+     fHistVarDcaNegToPrimVertexOmegaPlus = new TH2F("fHistVarDcaNegToPrimVertexOmegaPlus",";#it{p_{T}} (GeV/#it{c});Negative V^{0} daughter DCA to PV (cm)", 250, 0.0, 25.0, 25, 0.0, 0.25);
+     fListHistMultistrangeQA->Add(fHistVarDcaNegToPrimVertexOmegaPlus);
+  }  
+  // -- Invariant mass distributions (150 bins, [1.25,1.40] for Xi and [1.62,1.74] for Omega)
+  if (! fHistMassXiMinus) {
      fHistMassXiMinus = new TH1F("fHistMassXiMinus", "#Xi^{-} candidates;M(#Lambda,#pi^{-}) (GeV/c^{2}); Counts", 150, 1.25, 1.40);
      fListHistMultistrangeQA->Add(fHistMassXiMinus);
-  } 
-  if(! fHistMassXiPlus) {
+  }
+  if (! fHistMassXiPlus) {
      fHistMassXiPlus = new TH1F("fHistMassXiPlus", "#Xi^{+} candidates; M(#bar{#Lambda}^{0},#pi^{+}) (GeV/c^{2}); Counts", 150, 1.25, 1.40);
      fListHistMultistrangeQA->Add(fHistMassXiPlus);
   }
-  if(! fHistMassOmegaMinus) {
+  if (! fHistMassOmegaMinus) {
      fHistMassOmegaMinus = new TH1F("fHistMassOmegaMinus", "#Omega^{-} candidates; M(#Lambda,K^{-}) (GeV/c^{2}); Counts", 120, 1.62, 1.74);
      fListHistMultistrangeQA->Add(fHistMassOmegaMinus);
   }
-  if(! fHistMassOmegaPlus) {
-     fHistMassOmegaPlus = new TH1F("fHistMassOmegaPlus", "#Omega^{+} candidates;M(#bar{#Lambda}^{0},K^{+}) (GeV/c^{2}); Counts", 120, 1.62, 1.74); 
-     fListHistMultistrangeQA->Add(fHistMassOmegaPlus);                                                                                                    
+  if (! fHistMassOmegaPlus) {
+     fHistMassOmegaPlus = new TH1F("fHistMassOmegaPlus", "#Omega^{+} candidates;M(#bar{#Lambda}^{0},K^{+}) (GeV/c^{2}); Counts", 120, 1.62, 1.74);
+     fListHistMultistrangeQA->Add(fHistMassOmegaPlus);
   }
-  if(! fHistCascadeMultiplicityXiMinus) {
-     fHistCascadeMultiplicityXiMinus = new TH1F("fHistCascadeMultiplicityXiMinusForMC","Xi Minus per event;Nbr of Xi Minus/Evt;Events", 50, 0, 50);
-     fListHistMultistrangeQA->Add(fHistCascadeMultiplicityXiMinus);
-  } 
-  if(! fHistCascadeMultiplicityXiPlus) {
-     fHistCascadeMultiplicityXiPlus = new TH1F("fHistCascadeMultiplicityXiPlusForMC","Xi Plus per event;Nbr of Xi Plus/Evt;Events", 50, 0, 50);
-     fListHistMultistrangeQA->Add(fHistCascadeMultiplicityXiPlus);
+  // --- CascTransvMom (250, [0.0,25.0])
+  if (!fHistVarTransvMomentumXiMinus) {
+     fHistVarTransvMomentumXiMinus = new TH1F("fHistVarTransvMomentumXiMinus",";#it{p_{T}} (GeV/#it{c});Counts", 250, 0.0, 25.0);
+     fListHistMultistrangeQA->Add(fHistVarTransvMomentumXiMinus);
   }
-  if(! fHistCascadeMultiplicityOmegaMinus) {
-     fHistCascadeMultiplicityOmegaMinus = new TH1F("fHistCascadeMultiplicityOmegaMinusForMC","Omega Minus per event;Nbr of Omega Minus/Evt;Events", 50, 0, 50);
-     fListHistMultistrangeQA->Add(fHistCascadeMultiplicityOmegaMinus);
+  if (!fHistVarTransvMomentumXiPlus) {
+     fHistVarTransvMomentumXiPlus = new TH1F("fHistVarTransvMomentumXiPlus",";#it{p_{T}} (GeV/#it{c});Counts", 250, 0.0, 25.0);
+     fListHistMultistrangeQA->Add(fHistVarTransvMomentumXiPlus);
   }
-  if(! fHistCascadeMultiplicityOmegaPlus) {
-     fHistCascadeMultiplicityOmegaPlus = new TH1F("fHistCascadeMultiplicityOmegaPlusForMC","Omega Plus per event;Nbr of Omega Plus/Evt;Events", 50, 0, 50);
-     fListHistMultistrangeQA->Add(fHistCascadeMultiplicityOmegaPlus);
+  if (!fHistVarTransvMomentumOmegaMinus) {
+     fHistVarTransvMomentumOmegaMinus = new TH1F("fHistVarTransvMomentumOmegaMinus",";#it{p_{T}} (GeV/#it{c});Counts", 250, 0.0, 25.0);
+     fListHistMultistrangeQA->Add(fHistVarTransvMomentumOmegaMinus);
   }
-
-
-  //___________________________________________________
-  // Define the container for the topological variables
-  if(! fCFContCascadeCuts) {
-      // NB: overflow/underflow of variables on which we want to cut later should be 0!!! 
-      const Int_t  lNbSteps      =  4;
-      const Int_t  lNbVariables  =  19; 
-      //Array for the number of bins in each dimension :
-      Int_t lNbBinsPerVar[lNbVariables] = {0};
-      lNbBinsPerVar[0]  = 25;     //DcaCascDaughters             :  [0.0,2.4,3.0]       -> Rec.Cut = 2.0;
-      lNbBinsPerVar[1]  = 25;     //DcaBachToPrimVertex          :  [0.0,0.24,100.0]    -> Rec.Cut = 0.01; 
-      lNbBinsPerVar[2]  = 30;     //CascCosineOfPointingAngle    :  [0.97,1.0]          -> Rec.Cut = 0.98;
-      lNbBinsPerVar[3]  = 40;     //CascRadius                   :  [0.0,3.9,1000.0]    -> Rec.Cut = 0.2;
-      lNbBinsPerVar[4]  = 30;     //InvMassLambdaAsCascDghter    :  [1.1,1.3]           -> Rec.Cut = 0.008;
-      lNbBinsPerVar[5]  = 20;     //DcaV0Daughters               :  [0.0,2.0]           -> Rec.Cut = 1.5;
-      lNbBinsPerVar[6]  = 201;    //V0CosineOfPointingAngleToPV  :  [0.89,1.0]          -> Rec.Cut = 0.9;
-      lNbBinsPerVar[7]  = 40;     //V0Radius                     :  [0.0,3.9,1000.0]    -> Rec.Cut = 0.2;
-      lNbBinsPerVar[8]  = 40;     //DcaV0ToPrimVertex            :  [0.0,0.39,110.0]    -> Rec.Cut = 0.01;  
-      lNbBinsPerVar[9]  = 25;     //DcaPosToPrimVertex           :  [0.0,0.24,100.0]    -> Rec.Cut = 0.05;
-      lNbBinsPerVar[10] = 25;     //DcaNegToPrimVertex           :  [0.0,0.24,100.0]    -> Rec.Cut = 0.05
-      lNbBinsPerVar[11] = 150;    //InvMassXi                    :   2-MeV/c2 bins
-      lNbBinsPerVar[12] = 120;    //InvMassOmega                 :   2-MeV/c2 bins
-      lNbBinsPerVar[13] = 250;    //XiTransvMom                  :  [0.0,25.0]
-      lNbBinsPerVar[14] = 110;    //Y(Xi)                        :   0.02 in rapidity units
-      lNbBinsPerVar[15] = 110;    //Y(Omega)                     :   0.02 in rapidity units
-      lNbBinsPerVar[16] = 112;    //Proper lenght of cascade       
-      lNbBinsPerVar[17] = 112;    //Proper lenght of V0
-      lNbBinsPerVar[18] = 201;    //V0CosineOfPointingAngleToXiV
-      //define the container
-      fCFContCascadeCuts = new AliCFContainer("fCFContCascadeCuts","Container for Cascade cuts", lNbSteps, lNbVariables, lNbBinsPerVar );
-      //Setting the bin limits 
-       //0 -  DcaXiDaughters
-      Double_t *lBinLim0  = new Double_t[ lNbBinsPerVar[0] + 1 ];
-         for(Int_t i=0; i< lNbBinsPerVar[0]; i++) lBinLim0[i] = (Double_t)0.0 + (2.4 - 0.0)/(lNbBinsPerVar[0] - 1) * (Double_t)i;
-         lBinLim0[ lNbBinsPerVar[0] ] = 3.0;
-      fCFContCascadeCuts -> SetBinLimits(0, lBinLim0);
-      delete [] lBinLim0;
-       //1 - DcaToPrimVertexXi
-      Double_t *lBinLim1  = new Double_t[ lNbBinsPerVar[1] + 1 ];
-         for(Int_t i=0; i<lNbBinsPerVar[1]; i++) lBinLim1[i] = (Double_t)0.0 + (0.24  - 0.0)/(lNbBinsPerVar[1] - 1) * (Double_t)i;
-         lBinLim1[ lNbBinsPerVar[1] ] = 100.0;
-      fCFContCascadeCuts -> SetBinLimits(1, lBinLim1);
-      delete [] lBinLim1;
-       //2 - CascCosineOfPointingAngle 
-      fCFContCascadeCuts->SetBinLimits(2, 0.97, 1.);
-       //3 - CascRadius
-      Double_t *lBinLim3  = new Double_t[ lNbBinsPerVar[3]+1 ];
-         for(Int_t i=0; i< lNbBinsPerVar[3]; i++)   lBinLim3[i]  = (Double_t)0.0   + (3.9  - 0.0 )/(lNbBinsPerVar[3] - 1)  * (Double_t)i ;
-         lBinLim3[ lNbBinsPerVar[3] ] = 1000.0;
-      fCFContCascadeCuts -> SetBinLimits(3,  lBinLim3 );
-      delete [] lBinLim3;
-       //4 - InvMassLambdaAsCascDghter
-      fCFContCascadeCuts->SetBinLimits(4, 1.1, 1.13);
-       //5 - DcaV0Daughters
-      fCFContCascadeCuts -> SetBinLimits(5, 0., 2.);
-       //6 - V0CosineOfPointingAngleToPV
-      fCFContCascadeCuts -> SetBinLimits(6, 0.8, 1.001);
-       //7 - V0Radius
-      Double_t *lBinLim7 = new Double_t[ lNbBinsPerVar[7] + 1];
-         for(Int_t i=0; i< lNbBinsPerVar[7];i++) lBinLim7[i] = (Double_t)0.0 + (3.9 - 0.0)/(lNbBinsPerVar[7] - 1) * (Double_t)i;
-         lBinLim7[ lNbBinsPerVar[7] ] = 1000.0;
-      fCFContCascadeCuts -> SetBinLimits(7, lBinLim7);
-      delete [] lBinLim7;
-       //8 - DcaV0ToPrimVertex
-      Double_t *lBinLim8  = new Double_t[ lNbBinsPerVar[8]+1 ];
-         for(Int_t i=0; i< lNbBinsPerVar[8];i++)   lBinLim8[i]  = (Double_t)0.0   + (0.39  - 0.0 )/(lNbBinsPerVar[8]-1)  * (Double_t)i ;
-         lBinLim8[ lNbBinsPerVar[8]  ] = 100.0;
-      fCFContCascadeCuts -> SetBinLimits(8,  lBinLim8 );
-      delete [] lBinLim8;
-       //9 - DcaPosToPrimVertex
-      Double_t *lBinLim9  = new Double_t[ lNbBinsPerVar[9]+1 ];
-         for(Int_t i=0; i< lNbBinsPerVar[9];i++)   lBinLim9[i]  = (Double_t)0.0   + (0.24  - 0.0 )/(lNbBinsPerVar[9]-1)  * (Double_t)i ;
-         lBinLim9[ lNbBinsPerVar[9]  ] = 100.0;
-      fCFContCascadeCuts -> SetBinLimits(9,  lBinLim9 );
-      delete [] lBinLim9;
-       //10 - DcaNegToPrimVertex
-      Double_t *lBinLim10  = new Double_t[ lNbBinsPerVar[10]+1 ];
-         for(Int_t i=0; i< lNbBinsPerVar[10];i++)   lBinLim10[i]  = (Double_t)0.0   + (0.24  - 0.0 )/(lNbBinsPerVar[10]-1)  * (Double_t)i ;
-         lBinLim10[ lNbBinsPerVar[10]  ] = 100.0;
-      fCFContCascadeCuts -> SetBinLimits(10,  lBinLim10 );     
-      delete [] lBinLim10;
-       //11 - InvMassXi
-      fCFContCascadeCuts->SetBinLimits(11, 1.25, 1.40);
-       //12 - InvMassOmega
-      fCFContCascadeCuts->SetBinLimits(12, 1.62, 1.74);
-       //13 - XiTransvMom
-      fCFContCascadeCuts->SetBinLimits(13, 0.0, 25.0);
-       //14 - Y(Xi)
-      fCFContCascadeCuts->SetBinLimits(14, -1.1, 1.1);
-       //15 - Y(Omega)
-      fCFContCascadeCuts->SetBinLimits(15, -1.1, 1.1);
-       //16 - Proper time of cascade
-      Double_t *lBinLim16  = new Double_t[ lNbBinsPerVar[16]+1 ];
-         for(Int_t i=0; i< lNbBinsPerVar[16];i++) lBinLim16[i] = (Double_t) -1. + (110. + 1.0 ) / (lNbBinsPerVar[16] - 1) * (Double_t) i;
-         lBinLim16[ lNbBinsPerVar[16] ] = 2000.0;
-      fCFContCascadeCuts->SetBinLimits(16, lBinLim16);
-       //17 - Proper time of V0
-      fCFContCascadeCuts->SetBinLimits(17, lBinLim16);
-       //18 - V0CosineOfPointingAngleToXiV
-      fCFContCascadeCuts -> SetBinLimits(18, 0.8, 1.001);
-      // Setting the number of steps : one for each cascade species (Xi-, Xi+ and Omega-, Omega+)
-      fCFContCascadeCuts->SetStepTitle(0, "#Xi^{-} candidates");
-      fCFContCascadeCuts->SetStepTitle(1, "#bar{#Xi}^{+} candidates");
-      fCFContCascadeCuts->SetStepTitle(2, "#Omega^{-} candidates");
-      fCFContCascadeCuts->SetStepTitle(3, "#bar{#Omega}^{+} candidates");
-      // Setting the variable title, per axis
-      fCFContCascadeCuts->SetVarTitle(0,  "Dca(cascade daughters) (cm)");
-      fCFContCascadeCuts->SetVarTitle(1,  "ImpactParamToPV(bachelor) (cm)");
-      fCFContCascadeCuts->SetVarTitle(2,  "cos(cascade PA)");
-      fCFContCascadeCuts->SetVarTitle(3,  "R_{2d}(cascade decay) (cm)");
-      fCFContCascadeCuts->SetVarTitle(4,  "M_{#Lambda}(as casc dghter) (GeV/c^{2})");
-      fCFContCascadeCuts->SetVarTitle(5,  "Dca(V0 daughters) in Xi (cm)");
-      fCFContCascadeCuts->SetVarTitle(6,  "cos(V0 PA) in cascade to PV");
-      fCFContCascadeCuts->SetVarTitle(7,  "R_{2d}(V0 decay) (cm)");
-      fCFContCascadeCuts->SetVarTitle(8,  "ImpactParamToPV(V0) (cm)");
-      fCFContCascadeCuts->SetVarTitle(9,  "ImpactParamToPV(Pos) (cm)");
-      fCFContCascadeCuts->SetVarTitle(10, "ImpactParamToPV(Neg) (cm)");
-      fCFContCascadeCuts->SetVarTitle(11, "Inv. Mass(Xi) (GeV/c^{2})");
-      fCFContCascadeCuts->SetVarTitle(12, "Inv. Mass(Omega) (GeV/c^{2})");
-      fCFContCascadeCuts->SetVarTitle(13, "pt(cascade) (GeV/c)");
-      fCFContCascadeCuts->SetVarTitle(14, "Y(Xi)");
-      fCFContCascadeCuts->SetVarTitle(15, "Y(Omega)");
-      fCFContCascadeCuts->SetVarTitle(16, "mL/p (cascade) (cm)");
-      fCFContCascadeCuts->SetVarTitle(17, "mL/p (V0) (cm)");
-      fCFContCascadeCuts->SetVarTitle(18, "cos(V0 PA) in cascade to XiV");
+  if (!fHistVarTransvMomentumOmegaPlus) {
+     fHistVarTransvMomentumOmegaPlus = new TH1F("fHistVarTransvMomentumOmegaPlus",";#it{p_{T}} (GeV/#it{c});Counts", 250, 0.0, 25.0);
+     fListHistMultistrangeQA->Add(fHistVarTransvMomentumOmegaPlus);
   }
-
-
-  //_________________________________________________________________________
-  // Define the container for the topological variables (with MC association) 
-  if(! fCFContCascadeMCCuts) {
-      // NB: overflow/underflow of variables on which we want to cut later should be 0!!! 
-      const Int_t  lNbStepsMCAss      =  4;
-      const Int_t  lNbVariablesMCAss  =  19;
-      //Array for the number of bins in each dimension :
-      Int_t lNbBinsPerVarMCAss[lNbVariablesMCAss] = {0};
-      lNbBinsPerVarMCAss[0]  = 25;     //DcaCascDaughters             :  [0.0,2.4,3.0]       -> Rec.Cut = 2.0;
-      lNbBinsPerVarMCAss[1]  = 25;     //DcaBachToPrimVertex          :  [0.0,0.24,100.0]    -> Rec.Cut = 0.01; 
-      lNbBinsPerVarMCAss[2]  = 30;     //CascCosineOfPointingAngle    :  [0.97,1.0]          -> Rec.Cut = 0.98;
-      lNbBinsPerVarMCAss[3]  = 40;     //CascRadius                   :  [0.0,3.9,1000.0]    -> Rec.Cut = 0.2;
-      lNbBinsPerVarMCAss[4]  = 30;     //InvMassLambdaAsCascDghter    :  [1.1,1.3]           -> Rec.Cut = 0.008;
-      lNbBinsPerVarMCAss[5]  = 20;     //DcaV0Daughters               :  [0.0,2.0]           -> Rec.Cut = 1.5;
-      lNbBinsPerVarMCAss[6]  = 201;    //V0CosineOfPointingAngleToPV  :  [0.89,1.0]          -> Rec.Cut = 0.9;
-      lNbBinsPerVarMCAss[7]  = 40;     //V0Radius                     :  [0.0,3.9,1000.0]    -> Rec.Cut = 0.2;
-      lNbBinsPerVarMCAss[8]  = 40;     //DcaV0ToPrimVertex            :  [0.0,0.39,110.0]    -> Rec.Cut = 0.01;  
-      lNbBinsPerVarMCAss[9]  = 25;     //DcaPosToPrimVertex           :  [0.0,0.24,100.0]    -> Rec.Cut = 0.05;
-      lNbBinsPerVarMCAss[10] = 25;     //DcaNegToPrimVertex           :  [0.0,0.24,100.0]    -> Rec.Cut = 0.05
-      lNbBinsPerVarMCAss[11] = 150;    //InvMassXi                    :   2-MeV/c2 bins
-      lNbBinsPerVarMCAss[12] = 120;    //InvMassOmega                 :   2-MeV/c2 bins
-      lNbBinsPerVarMCAss[13] = 250;    //XiTransvMom                  :  [0.0,25.0]
-      lNbBinsPerVarMCAss[14] = 110;    //Y(Xi)                        :   0.02 in rapidity units
-      lNbBinsPerVarMCAss[15] = 110;    //Y(Omega)                     :   0.02 in rapidity units
-      lNbBinsPerVarMCAss[16] = 112;    //Proper lenght of cascade       
-      lNbBinsPerVarMCAss[17] = 112;    //Proper lenght of V0
-      lNbBinsPerVarMCAss[18] = 201;    //V0CosineOfPointingAngleToXiV
-      //define the container
-      fCFContCascadeMCCuts = new AliCFContainer("fCFContCascadeMCCuts","Container for Cascade cuts MC", lNbStepsMCAss, lNbVariablesMCAss, lNbBinsPerVarMCAss );
-      //Setting the bin limits 
-       //0 -  DcaXiDaughters
-      Double_t *lBinLim0MCAss  = new Double_t[ lNbBinsPerVarMCAss[0] + 1 ];
-         for(Int_t i=0; i< lNbBinsPerVarMCAss[0]; i++) lBinLim0MCAss[i] = (Double_t)0.0 + (2.4 - 0.0)/(lNbBinsPerVarMCAss[0] - 1) * (Double_t)i;
-         lBinLim0MCAss[ lNbBinsPerVarMCAss[0] ] = 3.0;
-      fCFContCascadeMCCuts -> SetBinLimits(0, lBinLim0MCAss);
-      delete [] lBinLim0MCAss;
-       //1 - DcaToPrimVertexXi
-      Double_t *lBinLim1MCAss  = new Double_t[ lNbBinsPerVarMCAss[1] + 1 ];
-         for(Int_t i=0; i<lNbBinsPerVarMCAss[1]; i++) lBinLim1MCAss[i] = (Double_t)0.0 + (0.24  - 0.0)/(lNbBinsPerVarMCAss[1] - 1) * (Double_t)i;
-         lBinLim1MCAss[ lNbBinsPerVarMCAss[1] ] = 100.0;
-      fCFContCascadeMCCuts -> SetBinLimits(1, lBinLim1MCAss);
-      delete [] lBinLim1MCAss;
-       //2 - CascCosineOfPointingAngle 
-      fCFContCascadeMCCuts->SetBinLimits(2, 0.97, 1.);
-       //3 - CascRadius
-      Double_t *lBinLim3MCAss  = new Double_t[ lNbBinsPerVarMCAss[3]+1 ];
-         for(Int_t i=0; i< lNbBinsPerVarMCAss[3]; i++)   lBinLim3MCAss[i]  = (Double_t)0.0   + (3.9  - 0.0 )/(lNbBinsPerVarMCAss[3] - 1)  * (Double_t)i ;
-         lBinLim3MCAss[ lNbBinsPerVarMCAss[3] ] = 1000.0;
-      fCFContCascadeMCCuts -> SetBinLimits(3,  lBinLim3MCAss );
-      delete [] lBinLim3MCAss;
-       //4 - InvMassLambdaAsCascDghter
-      fCFContCascadeMCCuts->SetBinLimits(4, 1.1, 1.13);
-       //5 - DcaV0Daughters
-      fCFContCascadeMCCuts -> SetBinLimits(5, 0., 2.);
-       //6 - V0CosineOfPointingAngleToPV
-      fCFContCascadeMCCuts -> SetBinLimits(6, 0.8, 1.001);
-       //7 - V0Radius
-      Double_t *lBinLim7MCAss = new Double_t[ lNbBinsPerVarMCAss[7] + 1];
-         for(Int_t i=0; i< lNbBinsPerVarMCAss[7];i++) lBinLim7MCAss[i] = (Double_t)0.0 + (3.9 - 0.0)/(lNbBinsPerVarMCAss[7] - 1) * (Double_t)i;
-         lBinLim7MCAss[ lNbBinsPerVarMCAss[7] ] = 1000.0;
-      fCFContCascadeMCCuts -> SetBinLimits(7, lBinLim7MCAss);
-      delete [] lBinLim7MCAss;
-       //8 - DcaV0ToPrimVertex
-      Double_t *lBinLim8MCAss = new Double_t[ lNbBinsPerVarMCAss[8]+1 ];
-         for(Int_t i=0; i< lNbBinsPerVarMCAss[8];i++)   lBinLim8MCAss[i]  = (Double_t)0.0 + (0.39 - 0.0 )/(lNbBinsPerVarMCAss[8]-1) * (Double_t)i ;
-         lBinLim8MCAss[ lNbBinsPerVarMCAss[8]  ] = 100.0;
-      fCFContCascadeMCCuts -> SetBinLimits(8,  lBinLim8MCAss );
-      delete [] lBinLim8MCAss;
-       //9 - DcaPosToPrimVertex
-      Double_t *lBinLim9MCAss = new Double_t[ lNbBinsPerVarMCAss[9]+1 ];
-         for(Int_t i=0; i< lNbBinsPerVarMCAss[9];i++)   lBinLim9MCAss[i] = (Double_t)0.0   + (0.24  - 0.0 )/(lNbBinsPerVarMCAss[9]-1)  * (Double_t)i ;
-         lBinLim9MCAss[ lNbBinsPerVarMCAss[9]  ] = 100.0;
-      fCFContCascadeMCCuts -> SetBinLimits(9,  lBinLim9MCAss );
-      delete [] lBinLim9MCAss;
-       //10 - DcaNegToPrimVertex
-      Double_t *lBinLim10MCAss  = new Double_t[ lNbBinsPerVarMCAss[10]+1 ];
-         for(Int_t i=0; i< lNbBinsPerVarMCAss[10];i++)   lBinLim10MCAss[i]  = (Double_t)0.0 + (0.24 - 0.0 )/(lNbBinsPerVarMCAss[10]-1) * (Double_t)i ;
-         lBinLim10MCAss[ lNbBinsPerVarMCAss[10]  ] = 100.0;
-      fCFContCascadeMCCuts -> SetBinLimits(10,  lBinLim10MCAss );
-      delete [] lBinLim10MCAss;
-       //11 - InvMassXi
-      fCFContCascadeMCCuts->SetBinLimits(11, 1.25, 1.40);
-       //12 - InvMassOmega
-      fCFContCascadeMCCuts->SetBinLimits(12, 1.62, 1.74);
-       //13 - XiTransvMom
-      fCFContCascadeMCCuts->SetBinLimits(13, 0.0, 25.0);
-       //14 - Y(Xi)
-      fCFContCascadeMCCuts->SetBinLimits(14, -1.1, 1.1);
-       //15 - Y(Omega)
-      fCFContCascadeMCCuts->SetBinLimits(15, -1.1, 1.1);
-       //16 - Proper time of cascade
-      Double_t *lBinLim16MCAss  = new Double_t[ lNbBinsPerVarMCAss[16]+1 ];
-         for(Int_t i=0; i< lNbBinsPerVarMCAss[16];i++) lBinLim16MCAss[i] = (Double_t) -1. + (110. + 1.0 ) / (lNbBinsPerVarMCAss[16] - 1) * (Double_t) i;
-         lBinLim16MCAss[ lNbBinsPerVarMCAss[16] ] = 2000.0;
-      fCFContCascadeMCCuts->SetBinLimits(16, lBinLim16MCAss);
-       //17 - Proper time of V0
-      fCFContCascadeMCCuts->SetBinLimits(17, lBinLim16MCAss);
-       //18 - V0CosineOfPointingAngleToXiV
-      fCFContCascadeMCCuts -> SetBinLimits(18, 0.8, 1.001);
-      // Setting the number of steps : one for each cascade species (Xi-, Xi+ and Omega-, Omega+)
-      fCFContCascadeMCCuts->SetStepTitle(0, "#Xi^{-} candidates");
-      fCFContCascadeMCCuts->SetStepTitle(1, "#bar{#Xi}^{+} candidates");
-      fCFContCascadeMCCuts->SetStepTitle(2, "#Omega^{-} candidates");
-      fCFContCascadeMCCuts->SetStepTitle(3, "#bar{#Omega}^{+} candidates");
-      // Setting the variable title, per axis
-      fCFContCascadeMCCuts->SetVarTitle(0,  "Dca(cascade daughters) (cm)");
-      fCFContCascadeMCCuts->SetVarTitle(1,  "ImpactParamToPV(bachelor) (cm)");
-      fCFContCascadeMCCuts->SetVarTitle(2,  "cos(cascade PA)");
-      fCFContCascadeMCCuts->SetVarTitle(3,  "R_{2d}(cascade decay) (cm)");
-      fCFContCascadeMCCuts->SetVarTitle(4,  "M_{#Lambda}(as casc dghter) (GeV/c^{2})");
-      fCFContCascadeMCCuts->SetVarTitle(5,  "Dca(V0 daughters) in Xi (cm)");
-      fCFContCascadeMCCuts->SetVarTitle(6,  "cos(V0 PA) in cascade to PV");
-      fCFContCascadeMCCuts->SetVarTitle(7,  "R_{2d}(V0 decay) (cm)");
-      fCFContCascadeMCCuts->SetVarTitle(8,  "ImpactParamToPV(V0) (cm)");
-      fCFContCascadeMCCuts->SetVarTitle(9,  "ImpactParamToPV(Pos) (cm)");
-      fCFContCascadeMCCuts->SetVarTitle(10, "ImpactParamToPV(Neg) (cm)");
-      fCFContCascadeMCCuts->SetVarTitle(11, "Inv. Mass(Xi) (GeV/c^{2})");
-      fCFContCascadeMCCuts->SetVarTitle(12, "Inv. Mass(Omega) (GeV/c^{2})");
-      fCFContCascadeMCCuts->SetVarTitle(13, "pt(cascade) (GeV/c)");
-      fCFContCascadeMCCuts->SetVarTitle(14, "Y(Xi)");
-      fCFContCascadeMCCuts->SetVarTitle(15, "Y(Omega)");
-      fCFContCascadeMCCuts->SetVarTitle(16, "mL/p (cascade) (cm)");
-      fCFContCascadeMCCuts->SetVarTitle(17, "mL/p (V0) (cm)");
-      fCFContCascadeMCCuts->SetVarTitle(18, "cos(V0 PA) in cascade to XiV");
+  // --- Y (110 bins, [-1.1, 1.1])
+  if (!fHistVarRapidityXiMinus) {
+     fHistVarRapidityXiMinus = new TH1F("fHistVarRapidityXiMinus",";Y;Counts", 110, -1.1, 1.1);
+     fListHistMultistrangeQA->Add(fHistVarRapidityXiMinus);
+  }
+  if (!fHistVarRapidityXiPlus) {
+     fHistVarRapidityXiPlus = new TH1F("fHistVarRapidityXiPlus",";Y;Counts", 110, -1.1, 1.1);
+     fListHistMultistrangeQA->Add(fHistVarRapidityXiPlus);
+  }
+  if (!fHistVarRapidityOmegaMinus) {
+     fHistVarRapidityOmegaMinus = new TH1F("fHistVarRapidityOmegaMinus",";Y;Counts", 110, -1.1, 1.1);
+     fListHistMultistrangeQA->Add(fHistVarRapidityOmegaMinus);
+  }
+  if (!fHistVarRapidityOmegaPlus) {
+     fHistVarRapidityOmegaPlus = new TH1F("fHistVarRapidityOmegaPlus",";Y;Counts", 110, -1.1, 1.1);
+     fListHistMultistrangeQA->Add(fHistVarRapidityOmegaPlus);
+  }
+  // --- CascadeProperLength (100 bins, [0.0, 100.])
+  if (!fHistVarCascProperLengthXiMinus) {
+     fHistVarCascProperLengthXiMinus =  new TH2F("fHistVarCascProperLengthXiMinus",";#it{p_{T}} (GeV/#it{c});mL/p (cm)", 250, 0.0, 25.0, 100, 0.0, 100.);
+     fListHistMultistrangeQA->Add(fHistVarCascProperLengthXiMinus);
+  }
+  if (!fHistVarCascProperLengthXiPlus) {
+     fHistVarCascProperLengthXiPlus =  new TH2F("fHistVarCascProperLengthXiPlus",";#it{p_{T}} (GeV/#it{c});mL/p (cm)", 250, 0.0, 25.0, 100, 0.0, 100.);
+     fListHistMultistrangeQA->Add(fHistVarCascProperLengthXiPlus);
+  }
+  if (!fHistVarCascProperLengthOmegaMinus) {
+     fHistVarCascProperLengthOmegaMinus =  new TH2F("fHistVarCascProperLengthOmegaMinus",";#it{p_{T}} (GeV/#it{c});mL/p (cm)", 250, 0.0, 25.0, 100, 0.0, 100.);
+     fListHistMultistrangeQA->Add(fHistVarCascProperLengthOmegaMinus);
+  }
+  if (!fHistVarCascProperLengthOmegaPlus) {
+     fHistVarCascProperLengthOmegaPlus =  new TH2F("fHistVarCascProperLengthOmegaPlus",";#it{p_{T}} (GeV/#it{c});mL/p (cm)", 250, 0.0, 25.0, 100, 0.0, 100.);
+     fListHistMultistrangeQA->Add(fHistVarCascProperLengthOmegaPlus);
+  }
+  // --- V0ProperLength (100 bins, [0.0, 100.])
+  if (!fHistVarV0ProperLengthXiMinus) {
+     fHistVarV0ProperLengthXiMinus =  new TH2F("fHistVarV0ProperLengthXiMinus",";#it{p_{T}} (GeV/#it{c});mL/p (cm)", 250, 0.0, 25.0, 100, 0.0, 100.);
+     fListHistMultistrangeQA->Add(fHistVarV0ProperLengthXiMinus);
+  }
+  if (!fHistVarV0ProperLengthXiPlus) {
+     fHistVarV0ProperLengthXiPlus =  new TH2F("fHistVarV0ProperLengthXiPlus",";#it{p_{T}} (GeV/#it{c});mL/p (cm)", 250, 0.0, 25.0, 100, 0.0, 100.);
+     fListHistMultistrangeQA->Add(fHistVarV0ProperLengthXiPlus);
+  }
+  if (!fHistVarV0ProperLengthOmegaMinus) {
+     fHistVarV0ProperLengthOmegaMinus =  new TH2F("fHistVarV0ProperLengthOmegaMinus",";#it{p_{T}} (GeV/#it{c});mL/p (cm)", 250, 0.0, 25.0, 100, 0.0, 100.);
+     fListHistMultistrangeQA->Add(fHistVarV0ProperLengthOmegaMinus);
+  }
+  if (!fHistVarV0ProperLengthOmegaPlus) {
+     fHistVarV0ProperLengthOmegaPlus =  new TH2F("fHistVarV0ProperLengthOmegaPlus",";#it{p_{T}} (GeV/#it{c});mL/p (cm)", 250, 0.0, 25.0, 100, 0.0, 100.);
+     fListHistMultistrangeQA->Add(fHistVarV0ProperLengthOmegaPlus);
+  }  
+  // -- Cascade variable distributions for generated particles  
+  // --- Total Momentum [250 bins, (0.0,25.0)]
+  if (!fHistGenVarTotMomXiMinus) {
+     fHistGenVarTotMomXiMinus = new TH1F("fHistGenVarTotMomXiMinus",";#it{p} (GeV/#it{c});Counts", 250, 0.0, 25.0);
+     fListHistMultistrangeQA->Add(fHistGenVarTotMomXiMinus);
+  }
+  if (!fHistGenVarTotMomXiPlus) {
+     fHistGenVarTotMomXiPlus = new TH1F("fHistGenVarTotMomXiPlus",";#it{p} (GeV/#it{c});Counts", 250, 0.0, 25.0);
+     fListHistMultistrangeQA->Add(fHistGenVarTotMomXiPlus);
+  }
+  if (!fHistGenVarTotMomOmegaMinus) {
+     fHistGenVarTotMomOmegaMinus = new TH1F("fHistGenVarTotMomOmegaMinus",";#it{p} (GeV/#it{c});Counts", 250, 0.0, 25.0);
+     fListHistMultistrangeQA->Add(fHistGenVarTotMomOmegaMinus);
+  }
+  if (!fHistGenVarTotMomOmegaPlus) {
+     fHistGenVarTotMomOmegaPlus = new TH1F("fHistGenVarTotMomOmegaPlus",";#it{p} (GeV/#it{c});Counts", 250, 0.0, 25.0);
+     fListHistMultistrangeQA->Add(fHistGenVarTotMomOmegaPlus);
+  }
+  // --- Transverse Momentum [250 bins, (0.0,25.0)]
+  if (!fHistGenVarTransvMomXiMinus) {
+     fHistGenVarTransvMomXiMinus = new TH1F("fHistGenVarTransvMomXiMinus",";#it{p_{T}} (GeV/#it{c});Counts", 250, 0.0, 25.0);
+     fListHistMultistrangeQA->Add(fHistGenVarTransvMomXiMinus);
+  }
+  if (!fHistGenVarTransvMomXiPlus) {
+     fHistGenVarTransvMomXiPlus = new TH1F("fHistGenVarTransvMomXiPlus",";#it{p_{T}} (GeV/#it{c});Counts", 250, 0.0, 25.0);
+     fListHistMultistrangeQA->Add(fHistGenVarTransvMomXiPlus);
+  }
+  if (!fHistGenVarTransvMomOmegaMinus) {
+     fHistGenVarTransvMomOmegaMinus = new TH1F("fHistGenVarTransvMomOmegaMinus",";#it{p_{T}} (GeV/#it{c});Counts", 250, 0.0, 25.0);
+     fListHistMultistrangeQA->Add(fHistGenVarTransvMomOmegaMinus);
+  }
+  if (!fHistGenVarTransvMomOmegaPlus) {
+     fHistGenVarTransvMomOmegaPlus = new TH1F("fHistGenVarTransvMomOmegaPlus",";#it{p_{T}} (GeV/#it{c});Counts", 250, 0.0, 25.0);
+     fListHistMultistrangeQA->Add(fHistGenVarTransvMomOmegaPlus);
+  }
+  // --- Y [110 bins, (-1.1,1.1)]
+  if (!fHistGenVarYXiMinus) {
+     fHistGenVarYXiMinus = new TH1F("fHistGenVarYXiMinus",";Y;Counts", 110, -1.1, 1.1);
+     fListHistMultistrangeQA->Add(fHistGenVarYXiMinus);
+  }
+  if (!fHistGenVarYXiPlus) {
+     fHistGenVarYXiPlus = new TH1F("fHistGenVarYXiPlus",";Y;Counts", 110, -1.1, 1.1);
+     fListHistMultistrangeQA->Add(fHistGenVarYXiPlus);
+  }
+  if (!fHistGenVarYOmegaMinus) {
+     fHistGenVarYOmegaMinus = new TH1F("fHistGenVarYOmegaMinus",";Y;Counts", 110, -1.1, 1.1);
+     fListHistMultistrangeQA->Add(fHistGenVarYOmegaMinus);
+  }
+  if (!fHistGenVarYOmegaPlus) {
+     fHistGenVarYOmegaPlus = new TH1F("fHistGenVarYOmegaPlus",";Y;Counts", 110, -1.1, 1.1);
+     fListHistMultistrangeQA->Add(fHistGenVarYOmegaPlus);
+  }
+  // --- Eta [200 bins, (-10.0,10.0)]
+  if (!fHistGenVarEtaXiMinus) {
+     fHistGenVarEtaXiMinus = new TH1F("fHistGenVarEtaXiMinus",";#eta;Counts", 200, -10.0, 10.0);
+     fListHistMultistrangeQA->Add(fHistGenVarEtaXiMinus);
+  }
+  if (!fHistGenVarEtaXiPlus) {
+     fHistGenVarEtaXiPlus = new TH1F("fHistGenVarEtaXiPlus",";#eta;Counts", 200, -10.0, 10.0);
+     fListHistMultistrangeQA->Add(fHistGenVarEtaXiPlus);
+  }
+  if (!fHistGenVarEtaOmegaMinus) {
+     fHistGenVarEtaOmegaMinus = new TH1F("fHistGenVarEtaOmegaMinus",";#eta;Counts", 200, -10.0, 10.0);
+     fListHistMultistrangeQA->Add(fHistGenVarEtaOmegaMinus);
+  }
+  if (!fHistGenVarEtaOmegaPlus) {
+     fHistGenVarEtaOmegaPlus = new TH1F("fHistGenVarEtaOmegaPlus",";#eta;Counts", 200, -10.0, 10.0);
+     fListHistMultistrangeQA->Add(fHistGenVarEtaOmegaPlus);
+  }
+  // --- Theta [200 bins, (-10.0,190.0)]
+  if (!fHistGenVarThetaXiMinus) {
+     fHistGenVarThetaXiMinus = new TH1F("fHistGenVarThetaXiMinus",";#theta;Counts", 200, -10.0, 190.0);
+     fListHistMultistrangeQA->Add(fHistGenVarThetaXiMinus);
+  }
+  if (!fHistGenVarThetaXiPlus) {
+     fHistGenVarThetaXiPlus = new TH1F("fHistGenVarThetaXiPlus",";#theta;Counts", 200, -10.0, 190.0);
+     fListHistMultistrangeQA->Add(fHistGenVarThetaXiPlus);
+  }
+  if (!fHistGenVarThetaOmegaMinus) {
+     fHistGenVarThetaOmegaMinus = new TH1F("fHistGenVarThetaOmegaMinus",";#theta;Counts", 200, -10.0, 190.0);
+     fListHistMultistrangeQA->Add(fHistGenVarThetaOmegaMinus);
+  }
+  if (!fHistGenVarThetaOmegaPlus) {
+     fHistGenVarThetaOmegaPlus = new TH1F("fHistGenVarThetaOmegaPlus",";#theta;Counts", 200, -10.0, 190.0);
+     fListHistMultistrangeQA->Add(fHistGenVarThetaOmegaPlus);
+  }
+  // --- Phi [180 bins, (0.0,360.0)]
+  if (!fHistGenVarPhiXiMinus) {
+     fHistGenVarPhiXiMinus = new TH1F("fHistGenVarPhiXiMinus",";#phi;Counts", 180, 0.0, 360.0);
+     fListHistMultistrangeQA->Add(fHistGenVarPhiXiMinus);
+  }
+  if (!fHistGenVarPhiXiPlus) {
+     fHistGenVarPhiXiPlus = new TH1F("fHistGenVarPhiXiPlus",";#phi;Counts", 180, 0.0, 360.0);
+     fListHistMultistrangeQA->Add(fHistGenVarPhiXiPlus);
+  }
+  if (!fHistGenVarPhiOmegaMinus) {
+     fHistGenVarPhiOmegaMinus = new TH1F("fHistGenVarPhiOmegaMinus",";#phi;Counts", 180, 0.0, 360.0);
+     fListHistMultistrangeQA->Add(fHistGenVarPhiOmegaMinus);
+  }
+  if (!fHistGenVarPhiOmegaPlus) {
+     fHistGenVarPhiOmegaPlus = new TH1F("fHistGenVarPhiOmegaPlus",";#phi;Counts", 180, 0.0, 360.0);
+     fListHistMultistrangeQA->Add(fHistGenVarPhiOmegaPlus);
   }
 
 
-
-  //_______________________________________________
-  // Define the Container for the MC generated info
-  if(! fCFContCascadeMCgen) {
-      // NB: overflow/underflow of variables on which we want to cut later should be 0!!! 
-      const Int_t  lNbStepsMC      =  4; 
-      const Int_t  lNbVariablesMC  =  6;  
-      //Array for the number of bins in each dimension :
-      Int_t lNbBinsPerVarMC[lNbVariablesMC] = {0};
-      lNbBinsPerVarMC[0] = 250;    //Total momentum        : [0.0,25.0]
-      lNbBinsPerVarMC[1] = 250;    //Transverse momentum   : [0.0,25.0]
-      lNbBinsPerVarMC[2] = 110;    //Y                     : [-1.1,1.1]  
-      lNbBinsPerVarMC[3] = 200;    //eta                   : [-10, 10]
-      lNbBinsPerVarMC[4] = 200;    //theta                 : [-10, 190] 
-      lNbBinsPerVarMC[5] = 360;    //Phi                   : [0., 360.]
-      //define the container
-      fCFContCascadeMCgen = new AliCFContainer("fCFContCascadeMCgen","Container for MC gen cascade ", lNbStepsMC, lNbVariablesMC, lNbBinsPerVarMC );
-      //Setting the bin limits 
-       //0 - Total Momentum
-      fCFContCascadeMCgen->SetBinLimits(0, 0.0, 25.0);
-       //1 - Transverse Momentum 
-      fCFContCascadeMCgen->SetBinLimits(1, 0.0, 25.0);
-       //2 - Y
-      fCFContCascadeMCgen->SetBinLimits(2, -1.1, 1.1);
-       //3 - Eta
-      fCFContCascadeMCgen->SetBinLimits(3, -10, 10);
-       //4 - Theta
-      fCFContCascadeMCgen->SetBinLimits(4, -10, 190);
-       //5 - Phi
-      fCFContCascadeMCgen->SetBinLimits(5, 0.0, 360.0);
-      // Setting the number of steps : one for each cascade species (Xi-, Xi+ and Omega-, Omega+)
-      fCFContCascadeMCgen->SetStepTitle(0, "#Xi^{-} candidates");
-      fCFContCascadeMCgen->SetStepTitle(1, "#bar{#Xi}^{+} candidates");
-      fCFContCascadeMCgen->SetStepTitle(2, "#Omega^{-} candidates");
-      fCFContCascadeMCgen->SetStepTitle(3, "#bar{#Omega}^{+} candidates");
-      // Setting the variable title, per axis
-      fCFContCascadeMCgen->SetVarTitle(0,  "MC gen p_tot (GeV/c)");
-      fCFContCascadeMCgen->SetVarTitle(1,  "MC gen p_T (GeV/c)");
-      fCFContCascadeMCgen->SetVarTitle(2,  "MC gen Rapidity");
-      fCFContCascadeMCgen->SetVarTitle(3,  "MC gen Pseudo-rapidity");
-      fCFContCascadeMCgen->SetVarTitle(4,  "MC gen Theta");
-      fCFContCascadeMCgen->SetVarTitle(5,  "MC gen Phi");
-  }
- 
   PostData(1, fListHistMultistrangeQA);
-  PostData(2, fCFContCascadeCuts);
-  PostData(3, fCFContCascadeMCCuts);
-  PostData(4, fCFContCascadeMCgen);
 
 
 }// end UserCreateOutputObjects
@@ -575,9 +669,6 @@ void AliAnalysisTaskQAMultistrange::UserExec(Option_t *)
    if (!MultSelection) {
           AliWarning("AliMultSelection object not found!");  //If you get this warning (and lPercentiles 300) please check that the AliMultSelectionTask actually ran (before your task)
           PostData(1, fListHistMultistrangeQA);
-          PostData(2, fCFContCascadeCuts);
-          PostData(3, fCFContCascadeMCCuts);
-          PostData(4, fCFContCascadeMCgen);
           return;
    } else {
           AliWarning("AliMultSelection object found!");
@@ -587,9 +678,6 @@ void AliAnalysisTaskQAMultistrange::UserExec(Option_t *)
    if (lEvSelCode != 0) {
           AliWarning(Form("lEvSelCode value = %i. Run Not good! REMOVE",lEvSelCode));
           PostData(1, fListHistMultistrangeQA);
-          PostData(2, fCFContCascadeCuts);
-          PostData(3, fCFContCascadeMCCuts);
-          PostData(4, fCFContCascadeMCgen);
           return;
    }
 
@@ -611,9 +699,6 @@ void AliAnalysisTaskQAMultistrange::UserExec(Option_t *)
        if (!lPrimaryBestESDVtx) { 
              AliWarning("No prim. vertex in ESD... return!");
              PostData(1, fListHistMultistrangeQA);
-             PostData(2, fCFContCascadeCuts);
-             PostData(3, fCFContCascadeMCCuts);
-             PostData(4, fCFContCascadeMCgen);
              return;
        }
        lPrimaryBestESDVtx->GetXYZ(lBestPrimaryVtxPos);
@@ -622,9 +707,6 @@ void AliAnalysisTaskQAMultistrange::UserExec(Option_t *)
        if (!lPrimaryBestAODVtx) {
              AliWarning("No prim. vertex in AOD... return!");
              PostData(1, fListHistMultistrangeQA);
-             PostData(2, fCFContCascadeCuts);
-             PostData(3, fCFContCascadeMCCuts);
-             PostData(4, fCFContCascadeMCgen);
              return;
        }
        lPrimaryBestAODVtx->GetXYZ(lBestPrimaryVtxPos);
@@ -650,14 +732,14 @@ void AliAnalysisTaskQAMultistrange::UserExec(Option_t *)
 
       for (Int_t iCurrentLabelStack = 0; iCurrentLabelStack < lNbMCPrimary; iCurrentLabelStack++) {
 
-           Double_t partP      = 0.;
-           Double_t partPt     = 0.;
-           Double_t partEta    = 0.;
-           Double_t partTheta  = 0.;
-           Double_t partPhi    = 0.;
-           Double_t partRap    = 0.;
-           Double_t partEnergy = 0.; //for Rapidity
-           Double_t partPz     = 0.; //for Rapidity
+           Float_t partP      = 0.;
+           Float_t partPt     = 0.;
+           Float_t partEta    = 0.;
+           Float_t partTheta  = 0.;
+           Float_t partPhi    = 0.;
+           Float_t partRap    = 0.;
+           Float_t partEnergy = 0.; //for Rapidity
+           Float_t partPz     = 0.; //for Rapidity
            Int_t    PDGcode    = 0;
 
            if ( fAnalysisType == "ESD" ) {
@@ -700,17 +782,40 @@ void AliAnalysisTaskQAMultistrange::UserExec(Option_t *)
            }
            partRap = 0.5*TMath::Log((partEnergy + partPz) / (partEnergy - partPz + 1.e-13));
 
-           Double_t lContainerCutVarsMC[6] = {0.0};
-           lContainerCutVarsMC[0]  = partP;
-           lContainerCutVarsMC[1]  = partPt;
-           lContainerCutVarsMC[2]  = partRap;
-           lContainerCutVarsMC[3]  = partEta;
-           lContainerCutVarsMC[4]  = partTheta;
-           lContainerCutVarsMC[5]  = partPhi;
-           if (PDGcode == 3312)  {fCFContCascadeMCgen->Fill(lContainerCutVarsMC,0); ngenximinus++;} // for Xi-
-           if (PDGcode == -3312) {fCFContCascadeMCgen->Fill(lContainerCutVarsMC,1); ngenxiplus++;} // for Xi+
-           if (PDGcode == 3334)  {fCFContCascadeMCgen->Fill(lContainerCutVarsMC,2); ngenomegaminus++;} // for Omega-
-           if (PDGcode == -3334) {fCFContCascadeMCgen->Fill(lContainerCutVarsMC,3); ngenomegaplus++;} // for Omega+   
+           if (PDGcode == 3312) {
+               fHistGenVarTotMomXiMinus->Fill(partP);
+               fHistGenVarTransvMomXiMinus->Fill(partPt);
+               fHistGenVarYXiMinus->Fill(partRap);
+               fHistGenVarEtaXiMinus->Fill(partEta);
+               fHistGenVarThetaXiMinus->Fill(partTheta);
+               fHistGenVarPhiXiMinus->Fill(partPhi);
+               ngenximinus++;
+           } else if (PDGcode == -3312) {
+               fHistGenVarTotMomXiPlus->Fill(partP);
+               fHistGenVarTransvMomXiPlus->Fill(partPt);
+               fHistGenVarYXiPlus->Fill(partRap);
+               fHistGenVarEtaXiPlus->Fill(partEta);
+               fHistGenVarThetaXiPlus->Fill(partTheta);
+               fHistGenVarPhiXiPlus->Fill(partPhi);
+               ngenxiplus++;
+           } else if (PDGcode == 3334)  {
+               fHistGenVarTotMomOmegaMinus->Fill(partP);
+               fHistGenVarTransvMomOmegaMinus->Fill(partPt);
+               fHistGenVarYOmegaMinus->Fill(partRap);
+               fHistGenVarEtaOmegaMinus->Fill(partEta);
+               fHistGenVarThetaOmegaMinus->Fill(partTheta);
+               fHistGenVarPhiOmegaMinus->Fill(partPhi);
+               ngenomegaminus++;
+           } else if (PDGcode == -3334) {
+               fHistGenVarTotMomOmegaPlus->Fill(partP);
+               fHistGenVarTransvMomOmegaPlus->Fill(partPt);
+               fHistGenVarYOmegaPlus->Fill(partRap);
+               fHistGenVarEtaOmegaPlus->Fill(partEta);
+               fHistGenVarThetaOmegaPlus->Fill(partTheta);
+               fHistGenVarPhiOmegaPlus->Fill(partPhi);
+               ngenomegaplus++;
+           }
+
       }
       fHistCascadeMultiplicityXiMinus->Fill(ngenximinus);
       fHistCascadeMultiplicityXiPlus->Fill(ngenxiplus);
@@ -733,28 +838,28 @@ void AliAnalysisTaskQAMultistrange::UserExec(Option_t *)
     // -------------------------------------
     // - Initialisation of the local variables that will be needed for ESD/AOD
     // -- Container variables (1st round)
-    Double_t lDcaXiDaughters              = -1. ;                   //[Container]
-    Double_t lXiCosineOfPointingAngle     = -1. ;                   //[Container]
+    Float_t lDcaXiDaughters              = -1. ;                   //[Container]
+    Float_t lXiCosineOfPointingAngle     = -1. ;                   //[Container]
     Double_t lPosXi[3] = { -1000.0, -1000.0, -1000.0 };             //Useful to define other variables: radius fid. vol., ctau, etc. for cascade
-    Double_t lXiRadius                    = -1000. ;                //[Container]
+    Float_t lXiRadius                    = -1000. ;                //[Container]
     UShort_t lPosTPCClusters              = -1;                     //To check the quality of the tracks. For ESD only ...
     UShort_t lNegTPCClusters              = -1;                     //To check the quality of the tracks. For ESD only ...
     UShort_t lBachTPCClusters             = -1;                     //To check the quality of the tracks. For ESD only ...
-    Double_t lInvMassLambdaAsCascDghter   = 0.;                     //[Container]
-    Double_t lDcaV0DaughtersXi            = -1.;                    //[Container]
-    Double_t lDcaBachToPrimVertexXi       = -1.;                    //[Container]
-    Double_t lDcaV0ToPrimVertexXi         = -1.;                    //[Container]
-    Double_t lDcaPosToPrimVertexXi        = -1.;                    //[Container]
-    Double_t lDcaNegToPrimVertexXi        = -1.;                    //[Container]
-    Double_t lV0CosineOfPointingAngle     = -1.;                    //[Container]
-    Double_t lV0toXiCosineOfPointingAngle = -1.;                    //[Container] 
+    Float_t lInvMassLambdaAsCascDghter   = 0.;                     //[Container]
+    Float_t lDcaV0DaughtersXi            = -1.;                    //[Container]
+    Float_t lDcaBachToPrimVertexXi       = -1.;                    //[Container]
+    Float_t lDcaV0ToPrimVertexXi         = -1.;                    //[Container]
+    Float_t lDcaPosToPrimVertexXi        = -1.;                    //[Container]
+    Float_t lDcaNegToPrimVertexXi        = -1.;                    //[Container]
+    Float_t lV0CosineOfPointingAngle     = -1.;                    //[Container]
+    Float_t lV0toXiCosineOfPointingAngle = -1.;                    //[Container] 
     Double_t lPosV0Xi[3] = { -1000. , -1000., -1000. };             //Useful to define other variables: radius fid. vol., ctau, etc. for VO 
-    Double_t lV0RadiusXi                  = -1000.0;                //[Container]
+    Float_t lV0RadiusXi                  = -1000.0;                //[Container]
     Double_t lV0quality                   = 0.;                     //  ??
-    Double_t lInvMassXiMinus              = 0.;                     //[Container]
-    Double_t lInvMassXiPlus               = 0.;                     //[Container]
-    Double_t lInvMassOmegaMinus           = 0.;                     //[Container]
-    Double_t lInvMassOmegaPlus            = 0.;                     //[Container]
+    Float_t lInvMassXiMinus              = 0.;                     //[Container]
+    Float_t lInvMassXiPlus               = 0.;                     //[Container]
+    Float_t lInvMassOmegaMinus           = 0.;                     //[Container]
+    Float_t lInvMassOmegaPlus            = 0.;                     //[Container]
     // -- PID treatment
     Bool_t   lIsBachelorKaonForTPC = kFALSE; 
     Bool_t   lIsBachelorPionForTPC = kFALSE; 
@@ -792,32 +897,32 @@ void AliAnalysisTaskQAMultistrange::UserExec(Option_t *)
     AliAODMCParticle *mcGdMotherNegV0Dghteraod = 0x0;
     AliAODMCParticle *mcMotherBachaod          = 0x0;
     // -- More container variables and quality checks
-    Double_t lXiMomX           = 0.;                               //Useful to define other variables: lXiTransvMom, lXiTotMom
-    Double_t lXiMomY           = 0.;                               //Useful to define other variables: lXiTransvMom, lXiTotMom
-    Double_t lXiMomZ           = 0.;                               //Useful to define other variables: lXiTransvMom, lXiTotMom
-    Double_t lXiTransvMom      = 0.;                               //[Container]
-    Double_t lXiTotMom         = 0.;                               //Useful to define other variables: cTau
-    Double_t lV0PMomX          = 0.;                               //Useful to define other variables: lV0TotMom, lpTrackTransvMom
-    Double_t lV0PMomY          = 0.;                               //Useful to define other variables: lV0TotMom, lpTrackTransvMom
-    Double_t lV0PMomZ          = 0.;                               //Useful to define other variables: lV0TotMom, lpTrackTransvMom
-    Double_t lV0NMomX          = 0.;                               //Useful to define other variables: lV0TotMom, lnTrackTransvMom
-    Double_t lV0NMomY          = 0.;                               //Useful to define other variables: lV0TotMom, lnTrackTransvMom
-    Double_t lV0NMomZ          = 0.;                               //Useful to define other variables: lV0TotMom, lnTrackTransvMom
-    Double_t lV0TotMom         = 0.;                               //Useful to define other variables: lctauV0
-    Double_t lBachMomX         = 0.;                               //Useful to define other variables: lBachTransvMom
-    Double_t lBachMomY         = 0.;                               //Useful to define other variables: lBachTransvMom
-    Double_t lBachMomZ         = 0.;                               //Useful to define other variables: lBachTransvMom
-    Double_t lBachTransvMom    = 0.;                               //Selection on the min bachelor pT
-    Double_t lpTrackTransvMom  = 0.;                               //Selection on the min bachelor pT
-    Double_t lnTrackTransvMom  = 0.;                               //Selection on the min bachelor pT
-    Short_t  lChargeXi         = -2;                               //Useful to select the particles based on the charge
-    Double_t lRapXi            = -20.0;                            //[Container]
-    Double_t lRapOmega         = -20.0;                            //[Container]
-    Float_t  etaBach           = 0.;                               //Selection on the eta range
-    Float_t  etaPos            = 0.;                               //Selection on the eta range
-    Float_t  etaNeg            = 0.;                               //Selection on the eta range
-    Double_t cascadeMass       = 0.;
-    // --  variables for the AliCFContainer dedicated to cascade cut optmisiation: ESD and AOD 
+    Double_t lXiMomX          = 0.;                               //Useful to define other variables: lXiTransvMom, lXiTotMom
+    Double_t lXiMomY          = 0.;                               //Useful to define other variables: lXiTransvMom, lXiTotMom
+    Double_t lXiMomZ          = 0.;                               //Useful to define other variables: lXiTransvMom, lXiTotMom
+    Float_t lXiTransvMom      = 0.;                               //
+    Float_t lXiTotMom         = 0.;                               //Useful to define other variables: cTau
+    Double_t lV0PMomX         = 0.;                               //Useful to define other variables: lV0TotMom, lpTrackTransvMom
+    Double_t lV0PMomY         = 0.;                               //Useful to define other variables: lV0TotMom, lpTrackTransvMom
+    Double_t lV0PMomZ         = 0.;                               //Useful to define other variables: lV0TotMom, lpTrackTransvMom
+    Double_t lV0NMomX         = 0.;                               //Useful to define other variables: lV0TotMom, lnTrackTransvMom
+    Double_t lV0NMomY         = 0.;                               //Useful to define other variables: lV0TotMom, lnTrackTransvMom
+    Double_t lV0NMomZ         = 0.;                               //Useful to define other variables: lV0TotMom, lnTrackTransvMom
+    Float_t lV0TotMom         = 0.;                               //Useful to define other variables: lctauV0
+    Double_t lBachMomX        = 0.;                               //Useful to define other variables: lBachTransvMom
+    Double_t lBachMomY        = 0.;                               //Useful to define other variables: lBachTransvMom
+    Double_t lBachMomZ        = 0.;                               //Useful to define other variables: lBachTransvMom
+    Float_t lBachTransvMom    = 0.;                               //Selection on the min bachelor pT
+    Float_t lpTrackTransvMom  = 0.;                               //Selection on the min bachelor pT
+    Float_t lnTrackTransvMom  = 0.;                               //Selection on the min bachelor pT
+    Short_t  lChargeXi        = -2;                               //Useful to select the particles based on the charge
+    Float_t lRapXi            = -20.0;                            //
+    Float_t lRapOmega         = -20.0;                            //
+    Float_t  etaBach          = 0.;                               //Selection on the eta range
+    Float_t  etaPos           = 0.;                               //Selection on the eta range
+    Float_t  etaNeg           = 0.;                               //Selection on the eta range
+    Float_t cascadeMass       = 0.;
+    // --  variables for the cascade cut optimisation: ESD and AOD 
     if (fAnalysisType == "ESD") { 
   
           // -------------------------------------
@@ -1105,9 +1210,7 @@ void AliAnalysisTaskQAMultistrange::UserExec(Option_t *)
            }
 
            // ---------------------------------
-           // - Extra info for QA (AOD)
-           // Miscellaneous pieces of info that may help regarding data quality assessment.
-           // Cascade transverse and total momentum     
+           // - Miscellaneous pieces of info that may help regarding data quality assessment.
            lXiMomX = xi->MomXiX();
            lXiMomY = xi->MomXiY();
            lXiMomZ = xi->MomXiZ();
@@ -1133,13 +1236,11 @@ void AliAnalysisTaskQAMultistrange::UserExec(Option_t *)
 
     }// end of AOD treatment
 
-
     // ---------------------------------------
     // Cut on pt of the three daughter tracks
     if (lBachTransvMom<fMinPtCutOnDaughterTracks)   { AliWarning("ERROR: bachelor pT < lowlimit");          continue; }
     if (lpTrackTransvMom<fMinPtCutOnDaughterTracks) { AliWarning("ERROR: positive daughter pT < lowlimit"); continue; }
     if (lnTrackTransvMom<fMinPtCutOnDaughterTracks) { AliWarning("ERROR: negative daughter pT < lowlimit"); continue; }
-
 
     // ---------------------------------------------------
     // Cut on pseudorapidity of the three daughter tracks
@@ -1147,132 +1248,107 @@ void AliAnalysisTaskQAMultistrange::UserExec(Option_t *)
     if (TMath::Abs(etaPos)  > 0.8) { AliWarning("ERROR: positive daughter eta > maxlimit"); continue; }
     if (TMath::Abs(etaNeg)  > 0.8) { AliWarning("ERROR: negative daughter eta > maxlimit"); continue; }
 
-
     // ----------------------------------
     // Calculate proper time for cascade
     if (!fisMC) {
       if ( ( (lChargeXi<0) && lIsBachelorPionForTPC && lIsPosProtonForTPC && lIsNegPionForTPC ) ||
            ( (lChargeXi>0) && lIsBachelorPionForTPC && lIsNegProtonForTPC && lIsPosPionForTPC )  ) cascadeMass = 1.321;
-      if ( ( (lChargeXi<0) && lIsBachelorKaonForTPC   && lIsPosProtonForTPC    && lIsNegPionForTPC ) ||
-           ( (lChargeXi>0) && lIsBachelorKaonForTPC   && lIsNegProtonForTPC    && lIsPosPionForTPC )  ) cascadeMass = 1.672; 
+      if ( ( (lChargeXi<0) && lIsBachelorKaonForTPC && lIsPosProtonForTPC && lIsNegPionForTPC ) ||
+           ( (lChargeXi>0) && lIsBachelorKaonForTPC && lIsNegProtonForTPC && lIsPosPionForTPC )  ) cascadeMass = 1.672; 
     }
-    Double_t lctau =  TMath::Sqrt(TMath::Power((lPosXi[0]-lBestPrimaryVtxPos[0]),2)+TMath::Power((lPosXi[1]-lBestPrimaryVtxPos[1]),2)+TMath::Power(( lPosXi[2]-lBestPrimaryVtxPos[2]),2));
-    if (lXiTotMom!=0)         lctau = lctau*cascadeMass/lXiTotMom;
-    else lctau = -1.;
+    Double_t lctau = TMath::Sqrt(TMath::Power((lPosXi[0]-lBestPrimaryVtxPos[0]),2)+TMath::Power((lPosXi[1]-lBestPrimaryVtxPos[1]),2)+TMath::Power(( lPosXi[2]-lBestPrimaryVtxPos[2]),2));
+    if (lXiTotMom != 0) lctau = lctau*cascadeMass/lXiTotMom;
+    else                lctau = -1.;
     // Calculate proper time for Lambda (reconstructed)
     Float_t lambdaMass = 1.115683; // PDG mass
-    Float_t distV0Xi =  TMath::Sqrt(TMath::Power((lPosV0Xi[0]-lPosXi[0]),2)+TMath::Power((lPosV0Xi[1]-lPosXi[1]),2)+TMath::Power((lPosV0Xi[2]-lPosXi[2]),2));
+    Float_t distV0Xi = TMath::Sqrt(TMath::Power((lPosV0Xi[0]-lPosXi[0]),2)+TMath::Power((lPosV0Xi[1]-lPosXi[1]),2)+TMath::Power((lPosV0Xi[2]-lPosXi[2]),2));
     Float_t lctauV0 = -1.;
-    if (lV0TotMom!=0) lctauV0 = distV0Xi*lambdaMass/lV0TotMom;
+    if (lV0TotMom != 0) lctauV0 = distV0Xi*lambdaMass/lV0TotMom;
 
-    // ------------------------------
-    // Fill the TH1F without PID info
-    if        ( lChargeXi < 0 ) {
-      fHistMassXiMinus->Fill( lInvMassXiMinus );
-      fHistMassOmegaMinus->Fill( lInvMassOmegaMinus );
-    } else if ( lChargeXi > 0 ) {
-      fHistMassXiPlus->Fill( lInvMassXiPlus );
-      fHistMassOmegaPlus->Fill( lInvMassOmegaPlus );
-    }
 
-    // ----------------------- 
-    // Fill the AliCFContainer 
-    Double_t lContainerCutVars[20] = {0.0};
-    lContainerCutVars[0]  = lDcaXiDaughters;
-    lContainerCutVars[1]  = lDcaBachToPrimVertexXi;
-    lContainerCutVars[2]  = lXiCosineOfPointingAngle;
-    lContainerCutVars[3]  = lXiRadius;
-    lContainerCutVars[4]  = lInvMassLambdaAsCascDghter;
-    lContainerCutVars[5]  = lDcaV0DaughtersXi;
-    lContainerCutVars[6]  = lV0CosineOfPointingAngle;
-    lContainerCutVars[7]  = lV0RadiusXi;
-    lContainerCutVars[8]  = lDcaV0ToPrimVertexXi;
-    lContainerCutVars[9]  = lDcaPosToPrimVertexXi;
-    lContainerCutVars[10] = lDcaNegToPrimVertexXi;
-    lContainerCutVars[13] = lXiTransvMom;
-    lContainerCutVars[16] = lctau;
-    lContainerCutVars[17] = lctauV0;
-    lContainerCutVars[18] = lV0toXiCosineOfPointingAngle;
-    if ( lChargeXi < 0 ) {
-         lContainerCutVars[11] = lInvMassXiMinus;
-         lContainerCutVars[12] = lInvMassOmegaMinus;
-         lContainerCutVars[14] = lRapXi;
-         lContainerCutVars[15] = -1.;
-         if (lIsBachelorPionForTPC && lIsPosProtonForTPC && lIsNegPionForTPC) fCFContCascadeCuts->Fill(lContainerCutVars,0); // for Xi-
-         lContainerCutVars[11] = lInvMassXiMinus;
-         lContainerCutVars[12] = lInvMassOmegaMinus;
-         lContainerCutVars[14] = -1.;
-         lContainerCutVars[15] = lRapOmega;
-         if (lIsBachelorKaonForTPC && lIsPosProtonForTPC && lIsNegPionForTPC) fCFContCascadeCuts->Fill(lContainerCutVars,2); // for Omega-
+    // ------------------- 
+    // Fill the Histograms
+    if (lChargeXi < 0) { 
+        if ((!fisMC && lIsBachelorPionForTPC && lIsPosProtonForTPC && lIsNegPionForTPC) || (fisMC && lAssoXiMinus)) {
+            fHistVarDcaCascDaughtXiMinus->Fill(lXiTransvMom,lDcaXiDaughters);
+            fHistVarDcaBachToPrimVertexXiMinus->Fill(lXiTransvMom,lDcaBachToPrimVertexXi);
+            fHistVarCascCosineOfPointingAngleXiMinus->Fill(lXiTransvMom,lXiCosineOfPointingAngle);
+            fHistVarCascRadiusXiMinus->Fill(lXiTransvMom,lXiRadius);
+            fHistVarInvMassLambdaAsCascDghterXiMinus->Fill(lXiTransvMom,lInvMassLambdaAsCascDghter);
+            fHistVarDcaV0DaughtersXiMinus->Fill(lXiTransvMom,lDcaV0DaughtersXi);
+            fHistVarV0CosineOfPAToCascVertexXiMinus->Fill(lXiTransvMom,lV0toXiCosineOfPointingAngle);
+            fHistVarV0RadiusXiMinus->Fill(lXiTransvMom,lV0RadiusXi);
+            fHistVarDcaV0ToPrimVertexXiMinus->Fill(lXiTransvMom,lDcaV0ToPrimVertexXi);
+            fHistVarDcaPosToPrimVertexXiMinus->Fill(lXiTransvMom,lDcaPosToPrimVertexXi);
+            fHistVarDcaNegToPrimVertexXiMinus->Fill(lXiTransvMom,lDcaNegToPrimVertexXi);
+            fHistMassXiMinus->Fill( lInvMassXiMinus );
+            fHistVarTransvMomentumXiMinus->Fill(lXiTransvMom);
+            fHistVarRapidityXiMinus->Fill(lRapXi);
+            fHistVarCascProperLengthXiMinus->Fill(lXiTransvMom,lctau);
+            fHistVarV0ProperLengthXiMinus->Fill(lXiTransvMom,lctauV0);
+        }
+        if ((!fisMC && lIsBachelorKaonForTPC && lIsPosProtonForTPC && lIsNegPionForTPC) || (fisMC && lAssoOmegaMinus)) {
+            fHistVarDcaCascDaughtOmegaMinus->Fill(lXiTransvMom,lDcaXiDaughters);
+            fHistVarDcaBachToPrimVertexOmegaMinus->Fill(lXiTransvMom,lDcaBachToPrimVertexXi);
+            fHistVarCascCosineOfPointingAngleOmegaMinus->Fill(lXiTransvMom,lXiCosineOfPointingAngle);
+            fHistVarCascRadiusOmegaMinus->Fill(lXiTransvMom,lXiRadius);
+            fHistVarInvMassLambdaAsCascDghterOmegaMinus->Fill(lXiTransvMom,lInvMassLambdaAsCascDghter);
+            fHistVarDcaV0DaughtersOmegaMinus->Fill(lXiTransvMom,lDcaV0DaughtersXi);
+            fHistVarV0CosineOfPAToCascVertexOmegaMinus->Fill(lXiTransvMom,lV0toXiCosineOfPointingAngle);
+            fHistVarV0RadiusOmegaMinus->Fill(lXiTransvMom,lV0RadiusXi);
+            fHistVarDcaV0ToPrimVertexOmegaMinus->Fill(lXiTransvMom,lDcaV0ToPrimVertexXi);
+            fHistVarDcaPosToPrimVertexOmegaMinus->Fill(lXiTransvMom,lDcaPosToPrimVertexXi);
+            fHistVarDcaNegToPrimVertexOmegaMinus->Fill(lXiTransvMom,lDcaNegToPrimVertexXi);
+            fHistMassOmegaMinus->Fill( lInvMassOmegaMinus );
+            fHistVarTransvMomentumOmegaMinus->Fill(lXiTransvMom);
+            fHistVarRapidityOmegaMinus->Fill(lRapXi);
+            fHistVarCascProperLengthOmegaMinus->Fill(lXiTransvMom,lctau);
+            fHistVarV0ProperLengthOmegaMinus->Fill(lXiTransvMom,lctauV0); 
+        }
     } else {
-         lContainerCutVars[11] = lInvMassXiPlus;
-         lContainerCutVars[12] = lInvMassOmegaPlus;
-         lContainerCutVars[14] = lRapXi;
-         lContainerCutVars[15] = -1.;
-         if (lIsBachelorPionForTPC && lIsNegProtonForTPC && lIsPosPionForTPC) fCFContCascadeCuts->Fill(lContainerCutVars,1); // for Xi+
-         lContainerCutVars[11] = lInvMassXiPlus;
-         lContainerCutVars[12] = lInvMassOmegaPlus;
-         lContainerCutVars[14] = -1.;
-         lContainerCutVars[15] = lRapOmega;
-         if (lIsBachelorKaonForTPC && lIsNegProtonForTPC && lIsPosPionForTPC) fCFContCascadeCuts->Fill(lContainerCutVars,3); // for Omega+ 
+        if ((!fisMC && lIsBachelorPionForTPC && lIsNegProtonForTPC && lIsPosPionForTPC) || (fisMC && lAssoXiPlus)) {
+            fHistVarDcaCascDaughtXiPlus->Fill(lXiTransvMom,lDcaXiDaughters);
+            fHistVarDcaBachToPrimVertexXiPlus->Fill(lXiTransvMom,lDcaBachToPrimVertexXi);
+            fHistVarCascCosineOfPointingAngleXiPlus->Fill(lXiTransvMom,lXiCosineOfPointingAngle);
+            fHistVarCascRadiusXiPlus->Fill(lXiTransvMom,lXiRadius);
+            fHistVarInvMassLambdaAsCascDghterXiPlus->Fill(lXiTransvMom,lInvMassLambdaAsCascDghter);
+            fHistVarDcaV0DaughtersXiPlus->Fill(lXiTransvMom,lDcaV0DaughtersXi);
+            fHistVarV0CosineOfPAToCascVertexXiPlus->Fill(lXiTransvMom,lV0toXiCosineOfPointingAngle);
+            fHistVarV0RadiusXiPlus->Fill(lXiTransvMom,lV0RadiusXi);
+            fHistVarDcaV0ToPrimVertexXiPlus->Fill(lXiTransvMom,lDcaV0ToPrimVertexXi);
+            fHistVarDcaPosToPrimVertexXiPlus->Fill(lXiTransvMom,lDcaPosToPrimVertexXi);
+            fHistVarDcaNegToPrimVertexXiPlus->Fill(lXiTransvMom,lDcaNegToPrimVertexXi);
+            fHistMassXiPlus->Fill( lInvMassXiPlus );
+            fHistVarTransvMomentumXiPlus->Fill(lXiTransvMom);
+            fHistVarRapidityXiPlus->Fill(lRapXi);
+            fHistVarCascProperLengthXiPlus->Fill(lXiTransvMom,lctau);
+            fHistVarV0ProperLengthXiPlus->Fill(lXiTransvMom,lctauV0);
+        }
+        if ((!fisMC && lIsBachelorKaonForTPC && lIsNegProtonForTPC && lIsPosPionForTPC) || (fisMC && lAssoOmegaPlus)) {
+            fHistVarDcaCascDaughtOmegaPlus->Fill(lXiTransvMom,lDcaXiDaughters);
+            fHistVarDcaBachToPrimVertexOmegaPlus->Fill(lXiTransvMom,lDcaBachToPrimVertexXi);
+            fHistVarCascCosineOfPointingAngleOmegaPlus->Fill(lXiTransvMom,lXiCosineOfPointingAngle);
+            fHistVarCascRadiusOmegaPlus->Fill(lXiTransvMom,lXiRadius);
+            fHistVarInvMassLambdaAsCascDghterOmegaPlus->Fill(lXiTransvMom,lInvMassLambdaAsCascDghter);
+            fHistVarDcaV0DaughtersOmegaPlus->Fill(lXiTransvMom,lDcaV0DaughtersXi);
+            fHistVarV0CosineOfPAToCascVertexOmegaPlus->Fill(lXiTransvMom,lV0toXiCosineOfPointingAngle);
+            fHistVarV0RadiusOmegaPlus->Fill(lXiTransvMom,lV0RadiusXi);
+            fHistVarDcaV0ToPrimVertexOmegaPlus->Fill(lXiTransvMom,lDcaV0ToPrimVertexXi);
+            fHistVarDcaPosToPrimVertexOmegaPlus->Fill(lXiTransvMom,lDcaPosToPrimVertexXi);
+            fHistVarDcaNegToPrimVertexOmegaPlus->Fill(lXiTransvMom,lDcaNegToPrimVertexXi);
+            fHistMassOmegaPlus->Fill( lInvMassOmegaPlus );
+            fHistVarTransvMomentumOmegaPlus->Fill(lXiTransvMom);
+            fHistVarRapidityOmegaPlus->Fill(lRapXi);
+            fHistVarCascProperLengthOmegaPlus->Fill(lXiTransvMom,lctau);
+            fHistVarV0ProperLengthOmegaPlus->Fill(lXiTransvMom,lctauV0);
+        }
     }
-
-    // ----------------------- 
-    // Fill the AliCFContainer 
-    if (fisMC) {
-      Double_t lContainerMCCutVars[20] = {0.0};
-      lContainerMCCutVars[0]  = lDcaXiDaughters;
-      lContainerMCCutVars[1]  = lDcaBachToPrimVertexXi;
-      lContainerMCCutVars[2]  = lXiCosineOfPointingAngle;
-      lContainerMCCutVars[3]  = lXiRadius;
-      lContainerMCCutVars[4]  = lInvMassLambdaAsCascDghter;
-      lContainerMCCutVars[5]  = lDcaV0DaughtersXi;
-      lContainerMCCutVars[6]  = lV0CosineOfPointingAngle;
-      lContainerMCCutVars[7]  = lV0RadiusXi;
-      lContainerMCCutVars[8]  = lDcaV0ToPrimVertexXi;
-      lContainerMCCutVars[9]  = lDcaPosToPrimVertexXi;
-      lContainerMCCutVars[10] = lDcaNegToPrimVertexXi;
-      lContainerMCCutVars[13] = lXiTransvMom;
-      lContainerMCCutVars[16] = lctau;
-      lContainerMCCutVars[17] = lctauV0;
-      lContainerMCCutVars[18] = lV0toXiCosineOfPointingAngle;
-      if ( lChargeXi < 0 ) {
-           lContainerMCCutVars[11] = lInvMassXiMinus;
-           lContainerMCCutVars[12] = lInvMassOmegaMinus;
-           lContainerMCCutVars[14] = lRapXi;
-           lContainerMCCutVars[15] = -1.;
-           if (lAssoXiMinus) fCFContCascadeMCCuts->Fill(lContainerMCCutVars,0); // for Xi-
-           lContainerMCCutVars[11] = lInvMassXiMinus;
-           lContainerMCCutVars[12] = lInvMassOmegaMinus;
-           lContainerMCCutVars[14] = -1.;
-           lContainerMCCutVars[15] = lRapOmega;
-           if (lAssoOmegaMinus) fCFContCascadeMCCuts->Fill(lContainerMCCutVars,2); // for Omega-
-      } else {
-           lContainerMCCutVars[11] = lInvMassXiPlus;
-           lContainerMCCutVars[12] = lInvMassOmegaPlus;
-           lContainerMCCutVars[14] = lRapXi;
-           lContainerMCCutVars[15] = -1.;
-           if (lAssoXiPlus) fCFContCascadeMCCuts->Fill(lContainerMCCutVars,1); // for Xi+
-           lContainerMCCutVars[11] = lInvMassXiPlus;
-           lContainerMCCutVars[12] = lInvMassOmegaPlus;
-           lContainerMCCutVars[14] = -1.;
-           lContainerMCCutVars[15] = lRapOmega;
-           if (lAssoOmegaPlus) fCFContCascadeMCCuts->Fill(lContainerMCCutVars,3); // for Omega+ 
-      }
-    }
-
-
-
-
-
+    
   }// end of the Cascade loop (ESD or AOD)
     
   
   // Post output data.
   PostData(1, fListHistMultistrangeQA);
-  PostData(2, fCFContCascadeCuts); 
-  PostData(3, fCFContCascadeMCCuts);
-  PostData(4, fCFContCascadeMCgen);
 
 }// End UserExec
 

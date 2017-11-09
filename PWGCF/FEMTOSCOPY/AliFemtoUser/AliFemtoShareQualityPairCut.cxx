@@ -1,23 +1,7 @@
-/////////////////////////////////////////////////////////////////////////////
-//                                                                         //
-// AliFemtoShareQualityPairCut - a pair cut which checks for some pair     //
-// qualities that attempt to identify slit/doubly reconstructed tracks     //
-//                                                                         //
-/////////////////////////////////////////////////////////////////////////////
-/***************************************************************************
- *
- * $Id: AliFemtoShareQualityPairCut.cxx 53713 2011-12-20 12:31:21Z akisiel $
- *
- * Author: Adam Kisiel, Ohio State, kisiel@mps.ohio-state.edu
- ***************************************************************************
- *
- * Description: part of STAR HBT Framework: AliFemtoMaker package
- *   a cut to remove "shared" and "split" pairs
- *
- ***************************************************************************
- *
- *
- **************************************************************************/
+///
+/// \file AliFemtoShareQualityPairCut.cxx
+///
+
 
 #include "AliFemtoShareQualityPairCut.h"
 #include <string>
@@ -33,7 +17,7 @@ AliFemtoShareQualityPairCut::AliFemtoShareQualityPairCut():
   fNPairsFailed(0),
   fShareQualityMax(1.0),
   fShareFractionMax(1.0),
-  fRemoveSameLabel(0)
+  fRemoveSameLabel(false)
 {
   // Default constructor
   // Nothing to do
@@ -56,29 +40,40 @@ AliFemtoShareQualityPairCut& AliFemtoShareQualityPairCut::operator=(const AliFem
   return *this;
 }
 //__________________
-bool AliFemtoShareQualityPairCut::Pass(const AliFemtoPair* pair){
+bool AliFemtoShareQualityPairCut::Pass(const AliFemtoPair* pair)
+{
   // Check for pairs that are possibly shared/double reconstruction
-  bool temp;
+  bool passes = true;
 
-  Int_t nh = 0;
-  Int_t an = 0;
-  Int_t ns = 0;
+  const auto *track1 = pair->Track1()->Track(),
+             *track2 = pair->Track2()->Track();
 
-  if ((fShareFractionMax >= 1.0) && ( fShareQualityMax >= 1.0)) {
-     temp = true;
+  if (fRemoveSameLabel) {
+    if (abs(track1->Label()) == abs(track2->Label())) {
+  //       cout << "Found a pair with same label " << pair->Track1()->Track()->Label() << endl;
+  //       cout << "Quality Sharity Passed " << hsmval << " " << hsfval << " " << pair->QInv() << " " << passes << endl;
+      passes = false;
+    }
   }
-  else {
-    const unsigned int n_bits = pair->Track1()->Track()->TPCclusters().GetNbits();
 
-    const auto tpc_clusters_1 = pair->Track1()->Track()->TPCclusters(),
-               tpc_clusters_2 = pair->Track2()->Track()->TPCclusters();
+  // only check fraction & quality if not already cut and bounds have been placed
+  if (passes && (fShareFractionMax < 1.0 || fShareQualityMax < 1.0)) {
 
-    const auto tpc_sharing_1 = pair->Track1()->Track()->TPCsharing(),
-               tpc_sharing_2 = pair->Track2()->Track()->TPCsharing();
+    Int_t nh = 0;
+    Int_t an = 0;
+    Int_t ns = 0;
 
-     for (unsigned int imap = 0; imap < n_bits; imap++) {
-       const bool cluster_bit_1 = tpc_clusters_1.TestBitNumber(imap),
-                  cluster_bit_2 = tpc_clusters_1.TestBitNumber(imap);
+    const unsigned int n_bits = track1->TPCclusters().GetNbits();
+
+    const auto tpc_clusters_1 = track1->TPCclusters(),
+               tpc_clusters_2 = track2->TPCclusters();
+
+    const auto tpc_sharing_1 = track1->TPCsharing(),
+               tpc_sharing_2 = track2->TPCsharing();
+
+    for (unsigned int imap = 0; imap < n_bits; imap++) {
+        const bool cluster_bit_1 = tpc_clusters_1.TestBitNumber(imap),
+                   cluster_bit_2 = tpc_clusters_2.TestBitNumber(imap);
         // If both have clusters in the same row
         if (cluster_bit_1 && cluster_bit_2) {
            // Do they share it ?
@@ -104,10 +99,11 @@ bool AliFemtoShareQualityPairCut::Pass(const AliFemtoPair* pair){
            nh++;
         }
      }
+
      Float_t hsmval = 0.0;
      Float_t hsfval = 0.0;
 
-     if (nh >0) {
+     if (nh > 0) {
         hsmval = an*1.0/nh;
         hsfval = ns*1.0/nh;
      }
@@ -120,65 +116,46 @@ bool AliFemtoShareQualityPairCut::Pass(const AliFemtoPair* pair){
     //   if (hsfval > 0.0) {
     //     cout << "Pair sharity: " << hsfval << " " << ns << " " << nh << "    " << hsmval << " " << an << " " << nh << endl;
     //   }
-     if( (fShareQualityMax < 1) && (fShareFractionMax < 1)  )
-        temp = (hsmval < fShareQualityMax) && (hsfval < fShareFractionMax);
-     else if (fShareQualityMax < 1)
-        temp = (hsmval < fShareQualityMax);
-     else if (fShareFractionMax < 1)
-        temp = (hsmval < fShareFractionMax);
-     else temp = false;
-  }
 
-  if (fRemoveSameLabel) {
-    if (abs(pair->Track1()->Track()->Label()) == abs(pair->Track2()->Track()->Label())) {
-//       cout << "Found a pair with same label " << pair->Track1()->Track()->Label() << endl;
-//       cout << "Quality Sharity Passed " << hsmval << " " << hsfval << " " << pair->QInv() << " " << temp << endl;
-      temp = kFALSE;
+    if (fShareQualityMax < 1.0) {
+      passes &= (hsmval < fShareQualityMax);
+    }
+    if (fShareFractionMax < 1.0) {
+      passes &= (hsfval < fShareFractionMax);
     }
   }
 
-  temp ? fNPairsPassed++ : fNPairsFailed++;
-  return temp;
+  // increment appropriate counter
+  // passes ? fNPairsPassed++ : ++;
+  (passes ? fNPairsPassed : fNPairsFailed)++;
+  return passes;
 }
 //__________________
 AliFemtoString AliFemtoShareQualityPairCut::Report()
 {
   // Prepare the report from the execution
-  string stemp = "AliFemtoShareQuality Pair Cut - remove shared and split pairs\n";  char ctemp[100];
-  snprintf(ctemp , 100, "Number of pairs which passed:\t%ld  Number which failed:\t%ld\n",fNPairsPassed,fNPairsFailed);
-  stemp += ctemp;
-  AliFemtoString returnThis = stemp;
-  return returnThis;}
+  TString report("AliFemtoShareQuality Pair Cut - remove shared and split pairs\n");
+  report += TString::Format("Number of pairs which passed:\t%ld  Number which failed:\t%ld\n", fNPairsPassed, fNPairsFailed);
+  return AliFemtoString((const char *)report);
+}
+
 //__________________
-
-void AliFemtoShareQualityPairCut::SetShareQualityMax(Double_t aShareQualityMax) {
-  fShareQualityMax = aShareQualityMax;
-}
-
-Double_t AliFemtoShareQualityPairCut::GetAliFemtoShareQualityMax() const {
-  return fShareQualityMax;
-}
-
-void AliFemtoShareQualityPairCut::SetShareFractionMax(Double_t aShareFractionMax) {
-  fShareFractionMax = aShareFractionMax;
-}
-Double_t AliFemtoShareQualityPairCut::GetAliFemtoShareFractionMax() const {
-  return fShareFractionMax;
-}
-
 TList *AliFemtoShareQualityPairCut::ListSettings()
 {
   // return a list of settings in a writable form
   TList *tListSetttings = new TList();
-  char buf[200];
-  snprintf(buf, 200, "AliFemtoShareQualityPairCut.sharequalitymax=%f", fShareQualityMax);
-  snprintf(buf, 200, "AliFemtoShareQualityPairCut.sharefractionmax=%f", fShareFractionMax);
-  tListSetttings->AddLast(new TObjString(buf));
+
+  tListSetttings->AddVector(
+    new TObjString(
+      TString::Format("AliFemtoShareQualityPairCut.sharequalitymax=%f", fShareQualityMax)
+    ),
+    new TObjString(
+      TString::Format("AliFemtoShareQualityPairCut.sharefractionmax=%f", fShareFractionMax)
+    ),
+    new TObjString(
+      TString::Format("AliFemtoShareQualityPairCut.fRemoveSameLabel=%d", fRemoveSameLabel)
+    ),
+    nullptr);
 
   return tListSetttings;
-}
-
-void     AliFemtoShareQualityPairCut::SetRemoveSameLabel(Bool_t aRemove)
-{
-  fRemoveSameLabel = aRemove;
 }

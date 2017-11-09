@@ -27,9 +27,10 @@
 #include "AliMCAnalysisUtils.h"
 #include "AliNeutralMesonSelection.h"
 #include "AliVCaloCells.h" 
+#include "AliMCEvent.h"
 #include "AliAODEvent.h"
 #include "AliAODHandler.h"
-#include "AliAODPWG4Particle.h"
+#include "AliCaloTrackParticle.h"
 
 /// \cond CLASSIMP
 ClassImp(AliAnaCaloTrackCorrBaseClass) ;
@@ -91,7 +92,7 @@ AliAnaCaloTrackCorrBaseClass::~AliAnaCaloTrackCorrBaseClass()
 /// Put cluster/track or created particle object
 /// in the AODParticleCorrelation array.
 //______________________________________________________________________
-void AliAnaCaloTrackCorrBaseClass::AddAODParticle(AliAODPWG4Particle pc)
+void AliAnaCaloTrackCorrBaseClass::AddAODParticle(AliCaloTrackParticle pc)
 {  
   if(!fOutputAODBranch)
   {
@@ -100,14 +101,14 @@ void AliAnaCaloTrackCorrBaseClass::AddAODParticle(AliAODPWG4Particle pc)
   }
   
   Int_t i = fOutputAODBranch->GetEntriesFast();
-  //new((*fOutputAODBranch)[i])  AliAODPWG4Particle(pc);
-  if     (strcmp(fOutputAODBranch->GetClass()->GetName(),"AliAODPWG4Particle")==0)
+  //new((*fOutputAODBranch)[i])  AliCaloTrackParticle(pc);
+  if     (strcmp(fOutputAODBranch->GetClass()->GetName(),"AliCaloTrackParticle")==0)
   {
-    new((*fOutputAODBranch)[i])  AliAODPWG4Particle(pc);
+    new((*fOutputAODBranch)[i])  AliCaloTrackParticle(pc);
   }
-  else if(strcmp(fOutputAODBranch->GetClass()->GetName(),"AliAODPWG4ParticleCorrelation")==0)
+  else if(strcmp(fOutputAODBranch->GetClass()->GetName(),"AliCaloTrackParticleCorrelation")==0)
   {
-    new((*fOutputAODBranch)[i])  AliAODPWG4ParticleCorrelation(pc);
+    new((*fOutputAODBranch)[i])  AliCaloTrackParticleCorrelation(pc);
   }
   else
   {
@@ -217,7 +218,7 @@ void AliAnaCaloTrackCorrBaseClass::ConnectInputOutputAODBranches()
 }
 
 //_____________________________________________________________________________________
-/// Given the cluster ID stored in AliAODPWG4Particle, get the originator cluster 
+/// Given the cluster ID stored in AliCaloTrackParticle, get the originator cluster 
 /// and its index in the array. Input parameters:
 /// \param clusters: Full TObjarray of clusters.
 /// \param clId: Integer with the searched cluster ID.
@@ -445,7 +446,7 @@ Int_t AliAnaCaloTrackCorrBaseClass::GetCocktailGeneratorBackgroundTag(AliVCluste
   // check overlap with same generator, but not hijing
   Int_t overpdg[nlabels];
   Int_t overlab[nlabels];
-  Int_t noverlaps = GetMCAnalysisUtils()->GetNOverlaps(cluster->GetLabels(), nlabels,mctag,-1,GetReader(),overpdg,overlab);
+  Int_t noverlaps = GetMCAnalysisUtils()->GetNOverlaps(cluster->GetLabels(), nlabels,mctag,-1,GetMC(),overpdg,overlab);
   Bool_t sameGenOverlap   = kFALSE;
   Bool_t sameGenOverlapHI = kFALSE;
   for(Int_t iover = 0; iover < noverlaps; iover++)
@@ -511,11 +512,11 @@ Int_t AliAnaCaloTrackCorrBaseClass::GetEventNumber() const
 }
 
 //__________________________________________________________
-/// \return  Stack pointer from AliCaloTrackReader.
+/// \return  AliMCEvent pointer from AliCaloTrackReader.
 //__________________________________________________________
-AliStack *  AliAnaCaloTrackCorrBaseClass::GetMCStack() const 
+AliMCEvent *  AliAnaCaloTrackCorrBaseClass::GetMC() const 
 {  
-  return fReader->GetStack(); 
+  return fReader->GetMC(); 
 }
 
 //____________________________________________________________
@@ -723,7 +724,7 @@ void AliAnaCaloTrackCorrBaseClass::InitParameters()
   
   fNewAOD              = kFALSE ;
   fOutputAODName       = "CaloTrackCorr";
-  fOutputAODClassName  = "AliAODPWG4Particle";
+  fOutputAODClassName  = "AliCaloTrackParticle";
   fInputAODName        = "CaloTrackCorr";
   fAddToHistogramsName = "";
   fAODObjArrayName     = "Ref";

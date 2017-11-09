@@ -50,7 +50,7 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-enum centrality{ kpp, k07half, kpPb0100, k010, k1020, k020, k2040, k2030, k3040, k4050, k3050, k5060, k4060, k6080, k4080, k5080, k80100, kpPb020, kpPb2040, kpPb4060, kpPb60100 };
+enum centrality{ kpp, k07half, kpPb0100, k010, k1020, k020, k2040, k2030, k3040, k4050, k3050, k5060, k4060, k6080, k4080, k5080, k80100,kpPb010, kpPb020, kpPb2040, kpPb4060, kpPb60100 };
 enum centestimator{ kV0M, kV0A, kZNA, kCL1 };
 enum energy{ k276, k5dot023, k55 };
 enum BFDSubtrMethod { kfc, kNb };
@@ -185,7 +185,9 @@ void HFPtSpectrumRaa(const char *ppfile="HFPtSpectrum_D0Kpi_method2_rebinnedth_2
     }
   }
   else if( ccestimator == kZNA ){
-    if ( cc == kpPb020 ) {
+    if ( cc== kpPb010 ){
+      Tab = 0.17; TabSyst = 0.01275;
+   else if ( cc == kpPb020 ) {
       Tab = 0.164; TabSyst = 0.010724;
     } else if ( cc == kpPb2040 ) {
       Tab = 0.137; TabSyst = 0.005099;
@@ -288,6 +290,7 @@ void HFPtSpectrumRaa(const char *ppfile="HFPtSpectrum_D0Kpi_method2_rebinnedth_2
   }else{
     systematicsAB = new AliHFSystErr();
     systematicsAB->SetCollisionType(1);
+    systematicsAB->SetRunNumber(2016);// check this
     if(Energy==k276){
       if ( cc == k07half ) systematicsAB->SetCentrality("07half");
       else if ( cc == k010 ) systematicsAB->SetCentrality("010");
@@ -312,7 +315,7 @@ void HFPtSpectrumRaa(const char *ppfile="HFPtSpectrum_D0Kpi_method2_rebinnedth_2
       }
     }
     //
-    else if ( cc == kpPb0100 || cc == kpPb020 || cc == kpPb2040 || cc == kpPb4060 || cc == kpPb60100 ) {
+    else if ( cc == kpPb0100 || cc == kpPb010 || cc == kpPb020 || cc == kpPb2040 || cc == kpPb4060 || cc == kpPb60100 ) {
       systematicsAB->SetCollisionType(2);
       // Rapidity slices
       if(rapiditySlice!=kdefault){
@@ -337,7 +340,8 @@ void HFPtSpectrumRaa(const char *ppfile="HFPtSpectrum_D0Kpi_method2_rebinnedth_2
 	else if(cc == kpPb4060) systematicsAB->SetCentrality("4060V0A");
 	else if(cc == kpPb60100) systematicsAB->SetCentrality("60100V0A");
       } else if (ccestimator==kZNA) {
-	if(cc == kpPb020) systematicsAB->SetCentrality("020ZNA");
+        if(cc == kpPb010) systematicsAB->SetCentrality("010ZNA");
+	else if(cc == kpPb020) systematicsAB->SetCentrality("020ZNA");
 	else if(cc == kpPb2040) systematicsAB->SetCentrality("2040ZNA");
 	else if(cc == kpPb4060) systematicsAB->SetCentrality("4060ZNA");
 	else if(cc == kpPb60100) systematicsAB->SetCentrality("60100ZNA");
@@ -353,12 +357,16 @@ void HFPtSpectrumRaa(const char *ppfile="HFPtSpectrum_D0Kpi_method2_rebinnedth_2
 	}
       }
     }
+		}
     else { 
       cout << " Systematics not yet implemented " << endl;
       return;
     }
     if(analysisSpeciality==kLowPt){
       systematicsAB->SetIsLowPtAnalysis(true);
+    }
+		else if(analysisSpeciality==kBDT){
+      systematicsAB->SetIsBDTAnalysis(true);
     }
     //
     systematicsAB->Init(decay);
@@ -1331,7 +1339,10 @@ void HFPtSpectrumRaa(const char *ppfile="HFPtSpectrum_D0Kpi_method2_rebinnedth_2
   gRAB_FeedDownSystematicsElossHypothesis->Write();
   gRAB_GlobalSystematics->Write();
   if(isScaledAndExtrapRef && hCombinedReferenceFlag) hCombinedReferenceFlag->Write();
-
+  systematicsPP->SetName("AliHFSystErrPP");
+  systematicsPP->Write();
+  systematicsAB->SetName("AliHFSystErrAA");
+  systematicsAB->Write();
   out->Write();
 
 }

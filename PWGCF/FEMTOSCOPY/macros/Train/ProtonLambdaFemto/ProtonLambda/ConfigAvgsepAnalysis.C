@@ -31,7 +31,8 @@ int runSys[nSys] = {1, 1, 1, 1, 1, 1, 1, 1, 1, 1};
 
 bool separationCuts;
 
-AliFemtoEventReaderAODMultSelection* GetReader(bool mcAnalysis);
+AliFemtoEventReaderAODMultSelection* GetReader2015(bool mcAnalysis);
+AliFemtoEventReaderAODChain* GetReader2011(bool mcAnalysis);
 AliFemtoVertexMultAnalysis* GetAnalysis(double multMin, double multMax);
 AliFemtoBasicEventCut* GetEventCut();
 AliFemtoV0TrackCut* GetV0TrackCut(EPart particle);
@@ -44,7 +45,7 @@ AliFemtoPairCutRadialDistance* GetTracksPairCut(ESys system);
 void GetParticlesForSystem(ESys system, EPart &firstParticle, EPart &secondParticle);
 
 //________________________________________________________________________
-AliFemtoManager* ConfigFemtoAnalysis(bool mcAnalysis=false, bool sepCuts=false)
+AliFemtoManager* ConfigFemtoAnalysis(bool mcAnalysis=false, bool sepCuts=false, int year=2015)
 {
     separationCuts = sepCuts;
     
@@ -53,9 +54,17 @@ AliFemtoManager* ConfigFemtoAnalysis(bool mcAnalysis=false, bool sepCuts=false)
     AliFemtoModelManager *modelMgr = new AliFemtoModelManager();
     
     // add event reader
-    AliFemtoEventReaderAODMultSelection* Reader = GetReader(mcAnalysis);
-    Manager->SetEventReader(Reader);
-    
+    if(year==2015)
+    {
+        AliFemtoEventReaderAODMultSelection* Reader2015 = GetReader2015(mcAnalysis);
+        Manager->SetEventReader(Reader2015);
+    }
+    else if(year==2011)
+    {
+        AliFemtoEventReaderAODChain* Reader2011 = GetReader2011(mcAnalysis);
+        Manager->SetEventReader(Reader2011);
+    }
+        
     // declare necessary objects
     AliFemtoVertexMultAnalysis    *femtoAnalysis[nSys*nMult];
     AliFemtoBasicEventCut         *eventCut[nSys*nMult];
@@ -102,8 +111,8 @@ AliFemtoManager* ConfigFemtoAnalysis(bool mcAnalysis=false, bool sepCuts=false)
             // create monitors
             if(mcAnalysis)
             {
-             pairOriginPass[anIter] = new AliFemtoPairOriginMonitor(Form("Pass%stpcM%i", sysNames[iSys], imult));
-             pairOriginFail[anIter] = new AliFemtoPairOriginMonitor(Form("Fail%stpcM%i", sysNames[iSys], imult));
+                pairOriginPass[anIter] = new AliFemtoPairOriginMonitor(Form("Pass%stpcM%i", sysNames[iSys], imult));
+                pairOriginFail[anIter] = new AliFemtoPairOriginMonitor(Form("Fail%stpcM%i", sysNames[iSys], imult));
             }
                 
             // setup anallysis cuts
@@ -156,20 +165,20 @@ AliFemtoManager* ConfigFemtoAnalysis(bool mcAnalysis=false, bool sepCuts=false)
             if(iSys==kPL || iSys==kAPL || iSys==kPAL || iSys==kAPAL)
             {
                 // this is in k*
-                nonIdenticalCF[anIter] = new AliFemtoCorrFctnNonIdDR(Form("CF_kstar_%sM%i", sysNames[iSys], imult),100,0.0,1.0);
+                nonIdenticalCF[anIter] = new AliFemtoCorrFctnNonIdDR(Form("CF_kstar_%sM%i", sysNames[iSys], imult),500,0.0,5.0);
                 femtoAnalysis[anIter]->AddCorrFctn(nonIdenticalCF[anIter]);
             }
             else // pairs with the same mass of particles
             {
                 // this is in q_inv
-                identicalCF[anIter] = new AliFemtoQinvCorrFctn(Form("CF_qinv_%sM%i", sysNames[iSys], imult),100,0.0,2.0);
+                identicalCF[anIter] = new AliFemtoQinvCorrFctn(Form("CF_qinv_%sM%i", sysNames[iSys], imult),500,0.0,10.0);
                 femtoAnalysis[anIter]->AddCorrFctn(identicalCF[anIter]);
             }
             
             // add correlation function on model data
             if(mcAnalysis)
             {
-                modelCF[anIter] = new AliFemtoModelCorrFctn(Form("CF_qinv_Model_%sM%i", sysNames[iSys],imult),100,0.0,2.0);
+                modelCF[anIter] = new AliFemtoModelCorrFctn(Form("CF_qinv_Model_%sM%i", sysNames[iSys],imult),500,0.0,10.0);
                 modelCF[anIter]->ConnectToManager(modelMgr);
                 femtoAnalysis[anIter]->AddCorrFctn(modelCF[anIter]);
                 femtoAnalysis[anIter]->SetEnablePairMonitors(true);
@@ -182,7 +191,7 @@ AliFemtoManager* ConfigFemtoAnalysis(bool mcAnalysis=false, bool sepCuts=false)
     return Manager;
 }
 
-AliFemtoEventReaderAODMultSelection* GetReader(bool mcAnalysis)
+AliFemtoEventReaderAODMultSelection* GetReader2015(bool mcAnalysis)
 {
     AliFemtoEventReaderAODMultSelection* Reader = new AliFemtoEventReaderAODMultSelection();
     Reader->SetFilterBit(7);
@@ -194,6 +203,20 @@ AliFemtoEventReaderAODMultSelection* GetReader(bool mcAnalysis)
     
     return Reader;
 }
+
+AliFemtoEventReaderAODChain* GetReader2011(bool mcAnalysis)
+{
+    AliFemtoEventReaderAODChain* Reader = new AliFemtoEventReaderAODChain();
+    Reader->SetFilterBit(7);
+    Reader->SetReadV0(1);
+    Reader->SetUseMultiplicity(AliFemtoEventReaderAOD::kCentrality);
+    Reader->SetEPVZERO(kTRUE);
+    Reader->SetCentralityFlattening(kTRUE);
+    if(mcAnalysis) Reader->SetReadMC(kTRUE);
+    
+    return Reader;
+}
+    
 AliFemtoVertexMultAnalysis* GetAnalysis(double multMin, double multMax)
 {
     AliFemtoVertexMultAnalysis *analysis = new AliFemtoVertexMultAnalysis(8, -8.0, 8.0, 4, multMin, multMax);

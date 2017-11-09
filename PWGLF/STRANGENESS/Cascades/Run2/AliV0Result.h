@@ -56,6 +56,7 @@ public:
     
     void SetCutCompetingV0Rejection ( Double_t lCut ) { fCutCompetingV0Rejection   = lCut; }
     void SetCutArmenteros           ( Bool_t lCut   ) { fCutArmenteros        = lCut; }
+    void SetCutArmenterosParameter  ( Double_t lCut ) { fCutArmenterosParameter        = lCut; }
     void SetCutTPCdEdx              ( Double_t lCut ) { fCutTPCdEdx           = lCut; }
     void SetCutMinBaryonMomentum    ( Double_t lCut ) { fCutMinBaryonMomentum = lCut; }
     
@@ -115,6 +116,7 @@ public:
 
     Double_t GetCutCompetingV0Rejection () const { return fCutCompetingV0Rejection; }
     Bool_t   GetCutArmenteros           () const { return fCutArmenteros; }
+    Double_t GetCutArmenterosParameter  () const { return fCutArmenterosParameter; }
     Double_t GetCutTPCdEdx              () const { return fCutTPCdEdx; }
     Double_t GetCutMinBaryonMomentum    () const { return fCutMinBaryonMomentum; }
     
@@ -172,6 +174,7 @@ private:
     Double_t fCutProperLifetime;
     Double_t fCutCompetingV0Rejection;
     Bool_t fCutArmenteros;
+    Double_t fCutArmenterosParameter;
     Double_t fCutTPCdEdx;
     Double_t fCutMinBaryonMomentum;
     
@@ -204,7 +207,7 @@ private:
     TH3F *fHisto; //Histogram for storing output with these configurations
     TH3F *fHistoFeeddown; //Feeddown matrix (optional)
     
-    ClassDef(AliV0Result, 15)
+    ClassDef(AliV0Result, 16)
     // 1 - original implementation
     // 2 - first implementation of MC association (to be adjusted)
     // 3 - Variable binning constructor + re-order variables in main output for convenience
@@ -219,6 +222,7 @@ private:
     //12 - Addition of eta window selection
     //13 - Max chi2/clusters, min track length for checking
     //14 - added possibility to select on-the-fly V0 candidates
-    //15 - added proton profile (dummy as of now) 
+    //15 - added proton profile (dummy as of now)
+    //16 - added configurable AP cut
 };
 #endif

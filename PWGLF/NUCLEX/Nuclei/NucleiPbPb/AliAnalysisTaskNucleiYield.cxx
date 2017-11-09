@@ -1,5 +1,9 @@
 #include "AliAnalysisTaskNucleiYield.h"
 
+#include <array>
+#include <string>
+#include <algorithm>
+
 // ROOT includes
 #include <TAxis.h>
 #include <TChain.h>
@@ -41,9 +45,6 @@ using TMath::TwoPi;
 ClassImp(AliAnalysisTaskNucleiYield);
 ///\endcond
 
-const TString kNames[5]= {"pion","kaon","proton","deuteron","triton"};
-const AliPID::EParticleType kSpecies[5] = {AliPID::kPion, AliPID::kKaon, AliPID::kProton, AliPID::kDeuteron, AliPID::kTriton};
-
 static double TOFsignal(double *x, double *par) {
   double &norm = par[0];
   double &mean = par[1];
@@ -56,28 +57,6 @@ static double TOFsignal(double *x, double *par) {
     return norm * TMath::Gaus(tail + mean, mean, sigma) * TMath::Exp(-tail * (x[0] - tail - mean) / (sigma * sigma));
 }
 
-/// Method for the correct logarithmic binning of histograms.
-///
-/// \param h Histogram that has to be correctly binned
-///
-static void BinLogAxis(const TH1 *h) {
-  TAxis *axis = const_cast<TAxis*>(h->GetXaxis());
-  const Int_t bins = axis->GetNbins();
-
-  const Double_t from = axis->GetXmin();
-  const Double_t to = axis->GetXmax();
-  Double_t *newBins = new Double_t[bins + 1];
-
-  newBins[0] = from;
-  Double_t factor = pow(to / from, 1. / bins);
-
-  for (Int_t i = 1; i <= bins; i++) {
-    newBins[i] = factor * newBins[i - 1];
-  }
-  axis->Set(bins, newBins);
-  delete [] newBins;
-}
-
 /// Standard and default constructor of the class.
 ///
 /// \param taskname Name of the task
@@ -87,6 +66,9 @@ AliAnalysisTaskNucleiYield::AliAnalysisTaskNucleiYield(TString taskname)
   :AliAnalysisTaskSE(taskname.Data())
    ,fEventCut{false}
    ,fFilterBit{BIT(4)}
+   ,fPropagateTracks{true}
+   ,fPtCorrectionA{3}
+   ,fPtCorrectionM{3}
    ,fList{nullptr}
    ,fCutVec{}
    ,fPDG{0}
@@ -98,8 +80,6 @@ AliAnalysisTaskNucleiYield::AliAnalysisTaskNucleiYield(TString taskname)
    ,fMagField{0.f}
    ,fDCAzLimit{10.}
    ,fDCAzNbins{400}
-   ,fPtCorrectionA{3}
-   ,fPtCorrectionM{3}
    ,fTOFlowBoundary{-2.4}
    ,fTOFhighBoundary{3.6}
    ,fTOFnBins{75}
@@ -127,15 +107,15 @@ AliAnalysisTaskNucleiYield::AliAnalysisTaskNucleiYield(TString taskname)
    ,fRequireMinEnergyLoss{0.}
    ,fRequireVetoSPD{false}
    ,fRequireMaxMomentum{-1.}
-   ,fFixForLHC14a6{true}
+   ,fFixForLHC14a6{false}
+   ,fEnableFlattening{false} 
    ,fParticle{AliPID::kUnknown}
    ,fCentBins{0}
    ,fDCABins{0}
    ,fPtBins{0}
    ,fCustomTPCpid{0}
    ,fFlatteningProbs{0}
-   ,fFlattenedCentrality{nullptr}
-   ,fCentralityClasses{nullptr}
+   ,fNormalisationHist{nullptr}
    ,fProduction{nullptr}
    ,fReconstructed{{nullptr}}
    ,fTotal{nullptr}
@@ -147,8 +127,7 @@ AliAnalysisTaskNucleiYield::AliAnalysisTaskNucleiYield(TString taskname)
    ,fTPCcounts{nullptr}
    ,fDCAxy{{nullptr}}
    ,fDCAz{{nullptr}}
-   ,fTOFtemplates{nullptr}
-   ,fEnableFlattening{true} {
+   {
      gRandom->SetSeed(0); //TODO: provide a simple method to avoid "complete randomness"
      Float_t aCorrection[3] = {-2.10154e-03,-4.53472e-01,-3.01246e+00};
      Float_t mCorrection[3] = {-2.00277e-03,-4.93461e-01,-3.05463e+00};
@@ -176,41 +155,36 @@ void AliAnalysisTaskNucleiYield::UserCreateOutputObjects() {
   const Int_t nPtBins = fPtBins.GetSize() - 1;
   const Int_t nCentBins = fCentBins.GetSize() - 1;
   const Int_t nDCAbins = fDCABins.GetSize() - 1;
-  const Float_t *pTbins = fPtBins.GetArray();
-  const Float_t *centBins = fCentBins.GetArray();
-  const Float_t *dcaBins = fDCABins.GetArray();
-
-  fCentralityClasses = new TH1F("fCentralityClasses",";Centrality classes(%);Events / Class;",
-      nCentBins,centBins);
-  fFlattenedCentrality = new TH1F("fFlattenCentrality","After the flattening;Centrality (%); \
-      Events / 1%;",100,0.,100.);
-  fList->Add(fCentralityClasses);
-  fList->Add(fFlattenedCentrality);
+  const float *pTbins = fPtBins.GetArray();
+  const float *centBins = fCentBins.GetArray();
+  double doubleCentBins[nCentBins+1];
+  std::copy(centBins,centBins+nCentBins+1,doubleCentBins);
+  const float *dcaBins = fDCABins.GetArray();
 
   char   letter[2] = {'A','M'};
   string tpctof[2] = {"TPC","TOF"};
   string tpctofMC[2] = {"TPC","TPC_TOF"};
 
   if (fIsMC) {
-    fProduction = new TH1F("fProduction",";p (GeV/c);Entries",100,-10,10);
+    fProduction = new TH1F("fProduction",";#it{p} (GeV/#it{c});Entries",100,-10,10);
     fList->Add(fProduction);
 
     for (int iC = 0; iC < 2; ++iC) {
-      fTotal[iC] = new TH2F(Form("f%cTotal",letter[iC]),";Centrality (%);p_{T} (GeV/c); Counts",
+      fTotal[iC] = new TH2F(Form("f%cTotal",letter[iC]),";Centrality (%);#it{p}_{T} (GeV/#it{c}); Counts",
           nCentBins,centBins,nPtBins,pTbins);
       fPtCorrection[iC] = new TH2F(Form("f%cPtCorrection",letter[iC]),
-          ";p_{T}^{rec} (GeV/c);p_{T}^{MC}-p_{T}^{rec} (GeV/c);Entries",
+          ";#it{p}_{T}^{rec} (GeV/#it{c});#it{p}_{T}^{MC}-#it{p}_{T}^{rec} (GeV/#it{c});Entries",
           160,0.4,6.,80,-1.,1.);
       fList->Add(fTotal[iC]);
       fList->Add(fPtCorrection[iC]);
       for (int iT = 0; iT < 2; ++iT) {
-        fReconstructed[iT][iC] = new TH2F(Form("f%cITS_%s",letter[iC],tpctofMC[iT].data()),";Centrality (%);p_{T} (GeV/c); Counts",
+        fReconstructed[iT][iC] = new TH2F(Form("f%cITS_%s",letter[iC],tpctofMC[iT].data()),";Centrality (%);#it{p}_{T} (GeV/#it{c}); Counts",
             nCentBins,centBins,nPtBins,pTbins);
-        fDCAPrimary[iT][iC] = new TH3F(Form("f%cDCAPrimary%s",letter[iC],tpctof[iT].data()),";Centrality (%);p_{T} (GeV/c); DCA_{xy} (cm)",
+        fDCAPrimary[iT][iC] = new TH3F(Form("f%cDCAPrimary%s",letter[iC],tpctof[iT].data()),";Centrality (%);#it{p}_{T} (GeV/#it{c}); DCA_{xy} (cm)",
             nCentBins,centBins,nPtBins,pTbins,nDCAbins,dcaBins);
-        fDCASecondary[iT][iC] = new TH3F(Form("f%cDCASecondary%s",letter[iC],tpctof[iT].data()),";Centrality (%);p_{T} (GeV/c); DCA_{xy} (cm)",
+        fDCASecondary[iT][iC] = new TH3F(Form("f%cDCASecondary%s",letter[iC],tpctof[iT].data()),";Centrality (%);#it{p}_{T} (GeV/#it{c}); DCA_{xy} (cm)",
             nCentBins,centBins,nPtBins,pTbins,nDCAbins,dcaBins);
-        fDCASecondaryWeak[iT][iC] = new TH3F(Form("f%cDCASecondaryWeak%s",letter[iC],tpctof[iT].data()),";Centrality (%);p_{T} (GeV/c); DCA_{xy} (cm)",
+        fDCASecondaryWeak[iT][iC] = new TH3F(Form("f%cDCASecondaryWeak%s",letter[iC],tpctof[iT].data()),";Centrality (%);#it{p}_{T} (GeV/#it{c}); DCA_{xy} (cm)",
             nCentBins,centBins,nPtBins,pTbins,nDCAbins,dcaBins);
         fList->Add(fReconstructed[iT][iC]);
         fList->Add(fDCAPrimary[iT][iC]);
@@ -235,30 +209,36 @@ void AliAnalysisTaskNucleiYield::UserCreateOutputObjects() {
 
     for (int iC = 0; iC < 2; ++iC) {
       fTOFsignal[iC] = new TH3F(Form("f%cTOFsignal",letter[iC]),
-          ";Centrality (%);p_{T} (GeV/c);m_{TOF}^{2}-m_{PDG}^{2} (GeV/c^{2})^{2}",
+          ";Centrality (%);#it{p}_{T} (GeV/#it{c});#it{m}^{2}-m_{PDG}^{2} (GeV/#it{c}^{2})^{2}",
           nCentBins,centBins,nPtBins,pTbins,fTOFnBins,tofBins);
-      fTPCcounts[iC] = new TH3F(Form("f%cTPCcounts",letter[iC]),";Centrality (%);p_{T} (GeV/c); n_{#sigma} d",
+      fTPCcounts[iC] = new TH3F(Form("f%cTPCcounts",letter[iC]),";Centrality (%);#it{p}_{T} (GeV/#it{c}); n_{#sigma} d",
           nCentBins,centBins,nPtBins,pTbins,nSigmaBins,sigmaBins);
 
       fList->Add(fTOFsignal[iC]);
       fList->Add(fTPCcounts[iC]);
 
       for (int iT = 0; iT < 2; ++iT) {
-        fDCAxy[iT][iC] = new TH3F(Form("f%cDCAxy%s",letter[iC],tpctof[iT].data()),";Centrality (%);p_{T} (GeV/c); DCA_{xy} (cm)",
+        fDCAxy[iT][iC] = new TH3F(Form("f%cDCAxy%s",letter[iC],tpctof[iT].data()),";Centrality (%);#it{p}_{T} (GeV/#it[c}); DCA_{xy} (cm)",
             nCentBins,centBins,nPtBins,pTbins,nDCAbins,dcaBins);
-        fDCAz[iT][iC] = new TH3F(Form("f%cDCAz%s",letter[iC],tpctof[iT].data()),";Centrality (%);p_{T} (GeV/c); DCA_{z} (cm)",
+        fDCAz[iT][iC] = new TH3F(Form("f%cDCAz%s",letter[iC],tpctof[iT].data()),";Centrality (%);#it{p}_{T} (GeV/#it{c}); DCA_{z} (cm)",
             nCentBins,centBins,nPtBins,pTbins,fDCAzNbins,dcazBins);
         fList->Add(fDCAxy[iT][iC]);
         fList->Add(fDCAz[iT][iC]);
       }
     }
 
-    for (int iS = 0; iS < 5; ++iS) {
-      fTOFtemplates[iS] = new TH3F(Form("fTOFtemplates%i",iS),
-          Form("%s;Centrality (%%);#it{p}_{T} (GeV/c);m_{TOF}^{2}-m_{PDG}^{2} (GeV/c^{2})^{2}",kNames[iS].Data()),
-          nCentBins,centBins,nPtBins,pTbins,fTOFnBins,tofBins);
-      fList->Add(fTOFtemplates[iS]);
-    }
+    std::array<std::string,4> norm_labels = {
+      "No cuts",
+      "Event selection",
+      "Vertex reconstruction and quality",
+      "Vertex position"
+    };
+
+    fNormalisationHist = new TH2F("fNormalisationHist",";Centrality (%%);",nCentBins,doubleCentBins,norm_labels.size(),-.5,norm_labels.size() - 0.5);
+    for (int iB = 1; iB <= norm_labels.size(); iB++) fNormalisationHist->GetYaxis()->SetBinLabel(iB,norm_labels[iB-1].data());
+
+    fList->Add(fNormalisationHist);
+
   }
 
   fTOFfunction = new TF1("fTOFfunction", TOFsignal, -2440., 2440., 4);
@@ -284,7 +264,24 @@ void AliAnalysisTaskNucleiYield::UserExec(Option_t *){
   }
 
   AliVEvent *ev = InputEvent();
-  if (!fEventCut.AcceptEvent(ev)) {
+  bool EventAccepted = fEventCut.AcceptEvent(ev);
+
+  /// The centrality selection in PbPb uses the percentile determined with V0.
+  float centrality = fEventCut.GetCentrality();
+
+  std::array <AliEventCuts::NormMask,4> norm_masks {
+    AliEventCuts::kAnyEvent,
+    AliEventCuts::kPassesNonVertexRelatedSelections,
+    AliEventCuts::kHasReconstructedVertex,
+    AliEventCuts::kPassesAllCuts
+  };
+  for (int iC = 0; iC < 4; ++iC) {
+    if (fEventCut.CheckNormalisationMask(norm_masks[iC])) {
+        fNormalisationHist->Fill(centrality,iC);
+    }
+  }
+
+  if (!EventAccepted) {
     PostData(1, fList);
     return;
   }
@@ -294,10 +291,6 @@ void AliAnalysisTaskNucleiYield::UserExec(Option_t *){
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   AliInputEventHandler* handl = (AliInputEventHandler*)mgr->GetInputEventHandler();
   fPID = handl->GetPIDResponse();
-
-
-  /// The centrality selection in PbPb uses the percentile determined with V0.
-  float centrality = fEventCut.GetCentrality();
 
   /// The magnetic field
   fMagField = ev->GetMagneticField();
@@ -311,8 +304,6 @@ void AliAnalysisTaskNucleiYield::UserExec(Option_t *){
     PostData(1, fList);
     return;
   }
-  fCentralityClasses->Fill(centrality);
-  fFlattenedCentrality->Fill(centrality);
 
   TClonesArray *stack = nullptr;
   if (fIsMC) {
@@ -339,8 +330,8 @@ void AliAnalysisTaskNucleiYield::UserExec(Option_t *){
     AliAODTrack *track = dynamic_cast<AliAODTrack*>(ev->GetTrack(iT));
 
     if (track->GetID() <= 0) continue;
-    Double_t dca[2];
-    if (!track->TestFilterBit(fFilterBit)) continue;
+    Double_t dca[2] = {0.};
+    if (!track->TestFilterBit(fFilterBit) && fFilterBit) continue;
     if (!AcceptTrack(track,dca)) continue;
     const float beta = HasTOF(track,fPID);
     const int iTof = beta > EPS ? 1 : 0;
@@ -360,13 +351,13 @@ void AliAnalysisTaskNucleiYield::UserExec(Option_t *){
       if (std::abs(part->GetPdgCode()) == fPDG) {
         for (int iR = iTof; iR >= 0; iR--) {
           if (part->IsPhysicalPrimary()) {
-            fReconstructed[iR][iC]->Fill(centrality,part->Pt());
-            fDCAPrimary[iR][iC]->Fill(centrality,part->Pt(),dca[0]);
+            if (TMath::Abs(dca[0]) <= fRequireMaxDCAxy) fReconstructed[iR][iC]->Fill(centrality,pT);
+            fDCAPrimary[iR][iC]->Fill(centrality,pT,dca[0]);
             if (!iR) fPtCorrection[iC]->Fill(pT,part->Pt()-pT); // Fill it only once.
           } else if (part->IsSecondaryFromMaterial() && !isFromHyperNucleus)
-            fDCASecondary[iR][iC]->Fill(centrality,part->Pt(),dca[0]);
+            fDCASecondary[iR][iC]->Fill(centrality,pT,dca[0]);
           else
-            fDCASecondaryWeak[iR][iC]->Fill(centrality,part->Pt(),dca[0]);
+            fDCASecondaryWeak[iR][iC]->Fill(centrality,pT,dca[0]);
         }
       }
     } else {
@@ -390,20 +381,6 @@ void AliAnalysisTaskNucleiYield::UserExec(Option_t *){
       /// \f$ m = \frac{p}{\beta\gamma} \f$
       const float m2 = track->P() * track->P() * (1.f / (beta * beta) - 1.f);
       fTOFsignal[iC]->Fill(centrality, pT, m2 - fPDGMassOverZ * fPDGMassOverZ);
-
-      if (fTOFfunctionPars.GetSize() == 4) {
-        AliTOFPIDResponse& tofPid = fPID->GetTOFResponse();
-        for (int iS = 0; iS < 5; ++iS) {
-          const float expt0 = tofPid.GetExpectedSignal(track,kSpecies[iS]);
-          const float sigma = tofPid.GetExpectedSigma(track->P(),expt0,kSpecies[iS]);
-          const float smearing = fTOFfunction->GetRandom() + gRandom->Gaus(0., sqrt(sigma * sigma - tofPid.GetTimeResolution() * tofPid.GetTimeResolution()));
-          const float expBeta = track->GetIntegratedLength() / ((expt0 + smearing) * LIGHT_SPEED);
-          if (expBeta > EPS) {
-            const float expM = track->P() * track->P() * (1.f / (expBeta * expBeta) - 1.f);
-            fTOFtemplates[iS]->Fill(centrality,pT,expM - fPDGMassOverZ * fPDGMassOverZ);
-          }
-        }
-      }
     }
 
   } // End AOD track loop
@@ -452,7 +429,8 @@ bool AliAnalysisTaskNucleiYield::AcceptTrack(AliAODTrack *track, Double_t dca[2]
     if (nSDD < fRequireSDDrecPoints) return false;
     if (fRequireVetoSPD && nSPD > 0) return false;
     Double_t cov[3];
-    if (!track->PropagateToDCA(fEventCut.GetPrimaryVertex(), fMagField, 100, dca, cov)) return false;
+    if (fPropagateTracks)
+      if (!track->PropagateToDCA(fEventCut.GetPrimaryVertex(), fMagField, 100, dca, cov)) return false;
     if (TMath::Abs(dca[1]) > fRequireMaxDCAz) return false;
     //if (TMath::Abs(dca[0]) > fRequireMaxDCAxy) return false;
   }
@@ -669,7 +647,7 @@ Bool_t AliAnalysisTaskNucleiYield::Flatten(float cent) {
 ///
 void AliAnalysisTaskNucleiYield::PtCorrection(float &pt, bool positiveCharge) {
   Float_t *par = (positiveCharge) ? fPtCorrectionM.GetArray() : fPtCorrectionA.GetArray();
-  const Float_t correction = par[0] + par[1] * TMath::Exp(par[2] * pt);
+  const Float_t correction = par[0] + par[1] * TMath::Exp(par[2] * pt * pt * pt);
   pt -= correction;
 }
 

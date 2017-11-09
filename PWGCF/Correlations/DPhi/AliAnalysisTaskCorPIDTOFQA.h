@@ -7,83 +7,65 @@
 
 #include "AliAnalysisTaskSE.h"
 #include "AliPIDResponse.h"
+#include "AliAnalysisUtils.h"
 
+
+//#define AliAnalysisTaskCorPIDTOFQA AliAnalysisTaskCorPIDTOFQA2
 
 class AliAODTrack;
 
-
+//namespace BSchaefer_devel{
+    
 class AliAnalysisTaskCorPIDTOFQA : public AliAnalysisTaskSE  
 {
     public:
-                                AliAnalysisTaskCorPIDTOFQA();
-                                AliAnalysisTaskCorPIDTOFQA(const char *name);
-        virtual                 ~AliAnalysisTaskCorPIDTOFQA();
+                              AliAnalysisTaskCorPIDTOFQA();
+                              AliAnalysisTaskCorPIDTOFQA(const char *name);
+        virtual              ~AliAnalysisTaskCorPIDTOFQA();
 
-        virtual void            UserCreateOutputObjects();
-        virtual void            UserExec(Option_t* option);
-        virtual void            Terminate(Option_t* option);
-	virtual Double_t        Beta(AliAODTrack *track);
-	virtual Double_t        tof_minus_tpion(AliAODTrack *track);
-	virtual Double_t        get_mass_squared(AliAODTrack *track);
+        virtual void          UserCreateOutputObjects();
+        virtual void          UserExec(Option_t* option);
+        virtual void          Terminate(Option_t* option);
+	virtual Double_t      Beta(AliAODTrack *track);
+	virtual Double_t      tof_minus_tpion(AliAODTrack *track);
+	virtual Double_t      get_mass_squared(AliAODTrack *track);
 
-	Double_t deut_curves[2][2][3];  /* [charge][mean,sigma][par]  */
-	TF1 *fit_deut_curve = new TF1("fit_m_mean",   "[0] + [1]*x + [2]/sqrt(x)",  1.1, 4.4);
 
+//	Double_t deut_curves[2][2][3];  /* [charge][mean,sigma][par]  */
+//	TF1 *fit_deut_curve = new TF1("fit_m_mean",   "[0] + [1]*x + [2]/sqrt(x)",  1.0, 4.4);
+
+//	Double_t cut_width  = 3.0;
+	
     private:
 
-        AliAODEvent*            fAOD;               //! input event
-        TList*                  fOutputList;        //! output list
-	AliPIDResponse*         fPIDResponse;
+        AliAODEvent*          fAOD;               //! input event
+        TList*                fOutputList;        //! output list
+	AliPIDResponse*       fPIDResponse;
+	AliAnalysisUtils*     fAnalysisUtils;
 	
-	TH1F*                   fHistPt;
+	TH1F*                 primary_vertex_z;            //  1
+	TH1F*                 primary_vertex_z_cut;        //  2
+	TH1I*                 deut_per_event;              //  3
+
+	TH1F*                 fHistPt;                     //  4
+
+	TH2F*                 m2_pt_pos;                   //  5
+	TH2F*                 m2_pt_neg;                   //  6
+
+	TH2F*                 m2_pt_pos_cut;               //  7
+	TH2F*                 m2_pt_neg_cut;               //  8
+
 	
-	TH2F*                   cent_ntracks;
-	TH2F*                   m_squared_pos;
-	TH2F*                   m_squared_pos_cut_T;
-	TH2F*                   m_squared_pos_cut_A;
-	TH2F*                   m_squared_pos_cut_B;
-	TH2F*                   m_squared_pos_cut_V;
-	TH2F*                   m_squared_neg;
-	TH2F*                   m_squared_neg_cut_T;
-	TH2F*                   m_squared_neg_cut_A;
-	TH2F*                   m_squared_neg_cut_B;
-	TH2F*                   m_squared_neg_cut_V;
-	TH2F*                   plength_vs_mom_pos;
-	TH2F*                   plength_vs_mom_neg;
-	TH2F*                   ttof_vs_mom_pos;
-	TH2F*                   ttof_vs_mom_neg;
-	TH2F*                   beta_vs_mom_pos;
-	TH2F*                   beta_vs_mom_neg;
-	TH2F*                   deltat_vs_mom_pos;
-	TH2F*                   deltat_vs_mom_neg;
-	TH2F*                   deut_dphi_T;
-	TH2F*                   deut_dphi_A;
-	TH2F*                   deut_dphi_B;
-	TH2F*                   deut_dphi_V;
-	TH2F*                   deut_dphi_pos_T;
-	TH2F*                   deut_dphi_pos_A;
-	TH2F*                   deut_dphi_pos_B;
-	TH2F*                   deut_dphi_pos_V;
-	TH2F*                   deut_dphi_neg_T;
-	TH2F*                   deut_dphi_neg_A;
-	TH2F*                   deut_dphi_neg_B;
-	TH2F*                   deut_dphi_neg_V;
-	TH1I*                   deuterons_per_event;
-	TH1I*                   deuterons_per_event_pos;
-	TH1I*                   deuterons_per_event_neg;
-	TH1F*                   track_phi;
-	TH1F*                   track_phi_hybrid;
-	TH1F*                   track_eta;
-	TH1F*                   track_eta_hybrid;	
-	TH2F*                   deut_dphi_deta_p0510;
-	TH2F*                   deut_dphi_deta_p1020;
-	TH2F*                   deut_dphi_deta_p2030;
-	TH2F*                   deut_dphi_deta_p3040;
-	TH2F*                   deut_dphi_deta_p4050;
+
+
+
+	
 	
         AliAnalysisTaskCorPIDTOFQA(const AliAnalysisTaskCorPIDTOFQA&);                        // not implemented
         AliAnalysisTaskCorPIDTOFQA& operator=(const AliAnalysisTaskCorPIDTOFQA&);             // not implemented
+
         ClassDef(AliAnalysisTaskCorPIDTOFQA, 1);
 };
 
+//}  //// namespace
 #endif

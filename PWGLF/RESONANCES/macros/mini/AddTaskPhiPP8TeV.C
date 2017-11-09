@@ -1,6 +1,6 @@
 /***************************************************************************
               Anders Knospe - last modified on 26 March 2016
-              Sushanta Tripathy - last modified on 17 Feb 2017
+              Sushanta Tripathy - last modified on 21 Jul 2017
 //Lauches phi analysis with rsn mini package for pp@8 Tev
 //Allows basic configuration of pile-up check and event cuts
 ****************************************************************************/
@@ -17,7 +17,10 @@ enum eventCutSet { kEvtDefault=0,
 		   kMCEvtDefault, //=5                   
 		   kSpecial1, //=6                   
 		   kSpecial2, //=7
-		   kNoEvtSel //=8
+		   kNoEvtSel, //=8
+		   kSpecial3, //=9
+		   kSpecial4, //=10
+		   kSpecial5 //=11
                  };
 
 enum eventMixConfig { kDisabled = -1,
@@ -52,7 +55,7 @@ AliRsnMiniAnalysisTask * AddTaskPhiPP8TeV
   // event cuts
   //-------------------------------------------
   UInt_t      triggerMask=AliVEvent::kINT7;
-  if(isMC && evtCutSetID==eventCutSet::kNoEvtSel) triggerMask=AliVEvent::kAny;
+  //if(isMC && evtCutSetID==eventCutSet::kNoEvtSel) triggerMask=AliVEvent::kAny;
   Bool_t      rejectPileUp=kTRUE;
   Double_t    vtxZcut=10.0;//cm, default cut on vtx z
   Int_t       MultBins=aodFilterBit/100;
@@ -99,8 +102,8 @@ AliRsnMiniAnalysisTask * AddTaskPhiPP8TeV
   // create the task and configure 
   TString taskName=Form("phi%s%s_%i%i",(isPP? "pp" : "PbPb"),(isMC ? "MC" : "Data"),(Int_t)cutKaCandidate);
   AliRsnMiniAnalysisTask* task=new AliRsnMiniAnalysisTask(taskName.Data(),isMC);
-  //task->UseESDTriggerMask(triggerMask); //ESD ****** check this *****
-  task->SelectCollisionCandidates(triggerMask); //AOD
+  if(evtCutSetID==eventCutSet::kSpecial4 || evtCutSetID==eventCutSet::kSpecial5) task->UseESDTriggerMask(triggerMask); //ESD ****** check this *****
+  if(evtCutSetID!=eventCutSet::kNoEvtSel && evtCutSetID!=eventCutSet::kSpecial3 && evtCutSetID!=eventCutSet::kSpecial4) task->SelectCollisionCandidates(triggerMask); //AOD
 
   if(isPP){
     if(MultBins==1) task->UseMultiplicity("AliMultSelection_V0M");
@@ -124,11 +127,14 @@ AliRsnMiniAnalysisTask * AddTaskPhiPP8TeV
   // - 4th argument --> tells if TPC stand-alone vertexes must be accepted
 
   AliRsnCutPrimaryVertex* cutVertex=0;
-  if(evtCutSetID!=eventCutSet::kSpecial1 && evtCutSetID!=eventCutSet::kNoEvtSel && !MultBins){
+  if(evtCutSetID!=eventCutSet::kSpecial1 && evtCutSetID!=eventCutSet::kNoEvtSel && (!MultBins || fabs(vtxZcut-10.)>1.e-10)){
     cutVertex=new AliRsnCutPrimaryVertex("cutVertex",vtxZcut,0,kFALSE);
+    if(!MultBins && evtCutSetID!=eventCutSet::kSpecial3){
     //cutVertex->SetCheckZResolutionSPD();
     //cutVertex->SetCheckDispersionSPD();
     //cutVertex->SetCheckZDifferenceSPDTrack();
+    }
+    if (evtCutSetID==eventCutSet::kSpecial3) cutVertex->SetCheckGeneratedVertexZ();
   }
 
   AliRsnCutEventUtils* cutEventUtils=0;
@@ -200,7 +206,7 @@ AliRsnMiniAnalysisTask * AddTaskPhiPP8TeV
 
   // -- CONFIG ANALYSIS --------------------------------------------------------------------------
 
-  gROOT->LoadMacro("ConfigPhiPP8TeV.C");
+  gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/RESONANCES/macros/mini/ConfigPhiPP8TeV.C");
   if(!ConfigPhiPP8TeV(task,isMC,isPP,"",cutsPair,aodFilterBit,customQualityCutsID,cutKaCandidate,nsigmaKa,enableMonitor,isMC&IsMcTrueOnly,monitorOpt.Data(),useMixLS,isMC&checkReflex,yaxisvar,polarizationOpt)) return 0x0;
 
   // -- CONTAINERS --------------------------------------------------------------------------------

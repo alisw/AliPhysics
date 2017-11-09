@@ -52,6 +52,7 @@ fSwapBaryon(kFALSE),
 fSwapV0MesonCharge(kFALSE),
 fSwapV0BaryonCharge(kFALSE),
 fCutUseITSRefitTracks(kFALSE),
+fCutUse276TeVV0CosPA(kFALSE),
 fCutLeastNumberOfClusters(70),
 fCutMinEtaTracks(-0.8),
 fCutMaxEtaTracks(+0.8),
@@ -120,6 +121,7 @@ fSwapBaryon(kFALSE),
 fSwapV0MesonCharge(kFALSE),
 fSwapV0BaryonCharge(kFALSE),
 fCutUseITSRefitTracks(kFALSE),
+fCutUse276TeVV0CosPA(kFALSE),
 fCutLeastNumberOfClusters(70),
 fCutMinEtaTracks(-0.8),
 fCutMaxEtaTracks(+0.8),
@@ -190,6 +192,7 @@ fSwapBaryon(kFALSE),
 fSwapV0MesonCharge(kFALSE),
 fSwapV0BaryonCharge(kFALSE),
 fCutUseITSRefitTracks(kFALSE),
+fCutUse276TeVV0CosPA(kFALSE),
 fCutLeastNumberOfClusters(70),
 fCutMinEtaTracks(-0.8),
 fCutMaxEtaTracks(+0.8),
@@ -269,6 +272,7 @@ fSwapBaryon(kFALSE),
 fSwapV0MesonCharge(kFALSE),
 fSwapV0BaryonCharge(kFALSE),
 fCutUseITSRefitTracks(kFALSE),
+fCutUse276TeVV0CosPA(kFALSE),
 fCutLeastNumberOfClusters(70),
 fCutMinEtaTracks(-0.8),
 fCutMaxEtaTracks(+0.8),
@@ -345,6 +349,8 @@ fSwapBachCharge(lCopyMe.fSwapBachCharge),
 fSwapBaryon(lCopyMe.fSwapBaryon),
 fSwapV0MesonCharge(lCopyMe.fSwapV0MesonCharge),
 fSwapV0BaryonCharge(lCopyMe.fSwapV0BaryonCharge),
+//276 Reanalysis
+fCutUse276TeVV0CosPA(lCopyMe.fCutUse276TeVV0CosPA),
 //Track selections
 fCutUseITSRefitTracks(lCopyMe.fCutUseITSRefitTracks),
 fCutLeastNumberOfClusters(lCopyMe.fCutLeastNumberOfClusters),
@@ -429,6 +435,9 @@ AliCascadeResult::AliCascadeResult(AliCascadeResult *lCopyMe, TString lNewName)
     fSwapBaryon     = lCopyMe -> GetSwapBaryon();
     fSwapV0MesonCharge     = lCopyMe -> GetSwapV0MesonCharge();
     fSwapV0BaryonCharge     = lCopyMe -> GetSwapV0BaryonCharge();
+    
+    //2.76 TeV reanalysis
+    fCutUse276TeVV0CosPA = lCopyMe ->GetCutUse276TeVV0CosPA();
     
     //Track cuts
     fCutUseITSRefitTracks    = lCopyMe -> GetCutUseITSRefitTracks();
@@ -531,6 +540,9 @@ AliCascadeResult& AliCascadeResult::operator=(const AliCascadeResult& lCopyMe)
     fSwapBaryon          = lCopyMe.GetSwapBaryon();
     fSwapV0MesonCharge     = lCopyMe.GetSwapV0MesonCharge();
     fSwapV0BaryonCharge     = lCopyMe.GetSwapV0BaryonCharge();
+    
+    //2.76 TeV reanalysis
+    fCutUse276TeVV0CosPA = lCopyMe.GetCutUse276TeVV0CosPA();
     
     //Track cuts
     fCutUseITSRefitTracks = lCopyMe.GetCutUseITSRefitTracks();
@@ -659,6 +671,10 @@ Bool_t AliCascadeResult::HasSameCuts(AliVWeakResult *lCompare, Bool_t lCheckdEdx
     //Track cuts
     if( TMath::Abs( fCutLeastNumberOfClusters - lCompareCascade->GetCutLeastNumberOfClusters() ) > 1e-6 ) lReturnValue = kFALSE;
     if( TMath::Abs( fCutUseITSRefitTracks - lCompareCascade->GetCutUseITSRefitTracks() ) > 1e-6 ) lReturnValue = kFALSE;
+    
+    //Check if parametric V0 CosPA (as in 2.76 analysis) used
+    if( fCutUse276TeVV0CosPA != lCompareCascade->GetCutUse276TeVV0CosPA() ) lReturnValue = kFALSE;
+    
     if( TMath::Abs( fCutMinEtaTracks - lCompareCascade->GetCutMinEtaTracks() ) > 1e-6 ) lReturnValue = kFALSE;
     if( TMath::Abs( fCutMaxEtaTracks - lCompareCascade->GetCutMaxEtaTracks() ) > 1e-6 ) lReturnValue = kFALSE;
     if( TMath::Abs( fCutMaxChi2PerCluster - lCompareCascade->GetCutMaxChi2PerCluster() ) > 1e-6 ) lReturnValue = kFALSE;
@@ -756,7 +772,7 @@ void AliCascadeResult::Print()
     cout<<" Proper Lifetime....: "<<fCutProperLifetime<<endl;
     cout<<" TPC dEdx (sigmas)..: "<<fCutTPCdEdx<<endl;
     cout<<" Xi Rej (for Omega).: "<<fCutXiRejection<<endl;
-    
+    cout<<" Use 2.76TeV v0cospa: "<<fCutUse276TeVV0CosPA<<endl;
     cout<<" Use ITSref tracks..: "<<fCutUseITSRefitTracks<<endl;
     cout<<" Nbr Clusters.......: "<<fCutLeastNumberOfClusters<<endl;
     cout<<" Min track eta......: "<<fCutMinEtaTracks<<endl;

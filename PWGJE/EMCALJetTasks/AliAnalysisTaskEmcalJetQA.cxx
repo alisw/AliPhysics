@@ -280,24 +280,24 @@ void AliAnalysisTaskEmcalJetQA::UserCreateOutputObjects()
 
   if (fForceBeamType != AliAnalysisTaskEmcalLight::kpp) {
     axistitle[dim] = "Centrality %";
-    nbins[dim] = 101;
+    nbins[dim] = 100;
     min[dim] = 0;
-    max[dim] = 101;
+    max[dim] = 100;
     dim++;
 
     if (!fCentMethod2.IsNull()) {
       axistitle[dim] = Form("Centrality %s %%", fCentMethod2.Data());
-      nbins[dim] = 101;
+      nbins[dim] = 100;
       min[dim] = 0;
-      max[dim] = 101;
+      max[dim] = 100;
       dim++;
     }
 
     if (!fCentMethod3.IsNull()) {
       axistitle[dim] = Form("Centrality %s %%", fCentMethod3.Data());
-      nbins[dim] = 101;
+      nbins[dim] = 100;
       min[dim] = 0;
-      max[dim] = 101;
+      max[dim] = 100;
       dim++;
     }
 
@@ -538,6 +538,11 @@ Bool_t AliAnalysisTaskEmcalJetQA::RetrieveEventObjects()
 Bool_t AliAnalysisTaskEmcalJetQA::FillHistograms()
 {
   // Fill histograms.
+
+  if (fCentBin < 0) {
+    AliError(Form("fCentBin is %d! fCent = %.3f. Fix the centrality bins to include all possible values of centrality.", fCentBin, fCent));
+    return kFALSE;
+  }
 
   EventQA_t eventQA;
 

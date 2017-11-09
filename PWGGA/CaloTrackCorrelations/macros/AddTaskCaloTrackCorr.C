@@ -10,7 +10,7 @@
 /// Global variables to be accessed by the different methods
 Bool_t  kPrint         = kFALSE;    ///< Print setted parameters when configuring
 Bool_t  kSimulation    = kFALSE;    ///< Declare the analysis simulation
-Bool_t  kUseKinematics = kFALSE;    ///< Use the MC information
+//Bool_t  kUseKinematics = kFALSE;    ///< Use the MC information
 Bool_t  kOutputAOD     = kFALSE;    ///< Create output AOD with generated particle AOD objects
 Bool_t  kEventSelection= kFALSE;    ///< Remove bad events
 Bool_t  kExotic        = kTRUE;     ///< Remove exotic clusters
@@ -120,13 +120,13 @@ AliAnalysisTaskCaloTrackCorrelation *AddTaskCaloTrackCorr(const TString  data   
   if(!kData.Contains("delta"))
     kInputDataType = mgr->GetInputEventHandler()->GetDataType(); // can be "ESD" or "AOD"
   
-  if(kSimulation) 
-  { 
-    kUseKinematics = (mgr->GetMCtruthEventHandler())?kTRUE:kFALSE; 
-    if (!kUseKinematics && data=="AOD" && kInputDataType != "ESD") kUseKinematics = kTRUE; //AOD primary should be available ... 
-  } 
-  
-  cout<<"********* ACCESS KINE? "<<kUseKinematics<<endl;
+//  if(kSimulation) 
+//  { 
+//    kUseKinematics = (mgr->GetMCtruthEventHandler())?kTRUE:kFALSE; 
+//    if (!kUseKinematics && data=="AOD" && kInputDataType != "ESD") kUseKinematics = kTRUE; //AOD primary should be available ... 
+//  } 
+//  
+//  cout<<"********* ACCESS KINE? "<<kUseKinematics<<endl;
   
   // Name for containers
   
@@ -323,18 +323,6 @@ AliCaloTrackReader * ConfigureReader()
   //Delta AOD?
   //reader->SetDeltaAODFileName("");
   if(kOutputAOD) reader->SwitchOnWriteDeltaAOD()  ;
-  
-  // MC settings
-  if(kUseKinematics){
-    if(kInputDataType == "ESD"){
-      reader->SwitchOnStack();          
-      reader->SwitchOffAODMCParticles(); 
-    }
-    else if(kInputDataType == "AOD"){
-      reader->SwitchOffStack();          
-      reader->SwitchOnAODMCParticles(); 
-    }
-  }  
   
   //------------------------
   // Detector input filling
@@ -708,8 +696,8 @@ AliAnaPhoton* ConfigurePhotonAnalysis()
   if(!kData.Contains("delta")) 
   {
     ana->SetOutputAODName(Form("Photon%s",kName.Data()));
-    ana->SetOutputAODClassName("AliAODPWG4ParticleCorrelation");
-    //ana->SetOutputAODClassName("AliAODPWG4Particle"); // use if no correlation done
+    ana->SetOutputAODClassName("AliCaloTrackParticleCorrelation");
+    //ana->SetOutputAODClassName("AliCaloTrackParticle"); // use if no correlation done
   }
   else ana->SetInputAODName(Form("Photon%s",kName.Data()));
   
@@ -836,7 +824,7 @@ AliAnaElectron* ConfigureElectronAnalysis()
   if(!kData.Contains("delta")) 
   {
     ana->SetOutputAODName(Form("Electron%s",kName.Data()));
-    ana->SetOutputAODClassName("AliAODPWG4ParticleCorrelation");
+    ana->SetOutputAODClassName("AliCaloTrackParticleCorrelation");
   }
   else ana->SetInputAODName(Form("Electron%s",kName.Data()));
   
@@ -887,7 +875,7 @@ AliAnaRandomTrigger* ConfigureRandomTriggerAnalysis(TString detector = "")
   if(!kData.Contains("delta")) 
   {
     ana->SetOutputAODName(Form("RandomTrigger%s%s",detector.Data(),kName.Data()));
-    ana->SetOutputAODClassName("AliAODPWG4ParticleCorrelation");
+    ana->SetOutputAODClassName("AliCaloTrackParticleCorrelation");
   }
   else 
     ana->SetInputAODName(Form("RandomTrigger%s%s",detector.Data(),kName.Data()));
@@ -1041,8 +1029,8 @@ AliAnaChargedParticles* ConfigureChargedAnalysis()
   if(!kData.Contains("delta"))
   {
     ana->SetOutputAODName(Form("Hadron%s",kName.Data()));
-    ana->SetOutputAODClassName("AliAODPWG4ParticleCorrelation");
-    //ana->SetOutputAODClassName("AliAODPWG4Particle"); // use if no correlation done
+    ana->SetOutputAODClassName("AliCaloTrackParticleCorrelation");
+    //ana->SetOutputAODClassName("AliCaloTrackParticle"); // use if no correlation done
   }
   else
     ana->SetInputAODName(Form("Hadron%s",kName.Data()));
@@ -1182,7 +1170,7 @@ AliAnaPi0EbE* ConfigurePi0EbEAnalysis(TString particle,
   if(!kInputDataType.Contains("delta"))
   {
     ana->SetOutputAODName(Form("%s%s%s",particle.Data(), opt.Data(), kName.Data()));
-    ana->SetOutputAODClassName("AliAODPWG4ParticleCorrelation");
+    ana->SetOutputAODClassName("AliCaloTrackParticleCorrelation");
     
   }
   else
@@ -1666,8 +1654,6 @@ AliAnaCalorimeterQA* ConfigureQAAnalysis()
   ana->SwitchOffFillAllPositionHistogram2();
   if(!kExotic)ana->SwitchOnStudyBadClusters();
   else        ana->SwitchOffStudyBadClusters();
-  ana->SwitchOffStudyClustersAsymmetry();
-  ana->SwitchOffStudyWeight();
   ana->SwitchOnFillAllTrackMatchingHistogram();
   ana->SwitchOnFillAllCellTimeHisto() ;
   

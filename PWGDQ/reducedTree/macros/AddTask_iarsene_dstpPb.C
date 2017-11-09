@@ -46,9 +46,9 @@ AliAnalysisTask *AddTask_iarsene_dstpPb(Int_t reducedEventType=-1, Bool_t writeT
   //  task->SetRejectPileup();
     
   //task->UsePhysicsSelection(kTRUE);
-  task->SetUseAnalysisUtils(kTRUE);
+  task->SetUseAnalysisUtils(kFALSE);
   
-  task->SetFillV0Info(kFALSE);
+  task->SetFillV0Info(kTRUE);
   /*task->SetFillGammaConversions(kTRUE);
   task->SetFillK0s(kTRUE);
   task->SetFillLambda(kTRUE);
@@ -60,19 +60,20 @@ AliAnalysisTask *AddTask_iarsene_dstpPb(Int_t reducedEventType=-1, Bool_t writeT
   task->SetEventFilter(CreateEventFilter(isAOD));
   task->SetTrackFilter(CreateGlobalTrackFilter(isAOD));
   //  task->SetFlowTrackFilter(CreateFlowTrackFilter(isAOD));
-  //task->SetK0sPionCuts(CreateK0sPionCuts(isAOD));
-  //task->SetLambdaProtonCuts(CreateLambdaProtonCuts(isAOD));
-  //task->SetLambdaPionCuts(CreateLambdaPionCuts(isAOD));
-  //task->SetGammaElectronCuts(CreateGammaConvElectronCuts(isAOD));
+  task->SetK0sPionCuts(CreateK0sPionCuts(isAOD));
+  task->SetLambdaProtonCuts(CreateLambdaProtonCuts(isAOD));
+  task->SetLambdaPionCuts(CreateLambdaPionCuts(isAOD));
+  task->SetGammaElectronCuts(CreateGammaConvElectronCuts(isAOD));
   //task->SetK0sMassRange(0.44,0.55);
   //task->SetLambdaMassRange(1.090,1.14);
   //task->SetGammaConvMassRange(0.0,0.1);
-  //task->SetV0OpenCuts(CreateV0OpenCuts(AliESDv0KineCuts::kEffGamma, AliESDv0KineCuts::kPbPb));
-  //task->SetV0StrongCuts(CreateV0StrongCuts(AliESDv0KineCuts::kEffGamma, AliESDv0KineCuts::kPbPb));
+  task->SetV0OpenCuts(CreateV0OpenCuts(AliESDv0KineCuts::kEffGamma, AliESDv0KineCuts::kPP));
+  task->SetV0StrongCuts(CreateV0StrongCuts(AliESDv0KineCuts::kPurity, AliESDv0KineCuts::kPP));
   //task->SetFillFMDInfo(); AddFMDTask();
   if(hasMC) task->SetFillMCInfo(kTRUE);
-  task->SetFillEventPlaneInfo(kTRUE);
-
+  //task->SetFillEventPlaneInfo(kTRUE);
+  //task->SetFillTRDMatchedTracks(kTRUE, kFALSE);
+  
   //task->SetTreeWritingOption(AliAnalysisTaskReducedTreeMaker::kFullEventsWithFullTracks);
   //task->SetTreeWritingOption(AliAnalysisTaskReducedTreeMaker::kBaseEventsWithBaseTracks);
   if(reducedEventType!=-1)
@@ -130,15 +131,15 @@ void SetInactiveBranches(AliAnalysisTaskReducedTreeMaker* task) {
    //task->SetTreeInactiveBranch("fNV0candidates*");
    //task->SetTreeInactiveBranch("fTracks.*");
    //task->SetTreeInactiveBranch("fCandidates.*");
-   //task->SetTreeInactiveBranch("fEventNumberInFile");
+   task->SetTreeInactiveBranch("fEventNumberInFile");
    //task->SetTreeInactiveBranch("fL0TriggerInputs");
    //task->SetTreeInactiveBranch("fL1TriggerInputs");
    //task->SetTreeInactiveBranch("fL2TriggerInputs");
    //task->SetTreeInactiveBranch("fBC");
    //task->SetTreeInactiveBranch("fTimeStamp");
-   //task->SetTreeInactiveBranch("fEventType");
+   task->SetTreeInactiveBranch("fEventType");
    //task->SetTreeInactiveBranch("fTriggerMask");
-   //task->SetTreeInactiveBranch("fMultiplicityEstimators*");
+   task->SetTreeInactiveBranch("fMultiplicityEstimators*");
    //task->SetTreeInactiveBranch("fMultiplicityEstimatorPercentiles*");
    //task->SetTreeInactiveBranch("fIsPhysicsSelection");
    //task->SetTreeInactiveBranch("fIsSPDPileup");
@@ -151,7 +152,7 @@ void SetInactiveBranches(AliAnalysisTaskReducedTreeMaker* task) {
    //task->SetTreeInactiveBranch("fNpileupSPD");
    //task->SetTreeInactiveBranch("fNpileupTracks");
    //task->SetTreeInactiveBranch("fNTPCclusters");
-   //task->SetTreeInactiveBranch("fNPMDtracks");
+   task->SetTreeInactiveBranch("fNPMDtracks");
    //task->SetTreeInactiveBranch("fNTRDtracks");
    //task->SetTreeInactiveBranch("fNTRDtracklets");
    //task->SetTreeInactiveBranch("fSPDntracklets");
@@ -160,23 +161,23 @@ void SetInactiveBranches(AliAnalysisTaskReducedTreeMaker* task) {
    //task->SetTreeInactiveBranch("fITSClusters*");
    //task->SetTreeInactiveBranch("fSPDnSingle");
    //task->SetTreeInactiveBranch("fNtracksPerTrackingFlag*");
-   //task->SetTreeInactiveBranch("fVZEROMult*");
+   task->SetTreeInactiveBranch("fVZEROMult*");
    //task->SetTreeInactiveBranch("fVZEROTotalMult*");
-   //task->SetTreeInactiveBranch("fZDCnEnergy*");
-   //task->SetTreeInactiveBranch("fZDCpEnergy*");
-   //task->SetTreeInactiveBranch("fZDCnTotalEnergy*");
-   //task->SetTreeInactiveBranch("fZDCpTotalEnergy*");
-   //task->SetTreeInactiveBranch("fT0amplitude*");
-   //task->SetTreeInactiveBranch("fT0TOF*");
-   //task->SetTreeInactiveBranch("fT0TOFbest*");
-   //task->SetTreeInactiveBranch("fT0zVertex");
-   //task->SetTreeInactiveBranch("fT0start");
+   task->SetTreeInactiveBranch("fZDCnEnergy*");
+   task->SetTreeInactiveBranch("fZDCpEnergy*");
+   task->SetTreeInactiveBranch("fZDCnTotalEnergy*");
+   task->SetTreeInactiveBranch("fZDCpTotalEnergy*");
+   task->SetTreeInactiveBranch("fT0amplitude*");
+   task->SetTreeInactiveBranch("fT0TOF*");
+   task->SetTreeInactiveBranch("fT0TOFbest*");
+   task->SetTreeInactiveBranch("fT0zVertex");
+   task->SetTreeInactiveBranch("fT0start");
    //task->SetTreeInactiveBranch("fT0pileup");
    //task->SetTreeInactiveBranch("fT0sattelite");
-   //task->SetTreeInactiveBranch("fNCaloClusters");
-   //task->SetTreeInactiveBranch("fCaloClusters.*");
-   //task->SetTreeInactiveBranch("fFMD.*");
-   //task->SetTreeInactiveBranch("fEventPlane.*");
+   task->SetTreeInactiveBranch("fNCaloClusters");
+   task->SetTreeInactiveBranch("fCaloClusters.*");
+   task->SetTreeInactiveBranch("fFMD.*");
+   task->SetTreeInactiveBranch("fEventPlane.*");
    
    //task->SetTreeInactiveBranch("fTracks.fP*");
    //task->SetTreeInactiveBranch("fTracks.fIsCartesian");
@@ -185,21 +186,21 @@ void SetInactiveBranches(AliAnalysisTaskReducedTreeMaker* task) {
    //task->SetTreeInactiveBranch("fTracks.fQualityFlags");
    //task->SetTreeInactiveBranch("fTracks.fTrackId");
    //task->SetTreeInactiveBranch("fTracks.fStatus");
-   //task->SetTreeInactiveBranch("fTracks.fTPCPhi");
-   //task->SetTreeInactiveBranch("fTracks.fTPCPt");
-   //task->SetTreeInactiveBranch("fTracks.fTPCEta");
+   task->SetTreeInactiveBranch("fTracks.fTPCPhi");
+   task->SetTreeInactiveBranch("fTracks.fTPCPt");
+   task->SetTreeInactiveBranch("fTracks.fTPCEta");
    //task->SetTreeInactiveBranch("fTracks.fMomentumInner");
    //task->SetTreeInactiveBranch("fTracks.fDCA*");
-   //task->SetTreeInactiveBranch("fTracks.fTPCDCA*");
-   //task->SetTreeInactiveBranch("fTracks.fTrackLength");
-   //task->SetTreeInactiveBranch("fTracks.fMassForTracking");
+   task->SetTreeInactiveBranch("fTracks.fTPCDCA*");
+   task->SetTreeInactiveBranch("fTracks.fTrackLength");
+   task->SetTreeInactiveBranch("fTracks.fMassForTracking");
    //task->SetTreeInactiveBranch("fTracks.fChi2TPCConstrainedVsGlobal");
-   //task->SetTreeInactiveBranch("fTracks.fHelixCenter*");
-   //task->SetTreeInactiveBranch("fTracks.fHelixRadius");
+   task->SetTreeInactiveBranch("fTracks.fHelixCenter*");
+   task->SetTreeInactiveBranch("fTracks.fHelixRadius");
    //task->SetTreeInactiveBranch("fTracks.fITSclusterMap");
    //task->SetTreeInactiveBranch("fTracks.fITSSharedClusterMap");
-   //task->SetTreeInactiveBranch("fTracks.fITSsignal");
-   //task->SetTreeInactiveBranch("fTracks.fITSnSig*");
+   task->SetTreeInactiveBranch("fTracks.fITSsignal");
+   task->SetTreeInactiveBranch("fTracks.fITSnSig*");
    //task->SetTreeInactiveBranch("fTracks.fITSchi2");
    //task->SetTreeInactiveBranch("fTracks.fTPCNcls");
    //task->SetTreeInactiveBranch("fTracks.fTPCCrossedRows");
@@ -210,20 +211,20 @@ void SetInactiveBranches(AliAnalysisTaskReducedTreeMaker* task) {
    //task->SetTreeInactiveBranch("fTracks.fTPCsignalN");
    //task->SetTreeInactiveBranch("fTracks.fTPCnSig*");
    //task->SetTreeInactiveBranch("fTracks.fTPCchi2");
-   //task->SetTreeInactiveBranch("fTracks.fTPCActiveLength");
-   //task->SetTreeInactiveBranch("fTracks.fTPCGeomLength");
+   task->SetTreeInactiveBranch("fTracks.fTPCActiveLength");
+   task->SetTreeInactiveBranch("fTracks.fTPCGeomLength");
    //task->SetTreeInactiveBranch("fTracks.fTOFbeta");
-   //task->SetTreeInactiveBranch("fTracks.fTOFtime");
-   //task->SetTreeInactiveBranch("fTracks.fTOFdx");
-   //task->SetTreeInactiveBranch("fTracks.fTOFdz");
-   //task->SetTreeInactiveBranch("fTracks.fTOFmismatchProbab");
-   //task->SetTreeInactiveBranch("fTracks.fTOFchi2");
+   task->SetTreeInactiveBranch("fTracks.fTOFtime");
+   task->SetTreeInactiveBranch("fTracks.fTOFdx");
+   task->SetTreeInactiveBranch("fTracks.fTOFdz");
+   task->SetTreeInactiveBranch("fTracks.fTOFmismatchProbab");
+   task->SetTreeInactiveBranch("fTracks.fTOFchi2");
    //task->SetTreeInactiveBranch("fTracks.fTOFnSig*");
    //task->SetTreeInactiveBranch("fTracks.fTOFdeltaBC");
    //task->SetTreeInactiveBranch("fTracks.fTRDntracklets*");
    //task->SetTreeInactiveBranch("fTracks.fTRDpid*");
    //task->SetTreeInactiveBranch("fTracks.fTRDpidLQ2D*");
-   //task->SetTreeInactiveBranch("fTracks.fCaloClusterId");
+   task->SetTreeInactiveBranch("fTracks.fCaloClusterId");
    //task->SetTreeInactiveBranch("fTracks.fMCMom*");
    //task->SetTreeInactiveBranch("fTracks.fMCFreezeout*");
    //task->SetTreeInactiveBranch("fTracks.fMCLabels*");
@@ -253,9 +254,9 @@ AliAnalysisCuts* CreateEventFilter(Bool_t isAOD) {
   //
   AliDielectronEventCuts *eventCuts=new AliDielectronEventCuts("eventCuts","Vertex Track && |vtxZ|<10 && ncontrib>0");
   if(isAOD) eventCuts->SetVertexType(AliDielectronEventCuts::kVtxAny);
-  eventCuts->SetRequireVertex();
-  eventCuts->SetMinVtxContributors(1);
-  eventCuts->SetVertexZ(-10.,10.);
+  //eventCuts->SetRequireVertex();
+  //eventCuts->SetMinVtxContributors(1);
+  //eventCuts->SetVertexZ(-10.,10.);
   return eventCuts;
 }
 
@@ -269,18 +270,18 @@ AliAnalysisCuts* CreateGlobalTrackFilter(Bool_t isAOD) {
   // general cuts ---------------------------------
   //if(isAOD) {
   AliDielectronVarCuts *trackCuts = new AliDielectronVarCuts("trackCuts","track cuts");
-  trackCuts->AddCut(AliDielectronVarManager::kImpactParXY,-3.0,3.0);
-  trackCuts->AddCut(AliDielectronVarManager::kImpactParZ,-10.0,10.0);
+  trackCuts->AddCut(AliDielectronVarManager::kImpactParXY,-1.5,1.5);
+  trackCuts->AddCut(AliDielectronVarManager::kImpactParZ,-4.0,4.0);
   trackCuts->AddCut(AliDielectronVarManager::kEta,-0.9,0.9);
   trackCuts->AddCut(AliDielectronVarManager::kP,0.3,1.0e+30);
-  trackCuts->AddCut(AliDielectronVarManager::kNclsTPC,30.0,161.0);
+  trackCuts->AddCut(AliDielectronVarManager::kNclsTPC,60.0,161.0);
   //  trackCuts->AddCut(AliDielectronVarManager::kTPCchi2Cl,0.1,4.0);
   
   //trackCuts->AddCut(AliDielectronVarManager::kP,1.0,1.0e+30);
   //trackCuts->AddCut(AliDielectronVarManager::kNclsTPC,70.0,161.0);
   cuts->AddCut(trackCuts);
   AliDielectronTrackCuts* trackCuts2 = new AliDielectronTrackCuts("trackCuts2","track cuts");
-  //trackCuts2->SetRequireITSRefit(kTRUE);
+  trackCuts2->SetRequireITSRefit(kTRUE);
   trackCuts2->SetRequireTPCRefit(kTRUE);
   cuts->AddCut(trackCuts2);
     //}
@@ -404,15 +405,15 @@ AliAnalysisCuts* CreateK0sPionCuts(Bool_t isAOD) {
    AliDielectronCutGroup* cuts = new AliDielectronCutGroup("cutsPionK0V0","cuts",AliDielectronCutGroup::kCompAND);
   if(!isAOD) {
     AliESDtrackCuts *pionCuts = new AliESDtrackCuts;
-    pionCuts->SetPtRange(0.7,100.0);
+    pionCuts->SetPtRange(0.3,100.0);
     pionCuts->SetEtaRange(-0.9,0.9);
     pionCuts->SetRequireTPCRefit(kTRUE);
-    pionCuts->SetMinNClustersTPC(30);
+    pionCuts->SetMinNClustersTPC(70);
     cuts->AddCut(pionCuts);
   }
-  AliDielectronPID *electronPid = new AliDielectronPID("PIDelePionK0V0","PID cut");
-  electronPid->AddCut(AliDielectronPID::kTPC,AliPID::kElectron,-4.0, 4.0, 0.0, 0.0, kFALSE, AliDielectronPID::kRequire); // TPC 4-sigma inclusion for electron    
-  cuts->AddCut(electronPid);
+  AliDielectronPID *pionPid = new AliDielectronPID("PIDelePionK0V0","PID cut");
+  pionPid->AddCut(AliDielectronPID::kTPC,AliPID::kPion,-3.0, 3.0, 0.0, 0.0, kFALSE, AliDielectronPID::kRequire); // TPC 3-sigma inclusion for pion    
+  cuts->AddCut(pionPid);
   return cuts;
 }
 
@@ -424,15 +425,15 @@ AliAnalysisCuts* CreateLambdaPionCuts(Bool_t isAOD) {
    AliDielectronCutGroup* cuts = new AliDielectronCutGroup("cutsPionLambdaV0","cuts",AliDielectronCutGroup::kCompAND);
   if(!isAOD) {
     AliESDtrackCuts *pionCuts = new AliESDtrackCuts;
-    pionCuts->SetPtRange(0.7,100.0);
+    pionCuts->SetPtRange(0.3,100.0);
     pionCuts->SetEtaRange(-0.9,0.9);
     pionCuts->SetRequireTPCRefit(kTRUE);
-    pionCuts->SetMinNClustersTPC(50);
+    pionCuts->SetMinNClustersTPC(70);
     cuts->AddCut(pionCuts);
   }
-  AliDielectronPID *electronPid = new AliDielectronPID("PIDelePionV0","PID cut");
-  electronPid->AddCut(AliDielectronPID::kTPC,AliPID::kElectron,-4.0, 4.0, 0.0, 0.0, kFALSE, AliDielectronPID::kRequire); // TPC 4-sigma inclusion for electron    
-  cuts->AddCut(electronPid);
+  AliDielectronPID *pionPid = new AliDielectronPID("PIDelePionV0","PID cut");
+  pionPid->AddCut(AliDielectronPID::kTPC,AliPID::kPion,-3.0, 3.0, 0.0, 0.0, kFALSE, AliDielectronPID::kRequire); // TPC 3-sigma inclusion for pion    
+  cuts->AddCut(pionPid);
   return cuts;
 }
 
@@ -445,16 +446,16 @@ AliAnalysisCuts* CreateLambdaProtonCuts(Bool_t isAOD) {
    AliDielectronCutGroup* cuts = new AliDielectronCutGroup("cutsProtV0","cuts",AliDielectronCutGroup::kCompAND);
   if(!isAOD) {
     AliESDtrackCuts *protonCuts = new AliESDtrackCuts;
-    protonCuts->SetPtRange(0.7,100.0);
+    protonCuts->SetPtRange(0.3,100.0);
     protonCuts->SetEtaRange(-0.9,0.9);
     protonCuts->SetRequireTPCRefit(kTRUE);
-    protonCuts->SetMinNClustersTPC(50);
+    protonCuts->SetMinNClustersTPC(70);
     cuts->AddCut(protonCuts);
     //return protonCuts;
   }
-  AliDielectronPID *electronPid = new AliDielectronPID("PIDeleProtV0","PID cut");
-  electronPid->AddCut(AliDielectronPID::kTPC,AliPID::kElectron,-4.0, 4.0, 0.0, 0.0, kFALSE, AliDielectronPID::kRequire); // TPC 4-sigma inclusion for electron    
-  cuts->AddCut(electronPid);
+  AliDielectronPID *protonPid = new AliDielectronPID("PIDeleProtV0","PID cut");
+  protonPid->AddCut(AliDielectronPID::kTPC,AliPID::kProton,-3.0, 3.0, 0.0, 0.0, kFALSE, AliDielectronPID::kRequire); // TPC 3-sigma inclusion for electron    
+  cuts->AddCut(protonPid);
   return cuts;
 }
 
@@ -467,10 +468,10 @@ AliAnalysisCuts* CreateGammaConvElectronCuts(Bool_t isAOD) {
   AliDielectronCutGroup* cuts = new AliDielectronCutGroup("cutsEleV0","cuts",AliDielectronCutGroup::kCompAND);
   if(!isAOD) {
     AliESDtrackCuts* electronCuts = new AliESDtrackCuts;
-    electronCuts->SetPtRange(0.6,100.0);
+    electronCuts->SetPtRange(0.3,100.0);
     electronCuts->SetEtaRange(-1.6,1.6);
     electronCuts->SetRequireTPCRefit(kTRUE);
-    electronCuts->SetMinNClustersTPC(50);
+    electronCuts->SetMinNClustersTPC(70);
     cuts->AddCut(electronCuts);
     //return electronCuts;
   }
@@ -489,7 +490,7 @@ AliESDv0KineCuts* CreateV0StrongCuts(Int_t mode, Int_t type) {
   cuts->SetMode(mode, type);
   
   // leg cuts
-  cuts->SetNTPCclusters(50);
+  cuts->SetNTPCclusters(70);
   cuts->SetTPCrefit(kTRUE);
   cuts->SetTPCchi2perCls(4.0);
   cuts->SetTPCclusterratio(0.6);
@@ -505,17 +506,6 @@ AliESDv0KineCuts* CreateV0StrongCuts(Int_t mode, Int_t type) {
   Float_t psiPairCut[2]={0.0,0.05};
   cuts->SetGammaCutPsiPair(psiPairCut);
   cuts->SetGammaCutInvMass(0.05); 
-  /*cuts->SetGammaCutChi2NDF(10.0);
-  Float_t cosPoint[2] = {0.0, 0.05};  //  Float_t cosPoint[2] = {0.0, 0.02};
-  cuts->SetGammaCutCosPoint(cosPoint);
-  Float_t cutDCA[2] = {0.0, 1.0};  //  Float_t cutDCA[2] = {0.0, 0.25};
-  cuts->SetGammaCutDCA(cutDCA);
-  Float_t vtxR[2] = {3.0, 90.0};
-  cuts->SetGammaCutVertexR(vtxR);
-  Float_t psiPairCut[2]={0.0,0.20};  //Float_t psiPairCut[2]={0.0,0.05};
-  cuts->SetGammaCutPsiPair(psiPairCut);
-  cuts->SetGammaCutInvMass(0.1); //  cuts->SetGammaCutInvMass(0.05);
-  */
   // K0s cuts
   cuts->SetK0CutChi2NDF(10.0);
   Float_t cosPointK0s[2] = {0.0, 0.02};
@@ -549,7 +539,7 @@ AliESDv0KineCuts* CreateV0OpenCuts(Int_t mode, Int_t type) {
   cuts->SetMode(mode, type);
   
   // leg cuts
-  cuts->SetNTPCclusters(50);
+  cuts->SetNTPCclusters(70);
   cuts->SetTPCrefit(kTRUE);
   cuts->SetTPCchi2perCls(4.0);
   cuts->SetTPCclusterratio(0.6);

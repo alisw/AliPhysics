@@ -15,6 +15,7 @@
 class TH2;
 class TObjArray;
 class TAxis;
+class TF1;
 
 class AliMTRParameterizedResponse : public TObject {
  public:
@@ -48,6 +49,7 @@ class AliMTRParameterizedResponse : public TObject {
   Bool_t ShowResponses ( Int_t itype, Bool_t isMC, Bool_t perBoard ) const;
   Bool_t CompareResponses ( Int_t itype, Bool_t perBoard ) const;
 
+  static void ZoomPad();
 
  private:
 
@@ -60,6 +62,8 @@ class AliMTRParameterizedResponse : public TObject {
 
   Double_t FitFunctionErf ( Double_t* xVal, Double_t *par );
   Double_t FitFunctionErfApt ( Double_t* xVal, Double_t *par );
+
+  void InitFunctionParams ( TF1* func, Bool_t fitLowPtIncrease, Int_t itype ) const;
 
 //  TH1* GetHisto ( Int_t itype, Int_t isMC, Bool_t perBoard, Double_t val );
 

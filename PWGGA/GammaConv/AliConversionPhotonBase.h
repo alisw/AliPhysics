@@ -3,7 +3,6 @@
 
 #include "TMath.h"
 #include "TParticle.h"
-#include "AliStack.h"
 #include "AliLog.h"
 #include "TObject.h"
 #include "AliMCEvent.h"   
@@ -56,9 +55,9 @@ class AliConversionPhotonBase {
   Int_t GetTrackLabelPositive() const{return fLabel[0];}
   Int_t GetTrackLabelNegative() const {return fLabel[1];}
   Int_t GetTrackLabel(Int_t i) const {return fLabel[i];}
-  virtual Int_t GetLabel(Int_t i) const { return GetTrackLabel(i); };
-  virtual Int_t GetLabel1() const { return GetTrackLabelPositive(); };
-  virtual Int_t GetLabel2() const { return GetTrackLabelNegative(); };
+  virtual Int_t GetLabel(Int_t i) const { return GetTrackLabel(i); }
+  virtual Int_t GetLabel1() const { return GetTrackLabelPositive(); }
+  virtual Int_t GetLabel2() const { return GetTrackLabelNegative(); }
 
   // MC Label
 
@@ -68,19 +67,23 @@ class AliConversionPhotonBase {
   Int_t GetMCLabel(Int_t i) const{return fMCLabel[i];}
   Int_t GetMCLabelPositive() const{return fMCLabel[0];}
   Int_t GetMCLabelNegative() const{return fMCLabel[1];}
-  Int_t GetMCParticleLabel(AliStack *fMCStack);
+  Int_t GetMCParticleLabel(AliMCEvent *mcEvent);
 
   // GetMCParticle
 
-  Bool_t IsTruePhoton(AliStack *fMCStack);
-  TParticle *GetMCParticle(AliStack *fMCStack);
-  TParticle *GetPositiveMCDaughter(AliStack *fMCStack){return GetMCDaughter(fMCStack,0);};
-  TParticle *GetNegativeMCDaughter(AliStack *fMCStack){return GetMCDaughter(fMCStack,1);};
-  TParticle *GetMCDaughter(AliStack *fMCStack,Int_t label);
+  Bool_t IsTruePhoton(AliMCEvent *mcEvent);
+  TParticle *GetMCParticle(AliMCEvent *mcEvent);
+  TParticle *GetPositiveMCDaughter(AliMCEvent *mcEvent){return GetMCDaughter(mcEvent,0);}
+  TParticle *GetNegativeMCDaughter(AliMCEvent *mcEvent){return GetMCDaughter(mcEvent,1);}
+  TParticle *GetMCDaughter(AliMCEvent *mcEvent,Int_t label);
 
   // V0Index
   Int_t GetV0Index() const {return fV0Index;}
   void SetV0Index(Int_t index) {fV0Index=index;}
+
+  // leadingCellID - stored in fV0Index for GammaCalo analysis
+  Int_t GetLeadingCellID() const {return fV0Index;}
+  void SetLeadingCellID(Int_t index) {fV0Index=index;}
 
   // Conversion Point
    void SetConversionPoint(Double_t convpoint[3]){fConversionPoint[0]=convpoint[0];fConversionPoint[1]=convpoint[1];fConversionPoint[2]=convpoint[2];}

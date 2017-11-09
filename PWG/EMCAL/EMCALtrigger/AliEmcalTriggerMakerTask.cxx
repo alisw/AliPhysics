@@ -90,8 +90,8 @@ AliEmcalTriggerMakerTask::~AliEmcalTriggerMakerTask() {
  */
 void AliEmcalTriggerMakerTask::UserCreateOutputObjects(){
   AliAnalysisTaskEmcal::UserCreateOutputObjects();
-  const std::array<const TString, 3>  kTriggerTypeNames = {"EJE", "EGA", "EL0"},
-                                      kPatchTypes = {"Online", "Offline", "Recalc"};
+  const std::array<const TString, 3>  kTriggerTypeNames = {{"EJE", "EGA", "EL0"}},
+                                      kPatchTypes = {{"Online", "Offline", "Recalc"}};
 
   if(fDoQA) AliInfoStream() << "Trigger maker - QA requested" << std::endl;
   else AliInfoStream() << "Trigger maker - no QA requested" << std::endl;
@@ -218,7 +218,7 @@ void AliEmcalTriggerMakerTask::ExecOnce(){
       dataset = "p-Pb 2013";
     } else if((runnumber >= 224891 && runnumber <= 244628) || runnumber >= 253434){
       // Configuration starting with LHC15f
-      fTriggerMaker->ConfigureForPbPb2015();
+      fTriggerMaker->ConfigureForPP2015();
       dataset = "pp 2015-2016";
     } else if(runnumber >= 244824 && runnumber <= 246994){
       fTriggerMaker->ConfigureForPbPb2015();

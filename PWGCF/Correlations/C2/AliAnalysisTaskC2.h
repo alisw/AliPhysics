@@ -1,7 +1,8 @@
 #ifndef AliAnalysisTaskC2_cxx
 #define AliAnalysisTaskC2_cxx
 
-#include "AliAnalysisTaskC2Base.h"
+#include "AliAnalysisC2Settings.h"
+#include "AliAnalysisTaskValidation.h"
 
 class TH1;
 class THn;
@@ -9,7 +10,7 @@ class THn;
 class AliAODTrack;
 class AliVEvent;
 
-class AliAnalysisTaskC2 : public AliAnalysisTaskC2Base {
+class AliAnalysisTaskC2 : public AliAnalysisTaskSE {
  public:
   AliAnalysisTaskC2();
   AliAnalysisTaskC2(const char *name);
@@ -19,15 +20,31 @@ class AliAnalysisTaskC2 : public AliAnalysisTaskC2Base {
   virtual void   UserExec(Option_t *option);
   virtual void   Terminate(Option_t *);
 
+  // A class combining all the settings for this analysis
+  AliAnalysisC2Settings fSettings;
+
  private:
+  // Helper function to load all tracks/hits used in the analysis
+  AliAnalysisTaskValidation::Tracks GetValidTracks();
+  // Helper function to find the event classifier value (e.g. the
+  // multiplicity in the estimator set in fSettings
+  Float_t GetEventClassifierValue();
+  TList *fOutputList;  //!
+
   // Histograms to construct C2
   THn *fEventCounter;  //!
-  // THn *fSingles;       //!
-  // THn *fPairs;         //!
 
-  std::vector< THn* > fpairHists; //!
+  // Eta, phi, zvtx track count at max resolution; used to identifie dead regions in post processing
+  THn *fEtaPhiZvtx_max_res; //!
+
   std::vector< THn* > fsingleHists; //!
-
+  std::vector< THn* > fpairHists; //!
+  // Get the index in the `fpairsHists` for this pair of tracks eta1 <
+  // eta2. The point here is that the call to filling a histogram is
+  // very slow and is done in a nested loop. At the same time, Fill()
+  // does not show if it was an over or underflow. This is an attempt
+  // to make things smarter.
+  UInt_t GetPairHistIndex(Float_t eta1, Float_t eta2);
   struct cEventCounterDims {
     enum type {kMult, kZvtx, kNdimensions};
   };

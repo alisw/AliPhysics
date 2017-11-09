@@ -78,6 +78,9 @@ void Setup(AliReducedAnalysisTest* processor, TString prod /*="LHC10h"*/) {
   AliReducedEventCut* evCut2 = new AliReducedEventCut("VertexZ","Vertex selection");
   evCut2->AddCut(AliReducedVarManager::kVtxZ, -25.0, 25.0);
   //processor->AddEventCut(evCut1);
+  //evCut2->AddEventTriggerFilter(AliReducedVarManager::kTRD);
+  //evCut2->AddEventL1InputFilter((UInt_t(1)<<10));          // HSE
+  evCut2->AddCut(AliReducedVarManager::kIsPhysicsSelection, 0.1, 2.);   // request physics selection
   processor->AddEventCut(evCut2);
   
   // Set track cuts
@@ -89,7 +92,7 @@ void Setup(AliReducedAnalysisTest* processor, TString prod /*="LHC10h"*/) {
   // Set pair cuts
   AliReducedTrackCut* pairCut1 = new AliReducedTrackCut("Ptpair","Pt pair selection");
   pairCut1->AddCut(AliReducedVarManager::kPt, 0.0,100.0);
-  pairCut1->AddCut(AliReducedVarManager::kEta, -1.5,1.5);
+  //pairCut1->AddCut(AliReducedVarManager::kEta, -1.5,1.5);
   processor->AddPairCut(pairCut1);
 }
 
@@ -135,6 +138,7 @@ void DefineHistograms(AliHistogramManager* man, TString prod /*="LHC10h"*/) {
   histClasses += "TrackQA_PureALambdaNegLeg;";
   histClasses += "TrackQA_AllTracks;";            //ok
   histClasses += "TrackingFlags;TrackQualityFlags;PairQualityFlags_Offline;PairQualityFlags_OnTheFly;";   //ok
+  histClasses += "TrackQualityFlags_GammaLeg;TrackQualityFlags_K0sLeg;";
   histClasses += "PairQA_OfflineGamma;";           // ok
   histClasses += "PairQA_OfflinePureGamma;";
   histClasses += "PairQA_OnTheFlyGamma;";
@@ -151,7 +155,9 @@ void DefineHistograms(AliHistogramManager* man, TString prod /*="LHC10h"*/) {
   histClasses += "PairQA_OfflinePureALambda;";
   histClasses += "PairQA_OnTheFlyALambda;";
   histClasses += "PairQA_OnTheFlyPureALambda;";
-    
+  histClasses += "PairQA_Jpsi2EE_PP;PairQA_Jpsi2EE_PM;PairQA_Jpsi2EE_MM;";  
+  histClasses += "PairQA_ADzeroToKplusPiminus_PP;PairQA_ADzeroToKplusPiminus_PM;PairQA_ADzeroToKplusPiminus_MM;";
+  
   Int_t runNBins = 0;
   Double_t runHistRange[2] = {0.0,0.0};
   
@@ -450,7 +456,7 @@ void DefineHistograms(AliHistogramManager* man, TString prod /*="LHC10h"*/) {
     trackQualityFlagNames += "pure #gamma;pure K^{0}_{S};pure #Lambda;pure #bar{#Lambda};-kink0;-kink1;-kink2;";
     //trackQualityFlagNames += "bayes e>0.5;bayes #pi>0.5;bayes K>0.5;bayes p>0.5;bayes>0.7;bayes>0.8;bayes>0.9";
     trackQualityFlagNames += "AOD filter bit 0; AOD filter bit 1; AOD filter bit 2; AOD filter bit 3; AOD filter bit 4;";
-    trackQualityFlagNames += "AOD filter bit 5; AOD filter bit 6; AOD filter bit 7; AOD filter bit 8; AOD filter bit 9;";
+    trackQualityFlagNames += "AOD filter bit 5; AOD filter bit 6; AOD filter bit 7; AOD filter bit 8; AOD filter bit 9; ; TRD match";
       
     
     if(classStr.Contains("TrackingFlags")) {

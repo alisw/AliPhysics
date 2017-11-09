@@ -1364,12 +1364,30 @@ void AliPWG4HighPtTrackQA::DoAnalysisAOD()
   //
   AliAODEvent *aod = dynamic_cast<AliAODEvent*>(fEvent);
   if(!aod) return;
+
+  // ---- Get MC Header information (for MC productions in pThard bins) ----
+  Double_t ptHard = 0.;
+  Double_t nTrials = 1; // trials for MC trigger weight for real data
+
+  if(MCEvent()){
+    AliGenPythiaEventHeader*  pythiaGenHeader = GetPythiaEventHeader(MCEvent());
+    if(pythiaGenHeader){
+      nTrials = pythiaGenHeader->Trials();
+      ptHard  = pythiaGenHeader->GetPtHard();
+
+      fh1PtHard->Fill(ptHard);
+      fh1PtHardTrials->Fill(ptHard,nTrials);
+
+      fh1Trials->Fill("#sum{ntrials}",fAvgTrials);
+    }
+  }
+
   AliExternalTrackParam exParam;
   for (Int_t iTrack = 0; iTrack < fEvent->GetNumberOfTracks(); iTrack++) {
 
     AliAODTrack *aodtrack = dynamic_cast<AliAODTrack*>(aod->GetTrack(iTrack));
     if(!aodtrack) AliFatal("Not a standard AOD");
-    if( !aodtrack->TestFilterMask(fFilterMask) ) {
+    if( !aodtrack->TestFilterBit(fFilterMask) ) {
       fh1NTracksReject->Fill("noHybridTrack",1);
       continue;
     }
@@ -1557,6 +1575,10 @@ Bool_t AliPWG4HighPtTrackQA::PythiaInfoFromFile(const char* currFile,Float_t &fX
 
   if(file.Contains("root_archive.zip#")){
     Ssiz_t pos1 = file.Index("root_archive",12,TString::kExact);
+    Ssiz_t pos = file.Index("#",1,pos1,TString::kExact);
+    file.Replace(pos+1,20,"");
+  } else if(file.Contains("aod_archive.zip#")){
+    Ssiz_t pos1 = file.Index("aod_archive",11,TString::kExact);
     Ssiz_t pos = file.Index("#",1,pos1,TString::kExact);
     file.Replace(pos+1,20,"");
   }

@@ -98,6 +98,12 @@ public:
   void SetPlotPID(Bool_t plotPID) { fStudyPID = plotPID; }
 
   /**
+   * @brief Switch on-/off- study of exotic triggers (default: off)
+   * @param[in] doStudy If true study of exotic triggers is enabled
+   */
+  void SetStudyExoticTriggers(Bool_t doStudy) { fStudyExoticTriggers = doStudy; }
+
+  /**
    * @brief Set the virtual track selection.
    *
    * Assumes that the track selection object is already fully configured
@@ -139,9 +145,17 @@ public:
   void SetStudyEMCALgeo(Bool_t doStudy) { fStudyEMCALgeo = doStudy; }
 
   /**
+   * @brief Require bunch crossing information of track obtained from TOF (if available)
+   * matches the bunch crossing ID of the event
+   *
+   * @param[in] doRequire If true the track is only selected if it is from the right bunch crossing according to TOF information
+   */
+  void SetRequireTOFBunchCrossing(Bool_t doRequire) { fRequireTOFBunchCrossing = doRequire; }
+
+  /**
    * @brief Pre-configure task so that it can be used in subwagons
    * @param[in] suffix Suffix of the subwagon
-   * @return Preconfigured task
+   * @return Pre-configured task
    */
   static AliAnalysisTaskChargedParticlesRef *AddTaskChargedParticlesRef(const TString &suffix);
 
@@ -195,6 +209,7 @@ protected:
   /**
    * @brief Fill track (kinematic) histograms
    * @param[in] eventclass Trigger class fired
+   * @param[in] histtag Tag in the histogram
    * @param[in] posCharge True if charge is positive, false if charge is negative
    * @param[in] pt track \f$ p_{t} \f$
    * @param[in] etalab Track \f$ \eta \f$ in lab frame
@@ -202,7 +217,7 @@ protected:
    * @param[in] phi Track \f$ \eta \f$ in lab frame
    * @param[in] inEmcal Track in EMCAL \f$ \phi \f$ acceptance
    */
-  void FillTrackHistos(const TString &eventclass, Bool_t posCharge, Double_t pt, Double_t eta, Double_t etacent, Double_t phi, Bool_t inEmcal);
+  void FillTrackHistos(const TString &eventclass, const TString &histtag, Bool_t posCharge, Double_t pt, Double_t eta, Double_t etacent, Double_t phi, Bool_t inEmcal);
 
   /**
    * @brief Fill PID-related histograms
@@ -210,6 +225,28 @@ protected:
    * @param[in] track Track containing PID information
    */
   void FillPIDHistos(const TString &eventclass, const AliVTrack &track);
+
+  /**
+   * Converted from AliESDtrack::GetTOFBunchCrossing, allowing for different values of bunch spacing
+   * @param trk Track to check
+   * @param b
+   * @param spacing Bunch spacing (default: 25 ns - corresponding to pp)
+   * @param pidTPConly
+   * @return
+   */
+  Int_t GetTOFBunchCrossing(const AliVTrack *trk, Double_t b = 0, Double_t spacing = 25, Bool_t pidTPConly = kTRUE) const;
+
+  /**
+   * @brief Check if the trigger is fired by an exotic cluster.
+   *
+   * An event is considered as fired by exotics if there are only patches with exotic clusters
+   * above threshold. This means every patch not overlapping with an exotic cluster is a valid trigger
+   * patch. For good events one should therefor select events which have *false* as return value.
+   *
+   * @param[in] trg Trigger class to be checked
+   * @return True if the event is purely fired by an exotic cluster, false otherwise
+   */
+  bool IsExoticsTrigger(const TString &trg);
 
   AliEmcalTrackSelection          *fTrackCuts;                ///< Standard track selection
 
@@ -224,6 +261,8 @@ protected:
   Bool_t                          fStudyPID;                  ///< Use kinematics correlation histograms
   Bool_t                          fStudyEMCALgeo;             ///< Add histograms for tracks pointing to the EMCAL acceptance
   Bool_t                          fEnableSumw2;               ///< Enable sumw2 during histogram creation
+  Bool_t                          fRequireTOFBunchCrossing;   ///< Require that the bunch crossing ID determined by TOF matches the bunch crossing ID of the event
+  Bool_t                          fStudyExoticTriggers;       ///< Switch on whether to study exotic triggers or not
 
 private:
 
