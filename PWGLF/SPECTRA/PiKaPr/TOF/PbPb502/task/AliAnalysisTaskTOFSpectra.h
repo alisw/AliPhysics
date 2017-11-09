@@ -652,8 +652,10 @@ class AliAnalysisTaskTOFSpectra : public AliAnalysisTaskSE {
   TH1F* hTOFClusters;                         ///<  Histogram with the number of TOF clusters per track
   TH1F* hTOFClustersDCApass;                  ///<  Histogram with the number of TOF clusters per track, for tracks which passed the DCA cut for primaries
   //->TPC information
-  TH2I* hTPCdEdx;                       ///<  Histogram with the track energy loss in the TOC vs the track momentum
-  TProfile* hdEdxExpected[kExpSpecies]; ///<  TProfile with the track dEdx vs the track momentum
+  TH2I* hTPCdEdx;                               ///<  Histogram with the track energy loss in the TOC vs the track momentum
+  TH2I* hTPCdEdxTPCp;                           ///<  Histogram with the track energy loss in the TOC vs the track momentum for TPC
+  TProfile* hdEdxExpected[kExpSpecies + 2];     ///<  TProfile with the track dEdx vs the track momentum
+  TProfile* hdEdxExpectedTPCp[kExpSpecies + 2]; ///<  TProfile with the track dEdx vs the track momentum for TPC
   //->TPC + TOF information
   TH2F* hTPCTOFSeparation[kExpSpecies][kPtBins]; ///<  Histogram with the PID separation of the TPC and TOF signal
 #ifdef CHECKCOMPUTEDVALUES                       // Only if checks on computed values are required
