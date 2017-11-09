@@ -946,6 +946,8 @@ void AliLog::Message(UInt_t level, const char* message,
 
   // abort in case of a fatal message
   if (type == kFatal) {
+    fgInstance->PrintMessage(type, "aborting execution due to AliFatal", 
+                             module, className, function, file, line);
     delete fgInstance;
     if (gSystem) {
       gSystem->StackTrace();
