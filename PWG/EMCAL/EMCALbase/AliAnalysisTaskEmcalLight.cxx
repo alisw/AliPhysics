@@ -13,6 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 #include <sstream>
+#include <array>
 
 #include <RVersion.h>
 #include <TClonesArray.h>
@@ -92,6 +93,7 @@ AliAnalysisTaskEmcalLight::AliAnalysisTaskEmcalLight() :
   fPtHardAndTrackPtFactor(0.),
   fSwitchOffLHC15oFaultyBranches(kFALSE),
   fEventSelectionAfterRun(kFALSE),
+  fSelectGeneratorName(),
   fLocalInitialized(kFALSE),
   fDataType(kAOD),
   fGeom(0),
@@ -113,6 +115,7 @@ AliAnalysisTaskEmcalLight::AliAnalysisTaskEmcalLight() :
   fPtHard(0),
   fNTrials(0),
   fXsection(0),
+  fGeneratorName(),
   fOutput(0),
   fHistTrialsVsPtHardNoSel(0),
   fHistEventsVsPtHardNoSel(0),
@@ -185,6 +188,7 @@ AliAnalysisTaskEmcalLight::AliAnalysisTaskEmcalLight(const char *name, Bool_t hi
   fPtHardAndTrackPtFactor(0.),
   fSwitchOffLHC15oFaultyBranches(kFALSE),
   fEventSelectionAfterRun(kFALSE),
+  fSelectGeneratorName(),
   fLocalInitialized(kFALSE),
   fDataType(kAOD),
   fGeom(0),
@@ -206,6 +210,7 @@ AliAnalysisTaskEmcalLight::AliAnalysisTaskEmcalLight(const char *name, Bool_t hi
   fPtHard(0),
   fNTrials(0),
   fXsection(0),
+  fGeneratorName(),
   fOutput(0),
   fHistTrialsVsPtHardNoSel(0),
   fHistEventsVsPtHardNoSel(0),
@@ -385,27 +390,18 @@ void AliAnalysisTaskEmcalLight::UserCreateOutputObjects()
     fOutput->Add(fHistEventPlaneNoSel);
   }
 
-  fHistEventRejection = new TH1F("fHistEventRejection","Reasons to reject event",20,0,20);
+  fHistEventRejection = new TH1F("fHistEventRejection","Reasons to reject event",30,0,30);
 #if ROOT_VERSION_CODE < ROOT_VERSION(6,4,2)
   fHistEventRejection->SetBit(TH1::kCanRebin);
 #else
   fHistEventRejection->SetCanExtend(TH1::kAllAxes);
 #endif
-  fHistEventRejection->GetXaxis()->SetBinLabel(1,"PhysSel");
-  fHistEventRejection->GetXaxis()->SetBinLabel(2,"trigger");
-  fHistEventRejection->GetXaxis()->SetBinLabel(3,"trigTypeSel");
-  fHistEventRejection->GetXaxis()->SetBinLabel(4,"Cent");
-  fHistEventRejection->GetXaxis()->SetBinLabel(5,"vertex contr.");
-  fHistEventRejection->GetXaxis()->SetBinLabel(6,"Vz");
-  fHistEventRejection->GetXaxis()->SetBinLabel(7,"VzSPD");
-  fHistEventRejection->GetXaxis()->SetBinLabel(8,"trackInEmcal");
-  fHistEventRejection->GetXaxis()->SetBinLabel(9,"minNTrack");
-  fHistEventRejection->GetXaxis()->SetBinLabel(10,"VtxSel2013pA");
-  fHistEventRejection->GetXaxis()->SetBinLabel(11,"PileUp");
-  fHistEventRejection->GetXaxis()->SetBinLabel(12,"EvtPlane");
-  fHistEventRejection->GetXaxis()->SetBinLabel(13,"SelPtHardBin");
-  fHistEventRejection->GetXaxis()->SetBinLabel(14,"Bkg evt");
-  fHistEventRejection->GetXaxis()->SetBinLabel(14,"MCOutlier");
+  std::array<std::string, 10> labels = {"PhysSel", "Evt Gen Name", "Trg class (acc)", "Trg class (rej)", "Cent", "vertex contr.", "Vz", "VzSPD", "SelPtHardBin", "MCOutlier"};
+  int i = 1;
+  for (auto label : labels) {
+    fHistEventRejection->GetXaxis()->SetBinLabel(i, label.c_str());
+    i++;
+  }
   fHistEventRejection->GetYaxis()->SetTitle("counts");
   fOutput->Add(fHistEventRejection);
 
@@ -816,6 +812,13 @@ Bool_t AliAnalysisTaskEmcalLight::IsEventSelected()
     return kFALSE;
   }
 
+  if (!fSelectGeneratorName.IsNull() && !fGeneratorName.IsNull()) {
+    if (!fGeneratorName.Contains(fSelectGeneratorName)) {
+      if (fGeneralHistograms) fHistEventRejection->Fill("Evt Gen Name",1);
+      return kFALSE;
+    }
+  }
+
   Bool_t acceptedTrgClassFound = kFALSE;
   if (fAcceptedTriggerClasses.size() > 0) {
     for (auto acc_trg : fAcceptedTriggerClasses) {
@@ -1030,23 +1033,25 @@ Bool_t AliAnalysisTaskEmcalLight::RetrieveEventObjects()
   if (fIsPythia) {
     if (MCEvent()) {
       fPythiaHeader = dynamic_cast<AliGenPythiaEventHeader*>(MCEvent()->GenEventHeader());
-      if (!fPythiaHeader) {
-        // Check if AOD
-        AliAODMCHeader* aodMCH = dynamic_cast<AliAODMCHeader*>(InputEvent()->FindListObject(AliAODMCHeader::StdBranchName()));
 
+      if (fDataType == kAOD) {
+        AliAODMCHeader* aodMCH = dynamic_cast<AliAODMCHeader*>(InputEvent()->FindListObject(AliAODMCHeader::StdBranchName()));
         if (aodMCH) {
-          for (UInt_t i = 0;i<aodMCH->GetNCocktailHeaders();i++) {
-            fPythiaHeader = dynamic_cast<AliGenPythiaEventHeader*>(aodMCH->GetCocktailHeader(i));
-            if (fPythiaHeader) break;
+          if (!fPythiaHeader) {
+            for (UInt_t i = 0;i<aodMCH->GetNCocktailHeaders();i++) {
+              fPythiaHeader = dynamic_cast<AliGenPythiaEventHeader*>(aodMCH->GetCocktailHeader(i));
+              if (fPythiaHeader) break;
+            }
           }
+          fGeneratorName = aodMCH->GetGeneratorName();
         }
       }
-    }
 
-    if (fPythiaHeader) {
-      fPtHard = fPythiaHeader->GetPtHard();
-      fXsection = fPythiaHeader->GetXsection();
-      fNTrials = fPythiaHeader->Trials();
+      if (fPythiaHeader) {
+        fPtHard = fPythiaHeader->GetPtHard();
+        fXsection = fPythiaHeader->GetXsection();
+        fNTrials = fPythiaHeader->Trials();
+      }
     }
   }
 
