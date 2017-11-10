@@ -86,7 +86,7 @@ AliAnalysisTaskHFE* ConfigHFEnpeXeXe(Bool_t useMC, Bool_t isAOD, TString appendi
     Bool_t nondefaultcentr = kFALSE;
     Bool_t ipCharge = kFALSE;
     Bool_t ipOpp = kFALSE;
-    Bool_t usekfparticle = kFALSE
+    Bool_t usekfparticle = kFALSE;
     Bool_t kAnalyseTaggedTracks = kFALSE;
     Bool_t kApplyPreselection = kFALSE;
     Bool_t isBeauty = kFALSE;
