@@ -96,9 +96,9 @@ void AliPtResolAnalysisPbPb::Init(){
   // Generic histograms to be corrected
   //
   //1/pT:#sigma(1/pT):centrality
-  Int_t binsTrackParamHist[3]={400,300,11};
+  Int_t binsTrackParamHist[3]={400,500,11};
   Double_t minTrackParamHist[3]={0,0,0}; 
-  Double_t maxTrackParamHist[3]={1,0.015,100};
+  Double_t maxTrackParamHist[3]={1,0.025,100};
 
   Double_t centrBins[12] = {0.0,5.,10.,20.,30.,40.,50.,60.,70.,80.,90.,100}; 
 
