@@ -2548,7 +2548,7 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::CalculateMesonCandidates(){
 //________________________________________________________________________
 void AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::CalculateBackground(){
 
-  /* Histo explanation
+  /* Event mixing histo explanation
   *
   * fHistoBackInvMassPtGroup1 => pi+ and pi- from same event
   * fHistoBackInvMassPtGroup2 => pi+ and pi0 from same event
