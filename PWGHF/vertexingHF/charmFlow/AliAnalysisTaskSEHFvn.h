@@ -124,8 +124,9 @@ class AliAnalysisTaskSEHFvn : public AliAnalysisTaskSE
   }
   void SetRemoveDaughtersFromq2(Int_t removeDau, Bool_t requiremass) {fRemoveDauFromq2=removeDau; fRequireMassForDauRemFromq2=requiremass;}
   void SetEnableQnFrameworkCorrForq2(Bool_t usecorr) {fUseQnFrameworkCorrq2=usecorr;}
-  void SetEnableEPVsq2VsCentHistos(Bool_t enablehistos) {fEPVsq2VsCent=enablehistos;}
-  
+  void SetEnableEPVsq2VsCentHistos(Bool_t enablehistos=kTRUE) {fEPVsq2VsCent=enablehistos;}
+  void SetEnableNtrklVsq2VsCentHistos(Bool_t enablehistos=kTRUE) {fEnableNtrklHistos=enablehistos;}
+
   // Implementation of interface methods
   virtual void UserCreateOutputObjects();
   virtual void LocalInit();// {Init();}
@@ -206,11 +207,12 @@ class AliAnalysisTaskSEHFvn : public AliAnalysisTaskSE
   Bool_t fUseQnFrameworkCorrq2; // flag to activate the Qn-framework corrections for the q2
   Bool_t fRequireMassForDauRemFromq2; // flag to activate mass range when removing daughter tracks from q2
   Double_t fDeltaEtaDmesonq2; //eta gap between q2 and D mesons
-  Bool_t fEPVsq2VsCent; //flag to enable EP vs. q2 vs. centrality TH3F
+  Bool_t fEPVsq2VsCent; //flag to enable EP vs. q2 vs. centrality TH3F in case of kEvShape
+  Bool_t fEnableNtrklHistos; //flag to enable Ntrklts vs. q2 vs. centrality TH3F in case of kEvShape
 
   AliAnalysisTaskSEHFvn::FlowMethod fFlowMethod;
 
-  ClassDef(AliAnalysisTaskSEHFvn,12); // AliAnalysisTaskSE for the HF v2 analysis
+  ClassDef(AliAnalysisTaskSEHFvn,13); // AliAnalysisTaskSE for the HF v2 analysis
 };
 
 #endif
