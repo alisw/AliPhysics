@@ -100,18 +100,18 @@ AliAnalysisTaskEMCALClusterize::AliAnalysisTaskEMCALClusterize(const char *name)
   {
     fGeomMatrix[i] = 0;
     fTCardCorrInduceEnerProb[i] = 0;
+    
+    for(Int_t j = 0; j < 4 ; j++)
+    {
+      fTCardCorrInduceEnerFrac     [j][i] =  0 ;   
+      fTCardCorrInduceEnerFracP1   [j][i] =  0 ;   
+      fTCardCorrInduceEnerFracWidth[j][i] =  0 ;   
+    }
   }
   
   ResetArrays();
   
   fCentralityBin[0] = fCentralityBin[1]=-1;
-  
-  for(Int_t i = 0; i < 4 ; i++)
-  {
-    fTCardCorrInduceEnerFrac     [i] =  0 ;   
-    fTCardCorrInduceEnerFracP1   [i] =  0 ;   
-    fTCardCorrInduceEnerFracWidth[i] =  0 ;   
-  }
 }
 
 //______________________________________________________________
@@ -157,18 +157,18 @@ AliAnalysisTaskEMCALClusterize::AliAnalysisTaskEMCALClusterize()
   {
     fGeomMatrix[i] = 0;
     fTCardCorrInduceEnerProb[i] = 0;
+    
+    for(Int_t j = 0; j < 4 ; j++)
+    {
+      fTCardCorrInduceEnerFrac     [j][i] =  0 ;   
+      fTCardCorrInduceEnerFracP1   [j][i] =  0 ;   
+      fTCardCorrInduceEnerFracWidth[j][i] =  0 ;   
+    }
   }
   
   ResetArrays();
   
   fCentralityBin[0] = fCentralityBin[1]=-1;
-
-  for(Int_t i = 0; i < 4 ; i++)
-  {
-    fTCardCorrInduceEnerFrac     [i] =  0 ;   
-    fTCardCorrInduceEnerFracP1   [i] =  0 ;   
-    fTCardCorrInduceEnerFracWidth[i] =  0 ;   
-  }
 }
 
 //_______________________________________________________________
@@ -1726,27 +1726,27 @@ void AliAnalysisTaskEMCALClusterize::MakeCellTCardCorrelation()
     //
     // Generate some energy for the nearby cells in same TCard , depending on this cell energy
     // Check if originally the tower had no or little energy, in which case tag it as new
-    Float_t fracupdown     = fTCardCorrInduceEnerFrac[0]+amp*fTCardCorrInduceEnerFracP1[0];
-    Float_t fracupdownleri = fTCardCorrInduceEnerFrac[1]+amp*fTCardCorrInduceEnerFracP1[1];
-    Float_t fracleri       = fTCardCorrInduceEnerFrac[2]+amp*fTCardCorrInduceEnerFracP1[2];
-    Float_t frac2nd        = fTCardCorrInduceEnerFrac[3]+amp*fTCardCorrInduceEnerFracP1[3];
+    Float_t fracupdown     = fTCardCorrInduceEnerFrac[0][imod]+amp*fTCardCorrInduceEnerFracP1[0][imod];
+    Float_t fracupdownleri = fTCardCorrInduceEnerFrac[1][imod]+amp*fTCardCorrInduceEnerFracP1[1][imod];
+    Float_t fracleri       = fTCardCorrInduceEnerFrac[2][imod]+amp*fTCardCorrInduceEnerFracP1[2][imod];
+    Float_t frac2nd        = fTCardCorrInduceEnerFrac[3][imod]+amp*fTCardCorrInduceEnerFracP1[3][imod];
     
-    AliDebug(1,Form("Fraction:\n\t up-down   : p1 %2.2e, p2 %2.2f, sig %2.2f, fraction %2.3f\n"
+    AliDebug(1,Form("Fraction for SM %d:\n\t up-down   : p1 %2.2e, p2 %2.2f, sig %2.2f, fraction %2.3f\n"
                     "\t up-down-lr: p1 %2.2e, p2 %2.2f, sig %2.2f, fraction %2.3f\n"
                     "\t left-right: p1 %2.2e, p2 %2.2f, sig %2.2f, fraction %2.3f\n"
-                    "\t 2nd row   : p1 %2.2e, p2 %2.2f, sig %2.2f, fraction %2.3f",
-                    fTCardCorrInduceEnerFrac[0],fTCardCorrInduceEnerFracP1[0],fTCardCorrInduceEnerFracWidth[0],fracupdown,
-                    fTCardCorrInduceEnerFrac[1],fTCardCorrInduceEnerFracP1[1],fTCardCorrInduceEnerFracWidth[1],fracupdownleri,
-                    fTCardCorrInduceEnerFrac[2],fTCardCorrInduceEnerFracP1[2],fTCardCorrInduceEnerFracWidth[2],fracleri,
-                    fTCardCorrInduceEnerFrac[3],fTCardCorrInduceEnerFracP1[3],fTCardCorrInduceEnerFracWidth[3],frac2nd));
+                    "\t 2nd row   : p1 %2.2e, p2 %2.2f, sig %2.2f, fraction %2.3f", imod,
+                    fTCardCorrInduceEnerFrac[0][imod],fTCardCorrInduceEnerFracP1[0][imod],fTCardCorrInduceEnerFracWidth[0][imod],fracupdown,
+                    fTCardCorrInduceEnerFrac[1][imod],fTCardCorrInduceEnerFracP1[1][imod],fTCardCorrInduceEnerFracWidth[1][imod],fracupdownleri,
+                    fTCardCorrInduceEnerFrac[2][imod],fTCardCorrInduceEnerFracP1[2][imod],fTCardCorrInduceEnerFracWidth[2][imod],fracleri,
+                    fTCardCorrInduceEnerFrac[3][imod],fTCardCorrInduceEnerFracP1[3][imod],fTCardCorrInduceEnerFracWidth[3][imod],frac2nd));
     
     // Randomize the induced fraction, if requested
     if(fRandomizeTCard)
     {
-      fracupdown     = fRandom.Gaus(fracupdown    ,fTCardCorrInduceEnerFracWidth[0]);
-      fracupdownleri = fRandom.Gaus(fracupdownleri,fTCardCorrInduceEnerFracWidth[1]);
-      fracleri       = fRandom.Gaus(fracleri      ,fTCardCorrInduceEnerFracWidth[2]);
-      frac2nd        = fRandom.Gaus(frac2nd       ,fTCardCorrInduceEnerFracWidth[3]);
+      fracupdown     = fRandom.Gaus(fracupdown    ,fTCardCorrInduceEnerFracWidth[0][imod]);
+      fracupdownleri = fRandom.Gaus(fracupdownleri,fTCardCorrInduceEnerFracWidth[1][imod]);
+      fracleri       = fRandom.Gaus(fracleri      ,fTCardCorrInduceEnerFracWidth[2][imod]);
+      frac2nd        = fRandom.Gaus(frac2nd       ,fTCardCorrInduceEnerFracWidth[3][imod]);
       
       AliDebug(1,Form("Randomized fraction: up-down %2.3f; up-down-left-right %2.3f; left-right %2.3f; 2nd row %2.3f",
                       fracupdown,fracupdownleri,fracleri,frac2nd));
@@ -1899,17 +1899,16 @@ void AliAnalysisTaskEMCALClusterize::PrintTCardParam()
   AliInfo(Form("T-Card emulation activated, energy conservation <%d>, randomize E <%d>, induced energy parameters:",
                fTCardCorrClusEnerConserv,fRandomizeTCard));
   
-  for(Int_t icell = 0; icell < 4; icell++)
-  {
-    printf("\t cell type %d, p0 %2.2e, p1 %2.2e, sigma %2.2e \n",
-           icell,fTCardCorrInduceEnerFrac[icell],fTCardCorrInduceEnerFracP1[icell],fTCardCorrInduceEnerFracWidth[icell]);     
-  }
-  
   AliInfo("T-Card emulation super-modules fraction:");
   
   for(Int_t ism = 0; ism < 22; ism++)
   {
     printf("\t sm %d, fraction %2.2f\n",ism, fTCardCorrInduceEnerProb[ism]);
+    for(Int_t icell = 0; icell < 4; icell++)
+    {
+      printf("\t \t cell type %d, p0 %2.2e, p1 %2.2e, sigma %2.2e \n",
+             icell,fTCardCorrInduceEnerFrac[icell][ism],fTCardCorrInduceEnerFracP1[icell][ism],fTCardCorrInduceEnerFracWidth[icell][ism]);     
+    }
   }
 }
 
