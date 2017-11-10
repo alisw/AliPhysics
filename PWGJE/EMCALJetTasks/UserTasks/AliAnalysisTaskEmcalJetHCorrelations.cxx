@@ -1356,7 +1356,8 @@ bool AliAnalysisTaskEmcalJetHCorrelations::ConfigureForEmbeddingAnalysis(std::st
     const double jetConstituentPtCut,
     const double trackEta,
     const double jetRadius,
-    const std::string & jetTag)
+    const std::string & jetTag,
+    const std::string & correlationsTracksCutsPeriod)
 {
   bool returnValue = false;
   AliInfoStream() << "Configuring Jet-H Correlations task for an embedding analysis.\n";
@@ -1401,6 +1402,11 @@ bool AliAnalysisTaskEmcalJetHCorrelations::ConfigureForEmbeddingAnalysis(std::st
     particlesForCorrelations->SetMinPt(0.15);
     particlesForCorrelations->SetEtaLimits(-1.0*trackEta, trackEta);
     particlesForCorrelations->SetIsEmbedding(true);
+    AliTrackContainer * trackCont = dynamic_cast<AliTrackContainer *>(particlesForCorrelations);
+    if (trackCont) {
+      // This option only exists for track containers
+      trackCont->SetTrackCutsPeriod(correlationsTracksCutsPeriod.c_str());
+    }
     // Adopt the container
     this->AdoptParticleContainer(particlesForCorrelations);
   }
