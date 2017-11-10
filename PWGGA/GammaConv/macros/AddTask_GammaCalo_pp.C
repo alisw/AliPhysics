@@ -636,7 +636,6 @@ void AddTask_GammaCalo_pp(  Int_t     trainConfig                   = 1,        
     cuts.AddCut("00000113","1111111007032220000","01631031000000d0"); // std
   } else if (trainConfig == 201){ // EMCAL clusters pp 7 TeV, pT dep matching
     cuts.AddCut("00000113","11111110b7032220000","01631031000000d0"); // std
-    cuts.AddCut("00000113","1111111007032220000","01631031000000d0"); // std
 
     // ATTENTION: adapted for dirGamma - ADJUSTED M02 Cut 2 -> p
   } else if (trainConfig == 202){ // EMCAL clusters pp 7 TeV, timing+minEnergy variation
