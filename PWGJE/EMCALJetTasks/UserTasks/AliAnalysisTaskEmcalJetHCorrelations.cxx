@@ -516,6 +516,17 @@ Bool_t AliAnalysisTaskEmcalJetHCorrelations::Run()
       if (pool->IsReady() || pool->NTracksInPool() >= fMinNTracksMixedEvents || nMix >= fMinNEventsMixedEvents) {
 
         for (auto jet : jets->accepted()) {
+          // Require the found jet to be matched
+          // This match should be between detector and particle level MC
+          if (fIsEmbedded) {
+            if (jet->MatchedJet()) {
+              AliDebugStream(4) << "Jet is matched!\nJet: " << jet->toString().Data() << "\n";
+            }
+            else {
+              AliDebugStream(5) << "Rejected jet because it was not matched to a external event jet.\n";
+              continue;
+            }
+          }
 
           // Jet properties
           // Determine if we have the lead jet
@@ -1345,7 +1356,8 @@ bool AliAnalysisTaskEmcalJetHCorrelations::ConfigureForEmbeddingAnalysis(std::st
     const double jetConstituentPtCut,
     const double trackEta,
     const double jetRadius,
-    const std::string & jetTag)
+    const std::string & jetTag,
+    const std::string & correlationsTracksCutsPeriod)
 {
   bool returnValue = false;
   AliInfoStream() << "Configuring Jet-H Correlations task for an embedding analysis.\n";
@@ -1390,6 +1402,11 @@ bool AliAnalysisTaskEmcalJetHCorrelations::ConfigureForEmbeddingAnalysis(std::st
     particlesForCorrelations->SetMinPt(0.15);
     particlesForCorrelations->SetEtaLimits(-1.0*trackEta, trackEta);
     particlesForCorrelations->SetIsEmbedding(true);
+    AliTrackContainer * trackCont = dynamic_cast<AliTrackContainer *>(particlesForCorrelations);
+    if (trackCont) {
+      // This option only exists for track containers
+      trackCont->SetTrackCutsPeriod(correlationsTracksCutsPeriod.c_str());
+    }
     // Adopt the container
     this->AdoptParticleContainer(particlesForCorrelations);
   }
