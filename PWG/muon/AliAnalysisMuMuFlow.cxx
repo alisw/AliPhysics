@@ -190,7 +190,7 @@ AliAnalysisMuMuFlow::DefineHistogramCollection(const char* eventSelection,
                          Form("#mu+#mu- mean v_{2}^{obs} %s;M_{#mu^{+}#mu^{-}} (GeV/c^{2});v_{2}^{obs} =< cos {2(#varphi_{#mu^{+}#mu^{-}}- #Psi_{EP,2})} > with %s",r->AsString().Data(),fDetectors[i].Data()),nMinvBins,minvMin,minvMax,0);
         }
         if(fcomputeSP){
-        TString mSPName(Form("SPvs%s_EP_%s",minvName.Data(),fDetectors[i].Data()));
+        TString mSPName(Form("SPVs%s_EP_%s",minvName.Data(),fDetectors[i].Data()));
         // Reconstructed pair histo
         CreatePairHistos(kHistoForData | kHistoForMCInput,eventSelection,triggerClassName,centrality,mSPName.Data(),
                          Form("#mu+#mu- v_{2} {SP} with %s vs %s;M_{#mu^{+}#mu^{-}} (GeV/c^{2});v_{2} {SP}",fDetectors[i].Data(),r->AsString().Data()),nMinvBins,minvMin,minvMax,0);
@@ -232,7 +232,7 @@ AliAnalysisMuMuFlow::DefineHistogramCollection(const char* eventSelection,
                            Form("#mu+#mu- mean (AE corrected) v_{2}^{obs} %s;M_{#mu^{+}#mu^{-}} (GeV/c^{2});v_{2}^{obs} =< cos {2(#varphi_{#mu^{+}#mu^{-}}- #Psi_{EP,2})} > with %s",r->AsString().Data(),fDetectors[i].Data()),nMinvBins,minvMin,minvMax,0);
           }
           if(fcomputeSP){
-            TString mSPAEName(Form("SPvs%s_EP_%s",minvName.Data(),fDetectors[i].Data()));
+            TString mSPAEName(Form("SPVs%s_EP_%s",minvName.Data(),fDetectors[i].Data()));
             CreatePairHistos(kHistoForData| kHistoForMCInput,eventSelection,triggerClassName,centrality,mSPAEName.Data(),
               Form("#mu+#mu- v_{2} {SP} with %s (Acc #times Eff Corrected) vs %s;M_{#mu^{+}#mu^{-}} (GeV/c^{2});v_{2} {SP}",fDetectors[i].Data(),r->AsString().Data()),nMinvBins,minvMin,minvMax,0);
             CreatePairHistos(kHistoForData| kHistoForMCInput,eventSelection,triggerClassName,centrality,Form("raw_%s",mSPAEName.Data()),
@@ -528,7 +528,7 @@ void AliAnalysisMuMuFlow::FillHistosForPair(const char* eventSelection,
             if ( ok ){
               TString hprofName("");
               for(Int_t i=0; i<fNDetectors;i++){
-                hprofName = Form("SPvs%s_EP_%s",minvName.Data(),fDetectors[i].Data());
+                hprofName = Form("SPVs%s_EP_%s",minvName.Data(),fDetectors[i].Data());
                 TProfile* hprof = Prof(eventSelection,triggerClassName,centrality,pairCutName,hprofName.Data());
                 if ( !hprof)AliError(Form("Could not get %s",hprofName.Data()));
                 else hprof->Fill(pair4Momentum.M(),SP[i]/sqrt(Qn[0]*Qn[1]),inputWeight);
@@ -640,7 +640,7 @@ void AliAnalysisMuMuFlow::FillHistosForPair(const char* eventSelection,
               if ( ok ){
                 TString hprofName("");
                 for(Int_t i=0; i<fNDetectors;i++){
-                  hprofName = Form("SPvs%s_EP_%s",minvName.Data(),fDetectors[i].Data());
+                  hprofName = Form("SPVs%s_EP_%s",minvName.Data(),fDetectors[i].Data());
                   TProfile* hprofraw = Prof(eventSelection,triggerClassName,centrality,pairCutName,Form("raw_%s",hprofName.Data()));
                   if ( !hprofraw)AliError(Form("Could not get %s",hprofName.Data()));
                   else hprofraw->Fill(pair4Momentum.M(),SP[i],inputWeight/AccxEff);
