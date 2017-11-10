@@ -194,31 +194,69 @@ class AliAnalysisTaskEMCALClusterize : public AliAnalysisTaskSE {
   /// De-activate T-Card cells correlation, 
   void           SwitchOffTCardCorrelation()                              { fTCardCorrEmulation = kFALSE ; fTCardCorrClusEnerConserv = kFALSE        ; }      
 
-  /// Fraction of energy lost by max energy cell in one of cross cells, mean of random gaussian
+  /// Fraction of energy lost by max energy cell in one of T-Card cells, same for all SM
   /// \param ud energy lost in upper/lower cell, same column
   /// \param udlr energy lost in upper/lower cell, left or right
   /// \param lr   energy lost in left or right cell, same row
-  void           SetInducedEnergyLossFraction(Float_t ud, Float_t udlr, Float_t lr, Float_t sec)   
-  { fTCardCorrInduceEnerFrac[0] = ud; fTCardCorrInduceEnerFrac[1] = udlr;  
-    fTCardCorrInduceEnerFrac[2] = lr; fTCardCorrInduceEnerFrac[3] = sec ; } 
+  void           SetInducedEnergyLossFraction(Float_t ud, Float_t udlr, Float_t lr, Float_t sec) { 
+    for(Int_t ism = 0; ism < 22; ism++) {
+      fTCardCorrInduceEnerFrac[0][ism] = ud; fTCardCorrInduceEnerFrac[1][ism] = udlr;  
+      fTCardCorrInduceEnerFrac[2][ism] = lr; fTCardCorrInduceEnerFrac[3][ism] = sec ; } } 
 
-  void           SetInducedEnergyLossFractionP1(Float_t ud, Float_t udlr, Float_t lr, Float_t sec)   
-  { fTCardCorrInduceEnerFracP1[0] = ud; fTCardCorrInduceEnerFracP1[1] = udlr;  
-    fTCardCorrInduceEnerFracP1[2] = lr; fTCardCorrInduceEnerFracP1[3] = sec ;} 
+  /// Slope parameter of fraction of energy lost by max energy cell in one of T-Card cells, same for all SM
+  /// \param ud energy lost in upper/lower cell, same column
+  /// \param udlr energy lost in upper/lower cell, left or right
+  /// \param lr   energy lost in left or right cell, same row
+  void           SetInducedEnergyLossFractionP1(Float_t ud, Float_t udlr, Float_t lr, Float_t sec) { 
+    for(Int_t ism = 0; ism < 22; ism++) {
+      fTCardCorrInduceEnerFracP1[0][ism] = ud; fTCardCorrInduceEnerFracP1[1][ism] = udlr;  
+      fTCardCorrInduceEnerFracP1[2][ism] = lr; fTCardCorrInduceEnerFracP1[3][ism] = sec ; } }
+
+  /// Fraction of energy lost by max energy cell in one of T-Card cells, per SM
+  /// \param sm super module index
+  /// \param ud energy lost in upper/lower cell, same column
+  /// \param udlr energy lost in upper/lower cell, left or right
+  /// \param lr   energy lost in left or right cell, same row
+  void           SetInducedEnergyLossFractionPerSM(Int_t sm, Float_t ud, Float_t udlr, Float_t lr, Float_t sec) { 
+    if ( sm < 22 && sm >= 0 ) {
+      fTCardCorrInduceEnerFrac[0][sm] = ud; fTCardCorrInduceEnerFrac[1][sm] = udlr;  
+      fTCardCorrInduceEnerFrac[2][sm] = lr; fTCardCorrInduceEnerFrac[3][sm] = sec ; } } 
+  
+  /// Slope parameter of fraction of energy lost by max energy cell in one of T-Card cells, per SM
+  /// \param sm super module index
+  /// \param ud energy lost in upper/lower cell, same column
+  /// \param udlr energy lost in upper/lower cell, left or right
+  /// \param lr   energy lost in left or right cell, same row
+  void           SetInducedEnergyLossFractionP1PerSM(Int_t sm, Float_t ud, Float_t udlr, Float_t lr, Float_t sec) { 
+    if ( sm < 22 && sm >= 0 ) {
+      fTCardCorrInduceEnerFracP1[0][sm] = ud; fTCardCorrInduceEnerFracP1[1][sm] = udlr;  
+      fTCardCorrInduceEnerFracP1[2][sm] = lr; fTCardCorrInduceEnerFracP1[3][sm] = sec ; } }
 
   
-  /// Fraction of energy lost by max energy cell in one of cross cells, width of random gaussian
+  /// Fraction of energy lost by max energy cell in one of T-Card cells, width of random gaussian, same for all SM
   /// \param ud energy lost in upper/lower cell, same column
   /// \param udlr energy lost in upper/lower cell, left or right
   /// \param lr   energy lost in left or right cell, same row
-  void           SetInducedEnergyLossFractionWidth(Float_t ud, Float_t udlr, Float_t lr, Float_t sec)   
-  { fTCardCorrInduceEnerFracWidth[0] = ud; fTCardCorrInduceEnerFracWidth[1] = udlr;  
-    fTCardCorrInduceEnerFracWidth[2] = lr; fTCardCorrInduceEnerFracWidth[3] = sec ;} 
+  void           SetInducedEnergyLossFractionWidth(Float_t ud, Float_t udlr, Float_t lr, Float_t sec) {
+    for(Int_t ism = 0; ism < 22; ism++) {
+      fTCardCorrInduceEnerFracWidth[0][ism] = ud; fTCardCorrInduceEnerFracWidth[1][ism] = udlr;  
+      fTCardCorrInduceEnerFracWidth[2][ism] = lr; fTCardCorrInduceEnerFracWidth[3][ism] = sec ; } }
+
+  /// Fraction of energy lost by max energy cell in one of T-Card cells, width of random gaussian, per SM
+  /// \param sm super module index
+  /// \param ud energy lost in upper/lower cell, same column
+  /// \param udlr energy lost in upper/lower cell, left or right
+  /// \param lr   energy lost in left or right cell, same row
+  void           SetInducedEnergyLossFractionWidthPerSM(Int_t sm, Float_t ud, Float_t udlr, Float_t lr, Float_t sec) {
+    if ( sm < 22 && sm >= 0 ) {
+      fTCardCorrInduceEnerFracWidth[0][sm] = ud; fTCardCorrInduceEnerFracWidth[1][sm] = udlr;  
+      fTCardCorrInduceEnerFracWidth[2][sm] = lr; fTCardCorrInduceEnerFracWidth[3][sm] = sec ; } }
 
   /// fraction of times max cell energy correlates with cross cells, different for each super-module
   /// \param prob probability per event, from 0 to 1
   /// \param sm   probability assigned to this super-module number
-  void           SetInducedEnergyLossProbabilityPerSM(Float_t prob, Int_t sm) { if ( sm < 22 && sm >= 0 ) fTCardCorrInduceEnerProb[sm] = prob ; }  
+  void           SetInducedEnergyLossProbabilityPerSM(Float_t prob, Int_t sm) { 
+    if ( sm < 22 && sm >= 0 ) fTCardCorrInduceEnerProb[sm] = prob ; }  
   
   void           SwitchOnRandomizeTCardInducedEnergy()          { fRandomizeTCard = kTRUE   ; } 
   void           SwitchOffRandomizeTCardInducedEnergy()         { fRandomizeTCard = kFALSE  ; }  
@@ -338,9 +376,9 @@ private:
   Float_t               fTCardCorrCellsEner[fgkNEMCalCells]; ///<  Array with induced cell energy in T-Card neighbour cells
   Bool_t                fTCardCorrCellsNew [fgkNEMCalCells]; ///<  Array with induced cell energy in T-Card neighbour cells, that before had no signal
   
-  Float_t               fTCardCorrInduceEnerFrac     [4 ]; ///< Induced energy loss gauss mean on 0-same row, diff col, 1-up/down cells left/right col 2-left/righ col, and 2nd row cells, param 0  
-  Float_t               fTCardCorrInduceEnerFracP1   [4 ]; ///< Induced energy loss gauss mean on 0-same row, diff col, 1-up/down cells left/right col 2-left/righ col, and 2nd row cells, param1  
-  Float_t               fTCardCorrInduceEnerFracWidth[4 ]; ///< Induced energy loss gauss witdth on 0-same row, diff col, 1-up/down cells left/right col 2-left/righ col, and 2nd row cells  
+  Float_t               fTCardCorrInduceEnerFrac     [4 ][22]; ///< Induced energy loss gauss mean on 0-same row, diff col, 1-up/down cells left/right col 2-left/righ col, and 2nd row cells, param 0  
+  Float_t               fTCardCorrInduceEnerFracP1   [4 ][22]; ///< Induced energy loss gauss mean on 0-same row, diff col, 1-up/down cells left/right col 2-left/righ col, and 2nd row cells, param1  
+  Float_t               fTCardCorrInduceEnerFracWidth[4 ][22]; ///< Induced energy loss gauss witdth on 0-same row, diff col, 1-up/down cells left/right col 2-left/righ col, and 2nd row cells  
   Float_t               fTCardCorrInduceEnerProb[22];      ///< Probability to induce energy loss per SM   
  
   TRandom3              fRandom   ;                ///<  Random generator
@@ -358,7 +396,7 @@ private:
   AliAnalysisTaskEMCALClusterize& operator=(const AliAnalysisTaskEMCALClusterize&) ;
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskEMCALClusterize, 37) ;
+  ClassDef(AliAnalysisTaskEMCALClusterize, 38) ;
   /// \endcond
 
 };
