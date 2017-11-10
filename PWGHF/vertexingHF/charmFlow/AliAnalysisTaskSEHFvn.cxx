@@ -82,6 +82,7 @@
 #include "AliMultSelection.h"
 #include "AliQnCorrectionsManager.h"
 #include "AliAnalysisTaskFlowVectorCorrections.h"
+#include "AliVertexingHFUtils.h"
 
 #include "AliAnalysisTaskSEHFvn.h"
 
@@ -137,6 +138,7 @@ AliAnalysisTaskSE(),
   fRequireMassForDauRemFromq2(kFALSE),
   fDeltaEtaDmesonq2(0.),
   fEPVsq2VsCent(kFALSE),
+  fEnableNtrklHistos(kFALSE),
   fFlowMethod(kEP)
 {
   // Default constructor
@@ -146,6 +148,9 @@ AliAnalysisTaskSE(),
     fHistEvPlaneQncorrVZERO[i] = 0x0;
   }
 
+  if(fFlowMethod==kEvShape) {
+    fCentBinSizePerMil=10.;
+  }
 }
 
 //________________________________________________________________________
@@ -197,6 +202,7 @@ AliAnalysisTaskSEHFvn::AliAnalysisTaskSEHFvn(const char *name,AliRDHFCuts *rdCut
   fRequireMassForDauRemFromq2(kFALSE),
   fDeltaEtaDmesonq2(0.),
   fEPVsq2VsCent(kFALSE),
+  fEnableNtrklHistos(kFALSE),
   fFlowMethod(kEP)
 {
   // standard constructor
@@ -206,6 +212,9 @@ AliAnalysisTaskSEHFvn::AliAnalysisTaskSEHFvn(const char *name,AliRDHFCuts *rdCut
     fHistEvPlaneQncorrVZERO[i] = 0x0;
   }
 
+  if(fFlowMethod==kEvShape) {
+    fCentBinSizePerMil=10.;
+  }
 
   Int_t pdg=421;
   switch(fDecChannel){
@@ -416,17 +425,17 @@ void AliAnalysisTaskSEHFvn::UserCreateOutputObjects()
     TH3F* hEvPlaneQncorrVZEROVsq2VsCent[3];
     if(fEPVsq2VsCent) {
       for(Int_t iDet=0; iDet<3; iDet++) {
-        hEvPlaneQncorrTPCVsq2VsCent[iDet] = new TH3F(Form("hEvPlaneQncorr%s%sVsq2VsCent",fDetTPCConfName[iDet].Data(),fNormMethod.Data()),Form("hEvPlaneQncorr%s%sVsq2VsCent;%s;#phi Ev Plane",fDetTPCConfName[iDet].Data(),fNormMethod.Data(),q2axisname.Data()),(fMaxCentr-fMinCentr)/(fCentBinSizePerMil/10),fMinCentr,fMaxCentr,500,0,10.,100,0.,TMath::Pi());
-        hEvPlaneQncorrVZEROVsq2VsCent[iDet] = new TH3F(Form("hEvPlaneQncorr%s%sVsq2VsCent",fDetV0ConfName[iDet].Data(),fNormMethod.Data()),Form("hEvPlaneQncorr%s%sVsq2VsCent;%s;#phi Ev Plane",fDetV0ConfName[iDet].Data(),fNormMethod.Data(),q2axisname.Data()),(fMaxCentr-fMinCentr)/(fCentBinSizePerMil/10),fMinCentr,fMaxCentr,500,0,10.,100,0.,TMath::Pi());
+        hEvPlaneQncorrTPCVsq2VsCent[iDet] = new TH3F(Form("hEvPlaneQncorr%s%sVsq2VsCent",fDetTPCConfName[iDet].Data(),fNormMethod.Data()),Form("hEvPlaneQncorr%s%sVsq2VsCent;centrality(%%);%s;#phi Ev Plane",fDetTPCConfName[iDet].Data(),fNormMethod.Data(),q2axisname.Data()),(fMaxCentr-fMinCentr)/(fCentBinSizePerMil/10),fMinCentr,fMaxCentr,500,0,10.,100,0.,TMath::Pi());
+        hEvPlaneQncorrVZEROVsq2VsCent[iDet] = new TH3F(Form("hEvPlaneQncorr%s%sVsq2VsCent",fDetV0ConfName[iDet].Data(),fNormMethod.Data()),Form("hEvPlaneQncorr%s%sVsq2VsCent;centrality(%%);%s;#phi Ev Plane",fDetV0ConfName[iDet].Data(),fNormMethod.Data(),q2axisname.Data()),(fMaxCentr-fMinCentr)/(fCentBinSizePerMil/10),fMinCentr,fMaxCentr,500,0,10.,100,0.,TMath::Pi());
         fOutput->Add(hEvPlaneQncorrTPCVsq2VsCent[iDet]);
         fOutput->Add(hEvPlaneQncorrVZEROVsq2VsCent[iDet]);
       }
     }
 
     //multiplicity used for q2 vs. centrality (TPC)
-    TH2F* hMultVsCentFullTPC = new TH2F("hMultVsCentFullTPC","Multiplicity for q_{2} vs. centrality (full TPC);centrality(%);M",(fMaxCentr-fMinCentr)/(fCentBinSizePerMil/10),fMinCentr,fMaxCentr,100,0.5,10000.5);
-    TH2F* hMultVsCentPosTPC = new TH2F("hMultVsCentPosTPC","Multiplicity for q_{2} vs. centrality (pos TPC);centrality(%);M",(fMaxCentr-fMinCentr)/(fCentBinSizePerMil/10),fMinCentr,fMaxCentr,100,0.5,10000.5);
-    TH2F* hMultVsCentNegTPC = new TH2F("hMultVsCentNegTPC","Multiplicity for q_{2} vs. centrality (neg TPC);centrality(%);M",(fMaxCentr-fMinCentr)/(fCentBinSizePerMil/10),fMinCentr,fMaxCentr,100,0.5,10000.5);
+    TH2F* hMultVsCentFullTPC = new TH2F("hMultVsCentFullTPC","Multiplicity for q_{2} vs. centrality (full TPC);centrality(%);M",(fMaxCentr-fMinCentr)/(fCentBinSizePerMil/10),fMinCentr,fMaxCentr,100,-0.5,4999.5);
+    TH2F* hMultVsCentPosTPC = new TH2F("hMultVsCentPosTPC","Multiplicity for q_{2} vs. centrality (pos TPC);centrality(%);M",(fMaxCentr-fMinCentr)/(fCentBinSizePerMil/10),fMinCentr,fMaxCentr,100,-0.5,4999.5);
+    TH2F* hMultVsCentNegTPC = new TH2F("hMultVsCentNegTPC","Multiplicity for q_{2} vs. centrality (neg TPC);centrality(%);M",(fMaxCentr-fMinCentr)/(fCentBinSizePerMil/10),fMinCentr,fMaxCentr,100,-0.5,4999.5);
     fOutput->Add(hMultVsCentFullTPC);
     fOutput->Add(hMultVsCentPosTPC);
     fOutput->Add(hMultVsCentNegTPC);
@@ -438,6 +447,16 @@ void AliAnalysisTaskSEHFvn::UserCreateOutputObjects()
     fOutput->Add(hq2TPCPosEtaVsNegEta);
     fOutput->Add(hq2TPCFullEtaVsNegEta);
     fOutput->Add(hq2TPCFullEtaVsPosEta);
+
+    //Ntracklets vs. q2 vs. centrality histos
+    if(fEnableNtrklHistos) {
+      TH3F* hNtrklVsq2VsCent = new TH3F("hNtrklVsq2VsCent",Form("N_{tracklets} vs. %s vs. centrality;centrality(%%);%s;N_{tracklets};",q2axisname.Data(),q2axisname.Data()),(fMaxCentr-fMinCentr)/(fCentBinSizePerMil/10),fMinCentr,fMaxCentr,500,0.,10.,500,-0.5,4999.5);
+      TH3F* hNtrklVsq2VsCentCand = new TH3F("hNtrklVsq2VsCentCand",Form("N_{tracklets} vs. %s vs. centrality (cand);centrality(%%);%s;N_{tracklets};",q2axisname.Data(),q2axisname.Data()),(fMaxCentr-fMinCentr)/(fCentBinSizePerMil/10),fMinCentr,fMaxCentr,500,0.,10.,500,-0.5,4999.5);
+      TH3F* hNtrklVsq2VsCentCandInMass = new TH3F("hNtrklVsq2VsCentCandInMass",Form("N_{tracklets} vs. %s vs. centrality (cand in mass);centrality(%%);%s;N_{tracklets};",q2axisname.Data(),q2axisname.Data()),(fMaxCentr-fMinCentr)/(fCentBinSizePerMil/10),fMinCentr,fMaxCentr,500,0.,10.,500,-0.5,4999.5);
+      fOutput->Add(hNtrklVsq2VsCent);
+      fOutput->Add(hNtrklVsq2VsCentCand);
+      fOutput->Add(hNtrklVsq2VsCentCandInMass);
+    }
   }
 
   for(Int_t icentr=fMinCentr*10+fCentBinSizePerMil;icentr<=fMaxCentr*10;icentr=icentr+fCentBinSizePerMil){
@@ -1317,6 +1336,17 @@ void AliAnalysisTaskSEHFvn::UserExec(Option_t */*option*/)
     ((TH2F*)fOutput->FindObject("hq2TPCPosEtaVsNegEta"))->Fill(q2NegTPC,q2PosTPC);
     ((TH2F*)fOutput->FindObject("hq2TPCFullEtaVsNegEta"))->Fill(q2NegTPC,q2FullTPC);
     ((TH2F*)fOutput->FindObject("hq2TPCFullEtaVsPosEta"))->Fill(q2PosTPC,q2FullTPC);
+
+    if(fEnableNtrklHistos) {
+      Int_t tracklets=AliVertexingHFUtils::GetNumberOfTrackletsInEtaRange(aod,-1.,1.);
+      ((TH3F*)fOutput->FindObject("hNtrklVsq2VsCent"))->Fill(centr,q2,tracklets);
+      if(nSelCand>0) {
+        ((TH3F*)fOutput->FindObject("hNtrklVsq2VsCentCand"))->Fill(centr,q2,tracklets);
+        if(nSelCandInMassRange>0) {
+          ((TH3F*)fOutput->FindObject("hNtrklVsq2VsCentCandInMass"))->Fill(centr,q2,tracklets);
+        }
+      }
+    }
 
     if(fq2Smearing && fq2SmearingHisto) {
       TAxis* ax=0x0;
