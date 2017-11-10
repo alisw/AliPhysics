@@ -932,6 +932,7 @@ Bool_t AliPrimaryPionCuts::SetPtCut(Int_t ptCut){
 			break;
         case 4: // 0.40 GeV
             fPtCut  = 0.40;
+            break;
 		default:
 			cout<<"Warning: PtCut not defined "<<ptCut<<endl;
 			return kFALSE;
