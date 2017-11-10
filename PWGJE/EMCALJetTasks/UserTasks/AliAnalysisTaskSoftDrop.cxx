@@ -25,7 +25,6 @@ ClassImp(AliAnalysisTaskSoftDrop)
 AliAnalysisTaskSoftDrop::AliAnalysisTaskSoftDrop() : 
   AliAnalysisTaskEmcalJet("AliAnalysisTaskSoftDrop", kTRUE),
   fHistTracksPt(0),
-  fHistNTracks(0),
   fHistClustersPt(0),
   fHistLeadingJetPt(0),
   fHistJetsPhiEta(0),
@@ -34,6 +33,7 @@ AliAnalysisTaskSoftDrop::AliAnalysisTaskSoftDrop() :
   fHistJetsCorrPtArea(0),
   fHistPtDEtaDPhiTrackClus(0),
   fHistPtDEtaDPhiClusTrack(0),
+  fHistNTracks(0),
   fHistClustDx(0),
   fHistClustDz(0),
   fNAccJets(0),
@@ -72,7 +72,6 @@ AliAnalysisTaskSoftDrop::AliAnalysisTaskSoftDrop() :
 AliAnalysisTaskSoftDrop::AliAnalysisTaskSoftDrop(const char *name) : 
   AliAnalysisTaskEmcalJet(name, kTRUE),
   fHistTracksPt(0),
-  fHistNTracks(0),
   fHistClustersPt(0),
   fHistLeadingJetPt(0),
   fHistJetsPhiEta(0),
@@ -81,6 +80,7 @@ AliAnalysisTaskSoftDrop::AliAnalysisTaskSoftDrop(const char *name) :
   fHistJetsCorrPtArea(0),
   fHistPtDEtaDPhiTrackClus(0),
   fHistPtDEtaDPhiClusTrack(0),
+  fHistNTracks(0),
   fHistClustDx(0),
   fHistClustDz(0),
   fNAccJets(0),
@@ -393,15 +393,12 @@ void AliAnalysisTaskSoftDrop::CheckClusTrackMatching()
   }
 }
 
-Int_t AliAnalysisTaskSoftDrop::SoftDropDeepDeclustering(fastjet::PseudoJet jet, const Float_t inpt) {
+void AliAnalysisTaskSoftDrop::SoftDropDeepDeclustering(fastjet::PseudoJet jet, const Float_t inpt) {
 
   fastjet::PseudoJet jet1;
   fastjet::PseudoJet jet2;
 
-  if ( !(jet.has_parents(jet1, jet2)) ) {
-    return 0;
-  }
-  else {
+  if ( jet.has_parents(jet1, jet2) ) {
 
     Float_t pt1 = jet1.pt();
     Float_t pt2 = jet2.pt();
