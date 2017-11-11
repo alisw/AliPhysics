@@ -96,6 +96,7 @@
 #include <TMath.h>
 #include <TGeoGlobalMagField.h>
 #include <TClonesArray.h>
+#include <fstream>
 #include <sstream>
 #include <set>
 #include <cassert>
@@ -1805,13 +1806,15 @@ void GetBusPatchIdAndNofChannels(std::vector<int> &busPatchIds, std::vector<int>
     busPatchIds.push_back(bp->GetId());
   }
 
-  std::sort(begin(busPatchIds),end(busPatchIds));
+  std::sort(busPatchIds.begin(),busPatchIds.end());
 
-  for ( auto bpid: busPatchIds ) {
+  for ( int i = 0; i < busPatchIds.size(); ++i ) {
+
+    int bpid = busPatchIds[i];
 
     AliMpBusPatch* bp = AliMpDDLStore::Instance()->GetBusPatch(bpid);
 
-    int bpnofchannels{0};
+    int bpnofchannels = 0;
 
     AliMpDetElement *de = AliMpDDLStore::Instance()->GetDetElement(
       AliMpDDLStore::Instance()->GetDEfromBus(bpid));
@@ -1823,9 +1826,9 @@ void GetBusPatchIdAndNofChannels(std::vector<int> &busPatchIds, std::vector<int>
     busPatchNofChannels.push_back(bpnofchannels);
   }
 
-  int totalNofChannels{0};
+  int totalNofChannels = 0;
 
-  for ( auto i = 0 ; i < busPatchIds.size(); ++i ) {
+  for ( int i = 0 ; i < busPatchIds.size(); ++i ) {
     totalNofChannels += busPatchNofChannels[i];
   }
 
@@ -1896,7 +1899,9 @@ void ShowFaultyPedestalsBusPatches(const char *runlist,
   std::vector<int> busPatchInConfig(busPatchIds.size());
   std::vector<int> busPatchNotOK(busPatchIds.size());
 
-  for (auto runNumber: runnumbers) {
+  for (int i = 0; i < runnumbers.size(); ++i ) {
+
+    int runNumber = runnumbers[i];
 
     man->SetRun(runNumber);
 
@@ -1912,13 +1917,13 @@ void ShowFaultyPedestalsBusPatches(const char *runlist,
 
     AliMUONVStore *pedmap = static_cast<AliMUONVStore *>(e->GetObject());
 
-    for ( auto i = 0; i < busPatchIds.size(); ++i ) {
+    for ( int i = 0; i < busPatchIds.size(); ++i ) {
 
       Int_t detElemId = AliMpDDLStore::Instance()->GetDEfromBus(busPatchIds[i]);
       AliMpDetElement *de = AliMpDDLStore::Instance()->GetDetElement(detElemId);
       AliMpBusPatch* bp = AliMpDDLStore::Instance()->GetBusPatch(busPatchIds[i]);
 
-      int nbad{0};
+      int nbad = 0;
 
       if (buspatches.find(busPatchIds[i]) != buspatches.end() ) {
         busPatchInConfig[i]++;
@@ -1952,7 +1957,7 @@ void ShowFaultyPedestalsBusPatches(const char *runlist,
   }
 
   std::ofstream outfile(Form("%s.txt", outputBaseName));
-  for (auto i = 0; i < busPatchIds.size(); ++i ) {
+  for (int i = 0; i < busPatchIds.size(); ++i ) {
     if ( busPatchNotOK[i]) {
       float fraction = 1.0*busPatchNotOK[i]/busPatchInConfig[i];
       if (fraction>outputFractionLimit) {
