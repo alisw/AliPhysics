@@ -107,7 +107,8 @@ AliAnalysisTaskHFE* ConfigHFEnpeXeXe(Bool_t useMC, Bool_t isAOD, TString appendi
     hfecuts->SetMaxChi2perClusterITS(itsChi2PerClusters);
     hfecuts->SetEtaRange(etami,etama);
     hfecuts->SetFractionOfSharedTPCClusters(tpcClShared);
-    hfecuts->SetAcceptKinkMothers(kFALSE);
+    hfecuts->SetRejectKinkMothers();
+    hfecuts->SetRejectKinkDaughters();
     if(isAOD) hfecuts->SetAODFilterBit(2);
     
     if((itshitpixel==AliHFEextraCuts::kAny) || (itshitpixel==AliHFEextraCuts::kSecond))
