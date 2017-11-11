@@ -68,6 +68,19 @@ AliAnalysisTaskCaloFilter * AddTaskCaloFilter
     return NULL;
   }
   
+  // Set the output AOD handler
+  //
+  printf("AddTaskCaloFilter --- Init output handler ---\n");
+  
+  AliAODHandler* aodoutHandler   = new AliAODHandler();
+  aodoutHandler->SetOutputFileName("AliAOD.root");
+  //aodoutHandler->SetCreateNonStandardAOD();
+  mgr->SetOutputEventHandler(aodoutHandler);
+
+  // Configure the task
+  //
+  printf("AddTaskCaloFilter --- Init task ---\n");
+
   AliAnalysisTaskCaloFilter * filter = new AliAnalysisTaskCaloFilter("CaloFilter");
   
   //filter->SetDebugLevel(2);
