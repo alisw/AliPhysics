@@ -1,12 +1,13 @@
-AliAnalysisTaskPHOSObjectCreator* AddTaskPHOSObjectCreator(
-    const char* name           = "PHOSObjectCreator",
-    const UInt_t trigger       = AliVEvent::kINT7|AliVEvent::kPHI7,
+AliAnalysisTaskPHOSEmbeddedDiffObjectCreator* AddTaskPHOSEmbeddedDiffObjectCreator(
+    const char* name     = "PHOSEmbeddedDiffObjectCreator",
+    const TString parname = "Pi0",
+    const UInt_t trigger = AliVEvent::kINT7|AliVEvent::kPHI7,
     const Bool_t usePHOSTender = kTRUE,
-    const Bool_t isMC          = kFALSE,
-    const Double_t BunchSpace  = 25.,
+    const Bool_t isMC = kTRUE,
+    const Double_t BunchSpace = 100.,
     const Bool_t NonLinCorr    = kTRUE,
     const Bool_t excludeM4     = kTRUE,
-    const TString period       = "LHC15n"
+    const TString period       = "LHC15o"
     )
 {
   //Add a task AliAnalysisTaskPHOSObjectCreator to the analysis train
@@ -15,35 +16,30 @@ AliAnalysisTaskPHOSObjectCreator* AddTaskPHOSObjectCreator(
 
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
-    ::Error("AddTaskPHOSObjectCreator", "No analysis manager to connect to");
+    ::Error("AddTaskPHOSEmbeddedDiffObjectCreator", "No analysis manager to connect to");
     return NULL;
   }
   
   if (!mgr->GetInputEventHandler()) {
-    ::Error("AddTaskPHOSObjectCreator", "This task requires an input event handler");
+    ::Error("AddTaskPHOSEmbeddedDiffObjectCreator", "This task requires an input event handler");
     return NULL;
   }
 
-  TString taskname = Form("%s_BS%dns",name,(Int_t)BunchSpace);
+  TString taskname = Form("%s_%s_BS%dns",name,parname.Data(),(Int_t)BunchSpace);
 
-  AliAnalysisTaskPHOSObjectCreator* task = new AliAnalysisTaskPHOSObjectCreator(taskname);
+  AliAnalysisTaskPHOSEmbeddedDiffObjectCreator* task = new AliAnalysisTaskPHOSEmbeddedDiffObjectCreator(taskname);
   task->SelectCollisionCandidates(trigger);
-  task->SetTenderFlag(usePHOSTender);
+  task->SetTenderFlag(usePHOSTender);//always switch OFF tender because tender does not support embedded clusters. do it by myself
   task->SetMCFlag(isMC);
   task->SetBunchSpace(BunchSpace);//in unit of ns
-  task->ExcludeM4(excludeM4);
+  task->SetEmbeddedParticle(parname);
 
   if(isMC && NonLinCorr){
     TF1 *f1nonlin = new TF1("f1nonlin","[2]*(1.+[0]/(1. + TMath::Power(x/[1],2)))",0,100);
     f1nonlin->SetNpx(1000);
     f1nonlin->SetParNames("a","b (GeV)","c");
 
-    if(period.Contains("LHC15n")){
-      f1nonlin->FixParameter(0,-0.06); //for full E, ZS = 20MeV;
-      f1nonlin->FixParameter(1,  0.7); //for full E, ZS = 20MeV;
-      f1nonlin->FixParameter(2,1.012); //for full E, ZS = 20MeV;//decalib 3% on M123
-    }
-    else if(period.Contains("LHC15o")){
+    if(period.Contains("LHC15o")){
       f1nonlin->FixParameter(0,-0.06);//for core E at ZS 20 MeV with only MIP cut
       f1nonlin->FixParameter(1,  0.7);//for core E at ZS 20 MeV with only MIP cut
       f1nonlin->FixParameter(2,0.995);//for core E at ZS 20 MeV with only MIP cut
@@ -60,9 +56,8 @@ AliAnalysisTaskPHOSObjectCreator* AddTaskPHOSObjectCreator(
 
   mgr->AddTask(task);
   mgr->ConnectInput(task, 0, mgr->GetCommonInputContainer());
-  //const TString listname = Form("hist_%s",name);
-  const TString listname = Form("hist_%s",taskname.Data());
 
+  const TString listname = Form("hist_%s",taskname.Data());
   TString outputFile = AliAnalysisManager::GetCommonFileName();
   AliAnalysisDataContainer *coutput1 = mgr->CreateContainer(Form("%s",listname.Data()), THashList::Class(), AliAnalysisManager::kOutputContainer, Form("%s:%s",outputFile.Data(),"PWGGA_PHOSTasks_PHOSRun2"));
   mgr->ConnectOutput(task, 1, coutput1);

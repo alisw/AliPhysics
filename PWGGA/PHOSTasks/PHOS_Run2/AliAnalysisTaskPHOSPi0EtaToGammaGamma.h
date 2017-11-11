@@ -78,6 +78,22 @@ class AliAnalysisTaskPHOSPi0EtaToGammaGamma : public AliAnalysisTaskSE {
       }
     }//adjust charged K/pi ratio
 
+    void SetAdditionalEtaPtWeightFunction(TArrayD *centarray, TObjArray *funcarray) {
+      Int_t Ncen = centarray->GetSize();
+      fCentArrayEta = centarray;
+      for(Int_t icen=0;icen<Ncen-1;icen++){
+        fAdditionalEtaPtWeight[icen] = (TF1*)funcarray->At(icen);
+      }
+    }
+
+    void SetAdditionalGammaPtWeightFunction(TArrayD *centarray, TObjArray *funcarray) {
+      Int_t Ncen = centarray->GetSize();
+      fCentArrayGamma = centarray;
+      for(Int_t icen=0;icen<Ncen-1;icen++){
+        fAdditionalGammaPtWeight[icen] = (TF1*)funcarray->At(icen);
+      }
+    }
+
     void SetCentralityMin(Float_t min) {fCentralityMin = min;}
     void SetCentralityMax(Float_t max) {fCentralityMax = max;}
     void SetDepthNMixed(Int_t Nmix)    {fNMixed        = Nmix;}
@@ -156,6 +172,28 @@ class AliAnalysisTaskPHOSPi0EtaToGammaGamma : public AliAnalysisTaskSE {
         return fAdditionalK0SPtWeight[0];
     }
 
+
+    TF1 *GetAdditionalEtaPtWeightFunction(Float_t centrality){
+      if(fCentArrayEta){
+        Int_t lastBinUpperIndex = fCentArrayEta->GetSize()-1;
+        Int_t index = TMath::BinarySearch<Double_t>( lastBinUpperIndex, fCentArrayEta->GetArray(), centrality);
+        return fAdditionalEtaPtWeight[index];
+      }
+      else
+        return fAdditionalEtaPtWeight[0]; 
+    }
+
+    TF1 *GetAdditionalGammaPtWeightFunction(Float_t centrality){
+      if(fCentArrayGamma){
+        Int_t lastBinUpperIndex = fCentArrayGamma->GetSize()-1;
+        Int_t index = TMath::BinarySearch<Double_t>( lastBinUpperIndex, fCentArrayGamma->GetArray(), centrality);
+        return fAdditionalGammaPtWeight[index];
+      }
+      else
+        return fAdditionalGammaPtWeight[0]; 
+    }
+
+
     AliStack *GetMCInfoESD();
     TClonesArray *GetMCInfoAOD();
 
@@ -183,8 +221,12 @@ class AliAnalysisTaskPHOSPi0EtaToGammaGamma : public AliAnalysisTaskSE {
     AliESDtrackCuts *fESDtrackCutsGlobal;//good global track
     AliESDtrackCuts *fESDtrackCutsGlobalConstrained;//global track but constrained to IP because of SPD dead area
     TF1 *fAdditionalPi0PtWeight[10];//weight function for pT distribution
+    TF1 *fAdditionalEtaPtWeight[10];//weight function for pT distribution
+    TF1 *fAdditionalGammaPtWeight[10];//weight function for pT distribution
     TF1 *fAdditionalK0SPtWeight[10];//weight function for pT distribution. note that this weight is aiming to reproduce K/pi ratio.
     TArrayD *fCentArrayPi0;
+    TArrayD *fCentArrayEta;
+    TArrayD *fCentArrayGamma;
     TArrayD *fCentArrayK0S;
 
     THashList *fOutputContainer;
@@ -232,7 +274,7 @@ class AliAnalysisTaskPHOSPi0EtaToGammaGamma : public AliAnalysisTaskSE {
     AliAnalysisTaskPHOSPi0EtaToGammaGamma(const AliAnalysisTaskPHOSPi0EtaToGammaGamma&);
     AliAnalysisTaskPHOSPi0EtaToGammaGamma& operator=(const AliAnalysisTaskPHOSPi0EtaToGammaGamma&);
 
-    ClassDef(AliAnalysisTaskPHOSPi0EtaToGammaGamma, 36);
+    ClassDef(AliAnalysisTaskPHOSPi0EtaToGammaGamma, 37);
 };
 
 #endif
