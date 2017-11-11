@@ -15,6 +15,9 @@
 #pragma link C++ class AliPHOSTriggerHelper+;
 #pragma link C++ class AliPHOSJetJetMC+;
 #pragma link C++ class AliAnalysisTaskPHOSPi0EtaToGammaGamma+;
+#pragma link C++ class AliAnalysisTaskPHOSEmbeddedDiffObjectCreator+;
+#pragma link C++ class AliAnalysisTaskPHOSEmbedding+;
+#pragma link C++ class AliAnalysisTaskPHOSEmbeddingEfficiency+;
 
 
 // PHOS_pp_8TeV_2012 

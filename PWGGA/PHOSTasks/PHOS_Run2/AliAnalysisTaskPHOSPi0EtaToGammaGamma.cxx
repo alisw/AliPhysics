@@ -93,6 +93,8 @@ AliAnalysisTaskPHOSPi0EtaToGammaGamma::AliAnalysisTaskPHOSPi0EtaToGammaGamma(con
   fESDtrackCutsGlobal(0x0),
   fESDtrackCutsGlobalConstrained(0x0),
   fCentArrayPi0(0x0),
+  fCentArrayEta(0x0),
+  fCentArrayGamma(0x0),
   fCentArrayK0S(0x0),
 
   fOutputContainer(0x0),
@@ -163,8 +165,10 @@ AliAnalysisTaskPHOSPi0EtaToGammaGamma::AliAnalysisTaskPHOSPi0EtaToGammaGamma(con
   fPHOSTriggerHelperL1L = new AliPHOSTriggerHelper("L1L",kFALSE);
 
   for(Int_t i=0;i<10;i++){
-    fAdditionalPi0PtWeight[i] = new TF1(Form("fAdditionalPi0PtWeight_%d",i),"1.",0,100);
-    fAdditionalK0SPtWeight[i] = new TF1(Form("fAdditionalK0SPtWeight_%d",i),"1.",0,100);
+    fAdditionalPi0PtWeight[i]   = new TF1(Form("fAdditionalPi0PtWeight_%d",i)  ,"1.",0,100);
+    fAdditionalEtaPtWeight[i]   = new TF1(Form("fAdditionalEtaPtWeight_%d",i)  ,"1.",0,100);
+    fAdditionalGammaPtWeight[i] = new TF1(Form("fAdditionalGammaPtWeight_%d",i),"1.",0,100);
+    fAdditionalK0SPtWeight[i]   = new TF1(Form("fAdditionalK0SPtWeight_%d",i)   ,"1.",0,100);
   }
 
   fTOFEfficiency = new TF1("fTOFEfficiency","1.",0,100);
@@ -216,6 +220,19 @@ AliAnalysisTaskPHOSPi0EtaToGammaGamma::~AliAnalysisTaskPHOSPi0EtaToGammaGamma()
       delete fAdditionalK0SPtWeight[i];
       fAdditionalK0SPtWeight[i] = 0x0;
     }
+
+    if(fAdditionalEtaPtWeight[i]){
+      delete fAdditionalEtaPtWeight[i];
+      fAdditionalEtaPtWeight[i] = 0x0;
+    }
+
+    if(fAdditionalGammaPtWeight[i]){
+      delete fAdditionalGammaPtWeight[i];
+      fAdditionalGammaPtWeight[i] = 0x0;
+    }
+
+
+
   }
 
 
@@ -293,6 +310,8 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::UserCreateOutputObjects()
     fOutputContainer->Add(new TH2F(Form("hCentrality%svsEventPlane%s%s",fEstimator.Data(),fV0EPName[i].Data(),fQnEstimator.Data()),Form("Centrality %s vs. EP %s %s;centrality (%%);#Psi_{EP}",fEstimator.Data(),fV0EPName[i].Data(),fQnEstimator.Data()),100,0,100,30,0,Pi));
   }
   fOutputContainer->Add(new TH2F(Form("hCentrality%svsSPQ1Q2",fEstimator.Data()),Form("Centrality %s vs. SP #vec{Q_{1}} #upoint #vec{Q_{2}};centrality (%%);SP #vec{Q_{1}} #upoint #vec{Q_{2}}",fEstimator.Data()),100,0,100,200,-0.05,0.05));
+  fOutputContainer->Add(new TH2F(Form("hCentrality%svsSPQ2Q3",fEstimator.Data()),Form("Centrality %s vs. SP #vec{Q_{2}} #upoint #vec{Q_{3}};centrality (%%);SP #vec{Q_{2}} #upoint #vec{Q_{3}}",fEstimator.Data()),100,0,100,200,-0.05,0.05));
+  fOutputContainer->Add(new TH2F(Form("hCentrality%svsSPQ3Q1",fEstimator.Data()),Form("Centrality %s vs. SP #vec{Q_{3}} #upoint #vec{Q_{1}};centrality (%%);SP #vec{Q_{3}} #upoint #vec{Q_{1}}",fEstimator.Data()),100,0,100,200,-0.05,0.05));
 
   fOutputContainer->Add(new TH2F(Form("hCentrality%svsQ1x",fEstimator.Data()),Form("Centrality %s vs. Q_{1x};centrality (%%);Q_{1x}",fEstimator.Data()),100,0,100,100,-0.5,0.5));
   fOutputContainer->Add(new TH2F(Form("hCentrality%svsQ1y",fEstimator.Data()),Form("Centrality %s vs. Q_{1y};centrality (%%);Q_{1y}",fEstimator.Data()),100,0,100,100,-0.5,0.5));
@@ -1012,24 +1031,37 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::UserExec(Option_t *option)
 
     Double_t Q1[2] = {};
     Double_t Q2[2] = {};
+    Double_t Q3[2] = {};
 
     Q1[0] = QnVectorV0Det[1]->Qx(fHarmonics);//V0A
     Q1[1] = QnVectorV0Det[1]->Qy(fHarmonics);//V0A
     Q2[0] = QnVectorV0Det[2]->Qx(fHarmonics);//V0C
     Q2[1] = QnVectorV0Det[2]->Qy(fHarmonics);//V0C
+
+    Q3[0] = QnVectorTPCDet[0]->Qx(fHarmonics);//full acceptance of TPC
+    Q3[1] = QnVectorTPCDet[0]->Qy(fHarmonics);//full acceptance of TPC
     
     fQVector1.Set(Q1[0],Q1[1]);
     fQVector2.Set(Q2[0],Q2[1]);
 
-    FillHistogramTH2(fOutputContainer,Form("hCentrality%svsQ1x",fEstimator.Data()),fCentralityMain,Q1[0]);
-    FillHistogramTH2(fOutputContainer,Form("hCentrality%svsQ1y",fEstimator.Data()),fCentralityMain,Q1[1]);
-    FillHistogramTH2(fOutputContainer,Form("hCentrality%svsQ2x",fEstimator.Data()),fCentralityMain,Q2[0]);
-    FillHistogramTH2(fOutputContainer,Form("hCentrality%svsQ2y",fEstimator.Data()),fCentralityMain,Q2[1]);
+    TVector2 QVector3(Q3[0],Q3[1]);//full acceptance of TPC
+
+    FillHistogramTH2(fOutputContainer,Form("hCentrality%svsQ1x",fEstimator.Data()),fCentralityMain,Q1[0]);//V0A
+    FillHistogramTH2(fOutputContainer,Form("hCentrality%svsQ1y",fEstimator.Data()),fCentralityMain,Q1[1]);//V0A
+    FillHistogramTH2(fOutputContainer,Form("hCentrality%svsQ2x",fEstimator.Data()),fCentralityMain,Q2[0]);//V0C
+    FillHistogramTH2(fOutputContainer,Form("hCentrality%svsQ2y",fEstimator.Data()),fCentralityMain,Q2[1]);//V0C
+    FillHistogramTH2(fOutputContainer,Form("hCentrality%svsQ3x",fEstimator.Data()),fCentralityMain,Q3[0]);//full acceptance of TPC
+    FillHistogramTH2(fOutputContainer,Form("hCentrality%svsQ3y",fEstimator.Data()),fCentralityMain,Q3[1]);//full acceptance of TPC
 
     //Double_t sp = fQ1[0] * fQ2[0] + fQ1[1] * fQ2[1];//scalar product between Q1 vector and Q2 vector
-    Double_t sp = fQVector1 * fQVector2;//scalar product between Q1 vector and Q2 vector
-    FillHistogramTH2(fOutputContainer,Form("hCentrality%svsSPQ1Q2",fEstimator.Data()),fCentralityMain,sp);//mean value of sp is denominator of vn{SP}
-    AliInfo(Form("Q1x = %e , Q1y = %e , Q2x = %e , Q2y = %e , SP = %e",Q1[0],Q1[1],Q2[0],Q2[1],sp));
+    Double_t sp12 = fQVector1 * fQVector2;//scalar product between Q1 vector and Q2 vector
+    Double_t sp23 = fQVector2 *  QVector3;//scalar product between Q2 vector and Q2 vector
+    Double_t sp31 =  QVector3 * fQVector1;//scalar product between Q3 vector and Q1 vector
+
+    FillHistogramTH2(fOutputContainer,Form("hCentrality%svsSPQ1Q2",fEstimator.Data()),fCentralityMain,sp12);//mean value of sp is denominator of vn{SP}
+    FillHistogramTH2(fOutputContainer,Form("hCentrality%svsSPQ2Q3",fEstimator.Data()),fCentralityMain,sp23);//mean value of sp is denominator of vn{SP}
+    FillHistogramTH2(fOutputContainer,Form("hCentrality%svsSPQ3Q1",fEstimator.Data()),fCentralityMain,sp31);//mean value of sp is denominator of vn{SP}
+    AliInfo(Form("Q1x = %e , Q1y = %e , Q2x = %e , Q2y = %e , Q3x = %e , Q3y = %e ,  SP12 = %e ,  SP23 = %e ,  SP31 = %e",Q1[0],Q1[1],Q2[0],Q2[1],Q3[0],Q3[1],sp12,sp23,sp31));
 
     const Double_t delta = 2. * TMath::Pi() / Double_t(fHarmonics) / 12.;
     fEPBin = (Int_t)((fEventPlane) / delta);//it should be 0-11.
@@ -2660,11 +2692,14 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::ProcessMC()
     AliInfo(Form("genIDUE = %d , genIDJet = %d , firstindexJet = %d , lastindexJet = %d.",genIDUE,genIDJet,firstJetindex,lastJetindex));
   }
 
-  TF1 *f1Pi0Weight = (TF1*)GetAdditionalPi0PtWeightFunction(fCentralityMain);
-  TF1 *f1K0SWeight = (TF1*)GetAdditionalK0SPtWeightFunction(fCentralityMain);
+  TF1 *f1Pi0Weight   = (TF1*)GetAdditionalPi0PtWeightFunction(fCentralityMain);
+  TF1 *f1EtaWeight   = (TF1*)GetAdditionalEtaPtWeightFunction(fCentralityMain);
+  TF1 *f1GammaWeight = (TF1*)GetAdditionalGammaPtWeightFunction(fCentralityMain);
+  TF1 *f1K0SWeight   = (TF1*)GetAdditionalK0SPtWeightFunction(fCentralityMain);
 
   Double_t TruePi0Pt = 0.;
   Double_t TrueK0SPt = 0.;
+  Double_t TrueEtaPt = 0.;
 
   Int_t genID = -1;
   Double_t pT=0, rapidity=0, phi=0;
@@ -2714,6 +2749,7 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::ProcessMC()
       }
       else if(pdg==221){//eta
         parname = "Eta";
+        weight = f1EtaWeight->Eval(pT);
       }
       else if(pdg==22){//gamma
         parname = "Gamma";
@@ -2721,11 +2757,11 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::ProcessMC()
           if(IsFrom(i,TrueK0SPt,310)) weight = f1K0SWeight->Eval(TrueK0SPt) * f1Pi0Weight->Eval(TrueK0SPt);
           else                        weight = f1Pi0Weight->Eval(TruePi0Pt);
         }
+        if(IsFrom(i,TrueEtaPt,221))   weight = f1EtaWeight->Eval(TrueEtaPt);
       }
       else if(pdg==211 || pdg==-211){//pi+ or pi-
         //c x tau = 7.8m
         parname = "ChargedPion";
-        //weight = f1Pi0Weight->Eval(pT);
         if(IsFrom(i,TrueK0SPt,310)) weight = f1K0SWeight->Eval(TrueK0SPt) * f1Pi0Weight->Eval(TrueK0SPt);
         else                        weight = f1Pi0Weight->Eval(pT);
       }
@@ -2801,6 +2837,7 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::ProcessMC()
       }
       else if(pdg==221){//eta
         parname = "Eta";
+        weight = f1EtaWeight->Eval(pT);
       }
       else if(pdg==22){//gamma
         parname = "Gamma";
@@ -2808,6 +2845,7 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::ProcessMC()
           if(IsFrom(i,TrueK0SPt,310)) weight = f1K0SWeight->Eval(TrueK0SPt) * f1Pi0Weight->Eval(TrueK0SPt);
           else                        weight = f1Pi0Weight->Eval(TruePi0Pt);
         }
+        if(IsFrom(i,TrueEtaPt,221))   weight = f1EtaWeight->Eval(TrueEtaPt);
 
       }
       else if(pdg==211 || pdg==-211){//pi+ or pi-
@@ -3200,10 +3238,15 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::SetMCWeight()
   const Int_t multClust = fPHOSClusterArray->GetEntriesFast();
 
   Double_t weight = 1.;
-  TF1 *f1Pi0Weight = (TF1*)GetAdditionalPi0PtWeightFunction(fCentralityMain);
-  TF1 *f1K0SWeight = (TF1*)GetAdditionalK0SPtWeightFunction(fCentralityMain);
+  TF1 *f1Pi0Weight   = (TF1*)GetAdditionalPi0PtWeightFunction(fCentralityMain);
+  TF1 *f1K0SWeight   = (TF1*)GetAdditionalK0SPtWeightFunction(fCentralityMain);
+  TF1 *f1EtaWeight   = (TF1*)GetAdditionalEtaPtWeightFunction(fCentralityMain);
+  TF1 *f1GammaWeight = (TF1*)GetAdditionalGammaPtWeightFunction(fCentralityMain);
+
   Int_t primary = -1;
   Double_t TruePi0Pt = 0.;
+  Double_t TrueEtaPt = 0.;
+  Double_t TrueGammaPt = 0.;
   Double_t TrueK0SPt = 0;
   Double_t TrueL0Pt = 0;
 
@@ -3214,14 +3257,15 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::SetMCWeight()
 
     if(IsFrom(primary,TruePi0Pt,111)){//pi0
       //for feed down correction from K0S->pi0 + pi0
-      if(IsFrom(primary,TrueK0SPt,310)) weight *= f1K0SWeight->Eval(TrueK0SPt) * f1Pi0Weight->Eval(TrueK0SPt);
-      else                              weight *= f1Pi0Weight->Eval(TruePi0Pt);
+      if(IsFrom(primary,TrueK0SPt,310)) weight = f1K0SWeight->Eval(TrueK0SPt) * f1Pi0Weight->Eval(TrueK0SPt);
+      else                              weight = f1Pi0Weight->Eval(TruePi0Pt);
     }
+    if(IsFrom(primary,TrueEtaPt,221))   weight = f1EtaWeight->Eval(TrueEtaPt);
 
     if(IsFrom(primary,TrueL0Pt,3122)){//lambda0
       //for feed down correction from L0->pi0 + neutron
       //weight *= f1K0SWeight->Eval(TrueK0SPt);
-      weight *= 1.;
+      weight = 1.;
     }
 
     ph->SetWeight(weight);
