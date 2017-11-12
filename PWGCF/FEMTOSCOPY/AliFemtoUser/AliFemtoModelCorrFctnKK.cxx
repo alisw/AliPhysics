@@ -259,6 +259,22 @@ void AliFemtoModelCorrFctnKK::AddRealPair(AliFemtoPair* aPair)
     fNumeratorTrue->Fill(aPair->QInv(), weight);
     Double_t tQinvTrue = GetQinvTrue(aPair);
     fNumeratorTrueIdeal->Fill(tQinvTrue, weight);
+
+    AliFemtoTrack *inf1 = (AliFemtoTrack *) aPair->Track1()->Track();
+    AliFemtoTrack *inf2 = (AliFemtoTrack *) aPair->Track2()->Track();
+    //true and recontructed momntum to get delta_p/p -->
+    AliFemtoLorentzVector p_true_1;//true momentum
+    AliFemtoThreeVector* temp =
+      ((AliFemtoModelHiddenInfo*)inf1->GetHiddenInfo())->GetTrueMomentum();
+    p_true_1.SetVect(*temp);
+    //cout<<"###_____________________ True: Px="<<p_true_1.x()<<endl;
+    // //AliFemtoLorentzVector p_rec_1 = aPair->Track1()->FourMomentum();//reconstructed momentum
+    //AliFemtoThreeVector p_rec_1 = aPair->Track1()->Track()->P();
+    AliFemtoLorentzVector p_rec_1 = aPair->Track1()->FourMomentum();
+    cout<<"#-->_____________________ True: x="<<p_true_1.x()<<"  y="<<p_true_1.y()<<" z="<<p_true_1.z()<<
+      " Rec: x="<<p_rec_1.x()<<"  y="<<p_rec_1.y()<<" z="<<p_rec_1.z()<<endl;
+    //true and recontructed momntum to get delta_p/p <--
+
   }
 }
 //_______________________
@@ -300,10 +316,10 @@ void AliFemtoModelCorrFctnKK::AddMixedPair(AliFemtoPair* aPair)
     p_true_1.SetVect(*temp);
     //cout<<"###_____________________ True: Px="<<p_true_1.x()<<endl;
     // //AliFemtoLorentzVector p_rec_1 = aPair->Track1()->FourMomentum();//reconstructed momentum
-    //AliFemtoThreeVector p_rec_1 = aPair->Track1()->Track()->P();
-    AliFemtoLorentzVector p_rec_1 = aPair->Track1()->FourMomentum();
-    cout<<"###_____________________ True: x="<<p_true_1.x()<<"  y="<<p_true_1.y()<<" z="<<p_true_1.z()<<
-      " Rec: x="<<p_rec_1.x()<<"  y="<<p_rec_1.y()<<" z="<<p_rec_1.z()<<endl;
+    // //AliFemtoThreeVector p_rec_1 = aPair->Track1()->Track()->P();
+    //AliFemtoLorentzVector p_rec_1 = aPair->Track1()->FourMomentum();
+    //cout<<"###_____________________ True: x="<<p_true_1.x()<<"  y="<<p_true_1.y()<<" z="<<p_true_1.z()<<
+    //  " Rec: x="<<p_rec_1.x()<<"  y="<<p_rec_1.y()<<" z="<<p_rec_1.z()<<endl;
     //true and recontructed momntum to get delta_p/p <--
     /*
     //not used?
