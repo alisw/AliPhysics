@@ -159,10 +159,10 @@ AliAnalysisTaskPHOSPi0EtaToGammaGamma::AliAnalysisTaskPHOSPi0EtaToGammaGamma(con
   fV0EPName[1] = "VZEROA";
   fV0EPName[2] = "VZEROC";
 
-  fPHOSTriggerHelperL0  = new AliPHOSTriggerHelper("L0" ,kFALSE);
-  fPHOSTriggerHelperL1H = new AliPHOSTriggerHelper("L1H",kFALSE);
-  fPHOSTriggerHelperL1M = new AliPHOSTriggerHelper("L1M",kFALSE);
-  fPHOSTriggerHelperL1L = new AliPHOSTriggerHelper("L1L",kFALSE);
+  //fPHOSTriggerHelperL0  = new AliPHOSTriggerHelper("L0" ,kFALSE);
+  //fPHOSTriggerHelperL1H = new AliPHOSTriggerHelper("L1H",kFALSE);
+  //fPHOSTriggerHelperL1M = new AliPHOSTriggerHelper("L1M",kFALSE);
+  //fPHOSTriggerHelperL1L = new AliPHOSTriggerHelper("L1L",kFALSE);
 
   for(Int_t i=0;i<10;i++){
     fAdditionalPi0PtWeight[i]   = new TF1(Form("fAdditionalPi0PtWeight_%d",i)  ,"1.",0,100);
@@ -200,15 +200,23 @@ AliAnalysisTaskPHOSPi0EtaToGammaGamma::~AliAnalysisTaskPHOSPi0EtaToGammaGamma()
     fPHOSTriggerHelper  = 0x0;
   }
 
-  delete fPHOSTriggerHelperL0;
-  delete fPHOSTriggerHelperL1H;
-  delete fPHOSTriggerHelperL1M;
-  delete fPHOSTriggerHelperL1L;
+  if(fPHOSTriggerHelperL0 ){
+    delete fPHOSTriggerHelperL0;
+    fPHOSTriggerHelperL0  = 0x0;
+  }
+  if(fPHOSTriggerHelperL1H){
+    delete fPHOSTriggerHelperL1H;
+    fPHOSTriggerHelperL1H = 0x0;
+  }
 
-  fPHOSTriggerHelperL0  = 0x0;
-  fPHOSTriggerHelperL1H = 0x0;
-  fPHOSTriggerHelperL1M = 0x0;
-  fPHOSTriggerHelperL1L = 0x0;
+  if(fPHOSTriggerHelperL1M){
+    delete fPHOSTriggerHelperL1M;
+    fPHOSTriggerHelperL1M = 0x0;
+  }
+
+  if(fPHOSTriggerHelperL1L){delete fPHOSTriggerHelperL1L;
+    fPHOSTriggerHelperL1L = 0x0;
+  }
 
   for(Int_t i=0;i<10;i++){
     if(fAdditionalPi0PtWeight[i]){
@@ -831,6 +839,11 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::UserExec(Option_t *option)
   fESDEvent = dynamic_cast<AliESDEvent*>(fEvent);
   fAODEvent = dynamic_cast<AliAODEvent*>(fEvent);
 
+  if(fRunNumber != fEvent->GetRunNumber()){ // Check run number
+    fRunNumber = fEvent->GetRunNumber();
+    fPHOSGeo = GetPHOSGeometry();
+  }
+
   UInt_t fSelectMask = fInputHandler->IsEventSelected();
   Bool_t isINT7selected = fSelectMask & AliVEvent::kINT7;
 
@@ -1082,10 +1095,16 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::UserExec(Option_t *option)
   else fEPBin = 0;
 
   //fill fired trigger statistics right after basic event selection, but before PHI7 event selection.
-  Bool_t Is0PH0fired = fEvent->GetHeader()->GetL0TriggerInputs() & 1 << (9 -1);//trigger input -1
-  Bool_t Is1PHHfired = fEvent->GetHeader()->GetL1TriggerInputs() & 1 << (7 -1);//trigger input -1
-  Bool_t Is1PHMfired = fEvent->GetHeader()->GetL1TriggerInputs() & 1 << (6 -1);//trigger input -1
-  Bool_t Is1PHLfired = fEvent->GetHeader()->GetL1TriggerInputs() & 1 << (5 -1);//trigger input -1
+  Int_t L0input  = 17;//for LHC17
+  Int_t L1Hinput = 7;
+  Int_t L1Minput = 6;
+  Int_t L1Linput = 5;
+  if(fRunNumber <= 246994)  L0input = 9;//for LHC15
+
+  Bool_t Is0PH0fired = fEvent->GetHeader()->GetL0TriggerInputs() & 1 << (L0input  - 1);//trigger input -1
+  Bool_t Is1PHHfired = fEvent->GetHeader()->GetL1TriggerInputs() & 1 << (L1Hinput - 1);//trigger input -1
+  Bool_t Is1PHMfired = fEvent->GetHeader()->GetL1TriggerInputs() & 1 << (L1Minput - 1);//trigger input -1
+  Bool_t Is1PHLfired = fEvent->GetHeader()->GetL1TriggerInputs() & 1 << (L1Linput - 1);//trigger input -1
 
   if(Is0PH0fired) FillHistogramTH1(fOutputContainer,"hEventSummary",3);//0PH0
   if(Is1PHLfired) FillHistogramTH1(fOutputContainer,"hEventSummary",4);//1PHL
@@ -1112,11 +1131,6 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::UserExec(Option_t *option)
   AliInfo(Form("Collision system = %d | fCentralityMain estimated by %s = %f %% | Zvtx = %f cm , fZvtx = %d | Harmonics = %d , fEventPlane = %f (rad.) , fEPBin = %d |",fCollisionSystem,fEstimator.Data(),fCentralityMain,fVertex[2],fZvtx,fHarmonics,fEventPlane,fEPBin));
  
   if(!fIsMC) FillRejectionFactorMB();
-
-  if(fRunNumber != fEvent->GetRunNumber()){ // Check run number
-    fRunNumber = fEvent->GetRunNumber();
-    fPHOSGeo = GetPHOSGeometry();
-  }
 
   fPIDResponse = fInputHandler->GetPIDResponse();
   if(!fPIDResponse){
@@ -1418,7 +1432,8 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::TriggerQA()
     else if(L1input == 5) L1 = 2;//L1 low
   }
   else if(L0input > 0){
-    if(L0input == 9) L1 = -1;//L0
+    //if(L0input == 9) L1 = -1;//L0
+    L1 = -1;//L0
   }
 
   Int_t kUsedCluster[] = {multClust*0};
@@ -2353,7 +2368,8 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::SelectTriggeredCluster()
     else if(L1input == 5) L1 = 2;//L1 low
   }
   else if(L0input > 0){
-    if(L0input == 9) L1 = -1;//L0
+    //if(L0input == 9) L1 = -1;//L0
+    L1 = -1;//L0
   }
 
   const Int_t multClust = fPHOSClusterArray->GetEntriesFast();
@@ -3280,10 +3296,22 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::FillRejectionFactorMB()
   //the best senario of how to estimate trigger rejection factor is reading ALICE electric log book.
   //but, fake trigger might be there.
 
-  Bool_t Is0PH0fired = fEvent->GetHeader()->GetL0TriggerInputs() & 1 << (9 -1);//trigger input -1
-  Bool_t Is1PHHfired = fEvent->GetHeader()->GetL1TriggerInputs() & 1 << (7 -1);//trigger input -1
-  Bool_t Is1PHMfired = fEvent->GetHeader()->GetL1TriggerInputs() & 1 << (6 -1);//trigger input -1
-  Bool_t Is1PHLfired = fEvent->GetHeader()->GetL1TriggerInputs() & 1 << (5 -1);//trigger input -1
+  Int_t L1Hinput = 7;
+  Int_t L1Minput = 6;
+  Int_t L1Linput = 5;
+  Int_t L0input  = 17;//LHC17
+
+  if(fRunNumber <= 246994)  L0input = 9;
+
+  if(!fPHOSTriggerHelperL0 ) fPHOSTriggerHelperL0  = new AliPHOSTriggerHelper(-1     ,L0input,kFALSE);
+  if(!fPHOSTriggerHelperL1H) fPHOSTriggerHelperL1H = new AliPHOSTriggerHelper(L1Hinput,-1     ,kFALSE);
+  if(!fPHOSTriggerHelperL1M) fPHOSTriggerHelperL1M = new AliPHOSTriggerHelper(L1Minput,-1     ,kFALSE);
+  if(!fPHOSTriggerHelperL1L) fPHOSTriggerHelperL1L = new AliPHOSTriggerHelper(L1Linput,-1     ,kFALSE);
+
+  Bool_t Is0PH0fired = fEvent->GetHeader()->GetL0TriggerInputs() & 1 << (L0input  - 1);//trigger input -1
+  Bool_t Is1PHHfired = fEvent->GetHeader()->GetL1TriggerInputs() & 1 << (L1Hinput - 1);//trigger input -1
+  Bool_t Is1PHMfired = fEvent->GetHeader()->GetL1TriggerInputs() & 1 << (L1Minput - 1);//trigger input -1
+  Bool_t Is1PHLfired = fEvent->GetHeader()->GetL1TriggerInputs() & 1 << (L1Linput - 1);//trigger input -1
 
   Bool_t Is0PH0matched = fPHOSTriggerHelperL0 ->IsPHI7(fEvent,fPHOSClusterCuts);
   Bool_t Is1PHHmatched = fPHOSTriggerHelperL1H->IsPHI7(fEvent,fPHOSClusterCuts);

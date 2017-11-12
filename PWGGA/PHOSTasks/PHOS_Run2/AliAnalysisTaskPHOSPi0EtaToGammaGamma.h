@@ -100,10 +100,18 @@ class AliAnalysisTaskPHOSPi0EtaToGammaGamma : public AliAnalysisTaskSE {
     void SetCentralityEstimator(TString estimator) {fEstimator = estimator;}
     void SetQnEstimator(TString estimator) {fQnEstimator = estimator;}
     void SetFlowMethod(TString method) {fFlowMethod = method;}
+
     void SetPHOSTriggerAnalysis(TString selection, Bool_t isMC){
+      //obsolete
       fIsPHOSTriggerAnalysis = kTRUE;
       fPHOSTriggerHelper  = new AliPHOSTriggerHelper(selection,isMC);
     }
+
+    void SetPHOSTriggerAnalysis(Int_t L1input, Int_t L0input, Bool_t isMC){
+      fIsPHOSTriggerAnalysis = kTRUE;
+      fPHOSTriggerHelper  = new AliPHOSTriggerHelper(L1input,L0input,isMC);
+    }
+
     void SetTriggerMatchingDeltaR(Double_t DeltaR){
       //this is a default setting
       fPHOSTriggerHelper->SetMatchingDeltaR(DeltaR);
@@ -274,7 +282,7 @@ class AliAnalysisTaskPHOSPi0EtaToGammaGamma : public AliAnalysisTaskSE {
     AliAnalysisTaskPHOSPi0EtaToGammaGamma(const AliAnalysisTaskPHOSPi0EtaToGammaGamma&);
     AliAnalysisTaskPHOSPi0EtaToGammaGamma& operator=(const AliAnalysisTaskPHOSPi0EtaToGammaGamma&);
 
-    ClassDef(AliAnalysisTaskPHOSPi0EtaToGammaGamma, 37);
+    ClassDef(AliAnalysisTaskPHOSPi0EtaToGammaGamma, 38);
 };
 
 #endif

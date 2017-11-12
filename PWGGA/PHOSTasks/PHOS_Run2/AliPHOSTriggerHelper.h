@@ -18,6 +18,7 @@ class AliPHOSTriggerHelper : public TObject {
   public:
     AliPHOSTriggerHelper();
     AliPHOSTriggerHelper(TString trigger, Bool_t isMC);
+    AliPHOSTriggerHelper(Int_t L1triggerinput, Int_t L0triggerinput, Bool_t isMC);
     virtual ~AliPHOSTriggerHelper();
 
     void SetPHOSTRUBadMap(Int_t mod, TH2I *h)
@@ -84,7 +85,7 @@ class AliPHOSTriggerHelper : public TObject {
     AliPHOSTriggerHelper(const AliPHOSTriggerHelper&);
     AliPHOSTriggerHelper& operator=(const AliPHOSTriggerHelper&);
 
-    ClassDef(AliPHOSTriggerHelper, 13);
+    ClassDef(AliPHOSTriggerHelper, 14);
 
 };
 
