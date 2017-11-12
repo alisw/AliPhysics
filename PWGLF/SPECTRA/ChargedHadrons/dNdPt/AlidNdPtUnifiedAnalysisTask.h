@@ -65,7 +65,7 @@ class AlidNdPtUnifiedAnalysisTask : public AliAnalysisTaskSE {
 
     void SetTrkEffParametrisation(TF1 *function){fFunTrkEff = function;}
 
-    void SetUseMultiplicity(){fUseMultiplicity = kTRUE;}
+    void SetUseMultiplicity(Bool_t useMult){fUseMultiplicity = useMult;}
     void SetUseCentrality(){fUseMultiplicity = kFALSE;}
     void SetUseCountedMult(){fUseCountedMult = kTRUE;}
     // Binning
@@ -172,7 +172,7 @@ class AlidNdPtUnifiedAnalysisTask : public AliAnalysisTaskSE {
     Bool_t fUseCentralityCut;
 
     // Output Histograms
-
+    THnF                *fEventCount;		        ///< Histogram for triggered events and events with vertex
     THnF        	*fHistTrack;			///<  Histogram for tracks (pt,eta,Zv,mult/cent)
     THnF	       	*fHistTrackCharge;		///<  Control Histogram for track charge (pt,eta,mult/cent,charge)
     THnF        	*fHistEvent;			///<  Histogram for events (Zv,mult/cent)
