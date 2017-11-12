@@ -48,8 +48,8 @@
 //______________________________________________________________________________
 TString fileName(const char* dir, int runNumber, const char* da, int i, const char* type)
 {
-  const char* format = "%s/run%09d_MCH_%s-%d_%s";
-  return Form(format,dir,runNumber,da,i,type);
+  const char* format = "%s/DAQ_MCH_%6d_%s_%s-%d.shuttle";
+  return Form(format,dir,runNumber,type,da,i);
 }
 
 //______________________________________________________________________________
