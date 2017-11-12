@@ -3,7 +3,8 @@ AliAnalysisTaskPHOSPi0EtaToGammaGamma* AddTaskPHOSPi0EtaToGammaGamma_PbPb_5TeV(
     const UInt_t trigger = AliVEvent::kINT7,
     const TString CollisionSystem = "PbPb",
     const Bool_t isMC = kFALSE,
-    const TString triggerinput = "",//L1H,L1M,L1L,L0
+    const Int_t L1input = -1,//L1H,L1M,L1L
+    const Int_t L0input = -1,//L0
     const Float_t CenMin = 0.,
     const Float_t CenMax = 90.,
     const Int_t NMixed   = 10,
@@ -43,13 +44,25 @@ AliAnalysisTaskPHOSPi0EtaToGammaGamma* AddTaskPHOSPi0EtaToGammaGamma_PbPb_5TeV(
 	else if(trigger == (UInt_t)AliVEvent::kINT7) TriggerName = "kINT7";
 	else if(trigger == (UInt_t)AliVEvent::kPHI7) TriggerName = "kPHI7";
 
-  if(trigger == (UInt_t)AliVEvent::kPHI7){
-    if(triggerinput.Contains("L1") || triggerinput.Contains("L0")){
-      TriggerName = TriggerName + "_" + triggerinput;
+  //if(trigger == (UInt_t)AliVEvent::kPHI7){
+  //  if(triggerinput.Contains("L1") || triggerinput.Contains("L0")){
+  //    TriggerName = TriggerName + "_" + triggerinput;
 
+  //  }
+  //  else{
+  //    ::Error("AddTaskPHOSPi0EtaToGammaGamma", "PHOS trigger analysis requires at least trigger input (L0 or L1[H,M,L]).");
+  //    return NULL;
+  //  }
+  //}
+  if(trigger == (UInt_t)AliVEvent::kPHI7){
+    if(L1input > 0){
+      if(L1input == 7)      TriggerName = TriggerName + "_" + "L1H";
+      else if(L1input == 6) TriggerName = TriggerName + "_" + "L1M";
+      else if(L1input == 5) TriggerName = TriggerName + "_" + "L1L";
     }
+    else if(L0input > 0)    TriggerName = TriggerName + "_" + "L0";
     else{
-      ::Error("AddTaskPHOSPi0EtaToGammaGamma", "PHOS trigger analysis requires at least trigger input (L0 or L1[H,M,L]).");
+      ::Error("AddTaskPHOSPi0EtaToGammaGamma", "PHOS trigger analysis requires at least 1 trigger input (L0 or L1[H,M,L]).");
       return NULL;
     }
   }
@@ -81,7 +94,8 @@ AliAnalysisTaskPHOSPi0EtaToGammaGamma* AddTaskPHOSPi0EtaToGammaGamma_PbPb_5TeV(
   AliAnalysisTaskPHOSPi0EtaToGammaGamma* task = new AliAnalysisTaskPHOSPi0EtaToGammaGamma(taskname);
   task->SelectCollisionCandidates(trigger);
 
-  if(trigger == (UInt_t)AliVEvent::kPHI7) task->SetPHOSTriggerAnalysis(triggerinput,isMC);
+  //if(trigger == (UInt_t)AliVEvent::kPHI7) task->SetPHOSTriggerAnalysis(triggerinput,isMC);
+  if(trigger == (UInt_t)AliVEvent::kPHI7) task->SetPHOSTriggerAnalysis(L1input,L0input,isMC);
 
   task->SetCollisionSystem(systemID);//colliions system : pp=0, PbPb=1, pPb (Pbp)=2;
   task->SetJetJetMC(isJJMC);
