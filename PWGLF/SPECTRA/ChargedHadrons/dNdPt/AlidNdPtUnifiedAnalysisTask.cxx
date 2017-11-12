@@ -63,6 +63,7 @@ AlidNdPtUnifiedAnalysisTask::AlidNdPtUnifiedAnalysisTask(const char *name) : Ali
   fUseCountedMult(kFALSE),
   //Event-Histograms
   fHistEvent(0),
+  fEventCount(0),
   fHistMultEvent(0),
   fHistMCGenEvent(0),
   fHistMCRecEvent(0),
@@ -151,6 +152,10 @@ void AlidNdPtUnifiedAnalysisTask::UserCreateOutputObjects(){
   fOutputList = new TList();
   fOutputList -> SetOwner();
 
+  Int_t binsEventCount[4]={2,2,2,2};
+  Double_t minEventCount[4]={0,0,0,0};
+  Double_t maxEventCount[4]={2,2,2,2};
+
   /// Standard track histogram pt:eta:zV:multcent
   Int_t nBinsTrack[4]={fBinsPt->GetSize()-1,fBinsEta->GetSize()-1,fBinsZv->GetSize()-1,fBinsMultCent->GetSize()-1};
   Double_t minTrack[4]={fBinsPt->GetAt(0),fBinsEta->GetAt(0),fBinsZv->GetAt(0),fBinsMultCent->GetAt(0)};
@@ -229,6 +234,14 @@ void AlidNdPtUnifiedAnalysisTask::UserCreateOutputObjects(){
   fHistEvent->GetAxis(0)->SetTitle("Zv (cm)");
   fHistEvent->GetAxis(1)->SetTitle("multiplicity (multCuts)");
   fHistEvent -> Sumw2();
+
+
+  fEventCount = new THnF("fEventCount","trig vs trig+vertex",4,binsEventCount,minEventCount,maxEventCount);
+  fEventCount->GetAxis(0)->SetTitle("trig");
+  fEventCount->GetAxis(1)->SetTitle("trig+vert");
+  fEventCount->GetAxis(2)->SetTitle("selected");
+  fEventCount->GetAxis(3)->SetTitle("All");
+  fEventCount->Sumw2();
 
   fHistMultEvent = new THnF("fHistMultEvent", "Histogram for MultEvents",3,nBinsMultEvent,minMultEvent,maxMultEvent);
   fHistMultEvent -> SetBinEdges(0,fBinsMultCent->GetArray());
@@ -465,6 +478,7 @@ void AlidNdPtUnifiedAnalysisTask::UserCreateOutputObjects(){
 
   fOutputList->Add(fHistTrack);
   fOutputList->Add(fHistEvent);
+  fOutputList->Add(fEventCount);
   fOutputList->Add(fHistMultEvent);
   fOutputList->Add(fHistTrackCharge);
 
@@ -547,7 +561,18 @@ void AlidNdPtUnifiedAnalysisTask::UserExec(Option_t *){ // Main loop (called for
   Double_t multEvent = GetEventMultCent(fEvent);
   Double_t zVertEvent = fEvent->GetPrimaryVertex()->GetZ();
   Double_t eventValues[2] = {zVertEvent, multEvent};
-  
+
+  AliVVZERO * vZeroHandler = fEvent->GetVZEROData();
+  if (!vZeroHandler) {printf("ERROR: vZeroHandler not available\n"); return;}
+
+
+  Bool_t isTrigAndVertex = kFALSE;
+  if (fIs2013pA){	isTrigAndVertex = isEventTriggered && IsEventAccepted2013pA(fEvent) && IsEventAcceptedQuality(fEvent);	}
+  if (fIs2015data){	isTrigAndVertex = isEventTriggered && IsEventAccepted2015data(fEvent) && IsEventAcceptedQuality(fEvent);	}
+
+
+  Double_t vEventCount[4] = { static_cast<Double_t>((isEventTriggered && kTRUE)) , static_cast<Double_t>(isTrigAndVertex),  static_cast<Double_t>(isTrigAndVertex && (TMath::Abs(zVertEvent) < 10.)), kTRUE};
+  fEventCount->Fill(vEventCount);
 
   Double_t multAccTracks = 0;   	/// N_acc (of tracks!!)
   Double_t multAccCorrTracks = 0;	/// N_acc (of tracks!!) corrected with trk efficiency
@@ -579,10 +604,10 @@ void AlidNdPtUnifiedAnalysisTask::UserExec(Option_t *){ // Main loop (called for
   }
 
   /// \li Event Acceptance Cuts
-  if(!IsEventAcceptedGeometrics(fEvent)) return;
-  if(!IsEventAcceptedQuality(fEvent)) return;
+  if(!IsEventAcceptedGeometrics(fEvent)) return;   //Requires primary vertex in the limits
+  if(!IsEventAcceptedQuality(fEvent)) return;      //Requires vertex quality
   if (fIs2013pA){	if(!IsEventAccepted2013pA(fEvent)) return;	}
-  if (fIs2015data){	if(!IsEventAccepted2015data(fEvent)) return;	}
+  if (fIs2015data){	if(!IsEventAccepted2015data(fEvent)) return;	}  // Requiring IncompleteDAQ, SPD background and Pileup cuts
 
 
   /// ------------------ Reconstructed Events --------------------------------------
@@ -1006,9 +1031,13 @@ Bool_t AlidNdPtUnifiedAnalysisTask::IsVertexOK(AliVEvent *event){
 
     const AliESDVertex *vertexSPD = ESDevent->GetPrimaryVertexSPD();
     // always check for SPD vertex
+    const AliESDVertex * trkVertex = ESDevent->GetPrimaryVertexTracks();
     if(!vertexSPD) return kFALSE;
     if(!vertexSPD->GetStatus()) return kFALSE;
-    if (vertexSPD->IsFromVertexerZ() && vertexSPD->GetDispersion() > 0.04) return kFALSE; /// vertexSPD->GetDispersion() > 0.02 to 0.04
+    if(!trkVertex->GetStatus()) return kFALSE;
+    if (vertexSPD->IsFromVertexerZ() && !(vertexSPD->GetDispersion()<0.04 && vertexSPD->GetZRes()<0.25)) return kFALSE;
+    //if (vertexSPD->IsFromVertexerZ() && vertexSPD->GetDispersion() > 0.04) return kFALSE; /// vertexSPD->GetDispersion() > 0.02 to 0.04
+    if ((TMath::Abs(vertexSPD->GetZ() - trkVertex->GetZ())>0.5)) return kFALSE;
   }else{
     //AOD code goes here
   }
