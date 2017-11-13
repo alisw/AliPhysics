@@ -1,10 +1,12 @@
 //
 //
 void SetDefaults(AliAnalysisTaskEbyeIterPID *defaultTask);
+void ReadLookUpTableOfFirstMoments(TTree *tree, Int_t parType, Float_t pArr[],Float_t centArr[],Float_t etaArr[],Float_t ****FirstMomArr,const Int_t mombins, const Int_t centbins, const Int_t etabins);
+Float_t**** CreateArrray(const Int_t nResMode,const Int_t mombins, const Int_t centbins, const Int_t etabins);
 //
 //
 //
-AliAnalysisTaskEbyeIterPID* Config_marsland_EbyeIterPID(Int_t settingType, Int_t lhcPeriod) {
+AliAnalysisTaskEbyeIterPID* Config_marsland_EbyeIterPID(Int_t settingType, Int_t lhcPeriod, Int_t lookUpTable) {
   
   // 
   // Configuration file for the AliAnalysisTaskEbyeIterPID.cxx class
@@ -50,6 +52,37 @@ AliAnalysisTaskEbyeIterPID* Config_marsland_EbyeIterPID(Int_t settingType, Int_t
   SetDefaults(task);
   if (lhcPeriod==1) task->SelectCollisionCandidates(AliVEvent::kMB);   // select minimum bias events for LHC10h
   if (lhcPeriod==2) task->SelectCollisionCandidates(AliVEvent::kINT7); // select minimum bias events for LHC15o
+  
+  // Read the look up table tree
+  TTree *tree = NULL;
+  if (settingType>199) {
+      //    /lustre/nyx/alice/users/marsland/pFluct/files/analysis/Data/PbPb/MC/RUN1/LHC11a10a_bis_kineOnly_GSI_NetCh_AllResOFF/MCgenResults/MomentsTree_AccCan.root
+      std::cout << " Copy LookUp table from alien " << std::endl;
+      TFile *fInputLookUp=NULL;
+      TString lookUpPath="";
+      if (lookUpTable==1){ 
+          gSystem->Exec("alien_cp alien:///alice/cern.ch/user/m/marsland/PWGCF/EBYE/IdentityMethodEbyeFluctuations/macros/MomentsTree_AccCan_HIJING.root .");
+          lookUpPath=Form("%s/MomentsTree_AccCan_HIJING.root",gSystem->pwd());
+      }
+      if (lookUpTable==2){ 
+          gSystem->Exec("alien_cp alien:///alice/cern.ch/user/m/marsland/PWGCF/EBYE/IdentityMethodEbyeFluctuations/macros/MomentsTree_AccCan_LHC13f3a.root .");
+          lookUpPath=Form("%s/MomentsTree_AccCan_LHC13f3a.root",gSystem->pwd());
+      }
+      if (lookUpTable==3){ 
+          gSystem->Exec("alien_cp alien:///alice/cern.ch/user/m/marsland/PWGCF/EBYE/IdentityMethodEbyeFluctuations/macros/MomentsTree_AccCan_LHC13f3b.root .");
+          lookUpPath=Form("%s/MomentsTree_AccCan_LHC13f3b.root",gSystem->pwd());
+      }
+      if (lookUpTable==4){ 
+          gSystem->Exec("alien_cp alien:///alice/cern.ch/user/m/marsland/PWGCF/EBYE/IdentityMethodEbyeFluctuations/macros/MomentsTree_AccCan_LHC13f3c.root .");
+          lookUpPath=Form("%s/MomentsTree_AccCan_LHC13f3c.root",gSystem->pwd());
+      }
+      std::cout << " LookUp table used is = " << lookUpPath << std::endl;
+      fInputLookUp = TFile::Open(lookUpPath);
+      tree = (TTree*)fInputLookUp->Get("mcMoments");
+      tree->Print();
+      if(!tree) { std::cout << " Error: There is no lookUp table" << std::endl; return;}
+  }
+  
   std::cout << " ===== In the Config --> Running with lhcPeriod =  " << lhcPeriod << " ===== " << std::endl;
   // Other Specific settings
 
@@ -429,13 +462,16 @@ AliAnalysisTaskEbyeIterPID* Config_marsland_EbyeIterPID(Int_t settingType, Int_t
       Float_t tmpfxCentBins[tmpCentbins] = {0,5,10,20,30,40,50,60,70,80};
       task->SetCentralityBinning(tmpCentbins,tmpfxCentBins);
       // resonances to exclude
-      const Int_t tmpNresonances = 3;
-      TString tmpResArr[tmpNresonances] = {"rho","phi","Delta"};
+      const Int_t tmpNresonances = 1;
+      TString tmpResArr[tmpNresonances] = {"xxx"};
       task->SetMCResonanceArray(tmpNresonances,tmpResArr);
+      //       const Int_t tmpNresonances = 5;
+      //       TString tmpResArr[tmpNresonances] = {"rho","phi","omega","eta","Delta"};
+      //       task->SetMCResonanceArray(tmpNresonances,tmpResArr); 
     }
     break;
     case 111:{ 
-      std::cout << settingType << " Fast Gen --> eta and mom scan + removal of resonances  " << std::endl;
+      std::cout << settingType << " Fast Gen GSI --> eta and mom scan without all resonances  " << std::endl;
       task->SetRunFastSimulation(kTRUE);
       task->SetIsMCtrue(kTRUE); 
       task->SetNEtabins(20);
@@ -456,19 +492,26 @@ AliAnalysisTaskEbyeIterPID* Config_marsland_EbyeIterPID(Int_t settingType, Int_t
       Float_t tmpfxCentBins[tmpCentbins] = {0,5,10,20,30,40,50,60,70,80};
       task->SetCentralityBinning(tmpCentbins,tmpfxCentBins);
       // resonances to exclude
-      //       const Int_t tmpNresonances = 1;
-      //       TString tmpResArr[tmpNresonances] = {"xxx"};
+      const Int_t tmpNresonances = 1;
+      TString tmpResArr[tmpNresonances] = {"xxx"};
+      task->SetMCResonanceArray(tmpNresonances,tmpResArr);
+      //       const Int_t tmpNresonances = 5;
+      //       TString tmpResArr[tmpNresonances] = {"rho","phi","omega","eta","Delta"};
       //       task->SetMCResonanceArray(tmpNresonances,tmpResArr);
-      const Int_t tmpNresonances = 5;
-      TString tmpResArr[tmpNresonances] = {"rho","phi","omega","eta","Delta"};
-      task->SetMCResonanceArray(tmpNresonances,tmpResArr); 
     }
     break;
-    case 112:{ 
-      std::cout << settingType << " Fast Gen --> eta and mom scan + removal of resonances  " << std::endl;
-      task->SetRunFastSimulation(kTRUE);
+    
+    //     
+    // ====================================================================================
+    // ================================ FastGen  Settings =================================
+    // ====================================================================================
+    // 
+    case 200:{ 
+      std::cout << settingType << " Fast Gen on LEGO --> Calculate higher moments using look-up table  " << std::endl;
+      task->SetRunFastHighMomentCal(kTRUE);
+      //       task->SetUseCouts(kTRUE);
       task->SetIsMCtrue(kTRUE);
-      task->SetNEtabins(20);
+      task->SetNEtabins(10);
       task->SetEtaLowerEdge(-2.);
       task->SetEtaUpperEdge(2.);
       // eta bin scan
@@ -486,11 +529,139 @@ AliAnalysisTaskEbyeIterPID* Config_marsland_EbyeIterPID(Int_t settingType, Int_t
       Float_t tmpfxCentBins[tmpCentbins] = {0,5,10,20,30,40,50,60,70,80};
       task->SetCentralityBinning(tmpCentbins,tmpfxCentBins);
       // resonances to exclude
-      //       const Int_t tmpNresonances = 1;
-      //       TString tmpResArr[tmpNresonances] = {"xxx"};
-      //       task->SetMCResonanceArray(tmpNresonances,tmpResArr);
-      const Int_t tmpNresonances = 5;
-      TString tmpResArr[tmpNresonances] = {"rho","phi","omega","eta","Delta"};
+      const Int_t tmpNresonances = 1;
+      TString tmpResArr[tmpNresonances] = {"xxx"};
+      task->SetMCResonanceArray(tmpNresonances,tmpResArr); 
+      // Read First Moments
+      Float_t**** tmpFirstMomArrPi = CreateArrray(2,tmpMomBinsMC,tmpCentbins,tmpEtaBinsMC);
+      Float_t**** tmpFirstMomArrKa = CreateArrray(2,tmpMomBinsMC,tmpCentbins,tmpEtaBinsMC);
+      Float_t**** tmpFirstMomArrPr = CreateArrray(2,tmpMomBinsMC,tmpCentbins,tmpEtaBinsMC);
+      Float_t**** tmpFirstMomArrLa = CreateArrray(2,tmpMomBinsMC,tmpCentbins,tmpEtaBinsMC);
+      Float_t**** tmpFirstMomArrCh = CreateArrray(2,tmpMomBinsMC,tmpCentbins,tmpEtaBinsMC);
+      ReadLookUpTableOfFirstMoments(tree,0,tmppDownArr,tmpfxCentBins,tmpetaUpArr,tmpFirstMomArrPi,tmpMomBinsMC,tmpCentbins,tmpEtaBinsMC);
+      ReadLookUpTableOfFirstMoments(tree,1,tmppDownArr,tmpfxCentBins,tmpetaUpArr,tmpFirstMomArrKa,tmpMomBinsMC,tmpCentbins,tmpEtaBinsMC);
+      ReadLookUpTableOfFirstMoments(tree,2,tmppDownArr,tmpfxCentBins,tmpetaUpArr,tmpFirstMomArrPr,tmpMomBinsMC,tmpCentbins,tmpEtaBinsMC);
+      ReadLookUpTableOfFirstMoments(tree,9,tmppDownArr,tmpfxCentBins,tmpetaUpArr,tmpFirstMomArrLa,tmpMomBinsMC,tmpCentbins,tmpEtaBinsMC);
+      ReadLookUpTableOfFirstMoments(tree,11,tmppDownArr,tmpfxCentBins,tmpetaUpArr,tmpFirstMomArrCh,tmpMomBinsMC,tmpCentbins,tmpEtaBinsMC);
+      task->SetLookUpTableFirstMoments(0,tmpFirstMomArrPi,tmpMomBinsMC,tmpCentbins,tmpEtaBinsMC); 
+      task->SetLookUpTableFirstMoments(1,tmpFirstMomArrKa,tmpMomBinsMC,tmpCentbins,tmpEtaBinsMC); 
+      task->SetLookUpTableFirstMoments(2,tmpFirstMomArrPr,tmpMomBinsMC,tmpCentbins,tmpEtaBinsMC); 
+      task->SetLookUpTableFirstMoments(9,tmpFirstMomArrLa,tmpMomBinsMC,tmpCentbins,tmpEtaBinsMC); 
+      task->SetLookUpTableFirstMoments(11,tmpFirstMomArrCh,tmpMomBinsMC,tmpCentbins,tmpEtaBinsMC); 
+    }
+    break;
+    case 201:{ 
+      std::cout << settingType << " Fast Gen on LEGO+GSI --> resonance calculation in full acceptance  " << std::endl;
+      task->SetRunFastSimulation(kTRUE);
+      task->SetPercentageOfEvents(0);
+      //       task->SetUseCouts(kTRUE);
+      task->SetIsMCtrue(kTRUE);
+      task->SetNEtabins(10);
+      task->SetEtaLowerEdge(-2.);
+      task->SetEtaUpperEdge(2.);
+      // eta bin scan
+      const Int_t tmpEtaBinsMC = 20;
+      Float_t tmpetaDownArr[tmpEtaBinsMC] = {-0.5,-1.,-1.5,-2.,-2.5,-3.,-3.5,-4.,-4.5,-5.,-5.5,-6.,-6.5,-7.,-7.5,-8,-8.5,-9,-9.5,-10.};
+      Float_t tmpetaUpArr[tmpEtaBinsMC]   = { 0.5, 1., 1.5, 2., 2.5, 3., 3.5, 4., 4.5, 5., 5.5, 6., 6.5, 7., 7.5, 8, 8.5, 9, 9.5, 10.};
+      task->SetMCEtaScanArray(tmpEtaBinsMC, tmpetaDownArr, tmpetaUpArr);
+      // mom bin scan
+      const Int_t tmpMomBinsMC = 2;
+      Float_t tmppDownArr[tmpMomBinsMC] = { 0.2,0.6};
+      Float_t tmppUpArr[tmpMomBinsMC]   = { 1.5,1.5};
+      task->SetMCMomScanArray(tmpMomBinsMC, tmppDownArr,   tmppUpArr); 
+      // cent bins
+      const Int_t tmpCentbins  = 10;   
+      Float_t tmpfxCentBins[tmpCentbins] = {0,5,10,20,30,40,50,60,70,80};
+      task->SetCentralityBinning(tmpCentbins,tmpfxCentBins);
+      // resonances to exclude
+      const Int_t tmpNresonances = 1;
+      TString tmpResArr[tmpNresonances] = {"xxx"};
+      task->SetMCResonanceArray(tmpNresonances,tmpResArr); 
+    }
+    break;
+    case 202:{ 
+      std::cout << settingType << " Fast Gen at GSI --> eta and mom scan + removal of resonances  " << std::endl;
+      task->SetRunFastSimulation(kTRUE);
+      task->SetPercentageOfEvents(0);
+      //       task->SetUseCouts(kTRUE);
+      task->SetIsMCtrue(kTRUE);
+      task->SetNEtabins(10);
+      task->SetEtaLowerEdge(-2.);
+      task->SetEtaUpperEdge(2.);
+      // eta bin scan
+      const Int_t tmpEtaBinsMC = 20;
+      Float_t tmpetaDownArr[tmpEtaBinsMC] = {-0.1,-0.2,-0.3,-0.4,-0.5,-0.6,-0.7,-0.8,-0.9,-1.,-1.1,-1.2,-1.3,-1.4,-1.5,-1.6,-1.7,-1.8,-1.9,-2};
+      Float_t tmpetaUpArr[tmpEtaBinsMC]   = { 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1., 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2};
+      task->SetMCEtaScanArray(tmpEtaBinsMC, tmpetaDownArr, tmpetaUpArr);
+      // mom bin scan
+      const Int_t tmpMomBinsMC = 2;
+      Float_t tmppDownArr[tmpMomBinsMC] = { 0.2, 0.6};
+      Float_t tmppUpArr[tmpMomBinsMC]   = { 1.5, 1.5};
+      task->SetMCMomScanArray(tmpMomBinsMC, tmppDownArr,   tmppUpArr); 
+      // cent bins
+      const Int_t tmpCentbins  = 10;   
+      Float_t tmpfxCentBins[tmpCentbins] = {0,5,10,20,30,40,50,60,70,80};
+      task->SetCentralityBinning(tmpCentbins,tmpfxCentBins);
+      // resonances to exclude
+      const Int_t tmpNresonances = 1;
+      TString tmpResArr[tmpNresonances] = {"xxx"};
+      task->SetMCResonanceArray(tmpNresonances,tmpResArr); 
+    }
+    break;
+    case 203:{ 
+      std::cout << settingType << " Fast Gen on LEGO --> eta and mom scan + removal of resonances  " << std::endl;
+      task->SetRunFastSimulation(kTRUE);
+      task->SetUseCouts(kTRUE);
+      task->SetIsMCtrue(kTRUE);
+      task->SetNEtabins(10);
+      task->SetEtaLowerEdge(-2.);
+      task->SetEtaUpperEdge(2.);
+      // eta bin scan
+      const Int_t tmpEtaBinsMC = 20;
+      Float_t tmpetaDownArr[tmpEtaBinsMC] = {-0.1,-0.2,-0.3,-0.4,-0.5,-0.6,-0.7,-0.8,-0.9,-1.,-1.1,-1.2,-1.3,-1.4,-1.5,-1.6,-1.7,-1.8,-1.9,-2};
+      Float_t tmpetaUpArr[tmpEtaBinsMC]   = { 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1., 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2};
+      task->SetMCEtaScanArray(tmpEtaBinsMC, tmpetaDownArr, tmpetaUpArr);
+      // mom bin scan
+      const Int_t tmpMomBinsMC = 1;
+      Float_t tmppDownArr[tmpMomBinsMC] = { 0.2};
+      Float_t tmppUpArr[tmpMomBinsMC]   = { 1.5};
+      task->SetMCMomScanArray(tmpMomBinsMC, tmppDownArr,   tmppUpArr); 
+      // cent bins
+      const Int_t tmpCentbins  = 10;   
+      Float_t tmpfxCentBins[tmpCentbins] = {0,5,10,20,30,40,50,60,70,80};
+      task->SetCentralityBinning(tmpCentbins,tmpfxCentBins);
+      // resonances to exclude
+      const Int_t tmpNresonances = 1;
+      TString tmpResArr[tmpNresonances] = {"xxx"};
+      task->SetMCResonanceArray(tmpNresonances,tmpResArr); 
+    }
+    break;
+    case 204:{ 
+      std::cout << settingType << " Fast Gen on LEGO --> eta and mom scan + removal of resonances  " << std::endl;
+      task->SetRunFastSimulation(kTRUE);
+      task->SetPercentageOfEvents(10);
+      task->SetUseCouts(kTRUE);
+      task->SetIsMCtrue(kTRUE);
+      task->SetNEtabins(10);
+      task->SetEtaLowerEdge(-2.);
+      task->SetEtaUpperEdge(2.);
+      // eta bin scan
+      const Int_t tmpEtaBinsMC = 20;
+      Float_t tmpetaDownArr[tmpEtaBinsMC] = {-0.1,-0.2,-0.3,-0.4,-0.5,-0.6,-0.7,-0.8,-0.9,-1.,-1.1,-1.2,-1.3,-1.4,-1.5,-1.6,-1.7,-1.8,-1.9,-2};
+      Float_t tmpetaUpArr[tmpEtaBinsMC]   = { 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1., 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2};
+      task->SetMCEtaScanArray(tmpEtaBinsMC, tmpetaDownArr, tmpetaUpArr);
+      // mom bin scan
+      const Int_t tmpMomBinsMC = 1;
+      Float_t tmppDownArr[tmpMomBinsMC] = { 0.6};
+      Float_t tmppUpArr[tmpMomBinsMC]   = { 1.5};
+      task->SetMCMomScanArray(tmpMomBinsMC, tmppDownArr,   tmppUpArr); 
+      // cent bins
+      const Int_t tmpCentbins  = 10;   
+      Float_t tmpfxCentBins[tmpCentbins] = {0,5,10,20,30,40,50,60,70,80};
+      task->SetCentralityBinning(tmpCentbins,tmpfxCentBins);
+      // resonances to exclude
+      const Int_t tmpNresonances = 1;
+      TString tmpResArr[tmpNresonances] = {"xxx"};
       task->SetMCResonanceArray(tmpNresonances,tmpResArr);
     }
      
@@ -567,3 +738,70 @@ void SetDefaults(AliAnalysisTaskEbyeIterPID *defaultTask)
   defaultTask->SetSystVz(0);
   
 }
+// ____________________________________________________________________________________________
+void ReadLookUpTableOfFirstMoments(TTree *tree, Int_t parType, Float_t pArr[],Float_t centArr[],Float_t etaArr[],Float_t ****FirstMomArr,const Int_t mombins, const Int_t centbins, const Int_t etabins)
+{
+      
+  TH1D *h=NULL, *h1=NULL;
+  for (Int_t imom=0; imom<mombins; imom++){
+      for (Int_t icent=0; icent<centbins; icent++){
+          for (Int_t ieta=0; ieta<etabins; ieta++){
+              
+              tree->Draw(Form("momentPos.fElements[%d]-momentNeg.fElements[%d]",parType,parType),Form("abs(etaUp-%f)<0.01&&abs(pDown-%f)<0.01&&abs(centDown-%f)<0.01",etaArr[ieta],pArr[imom],centArr[icent]),"goff");
+              h= (TH1D*)tree->GetHistogram()->Clone(); 
+              FirstMomArr[0][imom][icent][ieta] = h->GetMean();
+              h-> SetName("Res");
+              delete h;
+              
+              tree->Draw(Form("noResmomentPos.fElements[%d]-noResmomentNeg.fElements[%d]",parType,parType),Form("abs(etaUp-%f)<0.01&&abs(pDown-%f)<0.01&&abs(centDown-%f)<0.01",etaArr[ieta],pArr[imom],centArr[icent]),"goff");
+              h1= (TH1D*)tree->GetHistogram()->Clone(); 
+              h1-> SetName("noRes");
+              FirstMomArr[1][imom][icent][ieta] = h1->GetMean();
+              delete h1;
+          }
+      }
+  }
+}
+//  ____________________________________________________________________________________________
+Float_t**** CreateArrray(const Int_t nResMode,const Int_t mombins, const Int_t centbins, const Int_t etabins)
+{
+    
+    Float_t ****array = new Float_t ***[nResMode];
+    for (Int_t iresType=0; iresType<nResMode; iresType++){
+        array[iresType] = new Float_t**[mombins];
+          for (Int_t imom=0; imom<mombins; imom++){
+            array[iresType][imom] = new Float_t*[centbins];
+               for (Int_t icent=0; icent<centbins; icent++){
+                array[iresType][imom][icent] = new Float_t[etabins];
+                   for (Int_t ieta=0; ieta<etabins; ieta++){
+                       array[iresType][imom][icent][ieta] = 0.;
+                   }
+               }
+          }
+    }
+    return array;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
