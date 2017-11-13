@@ -447,14 +447,23 @@ public:
   void SetDefault(AliFemtoConfigObject &&default_mapobj);
 #endif
 
-/// Print warning that multiple
+  /// Print warning that multiple objects remain in this map or
+  /// array. This is useful for ensuring all fields are used after
+  /// "popping" all expected key-value pairs.
   void WarnOfRemainingItems(std::ostream& out=std::cerr) const;
 
   // ========================
   //     TObject Methods
   // ========================
 
+  /// Maps values of ConfigObjects to an unsigned integer.
+  /// If obj1 == obj2, then obj1.Hash() == obj2.Hash().
+  /// No particular algorithm is used std::hash, and there is no
+  /// guarantee that the same object will yield the same hash between
+  /// different versions of AliPhysics.
   virtual ULong_t Hash() const;
+
+  /// (static) title of "Configuration Object"
   virtual const char* GetTitle() const { return "Configuration Object"; }
 
   /// Called by merging actions like `hadd`

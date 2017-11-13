@@ -24,6 +24,11 @@ public:
   /// each bin added
   AliFemtoKtBinnedCorrFunc(const TString& name, AliFemtoCorrFctn*);
 
+  /// Destructor
+  ///
+  /// Deletes the prototype correlation function 
+  ///
+  virtual ~AliFemtoKtBinnedCorrFunc();
 
   /// Add a k_{T} bin to the correlation function
   ///
