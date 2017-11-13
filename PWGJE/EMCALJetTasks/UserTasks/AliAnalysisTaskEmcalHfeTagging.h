@@ -21,6 +21,7 @@ class AliCFManager;
 class AliEventCuts;
 class AliMultiEventInputHandler;
 class AliAODMCHeader;
+class AliAnalysisUtils;
 
 #include "AliAnalysisTaskEmcalJet.h"
 
@@ -96,12 +97,15 @@ protected:
     Bool_t                              Run();
     Bool_t                              FillHistograms();
     
-    void                                GetNumberOfElectrons(AliEmcalJet *jet,Int_t jetContNb, Int_t nMother, Double_t listMother[],  Int_t &nIncElec,  Int_t &nPhotElec);
-    void                                GetNumberOfTrueElectrons(AliEmcalJet *jet,Int_t jetContNb, Int_t nMother, Double_t listMother[], Int_t &nTrueElec,  Int_t &nTrueHFElec);
+    void                                GetNumberOfElectrons(AliEmcalJet *jet,Int_t jetContNb, Int_t nMother, Double_t listMother[],  Int_t &nIncElec,  Int_t &nPhotElec, Double_t &pElec, Double_t &ptElec, Bool_t &hasElec);
+    void                                GetNumberOfTrueElectrons(AliEmcalJet *jet,Int_t jetContNb, Int_t nMother, Double_t listMother[], Int_t &nTrueElec, Int_t &nTrueHFElec);
+    void                                GetWeightAndDecay(AliAODMCParticle *particle, Int_t &decay, Double_t &weight);
     Int_t                               GetNumberOfPairs(AliAODTrack *track,const AliVVertex *pVtx, Int_t nMother, Double_t listMother[]);
     Bool_t                              IsFromHFdecay(AliAODMCParticle *particle);
     Bool_t                              IsFromLMdecay(AliAODMCParticle *particle);
     Bool_t                              IsPrimary(AliAODMCParticle *particle);
+    Double_t                            GetPi0weight(Double_t mcPi0pT) const;
+    Double_t                            GetEtaweight(Double_t mcEtapT) const;
     Bool_t                              InclElecTrackCuts(const AliVVertex *pVtx,AliAODTrack *ietrack, Int_t nMother, Double_t listMother[]);
     Bool_t                              PhotElecTrackCuts(const AliVVertex *pVtx,AliAODTrack *aetrack, Int_t nMother, Double_t listMother[]);
     Float_t                             GetJetMass(AliEmcalJet *jet,Int_t jetContNb);
@@ -141,7 +145,7 @@ protected:
     JetShapeType                        fJetShapeType;               // jet type to be used
     JetShapeSub                         fJetShapeSub;                // jet subtraction to be used
     JetSelectionType                    fJetSelection;               // Jet selection: inclusive/recoil jet
-    Float_t                             fShapesVar[19];                  // jet shapes used for the tagging
+    Float_t                             fShapesVar[21];                  // jet shapes used for the tagging
     Float_t                             fPtThreshold;
     Float_t                             fRMatching;
     Int_t                               fSelectedShapes;                //chose set of shapes
@@ -186,18 +190,23 @@ protected:
     TH2F                                *fnTPCnocut;
     TH2F                                *fnTOFnocut;
     TH2F                                *fnTPCcut;
+    TH2F                                *fnTPCTrueParticles[15];
     TH2F                                *fnULSmLSpairsPerElectron;
     TH2F                                *fInvmassLS;
     TH2F                                *fInvmassULS;
-    TH1I                                *fnPartPerJet;
+    TH1F                                *fnPartPerJet;
     TH1F                                *fnElecOverPartPerJet;
-    TH1I                                *fnInclElecPerJet;
-    TH1I                                *fnPhotElecPerJet;
-    TH1I                                *fnIncSubPhotElecPerJet;
-    TH1I                                *fnTrueElecPerJet;
-    TH1I                                *fnTrueHFElecPerJet;
+    TH1F                                *fnInclElecPerJet;
+    TH1F                                *fnPhotElecPerJet;
+    TH1F                                *fnIncSubPhotElecPerJet;
+    TH1F                                *fnTrueElecPerJet;
+    TH1F                                *fnTrueHFElecPerJet;
+    TH1F                                *fnTruePElecPerJet;
     TH2F                                *fPi0Pt;
     TH2F                                *fEtaPt;
+    TH1F                                *fUlsLsElecPt;
+    TH1F                                *fTotElecPt;
+    TH2F                                *fPtP;
     
     TTree                               *fTreeObservableTagging;  // Tree with tagging variables subtracted MC or true MC or raw
     
