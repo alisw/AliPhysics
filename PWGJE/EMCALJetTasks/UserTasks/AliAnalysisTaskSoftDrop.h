@@ -23,14 +23,15 @@ class AliAnalysisTaskSoftDrop : public AliAnalysisTaskEmcalJet {
   void                        UserCreateOutputObjects();
   void                        Terminate(Option_t *option);
 
+  static Float_t              SoftDropDeclustering(fastjet::PseudoJet jet, const Float_t zcut, const Float_t beta);
+
  protected:
   void                        ExecOnce();
   Bool_t                      FillHistograms()   ;
   Bool_t                      Run()              ;
   void                        CheckClusTrackMatching();
 
-  Int_t                       SoftDropDeepDeclustering(fastjet::PseudoJet jet, const Float_t inpt); 
-  Float_t                     SoftDropDeclustering(fastjet::PseudoJet jet, const Float_t zcut, const Float_t beta);
+  void                        SoftDropDeepDeclustering(fastjet::PseudoJet jet, const Float_t inpt); 
 
   // General histograms
   TH1                       **fHistTracksPt;            //!Track pt spectrum

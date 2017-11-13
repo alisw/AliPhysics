@@ -243,6 +243,7 @@
 #pragma link C++ class EmcalTriggerJets::AliAnalysisTaskEmcalJetSubstructureTree+;
 #pragma link C++ class AliAnalysisTaskJetSubstructure+;
 #pragma link C++ class AliAnalysisTaskSoftDrop+;
+#pragma link C++ class AliAnalysisTaskSoftDropResponse+;
 #pragma link C++ class AliAnalysisTaskEmcalSubjet+;
 #endif
 #endif
