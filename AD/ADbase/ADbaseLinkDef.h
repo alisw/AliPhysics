@@ -15,5 +15,6 @@
 #pragma link C++ class  AliADRawStream+;
 #pragma link C++ class  AliADLogicalSignal+;
 //#pragma link C++ class  AliADMisAligner+;
+#pragma link C++ class  AliADChargeEqualization+;
 
 #endif

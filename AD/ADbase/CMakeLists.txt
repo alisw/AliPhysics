@@ -38,7 +38,8 @@ set(SRCS
     AliADLogicalSignal.cxx
     AliADPreprocessor.cxx
     AliADRawStream.cxx
-    AliADSDigit.cxx  
+    AliADSDigit.cxx
+    AliADChargeEqualization.cxx
    )
 
 # Headers from sources
