@@ -57,6 +57,7 @@ public:
   void    SetCentEstimator(TString centEstim)         {this->sCentEstimator     =    centEstim;}
   void    SetHarmonic(Float_t harmonic)               {this->fHarmonic          =     harmonic;}
   void    SetApplyNUAinEP(Bool_t bApplyNUAEP)         {this->bApplyNUAforEP     =  bApplyNUAEP;}
+  void    SetSourceFileNUA(TString sfilenua)          {this->sFileNUA           =     sfilenua;}
 
 
 
@@ -75,7 +76,7 @@ private:
   void OpenInfoCalbration(Int_t  run);
   void GetV0QvectAndMult(const AliAODVZERO *aodV0,Double_t& Qxan,Double_t& Qyan,Double_t& sumMa,Double_t& Qxcn,Double_t& Qycn,Double_t& sumMc);
   void DefineHistograms();
-  void GetNUACorrectionHist(Int_t run, Float_t cent);
+  void GetNUACorrectionHist(Int_t run, TString sfileNUA);
   void GetZDCCorrectionHist(Int_t run);
 
   void InitializeRunArray(TString sPeriod);
@@ -104,7 +105,7 @@ private:
   TString                   sDataSet;         // Dataset: 2010, 2011, or 2015.
   TString               sAnalysisSet;         // Values: recenter1,recenter2,analysis1
   TString             sCentEstimator;         // Centrality Estimator
-
+  TString                   sFileNUA;         // NUA source file.
 
   Int_t                  runNums[90];         //!  array of runnumbers
   Int_t                     fRunFlag;         //!  number of total run
@@ -151,8 +152,6 @@ private:
   TH2F        *fHV0CEventPlaneVsCent;   //!
   TH2F        *fHTPCEventPlaneVsCent;   //!
 
-  TH3D        *fHCorrectNUApos; //!
-  TH3D        *fHCorrectNUAneg; //!
 
   TH2F   *fHEnergyZNCvsCent;    //!
   TH2F   *fHEnergyZNAvsCent;    //!
@@ -197,7 +196,8 @@ private:
   TProfile2D      *fV0MultChVsRun;   //!
 
   TH1F           *fEventStatvsRun;   //!
-  TH1D        *fEtaBinFinderForQA;   //!
+  TH1F        *fEtaBinFinderForQA;   //!
+  TH1F        *fVzBinFinderForNUA;   //!
 
 
 
@@ -205,6 +205,10 @@ private:
 
 
   //  [ Arrays of Histrograms here: ]
+  TH3D        *fHCorrectNUApos[4]; //! 4 centrality bin
+  TH3D        *fHCorrectNUAneg[4]; //! 4 centrality bin
+
+
   TH3F         *fHist3DEtaPhiVz_Pos_Run[4][90];  //! 4 centrality bin 90 Bins for Run. NUA
   TH3F         *fHist3DEtaPhiVz_Neg_Run[4][90];  //! 4 centrality bin 90 Bins for Run. NUA
 
