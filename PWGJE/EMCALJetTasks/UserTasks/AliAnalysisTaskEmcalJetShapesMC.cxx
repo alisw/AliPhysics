@@ -299,10 +299,10 @@ AliAnalysisTaskEmcalJetShapesMC::~AliAnalysisTaskEmcalJetShapesMC()
 
 
   //log(1/theta),log(z*theta),jetpT,algo// 
-   const Int_t dimSpec   = 4;
-   const Int_t nBinsSpec[4]     = {50,50,20,3};
-   const Double_t lowBinSpec[4] = {0.0,-10,  0,0};
-   const Double_t hiBinSpec[4]  = {5.0,  0,200,3};
+   const Int_t dimSpec   = 5;
+   const Int_t nBinsSpec[5]     = {50,50,20,3,20};
+   const Double_t lowBinSpec[5] = {0.0,-10,  0,0,0};
+   const Double_t hiBinSpec[5]  = {5.0,  0,200,3,200};
    fHLundIterative = new THnSparseF("fHLundIterative",
                    "LundIterativePlot [log(1/theta),log(z*theta),pTjet,algo]",
                    dimSpec,nBinsSpec,lowBinSpec,hiBinSpec);
@@ -310,10 +310,10 @@ AliAnalysisTaskEmcalJetShapesMC::~AliAnalysisTaskEmcalJetShapesMC()
 
   if(fAdditionalTracks>0){
   //log(1/theta),log(z*theta),jetpT of added tracks
-   const Int_t dimSpecb   = 3;
-   const Int_t nBinsSpecb[3]     = {50,50,20};
-   const Double_t lowBinSpecb[3] = {0.0,-10,  0};
-   const Double_t hiBinSpecb[3]  = {5.0,  0,200};
+   const Int_t dimSpecb   = 4;
+   const Int_t nBinsSpecb[4]     = {50,50,20,20};
+   const Double_t lowBinSpecb[4] = {0.0,-10,  0,0};
+   const Double_t hiBinSpecb[4]  = {5.0,  0,200,200};
    fHLundIterativeInject = new THnSparseF("fHLundIterativeInject",
                    "LundIterativePlotInject [log(1/theta),log(z*theta),pTjet,algo]",
                    dimSpecb,nBinsSpecb,lowBinSpecb,hiBinSpecb);
@@ -1449,7 +1449,7 @@ void AliAnalysisTaskEmcalJetShapesMC::RecursiveParents(AliEmcalJet *fJet,AliJetC
     double z=j2.perp()/(j1.perp()+j2.perp());
     double y =log(1.0/delta_R);
     double lnpt_rel=log(z*delta_R);
-    Double_t LundEntries[4] = {y,lnpt_rel,fOutputJets[0].perp(),xflagalgo};  
+    Double_t LundEntries[5] = {y,lnpt_rel,fOutputJets[0].perp(),xflagalgo,fJet->Pt()};  
     fHLundIterative->Fill(LundEntries);
     jj=j1;} 
 
@@ -1459,7 +1459,7 @@ void AliAnalysisTaskEmcalJetShapesMC::RecursiveParents(AliEmcalJet *fJet,AliJetC
      cout<<"angle"<<pptheta<<endl;
      yinject =log(1.0/angleinject);
      lnpt_relinject=log(zinject*angleinject);
-     Double_t LundEntriesInject[3] = {yinject,lnpt_relinject,fOutputJets[0].perp()};  
+     Double_t LundEntriesInject[4] = {yinject,lnpt_relinject,fOutputJets[0].perp(),fJet->Pt()};  
      fHLundIterativeInject->Fill(LundEntriesInject);}
 
 
