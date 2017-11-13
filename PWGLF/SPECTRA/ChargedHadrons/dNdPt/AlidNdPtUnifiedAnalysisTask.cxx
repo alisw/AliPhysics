@@ -71,10 +71,11 @@ AlidNdPtUnifiedAnalysisTask::AlidNdPtUnifiedAnalysisTask(const char *name) : Ali
   fHistMultMCRecEvent(0),		//rename fHistMCRecMultEvent
   fHistMCGenINEL0Event(0),
   fHistMCRecINEL0Event(0),
+  fHistMCTrigINEL0Event(0),
   fHistMultCorrelation(0),		//rename fHistMCMultCorrelationEvent
   fHistMCResponseMat(0),
   fHistMCTrigEvent(0),
-  fHistMCTrigINEL0Event(0),
+
   //Track-Histograms
   fHistTrack(0),
   fHistTrackCharge(0),		//rename fHistChargeTrack?
@@ -945,9 +946,11 @@ Double_t AlidNdPtUnifiedAnalysisTask::GetEventMultCent(AliVEvent *event)
   }
   else
   {
+  	//printf("--------------- Using V0M -----------------\n");
     Float_t centralityF = -1;
     AliMultSelection *MultSelection = (AliMultSelection*) fEvent->FindListObject("MultSelection");
     if ( MultSelection ){
+    	//printf("--------------- There is MultSelection -----------------\n");
       centralityF = MultSelection->GetMultiplicityPercentile("V0M"/*, lEmbedEventSelection = kFALSE*/);
       if(centralityF>100) return 999;
       return centralityF;
