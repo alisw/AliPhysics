@@ -167,7 +167,7 @@ void AliJFFlucTask::UserCreateOutputObjects()
 	fFFlucAna->SetIsSCptdep( IsSCptdep ) ;
 	fFFlucAna->SetSCwithQC( IsSCwithQC );
 	fFFlucAna->SetEbEWeight( IsEbEWeighted );
-	fFFlucAna->SetQCEtaCut( fQC_eta_min, fQC_eta_max );
+	fFFlucAna->SetQCEtaCut( fQC_eta_min, fQC_eta_max, 0.5 );
 
 //	fFFlucAna->SetSCwithFineCentbin( IsSCwithFineCentBin );
 	// setting histos for phi modulation

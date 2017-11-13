@@ -136,8 +136,9 @@ AliJFFlucAnalysis::AliJFFlucAnalysis(const char *name)
 	IsSCptdep = kFALSE;
 	fEta_min = 0;
 	fEta_max = 0;
-	fQC_eta_cut_min = -1.0;//-0.8; // default setting
-	fQC_eta_cut_max = 1.0;//0.8; // default setting
+	fQC_eta_cut_min = -0.8; // default setting
+	fQC_eta_cut_max = 0.8; // default setting
+	fQC_eta_gap_half = 0.5;
 	fImpactParameter = -1;
 
 	for(int icent=0; icent<NCent; icent++){
@@ -222,7 +223,7 @@ void AliJFFlucAnalysis::UserCreateOutputObjects(){
 
 	fHistCentBin .Set("CentBin","CentBin","Cent:%d",AliJBin::kSingle).SetBin(fNCent);
 	fVertexBin .Set("Vtx","Vtx","Vtx:%d", AliJBin::kSingle).SetBin(3);
-	fCorrBin .Set("C", "C","C:%d", AliJBin::kSingle).SetBin(19);
+	fCorrBin .Set("C", "C","C:%d", AliJBin::kSingle).SetBin(22);
 
 	fBin_Nptbins .Set("PtBin","PtBin", "Pt:%d", AliJBin::kSingle).SetBin(N_ptbins);
 
@@ -453,7 +454,7 @@ void AliJFFlucAnalysis::UserExec(Option_t *) {
 			fh_vn[ih][ik][fCBin]->Fill( vn2[ih][ik] , ebe_2p_weight ); // Fill hvn2
 			for( int ihh=2; ihh<kNH; ihh++){
 				for(int ikk=1; ikk<nKL; ikk++){
-					vn2_vn2[ih][ik][ihh][ikk] = (corr[ih][ik]*corr[ihh][ikk]).Re();//(TComplex::Power( QnA[ih]*QnB_star[ih],ik)*TComplex::Power(QnA[ihh]*QnB_star[ihh],ikk) ).Re();
+					vn2_vn2[ih][ik][ihh][ikk] = (corr[ih][ik]*corr[ihh][ikk]).Re();
 					fh_vn_vn[ih][ik][ihh][ikk][fCBin]->Fill( vn2_vn2[ih][ik][ihh][ikk], ebe_4p_weight ) ; // Fill hvn_vn
 				}
 			}
@@ -463,22 +464,27 @@ void AliJFFlucAnalysis::UserExec(Option_t *) {
 
 	//************************************************************************
 
-	TComplex V4V2starv2_2 =	QnA[4] * TComplex::Power(QnB_star[2],2) * corr[2][1];//vn[2][1]
-	TComplex V4V2starv2_4 = QnA[4] * TComplex::Power( QnB_star[2], 2) * corr[2][2];//vn2[2][2]
-	TComplex V4V2star = QnA[4] * TComplex::Power( QnB_star[2], 2 );
+	TComplex V4V2star_2 = QnA[4] * QnB_star[2] * QnB_star[2];
+	TComplex V4V2starv2_2 =	V4V2star_2 * corr[2][1];//vn[2][1]
+	TComplex V4V2starv2_4 = V4V2star_2 * corr[2][2];//vn2[2][2]
 	TComplex V5V2starV3starv2_2 = QnA[5] * QnB_star[2] * QnB_star[3] * corr[2][1]; //vn2[2][1]
 	TComplex V5V2starV3star = QnA[5] * QnB_star[2] * QnB_star[3] ;
-	TComplex V5V2starV3startv3_2 = QnA[5] * QnB_star[2] * QnB_star[3] * corr[3][1]; //vn2[3][1]
-	TComplex V6V2star_3 = QnA[6] * TComplex::Power( QnB_star[2] , 3) ;
-	TComplex V6V3star_2 = QnA[6] * TComplex::Power( QnB_star[3], 2) ;
-	TComplex V7V2star_2V3star = QnA[7] * TComplex::Power( QnB_star[2] , 2) * QnB_star[3];
-	TComplex V8V2starV3star_2 = QnA[8] * QnB_star[2] * TComplex::Power(QnB_star[3],2);
+	TComplex V5V2starV3startv3_2 = V5V2starV3star * corr[3][1]; //vn2[3][1]
+	TComplex V6V2star_3 = QnA[6] * QnB_star[2] * QnB_star[2] * QnB_star[2];
+	TComplex V6V3star_2 = QnA[6] * QnB_star[3] * QnB_star[3];
+	TComplex V7V2star_2V3star = QnA[7] * QnB_star[2] * QnB_star[2] * QnB_star[3];
+	TComplex V8V2starV3star_2 = QnA[8] * QnB_star[2] * QnB_star[3] * QnB_star[3];
 	TComplex V8V2star_4 = QnA[8] * TComplex::Power(QnB_star[2],4);
 
 	// New correlators (Modified by You's correction term for self-correlations)
-	TComplex nV4V2star = (QnA[4] * QnB_star[2] * QnB_star[2]) -( 1./(NSubTracks[1]-1) * QnA[4] * QnB_star[4] );
-	TComplex nV5V2starV3star = (QnA[5] * QnB_star[2] * QnB_star[3])- (1/(NSubTracks[1]-1) * QnA[5] * QnB_star[5]);
-	TComplex nV6V3star_2 = (QnA[6] * QnB_star[3] * QnB_star[3]) - (1/(NSubTracks[1]-1) * QnA[6] * QnB_star[6] );
+	double nf = 1.0/(NSubTracks[1]-1.0);
+	double ef = nf/(NSubTracks[1]-2.0);
+	TComplex nV4V2star_2 = nf*( V4V2star_2*NSubTracks[1] - QnA[4]*QnB_star[4] );
+	TComplex nV5V2starV3star = nf*( V5V2starV3star*NSubTracks[1] - QnA[5]*QnB_star[5] );
+	TComplex nV6V2star_3 = QnA[6]*( ef*QnB_star[2]*QnB_star[2]*QnB_star[2]*NSubTracks[1]*NSubTracks[1] - 3.0*ef*QnB_star[2]*QnB_star[4]*NSubTracks[1] + 2.0*ef*QnB_star[6] );
+	TComplex nV6V3star_2 = nf*(V6V3star_2*NSubTracks[1] - QnA[6]*QnB_star[6]);
+	TComplex nV7V2star_2V3star = QnA[7]*( ef*QnB_star[2]*QnB_star[2]*QnB_star[3]*NSubTracks[1]*NSubTracks[1] - 2.0*ef*QnB_star[2]*QnB_star[5]*NSubTracks[1] - ef*QnB_star[3]*QnB_star[4]*NSubTracks[1] + 2.0*ef*QnB_star[7] );
+	TComplex nV8V2starV3star_2 = QnA[8]*( ef*QnB_star[2]*QnB_star[3]*QnB_star[3]*NSubTracks[1]*NSubTracks[1] - 2.0*ef*QnB_star[3]*QnB_star[5]*NSubTracks[1] - ef*QnB_star[2]*QnB_star[6]*NSubTracks[1] + 2.0*ef*QnB_star[8] );
 
 	// New correlators (Modifed by Ante's correction term for self-correlations for SC result)
 	TComplex nV4V4V2V2 = (QnA[4]*QnB_star[4]*QnA[2]*QnB_star[2]) - ((1/(NSubTracks[1]-1) * QnB_star[6] * QnA[4] *QnA[2] ))
@@ -495,7 +501,7 @@ void AliJFFlucAnalysis::UserExec(Option_t *) {
 
 	fh_correlator[0][fCBin]->Fill( V4V2starv2_2.Re() );
 	fh_correlator[1][fCBin]->Fill( V4V2starv2_4.Re() );
-	fh_correlator[2][fCBin]->Fill( V4V2star.Re() ) ; // added 2015.3.18
+	fh_correlator[2][fCBin]->Fill( V4V2star_2.Re() ) ; // added 2015.3.18
 	fh_correlator[3][fCBin]->Fill( V5V2starV3starv2_2.Re() );
 	fh_correlator[4][fCBin]->Fill( V5V2starV3star.Re() );
 	fh_correlator[5][fCBin]->Fill( V5V2starV3startv3_2.Re() );
@@ -503,7 +509,7 @@ void AliJFFlucAnalysis::UserExec(Option_t *) {
 	fh_correlator[7][fCBin]->Fill( V6V3star_2.Re() );
 	fh_correlator[8][fCBin]->Fill( V7V2star_2V3star.Re() ) ;
 
-	fh_correlator[9][fCBin]->Fill( nV4V2star.Re() ); // added 2015.6.10
+	fh_correlator[9][fCBin]->Fill( nV4V2star_2.Re() ); // added 2015.6.10
 	fh_correlator[10][fCBin]->Fill( nV5V2starV3star.Re() );
 	fh_correlator[11][fCBin]->Fill( nV6V3star_2.Re() ) ;
 
@@ -518,6 +524,9 @@ void AliJFFlucAnalysis::UserExec(Option_t *) {
 	//higher order correlators, added 2017.8.10
 	fh_correlator[17][fCBin]->Fill( V8V2starV3star_2.Re() );
 	fh_correlator[18][fCBin]->Fill( V8V2star_4.Re() );
+	fh_correlator[19][fCBin]->Fill( nV6V2star_3.Re() );
+	fh_correlator[20][fCBin]->Fill( nV7V2star_2V3star.Re() );
+	fh_correlator[21][fCBin]->Fill( nV8V2starV3star_2.Re() );
 
 	CalculateQvectorsQC();
 
@@ -904,7 +913,7 @@ void AliJFFlucAnalysis::CalculateQvectorsQC(){
 			//for(int ik=0; ik<nKL; ik++){
 			TComplex q = TComplex( TMath::Cos(ih*phi), TMath::Sin(ih*phi) );
 			QvectorQC[ih] += q;
-			if( TMath::Abs(eta) > 0.4 ){  // this is for normalized SC ( denominator needs an eta gap )
+			if( TMath::Abs(eta) > fQC_eta_gap_half ){  // this is for normalized SC ( denominator needs an eta gap )
 				int isub = 0;
 				if( eta > 0 )
 					isub = 1;
