@@ -50,6 +50,7 @@ fTuneKalman(0),
 fCrystalBallTails(),
 fCrystalBall(NULL),
 fRecoCharge(0.),
+fRAbs(-1.),
 fRecoTrack()
 //,
 //fRecoTrackList()
@@ -76,6 +77,7 @@ fTuneKalman(kFALSE),
 fCrystalBallTails(),
 fCrystalBall(NULL),
 fRecoCharge(0.),
+fRAbs(-1.),
 fRecoTrack()
 //,
 //fRecoTrackList()
@@ -243,7 +245,9 @@ void AliMuonTrackSmearing::ComputeRecoTrack ( Double_t pGen, Double_t etaGen,
     slopeXAbs = slopeXMCS + 2./TMath::Sqrt(3.) * (slopeXMCS - slopeX) * zB / (zB - 0.9) * 4.15 / 5.05;
     slopeYAbs = slopeYMCS + 2./TMath::Sqrt(3.) * (slopeYMCS - slopeY) * zB / (zB - 0.9) * 4.15 / 5.05;
   }
-  Double_t thetaAbs = TMath::ATan(TMath::Sqrt(slopeXAbs*slopeXAbs + slopeYAbs*slopeYAbs))*TMath::RadToDeg();
+  Double_t slopeRAbs = TMath::Sqrt(slopeXAbs*slopeXAbs + slopeYAbs*slopeYAbs);
+  Double_t thetaAbs = TMath::ATan(slopeRAbs) * TMath::RadToDeg();
+  fRAbs = slopeRAbs * 505.;
 
   // energy loss according to the "real" path in the absorber (should be done in 3D...)
   if ((theta > 2. && thetaAbs < 2.) || (theta > 3. && thetaAbs < 3.)) {
@@ -277,9 +281,9 @@ void AliMuonTrackSmearing::ComputeRecoTrack ( Double_t pGen, Double_t etaGen,
 
   // energy loss in the absorber
   Double_t dp = -1.;
-  while (dp < 0) dp = gRandom->Landau(eLoss+0.22278298*0.25*fwhmELoss,0.25*fwhmELoss);
+  while (dp < 0.) dp = gRandom->Landau(eLoss+0.22278298*0.25*fwhmELoss,0.25*fwhmELoss);
   Double_t pAbsEnd = pGen - dp;
-//  if (pAbsEnd < 4. ) return NULL;
+  if (pAbsEnd < 0.5) pAbsEnd = 0.5; // below ~0.5 GeV/c the track should not even exist
 
   // Branson plane according to thetaAbs
   Double_t zBRec;
@@ -434,13 +438,14 @@ Double_t AliMuonTrackSmearing::GenRndGaus ( Double_t mean, Double_t sigma ) cons
 //}
 
 //________________________________________________________________________
-TLorentzVector AliMuonTrackSmearing::GetRecoTrack ( Double_t pGen, Double_t etaGen, Double_t phiGen, Double_t chargeGen, Double_t &recoCharge )
+TLorentzVector AliMuonTrackSmearing::GetRecoTrack ( Double_t pGen, Double_t etaGen, Double_t phiGen, Double_t chargeGen, Double_t &recoCharge, Double_t &rAbs )
 {
   /// Given the generated MC track parameters,
   /// returns the track with smeared parameters according to resolution
 
   ComputeRecoTrack(pGen,etaGen,phiGen,chargeGen);
   recoCharge = fRecoCharge;
+  rAbs = fRAbs;
   return fRecoTrack;
 }
 

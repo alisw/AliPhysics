@@ -37,7 +37,7 @@ public:
 
 //  AliVParticle* GetRecoTrack ( const AliVParticle* genParticle );
 //  AliVParticle* GetRecoTrack ( const AliVParticle* recoTrack, const AliMCEvent* mcEvent );
-  TLorentzVector GetRecoTrack ( Double_t pGen, Double_t etaGen, Double_t phiGen, Double_t chargeGen, Double_t &recoCharge );
+  TLorentzVector GetRecoTrack ( Double_t pGen, Double_t etaGen, Double_t phiGen, Double_t chargeGen, Double_t &recoCharge, Double_t &rAbs );
 
   virtual void Print ( Option_t* option = "" ) const;
 
@@ -98,6 +98,7 @@ private:
   std::vector<Double_t> fCrystalBallTails; ///< Tail parameters of Crystal ball functions
   TF1* fCrystalBall; //!<! Crystal Ball function
   Double_t fRecoCharge; //!<! Reconstructed track charge
+  Double_t fRAbs; //!<! Reconstructed track transverse position at the end of the absorber (cm)
   TLorentzVector fRecoTrack; //!<! Reconstructed track from cluster resolution
 //  std::vector<AliVParticle*> fRecoTrackList; //!<! Bookkeeping of produced tracks
 
