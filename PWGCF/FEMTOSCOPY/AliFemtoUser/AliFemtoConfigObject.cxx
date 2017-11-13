@@ -541,6 +541,7 @@ AliFemtoConfigObject::SetDefault(const AliFemtoConfigObject &d)
 #define NUM_PATTERN "(?:" FLT_PATTERN "|" INT_PATTERN ")"
 #define STR_PATTERN "'[^']*'"
 #define RANGE_PATTERN "(" NUM_PATTERN "):(" NUM_PATTERN ")"
+#define BOOL_PATTERN "(?:true|false)"
 // numbers separated by colons
 #define MULTIRANGE_PATTERN NUM_PATTERN "(?:\\s*\\:\\s*" NUM_PATTERN  ")+"
 // group [1] is the contents between parens
@@ -577,6 +578,7 @@ static const std::regex
     NUM_RX(""),
     INT_RX(""),
     FLT_RX(""),
+    BOOL_RX(""),
     STR_RX(""),
     ID_RX(""),
     KEY_RX(""),
@@ -596,6 +598,7 @@ static const std::regex
     NUM_RX("^" NUM_PATTERN, std::regex_constants::icase),
     INT_RX("^" INT_PATTERN),
     FLT_RX("^(" FLT_PATTERN ")", std::regex_constants::icase),
+    BOOL_RX("^" BOOL_PATTERN),
     STR_RX("^" STR_PATTERN),
     ID_RX("^" IDENT_PATTERN),
     KEY_RX("^" KEY_PATTERN),
@@ -796,6 +799,10 @@ AliFemtoConfigObject::Parse(StringIter_t& it, const StringIter_t stop)
                   stop = std::stod(match[2].str());
     it = match[0].second;
     return AliFemtoConfigObject(start, stop);
+  }
+
+  else if (std::regex_search(it, stop, match, BOOL_RX)) {
+    return AliFemtoConfigObject(match[0].str() == "true");
   }
 
   else if (std::regex_search(it, stop, match, FLT_RX)) {
