@@ -11,7 +11,7 @@ class AliAnalysisTaskCMEV0;
  Bool_t bFBeffi = kFALSE,  TString sEfficiencyFB = "alien:///alice/cern.ch/user/m/mhaque/calib_files/FB768_Hijing_LHC15o.root",
  Bool_t bApplyNUA = kFALSE, TString sNUAFile="alien:///alice/cern.ch/user/m/mhaque/gain/Run2015o_Pass1_FB768_pT0p2_5GeV_NUA_Wgt_PosNeg_Run.root", 
  Bool_t bZDCGainEq= kFALSE, TString sZDCFile="alien:///alice/cern.ch/user/m/mhaque/gain/Run2015o_pass1_ZDNP_WgtTotEn_VsCentRun.root", 
- Bool_t bFillTPCQn=kFALSE, Bool_t bFillNUAhist= kFALSE, Float_t fSetHarmonic = 2.0,  Bool_t bUseNUAinEP = kFALSE,
+ Bool_t bFillTPCQn=kFALSE, Bool_t bFillNUAhist= kFALSE, Float_t fSetHarmonic = 2.0,  Bool_t bUseNUAinEP = kFALSE, TString sNUAtype="NewR",
  const char *suffix = "")
 {
 
@@ -194,7 +194,7 @@ class AliAnalysisTaskCMEV0;
   taskQC_prot->SetFillNUAHist(bFillNUAhist);
   taskQC_prot->SetApplyZDCCorr(bZDCGainEq);
   taskQC_prot->SetApplyNUAinEP(bUseNUAinEP);
-
+  taskQC_prot->SetSourceFileNUA(sNUAtype);
 
   if(bFBeffi){
     TFile* FileFBeffi  = TFile::Open(sEfficiencyFB,"READ");
@@ -209,20 +209,20 @@ class AliAnalysisTaskCMEV0;
       //exit(1);
     }
   }
-  if(bApplyNUA){
-     TFile* fNUAFile = TFile::Open(sNUAFile,"READ");
-     if(!fNUAFile) {
-       printf("\n\n *** ERROR: NUA wgt file not found! **EXIT** \n\n");
-       //exit(1);
-     } 
-     TList* fListNUA = dynamic_cast<TList*>(fNUAFile->FindObjectAny("fNUA_ChPosChNeg"));
-     if(fListNUA){
-       taskQC_prot->SetInputListNUA(fListNUA);
-     }
-     else{
-       printf("\n\n *** ERROR: NUA wgt List not found! **EXIT** \n\n");
-       //return NULL;
-     }
+  if(bApplyNUA && sNUAtype=="NewR") {
+    TFile* fNUAFile = TFile::Open(sNUAFile,"READ");
+    if(!fNUAFile) {
+      printf("\n\n *** ERROR: NUA wgt file not found! **EXIT** \n\n");
+      //exit(1);
+    } 
+    TList* fListNUA = dynamic_cast<TList*>(fNUAFile->FindObjectAny("fNUA_ChPosChNeg"));
+    if(fListNUA){
+      taskQC_prot->SetInputListNUA(fListNUA);
+    }
+    else{
+      printf("\n\n *** ERROR: NUA wgt List not found! **EXIT** \n\n");
+      //return NULL;
+    }
   }
 
   if(bZDCGainEq){
