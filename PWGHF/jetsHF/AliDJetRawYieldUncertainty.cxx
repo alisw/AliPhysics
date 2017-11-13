@@ -1359,11 +1359,18 @@ void AliDJetRawYieldUncertainty::FitReflDistr(Int_t nPtBins, TString inputfile, 
     }
   }
 
-  TCanvas *cy = new TCanvas(Form("%s_%s_fitCanv", fitType.Data(), inputfileNoExt.Data()), Form("%s_%s_fitCanv", fitType.Data(), inputfileNoExt.Data()));
+  TString cname;
+
+  cname = TString::Format("%s_%s_fitCanv", fitType.Data(), inputfileNoExt.Data());
+  TCanvas *cy = new TCanvas(cname, cname);
   cy->Divide(4,3);
-  TCanvas *cy2 = new TCanvas(Form("%s_%s_fitCanv2", fitType.Data(), inputfileNoExt.Data()), Form("%s_%s_fitCanv2", fitType.Data(), inputfileNoExt.Data()));
+
+  cname = TString::Format("%s_%s_fitCanv2", fitType.Data(), inputfileNoExt.Data());
+  TCanvas *cy2 = new TCanvas(cname, cname);
   cy2->Divide(4,3);
-  TCanvas *cyRatio = new TCanvas(Form("%s_%s_fitCanvRatio", fitType.Data(), inputfileNoExt.Data()), Form("%s_%s_fitCanvRatio", fitType.Data(), inputfileNoExt.Data()));
+
+  cname = TString::Format("%s_%s_fitCanvRatio", fitType.Data(), inputfileNoExt.Data());
+  TCanvas *cyRatio = new TCanvas(cname, cname);
   cyRatio->Divide(4,3);
 
   for (Int_t iBin = 0; iBin < nPtBins; iBin++) {
