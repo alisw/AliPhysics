@@ -45,8 +45,11 @@ public:
 	void SetIsSCptdep( Bool_t isSCptdep ){ IsSCptdep = isSCptdep; cout << "doing addtional loop to check SC pt dep = "<< IsSCptdep << endl;}
 	void SetSCwithQC(Bool_t isSCwithQC){ IsSCwithQC = isSCwithQC; cout << "doing additinal loop for SC results with QC method = " << IsSCwithQC << endl;}
 	void SetEbEWeight(Bool_t isEbEWeighted){ IsEbEWeighted = isEbEWeighted; cout << "use event weight = " << IsEbEWeighted << endl;}
-	void SetQCEtaCut( Double_t QC_eta_cut_min, Double_t QC_eta_cut_max){
-		fQC_eta_cut_min=QC_eta_cut_min; fQC_eta_cut_max=QC_eta_cut_max; cout<<"setting eta range for QC" << fQC_eta_cut_min << "~" << fQC_eta_cut_max << endl;
+	void SetQCEtaCut( Double_t QC_eta_cut_min, Double_t QC_eta_cut_max, Double_t QC_eta_gap_half){
+		fQC_eta_cut_min = QC_eta_cut_min;
+		fQC_eta_cut_max = QC_eta_cut_max;
+		fQC_eta_gap_half = QC_eta_gap_half;
+		cout<<"setting eta range for QC" << fQC_eta_cut_min << "~" << fQC_eta_cut_max << endl;
 	}
 
 
@@ -109,6 +112,7 @@ private:
 
 	Double_t fQC_eta_cut_min;
 	Double_t fQC_eta_cut_max;
+	Double_t fQC_eta_gap_half;
 
 	TComplex QvectorQC[kNH];
 	TComplex QvectorQCeta10[kNH][2]; // ksub
