@@ -314,18 +314,19 @@ void AliMuonTrackSmearing::ComputeRecoTrack ( Double_t pGen, Double_t etaGen,
   }
 
   // compute reconstructed momentum at first cluster
+  Double_t sigmaThetaRes2 = SigmaThetaDevFromRes2();
+  Double_t sigmaThetaRes = TMath::Sqrt(sigmaThetaRes2);
+  Double_t mean = PToThetaDev(pAbsEnd) + sign * fNSigmaShift * sigmaThetaRes;
   Double_t pAbsEndRec = 0.;
   if ( fChosenFunc == kGaus ) {
-    Double_t sigmaThetaDev = TMath::Sqrt(SigmaThetaDevFromMCS2(pAbsEnd) + SigmaThetaDevFromRes2());
-    pAbsEndRec = ThetaDevToP(GenRndGaus(PToThetaDev(pAbsEnd),sigmaThetaDev));
+    Double_t sigmaThetaDev = TMath::Sqrt(SigmaThetaDevFromMCS2(pAbsEnd) + sigmaThetaRes2);
+    pAbsEndRec = ThetaDevToP(GenRndGaus(mean,sigmaThetaDev));
   } else {
-    Double_t thetaDevMCS = GenRndGaus(PToThetaDev(pAbsEnd),TMath::Sqrt(SigmaThetaDevFromMCS2(pAbsEnd)));
-    Double_t sigmaThetaRes = TMath::Sqrt(SigmaThetaDevFromRes2());
+    Double_t thetaDevMCS = GenRndGaus(mean,TMath::Sqrt(SigmaThetaDevFromMCS2(pAbsEnd)));
     if ( fChosenFunc == kBreitWigner ) {
       pAbsEndRec = ThetaDevToP(GenRndBreitWigner(thetaDevMCS, sigmaThetaRes, fSigmaTrkCut * sigmaThetaRes / fSigmayCh * fSigmaTrk));
     } else if ( fChosenFunc == kCrystalBall ) {
-      Double_t mean = thetaDevMCS + sign * fNSigmaShift * sigmaThetaRes;
-      pAbsEndRec = ThetaDevToP(GenRndCrystalBall(mean, sigmaThetaRes, fCrystalBallTails[4], fCrystalBallTails[5], fSigmaTrkCut * sigmaThetaRes / fSigmayCh * fSigmaTrk));
+      pAbsEndRec = ThetaDevToP(GenRndCrystalBall(thetaDevMCS, sigmaThetaRes, fCrystalBallTails[4], fCrystalBallTails[5], fSigmaTrkCut * sigmaThetaRes / fSigmayCh * fSigmaTrk));
     }
   }
   if (pAbsEndRec < 0.) {
