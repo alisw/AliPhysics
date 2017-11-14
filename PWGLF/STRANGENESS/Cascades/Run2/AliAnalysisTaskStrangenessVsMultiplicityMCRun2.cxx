@@ -4606,15 +4606,15 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
                 
                 //Check 14a: Negative track DCA to PV, weighted
                 ( lCascadeResult->GetCutDCANegToPVWeighted() < 0 ||
-                 (fTreeCascVarDCANegToPrimVtx/TMath::Sqrt(fTreeCascVarNegDCAPVSigmaX2*fTreeCascVarNegDCAPVSigmaX2 + fTreeCascVarNegDCAPVSigmaY2*fTreeCascVarNegDCAPVSigmaY2+1e-6)<lCascadeResult->GetCutDCANegToPVWeighted() )
+                 (fTreeCascVarDCANegToPrimVtx/TMath::Sqrt(fTreeCascVarNegDCAPVSigmaX2*fTreeCascVarNegDCAPVSigmaX2 + fTreeCascVarNegDCAPVSigmaY2*fTreeCascVarNegDCAPVSigmaY2+1e-6)>lCascadeResult->GetCutDCANegToPVWeighted() )
                  )&&
                 //Check 14a: Negative track DCA to PV, weighted
                 ( lCascadeResult->GetCutDCAPosToPVWeighted() < 0 ||
-                 (fTreeCascVarDCAPosToPrimVtx/TMath::Sqrt(fTreeCascVarPosDCAPVSigmaX2*fTreeCascVarPosDCAPVSigmaX2 + fTreeCascVarPosDCAPVSigmaY2*fTreeCascVarPosDCAPVSigmaY2+1e-6)<lCascadeResult->GetCutDCAPosToPVWeighted() )
+                 (fTreeCascVarDCAPosToPrimVtx/TMath::Sqrt(fTreeCascVarPosDCAPVSigmaX2*fTreeCascVarPosDCAPVSigmaX2 + fTreeCascVarPosDCAPVSigmaY2*fTreeCascVarPosDCAPVSigmaY2+1e-6)>lCascadeResult->GetCutDCAPosToPVWeighted() )
                  )&&
                 //Check 14a: Negative track DCA to PV, weighted
                 ( lCascadeResult->GetCutDCABachToPVWeighted() < 0 ||
-                 (fTreeCascVarDCABachToPrimVtx/TMath::Sqrt(fTreeCascVarBachDCAPVSigmaX2*fTreeCascVarBachDCAPVSigmaX2 + fTreeCascVarBachDCAPVSigmaY2*fTreeCascVarBachDCAPVSigmaY2+1e-6)<lCascadeResult->GetCutDCABachToPVWeighted() )
+                 (fTreeCascVarDCABachToPrimVtx/TMath::Sqrt(fTreeCascVarBachDCAPVSigmaX2*fTreeCascVarBachDCAPVSigmaX2 + fTreeCascVarBachDCAPVSigmaY2*fTreeCascVarBachDCAPVSigmaY2+1e-6)>lCascadeResult->GetCutDCABachToPVWeighted() )
                  )
                 )
             {
