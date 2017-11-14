@@ -107,31 +107,31 @@ AliAnalysisMuMuFlow::DefineHistogramCollection(const char* eventSelection,
 
   // Int_t nMCMinvBins = GetNbins(minvMin,minvMax,0.1);
   //Event shape : ThnSparses
-  const Int_t nDimThNS = 8;
-  const Int_t nDimThNS_SP = 6;
+  // const Int_t nDimThNS = 8;
+  // const Int_t nDimThNS_SP = 6;
   // //                   minv   pt dphi cos2dp q2 cent EPp  EPev
-  Int_t nBins[nDimThNS]={nMinvBins,200,200,500,500,200,100,100};
-  Double_t xMin[nDimThNS]={minvMin,0.,0.,-1.,0.,20.,-1.,-1.};
-  Double_t xMax[nDimThNS]={minvMax,12.,3.2,1.,10.,40.,1.,1.};
-  // //                   minv   pt SP SP corr cent
-  Int_t nBinsSP[nDimThNS_SP]={nMinvBins,200,500,500,100,300};
-  Double_t xMinSP[nDimThNS_SP]={minvMin,0.,0.,0.,20.};
-  Double_t xMaxSP[nDimThNS_SP]={minvMax,12.,10.,10.,40.};
+  // Int_t nBins[nDimThNS]={nMinvBins,200,200,500,500,200,100,100};
+  // Double_t xMin[nDimThNS]={minvMin,0.,0.,-1.,0.,20.,-1.,-1.};
+  // Double_t xMax[nDimThNS]={minvMax,12.,3.2,1.,10.,40.,1.,1.};
+  // // //                   minv   pt SP SP corr cent
+  // Int_t nBinsSP[nDimThNS_SP]={nMinvBins,200,500,500,100,300};
+  // Double_t xMinSP[nDimThNS_SP]={minvMin,0.,0.,0.,20.};
+  // Double_t xMaxSP[nDimThNS_SP]={minvMax,12.,10.,10.,40.};
 
-  if(fESE){
-    CreatePairTHnSparse(kHistoForData | kHistoForMCInput,eventSelection,triggerClassName,centrality,"ESE_SPD","#mu+#mu+ v2 distribution",nDimThNS,nBins,xMin,xMax);
-    // CreatePairTHnSparse(kHistoForData | kHistoForMCInput,eventSelection,triggerClassName,centrality,"ESE_V0A","#mu+#mu+ v2 distribution",nDimThNS,nBins,xMin,xMax);
+  // if(fESE){
+  //   CreatePairTHnSparse(kHistoForData | kHistoForMCInput,eventSelection,triggerClassName,centrality,"ESE_SPD","#mu+#mu+ v2 distribution",nDimThNS,nBins,xMin,xMax);
+  //   // CreatePairTHnSparse(kHistoForData | kHistoForMCInput,eventSelection,triggerClassName,centrality,"ESE_V0A","#mu+#mu+ v2 distribution",nDimThNS,nBins,xMin,xMax);
   
-    CreatePairTHnSparse(kHistoForData | kHistoForMCInput,eventSelection,triggerClassName,centrality,"ESE_SP_SPD","#mu+#mu+ v2 distribution",nDimThNS_SP,nBinsSP,xMinSP,xMaxSP);
-    // CreatePairTHnSparse(kHistoForData | kHistoForMCInput,eventSelection,triggerClassName,centrality,"ESE_SP_V0A","#mu+#mu+ v2 distribution",nDimThNS,nBins,xMin,xMax);
-    if(ShouldCorrectDimuonForAccEff()){
-      CreatePairTHnSparse(kHistoForData | kHistoForMCInput,eventSelection,triggerClassName,centrality,"ESE_SPD_AE","#mu+#mu+ v2 distribution (Acc #times Eff Corrected)",nDimThNS,nBins,xMin,xMax);
-      // CreatePairTHnSparse(kHistoForData | kHistoForMCInput,eventSelection,triggerClassName,centrality,"ESE_V0A","#mu+#mu+ v2 distribution",nDimThNS,nBins,xMin,xMax);
+  //   CreatePairTHnSparse(kHistoForData | kHistoForMCInput,eventSelection,triggerClassName,centrality,"ESE_SP_SPD","#mu+#mu+ v2 distribution",nDimThNS_SP,nBinsSP,xMinSP,xMaxSP);
+  //   // CreatePairTHnSparse(kHistoForData | kHistoForMCInput,eventSelection,triggerClassName,centrality,"ESE_SP_V0A","#mu+#mu+ v2 distribution",nDimThNS,nBins,xMin,xMax);
+  //   if(ShouldCorrectDimuonForAccEff()){
+  //     CreatePairTHnSparse(kHistoForData | kHistoForMCInput,eventSelection,triggerClassName,centrality,"ESE_SPD_AE","#mu+#mu+ v2 distribution (Acc #times Eff Corrected)",nDimThNS,nBins,xMin,xMax);
+  //     // CreatePairTHnSparse(kHistoForData | kHistoForMCInput,eventSelection,triggerClassName,centrality,"ESE_V0A","#mu+#mu+ v2 distribution",nDimThNS,nBins,xMin,xMax);
   
-      CreatePairTHnSparse(kHistoForData | kHistoForMCInput,eventSelection,triggerClassName,centrality,"ESE_SP_SPD_AE","#mu+#mu+ v2 distribution (Acc #times Eff Corrected)",nDimThNS_SP,nBinsSP,xMinSP,xMaxSP);
-      // CreatePairTHnSparse(kHistoForData | kHistoForMCInput,eventSelection,triggerClassName,centrality,"ESE_SP_V0A","#mu+#mu+ v2 distribution",nDimThNS,nBins,xMin,xMax);
-    }
-  }
+  //     CreatePairTHnSparse(kHistoForData | kHistoForMCInput,eventSelection,triggerClassName,centrality,"ESE_SP_SPD_AE","#mu+#mu+ v2 distribution (Acc #times Eff Corrected)",nDimThNS_SP,nBinsSP,xMinSP,xMaxSP);
+  //     // CreatePairTHnSparse(kHistoForData | kHistoForMCInput,eventSelection,triggerClassName,centrality,"ESE_SP_V0A","#mu+#mu+ v2 distribution",nDimThNS,nBins,xMin,xMax);
+  //   }
+  // }
   for(Int_t i=0; i<fNDetectors;i++){
     CreateEventHistos(kHistoForData| kHistoForMCInput,eventSelection,triggerClassName,centrality,Form("EVENTPLANE_%s",fDetectors[i].Data()),Form("#mu+#mu- event plane distributionwith %s",fDetectors[i].Data()),
                      500, -1.6, 1.6,-2);
@@ -388,8 +388,8 @@ void AliAnalysisMuMuFlow::FillHistosForPair(const char* eventSelection,
 
     if ( !IsHistogramDisabled(Form("DPHI_%s",fDetectors[i].Data())) ) proxy->Histo(Form("DPHI_%s",fDetectors[i].Data()))->Fill(dphi[i]);
   }
-  Double_t x_ESE[8]={pair4Momentum.M(),pair4Momentum.Pt(),dphi[0],cos(2*dphi[0]),sqrt(Qn[0]*Qn[0]),GetCentrality(),phiEP[0],phiEP[1]}; //minv      pt     dphi     q2     cent    EPp  EPev
-  if( fESE && !IsHistogramDisabled("ESE_SPD"))static_cast<THnSparse*>(proxy->GetObject("ESE_SPD"))->Fill(x_ESE,inputWeight);
+  // Double_t x_ESE[8]={pair4Momentum.M(),pair4Momentum.Pt(),dphi[0],cos(2*dphi[0]),sqrt(Qn[0]*Qn[0]),GetCentrality(),phiEP[0],phiEP[1]}; //minv      pt     dphi     q2     cent    EPp  EPev
+  // if( fESE && !IsHistogramDisabled("ESE_SPD"))static_cast<THnSparse*>(proxy->GetObject("ESE_SPD"))->Fill(x_ESE,inputWeight);
   // x_ESE[2] = dphi[1];
   // x_ESE[3] = cos(2*dphi[1]);
   // x_ESE[4] = sqrt(Qn[1]*Qn[1]);
@@ -397,20 +397,20 @@ void AliAnalysisMuMuFlow::FillHistosForPair(const char* eventSelection,
   // x_ESE[7] = phiEP[0];
   // if( !IsHistogramDisabled("ESE_V0A"))static_cast<THnSparse*>(proxy->GetObject("ESE_V0A"))->Fill(x_ESE,inputWeight);
 
-  Double_t x_ESE_SP[6]={pair4Momentum.M(),pair4Momentum.Pt(),SP[0]/sqrt(Qn[1]*Qn[2]),(SP[0]-cos(Qn[0].X())*cos(Qn[0].X())-sin(Qn[0].X())*sin(Qn[0].X()))/sqrt(Qn[1]*Qn[2]-Qn[1].X()*Qn[2].X()-Qn[1].Y()*Qn[2].Y())/sqrt(Qn[0]*Qn[0]),GetCentrality(),sqrt(Qn[0].X()*Qn[0].X()+Qn[0].X()*Qn[0].X())}; //minv      pt     SP     SPcorr     cent   q2
+  // Double_t x_ESE_SP[6]={pair4Momentum.M(),pair4Momentum.Pt(),SP[0]/sqrt(Qn[1]*Qn[2]),(SP[0]-cos(Qn[0].X())*cos(Qn[0].X())-sin(Qn[0].X())*sin(Qn[0].X()))/sqrt(Qn[1]*Qn[2]-Qn[1].X()*Qn[2].X()-Qn[1].Y()*Qn[2].Y())/sqrt(Qn[0]*Qn[0]),GetCentrality(),sqrt(Qn[0].X()*Qn[0].X()+Qn[0].X()*Qn[0].X())}; //minv      pt     SP     SPcorr     cent   q2
 
-  if( fESE && !IsHistogramDisabled("ESE_SP_SPD"))static_cast<THnSparse*>(proxy->GetObject("ESE_SP_SPD"))->Fill(x_ESE_SP,inputWeight);
+  // if( fESE && !IsHistogramDisabled("ESE_SP_SPD"))static_cast<THnSparse*>(proxy->GetObject("ESE_SP_SPD"))->Fill(x_ESE_SP,inputWeight);
 
 
   //AE
-  if(ShouldCorrectDimuonForAccEff()){
-    Double_t AccxEff = GetAccxEff(pair4Momentum.Pt(),pair4Momentum.Rapidity());
-    if ( AccxEff <= 0.0 ) AliError(Form("AccxEff < 0 for pt = %f & y = %f ",pair4Momentum.Pt(),pair4Momentum.Rapidity()));
-    else {
-      if( !IsHistogramDisabled("ESE_SPD_AE"))static_cast<THnSparse*>(proxy->GetObject("ESE_SPD_AE"))->Fill(x_ESE,inputWeight/AccxEff);
-      if( !IsHistogramDisabled("ESE_SP_SPD_AE"))static_cast<THnSparse*>(proxy->GetObject("ESE_SP_SPD_AE"))->Fill(x_ESE_SP,inputWeight/AccxEff);
-    }
-  }
+  // if(ShouldCorrectDimuonForAccEff()){
+  //   Double_t AccxEff = GetAccxEff(pair4Momentum.Pt(),pair4Momentum.Rapidity());
+  //   if ( AccxEff <= 0.0 ) AliError(Form("AccxEff < 0 for pt = %f & y = %f ",pair4Momentum.Pt(),pair4Momentum.Rapidity()));
+  //   else {
+  //     if( !IsHistogramDisabled("ESE_SPD_AE"))static_cast<THnSparse*>(proxy->GetObject("ESE_SPD_AE"))->Fill(x_ESE,inputWeight/AccxEff);
+  //     if( !IsHistogramDisabled("ESE_SP_SPD_AE"))static_cast<THnSparse*>(proxy->GetObject("ESE_SP_SPD_AE"))->Fill(x_ESE_SP,inputWeight/AccxEff);
+  //   }
+  // }
 
   for(Int_t i=0; i<3; i++){
     if( !IsHistogramDisabled(Form("rSP_%s",fDetectors[i].Data())) && (i!=0)) Histo(eventSelection,triggerClassName,centrality,Form("rSP_%s",fDetectors[i].Data()))->Fill(sqrt(SP[0]*SP[i]));
@@ -958,11 +958,11 @@ void AliAnalysisMuMuFlow::FillHistosForEvent(const char* eventSelection,
         else deltaEP+=2.*TMath::Pi()/fHar;
       }
 
-      if(!IsHistogramDisabled(Form("hEvPlaneReso%s_%s",fDetectors[i].Data(),fDetectors[j].Data())))
-        Histo(eventSelection,triggerClassName,centrality,Form("hEvPlaneReso%s_%s",fDetectors[i].Data(),fDetectors[j].Data()))->Fill(TMath::Cos(fHar*deltaEP));
+      // if(!IsHistogramDisabled(Form("hEvPlaneReso%s_%s",fDetectors[i].Data(),fDetectors[j].Data())))
+      //   Histo(eventSelection,triggerClassName,centrality,Form("hEvPlaneReso%s_%s",fDetectors[i].Data(),fDetectors[j].Data()))->Fill(TMath::Cos(fHar*deltaEP));
 
-      if(!IsHistogramDisabled(Form("hEvPlaneReso%s_%svsQnSPD",fDetectors[i].Data(),fDetectors[j].Data())))
-        Histo(eventSelection,triggerClassName,centrality,Form("hEvPlaneReso%s_%svsQnSPD",fDetectors[i].Data(),fDetectors[j].Data()))->Fill(TMath::Cos(fHar*deltaEP),sqrt(Qn[0]*Qn[0]));
+      // if(!IsHistogramDisabled(Form("hEvPlaneReso%s_%svsQnSPD",fDetectors[i].Data(),fDetectors[j].Data())))
+      //   Histo(eventSelection,triggerClassName,centrality,Form("hEvPlaneReso%s_%svsQnSPD",fDetectors[i].Data(),fDetectors[j].Data()))->Fill(TMath::Cos(fHar*deltaEP),sqrt(Qn[0]*Qn[0]));
       //Fill Qn vector histos
       if ( !IsHistogramDisabled(Form("EP%svsEP%s",fDetectors[i].Data(),fDetectors[j].Data()) )) Histo(eventSelection,triggerClassName,centrality,Form("EP%svsEP%s",fDetectors[i].Data(),fDetectors[j].Data()))->Fill(phiEP[i],phiEP[j]);
       if ( !IsHistogramDisabled(Form("Qn%svsQn%s",fDetectors[i].Data(),fDetectors[j].Data())) ) Histo(eventSelection,triggerClassName,centrality,Form("Qn%svsQn%s",fDetectors[i].Data(),fDetectors[j].Data()))->Fill(sqrt(Qn[i]*Qn[i]),sqrt(Qn[j]*Qn[j]));
