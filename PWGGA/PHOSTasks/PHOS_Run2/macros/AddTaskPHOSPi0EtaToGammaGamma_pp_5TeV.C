@@ -93,8 +93,15 @@ AliAnalysisTaskPHOSPi0EtaToGammaGamma* AddTaskPHOSPi0EtaToGammaGamma_pp_5TeV(
 
   AliAnalysisTaskPHOSPi0EtaToGammaGamma* task = new AliAnalysisTaskPHOSPi0EtaToGammaGamma(taskname);
 
+  Double_t Ethre = 0.0;
+  if(L1input == 7)       Ethre = 8.0;
+  else if(L1input == 6)  Ethre = 6.0;
+  else if(L1input == 5)  Ethre = 4.0;
+  else if(L0input == 9)  Ethre = 3.0;//LHC15n
+  else if(L0input == 17) Ethre = 4.0;//LHC17p
+
   //if(trigger == (UInt_t)AliVEvent::kPHI7) task->SetPHOSTriggerAnalysis(triggerinput,isMC);
-  if(trigger == (UInt_t)AliVEvent::kPHI7) task->SetPHOSTriggerAnalysis(L1input,L0input,isMC);
+  if(trigger == (UInt_t)AliVEvent::kPHI7) task->SetPHOSTriggerAnalysis(L1input,L0input,Ethre,isMC);
   if(kMC && trigger == (UInt_t)AliVEvent::kPHI7) trigger = AliVEvent::kINT7;//change trigger selection in MC when you do PHOS trigger analysis.
 
   task->SelectCollisionCandidates(trigger);

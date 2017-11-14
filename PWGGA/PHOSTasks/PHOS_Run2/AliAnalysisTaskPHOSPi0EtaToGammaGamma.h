@@ -26,6 +26,22 @@ class AliQnCorrectionsManager;
 class AliAnalysisTaskPHOSPi0EtaToGammaGamma : public AliAnalysisTaskSE {
   public:
 
+    enum FlowMethod{
+      kOFF  = -1,
+      kEP   = 0,
+      kSP   = 1
+    };
+
+    enum QnDetector{
+      kNone      = -1,
+      kFullTPC   = 0,
+      kTPCNegEta = 1,
+      kTPCPosEta = 2,
+      kFullV0    = 3,
+      kV0A       = 4,
+      kV0C       = 5
+    };
+
     AliAnalysisTaskPHOSPi0EtaToGammaGamma(const char *name = "Pi0EtaToGammaGamma");
     virtual ~AliAnalysisTaskPHOSPi0EtaToGammaGamma(); 
 
@@ -98,8 +114,42 @@ class AliAnalysisTaskPHOSPi0EtaToGammaGamma : public AliAnalysisTaskSE {
     void SetCentralityMax(Float_t max) {fCentralityMax = max;}
     void SetDepthNMixed(Int_t Nmix)    {fNMixed        = Nmix;}
     void SetCentralityEstimator(TString estimator) {fEstimator = estimator;}
-    void SetQnEstimator(TString estimator) {fQnEstimator = estimator;}
-    void SetFlowMethod(TString method) {fFlowMethod = method;}
+    void SetQNomalization(TString norm) {fQNormalization = norm;}
+    void SetFlowMethod(Int_t fm) {fFM = fm;}
+    void SetQnDetector(Int_t det){
+      fQnDetectorMain = det;
+
+      if(fQnDetectorMain == AliAnalysisTaskPHOSPi0EtaToGammaGamma::kFullTPC){
+        fQnDetectorSub1 = AliAnalysisTaskPHOSPi0EtaToGammaGamma::kV0A;
+        fQnDetectorSub2 = AliAnalysisTaskPHOSPi0EtaToGammaGamma::kV0C;
+      }
+      else if(fQnDetectorMain == AliAnalysisTaskPHOSPi0EtaToGammaGamma::kTPCNegEta){
+        fQnDetectorSub1 = AliAnalysisTaskPHOSPi0EtaToGammaGamma::kV0A;
+        fQnDetectorSub2 = AliAnalysisTaskPHOSPi0EtaToGammaGamma::kV0C;
+      }
+      else if(fQnDetectorMain == AliAnalysisTaskPHOSPi0EtaToGammaGamma::kTPCPosEta){
+        fQnDetectorSub1 = AliAnalysisTaskPHOSPi0EtaToGammaGamma::kV0A;
+        fQnDetectorSub2 = AliAnalysisTaskPHOSPi0EtaToGammaGamma::kV0C;
+      }
+      else if(fQnDetectorMain == AliAnalysisTaskPHOSPi0EtaToGammaGamma::kFullV0){
+        fQnDetectorSub1 = AliAnalysisTaskPHOSPi0EtaToGammaGamma::kTPCNegEta;
+        fQnDetectorSub2 = AliAnalysisTaskPHOSPi0EtaToGammaGamma::kTPCPosEta;
+      }
+      else if(fQnDetectorMain == AliAnalysisTaskPHOSPi0EtaToGammaGamma::kV0A){
+        fQnDetectorSub1 = AliAnalysisTaskPHOSPi0EtaToGammaGamma::kV0C;
+        fQnDetectorSub2 = AliAnalysisTaskPHOSPi0EtaToGammaGamma::kFullTPC;
+      }
+      else if(fQnDetectorMain == AliAnalysisTaskPHOSPi0EtaToGammaGamma::kV0C){
+        fQnDetectorSub1 = AliAnalysisTaskPHOSPi0EtaToGammaGamma::kV0A;
+        fQnDetectorSub2 = AliAnalysisTaskPHOSPi0EtaToGammaGamma::kFullTPC;
+      }
+      else{ 
+        AliInfo("Your choice is ignored. QnVector is measured by FullV0-TPCNegEta-TPCPosEta");
+        fQnDetectorMain = AliAnalysisTaskPHOSPi0EtaToGammaGamma::kFullV0;
+        fQnDetectorSub1 = AliAnalysisTaskPHOSPi0EtaToGammaGamma::kTPCNegEta;
+        fQnDetectorSub2 = AliAnalysisTaskPHOSPi0EtaToGammaGamma::kTPCPosEta;
+      }
+    }
 
     void SetPHOSTriggerAnalysis(TString selection, Bool_t isMC){
       //obsolete
@@ -107,8 +157,9 @@ class AliAnalysisTaskPHOSPi0EtaToGammaGamma : public AliAnalysisTaskSE {
       fPHOSTriggerHelper  = new AliPHOSTriggerHelper(selection,isMC);
     }
 
-    void SetPHOSTriggerAnalysis(Int_t L1input, Int_t L0input, Bool_t isMC){
+    void SetPHOSTriggerAnalysis(Int_t L1input, Int_t L0input, Double_t Ethre, Bool_t isMC){
       fIsPHOSTriggerAnalysis = kTRUE;
+      fEnergyThreshold = Ethre;
       fPHOSTriggerHelper  = new AliPHOSTriggerHelper(L1input,L0input,isMC);
     }
 
@@ -180,7 +231,6 @@ class AliAnalysisTaskPHOSPi0EtaToGammaGamma : public AliAnalysisTaskSE {
         return fAdditionalK0SPtWeight[0];
     }
 
-
     TF1 *GetAdditionalEtaPtWeightFunction(Float_t centrality){
       if(fCentArrayEta){
         Int_t lastBinUpperIndex = fCentArrayEta->GetSize()-1;
@@ -201,6 +251,7 @@ class AliAnalysisTaskPHOSPi0EtaToGammaGamma : public AliAnalysisTaskSE {
         return fAdditionalGammaPtWeight[0]; 
     }
 
+    Bool_t ExtractQnVector();
 
     AliStack *GetMCInfoESD();
     TClonesArray *GetMCInfoAOD();
@@ -259,16 +310,19 @@ class AliAnalysisTaskPHOSPi0EtaToGammaGamma : public AliAnalysisTaskSE {
     Int_t fEPBin;
     Bool_t fIsFlowTask;
     Int_t fHarmonics;
-    TString fQnEstimator;
-    TString fFlowMethod;//EP or SP
+    TString fQNormalization;
+    Int_t fFM;//kEP or kSP
+    Int_t fQnDetectorMain;
+    Int_t fQnDetectorSub1;
+    Int_t fQnDetectorSub2;
     AliQnCorrectionsManager *fFlowQnVectorMgr;
     TString fTPCEPName[3]; 
     TString fV0EPName[3]; 
     Double_t fEventPlane;
     TVector2 fQVector1;//x,y
-    TVector2 fQVector2;//x,y
     Int_t fNHybridTrack;
     Bool_t fIsPHOSTriggerAnalysis;
+    Double_t fEnergyThreshold;
     AliPHOSTriggerHelper *fPHOSTriggerHelper;//for real PHOS triggered data analysis
     AliPHOSTriggerHelper *fPHOSTriggerHelperL0; //only for rejection factor in MB
     AliPHOSTriggerHelper *fPHOSTriggerHelperL1H;//only for rejection factor in MB
@@ -282,7 +336,7 @@ class AliAnalysisTaskPHOSPi0EtaToGammaGamma : public AliAnalysisTaskSE {
     AliAnalysisTaskPHOSPi0EtaToGammaGamma(const AliAnalysisTaskPHOSPi0EtaToGammaGamma&);
     AliAnalysisTaskPHOSPi0EtaToGammaGamma& operator=(const AliAnalysisTaskPHOSPi0EtaToGammaGamma&);
 
-    ClassDef(AliAnalysisTaskPHOSPi0EtaToGammaGamma, 38);
+    ClassDef(AliAnalysisTaskPHOSPi0EtaToGammaGamma, 39);
 };
 
 #endif
