@@ -486,9 +486,9 @@ void AliCaloPhotonCuts::InitCutHistograms(TString name){
   Int_t nBinsClusterECoarse         = 100;
   Double_t minClusterELog           = 0.5;
   Double_t maxClusterELog           = 100.0;
-  Int_t nBinsCellECoarse            = 100;
+  Int_t nBinsCellECoarse            = 150;
   Double_t minCellELog              = 0.05;
-  Double_t maxCellELog              = 50.0;
+  Double_t maxCellELog              = 120.0;
   Int_t nBinsModuleECoarse          = 400;
   Double_t minModuleELog            = 0.1;
   Double_t maxModuleELog            = 400.0;
