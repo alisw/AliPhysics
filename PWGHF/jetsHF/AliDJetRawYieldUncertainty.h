@@ -111,15 +111,15 @@ public:
 
   static void FitReflDistr(Int_t nPtBins, TString inputfile, TString fitType = "DoubleGaus");
 
-  AliHFMultiTrials* RunMultiTrial();
-  Bool_t CombineMultiTrialOutcomes();
+  AliHFMultiTrials* RunMultiTrial(TString spectrum_name);
+  Bool_t CombineMultiTrialOutcomes(TString spectrum_name);
 
   Bool_t ExtractInputMassPlot();
 
-  Bool_t EvaluateUncertainty();
-  Bool_t EvaluateUncertaintyEffScale();
-  SBResults EvaluateUncertaintySideband(TString obs, Int_t nJetBins, Double_t* jetBinEdges);
-  Bool_t EvaluateUncertaintySideband();
+  Bool_t EvaluateUncertainty(TString spectrum_name);
+  Bool_t EvaluateUncertaintyEffScale(TString spectrum_name);
+  SBResults EvaluateUncertaintySideband(TString spectrum_name, TString obs, Int_t nJetBins, Double_t* jetBinEdges);
+  Bool_t EvaluateUncertaintySideband(TString spectrum_name);
 
   Bool_t Success() const { return fSuccess; }
 
