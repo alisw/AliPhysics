@@ -4597,6 +4597,24 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
                 //either don't use the cut at all, or make sure it's above threshold
                 ( lCascadeResult->GetCutUse276TeVV0CosPA()==kFALSE ||
                  fTreeCascVarV0CosPointingAngle>l276TeVV0CosPA
+                 )&&
+                
+                //Check 13: 3D Cascade DCA to PV
+                ( lCascadeResult->GetCutDCACascadeToPV() > 999 ||
+                 (TMath::Sqrt(fTreeCascVarCascDCAtoPVz*fTreeCascVarCascDCAtoPVz + fTreeCascVarCascDCAtoPVxy*fTreeCascVarCascDCAtoPVxy)<lCascadeResult->GetCutDCACascadeToPV() )
+                 )&&
+                
+                //Check 14a: Negative track DCA to PV, weighted
+                ( lCascadeResult->GetCutDCANegToPVWeighted() < 0 ||
+                 (fTreeCascVarDCANegToPrimVtx/TMath::Sqrt(fTreeCascVarNegDCAPVSigmaX2*fTreeCascVarNegDCAPVSigmaX2 + fTreeCascVarNegDCAPVSigmaY2*fTreeCascVarNegDCAPVSigmaY2+1e-6)<lCascadeResult->GetCutDCANegToPVWeighted() )
+                 )&&
+                //Check 14a: Negative track DCA to PV, weighted
+                ( lCascadeResult->GetCutDCAPosToPVWeighted() < 0 ||
+                 (fTreeCascVarDCAPosToPrimVtx/TMath::Sqrt(fTreeCascVarPosDCAPVSigmaX2*fTreeCascVarPosDCAPVSigmaX2 + fTreeCascVarPosDCAPVSigmaY2*fTreeCascVarPosDCAPVSigmaY2+1e-6)<lCascadeResult->GetCutDCAPosToPVWeighted() )
+                 )&&
+                //Check 14a: Negative track DCA to PV, weighted
+                ( lCascadeResult->GetCutDCABachToPVWeighted() < 0 ||
+                 (fTreeCascVarDCABachToPrimVtx/TMath::Sqrt(fTreeCascVarBachDCAPVSigmaX2*fTreeCascVarBachDCAPVSigmaX2 + fTreeCascVarBachDCAPVSigmaY2*fTreeCascVarBachDCAPVSigmaY2+1e-6)<lCascadeResult->GetCutDCABachToPVWeighted() )
                  )
                 )
             {
