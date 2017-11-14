@@ -113,8 +113,8 @@ class AliCDBManager: public TObject {
     void SetRun(Int_t run);
     Int_t GetRun() const {return fRun;}
 
-    void SetMaxDate(time_t maxDate) { fMaxDate = maxDate; }
-    void SetMaxDate(TTimeStamp &maxDate) { fMaxDate = maxDate.GetSec(); }
+    void SetMaxDate(time_t maxDate);
+    void SetMaxDate(TTimeStamp &maxDate) { SetMaxDate(maxDate.GetSec()); }
     time_t GetMaxDate() const { return fMaxDate; }
 
     void SetMirrorSEs(const char* mirrors);
