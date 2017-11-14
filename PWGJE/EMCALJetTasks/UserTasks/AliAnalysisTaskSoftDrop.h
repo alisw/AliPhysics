@@ -54,10 +54,12 @@ class AliAnalysisTaskSoftDrop : public AliAnalysisTaskEmcalJet {
   TH2                        *fhCorrPtPtfrac;           //!<! distribution of ptfrac, jet pt-diff
   TH2                        *fhCorrPtDropCount;        //!<! distribution of dropped branches number, jet pt-diff
 
-  TH2                        *fhCorrPtZg2;               //!<! other SD settings, SD, distribution of zg, jet pt-diff
+  TH2                        *fhCorrPtZg2;               //!<! other SD settings
   TH2                        *fhCorrPtZgD;               //!<! iterative SD, distribution of zg, jet pt-diff
 
-  TH2                        *fhCorrPtRg2;               //!<! other SD settings, SD, distribution of Rg, jet pt-diff
+  TH3                        *fhCorrPtZgSDstep;          //!<! iterative SD, distribution of zg, jet pt-diff, SD step diff
+  TH3                        *fhCorrPtRgSDstep;          //!<! iterative SD, distribution of zg, jet pt-diff, SD step diff
+
   TH2                        *fhCorrPtRgD;               //!<! iterative SD, distribution of Rg, jet pt-diff
 
   AliJetContainer            *fJetsCont;                   //!Jets
@@ -68,7 +70,7 @@ class AliAnalysisTaskSoftDrop : public AliAnalysisTaskEmcalJet {
   AliAnalysisTaskSoftDrop(const AliAnalysisTaskSoftDrop&);            // not implemented
   AliAnalysisTaskSoftDrop &operator=(const AliAnalysisTaskSoftDrop&); // not implemented
 
-  
+  Int_t                       fSDM;                     ///< number of the SD iterations
 
   ClassDef(AliAnalysisTaskSoftDrop, 1) // jet sample analysis task
 };
