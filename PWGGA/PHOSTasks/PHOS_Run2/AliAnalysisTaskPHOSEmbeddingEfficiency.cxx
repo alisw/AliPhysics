@@ -291,88 +291,11 @@ void AliAnalysisTaskPHOSEmbeddingEfficiency::UserExec(Option_t *option)
   FillHistogramTH1(fOutputContainer,"hEventSummary",2);//selected event
 
   if(fIsFlowTask){
-    //fFlowQnVectorMgr->GetQnVectorList()->Print("",-1);
-
-    if(fHarmonics < 0){
-      AliError(Form("Qn Flow vector correction flag is ON, but fHarmonics is not set. (it is %d now).",fHarmonics));
+    Bool_t QnOK = ExtractQnVector();
+    if(!QnOK){
+      AliInfo("Event is rejected by Qn vector quality.");
       return;
     }
-
-    TList* qnlist = fFlowQnVectorMgr->GetQnVectorList();
-
-    const AliQnCorrectionsQnVector *QnVectorTPCDet[3];
-    Double_t TPCEP[3] = {};
-    for(Int_t i=0;i<3;i++){
-      QnVectorTPCDet[i] = GetQnVectorFromList(qnlist,Form("%s%s",fTPCEPName[i].Data(),fQnEstimator.Data()),"","");
-      if(QnVectorTPCDet[i]) TPCEP[i] = QnVectorTPCDet[i]->EventPlane(fHarmonics);
-      if(TPCEP[i] < 0) TPCEP[i] += 2./(Double_t) fHarmonics * TMath::Pi();
-      FillHistogramTH2(fOutputContainer,Form("hCentrality%svsEventPlane%s%s",fEstimator.Data(),fTPCEPName[i].Data(),fQnEstimator.Data()),fCentralityMain,TPCEP[i]);
-      AliInfo(Form("harmonics %d | TPC sub detector name %s : event plane = %f (rad).",fHarmonics,fTPCEPName[i].Data(),TPCEP[i]));
-    }
-
-    const AliQnCorrectionsQnVector *QnVectorV0Det[3];
-    Double_t V0EP[3]  = {};
-    for(Int_t i=0;i<3;i++){
-      QnVectorV0Det[i]  = GetQnVectorFromList(qnlist,Form("%s%s",fV0EPName[i].Data(),fQnEstimator.Data()),"","");
-      if(QnVectorV0Det[i]) V0EP[i] = QnVectorV0Det[i]->EventPlane(fHarmonics);
-      if(V0EP[i] < 0)  V0EP[i]  += 2./(Double_t) fHarmonics * TMath::Pi();
-      FillHistogramTH2(fOutputContainer,Form("hCentrality%svsEventPlane%s%s",fEstimator.Data(),fV0EPName[i].Data(),fQnEstimator.Data()),fCentralityMain,V0EP[i]);
-      AliInfo(Form("harmonics %d | V0  sub detector name %s : event plane = %f (rad).",fHarmonics,fV0EPName[i].Data() ,V0EP[i]));
-    }
-
-    //0 < event plane < 2*pi/fHarmonics.
-    //fEventPlane = TPCEP[0];//full acceptance of TPC
-    fEventPlane = V0EP[0];//full V0
-
-    Double_t Q1[2] = {};
-    Double_t Q2[2] = {};
-    Double_t Q3[2] = {};
-
-    Q1[0] = QnVectorV0Det[1]->Qx(fHarmonics);//V0A
-    Q1[1] = QnVectorV0Det[1]->Qy(fHarmonics);//V0A
-    Q2[0] = QnVectorV0Det[2]->Qx(fHarmonics);//V0C
-    Q2[1] = QnVectorV0Det[2]->Qy(fHarmonics);//V0C
-
-    Q3[0] = QnVectorTPCDet[0]->Qx(fHarmonics);//full acceptance of TPC
-    Q3[1] = QnVectorTPCDet[0]->Qy(fHarmonics);//full acceptance of TPC
-
-    fQVector1.Set(Q1[0],Q1[1]);
-    fQVector2.Set(Q2[0],Q2[1]);
-
-    TVector2 QVector3(Q3[0],Q3[1]);//full acceptance of TPC
-
-    FillHistogramTH2(fOutputContainer,Form("hCentrality%svsQ1x",fEstimator.Data()),fCentralityMain,Q1[0]);//V0A
-    FillHistogramTH2(fOutputContainer,Form("hCentrality%svsQ1y",fEstimator.Data()),fCentralityMain,Q1[1]);//V0A
-    FillHistogramTH2(fOutputContainer,Form("hCentrality%svsQ2x",fEstimator.Data()),fCentralityMain,Q2[0]);//V0C
-    FillHistogramTH2(fOutputContainer,Form("hCentrality%svsQ2y",fEstimator.Data()),fCentralityMain,Q2[1]);//V0C
-    FillHistogramTH2(fOutputContainer,Form("hCentrality%svsQ3x",fEstimator.Data()),fCentralityMain,Q3[0]);//full acceptance of TPC
-    FillHistogramTH2(fOutputContainer,Form("hCentrality%svsQ3y",fEstimator.Data()),fCentralityMain,Q3[1]);//full acceptance of TPC
-
-    //Double_t sp = fQ1[0] * fQ2[0] + fQ1[1] * fQ2[1];//scalar product between Q1 vector and Q2 vector
-    Double_t sp12 = fQVector1 * fQVector2;//scalar product between Q1 vector and Q2 vector
-    Double_t sp23 = fQVector2 *  QVector3;//scalar product between Q2 vector and Q2 vector
-    Double_t sp31 =  QVector3 * fQVector1;//scalar product between Q3 vector and Q1 vector
-
-    FillHistogramTH2(fOutputContainer,Form("hCentrality%svsSPQ1Q2",fEstimator.Data()),fCentralityMain,sp12);//mean value of sp is denominator of vn{SP}
-    FillHistogramTH2(fOutputContainer,Form("hCentrality%svsSPQ2Q3",fEstimator.Data()),fCentralityMain,sp23);//mean value of sp is denominator of vn{SP}
-    FillHistogramTH2(fOutputContainer,Form("hCentrality%svsSPQ3Q1",fEstimator.Data()),fCentralityMain,sp31);//mean value of sp is denominator of vn{SP}
-    AliInfo(Form("Q1x = %e , Q1y = %e , Q2x = %e , Q2y = %e , Q3x = %e , Q3y = %e ,  SP12 = %e ,  SP23 = %e ,  SP31 = %e",Q1[0],Q1[1],Q2[0],Q2[1],Q3[0],Q3[1],sp12,sp23,sp31));
-
-    const Double_t delta = 2. * TMath::Pi() / Double_t(fHarmonics) / 12.;
-    fEPBin = (Int_t)((fEventPlane) / delta);//it should be 0-11.
-    if(fEPBin < 0)  fEPBin =  0;//protection to avoid fEPBin = -1.
-    if(fEPBin > 11) fEPBin = 11;//protection to avoid fEPBin = 12.
-
-    //for event plane resolution
-    //cos V0(main)-TPCA-TPCC
-    FillHistogramTH2(fOutputContainer,Form("hCentrality%svsCosDeltaEventPlane%s%s",fEstimator.Data(),fV0EPName[0].Data() ,fTPCEPName[1].Data()),fCentralityMain,TMath::Cos(fHarmonics * (V0EP[0]  - TPCEP[1])));
-    FillHistogramTH2(fOutputContainer,Form("hCentrality%svsCosDeltaEventPlane%s%s",fEstimator.Data(),fV0EPName[0].Data() ,fTPCEPName[2].Data()),fCentralityMain,TMath::Cos(fHarmonics * (V0EP[0]  - TPCEP[2])));
-    FillHistogramTH2(fOutputContainer,Form("hCentrality%svsCosDeltaEventPlane%s%s",fEstimator.Data(),fTPCEPName[1].Data(),fTPCEPName[2].Data()),fCentralityMain,TMath::Cos(fHarmonics * (TPCEP[1] - TPCEP[2])));
-
-    //cos TPC(main)-V0A-V0C
-    FillHistogramTH2(fOutputContainer,Form("hCentrality%svsCosDeltaEventPlane%s%s",fEstimator.Data(),fTPCEPName[0].Data(),fV0EPName[1].Data()),fCentralityMain,TMath::Cos(fHarmonics * (TPCEP[0] - V0EP[1])));
-    FillHistogramTH2(fOutputContainer,Form("hCentrality%svsCosDeltaEventPlane%s%s",fEstimator.Data(),fTPCEPName[0].Data(),fV0EPName[2].Data()),fCentralityMain,TMath::Cos(fHarmonics * (TPCEP[0] - V0EP[2])));
-    FillHistogramTH2(fOutputContainer,Form("hCentrality%svsCosDeltaEventPlane%s%s",fEstimator.Data(),fV0EPName[1].Data() ,fV0EPName[2].Data()),fCentralityMain,TMath::Cos(fHarmonics * (V0EP[1]  - V0EP[2])));
   }
   else fEPBin = 0;
  
@@ -580,7 +503,7 @@ void AliAnalysisTaskPHOSEmbeddingEfficiency::FillPhoton()
   TF1 *f1tof = GetTOFCutEfficiencyFunction();
   Double_t trgeff=1;
   TF1 *f1trg = GetTriggerEfficiencyFunction();
-  Double_t value[4] = {};
+  Double_t value[2] = {};
   Double_t sp1 = -999;
   Double_t sp2 = -999;
 
@@ -621,24 +544,21 @@ void AliAnalysisTaskPHOSEmbeddingEfficiency::FillPhoton()
     if(fIsFlowTask){
       dphi = DeltaPhiIn0Pi(phi - fEventPlane);
       sp1 = vg * fQVector1;
-      sp2 = vg * fQVector2;
+      if(AliAnalysisTaskPHOSPi0EtaToGammaGamma::kEP)      value[1] = TMath::Cos(fHarmonics * dphi);
+      else if(AliAnalysisTaskPHOSPi0EtaToGammaGamma::kSP) value[1] = sp1;
+      else                                                value[1] = 0;
     }
     else{
       dphi = phi;
       sp1 = 0;
-      sp2 = 0;
+      value[1] = 0;
     }
 
     value[0] = pT;
-    value[1] = TMath::Cos(fHarmonics * dphi);
-    value[2] = sp1;//reserved by sp
-    value[3] = sp2;//reserved by sp
 
-    //FillHistogramTH2(fOutputContainer,"hPhotonPt",pT,TMath::Cos(fHarmonics * dphi),weight);
     FillSparse(fOutputContainer,"hSparsePhoton",value,weight * 1/trgeff);
 
     if(ph->IsTOFOK()){
-      //FillHistogramTH2(fOutputContainer,"hPhotonPt_TOF",pT,TMath::Cos(fHarmonics * dphi),1/eff * weight);
       FillSparse(fOutputContainer,"hSparsePhoton_TOF",value,1/eff * weight * 1/trgeff);
     }
 
@@ -663,7 +583,7 @@ void AliAnalysisTaskPHOSEmbeddingEfficiency::FillMgg()
   Double_t trgeff12=1;
   TF1 *f1trg = GetTriggerEfficiencyFunction();
 
-  Double_t value[6] = {};
+  Double_t value[4] = {};
   Double_t sp1 = -999;
   Double_t sp2 = -999;
 
@@ -740,37 +660,30 @@ void AliAnalysisTaskPHOSEmbeddingEfficiency::FillMgg()
       if(fIsFlowTask){
         dphi = DeltaPhiIn0Pi(phi - fEventPlane);
         sp1 = vgg * fQVector1;
-        sp2 = vgg * fQVector2;
+        if(AliAnalysisTaskPHOSPi0EtaToGammaGamma::kEP)      value[3] = TMath::Cos(fHarmonics * dphi);
+        else if(AliAnalysisTaskPHOSPi0EtaToGammaGamma::kSP) value[3] = sp1;
+        else                                                value[3] = 0;
       }
       else{
         dphi = phi;
         sp1 = 0;
-        sp2 = 0;
+        value[3] = 0;
       }
 
       value[0] = m12;
       value[1] = pt12;
       value[2] = asym;
-      value[3] = TMath::Cos(fHarmonics * dphi);
-      value[4] = sp1;//reserved by sp
-      value[5] = sp2;//reserved by sp
+      if(m12 > 0.96) continue;//reduce entry in THnSparse
 
       if(TMath::Abs(ph1->Module()-ph2->Module()) < 2) FillHistogramTH2(fOutputContainer,Form("hMgg_M%d%d",TMath::Min(ph1->Module(),ph2->Module()), TMath::Max(ph1->Module(),ph2->Module())),m12,pt12,weight * 1/trgeff12);
-      //FillHistogramTH3(fOutputContainer,"hMgg",m12,pt12,TMath::Cos(fHarmonics * dphi),weight);
       FillSparse(fOutputContainer,"hSparseMgg",value,weight * 1/trgeff12);
 
-      //FillHistogramTH2(fOutputContainer,"hAsymvsMgg",asym,m12,weight);
-      //if(0.12 < m12 && m12 < 0.15) FillHistogramTH2(fOutputContainer,"hAsymvsPt",asym,pt12,weight);
-      //if(asym < 0.8) FillHistogramTH3(fOutputContainer,"hMgg_asym08",m12,pt12,TMath::Cos(fHarmonics * dphi),weight);
-
       if(ph1->IsTOFOK() && ph2->IsTOFOK()){
-        //FillHistogramTH3(fOutputContainer,"hMgg_TOF",m12,pt12,TMath::Cos(fHarmonics * dphi),1/eff12 * weight);
 
         FillSparse(fOutputContainer,"hSparseMgg_TOF",value,1/eff12 * weight * 1/trgeff12);
 
         if(TMath::Abs(ph1->Module()-ph2->Module()) < 2) FillHistogramTH2(fOutputContainer,Form("hMgg_M%d%d_TOF",TMath::Min(ph1->Module(),ph2->Module()), TMath::Max(ph1->Module(),ph2->Module())),m12,pt12,1/eff12 * weight * 1/trgeff12);
 
-        //if(asym < 0.8) FillHistogramTH3(fOutputContainer,"hMgg_TOF_asym08",m12,pt12,TMath::Cos(fHarmonics * dphi),1/eff12 * weight);
 
       }//end of TOF cut
 
@@ -860,18 +773,20 @@ void AliAnalysisTaskPHOSEmbeddingEfficiency::FillMixMgg()
         if(fIsFlowTask){
           dphi = DeltaPhiIn0Pi(phi - fEventPlane);
           sp1 = vgg * fQVector1;
-          sp2 = vgg * fQVector2;
+          if(AliAnalysisTaskPHOSPi0EtaToGammaGamma::kEP)      value[3] = TMath::Cos(fHarmonics * dphi);
+          else if(AliAnalysisTaskPHOSPi0EtaToGammaGamma::kSP) value[3] = sp1;
+          else                                                value[3] = 0;
         }
         else{
           dphi = phi;
           sp1 = 0;
-          sp2 = 0;
+          value[3] = 0;
         }
 
         value[0] = m12;
         value[1] = pt12;
         value[2] = asym;
-        value[3] = TMath::Cos(fHarmonics * dphi);
+        if(m12 > 0.96) continue;//reduce entry in THnSparse
 
         if(TMath::Abs(ph1->Module()-ph2->Module()) < 2) FillHistogramTH2(fOutputContainer,Form("hMixMgg_M%d%d",TMath::Min(ph1->Module(),ph2->Module()), TMath::Max(ph1->Module(),ph2->Module())),m12,pt12);
         FillSparse(fOutputContainer,"hSparseMixMgg",value,weight * 1/trgeff12);

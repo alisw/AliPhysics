@@ -10,6 +10,8 @@ AliAnalysisTaskPHOSPi0EtaToGammaGamma* AddTaskPHOSPi0EtaToGammaGamma_PbPb_5TeV(
     const Int_t NMixed   = 10,
     const Bool_t FlowTask = kFALSE,
     const Int_t harmonics = -1,
+    const Int_t FlowMethod = -1,
+    const Int_t QnDetector = -1,
     const Bool_t useCoreE = kFALSE,
     const Bool_t useCoreDisp = kFALSE,
     const Double_t NsigmaCPV  = 2.5,
@@ -83,19 +85,43 @@ AliAnalysisTaskPHOSPi0EtaToGammaGamma* AddTaskPHOSPi0EtaToGammaGamma_PbPb_5TeV(
 
   TString taskname = "";
   if(FlowTask){
-     if(harmonics > 0) taskname = Form("%s_%s_%s_Cen%d_%d%s_Harmonics%d_BS%dns_DBC%dcell",name,CollisionSystem.Data(),TriggerName.Data(),(Int_t)CenMin,(Int_t)CenMax,PIDname.Data(),harmonics,(Int_t)bs,(Int_t)(distBC));
-      else{
-        ::Error("AddTaskPHOSPi0EtaToGammaGamma", "Qn flow vector correction is ON, but you do not set harmonics.");
-        return NULL;
-      }
+    if(harmonics <= 0){
+      ::Error("AddTaskPHOSPi0EtaToGammaGamma", "Qn flow vector correction is ON, but you do not set harmonics.");
+      return NULL;
+    }
+
+    TString FMname = "";
+    if(FlowMethod == AliAnalysisTaskPHOSPi0EtaToGammaGamma::kEP)      FMname = "EP";
+    else if(FlowMethod == AliAnalysisTaskPHOSPi0EtaToGammaGamma::kSP) FMname = "SP";
+
+    TString detname = "";
+    if(QnDetector == AliAnalysisTaskPHOSPi0EtaToGammaGamma::kFullTPC)        detname = "FullTPC";
+    else if(QnDetector == AliAnalysisTaskPHOSPi0EtaToGammaGamma::kTPCNegEta) detname = "TPCNegEta";
+    else if(QnDetector == AliAnalysisTaskPHOSPi0EtaToGammaGamma::kTPCPosEta) detname = "TPCPosEta";
+    else if(QnDetector == AliAnalysisTaskPHOSPi0EtaToGammaGamma::kFullV0)    detname = "FullV0";
+    else if(QnDetector == AliAnalysisTaskPHOSPi0EtaToGammaGamma::kV0A)       detname = "V0A";
+    else if(QnDetector == AliAnalysisTaskPHOSPi0EtaToGammaGamma::kV0C)       detname = "V0C";
+    else{
+      ::Error("AddTaskPHOSPi0EtaToGammaGamma", "detector to measure Qn vector does not exist.");
+      return NULL;
+    }
+
+    taskname = Form("%s_%s_%s_Cen%d_%d%s_Harmonics%d_%s_%s_BS%dns_DBC%dcell",name,CollisionSystem.Data(),TriggerName.Data(),(Int_t)CenMin,(Int_t)CenMax,PIDname.Data(),harmonics,FMname.Data(),detname.Data(),(Int_t)bs,(Int_t)(distBC));
+
   }
   else taskname = Form("%s_%s_%s_Cen%d_%d%s_BS%dns_DBC%dcell",name,CollisionSystem.Data(),TriggerName.Data(),(Int_t)CenMin,(Int_t)CenMax,PIDname.Data(),(Int_t)bs,(Int_t)(distBC));
 
   AliAnalysisTaskPHOSPi0EtaToGammaGamma* task = new AliAnalysisTaskPHOSPi0EtaToGammaGamma(taskname);
-  task->SelectCollisionCandidates(trigger);
 
-  //if(trigger == (UInt_t)AliVEvent::kPHI7) task->SetPHOSTriggerAnalysis(triggerinput,isMC);
-  if(trigger == (UInt_t)AliVEvent::kPHI7) task->SetPHOSTriggerAnalysis(L1input,L0input,isMC);
+  Double_t Ethre = 0.0;
+  if(L1input == 7)       Ethre = 8.0;
+  else if(L1input == 6)  Ethre = 6.0;
+  else if(L1input == 5)  Ethre = 4.0;
+  else if(L0input == 9)  Ethre = 3.0;//LHC15n
+  else if(L0input == 17) Ethre = 4.0;//LHC17p
+  if(trigger == (UInt_t)AliVEvent::kPHI7) task->SetPHOSTriggerAnalysis(L1input,L0input,Ethre,isMC);
+  if(kMC && trigger == (UInt_t)AliVEvent::kPHI7) trigger = AliVEvent::kINT7;//change trigger selection in MC when you do PHOS trigger analysis.
+  task->SelectCollisionCandidates(trigger);
 
   task->SetCollisionSystem(systemID);//colliions system : pp=0, PbPb=1, pPb (Pbp)=2;
   task->SetJetJetMC(isJJMC);
@@ -115,6 +141,9 @@ AliAnalysisTaskPHOSPi0EtaToGammaGamma* AddTaskPHOSPi0EtaToGammaGamma_PbPb_5TeV(
   task->SetDepthNMixed(NMixed);
   task->SetQnVectorTask(FlowTask);
   task->SetHarmonics(harmonics);
+  task->SetFlowMethod(FlowMethod);
+  task->SetQnDetector(QnDetector);
+
 
   //centrality setting
   task->SetCentralityEstimator("V0M");
