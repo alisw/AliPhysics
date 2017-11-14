@@ -503,6 +503,13 @@ void AliCDBStorage::PrintQueryCDB(){
 }
 
 //_____________________________________________________________________________
+void AliCDBStorage::SetMaxDate(time_t maxDate) {
+  if (maxDate == fMaxDate) return;
+  if (fRun > -1) AliFatal("Cannot call SetMaxDate() after run was set!");
+  fMaxDate = maxDate;
+}
+
+//_____________________________________________________________________________
 AliCDBManager::DataType AliCDBStorage::GetDataType() const {
 // returns the type of the data that should be stored into this storage:
 // kConditions: conditions data; kReference: reference data; kPrivate: private (user-defined) data type

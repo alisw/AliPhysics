@@ -101,7 +101,9 @@ class AliCDBStorage: public TObject {
     void PrintQueryCDB();
     TObjArray* GetQueryCDBList() {return &fValidFileIds;}
     virtual void SetRetry(Int_t nretry, Int_t initsec) = 0;
-    void SetMaxDate(time_t maxDate) { fMaxDate = maxDate; }
+    void SetMaxDate(time_t maxDate);
+    void SetMaxDate(TTimeStamp maxDate) { SetMaxDate(maxDate.GetSec()); }
+    time_t GetMaxDate() const { return fMaxDate; }
 
   protected:
 
