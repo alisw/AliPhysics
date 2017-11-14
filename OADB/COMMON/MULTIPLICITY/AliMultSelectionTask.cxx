@@ -68,6 +68,7 @@ class AliESDAD; //AD
 #include "AliGenHijingEventHeader.h"
 #include "AliGenDPMjetEventHeader.h"
 #include "AliGenCocktailEventHeader.h"
+#include "AliGenHepMCEventHeader.h"
 #include "AliMCParticle.h"
 
 #include "AliESDAD.h" //AD
@@ -1019,6 +1020,8 @@ void AliMultSelectionTask::UserExec(Option_t *)
             AliGenHijingEventHeader* hHijing=0;
             AliGenDPMjetEventHeader* dpmHeader=0;
             AliGenEventHeader* mcGenH = mcEvent->GenEventHeader();
+            
+            //DPMJet/HIJING info if available
             if (mcGenH->InheritsFrom(AliGenHijingEventHeader::Class()))
                 hHijing = (AliGenHijingEventHeader*)mcGenH;
             else if (mcGenH->InheritsFrom(AliGenCocktailEventHeader::Class())) {
@@ -1037,6 +1040,20 @@ void AliMultSelectionTask::UserExec(Option_t *)
             if(dpmHeader) {
                 fMC_NPart =dpmHeader->ProjectileParticipants()+dpmHeader->TargetParticipants();
                 fMC_NColl =dpmHeader->NN()+dpmHeader->NNw()+dpmHeader->NwN()+dpmHeader->NwNw();
+            }
+            
+            //check EPOS info, if available
+            if ( IsEPOSLHC() ){
+                AliGenHepMCEventHeader *lHepMCHeader = 0x0;
+                if (mcGenH->InheritsFrom(AliGenHepMCEventHeader::Class()))
+                    lHepMCHeader = (AliGenHepMCEventHeader*)mcGenH;
+                
+                if (lHepMCHeader ){
+                    fMC_NPart = lHepMCHeader->Npart_proj()+lHepMCHeader->Npart_targ();
+                    fMC_NColl = lHepMCHeader->N_Nwounded_collisions() +
+                                lHepMCHeader->Nwounded_N_collisions() +
+                                lHepMCHeader->Nwounded_Nwounded_collisions();
+                }
             }
 
             //Nch information in V0A and V0C acceptance

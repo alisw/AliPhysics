@@ -144,6 +144,12 @@ public:
         fCutVarBBCosPA_Const     = l5;
     }
     
+    //New to comission / experiemntal
+    void SetCutDCACascadeToPV        ( Double_t lCut ) { fCutDCACascadeToPV = lCut;         }
+    void SetCutDCANegToPVWeighted    ( Double_t lCut ) { fCutDCANegToPVWeighted = lCut;     }
+    void SetCutDCAPosToPVWeighted    ( Double_t lCut ) { fCutDCAPosToPVWeighted = lCut;     }
+    void SetCutDCABachToPVWeighted   ( Double_t lCut ) { fCutDCABachToPVWeighted = lCut;    }
+    
     AliCascadeResult::EMassHypo GetMassHypothesis () const { return fMassHypo; }
     Double_t GetMass() const;
     TString GetParticleName() const; 
@@ -222,6 +228,12 @@ public:
     Double_t GetCutVarBBCosPAExp1Const() const { return fCutVarBBCosPA_Exp1Const; }
     Double_t GetCutVarBBCosPAExp1Slope() const { return fCutVarBBCosPA_Exp1Slope; }
     Double_t GetCutVarBBCosPAConst    () const { return fCutVarBBCosPA_Const;     }
+    
+    //New to comission / experiemntal
+    Double_t GetCutDCACascadeToPV        () const { return fCutDCACascadeToPV;         }
+    Double_t GetCutDCANegToPVWeighted    () const { return fCutDCANegToPVWeighted;     }
+    Double_t GetCutDCAPosToPVWeighted    () const { return fCutDCAPosToPVWeighted;     }
+    Double_t GetCutDCABachToPVWeighted   () const { return fCutDCABachToPVWeighted;    }
     
     TH3F* GetHistogram       ()       { return fHisto; }
     TH3F* GetHistogramToCopy () const { return fHisto; }
@@ -318,11 +330,17 @@ private:
     Double_t fCutVarBBCosPA_Exp1Slope;
     Double_t fCutVarBBCosPA_Const;
     
+    //Special selections
+    Double_t fCutDCACascadeToPV;
+    Double_t fCutDCANegToPVWeighted;
+    Double_t fCutDCAPosToPVWeighted;
+    Double_t fCutDCABachToPVWeighted;
+    
     TH3F *fHisto; //Histogram for storing output with these configurations
     
     TProfile *fProtonProfile; //Histogram for bookkeeping proton momenta
     
-    ClassDef(AliCascadeResult, 28)
+    ClassDef(AliCascadeResult, 29)
     // 1 - original implementation
     // 2 - MC association implementation (disabled in real data analysis)
     // 3 - Variable binning constructor + re-order variables in main output for convenience
@@ -351,5 +369,6 @@ private:
     // 26 - addition of proton momenta histogram (for G3/F correction, 2.76 TeV re-analysis corrections)
     // 27 - bugfix
     // 28 - implementation of 276TeVV0CosPA cut (variable with lambda p)
+    // 29 - implementation of 3D DCA cascade to PV cut, weighted single-track DCA to PV cuts
 };
 #endif

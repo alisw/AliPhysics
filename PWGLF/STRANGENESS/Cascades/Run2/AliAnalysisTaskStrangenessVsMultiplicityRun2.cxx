@@ -264,6 +264,17 @@ fTreeCascVarBachNSigmaPion(0),
 fTreeCascVarBachNSigmaKaon(0),
 fTreeCascVarChiSquareV0(1e+3),
 fTreeCascVarChiSquareCascade(1e+3),
+
+fTreeCascVarBachDCAPVSigmaX2(0),
+fTreeCascVarBachDCAPVSigmaY2(0),
+fTreeCascVarBachDCAPVSigmaZ2(0),
+fTreeCascVarPosDCAPVSigmaX2(0),
+fTreeCascVarPosDCAPVSigmaY2(0),
+fTreeCascVarPosDCAPVSigmaZ2(0),
+fTreeCascVarNegDCAPVSigmaX2(0),
+fTreeCascVarNegDCAPVSigmaY2(0),
+fTreeCascVarNegDCAPVSigmaZ2(0),
+
 fTreeCascVarPosPIDForTracking(-1),
 fTreeCascVarNegPIDForTracking(-1),
 fTreeCascVarBachPIDForTracking(-1),
@@ -474,6 +485,17 @@ fTreeCascVarBachNSigmaPion(0),
 fTreeCascVarBachNSigmaKaon(0),
 fTreeCascVarChiSquareV0(1e+3),
 fTreeCascVarChiSquareCascade(1e+3),
+
+fTreeCascVarBachDCAPVSigmaX2(0),
+fTreeCascVarBachDCAPVSigmaY2(0),
+fTreeCascVarBachDCAPVSigmaZ2(0),
+fTreeCascVarPosDCAPVSigmaX2(0),
+fTreeCascVarPosDCAPVSigmaY2(0),
+fTreeCascVarPosDCAPVSigmaZ2(0),
+fTreeCascVarNegDCAPVSigmaX2(0),
+fTreeCascVarNegDCAPVSigmaY2(0),
+fTreeCascVarNegDCAPVSigmaZ2(0),
+
 fTreeCascVarPosPIDForTracking(-1),
 fTreeCascVarNegPIDForTracking(-1),
 fTreeCascVarBachPIDForTracking(-1),
@@ -1731,6 +1753,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::UserExec(Option_t *)
         UInt_t lIdxPosXi 	= (UInt_t) TMath::Abs( xi->GetPindex() );
         UInt_t lIdxNegXi 	= (UInt_t) TMath::Abs( xi->GetNindex() );
         UInt_t lBachIdx 	= (UInt_t) TMath::Abs( xi->GetBindex() );
+        
         // Care track label can be negative in MC production (linked with the track quality)
         // However = normally, not the case for track index ...
 
@@ -1765,6 +1788,20 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::UserExec(Option_t *)
         if( bachTrackXi->GetKinkIndex(0)>0 ) fTreeCascVarBachIsKink = kTRUE;
         if( pTrackXi->GetKinkIndex(0)>0 ) fTreeCascVarPosIsKink = kTRUE;
         if( nTrackXi->GetKinkIndex(0)>0 ) fTreeCascVarNegIsKink = kTRUE;
+        
+        //Get track uncertainties
+        //WARNING: THIS REFERS TO THE UNCERTAINTIES CLOSEST TO THE PV
+        fTreeCascVarNegDCAPVSigmaX2 = TMath::Power(TMath::Sin(nTrackXi->GetAlpha()),2)*nTrackXi->GetSigmaY2();
+        fTreeCascVarNegDCAPVSigmaY2 = TMath::Power(TMath::Cos(nTrackXi->GetAlpha()),2)*nTrackXi->GetSigmaY2();
+        fTreeCascVarNegDCAPVSigmaZ2 = nTrackXi->GetSigmaZ2();
+        
+        fTreeCascVarPosDCAPVSigmaX2 = TMath::Power(TMath::Sin(pTrackXi->GetAlpha()),2)*pTrackXi->GetSigmaY2();
+        fTreeCascVarPosDCAPVSigmaY2 = TMath::Power(TMath::Cos(pTrackXi->GetAlpha()),2)*pTrackXi->GetSigmaY2();
+        fTreeCascVarPosDCAPVSigmaZ2 = pTrackXi->GetSigmaZ2();
+        
+        fTreeCascVarBachDCAPVSigmaX2 = TMath::Power(TMath::Sin(bachTrackXi->GetAlpha()),2)*bachTrackXi->GetSigmaY2();
+        fTreeCascVarBachDCAPVSigmaY2 = TMath::Power(TMath::Cos(bachTrackXi->GetAlpha()),2)*bachTrackXi->GetSigmaY2();
+        fTreeCascVarBachDCAPVSigmaZ2 = bachTrackXi->GetSigmaZ2();
 
         Double_t lBMom[3], lNMom[3], lPMom[3];
         xi->GetBPxPyPz( lBMom[0], lBMom[1], lBMom[2] );
@@ -2495,8 +2532,27 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::UserExec(Option_t *)
                 //either don't use the cut at all, or make sure it's above threshold
                 ( lCascadeResult->GetCutUse276TeVV0CosPA()==kFALSE ||
                  fTreeCascVarV0CosPointingAngle>l276TeVV0CosPA
+                 )&&
+                
+                //Check 13: 3D Cascade DCA to PV
+                ( lCascadeResult->GetCutDCACascadeToPV() > 999 ||
+                 (TMath::Sqrt(fTreeCascVarCascDCAtoPVz*fTreeCascVarCascDCAtoPVz + fTreeCascVarCascDCAtoPVxy*fTreeCascVarCascDCAtoPVxy)<lCascadeResult->GetCutDCACascadeToPV() )
+                )&&
+                
+                //Check 14a: Negative track DCA to PV, weighted
+                ( lCascadeResult->GetCutDCANegToPVWeighted() < 0 ||
+                 (fTreeCascVarDCANegToPrimVtx/TMath::Sqrt(fTreeCascVarNegDCAPVSigmaX2*fTreeCascVarNegDCAPVSigmaX2 + fTreeCascVarNegDCAPVSigmaY2*fTreeCascVarNegDCAPVSigmaY2+1e-6)<lCascadeResult->GetCutDCANegToPVWeighted() )
+                 )&&
+                //Check 14a: Negative track DCA to PV, weighted
+                ( lCascadeResult->GetCutDCAPosToPVWeighted() < 0 ||
+                 (fTreeCascVarDCAPosToPrimVtx/TMath::Sqrt(fTreeCascVarPosDCAPVSigmaX2*fTreeCascVarPosDCAPVSigmaX2 + fTreeCascVarPosDCAPVSigmaY2*fTreeCascVarPosDCAPVSigmaY2+1e-6)<lCascadeResult->GetCutDCAPosToPVWeighted() )
+                 )&&
+                //Check 14a: Negative track DCA to PV, weighted
+                ( lCascadeResult->GetCutDCABachToPVWeighted() < 0 ||
+                 (fTreeCascVarDCABachToPrimVtx/TMath::Sqrt(fTreeCascVarBachDCAPVSigmaX2*fTreeCascVarBachDCAPVSigmaX2 + fTreeCascVarBachDCAPVSigmaY2*fTreeCascVarBachDCAPVSigmaY2+1e-6)<lCascadeResult->GetCutDCABachToPVWeighted() )
                  )
-                ){
+                )
+            {
                 //This satisfies all my conditionals! Fill histogram
                 histoout -> Fill ( fCentrality, fTreeCascVarPt, lMass );
             }

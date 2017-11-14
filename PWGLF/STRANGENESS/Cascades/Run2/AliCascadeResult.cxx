@@ -75,7 +75,11 @@ fCutVarBBCosPA_Exp0Const(0),
 fCutVarBBCosPA_Exp0Slope(0),
 fCutVarBBCosPA_Exp1Const(0),
 fCutVarBBCosPA_Exp1Slope(0),
-fCutVarBBCosPA_Const(1)
+fCutVarBBCosPA_Const(1),
+fCutDCACascadeToPV(1e+3),
+fCutDCANegToPVWeighted(-1),
+fCutDCAPosToPVWeighted(-1),
+fCutDCABachToPVWeighted(-1)
 {
     // Dummy Constructor - not to be used!
     //Main output histogram: Centrality, pt, mass
@@ -144,7 +148,11 @@ fCutVarBBCosPA_Exp0Const(0),
 fCutVarBBCosPA_Exp0Slope(0),
 fCutVarBBCosPA_Exp1Const(0),
 fCutVarBBCosPA_Exp1Slope(0),
-fCutVarBBCosPA_Const(1)
+fCutVarBBCosPA_Const(1),
+fCutDCACascadeToPV(1e+3),
+fCutDCANegToPVWeighted(-1),
+fCutDCAPosToPVWeighted(-1),
+fCutDCABachToPVWeighted(-1)
 {
     // Constructor
     Double_t lThisMass = GetMass();
@@ -215,7 +223,11 @@ fCutVarBBCosPA_Exp0Const(0),
 fCutVarBBCosPA_Exp0Slope(0),
 fCutVarBBCosPA_Exp1Const(0),
 fCutVarBBCosPA_Exp1Slope(0),
-fCutVarBBCosPA_Const(1)
+fCutVarBBCosPA_Const(1),
+fCutDCACascadeToPV(1e+3),
+fCutDCANegToPVWeighted(-1),
+fCutDCAPosToPVWeighted(-1),
+fCutDCABachToPVWeighted(-1)
 {
     // Constructor
     Double_t lThisMass = GetMass();
@@ -295,7 +307,11 @@ fCutVarBBCosPA_Exp0Const(0),
 fCutVarBBCosPA_Exp0Slope(0),
 fCutVarBBCosPA_Exp1Const(0),
 fCutVarBBCosPA_Exp1Slope(0),
-fCutVarBBCosPA_Const(1)
+fCutVarBBCosPA_Const(1),
+fCutDCACascadeToPV(1e+3),
+fCutDCANegToPVWeighted(-1),
+fCutDCAPosToPVWeighted(-1),
+fCutDCABachToPVWeighted(-1)
 {
     //Construct binning in invariant mass as standard: 400 bins from lThisMass-0.1 to lThisMass+1
     const Long_t lNMassBinsConst = lNMassBins;
@@ -376,7 +392,12 @@ fCutVarBBCosPA_Exp0Const(lCopyMe.fCutVarBBCosPA_Exp0Const),
 fCutVarBBCosPA_Exp0Slope(lCopyMe.fCutVarBBCosPA_Exp0Slope),
 fCutVarBBCosPA_Exp1Const(lCopyMe.fCutVarBBCosPA_Exp1Const),
 fCutVarBBCosPA_Exp1Slope(lCopyMe.fCutVarBBCosPA_Exp1Slope),
-fCutVarBBCosPA_Const(lCopyMe.fCutVarBBCosPA_Const)
+fCutVarBBCosPA_Const(lCopyMe.fCutVarBBCosPA_Const),
+
+fCutDCACascadeToPV(lCopyMe.fCutDCACascadeToPV),
+fCutDCANegToPVWeighted(lCopyMe.fCutDCANegToPVWeighted),
+fCutDCAPosToPVWeighted(lCopyMe.fCutDCAPosToPVWeighted),
+fCutDCABachToPVWeighted(lCopyMe.fCutDCABachToPVWeighted)
 
 {
     SetName( lNewName.Data() );
@@ -470,6 +491,11 @@ AliCascadeResult::AliCascadeResult(AliCascadeResult *lCopyMe, TString lNewName)
     fCutVarBBCosPA_Exp1Const = lCopyMe -> GetCutVarBBCosPAExp1Const();
     fCutVarBBCosPA_Exp1Slope = lCopyMe -> GetCutVarBBCosPAExp1Slope();
     fCutVarBBCosPA_Const = lCopyMe -> GetCutVarBBCosPAConst();
+    
+    fCutDCACascadeToPV      = lCopyMe -> GetCutDCACascadeToPV();
+    fCutDCANegToPVWeighted  = lCopyMe -> GetCutDCANegToPVWeighted();
+    fCutDCAPosToPVWeighted  = lCopyMe -> GetCutDCAPosToPVWeighted();
+    fCutDCABachToPVWeighted = lCopyMe -> GetCutDCABachToPVWeighted();
     
     // Constructor
     Double_t lThisMass = GetMass();
@@ -575,6 +601,11 @@ AliCascadeResult& AliCascadeResult::operator=(const AliCascadeResult& lCopyMe)
     fCutVarBBCosPA_Exp1Const = lCopyMe.GetCutVarBBCosPAExp1Const();
     fCutVarBBCosPA_Exp1Slope = lCopyMe.GetCutVarBBCosPAExp1Slope();
     fCutVarBBCosPA_Const = lCopyMe.GetCutVarBBCosPAConst();
+    
+    fCutDCACascadeToPV      = lCopyMe.GetCutDCACascadeToPV();
+    fCutDCANegToPVWeighted  = lCopyMe.GetCutDCANegToPVWeighted();
+    fCutDCAPosToPVWeighted  = lCopyMe.GetCutDCAPosToPVWeighted();
+    fCutDCABachToPVWeighted = lCopyMe.GetCutDCABachToPVWeighted();
     
     if (fHisto) {
         delete fHisto;
@@ -704,6 +735,11 @@ Bool_t AliCascadeResult::HasSameCuts(AliVWeakResult *lCompare, Bool_t lCheckdEdx
     if ( TMath::Abs(fCutVarBBCosPA_Exp1Slope - lCompareCascade->GetCutVarBBCosPAExp1Slope()) > 1e-6 ) lReturnValue = kFALSE;
     if ( TMath::Abs(fCutVarBBCosPA_Const  - lCompareCascade->GetCutVarBBCosPAConst()) > 1e-6 ) lReturnValue = kFALSE;
     
+    if ( TMath::Abs(fCutDCACascadeToPV       - lCompareCascade->GetCutDCACascadeToPV()) > 1e-6 ) lReturnValue = kFALSE;
+    if ( TMath::Abs(fCutDCANegToPVWeighted   - lCompareCascade->GetCutDCANegToPVWeighted()) > 1e-6 ) lReturnValue = kFALSE;
+    if ( TMath::Abs(fCutDCAPosToPVWeighted   - lCompareCascade->GetCutDCAPosToPVWeighted()) > 1e-6 ) lReturnValue = kFALSE;
+    if ( TMath::Abs(fCutDCABachToPVWeighted  - lCompareCascade->GetCutDCABachToPVWeighted()) > 1e-6 ) lReturnValue = kFALSE;
+    
     return lReturnValue;
 }
 //________________________________________________________________
@@ -789,6 +825,11 @@ void AliCascadeResult::Print()
     cout<<" Swap lam/lambar....: "<<fSwapBaryon<<endl; 
     cout<<" Swap v0 mes charge.: "<<fSwapV0MesonCharge<<endl;
     cout<<" Swap v0 bar charge.: "<<fSwapV0BaryonCharge<<endl;
+    
+    cout<<" DCA cascade to PV..: "<<fCutDCACascadeToPV<<endl;
+    cout<<" wDCA Neg to PV.....: "<<fCutDCANegToPVWeighted<<endl;
+    cout<<" wDCA Pos to PV.....: "<<fCutDCAPosToPVWeighted<<endl;
+    cout<<" wDCA Bach to PV....: "<<fCutDCABachToPVWeighted<<endl;
     cout<<"========================================"<<endl;
     return;
 }
