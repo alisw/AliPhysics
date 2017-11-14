@@ -51,6 +51,14 @@ class AliAnalysisTaskEmcalJetPerformance : public AliAnalysisTaskEmcalJet {
   AliAnalysisTaskEmcalJetPerformance(const char *name)                          ;
   virtual ~AliAnalysisTaskEmcalJetPerformance()                                 ;
   
+  static AliAnalysisTaskEmcalJetPerformance* AddTaskEmcalJetPerformance(
+    const char *ntracks            = "usedefault",
+    const char *nclusters          = "usedefault",
+    const char *nGenLev            = "mcparticles",
+    const Double_t minTrPt         = 0.15,              // Minimum track pT in standard track container
+    const Double_t minClPt         = 0.30,              // Minimum cluster E in standard cluster container
+    const char *suffix             = "");
+  
   enum ParticleType {
     kUndefined      = -1, //!< Undefined
     kPhoton         = 0,  //!< Photon (direct or decay)
