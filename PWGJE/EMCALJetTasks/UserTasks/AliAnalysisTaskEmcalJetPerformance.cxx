@@ -456,13 +456,12 @@ void AliAnalysisTaskEmcalJetPerformance::AllocateClusterHistograms()
   //////////////////////////////////////////////
   ////// Plot E/p studies
   
-  // Plot E/p (centrality, Eclus nonlincorr, Eclus nonlincorr / trackPsum)
-  histname = "ClusterHistograms/hEoverP";
-  htitle = histname + ";Centrality (%);#it{E}_{clus} (GeV); #it{E}_{clus} / #Sigma#it{p}_{track} (GeV)";
-  fHistManager.CreateTH3(histname.Data(), htitle.Data(), fNCentHistBins, fCentHistBins, fNPtHistBins, fPtHistBins, fNEoverPBins, fEoverPBins);
+  // Plot E/p vs. M02 for 0-10% and 50-90% (Eclus nonlincorr, Eclus nonlincorr / trackPsum, M02)
+  histname = "ClusterHistograms/hEoverPM02Central";
+  htitle = histname + ";#it{E}_{clus} (GeV); #it{E}_{clus} / #Sigma#it{p}_{track} (GeV); M02";
+  fHistManager.CreateTH3(histname.Data(), htitle.Data(), fNPtHistBins, fPtHistBins, fNEoverPBins, fEoverPBins, fNM02HistBins, fM02HistBins);
   
-  // Plot E/p vs. M02 for 0-10% (Eclus nonlincorr, Eclus nonlincorr / trackPsum, M02)
-  histname = "ClusterHistograms/hEoverPM02";
+  histname = "ClusterHistograms/hEoverPM02Peripheral";
   htitle = histname + ";#it{E}_{clus} (GeV); #it{E}_{clus} / #Sigma#it{p}_{track} (GeV); M02";
   fHistManager.CreateTH3(histname.Data(), htitle.Data(), fNPtHistBins, fPtHistBins, fNEoverPBins, fEoverPBins, fNM02HistBins, fM02HistBins);
   
@@ -1320,14 +1319,14 @@ void AliAnalysisTaskEmcalJetPerformance::FillClusterHistograms()
     
     //////////////////////////////////////////////
     ////// Plot E/p studies
-    
-    // Plot E/p (centrality, Eclus nonlincorr, Eclus nonlincorr / trackPsum)
-    histname = "ClusterHistograms/hEoverP";
-    fHistManager.FillTH3(histname, fCent, clus->GetNonLinCorrEnergy(), EoverP);
 
-    // Plot E/p vs. M02 for 0-10% (Eclus nonlincorr, Eclus nonlincorr / trackPsum, M02)
-    histname = "ClusterHistograms/hEoverPM02";
+    // Plot E/p vs. M02 for 0-10% and 50-90% (Eclus nonlincorr, Eclus nonlincorr / trackPsum, M02)
     if (fCent < 10) {
+      histname = "ClusterHistograms/hEoverPM02Central";
+      fHistManager.FillTH3(histname, clus->GetNonLinCorrEnergy(), EoverP, clus->GetM02());
+    }
+    if (fCent > 50 && fCent < 90) {
+      histname = "ClusterHistograms/hEoverPM02Peripheral";
       fHistManager.FillTH3(histname, clus->GetNonLinCorrEnergy(), EoverP, clus->GetM02());
     }
     
