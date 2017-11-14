@@ -2299,10 +2299,26 @@ void  AliTPCtracker::ApplyTailCancellation(){
   // Retrieve
   TObjArray *ionTailArr = (TObjArray*)AliTPCcalibDB::Instance()->GetIonTailArray();
   if (!ionTailArr) {AliFatal("TPC - Missing IonTail OCDB object");}
-  TObject *rocFactorIROC  = ionTailArr->FindObject("factorIROC");
-  TObject *rocFactorOROC  = ionTailArr->FindObject("factorOROC");   
-  Float_t factorIROC      = (atof(rocFactorIROC->GetTitle()));
-  Float_t factorOROC      = (atof(rocFactorOROC->GetTitle()));
+  Float_t factorIROC=2, factorOROC=2;
+  //if (AliReconstructor::GetMCEvent()){     // if is MC event reconstruction  - this does not work
+  if (gSystem->AccessPathName("TPC.SDigits.root",kFileExists)==kFALSE){ // Is MC data?
+    // TODO -THIS IS HACK - apply MC ion tail correction onnly in case TPC summable digits exist. AccessPathName - use inverted logic
+    TObject *rocFactorIROC  = ionTailArr->FindObject("factorIROCMC");
+    TObject *rocFactorOROC  = ionTailArr->FindObject("factorOROCMC");
+    if (rocFactorIROC==NULL){
+      rocFactorIROC  = ionTailArr->FindObject("factorIROC");
+      rocFactorOROC  = ionTailArr->FindObject("factorOROC");
+    }
+    factorIROC      = (atof(rocFactorIROC->GetTitle()));
+    factorOROC      = (atof(rocFactorOROC->GetTitle()));
+    ::Info("AliTPCtracker::ApplyTailCancellation","Applied MC ion tail correction\t%f\t%f", factorIROC, factorOROC);
+  }else{                                  // Get ion tail correction factor for real data
+    TObject *rocFactorIROC  = ionTailArr->FindObject("factorIROC");
+    TObject *rocFactorOROC  = ionTailArr->FindObject("factorOROC");
+    factorIROC      = (atof(rocFactorIROC->GetTitle()));
+    factorOROC      = (atof(rocFactorOROC->GetTitle()));
+    ::Info("AliTPCtracker::ApplyTailCancellation","Applied raw data ion tail correction\t%f\t%f", factorIROC, factorOROC);
+  }
 
   // find the number of clusters for the whole TPC (nclALL)
   Int_t nclALL=0;
