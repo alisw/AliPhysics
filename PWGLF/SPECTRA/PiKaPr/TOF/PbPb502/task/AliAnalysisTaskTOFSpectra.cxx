@@ -1373,7 +1373,6 @@ void AliAnalysisTaskTOFSpectra::UserCreateOutputObjects()
       //Event wide variables
       //fTreeTrack->Branch("fPrimVertex", &fPrimVertex, "fPrimVertex[3]/D");
       //fTreeTrack->Branch("fNContrPrimVertex", &fNContrPrimVertex, "fNContrPrimVertex/I");
-      fTreeTrack->Branch("fEvtMultBin", &fEvtMultBin, "fEvtMultBin/S");
 //
 //Track variables
 #ifdef USETREECLASS
