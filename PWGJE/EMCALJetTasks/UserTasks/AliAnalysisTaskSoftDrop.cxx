@@ -228,7 +228,7 @@ void AliAnalysisTaskSoftDrop::UserCreateOutputObjects()
   fhCorrPtZg = new TH2F("fhCorrPtZg", "#it{Z}_{g}; p_{T}^{corr} [GeV/c]; #it{Z}_{g}", 16, 0, 160, 20, 0., 0.5);
   fOutput->Add(fhCorrPtZg);
 
-  fhCorrPtZg2 = new TH2F("fhCorrPtZg2", "#it{Z}_{g}; p_{T}^{corr} [GeV/c]; #it{Z}_{g}", 16, 0, 160, 40, 0.0, 1.0);
+  fhCorrPtZg2 = new TH2F("fhCorrPtZg2", "#it{Z}_{g}; p_{T}^{corr} [GeV/c]; #it{Z}_{g}", 16, 0, 160, 20, 0., 0.5);
   fOutput->Add(fhCorrPtZg2);
 
   fhCorrPtZgD = new TH2F("fhCorrPtZgD", "#it{Z}_{g}; p_{T}^{corr} [GeV/c]; #it{Z}_{g}", 16, 0, 160, 20, 0., 0.5);
@@ -237,11 +237,14 @@ void AliAnalysisTaskSoftDrop::UserCreateOutputObjects()
   fhCorrPtRg = new TH2F("fhCorrPtRg", "R_{g}; p_{T}^{corr} [GeV/c]; R_{g}", 16, 0, 160, 40, 0., 0.5);
   fOutput->Add(fhCorrPtRg);
 
-  fhCorrPtRg2 = new TH2F("fhCorrPtRg2", "R_{g}; p_{T}^{corr} [GeV/c]; R_{g}", 16, 0, 160, 40, 0., 0.5);
-  fOutput->Add(fhCorrPtRg2);
-
   fhCorrPtRgD = new TH2F("fhCorrPtRgD", "R_{g}; p_{T}^{corr} [GeV/c]; R_{g}", 16, 0, 160, 40, 0., 0.5);
   fOutput->Add(fhCorrPtRgD);
+
+  fhCorrPtZgSDstep = new TH3F("fhCorrPtZgSDstep", "fhCorrPtZgSDstep", 16, 0, 160, 20, 0., 0.5, 20, 0, 20);
+  fOutput->Add(fhCorrPtZgSDstep);
+
+  fhCorrPtRgSDstep = new TH3F("fhCorrPtRgSDstep", "fhCorrPtRgSDstep", 16, 0, 160, 20, 0., 0.5, 20, 0, 20);
+  fOutput->Add(fhCorrPtRgSDstep);
 
   fhCorrPtPtfrac = new TH2F("fhCorrPtPtfrac", "#deltap_{T}; p_{T}^{corr} [GeV/c]; #deltap_{T}", 16, 0, 160, 80, 0., 1.0);
   fOutput->Add(fhCorrPtPtfrac);
@@ -309,6 +312,7 @@ Bool_t AliAnalysisTaskSoftDrop::FillHistograms()
       std::vector<fastjet::PseudoJet> jets = sorted_by_pt(cs.inclusive_jets());
 
       if (jets.size() > 0) {
+        fSDM = 0;
         SoftDropDeepDeclustering( jets[0], jets[0].pt() );
         fhCorrPtZg2->Fill( jets[0].pt(), SoftDropDeclustering(jets[0], 0.5, 1.5) );
       }
@@ -403,11 +407,19 @@ void AliAnalysisTaskSoftDrop::SoftDropDeepDeclustering(fastjet::PseudoJet jet, c
     Float_t pt1 = jet1.pt();
     Float_t pt2 = jet2.pt();
 
+    Float_t dr = TMath::Sqrt( jet1.plain_distance(jet2) );
+
     Float_t z;
     if (pt1 < pt2) z = pt1/(pt1+pt2);
     else z = pt2/(pt1+pt2);
 
-    if (z > 0.1) fhCorrPtZgD->Fill(inpt, z);
+    if (z > 0.1) {
+      fSDM++;
+      fhCorrPtZgD->Fill(inpt, z);
+      fhCorrPtRgD->Fill(inpt, dr);
+      fhCorrPtZgSDstep->Fill(inpt, z,  fSDM);
+      fhCorrPtRgSDstep->Fill(inpt, dr, fSDM);
+    }
 
     if (pt1 > pt2) SoftDropDeepDeclustering(jet1, inpt);
     else SoftDropDeepDeclustering(jet2, inpt);
@@ -428,7 +440,7 @@ Float_t AliAnalysisTaskSoftDrop::SoftDropDeclustering(fastjet::PseudoJet jet, co
     Float_t pt1 = jet1.pt();
     Float_t pt2 = jet2.pt();
 
-    Float_t dr = sqrt( jet1.plain_distance(jet2) );
+    Float_t dr = TMath::Sqrt( jet1.plain_distance(jet2) );
     Float_t angular_term = TMath::Power(dr/0.4, beta);
 
     Float_t z;
