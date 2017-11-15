@@ -42,6 +42,7 @@ class AliPIDResponse;
 class AliMultSelection;
 class AliEventPoolManager;
 class AliAODv0KineCuts;
+class AliESDv0KineCuts;
 
 #include "AliAODv0KineCuts.h"
 #include "AliMCEventHandler.h"
@@ -62,46 +63,47 @@ public:
     virtual void   Terminate(Option_t *);
     
     //******************** ANALYSIS
-    AliAODTrack* FindLPAndHFE(TObjArray* RedTracksHFE, const AliAODVertex *pVtx, Int_t nMother, Double_t listMother[]);
-    void FindPhotonicPartner(Int_t iTracks, AliAODTrack* track,  const AliAODVertex *pVtx, Int_t nMother, Double_t listMother[], Int_t &LSPartner, Int_t&ULSPartner, Int_t *LSPartnerID, Int_t *ULSPartnerID, Bool_t &trueULSPartner, Bool_t &iHsPhotonic);
+    AliVTrack* FindLPAndHFE(TObjArray* RedTracksHFE, const AliVVertex *pVtx, Int_t nMother, Int_t listMother[]);
+    void FindPhotonicPartner(Int_t iTracks, AliVTrack* track,  const AliVVertex *pVtx, Int_t nMother, Int_t listMother[], Int_t &LSPartner, Int_t&ULSPartner, Int_t *LSPartnerID, Int_t *ULSPartnerID, Bool_t &trueULSPartner, Bool_t &iHsPhotonic);
     void CorrelateElectron(TObjArray* RedTracksHFE);
 
-    void CorrelateLP(AliAODTrack* LPtrack,  const AliAODVertex* pVtx, Int_t nMother, Double_t listMother[], TObjArray* RedTracksHFE);
-    void CorrelateLPMixedEvent(AliAODTrack* LPtrack, Float_t mult, Float_t zVtx);
+    void CorrelateLP(AliVTrack* LPtrack,  const AliVVertex* pVtx, Int_t nMother, Int_t listMother[], TObjArray* RedTracksHFE);
+    void CorrelateLPMixedEvent(AliVTrack* LPtrack, Float_t mult, Float_t zVtx);
     
-    void CorrelateHadron(TObjArray* RedTracksHFE,  const AliAODVertex* pVtx, Int_t nMother, Double_t listMother[], Float_t mult);
-    void CorrelateHadronMixedEvent(AliAODTrack* Htrack, Float_t mult, Float_t zVtx);
+    void CorrelateHadron(TObjArray* RedTracksHFE,  const AliVVertex* pVtx, Int_t nMother, Int_t listMother[], Float_t mult);
+    void CorrelateHadronMixedEvent(AliVTrack* Htrack, Float_t mult, Float_t zVtx);
 
-    void CorrelateWithHadrons(AliAODTrack* TriggerTrack, const AliAODVertex* pVtx, Int_t nMother, Double_t listMother[], Bool_t FillHadron, Bool_t FillLP,Bool_t** NonElecIsTrigger, Double_t *NonElecIsTriggerPt, Int_t NumElectronsInEvent); 
+    void CorrelateWithHadrons(AliVTrack* TriggerTrack, const AliVVertex* pVtx, Int_t nMother, Int_t listMother[], Bool_t FillHadron, Bool_t FillLP,Bool_t** NonElecIsTrigger, Double_t *NonElecIsTriggerPt, Int_t NumElectronsInEvent); 
 
 
     //********************MC
-    void MCEfficiencyCorrections(const AliAODVertex * RecVertex);
+    void MCEfficiencyCorrections(const AliVVertex * RecVertex);
 
 
     //*********************ANALYSIS Helper
-    Bool_t ChargedHadronTrackCuts(const AliAODVertex *pVtx,AliAODTrack *Htrack, Int_t nMother, Double_t listMother[]);
-    Bool_t ChargedHadronPIDCuts(AliAODTrack *Htrack);
+    Bool_t ChargedHadronTrackCuts(const AliVVertex *pVtx,AliVTrack *Htrack, Int_t nMother, Int_t listMother[]);
+    Bool_t ChargedHadronPIDCuts(AliVTrack *Htrack);
 
-    Bool_t AssoHadronPIDCuts(AliAODTrack *Htrack);
+    Bool_t AssoHadronPIDCuts(AliVTrack *Htrack);
 
-    Bool_t InclElecTrackCuts(const AliAODVertex *pVtx,AliAODTrack *ietrack, Int_t nMother, Double_t listMother[]);
-    Bool_t InclElecPIDCuts(AliAODTrack *track, Bool_t IsPrimary);
+    Bool_t InclElecTrackCuts(const AliVVertex *pVtx,AliVTrack *ietrack, Int_t nMother, Int_t listMother[]);
+    Bool_t InclElecPIDCuts(AliVTrack *track, Bool_t IsPrimary);
 
-    Bool_t PhotElecPIDCuts(AliAODTrack *track);
-    Bool_t PhotElecTrackCuts(const AliAODVertex *pVtx,AliAODTrack *aetrack, Int_t nMother, Double_t listMother[]);
+    Bool_t PhotElecPIDCuts(AliVTrack *track);
+    Bool_t PhotElecTrackCuts(const AliVVertex *pVtx,AliVTrack *aetrack, Int_t nMother, Int_t listMother[]);
     
-    void EvaluateTaggingEfficiency(AliAODTrack * track, Int_t LSPartner, Int_t ULSPartner, Bool_t trueULSPartner); 
-    Bool_t CloneAndReduceTrackList(TObjArray* RedTracks, AliAODTrack* track, Int_t LSPartner, Int_t ULSPartner, Int_t *LSPartnerID, Int_t *ULSPartnerID, Bool_t trueULSPartner, Bool_t isPhotonic, Bool_t isHadron);
+    void EvaluateTaggingEfficiency(AliVTrack * track, Int_t LSPartner, Int_t ULSPartner, Bool_t trueULSPartner); 
+    Bool_t CloneAndReduceTrackList(TObjArray* RedTracks, AliVTrack* track, Int_t LSPartner, Int_t ULSPartner, Int_t *LSPartnerID, Int_t *ULSPartnerID, Bool_t trueULSPartner, Bool_t isPhotonic, Bool_t isHadron);
 
     void BinLogX(TAxis *axis);
     void CheckHadronIsTrigger(Double_t ptE, Bool_t *HadronIsTrigger);
     void CheckElectronIsTrigger(Double_t ptH, Bool_t *ElectronIsTrigger) ;
-    Bool_t PassEventBias( const AliAODVertex *pVtx, Int_t nMother, Double_t *listMother);    
+    Bool_t PassEventBias( const AliVVertex *pVtx, Int_t nMother, Int_t *listMother);    
 
 
     //**************  SETTINGS
     void SetMC (Bool_t IsMC) { fIsMC=IsMC;};
+    void SetAODanalysis(Bool_t IsAOD) {fIsAOD = IsAOD;};
     void SetTender (Bool_t UseTender) {fUseTender = UseTender;};
     void SetPeriod (Double_t period) {fWhichPeriod = period;};
 
@@ -118,7 +120,7 @@ public:
 
     void SetPhotElecPtCut (Double_t AssPtCut) {fPhotElecPtCut = AssPtCut;};
     void SetPhotElecTPCnCut (Int_t AssTPCnCut) {fPhotElecTPCnCut = AssTPCnCut;};
-    void SetPhotElecITSrefitCut(Bool_t AssITSrefitCut) {fPhotElecITSrefitCut = AssITSrefitCut;};  
+   void SetPhotElecITSrefitCut(Bool_t AssITSrefitCut) {fPhotElecITSrefitCut = AssITSrefitCut;};  
 
     void SetHTPCnCut(Int_t HTPCnCut) {fHTPCnCut = HTPCnCut;}
     void SetHITSrefitCut(Bool_t HITSrefitCut) {fHITSrefitCut = HITSrefitCut;};   
@@ -141,6 +143,8 @@ public:
 
     void SetPi0WeightToData(TH1F &  WPion) {fCorrectPiontoData = WPion; fCorrectPiontoData.SetName("fCorrectPiontoData");}
     void SetEtaWeightToData(TH1F &  WEta)  {fCorrectEtatoData  = WEta; fCorrectEtatoData.SetName("fCorrectEtatoData");}
+
+    Bool_t   ESDkTrkGlobalNoDCA(AliVTrack* Vtrack);
 
   
 
@@ -204,6 +208,8 @@ public:
     Bool_t                fLParticle;               //! Is LP found?
 
 
+    AliESDEvent           *fESD;                    //! ESD object
+    AliESDtrackCuts       *fesdTrackCuts;           //!
     AliAODEvent           *fAOD;                    //! AOD object
     AliVEvent             *fVevent;                 //! VEvent
     AliPIDResponse        *fpidResponse;            //! PID response
@@ -237,6 +243,7 @@ public:
     TH2F                  *fEtaVtxZ;                //! Eta vs Vtx z (check for ITS acceptance problem)
 
     THnSparse             *fMultiplicity;	    //! multiplicity distribution
+    Int_t                 *fRunList;                //!
 
     TH2F                  *fElectronTrackCuts;      //! 
     TH2F                  *fElectronTrackTPCNcls;   //! 
@@ -325,29 +332,41 @@ public:
     THnSparse             *fInclElecHa;             //!
     THnSparse             *fLSElecHa;               //!
     THnSparse             *fULSElecHa;              //!
-    THnSparse              *fMCElecHaHadron;        //!
+    THnSparse             *fMCElecHaHadron;        //!
     THnSparse             *fElecHaHa;               //!
     THnSparse             *fElecHaLSNoPartner;      //!
     THnSparse             *fElecHaULSNoPartner;     //!
     THnSparse             *fMCElecHaTruePartner;    //!
     THnSparse             *fMCElecHaNoPartner;      //!
+    THnSparse             *fMCElecHaRemovedPartner; //!
     TH2F                  *fMCElecHaTruePartnerTrigger;        //!
     TH2F                  *fMCElecHaNoPartnerTrigger;          //!
+    TH2F                  *fMCElecHaRemovedPartnerTrigger; //!
     THnSparse             *fElecHaMixedEvent;       //!
     THnSparse             *fLSElecHaMixedEvent;     //!
     THnSparse             *fULSElecHaMixedEvent;    //!
 
 
     TH2F                  *fElecLPTrigger;          //!
+    TH2F                  *fElecLPTriggerLS;         //!
+    TH2F                  *fElecLPTriggerULS;        //!
+    TH2F                  *fHadContLPTrigger;       //!
     TH2F                  *fLPElecTrigger;          //!
     TH2F                  *fLPNonElecTrigger;       //!
     TH2F                  *fNonElecLPTrigger;       //!
     THnSparse             *fInclElecLP;             //!
-    THnSparse             *fLSElecLP;               //!
-    THnSparse             *fULSElecLP;              //!
+    THnSparse             *fLSElecLP;               //! 
+    THnSparse             *fULSElecLP;              //! 
+    THnSparse             *fMCElecLPHadron;         //! 
     THnSparse             *fElecLPHa;               //!
-    THnSparse             *fElecLPLSNoPartner;      //!
-    THnSparse             *fElecLPULSNoPartner;     //!
+    THnSparse             *fElecLPLSNoPartner;      //! 
+    THnSparse             *fElecLPULSNoPartner;     //! 
+    THnSparse             *fMCElecLPTruePartner;    //! 
+    THnSparse             *fMCElecLPNoPartner;      //! 
+    THnSparse             *fMCElecLPRemovedPartner; //!
+    TH2F                  *fMCElecLPTruePartnerTrigger;        //!
+    TH2F                  *fMCElecLPNoPartnerTrigger;          //!
+    TH2F                  *fMCElecLPRemovedPartnerTrigger; //!
     THnSparse             *fElecLPMixedEvent;       //!
     THnSparse             *fLSElecLPMixedEvent;     //!
     THnSparse             *fULSElecLPMixedEvent;    //!
@@ -375,7 +394,8 @@ public:
     THnSparse             *fMCPiPlusProdV2;          //!
     THnSparse             *fMCLeadingParticle;       //!
 
-    AliAODv0KineCuts *fV0cuts;           //! ESD V0 cuts
+    AliESDv0KineCuts *fV0cutsESD;        //! ESD V0 cuts
+    AliAODv0KineCuts *fV0cuts;           //! AOD V0 cuts
     TObjArray *fV0electrons;             //! array with pointer to identified particles from V0 decays (electrons)
     TObjArray *fV0pions;                 //! array with pointer to identified particles from V0 decays (pions)
     TObjArray *fV0protons;               //! array with pointer to identified particles from V0 decays (ptotons)
@@ -383,10 +403,11 @@ public:
     TH1F      *fEventsPerRun;            //!
     TH3F      *fTRDnTrackRun;            //!
     Int_t     *fV0tags;                  //!
-    void      FindV0Candidates(AliAODEvent *Event);
+    void      FindV0CandidatesAOD(AliAODEvent *Event);
+    void      FindV0CandidatesESD(AliESDEvent *Event);
     void      ClearV0PIDList();
-    void      TRDQA(Int_t RunNumber, const AliAODVertex *pVtx, Int_t nMother, Double_t listMother[]);
-    void      FillV0Histograms(AliAODTrack* track, Int_t Species, Int_t RunNumber);
+    void      TRDQA(Int_t RunNumber, const AliVVertex *pVtx, Int_t nMother, Int_t listMother[]);
+    void      FillV0Histograms(AliVTrack* track, Int_t Species, Int_t RunNumber);
     THnSparse *fTRDEtaPhi;               //!
     THnSparse *fTRDNTracklets;           //!
     THnSparse *fTRDV0NTracklets;         //!

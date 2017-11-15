@@ -1,4 +1,4 @@
-AliAnalysisTask *AddTaskHaHFECorrel(Double_t period, Double_t MinPtEvent, Double_t MaxPtEvent, Bool_t TRDQA, Bool_t CorrHadron, Bool_t CorrLP,  Bool_t IsMC, Bool_t UseTender, Int_t ITSnCut,  Int_t TPCnCut, Int_t TPCnCutdEdx,   Double_t PhotElecPtCut, Int_t PhotElecTPCnCut,Bool_t PhotElecITSrefitCut,Double_t InvmassCut, Int_t HTPCnCut,   Bool_t HITSrefitCut, Bool_t HTPCrefitCut, Bool_t UseITS, Double_t SigmaITScut, Double_t SigmaTOFcut, Double_t SigmaTPCcut, const char * ID="")
+AliAnalysisTask *AddTaskHaHFECorrel(Double_t period, Double_t MinPtEvent, Double_t MaxPtEvent, Bool_t TRDQA, Bool_t CorrHadron, Bool_t CorrLP,  Bool_t IsMC, Bool_t IsAOD, Bool_t UseTender, Int_t ITSnCut,  Int_t TPCnCut, Int_t TPCnCutdEdx,   Double_t PhotElecPtCut, Int_t PhotElecTPCnCut,Bool_t PhotElecITSrefitCut,Double_t InvmassCut, Int_t HTPCnCut,   Bool_t HITSrefitCut, Bool_t HTPCrefitCut, Bool_t UseITS, Double_t SigmaITScut, Double_t SigmaTOFcut, Double_t SigmaTPCcut, const char * ID="")
 {
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
@@ -13,6 +13,8 @@ AliAnalysisTask *AddTaskHaHFECorrel(Double_t period, Double_t MinPtEvent, Double
 
   TString type = mgr->GetInputEventHandler()->GetDataType();
 
+  AliMCEventHandler* mcHand = new AliMCEventHandler();
+  mgr->SetMCtruthEventHandler(mcHand);
   Bool_t MCthere=kTRUE;
   AliMCEventHandler *mcH = dynamic_cast<AliMCEventHandler*>(mgr->GetMCtruthEventHandler());
   if (!mcH) {
@@ -20,9 +22,10 @@ AliAnalysisTask *AddTaskHaHFECorrel(Double_t period, Double_t MinPtEvent, Double
   }
 
 
+
   gROOT->LoadMacro("$ALICE_PHYSICS/PWGHF/hfe/macros/configs/pp/ConfigHaHFECorrel.C");
   AliAnalysisTaskHaHFECorrel *taskMB = 
-    ConfigHaHFECorrel(period, MinPtEvent, MaxPtEvent, TRDQA, CorrHadron, CorrLP, IsMC, UseTender, ITSnCut, TPCnCut, TPCnCutdEdx, PhotElecPtCut,PhotElecTPCnCut, PhotElecITSrefitCut,  InvmassCut,  HTPCnCut,  HITSrefitCut, HTPCrefitCut, UseITS, SigmaITScut, SigmaTOFcut, SigmaTPCcut, ID);
+    ConfigHaHFECorrel(period, MinPtEvent, MaxPtEvent, TRDQA, CorrHadron, CorrLP, IsMC, IsAOD, UseTender, ITSnCut, TPCnCut, TPCnCutdEdx, PhotElecPtCut,PhotElecTPCnCut, PhotElecITSrefitCut,  InvmassCut,  HTPCnCut,  HITSrefitCut, HTPCrefitCut, UseITS, SigmaITScut, SigmaTOFcut, SigmaTPCcut, ID);
   if (!taskMB) {
     Error("AddTaskHaHFECorrel", "No task found.");
   }
