@@ -710,19 +710,21 @@ void AliAnalysisTaskEMCALPhotonIsolation::UserCreateOutputObjects(){
 	fPtvsM02vsSumUE->Sumw2();
 	fOutput->Add(fPtvsM02vsSumUE);
 
-	fTestEnergyConeNorm = new TH3F("hTestEnergyConeVSpT_Norm","Test energy clusters and tracks in cone (already normalised by cone area)",200,0.,100.,250,0.,100.,250,0.,100.);
-	fTestEnergyConeNorm->SetXTitle("#it{p}_{T}^{cluster}");
-	fTestEnergyConeNorm->SetYTitle("#sum^{cone} #it{p}_{T}^{cluster}");
-	fTestEnergyConeNorm->SetZTitle("#sum^{cone} #it{p}_{T}^{track}");
-	fTestEnergyConeNorm->Sumw2();
-	fOutput->Add(fTestEnergyConeNorm);
+	if(fAreasPerEvent){
+	  fTestEnergyConeNorm = new TH3F("hTestEnergyConeVSpT_Norm","Test energy clusters and tracks in cone (already normalised by cone area)",200,0.,100.,250,0.,100.,250,0.,100.);
+	  fTestEnergyConeNorm->SetXTitle("#it{p}_{T}^{cluster}");
+	  fTestEnergyConeNorm->SetYTitle("#sum^{cone} #it{p}_{T}^{cluster}");
+	  fTestEnergyConeNorm->SetZTitle("#sum^{cone} #it{p}_{T}^{track}");
+	  fTestEnergyConeNorm->Sumw2();
+	  fOutput->Add(fTestEnergyConeNorm);
 
-	fTestEnergyEtaBandNorm = new TH3F("hTestEnergyEtaBandVSpT_Norm","Test energy clusters and tracks in eta-band (already normalised by band area)",200,0.,100.,250,0.,100.,250,0.,100.);
-	fTestEnergyEtaBandNorm->SetXTitle("#it{p}_{T}^{cluster}");
-	fTestEnergyEtaBandNorm->SetYTitle("#sum^{eta-band} #it{p}_{T}^{cluster}");
-	fTestEnergyEtaBandNorm->SetZTitle("#sum^{eta-band} #it{p}_{T}^{track}");
-	fTestEnergyEtaBandNorm->Sumw2();
-	fOutput->Add(fTestEnergyEtaBandNorm);
+	  fTestEnergyEtaBandNorm = new TH3F("hTestEnergyEtaBandVSpT_Norm","Test energy clusters and tracks in eta-band (already normalised by band area)",200,0.,100.,250,0.,100.,250,0.,100.);
+	  fTestEnergyEtaBandNorm->SetXTitle("#it{p}_{T}^{cluster}");
+	  fTestEnergyEtaBandNorm->SetYTitle("#sum^{eta-band} #it{p}_{T}^{cluster}");
+	  fTestEnergyEtaBandNorm->SetZTitle("#sum^{eta-band} #it{p}_{T}^{track}");
+	  fTestEnergyEtaBandNorm->Sumw2();
+	  fOutput->Add(fTestEnergyEtaBandNorm);
+	}
 
           // fPtvsM02vsSumPi0 = new TH3D("hPtvsM02vsSumPi0 when pi0 rejecting","#it{p}_{T} vs #sigma_{long}^{2} vs  #Sigma E_{T}^{iso cone}-UE  pi0 rejecting distribution for clusters",200,0.,100.,500,0.,5.,200,-10.,90.);
           // fPtvsM02vsSumPi0->Sumw2();
@@ -952,13 +954,15 @@ void AliAnalysisTaskEMCALPhotonIsolation::UserCreateOutputObjects(){
       // fInvMassM02noiso->Sumw2();
       // fOutput->Add(fInvMassM02noiso);
 
-    fConeArea = new TH1D("hConeArea","Cone area dist. (depending on the cluster position)", 60, 0., 0.6);
-    fConeArea->Sumw2();
-    fOutput->Add(fConeArea);
+    if(fAreasPerEvent){
+      fConeArea = new TH1D("hConeArea","Cone area dist. (depending on the cluster position)", 60, 0., 0.6);
+      fConeArea->Sumw2();
+      fOutput->Add(fConeArea);
 
-    fEtaBandArea = new TH1D("hEtaBandArea","Eta-band area dist. (depending on the cluster position)", 60, 0., 0.6);
-    fEtaBandArea->Sumw2();
-    fOutput->Add(fEtaBandArea);
+      fEtaBandArea = new TH1D("hEtaBandArea","Eta-band area dist. (depending on the cluster position)", 60, 0., 0.6);
+      fEtaBandArea->Sumw2();
+      fOutput->Add(fEtaBandArea);
+    }
   }
 
     // Initialization of all the common THistos for the 3 different outputs
@@ -1035,12 +1039,14 @@ void AliAnalysisTaskEMCALPhotonIsolation::UserCreateOutputObjects(){
   fTestEnergyCone->Sumw2();
   fOutput->Add(fTestEnergyCone);
 
-  fTestEnergyEtaBand = new TH3F("hTestEnergyEtaBandVSpT","Test energy clusters and tracks in eta-band",200,0.,100.,250,0.,100.,250,0.,100.);
-  fTestEnergyEtaBand->SetXTitle("#it{p}_{T}^{cluster}");
-  fTestEnergyEtaBand->SetYTitle("#sum^{eta-band} #it{p}_{T}^{cluster}");
-  fTestEnergyEtaBand->SetZTitle("#sum^{eta-band} #it{p}_{T}^{track}");
-  fTestEnergyEtaBand->Sumw2();
-  fOutput->Add(fTestEnergyEtaBand);
+  if(fAreasPerEvent){
+    fTestEnergyEtaBand = new TH3F("hTestEnergyEtaBandVSpT","Test energy clusters and tracks in eta-band",200,0.,100.,250,0.,100.,250,0.,100.);
+    fTestEnergyEtaBand->SetXTitle("#it{p}_{T}^{cluster}");
+    fTestEnergyEtaBand->SetYTitle("#sum^{eta-band} #it{p}_{T}^{cluster}");
+    fTestEnergyEtaBand->SetZTitle("#sum^{eta-band} #it{p}_{T}^{track}");
+    fTestEnergyEtaBand->Sumw2();
+    fOutput->Add(fTestEnergyEtaBand);
+  }
 
     // fTracksConeEtaPt = new TH3D("hTracksConeEtaPt","#Sigma vs #eta vs E_{T}",200,0.,100.,320,-0.8,0.8,200,0.,100.);
     // fTracksConeEtaPt->Sumw2();
@@ -2428,7 +2434,8 @@ void AliAnalysisTaskEMCALPhotonIsolation::EtIsoClusEtaBand(TLorentzVector c, Dou
     // Printf("\ntotal activity in isolation Cone from Tracks %.4lf",sumpTConeCharged);
 
   fTestEnergyCone->Fill(c.Pt(), sumEnergyConeClus, sumpTConeCharged);
-  fTestEnergyEtaBand->Fill(c.Pt(), sumEnergyEtaBandClus, sumpTEtaBandTracks);
+  if(fAreasPerEvent)
+    fTestEnergyEtaBand->Fill(c.Pt(), sumEnergyEtaBandClus, sumpTEtaBandTracks);
 
   Double_t isoConeArea = 0.; // Cluster (eta, phi)-dependent cone area
   Double_t etaBandArea = 0.; // Cluster phi-dependent eta-band area
