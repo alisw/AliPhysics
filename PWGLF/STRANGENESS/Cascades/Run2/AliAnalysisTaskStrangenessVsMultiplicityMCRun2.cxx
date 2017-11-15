@@ -2136,6 +2136,9 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
         Int_t lblMotherPosV0Dghter = mcPosV0Dghter->GetFirstMother();
         Int_t lblMotherNegV0Dghter = mcNegV0Dghter->GetFirstMother();
         
+        Double_t lMCTransvMomNeg = mcNegV0Dghter->Pt();
+        Double_t lMCTransvMomPos = mcPosV0Dghter->Pt();
+        
         if( lblMotherPosV0Dghter == lblMotherNegV0Dghter && lblMotherPosV0Dghter > -1 ) {
             //either label is fine, they're equal at this stage
             TParticle* pThisV0 = lMCstack->Particle( lblMotherPosV0Dghter );
@@ -2230,15 +2233,18 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
         //AliWarning(Form("[V0 Analyses] Processing different configurations (%i detected)",lNumberOfConfigurations));
         TH3F *histoout                 = 0x0;
         TH3F *histooutfeeddown         = 0x0;
+        TProfile *histoProtonProfile         = 0x0;
         AliV0Result *lV0Result = 0x0;
         for(Int_t lcfg=0; lcfg<lNumberOfConfigurations; lcfg++){
             histoout                 = 0x0;
             histooutfeeddown         = 0x0;
+            histoProtonProfile       = 0x0;
             
             //Acquire result objects
             lV0Result = (AliV0Result*) fListV0->At(lcfg);
-            histoout          = lV0Result->GetHistogram();
-            histooutfeeddown  = lV0Result->GetHistogramFeeddown();
+            histoout            = lV0Result->GetHistogram();
+            histooutfeeddown    = lV0Result->GetHistogramFeeddown();
+            histoProtonProfile  = lV0Result->GetProtonProfile();
             
             Float_t lMass = 0;
             Float_t lRap  = 0;
@@ -2248,6 +2254,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
             Int_t lPDGCode = 0;
             Int_t lPDGCodeXiMother = 0;
             Float_t lBaryonMomentum = -0.5;
+            Float_t lBaryonTransvMomMCForG3F = -0.5; //warning: MC perfect for Geant3/fluka
             
             //========================================================================
             //Setting up: Variable V0 CosPA
@@ -2275,6 +2282,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
                 lNegdEdx = fTreeVariableNSigmasNegPion;
                 lPosdEdx = fTreeVariableNSigmasPosPion;
                 lPDGCode = 310;
+                lBaryonTransvMomMCForG3F = 999; //nonsense (if you see this you should doubt it...)
             }
             if ( lV0Result->GetMassHypothesis() == AliV0Result::kLambda      ){
                 lMass = fTreeVariableInvMassLambda;
@@ -2285,6 +2293,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
                 lPDGCode = 3122;
                 lPDGCodeXiMother = 3312;
                 lBaryonMomentum = fTreeVariablePosInnerP;
+                lBaryonTransvMomMCForG3F = lMCTransvMomPos; //proton
             }
             if ( lV0Result->GetMassHypothesis() == AliV0Result::kAntiLambda  ){
                 lMass = fTreeVariableInvMassAntiLambda;
@@ -2295,6 +2304,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
                 lPDGCode = -3122;
                 lPDGCodeXiMother = -3312;
                 lBaryonMomentum = fTreeVariableNegInnerP;
+                lBaryonTransvMomMCForG3F = lMCTransvMomNeg; //antiproton
             }
             
             //Override rapidity for true rapidity if requested to do so
@@ -2360,8 +2370,12 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
                     //This satisfies all my conditionals! Fill histogram
                     if( !lV0Result -> GetCutMCUseMCProperties() ){
                         histoout -> Fill ( fCentrality, fTreeVariablePt, lMass );
+                        if(histoProtonProfile)
+                            histoProtonProfile -> Fill( fTreeVariablePt, lBaryonTransvMomMCForG3F );
                     }else{
                         histoout -> Fill ( fCentrality, fTreeVariablePtMC, lMass );
+                        if(histoProtonProfile)
+                            histoProtonProfile -> Fill( fTreeVariablePtMC, lBaryonTransvMomMCForG3F );
                     }
                 }
                 
@@ -4357,7 +4371,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
             lpipx = fTreeCascVarBachPx;
             lpipy = fTreeCascVarBachPy;
             lpipz = fTreeCascVarBachPz;
-            Float_t lBaryonTransvMom;
+            Float_t lBaryonTransvMomMCForG3F;
             
             //For parametric V0 Mass selection
             Float_t lExpV0Mass =
@@ -4453,7 +4467,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
                 lprpx = fTreeCascVarPosPx;
                 lprpy = fTreeCascVarPosPy;
                 lprpz = fTreeCascVarPosPz;
-                lBaryonTransvMom = fTreeCascVarPosTransvMomentumMC;
+                lBaryonTransvMomMCForG3F = fTreeCascVarPosTransvMomentumMC;
             }
             if ( lCascadeResult->GetMassHypothesis() == AliCascadeResult::kXiPlus      ){
                 lCharge  = +1;
@@ -4467,7 +4481,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
                 lprpx = fTreeCascVarNegPx;
                 lprpy = fTreeCascVarNegPy;
                 lprpz = fTreeCascVarNegPz;
-                lBaryonTransvMom = fTreeCascVarNegTransvMomentumMC;
+                lBaryonTransvMomMCForG3F = fTreeCascVarNegTransvMomentumMC;
             }
             if ( lCascadeResult->GetMassHypothesis() == AliCascadeResult::kOmegaMinus     ){
                 lCharge  = -1;
@@ -4481,7 +4495,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
                 lprpx = fTreeCascVarPosPx;
                 lprpy = fTreeCascVarPosPy;
                 lprpz = fTreeCascVarPosPz;
-                lBaryonTransvMom = fTreeCascVarPosTransvMomentumMC;
+                lBaryonTransvMomMCForG3F = fTreeCascVarPosTransvMomentumMC;
             }
             if ( lCascadeResult->GetMassHypothesis() == AliCascadeResult::kOmegaPlus      ){
                 lCharge  = +1;
@@ -4495,7 +4509,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
                 lprpx = fTreeCascVarNegPx;
                 lprpy = fTreeCascVarNegPy;
                 lprpz = fTreeCascVarNegPz;
-                lBaryonTransvMom = fTreeCascVarNegTransvMomentumMC;
+                lBaryonTransvMomMCForG3F = fTreeCascVarNegTransvMomentumMC;
             }
             
             //Override rapidity for true rapidity if requested to do so
@@ -4623,11 +4637,11 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
                 if( !lCascadeResult -> GetCutMCUseMCProperties() ){
                     histoout -> Fill ( fCentrality, fTreeCascVarPt, lMass );
                     if(histoProtonProfile)
-                        histoProtonProfile -> Fill( fTreeCascVarPt, lBaryonTransvMom );
+                        histoProtonProfile -> Fill( fTreeCascVarPt, lBaryonTransvMomMCForG3F );
                 }else{
                     histoout -> Fill ( fCentrality, fTreeCascVarPtMC, lMass );
                     if(histoProtonProfile)
-                        histoProtonProfile -> Fill( fTreeCascVarPtMC, lBaryonTransvMom );
+                        histoProtonProfile -> Fill( fTreeCascVarPtMC, lBaryonTransvMomMCForG3F );
                 }
             }
         }
