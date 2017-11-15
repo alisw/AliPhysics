@@ -28,7 +28,6 @@
 #include "AliAnTOFevent.h"
 #include "AliESDEvent.h"
 #include "AliESDVertex.h"
-#include "AliLog.h"
 #include "TError.h"
 #include <iostream>
 #include <vector>
@@ -42,30 +41,29 @@ AliAnTOFevent::AliAnTOFevent()
   //
   // standard constructur which should be used
   //
-  AliInfo("**** CONSTRUCTOR CALLED ****");
+  ::Info("AliAnTOFevent::AliAnTOFevent", "**** CONSTRUCTOR CALLED ****");
   Reset();
-  AliInfo("**** END OF CONSTRUCTOR ****");
+  ::Info("AliAnTOFevent::AliAnTOFevent", "**** END OF CONSTRUCTOR ****");
 }
 
 //________________________________________________________________________
 AliAnTOFevent::~AliAnTOFevent()
 { //Destructor
-  AliInfo("**** DESTRUCTOR CALLED ****");
+  ::Info("AliAnTOFevent::~AliAnTOFevent", "**** DESTRUCTOR CALLED ****");
 
-  AliInfo("**** END OF DESTRUCTOR ****");
+  ::Info("AliAnTOFevent::~AliAnTOFevent", "**** END OF DESTRUCTOR ****");
 }
 
 //________________________________________________________________________
 AliAnTOFtrack* AliAnTOFevent::GetTrack(const Int_t i)
 {
   if (i >= 0 && i < GetNtracks()) {
-    AliInfoF("Returning track at potition i = %i", i);
+    ::Info("AliAnTOFevent::GetTrack", "Returning track at potition i = %i", i);
     return &fAliAnTOFtracks.at(i);
   } else if (i >= 0) {
-    AliInfoF("Creating new track track at potition i = %i", fNTracks);
+    ::Info("AliAnTOFevent::GetTrack", "Creating new track track at potition i = %i", GetNtracks());
     fAliAnTOFtracks.push_back(AliAnTOFtrack());
   }
-
   return &fAliAnTOFtracks.back();
 }
 
