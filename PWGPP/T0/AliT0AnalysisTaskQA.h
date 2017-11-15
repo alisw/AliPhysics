@@ -49,7 +49,7 @@ class AliT0AnalysisTaskQA : public AliAnalysisTaskSE {
   AliT0AnalysisTaskQA(const AliT0AnalysisTaskQA&); // not implemented
   AliT0AnalysisTaskQA& operator=(const AliT0AnalysisTaskQA&); // not implemented
   
-  ClassDef(AliT0AnalysisTaskQA, 3); // example of analysis
+  ClassDef(AliT0AnalysisTaskQA, 4); // example of analysis
 };
 
 #endif
