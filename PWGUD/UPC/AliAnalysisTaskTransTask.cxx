@@ -39,7 +39,8 @@ AliAnalysisTaskTransTask::AliAnalysisTaskTransTask() : AliAnalysisTaskSE(),
   fAOD(0), fOutputList(0), fAnaTree(0), fRunNum(0), fTracklets(0), fCtrue(0),
   fL0inputs(0), fL1inputs(0), fZem1Energy(0), fZem2Energy(0),
   fZNCEnergy(0), fZNAEnergy(0), fZPCEnergy(0), fZPAEnergy(0),
-  fV0ADecision(-10), fV0CDecision(-10), fADADecision(-10), fADCDecision(-10), fCounter(0)
+  fV0ADecision(-10), fV0CDecision(-10), fADADecision(-10), fADCDecision(-10), 
+  fIR1Map(0),fIR2Map(0),fCounter(0)
 
 {
     // default constructor, don't allocate memory here!
@@ -51,7 +52,8 @@ AliAnalysisTaskTransTask::AliAnalysisTaskTransTask(const char* name) : AliAnalys
   fAOD(0), fOutputList(0), fAnaTree(0), fRunNum(0), fTracklets(0), fCtrue(0),
   fL0inputs(0), fL1inputs(0), fZem1Energy(0), fZem2Energy(0),						       
   fZNCEnergy(0), fZNAEnergy(0), fZPCEnergy(0), fZPAEnergy(0),
-  fV0ADecision(-10), fV0CDecision(-10), fADADecision(-10), fADCDecision(-10), fCounter(0)
+  fV0ADecision(-10), fV0CDecision(-10), fADADecision(-10), fADCDecision(-10), 
+  fIR1Map(0),fIR2Map(0),fCounter(0)
 
 {
   for (Int_t i=0;i<4;i++) fZNATDC[i]=fZNCTDC[i]=fZPATDC[i]=fZPCTDC[i]=0;
@@ -101,7 +103,9 @@ void AliAnalysisTaskTransTask::UserCreateOutputObjects()
   fAnaTree ->Branch("fV0ADecision", &fV0ADecision, "fV0ADecision/I");
   fAnaTree ->Branch("fV0CDecision", &fV0CDecision, "fV0CDecision/I");  
   fAnaTree ->Branch("fADADecision", &fADADecision, "fADADecision/I");
-  fAnaTree ->Branch("fADCDecision", &fADCDecision, "fADCDecision/I");  
+  fAnaTree ->Branch("fADCDecision", &fADCDecision, "fADCDecision/I");
+  fAnaTree ->Branch("fIR1Map", &fIR1Map);
+  fAnaTree ->Branch("fIR2Map", &fIR2Map);  
 
  
   // post output
@@ -144,6 +148,10 @@ void AliAnalysisTaskTransTask::UserExec(Option_t *)
   fL0inputs = fAOD->GetHeader()->GetL0TriggerInputs();
   fL1inputs = fAOD->GetHeader()->GetL1TriggerInputs();
   
+  //Past-future protection maps
+  fIR1Map = fAOD->GetHeader()->GetIRInt1InteractionMap();
+  fIR2Map = fAOD->GetHeader()->GetIRInt2InteractionMap();
+  
   //ZDC
   AliAODZDC *dataZDC = dynamic_cast<AliAODZDC*>(fAOD->GetZDCData());
   if(!dataZDC) {PostData(2, fOutputList); return;}
@@ -151,10 +159,10 @@ void AliAnalysisTaskTransTask::UserExec(Option_t *)
 
   fZem1Energy = dataZDC->GetZEM1Energy();
   fZem2Energy = dataZDC->GetZEM2Energy();  
-  fZNCEnergy = dataZDC->GetZNATowerEnergy()[0];
-  fZNAEnergy = dataZDC->GetZNCTowerEnergy()[0];
-  fZPCEnergy = dataZDC->GetZPATowerEnergy()[0];
-  fZPAEnergy = dataZDC->GetZPCTowerEnergy()[0];
+  fZNAEnergy = dataZDC->GetZNATowerEnergy()[0];
+  fZNCEnergy = dataZDC->GetZNCTowerEnergy()[0];
+  fZPAEnergy = dataZDC->GetZPATowerEnergy()[0];
+  fZPCEnergy = dataZDC->GetZPCTowerEnergy()[0];
 
   for (Int_t i=0;i<4;i++) fZNATDC[i] = dataZDC->GetZNATDCm(i);
   for (Int_t i=0;i<4;i++) fZNCTDC[i] = dataZDC->GetZNCTDCm(i);

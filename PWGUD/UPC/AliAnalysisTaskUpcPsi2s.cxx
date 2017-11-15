@@ -72,7 +72,7 @@ AliAnalysisTaskUpcPsi2s::AliAnalysisTaskUpcPsi2s()
     fVtxContrib(0),fVtxChi2(0),fVtxNDF(0),fSpdVtxContrib(0),
     fBCrossNum(0),fNtracklets(0),fNLooseTracks(0),
     fZNAenergy(0),fZNCenergy(0), fZPAenergy(0),fZPCenergy(0),fV0Adecision(0),fV0Cdecision(0),fADAdecision(0),fADCdecision(0),
-    fDataFilnam(0),fRecoPass(0),fEvtNum(0),fFOFiredChips(0),
+    fDataFilnam(0),fRecoPass(0),fEvtNum(0),fFOFiredChips(0),fIR1Map(0),fIR2Map(0),
     fJPsiAODTracks(0),fJPsiESDTracks(0),fPsi2sAODTracks(0),fPsi2sESDTracks(0),fGenPart(0),
     fEveTree(0),fPt(0), fY(0), fM(0), fDiLeptonM(0), fDiLeptonPt(0), fPIDsigma(0), fChannel(0),
     fListTrig(0),fHistCcup4TriggersPerRun(0), fHistCcup7TriggersPerRun(0), fHistCcup2TriggersPerRun(0),fHistCint1TriggersPerRun(0),fHistCint6TriggersPerRun(0), fHistC0tvxAndCint1TriggersPerRun(0),
@@ -100,7 +100,7 @@ AliAnalysisTaskUpcPsi2s::AliAnalysisTaskUpcPsi2s(const char *name)
     fVtxContrib(0),fVtxChi2(0),fVtxNDF(0),fSpdVtxContrib(0),
     fBCrossNum(0),fNtracklets(0),fNLooseTracks(0),
     fZNAenergy(0),fZNCenergy(0), fZPAenergy(0),fZPCenergy(0),fV0Adecision(0),fV0Cdecision(0),fADAdecision(0),fADCdecision(0),
-    fDataFilnam(0),fRecoPass(0),fEvtNum(0),fFOFiredChips(0),
+    fDataFilnam(0),fRecoPass(0),fEvtNum(0),fFOFiredChips(0),fIR1Map(0),fIR2Map(0),
     fJPsiAODTracks(0),fJPsiESDTracks(0),fPsi2sAODTracks(0),fPsi2sESDTracks(0),fGenPart(0),
     fEveTree(0),fPt(0), fY(0), fM(0), fDiLeptonM(0), fDiLeptonPt(0), fPIDsigma(0), fChannel(0),
     fListTrig(0),fHistCcup4TriggersPerRun(0), fHistCcup7TriggersPerRun(0), fHistCcup2TriggersPerRun(0),fHistCint1TriggersPerRun(0), fHistCint6TriggersPerRun(0), fHistC0tvxAndCint1TriggersPerRun(0),
@@ -153,6 +153,9 @@ void AliAnalysisTaskUpcPsi2s::Init()
 	
 	fZNATDCm[i] = -666;
         fZNCTDCm[i] = -666;
+	fZPATDCm[i] = -666;
+        fZPCTDCm[i] = -666;
+	
 	}
   for(Int_t i=0; i<3; i++){
   	fVtxPos[i] = -666; 
@@ -254,6 +257,8 @@ void AliAnalysisTaskUpcPsi2s::UserCreateOutputObjects()
   fJPsiTree ->Branch("fZPCenergy", &fZPCenergy, "fZPCenergy/F");
   fJPsiTree ->Branch("fZNATDCm", &fZNATDCm[0], "fZNATDCm[4]/F");
   fJPsiTree ->Branch("fZNCTDCm", &fZNCTDCm[0], "fZNCTDCm[4]/F");
+  fJPsiTree ->Branch("fZPATDCm", &fZPATDCm[0], "fZPATDCm[4]/F");
+  fJPsiTree ->Branch("fZPCTDCm", &fZPCTDCm[0], "fZPCTDCm[4]/F");
   fJPsiTree ->Branch("fV0Adecision", &fV0Adecision, "fV0Adecision/I");
   fJPsiTree ->Branch("fV0Cdecision", &fV0Cdecision, "fV0Cdecision/I"); 
   fJPsiTree ->Branch("fADAdecision", &fADAdecision, "fADAdecision/I");
@@ -272,6 +277,10 @@ void AliAnalysisTaskUpcPsi2s::UserCreateOutputObjects()
     fJPsiTree ->Branch("fTriggerInputsMC", &fTriggerInputsMC[0], Form("fTriggerInputsMC[%i]/O", ntrg));
     fJPsiTree ->Branch("fMCVtxPos", &fMCVtxPos[0], "fMCVtxPos[3]/F");
     fJPsiTree ->Branch("fFOFiredChips", &fFOFiredChips);
+  }
+  if(!isMC) {
+    fJPsiTree ->Branch("fIR1Map", &fIR1Map);
+    fJPsiTree ->Branch("fIR2Map", &fIR2Map);
   }
 
  
@@ -340,6 +349,10 @@ void AliAnalysisTaskUpcPsi2s::UserCreateOutputObjects()
     fPsi2sTree ->Branch("fTriggerInputsMC", &fTriggerInputsMC[0], Form("fTriggerInputsMC[%i]/O", ntrg));
     fPsi2sTree ->Branch("fMCVtxPos", &fMCVtxPos[0], "fMCVtxPos[3]/F");
     fPsi2sTree ->Branch("fFOFiredChips", &fFOFiredChips);
+  }
+  if(!isMC) {
+    fJPsiTree ->Branch("fIR1Map", &fIR1Map);
+    fJPsiTree ->Branch("fIR2Map", &fIR2Map);
   }
   
   fListTrig = new TList();
@@ -980,6 +993,10 @@ void AliAnalysisTaskUpcPsi2s::RunAODtree()
   //TOF trigger mask
   const AliTOFHeader *tofH = aod->GetTOFHeader();
   fTOFmask = tofH->GetTriggerMask();
+  
+  //Past-future protection maps
+  fIR1Map = aod->GetHeader()->GetIRInt1InteractionMap();
+  fIR2Map = aod->GetHeader()->GetIRInt2InteractionMap();
 
   //Event identification
   fPerNum = aod ->GetPeriodNumber();
@@ -1027,8 +1044,12 @@ void AliAnalysisTaskUpcPsi2s::RunAODtree()
   fZNCenergy = fZDCdata->GetZNCTowerEnergy()[0];
   fZPAenergy = fZDCdata->GetZPATowerEnergy()[0];
   fZPCenergy = fZDCdata->GetZPCTowerEnergy()[0];  
-  for (Int_t i=0;i<4;i++) fZNATDCm[i] = fZDCdata->GetZNATDCm(i);
-  for (Int_t i=0;i<4;i++) fZNCTDCm[i] = fZDCdata->GetZNCTDCm(i);
+  for (Int_t i=0;i<4;i++){
+  	fZNATDCm[i] = fZDCdata->GetZNATDCm(i);
+  	fZNCTDCm[i] = fZDCdata->GetZNCTDCm(i);
+	fZPATDCm[i] = fZDCdata->GetZPATDCm(i);
+  	fZPCTDCm[i] = fZDCdata->GetZPCTDCm(i);
+	}
   
   fNLooseTracks = 0;
   

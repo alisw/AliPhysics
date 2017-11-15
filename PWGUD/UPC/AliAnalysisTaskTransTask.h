@@ -50,6 +50,8 @@ class AliAnalysisTaskTransTask : public AliAnalysisTaskSE
 	Int_t fV0CDecision;
 	Int_t fADADecision; 
 	Int_t fADCDecision;
+  	TBits fIR1Map;
+  	TBits fIR2Map;
 	TH1I *fCounter; //! analysis counter
 	
         AliAnalysisTaskTransTask(const AliAnalysisTaskTransTask&); // not implemented

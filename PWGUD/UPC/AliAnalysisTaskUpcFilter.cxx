@@ -326,6 +326,9 @@ void AliAnalysisTaskUpcFilter::UserExec(Option_t *)
   trgClasses[38] = trigger.Contains("CCUP21-B");   // *0VBA *0UBA *0VBC 0SH1 *0SH2 *0UGC *0VGA
   trgClasses[39] = trigger.Contains("CCUP22-B");   // *0UBC *0UGC *0VBA *0VGA *0SH2 *0VBC 0STG 0OMU
   trgClasses[40] = trigger.Contains("CCUP23-B");   // *0UBC *0UGC *0VBA *0VGA *0SH2 *0VBC 0SH1
+  
+  trgClasses[41] = trigger.Contains("CMUP13-B");   // 0MUL & !0UBA & !0UBC 
+
 
   //end of list of trigger classes
 
@@ -589,9 +592,17 @@ Bool_t AliAnalysisTaskUpcFilter::RunAOD()
   
   Float_t znatdcm[4];
   Float_t znctdcm[4];
-  for (Int_t i=0;i<4;i++) znatdcm[i] = dataZDCAOD->GetZNATDCm(i);
-  for (Int_t i=0;i<4;i++) znctdcm[i] = dataZDCAOD->GetZNCTDCm(i);
-  fUPCEvent->SetZNTDCm(znatdcm,znctdcm);
+  Float_t zpatdcm[4];
+  Float_t zpctdcm[4];
+  for (Int_t i=0;i<4;i++){ 
+  	znatdcm[i] = dataZDCAOD->GetZNATDCm(i);
+  	znctdcm[i] = dataZDCAOD->GetZNCTDCm(i);
+	zpatdcm[i] = dataZDCAOD->GetZPATDCm(i);
+  	zpctdcm[i] = dataZDCAOD->GetZPCTDCm(i);
+	}
+  fUPCEvent->SetZNTDCm(znatdcm,znctdcm,zpatdcm,zpctdcm);
+  fUPCEvent->SetIR1Map(aodEvent->GetHeader()->GetIRInt1InteractionMap());
+  fUPCEvent->SetIR2Map(aodEvent->GetHeader()->GetIRInt2InteractionMap());
 
   //SPD primary vertex in AOD
   AliAODVertex *vtx = aodEvent->GetPrimaryVertexSPD();
