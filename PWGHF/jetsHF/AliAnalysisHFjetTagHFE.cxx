@@ -683,6 +683,8 @@ Bool_t AliAnalysisHFjetTagHFE::Run()
   if(idbHFEj)cout << "Run!" << endl;
   if(idbHFEj)cout << fJetsCont << endl;
   if(idbHFEj)cout << fJetsContPart << endl;
+  if(idbHFEj)cout << " fJetsCont :" <<  fJetsCont->GetName()<< " ; N = "<< fJetsCont->GetNAcceptedJets() << endl;
+  if(idbHFEj)cout << " fJetsContPart :" <<  fJetsContPart->GetName() << " N = " << fJetsContPart->GetNAcceptedJets() << endl;
 
   fAOD = dynamic_cast<AliAODEvent*>(InputEvent());
 
