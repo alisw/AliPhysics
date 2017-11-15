@@ -232,6 +232,7 @@ if(FASTJET_FOUND)
         UserTasks/AliAnalysisTaskJetPP.cxx
         UserTasks/AliAnalysisTaskSubJetFraction.cxx
 	UserTasks/AliAnalysisTaskRecoilJetYield.cxx
+	UserTasks/AliAnalysisTaskRecursiveSoftDrop.cxx
         UserTasks/AliAnalysisTaskJetSubstructure.cxx
         UserTasks/AliAnalysisTaskSoftDrop.cxx
         UserTasks/AliAnalysisTaskSoftDropResponse.cxx
