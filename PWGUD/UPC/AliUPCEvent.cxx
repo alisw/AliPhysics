@@ -47,7 +47,7 @@ AliUPCEvent::AliUPCEvent()
   for(Int_t itrg=0; itrg<fgkNtrg; itrg++) fTrgClasses[itrg] = kFALSE;
   for(Int_t i=0; i<3; i++) {fVtxPos[i] = 0.; fVtxSPDpos[i] = 0.; fVtxMCpos[i] = 0.;}
   for(Int_t i=0; i<6; i++) {fVtxCov[i] = 0.; fVtxSPDcov[i] = 0.;}
-  for(Int_t i=0; i<4; i++) {fZNATDCm[i] = -999; fZNCTDCm[i] = -999;}
+  for(Int_t i=0; i<4; i++) {fZNATDCm[i] = -999; fZNCTDCm[i] = -999; fZPATDCm[i] = -999; fZPCTDCm[i] = -999;}
 
   if(!fgUPCTracks) {
     fgUPCTracks = new TClonesArray("AliUPCTrack");
@@ -283,10 +283,12 @@ void AliUPCEvent::SetBBFlagADAmask(UInt_t ibit)
 }
 
 //_____________________________________________________________________________
-void AliUPCEvent::SetZNTDCm(Float_t *znatdcm,Float_t *znctdcm)
+void AliUPCEvent::SetZNTDCm(Float_t *znatdcm,Float_t *znctdcm,Float_t *zpatdcm,Float_t *zpctdcm)
 {
   for(Int_t i=0; i<4; i++) fZNATDCm[i] = znatdcm[i];
   for(Int_t i=0; i<4; i++) fZNCTDCm[i] = znctdcm[i];
+  for(Int_t i=0; i<4; i++) fZPATDCm[i] = zpatdcm[i];
+  for(Int_t i=0; i<4; i++) fZPCTDCm[i] = zpctdcm[i];
 
 }
 
