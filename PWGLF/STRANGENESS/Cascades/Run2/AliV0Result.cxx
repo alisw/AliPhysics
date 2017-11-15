@@ -604,6 +604,14 @@ TString AliV0Result::GetParticleName () const
     return lName;
 }
 
+//________________________________________________________________
+void AliV0Result::InitializeProtonProfile (Long_t lNPtBins, Double_t *lPtBins)
+//Initialize TProfile to do bookkeeping of proton momenta
+{
+    if(!fProtonProfile) fProtonProfile = new TProfile( Form("fProtonProfile_%s",GetName()), "", lNPtBins, lPtBins);
+}
+
+
 
 
 
