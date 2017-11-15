@@ -41,9 +41,18 @@ public:
 
   virtual void Print ( Option_t* option = "" ) const;
 
+  /// Get the chosen function for smearing
+  Int_t GetChosenFunc () { return fChosenFunc; }
+
+  /// Get chamber resolution used during tracking
+  Double_t GetSigmaTrk () { return fSigmaTrk; }
+  
+  /// Get sigma cut used during tracking
+  Double_t GetSigmaTrkCut () { return fSigmaTrkCut; }
+  
   void SetCrystalBallParams ( Double_t xChSt1Par1, Double_t xChSt1Par2, Double_t yChSt1Par1, Double_t yChSt1Par2, Double_t yChPar1, Double_t yChPar2 );
 
-  /// Set sistematic shift in alignment.
+  /// Set systematic shift in alignment.
   /// The shift applies to mu plus. A shift with the opposite sign will be applied to mu minus
   void SetNSigmaShift ( Double_t nSigmaShift ) { fNSigmaShift = nSigmaShift; }
 
@@ -55,7 +64,13 @@ public:
 
   /// Set flag to tune kalman filter
   void SetTuneKalman ( Bool_t tuneKalman ) { fTuneKalman = tuneKalman; }
+  
+  // function computing the expected momentum resolution versus p given the smearing settings
+  Double_t PResVsP( const Double_t *x, const Double_t *par );
 
+  // function computing the expected slope resolution versus p given the smearing settings
+  Double_t SlopeResVsP( const Double_t *x, const Double_t *par );
+  
 private:
   AliMuonTrackSmearing(const AliMuonTrackSmearing&);
   AliMuonTrackSmearing& operator=(const AliMuonTrackSmearing&);
