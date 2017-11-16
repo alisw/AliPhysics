@@ -76,6 +76,12 @@ fCutVarBBCosPA_Exp0Slope(0),
 fCutVarBBCosPA_Exp1Const(0),
 fCutVarBBCosPA_Exp1Slope(0),
 fCutVarBBCosPA_Const(1),
+fCutUseVariableDCACascDau(kFALSE),
+fCutVarDCACascDau_Exp0Const(0),
+fCutVarDCACascDau_Exp0Slope(0),
+fCutVarDCACascDau_Exp1Const(0),
+fCutVarDCACascDau_Exp1Slope(0),
+fCutVarDCACascDau_Const(1),
 fCutDCACascadeToPV(1e+3),
 fCutDCANegToPVWeighted(-1),
 fCutDCAPosToPVWeighted(-1),
@@ -149,6 +155,12 @@ fCutVarBBCosPA_Exp0Slope(0),
 fCutVarBBCosPA_Exp1Const(0),
 fCutVarBBCosPA_Exp1Slope(0),
 fCutVarBBCosPA_Const(1),
+fCutUseVariableDCACascDau(kFALSE),
+fCutVarDCACascDau_Exp0Const(0),
+fCutVarDCACascDau_Exp0Slope(0),
+fCutVarDCACascDau_Exp1Const(0),
+fCutVarDCACascDau_Exp1Slope(0),
+fCutVarDCACascDau_Const(1),
 fCutDCACascadeToPV(1e+3),
 fCutDCANegToPVWeighted(-1),
 fCutDCAPosToPVWeighted(-1),
@@ -224,6 +236,12 @@ fCutVarBBCosPA_Exp0Slope(0),
 fCutVarBBCosPA_Exp1Const(0),
 fCutVarBBCosPA_Exp1Slope(0),
 fCutVarBBCosPA_Const(1),
+fCutUseVariableDCACascDau(kFALSE),
+fCutVarDCACascDau_Exp0Const(0),
+fCutVarDCACascDau_Exp0Slope(0),
+fCutVarDCACascDau_Exp1Const(0),
+fCutVarDCACascDau_Exp1Slope(0),
+fCutVarDCACascDau_Const(1),
 fCutDCACascadeToPV(1e+3),
 fCutDCANegToPVWeighted(-1),
 fCutDCAPosToPVWeighted(-1),
@@ -308,6 +326,12 @@ fCutVarBBCosPA_Exp0Slope(0),
 fCutVarBBCosPA_Exp1Const(0),
 fCutVarBBCosPA_Exp1Slope(0),
 fCutVarBBCosPA_Const(1),
+fCutUseVariableDCACascDau(kFALSE),
+fCutVarDCACascDau_Exp0Const(0),
+fCutVarDCACascDau_Exp0Slope(0),
+fCutVarDCACascDau_Exp1Const(0),
+fCutVarDCACascDau_Exp1Slope(0),
+fCutVarDCACascDau_Const(1),
 fCutDCACascadeToPV(1e+3),
 fCutDCANegToPVWeighted(-1),
 fCutDCAPosToPVWeighted(-1),
@@ -393,7 +417,12 @@ fCutVarBBCosPA_Exp0Slope(lCopyMe.fCutVarBBCosPA_Exp0Slope),
 fCutVarBBCosPA_Exp1Const(lCopyMe.fCutVarBBCosPA_Exp1Const),
 fCutVarBBCosPA_Exp1Slope(lCopyMe.fCutVarBBCosPA_Exp1Slope),
 fCutVarBBCosPA_Const(lCopyMe.fCutVarBBCosPA_Const),
-
+fCutUseVariableDCACascDau(lCopyMe.fCutUseVariableDCACascDau),
+fCutVarDCACascDau_Exp0Const(lCopyMe.fCutVarDCACascDau_Exp0Const),
+fCutVarDCACascDau_Exp0Slope(lCopyMe.fCutVarDCACascDau_Exp0Slope),
+fCutVarDCACascDau_Exp1Const(lCopyMe.fCutVarDCACascDau_Exp1Const),
+fCutVarDCACascDau_Exp1Slope(lCopyMe.fCutVarDCACascDau_Exp1Slope),
+fCutVarDCACascDau_Const(lCopyMe.fCutVarDCACascDau_Const),
 fCutDCACascadeToPV(lCopyMe.fCutDCACascadeToPV),
 fCutDCANegToPVWeighted(lCopyMe.fCutDCANegToPVWeighted),
 fCutDCAPosToPVWeighted(lCopyMe.fCutDCAPosToPVWeighted),
@@ -491,6 +520,14 @@ AliCascadeResult::AliCascadeResult(AliCascadeResult *lCopyMe, TString lNewName)
     fCutVarBBCosPA_Exp1Const = lCopyMe -> GetCutVarBBCosPAExp1Const();
     fCutVarBBCosPA_Exp1Slope = lCopyMe -> GetCutVarBBCosPAExp1Slope();
     fCutVarBBCosPA_Const = lCopyMe -> GetCutVarBBCosPAConst();
+    
+    //Variable DCACascDau
+    fCutUseVariableDCACascDau = lCopyMe -> GetCutUseVarDCACascDau();
+    fCutVarDCACascDau_Exp0Const = lCopyMe -> GetCutVarDCACascDauExp0Const();
+    fCutVarDCACascDau_Exp0Slope = lCopyMe -> GetCutVarDCACascDauExp0Slope();
+    fCutVarDCACascDau_Exp1Const = lCopyMe -> GetCutVarDCACascDauExp1Const();
+    fCutVarDCACascDau_Exp1Slope = lCopyMe -> GetCutVarDCACascDauExp1Slope();
+    fCutVarDCACascDau_Const = lCopyMe -> GetCutVarDCACascDauConst();
     
     fCutDCACascadeToPV      = lCopyMe -> GetCutDCACascadeToPV();
     fCutDCANegToPVWeighted  = lCopyMe -> GetCutDCANegToPVWeighted();
@@ -601,6 +638,14 @@ AliCascadeResult& AliCascadeResult::operator=(const AliCascadeResult& lCopyMe)
     fCutVarBBCosPA_Exp1Const = lCopyMe.GetCutVarBBCosPAExp1Const();
     fCutVarBBCosPA_Exp1Slope = lCopyMe.GetCutVarBBCosPAExp1Slope();
     fCutVarBBCosPA_Const = lCopyMe.GetCutVarBBCosPAConst();
+    
+    //Variable DCACascDau
+    fCutUseVariableDCACascDau = lCopyMe.GetCutUseVarDCACascDau();
+    fCutVarDCACascDau_Exp0Const = lCopyMe.GetCutVarDCACascDauExp0Const();
+    fCutVarDCACascDau_Exp0Slope = lCopyMe.GetCutVarDCACascDauExp0Slope();
+    fCutVarDCACascDau_Exp1Const = lCopyMe.GetCutVarDCACascDauExp1Const();
+    fCutVarDCACascDau_Exp1Slope = lCopyMe.GetCutVarDCACascDauExp1Slope();
+    fCutVarDCACascDau_Const = lCopyMe.GetCutVarDCACascDauConst();
     
     fCutDCACascadeToPV      = lCopyMe.GetCutDCACascadeToPV();
     fCutDCANegToPVWeighted  = lCopyMe.GetCutDCANegToPVWeighted();
@@ -735,6 +780,14 @@ Bool_t AliCascadeResult::HasSameCuts(AliVWeakResult *lCompare, Bool_t lCheckdEdx
     if ( TMath::Abs(fCutVarBBCosPA_Exp1Slope - lCompareCascade->GetCutVarBBCosPAExp1Slope()) > 1e-6 ) lReturnValue = kFALSE;
     if ( TMath::Abs(fCutVarBBCosPA_Const  - lCompareCascade->GetCutVarBBCosPAConst()) > 1e-6 ) lReturnValue = kFALSE;
     
+    //Variable DCACascDau
+    if ( TMath::Abs(fCutUseVariableDCACascDau - lCompareCascade->GetCutUseVarDCACascDau()) > 1e-6 ) lReturnValue = kFALSE;
+    if ( TMath::Abs(fCutVarDCACascDau_Exp0Const - lCompareCascade->GetCutVarDCACascDauExp0Const()) > 1e-6 ) lReturnValue = kFALSE;
+    if ( TMath::Abs(fCutVarDCACascDau_Exp0Slope - lCompareCascade->GetCutVarDCACascDauExp0Slope()) > 1e-6 ) lReturnValue = kFALSE;
+    if ( TMath::Abs(fCutVarDCACascDau_Exp1Const - lCompareCascade->GetCutVarDCACascDauExp1Const()) > 1e-6 ) lReturnValue = kFALSE;
+    if ( TMath::Abs(fCutVarDCACascDau_Exp1Slope - lCompareCascade->GetCutVarDCACascDauExp1Slope()) > 1e-6 ) lReturnValue = kFALSE;
+    if ( TMath::Abs(fCutVarDCACascDau_Const  - lCompareCascade->GetCutVarDCACascDauConst()) > 1e-6 ) lReturnValue = kFALSE;
+    
     if ( TMath::Abs(fCutDCACascadeToPV       - lCompareCascade->GetCutDCACascadeToPV()) > 1e-6 ) lReturnValue = kFALSE;
     if ( TMath::Abs(fCutDCANegToPVWeighted   - lCompareCascade->GetCutDCANegToPVWeighted()) > 1e-6 ) lReturnValue = kFALSE;
     if ( TMath::Abs(fCutDCAPosToPVWeighted   - lCompareCascade->GetCutDCAPosToPVWeighted()) > 1e-6 ) lReturnValue = kFALSE;
@@ -801,6 +854,15 @@ void AliCascadeResult::Print()
         cout<<" ^--Exp. 1 Const....: "<<fCutVarBBCosPA_Exp1Const<<endl;
         cout<<" ^--Exp. 1 Slope....: "<<fCutVarBBCosPA_Exp1Slope<<endl;
         cout<<" ^--Constant........: "<<fCutVarBBCosPA_Const<<endl;
+    }
+    
+    cout<<" Use Var DCACascDau.: "<<fCutUseVariableDCACascDau<<endl;
+    if( fCutUseVariableDCACascDau ){
+        cout<<" ^--Exp. 0 Const....: "<<fCutVarDCACascDau_Exp0Const<<endl;
+        cout<<" ^--Exp. 0 Slope....: "<<fCutVarDCACascDau_Exp0Slope<<endl;
+        cout<<" ^--Exp. 1 Const....: "<<fCutVarDCACascDau_Exp1Const<<endl;
+        cout<<" ^--Exp. 1 Slope....: "<<fCutVarDCACascDau_Exp1Slope<<endl;
+        cout<<" ^--Constant........: "<<fCutVarDCACascDau_Const<<endl;
     }
     cout<<" Min V0 Lifetime....: "<<fCutMinV0Lifetime<<endl;
     cout<<" Max V0 Lifetime....: "<<fCutMaxV0Lifetime<<endl;

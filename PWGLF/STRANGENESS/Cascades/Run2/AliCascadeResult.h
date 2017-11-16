@@ -144,6 +144,22 @@ public:
         fCutVarBBCosPA_Const     = l5;
     }
     
+    //Variable DCACascDau
+    void SetCutUseVarDCACascDau      ( Bool_t lCut )   { fCutUseVariableDCACascDau     = lCut; }
+    void SetCutVarDCACascDauExp0Const( Double_t lCut ) { fCutVarDCACascDau_Exp0Const = lCut; }
+    void SetCutVarDCACascDauExp0Slope( Double_t lCut ) { fCutVarDCACascDau_Exp0Slope = lCut; }
+    void SetCutVarDCACascDauExp1Const( Double_t lCut ) { fCutVarDCACascDau_Exp1Const = lCut; }
+    void SetCutVarDCACascDauExp1Slope( Double_t lCut ) { fCutVarDCACascDau_Exp1Slope = lCut; }
+    void SetCutVarDCACascDauConst    ( Double_t lCut ) { fCutVarDCACascDau_Const     = lCut; }
+    void SetCutVarDCACascDau ( Double_t l1, Double_t l2, Double_t l3, Double_t l4, Double_t l5 ){
+        fCutUseVariableDCACascDau = kTRUE; //Automatically switch on!
+        fCutVarDCACascDau_Exp0Const = l1;
+        fCutVarDCACascDau_Exp0Slope = l2;
+        fCutVarDCACascDau_Exp1Const = l3;
+        fCutVarDCACascDau_Exp1Slope = l4;
+        fCutVarDCACascDau_Const     = l5;
+    }
+    
     //New to comission / experiemntal
     void SetCutDCACascadeToPV        ( Double_t lCut ) { fCutDCACascadeToPV = lCut;         }
     void SetCutDCANegToPVWeighted    ( Double_t lCut ) { fCutDCANegToPVWeighted = lCut;     }
@@ -228,6 +244,14 @@ public:
     Double_t GetCutVarBBCosPAExp1Const() const { return fCutVarBBCosPA_Exp1Const; }
     Double_t GetCutVarBBCosPAExp1Slope() const { return fCutVarBBCosPA_Exp1Slope; }
     Double_t GetCutVarBBCosPAConst    () const { return fCutVarBBCosPA_Const;     }
+    
+    //Variable DCACascDau
+    Bool_t GetCutUseVarDCACascDau        () const { return fCutUseVariableDCACascDau;   }
+    Double_t GetCutVarDCACascDauExp0Const() const { return fCutVarDCACascDau_Exp0Const; }
+    Double_t GetCutVarDCACascDauExp0Slope() const { return fCutVarDCACascDau_Exp0Slope; }
+    Double_t GetCutVarDCACascDauExp1Const() const { return fCutVarDCACascDau_Exp1Const; }
+    Double_t GetCutVarDCACascDauExp1Slope() const { return fCutVarDCACascDau_Exp1Slope; }
+    Double_t GetCutVarDCACascDauConst    () const { return fCutVarDCACascDau_Const;     }
     
     //New to comission / experiemntal
     Double_t GetCutDCACascadeToPV        () const { return fCutDCACascadeToPV;         }
@@ -330,6 +354,14 @@ private:
     Double_t fCutVarBBCosPA_Exp1Slope;
     Double_t fCutVarBBCosPA_Const;
     
+    //Experimental: pt-variable DCA casc dau
+    Bool_t fCutUseVariableDCACascDau;
+    Double_t fCutVarDCACascDau_Exp0Const;
+    Double_t fCutVarDCACascDau_Exp0Slope;
+    Double_t fCutVarDCACascDau_Exp1Const;
+    Double_t fCutVarDCACascDau_Exp1Slope;
+    Double_t fCutVarDCACascDau_Const;
+    
     //Special selections
     Double_t fCutDCACascadeToPV;
     Double_t fCutDCANegToPVWeighted;
@@ -340,7 +372,7 @@ private:
     
     TProfile *fProtonProfile; //Histogram for bookkeeping proton momenta
     
-    ClassDef(AliCascadeResult, 29)
+    ClassDef(AliCascadeResult, 30)
     // 1 - original implementation
     // 2 - MC association implementation (disabled in real data analysis)
     // 3 - Variable binning constructor + re-order variables in main output for convenience
@@ -370,5 +402,6 @@ private:
     // 27 - bugfix
     // 28 - implementation of 276TeVV0CosPA cut (variable with lambda p)
     // 29 - implementation of 3D DCA cascade to PV cut, weighted single-track DCA to PV cuts
+    // 30 - implementation of variable DCA cascade daughters cut
 };
 #endif
