@@ -1098,11 +1098,13 @@ Bool_t AliAnalysisHFjetTagHFE::Run()
         while(jetPart) 
              {
                Bool_t iTagHFjet = tagHFjet( jetPart, epTarrayMC, 0, pt);
+	       if(iTagHFjet)pTeJetTrue = jetPart->Pt();
                jetPart = fJetsContPart->GetNextAcceptJet(); 
-	       pTeJetTrue = jetPart->Pt();
              }
       }
     
+     if(idbHFEj)cout << "pTeJetTrue = " << pTeJetTrue << endl;
+
     // reco
     if (fJetsCont) 
        {
@@ -1399,10 +1401,12 @@ void AliAnalysisHFjetTagHFE::MakeParticleLevelJet()
                             //pJet->Fill(HFjetVals); 
                           }
                         }
+                        if(idbHFEj)cout << "go to next jet" << endl;
+                        jetPart = fJetsContPart->GetNextAcceptJet(); 
                     }
                    //jetPart = fJetsCont->GetNextAcceptJet(); 
-                   if(idbHFEj)cout << "go to next jet" << endl;
-                   jetPart = fJetsContPart->GetNextAcceptJet(); 
+                   //if(idbHFEj)cout << "go to next jet" << endl;
+                   //jetPart = fJetsContPart->GetNextAcceptJet(); 
                  }     
              }
           }
