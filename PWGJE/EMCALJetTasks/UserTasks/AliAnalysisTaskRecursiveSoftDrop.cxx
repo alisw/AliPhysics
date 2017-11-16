@@ -70,7 +70,7 @@ AliAnalysisTaskRecursiveSoftDrop::AliAnalysisTaskRecursiveSoftDrop() :
   fTreeRecursive_True(0)
 
 {
-  for(Int_t i=0;i<nBranches;i++){
+  for(Int_t i=0;i<4;i++){
     fShapesVar_Det[i]=0;
     fShapesVar_True[i]=0;
   }
@@ -97,7 +97,7 @@ AliAnalysisTaskRecursiveSoftDrop::AliAnalysisTaskRecursiveSoftDrop(const char *n
   fTreeRecursive_True(0)
 {
   // Standard constructor.
-  for(Int_t i=0;i<nBranches;i++){
+  for(Int_t i=0;i<4;i++){
     fShapesVar_Det[i]=0;
     fShapesVar_True[i]=0;
   }
@@ -126,10 +126,13 @@ AliAnalysisTaskRecursiveSoftDrop::~AliAnalysisTaskRecursiveSoftDrop()
   //create a tree used for the MC data and making a 4D response matrix
   const char* nameoutput = GetOutputSlot(2)->GetContainer()->GetName();
   fTreeRecursive_Det = new TTree(nameoutput, nameoutput);
-  TString *fShapesVarNames_Det = new TString [nBranches];
   const char* nameoutput2 = GetOutputSlot(3)->GetContainer()->GetName();
   fTreeRecursive_True = new TTree(nameoutput2, nameoutput2);
-  TString *fShapesVarNames_True = new TString [nBranches];
+
+  const Int_t intBranches = 4;
+
+  std::vector<String> fShapeVarNames_Det(intBranches), nShapeVarNames_True(intBranches);
+
   
   fShapesVarNames_Det[0] = "Pt";
   fShapesVarNames_Det[1] = "Z";
@@ -140,7 +143,7 @@ AliAnalysisTaskRecursiveSoftDrop::~AliAnalysisTaskRecursiveSoftDrop()
   fShapesVarNames_True[2] = "Theta_Truth";
   fShapesVarNames_True[3] = "N_Truth";
 
-  for(Int_t ivar=0; ivar < nBranches; ivar++){
+  for(Int_t ivar=0; ivar < intBranches; ivar++){
     cout<<"looping over variables"<<endl;
     fTreeRecursive_Det->Branch(fShapesVarNames_Det[ivar].Data(), &fShapesVar_Det[ivar], Form("%s/D", fShapesVarNames_Det[ivar].Data()));
     fTreeRecursive_True->Branch(fShapesVarNames_True[ivar].Data(), &fShapesVar_True[ivar], Form("%s/D", fShapesVarNames_True[ivar].Data()));

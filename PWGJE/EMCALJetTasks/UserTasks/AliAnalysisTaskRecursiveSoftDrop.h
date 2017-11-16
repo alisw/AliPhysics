@@ -19,7 +19,6 @@ class AliFJWrapper;
 #include "AliClusterContainer.h"
 #include "FJ_includes.h"
 
-const Int_t nBranches = 4;
 class AliAnalysisTaskRecursiveSoftDrop : public AliAnalysisTaskEmcalJet {
  public:
   
