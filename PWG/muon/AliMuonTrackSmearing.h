@@ -50,6 +50,16 @@ public:
   /// Get sigma cut used during tracking
   Double_t GetSigmaTrkCut () { return fSigmaTrkCut; }
   
+  /// Set chamber resolution along x on station 1
+  void SetSigmaxChSt1 ( Double_t sigmaxChSt1 ) { fSigmaxChSt1 = sigmaxChSt1; }
+  
+  /// Set chamber resolution along y on station 1
+  void SetSigmayChSt1 ( Double_t sigmayChSt1 ) { fSigmayChSt1 = sigmayChSt1; }
+  
+  /// Set overall chamber resolution along y
+  void SetSigmayCh ( Double_t sigmayCh ) { fSigmayCh = sigmayCh; }
+  
+  // Set the tail parameters of the Crystal Ball functions
   void SetCrystalBallParams ( Double_t xChSt1Par1, Double_t xChSt1Par2, Double_t yChSt1Par1, Double_t yChSt1Par2, Double_t yChPar1, Double_t yChPar2 );
 
   /// Set systematic shift in alignment.
@@ -101,9 +111,9 @@ private:
   Int_t fChosenFunc; ///< chosen function
   Double_t fSigmaTrk; ///< chamber resolution used during tracking
   Double_t fSigmaTrkCut; ///< sigma cut used during tracking
-  Double_t fSigmaxChSt1; ///< x cluster sigma
-  Double_t fSigmayChSt1; ///< y cluster sigma
-  Double_t fSigmayCh; ///< slope y sigma
+  Double_t fSigmaxChSt1; ///< x cluster sigma in station 1
+  Double_t fSigmayChSt1; ///< y cluster sigma in station 1
+  Double_t fSigmayCh; ///< y cluster sigma in average
   Double_t fNSigmaShift; ///< global shift in alignment
   Double_t fZB02; ///< branson plan position angle 0-2
   Double_t fZB23; ///< branson plan position angle 2-3
