@@ -1367,7 +1367,8 @@ void AliAnalysisTaskBeautyCal::UserExec(Option_t *)
       }
   
 
-    if(iEmbPi0 && centrality>30 && centrality<50)
+    //if(iEmbPi0 && centrality>30 && centrality<50)
+    if(iEmbPi0 && centrality>30 && centrality<100)
        {
         if(pTmom<4.0)
           {
