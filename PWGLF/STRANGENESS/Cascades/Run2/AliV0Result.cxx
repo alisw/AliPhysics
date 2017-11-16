@@ -16,6 +16,7 @@ ClassImp(AliV0Result);
 AliV0Result::AliV0Result() :
   AliVWeakResult(),
 fMassHypo(AliV0Result::kK0Short),
+fProtonProfile(0x0),
 fCutMinRapidity(-0.5),
 fCutMaxRapidity(+0.5),
 fCutV0Radius(5.0),
@@ -60,6 +61,7 @@ fUseOnTheFly(kFALSE)
 AliV0Result::AliV0Result(const char * name, AliV0Result::EMassHypo lMassHypo, const char * title):
 AliVWeakResult(name,title),
 fMassHypo(lMassHypo),
+fProtonProfile(0x0),
 fCutMinRapidity(-0.5),
 fCutMaxRapidity(+0.5),
 fCutV0Radius(5.0),
@@ -111,6 +113,7 @@ fUseOnTheFly(kFALSE)
 AliV0Result::AliV0Result(const char * name, AliV0Result::EMassHypo lMassHypo, const char * title, Long_t lNCentBins, Double_t *lCentBins, Long_t lNPtBins, Double_t *lPtBins):
 AliVWeakResult(name,title),
 fMassHypo(lMassHypo),
+fProtonProfile(0x0),
 fCutMinRapidity(-0.5),
 fCutMaxRapidity(+0.5),
 fCutV0Radius(5.0),
@@ -167,6 +170,7 @@ fUseOnTheFly(kFALSE)
 AliV0Result::AliV0Result(const char * name, AliV0Result::EMassHypo lMassHypo, const char * title, Long_t lNCentBins, Double_t *lCentBins, Long_t lNPtBins, Double_t *lPtBins, Long_t lNMassBins, Double_t lMinMass, Double_t lMaxMass):
 AliVWeakResult(name,title),
 fMassHypo(lMassHypo),
+fProtonProfile(0x0),
 fCutMinRapidity(-0.5),
 fCutMaxRapidity(+0.5),
 fCutV0Radius(5.0),
@@ -270,6 +274,11 @@ fUseOnTheFly(lCopyMe.fUseOnTheFly)
     fHistoFeeddown = 0x0;
     if( lCopyMe.GetHistogramFeeddownToCopy() )
         fHistoFeeddown = (TH3F*) lCopyMe.GetHistogramFeeddownToCopy()->Clone(Form("fHistoFeeddown_%s",GetName()));
+    fProtonProfile = 0x0;
+    //Copy proton profile, if it exists
+    if( lCopyMe.GetProtonProfileToCopy() ){
+        fProtonProfile = (TProfile*) lCopyMe.GetProtonProfileToCopy()->Clone(Form("fProtonProfile_%s",GetName()));
+    }
 }
 //________________________________________________________________
 AliV0Result::AliV0Result(AliV0Result *lCopyMe, TString lNewName)
@@ -335,6 +344,10 @@ AliV0Result::AliV0Result(AliV0Result *lCopyMe, TString lNewName)
     fHistoFeeddown = 0x0;
     if( lCopyMe->GetHistogramFeeddownToCopy() )
         fHistoFeeddown = (TH3F*) lCopyMe->GetHistogramFeeddownToCopy()->Clone(Form("fHistoFeeddown_%s",GetName()));
+    fProtonProfile = 0x0;
+    if( lCopyMe->GetProtonProfileToCopy() ){
+        fProtonProfile = (TProfile*) lCopyMe->GetProtonProfileToCopy()->Clone(Form("fProtonProfile_%s",GetName()));
+    }
 }
 //________________________________________________________________
 AliV0Result::~AliV0Result(){
@@ -342,6 +355,10 @@ AliV0Result::~AliV0Result(){
     if (fHisto) {
         delete fHisto;
         fHisto = 0x0;
+    }
+    if (fProtonProfile) {
+        delete fProtonProfile;
+        fProtonProfile = 0x0;
     }
 }
 
@@ -400,6 +417,10 @@ AliV0Result& AliV0Result::operator=(const AliV0Result& lCopyMe)
         delete fHisto;
         fHisto = 0;
     }
+    if (fProtonProfile) {
+        delete fProtonProfile;
+        fProtonProfile = 0;
+    }
     // Constructor
     Double_t lThisMass = GetMass();
     Double_t lMassWindow = 0.1 ;
@@ -415,6 +436,10 @@ AliV0Result& AliV0Result::operator=(const AliV0Result& lCopyMe)
     fHistoFeeddown = 0x0;
     if( lCopyMe.GetHistogramFeeddownToCopy() )
         fHistoFeeddown = (TH3F*) lCopyMe.GetHistogramFeeddownToCopy()->Clone(Form("fHistoFeeddown_%s",GetName()));
+    fProtonProfile = 0x0;
+    if( lCopyMe.GetProtonProfileToCopy() ){
+        fProtonProfile = (TProfile*) lCopyMe.GetProtonProfileToCopy()->Clone(Form("fProtonProfile_%s",GetName()));
+    }
     
     return *this;
 }
@@ -441,6 +466,10 @@ Long64_t AliV0Result::Merge(TCollection *hlist)
             //... if feeddown matrices are both defined, merge that as well, please  
             if ( fHistoFeeddown && xh->GetHistogramFeeddown() )
                 GetHistogramFeeddown()->Add(xh->GetHistogramFeeddown());
+            
+            //... if proton profiles are both defined, merge that as well, please
+            if ( fProtonProfile && xh->GetProtonProfileToCopy() )
+                GetProtonProfile()->Add(xh->GetProtonProfile());
         }
     }
     return (Long64_t) GetHistogram()->GetEntries();
