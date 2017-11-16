@@ -5,6 +5,8 @@
 
 #include "AliAnalysisTaskEmcalJetHCorrelations.h"
 
+#include <bitset>
+
 #include <TH1F.h>
 #include <TH2F.h>
 #include <TH3F.h>
@@ -293,9 +295,6 @@ UInt_t AliAnalysisTaskEmcalJetHCorrelations::RetrieveTriggerMask() const
 {
   UInt_t eventTrigger = 0;
   if (fIsEmbedded) {
-    eventTrigger = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
-  }
-  else {
     auto embeddingHelper = AliAnalysisTaskEmcalEmbeddingHelper::GetInstance();
     if (embeddingHelper) {
       auto aodHeader = dynamic_cast<AliVAODHeader *>(embeddingHelper->GetEventHeader());
@@ -309,6 +308,9 @@ UInt_t AliAnalysisTaskEmcalJetHCorrelations::RetrieveTriggerMask() const
     else {
       AliErrorStream() << "Failed to retrieve requested embedding helper\n";
     }
+  }
+  else {
+    eventTrigger = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
   }
 
   return eventTrigger;
@@ -360,6 +362,8 @@ Bool_t AliAnalysisTaskEmcalJetHCorrelations::Run()
   // Determine the trigger for the current event
   UInt_t eventTrigger = RetrieveTriggerMask();
 
+  AliDebugStream(5) << "Beginning main processing. Number of jets: " << jets->GetNJets() << ", accepted jets: " << jets->GetNAcceptedJets() << "\n";
+
   // Handle fast partition if selected
   if ((eventTrigger & AliVEvent::kFastOnly) && fDisableFastPartition) {
     AliDebugStream(4) << GetName() << ": Fast partition disabled\n";
@@ -371,8 +375,13 @@ Bool_t AliAnalysisTaskEmcalJetHCorrelations::Run()
 
   for (auto jet : jets->accepted()) {
     // Selects only events that we are interested in (ie triggered)
-    if (!(eventTrigger & fTriggerType)) continue;
-    AliDebugStream(5) << "Jet accepted!\nJet: " << jet->toString().Data() << "\n";
+    if (!(eventTrigger & fTriggerType)) {
+      AliDebugStream(5) << "Rejected jets due to physics selection. Phys sel: " << std::bitset<32>(eventTrigger) << ", requested triggers: " << std::bitset<32>(fTriggerType) << " \n";
+      // We can break here - the physics selection is not going to change within an event.
+      break;
+    }
+
+    AliDebugStream(5) << "Jet passed event selection!\nJet: " << jet->toString().Data() << "\n";
 
     // Require the found jet to be matched
     // This match should be between detector and particle level MC
@@ -407,7 +416,7 @@ Bool_t AliAnalysisTaskEmcalJetHCorrelations::Run()
 
     if (jet->Pt() > 15) {
 
-      AliDebugStream(4) << "Passed min jet pt cut of 15. \nJet: " << jet->toString().Data() << "\n";
+      AliDebugStream(4) << "Passed min jet pt cut of 15. Jet: " << jet->toString().Data() << "\n";
       for (auto trackIter : tracks->accepted_momentum()) {
 
         // Get proper track proeprties
