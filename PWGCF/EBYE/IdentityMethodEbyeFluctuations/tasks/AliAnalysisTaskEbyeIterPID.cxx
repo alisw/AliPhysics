@@ -259,11 +259,6 @@ fSystCrossedRows(0),
 fSystDCAxy(0),
 fSystChi2(0),
 fSystVz(0),
-fPiFirstMoments(0),     
-fKaFirstMoments(0),     
-fPrFirstMoments(0), 
-fLaFirstMoments(0),
-fChFirstMoments(0),
 fetaDownArr(0),           
 fetaUpArr(0),
 fcentDownArr(0),
@@ -464,11 +459,6 @@ fSystCrossedRows(0),
 fSystDCAxy(0),
 fSystChi2(0),
 fSystVz(0),
-fPiFirstMoments(0),     
-fKaFirstMoments(0),     
-fPrFirstMoments(0), 
-fLaFirstMoments(0),
-fChFirstMoments(0),
 fetaDownArr(0),           
 fetaUpArr(0),
 fcentDownArr(0),
@@ -499,13 +489,13 @@ fHistArmPod(0)
   .L /u/marsland/PHD/macros/marsland_EbyeRatios/AliAnalysisTaskEbyeIterPID.cxx++
   .L /lustre/nyx/alice/users/marsland/train/trunk/marsland_EbyeRatios/AliAnalysisTaskEbyeIterPID.cxx++
   */
-  std::cout << "===================================================================================="<< std::endl;
-  std::cout << "===================================================================================="<< std::endl;
-  std::cout << "===================================================================================="<< std::endl;
-  std::cout << "***************** CONSTRUCTOR CALLED: AliAnalysisTaskEbyeIterPID  *****************"<< std::endl;
-  std::cout << "===================================================================================="<< std::endl;
-  std::cout << "===================================================================================="<< std::endl;
-  std::cout << "===================================================================================="<< std::endl;
+  std::cout << " Info::marsland:===================================================================================="<< std::endl;
+  std::cout << " Info::marsland:===================================================================================="<< std::endl;
+  std::cout << " Info::marsland:===================================================================================="<< std::endl;
+  std::cout << " Info::marsland:***************** CONSTRUCTOR CALLED: AliAnalysisTaskEbyeIterPID  *****************"<< std::endl;
+  std::cout << " Info::marsland:===================================================================================="<< std::endl;
+  std::cout << " Info::marsland:===================================================================================="<< std::endl;
+  std::cout << " Info::marsland:===================================================================================="<< std::endl;
   // ==========================================
   //
   //   TFile cutGFile("/lustre/nyx/alice/users/marsland/pFluct/ArmPodGraphicalCuts_Tight.root");
@@ -523,7 +513,20 @@ fHistArmPod(0)
   //   fPionCutG       -> SetVarY("qt");
   //   
   // ==========================================
-  // Create histograms for binning of eta p and cent
+  // Initialize arrays
+  for (Int_t ires=0; ires<2; ires++){
+      for (Int_t imom=0; imom<4; imom++){
+          for (Int_t icent=0; icent<20; icent++){
+              for (Int_t ieta=0; ieta<20; ieta++){
+                  fPiFirstMoments[ires][imom][icent][ieta]=0.;
+                  fKaFirstMoments[ires][imom][icent][ieta]=0.;
+                  fPrFirstMoments[ires][imom][icent][ieta]=0.;
+                  fLaFirstMoments[ires][imom][icent][ieta]=0.;
+                  fChFirstMoments[ires][imom][icent][ieta]=0.;
+              }
+          }
+      }
+  }
   for (Int_t ibin=0;ibin<3;ibin++) myBin[ibin] = 0;
   for (Int_t ibin=0;ibin<3;ibin++) myBinMC[ibin] = 0; 
   // ==========================================
@@ -554,7 +557,7 @@ AliAnalysisTaskEbyeIterPID::~AliAnalysisTaskEbyeIterPID() {
   //
   // Destructor
   //
-  std::cout << " ===== In the Destructor ===== " << std::endl;
+  std::cout << " Info::marsland: ===== In the Destructor ===== " << std::endl;
   if (fHistPosEffMatrixRec) delete fHistPosEffMatrixRec;   
   if (fHistNegEffMatrixRec) delete fHistNegEffMatrixRec;  
   if (fHistPosEffMatrixGen) delete fHistPosEffMatrixGen;   
@@ -585,9 +588,9 @@ void AliAnalysisTaskEbyeIterPID::Initialize()
   //
   // updating parameters in case of changes (standard cuts and the eta window)
   //
-  std::cout << " ===== In the Initialize ===== " << std::endl;
-  if (fRunFastSimulation) { std::cout << " !!! We are running fast simulation return !!! " << std::endl; return; }
-  if (fRunFastHighMomentCal) { std::cout << " !!! We are running fast high moment calculation return !!! " << std::endl; return; }
+  std::cout << " Info::marsland: ===== In the Initialize ===== " << std::endl;
+  if (fRunFastSimulation) { std::cout << " Info::marsland: !!! We are running fast simulation return !!! " << std::endl; return; }
+  if (fRunFastHighMomentCal) { std::cout << " Info::marsland: !!! We are running fast high moment calculation return !!! " << std::endl; return; }
   AliInfoClass("Creating track cuts for ITS+TPC (2010 definition).");
   // fESDtrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010(kTRUE,1);
   
@@ -664,10 +667,10 @@ void AliAnalysisTaskEbyeIterPID::Initialize()
   fESDtrackCutsV0   ->SetMaxDcaV0Daughters(1.0);
   // ------------------------------------------------
   //
-  std::cout << " ===================================================== " << std::endl;
-  std::cout << " =============== Summary of Track Cuts =============== " << std::endl;
-  std::cout << " ===================================================== " << std::endl;
-  // fESDtrackCuts->Dump();
+  std::cout << " Info::marsland: ===================================================== " << std::endl;
+  std::cout << " Info::marsland: =============== Summary of Track Cuts =============== " << std::endl;
+  std::cout << " Info::marsland: ===================================================== " << std::endl;
+  fESDtrackCuts->Dump();
 }
 //________________________________________________________________________
 void AliAnalysisTaskEbyeIterPID::UserCreateOutputObjects() 
@@ -675,7 +678,7 @@ void AliAnalysisTaskEbyeIterPID::UserCreateOutputObjects()
   //
   // Create output histograms, trees of the analysis (called once)
   //
-  std::cout << " ===== In the UserCreateOutputObjects ===== " << std::endl;
+  std::cout << " Info::marsland: ===== In the UserCreateOutputObjects ===== " << std::endl;
   // ------------  setup PIDCombined  ---------------  
   fPIDCombined=new AliPIDCombined;
   fPIDCombined->SetDefaultTPCPriors();
@@ -689,7 +692,7 @@ void AliAnalysisTaskEbyeIterPID::UserCreateOutputObjects()
       AliFatal("Input handler needed");
     else {
       fPIDResponse = inputHandler->GetPIDResponse();       // PID response object
-      if (!fPIDResponse) std::cout << " ======= PIDResponse object was not created ====== " << std::endl;
+      if (!fPIDResponse) std::cout << " Info::marsland: ======= PIDResponse object was not created ====== " << std::endl;
     }
   }
   // ************************************************************************ 
@@ -927,7 +930,7 @@ void AliAnalysisTaskEbyeIterPID::UserCreateOutputObjects()
   PostData(14, fTreeResonance);
   PostData(15, fTreeMCgenMoms);
 
-  std::cout << " ===== Out of UserCreateOutputObjects ===== " << std::endl;
+  std::cout << " Info::marsland: ===== Out of UserCreateOutputObjects ===== " << std::endl;
 
 }
 //________________________________________________________________________
@@ -936,7 +939,7 @@ void AliAnalysisTaskEbyeIterPID::UserExec(Option_t *)
   //
   // main event loop
   //
-  if (fUseCouts) std::cout << " ===== In the UserExec ===== " << std::endl;
+  if (fUseCouts) std::cout << " Info::marsland: ===== In the UserExec ===== " << std::endl;
   // Check Monte Carlo information and other access first:
   AliMCEventHandler* eventHandler = dynamic_cast<AliMCEventHandler*> (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler());
   if (!eventHandler) fMCtrue = kFALSE;
@@ -996,9 +999,9 @@ void AliAnalysisTaskEbyeIterPID::UserExec(Option_t *)
         if (fMCImpactParameter>=impParArr[7] && fMCImpactParameter<impParArr[8]) fCentrality=65.;
         if (fMCImpactParameter>=impParArr[8] && fMCImpactParameter<impParArr[9]) fCentrality=75.;
         if (fMCImpactParameter<impParArr[0]  || fMCImpactParameter>impParArr[9]) fCentrality=-10.;
-        if (fUseCouts) std::cout << "impact parameter = " << fMCImpactParameter << std::endl;
+        if (fUseCouts) std::cout << " Info::marsland: impact parameter = " << fMCImpactParameter << std::endl;
     } else {
-        std::cout << " AAAAAAAAA there is no cent info " << std::endl;
+        std::cout << " Info::marsland: Error: There is no cent info " << std::endl;
     }
     //
     // Use file name in Hashing to create unique event ID
@@ -1013,10 +1016,10 @@ void AliAnalysisTaskEbyeIterPID::UserExec(Option_t *)
     fEventGIDMC  = TMath::Abs(Int_t(TString::Hash(&fEventGIDMC,sizeof(Int_t))));    // uniqe event id for real data 
     fEventGID    = fEventGIDMC;
     if (fUseCouts) {
-    std::cout << " ====================================================================================================== " << std::endl; 
+    std::cout << " Info::marsland: ====================================================================================================== " << std::endl; 
     std::cout << fEventCountInFile << " ----- " << "eventIDMC = " << fEventGIDMC << "   " << chain->GetCurrentFile()->GetName() << std::endl;
-    std::cout << " Centrality = " << fCentrality << " ------ Impact Param = " << fMCImpactParameter << std::endl;
-    std::cout << " ====================================================================================================== " << std::endl; 
+    std::cout << " Info::marsland: Centrality = " << fCentrality << " ------ Impact Param = " << fMCImpactParameter << std::endl;
+    std::cout << " Info::marsland: ====================================================================================================== " << std::endl; 
     }
     fEventCountInFile++; 
     //
@@ -1061,15 +1064,15 @@ void AliAnalysisTaskEbyeIterPID::UserExec(Option_t *)
       AliCentrality *esdCentrality = fESD->GetCentrality();
       AliMultSelection *MultSelection = (AliMultSelection*) fESD-> FindListObject("MultSelection");
       if (MultSelection) {
-          if (MultSelection && fSystCentEstimatetor == -1) fCentrality = MultSelection->GetMultiplicityPercentile("TRK"); 
-          if (MultSelection && fSystCentEstimatetor ==  0) fCentrality = MultSelection->GetMultiplicityPercentile("V0M"); 
-          if (MultSelection && fSystCentEstimatetor ==  1) fCentrality = MultSelection->GetMultiplicityPercentile("CL1");           
+          if(MultSelection && fSystCentEstimatetor == -1) fCentrality = MultSelection->GetMultiplicityPercentile("TRK"); 
+          if(MultSelection && fSystCentEstimatetor ==  0) fCentrality = MultSelection->GetMultiplicityPercentile("V0M"); 
+          if(MultSelection && fSystCentEstimatetor ==  1) fCentrality = MultSelection->GetMultiplicityPercentile("CL1");           
       } else if (esdCentrality) {
           if (esdCentrality && fSystCentEstimatetor == -1) fCentrality = esdCentrality->GetCentralityPercentile("TRK");
           if (esdCentrality && fSystCentEstimatetor ==  0) fCentrality = esdCentrality->GetCentralityPercentile("V0M");
           if (esdCentrality && fSystCentEstimatetor ==  1) fCentrality = esdCentrality->GetCentralityPercentile("CL1");
       } else {
-          std::cout << " AAAAAAAAA there is no cent info " << std::endl;
+          std::cout << " Info::marsland: Error: There is no cent info " << std::endl;
       }
     }
     fHistCentrality->Fill(fCentrality);  // count events after physics and vertex selection
@@ -1090,9 +1093,9 @@ void AliAnalysisTaskEbyeIterPID::UserExec(Option_t *)
     ULong64_t gid          = ((periodID << 36) | (orbitID << 12) | bunchCrossID); 
     fEventGID              = TMath::Abs(Int_t(TString::Hash(&gid,sizeof(Int_t))));    // uniqe event id for real data 
     if (fUseCouts) {
-        std::cout << " =============================================================================================== " << std::endl; 
+        std::cout << " Info::marsland: =============================================================================================== " << std::endl; 
         std::cout << fEventCountInFile << " ----- " << fCentrality << " === gidreal =  " << gid << " hashed = " << fEventGID << std::endl;
-        std::cout << " =============================================================================================== " << std::endl; 
+        std::cout << " Info::marsland: =============================================================================================== " << std::endl; 
     }
   }
   //
@@ -1130,7 +1133,7 @@ void AliAnalysisTaskEbyeIterPID::FillTPCdEdxReal()
   //
   // Fill dEdx information for the TPC and also clean kaon and protons
   //
-  if (fUseCouts) std::cout << " ===== In the FillTPCdEdxReal ===== " << std::endl;
+  if (fUseCouts) std::cout << " Info::marsland: ===== In the FillTPCdEdxReal ===== " << std::endl;
   TTree *chain = (TChain*)GetInputData(0); 
   if(!chain) { Printf("ERROR: Could not receive input chain"); return; }
   TObjString fileName(chain->GetCurrentFile()->GetName());
@@ -1443,7 +1446,7 @@ void AliAnalysisTaskEbyeIterPID::FillTPCdEdxCheck()
   //
   // Fill dEdx information for the TPC and also the clean kaon and protons
   //
-  if (fUseCouts) std::cout << " ===== In the FillTPCdEdxCheck ===== " << std::endl;
+  if (fUseCouts) std::cout << " Info::marsland: ===== In the FillTPCdEdxCheck ===== " << std::endl;
   AliVEvent *event=InputEvent();
   //    
   // Main track loop
@@ -1484,7 +1487,7 @@ void AliAnalysisTaskEbyeIterPID::FillTPCdEdxMC()
   //
   // Fill dEdx information for the TPC and also the clean kaon and protons
   //
-  if (fUseCouts) std::cout << " ===== In the FillTPCdEdxMC ===== " << std::endl;
+  if (fUseCouts) std::cout << " Info::marsland: ===== In the FillTPCdEdxMC ===== " << std::endl;
   AliMCEventHandler *eventHandler = dynamic_cast<AliMCEventHandler*>(AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler());
   TTree *chain = (TChain*)GetInputData(0);
   if(!chain) { Printf("ERROR: Could not receive input chain"); return; }
@@ -2146,7 +2149,7 @@ void AliAnalysisTaskEbyeIterPID::FastGen()
   //
   // Fill dEdx information for the TPC and also the clean kaon and protons
   //
-  if (fUseCouts) std::cout << " ===== In the FastGen ===== " << std::endl;
+  if (fUseCouts) std::cout << " Info::marsland: ===== In the FastGen ===== " << std::endl;
    
   Int_t dataType = 1, sampleNo = 0;  // dataType-> 1 for MCgen
   Int_t evtNuminFile = fMCEvent -> GetEventNumberInFile();
@@ -2435,7 +2438,7 @@ void AliAnalysisTaskEbyeIterPID::CalculateFastGenHigherMoments()
   //
   // Fill dEdx information for the TPC and also the clean kaon and protons
   //
-  if (fUseCouts) std::cout << " ===== In the CalculateFastGenHigherMoments ===== " << std::endl;
+  if (fUseCouts) std::cout << " Info::marsland: ===== In the CalculateFastGenHigherMoments ===== " << std::endl;
    
   Int_t dataType = 1, sampleNo = 0;  // dataType-> 1 for MCgen
   Int_t evtNuminFile = fMCEvent -> GetEventNumberInFile();
@@ -2613,19 +2616,19 @@ void AliAnalysisTaskEbyeIterPID::CalculateFastGenHigherMoments()
         } // ======= end of track loop ======= 
         
         // moments from Lookup table
-        // std::cout << " ====================== " << imom << "  " << icent << "  " << ieta << " ====================== " << std::endl;
-        // std::cout << fPiFirstMoments[0][imom][icent][ieta] << std::endl;
-        // std::cout << fKaFirstMoments[0][imom][icent][ieta] << std::endl;
-        // std::cout << fPrFirstMoments[0][imom][icent][ieta] << std::endl;
-        // std::cout << fLaFirstMoments[0][imom][icent][ieta] << std::endl;
-        // std::cout << fChFirstMoments[0][imom][icent][ieta] << std::endl;
-        // 
-        // std::cout << fPiFirstMoments[1][imom][icent][ieta] << std::endl;
-        // std::cout << fKaFirstMoments[1][imom][icent][ieta] << std::endl;
-        // std::cout << fPrFirstMoments[1][imom][icent][ieta] << std::endl;
-        // std::cout << fLaFirstMoments[1][imom][icent][ieta] << std::endl;
-        // std::cout << fChFirstMoments[1][imom][icent][ieta] << std::endl;
-        // std::cout << " ============================================================================================= " << std::endl;
+        //         std::cout << " Info::marsland: ====================== " << imom << "  " << icent << "  " << ieta << " ====================== " << std::endl;
+        //         std::cout << fPiFirstMoments[0][imom][icent][ieta] << std::endl;
+        //         std::cout << fKaFirstMoments[0][imom][icent][ieta] << std::endl;
+        //         std::cout << fPrFirstMoments[0][imom][icent][ieta] << std::endl;
+        //         std::cout << fLaFirstMoments[0][imom][icent][ieta] << std::endl;
+        //         std::cout << fChFirstMoments[0][imom][icent][ieta] << std::endl;
+        //         
+        //         std::cout << fPiFirstMoments[1][imom][icent][ieta] << std::endl;
+        //         std::cout << fKaFirstMoments[1][imom][icent][ieta] << std::endl;
+        //         std::cout << fPrFirstMoments[1][imom][icent][ieta] << std::endl;
+        //         std::cout << fLaFirstMoments[1][imom][icent][ieta] << std::endl;
+        //         std::cout << fChFirstMoments[1][imom][icent][ieta] << std::endl;
+        //         std::cout << " Info::marsland: ============================================================================================= " << std::endl;
         
         // net lambda for Alice and 
         genMomentsNeg[kLaLa]=genMomentsNeg[kLa]*genMomentsNeg[kLa]; 
@@ -2756,7 +2759,7 @@ void AliAnalysisTaskEbyeIterPID::WeakAndMaterial()
   //
   // Fill dEdx information for the TPC and also the clean kaon and protons
   //
-  if (fUseCouts) std::cout << " ===== In the WeakAndMaterial ===== " << std::endl;
+  if (fUseCouts) std::cout << " Info::marsland: ===== In the WeakAndMaterial ===== " << std::endl;
   //
   // ======================================================================
   // ======================================================================
@@ -2816,7 +2819,7 @@ void AliAnalysisTaskEbyeIterPID::FillDnchDeta()
   //
   // Fill dEdx information for the TPC and also the clean kaon and protons
   //
-  if (fUseCouts) std::cout << " ===== In the FillDnchDeta ===== " << std::endl;
+  if (fUseCouts) std::cout << " Info::marsland: ===== In the FillDnchDeta ===== " << std::endl;
   //
   // ======================================================================
   // ======================================================================
@@ -2904,7 +2907,7 @@ void AliAnalysisTaskEbyeIterPID::FillTPCdEdxMCEffMatrix()
   //
   // Fill dEdx information for the TPC and also the clean kaon and protons
   //
-  if (fUseCouts) std::cout << " ===== In the FillTPCdEdxMCEffMatrix ===== " << std::endl;
+  if (fUseCouts) std::cout << " Info::marsland: ===== In the FillTPCdEdxMCEffMatrix ===== " << std::endl;
   AliMCEventHandler *eventHandler = dynamic_cast<AliMCEventHandler*>(AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler());
   TTree *chain = (TChain*)GetInputData(0);
   if(!chain) { Printf("ERROR: Could not receive input chain"); return; }
@@ -3021,7 +3024,7 @@ void AliAnalysisTaskEbyeIterPID::FillCleanElectrons()
 {
 
 // Fill Clean Electrons from conversion
-  if (fUseCouts) std::cout << " ===== In the FillCleanElectrons ===== " << std::endl;
+  if (fUseCouts) std::cout << " Info::marsland: ===== In the FillCleanElectrons ===== " << std::endl;
   if (fPIDResponse) {
     fPIDResponse->GetTPCResponse().SetBetheBlochParameters(1.28778e+00/50., 3.13539e+01, TMath::Exp(-3.16327e+01), 1.87901e+00, 6.41583e+00);
   }
@@ -3141,7 +3144,7 @@ void AliAnalysisTaskEbyeIterPID::FillCleanPions()
 {
 
   // Fill Clean Pions from K0s
-  if (fUseCouts) std::cout << " ===== In the FillCleanPions ===== " << std::endl;
+  if (fUseCouts) std::cout << " Info::marsland: ===== In the FillCleanPions ===== " << std::endl;
   if (fPIDResponse) {
     fPIDResponse->GetTPCResponse().SetBetheBlochParameters(1.28778e+00/50., 3.13539e+01, TMath::Exp(-3.16327e+01), 1.87901e+00, 6.41583e+00);
   }
@@ -3458,7 +3461,7 @@ void AliAnalysisTaskEbyeIterPID::BinLogAxis(TH1 *h)
   //
   // Method for the correct logarithmic binning of histograms
   //
-  if (fUseCouts) std::cout << " ===== In the BinLogAxis ===== " << std::endl;
+  if (fUseCouts) std::cout << " Info::marsland: ===== In the BinLogAxis ===== " << std::endl;
   TAxis *axis       = h->GetXaxis();
   Int_t bins        = axis->GetNbins();
 
@@ -3501,16 +3504,16 @@ Int_t AliAnalysisTaskEbyeIterPID::CountEmptyEvents(Int_t counterBin)
   // check if the event is empty
   if (emptyCount<1) { 
     fHistEmptyEvent->Fill(counterBin);
-    std::cout << "empty event in " << chain->GetCurrentFile()->GetName() << std::endl;
+    std::cout << " Info::marsland: Empty event in " << chain->GetCurrentFile()->GetName() << std::endl;
   }
-  if (fUseCouts) std::cout << " ====== EVENT IS COOL GO AHEAD ======= " << std::endl;
+  if (fUseCouts) std::cout << " Info::marsland: ====== EVENT IS COOL GO AHEAD ======= " << std::endl;
   return emptyCount;
 
 }
 //________________________________________________________________________
 void AliAnalysisTaskEbyeIterPID::Terminate(Option_t *) 
 {
-  std::cout << " ===== In the Terminate ===== " << std::endl;
+  std::cout << " Info::marsland: ===== In the Terminate ===== " << std::endl;
   // Draw result to the screen
   // Called once at the end of the query
   
