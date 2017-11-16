@@ -12,15 +12,13 @@
 
 
 enum EPart { kKaonPlus , kKaonMinus , kPionPlus , kPionMinus };
+enum ESys  { kAPL, kPAL, kKKpi, nSys };
 
-enum ESys  { kAPL, kPAL, kEta, kF11, kEtaH, kEta2, nSys };
-
-
-const char *sysNames[nSys]      = { "APL", "PAL", "eta", "f1", "etaH", "eta2" };
-const bool runSys[nSys]         = {   1  ,   1  ,   1  ,  1  ,   1   ,   1    };
-const double distMin[nSys]      = {  1.95,  1.95,  1.3 , 1.3 ,  1.4  ,  1.4   }; // everything in GeV here
-const double distMax[nSys]      = {  2.15,  2.15,  1.5 , 1.5 ,  1.6  ,  1.8   };
-const double distBinWidth[nSys] = { 0.005, 0.005, 0.005,0.005, 0.005 , 0.005  };
+const char *sysNames[nSys]      = { "APL", "PAL", "KKpi"};
+const bool runSys[nSys]         = {   1  ,   1  ,   1  };
+const double distMin[nSys]      = {  1.5 ,  1.5 ,  1.0 }; // everything in GeV here
+const double distMax[nSys]      = {  2.5 ,  2.5 ,  2.0 };
+const double distBinWidth[nSys] = { 0.005, 0.005, 0.005};
 
 bool separationCuts;
 
@@ -164,8 +162,8 @@ AliFemtoESDTrackCut* GetTrackCut(EPart particle)
   
   particleCut->SetPt(0.14,1.5);
   particleCut->SetEta(-0.8, 0.8);
-  particleCut->SetMaxImpactXY(0.1);
-  particleCut->SetMaxImpactZ(0.1);
+  particleCut->SetMaxImpactXY(0.2);
+  particleCut->SetMaxImpactZ(0.25);
   particleCut->SetStatus(AliESDtrack::kTPCin);
   particleCut->SetminTPCncls(80);
   particleCut->SetRemoveKinks(kTRUE);
@@ -201,34 +199,19 @@ AliFemtoTrioCut* GetTrioCut(ESys system)
 void GetParticlesForSystem(ESys system, EPart &firstParticle, EPart &secondParticle, EPart &thirdParticle)
 {
   if(system == kAPL){
-    firstParticle = kKaonMinus;
+    firstParticle  = kKaonMinus;
     secondParticle = kPionPlus;
-    thirdParticle = kPionMinus;
+    thirdParticle  = kPionMinus;
   }
   if(system == kPAL){
-    firstParticle = kKaonPlus;
+    firstParticle  = kKaonPlus;
     secondParticle = kPionPlus;
-    thirdParticle = kPionMinus;
+    thirdParticle  = kPionMinus;
   }
-  if(system == kEta){
-    firstParticle = kKaonPlus;
+  if(system == kKKpi){
+    firstParticle  = kKaonPlus;
     secondParticle = kKaonMinus;
-    thirdParticle = kPionMinus;
-  }
-  if(system == kF11){
-    firstParticle = kKaonPlus;
-    secondParticle = kKaonMinus;
-    thirdParticle = kPionMinus;
-  }
-  if(system == kEtaH){
-    firstParticle = kKaonPlus;
-    secondParticle = kKaonMinus;
-    thirdParticle = kPionMinus;
-  }
-  if(system == kEta2){
-    firstParticle = kKaonPlus;
-    secondParticle = kKaonMinus;
-    thirdParticle = kPionMinus;
+    thirdParticle  = kPionMinus;
   }
 }
 
