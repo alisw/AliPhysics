@@ -138,7 +138,7 @@ class AliAnalysisTaskEbyeIterPID : public AliAnalysisTaskSE {
   void   SetCentralityBinning(const Int_t tmpCentbins, Float_t tmpfxCentBins[])
   {
     // Create the histograms to be used in the binning of eta, cent and momentum
-    std::cout << " !!!!!! Centrality binning is being set !!!!!!! " << std::endl;
+    std::cout << " Info::marsland: !!!!!! Centrality binning is being set !!!!!!! " << std::endl;
     fhEta  =  new TH1F("fhEta" ,"Eta Bins"       ,fnEtaBins        ,fEtaDown, fEtaUp );
     fhPtot =  new TH1F("fhPtot","Momentum Bins"  ,fnMomBins        ,fMomDown, fMomUp ); 
     fhCent =  new TH1F("fhCent","Centrality Bins",tmpCentbins-1    ,tmpfxCentBins );
@@ -157,7 +157,7 @@ class AliAnalysisTaskEbyeIterPID : public AliAnalysisTaskSE {
   void SetMCEtaScanArray(const Int_t tmpEtaBinsMC, Float_t tmpetaDownArr[], Float_t tmpetaUpArr[])
   {    
     // set MC eta values to scan 
-    std::cout << " !!!!!! SetMCEtaScanArray is being set !!!!!!! " << std::endl;
+    std::cout << " Info::marsland: !!!!!! SetMCEtaScanArray is being set !!!!!!! " << std::endl;
     fnEtaWinBinsMC = tmpEtaBinsMC;
     fetaDownArr = new Float_t[fnEtaWinBinsMC]; 
     fetaUpArr   = new Float_t[fnEtaWinBinsMC]; 
@@ -170,7 +170,7 @@ class AliAnalysisTaskEbyeIterPID : public AliAnalysisTaskSE {
   void SetMCResonanceArray(const Int_t tmpNRes, TString tmpResArr[])
   {    
     // set MC eta values to scan 
-    std::cout << " !!!!!! SetMCResonanceArray is being set !!!!!!! " << std::endl;
+    std::cout << " Info::marsland: !!!!!! SetMCResonanceArray is being set !!!!!!! " << std::endl;
     fnResBins = tmpNRes;
     fResonances = new TString[fnResBins]; 
     for (Int_t i=0; i<fnResBins; i++) fResonances[i] = tmpResArr[i]; 
@@ -180,7 +180,7 @@ class AliAnalysisTaskEbyeIterPID : public AliAnalysisTaskSE {
   void SetMCMomScanArray(const Int_t tmpMomBinsMC, Float_t tmppDownArr[], Float_t tmppUpArr[])
   {       
     // set MC momentum values to scan
-    std::cout << " !!!!!! SetMCMomScanArray is being set !!!!!!! " << std::endl;
+    std::cout << " Info::marsland: !!!!!! SetMCMomScanArray is being set !!!!!!! " << std::endl;
     fnMomBinsMC = tmpMomBinsMC;
     fpDownArr = new Float_t[fnMomBinsMC]; 
     fpUpArr   = new Float_t[fnMomBinsMC]; 
@@ -190,56 +190,41 @@ class AliAnalysisTaskEbyeIterPID : public AliAnalysisTaskSE {
     }
   }
   
-  Float_t**** CreateArrray(const Int_t nResMode,const Int_t mombins, const Int_t centbins, const Int_t etabins)
-  {
-      // resmode = 0: with resonances 1; without resonances
-      Float_t ****array = new Float_t ***[nResMode];
-      for (Int_t iresType=0; iresType<nResMode; iresType++){
-          array[iresType] = new Float_t**[mombins];
-          for (Int_t imom=0; imom<mombins; imom++){
-              array[iresType][imom] = new Float_t*[centbins];
-              for (Int_t icent=0; icent<centbins; icent++){
-                  array[iresType][imom][icent] = new Float_t[etabins];
-                  for (Int_t ieta=0; ieta<etabins; ieta++){
-                      array[iresType][imom][icent][ieta] = 0.;
-                  }
-              }
-          }
-      }
-      return array;
-  }
-  
-  void SetLookUpTableFirstMoments(const Int_t partType,Float_t ****tmpFirstMomArr,const Int_t tmpMomBinsMC, const Int_t tmpCentbins, const Int_t tmpEtaBinsMC)
+  void SetLookUpTableFirstMoments(TTree *lookUpTree, Int_t partType, Float_t pArr[],Float_t centArr[],Float_t etaArr[],const Int_t tmpMomBinsMC, const Int_t tmpCentbins, const Int_t tmpEtaBinsMC)
   {    
     // set MC eta values to scan 
-    std::cout << " !!!!!! SetLookUpTableFirstMoments is being set !!!!!!!   " << tmpFirstMomArr[0][0][0][0] << std::endl;
-
-    const Int_t nResMode = 2;
-    fnMomBinsMC = tmpMomBinsMC;
-    fnCentBinsMC = tmpCentbins;
-    fnEtaWinBinsMC = tmpEtaBinsMC;
-    if (partType==0) fPiFirstMoments = CreateArrray(2,tmpMomBinsMC,tmpCentbins,tmpEtaBinsMC);
-    if (partType==1) fKaFirstMoments = CreateArrray(2,tmpMomBinsMC,tmpCentbins,tmpEtaBinsMC);
-    if (partType==2) fPrFirstMoments = CreateArrray(2,tmpMomBinsMC,tmpCentbins,tmpEtaBinsMC);
-    if (partType==9) fLaFirstMoments = CreateArrray(2,tmpMomBinsMC,tmpCentbins,tmpEtaBinsMC);
-    if (partType==11) fChFirstMoments = CreateArrray(2,tmpMomBinsMC,tmpCentbins,tmpEtaBinsMC);
-    
-    for (Int_t iresType=0; iresType<nResMode; iresType++){
-        for (Int_t imom=0; imom<fnMomBinsMC; imom++){
-            for (Int_t icent=0; icent<fnCentBinsMC; icent++){
-                for (Int_t ieta=0; ieta<fnEtaWinBinsMC; ieta++){
-                    
-                    if (partType==0) fPiFirstMoments[iresType][imom][icent][ieta] = tmpFirstMomArr[iresType][imom][icent][ieta];
-                    if (partType==1) fKaFirstMoments[iresType][imom][icent][ieta] = tmpFirstMomArr[iresType][imom][icent][ieta];
-                    if (partType==2) fPrFirstMoments[iresType][imom][icent][ieta] = tmpFirstMomArr[iresType][imom][icent][ieta];
-                    if (partType==9) fLaFirstMoments[iresType][imom][icent][ieta] = tmpFirstMomArr[iresType][imom][icent][ieta];
-                    if (partType==11) fChFirstMoments[iresType][imom][icent][ieta] = tmpFirstMomArr[iresType][imom][icent][ieta];
-
-                }
+    std::cout << " Info::marsland: !!!!!! SetLookUpTableFirstMoments is being set !!!!!!!   " << std::endl;
+    //
+    // fill arrays from lookup table
+    TH1D *h=NULL, *h1=NULL;
+    for (Int_t imom=0; imom<tmpMomBinsMC; imom++){
+        for (Int_t icent=0; icent<tmpCentbins; icent++){
+            for (Int_t ieta=0; ieta<tmpEtaBinsMC; ieta++){
+                //
+                // with resonances
+                lookUpTree->Draw(Form("momentPos.fElements[%d]-momentNeg.fElements[%d]",partType,partType),Form("abs(etaUp-%f)<0.01&&abs(pDown-%f)<0.01&&abs(centDown-%f)<0.01",etaArr[ieta],pArr[imom],centArr[icent]),"goff");
+                h= (TH1D*)lookUpTree->GetHistogram()->Clone(); h-> SetName("Res");
+                if (partType==0)  fPiFirstMoments[0][imom][icent][ieta] = h->GetMean();
+                if (partType==1)  fKaFirstMoments[0][imom][icent][ieta] = h->GetMean();
+                if (partType==2)  fPrFirstMoments[0][imom][icent][ieta] = h->GetMean();
+                if (partType==9)  fLaFirstMoments[0][imom][icent][ieta] = h->GetMean();
+                if (partType==11) fChFirstMoments[0][imom][icent][ieta] = h->GetMean();
+                delete h;
+                //
+                // without resonances
+                lookUpTree->Draw(Form("noResmomentPos.fElements[%d]-noResmomentNeg.fElements[%d]",partType,partType),Form("abs(etaUp-%f)<0.01&&abs(pDown-%f)<0.01&&abs(centDown-%f)<0.01",etaArr[ieta],pArr[imom],centArr[icent]),"goff");
+                h1= (TH1D*)lookUpTree->GetHistogram()->Clone(); h1-> SetName("noRes");
+                if (partType==0)  fPiFirstMoments[1][imom][icent][ieta] = h1->GetMean();
+                if (partType==1)  fKaFirstMoments[1][imom][icent][ieta] = h1->GetMean();
+                if (partType==2)  fPrFirstMoments[1][imom][icent][ieta] = h1->GetMean();
+                if (partType==9)  fLaFirstMoments[1][imom][icent][ieta] = h1->GetMean();
+                if (partType==11) fChFirstMoments[1][imom][icent][ieta] = h1->GetMean();
+                delete h1;
+                
             }
         }
     }
-    
+
   }
   
  private:
@@ -478,12 +463,11 @@ class AliAnalysisTaskEbyeIterPID : public AliAnalysisTaskSE {
   Int_t              fSystDCAxy;             // 0 --> default ||| -1 --> -sigma ||| +1 --> +sigma 
   Int_t              fSystChi2;              // 0 -->  4      ||| -1 -->    3   ||| +1 -->   5
   Int_t              fSystVz;                // 0 -->  10     ||| -1 -->    8   ||| +1 -->   12
-  
-  Float_t            ****fPiFirstMoments;    //[fnResModeMC][fnMomBinsMC][fnCentBinsMC][fnEtaWinBinsMC]
-  Float_t            ****fKaFirstMoments;    //[fnResModeMC][fnMomBinsMC][fnCentBinsMC][fnEtaWinBinsMC]
-  Float_t            ****fPrFirstMoments;    //[fnResModeMC][fnMomBinsMC][fnCentBinsMC][fnEtaWinBinsMC]
-  Float_t            ****fLaFirstMoments;    //[fnResModeMC][fnMomBinsMC][fnCentBinsMC][fnEtaWinBinsMC]
-  Float_t            ****fChFirstMoments;    //[fnResModeMC][fnMomBinsMC][fnCentBinsMC][fnEtaWinBinsMC]
+  Float_t            fPiFirstMoments[2][4][20][20];    //[fnResModeMC][fnMomBinsMC][fnCentBinsMC][fnEtaWinBinsMC]
+  Float_t            fKaFirstMoments[2][4][20][20];    //[fnResModeMC][fnMomBinsMC][fnCentBinsMC][fnEtaWinBinsMC]
+  Float_t            fPrFirstMoments[2][4][20][20];    //[fnResModeMC][fnMomBinsMC][fnCentBinsMC][fnEtaWinBinsMC]
+  Float_t            fLaFirstMoments[2][4][20][20];    //[fnResModeMC][fnMomBinsMC][fnCentBinsMC][fnEtaWinBinsMC]
+  Float_t            fChFirstMoments[2][4][20][20];    //[fnResModeMC][fnMomBinsMC][fnCentBinsMC][fnEtaWinBinsMC]
   Float_t            *fetaDownArr;           //[fnEtaWinBinsMC]
   Float_t            *fetaUpArr;             //[fnEtaWinBinsMC]
   Float_t            *fcentDownArr;          //[fnCentBinsMC]
@@ -507,7 +491,7 @@ class AliAnalysisTaskEbyeIterPID : public AliAnalysisTaskSE {
   THnF             * fHistdEdxTPC;            // 5D hist of dEdx from all TPC
   TH2F             * fHistArmPod;             // control histogram for Armanteros Podolanski plot
    
-  ClassDef(AliAnalysisTaskEbyeIterPID, 1);
+  ClassDef(AliAnalysisTaskEbyeIterPID, 2);
   
 };
 
