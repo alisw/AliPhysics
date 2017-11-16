@@ -3,6 +3,9 @@
 
 #include "AliEmcalCorrectionClusterHadronicCorrection.h"
 
+#include <map>
+#include <utility>
+
 #include <TH2.h>
 #include <TList.h>
 
@@ -31,6 +34,7 @@ AliEmcalCorrectionClusterHadronicCorrection::AliEmcalCorrectionClusterHadronicCo
   fDoNotOversubtract(kFALSE),
   fClusterContainerIndexMap(),
   fParticleContainerIndexMap(),
+  fTrackToContainerMap(),
   fHistMatchEtaPhiAll(0),
   fHistMatchEtaPhiAllCl(0),
   fHistNclusvsCent(0),
@@ -92,15 +96,6 @@ Bool_t AliEmcalCorrectionClusterHadronicCorrection::Initialize()
   GetProperty("doTrackClus", fDoTrackClus);
   GetProperty("plotOversubtractionHistograms", fPlotOversubtractionHistograms);
   GetProperty("doNotOversubtract", fDoNotOversubtract);
-
-  if (!fEsdMode && fParticleCollArray.GetEntries() > 1) {
-    AliWarning("================================================================================");
-    AliWarning("== Added multiple particle containers when running with AOD!");
-    AliWarning("== Particle selection of the first particle container will be applied");
-    AliWarning("== to _ALL_ particles! If you need a different selection, then change");
-    AliWarning("== the order of adding the containers so that the desired container is first!");
-    AliWarning("================================================================================");
-  }
 
   return kTRUE;
 }
@@ -253,6 +248,13 @@ void AliEmcalCorrectionClusterHadronicCorrection::ExecOnce()
 Bool_t AliEmcalCorrectionClusterHadronicCorrection::Run()
 {
   AliEmcalCorrectionComponent::Run();
+
+  // Build map from all available tracks to their corresponding particle containers.
+  // This is only required for AODs which store pointers to AliVTracks instead of
+  // indices.
+  if (!fEsdMode) {
+    GenerateTrackToContainerMap();
+  }
   
   // Run the hadronic correction
   // loop over all clusters
@@ -293,6 +295,33 @@ Bool_t AliEmcalCorrectionClusterHadronicCorrection::Run()
   }
 
   return kTRUE;
+}
+
+/**
+ * Builds a map from all available tracks to their corresponding particle containers.
+ * Clusters in AODs store pointers to AliVTracks instead of the indices, which means that
+ * those tracks could only be matched back to their containers by searching through all of the containers
+ * for each track. This would be inefficient, so instead a map is built to find the correspondence once and
+ * then used to perform the lookup.
+ *
+ * This function should be called for AODs, as it is unnecessary for ESDs!
+ */
+void AliEmcalCorrectionClusterHadronicCorrection::GenerateTrackToContainerMap()
+{
+  fTrackToContainerMap.clear();
+
+  // Loop by index to avoid the possibility of iterators being invalidated.
+  AliParticleContainer * partCont = 0;
+  for (int i = 0; i < fParticleCollArray.GetEntriesFast(); i++)
+  {
+    partCont = GetParticleContainer(i);
+    if (!partCont) { AliErrorStream() << "Failed to retrieve particle container at index " << i << "\n"; }
+    for (int j = 0; j < partCont->GetNParticles(); j++)
+    {
+      AliVTrack * track = static_cast<AliVTrack *>(partCont->GetParticle(j));
+      fTrackToContainerMap.insert(std::make_pair(track, partCont));
+    }
+  }
 }
 
 /**
@@ -553,8 +582,8 @@ void AliEmcalCorrectionClusterHadronicCorrection::DoMatchedTracksLoop(Int_t iclu
     else {
       track = static_cast<AliVTrack*>(cluster->GetTrackMatched(i));
       UInt_t rejectionReason = 0;
-      AliParticleContainer * partCont = GetParticleContainer(0);
-      if (!partCont) { AliError("No particle container available!"); }
+      AliParticleContainer * partCont = fTrackToContainerMap.at(track);
+      if (!partCont) { AliErrorStream() << "Requested particle container not available!\n"; }
       if (!partCont->AcceptParticle(track, rejectionReason)) track = 0;
     }
     
@@ -647,8 +676,8 @@ Double_t AliEmcalCorrectionClusterHadronicCorrection::ApplyHadCorrOneTrack(Int_t
     else {
       track = static_cast<AliVTrack*>(cluster->GetTrackMatched(0));
       UInt_t rejectionReason = 0;
-      AliParticleContainer * partCont = GetParticleContainer(0);
-      if (!partCont) { AliError("No particle container available!"); }
+      AliParticleContainer * partCont = fTrackToContainerMap.at(track);
+      if (!partCont) { AliErrorStream() << "Requested particle container not available!\n"; }
       if (!partCont->AcceptParticle(track, rejectionReason)) track = 0;
     }
   }
@@ -806,8 +835,8 @@ Double_t AliEmcalCorrectionClusterHadronicCorrection::ApplyHadCorrAllTracks(Int_
         else {
           track = static_cast<AliVTrack*>(cluster->GetTrackMatched(0));
           UInt_t rejectionReason = 0;
-          AliParticleContainer * partCont = GetParticleContainer(0);
-          if (!partCont) { AliError("No particle container available!"); }
+          AliParticleContainer * partCont = fTrackToContainerMap.at(track);
+          if (!partCont) { AliErrorStream() << "Requested particle container not available!\n"; }
           if (!partCont->AcceptParticle(track, rejectionReason)) track = 0;
         }
         if (track) {

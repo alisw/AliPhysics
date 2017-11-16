@@ -43,6 +43,7 @@ class AliEmcalCorrectionClusterHadronicCorrection : public AliEmcalCorrectionCom
   Bool_t Run();
   
 protected:
+  void                   GenerateTrackToContainerMap();
   Double_t               ApplyHadCorrOneTrack(Int_t icluster, Double_t hadCorr);
   Double_t               ApplyHadCorrAllTracks(Int_t icluster, Double_t hadCorr);
   void                   DoMatchedTracksLoop(Int_t icluster, Double_t &totalTrkP, Int_t &Nmatches, Double_t &trkPMCfrac, Int_t &NMCmatches);
@@ -66,6 +67,7 @@ protected:
   AliEmcalContainerIndexMap <AliClusterContainer, AliVCluster> fClusterContainerIndexMap;    //!<! Mapping between index and cluster containers
   AliEmcalContainerIndexMap <AliParticleContainer, AliVParticle> fParticleContainerIndexMap; //!<! Mapping between index and particle containers
 #endif
+  std::map <AliVTrack *, AliParticleContainer *> fTrackToContainerMap;                       //!<! Mapping between AliVTracks and their respective particle containers. Needed for AODs only. See GenerateTrackToContainerMap() for more information.
   
   // QA plots
   TH2                   *fHistMatchEtaPhi[10][9][2];  //!<!deta vs. dphi of matched cluster-track pairs
