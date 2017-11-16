@@ -20,6 +20,7 @@
 #include <TKey.h>
 #include <AliAnalysisDataSlot.h>
 #include <AliAnalysisDataContainer.h>
+#include <vector>
 #include "TMatrixD.h"
 #include "TMatrixDSym.h"
 #include "TMatrixDSymEigen.h"
@@ -131,7 +132,7 @@ AliAnalysisTaskRecursiveSoftDrop::~AliAnalysisTaskRecursiveSoftDrop()
 
   const Int_t intBranches = 4;
 
-  std::vector<String> fShapeVarNames_Det(intBranches), nShapeVarNames_True(intBranches);
+  std::vector<TString> fShapesVarNames_Det(intBranches), fShapesVarNames_True(intBranches);
 
   
   fShapesVarNames_Det[0] = "Pt";
