@@ -442,6 +442,21 @@ public:
   void             SwitchOffSelectEventTimeStamp()         { fTimeStampEventSelect = kFALSE  ; }
   
   Bool_t           IsSelectEventTimeStampOn()              { return  fTimeStampEventSelect   ; }
+
+  // Time Stamp CTP corrected
+    
+  Double_t         GetTimeStampEventCTPBCCorrMin()   const { return fTimeStampEventCTPBCCorrMin ; }
+  Double_t         GetTimeStampEventCTPBCCorrMax()   const { return fTimeStampEventCTPBCCorrMax ; }
+  
+  void             SetTimeStampEventCTPBCCorrRange(Double_t a, Double_t b) { 
+                                                             fTimeStampEventCTPBCCorrMin = a    ;
+                                                             fTimeStampEventCTPBCCorrMax = b    ; } // seconds
+  
+  void             SwitchOnExcludeEventTimeCTPBCCorrStamp() { fTimeStampEventCTPBCCorrExclude = kTRUE   ; }
+  void             SwitchOffExcludeEventTimeCTPBCCorrStamp(){ fTimeStampEventCTPBCCorrExclude = kFALSE  ; }
+  
+  Bool_t           IsExcludeEventTimeStampCTPBCCorrOn()     { return  fTimeStampEventCTPBCCorrExclude ; }
+
   
   // Event tagging as pile-up
   
@@ -908,6 +923,10 @@ public:
   Double_t         fTimeStampRunMin;               ///<  Minimum value of time stamp in run.
   Double_t         fTimeStampRunMax;               ///<  Maximum value of time stamp in run.
   
+  Bool_t           fTimeStampEventCTPBCCorrExclude; ///<  Activate event selection within a range of data taking time CTP corrected. ESD only.
+  Double_t         fTimeStampEventCTPBCCorrMin;    ///<  Minimum value of time stamp corrected by CTP in run.
+  Double_t         fTimeStampEventCTPBCCorrMax;    ///<  Maximum value of time stamp corrected by CTP in run.
+  
   ///< Parameters to pass to method IsPileupFromSPD:
   ///< Int_t minContributors, Double_t minZdist, Double_t nSigmaZdist,Double_t nSigmaDiamXY,Double_t nSigmaDiamZ
   Double_t         fPileUpParamSPD[5];
@@ -974,7 +993,7 @@ public:
   AliCaloTrackReader & operator = (const AliCaloTrackReader & r) ; 
   
   /// \cond CLASSIMP
-  ClassDef(AliCaloTrackReader,77) ;
+  ClassDef(AliCaloTrackReader,78) ;
   /// \endcond
 
 } ;
