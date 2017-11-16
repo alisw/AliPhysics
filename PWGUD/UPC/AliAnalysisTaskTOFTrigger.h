@@ -22,6 +22,7 @@ class AliAnalysisTaskTOFTrigger : public AliAnalysisTaskSE {
   virtual void UserCreateOutputObjects();
   virtual void UserExec(Option_t *option);
   virtual void Terminate(Option_t *);
+  void SetupParameters(Float_t lowpt,Float_t highpt,Int_t highmult,TString trgcls){fMaxPt = highpt; fMinPt = lowpt; fMaxMulti = highmult; fTriggerClass = trgcls;}
   void GetLTMIndex(const Int_t * const detind, Int_t *indexLTM);
   
  private:
@@ -64,7 +65,7 @@ class AliAnalysisTaskTOFTrigger : public AliAnalysisTaskSE {
   AliAnalysisTaskTOFTrigger(const AliAnalysisTaskTOFTrigger&); //not implemented
   AliAnalysisTaskTOFTrigger& operator =(const AliAnalysisTaskTOFTrigger&); //not implemented
   
-  ClassDef(AliAnalysisTaskTOFTrigger, 1); 
+  ClassDef(AliAnalysisTaskTOFTrigger, 2); 
 };
 
 #endif
