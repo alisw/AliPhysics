@@ -237,6 +237,7 @@
 #pragma link C++ class AliAnalysisTaskJetPP+;
 #pragma link C++ class AliAnalysisTaskSubJetFraction+;
 #pragma link C++ class AliAnalysisTaskRecoilJetYield+;
+#pragma link C++ class AliAnalysisTaskRecursiveSoftDrop+;
 #pragma link C++ class EMCalTriggerPtAnalysis::AliAnalysisTaskPtEfficiencyJets+;
 #pragma link C++ class EMCalTriggerPtAnalysis::AliAnalysisTaskTracksInJet+;
 #pragma link C++ class HighPtTracks::AliHighPtReconstructionEfficiency+;
