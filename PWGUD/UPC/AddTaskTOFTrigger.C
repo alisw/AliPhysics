@@ -1,4 +1,4 @@
-AliAnalysisTaskTOFTrigger *AddTaskTOFTrigger(const char *name,Float_t lowpt,Float_t highpt,Float_t highmult,TString trgcls){
+AliAnalysisTaskTOFTrigger *AddTaskTOFTrigger(const char *name,Float_t lowpt,Float_t highpt,Float_t highmult,TString trgcls,const char* suffix = ""){
 
   
   //--- get the current analysis manager ---//
@@ -14,7 +14,10 @@ AliAnalysisTaskTOFTrigger *AddTaskTOFTrigger(const char *name,Float_t lowpt,Floa
     Error("AddTask_TOFTrigger", "This task requires an input event handler");
     return 0;
   }
-	  
+  
+  TString combinedName;
+  combinedName.Form("%s%s",name,suffix);
+   	  
   // Create tasks
   AliAnalysisTaskTOFTrigger *task = new AliAnalysisTaskTOFTrigger(name,lowpt,highpt,highmult,trgcls);
   mgr->AddTask(task);
@@ -22,7 +25,7 @@ AliAnalysisTaskTOFTrigger *AddTaskTOFTrigger(const char *name,Float_t lowpt,Floa
 
    // Create containers for input/output
   AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
-  AliAnalysisDataContainer *coutput = mgr->CreateContainer("ListHist", TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s:TOFTrig", AliAnalysisManager::GetCommonFileName()));  
+  AliAnalysisDataContainer *coutput = mgr->CreateContainer(combinedName, TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s:TOFTrig", AliAnalysisManager::GetCommonFileName()));  
 
   // Connect input/output
   mgr->ConnectInput(task, 0, cinput);
