@@ -586,3 +586,52 @@ Double_t AliMuonTrackSmearing::ThetaDevToP ( Double_t thetaDev ) const
   return 3./thetaDev*0.3; // BL = 3Tm; GeV/c = 10^9/3.10^8
 }
 
+//________________________________________________________________________
+Double_t AliMuonTrackSmearing::PResVsP( const Double_t *x, const Double_t *par )
+{
+  /// expected momentum resolution versus p
+  // par[0] = angular position in the absorber
+  // par[1] < 0. = resolution at vertex; par[1] > 0. = resolution at first cluster
+  Double_t p = *x;
+  Double_t theta = par[0];
+  Bool_t atFirstCluster = (par[1] > 0.);
+  Double_t dp = ELoss(p, theta);
+  Double_t pCorr = TMath::Max(atFirstCluster ? p : p - dp, 0.5);
+  Double_t thetaDev = PToThetaDev(pCorr);
+  Double_t sigmaThetaDev2 = SigmaThetaDevFromRes2();
+  if (fChosenFunc == kBreitWigner) sigmaThetaDev2 /= 2.*log(2.); // FWHM = 2 * gamma = 2 * srqt(2*ln(2)) * sigma
+  sigmaThetaDev2 += SigmaThetaDevFromMCS2(pCorr);
+  if (atFirstCluster) return 100.*TMath::Sqrt(sigmaThetaDev2)/thetaDev;
+  else {
+    Double_t sigmaELoss2 = FWHMELoss2(p, theta) / (8.*log(2.)); // gaussian: fwmh = 2 * srqt(2*ln(2)) * sigma
+    return 100.*TMath::Sqrt(sigmaELoss2 + sigmaThetaDev2/thetaDev/thetaDev*pCorr*pCorr)/p;
+  }
+}
+
+//________________________________________________________________________
+Double_t AliMuonTrackSmearing::SlopeResVsP( const Double_t *x, const Double_t *par )
+{
+  /// expected slope resolution versus p
+  // par[0] = angular position in the absorber
+  // par[1] < 0. = resolution along X; par[1] > 0. = resolution along Y
+  // par[2] < 0. = resolution at vertex; par[1] > 0. = resolution at first cluster
+  Double_t p = *x;
+  Double_t theta = par[0];
+  Bool_t atFirstCluster = (par[2] > 0.);
+  Double_t dp = ELoss(p, theta);
+  Double_t zB;
+  if (theta < 2.) zB = fZB02;
+  else if (theta < 3.) zB = fZB23;
+  else zB = fZB310;
+  Double_t pCorr = TMath::Max(atFirstCluster ? p : p - dp, 0.5);
+  Double_t sigmaMCSCh2 = SigmaSlopeFromMCSInCh2(pCorr, atFirstCluster, zB);
+  Double_t sigmaRes2 = SigmaSlopeFromRes2((par[1] > 0.), atFirstCluster, zB);
+  if (fChosenFunc == kBreitWigner) sigmaRes2 /= 2.*log(2.); // FWHM = 2 * gamma = 2 * srqt(2*ln(2)) * sigma
+  if (atFirstCluster) return TMath::Sqrt(sigmaMCSCh2+sigmaRes2);
+  else {
+    Double_t pHalfCorr = p-0.5*TMath::Min(p-1.e-6,dp);
+    Double_t sigmaMCSAbs2 = SigmaSlopeFromMCSInAbs2(pHalfCorr,theta);
+    return TMath::Sqrt(sigmaMCSAbs2+sigmaMCSCh2+sigmaRes2);
+  }
+}
+
