@@ -4455,6 +4455,24 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
             }
             //========================================================================
             
+            //========================================================================
+            //Setting up: Variable DCA Casc Dau
+            Float_t lDCACascDauCut = lCascadeResult -> GetCutDCACascDaughters();
+            Float_t lVarDCACascDaupar[5];
+            lVarDCACascDaupar[0] = lCascadeResult->GetCutVarDCACascDauExp0Const();
+            lVarDCACascDaupar[1] = lCascadeResult->GetCutVarDCACascDauExp0Slope();
+            lVarDCACascDaupar[2] = lCascadeResult->GetCutVarDCACascDauExp1Const();
+            lVarDCACascDaupar[3] = lCascadeResult->GetCutVarDCACascDauExp1Slope();
+            lVarDCACascDaupar[4] = lCascadeResult->GetCutVarDCACascDauConst();
+            Float_t lVarDCACascDau = lVarDCACascDaupar[0]*TMath::Exp(lVarDCACascDaupar[1]*fTreeCascVarPt) +
+            lVarDCACascDaupar[2]*TMath::Exp(lVarDCACascDaupar[3]*fTreeCascVarPt) +
+            lVarDCACascDaupar[4];
+            if( lCascadeResult->GetCutUseVarDCACascDau() ){
+                //Loosest: default cut, parametric can go tighter
+                if( lVarDCACascDau < lDCACascDauCut ) lDCACascDauCut = lVarDCACascDau;
+            }
+            //========================================================================
+            
             if ( lCascadeResult->GetMassHypothesis() == AliCascadeResult::kXiMinus     ){
                 lCharge  = -1;
                 lMass    = fTreeCascVarMassAsXi;
@@ -4538,7 +4556,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
                 fTreeCascVarDCAV0ToPrimVtx > lCascadeResult->GetCutDCAV0ToPV() &&
                 TMath::Abs(fTreeCascVarV0Mass-1.116) < lCascadeResult->GetCutV0Mass() &&
                 fTreeCascVarDCABachToPrimVtx > lCascadeResult->GetCutDCABachToPV() &&
-                fTreeCascVarDCACascDaughters < lCascadeResult->GetCutDCACascDaughters() &&
+                fTreeCascVarDCACascDaughters < lDCACascDauCut &&
                 fTreeCascVarCascCosPointingAngle > lCascCosPACut &&
                 fTreeCascVarCascRadius > lCascadeResult->GetCutCascRadius() &&
                 
