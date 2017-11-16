@@ -21,7 +21,7 @@ class AliAnalysisMuMuFlow : public AliAnalysisMuMuBase
 {
 public:
 
-  AliAnalysisMuMuFlow(TH2* AccEffHisto=0x0, Int_t systLevel=0);
+  AliAnalysisMuMuFlow(TH2* AccEffHisto=0x0, TList *q2Map=0x0, Int_t systLevel=0);
   virtual ~AliAnalysisMuMuFlow();
 
   Bool_t IsQnInRange(const AliVEvent& event, Double_t& qnMin, Double_t& qnMax) const;
@@ -95,6 +95,9 @@ private:
 
   Double_t GetCentrality();
 
+  Bool_t q2LargeRange(Double_t q2, Double_t pt, Double_t centrality);
+  Bool_t q2SmallRange(Double_t q2, Double_t pt, Double_t centrality);
+
 private:
   Bool_t fcomputeMeanV2; //mv2 with EP method
   Bool_t fcomputeEP; //dist in dphi bins
@@ -120,6 +123,8 @@ private:
   Double_t Q2[3][2];
   TString fEqSteps  [5] = {"raw", "plain", "rec", "align","twist"};
   TString fDetectors[3] = {"SPD","VZEROA", "VZEROC"};
+  TH1F *fq2SmallMap[5];
+  TH1F *fq2LargeMap[5];
 
   ClassDef(AliAnalysisMuMuFlow,2) // implementation of AliAnalysisMuMuFlow for muon pairs
 };
