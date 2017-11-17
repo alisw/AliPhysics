@@ -1,6 +1,5 @@
 #include "AliAnalysisTaskdStar.h"
 
-// dStar pdg code 900010020
 
 // ROOT includes
 #include <TChain.h>
@@ -46,9 +45,11 @@ fMCDalitzPlot(),
 fTree(nullptr),
 fMCTree(nullptr),
 fDeuteronVector(),
-fPiVector(),
+fPionVector(),
 fMCDeuteronVector(),
-fMCPiVector()
+fMCPionVector(),
+fFakeDeuteronVector(),
+fFakePionVector()
 {
   fFilterBit = BIT(8);
   DefineInput(0, TChain::Class());
@@ -102,14 +103,16 @@ void AliAnalysisTaskdStar::UserCreateOutputObjects() {
   OpenFile(2);
   fTree = new TTree("dStarTree", "Data for dStar background analysis");
   fTree->Branch("Deuteron", &fDeuteronVector);
-  fTree->Branch("Pi", &fPiVector);
+  fTree->Branch("Pion", &fPionVector);
   fTree->SetAutoSave(100000000);
   PostData(2,fTree);
 
   OpenFile(3);
   fMCTree = new TTree("dStarMCTree", "MC generated data for dStar background analysis");
   fMCTree->Branch("MCDeuteron", &fMCDeuteronVector);
-  fMCTree->Branch("MCPi", &fMCPiVector);
+  fMCTree->Branch("MCPion", &fMCPionVector);
+  fMCTree->Branch("DeuteronOKL",&fFakeDeuteronVector);
+  fMCTree->Branch("PionOKL",&fFakePionVector);
   fMCTree->SetAutoSave(100000000);
   PostData(3,fMCTree);
 
@@ -140,10 +143,14 @@ void AliAnalysisTaskdStar::UserExec(Option_t *) {
   if (!stack)
   ::Fatal("AliAnalysisTaskdStar::UserExec","MC analysis requested on a sample without the MC particle array.");
 
-  fMCPiVector.clear();
-  fMCPiVector.reserve(800);
   fMCDeuteronVector.clear();
   fMCDeuteronVector.reserve(40);
+  fMCPionVector.clear();
+  fMCPionVector.reserve(800);
+  fFakeDeuteronVector.clear();
+  fFakeDeuteronVector.reserve(10);
+  fFakePionVector.clear();
+  fFakePionVector.reserve(50);
 
   // need comment
   for (int iMC = 0; iMC < stack->GetEntriesFast(); ++iMC) {
@@ -162,12 +169,12 @@ void AliAnalysisTaskdStar::UserExec(Option_t *) {
       if (iC != 0)                          prop |= c;
       if (part->IsPhysicalPrimary())        prop |= p;
       if (part->IsSecondaryFromMaterial())  prop |= s;
-      daughter_struct daug;
-      daug.mother_pdg = m_pdg;
-      daug.mother_id  = m_id;
-      daug.vec        = tmp_vec;
-      daug.properties = prop;
-      fMCPiVector.push_back(daug);
+      daughter_struct daug1 = {0};
+      daug1.mother_pdg = m_pdg;
+      daug1.mother_id  = m_id;
+      daug1.vec        = tmp_vec;
+      daug1.properties = prop;
+      fMCPionVector.push_back(daug1);
     }
 
     if (pdg == 1000010020) {
@@ -180,12 +187,12 @@ void AliAnalysisTaskdStar::UserExec(Option_t *) {
       if (iC != 0)                          prop |= c;
       if (part->IsPhysicalPrimary())        prop |= p;
       if (part->IsSecondaryFromMaterial())  prop |= s;
-      daughter_struct daug;
-      daug.mother_pdg = m_pdg;
-      daug.mother_id  = m_id;
-      daug.vec        = tmp_vec;
-      daug.properties = prop;
-      fMCDeuteronVector.push_back(daug);
+      daughter_struct daug2 = {0};
+      daug2.mother_pdg = m_pdg;
+      daug2.mother_id  = m_id;
+      daug2.vec        = tmp_vec;
+      daug2.properties = prop;
+      fMCDeuteronVector.push_back(daug2);
     }
 
     if (pdg == 900010020) {
@@ -202,27 +209,32 @@ void AliAnalysisTaskdStar::UserExec(Option_t *) {
     }
   }
 
-  // filling MCDalitzPlot
+  // filling MCDalitzPlot (kinematics limits Mpp2 < 0.255    Mpd2 < 5.01)
   for (const auto& mcdeu : fMCDeuteronVector) {
-    FourVector_t deu_vec = {0.f,0.f,0.f,0.f};
     const unsigned char pdeu = mcdeu.properties;
     if ((pdeu & c) && mcdeu.mother_pdg == 900010020) {
-      deu_vec = mcdeu.vec;
-      bool check = false;
-      for (const auto& mcpip : fMCPiVector) {
-        FourVector_t pip_vec = {0.f,0.f,0.f,0.f};
+      FourVector_t deu_vec = mcdeu.vec;
+      // bool check = false;
+      for (const auto& mcpip : fMCPionVector) {
         const unsigned char ppip = mcpip.properties;
         if ((mcpip.mother_id == mcdeu.mother_id) && (ppip & c)) {
-          pip_vec = mcpip.vec;
-          for (const auto& mcpim : fMCPiVector) {
-            FourVector_t pim_vec = {0.f,0.f,0.f,0.f};
+          FourVector_t pip_vec = mcpip.vec;
+          for (const auto& mcpim : fMCPionVector) {
             const unsigned char ppim = mcpim.properties;
-            if ((mcpim.mother_id == mcdeu.mother_id) && !(ppim & c) && !check) {
-              pim_vec = mcpim.vec;
+            if ((mcpim.mother_id == mcdeu.mother_id) && !(ppim & c)) {
+              FourVector_t pim_vec = mcpim.vec;
               FourVector_t pp = pip_vec + pim_vec;
               FourVector_t pd = pim_vec + deu_vec;
               fMCDalitzPlot->Fill(pp.M2(), pd.M2());
-              check = true;
+              if (pp.M2() > 0.26 || pd.M2() > 5.02) {
+                daughter_struct d  = mcdeu;
+                daughter_struct pp = mcpip;
+                daughter_struct pm = mcpim;
+                fFakeDeuteronVector.push_back(d);
+                fFakePionVector.push_back(pp);
+                fFakePionVector.push_back(pm);
+                // check = true;
+              }
             }
           }
         }
@@ -231,11 +243,11 @@ void AliAnalysisTaskdStar::UserExec(Option_t *) {
   }
 
   // Checking how many dstar in acceptance are reconstructed well
-  vector<mother_struct> mothers;
+  std::vector<mother_struct> mothers;
   mothers.reserve(40);
 
   fDeuteronVector.clear();
-  fPiVector.clear();
+  fPionVector.clear();
 
   for (Int_t iT = 0; iT < (Int_t)ev->GetNumberOfTracks(); ++iT) {
 
@@ -279,7 +291,7 @@ void AliAnalysisTaskdStar::UserExec(Option_t *) {
       pi.mother_id  = mother_id;
       pi.vec        = tmp_pi;
       pi.properties = prop;
-      fPiVector.push_back(pi);
+      fPionVector.push_back(pi);
     }
 
 

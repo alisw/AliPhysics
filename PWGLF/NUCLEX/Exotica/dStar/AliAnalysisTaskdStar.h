@@ -87,9 +87,12 @@ private:
   TTree                *fMCTree;                    //!<!
 
   vector<daughter_struct>   fDeuteronVector;        //<
-  vector<daughter_struct>   fPiVector;              //<
+  vector<daughter_struct>   fPionVector;            //<
   vector<daughter_struct>   fMCDeuteronVector;      //<
-  vector<daughter_struct>   fMCPiVector;            //<
+  vector<daughter_struct>   fMCPionVector;          //<
+  vector<daughter_struct>   fFakeDeuteronVector;    //<
+  vector<daughter_struct>   fFakePionVector;        //<
+
 
   /// \cond CLASSDEF
   ClassDef(AliAnalysisTaskdStar,1)
