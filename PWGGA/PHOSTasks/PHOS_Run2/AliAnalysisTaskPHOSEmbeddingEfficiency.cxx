@@ -281,14 +281,12 @@ void AliAnalysisTaskPHOSEmbeddingEfficiency::UserExec(Option_t *option)
 
   AliInfo(Form("Particle : %s , Ncluster produced by embedding = %d.",fParticleName.Data(),fPHOSClusterArray->GetEntriesFast()));
 
-  FillHistogramTH2(fOutputContainer,"hCentralityV0MvsCL0",fCentralityV0M,fCentralityCL0);
-  FillHistogramTH2(fOutputContainer,"hCentralityV0MvsCL1",fCentralityV0M,fCentralityCL1);
-  FillHistogramTH2(fOutputContainer,"hCentralityCL0vsCL1",fCentralityCL0,fCentralityCL1);
-  FillHistogramTH2(fOutputContainer,"hCentralityV0AvsV0C",fCentralityV0A,fCentralityV0C);
-  FillHistogramTH2(fOutputContainer,"hCentralityZNAvsZNC",fCentralityZNA,fCentralityZNC);
+  GetEmbeddedMCInfo();
 
-  FillHistogramTH1(fOutputContainer,"hVertexZSelectEvent" ,fVertex[2]);
-  FillHistogramTH1(fOutputContainer,"hEventSummary",2);//selected event
+  if(!fMCArray){
+    AliError("Could not retrieve AOD event!");
+    return;
+  }
 
   if(fIsFlowTask){
     Bool_t QnOK = ExtractQnVector();
@@ -300,6 +298,15 @@ void AliAnalysisTaskPHOSEmbeddingEfficiency::UserExec(Option_t *option)
   else fEPBin = 0;
  
   AliInfo(Form("Collision system = %d | fCentralityMain estimated by %s = %f %% | Zvtx = %f cm , fZvtx = %d | Harmonics = %d , fEventPlane = %f (rad.) , fEPBin = %d |",fCollisionSystem,fEstimator.Data(),fCentralityMain,fVertex[2],fZvtx,fHarmonics,fEventPlane,fEPBin));
+
+  FillHistogramTH2(fOutputContainer,"hCentralityV0MvsCL0",fCentralityV0M,fCentralityCL0);
+  FillHistogramTH2(fOutputContainer,"hCentralityV0MvsCL1",fCentralityV0M,fCentralityCL1);
+  FillHistogramTH2(fOutputContainer,"hCentralityCL0vsCL1",fCentralityCL0,fCentralityCL1);
+  FillHistogramTH2(fOutputContainer,"hCentralityV0AvsV0C",fCentralityV0A,fCentralityV0C);
+  FillHistogramTH2(fOutputContainer,"hCentralityZNAvsZNC",fCentralityZNA,fCentralityZNC);
+
+  FillHistogramTH1(fOutputContainer,"hVertexZSelectEvent" ,fVertex[2]);
+  FillHistogramTH1(fOutputContainer,"hEventSummary",2);//selected event
 
   if(fRunNumber != fEvent->GetRunNumber()){ // Check run number
     fRunNumber = fEvent->GetRunNumber();
@@ -327,7 +334,6 @@ void AliAnalysisTaskPHOSEmbeddingEfficiency::UserExec(Option_t *option)
   if(!fPHOSEvents[fZvtx][fEPBin]) fPHOSEvents[fZvtx][fEPBin] = new TList();
   TList *prevPHOS = fPHOSEvents[fZvtx][fEPBin];
 
-  GetEmbeddedMCInfo();
   ProcessMC();
   SetWeightToClusters();
 
@@ -403,7 +409,9 @@ void AliAnalysisTaskPHOSEmbeddingEfficiency::ProcessMC()
     if(pT < 1e-3) continue;//reject below 1 MeV
     if(TMath::Abs(rapidity) > 0.5) continue;
 
-    //if(R(p) > 1.0) continue;
+    //printf("pdg = %d , Rho = %e cm\n",pdg,Rho(p));
+
+    if(RhoEMB(p) > 1.0) continue;
 
     if(pdg==111){//pi0
       parname = "Pi0";
@@ -421,7 +429,6 @@ void AliAnalysisTaskPHOSEmbeddingEfficiency::ProcessMC()
 
     //Double_t eta = p->Eta();
     //Printf("particle %d is generated at eta = %f , phi = %f and pT = %f.",pdg,eta,phi,pT);
-
 
     FillHistogramTH1(fOutputContainer,Form("hGenEmbedded%sPt"    ,parname.Data()),pT          ,weight);
     FillHistogramTH2(fOutputContainer,Form("hGenEmbedded%sEtaPhi",parname.Data()),rapidity,phi,weight);
@@ -568,6 +575,7 @@ void AliAnalysisTaskPHOSEmbeddingEfficiency::FillPhoton()
 //________________________________________________________________________
 void AliAnalysisTaskPHOSEmbeddingEfficiency::FillMgg() 
 {
+
   const Int_t multClust = fPHOSClusterArray->GetEntriesFast();
   TLorentzVector p12, p12core;
 
@@ -589,8 +597,6 @@ void AliAnalysisTaskPHOSEmbeddingEfficiency::FillMgg()
 
   Double_t weight = 1., w1 = 1., w2 = 1.;
 
-  Int_t primary1 = -1;
-  Int_t primary2 = -1;
   Double_t TrueK0SPt = 0;
   Double_t TrueL0Pt = 0;
 
@@ -625,6 +631,7 @@ void AliAnalysisTaskPHOSEmbeddingEfficiency::FillMgg()
 
         e1 = (ph1->GetMomV2())->Energy();
         e2 = (ph2->GetMomV2())->Energy();
+        asym = TMath::Abs(e1 - e2) / (e1 + e2);
       }
 
       eff1 = f1tof->Eval(e1);
@@ -639,17 +646,9 @@ void AliAnalysisTaskPHOSEmbeddingEfficiency::FillMgg()
 
       weight = 1.;
       if(fIsMC){
-        w1= ph1->GetWeight();
-        primary1 = ph1->GetPrimary();
-
+        w1 = ph1->GetWeight();
         w2 = ph2->GetWeight();
-        primary2 = ph2->GetPrimary();
-
         weight = w1;//common weighting to all generated particles in embedding.
-
-        //commonID = FindCommonParent(primary1,primary2);
-        //if(commonID > -1) weight = w1;
-        //else weight = w1*w2;
 
       }//end of if fIsMC
 
@@ -673,6 +672,7 @@ void AliAnalysisTaskPHOSEmbeddingEfficiency::FillMgg()
       value[0] = m12;
       value[1] = pt12;
       value[2] = asym;
+
       if(m12 > 0.96) continue;//reduce entry in THnSparse
 
       if(TMath::Abs(ph1->Module()-ph2->Module()) < 2) FillHistogramTH2(fOutputContainer,Form("hMgg_M%d%d",TMath::Min(ph1->Module(),ph2->Module()), TMath::Max(ph1->Module(),ph2->Module())),m12,pt12,weight * 1/trgeff12);
@@ -812,4 +812,27 @@ void AliAnalysisTaskPHOSEmbeddingEfficiency::FillMixMgg()
 }
 
 //________________________________________________________________________
+//________________________________________________________________________
+Double_t AliAnalysisTaskPHOSEmbeddingEfficiency::REMB(AliAODMCParticle* p)
+{
+  //Radius of vertex in cylindrical system.
+
+
+  Double32_t x = p->Xv();
+  Double32_t y = p->Yv();
+  return sqrt(x*x + y*y);
+
+}
+//________________________________________________________________________
+Double_t AliAnalysisTaskPHOSEmbeddingEfficiency::RhoEMB(AliAODMCParticle* p)
+{
+  //Radius of vertex in spherical system.
+
+
+  Double32_t x = p->Xv();
+  Double32_t y = p->Yv();
+  Double32_t z = p->Zv();
+  return sqrt(x*x + y*y + z*z);
+
+}
 //________________________________________________________________________

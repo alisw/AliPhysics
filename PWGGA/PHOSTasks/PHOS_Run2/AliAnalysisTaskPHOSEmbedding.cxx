@@ -132,6 +132,11 @@ AliAnalysisTaskPHOSEmbedding::~AliAnalysisTaskPHOSEmbedding()
     fPHOSReconstructor = 0x0;
   }
 
+  if(fMCArray){
+    delete fMCArray;
+    fMCArray = 0x0;
+  }
+
   if(fEmbeddedClusterArray){
     delete fEmbeddedClusterArray;
     fEmbeddedClusterArray = 0x0;
@@ -419,6 +424,8 @@ void AliAnalysisTaskPHOSEmbedding::UserExec(Option_t *option)
 
   for(Int_t i=0;i<Npart;i++){
     AliAODMCParticle* aodpart = (AliAODMCParticle*)mcarray_org->At(i);
+    //printf("PDG = %d , X = %e , Y = %e , Z = %e\n",aodpart->GetPdgCode(), aodpart->Xv(),aodpart->Yv(),aodpart->Zv());
+
     new ((*fMCArray)[i]) AliAODMCParticle(*aodpart);
   }
 
