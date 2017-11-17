@@ -2,7 +2,8 @@ Int_t LoadLib(const TString &libName)
 {
   if (libName.Contains("AliPythia") ||
       libName.Contains("TEPEMGEN") ||
-      libName.Contains("TPHIC"))
+      libName.Contains("TPHIC")    ||
+      libName.Contains("DRGEN"))
     gSystem->Load("libpythia6");
 
   if (libName.Contains("MONITOR") ||
