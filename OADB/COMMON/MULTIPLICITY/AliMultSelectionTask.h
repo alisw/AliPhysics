@@ -46,7 +46,6 @@ class AliESDEvent;
 class AliPhysicsSelection;
 class AliCFContainer;
 class AliESDAD;
-class AliMultVariable;
 class AliMultEstimator;
 class AliMultInput;
 class AliMultSelection;
@@ -54,7 +53,7 @@ class AliMultSelectionCuts;
 class AliOADBMultSelection;
 class AliADChargeEqualization;
 
-//#include "TString.h"
+#include "TArrayF.h"
 //#include "AliESDtrackCuts.h"
 //#include "AliAnalysisTaskSE.h"
 
@@ -178,57 +177,6 @@ private:
     //To perform event selection
     //AliMultSelectionCuts *fMultSelectionCuts; //To perform event selections
 
-    //===========================================================================
-    //   Variables for Multiplicity Determination
-    //===========================================================================
-    AliMultVariable *fAmplitude_V0A;
-    AliMultVariable *fAmplitude_V0A1;
-    AliMultVariable *fAmplitude_V0A2;
-    AliMultVariable *fAmplitude_V0A3;
-    AliMultVariable *fAmplitude_V0A4;
-    AliMultVariable *fAmplitude_V0C;
-    AliMultVariable *fAmplitude_V0C1;
-    AliMultVariable *fAmplitude_V0C2;
-    AliMultVariable *fAmplitude_V0C3;
-    AliMultVariable *fAmplitude_V0C4;
-    AliMultVariable *fAmplitude_V0Apartial;
-    AliMultVariable *fAmplitude_V0Cpartial;
-    AliMultVariable *fAmplitude_V0AEq;
-    AliMultVariable *fAmplitude_V0CEq;
-    AliMultVariable *fAmplitude_OnlineV0A;
-    AliMultVariable *fAmplitude_OnlineV0C;
-    AliMultVariable *fAmplitude_V0AADC;
-    AliMultVariable *fAmplitude_V0CADC;
-
-    //Integer Variables
-    AliMultVariable *fnSPDClusters;
-    AliMultVariable *fnSPDClusters0;
-    AliMultVariable *fnSPDClusters1;
-    AliMultVariable *fnTracklets; //tracklet estimator
-    AliMultVariable *fnTracklets08; //tracklet estimator
-    AliMultVariable *fnTracklets15; //tracklet estimator
-    AliMultVariable *fRefMultEta5; //tracklet estimator
-    AliMultVariable *fRefMultEta8; //tracklet estimator
-    //AD Related
-    AliMultVariable *fMultiplicity_AD;   // AD A+C-side
-    AliMultVariable *fMultiplicity_ADA;  // AD A-side
-    AliMultVariable *fMultiplicity_ADC;  // AD C-side
-    //ZDC Related
-    AliMultVariable *fZncEnergy;
-    AliMultVariable *fZpcEnergy;
-    AliMultVariable *fZnaEnergy;
-    AliMultVariable *fZpaEnergy;
-    AliMultVariable *fZem1Energy;
-    AliMultVariable *fZem2Energy;
-    //ZDC Tower info
-    AliMultVariable *fZnaTower;
-    AliMultVariable *fZncTower;
-    AliMultVariable *fZpaTower;
-    AliMultVariable *fZpcTower;
-
-    //Event selection snippet for VtxZ as AliMultVariable
-    AliMultVariable *fEvSel_VtxZ;
-
     //Event Characterization Variables - optional
     Bool_t fEvSel_VtxZCut;                  //!
     Bool_t fEvSel_IsNotPileup;              //!
@@ -255,17 +203,7 @@ private:
     AliESDtrackCuts* fTrackCutsGlobal2015;  // optional track cuts
     AliESDtrackCuts* fTrackCutsITSsa2010; // optional track cuts
 
-    AliMultVariable *fZnaFired;
-    AliMultVariable *fZncFired;
-    AliMultVariable *fZpaFired;
-    AliMultVariable *fZpcFired;
-
-    AliMultVariable *fNTracks;             //!  no. tracks
-    AliMultVariable *fNTracksGlobal2015;             //!  no. tracks (2015 Global track cuts)
-    AliMultVariable *fNTracksGlobal2015Trigger;             //!  no. tracks (2015 glob. + TOF-based selection for trigger event)
-    AliMultVariable *fNTracksITSsa2010;                     //!  no. tracks ITSsa (2010 ITSsa track cuts)
-
-    Float_t fQuantiles[100]; //! percentiles
+    TArrayF fQuantiles; //! percentiles
     Int_t fEvSelCode; //Final code in event selection
     Int_t fNDebug; // number of percentiles
 
@@ -339,7 +277,7 @@ private:
     AliMultSelectionTask(const AliMultSelectionTask&);            // not implemented
     AliMultSelectionTask& operator=(const AliMultSelectionTask&); // not implemented
 
-    ClassDef(AliMultSelectionTask, 5);
+    ClassDef(AliMultSelectionTask, 6);
     //3 - extra QA histograms
 };
 

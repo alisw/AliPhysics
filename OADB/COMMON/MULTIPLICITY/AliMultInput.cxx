@@ -8,7 +8,8 @@
  *
  **********************************************/
 
-#include "TList.h"
+#include "THashList.h"
+#include "AliLog.h"
 #include "AliMultEstimator.h"
 #include "AliMultVariable.h"
 #include "AliMultInput.h"
@@ -16,67 +17,61 @@
 
 ClassImp(AliMultInput);
 
-AliMultInput::AliMultInput() :
-  TNamed(), fNVars(0), fVariableList(0x0)
+AliMultInput::AliMultInput(const char * name, const char * title)
+  : TNamed(name, title)
+  , fVariableList(nullptr)
 {
-  // Constructor
-    fVariableList = new TList();
-}
-
-AliMultInput::AliMultInput(const char * name, const char * title):
-TNamed(name,title), fNVars(0), fVariableList(0x0)
-{
-  // Constructor
-    fVariableList = new TList();
+    fVariableList = new THashList;
 }
 
 AliMultInput::AliMultInput(const AliMultInput& o)
-: TNamed(o), fNVars(0), fVariableList(0x0)
+  : TNamed(o)
+  , fVariableList(nullptr)
 {
-    // Constructor
-    fVariableList = new TList();
+    fVariableList = new THashList;
     TIter next(o.fVariableList);
-    AliMultVariable* v  = 0;
-    while ((v = static_cast<AliMultVariable*>(next())))  AddVariable(v);
+    AliMultVariable* v = nullptr;
+    while ((v = static_cast<AliMultVariable*>(next())))
+      AddVariable(v);
 }
 
 AliMultInput& AliMultInput::operator=(const AliMultInput& o)
 {
-    if (&o == this) return *this;
+    if (&o == this)
+      return *this;
     SetName(o.GetName());
     SetTitle(o.GetTitle());
-    if (!fVariableList) fVariableList = new TList();
+    if (!fVariableList) fVariableList = new THashList;
     fVariableList->Clear();
-    fNVars = 0;
     TIter next(o.fVariableList);
-    AliMultVariable* v  = 0;
-    while ((v = static_cast<AliMultVariable*>(next())))  AddVariable(v);
+    AliMultVariable* v = nullptr;
+    while ((v = static_cast<AliMultVariable*>(next())))
+      AddVariable(v);
     return *this;
 }
 
-AliMultInput::~AliMultInput(){
-  // destructor
-  
+AliMultInput::~AliMultInput()
+{
+  SafeDelete(fVariableList);
 }
 void AliMultInput::AddVariable ( AliMultVariable *lVar )
 {
-    if (!lVar) return;
-    if (!fVariableList) {
-        fVariableList = new TList;
-        fNVars = 0;
-    }
-    //Protect against double-declaration 
-    if ( fVariableList->FindObject( lVar->GetName() ) ){ 
+    if (!lVar)
+      return;
+
+    if (!fVariableList)
+      fVariableList = new THashList;
+
+    //Protect against double-declaration
+    if ( fVariableList->FindObject( lVar->GetName() ) ){
       Printf("===========================================================================" );
       Printf("                          !!!  WARNING !!!                                 " );
       Printf("Variable named %s already exists, you're doing a double-declaration!",lVar->GetName() );
       Printf("AddVariable call exiting without doing anything... Please check your logic!");
       Printf("===========================================================================" );
-      return; 
+      return;
     }
-    
     fVariableList->Add(lVar);
-    fNVars++;
 }
 
 AliMultVariable* AliMultInput::GetVariable (const TString& lName) const
@@ -87,15 +82,15 @@ AliMultVariable* AliMultInput::GetVariable (const TString& lName) const
 
 AliMultVariable* AliMultInput::GetVariable (Long_t iIdx) const
 {
-    if (!fVariableList) return 0;
-    if (iIdx < 0 || iIdx >= fNVars) return 0;
+    if (!fVariableList) return nullptr;
+    if (iIdx < 0 || iIdx >= GetNVariables()) return nullptr;
     return static_cast<AliMultVariable*>(fVariableList->At(iIdx));
 }
 
 void AliMultInput::Clear(Option_t* option)
 {
     TIter next(fVariableList);
-    AliMultVariable* var = 0;
+    AliMultVariable* var = nullptr;
     while ((var = static_cast<AliMultVariable*>(next()))) {
         var->Clear(option);
     }
@@ -104,7 +99,7 @@ void AliMultInput::Clear(Option_t* option)
 void AliMultInput::Set(const AliMultInput* other)
 {
     TIter next(fVariableList);
-    AliMultVariable* var = 0;
+    AliMultVariable* var = nullptr;
     while ((var = static_cast<AliMultVariable*>(next()))) {
         AliMultVariable* ovar = other->GetVariable(var->GetName());
         var->Set(ovar);
@@ -113,15 +108,63 @@ void AliMultInput::Set(const AliMultInput* other)
 void AliMultInput::Print(Option_t* option) const
 {
     Printf("%s: %s/%s %ld variables", ClassName(),
-           GetName(), GetTitle(), fNVars);
+           GetName(), GetTitle(), GetNVariables());
     gROOT->IndentLevel();
     Printf("Variables");
     gROOT->IncreaseDirLevel();
     TIter next(fVariableList);
-    TObject* o = 0;
+    TObject* o = nullptr;
     while ((o = next())) {
         gROOT->IndentLevel();
         o->Print(option);
     }
     gROOT->DecreaseDirLevel();
+}
+Bool_t AliMultInput::SetValue(TString name, Float_t val)
+{
+  AliMultVariable *v = GetVariable(name);
+  if (!v) {
+    AliWarningF("variable '%s' not found", name.Data());
+    return kFALSE;
+  }
+  v->SetValue(val);
+  return kTRUE;
+}
+Bool_t AliMultInput::SetValue(TString name, Int_t val)
+{
+  AliMultVariable *v = GetVariable(name);
+  if (!v) {
+    AliWarningF("variable '%s' not found", name.Data());
+    return kFALSE;
+  }
+  v->SetValueInteger(val);
+  return kTRUE;
+}
+Bool_t AliMultInput::IncrementValue(TString name, Int_t increment)
+{
+  AliMultVariable *v = GetVariable(name);
+  if (!v) {
+    AliWarningF("variable '%s' not found", name.Data());
+    return kFALSE;
+  }
+  v->SetValueInteger(v->GetValueInteger()+increment);
+  return kTRUE;
+}
+Int_t AliMultInput::GetValueInteger(TString name) const
+{
+  AliMultVariable *v = GetVariable(name);
+  if (!v) {
+    AliWarningF("variable '%s' not found", name.Data());
+    return -1;
+  }
+  return v->GetValueInteger();
+}
+Float_t AliMultInput::GetValue(TString name) const
+{
+  AliMultVariable *v = GetVariable(name);
+  if (!v) {
+    AliWarningF("variable '%s' not found", name.Data());
+    return -1.0f;
+  }
+  return v->GetValue();
 }

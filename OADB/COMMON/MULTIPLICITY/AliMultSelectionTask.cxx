@@ -130,50 +130,6 @@ AliMultSelectionTask::AliMultSelectionTask(const char *name, TString lExtraOptio
   , fESDtrackCuts(nullptr)
   , fUtils(nullptr)
 
-  , fAmplitude_V0A(nullptr)
-  , fAmplitude_V0A1(nullptr)
-  , fAmplitude_V0A2(nullptr)
-  , fAmplitude_V0A3(nullptr)
-  , fAmplitude_V0A4(nullptr)
-  , fAmplitude_V0C(nullptr)
-  , fAmplitude_V0C1(nullptr)
-  , fAmplitude_V0C2(nullptr)
-  , fAmplitude_V0C3(nullptr)
-  , fAmplitude_V0C4(nullptr)
-  , fAmplitude_V0Apartial(nullptr)
-  , fAmplitude_V0Cpartial(nullptr)
-  , fAmplitude_V0AEq(nullptr)
-  , fAmplitude_V0CEq(nullptr)
-  , fAmplitude_OnlineV0A(nullptr)
-  , fAmplitude_OnlineV0C(nullptr)
-  , fAmplitude_V0AADC(nullptr)
-  , fAmplitude_V0CADC(nullptr)
-
-  , fnSPDClusters(nullptr)
-  , fnSPDClusters0(nullptr)
-  , fnSPDClusters1(nullptr)
-  , fnTracklets(nullptr)
-  , fnTracklets08(nullptr)
-  , fnTracklets15(nullptr)
-  , fRefMultEta5(0)
-  , fRefMultEta8(0)
-
-  , fMultiplicity_AD  (nullptr)
-  , fMultiplicity_ADA (nullptr)
-  , fMultiplicity_ADC (nullptr)
-
-  , fZncEnergy(nullptr)
-  , fZpcEnergy(nullptr)
-  , fZnaEnergy(nullptr)
-  , fZpaEnergy(nullptr)
-  , fZem1Energy(nullptr)
-  , fZem2Energy(nullptr)
-  , fZnaTower(nullptr)
-  , fZncTower(nullptr)
-  , fZpaTower(nullptr)
-  , fZpcTower(nullptr)
-
-  , fEvSel_VtxZ(nullptr)
   , fEvSel_VtxZCut(kFALSE)
   , fEvSel_IsNotPileup(kFALSE)
   , fEvSel_IsNotPileupMV(kFALSE)
@@ -193,17 +149,7 @@ AliMultSelectionTask::AliMultSelectionTask(const char *name, TString lExtraOptio
   , fTrackCutsGlobal2015(nullptr)
   , fTrackCutsITSsa2010(nullptr)
 
-  , fZnaFired(nullptr)
-  , fZncFired(nullptr)
-  , fZpaFired(nullptr)
-  , fZpcFired(nullptr)
-
-  , fNTracks(nullptr)
-  , fNTracksGlobal2015(nullptr)
-  , fNTracksGlobal2015Trigger(nullptr)
-  , fNTracksITSsa2010(nullptr)
-
-  , fQuantiles()
+  , fQuantiles(100)
   , fEvSelCode(0)
   , fNDebug(1)
 
@@ -267,7 +213,7 @@ AliMultSelectionTask::AliMultSelectionTask(const char *name, TString lExtraOptio
   , fOadbMultSelection(nullptr)
   , fInput(nullptr)
 {
-  std::fill_n(fQuantiles, 100, -1.0);
+  std::fill_n(fQuantiles.GetArray(), fQuantiles.GetSize(), -1.0);
 
   DefineOutput(1, TList::Class()); // Event Counter Histo
   if (fkCalibration)
@@ -278,22 +224,15 @@ AliMultSelectionTask::AliMultSelectionTask(const char *name, TString lExtraOptio
   fNDebug = lNDebugEstimators;
 
   //Special Debug Options (more to be added as needed)
-  // A - Debug AliCentrality
-  // B - Debug AliPPVsMultUtils
-  // M - Extra MC variables
-
-  fkDebugAliCentrality    = lExtraOptions.Contains("A");
-  fkDebugAliPPVsMultUtils = lExtraOptions.Contains("B");
-  fkDebugIsMC             = lExtraOptions.Contains("M");
+  fkDebugAliCentrality    = lExtraOptions.Contains("A"); // Debug AliCentrality
+  fkDebugAliPPVsMultUtils = lExtraOptions.Contains("B"); // Debug AliPPVsMultUtils
+  fkDebugIsMC             = lExtraOptions.Contains("M"); // Extra MC variables
 }
 
 
 AliMultSelectionTask::~AliMultSelectionTask()
 {
-  //if (fTreeEvent) {
-  //    delete fTreeEvent;
-  //    fTreeEvent = 0x0;
-  //}
+  //  SafeDelete(fTreeEvent);
   SafeDelete(fESDtrackCuts);
   SafeDelete(fTrackCuts);
   SafeDelete(fTrackCutsITSsa2010);
@@ -312,117 +251,67 @@ void AliMultSelectionTask::UserCreateOutputObjects()
 
     //Create input variables in AliMultInput Class
     //V0 related
-    fAmplitude_V0A        = new AliMultVariable("fAmplitude_V0A");
-    fAmplitude_V0A1       = new AliMultVariable("fAmplitude_V0A1");
-    fAmplitude_V0A2       = new AliMultVariable("fAmplitude_V0A2");
-    fAmplitude_V0A3       = new AliMultVariable("fAmplitude_V0A3");
-    fAmplitude_V0A4       = new AliMultVariable("fAmplitude_V0A4");
-    fAmplitude_V0C        = new AliMultVariable("fAmplitude_V0C");
-    fAmplitude_V0C1       = new AliMultVariable("fAmplitude_V0C1");
-    fAmplitude_V0C2       = new AliMultVariable("fAmplitude_V0C2");
-    fAmplitude_V0C3       = new AliMultVariable("fAmplitude_V0C3");
-    fAmplitude_V0C4       = new AliMultVariable("fAmplitude_V0C4");
-    fAmplitude_V0Apartial = new AliMultVariable("fAmplitude_V0Apartial");
-    fAmplitude_V0Cpartial = new AliMultVariable("fAmplitude_V0Cpartial");
-    fAmplitude_V0AEq      = new AliMultVariable("fAmplitude_V0AEq");
-    fAmplitude_V0CEq      = new AliMultVariable("fAmplitude_V0CEq");
-    fAmplitude_OnlineV0A  = new AliMultVariable("fAmplitude_OnlineV0A");
-    fAmplitude_OnlineV0C  = new AliMultVariable("fAmplitude_OnlineV0C");
-    fAmplitude_V0AADC     = new AliMultVariable("fAmplitude_V0AADC");
-    fAmplitude_V0CADC     = new AliMultVariable("fAmplitude_V0CADC");
+    fInput->AddVariable(new AliMultVariable("fAmplitude_V0A"));
+    fInput->AddVariable(new AliMultVariable("fAmplitude_V0A1"));
+    fInput->AddVariable(new AliMultVariable("fAmplitude_V0A2"));
+    fInput->AddVariable(new AliMultVariable("fAmplitude_V0A3"));
+    fInput->AddVariable(new AliMultVariable("fAmplitude_V0A4"));
+    fInput->AddVariable(new AliMultVariable("fAmplitude_V0C"));
+    fInput->AddVariable(new AliMultVariable("fAmplitude_V0C1"));
+    fInput->AddVariable(new AliMultVariable("fAmplitude_V0C2"));
+    fInput->AddVariable(new AliMultVariable("fAmplitude_V0C3"));
+    fInput->AddVariable(new AliMultVariable("fAmplitude_V0C4"));
+    fInput->AddVariable(new AliMultVariable("fAmplitude_V0Apartial"));
+    fInput->AddVariable(new AliMultVariable("fAmplitude_V0Cpartial"));
+    fInput->AddVariable(new AliMultVariable("fAmplitude_V0AEq"));
+    fInput->AddVariable(new AliMultVariable("fAmplitude_V0CEq"));
+    fInput->AddVariable(new AliMultVariable("fAmplitude_OnlineV0A"));
+    fInput->AddVariable(new AliMultVariable("fAmplitude_OnlineV0C"));
+    fInput->AddVariable(new AliMultVariable("fAmplitude_V0AADC"));
+    fInput->AddVariable(new AliMultVariable("fAmplitude_V0CADC"));
     //SPD Related
-    fnSPDClusters         = new AliMultVariable("fnSPDClusters", "Mult Variable", kTRUE);
-    fnSPDClusters0        = new AliMultVariable("fnSPDClusters0", "Mult Variable", kTRUE);
-    fnSPDClusters1        = new AliMultVariable("fnSPDClusters1", "Mult Variable", kTRUE);
+    fInput->AddVariable(new AliMultVariable("fnSPDClusters", "Mult Variable", kTRUE));
+    fInput->AddVariable(new AliMultVariable("fnSPDClusters0", "Mult Variable", kTRUE));
+    fInput->AddVariable(new AliMultVariable("fnSPDClusters1", "Mult Variable", kTRUE));
 
     //AD Related
-    fMultiplicity_AD      = new AliMultVariable("fMultiplicity_AD");
-    fMultiplicity_ADA     = new AliMultVariable("fMultiplicity_ADA");
-    fMultiplicity_ADC     = new AliMultVariable("fMultiplicity_ADC");
+    fInput->AddVariable(new AliMultVariable("fMultiplicity_AD"));
+    fInput->AddVariable(new AliMultVariable("fMultiplicity_ADA"));
+    fInput->AddVariable(new AliMultVariable("fMultiplicity_ADC"));
 
-    fnTracklets   = new AliMultVariable("fnTracklets", "Mult Variable", kTRUE);
-    fnTracklets08 = new AliMultVariable("fnTracklets08", "Mult Variable", kTRUE);
-    fnTracklets15 = new AliMultVariable("fnTracklets15", "Mult Variable", kTRUE);
+    fInput->AddVariable(new AliMultVariable("fnTracklets", "Mult Variable", kTRUE));
+    fInput->AddVariable(new AliMultVariable("fnTracklets08", "Mult Variable", kTRUE));
+    fInput->AddVariable(new AliMultVariable("fnTracklets15", "Mult Variable", kTRUE));
 
-    fRefMultEta5 = new AliMultVariable("fRefMultEta5", "Mult Variable", kTRUE);
-    fRefMultEta8 = new AliMultVariable("fRefMultEta8", "Mult Variable", kTRUE);
+    fInput->AddVariable(new AliMultVariable("fRefMultEta5", "Mult Variable", kTRUE));
+    fInput->AddVariable(new AliMultVariable("fRefMultEta8", "Mult Variable", kTRUE));
 
     //ZDC Related
-    fZncEnergy  = new AliMultVariable("fZncEnergy");
-    fZpcEnergy  = new AliMultVariable("fZpcEnergy");
-    fZnaEnergy  = new AliMultVariable("fZnaEnergy");
-    fZpaEnergy  = new AliMultVariable("fZpaEnergy");
-    fZem1Energy = new AliMultVariable("fZem1Energy");
-    fZem2Energy = new AliMultVariable("fZem2Energy");
+    fInput->AddVariable(new AliMultVariable("fZncEnergy"));
+    fInput->AddVariable(new AliMultVariable("fZpcEnergy"));
+    fInput->AddVariable(new AliMultVariable("fZnaEnergy"));
+    fInput->AddVariable(new AliMultVariable("fZpaEnergy"));
+    fInput->AddVariable(new AliMultVariable("fZem1Energy"));
+    fInput->AddVariable(new AliMultVariable("fZem2Energy"));
 
-    fZnaTower  = new AliMultVariable("fZnaTower");
-    fZncTower  = new AliMultVariable("fZncTower");
-    fZpaTower  = new AliMultVariable("fZpaTower");
-    fZpcTower  = new AliMultVariable("fZpcTower");
+    fInput->AddVariable(new AliMultVariable("fZnaTower"));
+    fInput->AddVariable(new AliMultVariable("fZncTower"));
+    fInput->AddVariable(new AliMultVariable("fZpaTower"));
+    fInput->AddVariable(new AliMultVariable("fZpcTower"));
 
     //Fired or not booleans (stored as integer for compatibility)
-    fZnaFired  = new AliMultVariable("fZnaFired", "Mult Variable", kTRUE);
-    fZncFired  = new AliMultVariable("fZncFired", "Mult Variable", kTRUE);
-    fZpaFired  = new AliMultVariable("fZpaFired", "Mult Variable", kTRUE);
-    fZpcFired  = new AliMultVariable("fZpcFired", "Mult Variable", kTRUE);
+    fInput->AddVariable(new AliMultVariable("fZnaFired", "Mult Variable", kTRUE));
+    fInput->AddVariable(new AliMultVariable("fZncFired", "Mult Variable", kTRUE));
+    fInput->AddVariable(new AliMultVariable("fZpaFired", "Mult Variable", kTRUE));
+    fInput->AddVariable(new AliMultVariable("fZpcFired", "Mult Variable", kTRUE));
 
     //Track counters (now useable as AliMultVariables as well)
-    fNTracks                  = new AliMultVariable("fNTracks", "Mult Variable", kTRUE);
-    fNTracksGlobal2015        = new AliMultVariable("fNTracksGlobal2015", "Mult Variable", kTRUE);
-    fNTracksGlobal2015Trigger = new AliMultVariable("fNTracksGlobal2015Trigger", "Mult Variable", kTRUE);
-    fNTracksITSsa2010         = new AliMultVariable("fNTracksITSsa2010", "Mult Variable", kTRUE);
+    fInput->AddVariable(new AliMultVariable("fNTracks", "Mult Variable", kTRUE));
+    fInput->AddVariable(new AliMultVariable("fNTracksGlobal2015", "Mult Variable", kTRUE));
+    fInput->AddVariable(new AliMultVariable("fNTracksGlobal2015Trigger", "Mult Variable", kTRUE));
+    fInput->AddVariable(new AliMultVariable("fNTracksITSsa2010", "Mult Variable", kTRUE));
 
-    fEvSel_VtxZ = new AliMultVariable("fEvSel_VtxZ");
-
-    //Add to AliMultInput Object, will later bind to TTree object in a loop
-    fInput->AddVariable( fAmplitude_V0A );
-    fInput->AddVariable( fAmplitude_V0A1 );
-    fInput->AddVariable( fAmplitude_V0A2 );
-    fInput->AddVariable( fAmplitude_V0A3 );
-    fInput->AddVariable( fAmplitude_V0A4 );
-    fInput->AddVariable( fAmplitude_V0C );
-    fInput->AddVariable( fAmplitude_V0C1 );
-    fInput->AddVariable( fAmplitude_V0C2 );
-    fInput->AddVariable( fAmplitude_V0C3 );
-    fInput->AddVariable( fAmplitude_V0C4 );
-    fInput->AddVariable( fAmplitude_V0Apartial );
-    fInput->AddVariable( fAmplitude_V0Cpartial );
-    fInput->AddVariable( fAmplitude_V0AEq );
-    fInput->AddVariable( fAmplitude_V0CEq );
-    fInput->AddVariable( fAmplitude_OnlineV0A );
-    fInput->AddVariable( fAmplitude_OnlineV0C );
-    fInput->AddVariable( fAmplitude_V0AADC );
-    fInput->AddVariable( fAmplitude_V0CADC );
-    fInput->AddVariable( fnSPDClusters );
-    fInput->AddVariable( fnSPDClusters0 );
-    fInput->AddVariable( fnSPDClusters1 );
-    fInput->AddVariable( fnTracklets );
-    fInput->AddVariable( fnTracklets08 );
-    fInput->AddVariable( fnTracklets15 );
-    fInput->AddVariable( fRefMultEta5 );
-    fInput->AddVariable( fRefMultEta8 );
-    fInput->AddVariable( fMultiplicity_AD );
-    fInput->AddVariable( fMultiplicity_ADA );
-    fInput->AddVariable( fMultiplicity_ADC );
-    fInput->AddVariable( fZncEnergy );
-    fInput->AddVariable( fZpcEnergy );
-    fInput->AddVariable( fZnaEnergy );
-    fInput->AddVariable( fZpaEnergy );
-    fInput->AddVariable( fZem1Energy );
-    fInput->AddVariable( fZem2Energy );
-    fInput->AddVariable( fZnaTower );
-    fInput->AddVariable( fZncTower );
-    fInput->AddVariable( fZpaTower );
-    fInput->AddVariable( fZpcTower );
-    fInput->AddVariable( fZnaFired );
-    fInput->AddVariable( fZncFired );
-    fInput->AddVariable( fZpaFired );
-    fInput->AddVariable( fZpcFired );
-    fInput->AddVariable( fNTracks                  );
-    fInput->AddVariable( fNTracksGlobal2015        );
-    fInput->AddVariable( fNTracksGlobal2015Trigger );
-    fInput->AddVariable( fNTracksITSsa2010         );
-    fInput->AddVariable( fEvSel_VtxZ );
+    fInput->AddVariable(new AliMultVariable("fEvSel_VtxZ"));
 
     if( fkCalibration ) {
         TDirectory *owd = gDirectory;
@@ -498,7 +387,6 @@ void AliMultSelectionTask::UserCreateOutputObjects()
         fESDtrackCuts->SetPtRange(0.15);  // adding pt cut
         fESDtrackCuts->SetEtaRange(-1.0, 1.0);
     }
-
 
     //Create TPC only track cuts
     if(!fTrackCuts) fTrackCuts = AliESDtrackCuts::GetStandardTPCOnlyTrackCuts();
@@ -833,11 +721,11 @@ void AliMultSelectionTask::UserExec(Option_t *)
     fEvSel_IsNotAsymmetricInVZERO = kFALSE;
     fEvSel_IsNotIncompleteDAQ     = kFALSE;
     fEvSel_HasGoodVertex2016      = kFALSE;
-    //fnSPDClusters = -1;
-    fnSPDClusters -> SetValueInteger(-1);
-    fnSPDClusters0 -> SetValueInteger( -1) ;
-    fnSPDClusters1 -> SetValueInteger( -1) ;
-    fEvSel_VtxZ ->SetValue( -100 );
+
+    fInput->SetValue("fnSPDClusters",  -1);
+    fInput->SetValue("fnSPDClusters0", -1);
+    fInput->SetValue("fnSPDClusters1", -1);
+    fInput->SetValue("fEvSel_VtxZ",  -100.0f);
 
     fMC_NchV0A = -1;
     fMC_NchV0C = -1;
@@ -900,7 +788,6 @@ void AliMultSelectionTask::UserExec(Option_t *)
         AliMCEventHandler* eventHandler = (AliMCEventHandler*)anMan->GetMCtruthEventHandler();
         AliStack*    stack=0;
         AliMCEvent*  mcEvent=0;
-
 
         if (eventHandler && (mcEvent=eventHandler->MCEvent()) && (stack=mcEvent->Stack())) {
 
@@ -1025,7 +912,8 @@ void AliMultSelectionTask::UserExec(Option_t *)
         //FIXME Passed default 10.0cm selection!
         fEvSel_VtxZCut = kTRUE;
     }
-    fEvSel_VtxZ -> SetValue( lBestPrimaryVtxPos[2] ); //Set for later use
+    const Float_t evSel_VtxZ = lBestPrimaryVtxPos[2];
+    fInput->SetValue("fEvSel_VtxZ", evSel_VtxZ); //Set for later use
 
     //===============================================
     // End Event Selection Variables Section
@@ -1131,15 +1019,15 @@ void AliMultSelectionTask::UserExec(Option_t *)
 
     //Set Desired Variables
 
-    fAmplitude_V0A->SetValue(multV0A);
-    fAmplitude_V0C->SetValue(multV0C);
+    fInput->SetValue("fAmplitude_V0A", multV0A);
+    fInput->SetValue("fAmplitude_V0C", multV0C);
 
     //Implementation of V0 ADC information
     // FIXME: THIS ONLY WORKS IN ESDS FOR NOW
     Float_t  multV0AADC  = 0;            //  multiplicity from V0 reco side A from ADC
     Float_t  multV0CADC  = 0;            //  multiplicity from V0 reco side C from ADC
-    fAmplitude_V0AADC->SetValue(0);
-    fAmplitude_V0CADC->SetValue(0);
+    fInput->SetValue("fAmplitude_V0AADC", 0);
+    fInput->SetValue("fAmplitude_V0CADC", 0);
 
     /* FIXME: THIS DOES NOT WORK !!
      for(Int_t iCh = 0; iCh < 32; iCh++){
@@ -1152,35 +1040,35 @@ void AliMultSelectionTask::UserExec(Option_t *)
      }
      */
 
-    fAmplitude_V0AADC->SetValue(multV0AADC);
-    fAmplitude_V0CADC->SetValue(multV0CADC);
+    fInput->SetValue("fAmplitude_V0AADC", multV0AADC);
+    fInput->SetValue("fAmplitude_V0CADC", multV0CADC);
 
     if ( lVerbose ) {
         Printf(" V0A Amplitude: %.5f", multV0A );
         Printf(" V0C Amplitude: %.5f", multV0C );
     }
 
-    fAmplitude_OnlineV0A->SetValue(multonlineV0A);
-    fAmplitude_OnlineV0C->SetValue(multonlineV0C);
+    fInput->SetValue("fAmplitude_OnlineV0A", multonlineV0A);
+    fInput->SetValue("fAmplitude_OnlineV0C", multonlineV0C);
 
-    fAmplitude_V0Apartial->SetValue(multV0Apartial);
-    fAmplitude_V0Cpartial->SetValue(multV0Cpartial);
+    fInput->SetValue("fAmplitude_V0Apartial", multV0Apartial);
+    fInput->SetValue("fAmplitude_V0Cpartial", multV0Cpartial);
 
     //A.T. (vertex correction for all rings?!?)
-    fAmplitude_V0A1 -> SetValue( multV0A1 );
-    fAmplitude_V0A2 -> SetValue( multV0A2 );
-    fAmplitude_V0A3 -> SetValue( multV0A3 );
-    fAmplitude_V0A4 -> SetValue( multV0A4 );
-    fAmplitude_V0C1 -> SetValue( multV0C1 );
-    fAmplitude_V0C2 -> SetValue( multV0C2 );
-    fAmplitude_V0C3 -> SetValue( multV0C3 );
-    fAmplitude_V0C4 -> SetValue( multV0C4 );
+    fInput->SetValue("fAmplitude_V0A1",  multV0A1 );
+    fInput->SetValue("fAmplitude_V0A2",  multV0A2 );
+    fInput->SetValue("fAmplitude_V0A3",  multV0A3 );
+    fInput->SetValue("fAmplitude_V0A4",  multV0A4 );
+    fInput->SetValue("fAmplitude_V0C1",  multV0C1 );
+    fInput->SetValue("fAmplitude_V0C2",  multV0C2 );
+    fInput->SetValue("fAmplitude_V0C3",  multV0C3 );
+    fInput->SetValue("fAmplitude_V0C4",  multV0C4 );
 
     //AD scintillator Data added to Event Tree
     if (lVAD) {
-        fMultiplicity_AD ->SetValue(multAD);
-        fMultiplicity_ADA->SetValue(multADA);
-        fMultiplicity_ADC->SetValue(multADC);
+      fInput->SetValue("fMultiplicity_AD", multAD);
+      fInput->SetValue("fMultiplicity_ADA", multADA);
+      fInput->SetValue("fMultiplicity_ADC", multADC);
     }
 
     // Equalized signals // From AliCentralitySelectionTask // Updated
@@ -1192,48 +1080,48 @@ void AliMultSelectionTask::UserExec(Option_t *)
         Double_t mult = lVevent->GetVZEROEqMultiplicity(iCh);
         multV0CEq += mult;
     }
-    fAmplitude_V0AEq->SetValue(multV0AEq);
-    fAmplitude_V0CEq->SetValue(multV0CEq);
+    fInput->SetValue("fAmplitude_V0AEq", multV0AEq);
+    fInput->SetValue("fAmplitude_V0CEq", multV0CEq);
 
     //Integer Estimators
-    fnTracklets->SetValueInteger(lVevent->GetMultiplicity()->GetNumberOfTracklets());
+    fInput->SetValue("fnTracklets", lVevent->GetMultiplicity()->GetNumberOfTracklets());
     //Tracklets in specific eta windows
-    fnTracklets08->SetValueInteger(AliESDtrackCuts::GetReferenceMultiplicity((AliESDEvent*)lVevent, AliESDtrackCuts::kTracklets, 0.8));
-    fnTracklets15->SetValueInteger(AliESDtrackCuts::GetReferenceMultiplicity((AliESDEvent*)lVevent, AliESDtrackCuts::kTracklets, 1.5));
+    fInput->SetValue("fnTracklets08", AliESDtrackCuts::GetReferenceMultiplicity((AliESDEvent*)lVevent, AliESDtrackCuts::kTracklets, 0.8));
+    fInput->SetValue("fnTracklets15", AliESDtrackCuts::GetReferenceMultiplicity((AliESDEvent*)lVevent, AliESDtrackCuts::kTracklets, 1.5));
 
-    fnSPDClusters->SetValueInteger(lVevent->GetNumberOfITSClusters(0) + lVevent->GetNumberOfITSClusters(1));
-    fnSPDClusters0 -> SetValueInteger(lVevent->GetNumberOfITSClusters(0));
-    fnSPDClusters1 -> SetValueInteger(lVevent->GetNumberOfITSClusters(1));
+    fInput->SetValue("fnSPDClusters",  lVevent->GetNumberOfITSClusters(0) + lVevent->GetNumberOfITSClusters(1));
+    fInput->SetValue("fnSPDClusters0", lVevent->GetNumberOfITSClusters(0));
+    fInput->SetValue("fnSPDClusters1", lVevent->GetNumberOfITSClusters(1));
     //===============================================
     //This part requires separation of AOD and ESD
     //===============================================
 
     //Setting variables to non-sense values
-    fRefMultEta5 -> SetValueInteger ( -5 ); //not acquired
-    fRefMultEta8 -> SetValueInteger ( -5 ); //not acquired
-    fNTracks                    -> SetValueInteger( -10 );
+    fInput->SetValue("fRefMultEta5",  -5 ); //not acquired
+    fInput->SetValue("fRefMultEta8",  -5 ); //not acquired
+    fInput->SetValue("fNTracks",     -10 );
 
 
     //Set ZDC variables to defaults
-    fZncEnergy->SetValue(-1e6);
-    fZpcEnergy->SetValue(-1e6);
-    fZnaEnergy->SetValue(-1e6);
-    fZpaEnergy->SetValue(-1e6);
-    fZem1Energy->SetValue(-1e6);
-    fZem2Energy->SetValue(-1e6);
-    fZnaTower->SetValue(-1e6);
-    fZncTower->SetValue(-1e6);
-    fZpaTower->SetValue(-1e6);
-    fZpcTower->SetValue(-1e6);
-    fZnaFired->SetValueInteger( 0 );
-    fZncFired->SetValueInteger( 0 );
-    fZpaFired->SetValueInteger( 0 );
-    fZpcFired->SetValueInteger( 0 );
+    fInput->SetValue("fZncEnergy", -1e6f);
+    fInput->SetValue("fZpcEnergy", -1e6f);
+    fInput->SetValue("fZnaEnergy", -1e6f);
+    fInput->SetValue("fZpaEnergy", -1e6f);
+    fInput->SetValue("fZem1Energy", -1e6f);
+    fInput->SetValue("fZem2Energy", -1e6f);
+    fInput->SetValue("fZnaTower", -1e6f);
+    fInput->SetValue("fZncTower", -1e6f);
+    fInput->SetValue("fZpaTower", -1e6f);
+    fInput->SetValue("fZpcTower", -1e6f);
+    fInput->SetValue("fZnaFired",  0 );
+    fInput->SetValue("fZncFired",  0 );
+    fInput->SetValue("fZpaFired",  0 );
+    fInput->SetValue("fZpcFired",  0 );
 
     //Set Track Counters to zero
-    fNTracksGlobal2015          -> SetValueInteger( 0 );
-    fNTracksGlobal2015Trigger   -> SetValueInteger( 0 );
-    fNTracksITSsa2010           -> SetValueInteger( 0 );
+    fInput->SetValue("fNTracksGlobal2015",         0 );
+    fInput->SetValue("fNTracksGlobal2015Trigger",  0 );
+    fInput->SetValue("fNTracksITSsa2010",          0 );
 
     //Count tracks with various selections
     for(Long_t itrack = 0; itrack<lVevent->GetNumberOfTracks(); itrack++) {
@@ -1242,18 +1130,18 @@ void AliMultSelectionTask::UserExec(Option_t *)
 
         //Only ITSsa tracks
         if ( fTrackCutsITSsa2010 -> AcceptVTrack (track) ) {
-            fNTracksITSsa2010 -> SetValueInteger( fNTracksITSsa2010->GetValueInteger() + 1);
+          fInput->IncrementValue("fNTracksITSsa2010");
         }
 
         if ( !fTrackCutsGlobal2015 -> AcceptVTrack (track) ) continue;
 
         //Only for accepted tracks
-        fNTracksGlobal2015 -> SetValueInteger( fNTracksGlobal2015->GetValueInteger() + 1);
+        fInput->IncrementValue("fNTracksGlobal2015");
 
         //Count accepted + TOF time window (info from Alberica)
         //Warning: 30 is a value that is good for Pb-Pb (12.5 is more appropriate for pp)
         if ( TMath::Abs( track -> GetTOFExpTDiff() ) < 30 )
-            fNTracksGlobal2015Trigger -> SetValueInteger( fNTracksGlobal2015Trigger->GetValueInteger() + 1);
+          fInput->IncrementValue("fNTracksGlobal2015Trigger");
     }
 
     if(lVerbose) Printf("Doing ESD/AOD part...");
@@ -1261,62 +1149,53 @@ void AliMultSelectionTask::UserExec(Option_t *)
         AliESDEvent *esdevent = dynamic_cast<AliESDEvent *>(lVevent);
 
         //Standard GetReferenceMultiplicity Estimator (0.5 and 0.8)
-        fRefMultEta5 -> SetValueInteger ( fESDtrackCuts->GetReferenceMultiplicity(esdevent, AliESDtrackCuts::kTrackletsITSTPC,0.5) );
-        fRefMultEta8 -> SetValueInteger ( fESDtrackCuts->GetReferenceMultiplicity(esdevent, AliESDtrackCuts::kTrackletsITSTPC,0.8) );
+        const Int_t refMultEta5 = fESDtrackCuts->GetReferenceMultiplicity(esdevent, AliESDtrackCuts::kTrackletsITSTPC,0.5);
+        const Int_t refMultEta8 = fESDtrackCuts->GetReferenceMultiplicity(esdevent, AliESDtrackCuts::kTrackletsITSTPC,0.8);
 
         //Use fallback in case of return value of -3 or -4
         //This is what will happen in AODs: -3 will use fallback
         //HOWEVER: -4 will not. Inconsistency requires use of "HasNoInconsistentSPDandTrackVertices"!
-        if ( fRefMultEta5 -> GetValueInteger() < -2 ) {
-            fRefMultEta5 -> SetValueInteger ( fESDtrackCuts->GetReferenceMultiplicity(esdevent, AliESDtrackCuts::kTracklets,0.5) );
-        }
-        if ( fRefMultEta8 -> GetValueInteger() < -2 ) {
-            fRefMultEta8 -> SetValueInteger ( fESDtrackCuts->GetReferenceMultiplicity(esdevent, AliESDtrackCuts::kTracklets,0.8) );
-        }
+        fInput->SetValue("fRefMultEta5", refMultEta5 < -2 ? fESDtrackCuts->GetReferenceMultiplicity(esdevent, AliESDtrackCuts::kTracklets,0.5) : refMultEta5);
+        fInput->SetValue("fRefMultEta8", refMultEta8 < -2 ? fESDtrackCuts->GetReferenceMultiplicity(esdevent, AliESDtrackCuts::kTracklets,0.8) : refMultEta8);
 
         //A.T.
-        fNTracks -> SetValueInteger( fTrackCuts ? (Short_t)fTrackCuts->GetReferenceMultiplicity(esdevent,kTRUE):-1 );
+        fInput->SetValue("fNTracks",  fTrackCuts ? (Short_t)fTrackCuts->GetReferenceMultiplicity(esdevent,kTRUE) : -1 );
 
         // ***** ZDC info
         AliESDZDC *lESDZDC = esdevent->GetESDZDC();
-        Float_t CalF=0;
-        if (lESDZDC->AliESDZDC::TestBit(AliESDZDC::kEnergyCalibratedSignal))  CalF=1.0; //! if zdc is calibrated (in pass2)
-        else CalF=8.0;
+        //! if zdc is calibrated (in pass2)
+        const Float_t CalF = (lESDZDC->AliESDZDC::TestBit(AliESDZDC::kEnergyCalibratedSignal) ? 1.0f : 0.8f);
 
-        fZncEnergy -> SetValue ( (Float_t) (lESDZDC->GetZDCN1Energy())/CalF );
-        fZpcEnergy -> SetValue ( (Float_t) (lESDZDC->GetZDCP1Energy())/CalF );
-        fZnaEnergy -> SetValue ( (Float_t) (lESDZDC->GetZDCN2Energy())/CalF );
-        fZpaEnergy -> SetValue ( (Float_t) (lESDZDC->GetZDCP2Energy())/CalF );
+        fInput->SetValue("fZncEnergy", Float_t(lESDZDC->GetZDCN1Energy())/CalF );
+        fInput->SetValue("fZpcEnergy", Float_t(lESDZDC->GetZDCP1Energy())/CalF );
+        fInput->SetValue("fZnaEnergy", Float_t(lESDZDC->GetZDCN2Energy())/CalF );
+        fInput->SetValue("fZpaEnergy", Float_t(lESDZDC->GetZDCP2Energy())/CalF );
 
-        fZem1Energy -> SetValue ( (Float_t) (lESDZDC->GetZDCEMEnergy(0))/CalF );
-        fZem2Energy -> SetValue ( (Float_t) (lESDZDC->GetZDCEMEnergy(1))/CalF );
+        fInput->SetValue("fZem1Energy", Float_t(lESDZDC->GetZDCEMEnergy(0))/CalF );
+        fInput->SetValue("fZem2Energy", Float_t(lESDZDC->GetZDCEMEnergy(1))/CalF );
 
-        Int_t detCh_ZNA = lESDZDC->GetZNATDCChannel();
-        Int_t detCh_ZNC = lESDZDC->GetZNCTDCChannel();
-        Int_t detCh_ZPA = lESDZDC->GetZPATDCChannel();
-        Int_t detCh_ZPC = lESDZDC->GetZPCTDCChannel();
+        const Int_t detCh_ZNA = lESDZDC->GetZNATDCChannel();
+        const Int_t detCh_ZNC = lESDZDC->GetZNCTDCChannel();
+        const Int_t detCh_ZPA = lESDZDC->GetZPATDCChannel();
+        const Int_t detCh_ZPC = lESDZDC->GetZPCTDCChannel();
 
         for (Int_t j = 0; j < 4; ++j) {
-	   if (lESDZDC->GetZDCTDCData(detCh_ZNA,j) != 0)      fZnaFired -> SetValueInteger(1);
-	   if (lESDZDC->GetZDCTDCData(detCh_ZNC,j) != 0)      fZncFired -> SetValueInteger(1);
-	   if (lESDZDC->GetZDCTDCData(detCh_ZPA,j) != 0)      fZpaFired -> SetValueInteger(1);
-	   if (lESDZDC->GetZDCTDCData(detCh_ZPC,j) != 0)      fZpcFired -> SetValueInteger(1);
+          if (lESDZDC->GetZDCTDCData(detCh_ZNA,j) != 0)      fInput->SetValue("fZnaFired", 1);
+          if (lESDZDC->GetZDCTDCData(detCh_ZNC,j) != 0)      fInput->SetValue("fZncFired", 1);
+          if (lESDZDC->GetZDCTDCData(detCh_ZPA,j) != 0)      fInput->SetValue("fZpaFired", 1);
+          if (lESDZDC->GetZDCTDCData(detCh_ZPC,j) != 0)      fInput->SetValue("fZpcFired", 1);
         }
 
-        const Double_t *ZNAtower = lESDZDC->GetZNATowerEnergy();
-        const Double_t *ZNCtower = lESDZDC->GetZNCTowerEnergy();
-        const Double_t *ZPAtower = lESDZDC->GetZPATowerEnergy();
-        const Double_t *ZPCtower = lESDZDC->GetZPCTowerEnergy();
-        fZnaTower -> SetValue ( (Float_t) ZNAtower[0] );
-        fZncTower -> SetValue ( (Float_t) ZNCtower[0] );
-        fZpaTower -> SetValue ( (Float_t) ZPAtower[0] );
-        fZpcTower -> SetValue ( (Float_t) ZPCtower[0] );
+        fInput->SetValue("fZnaTower", Float_t(lESDZDC->GetZNATowerEnergy()[0]));
+        fInput->SetValue("fZncTower", Float_t(lESDZDC->GetZNCTowerEnergy()[0]));
+        fInput->SetValue("fZpaTower", Float_t(lESDZDC->GetZPATowerEnergy()[0]));
+        fInput->SetValue("fZpcTower", Float_t(lESDZDC->GetZPCTowerEnergy()[0]));
 
     } else if (lVevent->InheritsFrom("AliAODEvent")) {
         AliAODEvent *aodevent = dynamic_cast<AliAODEvent *>(lVevent);
         AliAODHeader * header = dynamic_cast<AliAODHeader*>(aodevent->GetHeader());
-        fRefMultEta5 -> SetValueInteger ( header->GetRefMultiplicityComb05() );
-        fRefMultEta8 -> SetValueInteger ( header->GetRefMultiplicityComb08() );
+        fInput->SetValue("fRefMultEta5", header->GetRefMultiplicityComb05() );
+        fInput->SetValue("fRefMultEta8", header->GetRefMultiplicityComb08() );
 
         //FIXME: get ZDC information in AOD in a fully consistent way
         AliAODZDC *lAODZDC = aodevent->GetZDCData();
@@ -1324,20 +1203,15 @@ void AliMultSelectionTask::UserExec(Option_t *)
         //Only do this bit if the AOD has ZDC data
         if( lAODZDC ){
             for (Int_t j = 0; j < 4; ++j) {
-                if (lAODZDC->GetZNATDCm(j) > -998) fZnaFired -> SetValueInteger(1);
-                if (lAODZDC->GetZNCTDCm(j) > -998) fZncFired -> SetValueInteger(1);
-                if (lAODZDC->GetZPATDCm(j) > -998) fZpaFired -> SetValueInteger(1);
-                if (lAODZDC->GetZPCTDCm(j) > -998) fZpcFired -> SetValueInteger(1);
+              if (lAODZDC->GetZNATDCm(j) > -998) fInput->SetValue("fZnaFired", 1);
+              if (lAODZDC->GetZNCTDCm(j) > -998) fInput->SetValue("fZncFired", 1);
+              if (lAODZDC->GetZPATDCm(j) > -998) fInput->SetValue("fZpaFired", 1);
+              if (lAODZDC->GetZPCTDCm(j) > -998) fInput->SetValue("fZpcFired", 1);
             }
-
-            const Double_t *ZNAtower = lAODZDC->GetZNATowerEnergy();
-            const Double_t *ZNCtower = lAODZDC->GetZNCTowerEnergy();
-            const Double_t *ZPAtower = lAODZDC->GetZPATowerEnergy();
-            const Double_t *ZPCtower = lAODZDC->GetZPCTowerEnergy();
-            fZnaTower -> SetValue ( (Float_t) ZNAtower[0] );
-            fZncTower -> SetValue ( (Float_t) ZNCtower[0] );
-            fZpaTower -> SetValue ( (Float_t) ZPAtower[0] );
-            fZpcTower -> SetValue ( (Float_t) ZPCtower[0] );
+            fInput->SetValue("fZnaTower", Float_t(lAODZDC->GetZNATowerEnergy()[0]) );
+            fInput->SetValue("fZncTower", Float_t(lAODZDC->GetZNCTowerEnergy()[0]) );
+            fInput->SetValue("fZpaTower", Float_t(lAODZDC->GetZPATowerEnergy()[0]) );
+            fInput->SetValue("fZpcTower", Float_t(lAODZDC->GetZPCTowerEnergy()[0]) );
         }
     }
 
@@ -1407,7 +1281,7 @@ void AliMultSelectionTask::UserExec(Option_t *)
 	lSelection -> SetThisEventPassesTrackletVsCluster   ( fEvSel_PassesTrackletVsCluster   );
 	lSelection -> SetThisEventIsNotAsymmetricInVZERO    ( fEvSel_IsNotAsymmetricInVZERO    );
 	lSelection -> SetThisEventIsNotIncompleteDAQ        ( fEvSel_IsNotIncompleteDAQ        );
-    lSelection -> SetThisEventHasGoodVertex2016         ( fEvSel_HasGoodVertex2016         );
+        lSelection -> SetThisEventHasGoodVertex2016         ( fEvSel_HasGoodVertex2016         );
 
         if( lMultCuts->GetTriggerCut()    && ! fEvSel_Triggered           )
             lSelection->SetEvSelCode(AliMultSelectionCuts::kRejTrigger);
@@ -1415,7 +1289,7 @@ void AliMultSelectionTask::UserExec(Option_t *)
         if( lMultCuts->GetINELgtZEROCut() && ! fEvSel_INELgtZERO          )
             lSelection->SetEvSelCode(AliMultSelectionCuts::kRejINELgtZERO);
 
-        if( TMath::Abs(fEvSel_VtxZ->GetValue() ) > lMultCuts->GetVzCut()      )
+        if( TMath::Abs(evSel_VtxZ) > lMultCuts->GetVzCut())
             lSelection->SetEvSelCode(AliMultSelectionCuts::kRejVzCut);
 
         if( lMultCuts->GetRejectPileupInMultBinsCut() && ! fEvSel_IsNotPileupInMultBins      )
@@ -1478,7 +1352,7 @@ void AliMultSelectionTask::UserExec(Option_t *)
         Float_t lZNC = lSelection->GetMultiplicityPercentile("ZNC");
         Float_t lZNApp = lSelection->GetMultiplicityPercentile("ZNApp");
         Float_t lZNCpp = lSelection->GetMultiplicityPercentile("ZNCpp");
-        Int_t ltracklets = fnTracklets->GetValueInteger();
+        Int_t ltracklets = fInput->GetValueInteger("fnTracklets");
 
         fHistQA_V0M -> Fill( lV0M );
         fHistQA_V0A -> Fill( lV0A );
@@ -1523,6 +1397,9 @@ void AliMultSelectionTask::UserExec(Option_t *)
         fHistQASelected_TrackletsVsCL0 -> Fill( lCL0, ltracklets );
         fHistQASelected_TrackletsVsCL1 -> Fill( lCL1, ltracklets );
 
+        const Int_t nTracksGlobal2015 = fInput->GetValueInteger("fNTracksGlobal2015");
+        const Int_t nTracksITSsa2010  = fInput->GetValueInteger("fNTracksITSsa2010");
+
         //Track momentum QA
         for(Long_t itrack = 0; itrack<lVevent->GetNumberOfTracks(); itrack++) {
             AliVTrack *track = lVevent -> GetVTrack( itrack );
@@ -1543,12 +1420,12 @@ void AliMultSelectionTask::UserExec(Option_t *)
             fHistQASelected_PtGlobalVsCL1 -> Fill( lCL1, track->Pt() );
         }
 
-        fHistQASelected_NTracksGlobalVsV0M -> Fill( lV0M, fNTracksGlobal2015->GetValueInteger() );
-        fHistQASelected_NTracksGlobalVsCL0 -> Fill( lCL0, fNTracksGlobal2015->GetValueInteger() );
-        fHistQASelected_NTracksGlobalVsCL1 -> Fill( lCL1, fNTracksGlobal2015->GetValueInteger() );
-        fHistQASelected_NTracksITSsaVsV0M  -> Fill( lV0M, fNTracksITSsa2010->GetValueInteger() );
-        fHistQASelected_NTracksITSsaVsCL0  -> Fill( lCL0, fNTracksITSsa2010->GetValueInteger() );
-        fHistQASelected_NTracksITSsaVsCL1  -> Fill( lCL1, fNTracksITSsa2010->GetValueInteger() );
+        fHistQASelected_NTracksGlobalVsV0M -> Fill( lV0M, nTracksGlobal2015);
+        fHistQASelected_NTracksGlobalVsCL0 -> Fill( lCL0, nTracksGlobal2015);
+        fHistQASelected_NTracksGlobalVsCL1 -> Fill( lCL1, nTracksGlobal2015);
+        fHistQASelected_NTracksITSsaVsV0M  -> Fill( lV0M, nTracksITSsa2010);
+        fHistQASelected_NTracksITSsaVsCL0  -> Fill( lCL0, nTracksITSsa2010);
+        fHistQASelected_NTracksITSsaVsCL1  -> Fill( lCL1, nTracksITSsa2010);
         //=============================================================================
 
         //Add to AliVEvent
@@ -2377,12 +2254,11 @@ TString AliMultSelectionTask::GetSystemTypeByRunNumber() const
 }
 //______________________________________________________________________
 Bool_t AliMultSelectionTask::CheckOADB(TString lProdName) const {
-    //This helper function checks if an OADB exists for the production named lProdName
-    //Determine file name
-    TString fileName = Form("%s/COMMON/MULTIPLICITY/data/OADB-%s.root", AliAnalysisManager::GetOADBPath(), lProdName.Data() );
-
-    Bool_t lInverseThis = !gSystem->AccessPathName(fileName.Data());
-    return lInverseThis;
+  //This helper function checks if an OADB exists for the production named lProdName
+  //Determine file name
+  const TString fileName    = TString::Format("%s/COMMON/MULTIPLICITY/data/OADB-%s.root", AliAnalysisManager::GetOADBPath(), lProdName.Data() );
+  const Bool_t lInverseThis = !gSystem->AccessPathName(fileName.Data());
+  return lInverseThis;
 }
 
 //______________________________________________________________________
@@ -2425,7 +2301,7 @@ Bool_t AliMultSelectionTask::IsDPMJet() const {
 
 //______________________________________________________________________
 Bool_t AliMultSelectionTask::IsEPOSLHC() const {
-    //Function to check if this is DPMJet
+    //Function to check if this is EPOSLHC
     Bool_t lReturnValue = kFALSE;
     AliMCEvent*  mcEvent = MCEvent();
     if (mcEvent) {
