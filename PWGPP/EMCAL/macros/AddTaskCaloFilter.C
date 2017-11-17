@@ -73,7 +73,7 @@ AliAnalysisTaskCaloFilter * AddTaskCaloFilter
   printf("AddTaskCaloFilter --- Init output handler ---\n");
   
   AliAODHandler* aodoutHandler   = new AliAODHandler();
-  aodoutHandler->SetOutputFileName("AliAOD.root");
+  aodoutHandler->SetOutputFileName("AliAOD.EMCAL.root");
   //aodoutHandler->SetCreateNonStandardAOD();
   mgr->SetOutputEventHandler(aodoutHandler);
 
