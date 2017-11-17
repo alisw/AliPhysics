@@ -14,7 +14,7 @@ class AliMultSelectionCalibrator : public TNamed {
 public:
 
     AliMultSelectionCalibrator(const char * name="AliMultSelectionCalibrator", const char * title = "Multiplicity Calibration Class");
-    ~AliMultSelectionCalibrator();
+    virtual ~AliMultSelectionCalibrator();
 
     //void    Print(Option_t *option="") const;
 
@@ -29,7 +29,7 @@ public:
     void SetBoundaries ( Long_t lNB, Double_t *lB ){
         if ( lNB<2 || lNB > 1e+6 ){
             cout<<"Please make sure you are using a reasonable number of boundaries!"<<endl;
-            lNB = -1;
+            lNB = 0;
         }
         lDesiredBoundaries.Set(lNB, lB);
     }

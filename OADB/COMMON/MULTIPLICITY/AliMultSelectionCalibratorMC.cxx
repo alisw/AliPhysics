@@ -27,36 +27,21 @@
 
 ClassImp(AliMultSelectionCalibratorMC);
 
-AliMultSelectionCalibratorMC::AliMultSelectionCalibratorMC() :
-    TNamed(), fInputFileNameData(""), fInputFileNameOADB(""), fInputFileNameMC(""),
-    fBufferFileNameData("buffer.root"  ),
-    fBufferFileNameMC  ("bufferMC.root"),
-    fOutputFileName(""), fInput(0), fSelection(0), fMultSelectionCuts(0), fCalibHists(0),
-    lNDesiredBoundaries(0), lDesiredBoundaries(0), fRunToUseAsDefault(-1),
-    fkUseQuadraticMapping(kFALSE)
-{
-    // Constructor
-
-    // Create Event Selector
-    fMultSelectionCuts = new AliMultSelectionCuts();
-    fMultSelectionCuts -> Print();
-
-    //Basic I/O for MultSelection framework
-    fInput     = new AliMultInput();
-    fSelection = new AliMultSelection();
-
-    //Make sure the TList owns its objects
-    fCalibHists = new TList();
-    fCalibHists -> SetOwner(kTRUE);
-}
-
-AliMultSelectionCalibratorMC::AliMultSelectionCalibratorMC(const char * name, const char * title):
-    TNamed(), fInputFileNameData(""), fInputFileNameOADB(""), fInputFileNameMC(""),
-    fBufferFileNameData("buffer.root"  ),
-    fBufferFileNameMC  ("bufferMC.root"),
-    fOutputFileName(""), fInput(0), fSelection(0), fMultSelectionCuts(0), fCalibHists(0),
-    lNDesiredBoundaries(0), lDesiredBoundaries(0), fRunToUseAsDefault(-1),
-    fkUseQuadraticMapping(kFALSE)
+AliMultSelectionCalibratorMC::AliMultSelectionCalibratorMC(const char * name, const char * title)
+  : TNamed()
+  , fInput(nullptr)
+  , fSelection(nullptr)
+  , lDesiredBoundaries()
+  , fRunToUseAsDefault(-1)
+  , fInputFileNameData("")
+  , fInputFileNameOADB("")
+  , fInputFileNameMC("")
+  , fBufferFileNameData("buffer.root"  )
+  , fBufferFileNameMC  ("bufferMC.root")
+  , fOutputFileName("")
+  , fkUseQuadraticMapping(kFALSE)
+  , fMultSelectionCuts(nullptr)
+  , fCalibHists(0)
 {
     // Named Constructor
 
@@ -70,7 +55,7 @@ AliMultSelectionCalibratorMC::AliMultSelectionCalibratorMC(const char * name, co
     fMultSelectionCuts -> SetTrackletsVsClustersCut(kTRUE);
     fMultSelectionCuts -> SetRejectPileupInMultBinsCut(kTRUE);
     fMultSelectionCuts -> SetVertexConsistencyCut(kTRUE);
-    fMultSelectionCuts -> SetNonZeroNContribs(kFALSE);    
+    fMultSelectionCuts -> SetNonZeroNContribs(kFALSE);
 
     //Basic I/O for MultSelection framework
     fInput     = new AliMultInput();
@@ -82,25 +67,10 @@ AliMultSelectionCalibratorMC::AliMultSelectionCalibratorMC(const char * name, co
 
 }
 AliMultSelectionCalibratorMC::~AliMultSelectionCalibratorMC() {
-    // Destructor
-
-    if ( fInput ) {
-        delete fInput;
-        fInput = 0x0;
-    }
-    if ( fSelection ) {
-        delete fSelection;
-        fSelection = 0x0;
-    }
-    if ( fMultSelectionCuts ) {
-        delete fMultSelectionCuts;
-        fMultSelectionCuts = 0x0;
-    }
-    if ( fCalibHists ) {
-        delete fCalibHists;
-        fCalibHists = 0x0;
-    }
-
+  SafeDelete(fInput);
+  SafeDelete(fSelection);
+  SafeDelete(fMultSelectionCuts);
+  SafeDelete(fCalibHists);
 }
 Bool_t AliMultSelectionCalibratorMC::Calibrate() {
     // Function meant to generate calibration OADB for MC using scaling
@@ -114,13 +84,13 @@ Bool_t AliMultSelectionCalibratorMC::Calibrate() {
 
     // STEP 1: Basic I/O
     cout<<"(2) Opening OADB file for data..."<<endl;
-    TFile * fOADB = new TFile (fInputFileNameOADB.Data());
+    TFile * fOADB = TFile::Open(fInputFileNameOADB.Data());
 
     //Acquire OADB Container
     AliOADBContainer * oadbContMS = (AliOADBContainer*) fOADB->Get("MultSel");
 
     //Pointer to selection parameters
-    AliOADBMultSelection * oadbMultSelection = 0x0;
+    AliOADBMultSelection * oadbMultSelection = nullptr;
 
     //= (AliOADBMultSelection* )oadbContMS->GetObject(run, "Default");
 
@@ -210,7 +180,7 @@ Bool_t AliMultSelectionCalibratorMC::Calibrate() {
 
     //WARNING/FIXME- This will not allow for event selections to change in the middle of the processed dataset
     //This will shortly be replaced with a proper selection
-    //in which the OADB is queried and a run range mapping object is created 
+    //in which the OADB is queried and a run range mapping object is created
     fTree->GetEntry ( 0 ) ;
     oadbMultSelection = (AliOADBMultSelection* )oadbContMS->GetObject(fRunNumber, "Default");
     if(!oadbMultSelection) {
@@ -248,7 +218,7 @@ Bool_t AliMultSelectionCalibratorMC::Calibrate() {
     Int_t iVtxZ_index = -1;
     TString lTempStr;
 
-    TFile *fOutput = new TFile (fBufferFileNameData.Data(), "RECREATE");
+    TFile::Open(fBufferFileNameData.Data(), "RECREATE");
     TTree *sTree[lMaxQuantiles];
     cout<<"Creating Trees..."<<endl;
     for(Int_t iRun=0; iRun<lMax; iRun++) {
@@ -267,7 +237,7 @@ Bool_t AliMultSelectionCalibratorMC::Calibrate() {
         }
     }
 
-    TFile *fOutputMC = new TFile (fBufferFileNameMC.Data(), "RECREATE");
+    TFile::Open(fBufferFileNameMC.Data(), "RECREATE");
     TTree *sTreeMC[lMaxQuantiles];
     cout<<"Creating Trees..."<<endl;
     for(Int_t iRun=0; iRun<lMax; iRun++) {
@@ -365,7 +335,7 @@ Bool_t AliMultSelectionCalibratorMC::Calibrate() {
         if( fMultSelectionCuts->GetTrackletsVsClustersCut()    && ! fEvSel_PassesTrackletVsCluster  ) lSaveThisEvent = kFALSE;
         if( fMultSelectionCuts->GetVertexConsistencyCut()      && ! fEvSel_HasNoInconsistentVertices) lSaveThisEvent = kFALSE;
 	if( fMultSelectionCuts->GetNonZeroNContribs()          &&  fnContributors < 1 ) lSaveThisEvent = kFALSE;
-	
+
         if ( lSaveThisEvent ) {
             sTree [lThisRunIndex] -> Fill();
         }
@@ -415,7 +385,7 @@ Bool_t AliMultSelectionCalibratorMC::Calibrate() {
         Float_t lLocalVtxZ = fInput->GetVariable(iVtxZ_index)->GetValue();
 
         //Check Selections as they are in the fMultSelectionCuts Object
-        if( fMultSelectionCuts->GetTriggerCut()    && ! fEvSel_Triggered  ) lSaveThisEvent = kFALSE; //FIXME 
+        if( fMultSelectionCuts->GetTriggerCut()    && ! fEvSel_Triggered  ) lSaveThisEvent = kFALSE; //FIXME
         if( fMultSelectionCuts->GetINELgtZEROCut() && ! fEvSel_INELgtZERO ) lSaveThisEvent = kFALSE;
         if( TMath::Abs(lLocalVtxZ) > fMultSelectionCuts->GetVzCut()      ) lSaveThisEvent = kFALSE;
         //ADD ME HERE: Tracklets Vs Clusters Cut?
@@ -423,7 +393,7 @@ Bool_t AliMultSelectionCalibratorMC::Calibrate() {
         if( fMultSelectionCuts->GetTrackletsVsClustersCut()    && ! fEvSel_PassesTrackletVsCluster  ) lSaveThisEvent = kFALSE;
         if( fMultSelectionCuts->GetVertexConsistencyCut()      && ! fEvSel_HasNoInconsistentVertices) lSaveThisEvent = kFALSE;
 	if( fMultSelectionCuts->GetNonZeroNContribs()          &&  fnContributors < 1 ) lSaveThisEvent = kFALSE;
-	
+
         //Consult map for run range equivalency
         Int_t lIndex = -1;
         if ( fRunMap.find( fRunNumber ) != fRunMap.end() ) {
@@ -458,16 +428,16 @@ Bool_t AliMultSelectionCalibratorMC::Calibrate() {
     //==============================================================================
 
     Double_t *lValues;
-    
+
     //Determine max SPD tracklets: requires finding which estimator is SPD tracklets
     Int_t iEstSPDtracklets     = -1;
     Int_t iEstSPDclusters      = -1;
     Int_t iEstSPDtrackletscorr = -1;
     Int_t iEstCL0  = -1;
     Int_t iEstCL1  = -1;
-    
+
     //FIXME: This can be done in a loop, will be adjusted later (but this will work as is)
-    
+
     TString lEstName;
     for(Int_t iEst=0; iEst<lNEstimators; iEst++) {
         lEstName = fSelection->GetEstimator(iEst)->GetName();
@@ -529,8 +499,8 @@ Bool_t AliMultSelectionCalibratorMC::Calibrate() {
     Float_t lGlobalAxisScaling = 1.35;
     Float_t lRebinningSPD = 10;
     Float_t lRebinningEstimator = 10;
-    TFile *fOutputDebug = new TFile("debug.root", "RECREATE");
-    
+    TFile *fOutputDebug = TFile::Open("debug.root", "RECREATE");
+
     //Create 2D correlation plots as needed
     TH2F *l2dTrackletVsEstimatorData [1000] [lNEstimators];
     TH2F *l2dTrackletVsEstimatorMC   [1000] [lNEstimators];
@@ -567,7 +537,7 @@ Bool_t AliMultSelectionCalibratorMC::Calibrate() {
             }
         }
     }
-    
+
     //Prepare 2D correlations
     for(Int_t iRun=0; iRun<lNRuns; iRun++) {
         for(Int_t iEst=0; iEst<lNEstimators; iEst++) {
@@ -589,65 +559,65 @@ Bool_t AliMultSelectionCalibratorMC::Calibrate() {
             cout<<"Done!"<<endl;
         }
     }
-    
+
     //Prepare 1D fits
     TProfile *profdata[1000][lNEstimators];
     TProfile *profmc[1000][lNEstimators];
 
     TF1 *fitdata[1000][lNEstimators];
     TF1 *fitmc[1000][lNEstimators];
-    
+
     TString fFormula = "[0]*x";
-    
+
     //Experimental: quadratic fit
     //WARNING: NOT READY YET!
     if(fkUseQuadraticMapping) fFormula = "[0]*TMath::Power(x-[1],2)+[2]";
-    
+
     for(Int_t iRun=0; iRun<lNRuns; iRun++) {
         for(Int_t iEst=0; iEst<lNEstimators; iEst++) {
-            
+
             //Check if anchored, disregard anchored range if the case
             Double_t lLowestX=0.0;
             if(fSelection->GetEstimator(iEst)->GetUseAnchor()){
                 lLowestX=fSelection->GetEstimator(iEst)->GetAnchorPoint(); //Remove lowest
             }
-            
+
             cout<<"At Run "<<lRunNumbers[iRun]<<" ("<<iRun<<"/"<<lNRuns<<"), estimator "<<fSelection->GetEstimator(iEst)->GetName()<<", fit range "<<lMaxEst[iEst][iRun]<<endl;
             profdata[ iRun ][ iEst ] = l2dTrackletVsEstimatorData[iRun][iEst]->ProfileY(Form("profdata_%i_%s",lRunNumbers[iRun],fSelection->GetEstimator(iEst)->GetName() ) ) ;
             profmc[ iRun ][ iEst ] = l2dTrackletVsEstimatorMC[iRun][iEst]->ProfileY(Form("profmc_%i_%s",lRunNumbers[iRun],fSelection->GetEstimator(iEst)->GetName() ) ) ;
             fitdata[iRun][iEst] = new TF1(Form("fitdata_%i_%s",lRunNumbers[iRun],fSelection->GetEstimator(iEst)->GetName() ), fFormula.Data(), lLowestX, lMaxEst[iEst][iRun]);
             fitmc[iRun][iEst] = new TF1(Form("fitmc_%i_%s",lRunNumbers[iRun],fSelection->GetEstimator(iEst)->GetName() ), fFormula.Data(), lLowestX, lMaxEst[iEst][iRun]);
-            
+
             //Adjust range if needed
             //fitdata[iRun][iEst] -> SetRange(0,15000);
             //fitmc  [iRun][iEst] -> SetRange(0,15000);
-            
+
             //Initial guess: y = a (x-b)^2 + c
             //has to be such that
             //
             // || 0 = c
             // || Y = a(X-b)^2
-            
+
             //Die hard fitting
             //TVirtualFitter::SetMaxIterations(1000000);
-            
+
             //Guess initial parameters more wisely: linear approximation, please
-            
+
             Double_t lIncline   = 1e-3;
             Double_t lInclineMC = 1e-3;
-            
+
             if( TMath::Abs(lAvEst[iEst][iRun])>1e-3 ){
                 lIncline   = profdata[iRun][iEst]->GetBinContent( profdata[iRun][iEst]->FindBin(lAvEst[iEst][iRun]) ) / lAvEst[iEst][iRun];
                 lInclineMC = profmc  [iRun][iEst]->GetBinContent( profmc  [iRun][iEst]->FindBin(lAvEst[iEst][iRun]) ) / lAvEst[iEst][iRun];
             }
-            
+
             fitdata[iRun][iEst]->SetParameter(0,lIncline);
             fitmc[iRun][iEst]->SetParameter(0,lIncline);
             //fitdata[iRun][iEst]->SetParameter(1,lMaxEst[iEst][iRun]*5);
             //fitmc[iRun][iEst]->SetParameter(1,lMaxEst[iEst][iRun]*5);
             //fitdata[iRun][iEst]->SetParameter(2,0.0);
             //fitmc[iRun][iEst]->SetParameter(2,0.0);
-            
+
             //remember to not be silly...
             TString lEstName = fSelection->GetEstimator(iEst)->GetName();
             if( !lEstName.Contains("SPD") &&
@@ -660,14 +630,14 @@ Bool_t AliMultSelectionCalibratorMC::Calibrate() {
             }
         }
     }
-    
+
     for(Int_t iRun=0; iRun<lNRuns; iRun++) {
         cout<<"Run Report: "<<lRunNumbers[iRun]<<" ("<<iRun<<"/"<<lNRuns<<"): "<<endl;
         for(Int_t iEst=0; iEst<lNEstimators; iEst++) {
             cout<<"Estimator: "<<fSelection->GetEstimator(iEst)->GetName()<<" Data: "<<fitdata[iRun][iEst]->GetParameter(0)<<" MC: "<<fitmc[iRun][iEst]->GetParameter(0)<<endl;
         }
     }
-    
+
     //Create Histograms for storing scaling factors ...
     TH1F *hScaleFactor[lNEstimators];
     Float_t lScaleFactors     [lNEstimators][lNRuns];
@@ -684,22 +654,22 @@ Bool_t AliMultSelectionCalibratorMC::Calibrate() {
                     Float_t lkBerr = fitdata[iRun][iEst]->GetParError(0);
                     Float_t lkA = fitmc[iRun][iEst]->GetParameter(0);
                     Float_t lkB = fitdata[iRun][iEst]->GetParameter(0);
-                    
+
                     //Central value
                     lScaleFactors[iEst][iRun] = lkA / lkB;
-                    
+
                     //Standard Error Propagation
                     Float_t errorfromtop = lkAerr*lkAerr / (lkB*lkB) ;
                     Float_t errorfrombottom = ((lkA*lkA)/(lkB*lkB*lkB*lkB)) * lkBerr * lkBerr;
                     lScaleFactorsError[iEst][iRun] = TMath::Sqrt( errorfromtop + errorfrombottom );
-                    
+
                 }
             }
             hScaleFactor[iEst]->SetBinContent(iRun+1, lScaleFactors[iEst][iRun]);
             hScaleFactor[iEst]->SetBinError(iRun+1, lScaleFactorsError[iEst][iRun]);
         }
     }
-    
+
     cout<<"Write output..."<<endl;
 
     for(Int_t iRun=0; iRun<lNRuns; iRun++) {
@@ -716,25 +686,25 @@ Bool_t AliMultSelectionCalibratorMC::Calibrate() {
             fitmc[iRun][iEst]->Write();
         }
     }
-    
+
     cout<<"Write Debug file..."<<endl;
     fOutputDebug->Write();
     fOutputDebug->Close();
-    
-    //Save scaling factors as pre-pend to estimator evaluation for the OADB!
-    
-    //Create Stuff
-    TFile * f = new TFile (fOutputFileName.Data(), "recreate");
-    AliOADBContainer * oadbContMSout = new AliOADBContainer("MultSel");
-    
-    AliOADBMultSelection * oadbMultSelectionout = 0x0;
-    AliMultSelectionCuts * cuts              = 0x0;
-    AliMultSelection     * fsels             = 0x0;
 
-    AliOADBMultSelection * oadbMultSelectionoutdef = 0x0;
-    AliMultSelectionCuts * cutsdef              = 0x0;
-    AliMultSelection     * fselsdef             = 0x0;
-    
+    //Save scaling factors as pre-pend to estimator evaluation for the OADB!
+
+    //Create Stuff
+    TFile *f = TFile::Open(fOutputFileName.Data(), "recreate");
+    AliOADBContainer * oadbContMSout = new AliOADBContainer("MultSel");
+
+    AliOADBMultSelection * oadbMultSelectionout = nullptr;
+    AliMultSelectionCuts * cuts              = nullptr;
+    AliMultSelection     * fsels             = nullptr;
+
+    AliOADBMultSelection * oadbMultSelectionoutdef = nullptr;
+    AliMultSelectionCuts * cutsdef              = nullptr;
+    AliMultSelection     * fselsdef             = nullptr;
+
     //Default Stuff
     TH1F * hDummy[lNEstimators];
     for ( Int_t iEst=0; iEst<lNEstimators; iEst++) {
@@ -744,7 +714,7 @@ Bool_t AliMultSelectionCalibratorMC::Calibrate() {
 
     //Actual Calibration Histograms
     TH1F * hCalibData[lNEstimators];
-    
+
     //Loop over existing runs and write objects as needed
     for(Int_t iRun=0; iRun<lNRuns; iRun++) {
         cout<<"Processing run number "<<lRunNumbers[iRun]<<endl;
@@ -753,7 +723,7 @@ Bool_t AliMultSelectionCalibratorMC::Calibrate() {
             cuts              = new AliMultSelectionCuts();
             cuts = fMultSelectionCuts;
             fsels             = new AliMultSelection( fSelection );
-            
+
             //Write in scaling factors!
             TString lTempDef;
             for(Int_t iEst=0; iEst<lNEstimators; iEst++){
@@ -762,7 +732,7 @@ Bool_t AliMultSelectionCalibratorMC::Calibrate() {
                 lTempDef.ReplaceAll("fZncFired", "1");
                 lTempDef.ReplaceAll("fZpaFired", "1");
                 lTempDef.ReplaceAll("fZpcFired", "1");
-                
+
                 //Construction of estimator re-definition
                 if(!fkUseQuadraticMapping){
                     lTempDef.Prepend(Form("%.10f*(",lScaleFactors[iEst][iRun] ));
@@ -785,13 +755,13 @@ Bool_t AliMultSelectionCalibratorMC::Calibrate() {
                 }
                 fsels->GetEstimator( iEst )->SetDefinition ( lTempDef.Data() );
             }
-            
+
             oadbMultSelectionout->SetEventCuts    (cuts );
             oadbMultSelectionout->SetMultSelection(fsels);
             for ( Int_t iEst=0; iEst<lNEstimators; iEst++) {
                 //Average values
                 fsels->GetEstimator(iEst)->SetMean( lAvEst[iEst][iRun] );
-                
+
                 //Protect from crashes in the general case
                 hCalibData[iEst] = (TH1F*) hDummy[iEst]->Clone(Form("hCalib_%s",fSelection->GetEstimator(iEst)->GetName()) );
                 oadbMultSelectionout->AddCalibHisto( hCalibData[iEst]);
@@ -803,7 +773,7 @@ Bool_t AliMultSelectionCalibratorMC::Calibrate() {
             cuts->Print();
             cout<<"=================================================================================="<<endl;
             oadbContMSout->AppendObject(oadbMultSelectionout, lRunNumbers[iRun] ,lRunNumbers[iRun] );
-            
+
             //Check if this corresponds to the reference run !
             Bool_t lThisIsReference = kFALSE;
             if( lRunNumbers[iRun] == fRunToUseAsDefault ) lThisIsReference = kTRUE;
@@ -815,29 +785,29 @@ Bool_t AliMultSelectionCalibratorMC::Calibrate() {
                 cutsdef              = new AliMultSelectionCuts();
                 cutsdef = fMultSelectionCuts;
                 fselsdef             = new AliMultSelection( fSelection );
-                
+
                 //Write in scaling factors!
                 TString lTempDef;
                 for(Int_t iEst=0; iEst<lNEstimators; iEst++){
                     lTempDef = fselsdef->GetEstimator( iEst )->GetDefinition();
                     lTempDef.Prepend(Form("%.10f*(",lScaleFactors[iEst][iRun] ));
                     lTempDef.Append(")"); //don't forget parentheses...
-                    
+
                     //if ZxxFired included in the estimator, ignore it
                     lTempDef.ReplaceAll("fZnaFired", "1");
                     lTempDef.ReplaceAll("fZncFired", "1");
                     lTempDef.ReplaceAll("fZpaFired", "1");
                     lTempDef.ReplaceAll("fZpcFired", "1");
-                    
+
                     fselsdef->GetEstimator( iEst )->SetDefinition ( lTempDef.Data() );
                 }
-                
+
                 oadbMultSelectionoutdef->SetEventCuts    (cutsdef );
                 oadbMultSelectionoutdef->SetMultSelection(fselsdef);
                 for ( Int_t iEst=0; iEst<lNEstimators; iEst++) {
                     //Average values
                     fselsdef->GetEstimator(iEst)->SetMean( lAvEst[iEst][iRun] );
-                    
+
                     //Protect from crashes in the general case
                     //hCalibData[iEst] = (TH1F*) hDummy[iEst]->Clone(Form("hCalib_%s",fselsdef->GetEstimator(iEst)->GetName()) );
                     oadbMultSelectionoutdef->AddCalibHisto( hDummy[iEst]);
@@ -848,7 +818,7 @@ Bool_t AliMultSelectionCalibratorMC::Calibrate() {
                 cout<<" AliMultSelection Object to be saved (DEFAULT)"<<endl;
                 fselsdef->PrintInfo();
                 cout<<"=================================================================================="<<endl;
-                
+
                 //for ( Int_t iEst=0; iEst<lNEstimators; iEst++) oadbMultSelectionoutdef->AddCalibHisto( hDummy[iEst] );
                 oadbContMSout->AddDefaultObject(oadbMultSelectionoutdef);
                 //DEFAULT OADB Object saving procedure ENDS here
@@ -861,11 +831,11 @@ Bool_t AliMultSelectionCalibratorMC::Calibrate() {
     cout<<"Write OADB..."<<endl;
     //pre-write dump
     //fsels->PrintInfo();
-    
+
     oadbContMSout->Write();
     f->Write();
     f->Close();
-    
+
     cout<<" Done!"<<endl;
     return kTRUE;
 }
@@ -883,7 +853,7 @@ void AliMultSelectionCalibratorMC::SetupStandardInput() {
     //============================================================
     // --- Definition of Variables for estimators ---
     //============================================================
-    
+
     //Create input variables in AliMultInput Class
     //V0 related
     AliMultVariable *fAmplitude_V0A         = new AliMultVariable("fAmplitude_V0A");
@@ -912,14 +882,14 @@ void AliMultSelectionCalibratorMC::SetupStandardInput() {
     //AD Related
     AliMultVariable *fMultiplicity_ADA     = new AliMultVariable("fMultiplicity_ADA");
     AliMultVariable *fMultiplicity_ADC     = new AliMultVariable("fMultiplicity_ADC");
-    
+
     AliMultVariable *fRefMultEta5     = new AliMultVariable("fRefMultEta5");
     fRefMultEta5->SetIsInteger( kTRUE );
     AliMultVariable *fRefMultEta8     = new AliMultVariable("fRefMultEta8");
     fRefMultEta8->SetIsInteger( kTRUE );
     AliMultVariable *fnTracklets     = new AliMultVariable("fnTracklets");
     fnTracklets->SetIsInteger( kTRUE );
-    
+
     //ZDC Related
     AliMultVariable *fZncEnergy = new AliMultVariable("fZncEnergy");
     AliMultVariable *fZpcEnergy = new AliMultVariable("fZpcEnergy");
@@ -927,12 +897,12 @@ void AliMultSelectionCalibratorMC::SetupStandardInput() {
     AliMultVariable *fZpaEnergy = new AliMultVariable("fZpaEnergy");
     AliMultVariable *fZem1Energy = new AliMultVariable("fZem1Energy");
     AliMultVariable *fZem2Energy = new AliMultVariable("fZem2Energy");
-    
+
     AliMultVariable *fZnaTower = new AliMultVariable("fZnaTower");
     AliMultVariable *fZncTower = new AliMultVariable("fZncTower");
     AliMultVariable *fZpaTower = new AliMultVariable("fZpaTower");
     AliMultVariable *fZpcTower = new AliMultVariable("fZpcTower");
-    
+
     //Fired or not booleans (stored as integer for compatibility)
     AliMultVariable *fZnaFired = new AliMultVariable("fZnaFired");
     fZnaFired->SetIsInteger(kTRUE);
@@ -942,10 +912,10 @@ void AliMultSelectionCalibratorMC::SetupStandardInput() {
     fZpaFired->SetIsInteger(kTRUE);
     AliMultVariable *fZpcFired = new AliMultVariable("fZpcFired");
     fZpcFired->SetIsInteger(kTRUE);
-    
+
     //vertex-Z
     AliMultVariable *fEvSel_VtxZ = new AliMultVariable("fEvSel_VtxZ");
-    
+
     //Add to AliMultInput Object
     fInput->AddVariable( fAmplitude_V0A );
     fInput->AddVariable( fAmplitude_V0A1 );
@@ -987,5 +957,5 @@ void AliMultSelectionCalibratorMC::SetupStandardInput() {
     fInput->AddVariable( fRefMultEta8  );
     fInput->AddVariable( fEvSel_VtxZ  );
     //============================================================
-    
+
 }
