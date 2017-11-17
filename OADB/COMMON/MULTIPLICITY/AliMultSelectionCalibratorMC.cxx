@@ -271,8 +271,8 @@ Bool_t AliMultSelectionCalibratorMC::Calibrate() {
     }
 
     //Add Timer
-    TStopwatch* timer = new TStopwatch();
-    timer->Start ( kTRUE );
+    TStopwatch timer;
+    timer.Start ( kTRUE );
 
     //Compute events-per-hour performance metric
     Double_t lEventsPerSecond = 0;
@@ -289,13 +289,13 @@ Bool_t AliMultSelectionCalibratorMC::Calibrate() {
         if ( iEv % 100000 == 0 ) {
             Double_t complete = 100. * ( double ) ( iEv ) / ( double ) ( fTree->GetEntries() );
             cout << "(Data Loop 1) Event # " << iEv << "/" << fTree->GetEntries() << " (" << complete << "%, Time Left: ";
-            timer->Stop();
-            Double_t time = timer->RealTime();
+            timer.Stop();
+            Double_t time = timer.RealTime();
 
             //events per hour:
             lEventsPerSecond = ( ( Double_t ) ( iEv ) ) /time;
 
-            timer->Start ( kFALSE );
+            timer.Start ( kFALSE );
             Double_t secondsperstep = time / ( Double_t ) ( iEv+1 );
             Double_t secondsleft = ( Double_t ) ( fTree->GetEntries()-iEv-1 ) * secondsperstep;
             Long_t minutesleft = ( Long_t ) ( secondsleft / 60. );
@@ -355,21 +355,21 @@ Bool_t AliMultSelectionCalibratorMC::Calibrate() {
     //==============================================================================
 
     //Stop, reset Timer
-    timer->Stop();
-    timer->Start(kTRUE);
+    timer.Stop();
+    timer.Start(kTRUE);
 
     for(Long64_t iEv = 0; iEv<fTreeMC->GetEntries(); iEv++) {
 
         if ( iEv % 100000 == 0 ) {
             Double_t complete = 100. * ( double ) ( iEv ) / ( double ) ( fTreeMC->GetEntries() );
             cout << "(MC Loop 1) Event # " << iEv << "/" << fTreeMC->GetEntries() << " (" << complete << "%, Time Left: ";
-            timer->Stop();
-            Double_t time = timer->RealTime();
+            timer.Stop();
+            Double_t time = timer.RealTime();
 
             //events per hour:
             lEventsPerSecond = ( ( Double_t ) ( iEv ) ) /time;
 
-            timer->Start ( kFALSE );
+            timer.Start ( kFALSE );
             Double_t secondsperstep = time / ( Double_t ) ( iEv+1 );
             Double_t secondsleft = ( Double_t ) ( fTreeMC->GetEntries()-iEv-1 ) * secondsperstep;
             Long_t minutesleft = ( Long_t ) ( secondsleft / 60. );
