@@ -269,7 +269,6 @@ bool AliAnalysisTaskEmcalJetSubstructureTree::Run(){
 
       if(mcjets) {
         if(!associatedJet) continue;
-        taglist.insert(associatedJet);
         try {
           DoConstituentQA(jet, tracks, clusters);
           AliJetSubstructureData structureData =  MakeJetSubstructure(*jet, datajets->GetJetRadius() * 2., tracks, clusters, {softdropSettings, nsubjettinessSettings}),
@@ -296,28 +295,26 @@ bool AliAnalysisTaskEmcalJetSubstructureTree::Run(){
         }
       }
     }
-  }
-
-  if(mcjets) {
-	  // process non-matched true jets
-    // - for efficiency studies
-    // - for MCgen train (taglist will be empty in this case)
-    AliDebugStream(1) << "In MC pure jet branch: found " << mcjets->GetNJets() << " jets, " << mcjets->GetNAcceptedJets() << " were accepted\n";
-    for(auto j : mcjets->accepted()){
-      AliEmcalJet *mcjet = static_cast<AliEmcalJet *>(j);
-      if(taglist.find(mcjet) != taglist.end()) continue;
-      try {
-        AliJetSubstructureData structure = MakeJetSubstructure(*mcjet, mcjets->GetJetRadius() * 2., particles, nullptr,{softdropSettings, nsubjettinessSettings});
-        Double_t angularity[2] = {0., MakeAngularity(*mcjet, particles, nullptr)},
-                 ptd[2] = {0., MakePtD(*mcjet, particles, nullptr)};
-        FillTree(mcjets->GetJetRadius(), weight, nullptr, mcjet, nullptr, &(structure.fSoftDrop), nullptr, &(structure.fNsubjettiness), angularity, ptd, rhoparameters);
-      } catch (ReclusterizerException &e) {
-        AliErrorStream() << "Error in reclusterization - skipping jet" << std::endl;
-      } catch (SubstructureException &e) {
-        AliErrorStream() << "Error in substructure observable - skipping jet" << std::endl;
+  } else {
+    if(mcjets) {
+      // for MCgen train
+      AliDebugStream(1) << "In MC pure jet branch: found " << mcjets->GetNJets() << " jets, " << mcjets->GetNAcceptedJets() << " were accepted\n";
+      for(auto j : mcjets->accepted()){
+        AliEmcalJet *mcjet = static_cast<AliEmcalJet *>(j);
+        try {
+          AliJetSubstructureData structure = MakeJetSubstructure(*mcjet, mcjets->GetJetRadius() * 2., particles, nullptr,{softdropSettings, nsubjettinessSettings});
+          Double_t angularity[2] = {0., MakeAngularity(*mcjet, particles, nullptr)},
+                   ptd[2] = {0., MakePtD(*mcjet, particles, nullptr)};
+          FillTree(mcjets->GetJetRadius(), weight, nullptr, mcjet, nullptr, &(structure.fSoftDrop), nullptr, &(structure.fNsubjettiness), angularity, ptd, rhoparameters);
+        } catch (ReclusterizerException &e) {
+          AliErrorStream() << "Error in reclusterization - skipping jet" << std::endl;
+        } catch (SubstructureException &e) {
+          AliErrorStream() << "Error in substructure observable - skipping jet" << std::endl;
+        }
       }
     }
   }
+
 
   return true;
 }
