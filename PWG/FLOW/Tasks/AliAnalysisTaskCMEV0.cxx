@@ -216,6 +216,12 @@ AliAnalysisTaskCMEV0::AliAnalysisTaskCMEV0(const TString name):AliAnalysisTaskSE
     fHCos2nDWNegChEtaVz[i] = NULL;
     fHSin2nDWNegChEtaVz[i] = NULL;
   }
+  for(int i=0;i<2;i++){
+    fHist_NonIso_SP_PP_Mag0[i] = NULL;
+    fHist_NonIso_SP_NN_Mag0[i] = NULL;
+    fHist_NonIso_SP_PP_Mag1[i] = NULL;
+    fHist_NonIso_SP_NN_Mag1[i] = NULL;
+  }
 
 
 
@@ -393,6 +399,12 @@ AliAnalysisTaskCMEV0::AliAnalysisTaskCMEV0(): AliAnalysisTaskSE(),
     fHSin2nDWPosChEtaVz[i] = NULL;
     fHCos2nDWNegChEtaVz[i] = NULL;
     fHSin2nDWNegChEtaVz[i] = NULL;
+  }
+  for(int i=0;i<2;i++){
+    fHist_NonIso_SP_PP_Mag0[i] = NULL;
+    fHist_NonIso_SP_NN_Mag0[i] = NULL;
+    fHist_NonIso_SP_PP_Mag1[i] = NULL;
+    fHist_NonIso_SP_NN_Mag1[i] = NULL;
   }
 
 
@@ -739,6 +751,8 @@ void AliAnalysisTaskCMEV0::UserExec(Option_t *)
  //Multiplicity of POIs:
  Double_t MPOIpos = 0;
  Double_t MPOIneg = 0;
+ Double_t McorrPos = 0.;
+ Double_t McorrNeg = 0.;
 
  //TPC Event plane Qvectors:
  Double_t QxTPC[2] = {0.,};
@@ -958,6 +972,7 @@ void AliAnalysisTaskCMEV0::UserExec(Option_t *)
      QxAutoPos[0] += (ptw1*ptw1*w1NUA*w1NUA*TMath::Cos(2.*n*dPhi1) - AvgDWCos2n);
      QyAutoPos[0] += (ptw1*ptw1*w1NUA*w1NUA*TMath::Sin(2.*n*dPhi1) - AvgDWSin2n);
      MPOIpos += w1NUA*ptw1;
+     McorrPos += w1NUA*ptw1*w1NUA*ptw1;
      //QA: eta dependence
      if(EvtCent>=10 && EvtCent<20){
        QxPosQAEta[iEtaQA] +=  (ptw1*w1NUA*TMath::Cos(n*dPhi1) - AvgCos1n);
@@ -973,6 +988,7 @@ void AliAnalysisTaskCMEV0::UserExec(Option_t *)
      QxAutoNeg[0] += (ptw1*ptw1*w1NUA*w1NUA*TMath::Cos(2.*n*dPhi1) - AvgDWCos2n);
      QyAutoNeg[0] += (ptw1*ptw1*w1NUA*w1NUA*TMath::Sin(2.*n*dPhi1) - AvgDWSin2n);
      MPOIneg += w1NUA*ptw1;
+     McorrNeg += w1NUA*ptw1*w1NUA*ptw1;
      //QA: eta dependence
      if(EvtCent>=10 && EvtCent<20){
        QxNegQAEta[iEtaQA] +=  (ptw1*TMath::Cos(n*dPhi1) - AvgCos1n);
@@ -1147,12 +1163,108 @@ void AliAnalysisTaskCMEV0::UserExec(Option_t *)
  if(uPM > 1 && uNM > 1) {
    //CME w.r.t V0A EP:
    TwoQpQnV = ((uPRe*uNRe-uPIm*uNIm)*QxanCor + (uPRe*uNIm+uPIm*uNRe)*QyanCor) / (uPM*uNM) ;
-   TwoQpQpV = ((uPRe*uPRe-uPIm*uPIm-uP2Re)*QxanCor + (2.*uPRe*uPIm-uP2Im)*QyanCor) / (uPM*(uPM-1.)) ;
-   TwoQnQnV = ((uNRe*uNRe-uNIm*uNIm-uN2Re)*QxanCor + (2.*uNRe*uNIm-uN2Im)*QyanCor) / (uNM*(uNM-1.)) ;
+   TwoQpQpV = ((uPRe*uPRe-uPIm*uPIm-uP2Re)*QxanCor + (2.*uPRe*uPIm-uP2Im)*QyanCor) / (uPM*uPM-McorrPos) ;
+   TwoQnQnV = ((uNRe*uNRe-uNIm*uNIm-uN2Re)*QxanCor + (2.*uNRe*uNIm-uN2Im)*QyanCor) / (uNM*uNM-McorrNeg) ;
    //Fill profiles:
    fHist_Corr3p_SP_Norm_PN[QAindex][0]->Fill(EvtCent, TwoQpQnV, uPM*uNM);
-   fHist_Corr3p_SP_Norm_PP[QAindex][0]->Fill(EvtCent, TwoQpQpV, (uPM*(uPM-1.)));
-   fHist_Corr3p_SP_Norm_NN[QAindex][0]->Fill(EvtCent, TwoQnQnV, (uNM*(uNM-1.)));
+   fHist_Corr3p_SP_Norm_PP[QAindex][0]->Fill(EvtCent, TwoQpQpV, (uPM*uPM-McorrPos));
+   fHist_Corr3p_SP_Norm_NN[QAindex][0]->Fill(EvtCent, TwoQnQnV, (uNM*uNM-McorrNeg));
+
+  //-------- Fill NonIsotropic terms ------
+
+   Double_t QnNonIsoRe = 0.,QnNonIsoIm=0.;
+
+   if(QAindex==0){ //B < 0
+    //charge pos:
+     fHist_NonIso_SP_PP_Mag0[0]->Fill(EvtCent, 0.5,uPRe/uPM,uPM);  //<Cos(nPhi)> ChPos
+     fHist_NonIso_SP_PP_Mag0[0]->Fill(EvtCent, 1.5,uPIm/uPM,uPM);  //<Sin(nPhi)> ChPos
+
+     QnNonIsoRe = (uPRe*QxanCor + uPIm*QyanCor)/uPM;
+     QnNonIsoIm = (uPIm*QxanCor - uPRe*QyanCor)/uPM; 
+     fHist_NonIso_SP_PP_Mag0[0]->Fill(EvtCent, 2.5,QnNonIsoRe,uPM);  //<Cos(nPhi-mPsi)> ChPos
+     fHist_NonIso_SP_PP_Mag0[0]->Fill(EvtCent, 3.5,QnNonIsoIm,uPM);  //<Sin(nPhi-mPsi)> ChPos
+
+     QnNonIsoRe = (uPRe*uPRe-uPIm*uPIm-uP2Re)/(uPM*uPM-McorrPos); 
+     QnNonIsoIm = (2.*uPRe*uPIm-uP2Im)/(uPM*uPM-McorrPos);
+     fHist_NonIso_SP_PP_Mag0[0]->Fill(EvtCent, 4.5,QnNonIsoRe,(uPM*uPM-McorrPos)); //<Cos(nPhi1+nPhi2)> ChPos
+     fHist_NonIso_SP_PP_Mag0[0]->Fill(EvtCent, 5.5,QnNonIsoIm,(uPM*uPM-McorrPos)); //<Sin(nPhi1+nPhi2)> ChPos
+
+     QnNonIsoRe = (uPRe*uNRe-uPIm*uNIm)/(uPM*uNM);
+     QnNonIsoIm = (uPRe*uNIm+uPIm*uNRe)/(uPM*uNM);
+     fHist_NonIso_SP_PP_Mag0[0]->Fill(EvtCent, 6.5,QnNonIsoRe,(uPM*uNM)); //<Cos(nPhi1+nPhi2)> phi1,phi2 opposite charge
+     fHist_NonIso_SP_PP_Mag0[0]->Fill(EvtCent, 7.5,QnNonIsoIm,(uPM*uNM)); //<Sin(nPhi1+nPhi2)> phi1,phi2 opposite charge
+
+     fHist_NonIso_SP_PP_Mag0[0]->Fill(EvtCent, 8.5,QxanCor,uPM); //<Cos(mPsiEP)> 
+     fHist_NonIso_SP_PP_Mag0[0]->Fill(EvtCent, 9.5,QyanCor,uPM); //<Sin(mPsiEP)>
+
+     //charge neg:
+     fHist_NonIso_SP_NN_Mag0[0]->Fill(EvtCent, 0.5,uNRe/uNM,uNM);  //<Cos(nPhi)> ChNeg
+     fHist_NonIso_SP_NN_Mag0[0]->Fill(EvtCent, 1.5,uNIm/uNM,uNM);  //<Sin(nPhi)> ChNeg
+
+     QnNonIsoRe = (uNRe*QxanCor + uNIm*QyanCor)/uNM;
+     QnNonIsoIm = (uNIm*QxanCor - uNRe*QyanCor)/uNM; 
+     fHist_NonIso_SP_NN_Mag0[0]->Fill(EvtCent, 2.5,QnNonIsoRe,uNM); //<Cos(nPhi-mPsi)> ChNeg
+     fHist_NonIso_SP_NN_Mag0[0]->Fill(EvtCent, 3.5,QnNonIsoIm,uNM); //<Cos(nPhi-mPsi)> ChNeg
+
+     QnNonIsoRe = (uNRe*uNRe-uNIm*uNIm-uN2Re)/(uNM*uNM-McorrNeg); 
+     QnNonIsoIm = (2.*uNRe*uNIm-uN2Im)/(uNM*uNM-McorrNeg);
+     fHist_NonIso_SP_NN_Mag0[0]->Fill(EvtCent, 4.5,QnNonIsoRe,(uNM*uNM-McorrNeg)); //<Cos(nPhi1+nPhi2)> ChNeg
+     fHist_NonIso_SP_NN_Mag0[0]->Fill(EvtCent, 5.5,QnNonIsoIm,(uNM*uNM-McorrNeg)); //<Sin(nPhi1+nPhi2)> ChNeg
+
+     QnNonIsoRe = (uPRe*uNRe-uPIm*uNIm)/(uPM*uNM);
+     QnNonIsoIm = (uPRe*uNIm+uPIm*uNRe)/(uPM*uNM);
+     fHist_NonIso_SP_NN_Mag0[0]->Fill(EvtCent, 6.5,QnNonIsoRe,(uPM*uNM)); //<Cos(nPhi1+nPhi2)> phi1,phi2 opposite charge
+     fHist_NonIso_SP_NN_Mag0[0]->Fill(EvtCent, 7.5,QnNonIsoIm,(uPM*uNM)); //<Sin(nPhi1+nPhi2)> phi1,phi2 opposite charge
+
+     fHist_NonIso_SP_NN_Mag0[0]->Fill(EvtCent, 8.5,QxanCor,uNM); //<Cos(mPsiEP)> 
+     fHist_NonIso_SP_NN_Mag0[0]->Fill(EvtCent, 9.5,QyanCor,uNM); //<Sin(mPsiEP)>
+   }
+   else if(QAindex==1){ //B > 0
+    //charge pos:
+     fHist_NonIso_SP_PP_Mag1[0]->Fill(EvtCent, 0.5,uPRe/uPM,uPM);  //<Cos(nPhi)> ChPos
+     fHist_NonIso_SP_PP_Mag1[0]->Fill(EvtCent, 1.5,uPIm/uPM,uPM);  //<Sin(nPhi)> ChPos
+
+     QnNonIsoRe = (uPRe*QxanCor + uPIm*QyanCor)/uPM;
+     QnNonIsoIm = (uPIm*QxanCor - uPRe*QyanCor)/uPM; 
+     fHist_NonIso_SP_PP_Mag1[0]->Fill(EvtCent, 2.5,QnNonIsoRe,uPM);  //<Cos(nPhi-mPsi)> ChPos
+     fHist_NonIso_SP_PP_Mag1[0]->Fill(EvtCent, 3.5,QnNonIsoIm,uPM);  //<Sin(nPhi-mPsi)> ChPos
+
+     QnNonIsoRe = (uPRe*uPRe-uPIm*uPIm-uP2Re)/(uPM*uPM-McorrPos); 
+     QnNonIsoIm = (2.*uPRe*uPIm-uP2Im)/(uPM*uPM-McorrPos);
+     fHist_NonIso_SP_PP_Mag1[0]->Fill(EvtCent, 4.5,QnNonIsoRe,(uPM*uPM-McorrPos)); //<Cos(nPhi1+nPhi2)> ChPos
+     fHist_NonIso_SP_PP_Mag1[0]->Fill(EvtCent, 5.5,QnNonIsoIm,(uPM*uPM-McorrPos)); //<Sin(nPhi1+nPhi2)> ChPos
+
+     QnNonIsoRe = (uPRe*uNRe-uPIm*uNIm)/(uPM*uNM);
+     QnNonIsoIm = (uPRe*uNIm+uPIm*uNRe)/(uPM*uNM);
+     fHist_NonIso_SP_PP_Mag1[0]->Fill(EvtCent, 6.5,QnNonIsoRe,(uPM*uNM)); //<Cos(nPhi1+nPhi2)> phi1,phi2 opposite charge
+     fHist_NonIso_SP_PP_Mag1[0]->Fill(EvtCent, 7.5,QnNonIsoIm,(uPM*uNM)); //<Sin(nPhi1+nPhi2)> phi1,phi2 opposite charge
+
+     fHist_NonIso_SP_PP_Mag1[0]->Fill(EvtCent, 8.5,QxanCor,uPM); //<Cos(mPsiEP)> 
+     fHist_NonIso_SP_PP_Mag1[0]->Fill(EvtCent, 9.5,QyanCor,uPM); //<Sin(mPsiEP)>
+
+     //charge neg:
+     fHist_NonIso_SP_NN_Mag1[0]->Fill(EvtCent, 0.5,uNRe/uNM,uNM);  //<Cos(nPhi)> ChNeg
+     fHist_NonIso_SP_NN_Mag1[0]->Fill(EvtCent, 1.5,uNIm/uNM,uNM);  //<Sin(nPhi)> ChNeg
+
+     QnNonIsoRe = (uNRe*QxanCor + uNIm*QyanCor)/uNM;
+     QnNonIsoIm = (uNIm*QxanCor - uNRe*QyanCor)/uNM; 
+     fHist_NonIso_SP_NN_Mag1[0]->Fill(EvtCent, 2.5,QnNonIsoRe,uNM); //<Cos(nPhi-mPsi)> ChNeg
+     fHist_NonIso_SP_NN_Mag1[0]->Fill(EvtCent, 3.5,QnNonIsoIm,uNM); //<Cos(nPhi-mPsi)> ChNeg
+
+     QnNonIsoRe = (uNRe*uNRe-uNIm*uNIm-uN2Re)/(uNM*uNM-McorrNeg); 
+     QnNonIsoIm = (2.*uNRe*uNIm-uN2Im)/(uNM*uNM-McorrNeg);
+     fHist_NonIso_SP_NN_Mag1[0]->Fill(EvtCent, 4.5,QnNonIsoRe,(uNM*uNM-McorrNeg)); //<Cos(nPhi1+nPhi2)> ChNeg
+     fHist_NonIso_SP_NN_Mag1[0]->Fill(EvtCent, 5.5,QnNonIsoIm,(uNM*uNM-McorrNeg)); //<Sin(nPhi1+nPhi2)> ChNeg
+
+     QnNonIsoRe = (uPRe*uNRe-uPIm*uNIm)/(uPM*uNM);
+     QnNonIsoIm = (uPRe*uNIm+uPIm*uNRe)/(uPM*uNM);
+     fHist_NonIso_SP_NN_Mag1[0]->Fill(EvtCent, 6.5,QnNonIsoRe,(uPM*uNM)); //<Cos(nPhi1+nPhi2)> phi1,phi2 opposite charge
+     fHist_NonIso_SP_NN_Mag1[0]->Fill(EvtCent, 7.5,QnNonIsoIm,(uPM*uNM)); //<Sin(nPhi1+nPhi2)> phi1,phi2 opposite charge
+
+     fHist_NonIso_SP_NN_Mag1[0]->Fill(EvtCent, 8.5,QxanCor,uNM); //<Cos(mPsiEP)> 
+     fHist_NonIso_SP_NN_Mag1[0]->Fill(EvtCent, 9.5,QyanCor,uNM); //<Sin(mPsiEP)>
+   }
+
 
    //-------- CME - ZDN correlators:---------
    fHist_Corr3p_ZDN_SP_PN[0]->Fill(EvtCent,  0., TwoQpQnV, uPM*uNM);
@@ -1169,33 +1281,33 @@ void AliAnalysisTaskCMEV0::UserExec(Option_t *)
    fHist_Corr3p_ZDN_SP_PN[0]->Fill(EvtCent, 11., TwoQpQnV*energyZNC, uPM*uNM);
    fHist_Corr3p_ZDN_SP_PN[0]->Fill(EvtCent, 12., TwoQpQnV*(energyZNC+energyZNA), uPM*uNM);
 
-   fHist_Corr3p_ZDN_SP_PP[0]->Fill(EvtCent,  0., TwoQpQpV, (uPM*(uPM-1.)));
+   fHist_Corr3p_ZDN_SP_PP[0]->Fill(EvtCent,  0., TwoQpQpV, (uPM*uPM-McorrPos));
    //fHist_Corr3p_ZDN_SP_PP[0]->Fill(EvtCent,  1., energyZPA, 1.);
    //fHist_Corr3p_ZDN_SP_PP[0]->Fill(EvtCent,  2., energyZPC, 1.);
    //fHist_Corr3p_ZDN_SP_PP[0]->Fill(EvtCent,  3., (energyZPA+energyZPC), 1.);
    //fHist_Corr3p_ZDN_SP_PP[0]->Fill(EvtCent,  4., energyZNA, 1.);
    //fHist_Corr3p_ZDN_SP_PP[0]->Fill(EvtCent,  5., energyZNC, 1.);
    //fHist_Corr3p_ZDN_SP_PP[0]->Fill(EvtCent,  6., (energyZNA+energyZNC), 1.);
-   fHist_Corr3p_ZDN_SP_PP[0]->Fill(EvtCent,  7., TwoQpQpV*energyZPA, (uPM*(uPM-1.)));
-   fHist_Corr3p_ZDN_SP_PP[0]->Fill(EvtCent,  8., TwoQpQpV*energyZPC, (uPM*(uPM-1.)));
-   fHist_Corr3p_ZDN_SP_PP[0]->Fill(EvtCent,  9., TwoQpQpV*(energyZPC+energyZPA), (uPM*(uPM-1.)));
-   fHist_Corr3p_ZDN_SP_PP[0]->Fill(EvtCent, 10., TwoQpQpV*energyZNA, (uPM*(uPM-1.)));
-   fHist_Corr3p_ZDN_SP_PP[0]->Fill(EvtCent, 11., TwoQpQpV*energyZNC, (uPM*(uPM-1.)));
-   fHist_Corr3p_ZDN_SP_PP[0]->Fill(EvtCent, 12., TwoQpQpV*(energyZNC+energyZNA), (uPM*(uPM-1.)));
+   fHist_Corr3p_ZDN_SP_PP[0]->Fill(EvtCent,  7., TwoQpQpV*energyZPA, (uPM*uPM-McorrPos));
+   fHist_Corr3p_ZDN_SP_PP[0]->Fill(EvtCent,  8., TwoQpQpV*energyZPC, (uPM*uPM-McorrPos));
+   fHist_Corr3p_ZDN_SP_PP[0]->Fill(EvtCent,  9., TwoQpQpV*(energyZPC+energyZPA), (uPM*uPM-McorrPos));
+   fHist_Corr3p_ZDN_SP_PP[0]->Fill(EvtCent, 10., TwoQpQpV*energyZNA, (uPM*uPM-McorrPos));
+   fHist_Corr3p_ZDN_SP_PP[0]->Fill(EvtCent, 11., TwoQpQpV*energyZNC, (uPM*uPM-McorrPos));
+   fHist_Corr3p_ZDN_SP_PP[0]->Fill(EvtCent, 12., TwoQpQpV*(energyZNC+energyZNA), (uPM*uPM-McorrPos));
 
-   fHist_Corr3p_ZDN_SP_NN[0]->Fill(EvtCent,  0., TwoQnQnV, (uNM*(uNM-1.)));
+   fHist_Corr3p_ZDN_SP_NN[0]->Fill(EvtCent,  0., TwoQnQnV, (uNM*uNM-McorrNeg));
    //fHist_Corr3p_ZDN_SP_NN[0]->Fill(EvtCent,  1., energyZPA, 1.);
    //fHist_Corr3p_ZDN_SP_NN[0]->Fill(EvtCent,  2., energyZPC, 1.);
    //fHist_Corr3p_ZDN_SP_NN[0]->Fill(EvtCent,  3., (energyZPA+energyZPC), 1.);
    //fHist_Corr3p_ZDN_SP_NN[0]->Fill(EvtCent,  4., energyZNA, 1.);
    //fHist_Corr3p_ZDN_SP_NN[0]->Fill(EvtCent,  5., energyZNC, 1.);
    //fHist_Corr3p_ZDN_SP_NN[0]->Fill(EvtCent,  6., (energyZNA+energyZNC), 1.);
-   fHist_Corr3p_ZDN_SP_NN[0]->Fill(EvtCent,  7., TwoQnQnV*energyZPA, (uNM*(uNM-1.)));
-   fHist_Corr3p_ZDN_SP_NN[0]->Fill(EvtCent,  8., TwoQnQnV*energyZPC, (uNM*(uNM-1.)));
-   fHist_Corr3p_ZDN_SP_NN[0]->Fill(EvtCent,  9., TwoQnQnV*(energyZPC+energyZPA), (uNM*(uNM-1.)));
-   fHist_Corr3p_ZDN_SP_NN[0]->Fill(EvtCent, 10., TwoQnQnV*energyZNA, (uNM*(uNM-1.)));
-   fHist_Corr3p_ZDN_SP_NN[0]->Fill(EvtCent, 11., TwoQnQnV*energyZNC, (uNM*(uNM-1.)));
-   fHist_Corr3p_ZDN_SP_NN[0]->Fill(EvtCent, 12., TwoQnQnV*(energyZNC+energyZNA), (uNM*(uNM-1.)));
+   fHist_Corr3p_ZDN_SP_NN[0]->Fill(EvtCent,  7., TwoQnQnV*energyZPA, (uNM*uNM-McorrNeg));
+   fHist_Corr3p_ZDN_SP_NN[0]->Fill(EvtCent,  8., TwoQnQnV*energyZPC, (uNM*uNM-McorrNeg));
+   fHist_Corr3p_ZDN_SP_NN[0]->Fill(EvtCent,  9., TwoQnQnV*(energyZPC+energyZPA), (uNM*uNM-McorrNeg));
+   fHist_Corr3p_ZDN_SP_NN[0]->Fill(EvtCent, 10., TwoQnQnV*energyZNA, (uNM*uNM-McorrNeg));
+   fHist_Corr3p_ZDN_SP_NN[0]->Fill(EvtCent, 11., TwoQnQnV*energyZNC, (uNM*uNM-McorrNeg));
+   fHist_Corr3p_ZDN_SP_NN[0]->Fill(EvtCent, 12., TwoQnQnV*(energyZNC+energyZNA), (uNM*uNM-McorrNeg));
    //-----------------------------------------
 
 
@@ -1204,14 +1316,106 @@ void AliAnalysisTaskCMEV0::UserExec(Option_t *)
    //CME w.r.t V0C EP:
    TwoQpQnV = 0.; TwoQpQpV = 0.; TwoQnQnV = 0.;
    TwoQpQnV = ((uPRe*uNRe-uPIm*uNIm)*QxcnCor + (uPRe*uNIm+uPIm*uNRe)*QycnCor) / (uPM*uNM) ;
-   TwoQpQpV = ((uPRe*uPRe-uPIm*uPIm-uP2Re)*QxcnCor + (2.*uPRe*uPIm-uP2Im)*QycnCor) / (uPM*(uPM-1.)) ;
-   TwoQnQnV = ((uNRe*uNRe-uNIm*uNIm-uN2Re)*QxcnCor + (2.*uNRe*uNIm-uN2Im)*QycnCor) / (uNM*(uNM-1.)) ;
+   TwoQpQpV = ((uPRe*uPRe-uPIm*uPIm-uP2Re)*QxcnCor + (2.*uPRe*uPIm-uP2Im)*QycnCor) / (uPM*uPM-McorrPos) ;
+   TwoQnQnV = ((uNRe*uNRe-uNIm*uNIm-uN2Re)*QxcnCor + (2.*uNRe*uNIm-uN2Im)*QycnCor) / (uNM*uNM-McorrNeg) ;
 
    //Fill profiles:
    fHist_Corr3p_SP_Norm_PN[QAindex][1]->Fill(EvtCent, TwoQpQnV, uPM*uNM);
-   fHist_Corr3p_SP_Norm_PP[QAindex][1]->Fill(EvtCent, TwoQpQpV, (uPM*(uPM-1.)));
-   fHist_Corr3p_SP_Norm_NN[QAindex][1]->Fill(EvtCent, TwoQnQnV, (uNM*(uNM-1.)));
+   fHist_Corr3p_SP_Norm_PP[QAindex][1]->Fill(EvtCent, TwoQpQpV, (uPM*uPM-McorrPos));
+   fHist_Corr3p_SP_Norm_NN[QAindex][1]->Fill(EvtCent, TwoQnQnV, (uNM*uNM-McorrNeg));
   
+  if(QAindex==0){ //B < 0
+    //charge pos:
+     fHist_NonIso_SP_PP_Mag0[1]->Fill(EvtCent, 0.5,uPRe/uPM,uPM);  //<Cos(nPhi)> ChPos
+     fHist_NonIso_SP_PP_Mag0[1]->Fill(EvtCent, 1.5,uPIm/uPM,uPM);  //<Sin(nPhi)> ChPos
+
+     QnNonIsoRe = (uPRe*QxcnCor + uPIm*QycnCor)/uPM;
+     QnNonIsoIm = (uPIm*QxcnCor - uPRe*QycnCor)/uPM; 
+     fHist_NonIso_SP_PP_Mag0[1]->Fill(EvtCent, 2.5,QnNonIsoRe,uPM);  //<Cos(nPhi-mPsi)> ChPos
+     fHist_NonIso_SP_PP_Mag0[1]->Fill(EvtCent, 3.5,QnNonIsoIm,uPM);  //<Sin(nPhi-mPsi)> ChPos
+
+     QnNonIsoRe = (uPRe*uPRe-uPIm*uPIm-uP2Re)/(uPM*uPM-McorrPos); 
+     QnNonIsoIm = (2.*uPRe*uPIm-uP2Im)/(uPM*uPM-McorrPos);
+     fHist_NonIso_SP_PP_Mag0[1]->Fill(EvtCent, 4.5,QnNonIsoRe,(uPM*uPM-McorrPos)); //<Cos(nPhi1+nPhi2)> ChPos
+     fHist_NonIso_SP_PP_Mag0[1]->Fill(EvtCent, 5.5,QnNonIsoIm,(uPM*uPM-McorrPos)); //<Sin(nPhi1+nPhi2)> ChPos
+
+     QnNonIsoRe = (uPRe*uNRe-uPIm*uNIm)/(uPM*uNM);
+     QnNonIsoIm = (uPRe*uNIm+uPIm*uNRe)/(uPM*uNM);
+     fHist_NonIso_SP_PP_Mag0[1]->Fill(EvtCent, 6.5,QnNonIsoRe,(uPM*uNM)); //<Cos(nPhi1+nPhi2)> phi1,phi2 opposite charge
+     fHist_NonIso_SP_PP_Mag0[1]->Fill(EvtCent, 7.5,QnNonIsoIm,(uPM*uNM)); //<Sin(nPhi1+nPhi2)> phi1,phi2 opposite charge
+
+     fHist_NonIso_SP_PP_Mag0[1]->Fill(EvtCent, 8.5,QxcnCor,uPM); //<Cos(mPsiEP)> 
+     fHist_NonIso_SP_PP_Mag0[1]->Fill(EvtCent, 9.5,QycnCor,uPM); //<Sin(mPsiEP)>
+
+     //charge neg:
+     fHist_NonIso_SP_NN_Mag0[1]->Fill(EvtCent, 0.5,uNRe/uNM,uNM);  //<Cos(nPhi)> ChNeg
+     fHist_NonIso_SP_NN_Mag0[1]->Fill(EvtCent, 1.5,uNIm/uNM,uNM);  //<Sin(nPhi)> ChNeg
+
+     QnNonIsoRe = (uNRe*QxcnCor + uNIm*QycnCor)/uNM;
+     QnNonIsoIm = (uNIm*QxcnCor - uNRe*QycnCor)/uNM; 
+     fHist_NonIso_SP_NN_Mag0[1]->Fill(EvtCent, 2.5,QnNonIsoRe,uNM); //<Cos(nPhi-mPsi)> ChNeg
+     fHist_NonIso_SP_NN_Mag0[1]->Fill(EvtCent, 3.5,QnNonIsoIm,uNM); //<Cos(nPhi-mPsi)> ChNeg
+
+     QnNonIsoRe = (uNRe*uNRe-uNIm*uNIm-uN2Re)/(uNM*uNM-McorrNeg); 
+     QnNonIsoIm = (2.*uNRe*uNIm-uN2Im)/(uNM*uNM-McorrNeg);
+     fHist_NonIso_SP_NN_Mag0[1]->Fill(EvtCent, 4.5,QnNonIsoRe,(uNM*uNM-McorrNeg)); //<Cos(nPhi1+nPhi2)> ChNeg
+     fHist_NonIso_SP_NN_Mag0[1]->Fill(EvtCent, 5.5,QnNonIsoIm,(uNM*uNM-McorrNeg)); //<Sin(nPhi1+nPhi2)> ChNeg
+
+     QnNonIsoRe = (uPRe*uNRe-uPIm*uNIm)/(uPM*uNM);
+     QnNonIsoIm = (uPRe*uNIm+uPIm*uNRe)/(uPM*uNM);
+     fHist_NonIso_SP_NN_Mag0[1]->Fill(EvtCent, 6.5,QnNonIsoRe,(uPM*uNM)); //<Cos(nPhi1+nPhi2)> phi1,phi2 opposite charge
+     fHist_NonIso_SP_NN_Mag0[1]->Fill(EvtCent, 7.5,QnNonIsoIm,(uPM*uNM)); //<Sin(nPhi1+nPhi2)> phi1,phi2 opposite charge
+
+     fHist_NonIso_SP_NN_Mag0[1]->Fill(EvtCent, 8.5,QxcnCor,uNM); //<Cos(mPsiEP)> 
+     fHist_NonIso_SP_NN_Mag0[1]->Fill(EvtCent, 9.5,QycnCor,uNM); //<Sin(mPsiEP)>
+   }
+   else if(QAindex==1){ //B > 0
+    //charge pos:
+     fHist_NonIso_SP_PP_Mag1[1]->Fill(EvtCent, 0.5,uPRe/uPM,uPM);  //<Cos(nPhi)> ChPos
+     fHist_NonIso_SP_PP_Mag1[1]->Fill(EvtCent, 1.5,uPIm/uPM,uPM);  //<Sin(nPhi)> ChPos
+
+     QnNonIsoRe = (uPRe*QxcnCor + uPIm*QycnCor)/uPM;
+     QnNonIsoIm = (uPIm*QxcnCor - uPRe*QycnCor)/uPM; 
+     fHist_NonIso_SP_PP_Mag1[1]->Fill(EvtCent, 2.5,QnNonIsoRe,uPM);  //<Cos(nPhi-mPsi)> ChPos
+     fHist_NonIso_SP_PP_Mag1[1]->Fill(EvtCent, 3.5,QnNonIsoIm,uPM);  //<Sin(nPhi-mPsi)> ChPos
+
+     QnNonIsoRe = (uPRe*uPRe-uPIm*uPIm-uP2Re)/(uPM*uPM-McorrPos); 
+     QnNonIsoIm = (2.*uPRe*uPIm-uP2Im)/(uPM*uPM-McorrPos);
+     fHist_NonIso_SP_PP_Mag1[1]->Fill(EvtCent, 4.5,QnNonIsoRe,(uPM*uPM-McorrPos)); //<Cos(nPhi1+nPhi2)> ChPos
+     fHist_NonIso_SP_PP_Mag1[1]->Fill(EvtCent, 5.5,QnNonIsoIm,(uPM*uPM-McorrPos)); //<Sin(nPhi1+nPhi2)> ChPos
+
+     QnNonIsoRe = (uPRe*uNRe-uPIm*uNIm)/(uPM*uNM);
+     QnNonIsoIm = (uPRe*uNIm+uPIm*uNRe)/(uPM*uNM);
+     fHist_NonIso_SP_PP_Mag1[1]->Fill(EvtCent, 6.5,QnNonIsoRe,(uPM*uNM)); //<Cos(nPhi1+nPhi2)> phi1,phi2 opposite charge
+     fHist_NonIso_SP_PP_Mag1[1]->Fill(EvtCent, 7.5,QnNonIsoIm,(uPM*uNM)); //<Sin(nPhi1+nPhi2)> phi1,phi2 opposite charge
+
+     fHist_NonIso_SP_PP_Mag1[1]->Fill(EvtCent, 8.5,QxcnCor,uPM); //<Cos(mPsiEP)> 
+     fHist_NonIso_SP_PP_Mag1[1]->Fill(EvtCent, 9.5,QycnCor,uPM); //<Sin(mPsiEP)>
+
+     //charge neg:
+     fHist_NonIso_SP_NN_Mag1[1]->Fill(EvtCent, 0.5,uNRe/uNM,uNM);  //<Cos(nPhi)> ChNeg
+     fHist_NonIso_SP_NN_Mag1[1]->Fill(EvtCent, 1.5,uNIm/uNM,uNM);  //<Sin(nPhi)> ChNeg
+
+     QnNonIsoRe = (uNRe*QxcnCor + uNIm*QycnCor)/uNM;
+     QnNonIsoIm = (uNIm*QxcnCor - uNRe*QycnCor)/uNM; 
+     fHist_NonIso_SP_NN_Mag1[1]->Fill(EvtCent, 2.5,QnNonIsoRe,uNM); //<Cos(nPhi-mPsi)> ChNeg
+     fHist_NonIso_SP_NN_Mag1[1]->Fill(EvtCent, 3.5,QnNonIsoIm,uNM); //<Cos(nPhi-mPsi)> ChNeg
+
+     QnNonIsoRe = (uNRe*uNRe-uNIm*uNIm-uN2Re)/(uNM*uNM-McorrNeg); 
+     QnNonIsoIm = (2.*uNRe*uNIm-uN2Im)/(uNM*uNM-McorrNeg);
+     fHist_NonIso_SP_NN_Mag1[1]->Fill(EvtCent, 4.5,QnNonIsoRe,(uNM*uNM-McorrNeg)); //<Cos(nPhi1+nPhi2)> ChNeg
+     fHist_NonIso_SP_NN_Mag1[1]->Fill(EvtCent, 5.5,QnNonIsoIm,(uNM*uNM-McorrNeg)); //<Sin(nPhi1+nPhi2)> ChNeg
+
+     QnNonIsoRe = (uPRe*uNRe-uPIm*uNIm)/(uPM*uNM);
+     QnNonIsoIm = (uPRe*uNIm+uPIm*uNRe)/(uPM*uNM);
+     fHist_NonIso_SP_NN_Mag1[1]->Fill(EvtCent, 6.5,QnNonIsoRe,(uPM*uNM)); //<Cos(nPhi1+nPhi2)> phi1,phi2 opposite charge
+     fHist_NonIso_SP_NN_Mag1[1]->Fill(EvtCent, 7.5,QnNonIsoIm,(uPM*uNM)); //<Sin(nPhi1+nPhi2)> phi1,phi2 opposite charge
+
+     fHist_NonIso_SP_NN_Mag1[1]->Fill(EvtCent, 8.5,QxcnCor,uNM); //<Cos(mPsiEP)> 
+     fHist_NonIso_SP_NN_Mag1[1]->Fill(EvtCent, 9.5,QycnCor,uNM); //<Sin(mPsiEP)>
+   }
+
+
    //-------- CME - ZDN correlators:---------
    fHist_Corr3p_ZDN_SP_PN[1]->Fill(EvtCent,  0., TwoQpQnV, uPM*uNM);
    fHist_Corr3p_ZDN_SP_PN[1]->Fill(EvtCent,  1., energyZPA, 1.);
@@ -1227,33 +1431,33 @@ void AliAnalysisTaskCMEV0::UserExec(Option_t *)
    fHist_Corr3p_ZDN_SP_PN[1]->Fill(EvtCent, 11., TwoQpQnV*energyZNC, uPM*uNM);
    fHist_Corr3p_ZDN_SP_PN[1]->Fill(EvtCent, 12., TwoQpQnV*(energyZNC+energyZNA), uPM*uNM);
 
-   fHist_Corr3p_ZDN_SP_PP[1]->Fill(EvtCent,  0., TwoQpQpV, (uPM*(uPM-1.)));
+   fHist_Corr3p_ZDN_SP_PP[1]->Fill(EvtCent,  0., TwoQpQpV, (uPM*uPM-McorrPos));
    //fHist_Corr3p_ZDN_SP_PP[1]->Fill(EvtCent,  1., energyZPA, 1.);
    //fHist_Corr3p_ZDN_SP_PP[1]->Fill(EvtCent,  2., energyZPC, 1.);
    //fHist_Corr3p_ZDN_SP_PP[1]->Fill(EvtCent,  3., (energyZPA+energyZPC), 1.);
    //fHist_Corr3p_ZDN_SP_PP[1]->Fill(EvtCent,  4., energyZNA, 1.);
    //fHist_Corr3p_ZDN_SP_PP[1]->Fill(EvtCent,  5., energyZNC, 1.);
    //fHist_Corr3p_ZDN_SP_PP[1]->Fill(EvtCent,  6., (energyZNA+energyZNC), 1.);
-   fHist_Corr3p_ZDN_SP_PP[1]->Fill(EvtCent,  7., TwoQpQpV*energyZPA, (uPM*(uPM-1.)));
-   fHist_Corr3p_ZDN_SP_PP[1]->Fill(EvtCent,  8., TwoQpQpV*energyZPC, (uPM*(uPM-1.)));
-   fHist_Corr3p_ZDN_SP_PP[1]->Fill(EvtCent,  9., TwoQpQpV*(energyZPC+energyZPA), (uPM*(uPM-1.)));
-   fHist_Corr3p_ZDN_SP_PP[1]->Fill(EvtCent, 10., TwoQpQpV*energyZNA, (uPM*(uPM-1.)));
-   fHist_Corr3p_ZDN_SP_PP[1]->Fill(EvtCent, 11., TwoQpQpV*energyZNC, (uPM*(uPM-1.)));
-   fHist_Corr3p_ZDN_SP_PP[1]->Fill(EvtCent, 12., TwoQpQpV*(energyZNC+energyZNA), (uPM*(uPM-1.)));
+   fHist_Corr3p_ZDN_SP_PP[1]->Fill(EvtCent,  7., TwoQpQpV*energyZPA, (uPM*uPM-McorrPos));
+   fHist_Corr3p_ZDN_SP_PP[1]->Fill(EvtCent,  8., TwoQpQpV*energyZPC, (uPM*uPM-McorrPos));
+   fHist_Corr3p_ZDN_SP_PP[1]->Fill(EvtCent,  9., TwoQpQpV*(energyZPC+energyZPA), (uPM*uPM-McorrPos));
+   fHist_Corr3p_ZDN_SP_PP[1]->Fill(EvtCent, 10., TwoQpQpV*energyZNA, (uPM*uPM-McorrPos));
+   fHist_Corr3p_ZDN_SP_PP[1]->Fill(EvtCent, 11., TwoQpQpV*energyZNC, (uPM*uPM-McorrPos));
+   fHist_Corr3p_ZDN_SP_PP[1]->Fill(EvtCent, 12., TwoQpQpV*(energyZNC+energyZNA), (uPM*uPM-McorrPos));
 
-   fHist_Corr3p_ZDN_SP_NN[1]->Fill(EvtCent,  0., TwoQnQnV, (uNM*(uNM-1.)));
+   fHist_Corr3p_ZDN_SP_NN[1]->Fill(EvtCent,  0., TwoQnQnV, (uNM*uNM-McorrNeg));
    //fHist_Corr3p_ZDN_SP_NN[1]->Fill(EvtCent,  1., energyZPA, 1.);
    //fHist_Corr3p_ZDN_SP_NN[1]->Fill(EvtCent,  2., energyZPC, 1.);
    //fHist_Corr3p_ZDN_SP_NN[1]->Fill(EvtCent,  3., (energyZPA+energyZPC), 1.);
    //fHist_Corr3p_ZDN_SP_NN[1]->Fill(EvtCent,  4., energyZNA, 1.);
    //fHist_Corr3p_ZDN_SP_NN[1]->Fill(EvtCent,  5., energyZNC, 1.);
    //fHist_Corr3p_ZDN_SP_NN[1]->Fill(EvtCent,  6., (energyZNA+energyZNC), 1.);
-   fHist_Corr3p_ZDN_SP_NN[1]->Fill(EvtCent,  7., TwoQnQnV*energyZPA, (uNM*(uNM-1.)));
-   fHist_Corr3p_ZDN_SP_NN[1]->Fill(EvtCent,  8., TwoQnQnV*energyZPC, (uNM*(uNM-1.)));
-   fHist_Corr3p_ZDN_SP_NN[1]->Fill(EvtCent,  9., TwoQnQnV*(energyZPC+energyZPA), (uNM*(uNM-1.)));
-   fHist_Corr3p_ZDN_SP_NN[1]->Fill(EvtCent, 10., TwoQnQnV*energyZNA, (uNM*(uNM-1.)));
-   fHist_Corr3p_ZDN_SP_NN[1]->Fill(EvtCent, 11., TwoQnQnV*energyZNC, (uNM*(uNM-1.)));
-   fHist_Corr3p_ZDN_SP_NN[1]->Fill(EvtCent, 12., TwoQnQnV*(energyZNC+energyZNA), (uNM*(uNM-1.)));
+   fHist_Corr3p_ZDN_SP_NN[1]->Fill(EvtCent,  7., TwoQnQnV*energyZPA, (uNM*uNM-McorrNeg));
+   fHist_Corr3p_ZDN_SP_NN[1]->Fill(EvtCent,  8., TwoQnQnV*energyZPC, (uNM*uNM-McorrNeg));
+   fHist_Corr3p_ZDN_SP_NN[1]->Fill(EvtCent,  9., TwoQnQnV*(energyZPC+energyZPA), (uNM*uNM-McorrNeg));
+   fHist_Corr3p_ZDN_SP_NN[1]->Fill(EvtCent, 10., TwoQnQnV*energyZNA, (uNM*uNM-McorrNeg));
+   fHist_Corr3p_ZDN_SP_NN[1]->Fill(EvtCent, 11., TwoQnQnV*energyZNC, (uNM*uNM-McorrNeg));
+   fHist_Corr3p_ZDN_SP_NN[1]->Fill(EvtCent, 12., TwoQnQnV*(energyZNC+energyZNA), (uNM*uNM-McorrNeg));
    //-----------------------------------------
 
 
@@ -1263,8 +1467,8 @@ void AliAnalysisTaskCMEV0::UserExec(Option_t *)
    fAvgWgtMultCentRun->Fill(EvtCent,runindex,nRefMultWgt);
    fAvgPOIposCentRun->Fill(EvtCent,runindex,uPM); 
    fAvgPOInegCentRun->Fill(EvtCent,runindex,uNM); 
-   fAvgPOIPPCentRun->Fill(EvtCent,runindex,uPM*(uPM-1.));
-   fAvgPOINNCentRun->Fill(EvtCent,runindex,uNM*(uNM-1.));
+   fAvgPOIPPCentRun->Fill(EvtCent,runindex,(uPM*uPM-McorrPos));
+   fAvgPOINNCentRun->Fill(EvtCent,runindex,(uNM*uNM-McorrNeg));
    fAvgPOIOSCentRun->Fill(EvtCent,runindex,uPM*uNM);
 
 
@@ -2268,6 +2472,19 @@ void AliAnalysisTaskCMEV0::DefineHistograms(){
     }
   }
 
+  //non-Isotropic terms for correction:
+  for(int i=0;i<2;i++){
+    fHist_NonIso_SP_PP_Mag0[i] = new TProfile2D(Form("fHist_NonIso_SP_PP_Mag0_Det%d",i),"Non Isotropic terms",10,centRange,10,0,10,"s");
+    fListHistos->Add(fHist_NonIso_SP_PP_Mag0[i]);
+    fHist_NonIso_SP_NN_Mag0[i] = new TProfile2D(Form("fHist_NonIso_SP_NN_Mag0_Det%d",i),"Non Isotropic terms",10,centRange,10,0,10,"s");
+    fListHistos->Add(fHist_NonIso_SP_NN_Mag0[i]);
+
+    fHist_NonIso_SP_PP_Mag1[i] = new TProfile2D(Form("fHist_NonIso_SP_PP_Mag1_Det%d",i),"Non Isotropic terms",10,centRange,10,0,10,"s");
+    fListHistos->Add(fHist_NonIso_SP_PP_Mag1[i]);
+    fHist_NonIso_SP_NN_Mag1[i] = new TProfile2D(Form("fHist_NonIso_SP_NN_Mag1_Det%d",i),"Non Isotropic terms",10,centRange,10,0,10,"s");
+    fListHistos->Add(fHist_NonIso_SP_NN_Mag1[i]);
+  }
+
 
 
 
@@ -2495,6 +2712,8 @@ void AliAnalysisTaskCMEV0::DefineHistograms(){
     }
    }
   }
+
+
 
 
 }

@@ -293,6 +293,11 @@ private:
   TProfile2D     *fHCos2nDWNegChEtaVz[4];   //!
   TProfile2D     *fHSin2nDWNegChEtaVz[4];   //!
 
+  //Store Non-isotropic terms:
+  TProfile2D   *fHist_NonIso_SP_PP_Mag0[2];  //! Mag0 = B < 0
+  TProfile2D   *fHist_NonIso_SP_NN_Mag0[2];  //!
+  TProfile2D   *fHist_NonIso_SP_PP_Mag1[2];  //! Mag1 = B > 0
+  TProfile2D   *fHist_NonIso_SP_NN_Mag1[2];  //!
 
 
   ClassDef(AliAnalysisTaskCMEV0, 1); // 
