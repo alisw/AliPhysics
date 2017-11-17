@@ -31,7 +31,7 @@ AliPHOSTriggerHelper::AliPHOSTriggerHelper():
   fXmax(3),
   fZmin(-3),
   fZmax(3),
-  fMatchingDeltaR(0.025),
+  fMatchingDeltaR(0.020),
   fEvent(0x0),
   fESDEvent(0x0),
   fAODEvent(0x0),
@@ -41,7 +41,7 @@ AliPHOSTriggerHelper::AliPHOSTriggerHelper():
   fCaloTrigger(0x0),
   fIsUserTRUBadMap(kFALSE),
   fRunNumber(-1),
-  fUseDeltaRMatching(kTRUE)
+  fUseDeltaRMatching(kFALSE)
 {
   //Constructor
   
@@ -57,7 +57,7 @@ AliPHOSTriggerHelper::AliPHOSTriggerHelper(TString trigger, Bool_t isMC):
   fXmax(3),
   fZmin(-3),
   fZmax(3),
-  fMatchingDeltaR(0.025),
+  fMatchingDeltaR(0.020),
   fEvent(0x0),
   fESDEvent(0x0),
   fAODEvent(0x0),
@@ -113,7 +113,7 @@ AliPHOSTriggerHelper::AliPHOSTriggerHelper(Int_t L1triggerinput, Int_t L0trigger
   fXmax(3),
   fZmin(-3),
   fZmax(3),
-  fMatchingDeltaR(0.025),
+  fMatchingDeltaR(0.020),
   fEvent(0x0),
   fESDEvent(0x0),
   fAODEvent(0x0),
@@ -263,7 +263,7 @@ Bool_t AliPHOSTriggerHelper::IsPHI7(AliVEvent *event, AliPHOSClusterCuts *cuts)
     else if(fTriggerInputL1 == 5) L1 = 2;//L1 low
   }
   else if(fTriggerInputL0 > 0){
-    if(fTriggerInputL0 == 9) L1 = -1;//L0
+    L1 = -1;//L0
   }
 
   while(fCaloTrigger->Next()){
@@ -511,7 +511,7 @@ Double_t AliPHOSTriggerHelper::GetDistanceToClosestTRUChannel(AliCaloPhoton *ph)
     else if(fTriggerInputL1 == 5) L1 = 2;//L1 low
   }
   else if(fTriggerInputL0 > 0){
-    if(fTriggerInputL0 == 9) L1 = -1;//L0
+    L1 = -1;//L0
   }
 
   fCaloTrigger->Reset();
