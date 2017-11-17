@@ -64,6 +64,7 @@ AliAnalysisTaskEMCALPhotonIsolation* AddTaskEMCALPhotonIsolation(
   // Use the input containers naming convention with "usedefault" (already used in several EMCal tasks and new correction framework)
   TString trackName(ntracks);
   TString clusName(nclusters);
+  TString clusInfix("");
 
   if(trackName == "usedefault"){
     if(dType == "ESD"){
@@ -88,16 +89,19 @@ AliAnalysisTaskEMCALPhotonIsolation* AddTaskEMCALPhotonIsolation(
       clusName = "";
     }
   }
+  else{
+      clusInfix = Form("_%s",clusName.Data());
+  }
 
   // Set the task output container name
   Printf("Creating container name for cluster analysis\n");
 
   TString myContName("");
   if(bIsMC){
-    myContName = Form("Analysis_Neutrals_MC_%s",clusName.Data());
+    myContName = Form("Analysis_Neutrals_MC%s",clusInfix.Data());
   }
   else{
-    myContName = Form("Analysis_Neutrals_%s",clusName.Data());
+    myContName = Form("Analysis_Neutrals%s",clusInfix.Data());
   }
   
   // For the 2012 EGA/L1 Analysis, only events with EGA/L1 recalc patches are considered
