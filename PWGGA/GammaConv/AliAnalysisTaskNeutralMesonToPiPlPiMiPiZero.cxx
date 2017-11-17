@@ -2478,9 +2478,8 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::CalculateMesonCandidates(){
       AliAODConversionMother *neutralPion=dynamic_cast<AliAODConversionMother*>(fNeutralPionCandidates->At(mesonIndex));
       if (neutralPion==NULL) continue;
 
-      if(fNeutralPionMode == 0 && neutralPion->Pt() < 0.5) continue;
-      else if(fNeutralPionMode == 1 && neutralPion->Pt() < 1.0) continue;
-      else if(fNeutralPionMode == 2 && neutralPion->Pt() < 1.5) continue;
+      // cut on pT of neutralPion
+      if(neutralPion->Pt() < fNeutralPionPtMin) continue;
 
       for(Int_t virtualParticleIndex=0;virtualParticleIndex<fGoodVirtualParticles->GetEntries();virtualParticleIndex++){
 
@@ -2588,13 +2587,8 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::CalculateBackground(){
      }
 
     // Check if current pi0 fullfills Pt criteria dependend on NeutralPionMode
-    if(fNeutralPionMode == 0 && EventPiZeroGoodMeson->Pt() < 0.5){
-        continue;
-    }else if(fNeutralPionMode == 1 && EventPiZeroGoodMeson->Pt() < 1.0){
-        continue;
-    }else if(fNeutralPionMode == 2 && EventPiZeroGoodMeson->Pt() < 1.5){
-        continue;
-    }
+    if(EventPiZeroGoodMeson->Pt() < fNeutralPionPtMin) continue;
+
 if(!(((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->UseLikeSignMixing())){
     // Begin loop over BG events for Pi+
     for(Int_t nEventsInBGPl=0;nEventsInBGPl<fBGHandlerPiPl[fiCut]->GetNBGEvents();nEventsInBGPl++){

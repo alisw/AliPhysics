@@ -69,9 +69,10 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiPiZero_CaloMode_pp(
     TString generatorName             = "HIJING",
     TString cutnumberAODBranch        = "000000006008400001001500000",
     Double_t tolerance                = -1,
-    TString periodNameV0Reader        = "",                                // period Name for V0Reader
-    Int_t   runLightOutput            = 0,                                 // run light output option 0: no light output 1: most cut histos stiched off 2: unecessary omega hists turned off as well
-    TString additionalTrainConfig     = "0"                                // additional counter for trainconfig, this has to be always the last parameter
+    TString periodNameV0Reader        = "",                                 // period Name for V0Reader
+    Int_t runLightOutput              = 0,                                  // run light output option 0: no light output 1: most cut histos stiched off 2: unecessary omega hists turned off as well
+    Double_t neutralPionPtMin         = 0.4,                                // min pT for cut on neutral meson candidate
+    TString additionalTrainConfig     = "0"                                 // additional counter for trainconfig, this has to be always the last parameter
   ) {
 
   //parse additionalTrainConfig flag
@@ -572,6 +573,8 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiPiZero_CaloMode_pp(
 
   task->SetDoMesonQA(enableQAMesonTask );
 
+  // Set pT min for cut on neutral pions
+  task->SetNeutralPionPtMin(neutralPionPtMin);
 
   //connect containers
   AliAnalysisDataContainer *coutput =
