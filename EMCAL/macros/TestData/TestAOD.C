@@ -45,6 +45,7 @@ Bool_t kPrintKine         = kFALSE; ///< Print MC related information. Do not us
 Bool_t kPrintCaloCells    = kFALSE; ///< Print cells parameters
 Bool_t kPrintCaloTrigger  = kFALSE; ///< Print trigger patches information
 Bool_t kPrintTrackMatches = kFALSE; ///< Print cluster-track matching information
+Bool_t kPrintCaloCluster  = kTRUE ; ///< Print cluster parameters
 Bool_t kPrintClusterCells = kFALSE; ///< Print cells in clusters information
 Bool_t kPrintClusterPID   = kFALSE; ///< Print clusters PID (bayesian) weights
  
@@ -130,9 +131,12 @@ void TestAOD()
   
   for(Int_t iev = 0; iev < nEvt; iev++) 
   {
-    cout << "<<<< Event: " << iev+1 << "/" << nEvt << " >>>>"<<endl;
-    aodTree->GetEvent(iev);
+    cout << "<<<< Event: " << iev+1 << "/" << nEvt << " >>>>";
+    cout <<" Triggers: "<< aod->GetFiredTriggerClasses();
+    cout<<endl;
     
+    aodTree->GetEvent(iev);
+
     // Get reconstructed vertex position, only used if 
     // the momentum of the cluster is calculated, see comment below
     //
@@ -168,7 +172,6 @@ void TestAOD()
       Int_t bitEJE = 8; // 5 for old data
       
       AliAODCaloTrigger& trg = *(aod->GetCaloTrigger("EMCAL"));
-		  
       trg.Reset();
       while (trg.Next())
       {
@@ -240,15 +243,20 @@ void TestAOD()
       hTime->Fill(clus->GetTOF()*1e9);
       
       // Print basic cluster information
-      cout << "Cluster: " << icl+1 << "/" << nclus << " Energy: " << energy << "; Phi: " 
-      << cphi*TMath::RadToDeg() << "; Eta: " << ceta 
-      << "; NCells: " << nCells  << "; NLM: " << nlm
-      << "; #Labels: " << nLabels << " Index: " << labelIndex 
-      << "; Time "<<clus->GetTOF()*1e9<<" ns "<<endl;
-      
-      if(nMatched > 0)
+      if ( kPrintCaloCluster )
       {
-        printf("\t N matches %d, Residual phi %2.4f, eta %2.4f\n",nMatched,clus->GetTrackDx(),clus->GetTrackDz());
+        cout << "Cluster: " << icl+1 << "/" << nclus << " Energy: " << energy << "; Phi: "
+        << cphi*TMath::RadToDeg() << "; Eta: " << ceta
+        << "; NCells: " << nCells  << "; NLM: " << nlm
+        << "; #Labels: " << nLabels << " Index: " << labelIndex
+        << "; Time "<<clus->GetTOF()*1e9<<" ns "<<endl;
+      }
+        
+      if ( nMatched > 0 )
+      {
+        if ( kPrintCaloCluster )
+            printf("\t N matches %d, Residual phi %2.4f, eta %2.4f\n",
+                   nMatched,clus->GetTrackDx(),clus->GetTrackDz());
         hTMResEta->Fill(clus->GetTrackDz());
         hTMResPhi->Fill(clus->GetTrackDx());
       }
