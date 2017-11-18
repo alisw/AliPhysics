@@ -43,6 +43,7 @@ Bool_t kPrintKine         = kFALSE; ///< Print MC related information. Do not us
 Bool_t kPrintCaloCells    = kFALSE; ///< Print cells parameters
 Bool_t kPrintCaloTrigger  = kFALSE; ///< Print trigger patches information
 Bool_t kPrintTrackMatches = kFALSE; ///< Print cluster-track matching information
+Bool_t kPrintCaloCluster  = kTRUE ; ///< Print cluster parameters
 Bool_t kPrintClusterCells = kFALSE; ///< Print cells in clusters information
 Bool_t kPrintClusterPID   = kFALSE; ///< Print clusters PID (bayesian) weights
 Bool_t kPrintMisalMatrix  = kFALSE; ///< Print the alignment matrices stored in ESDs
@@ -146,8 +147,11 @@ void TestESD()
   
   for(Int_t iev = 0; iev < nEvt; iev++) 
   {
-    cout << "<<<< Event: " << iev+1 << "/" << nEvt << " >>>>"<<endl;
-    esdTree->GetEvent(iev);
+      cout << "<<<< Event: " << iev+1 << "/" << nEvt << " >>>>";
+      cout <<" Triggers: "<< esd->GetFiredTriggerClasses();
+      cout<<endl;
+      
+      esdTree->GetEvent(iev);
         
     // In case you want to play with MC data, get stack
     AliStack *stack = 0;
@@ -267,18 +271,23 @@ void TestESD()
       hTime->Fill(clus->GetTOF()*1e9);
       
       // Print basic cluster information
-      cout << "Cluster: " << icl+1 << "/" << nclus << " Energy: " << energy << "; Phi: " 
-      << cphi*TMath::RadToDeg() << "; Eta: " << ceta 
-      << "; NCells: " << nCells  << "; NLM: " << nlm
-      << "; #Labels: " << nLabels << " Index: " 
-      << labelIndex << "; Time "<<clus->GetTOF()*1e9<<" ns "<<endl;
-      
-      if(nMatched > 0)
-      {
-        printf("\t N matches %d, match index %d, Residual phi %2.4f, eta %2.4f\n",nMatched,trackIndex,clus->GetTrackDx(),clus->GetTrackDz());
-        hTMResEta->Fill(clus->GetTrackDz());
-        hTMResPhi->Fill(clus->GetTrackDx());
-      }
+        if ( kPrintCaloCluster )
+        {
+            cout << "Cluster: " << icl+1 << "/" << nclus << " Energy: " << energy << "; Phi: "
+            << cphi*TMath::RadToDeg() << "; Eta: " << ceta
+            << "; NCells: " << nCells  << "; NLM: " << nlm
+            << "; #Labels: " << nLabels << " Index: " << labelIndex
+            << "; Time "<<clus->GetTOF()*1e9<<" ns "<<endl;
+        }
+        
+        if ( nMatched > 0 )
+        {
+            if ( kPrintCaloCluster )
+                printf("\t N matches %d, Residual phi %2.4f, eta %2.4f\n",
+                       nMatched,clus->GetTrackDx(),clus->GetTrackDz());
+            hTMResEta->Fill(clus->GetTrackDz());
+            hTMResPhi->Fill(clus->GetTrackDx());
+        }
       
       //Print primary info
       if(stack && kPrintKine) 
