@@ -5,6 +5,7 @@
 #include "AliFemtoConfigObject.h"
 
 #include <TObjString.h>
+#include <TObjArray.h>
 #include <TCollection.h>
 
 #include <regex>
@@ -78,8 +79,9 @@ AliFemtoConfigObject::operator==(const AliFemtoConfigObject &rhs) const
 //  const AliFemtoConfigObject::TypeTagEnum_t AliFemtoConfigObject::enum_from_type< AliFemtoConfigObject::BoolValue_t >::value = static_cast<AliFemtoConfigObject::TypeTagEnum_t>(1);
 
 TString
-AliFemtoConfigObject::Stringify(bool pretty) const
+AliFemtoConfigObject::Stringify(bool pretty, int deep) const
 {
+#define INDENTSTEP 4
   switch (fTypeTag) {
     case kEMPTY: return "";
     case kBOOL: return fValueBool ? "true" : "false";
@@ -119,13 +121,33 @@ AliFemtoConfigObject::Stringify(bool pretty) const
     }
     case kMAP: {
      TString result = '{';
+     if (pretty) {
+       result += TString('\n');
+     }
      auto it = fValueMap.cbegin(),
          end = fValueMap.cend();
       if (it != end) {
-        result += it->first + ": " + it->second.Stringify(pretty);
+        if (pretty) {
+          result += TString(' ',(deep+1)*INDENTSTEP);
+          result += it->first + ": " + it->second.Stringify(pretty,deep+1);
+          result += TString('\n');
+        }
+        else {
+          result += it->first + ": " + it->second.Stringify(pretty);
+        }
       }
       for (++it; it != end; ++it) {
-        result += TString::Format(", %s: %s", it->first.c_str(), it->second.Stringify(pretty).Data());
+        if (pretty) {
+          result += TString(' ',(deep+1)*INDENTSTEP);
+          result += TString::Format("%s: %s", it->first.c_str(), it->second.Stringify(pretty, deep+1).Data());
+          result += TString('\n');
+        }
+        else {
+          result += TString::Format(", %s: %s", it->first.c_str(), it->second.Stringify(pretty).Data());
+        }
+      }
+      if (pretty) {
+        result += TString(' ',deep*INDENTSTEP);
       }
       result += '}';
       return result;
@@ -395,8 +417,8 @@ AliFemtoConfigObject::Streamer(TBuffer &buff)
 
 AliFemtoConfigObject::Painter::Painter(AliFemtoConfigObject &data):
 fData(&data)
-, fTitle(0.3, 0.9, "[-] AliFemtoConfigObject")
-, fBody(0.3, 0.8, "")
+, fTitle(0.05, 0.9, "[-] AliFemtoConfigObject")
+, fBody(0.05, 0.85, 0.9, 0.1, "NB")
 {
   // std::cout << "[AliFemtoConfigObjectPainter::AliFemtoConfigObjectPainter]\n";
   fBody.SetTextSize(18);
@@ -412,7 +434,7 @@ void
 AliFemtoConfigObject::Painter::Paint()
 {
   auto t = &fTitle;
-  t->SetTextAlign(22);
+  t->SetTextAlign(13);
   t->SetTextColor(kRed+2);
   t->SetTextFont(43);
   t->SetTextSize(25);
@@ -436,9 +458,17 @@ AliFemtoConfigObject::Painter::Paint()
   }
 */
 
-
-  fBody.SetText(0.3, 0.8, result);
+  fBody.Clear();
+  fBody.SetTextAlign(13);
+  fBody.SetTextColor(kBlue+2);
+  fBody.SetTextFont(43);
+  fBody.SetTextSize(18);
+  fBody.SetFillColor(0);
+  TObjArray *lines = result.Tokenize('\n');
+  for (Int_t iline = 0; iline < lines->GetEntriesFast(); iline++)
+    fBody.AddText(((TObjString*) lines->At(iline))->String().Data());
   fBody.Draw();
+  delete lines;
 }
 
 
