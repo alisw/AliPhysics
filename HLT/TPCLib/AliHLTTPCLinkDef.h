@@ -62,6 +62,8 @@
 #pragma link C++ class AliHLTTPCGMTrackParam+;
 #pragma link C++ class AliHLTTPCGMSliceTrack+;
 #pragma link C++ class AliHLTTPCGMMerger+;
+#pragma link C++ class AliHLTTPCGMPolynomialField+;
+#pragma link C++ class AliHLTTPCGMPolynomialFieldCreator+;
 #pragma link C++ class AliHLTTPCClusterStatComponent+;
 #pragma link C++ class AliHLTTPCDataCompressionComponent+;
 #pragma link C++ class AliHLTTPCDataCompressionMonitorComponent+;

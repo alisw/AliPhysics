@@ -98,6 +98,7 @@ set(SRCS
     AliHLTTPCTrackGeometry.cxx    
     AliHLTTPCTrackMCMarkerComponent.cxx
     AliHLTTPCGeometry.cxx
+    AliHLTTPCPolynomFit.cxx
     comp/AliHLTTPCClusterStatComponent.cxx
     comp/AliHLTTPCDataCompressionComponent.cxx
     comp/AliHLTTPCDataCompressionDecoder.cxx
@@ -122,6 +123,7 @@ set(SRCS
     merger-ca/AliHLTTPCGMPhysicalTrackModel.cxx
     merger-ca/AliHLTTPCGMPropagator.cxx
     merger-ca/AliHLTTPCGMPolynomialField.cxx
+    merger-ca/AliHLTTPCGMPolynomialFieldCreator.cxx
     offline/AliHLTTPCDigitPublisherComponent.cxx
     offline/AliHLTTPCOfflineCluster.cxx
     tracking-ca/AliHLTTPCCABaseTrackParam.cxx
