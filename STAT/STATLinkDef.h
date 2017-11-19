@@ -28,6 +28,7 @@
 #pragma link C++ class AliTreeTrending+;
 #pragma link C++ class AliNDFormulaBrowser+;
 #pragma link C++ class AliDrawStyle+;
+#pragma link C++ class AliPainter+;
 #pragma link C++ class AliElasticSearchRoot++;
 
 #pragma link C++ namespace AliFFTsmoother+;

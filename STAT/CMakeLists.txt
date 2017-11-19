@@ -42,6 +42,7 @@ set(SRCS
     AliTreeTrending.cxx
     AliNDFormulaBrowser.cxx
     AliDrawStyle.cxx
+        AliPainter.cxx
     AliElasticSearchRoot.cxx)
 
 # Dependencies (libraries)

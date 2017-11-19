@@ -61,16 +61,22 @@ class AliDrawStyle : public TObject{
 public:
   static void ApplyStyle(const char * styleName);
   static const TStyle *GetStyle(const char * styleName) {return fStyleAlice[styleName];}
+  /// \brief Get Css style by styleName.
+  ///  Getter for css style.
+  /// \param styleName  - name of style.
+  /// \return           - TObjArray with pair selector and declaration from css file.
   static const TObjArray *GetCssStyle(const char *styleName){return fCssStyleAlice[styleName];}
-  static TString GetSelector(const char *styleName);
-  static Int_t CountObjects(TPad *cPad, TString className);
-  static void TGraphApplyStyle(const char* styleName, TGraph *tempGraph, TString elementName, TString className, TString objName, Int_t objNum);
-  static void TH1ApplyStyle(const char* styleName, TH1 *tempHis, TString elementName, TString className, TString objName, Int_t objNum);
-  static void TF1ApplyStyle(const char* styleName, TF1 *tempFunc, TString elementName, TString className, TString objName, Int_t objNum);
-  static void TPadApplyStyle(const char* styleName, TPad *tempPad, TString elementName, TString className, TString objName);
-  static void TCanvasApplyCssStyle(const char* styleName, TCanvas *tempCanvas, TString elementName, TString className, TString objName);
+  static void TGraphApplyStyle(const char* styleName, TGraph *cGraph);
+  static void TH1ApplyStyle(const char* styleName, TH1 *cHis);
+  static void TF1ApplyStyle(const char* styleName, TF1 *cFunc);
+  static void TPadApplyStyle(const char* styleName, TPad *cPad);
+  static void TCanvasApplyCssStyle(const char* styleName, TCanvas *cCanvas);
   static void ApplyCssStyle(TPad *pad, const char* styleName);
-  static void  SetCssStyle(const char *styleName, TObjArray*array ){ fCssStyleAlice[styleName]=array;}
+  /// \brief Set Css style by styleName.
+  ///  Setter for css style.
+  /// \param styleName  - name of style.
+  /// \param array      - TObjArray with pair selector and declaration from css file.
+  static void SetCssStyle(const char *styleName, TObjArray*array ){ fCssStyleAlice[styleName]=array;}
   static void SetDefaults();
   static void SetDefaultStyles(const char * styleName, const char* arrayName);
   static TString GetLatexAlice(const char * symbol);
@@ -81,11 +87,13 @@ public:
   static const std::vector<float> &  GetLineWidth(const char *style){return AliDrawStyle::fLineWidth[style];};
   static const std::vector<int> &    GetFillColors(const char *style){return AliDrawStyle::fFillColors[style];};
   // CSS like attribute fields parsing
-  static TString GetProperty(const char * styleName, TString propertyName, TString elementName, TString className, TString objectName);
+  static Bool_t  IsSelected(TString selectors, TString elementID, TString classID, TString objectID);
+  static TString GetProperty(const char * styleName, TString propertyName, TString elementID, TString classID, TString objectID);
   static TString  GetPropertyValue(TString input, TString propertyName);
-  static Int_t    GetNamedIntegerAt(TString input, TString propertyName, Int_t index);
-  static Float_t  GetNamedFloatAt(TString input, TString propertyName, Int_t index);
-  static Bool_t  IsSelected(TString selectors, TString elementName, TString className, TString objectName);
+  //static Int_t    GetObjectIndex(TString &objName);
+  static void     GetIds(TObject *cObj, TString &elementID, TString &classSet, TString &objectID, Int_t &objNum);
+  static Int_t    GetNamedIntegerAt(TString input, TString propertyName, Int_t index, Bool_t &status);
+  static Float_t  GetNamedFloatAt(TString input, TString propertyName, Int_t index, Bool_t &status);
   static TObjArray * ReadCSSFile(const char *  inputName, TObjArray * array=NULL, Int_t verbose=0);
   static void    WriteCSSFile(TObjArray * cssArray, const char *  outputName, fstream *cssOut=NULL);
   //
@@ -101,9 +109,6 @@ public:
   static Float_t GetLineWidth(const char *style, Int_t index);
   static void PrintLatexSymbols(Option_t *option,TPRegexp& regExp);
   static void PrintStyles(Option_t *option, TPRegexp& regExp);
-  // Drawing part - will be another class
-  static void DivideTPad(TPad*pad, const char *division, const char *token=",");
-  static void SetMultiGraphTimeAxis(TMultiGraph *graph, TString option);
 protected:
   static TString fDefaultTStyleID;                            ///< ID of the default TStyle
   static TString fDefaultArrayStyleID;                        ///< ID of the default array styles

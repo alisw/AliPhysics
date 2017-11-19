@@ -462,7 +462,7 @@ TTree*  AliExternalInfo::GetTree(TString type, TString period, TString pass, TSt
 /// \param pass E.g. 'pass2' or 'passMC'. Here you can use wildcards like in 'ls', e.g. 'pass*'
 /// Returns a chain with the information from the corresponding resources.
 /// \return TChain*
-TChain* AliExternalInfo::GetChain(TString type, TString period, TString pass){
+TChain* AliExternalInfo::GetChain(TString type, TString period, TString pass, Int_t buildIndex){
   // FIXME  - here we should also fix Leave name bug
   TChain* chain = 0x0;
   TString internalFilename = ""; // Resulting path to the file
@@ -515,10 +515,41 @@ TChain* AliExternalInfo::GetChain(TString type, TString period, TString pass){
   if (cache>0) chain->SetCacheSize(cache);
 
   AddChain(type, period, pass);
+  BuildIndex(chain,type);
+  TString metadataMacro=fConfigMap[type + ".metadataMacro"];
+  chain->Draw("Entry$","1","goff",1);
+  if (metadataMacro.Length()>0 && chain->GetTree()) {  // rename branch  with index if specified in configuration file
+    if (fVerbose>1) printf("Processing metadata macro:\n gROOT->ProcessLine(.x %s((TTree*)%p,%d);",     metadataMacro.Data(),chain->GetTree(), fVerbose);
+    gROOT->ProcessLine(TString::Format(".x %s((TTree*)%p,%d);",metadataMacro.Data(),chain->GetTree(),fVerbose).Data());
+  }
+
   delete arrFiles;
   delete arrTreeName;
   return chain;
 };
+
+/// \param type Type of the resource as described in the config file, e.g. QA.TPC, MonALISA.RCT
+/// \param period Period, e.g. 'LHC15f'. Here you can use wildcards like in 'ls', e.g. 'LHC15*'
+/// \param pass E.g. 'pass2' or 'passMC'. Here you can use wildcards like in 'ls', e.g. 'pass*'
+/// Returns a chain with the information from the corresponding resources.
+/// \return TChain*
+TChain* AliExternalInfo::GetChain(TString type, TString period, TString pass, TString friendList){
+  TChain *chain = GetChain(type.Data(),period.Data(),pass.Data(),kFALSE);
+  if (chain==0){
+    ::Error("AliExternalInfo::GetChain", "Invalid tree description %s\t%s\t%s",type.Data(), period.Data(),pass.Data());
+  }
+  TObjArray * arrFriendList= friendList.Tokenize(";");
+  for (Int_t ilist=0; ilist<arrFriendList->GetEntriesFast(); ilist++) {
+    TChain *chainF = GetChain(arrFriendList->At(ilist)->GetName(), period.Data(), pass.Data(),kTRUE);
+    if (chainF){
+      chain->AddFriend(chainF,arrFriendList->At(ilist)->GetName());
+    }else{
+      ::Error("AliExternalInfo::GetChain", "Invalid friend tree\t%s\t%s",arrFriendList->At(ilist)->GetName(), friendList.Data());
+      continue;
+    }
+  }
+  return chain;
+}
 
 /// Every tree you create is added to a big tree acting as a friend.
 /// You can have access to this tree with the GetFriendsTree() function.
@@ -536,11 +567,11 @@ Bool_t AliExternalInfo::BuildIndex(TTree* tree, TString type){
   //
   if (oldIndexName.Length()>0){  // rename branch  with index if specified in configuration file
     if (tree->GetBranch(oldIndexName.Data())) {
-      tree->GetBranch(oldIndexName.Data())->SetName(indexName.Data());
     }
   }
   if (indexName.Length()<=0) { // set default index name
-    if (tree->GetListOfBranches()->FindObject("run"))  indexName="run";    
+     indexName="run";
+    if (tree->GetListOfBranches()!=NULL) if (tree->GetListOfBranches()->FindObject("run"))  indexName="run";
   }
   if (indexName.Length()<=0) {
     ::Error("AliExternalInfo::BuildIndex","Index %s not avaible for type %s", indexName.Data(), type.Data());

@@ -70,10 +70,12 @@ testAliDrawStyleTest() {
     gSystem->AddIncludePath("-I$ALICE_ROOT/include");
     .x ./AliDrawStyleTest.C+
 EOF
+
   N_GOOD=$(grep -cE 'Ali.*OK' AliDrawStyleTest.log)
   N_BAD=$(grep -c "E-Ali" AliDrawStyleTest.log)
+
   TEST_STATUS=0
-  if [[ $N_GOOD != 31 ]]; then
+  if [[ $N_GOOD != 27 ]]; then
     alilog_error "statTest.AliDrawStyleTest: Test FAILED"
     ((TEST_STATUS++))
   fi

@@ -97,7 +97,8 @@ public:
   TTree*  GetTreeMCPassGuess();
   TString GetMCPassGuess(TString MCprodname);
   
-  TChain* GetChain(TString type, TString period, TString pass);
+  TChain* GetChain(TString type, TString period, TString pass, Int_t buildIndex=1);
+  TChain* GetChain(TString type, TString period, TString pass, TString friendList);
   TChain* GetChainMC()                                                  {return GetChain("MonALISA.MC", "", "");}
   TChain* GetChainRCT(TString period, TString pass)                     {return GetChain("MonALISA.RCT", period, pass);}
   TChain* GetChainDataQA(TString detector, TString period, TString pass){return GetChain("QA." + detector, period, pass);}
