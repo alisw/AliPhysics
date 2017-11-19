@@ -379,10 +379,10 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::UserCreateOutputObjects()
   fOutputContainer->Add(new TH2F("hClusterEvsN","Cluster E vs N_{cell};E (GeV);N_{cell}",500,0,50,100,0.5,100.5));
   fOutputContainer->Add(new TH2F("hClusterEvsM02","Cluster E vs M02;E (GeV);M02 (cm)" ,500,0,50,100,0,10));
   fOutputContainer->Add(new TH2F("hClusterNvsM02","Cluster N vs M02;N_{cell};M02 (cm)",100,0.5,100.5,100,0,10));
-  fOutputContainer->Add(new TH2F("hFullDispvsFullE","full dispersion vs full E;E (GeV);dipersion (#sigma)",100,0,50,100,0,10));
-  fOutputContainer->Add(new TH2F("hCoreDispvsCoreE","core dispersion vs core E;E (GeV);dipersion (#sigma)",100,0,50,100,0,10));
-  fOutputContainer->Add(new TH2F("hFullDispvsCoreE","full dispersion vs full E;E (GeV);dipersion (#sigma)",100,0,50,100,0,10));
-  fOutputContainer->Add(new TH2F("hCoreDispvsFullE","core dispersion vs core E;E (GeV);dipersion (#sigma)",100,0,50,100,0,10));
+  fOutputContainer->Add(new TH2F("hFullDispvsFullE","full dispersion vs full E;E (GeV);dispersion (#sigma)",100,0,50,100,0,10));
+  fOutputContainer->Add(new TH2F("hCoreDispvsCoreE","core dispersion vs core E;E (GeV);dispersion (#sigma)",100,0,50,100,0,10));
+  fOutputContainer->Add(new TH2F("hFullDispvsCoreE","full dispersion vs full E;E (GeV);dispersion (#sigma)",100,0,50,100,0,10));
+  fOutputContainer->Add(new TH2F("hCoreDispvsFullE","core dispersion vs core E;E (GeV);dispersion (#sigma)",100,0,50,100,0,10));
 
   for(Int_t imod=1;imod<Nmod;imod++) fOutputContainer->Add(new TH2F(Form("hRvsTrackPtM%d",imod),Form("r vs track pT M%d;p_{T}^{track} (GeV/c);cpv (#sigma)",imod)         ,100,0,50,100,0,10));
   for(Int_t imod=1;imod<Nmod;imod++) fOutputContainer->Add(new TH3F(Form("hdZvsZvsTrackPt_M%d",imod)        ,"dZ vs. Z;Z (cm);dZ (cm);p_{T}^{track} (GeV/c)"           ,160,-80,80,80,-20,20,40,0,20));
@@ -2131,6 +2131,7 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::EstimateTOFCutEfficiency()
     AliCaloPhoton *ph1 = (AliCaloPhoton*)fPHOSClusterArray->At(i1);
     if(!fPHOSClusterCuts->AcceptPhoton(ph1)) continue;
     if(!ph1->IsTOFOK()) continue;
+    if(!fIsMC && fIsPHOSTriggerAnalysis && !ph1->IsTrig()) continue;//take trigger bias into account.
 
     for(Int_t ev=0;ev<prevPHOS->GetSize();ev++){
       TClonesArray *mixPHOS = static_cast<TClonesArray*>(prevPHOS->At(ev));
@@ -2327,8 +2328,7 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::EstimateTriggerEfficiency()
     if(!fPHOSTriggerHelper->IsOnActiveTRUChannel(ph1)) continue;
     if(!ph1->IsTrig()) continue;
     if(ph1->Energy() < fEnergyThreshold) continue;
-
-    //if(!ph1->IsTOFOK()) continue;
+    if(!ph1->IsTOFOK()) continue;
 
     relId[0] = 0; relId[1] = 0; relId[2] = 0; relId[3] = 0;
 
@@ -2357,7 +2357,7 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::EstimateTriggerEfficiency()
       AliCaloPhoton *ph2 = (AliCaloPhoton*)fPHOSClusterArray->At(i2);
       if(!fPHOSClusterCuts->AcceptPhoton(ph2)) continue;
       if(!fPHOSTriggerHelper->IsOnActiveTRUChannel(ph2)) continue;
-      //if(!ph2->IsTOFOK()) continue;
+      if(!ph2->IsTOFOK()) continue;
 
       if(i2==i1) continue;//reject same cluster combination
 
@@ -2430,7 +2430,7 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::EstimateTriggerEfficiency()
     if(!fPHOSTriggerHelper->IsOnActiveTRUChannel(ph1)) continue;
     if(!ph1->IsTrig()) continue;
     if(ph1->Energy() < fEnergyThreshold) continue;
-    //if(!ph1->IsTOFOK()) continue;
+    if(!ph1->IsTOFOK()) continue;
 
     position[0] = ph1->EMCx();
     position[1] = ph1->EMCy();
@@ -2449,7 +2449,7 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::EstimateTriggerEfficiency()
         AliCaloPhoton *ph2 = (AliCaloPhoton*)mixPHOS->At(i2);
         if(!fPHOSClusterCuts->AcceptPhoton(ph2)) continue;
         if(!fPHOSTriggerHelper->IsOnActiveTRUChannel(ph2)) continue;
-        //if(!ph2->IsTOFOK()) continue;
+        if(!ph2->IsTOFOK()) continue;
 
         p12 = *ph1 + *ph2;
         m12 = p12.M();
