@@ -57,7 +57,7 @@ public:
     Float_t eta_resitual_e;
     
     //PID properties
-    Float_t TPCNSigmaElectron;
+    Float_t n_sigma_electron_TPC;
     
     ElectronForAlignment()
     {
@@ -91,7 +91,7 @@ public:
         
         super_module_number = 99;
         //PID properties
-        TPCNSigmaElectron = -999;
+        n_sigma_electron_TPC = -999;
     }
     
     void Reset()
@@ -126,12 +126,12 @@ public:
         
         super_module_number = 99;
         //PID properties
-        TPCNSigmaElectron = -999;
+        n_sigma_electron_TPC = -999;
     }
     
     //Default Initializer
     
-    ClassDef(ElectronForAlignment, 1);
+    ClassDef(ElectronForAlignment, 2);
     
 };
 
@@ -157,9 +157,9 @@ protected:
     AliEMCALRecoUtils *fEMCALRecoUtils; //! EMCAL Reco utils used to recalculate the matching
     AliEMCALGeometry *fEMCALGeo; //! EMCAL geometry class
     AliPIDResponse *fPIDResponse; //! PID response task used to perform electron identification
-    ElectronForAlignment ElectronInformation;
     
-    TTree* ElectronTree;
+    ElectronForAlignment fElectronInformation; //! Object to hold the electron information
+    TTree* fElectronTree; //! Electron tree output
 
     
 private:
@@ -167,7 +167,7 @@ private:
     AliAnalysisTaskEMCALAlig &operator=(const AliAnalysisTaskEMCALAlig&); // not implemented
     
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskEMCALAlig, 2);
+  ClassDef(AliAnalysisTaskEMCALAlig, 3);
   /// \endcond
 
 };

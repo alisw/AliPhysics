@@ -180,11 +180,17 @@ AliAnalysisTaskEMCALAlig* AddTaskEMCALAlig(
     AliAnalysisDataContainer *cinput1  = mgr->GetCommonInputContainer()  ;
     TString contname(name);
     contname += "_histos";
-    AliAnalysisDataContainer *coutput1 = mgr->CreateContainer(contname.Data(),
-                                                              TList::Class(),AliAnalysisManager::kOutputContainer,
-                                                              Form("%s", AliAnalysisManager::GetCommonFileName()));
+    
+    AliAnalysisDataContainer *coutput1 = mgr->CreateContainer(contname.Data(),TList::Class(),AliAnalysisManager::kOutputContainer,AliAnalysisManager::GetCommonFileName());
+    TString contnameTree(name);
+    contnameTree += "_tree";
+    
+    AliAnalysisDataContainer *coutput2 = mgr->CreateContainer(contnameTree.Data(),TTree::Class(),AliAnalysisManager::kOutputContainer,AliAnalysisManager::GetCommonFileName());
+    
     mgr->ConnectInput  (sampleTask, 0,  cinput1 );
     mgr->ConnectOutput (sampleTask, 1, coutput1 );
+    mgr->ConnectOutput (sampleTask, 2, coutput2 );
+
     
     return sampleTask;
 }
