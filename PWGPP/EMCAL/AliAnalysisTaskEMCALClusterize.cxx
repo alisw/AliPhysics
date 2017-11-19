@@ -103,6 +103,7 @@ AliAnalysisTaskEMCALClusterize::AliAnalysisTaskEMCALClusterize(const char *name)
     
     for(Int_t j = 0; j < 4 ; j++)
     {
+      fTCardCorrInduceEner         [j][i] =  0 ;   
       fTCardCorrInduceEnerFrac     [j][i] =  0 ;   
       fTCardCorrInduceEnerFracP1   [j][i] =  0 ;   
       fTCardCorrInduceEnerFracWidth[j][i] =  0 ;   
@@ -160,6 +161,7 @@ AliAnalysisTaskEMCALClusterize::AliAnalysisTaskEMCALClusterize()
     
     for(Int_t j = 0; j < 4 ; j++)
     {
+      fTCardCorrInduceEner         [j][i] =  0 ;   
       fTCardCorrInduceEnerFrac     [j][i] =  0 ;   
       fTCardCorrInduceEnerFracP1   [j][i] =  0 ;   
       fTCardCorrInduceEnerFracWidth[j][i] =  0 ;   
@@ -1731,14 +1733,14 @@ void AliAnalysisTaskEMCALClusterize::MakeCellTCardCorrelation()
     Float_t fracleri       = fTCardCorrInduceEnerFrac[2][imod]+amp*fTCardCorrInduceEnerFracP1[2][imod];
     Float_t frac2nd        = fTCardCorrInduceEnerFrac[3][imod]+amp*fTCardCorrInduceEnerFracP1[3][imod];
     
-    AliDebug(1,Form("Fraction for SM %d:\n\t up-down   : p1 %2.2e, p2 %2.2f, sig %2.2f, fraction %2.3f\n"
-                    "\t up-down-lr: p1 %2.2e, p2 %2.2f, sig %2.2f, fraction %2.3f\n"
-                    "\t left-right: p1 %2.2e, p2 %2.2f, sig %2.2f, fraction %2.3f\n"
-                    "\t 2nd row   : p1 %2.2e, p2 %2.2f, sig %2.2f, fraction %2.3f", imod,
-                    fTCardCorrInduceEnerFrac[0][imod],fTCardCorrInduceEnerFracP1[0][imod],fTCardCorrInduceEnerFracWidth[0][imod],fracupdown,
-                    fTCardCorrInduceEnerFrac[1][imod],fTCardCorrInduceEnerFracP1[1][imod],fTCardCorrInduceEnerFracWidth[1][imod],fracupdownleri,
-                    fTCardCorrInduceEnerFrac[2][imod],fTCardCorrInduceEnerFracP1[2][imod],fTCardCorrInduceEnerFracWidth[2][imod],fracleri,
-                    fTCardCorrInduceEnerFrac[3][imod],fTCardCorrInduceEnerFracP1[3][imod],fTCardCorrInduceEnerFracWidth[3][imod],frac2nd));
+    AliDebug(1,Form("Fraction for SM %d:\n\t up-down   : c %2.2e, p1 %2.2e, p2 %2.2f, sig %2.2f, fraction %2.3f\n"
+                    "\t up-down-lr: c %2.2e, p1 %2.2e, p2 %2.2f, sig %2.2f, fraction %2.3f\n"
+                    "\t left-right: c %2.2e, p1 %2.2e, p2 %2.2f, sig %2.2f, fraction %2.3f\n"
+                    "\t 2nd row   : c %2.2e, p1 %2.2e, p2 %2.2f, sig %2.2f, fraction %2.3f", imod,
+                    fTCardCorrInduceEner[0][imod],fTCardCorrInduceEnerFrac[0][imod],fTCardCorrInduceEnerFracP1[0][imod],fTCardCorrInduceEnerFracWidth[0][imod],fracupdown,
+                    fTCardCorrInduceEner[1][imod],fTCardCorrInduceEnerFrac[1][imod],fTCardCorrInduceEnerFracP1[1][imod],fTCardCorrInduceEnerFracWidth[1][imod],fracupdownleri,
+                    fTCardCorrInduceEner[2][imod],fTCardCorrInduceEnerFrac[2][imod],fTCardCorrInduceEnerFracP1[2][imod],fTCardCorrInduceEnerFracWidth[2][imod],fracleri,
+                    fTCardCorrInduceEner[3][imod],fTCardCorrInduceEnerFrac[3][imod],fTCardCorrInduceEnerFracP1[3][imod],fTCardCorrInduceEnerFracWidth[3][imod],frac2nd));
     
     // Randomize the induced fraction, if requested
     if(fRandomizeTCard)
@@ -1753,10 +1755,10 @@ void AliAnalysisTaskEMCALClusterize::MakeCellTCardCorrelation()
     }
     
     // Calculate induced energy
-    Float_t indEupdown     = amp*fracupdown;
-    Float_t indEupdownleri = amp*fracupdownleri;
-    Float_t indEleri       = amp*fracleri;
-    Float_t indE2nd        = amp*frac2nd;
+    Float_t indEupdown     = fTCardCorrInduceEner[0][imod]+amp*fracupdown;
+    Float_t indEupdownleri = fTCardCorrInduceEner[1][imod]+amp*fracupdownleri;
+    Float_t indEleri       = fTCardCorrInduceEner[2][imod]+amp*fracleri;
+    Float_t indE2nd        = fTCardCorrInduceEner[3][imod]+amp*frac2nd;
     
     AliDebug(1,Form("Induced energy: up-down %2.3f; up-down-left-right %2.3f; left-right %2.3f; 2nd row %2.3f",
                     indEupdown,indEupdownleri,indEleri,indE2nd));
@@ -1906,8 +1908,8 @@ void AliAnalysisTaskEMCALClusterize::PrintTCardParam()
     printf("\t sm %d, fraction %2.2f\n",ism, fTCardCorrInduceEnerProb[ism]);
     for(Int_t icell = 0; icell < 4; icell++)
     {
-      printf("\t \t cell type %d, p0 %2.2e, p1 %2.2e, sigma %2.2e \n",
-             icell,fTCardCorrInduceEnerFrac[icell][ism],fTCardCorrInduceEnerFracP1[icell][ism],fTCardCorrInduceEnerFracWidth[icell][ism]);     
+      printf("\t \t cell type %d, c %2.2e, p0 %2.2e, p1 %2.2e, sigma %2.2e \n",
+             icell,fTCardCorrInduceEner[icell][ism],fTCardCorrInduceEnerFrac[icell][ism],fTCardCorrInduceEnerFracP1[icell][ism],fTCardCorrInduceEnerFracWidth[icell][ism]);     
     }
   }
 }
