@@ -50,7 +50,7 @@ public:
 
   virtual AliFemtoModelCorrFctn* Clone();
   
-  void SetFillkT(bool fillkT){fFillkT = fillkT;} //i do not need this
+  //void SetFillkT(bool fillkT){fFillkT = fillkT;} //i do not need this
    
   Double_t GetQinvTrue(AliFemtoPair*);
   
@@ -58,6 +58,7 @@ public:
   void SetKaonPDG(Bool_t aSetKaonAna);
 
 protected:
+  
   AliFemtoModelManager *fManager; // Link back to the manager to get the weights
 
   TH1D *fNumeratorTrue; // Numerator made with pairs from the same event
@@ -70,19 +71,23 @@ protected:
 
   TH2D *fQgenQrec; // Qinv true (generated) vs. Qinv reconstructed
 
+  TH1D *fdP;//delta_p/p
+  TH1D *fdPt;//delta_p_T/p_T
+  TH2D *fdPtvsPt; //delta_p_T/p_T versus p_T
 
 private:
   
   //Special MC analysis for K selected by PDG code -->
   Bool_t fKaonPDG;
 
-  
+  Double_t fP1x, fP2x;//do not take the same particles
+  /* 
     bool fFillkT;
     int fNbbPairs = 21;
     TH1D *fkTdists[21]; // histograms with kT distributions for different BB pairs
     double GetParentsKt(AliFemtoPair *pair);
+  */
     int GetPairNumber(AliFemtoPair *pair); // returns pair code
-  
   
 #ifdef __ROOT__
   /// \cond CLASSIMP

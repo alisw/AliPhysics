@@ -1,7 +1,7 @@
 /******************************************************************************/
 /*                                                                            */
 /*  AliFemtoModelCorrFctnKK -   numerator and denominator                     */
-/*      histograms from the true Monte Carlo KchKch tracks                    */
+/*      histograms from the true Monte Carlo K+K- tracks                      */
 /*         Konstantin.Mikhaylov@cern.ch                                       */
 /*                                                                            */
 /******************************************************************************/
@@ -29,6 +29,9 @@ AliFemtoModelCorrFctnKK::AliFemtoModelCorrFctnKK():
   fNumeratorFakeIdeal(0),
   fDenominatorIdeal(0),
   fQgenQrec(0),
+  fdP(0),
+  fdPt(0),
+  fdPtvsPt(0),
   fKaonPDG(kFALSE)
 {
   // Default constructor
@@ -42,11 +45,17 @@ AliFemtoModelCorrFctnKK::AliFemtoModelCorrFctnKK():
 
   fQgenQrec = new TH2D("QgenQrec","QgenQrec",50,0.0,0.5,50,0.0,0.5);
 
+  fdP = new TH1D("Delta_P","Delta_P", 50,-0.1,0.1);
+  fdPt = new TH1D("Delta_Pt","Delta_Pt", 50,-0.1,0.1);
+  fdPtvsPt = new TH2D("Delta_PtvsPt","Delta_PtvsPt",50,0.0,2.0,50,-0.1,0.1);
+  
+  /*
     for(int i=0;i<fNbbPairs;i++){
         fkTdists[i] = new TH1D(Form("fkTdists[%i]",i),Form("fkTdists[%i]",i),100,0.0,5.0);
         fkTdists[i]->Sumw2();
     }
-    
+  */
+  
   fNumeratorTrue->Sumw2();
   fNumeratorFake->Sumw2();
   fDenominator->Sumw2();
@@ -56,6 +65,9 @@ AliFemtoModelCorrFctnKK::AliFemtoModelCorrFctnKK():
   fDenominatorIdeal->Sumw2();
 
   fQgenQrec->Sumw2();
+  
+  fdP->Sumw2();
+  fdPt->Sumw2();
 
 }
 //_______________________
@@ -69,6 +81,9 @@ AliFemtoModelCorrFctnKK::AliFemtoModelCorrFctnKK(const char *title, Int_t aNbins
   fNumeratorFakeIdeal(0),
   fDenominatorIdeal(0),
   fQgenQrec(0),
+  fdP(0),
+  fdPt(0),
+  fdPtvsPt(0),
   fKaonPDG(kFALSE)
 {
   // Normal constructor
@@ -91,12 +106,21 @@ AliFemtoModelCorrFctnKK::AliFemtoModelCorrFctnKK(const char *title, Int_t aNbins
   fQgenQrec = new TH2D(buf,buf,aNbins,aQinvLo,aQinvHi,aNbins,aQinvLo,aQinvHi);
   //test
   //fQgenQrec = new TH2D(buf,buf,aNbins,aQinvLo,aQinvHi,aNbins,-0.05,0.05);
+  
+  snprintf(buf , 100,  "DeltaP_%s", title);
+  fdP = new TH1D(buf,buf,50,-0.1,0.1);
+  snprintf(buf , 100,  "DeltaPT_%s", title);
+  fdPt = new TH1D(buf,buf,50,-0.1,0.1);
+  snprintf(buf , 100,  "DeltaPT_PT_%s", title);
+  fdPtvsPt = new TH2D(buf,buf,50,0.0,2.0,50,-0.1,0.1);
 
+  /*
     for(int i=0;i<fNbbPairs;i++){
         fkTdists[i] = new TH1D(Form("fkTdists[%i]_%s",i,title),Form("fkTdists[%i]_%s",i,title),100,0.0,5.0);
         fkTdists[i]->Sumw2();
     }
-    
+  */
+  
   fNumeratorTrue->Sumw2();
   fNumeratorFake->Sumw2();
   fDenominator->Sumw2();
@@ -106,6 +130,11 @@ AliFemtoModelCorrFctnKK::AliFemtoModelCorrFctnKK(const char *title, Int_t aNbins
   fDenominatorIdeal->Sumw2();
 
   fQgenQrec->Sumw2();
+
+  fdP->Sumw2();
+  fdPt->Sumw2();
+  fdPtvsPt->Sumw2();
+
 }
 //_______________________
 AliFemtoModelCorrFctnKK::AliFemtoModelCorrFctnKK(const AliFemtoModelCorrFctnKK& aCorrFctn) :
@@ -118,6 +147,9 @@ AliFemtoModelCorrFctnKK::AliFemtoModelCorrFctnKK(const AliFemtoModelCorrFctnKK& 
   fNumeratorFakeIdeal(0),
   fDenominatorIdeal(0),
   fQgenQrec(0),
+  fdP(0),
+  fdPt(0),
+  fdPtvsPt(0),
   fKaonPDG(aCorrFctn.fKaonPDG)
 {
   // Copy constructor
@@ -138,11 +170,20 @@ AliFemtoModelCorrFctnKK::AliFemtoModelCorrFctnKK(const AliFemtoModelCorrFctnKK& 
   if (aCorrFctn.fQgenQrec)
     fQgenQrec = new TH2D(*(aCorrFctn.fQgenQrec));
 
+  if (aCorrFctn.fdP)
+    fdP = new TH1D(*(aCorrFctn.fdP));
+  if (aCorrFctn.fdPt)
+    fdPt = new TH1D(*(aCorrFctn.fdPt));
+   if (aCorrFctn.fdPtvsPt)
+    fdPtvsPt = new TH2D(*(aCorrFctn.fdPtvsPt));
+ 
+  /*
     for(int i=0;i<fNbbPairs;i++){
         if(aCorrFctn.fkTdists[i])
             fkTdists[i] = aCorrFctn.fkTdists[i];
     }
-    
+  */
+  
   fManager = aCorrFctn.fManager;
 }
 //_______________________
@@ -158,10 +199,16 @@ AliFemtoModelCorrFctnKK::~AliFemtoModelCorrFctnKK()
   if (fDenominatorIdeal) delete fDenominatorIdeal;
 
   if (fQgenQrec) delete fQgenQrec;
-    
+
+  if (fdP) delete fdP;
+  if (fdPt) delete fdPt;
+  if (fdPtvsPt) delete fdPtvsPt;
+
+  /*
     for(int i=0;i<fNbbPairs;i++){
         if(fkTdists[i]) delete fkTdists[i];
     }
+  */
 
 }
 //_______________________
@@ -191,13 +238,30 @@ AliFemtoModelCorrFctnKK& AliFemtoModelCorrFctnKK::operator=(const AliFemtoModelC
             ? new TH2D(*aCorrFctn.fQgenQrec)
             : nullptr;
 
-    for(int i=0;i<fNbbPairs;i++){
+  delete fdP;
+  fdP = (aCorrFctn.fdP)
+            ? new TH1D(*aCorrFctn.fdP)
+            : nullptr;
+
+  delete fdPt;
+  fdPt = (aCorrFctn.fdPt)
+            ? new TH1D(*aCorrFctn.fdPt)
+            : nullptr;
+
+  delete fdPtvsPt;
+  fdPtvsPt = (aCorrFctn.fdPtvsPt)
+            ? new TH2D(*aCorrFctn.fdPtvsPt)
+            : nullptr;
+
+  /*
+  for(int i=0;i<fNbbPairs;i++){
         delete fkTdists[i];
         fkTdists[i] = (aCorrFctn.fkTdists[i])
         ? new TH1D(*aCorrFctn.fkTdists[i])
         : nullptr;
   
     }
+  */
   delete fNumeratorTrueIdeal;
   fNumeratorTrueIdeal = (aCorrFctn.fNumeratorTrueIdeal)
                       ? new TH1D(*aCorrFctn.fNumeratorTrueIdeal)
@@ -263,16 +327,79 @@ void AliFemtoModelCorrFctnKK::AddRealPair(AliFemtoPair* aPair)
     AliFemtoTrack *inf1 = (AliFemtoTrack *) aPair->Track1()->Track();
     AliFemtoTrack *inf2 = (AliFemtoTrack *) aPair->Track2()->Track();
     //true and recontructed momntum to get delta_p/p -->
+    Double_t pdg1 = ((AliFemtoModelHiddenInfo*)inf1->GetHiddenInfo())->GetPDGPid();
+    Double_t pdg2 = ((AliFemtoModelHiddenInfo*)inf2->GetHiddenInfo())->GetPDGPid();
+    
+    //if(pdg1 != 321 || pdg2 != -321) cout<<"____________ ++++Kaons : pdg1="<<pdg1<<" pdg2="<<pdg2<<endl;
+
+    if(pdg1 == 321 && pdg2 == -321) { //to be sure PID does not change MR
+    
     AliFemtoLorentzVector p_true_1;//true momentum
-    AliFemtoThreeVector* temp =
+    AliFemtoThreeVector* temp1 =
       ((AliFemtoModelHiddenInfo*)inf1->GetHiddenInfo())->GetTrueMomentum();
-    p_true_1.SetVect(*temp);
+    p_true_1.SetVect(*temp1);
+    AliFemtoLorentzVector p_true_2;//true momentum
+    AliFemtoThreeVector* temp2 =
+      ((AliFemtoModelHiddenInfo*)inf2->GetHiddenInfo())->GetTrueMomentum();
+    p_true_2.SetVect(*temp2);
     //cout<<"###_____________________ True: Px="<<p_true_1.x()<<endl;
     // //AliFemtoLorentzVector p_rec_1 = aPair->Track1()->FourMomentum();//reconstructed momentum
     //AliFemtoThreeVector p_rec_1 = aPair->Track1()->Track()->P();
     AliFemtoLorentzVector p_rec_1 = aPair->Track1()->FourMomentum();
-    cout<<"#-->_____________________ True: x="<<p_true_1.x()<<"  y="<<p_true_1.y()<<" z="<<p_true_1.z()<<
-      " Rec: x="<<p_rec_1.x()<<"  y="<<p_rec_1.y()<<" z="<<p_rec_1.z()<<endl;
+    AliFemtoLorentzVector p_rec_2 = aPair->Track2()->FourMomentum();
+    Double_t P, deltaP, Pt, deltaPt;
+    
+    if(fP1x != p_true_1.x()) {
+      // cout<<"#+1>_____________________ True: x="<<p_true_1.x()<<"  y="<<p_true_1.y()<<" z="<<p_true_1.z()<<
+      //" Rec: x="<<p_rec_1.x()<<"  y="<<p_rec_1.y()<<" z="<<p_rec_1.z()<<endl;
+    fP1x = p_true_1.x();
+    P = TMath::Sqrt(p_true_1.x()*p_true_1.x()+p_true_1.y()*p_true_1.y()+p_true_1.z()*p_true_1.z());
+    Pt = TMath::Sqrt(p_true_1.x()*p_true_1.x()+p_true_1.y()*p_true_1.y());
+    //cout<<" P= "<<P<<endl;
+    if( P !=0 && Pt !=0 ){
+    deltaP=
+      TMath::Sqrt(p_true_1.x()*p_true_1.x()+p_true_1.y()*p_true_1.y()+p_true_1.z()*p_true_1.z())-
+      TMath::Sqrt(p_rec_1.x()*p_rec_1.x()+p_rec_1.y()*p_rec_1.y()+p_rec_1.z()*p_rec_1.z());
+    //cout<<" deltaP= "<<deltaP<<endl;
+    deltaPt=
+      TMath::Sqrt(p_true_1.x()*p_true_1.x()+p_true_1.y()*p_true_1.y())-
+      TMath::Sqrt(p_rec_1.x()*p_rec_1.x()+p_rec_1.y()*p_rec_1.y());
+    fdP->Fill(deltaP/P);
+    fdPt->Fill(deltaPt/Pt);
+    fdPtvsPt->Fill(Pt,deltaPt/Pt);
+    }
+    }
+    
+    
+    if(fP2x != p_true_2.x()) {
+      //cout<<"#+2>_____________________ True: x="<<p_true_2.x()<<"  y="<<p_true_2.y()<<" z="<<p_true_2.z()<<
+      //" Rec: x="<<p_rec_2.x()<<"  y="<<p_rec_2.y()<<" z="<<p_rec_2.z()<<endl;
+    fP2x = p_true_2.x();
+
+    P = TMath::Sqrt(p_true_2.x()*p_true_2.x()+p_true_2.y()*p_true_2.y()+p_true_2.z()*p_true_2.z());
+    Pt = TMath::Sqrt(p_true_2.x()*p_true_2.x()+p_true_2.y()*p_true_2.y());
+    deltaP=
+      TMath::Sqrt(p_true_2.x()*p_true_2.x()+p_true_2.y()*p_true_2.y()+p_true_2.z()*p_true_2.z())-
+      TMath::Sqrt(p_rec_2.x()*p_rec_2.x()+p_rec_2.y()*p_rec_2.y()+p_rec_2.z()*p_rec_2.z());
+    Pt = TMath::Sqrt(p_true_2.x()*p_true_2.x()+p_true_2.y()*p_true_2.y());
+    deltaPt=
+      TMath::Sqrt(p_true_2.x()*p_true_2.x()+p_true_2.y()*p_true_2.y())-
+      TMath::Sqrt(p_rec_2.x()*p_rec_2.x()+p_rec_2.y()*p_rec_2.y());
+    fdP->Fill(deltaP/P);
+    fdPt->Fill(deltaPt/Pt);
+    fdPtvsPt->Fill(Pt,deltaPt/Pt);
+    }
+    
+    /*Double_t deltaP=TMath::Sqrt(
+				(p_true_2.x()-p_rec_2.x())*(p_true_2.x()-p_rec_2.x())+
+				(p_true_2.y()-p_rec_2.y())*(p_true_2.y()-p_rec_2.y())+
+				(p_true_2.z()-p_rec_2.z())*(p_true_2.z()-p_rec_2.z())
+				);
+    Double_t deltaPt=TMath::Sqrt(
+				(p_true_2.x()-p_rec_2.x())*(p_true_2.x()-p_rec_2.x())+
+				(p_true_2.y()-p_rec_2.y())*(p_true_2.y()-p_rec_2.y())
+				);*/
+    }
     //true and recontructed momntum to get delta_p/p <--
 
   }
@@ -291,7 +418,8 @@ void AliFemtoModelCorrFctnKK::AddMixedPair(AliFemtoPair* aPair)
     
     fNumeratorFakeIdeal->Fill(tQinvTrue, weight);
     fDenominatorIdeal->Fill(tQinvTrue, 1.0);
-    
+
+    /*
       if(fFillkT)
       {
           int pairNumber = GetPairNumber(aPair);
@@ -302,6 +430,7 @@ void AliFemtoModelCorrFctnKK::AddMixedPair(AliFemtoPair* aPair)
               }
           }
       }
+    */
       fQgenQrec->Fill(tQinvTrue,aPair->QInv());
   }
   //Special MC analysis for K selected by PDG code -->
@@ -309,11 +438,15 @@ void AliFemtoModelCorrFctnKK::AddMixedPair(AliFemtoPair* aPair)
     Double_t weight = fManager->GetWeight(aPair);
     AliFemtoTrack *inf1 = (AliFemtoTrack *) aPair->Track1()->Track();
     AliFemtoTrack *inf2 = (AliFemtoTrack *) aPair->Track2()->Track();
+    Double_t pdg1 = ((AliFemtoModelHiddenInfo*)inf1->GetHiddenInfo())->GetPDGPid();
+    Double_t pdg2 = ((AliFemtoModelHiddenInfo*)inf2->GetHiddenInfo())->GetPDGPid();
+    if(pdg1 == 321 && pdg2 == -321) { //to be sure PID does not change MR
+
     //true and recontructed momntum to get delta_p/p -->
-    AliFemtoLorentzVector p_true_1;//true momentum
-    AliFemtoThreeVector* temp =
-      ((AliFemtoModelHiddenInfo*)inf1->GetHiddenInfo())->GetTrueMomentum();
-    p_true_1.SetVect(*temp);
+    //AliFemtoLorentzVector p_true_1;//true momentum
+    //AliFemtoThreeVector* temp =
+    //  ((AliFemtoModelHiddenInfo*)inf1->GetHiddenInfo())->GetTrueMomentum();
+    //p_true_1.SetVect(*temp);
     //cout<<"###_____________________ True: Px="<<p_true_1.x()<<endl;
     // //AliFemtoLorentzVector p_rec_1 = aPair->Track1()->FourMomentum();//reconstructed momentum
     // //AliFemtoThreeVector p_rec_1 = aPair->Track1()->Track()->P();
@@ -335,6 +468,7 @@ void AliFemtoModelCorrFctnKK::AddMixedPair(AliFemtoPair* aPair)
     if(tQinvTrue>0)fQgenQrec->Fill(tQinvTrue,aPair->QInv());
     //test
     //if(tQinvTrue>0)fQgenQrec->Fill(tQinvTrue,tQinvTrue-aPair->QInv());
+  }
   }
 }
 
@@ -438,16 +572,20 @@ void AliFemtoModelCorrFctnKK::Write()
 
   fQgenQrec->Write();
 
+  fdP->Write();
+  fdPt->Write();
+  fdPtvsPt->Write();
+
   fNumeratorTrue->Write();
   fNumeratorFake->Write();
   fDenominator->Write();
 
-    if(fFillkT)
+  /*  if(fFillkT)
     {
         for(int i=0;i<fNbbPairs;i++){
             fkTdists[i]->Write();
         }
-    }
+	} */
   fNumeratorTrueIdeal->Write();
   fNumeratorFakeIdeal->Write();
   fDenominatorIdeal->Write();
@@ -476,13 +614,17 @@ TList* AliFemtoModelCorrFctnKK::GetOutputList()
   tOutputList->Add(fNumeratorFakeIdeal);
   tOutputList->Add(fDenominatorIdeal);
   tOutputList->Add(fQgenQrec);
+  
+  tOutputList->Add(fdP);
+  tOutputList->Add(fdPt);
+  tOutputList->Add(fdPtvsPt);
 
-    if(fFillkT)
+  /*  if(fFillkT)
     {
         for(int i=0;i<fNbbPairs;i++){
             tOutputList->Add(fkTdists[i]);
         }
-    }
+	} */
   return tOutputList;
 }
 void AliFemtoModelCorrFctnKK::SetKaonPDG(Bool_t aSetKaonAna)
@@ -490,6 +632,7 @@ void AliFemtoModelCorrFctnKK::SetKaonPDG(Bool_t aSetKaonAna)
   fKaonPDG = aSetKaonAna;
 }
 
+/*
 double AliFemtoModelCorrFctnKK::GetParentsKt(AliFemtoPair *pair)
 {
     AliFemtoParticle *first = new AliFemtoParticle(*(pair->Track1()));
@@ -532,6 +675,7 @@ double AliFemtoModelCorrFctnKK::GetParentsKt(AliFemtoPair *pair)
     
     return pT/2.;
 }
+*/
 
 int AliFemtoModelCorrFctnKK::GetPairNumber(AliFemtoPair *pair)
 {
