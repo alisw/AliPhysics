@@ -2098,6 +2098,9 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::EstimateTOFCutEfficiency()
     if(!fPHOSClusterCuts->AcceptPhoton(ph1)) continue;
     if(!ph1->IsTOFOK()) continue;
 
+    if(!fIsMC && fIsPHOSTriggerAnalysis && !ph1->IsTrig()) continue;//take trigger bias into account.
+    //triggered clusters have very likely their hit timing withing 12.5 ns in kPHI7 events.
+ 
     for(Int_t i2=0;i2<multClust;i2++){
       AliCaloPhoton *ph2 = (AliCaloPhoton*)fPHOSClusterArray->At(i2);
       if(!fPHOSClusterCuts->AcceptPhoton(ph2)) continue;

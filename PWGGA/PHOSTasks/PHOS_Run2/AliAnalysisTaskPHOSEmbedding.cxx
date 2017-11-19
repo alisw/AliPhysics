@@ -102,7 +102,9 @@ AliAnalysisTaskPHOSEmbedding::AliAnalysisTaskPHOSEmbedding(const char *name):
   fESDEvent(0x0),
   fMCArray(0x0),
   fEmbeddedClusterArray(0x0),
-  fEmbeddedCells(0x0)
+  fEmbeddedCells(0x0),
+  fSignalECorrection(1.),
+  fSignalCalibData(0x0)
 {
   // Constructor
 
@@ -334,7 +336,7 @@ void AliAnalysisTaskPHOSEmbedding::UserExec(Option_t *option)
         continue ;
       }
 
-      //cellAmplitude = DecalibrateSignal(cellAmplitude,cellNumber);//decalibration from Dmitri, Daiki added this line on 21.December.2016
+      cellAmplitude = DecalibrateSignal(cellAmplitude,cellNumber);//decalibration from Dmitri, Daiki added this line on 21.December.2016
 
       Int_t longCellNumber=cellNumber ;
       if(cellNumber<0)longCellNumber= -cellNumber+56*64*5 ; //CPV digits
@@ -636,7 +638,7 @@ void AliAnalysisTaskPHOSEmbedding::Init()
   }
   else{
     const Int_t recoPass=1;
-    //fSignalCalibData = (AliPHOSCalibData*)recalib->At(recoPass-1) ;
+    fSignalCalibData = (AliPHOSCalibData*)recalib->At(recoPass-1) ;
   }
 
 }
@@ -921,6 +923,37 @@ void AliAnalysisTaskPHOSEmbedding::ConvertESDtoAOD()
 
 }
 //____________________________________________________________________________________________________________________________________
+Double_t AliAnalysisTaskPHOSEmbedding::DecalibrateSignal(Double_t cellAmplitude,Int_t cellNumber){
+  //Apply de-calibration inverse to the calibration, stored in OADB
+
+  AliInfo(Form("fSignalECorrection = %e.",fSignalECorrection));
+
+  //Apply overall energy correction
+  cellAmplitude *= fSignalECorrection;
+
+  if(!fSignalCalibData){
+    AliInfo("fSignalCalibData is not applied.");
+    return cellAmplitude;
+  }
+
+  Int_t relId[4];
+  AliPHOSGeometry * phosgeom = AliPHOSGeometry::GetInstance();
+  phosgeom->AbsToRelNumbering(cellNumber,relId);
+  if(relId[1]!=0) //CPV
+    return  cellAmplitude ;
+  Int_t   module = relId[0];
+  Int_t   column = relId[3];
+  Int_t   row    = relId[2];
+  Double_t c = fSignalCalibData->GetADCchannelEmc(module,column,row);
+  AliInfo(Form("calibration co-efficient at M%d : X%d : Z%d in OADB is %e",module,row,column,c));
+
+
+  if(c>0)
+    return  cellAmplitude/c ;
+  else
+    return  cellAmplitude ;
+}
+
 //____________________________________________________________________________________________________________________________________
 //____________________________________________________________________________________________________________________________________
 //____________________________________________________________________________________________________________________________________
