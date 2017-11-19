@@ -194,6 +194,16 @@ class AliAnalysisTaskEMCALClusterize : public AliAnalysisTaskSE {
   /// De-activate T-Card cells correlation, 
   void           SwitchOffTCardCorrelation()                              { fTCardCorrEmulation = kFALSE ; fTCardCorrClusEnerConserv = kFALSE        ; }      
 
+  
+  /// Constant energy lost by max energy cell in one of T-Card cells, same for all SM
+  /// \param ud energy lost in upper/lower cell, same column
+  /// \param udlr energy lost in upper/lower cell, left or right
+  /// \param lr   energy lost in left or right cell, same row
+  void           SetInducedEnergyLossConstant(Float_t ud, Float_t udlr, Float_t lr, Float_t sec) { 
+    for(Int_t ism = 0; ism < 22; ism++) {
+      fTCardCorrInduceEner[0][ism] = ud; fTCardCorrInduceEner[1][ism] = udlr;  
+      fTCardCorrInduceEner[2][ism] = lr; fTCardCorrInduceEner[3][ism] = sec ; } } 
+  
   /// Fraction of energy lost by max energy cell in one of T-Card cells, same for all SM
   /// \param ud energy lost in upper/lower cell, same column
   /// \param udlr energy lost in upper/lower cell, left or right
@@ -212,6 +222,16 @@ class AliAnalysisTaskEMCALClusterize : public AliAnalysisTaskSE {
       fTCardCorrInduceEnerFracP1[0][ism] = ud; fTCardCorrInduceEnerFracP1[1][ism] = udlr;  
       fTCardCorrInduceEnerFracP1[2][ism] = lr; fTCardCorrInduceEnerFracP1[3][ism] = sec ; } }
 
+  /// Constant energy lost by max energy cell in one of T-Card cells, per SM
+  /// \param sm super module index
+  /// \param ud energy lost in upper/lower cell, same column
+  /// \param udlr energy lost in upper/lower cell, left or right
+  /// \param lr   energy lost in left or right cell, same row
+  void           SetInducedEnergyLossConstantPerSM(Int_t sm, Float_t ud, Float_t udlr, Float_t lr, Float_t sec) { 
+    if ( sm < 22 && sm >= 0 ) {
+      fTCardCorrInduceEner[0][sm] = ud; fTCardCorrInduceEner[1][sm] = udlr;  
+      fTCardCorrInduceEner[2][sm] = lr; fTCardCorrInduceEner[3][sm] = sec ; } } 
+  
   /// Fraction of energy lost by max energy cell in one of T-Card cells, per SM
   /// \param sm super module index
   /// \param ud energy lost in upper/lower cell, same column
@@ -376,8 +396,9 @@ private:
   Float_t               fTCardCorrCellsEner[fgkNEMCalCells]; ///<  Array with induced cell energy in T-Card neighbour cells
   Bool_t                fTCardCorrCellsNew [fgkNEMCalCells]; ///<  Array with induced cell energy in T-Card neighbour cells, that before had no signal
   
-  Float_t               fTCardCorrInduceEnerFrac     [4 ][22]; ///< Induced energy loss gauss mean on 0-same row, diff col, 1-up/down cells left/right col 2-left/righ col, and 2nd row cells, param 0  
-  Float_t               fTCardCorrInduceEnerFracP1   [4 ][22]; ///< Induced energy loss gauss mean on 0-same row, diff col, 1-up/down cells left/right col 2-left/righ col, and 2nd row cells, param1  
+  Float_t               fTCardCorrInduceEner         [4 ][22]; ///< Induced energy loss gauss constant on 0-same row, diff col, 1-up/down cells left/right col 2-left/righ col, and 2nd row cells, param 0  
+  Float_t               fTCardCorrInduceEnerFrac     [4 ][22]; ///< Induced energy loss gauss fraction param0 on 0-same row, diff col, 1-up/down cells left/right col 2-left/righ col, and 2nd row cells, param 0  
+  Float_t               fTCardCorrInduceEnerFracP1   [4 ][22]; ///< Induced energy loss gauss fraction param1 on 0-same row, diff col, 1-up/down cells left/right col 2-left/righ col, and 2nd row cells, param1  
   Float_t               fTCardCorrInduceEnerFracWidth[4 ][22]; ///< Induced energy loss gauss witdth on 0-same row, diff col, 1-up/down cells left/right col 2-left/righ col, and 2nd row cells  
   Float_t               fTCardCorrInduceEnerProb[22];      ///< Probability to induce energy loss per SM   
  
@@ -396,7 +417,7 @@ private:
   AliAnalysisTaskEMCALClusterize& operator=(const AliAnalysisTaskEMCALClusterize&) ;
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskEMCALClusterize, 38) ;
+  ClassDef(AliAnalysisTaskEMCALClusterize, 39) ;
   /// \endcond
 
 };
