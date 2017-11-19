@@ -52,6 +52,7 @@ void Efficiency(bool MBonly = false) {
   for (auto list_key : *input_file.GetListOfKeys()) {
     /// Preliminary operation to read the list and create an output dir
     if (string(list_key->GetName()).find(kFilterListNames.data()) == string::npos) continue;
+    if (string(list_key->GetName())=="mpuccio_deuterons_chisquare0") continue;
     TTList* list = (TTList*)input_file.Get(list_key->GetName());
     output_file.mkdir(list_key->GetName());
     output_file.cd(list_key->GetName());

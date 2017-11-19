@@ -27,9 +27,9 @@ namespace plotting {
     TColor::GetColor("#85dd69"),
     TColor::GetColor("#42d6b4"),
     TColor::GetColor("#00ceff"),
-    kBlack,
     TColor::GetColor("#009adf"),
     TColor::GetColor("#0067c0"),
+    kBlack,
     TColor::GetColor("#0033a1")
   };
 

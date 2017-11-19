@@ -8,6 +8,7 @@ using namespace utils;
 #include <TFile.h>
 #include <TGraphAsymmErrors.h>
 #include <TH2F.h>
+#include <TH3F.h>
 using namespace std;
 
 void Divide(TH1* h, TGraphAsymmErrors* gr, bool printStuff = false) {
@@ -78,40 +79,27 @@ void Spectra() {
   };
   Requires(g3g4tpc[0],"tofA");
   Requires(g3g4tpc[1],"tofM");
-  TTList* norm_list_tot = (TTList*)data_file.Get(kNormalisationList.data());
-  Requires(norm_list_tot,"norm_list_tot");
-  TH1I* fNormalisationHist = (TH1I*)norm_list_tot->Get("fNormalisationHist");
-  if (!fNormalisationHist) {
-    cout << "Missing normalisation to histogram " << endl;
-    return;
-  }
-  double n_vtx = fNormalisationHist->GetBinContent(3);
-  double n_rec = fNormalisationHist->GetBinContent(2);
-  double n_sel = fNormalisationHist->GetBinContent(1);
-  double n_norm = n_sel * n_vtx / n_rec;
-  TTList* norm_list = (TTList*)data_file.Get(kFilterListNames.data());
-  Requires(norm_list,"norm_list");
-  TH1F* hCentrality = (TH1F*)norm_list->Get("fCentralityClasses");
-  if (!hCentrality) {
-    cout << "Missing normalisation to the number of events " << endl;
-    return;
-  }
 
   for (auto list_key : *signal_file.GetListOfKeys()) {
     if (string(list_key->GetName()).find(kFilterListNames.data()) == string::npos) continue;
+    TTList* list = (TTList*)data_file.Get(list_key->GetName());
     /// Getting the correct directories
     TDirectory* base_dir = output_file.mkdir(list_key->GetName());
     output_file.cd(list_key->GetName());
 
     /// Getting the information about centrality and pT bins
-    TH2F* hReference = (TH2F*)efficiency_file.Get(Form("%s/hReference",list_key->GetName()));
-    Requires(hReference,"Reference plot");
+    TH3F *fATOFsignal = (TH3F*)list->Get("fATOFsignal");
+    Requires(fATOFsignal,"Requires fATOFsignal");
     auto n_centralities = 1;
-    centAxis = hReference->GetXaxis();
-    auto centralities = *(hReference->GetXaxis()->GetXbins());
-    auto n_pt_bins = hReference->GetNbinsY();
-    auto ptbins = *(hReference->GetYaxis()->GetXbins());
-    ptAxis = hReference->GetYaxis();
+    centAxis = fATOFsignal->GetXaxis();
+    auto centralities = *(fATOFsignal->GetXaxis()->GetXbins());
+    auto n_pt_bins = fATOFsignal->GetNbinsY();
+    auto ptbins = *(fATOFsignal->GetYaxis()->GetXbins());
+    ptAxis = fATOFsignal->GetYaxis();
+
+    /// Getting information about normalisation
+    TH2F* fNormalisationHist = (TH2F*)list->Get("fNormalisationHist");
+    Requires(fNormalisationHist,"Requires fNormalisationHist");
 
     TF1 *primary_fraction=nullptr;
     TF1 *primary_fraction_tpc=nullptr;
@@ -128,19 +116,19 @@ void Spectra() {
         /// I am not considering Secondaries here, the analysis is only at high pT
         if (secondaries_file.IsOpen()) {
           TH1* hResTFF = (TH1*)secondaries_file.Get(Form("%s/Results/hResTFF_%i",list_key->GetName(),iC));
-          Requires(hResTFF,Form("%s/Results/hResTFF_%i",list_key->GetName(),7));
+          Requires(hResTFF,Form("%s/Results/hResTFF_%i",list_key->GetName(),iC));
           primary_fraction = hResTFF->GetFunction("fitFrac");
           Requires(primary_fraction,"Missing primary fraction");
         }
         if (secondaries_tpc_file.IsOpen()) {
           TH1* hResTFF_TPC = (TH1*)secondaries_tpc_file.Get(Form("%s/Results/hResTFF_%i",list_key->GetName(),iC));
-          Requires(hResTFF_TPC,Form("%s/Results/hResTFF_%i",list_key->GetName(),7));
+          Requires(hResTFF_TPC,Form("%s/Results/hResTFF_%i",list_key->GetName(),iC));
           primary_fraction_tpc = hResTFF_TPC->GetFunction("fitFrac");
           Requires(primary_fraction_tpc,"Missing primary fraction for TPC");
         }
 
         /// Getting raw signals
-        TH1D* rawTOF = (TH1D*)signal_file.Get(Form("%s/%s/TailTail/hRawCounts%c%i",list_key->GetName(),kNames[iS].data(),kLetter[iS],iC));
+        TH1D* rawTOF = (TH1D*)signal_file.Get(Form("%s/%s/Fits/hRawCounts%c%i",list_key->GetName(),kNames[iS].data(),kLetter[iS],iC));
         TH1D* rawTPC = (TH1D*)signal_file.Get(Form("%s/%s/TPConly/hTPConly%c%i",list_key->GetName(),kNames[iS].data(),kLetter[iS],iC));
         Requires(rawTOF,"Missing TOF raw counts");
         Requires(rawTPC,"Missing TPC raw counts");
@@ -181,11 +169,14 @@ void Spectra() {
         Divide(spectraTPC,&function_g3g4_tpc,corr_geant_tpc[iS]);
         corr_geant_tpc[iS]->Write();
         if (primary_fraction_tpc&&!iS) spectraTPC->Multiply(primary_fraction_tpc);
-        //spectraTOF->Scale(0.7448 / n_norm,"width");
-        //spectraTPC->Scale(0.7448 / n_norm,"width");
-        float number_of_events = hCentrality->Integral(kCentBinsArray[iC][0],kCentBinsArray[iC][1]);
-        spectraTOF->Scale(1. / number_of_events,"width");
-        spectraTPC->Scale(1. / number_of_events,"width");
+        /// normalisation
+        TH1F* fNormMultClass = (TH1F*)fNormalisationHist->ProjectionY(Form("fNormMultClass"),kCentBinsArray[iC][0],kCentBinsArray[iC][1]);
+        double n_vtx = fNormMultClass->GetBinContent(4);
+        double n_rec = fNormMultClass->GetBinContent(3);
+        double n_sel = fNormMultClass->GetBinContent(2); // Number of selected events
+        double n_norm = n_sel * n_vtx / n_rec;
+        spectraTOF->Scale(1. / n_norm,"width");
+        spectraTPC->Scale(1. / n_norm,"width");
         spectraTOF->GetXaxis()->SetRange(1,15);
 
         spectraTOF->Write(Form("TOFspectra%i",iC));

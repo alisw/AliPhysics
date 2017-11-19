@@ -118,7 +118,7 @@ void RooSecTPC(){
         TString iName = Form("d%i_%i",iC,iB);
         frame->SetTitle(iTitle.Data());
         frame->SetName(iName.Data());
-        frame->GetYaxis()->SetTitle(Form("Counts / (%.2f cm)",frame->GetXaxis()->GetBinWidth(1)));
+        frame->GetYaxis()->SetTitle(Form("Counts / (%.2f Gev/#it{c}^{2})",frame->GetXaxis()->GetBinWidth(1)));
         frame->Write();
         /// Determining the primary fraction
         RooAbsReal* prim_int = roo_pr_pdf->createIntegral(*DCAxy,RooFit::NormSet(*DCAxy),RooFit::Range("interest"));
