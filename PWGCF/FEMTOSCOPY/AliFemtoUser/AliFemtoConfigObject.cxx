@@ -563,7 +563,7 @@ AliFemtoConfigObject::SetDefault(const AliFemtoConfigObject &d)
     // IDENT_PATTERN = "[a-zA-Z_]+[a-zA-Z0-9_]*(?:\\.[a-zA-Z_]+[a-zA-Z0-9_]*)*",
 
 #define LBRK_PAT "^\\s*" "\\{" "\\s*"
-#define RBRK_PAT         "\\}" "\\s*"
+#define RBRK_PAT  "\\s*" "\\}" "\\s*"
 #define LPRN_PAT        "\\(" "\\s*"
 #define RPRN_PAT         "\\)" "\\s*"
 
@@ -802,6 +802,7 @@ AliFemtoConfigObject::Parse(StringIter_t& it, const StringIter_t stop)
   }
 
   else if (std::regex_search(it, stop, match, BOOL_RX)) {
+    it = match[0].second;
     return AliFemtoConfigObject(match[0].str() == "true");
   }
 
