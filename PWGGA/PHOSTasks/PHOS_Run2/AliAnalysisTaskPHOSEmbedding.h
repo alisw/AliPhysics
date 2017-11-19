@@ -20,10 +20,8 @@ class AliStack;
 #include "AliAnalysisTaskESDfilter.h"
 
 class AliAnalysisTaskPHOSEmbedding : public AliAnalysisTaskSE {
-//class AliAnalysisTaskPHOSEmbedding : public AliAnalysisTaskESDfilter {
-  public:
 
-    //AliAnalysisTaskPHOSEmbedding();
+  public:
     AliAnalysisTaskPHOSEmbedding(const char *name="PHOSEmbedding");
     virtual ~AliAnalysisTaskPHOSEmbedding(); 
     void SetInputFileArray(TObjArray *array) {fAODPathArray = array;}//array of path to MC AOD.
@@ -45,6 +43,9 @@ class AliAnalysisTaskPHOSEmbedding : public AliAnalysisTaskSE {
     Int_t SelectAODFile();
     Bool_t OpenAODFile();
     void CopyRecalibrateDigits();
+
+    void SetSignalCalibration(Double_t corr) {fSignalECorrection=corr;}
+    Double_t DecalibrateSignal(Double_t cellAmplitude,Int_t cellNumber);
 
   protected:
     TString fParticle;
@@ -71,12 +72,14 @@ class AliAnalysisTaskPHOSEmbedding : public AliAnalysisTaskSE {
     TClonesArray *fMCArray;
     TClonesArray *fEmbeddedClusterArray;
     AliAODCaloCells *fEmbeddedCells;
+    Double_t fSignalECorrection;
+    AliPHOSCalibData * fSignalCalibData; //! Decalibration of signal, inverse to OADB. //new memeber variable for an additional calibration.
 
   private:
     AliAnalysisTaskPHOSEmbedding(const AliAnalysisTaskPHOSEmbedding&);
     AliAnalysisTaskPHOSEmbedding& operator=(const AliAnalysisTaskPHOSEmbedding&);
 
-    ClassDef(AliAnalysisTaskPHOSEmbedding, 5);
+    ClassDef(AliAnalysisTaskPHOSEmbedding, 6);
 };
 
 #endif
