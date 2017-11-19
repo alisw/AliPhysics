@@ -152,10 +152,7 @@ void AliAnalysisTaskEMCALAlig::DoTrackLoop()
             
             TVector3 trackposOnEMCAL;
             trackposOnEMCAL.SetPtEtaPhi(440,track->GetTrackEtaOnEMCal(),track->GetTrackPhiOnEMCal());
-            
-            Float_t phidiff = TVector2::Phi_mpi_pi(trackposOnEMCAL.Phi()-emcphi);
-            Float_t etadiff = trackposOnEMCAL.Eta() - emceta;
-            
+                        
             Float_t xdiff = trackposOnEMCAL.X() - clustpos.X();
             Float_t ydiff = trackposOnEMCAL.Y() - clustpos.Y();
             Float_t zdiff = trackposOnEMCAL.Z() - clustpos.Z();

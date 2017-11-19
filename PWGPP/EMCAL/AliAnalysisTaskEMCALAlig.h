@@ -167,7 +167,7 @@ private:
     AliAnalysisTaskEMCALAlig &operator=(const AliAnalysisTaskEMCALAlig&); // not implemented
     
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskEMCALAlig, 1);
+  ClassDef(AliAnalysisTaskEMCALAlig, 2);
   /// \endcond
 
 };
