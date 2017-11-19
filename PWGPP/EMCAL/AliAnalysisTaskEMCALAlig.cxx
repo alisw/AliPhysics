@@ -108,9 +108,9 @@ void AliAnalysisTaskEMCALAlig::DoTrackLoop()
                 continue;
             
             //-1.5 to 3.5 sigma TPC to reduce the size of the trees
-            Double_t TPCNSgima = fPIDResponse->NumberOfSigmasTPC(track, AliPID::kElectron);
+            Double_t n_sigma_electron_TPC = fPIDResponse->NumberOfSigmasTPC(track, AliPID::kElectron);
             
-            if (TPCNSgima < -1.5 || TPCNSgima > 3.5)
+            if (n_sigma_electron_TPC < -1.5 || n_sigma_electron_TPC > 3.5)
                 continue;
             
             Int_t iCluster = track->GetEMCALcluster();
@@ -211,7 +211,7 @@ void AliAnalysisTaskEMCALAlig::DoTrackLoop()
             
             fElectronInformation.super_module_number = iSupMod;
             //PID properties
-            fElectronInformation.n_sigma_electron_TPC = TPCNSgima;
+            fElectronInformation.n_sigma_electron_TPC = n_sigma_electron_TPC;
             
             fElectronTree->Fill();
             
