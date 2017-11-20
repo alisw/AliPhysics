@@ -757,22 +757,7 @@ Bool_t AliAnalysisHFjetTagHFE::Run()
    // MC array
    fMCarray = dynamic_cast<TClonesArray*>(fAOD->FindListObject(AliAODMCParticle::StdBranchName()));
    //cout << "check fMCarray ..." << endl;
-
-  //fmcData = kTRUE;
-  // MC (particle level Jet)
-  if(fmcData)
-    {
-     //MakeParticleLevelJet(HFjetParticle);
-     MakeParticleLevelJet();
-    }
-   if(idbHFEj)cout << "check fmcData ..." << endl;
    
-
-  //AliVTrack *track = static_cast<AliVTrack*>(fTracksCont->GetNextAcceptParticle(0)); 
-  //while(track) {
-  
-  // check jets
-
 
  // analysis
 
@@ -791,6 +776,13 @@ Bool_t AliAnalysisHFjetTagHFE::Run()
     {
      //cout << "cent cut = " << centrality << endl; 
      fHistCent->Fill(centrality);    
+
+     // MC (particle level Jet)
+     if(fmcData)
+       {
+        MakeParticleLevelJet();
+       }
+     if(idbHFEj)cout << "check fmcData ..." << endl;
 
   /////////////////////////////
   //EMCAL cluster information//
@@ -1359,9 +1351,9 @@ void AliAnalysisHFjetTagHFE::MakeParticleLevelJet()
 	Int_t pdgMom = 0;
         if(fMCparticleMother)pdgMom = fMCparticleMother->GetPdgCode();
         if(idbHFEj)cout << "Mom = " << pdgMom << endl;
+        Double_t etaMC = fMCparticle->Eta();
 
-
-        if(fabs(pdg)==11 && pdgMom!=0)
+        if(fabs(pdg)==11 && pdgMom!=0 && TMath::Abs(etaMC)<0.6)
           {
            Bool_t iMCHF = isHeavyFlavour(pdgMom);
            if(iMCHF)
