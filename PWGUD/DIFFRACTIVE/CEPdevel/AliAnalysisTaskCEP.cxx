@@ -67,7 +67,7 @@ AliAnalysisTaskCEP::AliAnalysisTaskCEP(const char* name,
   , fETpatternNDG(ETpatternNDG)
   , fTTmask(TTmask)
   , fTTpattern(TTpattern)
-  , fisSTGTriggerFired(kFALSE)
+  , fisSTGTriggerFired(0)
   , fnTOFmaxipads(0)
   , fRun(-1)
   , fESDRun(0x0)
@@ -129,7 +129,7 @@ AliAnalysisTaskCEP::AliAnalysisTaskCEP():
   , fETpatternNDG(AliCEPBase::kETBaseLine)
   , fTTmask(AliCEPBase::kTTBaseLine)
   , fTTpattern(AliCEPBase::kTTBaseLine)
-  , fisSTGTriggerFired(kFALSE)
+  , fisSTGTriggerFired(0)
   , fnTOFmaxipads(0)
   , fRun(-1)
   , fESDRun(0x0)
@@ -628,7 +628,7 @@ void AliAnalysisTaskCEP::UserExec(Option_t *)
   // CINT11-B-NOPF-CENTNOTRD, DG trigger has to be replaied, LHC16[d,e,h]
   // CCUP2-B-SPD1-CENTNOTRD, DG trigger has to be replaied, LHC16[h,i,j]
   // CCUP13-B-SPD1-CENTNOTRD = DG trigger, LHC16[k,l,o,p], LHC17[f,h,i,k,l]
-  // CCUP25-B-SPD1-CENTNOTRD = DG trigger, LHC17[f,h,i,k,l]
+  // CCUP25-B-SPD1-CENTNOTRD = DG trigger, LHC17[c,h,i,j,k,l,m,o]
   TString firedTriggerClasses = fEvent->GetFiredTriggerClasses();
   
   if (firedTriggerClasses.Contains("CINT11-B-NOPF-CENTNOTRD"))
@@ -651,10 +651,16 @@ void AliAnalysisTaskCEP::UserExec(Option_t *)
   
   // The following is needed to replay the DG trigger
   // The STG trigger in 2016 required two online tracklets without additional
-  // topology.
+  // topology (dphiMin=0)
+  // The STRtrigger in 2017 requiered two online tracklets with
+  // min opening angle >=54 deg (dphiMin=4)
   const AliVMultiplicity *mult = fEvent->GetMultiplicity();
   TBits foMap = mult->GetFastOrFiredChips();
-  fisSTGTriggerFired = IsSTGFired(&foMap);
+  
+  // each bit of fisSTGTriggerFired corresponds to a specific dphiMin
+  fisSTGTriggerFired  = IsSTGFired(&foMap,0) ? (1<<0) : 0;
+  for (Int_t ii=1; ii<=10; ii++)
+    fisSTGTriggerFired |= IsSTGFired(&foMap,ii) ? (1<<ii) : 0;
     
   Bool_t isDGTrigger = kFALSE;
   if (isReplay) {
@@ -667,11 +673,13 @@ void AliAnalysisTaskCEP::UserExec(Option_t *)
     for (Int_t i=32; i<64; i++) isV0Afired |= esdV0->GetBBFlag(i);
     for (Int_t i=0; i<32; i++)  isV0Cfired |= esdV0->GetBBFlag(i);
 
-    isDGTrigger = fisSTGTriggerFired && !isV0Afired && !isV0Cfired;
+    isDGTrigger = (fisSTGTriggerFired & (1<<0)) && !isV0Afired && !isV0Cfired;
     
-    // printf("DG trigger replaied: %i %i %i -> %i\n",
-    //   isSTGtriggerFired,!isV0Afired,!isV0Cfired,isDGTrigger);
-  
+    if (isDGTrigger) {
+      printf("DG trigger replaied: %i %i %i -> %i\n",
+        fisSTGTriggerFired,!isV0Afired,!isV0Cfired,isDGTrigger);
+    }
+    
   } else {
   
     // LHC2010 data
@@ -767,7 +775,7 @@ void AliAnalysisTaskCEP::UserExec(Option_t *)
   if (isFMDDG)((TH1F*)flQArnum->At(9))->Fill(fRun);
   
   
-  // compre isSPD and isSTGtriggerFired
+  // compare isSPD and isSTGtriggerFired
   // printf("SPD fired: %i %i\n",isSPD,isSTGtriggerFired);
   
   // determine the gap condition using
@@ -1232,6 +1240,7 @@ void AliAnalysisTaskCEP::PostOutputs()
 //------------------------------------------------------------------------------
 // code to check if the STG trigger had fired
 // code from Evgeny Kryshen
+// dphiMin/dphiMax specifies the range for the angle between two tracks
 Bool_t AliAnalysisTaskCEP::IsSTGFired(TBits* fFOmap,Int_t dphiMin,Int_t dphiMax)
 {
 

@@ -35,7 +35,7 @@ class CEPEventBuffer : public TObject {
     Short_t fFiredChips[4];   // Number of FastOR chips in the two SPD layers
                               // and number of offline fired chips
     Bool_t fisDGTrigger;
-    Bool_t fisSTGTriggerFired;
+    UInt_t fisSTGTriggerFired;
     Int_t  fnTOFmaxipads;
 
     // see AliCEPBase.h for the definition of fEventCondition
@@ -82,7 +82,7 @@ class CEPEventBuffer : public TObject {
       fFiredChips[0]=chips[0]; fFiredChips[1]=chips[1]; 
       fFiredChips[2]=chips[2]; fFiredChips[3]=chips[3]; 
     }
-    void SetisSTGTriggerFired(Bool_t stgtrig) { fisSTGTriggerFired = stgtrig; }
+    void SetisSTGTriggerFired(UInt_t stgtrig) { fisSTGTriggerFired = stgtrig; }
     void SetnTOFmaxipads(Int_t nmaxipads) { fnTOFmaxipads = nmaxipads; }
 
     void SetEventCondition(UInt_t evcond) { fEventCondition = evcond; }
@@ -122,7 +122,7 @@ class CEPEventBuffer : public TObject {
     Bool_t* GetPFBGFlagAD() { return fPFBGFlagAD; }
     Short_t GetnFiredChips(Int_t layer) {
       return (layer>=0 && layer<=3) ? fFiredChips[layer] : -1; }
-    Bool_t  GetisSTGTriggerFired() { return fisSTGTriggerFired; }
+    UInt_t  GetisSTGTriggerFired() { return fisSTGTriggerFired; }
     Int_t   GetnTOFmaxipads() { return fnTOFmaxipads; }
 
     // different ways of retrieving number of tracks

@@ -97,7 +97,7 @@ private:
   UInt_t fTTmask, fTTpattern;
   
   // some hit information
-  Bool_t fisSTGTriggerFired;
+  UInt_t fisSTGTriggerFired;
   Int_t  fnTOFmaxipads;
 
 	// event information
