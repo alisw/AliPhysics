@@ -299,12 +299,12 @@ AliAnalysisTaskEmcalJetShapesMC::~AliAnalysisTaskEmcalJetShapesMC()
 
 
   //log(1/theta),log(z*theta),jetpT,algo// 
-   const Int_t dimSpec   = 5;
-   const Int_t nBinsSpec[5]     = {50,50,20,3,20};
-   const Double_t lowBinSpec[5] = {0.0,-10,  0,0,0};
-   const Double_t hiBinSpec[5]  = {5.0,  0,200,3,200};
+   const Int_t dimSpec   = 6;
+   const Int_t nBinsSpec[6]     = {50,50,10,3,10,10};
+   const Double_t lowBinSpec[6] = {0.0,-10,  0,0,0,0};
+   const Double_t hiBinSpec[6]  = {5.0,  0,200,3,200,10};
    fHLundIterative = new THnSparseF("fHLundIterative",
-                   "LundIterativePlot [log(1/theta),log(z*theta),pTjet,algo]",
+                   "LundIterativePlot [log(1/theta),log(z*theta),pTjet,algo,pToriginal,depth]",
                    dimSpec,nBinsSpec,lowBinSpec,hiBinSpec);
   fOutput->Add(fHLundIterative);
 
@@ -1442,14 +1442,15 @@ void AliAnalysisTaskEmcalJetShapesMC::RecursiveParents(AliEmcalJet *fJet,AliJetC
    fastjet::PseudoJet j1;
    fastjet::PseudoJet j2;
    jj=fOutputJets[0];
-   
+   double ndepth=0;
     while(jj.has_parents(j1,j2)){
+      ndepth=ndepth+1;  
     if(j1.perp() < j2.perp()) swap(j1,j2);
     double delta_R=j1.delta_R(j2);
     double z=j2.perp()/(j1.perp()+j2.perp());
     double y =log(1.0/delta_R);
     double lnpt_rel=log(z*delta_R);
-    Double_t LundEntries[5] = {y,lnpt_rel,fOutputJets[0].perp(),xflagalgo,fJet->Pt()};  
+    Double_t LundEntries[6] = {y,lnpt_rel,fOutputJets[0].perp(),xflagalgo,fJet->Pt(),ndepth};  
     fHLundIterative->Fill(LundEntries);
     jj=j1;} 
 
