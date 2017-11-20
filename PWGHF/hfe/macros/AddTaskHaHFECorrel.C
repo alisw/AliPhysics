@@ -13,6 +13,7 @@ AliAnalysisTask *AddTaskHaHFECorrel(Double_t period, Double_t MinPtEvent, Double
 
   TString type = mgr->GetInputEventHandler()->GetDataType();
 
+  /*
   AliMCEventHandler* mcHand = new AliMCEventHandler();
   mgr->SetMCtruthEventHandler(mcHand);
   Bool_t MCthere=kTRUE;
@@ -20,6 +21,7 @@ AliAnalysisTask *AddTaskHaHFECorrel(Double_t period, Double_t MinPtEvent, Double
   if (!mcH) {
     MCthere=kFALSE;
   }
+  */
 
 
 

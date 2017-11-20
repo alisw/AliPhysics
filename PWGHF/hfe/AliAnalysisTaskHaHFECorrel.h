@@ -68,10 +68,10 @@ public:
     void CorrelateElectron(TObjArray* RedTracksHFE);
 
     void CorrelateLP(AliVTrack* LPtrack,  const AliVVertex* pVtx, Int_t nMother, Int_t listMother[], TObjArray* RedTracksHFE);
-    void CorrelateLPMixedEvent(AliVTrack* LPtrack, Float_t mult, Float_t zVtx);
+    void CorrelateLPMixedEvent(AliVTrack* LPtrack, Float_t mult, Float_t zVtx, Float_t maxPt);
     
-    void CorrelateHadron(TObjArray* RedTracksHFE,  const AliVVertex* pVtx, Int_t nMother, Int_t listMother[], Float_t mult);
-    void CorrelateHadronMixedEvent(AliVTrack* Htrack, Float_t mult, Float_t zVtx);
+    void CorrelateHadron(TObjArray* RedTracksHFE,  const AliVVertex* pVtx, Int_t nMother, Int_t listMother[], Float_t mult, Float_t maxPt);
+    void CorrelateHadronMixedEvent(AliVTrack* Htrack, Float_t mult, Float_t zVtx, Float_t maxPt);
 
     void CorrelateWithHadrons(AliVTrack* TriggerTrack, const AliVVertex* pVtx, Int_t nMother, Int_t listMother[], Bool_t FillHadron, Bool_t FillLP,Bool_t** NonElecIsTrigger, Double_t *NonElecIsTriggerPt, Int_t NumElectronsInEvent); 
 
@@ -267,6 +267,8 @@ public:
     THnSparse             *fCheckNPhotHadScaling;  //!
 
     TH2F                  *fHadContPvsPt;           //!
+    TH3F                  *fHadContEtaPhiPt;        //!
+    TH3F                  *fHadContTPCEtaPhiPt;     //!
     THnSparse             *fHadContPPhiEtaTPC;      //!
     THnSparse             *fHadContamination;       //! HadronicContaminationTOF
     THnSparse             *fHadContaminationPt;       //! HadronicContaminationTOF
@@ -284,6 +286,8 @@ public:
     TH2F                  *fOpeningAngleLS;         //! opening angle for LS pairs
     TH2F                  *fOpeningAngleULS;        //! opening angle for ULS pairs
     TH2F                  *fCheckLSULS;             //! check no of LS/ULS partner per electron
+    TH3F                  *fTagEtaPhiPt;            //!
+    TH3F                  *fNonTagEtaPhiPt;         //@
     THnSparse             *fTagMotherPt;              //!
     THnSparse             *fTagEffIncl;             //! 
     THnSparse             *fTagEffLS;               //!
@@ -345,6 +349,8 @@ public:
     THnSparse             *fElecHaMixedEvent;       //!
     THnSparse             *fLSElecHaMixedEvent;     //!
     THnSparse             *fULSElecHaMixedEvent;    //!
+    THnSparse             *fTagHaMixedEvent; //!
+    THnSparse             *fNonTagHaMixedEvent; //!
 
 
     TH2F                  *fElecLPTrigger;          //!
