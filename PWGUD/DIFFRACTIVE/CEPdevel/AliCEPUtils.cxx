@@ -1566,3 +1566,25 @@ void AliCEPUtils::InitTrackCuts(Bool_t IsRun1, Int_t clusterCut)
 }
 
 // ------------------------------------------------------------------------------
+void AliCEPUtils::EMCALcheck(AliESDEvent *ESDEvent)
+{
+
+  Int_t nClusters = ESDEvent->GetNumberOfCaloClusters();
+  Int_t firstCluster = 0;
+  Double_t energy=0., lambda0=0.;
+  
+  printf("\nEMCAL information: %i clusters\n",nClusters);
+  for (Int_t iCluster = firstCluster; iCluster < (nClusters + firstCluster); iCluster++) 
+  {
+    AliESDCaloCluster *clust = ESDEvent->GetCaloCluster(iCluster);
+    if (!clust->IsEMCAL()) continue ; 
+    
+    energy = clust->E();
+    lambda0 = clust->GetM02();
+    
+    printf("cluster[%i] %f/%f\n",iCluster,energy,lambda0);
+  }
+
+}
+
+// ------------------------------------------------------------------------------

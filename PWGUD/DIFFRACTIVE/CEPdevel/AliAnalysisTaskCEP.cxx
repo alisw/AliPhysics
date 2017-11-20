@@ -624,6 +624,12 @@ void AliAnalysisTaskCEP::UserExec(Option_t *)
     fCEPUtil->VtxAnalysis(fEvent,flVtx);
   }
   
+  // EMCAL information
+  fCEPUtil->EMCALcheck(fEvent);
+
+
+
+
   // count number of recorded triggers
   // CINT11-B-NOPF-CENTNOTRD, DG trigger has to be replaied, LHC16[d,e,h]
   // CCUP2-B-SPD1-CENTNOTRD, DG trigger has to be replaied, LHC16[h,i,j]

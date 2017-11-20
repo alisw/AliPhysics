@@ -44,6 +44,7 @@
 #include "AliESDv0.h"
 #include "AliESDAD.h"
 #include "AliVVZERO.h"
+#include "AliESDCaloCluster.h"
 
 #include "AliCEPBase.h"
 
@@ -123,6 +124,8 @@ class AliCEPUtils : public TObject {
     Int_t GetResiduals(AliESDEvent* fESDEvent);
     Bool_t TestFiredChips(AliESDEvent *esd, TArrayI *indices);
     
+    void EMCALcheck(AliESDEvent *ESDEvent);
+
   private:
 
     Int_t fTPCnclsS;        // Maximum number of accepted shared clusters in TPC
