@@ -848,7 +848,7 @@ void AliAnalysisTaskBFPsi::UserExec(Option_t *) {
   //Use sphericity cut
   if(fUseSphericityCut) {
     if((fSphericityMin > gSphericity)||(gSphericity > fSphericityMax)) {
-      AliInfo(Form("The event got rejected due to its sphericity value of %.1f (accepted ranges: %.1f - %.1f",gSphericity,fSphericityMin,fSphericityMax));
+      //AliInfo(Form("The event got rejected due to its sphericity value of %.1f (accepted ranges: %.1f - %.1f",gSphericity,fSphericityMin,fSphericityMax));
       return;
     }
   }
@@ -856,7 +856,7 @@ void AliAnalysisTaskBFPsi::UserExec(Option_t *) {
   //Use of a high pT threshold cut
   if(fRequireHighPtTrigger) {
     if(nTracksAboveHighPtThreshold == 0) {
-      AliInfo(Form("The event got rejected since we found no track above the high pT threshold of %.1f",fPtTriggerMin));
+      //AliInfo(Form("The event got rejected since we found no track above the high pT threshold of %.1f",fPtTriggerMin));
       return;
     }
   }
@@ -997,7 +997,7 @@ Double_t AliAnalysisTaskBFPsi::IsEventAccepted(AliVEvent *event){
 
 		// get the reference multiplicty or centrality
 		gRefMultiplicity = GetRefMultiOrCentrality(event);
-
+		
 		fHistVx->Fill(gVertexArray.At(0));
 		fHistVy->Fill(gVertexArray.At(1));
 		fHistVz->Fill(gVertexArray.At(2),gRefMultiplicity);
