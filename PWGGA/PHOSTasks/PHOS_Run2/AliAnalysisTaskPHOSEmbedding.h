@@ -3,6 +3,7 @@
 
 // Author: Daiki Sekihata (Hiroshima University)
 
+class TF1;
 class TList;
 class AliVEvent;
 class AliESDEvent;
@@ -26,6 +27,9 @@ class AliAnalysisTaskPHOSEmbedding : public AliAnalysisTaskSE {
     virtual ~AliAnalysisTaskPHOSEmbedding(); 
     void SetInputFileArray(TObjArray *array) {fAODPathArray = array;}//array of path to MC AOD.
     void SetParticle(TString par) {fParticle = par;}//Pi0/Eta/Gamma
+    void SetSignalCalibration(Double_t corr) {fSignalECorrection=corr;}
+    void SetUserNonlinearity(TF1 *f1) {fUserNonLin = f1;}
+
 
   protected:
     virtual void UserCreateOutputObjects();
@@ -44,7 +48,6 @@ class AliAnalysisTaskPHOSEmbedding : public AliAnalysisTaskSE {
     Bool_t OpenAODFile();
     void CopyRecalibrateDigits();
 
-    void SetSignalCalibration(Double_t corr) {fSignalECorrection=corr;}
     Double_t DecalibrateSignal(Double_t cellAmplitude,Int_t cellNumber);
 
   protected:
@@ -74,12 +77,14 @@ class AliAnalysisTaskPHOSEmbedding : public AliAnalysisTaskSE {
     AliAODCaloCells *fEmbeddedCells;
     Double_t fSignalECorrection;
     AliPHOSCalibData * fSignalCalibData; //! Decalibration of signal, inverse to OADB. //new memeber variable for an additional calibration.
+    TF1 *fUserNonLin;
+
 
   private:
     AliAnalysisTaskPHOSEmbedding(const AliAnalysisTaskPHOSEmbedding&);
     AliAnalysisTaskPHOSEmbedding& operator=(const AliAnalysisTaskPHOSEmbedding&);
 
-    ClassDef(AliAnalysisTaskPHOSEmbedding, 6);
+    ClassDef(AliAnalysisTaskPHOSEmbedding, 7);
 };
 
 #endif

@@ -2,7 +2,8 @@ AliAnalysisTaskPHOSEmbedding* AddTaskPHOSEmbedding(
     const char* name     = "PHOSEmbedding",
     const UInt_t trigger = AliVEvent::kINT7,
     const TString parname = "Pi0",
-    const TString filepath = "Embedding_Pi0_AODMC_246980.txt"
+    const TString filepath = "Embedding_Pi0_AODMC_246980.txt",
+    const Double_t Ecorrection = 1.02
     )
 {
   //Add a task AliAnalysisTaskPHOSEmbedding to the analysis train
@@ -49,9 +50,10 @@ AliAnalysisTaskPHOSEmbedding* AddTaskPHOSEmbedding(
   printf("%d AOD MC paths are found in %s.\n", array->GetEntries(),filepath.Data());
 
   task->SetInputFileArray(array);//array of path to MC AOD.
+  task->SetSignalCalibration(Ecorrection);
 
   //Need MagFeild for tender
-  //((AliInputEventHandler*)mgr->GetInputEventHandler())->SetNeedField(kTRUE);
+  ((AliInputEventHandler*)mgr->GetInputEventHandler())->SetNeedField(kTRUE);
 
   mgr->AddTask(task);
   mgr->ConnectInput(task, 0, mgr->GetCommonInputContainer() );
