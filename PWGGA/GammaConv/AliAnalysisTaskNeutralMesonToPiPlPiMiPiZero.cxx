@@ -212,7 +212,8 @@ AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::AliAnalysisTaskNeutralMesonToPiPlPi
   fIsMC(kFALSE),
   fDoLightOutput(kFALSE),
   fNeutralPionMode(0),
-  fTolerance(-1)
+  fTolerance(-1),
+  fNeutralPionPtMin(0.)
 {
 
 }
@@ -376,7 +377,8 @@ AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::AliAnalysisTaskNeutralMesonToPiPlPi
   fIsMC(kFALSE),
   fDoLightOutput(kFALSE),
   fNeutralPionMode(0),
-  fTolerance(-1)
+  fTolerance(-1),
+  fNeutralPionPtMin(0.)
 {
   DefineOutput(1, TList::Class());
 }
@@ -1614,6 +1616,11 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::ProcessNeutralPionCandidatesPu
 
           } else if((((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->UseSidebandMixing()) && (pi0cand->M() > ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->GetSidebandMixingLow() && pi0cand->M() < ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->GetSidebandMixingHigh())){
               fNeutralPionSidebandCandidates->Add(pi0cand);
+          } else if((((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->UseSidebandMixingBothSides())
+                    && ((pi0cand->M() > ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->GetSidebandMixingLeftLow() && pi0cand->M() < ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->GetSidebandMixingLeftHigh())
+                    || (pi0cand->M() > ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->GetSidebandMixingRightLow() && pi0cand->M() < ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->GetSidebandMixingRightHigh())))
+          {
+              fNeutralPionSidebandCandidates->Add(pi0cand);
           } else{
               delete pi0cand;
               pi0cand=0x0;
@@ -1664,6 +1671,11 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::ProcessNeutralPionCandidatesPu
               fNeutralPionCandidates->Add(pi0cand);
               // 						cout << "Pi0 candidate " << pi0cand->M() << "\t" << pi0cand->Pt() << endl;
           } else if((((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->UseSidebandMixing()) && (pi0cand->M() > ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->GetSidebandMixingLow() && pi0cand->M() < ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->GetSidebandMixingHigh())){
+              fNeutralPionSidebandCandidates->Add(pi0cand);
+          } else if((((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->UseSidebandMixingBothSides())
+                    && ((pi0cand->M() > ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->GetSidebandMixingLeftLow() && pi0cand->M() < ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->GetSidebandMixingLeftHigh())
+                    || (pi0cand->M() > ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->GetSidebandMixingRightLow() && pi0cand->M() < ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->GetSidebandMixingRightHigh())))
+          {
               fNeutralPionSidebandCandidates->Add(pi0cand);
           }else {
               delete pi0cand;
@@ -1979,8 +1991,12 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::ProcessNeutralPionCandidatesMi
             }
             if (pi0cand->M() > ((AliConversionMesonCuts*)fNeutralPionMesonCutArray->At(fiCut))->GetSelectionLow() && pi0cand->M() < ((AliConversionMesonCuts*)fNeutralPionMesonCutArray->At(fiCut))->GetSelectionHigh()){
                 fNeutralPionCandidates->Add(pi0cand);
-                // 						cout << "Pi0 candidate " << pi0cand->M() << "\t" << pi0cand->Pt() << endl;
             } else if((((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->UseSidebandMixing()) && (pi0cand->M() > ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->GetSidebandMixingLow() && pi0cand->M() < ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->GetSidebandMixingHigh())){
+                fNeutralPionSidebandCandidates->Add(pi0cand);
+            } else if((((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->UseSidebandMixingBothSides())
+                      && ((pi0cand->M() > ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->GetSidebandMixingLeftLow() && pi0cand->M() < ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->GetSidebandMixingLeftHigh())
+                      || (pi0cand->M() > ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->GetSidebandMixingRightLow() && pi0cand->M() < ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->GetSidebandMixingRightHigh())))
+            {
                 fNeutralPionSidebandCandidates->Add(pi0cand);
             }else{
                 delete pi0cand;
@@ -2572,7 +2588,7 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::CalculateBackground(){
 
   // Get N of Pi0 according to chosen mix mode
   Int_t NPi0Candidates = 0;
-  if( ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->UseSidebandMixing()){
+  if( (((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->UseSidebandMixing()) || (((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->UseSidebandMixingBothSides())){
       NPi0Candidates = fNeutralPionSidebandCandidates->GetEntries();
    }else{
       NPi0Candidates = fNeutralPionCandidates->GetEntries();
@@ -2580,7 +2596,7 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::CalculateBackground(){
   // Begin loop over all Pi0 candidates
  for(Int_t iCurrentPi0=0; iCurrentPi0<NPi0Candidates; iCurrentPi0++){
      AliAODConversionMother* EventPiZeroGoodMeson;
-     if( ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->UseSidebandMixing()){
+     if( (((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->UseSidebandMixing()) ||  (((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->UseSidebandMixingBothSides())){
          EventPiZeroGoodMeson = (AliAODConversionMother*)(fNeutralPionSidebandCandidates->At(iCurrentPi0));
      }else{
          EventPiZeroGoodMeson = (AliAODConversionMother*)(fNeutralPionCandidates->At(iCurrentPi0));

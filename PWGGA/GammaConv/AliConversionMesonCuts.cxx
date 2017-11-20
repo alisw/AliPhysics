@@ -126,9 +126,14 @@ AliConversionMesonCuts::AliConversionMesonCuts(const char *name,const char *titl
   fMaxOpanPtDepCut(kFALSE),
   fBackgroundHandler(0),
   fBackgroundUseSideband(kFALSE),
+  fBackgroundUseSidebandBothSides(kFALSE),
   fBackgroundUseLikeSign(kFALSE),
   fSidebandMixingLow(0.180),
   fSidebandMixingHigh(0.300),
+  fSidebandMixingLeftLow(0.05),
+  fSidebandMixingLeftHigh(0.100),
+  fSidebandMixingRightLow(0.180),
+  fSidebandMixingRightHigh(0.300),
   fCutString(NULL),
   fCutStringRead(""),
   fHistoMesonCuts(NULL),
@@ -208,9 +213,14 @@ AliConversionMesonCuts::AliConversionMesonCuts(const AliConversionMesonCuts &ref
   fMaxOpanPtDepCut(kFALSE),
   fBackgroundHandler(ref.fBackgroundHandler),
   fBackgroundUseSideband(ref.fBackgroundUseSideband),
+  fBackgroundUseSidebandBothSides(ref.fBackgroundUseSidebandBothSides),
   fBackgroundUseLikeSign(ref.fBackgroundUseLikeSign),
   fSidebandMixingLow(0.180),
   fSidebandMixingHigh(0.300),
+  fSidebandMixingLeftLow(0.05),
+  fSidebandMixingLeftHigh(0.100),
+  fSidebandMixingRightLow(0.180),
+  fSidebandMixingRightHigh(0.300),
   fCutString(NULL),
   fCutStringRead(""),
   fHistoMesonCuts(NULL),
@@ -1999,6 +2009,18 @@ Bool_t AliConversionMesonCuts::SetBackgroundScheme(Int_t BackgroundScheme){
       fBackgroundUseSideband      = kTRUE;
       fSidebandMixingLow          = 0.01;
       fSidebandMixingHigh         = 0.05;
+      break;
+  case 13: // mixing event with pi0 sideband candidates (both sides of pi0 peak)
+      fUseRotationMethodInBG           = kFALSE;
+      fUseTrackMultiplicityForBG       = kFALSE;
+      fdoBGProbability                 = kFALSE;
+      fBackgroundUseLikeSign           = kFALSE;
+      fBackgroundUseSideband           = kFALSE;
+      fBackgroundUseSidebandBothSides  = kTRUE;
+      fSidebandMixingLeftLow           = 0.01;
+      fSidebandMixingLeftHigh          = 0.05;
+      fSidebandMixingRightLow          = 0.180;
+      fSidebandMixingRightHigh         = 0.220;
       break;
   default:
     cout<<"Warning: BackgroundScheme not defined "<<BackgroundScheme<<endl;
