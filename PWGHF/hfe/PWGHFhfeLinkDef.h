@@ -116,4 +116,6 @@
 #pragma link C++ class  AliAnalysisHFETPCTOFNew+;
 #pragma link C++ class  AliAnalysisHFETPCTOFBeauty+;
 
+#pragma link C++ class AliAnalysisTaskV1SingleMu+;
+
 #endif

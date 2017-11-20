@@ -125,6 +125,7 @@ set(SRCS
   AliAnalysisTaskHaHFECorrel.cxx
   AliAnalysisHFETPCTOFNew.cxx
   AliAnalysisHFETPCTOFBeauty.cxx	
+  HFMuFlow/AliAnalysisTaskV1SingleMu.cxx
   )
 
 # Headers from sources
