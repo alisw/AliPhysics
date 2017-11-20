@@ -69,6 +69,7 @@ AliTreeTrending::AliTreeTrending():
   fUserDescription(NULL),
   fLatexDescription(NULL),
   fStatusGraphM(NULL),
+  fCurrentCSSStyle(""),
   fReport(NULL) {
 }
 //_____________________________________________________________________________
@@ -77,7 +78,9 @@ AliTreeTrending::AliTreeTrending(const char *name, const char *title):
   fTree(NULL),
   fUserDescription(NULL),
   fLatexDescription(NULL),
-  fStatusGraphM(NULL),fReport(NULL) {
+  fStatusGraphM(NULL),
+  fCurrentCSSStyle(""),
+  fReport(NULL) {
   //
   fReport=new TFile("report.root","recreate");
 }
@@ -375,26 +378,30 @@ TMultiGraph * AliTreeTrending::MakeMultiGraphStatus(TTree *fTree, TString mgrNam
 /// \param sigmaRange     - sigma range for automatic // TO use CSS style
 /// \param comp           - ????
 void AliTreeTrending::MakePlot(const char* outputDir, const char *figureName, const char *LegendTitle, std::vector<Double_t>& legendPos, const char *groupName, const char* expr, const char * cut, const char * markers, const char *colors, Bool_t drawSparse, Float_t markerSize, Float_t sigmaRange, Bool_t comp) {
-  TMultiGraph *mgraph=0;
+  TMultiGraph *mGraph=0;
   fWorkingCanvas->Clear();
   TLegend *legend = new TLegend(legendPos[0],legendPos[1],legendPos[2],legendPos[3],LegendTitle);
   legend->SetBorderSize(0);
-  mgraph = TStatToolkit::MakeMultGraph(fTree,groupName,expr,cut,markers,colors,drawSparse,markerSize,sigmaRange,legend,comp);
+  mGraph = TStatToolkit::MakeMultGraph(fTree,groupName,expr,cut,markers,colors,drawSparse,markerSize,sigmaRange,legend,comp);
   
-  AliDrawStyle::SetCssStyle("testStyle",AliDrawStyle::ReadCSSFile("$AliRoot_SRC/STAT/test/alirootTestStyle.css",0));
-  for(Int_t it=0; it<mgraph->GetListOfGraphs()->GetSize(); it++){
-    TGraph* graph = (TGraph*) mgraph->GetListOfGraphs()->At(it);
-    graph->SetName(TString::Format("graph[%d].class(multiGraphPair)",it).Data());
-    AliDrawStyle::TGraphApplyStyle("testStyle",graph);
+  for(Int_t it=0; it<mGraph->GetListOfGraphs()->GetSize(); it++){
+    TGraph* graph = (TGraph*) mGraph->GetListOfGraphs()->At(it);
+    if (groupName!=NULL){    // example  groupName=".class(multiGraphPair).{marker_style:25,21,22,23;marker_color:1,2,4,5;}"
+      graph->SetName(TString::Format("graph[%d].%s",it,groupName).Data());
+    }else {
+      graph->SetName(TString::Format("graph[%d].class(multiGraphPair)", it).Data());
+    }
+	  // TODO add group name if exist
+    AliDrawStyle::TGraphApplyStyle(fCurrentCSSStyle.Data(),graph);
   }
   
-  if (groupName) mgraph->SetName(groupName);
-  if(!mgraph){
+  if (groupName) mGraph->SetName(groupName);
+  if(!mGraph){
     ::Error("MakePlot","No plot returned -> dummy plot!");
   }
   else {
-    if (drawSparse) TStatToolkit::RebinSparseMultiGraph(mgraph,(TGraph*)fStatusGraphM->GetListOfGraphs()->At(0));
-    TStatToolkit::DrawMultiGraph(mgraph,"alp");
+    if (drawSparse) TStatToolkit::RebinSparseMultiGraph(mGraph,(TGraph*)fStatusGraphM->GetListOfGraphs()->At(0));
+    TStatToolkit::DrawMultiGraph(mGraph,"alp");
     AppendStatusPad(0.3, 0.4, 0.05);
     legend->SetFillStyle(0);
     legend->Draw();

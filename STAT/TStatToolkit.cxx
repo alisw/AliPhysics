@@ -1722,8 +1722,9 @@ void TStatToolkit::MakeAnchorAlias(TTree * tree, TString& sTrendVars, Int_t doCh
     tree->SetAlias((aName+"WarningBand").Data(), (TString("1.*")+variables[2+0]).Data());
     tree->SetAlias((aName+"OutlierBand").Data(), (TString("1.*")+variables[2+1]).Data());
     tree->SetAlias((aName+"PhysAccBand").Data(), (TString("1.*")+variables[2+2]).Data());
-    ::Info("makeAnchorAlias", "SetAlias \t%s\t%s", (aName+"WarningBand").Data(), variables[2+0].Data());
-
+	if (verbose > 0) {
+    	::Info("makeAnchorAlias", "SetAlias \t%s\t%s", (aName+"WarningBand").Data(), variables[2+0].Data());
+    }
     delete descriptor;
   }
   delete aTrendVars;

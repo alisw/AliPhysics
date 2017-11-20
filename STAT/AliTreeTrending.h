@@ -44,7 +44,8 @@ public:
   TObjArray *  fLatexDescription;  /// description of process  (time/aliroot/root/user)
   TCanvas   *  fWorkingCanvas;     /// default canvas
   TMultiGraph *fStatusGraphM;      /// status graph
-  TStyle    *  fDrawStyle;         /// TreeTrending owner of drawing style - currently gStyle used
+  TStyle    *  fDrawStyle;         /// TreeTrending owner of drawing style - currently gStyle used  // TODO make  OBSOLETE
+  TString      fCurrentCSSStyle;   /// Name of the  CSS style to be used - if empty string current CSS style used
   TFile     *  fReport;            /// root report file
   ClassDef(AliTreeTrending,2)
 };
