@@ -71,6 +71,7 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiPiZero_ConvMode_pp(
     Double_t tolerance                = -1,
     TString    periodNameV0Reader     = "",                               // period Name for V0Reader
     Int_t   runLightOutput            = 0,                                 // run light output option 0: no light output 1: most cut histos stiched off 2: unecessary omega hists turned off as well
+    Double_t neutralPionPtMin         = 0.4,                                // min pT for cut on neutral meson candidate
     TString additionalTrainConfig     = "0"                               // additional counter for trainconfig, this has to be always the last parameter
   ) {
 
@@ -295,10 +296,11 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiPiZero_ConvMode_pp(
     // closing neural pion cuts, 0.125 < M_gamma,gamma < 0.145
     // maxChi2 per cluster TPC <4, require TPC refit, DCA XY pT dependend 0.0182+0.0350/pt^1.01, DCA_Z = 3.0
     cuts.AddCut("00000113","00200009327000008250400000","302010708","0103503800000000","0153503000000000"); // normal mixing
-    cuts.AddCut("00000113","00200009327000008250400000","302040708","0103503800000000","0153503000000000"); // normal mixing + charged pion pt > 400 MeV
-    cuts.AddCut("00000113","00200009327000008250400000","302010708","0103503800000000","0a53503000000000"); // likesign mixing
-//    cuts.AddCut("00000113","00200009327000008250400000","302010708","0103503800000000","0b53503000000000"); // pi0 sideband mixing right (0.180-0.220)
+//    cuts.AddCut("00000113","00200009327000008250400000","302040708","0103503800000000","0153503000000000"); // normal mixing + charged pion pt > 400 MeV
+//    cuts.AddCut("00000113","00200009327000008250400000","302010708","0103503800000000","0a53503000000000"); // likesign mixing
+    cuts.AddCut("00000113","00200009327000008250400000","302010708","0103503800000000","0b53503000000000"); // pi0 sideband mixing right (0.180-0.220)
     cuts.AddCut("00000113","00200009327000008250400000","302010708","0103503800000000","0c53503000000000"); // pi0 sideband mixing right (0.01-0.05)
+    cuts.AddCut("00000113","00200009327000008250400000","302010708","0103503800000000","0d53503000000000"); // pi0 sideband mixing both sides
   //8 TeV
   } else if( trainConfig == 101 ) {
     // closing charged pion cuts, minimum TPC cluster = 80, TPC dEdx pi = \pm 3 sigma, pi+pi- mass Cut at 0.65, min pt charged pi = 100 MeV
@@ -472,6 +474,9 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiPiZero_ConvMode_pp(
   task->SetMoveParticleAccordingToVertex(kTRUE);
 
   task->SetDoMesonQA(enableQAMesonTask);
+
+  // Set pT min for cut on neutral pions
+  task->SetNeutralPionPtMin(neutralPionPtMin);
 
   //connect containers
   AliAnalysisDataContainer *coutput =

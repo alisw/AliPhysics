@@ -179,11 +179,15 @@ class AliConversionMesonCuts : public AliAnalysisCuts {
     Int_t    BackgroundHandlerType(){return fBackgroundHandler;}
     Double_t GetSelectionLow() const {return fSelectionLow;}
     Double_t GetSelectionHigh() const {return fSelectionHigh;}
-    Bool_t    UseLikeSignMixing() {return fBackgroundUseLikeSign;}
-    Bool_t    UseSidebandMixing() {return fBackgroundUseSideband;}
+    Bool_t   UseLikeSignMixing() {return fBackgroundUseLikeSign;}
+    Bool_t   UseSidebandMixing() {return fBackgroundUseSideband;}
+    Bool_t   UseSidebandMixingBothSides() {return fBackgroundUseSidebandBothSides;}
     Double_t GetSidebandMixingLow() const {return fSidebandMixingLow;}
     Double_t GetSidebandMixingHigh() const {return fSidebandMixingHigh;}
-    
+    Double_t GetSidebandMixingLeftLow() const {return fSidebandMixingLeftLow;}
+    Double_t GetSidebandMixingLeftHigh() const {return fSidebandMixingLeftHigh;}
+    Double_t GetSidebandMixingRightLow() const {return fSidebandMixingRightLow;}
+    Double_t GetSidebandMixingRightHigh() const {return fSidebandMixingRightHigh;}
   protected:
     TList*    fHistograms;				 ///< List of QA histograms
     Bool_t    fDoLightOutput;             ///< switch for running light output, kFALSE -> normal mode, kTRUE -> light mode
@@ -239,10 +243,14 @@ class AliConversionMesonCuts : public AliAnalysisCuts {
     Bool_t    fMaxOpanPtDepCut;           ///<
     Int_t     fBackgroundHandler;         ///<
     Bool_t    fBackgroundUseSideband;     ///<
+    Bool_t    fBackgroundUseSidebandBothSides;     ///<
     Bool_t    fBackgroundUseLikeSign;     ///<
     Double_t  fSidebandMixingLow;     ///<
     Double_t  fSidebandMixingHigh;     ///<
-
+    Double_t  fSidebandMixingLeftLow;     ///<
+    Double_t  fSidebandMixingLeftHigh;     ///<
+    Double_t  fSidebandMixingRightLow;     ///<
+    Double_t  fSidebandMixingRightHigh;     ///<
     // Histograms
     TObjString* fCutString;                     ///< cut number used for analysis
     TString     fCutStringRead;
@@ -260,7 +268,7 @@ class AliConversionMesonCuts : public AliAnalysisCuts {
   private:
 
     /// \cond CLASSIMP
-    ClassDef(AliConversionMesonCuts,20)
+    ClassDef(AliConversionMesonCuts,21)
     /// \endcond
 };
 
