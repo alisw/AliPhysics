@@ -800,7 +800,7 @@ void AliAnalysisTaskCMEV0::UserExec(Option_t *)
 
  Double_t ptw1 = 1.0, w1NUA = 1.0;
  Double_t ptw2 = 1.0; 
- //Double_t w2NUA = 1.0;
+ Double_t w2NUA = 1.0;
 
  for(int i=0; i<iTracks; i++) {
    pTrack1    =     fEvent->GetTrack(i);
@@ -825,19 +825,31 @@ void AliAnalysisTaskCMEV0::UserExec(Option_t *)
 
    if(bApplyNUACorr){
      //get NUA weights: 
-     if(dChrg1>0){
-        iBinNUA = fHCorrectNUApos[cForNUA]->FindBin(VtxZ,dPhi1,dEta1);
-        w1NUA = fHCorrectNUApos[cForNUA]->GetBinContent(iBinNUA);     
-      }
-      else if(dChrg1<0){
-        iBinNUA = fHCorrectNUAneg[cForNUA]->FindBin(VtxZ,dPhi1,dEta1);
-        w1NUA = fHCorrectNUAneg[cForNUA]->GetBinContent(iBinNUA);     
-      }
-      if(sFileNUA=="OldJ"){
-	w1NUA = 1./w1NUA;
-      }
-      if(w1NUA > 1e4 ) w1NUA = 1.0;
+     if(sFileNUA=="OldJ"||sFileNUA=="NewR"){
+       if(dChrg1>0){
+         iBinNUA = fHCorrectNUApos[cForNUA]->FindBin(VtxZ,dPhi1,dEta1);
+         w1NUA = fHCorrectNUApos[cForNUA]->GetBinContent(iBinNUA);     
+       }
+       else if(dChrg1<0){
+         iBinNUA = fHCorrectNUAneg[cForNUA]->FindBin(VtxZ,dPhi1,dEta1);
+         w1NUA = fHCorrectNUAneg[cForNUA]->GetBinContent(iBinNUA);     
+       }
+       if(sFileNUA=="OldJ") w1NUA = 1./w1NUA;
+     }
+     else if(sFileNUA=="NewPt"||sFileNUA=="NewpT"){
+       if(dChrg1>0){
+         iBinNUA = fHCorrectNUApos[iVzNUA]->FindBin(dPt1,dPhi1,dEta1);
+         w1NUA = fHCorrectNUApos[iVzNUA]->GetBinContent(iBinNUA);     
+       }
+       else if(dChrg1<0){
+         iBinNUA = fHCorrectNUAneg[iVzNUA]->FindBin(dPt1,dPhi1,dEta1);
+         w1NUA = fHCorrectNUAneg[iVzNUA]->GetBinContent(iBinNUA);     
+       }
+     }
+     if(w1NUA > 1e4 ) w1NUA = 1.0;
    }
+
+
 
    if(dChrg1>0){
      fHistChPosvsEtaPtRun[cIndex]->Fill(dPt1,dEta1,runindex,w1NUA);
@@ -1028,35 +1040,38 @@ void AliAnalysisTaskCMEV0::UserExec(Option_t *)
      if(!pTrack2->InPOISelection())
      continue;
    
-     /*
+     
      ptBin = fFB_Efficiency_Cent[cIndex]->FindBin(dPt2);
      ptw2   = 1.0/fFB_Efficiency_Cent[cIndex]->GetBinContent(ptBin);
 
-     if(bApplyNUAforEP){
-       if(bApplyNUACorr){
+     if(bApplyNUACorr){
+     //get NUA weights: 
+       if(sFileNUA=="OldJ"||sFileNUA=="NewR"){
          if(dChrg2>0){
-           iBinNUA = fHCorrectNUApos->FindBin(VtxZ,dPhi2,dEta2);
-           w2NUA   = fHCorrectNUApos->GetBinContent(iBinNUA);    
-  	   if(w2NUA > 1e5 ) w2NUA = 1e5;
-	 }
+           iBinNUA = fHCorrectNUApos[cForNUA]->FindBin(VtxZ,dPhi2,dEta2);
+           w2NUA = fHCorrectNUApos[cForNUA]->GetBinContent(iBinNUA);     
+         }
          else if(dChrg2<0){
-           iBinNUA = fHCorrectNUApos->FindBin(VtxZ,dPhi2,dEta2);
-           w2NUA   = fHCorrectNUApos->GetBinContent(iBinNUA);  
-  	   if(w2NUA > 1e5 ) w2NUA = 1e5;  
-	 }
-         WgtEP = ptw1*ptw2*w1NUA*w2NUA;
+           iBinNUA = fHCorrectNUAneg[cForNUA]->FindBin(VtxZ,dPhi2,dEta2);
+           w2NUA = fHCorrectNUAneg[cForNUA]->GetBinContent(iBinNUA);     
+         }
+         if(sFileNUA=="OldJ") w2NUA = 1./w2NUA;
        }
-       else{
-	 WgtEP = ptw1*ptw2;
+       else if(sFileNUA=="NewPt"||sFileNUA=="NewpT"){
+         if(dChrg2>0){
+           iBinNUA = fHCorrectNUApos[iVzNUA]->FindBin(dPt2,dPhi2,dEta2);
+           w2NUA = fHCorrectNUApos[iVzNUA]->GetBinContent(iBinNUA);     
+         }
+         else if(dChrg2<0){
+           iBinNUA = fHCorrectNUAneg[iVzNUA]->FindBin(dPt2,dPhi2,dEta2);
+           w2NUA = fHCorrectNUAneg[iVzNUA]->GetBinContent(iBinNUA);     
+         }
        }
+       if(w2NUA > 1e4 ) w2NUA = 1.0;
      }
-     else{
-       WgtEP = 1.0;
-     }
-     */
 
      if(bApplyNUAforEP){
-       WgtEP = ptw1*ptw2;
+       WgtEP = ptw1*ptw2*w1NUA*w2NUA;
      }
      else{
        WgtEP = 1.0;
@@ -1066,10 +1081,10 @@ void AliAnalysisTaskCMEV0::UserExec(Option_t *)
        fHist_Corr3p_EP_Norm_PN[QAindex][0]->Fill(EvtCent, TMath::Cos(n*dPhi1 + n*dPhi2 - 2.*n*Psi2V0A),WgtEP);
        fHist_Corr3p_EP_Norm_PN[QAindex][1]->Fill(EvtCent, TMath::Cos(n*dPhi1 + n*dPhi2 - 2.*n*Psi2V0C),WgtEP);
        if(cIndex<6){
-         fHist_Corr3p_pTSum_EP_V0A_PN[QAindex][cIndex]->Fill((dPt1+dPt2)*0.5, TMath::Cos(n*dPhi1 + n*dPhi2 - 2.*n*Psi2V0A),1.0);
-         fHist_Corr3p_pTSum_EP_V0C_PN[QAindex][cIndex]->Fill((dPt1+dPt2)*0.5, TMath::Cos(n*dPhi1 + n*dPhi2 - 2.*n*Psi2V0C),1.0);
-         fHist_Corr3p_pTDiff_EP_V0A_PN[QAindex][cIndex]->Fill(TMath::Abs(dPt1-dPt2), TMath::Cos(n*dPhi1 + n*dPhi2 - 2.*n*Psi2V0A),1.0);
-         fHist_Corr3p_pTDiff_EP_V0C_PN[QAindex][cIndex]->Fill(TMath::Abs(dPt1-dPt2), TMath::Cos(n*dPhi1 + n*dPhi2 - 2.*n*Psi2V0C),1.0);
+         fHist_Corr3p_pTSum_EP_V0A_PN[QAindex][cIndex]->Fill((dPt1+dPt2)*0.5, TMath::Cos(n*dPhi1 + n*dPhi2 - 2.*n*Psi2V0A),WgtEP);
+         fHist_Corr3p_pTSum_EP_V0C_PN[QAindex][cIndex]->Fill((dPt1+dPt2)*0.5, TMath::Cos(n*dPhi1 + n*dPhi2 - 2.*n*Psi2V0C),WgtEP);
+         fHist_Corr3p_pTDiff_EP_V0A_PN[QAindex][cIndex]->Fill(TMath::Abs(dPt1-dPt2), TMath::Cos(n*dPhi1 + n*dPhi2 - 2.*n*Psi2V0A),WgtEP);
+         fHist_Corr3p_pTDiff_EP_V0C_PN[QAindex][cIndex]->Fill(TMath::Abs(dPt1-dPt2), TMath::Cos(n*dPhi1 + n*dPhi2 - 2.*n*Psi2V0C),WgtEP);
          fHist_Corr3p_EtaDiff_EP_V0A_PN[QAindex][cIndex]->Fill(TMath::Abs(dEta1-dEta2), TMath::Cos(n*dPhi1 + n*dPhi2 - 2.*n*Psi2V0A),WgtEP);
          fHist_Corr3p_EtaDiff_EP_V0C_PN[QAindex][cIndex]->Fill(TMath::Abs(dEta1-dEta2), TMath::Cos(n*dPhi1 + n*dPhi2 - 2.*n*Psi2V0C),WgtEP);
        }
@@ -1078,10 +1093,10 @@ void AliAnalysisTaskCMEV0::UserExec(Option_t *)
        fHist_Corr3p_EP_Norm_PP[QAindex][0]->Fill(EvtCent, TMath::Cos(n*dPhi1 + n*dPhi2 - 2.*n*Psi2V0A),WgtEP);
        fHist_Corr3p_EP_Norm_PP[QAindex][1]->Fill(EvtCent, TMath::Cos(n*dPhi1 + n*dPhi2 - 2.*n*Psi2V0C),WgtEP);
        if(cIndex<6){
-         fHist_Corr3p_pTSum_EP_V0A_PP[QAindex][cIndex]->Fill((dPt1+dPt2)*0.5, TMath::Cos(n*dPhi1 + n*dPhi2 - 2.*n*Psi2V0A),1.0);
-         fHist_Corr3p_pTSum_EP_V0C_PP[QAindex][cIndex]->Fill((dPt1+dPt2)*0.5, TMath::Cos(n*dPhi1 + n*dPhi2 - 2.*n*Psi2V0C),1.0);
-         fHist_Corr3p_pTDiff_EP_V0A_PP[QAindex][cIndex]->Fill(TMath::Abs(dPt1-dPt2), TMath::Cos(n*dPhi1 + n*dPhi2 - 2.*n*Psi2V0A),1.0);
-         fHist_Corr3p_pTDiff_EP_V0C_PP[QAindex][cIndex]->Fill(TMath::Abs(dPt1-dPt2), TMath::Cos(n*dPhi1 + n*dPhi2 - 2.*n*Psi2V0C),1.0);
+         fHist_Corr3p_pTSum_EP_V0A_PP[QAindex][cIndex]->Fill((dPt1+dPt2)*0.5, TMath::Cos(n*dPhi1 + n*dPhi2 - 2.*n*Psi2V0A),WgtEP);
+         fHist_Corr3p_pTSum_EP_V0C_PP[QAindex][cIndex]->Fill((dPt1+dPt2)*0.5, TMath::Cos(n*dPhi1 + n*dPhi2 - 2.*n*Psi2V0C),WgtEP);
+         fHist_Corr3p_pTDiff_EP_V0A_PP[QAindex][cIndex]->Fill(TMath::Abs(dPt1-dPt2), TMath::Cos(n*dPhi1 + n*dPhi2 - 2.*n*Psi2V0A),WgtEP);
+         fHist_Corr3p_pTDiff_EP_V0C_PP[QAindex][cIndex]->Fill(TMath::Abs(dPt1-dPt2), TMath::Cos(n*dPhi1 + n*dPhi2 - 2.*n*Psi2V0C),WgtEP);
          fHist_Corr3p_EtaDiff_EP_V0A_PP[QAindex][cIndex]->Fill(TMath::Abs(dEta1-dEta2), TMath::Cos(n*dPhi1 + n*dPhi2 - 2.*n*Psi2V0A),WgtEP);
          fHist_Corr3p_EtaDiff_EP_V0C_PP[QAindex][cIndex]->Fill(TMath::Abs(dEta1-dEta2), TMath::Cos(n*dPhi1 + n*dPhi2 - 2.*n*Psi2V0C),WgtEP);
        }
@@ -1090,10 +1105,10 @@ void AliAnalysisTaskCMEV0::UserExec(Option_t *)
        fHist_Corr3p_EP_Norm_NN[QAindex][0]->Fill(EvtCent, TMath::Cos(n*dPhi1 + n*dPhi2 - 2.*n*Psi2V0A),WgtEP);
        fHist_Corr3p_EP_Norm_NN[QAindex][1]->Fill(EvtCent, TMath::Cos(n*dPhi1 + n*dPhi2 - 2.*n*Psi2V0C),WgtEP);
        if(cIndex<6){
-         fHist_Corr3p_pTSum_EP_V0A_NN[QAindex][cIndex]->Fill((dPt1+dPt2)*0.5, TMath::Cos(n*dPhi1 + n*dPhi2 - 2.*n*Psi2V0A),1.0);
-         fHist_Corr3p_pTSum_EP_V0C_NN[QAindex][cIndex]->Fill((dPt1+dPt2)*0.5, TMath::Cos(n*dPhi1 + n*dPhi2 - 2.*n*Psi2V0C),1.0);
-         fHist_Corr3p_pTDiff_EP_V0A_NN[QAindex][cIndex]->Fill(TMath::Abs(dPt1-dPt2), TMath::Cos(n*dPhi1 + n*dPhi2 - 2.*n*Psi2V0A),1.0);
-         fHist_Corr3p_pTDiff_EP_V0C_NN[QAindex][cIndex]->Fill(TMath::Abs(dPt1-dPt2), TMath::Cos(n*dPhi1 + n*dPhi2 - 2.*n*Psi2V0C),1.0);
+         fHist_Corr3p_pTSum_EP_V0A_NN[QAindex][cIndex]->Fill((dPt1+dPt2)*0.5, TMath::Cos(n*dPhi1 + n*dPhi2 - 2.*n*Psi2V0A),WgtEP);
+         fHist_Corr3p_pTSum_EP_V0C_NN[QAindex][cIndex]->Fill((dPt1+dPt2)*0.5, TMath::Cos(n*dPhi1 + n*dPhi2 - 2.*n*Psi2V0C),WgtEP);
+         fHist_Corr3p_pTDiff_EP_V0A_NN[QAindex][cIndex]->Fill(TMath::Abs(dPt1-dPt2), TMath::Cos(n*dPhi1 + n*dPhi2 - 2.*n*Psi2V0A),WgtEP);
+         fHist_Corr3p_pTDiff_EP_V0C_NN[QAindex][cIndex]->Fill(TMath::Abs(dPt1-dPt2), TMath::Cos(n*dPhi1 + n*dPhi2 - 2.*n*Psi2V0C),WgtEP);
          fHist_Corr3p_EtaDiff_EP_V0A_NN[QAindex][cIndex]->Fill(TMath::Abs(dEta1-dEta2), TMath::Cos(n*dPhi1 + n*dPhi2 - 2.*n*Psi2V0A),WgtEP);
          fHist_Corr3p_EtaDiff_EP_V0C_NN[QAindex][cIndex]->Fill(TMath::Abs(dEta1-dEta2), TMath::Cos(n*dPhi1 + n*dPhi2 - 2.*n*Psi2V0C),WgtEP);
        }
@@ -1671,12 +1686,15 @@ void AliAnalysisTaskCMEV0::GetNUACorrectionHist(Int_t run, TString sfileNUA)
     }
     //cout<<"\n sfileNUA = "<<sfileNUA<<" opening Rihan's NUA file.\n "<<endl;
   }
- 
-
-
-  
-  //from Jacopo's NUA file:
-  if(sfileNUA=="OldJ") {
+  else if(sfileNUA=="NewPt"|| sfileNUA=="NewpT"){
+    if(fListNUACorr){
+      for(int i=0;i<4;i++){
+        fHCorrectNUApos[i] = (TH3D *) fListNUACorr->FindObject(Form("fHist_NUA_pTPhiEta_Pos_Vz%d_Run%d",i,run));
+        fHCorrectNUAneg[i] = (TH3D *) fListNUACorr->FindObject(Form("fHist_NUA_pTPhiEta_Neg_Vz%d_Run%d",i,run));
+      }
+    }
+  }
+  else if(sfileNUA=="OldJ") {//from Jacopo's NUA file:
    if(!gGrid){
      TGrid::Connect("alien://");
    }
@@ -1703,12 +1721,23 @@ void AliAnalysisTaskCMEV0::GetNUACorrectionHist(Int_t run, TString sfileNUA)
 
   if(!fHCorrectNUApos[0] || !fHCorrectNUAneg[0]){
     printf("\n\n ******** could not open NUA Histograms for run %d, Use Wgt = 1.0 *********\n\n",run);
-    for(int i=0;i<4;i++){
-      fHCorrectNUApos[i] = new TH3D(Form("fHCorrectNUApos_cent%d",i),"",1,-10,10,1,0,6.284,1,-0.9,0.9); 
-      fHCorrectNUAneg[i] = new TH3D(Form("fHCorrectNUAneg_cent%d",i),"",1,-10,10,1,0,6.284,1,-0.9,0.9); 
-      fHCorrectNUApos[i]->SetBinContent(1,1,1,1.0);
-      fHCorrectNUAneg[i]->SetBinContent(1,1,1,1.0);
+    if(sfileNUA=="OldJ"|| sfileNUA=="NewR"){
+     for(int i=0;i<4;i++){
+        fHCorrectNUApos[i] = new TH3D(Form("fHCorrectNUApos_cent%d",i),"",1,-10,10,1,0,6.284,1,-0.9,0.9); 
+        fHCorrectNUAneg[i] = new TH3D(Form("fHCorrectNUAneg_cent%d",i),"",1,-10,10,1,0,6.284,1,-0.9,0.9); 
+        fHCorrectNUApos[i]->SetBinContent(1,1,1,1.0);
+        fHCorrectNUAneg[i]->SetBinContent(1,1,1,1.0);
       //exit(1);
+     }
+    }
+    else if(sfileNUA=="NewPt"|| sfileNUA=="NewpT"){
+     for(int i=0;i<4;i++){
+        fHCorrectNUApos[i] = new TH3D(Form("fHCorrectNUApos_cent%d",i),"",1,0,10,1,0,6.284,1,-0.9,0.9); 
+        fHCorrectNUAneg[i] = new TH3D(Form("fHCorrectNUAneg_cent%d",i),"",1,0,10,1,0,6.284,1,-0.9,0.9); 
+        fHCorrectNUApos[i]->SetBinContent(1,1,1,1.0);
+        fHCorrectNUAneg[i]->SetBinContent(1,1,1,1.0);
+      //exit(1);
+     }
     }
   }
 }

@@ -209,7 +209,7 @@ class AliAnalysisTaskCMEV0;
       //exit(1);
     }
   }
-  if(bApplyNUA && sNUAtype=="NewR") {
+  if(bApplyNUA && sNUAtype!="OldJ") {
     TFile* fNUAFile = TFile::Open(sNUAFile,"READ");
     if(!fNUAFile) {
       printf("\n\n *** ERROR: NUA wgt file not found! **EXIT** \n\n");
