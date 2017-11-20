@@ -9,8 +9,29 @@ TGraph#obj1, TGraph.Status#TPC.QA.dcar_posA_1 - means obj1 from TGraph with any 
 TGraph#obj1, TGraph.Status#TPC.QA.dcar_posA_1   {
     marker_size:   1,2,3,4;
     marker_color:  5,6,7,8; /* marker_color defenition */
-    line_color:    9,10,11,12; /* line_color defenition */
+    line_color:    5,6,7,8; /* line_color defenition */
     line_style:    13,14,15,16;
+}
+
+.deadBand   {
+    marker_size:   1,1,1;
+    marker_color:  400,632,416; /* marker_color defenition */
+    line_color:    400,632,416; /* line_color defenition */
+    line_style:    2,3,4;
+}
+
+.multiGraph   {      /*like figTemplateTRD   markerstyles: 20,21,24,25,27,28,34,33,29,30*/
+    marker_size:   1,1, 0.9,0.9, 1.4,1.4, 1.1,1.1, 1.2,1.2;
+    marker_color:  1,2,3,4; /* kBlack, kRed+1 , kBlue+1, kGreen+3, kMagenta+1, kOrange-1,kCyan+2,kYellow+2,kGray+1,  kRed-10 */
+    line_color:    1,2,3,4; /* kBlack, kRed+1 , kBlue+1, kGreen+3, kMagenta+1, kOrange-1,kCyan+2,kYellow+2,kGray+1,  kRed-10 */
+    line_style:    1,2,3,4,5,6,7,8,9,10;
+}
+
+.multiGraphPair   {    /*like figTemplateTRDPair markerstyles: 20,21,24,25,27,28,34,33,29,30*/
+    marker_size:   1,1, 0.9,0.9, 1.4,1.4, 1.1,1.1, 1.2,1.2;
+    marker_color:  1,2,3,4,5,6,7,8,9,10; /* marker_color defenition */
+    line_color:    1,2,3,4,5,6,7,8,9,10; /* line_color defenition */
+    line_style:    1,1,1,1,1,1,1,1,1;
 }
 
 /*

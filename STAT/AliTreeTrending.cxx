@@ -43,6 +43,7 @@
 #include "TROOT.h"
 #include "TLegend.h"
 #include "AliTreeTrending.h"
+#include "AliDrawStyle.h"
 
 using std::cout;
 using std::cerr;
@@ -374,18 +375,26 @@ TMultiGraph * AliTreeTrending::MakeMultiGraphStatus(TTree *fTree, TString mgrNam
 /// \param sigmaRange     - sigma range for automatic // TO use CSS style
 /// \param comp           - ????
 void AliTreeTrending::MakePlot(const char* outputDir, const char *figureName, const char *LegendTitle, std::vector<Double_t>& legendPos, const char *groupName, const char* expr, const char * cut, const char * markers, const char *colors, Bool_t drawSparse, Float_t markerSize, Float_t sigmaRange, Bool_t comp) {
-  TMultiGraph *graph=0;
+  TMultiGraph *mgraph=0;
   fWorkingCanvas->Clear();
   TLegend *legend = new TLegend(legendPos[0],legendPos[1],legendPos[2],legendPos[3],LegendTitle);
   legend->SetBorderSize(0);
-  graph = TStatToolkit::MakeMultGraph(fTree,groupName,expr,cut,markers,colors,drawSparse,markerSize,sigmaRange,legend,comp);
-  if (groupName) graph->SetName(groupName);
-  if(!graph){
+  mgraph = TStatToolkit::MakeMultGraph(fTree,groupName,expr,cut,markers,colors,drawSparse,markerSize,sigmaRange,legend,comp);
+  
+  AliDrawStyle::SetCssStyle("testStyle",AliDrawStyle::ReadCSSFile("$AliRoot_SRC/STAT/test/alirootTestStyle.css",0));
+  for(Int_t it=0; it<mgraph->GetListOfGraphs()->GetSize(); it++){
+    TGraph* graph = (TGraph*) mgraph->GetListOfGraphs()->At(it);
+    graph->SetName(TString::Format("graph[%d].class(multiGraphPair)",it).Data());
+    AliDrawStyle::TGraphApplyStyle("testStyle",graph);
+  }
+  
+  if (groupName) mgraph->SetName(groupName);
+  if(!mgraph){
     ::Error("MakePlot","No plot returned -> dummy plot!");
   }
   else {
-    if (drawSparse) TStatToolkit::RebinSparseMultiGraph(graph,(TGraph*)fStatusGraphM->GetListOfGraphs()->At(0));
-    TStatToolkit::DrawMultiGraph(graph,"alp");
+    if (drawSparse) TStatToolkit::RebinSparseMultiGraph(mgraph,(TGraph*)fStatusGraphM->GetListOfGraphs()->At(0));
+    TStatToolkit::DrawMultiGraph(mgraph,"alp");
     AppendStatusPad(0.3, 0.4, 0.05);
     legend->SetFillStyle(0);
     legend->Draw();
