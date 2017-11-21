@@ -67,6 +67,8 @@ AliAnalysisTaskTOFTrigger::AliAnalysisTaskTOFTrigger()
 	hTrackPadCorrEta(0),
 	hNoiseMaxiPad(0),
 	hTriggerCounter(0),
+	hTriggerCounterIR1(0),
+	hTriggerCounterIR2(0),
 	hNFiredMaxiPads(0),
 	hDetIn0(0),
 	hDetIn1(0),
@@ -80,7 +82,8 @@ AliAnalysisTaskTOFTrigger::AliAnalysisTaskTOFTrigger()
 	fMaxPt(0),
 	fMinPt(0),
 	fMaxMulti(0),
-	fTriggerClass(0)
+	fTriggerClass(0),
+	fMaxBCs(0)
 	   
 
 {
@@ -91,7 +94,7 @@ AliAnalysisTaskTOFTrigger::AliAnalysisTaskTOFTrigger()
 
 
 //_____________________________________________________________________________
-AliAnalysisTaskTOFTrigger::AliAnalysisTaskTOFTrigger(const char *name,Float_t lowpt,Float_t highpt,Int_t highmult,TString trgcls) 
+AliAnalysisTaskTOFTrigger::AliAnalysisTaskTOFTrigger(const char *name,Float_t lowpt,Float_t highpt,Int_t highmult,TString trgcls,Int_t nBCs) 
   : AliAnalysisTaskSE(name),fOutputList(0),fPIDResponse(0),fTrackCuts(0),
 	fTOFmask(0),
 	eff_MaxiPadLTM_All(0),
@@ -107,6 +110,8 @@ AliAnalysisTaskTOFTrigger::AliAnalysisTaskTOFTrigger(const char *name,Float_t lo
 	hTrackPadCorrEta(0),
 	hNoiseMaxiPad(0),
 	hTriggerCounter(0),
+	hTriggerCounterIR1(0),
+	hTriggerCounterIR2(0),
 	hNFiredMaxiPads(0),
 	hDetIn0(0),
 	hDetIn1(0),
@@ -120,7 +125,8 @@ AliAnalysisTaskTOFTrigger::AliAnalysisTaskTOFTrigger(const char *name,Float_t lo
 	fMaxPt(highpt),
 	fMinPt(lowpt),
 	fMaxMulti(highmult),
-	fTriggerClass(trgcls)    
+	fTriggerClass(trgcls),
+	fMaxBCs(nBCs)    
 
 {
 
@@ -180,10 +186,14 @@ void AliAnalysisTaskTOFTrigger::UserCreateOutputObjects()
   fOutputList->Add(hTrackPadCorrEta); 
   hNoiseMaxiPad = new TH2F("hNoiseMaxiPad","hNoiseMaxiPad",72,0,72,23,0,23);
   fOutputList->Add(hNoiseMaxiPad);
-  hTriggerCounter = new TH1F("hTriggerCounter","hTriggerCounter",2,-0.5,1.5);
+  hTriggerCounter = new TH1I("hTriggerCounter","hTriggerCounter",2,-0.5,1.5);
   hTriggerCounter->GetXaxis()->SetBinLabel(1,"CTRUE-B");
   hTriggerCounter->GetXaxis()->SetBinLabel(2,fTriggerClass.Data());
   fOutputList->Add(hTriggerCounter);
+  hTriggerCounterIR1 = new TH1I("hTriggerCounterIR1","hTriggerCounterIR1",91,-0.5,90.5);
+  fOutputList->Add(hTriggerCounterIR1);
+  hTriggerCounterIR2 = new TH1I("hTriggerCounterIR2","hTriggerCounterIR2",91,-0.5,90.5);
+  fOutputList->Add(hTriggerCounterIR2);
   hNFiredMaxiPads = new TH1F("hNFiredMaxiPads","hNFiredMaxiPads",1657,-0.5,1656.5);
   fOutputList->Add(hNFiredMaxiPads);
   hDetIn0 = new TH1I("hDetIn0","hDetIn0",18,-0.5,17.5),
@@ -226,6 +236,38 @@ void AliAnalysisTaskTOFTrigger::UserExec(Option_t *)
   
   TString trigger = esd->GetFiredTriggerClasses();
   if(!trigger.Contains(fTriggerClass.Data()) && !trigger.Contains("CTRUE-B")) return;
+  
+  
+  
+  TBits fIR1Map = esd->GetHeader()->GetIRInt1InteractionMap();
+  TBits fIR2Map = esd->GetHeader()->GetIRInt2InteractionMap();
+  Int_t fClosestIR1 = 100;
+  Int_t fClosestIR2 = 100;
+  for(Int_t item=-1; item>=-90; item--) {
+    Int_t bin = 90+item;
+    Bool_t isFired = fIR1Map.TestBitNumber(bin);
+    if(isFired) {
+      fClosestIR1 = TMath::Abs(item);
+      break;
+    }
+  if(fClosestIR1 == 100)fClosestIR1 = 0;
+  }
+  for(Int_t item=-1; item>=-90; item--) {
+    Int_t bin = 90+item;
+    Bool_t isFired = fIR2Map.TestBitNumber(bin);
+    if(isFired) {
+      fClosestIR2 = TMath::Abs(item);
+      break;
+    }
+  }
+  if(fClosestIR2 == 100)fClosestIR2 = 0;
+  
+  if(trigger.Contains(fTriggerClass.Data())){
+  	hTriggerCounterIR1->Fill(fClosestIR1);
+	hTriggerCounterIR2->Fill(fClosestIR2);
+	}
+  if(fClosestIR1 < fMaxBCs && fClosestIR1 != 0)return;
+  if(fClosestIR2 < fMaxBCs && fClosestIR2 != 0)return;
 
   if(trigger.Contains("CTRUE-B"))hTriggerCounter->Fill(0); 
   if(trigger.Contains(fTriggerClass.Data()))hTriggerCounter->Fill(1);

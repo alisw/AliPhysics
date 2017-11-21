@@ -16,13 +16,14 @@ class AliESDtrackCuts;
 class AliAnalysisTaskTOFTrigger : public AliAnalysisTaskSE {
  public:
   AliAnalysisTaskTOFTrigger();
-  AliAnalysisTaskTOFTrigger(const char *name,Float_t lowpt,Float_t highpt,Int_t highmult,TString trgcls);
+  AliAnalysisTaskTOFTrigger(const char *name,Float_t lowpt,Float_t highpt,Int_t highmult,TString trgcls,Int_t nBCs);
   virtual ~AliAnalysisTaskTOFTrigger();
 
   virtual void UserCreateOutputObjects();
   virtual void UserExec(Option_t *option);
   virtual void Terminate(Option_t *);
-  void SetupParameters(Float_t lowpt,Float_t highpt,Int_t highmult,TString trgcls){fMaxPt = highpt; fMinPt = lowpt; fMaxMulti = highmult; fTriggerClass = trgcls;}
+  void SetupParameters(Float_t lowpt,Float_t highpt,Int_t highmult,TString trgcls,Int_t nBCs)
+  			{fMaxPt = highpt; fMinPt = lowpt; fMaxMulti = highmult; fTriggerClass = trgcls;fMaxBCs = nBCs;}
   void GetLTMIndex(const Int_t * const detind, Int_t *indexLTM);
   
  private:
@@ -44,7 +45,9 @@ class AliAnalysisTaskTOFTrigger : public AliAnalysisTaskSE {
   TH2F *hTrackPadCorrPhi;		//!  
   TH2F *hTrackPadCorrEta;		//!
   TH2F *hNoiseMaxiPad;			//!
-  TH1F *hTriggerCounter;		//!
+  TH1I *hTriggerCounter;		//!
+  TH1I *hTriggerCounterIR1;		//!
+  TH1I *hTriggerCounterIR2;		//!
   TH1F *hNFiredMaxiPads;		//!
   TH1I *hDetIn0;			//!
   TH1I *hDetIn1;			//!
@@ -60,12 +63,13 @@ class AliAnalysisTaskTOFTrigger : public AliAnalysisTaskSE {
   Float_t fMinPt;
   Int_t fMaxMulti;
   TString fTriggerClass;
+  Int_t fMaxBCs;
    
   
   AliAnalysisTaskTOFTrigger(const AliAnalysisTaskTOFTrigger&); //not implemented
   AliAnalysisTaskTOFTrigger& operator =(const AliAnalysisTaskTOFTrigger&); //not implemented
   
-  ClassDef(AliAnalysisTaskTOFTrigger, 2); 
+  ClassDef(AliAnalysisTaskTOFTrigger, 3); 
 };
 
 #endif
