@@ -69,21 +69,49 @@ AliTreeTrending::AliTreeTrending():
   fUserDescription(NULL),
   fLatexDescription(NULL),
   fStatusGraphM(NULL),
-  fCurrentCSSStyle(""),
+  fCurrentCssStyle(""),
   fReport(NULL) {
 }
 //_____________________________________________________________________________
-AliTreeTrending::AliTreeTrending(const char *name, const char *title):
+AliTreeTrending::AliTreeTrending(const char *name, const char *title, const char * cssStyle):
   TNamed(name, title),
   fTree(NULL),
   fUserDescription(NULL),
   fLatexDescription(NULL),
   fStatusGraphM(NULL),
-  fCurrentCSSStyle(""),
+  fCurrentCssStyle(cssStyle),
   fReport(NULL) {
   //
   fReport=new TFile("report.root","recreate");
+  // Register default style
+  if (fCurrentCssStyle.Length()>0){
+     if (AliDrawStyle::GetCssStyle(fCurrentCssStyle.Data())==NULL){
+       ::Error("AliTreeTrending::AliTreeTrending", "Requested CSS Style %s not registered", fCurrentCssStyle.Data());
+       fCurrentCssStyle="";
+     }
+  }
+  if (fCurrentCssStyle.Length()==0){
+    if (AliDrawStyle::GetCssStyle("AliTreeTrending") == NULL) {
+      AliDrawStyle::RegisterCssStyle("AliTreeTrending", AliDrawStyle::ReadCSSFile("$AliRoot_SRC/STAT/test/AliTreeTrending.css", 0));
+    }
+    fCurrentCssStyle="AliTreeTrending";
+  }
 }
+
+/// Change the style for drawing
+/// cssStyle should be registered before  using AliDrawStyle::SetSccStyle();
+/// \param cssStyle
+/// \return
+Bool_t AliTreeTrending::SetCssStyle(const char * cssStyle){
+  if (cssStyle){
+     if (AliDrawStyle::GetCssStyle(cssStyle)==NULL){
+       ::Error("AliTreeTrending::SetCssStyle", "Requested CSS Style %s not registered", cssStyle);
+     }else{
+       fCurrentCssStyle = cssStyle;
+     }
+  }
+}
+
 
 ///
 /// \param latex
@@ -243,14 +271,21 @@ void AliTreeTrending::AppendStatusPad(Float_t padRatio, Float_t bottomMargin, Fl
   // draw original canvas into first pad
   c1->cd(1);
   c1_clone->DrawClonePad();
-  pad1->SetBottomMargin(0.001);
-  pad1->SetRightMargin(rightMargin);
+
+  pad1->SetName("Top.class(statusPad)");
+  AliDrawStyle::TPadApplyStyle(fCurrentCssStyle.Data(),pad1);
+
+//  pad1->SetBottomMargin(0.001);
+//  pad1->SetRightMargin(rightMargin);
   // set up second pad
   c1->cd(2);
-  pad2->SetGrid(3);
-  pad2->SetTopMargin(0);
-  pad2->SetBottomMargin(bottomMargin); // for the long x-axis labels (run numbers)
-  pad2->SetRightMargin(rightMargin);
+//  pad2->SetGrid(3);
+//  pad2->SetTopMargin(0);
+//  pad2->SetBottomMargin(bottomMargin); // for the long x-axis labels (run numbers)
+//  pad2->SetRightMargin(rightMargin);
+  pad2->SetName("Bottom.class(statusPad)");
+  AliDrawStyle::TPadApplyStyle(fCurrentCssStyle.Data(),pad2); //"testStyle" to be changed to
+  
   const Int_t nVars = fStatusGraphM->GetYaxis()->GetNbins();
   TGraph* grAxis = (TGraph*) fStatusGraphM->GetListOfGraphs()->At(0);
   Int_t entries = grAxis->GetN();
@@ -386,13 +421,13 @@ void AliTreeTrending::MakePlot(const char* outputDir, const char *figureName, co
   
   for(Int_t it=0; it<mGraph->GetListOfGraphs()->GetSize(); it++){
     TGraph* graph = (TGraph*) mGraph->GetListOfGraphs()->At(it);
-    if (groupName!=NULL){    // example  groupName=".class(multiGraphPair).{marker_style:25,21,22,23;marker_color:1,2,4,5;}"
+    if (groupName!=NULL && strlen(groupName)>0){    // example  groupName=".class(multiGraphPair).{marker_style:25,21,22,23;marker_color:1,2,4,5;}"
       graph->SetName(TString::Format("graph[%d].%s",it,groupName).Data());
     }else {
       graph->SetName(TString::Format("graph[%d].class(multiGraphPair)", it).Data());
     }
 	  // TODO add group name if exist
-    AliDrawStyle::TGraphApplyStyle(fCurrentCSSStyle.Data(),graph);
+    AliDrawStyle::TGraphApplyStyle(fCurrentCssStyle.Data(),graph);
   }
   
   if (groupName) mGraph->SetName(groupName);
@@ -494,6 +529,47 @@ void AliTreeTrending::MakeStatusPlot(const char *outputDir, const char *figureNa
   AliSysInfo::AddStamp(expression.Data(),3,counter++);
 }
 
+
+
+///
+/// \param figureName       - figure name
+/// \param refVariable      - reference  variable
+/// \param bandNamePrefix   - band prefix
+/// \param selection        - selection
+/// \param groupName        - group name (used to specify class or properties)
+void AliTreeTrending::AppendDefaultBands(const char *outputDir, const char *figureName,  const char * refVariable,const char * bandNamePrefix, const char * selection, const char* groupName /*other drawing variable  TString style*/ ){
+  TMultiGraph *mGraph=0;
+  const char* aType[3]={"_WarningBand","_OutlierBand","_PhysAccBand"}; //yellow 400 ,red 632 ,green 416/
+  TString expr;
+  for(Int_t itype=0; itype<3; itype++){
+    expr = refVariable+TString("+")+bandNamePrefix+TString(aType[itype])+TString(";")+refVariable+TString("-")+bandNamePrefix+TString(aType[itype])+TString(":run");
+    mGraph = TStatToolkit::MakeMultGraph(fTree,"",expr,selection, "figTemplateTRDPair", "figTemplateTRDPair",kTRUE,0,6,0,kTRUE);
+    if(!mGraph){
+      ::Error("MakePlot","No plot returned -> dummy plot!");
+    }
+    else {
+      if (kTRUE) TStatToolkit::RebinSparseMultiGraph(mGraph,(TGraph*)fStatusGraphM->GetListOfGraphs()->At(0));
+      for(Int_t it=0; it<mGraph->GetListOfGraphs()->GetSize(); it++){
+        TGraph* band = (TGraph*) mGraph->GetListOfGraphs()->At(it);
+        if (groupName && strlen(groupName)>1){    // example  groupName=".class(multiGraphPair).{marker_style:25,21,22,23;marker_color:1,2,4,5;}"
+          band->SetName(TString::Format("graph[%d]%s",itype,groupName).Data());
+        }else {
+          band->SetName(TString::Format("graph[%d].class(deadBand)", itype).Data());
+        }
+        // TODO add group name if exist
+        AliDrawStyle::TGraphApplyStyle(fCurrentCssStyle,band); //"testStyle" to be changed to fCurrenCSSStyle
+      }
+      TStatToolkit::DrawMultiGraph(mGraph,"l");
+    }
+  }
+  if(outputDir!=0){
+    fWorkingCanvas->SaveAs(TString(outputDir)+"/"+TString(figureName));
+    fWorkingCanvas->Print(TString(outputDir)+"/report.pdf");
+    if (fReport) {fReport->cd();fWorkingCanvas->Write(figureName);}
+  }
+  static Int_t counter=0;
+  AliSysInfo::AddStamp(expr,2,counter++);
+}
 
 /// Recursive function to decompose the status string into sub-contribution
 /// \param tree            - input tree

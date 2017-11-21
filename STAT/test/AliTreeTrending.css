@@ -15,9 +15,10 @@ TGraph#obj1, TGraph.Status#TPC.QA.dcar_posA_1   {
 
 .deadBand   {
     marker_size:   1,1,1;
-    marker_color:  400,632,416;; /* marker_color defenition */
-    line_color:    2,3,4;/* line_color defenition */
-    line_style:    2,3,4;
+    marker_color:  800,632,416; /* marker_color definition */
+    line_color:    800,632,416;/* line_color definition */
+    line_style:    1,2,6;
+    line_width:    2,2,2;
 }
 
 .multiGraph   {      /*like figTemplateTRD   markerstyles: 20,21,24,25,27,28,34,33,29,30*/

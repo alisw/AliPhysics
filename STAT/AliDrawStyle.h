@@ -76,7 +76,7 @@ public:
   ///  Setter for css style.
   /// \param styleName  - name of style.
   /// \param array      - TObjArray with pair selector and declaration from css file.
-  static void SetCssStyle(const char *styleName, TObjArray*array ){ fCssStyleAlice[styleName]=array;}
+  static void RegisterCssStyle(const char *styleName, TObjArray*array ){ fCssStyleAlice[styleName]=array;}
   static void SetDefaults();
   static void SetDefaultStyles(const char * styleName, const char* arrayName);
   static TString GetLatexAlice(const char * symbol);

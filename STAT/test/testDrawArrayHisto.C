@@ -16,8 +16,8 @@
 TObjArray * hisArray=NULL;
 
 void RegisterStyles(){
-  AliDrawStyle::SetCssStyle("rawStyle", AliDrawStyle::ReadCSSFile("$AliRoot_SRC/STAT/Macros/raw.css",0));
-  AliDrawStyle::SetCssStyle("bbStyle", AliDrawStyle::ReadCSSFile("$AliRoot_SRC/STAT/Macros/bb.css",0));
+  AliDrawStyle::RegisterCssStyle("rawStyle", AliDrawStyle::ReadCSSFile("$AliRoot_SRC/STAT/Macros/raw.css",0));
+  AliDrawStyle::RegisterCssStyle("bbStyle", AliDrawStyle::ReadCSSFile("$AliRoot_SRC/STAT/Macros/bb.css",0));
 }
 
 

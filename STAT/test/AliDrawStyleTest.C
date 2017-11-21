@@ -223,7 +223,7 @@ void AliDrawStyleTest_GetFloatValues(){
 // }
 
 void  AliDrawStyleTest_GetProperty(){
-  AliDrawStyle::SetCssStyle("alirootTestStyle.css",AliDrawStyle::ReadCSSFile("$AliRoot_SRC/STAT/test/alirootTestStyle.css",0));
+  AliDrawStyle::RegisterCssStyle("alirootTestStyle.css",AliDrawStyle::ReadCSSFile("$AliRoot_SRC/STAT/test/alirootTestStyle.css",0));
   if (AliDrawStyle::GetProperty("alirootTestStyle.css","marker_size", "TGraph", "Status", "TPC.QA.dcar_posA_1") == "1,2,3,4"){
     ::Info("AliDrawStyleTest","AliDrawStyle::GetProperty(\"alirootTestStyle.css\",\"marker_size\", \"TGraph\", \"Status\", \"TPC.QA.dcar_posA_1\")- IsOK");
   }else{
@@ -261,10 +261,10 @@ void  AliDrawStyleTest_GetProperty(){
 
 void AliDrawStyleTest_ApplyCssStyle(){
   TCanvas *canv = MakeTestPlot(3);
-  AliDrawStyle::SetCssStyle("test1",AliDrawStyle::ReadCSSFile("$AliRoot_SRC/STAT/test/test1.css",0));
+  AliDrawStyle::RegisterCssStyle("test1",AliDrawStyle::ReadCSSFile("$AliRoot_SRC/STAT/test/test1.css",0));
   AliDrawStyle::ApplyCssStyle(canv, "test1");
   canv->Print("test1.xml");
-  AliDrawStyle::SetCssStyle("test2",AliDrawStyle::ReadCSSFile("test2.css",0));
+  AliDrawStyle::RegisterCssStyle("test2",AliDrawStyle::ReadCSSFile("test2.css",0));
   AliDrawStyle::ApplyCssStyle(canv, "test2");
   AliDrawStyle::ApplyCssStyle(canv, "test1");
   canv->Print("test2-1.xml");
@@ -328,47 +328,3 @@ TCanvas *MakeTestPlot(Int_t nHis) {
     legend->Draw();
   return exampleCanvas;
 }
-
-/*
-void SetStyleForTest(Int_t val, TCanvas *canv) {
-    cCanvas->SetFillColor(val);
-    cCanvas->SetBorderSize(val);
-    cCanvas->SetBorderMode(val);
-    TList *oListPad = NULL;
-    TList *oListObj = NULL;
-
-    oList = pad->GetListOfPrimitives();
-    for(Int_t c = 0; c < oList->GetEntries(); c++) {
-        (TPad *) oList->At(c)->SetFillColor(val);
-        (TPad *) oList->At(c)->SetBottomMargin(val);
-        (TPad *) oList->At(c)->SetTopMargin(val);
-        (TPad *) oList->At(c)->SetLeftMargin(val);
-        (TPad *) oList->At(c)->SetRightMargin(val);
-        (TPad *) oList->At(c)->SetBorderSize(val);
-        (TPad *) oList->At(c)->SetBorderMode(val);
-        (TPad *) oList->At(c)->SetGridx(val);
-        (TPad *) oList->At(c)->SetGridy(val);
-        (TPad *) oList->At(c)->SetTickx(val);
-        (TPad *) oList->At(c)->SetTicky(val);
-        (TPad *) oList->At(c)->SetLogx(val);
-        (TPad *) oList->At(c)->SetLogy(val);
-        (TPad *) oList->At(c)->SetLogz(val);
-        for (Int_t k = 0; k < oList->GetEntries(); k++) {
-
-            cObj = oListObj->At(k);
-            if (cObj->InheritsFrom("TH1") || cObj->InheritsFrom("TGraph") || cObj->InheritsFrom("TF1")) {
-
-                cObj->SetMarkerColor(val);
-                cObj->SetMarkerSize(val);
-                cObj->SetMarkerStyle(val);
-                cObj->SetLineColor(val);
-                cObj->SetLineWidth(val);
-                cObj->SetLineStyle(val);
-                cObj->SetFillColor(val);
-                cObj->SetFillStyle(val);
-            }
-        }
-    }
-    canv->Modified();
-}
-*/

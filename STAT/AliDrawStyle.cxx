@@ -686,7 +686,7 @@ Bool_t  AliDrawStyle::IsSelected(TString selectors, TString elementID, TString c
   }
 
 ///
-/// \param styleName      - name of predefined array with styles (see. AliDrawStyle::SetCssStyle())
+/// \param styleName      - name of predefined array with styles (see. AliDrawStyle::RegisterCssStyle())
 /// \param propertyName   - name of property according to css notation
 /// \param elementID
 /// \param classID
@@ -695,7 +695,7 @@ Bool_t  AliDrawStyle::IsSelected(TString selectors, TString elementID, TString c
 /*!
   ####  Example use:
    \code
-   AliDrawStyle::SetCssStyle("alirootTestStyle.css",AliDrawStyle::ReadCSSFile("$AliRoot_SRC/STAT/test/alirootTestStyle.css",0));
+   AliDrawStyle::RegisterCssStyle("alirootTestStyle.css",AliDrawStyle::ReadCSSFile("$AliRoot_SRC/STAT/test/alirootTestStyle.css",0));
    AliDrawStyle::GetProperty("alirootTestStyle.css","marker_size", "TGraph", "", "obj1");                      // "33,34,35,36"
    AliDrawStyle::GetProperty("alirootTestStyle.css","marker_size", "TGraph", "", "TPC.QA.dcar_posA_1");        // "1,2,3,4"
    AliDrawStyle::GetProperty("alirootTestStyle.css","marker_size", "TGraph", "Warning", "TPC.QA.dcar_posA_1"); // ""
@@ -722,7 +722,7 @@ TString AliDrawStyle::GetProperty(const char *styleName, TString propertyName,
 }
 
 ///
-/// \param styleName    - name of predefined array with styles (see. AliDrawStyle::SetCssStyle())
+/// \param styleName    - name of predefined array with styles (see. AliDrawStyle::RegisterCssStyle())
 /// \param cGraph       - object inherited from TGraph in which you want to change style
 /*!
   ####  Example use:
@@ -775,7 +775,7 @@ void AliDrawStyle::TGraphApplyStyle(const char* styleName, TGraph *cGraph){
 }
 
 ///
-/// \param styleName    - name of predefined array with styles (see. AliDrawStyle::SetCssStyle())
+/// \param styleName    - name of predefined array with styles (see. AliDrawStyle::RegisterCssStyle())
 /// \param cHis       - object inherited from TH1 in which you want to change style
 /*!
   ####  Example use:
@@ -828,7 +828,7 @@ void AliDrawStyle::TH1ApplyStyle(const char* styleName, TH1 *cHis){
 }
 
 ///
-/// \param styleName    - name of predefined array with styles (see. AliDrawStyle::SetCssStyle())
+/// \param styleName    - name of predefined array with styles (see. AliDrawStyle::RegisterCssStyle())
 /// \param cFunc       - object inherited from TF1 in which you want to change style
 /*!
   ####  Example use:
@@ -882,7 +882,7 @@ void AliDrawStyle::TF1ApplyStyle(const char* styleName, TF1 *cFunc) {
 }
 
 ///
-/// \param styleName    - name of predefined array with styles (see. AliDrawStyle::SetCssStyle())
+/// \param styleName    - name of predefined array with styles (see. AliDrawStyle::RegisterCssStyle())
 /// \param cPad       - object inherited from TPad in which you want to change style
 /*!
   ####  Example use:
@@ -944,7 +944,7 @@ void AliDrawStyle::TPadApplyStyle(const char* styleName, TPad *cPad){
 }
 
 ///
-/// \param styleName    - name of predefined array with styles (see. AliDrawStyle::SetCssStyle())
+/// \param styleName    - name of predefined array with styles (see. AliDrawStyle::RegisterCssStyle())
 /// \param cCanvas       - object inherited from TCanvas in which you want to change style
 /*!
   ####  Example use:
@@ -1007,13 +1007,13 @@ void AliDrawStyle::GetIds(TObject *cObject, TString &elementID, TString &classID
 /// \brief Applies style from css to all objects from Pad or Canvas.
 ///        In case if pad inherited from TCanvas will work recursively for all pads from input canvas.
 /// \param pad       - Input TPad object. You can specify TCanvas in this case style will be apply recursively to all objects (TH1, TF1, TGraph) on pad.
-/// \param styleName - Name of style specify in AliDrawStyle::SetCssStyle()
+/// \param styleName - Name of style specify in AliDrawStyle::RegisterCssStyle()
 /*!
   ####  Example use:
    \code
      .L $AliRoot_SRC/STAT/Macros/AliDrawStyleExample.C+
      MakeTestPlot(); //           styleName,     ReadCssFile returns TOBjArray with set of attributes and values from css file.
-     AliDrawStyle::SetCssStyle("testStyle", AliDrawStyle::ReadCSSFile("$AliRoot_SRC/STAT/test/alirootTestStyle.css",0));
+     AliDrawStyle::RegisterCssStyle("testStyle", AliDrawStyle::ReadCSSFile("$AliRoot_SRC/STAT/test/alirootTestStyle.css",0));
      AliDrawStyle::ApplyCssStyle(gPad->GetCanvas(), "testStyle")
    \endcode
 */
