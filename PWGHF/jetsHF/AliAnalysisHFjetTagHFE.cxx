@@ -963,7 +963,8 @@ Bool_t AliAnalysisHFjetTagHFE::Run()
         if(fabs(d0z0[0])>3.0)continue;
         if(fabs(d0z0[1])>3.0)continue;
         if(track->GetTPCNcls() < 80) continue;
-        if(atrack->GetITSNcls() < 2) continue;   // AOD track level
+        //if(atrack->GetITSNcls() < 2) continue;   // AOD track level
+        if(atrack->GetITSNcls() < 1) continue;   // AOD track level
         if(!(track->HasPointOnITSLayer(0) || track->HasPointOnITSLayer(1))) continue;    // kAny
         if((!(atrack->GetStatus()&AliESDtrack::kITSrefit)|| (!(atrack->GetStatus()&AliESDtrack::kTPCrefit)))) continue;
         // kink cut
@@ -1105,10 +1106,6 @@ Bool_t AliAnalysisHFjetTagHFE::Run()
         AliEmcalJet *jet = fJetsCont->GetNextAcceptJet();  // full or charge ?
         while(jet) 
            {
-            //jet->Pt() 
-            //jet->Area()
-            //jet->Eta() 
-            //jet->Phi()
             //Float_t ptLeading = fJetsCont->GetLeadingHadronPt(jet);
 
             double jetEta = jet->Eta();
@@ -1152,10 +1149,12 @@ Bool_t AliAnalysisHFjetTagHFE::Run()
                     if(fFlagULS) fHistULSjet->Fill(pt,corrPt);
                     if(fFlagLS)fHistLSjet->Fill(pt,corrPt);
                
-                    double HFjetVals[7];
-                    //HFjetVals[0]=track->Pt(); HFjetVals[1]=mcpT; HFjetVals[2] = HFjetpT; HFjetVals[3] = HFjetpTMC; HFjetVals[4] = HFjetpTparticle; HFjetVals[5] = 0.0; HFjetVals[6] = ptHard;
-                    HFjetVals[0]=track->Pt(); HFjetVals[1]=0.0; HFjetVals[2] = corrPt; HFjetVals[3] = pTeJet; HFjetVals[4] = pTeJetTrue; HFjetVals[5] = 0.0; HFjetVals[6] = 0.0;
-                    HFjetCorr1->Fill(HFjetVals);
+                    if(iMCHF)
+                      {
+                       double HFjetVals[7];
+                       HFjetVals[0]=track->Pt(); HFjetVals[1]=0.0; HFjetVals[2] = corrPt; HFjetVals[3] = pTeJet; HFjetVals[4] = pTeJetTrue; HFjetVals[5] = 0.0; HFjetVals[6] = 0.0;
+                       HFjetCorr1->Fill(HFjetVals);
+                      }
                    } // teg by e
 
              } // jet eta cut
@@ -1270,7 +1269,8 @@ void AliAnalysisHFjetTagHFE::SelectPhotonicElectron(Int_t itrack, AliVTrack *tra
         if((!(aAssotrack->GetStatus()&AliESDtrack::kITSrefit)|| (!(aAssotrack->GetStatus()&AliESDtrack::kTPCrefit)))) continue;
         
         //-------loose cut on partner electron
-        if(ptAsso <0.3) continue;
+        //if(ptAsso <0.3) continue;
+        if(ptAsso <0.15) continue;
         if(aAssotrack->Eta()<-0.9 || aAssotrack->Eta()>0.9) continue;
         if(nsigma < -3 || nsigma > 3) continue;
         
@@ -1387,7 +1387,6 @@ void AliAnalysisHFjetTagHFE::MakeParticleLevelJet()
                             //if(idbHFEj)cout << "iTagHFjetMC = " << iTagHFjet << " ; " << jetPart->Pt() << endl;
                             cout << "iTagHFjetMC = " << iTagHFjet << " ; " << jetPart->Pt() << endl;
                             double HFjetVals[7];
-                            //HFjetVals[0]=0.0; HFjetVals[1]=MChfepT; HFjetVals[2] = 0.0; HFjetVals[3] = 0.0; HFjetVals[4] = jetPart->Pt(); HFjetVals[5] = 0.0; HFjetVals[6] = ptHard;
                             HFjetVals[0]=0.0; HFjetVals[1]=MChfepT; HFjetVals[2] = 0.0; HFjetVals[3] = 0.0; HFjetVals[4] = jetPart->Pt(); HFjetVals[5] = 0.0; HFjetVals[6] = 0.0;
                             HFjetParticle->Fill(HFjetVals); 
                             //pJet->Fill(HFjetVals); 
@@ -1396,9 +1395,6 @@ void AliAnalysisHFjetTagHFE::MakeParticleLevelJet()
                         if(idbHFEj)cout << "go to next jet" << endl;
                         jetPart = fJetsContPart->GetNextAcceptJet(); 
                     }
-                   //jetPart = fJetsCont->GetNextAcceptJet(); 
-                   //if(idbHFEj)cout << "go to next jet" << endl;
-                   //jetPart = fJetsContPart->GetNextAcceptJet(); 
                  }     
              }
           }
