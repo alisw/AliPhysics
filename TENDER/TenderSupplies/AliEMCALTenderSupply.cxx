@@ -1910,7 +1910,6 @@ void AliEMCALTenderSupply::RecPoints2Clusters(TClonesArray *clus)
       UInt_t * mcEdepFracPerCell = new UInt_t[ncellsTrue];
       
       // Get the digit that originated this cell cluster
-      AliVCaloCells* cells = event->GetEMCALCells();
       
       for(Int_t icell = 0; icell < ncellsTrue ; icell++) 
       {

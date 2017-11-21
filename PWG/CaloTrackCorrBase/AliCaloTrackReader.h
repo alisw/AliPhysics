@@ -696,9 +696,9 @@ public:
   virtual Int_t    GetNumberOfMCGeneratorsToAccept()         const { return fNMCGenerToAccept ; } 
   
   virtual void     SetNameOfMCGeneratorsToAccept(Int_t ig, TString name) 
-  { if ( ig < 5 || ig >= 0 ) fMCGenerToAccept[ig] = name ; }  
+  { if ( ig < 5 && ig >= 0 ) fMCGenerToAccept[ig] = name ; }  
   virtual void     SetIndexOfMCGeneratorsToAccept(Int_t ig, Int_t index) 
-  { if ( ig < 5 || ig >= 0 ) fMCGenerIndexToAccept[ig] = index ; }  
+  { if ( ig < 5 && ig >= 0 ) fMCGenerIndexToAccept[ig] = index ; }  
   virtual TString GetNameOfMCGeneratorsToAccept(Int_t ig)   const { return fMCGenerToAccept[ig] ; }
   virtual Int_t   GetIndexOfMCGeneratorsToAccept(Int_t ig)  const { return fMCGenerIndexToAccept[ig] ; }
   
