@@ -27,7 +27,7 @@ AliAnalysisTaskSEITSsaSpectra* AddTaskITSsaSpectra(Int_t    pidMethod, // 0:kNSi
     return NULL;
   }
 
-  char* pidName[3] = {"_NSigCut", "_MeanCut", "_LanGauMP"};
+  const char* pidName[3] = {"_NSigCut", "_MeanCut", "_LanGauMP"};
   TString kContSuffix(pidName[pidMethod]);
 
   // Create and configure the task
