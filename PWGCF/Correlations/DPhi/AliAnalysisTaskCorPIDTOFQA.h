@@ -31,11 +31,12 @@ class AliAnalysisTaskCorPIDTOFQA : public AliAnalysisTaskSE
 	virtual Double_t      get_mass_squared(AliAODTrack *track);
 
 
-//	Double_t deut_curves[2][2][3];  /* [charge][mean,sigma][par]  */
-//	TF1 *fit_deut_curve = new TF1("fit_m_mean",   "[0] + [1]*x + [2]/sqrt(x)",  1.0, 4.4);
+	Double_t deut_curves[2][2][3];  /* [charge][mean,sigma][par]  */
+	TF1 *fit_deut_curve = new TF1("fit_m_mean",   "[0] + [1]*x + [2]/sqrt(x)",  1.0, 4.4);
 
 //	Double_t cut_width  = 3.0;
-	
+	Float_t pio2          = TMath::PiOver2();
+	Float_t twopi         = TMath::TwoPi();
     private:
 
         AliAODEvent*          fAOD;               //! input event
@@ -46,20 +47,25 @@ class AliAnalysisTaskCorPIDTOFQA : public AliAnalysisTaskSE
 	TH1F*                 primary_vertex_z;            //  1
 	TH1F*                 primary_vertex_z_cut;        //  2
 	TH1I*                 deut_per_event;              //  3
-
 	TH1F*                 fHistPt;                     //  4
 
 	TH2F*                 m2_pt_pos;                   //  5
 	TH2F*                 m2_pt_neg;                   //  6
-
 	TH2F*                 m2_pt_pos_cut;               //  7
 	TH2F*                 m2_pt_neg_cut;               //  8
-
 	
+	TH2F*                 m2_pt_pos_fine;              //  9
+	TH2F*                 m2_pt_neg_fine;              // 10
+	TH2F*                 m2_pt_pos_cut_fine;          // 11
+	TH2F*                 m2_pt_neg_cut_fine;          // 12
 
+	TH2F*                 trig_03_phi_pt_pos;          // 13
+	TH2F*                 trig_03_phi_pt_neg;          // 14
+	TH2F*                 trig_05_phi_pt_pos;          // 15
+	TH2F*                 trig_05_phi_pt_neg;          // 16
+	TH2F*                 trig_08_phi_pt_pos;          // 17
+	TH2F*                 trig_08_phi_pt_neg;          // 18
 
-
-	
 	
         AliAnalysisTaskCorPIDTOFQA(const AliAnalysisTaskCorPIDTOFQA&);                        // not implemented
         AliAnalysisTaskCorPIDTOFQA& operator=(const AliAnalysisTaskCorPIDTOFQA&);             // not implemented
