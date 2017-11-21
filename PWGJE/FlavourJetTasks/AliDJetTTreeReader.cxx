@@ -105,10 +105,10 @@ Bool_t AliDJetTTreeReader::ExtractInputMassPlotEffScale()
     tree->GetEntry(k);
     if (brJet->fEta < -0.5 || brJet->fEta >= 0.5) continue;
     if (brJet->fPt < fpTmin || brJet->fPt >= fpTmax) continue;
-    for (int j = 0; j < fnDbins; j++) {
-      if (brD->fPt < fDbinpTedges[j] || brD->fPt >= fDbinpTedges[j + 1]) continue;
-      fMassPlot->Fill(brD->fInvMass, 1. / fDEffValues[j]);
-    }//end of D-meson pT bin loop
+    int j = 0;
+    while (brD->fPt >= fDbinpTedges[j + 1] && j < fnDbins) j++;
+    if (brD->fPt < fDbinpTedges[j] || brD->fPt >= fDbinpTedges[j + 1]) continue;
+    fMassPlot->Fill(brD->fInvMass, 1. / fDEffValues[j]);
   }
 
   return kTRUE;
@@ -146,14 +146,26 @@ Bool_t AliDJetTTreeReader::ExtractInputMassPlotSideband()
     fMassVsJetzPlot->Sumw2();
   }
 
+  if (fpTmin < fDbinpTedges[0] || fpTmax > fDbinpTedges[fnDbins]) {
+    AliErrorStream() << "Efficiency bin edges " << fDbinpTedges[0] << ", " << fDbinpTedges[fnDbins] <<
+        " do not include the current bin " << fpTmin << ", " << fpTmax << std::endl;
+    throw;
+  }
+
   for (int k = 0; k < tree->GetEntries(); k++) {
     tree->GetEntry(k);
     if (brJet->fEta < -0.5 || brJet->fEta >= 0.5) continue;
     if (fnJetPtbins > 0 && (brJet->fPt < fJetPtBinEdges[0] || brJet->fPt >= fJetPtBinEdges[fnJetPtbins])) continue;
     if (brD->fPt < fpTmin || brD->fPt >= fpTmax) continue;
-    fMassPlot->Fill(brD->fInvMass);
-    if (fMassVsJetPtPlot) fMassVsJetPtPlot->Fill(brD->fInvMass, brJet->fPt);
-    if (fMassVsJetzPlot) fMassVsJetzPlot->Fill(brD->fInvMass, brJet->fZ);
+    Double_t w = 1.0;
+    if (fEfficiencyWeightSB) {
+      int j = 0;
+      while (brD->fPt >= fDbinpTedges[j + 1] && j < fnDbins) j++;
+      w /= fDEffValues[j];
+    }
+    fMassPlot->Fill(brD->fInvMass, w);
+    if (fMassVsJetPtPlot) fMassVsJetPtPlot->Fill(brD->fInvMass, brJet->fPt, w);
+    if (fMassVsJetzPlot) fMassVsJetzPlot->Fill(brD->fInvMass, brJet->fZ, w);
   }
 
   return kTRUE;

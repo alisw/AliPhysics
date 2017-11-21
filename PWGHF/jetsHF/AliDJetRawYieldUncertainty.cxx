@@ -63,6 +63,8 @@ AliDJetRawYieldUncertainty::AliDJetRawYieldUncertainty():
   fzmax(0),
   fnDbins(0),
   fDbinpTedges(nullptr),
+  fnDbinsForEff(0),
+  fDbinpTedgesForEff(nullptr),
   fnJetPtbins(0),
   fJetPtBinEdges(nullptr),
   fnJetzbins(0),
@@ -98,6 +100,7 @@ AliDJetRawYieldUncertainty::AliDJetRawYieldUncertainty():
   fReflRangeR(0),
   fCoherentChoice(kFALSE),
   fUseBkgInBinEdges(kTRUE),
+  fEfficiencyWeightSB(kFALSE),
   fDebug(0),
   fMassPlot(nullptr),
   fMassVsJetPtPlot(nullptr),
@@ -137,6 +140,8 @@ AliDJetRawYieldUncertainty::AliDJetRawYieldUncertainty(const AliDJetRawYieldUnce
   fzmax(source.fzmax),
   fnDbins(0),
   fDbinpTedges(nullptr),
+  fnDbinsForEff(0),
+  fDbinpTedgesForEff(nullptr),
   fnJetPtbins(0),
   fJetPtBinEdges(nullptr),
   fnJetzbins(0),
@@ -172,6 +177,7 @@ AliDJetRawYieldUncertainty::AliDJetRawYieldUncertainty(const AliDJetRawYieldUnce
   fReflRangeR(source.fReflRangeR),
   fCoherentChoice(source.fCoherentChoice),
   fUseBkgInBinEdges(source.fUseBkgInBinEdges),
+  fEfficiencyWeightSB(source.fEfficiencyWeightSB),
   fDebug(source.fDebug),
   fMassPlot(nullptr),
   fMassVsJetPtPlot(nullptr),
@@ -193,10 +199,15 @@ AliDJetRawYieldUncertainty::AliDJetRawYieldUncertainty(const AliDJetRawYieldUnce
     fnDbins = source.fnDbins;
     fDbinpTedges = new Double_t[fnDbins+1];
     memcpy(fDbinpTedges, source.fDbinpTedges, sizeof(Double_t)*(fnDbins+1));
-    fDEffValues = new Double_t[fnDbins+1];
-    memcpy(fDEffValues, source.fDEffValues, sizeof(Double_t)*(fnDbins+1));
     fSigmaToFixDPtBins = new Double_t[fnDbins+1];
     memcpy(fSigmaToFixDPtBins, source.fSigmaToFixDPtBins, sizeof(Double_t)*(fnDbins+1));
+  }
+  if (source.fnDbinsForEff > 0) {
+    fnDbinsForEff = source.fnDbinsForEff;
+    fDbinpTedgesForEff = new Double_t[fnDbinsForEff+1];
+    memcpy(fDbinpTedgesForEff, source.fDbinpTedgesForEff, sizeof(Double_t)*(fnDbinsForEff+1));
+    fDEffValues = new Double_t[fnDbinsForEff+1];
+    memcpy(fDEffValues, source.fDEffValues, sizeof(Double_t)*(fnDbinsForEff+1));
   }
   if (source.fnJetPtbins > 0) {
     fnJetPtbins = source.fnJetPtbins;
@@ -326,10 +337,11 @@ Bool_t AliDJetRawYieldUncertainty::ExtractInputMassPlot()
   std::cout << "Configuration:\nD meson: " << fDmesonLabel << "\nMethod: " << fMethodLabel << std::endl;
 
   fDJetReader->SetPtBinEdgesForMassPlot(fpTmin, fpTmax);
-  fDJetReader->SetDmesonPtBins(fnDbins, fDbinpTedges);
+  fDJetReader->SetDmesonPtBins(fnDbinsForEff, fDbinpTedgesForEff);
   fDJetReader->SetJetPtBins(fnJetPtbins, fJetPtBinEdges);
   fDJetReader->SetJetzBins(fnJetzbins, fJetzBinEdges);
   fDJetReader->SetDmesonEfficiency(fDEffValues);
+  fDJetReader->SetEfficiencyWeightSB(fEfficiencyWeightSB);
 
   Bool_t success = kFALSE;
   switch (fYieldApproach) {
@@ -429,6 +441,12 @@ AliHFMultiTrials* AliDJetRawYieldUncertainty::RunMultiTrial(TString spectrum_nam
   mt->ConfigureRebinSteps(fnRebinSteps,fRebinSteps);
   mt->ConfigureLowLimFitSteps(fnMinMassSteps,fMinMassSteps);
   mt->ConfigureUpLimFitSteps(fnMaxMassSteps,fMaxMassSteps);
+  if ((fEfficiencyWeightSB || fYieldApproach == kEffScale) && IsHistogramWeighted()) {
+    mt->SetUseLikelihoodWithWeightsFit();
+  }
+  else {
+    mt->SetUseLogLikelihoodFit();
+  }
   if (fSaveInvMassFitCanvases) {
     mt->AddInvMassFitSaveAsFormat("pdf");
     mt->AddInvMassFitSaveAsFormat("root");
@@ -512,6 +530,17 @@ AliHFMultiTrials* AliDJetRawYieldUncertainty::RunMultiTrial(TString spectrum_nam
   fSuccess = CombineMultiTrialOutcomes(spectrum_name);
 
   return mt;
+}
+
+/**
+ * Checks whether efficiencies != 1
+ */
+Bool_t AliDJetRawYieldUncertainty::IsHistogramWeighted() const
+{
+  for (int i = 0; i < fnDbinsForEff; i++) {
+    if (fDEffValues[i] != 1) return kTRUE;
+  }
+  return kFALSE;
 }
 
 /**
@@ -1008,7 +1037,7 @@ Bool_t AliDJetRawYieldUncertainty::GenerateJetSpectrum(TH2* hInvMassJetObs, Doub
   hjetobs->Add(hjetobs_s, -1);
 
   // correct for D* efficiency
-  hjetobs->Scale(1. / fDEffValues[iDbin]); // D efficiency
+  if (!fEfficiencyWeightSB) hjetobs->Scale(1. / fDEffValues[iDbin]); // D efficiency
   hjetobs->SetMarkerColor(kBlue + 3);
   hjetobs->SetLineColor(kBlue + 3);
 
@@ -1024,7 +1053,6 @@ Bool_t AliDJetRawYieldUncertainty::GenerateJetSpectrum(TH2* hInvMassJetObs, Doub
     Printf("The left effective sigma is %.3f. The right effective sigma is %.3f.", effSigma1, effSigma2);
   }
   hjetobs->Scale(1.0 / normNsigma);
-
   return kTRUE;
 }
 
@@ -1207,6 +1235,8 @@ AliDJetRawYieldUncertainty::SBResults AliDJetRawYieldUncertainty::EvaluateUncert
           jTrial = iTrial;
         }
         else {
+          const int maxAttempts = fnMaxTrials * 1000;
+          int attempts = 0;
           do {  //just one time if fAllowRepetitions==kTRUE, repeat extraction till new number is obtained if fAllowRepetitions==kFALSE
             jTrial = gen.Integer(hMean->GetNbinsX()) + 1;
 
@@ -1215,8 +1245,14 @@ AliDJetRawYieldUncertainty::SBResults AliDJetRawYieldUncertainty::EvaluateUncert
 
             //check if already extracted for this pT(D) bin
             if (!fAllowRepetitions && extracted.find(jTrial) != extracted.end()) extractOk = kFALSE;
-          } while (extractOk == kFALSE);
+            attempts++;
+          } while (extractOk == kFALSE && attempts < maxAttempts);
+          if (attempts >= maxAttempts) {
+            AliErrorStream() << "After " << attempts << " attempts, no valid trial was found! Stopping at " << iTrial << " trials" << std::endl;
+            break;
+          }
         }
+
         extracted.insert(jTrial);
 
         Double_t mean = hMean->GetBinContent(jTrial);
@@ -1509,6 +1545,23 @@ void AliDJetRawYieldUncertainty::SetDmesonPtBins(Int_t nbins, Double_t* ptedges)
 }
 
 /**
+ * Set the D meson pt bins
+ * @param[in] nbins Number of pt bins
+ * @param[in] ptedges Edges of the pt bins
+ */
+void AliDJetRawYieldUncertainty::SetDmesonPtBinsForEff(Int_t nbins, Double_t* ptedges)
+{
+  fnDbinsForEff = nbins;
+  if (fDbinpTedgesForEff) {
+    delete[] fDbinpTedgesForEff;
+    fDbinpTedgesForEff = nullptr;
+  }
+  if (nbins == 0) return;
+  fDbinpTedgesForEff = new Double_t[fnDbinsForEff + 1];
+  memcpy(fDbinpTedgesForEff, ptedges, sizeof(Double_t) * (fnDbinsForEff + 1));
+}
+
+/**
  * Set the jet pt bins
  * @param[in] nbins Number of pt bins
  * @param[in] ptedges Edges of the pt bins
@@ -1582,9 +1635,9 @@ void AliDJetRawYieldUncertainty::SetDmesonEfficiency(Double_t* effvalues)
     delete[] fDEffValues;
     fDEffValues = nullptr;
   }
-  if (fnDbins == 0) return;
-  fDEffValues = new Double_t[fnDbins];
-  memcpy(fDEffValues, effvalues, sizeof(Double_t) * fnDbins);
+  if (fnDbinsForEff == 0) return;
+  fDEffValues = new Double_t[fnDbinsForEff];
+  memcpy(fDEffValues, effvalues, sizeof(Double_t) * fnDbinsForEff);
 }
 
 /**
