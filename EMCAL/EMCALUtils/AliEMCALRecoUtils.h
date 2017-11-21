@@ -427,7 +427,7 @@ public:
   TString  GetNameOfMCGeneratorsToAccept(Int_t ig) const 
   { if (ig < fNMCGenerToAccept && ig > 0 && ig < 5 ) return fMCGenerToAccept[ig] ; 
     else return "" ; }
-  void     SetNameOfMCGeneratorsToAccept(Int_t ig, TString name) { if ( ig < 5 || ig >= 0 ) fMCGenerToAccept[ig] = name ; }
+  void     SetNameOfMCGeneratorsToAccept(Int_t ig, TString name) { if ( ig < 5 && ig >= 0 ) fMCGenerToAccept[ig] = name ; }
   
   
   void     SwitchOffMCGeneratorToAcceptForTrackMatching() { fMCGenerToAcceptForTrack = kFALSE ; }
