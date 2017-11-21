@@ -4949,7 +4949,6 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC)
 
     // NonLinearity LHC11h - PbPb 2.76TeV - 0-10% centrality
     case 71:
-      label_case_71:
       if(isMC>0){
         if( fCurrentMC==k14a1 ){
           if(fClusterType==1){
@@ -4962,7 +4961,6 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC)
       break;
     // NonLinearity LHC11h - PbPb 2.76TeV - 20-50% centrality
     case 72:
-      label_case_72:
       if(isMC>0){
         if( fCurrentMC==k14a1 ){
           if(fClusterType==1){
