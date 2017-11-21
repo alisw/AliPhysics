@@ -13,7 +13,7 @@
 #include "AliAnalysisTaskV1SingleMu.h"
 #endif
 
-AliAnalysisTaskV1SingleMu* AddTaskV1SingleMu(Bool_t isMC = kFALSE, TString changeName = "", Bool_t centCut = kFALSE)
+AliAnalysisTaskV1SingleMu* AddTaskV1SingleMu(Bool_t isMC = kFALSE, TString changeName = "", Bool_t centCut = kTRUE)
 {
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
@@ -47,6 +47,7 @@ AliAnalysisTaskV1SingleMu* AddTaskV1SingleMu(Bool_t isMC = kFALSE, TString chang
   if(centCut){
     muonEventCuts->SetFilterMask (AliMuonEventCuts::kSelectedCentrality);
     Double_t centClass[2]= {5.,40.}
+    muonEventCuts->SetCentralityEstimator("V0M");
     muonEventCuts->SetCentralityClasses(1,centClass);
   }
 
