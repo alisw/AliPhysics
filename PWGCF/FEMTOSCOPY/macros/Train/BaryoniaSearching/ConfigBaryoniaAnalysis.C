@@ -18,7 +18,7 @@ const char *sysNames[nSys]      = { "APL", "PAL", "KKpi"};
 const bool runSys[nSys]         = {   1  ,   1  ,   1  };
 const double distMin[nSys]      = {  1.5 ,  1.5 ,  1.0 }; // everything in GeV here
 const double distMax[nSys]      = {  2.5 ,  2.5 ,  2.0 };
-const double distBinWidth[nSys] = { 0.005, 0.005, 0.005};
+const double distBinWidth[nSys] = { 0.001, 0.001, 0.001};
 
 bool separationCuts;
 
