@@ -94,6 +94,7 @@ void MakeLumiRefObject(TString cdbPath="local://./")
   AddLumiRef(refArr, 280179, 4000.0, 0.71, "C0V0M-B-NOPF-CENTNOTRD", "Xe-Xe, Martino: obtained as 5.6 b * L0b_0V0M / (L2a_INT7ZAC / live_time )");
   AddLumiRef(refArr, 280244,   30.0, 0.40, "C0TVX-B-NOPF-CENTNOTRD", "estimates from Martino and MC");
   AddLumiRef(refArr, 281962,   21.6, 0.40, "C0TVX-B-NOPF-CENTNOTRD", "switch to pp at 5TeV");
+  AddLumiRef(refArr, 282445,   30.0, 0.40, "C0TVX-B-NOPF-CENTNOTRD", "back to pp @ 13 TeV");
   
   // add new entries above
   //=======================================================================================
