@@ -37,6 +37,8 @@ fEventCut(false),
 fList(),
 fRequireYmin(-0.5f),
 fRequireYmax(0.5f),
+fDalitPlotMassCutMin(2.340),
+fDalitPlotMassCutMax(2.420),
 fPID(),
 fProduction(),
 fReconstructed(),
@@ -47,9 +49,7 @@ fMCTree(nullptr),
 fDeuteronVector(),
 fPionVector(),
 fMCDeuteronVector(),
-fMCPionVector(),
-fFakeDeuteronVector(),
-fFakePionVector()
+fMCPionVector()
 {
   fFilterBit = BIT(8);
   DefineInput(0, TChain::Class());
@@ -111,8 +111,6 @@ void AliAnalysisTaskdStar::UserCreateOutputObjects() {
   fMCTree = new TTree("dStarMCTree", "MC generated data for dStar background analysis");
   fMCTree->Branch("MCDeuteron", &fMCDeuteronVector);
   fMCTree->Branch("MCPion", &fMCPionVector);
-  fMCTree->Branch("DeuteronOKL",&fFakeDeuteronVector);
-  fMCTree->Branch("PionOKL",&fFakePionVector);
   fMCTree->SetAutoSave(100000000);
   PostData(3,fMCTree);
 
@@ -147,10 +145,6 @@ void AliAnalysisTaskdStar::UserExec(Option_t *) {
   fMCDeuteronVector.reserve(40);
   fMCPionVector.clear();
   fMCPionVector.reserve(800);
-  fFakeDeuteronVector.clear();
-  fFakeDeuteronVector.reserve(10);
-  fFakePionVector.clear();
-  fFakePionVector.reserve(50);
 
   // need comment
   for (int iMC = 0; iMC < stack->GetEntriesFast(); ++iMC) {
@@ -160,8 +154,7 @@ void AliAnalysisTaskdStar::UserExec(Option_t *) {
     const int iC = part->Charge() > 0 ? 1 : 0;
 
     if (pdg == 211) {
-      FourVector_t tmp_vec = {0.f,0.f,0.f,0.f};
-      tmp_vec.SetCoordinates(part->Pt(),part->Eta(),part->Phi(),part->M());
+      FourVector_t tmp_vec = {(float)part->Pt(),(float)part->Eta(),(float)part->Phi(),(float)part->M()};
       const int m_id = part->GetMother();
       AliAODMCParticle *m_part = (AliAODMCParticle*)stack->UncheckedAt(m_id);
       const int m_pdg = TMath::Abs(m_part->GetPdgCode());
@@ -169,17 +162,16 @@ void AliAnalysisTaskdStar::UserExec(Option_t *) {
       if (iC != 0)                          prop |= c;
       if (part->IsPhysicalPrimary())        prop |= p;
       if (part->IsSecondaryFromMaterial())  prop |= s;
-      daughter_struct daug1 = {0};
-      daug1.mother_pdg = m_pdg;
-      daug1.mother_id  = m_id;
-      daug1.vec        = tmp_vec;
-      daug1.properties = prop;
-      fMCPionVector.push_back(daug1);
+      daughter_struct daug = {0};
+      daug.mother_pdg = m_pdg;
+      daug.mother_id  = m_id;
+      daug.vec        = tmp_vec;
+      daug.properties = prop;
+      fMCPionVector.push_back(daug);
     }
 
     if (pdg == 1000010020) {
-      FourVector_t tmp_vec = {0.f,0.f,0.f,0.f};
-      tmp_vec.SetCoordinates(part->Pt(),part->Eta(),part->Phi(),part->M());
+      FourVector_t tmp_vec = {(float)part->Pt(),(float)part->Eta(),(float)part->Phi(),(float)part->M()};
       const int m_id = part->GetMother();
       AliAODMCParticle *m_part = (AliAODMCParticle*)stack->UncheckedAt(m_id);
       const int m_pdg = TMath::Abs(m_part->GetPdgCode());
@@ -187,20 +179,20 @@ void AliAnalysisTaskdStar::UserExec(Option_t *) {
       if (iC != 0)                          prop |= c;
       if (part->IsPhysicalPrimary())        prop |= p;
       if (part->IsSecondaryFromMaterial())  prop |= s;
-      daughter_struct daug2 = {0};
-      daug2.mother_pdg = m_pdg;
-      daug2.mother_id  = m_id;
-      daug2.vec        = tmp_vec;
-      daug2.properties = prop;
-      fMCDeuteronVector.push_back(daug2);
+      daughter_struct daug = {0};
+      daug.mother_pdg = m_pdg;
+      daug.mother_id  = m_id;
+      daug.vec        = tmp_vec;
+      daug.properties = prop;
+      fMCDeuteronVector.push_back(daug);
     }
 
     if (pdg == 900010020) {
-      FourVector_t moth_vec = {0.f,0.f,0.f,0.f}, tmp_vec = {0.f,0.f,0.f,0.f};
+      FourVector_t moth_vec = {0.f,0.f,0.f,0.f};
       for(int iD=0; iD<3; iD++){
         const int daughter_id = part->GetDaughter(0)+iD;
         AliAODMCParticle *daughter_part = (AliAODMCParticle*)stack->At(TMath::Abs(daughter_id));
-        tmp_vec.SetCoordinates(daughter_part->Pt(),daughter_part->Eta(),daughter_part->Phi(),daughter_part->M());
+        FourVector_t tmp_vec = {(float)daughter_part->Pt(),(float)daughter_part->Eta(),(float)daughter_part->Phi(),(float)daughter_part->M()};
         moth_vec+=tmp_vec;
       }
       fProduction[iC]->Fill(part->M(),part->Pt());
@@ -211,33 +203,23 @@ void AliAnalysisTaskdStar::UserExec(Option_t *) {
 
   // filling MCDalitzPlot (kinematics limits Mpp2 < 0.255    Mpd2 < 5.01)
   for (const auto& mcdeu : fMCDeuteronVector) {
-    const unsigned char pdeu = mcdeu.properties;
-    if ((pdeu & c) && mcdeu.mother_pdg == 900010020) {
-      FourVector_t deu_vec = mcdeu.vec;
-      // bool check = false;
+    unsigned char pdeu = mcdeu.properties;
+    if (mcdeu.mother_pdg != 900010020 || !(pdeu & c) || mcdeu.mother_id <= 0) continue;
+    for (const auto& mcpim : fMCPionVector) {
+      unsigned char ppim = mcpim.properties;
+      if ((mcpim.mother_id != mcdeu.mother_id) || (ppim & c)) continue;
       for (const auto& mcpip : fMCPionVector) {
-        const unsigned char ppip = mcpip.properties;
-        if ((mcpip.mother_id == mcdeu.mother_id) && (ppip & c)) {
-          FourVector_t pip_vec = mcpip.vec;
-          for (const auto& mcpim : fMCPionVector) {
-            const unsigned char ppim = mcpim.properties;
-            if ((mcpim.mother_id == mcdeu.mother_id) && !(ppim & c)) {
-              FourVector_t pim_vec = mcpim.vec;
-              FourVector_t pp = pip_vec + pim_vec;
-              FourVector_t pd = pim_vec + deu_vec;
-              fMCDalitzPlot->Fill(pp.M2(), pd.M2());
-              if (pp.M2() > 0.26 || pd.M2() > 5.02) {
-                daughter_struct d  = mcdeu;
-                daughter_struct pp = mcpip;
-                daughter_struct pm = mcpim;
-                fFakeDeuteronVector.push_back(d);
-                fFakePionVector.push_back(pp);
-                fFakePionVector.push_back(pm);
-                // check = true;
-              }
-            }
-          }
-        }
+        unsigned char ppip = mcpip.properties;
+        if ((mcpip.mother_id != mcdeu.mother_id) || !(ppip & c)) continue;
+        FourVector_t deu_vec = mcdeu.vec;
+        FourVector_t pim_vec = mcpim.vec;
+        FourVector_t pip_vec = mcpip.vec;
+        // FourVector_t m = deu_vec + pim_vec + pip_vec;
+        pip_vec += pim_vec;
+        pim_vec += deu_vec;
+        deu_vec += pip_vec;
+        if (deu_vec.M() < fDalitPlotMassCutMin || deu_vec.M() > fDalitPlotMassCutMax) continue;
+        fMCDalitzPlot->Fill(pip_vec.M2(), pim_vec.M2());
       }
     }
   }
