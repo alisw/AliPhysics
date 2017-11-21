@@ -92,18 +92,30 @@ ClassImp(AliAnalysisTaskCorPIDTOFQA) // classimp: necessary for root
 AliAnalysisTaskCorPIDTOFQA::AliAnalysisTaskCorPIDTOFQA() : AliAnalysisTaskSE(), 
 fAOD(0), fOutputList(0), fPIDResponse(0), fAnalysisUtils(0),
 
-
+    
     primary_vertex_z(0),          //  E  1 (event)
     primary_vertex_z_cut(0),      //  E  2
     deut_per_event(0),            //  E  3
 
     fHistPt(0),                   //  T  4 (track)
+    
     m2_pt_pos(0),                 //  T  5
     m2_pt_neg(0),                 //  T  6
-    
     m2_pt_pos_cut(0),             //  T  7
-    m2_pt_neg_cut(0)              //  T  8
+    m2_pt_neg_cut(0),             //  T  8
 
+    m2_pt_pos_fine(0),            //  T  9
+    m2_pt_neg_fine(0),            //  T 10
+    m2_pt_pos_cut_fine(0),        //  T 11
+    m2_pt_neg_cut_fine(0),        //  T 12
+    
+    trig_03_phi_pt_pos(0),         // T 13
+    trig_03_phi_pt_neg(0),         // T 14  
+    trig_05_phi_pt_pos(0),         // T 15
+    trig_05_phi_pt_neg(0),         // T 16
+    trig_08_phi_pt_pos(0),         // T 17
+    trig_08_phi_pt_neg(0)          // T 18
+    
 {
     // default constructor, don't allocate memory here!
     // this is used by root for IO purposes, it needs to remain empty
@@ -118,12 +130,23 @@ fAOD(0), fOutputList(0), fPIDResponse(0), fAnalysisUtils(0),
     deut_per_event(0),            //  E  3
 
     fHistPt(0),                   //  T  4 (track)
+    
     m2_pt_pos(0),                 //  T  5
     m2_pt_neg(0),                 //  T  6
-    
     m2_pt_pos_cut(0),             //  T  7
-    m2_pt_neg_cut(0)              //  T  8
+    m2_pt_neg_cut(0),             //  T  8
 
+    m2_pt_pos_fine(0),            //  T  9
+    m2_pt_neg_fine(0),            //  T 10
+    m2_pt_pos_cut_fine(0),        //  T 11
+    m2_pt_neg_cut_fine(0),        //  T 12
+    
+    trig_03_phi_pt_pos(0),         // T 13
+    trig_03_phi_pt_neg(0),         // T 14  
+    trig_05_phi_pt_pos(0),         // T 15
+    trig_05_phi_pt_neg(0),         // T 16
+    trig_08_phi_pt_pos(0),         // T 17
+    trig_08_phi_pt_neg(0)          // T 18									   
 {
     // constructor
     DefineInput(0, TChain::Class());
@@ -143,8 +166,6 @@ AliAnalysisTaskCorPIDTOFQA::~AliAnalysisTaskCorPIDTOFQA()
 void AliAnalysisTaskCorPIDTOFQA::UserCreateOutputObjects()
 {
     fAnalysisUtils = new AliAnalysisUtils;
-//  fAnalysisUtils−>SetCutOnZVertexSPD(0);
-    fAnalysisUtils->SetCutOnZVertexSPD(0);
     
     fOutputList = new TList();          // this is a list which will contain all of your histograms
                                         // at the end of the analysis, the contents of this list are written
@@ -161,19 +182,30 @@ void AliAnalysisTaskCorPIDTOFQA::UserCreateOutputObjects()
 	moving_marker = moving_marker + pt_binning[i] * 0.005;
     }
 
-
+    float lower = -pio2;
+    float upper = 3.0*pio2;
 
     primary_vertex_z           = new TH1F("primary_vertex_z",           "primary_vertex_z",            100,    -50.0,   50.0);                              //  1
     primary_vertex_z_cut       = new TH1F("primary_vertex_z_cut",       "primary_vertex_z_cut",        100,    -50.0,   50.0);                              //  2
     deut_per_event             = new TH1I("deut_per_event",             "deut_per_event",               12,        0,     12);                              //  3
-
     fHistPt                    = new TH1F("fHistPt",                    "Pt()",                       1000,       0.0, 20.0);                               //  4
-    m2_pt_pos                  = new TH2F("m2_pt_pos",                  "m2_pt_pos",                   800,       pt_binning,    2400,    -1.0,     7.0);   //  5
-    m2_pt_neg                  = new TH2F("m2_pt_neg",                  "m2_pt_neg",                   800,       pt_binning,    2400,    -1.0,     7.0);   //  6
-    m2_pt_pos_cut              = new TH2F("m2_pt_pos_cut",              "m2_pt_pos_cut",               800,       pt_binning,    2400,    -1.0,     7.0);   //  7
-    m2_pt_neg_cut              = new TH2F("m2_pt_neg_cut",              "m2_pt_neg_cut",               800,       pt_binning,    2400,    -1.0,     7.0);   //  8
 
+    m2_pt_pos                  = new TH2F("m2_pt_pos",                  "m2_pt_pos",                    50,         0.0, 5.0,    2400,    -1.0,     7.0);   //  5
+    m2_pt_neg                  = new TH2F("m2_pt_neg",                  "m2_pt_neg",                    50,         0.0, 5.0,    2400,    -1.0,     7.0);   //  6
+    m2_pt_pos_cut              = new TH2F("m2_pt_pos_cut",              "m2_pt_pos_cut",                50,         0.0, 5.0,    2400,    -1.0,     7.0);   //  7
+    m2_pt_neg_cut              = new TH2F("m2_pt_neg_cut",              "m2_pt_neg_cut",                50,         0.0, 5.0,    2400,    -1.0,     7.0);   //  8
 
+    m2_pt_pos_fine             = new TH2F("m2_pt_pos_fine",             "m2_pt_pos_fine",              800,       pt_binning,    2400,    -1.0,     7.0);   //  9
+    m2_pt_neg_fine             = new TH2F("m2_pt_neg_fine",             "m2_pt_neg_fine",              800,       pt_binning,    2400,    -1.0,     7.0);   // 10
+    m2_pt_pos_cut_fine         = new TH2F("m2_pt_pos_cut_fine",         "m2_pt_pos_cut_fine",          800,       pt_binning,    2400,    -1.0,     7.0);   // 11
+    m2_pt_neg_cut_fine         = new TH2F("m2_pt_neg_cut_fine",         "m2_pt_neg_cut_fine",          800,       pt_binning,    2400,    -1.0,     7.0);   // 12
+
+    trig_03_phi_pt_pos         = new TH2F("trig_03_phi_pt_pos",         "trig_03_phi_pt_pos",          170,  3.0, 20.0,    288,   lower,   upper);          // 13
+    trig_03_phi_pt_neg         = new TH2F("trig_03_phi_pt_neg",         "trig_03_phi_pt_neg",          170,  3.0, 20.0,    288,   lower,   upper);          // 14
+    trig_05_phi_pt_pos         = new TH2F("trig_05_phi_pt_pos",         "trig_05_phi_pt_pos",          170,  3.0, 20.0,    288,   lower,   upper);          // 15
+    trig_05_phi_pt_neg         = new TH2F("trig_05_phi_pt_neg",         "trig_05_phi_pt_neg",          170,  3.0, 20.0,    288,   lower,   upper);          // 16
+    trig_08_phi_pt_pos         = new TH2F("trig_08_phi_pt_pos",         "trig_08_phi_pt_pos",          170,  3.0, 20.0,    288,   lower,   upper);          // 17
+    trig_08_phi_pt_neg         = new TH2F("trig_08_phi_pt_neg",         "trig_08_phi_pt_neg",          170,  3.0, 20.0,    288,   lower,   upper);          // 18
 
 
 
@@ -183,12 +215,25 @@ void AliAnalysisTaskCorPIDTOFQA::UserCreateOutputObjects()
     fOutputList->Add(primary_vertex_z_cut);        //  2
     fOutputList->Add(deut_per_event);              //  3
     fOutputList->Add(fHistPt);                     //  4
+    
     fOutputList->Add(m2_pt_pos);                   //  5
     fOutputList->Add(m2_pt_neg);                   //  6
     fOutputList->Add(m2_pt_pos_cut);               //  7
     fOutputList->Add(m2_pt_neg_cut);               //  8
+    
+    fOutputList->Add(m2_pt_pos_fine);              //  9
+    fOutputList->Add(m2_pt_neg_fine);              // 10
+    fOutputList->Add(m2_pt_pos_cut_fine);          // 11
+    fOutputList->Add(m2_pt_neg_cut_fine);          // 12
 
+    fOutputList->Add(trig_03_phi_pt_pos);          // 13
+    fOutputList->Add(trig_03_phi_pt_neg);          // 14
+    fOutputList->Add(trig_05_phi_pt_pos);          // 15
+    fOutputList->Add(trig_05_phi_pt_neg);          // 16
+    fOutputList->Add(trig_08_phi_pt_pos);          // 17
+    fOutputList->Add(trig_08_phi_pt_neg);          // 18
 
+    
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     AliAnalysisManager *man            = AliAnalysisManager::GetAnalysisManager();                  //// added by Brennan
@@ -223,10 +268,11 @@ void AliAnalysisTaskCorPIDTOFQA::UserExec(Option_t *)
     
     primary_vertex_z->Fill(pv);
 
+//    if(fUtils−>IsFirstEventInChunk(fAOD))            return;  // not needed for new reconstructions
 
     if(!fAnalysisUtils->IsVertexSelected2013pA(fAOD)) return;
-
-
+//    fAnalysisUtils−>SetCutOnZVertexSPD(kFALSE);
+//    fAnalysisUtils->SetCutOnZVertexSPD(0);
     if(fAnalysisUtils->IsPileUpSPD(fAOD)) return;
 
     primary_vertex_z_cut->Fill(pv);
@@ -256,15 +302,26 @@ void AliAnalysisTaskCorPIDTOFQA::UserExec(Option_t *)
         AliAODTrack* track = static_cast<AliAODTrack*>(fAOD->GetTrack(i));
         if(!track)                                                                      {    continue;    }
 
-	Float_t pt            = track->Pt();	   if(pt   <  0.2)                      {    continue;    }
-//	Float_t dedx   = track->GetTPCsignal();    if(dedx > 1000)                      {    continue;    }
-//	if(!(track->IsHybridGlobalConstrainedGlobal()))                                 {    continue;    }
-	Float_t eta = track->Eta();	if(TMath::Abs(eta) > 0.92)                      {    continue;    }
+	Float_t pt            = track->Pt();	   if(pt   < 0.95)                      {    continue;    }
+	Float_t dedx   = track->GetTPCsignal();    if(dedx > 1000)                      {    continue;    }
+	if(!(track->IsHybridGlobalConstrainedGlobal()))                                 {    continue;    }
+	Float_t eta = track->Eta();	if(TMath::Abs(eta) > 0.90)                      {    continue;    }
 
 //	if(!track->IsPrimaryCandidate())                                                {    continue;    }
 
 
+	Float_t phi           = track->Phi();
+	if(phi <  -pio2){    phi = phi + twopi; }	if(phi <  -pio2){    phi = phi + twopi;   }
+	if(phi > 3*pio2){    phi = phi - twopi;	}       if(phi > 3*pio2){    phi = phi - twopi;   }
+	
 
+	Short_t charge        = track->Charge();
+	if(pt >= 3.0)	{   if(charge > 0)   trig_03_phi_pt_pos->Fill(pt, phi);	    else if(charge < 0)   trig_03_phi_pt_neg->Fill(pt, phi);	}
+	if(pt >= 5.0)	{   if(charge > 0)   trig_05_phi_pt_pos->Fill(pt, phi);	    else if(charge < 0)   trig_05_phi_pt_neg->Fill(pt, phi);	}
+	if(pt >= 8.0)	{   if(charge > 0)   trig_08_phi_pt_pos->Fill(pt, phi);	    else if(charge < 0)   trig_08_phi_pt_neg->Fill(pt, phi);	}
+
+
+	
 	
 	Double_t nsigmaTPC = 999.0;	Double_t nsigmaTOF = 999.0;
 	AliPIDResponse::EDetPidStatus statusTPC = fPIDResponse->NumberOfSigmas(AliPIDResponse::kTPC, track, (AliPID::EParticleType) 0, nsigmaTPC);
@@ -278,21 +335,19 @@ void AliAnalysisTaskCorPIDTOFQA::UserExec(Option_t *)
 //	if(pt >= 3.0)   trig_03_track_count++;
 	if(!tofIsOk)	                                                                {    continue;    }
 
-
-	Short_t charge        = track->Charge();
-
+//	Short_t charge = track->Charge();
 
 	Float_t m2tof  = get_mass_squared(track);
-
 	    
 	if(charge > 0)
 	{
 	    m2_pt_pos->Fill(pt, m2tof);
+	    m2_pt_pos_fine->Fill(pt, m2tof);
 	    Double_t nSigmaTPCDeut = fPIDResponse->NumberOfSigmasTPC(track,(AliPID::EParticleType) 5);  // 5 = deuteron
 	    if(TMath::Abs(nSigmaTPCDeut) < 3.0)
 	    {
 		m2_pt_pos_cut->Fill(pt, m2tof);
-		
+		m2_pt_pos_cut_fine->Fill(pt, m2tof);
 		if(pt >= 1.0  &&  pt < 4.4)
 		{
 		    if(m2tof >= 1.7  &&  m2tof < 5.5)    {   deut_count++;   }
@@ -303,10 +358,12 @@ void AliAnalysisTaskCorPIDTOFQA::UserExec(Option_t *)
 	else if(charge < 0)
 	{
 	    m2_pt_neg->Fill(pt, m2tof);
+	    m2_pt_neg_fine->Fill(pt, m2tof);
 	    Double_t nSigmaTPCDeut = fPIDResponse->NumberOfSigmasTPC(track,(AliPID::EParticleType)5);  // 5 = deuteron
 	    if(TMath::Abs(nSigmaTPCDeut) < 3.0)
 	    {
 		m2_pt_neg_cut->Fill(pt, m2tof);
+		m2_pt_neg_cut_fine->Fill(pt, m2tof);
 		if(pt >= 1.0  &&  pt < 4.4)
 		{
 		    if(m2tof >= 1.7  &&  m2tof < 5.5)    {   deut_count++;   }
