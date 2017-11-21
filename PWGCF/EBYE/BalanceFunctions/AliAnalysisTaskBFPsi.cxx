@@ -1897,40 +1897,67 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t gC
 	    //Make the decision based on the n-sigma
 	    if(fUsePIDnSigma) {
 	      
+	      Double_t nSigmaPionTPC   = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(aodTrack,AliPID::kPion));
+	      Double_t nSigmaKaonTPC   = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(aodTrack,AliPID::kKaon));
+	      Double_t nSigmaProtonTPC = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(aodTrack,AliPID::kProton));
+
+	      Double_t nSigmaPionTOF   = TMath::Abs(fPIDResponse->NumberOfSigmasTOF(aodTrack,AliPID::kPion));
+	      Double_t nSigmaKaonTOF   = TMath::Abs(fPIDResponse->NumberOfSigmasTOF(aodTrack,AliPID::kKaon));
+	      Double_t nSigmaProtonTOF = TMath::Abs(fPIDResponse->NumberOfSigmasTOF(aodTrack,AliPID::kProton));
+	      
 	      // exclusive determination of PID (also taking into account other particle species, works only for pions so far)
 	      if(fPidDetectorConfig == kTPCTOFexcl){
 		
-		Double_t nSigmaPionTPC   = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(aodTrack,AliPID::kPion));
-		Double_t nSigmaKaonTPC   = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(aodTrack,AliPID::kKaon));
-		Double_t nSigmaProtonTPC = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(aodTrack,AliPID::kProton));
+		if (fParticleOfInterest == kParticleOfInterest::kPion){
+		  if( vPt > 0.2 && vPt < 0.6 ){
+		    if( nSigmaPionTPC > fPIDNSigma || nSigmaKaonTPC < fPIDNSigma || nSigmaProtonTPC < fPIDNSigma )
+		      continue;
+		  }
+		  else if(vPt > 0.6){
+		    if( nSigmaPionTPC > fPIDNSigma )
+		      continue;	
+		    
+		    if( nSigmaPionTOF > fPIDNSigma || nSigmaKaonTOF < fPIDNSigma || nSigmaProtonTOF < fPIDNSigma )
+		      continue;	
+		  }
+		} //end of pion case 
 		
-		if( vPt > 0.2 && vPt < 0.6 ){
-		  
-		  if( nSigmaPionTPC > fPIDNSigma || nSigmaKaonTPC < fPIDNSigma || nSigmaProtonTPC < fPIDNSigma )
-		    continue;
-		}
-		else if(vPt > 0.6){
-		  
-		  Double_t nSigmaPionTOF   = TMath::Abs(fPIDResponse->NumberOfSigmasTOF(aodTrack,AliPID::kPion));
-		  Double_t nSigmaKaonTOF   = TMath::Abs(fPIDResponse->NumberOfSigmasTOF(aodTrack,AliPID::kKaon));
-		  Double_t nSigmaProtonTOF = TMath::Abs(fPIDResponse->NumberOfSigmasTOF(aodTrack,AliPID::kProton));
-		  
-		  if( nSigmaPionTPC > fPIDNSigma )
-		    continue;	
-		  
-		  if( nSigmaPionTOF > fPIDNSigma || nSigmaKaonTOF < fPIDNSigma || nSigmaProtonTOF < fPIDNSigma )
-		    continue;	
-		  
-		}
+		if (fParticleOfInterest ==  kParticleOfInterest::kKaon){
+		  if( vPt > 0.2 && vPt < 0.5 ){
+		    if( nSigmaPionTPC < fPIDNSigma || nSigmaKaonTPC > fPIDNSigma || nSigmaProtonTPC < fPIDNSigma )
+		      continue;
+		  }
+		  else if(vPt >= 0.5  && vPt <= 2.5){
+		    if( nSigmaKaonTPC > fPIDNSigma )
+		      continue;	
+		    
+		    if( nSigmaPionTOF < fPIDNSigma || nSigmaKaonTOF > fPIDNSigma || nSigmaProtonTOF < fPIDNSigma )
+		      continue;
+		  }
+		} //end of the kaon case 
+		
+		if (fParticleOfInterest == kParticleOfInterest::kProton){
+		  if( vPt > 0.2 && vPt < 0.5 ){
+		    if( nSigmaPionTPC < fPIDNSigma || nSigmaKaonTPC < fPIDNSigma || nSigmaProtonTPC > fPIDNSigma )
+		      continue;  
+		  }
+		  else if(vPt > 0.5  && vPt < 4.0 ){
+		    if( nSigmaProtonTPC > fPIDNSigma )
+		      continue;	
+		    
+		    if( nSigmaPionTOF < fPIDNSigma || nSigmaKaonTOF < fPIDNSigma || nSigmaProtonTOF > fPIDNSigma )
+		      continue;	
+		  }
+		}//end of the proton case 
 		else{
 		  continue;
 		}
-	      }
+	      } // end of TPCTOF exclusive PID
 	      // else just normal nSigma cut
 	      else{
 		if(TMath::Abs(nSigma) > fPIDNSigma) 
 		  continue;
-	      }	    
+	      }      
 	      
 	      fHistNSigmaTOFvsPtafterPID ->Fill(aodTrack->Pt(),nSigmaTOF);
 	      fHistNSigmaTPCvsPtafterPID ->Fill(aodTrack->Pt(),nSigmaTPC);
