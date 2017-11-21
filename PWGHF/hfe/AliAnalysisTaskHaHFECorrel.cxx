@@ -572,16 +572,19 @@ void AliAnalysisTaskHaHFECorrel::UserExec(Option_t*)
       return;
     }
   
+  // Tender
   if(fUseTender){
     fTracks_tender = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject("AODFilterTracks"));
     fCaloClusters_tender = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject("EmcCaloClusters"));
     if (!fTracks_tender || !fCaloClusters_tender) return;
   }
  
+  // Ntracks
   Int_t ntracks = -999;
   if(!fUseTender) ntracks = fVevent->GetNumberOfTracks();
   if(fUseTender)  ntracks = fTracks_tender->GetEntries();
 
+  // Initialize MC
   if(fIsMC) {
     if (fIsAOD) {
       AliAODInputHandler *eventHandler = dynamic_cast<AliAODInputHandler*> (AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
@@ -599,7 +602,8 @@ void AliAnalysisTaskHaHFECorrel::UserExec(Option_t*)
     }
   }
 
-  // suggested by DPG to remove outliers
+
+  // Get Vertex and cut > 10cm and min NumberOfTracks ( suggested by DPG to remove outliers)
   const AliVVertex *pVtx=0;  
   const AliVVertex *spdVtx=0;
   if (fAOD) {
@@ -621,19 +625,21 @@ void AliAnalysisTaskHaHFECorrel::UserExec(Option_t*)
   if(fNOtrks<2) return;
   fNoEvents->Fill(1);
     
+  // EventCuts
   if(!fEventCuts.AcceptEvent(fVevent)) {
     PostData(1, fOutputList);
     return;
   }
   fNoEvents->Fill(2);
 
+  // Initialize PID Resonse
   fpidResponse = fInputHandler->GetPIDResponse();
   if(!fpidResponse){
     AliDebug(1, "Using default PID Response");
     fpidResponse = AliHFEtools::GetDefaultPID(kFALSE, fInputEvent->IsA() == AliAODEvent::Class());
   }  
   
-
+  // Find MotherKinks
   Int_t *listofmotherkink=0;
   Int_t nMotherKink=0;
   if (fIsAOD) {
@@ -653,6 +659,7 @@ void AliAnalysisTaskHaHFECorrel::UserExec(Option_t*)
     }
   }
 
+  // Perform Event Bias
   if (fMinPtEvent > 0.1 || fMaxPtEvent <100) {
     if (!PassEventBias(pVtx,nMotherKink,listofmotherkink)) {
       delete listofmotherkink;
@@ -662,35 +669,39 @@ void AliAnalysisTaskHaHFECorrel::UserExec(Option_t*)
   
   fNoEvents->Fill(3);
 
-
+  // Get Multitplicity
   Double_t fMultV0Per, fMultSPDPer, fMultV0Tot, fMultSPD;
   Float_t mult = 1;
-  // if (!fIsMC) {
-    fMultV0Per = -1.;
-    fMultSPDPer =-1.;
-    // fAOD->GetMultiplicity();
-    fMultSelection = (AliMultSelection * ) fVevent->FindListObject("MultSelection");
+  fMultV0Per = 1.;
+  fMultSPDPer =1.;
+  fMultV0Tot = 1.;
+  fMultSPD = 1;
+  
+  fMultSelection = (AliMultSelection * ) fVevent->FindListObject("MultSelection");
+  if (fMultSelection) {
     fMultV0Per = fMultSelection->GetMultiplicityPercentile("V0M", kFALSE); // Method, Embed Event selection (kFALSE)
     fMultSPDPer = fMultSelection->GetMultiplicityPercentile("SPDTracklets", kFALSE); // Method, Embed Event selection (kFALSE)
-    
-    // TRY Multiplicity estimates
-    AliVVZERO* AODV0 = fVevent->GetVZEROData();
-    Float_t multV0A=AODV0->GetMTotV0A();
-    Float_t multV0C=AODV0->GetMTotV0C();
-    fMultV0Tot=multV0A+multV0C;
-    
-    AliVMultiplicity* AliMult = fVevent->GetMultiplicity();
-    fMultSPD=AliMult->GetNumberOfTracklets();
-    
-    //  AliAODTracklets *AODtracklets = ((AliAODEvent*)fAOD)->GetTracklets();
-    //  fMultAOD = AODtracklets->GetNumberOfTracklets();
+  }
 
-    mult=fMultSPDPer;
+  // Multiplicity estimates
+  AliVVZERO* AODV0 = fVevent->GetVZEROData();
+  Float_t multV0A=AODV0->GetMTotV0A();
+  Float_t multV0C=AODV0->GetMTotV0C();
+  fMultV0Tot=multV0A+multV0C;
+  
+  AliVMultiplicity* AliMult = fVevent->GetMultiplicity();
+  if (AliMult) fMultSPD=AliMult->GetNumberOfTracklets();
+    
+  if (fIsAOD)  AliAODTracklets *AODtracklets = ((AliAODEvent*)fAOD)->GetTracklets();
+  //  fMultAOD = AODtracklets->GetNumberOfTracklets();
 
-    Double_t fillSparse[4]={fMultV0Per, fMultSPDPer, fMultV0Tot, fMultSPD};
-    fMultiplicity->Fill(fillSparse);
-    //}
+  mult=fMultSPDPer;
+
+  Double_t fillSparse[4]={fMultV0Per, fMultSPDPer, fMultV0Tot, fMultSPD};
+  fMultiplicity->Fill(fillSparse);
+ 
      
+  // Efficiency Corrections
   if(fIsMC) {
     if (fIsAOD) {
       MCEfficiencyCorrections(pVtx); //  Electron reconstruction, Hadron reconstruction
@@ -764,24 +775,23 @@ void AliAnalysisTaskHaHFECorrel::UserExec(Option_t*)
   //Fill Mixed event pool//
   /////////////////////////
   if (RedTracksHFE->GetEntriesFast()>0 && fLParticle) {
- 
-    AliEventPool * HFEPool = fPoolMgr->GetEventPool(mult, pVtxZ, LPtrack->Pt()); // Get the buffer associated with the current centrality and z-vtx
-   HFEPool->SetDebug(kTRUE);
-   cout << Form("Pool found for centrality = %f, zVtx = %f, leading pt = %f", mult, pVtx->GetZ(), LPtrack->Pt()) << endl;
+     AliEventPool * HFEPool = fPoolMgr->GetEventPool(mult, pVtxZ, LPtrack->Pt()); // Get the buffer associated with the current centrality and z-vtx
+    //HFEPool->SetDebug(kTRUE);
+     // cout << Form("\nPool found for centrality = %f, zVtx = %f, leading pt = %f end.\n", mult, pVtx->GetZ(), LPtrack->Pt()) << endl;
 
-    if (!HFEPool)
-      {
-	AliFatal(Form("No pool found for centrality = %f, zVtx = %f, leading pt = %f", mult, pVtx->GetZ(), LPtrack->Pt()));
-	return;
-      }
-    if (RedTracksHFE->GetEntriesFast()>0) {
-      HFEPool->UpdatePool(RedTracksHFE);
-    }
+     if (!HFEPool)
+       {
+	 AliFatal(Form("No pool found for centrality = %f, zVtx = %f, leading pt = %f", mult, pVtx->GetZ(), LPtrack->Pt()));
+	 return;
+       }
+     if (RedTracksHFE->GetEntriesFast()>0) {
+       HFEPool->UpdatePool(RedTracksHFE);
+     }
   }
-
+  
   ClearV0PIDList();
   delete listofmotherkink;
-
+  
   PostData(1, fOutputList);
 }
 
@@ -1507,10 +1517,10 @@ void AliAnalysisTaskHaHFECorrel::UserCreateOutputObjects()
   Int_t    trackDepth = 2000; 
   Int_t    nMultBins = 3;
   Double_t multBins[]={0,20,50,100};
-  Int_t    nZVtxBins=6;
+  Int_t    nZVtxBins=5;
   Double_t zVtxBins[]={-10,-4.41,-1.41,0.59,3.59,10};
-  Int_t    nMaxPtBins=7;
-  Double_t maxPtBins[]={0, 0.5, 1., 2., 5., 10, 15, 999};
+  Int_t    nMaxPtBins=5;
+  Double_t maxPtBins[]={0, 0.5, 2., 5., 10, 999};
   //Int_t    nDummyBins=1;
   // Double_t dummyBins[]=
 
@@ -2399,13 +2409,6 @@ void AliAnalysisTaskHaHFECorrel::CorrelateLP(AliVTrack* LPtrack,  const AliVVert
     AliBasicParticleHaHFE *RedTrack = (AliBasicParticleHaHFE*) RedTracksHFE->At(k);
   
 
-
-    if (RedTrack->IsHadron()) {
-      cout << "RedTrackIsHadron" << endl;
-      cout << RedTrack->ID() << "\t" << idH << endl;
-    }
-
-
     if (RedTrack->ID()==idH) continue; // no self-correlation
     Double_t pt=-9.,eta =-9.,phi=-9.;
     Int_t ls=0, uls=0;    
@@ -2820,7 +2823,7 @@ Bool_t AliAnalysisTaskHaHFECorrel::AssoHadronPIDCuts(AliVTrack *Vtrack)
 
 
   fTOFnSigmaAsso = fpidResponse->NumberOfSigmasTOF(Vtrack, AliPID::kElectron);
-  // if ((fTOFnSigmaAsso < (-1.*fSigmaTOFcut) ) || (fTOFnSigmaAsso > fSigmaTOFcut)) return kFALSE;
+   if ((fTOFnSigmaAsso < (-1.*fSigmaTOFcut) ) || (fTOFnSigmaAsso > fSigmaTOFcut)) return kFALSE;
   // looser PID cuts
   fTPCnSigmaAsso = fpidResponse->NumberOfSigmasTPC(Vtrack, AliPID::kElectron);
   if(fTPCnSigmaAsso>fAssNonEleTPCcut) return kFALSE;
@@ -3063,6 +3066,7 @@ Bool_t  AliAnalysisTaskHaHFECorrel::CloneAndReduceTrackList(TObjArray* RedTracks
   AliBasicParticleHaHFE * bparticle  = 0;
   bparticle = new AliBasicParticleHaHFE(Vtrack->GetID(), Vtrack->Eta(), Vtrack->Phi(), Vtrack->Pt(), Vtrack->Charge(), LSPartner, ULSPartner, LSPartnerID, ULSPartnerID, trueULSPartner, isPhotonic, isHadron);
   if (!bparticle) return kFALSE;
+  
   RedTracks->Add(bparticle);
   return kTRUE;
 
