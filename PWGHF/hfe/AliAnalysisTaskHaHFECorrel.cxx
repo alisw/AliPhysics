@@ -3316,6 +3316,9 @@ void AliAnalysisTaskHaHFECorrel::TRDQA(Int_t RunNumber, const AliVVertex *pVtx, 
     Bool_t passHFEPIDCut=kFALSE;
     if (passHFETrackCut) passHFEPIDCut= InclElecPIDCuts(Vtrack, kFALSE);
   
+    cout << "pt , Chi2 " << ESDtrack->Pt() << " , " << ESDtrack->GetTRDchi2() << endl;
+ 
+
     Double_t fillSparse[7];
     fillSparse[0]=Vtrack->Pt();
     fillSparse[1]=Vtrack->Eta();
