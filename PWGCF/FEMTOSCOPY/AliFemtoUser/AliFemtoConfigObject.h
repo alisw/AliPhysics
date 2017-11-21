@@ -18,6 +18,7 @@
 #include <TBuffer.h>
 #include <TString.h>
 #include <TText.h>
+#include <TPaveText.h>
 
 
 #if false && __cplusplus >= 201103L
@@ -434,7 +435,7 @@ public:
   T* Into(bool warn=true);
 
   /// Pretty-print the value
-  TString Stringify(const bool pretty=true) const;
+  TString Stringify(const bool pretty=false, int deep = 0) const;
 
   /// Perform a "deep" update of object into this map object.
   /// If either is not a map, do nothing.
@@ -574,7 +575,7 @@ public:
 
 protected:
   TText fTitle;
-  TText fBody;
+  TPaveText fBody;
 };
 
 inline
