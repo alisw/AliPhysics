@@ -63,6 +63,7 @@ AliJFFlucAnalysis::AliJFFlucAnalysis()
 	//fh_Qvector(),
 	fh_ntracks(),
 	fh_vn(),
+	fh_vna(),
 	fh_vn_vn(),
 	fh_cn_4c(),
 	fh_cn_2c(),
@@ -113,6 +114,7 @@ AliJFFlucAnalysis::AliJFFlucAnalysis(const char *name)
 	//fh_Qvector(),
 	fh_ntracks(),
 	fh_vn(),
+	fh_vna(),
 	fh_vn_vn(),
 	fh_cn_4c(),
 	fh_cn_2c(),
@@ -182,6 +184,7 @@ AliJFFlucAnalysis::AliJFFlucAnalysis(const AliJFFlucAnalysis& a):
 	//fh_Qvector(a.fh_Qvector),
 	fh_ntracks(a.fh_ntracks),
 	fh_vn(a.fh_vn),
+	fh_vna(a.fh_vna),
 	fh_vn_vn(a.fh_vn_vn),
 	fh_cn_4c(a.fh_cn_4c),
 	fh_cn_2c(a.fh_cn_2c),
@@ -278,6 +281,11 @@ void AliJFFlucAnalysis::UserCreateOutputObjects(){
 
 	fh_vn
 		<< TH1D("hvn","hvn", 1024, -1.5, 1.5)
+		<< fBin_h << fBin_k
+		<< fHistCentBin
+		<< "END";   // histogram of vn_h^k values for [ih][ik][iCent]
+	fh_vna
+		<< TH1D("hvna","hvna", 1024, -1.5, 1.5)
 		<< fBin_h << fBin_k
 		<< fHistCentBin
 		<< "END";   // histogram of vn_h^k values for [ih][ik][iCent]
@@ -429,10 +437,14 @@ void AliJFFlucAnalysis::UserExec(Option_t *) {
 	NSubTracks[kSubB] = QnB[0].Re(); // this is number of tracks in Sub B
 	
 	Double_t ebe_2p_weight = 1;
+	//Double_t ebe_3p_weight = 1;
 	Double_t ebe_4p_weight = 1;
+	//Double_t ebe_4p_weightB = 1;
 	if( IsEbEWeighted == kTRUE ){
 		ebe_2p_weight = NSubTracks[kSubA] * NSubTracks[kSubB] ;
+		//ebe_3p_weight = NSubTracks[kSubA] * NSubTracks[kSubB] * (NSubTracks[kSubB]-1);
 		ebe_4p_weight = NSubTracks[kSubA] * NSubTracks[kSubB] * (NSubTracks[kSubA]-1) * (NSubTracks[kSubB]-1) ;
+		//ebe_4p_weightB = NSubTracks[kSubA] * NSubTracks[kSubB] * (NSubTracks[kSubB]-1) * (NSubTracks[kSubB]-2) ;
 	}
 
 	// v2^2 :  k=1  /// remember QnQn = vn^(2k) not k
@@ -441,17 +453,25 @@ void AliJFFlucAnalysis::UserExec(Option_t *) {
 	Double_t vn2_vn2[kNH][nKL][kNH][nKL];
 
 	TComplex corr[kNH][nKL];
+	TComplex ncorr[kNH][nKL];
+
+	double mf = 1.0/((NSubTracks[0]-1)*(NSubTracks[1]-1));
 
 	for(int ih=2; ih<kNH; ih++){
 		corr[ih][1] = QnA[ih]*QnB_star[ih];
 		for(int ik=2; ik<nKL; ik++)
-			corr[ih][ik] = TComplex::Power(QnA[ih]*QnB_star[ih],ik);
+			corr[ih][ik] = corr[ih][ik-1]*corr[ih][1];//TComplex::Power(corr[ih][1],ik);
+		ncorr[ih][1] = corr[ih][1];
+		ncorr[ih][2] = mf*(corr[ih][2]*NSubTracks[0]*NSubTracks[1]-QnB_star[2*ih]*QnA[ih]*QnA[ih]*NSubTracks[0]-QnA[2*ih]*QnB_star[ih]*QnB_star[ih]*NSubTracks[1]+QnB_star[2*ih]*QnA[2*ih]);
+		for(int ik=3; ik<nKL; ik++)
+			ncorr[ih][ik] = corr[ih][ik]; //for 6,8,...-particle correlations, ignore the autocorrelation for now
 	}
 	
 	for(int ih=2; ih<kNH; ih++){
 		for(int ik=1; ik<nKL; ik++){ // 2k(0) =1, 2k(1) =2, 2k(2)=4....
 			vn2[ih][ik] = corr[ih][ik].Re();
 			fh_vn[ih][ik][fCBin]->Fill( vn2[ih][ik] , ebe_2p_weight ); // Fill hvn2
+			fh_vna[ih][ik][fCBin]->Fill(ncorr[ih][ik].Re(),ebe_2p_weight); //4-particle weight etc?
 			for( int ihh=2; ihh<kNH; ihh++){
 				for(int ikk=1; ikk<nKL; ikk++){
 					vn2_vn2[ih][ik][ihh][ikk] = (corr[ih][ik]*corr[ihh][ikk]).Re();
@@ -481,10 +501,10 @@ void AliJFFlucAnalysis::UserExec(Option_t *) {
 	double ef = nf/(NSubTracks[1]-2.0);
 	TComplex nV4V2star_2 = nf*( V4V2star_2*NSubTracks[1] - QnA[4]*QnB_star[4] );
 	TComplex nV5V2starV3star = nf*( V5V2starV3star*NSubTracks[1] - QnA[5]*QnB_star[5] );
-	TComplex nV6V2star_3 = QnA[6]*( ef*QnB_star[2]*QnB_star[2]*QnB_star[2]*NSubTracks[1]*NSubTracks[1] - 3.0*ef*QnB_star[2]*QnB_star[4]*NSubTracks[1] + 2.0*ef*QnB_star[6] );
+	TComplex nV6V2star_3 = QnA[6]*ef*( QnB_star[2]*QnB_star[2]*QnB_star[2]*NSubTracks[1]*NSubTracks[1] - 3.0*QnB_star[2]*QnB_star[4]*NSubTracks[1] + 2.0*QnB_star[6] );
 	TComplex nV6V3star_2 = nf*(V6V3star_2*NSubTracks[1] - QnA[6]*QnB_star[6]);
-	TComplex nV7V2star_2V3star = QnA[7]*( ef*QnB_star[2]*QnB_star[2]*QnB_star[3]*NSubTracks[1]*NSubTracks[1] - 2.0*ef*QnB_star[2]*QnB_star[5]*NSubTracks[1] - ef*QnB_star[3]*QnB_star[4]*NSubTracks[1] + 2.0*ef*QnB_star[7] );
-	TComplex nV8V2starV3star_2 = QnA[8]*( ef*QnB_star[2]*QnB_star[3]*QnB_star[3]*NSubTracks[1]*NSubTracks[1] - 2.0*ef*QnB_star[3]*QnB_star[5]*NSubTracks[1] - ef*QnB_star[2]*QnB_star[6]*NSubTracks[1] + 2.0*ef*QnB_star[8] );
+	TComplex nV7V2star_2V3star = QnA[7]*ef*( QnB_star[2]*QnB_star[2]*QnB_star[3]*NSubTracks[1]*NSubTracks[1] - 2.0*QnB_star[2]*QnB_star[5]*NSubTracks[1] - QnB_star[3]*QnB_star[4]*NSubTracks[1] + 2.0*QnB_star[7] );
+	TComplex nV8V2starV3star_2 = QnA[8]*ef*( QnB_star[2]*QnB_star[3]*QnB_star[3]*NSubTracks[1]*NSubTracks[1] - 2.0*QnB_star[3]*QnB_star[5]*NSubTracks[1] - QnB_star[2]*QnB_star[6]*NSubTracks[1] + 2.0*QnB_star[8] );
 
 	// New correlators (Modifed by Ante's correction term for self-correlations for SC result)
 	TComplex nV4V4V2V2 = (QnA[4]*QnB_star[4]*QnA[2]*QnB_star[2]) - ((1/(NSubTracks[1]-1) * QnB_star[6] * QnA[4] *QnA[2] ))
@@ -509,8 +529,8 @@ void AliJFFlucAnalysis::UserExec(Option_t *) {
 	fh_correlator[7][fCBin]->Fill( V6V3star_2.Re() );
 	fh_correlator[8][fCBin]->Fill( V7V2star_2V3star.Re() ) ;
 
-	fh_correlator[9][fCBin]->Fill( nV4V2star_2.Re() ); // added 2015.6.10
-	fh_correlator[10][fCBin]->Fill( nV5V2starV3star.Re() );
+	fh_correlator[9][fCBin]->Fill( nV4V2star_2.Re() );//,ebe_3p_weight); // added 2015.6.10
+	fh_correlator[10][fCBin]->Fill( nV5V2starV3star.Re() );//,ebe_3p_weight);
 	fh_correlator[11][fCBin]->Fill( nV6V3star_2.Re() ) ;
 
 	// use this to avoid self-correlation 4p correlation (2 particles from A, 2 particles from B) -> MA(MA-1)MB(MB-1) : evt weight..

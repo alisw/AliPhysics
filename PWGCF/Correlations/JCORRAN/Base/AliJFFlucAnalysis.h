@@ -141,6 +141,7 @@ private:
 
 	AliJTH1D fh_ntracks;//! // for number of tracks dist
 	AliJTH1D fh_vn;//!  // single vn^k  array [ih][ik][iCent]
+	AliJTH1D fh_vna;//! // single vn^k with autocorrelation removed (up to a limited order)
 	AliJTH1D fh_vn_vn;//! // combination for <vn*vn> [ih][ik][ihh][ikk][iCent]
 	AliJTH1D fh_cn_4c;//!  // QC
 	AliJTH1D fh_cn_2c;//!  // QC
