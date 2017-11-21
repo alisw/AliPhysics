@@ -97,7 +97,6 @@ AliAnalysisTaskSE(),
 fUtilityMuonAncestor(0x0),
 fNPtBins(1),
 fHarmonic(1),
-fNormMethod("QoverQlength"),
 fMergeableCollection(0x0),
 fSparse(0x0)
 {
@@ -112,7 +111,6 @@ AliAnalysisTaskSE(name),
 fUtilityMuonAncestor(0x0),
 fNPtBins(1),
 fHarmonic(1),
-fNormMethod("QoverQlength"),
 fMergeableCollection(0x0),
 fSparse(0x0)
 {
@@ -156,7 +154,7 @@ TObject* AliAnalysisTaskV1SingleMu::GetMergeableObject ( TString identifier, TSt
     obj = histo;
   }
   else if(objectName == "hScalProdQAQB"){
-    TProfile* prof =new TProfile(objectName.Data(),objectName.Data(),25,0.,100.);
+    TProfile* prof =new TProfile(objectName.Data(),objectName.Data(),300,0.,100.);
     obj = prof;
   }
   else {
@@ -176,6 +174,10 @@ void AliAnalysisTaskV1SingleMu::UserCreateOutputObjects()
   //
 
   //
+  Int_t nCentBins = 200;
+  Double_t centMin = 0., centMax = 100.;
+  TString centName("Centrality"), centTitle("Centrality"), centUnits("\%");
+
   Int_t nPtBins = 160;
   Double_t ptMin = 0., ptMax = 80.;
   TString ptName("Pt"), ptTitle("p_{t}"), ptUnits("GeV/c");
@@ -192,15 +194,16 @@ void AliAnalysisTaskV1SingleMu::UserCreateOutputObjects()
   Double_t chargeMin = -2, chargeMax = 2.;
   TString chargeName("Charge"), chargeTitle("charge"), chargeUnits("e");
 
-  // Int_t nSPBins = 2;
-  // Double_t SPMin = -2, SPMax = 2.;
-  // TString SPName("Scalar product"), SPTitle("SP"), SPUnits("");
+  Int_t nSPBins = 2;
+  Double_t SPMin = -2, SPMax = 2.;
+  TString SPNameA("Scalar product with A"), SPTitleA("SP A"), SPUnits("");
+  TString SPNameB("Scalar product with C"), SPTitleB("SP C");
 
-  Int_t nbins[kNvars] = {nPtBins, nEtaBins, nChargeBins, nPhiBins};
-  Double_t xmin[kNvars] = {ptMin, etaMin, chargeMin, phiMin};
-  Double_t xmax[kNvars] = {ptMax, etaMax, chargeMax, phiMax};
-  TString axisTitle[kNvars] = {ptTitle, etaTitle, chargeTitle, phiTitle};
-  TString axisUnits[kNvars] = {ptUnits, etaUnits, chargeUnits, phiUnits};
+  Int_t nbins[kNvars] = {nCentBins, nPtBins, nEtaBins, nChargeBins, nPhiBins, nSPBins, nSPBins};
+  Double_t xmin[kNvars] = {centMin, ptMin, etaMin, chargeMin, phiMin, SPMin, SPMin};
+  Double_t xmax[kNvars] = {centMax, ptMax, etaMax, chargeMax, phiMax, SPMax, SPMax};
+  TString axisTitle[kNvars] = {centTitle, ptTitle, etaTitle, chargeTitle, phiTitle, SPTitleA, SPTitleB};
+  TString axisUnits[kNvars] = {centUnits, ptUnits, etaUnits, chargeUnits, phiUnits, SPUnits, SPUnits};
 
   fSparse = new THnSparseF("MuSparse","Sparse for muons",kNvars,nbins);
 
@@ -248,6 +251,7 @@ void AliAnalysisTaskV1SingleMu::UserExec ( Option_t * /*option*/ )
   /// Fill output objects
   //
   // fAODEvent = dynamic_cast<AliAODEvent*> (InputEvent());
+  AliAODEvent *aod = dynamic_cast<AliAODEvent*>(InputEvent());
   // if ( ! fAODEvent )
   //   fESDEvent = dynamic_cast<AliESDEvent*> (InputEvent());
   // if ( ! fAODEvent && ! fESDEvent ) {
@@ -257,6 +261,8 @@ void AliAnalysisTaskV1SingleMu::UserExec ( Option_t * /*option*/ )
 
   if ( ! fMuonEventCuts.IsSelected(fInputHandler) ) return;
 
+  if ( !IsZDCCalibrated(aod->GetRunNumber()) ) return;
+
   // //
   // // Global event info
   // //
@@ -265,6 +271,7 @@ void AliAnalysisTaskV1SingleMu::UserExec ( Option_t * /*option*/ )
 
   Double_t containerInput[kNvars];
   Double_t centrality = fMuonEventCuts.GetCentrality(InputEvent());
+  if(centrality <5. || centrality > 40.) return;
   containerInput[kHCentrality] = centrality;
 
   // //
@@ -281,16 +288,19 @@ void AliAnalysisTaskV1SingleMu::UserExec ( Option_t * /*option*/ )
   } else {
       AliWarning("WARNING: FlowEvent not found !!! \n");
   }
-
   QA[0] = vQarray[0].X(); // ZNA
   QA[1] = vQarray[0].Y(); // ZNA
   QB[0] = vQarray[1].X(); // ZNC
   QB[1] = vQarray[1].Y(); // ZNC
 
+  if( (QA[0]*QA[0]+QA[1]*QA[1])==0.) {
+    AliWarning("WARNING : FlowEvent did not compute the flow vectors for ZDC");
+    return;
+  }
 
  //Resolution
   // for ( auto& trigClass : selTrigClasses ) {
-    TString identifier = "";
+    TString identifier = "Qnorm";
     static_cast<TH1*>(GetMergeableObject(identifier,"hNormQA"))->Fill(TMath::Sqrt(QA[0]*QA[0]+QA[1]*QA[1]));
     static_cast<TH1*>(GetMergeableObject(identifier,"hNormQB"))->Fill(TMath::Sqrt(QB[0]*QB[0]+QB[1]*QB[1]));
     static_cast<TProfile*>(GetMergeableObject(identifier,"hScalProdQAQB"))->Fill(centrality,QA[0]*QB[0] + QA[1]*QB[1]);
@@ -333,8 +343,8 @@ void AliAnalysisTaskV1SingleMu::UserExec ( Option_t * /*option*/ )
 
       containerInput[kHvarPt]         = track->Pt();
       containerInput[kHvarEta]        = track->Eta();
-      containerInput[kHvarPhi]        = track->Phi();
       containerInput[kHvarCharge]     = track->Charge()/3.;
+      containerInput[kHvarPhi]        = track->Phi();
       // containerInput[kHvarVz]         = ( istep == kStepReconstructed && !fUseMCKineForRecoTracks ) ? ipVz : ipVzMC;
 
       // Check with Jacopo
@@ -364,6 +374,15 @@ void AliAnalysisTaskV1SingleMu::NotifyRun()
 {
   /// Set run number for cuts
   fMuonTrackCuts.SetRun(fInputHandler);
+}
+//________________________________________________________________________
+Bool_t AliAnalysisTaskV1SingleMu::IsZDCCalibrated(Int_t run){
+  Bool_t calib = kFALSE;
+  Int_t dRun15hPos[] = {246390, 246391, 246392, 246994, 246991, 246989, 246984, 246982, 246980, 246948, 246945, 246928, 246851, 246847, 246846, 246845, 246844, 246810, 246809, 246808, 246807, 246805, 246804, 246766, 246765, 246763, 246760, 246759, 246758, 246757, 246751, 246750, 246495, 246493, 246488, 246487, 246434, 246431, 246428, 246424};
+    for (Int_t i=0; i<40; i++) {
+      if(run==dRun15hPos[i]) calib = kTRUE;
+  }
+  return calib;
 }
 //________________________________________________________________________
 Int_t AliAnalysisTaskV1SingleMu::GetParticleType ( AliVParticle* track )

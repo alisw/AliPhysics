@@ -32,7 +32,7 @@ class AliAnalysisTaskV1SingleMu : public AliAnalysisTaskSE {
   void UserCreateOutputObjects();
   void UserExec(Option_t *option);
   void NotifyRun();
-  void  Terminate(Option_t *option);
+  void Terminate(Option_t *option);
 
   /// Get muon event cuts
   AliMuonEventCuts* GetMuonEventCuts() { return &fMuonEventCuts; }
@@ -50,11 +50,11 @@ class AliAnalysisTaskV1SingleMu : public AliAnalysisTaskSE {
     kNsteps              ///< Number of steps
   };
   enum {
+    kHCentrality,    ///< event centrality
     kHvarPt,         ///< Pt at vertex
     kHvarEta,        ///< Pseudo-Rapidity
-    kHvarPhi,        ///< Phi
     kHvarCharge,     ///< Particle charge
-    kHCentrality,    ///< event centrality
+    kHvarPhi,        ///< Phi
     kHvarV1QA,
     kHvarV1QB,
     kNvars           ///< THnSparse dimensions
@@ -67,6 +67,8 @@ class AliAnalysisTaskV1SingleMu : public AliAnalysisTaskSE {
   AliAnalysisTaskV1SingleMu& operator=(const AliAnalysisTaskV1SingleMu&);
 
   Int_t GetParticleType ( AliVParticle* track );
+
+  Bool_t IsZDCCalibrated(Int_t run);
 
   //add enum for MC (AliUtilityMuonAncestor)
     enum {
@@ -87,7 +89,6 @@ class AliAnalysisTaskV1SingleMu : public AliAnalysisTaskSE {
   AliUtilityMuonAncestor* fUtilityMuonAncestor; ///< Utility to get the muon ancestor for MC
   Int_t fNPtBins;
   Int_t fHarmonic;
-  TString fNormMethod;
   AliMergeableCollection* fMergeableCollection; //!<! collection of mergeable objects
   THnSparse* fSparse; ///< CF container
 
