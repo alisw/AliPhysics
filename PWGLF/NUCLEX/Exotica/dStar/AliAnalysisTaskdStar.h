@@ -74,6 +74,8 @@ private:
 
   float                fRequireYmin;                ///<  Cut on tracks: mimimum y for the track (using PDG mass)
   float                fRequireYmax;                ///<  Cut on tracks: maximum y for the track (using PDG mass)
+  float                fDalitPlotMassCutMin;        ///<  Cut on min d* candidate's invariant mass for Dalitz Plot
+  float                fDalitPlotMassCutMax;        ///<  Cut on max d* candidate's invariant mass for Dalitz Plot
 
   AliPIDResponse       *fPID;                       //!<! PID response class
 
@@ -90,8 +92,6 @@ private:
   vector<daughter_struct>   fPionVector;            //<
   vector<daughter_struct>   fMCDeuteronVector;      //<
   vector<daughter_struct>   fMCPionVector;          //<
-  vector<daughter_struct>   fFakeDeuteronVector;    //<
-  vector<daughter_struct>   fFakePionVector;        //<
 
 
   /// \cond CLASSDEF
