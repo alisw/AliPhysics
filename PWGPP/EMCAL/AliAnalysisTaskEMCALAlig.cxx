@@ -13,18 +13,13 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-#include <TClonesArray.h>
-#include <TH1F.h>
-#include <TH2F.h>
-#include <TList.h>
 #include <AliVCluster.h>
 #include <AliVParticle.h>
-#include <AliLog.h>
 #include "AliParticleContainer.h"
 #include "AliClusterContainer.h"
 #include "AliPIDResponse.h"
-#include "AliAnalysisTaskEMCALAlig.h"
 #include "AliInputEventHandler.h"
+#include "AliAnalysisTaskEMCALAlig.h"
 #include "AliEMCALRecoUtils.h"
 #include "AliEMCALGeometry.h"
 #include "AliExternalTrackParam.h"
@@ -39,8 +34,9 @@ AliAnalysisTaskEmcal(),
 fEMCALRecoUtils(NULL),
 fEMCALGeo(NULL),
 fPIDResponse(NULL),
-ElectronInformation(ElectronForAlignment()),
-ElectronTree(NULL)
+fElectronInformation(ElectronForAlignment()),
+fElectronTree(NULL),
+fTreeSuffix("")
 {
     
 }
@@ -50,16 +46,21 @@ AliAnalysisTaskEmcal(name, kTRUE),
 fEMCALRecoUtils(NULL),
 fEMCALGeo(NULL),
 fPIDResponse(NULL),
-ElectronInformation(ElectronForAlignment()),
-ElectronTree(NULL)
+fElectronInformation(ElectronForAlignment()),
+fElectronTree(NULL),
+fTreeSuffix("")
 {
     SetMakeGeneralHistograms(kTRUE);
+    DefineOutput(2, TTree::Class());
 }
 
 
 AliAnalysisTaskEMCALAlig::~AliAnalysisTaskEMCALAlig()
 {
-    
+    if (fEMCALRecoUtils)
+        delete fEMCALRecoUtils;
+    if (fElectronTree)
+        delete fElectronTree;
 }
 
 
@@ -69,10 +70,12 @@ void AliAnalysisTaskEMCALAlig::UserCreateOutputObjects()
     
     fPIDResponse = fInputHandler->GetPIDResponse();
     
-    ElectronTree = new TTree("electron_information","electron_information");
-    ElectronTree->Branch("electrons", &ElectronInformation);
-    fOutput->Add(ElectronTree);
-    PostData(1, fOutput);
+    TString name_tree("electron_information");
+    name_tree += fTreeSuffix;
+    
+    fElectronTree = new TTree(name_tree,name_tree);
+    fElectronTree->Branch("electrons", &fElectronInformation);
+    PostData(2, fElectronTree);
 }
 
 
@@ -85,7 +88,6 @@ Bool_t AliAnalysisTaskEMCALAlig::FillHistograms()
 void AliAnalysisTaskEMCALAlig::DoTrackLoop()
 {
     AliClusterContainer* clusCont = GetClusterContainer(0);
-    //AliVCaloCells *cells = InputEvent()->GetEMCALCells();
     
     if (!clusCont)
     {
@@ -110,10 +112,11 @@ void AliAnalysisTaskEMCALAlig::DoTrackLoop()
             const AliVTrack* track = static_cast<const AliVTrack*>(part);
             if (!track)
                 continue;
-            //Electron PID cuts: -1 to 3 sigma TPC
-            Double_t TPCNSgima = fPIDResponse->NumberOfSigmasTPC(track, AliPID::kElectron);
             
-            if (TPCNSgima < -1.5 || TPCNSgima > 3.5)
+            //-1.5 to 3.5 sigma TPC to reduce the size of the trees
+            Double_t n_sigma_electron_TPC = fPIDResponse->NumberOfSigmasTPC(track, AliPID::kElectron);
+            
+            if (n_sigma_electron_TPC < -1.5 || n_sigma_electron_TPC > 3.5)
                 continue;
             
             Int_t iCluster = track->GetEMCALcluster();
@@ -126,9 +129,9 @@ void AliAnalysisTaskEMCALAlig::DoTrackLoop()
             if (!cluster)
                 continue;
             
-            
             Double_t EoverP = cluster->GetNonLinCorrEnergy()/track->P();
-                //E/p cut
+            
+            //Loose E/p cut to reduce tree
             if (EoverP<0.7 || EoverP>1.3)
                 continue;
             
@@ -141,15 +144,16 @@ void AliAnalysisTaskEMCALAlig::DoTrackLoop()
             
             if(emcphi < 0) emcphi = emcphi+(2*TMath::Pi());
             
-            //Int_t nCells=cluster->GetNCells();
             Int_t iSupMod = -9;
             Int_t ieta = -9;
             Int_t iphi = -9;
             Int_t icell = -9;
             Bool_t Isshared	= kFALSE;
+            
             //Get the SM number
             fEMCALRecoUtils->GetMaxEnergyCell(fEMCALGeo,fCaloCells,cluster,icell,iSupMod,ieta,iphi,Isshared);
             
+            //Default propagation
             TVector3 trackposOnEMCAL;
             trackposOnEMCAL.SetPtEtaPhi(440,track->GetTrackEtaOnEMCal(),track->GetTrackPhiOnEMCal());
                         
@@ -182,44 +186,47 @@ void AliAnalysisTaskEMCALAlig::DoTrackLoop()
             Double_t ydiffRU = trackposOnEMCALRU.Y() - clustpos.Y();
             Double_t zdiffRU = trackposOnEMCALRU.Z() - clustpos.Z();
             
+            //Save to Tree
             
-            ElectronInformation.charge = track->Charge();
-            ElectronInformation.pt = track->Pt();
-            ElectronInformation.pz = track->Pz();
-            ElectronInformation.eta_track = track->Eta();
-            ElectronInformation.phi_track = track->Phi();
+            fElectronInformation.charge = track->Charge();
+            fElectronInformation.pt = track->Pt();
+            fElectronInformation.pz = track->Pz();
+            fElectronInformation.eta_track = track->Eta();
+            fElectronInformation.phi_track = track->Phi();
             
             //cluster properties
-            ElectronInformation.energy = cluster->GetNonLinCorrEnergy();
-            ElectronInformation.M20 = cluster->GetM20();
-            ElectronInformation.M02 = cluster->GetM02();
-            ElectronInformation.eta_cluster = clustpos.Eta();
-            ElectronInformation.phi_cluster = clustpos.Phi();
+            fElectronInformation.energy = cluster->GetNonLinCorrEnergy();
+            fElectronInformation.M20 = cluster->GetM20();
+            fElectronInformation.M02 = cluster->GetM02();
+            fElectronInformation.eta_cluster = clustpos.Eta();
+            fElectronInformation.phi_cluster = clustpos.Phi();
             
             //mathing properties using default matcher
-            ElectronInformation.x_resitual_def = xdiff;
-            ElectronInformation.y_resitual_def = ydiff;
-            ElectronInformation.z_resitual_def = zdiff;
-            ElectronInformation.phi_resitual_def = cluster->GetTrackDx();
-            ElectronInformation.eta_resitual_def = cluster->GetTrackDz();
+            fElectronInformation.x_resitual_def = xdiff;
+            fElectronInformation.y_resitual_def = ydiff;
+            fElectronInformation.z_resitual_def = zdiff;
+            fElectronInformation.phi_resitual_def = cluster->GetTrackDx();
+            fElectronInformation.eta_resitual_def = cluster->GetTrackDz();
                    
             //mathing properties using electron mass
-            ElectronInformation.x_resitual_e = xdiffRU;
-            ElectronInformation.y_resitual_e = ydiffRU;
-            ElectronInformation.z_resitual_e = zdiffRU;
-            ElectronInformation.phi_resitual_e = phidiffRU;
-            ElectronInformation.eta_resitual_e = etadiffRU;
+            fElectronInformation.x_resitual_e = xdiffRU;
+            fElectronInformation.y_resitual_e = ydiffRU;
+            fElectronInformation.z_resitual_e = zdiffRU;
+            fElectronInformation.phi_resitual_e = phidiffRU;
+            fElectronInformation.eta_resitual_e = etadiffRU;
             
-            ElectronInformation.super_module_number = iSupMod;
+            fElectronInformation.super_module_number = iSupMod;
             //PID properties
-            ElectronInformation.TPCNSigmaElectron = TPCNSgima;
+            fElectronInformation.n_sigma_electron_TPC = n_sigma_electron_TPC;
             
-            ElectronTree->Fill();
+            fElectronTree->Fill();
             
         }
         
         
     }
+    
+    PostData(2, fElectronTree);
 }
 
 void AliAnalysisTaskEMCALAlig::ExecOnce()
