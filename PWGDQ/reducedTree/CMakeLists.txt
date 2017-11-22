@@ -59,6 +59,7 @@ set(SRCS
       AliReducedVarCut.cxx
       AliReducedVarManager.cxx
       AliResonanceFits.cxx
+      AliSignalMC.cxx
    )
 
 # Headers from sources
