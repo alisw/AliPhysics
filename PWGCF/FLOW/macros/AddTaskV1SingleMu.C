@@ -46,7 +46,7 @@ AliAnalysisTaskV1SingleMu* AddTaskV1SingleMu(Bool_t isMC = kFALSE, TString chang
   else muonEventCuts->SetTrigClassPatterns("kMuonSingleHighPt7:Hpt,kMuonSingleLowPt7:Lpt");
   if(centCut){
     muonEventCuts->SetFilterMask (AliMuonEventCuts::kSelectedCentrality);
-    Double_t centClass[2]= {5.,40.}
+    Double_t centClass[2]= {5.,40.};
     muonEventCuts->SetCentralityClasses(1,centClass);
   }
 
