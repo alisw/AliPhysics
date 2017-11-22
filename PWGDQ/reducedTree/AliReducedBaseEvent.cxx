@@ -15,7 +15,8 @@
 
 ClassImp(AliReducedBaseEvent)
 
-TClonesArray* AliReducedBaseEvent::fgTracks = 0;
+//TClonesArray* AliReducedBaseEvent::fgTracks = 0;
+TList* AliReducedBaseEvent::fgTracks = 0;
 TClonesArray* AliReducedBaseEvent::fgCandidates = 0;
 
 //____________________________________________________________________________
@@ -63,14 +64,18 @@ AliReducedBaseEvent::AliReducedBaseEvent(const Char_t* /*name*/, Int_t trackOpti
   for(Int_t i=0; i<4; ++i) fCentrality[i]=-1.;
   fNtracks[0]=0; fNtracks[1]=0;
   fNV0candidates[0]=0; fNV0candidates[1]=0;
-  if(trackOption == kUseBaseTracks) {
+  /*if(trackOption == kUseBaseTracks) {
     if(!fgTracks) fgTracks = new TClonesArray("AliReducedBaseTrack", 100000);
     fTracks = fgTracks;
   }
   if(trackOption == kUseReducedTracks) {
      if(!fgTracks) fgTracks = new TClonesArray("AliReducedTrackInfo", 100000);
      fTracks = fgTracks;
-  }
+  } */
+  if(!fgTracks) fgTracks = new TList();
+  fTracks = fgTracks;
+  fTracks->SetOwner(kTRUE);
+  
   if(!fgCandidates) fgCandidates = new TClonesArray("AliReducedPairInfo", 100000);
   fCandidates = fgCandidates;
 }

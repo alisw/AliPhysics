@@ -131,9 +131,9 @@ AliAnalysisTaskReducedTreeMaker::AliAnalysisTaskReducedTreeMaker() :
   //fBayesianResponse(0x0),
   fTreeFile(0x0),
   fTree(0x0),
+  fNevents(0),
   fReducedEvent(0x0),
-  fUsedVars(0x0),
-  fNevents(0)
+  fUsedVars(0x0)
 {
   //
   // Constructor
@@ -190,9 +190,9 @@ AliAnalysisTaskReducedTreeMaker::AliAnalysisTaskReducedTreeMaker(const char *nam
   //fBayesianResponse(0x0),
   fTreeFile(0x0),
   fTree(0x0),
+  fNevents(0),
   fReducedEvent(0x0),
-  fUsedVars(0x0),
-  fNevents(0)
+  fUsedVars(0x0)
 {
   //
   // Constructor
@@ -860,12 +860,17 @@ void AliAnalysisTaskReducedTreeMaker::FillMCTruthInfo()
       if(TMath::Abs(particle->PdgCode())==11 && particle->Pt()>0.5) acceptParticle = kTRUE;
       if(!acceptParticle) continue;
       
-      TClonesArray& tracks = *(fReducedEvent->fTracks);
+      //TClonesArray& tracks = *(fReducedEvent->fTracks);
+      TList* tracks = fReducedEvent->fTracks;
       AliReducedBaseTrack* reducedParticle=NULL;
-      if(fTreeWritingOption==kBaseEventsWithBaseTracks || fTreeWritingOption==kFullEventsWithBaseTracks)
-         reducedParticle=new(tracks[fReducedEvent->fNtracks[1]]) AliReducedBaseTrack();
-      if(fTreeWritingOption==kBaseEventsWithFullTracks || fTreeWritingOption==kFullEventsWithFullTracks)
-         reducedParticle=new(tracks[fReducedEvent->fNtracks[1]]) AliReducedTrackInfo();
+      if(fTreeWritingOption==kBaseEventsWithBaseTracks || fTreeWritingOption==kFullEventsWithBaseTracks) {
+         //reducedParticle=new(tracks[fReducedEvent->fNtracks[1]]) AliReducedBaseTrack();
+         reducedParticle=new AliReducedBaseTrack();
+      }
+      if(fTreeWritingOption==kBaseEventsWithFullTracks || fTreeWritingOption==kFullEventsWithFullTracks) {
+         //reducedParticle=new(tracks[fReducedEvent->fNtracks[1]]) AliReducedTrackInfo();
+         reducedParticle=new AliReducedTrackInfo();
+      }
       
       reducedParticle->PxPyPz(particle->Px(), particle->Py(), particle->Pz());
       reducedParticle->fQualityFlags |= (ULong_t(1)<<63);               // this means that this is a pure MC track
@@ -911,6 +916,10 @@ void AliAnalysisTaskReducedTreeMaker::FillMCTruthInfo()
         << particle->GetLastDaughter() << endl; */
         
       fReducedEvent->fNtracks[1] += 1;  
+      if(fTreeWritingOption==kBaseEventsWithBaseTracks || fTreeWritingOption==kFullEventsWithBaseTracks) 
+         tracks->Add(reducedParticle);
+      if(fTreeWritingOption==kBaseEventsWithFullTracks || fTreeWritingOption==kFullEventsWithFullTracks)
+         tracks->Add(trackInfo);
    }
 }
 
@@ -1030,7 +1039,7 @@ void AliAnalysisTaskReducedTreeMaker::FillTrackInfo()
     }  // end loop over TRD tracks
   }  // end if(fFillTRDMatchedTracks)
 
-  Int_t pidtypes[4] = {AliPID::kElectron,AliPID::kPion,AliPID::kKaon,AliPID::kProton};
+  //Int_t pidtypes[4] = {AliPID::kElectron,AliPID::kPion,AliPID::kKaon,AliPID::kProton};
   AliESDtrack* esdTrack=0;
   AliAODTrack* aodTrack=0;
   Int_t ntracks=event->GetNumberOfTracks();
@@ -1111,12 +1120,17 @@ void AliAnalysisTaskReducedTreeMaker::FillTrackInfo()
     if(!writeTrack) continue;
     //if(!matchedInTRD && !usedForV0Or && fTrackFilter && !fTrackFilter->IsSelected(particle)) continue;
         
-    TClonesArray& tracks = *(fReducedEvent->fTracks);
+    //TClonesArray& tracks = *(fReducedEvent->fTracks);
+    TList* tracks = fReducedEvent->fTracks;
     AliReducedBaseTrack* reducedParticle=NULL;
-    if(fTreeWritingOption==kBaseEventsWithBaseTracks || fTreeWritingOption==kFullEventsWithBaseTracks)
-      reducedParticle=new(tracks[fReducedEvent->fNtracks[1]]) AliReducedBaseTrack();
-    if(fTreeWritingOption==kBaseEventsWithFullTracks || fTreeWritingOption==kFullEventsWithFullTracks)
-       reducedParticle=new(tracks[fReducedEvent->fNtracks[1]]) AliReducedTrackInfo();
+    if(fTreeWritingOption==kBaseEventsWithBaseTracks || fTreeWritingOption==kFullEventsWithBaseTracks) {
+      //reducedParticle=new(tracks[fReducedEvent->fNtracks[1]]) AliReducedBaseTrack();
+       reducedParticle = new AliReducedBaseTrack();
+    }
+    if(fTreeWritingOption==kBaseEventsWithFullTracks || fTreeWritingOption==kFullEventsWithFullTracks) {
+       //reducedParticle=new(tracks[fReducedEvent->fNtracks[1]]) AliReducedTrackInfo();
+       reducedParticle = new AliReducedTrackInfo();
+    }
         
     Double_t values[AliDielectronVarManager::kNMaxValues];
     // set the fill map (all 1's) for the AliDielectronVarManager
@@ -1434,6 +1448,7 @@ void AliAnalysisTaskReducedTreeMaker::FillTrackInfo()
       
     }  // end if(isAOD)
 
+    tracks->Add(reducedParticle);
     fReducedEvent->fNtracks[1] += 1;
   }
 }
@@ -1452,8 +1467,8 @@ void AliAnalysisTaskReducedTreeMaker::FillV0PairInfo()
   
   if(!(fFillK0s || fFillLambda || fFillALambda || fFillGammaConversions)) return;
     
-  Double_t valuesPos[AliDielectronVarManager::kNMaxValues];
-  Double_t valuesNeg[AliDielectronVarManager::kNMaxValues];
+  //Double_t valuesPos[AliDielectronVarManager::kNMaxValues];
+  //Double_t valuesNeg[AliDielectronVarManager::kNMaxValues];
   
   if(fV0OpenCuts) {
     fV0OpenCuts->SetEvent(esd);

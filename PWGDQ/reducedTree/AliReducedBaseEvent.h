@@ -7,6 +7,7 @@
 
 #include <TObject.h>
 #include <TClonesArray.h>
+#include <TList.h>
 
 class AliReducedBaseTrack;
 class AliReducedPairInfo;
@@ -52,7 +53,8 @@ class AliReducedBaseEvent : public TObject {
   Int_t     NPairs()                   const {return fCandidates->GetEntries();}
   
   AliReducedBaseTrack* GetTrack(Int_t i) const {return (i<fNtracks[1] ? (AliReducedBaseTrack*)fTracks->At(i) : 0x0);}
-  TClonesArray* GetTracks()          const {return fTracks;}
+  //TClonesArray* GetTracks()          const {return fTracks;}
+  TList* GetTracks()          const {return fTracks;}
   
   AliReducedPairInfo* GetV0Pair(Int_t i)         const 
   {return (i>=0 && i<fNV0candidates[1] ? (AliReducedPairInfo*)fCandidates->At(i) : 0x0);}
@@ -66,7 +68,7 @@ class AliReducedBaseEvent : public TObject {
   virtual void ClearEvent();
   
  protected:
-  ULong64_t fEventTag;              // Event tags to be used either during analysis or to filter events
+  ULong64_t fEventTag;        // Event tags to be used either during analysis or to filter events
   Int_t     fRunNo;                 // run number
   Float_t   fVtx[3];                // global event vertex vector in cm
   Int_t     fNVtxContributors;      // global event vertex contributors
@@ -75,8 +77,10 @@ class AliReducedBaseEvent : public TObject {
   Int_t     fNtracks[2];            // number of tracks, [0]-total, [1]-selected for the tree
   Int_t     fNV0candidates[2];      // number of V0 candidates, [0]-total, [1]-selected for the tree
     
-  TClonesArray* fTracks;            //->   array containing particles
-  static TClonesArray* fgTracks;    //       global tracks
+  //TClonesArray* fTracks;            //->   array containing particles
+  TList* fTracks;            //->   array containing particles
+  //static TClonesArray* fgTracks;    //       global tracks
+  static TList* fgTracks;    //       global tracks
   
   TClonesArray* fCandidates;        //->   array containing pair candidates
   static TClonesArray* fgCandidates;  // pair candidates

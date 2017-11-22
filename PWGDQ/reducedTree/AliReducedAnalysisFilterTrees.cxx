@@ -239,7 +239,8 @@ void AliReducedAnalysisFilterTrees::WriteFilteredTracks() {
    //
    // loop over the track list and evaluate all the track cuts
    AliReducedBaseTrack* track = 0x0;
-   TClonesArray* trackList = fEvent->GetTracks();
+   //TClonesArray* trackList = fEvent->GetTracks();
+   TList* trackList = fEvent->GetTracks();
    TIter nextTrack(trackList);
    for(Int_t it=0; it<fEvent->NTracks(); ++it) {
       track = (AliReducedBaseTrack*)nextTrack();
@@ -254,13 +255,19 @@ void AliReducedAnalysisFilterTrees::WriteFilteredTracks() {
             if(track->TestFlag(icut)) 
                fHistosManager->FillHistClass(Form("Track_%s", fTrackCuts.At(icut)->GetName()), fValues);
          }
-         TClonesArray& tracks = *(fFilteredEvent->fTracks);
+         //TClonesArray& tracks = *(fFilteredEvent->fTracks);
+         TList* tracks = fFilteredEvent->fTracks;
          AliReducedBaseTrack* filteredParticle=NULL;
-         if(fFilteredTreeWritingOption==kBaseEventsWithBaseTracks || fFilteredTreeWritingOption==kFullEventsWithBaseTracks)
-            filteredParticle=new(tracks[fFilteredEvent->fNtracks[1]]) AliReducedBaseTrack(*track);
+         if(fFilteredTreeWritingOption==kBaseEventsWithBaseTracks || fFilteredTreeWritingOption==kFullEventsWithBaseTracks) {
+            //filteredParticle=new(tracks[fFilteredEvent->fNtracks[1]]) AliReducedBaseTrack(*track);
+            filteredParticle=new AliReducedBaseTrack(*track);
+            tracks->Add(filteredParticle);
+         }
          if(fFilteredTreeWritingOption==kBaseEventsWithFullTracks || fFilteredTreeWritingOption==kFullEventsWithFullTracks) {
             AliReducedTrackInfo* tempTrack = dynamic_cast<AliReducedTrackInfo*>(track);
-            filteredParticle=new(tracks[fFilteredEvent->fNtracks[1]]) AliReducedTrackInfo(*tempTrack);
+            //filteredParticle=new(tracks[fFilteredEvent->fNtracks[1]]) AliReducedTrackInfo(*tempTrack);
+            filteredParticle=new AliReducedTrackInfo(*tempTrack);
+            tracks->Add(filteredParticle);
          }
          fFilteredEvent->fNtracks[1] += 1;
       }
@@ -298,7 +305,8 @@ void AliReducedAnalysisFilterTrees::RunCandidateLegsSelection() {
    
    // loop over the track list and evaluate all the track cuts
    AliReducedBaseTrack* track = 0x0;
-   TClonesArray* trackList = fEvent->GetTracks();
+   //TClonesArray* trackList = fEvent->GetTracks();
+   TList* trackList = fEvent->GetTracks();
    TIter nextTrack(trackList);
    for(Int_t it=0; it<fEvent->NTracks(); ++it) {
       track = (AliReducedBaseTrack*)nextTrack();
