@@ -21,6 +21,10 @@ class AliESDtrackCuts;
 
 #include "AliAODVertex.h"
 #include "AliESDVertex.h"
+#include "AliAODVZERO.h"
+#include "AliESDVZERO.h"
+#include "AliAODAD.h"
+#include "AliESDAD.h"
 #include "AliAnalysisTaskSE.h"
 #include "AliTOFHeader.h"
 #include "AliTriggerAnalysis.h"
@@ -284,6 +288,10 @@ private:
   VtxPairType      fVertexSPD;           //!
   VtxPairType      fVertexTPC;           //!
   VtxPairType      fVertexTracks;        //!
+  typedef std::pair<AliESDVZERO, AliAODVZERO> V0PairType;
+  V0PairType       fV0;                  //!
+  typedef std::pair<AliESDAD, AliAODAD> ADPairType;
+  ADPairType       fAD;                  //!
   AliTOFHeader     fTOFHeader;           //!
   TClonesArray     fTriggerIRs;          //!
   TString          fFiredTriggerClasses; //!
@@ -294,7 +302,7 @@ private:
   TClonesArray     fMCTracks;            //!
   AliESDtrackCuts *fTrackCuts;           //!
 
-  ClassDef(AliAnalysisTaskDG, 16);
+  ClassDef(AliAnalysisTaskDG, 17);
 } ;
 
 #endif // ALIANALYSISTASKDG_H
