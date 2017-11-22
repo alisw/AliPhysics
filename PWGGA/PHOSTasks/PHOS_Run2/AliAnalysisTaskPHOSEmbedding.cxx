@@ -105,7 +105,9 @@ AliAnalysisTaskPHOSEmbedding::AliAnalysisTaskPHOSEmbedding(const char *name):
   fEmbeddedCells(0x0),
   fSignalECorrection(1.),
   fSignalCalibData(0x0),
-  fUserNonLin(0x0)
+  fUserNonLin(0x0),
+  fApplyZS(kFALSE),
+  fZSThreshold(0.020)
 {
   // Constructor
 
@@ -342,6 +344,11 @@ void AliAnalysisTaskPHOSEmbedding::UserExec(Option_t *option)
       }
 
       cellAmplitude = DecalibrateSignal(cellAmplitude,cellNumber);//decalibration from Dmitri, Daiki added this line on 21.December.2016
+
+      if(fApplyZS && (cellAmplitude < fZSThreshold)){
+        AliInfo(Form("cellAmplitude %e GeV is less than ZS threshold (%e GeV). This cell will not be merged.",cellAmplitude,fZSThreshold));
+        continue;
+      }
 
       Int_t longCellNumber=cellNumber ;
       if(cellNumber<0)longCellNumber= -cellNumber+56*64*5 ; //CPV digits
@@ -875,8 +882,8 @@ void AliAnalysisTaskPHOSEmbedding::ConvertESDtoAOD()
         NULL,
         cluster->GetType(),0);
 
-    Double_t dx=cluster->GetTrackDx() ;
-    Double_t dz=cluster->GetTrackDz() ;
+    //Double_t dx=cluster->GetTrackDx() ;
+    //Double_t dz=cluster->GetTrackDz() ;
     Float_t cpv=99. ; //No track matched by default
 
 //no track matching
@@ -902,8 +909,6 @@ void AliAnalysisTaskPHOSEmbedding::ConvertESDtoAOD()
     caloCluster->SetCellsAbsId(cluster->GetCellsAbsId());
     caloCluster->SetCellsAmplitudeFraction(cluster->GetCellsAmplitudeFraction());
   }
-
-
 
   //for(Int_t i=0;i<fEmbeddedClusterArray->GetEntriesFast();i++){
   //  AliAODCaloCluster *caloCluster =(AliAODCaloCluster *)fEmbeddedClusterArray->At(i) ;
@@ -932,9 +937,9 @@ Double_t AliAnalysisTaskPHOSEmbedding::DecalibrateSignal(Double_t cellAmplitude,
 {
   //Apply de-calibration inverse to the calibration, stored in OADB
 
-  AliInfo(Form("before correction : cellAmplitude = %e (GeV), fSignalECorrection = %e.",cellAmplitude,fSignalECorrection));
-
-  //Apply overall energy correction
+  AliInfo(Form("before correction : cellAmplitude = %e (GeV), fSignalECorrection = %e , nonlin = %e",cellAmplitude,fSignalECorrection,fUserNonLin->Eval(cellAmplitude)));
+  //Apply overall energy correction and nonlin
+  cellAmplitude *= fUserNonLin->Eval(cellAmplitude);
   cellAmplitude *= fSignalECorrection;
 
   if(!fSignalCalibData){
@@ -955,13 +960,12 @@ Double_t AliAnalysisTaskPHOSEmbedding::DecalibrateSignal(Double_t cellAmplitude,
 
   if(c>0){
     cellAmplitude *= 1./c;
-    cellAmplitude *= fUserNonLin->Eval(cellAmplitude);
     AliInfo(Form("after correction : cellAmplitude = %e (GeV)",cellAmplitude));
     return  cellAmplitude;
   }
   else{
-    cellAmplitude *= fUserNonLin->Eval(cellAmplitude);
-    AliInfo(Form("after correction : cellAmplitude = %e (GeV)",cellAmplitude));
+    //cellAmplitude *= 1./TMath::Abs(c);
+    //AliInfo(Form("after correction : cellAmplitude = %e (GeV)",cellAmplitude));
     return  cellAmplitude;
   }
 }

@@ -52,6 +52,14 @@ AliAnalysisTaskPHOSEmbedding* AddTaskPHOSEmbedding(
   task->SetInputFileArray(array);//array of path to MC AOD.
   task->SetSignalCalibration(Ecorrection);
 
+  TF1 *f1nonlin = new TF1("f1nonlin","[2]*(1.+[0]/(1. + TMath::Power(x/[1],2)))",0,100);
+  f1nonlin->SetNpx(1000);
+  f1nonlin->SetParNames("a","b (GeV)","c");
+  f1nonlin->FixParameter(0,-0.06);
+  f1nonlin->FixParameter(1,  0.7);
+  f1nonlin->FixParameter(2, 1.00);
+  task->SetUserNonlinearity(f1nonlin);
+
   //Need MagFeild for tender
   ((AliInputEventHandler*)mgr->GetInputEventHandler())->SetNeedField(kTRUE);
 

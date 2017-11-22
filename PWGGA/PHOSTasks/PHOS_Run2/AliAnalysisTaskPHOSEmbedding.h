@@ -29,6 +29,10 @@ class AliAnalysisTaskPHOSEmbedding : public AliAnalysisTaskSE {
     void SetParticle(TString par) {fParticle = par;}//Pi0/Eta/Gamma
     void SetSignalCalibration(Double_t corr) {fSignalECorrection=corr;}
     void SetUserNonlinearity(TF1 *f1) {fUserNonLin = f1;}
+    void SetZSThreshold(Bool_t apply, Double_t threshold){
+      fApplyZS = apply;
+      fZSThreshold = threshold;
+    }
 
 
   protected:
@@ -47,8 +51,8 @@ class AliAnalysisTaskPHOSEmbedding : public AliAnalysisTaskSE {
     Int_t SelectAODFile();
     Bool_t OpenAODFile();
     void CopyRecalibrateDigits();
-
     Double_t DecalibrateSignal(Double_t cellAmplitude,Int_t cellNumber);
+
 
   protected:
     TString fParticle;
@@ -78,13 +82,14 @@ class AliAnalysisTaskPHOSEmbedding : public AliAnalysisTaskSE {
     Double_t fSignalECorrection;
     AliPHOSCalibData * fSignalCalibData; //! Decalibration of signal, inverse to OADB. //new memeber variable for an additional calibration.
     TF1 *fUserNonLin;
-
+    Bool_t fApplyZS;
+    Double_t fZSThreshold;//threshold in GeV
 
   private:
     AliAnalysisTaskPHOSEmbedding(const AliAnalysisTaskPHOSEmbedding&);
     AliAnalysisTaskPHOSEmbedding& operator=(const AliAnalysisTaskPHOSEmbedding&);
 
-    ClassDef(AliAnalysisTaskPHOSEmbedding, 7);
+    ClassDef(AliAnalysisTaskPHOSEmbedding, 8);
 };
 
 #endif
