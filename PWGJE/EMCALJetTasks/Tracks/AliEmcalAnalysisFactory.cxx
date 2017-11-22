@@ -37,6 +37,7 @@
 #include "AliEmcalTrackSelectionAOD.h"
 #include "AliEmcalTriggerOfflineSelection.h"
 #include "AliEMCalTriggerExtraCuts.h"
+#include "AliTrackContainer.h"
 
 #include "AliEmcalAnalysisFactory.h"
 
@@ -239,8 +240,7 @@ AliEmcalTrackSelection *AliEmcalAnalysisFactory::TrackCutsFactory(TString cut, B
       extracuts->SetMinTPCCrossedRows(120);
     }
     if(cut.Contains("hybrid")){
-      aodsel->AddFilterBit(256);
-      aodsel->AddFilterBit(512);
+      aodsel->GenerateTrackCuts(AliEmcalTrackSelection::kHybridTracks, AliTrackContainer::GetDefTrackCutsPeriod());
     }
     if(cut.Contains("geo")){
       AliEMCalTriggerExtraCuts *extracuts = FindTrackCuts(trackcuts);
