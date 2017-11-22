@@ -185,6 +185,9 @@ AliAnalysisHFETPCTOFBeauty::AliAnalysisHFETPCTOFBeauty(const char *name)
 ,fTPCnsigma_pt2(0)
 ,fTPCnsigma_pt3(0)
 ,fTPCnsigma_p_after_tof(0)
+,fTPCnsigma_p_after_tof_p(0)
+,fTPCnsigma_p_after_tof_pion(0)
+,fTPCnsigma_p_after_tof_k(0)
 ,fTPCnsigma_pt_after_tof(0)
 ,fTPCnsigma_p_after_tof_its(0)
 ,fTPCnsigma_pt_after_tof_its(0)
@@ -203,8 +206,8 @@ AliAnalysisHFETPCTOFBeauty::AliAnalysisHFETPCTOFBeauty(const char *name)
 ,fTPCnsigma_TOFnsigma1(0)
 ,fTPCnsigma_TOFnsigma2(0)
 ,fTPCnsigma_TOFnsigma3(0)
-,fDCAxy_pt(0)
-,fDCAz_pt(0)
+,fDCAxy_pt_had(0)
+,fDCAz_pt_had(0)
 ,fDCAxy_pt_ele(0)
 ,fDCAz_pt_ele(0)
 
@@ -337,6 +340,9 @@ AliAnalysisHFETPCTOFBeauty::AliAnalysisHFETPCTOFBeauty()
 ,fTPCnsigma_pt2(0)
 ,fTPCnsigma_pt3(0)
 ,fTPCnsigma_p_after_tof(0)
+,fTPCnsigma_p_after_tof_p(0)
+,fTPCnsigma_p_after_tof_pion(0)
+,fTPCnsigma_p_after_tof_k(0)
 ,fTPCnsigma_pt_after_tof(0)
 ,fTPCnsigma_p_after_tof_its(0)
 ,fTPCnsigma_pt_after_tof_its(0)
@@ -355,8 +361,8 @@ AliAnalysisHFETPCTOFBeauty::AliAnalysisHFETPCTOFBeauty()
 ,fTPCnsigma_TOFnsigma1(0)
 ,fTPCnsigma_TOFnsigma2(0)
 ,fTPCnsigma_TOFnsigma3(0)
-,fDCAxy_pt(0)
-,fDCAz_pt(0)
+,fDCAxy_pt_had(0)
+,fDCAz_pt_had(0)
 ,fDCAxy_pt_ele(0)
 ,fDCAz_pt_ele(0)
 
@@ -595,12 +601,12 @@ void AliAnalysisHFETPCTOFBeauty::UserCreateOutputObjects()
     fPHad_f = new TH1F("fPHad_f","; p [GeV/c]; Count",32,ptbinning);
     fOutputList->Add(fPHad_f);
     fPHad_f->Sumw2();
+       
+    fDCAxy_pt_had = new TH2F("fDCAxy_pt_had",";p_{t} (GeV/c);DCAxy hadrons",300,0,30,800,-0.2,0.2);
+    fOutputList->Add(fDCAxy_pt_had);
     
-    fDCAxy_pt = new TH2F("fDCAxy_pt",";p_{t} (GeV/c);DCAxy ",300,0,30,800,-0.2,0.2);
-    fOutputList->Add(fDCAxy_pt);
-    
-    fDCAz_pt = new TH2F("fDCAz_pt",";p_{t} (GeV/c);DCAz ",300,0,30,800,-0.2,0.2);
-    fOutputList->Add(fDCAz_pt);
+    fDCAz_pt_had = new TH2F("fDCAz_pt_had",";p_{t} (GeV/c);DCAz hadrons",300,0,30,800,-0.2,0.2);
+    fOutputList->Add(fDCAz_pt_had);
     
     fDCAxy_pt_ele = new TH2F("fDCAxy_pt_ele",";p_{t} (GeV/c);DCAxy ",300,0,30,800,-0.2,0.2);
     fOutputList->Add(fDCAxy_pt_ele);
@@ -614,6 +620,15 @@ void AliAnalysisHFETPCTOFBeauty::UserCreateOutputObjects()
     fTPCnsigma_p_after_tof = new TH2F("fTPCnsigma_p_after_tof","p (GeV/c);TPC Electron N#sigma after TOF cut",300,0,15,200,-15,10);
     fOutputList->Add(fTPCnsigma_p_after_tof);
     
+    fTPCnsigma_p_after_tof_p = new TH2F("fTPCnsigma_p_after_tof_p","p (GeV/c);TPC Electron N#sigma after TOF cut",300,0,15,200,-15,10);
+    fOutputList->Add(fTPCnsigma_p_after_tof_p);
+    
+    fTPCnsigma_p_after_tof_pion = new TH2F("fTPCnsigma_p_after_tof_pion","p (GeV/c);TPC Electron N#sigma after TOF cut",300,0,15,200,-15,10);
+    fOutputList->Add(fTPCnsigma_p_after_tof_pion);
+    
+    fTPCnsigma_p_after_tof_k = new TH2F("fTPCnsigma_p_after_tof_k","p (GeV/c);TPC Electron N#sigma after TOF cut",300,0,15,200,-15,10);
+    fOutputList->Add(fTPCnsigma_p_after_tof_k);
+       
     fTPCnsigma_p_after_tof_its = new TH2F("fTPCnsigma_p_after_tof_its","p (GeV/c);TPC Electron N#sigma after TOF and ITS cuts",300,0,15,200,-15,10);
     fOutputList->Add(fTPCnsigma_p_after_tof_its);
     
@@ -725,13 +740,14 @@ void AliAnalysisHFETPCTOFBeauty::UserCreateOutputObjects()
     
     
     ///THnSparse to store DCA in Data
-    const Int_t nDima3=4;
-    Int_t nBina3[nDima3] = {32,nBinsdcaxy,nBinsITSchi2,nBinsITSsha};
+    const Int_t nDima3=5;
+    Int_t nBina3[nDima3] = {32,nBinsdcaxy,nBinsITSchi2,nBinsITSsha,nBinspdg2};
     fD0Data = new THnSparseF("fD0Data","fD0Data",nDima3,nBina3);
     fD0Data->SetBinEdges(0,ptbinning); ///pt spectra -> same binning as other histograms
     fD0Data->SetBinEdges(1,binLimdcaxy); ///dca distribution
     fD0Data->SetBinEdges(2,binLimITSchi2); ///ITS chi2 
     fD0Data->SetBinEdges(3,binLimITSsha); ///fraction ITS shared clusters 
+    fD0Data->SetBinEdges(4,binLimpdg2); /// electrons and pions
     fD0Data->Sumw2();
     fOutputList->Add(fD0Data);
     
@@ -1167,7 +1183,7 @@ void AliAnalysisHFETPCTOFBeauty::UserExec(Option_t *)
         fITSnClus_2->Fill(fITSnClus);
         fTPCnClus_2->Fill(fTPCnClus);
         
-        ///Calculating DCA---------
+        ///Calculating DCA
         Double_t d0z0[2], cov[3];
         AliAODVertex *prim_vtx = fAOD->GetPrimaryVertex();
         if(!(track->PropagateToDCA(prim_vtx, fAOD->GetMagneticField(), 100., d0z0, cov))) continue;
@@ -1176,65 +1192,51 @@ void AliAnalysisHFETPCTOFBeauty::UserExec(Option_t *)
         
         //cout<<"fAOD->GetMagneticField() = "<<fAOD->GetMagneticField()<<endl;
         
-        fDCAxy_pt->Fill(fPt,DCAxy*track->Charge()*signB);
-        fDCAz_pt->Fill(fPt,DCAz);
-        ///---------------------
+               
         
+        ///Checking nsigmaTPC after PID cuts 
         if(fTOFnSigma >= ftofPIDmincut && fTOFnSigma <= ftofPIDmaxcut){
             fTPCnsigma_p_after_tof->Fill(fP,fTPCnSigma);
             fTPCnsigma_pt_after_tof->Fill(fPt,fTPCnSigma);
+            
+             ///-------------------------------
+			///Cheking the hadron nsigmaTPC after TOF cut
+			if(fIsMC){
+				fMCparticle = (AliAODMCParticle*) fMCarray->At(TMath::Abs(track->GetLabel()));
+				if(TMath::Abs(fMCparticle->GetPdgCode()) == 2212)  fTPCnsigma_p_after_tof_p->Fill(fP,fTPCnSigma);
+				if(TMath::Abs(fMCparticle->GetPdgCode()) == 130 || TMath::Abs(fMCparticle->GetPdgCode()) == 310 || TMath::Abs(fMCparticle->GetPdgCode()) == 311 || TMath::Abs(fMCparticle->GetPdgCode()) == 321)  fTPCnsigma_p_after_tof_k->Fill(fP,fTPCnSigma);
+				if(TMath::Abs(fMCparticle->GetPdgCode()) == 211)  fTPCnsigma_p_after_tof_pion->Fill(fP,fTPCnSigma);
+			}
+			///-------------------------------        
             
             if(fITSnSigma >= -2 && fITSnSigma <= 2){
                 fTPCnsigma_p_after_tof_its->Fill(fP,fTPCnSigma);
                 fTPCnsigma_pt_after_tof_its->Fill(fPt,fTPCnSigma);
             }
-            
-            
         }
         
-                
-        //=======================================================================
-        // Here the PID cuts defined in the file "ConfigEMCalHFEpA.C" is applied
-        //=======================================================================
-        Int_t pidpassed = 1;
-        AliHFEpidObject hfetrack;
-        hfetrack.SetAnalysisType(AliHFEpidObject::kESDanalysis);
-        hfetrack.SetRecTrack(track);
-        hfetrack.SetPP();	//proton-proton analysis
-        if(!fPID->IsSelected(&hfetrack, NULL, "", fPIDqa)) pidpassed = 0;
+              
+        if(fTPCnSigma >= -5 && fTPCnSigma <= -3){
+			fDCAxy_pt_had->Fill(fPt,DCAxy*track->Charge()*signB);
+			fDCAz_pt_had->Fill(fPt,DCAz);
+        }
         
-        if(pidpassed==0) continue;
-        
-        //=======================================================================
-        // QA plots after PID selection
-        //=======================================================================
-        
-        ///After TOF and TPC cuts
-        fTPC_p3->Fill(fP,fTPCsignal);
-        fTPCnsigma_p3->Fill(fP,fTPCnSigma);
-        fTPCnsigma_pt3->Fill(fPt,fTPCnSigma);
-        
-        fTPCnsigma_TOFnsigma3->Fill(fTOFnSigma,fTPCnSigma);
-        fTOFnsigma_p3->Fill(fP,fTOFnSigma);
-        fTOFnsigma_pt3->Fill(fPt,fTOFnSigma);
-        
-        fITSnsigma_p3->Fill(fP,fITSnSigma);
-        fITSnsigma_pt3->Fill(fPt,fITSnSigma);
-        
-        
-        fPtElec->Fill(fPt);
-        fPElec->Fill(fP);
- 
-        ///DCA
-        fDCAxy_pt_ele->Fill(fPt,DCAxy*track->Charge()*signB);
-        fDCAz_pt_ele->Fill(fPt,DCAz);
-        
-        
-         ///Using thnSparse to store the DCA in Data-----------------------
+		///Using thnSparse to store the DCA in Data-----------------------
          if(!fIsMC){
 			qadcaData[0] = fPt;
          
-			qadcaData[1] = DCAxy*track->Charge()*signB;
+			 qadcaData[1] = DCAxy*track->Charge()*signB;
+			
+			 ///Charged pions
+			 if(fTPCnSigma >= -5 && fTPCnSigma <= -3){
+				  qadcaData[4] = 0.5;
+			 }
+			 ///Electron candidates
+			 if(fTPCnSigma >= ftpcPIDmincut && fTPCnSigma <= ftpcPIDmaxcut){
+				if(fTOFnSigma >= ftofPIDmincut && fTOFnSigma <= ftofPIDmaxcut){
+					qadcaData[4] = 1.5;
+				}
+			 }
         
 			Double_t ITSNcls = atrack->GetITSNcls();
 			//cout<<"atrack->GetITSNcls() = "<<atrack->GetITSNcls()<<endl;
@@ -1260,8 +1262,45 @@ void AliAnalysisHFETPCTOFBeauty::UserExec(Option_t *)
          
 			fD0Data->Fill(qadcaData);
         }
-        ///-------------------------       
+        ///-------------------------          
         
+        
+        
+                
+        //=======================================================================
+        // Here the PID cuts defined in the file "ConfigEMCalHFEpA.C" is applied
+        //=======================================================================
+        Int_t pidpassed = 1;
+        AliHFEpidObject hfetrack;
+        hfetrack.SetAnalysisType(AliHFEpidObject::kESDanalysis);
+        hfetrack.SetRecTrack(track);
+        hfetrack.SetPP();	//proton-proton analysis
+        if(!fPID->IsSelected(&hfetrack, NULL, "", fPIDqa)) pidpassed = 0;
+        
+        if(pidpassed==0) continue;
+        
+        //=======================================================================
+        // QA plots after PID selection
+        //=======================================================================
+        
+        ///After TOF and TPC cuts
+        fTPC_p3->Fill(fP,fTPCsignal);
+        fTPCnsigma_p3->Fill(fP,fTPCnSigma);
+        fTPCnsigma_pt3->Fill(fPt,fTPCnSigma);
+        fTPCnsigma_TOFnsigma3->Fill(fTOFnSigma,fTPCnSigma);
+        fTOFnsigma_p3->Fill(fP,fTOFnSigma);
+        fTOFnsigma_pt3->Fill(fPt,fTOFnSigma);
+        
+        fITSnsigma_p3->Fill(fP,fITSnSigma);
+        fITSnsigma_pt3->Fill(fPt,fITSnSigma);
+        
+        fPtElec->Fill(fPt);
+        fPElec->Fill(fP);
+ 
+        ///DCA electron candidates
+        fDCAxy_pt_ele->Fill(fPt,DCAxy*track->Charge()*signB);
+        fDCAz_pt_ele->Fill(fPt,DCAz);
+              
         
         ///Using thnSparse to store the DCA in MC-----------------------
         if(fIsMC && fIsAOD){
@@ -1698,6 +1737,7 @@ Int_t AliAnalysisHFETPCTOFBeauty::GetPi0EtaType(AliAODMCParticle *pi0eta, TClone
         
         AliAODMCParticle *mother = (AliAODMCParticle*)fMCarray->At(motherlabel);
         Int_t motherpdg = TMath::Abs(mother->GetPdgCode());
+        ///pi0, eta, omega, phi, eta',rho0, rho+,k*0,K*+,lambda
         if(motherpdg == 111 || motherpdg == 221 || motherpdg == 223 || motherpdg == 333 || motherpdg == 331 || motherpdg == 113 || motherpdg == 213 || motherpdg == 313 || motherpdg == 323 || motherpdg == 3122) return kLightMesons;
         
         if ( (int(TMath::Abs(motherpdg)/100.)%10) == 5 || (int(TMath::Abs(motherpdg)/1000.)%10) == 5 ) return kBeauty;

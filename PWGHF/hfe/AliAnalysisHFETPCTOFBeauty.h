@@ -232,6 +232,9 @@ private:
     TH2F                *fTPCnsigma_TOFnsigma2;//!
     TH2F                *fTPCnsigma_TOFnsigma3;//!
     TH2F                *fTPCnsigma_p_after_tof;//!
+    TH2F                *fTPCnsigma_p_after_tof_p;//!
+    TH2F                *fTPCnsigma_p_after_tof_pion;//!
+    TH2F                *fTPCnsigma_p_after_tof_k;//!
     TH2F                *fTPCnsigma_pt_after_tof;//!
     TH2F                *fTPCnsigma_p_after_tof_its;//!
     TH2F                *fTPCnsigma_pt_after_tof_its;//!
@@ -239,8 +242,8 @@ private:
     TH1F                *fPElec;//!
     TH1F				*fPtHad_f;//!
     TH1F				*fPHad_f;//!
-    TH2F                *fDCAz_pt;//!
-    TH2F                *fDCAxy_pt;//!
+    TH2F                *fDCAz_pt_had;//!
+    TH2F                *fDCAxy_pt_had;//!
     TH2F                *fDCAz_pt_ele;//!
     TH2F                *fDCAxy_pt_ele;//!
     TH1F                *fPtMCeta;//!
