@@ -621,4 +621,43 @@ void AliTreeTrending::DecomposeStatusAlias(TTree* tree, TString currentString, T
 }
 
 
+/// Print to the output string object names fulfilling criteria sRegExp
+/// \param array            - input TCollection
+/// \param regExp           - regular expression to select
+/// \param separator        -
+/// \return                 - string
+TString AliTreeTrending::ArrayNameToString(TCollection *array, TString sRegExp, TString separator){
+  TString output="";
+  TPRegexp regExp(sRegExp);
+  TIter next(array);
+  TObject *object;
+  while ( ( object =next())) {
+    if (regExp.Match(object->GetName())) {
+      output += object->GetName();
+      output += separator;
+    }
+  }
+  return output;
+}
+
+
+/// AddHtmlLink - helper function to build html page for JSROOT
+/// \param pFile   - pointer to the output html text file
+/// \param title   - Title of the section
+/// \param prefix  - prefix Query
+/// \param items   - comma separated list of figures to include
+/*!
+    TString prefix="http://localhost:90/data/jsroot/index.htm?file=http://localhost:90/data/alice-tpc-notes/JIRA/ATO-83/test/report.root"
+    items=AliTreeTrending::ArrayNameToString(fReport->GetListOfKeys(),".*tatus.*",",");
+    AliTreeTrending::AddJSROOTHtmlLink(pFile,"Status", prefix, Form("items=[%s]",items.Data()));
+*/
+void AliTreeTrending::AddJSROOTHtmlLink(FILE * pFile, TString title,  TString prefix, TString items){
+  fprintf(pFile, "<b>%s</b>",title.Data());
+  fprintf(pFile, "<a href=\"%s&%s&layout=tabs\">[all,</a>",prefix.Data(),items.Data());
+  fprintf(pFile, "<a href=\"%s&%s&layout=collapsible&nobrowser\">col,</a>",prefix.Data(),items.Data());
+  fprintf(pFile, "<a href=\"%s&%s&layout=tabs&nobrowser\">tabs,</a>",prefix.Data(),items.Data());
+  fprintf(pFile, "<a href=\"%s&%s&layout=flex&nobrowser\">flex]</a>",prefix.Data(),items.Data());
+  fprintf(pFile, "<br>");
+}
+
 

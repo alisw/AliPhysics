@@ -39,6 +39,9 @@ public:
   static TMultiGraph * MakeMultiGraphStatus(TTree *fTree, TString mgrName, TString expression, TString varTitle, TCut cutString, TString sCriteria, Bool_t setAxis=kFALSE);
   static void  DecomposeStatusAlias(TTree* tree, TString currentString, TString &statusVar, TString &statusTitle, TPRegexp &suffix, Int_t &counter, TString &maskAlias);
   // TODO void MakeHtml(char *htmlName, char *varList)
+  // JSROOT export related helper functions
+  static TString ArrayNameToString(TCollection *array, TString sRegExp, TString separator);
+  static void AddJSROOTHtmlLink(FILE * pFile, TString title,  TString prefix, TString items);
 public:
   TObjArray *  GetTexDescription(TLatex *latex);  /// Currently only standard variables
   TTree     *  fTree;              /// working tree with friends
