@@ -469,14 +469,16 @@ Int_t runLevelEventStatQA(TString qafilename="EventStat_temp.root", Int_t run=25
   if (run>=276135 && run<=281961) {
     AliTriggerClass* refTmaskClassObject = (AliTriggerClass*) classes.FindObject("C0TVX-T-NOPF-CENTNOTRD");
     if (refClass.Contains("CINT7")) refTmaskClassObject = (AliTriggerClass*) classes.FindObject("CINT7-T-NOPF-CENTNOTRD");
-    if (!refTmaskClassObject) continue;
-    Int_t refTmaskId = classes.IndexOf(refTmaskClassObject);
-    TString refTmaskCluster = refTmaskClassObject->GetCluster()->GetName();
-    refTmaskCounts = (activeDetectorsString.Contains("TRD") && (refTmaskCluster.EqualTo("CENT") || refTmaskCluster.EqualTo("ALL") || refTmaskCluster.EqualTo("FAST"))) ? class_lMb[refTmaskId] : class_l0b[refTmaskId];
-    for (Int_t i=0;i<classes.GetEntriesFast();i++){
-      AliTriggerClass* cl = (AliTriggerClass*) classes.At(i);
-      if (TString(cl->GetName()).Contains("-T-")){
-        class_lumi[i] = class_lumi[i]*TMath::Log(1-(Double_t)(refTmaskCounts)/totalBCs)/TMath::Log(1-(Double_t)(refCounts)/totalBCs);
+    if (refTmaskClassObject) {
+      Int_t refTmaskId = classes.IndexOf(refTmaskClassObject);
+      TString refTmaskCluster = refTmaskClassObject->GetCluster()->GetName();
+      refTmaskCounts = (activeDetectorsString.Contains("TRD") && (refTmaskCluster.EqualTo("CENT") || refTmaskCluster.EqualTo("ALL") || refTmaskCluster.EqualTo("FAST"))) ? class_lMb[refTmaskId] : class_l0b[refTmaskId];
+      for (Int_t i=0;i<classes.GetEntriesFast();i++){
+        AliTriggerClass* cl = (AliTriggerClass*) classes.At(i);
+        if (!cl) continue;
+        if (TString(cl->GetName()).Contains("-T-")){
+          class_lumi[i] = class_lumi[i]*TMath::Log(1-(Double_t)(refTmaskCounts)/totalBCs)/TMath::Log(1-(Double_t)(refCounts)/totalBCs);
+        }
       }
     }
   }
