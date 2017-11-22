@@ -35,7 +35,8 @@ fEMCALRecoUtils(NULL),
 fEMCALGeo(NULL),
 fPIDResponse(NULL),
 fElectronInformation(ElectronForAlignment()),
-fElectronTree(NULL)
+fElectronTree(NULL),
+fTreeSuffix("")
 {
     
 }
@@ -46,7 +47,8 @@ fEMCALRecoUtils(NULL),
 fEMCALGeo(NULL),
 fPIDResponse(NULL),
 fElectronInformation(ElectronForAlignment()),
-fElectronTree(NULL)
+fElectronTree(NULL),
+fTreeSuffix("")
 {
     SetMakeGeneralHistograms(kTRUE);
     DefineOutput(2, TTree::Class());
@@ -56,7 +58,6 @@ fElectronTree(NULL)
 AliAnalysisTaskEMCALAlig::~AliAnalysisTaskEMCALAlig()
 {
     if (fEMCALRecoUtils) delete fEMCALRecoUtils;
-    if (fElectronTree) delete fElectronTree;
 }
 
 
@@ -66,7 +67,10 @@ void AliAnalysisTaskEMCALAlig::UserCreateOutputObjects()
     
     fPIDResponse = fInputHandler->GetPIDResponse();
     
-    fElectronTree = new TTree("electron_information","electron_information");
+    TString name_tree("electron_information");
+    name_tree += fTreeSuffix;
+    
+    fElectronTree = new TTree(name_tree,name_tree);
     fElectronTree->Branch("electrons", &fElectronInformation);
     PostData(2, fElectronTree);
 }
@@ -81,7 +85,6 @@ Bool_t AliAnalysisTaskEMCALAlig::FillHistograms()
 void AliAnalysisTaskEMCALAlig::DoTrackLoop()
 {
     AliClusterContainer* clusCont = GetClusterContainer(0);
-    //AliVCaloCells *cells = InputEvent()->GetEMCALCells();
     
     if (!clusCont)
     {

@@ -169,6 +169,10 @@ AliAnalysisTaskEMCALAlig* AddTaskEMCALAlig(
     sampleTask->SetHistoBins(600, 0, 300);
     sampleTask->SelectCollisionCandidates(Selection);
     
+    TString SuffixForTree(suffix);
+    SuffixForTree +="_";
+    sampleTask->SetSuffix(SuffixForTree);
+    
     
     //-------------------------------------------------------
     // Final settings, pass to manager and set the containers

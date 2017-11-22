@@ -143,8 +143,9 @@ public:
     AliAnalysisTaskEMCALAlig(const char *name);
     virtual ~AliAnalysisTaskEMCALAlig();
     
-    void                        UserCreateOutputObjects();
-    void                        Terminate(Option_t *option);
+    void UserCreateOutputObjects();
+    void Terminate(Option_t *option);
+    void SetSuffix(TString suff) { fTreeSuffix = suff;};
     
 protected:
     void                        ExecOnce();
@@ -160,6 +161,7 @@ protected:
     
     ElectronForAlignment fElectronInformation; //! Object to hold the electron information
     TTree* fElectronTree; //! Electron tree output
+    TString fTreeSuffix; // Suffix for tree name
 
     
 private:
