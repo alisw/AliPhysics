@@ -1018,17 +1018,18 @@ Bool_t AliDJetRawYieldUncertainty::GenerateJetSpectrum(TH2* hInvMassJetObs, Doub
   Double_t scaling = bkg / tmphjet_s->Integral(tmphjet_s->FindBin(jetmin+0.0001), tmphjet_s->FindBin(jetmax-0.0001)); //integral btw jetmin and jetmax (where you get the bkg from the mass plot)
   Printf("Background scaling factor = %.6f", scaling);
   for (int j = 1; j <= tmphjet->GetNbinsX(); j++) {
-    Double_t centerbin = tmphjet->GetBinCenter(j);
-    hjetobs->Fill(centerbin, tmphjet->GetBinContent(j));
-    hjetobs_s1->Fill(centerbin, tmphjet_s1->GetBinContent(j));
-    hjetobs_s2->Fill(centerbin, tmphjet_s2->GetBinContent(j));
-    hjetobs_s->Fill(centerbin, tmphjet_s->GetBinContent(j));
-  }
-  for (int j = 1; j <= hjetobs->GetNbinsX(); j++) {
-    hjetobs->SetBinError(j, TMath::Sqrt(hjetobs->GetBinContent(j)));
-    hjetobs_s1->SetBinError(j, TMath::Sqrt(hjetobs_s1->GetBinContent(j)));
-    hjetobs_s2->SetBinError(j, TMath::Sqrt(hjetobs_s2->GetBinContent(j)));
-    hjetobs_s->SetBinError(j, TMath::Sqrt(hjetobs_s->GetBinContent(j)));
+    Int_t bin = hjetobs->GetXaxis()->FindBin(tmphjet->GetBinCenter(j));
+    hjetobs->SetBinContent(bin, hjetobs->GetBinContent(bin) + tmphjet->GetBinContent(j));
+    hjetobs->SetBinError(bin, TMath::Sqrt(hjetobs->GetBinError(bin)*hjetobs->GetBinError(bin) + tmphjet->GetBinError(j)*tmphjet->GetBinError(j)));
+
+    hjetobs_s1->SetBinContent(bin, hjetobs_s1->GetBinContent(bin) + tmphjet_s1->GetBinContent(j));
+    hjetobs_s1->SetBinError(bin, TMath::Sqrt(hjetobs_s1->GetBinError(bin)*hjetobs_s1->GetBinError(bin) + tmphjet_s1->GetBinError(j)*tmphjet_s1->GetBinError(j)));
+
+    hjetobs_s2->SetBinContent(bin, hjetobs_s2->GetBinContent(bin) + tmphjet_s2->GetBinContent(j));
+    hjetobs_s2->SetBinError(bin, TMath::Sqrt(hjetobs_s2->GetBinError(bin)*hjetobs_s2->GetBinError(bin) + tmphjet_s2->GetBinError(j)*tmphjet_s2->GetBinError(j)));
+
+    hjetobs_s->SetBinContent(bin, hjetobs_s->GetBinContent(bin) + tmphjet_s->GetBinContent(j));
+    hjetobs_s->SetBinError(bin, TMath::Sqrt(hjetobs_s->GetBinError(bin)*hjetobs_s->GetBinError(bin) + tmphjet_s->GetBinError(j)*tmphjet_s->GetBinError(j)));
   }
 
   hjetobs_s->Scale(scaling);
