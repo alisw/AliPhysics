@@ -64,13 +64,15 @@ TH1.Status#obj1, TH1.Warning#obj1, TH1.Warning#obj3   {
 }
 
 .statusPad#Top {
-    bottom_margin:   0.001;
-    right_margin:    0.05;
+    left_margin:     120px;
+    bottom_margin:   1px;
+    right_margin:    80px;
 }
 
 .statusPad#Bottom{
-    bottom_margin:   0.4;
-    right_margin:    0.05;
+    left_margin:     120px;
+    bottom_margin:   60px;
+    right_margin:    80px;
     top_margin:      0.0;  
     gridX:           3;   
     gridY:           1;

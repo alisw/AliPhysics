@@ -552,6 +552,23 @@ Float_t  AliDrawStyle::GetNamedFloatAt(TString input, TString propertyName, Int_
     return -1.0;
   }
 }
+///
+/// \param value - value for convert ("0.5")
+/// \param propertyName
+/// \param unit
+/// \return
+Double_t AliDrawStyle::UnitsConverter(TString value, Double_t k) {
+  if (k == 0.0) {
+    ::Error("AliDrawStyle::UnitsConverter", "divide by zero");
+    return 0.0;
+  }
+  if (value(value.Length() - 2, value.Length()) == "px") {
+    Double_t pix = 0.0;
+    pix = TString(value(0, value.Length() - 2)).Atof() / k;
+    return pix;
+  }
+  else return TString(value(0, value.Length())).Atof();
+}
 
 /// Read CSS html like files  (*see also AliRoot modification in CSS)
 /// TODO:
@@ -593,13 +610,13 @@ TObjArray * AliDrawStyle::ReadCSSFile(const char *  inputName, TObjArray * cssAr
 /// \param cssArray    - input css array to write
 /// \param outputName  - output file
 /// \param pCssOut     - output stream ( )
-void    AliDrawStyle::WriteCSSFile(TObjArray * cssArray, const char *  outputName, fstream *pCssOut) {
+void    AliDrawStyle::WriteCSSFile(TObjArray * cssArray, const char *  outputName, std::fstream *pCssOut) {
 
   if (pCssOut == NULL) {
-    pCssOut=new fstream;
+    pCssOut=new std::fstream;
     pCssOut->open(outputName, ios_base::out|ios_base::trunc);
   }
-  fstream &cssOut = *pCssOut;
+  std::fstream &cssOut = *pCssOut;
   for (Int_t i=0;i<cssArray->GetEntries();i++) {
     TObject *object = cssArray->At(i);
     if (object->InheritsFrom("TObjArray")){
@@ -626,6 +643,7 @@ void    AliDrawStyle::WriteCSSFile(TObjArray * cssArray, const char *  outputNam
 /// TODO
 ///   - pre-calculate the tree ?
 ///   - try to use existing parsers (check bison, webKit).
+///   - add supports regular expressions in css
 /*!
  ####  Example use:
  \code
@@ -643,10 +661,13 @@ Bool_t  AliDrawStyle::IsSelected(TString selectors, TString elementID, TString c
   Ssiz_t    fromStart0     = 0;
   Ssiz_t    fromStart1     = 0;
   TObjArray *classIDs      = classID.Tokenize(",");
-  Int_t     nC              = 0;
+  Int_t     nC             = 0;
   TString   subSelectors   = "";
   TString   selector       = "";
   TString   className      = "";
+  TString   elementCss     = "";
+  TString   classCss       = "";
+  TString   objectCss      = "";
   TPRegexp  elemPat(".*?[.]");
   TPRegexp  classPat("[.].*[#]");
   TPRegexp  objPat("[#].*");
@@ -657,6 +678,7 @@ Bool_t  AliDrawStyle::IsSelected(TString selectors, TString elementID, TString c
   for (Int_t i = 0; i < nC; i++) {
     if (classIDs->GetEntriesFast() == 0) className = "";
     else className = classIDs->At(i)->GetName();
+    fromStart0 = 0;
     while (selectors.Tokenize(subSelectors, fromStart0, " \t")) {
       fromStart1 = 0;
       while (subSelectors.Tokenize(selector, fromStart1, ", ")) {
@@ -665,18 +687,25 @@ Bool_t  AliDrawStyle::IsSelected(TString selectors, TString elementID, TString c
         classCatched = false;
         objectCatched = false;
         // check object
+        objectCss = TString(selector(objPat))(1,TString(selector(objPat)).Length());
+        objectCss = objectCss.ReplaceAll("*", ".*");
         if (selector(objPat) == "" || objectID == "") {
           objectCatched = true;
           selector.Append("#anyObjects");
-        } else if (selector(objPat) == ("#" + objectID)) objectCatched = true;
+        } else if (selector(objPat) == ("#" + objectID) || objectID(objectCss) == objectID) objectCatched = true;
         // check class
+        classCss = TString(selector(classPat))(1,TString(selector(classPat)).Length()-2);
+        classCss = classCss.ReplaceAll("*", ".*");
         if (selector(classPat) == "" || className == "") {
           classCatched = true;
           selector.Insert(selector.Index("#"), ".anyClasses");
-        } else if (selector(classPat) == ("." + className + "#")) classCatched = true;
+        } else if (selector(classPat) == ("." + className + "#") || className(classCss) == className) classCatched = true;
         //check element
+        elementCss = TString(selector(elemPat))(0,TString(selector(elemPat)).Length()-1);
+        elementCss = elementCss.ReplaceAll("*", ".*");
         if (selector(elemPat) == "." || selector(elemPat) == "" ||
-            selector(elemPat) == (elementID + ".") || elementID == "")
+            selector(elemPat) == (elementID + ".") || elementID == "" ||
+            elementID(elementCss) == elementID)
           elementCatched = true;
         if (elementCatched && classCatched && objectCatched) return true;
       }
@@ -903,16 +932,16 @@ void AliDrawStyle::TPadApplyStyle(const char* styleName, TPad *cPad){
   if (property != "") cPad->SetFillColor(AliDrawStyle::GetNamedIntegerAt(property, "", objectNum, status));
 
   property = AliDrawStyle::GetProperty(styleName, "bottom_margin", elementID, classID, objectID);
-  if (property != "") cPad->SetBottomMargin(AliDrawStyle::GetNamedFloatAt(property, "", objectNum, status));
+  if (property != "") cPad->SetBottomMargin(AliDrawStyle::UnitsConverter(property, cPad->GetWh()));
 
   property = AliDrawStyle::GetProperty(styleName, "top_margin", elementID, classID, objectID);
-  if (property != "") cPad->SetTopMargin(AliDrawStyle::GetNamedFloatAt(property, "", objectNum, status));
+  if (property != "") cPad->SetTopMargin(AliDrawStyle::UnitsConverter(property, cPad->GetWh()));
 
   property = AliDrawStyle::GetProperty(styleName, "left_margin", elementID, classID, objectID);
-  if (property != "") cPad->SetLeftMargin(AliDrawStyle::GetNamedFloatAt(property, "", objectNum, status));
+  if (property != "") cPad->SetLeftMargin(AliDrawStyle::UnitsConverter(property, cPad->GetWw()));
 
   property = AliDrawStyle::GetProperty(styleName, "right_margin", elementID, classID, objectID);
-  if (property != "") cPad->SetRightMargin(AliDrawStyle::GetNamedFloatAt(property, "", objectNum, status));
+  if (property != "") cPad->SetRightMargin(AliDrawStyle::UnitsConverter(property, cPad->GetWw()));
 
   property = AliDrawStyle::GetProperty(styleName, "border_size", elementID, classID, objectID);
   if (property != "") cPad->SetBorderSize(AliDrawStyle::GetNamedIntegerAt(property, "", objectNum, status));

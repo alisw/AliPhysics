@@ -77,7 +77,7 @@ public:
   ~AliTreeFormulaF();
   AliTreeFormulaF(const char *name, const char *formula, TTree *tree, Int_t debug=0);
   virtual Int_t Compile(const char *expression = "");
-  virtual char *PrintValue(Int_t mode = 0) const { PrintValue(mode, 0, ""); }
+  virtual char *PrintValue(Int_t mode = 0) const; // { PrintValue(mode, 0, ""); }
   virtual char *PrintValue(Int_t mode, Int_t instance, const char *decform = "9.9") const;
   virtual void        UpdateFormulaLeaves();
   virtual Int_t       GetNdata(){return 1;} // TODO - support for vectors

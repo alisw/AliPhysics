@@ -111,6 +111,13 @@ Int_t AliTreeFormulaF::Compile(const char *expression) {
   fTextArray->AddAtAndExpand(new TObjString(stext.Data()), nVars);
 }
 
+///
+/// \param mode
+/// \return
+char *AliTreeFormulaF::PrintValue(Int_t mode) const {
+   PrintValue(mode, 0, "");
+}
+
 /// Overwrite TTreeFormula PrintValue
 /// \param mode
 /// \param instance

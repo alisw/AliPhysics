@@ -32,6 +32,7 @@
 using std::cout;
 using std::cerr;
 using std::endl;
+using namespace std;
 
 //_____________________________________________________________________________
 void TStatToolkit::EvaluateUni(Int_t nvectors, Double_t *data, Double_t &mean, Double_t &sigma, Int_t hh) {

@@ -49,6 +49,8 @@
 #include <vector>
 #include <string>
 #include "TString.h"
+#include <iostream>     // std::cout
+#include <fstream>
 class TPRegexp;
 class TStyle;
 class TPad;
@@ -94,8 +96,9 @@ public:
   static void     GetIds(TObject *cObj, TString &elementID, TString &classSet, TString &objectID, Int_t &objNum);
   static Int_t    GetNamedIntegerAt(TString input, TString propertyName, Int_t index, Bool_t &status);
   static Float_t  GetNamedFloatAt(TString input, TString propertyName, Int_t index, Bool_t &status);
+  static Double_t UnitsConverter(TString value, Double_t k);
   static TObjArray * ReadCSSFile(const char *  inputName, TObjArray * array=NULL, Int_t verbose=0);
-  static void    WriteCSSFile(TObjArray * cssArray, const char *  outputName, fstream *cssOut=NULL);
+  static void    WriteCSSFile(TObjArray * cssArray, const char *  outputName, std::fstream *cssOut=NULL);
   //
   //
   static Int_t   GetIntegerAt(const char * format, Int_t index, const char * separator=";");
