@@ -48,8 +48,9 @@ AliAnalysisTaskdStar* AddTaskdStar(bool isMC=true,TString suffix = ""){
   TString outputFileName = AliAnalysisManager::GetCommonFileName();
   outputFileName += ":AODdstar";
 
-  AliAnalysisDataContainer *coutput1 =0x0;
-  AliAnalysisDataContainer *coutput2 =0x0;
+  AliAnalysisDataContainer *coutput1 = 0x0;
+  AliAnalysisDataContainer *coutput2 = 0x0;
+  AliAnalysisDataContainer *coutput3 = 0x0;
 
   coutput1 = mgr->CreateContainer(Form("pfecchio_%s",tskname.Data()),
 				 TList::Class(),
@@ -61,9 +62,15 @@ AliAnalysisTaskdStar* AddTaskdStar(bool isMC=true,TString suffix = ""){
 				 AliAnalysisManager::kOutputContainer,
        "dStarTree.root");
 
+  coutput3 = mgr->CreateContainer(Form("pfecchio_%s_MCtree",tskname.Data()),
+     	 TTree::Class(),
+     	 AliAnalysisManager::kOutputContainer,
+    "dStarMCTree.root");
+
   mgr->ConnectInput(taskdStar, 0, mgr->GetCommonInputContainer());
   mgr->ConnectOutput(taskdStar, 1, coutput1);
   mgr->ConnectOutput(taskdStar, 2, coutput2);
+  mgr->ConnectOutput(taskdStar, 3, coutput3);
 
   return taskdStar;
 }

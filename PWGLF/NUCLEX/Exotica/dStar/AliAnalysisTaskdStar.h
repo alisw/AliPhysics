@@ -30,6 +30,12 @@ class TH2F;
 class TList;
 
 
+// Define bit flags for datacompression
+const unsigned char c = 0x1;   // on if charge is +1
+const unsigned char p = 0x2;   // on if is Physical Primary
+const unsigned char s = 0x4;   // on if is Seconbdary from Material
+// const unsigned char secondarywd = 0x8;   // on if is Secondary from Weak Decay
+
 struct mother_struct{
   int id;
   bool pi_tof;
@@ -42,7 +48,7 @@ struct mother_struct{
 struct daughter_struct{
   int mother_pdg;
   int mother_id;
-  bool charge;                     // true if is +, false if is -
+  unsigned char properties;
   FourVector_t vec;
 };
 
@@ -68,6 +74,8 @@ private:
 
   float                fRequireYmin;                ///<  Cut on tracks: mimimum y for the track (using PDG mass)
   float                fRequireYmax;                ///<  Cut on tracks: maximum y for the track (using PDG mass)
+  float                fDalitPlotMassCutMin;        ///<  Cut on min d* candidate's invariant mass for Dalitz Plot
+  float                fDalitPlotMassCutMax;        ///<  Cut on max d* candidate's invariant mass for Dalitz Plot
 
   AliPIDResponse       *fPID;                       //!<! PID response class
 
@@ -75,10 +83,15 @@ private:
   TH2F                 *fProduction[2];             //!<! *(MC only)* Total number of produced particles dStar state][Matter-Antimatter]
   TH2F                 *fReconstructed[2][3];       //!<! *(MC only)* Positive and negative tracks reconstructed in the acceptance (ITS-TPC,ITS-TPC-TOF,ITS-TPC-(TOF)) [Ps state][Matter-Antimatter][Detector]
   TH2F                 *fTotal[2];                  //!<! *(MC only)* Positively and negatively charged particles in acceptance : [dStar state][Matter-Antimatter]
+  TH2F                 *fMCDalitzPlot;              //!<!
+
   TTree                *fTree;                      //!<!
+  TTree                *fMCTree;                    //!<!
 
   vector<daughter_struct>   fDeuteronVector;        //<
-  vector<daughter_struct>   fPiVector;              //<
+  vector<daughter_struct>   fPionVector;            //<
+  vector<daughter_struct>   fMCDeuteronVector;      //<
+  vector<daughter_struct>   fMCPionVector;          //<
 
 
   /// \cond CLASSDEF
