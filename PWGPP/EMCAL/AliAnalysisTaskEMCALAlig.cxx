@@ -57,7 +57,10 @@ fTreeSuffix("")
 
 AliAnalysisTaskEMCALAlig::~AliAnalysisTaskEMCALAlig()
 {
-    if (fEMCALRecoUtils) delete fEMCALRecoUtils;
+    if (fEMCALRecoUtils)
+        delete fEMCALRecoUtils;
+    if (fElectronTree)
+        delete fElectronTree;
 }
 
 
