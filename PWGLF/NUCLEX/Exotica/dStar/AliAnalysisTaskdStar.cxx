@@ -204,17 +204,16 @@ void AliAnalysisTaskdStar::UserExec(Option_t *) {
   // filling MCDalitzPlot (kinematics limits Mpp2 < 0.255    Mpd2 < 5.01)
   for (const auto& mcdeu : fMCDeuteronVector) {
     unsigned char pdeu = mcdeu.properties;
-    if (mcdeu.mother_pdg != 900010020 || !(pdeu & c) || mcdeu.mother_id <= 0) continue;
+    if (mcdeu.mother_pdg != 900010020 || !(pdeu & c)) continue;
     for (const auto& mcpim : fMCPionVector) {
       unsigned char ppim = mcpim.properties;
-      if ((mcpim.mother_id != mcdeu.mother_id) || (ppim & c)) continue;
+      if (mcpim.mother_id != mcdeu.mother_id || (ppim & c)) continue;
       for (const auto& mcpip : fMCPionVector) {
         unsigned char ppip = mcpip.properties;
-        if ((mcpip.mother_id != mcdeu.mother_id) || !(ppip & c)) continue;
+        if (mcpip.mother_id != mcdeu.mother_id || !(ppip & c)) continue;
         FourVector_t deu_vec = mcdeu.vec;
         FourVector_t pim_vec = mcpim.vec;
         FourVector_t pip_vec = mcpip.vec;
-        // FourVector_t m = deu_vec + pim_vec + pip_vec;
         pip_vec += pim_vec;
         pim_vec += deu_vec;
         deu_vec += pip_vec;
@@ -251,7 +250,7 @@ void AliAnalysisTaskdStar::UserExec(Option_t *) {
     if (TMath::Abs(fPID->NumberOfSigmas(AliPIDResponse::kTPC, track, AliPID::kDeuteron)) < 3.) {
       FourVector_t tmp_deu = {(float)track->Pt(), (float)track->Eta(), (float)track->Phi(), (float)track->M(AliAODTrack::kDeuteron)};
       unsigned char prop = 0u;
-      if (track->Charge() != 0)              prop |= c;
+      if (track->Charge() > 0)               prop |= c;
       if (track->IsPhysicalPrimary())        prop |= p;
       if (track->IsSecondaryFromMaterial())  prop |= s;
       daughter_struct deu;
@@ -265,7 +264,7 @@ void AliAnalysisTaskdStar::UserExec(Option_t *) {
     if (TMath::Abs(fPID->NumberOfSigmas(AliPIDResponse::kTPC, track, AliPID::kPion)) <  3.) {
       FourVector_t tmp_pi = {(float)track->Pt(), (float)track->Eta(), (float)track->Phi(), (float)track->M(AliAODTrack::kPion)};
       unsigned char prop = 0u;
-      if (track->Charge() != 0)              prop |= c;
+      if (track->Charge() > 0)               prop |= c;
       if (track->IsPhysicalPrimary())        prop |= p;
       if (track->IsSecondaryFromMaterial())  prop |= s;
       daughter_struct pi;
