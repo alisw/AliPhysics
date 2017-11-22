@@ -210,7 +210,7 @@ void AliAnalysisTaskTOFTrigger::UserCreateOutputObjects()
   fOutputList->Add(hPadDistance);
   hTrackPt = new TH1F("hTrackPt","hTrackPt",500,0,50);
   fOutputList->Add(hTrackPt);
-  hNMaxiPadIn = new TH1I("hNMaxiPadIn","hNMaxiPadIn",11,-0.5,10.5);
+  hNMaxiPadIn = new TH1I("hNMaxiPadIn","hNMaxiPadIn",13,-2.5,10.5);
   fOutputList->Add(hNMaxiPadIn);
   
   PostData(1, fOutputList);
@@ -236,8 +236,6 @@ void AliAnalysisTaskTOFTrigger::UserExec(Option_t *)
   
   TString trigger = esd->GetFiredTriggerClasses();
   if(!trigger.Contains(fTriggerClass.Data()) && !trigger.Contains("CTRUE-B")) return;
-  
-  
   
   TBits fIR1Map = esd->GetHeader()->GetIRInt1InteractionMap();
   TBits fIR2Map = esd->GetHeader()->GetIRInt2InteractionMap();
@@ -269,12 +267,14 @@ void AliAnalysisTaskTOFTrigger::UserExec(Option_t *)
   if(fClosestIR1 < fMaxBCs && fClosestIR1 != 0)return;
   if(fClosestIR2 < fMaxBCs && fClosestIR2 != 0)return;
 
-  if(trigger.Contains("CTRUE-B"))hTriggerCounter->Fill(0); 
+  Bool_t isGoodCTRUE = trigger.Contains("CTRUE-B") && !esd->GetHeader()->IsTriggerInputFired("VBA") && !esd->GetHeader()->IsTriggerInputFired("VBC") && !esd->GetHeader()->IsTriggerInputFired("SH2");
+
+  if(isGoodCTRUE)hTriggerCounter->Fill(0); 
   if(trigger.Contains(fTriggerClass.Data()))hTriggerCounter->Fill(1);
   
   for (Int_t ltm=0;ltm<72;ltm++){
    	for (Int_t channel=0;channel<23;channel++){
-		if(fTOFmask->IsON(ltm,channel) && trigger.Contains("CTRUE-B"))hNoiseMaxiPad->Fill(ltm,channel);
+		if(fTOFmask->IsON(ltm,channel) && isGoodCTRUE)hNoiseMaxiPad->Fill(ltm,channel);
 		if(fTOFmask->IsON(ltm,channel) && trigger.Contains(fTriggerClass.Data()))hFiredMaxiPad->Fill(ltm,channel);
 		}
 	}
@@ -329,7 +329,7 @@ void AliAnalysisTaskTOFTrigger::UserExec(Option_t *)
     //cout<<"Track"<<endl;
     for(UInt_t instep = 0; instep < nmaxstep; instep++){
     	rTOFused += 0.1; // 1 mm step     
-    	if(!trc->PropagateTo(rTOFused,esd->GetMagneticField())) break;
+    	if(!trc->PropagateTo(rTOFused,esd->GetMagneticField())){hNMaxiPadIn->Fill(-1); break;}
     	trc->GetXYZ(pos);
 	posF_In[0] = pos[0];
 	posF_In[1] = pos[1];
@@ -346,7 +346,7 @@ void AliAnalysisTaskTOFTrigger::UserExec(Option_t *)
 		
 		for(UInt_t outstep = 0; outstep < nmaxstep; outstep++){
     			rTOFused += 0.1; // 1 mm step     
-    			if(!trc->PropagateTo(rTOFused,esd->GetMagneticField())) break;
+    			if(!trc->PropagateTo(rTOFused,esd->GetMagneticField())){hNMaxiPadIn->Fill(-1); break;}
     			trc->GetXYZ(pos);
 			posF_Out[0] = pos[0];
 			posF_Out[1] = pos[1];
