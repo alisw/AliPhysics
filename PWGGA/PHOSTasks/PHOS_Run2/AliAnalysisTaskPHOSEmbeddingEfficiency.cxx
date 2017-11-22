@@ -410,8 +410,7 @@ void AliAnalysisTaskPHOSEmbeddingEfficiency::ProcessMC()
     if(TMath::Abs(rapidity) > 0.5) continue;
 
     //printf("pdg = %d , Rho = %e cm\n",pdg,Rho(p));
-
-    if(RhoEMB(p) > 1.0) continue;
+    //if(RhoEMB(p) > 1.0) continue;
 
     if(pdg==111){//pi0
       parname = "Pi0";
@@ -817,7 +816,6 @@ Double_t AliAnalysisTaskPHOSEmbeddingEfficiency::REMB(AliAODMCParticle* p)
 {
   //Radius of vertex in cylindrical system.
 
-
   Double32_t x = p->Xv();
   Double32_t y = p->Yv();
   return sqrt(x*x + y*y);
@@ -827,7 +825,6 @@ Double_t AliAnalysisTaskPHOSEmbeddingEfficiency::REMB(AliAODMCParticle* p)
 Double_t AliAnalysisTaskPHOSEmbeddingEfficiency::RhoEMB(AliAODMCParticle* p)
 {
   //Radius of vertex in spherical system.
-
 
   Double32_t x = p->Xv();
   Double32_t y = p->Yv();
