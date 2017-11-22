@@ -37,7 +37,7 @@ AliAnalysisTaskV1SingleMu* AddTaskV1SingleMu(Bool_t isMC = kFALSE, TString chang
 
   // AliAnalysisDataContainer *coutput = mgr->CreateContainer("V1SingleMuOut",TObjArray::Class(),AliAnalysisManager::kOutputContainer,outputfile);
   AliMuonTrackCuts* muonTrackCuts = new AliMuonTrackCuts("StandardMuonTrackCuts", "StandardMuonTrackCuts");
-  // muonTrackCuts->SetAllowDefaultParams(kTRUE);
+  muonTrackCuts->SetAllowDefaultParams(kTRUE);
   muonTrackCuts->SetFilterMask (AliMuonTrackCuts::kMuEta | AliMuonTrackCuts::kMuThetaAbs | AliMuonTrackCuts::kMuPdca | AliMuonTrackCuts::kMuMatchApt);
   muonTrackCuts->SetIsMC(isMC);
 
@@ -46,7 +46,7 @@ AliAnalysisTaskV1SingleMu* AddTaskV1SingleMu(Bool_t isMC = kFALSE, TString chang
   else muonEventCuts->SetTrigClassPatterns("kMuonSingleHighPt7:Hpt,kMuonSingleLowPt7:Lpt");
   if(centCut){
     muonEventCuts->SetFilterMask (AliMuonEventCuts::kSelectedCentrality);
-    Double_t centClass[2]= {5.,40.}
+    Double_t centClass[2]= {5.,40.};
     muonEventCuts->SetCentralityEstimator("V0M");
     muonEventCuts->SetCentralityClasses(1,centClass);
   }
