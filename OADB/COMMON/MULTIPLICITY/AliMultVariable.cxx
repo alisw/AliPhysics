@@ -1,9 +1,9 @@
 /**********************************************
  *
- * This is the basic input variable definition 
+ * This is the basic input variable definition
  * class
- * 
- * Requires a definition of a callsign and 
+ *
+ * Requires a definition of a callsign and
  * a definition of a substitution value
  *
  **********************************************/
@@ -17,19 +17,19 @@ AliMultVariable::AliMultVariable() :
   TNamed(), fIsInteger(kFALSE), fValue(0), fValueInteger(0), fMean(0)
 {
   // Constructor
-  
+
 }
 //________________________________________________________________
-AliMultVariable::AliMultVariable(const char * name, const char * title):
-TNamed(name,title), fIsInteger(kFALSE), fValue(0), fValueInteger(0), fMean(0)
+AliMultVariable::AliMultVariable(const char * name, const char * title, Bool_t isInteger):
+TNamed(name,title), fIsInteger(isInteger), fValue(0), fValueInteger(0), fMean(0)
 {
   // Constructor
-  
+
 }
 //________________________________________________________________
 AliMultVariable::~AliMultVariable(){
   // destructor
-  
+
 }
 //________________________________________________________________
 void AliMultVariable::Print(Option_t* option) const

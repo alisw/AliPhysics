@@ -327,6 +327,8 @@ AliAnalysisTaskDG::AliAnalysisTaskDG(const char *name)
   , fVertexSPD()
   , fVertexTPC()
   , fVertexTracks()
+  , fV0()
+  , fAD()
   , fTOFHeader()
   , fTriggerIRs("AliTriggerIR", 3)
   , fFiredTriggerClasses()
@@ -391,6 +393,18 @@ void AliAnalysisTaskDG::SetBranches(TTree* t, Bool_t isAOD) {
       t->Branch("VertexTracks", &fVertexTracks.second, 32000, 0);
     else
       t->Branch("VertexTracks", &fVertexTracks.first,  32000, 0);
+  }
+  if (fTreeBranchNames.Contains("V0")) {
+    if (isAOD)
+      t->Branch("V0", &fV0.second, 32000, 0);
+    else
+      t->Branch("V0", &fV0.first,  32000, 0);
+  }
+  if (fTreeBranchNames.Contains("AD")) {
+    if (isAOD)
+      t->Branch("AD", &fAD.second, 32000, 0);
+    else
+      t->Branch("AD", &fAD.first,  32000, 0);
   }
   if (fTreeBranchNames.Contains("TOFHeader")) {
     t->Branch("TOFHeader", &fTOFHeader, 32000, 0);
@@ -695,10 +709,14 @@ void AliAnalysisTaskDG::UserExec(Option_t *)
     fVertexSPD.first    = *esdEvent->GetPrimaryVertexSPD();
     fVertexTPC.first    = *esdEvent->GetPrimaryVertexTPC();
     fVertexTracks.first = *esdEvent->GetPrimaryVertexTracks();
+    fV0.first           = *esdEvent->GetVZEROData();
+    fAD.first           = *esdEvent->GetADData();
   } else {
     fVertexSPD.second    = *aodEvent->GetPrimaryVertexSPD();
     fVertexTPC.second    = *aodEvent->GetPrimaryVertexTPC();
     fVertexTracks.second = *aodEvent->GetPrimaryVertex();
+    fV0.second           = *aodEvent->GetVZEROData();
+    fAD.second           = *aodEvent->GetADData();
   }
   fTOFHeader    = *(vEvent->GetTOFHeader());
 
