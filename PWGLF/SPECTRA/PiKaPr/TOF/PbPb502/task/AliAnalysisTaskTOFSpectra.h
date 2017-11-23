@@ -57,7 +57,9 @@ using namespace AliUtilTOFParams;
 
 // #define CHECKCOMPUTEDVALUES//Flag to compute the TOF values and compare to the ones expected
 
-// #define BUILDTOFDISTRIBUTIONS// Flag to prepare distributions of T-Texp-T0 for analasys with and without mismatch with TPC information
+// #define BUILDTOFDISTRIBUTIONS// Flag to prepare distributions of T-Texp-T0 for analysis with and without mismatch with TPC information
+
+// #define BUILDT0PLOTS// Flag to prepare distributions of T0 for analysis of the correlation with the vertex position
 
 class AliAnalysisTaskTOFSpectra : public AliAnalysisTaskSE {
   public:
@@ -313,6 +315,14 @@ class AliAnalysisTaskTOFSpectra : public AliAnalysisTaskSE {
   ///
   /// Method to fill the histograms used for the Performance
   void FillPerformanceHistograms(const AliVTrack* track);
+
+  ///
+  /// Method to define the histograms used for the T0 information
+  void DefineT0Histograms();
+
+  ///
+  /// Method to fill the histograms used for the T0 information
+  Bool_t FillT0Histograms();
 
   //Setter methods
   void SetHeavyIonFlag(Bool_t mode = kTRUE) { fHImode = mode; };
@@ -670,6 +680,10 @@ class AliAnalysisTaskTOFSpectra : public AliAnalysisTaskSE {
   TH1F* hTOFSigma[kPtBins][kCharges][kSpecies];           ///<  Sigma distributions for T-Texp-T0
   TH1F* hTOFNoMismatch[kPtBins][kCharges][kSpecies];      ///<  Distribution for T-Texp-T0 without Mismatch, removed with the information on the TPC
   TH1F* hTOFSigmaNoMismatch[kPtBins][kCharges][kSpecies]; ///<  Distribution for T-Texp-T0 without Mismatch, removed with the information on the TPC
+#endif
+#ifdef BUILDT0PLOTS
+  TH2F* hT0VsVtxZ[4];     ///<  Distribution for T0 vs Vtx Z position for all the ways of computing T0 (i.e. A&C, A, C and TOF)
+  TH2F* hT0VsVtxZbest[4]; ///<  Distribution for T0 vs Vtx Z position for all the ways of computing T0 (i.e. A&C, A, C best)
 #endif
 
   //

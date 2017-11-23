@@ -103,7 +103,7 @@ AliAnalysisTaskTOFSpectra::AliAnalysisTaskTOFSpectra(const TString taskname, Boo
     , fBuilTPCTOF(kFALSE)
     , fBuilDCAchi2(kFALSE)
     , fUseTPCShift(kFALSE)
-    , fPerformance(kFALSE)
+    , fPerformance(kFALSE) //kTRUE for performance plots!
     , fRecalibrateTOF(kFALSE)
     , fCutOnMCImpact(kFALSE)
     , fFineTOFReso(kFALSE)
@@ -312,7 +312,6 @@ AliAnalysisTaskTOFSpectra::~AliAnalysisTaskTOFSpectra()
     delete fTreeTrack;
     fTreeTrack = 0;
   }
-
 
   if (fTreeTrackMC) {
     delete fTreeTrackMC;
@@ -628,6 +627,13 @@ void AliAnalysisTaskTOFSpectra::Init()
         hTOFSigmaNoMismatch[ptbin][charge][species] = 0x0;
       }
     }
+  }
+#endif
+
+#ifdef BUILDT0PLOTS // Build TOF distributions only if requested
+  for (Int_t type = 0; type < 4; type++) {
+    hT0VsVtxZ[type] = 0x0;
+    hT0VsVtxZbest[type] = 0x0;
   }
 #endif
 
@@ -962,6 +968,8 @@ void AliAnalysisTaskTOFSpectra::UserCreateOutputObjects()
     fListHist->AddLast(hTOFDist);
 
     DefinePerformanceHistograms();
+
+    DefineT0Histograms();
 
     hCutVariation = new TH1F("hCutVariation", "CutCounter;CutSet;Tracks", 20, 0. - .5, 20. - .5);
     fListHist->AddLast(hCutVariation);
@@ -1580,6 +1588,12 @@ void AliAnalysisTaskTOFSpectra::UserExec(Option_t*)
   if (fEvtPhysSelected)
     hNEvt->Fill(EvtStart); //-->Pass Phys. Sel. + Trig
   EvtStart++;
+
+  //T0 plots
+  if (FillT0Histograms()) {
+    PostAllTheData();
+    return;
+  }
 
   //
   // monitor vertex position before event and physics selection
@@ -2252,6 +2266,7 @@ void AliAnalysisTaskTOFSpectra::UserExec(Option_t*)
   if (fTreemode) {
     StartTimePerformance(5);
     fAnTOFevent->fEvtMultBin = fEvtMultBin;
+    fAnTOFevent->AdoptVertex(vertex);
     fTreeTrack->Fill();
     StopTimePerformance(5);
 
@@ -3583,6 +3598,40 @@ void AliAnalysisTaskTOFSpectra::FillPerformanceHistograms(const AliVTrack* track
       hdEdxExpectedTPCp[i]->Fill(fPTPC, fPIDResponse->GetTPCResponse().GetExpectedSignal(track, static_cast<AliPID::EParticleType>(i)));
     }
   }
+}
+
+//________________________________________________________________________
+void AliAnalysisTaskTOFSpectra::DefineT0Histograms()
+{
+#ifdef BUILDT0PLOTS
+  const TString titles[4] = { "t^{AC}_{ev}", "t^{A}_{ev}", "t^{C}_{ev}", "t^{TOF}_{ev}" };
+  for (Int_t i = 0; i < 4; i++) {
+    hT0VsVtxZ[i] = new TH2F(Form("hT0VsVtxZ%i", i), Form("%s;Vtx Z (cm);T0 (ps)", titles[i].Data()), 600, -30, 30, 500, -500, 500);
+    fListHist->AddLast(hT0VsVtxZ[i]);
+    hT0VsVtxZbest[i] = new TH2F(Form("hT0VsVtxZbest%i", i), Form("%s;Vtx Z (cm);T0 (ps)", titles[i].Data()), 600, -30, 30, 500, -500, 500);
+    fListHist->AddLast(hT0VsVtxZbest[i]);
+  }
+#endif
+}
+
+//________________________________________________________________________
+Bool_t AliAnalysisTaskTOFSpectra::FillT0Histograms()
+{
+#ifdef BUILDT0PLOTS
+  if (!fESD->GetPrimaryVertexSPD())
+    return kTRUE;
+  //
+  hT0VsVtxZ[0]->Fill(fESD->GetPrimaryVertexSPD()->GetZ(), fESD->GetESDTZERO()->GetT0TOF(0));
+  hT0VsVtxZ[1]->Fill(fESD->GetPrimaryVertexSPD()->GetZ(), fESD->GetESDTZERO()->GetT0TOF(1));
+  hT0VsVtxZ[2]->Fill(fESD->GetPrimaryVertexSPD()->GetZ(), fESD->GetESDTZERO()->GetT0TOF(2));
+  hT0VsVtxZ[3]->Fill(fESD->GetPrimaryVertexSPD()->GetZ(), fESD->GetTOFHeader()->GetEventTimeValues() ? fESD->GetTOFHeader()->GetEventTimeValues()->GetAt(1) : -1000);
+  //
+  hT0VsVtxZbest[0]->Fill(fESD->GetPrimaryVertexSPD()->GetZ(), fESD->GetESDTZERO()->GetT0TOFbest(0));
+  hT0VsVtxZbest[1]->Fill(fESD->GetPrimaryVertexSPD()->GetZ(), fESD->GetESDTZERO()->GetT0TOFbest(1));
+  hT0VsVtxZbest[2]->Fill(fESD->GetPrimaryVertexSPD()->GetZ(), fESD->GetESDTZERO()->GetT0TOFbest(2));
+  return kTRUE;
+#endif
+  return kFALSE;
 }
 
 //________________________________________________________________________
