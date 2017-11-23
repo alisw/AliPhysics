@@ -25,7 +25,6 @@
 //  rewritten by
 //  Paul Buehler <paul.buehler@oeaw.ac.at>
 
-
 #include "TGraph.h"
 #include "AliTriggerAnalysis.h"
 #include "AliESDFMD.h"
@@ -345,6 +344,30 @@ TList* AliCEPUtils::GetFMDQAHists()
   TH1F* fhh03 = new TH1F("FMDCmult","FMDCmult",500,0.,2.);
   lhh->Add(fhh03);
   TH1F* fhh04 = new TH1F("FMDCtotmult","FMDCtotmult",500,0.,2.);
+  lhh->Add(fhh04);
+
+  return lhh;
+
+}
+
+//------------------------------------------------------------------------------
+// definition of QA histograms used in
+// AliCEPUtils::EMCAnalysis
+TList* AliCEPUtils::GetEMCQAHists()
+{
+  // initialisations
+  TList *lhh = new TList();
+  lhh->SetOwner();
+
+  // define histograms and graphs and add them to the list lhh
+  printf("Preparing EMCAnalysis histograms\n");
+  TH1F* fhh01 = new TH1F("EMCALmult","EMCALmult",500,0.,2.);
+  lhh->Add(fhh01);
+  TH1F* fhh02 = new TH1F("PHOSmult","PHOSmult",500,0.,2.);
+  lhh->Add(fhh02);
+  TH1F* fhh03 = new TH1F("EMCALEne","EMCALEne",500,0.,2.);
+  lhh->Add(fhh03);
+  TH1F* fhh04 = new TH1F("PHOSEne","PHOSEne",500,0.,2.);
   lhh->Add(fhh04);
 
   return lhh;
@@ -839,6 +862,8 @@ Int_t AliCEPUtils::AnalyzeTracks(AliESDEvent* fESDEvent,
   UInt_t trackstat;
   Int_t nTracks = fESDEvent->GetNumberOfTracks();
 
+  Int_t nV0daughters[2]={0}, nTrackswSPDHit=0;
+  
   // sets event of all tracks to esd
   fESDEvent->ConnectTracks();
 
@@ -928,8 +953,10 @@ Int_t AliCEPUtils::AnalyzeTracks(AliESDEvent* fESDEvent,
     }
 
     // is a daughter of a V0
-    if (v0daughters->At(ii))
+    if (v0daughters->At(ii)) {
       trackstat |= AliCEPBase::kTTV0;
+      nV0daughters[0]++;
+    }
 
     // is an ITS pure track
     if (track->GetStatus() & AliESDtrack::kITSpureSA)
@@ -966,9 +993,20 @@ Int_t AliCEPUtils::AnalyzeTracks(AliESDEvent* fESDEvent,
         trackstat |= AliCEPBase::kTTAccTPCOnly;
     }
 
+    // accepted by standard V0daughter cuts
+    cut = (AliESDtrackCuts*)fTrackCutListPrim->At(3);
+    if (cut) {
+      if (cut->AcceptTrack(track)) {
+        trackstat |= AliCEPBase::kTTAccV0daughter;
+        nV0daughters[1]++;
+      }
+    }
+
     // has at least one SPD hit
-    if (track->HasPointOnITSLayer(0) || track->HasPointOnITSLayer(1))
+    if (track->HasPointOnITSLayer(0) || track->HasPointOnITSLayer(1)) {
       trackstat |= AliCEPBase::kTTSPDHit;
+      nTrackswSPDHit++;
+    }
     
     
     // FiredChips test
@@ -999,6 +1037,10 @@ Int_t AliCEPUtils::AnalyzeTracks(AliESDEvent* fESDEvent,
     }
     if (goodtrack)
       trackstat |= AliCEPBase::kTTFiredChips;
+      
+    // does track match with a calorimeter cluster?
+    if ( track->IsEMCAL() || track->IsPHOS() )
+      trackstat |= AliCEPBase::kTTCaloMatch;
 
     // save trackstat
     fTrackStatus->AddAt(trackstat,ii);
@@ -1009,6 +1051,12 @@ Int_t AliCEPUtils::AnalyzeTracks(AliESDEvent* fESDEvent,
   v0daughters->Reset();
   delete v0daughters;
 
+  /*
+  printf("EMCAL information: %i (%f) clusters compared to %i/%i tracks\n",
+    nClus,CaloEnergy,nTracks,nTrackswSPDHit);
+  printf("V0daughters %i/%i\n",nV0daughters[0],nV0daughters[1]);
+  */
+  
   return nTracks;
 
 }
@@ -1369,7 +1417,7 @@ void AliCEPUtils::SPDLoadGeom(Int_t run)
 
 //------------------------------------------------------------------------------
 void AliCEPUtils::DetermineMCprocessType (
-  AliMCEvent *fMCEvent, TString fMCGenerator, Int_t &fMCProcess)
+  AliMCEvent *fMCEvent, TString &fMCGenerator, Int_t &fMCProcess)
 {
 	//
 	// retrieves the MC process type from the AliGenEventHeader and classifies
@@ -1411,7 +1459,7 @@ void AliCEPUtils::DetermineMCprocessType (
 			// printf("Number of produced particles: %i\n",nprod);
 
       // Pythia
-			if (fMCGenerator == "Pythia") {
+			if (fMCGenerator.EqualTo("Pythia")) {
 				fMCProcess = ((AliGenPythiaEventHeader*)header)->ProcessType();
 				// printf("Pythia process type: %i\n",fMCProcess);
         switch(fMCProcess) {
@@ -1425,12 +1473,12 @@ void AliCEPUtils::DetermineMCprocessType (
 			}
 
       // DIME
-			else if (fMCGenerator == "Dime") {
+			else if (fMCGenerator.EqualTo("Dime")) {
 				fMCProcessType = AliCEPBase::kProctypeCD;
 			}
 
       // DPMjet = Phojet
-			else if (fMCGenerator == "DPMJET") {
+			else if (fMCGenerator.EqualTo("DPMJET")) {
 				// see TDPMjet.h for definition of process codes
 
         fMCProcess = ((AliGenDPMjetEventHeader*)header)->ProcessType();
@@ -1516,7 +1564,7 @@ void AliCEPUtils::InitTrackCuts(Bool_t IsRun1, Int_t clusterCut)
 		fcutITSTPC_P->SetName("ITSTPC");
 		AddTrackCut(fcutITSTPC_P);
 
-    // ITS
+    // ITS standalone
     AliESDtrackCuts *fcutITSSA_P = AliESDtrackCuts::GetStandardITSSATrackCuts2010(selPrimaries, 0);
 		fcutITSSA_P->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kOff);
 		fcutITSSA_P->SetName("ITSSA");
@@ -1562,6 +1610,160 @@ void AliCEPUtils::InitTrackCuts(Bool_t IsRun1, Int_t clusterCut)
 		AddTrackCut(fcutTPCOnly_P);
 
 	}
+  
+  // add V0DaughterCuts
+  AliESDtrackCuts *fcutV0daughter_P = AliESDtrackCuts::GetStandardV0DaughterCuts();
+  fcutV0daughter_P->SetName("V0daughter");
+  AddTrackCut(fcutV0daughter_P);
+
+}
+
+// ------------------------------------------------------------------------------
+void AliCEPUtils::EMCAnalysis (
+  AliESDEvent *Event,
+  TList *lhh)
+{
+
+  Int_t nEMCClus=0, nPHOSClus=0;
+  Double_t ene, EMCEne=0., PHOSEne=0.;
+
+  Int_t nClusters = Event->GetNumberOfCaloClusters();
+  // printf("\nEMCAL information: %i clusters\n",nClusters);
+  for (Int_t ii = 0; ii < nClusters ; ii++) 
+  {
+    AliESDCaloCluster *clust = Event->GetCaloCluster(ii);
+    ene = clust->E();
+    
+    // count ...
+    // number of clusters on EMC/PHOS
+    // deposited energy
+    if (clust->IsEMCAL()) {
+      nEMCClus++;
+      EMCEne += ene;
+    }
+    if (clust->IsPHOS()) {
+      nPHOSClus++;
+      PHOSEne += ene;
+    }
+  
+  }
+   
+  // update histograms
+  ((TH1F*)lhh->At(0))->Fill(nEMCClus);
+  ((TH1F*)lhh->At(1))->Fill(nPHOSClus);
+  ((TH1F*)lhh->At(2))->Fill(EMCEne);
+  ((TH1F*)lhh->At(3))->Fill(PHOSEne);
+  
+  
+  // old stuff to keep ====================================================
+  /*
+  const Double_t *PIDs;
+  
+  Float_t pos[3];
+  TVector3 vpos;
+  Double_t eta, ds;
+  
+  Int_t firstCluster = 0;
+  Int_t nCells=0, ntrks=0;
+  Double_t ene=0., eneavg=0., amptot=0.;
+  Double_t lambda0=0., tof=0.;
+  
+  // cell information
+  AliVCaloCells &phoscells = *(Event->GetPHOSCells());
+  Int_t nTotalCells = phoscells.GetNumberOfCells() ;  
+  printf("\nPHOS information: %i cells\n",nTotalCells);
+  for (Int_t icell=  0; icell <  nTotalCells; icell++) 
+  {
+    std::cout<<"Cell[" << phoscells.IsEMCAL()<<"/"<<phoscells.IsPHOS()<<"]: "<<icell<<"/"<<nTotalCells  <<" - ID: "<<phoscells.GetCellNumber(icell)<<"; High Gain? "<<phoscells.GetHighGain(icell);
+    std::cout<<"; Amplitude: "<<phoscells.GetAmplitude(icell)<<"; Time: "<<phoscells.GetTime(icell)*1e9;
+    std::cout<<"; MC label "  <<phoscells.GetMCLabel(icell)  <<"; Embeded E fraction "<<phoscells.GetEFraction(icell);
+    std::cout<<std::endl;
+    
+    amptot += phoscells.GetAmplitude(icell);
+  }
+  AliVCaloCells &emccells = *(Event->GetEMCALCells());
+  nTotalCells = emccells.GetNumberOfCells() ;  
+  printf("\nEMCAL information: %i cells\n",nTotalCells);
+  for (Int_t icell=  0; icell <  nTotalCells; icell++) 
+  {
+    std::cout<<"Cell[" << emccells.IsEMCAL()<<"/"<<emccells.IsPHOS()<<"]: "<<icell<<"/"<<nTotalCells  <<" - ID: "<<emccells.GetCellNumber(icell)<<"; High Gain? "<<emccells.GetHighGain(icell);
+    std::cout<<"; Amplitude: "<<emccells.GetAmplitude(icell)<<"; Time: "<<emccells.GetTime(icell)*1e9;
+    std::cout<<"; MC label "  <<emccells.GetMCLabel(icell)  <<"; Embeded E fraction "<<emccells.GetEFraction(icell);
+    std::cout<<std::endl;
+    
+    amptot += emccells.GetAmplitude(icell);
+  }
+  printf("Total amplitude: %f\n",amptot);
+  
+  // cluster information
+  AliEMCALPIDUtils caloPIDUtil = AliEMCALPIDUtils();
+  caloPIDUtil.SetPrintInfo(kTRUE);
+  */
+  
+   
+    /*
+    nCells = clust->GetNCells();
+    Char_t type = clust->GetType();
+    printf("cluster[%i] type %i EMCAL %i PHOS %i nCells %i",
+      ii,type,clust->IsEMCAL(),clust->IsPHOS(), nCells);
+    
+    
+    // lambda0 != 0 only if nCells>1
+    lambda0 = clust->GetM02();
+    tof = clust->GetTOF();
+    
+    clust->GetPosition(pos);
+    vpos = TVector3(pos[0],pos[1],pos[2]);
+    eta = vpos.Eta();
+    
+    ntrks = clust->GetNTracksMatched();
+    ds = 0;
+    printf(" tracks %i",ntrks);
+    if (ntrks>0) {
+      ds = sqrt(pow(clust->GetTrackDx(),2)+pow(clust->GetTrackDz(),2));
+      printf("(%f)",ds);
+    }
+    printf(" eta %f ene %f lambda0 %f TOF %f\n",
+      eta,ene,lambda0,tof*1.E9);
+    printf("PID weights: ph %0.2f, pi0 %0.2f, kaon0 %0.2f, el %0.2f, conv el %0.2f, hadrons: pion %0.2f, kaon %0.2f, proton %0.2f, neutron %0.2f \n\n",
+      caloPIDUtil.GetPIDFinal(AliPID::kPhoton),
+      caloPIDUtil.GetPIDFinal(AliPID::kPi0),
+      caloPIDUtil.GetPIDFinal(AliPID::kKaon0),
+      caloPIDUtil.GetPIDFinal(AliPID::kElectron),
+      caloPIDUtil.GetPIDFinal(AliPID::kEleCon),
+      caloPIDUtil.GetPIDFinal(AliPID::kPion),
+      caloPIDUtil.GetPIDFinal(AliPID::kKaon),
+      caloPIDUtil.GetPIDFinal(AliPID::kProton),
+      caloPIDUtil.GetPIDFinal(AliPID::kNeutron) );
+                              
+    caloPIDUtil.ComputePID(ene,lambda0);
+    printf("PID weights: gamma %0.2f, pi0 %0.2f, hadron %0.2f\n",
+      caloPIDUtil.GetPIDWeight(0),
+      caloPIDUtil.GetPIDWeight(1),
+      caloPIDUtil.GetPIDWeight(2) );ESD
+
+    PIDs = clust->GetPID();
+    printf("PID weights: ph %0.2f, pi0 %0.2f, el %0.2f, conv el %0.2f, hadrons: pion %0.2f, kaon %0.2f, proton %0.2f , neutron %0.2f, kaon %0.2f \n",
+      PIDs[AliVCluster::kPhoton],   PIDs[AliVCluster::kPi0],
+      PIDs[AliVCluster::kElectron], PIDs[AliVCluster::kEleCon],
+      PIDs[AliVCluster::kPion],     PIDs[AliVCluster::kKaon],   PIDs[AliVCluster::kProton],
+      PIDs[AliVCluster::kNeutron],  PIDs[AliVCluster::kKaon0]);
+
+    
+  }
+  
+  printf("total EMC/PHOS/DCAL energy %f\n",eneavg);
+  
+  
+  // PMD
+  Int_t ptracks = Event->GetNumberOfPmdTracks();
+  printf("PMD tracks %i\n",ptracks);
+  for(Int_t kk=0;kk<ptracks;kk++) {
+	  AliESDPmdTrack *pmdtr = Event->GetPmdTrack(kk);
+    printf("track[%i] ADC %f PID %f \n",kk,
+      pmdtr->GetClusterADC(),pmdtr->GetClusterPID());
+  }
+  */
 
 }
 
