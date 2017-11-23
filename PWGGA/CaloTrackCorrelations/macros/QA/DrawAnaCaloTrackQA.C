@@ -85,7 +85,7 @@ Bool_t    GetList   (TString trigName );
 //-----------------------
 // Some global variables
 TDirectoryFile *dir = 0;  /// TDirectory file where lists per trigger are stored in train ouput
-TList  *list = 0;         /// TList with histograms for a given trigger
+TList  *histArr = 0;      /// TList with histograms for a given trigger
 TFile  *file = 0;         /// input train file
 TFile  *fout = 0;         /// output file with plots or extracted histograms
 TString histoTag = "";    /// file names tag, basically the trigger and calorimeter combination 
@@ -470,10 +470,10 @@ void CaloQA(Int_t icalo)
   }
   
   // Plot track-matching residuals
-  TH1F* hTrackMatchResEtaNeg;
-  TH1F* hTrackMatchResEtaPos;
-  TH1F* hTrackMatchResPhiNeg;
-  TH1F* hTrackMatchResPhiPos;
+  TH1F* hTrackMatchResEtaNeg = NULL;
+  TH1F* hTrackMatchResEtaPos = NULL;
+  TH1F* hTrackMatchResPhiNeg = NULL;
+  TH1F* hTrackMatchResPhiPos = NULL;
 
   // first test did not have this histogram, add protection
   TH2F* hTrackMatchResEtaPhi = (TH2F*) GetHisto(Form("AnaPhoton_Calo%d_hTrackMatchedDEtaDPhiPosNoCut",icalo));
@@ -2675,26 +2675,26 @@ void MCQA(Int_t icalo)
 //____________________________________________________________________
 Bool_t GetList(TString trigName)
 {  
-  if(list) delete list;
+  if(histArr) delete histArr;
   
-  list = (TList*) dir->Get(trigName);
+  histArr = (TList*) dir->Get(trigName);
   
-  if ( !list ) 
+  if ( !histArr ) 
   { 
     printf("List not found, do nothing\n");
     return kFALSE; 
   }
 
-  if ( list->GetEntries() <= 0 ) 
+  if ( histArr->GetEntries() <= 0 ) 
   { 
-    printf("No histograms found <%d>, do nothing\n",list->GetEntries());
+    printf("No histograms found <%d>, do nothing\n",histArr->GetEntries());
     return kFALSE; 
   }
 
   if ( exportToFile == 2 )
   {
     fout = new TFile(Form("AnalysisResults%s.root",histoTag.Data()),"RECREATE");
-    list->Write();
+    histArr->Write();
     fout->Close();
   }
   
@@ -2713,8 +2713,10 @@ TObject * GetHisto(TString histoName)
 {
   TObject *histo = 0x0;
   
-  if ( list ) histo = list->FindObject(histoName);
-  else        histo = file->Get       (histoName);
+  if ( histArr ) 
+    histo = histArr->FindObject(histoName);
+  else        
+    histo = file->Get       (histoName);
   
   SaveHisto(histo);
   
