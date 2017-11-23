@@ -26,7 +26,7 @@
 #include "TList.h"
 #include "TDirectoryFile.h"
 
-#endif
+#endif // CINT
 
 void ForBin
 (
@@ -130,7 +130,7 @@ void ForBin ( Int_t bin, TString listName, TString subListName )
   
   printf("\t scaling ...\n ");
   
-  TObject * h ; 
+  TObject * h = 0 ; 
 
   for(Int_t i = 0; i < list->GetEntries(); i++) 
   { 

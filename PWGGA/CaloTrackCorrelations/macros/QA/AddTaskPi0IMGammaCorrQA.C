@@ -15,86 +15,81 @@
 /// \author Gustavo Conesa Balbastre <Gustavo.Conesa.Balbastre@cern.ch>, (LPSC-CNRS)
 
 
-// Uncomment for compilation
-//// Set includes for compilation
-//
-//#if !defined(__CINT__) || defined(__MAKECINT__)
-//
-//#include <TString.h>
-//#include <TROOT.h>
-//
-//#include "AliLog.h"
-//#include "AliAnalysisTaskCaloTrackCorrelation.h"
-//#include "AliCaloTrackESDReader.h"
-//#include "AliCaloTrackAODReader.h"
-//#include "AliCalorimeterUtils.h"
-//#include "AliAnaPhoton.h"
-//#include "AliAnaPi0.h"
-//#include "AliHistogramRanges.h"
-//#include "AliAnaParticleIsolation.h"
-//#include "AliAnaParticleHadronCorrelation.h"
-//#include "AliAnaChargedParticles.h"
-//#include "AliAnaCalorimeterQA.h"
-//#include "AliAnaGeneratorKine.h"
-//#include "AliAnalysisTaskCaloTrackCorrelation.h"
-//#include "AliAnaCaloTrackCorrMaker.h"
-//#include "AliAnalysisManager.h"
-//#include "AliInputEventHandler.h"
-//#include "AliVTrack.h"
-//#include "ConfigureAndGetEventTriggerMaskAndCaloTriggerString.C"
-//#include "AliESDtrackCuts.h"
-//#include "CreateTrackCutsPWGJE.C"
-//#include "ConfigureEMCALRecoUtils.C"
-//#include "CheckActiveEMCalTriggerPerPeriod.C"
-//#endif
-//
-//// Declare methods for compilation
-//
-//AliCaloTrackReader  * ConfigureReader        (TString inputDataType, TString collision, Bool_t   calibrate,
-//                                              Int_t   minTime,       Int_t   maxTime,
-//                                              Int_t   minCen,        Int_t   maxCen,
-//                                              Bool_t  simulation,    Int_t   year,      Int_t    debugLevel);
-//
-//AliCalorimeterUtils * ConfigureCaloUtils     (TString calorimeter,   TString trigger, 
-//                                              Bool_t  simulation ,   Bool_t  calibrate,
-//                                              Int_t   year       ,   Int_t   debugLevel );
-//
-//AliAnaPhoton        * ConfigurePhotonAnalysis(TString calorimeter,   Bool_t  caloType,   TString collision,
-//                                              TString containerName, Bool_t  simulation, 
-//                                              Int_t   year,          Int_t   debugLevel);
-//
-//AliAnaPi0           * ConfigurePi0Analysis   (TString calorimeter,   Bool_t  caloType,   TString collision,
-//                                              TString containerName, Bool_t  simulation, Int_t   year,
-//                                              Int_t   debugLevel,    Int_t   minCen);
-//
-//AliAnaChargedParticles * ConfigureChargedAnalysis
-//                                             (TString collision ,    TString containerName,
-//                                              Bool_t  simulation,    Int_t year,         Int_t   debugLevel);
-//
-//AliAnaParticleIsolation* ConfigureIsolationAnalysis
-//                                             (TString particle  ,    TString calorimeter  , Bool_t caloType,
-//                                              TString collision ,    TString containerName,
-//                                              Bool_t  simulation,    Int_t   year         , Int_t  debugLevel);
-//
-//AliAnaParticleHadronCorrelation * ConfigureHadronCorrelationAnalysis
-//                                             (TString particle  ,    TString calorimeter  , Bool_t caloType,
-//                                              TString collision ,    TString containerName,
-//                                              Bool_t simulation ,    Int_t year           , Int_t  debugLevel, 
-//                                              Int_t minCen);
-//
-//AliAnaCalorimeterQA * ConfigureQAAnalysis    (TString calorimeter,   TString collision,
-//                                              Bool_t simulation  ,   Int_t year,            Int_t  debugLevel);
-//
-//void SetHistoRangeAndNBins                   (AliHistogramRanges* histoRanges, 
-//                                              TString calorimeter,   Bool_t caloType,
-//                                              TString collision,     Int_t year      );
-//
-//
-//// Global variables, set externally, uncomment next lines for local tests and compilation.
-//const char* kPeriod   = "LHC16t"; // gSystem->Getenv("ALIEN_JDL_LPMPRODUCTIONTAG");
-//const char* kColType  = "PbPb";   // gSystem->Getenv("ALIEN_JDL_LPMINTERACTIONTYPE"); //either "pp", "pPb" or "PbPb"
-//const char* kProdType = "MC";     // gSystem->Getenv("ALIEN_JDL_LPMPRODUCTIONTYPE");
-//Bool_t kMC = kFALSE;
+// Set includes for compilation
+
+#if !defined(__CINT__) || defined(__MAKECINT__)
+
+#include <TString.h>
+#include <TROOT.h>
+#include <TSystem.h>
+
+#include "AliLog.h"
+#include "AliAnalysisTaskCaloTrackCorrelation.h"
+#include "AliCaloTrackESDReader.h"
+#include "AliCaloTrackAODReader.h"
+#include "AliCalorimeterUtils.h"
+#include "AliAnaPhoton.h"
+#include "AliAnaPi0.h"
+#include "AliHistogramRanges.h"
+#include "AliAnaParticleIsolation.h"
+#include "AliAnaParticleHadronCorrelation.h"
+#include "AliAnaChargedParticles.h"
+#include "AliAnaCalorimeterQA.h"
+#include "AliAnaGeneratorKine.h"
+#include "AliAnalysisTaskCaloTrackCorrelation.h"
+#include "AliAnaCaloTrackCorrMaker.h"
+#include "AliAnalysisManager.h"
+#include "AliInputEventHandler.h"
+#include "AliVTrack.h"
+#include "ConfigureAndGetEventTriggerMaskAndCaloTriggerString.C"
+#include "AliESDtrackCuts.h"
+#include "CreateTrackCutsPWGJE.C"
+#include "CheckActiveEMCalTriggerPerPeriod.C"
+#include "ConfigureEMCALRecoUtils.C"
+
+#endif // CINT
+
+// Declare methods for compilation
+
+AliCaloTrackReader  * ConfigureReader        (TString inputDataType, TString collision, Bool_t   calibrate,
+                                              Int_t   minTime,       Int_t   maxTime,
+                                              Int_t   minCen,        Int_t   maxCen,
+                                              Bool_t  simulation,    Int_t   year,      Int_t    debugLevel);
+
+AliCalorimeterUtils * ConfigureCaloUtils     (TString calorimeter,   TString trigger, 
+                                              Bool_t  simulation ,   Bool_t  calibrate,
+                                              Int_t   year       ,   Int_t   debugLevel );
+
+AliAnaPhoton        * ConfigurePhotonAnalysis(TString calorimeter,   Bool_t  caloType,   TString collision,
+                                              TString containerName, Bool_t  simulation, 
+                                              Int_t   year,          Int_t   debugLevel);
+
+AliAnaPi0           * ConfigurePi0Analysis   (TString calorimeter,   Bool_t  caloType,   TString collision,
+                                              TString containerName, Bool_t  simulation, Int_t   year,
+                                              Int_t   debugLevel,    Int_t   minCen);
+
+AliAnaChargedParticles * ConfigureChargedAnalysis
+                                             (TString collision ,    TString containerName,
+                                              Bool_t  simulation,    Int_t year,         Int_t   debugLevel);
+
+AliAnaParticleIsolation* ConfigureIsolationAnalysis
+                                             (TString particle  ,    TString calorimeter  , Bool_t caloType,
+                                              TString collision ,    TString containerName,
+                                              Bool_t  simulation,    Int_t   year         , Int_t  debugLevel);
+
+AliAnaParticleHadronCorrelation * ConfigureHadronCorrelationAnalysis
+                                             (TString particle  ,    TString calorimeter  , Bool_t caloType,
+                                              TString collision ,    TString containerName,
+                                              Bool_t simulation ,    Int_t year           , Int_t  debugLevel, 
+                                              Int_t minCen);
+
+AliAnaCalorimeterQA * ConfigureQAAnalysis    (TString calorimeter,   TString collision,
+                                              //Bool_t simulation  ,   
+                                              Int_t year,            Int_t  debugLevel);
+
+void SetHistoRangeAndNBins                   (AliHistogramRanges* histoRanges, 
+                                              TString calorimeter,   Bool_t caloType,
+                                              TString collision,     Int_t year      );
 
 ///
 /// Main method calling all the configuration
@@ -132,25 +127,34 @@ AliAnalysisTaskCaloTrackCorrelation *AddTaskPi0IMGammaCorrQA(const TString  calo
 {
   // Check the global variables, and reset the provided ones if empty.
   //
-  TString trigger = suffix;
-  if(collision=="")
+  TString trigger  = suffix;
+  
+  TString colType  = gSystem->Getenv("ALIEN_JDL_LPMINTERACTIONTYPE");
+  TString prodType = gSystem->Getenv("ALIEN_JDL_LPMPRODUCTIONTAG");
+  
+  if(collision=="") // Check the alien environment 
   {
+    if      (colType.Contains( "PbPb")) collision = "PbPb"; 
+    else if (colType.Contains( "XeXe")) collision = "PbPb"; 
+    else if (colType.Contains( "AA"  )) collision = "PbPb"; 
+    else if (colType.Contains( "pA"  )) collision = "pPb"; 
+    else if (colType.Contains( "Ap"  )) collision = "pPb";     
+    else if (colType.Contains( "pPb" )) collision = "pPb"; 
+    else if (colType.Contains( "Pbp" )) collision = "pPb"; 
+    else if (colType.Contains( "pp"  )) collision = "pp" ; 
     
-    if      (!strcmp(kColType, "PbPb")) collision = "PbPb"; 
-    else if (!strcmp(kColType, "AA"  )) collision = "PbPb"; 
-    else if (!strcmp(kColType, "pA"  )) collision = "pPb"; 
-    else if (!strcmp(kColType, "Ap"  )) collision = "pPb";     
-    else if (!strcmp(kColType, "pPb" )) collision = "pPb"; 
-    else if (!strcmp(kColType, "Pbp" )) collision = "pPb"; 
-    else if (!strcmp(kColType, "pp"  )) collision = "pp" ; 
+    // Check if production is MC or data, of data recover period name
+    if   ( prodType.Contains("MC") ) simulation = kTRUE;
+    else                             simulation = kFALSE;
     
-    simulation = kMC;
-    period = kPeriod;
+    if   ( !simulation  && period!="" ) period = prodType;
     
     // print check on global settings once
-    if(trigger.Contains("default") ||trigger.Contains("INT") || trigger.Contains("MB") )
-      printf("AddTaskPi0IMGammaCorrQA - Get the data features from global parameters: col <%s>, period <%s>, mc <%d> \n",
-           kColType,kPeriod,kMC);
+    if ( trigger.Contains("default") ||trigger.Contains("INT") || trigger.Contains("MB") )
+      printf("AddTaskClusterShape() - Get the data features from global parameters: collision <%s> (<%s>), "
+             "period <%s>, production Type <%s>, mc bool <%d> \n",
+             colType.Data(),collision.Data(),
+             period.Data(),prodType.Data(),simulation);
   }
   
   Int_t year = 2017;
@@ -163,6 +167,7 @@ AliAnalysisTaskCaloTrackCorrelation *AddTaskPi0IMGammaCorrQA(const TString  calo
     else if(period.Contains("11")) year = 2011;
     else if(period.Contains("10")) year = 2010;
   }
+
   
   // Get the pointer to the existing analysis manager via the static access method.
   //
@@ -265,7 +270,9 @@ AliAnalysisTaskCaloTrackCorrelation *AddTaskPi0IMGammaCorrQA(const TString  calo
   Int_t n = 0;//Analysis number, order is important
   
   // Cell QA
-  if(qaan) maker->AddAnalysis(ConfigureQAAnalysis(calorimeter,collision,simulation,year,debugLevel),n++);
+  if(qaan) maker->AddAnalysis(ConfigureQAAnalysis(calorimeter,collision,
+                                                  //simulation,
+                                                  year,debugLevel),n++);
   
   // Analysis with EMCal trigger or MB
   if ( !trigger.Contains("DCAL") )
@@ -988,7 +995,7 @@ AliAnaParticleHadronCorrelation* ConfigureHadronCorrelationAnalysis(TString part
 /// Configure the task doing standard calorimeter QA
 ///
 AliAnaCalorimeterQA* ConfigureQAAnalysis(TString calorimeter, TString collision,
-                                         Bool_t  simulation , 
+                                         //Bool_t  simulation , 
                                          Int_t   year,        Int_t   debugLevel)
 {
   AliAnaCalorimeterQA *ana = new AliAnaCalorimeterQA();

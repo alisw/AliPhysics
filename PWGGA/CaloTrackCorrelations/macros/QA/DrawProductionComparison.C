@@ -90,7 +90,7 @@ TString      prodLeg[] = {"DCA off - PID off","DCA on - PID off","DCA off - PID 
 const Int_t nProd = 4;       /// total number of productions to compare
 
 TDirectoryFile *dir[nProd];  /// TDirectory file where lists per trigger are stored in train ouput
-TList  *list   [nProd];      /// TList with histograms for a given trigger
+TList  *histArr[nProd];      /// TList with histograms for a given trigger
 TFile  *file   [nProd];      /// Input train file
 Float_t nEvents[nProd];      /// number of events container
 
@@ -1204,7 +1204,7 @@ Bool_t GetFileAndList(TString fileName, TString listName, TString trigName)
     // First, init to 0
     file   [iprod] = 0;
     dir    [iprod] = 0;
-    list   [iprod] = 0;
+    histArr[iprod] = 0;
     nEvents[iprod] = 0;
     
     // now get them
@@ -1218,26 +1218,26 @@ Bool_t GetFileAndList(TString fileName, TString listName, TString trigName)
     dir[iprod] = (TDirectoryFile*) file[iprod]->Get(listName);
     if(dir[iprod])
     {
-      list[iprod] = (TList*) dir[iprod]->Get(trigName);
+      histArr[iprod] = (TList*) dir[iprod]->Get(trigName);
       
-      if ( !list[iprod]                    ) continue;
-      if (  list[iprod]->GetEntries() <= 0 ) continue;
+      if ( !histArr[iprod]                    ) continue;
+      if (  histArr[iprod]->GetEntries() <= 0 ) continue;
       
-      nEvents[iprod] = ((TH1F*)list[iprod]->FindObject("hNEvents"))->GetEntries();
+      nEvents[iprod] = ((TH1F*)histArr[iprod]->FindObject("hNEvents"))->GetEntries();
       printf("%s: nEvents %e\n",prod[iprod].Data(),nEvents[iprod]);
     }
     else
     {
-      list[iprod] = (TList*) file[iprod]->Get(trigName);
+      histArr[iprod] = (TList*) file[iprod]->Get(trigName);
       
-      if ( !list[iprod]                    ) continue;
-      if (  list[iprod]->GetEntries() <= 0 ) continue;
+      if ( !histArr[iprod]                    ) continue;
+      if (  histArr[iprod]->GetEntries() <= 0 ) continue;
       
-      nEvents[iprod] = ((TH1F*)list[iprod]->FindObject("hNEvents"))->GetEntries();
+      nEvents[iprod] = ((TH1F*)histArr[iprod]->FindObject("hNEvents"))->GetEntries();
       printf("%s: nEvents %e\n",prod[iprod].Data(),nEvents[iprod]);
     }
     
-    if(!list[iprod])
+    if(!histArr[iprod])
     {
       printf("list %s not found\n",trigName.Data());
       ok = kFALSE;
@@ -1258,6 +1258,9 @@ Bool_t GetFileAndList(TString fileName, TString listName, TString trigName)
 //___________________________________
 TObject * GetHisto(TString histoName, Int_t iprod)
 {
-  if(list[iprod]) return list[iprod]->FindObject(histoName);
-  else            return file[iprod]->Get       (histoName);
+  if ( histArr[iprod] ) 
+    return histArr[iprod]->FindObject(histoName);
+  else                  
+    return file[iprod]->Get       (histoName);
 }
+

@@ -6,6 +6,23 @@
 /// branch with those clusters so that it can be used by another analysis
 /// task accessing this cluster branch.
 ///
+/// \author : Gustavo Conesa Balbastre <Gustavo.Conesa.Balbastre@cern.ch>, (LPSC-CNRS)
+///
+
+#if !defined(__CINT__) || defined(__MAKECINT__)
+
+#include <TROOT.h>
+
+#include "AliAnalysisManager.h"
+
+#include "AliAnalysisTaskEMCALClusterize.h"
+
+#include "ConfigureEMCALRecoUtils.C"
+
+#endif // CINT
+
+/// Main method
+///
 /// The parameters for the analysis are:
 /// \param arrayName: TString name of new cluster branch.
 /// \param bFillAOD: Bool, keep the new clusters in output file.
@@ -33,9 +50,6 @@
 /// \param tCardMimic: option for TCard correlation emulation, MC only
 /// \param cellUpd: update cells list with cuts
 ///
-/// \author : Gustavo Conesa Balbastre <Gustavo.Conesa.Balbastre@cern.ch>, (LPSC-CNRS)
-///
-
 AliAnalysisTaskEMCALClusterize* AddTaskEMCALClusterize(
                                                        TString & arrayName,
                                                        const Bool_t  bFillAOD   = kFALSE,                                                
@@ -87,7 +101,7 @@ AliAnalysisTaskEMCALClusterize* AddTaskEMCALClusterize(
   printf("\t Ecell %d, Eseed %d, dT %d, wT %d, minUnf %d, minFrac %d \n",
          minEcell, minEseed,maxDeltaT,timeWindow,minEUnf,minFrac);
   printf("\t recalE %d, bad %d, recalT %d, nonlin %d, minCen %d, maxCen %d, rowDiff %d, colDiff %d, t-card %d, cell update %d \n",
-         bRecalE,bBad,bRecalT,bNonLine,minCen,maxCen,nRowDiff,nColDiff,tCardMimic);
+         bRecalE,bBad,bRecalT,bNonLine,minCen,maxCen,nRowDiff,nColDiff,tCardMimic,cellUpd);
 
   // Create name of task and AOD branch depending on different settings
   
