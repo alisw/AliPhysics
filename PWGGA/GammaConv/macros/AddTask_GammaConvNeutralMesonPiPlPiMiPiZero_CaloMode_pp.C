@@ -525,6 +525,7 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiPiZero_CaloMode_pp(
       cout<<"ERROR: analysisClusterCuts [" <<i<<"]"<<endl;
       return 0;
     } else {				
+      analysisClusterCuts[i]->InitializeCutsFromCutString((cuts.GetClusterCut(i)).Data());
       ClusterCutList->Add(analysisClusterCuts[i]);
       analysisClusterCuts[i]->SetFillCutHistograms("");			
     }
