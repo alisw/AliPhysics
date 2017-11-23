@@ -3038,8 +3038,10 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::ProcessTrueMesonCandidates(Ali
   Float_t weighted= 1;
 
   if ( !(trueMesonFlag == 1 && pi0MCLabel != -1)){
-    fHistoTruePiPlPiMiPiZeroContaminationInvMassPt[fiCut]->Fill(mesoncand->M(),mesoncand->Pt(),weighted);
-    return;
+      if((fDoMesonQA>0 ) && (!fDoLightOutput)){
+          fHistoTruePiPlPiMiPiZeroContaminationInvMassPt[fiCut]->Fill(mesoncand->M(),mesoncand->Pt(),weighted);
+      }
+      return;
   }
   Int_t pi0MotherLabel =  fMCEvent->Particle(pi0MCLabel)->GetMother(0);
 
