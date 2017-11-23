@@ -23,7 +23,7 @@ public:
   void SetProcess     (Int_t   proc1  =2, Int_t   proc2  =2    );
   void SetBeamEnergy  (Double_t energy=3500.);
   void SetF2Polarization  (Double_t *polarization);  // Set polarization of f2(1270) meson: f2 polarization array: |D0|^2, |D-|^2, |D+|^2, |D--|^2, |D++|^2, phase(D-,D0), phase(D--,D0), phase(D++,D+). Valid only for processes 9 and 10.
-
+  void SetMassRange(Float_t min, Float_t max);
   // Getters of output parameters
 
   TClonesArray*  GetParticleList ();
@@ -35,6 +35,10 @@ public:
   Int_t         fDebug;             //!debug level
   Int_t         fDebugEventFirst;   //!First event to debug
   Int_t         fDebugEventLast;    //!Last  event to debug
+  Bool_t        kMassRange;         //!cut on mass of centrally produced system - flag
+  Float_t     fMassMin;        //Minimum mass of centrally produced system
+  Float_t     fMassMax;        //Maximum mass of centrally produced system
+   
 
  private:
   AliGenDRgen(const AliGenDRgen & gen);
