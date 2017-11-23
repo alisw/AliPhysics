@@ -437,6 +437,51 @@ class AliAnalysisTaskMultiparticleFemtoscopy : public AliAnalysisTaskSE{
   Bool_t GetProjectMPDF2p() const {return this->fProjectMPDF2p;};
   void SetProjectMPDF3p(Bool_t pmpdf3p) {this->fProjectMPDF3p = pmpdf3p;};
   Bool_t GetProjectMPDF3p() const {return this->fProjectMPDF3p;};
+  void SetnBinsPxPyPzE2p(Int_t p1xNbins, Int_t p1yNbins, Int_t p1zNbins, Int_t p2xNbins, Int_t p2yNbins, Int_t p2zNbins)
+  {
+   this->fnBinsPxPyPzE2p[0] = p1xNbins;
+   this->fnBinsPxPyPzE2p[1] = p1yNbins;
+   this->fnBinsPxPyPzE2p[2] = p1zNbins;
+   this->fnBinsPxPyPzE2p[3] = p2xNbins;
+   this->fnBinsPxPyPzE2p[4] = p2yNbins;
+   this->fnBinsPxPyPzE2p[5] = p2zNbins;
+  };
+  void SetMinValuesBinsPxPyPzE2p(Float_t p1xmin, Float_t p1ymin, Float_t p1zmin, Float_t p2xmin, Float_t p2ymin, Float_t p2zmin)
+  {
+   this->fmin2p[0] = p1xmin;
+   this->fmin2p[1] = p1ymin;
+   this->fmin2p[2] = p1zmin;
+   this->fmin2p[3] = p2xmin;
+   this->fmin2p[4] = p2ymin;
+   this->fmin2p[5] = p2zmin;
+  };
+  void SetMaxValuesBinsPxPyPzE2p(Float_t p1xmax, Float_t p1ymax, Float_t p1zmax, Float_t p2xmax, Float_t p2ymax, Float_t p2zmax)
+  {
+   this->fmax2p[0] = p1xmax;
+   this->fmax2p[1] = p1ymax;
+   this->fmax2p[2] = p1zmax;
+   this->fmax2p[3] = p2xmax;
+   this->fmax2p[4] = p2ymax;
+   this->fmax2p[5] = p2zmax;
+  };
+  void SetnBinsPxPyPzE1p(Int_t p1xNbins, Int_t p1yNbins, Int_t p1zNbins)
+  {
+   this->fnBinsPxPyPzE1p[0] = p1xNbins;
+   this->fnBinsPxPyPzE1p[1] = p1yNbins;
+   this->fnBinsPxPyPzE1p[2] = p1zNbins;
+  };
+  void SetMinValuesBinsPxPyPzE1p(Float_t p1xmin, Float_t p1ymin, Float_t p1zmin) // applies both for p1 and p2
+  {
+   this->fmin1p[0] = p1xmin;
+   this->fmin1p[1] = p1ymin;
+   this->fmin1p[2] = p1zmin;
+  };
+  void SetMaxValuesBinsPxPyPzE1p(Float_t p1xmax, Float_t p1ymax, Float_t p1zmax) // applies both for p1 and p2
+  {
+   this->fmax1p[0] = p1xmax;
+   this->fmax1p[1] = p1ymax;
+   this->fmax1p[2] = p1zmax;
+  };
 
   // *.) Online monitoring:
   void SetUpdateOutputFile(const Int_t uf, const char *uqof)
@@ -723,15 +768,22 @@ class AliAnalysisTaskMultiparticleFemtoscopy : public AliAnalysisTaskSE{
   TExMap *fGlobalTracksAODHA[3];     //! global tracks in AOD
 
   // *.) m.p.d.f.'s:
-  TList *fMPDFList;        // list to hold all histos for approach with m.p.d.f.'s
-  TProfile *fMPDFFlagsPro; // profile to hold all flags for approach with m.p.d.f.'s
-  Bool_t fDoMPDF;          // do or not the correlations via the m.p.d.f.'s
-  Bool_t fCalculateMPDF2p; // calculate 2p correlations via m.p.d.f.'s 
-  Bool_t fCalculateMPDF3p; // calculate 3p correlations via m.p.d.f.'s 
-  Bool_t fProjectMPDF2p;   // project 2p correlations at the end of the day 
-  Bool_t fProjectMPDF3p;   // project 3p correlations at the end of the day
-  THnSparse *fhs2p[3];     // [0] = p.d.f. for both particles; [1] = m.p.d.f. for 1st particle; [2] = m.p.d.f. for 2nd particle
-  TH1D *fProjectionQ2[3];  // [0] = projection on Q2 from p.d.f. for both particles; [1] = projection on Q2 from the product of m.p.d.f.'s of 1st and 2nd particle; [2] = normalized, i.e. [0]/[1]
+  TList *fMPDFList;         // list to hold all histos for approach with m.p.d.f.'s
+  TProfile *fMPDFFlagsPro;  // profile to hold all flags for approach with m.p.d.f.'s
+  Bool_t fDoMPDF;           // do or not the correlations via the m.p.d.f.'s
+  Bool_t fCalculateMPDF2p;  // calculate 2p correlations via m.p.d.f.'s 
+  Bool_t fCalculateMPDF3p;  // calculate 3p correlations via m.p.d.f.'s 
+  Bool_t fProjectMPDF2p;    // project 2p correlations at the end of the day 
+  Bool_t fProjectMPDF3p;    // project 3p correlations at the end of the day
+  THnSparse *fhs2p[3];      //! [0] = p.d.f. for both particles; [1] = m.p.d.f. for 1st particle; [2] = m.p.d.f. for 2nd particle
+  TH1D *fProjectionQ2[3];   //! [0] = projection on Q2 from p.d.f. for both particles; [1] = projection on Q2 from the product of m.p.d.f.'s of 1st and 2nd particle; [2] = normalized, i.e. [0]/[1]
+  TH1D *fDistMPDF[9];       //! various distributions relevant for m.p.d.f.'s (see .cxx file for a detailed expl.)
+  Int_t fnBinsPxPyPzE2p[6]; //! TBI add a comment 
+  Double_t fmin2p[6];       //! TBI add a comment 
+  Double_t fmax2p[6];       //! TBI add a comment 
+  Int_t fnBinsPxPyPzE1p[3]; //! TBI add a comment 
+  Double_t fmin1p[3];       //! TBI add a comment 
+  Double_t fmax1p[3];       //! TBI add a comment 
 
   // *.) Online monitoring:
   Bool_t fOnlineMonitoring;        // enable online monitoring (not set excplicitly!), the flags below just refine it
@@ -748,7 +800,7 @@ class AliAnalysisTaskMultiparticleFemtoscopy : public AliAnalysisTaskSE{
   UInt_t fOrbit;                  // do something only for the specified event
   UInt_t fPeriod;                 // do something only for the specified event
 
-  ClassDef(AliAnalysisTaskMultiparticleFemtoscopy,21);
+  ClassDef(AliAnalysisTaskMultiparticleFemtoscopy,22);
 
 };
 
