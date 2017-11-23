@@ -92,29 +92,26 @@ void AliAnalysisTaskPHOSEmbeddedDiffObjectCreator::UserExec(Option_t *option)
 
   fMCArrayAOD = 0x0;
   fMCArrayAOD = (TClonesArray*)fEvent->FindListObject(Form("%s_%s",AliAODMCParticle::StdBranchName(),fParticleName.Data()));
-
   if(!fMCArrayAOD){
     AliError("Could not retrieve MC array!");
     return;
   }
-  const Int_t Ntrack = fMCArrayAOD->GetEntriesFast();
+  //const Int_t Ntrack = fMCArrayAOD->GetEntriesFast();
+  //for(Int_t i=0;i<Ntrack;i++){
+  //  AliAODMCParticle *p = (AliAODMCParticle*)fMCArrayAOD->At(i);
+  //  Int_t genID = p->GetGeneratorIndex();
 
-  for(Int_t i=0;i<Ntrack;i++){
-    AliAODMCParticle *p = (AliAODMCParticle*)fMCArrayAOD->At(i);
-    Int_t genID = p->GetGeneratorIndex();
+  //  Double_t pT = p->Pt();
+  //  Double_t rapidity = p->Y();
+  //  Double_t phi = p->Phi();
+  //  Int_t pdg = p->PdgCode();
 
-    Double_t pT = p->Pt();
-    Double_t rapidity = p->Y();
-    Double_t phi = p->Phi();
-    Int_t pdg = p->PdgCode();
+  //  //rapidity is Y(), but, pseudo-rapidity is Eta();
 
-    //rapidity is Y(), but, pseudo-rapidity is Eta();
+  //  if(pT < 1e-3) continue;//reject below 1 MeV
+  //  if(TMath::Abs(rapidity) > 0.5) continue;
 
-    if(pT < 1e-3) continue;//reject below 1 MeV
-    if(TMath::Abs(rapidity) > 0.5) continue;
-
-
-  }//end of generated particle loop
+  //}//end of generated particle loop
 
   if(fRunNumber != fEvent->GetRunNumber()) { // Check run number
     fRunNumber = fEvent->GetRunNumber();
@@ -132,19 +129,15 @@ void AliAnalysisTaskPHOSEmbeddedDiffObjectCreator::UserExec(Option_t *option)
   TLorentzVector p1,p1core;
 
   Double_t energy=0, tof=-999, M20=0, M02=0, R2=999, coreE=0, coreR2=999;
-  Double_t TrackDx=0, TrackDz=0, TrackPt=0, r=999;
-  Int_t TrackCharge = 0;
-  Int_t trackindex=-1;
+  Double_t r=999;
 
   Int_t relId[4] = {};
   Int_t module=-1, cellx=-1, cellz=-1;
   Int_t digMult=0;
   Float_t position[3] = {}; 
-  AliVTrack *vtrack = 0x0;
-  //AliVCluster *cluster = 0x0;
   Double_t distance=0;
   Int_t inPHOS=0;
-  const Double_t vtx000[3] = {0.,0.,0.};//this is because of generated pi0 from 000.
+  //const Double_t vtx000[3] = {0.,0.,0.};//this is because of generated pi0 from 000.
 
   TClonesArray * clustersEmb = (TClonesArray*)   fEvent->FindListObject(Form("Embedded%sCaloClusters",fParticleName.Data())) ;
   AliAODCaloCells * cellsEmb = (AliAODCaloCells*)fEvent->FindListObject(Form("Embedded%sPHOScells"   ,fParticleName.Data())) ;
@@ -153,7 +146,7 @@ void AliAnalysisTaskPHOSEmbeddedDiffObjectCreator::UserExec(Option_t *option)
 
   TClonesArray * clustersUE = (TClonesArray*)fAODEvent->GetCaloClusters();//clusters in underlying event.
   Int_t multClustUE = fAODEvent->GetNumberOfCaloClusters();//real data is treated as underlying event.
-  AliVCaloCells *cellsUE = dynamic_cast<AliVCaloCells*>(fEvent->GetPHOSCells());
+  //AliVCaloCells *cellsUE = dynamic_cast<AliVCaloCells*>(fEvent->GetPHOSCells());
 
   if(!fUsePHOSTender) CalibrateEmbeddedClusters(clustersEmb, cellsEmb);
 
@@ -193,7 +186,7 @@ void AliAnalysisTaskPHOSEmbeddedDiffObjectCreator::UserExec(Option_t *option)
     if(IsSameFound) continue;
     AliInfo(Form("Particle : %s , embedded cluster is found. E = %f GeV , Ncell = %d , MC label = %d.",fParticleName.Data(),cluster->E(), cluster->GetNCells(), cluster->GetLabel()));
 
-    distance = cluster->GetDistanceToBadChannel();
+    distance = cluster->GetDistanceToBadChannel();//in cm
 
     Int_t Ncell = cluster->GetNCells();
     for(Int_t i=0;i<cluster->GetNCells();i++){
@@ -223,6 +216,8 @@ void AliAnalysisTaskPHOSEmbeddedDiffObjectCreator::UserExec(Option_t *option)
       return;
     }
 
+    if(!fUsePHOSTender && !IsGoodChannel("PHOS",module,cellx,cellz)) continue;
+
     energy = cluster->E();
     digMult = cluster->GetNCells();
     tof = cluster->GetTOF();
@@ -238,12 +233,14 @@ void AliAnalysisTaskPHOSEmbeddedDiffObjectCreator::UserExec(Option_t *option)
     ph->SetNCells(digMult); 
     ph->SetTime(tof);//unit of second
     ph->SetTOFBit(TMath::Abs(tof*1e+9) < fBunchSpace/2.);
-    ph->SetDistToBad((Int_t)(distance*100));//in unit of cm * 100
+    ph->SetDistToBadfp(distance/2.2);//in unit of cells with floating point. 2.2 cm is crystal size
     ph->SetEMCx((Double_t)position[0]);
     ph->SetEMCy((Double_t)position[1]);
     ph->SetEMCz((Double_t)position[2]);
-    Bool_t sure = kFALSE;
-    Int_t primary = FindPrimary(ph,sure);
+    Int_t primary = cluster->GetLabel();
+
+    //Bool_t sure = kFALSE;
+    //Int_t primary = FindPrimary(ph,sure);
 
     ph->SetPrimary(primary);//MC label is meaningless in embedding.
     ph->SetWeight(1.);
@@ -271,7 +268,6 @@ void AliAnalysisTaskPHOSEmbeddedDiffObjectCreator::UserExec(Option_t *option)
 
   AliVEvent* input = InputEvent();
   TObject* outO = input->FindListObject(Form("PHOSEmbeddedDiffClusterArray_%s",fParticleName.Data()));
-  TClonesArray* outS = 0;
 
   if(!outO){
     fPHOSObjectArray->SetName(Form("PHOSEmbeddedDiffClusterArray_%s",fParticleName.Data()));
@@ -365,7 +361,6 @@ void AliAnalysisTaskPHOSEmbeddedDiffObjectCreator::CalibrateEmbeddedClusters(TCl
     Int_t itr=FindTrackMatching(mod,&locPos,dx,dz,pttrack,charge) ;
     clu->SetTrackDistance(dx,dz);
     Double_t r = 999. ; //Big distance
-    Int_t nTracksMatched = clu->GetNTracksMatched();
     if(itr > 0) {
       r=TestCPVRun2(dx, dz, pttrack,charge) ;
     }
