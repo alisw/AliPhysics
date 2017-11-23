@@ -33,9 +33,9 @@ class AliAnTOFtrack {
   UShort_t fTrkCutMask;              //Mask for Track cuts information
   UShort_t fDCAXYIndex;              //Binned version of the XY impact parameters
   UShort_t fDCAZIndex;               //Binned version of the Z impact parameters
-  Double_t fLength;                  //Track length
+  Float_t fLength;                   //Track length
   Float_t fLengthRatio;              //Ratio of length of the track matched and the one from a distant cluster
-  Double_t fTOFTime;                 //Time measured by TOF
+  Float_t fTOFTime;                  //Time measured by TOF
   Float_t fTOFMismatchTime;          //Time measured by TOF from a distant cluster
   Float_t fTOFExpTime[kExpSpecies];  //Expected time for all species
   Float_t fTOFExpSigma[kExpSpecies]; //Expected sigmas for all species
@@ -43,8 +43,8 @@ class AliAnTOFtrack {
   Int_t fTOFchan;                    //Channel of the matched track
   Float_t fEta;                      //Eta distribution of the track
   Float_t fPhi;                      //Phi distribution of the track
-  Double_t fPt;                      //Transverse momentum
-  Double_t fPTPC;                    //Momentum in the TPC
+  Float_t fPt;                       //Transverse momentum
+  Float_t fPTPC;                     //Momentum in the TPC
   Int_t fNTOFClusters;               //Number of clusters matchable to the one matched
   Float_t fTPCSignal;                //Signal in the TPC
 
@@ -82,6 +82,10 @@ class AliAnTOFtrack {
   ///
   /// Method to get the resolution on T0 based on the expected sigma of electrons
   Double_t GetT0Resolution(const Double_t TOFsigma = 80) const;
+
+  ///
+  /// Method to get the track beta
+  Double_t GetBeta() const { return fLength / ((fTOFTime - fT0TrkTime) * CSPEED); }
 
   //T0 Methods
 

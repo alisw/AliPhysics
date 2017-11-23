@@ -88,7 +88,8 @@ void PrepareRawSpectra(TString dirname = latestDir[0], TString dataname = "TOFDa
   const TString outpath = Form("./Spectra/%s/Yields/%s%s/", systemString[optpp].Data(), pCharge[iCharge].Data(), pSpecies[iSpecies].Data());
 
   TFile *fout = 0x0;
-  if(save) fout = GetFile(Form("%sYield%s%s_%s_%s%s.root", outpath.Data(), pCharge[iCharge].Data(), pSpecies[iSpecies].Data(), fitmodes[fitmode].Data(), MultBinString[iMult].Data(), prefix.Data()), "RECREATE");
+  if(save)
+    fout = GetFile(Form("%sYield%s%s_%s_%s%s%s.root", outpath.Data(), pCharge[iCharge].Data(), pSpecies[iSpecies].Data(), fitmodes[fitmode].Data(), MultBinString[iMult].Data(), (prefix.IsNull() || prefix.BeginsWith('_')) ? "" : "_", prefix.Data()), "RECREATE");
 
   TFile *foutfits = 0x0;
   if(save && !fitprefix.EqualTo("")){
@@ -254,7 +255,7 @@ void PrepareRawSpectra(TString dirname = latestDir[0], TString dataname = "TOFDa
   TH2I *husage = 0x0;
   if(showtemplateusage){
     husage = new TH2I("husage", Form("TemplateUsage;Template;%s", ptstring.Data()), kExpSpecies+1, -0.5, -0.5+kExpSpecies+1, kPtBins, -0.5, -0.5+kPtBins);
-    for(Int_t i = 0; i < kExpSpecies; i++) husage->GetXaxis()->SetBinLabel(i+1, Form("Temp. %s", speciesRoot_all[2*i + iCharge].Data()));
+    for(Int_t i = 0; i < kExpSpecies; i++) husage->GetXaxis()->SetBinLabel(i+1, Form("Temp. %s", speciesRoot_all[3*i + iCharge].Data()));
     husage->GetXaxis()->SetBinLabel(kExpSpecies+1, "Temp. Mismatch");
 
     for(Int_t i = 0; i < kPtBins; i++) husage->GetYaxis()->SetBinLabel(i+1, Form("[%.2f,%.2f]", fBinPt[i], fBinPt[i+1]));
@@ -792,7 +793,7 @@ void PrepareRawSpectra(TString dirname = latestDir[0], TString dataname = "TOFDa
         if(usefun[species]){
 
           TF1 *funct = new TF1(Form("signal%s%s", pC[iCharge].Data(), pS_all[species].Data()), TOFsignalNorm, range[0], range[1], 3);
-          funct->SetTitle(Form("%s", speciesRoot_all[2*species + iCharge].Data()));
+          funct->SetTitle(Form("%s", speciesRoot_all[3*species + iCharge].Data()));
           const Double_t m = templatehhisto[species]->GetMean() > 0 ? templatehhisto[species]->GetMean() : 0;
           const Double_t mLow = fitsigma ? m -3 : m -1;
           const Double_t mUp = fitsigma ? m +3 : m +1;
@@ -1118,7 +1119,7 @@ void PrepareRawSpectra(TString dirname = latestDir[0], TString dataname = "TOFDa
 
     //Drawing ratio between the fit and the data
     cFitRatio->cd(padcounter);
-    hRatioToFitted[ptbin] = (TH1F*) hFitted[ptbin]->Clone(Form("RatioToFitted%s%s_%i", pS[iSpecies].Data(), pS[iCharge].Data(), ptbin));
+    hRatioToFitted[ptbin] = (TH1F*) hFitted[ptbin]->Clone(Form("RatioToFitted%s%s_%i", pS[iSpecies].Data(), pS[iSpecies].Data(), ptbin));
     hRatioToFitted[ptbin]->SetTitle(Form("Ratio to Fit;%s;Fitted/Data", fitsigma ? nsigmastringSpecies[iSpecies + kpi].Data() : tofsignalstringSpecies[iSpecies + kpi].Data()));
     hRatioToFitted[ptbin]->Sumw2();
     hRatioToFitted[ptbin]->Divide(hFitted[ptbin], datahisto, 1, 1);

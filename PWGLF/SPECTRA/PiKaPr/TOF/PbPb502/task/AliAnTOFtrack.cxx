@@ -194,9 +194,9 @@ Bool_t AliAnTOFtrack::IsNegative()
 Double_t AliAnTOFtrack::GetDCA(const Bool_t xy)
 {
   if (xy)
-    return GetBinnedData(fDCAXYIndex, -fDCAXYRange, fDCAXYRange, 256);
+    return GetBinnedData(fDCAXYIndex, -fDCAXYRange, fDCAXYRange, 65536);
   else
-    return GetBinnedData(fDCAZIndex, -fDCAZRange, fDCAZRange, 256);
+    return GetBinnedData(fDCAZIndex, -fDCAZRange, fDCAZRange, 65536);
 }
 
 ////////////////////////
@@ -234,9 +234,9 @@ void AliAnTOFtrack::TestDCAXYBinning()
 void AliAnTOFtrack::ComputeDCABin(const Double_t dca, const Bool_t xy)
 {
   if (xy) {
-    fDCAXYIndex = static_cast<UShort_t>(BinData(dca, -fDCAXYRange, fDCAXYRange, 256));
+    fDCAXYIndex = static_cast<UShort_t>(BinData(dca, -fDCAXYRange, fDCAXYRange, 65536));
   } else {
-    fDCAZIndex = static_cast<UShort_t>(BinData(dca, -fDCAZRange, fDCAZRange, 256));
+    fDCAZIndex = static_cast<UShort_t>(BinData(dca, -fDCAZRange, fDCAZRange, 65536));
   }
 };
 
