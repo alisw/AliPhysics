@@ -440,10 +440,10 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiPiZero_CaloMode_pp(
       // eta < 0.9
       // closing charged pion cuts, minimum TPC cluster = 80, TPC dEdx pi = \pm 3 sigma, pi+pi- mass cut of 0.85, min pt charged pi = 100 MeV
       // closing neural pion cuts, 0.110 < M_gamma,gamma < 0.155
-      cuts.AddCut("00010113","1111113047032230000","302010708","0103503900000000","0153503000000000"); // normal event mixing; Triggers: V0AND
-      cuts.AddCut("00052113","1111113047032230000","302010708","0103503900000000","0153503000000000"); // normal event mixing; Triggers: CEMC7: V0AND and EMCAL fired
-      cuts.AddCut("00083113","1111113047032230000","302010708","0103503900000000","0153503000000000"); // normal event mixing; Triggers: 7EG1 - CINT7 EG1
-      cuts.AddCut("00085113","1111113047032230000","302010708","0103503900000000","0153503000000000"); // normal event mixing; Triggers: 7EG2 - CINT7 EG2
+      cuts.AddCut("00010113","1111100047032230000","302010708","0103503900000000","0153503000000000"); // normal event mixing; Triggers: V0AND
+      cuts.AddCut("00052113","1111100047032230000","302010708","0103503900000000","0153503000000000"); // normal event mixing; Triggers: CEMC7: V0AND and EMCAL fired
+      cuts.AddCut("00083113","1111100047032230000","302010708","0103503900000000","0153503000000000"); // normal event mixing; Triggers: 7EG1 - CINT7 EG1
+      cuts.AddCut("00085113","1111100047032230000","302010708","0103503900000000","0153503000000000"); // normal event mixing; Triggers: 7EG2 - CINT7 EG2
    // 13 TeV PHOS
    } else if( trainConfig == 210) {
     // eta < 0.9
