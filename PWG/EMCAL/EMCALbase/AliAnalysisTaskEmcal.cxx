@@ -1504,7 +1504,7 @@ Bool_t AliAnalysisTaskEmcal::RetrieveEventObjects()
     if(fPtHardBinning.GetSize()){
       // pt-hard binning defined for the corresponding dataset - automatically determine the bin
       for (fPtHardBin = 0; fPtHardBin < fNPtHardBins; fPtHardBin++) {
-        if (fPtHard >= fPtHardBinning[fPtHardBin] && fPtHard < fPtHardBinning[fPtHardBin+1])
+        if (fPtHard >= static_cast<float>(fPtHardBinning[fPtHardBin]) && fPtHard < static_cast<float>(fPtHardBinning[fPtHardBin+1]))
           break;
       }
     } else {
