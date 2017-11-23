@@ -83,6 +83,10 @@ class AliAnTOFtrack {
   /// Method to get the resolution on T0 based on the expected sigma of electrons
   Double_t GetT0Resolution(const Double_t TOFsigma = 80) const;
 
+  ///
+  /// Method to get the track beta
+  Double_t GetBeta() const { return fLength / ((fTOFTime - fT0TrkTime) * CSPEED); }
+
   //T0 Methods
 
   ///
