@@ -194,7 +194,7 @@ void AliAnalysisTaskV1SingleMu::UserCreateOutputObjects()
   Double_t chargeMin = -2, chargeMax = 2.;
   TString chargeName("Charge"), chargeTitle("charge"), chargeUnits("e");
 
-  Int_t nSPBins = 2;
+  Int_t nSPBins = 100;
   Double_t SPMin = -2, SPMax = 2.;
   TString SPNameA("Scalar product with A"), SPTitleA("SP A"), SPUnits("");
   TString SPNameB("Scalar product with C"), SPTitleB("SP C");
