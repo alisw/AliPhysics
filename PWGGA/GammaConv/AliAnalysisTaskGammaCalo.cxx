@@ -97,6 +97,8 @@ AliAnalysisTaskGammaCalo::AliAnalysisTaskGammaCalo(): AliAnalysisTaskSE(),
   fHistoMotherEtaPtAlpha(NULL),
   fHistoMotherPi0PtOpenAngle(NULL),
   fHistoMotherEtaPtOpenAngle(NULL),
+  fHistoMotherPi0NGoodESDTracksPt(NULL),
+  fHistoMotherEtaNGoodESDTracksPt(NULL),
   fHistoClusGammaPt(NULL),
   fHistoClusGammaE(NULL),
   fHistoClusOverlapHeadersGammaPt(NULL),
@@ -359,6 +361,8 @@ AliAnalysisTaskGammaCalo::AliAnalysisTaskGammaCalo(const char *name):
   fHistoMotherEtaPtAlpha(NULL),
   fHistoMotherPi0PtOpenAngle(NULL),
   fHistoMotherEtaPtOpenAngle(NULL),
+  fHistoMotherPi0NGoodESDTracksPt(NULL),
+  fHistoMotherEtaNGoodESDTracksPt(NULL),
   fHistoClusGammaPt(NULL),
   fHistoClusGammaE(NULL),
   fHistoClusOverlapHeadersGammaPt(NULL),
@@ -766,8 +770,8 @@ void AliAnalysisTaskGammaCalo::UserCreateOutputObjects(){
       fHistoMotherEtaPtAlpha        = new TH2F*[fnCuts];
       fHistoMotherPi0PtOpenAngle    = new TH2F*[fnCuts];
       fHistoMotherEtaPtOpenAngle    = new TH2F*[fnCuts];
-      fHistoMotherPi0NGoodESDTracksPtSlice    = new TH2F*[fnCuts];
-      fHistoMotherEtaNGoodESDTracksPtSlice    = new TH2F*[fnCuts];
+      fHistoMotherPi0NGoodESDTracksPt    = new TH2F*[fnCuts];
+      fHistoMotherEtaNGoodESDTracksPt    = new TH2F*[fnCuts];
     }
   }
 
@@ -980,6 +984,18 @@ void AliAnalysisTaskGammaCalo::UserCreateOutputObjects(){
         fHistoMotherEtaPtOpenAngle[iCut]  = new TH2F("ESD_MotherEta_Pt_OpenAngle","ESD_MotherEta_Pt_OpenAngle",nBinsQAPt, minQAPt, maxQAPt,180,0, 1.8);
         SetLogBinningXTH2(fHistoMotherEtaPtOpenAngle[iCut]);
         fESDList[iCut]->Add(fHistoMotherEtaPtOpenAngle[iCut]);
+        if(fIsHeavyIon == 1){
+          fHistoMotherPi0NGoodESDTracksPt[iCut]  = new TH2F("ESD_MotherPi0_GoodESDTracks_Pt","ESD_MotherPi0_GoodESDTracks_Pt",4000,0,4000,nBinsQAPt, minQAPt, maxQAPt);
+          fHistoMotherEtaNGoodESDTracksPt[iCut]  = new TH2F("ESD_MotherEta_GoodESDTracks_Pt","ESD_MotherEta_GoodESDTracks_Pt",4000,0,4000,nBinsQAPt, minQAPt, maxQAPt);
+        }else if(fIsHeavyIon == 2){
+          fHistoMotherPi0NGoodESDTracksPt[iCut]  = new TH2F("ESD_MotherPi0_GoodESDTracks_Pt","ESD_MotherPi0_GoodESDTracks_Pt",400,0,400,nBinsQAPt, minQAPt, maxQAPt);
+          fHistoMotherEtaNGoodESDTracksPt[iCut]  = new TH2F("ESD_MotherEta_GoodESDTracks_Pt","ESD_MotherEta_GoodESDTracks_Pt",400,0,400,nBinsQAPt, minQAPt, maxQAPt);
+        }else{
+          fHistoMotherPi0NGoodESDTracksPt[iCut]  = new TH2F("ESD_MotherPi0_GoodESDTracks_Pt","ESD_MotherPi0_GoodESDTracks_Pt",200,0,200,nBinsQAPt, minQAPt, maxQAPt);
+          fHistoMotherEtaNGoodESDTracksPt[iCut]  = new TH2F("ESD_MotherEta_GoodESDTracks_Pt","ESD_MotherEta_GoodESDTracks_Pt",200,0,200,nBinsQAPt, minQAPt, maxQAPt);
+        }
+        fESDList[iCut]->Add(fHistoMotherPi0NGoodESDTracksPt[iCut]);
+        fESDList[iCut]->Add(fHistoMotherEtaNGoodESDTracksPt[iCut]);
       }
 
       if (fIsMC > 1 && fDoMesonQA > 0 && fDoMesonQA < 3){
@@ -989,6 +1005,8 @@ void AliAnalysisTaskGammaCalo::UserCreateOutputObjects(){
         fHistoMotherEtaPtAlpha[iCut]->Sumw2();
         fHistoMotherPi0PtOpenAngle[iCut]->Sumw2();
         fHistoMotherEtaPtOpenAngle[iCut]->Sumw2();
+        fHistoMotherPi0NGoodESDTracksPt[iCut]->Sumw2();
+        fHistoMotherEtaNGoodESDTracksPt[iCut]->Sumw2();
       }
 
       if (fProduceCellIDPlots){
@@ -3159,11 +3177,13 @@ void AliAnalysisTaskGammaCalo::CalculatePi0Candidates(){
               fHistoMotherPi0PtY[fiCut]->Fill(pi0cand->Pt(),pi0cand->Rapidity()-((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift(), fWeightJetJetMC);
               fHistoMotherPi0PtAlpha[fiCut]->Fill(pi0cand->Pt(),TMath::Abs(pi0cand->GetAlpha()), fWeightJetJetMC);
               fHistoMotherPi0PtOpenAngle[fiCut]->Fill(pi0cand->Pt(),pi0cand->GetOpeningAngle(), fWeightJetJetMC);
+              fHistoMotherPi0NGoodESDTracksPt[fiCut]->Fill(fV0Reader->GetNumberOfPrimaryTracks(),pi0cand->Pt(), fWeightJetJetMC);
             }
             if ( pi0cand->M() > 0.45 && pi0cand->M() < 0.65){
               fHistoMotherEtaPtY[fiCut]->Fill(pi0cand->Pt(),pi0cand->Rapidity()-((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift(), fWeightJetJetMC);
               fHistoMotherEtaPtAlpha[fiCut]->Fill(pi0cand->Pt(),TMath::Abs(pi0cand->GetAlpha()), fWeightJetJetMC);
               fHistoMotherEtaPtOpenAngle[fiCut]->Fill(pi0cand->Pt(),pi0cand->GetOpeningAngle(),  fWeightJetJetMC);
+              fHistoMotherEtaNGoodESDTracksPt[fiCut]->Fill(fV0Reader->GetNumberOfPrimaryTracks(),pi0cand->Pt(), fWeightJetJetMC);
             }
           }
           if(fDoTHnSparse && ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->DoBGCalculation()){

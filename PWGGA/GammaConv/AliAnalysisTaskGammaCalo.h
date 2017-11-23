@@ -149,8 +149,8 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
     TH2F**                fHistoMotherEtaPtAlpha;                               //! array of histograms with invariant mass cut of 0.45 && pi0cand->M() < 0.65, pt, alpha
     TH2F**                fHistoMotherPi0PtOpenAngle;                           //! array of histograms with invariant mass cut of 0.05 && pi0cand->M() < 0.17, pt, openAngle
     TH2F**                fHistoMotherEtaPtOpenAngle;                           //! array of histograms with invariant mass cut of 0.45 && pi0cand->M() < 0.65, pt, openAngle
-    TH2F**                fHistoMotherPi0NGoodESDTracksPtSlice;                 //! array of histograms with invariant mass cut of 0.05 && pi0cand->M() < 0.17, ngoodtrakcs, pt
-    TH2F**                fHistoMotherEtaNGoodESDTracksPtSlice;                 //! array of histograms with invariant mass cut of 0.45 && pi0cand->M() < 0.65, ngoodtrakcs, pt
+    TH2F**                fHistoMotherPi0NGoodESDTracksPt;                 //! array of histograms with invariant mass cut of 0.05 && pi0cand->M() < 0.17, ngoodtrakcs, pt
+    TH2F**                fHistoMotherEtaNGoodESDTracksPt;                 //! array of histograms with invariant mass cut of 0.45 && pi0cand->M() < 0.65, ngoodtrakcs, pt
 
     // histograms for rec photon clusters
     TH1F**                fHistoClusGammaPt;                                    //! array of histos with cluster, pt
