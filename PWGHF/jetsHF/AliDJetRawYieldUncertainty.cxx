@@ -948,7 +948,7 @@ Bool_t AliDJetRawYieldUncertainty::EvaluateUncertaintyEffScale(TString spectrum_
 
   fJetPtYieldUnc->SetStats(kFALSE);
   fJetPtYieldUnc->Draw();
-  fJetPtYieldUnc->SaveAs(Form("%s_FinalRawYieldUncertaintyJetPt_%s_%s.root", spectrum_name.Data(), fDmesonLabel.Data(), fMethodLabel.Data()));
+  fJetPtYieldUnc->SaveAs(Form("%s_FinalRawYieldUncertainty_JetPt_%s_%s.root", spectrum_name.Data(), fDmesonLabel.Data(), fMethodLabel.Data()));
   fJetPtYieldCentral->SetStats(kFALSE);
   fJetPtYieldCentral->Draw();
   fJetPtYieldCentral->SaveAs(Form("%s_FinalRawYieldCentralPlusSystUncertainty_JetPt_%s_%s.root", spectrum_name.Data(), fDmesonLabel.Data(), fMethodLabel.Data()));
