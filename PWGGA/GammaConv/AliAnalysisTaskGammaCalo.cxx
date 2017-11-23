@@ -766,6 +766,8 @@ void AliAnalysisTaskGammaCalo::UserCreateOutputObjects(){
       fHistoMotherEtaPtAlpha        = new TH2F*[fnCuts];
       fHistoMotherPi0PtOpenAngle    = new TH2F*[fnCuts];
       fHistoMotherEtaPtOpenAngle    = new TH2F*[fnCuts];
+      fHistoMotherPi0NGoodESDTracksPtSlice    = new TH2F*[fnCuts];
+      fHistoMotherEtaNGoodESDTracksPtSlice    = new TH2F*[fnCuts];
     }
   }
 
