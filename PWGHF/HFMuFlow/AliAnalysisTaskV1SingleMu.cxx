@@ -278,22 +278,22 @@ void AliAnalysisTaskV1SingleMu::UserExec ( Option_t * /*option*/ )
   // // Flow info
   // //
   AliFlowVector vQarray[2];
-  Double_t QA[2]={-2.-2};
-  Double_t QB[2]={-2.-2};
+  Double_t QA[2]={0.,0.};
+  Double_t QB[2]={0.,0.};
   // get ZDC Q-vectors
   AliFlowEvent* anEvent = dynamic_cast<AliFlowEvent*>(GetInputData(1));
   if(anEvent) {
       // Get Q vectors for the subevents
       anEvent->GetZDC2Qsub(vQarray);
+      QA[0] = vQarray[0].X(); // ZNA
+      QA[1] = vQarray[0].Y(); // ZNA
+      QB[0] = vQarray[1].X(); // ZNC
+      QB[1] = vQarray[1].Y(); // ZNC
   } else {
       AliWarning("WARNING: FlowEvent not found !!! \n");
   }
-  QA[0] = vQarray[0].X(); // ZNA
-  QA[1] = vQarray[0].Y(); // ZNA
-  QB[0] = vQarray[1].X(); // ZNC
-  QB[1] = vQarray[1].Y(); // ZNC
 
-  if( (QA[0]*QA[0]+QA[1]*QA[1])==0.) {
+  if( (QA[0]*QA[0]+QA[1]*QA[1])<10.E-6) {
     AliWarning("WARNING : FlowEvent did not compute the flow vectors for ZDC");
     return;
   }
