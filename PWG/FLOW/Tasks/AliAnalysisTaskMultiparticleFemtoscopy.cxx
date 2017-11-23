@@ -2775,6 +2775,28 @@ void AliAnalysisTaskMultiparticleFemtoscopy::InitializeArraysForMPDF()
  fProjectionQ2[1] = NULL; // [1] = projection on Q2 from the product of m.p.d.f.'s of 1st and 2nd particle
  fProjectionQ2[2] = NULL; // [2] = normalized, i.e. [0]/[1]
 
+ for(Int_t d=0;d<9;d++)
+ {
+  fDistMPDF[d] = NULL;
+ }
+
+ // Some default values...
+ // 2p:
+ for(Int_t d=0;d<6;d++)
+ {
+  fnBinsPxPyPzE2p[d] = 20; 
+  fmin2p[d] = -2.;  
+  fmax2p[d] = 2.;
+ }
+
+ // 1p:
+ for(Int_t d=0;d<3;d++)
+ {
+  fnBinsPxPyPzE1p[d] = 20;
+  fmin1p[d] = -2.; 
+  fmax1p[d] = 2.;
+ }
+
 } // void AliAnalysisTaskMultiparticleFemtoscopy::InitializeArraysForMPDF()
 
 //=======================================================================================================================
@@ -3137,20 +3159,12 @@ void AliAnalysisTaskMultiparticleFemtoscopy::BookEverythingForMPDF()
  if(fCalculateMPDF2p)
  {
   // 2D:
-  const Int_t nDimensions2p = 6; // (px1,py1,pz1) x (px2,py2,pz2) TBI I do not need additional dim. for e1 and e2, due to e1^2 = p1^2 + m^2, etc.  
-  Int_t nBinsPxPyPzE2p[nDimensions2p] = {40,40,40,40,40,40}; // same for all components, and for both particles
-  Double_t min2p[nDimensions2p] = {-2.,-2.,-2.,-2.,-2.,-2.}; // each momenta runs from -10, each energy from 0
-  Double_t max2p[nDimensions2p] = {2.,2.,2.,2.,2.,2.}; // each momenta runs up to 10, each energy up to 10
-  fhs2p[0] = new THnSparseD("fhs2p[0]","fhs2p[0]",nDimensions2p,nBinsPxPyPzE2p,min2p,max2p);
+  fhs2p[0] = new THnSparseD("fhs2p[0]","fhs2p[0]",6,fnBinsPxPyPzE2p,fmin2p,fmax2p); // joint p.d.f.
   fMPDFList->Add(fhs2p[0]);
   // 1D:
-  const Int_t nDimensions1p = 3; // (px1,py1,pz1) or (px2,py2,pz2) TBI I do not need additional dim. for e1 and e2, due to e1^2 = p1^2 + m^2, etc
-  Int_t nBinsPxPyPzE1p[nDimensions1p] = {40,40,40}; // same for all components, and for both particles
-  Double_t min1p[nDimensions1p] = {-2.,-2.,-2.}; // each momenta runs from -10
-  Double_t max1p[nDimensions1p] = {2.,2.,2.}; // each momenta runs up to 10
-  fhs2p[1] = new THnSparseD("fhs2p[1]","fhs2p[1]",nDimensions1p,nBinsPxPyPzE1p,min1p,max1p); // m.p.d.f. for 1st particle
+  fhs2p[1] = new THnSparseD("fhs2p[1]","fhs2p[1]",3,fnBinsPxPyPzE1p,fmin1p,fmax1p); // m.p.d.f. for 1st particle
   fMPDFList->Add(fhs2p[1]);
-  fhs2p[2] = new THnSparseD("fhs2p[2]","fhs2p[2]",nDimensions1p,nBinsPxPyPzE1p,min1p,max1p); // m.p.d.f. for 2nd particle
+  fhs2p[2] = new THnSparseD("fhs2p[2]","fhs2p[2]",3,fnBinsPxPyPzE1p,fmin1p,fmax1p); // m.p.d.f. for 2nd particle
   fMPDFList->Add(fhs2p[2]);
 
   // Q2 dependence:
@@ -3178,6 +3192,16 @@ void AliAnalysisTaskMultiparticleFemtoscopy::BookEverythingForMPDF()
   fProjectionQ2[2]->GetXaxis()->SetTitle("Q_{2}");
   fProjectionQ2[2]->GetYaxis()->SetTitle("counts");
   fMPDFList->Add(fProjectionQ2[2]);
+
+  // Various distributions: TBI classify
+  fDistMPDF[0] =  new TH1D("fDistMPDF[0]","distribution of bin content of the 6D ratio f/f_xf_y  ",10000,0.,1000.);
+  fDistMPDF[0]->SetStats(kFALSE);
+  fDistMPDF[0]->SetLineColor(kGreen+2);
+  fDistMPDF[0]->SetFillColor(kGreen-10);
+  //fDistMPDF[0]->GetXaxis()->SetTitle("");
+  //fDistMPDF[0]->GetYaxis()->SetTitle("");
+  fMPDFList->Add(fDistMPDF[0]);
+
  } // if(fCalculateMPDF2p) 
 
  // c) Book THnSparse for 3p correlations:
@@ -4138,8 +4162,8 @@ void AliAnalysisTaskMultiparticleFemtoscopy::BookEverythingForBackground()
     f2pBackground[pid1][pid2]->SetStats(kTRUE);
     f2pBackground[pid1][pid2]->SetFillColor(kRed-10);
     f2pBackground[pid1][pid2]->SetLineColor(kRed);
-    f2pBackground[pid1][pid2]->SetXTitle("k");
-    f2pBackground[pid1][pid2]->SetYTitle("B(k)");
+    f2pBackground[pid1][pid2]->SetXTitle("Q_{2}");
+    f2pBackground[pid1][pid2]->SetYTitle("B(Q_{2})");
     fBackgroundSublist[0]->Add(f2pBackground[pid1][pid2]);
    } // for(Int_t pid2=0;pid2<5;pid2++) // anti-particle [0=e,1=mu,2=pi,3=K,4=p]
   } // for(Int_t pid=0;pid<5;pid++) // particle [0=e,1=mu,2=pi,3=K,4=p]
@@ -8800,6 +8824,9 @@ void AliAnalysisTaskMultiparticleFemtoscopy::GetPointersForMPDF()
  fProjectionQ2[2] = dynamic_cast<TH1D*>(fMPDFList->FindObject("fProjectionQ2[2]"));
  if(!fProjectionQ2[2]){Fatal(sMethodName.Data(),"fProjectionQ2[2]");}
 
+ fDistMPDF[0] = dynamic_cast<TH1D*>(fMPDFList->FindObject("fDistMPDF[0]"));
+ if(!fDistMPDF[0]){Fatal(sMethodName.Data(),"fDistMPDF[0]");}
+
 } // void AliAnalysisTaskMultiparticleFemtoscopy::GetPointersForMPDF()
 
 //=======================================================================================================================
@@ -9327,6 +9354,14 @@ void AliAnalysisTaskMultiparticleFemtoscopy::ProjectMPDF2p()
  Int_t nDimensions1st[nWhichDimensions] = {0,1,2}; // project out d.o.f. for the 2nd particle (the degrees which are specified, are kept)
  Int_t nDimensions2nd[nWhichDimensions] = {3,4,5}; // project out d.o.f. for the 1st particle (the degrees which are specified, are kept)
 
+ // Normalizing 6D (then, m.p.d.f.'s are automatically normalized):
+ Double_t entries = fhs2p[0]->GetEntries();
+ if(entries>0.)
+ {
+  fhs2p[0]->Scale(1./entries);
+ }
+ // TBI shall I store normalized distribution separately?
+
  // TBI the lines below are bit shaky, I think...
  fMPDFList->Remove(fhs2p[1]);
  fhs2p[1] = fhs2p[0]->Projection(nWhichDimensions,nDimensions1st); // this is then m.p.d.f. for 1st particle
@@ -9339,7 +9374,6 @@ void AliAnalysisTaskMultiparticleFemtoscopy::ProjectMPDF2p()
  fhs2p[2]->SetName("fhs2p[2]");
  fMPDFList->Add(fhs2p[2]);
 
-
  // Projections on Q2:
  const Int_t nDim = 6;
  Int_t nBins[nDim] = {0}; // TBI most likely, this shall go to data members
@@ -9350,7 +9384,6 @@ void AliAnalysisTaskMultiparticleFemtoscopy::ProjectMPDF2p()
   if(!axis){exit(0);} 
   nBins[dim] = axis->GetNbins();
  }
-
 
  Double_t dQ2 = 0.;
  for(Int_t p1x=1;p1x<=nBins[0];p1x++)
@@ -9390,7 +9423,13 @@ void AliAnalysisTaskMultiparticleFemtoscopy::ProjectMPDF2p()
 
        fProjectionQ2[1]->Fill(dQ2,fhs2p[1]->GetBinContent(bin1)*fhs2p[2]->GetBinContent(bin2));
 
-      }
+       // Distributions (just for easier visualisation):
+       if(fhs2p[1]->GetBinContent(bin1)>0. && fhs2p[2]->GetBinContent(bin2)>0.)
+       {
+        fDistMPDF[0]->Fill(fhs2p[0]->GetBinContent(bin)/(fhs2p[1]->GetBinContent(bin1)*fhs2p[2]->GetBinContent(bin2)));
+       }
+
+      } // for(Int_t p2z=1;p2z<=nBins[5];p2z++)
      }
     }
    }
@@ -9400,6 +9439,7 @@ void AliAnalysisTaskMultiparticleFemtoscopy::ProjectMPDF2p()
  // TBI the lines below are bit shaky, I think...
  fMPDFList->Remove(fProjectionQ2[2]);
  fProjectionQ2[2] = (TH1D*)fProjectionQ2[0]->Clone("fProjectionQ2[2]");
+ fProjectionQ2[2]->SetTitle("fProjectionQ2[0]/fProjectionQ2[1]");
  fProjectionQ2[2]->Divide(fProjectionQ2[1]);
  fMPDFList->Add(fProjectionQ2[2]);
 
