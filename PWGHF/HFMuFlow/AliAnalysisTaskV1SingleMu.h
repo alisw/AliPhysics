@@ -92,7 +92,7 @@ class AliAnalysisTaskV1SingleMu : public AliAnalysisTaskSE {
   AliMergeableCollection* fMergeableCollection; //!<! collection of mergeable objects
   THnSparse* fSparse; ///< CF container
 
-  ClassDef(AliAnalysisTaskV1SingleMu, 1); // Single muon v1 analysis
+  ClassDef(AliAnalysisTaskV1SingleMu, 2); // Single muon v1 analysis
 };
 
 #endif

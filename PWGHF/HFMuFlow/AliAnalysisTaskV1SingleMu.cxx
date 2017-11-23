@@ -174,7 +174,7 @@ void AliAnalysisTaskV1SingleMu::UserCreateOutputObjects()
   //
 
   //
-  Int_t nCentBins = 200;
+  Int_t nCentBins = 50;
   Double_t centMin = 0., centMax = 100.;
   TString centName("Centrality"), centTitle("Centrality"), centUnits("\%");
 
@@ -182,11 +182,11 @@ void AliAnalysisTaskV1SingleMu::UserCreateOutputObjects()
   Double_t ptMin = 0., ptMax = 80.;
   TString ptName("Pt"), ptTitle("p_{t}"), ptUnits("GeV/c");
 
-  Int_t nEtaBins = 25;
+  Int_t nEtaBins = 3;
   Double_t etaMin = -4.5, etaMax = -2.;
   TString etaName("Eta"), etaTitle("#eta"), etaUnits("");
 
-  Int_t nPhiBins = 36;
+  Int_t nPhiBins = 50;
   Double_t phiMin = 0., phiMax = 2.*TMath::Pi();
   TString phiTitle("#phi"), phiUnits("rad");
 
@@ -194,7 +194,7 @@ void AliAnalysisTaskV1SingleMu::UserCreateOutputObjects()
   Double_t chargeMin = -2, chargeMax = 2.;
   TString chargeName("Charge"), chargeTitle("charge"), chargeUnits("e");
 
-  Int_t nSPBins = 2;
+  Int_t nSPBins = 100;
   Double_t SPMin = -2, SPMax = 2.;
   TString SPNameA("Scalar product with A"), SPTitleA("SP A"), SPUnits("");
   TString SPNameB("Scalar product with C"), SPTitleB("SP C");
