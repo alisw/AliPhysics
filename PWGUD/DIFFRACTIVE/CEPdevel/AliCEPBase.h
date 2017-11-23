@@ -61,6 +61,8 @@ class AliCEPBase : public TObject {
     kTTFiredChips      = BIT( 9), // passed FiredChips test
     kTTAccTPCOnly      = BIT(10), // passed standard TPCOnly criteria
     kTTSPDHit          = BIT(11), // has at least one SPD hit
+    kTTCaloMatch       = BIT(12), // match with calorimeter cluster
+    kTTAccV0daughter   = BIT(13), // passed standard V0daughter criteria
 
     // type of vertex
     kVtxUnknown         = 0,
@@ -146,7 +148,8 @@ class AliCEPBase : public TObject {
     kBitBBFlagStudy           = BIT( 9), // BBFlag study
     kBitV0Study               = BIT(10), // V0 study
     kBitFMDStudy              = BIT(11), // FMD study
-		kBitConfigurationVersion  = BIT(12)  // always set, last bit
+    kBitEMCStudy              = BIT(12), // EMC study
+		kBitConfigurationVersion  = BIT(13)  // always set, last bit
 	
   };
 

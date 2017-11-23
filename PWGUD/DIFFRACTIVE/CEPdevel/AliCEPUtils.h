@@ -28,6 +28,8 @@
 #ifndef ALICEPUTILS_H
 #define ALICEPUTILS_H
 
+#include <iostream>
+
 #include "AliSPDUtils.h"
 #include "AliCDBManager.h"
 #include "AliCDBStorage.h"
@@ -44,7 +46,10 @@
 #include "AliESDv0.h"
 #include "AliESDAD.h"
 #include "AliVVZERO.h"
+#include "AliEMCALPIDUtils.h"
 #include "AliESDCaloCluster.h"
+#include "AliVCaloCells.h"
+#include "AliESDPmdTrack.h"
 
 #include "AliCEPBase.h"
 
@@ -72,7 +77,7 @@ class AliCEPUtils : public TObject {
   	static Int_t GetEventType(const AliVEvent *Event);
   	static void SPDLoadGeom(Int_t run);
     static void DetermineMCprocessType (
-      AliMCEvent *MCEvent, TString MCgen, Int_t &MCproc);
+      AliMCEvent *MCEvent, TString &MCgen, Int_t &MCproc);
     Int_t AnalyzeTracks(AliESDEvent* ESDEvent,
       TObjArray* fTracks,TArrayI* fTrackStatus);
 
@@ -83,6 +88,7 @@ class AliCEPUtils : public TObject {
     void BBFlagAnalysis(
       AliVEvent *Event,
       TList *lhh );
+
     static TList* GetSPDPileupQAHists();
     void SPDVtxAnalysis (
       AliVEvent *Event,
@@ -92,22 +98,31 @@ class AliCEPUtils : public TObject {
       Double_t nSigmaDiamXY, 
       Double_t nSigmaDiamZ,
       TList * lhh );
+
     static TList* GetnClunTraQAHists();
     void SPDClusterVsTrackletBGAnalysis (
       AliVEvent *Event,
       TList *lhh );
+
     static TList* GetVtxQAHists();
     void VtxAnalysis (
       AliVEvent *Event,
       TList *lhh );
+
     static TList* GetV0QAHists();
     void V0Analysis (
       AliESDEvent *Event,
       TList *lhh );
+
     static TList* GetFMDQAHists();
     void FMDAnalysis (
       AliESDEvent *Event,
 	    AliTriggerAnalysis *fTrigger,
+      TList *lhh );
+
+    static TList* GetEMCQAHists();
+    void EMCAnalysis (
+      AliESDEvent *Event,
       TList *lhh );
 
     UInt_t GetVtxPos(AliVEvent *Event, TVector3 *vtxpos);
@@ -124,7 +139,7 @@ class AliCEPUtils : public TObject {
     Int_t GetResiduals(AliESDEvent* fESDEvent);
     Bool_t TestFiredChips(AliESDEvent *esd, TArrayI *indices);
     
-    void EMCALcheck(AliESDEvent *ESDEvent);
+    void EMCALcheck(AliVEvent *Event);
 
   private:
 

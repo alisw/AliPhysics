@@ -81,7 +81,6 @@ AliAnalysisTaskCEP::AliAnalysisTaskCEP(const char* name,
   , fLHCPeriod(TString(""))
   , fVtxPos(TVector3(-999.9,-999.9,-999.9))
   , fAnalysisStatus(state)
-  , fMCCEPSystem(TLorentzVector(0,0,0,0))
   , fPIDResponse(0x0)
   , fPIDCombined1(0x0)
   , fPIDCombined2(0x0)
@@ -99,6 +98,7 @@ AliAnalysisTaskCEP::AliAnalysisTaskCEP(const char* name,
   , flVtx(0x0)
   , flV0(0x0)
   , flFMD(0x0)
+  , flEMC(0x0)
   , fhStatsFlow(0x0)
   , fHist(new TList())
   , fCEPtree(0x0)
@@ -143,7 +143,6 @@ AliAnalysisTaskCEP::AliAnalysisTaskCEP():
   , fLHCPeriod(TString(""))
   , fVtxPos(TVector3(-999.9,-999.9,-999.9))
   , fAnalysisStatus(AliCEPBase::kBitConfigurationSet)
-  , fMCCEPSystem(TLorentzVector(0,0,0,0))
   , fPIDResponse(0x0)
   , fPIDCombined1(0x0)
   , fPIDCombined2(0x0)
@@ -161,6 +160,7 @@ AliAnalysisTaskCEP::AliAnalysisTaskCEP():
   , flVtx(0x0)
   , flV0(0x0)
   , flFMD(0x0)
+  , flEMC(0x0)
   , fhStatsFlow(0x0)
   , fHist(new TList())
   , fCEPtree(0x0)
@@ -265,6 +265,10 @@ AliAnalysisTaskCEP::~AliAnalysisTaskCEP()
   if (flFMD) {
     delete flFMD;
     flFMD = 0x0;
+  }
+  if (flEMC) {
+    delete flEMC;
+    flEMC = 0x0;
   }
 
   // delete fHist and fCEPtree
@@ -487,6 +491,19 @@ void AliAnalysisTaskCEP::UserCreateOutputObjects()
       fHist->Add((TObject*)flFMD->At(ii));
   } else flFMD = NULL;
   
+  // histograms for EMC study
+  if (fCEPUtil->checkstatus(fAnalysisStatus,
+    AliCEPBase::kBitEMCStudy,AliCEPBase::kBitEMCStudy)) {
+            
+    // get list of histograms
+    flEMC = new TList();
+    flEMC = fCEPUtil->GetEMCQAHists();
+    
+    // add histograms to the output list
+    for (Int_t ii=0; ii<flEMC->GetEntries(); ii++)
+      fHist->Add((TObject*)flEMC->At(ii));
+  } else flEMC = NULL;
+  
   // histogram for event statistics
   fhStatsFlow = fCEPUtil->GetHistStatsFlow();
   fHist->Add(fhStatsFlow);
@@ -496,9 +513,6 @@ void AliAnalysisTaskCEP::UserCreateOutputObjects()
 
   //CEP tree
   fCEPtree = new TTree("CEP", "CEP");
-
-  // add MonteCarlo truth
-  fCEPtree->Branch("MCtruth", &fMCCEPSystem);
 
   // add branch with CEPEventBuffer
   Int_t split = 2;         // branches are split
@@ -625,14 +639,11 @@ void AliAnalysisTaskCEP::UserExec(Option_t *)
   }
   
   // EMCAL information
-  fCEPUtil->EMCALcheck(fEvent);
-
-
-
+  if (flEMC) fCEPUtil->EMCAnalysis(fESDEvent,flEMC);
 
   // count number of recorded triggers
-  // CINT11-B-NOPF-CENTNOTRD, DG trigger has to be replaied, LHC16[d,e,h]
-  // CCUP2-B-SPD1-CENTNOTRD, DG trigger has to be replaied, LHC16[h,i,j]
+  // CINT11-B-NOPF-CENTNOTRD, DG trigger has to be replayed, LHC16[d,e,h]
+  // CCUP2-B-SPD1-CENTNOTRD, DG trigger has to be replayed, LHC16[h,i,j]
   // CCUP13-B-SPD1-CENTNOTRD = DG trigger, LHC16[k,l,o,p], LHC17[f,h,i,k,l]
   // CCUP25-B-SPD1-CENTNOTRD = DG trigger, LHC17[c,h,i,j,k,l,m,o]
   TString firedTriggerClasses = fEvent->GetFiredTriggerClasses();
@@ -649,7 +660,7 @@ void AliAnalysisTaskCEP::UserExec(Option_t *)
   // did the double-gap trigger (CCUP13-B-SPD1-CENTNOTRD) fire?
   // this is relevant for the LHC16[k,l,o,p] data
   // in case of MC data and data containing no DG trigger
-  // the trigger needs to be replaied
+  // the trigger needs to be replayed
   // different triggers are considered
   Bool_t isReplay = fMCEvent
     || firedTriggerClasses.Contains("CINT11-B-NOPF-CENTNOTRD")
@@ -681,10 +692,10 @@ void AliAnalysisTaskCEP::UserExec(Option_t *)
 
     isDGTrigger = (fisSTGTriggerFired & (1<<0)) && !isV0Afired && !isV0Cfired;
     
-    if (isDGTrigger) {
-      printf("DG trigger replaied: %i %i %i -> %i\n",
-        fisSTGTriggerFired,!isV0Afired,!isV0Cfired,isDGTrigger);
-    }
+    //if (isDGTrigger) {
+    //  printf("DG trigger replayed: %i %i %i -> %i\n",
+    //    fisSTGTriggerFired,!isV0Afired,!isV0Cfired,isDGTrigger);
+    //}
     
   } else {
   
@@ -848,7 +859,10 @@ void AliAnalysisTaskCEP::UserExec(Option_t *)
   Int_t nTracks = fCEPUtil->AnalyzeTracks(fESDEvent,fTracks,fTrackStatus);
   // printf("Total number of charged tracks: %i\n",nTracks);
   
-  // V0 study
+  // How many muon tracks are there?
+  // printf("Number of muon tracks %i\n",fESDEvent->GetNumberOfMuonTracks());
+  
+  // V0 and FMD study
   if (flV0)  fCEPUtil->V0Analysis(fESDEvent,flV0);
   if (flFMD && !isPileup) fCEPUtil->FMDAnalysis(fESDEvent,fTrigger,flFMD);
 
@@ -1042,19 +1056,41 @@ void AliAnalysisTaskCEP::UserExec(Option_t *)
       fCEPUtil->DetermineMCprocessType(fMCEvent,fMCGenerator,fMCProcess);
       
       // get MC vertex
-      TParticle* prot1 = NULL;
+      TParticle *part = NULL;
+      TLorentzVector lvtmp, lvin, lvprod;
       stack = fMCEvent->Stack();
       if (stack) {
-        // Int_t nPrimaries = stack->GetNprimary();
+        Int_t nPrimaries = stack->GetNprimary();
         //printf("number of tracks: primaries - %i, reconstructed - %i\n",
         //  nPrimaries,nTracks);
-        prot1 = stack->Particle(0);
+        
+        // incident beam-beam system
+        part = stack->Particle(0);
+        part->Momentum(lvtmp);
+        lvin  = lvtmp;
+        stack->Particle(1)->Momentum(lvtmp);
+        lvin += lvtmp;
+        
+        // for DIME save the CEP particle
+        // add primaries except for the incoming and outgoing protons
+        lvprod = TLorentzVector(0,0,0,0);
+        if ( fMCGenerator.EqualTo("Dime") ) {
+          stack->Particle(4)->Momentum(lvtmp);
+          lvprod  = lvtmp;
+          for (Int_t ii=5; ii<nPrimaries; ii++) {
+            stack->Particle(ii)->Momentum(lvtmp);
+            lvprod += lvtmp;
+          }
+        }
+        
+        // update the event buffer
+        fCEPEvent->SetMCGenerator(fMCGenerator);
+        fCEPEvent->SetMCProcessType(fMCProcess);
+        fCEPEvent->SetMCVtxPos(part->Vx(),part->Vy(),part->Vz());
+        fCEPEvent->SetMCIniSystem(lvin);
+        fCEPEvent->SetMCParticle(lvprod);
+        
       }
-
-      // update the event buffer
-      fCEPEvent->SetMCGenerator(fMCGenerator);
-      fCEPEvent->SetMCProcessType(fMCProcess);
-      fCEPEvent->SetMCVtxPos(prot1->Vx(),prot1->Vy(),prot1->Vz());
     }
     
     // add tracks
@@ -1106,8 +1142,19 @@ void AliAnalysisTaskCEP::UserExec(Option_t *)
         trk->SetPIDTOFProbability(jj,probs[jj]);
       }
       
+      /*
+      // check EMC PIDs
+      // no PIDs are provided at pt<1.5 GeV/c
+      if ( tmptrk->IsEMCAL() || tmptrk->IsPHOS() ) {
+        stat = fPIDResponse->ComputeEMCALProbability(tmptrk,AliPID::kSPECIES, probs);
+        printf("track[%i] with pt %f has EMCAL match",trkIndex,tmptrk->Pt());
+        for (Int_t jj=0; jj<AliPID::kSPECIES; jj++) printf(" %f",probs[jj]);
+        printf("\n");
+      }
+      */
+      
       // ... Bayes
-      stat = fPIDCombined1->ComputeProbabilities(tmptrk, fPIDResponse, probs);
+      stat = fPIDCombined1->ComputeProbabilities(tmptrk,fPIDResponse,probs);
       trk->SetPIDBayesStatus(stat);
       for (Int_t jj=0; jj<AliPID::kSPECIES; jj++)
         trk->SetPIDBayesProbability(jj,probs[jj]);

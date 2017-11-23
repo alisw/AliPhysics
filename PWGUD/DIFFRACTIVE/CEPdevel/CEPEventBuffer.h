@@ -8,6 +8,7 @@
 #include "AliVVZERO.h"
 #include "AliESDAD.h"
 #include "AliCEPBase.h"
+#include "TParticle.h"
 #include "CEPTrackBuffer.h"
 
 class CEPEventBuffer : public TObject {
@@ -55,9 +56,12 @@ class CEPEventBuffer : public TObject {
     UInt_t   fVtxType;      // see AliCEPBase.h for a definition of the bits
     TVector3 fVtxPos;       // vertex position
     
+    Int_t fnCaloCluster;    // number of calorimeter cluster
+    
     // Monte Carlo information
     TString  fMCGenerator;
     UInt_t   fMCProcessType; 
+    TLorentzVector fMCIniSystem, fMCParticle;
     TVector3 fMCVtxPos;
     
     // list of tracks
@@ -93,20 +97,26 @@ class CEPEventBuffer : public TObject {
     
     // the number of tracklets and residuals, as well as the enumber
     // of tracks passing Martin's selection have to be set separately
-    void SetnTracksTotal(Int_t ntrks) { fnTracksTotal = ntrks; }
-    void SetnTracklets(Int_t ntrklts) { fnTracklets = ntrklts; }
-    void SetnResiduals(Int_t nres)    { fnResiduals = nres; }
-    void SetnMSelection(Int_t nMsel)  { fnMSelection = nMsel; }
+    void SetnTracksTotal(Int_t ntrks)   { fnTracksTotal = ntrks; }
+    void SetnTracklets(Int_t ntrklts)   { fnTracklets = ntrklts; }
+    void SetnResiduals(Int_t nres)      { fnResiduals = nres; }
+    void SetnMSelection(Int_t nMsel)    { fnMSelection = nMsel; }
     
     void SetnV0(Int_t nV0)              { fnV0 = nV0; }
     void SetVtxType(UInt_t vtxtype)     { fVtxType = vtxtype; }
     void SetVtxPos(Double_t xp,Double_t yp,Double_t zp)
                                         { fVtxPos.SetXYZ(xp,yp,zp); }
+    void SetnCaloCluster(Int_t nclus)   { fnCaloCluster = nclus; }
+
     void SetVtxPos(TVector3 vtxpos)     { fVtxPos = TVector3(vtxpos); }
+    
     void SetMCGenerator(TString MCGenerator) { fMCGenerator = MCGenerator; }
     void SetMCProcessType(UInt_t MCProcess)  { fMCProcessType = MCProcess; }
     void SetMCVtxPos(Double_t xp,Double_t yp,Double_t zp)
                                              { fMCVtxPos.SetXYZ(xp,yp,zp); }
+    void SetMCIniSystem(TLorentzVector part) { fMCIniSystem = part; }
+    void SetMCParticle(TLorentzVector part)  { fMCParticle = part; }
+    
     // Accessors
     Int_t GetRunNumber()     const { return fRunNumber; }
     Int_t GetEventNumber()   const { return fEventNumber; }
@@ -142,10 +152,14 @@ class CEPEventBuffer : public TObject {
     Int_t GetnV0()       const { return fnV0; }
     UInt_t GetVtxType()  const { return fVtxType; }
     TVector3 GetVtxPos() const { return fVtxPos; }
+    
+    Int_t GetnCaloCluster() const { return fnCaloCluster; }
 
-    TString GetMCGenerator() const { return fMCGenerator; }
-    UInt_t GetMCProcessType()const { return fMCProcessType; }
-    TVector3 GetMCVtxPos()   const { return fMCVtxPos; }
+    TString GetMCGenerator()        const { return fMCGenerator; }
+    UInt_t GetMCProcessType()       const { return fMCProcessType; }
+    TVector3 GetMCVtxPos()          const { return fMCVtxPos; }
+    TLorentzVector GetMCIniSystem() const { return fMCIniSystem; }
+    TLorentzVector GetMCParticle()  const { return fMCParticle; }
   
     // readout gap condition
     UInt_t  GetEventCondition() const { return fEventCondition; }

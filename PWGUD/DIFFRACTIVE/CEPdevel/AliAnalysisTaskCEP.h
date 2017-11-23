@@ -118,9 +118,6 @@ private:
 	// analysis task status
 	Long_t fAnalysisStatus; // stores the status bits used to specify
                           // processing steps to be performed
-  // MC CEP system
-  TLorentzVector fMCCEPSystem;
-  
 	// PID information
   AliPIDResponse *fPIDResponse;   //! esd pid object
   AliPIDCombined *fPIDCombined1;  //! PID Combined object with priors
@@ -142,6 +139,7 @@ private:
   TList *flVtx     ;    //! list of QA histograms for vertex selection
   TList *flV0      ;    //! list of QA histograms for V0 study
   TList *flFMD     ;    //! list of QA histograms for FMD study
+  TList *flEMC     ;    //! list of QA histograms for EMC study
   TH1F *fhStatsFlow;    //! histogram with event selection statistics
   
 	// output objects
