@@ -70,8 +70,8 @@ fSSsmear_mean(0),
 fWhich(0),
 fRejectPileUpEvent(kFALSE),
 fNContrToPileUp(3),
-fLightOutput(kFALSE),
-  // fOutputList(0),
+// fLightOutput(kFALSE),
+// fOutputList(0),
 fIsoConeRadius(0.4),
 fEtIsoMethod(0),
 fEtIsoThreshold(2),
@@ -269,8 +269,8 @@ fSSsmear_mean(0),
 fWhich(0),
 fRejectPileUpEvent(kFALSE),
 fNContrToPileUp(3),
-fLightOutput(kFALSE),
-  // fOutputList(0),
+// fLightOutput(kFALSE),
+// fOutputList(0),
 fIsoConeRadius(0.4),
 fEtIsoMethod(0),
 fEtIsoThreshold(2),
@@ -802,58 +802,58 @@ void AliAnalysisTaskEMCALPhotonIsolation::UserCreateOutputObjects(){
 	  fOutput->Add(fTPCWithoutIsoConeB2BbandUE);
         }
 
-	if(!fLightOutput){
-	  fPtEtIsoTC = new TH1D("hPtEtIsoTrackClust_NC","#Sigma #it{p}_{T}^{iso cone} + #Sigma E_{T}^{iso cone} in iso cone distribution for Neutral Clusters with Tracks and Clusters",200,-0.25,99.75);
-	  fPtEtIsoTC->SetXTitle("#Sigma #it{p}_{T}^{iso cone} + #Sigma E_{T}^{iso cone} (GeV/c)");
-	  fPtEtIsoTC->Sumw2();
-	  fOutput->Add(fPtEtIsoTC);
+	// if(!fLightOutput){
+	//   fPtEtIsoTC = new TH1D("hPtEtIsoTrackClust_NC","#Sigma #it{p}_{T}^{iso cone} + #Sigma E_{T}^{iso cone} in iso cone distribution for Neutral Clusters with Tracks and Clusters",200,-0.25,99.75);
+	//   fPtEtIsoTC->SetXTitle("#Sigma #it{p}_{T}^{iso cone} + #Sigma E_{T}^{iso cone} (GeV/c)");
+	//   fPtEtIsoTC->Sumw2();
+	//   fOutput->Add(fPtEtIsoTC);
 
-	  fEtIsolatedClust = new TH1D("hEtIsolatedClust","E_{T} distribution for Isolated Photons with clusters; #Sigma E_{T}^{iso cone}<Ethres",200,0.,100.);
-	  fEtIsolatedClust->SetXTitle("E_{T}^{iso}");
-	  fEtIsolatedClust->Sumw2();
-	  fOutput->Add(fEtIsolatedClust);
+	//   fEtIsolatedClust = new TH1D("hEtIsolatedClust","E_{T} distribution for Isolated Photons with clusters; #Sigma E_{T}^{iso cone}<Ethres",200,0.,100.);
+	//   fEtIsolatedClust->SetXTitle("E_{T}^{iso}");
+	//   fEtIsolatedClust->Sumw2();
+	//   fOutput->Add(fEtIsolatedClust);
 
-	  fPtIsolatedNClust = new TH1D("hEtIsolatedNClust","#it{p}_{T} distribution for neutral clusters; #Sigma #it{p}_{T}^{iso cone}<Pthres",200,0.,100.);
-	  fPtIsolatedNClust->SetXTitle("#it{p}_{T}^{iso}");
-	  fPtIsolatedNClust->Sumw2();
-	  fOutput->Add(fPtIsolatedNClust);
+	//   fPtIsolatedNClust = new TH1D("hEtIsolatedNClust","#it{p}_{T} distribution for neutral clusters; #Sigma #it{p}_{T}^{iso cone}<Pthres",200,0.,100.);
+	//   fPtIsolatedNClust->SetXTitle("#it{p}_{T}^{iso}");
+	//   fPtIsolatedNClust->Sumw2();
+	//   fOutput->Add(fPtIsolatedNClust);
 
-	  fPtIsolatedNTracks = new TH1D("hEtIsolatedNTracks","#it{p}_{T} distribution for neutral clusters; #Sigma #it{p}_{T}^{iso cone}<Pthres",200,0.,100.);
-	  fPtIsolatedNTracks->SetXTitle("#it{p}_{T}^{iso}");
-	  fPtIsolatedNTracks->Sumw2();
-	  fOutput->Add(fPtIsolatedNTracks);
+	//   fPtIsolatedNTracks = new TH1D("hEtIsolatedNTracks","#it{p}_{T} distribution for neutral clusters; #Sigma #it{p}_{T}^{iso cone}<Pthres",200,0.,100.);
+	//   fPtIsolatedNTracks->SetXTitle("#it{p}_{T}^{iso}");
+	//   fPtIsolatedNTracks->Sumw2();
+	//   fOutput->Add(fPtIsolatedNTracks);
 
-	  fEtIsolatedTracks = new TH1D("hEtIsolatedTracks","E_{T} distribution for Isolated Photons with tracks; #Sigma #it{p}_{T}^{iso cone}<Pthres",100,0.,100.);
-	  fEtIsolatedTracks->SetXTitle("E_{T}^{iso}");
-	  fEtIsolatedTracks->Sumw2();
-	  fOutput->Add(fEtIsolatedTracks);
+	//   fEtIsolatedTracks = new TH1D("hEtIsolatedTracks","E_{T} distribution for Isolated Photons with tracks; #Sigma #it{p}_{T}^{iso cone}<Pthres",100,0.,100.);
+	//   fEtIsolatedTracks->SetXTitle("E_{T}^{iso}");
+	//   fEtIsolatedTracks->Sumw2();
+	//   fOutput->Add(fEtIsolatedTracks);
 
-	  fPtvsM02iso = new TH2D("hPtvsM02iso","#it{p}_{T} vs #sigma_{long}^{2} distribution for isolated clusters",200,0.,100.,500,0.,5.);
-	  fPtvsM02iso->SetXTitle("#it{p}_{T}^{iso}");
-	  fPtvsM02iso->SetYTitle("#sigma_{long}^{2}");
-	  fOutput->Add(fPtvsM02iso);
+	//   fPtvsM02iso = new TH2D("hPtvsM02iso","#it{p}_{T} vs #sigma_{long}^{2} distribution for isolated clusters",200,0.,100.,500,0.,5.);
+	//   fPtvsM02iso->SetXTitle("#it{p}_{T}^{iso}");
+	//   fPtvsM02iso->SetYTitle("#sigma_{long}^{2}");
+	//   fOutput->Add(fPtvsM02iso);
 
-	  fPtvsM02noiso = new TH2D("hPtvsM02noiso","#it{p}_{T} vs #sigma_{long}^{2} distribution for non isolated clusters",200,0.,100.,500,0.,5.);
-	  fPtvsM02noiso->SetXTitle("#it{p}_{T}^{iso}");
-	  fPtvsM02noiso->SetYTitle("#sigma_{long}^{2}");
-	  fOutput->Add(fPtvsM02noiso);
+	//   fPtvsM02noiso = new TH2D("hPtvsM02noiso","#it{p}_{T} vs #sigma_{long}^{2} distribution for non isolated clusters",200,0.,100.,500,0.,5.);
+	//   fPtvsM02noiso->SetXTitle("#it{p}_{T}^{iso}");
+	//   fPtvsM02noiso->SetYTitle("#sigma_{long}^{2}");
+	//   fOutput->Add(fPtvsM02noiso);
 
-	  fTrackMultvsSumChargedvsUE = new TH3D("hTrackMultvsSumChargedvsUE","Track Multiplicity vs  #Sigma E_{T}^{iso cone} vs UE charged",100,0.,100.,200,-10.,90.,100,0.,100.);
-	  fTrackMultvsSumChargedvsUE->Sumw2();
-	  fOutput->Add(fTrackMultvsSumChargedvsUE);
+	//   fTrackMultvsSumChargedvsUE = new TH3D("hTrackMultvsSumChargedvsUE","Track Multiplicity vs  #Sigma E_{T}^{iso cone} vs UE charged",100,0.,100.,200,-10.,90.,100,0.,100.);
+	//   fTrackMultvsSumChargedvsUE->Sumw2();
+	//   fOutput->Add(fTrackMultvsSumChargedvsUE);
 
-	  fTrackMultvsPt = new TH2D("hTrackMultvsPt","Track Multiplicity vs  #it{p}_{T}-UE distribution for clusters",100,0.,100.,200,0.,100.);
-	  fTrackMultvsPt->Sumw2();
-	  fOutput->Add(fTrackMultvsPt);
+	//   fTrackMultvsPt = new TH2D("hTrackMultvsPt","Track Multiplicity vs  #it{p}_{T}-UE distribution for clusters",100,0.,100.,200,0.,100.);
+	//   fTrackMultvsPt->Sumw2();
+	//   fOutput->Add(fTrackMultvsPt);
 
-	  fEtaPhiClusVsPtUETrackCside = new TH3F ("hEtaVsPhiVsPtUETrack_Cside", "#eta vs. #varphi vs. #Sigma #it{p}_{T}^{track, UE} (tracks in C side) for clusters with 14 < #it{E}_{T} < 16 GeV", netabins, etamin, etamax, nphibins, phimin, phimax, 60, 0., 30.);
-	  fEtaPhiClusVsPtUETrackCside->Sumw2();
-	  fOutput->Add(fEtaPhiClusVsPtUETrackCside);
+	//   fEtaPhiClusVsPtUETrackCside = new TH3F ("hEtaVsPhiVsPtUETrack_Cside", "#eta vs. #varphi vs. #Sigma #it{p}_{T}^{track, UE} (tracks in C side) for clusters with 14 < #it{E}_{T} < 16 GeV", netabins, etamin, etamax, nphibins, phimin, phimax, 60, 0., 30.);
+	//   fEtaPhiClusVsPtUETrackCside->Sumw2();
+	//   fOutput->Add(fEtaPhiClusVsPtUETrackCside);
 
-	  fEtaPhiClusVsPtUETrackAside = new TH3F ("hEtaVsPhiVsPtUETrack_Aside", "#eta vs. #varphi vs. #Sigma #it{p}_{T}^{track, UE} (tracks in A side) for clusters with 14 < #it{E}_{T} < 16 GeV", netabins, etamin, etamax, nphibins, phimin, phimax, 60, 0., 30.);
-	  fEtaPhiClusVsPtUETrackAside->Sumw2();
-	  fOutput->Add(fEtaPhiClusVsPtUETrackAside);
-	}
+	//   fEtaPhiClusVsPtUETrackAside = new TH3F ("hEtaVsPhiVsPtUETrack_Aside", "#eta vs. #varphi vs. #Sigma #it{p}_{T}^{track, UE} (tracks in A side) for clusters with 14 < #it{E}_{T} < 16 GeV", netabins, etamin, etamax, nphibins, phimin, phimax, 60, 0., 30.);
+	//   fEtaPhiClusVsPtUETrackAside->Sumw2();
+	//   fOutput->Add(fEtaPhiClusVsPtUETrackAside);
+	// }
 
 	if(fIsMC){
 	  fPtvsSumUE_MC = new TH2D("hPtvsSumUE_MC","#it{p}_{T} vs #Sigma E_{T}^{iso cone}-UE distribution for isolated clusters",200,0.,100.,220,-10.,100.);
@@ -888,7 +888,7 @@ void AliAnalysisTaskEMCALPhotonIsolation::UserCreateOutputObjects(){
     fDeltaPHIClusTrack->Sumw2();
     fOutput->Add(fDeltaPHIClusTrack);
 
-    if(!fLightOutput){
+    if(fWho != 2){
       fDeltaETAClusTrackMatch = new TH1D("h_DzMatch","Track-Cluster Dz matching ",100,-0.05,0.05);
       fDeltaETAClusTrackMatch ->Sumw2();
       fOutput->Add(fDeltaETAClusTrackMatch);
@@ -906,7 +906,7 @@ void AliAnalysisTaskEMCALPhotonIsolation::UserCreateOutputObjects(){
     fNLM->Sumw2();
     fOutput->Add(fNLM);
 
-    if(!fLightOutput){
+    if(fWho != 2){
       fTestIndex= new TH2D("hTestIndex","Test index for cluster",100,0.,100.,100,0.,100.);
       fTestIndex->SetXTitle("index");
       fTestIndex->SetYTitle("local index");
@@ -970,7 +970,7 @@ void AliAnalysisTaskEMCALPhotonIsolation::UserCreateOutputObjects(){
   fVz->Sumw2();
   fOutput->Add(fVz);
 
-  if(!fLightOutput){
+  if(fWho != 2){
     fVzBeforecut = new TH1D("hVz_ALL", "Inclusive Vertex Z distribution",100,-50.,50.);
     fVzBeforecut->Sumw2();
     fOutput->Add(fVzBeforecut);
@@ -980,7 +980,7 @@ void AliAnalysisTaskEMCALPhotonIsolation::UserCreateOutputObjects(){
   fEvents->Sumw2();
   fOutput->Add(fEvents);
 
-  if(!fLightOutput){
+  if(fWho != 2){
     fSPDclustVsSPDtracklets = new TH2F("hSPDclustVsSPDtracklets","Number of SPD clusters VS number of SPD tracklets in events with |Zvtx| < 10",100,0,200,250,0,1000);
     fSPDclustVsSPDtracklets->Sumw2();
     fOutput->Add(fSPDclustVsSPDtracklets);
@@ -1066,7 +1066,7 @@ void AliAnalysisTaskEMCALPhotonIsolation::UserCreateOutputObjects(){
   fPtTracksVSpTNC->Sumw2();
   fOutput->Add(fPtTracksVSpTNC);
 
-  if(!fLightOutput){
+  if(fWho != 2){
     fPhiTracksVSclustPt  = new TH2F("hPhiTracks_vs_clustPT","Tracks phi distr vs pT Candidate",70, 0.,70., 200,0.,TMath::TwoPi());
     fPhiTracksVSclustPt->Sumw2();
     fOutput->Add(fPhiTracksVSclustPt);
@@ -1084,7 +1084,7 @@ void AliAnalysisTaskEMCALPhotonIsolation::UserCreateOutputObjects(){
   fTracksEtaVsPt->Sumw2();
   fOutput->Add(fTracksEtaVsPt);
 
-  if(!fLightOutput){
+  if(fWho != 2){
     fCTdistVSpTNC = new TH2F ("hDistanceC_TrackVSpT","Distance between Neutral Clust and closest Track vs pT Candidate",70,0.,70.,210,-0.1,2.);
     fCTdistVSpTNC->Sumw2();
     fOutput->Add(fCTdistVSpTNC);
@@ -1105,7 +1105,7 @@ void AliAnalysisTaskEMCALPhotonIsolation::UserCreateOutputObjects(){
     fPtTracksVSpTNC_MC->Sumw2();
     fOutput->Add(fPtTracksVSpTNC_MC);
 
-    if(!fLightOutput){
+    if(fWho != 2){
       fpi0VSclusterVSIsolation = new TH3F ("hpi0VSclusterVSisolation","Energy pi0 vs cluster Energy vs Isolation",95,5.,100.,95,5.,100.,400,0.,100.);
       fpi0VSclusterVSIsolation->SetXTitle("particle (#pi^{0} or #eta) E");
       fpi0VSclusterVSIsolation->SetYTitle("cluster E");
@@ -1255,7 +1255,7 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::SelectCandidate(AliVCluster *coi)
 
   fPtaftFC->Fill(vecCOI.Pt());
 
-  if(fQA && !fLightOutput)
+  if(fQA && fWho != 2)
     fTestIndexE->Fill(vecCOI.Pt(),index);
 
   if(vecCOI.Pt()<5.)
@@ -1302,13 +1302,13 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::Run()
 
   fVevent = dynamic_cast<AliVEvent*>(InputEvent());
 
-  if(!fLightOutput)
+  if(fWho != 2)
     fVzBeforecut->Fill(fVertex[2]);
 
   if(fVertex[2]>10. || fVertex[2]<-10.)
     return kFALSE;
 
-  if(!fLightOutput){
+  if(fWho != 2){
     fSPDclustVsSPDtracklets->Fill(fVevent->GetMultiplicity()->GetNumberOfTracklets(),(fVevent->GetNumberOfITSClusters(0)+fVevent->GetNumberOfITSClusters(1)));
 
     if(fRejectPileUpEvent && fVevent->IsPileupFromSPD(fNContrToPileUp, 0.8,3.,2.,5.)){
@@ -1409,20 +1409,20 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::Run()
     return kFALSE;
   }
 
-  if(fisLCAnalysis){
-      // Get the leading particle
+  // Get the entries of the Cluster Container
+  // Whatever is a RETURN in LCAnalysis here is a CONTINUE,
+  // since there are more than 1 Cluster per Event
 
-      // AliEmcalParticle *emccluster = static_cast<AliEmcalParticle*>(clusters->GetLeadingParticle());
-    AliVCluster *coi = (clusters->GetLeadingCluster());
-
+  for(auto it : clusters->accepted()){
+    AliVCluster *coi = static_cast<AliVCluster*>(it);
     if(!coi){
-      AliError(Form("No leading cluster"));
+      AliError("No cluster found");
       return kFALSE;
     }
     if(!coi->IsEMCAL())
       return kFALSE;
 
-    index = coi->GetID();
+    index=coi->GetID();
     TLorentzVector vecCOI;
     coi->GetMomentum(vecCOI,fVertex);
 
@@ -1435,13 +1435,13 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::Run()
 
     if(isSelected){
       for(auto it : tracksANA->accepted()){
-        AliVTrack *tr = static_cast<AliVTrack*>(it);
-        if(!tr){
-          AliError("No track found");
-          return kFALSE;
-        }
+	AliVTrack *tr = static_cast<AliVTrack*>(it);
+	if(!tr){
+	  AliError("No track found");
+	  return kFALSE;
+	}
 	fPtTracksVSpTNC->Fill(vecCOI.Pt(),tr->Pt());
-	if(!fLightOutput){
+	if(fWho != 2){
 	  fPhiTracksVSclustPt->Fill(vecCOI.Pt(),tr->Phi());
 	  fEtaTracksVSclustPt->Fill(vecCOI.Pt(),tr->Eta());
 	}
@@ -1449,52 +1449,7 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::Run()
 	fTracksEtaVsPt->Fill(tr->Pt(),tr->Eta());
       }
 
-      FillGeneralHistograms(coi,vecCOI, index);
-    }
-  }
-  else{
-      // Get the entries of the Cluster Container
-      // Whatever is a RETURN in LCAnalysis here is a CONTINUE,
-      // since there are more than 1 Cluster per Event
-
-    for(auto it : clusters->accepted()){
-      AliVCluster *coi = static_cast<AliVCluster*>(it);
-      if(!coi){
-        AliError("No cluster found");
-        return kFALSE;
-      }
-      if(!coi->IsEMCAL())
-        return kFALSE;
-
-      index=coi->GetID();
-      TLorentzVector vecCOI;
-      coi->GetMomentum(vecCOI,fVertex);
-
-      fPT->Fill(vecCOI.Pt());
-
-      if(fQA)
-	FillQAHistograms(coi,vecCOI);
-
-      Bool_t isSelected = SelectCandidate(coi);
-
-      if(isSelected){
-        for(auto it : tracksANA->accepted()){
-          AliVTrack *tr = static_cast<AliVTrack*>(it);
-          if(!tr){
-            AliError("No track found");
-            return kFALSE;
-          }
-	  fPtTracksVSpTNC->Fill(vecCOI.Pt(),tr->Pt());
-	  if(!fLightOutput){
-	    fPhiTracksVSclustPt->Fill(vecCOI.Pt(),tr->Phi());
-	    fEtaTracksVSclustPt->Fill(vecCOI.Pt(),tr->Eta());
-	  }
-	  fTracksPhiVsPt->Fill(tr->Pt(),tr->Phi());
-	  fTracksEtaVsPt->Fill(tr->Pt(),tr->Eta());
-        }
-
-        FillGeneralHistograms(coi,vecCOI,index);
-      }
+      FillGeneralHistograms(coi,vecCOI,index);
     }
   }
   return kTRUE;
@@ -1533,7 +1488,7 @@ void AliAnalysisTaskEMCALPhotonIsolation::FillQAHistograms(AliVCluster *coi, TLo
       break;
   }
 
-  if(!fLightOutput)
+  if(fWho != 2)
     fE->Fill(vecCOI.E());
   fEtaPhiClus->Fill(vecCOI.Eta(),vecCOI.Phi());
 
@@ -1678,7 +1633,7 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::ClustTrackMatching(AliVCluster *clus
 
     if(TMath::Abs(dphi)<deltaPhi && TMath::Abs(deta)<deltaEta){
       if(fQA && candidate){
-	if(!fLightOutput){
+	if(fWho != 2){
 	  fDeltaETAClusTrackMatch->Fill(deta);
 	  fDeltaPHIClusTrackMatch->Fill(dphi);
 	}
@@ -1686,7 +1641,7 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::ClustTrackMatching(AliVCluster *clus
         matched=kTRUE;
     }
   }
-  if(!fLightOutput)
+  if(fWho != 2)
     fCTdistVSpTNC->Fill(vecClust.Pt(),distCT);
 
   return matched;
@@ -2149,7 +2104,7 @@ void AliAnalysisTaskEMCALPhotonIsolation::EtIsoClusPhiBand(TLorentzVector c, Dou
       // else if(radius < fIsoConeRadius && radius != 0.){
       else{                                                                                         // The cluster is inside the isolation cone -> add the cluster pT to pT_iso
 	sumEnergyConeClus += nClust.Pt();
-	if(fQA && !fLightOutput){
+	if(fQA && fWho != 2){
 	  fTestEtaPhiCone->Fill(c.Eta(),c.Phi());
 	  fTestIndex->Fill(index,localIndex);
 	  fTestLocalIndexE->Fill(nClust.Pt(),localIndex);
@@ -2240,15 +2195,15 @@ void AliAnalysisTaskEMCALPhotonIsolation::EtIsoClusPhiBand(TLorentzVector c, Dou
   else
     m02candidate = candidate->GetM02();
 
-  if(fIsoMethod==1 && fQA && !fLightOutput){
+  if(fIsoMethod==1 && fQA && fWho != 2){
     fEtVSM02VSPisotrack->Fill(c.Pt(),m02candidate,sumpTConeCharged);
     fEtVSM02VSEisoclust->Fill(c.Pt(),m02candidate,sumEnergyConeClus);
   }
 
-  if(fWho==2 && !fLightOutput){
-    fTrackMultvsSumChargedvsUE->Fill(iTracksCone,sumpTConeCharged, sumpTPhiBandTracks);
-    fTrackMultvsPt->Fill(iTracksCone,c.Pt());
-  }
+  // if(fWho==2 && !fLightOutput){
+  //   fTrackMultvsSumChargedvsUE->Fill(iTracksCone,sumpTConeCharged, sumpTPhiBandTracks);
+  //   fTrackMultvsPt->Fill(iTracksCone,c.Pt());
+  // }
 
   if(fIsoMethod==1)
     ptIso = sumEnergyConeClus + sumpTConeCharged;
@@ -2346,7 +2301,7 @@ void AliAnalysisTaskEMCALPhotonIsolation::EtIsoClusEtaBand(TLorentzVector c, Dou
       // else if(radius<fIsoConeRadius && radius != 0.){
       else{                                                                                         // The cluster is inside the isolation cone -> add the cluster pT to pT_iso
 	sumEnergyConeClus += nClust.Pt();
-	if(fQA && !fLightOutput){
+	if(fQA && fWho != 2){
 	  fTestEtaPhiCone->Fill(c.Eta(),c.Phi());
 	  fTestIndex->Fill(index,localIndex);
 	  fTestLocalIndexE->Fill(nClust.Pt(),localIndex);
@@ -2457,10 +2412,10 @@ void AliAnalysisTaskEMCALPhotonIsolation::EtIsoClusEtaBand(TLorentzVector c, Dou
     fEtaPhiClusVsEtIsoClus->Fill(c.Eta(),c.Phi(),sumEnergyConeClus);
     fEtaPhiClusVsPtIsoTrack->Fill(c.Eta(),c.Phi(),sumpTConeCharged);
 
-    if(!fLightOutput){
-      fEtaPhiClusVsPtUETrackCside->Fill(c.Eta(),c.Phi(),sumpTEtaBandTracks_Cside);
-      fEtaPhiClusVsPtUETrackAside->Fill(c.Eta(),c.Phi(),sumpTEtaBandTracks_Aside);
-    }
+    // if(!fLightOutput){
+    //   fEtaPhiClusVsPtUETrackCside->Fill(c.Eta(),c.Phi(),sumpTEtaBandTracks_Cside);
+    //   fEtaPhiClusVsPtUETrackAside->Fill(c.Eta(),c.Phi(),sumpTEtaBandTracks_Aside);
+    // }
   }
 
   // Set smearing for MC
@@ -2470,15 +2425,15 @@ void AliAnalysisTaskEMCALPhotonIsolation::EtIsoClusEtaBand(TLorentzVector c, Dou
   else
     m02candidate = candidate->GetM02();
 
-  if(fIsoMethod==1 && fQA && !fLightOutput){
+  if(fIsoMethod==1 && fQA && fWho != 2){
     fEtVSM02VSPisotrack->Fill(c.Pt(),m02candidate,sumpTConeCharged);
     fEtVSM02VSEisoclust->Fill(c.Pt(),m02candidate,sumEnergyConeClus);
   }
 
-  if(fWho==2 && !fLightOutput){
-    fTrackMultvsSumChargedvsUE->Fill(iTracksCone,sumpTConeCharged, sumpTEtaBandTracks);
-    fTrackMultvsPt->Fill(iTracksCone,c.Pt());
-  }
+  // if(fWho==2 && !fLightOutput){
+  //   fTrackMultvsSumChargedvsUE->Fill(iTracksCone,sumpTConeCharged, sumpTEtaBandTracks);
+  //   fTrackMultvsPt->Fill(iTracksCone,c.Pt());
+  // }
 
   if(fIsoMethod==1)
     ptIso = sumEnergyConeClus + sumpTConeCharged;
@@ -2586,10 +2541,10 @@ void AliAnalysisTaskEMCALPhotonIsolation::PtIsoTrackPhiBand(TLorentzVector c, Do
     }
   }
 
-  if(fWho==2 && !fLightOutput){
-    fTrackMultvsSumChargedvsUE->Fill(iTracksCone,sumpTConeCharged,sumpTPhiBandTrack);
-    fTrackMultvsPt->Fill(iTracksCone,c.Pt());
-  }
+  // if(fWho==2 && !fLightOutput){
+  //   fTrackMultvsSumChargedvsUE->Fill(iTracksCone,sumpTConeCharged,sumpTPhiBandTrack);
+  //   fTrackMultvsPt->Fill(iTracksCone,c.Pt());
+  // }
 
   ptIso = sumpTConeCharged;
   phiBandtrack = sumpTPhiBandTrack;
@@ -2687,10 +2642,10 @@ void AliAnalysisTaskEMCALPhotonIsolation::PtIsoTrackEtaBand(TLorentzVector c, Do
     }
   }
 
-  if(fWho==2 && !fLightOutput){
-    fTrackMultvsSumChargedvsUE->Fill(iTracksCone,sumpTConeCharged, sumpTEtaBandTrack,sumpTEtaBandTrack);
-    fTrackMultvsPt->Fill(iTracksCone,c.Pt());
-  }
+  // if(fWho==2 && !fLightOutput){
+  //   fTrackMultvsSumChargedvsUE->Fill(iTracksCone,sumpTConeCharged, sumpTEtaBandTrack,sumpTEtaBandTrack);
+  //   fTrackMultvsPt->Fill(iTracksCone,c.Pt());
+  // }
 
   ptIso = sumpTConeCharged;
   etaBandtrack = sumpTEtaBandTrack;
@@ -2779,10 +2734,10 @@ void AliAnalysisTaskEMCALPhotonIsolation::PtIsoTrackOrthCones(TLorentzVector c, 
         sumpTPerpConeTrack += eTrack->Pt();
     }
   }
-  if(fWho==2 && !fLightOutput){
-    fTrackMultvsSumChargedvsUE->Fill(iTracksCone,sumpTConeCharged,sumpTPerpConeTrack );
-    fTrackMultvsPt->Fill(iTracksCone,c.Pt());
-  }
+  // if(fWho==2 && !fLightOutput){
+  //   fTrackMultvsSumChargedvsUE->Fill(iTracksCone,sumpTConeCharged,sumpTPerpConeTrack );
+  //   fTrackMultvsPt->Fill(iTracksCone,c.Pt());
+  // }
 
   ptIso = sumpTConeCharged;
   cones = sumpTPerpConeTrack;
@@ -2860,10 +2815,10 @@ void AliAnalysisTaskEMCALPhotonIsolation::PtIsoTrackFullTPC(TLorentzVector c, Do
     }
   }
 
-  if(fWho==2 && !fLightOutput){
-    fTrackMultvsSumChargedvsUE->Fill(iTracksCone,sumpTConeCharged, sumpTTPCexceptB2B);
-    fTrackMultvsPt->Fill(iTracksCone,c.Pt());
-  }
+  // if(fWho==2 && !fLightOutput){
+  //   fTrackMultvsSumChargedvsUE->Fill(iTracksCone,sumpTConeCharged, sumpTTPCexceptB2B);
+  //   fTrackMultvsPt->Fill(iTracksCone,c.Pt());
+  // }
 
   ptIso = sumpTConeCharged;
   full = sumpTTPCexceptB2B;
@@ -3053,7 +3008,7 @@ void AliAnalysisTaskEMCALPhotonIsolation::LookforParticle(Int_t clusterlabel, Do
             else
               clusterFromPromptPhoton=7; // Contribution from one daughter
           }
-	  if(!fLightOutput){
+	  if(fWho != 2){
 	    fpi0VSclusterVSIsolation->Fill(momP2Check->E()*TMath::Sin(momP2Check->Theta()), energyCLS, isolation);
 	    fpi0VSclusterVSM02->Fill(momP2Check->E()*TMath::Sin(momP2Check->Theta()), energyCLS,ss);
 	    fpi0VSM02VSIsolation->Fill(momP2Check->E()*TMath::Sin(momP2Check->Theta()), ss, isolation);
@@ -3144,7 +3099,7 @@ void AliAnalysisTaskEMCALPhotonIsolation::LookforParticle(Int_t clusterlabel, Do
             else
               clusterFromPromptPhoton=7; // Contribution from one daughter
           }
-	  if(!fLightOutput){
+	  if(fWho != 2){
 	    fpi0VSclusterVSIsolation->Fill(grandma->E()*TMath::Sin(grandma->Theta()), energyCLS, isolation);
 	    fpi0VSclusterVSM02->Fill(grandma->E()*TMath::Sin(momP2Check->Theta()), energyCLS, ss);
 	    fpi0VSM02VSIsolation->Fill(grandma->E()*TMath::Sin(grandma->Theta()), ss, isolation);
@@ -3346,17 +3301,17 @@ void AliAnalysisTaskEMCALPhotonIsolation::IsolationAndUEinEMCAL(AliVCluster *coi
       if(isolation<eTThreshold){
         FillInvMassHistograms(kTRUE, m02COI, vecCOI, index, isolation);
 
-        if(fWho==2 && !fLightOutput){
-          fPtvsM02iso->Fill(vecCOI.Pt(),m02COI);
-	  fPtIsolatedNClust->Fill(vecCOI.Pt());
-        }
+        // if(fWho==2 && !fLightOutput){
+        //   fPtvsM02iso->Fill(vecCOI.Pt(),m02COI);
+	//   fPtIsolatedNClust->Fill(vecCOI.Pt());
+        // }
 
         fPtisoT=vecCOI.Pt();
         fM02isoT=m02COI;
 
         if(fM02mincut < m02COI && m02COI < fM02maxcut){
-          if(fWho==2 && !fLightOutput)
-            fEtIsolatedClust->Fill(eTCOI);
+          // if(fWho==2 && !fLightOutput)
+          //   fEtIsolatedClust->Fill(eTCOI);
 
           fEtisolatedT=eTCOI;
           fPtisolatedT=vecCOI.Pt();
@@ -3366,8 +3321,8 @@ void AliAnalysisTaskEMCALPhotonIsolation::IsolationAndUEinEMCAL(AliVCluster *coi
         if(isolation>3.)
           FillInvMassHistograms(kFALSE, m02COI, vecCOI, index, isolation);
 
-        if(fWho==2 && !fLightOutput)
-          fPtvsM02noiso->Fill(vecCOI.Pt(),m02COI);
+        // if(fWho==2 && !fLightOutput)
+        //   fPtvsM02noiso->Fill(vecCOI.Pt(),m02COI);
 
         fPtnoisoT=vecCOI.Pt();
         fM02noisoT=m02COI;
@@ -3412,17 +3367,17 @@ void AliAnalysisTaskEMCALPhotonIsolation::IsolationAndUEinEMCAL(AliVCluster *coi
       if(isolation<eTThreshold){
         FillInvMassHistograms(kTRUE, m02COI, vecCOI, index, isolation);
 
-        if(fWho==2 && !fLightOutput){
-          fPtvsM02iso->Fill(vecCOI.Pt(),m02COI);
-	  fPtIsolatedNTracks->Fill(vecCOI.Pt());
-        }
+        // if(fWho==2 && !fLightOutput){
+        //   fPtvsM02iso->Fill(vecCOI.Pt(),m02COI);
+	//   fPtIsolatedNTracks->Fill(vecCOI.Pt());
+        // }
 
         fPtisoT=vecCOI.Pt();
         fM02isoT=m02COI;
 
         if(fM02mincut < m02COI && m02COI < fM02maxcut){
-          if(fWho==2 && !fLightOutput)
-            fEtIsolatedTracks->Fill(eTCOI);
+          // if(fWho==2 && !fLightOutput)
+          //   fEtIsolatedTracks->Fill(eTCOI);
 
           fEtisolatedT=eTCOI;
           fPtisolatedT=vecCOI.Pt();
@@ -3432,8 +3387,8 @@ void AliAnalysisTaskEMCALPhotonIsolation::IsolationAndUEinEMCAL(AliVCluster *coi
         if(isolation>3.)
           FillInvMassHistograms(kFALSE, m02COI, vecCOI, index, isolation);
 
-        if(fWho==2 && !fLightOutput)
-          fPtvsM02noiso->Fill(vecCOI.Pt(),m02COI);
+        // if(fWho==2 && !fLightOutput)
+        //   fPtvsM02noiso->Fill(vecCOI.Pt(),m02COI);
 
         fPtnoisoT=vecCOI.Pt();
         fM02noisoT=m02COI;
@@ -3486,17 +3441,17 @@ void AliAnalysisTaskEMCALPhotonIsolation::IsolationAndUEinTPC(AliVCluster *coi, 
       if(isolation<eTThreshold){
         FillInvMassHistograms(kTRUE, m02COI, vecCOI, index,isolation);
 
-        if(fWho==2 && !fLightOutput){
-          fPtvsM02iso->Fill(vecCOI.Pt(),m02COI);
-	  fPtIsolatedNTracks->Fill(vecCOI.Pt());
-        }
+        // if(fWho==2 && !fLightOutput){
+        //   fPtvsM02iso->Fill(vecCOI.Pt(),m02COI);
+	//   fPtIsolatedNTracks->Fill(vecCOI.Pt());
+        // }
 
         fPtisoT=vecCOI.Pt();
         fM02isoT=m02COI;
 
         if(fM02mincut < m02COI && m02COI < fM02maxcut){
-          if(fWho==2 && !fLightOutput)
-            fEtIsolatedTracks->Fill(eTCOI);
+          // if(fWho==2 && !fLightOutput)
+          //   fEtIsolatedTracks->Fill(eTCOI);
 
           fEtisolatedT=eTCOI;
           fPtisolatedT=vecCOI.Pt();
@@ -3506,8 +3461,8 @@ void AliAnalysisTaskEMCALPhotonIsolation::IsolationAndUEinTPC(AliVCluster *coi, 
         if(isolation>3.)
           FillInvMassHistograms(kFALSE, m02COI, vecCOI, index,isolation);
 
-        if(fWho==2 && !fLightOutput)
-          fPtvsM02noiso->Fill(vecCOI.Pt(),m02COI);
+        // if(fWho==2 && !fLightOutput)
+        //   fPtvsM02noiso->Fill(vecCOI.Pt(),m02COI);
 
         fPtnoisoT=vecCOI.Pt();
         fM02noisoT=m02COI;
@@ -3535,17 +3490,17 @@ void AliAnalysisTaskEMCALPhotonIsolation::IsolationAndUEinTPC(AliVCluster *coi, 
       if(isolation<eTThreshold){
         FillInvMassHistograms(kTRUE, m02COI, vecCOI, index,isolation);
 
-        if(fWho==2 && !fLightOutput){
-          fPtvsM02iso->Fill(vecCOI.Pt(),m02COI);
-	  fPtIsolatedNTracks->Fill(vecCOI.Pt());
-        }
+        // if(fWho==2 && !fLightOutput){
+        //   fPtvsM02iso->Fill(vecCOI.Pt(),m02COI);
+	//   fPtIsolatedNTracks->Fill(vecCOI.Pt());
+        // }
 
         fPtisoT=vecCOI.Pt();
         fM02isoT=m02COI;
 
         if(fM02mincut < m02COI && m02COI < fM02maxcut){
-          if(fWho==2 && !fLightOutput)
-            fEtIsolatedTracks->Fill(eTCOI);
+          // if(fWho==2 && !fLightOutput)
+          //   fEtIsolatedTracks->Fill(eTCOI);
 
           fEtisolatedT=eTCOI;
           fPtisolatedT=vecCOI.Pt();
@@ -3555,8 +3510,8 @@ void AliAnalysisTaskEMCALPhotonIsolation::IsolationAndUEinTPC(AliVCluster *coi, 
         if(isolation>3.)
           FillInvMassHistograms(kFALSE, m02COI, vecCOI, index,isolation);
 
-        if(fWho==2 && !fLightOutput)
-          fPtvsM02noiso->Fill(vecCOI.Pt(),m02COI);
+        // if(fWho==2 && !fLightOutput)
+        //   fPtvsM02noiso->Fill(vecCOI.Pt(),m02COI);
 
         fPtnoisoT=vecCOI.Pt();
         fM02noisoT=m02COI;
@@ -3585,17 +3540,17 @@ void AliAnalysisTaskEMCALPhotonIsolation::IsolationAndUEinTPC(AliVCluster *coi, 
       if(isolation<eTThreshold){
         FillInvMassHistograms(kTRUE, m02COI, vecCOI, index, isolation);
 
-        if(fWho==2 && !fLightOutput){
-          fPtvsM02iso->Fill(vecCOI.Pt(),m02COI);
-	  fPtIsolatedNTracks->Fill(vecCOI.Pt());
-        }
+        // if(fWho==2 && !fLightOutput){
+        //   fPtvsM02iso->Fill(vecCOI.Pt(),m02COI);
+	//   fPtIsolatedNTracks->Fill(vecCOI.Pt());
+        // }
 
         fPtisoT=vecCOI.Pt();
         fM02isoT=m02COI;
 
         if(fM02mincut < m02COI && m02COI < fM02maxcut){
-          if(fWho==2 && !fLightOutput)
-            fEtIsolatedTracks->Fill(eTCOI);
+          // if(fWho==2 && !fLightOutput)
+          //   fEtIsolatedTracks->Fill(eTCOI);
 
           fEtisolatedT=eTCOI;
           fPtisolatedT=vecCOI.Pt();
@@ -3605,8 +3560,8 @@ void AliAnalysisTaskEMCALPhotonIsolation::IsolationAndUEinTPC(AliVCluster *coi, 
         if(isolation>3.)
           FillInvMassHistograms(kFALSE, m02COI, vecCOI, index, isolation);
 
-        if(fWho==2 && !fLightOutput)
-          fPtvsM02noiso->Fill(vecCOI.Pt(),m02COI);
+        // if(fWho==2 && !fLightOutput)
+        //   fPtvsM02noiso->Fill(vecCOI.Pt(),m02COI);
 
         fPtnoisoT=vecCOI.Pt();
         fM02noisoT=m02COI;
@@ -3638,17 +3593,17 @@ void AliAnalysisTaskEMCALPhotonIsolation::IsolationAndUEinTPC(AliVCluster *coi, 
       if(isolation<eTThreshold){
         FillInvMassHistograms(kTRUE, m02COI, vecCOI, index, isolation);
 
-        if(fWho==2 && !fLightOutput){
-          fPtvsM02iso->Fill(vecCOI.Pt(),m02COI);
-	  fPtIsolatedNTracks->Fill(vecCOI.Pt());
-        }
+        // if(fWho==2 && !fLightOutput){
+        //   fPtvsM02iso->Fill(vecCOI.Pt(),m02COI);
+	//   fPtIsolatedNTracks->Fill(vecCOI.Pt());
+        // }
 
         fPtisoT=vecCOI.Pt();
         fM02isoT=m02COI;
 
         if(fM02mincut < m02COI && m02COI < fM02maxcut){
-          if(fWho==2 && !fLightOutput)
-            fEtIsolatedTracks->Fill(eTCOI);
+          // if(fWho==2 && !fLightOutput)
+          //   fEtIsolatedTracks->Fill(eTCOI);
 
           fEtisolatedT=eTCOI;
           fPtisolatedT=vecCOI.Pt();
@@ -3658,8 +3613,8 @@ void AliAnalysisTaskEMCALPhotonIsolation::IsolationAndUEinTPC(AliVCluster *coi, 
         if(isolation>3.)
           FillInvMassHistograms(kFALSE, m02COI, vecCOI, index, isolation);
 
-        if(fWho==2 && !fLightOutput)
-          fPtvsM02noiso->Fill(vecCOI.Pt(),m02COI);
+        // if(fWho==2 && !fLightOutput)
+        //   fPtvsM02noiso->Fill(vecCOI.Pt(),m02COI);
 
         fPtnoisoT=vecCOI.Pt();
         fM02noisoT=m02COI;
@@ -3716,9 +3671,9 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::FillGeneralHistograms(AliVCluster *c
 
     case 2:  // Etmax < EtThr
       eTThreshold = fEtIsoThreshold;
-      if(eTCOI<eTThreshold && fWho==2 && !fLightOutput){ // Photon candidate, cuts have to be decided after studies
-        fEtIsolatedClust->Fill(eTCOI);
-      }
+      // if(eTCOI<eTThreshold && fWho==2 && !fLightOutput){ // Photon candidate, cuts have to be decided after studies
+      //   fEtIsolatedClust->Fill(eTCOI);
+      // }
       break;
   }
 
@@ -4128,323 +4083,198 @@ void AliAnalysisTaskEMCALPhotonIsolation::AnalyzeMC(){
     // AliAODMCParticle *mcfirst = static_cast<AliAODMCParticle*>(fAODMCParticles->At(0));
     // AliAODMCParticle *mcp, *mcpmaxE, *mcpp, *mom;
 
-  if(!fisLCAnalysis){
-    for(int iTr=0;iTr<nTracks;iTr++){
-      eT=0.; phi=0.; eta=0.;
+  for(int iTr=0;iTr<nTracks;iTr++){
+    eT=0.; phi=0.; eta=0.;
 
-      mcpart = static_cast<AliAODMCParticle*>(fAODMCParticles->At(iTr));
+    mcpart = static_cast<AliAODMCParticle*>(fAODMCParticles->At(iTr));
 
-      if(mcpart->GetStatus()>10)
-        continue;
+    if(mcpart->GetStatus()>10)
+      continue;
 
-      if(!mcpart->IsPrimary())
-        continue;
+    if(!mcpart->IsPrimary())
+      continue;
 
-      if(!mcpart->IsPhysicalPrimary())
-        continue;
+    if(!mcpart->IsPhysicalPrimary())
+      continue;
 
-      pdg = mcpart->GetPdgCode();
-      if(pdg != 22 /*|| mcpart->GetLabel()!=8*/)
-        continue;
+    pdg = mcpart->GetPdgCode();
+    if(pdg != 22 /*|| mcpart->GetLabel()!=8*/)
+      continue;
 
-      eta = mcpart->Eta();
-      phi = mcpart->Phi();
+    eta = mcpart->Eta();
+    phi = mcpart->Phi();
 
-      // Check photons in EMCal
-      if(!fTPC4Iso){
-	etaMax = fGeom->GetArm1EtaMax()-0.03-fFiducialCut;
+    // Check photons in EMCal
+    if(!fTPC4Iso){
+      etaMax = fGeom->GetArm1EtaMax()-0.03-fFiducialCut;
 
-	if(!fPeriod.IsNull()){
-	  phiMinEMCal = (fGeom->GetArm1PhiMin())*TMath::DegToRad()+0.03+fFiducialCut;
-	  if(fPeriod.Contains("12") || fPeriod.Contains("13"))
-	    phiMaxEMCal = (fGeom->GetEMCALPhiMax()-20.)*TMath::DegToRad()-0.03-fFiducialCut;
-	  else
-	    phiMaxEMCal = (fGeom->GetEMCALPhiMax())*TMath::DegToRad()-0.03-fFiducialCut;
-	}
-	else{ // If no period set, default for 2011-2013 (2*5 EMCal SM)
-	  phiMinEMCal = (4./9.)*TMath::Pi()+0.03+fFiducialCut;
-	  phiMaxEMCal = TMath::Pi()-0.03-fFiducialCut;
-	}
-
-        if((TMath::Abs(eta) > etaMax) || (phi < phiMinEMCal || phi > phiMaxEMCal))
-          continue;
+      if(!fPeriod.IsNull()){
+	phiMinEMCal = (fGeom->GetArm1PhiMin())*TMath::DegToRad()+0.03+fFiducialCut;
+	if(fPeriod.Contains("12") || fPeriod.Contains("13"))
+	  phiMaxEMCal = (fGeom->GetEMCALPhiMax()-20.)*TMath::DegToRad()-0.03-fFiducialCut;
+	else
+	  phiMaxEMCal = (fGeom->GetEMCALPhiMax())*TMath::DegToRad()-0.03-fFiducialCut;
       }
-      else{
-	etaMax = 0.87-fFiducialCut;
-
-	if(!fPeriod.IsNull()){
-	  phiMinEMCal = (fGeom->GetArm1PhiMin())*TMath::DegToRad()+0.03;
-	  if(fPeriod.Contains("12") || fPeriod.Contains("13"))
-	    phiMaxEMCal = (fGeom->GetEMCALPhiMax()-20.)*TMath::DegToRad()-0.03;
-	  else
-	    phiMaxEMCal = (fGeom->GetEMCALPhiMax())*TMath::DegToRad()-0.03;
-	}
-	else{ // If no period set, default for 2011-2013 (2*5 EMCal SM)
-	  phiMinEMCal = (4./9.)*TMath::Pi()+0.03;
-	  phiMaxEMCal = TMath::Pi()-0.03;
-	}
-
-        if((TMath::Abs(eta) > etaMax) || (phi < phiMinEMCal || phi > phiMaxEMCal))
-          continue;
+      else{ // If no period set, default for 2011-2013 (2*5 EMCal SM)
+	phiMinEMCal = (4./9.)*TMath::Pi()+0.03+fFiducialCut;
+	phiMaxEMCal = TMath::Pi()-0.03-fFiducialCut;
       }
 
-        // printf("\nParticle Position %d  and Label: %d  PDG: %d  Pt: %f  Eta: %f  Phi: %f",iTr, mcpart->GetLabel(),pdg,mcpart->Pt(), eta, phi);
-
-      photonlabel = iTr;
-
-      int momidx = mcpart->GetMother();
-      if(momidx>0){
-        mom = static_cast<AliAODMCParticle*>(fAODMCParticles->At(momidx));
-        mompdg = TMath::Abs(mom->GetPdgCode());
-      }
-      else
-        mompdg=mcpart->GetPdgCode();
-
-        // printf("With Mother at %d with label %d which is a %d",momidx, mom->GetLabel(), mompdg);
-
-      eT = mcpart->E()*TMath::Sin(mcpart->Theta()); // Transform to transverse Energy
-
-      if(fWho == 1)
-	fphietaPhotons->Fill(eta,phi,eT);
-        //Taking out this part of code since it introduces a bias in the efficiency
-        //computation
-//      bool foundmatch=kFALSE;
-//      for(int m=0;m<nTracks && foundmatch==kFALSE;m++){
-//        if(m==iTr)
-//          continue;
-//
-//        matchingtrack = static_cast<AliAODMCParticle*>(fAODMCParticles->At(m));
-//
-//        if(! matchingtrack->IsPrimary())
-//          continue;
-//        if(! matchingtrack->IsPhysicalPrimary())
-//          continue;
-//        if(matchingtrack->GetStatus()> 10 )
-//          continue;
-//
-//        Double_t etamatching = matchingtrack->Eta();
-//        Double_t phimatching = matchingtrack->Phi();
-//
-//        if(TMath::Abs(eta-etamatching)<=fdetacut && TMath::Abs(phi-phimatching)<=fdphicut){
-//          foundmatch=kTRUE;
-//	  if(fWho == 1){
-//	    fphietaOthers->Fill(matchingtrack->Eta(),matchingtrack->Phi(),eT);
-//	    fphietaOthersBis->Fill(matchingtrack->Eta(),matchingtrack->Phi(),matchingtrack->Pt());
-//	  }
-//        }
-//      }
-//
-//      if(foundmatch)
-//        continue;
-
-      distance=0.;
-      phip=0., etap=0.;
-      sumEiso=0.,sumUE=0.;
-
-      for(int iTrack=0;iTrack<nTracks;iTrack++){
-        if(iTrack==photonlabel)
-          continue;
-
-        mcpp = static_cast<AliAODMCParticle*>(fAODMCParticles->At(iTrack));
-
-        if(!mcpp)
-          continue;
-
-        if(mcpp->Charge() != 0 && mcpp->GetStatus()<10)
-          fPtTracksVSpTNC_MC->Fill(eT,mcpp->Pt());
-
-        if(fIsoMethod==2){
-          if((mcpp->Charge())==0)
-            continue;
-        }
-          //only final state PhysicalPrimary and primary particles
-        if(mcpp->GetStatus()>10 || (!mcpp->IsPhysicalPrimary() || (!mcpp->IsPrimary())))
-          continue;
-
-        int mumidx=mcpp->GetMother();
-        if(mumidx<0 || mumidx>nTracks)
-          continue;
-
-        mum = static_cast<AliAODMCParticle*>(fAODMCParticles->At(mumidx));
-        if(mumidx == photonlabel)
-          continue;
-
-        phip = mcpp->Phi();
-        etap = mcpp->Eta();
-
-          // Depending on which isolation method and UE method is considered
-        distance = TMath::Sqrt((phi-phip)*(phi-phip) + (eta-etap)*(eta-etap));
-
-        if(distance <= fIsoConeRadius){
-            // cout<<iTrack<<"\t"<<photonlabel<<endl;
-            // mcpp->Print();
-          if(mcpp->E()<0.3)//minimum energy for clusters allowed at reconstructed level
-            continue;
-
-          if(mcpp->Charge()!=0)//using pT for charged particles
-            sumEiso += mcpp->Pt();
-          else{
-            if(mcpp->GetPdgCode()==22) //using ET for photons
-              sumEiso += mcpp->E()*TMath::Sin(mcpp->Theta());
-            else //skipping neutral hadrons
-              continue;
-          }
-        }
-        else{
-          if(mcpp->Charge()==0 && mcpp->GetPdgCode()!=22) //skipping neutral hadrons
-            continue;
-          else
-            AddParticleToUEMC(sumUE,mcpp, eta, phi);
-        }
-      }
-
-      CalculateUEDensityMC(sumUE);
-
-        // printf("Storing Particle: Label %d  PDG: %d  Eta: %f  Phi: %f",mcpart->GetLabel(),pdg,eta,phi);
-        // printf("With Mother at %d with label %d which is a %d",momidx, mom->GetLabel(), mompdg);
-      outputValuesMC[0] = eT;
-      outputValuesMC[1] = sumEiso;
-      outputValuesMC[2] = sumUE;
-      outputValuesMC[3] = mompdg;
-      outputValuesMC[4] = eta;
-      outputValuesMC[5] = phi;
-      outputValuesMC[6] = mcpart->GetLabel();
-        // EtaPhiMCPhoton
-        // EtMC
-        // EtIsoCone
-        // EtMother
-        // UE Et
-        // Mother PDG
-        // fill some histograms or a THnSparse or a TTree.
-        //	AliError(Form("Fill something in Analize MC"));
-      if(fWho==1)
-        fOutMCTruth->Fill(outputValuesMC);
-      if(fWho==2)
-	fPtvsSumUE_MC->Fill(eT, sumEiso-sumUE);
+      if((TMath::Abs(eta) > etaMax) || (phi < phiMinEMCal || phi > phiMaxEMCal))
+	continue;
     }
-  }
-  else{
-    maxE=0.;
-    int indexmaxE=0;
+    else{
+      etaMax = 0.87-fFiducialCut;
 
-      // Getting the index of the particle with the maximum energy
-    for(int iTr=0;iTr<nTracks;iTr++){
-      mcsearch = static_cast<AliAODMCParticle*>(fAODMCParticles->At(iTr));
-
-      if(!mcsearch)
-        continue;
-
-      if(mcsearch->GetStatus()>10)
-        continue;
-      if(mcsearch->GetPdgCode() != 22)
-        continue;
-
-      // eta = mcsearch->Eta();
-      // phi = mcsearch->Phi();
-
-      if(!fTPC4Iso){
-	etaMax = fGeom->GetArm1EtaMax()-0.03-fFiducialCut;
-
-	if(!fPeriod.IsNull()){
-	  phiMinEMCal = (fGeom->GetArm1PhiMin())*TMath::DegToRad()+0.03+fFiducialCut;
-	  if(fPeriod.Contains("12") || fPeriod.Contains("13"))
-	    phiMaxEMCal = (fGeom->GetEMCALPhiMax()-20.)*TMath::DegToRad()-0.03-fFiducialCut;
-	  else
-	    phiMaxEMCal = (fGeom->GetEMCALPhiMax())*TMath::DegToRad()-0.03-fFiducialCut;
-	}
-	else{ // If no period set, default for 2011-2013 (2*5 EMCal SM)
-	  phiMinEMCal = (4./9.)*TMath::Pi()+0.03+fFiducialCut;
-	  phiMaxEMCal = TMath::Pi()-0.03-fFiducialCut;
-	}
-
-        if((TMath::Abs(mcsearch->Eta()) > etaMax) || (mcsearch->Phi() < phiMinEMCal || mcsearch->Phi() > phiMaxEMCal))
-          continue;
+      if(!fPeriod.IsNull()){
+	phiMinEMCal = (fGeom->GetArm1PhiMin())*TMath::DegToRad()+0.03;
+	if(fPeriod.Contains("12") || fPeriod.Contains("13"))
+	  phiMaxEMCal = (fGeom->GetEMCALPhiMax()-20.)*TMath::DegToRad()-0.03;
+	else
+	  phiMaxEMCal = (fGeom->GetEMCALPhiMax())*TMath::DegToRad()-0.03;
       }
-      else{
-	etaMax = 0.87-fFiducialCut;
-
-	if(!fPeriod.IsNull()){
-	  phiMinEMCal = (fGeom->GetArm1PhiMin())*TMath::DegToRad()+0.03;
-	  if(fPeriod.Contains("12") || fPeriod.Contains("13"))
-	    phiMaxEMCal = (fGeom->GetEMCALPhiMax()-20.)*TMath::DegToRad()-0.03;
-	  else
-	    phiMaxEMCal = (fGeom->GetEMCALPhiMax())*TMath::DegToRad()-0.03;
-	}
-	else{ // If no period set, default for 2011-2013 (2*5 EMCal SM)
-	  phiMinEMCal = (4./9.)*TMath::Pi()+0.03;
-	  phiMaxEMCal = TMath::Pi()-0.03;
-	}
-
-        if((TMath::Abs(mcsearch->Eta()) > etaMax) || (mcsearch->Phi() < phiMinEMCal || mcsearch->Phi() > phiMaxEMCal))
-          continue;
+      else{ // If no period set, default for 2011-2013 (2*5 EMCal SM)
+	phiMinEMCal = (4./9.)*TMath::Pi()+0.03;
+	phiMaxEMCal = TMath::Pi()-0.03;
       }
 
-      mcfirstEnergy = mcsearch->E()*TMath::Sin(mcsearch->Theta());
-      if(mcfirstEnergy>maxE){
-        maxE=mcfirstEnergy;
-        indexmaxE=iTr;
-      }
-      else
-        continue;
+      if((TMath::Abs(eta) > etaMax) || (phi < phiMinEMCal || phi > phiMaxEMCal))
+	continue;
     }
 
-    mcfirst= static_cast<AliAODMCParticle*>(fAODMCParticles->At(indexmaxE));
-    mcfirstEnergy=mcfirst->E()*TMath::Sin(mcfirst->Theta());
+    // printf("\nParticle Position %d  and Label: %d  PDG: %d  Pt: %f  Eta: %f  Phi: %f",iTr, mcpart->GetLabel(),pdg,mcpart->Pt(), eta, phi);
 
-    int momidx= mcfirst->GetMother();
+    photonlabel = iTr;
+
+    int momidx = mcpart->GetMother();
     if(momidx>0){
       mom = static_cast<AliAODMCParticle*>(fAODMCParticles->At(momidx));
-      mompdg= TMath::Abs(mom->GetPdgCode());
+      mompdg = TMath::Abs(mom->GetPdgCode());
     }
     else
-      mompdg=mcfirst->GetPdgCode();
+      mompdg=mcpart->GetPdgCode();
 
-    mcFirstEta = mcfirst->Eta();
-    mcFirstPhi = mcfirst->Phi();
+    // printf("With Mother at %d with label %d which is a %d",momidx, mom->GetLabel(), mompdg);
 
+    eT = mcpart->E()*TMath::Sin(mcpart->Theta()); // Transform to transverse Energy
+
+    if(fWho == 1)
+      fphietaPhotons->Fill(eta,phi,eT);
+    //Taking out this part of code since it introduces a bias in the efficiency
+    //computation
+    //      bool foundmatch=kFALSE;
+    //      for(int m=0;m<nTracks && foundmatch==kFALSE;m++){
+    //        if(m==iTr)
+    //          continue;
+    //
+    //        matchingtrack = static_cast<AliAODMCParticle*>(fAODMCParticles->At(m));
+    //
+    //        if(! matchingtrack->IsPrimary())
+    //          continue;
+    //        if(! matchingtrack->IsPhysicalPrimary())
+    //          continue;
+    //        if(matchingtrack->GetStatus()> 10 )
+    //          continue;
+    //
+    //        Double_t etamatching = matchingtrack->Eta();
+    //        Double_t phimatching = matchingtrack->Phi();
+    //
+    //        if(TMath::Abs(eta-etamatching)<=fdetacut && TMath::Abs(phi-phimatching)<=fdphicut){
+    //          foundmatch=kTRUE;
+    //	  if(fWho == 1){
+    //	    fphietaOthers->Fill(matchingtrack->Eta(),matchingtrack->Phi(),eT);
+    //	    fphietaOthersBis->Fill(matchingtrack->Eta(),matchingtrack->Phi(),matchingtrack->Pt());
+    //	  }
+    //        }
+    //      }
+    //
+    //      if(foundmatch)
+    //        continue;
+
+    distance=0.;
     phip=0., etap=0.;
-    sumEiso=0,sumUE=0;
+    sumEiso=0.,sumUE=0.;
 
-    for(Int_t iTrack=1;iTrack<nTracks ;iTrack++){
-      if(iTrack==indexmaxE)
-        continue;
+    for(int iTrack=0;iTrack<nTracks;iTrack++){
+      if(iTrack==photonlabel)
+	continue;
 
       mcpp = static_cast<AliAODMCParticle*>(fAODMCParticles->At(iTrack));
+
+      if(!mcpp)
+	continue;
+
+      if(mcpp->Charge() != 0 && mcpp->GetStatus()<10)
+	fPtTracksVSpTNC_MC->Fill(eT,mcpp->Pt());
+
+      if(fIsoMethod==2){
+	if((mcpp->Charge())==0)
+	  continue;
+      }
+      //only final state PhysicalPrimary and primary particles
+      if(mcpp->GetStatus()>10 || (!mcpp->IsPhysicalPrimary() || (!mcpp->IsPrimary())))
+	continue;
+
+      int mumidx=mcpp->GetMother();
+      if(mumidx<0 || mumidx>nTracks)
+	continue;
+
+      mum = static_cast<AliAODMCParticle*>(fAODMCParticles->At(mumidx));
+      if(mumidx == photonlabel)
+	continue;
+
       phip = mcpp->Phi();
       etap = mcpp->Eta();
 
-      if(!mcpp)
-        continue;
+      // Depending on which isolation method and UE method is considered
+      distance = TMath::Sqrt((phi-phip)*(phi-phip) + (eta-etap)*(eta-etap));
 
-      if(mcpp->GetStatus()>10)
-        continue;
-      if(!mcpp->IsPrimary())
-        continue;
+      if(distance <= fIsoConeRadius){
+	// cout<<iTrack<<"\t"<<photonlabel<<endl;
+	// mcpp->Print();
+	if(mcpp->E()<0.3)//minimum energy for clusters allowed at reconstructed level
+	  continue;
 
-      distance=0.;
-      distance= TMath::Sqrt((mcFirstPhi- phip)*(mcFirstPhi- phip) + (mcFirstEta- etap)*(mcFirstEta- etap));
-
-      if(distance<=fIsoConeRadius)
-        sumEiso += mcpp->E()*TMath::Sin(mcpp->Theta());
-      else
-        AddParticleToUEMC(sumUE,mcpp,mcFirstEta,mcFirstPhi);
+	if(mcpp->Charge()!=0)//using pT for charged particles
+	  sumEiso += mcpp->Pt();
+	else{
+	  if(mcpp->GetPdgCode()==22) //using ET for photons
+	    sumEiso += mcpp->E()*TMath::Sin(mcpp->Theta());
+	  else //skipping neutral hadrons
+	    continue;
+	}
+      }
+      else{
+	if(mcpp->Charge()==0 && mcpp->GetPdgCode()!=22) //skipping neutral hadrons
+	  continue;
+	else
+	  AddParticleToUEMC(sumUE,mcpp, eta, phi);
+      }
     }
 
-      // cout<<"\n\nTotal Energy inside the Isolation Cone : "<<sumEiso<<endl;
     CalculateUEDensityMC(sumUE);
-      // cout<<"Total UE Energy : "<<sumUE<<" calculated with method "<<fUEMethod<<endl;
-    outputValuesMC[0] = mcfirstEnergy;
+
+    // printf("Storing Particle: Label %d  PDG: %d  Eta: %f  Phi: %f",mcpart->GetLabel(),pdg,eta,phi);
+    // printf("With Mother at %d with label %d which is a %d",momidx, mom->GetLabel(), mompdg);
+    outputValuesMC[0] = eT;
     outputValuesMC[1] = sumEiso;
     outputValuesMC[2] = sumUE;
     outputValuesMC[3] = mompdg;
-    outputValuesMC[4] = mcFirstEta;
-    outputValuesMC[5] = mcFirstPhi;
-    outputValuesMC[6] = mcfirst->GetLabel();
-      // Fill the Output TTree for MC Truth
+    outputValuesMC[4] = eta;
+    outputValuesMC[5] = phi;
+    outputValuesMC[6] = mcpart->GetLabel();
+    // EtaPhiMCPhoton
+    // EtMC
+    // EtIsoCone
+    // EtMother
+    // UE Et
+    // Mother PDG
+    // fill some histograms or a THnSparse or a TTree.
+    //	AliError(Form("Fill something in Analize MC"));
     if(fWho==1)
       fOutMCTruth->Fill(outputValuesMC);
     if(fWho==2)
-      fPtvsSumUE_MC->Fill(mcfirstEnergy, sumEiso-sumUE);
+      fPtvsSumUE_MC->Fill(eT, sumEiso-sumUE);
   }
 
   return;
