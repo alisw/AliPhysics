@@ -388,7 +388,7 @@ void AliAnalysisTaskPHOSEmbeddingEfficiency::ProcessMC()
   Double_t pT_origin = p_origin->Pt();
   Double_t weight = f1weight->Eval(pT_origin) * pT_origin;
 
-  Int_t genID = -1;
+  //Int_t genID = -1;
   Double_t pT=0, rapidity=0, phi=0;
   Int_t pdg = 0;
   TString parname = "";
@@ -398,7 +398,7 @@ void AliAnalysisTaskPHOSEmbeddingEfficiency::ProcessMC()
 
   for(Int_t i=0;i<Ntrack;i++){
     AliAODMCParticle *p = (AliAODMCParticle*)fMCArray->At(i);
-    genID = p->GetGeneratorIndex();
+    //genID = p->GetGeneratorIndex();
     pT = p->Pt();
     rapidity = p->Y();
     phi = p->Phi();
@@ -511,10 +511,8 @@ void AliAnalysisTaskPHOSEmbeddingEfficiency::FillPhoton()
   TF1 *f1trg = GetTriggerEfficiencyFunction();
   Double_t value[2] = {};
   Double_t sp1 = -999;
-  Double_t sp2 = -999;
 
   Double_t weight = 1.;
-  Int_t primary = -1;
 
   for(Int_t iph=0;iph<multClust;iph++){
     AliCaloPhoton *ph = (AliCaloPhoton*)fPHOSClusterArray->At(iph);
@@ -527,7 +525,6 @@ void AliAnalysisTaskPHOSEmbeddingEfficiency::FillPhoton()
 
     weight = 1.;
     if(fIsMC){
-      primary = ph->GetPrimary();
       weight = ph->GetWeight();
     }
 
@@ -542,6 +539,10 @@ void AliAnalysisTaskPHOSEmbeddingEfficiency::FillPhoton()
     }
 
     eff = f1tof->Eval(energy);
+
+    if(!fIsMC && fIsPHOSTriggerAnalysis){
+      trgeff  = f1trg->Eval(energy);
+    }
 
     //0 < photon phi < 2pi
     if(phi < 0) phi += TMath::TwoPi();
@@ -592,14 +593,8 @@ void AliAnalysisTaskPHOSEmbeddingEfficiency::FillMgg()
 
   Double_t value[4] = {};
   Double_t sp1 = -999;
-  Double_t sp2 = -999;
 
   Double_t weight = 1., w1 = 1., w2 = 1.;
-
-  Double_t TrueK0SPt = 0;
-  Double_t TrueL0Pt = 0;
-
-  Int_t commonID = -1;
 
   for(Int_t i1=0;i1<multClust-1;i1++){
     AliCaloPhoton *ph1 = (AliCaloPhoton*)fPHOSClusterArray->At(i1);
@@ -713,7 +708,6 @@ void AliAnalysisTaskPHOSEmbeddingEfficiency::FillMixMgg()
 
   Double_t value[4] = {};
   Double_t sp1 = -999;
-  Double_t sp2 = -999;
 
   for(Int_t i1=0;i1<multClust;i1++){
     AliCaloPhoton *ph1 = (AliCaloPhoton*)fPHOSClusterArray->At(i1);

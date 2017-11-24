@@ -21,7 +21,8 @@ AliAnalysisTaskPHOSPi0EtaToGammaGamma* AddTaskPHOSPi0EtaToGammaGamma_pp_5TeV(
     const Double_t bs = 25.,//bunch space in ns.
     const Double_t distBC = 0,//minimum distance to bad channel.
     const Bool_t isJJMC = kFALSE,
-    const TString MCtype = "MBMC"
+    const TString MCtype = "MBMC",
+    const Bool_t ForceActiveTRU = kFALSE
     )
 {
   //Add a task AliAnalysisTaskPHOSPi0EtaToGammaGamma to the analysis train
@@ -91,6 +92,8 @@ AliAnalysisTaskPHOSPi0EtaToGammaGamma* AddTaskPHOSPi0EtaToGammaGamma_pp_5TeV(
   }
   else taskname = Form("%s_%s_%s_Cen%d_%d%s_BS%dns_DBC%dcell",name,CollisionSystem.Data(),TriggerName.Data(),(Int_t)CenMin,(Int_t)CenMax,PIDname.Data(),(Int_t)bs,(Int_t)(distBC));
 
+  if(ForceActiveTRU) taskname += "_ForceActiveTRU";
+
   AliAnalysisTaskPHOSPi0EtaToGammaGamma* task = new AliAnalysisTaskPHOSPi0EtaToGammaGamma(taskname);
 
   Double_t Ethre = 0.0;
@@ -103,6 +106,7 @@ AliAnalysisTaskPHOSPi0EtaToGammaGamma* AddTaskPHOSPi0EtaToGammaGamma_pp_5TeV(
   //if(trigger == (UInt_t)AliVEvent::kPHI7) task->SetPHOSTriggerAnalysis(triggerinput,isMC);
   if(trigger == (UInt_t)AliVEvent::kPHI7) task->SetPHOSTriggerAnalysis(L1input,L0input,Ethre,isMC);
   if(kMC && trigger == (UInt_t)AliVEvent::kPHI7) trigger = AliVEvent::kINT7;//change trigger selection in MC when you do PHOS trigger analysis.
+  if(ForceActiveTRU) task->SetForceActiveTRU(L1input,L0input,Ethre,isMC);//this is to measure rejection factor from cluster energy kPHI7/kINT7 with same acceptance.
 
   task->SelectCollisionCandidates(trigger);
 
