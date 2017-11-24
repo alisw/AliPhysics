@@ -9375,8 +9375,10 @@ void AliAnalysisTaskMultiparticleFemtoscopy::ProjectMPDF2p()
  fMPDFList->Add(fhs2p[2]);
 
  // Projections on Q2:
+
  const Int_t nDim = 6;
  Int_t nBins[nDim] = {0}; // TBI most likely, this shall go to data members
+
  TAxis *axis = NULL; 
  for(Int_t dim=0;dim<nDim;dim++)
  {
@@ -9473,7 +9475,7 @@ Double_t AliAnalysisTaskMultiparticleFemtoscopy::BinCenterSparse(THnSparse *hs, 
 
  // Fetch the axis for specified dimension:
  TAxis *axis = hs->GetAxis(dim);
- if(!axis){exit(0);} 
+ if(!axis){exit(0);}
 
  // Fetch # of bins for the specified axis:
  Int_t nBins = axis->GetNbins();
