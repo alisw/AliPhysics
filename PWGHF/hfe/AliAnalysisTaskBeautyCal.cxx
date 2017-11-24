@@ -186,6 +186,8 @@ ClassImp(AliAnalysisTaskBeautyCal)
   fHistDCApe(0),
   fHistDCAdeEnhance(0),
   fHistDCAbeEnhance(0),
+  fHistDCAbeEnhance_D0(0),
+  fHistDCAbeEnhance_D(0),
   fHistDCAdePureMC(0),
   fHistDCAbePureMC(0),
   fHistDCAdeInc(0),
@@ -335,6 +337,8 @@ AliAnalysisTaskBeautyCal::AliAnalysisTaskBeautyCal()
   fHistDCApe(0),
   fHistDCAdeEnhance(0),
   fHistDCAbeEnhance(0),
+  fHistDCAbeEnhance_D0(0),
+  fHistDCAbeEnhance_D(0),
   fHistDCAdePureMC(0),
   fHistDCAbePureMC(0),
   fHistDCAdeInc(0),
@@ -714,6 +718,12 @@ void AliAnalysisTaskBeautyCal::UserCreateOutputObjects()
  
   fHistDCAbeEnhance = new TH2D("fHistDCAbeEnhance", "DCA of B-> e; p_{T}(GeV/c);DCAxchargexMag.", 40,0,40,2000,-0.2,0.2);
   fOutputList->Add(fHistDCAbeEnhance);
+
+  fHistDCAbeEnhance_D0 = new TH2D("fHistDCAbeEnhance_D0", "DCA of B-> e; p_{T}(GeV/c);DCAxchargexMag.", 40,0,40,2000,-0.2,0.2);
+  fOutputList->Add(fHistDCAbeEnhance_D0);
+
+  fHistDCAbeEnhance_D = new TH2D("fHistDCAbeEnhance_D", "DCA of B-> e; p_{T}(GeV/c);DCAxchargexMag.", 40,0,40,2000,-0.2,0.2);
+  fOutputList->Add(fHistDCAbeEnhance_D);
 
   fHistDCAdePureMC = new TH2D("fHistDCAdePureMC", "DCA of D-> e; p_{T}(GeV/c);DCAxchargexMag.", 40,0,40,2000,-0.2,0.2);
   fOutputList->Add(fHistDCAdePureMC);
@@ -1601,9 +1611,14 @@ void AliAnalysisTaskBeautyCal::UserExec(Option_t *)
               else  // D->e
                  {
                   fHistDCAdeEnhance->Fill(track->Pt(),DCAxy);
+                  if(abs(pidM)==421)fHistDCAbeEnhance_D0->Fill(track->Pt(),DCAxy);
+                  if(abs(pidM)==411)fHistDCAbeEnhance_D->Fill(track->Pt(),DCAxy);
                  } 
                }
-          if(pid_eleB)fHistDCAbeEnhance->Fill(track->Pt(),DCAxy);
+          if(pid_eleB)
+             {
+              fHistDCAbeEnhance->Fill(track->Pt(),DCAxy);
+             }
           fHistHFmcCheck->Fill(1);
          }
        else
