@@ -778,12 +778,12 @@ class AliAnalysisTaskMultiparticleFemtoscopy : public AliAnalysisTaskSE{
   THnSparse *fhs2p[3];      //! [0] = p.d.f. for both particles; [1] = m.p.d.f. for 1st particle; [2] = m.p.d.f. for 2nd particle
   TH1D *fProjectionQ2[3];   //! [0] = projection on Q2 from p.d.f. for both particles; [1] = projection on Q2 from the product of m.p.d.f.'s of 1st and 2nd particle; [2] = normalized, i.e. [0]/[1]
   TH1D *fDistMPDF[9];       //! various distributions relevant for m.p.d.f.'s (see .cxx file for a detailed expl.)
-  Int_t fnBinsPxPyPzE2p[6]; //! TBI add a comment 
-  Double_t fmin2p[6];       //! TBI add a comment 
-  Double_t fmax2p[6];       //! TBI add a comment 
-  Int_t fnBinsPxPyPzE1p[3]; //! TBI add a comment 
-  Double_t fmin1p[3];       //! TBI add a comment 
-  Double_t fmax1p[3];       //! TBI add a comment 
+  Int_t fnBinsPxPyPzE2p[6]; // TBI add a comment 
+  Double_t fmin2p[6];       // TBI add a comment 
+  Double_t fmax2p[6];       // TBI add a comment 
+  Int_t fnBinsPxPyPzE1p[3]; // TBI add a comment 
+  Double_t fmin1p[3];       // TBI add a comment 
+  Double_t fmax1p[3];       // TBI add a comment 
 
   // *.) Online monitoring:
   Bool_t fOnlineMonitoring;        // enable online monitoring (not set excplicitly!), the flags below just refine it
@@ -800,7 +800,7 @@ class AliAnalysisTaskMultiparticleFemtoscopy : public AliAnalysisTaskSE{
   UInt_t fOrbit;                  // do something only for the specified event
   UInt_t fPeriod;                 // do something only for the specified event
 
-  ClassDef(AliAnalysisTaskMultiparticleFemtoscopy,22);
+  ClassDef(AliAnalysisTaskMultiparticleFemtoscopy,23);
 
 };
 
