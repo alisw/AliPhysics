@@ -220,6 +220,8 @@ private:
     TH2D        *fHistDCAbe;//!ele cand SPD or
     TH2D        *fHistDCAdeEnhance;//!ele cand SPD or
     TH2D        *fHistDCAbeEnhance;//!ele cand SPD or
+    TH2D        *fHistDCAbeEnhance_D0;//!ele cand SPD or
+    TH2D        *fHistDCAbeEnhance_D;//!ele cand SPD or
     TH2D        *fHistDCAdePureMC;//!ele cand SPD or
     TH2D        *fHistDCAbePureMC;//!ele cand SPD or
     TH2D        *fHistDCApe;//!ele cand SPD or
