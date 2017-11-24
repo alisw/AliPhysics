@@ -1,5 +1,5 @@
-#ifndef ALIANALYSISTASKACCCONT_cxx
-#define ALIANALYSISTASKACCCONT_cxx
+#ifndef ALIANALYSISTASKACCCONT_CXX
+#define ALIANALYSISTASKACCCONT_CXX
 
 class TList;
 class TH1F;
@@ -33,8 +33,19 @@ class AliAnalysisTaskAccCont : public AliAnalysisTaskSE {
     fAODtrackCutBit = bit;
   }
 
-  void SetKinematicsCutsAOD(Double_t etamin, Double_t etamax) {
+  void SetKinematicsCutsAOD(Double_t ptmin, Double_t ptmax, Double_t etamin, Double_t etamax) {
     fEtaMin  = etamin; fEtaMax  = etamax;
+    fPtMin  = ptmin; fPtMax  = ptmax;
+
+  }
+
+  void UsePileUpCuts() {fUseOutOfBunchPileUpCutsLHC15o = kTRUE;}
+ 
+  void UsePID(){fUsePID = kTRUE;}
+
+  void SetNSigmaPID(Int_t nsigma) {
+ 
+    fPIDNSigma = nsigma;
   }
 
   void UseOfflineTrigger() {fUseOfflineTrigger = kTRUE;}
@@ -44,6 +55,12 @@ class AliAnalysisTaskAccCont : public AliAnalysisTaskSE {
   void SetCentralityPercentileRange(Double_t min, Double_t max) { 
     fCentralityPercentileMin=min;
     fCentralityPercentileMax=max;
+  }
+
+  enum kParticleOfInterest { kMuon, kElectron, kPion, kKaon, kProton };
+  
+  void setParticleType(kParticleOfInterest ptype){
+  fParticleOfInterest = ptype;
   }
 
  private:
@@ -77,31 +94,37 @@ class AliAnalysisTaskAccCont : public AliAnalysisTaskSE {
   TH1F *fHistChi2PerClusterTPC;
   TH1F *fHistDCAToVertexZ;
   TH1F *fHistDCAToVertexXY;
-  TH1F *fHistMultiplicity_counts;
-   
+     
   TH3F *fHistEtaPhiCent;
   TH3F *fHistPtEtaCent;
   TH3F *fHistPtPhiCent;
 
-  TH3F *fHistEtaPhiVertexPlus;
-  TH3F *fHistEtaPhiVertexMinus;   
+  TH3D *fHistEtaPhiVertexPlus;
+  TH3D *fHistEtaPhiVertexMinus;   
   TH3F *fHistDCAXYptchargedminus;
   TH3F *fHistDCAXYptchargedplus;
 
   Bool_t fUseOfflineTrigger;//Usage of the offline trigger selection
+  Bool_t fUseOutOfBunchPileUpCutsLHC15o;
+  Bool_t fUsePID;
 
   Double_t fVxMax;//vxmax
   Double_t fVyMax;//vymax
   Double_t fVzMax;//vzmax
 
   Int_t fAODtrackCutBit;//AOD track cut bit from track selection
+  
+  Int_t fPIDNSigma;
+  kParticleOfInterest fParticleOfInterest;
+ 
+  Double_t fEtaMin; 
+  Double_t fEtaMax; 
+  Double_t fPtMin; 
+  Double_t fPtMax;
 
-  Double_t fEtaMin;//only used for AODs 
-  Double_t fEtaMax;//only used for AODs 
-
-  //AliAnalysisUtils
-  AliAnalysisUtils *fUtils;//AliAnalysisUtils
-
+  AliAnalysisUtils *fUtils;
+  AliPIDResponse *fPIDResponse;  
+ 
   AliAnalysisTaskAccCont(const AliAnalysisTaskAccCont&); // not implemented
   AliAnalysisTaskAccCont& operator=(const AliAnalysisTaskAccCont&); // not implemented
   
