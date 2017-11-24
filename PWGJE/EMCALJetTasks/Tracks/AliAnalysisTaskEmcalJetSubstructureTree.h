@@ -166,10 +166,6 @@ public:
     kTNDroppedTrue = 38,
     kTNVar = 39
   };
-  enum JetType_t{
-    kFull = 0,
-    kCharged = 1
-  };
 
 	AliAnalysisTaskEmcalJetSubstructureTree();
 	AliAnalysisTaskEmcalJetSubstructureTree(const char *name);
@@ -185,7 +181,7 @@ public:
 	  fReclusterizer = reclusterizer;
 	}
 
-	static AliAnalysisTaskEmcalJetSubstructureTree *AddEmcalJetSubstructureTreeMaker(Bool_t isMC, Bool_t isData, Double_t jetradius, JetType_t jettype, AliJetContainer::ERecoScheme_t recombinationScheme, const char *name);
+	static AliAnalysisTaskEmcalJetSubstructureTree *AddEmcalJetSubstructureTreeMaker(Bool_t isMC, Bool_t isData, Double_t jetradius, AliJetContainer::EJetType_t jettype, AliJetContainer::ERecoScheme_t recombinationScheme, const char *name);
 
 protected:
 	virtual void UserCreateOutputObjects();

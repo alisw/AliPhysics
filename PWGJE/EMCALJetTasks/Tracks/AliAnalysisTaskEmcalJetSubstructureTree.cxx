@@ -594,7 +594,7 @@ void AliAnalysisTaskEmcalJetSubstructureTree::DoConstituentQA(const AliEmcalJet 
 #endif
 }
 
-AliAnalysisTaskEmcalJetSubstructureTree *AliAnalysisTaskEmcalJetSubstructureTree::AddEmcalJetSubstructureTreeMaker(Bool_t isMC, Bool_t isData, Double_t jetradius, JetType_t jettype, AliJetContainer::ERecoScheme_t recombinationScheme, const char *trigger){
+AliAnalysisTaskEmcalJetSubstructureTree *AliAnalysisTaskEmcalJetSubstructureTree::AddEmcalJetSubstructureTreeMaker(Bool_t isMC, Bool_t isData, Double_t jetradius, AliJetContainer::EJetType_t jettype, AliJetContainer::ERecoScheme_t recombinationScheme, const char *trigger){
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
 
   Bool_t isAOD(kFALSE);
@@ -618,23 +618,26 @@ AliAnalysisTaskEmcalJetSubstructureTree *AliAnalysisTaskEmcalJetSubstructureTree
     particles->SetMinPt(0.);
 
     AliJetContainer *mcjets = treemaker->AddJetContainer(
-                              jettype == kFull ? AliJetContainer::kFullJet : AliJetContainer::kChargedJet,
+                              jettype,
                               AliJetContainer::antikt_algorithm,
                               recombinationScheme,
                               jetradius,
-                              (isData && jettype == kFull) ? AliEmcalJet::kEMCALfid : AliEmcalJet::kTPC,
+                              (isData && ((jettype == AliJetContainer::kFullJet) || (jettype == AliJetContainer::kNeutralJet))) ? AliEmcalJet::kEMCALfid : AliEmcalJet::kTPC,
                               particles, nullptr);
     mcjets->SetName("mcjets");
     mcjets->SetJetPtCut(20.);
   }
 
   if(isData) {
-    AliTrackContainer *tracks = treemaker->AddTrackContainer(EMCalTriggerPtAnalysis::AliEmcalAnalysisFactory::TrackContainerNameFactory(isAOD));
-    std::cout << "Track container name: " << tracks->GetName() << std::endl;
-    tracks->SetMinPt(0.15);
+    AliTrackContainer *tracks(nullptr);
+    if((jettype == AliJetContainer::kChargedJet) || (jettype == AliJetContainer::kFullJet)){
+      tracks = treemaker->AddTrackContainer(EMCalTriggerPtAnalysis::AliEmcalAnalysisFactory::TrackContainerNameFactory(isAOD));
+      std::cout << "Track container name: " << tracks->GetName() << std::endl;
+      tracks->SetMinPt(0.15);
+    }
     AliClusterContainer *clusters(nullptr);
-    if(jettype == kFull){
-      std::cout << "Using full jets ..." << std::endl;
+    if((jettype == AliJetContainer::kFullJet) || (AliJetContainer::kNeutralJet)){
+      std::cout << "Using full or neutral jets ..." << std::endl;
       clusters = treemaker->AddClusterContainer(EMCalTriggerPtAnalysis::AliEmcalAnalysisFactory::ClusterContainerNameFactory(isAOD));
       std::cout << "Cluster container name: " << clusters->GetName() << std::endl;
       clusters->SetClusHadCorrEnergyCut(0.3); // 300 MeV E-cut
@@ -644,11 +647,11 @@ AliAnalysisTaskEmcalJetSubstructureTree *AliAnalysisTaskEmcalJetSubstructureTree
     }
 
     AliJetContainer *datajets = treemaker->AddJetContainer(
-                              jettype == kFull ? AliJetContainer::kFullJet : AliJetContainer::kChargedJet,
+                              jettype,
                               AliJetContainer::antikt_algorithm,
                               recombinationScheme,
                               jetradius,
-                              jettype == kFull ? AliEmcalJet::kEMCALfid : AliEmcalJet::kTPCfid,
+                              ((jettype == AliJetContainer::kFullJet) || (jettype == AliJetContainer::kNeutralJet)) ? AliEmcalJet::kEMCALfid : AliEmcalJet::kTPCfid,
                               tracks, clusters);
     datajets->SetName("datajets");
     datajets->SetJetPtCut(20.);
