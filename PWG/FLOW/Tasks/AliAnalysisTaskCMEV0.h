@@ -55,7 +55,9 @@ public:
   void    SetDataSet(TString fdataset)                {this->sDataSet           =     fdataset;}
   void    SetAnalysisSet(TString fanalysisSet)        {this->sAnalysisSet       = fanalysisSet;}
   void    SetCentEstimator(TString centEstim)         {this->sCentEstimator     =    centEstim;}
-  void    SetHarmonic(Float_t harmonic)               {this->fHarmonic          =     harmonic;}
+  void    SetHarmonicN(Int_t harmonic1)               {this->fHarmonicN         =    harmonic1;}
+  void    SetHarmonicM(Int_t harmonic2)               {this->fHarmonicM         =    harmonic2;}
+  void    SetPsiHarmonic(Int_t nforpsi)               {this->fHarmonicPsi       =      nforpsi;}
   void    SetApplyNUAinEP(Bool_t bApplyNUAEP)         {this->bApplyNUAforEP     =  bApplyNUAEP;}
   void    SetSourceFileNUA(TString sfilenua)          {this->sFileNUA           =     sfilenua;}
 
@@ -73,8 +75,8 @@ private:
   Bool_t PileUpMultiVertex(const AliAODEvent* faod);
   double GetWDist(const AliVVertex* v0, const AliVVertex* v1);
 
-  void OpenInfoCalbration(Int_t  run);
-  void GetV0QvectAndMult(const AliAODVZERO *aodV0,Double_t& Qxan,Double_t& Qyan,Double_t& sumMa,Double_t& Qxcn,Double_t& Qycn,Double_t& sumMc);
+  void OpenInfoCalbration(Int_t  run, Float_t fHarmonic);
+  void GetV0QvectAndMult(const AliAODVZERO *aodV0,Float_t fHarmonic,Double_t& Qxan,Double_t& Qyan,Double_t& sumMa,Double_t& Qxcn,Double_t& Qycn,Double_t& sumMc);
   void DefineHistograms();
   void GetNUACorrectionHist(Int_t run, TString sfileNUA);
   void GetZDCCorrectionHist(Int_t run);
@@ -112,21 +114,25 @@ private:
   Int_t                   fOldRunNum;         //!
   Int_t                      fievent;         //!  counter of event for cout
   Float_t                    EvtCent;         //!  Event centrality 
-  Float_t                  fHarmonic;         //!  Harmonic
+  Int_t                   fHarmonicN;         //   Harmonic n
+  Int_t                   fHarmonicM;         //   Harmonic m
+  Int_t                 fHarmonicPsi;         //   Harmonic psi
 
   TH1F            *fHist_Event_count;         //!  event count with different cuts
   TH1F          *fPileUpMultSelCount;         //!
   TH1F                 *fPileUpCount;         //!
+  TH1F              *fTaskConfigParm;         //!  Cut parameters which were used
+
   //runtime v0 calibration info histograms:
-  TH1D*                      fMultV0;            //! profile from V0 multiplicity
-  TH1D*                     fQxnmV0A;            //! <Qx2> V0A
-  TH1D*                     fQynmV0A;            //! <Qy2> V0A
-  TH1D*                     fQxnsV0A;            //! sigma Qx2 V0A
-  TH1D*                     fQynsV0A;            //! sigma Qy2 V0A
-  TH1D*                     fQxnmV0C;            //! <Qx2> V0C
-  TH1D*                     fQynmV0C;            //! <Qy2> V0C
-  TH1D*                     fQxnsV0C;            //! sigma Qx2 V0C
-  TH1D*                     fQynsV0C;            //! sigma Qy2 V0C
+  TH1D*                      fMultV0;         //! profile from V0 multiplicity
+  TH1D*                     fQxnmV0A;         //! <Qx2> V0A
+  TH1D*                     fQynmV0A;         //! <Qy2> V0A
+  TH1D*                     fQxnsV0A;         //! sigma Qx2 V0A
+  TH1D*                     fQynsV0A;         //! sigma Qy2 V0A
+  TH1D*                     fQxnmV0C;         //! <Qx2> V0C
+  TH1D*                     fQynmV0C;         //! <Qy2> V0C
+  TH1D*                     fQxnsV0C;         //! sigma Qx2 V0C
+  TH1D*                     fQynsV0C;         //! sigma Qy2 V0C
   //---------------------------------
 
   //--- profiles for TPC Q-vector recenter. (They are filled, not read)
@@ -232,7 +238,6 @@ private:
   TProfile2D     *fHist_Corr3p_ZDN_SP_NN[3];  //!
   TProfile2D     *fHist_Reso2n_ZDN_SP_Det[3]; //! 
 
-
   //CME pT differential Histograms:
 
   //(pT_A + pT_B)/2.0
@@ -298,6 +303,13 @@ private:
   TProfile2D   *fHist_NonIso_SP_NN_Mag0[2];  //!
   TProfile2D   *fHist_NonIso_SP_PP_Mag1[2];  //! Mag1 = B > 0
   TProfile2D   *fHist_NonIso_SP_NN_Mag1[2];  //!
+
+
+  //2particle correlation:
+  TProfile2D  *fHist_Corr2p_EP_Norm_PN[2];  //!  Two magnetic fields
+  TProfile2D  *fHist_Corr2p_EP_Norm_PP[2];  //! 
+  TProfile2D  *fHist_Corr2p_EP_Norm_NN[2];  //! 
+
 
 
   ClassDef(AliAnalysisTaskCMEV0, 1); // 

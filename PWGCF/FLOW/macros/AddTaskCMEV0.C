@@ -7,12 +7,12 @@ class AliAnalysisTaskCMEV0;
  AliAnalysisTaskCMEV0* AddTaskCMEV0(Double_t dcentrMin=0, Double_t dcentrMax=90., Int_t gFilterBit = 768, Int_t gClusterTPC = 70, 
  Double_t fpTLow = 0.2, Double_t fpTHigh = 10.0, Double_t fEtaLow = -0.8, Double_t fEtaHigh = 0.8, Double_t dDCAxy = 2.4, Double_t dDCAz  = 3.2,
  TString sAnalysisFile = "AOD", TString sDataSet = "2010", TString sAnalysisType = "AUTOMATIC", TString sEventTrigger = "MB", Bool_t bEventCutsQA = kFALSE, 
- Bool_t bTrackCutsQA = kFALSE, Double_t dVertexRange = 10., Bool_t bPileUp = kFALSE, Bool_t bPileUpTight = kFALSE, TString sCentEstimator = "V0", 
- Bool_t bFBeffi = kFALSE,  TString sEfficiencyFB = "alien:///alice/cern.ch/user/m/mhaque/calib_files/FB768_Hijing_LHC15o.root",
+ Bool_t bTrackCutsQA = kFALSE,Double_t dVertexLow = -10.,Double_t dVertexHigh = 10., Bool_t bPileUp = kFALSE, Bool_t bPileUpTight = kFALSE, 
+ TString sCentEstimator = "V0", Bool_t bFBeffi = kFALSE,TString sEfficiencyFB = "alien:///alice/cern.ch/user/m/mhaque/calib_files/FB768_Hijing_LHC15o.root",
  Bool_t bApplyNUA = kFALSE, TString sNUAFile="alien:///alice/cern.ch/user/m/mhaque/gain/Run2015o_Pass1_FB768_pT0p2_5GeV_NUA_Wgt_PosNeg_Run.root", 
  Bool_t bZDCGainEq= kFALSE, TString sZDCFile="alien:///alice/cern.ch/user/m/mhaque/gain/Run2015o_pass1_ZDNP_WgtTotEn_VsCentRun.root", 
- Bool_t bFillTPCQn=kFALSE, Bool_t bFillNUAhist= kFALSE, Float_t fSetHarmonic = 2.0,  Bool_t bUseNUAinEP = kFALSE, TString sNUAtype="NewR",
- const char *suffix = "")
+ Bool_t bFillTPCQn= kFALSE, Bool_t bFillNUAhist= kFALSE, Int_t fSetHarmN = 1, Int_t fSetHarmM = 1, Int_t fSetPsiHarm = 2, Bool_t bUseNUAinEP = kFALSE, 
+ TString sNUAtype="NewR", const char *suffix = "")
 {
 
   //gSystem->Load("libPWGflowBase.so");
@@ -49,7 +49,7 @@ class AliAnalysisTaskCMEV0;
 
   AliFlowEventCuts *cutsEvent = new AliFlowEventCuts(taskFEname);
   cutsEvent->SetCheckPileup(kFALSE);
-  cutsEvent->SetPrimaryVertexZrange(-dVertexRange, dVertexRange);      // vertex-z cut
+  cutsEvent->SetPrimaryVertexZrange(dVertexLow, dVertexHigh);      // vertex-z cut
   cutsEvent->SetQA(bEventCutsQA);                                      // enable the qa plots
   cutsEvent->SetCutTPCmultiplicityOutliersAOD(kTRUE); 	               // multiplicity outlier cut
 
@@ -183,7 +183,9 @@ class AliAnalysisTaskCMEV0;
     taskQC_prot->SelectCollisionCandidates(AliVEvent::kMB);
   }
 
-  taskQC_prot->SetHarmonic(fSetHarmonic);  
+  taskQC_prot->SetHarmonicN(fSetHarmN);  
+  taskQC_prot->SetHarmonicM(fSetHarmM);  
+  taskQC_prot->SetPsiHarmonic(fSetPsiHarm);
   taskQC_prot->SetCentEstimator(sCentEstimator);
   taskQC_prot->SetRejectPileUp(bPileUp);  
   taskQC_prot->SetRejectPileUpTight(bPileUpTight); //kTRUE:700,kFALSE:15000
