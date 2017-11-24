@@ -133,7 +133,9 @@ void AliAnalysisTaskEmcalJetSubstructureTree::UserCreateOutputObjects() {
   for(auto h : *(fQAHistos->GetListOfHistograms())) fOutput->Add(h);
 
   OpenFile(2);
-  fJetSubstructureTree = new TTree("jetSubstructure", "Tree with jet substructure information");
+  TString tag(GetName());
+  tag.ReplaceAll("JetSubstructureTreemaker", "");
+  fJetSubstructureTree = new TTree("jetSubstructure" + tag, "Tree with jet substructure information");
   TString varnames[kTNVar];
   varnames[0] = "Radius";
   varnames[1] = "EventWeight";
