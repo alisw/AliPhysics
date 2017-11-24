@@ -44,7 +44,6 @@ AliAnalysisTaskEMCALPhotonIsolation* AddTaskEMCALPhotonIsolation(
                                                                  TString                triggerName               = "",
                                                                  const Bool_t           RejectPileUpEvent         = kFALSE,
                                                                  const Int_t            NContrToPileUp            = 3,
-								 const Bool_t           lightOutput               = kFALSE,
                                                                  const Float_t          iFiducialCut              = 0.4
                                                                  )
 {
@@ -235,7 +234,6 @@ AliAnalysisTaskEMCALPhotonIsolation* AddTaskEMCALPhotonIsolation(
   task->SetPeriod(periodstr);
   task->SetRejectPileUpEvent(RejectPileUpEvent);
   task->SetNcontributorsToPileUp(NContrToPileUp);
-  task->SetLightenOutput(lightOutput);
   task->SetFiducialCut(iFiducialCut);
   task->Set2012L1Analysis(is2012_EGA);
 

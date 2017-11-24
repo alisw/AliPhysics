@@ -117,7 +117,7 @@ class AliAnalysisTaskEMCALPhotonIsolation: public AliAnalysisTaskEmcal {
   void                         SetPeriod(const char *period)                                   { fPeriod = period; }
   void                         SetRejectPileUpEvent(Bool_t rpue)                               { fRejectPileUpEvent = rpue; }
   void                         SetNcontributorsToPileUp (Int_t nCtoPU)                         { fNContrToPileUp = nCtoPU; }
-  void                         SetLightenOutput (Bool_t light)                                 { fLightOutput = light; }
+  /* void                         SetLightenOutput (Bool_t light)                                 { fLightOutput = light; } */
   void                         SetFiducialCut(Float_t fiducial)                                { fFiducialCut = fiducial; }
   void                         SetComputeAreasPerEvent(Bool_t eventAreas)                      { fAreasPerEvent = eventAreas; }
   void                         Set2012L1Analysis(Bool_t is2012L1)                              { f2012EGA = is2012L1; }
@@ -183,7 +183,7 @@ class AliAnalysisTaskEMCALPhotonIsolation: public AliAnalysisTaskEmcal {
   Int_t                        fWhich;
   Bool_t                       fRejectPileUpEvent;
   Int_t                        fNContrToPileUp;
-  Bool_t                       fLightOutput;
+  /* Bool_t                       fLightOutput; */
   
   /* TList       *fOutputList;                                     //!<! Output list */
   /* TGeoHMatrix *fGeomMatrix[12];                                 //!<! Geometry misalignment matrices for EMCal */
