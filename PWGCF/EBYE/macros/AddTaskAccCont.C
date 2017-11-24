@@ -2,6 +2,7 @@
 AliAnalysisTaskAccCont *AddTaskAccCont(Double_t vertexZ=10.,
 						UInt_t triggerSelectionString = AliVEvent::kMB | AliVEvent::kCentral | AliVEvent::kSemiCentral,
 						Int_t gFilterBit = 768,
+						Double_t ptMin=0, Double_t ptMax=10,
 						Double_t etaMin=-0.8, Double_t etaMax=0.8,
 						TString fileNameBase="AnalysisResults") {
   // Creates an analysis task and adds it to the analysis manager.
@@ -57,12 +58,13 @@ AliAnalysisTaskAccCont *AddTaskAccCont(Double_t vertexZ=10.,
   task[iCentralityBin]->SetCentralityEstimator("V0M");
   
   // vertex cut (x,y,z)
-  task[iCentralityBin]->SetVertexDiamond(30.,30.,vertexZ);
+  task[iCentralityBin]->SetVertexDiamond(3.,3.,vertexZ);
   
   // pt and eta cut (pt_min, pt_max, eta_min, eta_max)
   task[iCentralityBin]->SetAODtrackCutBit(gFilterBit);
-  task[iCentralityBin]->SetKinematicsCutsAOD(etaMin,etaMax);
+  task[iCentralityBin]->SetKinematicsCutsAOD(ptMin,ptMax,etaMin,etaMax);
   task[iCentralityBin]->SetCentralityPercentileRange(gCentrality[iCentralityBin],gCentrality[iCentralityBin+1]);
+  task[iCentralityBin]->UsePileUpCuts();
 
   mgr->AddTask(task[iCentralityBin]);
     
