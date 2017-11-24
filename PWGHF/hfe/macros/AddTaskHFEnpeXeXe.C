@@ -216,6 +216,7 @@ AliAnalysisTask *RegisterTaskNPEXeXe(
         cweightsback += "_";
         cweightsback += wei;
     }
+
     
     TString cmvx("");
     if(releasemcvx) {
@@ -272,7 +273,7 @@ AliAnalysisTask *RegisterTaskNPEXeXe(
     else       task->SetHasMCData(kFALSE);
     
     if(useMC && weightlevelback>=0) {
-        ConfigWeightFactors(task,kFALSE,WhichWei,"nonHFEcorrect_XeXe.root");
+        ConfigWeightFactors(task,kFALSE,wei,"nonHFEcorrect_XeXe.root");
     }
     
     // ----- trigger selecton ---------
