@@ -93,6 +93,7 @@ AliAnalysisHFjetTagHFE::AliAnalysisHFjetTagHFE() :
   fHistTPCnSigma(0),
   fHistEopNsig(0),
   fHistEop(0),
+  fHistEopHad(0),
   fHistJetOrg(0),
   fHistJetOrgArea(0),
   fHistJetBG(0),
@@ -188,6 +189,7 @@ AliAnalysisHFjetTagHFE::AliAnalysisHFjetTagHFE(const char *name) :
   fHistTPCnSigma(0),//my
   fHistEopNsig(0),
   fHistEop(0),
+  fHistEopHad(0),
   fHistJetOrg(0),
   fHistJetOrgArea(0),
   fHistJetBG(0),
@@ -268,17 +270,6 @@ void AliAnalysisHFjetTagHFE::UserCreateOutputObjects()
   // Create user output.
 
      if(idbHFEj)cout << "+++++++ MC check ++++++++ " << fmcData <<  endl;
-  /*
-  //if(AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler())
-  if(dynamic_cast<AliMCEventHandler*> (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler()))
-    {
-     fmcData = kTRUE;
-    }
-  else
-   {
-     fmcData = kFALSE;
-   }
-  */
 
   for(int i=0; i<5; i++)
      {
@@ -400,6 +391,9 @@ void AliAnalysisHFjetTagHFE::UserCreateOutputObjects()
 
   fHistEop = new TH2F("fHistEop","E/p;p_{T}(GeV/c);E/p",100,0.,20.,200,0.,4.);
   fOutput->Add(fHistEop);
+
+  fHistEopHad = new TH2F("fHistEopHad","E/p hadron ;p_{T}(GeV/c);E/p",100,0.,20.,200,0.,4.);
+  fOutput->Add(fHistEopHad);
 
   fHistJetOrg = new TH1F("fHistJetOrg","Inclusive jet org;p_{T}",300,-100.,200.);
   fOutput->Add(fHistJetOrg);
@@ -983,9 +977,8 @@ Bool_t AliAnalysisHFjetTagHFE::Run()
         dEdx = track->GetTPCsignal();
         fTPCnSigma = fpidResponse->NumberOfSigmasTPC(track, AliPID::kElectron);
 
-         if(idbHFEj)cout << "fmimSig = " << fmimSig << endl;
-        //if(fTPCnSigma<0 || fTPCnSigma>6)continue;
-        if(fTPCnSigma<fmimSig || fTPCnSigma>3)continue;  //++++++++
+        if(idbHFEj)cout << "fmimSig = " << fmimSig << endl;
+        //if(fTPCnSigma<fmimSig || fTPCnSigma>3)continue;  //++++++++
         fHistTPCnSigma->Fill(pt,fTPCnSigma);
 
                epTarray[0] = px;
@@ -1032,14 +1025,19 @@ Bool_t AliAnalysisHFjetTagHFE::Run()
             Double_t clustMatchE = clustMatch->E();
             Double_t m20 =clustMatch->GetM20();
          
-            if(m20<0.03 || m20>0.3)continue; 
+            if(m20<0.03 || m20>0.3)continue;  // shower shape cut
      
             //EMCAL EID info
             Double_t eop = -1.0;
             if(track->P()>0)eop = clustMatchE/track->P();
             if(idbHFEj)cout << "++++++++++ eop = " << eop << " ; " << pt  << endl;
             if(pt>2.0)fHistEopNsig->Fill(fTPCnSigma,eop);
+
+            if(fTPCnSigma<-4)fHistEopHad->Fill(pt,eop);
+
+            if(fTPCnSigma<fmimSig || fTPCnSigma>3)continue;  // Nsigma cut
             fHistEop->Fill(pt,eop);
+
             if(eop>0.9 && eop<1.3 && m20<0.3 && m20>0.03)isElectron = kTRUE;  
                  
             if(isElectron)
@@ -1067,7 +1065,7 @@ Bool_t AliAnalysisHFjetTagHFE::Run()
     if(idbHFEj)cout << "electron in event" << endl;
 
     // data
-    fHistIncEle->Fill(pt);  // to do ULS, LS
+    fHistIncEle->Fill(pt);  
     // MC
     //if(iMCHF)fHistHfEleMCreco->Fill(pt);  // to do ULS, LS
     if(iMCPHO)
