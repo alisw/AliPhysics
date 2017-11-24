@@ -53,7 +53,7 @@ class AliHFEpidITS : public AliHFEpidBase{
     Float_t    fNsigmaITSlow;          // ITS sigma band
     Float_t    fNsigmaITShigh;          // ITS sigma band
     Double_t   fMeanShift;          // Correction for possible shift of the electron band
-    ClassDef(AliHFEpidITS, 1)  // PID class for ITS
+    ClassDef(AliHFEpidITS, 2)  // PID class for ITS
 };
 #endif
 
