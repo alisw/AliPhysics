@@ -164,11 +164,22 @@ class AliAnalysisTaskPHOSPi0EtaToGammaGamma : public AliAnalysisTaskSE {
     }
 
     void SetTriggerMatchingDeltaR(Double_t DeltaR){
-      //this is a default setting
       fPHOSTriggerHelper->SetMatchingDeltaR(DeltaR);
     }
     void SetTriggerMatchingDXZ(Int_t xmin, Int_t zmin, Int_t xmax, Int_t zmax){
+      //this is a default setting
       fPHOSTriggerHelper->SetMatchingDistance(xmin,zmin,xmax,zmax);
+    }
+
+    void SetForceActiveTRU(Int_t L1input, Int_t L0input, Double_t Ethre, Bool_t isMC){
+      //this function should not be called together with SetPHOSTriggerAnalysis
+      AliInfo("Force active TRU region!");
+      if(fIsPHOSTriggerAnalysis) AliInfo("fIsPHOSTriggerAnalysis = kTRUE. Are you sure you want to use active TRU separately?");
+
+      fForceActiveTRU = kTRUE;
+      fIsPHOSTriggerAnalysis = kFALSE;
+      fEnergyThreshold = Ethre;
+      fPHOSTriggerHelper  = new AliPHOSTriggerHelper(L1input,L0input,isMC);
     }
 
   protected:
@@ -328,6 +339,7 @@ class AliAnalysisTaskPHOSPi0EtaToGammaGamma : public AliAnalysisTaskSE {
     AliPHOSTriggerHelper *fPHOSTriggerHelperL1H;//only for rejection factor in MB
     AliPHOSTriggerHelper *fPHOSTriggerHelperL1M;//only for rejection factor in MB
     AliPHOSTriggerHelper *fPHOSTriggerHelperL1L;//only for rejection factor in MB
+    Bool_t fForceActiveTRU;
     AliPIDResponse *fPIDResponse;
     Bool_t fIsNonLinStudy;
     TF1 *fNonLin[7][7];
@@ -336,7 +348,7 @@ class AliAnalysisTaskPHOSPi0EtaToGammaGamma : public AliAnalysisTaskSE {
     AliAnalysisTaskPHOSPi0EtaToGammaGamma(const AliAnalysisTaskPHOSPi0EtaToGammaGamma&);
     AliAnalysisTaskPHOSPi0EtaToGammaGamma& operator=(const AliAnalysisTaskPHOSPi0EtaToGammaGamma&);
 
-    ClassDef(AliAnalysisTaskPHOSPi0EtaToGammaGamma, 39);
+    ClassDef(AliAnalysisTaskPHOSPi0EtaToGammaGamma, 40);
 };
 
 #endif

@@ -133,6 +133,7 @@ AliAnalysisTaskPHOSPi0EtaToGammaGamma::AliAnalysisTaskPHOSPi0EtaToGammaGamma(con
   fPHOSTriggerHelperL1H(0x0),
   fPHOSTriggerHelperL1M(0x0),
   fPHOSTriggerHelperL1L(0x0),
+  fForceActiveTRU(kFALSE),
   fPIDResponse(0x0),
   fIsNonLinStudy(kFALSE)
 {
@@ -423,20 +424,6 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::UserCreateOutputObjects()
   for(Int_t i=0;i<50;i++)     pTgg[i] = 0.1 * i;            //every 0.1 GeV/c, up to 5 GeV/c
   for(Int_t i=50;i<60;i++)    pTgg[i] = 0.5 * (i-50) + 5.0; //every 0.5 GeV/c, up to 10 GeV/c
   for(Int_t i=60;i<NpTgg;i++) pTgg[i] = 1.0 * (i-60) + 10.0;//every 1.0 GeV/c, up to 50 GeV/c
-
-  //const Int_t Nm = 241;
-  //Double_t mgg[Nm] = {};
-  //for(Int_t i=0;i<Nm;i++) mgg[i] = 0.004*i;
-
-  //const Int_t Nphi = 13;
-  //Double_t phibin[Nphi] = {};
-  //const Double_t delta = (1. - -1.)/Double_t(Nphi-1);
-  //for(Int_t iphi=0;iphi<Nphi;iphi++) phibin[iphi] = (delta * iphi) - 1;
-
-  //const Int_t Nsp = 31;
-  //Double_t spbin[Nsp] = {};
-  //const Double_t dsp = (0.3 - -0.3)/Double_t(Nsp-1);
-  //for(Int_t isp=0;isp<Nsp;isp++) spbin[isp] = (dsp * isp) - 0.3;
 
   Int_t NbinQ   = 12;
   Double_t Qmin = -1;
@@ -976,6 +963,8 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::UserExec(Option_t *option)
     return;
   }
 
+  if(fForceActiveTRU) fPHOSTriggerHelper->IsPHI7(fEvent,fPHOSClusterCuts);//only to set event in fPHOSTriggerHelper
+
   //<- end of event selection
   //-> start physics analysis
 
@@ -1433,6 +1422,7 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::ClusterQA()
       if(!fPHOSTriggerHelper->IsOnActiveTRUChannel(ph)) continue;
       if(!fIsMC && !ph->IsTrig()) continue;//it is meaningless to focus on photon without fired trigger in PHOS triggered data.
     }
+    if(fForceActiveTRU && !fPHOSTriggerHelper->IsOnActiveTRUChannel(ph)) continue;
 
     energy  = ph->Energy();
     if(fUseCoreEnergy){
@@ -1575,6 +1565,8 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::FillPhoton()
       if(ph->Energy() < fEnergyThreshold) continue;//if efficiency is not defined at this energy, it does not make sense to compute logical OR.
     }
 
+    if(fForceActiveTRU && !fPHOSTriggerHelper->IsOnActiveTRUChannel(ph)) continue;
+
     weight = 1.;
 
     pT = ph->Pt();
@@ -1662,6 +1654,7 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::FillMgg()
     if(!fPHOSClusterCuts->AcceptPhoton(ph1)) continue;
     if(fIsPHOSTriggerAnalysis && !fPHOSTriggerHelper->IsOnActiveTRUChannel(ph1)) continue;
     if(fIsPHOSTriggerAnalysis && ph1->Energy() < fEnergyThreshold) continue;//if efficiency is not defined at this energy, it does not make sense to compute logical OR.
+    if(fForceActiveTRU && !fPHOSTriggerHelper->IsOnActiveTRUChannel(ph1)) continue;
 
     eta1 = ph1->Eta();
     phi1 = ph1->Phi();
@@ -1672,6 +1665,7 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::FillMgg()
       if(!fPHOSClusterCuts->AcceptPhoton(ph2)) continue;
       if(fIsPHOSTriggerAnalysis && !fPHOSTriggerHelper->IsOnActiveTRUChannel(ph2)) continue;
       if(fIsPHOSTriggerAnalysis && ph2->Energy() < fEnergyThreshold) continue;
+      if(fForceActiveTRU && !fPHOSTriggerHelper->IsOnActiveTRUChannel(ph2)) continue;
 
       if(!fIsMC && fIsPHOSTriggerAnalysis && (!ph1->IsTrig() && !ph2->IsTrig())) continue;//it is meaningless to reconstruct invariant mass with FALSE-FALSE combination in PHOS triggered data.
 
@@ -1804,6 +1798,7 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::FillMixMgg()
     if(!fPHOSClusterCuts->AcceptPhoton(ph1)) continue;
     if(fIsPHOSTriggerAnalysis && !fPHOSTriggerHelper->IsOnActiveTRUChannel(ph1)) continue;
     if(fIsPHOSTriggerAnalysis && ph1->Energy() < fEnergyThreshold) continue;//if efficiency is not defined at this energy, it does not make sense to compute logical OR.
+    if(fForceActiveTRU && !fPHOSTriggerHelper->IsOnActiveTRUChannel(ph1)) continue;
 
     for(Int_t ev=0;ev<prevPHOS->GetSize();ev++){
       TClonesArray *mixPHOS = static_cast<TClonesArray*>(prevPHOS->At(ev));
@@ -1813,6 +1808,7 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::FillMixMgg()
         if(!fPHOSClusterCuts->AcceptPhoton(ph2)) continue;
         if(fIsPHOSTriggerAnalysis && !fPHOSTriggerHelper->IsOnActiveTRUChannel(ph2)) continue;
         if(fIsPHOSTriggerAnalysis && ph2->Energy() < fEnergyThreshold) continue;
+        if(fForceActiveTRU && !fPHOSTriggerHelper->IsOnActiveTRUChannel(ph2)) continue;
 
         if(!fIsMC && fIsPHOSTriggerAnalysis && (!ph1->IsTrig() && !ph2->IsTrig())) continue;//it is meaningless to reconstruct invariant mass with FALSE-FALSE combination in PHOS triggered data.
 
@@ -2401,7 +2397,8 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::EstimateTriggerEfficiency()
       // && (TMath::Abs(dx) < 2)
       // && (TMath::Abs(dz) < 2)
       // ) continue;//reject cluster pair where they belong to same 4x4 region.
-      //AliInfo(Form("dm = %d , dt = %d , dx = %d , dz = %d, truch = %d.",dm,dt,dx,dz,truch));
+
+      AliInfo(Form("dm = %d , dt = %d , dx = %d , dz = %d, truch = %d.",dm,dt,dx,dz,truch));
       DeltaR_probe = fPHOSTriggerHelper->GetDistanceToClosestTRUChannel(ph2);
 
       Rlimit = DeltaR_tag + DeltaR_probe;
@@ -2528,7 +2525,7 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::ProcessMC()
 
   TF1 *f1Pi0Weight   = (TF1*)GetAdditionalPi0PtWeightFunction(fCentralityMain);
   TF1 *f1EtaWeight   = (TF1*)GetAdditionalEtaPtWeightFunction(fCentralityMain);
-  TF1 *f1GammaWeight = (TF1*)GetAdditionalGammaPtWeightFunction(fCentralityMain);
+  //TF1 *f1GammaWeight = (TF1*)GetAdditionalGammaPtWeightFunction(fCentralityMain);
   TF1 *f1K0SWeight   = (TF1*)GetAdditionalK0SPtWeightFunction(fCentralityMain);
 
   Double_t TruePi0Pt = 0.;
@@ -3075,12 +3072,12 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::SetMCWeight()
   TF1 *f1Pi0Weight   = (TF1*)GetAdditionalPi0PtWeightFunction(fCentralityMain);
   TF1 *f1K0SWeight   = (TF1*)GetAdditionalK0SPtWeightFunction(fCentralityMain);
   TF1 *f1EtaWeight   = (TF1*)GetAdditionalEtaPtWeightFunction(fCentralityMain);
-  TF1 *f1GammaWeight = (TF1*)GetAdditionalGammaPtWeightFunction(fCentralityMain);
+  //TF1 *f1GammaWeight = (TF1*)GetAdditionalGammaPtWeightFunction(fCentralityMain);
 
   Int_t primary = -1;
   Double_t TruePi0Pt = 0.;
   Double_t TrueEtaPt = 0.;
-  Double_t TrueGammaPt = 0.;
+  //Double_t TrueGammaPt = 0.;
   Double_t TrueK0SPt = 0;
   Double_t TrueL0Pt = 0;
 
