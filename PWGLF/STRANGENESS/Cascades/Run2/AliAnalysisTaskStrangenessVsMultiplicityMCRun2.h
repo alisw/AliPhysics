@@ -620,6 +620,27 @@ private:
     Bool_t fTreeCascVarMVPileupFlag; //!
     Bool_t fTreeCascVarOOBPileupFlag; //!
     
+    //MC-only Variables
+
+    Int_t   fTreeCascVarPID;         //!
+    Int_t   fTreeCascVarPIDNegative;         //!
+    Int_t   fTreeCascVarPIDPositive;         //!
+    Int_t   fTreeCascVarPIDBachelor;         //!
+    Int_t   fTreeCascVarPIDNegativeMother;         //!
+    Int_t   fTreeCascVarPIDPositiveMother;         //!
+    Int_t   fTreeCascVarPIDBachelorMother;         //!
+    Int_t   fTreeCascVarPIDNegativeGrandMother;         //!
+    Int_t   fTreeCascVarPIDPositiveGrandMother;         //!
+    Int_t   fTreeCascVarPIDBachelorGrandMother;         //!
+    
+    Int_t   fTreeCascVarBachCousinStatus;         //!
+    Int_t   fTreeCascVarV0BachSibIsValid;         //!
+    Int_t   fTreeCascVarBachV0Tagging;         //!
+    Int_t   fTreeCascVarV0NegSibIsValid;         //!
+    Int_t   fTreeCascVarNegV0Tagging;         //!
+    Int_t   fTreeCascVarV0PosSibIsValid;         //!
+    Int_t   fTreeCascVarPosV0Tagging;         //!
+    
     //Bachelor Sibling Testing Variables
     Float_t fTreeCascVarBachSibPt; //!
     Float_t fTreeCascVarBachSibDcaV0ToPrimVertex; //!
@@ -656,26 +677,7 @@ private:
     Float_t fTreeCascVarPosSibV0InvMassLambda; //!
     Float_t fTreeCascVarPosSibV0InvMassAntiLambda; //!
     
-    //MC-only Variables
     Int_t   fTreeCascVarIsPhysicalPrimary; //!
-    Int_t   fTreeCascVarPID;         //!
-    Int_t   fTreeCascVarPIDNegative;         //!
-    Int_t   fTreeCascVarPIDPositive;         //!
-    Int_t   fTreeCascVarPIDBachelor;         //!
-    Int_t   fTreeCascVarPIDNegativeMother;         //!
-    Int_t   fTreeCascVarPIDPositiveMother;         //!
-    Int_t   fTreeCascVarPIDBachelorMother;         //!
-    Int_t   fTreeCascVarPIDNegativeGrandMother;         //!
-    Int_t   fTreeCascVarPIDPositiveGrandMother;         //!
-    Int_t   fTreeCascVarPIDBachelorGrandMother;         //!
-    Int_t   fTreeCascVarBachCousinStatus;         //!
-    Int_t   fTreeCascVarV0BachSibIsValid;         //!
-    Int_t   fTreeCascVarBachV0Tagging;         //!
-    Int_t   fTreeCascVarV0NegSibIsValid;         //!
-    Int_t   fTreeCascVarNegV0Tagging;         //!
-    Int_t   fTreeCascVarV0PosSibIsValid;         //!
-    Int_t   fTreeCascVarPosV0Tagging;         //!
-    
     Bool_t fTreeCascVarIsPhysicalPrimaryNegative;
     Bool_t fTreeCascVarIsPhysicalPrimaryPositive;
     Bool_t fTreeCascVarIsPhysicalPrimaryBachelor;
