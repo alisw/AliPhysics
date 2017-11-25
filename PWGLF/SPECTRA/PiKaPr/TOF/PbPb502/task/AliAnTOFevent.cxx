@@ -35,9 +35,9 @@
 //________________________________________________________________________
 AliAnTOFevent::AliAnTOFevent()
     : fEvtMultBin(-1)
-    , fVtxX(0)
-    , fVtxY(0)
-    , fVtxZ(0)
+    , fVtxX(-999)
+    , fVtxY(-999)
+    , fVtxZ(-999)
     , fAliAnTOFtracks()
 {
 
@@ -73,9 +73,9 @@ AliAnTOFtrack* AliAnTOFevent::GetTrack(const Int_t i)
 //________________________________________________________________________
 void AliAnTOFevent::AdoptVertex(const AliESDVertex* vtx)
 {
-  SetVtxX(vtx->GetX());
-  SetVtxY(vtx->GetY());
-  SetVtxZ(vtx->GetZ());
+  fVtxX = vtx->GetX();
+  fVtxY = vtx->GetY();
+  fVtxZ = vtx->GetZ();
 }
 
 //________________________________________________________________________
@@ -83,7 +83,7 @@ void AliAnTOFevent::Reset()
 {
   fEvtMultBin = -1;
   fAliAnTOFtracks.clear();
-  fVtxX = 0;
-  fVtxY = 0;
-  fVtxZ = 0;
+  fVtxX = -999;
+  fVtxY = -999;
+  fVtxZ = -999;
 }

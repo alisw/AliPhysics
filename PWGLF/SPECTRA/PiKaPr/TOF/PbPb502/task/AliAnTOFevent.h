@@ -28,9 +28,9 @@ class AliAnTOFevent {
 
   ///Masks
   Short_t fEvtMultBin;                        /// Binned multiplicity
-  UChar_t fVtxX;                              /// Binned Vtx X
-  UChar_t fVtxY;                              /// Binned Vtx Y
-  UChar_t fVtxZ;                              /// Binned Vtx Z
+  Double32_t fVtxX;                           //[-0.128,0.128,8]  Vtx X
+  Double32_t fVtxY;                           //[-1.28,1.28,8]  Vtx Y
+  Double32_t fVtxZ;                           //[-12.8,12.8,8]  Vtx Z
   std::vector<AliAnTOFtrack> fAliAnTOFtracks; /// Array of AliAnTOFtrack
 
   //******************************
@@ -53,38 +53,16 @@ class AliAnTOFevent {
   ///Method to get a track from the event, if the index is not given (or negative) it returns the last element of the vector
   AliAnTOFtrack* GetTrack(Int_t i = -1);
 
+
   ///
-  /// Setter for the Vtx Z position
-  void SetVtxZ(const Double_t z)
+  /// Status Printer
+  void Print()
   {
-    fVtxZ = static_cast<UChar_t>(BinData(z, -12.8, 12.8, 256));
+    Printf(" fEvtMultBin = %i", fEvtMultBin);
+    Printf(" fVtxX = %f", fVtxX);
+    Printf(" fVtxY = %f", fVtxY);
+    Printf(" fVtxZ = %f", fVtxZ);
   }
-
-  ///
-  /// Setter for the Vtx X position
-  void SetVtxX(const Double_t x)
-  {
-    fVtxX = static_cast<UChar_t>(BinData(x, -0.128, 0.128, 256));
-  }
-
-  ///
-  /// Setter for the Vtx Y position
-  void SetVtxY(const Double_t y)
-  {
-    fVtxY = static_cast<UChar_t>(BinData(y, -0.128, 0.128, 256));
-  }
-
-  ///
-  /// Getter for the Vtx Z position
-  Double_t GetVtxZ() const { return GetBinnedData(fVtxZ, -12.8, 12.8, 256); }
-
-  ///
-  /// Getter for the Vtx X position
-  Double_t GetVtxX() const { return GetBinnedData(fVtxX, -0.128, 0.128, 256); }
-
-  ///
-  /// Getter for the Vtx Y position
-  Double_t GetVtxY() const { return GetBinnedData(fVtxY, -0.128, 0.128, 256); }
 };
 
 #endif
