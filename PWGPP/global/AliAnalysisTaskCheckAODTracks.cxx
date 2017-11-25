@@ -643,7 +643,13 @@ void AliAnalysisTaskCheckAODTracks::UserExec(Option_t *)
     Bool_t spdAny=kFALSE;
     if(track->HasPointOnITSLayer(0) || track->HasPointOnITSLayer(1)) spdAny=kTRUE;
     Int_t nTPCclus=track->GetNcls(1);
-    Double_t chi2clus=track->Chi2perNDF();
+    Double_t chi2ndf=track->Chi2perNDF();
+    Double_t chi2tpc=999.;
+    if(chi2ndf>0. && nTPCclus > 5){
+      chi2tpc=Float_t(nTPCclus-5)*chi2ndf;
+    }
+    Double_t chi2clus=-1.;
+    if(nTPCclus>0) chi2clus=chi2tpc/(Float_t)nTPCclus;
     Double_t goldenChi2=track->GetChi2TPCConstrainedVsGlobal();
     Float_t nCrossedRowsTPC = track->GetTPCCrossedRows();
     Float_t  ratioCrossedRowsOverFindableClustersTPC = 1.0;
@@ -748,6 +754,8 @@ void AliAnalysisTaskCheckAODTracks::UserExec(Option_t *)
     esdTrack.SetTPCClusterMap(track->GetTPCClusterMap());
     esdTrack.SetTPCSharedMap(track->GetTPCSharedMap());
     esdTrack.SetTPCPointsF(track->GetTPCNclsF());
+    esdTrack.SetTPCNcls(track->GetTPCNcls());
+    esdTrack.SetTPCchi2(chi2tpc);
     // needed to calculate the impact parameters
     esdTrack.RelateToVertex(&vESD,0.,3.);
     if(!fTrCutsTPC->AcceptTrack(&esdTrack)) continue;
@@ -853,6 +861,8 @@ void AliAnalysisTaskCheckAODTracks::UserExec(Option_t *)
       Printf("ERROR: Could not retreive one of the daughter track");
       continue;
     }
+    //    if(pTrack->GetID()<0 || nTrack->GetID()<0) continue;
+
     Double_t invMassK0s = v0->MassK0Short();
     Double_t invMassLambda = v0->MassLambda();
     Double_t invMassAntiLambda = v0->MassAntiLambda();
