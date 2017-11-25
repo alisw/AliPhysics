@@ -146,9 +146,12 @@ void DrawPtHardBins
       //printf("i %d, k %d, f %p\n",i,k,f[i][k]);
       
       hPtHard[i][k] = (TH1F*) f[i][k]->Get("hPtHard");
-      hPtHard[i][k]->SetLineColor(color[i]);
-      hPtHard[i][k]->SetLineWidth(2);
-      //hPtHard[i][k]->SetAxisRange(minE, maxE,"X");
+      if(hPtHard[i][k])
+      {
+        hPtHard[i][k]->SetLineColor(color[i]);
+        hPtHard[i][k]->SetLineWidth(2);
+        //hPtHard[i][k]->SetAxisRange(minE, maxE,"X");
+      }
       
       // Recover scaling parameters
       if ( k==0 )
@@ -157,19 +160,25 @@ void DrawPtHardBins
         hXsec    = (TH1F*) f[i][k]->Get("hXsec");
         hTrials  = (TH1F*) f[i][k]->Get("hTrials");
         
-        scale[i] =  
-        (hXsec->GetBinContent(1)/hXsec->GetEntries()) / 
-        (hTrials->GetBinContent(1)/ hNEvents->GetBinContent(1)) / hNEvents->GetBinContent(1);
-//       hXsec->GetBinContent(1)/hTrials->GetBinContent(1);
-//        1. / hNEvents->GetBinContent(1);
-//        1./  hPtHard[i][k]->GetEntries();
-//        hXsec->GetBinContent(1)/hTrials->GetBinContent(1)/hPtHard[i][k]->GetEntries();
-
-        printf("bin i %d, events %2.3e, pT hard entries %2.3e (fraction of pT hard %2.4f),"
-               "chunks %2.0f, xsec %2.3e, trails %2.0f, xsec/chunks %2.3e, trials/nevents %2.3e, scale %2.3e \n",
-               i, hNEvents->GetBinContent(1),hPtHard[i][k]->GetEntries(), hPtHard[i][k]->GetEntries()/hNEvents->GetBinContent(1),
-               hXsec->GetEntries(), hXsec->GetBinContent(1), hTrials->GetBinContent(1),
-               hXsec->GetBinContent(1)/hXsec->GetEntries(),hTrials->GetBinContent(1)/ hNEvents->GetBinContent(1), scale[i] );
+        if(hXsec)
+        {
+          scale[i] = (hXsec->GetBinContent(1)/hXsec->GetEntries()) / 
+          (hTrials->GetBinContent(1)/ hNEvents->GetBinContent(1)) / hNEvents->GetBinContent(1);
+          //       hXsec->GetBinContent(1)/hTrials->GetBinContent(1);
+          //        1. / hNEvents->GetBinContent(1);
+          //        1./  hPtHard[i][k]->GetEntries();
+          //        hXsec->GetBinContent(1)/hTrials->GetBinContent(1)/hPtHard[i][k]->GetEntries();
+          
+          printf("bin i %d, events %2.3e, pT hard entries %2.3e (fraction of pT hard %2.4f),"
+                 "chunks %2.0f, xsec %2.3e, trails %2.0f, xsec/chunks %2.3e, trials/nevents %2.3e, scale %2.3e \n",
+                 i, hNEvents->GetBinContent(1),hPtHard[i][k]->GetEntries(), hPtHard[i][k]->GetEntries()/hNEvents->GetBinContent(1),
+                 hXsec->GetEntries(), hXsec->GetBinContent(1), hTrials->GetBinContent(1),
+                 hXsec->GetBinContent(1)/hXsec->GetEntries(),hTrials->GetBinContent(1)/ hNEvents->GetBinContent(1), scale[i] );
+        }
+        else
+        {
+          scale[i] = 1./ hNEvents->GetBinContent(1);
+        }
       }
       
 
@@ -199,14 +208,20 @@ void DrawPtHardBins
       }
       
       hPi0[i][k] = (TH1F*) f[i][k]->Get("AnaPi0_Calo0_hPrimPi0Pt");
-      hPi0[i][k]->SetLineColor(color[i]);
-      hPi0[i][k]->SetLineWidth(2);
-      hPi0[i][k]->SetAxisRange(minE, maxE,"X");
+      if(hPi0[i][k])
+      {
+        hPi0[i][k]->SetLineColor(color[i]);
+        hPi0[i][k]->SetLineWidth(2);
+        hPi0[i][k]->SetAxisRange(minE, maxE,"X");
+      }
       
       hPi0E[i][k] = (TH1F*) f[i][k]->Get("AnaPi0_Calo0_hPrimPi0PtInCalo");
-      hPi0E[i][k]->SetLineColor(color[i]);
-      hPi0E[i][k]->SetLineWidth(2);
-      hPi0E[i][k]->SetAxisRange(minE, maxE,"X");
+      if(hPi0E[i][k])
+      {
+        hPi0E[i][k]->SetLineColor(color[i]);
+        hPi0E[i][k]->SetLineWidth(2);
+        hPi0E[i][k]->SetAxisRange(minE, maxE,"X");
+      }
       
       hPi0D[i][k] = (TH1F*) f[i][k]->Get("AnaPi0_Calo1_hPrimPi0PtInCalo");
       if(hPi0D[i][k])
@@ -217,14 +232,20 @@ void DrawPtHardBins
       }
       
       hGam[i][k] = (TH1F*) f[i][k]->Get("AnaPhoton_Calo0_hPtPrim_MCPhoton");
-      hGam[i][k]->SetLineColor(color[i]);
-      hGam[i][k]->SetLineWidth(2);
-      hGam[i][k]->SetAxisRange(minE, maxE,"X");
+      if(hGam[i][k])
+      {
+        hGam[i][k]->SetLineColor(color[i]);
+        hGam[i][k]->SetLineWidth(2);
+        hGam[i][k]->SetAxisRange(minE, maxE,"X");
+      }
       
       hGamE[i][k] = (TH1F*) f[i][k]->Get("AnaPhoton_Calo0_hPtPrimAcc_MCPhoton");
-      hGamE[i][k]->SetLineColor(color[i]);
-      hGamE[i][k]->SetLineWidth(2);
-      hGamE[i][k]->SetAxisRange(minE, maxE,"X");
+      if(hGamE[i][k])
+      {
+        hGamE[i][k]->SetLineColor(color[i]);
+        hGamE[i][k]->SetLineWidth(2);
+        hGamE[i][k]->SetAxisRange(minE, maxE,"X");
+      }
       
       hGamD[i][k] = (TH1F*) f[i][k]->Get("AnaPhoton_Calo1_hPtPrimAcc_MCPhoton");
       if(hGamD[i][k])
@@ -247,16 +268,21 @@ void DrawPtHardBins
 
       if(k==0)
       {
-        hPtHard  [i][k]->Sumw2();
+        if(hPtHard  [i][k]) hPtHard  [i][k]->Sumw2();
         hClusterE[i][k]->Sumw2();
         if(hClusterD[i][k]) hClusterD[i][k]->Sumw2();
-        hPi0     [i][k]->Sumw2();
-        hPi0E    [i][k]->Sumw2();
-        if(hPi0D[i][k]) hPi0D    [i][k]->Sumw2();     
-        hGam     [i][k]->Sumw2();
-        hGamE    [i][k]->Sumw2();
-        if(hGamD[i][k]) hGamD    [i][k]->Sumw2();
-        for(Int_t j = 0; j < 3; j++) hTrackPt[i][k][j]->Sumw2();
+        
+        if(hPi0 [i][k]) hPi0 [i][k]->Sumw2();
+        if(hPi0E[i][k]) hPi0E[i][k]->Sumw2();
+        if(hPi0D[i][k]) hPi0D[i][k]->Sumw2();     
+        if(hGam [i][k]) hGam [i][k]->Sumw2();
+        if(hGamE[i][k]) hGamE[i][k]->Sumw2();
+        if(hGamD[i][k]) hGamD[i][k]->Sumw2();
+        
+        for(Int_t j = 0; j < 3; j++) 
+        {
+          if(hTrackPt[i][k][j])hTrackPt[i][k][j]->Sumw2();
+        }
         //hEtaPhi     [i][k]->Sumw2();
         //hCellEtaPhi [i][k]->Sumw2();
         //hTrackEtaPhi[i][k]->Sumw2();
@@ -270,10 +296,14 @@ void DrawPtHardBins
       // Recover the summed histograms, or scale sum 
       if ( k==1 || (k==0 && !scaleHisto))
       {
+        
         hPtHardSum[k] = (TH1F*) fTot[k]->Get("hPtHard");
-        hPtHardSum[k]->SetLineColor(1);
-        hPtHardSum[k]->SetLineWidth(2);
-        //hPtHardSum[k]->SetAxisRange(minE, maxE,"X");
+        if(hPtHardSum[k])
+        {
+          hPtHardSum[k]->SetLineColor(1);
+          hPtHardSum[k]->SetLineWidth(2);
+          //hPtHardSum[k]->SetAxisRange(minE, maxE,"X");
+        }
         
         hClusterESum[k] = (TH1F*) fTot[k]->Get("AnaPhoton_Calo0_hEPhoton");
         hClusterESum[k]->SetLineColor(1);
@@ -301,14 +331,20 @@ void DrawPtHardBins
         }
         
         hPi0Sum[k] = (TH1F*) fTot[k]->Get("AnaPi0_Calo0_hPrimPi0Pt");
-        hPi0Sum[k]->SetLineColor(1);
-        hPi0Sum[k]->SetLineWidth(2);
-        hPi0Sum[k]->SetAxisRange(minE, maxE,"X");
+        if(hPi0Sum[k])
+        {
+          hPi0Sum[k]->SetLineColor(1);
+          hPi0Sum[k]->SetLineWidth(2);
+          hPi0Sum[k]->SetAxisRange(minE, maxE,"X");
+        }
         
         hPi0ESum[k] = (TH1F*) fTot[k]->Get("AnaPi0_Calo0_hPrimPi0PtInCalo");
-        hPi0ESum[k]->SetLineColor(1);
-        hPi0ESum[k]->SetLineWidth(2);
-        hPi0ESum[k]->SetAxisRange(minE, maxE,"X");
+        if(hPi0ESum[k])
+        {
+          hPi0ESum[k]->SetLineColor(1);
+          hPi0ESum[k]->SetLineWidth(2);
+          hPi0ESum[k]->SetAxisRange(minE, maxE,"X");
+        }
         
         hPi0DSum[k] = (TH1F*) fTot[k]->Get("AnaPi0_Calo1_hPrimPi0PtInCalo");
         if(hPi0DSum[k])
@@ -319,14 +355,20 @@ void DrawPtHardBins
         }
 
         hGamSum[k] = (TH1F*) fTot[k]->Get("AnaPhoton_Calo0_hPtPrim_MCPhoton");
-        hGamSum[k]->SetLineColor(1);
-        hGamSum[k]->SetLineWidth(2);
-        hGamSum[k]->SetAxisRange(minE, maxE,"X");
+        if(hGamSum[k])
+        {
+          hGamSum[k]->SetLineColor(1);
+          hGamSum[k]->SetLineWidth(2);
+          hGamSum[k]->SetAxisRange(minE, maxE,"X");
+        }
         
         hGamESum[k] = (TH1F*) fTot[k]->Get("AnaPhoton_Calo0_hPtPrimAcc_MCPhoton");
-        hGamESum[k]->SetLineColor(1);
-        hGamESum[k]->SetLineWidth(2);
-        hGamESum[k]->SetAxisRange(minE, maxE,"X");
+        if(hGamESum[k])
+        {
+          hGamESum[k]->SetLineColor(1);
+          hGamESum[k]->SetLineWidth(2);
+          hGamESum[k]->SetAxisRange(minE, maxE,"X");
+        }
         
         hGamDSum[k] = (TH1F*) fTot[k]->Get("AnaPhoton_Calo1_hPtPrimAcc_MCPhoton");
         if(hGamDSum[k])
@@ -372,14 +414,15 @@ void DrawPtHardBins
       // Scaler and merge
       else if ( scaleHisto && k == 0 )
       {
-        hPtHard  [i][k]->Scale(scale[i]);
+        if(hPtHard  [i][k])hPtHard[i][k]->Scale(scale[i]);
         hClusterE[i][k]->Scale(scale[i]);
         if(hClusterD[i][k])hClusterD[i][k]->Scale(scale[i]);
-        hPi0     [i][k]->Scale(scale[i]);
-        hPi0E    [i][k]->Scale(scale[i]);
+        
+        if(hPi0 [i][k])hPi0 [i][k]->Scale(scale[i]);
+        if(hPi0E[i][k])hPi0E[i][k]->Scale(scale[i]);
         if(hPi0D[i][k])hPi0D[i][k]->Scale(scale[i]);     
-        hGam     [i][k]->Scale(scale[i]);
-        hGamE    [i][k]->Scale(scale[i]);
+        if(hGam [i][k])hGam [i][k]->Scale(scale[i]);
+        if(hGamE[i][k])hGamE[i][k]->Scale(scale[i]);
         if(hGamD[i][k])hGamD[i][k]->Scale(scale[i]);
         
         for(Int_t j = 0; j < 3; j++) hTrackPt[i][k][j]->Scale(scale[i]);
@@ -396,8 +439,11 @@ void DrawPtHardBins
 
         if ( i == 0 ) 
         {
-          hPtHardSum[k] = (TH1F*) hPtHard[i][k]->Clone("hPtHardSum");
-          hPtHardSum[k]->SetLineColor(1);
+          if(hPtHardSum[k])
+          {
+            hPtHardSum[k] = (TH1F*) hPtHard[i][k]->Clone("hPtHardSum");
+            hPtHardSum[k]->SetLineColor(1);
+          }
           
           hClusterESum[k] = (TH1F*) hClusterE[i][k]->Clone("hClusterESum");
           hClusterESum[k]->SetLineColor(1);
@@ -406,19 +452,19 @@ void DrawPtHardBins
           if(hClusterDSum[k])hClusterDSum[k]->SetLineColor(1);
 
           hPi0Sum [k] = (TH1F*) hPi0 [i][k]->Clone("hPi0Sum");
-          hPi0Sum [k]->SetLineColor(1);
+          if(hPi0Sum[k])hPi0Sum [k]->SetLineColor(1);
           
           hPi0ESum[k] = (TH1F*) hPi0E[i][k]->Clone("hPi0ESum");
-          hPi0ESum[k]->SetLineColor(1);
+          if(hPi0ESum[k])hPi0ESum[k]->SetLineColor(1);
           
           hPi0DSum[k] = (TH1F*) hPi0D[i][k]->Clone("hPi0DSum");
           if(hPi0DSum[k])hPi0DSum[k]->SetLineColor(1);
 
           hGamSum [k] = (TH1F*) hPi0 [i][k]->Clone("hGamSum");
-          hGamSum [k]->SetLineColor(1);
+          if(hGamSum[k])hGamSum [k]->SetLineColor(1);
           
           hGamESum[k] = (TH1F*) hPi0E[i][k]->Clone("hGamESum");
-          hGamESum[k]->SetLineColor(1);
+          if(hGamESum[k])hGamESum[k]->SetLineColor(1);
           
           hGamDSum[k] = (TH1F*) hPi0D[i][k]->Clone("hGamDSum");
           if(hGamDSum[k])hGamDSum[k]->SetLineColor(1);
@@ -441,17 +487,17 @@ void DrawPtHardBins
         }
         else 
         {
-          hPtHardSum  [k]->Add(hPtHard[i][k]);
+          if(hPtHardSum[k])hPtHardSum[k]->Add(hPtHard[i][k]);
 
           hClusterESum[k]->Add(hClusterE[i][k]);
           if(hClusterD[i][k])hClusterDSum[k]->Add(hClusterD[i][k]);
 
-          hPi0Sum [k]->Add(hPi0 [i][k]);
-          hPi0ESum[k]->Add(hPi0E[i][k]);
+          if(hPi0 [i][k])hPi0Sum [k]->Add(hPi0 [i][k]);
+          if(hPi0E[i][k])hPi0ESum[k]->Add(hPi0E[i][k]);
           if(hPi0D[i][k])hPi0DSum[k]->Add(hPi0D[i][k]);
 
-          hGamSum [k]->Add(hGam [i][k]);
-          hGamESum[k]->Add(hGamE[i][k]);
+          if(hGam [i][k])hGamSum [k]->Add(hGam [i][k]);
+          if(hGamD[i][k])hGamESum[k]->Add(hGamE[i][k]);
           if(hGamD[i][k])hGamDSum[k]->Add(hGamD[i][k]);
           
           for(Int_t j = 0; j < 3; j++) hTrackPtSum[k][j]->Add(hTrackPt[i][k][j]);
@@ -477,10 +523,10 @@ void DrawPtHardBins
   TString scaleCase [] = {"NotScaled" ,"Scaled"};
   TString scaleTitle[] = {"Not scaled","Scaled"};
   TString trackType [] = {"All","Global","noSPD"};
+  TString trackTitle[] = {"All hybrid","Global","No SPD"};
 
   for(Int_t k = 0; k < 2; k++)
   {
-    
     gStyle->SetPadTopMargin(0.10);
     gStyle->SetPadRightMargin(0.02);
     
@@ -513,6 +559,8 @@ void DrawPtHardBins
     
     for(Int_t i = 0; i < nBin; i++)
     {
+      if(!f[i][k]) continue;
+
       if(!hClusterE[i][k]) continue;
       hClusterE[i][k]->Draw("H same");
       l.AddEntry(hClusterE[i][k],Form("Bin %d",i+firstBin),"L");
@@ -538,6 +586,8 @@ void DrawPtHardBins
       
       for(Int_t i = 0; i < nBin; i++)
       {
+        if(!f[i][k]) continue;
+
         hClusterD[i][k]->Draw("H same");
       }
       
@@ -551,43 +601,50 @@ void DrawPtHardBins
     //
     // Parton PT hard spectrum
     //
-    TCanvas * cHard = new TCanvas(Form("cPtHard%d",k),Form("pT Hard %s", scaleCase[k].Data()), 200,200);
-    
-    gPad->SetLogy();
-    //gPad->SetLogx();
-    
-    hPtHardSum[k]->SetTitle(Form("Generated parton hard-pT, %s",scaleTitle[k].Data()));
-    hPtHardSum[k]->Draw("H");
-    //hPtHardSum[k]->SetMinimum(1);
-    
-    for(Int_t i = 0; i < nBin; i++)
+    if(hPtHardSum[k])
     {
-      if(!hPtHard[i][k]) continue;
-      hPtHard[i][k]->Draw("H same");
+      TCanvas * cHard = new TCanvas(Form("cPtHard%d",k),Form("pT Hard %s", scaleCase[k].Data()), 200,200);
+    
+      gPad->SetLogy();
+      //gPad->SetLogx();
+    
+      hPtHardSum[k]->SetTitle(Form("Generated parton hard-pT, %s",scaleTitle[k].Data()));
+      hPtHardSum[k]->Draw("H");
+      //hPtHardSum[k]->SetMinimum(1);
+    
+      for(Int_t i = 0; i < nBin; i++)
+      {
+        if(!f[i][k]) continue;
+
+        if(!hPtHard[i][k]) continue;
+        hPtHard[i][k]->Draw("H same");
+      }
+    
+      hPtHardSum[k]->Draw("H same");
+
+      l.Draw();
+    
+      cHard->Print(Form("PtHard_%s.eps",scaleCase[k].Data()));
     }
     
-    hPtHardSum[k]->Draw("H same");
-
-    l.Draw();
-    
-    cHard->Print(Form("PtHard_%s.eps",scaleCase[k].Data()));
-
     //
     // TRACK spectra
     //
     for(Int_t j=0; j<3; j++)
     {
       TCanvas * cTr = new TCanvas(Form("cTrackPt%d_Type%d",k,j),
-                                  Form("Track Pt Type %s, %s",trackType[j].Data(),scaleTitle[k].Data()), 
+                                  Form("Track Pt Type %s, %s",trackTitle[j].Data(),scaleTitle[k].Data()), 
                                   200,200);
       gPad->SetLogy();
       //gPad->SetLogx();
       
-      hTrackPtSum[k][j]->SetTitle(Form("Hybrid tracks, %s",scaleTitle[k].Data()));
+      hTrackPtSum[k][j]->SetTitle(Form("%s tracks, %s",trackTitle[j].Data(),scaleTitle[k].Data()));
       hTrackPtSum[k][j]->Draw("H");
       //hTrackPtSum[k][j]->SetMinimum(1);  
       for(Int_t i = 0; i < nBin; i++)
       {
+        if(!f[i][k]) continue;
+
         if(!hTrackPt[i][k][j]) continue;
         hTrackPt[i][k][j]->Draw("H same");
       }
@@ -601,44 +658,54 @@ void DrawPtHardBins
     // Generated Pi0 spectrum
     //
     // No acceptance selection
-    TCanvas * cPi0 = new TCanvas(Form("cPi0%d",k),Form("Generated Pi0 %s", scaleCase[k].Data()), 200,200);
-    
-    gPad->SetLogy();
-    //gPad->SetLogx();
-    
-    hPi0Sum[k]->SetTitle(Form("Generated #pi^{0}, %s",scaleTitle[k].Data()));
-    hPi0Sum[k]->Draw("H");
-    //hPi0Sum[k]->SetMinimum(1);
-    
-    for(Int_t i = 0; i < nBin; i++)
+    if(hPi0Sum[k])
     {
-      if(!hPi0[i][k]) continue;
-      hPi0[i][k]->Draw("H same");
+      TCanvas * cPi0 = new TCanvas(Form("cPi0%d",k),Form("Generated Pi0 %s", scaleCase[k].Data()), 200,200);
+    
+      gPad->SetLogy();
+      //gPad->SetLogx();
+    
+      hPi0Sum[k]->SetTitle(Form("Generated #pi^{0}, %s",scaleTitle[k].Data()));
+      hPi0Sum[k]->Draw("H");
+      //hPi0Sum[k]->SetMinimum(1);
+    
+      for(Int_t i = 0; i < nBin; i++)
+      {
+        if(!f[i][k]) continue;
+
+        if(!hPi0[i][k]) continue;
+        hPi0[i][k]->Draw("H same");
+      }
+    
+      l.Draw();
+    
+      cPi0->Print(Form("GeneratedPi0_Pt_%s.eps",scaleCase[k].Data()));
     }
-    
-    l.Draw();
-    
-    cPi0->Print(Form("GeneratedPi0_Pt_%s.eps",scaleCase[k].Data()));
     
     // EMCal
-    TCanvas * cPi0E = new TCanvas(Form("cPi0E%d",k),Form("Generated Pi0 in EMCal acceptance %s", scaleCase[k].Data()), 200,200);
-    
-    gPad->SetLogy();
-    //gPad->SetLogx();
-    
-    hPi0ESum[k]->SetTitle(Form("Generated #pi^{0} in EMCal, %s",scaleTitle[k].Data()));
-    hPi0ESum[k]->Draw("H");
-    //hPi0ESum[k]->SetMinimum(1);
-    
-    for(Int_t i = 0; i < nBin; i++)
+    if(hPi0ESum[k])
     {
-      if(!hPi0E[i][k]) continue;
-      hPi0E[i][k]->Draw("H same");
+      TCanvas * cPi0E = new TCanvas(Form("cPi0E%d",k),Form("Generated Pi0 in EMCal acceptance %s", scaleCase[k].Data()), 200,200);
+    
+      gPad->SetLogy();
+      //gPad->SetLogx();
+    
+      hPi0ESum[k]->SetTitle(Form("Generated #pi^{0} in EMCal, %s",scaleTitle[k].Data()));
+      hPi0ESum[k]->Draw("H");
+      //hPi0ESum[k]->SetMinimum(1);
+    
+      for(Int_t i = 0; i < nBin; i++)
+      {
+        if(!f[i][k]) continue;
+
+        if(!hPi0E[i][k]) continue;
+        hPi0E[i][k]->Draw("H same");
+      }
+    
+      l.Draw();
+    
+      cPi0E->Print(Form("GeneratedPi0_EMCal_Pt_%s.eps",scaleCase[k].Data()));
     }
-    
-    l.Draw();
-    
-    cPi0E->Print(Form("GeneratedPi0_EMCal_Pt_%s.eps",scaleCase[k].Data()));
     
     // DCal
     if(hPi0DSum[k])
@@ -654,6 +721,8 @@ void DrawPtHardBins
       
       for(Int_t i = 0; i < nBin; i++)
       {
+        if(!f[i][k]) continue;
+
         if(!hPi0D[i][k]) continue;
         hPi0D[i][k]->Draw("H same");
       }
@@ -667,45 +736,55 @@ void DrawPtHardBins
     // Generated Gamma spectrum
     //
     // No acceptance selection
-    TCanvas * cGam = new TCanvas(Form("cGamma%d",k),Form("Generated Gamma %s", scaleCase[k].Data()), 200,200);
-    
-    gPad->SetLogy();
-    //gPad->SetLogx();
-    
-    hGamSum[k]->SetTitle(Form("Generated #gamma, %s",scaleTitle[k].Data()));
-    hGamSum[k]->Draw("H");
-    //hGamSum[k]->SetMinimum(1);
-    
-    for(Int_t i = 0; i < nBin; i++)
+    if(hGamSum[k])
     {
-      if(!hGam[i][k]) continue;
-      hGam[i][k]->Draw("H same");
+      TCanvas * cGam = new TCanvas(Form("cGamma%d",k),Form("Generated Gamma %s", scaleCase[k].Data()), 200,200);
+    
+      gPad->SetLogy();
+      //gPad->SetLogx();
+    
+      hGamSum[k]->SetTitle(Form("Generated #gamma, %s",scaleTitle[k].Data()));
+      hGamSum[k]->Draw("H");
+      //hGamSum[k]->SetMinimum(1);
+    
+      for(Int_t i = 0; i < nBin; i++)
+      {
+        if(!f[i][k]) continue;
+
+        if(!hGam[i][k]) continue;
+        hGam[i][k]->Draw("H same");
+      }
+    
+      l.Draw();
+    
+      cGam->Print(Form("GeneratedGam_Pt_%s.eps",scaleCase[k].Data()));
     }
-    
-    l.Draw();
-    
-    cGam->Print(Form("GeneratedGam_Pt_%s.eps",scaleCase[k].Data()));
-    
-    // EMCal
-    TCanvas * cGamE = new TCanvas(Form("cGammaE%d",k),Form("Generated Gamma in EMCal acceptance %s", scaleCase[k].Data()), 200,200);
-    
-    gPad->SetLogy();
-    //gPad->SetLogx();
-    
-    hGamESum[k]->SetTitle(Form("Generated #gamma in EMCal acceptance, %s",scaleTitle[k].Data()));
-    hGamESum[k]->Draw("H");
-    //hGamESum[k]->SetMinimum(1);
-    
-    for(Int_t i = 0; i < nBin; i++)
+  
+    if(hGamESum[k])
     {
-      if(!hGamE[i][k]) continue;
-      hGamE[i][k]->Draw("H same");
+      // EMCal
+      TCanvas * cGamE = new TCanvas(Form("cGammaE%d",k),Form("Generated Gamma in EMCal acceptance %s", scaleCase[k].Data()), 200,200);
+    
+      gPad->SetLogy();
+      //gPad->SetLogx();
+    
+      hGamESum[k]->SetTitle(Form("Generated #gamma in EMCal acceptance, %s",scaleTitle[k].Data()));
+      hGamESum[k]->Draw("H");
+      //hGamESum[k]->SetMinimum(1);
+    
+      for(Int_t i = 0; i < nBin; i++)
+      {
+        if(!f[i][k]) continue;
+
+        if(!hGamE[i][k]) continue;
+        hGamE[i][k]->Draw("H same");
+      }
+    
+      l.Draw();
+    
+      cGamE->Print(Form("GeneratedGamma_EMCal_Pt_%s.eps",scaleCase[k].Data()));
     }
-    
-    l.Draw();
-    
-    cGamE->Print(Form("GeneratedGamma_EMCal_Pt_%s.eps",scaleCase[k].Data()));
-    
+  
     // DCal
     if(hGamDSum[k])
     {
@@ -720,6 +799,8 @@ void DrawPtHardBins
       
       for(Int_t i = 0; i < nBin; i++)
       {
+        if(!f[i][k]) continue;
+
         if(!hGamD[i][k]) continue;
         hGamD[i][k]->Draw("H same");
       }
@@ -756,13 +837,28 @@ void DrawPtHardBins
     
     hInvMassEMC->SetTitle(Form("Cluster pair M in #pi^{0} region, %s",scaleTitle[k].Data()));
 
+    Double_t intE = hInvMassEMC->Integral();
+    if(intE > 0) hInvMassEMC->Scale(1./intE);
+    Double_t maxE = hInvMassEMC->GetMaximum();
+    hInvMassEMC->SetYTitle("1/N dN / dM ");
     hInvMassEMC->Draw("H");
-    if(hInvMassDMC)hInvMassDMC->Draw("H same");
     
-    TLegend lim(0.6,0.8,0.98,0.98);
+    TLegend lim(0.68,0.6,0.98,0.8);
     lim.SetHeader("5 < E < 10 GeV ");
     lim.AddEntry(hInvMassEMC,"EMCal","L");
-    if(hInvMassDMC)lim.AddEntry(hInvMassDMC,"EMCal","L");
+    
+    if(hInvMassDMC)
+    {
+      Double_t intD = hInvMassDMC->Integral();
+      if(intD > 0) hInvMassDMC->Scale(1./intD);
+      
+      Double_t maxD = hInvMassDMC->GetMaximum();
+      if(maxD > maxE) hInvMassEMC->SetMaximum(hInvMassEMC->GetMaximum()*1.1);
+      
+      hInvMassDMC->Draw("H same");
+      lim.AddEntry(hInvMassDMC,"DCal","L");
+    }
+ 
     lim.Draw();
     
     cIMProj->Print(Form("InvMassDCalEMCal_5_10GeV_%s.eps",scaleCase[k].Data()));
