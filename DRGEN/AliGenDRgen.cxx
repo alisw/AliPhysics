@@ -35,7 +35,7 @@
 #include <TDatabasePDG.h>
 #include <TClonesArray.h>
 
-#include "AliRun.h"
+//#include "AliRun.h"
 #include "AliGenDRgen.h"
 #include "TDRgen.h"
 #include "DRGENcommon.h"
@@ -51,7 +51,8 @@ AliGenDRgen::AliGenDRgen() :
   fEvent(-1),
   fDebug(0),
   fDebugEventFirst(-1),
-  fDebugEventLast(-1)
+  fDebugEventLast(-1),
+  kMassRange(kFALSE)
 {
   // Constructor: create generator instance,
   // create particle array
@@ -106,17 +107,42 @@ void AliGenDRgen::Generate()
   Double_t weight;
 
   Int_t    ks,kf,iparent,nt, trackIt;
+  Bool_t isWithinCuts;
   Float_t  random[6];
   const Float_t kconv=0.001/2.999792458e8;
 
-  fTDRgen->GenerateEvent();
-  weight = 1.;
-  //  if (gAlice->GetEvNumber()>=fDebugEventFirst &&
-  //      gAlice->GetEvNumber()<=fDebugEventLast) fPythia->Pylist(1);
-  fTDRgen->ImportParticles(fParticles);
+  isWithinCuts = kFALSE;
 
-  if (fDebug == 1)
-    Info("Generate()","one event is produced");
+  while (!isWithinCuts) {
+
+    fTDRgen->GenerateEvent();
+    weight = 1.;
+    isWithinCuts=kTRUE;
+    //  if (gAlice->GetEvNumber()>=fDebugEventFirst &&
+    //      gAlice->GetEvNumber()<=fDebugEventLast) fPythia->Pylist(1);
+    fTDRgen->ImportParticles(fParticles);
+
+    if (fDebug == 1)
+      Info("Generate()","one event before cuts is produced");
+    Int_t np = fParticles->GetEntriesFast();
+    TParticle *iparticle;
+    //   Int_t* pParent   = new Int_t[np];
+    for (Int_t ip=0; ip<np; ip++) {
+      iparticle = (TParticle *) fParticles->At(ip);
+      Int_t st = iparticle->GetStatusCode();
+      if(st == 99){//this particle is central system
+	if(kYRange)//cut on rapidity of central system  
+	  if(fYMin > iparticle->Y() || fYMax <iparticle->Y() ) isWithinCuts = kFALSE;
+	if(kPtRange)//cut on Pt of central system
+	  if(fPtMin > iparticle->Pt() || fPtMax < iparticle->Pt() ) isWithinCuts = kFALSE;
+	if(kMassRange){//cut on mass of central system
+	  Float_t mass = TMath::Sqrt(TMath::Abs(iparticle->Energy()*iparticle->Energy() - iparticle->P()*iparticle->P()));
+	  if(fMassMin > mass || fPtMax < mass ) isWithinCuts = kFALSE;
+	}
+      }
+
+    }
+  }
 
   Int_t j;
   for (j=0;j<3;j++) origin0[j]=fOrigin[j];
@@ -199,8 +225,15 @@ void AliGenDRgen::SetProcess       (Int_t   proc1, Int_t proc2  )
   if(polarization!=0x0)
     fTDRgen->SetF2Polarization(polarization);
 }
-
 //____________________________________________________________
+  void AliGenDRgen::SetMassRange(Float_t min, Float_t max)
+{
+  if(min<max && max > 0){
+    kMassRange = kTRUE;
+    fMassMin = min;
+    fMassMax = max;
+  }
+}
 //____________________________________________________________
   TClonesArray*  AliGenDRgen::GetParticleList ()
 {
