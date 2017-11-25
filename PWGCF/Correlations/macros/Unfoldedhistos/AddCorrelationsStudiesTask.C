@@ -30,9 +30,9 @@ AliAnalysisTaskSE *AddCorrelationsStudiesTask(const char *suffix, const char *co
 
     // create containers for input/output
     AliAnalysisDataContainer *coutput1 = mgr->CreateContainer(Form("CorrelationStudies_%s_%s", szContainerPrefix.Data(), suffix), TList::Class(), AliAnalysisManager::kOutputContainer, outfilename);
-    AliAnalysisDataContainer *coutput2 = mgr->CreateContainer(Form("DptDptCorrelations_%s_%s", szContainerPrefix.Data(), suffix), TList::Class(), AliAnalysisManager::kOutputContainer, outfilename);
-    AliAnalysisDataContainer *coutput3 = mgr->CreateContainer(Form("DptDptCorrelationsMCRecOptions_%s_%s", szContainerPrefix.Data(), suffix), TList::Class(), AliAnalysisManager::kOutputContainer, outfilename);
-    AliAnalysisDataContainer *coutput4 = mgr->CreateContainer(Form("DptDptTrueCorrelations_%s_%s", szContainerPrefix.Data(), suffix), TList::Class(), AliAnalysisManager::kOutputContainer, outfilename);
+    AliAnalysisDataContainer *coutput2 = mgr->CreateContainer(Form("CSDptDptCorrelations_%s_%s", szContainerPrefix.Data(), suffix), TList::Class(), AliAnalysisManager::kOutputContainer, outfilename);
+    AliAnalysisDataContainer *coutput3 = mgr->CreateContainer(Form("CSDptDptCorrelationsMCRecOptions_%s_%s", szContainerPrefix.Data(), suffix), TList::Class(), AliAnalysisManager::kOutputContainer, outfilename);
+    AliAnalysisDataContainer *coutput4 = mgr->CreateContainer(Form("CSDptDptTrueCorrelations_%s_%s", szContainerPrefix.Data(), suffix), TList::Class(), AliAnalysisManager::kOutputContainer, outfilename);
 
     // connect input/output
     mgr->ConnectInput(taskCS, 0, cinput);
