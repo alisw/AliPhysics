@@ -829,14 +829,17 @@ Bool_t AliDptDptCorrelations::StartEvent(Float_t centrality, Float_t vertexz) {
 
   fVertexZ = vertexz;
   fCentrality = centrality;
+
+  if (fVertexZ < fMin_vertexZ || fMax_vertexZ < fVertexZ) {
+    AliInfo(Form("Event with z vertex: %.2f out of internal cuts", fVertexZ));
+    return kFALSE;
+  }
+
   fIxVertexZ = Int_t ((fVertexZ - fMin_vertexZ) / fWidth_vertexZ);
   if (fIxVertexZ < 0 || !(fIxVertexZ < fNBins_vertexZ)) {
     AliError(Form("Event z vertex bin %d out of bounds. Ignoring event.", fIxVertexZ));
     return kFALSE;
   }
-
-  if (fVertexZ < fMin_vertexZ || fMax_vertexZ < fVertexZ)
-    AliError(Form("Wrongly accepted event with z vertex: %.2f", fVertexZ));
 
   if (fUseSimulation) {
     fPositiveTrackCurrentPdf = (TH3F *) fPositiveTrackPdfs->At(fIxVertexZ);
