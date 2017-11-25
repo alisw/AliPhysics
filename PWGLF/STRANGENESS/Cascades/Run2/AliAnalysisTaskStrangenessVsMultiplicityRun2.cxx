@@ -3438,7 +3438,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::AddStandardCascadeConfigurati
         "ProperLifetimeV0", //11
         "LeastNumberOfClusters", //12
         "TPCdEdx", //13
-        "Competing" //14
+        "Competing", //14
         "DCA3DCascToPV" //15
     };
     
@@ -3475,7 +3475,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::AddStandardCascadeConfigurati
     lcuts[lIdx][0][11] =   -1;    lcuts[lIdx][1][11] =    70; lcuts[lIdx][2][11] =    80; //LeastNumberOfClusters 12
     lcuts[lIdx][0][12] =    5;    lcuts[lIdx][1][12] =     4; lcuts[lIdx][2][12] =     3; //TPCdEdx 13
     lcuts[lIdx][0][13] =  0.0;    lcuts[lIdx][1][13] = 0.008; lcuts[lIdx][2][13] = 0.010; //Competing 14
-    lcuts[lIdx][0][14] =  0.6;    lcuts[lIdx][1][14] =   0.8; lcuts[lIdx][2][14] =   1.2; //3D DCA Cascade To PV
+    lcuts[lIdx][0][14] =  1.2;    lcuts[lIdx][1][14] =   0.8; lcuts[lIdx][2][14] =   0.6; //3D DCA Cascade To PV
     //================================================================================
     
     //================================================================================
@@ -3497,7 +3497,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::AddStandardCascadeConfigurati
     lcuts[lIdx][0][11] =   -1;    lcuts[lIdx][1][11] =    70; lcuts[lIdx][2][11] =    80; //LeastNumberOfClusters 12
     lcuts[lIdx][0][12] =    5;    lcuts[lIdx][1][12] =     4; lcuts[lIdx][2][12] =     3; //TPCdEdx 13
     lcuts[lIdx][0][13] =  0.0;    lcuts[lIdx][1][13] = 0.008; lcuts[lIdx][2][13] = 0.010; //Competing 14
-    lcuts[lIdx][0][14] =  0.6;    lcuts[lIdx][1][14] =   0.8; lcuts[lIdx][2][14] =   1.2; //3D DCA Cascade To PV
+    lcuts[lIdx][0][14] =  1.2;    lcuts[lIdx][1][14] =   0.8; lcuts[lIdx][2][14] =   0.6; //3D DCA Cascade To PV
     //================================================================================
     
     //================================================================================
@@ -3519,7 +3519,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::AddStandardCascadeConfigurati
     lcuts[lIdx][0][11] =   -1;    lcuts[lIdx][1][11] =    70; lcuts[lIdx][2][11] =    80; //LeastNumberOfClusters 12
     lcuts[lIdx][0][12] =    5;    lcuts[lIdx][1][12] =     4; lcuts[lIdx][2][12] =     3; //TPCdEdx 13
     lcuts[lIdx][0][13] =  0.0;    lcuts[lIdx][1][13] = 0.008; lcuts[lIdx][2][13] = 0.010; //Competing 14
-    lcuts[lIdx][0][14] =  0.6;    lcuts[lIdx][1][14] =   0.8; lcuts[lIdx][2][14] =   1.2; //3D DCA Cascade To PV
+    lcuts[lIdx][0][14] =  1.2;    lcuts[lIdx][1][14] =   0.8; lcuts[lIdx][2][14] =   0.6; //3D DCA Cascade To PV
     //================================================================================
     
     //================================================================================
@@ -3541,7 +3541,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::AddStandardCascadeConfigurati
     lcuts[lIdx][0][11] =   -1;    lcuts[lIdx][1][11] =    70; lcuts[lIdx][2][11] =    80; //LeastNumberOfClusters 12
     lcuts[lIdx][0][12] =    5;    lcuts[lIdx][1][12] =     4; lcuts[lIdx][2][12] =     3; //TPCdEdx 13
     lcuts[lIdx][0][13] =  0.0;    lcuts[lIdx][1][13] = 0.008; lcuts[lIdx][2][13] = 0.010; //Competing 14
-    lcuts[lIdx][0][14] =  0.6;    lcuts[lIdx][1][14] =   0.8; lcuts[lIdx][2][14] =   1.2; //3D DCA Cascade To PV
+    lcuts[lIdx][0][14] =  1.2;    lcuts[lIdx][1][14] =   0.8; lcuts[lIdx][2][14] =   0.6; //3D DCA Cascade To PV
     //================================================================================
     
     //STEP 3: Creation of output objects
