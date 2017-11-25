@@ -29,7 +29,7 @@ class AliAnTOFevent {
   ///Masks
   Short_t fEvtMultBin;                        /// Binned multiplicity
   Double32_t fVtxX;                           //[-0.128,0.128,8]  Vtx X
-  Double32_t fVtxY;                           //[-1.28,1.28,8]  Vtx Y
+  Double32_t fVtxY;                           //[0.154,0.410,8]  Vtx Y
   Double32_t fVtxZ;                           //[-12.8,12.8,8]  Vtx Z
   std::vector<AliAnTOFtrack> fAliAnTOFtracks; /// Array of AliAnTOFtrack
 
