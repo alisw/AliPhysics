@@ -116,6 +116,8 @@ AliAnalysisTask *AddTaskHFEnpeXeXe(
             // NO WEIGHTS FOR DATA
             RegisterTaskNPEXeXe( centrMin,centrMax,newCentralitySelection,MCthere, isAOD, isBeauty, kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl15, dEdxhm,  kDefTOFs,  kDefITSsmin,kDefITSsmax, AliHFEextraCuts::kBoth, kDefITSchi2percluster, kDefTPCclshared, etacorrection, multicorrection, kDefEtaIncMin, kDefEtaIncMax,
                                 kassETAm, kassETAp,kassMinpT, kassITS, kassTPCcl, kassTPCPIDcl, kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kTRUE, kFALSE,-1);
+            
+            RegisterTaskNPEXeXe( centrMin,centrMax,newCentralitySelection,MCthere, isAOD, isBeauty, kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl15, dEdxhm,  kDefTOFs,  -4,2, AliHFEextraCuts::kBoth, kDefITSchi2percluster, kDefTPCclshared, etacorrection, multicorrection, kDefEtaIncMin, kDefEtaIncMax, kassETAm, kassETAp,kassMinpT, kassITS, kassTPCcl, kassTPCPIDcl, kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kTRUE, kFALSE,-1);
         }
         
     }
