@@ -1,0 +1,79 @@
+/*
+How to use css in aliroot.
+examples of css style in aliroot:
+*/
+
+/*
+TGraph#obj1, TGraph.Status#TPC.QA.dcar_posA_1 - means obj1 from TGraph with any tag(Status, Warnings, Errors) and TPC.QA.dcar_posA_1 from TGraph with tag Status.
+*/
+TGraph#obj1, TGraph.Status#TPC.QA.dcar_posA_1   {
+    marker_size:   1,2,3,4;
+    marker_color:  5,6,7,8; /* marker_color defenition */
+    line_color:    5,6,7,8; /* line_color defenition */
+    line_style:    13,14,15,16;
+}
+
+.deadBand   {
+    marker_size:   1,1,1;
+    marker_color:  800,632,416; /* marker_color definition */
+    line_color:    800,632,416;/* line_color definition */
+    line_style:    1,2,6;
+    line_width:    2,2,2;
+}
+
+.multiGraph   {      /*like figTemplateTRD   markerstyles: 20,21,24,25,27,28,34,33,29,30*/
+    marker_size:   1,1, 0.9,0.9, 1.4,1.4, 1.1,1.1, 1.2,1.2;
+    marker_color:  1,2,3,4; /* kBlack, kRed+1 , kBlue+1, kGreen+3, kMagenta+1, kOrange-1,kCyan+2,kYellow+2,kGray+1,  kRed-10 */
+    line_color:    1,2,3,4; /* kBlack, kRed+1 , kBlue+1, kGreen+3, kMagenta+1, kOrange-1,kCyan+2,kYellow+2,kGray+1,  kRed-10 */
+    line_style:    1,2,3,4,5,6,7,8,9,10;
+}
+
+.multiGraphPair   {    /*like figTemplateTRDPair markerstyles: 20,21,24,25,27,28,34,33,29,30*/
+    marker_size:   1,1, 0.9,0.9, 1.4,1.4, 1.1,1.1, 1.2,1.2;
+    marker_color:  1,2,3,4,5,6,7,8,9,10; /* marker_color defenition */
+    line_color:    1,2,3,4,5,6,7,8,9,10; /* line_color defenition */
+    line_style:    1,1,1,1,1,1,1,1,1;
+}
+
+/*
+TF1.Status, .Status#obj1, #obj3 - means any object from TF1 class with tag Status and obj1 from any class with tag Status and obj3 from any class with any tag.
+*/
+
+TF1.Status, .Status#obj1, #obj3   {
+    marker_size:   17,18,19,20;
+    marker_color:  21,22,23,24;
+    line_color:    25,26,27,28;
+    line_style:    29,30,31,32;
+}
+
+.Status#obj1, #obj3, TGraphErrors.Warning   {
+    marker_size:   33,34,35,36;
+    marker_color:  37,38,39,40;
+    line_color:    41,42,43,44;
+    line_style:    45,46,47,48;
+}
+
+/*
+TH1.Status#obj1, TH1.Warning#obj1, TH1.Warning#obj3 - means apply the value of marker_size, marker_color, line_color, line_style for obj1 of class TH1 with tag Status and obj1 from TH1 with tag Warning and for obj3 from TH1 with tag Warning.
+*/
+TH1.Status#obj1, TH1.Warning#obj1, TH1.Warning#obj3   {
+    marker_size:   49,50,51,52;
+    marker_color:  53,54,55,56; /* marker_color defenition */
+    line_color:    57,58,59,60;
+    line_style:    61,62,63,64;
+}
+
+.statusPad#Top {
+    left_margin:     120px;
+    bottom_margin:   1px;
+    right_margin:    80px;
+}
+
+.statusPad#Bottom{
+    left_margin:     120px;
+    bottom_margin:   60px;
+    right_margin:    80px;
+    top_margin:      0.0;  
+    gridX:           3;   
+    gridY:           1;
+}

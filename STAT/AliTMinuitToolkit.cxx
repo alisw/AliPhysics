@@ -110,7 +110,7 @@ std::map<std::string, AliTMinuitToolkit*> AliTMinuitToolkit::fPredefinedFitters;
 
 ClassImp(AliTMinuitToolkit)
 
-AliTMinuitToolkit::AliTMinuitToolkit(const char *streamerName) : 
+AliTMinuitToolkit::AliTMinuitToolkit(const char *streamerName, const char *mode) :
   TNamed(),
   fStreamer(0),
   fVerbose(0),
@@ -138,7 +138,7 @@ AliTMinuitToolkit::AliTMinuitToolkit(const char *streamerName) :
  fMaxCalls = 500;
  fPrecision = 1;
  fIsHuberCost = false;
- if (streamerName!=NULL) fStreamer= new TTreeSRedirector(streamerName,"update");
+ if (streamerName!=NULL) fStreamer= new TTreeSRedirector(streamerName,mode);
 }
 
 
@@ -158,11 +158,11 @@ AliTMinuitToolkit::~AliTMinuitToolkit(){
   if (fStreamer) delete fStreamer;
 }
 
-void  AliTMinuitToolkit::SetStreamer(const char *streamerName){
+void  AliTMinuitToolkit::SetStreamer(const char *streamerName, const char *mode){
   //
   // set streamer
   if (fStreamer) delete fStreamer;
-  fStreamer= new TTreeSRedirector(streamerName,"recreate");
+  fStreamer= new TTreeSRedirector(streamerName,mode);
 }
 
 
@@ -493,22 +493,44 @@ Int_t AliTMinuitToolkit::FillFitter(TTree * inputTree, TString values, TString v
       (*fValues)(index0+iPoint,iVal)=inputTree->GetVal(iVal)[iPoint];
     }
   }
+  return entries;
 }
 
-TString AliTMinuitToolkit::GetFitFunctionAsAlias(){
+/// forrma alias string for the for tree alias or for fit title
+/// \param option  - use latex in case of title request
+/// \return        - string description
+TString AliTMinuitToolkit::GetFitFunctionAsAlias(Option_t *option, TTree * tree){
   //
   // construct string TTree alias for fit function
   TString inputString(fFormula->GetTitle());
+  TString sOption(option);
+  sOption.ToLower();
 
   if (fVarNames==NULL){
     ::Error("AliTMinuitToolkit::GetFitFunctionAsAlias","Variable names not defined. Fucntion supported for TTree::UnbinnedFit");
     return "";
   }
+
   for (Int_t iDim=0; iDim<fFormula->GetNdim(); iDim++){
-    inputString.ReplaceAll(TString::Format("x[%d]",iDim).Data(), GetListOfVariables()->At(iDim)->GetName());
+    TString varName=GetListOfVariables()->At(iDim)->GetName();
+    if (sOption.Contains("latex") &&tree){
+      TNamed * meta = TStatToolkit::GetMetadata(tree,varName+".Title");
+      if (meta) varName=meta->GetTitle();
+    }
+    inputString.ReplaceAll(TString::Format("x[%d]",iDim).Data(), varName.Data());
   }
   for (Int_t iPar=0; iPar<fFormula->GetNpar(); iPar++){
-    inputString.ReplaceAll(TString::Format("[%d]",iPar).Data(), TString::Format("(%f)",(*fParam)[iPar]).Data());
+    if (sOption.Contains("latex")==0){
+      inputString.ReplaceAll(TString::Format("[%d]",iPar).Data(), TString::Format("(%f)",(*fParam)[iPar]).Data());
+    }else{
+      if ((*GetRMSEstimator())[0]>0) {
+        inputString.ReplaceAll(TString::Format("[%d]", iPar).Data(),
+                               TString::Format("(%2.2f#pm%2.2f)", (*fParam)[iPar], (*GetRMSEstimator())[iPar]).Data());
+      }else{
+        inputString.ReplaceAll(TString::Format("[%d]", iPar).Data(),
+                               TString::Format("(%2.2f#pm%2.2f)", (*fParam)[iPar], (*GetRMSEstimator())[iPar]).Data());
+      }
+    }
   }  
   return inputString;
 }

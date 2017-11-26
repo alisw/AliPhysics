@@ -63,4 +63,34 @@ EOF
   fi
 }
 
+
+testAliDrawStyleTest() {
+  cp $ALIROOT_SOURCE/STAT/test/AliDrawStyleTest.C .
+  root -n -b -l <<\EOF 2>&1 | tee AliDrawStyleTest.log
+    gSystem->AddIncludePath("-I$ALICE_ROOT/include");
+    .x ./AliDrawStyleTest.C+
+EOF
+
+  N_GOOD=$(grep -cE 'Ali.*OK' AliDrawStyleTest.log)
+  N_BAD=$(grep -c "E-Ali" AliDrawStyleTest.log)
+
+  TEST_STATUS=0
+  if [[ $N_GOOD != 27 ]]; then
+    alilog_error "statTest.AliDrawStyleTest: Test FAILED"
+    ((TEST_STATUS++))
+  fi
+  if [[ $N_BAD != 0 ]]; then
+    alilog_error "statTest.AliDrawStyleTest: Test FAILED"
+    ((TEST_STATUS+=2))
+  fi
+  if [[ $TEST_STATUS == 0 ]]; then
+    alilog_success "statTest.AliDrawStyleTest: All OK"
+  else
+    alilog_error "statTest.: FAILED (code $TEST_STATUS)"
+  fi
+  exit $TEST_STATUS
+
+}
+
+
 [[ $1 ]] && $1

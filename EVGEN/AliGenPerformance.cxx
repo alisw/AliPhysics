@@ -14,28 +14,28 @@
  **************************************************************************/
 
 // Generator for particles according generic functions
-// For high pt performance studies realistic distribution of the particles - local density in jets to be approximated 
+// For high pt performance studies realistic distribution of the particles - local density in jets to be approximated
 //
-//  
-//  TF1 *   fF1Momentum;          // 1/momentum distribution function inGeV 
+//
+//  TF1 *   fF1Momentum;          // 1/momentum distribution function inGeV
 //  TF1 *   fFPhi;                // phi distribution function in rad     - if not set flat 0-2pi used
 //  TF1 *   fFTheta;              // theta distribution function in rad   - if not set flat pi/4-3pi/4 used
 //  TF3 *   fFPosition;           // position distribution function in cm - TO FIX if not set 0 used ()
-//  TF1 *   fFPdg;                // pdg distribution function            - if not set flat jet pdg used 
-//  We assume that the moment, postion and PDG code of particles are independent  
+//  TF1 *   fFPdg;                // pdg distribution function            - if not set flat jet pdg used
+//  We assume that the moment, postion and PDG code of particles are independent
 //  Only tracks/particle crossing the reference radius at given z range
 //
 // Origin: marian.ivanov@cern.ch
 
 
 /*
-  To test generator for particular setting run   
+  To test generator for particular setting run
   AliGenPerformance::TestAliGenPerformance(Int_t nEvents, TF1 *f1pt, TF1 *fpdg){
-  For distribution of 
+  For distribution of
     fF1Momentum=new TF1("f1pt","1-10*x",0,0.1);
     AliGenPerformance::TestAliGenPerformance(1000, fF1Momentum,0)
     pt distribution of charged primary particles described by powerlaw with slope -1.7
-  
+
   gSystem->Load("libpythia6");
   gSystem->Load("libEGPythia6");
   gSystem->Load("liblhapdf");
@@ -47,7 +47,7 @@
 
 */
 
-  
+
 
 
 #include <TParticle.h>
@@ -76,18 +76,18 @@ ClassImp(AliGenPerformance)
 AliGenPerformance::AliGenPerformance():
   AliGenerator(),
   fNJets(1),                // mean number of jets per event
-  fF1Momentum(0),           // momentum distribution function 
+  fF1Momentum(0),           // momentum distribution function
   fFPhi(0),                 // phi distribution function
   fFTheta(0),               // theta distribution function
-  fFPosition(0),            // position distribution function 
-  fFPdg(0),                 // pdg distribution function  
+  fFPosition(0),            // position distribution function
+  fFPdg(0),                 // pdg distribution function
   fStreamer(0),           // test stream - used for tuning of parameters of generator
   fVerboseLevel(0)            // verbose level
 {
   //
   // Default constructor
   //
-  SetNumberParticles(1);  
+  SetNumberParticles(1);
 }
 //-----------------------------------------------------------------------------
 AliGenPerformance::AliGenPerformance(const char* generName, Int_t verboseLevel):
@@ -369,10 +369,10 @@ void AliGenPerformance::Generate() {
 //-----------------------------------------------------------------------------
 void AliGenPerformance::Init()
 {
-  // 
+  //
   // Initialisation, check consistency of selected ranges
   //
-  
+
 
   printf("************ AliGenPerformance ****************\n");
   printf("************************************************\n");
@@ -438,14 +438,14 @@ TChain *  AliGenPerformance::MakeKineChain(){
     TList * kineList = fkine->GetListOfKeys();
     for (Int_t iKey=0; iKey<kineList->GetEntries();iKey++){
       chain->AddFile(kineArray->At(iFile)->GetName(), TChain::kBigNumber, TString::Format("%s/TreeK",kineList->At(iKey)->GetName()).Data());
-    }    
+    }
   }
   return chain;
   /*
     // using following lines properties of mother particles and daughter particles can be correlated
-    // Unfortuantelly to do it fix in the TChain needed. 
+    // Unfortuantelly to do it fix in the TChain needed.
     //    1.) problem with aliases (fix prepared)
-    //    2.) 
+    //    2.)
     TChain * chainMother = AliGenPerformance::MakeKineChain();
     TChain * chainDaughter = AliGenPerformance::MakeKineChain();
     chainMother->SetAlias("index0","(Particles.GetDaughter(0)+1000000*This->GetTreeNumber()+0)");
@@ -453,6 +453,6 @@ TChain *  AliGenPerformance::MakeKineChain(){
     //
     chainMother->BuildIndex("index0");
     chainDaughter->BuildIndex("index0");
-    chainMother->AddFriend(chainDaughter,"D");    
+    chainMother->AddFriend(chainDaughter,"D");
   */
 }

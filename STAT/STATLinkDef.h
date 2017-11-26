@@ -21,12 +21,14 @@
 
 #ifdef ROOT_HAS_HTTP
 #pragma link C++ class AliTreePlayer+;
+#pragma link C++ class AliTreeFormulaF+;
 #endif
 
 #pragma link C++ class AliExternalInfo+;
 #pragma link C++ class AliTreeTrending+;
 #pragma link C++ class AliNDFormulaBrowser+;
 #pragma link C++ class AliDrawStyle+;
+#pragma link C++ class AliPainter+;
 #pragma link C++ class AliElasticSearchRoot++;
 
 #pragma link C++ namespace AliFFTsmoother+;
@@ -57,7 +59,7 @@
 #pragma link C++ class std::map<UInt_t,THn*>+;
 #pragma link C++ class std::map<Int_t,TClonesArray*>+;
 #pragma link C++ class std::map<std::string,std::string>+;
-
+#pragma link C++ class std::map<Int_t,std::string>+;
 /*
 // RS At the moment is not recognized by the CINT...
 

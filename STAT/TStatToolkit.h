@@ -30,6 +30,7 @@
 #include "THashList.h"
 #include "TFitResultPtr.h"
 #include "TFitResult.h"
+#include "TPaletteAxis.h"
 //
 // includes necessary for test functions
 //
@@ -87,10 +88,13 @@ namespace TStatToolkit {
   // Graph tools
   //
   THashList *AddMetadata(TTree*, const char *vartagName,const char *varTagValue);
-  TNamed *GetMetadata(TTree* tree, const char *vartagName, TString *prefix=0);
+  TNamed *GetMetadata(TTree* tree, const char *vartagName, TString *prefix=0, Bool_t fullMatch=kFALSE);
   TGraph * MakeGraphSparse(TTree * tree, const char * expr="Entry", const char * cut="1",  Int_t mstyle=25, Int_t mcolor=1, Float_t msize=-1, Float_t offset=0.0);
   TGraphErrors * MakeGraphErrors(TTree * tree, const char * expr="Entry", const char * cut="1",  Int_t mstyle=25, Int_t mcolor=1, Float_t msize=-1, Float_t offset=0.0, Int_t entries=10000000, Int_t firstEntry=0);
   TMultiGraph * MakeMultGraph(TTree * tree, const char *groupName, const char* expr, const char * cut, const char * markers, const char *colors, Bool_t drawSparse, Float_t msize, Float_t sigmaRange, TLegend * legend, Bool_t comp=kTRUE );
+  void RebinSparseGraph(TGraph * graph0, TGraph *graph1, Option_t * option="");
+  void RebinSparseMultiGraph(TMultiGraph *multiGraph, TGraph *graphRef);
+  void MakeMultiGraphSparse(TMultiGraph *multiGraph);
   //
   // Fitting function
   //
@@ -140,6 +144,7 @@ namespace TStatToolkit {
   // TTree function for robust draw
   //
   TH1* DrawHistogram(TTree * tree, const char* drawCommand, const char* cuts = "1", const char* hname = "histo", const char* htitle = "histo", Int_t nsigma = 4, Float_t fraction = 0.75, TObjArray *description=0 );
+  Int_t AdaptHistoMetadata(TTree* tree, TH1 *histogram, TString option);
   //
   // TestFunctions:
   //

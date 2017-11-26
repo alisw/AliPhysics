@@ -1,4 +1,4 @@
-/*
+/*!
   Append QA TPC  metadata decribing tree structure,  and annotating branche variables. 
   Partialy inspired by CSS (https://de.wikipedia.org/wiki/Cascading_Style_Sheets) but not full functionality implemented
   
@@ -26,10 +26,10 @@
      1.) Metadata can be setup invoking macro:
          AliExternalInfo info;
          TTree * tree = info.GetTree("QA.TPC","LHC15o","cpass1_pass1","QA.TPC;QA.TRD;QA.TOF;QA.ITS;QA.EVS;Logbook.detector");             
-	 .x $ALICE_ROOT/../src/STAT/Macros/qatpcAddMetadata.C+(tree,4)
+	 .x $AliRoot_SRC/STAT/Macros/qatpcAddMetadata.C+(tree,4)
 
             
-     2.) Macro can be executed automatically if proper configuation file leaded AliExternalInfo.cfg - see line:
+     2.) Macro can be executed automatically if proper configuration file leaded AliExternalInfo.cfg - see line:
          QA.TPC.metadataMacro $ALICE_ROOT/STAT/Macros/qatpcAddMetadata.C+
 
      3.) Printing all metadata:
@@ -37,9 +37,9 @@
 	 AliTreePlayer::selectMetadata(tree, "[class==\"\"]",0)->Print();
 
      3.) Example query particular info:
-           AliTreePlayer::selectMetadata(tree, "[class==\"DCAR&&!ERR&&!CHI2\"]",0)->Print();
-	   AliTreePlayer::selectMetadata(tree, "[class==\"DCAR&&ERR\"]",0)->Print();
-           AliTreePlayer::selectMetadata(tree, "[class==\"DCAZ\"]",0)->Print();
+           AliTreePlayer::selectMetadata(tree, "[class==\"DCAr&&!Err&&!CHI2\"]",0)->Print();
+	         AliTreePlayer::selectMetadata(tree, "[class==\"DCAr&&Err\"]",0)->Print();
+           AliTreePlayer::selectMetadata(tree, "[class==\"DCAz\"]",0)->Print();
 	   
 	   AliTreePlayer::selectMetadata(tree,"[class==DCAr&&!Pos&&!Neg",0).Print();
 	   // alternative
@@ -99,12 +99,27 @@ void addTPCAliases(TTree * tree){
   tree->SetAlias("DCAr_Status", "(1*dcar_Warning+10*dcar_Outlier+100*(dcar_PhysAcc==0))");
   tree->SetAlias("tpcItsMatch_Status", "(1*tpcItsMatch_Warning+10*tpcItsMatch_Outlier+100*(tpcItsMatch_PhysAcc==0))");
   tree->SetAlias("itsTpcPulls_Status", "(1*itsTpcPulls_Warning+10*itsTpcPulls_Outlier+100*(itsTpcPulls_PhysAcc==0))");
+  tree->SetAlias("htmlLink","1"); // formal variable to link for logbook
+  //
 }
 
+///
+void addHtmlMetadata(TTree * tree){
+  //
+  // add html preview  metadata associated to the figure
+  // Logbook: run https://alice-logbook.cern.ch/logbook/date_online.php?p_cont=rund&p_run=244917
+  //        : https://alice-logbook.cern.ch/logbook/date_online.php?p_cont=rund&p_run=244917&p_tab=gi&p_subtab=rs
+  //        :
+  TStatToolkit::AddMetadata(tree,"PID_Status.html","%d<run>/TPC_dEdx_track_info.png");    // PID status
+  TStatToolkit::AddMetadata(tree,"DCAz_Status.html","%d<run>/dca_and_phi.png");           // DCAz status run plot
+  TStatToolkit::AddMetadata(tree,"DCAr_Status.html","%d<run>/dca_and_phi.png");           // DCAr status run plot
+  TStatToolkit::AddMetadata(tree,"rawLowCounter75.html","%d<run>/rawQAInformation.png");  // missing clusters sector counter
+  TStatToolkit::AddMetadata(tree,"htmlLink.html","https://alice-logbook.cern.ch/logbook/date_online.php?p_cont=rund&p_run=%d<run>");    // logbook link
+}
 
 void qatpcAddMetadata(TTree*tree, Int_t verbose){
   //
-  // Set metadata infomation 
+  // Set metadata information
   //
   if (tree==NULL) {
     ::Error("qatpcAddMetadata","Start processing. Emtpy tree");
@@ -141,9 +156,9 @@ void qatpcAddMetadata(TTree*tree, Int_t verbose){
   //   QA variables  
   const Int_t nQA=8;
   const TString qaVariableClass[nQA]={"Ncl", "Eff","dEdx", "DCAr", "DCAz","Occ","Attach","Electron"};
-  const TString qaVariableAxisTitle[nQA]={"Ncl(#)", "Eff(unit)","dEdx(MIP/50)", "DCAr(cm)", "DCAz(cm)", "Occupancy","Attach","Electron"};
-  const TString qaVariableLegend[nQA]={"Ncl", "Eff","dEdx", "DCAr", "DCAz","Occ.","Attach","e-"};
-  const TString qaVariableTitle[nQA]={"Ncl", "Eff","dEdx", "DCAr", "DCAz", "Occupancy","Attach","e-"};
+  const TString qaVariableAxisTitle[nQA]={"Ncl(#)", "Eff(unit)","dEdx(MIP/50)", "DCA_{xy}(cm)", "DCA_{z}(cm)", "Occupancy","Attach","Electron"};
+  const TString qaVariableLegend[nQA]={"Ncl", "Eff","dEdx", "DCA_{xy}", "DCA_{z}","Occ.","Attach","e-"};
+  const TString qaVariableTitle[nQA]={"Ncl", "Eff","dEdx", "DCA_{xy}", "DCA_{z}", "Occupancy","Attach","e-"};
   TPRegexp regQAVariable[nQA];
   regQAVariable[0]=TPRegexp("ncl");               // Ncl
   regQAVariable[1]=TPRegexp("tpcitsmatch");       // TPC->ITS eff
@@ -263,6 +278,7 @@ void qatpcAddMetadata(TTree*tree, Int_t verbose){
   TStatToolkit::AddMetadata(tree,"run.class","Base Index");
   TStatToolkit::AddMetadata(tree,"run.Title","run");
   TStatToolkit::AddMetadata(tree,"run.AxisTitle","run");
+  addHtmlMetadata(tree);
   //
   TList * mlist = (TList*)(tree->GetUserInfo()->FindObject("metaTable"));
   mlist->Sort();
