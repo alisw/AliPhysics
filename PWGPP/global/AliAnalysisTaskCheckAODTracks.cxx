@@ -91,8 +91,6 @@ AliAnalysisTaskCheckAODTracks::AliAnalysisTaskCheckAODTracks() :
   fHistImpParXYPtMulProtonTPCselSPDany{nullptr},
   fHistPtResidVsPtTPCselAll{nullptr},
   fHistPtResidVsPtTPCselITSrefAll{nullptr},
-  fHistPtResidVsPtTPCsel{nullptr},
-  fHistPtResidVsPtTPCselITSref{nullptr},
   fHistOneOverPtResidVsPtTPCselAll{nullptr},
   fHistOneOverPtResidVsPtTPCselITSrefAll{nullptr},
   fHistOneOverPtResidVsPtTPCsel{nullptr},
@@ -598,10 +596,6 @@ void AliAnalysisTaskCheckAODTracks::UserExec(Option_t *)
 
     Int_t chtrack=track->Charge();
     Double_t pttrack=track->Pt();
-    Double_t ptrack=track->P();
-    Double_t pxtrack=track->Px();
-    Double_t pytrack=track->Py();
-    Double_t pztrack=track->Pz();
     Double_t etatrack=track->Eta();
     Double_t phitrack=track->Phi();
     fTreeVarFloat[3]=track->Px();
@@ -749,16 +743,7 @@ void AliAnalysisTaskCheckAODTracks::UserExec(Option_t *)
 
     if(track->GetID()<0) continue;
     // convert to ESD track here
-    AliESDtrack esdTrack(track);
-    // set the TPC cluster info
-    esdTrack.SetTPCClusterMap(track->GetTPCClusterMap());
-    esdTrack.SetTPCSharedMap(track->GetTPCSharedMap());
-    esdTrack.SetTPCPointsF(track->GetTPCNclsF());
-    esdTrack.SetTPCNcls(track->GetTPCNcls());
-    esdTrack.SetTPCchi2(chi2tpc);
-    // needed to calculate the impact parameters
-    esdTrack.RelateToVertex(&vESD,0.,3.);
-    if(!fTrCutsTPC->AcceptTrack(&esdTrack)) continue;
+    if(ConvertAndSelectAODTrack(track,vESD)==kFALSE) continue;
     if(track->GetTPCsignalN()<fMinNumOfTPCPIDclu) continue;
 
     fHistITSnClusTPCsel->Fill(nITSclus);
@@ -871,16 +856,8 @@ void AliAnalysisTaskCheckAODTracks::UserExec(Option_t *)
     Double_t yv0=v0->Yv();
     Double_t rv0=TMath::Sqrt(xv0*xv0+yv0*yv0);
 
-    AliESDtrack pEsdTrack(pTrack);
-    pEsdTrack.SetTPCClusterMap(pTrack->GetTPCClusterMap());
-    pEsdTrack.SetTPCSharedMap(pTrack->GetTPCSharedMap());
-    pEsdTrack.SetTPCPointsF(pTrack->GetTPCNclsF());
-    if(!fTrCutsTPC->AcceptTrack(&pEsdTrack)) continue;
-    AliESDtrack nEsdTrack(pTrack);
-    nEsdTrack.SetTPCClusterMap(nTrack->GetTPCClusterMap());
-    nEsdTrack.SetTPCSharedMap(nTrack->GetTPCSharedMap());
-    nEsdTrack.SetTPCPointsF(nTrack->GetTPCNclsF());
-    if(!fTrCutsTPC->AcceptTrack(&nEsdTrack)) continue;
+    if(ConvertAndSelectAODTrack(pTrack,vESD)==kFALSE) continue;
+    if(ConvertAndSelectAODTrack(nTrack,vESD)==kFALSE) continue;
 
     Bool_t keepK0s=kTRUE;
     Bool_t keepLambda=kTRUE;
@@ -934,6 +911,28 @@ void AliAnalysisTaskCheckAODTracks::UserExec(Option_t *)
   PostData(1,fOutput);
   PostData(2,fTrackTree);
   
+}
+
+//______________________________________________________________________________
+Bool_t AliAnalysisTaskCheckAODTracks::ConvertAndSelectAODTrack(AliAODTrack* aTrack, const AliESDVertex vESD)
+{
+  AliESDtrack esdTrack(aTrack);
+  esdTrack.SetTPCClusterMap(aTrack->GetTPCClusterMap());
+  esdTrack.SetTPCSharedMap(aTrack->GetTPCSharedMap());
+  esdTrack.SetTPCPointsF(aTrack->GetTPCNclsF());
+  esdTrack.SetTPCNcls(aTrack->GetTPCNcls());
+  Int_t nTPCclus=aTrack->GetNcls(1);
+  Double_t chi2ndf=aTrack->Chi2perNDF();
+  Double_t chi2tpc=999.;
+  if(chi2ndf>0. && nTPCclus > 5){
+    chi2tpc=Float_t(nTPCclus-5)*chi2ndf;
+  }
+  esdTrack.SetTPCchi2(chi2tpc);
+  // needed to calculate the impact parameters
+  esdTrack.RelateToVertex(&vESD,0.,3.);
+  AliAODVertex* av=aTrack->GetProdVertex();
+  if(av->GetType()==AliAODVertex::kKink) return kFALSE;
+  return fTrCutsTPC->AcceptTrack(&esdTrack);
 }
 //______________________________________________________________________________
 void AliAnalysisTaskCheckAODTracks::Terminate(Option_t */*option*/)
