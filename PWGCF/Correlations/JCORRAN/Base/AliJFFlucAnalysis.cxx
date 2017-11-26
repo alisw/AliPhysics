@@ -226,7 +226,7 @@ void AliJFFlucAnalysis::UserCreateOutputObjects(){
 
 	fHistCentBin .Set("CentBin","CentBin","Cent:%d",AliJBin::kSingle).SetBin(fNCent);
 	fVertexBin .Set("Vtx","Vtx","Vtx:%d", AliJBin::kSingle).SetBin(3);
-	fCorrBin .Set("C", "C","C:%d", AliJBin::kSingle).SetBin(22);
+	fCorrBin .Set("C", "C","C:%d", AliJBin::kSingle).SetBin(28);
 
 	fBin_Nptbins .Set("PtBin","PtBin", "Pt:%d", AliJBin::kSingle).SetBin(N_ptbins);
 
@@ -503,7 +503,10 @@ void AliJFFlucAnalysis::UserExec(Option_t *) {
 	TComplex V5V2starV3startv3_2 = V5V2starV3star * corr[3][1]; //vn2[3][1]
 	TComplex V6V2star_3 = QnA[6] * QnB_star[2] * QnB_star[2] * QnB_star[2];
 	TComplex V6V3star_2 = QnA[6] * QnB_star[3] * QnB_star[3];
+	TComplex V6V2starV4star = QnA[6] * QnB_star[2] * QnB_star[4];
 	TComplex V7V2star_2V3star = QnA[7] * QnB_star[2] * QnB_star[2] * QnB_star[3];
+	TComplex V7V2starV5star = QnA[7] * QnB_star[2] * QnB_star[5];
+	TComplex V7V3starV4star = QnA[7] * QnB_star[3] * QnB_star[4];
 	TComplex V8V2starV3star_2 = QnA[8] * QnB_star[2] * QnB_star[3] * QnB_star[3];
 	TComplex V8V2star_4 = QnA[8] * TComplex::Power(QnB_star[2],4);
 
@@ -514,7 +517,10 @@ void AliJFFlucAnalysis::UserExec(Option_t *) {
 	TComplex nV5V2starV3star = nf*( V5V2starV3star*NSubTracks[1] - QnA[5]*QnB_star[5] );
 	TComplex nV6V2star_3 = QnA[6]*ef*( QnB_star[2]*QnB_star[2]*QnB_star[2]*NSubTracks[1]*NSubTracks[1] - 3.0*QnB_star[2]*QnB_star[4]*NSubTracks[1] + 2.0*QnB_star[6] );
 	TComplex nV6V3star_2 = nf*(V6V3star_2*NSubTracks[1] - QnA[6]*QnB_star[6]);
+	TComplex nV6V2starV4star = nf*(V6V2starV4star*NSubTracks[1] - QnA[6]*QnB_star[6]);
 	TComplex nV7V2star_2V3star = QnA[7]*ef*( QnB_star[2]*QnB_star[2]*QnB_star[3]*NSubTracks[1]*NSubTracks[1] - 2.0*QnB_star[2]*QnB_star[5]*NSubTracks[1] - QnB_star[3]*QnB_star[4]*NSubTracks[1] + 2.0*QnB_star[7] );
+	TComplex nV7V2starV5star = nf*(V7V2starV5star*NSubTracks[1] - QnA[7]*QnB_star[7]);
+	TComplex nV7V3starV4star = nf*(V7V3starV4star*NSubTracks[1] - QnA[7]*QnB_star[7]);
 	TComplex nV8V2starV3star_2 = QnA[8]*ef*( QnB_star[2]*QnB_star[3]*QnB_star[3]*NSubTracks[1]*NSubTracks[1] - 2.0*QnB_star[3]*QnB_star[5]*NSubTracks[1] - QnB_star[2]*QnB_star[6]*NSubTracks[1] + 2.0*QnB_star[8] );
 
 	// New correlators (Modifed by Ante's correction term for self-correlations for SC result)
@@ -545,12 +551,12 @@ void AliJFFlucAnalysis::UserExec(Option_t *) {
 	fh_correlator[11][fCBin]->Fill( nV6V3star_2.Re(),ebe_3p_weight ) ;
 
 	// use this to avoid self-correlation 4p correlation (2 particles from A, 2 particles from B) -> MA(MA-1)MB(MB-1) : evt weight..
-	fh_correlator[12][fCBin]->Fill( nV4V4V2V2.Re() , ebe_4p_weight);
-	fh_correlator[13][fCBin]->Fill( nV3V3V2V2.Re() , ebe_4p_weight);
+	fh_correlator[12][fCBin]->Fill( nV4V4V2V2.Re(),ebe_4p_weight );
+	fh_correlator[13][fCBin]->Fill( nV3V3V2V2.Re(),ebe_4p_weight );
 
-	fh_correlator[14][fCBin]->Fill( nV5V5V2V2.Re() , ebe_4p_weight);
-	fh_correlator[15][fCBin]->Fill( nV5V5V3V3.Re() , ebe_4p_weight);
-	fh_correlator[16][fCBin]->Fill( nV4V4V3V3.Re() , ebe_4p_weight);
+	fh_correlator[14][fCBin]->Fill( nV5V5V2V2.Re(),ebe_4p_weight );
+	fh_correlator[15][fCBin]->Fill( nV5V5V3V3.Re(),ebe_4p_weight );
+	fh_correlator[16][fCBin]->Fill( nV4V4V3V3.Re(),ebe_4p_weight );
 
 	//higher order correlators, added 2017.8.10
 	fh_correlator[17][fCBin]->Fill( V8V2starV3star_2.Re(),ebe_4p_weightB );
@@ -558,6 +564,13 @@ void AliJFFlucAnalysis::UserExec(Option_t *) {
 	fh_correlator[19][fCBin]->Fill( nV6V2star_3.Re(),ebe_4p_weightB );
 	fh_correlator[20][fCBin]->Fill( nV7V2star_2V3star.Re(),ebe_4p_weightB );
 	fh_correlator[21][fCBin]->Fill( nV8V2starV3star_2.Re(),ebe_4p_weightB );
+
+	fh_correlator[22][fCBin]->Fill( V6V2starV4star.Re(),ebe_3p_weight );
+	fh_correlator[23][fCBin]->Fill( V7V2starV5star.Re(),ebe_3p_weight );
+	fh_correlator[24][fCBin]->Fill( V7V3starV4star.Re(),ebe_3p_weight );
+	fh_correlator[25][fCBin]->Fill( nV6V2starV4star.Re(),ebe_3p_weight );
+	fh_correlator[26][fCBin]->Fill( nV7V2starV5star.Re(),ebe_3p_weight );
+	fh_correlator[27][fCBin]->Fill( nV7V3starV4star.Re(),ebe_3p_weight );
 
 	CalculateQvectorsQC();
 
