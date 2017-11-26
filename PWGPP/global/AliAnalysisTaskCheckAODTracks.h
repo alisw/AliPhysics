@@ -20,7 +20,8 @@ class TH1F;
 class TH2F;
 class TH3F;
 class TString;
-class AliESDEvent;
+class AliAODTrack;
+class AliESDVertex;
 
 #include "AliESDtrackCuts.h"
 #include "AliAnalysisTaskSE.h"
@@ -71,6 +72,7 @@ class AliAnalysisTaskCheckAODTracks : public AliAnalysisTaskSE {
   void SetUpperMultiplicity(Double_t maxMult){
     fMaxMult=maxMult;
   }
+  Bool_t ConvertAndSelectAODTrack(AliAODTrack* aTrack, const AliESDVertex vESD);
 
  private:
 
