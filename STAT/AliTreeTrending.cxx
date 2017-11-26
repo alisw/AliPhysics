@@ -43,6 +43,7 @@
 #include "TROOT.h"
 #include "TLegend.h"
 #include "AliTreeTrending.h"
+#include <stdexcept>      // std::invalid_argument
 #include "AliDrawStyle.h"
 
 using std::cout;

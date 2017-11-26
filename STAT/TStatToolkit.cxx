@@ -28,7 +28,7 @@
 #include "TPRegexp.h"
 #include "AliDrawStyle.h"
 #include <stdlib.h>
-
+#include <stdexcept>      // std::invalid_argument
 using std::cout;
 using std::cerr;
 using std::endl;
