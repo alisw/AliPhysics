@@ -48,6 +48,7 @@ struct mother_struct{
 struct daughter_struct{
   int mother_pdg;
   int mother_id;
+  int mc_truth;     // pdg code of the generated particle
   unsigned char properties;
   FourVector_t vec;
 };
