@@ -925,7 +925,7 @@ Float_t AliEMCALRecoUtils::CorrectClusterEnergyLinearity(AliVCluster* cluster)
       //fNonLinearityParams[4] =  0.;
       //fNonLinearityParams[5] =  0.;
       //fNonLinearityParams[6] =  0.;
-      energy /= fNonLinearityParams[0] + exp(fNonLinearityParams[1] + fNonLinearityParams[2]*energy);
+      energy /=  TMath::Power(fNonLinearityParams[0] + exp(fNonLinearityParams[1] + fNonLinearityParams[2]*energy),2);//result coming from calo-conv method
       
       break;
     }  
@@ -947,7 +947,7 @@ Float_t AliEMCALRecoUtils::CorrectClusterEnergyLinearity(AliVCluster* cluster)
       //fNonLinearityParams[8] =  -9.999609;
       //fNonLinearityParams[9] =  -4.999891;
       energy *= fNonLinearityParams[6]/(fNonLinearityParams[0]*(1./(1.+fNonLinearityParams[1]*exp(-energy/fNonLinearityParams[2]))*1./(1.+fNonLinearityParams[3]*exp((energy-fNonLinearityParams[4])/fNonLinearityParams[5]))));
-      energy /= fNonLinearityParams[7] + exp(fNonLinearityParams[8] + fNonLinearityParams[9]*energy);
+      energy /= TMath::Power(fNonLinearityParams[7] + exp(fNonLinearityParams[8] + fNonLinearityParams[9]*energy),2);//result coming from calo-conv method
       
       break;
     }  
@@ -965,8 +965,8 @@ Float_t AliEMCALRecoUtils::CorrectClusterEnergyLinearity(AliVCluster* cluster)
       //fNonLinearityParams[4] =  1.0;
       //fNonLinearityParams[5] =  0.0;
       //fNonLinearityParams[6] =  0.0;
-      energy /= (fNonLinearityParams[0] + fNonLinearityParams[1] * TMath::Power(energy,fNonLinearityParams[2]) ) /
-	(fNonLinearityParams[3] + fNonLinearityParams[4] * TMath::Power(energy,fNonLinearityParams[5]) ) + fNonLinearityParams[6];
+      energy /= TMath::Power( (fNonLinearityParams[0] + fNonLinearityParams[1] * TMath::Power(energy,fNonLinearityParams[2]) ) /
+			      (fNonLinearityParams[3] + fNonLinearityParams[4] * TMath::Power(energy,fNonLinearityParams[5]) ) + fNonLinearityParams[6], 2);//result coming from calo-conv method
       
       break;
     }  
