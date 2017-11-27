@@ -28,7 +28,8 @@
 ClassImp(AliV0vertexer)
 
 
-//A set of very loose cuts 
+//A set of very loose cuts
+Double_t AliV0vertexer::fgEtaMax =5.0; // max eta
 Double_t AliV0vertexer::fgChi2max=33.; //max chi2
 Double_t AliV0vertexer::fgDNmin=0.05;  //min imp parameter for the 1st daughter
 Double_t AliV0vertexer::fgDPmin=0.05;  //min imp parameter for the 2nd daughter

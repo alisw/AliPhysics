@@ -43,6 +43,7 @@ class AliGRPRecoParam : public AliDetectorRecoParam
   Bool_t GetVertexerTracksConstraintTPC() const { return fVertexerTracksConstraintTPC; }
   Int_t GetVertexerTracksNCuts() const { return fVertexerTracksNCuts; }
   Int_t GetVertexerV0NCuts() const { return fVertexerV0NCuts; }
+  Double_t GetVertexerV0EtaMax() const { return fVertexerV0EtaMax; }
   Int_t GetVertexerCascadeNCuts() const { return fVertexerCascadeNCuts; }
   void  GetVertexerTracksCuts(Int_t mode,Double_t *cuts,Int_t n) const;
   void  GetVertexerTracksCutsITS(Double_t *cuts,Int_t n) const
@@ -129,6 +130,7 @@ class AliGRPRecoParam : public AliDetectorRecoParam
   Double_t fVertexerV0CPAmin;  //min cosine of V0's pointing angle
   Double_t fVertexerV0Rmin;    //min radius of the fiducial volume
   Double_t fVertexerV0Rmax;    //max radius of the fiducial volume
+  Double_t fVertexerV0EtaMax;  //max eta
 
   Int_t    fVertexerCascadeNCuts; // number of cuts for AliCascadeVertexer
 

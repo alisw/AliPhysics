@@ -86,7 +86,7 @@ fVertexerTracksTPCclusterize(0),
 fVertexerTracksTPCclusterdz(999999.),
 fVertexerTracksTPCclusternsigmaz(3.),
 //
-fVertexerV0NCuts(7),
+fVertexerV0NCuts(8),
 fVertexerV0Chi2max(33.),
 fVertexerV0DNmin(0.05),
 fVertexerV0DPmin(0.05),
@@ -94,6 +94,7 @@ fVertexerV0DCAmax(1.5),
 fVertexerV0CPAmin(0.9),
 fVertexerV0Rmin(0.2),
 fVertexerV0Rmax(200.),
+fVertexerV0EtaMax(5.0),
 fVertexerCascadeNCuts(8),
 fVertexerCascadeChi2max(33.),
 fVertexerCascadeDV0min(0.01),
@@ -187,6 +188,7 @@ AliGRPRecoParam::AliGRPRecoParam(const AliGRPRecoParam& par) :
   fVertexerV0CPAmin(par.fVertexerV0CPAmin),
   fVertexerV0Rmin(par.fVertexerV0Rmin),
   fVertexerV0Rmax(par.fVertexerV0Rmax),
+  fVertexerV0EtaMax(par.fVertexerV0EtaMax),
   fVertexerCascadeNCuts(par.fVertexerCascadeNCuts),
   fVertexerCascadeChi2max(par.fVertexerCascadeChi2max),
   fVertexerCascadeDV0min(par.fVertexerCascadeDV0min),
@@ -411,10 +413,11 @@ void AliGRPRecoParam::GetVertexerV0Cuts(Double_t *cuts) const {
   cuts[4] = fVertexerV0CPAmin;
   cuts[5] = fVertexerV0Rmin;
   cuts[6] = fVertexerV0Rmax;
+  cuts[7] = fVertexerV0EtaMax;
   return;
 }
 //_____________________________________________________________________________
-void AliGRPRecoParam::SetVertexerV0Cuts(Int_t ncuts,Double_t cuts[7]) {
+void AliGRPRecoParam::SetVertexerV0Cuts(Int_t ncuts,Double_t cuts[8]) {
   //
   // set cuts for AliV0vertexer
   //
@@ -429,6 +432,7 @@ void AliGRPRecoParam::SetVertexerV0Cuts(Int_t ncuts,Double_t cuts[7]) {
   fVertexerV0CPAmin  = cuts[4];
   fVertexerV0Rmin    = cuts[5];
   fVertexerV0Rmax    = cuts[6];
+  fVertexerV0EtaMax  = cuts[7];
   return;
 }
 //_____________________________________________________________________________

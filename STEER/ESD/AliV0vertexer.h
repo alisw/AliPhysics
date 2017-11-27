@@ -18,15 +18,17 @@ class AliESDEvent;
 class AliV0vertexer : public TObject {
 public:
   AliV0vertexer();
-  void SetCuts(const Double_t cuts[7]);
-  static void SetDefaultCuts(const Double_t cuts[7]);
+  void SetCuts(const Double_t *cuts);
+  static void SetDefaultCuts(const Double_t *cuts);
 
   Int_t Tracks2V0vertices(AliESDEvent *event);
 
-  void GetCuts(Double_t cuts[7]) const;
-  static void GetDefaultCuts(Double_t cuts[7]);
+  void GetCuts(Double_t *cuts) const;
+  static void GetDefaultCuts(Double_t *cuts);
 
 private:
+  static
+  Double_t fgEtaMax;      // maximal allowed Eta
   static
   Double_t fgChi2max;      // maximal allowed chi2 
   static
@@ -40,6 +42,7 @@ private:
   static
   Double_t fgRmin, fgRmax; // max & min radii of the fiducial volume
   
+  Double_t fEtaMax;       // max eta
   Double_t fChi2max;      // maximal allowed chi2 
   Double_t fDNmin;        // min allowed impact parameter for the 1st daughter
   Double_t fDPmin;        // min allowed impact parameter for the 2nd daughter
@@ -47,11 +50,12 @@ private:
   Double_t fCPAmin;       // minimal allowed cosine of V0's pointing angle
   Double_t fRmin, fRmax;  // max & min radii of the fiducial volume
   
-  ClassDef(AliV0vertexer,3)  // V0 verterxer 
+  ClassDef(AliV0vertexer,4)  // V0 verterxer 
 };
 
 inline AliV0vertexer::AliV0vertexer() :
   TObject(),
+  fEtaMax(fgEtaMax),	     
   fChi2max(fgChi2max), 
   fDNmin(fgDNmin),
   fDPmin(fgDPmin),
@@ -62,32 +66,36 @@ inline AliV0vertexer::AliV0vertexer() :
 {
 }
 
-inline void AliV0vertexer::SetCuts(const Double_t cuts[7]) {
+inline void AliV0vertexer::SetCuts(const Double_t *cuts) {
   fChi2max=cuts[0]; 
   fDNmin=cuts[1];   fDPmin=cuts[2];
   fDCAmax=cuts[3];  fCPAmin=cuts[4];
-  fRmin=cuts[5];    fRmax=cuts[6]; 
+  fRmin=cuts[5];    fRmax=cuts[6];
+  fEtaMax = cuts[7];
 }
 
-inline void AliV0vertexer::SetDefaultCuts(const Double_t cuts[7]) {
+inline void AliV0vertexer::SetDefaultCuts(const Double_t *cuts) {
   fgChi2max=cuts[0]; 
   fgDNmin=cuts[1];   fgDPmin=cuts[2];
   fgDCAmax=cuts[3];  fgCPAmin=cuts[4];
-  fgRmin=cuts[5];    fgRmax=cuts[6]; 
+  fgRmin=cuts[5];    fgRmax=cuts[6];
+  fgEtaMax = cuts[7];
 }
 
-inline void AliV0vertexer::GetCuts(Double_t cuts[7]) const {
+inline void AliV0vertexer::GetCuts(Double_t *cuts) const {
   cuts[0]=fChi2max; 
   cuts[1]=fDNmin;   cuts[2]=fDPmin; 
   cuts[3]=fDCAmax;  cuts[4]=fCPAmin;
-  cuts[5]=fRmin;    cuts[6]=fRmax; 
+  cuts[5]=fRmin;    cuts[6]=fRmax;
+  cuts[7] = fEtaMax;
 }
 
-inline void AliV0vertexer::GetDefaultCuts(Double_t cuts[7]) {
+inline void AliV0vertexer::GetDefaultCuts(Double_t *cuts) {
   cuts[0]=fgChi2max; 
   cuts[1]=fgDNmin;   cuts[2]=fgDPmin; 
   cuts[3]=fgDCAmax;  cuts[4]=fgCPAmin;
-  cuts[5]=fgRmin;    cuts[6]=fgRmax; 
+  cuts[5]=fgRmin;    cuts[6]=fgRmax;
+  cuts[7] = fgEtaMax;
 }
 
 #endif
