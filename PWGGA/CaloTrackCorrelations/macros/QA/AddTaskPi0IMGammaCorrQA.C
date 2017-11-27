@@ -49,48 +49,6 @@
 
 #endif // CINT
 
-// Declare methods for compilation
-
-AliCaloTrackReader  * ConfigureReader        (TString inputDataType, TString collision, Bool_t   calibrate,
-                                              Int_t   minTime,       Int_t   maxTime,
-                                              Int_t   minCen,        Int_t   maxCen,
-                                              Bool_t  simulation,    Int_t   year,      Int_t    debugLevel);
-
-AliCalorimeterUtils * ConfigureCaloUtils     (TString calorimeter,   TString trigger, 
-                                              Bool_t  simulation ,   Bool_t  calibrate,
-                                              Int_t   year       ,   Int_t   debugLevel );
-
-AliAnaPhoton        * ConfigurePhotonAnalysis(TString calorimeter,   Bool_t  caloType,   TString collision,
-                                              TString containerName, Bool_t  simulation, 
-                                              Int_t   year,          Int_t   debugLevel);
-
-AliAnaPi0           * ConfigurePi0Analysis   (TString calorimeter,   Bool_t  caloType,   TString collision,
-                                              TString containerName, Bool_t  simulation, Int_t   year,
-                                              Int_t   debugLevel,    Int_t   minCen);
-
-AliAnaChargedParticles * ConfigureChargedAnalysis
-                                             (TString collision ,    TString containerName,
-                                              Bool_t  simulation,    Int_t year,         Int_t   debugLevel);
-
-AliAnaParticleIsolation* ConfigureIsolationAnalysis
-                                             (TString particle  ,    TString calorimeter  , Bool_t caloType,
-                                              TString collision ,    TString containerName,
-                                              Bool_t  simulation,    Int_t   year         , Int_t  debugLevel);
-
-AliAnaParticleHadronCorrelation * ConfigureHadronCorrelationAnalysis
-                                             (TString particle  ,    TString calorimeter  , Bool_t caloType,
-                                              TString collision ,    TString containerName,
-                                              Bool_t simulation ,    Int_t year           , Int_t  debugLevel, 
-                                              Int_t minCen);
-
-AliAnaCalorimeterQA * ConfigureQAAnalysis    (TString calorimeter,   TString collision,
-                                              //Bool_t simulation  ,   
-                                              Int_t year,            Int_t  debugLevel);
-
-void SetHistoRangeAndNBins                   (AliHistogramRanges* histoRanges, 
-                                              TString calorimeter,   Bool_t caloType,
-                                              TString collision,     Int_t year      );
-
 ///
 /// Main method calling all the configuration
 /// Creates a CaloTrackCorr task, configures it and adds it to the analysis manager.
