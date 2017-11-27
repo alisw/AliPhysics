@@ -44,6 +44,8 @@
 #include "AliAODEvent.h"
 #include "AliAODInputHandler.h"
 #include "AliAnalysisManager.h"
+#include "AliAnalysisDataSlot.h"
+#include "AliAnalysisDataContainer.h"
 #include "AliAnalysisTaskEmcalJetSubstructureTree.h"
 #include "AliClusterContainer.h"
 #include "AliJetContainer.h"
@@ -133,9 +135,8 @@ void AliAnalysisTaskEmcalJetSubstructureTree::UserCreateOutputObjects() {
   for(auto h : *(fQAHistos->GetListOfHistograms())) fOutput->Add(h);
 
   OpenFile(2);
-  TString tag(GetName());
-  tag.ReplaceAll("JetSubstructureTreemaker", "");
-  fJetSubstructureTree = new TTree("jetSubstructure" + tag, "Tree with jet substructure information");
+  TString treename = this->GetOutputSlot(2)->GetContainer()->GetName();
+  fJetSubstructureTree = new TTree(treename, "Tree with jet substructure information");
   TString varnames[kTNVar];
   varnames[0] = "Radius";
   varnames[1] = "EventWeight";
