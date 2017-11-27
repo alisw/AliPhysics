@@ -51,6 +51,105 @@
 
 
 ///
+/// Configure histograms ranges and bins
+///
+void SetHistoRangeAndNBins (AliHistogramRanges* histoRanges, TString calorimeter, Bool_t caloType,
+                            TString collision,               Int_t year)
+{
+  histoRanges->SetHistoPtRangeAndNBins(0, 100, 200) ; // Energy and pt histograms
+  
+  if(calorimeter=="EMCAL")
+  {
+    if ( year == 2010 )
+    {
+      histoRanges->SetHistoPhiRangeAndNBins(79*TMath::DegToRad(), 121*TMath::DegToRad(), 42) ;
+      histoRanges->SetHistoXRangeAndNBins(-230,90,120); // QA
+      histoRanges->SetHistoYRangeAndNBins(370,450,40);  // QA
+    }
+    else if ( year < 2014 )
+    {           
+      histoRanges->SetHistoPhiRangeAndNBins(78*TMath::DegToRad(), 182*TMath::DegToRad(), 108) ;
+      histoRanges->SetHistoXRangeAndNBins(-460,90,200); // QA
+      histoRanges->SetHistoYRangeAndNBins(100,450,100); // QA    
+    }
+    else // Run2
+    {
+      if      (caloType == 0)
+        histoRanges->SetHistoPhiRangeAndNBins(78 *TMath::DegToRad(), 189*TMath::DegToRad(), 111) ;
+      else if (caloType == 1) 
+        histoRanges->SetHistoPhiRangeAndNBins(258*TMath::DegToRad(), 329*TMath::DegToRad(),  71) ;
+      else                 
+        histoRanges->SetHistoPhiRangeAndNBins(80 *TMath::DegToRad(), 327*TMath::DegToRad(), 247) ;
+      
+      histoRanges->SetHistoXRangeAndNBins(-460,460,230); // QA
+      histoRanges->SetHistoYRangeAndNBins(-450,450,225); // QA
+    }
+    
+    histoRanges->SetHistoEtaRangeAndNBins(-0.72, 0.72, 144) ;
+  }
+  else
+  {
+    histoRanges->SetHistoPhiRangeAndNBins(250*TMath::DegToRad(), 320*TMath::DegToRad(), 70) ;
+    histoRanges->SetHistoEtaRangeAndNBins(-0.13, 0.13, 130) ;
+  }
+  
+  histoRanges->SetHistoShowerShapeRangeAndNBins(-0.1, 2.9, 300);
+  
+  // Invariant mass histoRangeslysis
+  histoRanges->SetHistoMassRangeAndNBins(0., 0.8, 160) ;
+  histoRanges->SetHistoAsymmetryRangeAndNBins(0., 1. , 100) ;
+  histoRanges->SetHistoOpeningAngleRangeAndNBins(0,0.7,50);
+  
+  // check if time calibration is on
+  histoRanges->SetHistoTimeRangeAndNBins(-250.,250,250);
+  histoRanges->SetHistoDiffTimeRangeAndNBins(-150, 150, 150);
+  
+  // track-cluster residuals
+  histoRanges->SetHistoTrackResidualEtaRangeAndNBins(-0.05,0.05,100);
+  histoRanges->SetHistoTrackResidualPhiRangeAndNBins(-0.05,0.05,100);
+  histoRanges->SetHistodRRangeAndNBins(0.,0.05,50);//QA
+  
+  // QA, electron, charged
+  histoRanges->SetHistoPOverERangeAndNBins(0,  2. ,100);
+  histoRanges->SetHistodEdxRangeAndNBins  (0.,200.,100);
+  
+  // QA
+  histoRanges->SetHistoFinePtRangeAndNBins(0, 10, 200) ; // bining for fhAmpId
+  histoRanges->SetHistoVertexDistRangeAndNBins(0.,500.,250);
+  histoRanges->SetHistoZRangeAndNBins(-350,350,175);
+  histoRanges->SetHistoRRangeAndNBins(430,460,30);
+  histoRanges->SetHistoV0SignalRangeAndNBins(0,5000,250);
+  histoRanges->SetHistoV0MultiplicityRangeAndNBins(0,5000,250);
+  
+  // QA, correlation
+  if(collision=="PbPb")
+  {
+    histoRanges->SetHistoNClusterCellRangeAndNBins(0,100,100);
+    histoRanges->SetHistoNClustersRangeAndNBins(0,500,50);
+    histoRanges->SetHistoTrackMultiplicityRangeAndNBins(0,2000,200);
+  }
+  else
+  {
+    histoRanges->SetHistoNClusterCellRangeAndNBins(0,50,50);
+    histoRanges->SetHistoNClustersRangeAndNBins(0,50,50);
+    histoRanges->SetHistoTrackMultiplicityRangeAndNBins(0,200,200);
+  }
+  
+  // xE, zT
+  histoRanges->SetHistoRatioRangeAndNBins(0.,1.2,120);
+  histoRanges->SetHistoHBPRangeAndNBins  (0.,10.,100);
+  
+  // Isolation
+  histoRanges->SetHistoPtInConeRangeAndNBins(0, 50 , 100);
+  histoRanges->SetHistoPtSumRangeAndNBins   (0, 100, 100);
+  if(collision.Contains("pPb"))
+    histoRanges->SetHistoPtSumRangeAndNBins   (0, 200, 100);
+  else if(collision.Contains("PbPb"))
+    histoRanges->SetHistoPtSumRangeAndNBins   (0, 500, 100);
+}
+
+
+///
 /// Configure the class handling the events and cluster/tracks filtering.
 ///
 AliCaloTrackReader * ConfigureReader(TString inputDataType, TString collision, Bool_t calibrate,
@@ -733,104 +832,6 @@ AliAnaCalorimeterQA* ConfigureQAAnalysis(TString calorimeter, TString collision,
   if(debugLevel > 0) ana->Print("");
   
   return ana;
-}
-
-///
-/// Configure histograms ranges and bins
-///
-void SetHistoRangeAndNBins (AliHistogramRanges* histoRanges, TString calorimeter, Bool_t caloType,
-                            TString collision,               Int_t year)
-{
-  histoRanges->SetHistoPtRangeAndNBins(0, 100, 200) ; // Energy and pt histograms
-  
-  if(calorimeter=="EMCAL")
-  {
-    if ( year == 2010 )
-    {
-      histoRanges->SetHistoPhiRangeAndNBins(79*TMath::DegToRad(), 121*TMath::DegToRad(), 42) ;
-      histoRanges->SetHistoXRangeAndNBins(-230,90,120); // QA
-      histoRanges->SetHistoYRangeAndNBins(370,450,40);  // QA
-    }
-    else if ( year < 2014 )
-    {           
-      histoRanges->SetHistoPhiRangeAndNBins(78*TMath::DegToRad(), 182*TMath::DegToRad(), 108) ;
-      histoRanges->SetHistoXRangeAndNBins(-460,90,200); // QA
-      histoRanges->SetHistoYRangeAndNBins(100,450,100); // QA    
-    }
-    else // Run2
-    {
-      if      (caloType == 0)
-        histoRanges->SetHistoPhiRangeAndNBins(78 *TMath::DegToRad(), 189*TMath::DegToRad(), 111) ;
-      else if (caloType == 1) 
-        histoRanges->SetHistoPhiRangeAndNBins(258*TMath::DegToRad(), 329*TMath::DegToRad(),  71) ;
-      else                 
-        histoRanges->SetHistoPhiRangeAndNBins(80 *TMath::DegToRad(), 327*TMath::DegToRad(), 247) ;
-      
-      histoRanges->SetHistoXRangeAndNBins(-460,460,230); // QA
-      histoRanges->SetHistoYRangeAndNBins(-450,450,225); // QA
-    }
-
-    histoRanges->SetHistoEtaRangeAndNBins(-0.72, 0.72, 144) ;
-  }
-  else
-  {
-    histoRanges->SetHistoPhiRangeAndNBins(250*TMath::DegToRad(), 320*TMath::DegToRad(), 70) ;
-    histoRanges->SetHistoEtaRangeAndNBins(-0.13, 0.13, 130) ;
-  }
-  
-  histoRanges->SetHistoShowerShapeRangeAndNBins(-0.1, 2.9, 300);
-  
-  // Invariant mass histoRangeslysis
-  histoRanges->SetHistoMassRangeAndNBins(0., 0.8, 160) ;
-  histoRanges->SetHistoAsymmetryRangeAndNBins(0., 1. , 100) ;
-  histoRanges->SetHistoOpeningAngleRangeAndNBins(0,0.7,50);
-  
-  // check if time calibration is on
-  histoRanges->SetHistoTimeRangeAndNBins(-250.,250,250);
-  histoRanges->SetHistoDiffTimeRangeAndNBins(-150, 150, 150);
-
-  // track-cluster residuals
-  histoRanges->SetHistoTrackResidualEtaRangeAndNBins(-0.05,0.05,100);
-  histoRanges->SetHistoTrackResidualPhiRangeAndNBins(-0.05,0.05,100);
-  histoRanges->SetHistodRRangeAndNBins(0.,0.05,50);//QA
-
-  // QA, electron, charged
-  histoRanges->SetHistoPOverERangeAndNBins(0,  2. ,100);
-  histoRanges->SetHistodEdxRangeAndNBins  (0.,200.,100);
-  
-  // QA
-  histoRanges->SetHistoFinePtRangeAndNBins(0, 10, 200) ; // bining for fhAmpId
-  histoRanges->SetHistoVertexDistRangeAndNBins(0.,500.,250);
-  histoRanges->SetHistoZRangeAndNBins(-350,350,175);
-  histoRanges->SetHistoRRangeAndNBins(430,460,30);
-  histoRanges->SetHistoV0SignalRangeAndNBins(0,5000,250);
-  histoRanges->SetHistoV0MultiplicityRangeAndNBins(0,5000,250);
-  
-  // QA, correlation
-  if(collision=="PbPb")
-  {
-    histoRanges->SetHistoNClusterCellRangeAndNBins(0,100,100);
-    histoRanges->SetHistoNClustersRangeAndNBins(0,500,50);
-    histoRanges->SetHistoTrackMultiplicityRangeAndNBins(0,2000,200);
-  }
-  else
-  {
-    histoRanges->SetHistoNClusterCellRangeAndNBins(0,50,50);
-    histoRanges->SetHistoNClustersRangeAndNBins(0,50,50);
-    histoRanges->SetHistoTrackMultiplicityRangeAndNBins(0,200,200);
-  }
-
-  // xE, zT
-  histoRanges->SetHistoRatioRangeAndNBins(0.,1.2,120);
-  histoRanges->SetHistoHBPRangeAndNBins  (0.,10.,100);
-  
-  // Isolation
-  histoRanges->SetHistoPtInConeRangeAndNBins(0, 50 , 100);
-  histoRanges->SetHistoPtSumRangeAndNBins   (0, 100, 100);
-  if(collision.Contains("pPb"))
-    histoRanges->SetHistoPtSumRangeAndNBins   (0, 200, 100);
-  else if(collision.Contains("PbPb"))
-    histoRanges->SetHistoPtSumRangeAndNBins   (0, 500, 100);
 }
 
 
