@@ -383,12 +383,12 @@ void AliEmcalJetTask::ExecOnce()
   if(auto partcont = GetParticleContainer(0)) {
     std::cout << "Found particle container with name " << partcont->GetName() << std::endl;
   } else {
-    std::cout << "Not found particle container" << std::endl;
+    std::cout << "Not particle container found for task" << std::endl;
   }
   if(auto clustcont = GetClusterContainer(0)){
     std::cout << "Found cluster container with name " << clustcont->GetName() << std::endl;
   } else {
-    std::cout << "Not found cluster container" << std::endl;
+    std::cout << "Not cluster container found for task" << std::endl;
   }
 
   // add jets to event if not yet there
