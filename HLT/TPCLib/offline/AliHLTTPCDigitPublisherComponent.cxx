@@ -270,7 +270,7 @@ int AliHLTTPCDigitPublisherComponent::GetEvent(const AliHLTComponentEventData & 
 			fgCurrEvent = event;
 			if (fLateFill)
 			{
-				HLTDebug("Performing late buffer filling, parsing only slice and partition information");
+				HLTDebug("Performing late buffer filling, passing only slice and partition information");
 				if (fMaxSize < sizeof(AliHLTTPCDigitPublisherLateFillData))
 				{
 					fMaxSize = sizeof(AliHLTTPCDigitPublisherLateFillData);

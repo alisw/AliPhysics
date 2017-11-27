@@ -167,6 +167,8 @@ void AliHLTTPCHWCFEmulatorComponent::GetInputDataTypes( vector<AliHLTComponentDa
   list.push_back( kAliHLTDataTypeDDLRaw | kAliHLTDataOriginTPC );
   list.push_back( AliHLTTPCDefinitions::RawClustersDataType() | kAliHLTDataOriginTPC );
   list.push_back( AliHLTTPCDefinitions::RawClustersDescriptorDataType() | kAliHLTDataOriginTPC );
+  list.push_back( AliHLTTPCDefinitions::fgkUnpackedRawDataType | kAliHLTDataOriginTPC );
+  list.push_back( AliHLTTPCDefinitions::fgkUnpackedRawLateDataType | kAliHLTDataOriginTPC );
 }
 
 AliHLTComponentDataType AliHLTTPCHWCFEmulatorComponent::GetOutputDataType()

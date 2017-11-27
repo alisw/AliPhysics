@@ -85,14 +85,14 @@ AliHLTTPCHWCFSupport& AliHLTTPCHWCFSupport::operator=(const AliHLTTPCHWCFSupport
 }
 
 
-void AliHLTTPCHWCFSupport::ReleaseEventMemory()
+void AliHLTTPCHWCFSupport::ReleaseEventMemory(bool releaseInputTree)
 {
   // clean up 
   if( fEventMemory ) delete[] fEventMemory;
   if( fEventMCMemory )delete[] fEventMCMemory;
   fEventMemory = 0;
   fEventMCMemory = 0;
-  AliHLTTPCDigitPublisherComponent::ReleaseDigitTree();
+  if (releaseInputTree) AliHLTTPCDigitPublisherComponent::ReleaseDigitTree();
 }
 
 void AliHLTTPCHWCFSupport::UnloadMapping()
@@ -340,7 +340,7 @@ int AliHLTTPCHWCFSupport::CreateRawEvent
   // MC labels are provided if possible  
   //
 
-  ReleaseEventMemory();
+  ReleaseEventMemory(false);
   
   rawEvent = 0;
   rawEventSize32 = 0;
