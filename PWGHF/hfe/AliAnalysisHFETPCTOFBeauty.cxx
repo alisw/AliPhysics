@@ -210,8 +210,8 @@ AliAnalysisHFETPCTOFBeauty::AliAnalysisHFETPCTOFBeauty(const char *name)
 ,fDCAz_pt_had(0)
 ,fDCAxy_pt_ele(0)
 ,fDCAz_pt_ele(0)
-
-
+,hCharmMotherPt(0)
+,hBeautyMotherPt(0)
 
 //For the HFE package
 ,fCuts(0)
@@ -365,7 +365,8 @@ AliAnalysisHFETPCTOFBeauty::AliAnalysisHFETPCTOFBeauty()
 ,fDCAz_pt_had(0)
 ,fDCAxy_pt_ele(0)
 ,fDCAz_pt_ele(0)
-
+,hCharmMotherPt(0)
+,hBeautyMotherPt(0)
 
 //For the HFE package
 ,fCuts(0)
@@ -498,6 +499,8 @@ void AliAnalysisHFETPCTOFBeauty::UserCreateOutputObjects()
     
     Double_t ptbinning[33] = {0., 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1., 1.1, 1.2, 1.3, 1.4, 1.5, 1.75, 2., 2.25, 2.5, 2.75, 3., 3.5, 4., 4.5, 5, 5.5, 6, 6.5, 7, 8, 9, 10};
     
+    Double_t ptbinningHF[14] = {1,2,3,4,5,6,7,8,10,12,16,24,36,50};
+    
     fTPC_p1 = new TH2F("fTPC_p1","p (GeV/c);TPC dE/dx (a. u.)",300,0,15,400,-20,200);
     fOutputList->Add(fTPC_p1);
     
@@ -587,6 +590,12 @@ void AliAnalysisHFETPCTOFBeauty::UserCreateOutputObjects()
     
     fTPCnsigma_TOFnsigma3 = new TH2F("fTPCnsigma_TOFnsigma3","TOF Electron N#sigma;TPC Electron N#sigma",200,-10,30,200,-15,10);
     fOutputList->Add(fTPCnsigma_TOFnsigma3);
+    
+    hCharmMotherPt = new TH1F("hCharmMotherPt","; p_{T} [GeV/c]; Count",13,ptbinningHF);
+    fOutputList->Add(hCharmMotherPt);
+	
+	hBeautyMotherPt = new TH1F("hBeautyMotherPt","; p_{T} [GeV/c]; Count",13,ptbinningHF);
+    fOutputList->Add(hBeautyMotherPt);
 
     fPtElec = new TH1F("fPtElec","; p_{T} [GeV/c]; Count",32,ptbinning);
     fOutputList->Add(fPtElec);
@@ -686,9 +695,9 @@ void AliAnalysisHFETPCTOFBeauty::UserCreateOutputObjects()
    
     ///THnSparse to store DCA of different particle species-------------
     
-    Int_t nBinspdg2 = 6;
+    Int_t nBinspdg2 = 8;
     Double_t minpdg2 = 0.;
-    Double_t maxpdg2 = 6.;
+    Double_t maxpdg2 = 8.;
     Double_t binLimpdg2[nBinspdg2+1];
     for(Int_t i=0; i<=nBinspdg2; i++) binLimpdg2[i]=(Double_t)minpdg2 + (maxpdg2-minpdg2)/nBinspdg2*(Double_t)i ;
     
@@ -722,16 +731,17 @@ void AliAnalysisHFETPCTOFBeauty::UserCreateOutputObjects()
      2.28928,2.58223,2.91267,3.2854,3.70582,4.18004,4.71494,5.3183,5.99886,6.76651,7.6324,8.60909,9.71076,10.9534,12.3551,13.9361,15.7195,17.731,20};//bin limits from the measured pi0 spectrum
      */
     
-    const Int_t nDima2=7;
-    Int_t nBina2[nDima2] = {32,nBinspdg2,nBinsdcaxy,nBinsg,nBinsR,nBinsITSchi2,nBinsITSsha};
+    const Int_t nDima2=8;
+    Int_t nBina2[nDima2] = {32,nBinspdg2,nBinsdcaxy,nBinsg,nBinsR,nBinsITSchi2,nBinsITSsha,nBinstype};
     fD0 = new THnSparseF("fD0","fD0",nDima2,nBina2);
     fD0->SetBinEdges(0,ptbinning); ///pt spectra -> same binning as other histograms
-    fD0->SetBinEdges(1,binLimpdg2); /// electrons from D, B, gamma, pi0, eta
+    fD0->SetBinEdges(1,binLimpdg2); /// electrons from D, B, gamma, pi0, eta, charm baryons, beauty baryons
     fD0->SetBinEdges(2,binLimdcaxy); ///dca distribution
     fD0->SetBinEdges(3,binLimg);  ///From which generator (Hijing, else, pi0, eta)
     fD0->SetBinEdges(4,binLimR); ///Position where the electron is created
     fD0->SetBinEdges(5,binLimITSchi2); ///ITS chi2 
     fD0->SetBinEdges(6,binLimITSsha); ///fraction ITS shared clusters 
+    fD0->SetBinEdges(7,binLimtype); ///pi0 and eta type  ///kNoMother, kNoFeedDown, kNoIsPrimary, kLightMesons, kBeauty, kCharm
     fD0->Sumw2();
     fOutputList->Add(fD0);
     
@@ -1223,9 +1233,11 @@ void AliAnalysisHFETPCTOFBeauty::UserExec(Option_t *)
         
 		///Using thnSparse to store the DCA in Data-----------------------
          if(!fIsMC){
-			qadcaData[0] = fPt;
+			 qadcaData[0] = fPt;
          
 			 qadcaData[1] = DCAxy*track->Charge()*signB;
+			
+			 qadcaData[4] = -1.;
 			
 			 ///Charged pions
 			 if(fTPCnSigma >= -5 && fTPCnSigma <= -3){
@@ -1234,18 +1246,18 @@ void AliAnalysisHFETPCTOFBeauty::UserExec(Option_t *)
 			 ///Electron candidates
 			 if(fTPCnSigma >= ftpcPIDmincut && fTPCnSigma <= ftpcPIDmaxcut){
 				if(fTOFnSigma >= ftofPIDmincut && fTOFnSigma <= ftofPIDmaxcut){
-					qadcaData[4] = 1.5;
+					qadcaData[4] = 1.5;					
 				}
 			 }
         
 			Double_t ITSNcls = atrack->GetITSNcls();
 			//cout<<"atrack->GetITSNcls() = "<<atrack->GetITSNcls()<<endl;
             
-			//ITS Chi2            
+			///ITS Chi2            
 			qadcaData[2] = atrack->GetITSchi2()/ITSNcls; 
 			//cout<<"track->GetITSchi2() = "<<track->GetITSchi2()<<endl;
             
-			//Fraction of shared clusters in the ITS
+			///Fraction of shared clusters in the ITS
 			Bool_t HasSharedCls = kFALSE;
 			Double_t ITSNSharedcls = 0;
 			for(int itsL = 0; itsL < 6; itsL++){
@@ -1260,15 +1272,13 @@ void AliAnalysisHFETPCTOFBeauty::UserExec(Option_t *)
             
 			qadcaData[3] = fsharedclsITS; 
          
-			fD0Data->Fill(qadcaData);
+			if(qadcaData[4]>0.) fD0Data->Fill(qadcaData);
         }
         ///-------------------------          
         
-        
-        
-                
+               
         //=======================================================================
-        // Here the PID cuts defined in the file "ConfigEMCalHFEpA.C" is applied
+        // Here the PID cuts defined in the file "Config.C" is applied
         //=======================================================================
         Int_t pidpassed = 1;
         AliHFEpidObject hfetrack;
@@ -1307,39 +1317,56 @@ void AliAnalysisHFETPCTOFBeauty::UserExec(Option_t *)
             
             
             Int_t trkLabel = TMath::Abs(track->GetLabel());
-            Int_t labelm = GetPrimary(trkLabel,fMCarray);//gives the label of first mother
+            Int_t labelm = GetPrimary(trkLabel,fMCarray);///gives the label of first mother
             AliAODMCParticle *AODMCtrack = (AliAODMCParticle*)fMCarray->At(labelm);
-            Int_t trkIndexPrimHFE= AODMCtrack->GetLabel();//gives index of the particle in original MCparticle array (labelm and trkIndexPrimHFE are the same, so I don't understand why this is done)
+            Int_t trkIndexPrimHFE= AODMCtrack->GetLabel();///gives index of the particle in original MCparticle array (labelm and trkIndexPrimHFE are the same, so I don't understand why this is done)
             
-            //Electron generator:
+            ///Electron generator:
             Int_t MChijingHFE=kHijing;
-            if(trkIndexPrimHFE >= fNpureMC) MChijingHFE = kPhytia;//check if the particle comes from hijing or from enhanc
+            if(trkIndexPrimHFE >= fNpureMC) MChijingHFE = kPhytia;///check if the particle comes from hijing or from enhanc
             //cout<<"trkIndexPrimHFE = "<<trkIndexPrimHFE<<endl;
                         
             qadca[3]=MChijingHFE;
 			
-			//Position where the electron is created:
+			///Position where the electron is created:
 			fMCparticle = (AliAODMCParticle*) fMCarray->At(TMath::Abs(track->GetLabel()));
 			Double_t fVx = fMCparticle->Xv();
 			Double_t fVy = fMCparticle->Yv();
 			Double_t Rconv = TMath::Sqrt(fVx*fVx+fVy*fVy);
 			qadca[4]=Rconv; 
 			
-			//Pt
+			///Pt
             qadca[0] = fPt;
             
-            // Selecting electron source
+            ///Selecting electron source
             qadca[1]=-1.;
             
             Bool_t IsHFEMC = IsHFelectronsMC(track);
             if(IsHFEMC){
-                
                 if(fIsFromD){
-                    qadca[1]=0.5;
+                    fMCparticle = (AliAODMCParticle*) fMCarray->At(TMath::Abs(track->GetLabel()));
+                    fMCparticleMother = (AliAODMCParticle*) fMCarray->At(fMCparticle->GetMother());
+                    pdg_mother = fMCparticleMother->GetPdgCode();
+                    if(TMath::Abs(pdg_mother)>400 && TMath::Abs(pdg_mother)<500){///charmed meson 
+						 qadca[1]=0.5;
+						 hCharmMotherPt->Fill(fMCparticleMother->Pt());
+					}
+					 if(TMath::Abs(pdg_mother)>4000 && TMath::Abs(pdg_mother)<5000){///charmed baryon
+						 qadca[1]=1.5;
+					}
                 }
                 
                 if(fIsFromB){
-                    qadca[1]=1.5;
+                    fMCparticle = (AliAODMCParticle*) fMCarray->At(TMath::Abs(track->GetLabel()));
+                    fMCparticleMother = (AliAODMCParticle*) fMCarray->At(fMCparticle->GetMother());
+                    pdg_mother = fMCparticleMother->GetPdgCode();
+                    if(TMath::Abs(pdg_mother)>500 && TMath::Abs(pdg_mother)<600){///beauty meson 
+						qadca[1]=1.5;
+						hBeautyMotherPt->Fill(fMCparticleMother->Pt());
+					}
+					if(TMath::Abs(pdg_mother)>5000 && TMath::Abs(pdg_mother)<6000){///beauty baryon
+						qadca[1]=3.5;
+					}
                 }
             }
             if(!IsHFEMC){
@@ -1352,25 +1379,16 @@ void AliAnalysisHFETPCTOFBeauty::UserExec(Option_t *)
                 pdg_mother = fMCparticleMother->GetPdgCode();
                 
                 ///Photonic Electrons:
-                if(TMath::Abs(pdg_mother) == 22 || TMath::Abs(pdg_mother) == 111 || TMath::Abs(pdg_mother) == 221){
-                    Double_t ptmotherw = -1.;
-                    Int_t electronsource = GetElecSourceType(fMCparticle,fMCarray,ptmotherw);					              
-                    if((electronsource==kPi0NoFeedDown)){
-                        qadca[1]=3.5;   
-                        //cout<<"Rconv = "<<Rconv<<endl;
-				    }
-                    if((electronsource==kEtaNoFeedDown)) {
-                        qadca[1]=4.5;
-                        //cout<<"Rconv = "<<Rconv<<endl;
-                    }
-                    if((electronsource==kGPi0NoFeedDown)) {
-                        qadca[1]=2.5;
-                        //cout<<"Rconv = "<<Rconv<<endl;
-                    }
-                    if((electronsource==kGEtaNoFeedDown)) {
-                        qadca[1]=2.5;
-                        //cout<<"Rconv = "<<Rconv<<endl;
-                    }
+                if(TMath::Abs(pdg_mother) == 111 || TMath::Abs(pdg_mother) == 221){
+					if(pdg_mother == 111) qadca[1]=4.5; 
+					if(pdg_mother == 221) qadca[1]=5.5;
+					Int_t fType = GetPi0EtaType(fMCparticleMother,fMCarray);
+					qadca[7]=fType;
+                }
+                
+                if(TMath::Abs(pdg_mother) == 22){
+                    Bool_t primMC = fMCparticleMother->IsPrimary();
+                    if(primMC) qadca[1]=6.5;
                 }
             }
             
@@ -1660,9 +1678,9 @@ Bool_t AliAnalysisHFETPCTOFBeauty::FindMother(Int_t mcIndex)
         fIsFromD = kFALSE;
         fIsFromB = kFALSE;
         
-        if(mpdg>400 && mpdg<500) //charmed mesons (many kind of mesons D)
+        if((mpdg>400 && mpdg<500) || (mpdg>4000 && mpdg<5000)) //charmed mesons and baryons
         {
-            if((gmpdg>500 && gmpdg<600) || (ggmpdg>500 && ggmpdg<600) || (gggmpdg>500 && gggmpdg<600)) //when the D comes from B
+            if((gmpdg>500 && gmpdg<600) || (ggmpdg>500 && ggmpdg<600) || (gggmpdg>500 && gggmpdg<600) || (gmpdg>5000 && gmpdg<6000) || (ggmpdg>5000 && ggmpdg<6000) || (gggmpdg>5000 && gggmpdg<6000)) //when the charm comes from beauty
             {
                 fIsHFE1 = kTRUE;
                 fIsFromD = kFALSE;
@@ -1677,7 +1695,7 @@ Bool_t AliAnalysisHFETPCTOFBeauty::FindMother(Int_t mcIndex)
                 return kTRUE;
             }
         }
-        else if(mpdg>500 && mpdg<600) //bottom mesons (many kind of mesons B)
+        else if((mpdg>500 && mpdg<600) || (mpdg>5000 && mpdg<6000)) //beauty mesons and baryons
         {
             fIsHFE1 = kTRUE;
             fIsFromD = kFALSE;
@@ -1737,11 +1755,11 @@ Int_t AliAnalysisHFETPCTOFBeauty::GetPi0EtaType(AliAODMCParticle *pi0eta, TClone
         
         AliAODMCParticle *mother = (AliAODMCParticle*)fMCarray->At(motherlabel);
         Int_t motherpdg = TMath::Abs(mother->GetPdgCode());
-        ///pi0, eta, omega, phi, eta',rho0, rho+,k*0,K*+,lambda
+        ///pi0, eta, omega, phi, eta',rho0, rho+,k*0,K*+,lambda(strangeness)
         if(motherpdg == 111 || motherpdg == 221 || motherpdg == 223 || motherpdg == 333 || motherpdg == 331 || motherpdg == 113 || motherpdg == 213 || motherpdg == 313 || motherpdg == 323 || motherpdg == 3122) return kLightMesons;
         
-        if ( (int(TMath::Abs(motherpdg)/100.)%10) == 5 || (int(TMath::Abs(motherpdg)/1000.)%10) == 5 ) return kBeauty;
-        if ( (int(TMath::Abs(motherpdg)/100.)%10) == 4 || (int(TMath::Abs(motherpdg)/1000.)%10) == 4 ) return kCharm;
+        if ( (int(TMath::Abs(motherpdg)/100.)%10) == 5 || (int(TMath::Abs(motherpdg)/1000.)%10) == 5 ) return kBeauty; ///beauty mesons and barions
+        if ( (int(TMath::Abs(motherpdg)/100.)%10) == 4 || (int(TMath::Abs(motherpdg)/1000.)%10) == 4 ) return kCharm; ///charmed mesons and barions
         return kNoFeedDown;    
         
     }
