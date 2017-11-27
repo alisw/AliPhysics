@@ -238,7 +238,6 @@ void AliAnalysisTaskdStar::UserExec(Option_t *) {
     AliAODMCParticle *part = (AliAODMCParticle*)stack->At(TMath::Abs(track->GetLabel()));
     if (!part) continue;
     const int pdg = TMath::Abs(part->GetPdgCode());
-    if (pdg != 211 && pdg != 1000010020) continue;
     const int mother_id = part->GetMother();
     AliAODMCParticle* mother = (mother_id >= 0) ? (AliAODMCParticle*)stack->At(mother_id) : nullptr;
     if (!mother) continue;
@@ -256,6 +255,7 @@ void AliAnalysisTaskdStar::UserExec(Option_t *) {
       daughter_struct deu;
       deu.mother_pdg = mum_pdg;
       deu.mother_id  = mother_id;
+      deu.mc_truth   = pdg;
       deu.vec        = tmp_deu;
       deu.properties = prop;
       fDeuteronVector.push_back(deu);
@@ -270,6 +270,7 @@ void AliAnalysisTaskdStar::UserExec(Option_t *) {
       daughter_struct pi;
       pi.mother_pdg = mum_pdg;
       pi.mother_id  = mother_id;
+      pi.mc_truth   = pdg;
       pi.vec        = tmp_pi;
       pi.properties = prop;
       fPionVector.push_back(pi);
