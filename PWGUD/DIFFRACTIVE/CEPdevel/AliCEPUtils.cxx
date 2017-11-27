@@ -938,6 +938,18 @@ Int_t AliCEPUtils::AnalyzeTracks(AliESDEvent* fESDEvent,
     // add track to buffer
     fTracks->Add(track);
 
+    // get number of hits in various detectors
+    //if (track->HasPointOnITSLayer(0) || track->HasPointOnITSLayer(1)) {
+    if (track->GetEMCALcluster()>=0) {
+      printf("Number of track points %i %i %i %i %i\n",
+        track->GetNumberOfITSClusters(),
+        track->GetNumberOfTPCClusters(),
+        track->GetNumberOfTRDClusters(),
+        track->GetTOFclusterN(),
+        track->GetEMCALcluster());
+    }
+    
+    
     // go through the list of selection tests
     // and update the TrackStatus word trackstat accordingly
     // see AliCEPBase.h for a definition of the TrackStatus word bits
@@ -967,7 +979,7 @@ Int_t AliCEPUtils::AnalyzeTracks(AliESDEvent* fESDEvent,
     }
 
     // is an ITS pure track
-    if (track->GetStatus() & AliESDtrack::kITSpureSA)
+    if (track->IsPureITSStandalone())
       trackstat |=  AliCEPBase::kTTITSpure;
 
     // |Zv-VtxZ| <= fTrackDCAz(6)
@@ -1648,14 +1660,14 @@ void AliCEPUtils::EMCAnalysis (
     
     // count ...
     // number of clusters on EMC/PHOS
-    // deposited energy
+    // deposited energy, ignore matched clusters
     if (clust->IsEMCAL()) {
       nEMCClus++;
-      EMCEne += ene;
+      if (clust->GetNTracksMatched()<=0) EMCEne += ene;
     }
     if (clust->IsPHOS()) {
       nPHOSClus++;
-      PHOSEne += ene;
+      if (clust->GetNTracksMatched()<=0) PHOSEne += ene;
     }
   
   }
