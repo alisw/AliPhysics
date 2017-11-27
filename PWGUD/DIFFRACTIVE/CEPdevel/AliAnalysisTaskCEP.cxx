@@ -1214,8 +1214,8 @@ void AliAnalysisTaskCEP::UserExec(Option_t *)
     delete TTindices;
     TTindices = 0x0;
   }
-  delete nCaloCluster;
-  delete CaloEnergy;
+  delete[] nCaloCluster;
+  delete[] CaloEnergy;
 
 }
 
