@@ -122,7 +122,8 @@ class AliAnalysisTaskAccCont : public AliAnalysisTaskSE {
   Double_t fPtMin; 
   Double_t fPtMax;
 
-  AliAnalysisUtils *fUtils;
+  //AliAnalysisUtils
+  AliAnalysisUtils *fUtils;//AliAnalysisUtils
   AliPIDResponse *fPIDResponse;  
  
   AliAnalysisTaskAccCont(const AliAnalysisTaskAccCont&); // not implemented
