@@ -101,16 +101,14 @@ void AliMeanVertexPreprocessorOffline::ProcessOutput(const char *filename, AliCD
   TH1F *histTRKvtxY = 0x0;
   TH1F *histTRKvtxZ = 0x0;
 
+  TH1F *histITSSAvtxX = 0x0;
+  TH1F *histITSSAvtxY = 0x0;
+  TH1F *histITSSAvtxZ = 0x0;
+
   TH1F *histSPDvtxX = 0x0;
   TH1F *histSPDvtxY = 0x0;
   TH1F *histSPDvtxZ = 0x0;
 
-  Bool_t useTRKvtx = kTRUE;
-  Bool_t useITSSAvtx = kFALSE;
-  Bool_t useSPDvtx = kFALSE;
-  Bool_t spdAvailable = kTRUE;
-  Bool_t writeMeanVertexSPD = kFALSE;
-  Bool_t vertexerSPD3Doff=kFALSE;
 
   if (!list) {
 
@@ -118,99 +116,86 @@ void AliMeanVertexPreprocessorOffline::ProcessOutput(const char *filename, AliCD
     histTRKvtxY = (TH1F*)file->Get("hTRKVertexY");
     histTRKvtxZ = (TH1F*)file->Get("hTRKVertexZ");
 
+    histITSSAvtxX = (TH1F*)file->Get("hITSSAVertexX");
+    histITSSAvtxY = (TH1F*)file->Get("hITSSAVertexY");
+    histITSSAvtxZ = (TH1F*)file->Get("hITSSAVertexZ");
+
     histSPDvtxX = (TH1F*)file->Get("hSPDVertexX");
     histSPDvtxY = (TH1F*)file->Get("hSPDVertexY");
     histSPDvtxZ = (TH1F*)file->Get("hSPDVertexZ");
 
-    if (!histTRKvtxX || !histTRKvtxY || !histTRKvtxZ) {
-      useTRKvtx = kFALSE;
-      useITSSAvtx = kTRUE;
+  }else{
 
-      histTRKvtxX = (TH1F*)file->FindObject("hITSSAVertexX");
-      histTRKvtxY = (TH1F*)file->FindObject("hITSSAVertexY");
-      histTRKvtxZ = (TH1F*)file->FindObject("hITSSAVertexZ");
-
-      if (!histTRKvtxX || !histTRKvtxY || !histTRKvtxZ) {
-        useITSSAvtx=kFALSE;
-        useSPDvtx=kTRUE;
-
-        if (!histSPDvtxX || !histSPDvtxY || !histSPDvtxZ) {
-          AliError("cannot find any histograms available from file");
-          fStatus=kInputError;
-          return;
-        }
-      }
-    }
-  }
-  else {
     histTRKvtxX = (TH1F*)list->FindObject("hTRKVertexX");
     histTRKvtxY = (TH1F*)list->FindObject("hTRKVertexY");
     histTRKvtxZ = (TH1F*)list->FindObject("hTRKVertexZ");
+
+    histITSSAvtxX = (TH1F*)list->FindObject("hITSSAVertexX");
+    histITSSAvtxY = (TH1F*)list->FindObject("hITSSAVertexY");
+    histITSSAvtxZ = (TH1F*)list->FindObject("hITSSAVertexZ");
 
     histSPDvtxX = (TH1F*)list->FindObject("hSPDVertexX");
     histSPDvtxY = (TH1F*)list->FindObject("hSPDVertexY");
     histSPDvtxZ = (TH1F*)list->FindObject("hSPDVertexZ");
 
-    if (!histTRKvtxX || !histTRKvtxY || !histTRKvtxZ) {
-
-      useTRKvtx = kFALSE;
-      useITSSAvtx = kTRUE;
-
-      histTRKvtxX = (TH1F*)list->FindObject("hITSSAVertexX");
-      histTRKvtxY = (TH1F*)list->FindObject("hITSSAVertexY");
-      histTRKvtxZ = (TH1F*)list->FindObject("hITSSAVertexZ");
-
-      if (!histTRKvtxX || !histTRKvtxY || !histTRKvtxZ) {
-        useITSSAvtx=kFALSE;
-        useSPDvtx=kTRUE;
-        if (!histSPDvtxX || !histSPDvtxY || !histSPDvtxZ) {
-          AliError("cannot find any histograms available from list");
-          fStatus=kInputError;
-          return;
-        }
-      }
-    }
   }
 
-  if (useTRKvtx) {
-    Float_t nEntriesX = histTRKvtxX->GetEffectiveEntries();
-    Float_t nEntriesY = histTRKvtxY->GetEffectiveEntries();
-    Float_t nEntriesZ = histTRKvtxZ->GetEffectiveEntries();
+  // Hierachical search for available vertices
+  // globbal tracks -> ITS standalone tracks -> SPD tracklets
+  Bool_t useTRKvtx = kTRUE;
+  Bool_t useITSSAvtx = kFALSE;
+  Bool_t useSPDvtx = kFALSE;
+  Bool_t spdAvailable = kTRUE;
+  Bool_t writeMeanVertexSPD = kFALSE;
+  Bool_t vertexerSPD3Doff=kFALSE;
 
-    if (nEntriesX < 50. || nEntriesY<50. || nEntriesZ<50.) {
-      AliError("TRK vertex histograms have too few entries for fitting");
+  if ( !histTRKvtxX || !histTRKvtxY || !histTRKvtxZ ||
+       histTRKvtxX->GetEffectiveEntries()<50 ||
+       histTRKvtxY->GetEffectiveEntries()<50 ||
+       histTRKvtxZ->GetEffectiveEntries()<50) 
+    {
+      AliError("TRK vertex histograms have too few entries for fitting");    
       useTRKvtx=kFALSE;
-      useSPDvtx = kTRUE;
+      useITSSAvtx=kTRUE;
+      histTRKvtxX = histITSSAvtxX;
+      histTRKvtxY = histITSSAvtxY;
+      histTRKvtxZ = histITSSAvtxZ;    
     }
-  }
-  if (useITSSAvtx) {
-    Float_t nEntriesX = histTRKvtxX->GetEffectiveEntries();
-    Float_t nEntriesY = histTRKvtxY->GetEffectiveEntries();
-    Float_t nEntriesZ = histTRKvtxZ->GetEffectiveEntries();
-
-    if (nEntriesX < 50. || nEntriesY<50. || nEntriesZ<50.) {
-      AliError("ITSSA vertex histograms have too few entries for fitting");
-      useITSSAvtx=kFALSE;
-      useSPDvtx=kTRUE;
-    }
+  if (useITSSAvtx && 
+      (!histTRKvtxX || !histTRKvtxY || !histTRKvtxZ ||
+       histTRKvtxX->GetEffectiveEntries()<50 ||
+       histTRKvtxY->GetEffectiveEntries()<50 ||
+       histTRKvtxZ->GetEffectiveEntries()<50) 
+      ) {
+    AliError("ITSSA vertex histograms have too few entries for fitting");
+    useITSSAvtx = kFALSE;
+    useSPDvtx=kTRUE;
   }
 
-  Float_t nEntriesX = histSPDvtxX->GetEffectiveEntries();
-  Float_t nEntriesY = histSPDvtxY->GetEffectiveEntries();
-  Float_t nEntriesZ = histSPDvtxZ->GetEffectiveEntries();
-
-  if (nEntriesX < 50. || nEntriesY<50. || nEntriesZ<50.) {
-    spdAvailable = kFALSE;
-    if ((useTRKvtx==kFALSE) && (useITSSAvtx==kFALSE)) {
-      AliError("Also SPD vertex histograms have too few entries for fitting, return");
-      fStatus=kLowStatistics;
+  if(useSPDvtx){
+    if (!histSPDvtxX || !histSPDvtxY || !histSPDvtxZ) {
+      AliError("cannot find any histograms available from file");
+      spdAvailable = kFALSE;
+      fStatus=kInputError;
       return;
     }
-  }
+    
+    Float_t nEntriesX = histSPDvtxX->GetEffectiveEntries();
+    Float_t nEntriesY = histSPDvtxY->GetEffectiveEntries();
+    Float_t nEntriesZ = histSPDvtxZ->GetEffectiveEntries();
 
-  if((nEntriesX == 0.)&&(nEntriesY==0.) && (nEntriesZ>0.)) {
-    vertexerSPD3Doff = kTRUE;
-    AliWarning("Vertexer SPD 3D off");
+    if (nEntriesX < 50. || nEntriesY<50. || nEntriesZ<50.) {
+      spdAvailable = kFALSE;
+      if ((useTRKvtx==kFALSE) && (useITSSAvtx==kFALSE)) {
+	AliError("Also SPD vertex histograms have too few entries for fitting, return");
+	fStatus=kLowStatistics;
+	return;
+      }
+    }
+    if((nEntriesX == 0.)&&(nEntriesY==0.) && (nEntriesZ>0.)) {
+      vertexerSPD3Doff = kTRUE;
+      AliWarning("Vertexer SPD 3D off");
+    }
   }
 
 
@@ -455,8 +440,8 @@ void AliMeanVertexPreprocessorOffline::ProcessOutput(const char *filename, AliCD
         histTRKHighMultX = (TH1F*)list->FindObject("hITSSAVertexXHighMult");
         histTRKHighMultY = (TH1F*)list->FindObject("hITSSAVertexYHighMult");
 
-        histTRKvsMultX = (TH2F*)file->FindObject("hITSSAVertexXvsMult");
-        histTRKvsMultY = (TH2F*)file->FindObject("hITSSAVertexYvsMult");
+        histTRKvsMultX = (TH2F*)list->FindObject("hITSSAVertexXvsMult");
+        histTRKvsMultY = (TH2F*)list->FindObject("hITSSAVertexYvsMult");
 
         histTRKVertexXZ = (TH2F*)list->FindObject("hITSSAVertexXZ");
         histTRKVertexYZ = (TH2F*)list->FindObject("hITSSAVertexYZ");
@@ -853,6 +838,12 @@ void AliMeanVertexPreprocessorOffline::ModObject(const char* url, double zv, dou
   }
   commComb += commentAdd;
   mdnew->SetComment(commComb.Data());
+
+  if (firstRun==0 || lastRun==999999999) {
+    printf("Object %s to be modified has run range %d : %d, restricting to %d\n",
+	   url,firstRun,lastRun,man->GetRun());
+    firstRun = lastRun = man->GetRun();
+  }
   
   AliCDBId id(url,firstRun,lastRun);
   man->Put(vtx,id,mdnew); //comment to run locally
