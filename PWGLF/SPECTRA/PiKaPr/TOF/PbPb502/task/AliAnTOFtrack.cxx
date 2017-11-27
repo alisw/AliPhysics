@@ -34,8 +34,8 @@ AliAnTOFtrack::AliAnTOFtrack()
     : fTrkMask(0)
     , fTPCPIDMask(0)
     , fTrkCutMask(0)
-    , fDCAXYIndex(0)
-    , fDCAZIndex(0)
+    , fDCAXY(-999)
+    , fDCAZ(-999)
     , fLength(-999)
     , fLengthRatio(-999)
     , fTOFTime(-999)
@@ -190,42 +190,6 @@ Bool_t AliAnTOFtrack::IsNegative()
   return kFALSE;
 }
 
-//________________________________________________________________________
-Double_t AliAnTOFtrack::GetDCA(const Bool_t xy)
-{
-  if (xy)
-    return GetBinnedData(fDCAXYIndex, -fDCAXYRange, fDCAXYRange, 65536);
-  else
-    return GetBinnedData(fDCAZIndex, -fDCAZRange, fDCAZRange, 65536);
-}
-
-////////////////////////
-/////TEST functions/////
-////////////////////////
-
-//________________________________________________________________________
-void AliAnTOFtrack::TestDCAXYBinning()
-{
-  Int_t dim = static_cast<Int_t>(TMath::Power(2., 8. * sizeof(fDCAXYIndex)));
-  Double_t range = (2. * fDCAXYRange);
-  std::cout << "fDCAXYIndex has " << dim << " possibilities" << std::endl;
-  std::cout << "DCAXY range is [" << -fDCAXYRange << "," << fDCAXYRange << "] -> " << range << " bin width = " << range / dim << std::endl;
-  std::cout << "Variable dimension is " << dim << " while actual bin required are " << kDCAXYBins << std::endl;
-
-  dim = static_cast<Int_t>(TMath::Power(2., 8. * sizeof(fDCAZIndex)));
-  range = (2. * fDCAZRange);
-  std::cout << "fDCAZIndex has " << dim << " possibilities" << std::endl;
-  std::cout << "DCAZ range is [" << -fDCAZRange << "," << fDCAZRange << "] -> " << range << " bin width = " << range / dim << std::endl;
-  std::cout << "Variable dimension is " << dim << " while actual bin required are " << kDCAZBins << std::endl;
-
-  for (Int_t var = 0; var <= 20; ++var) {
-    //       Double_t rnd = 2.*fDCAXYRange*gRandom->Rndm()-1;
-    Double_t rnd = 2. * fDCAXYRange * (Double_t)var / 20. - fDCAXYRange;
-    ComputeDCABin(rnd, kTRUE);
-    std::cout << rnd << " Index: " << fDCAXYIndex << " binned is " << GetDCA(kTRUE) << " --> Diff --> " << GetDCA(kTRUE) - rnd << std::endl;
-  }
-}
-
 ///////////////////////////
 ///DCA Utility functions///
 ///////////////////////////
@@ -233,11 +197,10 @@ void AliAnTOFtrack::TestDCAXYBinning()
 //________________________________________________________________________
 void AliAnTOFtrack::ComputeDCABin(const Double_t dca, const Bool_t xy)
 {
-  if (xy) {
-    fDCAXYIndex = static_cast<UShort_t>(BinData(dca, -fDCAXYRange, fDCAXYRange, 65536));
-  } else {
-    fDCAZIndex = static_cast<UShort_t>(BinData(dca, -fDCAZRange, fDCAZRange, 65536));
-  }
+  if (xy)
+    fDCAXY = dca;
+  else
+    fDCAZ = dca;
 };
 
 //________________________________________________________________________

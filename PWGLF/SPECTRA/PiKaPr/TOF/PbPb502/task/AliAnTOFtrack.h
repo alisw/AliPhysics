@@ -31,8 +31,8 @@ class AliAnTOFtrack {
   UShort_t fTrkMask;                 //Mask for track information
   UChar_t fTPCPIDMask;               //Mask for TPC PID information
   UShort_t fTrkCutMask;              //Mask for Track cuts information
-  UShort_t fDCAXYIndex;              //Binned version of the XY impact parameters
-  UShort_t fDCAZIndex;               //Binned version of the Z impact parameters
+  Double32_t fDCAXY;                 //[-3,3,12]  Binned version of the XY impact parameters
+  Double32_t fDCAZ;                  //[-3,3,12]  Binned version of the Z impact parameters
   Float_t fLength;                   //Track length
   Float_t fLengthRatio;              //Ratio of length of the track matched and the one from a distant cluster
   Float_t fTOFTime;                  //Time measured by TOF
@@ -184,8 +184,8 @@ class AliAnTOFtrack {
     cout << "fTrkMask " << fTrkMask << endl;
     cout << "fTPCPIDMask " << fTPCPIDMask << endl;
     cout << "fTrkCutMask " << fTrkCutMask << endl;
-    cout << "fDCAXYIndex " << fDCAXYIndex << endl;
-    cout << "fDCAZIndex " << fDCAZIndex << endl;
+    cout << "fDCAXY " << fDCAXY << endl;
+    cout << "fDCAZ " << fDCAZ << endl;
     cout << "fLength " << fLength << endl;
     cout << "fLengthRatio " << fLengthRatio << endl;
     cout << "fTOFTime " << fTOFTime << endl;
