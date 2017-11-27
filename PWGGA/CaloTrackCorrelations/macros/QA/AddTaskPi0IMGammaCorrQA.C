@@ -884,8 +884,9 @@ AliAnalysisTaskCaloTrackCorrelation *AddTaskPi0IMGammaCorrQA(const TString  calo
   TString trigger  = suffix;
   
   TString colType  = gSystem->Getenv("ALIEN_JDL_LPMINTERACTIONTYPE");
-  TString prodType = gSystem->Getenv("ALIEN_JDL_LPMPRODUCTIONTAG");
-  
+  TString prodTag  = gSystem->Getenv("ALIEN_JDL_LPMPRODUCTIONTAG");
+  TString prodType = gSystem->Getenv("ALIEN_JDL_LPMPRODUCTIONTYPE");
+    
   if(collision=="") // Check the alien environment 
   {
     if      (colType.Contains( "PbPb")) collision = "PbPb"; 
@@ -901,14 +902,14 @@ AliAnalysisTaskCaloTrackCorrelation *AddTaskPi0IMGammaCorrQA(const TString  calo
     if   ( prodType.Contains("MC") ) simulation = kTRUE;
     else                             simulation = kFALSE;
     
-    if   ( !simulation  && period!="" ) period = prodType;
+    if   ( !simulation  && period!="" ) period = prodTag;
     
     // print check on global settings once
     if ( trigger.Contains("default") ||trigger.Contains("INT") || trigger.Contains("MB") )
-      printf("AddTaskClusterShape() - Get the data features from global parameters: collision <%s> (<%s>), "
-             "period <%s>, production Type <%s>, mc bool <%d> \n",
+      printf("AddTaskPi0IMGammaCorrQA() - Get the data features from global parameters: collision <%s> (<%s>), "
+             "period <%s>,  tag <%s>, type <%s>, MC bool <%d> \n",
              colType.Data(),collision.Data(),
-             period.Data(),prodType.Data(),simulation);
+             period.Data(),prodType.Data(),prodTag.Data(),simulation);
   }
   
   Int_t year = 2017;
