@@ -592,9 +592,7 @@ AliCalorimeterUtils* ConfigureCaloUtils(TString col,           Bool_t simulation
   
   if(!simulation)
     cu->SwitchOnLoadOwnEMCALGeometryMatrices();
-  
-  AliEMCALRecoUtils * recou = cu->GetEMCALRecoUtils();
-  
+    
   // calibrations
   Bool_t calibEner = kFALSE;
   Bool_t calibTime = kFALSE;
@@ -619,14 +617,23 @@ AliCalorimeterUtils* ConfigureCaloUtils(TString col,           Bool_t simulation
     cu->SwitchOffRunDepCorrection();
   }
   
-  gROOT->LoadMacro("$ALICE_PHYSICS/PWGPP/EMCAL/macros/ConfigureEMCALRecoUtils.C");
-  ConfigureEMCALRecoUtils(recou,
-                          simulation,
-                          kTRUE,      // exotic
-                          nonLinOn,   // Non linearity
-                          calibEner,  // E calib
-                          kTRUE,      // bad map
-                          calibTime); // time calib
+AliEMCALRecoUtils * recou = cu->GetEMCALRecoUtils();
+//
+//  gROOT->LoadMacro("$ALICE_PHYSICS/PWGPP/EMCAL/macros/ConfigureEMCALRecoUtils.C");
+//  ConfigureEMCALRecoUtils(recou,
+//                          simulation,
+//                          kTRUE,      // exotic
+//                          nonLinOn,   // Non linearity
+//                          calibEner,  // E calib
+//                          kTRUE,      // bad map
+//                          calibTime); // time calib
+  
+  cu->ConfigureEMCALRecoUtils(simulation,
+                              kTRUE,      // exotic
+                              nonLinOn,   // Non linearity
+                              calibEner,  // E calib
+                              kTRUE,      // bad map
+                              calibTime); // time calib
   
   //if( calibTime ) recou->SetExoticCellDiffTimeCut(1e6);
   
