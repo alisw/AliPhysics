@@ -49,268 +49,6 @@
 
 #endif // CINT
 
-///
-/// Main method calling all the configuration
-/// Creates a CaloTrackCorr task, configures it and adds it to the analysis manager.
-///
-/// The options that can be passed to the macro are:
-/// \param calorimeter : A string with he calorimeter used to measure the trigger particle.
-/// \param simulation : A bool identifying the data as simulation.
-/// \param collision: A string with the colliding system.
-/// \param period : A string with the data period: LHC11h, LHC15n ... from it we extract the year.
-/// \param qaan: execute the detector QA analysis.
-/// \param hadronan: execute the track QA and cluster-track correlation analysis.
-/// \param calibrate: if OADB was updated with calibration parameters not used in reconstruction, apply them here.
-/// \param minTime: minimum time cut, leave it open by default even if calibration available, ns
-/// \param maxTime: maximum time cut, leave it open by default even if calibration available, ns
-/// \param minCen : An int to select the minimum centrality, -1 means no selection.
-/// \param maxCen : An int to select the maximum centrality, -1 means no selection.
-/// \param debugLevel : An int to define the debug level of all the tasks.
-/// \param suffix : A string with the type of trigger (default: MB, EMC).
-///
-AliAnalysisTaskCaloTrackCorrelation *AddTaskPi0IMGammaCorrQA(const TString  calorimeter   = "EMCAL",
-                                                                   Bool_t   simulation    = kFALSE,
-                                                                   TString  collision     = "pp",
-                                                                   TString  period        = "",
-                                                             const Bool_t   qaan          = kTRUE,
-                                                             const Bool_t   hadronan      = kTRUE,
-                                                             const Bool_t   calibrate     = kFALSE,
-                                                             const Int_t    minTime       = -1000,
-                                                             const Int_t    maxTime       =  1000,
-                                                             const Int_t    minCen        = -1,
-                                                             const Int_t    maxCen        = -1,
-                                                             const Int_t    debugLevel    = -1,
-                                                             const char *   suffix        = "default"
-                                                          )
-{
-  // Check the global variables, and reset the provided ones if empty.
-  //
-  TString trigger  = suffix;
-  
-  TString colType  = gSystem->Getenv("ALIEN_JDL_LPMINTERACTIONTYPE");
-  TString prodType = gSystem->Getenv("ALIEN_JDL_LPMPRODUCTIONTAG");
-  
-  if(collision=="") // Check the alien environment 
-  {
-    if      (colType.Contains( "PbPb")) collision = "PbPb"; 
-    else if (colType.Contains( "XeXe")) collision = "PbPb"; 
-    else if (colType.Contains( "AA"  )) collision = "PbPb"; 
-    else if (colType.Contains( "pA"  )) collision = "pPb"; 
-    else if (colType.Contains( "Ap"  )) collision = "pPb";     
-    else if (colType.Contains( "pPb" )) collision = "pPb"; 
-    else if (colType.Contains( "Pbp" )) collision = "pPb"; 
-    else if (colType.Contains( "pp"  )) collision = "pp" ; 
-    
-    // Check if production is MC or data, of data recover period name
-    if   ( prodType.Contains("MC") ) simulation = kTRUE;
-    else                             simulation = kFALSE;
-    
-    if   ( !simulation  && period!="" ) period = prodType;
-    
-    // print check on global settings once
-    if ( trigger.Contains("default") ||trigger.Contains("INT") || trigger.Contains("MB") )
-      printf("AddTaskClusterShape() - Get the data features from global parameters: collision <%s> (<%s>), "
-             "period <%s>, production Type <%s>, mc bool <%d> \n",
-             colType.Data(),collision.Data(),
-             period.Data(),prodType.Data(),simulation);
-  }
-  
-  Int_t year = 2017;
-  if ( period!="" )
-  {
-    if     (period.Contains("16")) year = 2016;
-    else if(period.Contains("15")) year = 2015;
-    else if(period.Contains("13")) year = 2013;
-    else if(period.Contains("12")) year = 2012;
-    else if(period.Contains("11")) year = 2011;
-    else if(period.Contains("10")) year = 2010;
-  }
-
-  
-  // Get the pointer to the existing analysis manager via the static access method.
-  //
-  AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
-  if (!mgr) 
-  {
-    ::Error("AddTaskPi0IMGammaCorrQA", "No analysis manager to connect to.");
-    return NULL;
-  }  
-  
-  // Check the analysis type using the event handlers connected to the analysis manager.
-  //
-  if (!mgr->GetInputEventHandler()) 
-  {
-    ::Error("AddTaskPi0IMGammaCorrQA", "This task requires an input event handler");
-    return NULL;
-  }
-  
-  //
-  // Create task
-  //
-
-  // Name for containers
-  TString containerName = Form("%s_Trig_%s",calorimeter.Data(), trigger.Data());
-  
-  if(collision!="pp" && maxCen>=0) containerName+=Form("Cen%d_%d",minCen,maxCen);
-
-  TString taskName =Form("Pi0IM_GammaTrackCorr_%s",containerName.Data());
-    
-  AliAnalysisTaskCaloTrackCorrelation * task = new AliAnalysisTaskCaloTrackCorrelation (taskName);
-  //task->SetConfigFileName(""); //Don't configure the analysis via configuration file.
-  task->SetDebugLevel(debugLevel);
-  //task->SetBranches("ESD:AliESDRun.,AliESDHeader");
-  //task->SetBranches("AOD:header,tracks,vertices,emcalCells,caloClusters");
-  
-  //
-  // Init main analysis maker and pass it to the task
-  AliAnaCaloTrackCorrMaker * maker = new AliAnaCaloTrackCorrMaker();
-  task->SetAnalysisMaker(maker);
-
-  //
-  // Pass the task to the analysis manager
-  mgr->AddTask(task);
-
-  //
-  // Create containers
-  TString outputfile = AliAnalysisManager::GetCommonFileName();
-
-  AliAnalysisDataContainer *cout_pc   = mgr->CreateContainer(trigger, TList::Class(),
-                                                             AliAnalysisManager::kOutputContainer, 
-                                                             Form("%s:%s",outputfile.Data(),Form("Pi0IM_GammaTrackCorr_%s",calorimeter.Data())));
-  
-  AliAnalysisDataContainer *cout_cuts = mgr->CreateContainer(Form("Param_%s",trigger.Data()), TList::Class(),
-                                                             AliAnalysisManager::kParamContainer, 
-                                                             Form("%s_Parameters.root",Form("Pi0IM_GammaTrackCorr_%s",calorimeter.Data())));
-  
-  // Create ONLY the output containers for the data produced by the task.
-  // Get and connect other common input/output containers via the manager as below
-  mgr->ConnectInput  (task, 0, mgr->GetCommonInputContainer());
-  mgr->ConnectOutput (task, 1, cout_pc);
-  mgr->ConnectOutput (task, 2, cout_cuts);
-  //==============================================================================
-  
-  // Do not configure the wagon for certain analysis combinations
-  // But create the task so that the sub-wagon train can run
-  //
-  gROOT->LoadMacro("$ALICE_PHYSICS/PWGGA/CaloTrackCorrelations/macros/CheckActiveEMCalTriggerPerPeriod.C");
-  Bool_t doAnalysis = CheckActiveEMCalTriggerPerPeriod(simulation,trigger,period,year);
-  if(!doAnalysis) 
-  {
-    maker->SwitchOffProcessEvent();
-    return task;
-  }
-  
-  // #### Start analysis configuration ####
-  //  
-  TString inputDataType = mgr->GetInputEventHandler()->GetDataType(); // can be "ESD" or "AOD"
-  
-  // Make sure the B field is enabled for track selection, some cuts need it
-  //
-  ((AliInputEventHandler*)mgr->GetInputEventHandler())->SetNeedField(kTRUE);
-  
-  // Print settings to check all is as expected
-  //
-  printf("AddTaskPi0IMGammaCorrQA - Task NAME: %s \n",taskName.Data());
-
-  printf("AddTaskPi0IMGammaCorrQA - Settings: data <%s>, calo <%s>, MC <%d>, collision <%s>, trigger <%s>, period <%s>, year <%d>,\n"
-         "\t \t \t  CaloQA on <%d>, Track QA on <%d>, Make corrections <%d>, %d < time < %d, %d < cen < %d, debug level <%d> \n", 
-         inputDataType.Data(), calorimeter.Data(),simulation, collision.Data(),trigger.Data(), period.Data(), year,
-         qaan , hadronan, calibrate, minTime, maxTime, minCen, maxCen, debugLevel);
-  //
-
-  // General frame setting and configuration
-  maker->SetReader   ( ConfigureReader   (inputDataType,collision,calibrate,minTime,maxTime,minCen,maxCen,simulation,year,debugLevel) );
-  if(hadronan)maker->GetReader()->SwitchOnCTS();
-  
-  maker->SetCaloUtils( ConfigureCaloUtils(calorimeter,trigger,simulation,calibrate,year,debugLevel) );
-  
-  // Analysis tasks setting and configuration
-  Int_t n = 0;//Analysis number, order is important
-  
-  // Cell QA
-  if(qaan) maker->AddAnalysis(ConfigureQAAnalysis(calorimeter,collision,
-                                                  //simulation,
-                                                  year,debugLevel),n++);
-  
-  // Analysis with EMCal trigger or MB
-  if ( !trigger.Contains("DCAL") )
-  {
-    // Cluster selection
-    maker->AddAnalysis(ConfigurePhotonAnalysis(calorimeter,0,collision,containerName,simulation,year,debugLevel)       ,n++); 
-    // Previous cluster invariant mass
-    maker->AddAnalysis(ConfigurePi0Analysis   (calorimeter,0,collision,containerName,simulation,year,debugLevel,minCen),n++);     
-    if(hadronan)
-    {
-      // Isolation of selected clusters by AliAnaPhoton
-      maker->AddAnalysis(ConfigureIsolationAnalysis("Photon",calorimeter,0,collision,containerName,simulation,year,debugLevel), n++);
-      // Selected clusters-track correlation
-      maker->AddAnalysis(ConfigureHadronCorrelationAnalysis("Photon",calorimeter,0,collision,containerName,simulation,year,debugLevel,minCen), n++); 
-    }
-  }
-  
-  // Analysis with DCal trigger or MB
-  if(year > 2014 && calorimeter=="EMCAL" && !trigger.Contains("EMCAL"))
-  {
-    // Cluster selection
-    maker->AddAnalysis(ConfigurePhotonAnalysis(calorimeter,1,collision,containerName,simulation,year,debugLevel)       , n++); 
-    // Previous cluster invariant mass
-    maker->AddAnalysis(ConfigurePi0Analysis   (calorimeter,1,collision,containerName,simulation,year,debugLevel,minCen),n++); 
-    if(hadronan)
-    {
-      // Isolation of selected clusters by AliAnaPhoton
-      maker->AddAnalysis(ConfigureIsolationAnalysis("Photon",calorimeter,1,collision,containerName,simulation,year,debugLevel), n++);
-      // Selected clusters-track correlation
-      maker->AddAnalysis(ConfigureHadronCorrelationAnalysis("Photon",calorimeter,1,collision,containerName,simulation,year,debugLevel,minCen), n++); 
-    }
-  }
-  
-  // Charged tracks plots, any trigger
-  if(hadronan)
-    maker->AddAnalysis(ConfigureChargedAnalysis(collision,containerName,simulation,year,debugLevel), n++); 
-    
-  if(simulation)
-  {
-    // Calculate the cross section weights, apply them to all histograms 
-    // and fill xsec and trial histo. Sumw2 must be activated.
-    //maker->GetReader()->GetWeightUtils()->SwitchOnMCCrossSectionCalculation(); 
-    //maker->SwitchOnSumw2Histograms();
-    
-    // For recent productions where the cross sections and trials are not stored in separate file
-    //maker->GetReader()->GetWeightUtils()->SwitchOnMCCrossSectionFromEventHeader() ;
-    
-    // Just fill cross section and trials histograms.
-    maker->GetReader()->GetWeightUtils()->SwitchOnMCCrossSectionHistoFill(); 
-    
-    // Add control histogram with pT hard to control aplication of weights 
-    maker->SwitchOnPtHardHistogram();
-  }
-      
-  //
-  // Select events trigger depending on trigger
-  //
-  if(!simulation)
-  {    
-    gROOT->LoadMacro("$ALICE_PHYSICS/PWGGA/CaloTrackCorrelations/macros/ConfigureAndGetEventTriggerMaskAndCaloTriggerString.C");
-    TString caloTriggerString = "";
-    UInt_t mask = ConfigureAndGetEventTriggerMaskAndCaloTriggerString(trigger, year, caloTriggerString);
-    
-    task ->SelectCollisionCandidates( mask );
-    maker->GetReader()->SetFiredTriggerClassName(caloTriggerString);
-    printf("AddTaskPi0IMGammaCorrQA - Trigger Mask %d, caloTriggerString <%s>\n", mask, caloTriggerString.Data());
-  }
-
-  //
-  // Final maker settings
-  //
-  maker->SetAnaDebug(debugLevel)  ;
-  maker->SwitchOnHistogramsMaker()  ;
-  maker->SwitchOnAODsMaker() ;
-  maker->SwitchOnDataControlHistograms(); 
-
-  if(debugLevel > 0) maker->Print("");
-  
-  return task;
-}
 
 ///
 /// Configure the class handling the events and cluster/tracks filtering.
@@ -1094,4 +832,270 @@ void SetHistoRangeAndNBins (AliHistogramRanges* histoRanges, TString calorimeter
   else if(collision.Contains("PbPb"))
     histoRanges->SetHistoPtSumRangeAndNBins   (0, 500, 100);
 }
+
+
+///
+/// Main method calling all the configuration
+/// Creates a CaloTrackCorr task, configures it and adds it to the analysis manager.
+///
+/// The options that can be passed to the macro are:
+/// \param calorimeter : A string with he calorimeter used to measure the trigger particle.
+/// \param simulation : A bool identifying the data as simulation.
+/// \param collision: A string with the colliding system.
+/// \param period : A string with the data period: LHC11h, LHC15n ... from it we extract the year.
+/// \param qaan: execute the detector QA analysis.
+/// \param hadronan: execute the track QA and cluster-track correlation analysis.
+/// \param calibrate: if OADB was updated with calibration parameters not used in reconstruction, apply them here.
+/// \param minTime: minimum time cut, leave it open by default even if calibration available, ns
+/// \param maxTime: maximum time cut, leave it open by default even if calibration available, ns
+/// \param minCen : An int to select the minimum centrality, -1 means no selection.
+/// \param maxCen : An int to select the maximum centrality, -1 means no selection.
+/// \param debugLevel : An int to define the debug level of all the tasks.
+/// \param suffix : A string with the type of trigger (default: MB, EMC).
+///
+AliAnalysisTaskCaloTrackCorrelation *AddTaskPi0IMGammaCorrQA(const TString  calorimeter   = "EMCAL",
+                                                             Bool_t   simulation    = kFALSE,
+                                                             TString  collision     = "pp",
+                                                             TString  period        = "",
+                                                             const Bool_t   qaan          = kTRUE,
+                                                             const Bool_t   hadronan      = kTRUE,
+                                                             const Bool_t   calibrate     = kFALSE,
+                                                             const Int_t    minTime       = -1000,
+                                                             const Int_t    maxTime       =  1000,
+                                                             const Int_t    minCen        = -1,
+                                                             const Int_t    maxCen        = -1,
+                                                             const Int_t    debugLevel    = -1,
+                                                             const char *   suffix        = "default"
+                                                             )
+{
+  // Check the global variables, and reset the provided ones if empty.
+  //
+  TString trigger  = suffix;
+  
+  TString colType  = gSystem->Getenv("ALIEN_JDL_LPMINTERACTIONTYPE");
+  TString prodType = gSystem->Getenv("ALIEN_JDL_LPMPRODUCTIONTAG");
+  
+  if(collision=="") // Check the alien environment 
+  {
+    if      (colType.Contains( "PbPb")) collision = "PbPb"; 
+    else if (colType.Contains( "XeXe")) collision = "PbPb"; 
+    else if (colType.Contains( "AA"  )) collision = "PbPb"; 
+    else if (colType.Contains( "pA"  )) collision = "pPb"; 
+    else if (colType.Contains( "Ap"  )) collision = "pPb";     
+    else if (colType.Contains( "pPb" )) collision = "pPb"; 
+    else if (colType.Contains( "Pbp" )) collision = "pPb"; 
+    else if (colType.Contains( "pp"  )) collision = "pp" ; 
+    
+    // Check if production is MC or data, of data recover period name
+    if   ( prodType.Contains("MC") ) simulation = kTRUE;
+    else                             simulation = kFALSE;
+    
+    if   ( !simulation  && period!="" ) period = prodType;
+    
+    // print check on global settings once
+    if ( trigger.Contains("default") ||trigger.Contains("INT") || trigger.Contains("MB") )
+      printf("AddTaskClusterShape() - Get the data features from global parameters: collision <%s> (<%s>), "
+             "period <%s>, production Type <%s>, mc bool <%d> \n",
+             colType.Data(),collision.Data(),
+             period.Data(),prodType.Data(),simulation);
+  }
+  
+  Int_t year = 2017;
+  if ( period!="" )
+  {
+    if     (period.Contains("16")) year = 2016;
+    else if(period.Contains("15")) year = 2015;
+    else if(period.Contains("13")) year = 2013;
+    else if(period.Contains("12")) year = 2012;
+    else if(period.Contains("11")) year = 2011;
+    else if(period.Contains("10")) year = 2010;
+  }
+  
+  
+  // Get the pointer to the existing analysis manager via the static access method.
+  //
+  AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
+  if (!mgr) 
+  {
+    ::Error("AddTaskPi0IMGammaCorrQA", "No analysis manager to connect to.");
+    return NULL;
+  }  
+  
+  // Check the analysis type using the event handlers connected to the analysis manager.
+  //
+  if (!mgr->GetInputEventHandler()) 
+  {
+    ::Error("AddTaskPi0IMGammaCorrQA", "This task requires an input event handler");
+    return NULL;
+  }
+  
+  //
+  // Create task
+  //
+  
+  // Name for containers
+  TString containerName = Form("%s_Trig_%s",calorimeter.Data(), trigger.Data());
+  
+  if(collision!="pp" && maxCen>=0) containerName+=Form("Cen%d_%d",minCen,maxCen);
+  
+  TString taskName =Form("Pi0IM_GammaTrackCorr_%s",containerName.Data());
+  
+  AliAnalysisTaskCaloTrackCorrelation * task = new AliAnalysisTaskCaloTrackCorrelation (taskName);
+  //task->SetConfigFileName(""); //Don't configure the analysis via configuration file.
+  task->SetDebugLevel(debugLevel);
+  //task->SetBranches("ESD:AliESDRun.,AliESDHeader");
+  //task->SetBranches("AOD:header,tracks,vertices,emcalCells,caloClusters");
+  
+  //
+  // Init main analysis maker and pass it to the task
+  AliAnaCaloTrackCorrMaker * maker = new AliAnaCaloTrackCorrMaker();
+  task->SetAnalysisMaker(maker);
+  
+  //
+  // Pass the task to the analysis manager
+  mgr->AddTask(task);
+  
+  //
+  // Create containers
+  TString outputfile = AliAnalysisManager::GetCommonFileName();
+  
+  AliAnalysisDataContainer *cout_pc   = mgr->CreateContainer(trigger, TList::Class(),
+                                                             AliAnalysisManager::kOutputContainer, 
+                                                             Form("%s:%s",outputfile.Data(),Form("Pi0IM_GammaTrackCorr_%s",calorimeter.Data())));
+  
+  AliAnalysisDataContainer *cout_cuts = mgr->CreateContainer(Form("Param_%s",trigger.Data()), TList::Class(),
+                                                             AliAnalysisManager::kParamContainer, 
+                                                             Form("%s_Parameters.root",Form("Pi0IM_GammaTrackCorr_%s",calorimeter.Data())));
+  
+  // Create ONLY the output containers for the data produced by the task.
+  // Get and connect other common input/output containers via the manager as below
+  mgr->ConnectInput  (task, 0, mgr->GetCommonInputContainer());
+  mgr->ConnectOutput (task, 1, cout_pc);
+  mgr->ConnectOutput (task, 2, cout_cuts);
+  //==============================================================================
+  
+  // Do not configure the wagon for certain analysis combinations
+  // But create the task so that the sub-wagon train can run
+  //
+  gROOT->LoadMacro("$ALICE_PHYSICS/PWGGA/CaloTrackCorrelations/macros/CheckActiveEMCalTriggerPerPeriod.C");
+  Bool_t doAnalysis = CheckActiveEMCalTriggerPerPeriod(simulation,trigger,period,year);
+  if(!doAnalysis) 
+  {
+    maker->SwitchOffProcessEvent();
+    return task;
+  }
+  
+  // #### Start analysis configuration ####
+  //  
+  TString inputDataType = mgr->GetInputEventHandler()->GetDataType(); // can be "ESD" or "AOD"
+  
+  // Make sure the B field is enabled for track selection, some cuts need it
+  //
+  ((AliInputEventHandler*)mgr->GetInputEventHandler())->SetNeedField(kTRUE);
+  
+  // Print settings to check all is as expected
+  //
+  printf("AddTaskPi0IMGammaCorrQA - Task NAME: %s \n",taskName.Data());
+  
+  printf("AddTaskPi0IMGammaCorrQA - Settings: data <%s>, calo <%s>, MC <%d>, collision <%s>, trigger <%s>, period <%s>, year <%d>,\n"
+         "\t \t \t  CaloQA on <%d>, Track QA on <%d>, Make corrections <%d>, %d < time < %d, %d < cen < %d, debug level <%d> \n", 
+         inputDataType.Data(), calorimeter.Data(),simulation, collision.Data(),trigger.Data(), period.Data(), year,
+         qaan , hadronan, calibrate, minTime, maxTime, minCen, maxCen, debugLevel);
+  //
+  
+  // General frame setting and configuration
+  maker->SetReader   ( ConfigureReader   (inputDataType,collision,calibrate,minTime,maxTime,minCen,maxCen,simulation,year,debugLevel) );
+  if(hadronan)maker->GetReader()->SwitchOnCTS();
+  
+  maker->SetCaloUtils( ConfigureCaloUtils(calorimeter,trigger,simulation,calibrate,year,debugLevel) );
+  
+  // Analysis tasks setting and configuration
+  Int_t n = 0;//Analysis number, order is important
+  
+  // Cell QA
+  if(qaan) maker->AddAnalysis(ConfigureQAAnalysis(calorimeter,collision,
+                                                  //simulation,
+                                                  year,debugLevel),n++);
+  
+  // Analysis with EMCal trigger or MB
+  if ( !trigger.Contains("DCAL") )
+  {
+    // Cluster selection
+    maker->AddAnalysis(ConfigurePhotonAnalysis(calorimeter,0,collision,containerName,simulation,year,debugLevel)       ,n++); 
+    // Previous cluster invariant mass
+    maker->AddAnalysis(ConfigurePi0Analysis   (calorimeter,0,collision,containerName,simulation,year,debugLevel,minCen),n++);     
+    if(hadronan)
+    {
+      // Isolation of selected clusters by AliAnaPhoton
+      maker->AddAnalysis(ConfigureIsolationAnalysis("Photon",calorimeter,0,collision,containerName,simulation,year,debugLevel), n++);
+      // Selected clusters-track correlation
+      maker->AddAnalysis(ConfigureHadronCorrelationAnalysis("Photon",calorimeter,0,collision,containerName,simulation,year,debugLevel,minCen), n++); 
+    }
+  }
+  
+  // Analysis with DCal trigger or MB
+  if(year > 2014 && calorimeter=="EMCAL" && !trigger.Contains("EMCAL"))
+  {
+    // Cluster selection
+    maker->AddAnalysis(ConfigurePhotonAnalysis(calorimeter,1,collision,containerName,simulation,year,debugLevel)       , n++); 
+    // Previous cluster invariant mass
+    maker->AddAnalysis(ConfigurePi0Analysis   (calorimeter,1,collision,containerName,simulation,year,debugLevel,minCen),n++); 
+    if(hadronan)
+    {
+      // Isolation of selected clusters by AliAnaPhoton
+      maker->AddAnalysis(ConfigureIsolationAnalysis("Photon",calorimeter,1,collision,containerName,simulation,year,debugLevel), n++);
+      // Selected clusters-track correlation
+      maker->AddAnalysis(ConfigureHadronCorrelationAnalysis("Photon",calorimeter,1,collision,containerName,simulation,year,debugLevel,minCen), n++); 
+    }
+  }
+  
+  // Charged tracks plots, any trigger
+  if(hadronan)
+    maker->AddAnalysis(ConfigureChargedAnalysis(collision,containerName,simulation,year,debugLevel), n++); 
+  
+  if(simulation)
+  {
+    // Calculate the cross section weights, apply them to all histograms 
+    // and fill xsec and trial histo. Sumw2 must be activated.
+    //maker->GetReader()->GetWeightUtils()->SwitchOnMCCrossSectionCalculation(); 
+    //maker->SwitchOnSumw2Histograms();
+    
+    // For recent productions where the cross sections and trials are not stored in separate file
+    //maker->GetReader()->GetWeightUtils()->SwitchOnMCCrossSectionFromEventHeader() ;
+    
+    // Just fill cross section and trials histograms.
+    maker->GetReader()->GetWeightUtils()->SwitchOnMCCrossSectionHistoFill(); 
+    
+    // Add control histogram with pT hard to control aplication of weights 
+    maker->SwitchOnPtHardHistogram();
+  }
+  
+  //
+  // Select events trigger depending on trigger
+  //
+  if(!simulation)
+  {    
+    gROOT->LoadMacro("$ALICE_PHYSICS/PWGGA/CaloTrackCorrelations/macros/ConfigureAndGetEventTriggerMaskAndCaloTriggerString.C");
+    TString caloTriggerString = "";
+    UInt_t mask = ConfigureAndGetEventTriggerMaskAndCaloTriggerString(trigger, year, caloTriggerString);
+    
+    task ->SelectCollisionCandidates( mask );
+    maker->GetReader()->SetFiredTriggerClassName(caloTriggerString);
+    printf("AddTaskPi0IMGammaCorrQA - Trigger Mask %d, caloTriggerString <%s>\n", mask, caloTriggerString.Data());
+  }
+  
+  //
+  // Final maker settings
+  //
+  maker->SetAnaDebug(debugLevel)  ;
+  maker->SwitchOnHistogramsMaker()  ;
+  maker->SwitchOnAODsMaker() ;
+  maker->SwitchOnDataControlHistograms(); 
+  
+  if(debugLevel > 0) maker->Print("");
+  
+  return task;
+}
+
+
 
