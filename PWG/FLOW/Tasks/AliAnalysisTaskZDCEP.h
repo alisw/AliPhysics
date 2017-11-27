@@ -53,11 +53,18 @@ public:
   //  called  at  end  of  analysis
   virtual void Terminate(Option_t* option);
 
+  enum DataSet {
+    k2015o_pass1_pass1pidfix,
+    k2015o_muon_calo_pass1,
+  };
+
   void SetZDCCalibList(TList* const wlist) {this->fZDCCalibList = wlist;}
   TList* GetZDCCalibList() const {return this->fZDCCalibList;}
   void SetTowerEqList(TList* const wlist) {this->fTowerEqList = wlist;}
   TList* GetTowerEqList() const {return this->fTowerEqList;}
   void GetZDCQVectors(Double_t QAX, Double_t QAY, Double_t QCX, Double_t QCY);
+  void SetDataSet(DataSet set) {this->fDataSet = set;};
+  DataSet GetDataSet() const {return this->fDataSet;}
 
 private:
 
@@ -80,8 +87,8 @@ private:
   TProfile*   fQVecCen[4][2];      //!
   TProfile3D* fQVecVtx[4][2];      //!
   TProfile*   fQVecCorCen[4][2];   //!
-  TProfile* fQVecDeltaC[4][2];     //!
-  TProfile* fQVecCorDeltaC[4][2];  //!
+  // TProfile* fQVecDeltaC[4][2];     //!
+  // TProfile* fQVecCorDeltaC[4][2];  //!
   TH1D* fEventCounter;             //!
 
   TH3D *fZDCQVecVtxCenEZDC3D[10][10][4]; //!
@@ -89,10 +96,16 @@ private:
 
   AliFlowVector* fZDCFlowVect[2]; //! ZDC q-vectors
   Int_t fCachedRunNum;            //
-  const static Int_t fnRun = 125; //
-  Int_t fRunList[fnRun];          // run list
-  TList *fQVecListRun[fnRun];     //! run-by-run list
-  TProfile2D* fQVecRbR[fnRun];    //!
+  DataSet fDataSet;               //
+  Int_t fnRun;                    //
+  const static Int_t fnRunMax = 200; //
+  TList *fQVecListRun[fnRunMax];        //! run-by-run list
+  TProfile2D* fQVecRbRCen[fnRunMax];    //!
+  TProfile2D* fQVecRbRVtxZ[fnRunMax];   //!
+  const static Int_t fCRCnTow = 5;
+  TProfile *fZNCTower[fnRunMax][fCRCnTow]; //! ZNC tower spectra
+  TProfile *fZNATower[fnRunMax][fCRCnTow]; //! ZNA tower spectra
+  TArrayI fRunList;               // run list
   TArrayD fAvVtxPosX;             // average vx position vs run number
   TArrayD fAvVtxPosY;             // average vy position vs run number
   TArrayD fAvVtxPosZ;             // average vz position vs run number
@@ -106,7 +119,7 @@ private:
   AliAnalysisTaskZDCEP(const AliAnalysisTaskZDCEP&);
   AliAnalysisTaskZDCEP& operator=(const AliAnalysisTaskZDCEP&);
 
-  ClassDef(AliAnalysisTaskZDCEP,4);
+  ClassDef(AliAnalysisTaskZDCEP,5);
 };
 
 #endif
