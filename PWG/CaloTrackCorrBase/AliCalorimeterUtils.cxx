@@ -803,6 +803,93 @@ Bool_t AliCalorimeterUtils::ClusterContainsBadChannel(Int_t calorimeter, UShort_
 }
 
 //_______________________________________________________________
+/// Configure fEMCALRecoUtils with some standard arguments for common analysis configurations
+///
+/// The input parameters:
+/// \param reco: pointer to object to initialize in this macro.
+/// \param bMC: Bool, indicates if data is MC.
+/// \param bExotic: Bool, indicates if exotic clusters are removed.
+/// \param bNonLin: Bool, indicates if non linearity correction is applied on clusters.
+/// \param bRecalE: Bool, indicates if energy recalibration is applied.
+/// \param bBad: Bool, indicates if bad channels/clusters are removed.
+/// \param bRecalT: Bool, indicates if time is calibrated.
+/// \param debug: int debug level, print info on settings in the macro
+///
+//_______________________________________________________________
+void AliCalorimeterUtils::ConfigureEMCALRecoUtils
+(Bool_t  bMC    , Bool_t  bExotic, Bool_t  bNonLin,  
+ Bool_t  bRecalE, Bool_t  bBad   , Bool_t  bRecalT, Int_t   debug)
+{
+  if ( debug > 0 ) printf("ConfigureEMCALRecoUtils() - **** Start ***\n");
+  
+  // Exotic cells removal
+  
+  if(bExotic)
+  {
+    if ( debug > 0 ) printf("ConfigureEMCALRecoUtils() - Remove exotics in EMCAL\n");
+    fEMCALRecoUtils->SwitchOnRejectExoticCell() ;
+    fEMCALRecoUtils->SwitchOnRejectExoticCluster(); 
+    
+    //  fEMCALRecoUtils->SetExoticCellDiffTimeCut(50);     // If |t cell max - t cell in cross| > 50 do not add its energy, avoid 
+    fEMCALRecoUtils->SetExoticCellFractionCut(0.97);   // 1-Ecross/Ecell > 0.97 -> out
+    fEMCALRecoUtils->SetExoticCellMinAmplitudeCut(4.); // 4 GeV    
+  }  
+  
+  // Recalibration factors
+  
+  if(bRecalE && ! bMC)
+  {
+    if ( debug > 0 ) printf("ConfigureEMCALRecoUtils() - Switch on energy recalibration in EMCAL\n");
+    fEMCALRecoUtils->SwitchOnRecalibration();
+    fEMCALRecoUtils->SwitchOnRunDepCorrection();    
+  } 
+  
+  // Remove EMCAL hot channels 
+  
+  if(bBad)
+  {
+    if ( debug > 0 ) printf("ConfigureEMCALRecoUtils() - Switch on bad channels removal in EMCAL\n");
+    fEMCALRecoUtils->SwitchOnBadChannelsRemoval();
+    fEMCALRecoUtils->SwitchOnDistToBadChannelRecalculation();
+  }
+  
+  // *** Time recalibration settings ***
+  
+  if(bRecalT && ! bMC)
+  {
+    if ( debug > 0 ) printf("ConfigureEMCALRecoUtils() - Switch on time recalibration in EMCAL\n");
+    fEMCALRecoUtils->SwitchOnTimeRecalibration();
+    fEMCALRecoUtils->SwitchOnL1PhaseInTimeRecalibration() ;
+  }
+  
+  // Recalculate position with method
+  
+  fEMCALRecoUtils->SetPositionAlgorithm(AliEMCALRecoUtils::kPosTowerGlobal);   
+  
+  // Non linearity
+  
+  if( bNonLin ) 
+  { 
+    if(!bMC)
+    {
+      if ( debug > 0 ) printf("ConfigureEMCALRecoUtils() xxx SET Non linearity correction kBeamTestCorrected xxx\n");
+      fEMCALRecoUtils->SetNonLinearityFunction(AliEMCALRecoUtils::kBeamTestCorrectedv3);
+    }
+    else
+    {       
+      if ( debug > 0 ) printf("ConfigureEMCALRecoUtils() xxx SET Non linearity correction kPi0MCv3 xxx\n");
+      fEMCALRecoUtils->SetNonLinearityFunction(AliEMCALRecoUtils::kPi0MCv3);
+    }
+  }
+  else 
+  {
+    if ( debug > 0 ) printf("ConfigureEMCALRecoUtils() xxx DON'T SET Non linearity correction xxx\n");
+    fEMCALRecoUtils->SetNonLinearityFunction(AliEMCALRecoUtils::kNoCorrection);
+  }
+  
+}
+
+//_______________________________________________________________
 /// Correct cluster energy non linearity.
 //_______________________________________________________________
 void AliCalorimeterUtils::CorrectClusterEnergy(AliVCluster *clus)
