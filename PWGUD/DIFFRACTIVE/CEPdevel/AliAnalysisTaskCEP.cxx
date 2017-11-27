@@ -523,7 +523,6 @@ void AliAnalysisTaskCEP::UserCreateOutputObjects()
   
 }
 
-
 //------------------------------------------------------------------------------
 void AliAnalysisTaskCEP::UserExec(Option_t *)
 {
@@ -1071,10 +1070,13 @@ void AliAnalysisTaskCEP::UserExec(Option_t *)
         stack->Particle(1)->Momentum(lvtmp);
         lvin += lvtmp;
         
-        // for DIME save the CEP particle
+        // for DIME and PYTHIA8-CD save the CEP particle
         // add primaries except for the incoming and outgoing protons
         lvprod = TLorentzVector(0,0,0,0);
-        if ( fMCGenerator.EqualTo("Dime") ) {
+        if ( fMCGenerator.EqualTo("Dime") ||
+             ( fMCGenerator.EqualTo("Pythia") && fMCProcess==106 )
+           )
+        {
           stack->Particle(4)->Momentum(lvtmp);
           lvprod  = lvtmp;
           for (Int_t ii=5; ii<nPrimaries; ii++) {
