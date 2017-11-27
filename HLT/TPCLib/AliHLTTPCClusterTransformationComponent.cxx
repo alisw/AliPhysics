@@ -236,9 +236,13 @@ int AliHLTTPCClusterTransformationComponent::ScanConfigurationArgument(int argc,
       fIsMC = 1;
       HLTDebug("Processing Monte Carlo Data.");
       iRet++;
-  } else if (argument.CompareTo("-use-orig-transform")==0){
+    } else if (argument.CompareTo("-use-orig-transform")==0){
       fUseOrigTransform = 1;
       HLTInfo("Running unmodified original TPC transformation.");
+      iRet++;
+    } else if (argument.CompareTo("-offline-keep-initial-timestamp")==0){
+      fOfflineKeepInitialTimestamp = 1;
+      HLTInfo("Not updating transform timestamp!.");
       iRet++;
     } else {
       iRet = -EINVAL;
@@ -305,7 +309,7 @@ int AliHLTTPCClusterTransformationComponent::DoEvent(const AliHLTComponentEventD
   fBenchmark.StartNewEvent();
   fBenchmark.Start(0);
   
-  if( fOfflineMode && !fInitializeByObjectInDoEvent )
+  if( fOfflineMode && !fInitializeByObjectInDoEvent && !fOfflineKeepInitialTimestamp )
   {
     Long_t eventTimeStamp = GetTimeStamp();
     int err = fgTransform.SetCurrentTimeStamp( eventTimeStamp );
