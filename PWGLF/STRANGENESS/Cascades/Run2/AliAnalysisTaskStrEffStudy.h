@@ -428,6 +428,8 @@ private:
     AliExternalTrackParam *fTreeVariablePosTrack;
     AliExternalTrackParam *fTreeVariableNegTrack;
     
+    AliESDv0 *fTreeVariableOTFV0;
+    
     Float_t fTreeVariableMagneticField;
     
     Float_t fTreeVariablePosOriginalX;
@@ -534,6 +536,9 @@ private:
     AliExternalTrackParam *fTreeCascVarBachTrack;
     AliExternalTrackParam *fTreeCascVarPosTrack;
     AliExternalTrackParam *fTreeCascVarNegTrack;
+    
+    //Sandbox on-the-fly V0 for comparison, please
+    AliESDv0 *fTreeCascVarOTFV0;
     
     Float_t fTreeCascVarMagneticField;
     

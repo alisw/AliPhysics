@@ -3485,7 +3485,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::AddStandardCascadeConfigurati
     lcuts[lIdx][0][14] =  1.2;    lcuts[lIdx][1][14] =   0.8; lcuts[lIdx][2][14] =   0.6; //3D DCA Cascade To PV
     //================================================================================
     
-    //STEP 3: Creation of output objects
+    //STEP 3: Creation of output objectsGet
     
     //Just a counter and one array, please. Nothing else needed
     AliCascadeResult *lCascadeResult[600];
