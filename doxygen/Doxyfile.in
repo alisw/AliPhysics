@@ -798,6 +798,7 @@ INPUT                  = @CMAKE_SOURCE_DIR@/doxygen \
                          @CMAKE_SOURCE_DIR@/PWGPP/EMCAL/ECPi0Macros \
                          @CMAKE_SOURCE_DIR@/PWGPP/EMCAL/ECSingleChMacros \
                          @CMAKE_SOURCE_DIR@/PWGPP/EMCAL/QAMacros \
+			 @CMAKE_SOURCE_DIR@/PWGPP/TPC/macros \
                          @CMAKE_SOURCE_DIR@/PWG/FLOW/Tasks \
                          @CMAKE_SOURCE_DIR@/PWG/FLOW/Base \
                          @CMAKE_SOURCE_DIR@/PWG/CaloTrackCorrBase \

@@ -39,8 +39,23 @@ periodLevelQA()
   cp $ALICE_PHYSICS/PWGPP/TPC/macros/makePeriodTrendingTree.C .
   aliroot -b -q -l "drawPerformanceTPCQAMatchTrends.C(\"trending.root\",\"PbPb\")"
   # aliroot -b -q -l "makePeriodTrendingTree.C(\"trending.root\",\"PbPb\")"
+  if [[ ${dataType} =~ "sim" ]]; then 
+    mcrddir="mcrd_com"
+    mkdir -p $mcrddir
+  fi
+
   makeHTMLindexPerPeriod
+
+  if [[ ${dataType} =~ "sim" ]]; then  
+    echo "running tpcMCValidation.C in " $PWD
+    echo "MC period: $period;" 
+    echo "make direcotry: $mcrddir"
+
+        aliroot -q  "$ALICE_PHYSICS/PWGPP/TPC/macros/tpcMCValidation.C+(\"$period\",\"$mcrddir\")"
+    cd - 
+  fi 
 }
+
 
 makeHTMLindexPerRun()
 {
@@ -82,41 +97,60 @@ fileName="trending.root"
 copyFileFromRemote http://tablefilter.free.fr/TableFilter/tablefilter.js .
 copyFileFromRemote http://methvin.com/splitter/splitter.js .
 
-aliroot -l -b -q $ALICE_PHYSICS/PWGPP/TPC/macros/TPCQAWebpage/rootlogon.C $ALICE_PHYSICS/PWGPP/TPC/macros/TPCQAWebpage/dumpTable.C+\(\"${fileName}\",\"runTable\"\)
+if [[ ${dataType} =~ "sim" ]]; then 
+    aliroot -l -b -q $ALICE_PHYSICS/PWGPP/TPC/macros/TPCQAWebpage/rootlogon.C $ALICE_PHYSICS/PWGPP/TPC/macros/TPCQAWebpage/dumpTable.C+\(\"${fileName}\",\"runTable\"\,\"$period\",\"anchorper\",\"anchorpass\"\)
+else
+    aliroot -l -b -q $ALICE_PHYSICS/PWGPP/TPC/macros/TPCQAWebpage/rootlogon.C $ALICE_PHYSICS/PWGPP/TPC/macros/TPCQAWebpage/dumpTable.C+\(\"${fileName}\",\"runTable\"\)
+fi
 
 #
 # fill html web page
 #
-cat $ALICE_PHYSICS/PWGPP/TPC/macros/TPCQAWebpage/tpcTemplate.html     >   index.html
+
+index="index.html"
+
+if [[ ${dataType} =~ "sim" ]]; then 
+mcrdindex="${mcrddir}/index_mcrd.html"
+else
+mcrdindex=""
+fi
+
+
+cat $ALICE_PHYSICS/PWGPP/TPC/macros/TPCQAWebpage/tpcTemplate.html  | tee -a   >   $index $mcrdindex
 
 ## Write Period Table
-echo "<body class=\"content\">" >> index.html
-echo "<div class=\"topWrapper\">" >> index.html
-echo "<div class=\"leftDiv\">" >> index.html
-cat treePeriodTable.inc  >> index.html ###### Period Table for the upper left corner
-echo "</div>" >> index.html
+echo "<body class=\"content\">" | tee -a $index $mcrdindex
+echo "<div class=\"topWrapper\">" | tee -a $index $mcrdindex
+echo "<div class=\"leftDiv\">" | tee -a $index $mcrdindex
+cat treePeriodTable.inc  | tee -a >> $index
+cat treePeriodTableMCRD.inc  | tee -a >> $mcrdindex ###### Period Table for the upper left corner
+echo "</div>" | tee -a >> $index $mcrdindex
 
 ## Write Canvas for Plots
-echo "<div class=\"rightDiv\">"  >> index.html
-echo "  <canvas width=\"800\" height=\"580\"  id=\"canvasDraw\"/>"  >> index.html
-echo "</div>"  >> index.html
-echo "</div>"  >> index.html
-echo ""  >> index.html
+echo "<div class=\"rightDiv\">"  | tee -a >> $index $mcrdindex
+echo "  <canvas width=\"800\" height=\"580\"  id=\"canvasDraw\"/>"  | tee -a >> $index $mcrdindex
+echo "</div>"  | tee -a >> $index $mcrdindex
+echo "</div>"  | tee -a >> $index $mcrdindex
+echo ""  | tee -a >> $index $mcrdindex
 
 ## Write Custom Query Box and Run Table
-echo "<div class=\"lowerDiv\">"  >> index.html
-echo "<table border=\"0\" cellpadding=\"1\" cellspacing=\"2\">"  >> index.html
-echo "    <tbody>" >> index.html
-echo "        <tr>"  >> index.html
-echo "            <td>Custom query:</td>"  >> index.html
-echo "            <td><input id=\"globalSelectionMI\" class=\"globalSelectionMI\" name=\"globalSelectionMI\" type=\"text\", size=\"50\"></td>"  >> index.html
-echo "        </tr>"  >> index.html
-echo "    </tbody>"  >> index.html
-echo "</table>"  >> index.html
-cat treeRunTable.inc     >> index.html ##### Run Table for the lower corner
-echo "</div>" >> index.html
-echo "</document>"       >> index.html
-#   cat > index.html <<EOF
+echo "<div class=\"lowerDiv\">"  | tee -a >> $index $mcrdindex
+echo "<table border=\"0\" cellpadding=\"1\" cellspacing=\"2\">"  | tee -a >> $index $mcrdindex
+echo "    <tbody>" | tee -a >> $index $mcrdindex
+echo "        <tr>"  | tee -a >> $index $mcrdindex
+echo "            <td>Custom query:</td>"  | tee -a >> $index $mcrdindex
+echo "            <td><input id=\"globalSelectionMI\" class=\"globalSelectionMI\" name=\"globalSelectionMI\" type=\"text\", size=\"50\"></td>"  | tee -a >> $index $mcrdindex
+echo "        </tr>"  | tee -a >> $index $mcrdindex
+echo "    </tbody>"  | tee -a >> $index $mcrdindex
+echo "</table>"  | tee -a >> $index $mcrdindex
+cat treeRunTable.inc     | tee -a >> $index $mcrdindex ##### Run Table for the lower corner
+echo "</div>" | tee -a >> $index $mcrdindex
+echo "</document>"       | tee -a >> $index $mcrdindex
+
+
+
+
+#   cat > $index $mcrdindex <<EOF
 # <div align="left"><br>
 # <h2>Periodical Data Quality</h2>
 # <a href="meanTPCncl_vs_run.png">Mean Number of TPC Clusters</a><br>
@@ -139,10 +173,10 @@ echo "</document>"       >> index.html
 
 # local dir
 # for dir in 000*; do
-#   echo "<a href="${dir}">${dir}</a>" >> index.html
+#   echo "<a href="${dir}">${dir}</a>" | tee -a >> $index $mcrdindex
 # done
 
-#   cat >> index.html <<EOF
+#   cat | tee -a >> $index $mcrdindex <<EOF
 # <br>
 # <p><font size="4">Additional plots</font></p>
 # <a href="occ_AC_Side_IROC_OROC_vs_run.png">Nr of Chambers with lower gain (occupancy)</a><br>

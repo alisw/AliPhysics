@@ -21,19 +21,25 @@
 #include "AliXRDPROOFtoolkit.h"
 #include "TError.h"
 #include "AliTPCPerformanceSummary.h"
-
+#include "AliExternalInfo.h"
+#include "TPRegexp.h" 
 
 TTree * tree=0;
 TString query="";
 TString queryDescriptor="";
 TString queryFormat="";
 TString queryLink="";
+
+TString year="";
+TString pass="";
+TString anchprodname="";
+
 void initTree(const char* fname, const char* treeName);
 void initQuery();
 void dumpWebRunTable(TTree* tree, const char* tableName );
-void dumpWebPeriodTable(TTree* tree, const char* tableName);
-
-void dumpTable(const char *fname, const char * tableName){
+void dumpWebPeriodTable(TTree* tree, const char* tableName, const char* MCper=NULL, const char* anchorper=NULL, const char* anchorpass=NULL);
+void dumpWebPeriodTableMCRD(TTree* tree, const char* tableName,const char* MCper=NULL, const char* anchorper=NULL, const char* anchorpass=NULL);
+void dumpTable(const char *fname, const char * tableName, const char* MCper=NULL, const char* anchorper=NULL, const char* anchorpass=NULL){
   //
   //
   //
@@ -42,7 +48,10 @@ void dumpTable(const char *fname, const char * tableName){
   if (!tree || tree->GetEntries()==0)  initTree(fname,"trending");
   initQuery();
   dumpWebRunTable(tree, tableName);
-  dumpWebPeriodTable(tree, tableName);
+  dumpWebPeriodTable(tree, tableName, MCper, anchorper, anchorpass);
+  if(anchorper!=NULL){
+      dumpWebPeriodTableMCRD(tree, tableName, MCper, anchorper, anchorpass);
+  }
 }
 
 void initTree(const char* fname, const char* treeName){
@@ -218,10 +227,9 @@ void dumpWebRunTable(TTree* tree, const char * tableName  ){
   fclose(fp);
 }
 
-void dumpWebPeriodTable(TTree* tree, const char * tableName  ){
+void dumpWebPeriodTable(TTree* tree, const char * tableName, const char* MCper, const char* anchorper, const char* anchorpass) {
   FILE * fp=0;
   fp = fopen ("treePeriodTable.inc", "w");
-
   fprintf(fp, "\
   <h2 style=\"margin-bottom:3px;margin-top:3px\">TPC QA trending</h2>\n \
   <p style=\"margin-left:10px;margin-top:0px\">\n \
@@ -258,6 +266,61 @@ void dumpWebPeriodTable(TTree* tree, const char * tableName  ){
   <b>MISC</b><br>\n \
   <a class=\"tooltip\" data-tooltip=\"==18\" href=\"occ_AC_Side_IROC_OROC_vs_run.png\">Chambers with lower gain (occupancy)</a><br>\n \
   <a class=\"tooltip\" data-tooltip=\"\" href=\"prodinfo\">Production information</a>\n \
-  </p>\n \
   ");
+  if(anchorper==NULL){
+
+      fprintf(fp, "\
+                  </p>\n \
+                  ");
+  }
+  else{                 //remove hard coded mcrd_com directory/filename name!?  
+  //Get directory of anchor production
+  AliExternalInfo i;   
+
+  TString AnchProdNamenPass = i.GetMCPassGuess(TString::Format("%s",MCper));
+  TObjArray *subStrL;
+  subStrL = TPRegexp("(?:[0-9])[0-9]{1}").MatchS(AnchProdNamenPass);
+  year = ((TObjString*)subStrL->At(0))->GetString();
+  
+  subStrL = TPRegexp("pass(.*)").MatchS(AnchProdNamenPass);
+  pass = ((TObjString*)subStrL->At(0))->GetString();
+  
+  subStrL = TPRegexp("^([^ ]+)").MatchS(AnchProdNamenPass);
+  anchprodname = ((TObjString*)subStrL->At(0))->GetString();
+  
+  fprintf(fp, "\
+  <br>\n <b>MCRD</b><br>\n \
+  <a class=\"tooltip\" data-tooltip=\"==18\" href=\"mcrd_com/index_mcrd.html\">MC-RD comparison</a><br>\n \
+  <a class=\"tooltip\" data-tooltip=\"==18\" href=\"../../../../data/20%s/%s/%s/index.html\">RD QA</a><br>\n \
+                  </p>\n \
+                  ",year.Data(),anchprodname.Data(),pass.Data());      
+  
+  }
+   
 }
+
+
+void dumpWebPeriodTableMCRD(TTree* tree, const char * tableName,const char* MCper, const char* anchorper, const char* anchorpass) {
+  FILE * fp=0;
+  fp = fopen ("treePeriodTableMCRD.inc", "w");
+  fprintf(fp, "\
+  <h2 style=\"margin-bottom:3px;margin-top:3px\">TPC QA trending: MC - RD comparison</h2>\n \
+  <p style=\"margin-left:10px;margin-top:0px\">\n \
+  <b>MC - RD comparison</b><br>\n \
+  <a class=\"tooltip\" data-tooltip=\">> 120\" href=\"matchingTPC-ITSEffe.png\">TPC-ITS Matching Eff.</a><br>\n \
+  <a class=\"tooltip\" data-tooltip=\">> 120\" href=\"matchingTPC-ITSEffe_1.png\">TPC-ITS Matching Eff1</a><br>\n \
+  <a class=\"tooltip\" data-tooltip=\">> 120\" href=\"matchingTPC-ITSEffe_2.png\">TPC-ITS Matching Eff2</a><br>\n \
+  <a class=\"tooltip\" data-tooltip=\">> 120\" href=\"matchingTPC-ITSEffe3.png\">TPC-ITS Matching Eff3</a><br>\n \
+  <a class=\"tooltip\" data-tooltip=\">> 120\" href=\"meanTPCNclRatiMCtoAnchor.png\">meanTPCNclRatiMCtoAnchor</a><br>\n \
+  <a class=\"tooltip\" data-tooltip=\">> 120\" href=\"meanTPCNclMCtoAnchor.png\">meanTPCNclMCtoAnchor</a><br>\n \
+  <a class=\"tooltip\" data-tooltip=\">> 120\" href=\"rmsDCAAt1pt0MCtoAnchor.png\">rmsDCAAt1pt0MCtoAnchor</a><br>\n \
+  <a class=\"tooltip\" data-tooltip=\">> 120\" href=\"rmsDCAMultSpartMCtoAnchor.png\">rmsDCAMultSpartMCtoAnchor</a><br>\n \
+  <br>\n <b>MC</b><br>\n \
+  <a class=\"tooltip\" data-tooltip=\"==18\" href=\"../index.html\">MC QA</a><br>\n \
+  <a class=\"tooltip\" data-tooltip=\"==18\" href=\"../../../../../data/20%s/%s/%s/index.html\">RD QA</a><br>\n \
+                  </p>\n \
+                  ",year.Data(),anchprodname.Data(),pass.Data());      
+  
+  }
+   
+
