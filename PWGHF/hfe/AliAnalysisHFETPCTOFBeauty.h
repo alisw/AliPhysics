@@ -247,7 +247,8 @@ private:
     TH2F                *fDCAz_pt_ele;//!
     TH2F                *fDCAxy_pt_ele;//!
     TH1F                *fPtMCeta;//!
-
+    TH1F                *hCharmMotherPt;//!
+	TH1F                *hBeautyMotherPt;//!
     
     
     //For the HFE package
