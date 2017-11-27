@@ -841,7 +841,15 @@ void AliAnalysisTaskCMEV0::UserExec(Option_t *)
    if(!pTrack1->InPOISelection())
    continue;
 
-
+   if(bFillEtaPhiNUA){
+     if(dChrg1>0){
+       fHist3DEtaPhiVz_Pos_Run[cForNUA][runindex]->Fill(VtxZ,dPhi1,dEta1);
+     }
+     else if(dChrg1<0){
+       fHist3DEtaPhiVz_Neg_Run[cForNUA][runindex]->Fill(VtxZ,dPhi1,dEta1);
+     }
+   }
+   /*
    if(bFillEtaPhiNUA){
      if(dChrg1>0){
        fHist3DEtaPhiVz_Pos_Run[iVzNUA][runindex]->Fill(dPt1,dPhi1,dEta1);
@@ -849,7 +857,7 @@ void AliAnalysisTaskCMEV0::UserExec(Option_t *)
      else if(dChrg1<0){
        fHist3DEtaPhiVz_Neg_Run[iVzNUA][runindex]->Fill(dPt1,dPhi1,dEta1);
      }
-   }
+   }*/
 
    if(bApplyNUACorr){
      //get NUA weights: 
@@ -1190,11 +1198,11 @@ void AliAnalysisTaskCMEV0::UserExec(Option_t *)
 
 
 //V0A-V0C EP resolution:
- fHist_Reso2n_EP_Norm_Det[QAindex][0]->Fill(EvtCent, TMath::Cos(p*(Psi2V0A-Psi2V0C)));
+ fHist_Reso2n_EP_Norm_Det[QAindex][0]->Fill(EvtCent, TMath::Cos(psiN*(Psi2V0A-Psi2V0C)));
 //V0A-TPC EP resolution:
- fHist_Reso2n_EP_Norm_Det[QAindex][1]->Fill(EvtCent, TMath::Cos(p*(Psi2V0A-Psi2TPC)));
+ fHist_Reso2n_EP_Norm_Det[QAindex][1]->Fill(EvtCent, TMath::Cos(psiN*(Psi2V0A-Psi2TPC)));
 //V0C-TPC EP resolution:
- fHist_Reso2n_EP_Norm_Det[QAindex][2]->Fill(EvtCent, TMath::Cos(p*(Psi2V0C-Psi2TPC)));
+ fHist_Reso2n_EP_Norm_Det[QAindex][2]->Fill(EvtCent, TMath::Cos(psiN*(Psi2V0C-Psi2TPC)));
 
  fHV0AEventPlaneVsCent->Fill(EvtCent,Psi2V0A);
  fHV0CEventPlaneVsCent->Fill(EvtCent,Psi2V0C);
@@ -2771,7 +2779,7 @@ void AliAnalysisTaskCMEV0::DefineHistograms(){
 
 
 
-  /*
+  
   Int_t gCentForNUA[5] = {0,5,10,40,90};
 
   if(bFillEtaPhiNUA) {
@@ -2788,14 +2796,14 @@ void AliAnalysisTaskCMEV0::DefineHistograms(){
       fListCalibs->Add(fHist3DEtaPhiVz_Neg_Run[i][j]);
     }
    }
-  }*/
+  }
 
 
 
   //pT Dependent NUA correction:
   fVzBinFinderForNUA = new TH1F("fVzBinFinderForNUA","",4,-10,10);
   fListCalibs->Add(fVzBinFinderForNUA);
-
+  /*
   Double_t pTbinNUA[16] = {0.2,0.4,0.6,0.8,1.0,1.2,1.4,1.6,1.8,2.0,2.4,2.6,3.0,3.5,4.0,5.0};
   Double_t etabinNUA[9] = {-0.8,-0.6,-0.4,-0.2,0.0,0.2,0.4,0.6,0.8}; 
   Double_t phibinNUA[51] = {0.,};
@@ -2819,7 +2827,7 @@ void AliAnalysisTaskCMEV0::DefineHistograms(){
     }
    }
   }
-
+  */
 
 
 
