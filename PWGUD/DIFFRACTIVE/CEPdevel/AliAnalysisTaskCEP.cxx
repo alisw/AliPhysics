@@ -639,7 +639,7 @@ void AliAnalysisTaskCEP::UserExec(Option_t *)
   
   // EMCAL information
   Int_t *nCaloCluster = new Int_t[2];
-  Double_t *CaloEnergy= new Double_t[2];
+  Double_t *CaloEnergy = new Double_t[2];
   if (flEMC) fCEPUtil->EMCAnalysis(fESDEvent,flEMC,nCaloCluster,CaloEnergy);
 
   // count number of recorded triggers
@@ -1214,8 +1214,8 @@ void AliAnalysisTaskCEP::UserExec(Option_t *)
     delete TTindices;
     TTindices = 0x0;
   }
-  delete nCaloCluster;
-  delete CaloEnergy;
+  delete [] nCaloCluster;
+  delete [] CaloEnergy;
 
 }
 
