@@ -2719,3 +2719,49 @@ void AliESDEvent::AdjustMCLabels(const AliVEvent *mcTruth)
   
   
 }
+
+//________________________________________________
+void AliESDEvent::EmptyOfflineV0Prongs()
+{
+  // fill redundant prongs info by 0 for offline v0s;
+  Int_t nv0=GetNumberOfV0s();
+  const double par0[5]={0.}, cov0[15]={0.};
+  for (Int_t n=0; n<nv0; n++) {
+    AliESDv0 *v0=GetV0(n);
+    if (v0->GetOnFlyStatus()) continue;
+    AliExternalTrackParam *parP = (AliExternalTrackParam*) v0->GetParamP();
+    AliExternalTrackParam *parN = (AliExternalTrackParam*) v0->GetParamN();
+    parP->Set(parP->GetX(),0.,par0,cov0);
+    parN->Set(parP->GetX(),0.,par0,cov0);
+  }
+}
+
+//________________________________________________
+void AliESDEvent::RestoreOfflineV0Prongs()
+{
+  // fill redundant prongs info by 0 for offline v0s;
+  Int_t nv0=GetNumberOfV0s();
+  const double par0[5]={0.}, cov0[15]={0.};
+  double bZ = GetMagneticField();
+  for (Int_t n=0; n<nv0; n++) {
+    AliESDv0 *v0=GetV0(n);
+    if (v0->GetOnFlyStatus()) continue;    
+    AliExternalTrackParam *parP = (AliExternalTrackParam*) v0->GetParamP();
+    AliExternalTrackParam *parN = (AliExternalTrackParam*) v0->GetParamN();
+    if (parP->GetSigmaY2()>0. && parP->GetSigmaZ2()>0.) continue; // were not filled by 0s
+    double xP = parP->GetX(), xN = parN->GetX(); // Only X info is valid
+    parP = *GetTrack(GetPindex());
+    parN = *GetTrack(GetNindex());
+    if (!parP->PropagateTo(xP,bZ)) {
+      AliErrorF("Failed to restore V0 prong from track %d at X=%e",GetPindex(),xP);
+      parP->Print();
+      continue;
+    }
+    if (!parN->PropagateTo(xN,bZ)) {
+      AliErrorF("Failed to restore V0 prong from track %d at X=%e",GetPindex(),xP);
+      parP->Print();
+      continue;
+    }
+    //    
+  }
+}

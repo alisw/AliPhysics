@@ -370,6 +370,10 @@ public:
   void  SetNumberOfTPCClusters(int n)       {fNTPCClusters = n;}
 
   Bool_t Clean(Float_t *cleanPars, TObjArray* track2destroy);
+
+  void EmptyOfflineV0Prongs();
+  void RestoreOfflineV0Prongs();
+  
   Bool_t RemoveKink(Int_t i)   const;
   Bool_t RemoveV0(Int_t i)     const;
   AliESDfriendTrack* RemoveTrack(Int_t i)  const;
