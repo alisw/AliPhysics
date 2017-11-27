@@ -495,7 +495,6 @@ AliAnalysisTaskCMEV0::~AliAnalysisTaskCMEV0()
 
 void AliAnalysisTaskCMEV0::UserExec(Option_t *)
 {
-
  Float_t stepCount = 0.5;
  fHist_Event_count->Fill(stepCount); //1
  stepCount++;
@@ -514,7 +513,10 @@ void AliAnalysisTaskCMEV0::UserExec(Option_t *)
 
 
  //---------pileup rejection: --------
- Bool_t kPileupEvent =  CheckEventIsPileUp(aod);
+
+ Bool_t kPileupEvent = kFALSE;
+
+ kPileupEvent = CheckEventIsPileUp(aod);
 
  if(kPileupEvent)    return;
 
@@ -557,13 +559,14 @@ void AliAnalysisTaskCMEV0::UserExec(Option_t *)
  }
 
 
-
  Int_t iCentSPD = centrCL1;
 
  if(iCentSPD >= 90) return;
 
  fHist_Event_count->Fill(stepCount); //4
  stepCount++;
+
+
 
 
  Int_t cIndex = 0;
@@ -586,7 +589,6 @@ void AliAnalysisTaskCMEV0::UserExec(Option_t *)
  }
 
 
-
   //------- load v0 calib file of Alex --------
  Int_t runindex = -111;
  Int_t runNumber = aod->GetRunNumber();
@@ -600,7 +602,7 @@ void AliAnalysisTaskCMEV0::UserExec(Option_t *)
    if(bApplyNUACorr){
      GetNUACorrectionHist(runNumber,sFileNUA);
    }
-   if(bApplyZDCCorr){
+   if(bApplyZDCCorr && sDataSet=="2015"){
      GetZDCCorrectionHist(runNumber);
    }
    fOldRunNum = runNumber;
@@ -638,7 +640,7 @@ void AliAnalysisTaskCMEV0::UserExec(Option_t *)
    QxanCor = Qxan;
    QxcnCor = Qxcn;
 
-   if(fHarmonicPsi != 4.){
+   if(psiN != 4.){
      QxanCor = (Qxan - fQxnmV0A->GetBinContent(iCentSPD+1))/fQxnsV0A->GetBinContent(iCentSPD+1);
      QxcnCor = (Qxcn - fQxnmV0C->GetBinContent(iCentSPD+1))/fQxnsV0C->GetBinContent(iCentSPD+1);
    }
@@ -698,7 +700,7 @@ void AliAnalysisTaskCMEV0::UserExec(Option_t *)
    energyZPA = energyZPA * fHCorrectZDNP->GetBinContent((abs(EvtCent)+1),4);
  }
 
- /*
+ 
  fHEnergyZNCvsCent->Fill(EvtCent,energyZNC);
  fHEnergyZNAvsCent->Fill(EvtCent,energyZNA);
  fHEnergyZPCvsCent->Fill(EvtCent,energyZPC);
@@ -713,7 +715,7 @@ void AliAnalysisTaskCMEV0::UserExec(Option_t *)
    fHEnergyZPCvsZPA->Fill(energyZPC,energyZPA);
    fHEnergyZNCvsZNA->Fill(energyZNC,energyZNA);
  }
- */
+
 
 
 
@@ -746,7 +748,7 @@ void AliAnalysisTaskCMEV0::UserExec(Option_t *)
  Double_t QxAutoNeg[2] = {0.,};  
  Double_t QyAutoNeg[2] = {0.,};
 
- /*
+ 
  //temp: for QA only
  Double_t QxPosQAEta[16] = {0.,};  
  Double_t QyPosQAEta[16] = {0.,};
@@ -758,7 +760,7 @@ void AliAnalysisTaskCMEV0::UserExec(Option_t *)
  Double_t QyAutoNegQAEta[16] = {0.,};
  Double_t MPOIposQAEta[16] = {0.,};
  Double_t MPOInegQAEta[16] = {0.,};
- Int_t    iEtaQA = -1; */
+ Int_t    iEtaQA = -1; 
 
  Double_t AvgCos1n=0.,AvgSin1n=0.;
  //Double_t AvgCos2n=0.,AvgSin2n=0.;
@@ -1003,7 +1005,7 @@ void AliAnalysisTaskCMEV0::UserExec(Option_t *)
 
 
 
-   //iEtaQA = fEtaBinFinderForQA->FindBin(dEta1) - 1;
+   iEtaQA = fEtaBinFinderForQA->FindBin(dEta1) - 1;
 
    if(dChrg1>0){
      QxPos[0] += (ptw1*w1NUA*TMath::Cos(n*dPhi1) - AvgCos1n);
@@ -1013,13 +1015,13 @@ void AliAnalysisTaskCMEV0::UserExec(Option_t *)
      MPOIpos  += w1NUA*ptw1;
      McorrPos += w1NUA*ptw1*w1NUA*ptw1;
      //QA: eta dependence
-     /*if(EvtCent>=10 && EvtCent<20){
+     if(EvtCent>=10 && EvtCent<20){
        QxPosQAEta[iEtaQA] +=  (ptw1*w1NUA*TMath::Cos(n*dPhi1) - AvgCos1n);
        QyPosQAEta[iEtaQA] +=  (ptw1*w1NUA*TMath::Sin(n*dPhi1) - AvgSin1n);
        QxAutoPosQAEta[iEtaQA] += (ptw1*ptw1*w1NUA*w1NUA*TMath::Cos(2.*n*dPhi1) - AvgDWCos2n);
        QyAutoPosQAEta[iEtaQA] += (ptw1*ptw1*w1NUA*w1NUA*TMath::Sin(2.*n*dPhi1) - AvgDWSin2n);
        MPOIposQAEta[iEtaQA]   += w1NUA*ptw1;
-       }*/
+     }
    }
    else if(dChrg1<0){
      QxNeg[0] += (ptw1*w1NUA*TMath::Cos(n*dPhi1) - AvgCos1n);
@@ -1029,19 +1031,19 @@ void AliAnalysisTaskCMEV0::UserExec(Option_t *)
      MPOIneg += w1NUA*ptw1;
      McorrNeg += w1NUA*ptw1*w1NUA*ptw1;
      //QA: eta dependence
-     /*if(EvtCent>=10 && EvtCent<20){
+     if(EvtCent>=10 && EvtCent<20){
        QxNegQAEta[iEtaQA] +=  (ptw1*TMath::Cos(n*dPhi1) - AvgCos1n);
        QyNegQAEta[iEtaQA] +=  (ptw1*TMath::Sin(n*dPhi1) - AvgSin1n);
        QxAutoNegQAEta[iEtaQA] += (ptw1*ptw1*TMath::Cos(2.*n*dPhi1) - AvgDWCos2n);
        QyAutoNegQAEta[iEtaQA] += (ptw1*ptw1*TMath::Sin(2.*n*dPhi1) - AvgDWSin2n);
        MPOInegQAEta[iEtaQA]   += w1NUA*ptw1;
-       }*/
+     }
    }
 
    //QxTPC[0] += ptw1*w1NUA*TMath::Cos(n*dPhi1);
    //QyTPC[0] += ptw1*w1NUA*TMath::Sin(n*dPhi1);
-   QxTPC[1] += ptw1*w1NUA*TMath::Cos(2.*n*dPhi1);
-   QyTPC[1] += ptw1*w1NUA*TMath::Sin(2.*n*dPhi1);
+   QxTPC[1] += ptw1*w1NUA*TMath::Cos(psiN*dPhi1);
+   QyTPC[1] += ptw1*w1NUA*TMath::Sin(psiN*dPhi1);
 
    nRefMult++;
    nRefMultWgt += ptw1*w1NUA;
@@ -1178,8 +1180,9 @@ void AliAnalysisTaskCMEV0::UserExec(Option_t *)
  QTPCIm = QyTPC[1];
 
 
- Double_t Psi2TPC = 0.5*(TMath::ATan2(QTPCIm,QTPCRe));
- if(Psi2TPC < 0.) Psi2TPC += pi;
+ Double_t Psi2TPC = 1./psiN*(TMath::ATan2(QTPCIm,QTPCRe));
+ if(Psi2TPC < 0.) Psi2TPC += 2*pi/psiN;
+
 
  fTPCQnxVsCentRun->Fill(centrCL1,runindex,TMath::Cos(Psi2TPC));
  fTPCQnyVsCentRun->Fill(centrCL1,runindex,TMath::Sin(Psi2TPC));
@@ -1533,7 +1536,7 @@ void AliAnalysisTaskCMEV0::UserExec(Option_t *)
 
 
    //------------ eta depedence -----------------
-   /*Double_t fEtaCent = -100.;
+   Double_t fEtaCent = -100.;
 
    for(int ie=0; ie<16; ie++){
      
@@ -1563,7 +1566,7 @@ void AliAnalysisTaskCMEV0::UserExec(Option_t *)
        fHist_Corr3p_QAEta_EP_V0C_PP[QAindex]->Fill(fEtaCent,TwoQpQpV,uPM*(uPM-1.));
        fHist_Corr3p_QAEta_EP_V0C_NN[QAindex]->Fill(fEtaCent,TwoQnQnV,uNM*(uNM-1.));
      }
-   }*/
+   }
    //---------------------------------------
 
 
@@ -1612,10 +1615,10 @@ void AliAnalysisTaskCMEV0::UserExec(Option_t *)
  
  fHist_Event_count->Fill(9.5);
 
- //if(fievent%20==0) {
- //std::cout<<"irun = "<<runindex<<" n "<<n<<" m = "<<m<<" p = "<<p<<" cent= "<<EvtCent<<"\tsumMa= "<<sumMa<<"\tQxA = "<<QxanCor<<std::endl;
- //std::cout<<" cent= "<<EvtCent<<"\teZNC= "<<energyZNC<<"\teZPC = "<<energyZPC<<"\teZNA= "<<energyZNA<<"\teZPA = "<<energyZPA<<std::endl;
- //}
+//if(fievent%20==0) {
+  //cout<<"irun = "<<runindex<<" n "<<n<<" m = "<<m<<" p = "<<p<<" cent= "<<EvtCent<<"\tiCentSPD = "<<iCentSPD<<"\tsumMa= "<<sumMa<<"\tQxA = "<<QxanCor<<endl;
+  //cout<<" cent= "<<EvtCent<<"\teZNC= "<<energyZNC<<"\teZPC = "<<energyZPC<<"\teZNA= "<<energyZNA<<"\teZPA = "<<energyZPA<<endl;
+//}
 
  fievent++;
 
@@ -2270,7 +2273,12 @@ void AliAnalysisTaskCMEV0::InitializeRunArray(TString sPeriod){
 
  Int_t runArray_2015[90] = {246994, 246991, 246989, 246984, 246982, 246980, 246948, 246945, 246928, 246871, 246870, 246867, 246865, 246864, 246859, 246858, 246851, 246847, 246846, 246845, 246844, 246810, 246809, 246808, 246807, 246805, 246804, 246766, 246765, 246763, 246760, 246759, 246758, 246757, 246751, 246750, 246676, 246675, 246540, 246495, 246493, 246488, 246487, 246434, 246431, 246428, 246424, 246276, 246275, 246272, 246271, 246225, 246222, 246217, 246185, 246182, 246181, 246180, 246178, 246153, 246152, 246151, 246148, 246115, 246113, 246089, 246087, 246053, 246052, 246049, 246048, 246042, 246037, 246036, 246012, 246003, 246001, 245963, 245954, 245952, 245949, 245923, 245833, 245831, 245829, 245705, 245702, 245700, 245692, 245683};
 
- Int_t runArray_pPb_13cpass2[14] = {195677, 195675, 195673, 195644, 195635, 195633, 195596, 195593, 195592, 195568, 195567, 195566, 195531, 195529};
+//Int_t runArray_pPb_13cpass2[14] = {195677, 195675, 195673, 195644, 195635, 195633, 195596, 195593, 195592, 195568, 195567, 195566, 195531, 195529};
+
+ Int_t runArray_pPb_16q_pass1[32] = {265309, 265332, 265334, 265335, 265336, 265338, 265339, 265342, 265343, 265344, 265377, 265378, 265381, 265383, 265384, 265385, 265387, 265388, 265419, 265420, 265421, 265422, 265424, 265425, 265426, 265427, 265435, 265499, 265500, 265501, 265521, 265525}; 
+
+ 
+
 
  if(sPeriod=="2010"){
   fRunFlag = 89;
@@ -2288,9 +2296,9 @@ void AliAnalysisTaskCMEV0::InitializeRunArray(TString sPeriod){
     runNums[i] = runArray_2015[i];
  }
  else if(sPeriod=="2015pPb" || sPeriod=="pPb"){
-  fRunFlag = 14;
+  fRunFlag = 32;
   for(int i=0;i<fRunFlag;i++)
-    runNums[i] = runArray_pPb_13cpass2[i];
+    runNums[i] = runArray_pPb_16q_pass1[i];
  }
 
 

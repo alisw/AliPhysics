@@ -37,7 +37,7 @@ class AliAnalysisTaskCMEV0;
   taskFE->SetQAOn(bEventCutsQA);
   taskFE->SetAnalysisType(sAnalysisType); //sanalysisType = AUTOMATIC see the initializers!!
 
-  if(sDataSet=="2015"){
+  if(sDataSet=="2015"||sDataSet=="2015pPb"){
     taskFE->SelectCollisionCandidates(AliVEvent::kINT7);
   }
   else{
@@ -50,10 +50,15 @@ class AliAnalysisTaskCMEV0;
   AliFlowEventCuts *cutsEvent = new AliFlowEventCuts(taskFEname);
   cutsEvent->SetCheckPileup(kFALSE);
   cutsEvent->SetPrimaryVertexZrange(dVertexLow, dVertexHigh);      // vertex-z cut
-  cutsEvent->SetQA(bEventCutsQA);                                      // enable the qa plots
-  cutsEvent->SetCutTPCmultiplicityOutliersAOD(kTRUE); 	               // multiplicity outlier cut
+  cutsEvent->SetQA(bEventCutsQA);                                  // enable the qa plots
+  if(sDataSet=="2015pPb"){
+    cutsEvent->SetCutTPCmultiplicityOutliersAOD(kFALSE); 	   // multiplicity outlier cut
+  }
+  else {
+    cutsEvent->SetCutTPCmultiplicityOutliersAOD(kTRUE); 	 
+  }
 
-  if(sDataSet=="2015")
+  if(sDataSet=="2015"||sDataSet=="2015pPb")
   {
    cutsEvent->SetCentralityPercentileRange(dcentrMin, dcentrMax, kTRUE);
   }
@@ -91,6 +96,8 @@ class AliAnalysisTaskCMEV0;
   RefMultCuts->SetPtRange(fpTLow,fpTHigh);
   RefMultCuts->SetEtaRange(fEtaLow,fEtaHigh);
   RefMultCuts->SetAcceptKinkDaughters(kFALSE);
+  
+
 
   cutsEvent->SetRefMultCuts(RefMultCuts);
   cutsEvent->SetRefMultMethod(AliFlowEventCuts::kTPConly);
@@ -135,7 +142,7 @@ class AliAnalysisTaskCMEV0;
 
   taskFE->SetCutsRP(cutsRP);
   taskFE->SetCutsPOI(cutsPOI);
-  taskFE->SetSubeventEtaRange(-5.0,-2.0, 2.0,5.0);
+  taskFE->SetSubeventEtaRange(-5.5,-4.0, 4.0,5.5);
 
 
   // Finally add the task to the manager
@@ -175,7 +182,7 @@ class AliAnalysisTaskCMEV0;
 
   AliAnalysisTaskCMEV0 *taskQC_prot = new AliAnalysisTaskCMEV0(TaskZDCflow);
 
-  if(sDataSet == "2015")
+  if(sDataSet == "2015"||sDataSet == "2015pPb")
   {
     taskQC_prot->SelectCollisionCandidates(AliVEvent::kINT7);
   }
@@ -197,13 +204,15 @@ class AliAnalysisTaskCMEV0;
   taskQC_prot->SetApplyZDCCorr(bZDCGainEq);
   taskQC_prot->SetApplyNUAinEP(bUseNUAinEP);
   taskQC_prot->SetSourceFileNUA(sNUAtype);
+  //taskQC_prot->SetDebugLevel(0);
+
 
   if(bFBeffi){
     TFile* FileFBeffi  = TFile::Open(sEfficiencyFB,"READ");
     TList* FBEffiListUse = dynamic_cast<TList*>(FileFBeffi->FindObjectAny("fMcEffiHij"));
      
     if(FBEffiListUse) {
-     std::cout<<"\n\n Efficiency Histograms found\n:"<<FBEffiListUse->ls()<<"\n\n"<<std::endl;
+      //std::cout<<"\n\n Efficiency Histograms found\n:"<<FBEffiListUse->ls()<<"\n\n"<<std::endl;
        taskQC_prot->SetFBEfficiencyList(FBEffiListUse);
     }
     else{
