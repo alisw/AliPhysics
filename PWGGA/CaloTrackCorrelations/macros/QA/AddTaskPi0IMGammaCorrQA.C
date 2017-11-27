@@ -45,7 +45,7 @@
 #include "AliESDtrackCuts.h"
 #include "CreateTrackCutsPWGJE.C"
 #include "CheckActiveEMCalTriggerPerPeriod.C"
-#include "ConfigureEMCALRecoUtils.C"
+//#include "ConfigureEMCALRecoUtils.C"
 
 #endif // CINT
 
@@ -294,7 +294,6 @@ AliCalorimeterUtils* ConfigureCaloUtils(TString calorimeter, TString trigger,
   if(!simulation)
     cu->SwitchOnLoadOwnEMCALGeometryMatrices();
   
-  AliEMCALRecoUtils * recou = cu->GetEMCALRecoUtils();
   cu->SwitchOffRecalibration(); // Check the reader if it is taken into account during filtering
   cu->SwitchOffRunDepCorrection();
 
@@ -317,16 +316,27 @@ AliCalorimeterUtils* ConfigureCaloUtils(TString calorimeter, TString trigger,
     bTiCalib = kTRUE;
   }
   
-  gROOT->LoadMacro("$ALICE_PHYSICS/PWGPP/EMCAL/macros/ConfigureEMCALRecoUtils.C");
-  ConfigureEMCALRecoUtils(recou,
-                          simulation,
-                          bExotic,
-                          bNonLin,
-                          bEnCalib,
-                          bBadMap,
-                          bTiCalib,
-                          debugLevel
-                          );
+//  AliEMCALRecoUtils * recou = cu->GetEMCALRecoUtils();
+//
+//  gROOT->LoadMacro("$ALICE_PHYSICS/PWGPP/EMCAL/macros/ConfigureEMCALRecoUtils.C");
+//  ConfigureEMCALRecoUtils(recou,
+//                          simulation,
+//                          bExotic,
+//                          bNonLin,
+//                          bEnCalib,
+//                          bBadMap,
+//                          bTiCalib,
+//                          debugLevel
+//                          );
+  
+  cu->ConfigureEMCALRecoUtils(simulation,
+                              bExotic,
+                              bNonLin,
+                              bEnCalib,
+                              bBadMap,
+                              bTiCalib,
+                              debugLevel);
+  
   //recou->SetExoticCellDiffTimeCut(50.);
 
   if(calorimeter=="PHOS")
