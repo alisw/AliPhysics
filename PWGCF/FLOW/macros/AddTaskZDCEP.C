@@ -1,4 +1,6 @@
 AliAnalysisTask * AddTaskZDCEP(TString ZDCCalibFileName,
+                               TString trigger="MB",
+                               TString dataset="pass1",
                                TString Label="",
                                const char* suffix="")
 {
@@ -26,47 +28,54 @@ AliAnalysisTask * AddTaskZDCEP(TString ZDCCalibFileName,
   AnalysisTaskName += Label;
   AnalysisTaskName += suffix;
   AliAnalysisTaskZDCEP *taskZDC = new AliAnalysisTaskZDCEP(AnalysisTaskName);
-  taskZDC->SelectCollisionCandidates(AliVEvent::kINT7);
+  if(trigger=="MB") taskZDC->SelectCollisionCandidates(AliVEvent::kINT7);
+  if(dataset=="pass1") taskZDC->SetDataSet(AliAnalysisTaskZDCEP::k2015o_pass1_pass1pidfix);
+  if(trigger=="muon_single") taskZDC->SelectCollisionCandidates(AliVEvent::kMuonSingleHighPt7 | AliVEvent::kMuonSingleLowPt7);
+  if(dataset=="muon_calo_pass1") taskZDC->SetDataSet(AliAnalysisTaskZDCEP::k2015o_muon_calo_pass1);
 
-  // add list for ZDC towers gain equalization
-  TString ZDCTowerEqFileName = "alien:///alice/cern.ch/user/j/jmargutt/15oHI_EZDCcalib.root";
-  TFile* ZDCTowerEqFile = TFile::Open(ZDCTowerEqFileName,"READ");
-  if(!ZDCTowerEqFile) {
-    cout << "ERROR: ZDC tower equalisation: file not found!" << endl;
-    exit(1);
-  }
-  gROOT->cd();
-  TList* ZDCTowerEqList = (TList*)(ZDCTowerEqFile->FindObjectAny("EZNcalib"));
-  if(ZDCTowerEqList) {
-    taskZDC->SetTowerEqList(ZDCTowerEqList);
-    cout << "ZDC tower equalisation: set! (from " <<  ZDCTowerEqFileName.Data() << ")" << endl;
-  } else {
-    cout << "ERROR: ZDC tower equalisation: EZNcalib TList not found!" << endl;
-    exit(1);
-  }
-  delete ZDCTowerEqFile;
+  if(ZDCCalibFileName!="") {
+    // add list for ZDC towers gain equalization
+    TString ZDCTowerEqFileName = "alien:///alice/cern.ch/user/j/jmargutt/15oHI_EZDCcalib.root";
+    TFile* ZDCTowerEqFile = TFile::Open(ZDCTowerEqFileName,"READ");
+    if(!ZDCTowerEqFile) {
+      cout << "ERROR: ZDC tower equalisation: file not found!" << endl;
+      exit(1);
+    }
+    gROOT->cd();
+    TList* ZDCTowerEqList = (TList*)(ZDCTowerEqFile->FindObjectAny("EZNcalib"));
+    if(ZDCTowerEqList) {
+      taskZDC->SetTowerEqList(ZDCTowerEqList);
+      cout << "ZDC tower equalisation: set! (from " <<  ZDCTowerEqFileName.Data() << ")" << endl;
+    } else {
+      cout << "ERROR: ZDC tower equalisation: EZNcalib TList not found!" << endl;
+      exit(1);
+    }
+    delete ZDCTowerEqFile;
 
-  // add list for ZDC Q-vector re-centering
-  TFile* ZDCCalibFile = TFile::Open(ZDCCalibFileName,"READ");
-  if(!ZDCCalibFile) {
-    cout << "ERROR: ZDC Q-vector calibration: file not found!" << endl;
-    exit(1);
+    // add list for ZDC Q-vector re-centering
+    TFile* ZDCCalibFile = TFile::Open(ZDCCalibFileName,"READ");
+    if(!ZDCCalibFile) {
+      cout << "ERROR: ZDC Q-vector calibration: file not found!" << endl;
+      exit(1);
+    }
+    TList* ZDCCalibList = dynamic_cast<TList*>(ZDCCalibFile->FindObjectAny("Q Vectors"));
+    if(ZDCCalibList) {
+      taskZDC->SetZDCCalibList(ZDCCalibList);
+      cout << "ZDC Q-vector calibration: set! (from " <<  ZDCCalibFileName.Data() << ")" << endl;
+    } else {
+      cout << "ERROR: ZDC Q-vector calibration: Q Vectors TList not found!" << endl;
+      exit(1);
+    }
+    delete ZDCCalibFile;
   }
-  TList* ZDCCalibList = dynamic_cast<TList*>(ZDCCalibFile->FindObjectAny("Q Vectors"));
-  if(ZDCCalibList) {
-    taskZDC->SetZDCCalibList(ZDCCalibList);
-    cout << "ZDC Q-vector calibration: set! (from " <<  ZDCCalibFileName.Data() << ")" << endl;
-  } else {
-    cout << "ERROR: ZDC Q-vector calibration: Q Vectors TList not found!" << endl;
-    exit(1);
-  }
-  delete ZDCCalibFile;
 
   // connect the task to the analysis manager
   mgr->AddTask(taskZDC);
 
   // create a data container for the output of the flow event task
   TString taskZDCEPname = "ZDCEPExchangeContainer";
+  taskZDCEPname += Label;
+  taskZDCEPname += suffix;
   AliAnalysisDataContainer *coutputFE = mgr->CreateContainer(taskZDCEPname,
                                                              AliFlowEventSimple::Class(),
                                                              AliAnalysisManager::kExchangeContainer);
@@ -77,6 +86,8 @@ AliAnalysisTask * AddTaskZDCEP(TString ZDCCalibFileName,
 
   // QA OUTPUT CONTAINER
   TString taskZDCQAname = "AnalysisResults.root:ZDCQA";
+  taskZDCQAname += Label;
+  taskZDCQAname += suffix;
   AliAnalysisDataContainer* coutputZDCQA = mgr->CreateContainer(taskZDCQAname.Data(),
                                                                TList::Class(),
                                                                AliAnalysisManager::kOutputContainer,
