@@ -902,12 +902,12 @@ AliAnalysisTaskCaloTrackCorrelation *AddTaskPi0IMGammaCorrQA(const TString  calo
     if   ( prodType.Contains("MC") ) simulation = kTRUE;
     else                             simulation = kFALSE;
     
-    if   ( !simulation  && period!="" ) period = prodTag;
+    if   ( !simulation && period!="" ) period = prodTag;
     
     // print check on global settings once
-    if ( trigger.Contains("default") ||trigger.Contains("INT") || trigger.Contains("MB") )
+    if ( trigger.Contains("default") || trigger.Contains("INT") || trigger.Contains("MB") )
       printf("AddTaskPi0IMGammaCorrQA() - Get the data features from global parameters: collision <%s> (<%s>), "
-             "period <%s>,  tag <%s>, type <%s>, MC bool <%d> \n",
+             "period <%s>, tag <%s>, type <%s>, MC bool <%d> \n",
              colType.Data(),collision.Data(),
              period.Data(),prodType.Data(),prodTag.Data(),simulation);
   }
