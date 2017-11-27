@@ -75,6 +75,7 @@ AliMeanVertexPreprocessorOffline::~AliMeanVertexPreprocessorOffline()
   //destructor
 
 }
+
 //____________________________________________________
 void AliMeanVertexPreprocessorOffline::ProcessOutput(const char *filename, AliCDBStorage *db, Int_t runNb) {
 
@@ -200,8 +201,35 @@ void AliMeanVertexPreprocessorOffline::ProcessOutput(const char *filename, AliCD
 
 
   const char* whichpass = gSystem->Getenv("CPASSMODE");
-
+  
+  int cPassMode = -1;
   if (whichpass && *whichpass == '0') {
+    cPassMode = 0;
+  }
+  else if (whichpass && *whichpass == '1') {
+    cPassMode = 1;
+  }
+  else {
+    AliFatal("Environment variable CPASSMODE must be set to either 0 or 1");
+  }
+
+  if (cPassMode==1) { 
+    // check if there was a cpass0 already done, i.e. there is a run-specific version of MeanVertex
+    AliCDBEntry* entryMV = manCheck->Get("GRP/Calib/MeanVertex");
+    AliCDBId& idOldMV = entryMV->GetId();
+    AliESDVertex* oldMVtx = (AliESDVertex*)entryMV->GetObject();
+
+    if (idOldMV.GetFirstRun()==0 || idOldMV.GetLastRun()==999999999 ||
+	oldMVtx->GetXRes()>2.8 // > pipe radius --> it's a dummy object, don't use it 
+	) {
+      AliWarningF("In CPass1 old MeanVertex has run range %d:%d and XRes:%.2f "
+		  "-> switch to CPass0 mode with full update of meanVertex",
+		  idOldMV.GetFirstRun(),idOldMV.GetLastRun(),oldMVtx->GetXRes());
+      cPassMode = 0;
+    }
+  }
+    
+  if (cPassMode==0) {
 
     Double_t xMeanVtx=0., yMeanVtx=0., zMeanVtx=0.;
     Double_t xSigmaVtx=0., ySigmaVtx=0., zSigmaVtx=0.;
@@ -728,7 +756,7 @@ void AliMeanVertexPreprocessorOffline::ProcessOutput(const char *filename, AliCD
 
     delete vertex;
   } // end of pass0 case
-  else if (whichpass && *whichpass == '1') {
+  else if (cPassMode == 1) {
     TF1* gs = new TF1("gs", "gaus", -30, 30);
     gs->SetParameters(histSPDvtxZ->GetMaximum(),histSPDvtxZ->GetMean(),histSPDvtxZ->GetRMS());
     TFitResultPtr rSPD = histSPDvtxZ->Fit(gs, "ons");
@@ -752,13 +780,10 @@ void AliMeanVertexPreprocessorOffline::ProcessOutput(const char *filename, AliCD
     else if (!okTRK) rTRK = rSPD;
 
     if (okTRK || okSPD) {
-      ModObject("GRP/Calib/MeanVertex",rTRK->GetParams()[1],rTRK->GetParams()[2], "ZcoordUpdated");
-      ModObject("GRP/Calib/MeanVertexSPD",rSPD->GetParams()[1],rSPD->GetParams()[2], "ZcoordUpdated");
+      ModObject("GRP/Calib/MeanVertex",rTRK->GetParams()[1],rTRK->GetParams()[2], "ZcoordUpdated", db);
+      ModObject("GRP/Calib/MeanVertexSPD",rSPD->GetParams()[1],rSPD->GetParams()[2], "ZcoordUpdated", db);
     }
   } // end of pass1 case
-  else {
-    AliFatal("Environment variable CPASSMODE must be set to either 0 or 1");
-  }
 
   Int_t status=GetStatus();
   if (status == 0) {
@@ -811,7 +836,7 @@ Int_t AliMeanVertexPreprocessorOffline::GetStatus() {
 }
 
 //_______________________________________________________________________________________________
-void AliMeanVertexPreprocessorOffline::ModObject(const char* url, double zv, double zs, const char* commentAdd)
+void AliMeanVertexPreprocessorOffline::ModObject(const char* url, double zv, double zs, const char* commentAdd, AliCDBStorage *db)
 {
   AliCDBManager* man = AliCDBManager::Instance();
   AliCDBEntry* entry = man->Get(url);
@@ -846,8 +871,12 @@ void AliMeanVertexPreprocessorOffline::ModObject(const char* url, double zv, dou
   }
   
   AliCDBId id(url,firstRun,lastRun);
-  man->Put(vtx,id,mdnew); //comment to run locally
-  
+  if (db) {
+    db->Put(vtx,id,mdnew); //comment to run locally
+  }
+  else {
+    man->Put(vtx,id,mdnew); //comment to run locally
+  }  
   //uncomment to run locally 
   //AliCDBStorage* stor = man->GetStorage("local://");
   //stor->Put(vtx,id,mdnew);
