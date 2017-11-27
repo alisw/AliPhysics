@@ -110,14 +110,21 @@ public:
     ReclusterizerException() : std::exception() {}
     virtual ~ReclusterizerException() throw() {}
 
-    const char *what() const throw() { return "Error in reclusterizing in fastjet"; }
+    virtual const char *what() const throw() { return "Error in reclusterizing in fastjet"; }
   };
   class SubstructureException : public std::exception {
   public:
     SubstructureException() : std::exception() {}
     virtual ~SubstructureException() throw() {}
 
-    const char *what() const throw() { return "Error in builing substructure observable"; }
+    virtual const char *what() const throw() { return "Error in builing substructure observable"; }
+  };
+  class SoftDropException : public std::exception {
+  public:
+    SoftDropException() : std::exception() {}
+    virtual ~SoftDropException() throw() {}
+
+    virtual const char *what() const throw() { return "No associated softdrop structure found for jet - softdrop algorithm failing"; }
   };
   enum Reclusterizer_t {
     kCAAlgo = 0,

@@ -886,7 +886,7 @@ TString AliJetContainer::GenerateJetName(EJetType_t jetType, EJetAlgo_t jetAlgo,
   TString radiusString = TString::Format("R%03.0f", radius*100.0);
 
   TString trackString;
-  if (jetType != kNeutralJet && partCont) {
+  if (partCont) { //Neutral jets on particle level, can have praticle containers
     trackString = "_" + TString(partCont->GetTitle());
   }
 

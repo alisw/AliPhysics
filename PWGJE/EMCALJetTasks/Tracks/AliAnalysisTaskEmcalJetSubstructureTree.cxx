@@ -260,17 +260,22 @@ bool AliAnalysisTaskEmcalJetSubstructureTree::Run(){
   nsubjettinessSettings.fBeta = 1.;
   nsubjettinessSettings.fRadius = 0.4;
 
-  std::set<AliEmcalJet *> taglist;
   if(datajets) {
-    AliDebugStream(1) << "In data jets branch: found" <<  datajets->GetNJets() << " jets, " << datajets->GetNAcceptedJets() << " were accepted\n";
+    AliDebugStream(1) << "In data jets branch: found " <<  datajets->GetNJets() << " jets, " << datajets->GetNAcceptedJets() << " were accepted\n";
     AliDebugStream(1) << "Having MC information: " << (mcjets ? TString::Format("yes, with %d jets", mcjets->GetNJets()) : "no") << std::endl; 
+    if(mcjets) {
+      AliDebugStream(1) << "In MC jets branch: found " << mcjets->GetNJets() << " jets, " << mcjets->GetNAcceptedJets() << " were accepted\n";
+    }
     for(auto jet : datajets->accepted()) {
       double pt = jet->Pt(), pz = jet->Pz(), E = jet->E(), M = TMath::Sqrt(E*E - pt*pt - pz*pz);
       AliDebugStream(2) << "Next jet: pt:" << jet->Pt() << ", E: " << E << ", pz: " << pz << ", M(self): " << M << "M(fj)" << jet->M() << std::endl;
       AliEmcalJet *associatedJet = jet->ClosestJet();
 
       if(mcjets) {
-        if(!associatedJet) continue;
+        if(!associatedJet) {
+          AliDebugStream(2) << "Not found associated jet" << std::endl;
+          continue;
+        }
         try {
           DoConstituentQA(jet, tracks, clusters);
           AliJetSubstructureData structureData =  MakeJetSubstructure(*jet, datajets->GetJetRadius() * 2., tracks, clusters, {softdropSettings, nsubjettinessSettings}),
@@ -316,7 +321,6 @@ bool AliAnalysisTaskEmcalJetSubstructureTree::Run(){
       }
     }
   }
-
 
   return true;
 }
@@ -429,7 +433,7 @@ AliJetSubstructureData AliAnalysisTaskEmcalJetSubstructureTree::MakeJetSubstruct
   bool isMC = dynamic_cast<const AliTrackContainer *>(tracks);
   AliDebugStream(2) << "Make new jet substrucutre for " << (isMC ? "MC" : "data") << " jet: Number of tracks " << jet.GetNumberOfTracks() << ", clusters " << jet.GetNumberOfClusters() << std::endl;
   for(int itrk = 0; itrk < jet.GetNumberOfTracks(); itrk++){
-    AliVTrack *track = static_cast<AliVTrack *>(jet.TrackAt(itrk, tracks->GetArray()));
+    auto track = jet.TrackAt(itrk, tracks->GetArray());
     fastjet::PseudoJet constituentTrack(track->Px(), track->Py(), track->Pz(), track->E());
     constituentTrack.set_user_index(jet.TrackAt(itrk));
     constituents.push_back(constituentTrack);
@@ -437,7 +441,7 @@ AliJetSubstructureData AliAnalysisTaskEmcalJetSubstructureTree::MakeJetSubstruct
 
   if(clusters){
     for(int icl = 0; icl < jet.GetNumberOfClusters(); icl++) {
-      AliVCluster *cluster = jet.ClusterAt(icl, clusters->GetArray());
+      auto cluster = jet.ClusterAt(icl, clusters->GetArray());
       TLorentzVector clustervec;
       cluster->GetMomentum(clustervec, fVertex, (AliVCluster::VCluUserDefEnergy_t)clusters->GetDefaultClusterEnergy());
       fastjet::PseudoJet constituentCluster(clustervec.Px(), clustervec.Py(), clustervec.Pz(), cluster->GetHadCorrEnergy());
@@ -460,6 +464,9 @@ AliJetSubstructureData AliAnalysisTaskEmcalJetSubstructureTree::MakeJetSubstruct
   } catch (fastjet::Error &e) {
     AliErrorStream() << " FJ Exception caught: " << e.message() << std::endl;
     throw ReclusterizerException();
+  } catch (SoftDropException &e) {
+    AliErrorStream() << "Softdrop exception caught: " << e.what() << std::endl;
+    throw ReclusterizerException();
   }
 }
 
@@ -469,15 +476,20 @@ AliSoftDropParameters AliAnalysisTaskEmcalJetSubstructureTree::MakeSoftDropParam
   std::unique_ptr<fastjet::contrib::Recluster> reclusterizer(new fastjet::contrib::Recluster(cutparameters.fRecluserAlgo, 1, true));
   softdropAlgorithm.set_reclustering(kTRUE, reclusterizer.get());
   AliDebugStream(4) << "Jet has " << jet.constituents().size() << " constituents" << std::endl;
-  fastjet::PseudoJet groomed = softdropAlgorithm(jet);
+  auto groomed = softdropAlgorithm(jet);
+  try {
+    auto softdropstruct = groomed.structure_of<fastjet::contrib::SoftDrop>();
 
-  AliSoftDropParameters result({groomed.structure_of<fastjet::contrib::SoftDrop>().symmetry(),
-                                groomed.m(),
-                                groomed.structure_of<fastjet::contrib::SoftDrop>().delta_R(),
-                                groomed.perp(),
-                                groomed.structure_of<fastjet::contrib::SoftDrop>().mu(),
-                                groomed.structure_of<fastjet::contrib::SoftDrop>().dropped_count()});
-  return result;
+    AliSoftDropParameters result({softdropstruct.symmetry(),
+                                  groomed.m(),
+                                  softdropstruct.delta_R(),
+                                  groomed.perp(),
+                                  softdropstruct.mu(),
+                                  softdropstruct.dropped_count()});
+    return result;
+  } catch(std::bad_cast &e) {
+    throw SoftDropException(); 
+  }
 }
 
 AliNSubjettinessParameters AliAnalysisTaskEmcalJetSubstructureTree::MakeNsubjettinessParameters(const fastjet::PseudoJet &jet, const AliNSubjettinessDefinition &cut) const {
@@ -495,7 +507,7 @@ Double_t AliAnalysisTaskEmcalJetSubstructureTree::MakeAngularity(const AliEmcalJ
   Double_t den(0.), num(0.);
   if(tracks){
     for(UInt_t itrk = 0; itrk < jet.GetNumberOfTracks(); itrk++) {
-      AliVParticle *track = jet.TrackAt(itrk, tracks->GetArray());
+      auto track = jet.TrackAt(itrk, tracks->GetArray());
       if(!track){
         AliErrorStream() << "Associated constituent particle / track not found\n";
         continue;
@@ -508,7 +520,7 @@ Double_t AliAnalysisTaskEmcalJetSubstructureTree::MakeAngularity(const AliEmcalJ
   }
   if(clusters) {
     for(UInt_t icl = 0; icl < jet.GetNumberOfClusters(); icl++){
-      AliVCluster *clust = jet.ClusterAt(icl, clusters->GetArray());
+      auto clust = jet.ClusterAt(icl, clusters->GetArray());
       if(!clust) {
         AliErrorStream() << "Associated constituent cluster not found\n";
         continue;
@@ -529,7 +541,7 @@ Double_t AliAnalysisTaskEmcalJetSubstructureTree::MakePtD(const AliEmcalJet &jet
   Double_t den(0.), num(0.);
   if(particles){
     for(UInt_t itrk = 0; itrk < jet.GetNumberOfTracks(); itrk++) {
-      AliVParticle *trk = jet.TrackAt(itrk, particles->GetArray());
+      auto trk = jet.TrackAt(itrk, particles->GetArray());
       if(!trk){
         AliErrorStream() << "Associated constituent particle / track not found\n";
         continue;
@@ -540,7 +552,7 @@ Double_t AliAnalysisTaskEmcalJetSubstructureTree::MakePtD(const AliEmcalJet &jet
   }
   if(clusters){
     for(UInt_t icl = 0; icl < jet.GetNumberOfClusters(); icl++){
-      AliVCluster *clust = jet.ClusterAt(icl, clusters->GetArray());
+      auto clust = jet.ClusterAt(icl, clusters->GetArray());
       if(!clust) {
         AliErrorStream() << "Associated constituent cluster not found\n";
         continue;
@@ -556,7 +568,7 @@ Double_t AliAnalysisTaskEmcalJetSubstructureTree::MakePtD(const AliEmcalJet &jet
 
 void AliAnalysisTaskEmcalJetSubstructureTree::DoConstituentQA(const AliEmcalJet *jet, const AliParticleContainer *cont, const AliClusterContainer *clusters){
   for(int icl = 0; icl < jet->GetNumberOfClusters(); icl++){
-    AliVCluster *clust = jet->ClusterAt(icl, clusters->GetArray());
+    auto clust = jet->ClusterAt(icl, clusters->GetArray());
     AliDebugStream(3) << "cluster time " << clust->GetTOF() << std::endl;
     fQAHistos->FillTH2("hClusterConstE", jet->Pt(),clust->GetUserDefEnergy(clusters->GetDefaultClusterEnergy()));
     fQAHistos->FillTH2("hClusterConstTime", jet->Pt(), clust->GetTOF());
@@ -572,14 +584,14 @@ void AliAnalysisTaskEmcalJetSubstructureTree::DoConstituentQA(const AliEmcalJet 
 #ifdef EXPERIMENTAL_JETCONSTITUENTS
   // Loop over charged particles - fill test histogram
   for(int itrk = 0; itrk < jet->GetNumberOfTracks(); itrk++){
-    AliVParticle *part = jet->TrackAt(itrk, cont->GetArray());
+    auto part = jet->TrackAt(itrk, cont->GetArray());
     fQAHistos->FillTH2("hChargedIndexPt", jet->Pt(), part->Pt());
   }
 
   // Look over charged constituents
   AliDebugStream(2) << "Jet: Number of particle constituents: " << jet->GetParticleConstituents().GetEntriesFast() << std::endl;
   for(auto pconst : jet->GetParticleConstituents()) {
-    PWG::JETFW::AliEmcalParticleJetConstituent *part = static_cast<PWG::JETFW::AliEmcalParticleJetConstituent *>(pconst);
+    auto part = static_cast<PWG::JETFW::AliEmcalParticleJetConstituent *>(pconst);
     AliDebugStream(3) << "Found particle constituent with pt " << part->Pt() << ", from VParticle " << part->GetParticle()->Pt() << std::endl;
     fQAHistos->FillTH2("hChargedConstituentPt", jet->Pt(), part->Pt());
   }
@@ -587,7 +599,7 @@ void AliAnalysisTaskEmcalJetSubstructureTree::DoConstituentQA(const AliEmcalJet 
   // Loop over neutral constituents
   AliDebugStream(2) << "Jet: Number of cluster constituents: " << jet->GetClusterConstituents().GetEntriesFast() << std::endl;
   for(auto cconst : jet->GetClusterConstituents()){
-    PWG::JETFW::AliEmcalClusterJetConstituent *clust = static_cast<PWG::JETFW::AliEmcalClusterJetConstituent *>(cconst);
+    auto clust = static_cast<PWG::JETFW::AliEmcalClusterJetConstituent *>(cconst);
     AliDebugStream(3) << "Found cluster constituent with energy " << clust->E() << " using energy definition " << static_cast<int>(clust->GetDefaultEnergyType()) << std::endl;
     fQAHistos->FillTH2("hClusterConstituentEDefault", jet->Pt(), clust->E());
     fQAHistos->FillTH2("hClusterConstituentENLC", jet->Pt(), clust->GetCluster()->GetNonLinCorrEnergy());
