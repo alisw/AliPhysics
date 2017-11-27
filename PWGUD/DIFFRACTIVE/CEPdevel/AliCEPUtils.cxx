@@ -361,14 +361,22 @@ TList* AliCEPUtils::GetEMCQAHists()
 
   // define histograms and graphs and add them to the list lhh
   printf("Preparing EMCAnalysis histograms\n");
-  TH1F* fhh01 = new TH1F("EMCALmult","EMCALmult",500,0.,2.);
+  TH1F* fhh01 = new TH1F("EMCALmult","EMCALmult",200,0.,200.);
   lhh->Add(fhh01);
-  TH1F* fhh02 = new TH1F("PHOSmult","PHOSmult",500,0.,2.);
+  TH1F* fhh02 = new TH1F("PHOSmult","PHOSmult",200,0.,200.);
   lhh->Add(fhh02);
-  TH1F* fhh03 = new TH1F("EMCALEne","EMCALEne",500,0.,2.);
+  TH1F* fhh03 = new TH1F("EMCALEne","EMCALEne",1000,0.,200.);
   lhh->Add(fhh03);
-  TH1F* fhh04 = new TH1F("PHOSEne","PHOSEne",500,0.,2.);
+  TH1F* fhh04 = new TH1F("PHOSEne","PHOSEne",1000,0.,200.);
   lhh->Add(fhh04);
+
+  TH2F* fhh05 = new TH2F("EMC n vs E","EMC n vs E",200,0.,200.,1000,0.,200.);
+  lhh->Add(fhh05);
+  TH2F* fhh06 = new TH2F("PHOS n vs E","PHOS n vs E",200,0.,200.,1000,0.,200.);
+  lhh->Add(fhh06);  
+  
+  TH1F* fhh07 = new TH1F("dBadChannel","dBadChannel",500,0.,50.);
+  lhh->Add(fhh07);
 
   return lhh;
 
@@ -930,6 +938,18 @@ Int_t AliCEPUtils::AnalyzeTracks(AliESDEvent* fESDEvent,
     // add track to buffer
     fTracks->Add(track);
 
+    // get number of hits in various detectors
+    //if (track->HasPointOnITSLayer(0) || track->HasPointOnITSLayer(1)) {
+    if (track->GetEMCALcluster()>=0) {
+      printf("Number of track points %i %i %i %i %i\n",
+        track->GetNumberOfITSClusters(),
+        track->GetNumberOfTPCClusters(),
+        track->GetNumberOfTRDClusters(),
+        track->GetTOFclusterN(),
+        track->GetEMCALcluster());
+    }
+    
+    
     // go through the list of selection tests
     // and update the TrackStatus word trackstat accordingly
     // see AliCEPBase.h for a definition of the TrackStatus word bits
@@ -959,7 +979,7 @@ Int_t AliCEPUtils::AnalyzeTracks(AliESDEvent* fESDEvent,
     }
 
     // is an ITS pure track
-    if (track->GetStatus() & AliESDtrack::kITSpureSA)
+    if (track->IsPureITSStandalone())
       trackstat |=  AliCEPBase::kTTITSpure;
 
     // |Zv-VtxZ| <= fTrackDCAz(6)
@@ -1621,11 +1641,12 @@ void AliCEPUtils::InitTrackCuts(Bool_t IsRun1, Int_t clusterCut)
 // ------------------------------------------------------------------------------
 void AliCEPUtils::EMCAnalysis (
   AliESDEvent *Event,
-  TList *lhh)
+  TList *lhh,
+  Int_t *nCaloCluster, Double_t *CaloEnergy)
 {
 
   Int_t nEMCClus=0, nPHOSClus=0;
-  Double_t ene, EMCEne=0., PHOSEne=0.;
+  Double_t ene=0., dBadChannel=0., EMCEne=0., PHOSEne=0.;
 
   Int_t nClusters = Event->GetNumberOfCaloClusters();
   // printf("\nEMCAL information: %i clusters\n",nClusters);
@@ -1633,17 +1654,20 @@ void AliCEPUtils::EMCAnalysis (
   {
     AliESDCaloCluster *clust = Event->GetCaloCluster(ii);
     ene = clust->E();
+    dBadChannel = clust->GetDistanceToBadChannel();
+    ((TH1F*)lhh->At(6))->Fill(dBadChannel);
+    // printf("Distance to bad channel %f\n",dBadChannel);
     
     // count ...
     // number of clusters on EMC/PHOS
-    // deposited energy
+    // deposited energy, ignore matched clusters
     if (clust->IsEMCAL()) {
       nEMCClus++;
-      EMCEne += ene;
+      if (clust->GetNTracksMatched()<=0) EMCEne += ene;
     }
     if (clust->IsPHOS()) {
       nPHOSClus++;
-      PHOSEne += ene;
+      if (clust->GetNTracksMatched()<=0) PHOSEne += ene;
     }
   
   }
@@ -1653,8 +1677,21 @@ void AliCEPUtils::EMCAnalysis (
   ((TH1F*)lhh->At(1))->Fill(nPHOSClus);
   ((TH1F*)lhh->At(2))->Fill(EMCEne);
   ((TH1F*)lhh->At(3))->Fill(PHOSEne);
+
+  ((TH2F*)lhh->At(4))->Fill(nEMCClus,EMCEne);
+  ((TH2F*)lhh->At(5))->Fill(nPHOSClus,PHOSEne);
   
+  // save to output parameters
+  nCaloCluster[0] = nEMCClus;
+  nCaloCluster[1] = nPHOSClus;
+  CaloEnergy[0]   = EMCEne;
+  CaloEnergy[1]   = PHOSEne;
   
+  //printf("Calorimeter");
+  //for (Int_t ii=0; ii<2; ii++)
+  //  printf(" - %i %f",nCaloCluster[ii],CaloEnergy[ii]);
+  //printf("\n");
+
   // old stuff to keep ====================================================
   /*
   const Double_t *PIDs;
