@@ -69,7 +69,9 @@ AliAnalysisTaskEMCALClusterize::AliAnalysisTaskEMCALClusterize(const char *name)
 , fCaloClusterArr(0),     fCaloCells(0)
 , fRecParam(0),           fClusterizer(0)
 , fUnfolder(0),           fJustUnfold(kFALSE) 
-, fOutputAODBranch(0),    fOutputAODBranchName(""),   fOutputAODBranchSet(0)
+, fOutputAODBranch(0),    fOutputAODBranchName("")   
+, fOutputAODCells (0),    fOutputAODCellsName ("")  
+, fOutputAODBranchSet(0)
 , fFillAODFile(kFALSE),   fFillAODHeader(0)
 , fFillAODCaloCells(0),   fRun(-1)
 , fRecoUtils(0),          fConfigName("")
@@ -128,7 +130,9 @@ AliAnalysisTaskEMCALClusterize::AliAnalysisTaskEMCALClusterize()
 , fCaloClusterArr(0),       fCaloCells(0)
 , fRecParam(0),             fClusterizer(0)
 , fUnfolder(0),             fJustUnfold(kFALSE) 
-, fOutputAODBranch(0),      fOutputAODBranchName(""),   fOutputAODBranchSet(0)
+, fOutputAODBranch(0),      fOutputAODBranchName("")
+, fOutputAODCells (0),      fOutputAODCellsName ("")
+, fOutputAODBranchSet(0)
 , fFillAODFile(kFALSE),     fFillAODHeader(0)
 , fFillAODCaloCells(0),     fRun(-1)
 , fRecoUtils(0),            fConfigName("")
@@ -705,10 +709,17 @@ void AliAnalysisTaskEMCALClusterize::CheckAndGetEvent()
   }
   else if( !fOutputAODBranchSet )
   {
-    // Create array and put it in the input event, if output AOD not selected, only once
+    // Create array of clusters/cells and put it in the input event, if output AOD not selected, only once
     InputEvent()->AddObject(fOutputAODBranch);
+    AliInfo(Form("Add AOD clusters branch <%s> to input event",fOutputAODBranchName.Data()));
+    
+    if ( fOutputAODBranchName.Length() > 0 )
+    {
+      InputEvent()->AddObject(fOutputAODCells);
+      AliInfo(Form("Add AOD cells branch <%s> to input event",fOutputAODCellsName.Data()));
+    }
+    
     fOutputAODBranchSet = kTRUE;
-    AliInfo(Form("Add AOD branch <%s> to input event",fOutputAODBranchName.Data()));
   }
 }
 
@@ -1043,6 +1054,9 @@ void AliAnalysisTaskEMCALClusterize::ConfigureEMCALRecoUtils
  Bool_t  bRecalE, Bool_t  bBad   , Bool_t  bRecalT, Int_t   debug)
 {
   if ( debug > 0 ) printf("ConfigureEMCALRecoUtils() - **** Start ***\n");
+  
+  // Init
+  if(!fRecoUtils) fRecoUtils = new AliEMCALRecoUtils ;
   
   // Exotic cells removal
   
@@ -1954,7 +1968,8 @@ void AliAnalysisTaskEMCALClusterize::PrintParam()
   if ( fAccessOCDB ) AliInfo(Form("OCDB path name <%s>", fOCDBpath.Data()));
   if ( fAccessOADB ) AliInfo(Form("OADB path name <%s>", fOADBFilePath.Data()));
   
-  AliInfo(Form("Just Unfold clusters <%d>, new clusters list name <%s>", fJustUnfold, fOutputAODBranchName.Data()));
+  AliInfo(Form("Just Unfold clusters <%d>, new clusters list name <%s>, new cells name <%s>", 
+               fJustUnfold, fOutputAODBranchName.Data(), fOutputAODCellsName.Data()));
   
   if ( fFillAODFile ) AliInfo(Form("Fill new AOD file with: header <%d>, cells <%d>",fFillAODHeader,fFillAODCaloCells));
   
@@ -2448,10 +2463,11 @@ void AliAnalysisTaskEMCALClusterize::SetClustersMCLabelFromOriginalClusters(AliA
 }
 
 //____________________________________________________________
-// Init geometry, create list of output clusters.
+// Init geometry, create list of output clusters and cells.
 //____________________________________________________________
 void AliAnalysisTaskEMCALClusterize::UserCreateOutputObjects()
 {
+  // Clusters
   fOutputAODBranch = new TClonesArray("AliAODCaloCluster", 0);
 
   if(fOutputAODBranchName.Length()==0)
@@ -2470,16 +2486,22 @@ void AliAnalysisTaskEMCALClusterize::UserCreateOutputObjects()
     
     AddAODBranch("TClonesArray", &fOutputAODBranch);
   }
+  
+  // Cells
+  if ( fOutputAODBranchName.Length() > 0 )
+  {
+    fOutputAODCells = new AliAODCaloCells(fOutputAODCellsName,fOutputAODCellsName,AliAODCaloCells::kEMCALCell); 
+  
+    if( fFillAODFile ) AddAODBranch("AliAODCaloCells", &fOutputAODCells);
+  }
 }
 
 //_______________________________________________________________________
-/// Create a new CaloCells container if calibration or some changes were applied.
+/// Update or create CaloCells container if calibration or some changes were applied.
 /// Delete previouly existing content in the container.
 //________________________________________________________________________
 void AliAnalysisTaskEMCALClusterize::UpdateCells()
-{
-  if ( !fUpdateCell ) return;
-  
+{  
   // Update cells only in case re-calibration was done 
   // or bad map applied or additional T-Card cells added.
   if(!fRecoUtils->IsBadChannelsRemovalSwitchedOn() && 
@@ -2491,7 +2513,13 @@ void AliAnalysisTaskEMCALClusterize::UpdateCells()
   
   const Int_t   ncells = fCaloCells->GetNumberOfCells();
   const Int_t   ndigis = fDigitsArr->GetEntries();
-  if ( ncells != ndigis ) 
+  
+  if ( fOutputAODCellsName.Length() > 0 ) 
+  {
+    fOutputAODCells->DeleteContainer();
+    fOutputAODCells->CreateContainer(ndigis);
+  }
+  else if ( ncells != ndigis ) // update case 
   {
     fCaloCells->DeleteContainer();
     fCaloCells->CreateContainer(ndigis);
@@ -2527,10 +2555,12 @@ void AliAnalysisTaskEMCALClusterize::UpdateCells()
     
     if ( cellMcEDepFrac < 0 ) cellMcEDepFrac = 0.;
       
-    fCaloCells->SetCell(idigit, cellNumber, cellAmplitude, cellTime, cellMcLabel, cellMcEDepFrac, highGain);
+    if ( fUpdateCell ) 
+      fCaloCells     ->SetCell(idigit, cellNumber, cellAmplitude, cellTime, cellMcLabel, cellMcEDepFrac, highGain);
+    else
+      fOutputAODCells->SetCell(idigit, cellNumber, cellAmplitude, cellTime, cellMcLabel, cellMcEDepFrac, highGain);
   }
 }
-
 
 //_______________________________________________________
 /// Do clusterization event by event, execute different steps
@@ -2551,7 +2581,7 @@ void AliAnalysisTaskEMCALClusterize::UserExec(Option_t *)
 
   // Remove the contents of AOD branch output list set in the previous event
   fOutputAODBranch->Clear("C");
-
+  
   LoadBranches();
   
   // Check if there is a centrality value, PbPb analysis, and if a centrality bin selection is requested
@@ -2619,7 +2649,9 @@ void AliAnalysisTaskEMCALClusterize::UserExec(Option_t *)
   
   FillCaloClusterInEvent();
   
-  UpdateCells();
+  if ( fUpdateCell || fOutputAODCellsName.Length() > 0 ) 
+    UpdateCells();
+ 
 }
 
 

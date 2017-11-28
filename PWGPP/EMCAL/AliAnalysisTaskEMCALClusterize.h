@@ -95,6 +95,7 @@ class AliAnalysisTaskEMCALClusterize : public AliAnalysisTaskSE {
   // Outout AOD branch methods
     
   void           SetAODBranchName(TString &name)                { fOutputAODBranchName = name  ; }
+  void           SetAODCellsName(TString &name)                 { fOutputAODCellsName  = name  ; }
   void           FillAODFile(Bool_t yesno)                      { fFillAODFile         = yesno ; }
   void           FillAODCaloCells();
   void           FillAODHeader();
@@ -325,7 +326,9 @@ private:
   
   // AOD
   TClonesArray          *fOutputAODBranch;         //!<! AOD Branch with output clusters
-  TString                fOutputAODBranchName;     ///<  New of output AOD branch
+  TString                fOutputAODBranchName;     ///<  New of output clusters AOD branch
+  AliAODCaloCells       *fOutputAODCells;          //!<! AOD Branch with output cells
+  TString                fOutputAODCellsName;      ///<  New of output cells AOD branch
   Bool_t                 fOutputAODBranchSet ;     ///<  Set the AOD clusters branch in the input event once
   Bool_t                 fFillAODFile;             ///<  Fill the output AOD file with the new clusters, 
                                                    ///<  if not they will be only available for the event they were generated
@@ -419,7 +422,7 @@ private:
   AliAnalysisTaskEMCALClusterize& operator=(const AliAnalysisTaskEMCALClusterize&) ;
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskEMCALClusterize, 39) ;
+  ClassDef(AliAnalysisTaskEMCALClusterize, 40) ;
   /// \endcond
 
 };
