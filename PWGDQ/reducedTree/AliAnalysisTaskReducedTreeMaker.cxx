@@ -22,8 +22,11 @@
 
 #include <TChain.h>
 #include <TH1D.h>
+#include <TH2I.h>
 #include <TFile.h>
 #include <TBits.h>
+#include <TRandom.h>
+#include <TTimeStamp.h>
 
 #include <AliAnalysisTaskSE.h>
 #include <AliCFContainer.h>
@@ -95,6 +98,9 @@ AliAnalysisTaskReducedTreeMaker::AliAnalysisTaskReducedTreeMaker() :
   fTreeWritingOption(kBaseEventsWithBaseTracks),
   fWriteTree(kTRUE),
   fWriteEventsWithNoSelectedTracks(kTRUE),
+  fWriteEventsWithNoSelectedTracksAndNoSelectedAssociatedTracks(kTRUE),
+  fScaleDownEventsWithNoSelectedTracks(0.0),
+  fEventsHistogram(0x0),
   fFillTrackInfo(kTRUE),
   fFillV0Info(kTRUE),
   fFillGammaConversions(kTRUE),
@@ -154,6 +160,9 @@ AliAnalysisTaskReducedTreeMaker::AliAnalysisTaskReducedTreeMaker(const char *nam
   fTreeWritingOption(kBaseEventsWithBaseTracks),
   fWriteTree(writeTree),
   fWriteEventsWithNoSelectedTracks(kTRUE),
+  fWriteEventsWithNoSelectedTracksAndNoSelectedAssociatedTracks(kTRUE),
+  fScaleDownEventsWithNoSelectedTracks(0.0),
+  fEventsHistogram(0x0),
   fFillTrackInfo(kTRUE),
   fFillV0Info(kTRUE),
   fFillGammaConversions(kTRUE),
@@ -206,8 +215,10 @@ AliAnalysisTaskReducedTreeMaker::AliAnalysisTaskReducedTreeMaker(const char *nam
   DefineInput(0,TChain::Class());
   //DefineInput(2,AliAODForwardMult::Class());
   DefineOutput(1, AliReducedBaseEvent::Class());   // reduced information tree
-  if(writeTree)
+  if(writeTree) {
     DefineOutput(2, TTree::Class());   // reduced information tree
+    DefineOutput(3, TH2I::Class());   // reduced information tree
+  }
 }
 
 
@@ -276,14 +287,29 @@ void AliAnalysisTaskReducedTreeMaker::UserCreateOutputObjects()
   for(Int_t i=0;i<AliDielectronVarManager::kNacc;++i) fUsedVars->SetBitNumber(i,kTRUE);
   
   AliDielectronVarManager::SetFillMap(fUsedVars);
+
+  fEventsHistogram = new TH2I("EventStatistics", "Event statistics", 9, -0.5,8.5,32,-0.5,31.5);
+  const Char_t* offlineTriggerNames[32] = {"MB/INT1", "INT7", "MUON", "HighMult/HighMultSPD", "EMC1", "CINT5/INT5", "CMUS5/MUSPB/INT7inMUON",
+     "MuonSingleHighPt7/MUSH7/MUSHPB", "MuonLikeLowPt7/MUL7/MuonLikePB", "MuonUnlikeLowPt7/MUU7/MuonUnlikePB", "EMC7/EMC8", 
+     "MUS7/MuonSingleLowPt7", "PHI1", "PHI7/PHI8/PHOSPb", "EMCEJE", "EMCEGA", "Central/HighMultV0", "SemiCentral", "DG/DG5", "ZED", 
+     "SPI7/SPI", "INT8", "MuonSingleLowPt8", "MuonSingleHighPt8", "MuonLikeLowPt8", "MuonUnlikeLowPt8", "MuonUnlikeLowPt0/INT6", "UserDefined", 
+     "TRD", "N/A", "FastOnly", "N/A"
+  };  
+  const Char_t* selectionNames[9] = {"All PS", "PS and trigger selected", "Event cuts selected", "Rejected (event cuts)", "Rejected (no tracks)", "Rejected (no tracks and no assoc tracks)", "Written (has tracks)", "Written (no tracks, has assoc tracks)", "Written (no tracks, no assoc tracks)"};
+  for(Int_t i=1;i<=32;++i)
+     fEventsHistogram->GetYaxis()->SetBinLabel(i, offlineTriggerNames[i-1]);
+  for(Int_t i=1;i<=9;++i)
+     fEventsHistogram->GetXaxis()->SetBinLabel(i, selectionNames[i-1]);
   
+  // set a seed for the random number generator
+  TTimeStamp ts;
+  gRandom->SetSeed(ts.GetNanoSec());
   
   PostData(1, fReducedEvent);
-  if(fWriteTree)
+  if(fWriteTree) {
     PostData(2, fTree);
-  //if(fFillFriendInfo) PostData(3, fFriendTree);
-  //PostData(2, fFriendTree);
-  //PostData(1, fTree);
+    PostData(3, fEventsHistogram);
+  }
 }
 
 //_________________________________________________________________________________
@@ -308,33 +334,58 @@ void AliAnalysisTaskReducedTreeMaker::UserExec(Option_t *option)
     AliFatal("This task needs the PID response attached to the input event handler!");
   }
 
-  
   // Was event selected ?
   UInt_t isSelected = AliVEvent::kAny;
-  if(fSelectPhysics && inputHandler){
+  if(inputHandler){
     if((isESD && inputHandler->GetEventSelection()) || isAOD){
       isSelected = inputHandler->IsEventSelected();
       isSelected&=fTriggerMask;
     }
   }
-
-  fReducedEvent->ClearEvent();
+  
+  // event statistics after physics selection
+  if(isSelected) {
+     for(Int_t i=0;i<32;++i) 
+        if(inputHandler->IsEventSelected() & (UInt_t(1)<<i)) fEventsHistogram->Fill(1.,Double_t(i));
+  }
+     
+  if(!fSelectPhysics) isSelected = AliVEvent::kAny;
+  
+  // event statistics before any cuts
+  for(Int_t i=0;i<32;++i) 
+     if(inputHandler->IsEventSelected() & (UInt_t(1)<<i)) fEventsHistogram->Fill(0.,Double_t(i));
   
   if(isSelected==0) {
     //cout << "AliAnalysisTaskReducedTreeMaker::UserExec() event is not selected" << endl;
     //PostData(1, fReducedEvent);
     return;
   }
-
+  
   //event filter
   if (fEventFilter) {
-    if (!fEventFilter->IsSelected(InputEvent())) return;
+    if (!fEventFilter->IsSelected(InputEvent())) {
+       // event statistics for events failing selection cuts
+       for(Int_t i=0;i<32;++i) 
+          if(inputHandler->IsEventSelected() & (UInt_t(1)<<i)) fEventsHistogram->Fill(3.,Double_t(i));
+          
+       return;
+    }
   }
   
   //pileup
   if (fRejectPileup){
-    if (InputEvent()->IsPileupFromSPD(3,0.8,3.,2.,5.)) return;
+    if (InputEvent()->IsPileupFromSPD(3,0.8,3.,2.,5.)) {
+       // event statistics for events failing selection cuts
+       for(Int_t i=0;i<32;++i) 
+          if(inputHandler->IsEventSelected() & (UInt_t(1)<<i)) fEventsHistogram->Fill(3.,Double_t(i));
+          
+       return;
+    }
   }
+  
+  // event statistics after event selection cuts
+  for(Int_t i=0;i<32;++i) 
+     if(inputHandler->IsEventSelected() & (UInt_t(1)<<i)) fEventsHistogram->Fill(2.,Double_t(i));
   
   if(fFillMCInfo) {
      Bool_t hasMC=AliDielectronMC::Instance()->HasMC();
@@ -351,6 +402,7 @@ void AliAnalysisTaskReducedTreeMaker::UserExec(Option_t *option)
   AliKFParticle::SetField( bz );
   
   //Fill event wise information
+  fReducedEvent->ClearEvent();
   FillEventInfo();
   
   // NOTE: It is important that FillV0PairInfo() is called before FillTrackInfo()
@@ -359,16 +411,65 @@ void AliAnalysisTaskReducedTreeMaker::UserExec(Option_t *option)
   if(fFillTrackInfo) FillTrackInfo();
  
   if(fWriteTree) {
-    if(fWriteEventsWithNoSelectedTracks) fTree->Fill();
-    if(!fWriteEventsWithNoSelectedTracks && fReducedEvent->fNtracks[1]>0) fTree->Fill();
-  }
+    Bool_t writeEvent = kFALSE;
+    Int_t nTracks = fReducedEvent->fTracks->GetEntries();
+    Int_t nTracks2 = fReducedEvent->fTracks2->GetEntries();
+    if(nTracks>0) {
+       writeEvent = kTRUE;
+       // event statistics, event with tracks -> written
+       for(Int_t i=0;i<32;++i) 
+          if(inputHandler->IsEventSelected() & (UInt_t(1)<<i)) fEventsHistogram->Fill(6.,Double_t(i));
+    }
+    else {
+       if(nTracks2>0) {
+          if(fWriteEventsWithNoSelectedTracks) {
+             writeEvent = kTRUE;
+             // event statistics, event with no POI tracks, but with assoc tracks -> written
+             for(Int_t i=0;i<32;++i) 
+                if(inputHandler->IsEventSelected() & (UInt_t(1)<<i)) fEventsHistogram->Fill(7.,Double_t(i));
+          }
+          else if(gRandom->Rndm()<fScaleDownEventsWithNoSelectedTracks) {
+             writeEvent = kTRUE;
+             // event statistics, event with no POI tracks, but with assoc tracks -> written
+             for(Int_t i=0;i<32;++i) 
+                if(inputHandler->IsEventSelected() & (UInt_t(1)<<i)) fEventsHistogram->Fill(7.,Double_t(i));
+          }
+      }
+      else {
+         if(fWriteEventsWithNoSelectedTracksAndNoSelectedAssociatedTracks) {
+            writeEvent = kTRUE;
+            // event statistics, event with no POI tracks, and no assoc tracks -> written
+            for(Int_t i=0;i<32;++i) 
+               if(inputHandler->IsEventSelected() & (UInt_t(1)<<i)) fEventsHistogram->Fill(8.,Double_t(i));
+         }
+         else if(gRandom->Rndm()<fScaleDownEventsWithNoSelectedTracks) {
+            writeEvent = kTRUE;
+            // event statistics, event with no POI tracks, and no assoc tracks -> written
+            for(Int_t i=0;i<32;++i) 
+               if(inputHandler->IsEventSelected() & (UInt_t(1)<<i)) fEventsHistogram->Fill(8.,Double_t(i));
+         }
+      }  // end else (nTracks2==0)
+    }  // end else(nTracks==0)
+    
+    if(!writeEvent && nTracks==0 && nTracks2==0) {
+       // event statistics, event with no POI tracks, and no assoc tracks -> NOT written
+       for(Int_t i=0;i<32;++i) 
+          if(inputHandler->IsEventSelected() & (UInt_t(1)<<i)) fEventsHistogram->Fill(5.,Double_t(i));
+    }
+    if(!writeEvent && nTracks==0) {
+       // event statistics, event with no POI tracks (may have assoc tracks) -> NOT written
+       for(Int_t i=0;i<32;++i) 
+          if(inputHandler->IsEventSelected() & (UInt_t(1)<<i)) fEventsHistogram->Fill(4.,Double_t(i));
+    }
+    
+    if(writeEvent) fTree->Fill();
+  }  // end if(writeTree)
         
-  // if there are candidate pairs, add the information to the reduced tree
-  //if(fFillFriendInfo) PostData(3, fFriendTree);
   PostData(1, fReducedEvent);
-  //PostData(2, fFriendTree);
-  if(fWriteTree)
+  if(fWriteTree) {
     PostData(2, fTree);
+    PostData(3, fEventsHistogram);
+  }
 }
 
 

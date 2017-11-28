@@ -97,7 +97,11 @@ public:
   void SetFillMCInfo(Bool_t flag=kTRUE)               {fFillMCInfo = flag;}
   void SetFillHFInfo(Bool_t flag=kTRUE)               {fFillHFInfo = flag;}
   void SetFillTRDMatchedTracks(Bool_t flag1=kTRUE, Bool_t flag2=kFALSE)   {fFillTRDMatchedTracks = flag1; fFillAllTRDMatchedTracks=flag2;}
-  void SetWriteEventsWithNoSelectedTracks(Bool_t flag=kTRUE)   {fWriteEventsWithNoSelectedTracks = flag;}
+  void SetWriteEventsWithNoSelectedTracks(Bool_t flag=kTRUE, Double_t scaleDown=1.0)   {
+     fWriteEventsWithNoSelectedTracks = flag; 
+     fScaleDownEventsWithNoSelectedTracks = scaleDown;
+  }
+  void SetWriteEventsWithNoSelectedTracksAndNoSelectedAssociatedTracks(Bool_t flag=kTRUE) {fWriteEventsWithNoSelectedTracksAndNoSelectedAssociatedTracks = flag;}
     
  private:
 
@@ -117,6 +121,9 @@ public:
   Int_t    fTreeWritingOption;     // one of the options described by ETreeWritingOptions
   Bool_t fWriteTree;                   // if kFALSE don't write the tree, use task only to produce on the fly reduced events
   Bool_t fWriteEventsWithNoSelectedTracks;   // write events without any selected tracks
+  Bool_t fWriteEventsWithNoSelectedTracksAndNoSelectedAssociatedTracks;    // write events without tracks in both track arrays
+  Double_t fScaleDownEventsWithNoSelectedTracks;      // scale down factor for events with no selected track candidates in the main track array
+  TH2I*  fEventsHistogram;     // event statistics histogram
   
   Bool_t fFillTrackInfo;             // fill track information
   Bool_t fFillV0Info;                // fill the V0 information
@@ -181,6 +188,6 @@ public:
   AliAnalysisTaskReducedTreeMaker(const AliAnalysisTaskReducedTreeMaker &c);
   AliAnalysisTaskReducedTreeMaker& operator= (const AliAnalysisTaskReducedTreeMaker &c);
 
-  ClassDef(AliAnalysisTaskReducedTreeMaker, 4); //Analysis Task for creating a reduced event information tree 
+  ClassDef(AliAnalysisTaskReducedTreeMaker, 5); //Analysis Task for creating a reduced event information tree 
 };
 #endif
