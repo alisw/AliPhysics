@@ -102,7 +102,8 @@ fMixedEvent(NULL),           fNMixedEvent(0),                 fVertex(NULL),
 fListMixedTracksEvents(),    fListMixedCaloEvents(),
 fLastMixedTracksEvent(-1),   fLastMixedCaloEvent(-1),
 fWriteOutputDeltaAOD(kFALSE),
-fEMCALClustersListName(""),  fZvtxCut(0.),
+fEMCALClustersListName(""),  fEMCALCellsListName(""),  
+fZvtxCut(0.),
 fAcceptFastCluster(kFALSE),  fRemoveLEDEvents(0),
 //Trigger rejection
 fRemoveBadTriggerEvents(0),  fTriggerPatchClusterMatch(0),
@@ -2420,7 +2421,10 @@ void AliCaloTrackReader::FillInputPHOS()
 //____________________________________________
 void AliCaloTrackReader::FillInputEMCALCells()
 {  
-  fEMCALCells = fInputEvent->GetEMCALCells();
+  if(fEMCALCellsListName.Length() == 0)
+    fEMCALCells = fInputEvent->GetEMCALCells();
+  else
+    fEMCALCells = (AliVCaloCells*) fInputEvent->FindListObject(fEMCALCellsListName);
 }
 
 //___________________________________________
