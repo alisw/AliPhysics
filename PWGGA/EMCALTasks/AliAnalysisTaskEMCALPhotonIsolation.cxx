@@ -679,16 +679,18 @@ void AliAnalysisTaskEMCALPhotonIsolation::UserCreateOutputObjects(){
         fOutput->Add(fM02);
 
 	fEtaPhiClusVsM02 = new TH3F ("hEtaVsPhiVsM02", "#eta vs. #varphi vs. #sigma_{long}^{2} for clusters with 14 < #it{E}_{T} < 16 GeV", netabins, etamin, etamax, nphibins, phimin, phimax, 75, 0., 1.5);
-        fEtaPhiClusVsM02->Sumw2();
+	fEtaPhiClusVsM02->Sumw2();
 	fOutput->Add(fEtaPhiClusVsM02);
 
-	fEtaPhiClusVsEtIsoClus = new TH3F ("hEtaVsPhiVsEtIsoClus", "#eta vs. #varphi vs. #Sigma #it{E}_{T}^{clus, cone} for clusters with 14 < #it{E}_{T} < 16 GeV", netabins, etamin, etamax, nphibins, phimin, phimax, 60, 0., 30.);
-        fEtaPhiClusVsEtIsoClus->Sumw2();
-	fOutput->Add(fEtaPhiClusVsEtIsoClus);
+	if(fQA){
+	  fEtaPhiClusVsEtIsoClus = new TH3F ("hEtaVsPhiVsEtIsoClus", "#eta vs. #varphi vs. #Sigma #it{E}_{T}^{clus, cone} for clusters with 14 < #it{E}_{T} < 16 GeV", netabins, etamin, etamax, nphibins, phimin, phimax, 60, 0., 30.);
+	  fEtaPhiClusVsEtIsoClus->Sumw2();
+	  fOutput->Add(fEtaPhiClusVsEtIsoClus);
 
-	fEtaPhiClusVsPtIsoTrack = new TH3F ("hEtaVsPhiVsPtIsoTrack", "#eta vs. #varphi vs. #Sigma #it{p}_{T}^{track, cone} for clusters with 14 < #it{E}_{T} < 16 GeV", netabins, etamin, etamax, nphibins, phimin, phimax, 60, 0., 30.);
-        fEtaPhiClusVsPtIsoTrack->Sumw2();
-	fOutput->Add(fEtaPhiClusVsPtIsoTrack);
+	  fEtaPhiClusVsPtIsoTrack = new TH3F ("hEtaVsPhiVsPtIsoTrack", "#eta vs. #varphi vs. #Sigma #it{p}_{T}^{track, cone} for clusters with 14 < #it{E}_{T} < 16 GeV", netabins, etamin, etamax, nphibins, phimin, phimax, 60, 0., 30.);
+	  fEtaPhiClusVsPtIsoTrack->Sumw2();
+	  fOutput->Add(fEtaPhiClusVsPtIsoTrack);
+	}
 
         fEtIsoClust = new TH2D("hEtIsoClus_NC","#Sigma #it{p}_{T}^{iso cone} in iso cone distribution for Neutral Clusters with EMCal Clusters",200,0.,100.,200,0.,100.);
         fEtIsoClust->SetYTitle("#Sigma #it{p}_{T}^{iso cone} (GeV/c)");
@@ -963,6 +965,14 @@ void AliAnalysisTaskEMCALPhotonIsolation::UserCreateOutputObjects(){
       fEtaBandArea->Sumw2();
       fOutput->Add(fEtaBandArea);
     }
+
+    fClusEtVsEtaPhiMatched = new TH3F ("hEtaVsPhiVsEt_Matched", "#eta vs. #varphi vs. #it{E}_{T} for TRACK-MATCHED clusters", netabins, etamin, etamax, nphibins, phimin, phimax, 60, 0., 60.);
+    fClusEtVsEtaPhiMatched->Sumw2();
+    fOutput->Add(fClusEtVsEtaPhiMatched);
+
+    fClusEtVsEtaPhiUnmatched = new TH3F ("hEtaVsPhiVsEt_Unmatched", "#eta vs. #varphi vs. #it{E}_{T} for NON TRACK-MATCHED clusters", netabins, etamin, etamax, nphibins, phimin, phimax, 60, 0., 60.);
+    fClusEtVsEtaPhiUnmatched->Sumw2();
+    fOutput->Add(fClusEtVsEtaPhiUnmatched);
   }
 
     // Initialization of all the common THistos for the 3 different outputs
@@ -1011,14 +1021,6 @@ void AliAnalysisTaskEMCALPhotonIsolation::UserCreateOutputObjects(){
   fPtaftNLM = new TH1D("hPtaftNLM_NC","#it{p}_{T} distribution for Clusters after NLM cut",200,0.,100.);
   fPtaftNLM->Sumw2();
   fOutput->Add(fPtaftNLM);
-
-  fClusEtVsEtaPhiMatched = new TH3F ("hEtaVsPhiVsEt_Matched", "#eta vs. #varphi vs. #it{E}_{T} for TRACK-MATCHED clusters", netabins, etamin, etamax, nphibins, phimin, phimax, 60, 0., 60.);
-  fClusEtVsEtaPhiMatched->Sumw2();
-  fOutput->Add(fClusEtVsEtaPhiMatched);
-
-  fClusEtVsEtaPhiUnmatched = new TH3F ("hEtaVsPhiVsEt_Unmatched", "#eta vs. #varphi vs. #it{E}_{T} for NON TRACK-MATCHED clusters", netabins, etamin, etamax, nphibins, phimin, phimax, 60, 0., 60.);
-  fClusEtVsEtaPhiUnmatched->Sumw2();
-  fOutput->Add(fClusEtVsEtaPhiUnmatched);
 
   fPtaftTM = new TH1D("hPtaftTM_NC","#it{p}_{T} distribution for Neutral Clusters",200,0.,100.);
   fPtaftTM->Sumw2();
@@ -1236,11 +1238,14 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::SelectCandidate(AliVCluster *coi)
 
   if(fTMClusterRejected){
     if(ClustTrackMatching(coi,kTRUE)){
-      fClusEtVsEtaPhiMatched->Fill(vecCOI.Eta(), vecCOI.Phi(), vecCOI.Pt());
+      if(fQA)
+	fClusEtVsEtaPhiMatched->Fill(vecCOI.Eta(), vecCOI.Phi(), vecCOI.Pt());
       return kFALSE;
     }
-    else
-      fClusEtVsEtaPhiUnmatched->Fill(vecCOI.Eta(), vecCOI.Phi(), vecCOI.Pt());
+    else{
+      if(fQA)
+	fClusEtVsEtaPhiUnmatched->Fill(vecCOI.Eta(), vecCOI.Phi(), vecCOI.Pt());
+    }
   }
 
   fPtaftTM->Fill(vecCOI.Pt());
@@ -2183,7 +2188,7 @@ void AliAnalysisTaskEMCALPhotonIsolation::EtIsoClusPhiBand(TLorentzVector c, Dou
   } // End of tracks loop
 
   fTestEnergyCone->Fill(c.Pt(),sumEnergyConeClus,sumpTConeCharged);
-  if(c.Pt()>14. && c.Pt()<16. && fWho == 2){
+  if(fQA && c.Pt()>14. && c.Pt()<16. && fWho == 2){
     fEtaPhiClusVsEtIsoClus->Fill(c.Eta(),c.Phi(),sumEnergyConeClus);
     fEtaPhiClusVsPtIsoTrack->Fill(c.Eta(),c.Phi(),sumpTConeCharged);
   }
@@ -2408,7 +2413,7 @@ void AliAnalysisTaskEMCALPhotonIsolation::EtIsoClusEtaBand(TLorentzVector c, Dou
     }
   }
 
-  if(c.Pt()>14. && c.Pt()<16. && fWho == 2){
+  if(fQA && c.Pt()>14. && c.Pt()<16. && fWho == 2){
     fEtaPhiClusVsEtIsoClus->Fill(c.Eta(),c.Phi(),sumEnergyConeClus);
     fEtaPhiClusVsPtIsoTrack->Fill(c.Eta(),c.Phi(),sumpTConeCharged);
 
