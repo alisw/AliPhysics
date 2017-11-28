@@ -393,9 +393,9 @@ AliAnalysisCuts* LMEECutLib::GetTrackCutsAna(Int_t cutSet){
             trackCutsAOD->AddCut(AliDielectronVarManager::kImpactParXY,  - 1.0, 1.0);
             trackCutsAOD->AddCut(AliDielectronVarManager::kImpactParZ,   - 3.0, 3.0);
             if(wSDD){
-                trackCutsAOD->AddCut(AliDielectronVarManager::kNclsITS,      4.0, 100.0);
-            }else{
                 trackCutsAOD->AddCut(AliDielectronVarManager::kNclsITS,      3.0, 100.0);
+            }else{
+                trackCutsAOD->AddCut(AliDielectronVarManager::kNclsITS,      2.0, 100.0);
             }
             trackCutsAOD->AddCut(AliDielectronVarManager::kITSchi2Cl,      0.0, 4.5);
             trackCutsAOD->AddCut(AliDielectronVarManager::kNclsTPC,       80.0, 200.);
