@@ -76,7 +76,7 @@ AliReducedBaseEvent::AliReducedBaseEvent(const Char_t* /*name*/, Int_t trackOpti
      fTracks = fgTracks;
   }
   
-  if(track2Option == kUseBaseTracks) {
+  if(track2Option == kUseBaseTracks || track2Option == kNoInit) {
      if(!fgTracks2) fgTracks2 = new TClonesArray("AliReducedBaseTrack", 100000);
      fTracks2 = fgTracks2;
   }
