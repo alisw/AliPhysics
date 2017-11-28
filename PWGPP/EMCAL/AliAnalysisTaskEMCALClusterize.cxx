@@ -1044,6 +1044,9 @@ void AliAnalysisTaskEMCALClusterize::ConfigureEMCALRecoUtils
 {
   if ( debug > 0 ) printf("ConfigureEMCALRecoUtils() - **** Start ***\n");
   
+  // Init
+  if(!fRecoUtils) fRecoUtils = new AliEMCALRecoUtils ; 
+  
   // Exotic cells removal
   
   if(bExotic)
