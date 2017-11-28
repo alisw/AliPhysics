@@ -220,6 +220,8 @@ if(FASTJET_FOUND)
         AliEmcalJetUtilitySoftDrop.cxx
         AliEmcalJetTask.cxx
         AliEmcalJetFinder.cxx
+        AliEmcalJetFinderKernel.cxx
+        AliEmcalJetTaskV1.cxx
         AliJetEmbeddingFromAODTask.cxx
 	AliJetEmbeddingFromPYTHIATask.cxx
         AliJetShape.cxx

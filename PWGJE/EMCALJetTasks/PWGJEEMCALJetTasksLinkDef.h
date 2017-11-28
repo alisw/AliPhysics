@@ -226,6 +226,8 @@
 #pragma link C++ class AliEmcalJetUtilitySoftDrop+;
 #pragma link C++ class AliEmcalJetTask+;
 #pragma link C++ class AliEmcalJetFinder+;
+#pragma link C++ class PWGJE::EMCALJetTasks::AliEmcalJetFinderKernel+;
+#pragma link C++ class PWGJE::EMCALJetTasks::AliEmcalJetTaskV1+;
 #pragma link C++ class AliJetEmbeddingFromAODTask+;
 #pragma link C++ class AliJetEmbeddingFromPYTHIATask+;
 #pragma link C++ class AliAnalysisTaskEmcalQGTagging+;
