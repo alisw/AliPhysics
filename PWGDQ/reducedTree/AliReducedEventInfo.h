@@ -20,7 +20,7 @@ class AliReducedEventInfo : public AliReducedBaseEvent {
   
  public:
   AliReducedEventInfo();
-  AliReducedEventInfo(const Char_t* name, Int_t trackOption = AliReducedBaseEvent::kNoInit);
+  AliReducedEventInfo(const Char_t* name, Int_t trackOption = AliReducedBaseEvent::kNoInit, Int_t track2Option = AliReducedBaseEvent::kNoInit);
   virtual ~AliReducedEventInfo();
 
   virtual void CopyEventHeader(const AliReducedEventInfo* c);

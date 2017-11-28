@@ -379,10 +379,8 @@ void AliReducedAnalysisJpsi2eeMult::RunTrackSelection() {
    
    // loop over the track list and evaluate all the track cuts
    AliReducedTrackInfo* track = 0x0;
-   //TClonesArray* trackList = fEvent->GetTracks();
-   TList* trackList = fEvent->GetTracks();
+   TClonesArray* trackList = fEvent->GetTracks();
    TIter nextTrack(trackList);
-   Float_t nsigma = 0.;
    for(Int_t it=0; it<fEvent->NTracks(); ++it) {
       track = (AliReducedTrackInfo*)nextTrack();
       if(fOptionRunOverMC && track->IsMCTruth()) continue;
@@ -609,10 +607,8 @@ void AliReducedAnalysisJpsi2eeMult::FillMCTruthHistograms() {
   Int_t leg2Id = -1;
   AliReducedTrackInfo* leg1=0x0;
   AliReducedTrackInfo* leg2=0x0;
-  //TClonesArray* trackList = fEvent->GetTracks();
-  TList* trackList = fEvent->GetTracks();
+  TClonesArray* trackList = fEvent->GetTracks();
   TIter nextTrack(trackList);
-  Float_t nsigma = 0.;
   for(Int_t it=0; it<fEvent->NTracks(); ++it) {
      track = (AliReducedTrackInfo*)nextTrack();
      if(!track->IsMCTruth()) continue;
@@ -642,8 +638,7 @@ void AliReducedAnalysisJpsi2eeMult::FindJpsiTruthLegs(AliReducedTrackInfo* mothe
    //
    Int_t mLabel = mother->MCLabel(0);
    AliReducedTrackInfo* track=0x0;
-   //TClonesArray* trackList = fEvent->GetTracks();
-   TList* trackList = fEvent->GetTracks();
+   TClonesArray* trackList = fEvent->GetTracks();
    TIter nextTrack(trackList);
    Int_t legsFound = 0;
    for(Int_t it=0; it<fEvent->NTracks(); ++it) {

@@ -186,8 +186,7 @@ void AliReducedAnalysisTest::Process() {
   }
      
   AliReducedBaseTrack* track = 0x0;
-  //TClonesArray* trackList = fEvent->GetTracks();
-  TList* trackList = fEvent->GetTracks();
+  TClonesArray* trackList = fEvent->GetTracks();
   TIter nextTrack(trackList);
   if(trackList) {
     for(Int_t it=0; it<fEvent->NTracks(); ++it) {
