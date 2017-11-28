@@ -56,6 +56,7 @@ Bool_t AliHLTTPCClusterTransformationComponent::fgTimeInitialisedFromEvent = 0;
 AliHLTTPCClusterTransformationComponent::AliHLTTPCClusterTransformationComponent()
 :
 fOfflineMode(0),
+fOfflineKeepInitialTimestamp(0),
 fInitializeByObjectInDoEvent(0),
 fInitialized(0),
 fTPCPresent(0),
