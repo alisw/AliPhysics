@@ -97,7 +97,7 @@ public:
   void SetFillMCInfo(Bool_t flag=kTRUE)               {fFillMCInfo = flag;}
   void SetFillHFInfo(Bool_t flag=kTRUE)               {fFillHFInfo = flag;}
   void SetFillTRDMatchedTracks(Bool_t flag1=kTRUE, Bool_t flag2=kFALSE)   {fFillTRDMatchedTracks = flag1; fFillAllTRDMatchedTracks=flag2;}
-  void SetWriteEventsWithNoSelectedTracks(Bool_t flag=kTRUE, Double_t scaleDown=1.0)   {
+  void SetWriteEventsWithNoSelectedTracks(Bool_t flag=kTRUE, Double_t scaleDown=0.0)   {
      fWriteEventsWithNoSelectedTracks = flag; 
      fScaleDownEventsWithNoSelectedTracks = scaleDown;
   }
