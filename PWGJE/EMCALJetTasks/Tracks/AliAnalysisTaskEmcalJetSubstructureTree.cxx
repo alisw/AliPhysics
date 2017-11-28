@@ -82,7 +82,13 @@ AliAnalysisTaskEmcalJetSubstructureTree::AliAnalysisTaskEmcalJetSubstructureTree
     fReclusterizer(kCAAlgo),
     fTriggerSelectionBits(AliVEvent::kAny),
     fTriggerSelectionString(""),
-    fUseDownscaleWeight(false)
+    fUseDownscaleWeight(false),
+    fFillPart(true),
+    fFillRho(true),
+    fFillMass(true),
+    fFillSoftDrop(true),
+    fFillNSub(true),
+    fFillStructGlob(true)
 {
   memset(fJetTreeData, 0, sizeof(Double_t) * kTNVar);
 }
@@ -96,7 +102,13 @@ AliAnalysisTaskEmcalJetSubstructureTree::AliAnalysisTaskEmcalJetSubstructureTree
     fReclusterizer(kCAAlgo),
     fTriggerSelectionBits(AliVEvent::kAny),
     fTriggerSelectionString(""),
-    fUseDownscaleWeight(false)
+    fUseDownscaleWeight(false),
+    fFillPart(true),
+    fFillRho(true),
+    fFillMass(true),
+    fFillSoftDrop(true),
+    fFillNSub(true),
+    fFillStructGlob(true)
 {
   memset(fJetTreeData, 0, sizeof(Double_t) * kTNVar);
   DefineOutput(2, TTree::Class());
@@ -179,10 +191,23 @@ void AliAnalysisTaskEmcalJetSubstructureTree::UserCreateOutputObjects() {
   varnames[38] = "NDroppedTrue";
 
   for(int ib = 0; ib < kTNVar; ib++){
-    fJetSubstructureTree->Branch(varnames[ib], fJetTreeData + ib, Form("%s/D", varnames[ib].Data()));
+    LinkOutputBranch(varnames[ib], fJetTreeData + ib);
   }
   PostData(1, fOutput);
   PostData(2, fJetSubstructureTree);
+}
+
+void AliAnalysisTaskEmcalJetSubstructureTree::LinkOutputBranch(const TString &branchname, Double_t *datalocation) {
+  // Check whether branch is rejected
+  if(!fFillPart && IsPartBranch(branchname)) return;
+  if(!fFillRho && IsRhoBranch(branchname)) return;
+  if(!fFillMass && IsMassBranch(branchname)) return;
+  if(!fFillSoftDrop && IsSoftdropBranch(branchname)) return;
+  if(!fFillNSub && IsNSubjettinessBranch(branchname)) return;
+  if(!fFillStructGlob && IsStructbranch(branchname)) return;
+
+  std::cout << "Adding branch " << branchname << std::endl;
+  fJetSubstructureTree->Branch(branchname, datalocation, Form("%s/D", branchname.Data()));  
 }
 
 void AliAnalysisTaskEmcalJetSubstructureTree::RunChanged(Int_t newrun) {
@@ -280,9 +305,9 @@ bool AliAnalysisTaskEmcalJetSubstructureTree::Run(){
         try {
           DoConstituentQA(jet, tracks, clusters);
           AliJetSubstructureData structureData =  MakeJetSubstructure(*jet, datajets->GetJetRadius() * 2., tracks, clusters, {softdropSettings, nsubjettinessSettings}),
-                                 structureMC = MakeJetSubstructure(*associatedJet, mcjets->GetJetRadius() * 2, particles, nullptr, {softdropSettings, nsubjettinessSettings});
-          Double_t angularity[2] = {MakeAngularity(*jet, tracks, clusters), MakeAngularity(*associatedJet, particles, nullptr)},
-                   ptd[2] = {MakePtD(*jet, tracks, clusters), MakePtD(*associatedJet, particles, nullptr)};
+                                 structureMC = fFillPart ? MakeJetSubstructure(*associatedJet, mcjets->GetJetRadius() * 2, particles, nullptr, {softdropSettings, nsubjettinessSettings}) : AliJetSubstructureData();
+          Double_t angularity[2] = {fFillStructGlob ? MakeAngularity(*jet, tracks, clusters) : 0., (fFillStructGlob && fFillPart) ? MakeAngularity(*associatedJet, particles, nullptr) : 0.},
+                   ptd[2] = {fFillStructGlob ? MakePtD(*jet, tracks, clusters) : 0., (fFillStructGlob && fFillPart) ? MakePtD(*associatedJet, particles, nullptr) : 0};
           FillTree(datajets->GetJetRadius(), weight, jet, associatedJet, &(structureData.fSoftDrop), &(structureMC.fSoftDrop), &(structureData.fNsubjettiness), &(structureMC.fNsubjettiness), angularity, ptd, rhoparameters);
         } catch(ReclusterizerException &e) {
           AliErrorStream() << "Error in reclusterization - skipping jet" << std::endl;
@@ -293,8 +318,8 @@ bool AliAnalysisTaskEmcalJetSubstructureTree::Run(){
         try {
           DoConstituentQA(jet, tracks, clusters);
           AliJetSubstructureData structure = MakeJetSubstructure(*jet, 0.4, tracks, clusters, {softdropSettings, nsubjettinessSettings});
-          Double_t angularity[2] = {MakeAngularity(*jet, tracks, clusters), 0.},
-                   ptd[2] = {MakePtD(*jet, tracks, clusters), 0.};
+          Double_t angularity[2] = {fFillStructGlob ? MakeAngularity(*jet, tracks, clusters): 0., 0.},
+                   ptd[2] = {fFillStructGlob ? MakePtD(*jet, tracks, clusters) : 0., 0.};
           FillTree(datajets->GetJetRadius(), weight, jet, nullptr, &(structure.fSoftDrop), nullptr, &(structure.fNsubjettiness), nullptr, angularity, ptd, rhoparameters);
         } catch(ReclusterizerException &e) {
           AliErrorStream() << "Error in reclusterization - skipping jet" << std::endl;
@@ -331,98 +356,78 @@ void AliAnalysisTaskEmcalJetSubstructureTree::FillTree(double r, double weight,
                                                        AliSoftDropParameters *dataSoftdrop, AliSoftDropParameters *mcSoftdrop,
                                                        AliNSubjettinessParameters *dataSubjettiness, AliNSubjettinessParameters *mcSubjettiness,
                                                        Double_t *angularity, Double_t *ptd, Double_t *rhoparameters){
+
+  memset(fJetTreeData,0, sizeof(Double_t) * kTNVar);
   fJetTreeData[kTRadius] = r;
   fJetTreeData[kTWeight] = weight;
-  fJetTreeData[kTRhoPtRec] = rhoparameters[0]; 
-  fJetTreeData[kTRhoPtSim] = rhoparameters[1]; 
-  fJetTreeData[kTRhoMassRec] = rhoparameters[2]; 
-  fJetTreeData[kTRhoMassSim] = rhoparameters[3]; 
+  if(fFillRho){
+    fJetTreeData[kTRhoPtRec] = rhoparameters[0]; 
+    if(fFillMass) fJetTreeData[kTRhoMassRec] = rhoparameters[2]; 
+    if(fFillPart){
+      fJetTreeData[kTRhoPtSim] = rhoparameters[1]; 
+      if(fFillMass) fJetTreeData[kTRhoMassSim] = rhoparameters[3]; 
+    }
+  }
   if(datajet) {
     fJetTreeData[kTPtJetRec] = TMath::Abs(datajet->Pt());
     fJetTreeData[kTNCharged] = datajet->GetNumberOfTracks();
     fJetTreeData[kTNNeutral] = datajet->GetNumberOfClusters();
     fJetTreeData[kTAreaRec] = datajet->Area();
     fJetTreeData[kTNEFRec] = datajet->NEF();
-    fJetTreeData[kTMassRec] = datajet->M();
+    if(fFillMass) fJetTreeData[kTMassRec] = datajet->M();
     fJetTreeData[kTEJetRec] = datajet->E();
-  } else {
-    fJetTreeData[kTPtJetRec] = 0.;
-    fJetTreeData[kTNCharged] = 0;
-    fJetTreeData[kTNNeutral] = 0;
-    fJetTreeData[kTAreaRec] = 0.;
-    fJetTreeData[kTNEFRec] = 0.;
-    fJetTreeData[kTMassRec] = 0.;
-    fJetTreeData[kTEJetRec] = 0.;
   }
 
-  if(mcjet) {
+  if(fFillPart && mcjet){
     fJetTreeData[kTPtJetSim] = TMath::Abs(mcjet->Pt());
     fJetTreeData[kTNConstTrue] = mcjet->GetNumberOfConstituents();
     fJetTreeData[kTAreaSim] = mcjet->Area();
     fJetTreeData[kTNEFSim] = mcjet->NEF();
-    fJetTreeData[kTMassSim] = mcjet->M();
+    if(fFillMass) fJetTreeData[kTMassSim] = mcjet->M();
     fJetTreeData[kTEJetSim] = mcjet->E();
-  } else {
-    fJetTreeData[kTPtJetSim] = 0.;
-    fJetTreeData[kTNConstTrue] = 0;
-    fJetTreeData[kTAreaSim] = 0.;
-    fJetTreeData[kTNEFSim] = 0.;
-    fJetTreeData[kTMassSim] = 0.;
-    fJetTreeData[kTEJetSim] = 0.;
   }
 
-  if(dataSoftdrop) {
-    fJetTreeData[kTZgMeasured] = dataSoftdrop->fZg;
-    fJetTreeData[kTRgMeasured] = dataSoftdrop->fRg;
-    fJetTreeData[kTMgMeasured] = dataSoftdrop->fMg;
-    fJetTreeData[kTPtgMeasured] = dataSoftdrop->fPtg;
-    fJetTreeData[kTMugMeasured] = dataSoftdrop->fMug;
-    fJetTreeData[kTNDroppedMeasured] = dataSoftdrop->fNDropped;
-  } else {
-    fJetTreeData[kTZgMeasured] = 0.;
-    fJetTreeData[kTRgMeasured] = 0.;
-    fJetTreeData[kTMgMeasured] = 0.;
-    fJetTreeData[kTPtgMeasured] = 0.;
-    fJetTreeData[kTMugMeasured] = 0.;
-    fJetTreeData[kTNDroppedMeasured] = 0;
+  if(fFillSoftDrop){
+    if(dataSoftdrop) {
+      fJetTreeData[kTZgMeasured] = dataSoftdrop->fZg;
+      fJetTreeData[kTRgMeasured] = dataSoftdrop->fRg;
+      fJetTreeData[kTMgMeasured] = dataSoftdrop->fMg;
+      fJetTreeData[kTPtgMeasured] = dataSoftdrop->fPtg;
+      fJetTreeData[kTMugMeasured] = dataSoftdrop->fMug;
+      fJetTreeData[kTNDroppedMeasured] = dataSoftdrop->fNDropped;
+    }
+
+    if(fFillPart && mcSoftdrop) {
+      fJetTreeData[kTZgTrue] = mcSoftdrop->fZg;
+      fJetTreeData[kTRgTrue] = mcSoftdrop->fRg;
+      fJetTreeData[kTMgTrue] = mcSoftdrop->fMg;
+      fJetTreeData[kTPtgTrue] = mcSoftdrop->fPtg;
+      fJetTreeData[kTMugTrue] = mcSoftdrop->fMug;
+      fJetTreeData[kTNDroppedTrue] = mcSoftdrop->fNDropped;
+    }
   }
 
-  if(mcSoftdrop) {
-    fJetTreeData[kTZgTrue] = mcSoftdrop->fZg;
-    fJetTreeData[kTRgTrue] = mcSoftdrop->fRg;
-    fJetTreeData[kTMgTrue] = mcSoftdrop->fMg;
-    fJetTreeData[kTPtgTrue] = mcSoftdrop->fPtg;
-    fJetTreeData[kTMugTrue] = mcSoftdrop->fMug;
-    fJetTreeData[kTNDroppedTrue] = mcSoftdrop->fNDropped;
-  } else {
-    fJetTreeData[kTZgTrue] = 0.;
-    fJetTreeData[kTRgTrue] = 0.;
-    fJetTreeData[kTMgTrue] = 0.;
-    fJetTreeData[kTPtgTrue] = 0.;
-    fJetTreeData[kTMugTrue] = 0.;
-    fJetTreeData[kTNDroppedTrue] = 0;
+  if(fFillNSub){
+    if(dataSubjettiness) {
+      fJetTreeData[kTOneNSubjettinessMeasured] = dataSubjettiness->fOneSubjettiness;
+      fJetTreeData[kTTwoNSubjettinessMeasured] = dataSubjettiness->fTwoSubjettiness;
+    }
+
+    if(fFillPart && mcSubjettiness) {
+      fJetTreeData[kTOneNSubjettinessTrue] = mcSubjettiness->fOneSubjettiness;
+      fJetTreeData[kTTwoNSubjettinessTrue] = mcSubjettiness->fTwoSubjettiness;
+    } 
   }
 
-  if(dataSubjettiness) {
-    fJetTreeData[kTOneNSubjettinessMeasured] = dataSubjettiness->fOneSubjettiness;
-    fJetTreeData[kTTwoNSubjettinessMeasured] = dataSubjettiness->fTwoSubjettiness;
-  } else {
-    fJetTreeData[kTOneNSubjettinessMeasured] = 0.;
-    fJetTreeData[kTTwoNSubjettinessMeasured] = 0.;
-  }
+  if(fFillStructGlob){
+    fJetTreeData[kTAngularityMeasured] = angularity[0];
+    fJetTreeData[kTPtDMeasured] = ptd[0];
 
-  if(mcSubjettiness) {
-    fJetTreeData[kTOneNSubjettinessTrue] = mcSubjettiness->fOneSubjettiness;
-    fJetTreeData[kTTwoNSubjettinessTrue] = mcSubjettiness->fTwoSubjettiness;
-  } else {
-    fJetTreeData[kTOneNSubjettinessTrue] = 0.;
-    fJetTreeData[kTTwoNSubjettinessTrue] = 0.;
+    if(fFillPart){
+      fJetTreeData[kTAngularityTrue] = angularity[1];
+      fJetTreeData[kTPtDTrue] = ptd[1];
+    }
   }
-
-  fJetTreeData[kTAngularityMeasured] = angularity[0];
-  fJetTreeData[kTAngularityTrue] = angularity[1];
-  fJetTreeData[kTPtDMeasured] = ptd[0];
-  fJetTreeData[kTPtDTrue] = ptd[1];
 
   fJetSubstructureTree->Fill();
 }
@@ -460,7 +465,7 @@ AliJetSubstructureData AliAnalysisTaskEmcalJetSubstructureTree::MakeJetSubstruct
   try {
     fastjet::ClusterSequence jetfinder(constituents, jetdef);
     outputjets = jetfinder.inclusive_jets(0);
-    AliJetSubstructureData result({MakeSoftDropParameters(outputjets[0], settings.fSoftdropSettings), MakeNsubjettinessParameters(outputjets[0], settings.fSubjettinessSettings)});
+    AliJetSubstructureData result({fFillSoftDrop ? MakeSoftDropParameters(outputjets[0], settings.fSoftdropSettings) : AliSoftDropParameters(), fFillNSub ? MakeNsubjettinessParameters(outputjets[0], settings.fSubjettinessSettings): AliNSubjettinessParameters()});
     return result;
   } catch (fastjet::Error &e) {
     AliErrorStream() << " FJ Exception caught: " << e.message() << std::endl;
@@ -607,6 +612,30 @@ void AliAnalysisTaskEmcalJetSubstructureTree::DoConstituentQA(const AliEmcalJet 
     fQAHistos->FillTH2("hClusterConstituentEHC", jet->Pt(), clust->GetCluster()->GetHadCorrEnergy());
   }
 #endif
+}
+
+bool AliAnalysisTaskEmcalJetSubstructureTree::IsPartBranch(const TString &branchname) const{
+  return branchname.Contains("Sim") || branchname.Contains("True");
+}
+
+bool AliAnalysisTaskEmcalJetSubstructureTree::IsRhoBranch(const TString &branchname) const{
+  return branchname.Contains("Rho");
+}
+
+bool AliAnalysisTaskEmcalJetSubstructureTree::IsMassBranch(const TString &branchname) const{
+  return branchname.Contains("Mass");     // also disable rho mass branch
+}
+
+bool AliAnalysisTaskEmcalJetSubstructureTree::IsSoftdropBranch(const TString &branchname) const{
+  return branchname.Contains("gMeasured") || branchname.Contains("gTrue") || branchname.Contains("NDropped");
+}
+
+bool AliAnalysisTaskEmcalJetSubstructureTree::IsNSubjettinessBranch(const TString &branchname) const{
+  return branchname.Contains("Subjettiness");
+}
+
+bool AliAnalysisTaskEmcalJetSubstructureTree::IsStructbranch(const TString &branchname) const{
+  return branchname.Contains("Angularity") || branchname.Contains("PtD");
 }
 
 AliAnalysisTaskEmcalJetSubstructureTree *AliAnalysisTaskEmcalJetSubstructureTree::AddEmcalJetSubstructureTreeMaker(Bool_t isMC, Bool_t isData, Double_t jetradius, AliJetContainer::EJetType_t jettype, AliJetContainer::ERecoScheme_t recombinationScheme, const char *trigger){
