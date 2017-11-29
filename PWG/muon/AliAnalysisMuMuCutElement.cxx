@@ -80,17 +80,11 @@ Bool_t AliAnalysisMuMuCutElement::CallCutMethod(Long_t p) const
 
   fCallParams[0] = p;
 
-<<<<<<< HEAD
   fCutMethod->SetParamPtrs(&fCallParams[0],fCallParams.size());
-  Long_t result;
-  fCutMethod->Execute(fCutObject,result);
-=======
-  fCutMethod->SetParamPtrs(&fCallParams[0],3);
 
   Long_t result;
   fCutMethod->Execute(fCutObject,result);
-  printf("executed cutmethod 1\n");
->>>>>>> fixed root6
+
   return (result!=0);
 }
 
@@ -101,21 +95,17 @@ Bool_t AliAnalysisMuMuCutElement::CallCutMethod(Long_t p1, Long_t p2) const
 
   if (!fCutMethod)
   {
+
     Init();
     if (!fCutMethod) return kFALSE;
   }
 
   fCallParams[0] = p1;
   fCallParams[1] = p2;
-  fCutMethod->SetParamPtrs(&fCallParams[0],4);
-
-<<<<<<< HEAD
   fCutMethod->SetParamPtrs(&fCallParams[0],fCallParams.size());
-=======
->>>>>>> fixed root6
+
   Long_t result;
   fCutMethod->Execute(fCutObject,result);
-  printf("executed cutmethod 2\n");
   return (result!=0);
 }
 
@@ -404,11 +394,6 @@ void AliAnalysisMuMuCutElement::Init(ECutType expectedType) const
       }
     }
 
-<<<<<<< HEAD
-=======
-
-
->>>>>>> fixed root6
     nameOfMethod.SetParamPtrs(&fCallParams[0+nMainPar-1],nMainPar+nparams);
 
     nameOfMethod.Execute(fCutObject);
