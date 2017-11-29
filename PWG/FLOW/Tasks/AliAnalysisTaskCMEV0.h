@@ -232,6 +232,10 @@ private:
   TProfile     *fHist_Corr3p_EP_Norm_NN[2][3];  //!
   TProfile     *fHist_Reso2n_EP_Norm_Det[2][3]; //! 
 
+  TProfile2D      *fHist_Corr3p_vsRun_EP_PN[2];  // 0=V0A,1=V0C
+  TProfile2D      *fHist_Corr3p_vsRun_EP_PP[2];  //
+  TProfile2D      *fHist_Corr3p_vsRun_EP_NN[2];  //
+
   //CME ZDN correlator: Spectator neutron
   TProfile2D     *fHist_Corr3p_ZDN_SP_PN[3];  //! Norm = 10 centrality bins along X
   TProfile2D     *fHist_Corr3p_ZDN_SP_PP[3];  //!
@@ -270,9 +274,13 @@ private:
   TH3F         *fHistChNegvsEtaPtRun[10];  //!
 
   //QA eta dependence:
-  TProfile  *fHist_Corr3p_QAEta_EP_V0C_PN[2]; //!  Pos and Neg Mag field.
-  TProfile  *fHist_Corr3p_QAEta_EP_V0C_PP[2]; //!
-  TProfile  *fHist_Corr3p_QAEta_EP_V0C_NN[2]; //!
+  TProfile  *fHist_Corr3p_QAEta_SP_V0A_PN[2]; //!  Pos and Neg Mag field.
+  TProfile  *fHist_Corr3p_QAEta_SP_V0A_PP[2]; //!
+  TProfile  *fHist_Corr3p_QAEta_SP_V0A_NN[2]; //!
+
+  TProfile  *fHist_Corr3p_QAEta_SP_V0C_PN[2]; //!  Pos and Neg Mag field.
+  TProfile  *fHist_Corr3p_QAEta_SP_V0C_PP[2]; //!
+  TProfile  *fHist_Corr3p_QAEta_SP_V0C_NN[2]; //!
 
   //--- profiles for TPC <Q> (They are filled)
   TProfile2D     *fHCos1nPosChEtaVz[4];   //!
