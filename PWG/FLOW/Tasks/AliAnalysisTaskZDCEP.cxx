@@ -1,24 +1,24 @@
 /*************************************************************************
- * Copyright(c) 1998-2008, ALICE Experiment at CERN, All rights reserved. *
- *                                                                        *
- * Author: The ALICE Off-line Project.                                    *
- * Contributors are mentioned in the code where appropriate.              *
- *                                                                        *
- * Permission to use, copy, modify and distribute this software and its   *
- * documentation strictly for non-commercial purposes is hereby granted   *
- * without fee, provided that the above copyright notice appears in all   *
- * copies and that both the copyright notice and this permission notice   *
- * appear in the supporting documentation. The authors make no claims     *
- * about the suitability of this software for any purpose. It is          *
- * provided "as is" without express or implied warranty.                  *
- **************************************************************************/
+* Copyright(c) 1998-2008, ALICE Experiment at CERN, All rights reserved. *
+*                                                                        *
+* Author: The ALICE Off-line Project.                                    *
+* Contributors are mentioned in the code where appropriate.              *
+*                                                                        *
+* Permission to use, copy, modify and distribute this software and its   *
+* documentation strictly for non-commercial purposes is hereby granted   *
+* without fee, provided that the above copyright notice appears in all   *
+* copies and that both the copyright notice and this permission notice   *
+* appear in the supporting documentation. The authors make no claims     *
+* about the suitability of this software for any purpose. It is          *
+* provided "as is" without express or implied warranty.                  *
+**************************************************************************/
 
 /***********************************
- * ZDC Event Plane                 *
- *                                 *
- * author: Jacopo Margutti         *
- * email:  jacopo.margutti@cern.ch *
- ***********************************/
+* ZDC Event Plane                 *
+*                                 *
+* author: Jacopo Margutti         *
+* email:  jacopo.margutti@cern.ch *
+***********************************/
 
 #define AliAnalysisTaskZDCEP_cxx
 
@@ -80,6 +80,8 @@ fQAList(0x0),
 fZDCGainAlpha(0.395),
 fZDCCalibList(0x0),
 fTowerEqList(0x0),
+fEventCounter(NULL),
+fCentralityHisto(NULL),
 fCachedRunNum(0),
 fnRun(0),
 fDataSet(k2015o_pass1_pass1pidfix),
@@ -131,6 +133,11 @@ fFlowEvent(NULL)
       // fQVecCorDeltaC[c][i] =  NULL;
     }
   }
+  for(Int_t k=0; k<2; k++) {
+    for(Int_t c=0; c<10; c++) {
+      fZDCQvec2Ddis[c][k] = NULL;
+    }
+  }
 
   fRunList = TArrayI();
   fAvVtxPosX = TArrayD();
@@ -145,6 +152,10 @@ fFlowEvent(NULL)
       fZNCTower[r][k] = NULL;
       fZNATower[r][k] = NULL;
     }
+  }
+  for(Int_t k=0;k<fCRCnTow;k++) {
+    fZNCTowerSpec[k] = NULL;
+    fZNATowerSpec[k] = NULL;
   }
 }
 
@@ -158,6 +169,8 @@ fQAList(0x0),
 fZDCGainAlpha(0.395),
 fZDCCalibList(0x0),
 fTowerEqList(0x0),
+fEventCounter(NULL),
+fCentralityHisto(NULL),
 fCachedRunNum(0),
 fnRun(0),
 fDataSet(k2015o_pass1_pass1pidfix),
@@ -209,6 +222,11 @@ fFlowEvent(NULL)
       // fQVecCorDeltaC[c][i] =  NULL;
     }
   }
+  for(Int_t k=0; k<2; k++) {
+    for(Int_t c=0; c<10; c++) {
+      fZDCQvec2Ddis[c][k] = NULL;
+    }
+  }
 
   fRunList = TArrayI();
   fAvVtxPosX = TArrayD();
@@ -223,6 +241,10 @@ fFlowEvent(NULL)
       fZNCTower[r][k] = NULL;
       fZNATower[r][k] = NULL;
     }
+  }
+  for(Int_t k=0;k<fCRCnTow;k++) {
+    fZNCTowerSpec[k] = NULL;
+    fZNATowerSpec[k] = NULL;
   }
 
   DefineInput(0,TChain::Class());
@@ -334,6 +356,8 @@ void AliAnalysisTaskZDCEP::UserCreateOutputObjects ()
   fEventCounter->GetXaxis()->SetBinLabel(5,"norm=0");
   fEventCounter->GetXaxis()->SetBinLabel(6,"raw tower<0");
   fQAList->Add(fEventCounter);
+  fCentralityHisto = new TH1D("fCentralityHisto","fCentralityHisto",100,0.,100.);
+  fQAList->Add(fCentralityHisto);
 
   for(Int_t c=0; c<4; c++) {
     for(Int_t i=0; i<2; i++) {
@@ -347,6 +371,12 @@ void AliAnalysisTaskZDCEP::UserCreateOutputObjects ()
       // fQAList->Add(fQVecDeltaC[c][i]);
       // fQVecCorDeltaC[c][i] = new TProfile(Form("fQVecCorDeltaC[%d][%d]",c,i),Form("ZDC <%s> mag.pol. %s;#Delta centroids (cm);<%s>",WhichCor[c].Data(),WhichMP[i].Data(),WhichCor[c].Data()),100,0.,2.5);
       // fQAList->Add(fQVecCorDeltaC[c][i]);
+    }
+  }
+  for(Int_t k=0; k<2; k++) {
+    for(Int_t c=0; c<10; c++) {
+      fZDCQvec2Ddis[c][k] = new TH2D(Form("fZDCQvec2Ddis[%d][%d]",c,k),Form("%s x-y distribution (centrality bin %d);x (cm);y (cm)",(k==0?"QC":"QA"),c),100, -2., 2. , 100., -2., 2.);
+      fQAList->Add(fZDCQvec2Ddis[c][k]);
     }
   }
 
@@ -372,6 +402,14 @@ void AliAnalysisTaskZDCEP::UserCreateOutputObjects ()
     fAvVtxPosY=TArrayD(fnRun);
     fAvVtxPosZ=TArrayD(fnRun);
     break;
+  }
+
+
+  for(Int_t k=0;k<fCRCnTow;k++) {
+    fZNCTowerSpec[k] = new TH2D(Form("fZNCTowerSpec[%d]",k),Form("fZNCTowerSpec[%d];centrality;ADC signal (a.u.);counts",k),100,0.,100.,500,0.,5.E4);
+    fQAList->Add(fZNCTowerSpec[k]);
+    fZNATowerSpec[k] = new TH2D(Form("fZNATowerSpec[%d]",k),Form("fZNATowerSpec[%d];centrality;ADC signal (a.u.);counts",k),100,0.,100.,500,0.,5.E4);
+    fQAList->Add(fZNATowerSpec[k]);
   }
 
   for(Int_t r=0; r<fnRun; r++) {
@@ -431,6 +469,7 @@ void AliAnalysisTaskZDCEP::UserExec(Option_t *)
 
   Bool_t IsGoodEvent = kTRUE;
   fEventCounter->Fill(0.5);
+  fCentralityHisto->Fill(Centrality);
 
   // get primary vertex position
   Double_t fVtxPos[3]={0.,0.,0.};
@@ -472,12 +511,17 @@ void AliAnalysisTaskZDCEP::UserExec(Option_t *)
     }
   } else {
     for(Int_t i=0; i<5; i++) {
+      if(towZNCraw[i]<0. || towZNAraw[i]<0.) continue;
       towZNC[i] = towZNCraw[i];
       towZNA[i] = towZNAraw[i];
-      if(towZNCraw[i]<0. || towZNAraw[i]<0.) continue;
       fZNCTower[RunBin][i]->Fill(Centrality,towZNC[i]);
       fZNATower[RunBin][i]->Fill(Centrality,towZNA[i]);
     }
+  }
+
+  for(Int_t i=0; i<5; i++) {
+    fZNCTowerSpec[i]->Fill(Centrality,towZNC[i]);
+    fZNATowerSpec[i]->Fill(Centrality,towZNA[i]);
   }
 
   if(RunNum>=245829) towZNA[2] = 0.;
@@ -768,18 +812,25 @@ void AliAnalysisTaskZDCEP::UserExec(Option_t *)
   } else {
     // if no calibration files provided, store <Q>
 
-    fQVecRbRCen[RunBin]->Fill(Centrality,0.5,QCReR);
-    fQVecRbRCen[RunBin]->Fill(Centrality,1.5,QCImR);
-    fQVecRbRCen[RunBin]->Fill(Centrality,2.5,QAReR);
-    fQVecRbRCen[RunBin]->Fill(Centrality,3.5,QAImR);
+    if(IsGoodEvent) {
+      fQVecRbRCen[RunBin]->Fill(Centrality,0.5,QCReR);
+      fQVecRbRCen[RunBin]->Fill(Centrality,1.5,QCImR);
+      fQVecRbRCen[RunBin]->Fill(Centrality,2.5,QAReR);
+      fQVecRbRCen[RunBin]->Fill(Centrality,3.5,QAImR);
 
-    if(Centrality>5. && Centrality<40.) {
-      fQVecRbRVtxZ[RunBin]->Fill(fVtxPos[2],0.5,QCReR);
-      fQVecRbRVtxZ[RunBin]->Fill(fVtxPos[2],1.5,QCImR);
-      fQVecRbRVtxZ[RunBin]->Fill(fVtxPos[2],2.5,QAReR);
-      fQVecRbRVtxZ[RunBin]->Fill(fVtxPos[2],3.5,QAImR);
+      if(Centrality>5. && Centrality<40.) {
+        fQVecRbRVtxZ[RunBin]->Fill(fVtxPos[2],0.5,QCReR);
+        fQVecRbRVtxZ[RunBin]->Fill(fVtxPos[2],1.5,QCImR);
+        fQVecRbRVtxZ[RunBin]->Fill(fVtxPos[2],2.5,QAReR);
+        fQVecRbRVtxZ[RunBin]->Fill(fVtxPos[2],3.5,QAImR);
+      }
     }
 
+  }
+
+  if(IsGoodEvent) {
+    fZDCQvec2Ddis[fCenBin][0]->Fill(QCReR,QCImR);
+    fZDCQvec2Ddis[fCenBin][1]->Fill(QAReR,QAImR);
   }
 
   // pass ZDC Qvectors in output **********************************************

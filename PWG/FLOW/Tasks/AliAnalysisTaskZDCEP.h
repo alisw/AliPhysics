@@ -82,6 +82,7 @@ private:
   TProfile3D *fZDCVtxCenHistMagPol[10][8]; //!
   TProfile3D* fZDCVtxCenHist[10][4]; //!
   TH1D* fCRCZDCQVecDummyEZDCBins[10]; //!
+  TH2D* fZDCQvec2Ddis[10][2];      //!
 
   // QA histograms
   TProfile*   fQVecCen[4][2];      //!
@@ -90,6 +91,7 @@ private:
   // TProfile* fQVecDeltaC[4][2];     //!
   // TProfile* fQVecCorDeltaC[4][2];  //!
   TH1D* fEventCounter;             //!
+  TH1D* fCentralityHisto;        //!
 
   TH3D *fZDCQVecVtxCenEZDC3D[10][10][4]; //!
   TH1D *fTowerGainEq[2][5];              //!
@@ -105,6 +107,8 @@ private:
   const static Int_t fCRCnTow = 5;
   TProfile *fZNCTower[fnRunMax][fCRCnTow]; //! ZNC tower spectra
   TProfile *fZNATower[fnRunMax][fCRCnTow]; //! ZNA tower spectra
+  TH2D *fZNCTowerSpec[fCRCnTow];  //! ZNC tower spectra
+  TH2D *fZNATowerSpec[fCRCnTow];  //! ZNA tower spectra
   TArrayI fRunList;               // run list
   TArrayD fAvVtxPosX;             // average vx position vs run number
   TArrayD fAvVtxPosY;             // average vy position vs run number
@@ -119,7 +123,7 @@ private:
   AliAnalysisTaskZDCEP(const AliAnalysisTaskZDCEP&);
   AliAnalysisTaskZDCEP& operator=(const AliAnalysisTaskZDCEP&);
 
-  ClassDef(AliAnalysisTaskZDCEP,5);
+  ClassDef(AliAnalysisTaskZDCEP,6);
 };
 
 #endif
