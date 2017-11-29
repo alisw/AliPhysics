@@ -79,8 +79,8 @@ void AddTask_MaterialHistos_PbPb(	Int_t   trainConfig             = 1,        //
                                     TString periodname              = "LHC10b", // period name
                                     TString periodNameV0Reader      = "",
                                     TString periodNameAnchor        = "",
-                                    Bool_t 	enableV0findingEffi 	= kFALSE    // enables V0finding efficiency histograms
-                                    TString   additionalTrainConfig = "0"       // additional counter for trainconfig, this has to be always the last parameter
+                                    Bool_t 	enableV0findingEffi 	= kFALSE,    // enables V0finding efficiency histograms
+                                    TString additionalTrainConfig   = "0"       // additional counter for trainconfig, this has to be always the last parameter
                                 ){
 
   Int_t IsHeavyIon = 1;
@@ -149,7 +149,6 @@ void AddTask_MaterialHistos_PbPb(	Int_t   trainConfig             = 1,        //
       fCuts->SetPreSelectionCutFlag(kTRUE);
       fCuts->SetIsHeavyIon(IsHeavyIon);
       fCuts->SetV0ReaderName(V0ReaderName);
-      fCuts->SetProcessAODCheck(processAODcheckForV0s); // if processAODcheckForV0s is kTRUE, also check for V0s to be contained in AliAODs and AliAODGammaConversion.root
       if(fCuts->InitializeCutsFromCutString(cutnumberPhoton.Data())){
         fV0ReaderV1->SetConversionCuts(fCuts);
         fCuts->SetFillCutHistograms("",kTRUE);
@@ -189,9 +188,9 @@ void AddTask_MaterialHistos_PbPb(	Int_t   trainConfig             = 1,        //
   } else  if( trainConfig == 2){ // kMB, V0M, open cuts
     cuts.AddCut("50000013", "00000070000000000500004000");
   } else if ( trainConfig == 3){ // selection for 11h meson cut
-    cuts.AddCut("50000013", "00200009247602008850404000");
+    cuts.AddCut("50000013", "00000009247602008850404000");
   } else if ( trainConfig == 4){ // selection for 11h photon cut
-    cuts.AddCut("50000013", "00200009247002008850404000");
+    cuts.AddCut("50000013", "00000009247002008850404000");
 
     // Offline V0Finder is used
   } else  if(trainConfig == 101){ //INT7, CL1
@@ -199,9 +198,9 @@ void AddTask_MaterialHistos_PbPb(	Int_t   trainConfig             = 1,        //
   } else  if( trainConfig == 102){ // kMB, V0M, open cuts
     cuts.AddCut("50000013", "10000070000000000500004000");
   } else if ( trainConfig == 103){ // selection for 11h meson cut
-    cuts.AddCut("50000013", "10200009247602008850404000");
+    cuts.AddCut("50000013", "10000009247602008850404000");
   } else if ( trainConfig == 104){ // selection for 11h photon cut
-    cuts.AddCut("50000013", "10200009247002008850404000");
+    cuts.AddCut("50000013", "10000009247002008850404000");
 
   } else {
     Error(Form("GammaConvV1_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
