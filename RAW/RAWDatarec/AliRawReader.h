@@ -198,7 +198,7 @@ class AliRawReader: public TObject {
     virtual AliRawReader* CloneSingleEvent() const { return NULL; }
 
   protected :
-    virtual void     SelectEvents(Int_t type,ULong64_t triggerMask=0,const char *triggerExpr=NULL,ULong64_t triggerMask50=0,const char *contExpr=NULL, const char *exclExpr=NULL);
+    virtual void     SelectEvents(Int_t type,ULong64_t triggerMask=0,const char *triggerExpr=NULL,ULong64_t triggerMask50=0,const char *contExpr=NULL, const char *exclExpr=NULL, const char *selClusterExpr=NULL, const char *exclClusterExpr=NULL, const char *selDetectorExpr=NULL, const char *exclDetectorExpr=NULL);
     Bool_t           IsSelected() const;
     Bool_t           IsEventSelected() const;
 
@@ -220,7 +220,11 @@ class AliRawReader: public TObject {
     ULong64_t        fSelectTriggerMask50;  // trigger maskNext50 for selecting events (0 = no selection)
     TString          fSelectTriggerExpr;    // trigger expression for selecting events (empty = no selection)
     TString          fContainTriggerExpr;   // string required in trigger name for selecting events (empty = no selection)
-    TString          fExcludeTriggerExpr;   // string required in trigger name for exluding events (empty = no selection)
+    TString          fExcludeTriggerExpr;   // string required in trigger name for excluding events (empty = no selection)
+    TString          fSelectClusterExpr;    // string with names of clusters for selecting events (empty = no selection)
+    TString          fExcludeClusterExpr;   // string with names of clusters for excluding events (empty = no selection)
+    UInt_t           fSelectDetectorExpr;   // mask with names of detectors for selecting events (empty = no selection)
+    UInt_t           fExcludeDetectorExpr;  // mask with names of detectors for excluding events (empty = no selection)
     Bool_t           fVeto[100];            // veto for the 50+50 trigger masks
 
     Int_t            fErrorCode;            // code of last error

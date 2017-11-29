@@ -75,6 +75,10 @@ AliRawReader::AliRawReader() :
   fSelectTriggerExpr(),
   fContainTriggerExpr(),
   fExcludeTriggerExpr(),
+  fSelectClusterExpr(),
+  fExcludeClusterExpr(),
+  fSelectDetectorExpr(0),
+  fExcludeDetectorExpr(0),
   fErrorCode(0),
   fEventNumber(-1),
   fErrorLogs("AliRawDataErrorLog",100),
@@ -141,6 +145,10 @@ AliRawReader::AliRawReader(const AliRawReader& rawReader) :
   fSelectTriggerExpr(rawReader.fSelectTriggerExpr),
   fContainTriggerExpr(rawReader.fContainTriggerExpr),
   fExcludeTriggerExpr(rawReader.fExcludeTriggerExpr),
+  fSelectClusterExpr(rawReader.fSelectClusterExpr),
+  fExcludeClusterExpr(rawReader.fExcludeClusterExpr),
+  fSelectDetectorExpr(rawReader.fSelectDetectorExpr),
+  fExcludeDetectorExpr(rawReader.fExcludeDetectorExpr),
   fErrorCode(0),
   fEventNumber(-1),
   fErrorLogs("AliRawDataErrorLog",100),
@@ -178,6 +186,10 @@ AliRawReader& AliRawReader::operator = (const AliRawReader& rawReader)
   fSelectTriggerExpr = rawReader.fSelectTriggerExpr;
   fContainTriggerExpr = rawReader.fContainTriggerExpr;
   fExcludeTriggerExpr = rawReader.fExcludeTriggerExpr;
+  fSelectClusterExpr = rawReader.fSelectClusterExpr;
+  fExcludeClusterExpr = rawReader.fExcludeClusterExpr;
+  fSelectDetectorExpr = rawReader.fSelectDetectorExpr;
+  fExcludeDetectorExpr = rawReader.fExcludeDetectorExpr;
   fErrorCode = rawReader.fErrorCode;
 
   fEventNumber = rawReader.fEventNumber;
@@ -293,6 +305,10 @@ AliRawReader* AliRawReader::Create(const char *uri)
     TString triggerExpr;
     TString contExpr="";
     TString exclExpr="";
+    TString selClusterExpr="";
+    TString exclClusterExpr="";
+    TString selDetectorExpr="";
+    TString exclDetectorExpr="";
     for(Int_t i = 1; i < fields->GetEntries(); i++) {
       if (!fields->At(i)) continue;
       TString &option = ((TObjString*)fields->At(i))->String();
@@ -328,6 +344,7 @@ AliRawReader* AliRawReader::Create(const char *uri)
 	}else{
 	  AliWarningClass(Form("Ingnoring multiple Contain requests: %s",option.Data()));
 	}
+	continue;
       }
       else if((option.BeginsWith("Exclude=",TString::kIgnoreCase))){
 	if(exclExpr.IsNull()){
@@ -336,13 +353,37 @@ AliRawReader* AliRawReader::Create(const char *uri)
 	}else{
 	  AliWarningClass(Form("Ingnoring multiple Exclude requests: %s",option.Data()));
 	}
+	continue;
       }
-
+      else if((option.BeginsWith("Cluster=",TString::kIgnoreCase))){
+	option.ReplaceAll("Cluster=","");
+	option.ReplaceAll("||"," ");
+	selClusterExpr += Form("%s ",option.Data());
+	continue;
+      }
+      else if((option.BeginsWith("ExcludeCluster=",TString::kIgnoreCase))){
+	option.ReplaceAll("ExcludeCluster=","");
+	option.ReplaceAll("||"," ");
+	exclClusterExpr += Form("%s ",option.Data());
+	continue;
+      }
+      else if((option.BeginsWith("DetectorsContain=",TString::kIgnoreCase))){
+	option.ReplaceAll("DetectorsContain=","");
+	option.ReplaceAll("||"," ");
+	selDetectorExpr += Form("%s ",option.Data());
+	continue;
+      }
+      else if((option.BeginsWith("DetectorsExcluded=",TString::kIgnoreCase))){
+	option.ReplaceAll("DetectorsExcluded=","");
+	option.ReplaceAll("||"," ");
+	exclDetectorExpr += Form("%s ",option.Data());
+	continue;
+      }
       AliWarningClass(Form("Ignoring invalid event selection option: %s",option.Data()));
     }
-    AliInfoClass(Form("Event selection criteria specified:   eventype=%d   trigger mask=%llx mask50=%llx  trigger expression=%s must contain=%s should not contain=%s",
-		      eventType,triggerMask,triggerMask50,triggerExpr.Data(),contExpr.Data(),exclExpr.Data()));
-    rawReader->SelectEvents(eventType,triggerMask,triggerExpr.Data(),triggerMask50,contExpr.Data(),exclExpr.Data());
+    AliInfoClass(Form("Event selection criteria specified:   eventype=%d   trigger mask=%llx mask50=%llx  trigger expression=%s must contain=%s should not contain=%s  cluster should be=%s  should not contain=%s   detector must contain %s, should not contain %s",
+		      eventType,triggerMask,triggerMask50,triggerExpr.Data(),contExpr.Data(),exclExpr.Data(),selClusterExpr.Data(),exclClusterExpr.Data(),selDetectorExpr.Data(),exclDetectorExpr.Data()));
+    rawReader->SelectEvents(eventType,triggerMask,triggerExpr.Data(),triggerMask50,contExpr.Data(),exclExpr.Data(),selClusterExpr.Data(),exclClusterExpr.Data(),selDetectorExpr.Data(),exclDetectorExpr.Data());
   }
 
   delete fields;
@@ -448,7 +489,10 @@ void AliRawReader::SelectEquipment(Int_t equipmentType,
 
 void AliRawReader::SelectEvents(Int_t type, ULong64_t triggerMask,
 				const char *triggerExpr,ULong64_t triggerMask50,
-				const char *contExpr, const char *exclExpr)
+				const char *contExpr, const char *exclExpr,
+				const char *selClusterExpr, const char *exclClusterExpr,
+				const char *selDetectorExpr, const char *exclDetectorExpr
+				)
 {
 // read only events with the given type and optionally
 // trigger mask.
@@ -464,6 +508,10 @@ void AliRawReader::SelectEvents(Int_t type, ULong64_t triggerMask,
   if (triggerExpr) fSelectTriggerExpr = triggerExpr;
   if (contExpr) fContainTriggerExpr = contExpr;
   if (exclExpr) fExcludeTriggerExpr = exclExpr;
+  if (selClusterExpr) fSelectClusterExpr = selClusterExpr;
+  if (exclClusterExpr) fExcludeClusterExpr = exclClusterExpr;
+  if (selDetectorExpr) fSelectDetectorExpr = AliDAQ::DetectorPattern(selDetectorExpr);
+  if (exclDetectorExpr) fExcludeDetectorExpr = AliDAQ::DetectorPattern(exclDetectorExpr);
   for(Int_t j=0; j<100; j++) fVeto[j]=kFALSE;
 }
 
@@ -474,22 +522,69 @@ void AliRawReader::LoadTriggerClass(const char* name, Int_t index)
   // case when the trigger selection is given by
   // fSelectedTriggerExpr
 
-  if (fSelectTriggerExpr.IsNull() && fContainTriggerExpr.IsNull() && fExcludeTriggerExpr.IsNull()) return;
+  if (fSelectTriggerExpr.IsNull() && 
+      fContainTriggerExpr.IsNull() && fExcludeTriggerExpr.IsNull() && 
+      fExcludeClusterExpr.IsNull() && fSelectClusterExpr.IsNull()) return;
+
   const char* kMyWordBond="(?:(?<![\\w-])(?=[\\w-])|(?<=[\\w-])(?![\\w-]))";
   
   fIsTriggerClassLoaded = kTRUE;
   TString incrInd = index>=0 ? Form(" [%d] ",index) : " 0 ";
   TString names(name);
+  Bool_t selTrigger=kFALSE;
   // RS: some trigger names are substrings of others
-  if (TPRegexp(Form("%s%s%s",kMyWordBond,name,kMyWordBond)).Substitute(fSelectTriggerExpr,incrInd.Data(),"g")) {}
-  else if(!fContainTriggerExpr.IsNull()) {
-    if (names.Contains(fContainTriggerExpr.Data())) fSelectTriggerExpr += incrInd;
+  if (TPRegexp(Form("%s%s%s",kMyWordBond,name,kMyWordBond)).Substitute(fSelectTriggerExpr,incrInd.Data(),"g")) {
+    selTrigger=kTRUE;
+  }else if(!fContainTriggerExpr.IsNull()) {
+    if (names.Contains(fContainTriggerExpr.Data())){
+      fSelectTriggerExpr += incrInd;
+      selTrigger=kTRUE;
+    }
   }
   if(!fExcludeTriggerExpr.IsNull()){
     if(index>=0 && names.Contains(fExcludeTriggerExpr.Data())){
       fVeto[index]=kTRUE;
     }
   }
+
+  // selections based on the triggered cluster
+  if(fExcludeClusterExpr.IsNull() && fSelectClusterExpr.IsNull()) return;
+
+  // extract the name of the cluster from the trigger class
+  // The cluster is the 4th substring of the trigger class name
+  //   e.g. CINT7-B-NOPF-CENT
+  TObjArray* pieces=names.Tokenize("-");
+  TObjString* clu=(TObjString*)pieces->At(3);
+  TString clus=clu->GetString();
+
+  // enable the trigger class if the cluster is among the selected ones
+  if(!selTrigger && !fSelectClusterExpr.IsNull()){
+    TObjArray* arr=fSelectClusterExpr.Tokenize(" ");
+    Int_t nSelClu=arr->GetEntries();
+    for(Int_t jclu=0; jclu<nSelClu; jclu++){
+      TObjString* selclu=(TObjString*)arr->At(jclu);
+      TString selclus=selclu->GetString();
+      if(clus.EqualTo(selclus,TString::kIgnoreCase)){
+	fSelectTriggerExpr += incrInd;
+      }
+    }
+    delete arr;
+  }
+
+  // disable the trigger class if the cluster is among the vetoed ones
+  if(!fExcludeClusterExpr.IsNull() && index>=0 && fVeto[index]==kFALSE){
+     TObjArray* arr=fExcludeClusterExpr.Tokenize(" ");
+     Int_t nExcClu=arr->GetEntries();
+     for(Int_t jclu=0; jclu<nExcClu; jclu++){
+       TObjString* excclu=(TObjString*)arr->At(jclu);
+       TString excclus=excclu->GetString();
+       if(clus.EqualTo(excclus,TString::kIgnoreCase)){
+	 fVeto[index]=kTRUE;
+       }
+     }
+     delete arr;
+  }
+  delete pieces;
 }
 
 void AliRawReader::LoadTriggerAlias(const THashList *lst)
@@ -579,13 +674,19 @@ Bool_t AliRawReader::IsEventSelected() const
     if (GetType() != (UInt_t) fSelectEventType) return kFALSE;
   }
 
+  // Check the list of detectors
+  UInt_t clmask = GetDetectorPattern()[0];
+  if (fSelectDetectorExpr && (fSelectDetectorExpr&clmask)!=fSelectDetectorExpr) return kFALSE;
+  if (fExcludeDetectorExpr && (fExcludeDetectorExpr&clmask)) return kFALSE;
+
+
   // Then check the trigger pattern and compared it
   // to the required trigger mask
   if (fSelectTriggerMask!=0 || fSelectTriggerMask50!=0) {
     if ( !(GetClassMask()&fSelectTriggerMask) && !(GetClassMaskNext50() & fSelectTriggerMask50)) return kFALSE;
   }
 
-  if (  fIsTriggerClassLoaded && (!fSelectTriggerExpr.IsNull() || !fExcludeTriggerExpr.IsNull())) {
+  if (  fIsTriggerClassLoaded && (!fSelectTriggerExpr.IsNull() || !fExcludeTriggerExpr.IsNull()  || !fExcludeClusterExpr.IsNull())) {
     TString expr(fSelectTriggerExpr);
     ULong64_t mask   = GetClassMask();
     ULong64_t maskNext50 = GetClassMaskNext50();
@@ -607,6 +708,7 @@ Bool_t AliRawReader::IsEventSelected() const
 	expr.ReplaceAll(Form("[%d]",itrigger+50),"0");
       }
     }
+
     // 
     // Possibility to introduce downscaling
     if(!fSelectTriggerExpr.IsNull()){
@@ -623,6 +725,7 @@ Bool_t AliRawReader::IsEventSelected() const
 	return kFALSE;
     }
   }
+
 
   return kTRUE;
 }
