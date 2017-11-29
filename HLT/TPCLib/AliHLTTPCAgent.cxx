@@ -223,8 +223,8 @@ int AliHLTTPCAgent::CreateConfigurations(AliHLTConfigurationHandler* handler,
     TString hwcfDecoder = "TPC-HWCFDecoder";
     handler->CreateConfiguration(hwcfDecoder.Data(), "TPCHWClusterDecoder",hwclustOutput.Data(), "");
 	
-	arg="-offline-mode -offline-keep-initial-timestamp";
-	if (!bPublishRaw) arg+=" -do-mc";
+	arg="-offline-mode";
+	if (!bPublishRaw) arg+=" -do-mc -offline-keep-initial-timestamp";
 
     TString clusterTransformation = "TPC-ClusterTransformation";
     handler->CreateConfiguration(clusterTransformation.Data(), "TPCClusterTransformation",hwcfDecoder.Data(), arg.Data() );
