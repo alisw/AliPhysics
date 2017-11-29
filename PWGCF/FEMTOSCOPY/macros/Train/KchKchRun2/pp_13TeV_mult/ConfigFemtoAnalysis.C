@@ -60,8 +60,8 @@ AliFemtoManager* ConfigFemtoAnalysis() {
  //////// const int cKt=3;
   
   
-  const int cMu=4;
-  const int cKt=4;
+  const int cMu=2;
+  const int cKt=2;
   
   
   
@@ -87,10 +87,11 @@ AliFemtoManager* ConfigFemtoAnalysis() {
 
   // Switches for QA analyses
  
-  int runmults[4] = {1, 1, 1, 1};
+  int runmults[2] = {1, 1};
  // int multbins[5] = {0, 900, 300, 500, 900};
 //old pp
-  int multbins[5] = {0, 11, 22, 60, 200};
+ // int multbins[5] = {0, 11, 22, 60, 200};
+  int multbins[2] = {0, 18, 200};
   //.................................................
 
   int runch[2] = {1, 1};
@@ -100,8 +101,8 @@ AliFemtoManager* ConfigFemtoAnalysis() {
   int runktdep = 1;
 //YS  double ktrng[cKt+1] = {0.2, 0.36, 0.48, 0.6, 1.0, 1.5};
 //  double ktrng[cKt+1] = {0.2, 0.4, 0.6, 1.5};
-  double ktrng[5] = {0.2, 0.4, 0.6, 0.8, 1.3};
- // double ktrng[3] = {0.2, 0.6, 1.3};
+  /////double ktrng[5] = {0.2, 0.4, 0.6, 0.8, 1.3};
+  double ktrng[3] = {0.2, 0.6, 1.3};
 
 // double ktrng[8] = {0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 2.0};
 
@@ -226,13 +227,14 @@ AliFemtoEventReaderAOD *Reader = new AliFemtoEventReaderAODMultSelection();
 	if (runch[ichg]) {
 	  aniter = ichg*cMu+imult;
 
-	  anetaphitpc[aniter] = new AliFemtoVertexMultAnalysis(3, -8.0, 8.0, 3, multbins[imult], multbins[imult+1]);
+	  anetaphitpc[aniter] = new AliFemtoVertexMultAnalysis(3, -10.0, 10.0, 3, multbins[imult], multbins[imult+1]);
+//	  anetaphitpc[aniter] = new AliFemtoVertexMultAnalysis(3, -8.0, 8.0, 3, multbins[imult], multbins[imult+1]);
 	  anetaphitpc[aniter]->SetNumEventsToMix(10);
 	  anetaphitpc[aniter]->SetMinSizePartCollection(1);
 
 	  mecetaphitpc[aniter] = new AliFemtoBasicEventCut();
 	  mecetaphitpc[aniter]->SetEventMult(0,100000);
-	  mecetaphitpc[aniter]->SetVertZPos(-8.0,8.0);
+	  mecetaphitpc[aniter]->SetVertZPos(-10.0,10.0); //-8
 	  /* //was in aliroot 5.03.76
 	  if (isrealdata)
 	     mecetaphitpc[aniter]->SetAcceptOnlyPhysics(kTRUE);
