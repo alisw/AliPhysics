@@ -4049,7 +4049,7 @@ void AliAnalysisTaskEMCALPhotonIsolation::AnalyzeMC(){
     // cout<<"there's a List of particles"<<endl;
     // DO THIS ALSO FOR ESDs
 
-  Double_t eT = 0., sumEiso = 0., sumUE = 0., phi = 0., eta = 0., distance = 0., phip = 0., etap = 0., mcfirstEnergy = 0.;
+  Double_t eT = 0., sumEiso = 0., sumUE = 0., phi = 0., eta = 0., distance = 0., phip = 0., etap = 0.;
   Double_t etaMax = 0./*, etaMinDCal_InnerEdge = 0.*/, phiMinEMCal = 0., phiMaxEMCal = 0./*, phiMinDCal = 0. , phiMaxDCal_FullSM = 0., phiMaxDCal = 0.*/;
 
   if(fAODMCParticles->GetEntries() < 1){
@@ -4078,12 +4078,10 @@ void AliAnalysisTaskEMCALPhotonIsolation::AnalyzeMC(){
   }
     // AliInfo(Form("number of particles in the array %d",nTracks));
 
-  AliAODMCParticle *mcpart, *mom, *mcpp,*mcsearch, *mcfirst,*matchingtrack, *mum;
+  AliAODMCParticle *mcpart, *mom, *mcpp/*, *mum*/;
 
     // Bool_t prompt=kFALSE;
-  Double_t maxE;
   Int_t pdg, mompdg, photonlabel;
-  Double_t mcFirstEta=0., mcFirstPhi=0.;
 
     // AliAODMCParticle *mcfirst = static_cast<AliAODMCParticle*>(fAODMCParticles->At(0));
     // AliAODMCParticle *mcp, *mcpmaxE, *mcpp, *mom;
@@ -4224,7 +4222,7 @@ void AliAnalysisTaskEMCALPhotonIsolation::AnalyzeMC(){
       if(mumidx<0 || mumidx>nTracks)
 	continue;
 
-      mum = static_cast<AliAODMCParticle*>(fAODMCParticles->At(mumidx));
+      // mum = static_cast<AliAODMCParticle*>(fAODMCParticles->At(mumidx));
       if(mumidx == photonlabel)
 	continue;
 

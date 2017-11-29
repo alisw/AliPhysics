@@ -269,6 +269,8 @@ class AliAnalysisTaskEMCALPhotonIsolation: public AliAnalysisTaskEmcal {
   TH1D                       * fE;                              //!<! E distribution
   TH2D                       * fNLM;                            //!<! NLM distribution
   TH2D                       * fNLM2_NC_Acc;                    //!<! NLM (1,2) distribution for Neutral Clusters in Acceptance
+  TH1D                       * fConeArea;                       //!<! Cone area distribution (depending on the cluster position)
+  TH1D                       * fEtaBandArea;                    //!<! Eta-band area distribution (depending on the cluster position)
   TH1D                       * fVz;                             //!<! Vertex Z distribution
   TH1D                       * fEvents;                         //!<! Number of Events
   TH1D                       * fPtaftTime;                      //!<! E distribution for clusters after Cluster Time cut
@@ -345,8 +347,6 @@ class AliAnalysisTaskEMCALPhotonIsolation: public AliAnalysisTaskEmcal {
   TH2F                       * fTracksEtaVsPt;                  //!<!
   TH2F                       * fTrackResolutionPtMC;            //!<!
   TH1D                       * fVzBeforecut;                    //!<!
-  TH1D                       * fConeArea;                       //!<! Cone area distribution (depending on the cluster position)
-  TH1D                       * fEtaBandArea;                    //!<! Eta-band area distribution (depending on the cluster position)
   
   THnSparse                  * fOutputTHnS;                     //!<! 1st Method 4 Output
   THnSparse                  * fOutMCTruth;                     //!<! 1st Method 4 MC truth Output // Isolation on pTMax
