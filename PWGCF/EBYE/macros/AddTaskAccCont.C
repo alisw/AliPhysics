@@ -1,8 +1,11 @@
 //_________________________________________________________//
 AliAnalysisTaskAccCont *AddTaskAccCont(Double_t vertexZ=10.,
 						UInt_t triggerSelectionString = AliVEvent::kMB | AliVEvent::kCentral | AliVEvent::kSemiCentral,
-						Int_t gFilterBit = 768,
+						Int_t gFilterBit = 768, Int_t nsigma = 3,
+						Double_t ptMin=0, Double_t ptMax=10,
 						Double_t etaMin=-0.8, Double_t etaMax=0.8,
+						Bool_t PID = kFALSE,
+						AliAnalysisTaskAccCont::kParticleOfInterest particleType = AliAnalysisTaskAccCont::kMuon,
 						TString fileNameBase="AnalysisResults") {
   // Creates an analysis task and adds it to the analysis manager.
   // Get the pointer to the existing analysis manager via the static access method.
@@ -56,14 +59,22 @@ AliAnalysisTaskAccCont *AddTaskAccCont(Double_t vertexZ=10.,
   //Centrality estimator
   task[iCentralityBin]->SetCentralityEstimator("V0M");
   
-  // vertex cut (x,y,z)
-  task[iCentralityBin]->SetVertexDiamond(30.,30.,vertexZ);
+  //vertex cut (x,y,z)
+  task[iCentralityBin]->SetVertexDiamond(3.,3.,vertexZ);
   
-  // pt and eta cut (pt_min, pt_max, eta_min, eta_max)
+  //pt and eta cut (pt_min, pt_max, eta_min, eta_max)
   task[iCentralityBin]->SetAODtrackCutBit(gFilterBit);
-  task[iCentralityBin]->SetKinematicsCutsAOD(etaMin,etaMax);
+  task[iCentralityBin]->SetKinematicsCutsAOD(ptMin,ptMax,etaMin,etaMax);
   task[iCentralityBin]->SetCentralityPercentileRange(gCentrality[iCentralityBin],gCentrality[iCentralityBin+1]);
-
+  task[iCentralityBin]->UsePileUpCuts();
+  
+  //PID
+  if(PID){
+  task[iCentralityBin]->UsePID();
+  task[iCentralityBin]->SetNSigmaPID(nsigma);
+  task[iCentralityBin]->setParticleType(particleType);
+  }
+  
   mgr->AddTask(task[iCentralityBin]);
     
   // Create ONLY the output containers for the data produced by the task.
@@ -76,8 +87,6 @@ AliAnalysisTaskAccCont *AddTaskAccCont(Double_t vertexZ=10.,
 
   coutResults[iCentralityBin] = mgr->CreateContainer(Form("listResults_%s",suffixName[iCentralityBin].Data()), TList::Class(),AliAnalysisManager::kOutputContainer,outputFileName.Data());
   mgr->ConnectOutput(task[iCentralityBin], 2, coutResults[iCentralityBin]);
-
-  //return task;
 }
 
 }

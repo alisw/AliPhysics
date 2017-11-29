@@ -846,7 +846,8 @@ void AliAnalysisTaskCheckAODTracks::UserExec(Option_t *)
       Printf("ERROR: Could not retreive one of the daughter track");
       continue;
     }
-    //    if(pTrack->GetID()<0 || nTrack->GetID()<0) continue;
+    if(pTrack->GetID()<0 || nTrack->GetID()<0) continue;
+    if (pTrack->Charge() == nTrack->Charge()) continue;
 
     Double_t invMassK0s = v0->MassK0Short();
     Double_t invMassLambda = v0->MassLambda();

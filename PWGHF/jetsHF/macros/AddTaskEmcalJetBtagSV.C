@@ -16,8 +16,8 @@ AliAnalysisTaskEmcalJetBtagSV* AddTaskEmcalJetBtagSV(const char* trkcontname   =
                                                      Bool_t useWeight  =  kFALSE,
                                                      const char* ptHname  =  "",
                                                      const char* ptHpatt  =  "",
-                                                     Int_t gbLogLevel  = 1,
-                                                     Int_t lcDebLevel  = 2,
+                                                     Int_t gbLogLevel  = AliLog::kInfo,  //=2
+                                                     Int_t lcDebLevel  = AliLog::kFatal, //=0
                                                      Double_t tagRadius = 0.4,
                                                      TString cutflname = "",
                                                      Float_t minPt = 0., Float_t maxPt = 100.,
@@ -64,8 +64,8 @@ AliAnalysisTaskEmcalJetBtagSV* AddTaskEmcalJetBtagSV(const char* trkcontname   =
   hfTask->SetCheckMCCrossSection(checkXsec);  
   if (useWeight) hfTask->SetUseWeightOn();
 
-  hfTask->SetGlLogLevel(AliLog::kInfo);
-  hfTask->SetLcDebLevel(0);
+  hfTask->SetGlLogLevel(gbLogLevel);
+  hfTask->SetLcDebLevel(lcDebLevel);
 
   // choose the method to select on the flavor of the jet and, if needed, select the pt-hard bin via the minimum pt-hard
   // also set mc jet and particle container

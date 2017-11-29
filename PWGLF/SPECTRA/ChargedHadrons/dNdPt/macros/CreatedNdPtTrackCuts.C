@@ -9,7 +9,7 @@
 // added cut modes 200,201: replacing TPCNcluster cut
 
 
-AliESDtrackCuts* CreatedNdPtTrackCuts(Int_t cutMode=1, const char control = "";  Bool_t fieldOn = kTRUE, Bool_t hists = kTRUE)
+AliESDtrackCuts* CreatedNdPtTrackCuts(Int_t cutMode=1, const char *control = "";  Bool_t fieldOn = kTRUE, Bool_t hists = kTRUE)
 {
   AliESDtrackCuts* esdTrackCuts = new AliESDtrackCuts("AliESDtrackCuts");
   

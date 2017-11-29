@@ -292,6 +292,9 @@ public:
   void             SetEMCALClusterListName(TString &name)  { fEMCALClustersListName = name  ; }
   TString          GetEMCALClusterListName()         const { return fEMCALClustersListName  ; }
 
+  void             SetEMCALCellsListName(TString &name)    { fEMCALCellsListName = name     ; }
+  TString          GetEMCALCellsListName()           const { return fEMCALCellsListName     ; }
+  
   // Arrays with clusters/track/cells access method
   
   virtual TObjArray*     GetCTSTracks()              const { return fCTSTracks              ; }
@@ -798,7 +801,7 @@ public:
   
   /// Temporal array with EMCAL CaloClusters.
   TObjArray      * fEMCALClusters ;                //-> 
-  
+
   /// Temporal array with DCAL CaloClusters, not needed in the normal case, use just EMCal array with DCal limits.
   TObjArray      * fDCALClusters ;                 //-> 
   
@@ -883,6 +886,7 @@ public:
   Int_t            fV0Mul[2]    ;                  ///<  Integrated V0 Multiplicity.
 
   TString          fEMCALClustersListName;         ///<  Alternative list of clusters produced elsewhere and not from InputEvent.
+  TString          fEMCALCellsListName;            ///<  Alternative list of cells produced elsewhere and not from InputEvent.
   
   //  Event selection
   
@@ -993,7 +997,7 @@ public:
   AliCaloTrackReader & operator = (const AliCaloTrackReader & r) ; 
   
   /// \cond CLASSIMP
-  ClassDef(AliCaloTrackReader,78) ;
+  ClassDef(AliCaloTrackReader,79) ;
   /// \endcond
 
 } ;

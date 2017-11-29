@@ -1,5 +1,5 @@
-#ifndef CONFIGUREEMCALRECOUTILS_C
-#define CONFIGUREEMCALRECOUTILS_C
+//#ifndef CONFIGUREEMCALRECOUTILS_C
+//#define CONFIGUREEMCALRECOUTILS_C
 
 ///
 /// \file ConfigureEMCALRecoUtils.C
@@ -109,5 +109,5 @@ void ConfigureEMCALRecoUtils(AliEMCALRecoUtils* reco,
   
 }
 
-#endif //CONFIGUREEMCALRECOUTILS_C
+//#endif //CONFIGUREEMCALRECOUTILS_C
 

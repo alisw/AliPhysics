@@ -17,7 +17,7 @@
 
 #include "AliAnalysisTaskEMCALClusterize.h"
 
-#include "ConfigureEMCALRecoUtils.C"
+//#include "ConfigureEMCALRecoUtils.C"
 
 #endif // CINT
 
@@ -233,13 +233,17 @@ AliAnalysisTaskEMCALClusterize* AddTaskEMCALClusterize(
   // Configure AliEMCALRecoUtils
   //-------------------------------------------------------
 
-  AliEMCALRecoUtils * reco = clusterize->GetRecoUtils();
+//  AliEMCALRecoUtils * reco = clusterize->GetRecoUtils();
+//  
+//  gROOT->LoadMacro("$ALICE_PHYSICS/PWGPP/EMCAL/macros/ConfigureEMCALRecoUtils.C");
+//  
+//  ConfigureEMCALRecoUtils(reco,bMC,exotic,bNonLine,bRecalE,bBad,bRecalT);
+
+  clusterize->ConfigureEMCALRecoUtils(bMC,exotic,bNonLine,bRecalE,bBad,bRecalT);
   
-  gROOT->LoadMacro("$ALICE_PHYSICS/PWGPP/EMCAL/macros/ConfigureEMCALRecoUtils.C");
-  
-  ConfigureEMCALRecoUtils(reco,bMC,exotic,bNonLine,bRecalE,bBad,bRecalT);
-  
+  //-------------------------------------------------------
   // Do track matching after clusterization
+  //-------------------------------------------------------
   if ( tm > 0 ) 
   {
     clusterize->SwitchOnTrackMatching();
@@ -249,7 +253,6 @@ AliAnalysisTaskEMCALClusterize* AddTaskEMCALClusterize(
   }
   else   clusterize->SwitchOffTrackMatching();
 
-  
   //-------------------------------------------------------
   // Alignment matrices
   //-------------------------------------------------------

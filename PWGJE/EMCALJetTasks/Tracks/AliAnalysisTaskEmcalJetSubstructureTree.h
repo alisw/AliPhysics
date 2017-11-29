@@ -110,14 +110,21 @@ public:
     ReclusterizerException() : std::exception() {}
     virtual ~ReclusterizerException() throw() {}
 
-    const char *what() const throw() { return "Error in reclusterizing in fastjet"; }
+    virtual const char *what() const throw() { return "Error in reclusterizing in fastjet"; }
   };
   class SubstructureException : public std::exception {
   public:
     SubstructureException() : std::exception() {}
     virtual ~SubstructureException() throw() {}
 
-    const char *what() const throw() { return "Error in builing substructure observable"; }
+    virtual const char *what() const throw() { return "Error in builing substructure observable"; }
+  };
+  class SoftDropException : public std::exception {
+  public:
+    SoftDropException() : std::exception() {}
+    virtual ~SoftDropException() throw() {}
+
+    virtual const char *what() const throw() { return "No associated softdrop structure found for jet - softdrop algorithm failing"; }
   };
   enum Reclusterizer_t {
     kCAAlgo = 0,
@@ -181,6 +188,13 @@ public:
 	  fReclusterizer = reclusterizer;
 	}
 
+  void SetFillPartLevelBranches(Bool_t doFill) { fFillPart = doFill; }
+  void SetFillRhoBranches(Bool_t doFill) { fFillRho = doFill; }
+  void SetFillMassBranches(Bool_t doFill) { fFillMass = doFill; }
+  void SetFillSoftdropBranches(Bool_t doFill) { fFillSoftDrop = doFill; }
+  void SetFillNSubjettinessBranches(Bool_t doFill) { fFillNSub = doFill; }
+  void SetFillSubstructureBranches(Bool_t doFill) { fFillStructGlob = doFill; }
+
 	static AliAnalysisTaskEmcalJetSubstructureTree *AddEmcalJetSubstructureTreeMaker(Bool_t isMC, Bool_t isData, Double_t jetradius, AliJetContainer::EJetType_t jettype, AliJetContainer::ERecoScheme_t recombinationScheme, const char *name);
 
 protected:
@@ -202,6 +216,15 @@ protected:
 
 	void DoConstituentQA(const AliEmcalJet *jet, const AliParticleContainer *tracks, const AliClusterContainer *clusters);
 
+  void LinkOutputBranch(const TString &branchname, Double_t *datalocation);
+
+  bool IsPartBranch(const TString &branchname) const;
+  bool IsRhoBranch(const TString &branchname) const;
+  bool IsMassBranch(const TString &branchname) const;
+  bool IsSoftdropBranch(const TString &branchname) const;
+  bool IsNSubjettinessBranch(const TString &branchname) const;
+  bool IsStructbranch(const TString &branchname) const;
+
 private:
 	TTree                       *fJetSubstructureTree;        //!<! Tree with jet substructure information
 	Double_t                     fJetTreeData[kTNVar];        ///< Variable storage for the jet tree
@@ -214,6 +237,14 @@ private:
 	UInt_t                       fTriggerSelectionBits;       ///< Trigger selection bits
   TString                      fTriggerSelectionString;     ///< Trigger selection string
   Bool_t                       fUseDownscaleWeight;         ///< Use 1/downscale as weight
+
+  // Fill levels for tree (save disk space when information is not needed)
+  Bool_t                       fFillPart;                   ///< Fill particle level information
+  Bool_t                       fFillRho;                    ///< Fill rho parameters
+  Bool_t                       fFillMass;                   ///< Fill jet mass
+  Bool_t                       fFillSoftDrop;               ///< Fill soft drop parameters
+  Bool_t                       fFillNSub;                   ///< Fill N-subjettiness
+  Bool_t                       fFillStructGlob;             ///< Fill other substructure variables
 
 	/// \cond CLASSIMP
 	ClassDef(AliAnalysisTaskEmcalJetSubstructureTree, 1);

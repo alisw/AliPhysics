@@ -123,6 +123,7 @@ AliAnalysisHFjetTagHFE::AliAnalysisHFjetTagHFE() :
   fQAHistJetPhi(0),
   fQAHistTrPhiJet(0),
   fQAHistTrPhi(0),
+  fQAHistNits(0),
   fHistClustE(0),
   fHistClustEtime(0),
   fEMCClsEtaPhi(0),
@@ -219,6 +220,7 @@ AliAnalysisHFjetTagHFE::AliAnalysisHFjetTagHFE(const char *name) :
   fQAHistJetPhi(0),
   fQAHistTrPhiJet(0),
   fQAHistTrPhi(0),
+  fQAHistNits(0),
   fHistClustE(0),
   fHistClustEtime(0),
   fEMCClsEtaPhi(0),
@@ -419,6 +421,12 @@ void AliAnalysisHFjetTagHFE::UserCreateOutputObjects()
   fHistIncEle = new TH1F("fHistIncEle","Inclusive electron;p_{T}",100,0.,20.);
   fOutput->Add(fHistIncEle);
 
+  fHistHfEleMC = new TH1F("fHistHfEleMC","HF electron;p_{T}",100,0.,20.);
+  fOutput->Add(fHistHfEleMC);
+
+  fHistHfEleMCreco = new TH1F("fHistHfEleMCreco","HF reco electron;p_{T}",100,0.,20.);
+  fOutput->Add(fHistHfEleMCreco);
+
   fHistIncEleInJet0 = new TH1F("fHistIncEleInJet0","Inclusive electron in Jet;p_{T}",100,0.,20.);
   fOutput->Add(fHistIncEleInJet0);
 
@@ -486,6 +494,9 @@ void AliAnalysisHFjetTagHFE::UserCreateOutputObjects()
   fQAHistTrPhi = new TH1F("fQAHistTrPhi","track phi",650,0.0,6.5);
   fOutput->Add(fQAHistTrPhi);
  
+  fQAHistNits = new TH1F("fQAHistNits","ITS hits",7,-0.5,-6.5);
+  fOutput->Add(fQAHistNits);
+
   fHistClustE = new TH1F("fHistClustE", "EMCAL cluster energy distribution; Cluster E;counts", 500, 0.0, 50.0);
   fOutput->Add(fHistClustE);
 
@@ -938,6 +949,7 @@ Bool_t AliAnalysisHFjetTagHFE::Run()
 
 
         fQAHistTrPhi->Fill(phi); // QA
+        fQAHistNits->Fill(atrack->GetITSNcls());
 
         if(iHybrid)
           {
@@ -1067,7 +1079,7 @@ Bool_t AliAnalysisHFjetTagHFE::Run()
     // data
     fHistIncEle->Fill(pt);  
     // MC
-    //if(iMCHF)fHistHfEleMCreco->Fill(pt);  // to do ULS, LS
+    if(iMCHF)fHistHfEleMCreco->Fill(pt);  // to do ULS, LS
     if(iMCPHO)
       {  
     cout << "iMCPHO = " << iMCPHO << endl; 
@@ -1363,7 +1375,7 @@ void AliAnalysisHFjetTagHFE::MakeParticleLevelJet()
               cout << MCpTarray[0] << endl;
               double MChfepT=fMCparticle->Pt(); 
               cout << MChfepT << endl;
-              //if(fabs(fMCparticle->Eta())<0.6)fHistHfEleMC->Fill(MChfepT); 
+              fHistHfEleMC->Fill(MChfepT); 
 
               //if (fJetsCont) 
                   {
