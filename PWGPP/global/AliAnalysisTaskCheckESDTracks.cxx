@@ -671,7 +671,9 @@ void AliAnalysisTaskCheckESDTracks::UserExec(Option_t *)
 
   const AliVVertex* vtTrc = esd->GetPrimaryVertex();
   const AliVVertex* vtSPD = esd->GetPrimaryVertexSPD();
-  if (vtTrc->GetNContributors()<2 || vtSPD->GetNContributors()<1) return; // one of vertices is missing
+  TString titTrc=vtTrc->GetTitle();
+  if(titTrc.IsNull() || titTrc=="vertexer: 3D" || titTrc=="vertexer: Z") return;
+  if (vtSPD->GetNContributors()<1) return;
   fHistNEvents->Fill(2);
 
   double covTrc[6],covSPD[6];
