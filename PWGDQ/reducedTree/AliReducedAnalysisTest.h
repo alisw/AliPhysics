@@ -6,6 +6,7 @@
 #define ALIREDUCEDANALYSISTEST_H
 
 #include <TList.h>
+#include <TClonesArray.h>
 
 #include "AliReducedAnalysisTaskSE.h"
 #include "AliReducedInfoCut.h"
@@ -46,6 +47,8 @@ protected:
   Bool_t IsEventSelected(AliReducedBaseEvent* event);
   Bool_t IsTrackSelected(AliReducedBaseTrack* track);
   Bool_t IsPairSelected(AliReducedBaseTrack* pair);
+  
+  void FillTrackHistograms(TClonesArray* trackList);
   
   ClassDef(AliReducedAnalysisTest,2);
 };

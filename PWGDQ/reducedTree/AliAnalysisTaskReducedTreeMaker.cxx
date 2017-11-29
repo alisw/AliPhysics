@@ -113,6 +113,8 @@ AliAnalysisTaskReducedTreeMaker::AliAnalysisTaskReducedTreeMaker() :
   fFillEventPlaneInfo(kFALSE),
   fFillMCInfo(kFALSE),
   fFillHFInfo(kFALSE),
+  fMCsignals(),
+  fMCsignalsWritingOptions(),
   fFillTRDMatchedTracks(kFALSE),
   fFillAllTRDMatchedTracks(kFALSE),
   fEventFilter(0x0),
@@ -175,6 +177,8 @@ AliAnalysisTaskReducedTreeMaker::AliAnalysisTaskReducedTreeMaker(const char *nam
   fFillEventPlaneInfo(kFALSE),
   fFillMCInfo(kFALSE),
   fFillHFInfo(kFALSE),
+  fMCsignals(),
+  fMCsignalsWritingOptions(),
   fFillTRDMatchedTracks(kFALSE),
   fFillAllTRDMatchedTracks(kFALSE),
   fEventFilter(0x0),
@@ -209,7 +213,7 @@ AliAnalysisTaskReducedTreeMaker::AliAnalysisTaskReducedTreeMaker(const char *nam
   fK0sMassRange[0] = 0.4; fK0sMassRange[1] = 0.6;
   fLambdaMassRange[0] = 1.08; fLambdaMassRange[1] = 1.15;
   fGammaMassRange[0] = 0.0; fGammaMassRange[1] = 0.1;
-
+  for(Int_t i=0; i<kMaxMCsignals; ++i) fMCsignalsWritingOptions[i] = kBaseTrack;
   //fAliFlowTrackCuts = new AliFlowTrackCuts();
  
   DefineInput(0,TChain::Class());
@@ -924,6 +928,44 @@ Double_t AliAnalysisTaskReducedTreeMaker::Radius(Double_t eta, Double_t z){
   return r;
 }
 
+//_________________________________________________________________________________
+UInt_t AliAnalysisTaskReducedTreeMaker::MatchMCsignals(Int_t iparticle) {
+   //
+   // check whether the defined MC signals match this particle
+   //
+   if(!AliDielectronMC::Instance()->HasMC()) return 0;
+   
+   Int_t nMCsignals = fMCsignals.GetEntries();
+   if(!nMCsignals) return 0;
+   
+   AliMCEvent* event = AliDielectronMC::Instance()->GetMCEvent();
+   AliVParticle* particle = event->GetTrack(iparticle);
+   
+   UInt_t mcSignalsMap = 0;
+   for(Int_t isig=0; isig<nMCsignals; ++isig) {
+      Bool_t mcMatch = kFALSE;
+      // TODO: add the code to really check the MC signal
+      if(gRandom->Rndm()<0.05) mcMatch = kTRUE;
+      if(mcMatch)
+         mcSignalsMap |= (UInt_t(1)<<isig);
+   }
+   return mcSignalsMap;
+}
+
+//_________________________________________________________________________________
+Bool_t AliAnalysisTaskReducedTreeMaker::CheckMCtruthWriteFormat(UInt_t bitMap) {
+   //
+   // For the bits which are on, check which writing options were requested
+   // If both base and full track formats are requested, the track will be written as full track
+   // Return TRUE if base track format is chosen, and FALSE otherwise 
+   //
+   Bool_t writeBaseTrack = kTRUE;
+   for(Int_t iflag=0;iflag<32;++iflag) {
+      if(!(bitMap & (UInt_t(1)<<iflag))) continue;
+      if(fMCsignalsWritingOptions[iflag]==kFullTrack) writeBaseTrack = kFALSE;
+   }
+   return writeBaseTrack;
+}
 
 //_________________________________________________________________________________
 void AliAnalysisTaskReducedTreeMaker::FillMCTruthInfo() 
@@ -933,16 +975,81 @@ void AliAnalysisTaskReducedTreeMaker::FillMCTruthInfo()
    //
    Bool_t hasMC = AliDielectronMC::Instance()->HasMC();
    if(!hasMC) return;
+   Int_t nMCsignals = fMCsignals.GetEntries();
+   if(!nMCsignals) return;
    
-   AliDielectronMC* mcHandler = AliDielectronMC::Instance();
+   //AliDielectronMC* mcHandler = AliDielectronMC::Instance();
+   AliMCEvent* event = AliDielectronMC::Instance()->GetMCEvent();
    
-   Int_t nPrimary = mcHandler->GetNPrimaryFromStack();
-
+   //Int_t nPrimary = mcHandler->GetNPrimaryFromStack();
+   
+   
    //cout << "Event+++++++++++++++++++++++++" << endl;
    
-   for(Int_t i=0; i<nPrimary; ++i) {
-      AliVParticle* particle = mcHandler->GetMCTrackFromMCEvent(i);
+   // We loop over all particles in the MC event
+   for(Int_t i=0; i<event->GetNumberOfTracks(); ++i) {
+      //AliVParticle* particle = mcHandler->GetMCTrackFromMCEvent(i);
+      AliVParticle* particle = event->GetTrack(i);
+      if(!particle) continue;
+      UInt_t mcSignalsMap = MatchMCsignals(i);    // check which MC signals match this particle and fill the bit map
+      if(!mcSignalsMap) continue;
       
+      Bool_t writeBaseTrack = kFALSE;      // if false write full track format
+      writeBaseTrack = CheckMCtruthWriteFormat(mcSignalsMap);  // check which track format (base/full) should be used
+      // write the track in the first track array if the format is full track
+      // if the track format is base track then write it on either the first or the second array, depending on the tree writing options
+      Bool_t useFirstTrackArray = kTRUE;
+      if(writeBaseTrack) {
+         if(fTreeWritingOption==kBaseEventsWithFullTracks || fTreeWritingOption==kFullEventsWithFullTracks)
+            useFirstTrackArray = kFALSE;
+      }
+      
+      TClonesArray* trackArrPointer = fReducedEvent->fTracks;
+      if(!useFirstTrackArray) trackArrPointer = fReducedEvent->fTracks2;
+      TClonesArray& tracks = *(trackArrPointer);
+      Int_t currentTrackIdx = tracks.GetEntries();
+      
+      AliReducedBaseTrack* reducedParticle=NULL;
+      if(writeBaseTrack) 
+         reducedParticle=new(tracks[currentTrackIdx]) AliReducedBaseTrack();
+      else
+         reducedParticle=new(tracks[currentTrackIdx]) AliReducedTrackInfo();
+      
+      reducedParticle->fMCFlags = mcSignalsMap;
+      reducedParticle->PxPyPz(particle->Px(), particle->Py(), particle->Pz());
+      reducedParticle->Charge(particle->Charge());
+   
+      if(writeBaseTrack) continue;
+      
+      AliReducedTrackInfo* trackInfo = dynamic_cast<AliReducedTrackInfo*>(reducedParticle);
+      if(!trackInfo) continue;
+      
+      trackInfo->fMCLabels[0] = particle->GetLabel();
+      trackInfo->fMCPdg[0] = particle->PdgCode();
+      trackInfo->fMCMom[0] = particle->Px();
+      trackInfo->fMCMom[1] = particle->Py();
+      trackInfo->fMCMom[2] = particle->Pz();
+      
+      AliVParticle* mother = event->GetTrack(particle->GetMother());
+      if(mother) {
+         trackInfo->fMCLabels[1] = mother->GetLabel();
+         trackInfo->fMCPdg[1] = mother->PdgCode();
+         
+         AliVParticle* grandmother = event->GetTrack(mother->GetMother());
+         if(grandmother) {
+            trackInfo->fMCLabels[2] = grandmother->GetLabel();
+            trackInfo->fMCPdg[2] = grandmother->PdgCode();
+            
+            AliVParticle* grandgrandmother = event->GetTrack(grandmother->GetMother());
+            if(grandgrandmother) {
+               trackInfo->fMCLabels[3] = grandgrandmother->GetLabel();
+               trackInfo->fMCPdg[3] = grandgrandmother->PdgCode();
+            }
+         }
+      }
+      if(fFillHFInfo) trackInfo->fHFProc = AliDielectronMC::Instance()->GetHFProcess(particle->GetLabel());
+
+/*      
       // write J/psi's and electrons from J/psi decays
       // TODO: Create a dynamical way to define which particles from the MC stack will be written
       if(!particle) continue;
@@ -1006,7 +1113,7 @@ void AliAnalysisTaskReducedTreeMaker::FillMCTruthInfo()
       }
 
       if(fFillHFInfo)      trackInfo->fHFProc = mcHandler->GetHFProcess(particle->GetLabel());
-
+*/
       
       /*cout << "particle label/pdg/mlabel/mpdg/px/py/pz/ndaughters/first/last :: " << trackInfo->fMCLabels[0] << "/" << trackInfo->fMCPdg[0] << "/"
         << trackInfo->fMCLabels[1] << "/" << trackInfo->fMCPdg[1] << "/" << reducedParticle->Px() << "/"
@@ -1414,7 +1521,6 @@ void AliAnalysisTaskReducedTreeMaker::FillTrackInfo()
            trackInfo->fMCLabels[0] = esdTrack->GetLabel();
            trackInfo->fMCPdg[0] = truthParticle->PdgCode();
            trackInfo->fMCGeneratorIndex = truthParticle->GetGeneratorIndex();
-           if(truthParticle->PdgCode()!=-9999 && esdTrack->GetLabel()!=-9999) trackInfo->fQualityFlags |= (ULong_t(1)<<22);   // means the track has MC truth info
            
            AliMCParticle* motherTruth = AliDielectronMC::Instance()->GetMCTrackMother(truthParticle);
            if(motherTruth) {
@@ -1511,7 +1617,6 @@ void AliAnalysisTaskReducedTreeMaker::FillTrackInfo()
             trackInfo->fMCLabels[0] = aodTrack->GetLabel();
             trackInfo->fMCPdg[0] = truthParticle->PdgCode();
             trackInfo->fMCGeneratorIndex = truthParticle->GetGeneratorIndex();
-            if(truthParticle->PdgCode()!=-9999 && aodTrack->GetLabel()!=-9999) trackInfo->fQualityFlags |= (ULong_t(1)<<22);
             
             AliAODMCParticle* motherTruth = AliDielectronMC::Instance()->GetMCTrackMother(truthParticle);
             if(motherTruth) {

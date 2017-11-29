@@ -50,12 +50,14 @@ public:
   void SetFilteredTreeWritingOption(Int_t option)         {fFilteredTreeWritingOption = option;}
   void SetFilteredTreeActiveBranch(TString b)   {fActiveBranches+=b+";";}
   void SetFilteredTreeInactiveBranch(TString b) {fInactiveBranches+=b+";";}
+  void SetProcessMC(Bool_t option=kTRUE) {fProcessMCInfo=option;}
   
   // getters
   virtual AliHistogramManager* GetHistogramManager() const = 0;
   AliReducedBaseEvent* GetEvent() const {return fEvent;}
   TTree* GetFilteredTree() {return fFilteredTree;}
   Int_t GetFilteredTreeWritingOption() const {return fFilteredTreeWritingOption;}
+  Bool_t ProcessMC() const {return fProcessMCInfo;}
   
 protected:
   AliReducedAnalysisTaskSE(const AliReducedAnalysisTaskSE& task);             
@@ -72,10 +74,11 @@ protected:
   TString fInactiveBranches;                // list of inactive output tree branches
   AliReducedBaseEvent *fFilteredEvent;     // filtered reduced event
   Int_t     fFilteredTreeWritingOption;     // one of the options described by ETreeWritingOptions
+  Bool_t  fProcessMCInfo;
   
   ULong_t fEventCounter;   // event counter
   
-  ClassDef(AliReducedAnalysisTaskSE, 3)
+  ClassDef(AliReducedAnalysisTaskSE, 4)
 };
 
 #endif

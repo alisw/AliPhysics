@@ -14,6 +14,7 @@ public:
    
    enum Source {
       kPhysicalPrimary=0,                         // AliMCEvent::IsPhysicalPrimary()
+      kFromBGEvent,                                 // AliMCEvent::IsFromBGEvent()
       kSecondaryFromWeakDecay,           // AliMCEvent::IsSecondaryFromWeakDecay()
       kSecondaryFromMaterial,                 // AliMCEvent::IsSecondaryFromMaterial()
       kFromSubsidiaryEvent,                     // AliMCEvent::IsFromSubsidiaryEvent()

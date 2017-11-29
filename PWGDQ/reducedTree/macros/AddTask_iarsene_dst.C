@@ -80,6 +80,14 @@ AliAnalysisTask *AddTask_iarsene_dst(Int_t reducedEventType=-1, Bool_t writeTree
   task->SetWriteTree(writeTree);
   //task->SetWriteEventsWithNoSelectedTracks(kFALSE);
   
+  AliSignalMC* jpsiInclusive=new AliSignalMC(1,1);
+  jpsiInclusive->SetPDGcode(0, 0, 443, kFALSE);
+  task->AddMCsignal(jpsiInclusive, AliAnalysisTaskReducedTreeMaker::kBaseTrack);
+  AliSignalMC* jpsiFromB=new AliSignalMC(1,2);
+  jpsiFromB->SetPDGcode(0, 0, 443, kFALSE);
+  jpsiFromB->SetPDGcode(0, 1, 500, kTRUE);
+  task->AddMCsignal(jpsiFromB, AliAnalysisTaskReducedTreeMaker::kFullTrack);
+    
   SetInactiveBranches(task);
   
   mgr->AddTask(task);
@@ -226,7 +234,7 @@ void SetInactiveBranches(AliAnalysisTaskReducedTreeMaker* task) {
    //task->SetTreeInactiveBranch("fTracks.fTRDntracklets*");
    //task->SetTreeInactiveBranch("fTracks.fTRDpid*");
    //task->SetTreeInactiveBranch("fTracks.fTRDpidLQ2D*");
-   task->SetTreeInactiveBranch("fTracks.fCaloClusterId");
+   //task->SetTreeInactiveBranch("fTracks.fCaloClusterId");
    //task->SetTreeInactiveBranch("fTracks.fMCMom*");
    //task->SetTreeInactiveBranch("fTracks.fMCFreezeout*");
    //task->SetTreeInactiveBranch("fTracks.fMCLabels*");

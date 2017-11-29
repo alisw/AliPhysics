@@ -7,6 +7,7 @@
 
 #include <TList.h>
 #include <AliAnalysisTaskSE.h>
+#include <AliSignalMC.h>
 
 class AliAnalysisCuts;
 class TTree;
@@ -31,6 +32,12 @@ public:
       kBaseEventsWithFullTracks,           // write basic event info and full track info
       kFullEventsWithBaseTracks,           // write full event info and base track info
       kFullEventsWithFullTracks              // write full event info and full track info
+   };
+   
+   enum ETreeMCwritingOptions {
+      kBaseTrack=0,
+      kFullTrack,
+      kMaxMCsignals=32
    };
    
 public:
@@ -95,6 +102,10 @@ public:
   //void SetFillBayesianPIDInfo(Bool_t flag=kTRUE)  {fFillBayesianPIDInfo = flag;}
   void SetFillEventPlaneInfo(Bool_t flag=kTRUE)    {fFillEventPlaneInfo = flag;}
   void SetFillMCInfo(Bool_t flag=kTRUE)               {fFillMCInfo = flag;}
+  void AddMCsignal(AliSignalMC* mc, Int_t wOpt=kFullTrack) {
+     if(fMCsignals.GetEntries()>=kMaxMCsignals) return; 
+     fMCsignals.Add(mc); 
+     fMCsignalsWritingOptions[fMCsignals.GetEntries()-1] = wOpt;}
   void SetFillHFInfo(Bool_t flag=kTRUE)               {fFillHFInfo = flag;}
   void SetFillTRDMatchedTracks(Bool_t flag1=kTRUE, Bool_t flag2=kFALSE)   {fFillTRDMatchedTracks = flag1; fFillAllTRDMatchedTracks=flag2;}
   void SetWriteEventsWithNoSelectedTracks(Bool_t flag=kTRUE, Double_t scaleDown=0.0)   {
@@ -137,6 +148,8 @@ public:
   Bool_t fFillEventPlaneInfo;     // Write event plane information
   Bool_t fFillMCInfo;                  // Write MC truth information
   Bool_t fFillHFInfo;                  // Write HF Process information
+  TList   fMCsignals;                  // list of AliSignalMC objects to select which particles from the Kinematics stack will be written in the tree
+  Int_t   fMCsignalsWritingOptions[kMaxMCsignals];   // writing options for each of the MC signals (either base or full track)     
   Bool_t fFillTRDMatchedTracks;  // Write global tracks with matched TRD tracks
   Bool_t fFillAllTRDMatchedTracks;  // if true, fill all global tracks matched in TRD; if false, fill just those global tracks which were selected with the track of V0 filters
 
@@ -183,11 +196,13 @@ public:
   void FillCaloClusters();
   void FillFMDInfo(Bool_t isAOD);
   Int_t GetSPDTrackletMultiplicity(AliVEvent* event, Float_t lowEta, Float_t highEta);
-
+  
+  UInt_t MatchMCsignals(Int_t iparticle);     // check all MC signals for MC particle i and write decisions in a bit map
+  Bool_t CheckMCtruthWriteFormat(UInt_t bitMap);   // make a decision on which format (base/full) to be used for the MC track
   
   AliAnalysisTaskReducedTreeMaker(const AliAnalysisTaskReducedTreeMaker &c);
   AliAnalysisTaskReducedTreeMaker& operator= (const AliAnalysisTaskReducedTreeMaker &c);
 
-  ClassDef(AliAnalysisTaskReducedTreeMaker, 5); //Analysis Task for creating a reduced event information tree 
+  ClassDef(AliAnalysisTaskReducedTreeMaker, 6); //Analysis Task for creating a reduced event information tree 
 };
 #endif

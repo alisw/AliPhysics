@@ -1013,6 +1013,15 @@ void AliReducedVarManager::FillTrackQualityFlag(BASETRACK* track, UShort_t flag,
 }
 
 //_________________________________________________________________
+void AliReducedVarManager::FillTrackMCFlag(BASETRACK* track, UShort_t flag, Float_t* values) {
+   //
+   // fill the track MC flag
+   //
+   values[kTrackMCFlag] = -1;
+   if(flag<32 && track->TestMCFlag(flag)) values[kTrackMCFlag] = flag;
+}
+
+//_________________________________________________________________
 void AliReducedVarManager::FillPairQualityFlag(PAIR* p, UShort_t flag, Float_t* values) {
   //
   // fill the pair quality flag
