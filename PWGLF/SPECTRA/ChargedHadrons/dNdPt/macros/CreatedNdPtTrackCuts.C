@@ -9,7 +9,7 @@
 // added cut modes 200,201: replacing TPCNcluster cut
 
 
-AliESDtrackCuts* CreatedNdPtTrackCuts(Int_t cutMode=1, const char *control = "";  Bool_t fieldOn = kTRUE, Bool_t hists = kTRUE)
+AliESDtrackCuts* CreatedNdPtTrackCuts(Int_t cutMode=1, const char *control = "",  Bool_t fieldOn = kTRUE, Bool_t hists = kTRUE)
 {
   AliESDtrackCuts* esdTrackCuts = new AliESDtrackCuts("AliESDtrackCuts");
   
@@ -2027,9 +2027,14 @@ AliESDtrackCuts* CreatedNdPtTrackCuts(Int_t cutMode=1, const char *control = "";
     //
     esdTrackCuts->SetDCAToVertex2D(kFALSE);
     esdTrackCuts->SetRequireSigmaToVertex(kFALSE);
-    esdTrackCuts->SetMaxDCAToVertexZ(2.0); 
+    esdTrackCuts->SetMaxDCAToVertexZ(2.0);
     // 7*(0.0026+0.0050/pt^1.01)
-    esdTrackCuts->SetMaxDCAToVertexXYPtDep("0.0182+0.0350/pt^1.01"); 
+//     sigma_expected = 0.0035+0.0064/pt+0.0051/pt^2
+    if (stControlString.Contains("XeXe")){ 
+      esdTrackCuts->SetMaxDCAToVertexXYPtDep("0.0182+0.0350/pt^1.01");
+    }else{
+      esdTrackCuts->SetMaxDCAToVertexXYPtDep("0.0182+0.0350/pt^1.01");
+    }
     esdTrackCuts->SetAcceptKinkDaughters(kFALSE); 
     // tpcc cut
     esdTrackCuts->SetMaxChi2TPCConstrainedGlobal(36.);
@@ -2052,8 +2057,13 @@ AliESDtrackCuts* CreatedNdPtTrackCuts(Int_t cutMode=1, const char *control = "";
     if(cutMode==5008){esdTrackCuts->SetMaxFractionSharedTPCClusters(1.0);}
     if(cutMode==5009){esdTrackCuts->SetMaxChi2TPCConstrainedGlobal(25.);} 
     if(cutMode==5010){esdTrackCuts->SetMaxChi2TPCConstrainedGlobal(49.);}
-    if(cutMode==5011){esdTrackCuts->SetMaxDCAToVertexXYPtDep("0.0104+0.0200/pt^1.01");}
-    if(cutMode==5012){esdTrackCuts->SetMaxDCAToVertexXYPtDep("0.0260+0.0500/pt^1.01");}
+    if (stControlString.Contains("XeXe")){
+      if(cutMode==5011){esdTrackCuts->SetMaxDCAToVertexXYPtDep("0.0104+0.0200/pt^1.01");}
+      if(cutMode==5012){esdTrackCuts->SetMaxDCAToVertexXYPtDep("0.0260+0.0500/pt^1.01");}
+    }else{
+      if(cutMode==5011){esdTrackCuts->SetMaxDCAToVertexXYPtDep("0.0104+0.0200/pt^1.01");}
+      if(cutMode==5012){esdTrackCuts->SetMaxDCAToVertexXYPtDep("0.0260+0.0500/pt^1.01");}
+    }
     if(cutMode==5013){esdTrackCuts->SetMaxDCAToVertexZ(1.0); }
     if(cutMode==5014){esdTrackCuts->SetMaxDCAToVertexZ(5.0); }
     if(cutMode==5015){esdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kOff); }
