@@ -52,6 +52,9 @@ class AliAnalysisTaskCheckESDTracks : public AliAnalysisTaskSE {
   void SetTriggerMask(Int_t mask){
     fTriggerMask=mask;
   }
+  void SetUsePileupCut(Bool_t opt=kTRUE){
+    fUsePileupCut=kTRUE;
+  }
   void SetTPCTrackCuts(AliESDtrackCuts* cuts){
     if(fTrCutsTPC) delete fTrCutsTPC;
     fTrCutsTPC=new AliESDtrackCuts(*cuts);

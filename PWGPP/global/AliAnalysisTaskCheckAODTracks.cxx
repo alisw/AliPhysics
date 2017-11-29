@@ -11,6 +11,7 @@
 #include "AliESDtrack.h"
 #include "AliESDVertex.h"
 #include <AliAODMCParticle.h>
+#include "AliAnalysisUtils.h"
 #include <TSystem.h>
 #include <TTree.h>
 #include <TTree.h>
@@ -112,6 +113,7 @@ AliAnalysisTaskCheckAODTracks::AliAnalysisTaskCheckAODTracks() :
   fTrCutsTPC{nullptr},
   fMinNumOfTPCPIDclu(0),
   fUsePhysSel(kTRUE),
+  fUsePileupCut(kTRUE),
   fTriggerMask(AliVEvent::kAnyINT),
   fNEtaBins(10),
   fNPhiBins(144),
@@ -307,10 +309,11 @@ void AliAnalysisTaskCheckAODTracks::UserCreateOutputObjects() {
   //fHistNEvents->Sumw2();
   fHistNEvents->SetMinimum(0);
   fHistNEvents->GetXaxis()->SetBinLabel(1,"All events");
-  fHistNEvents->GetXaxis()->SetBinLabel(2,"PhysSel"); 
-  fHistNEvents->GetXaxis()->SetBinLabel(3,"Good vertex"); 
-  fHistNEvents->GetXaxis()->SetBinLabel(4,"Pass zSPD-zTrk vert sel"); 
-  fHistNEvents->GetXaxis()->SetBinLabel(5,"|zvert|<10"); 
+  fHistNEvents->GetXaxis()->SetBinLabel(2,"PhysSel");
+  fHistNEvents->GetXaxis()->SetBinLabel(3,"Good vertex");
+  fHistNEvents->GetXaxis()->SetBinLabel(4,"Pass zSPD-zTrk vert sel");
+  fHistNEvents->GetXaxis()->SetBinLabel(5,"|zvert|<10");
+  fHistNEvents->GetXaxis()->SetBinLabel(6,"Pileup cut");
   fOutput->Add(fHistNEvents);
 
   fHistNTracks = new TH1F("hNTracks", "Number of tracks in AOD events ; N_{tracks}",(Int_t)(fMaxMult+1.00001),-0.5,fMaxMult+0.5);
@@ -541,7 +544,9 @@ void AliAnalysisTaskCheckAODTracks::UserExec(Option_t *)
 
   const AliVVertex* vtTrc = aod->GetPrimaryVertex();
   const AliVVertex* vtSPD = aod->GetPrimaryVertexSPD();
-  if (vtTrc->GetNContributors()<2 || vtSPD->GetNContributors()<1) return; // one of vertices is missing
+  TString titTrc=vtTrc->GetTitle();
+  if(titTrc.IsNull() || titTrc=="vertexer: 3D" || titTrc=="vertexer: Z") return;
+  if (vtSPD->GetNContributors()<1) return;
   fHistNEvents->Fill(2);
 
   double covTrc[6],covSPD[6];
@@ -559,6 +564,17 @@ void AliAnalysisTaskCheckAODTracks::UserExec(Option_t *)
   Float_t zvert=vtTrc->GetZ();
   if(TMath::Abs(zvert)>10) return;
   fHistNEvents->Fill(4);
+
+  if(fUsePileupCut){
+    AliAnalysisUtils utils;
+    utils.SetMinPlpContribMV(5);
+    utils.SetMaxPlpChi2MV(5.);
+    utils.SetMinWDistMV(15.);
+    utils.SetCheckPlpFromDifferentBCMV(kTRUE);
+    Bool_t isPUMV = utils.IsPileUpMV(aod);
+    if(isPUMV) return;
+    fHistNEvents->Fill(5);
+  }
 
   fHistNtracksFb4VsV0aftEvSel->Fill(vZEROampl,ntracksFB4);
   fHistNtracksFb5VsV0aftEvSel->Fill(vZEROampl,ntracksFB5);
@@ -743,8 +759,7 @@ void AliAnalysisTaskCheckAODTracks::UserExec(Option_t *)
 
     if(track->GetID()<0) continue;
     // convert to ESD track here
-    if(ConvertAndSelectAODTrack(track,vESD)==kFALSE) continue;
-    if(track->GetTPCsignalN()<fMinNumOfTPCPIDclu) continue;
+    if(ConvertAndSelectAODTrack(track,vESD,magField)==kFALSE) continue;
 
     fHistITSnClusTPCsel->Fill(nITSclus);
     for(Int_t layer=0; layer<6; layer++) {
@@ -857,8 +872,8 @@ void AliAnalysisTaskCheckAODTracks::UserExec(Option_t *)
     Double_t yv0=v0->Yv();
     Double_t rv0=TMath::Sqrt(xv0*xv0+yv0*yv0);
 
-    if(ConvertAndSelectAODTrack(pTrack,vESD)==kFALSE) continue;
-    if(ConvertAndSelectAODTrack(nTrack,vESD)==kFALSE) continue;
+    if(ConvertAndSelectAODTrack(pTrack,vESD,magField)==kFALSE) continue;
+    if(ConvertAndSelectAODTrack(nTrack,vESD,magField)==kFALSE) continue;
 
     Bool_t keepK0s=kTRUE;
     Bool_t keepLambda=kTRUE;
@@ -915,7 +930,7 @@ void AliAnalysisTaskCheckAODTracks::UserExec(Option_t *)
 }
 
 //______________________________________________________________________________
-Bool_t AliAnalysisTaskCheckAODTracks::ConvertAndSelectAODTrack(AliAODTrack* aTrack, const AliESDVertex vESD)
+Bool_t AliAnalysisTaskCheckAODTracks::ConvertAndSelectAODTrack(AliAODTrack* aTrack, const AliESDVertex vESD, Double_t magField)
 {
   AliESDtrack esdTrack(aTrack);
   esdTrack.SetTPCClusterMap(aTrack->GetTPCClusterMap());
@@ -930,9 +945,11 @@ Bool_t AliAnalysisTaskCheckAODTracks::ConvertAndSelectAODTrack(AliAODTrack* aTra
   }
   esdTrack.SetTPCchi2(chi2tpc);
   // needed to calculate the impact parameters
-  esdTrack.RelateToVertex(&vESD,0.,3.);
+  Bool_t okDCA=esdTrack.RelateToVertex(&vESD,magField,99999.);
+  if(!okDCA) return kFALSE;
   AliAODVertex* av=aTrack->GetProdVertex();
   if(av->GetType()==AliAODVertex::kKink) return kFALSE;
+  if(aTrack->GetTPCsignalN()<fMinNumOfTPCPIDclu) return kFALSE;
   return fTrCutsTPC->AcceptTrack(&esdTrack);
 }
 //______________________________________________________________________________
