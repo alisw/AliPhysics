@@ -90,9 +90,11 @@ private:
   TTree                *fMCTree;                    //!<!
 
   vector<daughter_struct>   fDeuteronVector;        //<
-  vector<daughter_struct>   fPionVector;            //<
+  vector<daughter_struct>   fPiPlusVector;          //<
+  vector<daughter_struct>   fPiMinusVector;         //<
   vector<daughter_struct>   fMCDeuteronVector;      //<
-  vector<daughter_struct>   fMCPionVector;          //<
+  vector<daughter_struct>   fMCPiPlusVector;        //<
+  vector<daughter_struct>   fMCPiMinusVector;       //<
 
 
   /// \cond CLASSDEF
