@@ -59,7 +59,7 @@ class AliAnalysisTaskEmcalJetPerformance : public AliAnalysisTaskEmcalJet {
     const Double_t minClPt         = 0.30,              // Minimum cluster E in standard cluster container
     const char *suffix             = "");
   
-  enum ParticleType {
+  enum ContributorType {
     kUndefined      = -1, //!< Undefined
     kPhoton         = 0,  //!< Photon (direct or decay)
     kPi0            = 1,  //!< Pi0 (merged pi0)
@@ -111,6 +111,8 @@ class AliAnalysisTaskEmcalJetPerformance : public AliAnalysisTaskEmcalJet {
   void                        FillJetHistograms()                               ;
   void                        FillClusterHistograms()                           ;
   void                        FillParticleCompositionHistograms()               ;
+  void                        FillParticleCompositionClusterHistograms(const AliMCEvent* mcevent);
+  void                        FillParticleCompositionJetHistograms(const AliMCEvent* mcevent);
   void                        ComputeBackground()                               ;
   void                        DoTriggerSimulation()                             ;
   void                        FillTriggerSimHistograms()                        ;
@@ -120,8 +122,8 @@ class AliAnalysisTaskEmcalJetPerformance : public AliAnalysisTaskEmcalJet {
   Double_t                    GetJetPt(const AliEmcalJet* jet, Double_t rho);
   Double_t                    GetDeltaR(const AliTLorentzVector* part, Double_t etaRef, Double_t phiRef);
   Double_t                    GetJetType(const AliEmcalJet* jet);
-  ParticleType                GetParticleType1(const AliVCluster* clus, const AliMCEvent* mcevent, const TClonesArray* clusArray);
-  ParticleType                GetParticleType2(const AliVCluster* clus, const AliMCEvent* mcevent, Int_t label, const AliClusterContainer* clusters);
+  ContributorType             GetContributorTypeFromUtils(const AliVCluster* clus, const AliMCEvent* mcevent, const TClonesArray* clusArray);
+  ContributorType             GetContributorType(const AliVCluster* clus, const AliMCEvent* mcevent, Int_t label);
   
   // Analysis parameters
   Bool_t                      fPlotJetHistograms;                   ///< Set whether to enable inclusive jet histograms
@@ -175,7 +177,7 @@ class AliAnalysisTaskEmcalJetPerformance : public AliAnalysisTaskEmcalJet {
   AliAnalysisTaskEmcalJetPerformance &operator=(const AliAnalysisTaskEmcalJetPerformance&); // not implemented
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskEmcalJetPerformance, 4);
+  ClassDef(AliAnalysisTaskEmcalJetPerformance, 5);
   /// \endcond
 };
 #endif
