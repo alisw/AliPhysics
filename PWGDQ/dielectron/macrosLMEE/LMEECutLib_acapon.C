@@ -398,15 +398,15 @@ AliAnalysisCuts* LMEECutLib::GetTrackCutsAna(Int_t cutSet){
                 trackCutsAOD->AddCut(AliDielectronVarManager::kNclsITS,      2.0, 100.0);
             }
             trackCutsAOD->AddCut(AliDielectronVarManager::kITSchi2Cl,      0.0, 4.5);
-            trackCutsAOD->AddCut(AliDielectronVarManager::kNclsTPC,       80.0, 200.);
-            trackCutsAOD->AddCut(AliDielectronVarManager::kNFclsTPCr,     100.0, 200.);
+            trackCutsAOD->AddCut(AliDielectronVarManager::kNclsTPC,       70.0, 200.); //clusters
+            trackCutsAOD->AddCut(AliDielectronVarManager::kNFclsTPCr,     60.0, 200.); //findable
             //trackCutsAOD->AddCut(AliDielectronVarManager::kTPCchi2Cl,      0.0, 6.0);
             //trackCutsAOD->AddCut(AliDielectronVarManager::kNFclsTPCrFrac,  0.3, 10.); //Number of found/findable
-            trackCutsAOD->AddCut(AliDielectronVarManager::kNFclsTPCfCross, 0.8, 1.1); //Crossed rows over findable
+            trackCutsAOD->AddCut(AliDielectronVarManager::kNFclsTPCfCross, 0.3, 1.1); //Crossed rows over findable
             //Lower limit 0.8 in most filterbits! // 1.1 since 26.02.2014
             AliDielectronTrackCuts *trackCutsDiel = new AliDielectronTrackCuts("trackCutsDiel","trackCutsDiel");
             //trackCutsDiel->SetAODFilterBit(0<<0); // (=0) filterbit 0! //GetStandardITSTPCTrackCuts2010(kFALSE); loose DCA, 2D cut
-            trackCutsDiel->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kFirst);
+            //trackCutsDiel->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kFirst);
             trackCutsDiel->SetRequireITSRefit(kTRUE);
             trackCutsDiel->SetRequireTPCRefit(kTRUE);
 
