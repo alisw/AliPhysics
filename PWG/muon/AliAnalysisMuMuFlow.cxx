@@ -72,7 +72,7 @@ fq2LargeMap{0x0,0x0,0x0,0x0,0x0}
     fAccEffHisto->SetDirectory(0);
   }
   if(q2Map){ //todo : cleaning
-    cout << " ESE for dimuon v2" << endl;
+    std::cout << " ESE for dimuon v2" << std::endl;
     Double_t ptBins[6] = {0.,2.,4.,6.,8.,12.};
     for(Int_t i=0; i<5;i++){
       fq2SmallMap[i]=static_cast<TH1F*>(q2Map->FindObject(Form("smallq2_%0.1f_%0.1f",ptBins[i],ptBins[i+1]))->Clone());
@@ -319,7 +319,7 @@ void AliAnalysisMuMuFlow::FillHistosForPair(const char* eventSelection,
   /// Fill histograms for unlike-sign reconstructed  muon pairs.
   /// For the MC case, we check that only tracks with an associated MC label are selected (usefull when running on embedding).
   /// A weight is also applied for MC case at the pair or the muon track level according to SetMuonWeight() and systLevel.
-
+  printf("filling for pairs\n");
   // Usual cuts
   if ( ( tracki.Charge() == trackj.Charge() ) ) return;
   if (!AliAnalysisMuonUtility::IsMuonTrack(&tracki) ) return;
@@ -568,16 +568,18 @@ void AliAnalysisMuMuFlow::FillHistosForPair(const char* eventSelection,
                 TProfile* hprofmV2 = Prof(eventSelection,triggerClassName,centrality,pairCutName,hprofmV2Name.Data());
                 if ( !hprofmV2)AliError(Form("Could not get %s",hprofmV2Name.Data()));
                 else hprofmV2->Fill(pair4Momentum.M(),cos(2*dphi[i]),inputWeight);
-                if(q2SmallRange(sqrt(Qn[0].X()*Qn[0].X()+Qn[0].Y()*Qn[0].Y()),pair4Momentum.Pt(),GetCentrality())){
-                  TProfile* hprofmV2_sq2 = Prof(eventSelection,triggerClassName,centrality,pairCutName,Form("%s_sq2",hprofmV2Name.Data()));
-                  if ( !hprofmV2_sq2)AliError(Form("Could not get %s",Form("%s_sq2",hprofmV2Name.Data())));
-                  else hprofmV2_sq2->Fill(pair4Momentum.M(),cos(2*dphi[i]),inputWeight);
-                }
-                else if(q2LargeRange(sqrt(Qn[0].X()*Qn[0].X()+Qn[0].Y()*Qn[0].Y()),pair4Momentum.Pt(),GetCentrality())){
-                  TProfile* hprofmV2_Lq2 = Prof(eventSelection,triggerClassName,centrality,pairCutName,Form("%s_Lq2",hprofmV2Name.Data()));
-                  if ( !hprofmV2_Lq2)AliError(Form("Could not get %s",Form("%s_Lq2",hprofmV2Name.Data())));
-                  else hprofmV2_Lq2->Fill(pair4Momentum.M(),cos(2*dphi[i]),inputWeight);
-                }
+                // if(fq2SmallMap && fq2LargeMap){
+                //   if(q2SmallRange(sqrt(Qn[0].X()*Qn[0].X()+Qn[0].Y()*Qn[0].Y()),pair4Momentum.Pt(),GetCentrality())){
+                //     TProfile* hprofmV2_sq2 = Prof(eventSelection,triggerClassName,centrality,pairCutName,Form("%s_sq2",hprofmV2Name.Data()));
+                //     if ( !hprofmV2_sq2)AliError(Form("Could not get %s",Form("%s_sq2",hprofmV2Name.Data())));
+                //     else hprofmV2_sq2->Fill(pair4Momentum.M(),cos(2*dphi[i]),inputWeight);
+                //   }
+                //   else if(q2LargeRange(sqrt(Qn[0].X()*Qn[0].X()+Qn[0].Y()*Qn[0].Y()),pair4Momentum.Pt(),GetCentrality())){
+                //     TProfile* hprofmV2_Lq2 = Prof(eventSelection,triggerClassName,centrality,pairCutName,Form("%s_Lq2",hprofmV2Name.Data()));
+                //     if ( !hprofmV2_Lq2)AliError(Form("Could not get %s",Form("%s_Lq2",hprofmV2Name.Data())));
+                //     else hprofmV2_Lq2->Fill(pair4Momentum.M(),cos(2*dphi[i]),inputWeight);
+                //   }
+                // }
               }
             }
 
@@ -604,16 +606,18 @@ void AliAnalysisMuMuFlow::FillHistosForPair(const char* eventSelection,
                 TProfile* hprof = Prof(eventSelection,triggerClassName,centrality,pairCutName,hprofName.Data());
                 if ( !hprof)AliError(Form("Could not get %s",hprofName.Data()));
                 else hprof->Fill(pair4Momentum.M(),SP[i]/sqrt(Qn[0]*Qn[1]),inputWeight);
-                if(q2SmallRange(sqrt(Qn[0].X()*Qn[0].X()+Qn[0].Y()*Qn[0].Y()),pair4Momentum.Pt(),GetCentrality())){
-                  TProfile* hprofsq2 = Prof(eventSelection,triggerClassName,centrality,pairCutName,Form("%s_sq2",hprofName.Data()));
-                  if ( !hprofsq2)AliError(Form("Could not get %s",hprofName.Data()));
-                  else hprofsq2->Fill(pair4Momentum.M(),SP[i]/sqrt(Qn[0]*Qn[1]),inputWeight);
-                }
-                else if(q2LargeRange(sqrt(Qn[0].X()*Qn[0].X()+Qn[0].Y()*Qn[0].Y()),pair4Momentum.Pt(),GetCentrality())){
-                  TProfile* hprofmV2_Lq2 = Prof(eventSelection,triggerClassName,centrality,pairCutName,Form("%s_Lq2",hprofName.Data()));
-                  if ( !hprofmV2_Lq2)AliError(Form("Could not get %s",hprofName.Data()));
-                  else hprofmV2_Lq2->Fill(pair4Momentum.M(),SP[i]/sqrt(Qn[0]*Qn[1]),inputWeight);
-                }
+                // if(fq2SmallMap && fq2LargeMap){
+                //   if(q2SmallRange(sqrt(Qn[0].X()*Qn[0].X()+Qn[0].Y()*Qn[0].Y()),pair4Momentum.Pt(),GetCentrality())){
+                //     TProfile* hprofsq2 = Prof(eventSelection,triggerClassName,centrality,pairCutName,Form("%s_sq2",hprofName.Data()));
+                //     if ( !hprofsq2)AliError(Form("Could not get %s",hprofName.Data()));
+                //     else hprofsq2->Fill(pair4Momentum.M(),SP[i]/sqrt(Qn[0]*Qn[1]),inputWeight);
+                //   }
+                //   else if(q2LargeRange(sqrt(Qn[0].X()*Qn[0].X()+Qn[0].Y()*Qn[0].Y()),pair4Momentum.Pt(),GetCentrality())){
+                //     TProfile* hprofmV2_Lq2 = Prof(eventSelection,triggerClassName,centrality,pairCutName,Form("%s_Lq2",hprofName.Data()));
+                //     if ( !hprofmV2_Lq2)AliError(Form("Could not get %s",hprofName.Data()));
+                //     else hprofmV2_Lq2->Fill(pair4Momentum.M(),SP[i]/sqrt(Qn[0]*Qn[1]),inputWeight);
+                //   }
+                // }
 
                 TProfile* hprofraw = Prof(eventSelection,triggerClassName,centrality,pairCutName,Form("raw_%s",hprofName.Data()));
                 if ( !hprofraw)AliError(Form("Could not get %s",hprofName.Data()));
@@ -756,6 +760,7 @@ void AliAnalysisMuMuFlow::FillHistosForPair(const char* eventSelection,
   }
   delete proxy;
   delete mcProxy;
+  printf("filled for pairs\n");
 }
 
 
@@ -948,7 +953,7 @@ void AliAnalysisMuMuFlow::FillHistosForEvent(const char* eventSelection,
   // Fill histos with event planes and Qn vectors + compute the resolution with the 3 sub-event method
   // The function access the corrected Qn vector from the Qn correction framework (PWGPP/EVCHAR/FlowVectorCorrections)
   // Check the documentation at https://twiki.cern.ch/twiki/bin/view/ALICE/StartUsingR2FlowVectorCorrections
-
+  printf("filling for event\n");
   AliQnCorrectionsManager *flowQnMgr;
   AliAnalysisTaskFlowVectorCorrections *flowQnVectorTask =
       static_cast<AliAnalysisTaskFlowVectorCorrections *>(AliAnalysisManager::GetAnalysisManager()->GetTask("FlowQnVectorCorrections"));
@@ -973,6 +978,7 @@ void AliAnalysisMuMuFlow::FillHistosForEvent(const char* eventSelection,
     TList* qnlist = static_cast<TList*> (detectorlist->FindObject(fDetectors[i].Data()));
     if (!qnlist) AliError("Detectorlist was found but there is no entry for your detector");
     else{
+      Printf("Getting Qn for i=%d : detector %s step %s",i,fDetectors[i].Data(),fEqSteps[step].Data());
       AliQnCorrectionsQnVector* qn = static_cast<AliQnCorrectionsQnVector*> (qnlist->FindObject(fEqSteps[step].Data())); //last step
 
       if (qn == NULL) {
@@ -996,6 +1002,7 @@ void AliAnalysisMuMuFlow::FillHistosForEvent(const char* eventSelection,
   }
   //Filling the histos
   for(Int_t i=0;i<3;i++){
+    std::cout << Form("EVENTPLANE_%s",fDetectors[i].Data()) << phiEP[i]<< " cos : " << TMath::Cos(2*phiEP[i]) << " sin : " << TMath::Sin(2*phiEP[i]) << " Qn : " << sqrt(Qn[i]*Qn[i]) <<std::endl;
     if( !IsHistogramDisabled(Form("EVENTPLANE_%s",fDetectors[i].Data())) ) Histo(eventSelection,triggerClassName,centrality,Form("EVENTPLANE_%s",fDetectors[i].Data()))->Fill(phiEP[i]);
     if( !IsHistogramDisabled(Form("Cos2EP_%s",fDetectors[i].Data())) ) Histo(eventSelection,triggerClassName,centrality,Form("Cos2EP_%s",fDetectors[i].Data()))->Fill(TMath::Cos(2*phiEP[i]));
     if( !IsHistogramDisabled(Form("Sin2EP_%s",fDetectors[i].Data())) ) Histo(eventSelection,triggerClassName,centrality,Form("Sin2EP_%s",fDetectors[i].Data()))->Fill(TMath::Sin(2*phiEP[i]));
@@ -1014,58 +1021,69 @@ void AliAnalysisMuMuFlow::FillHistosForEvent(const char* eventSelection,
         Histo(eventSelection,triggerClassName,centrality,Form("hEvPlaneReso%s_%s",fDetectors[i].Data(),fDetectors[j].Data()))->Fill(TMath::Cos(fHar*deltaEP));
       if(!IsHistogramDisabled(Form("hEvPlaneReso%s_%svsQnSPD",fDetectors[i].Data(),fDetectors[j].Data())))
         Histo(eventSelection,triggerClassName,centrality,Form("hEvPlaneReso%s_%svsQnSPD",fDetectors[i].Data(),fDetectors[j].Data()))->Fill(TMath::Cos(fHar*deltaEP),sqrt(Qn[0]*Qn[0]));
-
-      if(q2SmallRange(sqrt(Qn[0].X()*Qn[0].X()+Qn[0].Y()*Qn[0].Y()),4.,GetCentrality())){
-        if(!IsHistogramDisabled(Form("hEvPlaneReso%s_%s_sq2",fDetectors[i].Data(),fDetectors[j].Data())))
-          Histo(eventSelection,triggerClassName,centrality,Form("hEvPlaneReso%s_%s_sq2",fDetectors[i].Data(),fDetectors[j].Data()))->Fill(TMath::Cos(fHar*deltaEP));
-        if(!IsHistogramDisabled(Form("hEvPlaneReso%s_%svsQnSPD_sq2",fDetectors[i].Data(),fDetectors[j].Data())))
-          Histo(eventSelection,triggerClassName,centrality,Form("hEvPlaneReso%s_%svsQnSPD_sq2",fDetectors[i].Data(),fDetectors[j].Data()))->Fill(TMath::Cos(fHar*deltaEP),sqrt(Qn[0]*Qn[0]));
-      }
-      else if(q2LargeRange(sqrt(Qn[0].X()*Qn[0].X()+Qn[0].Y()*Qn[0].Y()),4.,GetCentrality())){
-        if(!IsHistogramDisabled(Form("hEvPlaneReso%s_%s_Lq2",fDetectors[i].Data(),fDetectors[j].Data())))
-          Histo(eventSelection,triggerClassName,centrality,Form("hEvPlaneReso%s_%s_Lq2",fDetectors[i].Data(),fDetectors[j].Data()))->Fill(TMath::Cos(fHar*deltaEP));
-        if(!IsHistogramDisabled(Form("hEvPlaneReso%s_%svsQnSPD_Lq2",fDetectors[i].Data(),fDetectors[j].Data())))
-          Histo(eventSelection,triggerClassName,centrality,Form("hEvPlaneReso%s_%svsQnSPD_Lq2",fDetectors[i].Data(),fDetectors[j].Data()))->Fill(TMath::Cos(fHar*deltaEP),sqrt(Qn[0]*Qn[0]));
-      }
+      // if(fq2SmallMap && fq2LargeMap){
+      //   if(q2SmallRange(sqrt(Qn[0].X()*Qn[0].X()+Qn[0].Y()*Qn[0].Y()),4.,GetCentrality())){
+      //     if(!IsHistogramDisabled(Form("hEvPlaneReso%s_%s_sq2",fDetectors[i].Data(),fDetectors[j].Data())))
+      //       Histo(eventSelection,triggerClassName,centrality,Form("hEvPlaneReso%s_%s_sq2",fDetectors[i].Data(),fDetectors[j].Data()))->Fill(TMath::Cos(fHar*deltaEP));
+      //     if(!IsHistogramDisabled(Form("hEvPlaneReso%s_%svsQnSPD_sq2",fDetectors[i].Data(),fDetectors[j].Data())))
+      //       Histo(eventSelection,triggerClassName,centrality,Form("hEvPlaneReso%s_%svsQnSPD_sq2",fDetectors[i].Data(),fDetectors[j].Data()))->Fill(TMath::Cos(fHar*deltaEP),sqrt(Qn[0]*Qn[0]));
+      //   }
+      //   else if(q2LargeRange(sqrt(Qn[0].X()*Qn[0].X()+Qn[0].Y()*Qn[0].Y()),4.,GetCentrality())){
+      //     if(!IsHistogramDisabled(Form("hEvPlaneReso%s_%s_Lq2",fDetectors[i].Data(),fDetectors[j].Data())))
+      //       Histo(eventSelection,triggerClassName,centrality,Form("hEvPlaneReso%s_%s_Lq2",fDetectors[i].Data(),fDetectors[j].Data()))->Fill(TMath::Cos(fHar*deltaEP));
+      //     if(!IsHistogramDisabled(Form("hEvPlaneReso%s_%svsQnSPD_Lq2",fDetectors[i].Data(),fDetectors[j].Data())))
+      //       Histo(eventSelection,triggerClassName,centrality,Form("hEvPlaneReso%s_%svsQnSPD_Lq2",fDetectors[i].Data(),fDetectors[j].Data()))->Fill(TMath::Cos(fHar*deltaEP),sqrt(Qn[0]*Qn[0]));
+      //   }
+      // }
 
       //Fill Qn vector histos
       if ( !IsHistogramDisabled(Form("EP%svsEP%s",fDetectors[i].Data(),fDetectors[j].Data()) )) Histo(eventSelection,triggerClassName,centrality,Form("EP%svsEP%s",fDetectors[i].Data(),fDetectors[j].Data()))->Fill(phiEP[i],phiEP[j]);
       if ( !IsHistogramDisabled(Form("Qn%svsQn%s",fDetectors[i].Data(),fDetectors[j].Data())) ) Histo(eventSelection,triggerClassName,centrality,Form("Qn%svsQn%s",fDetectors[i].Data(),fDetectors[j].Data()))->Fill(sqrt(Qn[i]*Qn[i]),sqrt(Qn[j]*Qn[j]));
-      if(q2SmallRange(sqrt(Qn[0].X()*Qn[0].X()+Qn[0].Y()*Qn[0].Y()),4.,GetCentrality()) && !IsHistogramDisabled(Form("Qn%svsQn%s_sq2",fDetectors[i].Data(),fDetectors[j].Data()))) Histo(eventSelection,triggerClassName,centrality,Form("Qn%svsQn%s_sq2",fDetectors[i].Data(),fDetectors[j].Data()))->Fill(sqrt(Qn[i]*Qn[i]),sqrt(Qn[j]*Qn[j]));
-      else if(q2LargeRange(sqrt(Qn[0].X()*Qn[0].X()+Qn[0].Y()*Qn[0].Y()),4.,GetCentrality()) && !IsHistogramDisabled(Form("Qn%svsQn%s_Lq2",fDetectors[i].Data(),fDetectors[j].Data()))) Histo(eventSelection,triggerClassName,centrality,Form("Qn%svsQn%s_Lq2",fDetectors[i].Data(),fDetectors[j].Data()))->Fill(sqrt(Qn[i]*Qn[i]),sqrt(Qn[j]*Qn[j]));
+      // if(fq2SmallMap && fq2LargeMap){
+      //   if(q2SmallRange(sqrt(Qn[0].X()*Qn[0].X()+Qn[0].Y()*Qn[0].Y()),4.,GetCentrality()) && !IsHistogramDisabled(Form("Qn%svsQn%s_sq2",fDetectors[i].Data(),fDetectors[j].Data()))) Histo(eventSelection,triggerClassName,centrality,Form("Qn%svsQn%s_sq2",fDetectors[i].Data(),fDetectors[j].Data()))->Fill(sqrt(Qn[i]*Qn[i]),sqrt(Qn[j]*Qn[j]));
+      //   else if(q2LargeRange(sqrt(Qn[0].X()*Qn[0].X()+Qn[0].Y()*Qn[0].Y()),4.,GetCentrality()) && !IsHistogramDisabled(Form("Qn%svsQn%s_Lq2",fDetectors[i].Data(),fDetectors[j].Data()))) Histo(eventSelection,triggerClassName,centrality,Form("Qn%svsQn%s_Lq2",fDetectors[i].Data(),fDetectors[j].Data()))->Fill(sqrt(Qn[i]*Qn[i]),sqrt(Qn[j]*Qn[j]));
+      // }
     }
   }
+  printf("filled for pairs\n");
 }
   //________________________________________________________________________
 Bool_t AliAnalysisMuMuFlow::q2SmallRange(Double_t q2, Double_t pt, Double_t centrality){
-  // if(!fq2SmallMap) AliError("ERROR : no q2SmallMap provided");
+  if(!fq2SmallMap) {
+    AliWarning("ERROR : no q2SmallMap provided");
+    return kFALSE;
+  }
   Double_t ptBins[6] = {0.,2.,4.,6.,8.,12.};
   Int_t i=0;
   while(pt>ptBins[i]){
-    cout << " pt = " << pt << " [" << ptBins[i] << "-" << ptBins[i+1] << "]" << endl;
+    std::cout << " pt = " << pt << " [" << ptBins[i] << "-" << ptBins[i+1] << "]" << std::endl;
     i++;
   }
   if(i==0||i>5) AliError(Form("ERROR : pt %0.1f not found in the q2SmallMap",pt));
   if(!fq2SmallMap[i-1]) AliError("ERROR : q2SmallMap not found for the bin");
   Int_t bin    = fq2SmallMap[i-1]->FindBin(centrality);//pt,-rapidity);
   Double_t max = fq2SmallMap[i-1]->GetBinContent(bin);
-  cout << "q2SmallRange : pt = " << pt << " map N°" <<i-1  <<" q2 " << q2 << " centrality " << centrality << " bin " << bin << " q2small max " << max << endl;
+  std::cout << "q2SmallRange : pt = " << pt << " map N°" <<i-1  <<" q2 " << q2 << " centrality " << centrality << " bin " << bin << " q2small max " << max << std::endl;
   return q2<max;
 }
   //________________________________________________________________________
 Bool_t AliAnalysisMuMuFlow::q2LargeRange(Double_t q2, Double_t pt, Double_t centrality){
   // if(!fq2LargeMap) AliError("ERROR : no q2SmallMap provided");
+  if(!fq2LargeMap) {
+    AliWarning("ERROR : no fq2LargeMap provided");
+    return kFALSE;
+  }
   Double_t ptBins[6] = {0.,2.,4.,6.,8.,12.};
   Int_t i=0;
   while(pt>ptBins[i]){
-    cout << " pt = " << pt << " [" << ptBins[i] << "-" << ptBins[i+1] << "]" << endl;
+    std::cout << " pt = " << pt << " [" << ptBins[i] << "-" << ptBins[i+1] << "]" << std::endl;
     i++;
   }
   if(i==0||i>5) AliError("ERROR : pt bin not found in the q2SmallMap");
   if(!fq2LargeMap[i-1]) AliError("ERROR : q2SmallMap not found for the bin");
   Int_t bin    = fq2LargeMap[i-1]->FindBin(centrality);//pt,-rapidity);
   Double_t min = fq2LargeMap[i-1]->GetBinContent(bin);
-  cout << "q2LargeRange : pt = " << pt << " map N°" <<i-1  <<" q2 " << q2 << " centrality " << centrality << " bin " << bin << " q2Large min " << min << endl;
+  std::cout << "q2LargeRange : pt = " << pt << " map N°" <<i-1  <<" q2 " << q2 << " centrality " << centrality << " bin " << bin << " q2Large min " << min << std::endl;
   return q2>min;
 }
     //________________________________________________________________________
