@@ -349,10 +349,10 @@ private:
   Int_t     fEMCALFuncTrackPtDepDPhiNParam;     ///<  number of formula parameters for matching eta residual pT track dependent
 
   /// Formula parameters for track matching eta residual pT track dependent
-  Float_t  *fEMCALFuncTrackPtDepDEtaParam;      //[EMCALFuncTrackPtDepDEtaNParam]
+  Float_t  *fEMCALFuncTrackPtDepDEtaParam;      //[fEMCALFuncTrackPtDepDEtaNParam]
   
   /// Formula parameters for track matching eta residual pT track dependent
-  Float_t  *fEMCALFuncTrackPtDepDPhiParam;      //[EMCALFuncTrackPtDepDPhiNParam] 
+  Float_t  *fEMCALFuncTrackPtDepDPhiParam;      //[fEMCALFuncTrackPtDepDPhiNParam] 
   
   
   Float_t   fTOFCut;                            ///<  Cut on TOF, used in PID evaluation.
