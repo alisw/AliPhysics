@@ -149,7 +149,7 @@ AliAnalysisTaskCheckAODTracks::AliAnalysisTaskCheckAODTracks() :
     fHistTPCcluPtFiltBit[jb]=0x0;
     fHistTPCcrrowsPtFiltBit[jb]=0x0;
     fHistTPCCrowOverFindPtFiltBit[jb]=0x0;
-    fHistTPCChi2ndfPtFiltBit[jb]=0x0;
+    fHistTPCChi2clusPtFiltBit[jb]=0x0;
     fHistChi2TPCConstrVsGlobPtFiltBit[jb]=0x0;
   }
   DefineInput(0, TChain::Class());
@@ -229,7 +229,7 @@ AliAnalysisTaskCheckAODTracks::~AliAnalysisTaskCheckAODTracks(){
       delete fHistTPCcluPtFiltBit[jb];
       delete fHistTPCcrrowsPtFiltBit[jb];
       delete fHistTPCCrowOverFindPtFiltBit[jb];      
-      delete fHistTPCChi2ndfPtFiltBit[jb];
+      delete fHistTPCChi2clusPtFiltBit[jb];
       delete fHistChi2TPCConstrVsGlobPtFiltBit[jb];
     }
     delete fTrackTree;
@@ -425,8 +425,8 @@ void AliAnalysisTaskCheckAODTracks::UserCreateOutputObjects() {
     fHistSPDcluPtFiltBit[jb]->GetYaxis()->SetBinLabel(4,"kBoth");
     fHistTPCcluPtFiltBit[jb] = new TH2F(Form("hTPCcluPtFiltBit%d",jb)," ; p_{T} (GeV/c) ; n TPC clusters",50,0.,10.,161,-0.5,160.5);  
     fHistTPCcrrowsPtFiltBit[jb] = new TH2F(Form("hTPCcrrowsPtFiltBit%d",jb)," ; p_{T} (GeV/c) ; n TPC Crossed Rows",50,0.,10.,161,-0.5,160.5);  
-    fHistTPCCrowOverFindPtFiltBit[jb] = new TH2F(Form("hTPCCrowOverFindPtFiltBit%d",jb)," ; p_{T} (GeV/c) ; #chi^{2}/ndf",50,0.,10.,100,0.,2.);    
-    fHistTPCChi2ndfPtFiltBit[jb] = new TH2F(Form("hTPCChi2ndfPtFiltBit%d",jb)," ; p_{T} (GeV/c) ; #chi^{2}/ndf",50,0.,10.,160,0.,8.);
+    fHistTPCCrowOverFindPtFiltBit[jb] = new TH2F(Form("hTPCCrowOverFindPtFiltBit%d",jb)," ; p_{T} (GeV/c) ; nTPCCrossedRows / nTPCFindableClusters",50,0.,10.,100,0.,2.);    
+    fHistTPCChi2clusPtFiltBit[jb] = new TH2F(Form("hTPCChi2clusPtFiltBit%d",jb)," ; p_{T} (GeV/c) ; #chi^{2}/nTPCclusters",50,0.,10.,160,0.,8.);
     fHistChi2TPCConstrVsGlobPtFiltBit[jb] = new TH2F(Form("hChi2TPCConstrVsGlobPtFiltBit%d",jb)," ; p_{T} (GeV/c) ; golden #chi^{2}",50,0.,10.,160,0.,40.);
     fOutput->Add(fHistEtaPhiPtFiltBit[jb]);
     fOutput->Add(fHistImpParXYPtMulFiltBit[jb]);
@@ -434,7 +434,7 @@ void AliAnalysisTaskCheckAODTracks::UserCreateOutputObjects() {
     fOutput->Add(fHistSPDcluPtFiltBit[jb]);
     fOutput->Add(fHistTPCcluPtFiltBit[jb]);
     fOutput->Add(fHistTPCcrrowsPtFiltBit[jb]);
-    fOutput->Add(fHistTPCChi2ndfPtFiltBit[jb]);
+    fOutput->Add(fHistTPCChi2clusPtFiltBit[jb]);
     fOutput->Add(fHistChi2TPCConstrVsGlobPtFiltBit[jb]);
     fOutput->Add(fHistTPCCrowOverFindPtFiltBit[jb]);
   }
@@ -752,7 +752,7 @@ void AliAnalysisTaskCheckAODTracks::UserExec(Option_t *)
  	fHistTPCcluPtFiltBit[jb]->Fill(pttrack,nTPCclus);
 	fHistTPCcrrowsPtFiltBit[jb]->Fill(pttrack,nCrossedRowsTPC);
 	fHistTPCCrowOverFindPtFiltBit[jb]->Fill(pttrack,ratioCrossedRowsOverFindableClustersTPC);
-	fHistTPCChi2ndfPtFiltBit[jb]->Fill(pttrack,chi2clus);
+	fHistTPCChi2clusPtFiltBit[jb]->Fill(pttrack,chi2clus);
 	fHistChi2TPCConstrVsGlobPtFiltBit[jb]->Fill(pttrack,goldenChi2);
       }
     }
