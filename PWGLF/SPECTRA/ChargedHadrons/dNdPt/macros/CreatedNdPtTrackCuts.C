@@ -1429,9 +1429,14 @@ AliESDtrackCuts* CreatedNdPtTrackCuts(Int_t cutMode=1, const char *control = "",
     esdTrackCuts->SetRequireSigmaToVertex(kFALSE);
     esdTrackCuts->SetMaxDCAToVertexZ(maxdcazITSTPC);
 
-    // DCArphi parametrization (LHC10c pass2)
-    // 7*(0.0026+0.0050/pt^1.01)
-    esdTrackCuts->SetMaxDCAToVertexXYPtDep("0.0182+0.0350/pt^1.01");
+    // DCArphi parametrization
+    if (stControlString.Contains("XeXe")){ 
+      // 7*(0.0017 + 0.007/pt^1.01)
+      esdTrackCuts->SetMaxDCAToVertexXYPtDep("0.0119 + 0.049/pt^1.01");
+    }else{
+      // 7*(0.0026+0.005/pt^1.01)
+      esdTrackCuts->SetMaxDCAToVertexXYPtDep("0.0182+0.035/pt^1.01");
+    }
 
     // tpcc cut
     esdTrackCuts->SetMaxChi2TPCConstrainedGlobal(36.);
@@ -2028,12 +2033,12 @@ AliESDtrackCuts* CreatedNdPtTrackCuts(Int_t cutMode=1, const char *control = "",
     esdTrackCuts->SetDCAToVertex2D(kFALSE);
     esdTrackCuts->SetRequireSigmaToVertex(kFALSE);
     esdTrackCuts->SetMaxDCAToVertexZ(2.0);
-    // 7*(0.0026+0.0050/pt^1.01)
-//     sigma_expected = 0.0035+0.0064/pt+0.0051/pt^2
     if (stControlString.Contains("XeXe")){ 
-      esdTrackCuts->SetMaxDCAToVertexXYPtDep("0.0182+0.0350/pt^1.01");
+      // 7*(0.0017 + 0.007/pt^1.01)
+      esdTrackCuts->SetMaxDCAToVertexXYPtDep("0.0119 + 0.049/pt^1.01");
     }else{
-      esdTrackCuts->SetMaxDCAToVertexXYPtDep("0.0182+0.0350/pt^1.01");
+      // 7*(0.0026+0.005/pt^1.01)
+      esdTrackCuts->SetMaxDCAToVertexXYPtDep("0.0182+0.035/pt^1.01");
     }
     esdTrackCuts->SetAcceptKinkDaughters(kFALSE); 
     // tpcc cut
@@ -2058,8 +2063,8 @@ AliESDtrackCuts* CreatedNdPtTrackCuts(Int_t cutMode=1, const char *control = "",
     if(cutMode==5009){esdTrackCuts->SetMaxChi2TPCConstrainedGlobal(25.);} 
     if(cutMode==5010){esdTrackCuts->SetMaxChi2TPCConstrainedGlobal(49.);}
     if (stControlString.Contains("XeXe")){
-      if(cutMode==5011){esdTrackCuts->SetMaxDCAToVertexXYPtDep("0.0104+0.0200/pt^1.01");}
-      if(cutMode==5012){esdTrackCuts->SetMaxDCAToVertexXYPtDep("0.0260+0.0500/pt^1.01");}
+      if(cutMode==5011){esdTrackCuts->SetMaxDCAToVertexXYPtDep("0.0068+0.028/pt^1.01");}
+      if(cutMode==5012){esdTrackCuts->SetMaxDCAToVertexXYPtDep("0.017+0.07/pt^1.01");}
     }else{
       if(cutMode==5011){esdTrackCuts->SetMaxDCAToVertexXYPtDep("0.0104+0.0200/pt^1.01");}
       if(cutMode==5012){esdTrackCuts->SetMaxDCAToVertexXYPtDep("0.0260+0.0500/pt^1.01");}
