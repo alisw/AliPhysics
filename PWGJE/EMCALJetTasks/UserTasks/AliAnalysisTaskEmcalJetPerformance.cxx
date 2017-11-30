@@ -54,7 +54,6 @@
 #include "AliEmcalDownscaleFactorsOCDB.h"
 #include "AliEMCALTriggerPatchInfo.h"
 #include "AliAnalysisTaskEmcalEmbeddingHelper.h"
-#include "AliMCAnalysisUtils.h"
 
 #include "AliAnalysisTaskEmcalJetPerformance.h"
 
@@ -512,8 +511,8 @@ void AliAnalysisTaskEmcalJetPerformance::AllocateParticleCompositionHistograms()
   const Int_t nRejBins = 32;
   Double_t* rejReasonBins = new Double_t[nRejBins+1];
   GenerateFixedBinArray(nRejBins, 0, nRejBins, rejReasonBins);
-  const Int_t nContributorTypes = 12;
-  Double_t *contributorTypeBins = GenerateFixedBinArray(nContributorTypes, -0.5, 7.5);
+  const Int_t nContributorTypes = 10;
+  Double_t *contributorTypeBins = GenerateFixedBinArray(nContributorTypes, -0.5, 9.5);
   const Int_t nParticleTypes = 15;
   Double_t *particleTypeBins = GenerateFixedBinArray(nParticleTypes, -0.5, 14.5);
   
@@ -530,11 +529,13 @@ void AliAnalysisTaskEmcalJetPerformance::AllocateParticleCompositionHistograms()
   // M02 vs. Energy vs. Particle type
   histname = "ClusterHistogramsMC/hM02VsParticleTypeCentral";
   htitle = histname + ";M02;#it{E}_{clus} (GeV); Particle type";
-  fHistManager.CreateTH3(histname.Data(), htitle.Data(), fNM02HistBins, fM02HistBins, fNPtHistBins, fPtHistBins, nParticleTypes, particleTypeBins);
+  TH3* hM02VsParticleTypeCentral = fHistManager.CreateTH3(histname.Data(), htitle.Data(), fNM02HistBins, fM02HistBins, fNPtHistBins, fPtHistBins, nParticleTypes, particleTypeBins);
+  SetParticleTypeLabels(hM02VsParticleTypeCentral->GetZaxis());
   
   histname = "ClusterHistogramsMC/hM02VsParticleTypePeripheral";
   htitle = histname + ";M02;#it{E}_{clus} (GeV); Particle type";
-  fHistManager.CreateTH3(histname.Data(), htitle.Data(), fNM02HistBins, fM02HistBins, fNPtHistBins, fPtHistBins, nParticleTypes, particleTypeBins);
+  TH3* hM02VsParticleTypePeripheral = fHistManager.CreateTH3(histname.Data(), htitle.Data(), fNM02HistBins, fM02HistBins, fNPtHistBins, fPtHistBins, nParticleTypes, particleTypeBins);
+  SetParticleTypeLabels(hM02VsParticleTypePeripheral->GetZaxis());
   
   if (fPlotJetHistograms) {
   
@@ -639,6 +640,28 @@ void AliAnalysisTaskEmcalJetPerformance::AllocateParticleCompositionHistograms()
     
   }
   
+}
+
+/*
+ * This function sets axis labels for particle type histograms.
+ */
+void AliAnalysisTaskEmcalJetPerformance::SetParticleTypeLabels(TAxis* axis)
+{
+  axis->SetBinLabel(1,  "SinglePhoton");
+  axis->SetBinLabel(2,  "SingleElectron");
+  axis->SetBinLabel(3,  "SingleChargedPion");
+  axis->SetBinLabel(4,  "SingleProton");
+  axis->SetBinLabel(5,  "SingleAntiProton");
+  axis->SetBinLabel(6,  "SingleKaon");
+  axis->SetBinLabel(7,  "SingleNeutron");
+  axis->SetBinLabel(8,  "SingleAntiNeutron");
+  axis->SetBinLabel(9,  "SingleOther");
+  axis->SetBinLabel(10, "PhotonHadron");
+  axis->SetBinLabel(11, "PhotonPhoton");
+  axis->SetBinLabel(12, "HadronHadron");
+  axis->SetBinLabel(13, "MergedPi0");
+  axis->SetBinLabel(14, "TwoContributorsOther");
+  axis->SetBinLabel(15, "MoreThanTwoContributors");
 }
       
 /*
@@ -1428,7 +1451,6 @@ void AliAnalysisTaskEmcalJetPerformance::FillParticleCompositionClusterHistogram
     ParticleType particleType = kNotDefined;
     ContributorType contributorType = kUndefined;
     const Int_t nLabels = clus->GetNLabels();
-    Printf("nLabels: %d", nLabels);
     
     // Create a vector to store the contributor types for PhysicalPrimary particles
     vecContributorTypes.clear();
@@ -1437,7 +1459,6 @@ void AliAnalysisTaskEmcalJetPerformance::FillParticleCompositionClusterHistogram
       Int_t label = clus->GetLabels()[iLabel];
       if (TMath::Abs(label) > 0) { // if the particle has a truth-level match, the label is nonzero
         contributorType = GetContributorType(clus, mcevent, label);
-        Printf("contributorType: %d", contributorType);
         if (contributorType != kUndefined) {
           vecContributorTypes.push_back(contributorType);
         }
@@ -1445,7 +1466,6 @@ void AliAnalysisTaskEmcalJetPerformance::FillParticleCompositionClusterHistogram
     }
     
     Int_t nLabelsPhysPrim = vecContributorTypes.size();
-    Printf("nLabelsPhysPrim: %d", nLabelsPhysPrim);
     
     if (nLabelsPhysPrim == 1) {
       
@@ -1496,11 +1516,11 @@ void AliAnalysisTaskEmcalJetPerformance::FillParticleCompositionClusterHistogram
       else if ((isHadron1 && isPhoton2) || (isHadron2 && isPhoton1)) {
         particleType = kPhotonHadron;
       }
-      else if (isPhoton1 && isPhoton2) {
+      else if (isPhoton1 && isPhoton2) { // this includes merged pi0
         particleType = kPhotonPhoton;
       }
       else {
-        particleType = kTwoContributorsOther;
+        particleType = kTwoContributorsOther; // this includes partially contained conversion overlaps
       }
       
     }
@@ -1528,9 +1548,7 @@ void AliAnalysisTaskEmcalJetPerformance::FillParticleCompositionJetHistograms(co
 {
   TString histname;
   
-  AliClusterContainer* clusters = GetClusterContainer(0);
   const AliVCluster* clus;
-
   AliJetContainer* jets = GetJetContainer(0); // there is only a single, det-level jet finder here
   for (const auto jet : jets->accepted()) {
     
@@ -1548,19 +1566,19 @@ void AliAnalysisTaskEmcalJetPerformance::FillParticleCompositionJetHistograms(co
       clus = jet->Cluster(iClus);
       
       // Get the particle type of the cluster
-      ContributorType contributorTypeFromUtils = kUndefined;
+      ContributorType contributorType = kUndefined;
       Int_t label = TMath::Abs(clus->GetLabel());
       if (label > 0) {
-        contributorTypeFromUtils = GetContributorTypeFromUtils(clus, mcevent, clusters->GetArray());
+        contributorType = GetContributorType(clus, mcevent, label);
       }
       
       // Plot M02 for each particle type
       histname = "JetPerformanceMC/hM02VsContributorTypeJets";
-      Double_t x[4] = {clus->GetM02(), clus->GetNonLinCorrEnergy(), contributorTypeFromUtils, jetPt};
+      Double_t x[4] = {clus->GetM02(), clus->GetNonLinCorrEnergy(), contributorType, jetPt};
       fHistManager.FillTHnSparse(histname, x);
       
       // If the cluster is a hadron, sum its energy to compute the jet's hadronic calo energy
-      Bool_t isHadron = (contributorTypeFromUtils == kChargedPion) || (contributorTypeFromUtils == kProton) || (contributorTypeFromUtils == kAntiProton) || (contributorTypeFromUtils == kKaon) || (contributorTypeFromUtils == kNeutron) || (contributorTypeFromUtils == kAntiNeutron);
+      Bool_t isHadron = (contributorType == kChargedPion) || (contributorType == kProton) || (contributorType == kAntiProton) || (contributorType == kKaon) || (contributorType == kNeutron) || (contributorType == kAntiNeutron);
       if (isHadron) {
         Bool_t hasMatchedTrack = (clus->GetNTracksMatched() > 0);
         //Bool_t hasMatchedTrack = ((clus->GetNonLinCorrEnergy() - clus->GetHadCorrEnergy()) > 1e-3);
@@ -1593,7 +1611,7 @@ void AliAnalysisTaskEmcalJetPerformance::FillParticleCompositionJetHistograms(co
     histname = "JetPerformanceMC/hJetComposition";
     for (Int_t type = 0; type < 8; type++) {
       
-      ContributorType contributorTypeFromUtils = kUndefined;
+      ContributorType contributorType = kUndefined;
       Double_t nSum = 0;
       Double_t pTsum = 0;
       
@@ -1604,10 +1622,10 @@ void AliAnalysisTaskEmcalJetPerformance::FillParticleCompositionJetHistograms(co
         
         Int_t label = TMath::Abs(clus->GetLabel());
         if (label > 0) {
-          contributorTypeFromUtils = GetContributorTypeFromUtils(clus, mcevent, clusters->GetArray());
+          contributorType = GetContributorType(clus, mcevent, label);
         }
         
-        if (type == contributorTypeFromUtils) {
+        if (type == contributorType) {
           nSum++;
           pTsum += clus->GetNonLinCorrEnergy();
         }
@@ -1926,77 +1944,7 @@ void AliAnalysisTaskEmcalJetPerformance::FillMatchedJetHistograms()
 }
 
 /*
- * Compute the MC particle type using AliMCAnalysisUtils.
- * The basic method is: Given a photon cluster, get the leading cluster, and its parent. If it is a pi0, and has exactly two decay photons,
- * get the two decay photons. If both decay photons contribute to the original cluster, we call it a merged pi0. If not, we also check if the
- * cluster contains a particle (an electron) whose parent is one of the decay photons, in which case we call it a pi0 and a conversion.
- */
-AliAnalysisTaskEmcalJetPerformance::ContributorType AliAnalysisTaskEmcalJetPerformance::GetContributorTypeFromUtils(const AliVCluster* clus, const AliMCEvent* mcevent, const TClonesArray* clusArray)
-{
-  ContributorType contributorType = kUndefined;
-  
-  AliMCAnalysisUtils mcUtils;
-  Int_t tag = mcUtils.CheckOrigin(clus->GetLabels(), clus->GetNLabels(), mcevent, clusArray);
-
-  Bool_t isPhoton = mcUtils.CheckTagBit(tag, AliMCAnalysisUtils::kMCPhoton);
-  Bool_t isPi0 = mcUtils.CheckTagBit(tag, AliMCAnalysisUtils::kMCPi0);
-  Bool_t isConversion = mcUtils.CheckTagBit(tag, AliMCAnalysisUtils::kMCConversion);
-  Bool_t isEta = mcUtils.CheckTagBit(tag, AliMCAnalysisUtils::kMCEta);
-  Bool_t isPion = mcUtils.CheckTagBit(tag, AliMCAnalysisUtils::kMCPion);
-  Bool_t isKaon = mcUtils.CheckTagBit(tag, AliMCAnalysisUtils::kMCKaon);
-  Bool_t isProton = mcUtils.CheckTagBit(tag, AliMCAnalysisUtils::kMCProton);
-  Bool_t isAntiProton = mcUtils.CheckTagBit(tag, AliMCAnalysisUtils::kMCAntiProton);
-  Bool_t isNeutron = mcUtils.CheckTagBit(tag, AliMCAnalysisUtils::kMCNeutron);
-  Bool_t isAntiNeutron = mcUtils.CheckTagBit(tag, AliMCAnalysisUtils::kMCAntiNeutron);
-  Bool_t isElectron = mcUtils.CheckTagBit(tag, AliMCAnalysisUtils::kMCElectron);
-  Bool_t isMuon = mcUtils.CheckTagBit(tag, AliMCAnalysisUtils::kMCMuon);
-  
-  if (isPi0) {
-    if (isConversion) {
-      contributorType = kPi0Conversion;
-    }
-    else {
-      contributorType = kPi0;
-    }
-  }
-  else if (isEta) {
-    contributorType = kEta;
-  }
-  else if (isPhoton) {
-    contributorType = kPhoton;
-  }
-  else if (isPion) {
-    contributorType = kChargedPion;
-  }
-  else if (isKaon) {
-    contributorType = kKaon;
-  }
-  else if (isProton) {
-    contributorType = kProton;
-  }
-  else if (isAntiProton) {
-    contributorType = kAntiProton;
-  }
-  else if (isNeutron) {
-    contributorType = kNeutron;
-  }
-  else if (isAntiNeutron) {
-    contributorType = kAntiNeutron;
-  }
-  else if (isElectron) {
-    contributorType = kElectron;
-  }
-  else if (isMuon) {
-    contributorType = kMuon;
-  }
-  else {
-    contributorType = kOther;
-  }
-  return contributorType;
-}
-
-/*
- * Compute the MC particle type of a given cluster contributor, using the MC particle container (and AliMCAnalysisUtils to find merged pi0)
+ * Compute the MC particle type of a given cluster contributor, using the MC particle container
  */
 AliAnalysisTaskEmcalJetPerformance::ContributorType AliAnalysisTaskEmcalJetPerformance::GetContributorType(const AliVCluster* clus, const AliMCEvent* mcevent, Int_t label)
 {
@@ -2018,26 +1966,7 @@ AliAnalysisTaskEmcalJetPerformance::ContributorType AliAnalysisTaskEmcalJetPerfo
       Int_t pdg = part->PdgCode();
       
       if (pdg == 22) { // gamma 22
-        
-        AliMCAnalysisUtils mcUtils;
-        Int_t tag;
-        mcUtils.CheckOverlapped2GammaDecay(clus->GetLabels(), clus->GetNLabels(), part->GetMother(), mcevent, tag);
-        
-        if (mcUtils.CheckTagBit(tag, AliMCAnalysisUtils::kMCPi0)) {
-          if (mcUtils.CheckTagBit(tag, AliMCAnalysisUtils::kMCConversion)) {
-            contributorType = kPi0Conversion;
-          }
-          else {
-            contributorType = kPi0;
-          }
-        }
-        else if (mcUtils.CheckTagBit(tag, AliMCAnalysisUtils::kMCEta)) {
-          contributorType = kEta;
-        }
-        else { // direct photon
-          contributorType = kPhoton;
-        }
-        
+        contributorType = kPhoton;
       }
       else if (TMath::Abs(pdg) == 211) { // pi+ 211 (abs value ensures both particles and antiparticles are included)
         contributorType = kChargedPion;

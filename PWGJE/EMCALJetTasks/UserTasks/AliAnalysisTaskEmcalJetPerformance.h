@@ -63,18 +63,15 @@ class AliAnalysisTaskEmcalJetPerformance : public AliAnalysisTaskEmcalJet {
   enum ContributorType {
     kUndefined      = -1,  //!< Undefined
     kPhoton         = 0,   //!< Photon (direct or decay)
-    kPi0            = 1,   //!< Pi0 (merged pi0)
-    kPi0Conversion  = 2,   //!< Pi0 (merged pi0) with conversion of one photon (may be only partially contained in cluster)
-    kEta            = 3,   //!< Eta (merged eta)
-    kChargedPion    = 4,   //!< Charged pion
-    kProton         = 5,   //!< Proton
-    kAntiProton     = 6,   //!< Antiproton
-    kKaon           = 7,   //!< Charged Kaon
-    kNeutron        = 8,   //!< Neutron
-    kAntiNeutron    = 9,   //!< Antineutron
-    kElectron       = 10,  //!< Electron
-    kMuon           = 11,  //!< Muon
-    kOther          = 12   //!< Other
+    kChargedPion    = 1,   //!< Charged pion
+    kProton         = 2,   //!< Proton
+    kAntiProton     = 3,   //!< Antiproton
+    kKaon           = 4,   //!< Charged Kaon
+    kNeutron        = 5,   //!< Neutron
+    kAntiNeutron    = 6,   //!< Antineutron
+    kElectron       = 7,  //!< Electron
+    kMuon           = 8,  //!< Muon
+    kOther          = 9   //!< Other
   };
   
   // Detector-level particle types, based on PhysicalPrimary contributors
@@ -90,7 +87,7 @@ class AliAnalysisTaskEmcalJetPerformance : public AliAnalysisTaskEmcalJet {
     kSingleAntiNeutron        = 7,  //!< Antineutron is the only contributor
     kSingleOther              = 8,  //!< One contributor (excluding the above cases)
     kPhotonHadron             = 9,  //!< Hadron+Photon are the only contributors
-    kPhotonPhoton             = 10,  //!< Photon+Photon (not from same parent) are the only contributors
+    kPhotonPhoton             = 10, //!< Photon+Photon (not from same parent) are the only contributors
     kHadronHadron             = 11, //!< Hadron+Hadron are the only contributors
     kMergedPi0                = 12, //!< Two contributos from merged pi0 are the only contributors
     kTwoContributorsOther     = 13, //!< Two contributors (excluding the above cases)
@@ -139,6 +136,7 @@ class AliAnalysisTaskEmcalJetPerformance : public AliAnalysisTaskEmcalJet {
   void                        FillParticleCompositionHistograms()               ;
   void                        FillParticleCompositionClusterHistograms(const AliMCEvent* mcevent);
   void                        FillParticleCompositionJetHistograms(const AliMCEvent* mcevent);
+  void                        SetParticleTypeLabels(TAxis* axis)                ;
   void                        ComputeBackground()                               ;
   void                        DoTriggerSimulation()                             ;
   void                        FillTriggerSimHistograms()                        ;
@@ -148,7 +146,6 @@ class AliAnalysisTaskEmcalJetPerformance : public AliAnalysisTaskEmcalJet {
   Double_t                    GetJetPt(const AliEmcalJet* jet, Double_t rho);
   Double_t                    GetDeltaR(const AliTLorentzVector* part, Double_t etaRef, Double_t phiRef);
   Double_t                    GetJetType(const AliEmcalJet* jet);
-  ContributorType             GetContributorTypeFromUtils(const AliVCluster* clus, const AliMCEvent* mcevent, const TClonesArray* clusArray);
   ContributorType             GetContributorType(const AliVCluster* clus, const AliMCEvent* mcevent, Int_t label);
   
   // Analysis parameters
@@ -203,7 +200,7 @@ class AliAnalysisTaskEmcalJetPerformance : public AliAnalysisTaskEmcalJet {
   AliAnalysisTaskEmcalJetPerformance &operator=(const AliAnalysisTaskEmcalJetPerformance&); // not implemented
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskEmcalJetPerformance, 6);
+  ClassDef(AliAnalysisTaskEmcalJetPerformance, 7);
   /// \endcond
 };
 #endif
