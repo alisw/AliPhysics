@@ -287,10 +287,10 @@ void  AliMC::AddParticles()
   TVirtualMC::GetMC()->DefineParticle(-1020010020, "AntiXi0Proton", kPTHadron, 2.248 , 1.0, 1.333e-10,"Ion", 0.0, 0, 1, 0, 0, 0, 0, 0, 2, kFALSE);
 
   //Lambda-Neutron-Neutron
-  TVirtualMC::GetMC()->DefineParticle(1010000030, "LambdaNeutronNeutron", kPTNeutron, 2.982 , 0.0, 2.632e-10,"Hadron", 0.0, 0, 1, 0, 0, 0, 0, 0, 2, kFALSE);
+  TVirtualMC::GetMC()->DefineParticle(1010000030, "LambdaNeutronNeutron", kPTNeutron, 2.99 , 0.0, 2.632e-10,"Hadron", 0.0, 0, 1, 0, 0, 0, 0, 0, 3, kFALSE);
 
   //Anti-Lambda-Neutron-Neutron
-  TVirtualMC::GetMC()->DefineParticle(-1010000030, "AntiLambdaNeutronNeutron", kPTNeutron, 2.982 , 0.0, 2.632e-10,"Hadron", 0.0, 0, 1, 0, 0, 0, 0, 0, 2, kFALSE);
+  TVirtualMC::GetMC()->DefineParticle(-1010000030, "AntiLambdaNeutronNeutron", kPTNeutron, 2.99 , 0.0, 2.632e-10,"Hadron", 0.0, 0, 1, 0, 0, 0, 0, 0, 3, kFALSE);
 
 	//Omega-Proton
   TVirtualMC::GetMC()->DefineParticle(1030000020, "OmegaProton", kPTNeutron, 2.592, 0.0, 2.632e-10,"Hadron", 0.0, 2, 1, 0, 0, 0, 0, 0, 2, kFALSE);
