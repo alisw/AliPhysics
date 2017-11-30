@@ -289,7 +289,7 @@ class AliAnalysisTaskElectronEfficiency : public AliAnalysisTaskSE {
   };
 
   TH2D*                           fNgenPairsResonances;
-  TH2D*                           fNgenPairsDiffMothers; //!
+  TH2D*                           fNgenPairsDiffMothers; 
   TH2D*                           fNgenPairsCharm;
   TH2D*                           fNgenPairsBeauty;
   TH2D*                           fNgenPairsHF;
