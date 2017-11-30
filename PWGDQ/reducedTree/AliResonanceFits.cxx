@@ -785,6 +785,7 @@ void AliResonanceFits::ExtractSignal(TH1* signal, TH1* bkg, Bool_t fixScale /*=k
     Double_t m = signal->GetXaxis()->GetBinCenter(im);
     for(Int_t ipt=1; ipt<=(fUse2DMatching ? signal->GetYaxis()->GetNbins() : 1); ++ipt) {
       Double_t pt   = (fUse2DMatching ? signal->GetYaxis()->GetBinCenter(ipt) : 0.0);
+      if (fUse2DMatching && (pt<fPtRange[0] || pt>fPtRange[1])) continue; //Extract signal only in region of interest
       Double_t s    = (fUse2DMatching ? signal->GetBinContent(im,ipt) : signal->GetBinContent(im));
       if(s<=0.0) continue;
       Double_t sErr = (fUse2DMatching ? signal->GetBinError(im,ipt) : signal->GetBinError(im));
@@ -865,7 +866,8 @@ void AliResonanceFits::MakeSEOS() {
     minPt = fSEOS->GetAxis(ptIdx)->GetXmin(); maxPt = fSEOS->GetAxis(ptIdx)->GetXmax();
     if(fPtRange[0]>minPt) minPt = fPtRange[0]+1.0e-6;
     if(fPtRange[1]<maxPt) maxPt = fPtRange[1]-1.0e-6;
-    fSEOS->GetAxis(ptIdx)->SetRangeUser(minPt, maxPt);
+    //fSEOS->GetAxis(ptIdx)->SetRangeUser(minPt, maxPt);
+    if(!fUse2DMatching) fSEOS->GetAxis(ptIdx)->SetRangeUser(minPt, maxPt); //2D matching needs full range
   }
   Int_t centIdx = fVarIndex[kCentrality];
   Double_t minCent = fCentralityRange[0]; Double_t maxCent = fCentralityRange[1];
@@ -1355,13 +1357,15 @@ void AliResonanceFits::MakeMEbkg() {
            cout << "pt/ipt/npt :: " << pt << "/" << ipt << "/" << fMEOS->GetAxis(ptIdx)->GetNbins() << endl;
            */
 	  
-	  fMEOS->GetAxis(ptIdx)->SetRangeUser(fPtFitRange[0], fPtFitRange[1]);
+	  //	  fMEOS->GetAxis(ptIdx)->SetRangeUser(fPtFitRange[0], fPtFitRange[1]);
+	  if(!fUse2DMatching)  fMEOS->GetAxis(ptIdx)->SetRangeUser(fPtRange[0], fPtRange[1]); //2D matching needs full range 
 	  if(fUse2DMatching) meosFit_proj = fMEOS->Projection(ptIdx,mIdx);
 	  else meosFit_proj = fMEOS->Projection(mIdx);
 	  meosFit_proj->SetName(Form("meosFit_proj%.6f", gRandom->Rndm()));
 	  	
 	  if(fMEMatchOption==1) {
-            fSEOS->GetAxis(ptIdx)->SetRangeUser(fPtFitRange[0], fPtFitRange[1]);
+	    //            fSEOS->GetAxis(ptIdx)->SetRangeUser(fPtFitRange[0], fPtFitRange[1]);
+	    if(!fUse2DMatching)  fSEOS->GetAxis(ptIdx)->SetRangeUser(fPtRange[0], fPtRange[1]); //2D matching needs full range
 	    if(fUse2DMatching) seosFit_proj = fSEOS->Projection(ptIdx,mIdx);
 	    else seosFit_proj = fSEOS->Projection(mIdx);
             seosFit_proj->SetName(Form("seosFit_proj%.6f", gRandom->Rndm()));
@@ -1418,7 +1422,7 @@ void AliResonanceFits::MakeMEbkg() {
            if(centBin==fEffVsPtCent->GetXaxis()->GetNbins()+1) centBin = fEffVsPtCent->GetXaxis()->GetNbins();
            eff = fEffVsPtCent->GetBinContent(centBin, ptBin);
         }*/
-        fMEOS->GetAxis(ptIdx)->SetRangeUser(fPtRange[0], fPtRange[1]);
+        //fMEOS->GetAxis(ptIdx)->SetRangeUser(fPtRange[0], fPtRange[1]);
         if(fUse2DMatching) meos_proj = fMEOS->Projection(ptIdx,mIdx);
         else meos_proj = fMEOS->Projection(mIdx);
         meos_proj->SetName(Form("meos_proj%.6f", gRandom->Rndm()));
@@ -1473,9 +1477,12 @@ TH1D* AliResonanceFits::DrawSignalExtraction(Bool_t save /*=kFALSE*/, const Char
        //Int_t firstPtBin = fHistSEOS->GetYaxis()->FindBin(fPtRange[0]);
        //Int_t lastPtBin = fHistSEOS->GetYaxis()->FindBin(fPtRange[1]);
       //TH1D* projSEOS = ((TH2D*)fHistSEOS)->ProjectionX(Form("%s_massProj",fHistSEOS->GetName()),firstPtBin, lastPtBin);
-       TH1D* projSEOS = ((TH2D*)fHistSEOS)->ProjectionX(Form("%s_massProj",fHistSEOS->GetName()),0);
+      fHistSEOS->GetYaxis()->SetRangeUser(fPtRange[0], fPtRange[1] -0.001); //set Pt range for drawing
+      TH1D* projSEOS = ((TH2D*)fHistSEOS)->ProjectionX(Form("%s_massProj",fHistSEOS->GetName()),0);
+
       TH1* bkg = fHistMEbkg; 
       if(fBkgMethod!=1) bkg = fHistSELSbkg;
+      bkg->GetYaxis()->SetRangeUser(fPtRange[0], fPtRange[1] -0.001); //set range for background
       //Int_t firstPtBinBkg = bkg->GetYaxis()->FindBin(fPtRange[0]);
       //Int_t lastPtBinBkg = bkg->GetYaxis()->FindBin(fPtRange[1]);
       //TH1D* projBkg = ((TH2D*)bkg)->ProjectionX(Form("%s_massProj",bkg->GetName()),firstPtBinBkg,lastPtBinBkg);
@@ -1843,7 +1850,7 @@ void AliResonanceFits::DrawMassProjection(TH1* seos, TH1* bkg, TH1* signal,
   cout << "5" << endl;
   
   signal->DrawClone("XY");
-  if(fSignalMCshape) fSignalMCshape->DrawClone("sameHISTL");
+  if(fSignalMCshape) fSignalMCshape->DrawClone("sameHISTC"); //smooth MC shape drawing
   if(makeNicePlot)
      line.DrawLine(1.5,0.0,4.5,0.0);
   else

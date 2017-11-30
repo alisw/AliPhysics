@@ -23,6 +23,11 @@ AliFemtoKtBinnedCorrFunc::AliFemtoKtBinnedCorrFunc(const TString& name, AliFemto
 { // no-op
 }
 
+AliFemtoKtBinnedCorrFunc::~AliFemtoKtBinnedCorrFunc()
+{
+  delete fPrototypeCF;
+}
+
 UInt_t AliFemtoKtBinnedCorrFunc::AddKtRange(float low, float high)
 {
   assert(low < high);
@@ -112,7 +117,7 @@ TList* AliFemtoKtBinnedCorrFunc::GetOutputList()
     const std::pair<Float_t, Float_t> &range = fRanges[i];
     AliFemtoCorrFctn *cf = fCFBuffer[i];
 
-    const TString range_name = Form("%0.3f_%0.3f", range.first, range.second);
+    const TString range_name = TString::Format("%0.3f_%0.3f", range.first, range.second);
     TObjArray *cf_output = new TObjArray();
     cf_output->SetName(range_name);
     TList *cf_list = cf->GetOutputList();

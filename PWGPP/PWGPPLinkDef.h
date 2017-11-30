@@ -54,12 +54,14 @@
 #pragma link C++ class AliPerfAnalyzeInvPt+;
 #pragma link C++ class AliTPCPerformanceSummary+;
 #pragma link C++ class AliAnalysisNoiseTPC+;
+#pragma link C++ class AliMCTreeTools+;
 
 #pragma link C++ class AliIntSpotEstimator+;
 #pragma link C++ class AliAnalysisTaskIPInfo+;
 
 #pragma link C++ class AliAnalysisTaskVertexESD+;
 #pragma link C++ class AliAnalysisTaskCheckPileup+;
+#pragma link C++ class AliAnalysisTaskCheckVertexAOD+;
 #pragma link C++ class AliAnalysisTaskCheckESDTracks+;
 #pragma link C++ class AliAnalysisTaskCheckAODTracks+;
 #pragma link C++ class AliAlignmentDataFilterITS+;
@@ -124,6 +126,7 @@
 #pragma link C++ class  AliTRDPIDTree+;
 #pragma link C++ class  AliTRDPIDmatching+;
 #pragma link C++ class  AliTRDdigitsFilter;
+#pragma link C++ class  AliTRDdigitsTask;
 
 // TRD offline calibration classes
 #pragma link C++ class  AliTRDmultiplicity+;
@@ -189,6 +192,12 @@
 
 // vdM task
 #pragma link C++ class  AliAnalysisTaskVdM::TreeData+;
+#pragma link C++ class  AliAnalysisTaskVdM::EventInfo+;
+#pragma link C++ class  AliAnalysisTaskVdM::ADV0+;
 #pragma link C++ class  AliAnalysisTaskVdM+;
+#pragma link C++ class  AliXMLEngine::NodeIterator+;
+#pragma link C++ class  AliXMLEngine::Node+;
+#pragma link C++ class  AliXMLEngine::Attr+;
+#pragma link C++ class  AliXMLEngine+;
 
 #endif

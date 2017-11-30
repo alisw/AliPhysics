@@ -1,7 +1,9 @@
+//==========================================================//
 // Date: 11/5/2017
 //Authors: Nur Hussain and Buddhadeb Bhattacharjee, Department of Physics, Gauhati University
 //Special thanks to  Martha Spyropoulou-Stassinaki
 //purpose:: Kink topology for pp 5TeV for MC data
+//=========================================================//
 
 #include "Riostream.h" 
 #include "TChain.h"
@@ -38,13 +40,37 @@
 #include "AliCentrality.h"
 #include "iostream"
 #include "AliMultSelection.h"
+#include "AliAnalysisUtils.h"
 
 
 
 ClassImp(AliAnalysisTaskKinkpp5TeVMC)
 
+//_________________________________________________________________
+AliAnalysisTaskKinkpp5TeVMC::AliAnalysisTaskKinkpp5TeVMC()
+: AliAnalysisTaskSE(),fOutputList(0), fHistPt(0),fVtxCut(10.),fMultiplicity(0),fIncompletEvent(0),fMultpileup(0), fMultV0trigger(0),fZvertex(0),fEventVertex(0),
+        fRatioCrossedRows(0),fZvXv(0), fZvYv(0), fXvYv(0),fRpr(0),fdcaToVertexXY(0),fdcaToVertexXYafterCut(0),fptAllKink(0),fRatioCrossedRowsKink(0),fPosiKink(0),
+        fQtAll(0),fptKink(0),fQtMothP(0),fqT1(0),fEta(0),fqT2(0),fKinkKaonBackg(0),f1(0), f2(0),fPtCut1(0),fAngMotherPi(0),
+        fQtInvM(0),fInvMuNuAll(0),fInvMassMuNuPtAll(0),fRadiusPt(0),fKinkRadUp(200.), fKinkRadLow(130.), fLowCluster(30), fLowQt(.12), fRapiK(0.5),
+        fAngMotherKC(0),fkaonInvaiant(0),fRadiusNcl(0), fPtKPDG(0),fAngMotherKKinks(0),fPtCut2(0),fPtCut3(0),fTPCSignlMotherK(0),fPtKaon(0), fPtKaonP(0), fPtKaonN(0),
+         fTPCSignalP(0),fRadiusNclCln(0),fRadiusPtcln(0),fInvMassMuNuPt(0),fTPCSignlPtpc(0),fMothKinkMomSignl(0),fTPCSignlKinkDau(0),fTPCMomNSigmaAllKaon(0),
+        fnSigmaTPC(0),fradiurKink(0),fLenthKink(0),fEtaK(0),frapiKESD(0),fzVertexPositionKinKvsKinkRad(0),fSignPtNcl(0),fSignPtrapiK(0),frapiKNcl(0),fSignPt(0),
+        fChi2NclTPC(0),fRatioChi2Ncl(0),flifetime(0),fPtKinkKaon(0),fDCAkink(0),fPtKink(0),fPtKinkPos(0),fPtKinkNeg(0),fPtKinkK0(0),fPtKinkK0P(0),fPtKinkK0N(0),
+        fPtKinkGyu(0),fPtKinkGyuP(0),fPtKinkGyuN(0),fKinKRbn(0),fradPtRpDt(0),fAngMomK(0),fPosiKinkK(0),fPosiKinKXZ(0), fPosiKinKYZ(0),fPIDResponse(0),fNumberOfEvent(0),
+
+        fMultMC_wo_any_cut(0),fMultMC_incompleteDAQ(0),fMultMC_AfterPileUp(0),fMultTriggerMCAfterV0(0),fTrigSel(AliVEvent::kINT7),
+        frapidKMC(0), fptKMC(0),fSignPtGen(0),fPtKPlMC(0),fPtKMnMC(0),flengthTrackRef(0),flifetimeMC(0),flifeSmallMC(0),flifeInt(0),flifeYuri(0),flifetiMCK(0),
+        flenYuri(0),flengthMCK(0),flifetime_MCprocess4(0),fradPtRapMC(0), flifetime_kaonpionPDG(0),flifetime_kaonmuonPDG(0),fmaxAngMomKmuMC(0),fradPtRapDC(0),
+        fradMC(0),fQtKMuMC(0),fgenPtEtR(0),fgenPtEtRP(0),fMCEtaKaon(0),fSignPtEtaMC(0),fSignPtMC(0),fgenPtEtRN(0),fQtKElMC(0),fQtKPiMC(0),fESDMult(0),
+        fFakepipi(0),fFakeKPi(0),fRadiusPtPion(0),fRadiusPtKaon(0),fQtKMu(0),fQtKPi(0),fQtKEl(0),fQtK3PiP(0),fQtK3PiM(0),fHistPtKPDG(0), fHiPtKPDGP(0), fHiPtKPDGN(0),
+        fHistEta(0), frapidESDK(0), fHistQt2(0),fAngMomPi(0),fMinvPi(0),fMinvKa(0),fcodeH(0), fZkinkZDau(0),fRadiusPtFake(0),fTPCMomNSgnl(0),fPtPrKink(0),flifTiESDK(0),
+        fKinkKaon(0),fkinkKaonP(0),fkinkKaonN(0),fcode2(0),fTPCSgnlPtpc(0),fMothKinkMomSgnlD(0),fKinkKaonBg(0),fMothKinkMomSgnl(0),fcodeDau2(0),fTPCSgnlKinkDau(0),
+        fMinvPr(0),fDCAkinkBG(0),fPosiKinKBgXY(0),fPosiKinKBgZY(0),fPosiKinKBgZX(0),fKinKBGP(0),fKinKBGN(0),fdcodeH(0),fcode4(0),
+        fNumberOfEvent_cent(0),fESDtrackCuts(0),fEventVsCentrality(0)
+{}
+
 //________________________________________________________________________
-AliAnalysisTaskKinkpp5TeVMC::AliAnalysisTaskKinkpp5TeVMC(const char *name) 
+AliAnalysisTaskKinkpp5TeVMC::AliAnalysisTaskKinkpp5TeVMC(const char *name, Float_t lRadiusKUp,  Float_t lRadiusKLow, Int_t lNCluster, Float_t lLowQtValue, Float_t yRange) 
   : AliAnalysisTaskSE(name),  fOutputList(0), fHistPt(0),fVtxCut(10.),fMultiplicity(0),fIncompletEvent(0),fMultpileup(0), fMultV0trigger(0),fZvertex(0),fEventVertex(0),
 	fRatioCrossedRows(0),fZvXv(0), fZvYv(0), fXvYv(0),fRpr(0),fdcaToVertexXY(0),fdcaToVertexXYafterCut(0),fptAllKink(0),fRatioCrossedRowsKink(0),fPosiKink(0),
 	fQtAll(0),fptKink(0),fQtMothP(0),fqT1(0),fEta(0),fqT2(0),fKinkKaonBackg(0),f1(0), f2(0),fPtCut1(0),fAngMotherPi(0),
@@ -253,7 +279,7 @@ void AliAnalysisTaskKinkpp5TeVMC::UserCreateOutputObjects()
 	fPosiKinkK= new TH2F("fPosiKinkK", "Y vrx kink VrexK ",100, -300.0,300.0,100, -300, 300.);
   	fPosiKinKXZ= new TH2F("fPosiKinKXZ", "Y vrx kink VrexK ",100, -300.0,300.0,100, -300, 300.);
   	fPosiKinKYZ= new TH2F("fPosiKinKYZ", "Y vrx kink VrexK ",100, -300.0,300.0,100, -300, 300.);	
-	fNumberOfEvent = new TH1F("fNumberOfEvent", "the number of events in this run", 20, 0., 10.);
+	fNumberOfEvent = new TH1F("fNumberOfEvent", "the number of events in this run", 40, 0., 20.);
 	
 	fMultMC_wo_any_cut = new TH1F ("fMultMC_wo_any_cut"," number of tracks in MC", 100, 0., 50000.);
 	fMultMC_incompleteDAQ = new TH1F ("fMultMC_incompleteDAQ"," number of tracks in MC after the cut of Incomplete DAQ", 100, 0., 50000.);
@@ -533,76 +559,92 @@ void AliAnalysisTaskKinkpp5TeVMC::UserExec(Option_t *)
 	fMultMC_wo_any_cut->Fill(mcEvent->GetNumberOfTracks() );
 	
 // Number ESD tracks 
-   	Int_t nESDTracks =  esd->GetNumberOfTracks();
-      	//fMultiplicity->Fill(nESDTracks);
-      	fMultiplicity->Fill(2);
-// check incomplete event
-	if (esd->IsIncompleteDAQ()) return;
+ 	Int_t nESDTracks =  esd->GetNumberOfTracks();
+        //fMultiplicity->Fill(nESDTracks);
+        fMultiplicity->Fill(2);
+
+        fESDtrackCuts->SetMaxDCAToVertexXYPtDep("0.0105 + 0.0350/pt^1.01");
+        //fESDtrackCuts->SetMaxDCAToVertexXYPtDep("0.0182+0.0350/pt^1.01");
+         fESDtrackCuts->SetMaxChi2TPCConstrainedGlobal(36);
 	fNumberOfEvent->Fill(2.5);
-        //fIncompletEvent ->Fill(esd->GetNumberOfTracks() );
-	fMultMC_incompleteDAQ->Fill(mcEvent->GetNumberOfTracks() );
-        fIncompletEvent ->Fill(2 );
-// check of Pileup   
-       if (esd->IsPileupFromSPD()) return;
-	fNumberOfEvent->Fill(3.5);
-	fMultMC_AfterPileUp->Fill(mcEvent->GetNumberOfTracks() );	
-       //Multpileup->Fill(nESDTracks);
-       fMultpileup->Fill(2);
-
-	fESDtrackCuts->SetMaxDCAToVertexXYPtDep("0.0105 + 0.0350/pt^1.01");
-	//fESDtrackCuts->SetMaxDCAToVertexXYPtDep("0.0182+0.0350/pt^1.01");
-    	 fESDtrackCuts->SetMaxChi2TPCConstrainedGlobal(36);
-
-	Float_t cent = -999;
-	if (esd->GetRunNumber() < 244824) { //OLD multiplicity/centrality class framework
-  	AliCentrality *centrality = esd->GetCentrality();
-  	cent = centrality->GetCentralityPercentile("V0M");
-	} else { //New multiplicity/centrality class framework
-  	AliMultSelection *fMultSel = (AliMultSelection *) esd->FindListObject("MultSelection");
-	if (!fMultSel) {
-  //If you get this warning please check that the AliMultSelectionTask actually ran (before your task) 
-  	AliWarning("AliMultSelection object not found!");
-	} else {
-  //Event selection is embedded in the Multiplicity estimator so that the Multiplicity percentiles are well defined and refer to the same sample
-  	cent = fMultSel->GetMultiplicityPercentile("V0M", kTRUE);
-  	if ((cent < 0) || (cent > 100)) return; //Event selection
-	}
-	}
-
-
-         UInt_t maskIsSelected = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
+//physics selection
+	UInt_t maskIsSelected =
+        ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
         Bool_t isSelected = 0;
-        maskIsSelected &= fTrigSel;
-        //isSelected = (maskIsSelected & AliVEvent::kINT7) == AliVEvent::kINT7;
-	TString  firedTriggerClasses = esd->GetFiredTriggerClasses();
-         if (maskIsSelected!=fTrigSel) return;
+        isSelected = (maskIsSelected & AliVEvent::kINT7) == AliVEvent::kINT7;
+         if (!isSelected) {
+         ( PostData(1, fOutputList));
+            return;
+         }
+        fMultV0trigger->Fill(2);
+	fNumberOfEvent->Fill(3.5);
 
-	fNumberOfEvent->Fill(4.5);
 
-	Double_t mctrack= mcEvent->GetNumberOfTracks();
+//multiplicity/ centrality 
 
-	fMultTriggerMCAfterV0->Fill(mctrack );
-	fMultV0trigger->Fill(2);
+        Float_t cent = -999;
+        if (esd->GetRunNumber() < 244824) { //OLD multiplicity/centrality class framework
+        AliCentrality *centrality = esd->GetCentrality();
+        cent = centrality->GetCentralityPercentile("V0M");
+        } else { //New multiplicity/centrality class framework
+        AliMultSelection *fMultSel = (AliMultSelection *) esd->FindListObject("MultSelection");
+        if (!fMultSel) {
+  //If you get this warning please check that the AliMultSelectionTask actually ran (before your task) 
+        AliWarning("AliMultSelection object not found!");
+        } else {
+  //Event selection is embedded in the Multiplicity estimator so that the Multiplicity percentiles are well defined and refer to the same sample
+        cent = fMultSel->GetMultiplicityPercentile("V0M", kTRUE);
+//        if ((cent < 0) || (cent > 100)) return; //Event selection
+        }
+        }
 
+        fNumberOfEvent->Fill(4.5);
+        Double_t mctrack= mcEvent->GetNumberOfTracks();
+
+        fMultTriggerMCAfterV0->Fill(mctrack );
+        fMultV0trigger->Fill(2);
+
+// check incomplete event
+        if (esd->IsIncompleteDAQ()) return;
+        //fIncompletEvent ->Fill(esd->GetNumberOfTracks() );
+        fIncompletEvent ->Fill(2 );
+        fNumberOfEvent->Fill(5.5);
+// check of Pileup   
+        if (esd->IsPileupFromSPD()) return;
+       //Multpileup->Fill(nESDTracks);
+        fMultpileup->Fill(2);
+        fNumberOfEvent->Fill(6.5);
+
+//tracklet vs cluster cut
+        AliAnalysisUtils *AnalysisUtils = new AliAnalysisUtils();
+        Double_t IsCluVstrk = AnalysisUtils->IsSPDClusterVsTrackletBG(esd);
+        if(IsCluVstrk)
+          return;
+	fNumberOfEvent->Fill(7.5);
+//TPC or SPD vertex check
+        const AliESDVertex * trkVertex = esd->GetPrimaryVertexTracks();
+        const AliESDVertex * spdVertex = esd->GetPrimaryVertexSPD();
+        Bool_t hasSPD = spdVertex->GetStatus();
+        Bool_t hasTrk = trkVertex->GetStatus();
+        //Note that AliVertex::GetStatus checks that N_contributors is > 0
+        if (!(hasSPD && hasTrk)) return;
+
+ 	fNumberOfEvent->Fill(8.5);
 // vertex cut
-  	//const AliESDVertex *vertex= esd->GetPrimaryVertex();    
-  	//if(!vertex) return;
-	
-	const AliESDVertex *vertex=GetEventVertex(esd);
-      	if(!vertex) return;
-	Double_t vpos[3];
-  	vertex->GetXYZ(vpos);
-    	fZvertex->Fill(vpos[2]);
-      	if (TMath::Abs( vpos[2] ) > 10. ) return;
-	fEventVertex->Fill(2);
-	fNumberOfEvent->Fill(3);
-	fNumberOfEvent->Fill(5.5);
-	
-	fEventVsCentrality->Fill(cent, 2);
+        //const AliESDVertex *vertex= esd->GetPrimaryVertex();    
+        //if(!vertex) return;
 
-	// AliCentrality *esdCentrality = esd->GetCentrality();
-        // Int_t cent = esdCentrality->GetCentralityPercentile("V0M");
+        const AliESDVertex *vertex=GetEventVertex(esd);
+        if(!vertex) return;
+	fNumberOfEvent->Fill(9.5);
+        Double_t vpos[3];
+        vertex->GetXYZ(vpos);
+        fZvertex->Fill(vpos[2]);
+        if (TMath::Abs( vpos[2] ) > 10. ) return;
+        fEventVertex->Fill(2);
+        fNumberOfEvent->Fill(10.5);
 
+        fEventVsCentrality->Fill(cent, 2);
 	
   	Printf("MC particles: %d", mcEvent->GetNumberOfTracks());
   	AliStack* stack=mcEvent->Stack();

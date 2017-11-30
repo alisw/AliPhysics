@@ -207,7 +207,12 @@ public:
 
   void SetPrimaryVertex(const double *vertex);
   void GetPrimaryVertex(double *vertex);
-
+  
+  int Multiplicity() const;
+  double Zvtx() const;
+  void SetMultiplicity(int mult);
+  void SetZvtx(double vtx);
+  
   //Alice stuff
   enum {
     kITSin=0x0001,kITSout=0x0002,kITSrefit=0x0004,kITSpid=0x0008,
@@ -236,7 +241,9 @@ public:
   AliFemtoThreeVector fP; ///< track momentum
   float fPt;              ///< transverse momenta
   float fInnerMomentum;   ///< *total* momentum at the *inner* wall of the TPC
-
+  int fMultiplicity;
+  double fZvtx;
+  
   AliFmPhysicalHelixD fHelix; ///< track helix
   //alice stuff
   //Long_t  fFlags;
@@ -310,6 +317,7 @@ public:
 
   float fCorrAll;    //corrections for particles without PID
 
+
 };
 
 //inline const float* AliFemtoTrack::NSigma() const
@@ -319,5 +327,6 @@ inline float AliFemtoTrack::PidProbPion() const {return fPidProbPion;}
 inline float AliFemtoTrack::PidProbKaon() const {return fPidProbKaon;}
 inline float AliFemtoTrack::PidProbProton() const {return fPidProbProton;}
 inline float AliFemtoTrack::PidProbMuon() const {return fPidProbMuon;}
-
+inline int AliFemtoTrack::Multiplicity() const{ return fMultiplicity;}
+inline double AliFemtoTrack::Zvtx() const{  return fZvtx;}
 #endif

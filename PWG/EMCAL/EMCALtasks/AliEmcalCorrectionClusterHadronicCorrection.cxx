@@ -27,7 +27,8 @@ AliEmcalCorrectionClusterHadronicCorrection::AliEmcalCorrectionClusterHadronicCo
   fDoTrackClus(kTRUE),
   fHadCorr(0),
   fEexclCell(0),
-  fDoExact(kFALSE),
+  fPlotOversubtractionHistograms(kFALSE),
+  fDoNotOversubtract(kFALSE),
   fClusterContainerIndexMap(),
   fParticleContainerIndexMap(),
   fHistMatchEtaPhiAll(0),
@@ -89,6 +90,8 @@ Bool_t AliEmcalCorrectionClusterHadronicCorrection::Initialize()
   GetProperty("hadCorr", fHadCorr);
   GetProperty("Eexcl", fEexclCell);
   GetProperty("doTrackClus", fDoTrackClus);
+  GetProperty("plotOversubtractionHistograms", fPlotOversubtractionHistograms);
+  GetProperty("doNotOversubtract", fDoNotOversubtract);
 
   if (!fEsdMode && fParticleCollArray.GetEntries() > 1) {
     AliWarning("================================================================================");
@@ -199,7 +202,7 @@ void AliEmcalCorrectionClusterHadronicCorrection::UserCreateOutputObjects()
   fOutput->Add(fHistNMatchCent);
   fOutput->Add(fHistNClusMatchCent);
   
-  if (fIsEmbedded) {
+  if (fPlotOversubtractionHistograms) {
     for(Int_t icent=0; icent<fNcentBins; ++icent) {
       name = Form("fHistEmbTrackMatchesOversub_%d",icent);
       fHistEmbTrackMatchesOversub[icent] = new TH2F(name, name, fNbins, fMinBinPt, fMaxBinPt, fNbins, 0, 1.2);
@@ -536,7 +539,7 @@ void AliEmcalCorrectionClusterHadronicCorrection::DoMatchedTracksLoop(Int_t iclu
   if (!cluster) return;
   
   // loop over matched tracks
-  Int_t Ntrks = Ntrks = cluster->GetNTracksMatched();
+  Int_t Ntrks = cluster->GetNTracksMatched();
   for (Int_t i = 0; i < Ntrks; ++i) {
     AliVTrack* track = 0;
     
@@ -752,7 +755,7 @@ Double_t AliEmcalCorrectionClusterHadronicCorrection::ApplyHadCorrAllTracks(Int_
   Double_t EclusMCcorr  = 0;
   Double_t EclusBkgcorr = 0;
   Double_t overSub = 0;
-  if (fIsEmbedded) {
+  if (fPlotOversubtractionHistograms) {
     EsubMC   = hadCorr * totalTrkP * trkPMCfrac;
     EsubBkg  = hadCorr * totalTrkP - EsubMC;
     EclusMC  = energyclus * cluster->GetMCEnergyFraction();
@@ -815,7 +818,7 @@ Double_t AliEmcalCorrectionClusterHadronicCorrection::ApplyHadCorrAllTracks(Int_
         }
       }
       
-      if (fIsEmbedded) {
+      if (fPlotOversubtractionHistograms) {
         fHistOversub[fCentBin]->Fill(energyclus, overSub / energyclus);
         
         if (cluster->GetMCEnergyFraction() > 0.95)
@@ -831,7 +834,7 @@ Double_t AliEmcalCorrectionClusterHadronicCorrection::ApplyHadCorrAllTracks(Int_
     }
   }
   
-  if (fIsEmbedded && fDoExact) {
+  if (fPlotOversubtractionHistograms && fDoNotOversubtract) {
     Esub -= overSub;
     if (EclusBkgcorr + EclusMCcorr > 0) {
       Double_t newfrac = EclusMCcorr / (EclusBkgcorr + EclusMCcorr);

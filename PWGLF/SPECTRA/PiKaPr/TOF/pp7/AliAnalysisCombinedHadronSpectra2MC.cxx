@@ -1015,10 +1015,10 @@ void AliAnalysisCombinedHadronSpectra2MC::UserExec(Option_t *)
     
 
     if (!fESDtrackCuts->AcceptTrack(track)) {continue;}
-    if (!(track->GetStatus()&AliESDtrack::kTOFout)==0) {fTOFout=1;}else {fTOFout=0;}
-    if (!(track->GetStatus()&AliESDtrack::kTIME)==0) {ftime=1;}else {ftime=0;}  
-    if (!(track->GetStatus()&AliESDtrack::kTRDout)==0) {ftrdout=1;}else {ftrdout=0;}  
-    if (!(track->GetStatus()&AliESDtrack::kTOFmismatch)==0) {fmatch=0;}else {fmatch=1;}  
+    if (track->GetStatus()&AliESDtrack::kTOFout) {fTOFout=1;}else {fTOFout=0;}
+    if (track->GetStatus()&AliESDtrack::kTIME) {ftime=1;}else {ftime=0;}  
+    if (track->GetStatus()&AliESDtrack::kTRDout) {ftrdout=1;}else {ftrdout=0;}  
+    if (track->GetStatus()&AliESDtrack::kTOFmismatch) {fmatch=0;}else {fmatch=1;}  
     track->GetImpactParameters(fDCAXY, fDCAZ);
 
     track->GetTOFpid(r1);
@@ -1027,7 +1027,7 @@ void AliAnalysisCombinedHadronSpectra2MC::UserExec(Option_t *)
     if(!(TMath::Abs(feta)<0.9))continue;
     
     fmom=track->GetP();  // This function returns the track momentum
-    Double_t *trackT0;
+    // Double_t *trackT0;
     // trackT0 = t0maker->GetT0p(fmom);// [0]=to -- [1] = sigma T0
 //     fT0meas=trackT0[0]; 
 //     fT0sigma=trackT0[1];

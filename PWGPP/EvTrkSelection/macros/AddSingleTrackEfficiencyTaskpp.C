@@ -26,6 +26,7 @@ AliCFSingleTrackEfficiencyTask *AddSingleTrackEfficiencyTaskpp(const Bool_t read
 							       AliPID::EParticleType specie=AliPID::kPion, 
 							       Int_t pdgcode=0, //particle specie
 							       Bool_t useMCtruthForKine=kFALSE,
+							       Double_t maxRadiusForPrimaries=999.,
 							       ULong64_t triggerMask=AliVEvent::kAnyINT,
 							       TString centralityEstimator = "V0M",
 							       Int_t fBit=0,
@@ -156,6 +157,7 @@ AliCFSingleTrackEfficiencyTask *AddSingleTrackEfficiencyTaskpp(const Bool_t read
   cuts->SetNumberOfClusters(mintrackrefsITS,mintrackrefsTPC,mintrackrefsTOF,mintrackrefsMUON);
   cuts->SetTriggerMask(triggerMask);
   cuts->SetIsAOD(readAOD);
+  cuts->SetMaxRadiusOfParticleOrigin(maxRadiusForPrimaries);
   //
   // Pid selection here
   //

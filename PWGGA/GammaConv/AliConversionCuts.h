@@ -24,7 +24,7 @@
 #include "AliESDtrack.h"
 #include "AliVTrack.h"
 #include "AliAODTrack.h"
-#include "AliStack.h"
+#include "AliMCEvent.h"
 #include "AliAnalysisCuts.h"
 #include "TH1F.h"
 #include "TF1.h"
@@ -141,18 +141,18 @@ class AliConversionCuts : public AliAnalysisCuts {
 
    TString GetCutNumber();
    
-   void GetCentralityRange(Double_t range[2]){range[0]=10*fCentralityMin;range[1]=10*fCentralityMax;};
+   void GetCentralityRange(Double_t range[2]){range[0]=10*fCentralityMin;range[1]=10*fCentralityMax;}
    
    // Cut Selection
-   Bool_t EventIsSelected(AliVEvent *fInputEvent, AliVEvent *fMCEvent);
+   Bool_t EventIsSelected(AliVEvent *fInputEvent, AliMCEvent *fMCEvent);
    Int_t IsEventAcceptedByConversionCut(AliConversionCuts *ReaderCuts, AliVEvent *InputEvent, AliMCEvent *MCEvent, Int_t isHeavyIon);
    Bool_t PhotonIsSelected(AliConversionPhotonBase * photon, AliVEvent  * event);
-   Bool_t PhotonIsSelectedMC(TParticle *particle,AliStack *fMCStack,Bool_t checkForConvertedGamma=kTRUE);
+   Bool_t PhotonIsSelectedMC(TParticle *particle,AliMCEvent *mcEvent,Bool_t checkForConvertedGamma=kTRUE);
    Bool_t PhotonIsSelectedAODMC(AliAODMCParticle *particle,TClonesArray *aodmcArray,Bool_t checkForConvertedGamma=kTRUE);
-   Bool_t ElectronIsSelectedMC(TParticle *particle,AliStack *fMCStack);
+   Bool_t ElectronIsSelectedMC(TParticle *particle,AliMCEvent *mcEvent);
    Bool_t TracksAreSelected(AliVTrack * negTrack, AliVTrack * posTrack);
    Bool_t MesonIsSelected(AliAODConversionMother *pi0,Bool_t IsSignal=kTRUE);
-   Bool_t MesonIsSelectedMC(TParticle *fMCMother,AliStack *fMCStack, Bool_t bMCDaughtersInAcceptance=kFALSE);
+   Bool_t MesonIsSelectedMC(TParticle *fMCMother,AliMCEvent *mcEvent, Bool_t bMCDaughtersInAcceptance=kFALSE);
 
    void InitAODpidUtil(Int_t type);
    Bool_t InitPIDResponse();
@@ -206,7 +206,7 @@ class AliConversionCuts : public AliAnalysisCuts {
    Bool_t CosinePAngleCut(const AliConversionPhotonBase * photon, AliVEvent * event) const;
    Bool_t RejectSharedElectronV0s(AliAODConversionPhoton* photon, Int_t nV0, Int_t nV0s);
    Bool_t RejectToCloseV0s(AliAODConversionPhoton* photon, TList *photons, Int_t nV0);
-   Int_t IsParticleFromBGEvent(Int_t index, AliStack *MCStack, AliVEvent *InputEvent = 0x0);
+   Int_t IsParticleFromBGEvent(Int_t index, AliMCEvent *mcEvent, AliVEvent *InputEvent = 0x0);
    void GetNotRejectedParticles(Int_t rejection, TList *HeaderList, AliVEvent *MCEvent);
    void SetUseReweightingWithHistogramFromFile( Bool_t pi0reweight=kTRUE, Bool_t etareweight=kFALSE, Bool_t k0sreweight=kFALSE, TString path="$ALICE_PHYSICS/PWGGA/GammaConv/MCSpectraInput.root",
                                                 TString histoNamePi0 = "", TString histoNameEta = "", TString histoNameK0s = "",
@@ -227,7 +227,7 @@ class AliConversionCuts : public AliAnalysisCuts {
    void  LoadReweightingHistosMCFromFile ();
    UChar_t DeterminePhotonQualityAOD(AliAODConversionPhoton*, AliVEvent*);
    // Event Cuts
-   Bool_t IsCentralitySelected(AliVEvent *fInputEvent, AliVEvent *fMCEvent = NULL);
+   Bool_t IsCentralitySelected(AliVEvent *fInputEvent, AliMCEvent *fMCEvent = NULL);
    Double_t GetCentrality(AliVEvent *event);
    Bool_t GetUseNewMultiplicityFramework(TString period);
    Int_t GetNumberOfContributorsVtx(AliVEvent *event);
@@ -277,7 +277,7 @@ class AliConversionCuts : public AliAnalysisCuts {
 
    Int_t IsHeavyIon(){return fIsHeavyIon;}
    Int_t GetFirstTPCRow(Double_t radius);
-   Float_t GetWeightForMeson(TString period, Int_t index, AliStack *MCStack, AliVEvent *InputEvent = 0x0);
+   Float_t GetWeightForMeson(TString period, Int_t index, AliMCEvent *mcEvent, AliVEvent *InputEvent = 0x0);
 
    Bool_t UseElecSharingCut(){return fDoSharedElecCut;}
    Bool_t UseToCloseV0sCut(){return fDoToCloseV0sCut;}
@@ -387,6 +387,7 @@ class AliConversionCuts : public AliAnalysisCuts {
    Int_t *fNotRejectedEnd; //[fnHeaders]
    TString *fGeneratorNames; //[fnHeaders]
    TObjString *fCutString; // cut number used for analysis
+   TString fCutStringRead;
    AliAnalysisUtils *fUtils;
    Double_t fEtaShift;
    Bool_t fDoEtaShift;            // Flag for Etashift
@@ -441,7 +442,7 @@ class AliConversionCuts : public AliAnalysisCuts {
    Int_t fNSpecialSubTriggerOptions;
 private:
 
-   ClassDef(AliConversionCuts,9)
+   ClassDef(AliConversionCuts,10)
 };
 
 

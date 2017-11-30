@@ -16,6 +16,7 @@ ClassImp(AliV0Result);
 AliV0Result::AliV0Result() :
   AliVWeakResult(),
 fMassHypo(AliV0Result::kK0Short),
+fProtonProfile(0x0),
 fCutMinRapidity(-0.5),
 fCutMaxRapidity(+0.5),
 fCutV0Radius(5.0),
@@ -26,6 +27,7 @@ fCutV0CosPA(0.998),
 fCutProperLifetime(10),
 fCutCompetingV0Rejection(-1),
 fCutArmenteros(kTRUE),
+fCutArmenterosParameter(0.2),
 fCutTPCdEdx(3.0),
 fCutMinBaryonMomentum(-1),
 fCutMCPhysicalPrimary(kTRUE),
@@ -59,6 +61,7 @@ fUseOnTheFly(kFALSE)
 AliV0Result::AliV0Result(const char * name, AliV0Result::EMassHypo lMassHypo, const char * title):
 AliVWeakResult(name,title),
 fMassHypo(lMassHypo),
+fProtonProfile(0x0),
 fCutMinRapidity(-0.5),
 fCutMaxRapidity(+0.5),
 fCutV0Radius(5.0),
@@ -69,6 +72,7 @@ fCutV0CosPA(0.998),
 fCutProperLifetime(10),
 fCutCompetingV0Rejection(-1),
 fCutArmenteros(kTRUE),
+fCutArmenterosParameter(0.2),
 fCutTPCdEdx(3.0),
 fCutMinBaryonMomentum(-1),
 fCutMCPhysicalPrimary(kTRUE),
@@ -109,6 +113,7 @@ fUseOnTheFly(kFALSE)
 AliV0Result::AliV0Result(const char * name, AliV0Result::EMassHypo lMassHypo, const char * title, Long_t lNCentBins, Double_t *lCentBins, Long_t lNPtBins, Double_t *lPtBins):
 AliVWeakResult(name,title),
 fMassHypo(lMassHypo),
+fProtonProfile(0x0),
 fCutMinRapidity(-0.5),
 fCutMaxRapidity(+0.5),
 fCutV0Radius(5.0),
@@ -119,6 +124,7 @@ fCutV0CosPA(0.998),
 fCutProperLifetime(10),
 fCutCompetingV0Rejection(-1),
 fCutArmenteros(kTRUE),
+fCutArmenterosParameter(0.2),
 fCutTPCdEdx(3.0),
 fCutMinBaryonMomentum(-1),
 fCutMCPhysicalPrimary(kTRUE),
@@ -164,6 +170,7 @@ fUseOnTheFly(kFALSE)
 AliV0Result::AliV0Result(const char * name, AliV0Result::EMassHypo lMassHypo, const char * title, Long_t lNCentBins, Double_t *lCentBins, Long_t lNPtBins, Double_t *lPtBins, Long_t lNMassBins, Double_t lMinMass, Double_t lMaxMass):
 AliVWeakResult(name,title),
 fMassHypo(lMassHypo),
+fProtonProfile(0x0),
 fCutMinRapidity(-0.5),
 fCutMaxRapidity(+0.5),
 fCutV0Radius(5.0),
@@ -174,6 +181,7 @@ fCutV0CosPA(0.998),
 fCutProperLifetime(10),
 fCutCompetingV0Rejection(-1),
 fCutArmenteros(kTRUE),
+fCutArmenterosParameter(0.2),
 fCutTPCdEdx(3.0),
 fCutMinBaryonMomentum(-1),
 fCutMCPhysicalPrimary(kTRUE),
@@ -226,6 +234,7 @@ fCutV0CosPA(lCopyMe.fCutV0CosPA),
 fCutProperLifetime(lCopyMe.fCutProperLifetime),
 fCutCompetingV0Rejection(lCopyMe.fCutCompetingV0Rejection),
 fCutArmenteros(lCopyMe.fCutArmenteros),
+fCutArmenterosParameter(lCopyMe.fCutArmenterosParameter),
 fCutTPCdEdx(lCopyMe.fCutTPCdEdx),
 fCutMCPhysicalPrimary(lCopyMe.fCutMCPhysicalPrimary),
 fCutMCLambdaFromPrimaryXi(lCopyMe.fCutMCLambdaFromPrimaryXi),
@@ -265,6 +274,11 @@ fUseOnTheFly(lCopyMe.fUseOnTheFly)
     fHistoFeeddown = 0x0;
     if( lCopyMe.GetHistogramFeeddownToCopy() )
         fHistoFeeddown = (TH3F*) lCopyMe.GetHistogramFeeddownToCopy()->Clone(Form("fHistoFeeddown_%s",GetName()));
+    fProtonProfile = 0x0;
+    //Copy proton profile, if it exists
+    if( lCopyMe.GetProtonProfileToCopy() ){
+        fProtonProfile = (TProfile*) lCopyMe.GetProtonProfileToCopy()->Clone(Form("fProtonProfile_%s",GetName()));
+    }
 }
 //________________________________________________________________
 AliV0Result::AliV0Result(AliV0Result *lCopyMe, TString lNewName)
@@ -286,6 +300,7 @@ AliV0Result::AliV0Result(AliV0Result *lCopyMe, TString lNewName)
     fCutProperLifetime = lCopyMe->GetCutProperLifetime();
     fCutCompetingV0Rejection = lCopyMe->GetCutCompetingV0Rejection();
     fCutArmenteros = lCopyMe->GetCutArmenteros();
+    fCutArmenterosParameter = lCopyMe->GetCutArmenterosParameter();
     fCutTPCdEdx = lCopyMe->GetCutTPCdEdx();
     fCutMinBaryonMomentum = lCopyMe->GetCutMinBaryonMomentum();
     
@@ -329,6 +344,10 @@ AliV0Result::AliV0Result(AliV0Result *lCopyMe, TString lNewName)
     fHistoFeeddown = 0x0;
     if( lCopyMe->GetHistogramFeeddownToCopy() )
         fHistoFeeddown = (TH3F*) lCopyMe->GetHistogramFeeddownToCopy()->Clone(Form("fHistoFeeddown_%s",GetName()));
+    fProtonProfile = 0x0;
+    if( lCopyMe->GetProtonProfileToCopy() ){
+        fProtonProfile = (TProfile*) lCopyMe->GetProtonProfileToCopy()->Clone(Form("fProtonProfile_%s",GetName()));
+    }
 }
 //________________________________________________________________
 AliV0Result::~AliV0Result(){
@@ -336,6 +355,10 @@ AliV0Result::~AliV0Result(){
     if (fHisto) {
         delete fHisto;
         fHisto = 0x0;
+    }
+    if (fProtonProfile) {
+        delete fProtonProfile;
+        fProtonProfile = 0x0;
     }
 }
 
@@ -361,6 +384,7 @@ AliV0Result& AliV0Result::operator=(const AliV0Result& lCopyMe)
     fCutProperLifetime = lCopyMe.GetCutProperLifetime();
     fCutCompetingV0Rejection = lCopyMe.GetCutCompetingV0Rejection();
     fCutArmenteros = lCopyMe.GetCutArmenteros();
+    fCutArmenterosParameter = lCopyMe.GetCutArmenterosParameter();
     fCutTPCdEdx = lCopyMe.GetCutTPCdEdx();
     fCutMinBaryonMomentum = lCopyMe.GetCutMinBaryonMomentum();
     
@@ -393,6 +417,10 @@ AliV0Result& AliV0Result::operator=(const AliV0Result& lCopyMe)
         delete fHisto;
         fHisto = 0;
     }
+    if (fProtonProfile) {
+        delete fProtonProfile;
+        fProtonProfile = 0;
+    }
     // Constructor
     Double_t lThisMass = GetMass();
     Double_t lMassWindow = 0.1 ;
@@ -408,6 +436,10 @@ AliV0Result& AliV0Result::operator=(const AliV0Result& lCopyMe)
     fHistoFeeddown = 0x0;
     if( lCopyMe.GetHistogramFeeddownToCopy() )
         fHistoFeeddown = (TH3F*) lCopyMe.GetHistogramFeeddownToCopy()->Clone(Form("fHistoFeeddown_%s",GetName()));
+    fProtonProfile = 0x0;
+    if( lCopyMe.GetProtonProfileToCopy() ){
+        fProtonProfile = (TProfile*) lCopyMe.GetProtonProfileToCopy()->Clone(Form("fProtonProfile_%s",GetName()));
+    }
     
     return *this;
 }
@@ -434,6 +466,10 @@ Long64_t AliV0Result::Merge(TCollection *hlist)
             //... if feeddown matrices are both defined, merge that as well, please  
             if ( fHistoFeeddown && xh->GetHistogramFeeddown() )
                 GetHistogramFeeddown()->Add(xh->GetHistogramFeeddown());
+            
+            //... if proton profiles are both defined, merge that as well, please
+            if ( fProtonProfile && xh->GetProtonProfileToCopy() )
+                GetProtonProfile()->Add(xh->GetProtonProfile());
         }
     }
     return (Long64_t) GetHistogram()->GetEntries();
@@ -470,6 +506,7 @@ Bool_t AliV0Result::HasSameCuts(AliVWeakResult *lCompare, Bool_t lCheckdEdx )
 
     //if( fCutCompetingV0Rejection != lCompareV0->GetCutCompetingV0Rejection() ) lReturnValue = kFALSE;
     if( fCutArmenteros != lCompareV0->GetCutArmenteros() ) lReturnValue = kFALSE;
+    if( TMath::Abs( fCutArmenterosParameter - lCompareV0->GetCutArmenterosParameter() ) > 1e-6 ) lReturnValue = kFALSE;
     if( TMath::Abs( fCutTPCdEdx - lCompareV0->GetCutTPCdEdx() ) > 1e-6 && lCheckdEdx ) lReturnValue = kFALSE;
     if( TMath::Abs( fCutMinBaryonMomentum - lCompareV0->GetCutMinBaryonMomentum() ) > 1e-6 ) lReturnValue = kFALSE;
     
@@ -529,6 +566,7 @@ void AliV0Result::Print()
     
     cout<<" Proper Lifetime....: "<<fCutProperLifetime<<endl;
     cout<<" Armenteros (for K0): "<<fCutArmenteros<<endl;
+    cout<<" Armenteros param...: "<<fCutArmenterosParameter<<endl;
     cout<<" TPC dEdx (sigmas)..: "<<fCutTPCdEdx<<endl;
     cout<<" Min baryon momentum: "<<fCutMinBaryonMomentum<<endl;
     
@@ -594,6 +632,14 @@ TString AliV0Result::GetParticleName () const
     if( fMassHypo == AliV0Result::kAntiLambda ) lName = "AntiLambda";
     return lName;
 }
+
+//________________________________________________________________
+void AliV0Result::InitializeProtonProfile (Long_t lNPtBins, Double_t *lPtBins)
+//Initialize TProfile to do bookkeeping of proton momenta
+{
+    if(!fProtonProfile) fProtonProfile = new TProfile( Form("fProtonProfile_%s",GetName()), "", lNPtBins, lPtBins);
+}
+
 
 
 

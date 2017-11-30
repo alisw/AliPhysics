@@ -50,6 +50,7 @@ fTuneKalman(0),
 fCrystalBallTails(),
 fCrystalBall(NULL),
 fRecoCharge(0.),
+fRAbs(-1.),
 fRecoTrack()
 //,
 //fRecoTrackList()
@@ -76,6 +77,7 @@ fTuneKalman(kFALSE),
 fCrystalBallTails(),
 fCrystalBall(NULL),
 fRecoCharge(0.),
+fRAbs(-1.),
 fRecoTrack()
 //,
 //fRecoTrackList()
@@ -243,7 +245,9 @@ void AliMuonTrackSmearing::ComputeRecoTrack ( Double_t pGen, Double_t etaGen,
     slopeXAbs = slopeXMCS + 2./TMath::Sqrt(3.) * (slopeXMCS - slopeX) * zB / (zB - 0.9) * 4.15 / 5.05;
     slopeYAbs = slopeYMCS + 2./TMath::Sqrt(3.) * (slopeYMCS - slopeY) * zB / (zB - 0.9) * 4.15 / 5.05;
   }
-  Double_t thetaAbs = TMath::ATan(TMath::Sqrt(slopeXAbs*slopeXAbs + slopeYAbs*slopeYAbs))*TMath::RadToDeg();
+  Double_t slopeRAbs = TMath::Sqrt(slopeXAbs*slopeXAbs + slopeYAbs*slopeYAbs);
+  Double_t thetaAbs = TMath::ATan(slopeRAbs) * TMath::RadToDeg();
+  fRAbs = slopeRAbs * 505.;
 
   // energy loss according to the "real" path in the absorber (should be done in 3D...)
   if ((theta > 2. && thetaAbs < 2.) || (theta > 3. && thetaAbs < 3.)) {
@@ -277,9 +281,9 @@ void AliMuonTrackSmearing::ComputeRecoTrack ( Double_t pGen, Double_t etaGen,
 
   // energy loss in the absorber
   Double_t dp = -1.;
-  while (dp < 0) dp = gRandom->Landau(eLoss+0.22278298*0.25*fwhmELoss,0.25*fwhmELoss);
+  while (dp < 0.) dp = gRandom->Landau(eLoss+0.22278298*0.25*fwhmELoss,0.25*fwhmELoss);
   Double_t pAbsEnd = pGen - dp;
-//  if (pAbsEnd < 4. ) return NULL;
+  if (pAbsEnd < 0.5) pAbsEnd = 0.5; // below ~0.5 GeV/c the track should not even exist
 
   // Branson plane according to thetaAbs
   Double_t zBRec;
@@ -310,18 +314,19 @@ void AliMuonTrackSmearing::ComputeRecoTrack ( Double_t pGen, Double_t etaGen,
   }
 
   // compute reconstructed momentum at first cluster
+  Double_t sigmaThetaRes2 = SigmaThetaDevFromRes2();
+  Double_t sigmaThetaRes = TMath::Sqrt(sigmaThetaRes2);
+  Double_t mean = PToThetaDev(pAbsEnd) + sign * fNSigmaShift * sigmaThetaRes;
   Double_t pAbsEndRec = 0.;
   if ( fChosenFunc == kGaus ) {
-    Double_t sigmaThetaDev = TMath::Sqrt(SigmaThetaDevFromMCS2(pAbsEnd) + SigmaThetaDevFromRes2());
-    pAbsEndRec = ThetaDevToP(GenRndGaus(PToThetaDev(pAbsEnd),sigmaThetaDev));
+    Double_t sigmaThetaDev = TMath::Sqrt(SigmaThetaDevFromMCS2(pAbsEnd) + sigmaThetaRes2);
+    pAbsEndRec = ThetaDevToP(GenRndGaus(mean,sigmaThetaDev));
   } else {
-    Double_t thetaDevMCS = GenRndGaus(PToThetaDev(pAbsEnd),TMath::Sqrt(SigmaThetaDevFromMCS2(pAbsEnd)));
-    Double_t sigmaThetaRes = TMath::Sqrt(SigmaThetaDevFromRes2());
+    Double_t thetaDevMCS = GenRndGaus(mean,TMath::Sqrt(SigmaThetaDevFromMCS2(pAbsEnd)));
     if ( fChosenFunc == kBreitWigner ) {
       pAbsEndRec = ThetaDevToP(GenRndBreitWigner(thetaDevMCS, sigmaThetaRes, fSigmaTrkCut * sigmaThetaRes / fSigmayCh * fSigmaTrk));
     } else if ( fChosenFunc == kCrystalBall ) {
-      Double_t mean = thetaDevMCS + sign * fNSigmaShift * sigmaThetaRes;
-      pAbsEndRec = ThetaDevToP(GenRndCrystalBall(mean, sigmaThetaRes, fCrystalBallTails[4], fCrystalBallTails[5], fSigmaTrkCut * sigmaThetaRes / fSigmayCh * fSigmaTrk));
+      pAbsEndRec = ThetaDevToP(GenRndCrystalBall(thetaDevMCS, sigmaThetaRes, fCrystalBallTails[4], fCrystalBallTails[5], fSigmaTrkCut * sigmaThetaRes / fSigmayCh * fSigmaTrk));
     }
   }
   if (pAbsEndRec < 0.) {
@@ -434,13 +439,14 @@ Double_t AliMuonTrackSmearing::GenRndGaus ( Double_t mean, Double_t sigma ) cons
 //}
 
 //________________________________________________________________________
-TLorentzVector AliMuonTrackSmearing::GetRecoTrack ( Double_t pGen, Double_t etaGen, Double_t phiGen, Double_t chargeGen, Double_t &recoCharge )
+TLorentzVector AliMuonTrackSmearing::GetRecoTrack ( Double_t pGen, Double_t etaGen, Double_t phiGen, Double_t chargeGen, Double_t &recoCharge, Double_t &rAbs )
 {
   /// Given the generated MC track parameters,
   /// returns the track with smeared parameters according to resolution
 
   ComputeRecoTrack(pGen,etaGen,phiGen,chargeGen);
   recoCharge = fRecoCharge;
+  rAbs = fRAbs;
   return fRecoTrack;
 }
 
@@ -578,5 +584,54 @@ Double_t AliMuonTrackSmearing::ThetaDevToP ( Double_t thetaDev ) const
 {
   /// deviation angle for a track of a given momentum in the spectrometer
   return 3./thetaDev*0.3; // BL = 3Tm; GeV/c = 10^9/3.10^8
+}
+
+//________________________________________________________________________
+Double_t AliMuonTrackSmearing::PResVsP( const Double_t *x, const Double_t *par )
+{
+  /// expected momentum resolution versus p
+  // par[0] = angular position in the absorber
+  // par[1] < 0. = resolution at vertex; par[1] > 0. = resolution at first cluster
+  Double_t p = *x;
+  Double_t theta = par[0];
+  Bool_t atFirstCluster = (par[1] > 0.);
+  Double_t dp = ELoss(p, theta);
+  Double_t pCorr = TMath::Max(atFirstCluster ? p : p - dp, 0.5);
+  Double_t thetaDev = PToThetaDev(pCorr);
+  Double_t sigmaThetaDev2 = SigmaThetaDevFromRes2();
+  if (fChosenFunc == kBreitWigner) sigmaThetaDev2 /= 2.*log(2.); // FWHM = 2 * gamma = 2 * srqt(2*ln(2)) * sigma
+  sigmaThetaDev2 += SigmaThetaDevFromMCS2(pCorr);
+  if (atFirstCluster) return 100.*TMath::Sqrt(sigmaThetaDev2)/thetaDev;
+  else {
+    Double_t sigmaELoss2 = FWHMELoss2(p, theta) / (8.*log(2.)); // gaussian: fwmh = 2 * srqt(2*ln(2)) * sigma
+    return 100.*TMath::Sqrt(sigmaELoss2 + sigmaThetaDev2/thetaDev/thetaDev*pCorr*pCorr)/p;
+  }
+}
+
+//________________________________________________________________________
+Double_t AliMuonTrackSmearing::SlopeResVsP( const Double_t *x, const Double_t *par )
+{
+  /// expected slope resolution versus p
+  // par[0] = angular position in the absorber
+  // par[1] < 0. = resolution along X; par[1] > 0. = resolution along Y
+  // par[2] < 0. = resolution at vertex; par[1] > 0. = resolution at first cluster
+  Double_t p = *x;
+  Double_t theta = par[0];
+  Bool_t atFirstCluster = (par[2] > 0.);
+  Double_t dp = ELoss(p, theta);
+  Double_t zB;
+  if (theta < 2.) zB = fZB02;
+  else if (theta < 3.) zB = fZB23;
+  else zB = fZB310;
+  Double_t pCorr = TMath::Max(atFirstCluster ? p : p - dp, 0.5);
+  Double_t sigmaMCSCh2 = SigmaSlopeFromMCSInCh2(pCorr, atFirstCluster, zB);
+  Double_t sigmaRes2 = SigmaSlopeFromRes2((par[1] > 0.), atFirstCluster, zB);
+  if (fChosenFunc == kBreitWigner) sigmaRes2 /= 2.*log(2.); // FWHM = 2 * gamma = 2 * srqt(2*ln(2)) * sigma
+  if (atFirstCluster) return TMath::Sqrt(sigmaMCSCh2+sigmaRes2);
+  else {
+    Double_t pHalfCorr = p-0.5*TMath::Min(p-1.e-6,dp);
+    Double_t sigmaMCSAbs2 = SigmaSlopeFromMCSInAbs2(pHalfCorr,theta);
+    return TMath::Sqrt(sigmaMCSAbs2+sigmaMCSCh2+sigmaRes2);
+  }
 }
 

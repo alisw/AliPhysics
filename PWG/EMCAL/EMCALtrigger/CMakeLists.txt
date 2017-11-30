@@ -41,6 +41,7 @@ set(SRCS
   AliEmcalTriggerSelection.cxx
   AliEmcalTriggerQATask.cxx
   AliEMCALTriggerOfflineQAPP.cxx
+  AliEMCALTriggerOfflineLightQAPP.cxx
   AliEMCALTriggerPatchADCInfoAP.cxx
   )
 

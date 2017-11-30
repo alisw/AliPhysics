@@ -1,6 +1,7 @@
 AliAnalysisTaskSEDs *AddTaskDs(Int_t system=0/*0=pp,1=PbPb*/,
 			       Int_t storeNtuple=0,Bool_t storeNsparse=kFALSE,Bool_t storeNsparseDplus=kFALSE,Bool_t readMC=kFALSE,
 			       TString filename="", TString postname="", Bool_t doCutVarHistos = kFALSE, Int_t AODProtection = 1,
+			       Bool_t fillNTrklAxis = kFALSE, Int_t fillCentrAxis = 0,
 			       Bool_t useRotBkg=kFALSE, Bool_t useBkgFromPhiSB=kFALSE, Bool_t useCutV0multTPCout=kFALSE,
 			       Bool_t storeNsparseImpPar = kFALSE)
 {
@@ -48,7 +49,7 @@ AliAnalysisTaskSEDs *AddTaskDs(Int_t system=0/*0=pp,1=PbPb*/,
     
   dsTask->SetReadMC(readMC);
   //dsTask->SetDoLikeSign(kTRUE);
-  //  dsTask->SetUseTPCpid(kTRUE);
+  //dsTask->SetUseTPCpid(kTRUE);
   //dsTask->SetUseTOFpid(kTRUE);
   dsTask->SetDebugLevel(0);
   dsTask->SetUseSelectionBit(kTRUE);
@@ -62,6 +63,8 @@ AliAnalysisTaskSEDs *AddTaskDs(Int_t system=0/*0=pp,1=PbPb*/,
   dsTask->SetUseBkgFromPhiSB(useBkgFromPhiSB);
   dsTask->SetUseCutV0multVsTPCout(useCutV0multTPCout);
   dsTask->SetSystem(system);
+  dsTask->SetFillTracklets(fillNTrklAxis);
+  dsTask->SetFillCentralityAxis(fillCentrAxis);
   mgr->AddTask(dsTask);
     
   // Create containers for input/output

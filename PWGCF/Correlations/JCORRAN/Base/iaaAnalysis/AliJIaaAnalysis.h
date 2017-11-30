@@ -8,7 +8,7 @@
 #include "../AliJConst.h"
 #include <TH1D.h>
 
-// jtAnalysis main class
+// iaaAnalysis main class
 // used in local and grid execution
 
 class AliJCard;
@@ -95,7 +95,7 @@ private:
 	bool fbTriggCorrel; //! Flag for triggered correlation
 	bool fbLPCorrel; //! Flag for leading particle correlation
 	double fMinimumPt; //!  Minimum pT value for a particle to be still accepted to analysis
-
+    bool fMCTruthRun; //! false = regular run, true = read particles from MC particle list
 	Int_t fEventBC; //! Selector for some BC%4
 
 	AliJEfficiency *fEfficiency; // Efficience class

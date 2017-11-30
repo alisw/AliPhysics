@@ -2,7 +2,8 @@
   .x $NOTES/aux/NimStyle.C(1) 
   NimStyleBig()
   .L $AliPhysics_SRC/PWGPP/TPC/macros/comparePerformanceMaps.C+
-   InitTrees();  
+  inputFileSelection ="LHC16f.pass1.B0.Bin0:LHC16f.pass1.B0.Bin1:LHC16f.pass1.B0.Bin3:LHC15n.pass4.B1.Bin0:LHC17d1.LHC16f.pass1.B0.Bin0";
+  InitTrees(inputFileSelection);  
   
  
 
@@ -16,7 +17,7 @@
 #include "TGraph.h"
 #include "TStyle.h"
 
-TTree *  InitMapTree(TPRegexp regExp,  TPRegexp notReg, TString axisAlias,  TString axisTitle);
+TTree *  InitMapTree(TPRegexp regExp,  TPRegexp notReg, TString axisAlias,  TString axisTitle, TString  inputFileSelection);
 TObjArray * samples=new TObjArray(1000);
 
 
@@ -25,49 +26,84 @@ TPRegexp regTreeK0Qpt("hisK0.*proj_0_1");
 TPRegexp regTreeNotK0Qpt("hisK0.*(Alpha|DSec)");
 TPRegexp regTreeK0QptDSec("hisK0.*QPtTglDSec_1_1_5_1Dist");
 TPRegexp regTreeK0Alpha("hisK0.*AlphaDist");
-//TPRegexp regTreeDelta("(his|qahis).*(Delta|Pull|Covar|ncl|Chi2).*_tglDist");  // regular expression for standard trees
-TPRegexp regTreeDelta("^(his|qahis).*(Delta|Pull|Covar|ncl|Chi2|covar|delta|pull).*_tglDist$");  // regular expression for standard trees
+//TPRegexp regTreeDelta("(his|qahis|matchhis).*(Delta|Pull|Covar|ncl|Chi2).*_tglDist");  // regular expression for standard trees
+TPRegexp regTreeDelta("(his|qahis|matchhis).*_tglDist$");  // regular expression for standard trees
+TPRegexp regTreesmdEdx(".*smdEdxDist$");  // regular expression for standard trees
 TPRegexp regTreeNotDeltaInt("his.*(lpha|DSec)");
 //
-TPRegexp regCovar("hisCovar");
-TPRegexp regTreeDeltaAlpha("(his|qahis)(Delta|Pull|Covar|ncl|Chi2|covar|delta|pull).*alphaVDist$");
-TPRegexp regTreeDeltaDAlphaQ("(his|qahis)(Delta|Pull|Covarr|ncl|Chi2|covar|delta|pull).*_dalphaQDist$");
+TPRegexp regCovar("hisCovar.*_tglDist$");
+TPRegexp regTreeDeltaAlpha("(his|qahis|matchhis).*alphaVDist$");
+TPRegexp regTreeDeltaTrack5("(his|qahis|matchhis).*_tgl_LogTracks5Dist$");
+TPRegexp regTreeDeltadEdxTrack5("(his|qahis|matchhis).*_smdEdx_LogTracks5Dist$");
+TPRegexp regTreeDeltaDAlphaQ("(his|qahis|matchhis)*.*_dalphaQDist$");
 
-TTree * treeDelta0,  *treeK0proj_0_1,  *treeK0QptDSec, * treeCovar, * treeDeltaAlpha, *treeDeltaDAlphaQ, *treeK0Alpha;
-TCanvas *canvasDraw=0;
+TTree * treeDelta0,  *treeK0proj_0_1,  *treeK0QptDSec, * treeCovar, * treeDeltaAlpha, *treeDeltaDAlphaQ, *treeK0Alpha,*treeLogTrack5,*treedEdxLogTrack5;
+TTree * treesmdEdx=0;
+TCanvas *canvasDrawRec=0;
+TCanvas *canvasDrawSquare=0;
 
 
 void makeCanvas(){
-  canvasDraw = new TCanvas("xxx","xxx",1100,500);
-  canvasDraw->SetRightMargin(0.15);
-  canvasDraw->SetBottomMargin(0.15);
-  canvasDraw->SetLeftMargin(0.1);
   gStyle->SetTitleOffset(0.8,"Z");
-  gStyle->SetTitleOffset(1.0,"X");
-  gStyle->SetTitleOffset(0.6,"Y");
+  gStyle->SetTitleOffset(1.3,"X");
+  gStyle->SetTitleOffset(1.0,"Y");
+
+  canvasDrawRec = new TCanvas("canvasDrawRec","canvasDrawRec",1100,500);
+  canvasDrawRec->SetRightMargin(0.03);
+  canvasDrawRec->SetTopMargin(0.03);
+  canvasDrawRec->SetBottomMargin(0.15);
+  canvasDrawRec->SetLeftMargin(0.1);
+  canvasDrawSquare = new TCanvas("canvasDrawSquare","canvasDrawSquare",700,700);  
+  canvasDrawSquare->SetTopMargin(0.03);
+  canvasDrawSquare->SetRightMargin(0.03);
+  canvasDrawSquare->SetBottomMargin(0.15);
+  canvasDrawSquare->SetLeftMargin(0.15);
+
 }
 
-void InitTrees(){
-  treeDelta0= InitMapTree(regTreeDelta,regTreeNotDeltaInt,"qPt:tgl","q/p_{t}(1/GeV):unit");
-  treeK0proj_0_1= InitMapTree(regTreeK0Qpt,regTreeNotK0Qpt , "mpt:tgl","1/p_{t} (1/GeV): tan(#lambda)");
-  treeK0QptDSec= InitMapTree(regTreeK0QptDSec,dummy , "mpt:side:dsec","1/p_{t} (1/GeV): side:dsec");
-  treeCovar= InitMapTree(regCovar,dummy , "qPt:tgl","q/p_{t} (1/GeV): tan(#lambda)");
-  treeDeltaAlpha= InitMapTree(regTreeDeltaAlpha,dummy , "qPt:tgl:alpha","q/p_{t} (1/GeV):tan(#lambda):alpha");
-  treeDeltaDAlphaQ= InitMapTree(regTreeDeltaDAlphaQ,dummy , "qPt:tgl:alpha","q/p_{t} (1/GeV):tan(#lambda):dalphaQ");
-  treeK0Alpha= InitMapTree(regTreeK0Alpha,dummy , "qPt:tgl:alpha","q/p_{t} (1/GeV):tan(#lambda):alpha");
+void InitTrees(TString  inputFileSelection=""){
+  // TString  inputFileSelection ="LHC15o.pass1.B1.Bin3:LHC15o.pass3_lowIR_pidfix.B0.Bin0:LHC16i.TRD0:LHC16i.TRD2:LHC15n.TRD0:LHC15n.TRD2:LHC15n.TRD0"
+  // Lpad all trees
+  treeDelta0= InitMapTree(regTreeDelta,dummy,"qPt:tgl","q/p_{t}(1/GeV):unit",inputFileSelection);
+  treesmdEdx= InitMapTree(regTreesmdEdx,dummy,"qPt:tgl","q/p_{t}(1/GeV):unit",inputFileSelection);
+  treeK0proj_0_1= InitMapTree(regTreeK0Qpt,regTreeNotK0Qpt , "mpt:tgl","1/p_{t} (1/GeV): tan(#lambda)",inputFileSelection);
+  treeK0QptDSec= InitMapTree(regTreeK0QptDSec,dummy , "mpt:side:dsec","1/p_{t} (1/GeV): side:dsec",inputFileSelection);
+  treeCovar= InitMapTree(regCovar,dummy , "qPt:tgl","q/p_{t} (1/GeV): tan(#lambda)",inputFileSelection);
+  treeDeltaAlpha= InitMapTree(regTreeDeltaAlpha,dummy , "qPt:tgl:alpha","q/p_{t} (1/GeV):tan(#lambda):alpha",inputFileSelection);
+  treeDeltaDAlphaQ= InitMapTree(regTreeDeltaDAlphaQ,dummy , "qPt:tgl:alpha","q/p_{t} (1/GeV):tan(#lambda):dalphaQ",inputFileSelection);
+  treeK0Alpha= InitMapTree(regTreeK0Alpha,dummy , "qPt:tgl:alpha","q/p_{t} (1/GeV):tan(#lambda):alpha",inputFileSelection);
+  treeLogTrack5= InitMapTree(regTreeDeltaTrack5,dummy , "qPt:tgl:logTrack5","q/p_{t} (1/GeV):tan(#lambda):log(1+N_{tracks}/5.)",inputFileSelection);
+  treedEdxLogTrack5= InitMapTree(regTreeDeltadEdxTrack5,dummy , "qPt:tgl:smdEdx:logTrack5","q/p_{t} (1/GeV):tan(#lambda):sqrt{1/dEdx}:log(1+N_{tracks}/5.)",inputFileSelection);
 
 }
 
 
-TTree *  InitMapTree(TPRegexp regExp, TPRegexp notReg,  TString axisAlias,  TString axisTitle){
+TTree *  InitMapTree(TPRegexp regExp, TPRegexp notReg,  TString axisAlias,  TString axisTitle, TString  inputFileSelection){
   //
-  TObjArray * residualMapList=  gSystem->GetFromPipe("cat residualMap.list").Tokenize("\n");
+  TObjArray * regExpArray= inputFileSelection.Tokenize(":");
+  TObjArray * residualMapList=  gSystem->GetFromPipe("cat residualMap.list | grep -v '^#'").Tokenize("\n");
   Int_t nFiles=residualMapList->GetEntries()/2;
   TTree * treeBase =0; 
   TObjArray *arrayAxisAlias=axisAlias.Tokenize(":");
   TObjArray *arrayAxisTitle=axisTitle.Tokenize(":");
+  
   for (Int_t iFile=0; iFile<nFiles; iFile++){
     TString name0=residualMapList->At(iFile*2)->GetName();
+    Bool_t isSelected=kTRUE;
+    if (regExpArray->GetEntries()>0){
+      isSelected=kFALSE;
+      for (Int_t entry=0; entry<regExpArray->GetEntries(); entry++){
+	TPRegexp reg(regExpArray->At(entry)->GetName());
+	if (reg.Match(name0)) isSelected|=kTRUE;
+      }
+    }
+    if (!isSelected) continue;
+    TString description="";
+    if (name0.Contains(":")){
+      TObjArray *array = name0.Tokenize(":");
+      name0=array->At(0)->GetName();
+      description=array->At(1)->GetName();
+    }
     samples->AddAt(new TObjString(name0),iFile);
     TFile * finput = TFile::Open(residualMapList->At(iFile*2+1)->GetName());
     if (finput==NULL){
@@ -75,6 +111,7 @@ TTree *  InitMapTree(TPRegexp regExp, TPRegexp notReg,  TString axisAlias,  TStr
       continue;
     }
     TList * keys = finput->GetListOfKeys();
+    Int_t isLegend=kFALSE;
     for (Int_t iKey=0; iKey<keys->GetEntries(); iKey++){   
       if (regExp.Match(keys->At(iKey)->GetName())==0) continue;
       if (notReg.Match(keys->At(iKey)->GetName())!=0) continue;
@@ -84,6 +121,11 @@ TTree *  InitMapTree(TPRegexp regExp, TPRegexp notReg,  TString axisAlias,  TStr
 	treeBase= (TTree*)finput2->Get(keys->At(iKey)->GetName());
       }
       treeBase->AddFriend(tree,TString::Format("%s.%s",name0.Data(),keys->At(iKey)->GetName()).Data());
+      if (isLegend==kFALSE&&description.Length()>0){
+	TStatToolkit::AddMetadata(treeBase,TString::Format("%s.Legend",name0.Data()), description.Data());
+	::Info("InitMapTree.Legend","%s\t%s",name0.Data(), description.Data());
+	isLegend=kTRUE;
+      }
       Int_t entriesF=tree->GetEntries();
       Int_t entriesB=treeBase->GetEntries();
       if (entriesB==entriesF){
@@ -100,6 +142,7 @@ TTree *  InitMapTree(TPRegexp regExp, TPRegexp notReg,  TString axisAlias,  TStr
     }
     treeBase->SetMarkerStyle(25);
     treeBase->SetMarkerSize(0.5);
+    treeBase->SetAlias("fsector","9*alphaVCenter/pi+18*(alphaVCenter<0)");
   }
   return treeBase;
 }

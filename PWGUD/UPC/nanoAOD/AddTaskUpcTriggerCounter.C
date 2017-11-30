@@ -22,7 +22,7 @@ AliAnalysisTaskUpcTriggerCounter *AddTaskUpcTriggerCounter(){
 
    // Create containers for input/output
   AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
-  AliAnalysisDataContainer *coutput = mgr->CreateContainer("UpcTriggerCounter", TH1I::Class(), AliAnalysisManager::kOutputContainer, Form("%s:UpcTriggers", AliAnalysisManager::GetCommonFileName()));  
+  AliAnalysisDataContainer *coutput = mgr->CreateContainer("UpcTriggerCounter", TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s:UpcTriggers", AliAnalysisManager::GetCommonFileName()));  
 
   // Connect input/output
   mgr->ConnectInput(task, 0, cinput);

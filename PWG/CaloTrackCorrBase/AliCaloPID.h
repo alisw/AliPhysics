@@ -45,7 +45,7 @@ class TH2F ;
 //--- AliRoot system ---
 class AliVCluster;
 class AliVCaloCells;
-class AliAODPWG4Particle;
+class AliCaloTrackParticle;
 class AliEMCALPIDUtils;
 class AliCalorimeterUtils;
 class AliVEvent;
@@ -109,7 +109,7 @@ class AliCaloPID : public TObject {
   
   Bool_t    IsTrackMatched(AliVCluster * cluster, AliCalorimeterUtils* cu, AliVEvent* event) ;    
   
-  void      SetPIDBits(AliVCluster * cluster, AliAODPWG4Particle *aodph, 
+  void      SetPIDBits(AliVCluster * cluster, AliCaloTrackParticle *aodph, 
                        AliCalorimeterUtils* cu, AliVEvent* event);
   
   void      Print(const Option_t * opt)const;
@@ -223,7 +223,9 @@ class AliCaloPID : public TObject {
   
   // Track matching EMC
   // Pt dependent
-  void    SwitchOnEMCTrackPtDepResMatching ()  { fEMCALUseTrackPtDepMatchingCut = kTRUE  ; InitParamTrackMatchPtDependent() ; }
+  
+  // Activate pT dependent track matching
+  void    SwitchOnEMCTrackPtDepResMatching ()  { fEMCALUseTrackPtDepMatchingCut = kTRUE  ; }  
   void    SwitchOffEMCTrackPtDepResMatching()  { fEMCALUseTrackPtDepMatchingCut = kFALSE ; }
 
   TF1    *GetEMCALFuncTrackPtDepDEta() ;     

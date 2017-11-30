@@ -988,7 +988,7 @@ void AliAnaPhoton::FillAcceptanceHistograms()
     primary = GetMC()->GetTrack(i);
     if(!primary)
     {
-      AliWarning("ESD primaries pointer not available!!");
+      AliWarning("primaries pointer not available!!");
       continue;
     }
     
@@ -1188,7 +1188,7 @@ void AliAnaPhoton::FillAcceptanceHistograms()
 //      primary = GetMC()->Particle(i) ;
 //      if(!primary)
 //      {
-//        AliWarning("ESD primaries pointer not available!!");
+//        AliWarning("primaries pointer not available!!");
 //        continue;
 //      }
 //      
@@ -4541,7 +4541,7 @@ void  AliAnaPhoton::MakeAnalysisFillAOD()
   AliDebug(1,Form("Input %s cluster entries %d", GetCalorimeterString().Data(), nCaloClusters));
   
   //----------------------------------------------------
-  // Fill AOD with PHOS/EMCAL AliAODPWG4Particle objects
+  // Fill AOD with PHOS/EMCAL AliCaloTrackParticle objects
   //----------------------------------------------------
   // Loop on clusters
   for(Int_t icalo = 0; icalo < nCaloClusters; icalo++)
@@ -4581,6 +4581,25 @@ void  AliAnaPhoton::MakeAnalysisFillAOD()
       tag = GetMCAnalysisUtils()->CheckOrigin(calo->GetLabels(),calo->GetNLabels(), GetMC(), pl); // check lost decays
           
       AliDebug(1,Form("Origin of candidate, bit map %d",tag));
+      
+//      if( calo->E() > 2 &&
+//         ( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCOtherDecay)    ||
+//           GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPrompt)        ||
+//           GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCFragmentation) ||
+//           GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCISR)           ||
+//          ( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPhoton) &&
+//           !GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPi0Decay) && 
+//           !GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPi0) &&
+//           !GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCEtaDecay) &&
+//           !GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCEta) 
+//           )
+//          )  
+//         )
+//      {
+//        GetMCAnalysisUtils()->PrintMCTag(tag);
+//        GetMCAnalysisUtils()->PrintAncestry(GetMC(),calo->GetLabel());//,10);
+//      }
+      
     }// Work with stack also
     
     //-----------------------------
@@ -4592,7 +4611,7 @@ void  AliAnaPhoton::MakeAnalysisFillAOD()
     //----------------------------
     // Create AOD for analysis
     //----------------------------
-    AliAODPWG4Particle aodph = AliAODPWG4Particle(fMomentum);
+    AliCaloTrackParticle aodph = AliCaloTrackParticle(fMomentum);
     
     //...............................................
     // Set the indeces of the original caloclusters (MC, ID), and calorimeter
@@ -4782,7 +4801,7 @@ void  AliAnaPhoton::MakeAnalysisFillHistograms()
 
   for(Int_t iaod = 0; iaod < naod ; iaod++)
   {
-    AliAODPWG4Particle* ph =  (AliAODPWG4Particle*) (GetOutputAODBranch()->At(iaod));
+    AliCaloTrackParticle* ph =  (AliCaloTrackParticle*) (GetOutputAODBranch()->At(iaod));
     Int_t pdg = ph->GetIdentifiedParticleType();
     
     AliDebug(2,Form("PDG %d, MC TAG %d, Calorimeter <%d>",ph->GetIdentifiedParticleType(),ph->GetTag(), ph->GetDetectorTag())) ;

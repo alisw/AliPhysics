@@ -57,6 +57,7 @@ AliPHOSTenderSupply::AliPHOSTenderSupply() :
   ,fRunNumber(-1)
   ,fRecoPass(-1)  //to be defined
   ,fUsePrivateBadMap(0)
+  ,fPrivateOADBBadMap("")
   ,fUsePrivateCalib(0)
   ,fAddNoiseMC(0)
   ,fNoiseMC(0.001)
@@ -67,7 +68,7 @@ AliPHOSTenderSupply::AliPHOSTenderSupply() :
   ,fPHOSCalibData(0x0)
   ,fTask(0x0)
   ,fIsMC(kFALSE)
-  ,fMCProduction("")  
+  ,fMCProduction("")
 {
 	//
 	// default ctor
@@ -87,6 +88,7 @@ AliPHOSTenderSupply::AliPHOSTenderSupply(const char *name, const AliTender *tend
   ,fRunNumber(-1) //to be defined
   ,fRecoPass(-1)  //to be defined
   ,fUsePrivateBadMap(0)
+  ,fPrivateOADBBadMap("")
   ,fUsePrivateCalib(0)
   ,fAddNoiseMC(0)
   ,fNoiseMC(0.001)
@@ -97,7 +99,7 @@ AliPHOSTenderSupply::AliPHOSTenderSupply(const char *name, const AliTender *tend
   ,fPHOSCalibData(0x0)
   ,fTask(0x0)
   ,fIsMC(kFALSE)
-  ,fMCProduction("")  
+  ,fMCProduction("")
 {
 	//
 	// named ctor
@@ -227,23 +229,30 @@ void AliPHOSTenderSupply::InitTender()
   
   //Init Bad channels map
   if(!fUsePrivateBadMap){
-   AliOADBContainer badmapContainer(Form("phosBadMap"));
-    badmapContainer.InitFromFile("$ALICE_PHYSICS/OADB/PHOS/PHOSBadMaps.root","phosBadMap");
+    AliOADBContainer badmapContainer(Form("phosBadMap"));
+    if(fPrivateOADBBadMap.Length()!=0){
+      //Load standard bad maps file if no OADB file is force loaded
+      AliInfo(Form("using custom bad channel map from %s\n",fPrivateOADBBadMap.Data()));
+       badmapContainer.InitFromFile(fPrivateOADBBadMap.Data(),"phosBadMap");
+    } else {
+      //Load force loaded OADB file
+      AliInfo("using standard bad channel map from $ALICE_PHYSICS/OADB/PHOS/PHOSBadMaps.root\n");
+      badmapContainer.InitFromFile("$ALICE_PHYSICS/OADB/PHOS/PHOSBadMaps.root","phosBadMap");
+    }
     TObjArray *maps = (TObjArray*)badmapContainer.GetObject(fRunNumber,"phosBadMap");
     if(!maps){
-      AliError(Form("Can not read Bad map for run %d. \n You may choose to use your map with ForceUsingBadMap()\n",fRunNumber)) ;    
+      AliError(Form("Can not read Bad map for run %d. \n You may choose to use your map with ForceUsingBadMap()\n",fRunNumber)) ;
     }
     else{
       AliInfo(Form("Setting PHOS bad map with name %s \n",maps->GetName())) ;
       for(Int_t mod=0; mod<6;mod++){
         if(fPHOSBadMap[mod]) 
           delete fPHOSBadMap[mod] ;
-        TH2I * h = (TH2I*)maps->At(mod) ;      
-	if(h)
-          fPHOSBadMap[mod]=new TH2I(*h) ;
+        TH2I * h = (TH2I*)maps->At(mod) ;
+        if(h) fPHOSBadMap[mod]=new TH2I(*h) ;
       }
-    }    
-  } 
+    }
+  }
 
   
   

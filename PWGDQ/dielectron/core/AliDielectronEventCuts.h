@@ -97,8 +97,8 @@ private:
   const AliESDVertex *fkVertex;         //! current vertex
   const AliAODVertex *fkVertexAOD;      //! current vertex AOD
 
-  TH1* fCorrCutMin[5];       //parametrization of lower limit correlation cut
-  TH1* fCorrCutMax[5];       //parametrization of upper limit correlation cut
+  TH1D* fCorrCutMin[5];       //parametrization of lower limit correlation cut
+  TH1D* fCorrCutMax[5];       //parametrization of upper limit correlation cut
 
   TF1*     fparMean;                // parametrization of the mean values
   TF1*     fparSigma;               // parametrization of the sigmas

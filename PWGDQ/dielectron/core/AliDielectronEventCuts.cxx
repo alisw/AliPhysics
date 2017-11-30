@@ -455,7 +455,7 @@ void AliDielectronEventCuts::SetMinCorrCutFunction(TF1 *fun, UInt_t varx, UInt_t
     else {
       TString key=GetName(); key+=Form("Min%d",i);
       // clone temporare histogram since otherwise it will not be streamed to file!
-      fCorrCutMin[i] = (TH1*)fun->GetHistogram()->Clone(key.Data());
+      fCorrCutMin[i] = (TH1D*)fun->GetHistogram()->Clone(key.Data());
       fCorrCutMin[i]->GetListOfFunctions()->AddAt(fun,0);
       break;
     }
@@ -483,7 +483,7 @@ void AliDielectronEventCuts::SetMaxCorrCutFunction(TF1 *fun, UInt_t varx, UInt_t
     else {
       TString key=GetName(); key+=Form("Max%d",i);
       // clone temporare histogram since otherwise it will not be streamed to file!
-      fCorrCutMax[i] = (TH1*)fun->GetHistogram()->Clone(key.Data());
+      fCorrCutMax[i] = (TH1D*)fun->GetHistogram()->Clone(key.Data());
       fCorrCutMax[i]->GetListOfFunctions()->AddAt(fun,0);
       break;
     }

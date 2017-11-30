@@ -20,6 +20,7 @@ class AliPHOSGeometry;
 
 #include "AliEventCuts.h"
 #include "AliAnalysisTaskEmcalJet.h"
+#include "AliEmcalEmbeddingQA.h"
 
 class AliAnalysisTaskEmcalDijetImbalance : public AliAnalysisTaskEmcalJet {
  public:
@@ -65,19 +66,18 @@ class AliAnalysisTaskEmcalDijetImbalance : public AliAnalysisTaskEmcalJet {
   virtual ~AliAnalysisTaskEmcalDijetImbalance()                                 ;
 
   void UserCreateOutputObjects()                                                ;
-  void LoadBackgroundScalingHistogram(const char* path = "alien:///alice/cern.ch/user/j/jmulliga/BackgroundScalingWeights.root", const char* name = "hBackgroundScalingWeights");
+  void LoadBackgroundScalingHistogram(const char* path = "alien:///alice/cern.ch/user/j/jmulliga/scaleFactorEMCalLHC15o.root", const char* name1 = "hEtaPhiSFCorrection", const char* name2 = "hEtaPhiJetPtCorrection");
   
   // Setters
   void SetDeltaPhiCut(Double_t d)                           { fDeltaPhiMin = d; }
   void SetMaxPt(Double_t d)                                 { fMaxPt = d; }
-  void SetPlotJetHistograms(Bool_t b)                       { fPlotJetHistograms = b; }
   void SetPlotDijetCandHistograms(Bool_t b)                 { fPlotDijetCandHistograms = b; }
   void SetPlotDijetImbalanceHistograms(Bool_t b)            { fPlotDijetImbalanceHistograms = b; }
   void SetComputeBackground(Bool_t b)                       { fComputeBackground = b; }
   void SetDoMomentumBalance(Bool_t b)                       { fDoMomentumBalance = b; }
   void SetDoGeometricalMatching(Bool_t b, Double_t r, Double_t trackThresh, Double_t clusThresh)
     { fDoGeometricalMatching = b; fMatchingJetR = r; fTrackConstituentThreshold = trackThresh; fClusterConstituentThreshold = clusThresh;}
-  void SetDoCaloStudy (Bool_t b)                            { fDoCaloStudy = b; }
+  void SetDoTriggerSimulation(Bool_t b)                     { fDoTriggerSimulation = b; }
   void SetLoadBackgroundScalingWeights(Bool_t b)            { fLoadBackgroundScalingWeights = b; }
   void SetComputeMBDownscaling(Bool_t b)                    { fComputeMBDownscaling = b; }
   void SetMinTrigJetPt(Double_t p)                          { fMinTrigJetPt = p; }
@@ -97,29 +97,30 @@ class AliAnalysisTaskEmcalDijetImbalance : public AliAnalysisTaskEmcalJet {
 
   // Analysis and plotting functions
   void                        GenerateHistoBins()                               ;
-  void                        AllocateJetHistograms()                           ;
+  void                        AllocateBackgroundHistograms()                    ;
   void                        AllocateDijetCandHistograms()                     ;
   void                        AllocateDijetImbalanceHistograms()                ;
   void                        AllocateMomentumBalanceHistograms()               ;
   void                        AllocateGeometricalMatchingHistograms()           ;
-  void                        AllocateCaloHistograms()                          ;
+  void                        AllocateTriggerSimHistograms()                    ;
   void                        FindDijet(AliJetContainer* jetCont, Int_t leadingHadronCutBin);
-  void                        ComputeBackground(AliJetContainer* jetCont)       ;
+  void                        ComputeBackground()                               ;
   void                        DoMomentumBalance(TString histname)               ;
   void                        DoGeometricalMatching()                           ;
+  void                        DoTriggerSimulation()                             ;
   void                        FindMatchingDijet(AliJetContainer* jetCont)       ;
-  void                        FillJetHistograms()                               ;
-  void                        FillDijetCandHistograms(TString histname)         ;
-  void                        FillDijetImbalanceHistograms(TString histname)    ;
+  void                        FillDijetCandHistograms(AliJetContainer* jets)    ;
+  void                        FillDijetImbalanceHistograms(AliJetContainer* jets);
   void                        FillMomentumBalanceHistograms(TString histname, Double_t deltaPhi, Double_t trackPt, Double_t balancePt);
   void                        FillGeometricalMatchingHistograms()               ;
-  void                        FillCaloHistograms()                              ;
+  void                        FillTriggerSimHistograms()                        ;
   
   // Utility functions
   Double_t                    GetJetPt(AliJetContainer* jetCont, AliEmcalJet* jet);
   AliEmcalJet*                GetLeadingJet(AliJetContainer* jetCont);
   Double_t                    GetDeltaR(AliEmcalJet* jet1, AliEmcalJet* jet2);
   Double_t                    GetDeltaR(AliTLorentzVector* part, Double_t etaRef, Double_t phiRef);
+  Double_t                    GetJetType(AliEmcalJet* jet);
   
   // Analysis parameters
   Double_t                    fDeltaPhiMin;                         ///< minimum delta phi between di-jets
@@ -133,11 +134,10 @@ class AliAnalysisTaskEmcalDijetImbalance : public AliAnalysisTaskEmcalJet {
   Dijet_t                     fMatchingDijet;                       //!<! low-threshold matching dijet, for matching study
   Int_t                       fNEtaBins;                            ///< Number of eta bins in DCal region (for background/correction)
   Int_t                       fNPhiBins;                            ///< Number of phi bins in DCal region (for background/correction)
-  TH1D*                       fBackgroundScalingWeights;            ///< Histogram storing eta-phi weights for full-jet background scale factors
-  TH1D*                       fGapJetScalingWeights;                ///< Histogram storing eta-phi weights scaling jets near the gap region
+  TH2D*                       fBackgroundScalingWeights;            ///< Histogram storing eta-phi weights for full-jet background scale factors
+  TH2D*                       fGapJetScalingWeights;                ///< Histogram storing eta-phi weights scaling jets near the gap region
 
   // Analysis configuration and plotting options
-  Bool_t                      fPlotJetHistograms;                   ///< Set whether to enable inclusive jet histograms
   Bool_t                      fPlotDijetCandHistograms;             ///< Set whether to enable dijet pair histograms
   Bool_t                      fPlotDijetImbalanceHistograms;        ///< Set whether to enable dijet imbalance histograms
   Bool_t                      fComputeBackground;                   ///< Set whether to enable study of background
@@ -145,7 +145,7 @@ class AliAnalysisTaskEmcalDijetImbalance : public AliAnalysisTaskEmcalJet {
   Bool_t                      fDoGeometricalMatching;               ///< Set whether to enable constituent study with geometrical matching
   Bool_t                      fLoadBackgroundScalingWeights;        ///< Flag to load eta-phi weights for full-jet background scale factors
   Bool_t                      fComputeMBDownscaling;                ///< Set whether to compute and plot MB downscaling factors
-  Bool_t                      fDoCaloStudy;                         ///< Set whether to perform calorimeter detector study
+  Bool_t                      fDoTriggerSimulation;                 ///< Set whether to perform a simple trigger simulation
 
   // Plotting parameters
   Float_t                     fMaxPt;                               ///< Histogram pt limit
@@ -162,9 +162,12 @@ class AliAnalysisTaskEmcalDijetImbalance : public AliAnalysisTaskEmcalJet {
   
   // Trigger parameters
   Double_t                    fMBUpscaleFactor;                     //!<! inverse of downscale factor, for MB trigger
+  Double_t                    fMedianEMCal;                         //!<! median patch energy in EMCal, per event
+  Double_t                    fMedianDCal;                          //!<! median patch energy in DCal, per event
+  Bool_t                      fkEMCEJE;                             //!<! flag telling whether the event is "triggered" or not in "simulation"
   
-  // Phos geometry (only needed for cluster studies)
-  AliPHOSGeometry*            fPHOSGeo;                             //!<! phos geometry
+  // Embedding parameters
+  AliEmcalEmbeddingQA         fEmbeddingQA;                         //!<! QA hists for embedding (will only be added if embedding)
   
   // Hist manager
   THistManager                fHistManager;                         ///< Histogram manager
@@ -174,7 +177,7 @@ class AliAnalysisTaskEmcalDijetImbalance : public AliAnalysisTaskEmcalJet {
   AliAnalysisTaskEmcalDijetImbalance &operator=(const AliAnalysisTaskEmcalDijetImbalance&); // not implemented
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskEmcalDijetImbalance, 8);
+  ClassDef(AliAnalysisTaskEmcalDijetImbalance, 14);
   /// \endcond
 };
 #endif

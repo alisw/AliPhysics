@@ -44,12 +44,13 @@ set(SRCS
     AliAnalysisTaskSEPicoV0Maker.cxx
     AliAnalysisTaskSEPicoV0MakerMC.cxx
     AliMCHFParticleSelector.cxx
-    AliPicoHeaderCJ.cxx
+    AliPicoHeaderJet.cxx
+    AliPicoHeaderV0.cxx
     AliPicoJet.cxx
-    AliPicoJetHeader.cxx
-    AliPicoV0Base.cxx
     AliPicoV0MC.cxx
     AliPicoV0RD.cxx
+    AliPicoV0.cxx
+    AliPicoBase.cxx
    )
 
 if(FASTJET_FOUND)

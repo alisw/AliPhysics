@@ -93,7 +93,7 @@ AliAnalysisTaskSEHFQA* AddTaskHFQA(AliAnalysisTaskSEHFQA::DecChannel ch,TString 
   case 6:
     cutsobjname="LctoV0AnalysisCuts";
     if(stdcuts) {
-      analysiscuts = new AliRDHFCutsLctoV0bachelor();
+      analysiscuts = new AliRDHFCutsLctoV0();
       if (system == 0) analysiscuts->SetStandardCutsPP2010();
       else analysiscuts->SetStandardCutsPbPb2010();
     }

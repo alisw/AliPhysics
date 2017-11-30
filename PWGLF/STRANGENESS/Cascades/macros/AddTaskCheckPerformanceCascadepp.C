@@ -20,6 +20,7 @@
 AliAnalysisTaskCheckPerformanceCascadepp *AddTaskCheckPerformanceCascadepp( Int_t  collidingSystem                       = 0,
                                                                             AliVEvent::EOfflineTriggerTypes triggerclass = AliVEvent::kINT7,
                                                                             Int_t    minnTPCcls                          = 70,
+                                                                            Float_t  minTPCcrossrawoverfindable          = 0.8,
                                                                             Float_t  vtxlimmax                           = 10.,
                                                                             Float_t  vtxlimmin                           = 0.,
                                                                             Bool_t   ksddselection                       = kFALSE,                                                                                  
@@ -56,20 +57,21 @@ AliAnalysisTaskCheckPerformanceCascadepp *AddTaskCheckPerformanceCascadepp( Int_
    const Char_t *sddstatus = "";
    if      (collidingSystem == 0 && ksddselection && kwithsdd)   sddstatus = "_wSDDon";
    else if (collidingSystem == 0 && ksddselection && !kwithsdd)  sddstatus = "_wSDDoff";
-   TString tasknameperf = Form("TaskCheckPerformanceCascade_minnTPCcls%i_vtxlim%.1f-%.1f_minptdghtrk%.1f_etacutdghtrk%.1f%s",minnTPCcls,vtxlimmax,vtxlimmin,minptondaughtertracks,etacutondaughtertracks,sddstatus);
+   TString tasknameperf = Form("TaskCheckPerformanceCascade_minnTPCcls%i_clsfindratio%.1f_vtxlim%.1f-%.1f_minptdghtrk%.1f_etacutdghtrk%.1f%s",minnTPCcls,minptondaughtertracks,vtxlimmax,vtxlimmin,minptondaughtertracks,etacutondaughtertracks,sddstatus);
    tasknameperf.Append(Form("%s",suffix.Data()));
    AliAnalysisTaskCheckPerformanceCascadepp *taskCheckPerfCascadepp = new AliAnalysisTaskCheckPerformanceCascadepp(tasknameperf);
-     taskCheckPerfCascadepp->SetAnalysisType               (type);                   // "ESD" or "AOD"
-     taskCheckPerfCascadepp->SetCollidingSystem            (collidingSystem);        // choose the collision system to run on: "pp" and "pPb"
-     taskCheckPerfCascadepp->SetSelectedTriggerClass       (triggerclass);           // trigger selection
-     taskCheckPerfCascadepp->SetEventSelSDDstatus          (ksddselection);
-     taskCheckPerfCascadepp->SetWithSDDOn                  (kwithsdd);
-     taskCheckPerfCascadepp->SetQualityCutMinnTPCcls       (minnTPCcls);             // which value do you want apply for the minTPCcls cut?
-     taskCheckPerfCascadepp->SetVertexRange                (vtxlimmin,vtxlimmax);
-     taskCheckPerfCascadepp->SetMinptCutOnDaughterTracks   (minptondaughtertracks);  // which value do you want apply for cut on min pt daughter track?
-     taskCheckPerfCascadepp->SetEtaCutOnDaughterTracks     (etacutondaughtertracks); // which value do you want apply for cut on eta daughter track?
-     taskCheckPerfCascadepp->SetApplyAccCut                (kacccut);                // choose if apply acceptance cut
-     taskCheckPerfCascadepp->SetSuffix                     (suffix);
+     taskCheckPerfCascadepp->SetAnalysisType                 (type);                   // "ESD" or "AOD"
+     taskCheckPerfCascadepp->SetCollidingSystem              (collidingSystem);        // choose the collision system to run on: "pp" and "pPb"
+     taskCheckPerfCascadepp->SetSelectedTriggerClass         (triggerclass);           // trigger selection
+     taskCheckPerfCascadepp->SetEventSelSDDstatus            (ksddselection);
+     taskCheckPerfCascadepp->SetWithSDDOn                    (kwithsdd);
+     taskCheckPerfCascadepp->SetQualityCutMinnTPCcls         (minnTPCcls);             // which value do you want apply for the minTPCcls cut?
+     taskCheckPerfCascadepp->SetQualityCutClusterOverFindable(minTPCcrossrawoverfindable);
+     taskCheckPerfCascadepp->SetVertexRange                  (vtxlimmin,vtxlimmax);
+     taskCheckPerfCascadepp->SetMinptCutOnDaughterTracks     (minptondaughtertracks);  // which value do you want apply for cut on min pt daughter track?
+     taskCheckPerfCascadepp->SetEtaCutOnDaughterTracks       (etacutondaughtertracks); // which value do you want apply for cut on eta daughter track?
+     taskCheckPerfCascadepp->SetApplyAccCut                  (kacccut);                // choose if apply acceptance cut
+     taskCheckPerfCascadepp->SetSuffix                       (suffix);
 
    mgr->AddTask(taskCheckPerfCascadepp);
 
@@ -81,12 +83,12 @@ AliAnalysisTaskCheckPerformanceCascadepp *AddTaskCheckPerformanceCascadepp( Int_
    // - Directory name
    TString outputFileNamePerf = Form("%s:PWGLFStrangeness.outputCheckPerformanceCascade", AliAnalysisManager::GetCommonFileName());
    // - Objects name
-   TString outputnameperf0 = Form("clistCascPerf_minnTPCcls%i_vtxlim%.1f-%.1f_minptdghtrk%.1f_etacutdghtrk%.1f%s",minnTPCcls,vtxlimmax,vtxlimmin,minptondaughtertracks,etacutondaughtertracks,sddstatus);
-   TString outputnameperf1 = Form("cfcontPIDAsXiM_minnTPCcls%i_vtxlim%.1f-%.1f_minptdghtrk%.1f_etacutdghtrk%.1f%s",minnTPCcls,vtxlimmax,vtxlimmin,minptondaughtertracks,etacutondaughtertracks,sddstatus);
-   TString outputnameperf2 = Form("cfcontPIDAsXiP_minnTPCcls%i_vtxlim%.1f-%.1f_minptdghtrk%.1f_etacutdghtrk%.1f%s",minnTPCcls,vtxlimmax,vtxlimmin,minptondaughtertracks,etacutondaughtertracks,sddstatus);
-   TString outputnameperf3 = Form("cfcontPIDAsOmegaM_minnTPCcls%i_vtxlim%.1f-%.1f_minptdghtrk%.1f_etacutdghtrk%.1f%s",minnTPCcls,vtxlimmax,vtxlimmin,minptondaughtertracks,etacutondaughtertracks,sddstatus);
-   TString outputnameperf4 = Form("cfcontPIDAsOmegaP_minnTPCcls%i_vtxlim%.1f-%.1f_minptdghtrk%.1f_etacutdghtrk%.1f%s",minnTPCcls,vtxlimmax,vtxlimmin,minptondaughtertracks,etacutondaughtertracks,sddstatus);
-   TString outputnameperf5 = Form("cfcontAsCuts_minnTPCcls%i_vtxlim%.1f-%.1f_minptdghtrk%.1f_etacutdghtrk%.1f%s",minnTPCcls,vtxlimmax,vtxlimmin,minptondaughtertracks,etacutondaughtertracks,sddstatus);
+   TString outputnameperf0 = Form("clistCascPerf_minnTPCcls%i_clsfindratio%.1f_vtxlim%.1f-%.1f_minptdghtrk%.1f_etacutdghtrk%.1f%s",minnTPCcls,minTPCcrossrawoverfindable,vtxlimmax,vtxlimmin,minptondaughtertracks,etacutondaughtertracks,sddstatus);
+   TString outputnameperf1 = Form("cfcontPIDAsXiM_minnTPCcls%i_clsfindratio%.1f_vtxlim%.1f-%.1f_minptdghtrk%.1f_etacutdghtrk%.1f%s",minnTPCcls,minTPCcrossrawoverfindable,vtxlimmax,vtxlimmin,minptondaughtertracks,etacutondaughtertracks,sddstatus);
+   TString outputnameperf2 = Form("cfcontPIDAsXiP_minnTPCcls%i_clsfindratio%.1f_vtxlim%.1f-%.1f_minptdghtrk%.1f_etacutdghtrk%.1f%s",minnTPCcls,minTPCcrossrawoverfindable,vtxlimmax,vtxlimmin,minptondaughtertracks,etacutondaughtertracks,sddstatus);
+   TString outputnameperf3 = Form("cfcontPIDAsOmegaM_minnTPCcls%i_clsfindratio%.1f_vtxlim%.1f-%.1f_minptdghtrk%.1f_etacutdghtrk%.1f%s",minnTPCcls,minTPCcrossrawoverfindable,vtxlimmax,vtxlimmin,minptondaughtertracks,etacutondaughtertracks,sddstatus);
+   TString outputnameperf4 = Form("cfcontPIDAsOmegaP_minnTPCcls%i_clsfindratio%.1f_vtxlim%.1f-%.1f_minptdghtrk%.1f_etacutdghtrk%.1f%s",minnTPCcls,minTPCcrossrawoverfindable,vtxlimmax,vtxlimmin,minptondaughtertracks,etacutondaughtertracks,sddstatus);
+   TString outputnameperf5 = Form("cfcontAsCuts_minnTPCcls%i_clsfindratio%.1f_vtxlim%.1f-%.1f_minptdghtrk%.1f_etacutdghtrk%.1f%s",minnTPCcls,minTPCcrossrawoverfindable,vtxlimmax,vtxlimmin,minptondaughtertracks,etacutondaughtertracks,sddstatus);
    outputnameperf0.Append(Form("%s",suffix.Data()));
    outputnameperf1.Append(Form("%s",suffix.Data()));
    outputnameperf2.Append(Form("%s",suffix.Data()));

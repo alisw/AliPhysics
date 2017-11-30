@@ -42,11 +42,11 @@ AliFemtoXiTrackPairCut &AliFemtoXiTrackPairCut::operator=(const AliFemtoXiTrackP
   if(fV0TrackPairCut) delete fV0TrackPairCut;
   fV0TrackPairCut = new AliFemtoV0TrackPairCut(*cut.fV0TrackPairCut);
 
-  return *this; 
+  return *this;
 }
 
 //__________________
-bool AliFemtoXiTrackPairCut::Pass(const AliFemtoPair *pair) 
+bool AliFemtoXiTrackPairCut::Pass(const AliFemtoPair *pair)
 {
   //Track1 - Xi
   //Track2 - track
@@ -130,7 +130,7 @@ AliFemtoString AliFemtoXiTrackPairCut::Report()
   TString report = "AliFemtoXi Pair Cut - remove shared and split pairs\n";
   report += TString::Format("Number of pairs which passed:\t%ld  Number which failed:\t%ld\n", fNPairsPassed, fNPairsFailed);
 
-  return AliFemtoString(report);
+  return AliFemtoString((const char *)report);
 }
 //__________________
 

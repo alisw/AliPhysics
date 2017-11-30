@@ -1,10 +1,27 @@
 /// \file AddTaskEMCALClusterize.C
-/// \ingroup EMCALPerformanceMacros
+/// \ingroup EMCALPerfAddTaskMacros
 /// \brief Configuration of EMCal re-clusterization analysis task.
 ///
 /// This task reclusterizes on the fly EMCal clusters, creates a new
 /// branch with those clusters so that it can be used by another analysis
 /// task accessing this cluster branch.
+///
+/// \author : Gustavo Conesa Balbastre <Gustavo.Conesa.Balbastre@cern.ch>, (LPSC-CNRS)
+///
+
+#if !defined(__CINT__) || defined(__MAKECINT__)
+
+#include <TROOT.h>
+
+#include "AliAnalysisManager.h"
+
+#include "AliAnalysisTaskEMCALClusterize.h"
+
+//#include "ConfigureEMCALRecoUtils.C"
+
+#endif // CINT
+
+/// Main method
 ///
 /// The parameters for the analysis are:
 /// \param arrayName: TString name of new cluster branch.
@@ -30,10 +47,9 @@
 /// \param nRowDiff: Integer, number of rows for NxM clusterizer
 /// \param nColDiff: Integer, number of collumns for NxM clusterizer
 /// \param skipOrReject: Bool, for unfolding (check)
+/// \param tCardMimic: option for TCard correlation emulation, MC only
+/// \param cellUpd: update cells list with cuts
 ///
-/// \author : Gustavo Conesa Balbastre <Gustavo.Conesa.Balbastre@cern.ch>, (LPSC-CNRS)
-///
-
 AliAnalysisTaskEMCALClusterize* AddTaskEMCALClusterize(
                                                        TString & arrayName,
                                                        const Bool_t  bFillAOD   = kFALSE,                                                
@@ -41,7 +57,7 @@ AliAnalysisTaskEMCALClusterize* AddTaskEMCALClusterize(
                                                        const Bool_t  exotic     = kTRUE,
                                                        const TString name       = "V1Unfold", // V1, V2, NxN, V1Unfold
                                                        const TString trigger    = "", 
-                                                       const Bool_t  tm         = kTRUE, 
+                                                       const Int_t   tm         = 1, 
                                                        const Int_t   minEcell   = 50,
                                                        const Int_t   minEseed   = 100,
                                                        const Int_t   maxDeltaT  = 250,
@@ -57,7 +73,9 @@ AliAnalysisTaskEMCALClusterize* AddTaskEMCALClusterize(
                                                        const Float_t clusterEnergyCutEvent = -1,
                                                        const Int_t   nRowDiff   = 1,
                                                        const Int_t   nColDiff   = 1,
-                                                       const Bool_t  skipOrReject = kFALSE
+                                                       const Bool_t  skipOrReject = kFALSE,
+                                                       const Int_t   tCardMimic = kFALSE,
+                                                       const Bool_t  cellUpd    = kTRUE
                                                        )
 {  
   // Get the pointer to the existing analysis manager via the static access method.
@@ -77,9 +95,13 @@ AliAnalysisTaskEMCALClusterize* AddTaskEMCALClusterize(
     return NULL;
   }
   
-  printf("Passed Settings : mc %d, exo %d, name %s, trigger %s, tm %d\n",bMC,exotic,name.Data(),trigger.Data(),tm);
-  printf("                  Ecell %d, Eseed %d, dT %d, wT %d, minUnf %d, minFrac %d \n",minEcell, minEseed,maxDeltaT,timeWindow,minEUnf,minFrac);
-  printf("                  recalE %d, bad %d, recalT %d, nonlin %d, minCen %d, maxCen %d, rowDiff %d, colDiff %d \n",bRecalE,bBad,bRecalT,bNonLine,minCen,maxCen,nRowDiff,nColDiff);
+  printf("AddTaskEMCALClusterize() - Passed Settings :\n");
+  printf("\t mc %d, exo %d, name %s, trigger %s, tm %d\n",
+         bMC,exotic,name.Data(),trigger.Data(),tm);
+  printf("\t Ecell %d, Eseed %d, dT %d, wT %d, minUnf %d, minFrac %d \n",
+         minEcell, minEseed,maxDeltaT,timeWindow,minEUnf,minFrac);
+  printf("\t recalE %d, bad %d, recalT %d, nonlin %d, minCen %d, maxCen %d, rowDiff %d, colDiff %d, t-card %d, cell update %d \n",
+         bRecalE,bBad,bRecalT,bNonLine,minCen,maxCen,nRowDiff,nColDiff,tCardMimic,cellUpd);
 
   // Create name of task and AOD branch depending on different settings
   
@@ -89,8 +111,7 @@ AliAnalysisTaskEMCALClusterize* AddTaskEMCALClusterize(
   if(minCen != -1 && maxCen != -1)
     arrayName+=Form("_Cen%d_%d",minCen,maxCen);
 
-  printf("Created Branch Name: %s \n",arrayName.Data());
-  
+  printf("AddTaskEMCALClusterize() - Created Branch Name: %s \n",arrayName.Data());
   
   //-------------------------------------------------------
   // Init the task and do settings
@@ -110,9 +131,8 @@ AliAnalysisTaskEMCALClusterize* AddTaskEMCALClusterize(
   clusterize->SwitchOffFillAODHeader();
   clusterize->FillAODFile(bFillAOD); // fill aod.root with clusters?, not really needed for analysis.
 
-  // Do track matching after clusterization
-  if(tm) clusterize->SwitchOnTrackMatching();
-  else   clusterize->SwitchOffTrackMatching();
+  // Update cells list after cuts
+  if ( cellUpd ) clusterize->SwitchOnUpdateCell();
   
   //-------------------------------------------------------
   // Set clusterization parameters via rec param
@@ -130,7 +150,7 @@ AliAnalysisTaskEMCALClusterize* AddTaskEMCALClusterize(
   // Be careful using time cuts, best thing is to leave them open.
   //
   if(maxDeltaT > 1) params->SetTimeCut(maxDeltaT*1.e-9);
-  else            { params->SetTimeCut(250*1.e-9); printf("default maxDeltaT = 250 ns\n"); }// Same as in reco
+  else            { params->SetTimeCut(250*1.e-9); printf("AddTaskEMCALClusterize() - default maxDeltaT = 250 ns\n"); }// Same as in reco
   
   if(timeWindow > 1)
   {
@@ -145,21 +165,21 @@ AliAnalysisTaskEMCALClusterize* AddTaskEMCALClusterize(
       {
         params->SetTimeMin(-250*1.e-9);
         params->SetTimeMax( 250*1.e-9);
-        printf("default time window for calibrated time -250 ns < T < 250 ns\n");
+        printf("AddTaskEMCALClusterize() - default time window for calibrated time -250 ns < T < 250 ns\n");
       }
       else
       {
         // same as in reco, USE IF NO TIME RECALIBRATION
         params->SetTimeMin(425*1.e-9);
         params->SetTimeMax(825*1.e-9);
-        printf("default time window 425 ns < T < 825 ns\n");
+        printf("AddTaskEMCALClusterize() - default time window 425 ns < T < 825 ns\n");
       }
     }
     else
     {
       params->SetTimeMin(-100000000);
       params->SetTimeMax( 100000000);
-      printf("open time cut\n");
+      printf("AddTaskEMCALClusterize() - open time cut\n");
     }
   }
 
@@ -177,7 +197,8 @@ AliAnalysisTaskEMCALClusterize* AddTaskEMCALClusterize(
   if(name.Contains("NxN"))
   {
     params->SetClusterizerFlag(AliEMCALRecParam::kClusterizerNxN);
-    printf("Set NxN cluster size to %dx%d (row diff %d, col diff %d)\n",2*nRowDiff+1,2*nColDiff+1,nRowDiff,nColDiff);
+    printf("AddTaskEMCALClusterize() - Set NxN cluster size to %dx%d (row diff %d, col diff %d)\n",
+           2*nRowDiff+1,2*nColDiff+1,nRowDiff,nColDiff);
     params->SetNxM(nRowDiff, nColDiff);
   }
 
@@ -197,7 +218,8 @@ AliAnalysisTaskEMCALClusterize* AddTaskEMCALClusterize(
     clusterize->SwitchOnCellEnergySelection();
     clusterize->SetCellCuts(minEUnf/1000.,minFrac/10000.);
     clusterize->SetRejectBelowThreshold(skipOrReject);
-    printf("AliAnalysisTaskEMCALClusterize - Cuts: min E %f, frac %f\n",minEUnf/1000.,minFrac/10000.);
+    printf("AliAnalysisTaskEMCALClusterize() - Unfolding Cuts: min E %f, frac %f\n",
+           minEUnf/1000.,minFrac/10000.);
     //clusterize->SwitchOffCellEnergySelection(); 
     
     if(!name.Contains("Just"))
@@ -211,12 +233,26 @@ AliAnalysisTaskEMCALClusterize* AddTaskEMCALClusterize(
   // Configure AliEMCALRecoUtils
   //-------------------------------------------------------
 
-  AliEMCALRecoUtils * reco = clusterize->GetRecoUtils();
+//  AliEMCALRecoUtils * reco = clusterize->GetRecoUtils();
+//  
+//  gROOT->LoadMacro("$ALICE_PHYSICS/PWGPP/EMCAL/macros/ConfigureEMCALRecoUtils.C");
+//  
+//  ConfigureEMCALRecoUtils(reco,bMC,exotic,bNonLine,bRecalE,bBad,bRecalT);
+
+  clusterize->ConfigureEMCALRecoUtils(bMC,exotic,bNonLine,bRecalE,bBad,bRecalT);
   
-  gROOT->LoadMacro("$ALICE_PHYSICS/PWGPP/EMCAL/macros/ConfigureEMCALRecoUtils.C");
-  
-  ConfigureEMCALRecoUtils(reco,bMC,exotic,bNonLine,bRecalE,bBad,bRecalT);
-  
+  //-------------------------------------------------------
+  // Do track matching after clusterization
+  //-------------------------------------------------------
+  if ( tm > 0 ) 
+  {
+    clusterize->SwitchOnTrackMatching();
+    if      ( tm == 2 ) clusterize->GetRecoUtils()->SwitchOnAODHybridTracksMatch();
+    else if ( tm == 1 ) clusterize->GetRecoUtils()->SwitchOnAODTPCOnlyTracksMatch();
+    else                clusterize->GetRecoUtils()->SetAODTrackFilterMask(tm);
+  }
+  else   clusterize->SwitchOffTrackMatching();
+
   //-------------------------------------------------------
   // Alignment matrices
   //-------------------------------------------------------
@@ -243,7 +279,7 @@ AliAnalysisTaskEMCALClusterize* AddTaskEMCALClusterize(
   
   if(bMC)
   {
-    printf("Recalculate MC labels\n");
+    //printf("Recalculate MC labels\n");
     clusterize->SwitchOnUseClusterMCLabelForCell(0) ; // Take the cell MC label as basis (only possible in recent productions, from 2012?)
     clusterize->SwitchOnRemapMCLabelForAODs()  ;      // Only in case 0, and for productions where the re-mapping of cell label in AODs was not done (productions before March 2013?)
 
@@ -257,67 +293,94 @@ AliAnalysisTaskEMCALClusterize* AddTaskEMCALClusterize(
   }
   
   //-------------------------------------------------------
+  // T-Card cell correlation
+  //-------------------------------------------------------
+  
+  clusterize->SwitchOffTCardCorrelation();
+
+  if(bMC && tCardMimic > 0)
+  {
+    if ( tCardMimic == 1 ) clusterize->SwitchOnTCardCorrelation(kFALSE);
+    else                   clusterize->SwitchOnTCardCorrelation(kTRUE);
+        
+    clusterize->SetInducedEnergyLossFraction     (0.00700, 0.00700, 0.00700, 0.00000);
+    clusterize->SetInducedEnergyLossFractionP1   (0.00060, 0.00060, 0.00060, 0.00000);
+    clusterize->SetInducedEnergyLossFractionWidth(0.00900, 0.00900, 0.00900, 0.00000);
+    
+    clusterize->SetInducedEnergyLossProbabilityPerSM(0.30, 0);
+    clusterize->SetInducedEnergyLossProbabilityPerSM(0.60, 1);
+    clusterize->SetInducedEnergyLossProbabilityPerSM(0.50, 2);
+    clusterize->SetInducedEnergyLossProbabilityPerSM(1.00, 3);
+    clusterize->SetInducedEnergyLossProbabilityPerSM(0.35, 4);
+    clusterize->SetInducedEnergyLossProbabilityPerSM(0.25, 5);
+    clusterize->SetInducedEnergyLossProbabilityPerSM(0.35, 6);
+    clusterize->SetInducedEnergyLossProbabilityPerSM(1.00, 7);
+    clusterize->SetInducedEnergyLossProbabilityPerSM(0.25, 8);
+    clusterize->SetInducedEnergyLossProbabilityPerSM(0.25, 9);
+  }
+  
+  //-------------------------------------------------------
   // Trigger options
   //-------------------------------------------------------
 
   if(trigger=="EMC7")
   {
-    printf("Clusterizing task trigger EMC7\n");
+    printf("AddTaskEMCALClusterize() - trigger EMC7\n");
     clusterize->SelectCollisionCandidates(AliVEvent::kEMC7);
   }
   else if (trigger=="INT7")
   {
-    printf("Clusterizing task trigger INT7\n");
+    printf("AddTaskEMCALClusterize() - trigger INT7\n");
     clusterize->SelectCollisionCandidates(AliVEvent::kINT7);
   }
   else if(trigger=="EMC1")
   {
-    printf("Clusterizing task trigger EMC1\n");
+    printf("AddTaskEMCALClusterize() - trigger EMC1\n");
     clusterize->SelectCollisionCandidates(AliVEvent::kEMC1);
   }
   else if(trigger=="MB")
   {
-    printf("Clusterizing task trigger MB\n");
+    printf("AddTaskEMCALClusterize() - trigger MB\n");
     clusterize->SelectCollisionCandidates(AliVEvent::kMB);
   }  
   else if(trigger=="PHOS")
   {
-    printf("Clusterizing task trigger PHOS\n");
+    printf("AddTaskEMCALClusterize() - trigger PHOS\n");
     clusterize->SelectCollisionCandidates(AliVEvent::kPHI7);
   }  
   else if(trigger=="PHOSPb")
   {
-    printf("Clusterizing task trigger PHOSPb\n");
+    printf("AddTaskEMCALClusterize() - trigger PHOSPb\n");
     clusterize->SelectCollisionCandidates(AliVEvent::kPHOSPb);
   }
   else if(trigger=="AnyINT")
   {
-    printf("Clusterizing task trigger AnyINT\n");
+    printf("AddTaskEMCALClusterize() - trigger AnyINT\n");
     clusterize->SelectCollisionCandidates(AliVEvent::kAnyINT);
   }  
   else if(trigger=="INT")
   {
-    printf("Clusterizing task trigger AnyINT\n");
+    printf("AddTaskEMCALClusterize() - trigger AnyINT\n");
     clusterize->SelectCollisionCandidates(AliVEvent::kAny);
   }
   else if(trigger=="EMCEGA")
   {
-    printf("Clusterizing task trigger EMC Gamma\n");
+    printf("AddTaskEMCALClusterize() - EMC Gamma\n");
     clusterize->SelectCollisionCandidates(AliVEvent::kEMCEGA);
   } 
   else if(trigger=="EMCEJE")
   {
-    printf("Clusterizing task trigger EMC Jet\n");
+    printf("AddTaskEMCALClusterize() - trigger EMC Jet\n");
     clusterize->SelectCollisionCandidates(AliVEvent::kEMCEJE);
   }
   else if(trigger=="Central")
   {
-    printf("Clusterizing task trigger Central\n");
+    printf("AddTaskEMCALClusterize() - trigger Central\n");
     clusterize->SelectCollisionCandidates(AliVEvent::kCentral);
   } 
   else if(trigger=="SemiCentral")
   {
-    printf("Clusterizing task trigger SemiCentral\n");
+    printf("AddTaskEMCALClusterize() - trigger SemiCentral\n");
     clusterize->SelectCollisionCandidates(AliVEvent::kSemiCentral);
   }
   
@@ -335,7 +398,7 @@ AliAnalysisTaskEMCALClusterize* AddTaskEMCALClusterize(
   
   if(bFillAOD)  
   {
-    printf("AddTaskEMCALClusterize - Fill output AOD\n");
+    printf("AddTaskEMCALClusterize() - Fill output AOD\n");
     AliAnalysisDataContainer *coutput1 = mgr->GetCommonOutputContainer() ;
     mgr->ConnectOutput (clusterize, 0, coutput1 );
   }

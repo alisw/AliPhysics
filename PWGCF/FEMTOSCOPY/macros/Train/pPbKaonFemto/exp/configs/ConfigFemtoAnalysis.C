@@ -13,6 +13,7 @@
 #include "AliFemtoEventReaderESDChain.h"
 #include "AliFemtoEventReaderESDChainKine.h"
 #include "AliFemtoEventReaderAODChain.h"
+#include "AliFemtoEventReaderAODMultSelection"
 #include "AliFemtoSimpleAnalysis.h"
 #include "AliFemtoBasicEventCut.h"
 #include "AliFemtoESDTrackCut.h"
@@ -52,7 +53,7 @@
 #endif
 
 //________________________________________________________________________
-AliFemtoManager* ConfigFemtoAnalysis() {
+AliFemtoManager* ConfigFemtoAnalysis(bool mcAnalysis = false) {
 
   double PionMass = 0.13956995;
   double KaonMass = 0.493677;
@@ -78,11 +79,12 @@ AliFemtoManager* ConfigFemtoAnalysis() {
   if (runshlcms) shqmax = 0.25;
   else shqmax = 2.0;
 
-  AliFemtoEventReaderAODChain *Reader = new AliFemtoEventReaderAODChain();
-  Reader->SetUseMultiplicity(AliFemtoEventReaderAODChain::kCentrality);
+  AliFemtoEventReaderAODMultSelection *Reader = new AliFemtoEventReaderAODMultSelection();
+  Reader->SetUseMultiplicity(AliFemtoEventReaderAOD::kCentrality);
   Reader->SetFilterBit(5);
   //Reader->SetDCAglobalTrack(kTRUE);
   Reader->SetpA2013(kTRUE);
+    if (mcAnalysis) Reader->SetReadMC(kTRUE); // for MC.
   
   AliFemtoManager* Manager=new AliFemtoManager();
   Manager->SetEventReader(Reader);
@@ -127,6 +129,8 @@ AliFemtoManager* ConfigFemtoAnalysis() {
   AliFemtoChi2CorrFctn          *cqinvchi2tpc[20];
   AliFemtoTPCInnerCorrFctn      *cqinvinnertpc[20*10];
 
+        AliFemtoModelCorrFctn         *cQinvModel[320];
+
   // *** Begin pion-pion analysis ***
   int aniter = 0;
   int ichg=0;
@@ -167,7 +171,7 @@ AliFemtoManager* ConfigFemtoAnalysis() {
             dtc1etaphitpc[aniter]->SetEta(-0.8,0.8);
           //PID method
             dtc1etaphitpc[aniter]->SetMass(KaonMass);
-            dtc1etaphitpc[aniter]->SetMostProbableKaon();
+            //dtc1etaphitpc[aniter]->SetMostProbableKaon();
           //dtc1etaphitpc[aniter]->SetPIDMethod(AliFemtoESDTrackCut::kContour);
             //------------------- November 2013 -----------------------------------< 
           // new cuts to remove electron (do not take into analysis if 400<p<500) 
@@ -210,7 +214,7 @@ AliFemtoManager* ConfigFemtoAnalysis() {
             dtc2etaphitpc[aniter]->SetEta(-0.8,0.8);
           //PID method
             dtc2etaphitpc[aniter]->SetMass(KaonMass);
-            dtc2etaphitpc[aniter]->SetMostProbableKaon();
+            //dtc2etaphitpc[aniter]->SetMostProbableKaon();
           //dtc2etaphitpc[aniter]->SetPIDMethod(AliFemtoESDTrackCut::kContour);
             //------------------- November 2013 -----------------------------------< 
           // new cuts to remove electron (do not take into analysis if 400<p<500) 
@@ -272,17 +276,17 @@ AliFemtoManager* ConfigFemtoAnalysis() {
 
 
 
-          sqpcetaphitpc[aniter] = new AliFemtoPairCutAntiGamma();
+          //sqpcetaphitpc[aniter] = new AliFemtoPairCutAntiGamma();
           // sqpcetaphitpc[aniter] = new AliFemtoPairCutRadialDistance();
           // sqpcetaphitpc[aniter] = new AliFemtoShareQualityPairCut();
          // sqpcetaphitpc[aniter] = new    AliFemtoShareQualityTPCEntranceSepPairCut();
           //sqpcetaphitpc[aniter] = new AliFemtoPairCutRadialDistance();
           //sqpcetaphitpc[aniter]->SetShareQualityMax(1.0);
           //sqpcetaphitpc[aniter]->SetShareFractionMax(0.05);
-          sqpcetaphitpc[aniter]->SetRemoveSameLabel(kFALSE);
-          sqpcetaphitpc[aniter]->SetMaxEEMinv(0.001);
-          sqpcetaphitpc[aniter]->SetMaxThetaDiff(0.033);
-          sqpcetaphitpc[aniter]->SetTPCEntranceSepMinimum(0.001); // if 0.0 doesn't work put there 0.001
+          //sqpcetaphitpc[aniter]->SetRemoveSameLabel(kFALSE);
+         // sqpcetaphitpc[aniter]->SetMaxEEMinv(0.001);
+          //sqpcetaphitpc[aniter]->SetMaxThetaDiff(0.033);
+          //sqpcetaphitpc[aniter]->SetTPCEntranceSepMinimum(0.001); // if 0.0 doesn't work put there 0.001
 
          // sqpcetaphitpc[aniter]->SetPhiStarDifferenceMinimum(0.04);
              // sqpcetaphitpc[aniter]->SetEtaDifferenceMinimum(0.02);
@@ -361,6 +365,13 @@ AliFemtoManager* ConfigFemtoAnalysis() {
               anetaphitpc[aniter]->AddCorrFctn(cqinvinnertpc[ktm]);
               cgamma[aniter] = new AliFemtoCorrFctnGammaMonitor(Form("cgammaM%ikT%i", imult, ikt),200,200);
               anetaphitpc[aniter]->AddCorrFctn(cgamma[aniter]);
+                
+                if(mcAnalysis)
+                {
+                    cQinvModel[aniter] = new AliFemtoModelCorrFctn(Form("cQinv_Model_%s_M%i", chrgs[ichg],imult), 400, 0, 2);
+                    cQinvModel[aniter]->ConnectToManager(modelMgr);
+                    anetaphitpc[aniter]->AddCorrFctn(cQinvModel[aniter]);
+                }
 
               if (run3d) {
             //		cq3dlcmskttpc[ktm] = new AliFemtoCorrFctn3DLCMSSym(Form("cq3d%stpcM%ikT%i", chrgs[ichg], imult, ikt),60,(imult>3)?((imult>6)?((imult>7)?0.6:0.4):0.25):0.15);

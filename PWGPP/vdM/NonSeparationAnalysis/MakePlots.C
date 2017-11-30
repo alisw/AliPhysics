@@ -11,7 +11,7 @@ TH1* DrawFrame(TVirtualPad* c,
 	       Double_t xRange=0.65,
 	       const char* xTitle="Separation [mm]",
 	       Double_t bottomMargin=0.15,
-	       Bool_t plotLabel=kTRUE) {
+	       TString label) {
   c->SetLeftMargin(0.17);
   c->SetBottomMargin(bottomMargin);
   TH1* hf = c->DrawFrame(-xRange, yMin, +xRange, yMax);
@@ -26,19 +26,19 @@ TH1* DrawFrame(TVirtualPad* c,
   if (logY)
     c->SetLogy();
 
-  if (plotLabel) {
+  if (label != "") {
     TLatex *tl = new TLatex;
     tl->SetNDC();
     tl->SetTextSize(0.08);
     tl->SetTextAlign(23);
-    tl->DrawLatex(0.55, 0.88, "ALICE pp #sqrt{#it{s}}=5 TeV");
+    tl->DrawLatex(0.55, 0.88, label);
   }
   return hf;
 }
 
-void SetupErrorPlot(TVirtualPad *pad, Double_t maxSep) {  
+void SetupErrorPlot(TVirtualPad *pad, Double_t maxSep) {
   pad->cd()->SetGrid(0,1);
-  TH1* hf = DrawFrame(pad, -8, 8, "", "Residual (#sigma)", kFALSE, maxSep, "Separation [mm]", 0.30, kFALSE);
+  TH1* hf = DrawFrame(pad, -8, 8, "", "Residual (#sigma)", kFALSE, maxSep, "Separation [mm]", 0.30, "");
   hf->SetLabelSize(0.17, "X");
   hf->SetLabelSize(0.15, "Y");
   hf->GetYaxis()->SetNdivisions(-4);
@@ -85,6 +85,8 @@ TGraphErrors* ScaleGraphError(TGraphErrors *g, Double_t s) {
 }
 
 
+Int_t nScans = 0;
+
 Bool_t ReadData(TString rfn) {
   if (!TFile::Open(rfn))
     return kFALSE;
@@ -95,12 +97,19 @@ Bool_t ReadData(TString rfn) {
   pScaleRateError = (TParameter<Double_t>*)gFile->Get("scaleRateError");
   muOffsetsX      = (TVectorD*)gFile->Get("muOffsetsX");
   muOffsetsY      = (TVectorD*)gFile->Get("muOffsetsY");
+  nScans          = 0;
   for (Int_t i=0; i<6; ++i) {
     gRate[i]     = ScaleGraphError((TGraphErrors*)gFile->Get(Form("gRateScan%c_%d", (i%2) ? 'Y' : 'X', i/2)),
 				   pScaleRateError->GetVal());
     tBeamSpot[i] = (TTree*)gFile->Get(Form("fMoments%c_%d",  (i%2) ? 'Y' : 'X', i/2));
+    if (tBeamSpot[i]) {
+      TEntryList *elist = (TEntryList*)gFile->Get(Form("elist_%d_entrylist", i));
+      elist->Print();
+      tBeamSpot[i]->SetEntryList(elist);
+    }
+    nScans += (tBeamSpot[i] != NULL);
   }
-   
+
   return gMinuit && pNDF && pChi2 && pScaleRateError && muOffsetsX && muOffsetsY;
 }
 
@@ -110,6 +119,8 @@ struct ModelPar {
     TString _name;
     for (Int_t i=0; i<34; ++i) {
       gMinuit->mnpout(i,_name,par[i],err[i],xlolim[i],xuplim[i],iuint);
+      Printf("ModelPar: %d %s %f+-%f [%f %f] %d", i,_name.Data(),par[i],err[i],xlolim[i],xuplim[i],iuint);
+      isFixed[i] = (iuint==0);
       name[i] = _name;
     }
   }
@@ -126,6 +137,7 @@ struct ModelPar {
   Double_t err[34];
   Double_t xlolim[34];
   Double_t xuplim[34];
+  Bool_t   isFixed[34];
 } ;
 
 
@@ -140,6 +152,7 @@ void MakeGraphsModel() {
   TVectorD    profile(8);
 
   for (Int_t i=0; i<6; ++i) {
+    Printf("tBeamSpot[%d]=%p", i, tBeamSpot[i]);
     if (!tBeamSpot[i])
       continue;
 
@@ -154,11 +167,10 @@ void MakeGraphsModel() {
     tBeamSpot[i]->SetBranchAddress("modelPar", mom.GetMatrixArray());
     tBeamSpot[i]->SetBranchAddress("modelCov", cov.GetMatrixArray());
 
-    for (Int_t j=0, n=tBeamSpot[i]->GetEntries(); j<n; ++j) {
-      tBeamSpot[i]->GetEntry(j);
-      if (!AliNonseparationModelFit::IsGoodLumiRegionFit(i, scanType, beamSep, mom, cov))
-	  continue;
+    TEntryList *elist = tBeamSpot[i]->GetEntryList();
 
+    for (Int_t j=0, m=elist->GetN(); j<m; ++j) {
+      tBeamSpot[i]->GetEntry(elist->GetEntry(j));
       for (Int_t k=0; k<7; ++k) {
 	gMoment[i][k]->SetPoint(gMoment[i][k]->GetN(), 10*beamSep(scanType), mom(k));
 	gMoment[i][k]->SetPointError(gMoment[i][k]->GetN()-1, 0, TMath::Sqrt(cov(k,k)));
@@ -167,33 +179,33 @@ void MakeGraphsModel() {
 
     for (Int_t j=0; j<=140; ++j) {
       beamSep(scanType) = 0.001*j-0.07;
-      AliDoubleGaussianBeamProfile::Eval(mp.par[24]*beamSep(0) - (*muOffsetsX)[i/2],
-					 mp.par[25]*beamSep(1) - (*muOffsetsY)[i/2],
-					 mp.GetPar(), profile, 5e-3);
-      
+      AliDoubleGaussianBeamProfile::Eval(mp.par[24+3]*beamSep(0) - (*muOffsetsX)[i/2],
+					 mp.par[25+3]*beamSep(1) - (*muOffsetsY)[i/2],
+					 mp.GetPar(), profile, 1e-4, !kTRUE);
+
       for (Int_t k=0; k<7; ++k)
-	gMomentModel[i][k]->SetPoint(gMomentModel[i][k]->GetN(), 10*beamSep(scanType), profile(1+k) + (k<3 ? mp.par[20+k] : 0.0));
-      gRateModel[i]->SetPoint(gRateModel[i]->GetN(), 10*beamSep(scanType), mp.par[23]*profile(0));
+	gMomentModel[i][k]->SetPoint(gMomentModel[i][k]->GetN(), 10*beamSep(scanType), profile(1+k) + (k<3 ? mp.par[20+k+3*(i>=4)] : 0.0));
+      gRateModel[i]->SetPoint(gRateModel[i]->GetN(), 10*beamSep(scanType), mp.par[23+3]*profile(0));
     }
 
-    tBeamSpot[i]->ResetBranchAddresses();    
-  }  
+    tBeamSpot[i]->ResetBranchAddresses();
+  }
 }
 
 Double_t ComputeR(Double_t &eRmin, Double_t &eRmax, Int_t nEval=20) {
   ModelPar mp(gMinuit);
 
-  TF2 fM("fM", AliDoubleGaussianBeamProfile::EvalProfile0, 
-	 -.1, +.1, 
-	 -.1, +.1, 26);
-  
+  TF2 fM("fM", AliDoubleGaussianBeamProfile::EvalProfile0,
+	 -.1/5, +.1/5,
+	 -.1/5, +.1/5, 26+3);
+
   TVectorD R(nEval);
-  Double_t p[26] = { 0 };
-  for (Int_t i=0; i<nEval; ++i) {
+  Double_t p[26+3] = { 0 };
+  for (Int_t i=0; i<nEval;) {
     for (Int_t j=0; j<20; ++j) {
       p[j] = TMath::Min(mp.xuplim[j],
 			TMath::Max(mp.xlolim[j],
-				   mp.par[j]+ 3*(i!=0)*(gRandom->Uniform(0.,1.)>0.5 ? 1 : -1)*mp.err[j]));
+				   mp.par[j]+ 1*(i!=0)*(gRandom->Uniform(0.,1.)>0.5 ? 1 : -1)*mp.err[j]));
     }
 
     fM.SetParameters(p);
@@ -206,6 +218,8 @@ Double_t ComputeR(Double_t &eRmin, Double_t &eRmax, Int_t nEval=20) {
     const Double_t x3 = fM.Integral(-1,1, -1,1);
     R[i]  = (x1/x0) * (x2/x0) / (x3/x0);
     Printf("R[%2d]= %f", i, R[i]);
+    if (!TMath::IsNaN(R[i]-R[i]))
+      ++i;
   }
   eRmin = TMath::MinElement(nEval, R.GetMatrixArray()) - R[0];
   eRmax = TMath::MaxElement(nEval, R.GetMatrixArray()) - R[0];
@@ -258,7 +272,14 @@ void SetupPads(TPad **padData, TPad **padError) {
 
 }
 
-void MakePlotsMoments(Int_t scanIndex, TString pn, Bool_t drawErrorPlots=kTRUE, Double_t maxSep=0.65) {  
+Double_t GraphMax(TGraph *g) {
+  return TMath::MaxElement(g->GetN(), g->GetY());
+}
+Double_t GraphMin(TGraph *g) {
+  return TMath::MinElement(g->GetN(), g->GetY());
+}
+
+void MakePlotsMoments(Int_t scanIndex, TString pn, TString label, Double_t maxSep, Bool_t drawErrorPlots) {
   const char* labelsX[3] = {
     "Horizontal scan 1",
     "Horizontal scan 2",
@@ -284,30 +305,35 @@ void MakePlotsMoments(Int_t scanIndex, TString pn, Bool_t drawErrorPlots=kTRUE, 
 
   TCanvas *c1 = new TCanvas(frameTitle, "", 600, (drawErrorPlots ? 600 : 600*7/10));
   c1->Divide(3,3);
-  
+
   TPad *padData=NULL, *padError=NULL;
-  
+
+  Double_t dy[] = {
+    GraphMax(gMoment[scanIndex][0])-GraphMin(gMoment[scanIndex][0]),
+    GraphMax(gMoment[scanIndex][1])-GraphMin(gMoment[scanIndex][1])
+  };
+  Double_t s=0.3;
   Double_t yRange[7][2] = {
-    { gMoment[scanIndex][0]->GetMean(2)-0.01, gMoment[scanIndex][0]->GetMean(2)+0.01 },
-    { gMoment[scanIndex][1]->GetMean(2)-0.01, gMoment[scanIndex][1]->GetMean(2)+0.01 },
-    { -5.0 + drawErrorPlots*0.0001, +5.0   },
-    {  0.0 + drawErrorPlots*0.0001,  0.015 },
-    {  0.0 + drawErrorPlots*0.0001,  0.015 },
-    {  3.0 + drawErrorPlots*0.0001,  7.0,  },
+    { GraphMin(gMoment[scanIndex][0])-0.2*dy[0], GraphMax(gMoment[scanIndex][0])+0.8*dy[0] },
+    { GraphMin(gMoment[scanIndex][1])-0.2*dy[1], GraphMax(gMoment[scanIndex][1])+0.8*dy[1] },
+    { GraphMin(gMoment[scanIndex][2])-1 + drawErrorPlots*0.0001, GraphMax(gMoment[scanIndex][2])+1.5 },
+    {  0.0 + drawErrorPlots*0.0001, 1.5*GraphMax(gMoment[scanIndex][3]) }
+    {  0.0 + drawErrorPlots*0.0001, 1.5*GraphMax(gMoment[scanIndex][4]) }
+    {  0.0 + drawErrorPlots*0.0001, 1.3*GraphMax(gMoment[scanIndex][5]) }
     { -1.0 + drawErrorPlots*0.0001,  1.0,  }
   };
 
-  for (Int_t i=0; i<2; ++i) {
-    yRange[i][0] = TMath::Nint(yRange[i][0]*500)/500.0 + drawErrorPlots*0.00001;
-    yRange[i][1] = TMath::Nint(yRange[i][1]*500)/500.0;
-  }
+  // for (Int_t i=0; i<2; ++i) {
+  //   yRange[i][0] = TMath::Nint(yRange[i][0]*500)/500.0 + drawErrorPlots*0.00001;
+  //   yRange[i][1] = TMath::Nint(yRange[i][1]*500)/500.0;
+  // }
 
   // draw all moments
   for (Int_t i=0; i<7; ++i) {
     c1->cd(1+i);
 
     SetupPads(&padData, drawErrorPlots ? &padError : NULL);
-    DrawFrame(padData->cd(), yRange[i][0], yRange[i][1], frameTitle, yLabels[i], kFALSE, maxSep, drawErrorPlots ? "" : "Separation [mm]", drawErrorPlots ? 0.01 : 0.15);
+    DrawFrame(padData->cd(), yRange[i][0], yRange[i][1], frameTitle, yLabels[i], kFALSE, maxSep, drawErrorPlots ? "" : "Separation [mm]", drawErrorPlots ? 0.01 : 0.15, label);
 
     gMoment[scanIndex][i]->Draw("PE");
     gMomentModel[scanIndex][i]->Draw("C");
@@ -320,7 +346,7 @@ void MakePlotsMoments(Int_t scanIndex, TString pn, Bool_t drawErrorPlots=kTRUE, 
   // draw rate
   c1->cd(8);
   SetupPads(&padData, drawErrorPlots ? &padError : NULL);
-  DrawFrame(padData->cd(), .11, 1e6, frameTitle, yLabels[7], kTRUE, maxSep, drawErrorPlots ? "" : "Separation [mm]", drawErrorPlots ? 0.01 : 0.15);
+  DrawFrame(padData->cd(), .11, 1e6, frameTitle, yLabels[7], kTRUE, maxSep, drawErrorPlots ? "" : "Separation [mm]", drawErrorPlots ? 0.01 : 0.15, label);
   if (gRate[scanIndex]) {
     delete gRate[scanIndex]->FindObject("gaus");
     gRate[scanIndex]->Draw("PE");
@@ -350,41 +376,43 @@ void MakePlotsMoments(Int_t scanIndex, TString pn, Bool_t drawErrorPlots=kTRUE, 
 void MakePlotsPar(TString pn) {
   TCanvas *c1 = new TCanvas;
 
-  c1->Divide(1,2,0,0);
-  c1->cd(1);
+  // c1->Divide(1,2,0,0);
+  // c1->cd(1);
 
   TLatex *tl = new TLatex;
   tl->SetNDC();
-  tl->SetTextSize(0.06);
+  tl->SetTextSize(0.03);
 
   ModelPar mp(gMinuit);
 
-  const Double_t posX[26] = {
+  const Double_t posX[29] = {
     0.1, 0.1, 0.1, 0.1,
     0.3, 0.3, 0.3, 0.3,
     0.25,
     0.6, 0.6, 0.6, 0.6,
     0.8, 0.8, 0.8, 0.8,
     0.75,
-    0.4, 0.4,
+    0.1, 0.1,
+    0.4, 0.4, 0.4,
     0.7, 0.7, 0.7,
     0.0, // not plotted
     0.4
   };
-  const Double_t posY[26] = {
-    0.9, 0.8, 0.7, 0.6,
-    0.9, 0.8, 0.7, 0.6,
-    0.5,
-    0.9, 0.8, 0.7, 0.6,
-    0.9, 0.8, 0.7, 0.6,
-    0.5,
-    0.35, 0.25,
-    0.35, 0.25, 0.15,
+  const Double_t posY[29] = {
+    0.90, 0.85, 0.80, 0.75,
+    0.90, 0.85, 0.80, 0.75,
+    0.70,
+    0.90, 0.85, 0.80, 0.75,
+    0.90, 0.85, 0.80, 0.75,
+    0.70,
+    0.60, 0.55,
+    0.60, 0.55, 0.50,
+    0.60, 0.55, 0.50,
     0.0, // not plotted
-    0.15
+    0.45
   };
 
-  const Double_t scale[26] = {
+  const Double_t scale[29] = {
     1e4,1e4,1,1,
     1,  1,  1,1,
     1,
@@ -394,11 +422,12 @@ void MakePlotsPar(TString pn) {
     1e6,1e6,
 
     1,1,1,
+    1,1,1,
     1,
     1
   };
 
-  const char* units[26] = {
+  const char* units[29] = {
     "#mum","#mum","cm","",
     "",    "",    "",  "",
     "",
@@ -408,10 +437,11 @@ void MakePlotsPar(TString pn) {
     "#murad","#murad",
 
     "cm","cm","cm",
+    "cm","cm","cm",
     "",
     ""
   };
-  const char* fmt[26] = {
+  const char* fmt[29] = {
     "%s = %.1f#pm%.1f %s","%s = %.1f#pm%.1f %s","%s = %.1f#pm%.1f %s","%s = %.2f#pm%.2f %s",
     "%s = %.2f#pm%.2f %s","%s = %.2f#pm%.2f %s","%s = %.2f#pm%.2f %s","%s = %.2f#pm%.2f %s",
     "%s = %.2f#pm%.2f %s",
@@ -421,60 +451,60 @@ void MakePlotsPar(TString pn) {
     "%s = %.1f#pm%.1f %s","%s = %.1f#pm%.1f %s",
 
     "%s = %.5f#pm%.5f %s","%s = %.5f#pm%.5f %s","%s = %.3f#pm%.3f %s",
+    "%s = %.5f#pm%.5f %s","%s = %.5f#pm%.5f %s","%s = %.3f#pm%.3f %s",
     "",
     "%s = %.3f#pm%.3f %s"
   };
-  
-  for (Int_t i=0; i<24; ++i) {
-    if (i==23)
+
+  for (Int_t i=0; i<27; ++i) {
+    if (i==26)
+      continue;
+
+    if (mp.isFixed[i])
       continue;
 
     tl->DrawLatex(posX[i], posY[i], Form(fmt[i],
-					 mp.name[i].Data(),
-					 scale[i]*mp.par[i],
-					 scale[i]*mp.err[i], units[i]));
+                                         mp.name[i].Data(),
+                                         scale[i]*mp.par[i],
+                                         scale[i]*mp.err[i], units[i]));
   }
 
 
   Double_t eRmin=0, eRmax=0;
-  const Double_t R = ComputeR(eRmin, eRmax, 20);
+  const Double_t R = ComputeR(eRmin, eRmax, 40);
 
   tl->DrawLatex(0.1, 0.35, Form("R = %.3f_{%+.3f}^{%+.3f}", R, eRmin,eRmax));
   tl->DrawLatex(0.1, 0.25, Form("#chi^{2}/NDF = %.0f/%.0f=%.1f", pChi2->GetVal(), pNDF->GetVal(), pChi2->GetVal()/pNDF->GetVal()));
-  tl->DrawLatex(0.1, 0.15, Form("0TVX rate errors rescaled by %.2f", 1.0/TMath::Sqrt(pScaleRateError->GetVal())));
+  tl->DrawLatex(0.1, 0.20, Form("0TVX rate errors rescaled by %.2f", 1.0/TMath::Sqrt(pScaleRateError->GetVal())));
 
   c1->SaveAs(pn);
   fSave->cd();
   c1->Write("canvas_par");
-  
+
   delete c1;
 }
 
-void MakePlots(Bool_t drawErrorPlots=kTRUE, Int_t fillNumber=4296, Bool_t useRates=kTRUE, Int_t bcid=-1) {
+void MakePlots(TString  rootFileName,
+               TString  label,
+               Double_t sepMax,
+               Bool_t   drawErrorPlots=kTRUE) {
 
   gROOT->LoadMacro("AliDoubleGaussianBeamProfile.cxx+");
-  gROOT->LoadMacro("AliNonseparationModelFit.cxx+");
 
-  TString bcString = (bcid > 0 ? Form("_bcid%d", bcid) : "");
-  TString rfn = TString::Format("root/%d/par_%s%s",
-				fillNumber,
-				useRates ? "with0TVX" : "withoutRates",
-				bcString.Data());
-  if (!ReadData(rfn+".root"))
+  if (!ReadData(rootFileName))
     return;
-  
+
   MakeGraphsModel();
 
-  TString pn = rfn; pn.ReplaceAll("root", "pdf");
-  pn += ".pdf";
+  TString pn = rootFileName; pn.ReplaceAll("root", "pdf");
 
   TString rn = pn;
   rn += "_canvas.root";
   fSave = TFile::Open(rn, "RECREATE");
 
   MakePlotsPar(pn+"(");
-  for (Int_t i=0; i<6; ++i)
-    MakePlotsMoments(i, pn + (i==5 ? ")" : ""));
+  for (Int_t i=0; i<nScans; ++i)
+    MakePlotsMoments(i, pn + (i==(nScans-1) ? ")" : ""), label, sepMax, drawErrorPlots);
 
   fSave->Write();
   fSave->Close();

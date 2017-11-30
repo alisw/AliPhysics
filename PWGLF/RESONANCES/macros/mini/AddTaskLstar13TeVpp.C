@@ -18,7 +18,7 @@
 ****************************************************************************/
 
 enum eventCutSet { kDefaultVtx = 0,
-		   kDefaultVtx12,//=1
+		   kDefaultVtx9,//=1
 		   kDefaultVtx8 //=2
                  };
 
@@ -59,7 +59,7 @@ AliRsnMiniAnalysisTask * AddTaskLstar13TeVpp
   Double_t  vtxZcut = 10.0;//default cut on vtx z
   
   //  if(evtCutSetID==eventCutSet::kDefaultVtx) vtxZcut=10.0; //cm
-  if(evtCutSetID==eventCutSet::kDefaultVtx12) vtxZcut=12.0; //cm
+  if(evtCutSetID==eventCutSet::kDefaultVtx9) vtxZcut=9.0; //cm
   if(evtCutSetID==eventCutSet::kDefaultVtx8) vtxZcut=8.0; //cm
   
   //vtxZcut = 10.0;//default cut on vtx z

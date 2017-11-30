@@ -4,7 +4,8 @@ AliAnalysisTaskEffContBF *AddTaskBalanceEffCont( TString  centralityEstimator="V
 						 Double_t vertexZ=10.,
 						 Int_t AODfilterBit = 128,
 						 Bool_t bUseElectronRejection = kFALSE,
-						 TString fileNameBase="AnalysisResults"
+						 TString fileNameBase="AnalysisResults",
+						 AliAnalysisTaskBFPsi::etriggerSel triggerSel = AliAnalysisTaskBFPsi::kINT7
 						 ) {
 
   // Creates a balance function analysis task and adds it to the analysis manager.
@@ -44,8 +45,11 @@ AliAnalysisTaskEffContBF *AddTaskBalanceEffCont( TString  centralityEstimator="V
     taskEffContBF->SetCentralityEstimator(centralityEstimator);
     taskEffContBF->SetCentralityPercentileRange(centrMin,centrMax);
   }
-  taskEffContBF->SelectCollisionCandidates(AliVEvent::kMB);
-
+  
+  if (triggerSel == AliAnalysisTaskBFPsi::kCentral) taskEffContBF->SelectCollisionCandidates(AliVEvent::kMB | AliVEvent::kCentral | AliVEvent::kSemiCentral);
+  else if(triggerSel == AliAnalysisTaskBFPsi::kMB) taskEffContBF->SelectCollisionCandidates(AliVEvent::kMB);
+  else if(triggerSel == AliAnalysisTaskBFPsi::kINT7) taskEffContBF->SelectCollisionCandidates(AliVEvent::kINT7);
+  
   // vertex
   taskEffContBF->SetVertexDiamond(.3,.3,vertexZ);
 

@@ -91,23 +91,25 @@ class AliVertexingHFUtils : public TObject{
   static Int_t GetGeneratedPhysicalPrimariesInEtaRange(TClonesArray* arrayMC, Double_t mineta, Double_t maxeta);
 
   /// Functions for event shape variables
-  static Double_t GetSpherocity(AliAODEvent* aod, 
-				Double_t etaMin=-0.8, Double_t etaMax=0.8, 
-				Double_t ptMin=0.15, Double_t ptMax=10.,
-				Int_t filtbit1=256, Int_t filtbit2=512, 
-				Int_t minMult=3, Double_t phiStepSizeDeg=0.1,
-				Int_t nTrksToSkip=0, Int_t* idToSkip=0x0);
+  static void GetSpherocity(AliAODEvent* aod,
+                            Double_t &spherocity, Double_t &phiRef,
+                            Double_t etaMin=-0.8, Double_t etaMax=0.8,
+                            Double_t ptMin=0.15, Double_t ptMax=10.,
+                            Int_t filtbit1=256, Int_t filtbit2=512,
+                            Int_t minMult=3, Double_t phiStepSizeDeg=0.1,
+                            Int_t nTrksToSkip=0, Int_t* idToSkip=0x0);
 
-  static Double_t GetGeneratedSpherocity(TClonesArray *arrayMC,
-					 Double_t etaMin=-0.8, Double_t etaMax=0.8, 
-					 Double_t ptMin=0.15, Double_t ptMax=10.,				
-					 Int_t minMult=3, Double_t phiStepSizeDeg=0.1);
+  static void GetGeneratedSpherocity(TClonesArray *arrayMC,
+                                     Double_t &spherocity, Double_t &phiRef,
+                                     Double_t etaMin=-0.8, Double_t etaMax=0.8,
+                                     Double_t ptMin=0.15, Double_t ptMax=10.,
+                                     Int_t minMult=3, Double_t phiStepSizeDeg=0.1);
 
-
-  static Double_t GetSphericity(AliAODEvent* aod, Double_t etaMin=-0.8, Double_t etaMax=0.8, 
-				Double_t ptMin=0.15, Double_t ptMax=10.,
-				Int_t filtbit1=256, Int_t filtbit2=512, 
-				Int_t minMult=3);
+  static Double_t GetSphericity(AliAODEvent* aod,
+                                Double_t etaMin=-0.8, Double_t etaMax=0.8,
+                                Double_t ptMin=0.15, Double_t ptMax=10.,
+                                Int_t filtbit1=256, Int_t filtbit2=512,
+                                Int_t minMult=3);
 
   /// Utilities for V0 multiplicity checks
   static Double_t GetVZEROAEqualizedMultiplicity(AliAODEvent* ev);
@@ -119,12 +121,17 @@ class AliVertexingHFUtils : public TObject{
   /// Functions for processing trigger information
   static Bool_t CheckT0TriggerFired(AliAODEvent* aodEv);
 
+  /// Rebinning of invariant mass histograms
+  static TH1D* RebinHisto(TH1* hOrig, Int_t reb, Int_t firstUse=-1);
+  static TH1* AdaptTemplateRangeAndBinning(const TH1 *hRef,TH1 *hData, Double_t minFit, Double_t maxFit);
+
   /// Functions for computing true impact parameter of D meson
   static Double_t GetTrueImpactParameterDzero(AliAODMCHeader *mcHeader, TClonesArray* arrayMC, AliAODMCParticle *partDp);
   static Double_t GetTrueImpactParameterDplus(AliAODMCHeader *mcHeader, TClonesArray* arrayMC, AliAODMCParticle *partDp);
 
   static Double_t GetCorrectedNtracklets(TProfile* estimatorAvg, Double_t uncorrectedNacc, Double_t vtxZ, Double_t refMult);
 
+  /// Functions to check the decay tree
   static Int_t CheckOrigin(TClonesArray* arrayMC, AliAODMCParticle *mcPart, Bool_t searchUpToQuark=kTRUE);
   static Int_t CheckOrigin(AliMCEvent* mcEvent, TParticle *mcPart, Bool_t searchUpToQuark=kTRUE);
   static Double_t GetBeautyMotherPt(TClonesArray* arrayMC, AliAODMCParticle *mcPart);

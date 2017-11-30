@@ -19,7 +19,9 @@ class AliFJWrapper;
 #include "AliAnalysisTaskEmcalJet.h"
 #include "AliFJWrapper.h"
 #include "AliClusterContainer.h"
-const Int_t nBranch = 18;
+#include "FJ_includes.h"
+
+const Int_t nBranch = 20;
 class AliAnalysisTaskRecoilJetYield : public AliAnalysisTaskEmcalJet {
  public:
   
@@ -101,6 +103,7 @@ class AliAnalysisTaskRecoilJetYield : public AliAnalysisTaskEmcalJet {
   void                                SoftDrop(AliEmcalJet *fJet,AliJetContainer *fJetCont, double zcut, double beta, Bool_t fTruthJet);
   Int_t                               SelectTriggerHadron(Float_t PtMin, Float_t PtMax);
   Double_t                            GetFractionSharedPt_SubMatching(const AliEmcalJet *jet, AliParticleContainer *cont2 = 0x0) const;
+  Double_t                            LeadingTrackPt(fastjet::PseudoJet jet);
   static Bool_t                       SameParticle(const AliVParticle* part1, const AliVParticle* part2, Double_t dist = 1.e-4);
 
 

@@ -27,7 +27,9 @@ include_directories(${ROOT_INCLUDE_DIRS}
                     ${AliPhysics_SOURCE_DIR}/PWG/Tools
                     ${AliPhysics_SOURCE_DIR}/PWG/JETFW
                     ${AliPhysics_SOURCE_DIR}/PWGCF/Correlations/Base
+                    ${AliPhysics_SOURCE_DIR}/OADB
                     ${AliPhysics_SOURCE_DIR}/OADB/COMMON/MULTIPLICITY
+                    ${AliPhysics_SOURCE_DIR}/PWGLF/FORWARD/analysis2
   )
 
 # Sources - alphabetical order
@@ -35,6 +37,10 @@ set(SRCS
     AliAnalysisTask3PCorrelations.cxx
     AliAnalysisTaskContMC.cxx
     AliAnalysisTaskCorPIDTOFQA.cxx
+    AliAnalysisTaskCorPIDTOFdeut.cxx
+    AliAnalysisTaskCorPIDTOFprot.cxx
+    AliAnalysisTaskCorPIDTOFhadr.cxx
+    AliAnalysisTaskCorPIDTOFdiprot.cxx
     AliAnalysisTaskDiHadron.cxx
     AliAnalysisTaskDptDptCorrelations.cxx
     AlianalysisTaskDptPIDpPb.cxx    
@@ -83,6 +89,16 @@ set(SRCS
     TriggerPID/AliAnalysisTaskPIDCORR.cxx
     TriggerPID/AliTwoParticlePIDCorr.cxx
     TriggerPID/AliTwoParticlePIDCorrKine.cxx
+    Unfoldedhistos/AliAnalysisTaskCorrelationsStudies.cxx
+    Unfoldedhistos/AliCSAnalysisCutsBase.cxx
+    Unfoldedhistos/AliCSEventCuts.cxx
+    Unfoldedhistos/AliCSPairAnalysis.cxx
+    Unfoldedhistos/AliCSPIDCuts.cxx
+    Unfoldedhistos/AliCSTrackCutsBase.cxx
+    Unfoldedhistos/AliCSTrackCuts.cxx
+    Unfoldedhistos/AliCSTrackMaps.cxx
+    Unfoldedhistos/AliCSTrackSelection.cxx
+    Unfoldedhistos/AliDptDptCorrelations.cxx
    )
 
 # Headers from sources
@@ -94,7 +110,7 @@ get_directory_property(incdirs INCLUDE_DIRECTORIES)
 generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}")
 
 set(ROOT_DEPENDENCIES)
-set(ALIROOT_DEPENDENCIES ANALYSISalice CORRFW PWGmuon PWGCFCorrelationsBase PWGJETFW)
+set(ALIROOT_DEPENDENCIES ANALYSISalice CORRFW PWGmuon PWGCFCorrelationsBase PWGJETFW OADB)
 
 # Generate the ROOT map
 # Dependecies

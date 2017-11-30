@@ -759,11 +759,7 @@ WARN_LOGFILE           =
 # Note: If this tag is empty the current directory is searched.
 
 INPUT                  = @CMAKE_SOURCE_DIR@/doxygen \
-                         @CMAKE_SOURCE_DIR@/PWG/FLOW/Tasks \
-                         @CMAKE_SOURCE_DIR@/PWG/FLOW/Base \
                          @CMAKE_SOURCE_DIR@/PWGCF/FLOW/Documentation/doxygen \
-                         @CMAKE_SOURCE_DIR@/PWGPP/MUON/lite \
-                         @CMAKE_SOURCE_DIR@/PWGPP/MUON/dep \
                          @CMAKE_SOURCE_DIR@/PWGJE/doc \
                          @CMAKE_SOURCE_DIR@/PWGJE/EMCALJetTasks \
                          @CMAKE_SOURCE_DIR@/PWGJE/EMCALJetTasks/Tracks \
@@ -787,14 +783,24 @@ INPUT                  = @CMAKE_SOURCE_DIR@/doxygen \
                          @CMAKE_SOURCE_DIR@/PWGLF/FORWARD/analysis2/tests \
                          @CMAKE_SOURCE_DIR@/PWGLF/FORWARD/analysis2/trains \
                          @CMAKE_SOURCE_DIR@/PWGLF/FORWARD/analysis2/doc \
-                         @CMAKE_SOURCE_DIR@/PWG/CaloTrackCorrBase \
                          @CMAKE_SOURCE_DIR@/PWGGA/CaloTrackCorrelations \
                          @CMAKE_SOURCE_DIR@/PWGGA/CaloTrackCorrelations/macros \
                          @CMAKE_SOURCE_DIR@/PWGGA/CaloTrackCorrelations/macros/QA \
+                         @CMAKE_SOURCE_DIR@/PWGGA/GammaConv \
                          @CMAKE_SOURCE_DIR@/PWGMM/doc \
+                         @CMAKE_SOURCE_DIR@/PWGPP/MUON/lite \
+                         @CMAKE_SOURCE_DIR@/PWGPP/MUON/dep \
                          @CMAKE_SOURCE_DIR@/PWGPP/EMCAL \
                          @CMAKE_SOURCE_DIR@/PWGPP/EMCAL/macros \
-                         @CMAKE_SOURCE_DIR@/PWGPP/EMCAL/QA/macros \
+                         @CMAKE_SOURCE_DIR@/PWGPP/EMCAL/BCMacros \
+                         @CMAKE_SOURCE_DIR@/PWGPP/EMCAL/TeCMacros \
+                         @CMAKE_SOURCE_DIR@/PWGPP/EMCAL/TiCMacros \
+                         @CMAKE_SOURCE_DIR@/PWGPP/EMCAL/ECPi0Macros \
+                         @CMAKE_SOURCE_DIR@/PWGPP/EMCAL/ECSingleChMacros \
+                         @CMAKE_SOURCE_DIR@/PWGPP/EMCAL/QAMacros \
+                         @CMAKE_SOURCE_DIR@/PWG/FLOW/Tasks \
+                         @CMAKE_SOURCE_DIR@/PWG/FLOW/Base \
+                         @CMAKE_SOURCE_DIR@/PWG/CaloTrackCorrBase \
                          @CMAKE_SOURCE_DIR@/PWG/EMCAL \
                          @CMAKE_SOURCE_DIR@/PWG/EMCAL/EMCALbase \
                          @CMAKE_SOURCE_DIR@/PWG/EMCAL/EMCALtrigger \
@@ -803,7 +809,9 @@ INPUT                  = @CMAKE_SOURCE_DIR@/doxygen \
                          @CMAKE_SOURCE_DIR@/PWG/Tools \
                          @CMAKE_SOURCE_DIR@/PWGHF \
                          @CMAKE_SOURCE_DIR@/PWGHF/vertexingHF \
-                         @CMAKE_SOURCE_DIR@/PWGHF/vertexingHF/macros
+                         @CMAKE_SOURCE_DIR@/PWGHF/vertexingHF/macros \
+                         @CMAKE_SOURCE_DIR@/PWGPP \
+                         @CMAKE_SOURCE_DIR@/PWGPP/test/testAliAnalysisTaskFiltered
 
 # This tag can be used to specify the character encoding of the source files
 # that doxygen parses. Internally doxygen uses the UTF-8 encoding. Doxygen uses
@@ -869,7 +877,7 @@ EXCLUDE_PATTERNS       =
 # Note that the wildcards are matched against the file with absolute path, so to
 # exclude all test directories use the pattern */test/*
 
-EXCLUDE_SYMBOLS        =
+EXCLUDE_SYMBOLS        = ClassDef ClassImp
 
 # The EXAMPLE_PATH tag can be used to specify one or more files or directories
 # that contain example code fragments that are included (see the \include
@@ -2010,7 +2018,7 @@ ENABLE_PREPROCESSING   = YES
 # The default value is: NO.
 # This tag requires that the tag ENABLE_PREPROCESSING is set to YES.
 
-MACRO_EXPANSION        = NO
+MACRO_EXPANSION        = YES
 
 # If the EXPAND_ONLY_PREDEF and MACRO_EXPANSION tags are both set to YES then
 # the macro expansion is limited to the macros specified with the PREDEFINED and

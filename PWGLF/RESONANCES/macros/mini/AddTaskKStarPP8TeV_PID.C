@@ -57,7 +57,7 @@ AliRsnMiniAnalysisTask * AddTaskKStarPP8TeV_PID
   // event cuts
   //-------------------------------------------
   UInt_t      triggerMask = AliVEvent::kINT7;//A Khuntia
-  if(isMC && (evtCutSetID==eventCutSet::kNoEvtSel || evtCutSetID==eventCutSet::kSpecial3)) triggerMask=AliVEvent::kAny;
+  // if(isMC && (evtCutSetID==eventCutSet::kNoEvtSel || evtCutSetID==eventCutSet::kSpecial3)) triggerMask=AliVEvent::kAny;
   Bool_t      rejectPileUp = kTRUE; //
   Double_t    vtxZcut = 10.0; //cm, default cut on vtx z
   
@@ -110,7 +110,9 @@ AliRsnMiniAnalysisTask * AddTaskKStarPP8TeV_PID
    TString taskName = Form("TOFKStar%s%s_%i%i", (isPP? "pp" : "PbPb"), (isMC ? "MC" : "Data"), (Int_t)cutPiCandidate,(Int_t)cutKaCandidate );
    AliRsnMiniAnalysisTask *task = new AliRsnMiniAnalysisTask(taskName.Data(), isMC);
    //task->UseESDTriggerMask(triggerMask); //ESD
-   task->SelectCollisionCandidates(triggerMask); //AOD
+   //task->SelectCollisionCandidates(triggerMask); //AOD
+   if(evtCutSetID!=eventCutSet::kNoEvtSel && evtCutSetID!=eventCutSet::kSpecial3) task->SelectCollisionCandidates(triggerMask); //AOD
+
    
    if (isPP) 
      task->UseMultiplicity("QUALITY");
@@ -140,7 +142,7 @@ AliRsnMiniAnalysisTask * AddTaskKStarPP8TeV_PID
 
 
    
-   if (isPP && (!isMC)) { 
+   if (isPP && (!isMC)&&cutVertex) { 
      cutVertex->SetCheckPileUp(rejectPileUp);   // set the check for pileup  
      ::Info("AddAnalysisTaskTOFKStar", Form(":::::::::::::::::: Pile-up rejection mode: %s", (rejectPileUp)?"ON":"OFF"));
      //cutVertex->SetCheckZResolutionSPD();//A Khuntia
@@ -157,11 +159,14 @@ AliRsnMiniAnalysisTask * AddTaskKStarPP8TeV_PID
    cutEventUtils->SetCheckSPDClusterVsTrackletBG();*/
    //------------------------------------
    // define and fill cut set for event cut
-   AliRsnCutSet *eventCuts = new AliRsnCutSet("eventCuts", AliRsnTarget::kEvent);
+
+   AliRsnCutSet* eventCuts=0;
+   if(cutVertex){
+   eventCuts = new AliRsnCutSet("eventCuts", AliRsnTarget::kEvent);
    eventCuts->AddCut(cutVertex);
    eventCuts->SetCutScheme(Form("%s", cutVertex->GetName()));
    task->SetEventCuts(eventCuts);
-   
+   }
    //
    // -- EVENT-ONLY COMPUTATIONS -------------------------------------------------------------------
    //   

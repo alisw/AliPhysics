@@ -33,6 +33,8 @@ public:
   
   void             Init();
   
+  AliGenEventHeader* GetGenEventHeader()   const ;
+
   Bool_t           SelectTrack(AliVTrack* track, Double_t* pTrack);
   
   AliESDtrackCuts* GetTrackCuts()                    const { return fESDtrackCuts     ; }

@@ -20,6 +20,7 @@ class AliVCaloCells;
 class AliVCaloTrigger;
 class AliVEvent;
 class AliVVZERO;
+class AliEMCALTriggerBitConfig;
 template<class T> class AliEMCALTriggerDataGrid;
 template<class T> class AliEMCALTriggerAlgorithm;
 template<class T> class AliEMCALTriggerPatchFinder;
@@ -113,6 +114,14 @@ public:
   void SetTriggerThresholdGammaHigh( Int_t a, Int_t b, Int_t c ) { fThresholdConstants[1][0] = a; fThresholdConstants[1][1] = b; fThresholdConstants[1][2] = c; }
   void SetBackgroundThreshold(Int_t t)                           { fBkgThreshold             = t; }
   void SetL0Threshold(Int_t t)                                   { fL0Threshold              = t; }
+
+  /**
+   * @brief Get L0 amplitude of a given trigger channel (in col-row space)
+   * @param[in] col Column of the trigger channel
+   * @param[in] row Row of the trigger channel
+   * @return L0 amplitude of the given trigger channel (0 for invalid channel IDs)
+   */
+  double GetL0TriggerChannelAmplitude(Int_t col, Int_t row) const;
 
   /**
    * @brief Get ADC value of a given trigger channel (in col-row space)
@@ -395,6 +404,11 @@ public:
    * @brief Configure the class for 2015 pp
    */
   void ConfigureForPP2015();
+
+  /**
+   * @brief Configure the class for 2015 pp
+   */
+  void ConfigureForPP20158x8();
 
   /**
    * @brief Configure the class for 2013 pPb

@@ -165,20 +165,20 @@ AliFemtoManager* ConfigFemtoAnalysis(bool mcAnalysis=false, bool sepCuts=false, 
             if(iSys==kPL || iSys==kAPL || iSys==kPAL || iSys==kAPAL)
             {
                 // this is in k*
-                nonIdenticalCF[anIter] = new AliFemtoCorrFctnNonIdDR(Form("CF_kstar_%sM%i", sysNames[iSys], imult),100,0.0,1.0);
+                nonIdenticalCF[anIter] = new AliFemtoCorrFctnNonIdDR(Form("CF_kstar_%sM%i", sysNames[iSys], imult),500,0.0,5.0);
                 femtoAnalysis[anIter]->AddCorrFctn(nonIdenticalCF[anIter]);
             }
             else // pairs with the same mass of particles
             {
                 // this is in q_inv
-                identicalCF[anIter] = new AliFemtoQinvCorrFctn(Form("CF_qinv_%sM%i", sysNames[iSys], imult),100,0.0,2.0);
+                identicalCF[anIter] = new AliFemtoQinvCorrFctn(Form("CF_qinv_%sM%i", sysNames[iSys], imult),500,0.0,10.0);
                 femtoAnalysis[anIter]->AddCorrFctn(identicalCF[anIter]);
             }
             
             // add correlation function on model data
             if(mcAnalysis)
             {
-                modelCF[anIter] = new AliFemtoModelCorrFctn(Form("CF_qinv_Model_%sM%i", sysNames[iSys],imult),100,0.0,2.0);
+                modelCF[anIter] = new AliFemtoModelCorrFctn(Form("CF_qinv_Model_%sM%i", sysNames[iSys],imult),500,0.0,10.0);
                 modelCF[anIter]->ConnectToManager(modelMgr);
                 femtoAnalysis[anIter]->AddCorrFctn(modelCF[anIter]);
                 femtoAnalysis[anIter]->SetEnablePairMonitors(true);

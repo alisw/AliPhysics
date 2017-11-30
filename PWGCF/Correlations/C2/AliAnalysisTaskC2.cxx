@@ -5,13 +5,11 @@
 #include "THn.h"
 #include "TList.h"
 #include "TMath.h"
-#include "TProfile2D.h"
 
 #include "AliAODEvent.h"
 #include "AliAODMCParticle.h"
 #include "AliHeader.h"
 #include "AliGenEventHeader.h"
-#include "AliLog.h"
 #include "AliMCEvent.h"
 #include "AliMultSelection.h"
 #include "AliStack.h"
@@ -26,8 +24,11 @@ using std::vector;
 
 //________________________________________________________________________
 AliAnalysisTaskC2::AliAnalysisTaskC2()
-  : AliAnalysisTaskC2Base(),
+  : AliAnalysisTaskSE(),
+    fSettings(),
+    fOutputList(0),
     fEventCounter(0),
+    fEtaPhiZvtx_max_res(0),
     fsingleHists(0),
     fpairHists(0)
 {
@@ -35,19 +36,22 @@ AliAnalysisTaskC2::AliAnalysisTaskC2()
 
 //________________________________________________________________________
 AliAnalysisTaskC2::AliAnalysisTaskC2(const char *name)
-  : AliAnalysisTaskC2Base(name),
+  : AliAnalysisTaskSE(name),
+    fSettings(),
+    fOutputList(0),
     fEventCounter(0),
+    fEtaPhiZvtx_max_res(0),
     fsingleHists(0),
     fpairHists(0)
 {
+  // Rely on validation task for event and track selection
+  DefineInput(1, AliAnalysisTaskValidation::Class());
   DefineOutput(1, TList::Class());
 }
 
 //________________________________________________________________________
 void AliAnalysisTaskC2::UserCreateOutputObjects()
 {
-  // Call the base class to set up histograms there
-  AliAnalysisTaskC2Base::UserCreateOutputObjects();
   // Setup output list if it was not done already
   if (!this->fOutputList){
     this->fOutputList = new TList();
@@ -165,6 +169,21 @@ void AliAnalysisTaskC2::UserCreateOutputObjects()
   this->fEventCounter->GetAxis(cEventCounterDims::kMult)->Set(nMult, &this->fSettings.fMultBinEdges[0]);
   this->fOutputList->Add(this->fEventCounter);
 
+  {
+    const Int_t ndims = 3;
+    const Int_t nbins[ndims] = {200, 20, 100};
+    const Double_t lowerBounds[ndims] = {-4.0, 0, -10.0};
+    const Double_t upperBounds[ndims] = {6.0, 2*TMath::Pi(), 10.0};
+    this->fEtaPhiZvtx_max_res = new THnF("etaPhiZvtx_max_res",
+					 "etaPhiZvtx_max_res;#eta;#phi;#zvtx;",
+					 ndims,
+					 nbins,
+					 lowerBounds,
+					 upperBounds
+					 );
+    this->fOutputList->Add(this->fEtaPhiZvtx_max_res);
+  }
+  
   AliLog::SetGlobalLogLevel(AliLog::kError);
   PostData(1, fOutputList);
 }
@@ -172,114 +191,216 @@ void AliAnalysisTaskC2::UserCreateOutputObjects()
 //________________________________________________________________________
 void AliAnalysisTaskC2::UserExec(Option_t *)
 {
-  // Run setup for base class
-  this->SetupEventForBase();
+  // Get the event validation object
+  AliAnalysisTaskValidation* ev_val = dynamic_cast<AliAnalysisTaskValidation*>(this->GetInputData(1));
 
-  // AODEvent() returns a null pointer for whatever reason...
   AliMCEvent*   mcEvent = this->MCEvent();
-  AliAODEvent* aodEvent = dynamic_cast< AliAODEvent* >(this->InputEvent());
 
-  if (!this->IsValidEvent()){
+  if (!ev_val->IsValidEvent()){
     PostData(1, this->fOutputList);
     return;
   }
+
   const Float_t multiplicity = this->GetEventClassifierValue();
-  this->fmultDistribution->Fill(this->GetEventClassifierValue());
+  const Double_t zvtx = (this->InputEvent()->GetPrimaryVertex())
+    ? this->InputEvent()->GetPrimaryVertex()->GetZ()
+    : -999;
+  // Check that the given event is not over/under in z_vtx or mult
+  {
+    TAxis* multAxis = fEventCounter->GetAxis(cEventCounterDims::kMult);
+    if (multAxis->FindBin(multiplicity) == 0
+      || multAxis->FindBin(multiplicity) == multAxis->GetNbins() + 1) {
+      return;
+    }
+  }
+
+  {
+    TAxis* zvtxAxis = fEventCounter->GetAxis(cEventCounterDims::kZvtx);
+    if (zvtxAxis->FindBin(zvtx) == 0
+      || zvtxAxis->FindBin(zvtx) == zvtxAxis->GetNbins() + 1) {
+      return;
+    }
+  }
 
   const Double_t evWeight = (this->fSettings.kMCTRUTH == this->fSettings.fDataType)
     ? mcEvent->GenEventHeader()->EventWeight()
     : 1;
-  const Double_t zvtx = (this->InputEvent()->GetPrimaryVertex())
-    ? this->InputEvent()->GetPrimaryVertex()->GetZ()
-    : -999;
+  // Load all valid tracks/hits used in the following
+  const auto tracks = this->GetValidTracks();
 
-  for (auto const &track: this->GetValidTracks()) {
-    // Fill the single track histograms
-    Double_t stuffing[5] = {track.eta,
-			    AliAnalysisC2Utils::WrapAngle(track.phi, fsingleHists[0]->GetAxis(cSinglesDims::kPhi)),
-			    track.pt,
-			    multiplicity,
-			    zvtx};
-    for (auto single: this->fsingleHists) {
-      	if (// Check overflow; see comments in the loop for the pairs.
-	    single->GetAxis(cSinglesDims::kEta)->GetBinLowEdge(1) <= stuffing[cSinglesDims::kEta]
-	    && stuffing[cSinglesDims::kEta] < single->GetAxis(cSinglesDims::kEta)->
-	    GetBinUpEdge(single->GetAxis(cSinglesDims::kEta)->GetNbins()))
-	  {
-	    single->Fill(stuffing, evWeight * track.weight);
-	  }
-    }
+  // fill the valid tracks into the appropriate QA histograms
+  for (auto &t: tracks) {
+    const Double_t stuffing[] = {t.eta, t.phi, zvtx};
+    this->fEtaPhiZvtx_max_res->Fill(stuffing, t.weight);
   }
+
+  // Fill the event counter histogram
   {
     Double_t stuffing[3] = {multiplicity, zvtx};
     this->fEventCounter->Fill(stuffing, evWeight);
   }
-  const vector< AliAnalysisC2NanoTrack > tracks = this->GetValidTracks();
-  const AliAnalysisC2NanoTrack *trigger, *assoc;
-  for (Int_t i = 0; i < tracks.size(); i++) {
+  
+  // Fill the single particle histograms
+  for (auto const &track: tracks) {
+    // Fill the single track histograms
+    Double_t stuffing[5] = {track.eta,
+			    AliAnalysisC2Utils::Wrap02pi(track.phi),
+			    track.pt,
+			    multiplicity,
+			    zvtx};
+    for (auto single: this->fsingleHists) {
+      single->Fill(stuffing, evWeight * track.weight);
+    }
+  }
+  struct Bin_indices{
+    Int_t i_eta;
+    Int_t i_phi;
+    Int_t i_pt;
+    Int_t i_mult;
+    Int_t i_zvtx;
+    AliAnalysisTaskValidation::Track track;
+  };
+  // Find the bin indices here instead of doing it (implicity in the loop) which is super slow
+  vector<Bin_indices> track_bin_idxs;
+  for (auto t: tracks) {
+    THn *hist;
+    if (t.eta < this->fSettings.fEtaEdgesIts[0]) {
+      hist = this->fsingleHists[0];
+    } else if (t.eta >= this->fSettings.fEtaEdgesIts[0] && t.eta < this->fSettings.fEtaEdgesFwd[0]) {
+      hist = this->fsingleHists[1];
+    } else {
+      hist = this->fsingleHists[2];
+    }
+    track_bin_idxs.push_back(Bin_indices {
+	hist->GetAxis(cSinglesDims::kEta)->FindFixBin(t.eta),
+	hist->GetAxis(cSinglesDims::kPhi)->FindFixBin(AliAnalysisC2Utils::Wrap02pi(t.phi)),
+	hist->GetAxis(cSinglesDims::kPt)->FindFixBin(t.pt),
+	hist->GetAxis(cSinglesDims::kMult)->FindFixBin(multiplicity),
+	hist->GetAxis(cSinglesDims::kZvtx)->FindFixBin(zvtx),
+	t});
+  }
+  // Fill the pair particle histograms
+  Bin_indices *trigger, *assoc;
+  for (UInt_t i = 0; i < track_bin_idxs.size(); i++) {
     // Do not pair with itself and drop mirrored pairs
-    for (Int_t j = i + 1; j < tracks.size(); j++) {
+    for (UInt_t j = i + 1; j < track_bin_idxs.size(); j++) {
       // assign trigger/assoc
       // If we bin in pt, use pt as distinction, else use eta
       if (this->fSettings.fPtBinEdges.size() > 2) {
-	if (tracks[i].pt <= tracks[j].pt) {
-	  trigger = &tracks[j];
-	  assoc = &tracks[i];
+	if (track_bin_idxs[i].track.pt <= track_bin_idxs[j].track.pt) {
+	  trigger = &track_bin_idxs[j];
+	  assoc = &track_bin_idxs[i];
 	}
 	else {
-	  trigger = &tracks[i];
-	  assoc = &tracks[j];
+	  trigger = &track_bin_idxs[i];
+	  assoc = &track_bin_idxs[j];
 	}
       }
       else {
-	if (tracks[i].eta <= tracks[j].eta) {
-	  trigger = &tracks[j];
-	  assoc = &tracks[i];
+	if (track_bin_idxs[i].track.eta <= track_bin_idxs[j].track.eta) {
+	  trigger = &track_bin_idxs[j];
+	  assoc = &track_bin_idxs[i];
 	}
 	else {
-	  trigger = &tracks[i];
-	  assoc = &tracks[j];
+	  trigger = &track_bin_idxs[i];
+	  assoc = &track_bin_idxs[j];
 	}
       }
       // FIXME: This will break if I bin ITS region in pt but not the FMD part!
-      Int_t pt1Bin = this->fsingleHists[0]->GetAxis(cSinglesDims::kPt)->FindFixBin(assoc->pt);
-      Int_t pt2Bin = this->fsingleHists[0]->GetAxis(cSinglesDims::kPt)->FindFixBin(trigger->pt);
-      Double_t stuffing[7] =
-	{assoc->eta,
-	 trigger->eta,
-	 AliAnalysisC2Utils::WrapAngle(assoc->phi, fpairHists[0]->GetAxis(cPairsDims::kPhi1)),
-	 AliAnalysisC2Utils::WrapAngle(trigger->phi, fpairHists[0]->GetAxis(cPairsDims::kPhi2)),
-	 Double_t(AliAnalysisC2Utils::ComputePtPairBin(pt1Bin, pt2Bin) + 0.5),  // +.5 to hit the bin center
-	 multiplicity,
-	 zvtx};
-      for (auto pair: this->fpairHists) {
-	// Only call Fill if we are in the right eta region. If we
-	// filled, move to the next track. I.e., asume that histograms
-	// do not overlap in phace-space so each pair can only go into
-	// one histogram.  This is so ugly because ROOT does not
-	// report back if the fill was successful or in an
-	// overflow. At the same time, there is a problem with ROOT's
-	// THn where filling in an overflow bin might end up in a fill
-	// in a valid bin instead. See
-	// https://sft.its.cern.ch/jira/browse/ROOT-8457
-	if (// Check bounderies for eta1
-	    pair->GetAxis(cPairsDims::kEta1)->GetBinLowEdge(1) <= stuffing[cPairsDims::kEta1]
-	    && stuffing[cPairsDims::kEta1] < pair->GetAxis(cPairsDims::kEta1)->
-	    GetBinUpEdge(pair->GetAxis(cPairsDims::kEta1)->GetNbins())
-	    // Check bounderies for eta1
-	    && pair->GetAxis(cPairsDims::kEta2)->GetBinLowEdge(1) <= stuffing[cPairsDims::kEta2]
-	    && stuffing[cPairsDims::kEta2] < pair->GetAxis(cPairsDims::kEta2)->
-	    GetBinUpEdge(pair->GetAxis(cPairsDims::kEta2)->GetNbins())) {
-	  pair->Fill(stuffing, assoc->weight * trigger->weight * evWeight);
-	  continue;
-	}
-      }
+      Int_t pt1Bin = 1; // this->fsingleHists[0]->GetAxis(cSinglesDims::kPt)->FindFixBin(assoc->pt);
+      Int_t pt2Bin = 1; // this->fsingleHists[0]->GetAxis(cSinglesDims::kPt)->FindFixBin(trigger->pt);
+      Int_t stuffing[7] =
+	{assoc->i_eta,
+	 trigger->i_eta,
+	 assoc->i_phi,
+	 trigger->i_phi,
+	 AliAnalysisC2Utils::ComputePtPairBin(pt1Bin, pt2Bin) + 1, // bin indices start at 1...
+	 assoc->i_mult,
+	 assoc->i_zvtx};
+      this->fpairHists[this->GetPairHistIndex(trigger->track.eta, assoc->track.eta)]
+	->AddBinContent(stuffing, assoc->track.weight * trigger->track.weight * evWeight);
     }
-    PostData(1, this->fOutputList);
   }
+  PostData(1, this->fOutputList);
 }
+
 //________________________________________________________________________
 void AliAnalysisTaskC2::Terminate(Option_t *)
 {
   // PostData(1, this->fOutputList);
+}
+
+UInt_t AliAnalysisTaskC2::GetPairHistIndex(Float_t trigger, Float_t assoc) {
+  auto is_bwd =
+    [this] (Float_t eta)
+    {return eta < this->fSettings.fEtaEdgesIts[0];};
+  auto is_its =
+    [this] (Float_t eta)
+    {return eta >= this->fSettings.fEtaEdgesIts[0] && eta < this->fSettings.fEtaEdgesFwd[0];};
+  auto is_fwd =
+    [this] (Float_t eta)
+    {return eta >= this->fSettings.fEtaEdgesFwd[0];};
+  if (is_bwd(assoc) && is_bwd(trigger)) return 0; // bwd bwd
+  if (is_bwd(assoc) && is_its(trigger)) return 1; // bwd its
+  if (is_bwd(assoc) && is_fwd(trigger)) return 2; // bwd fwd
+  if (is_its(assoc) && is_its(trigger)) return 3; // its its
+  if (is_its(assoc) && is_fwd(trigger)) return 4; // its fwd
+  if (is_fwd(assoc) && is_fwd(trigger)) return 5; // fwd fwd
+  return -1;
+}
+
+
+AliAnalysisTaskValidation::Tracks AliAnalysisTaskC2::GetValidTracks() {
+  // Get the event validation object
+  AliAnalysisTaskValidation* ev_val = dynamic_cast<AliAnalysisTaskValidation*>(this->GetInputData(1));
+
+  AliAnalysisTaskValidation::Tracks ret_vector;
+  // Append central tracklets
+  if (this->fSettings.kRECON == this->fSettings.fDataType) {
+    // Are we running on SPD clusters? If so add them to our track vector
+    if (this->fSettings.fUseSPDclusters) {
+      AliError("SPD clusters not yet implemented");
+    }
+    else if (this->fSettings.fUseTracklets) {
+      auto spdhits = ev_val->GetTracklets();
+      ret_vector.insert(ret_vector.end(), spdhits.begin(), spdhits.end());
+    }
+    else if (this->fSettings.fUseTracks) {
+      auto trks = ev_val->GetTracks();
+      ret_vector.insert(ret_vector.end(), trks.begin(), trks.end());
+    }
+
+    // Append the fmd hits to this vector if we are looking at reconstructed data,
+    // All hits on the FMD (above the internally used threshold) are "valid"
+    if (this->fSettings.fUseFMD) {
+      auto fmdhits = ev_val->GetFMDhits();
+      ret_vector.insert(ret_vector.end(), fmdhits.begin(), fmdhits.end());
+    } else if (this->fSettings.fUseV0){
+      auto v0amps = ev_val->GetV0hits();
+      ret_vector.insert(ret_vector.end(), v0amps.begin(), v0amps.end());
+    }
+  }
+  // MC truth case:
+  else {
+    AliError("MC truth is not yet implemented");
+    // auto allMCtracks = this->GetValidCentralTracks();
+    // this->fValidTracks.insert(this->fValidTracks.end(), allMCtracks.begin(), allMCtracks.end());
+  }
+  return ret_vector;
+}
+
+Float_t AliAnalysisTaskC2::GetEventClassifierValue() {
+  if (this->fSettings.fMultEstimator == this->fSettings.fMultEstimatorValidTracks){
+    return this->GetValidTracks().size();
+  }
+  else {
+    // Event is invalid if no multselection is present; ie. tested in IsValidEvent() already
+    AliMultEstimator *multEstimator =
+      (dynamic_cast< AliMultSelection* >(this->InputEvent()->FindListObject("MultSelection")))
+      ->GetEstimator(this->fSettings.fMultEstimator);
+    // const Float_t multiplicity = ((Float_t)multEstimator->GetValue()) / multEstimator->GetMean();
+    // const Float_t multiplicity = (Float_t)multEstimator->GetValue();
+    const Float_t multiplicity = multEstimator->GetPercentile();
+    return multiplicity;
+  }
 }

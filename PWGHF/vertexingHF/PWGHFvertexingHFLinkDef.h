@@ -84,7 +84,6 @@
 #pragma link C++ class AliAnalysisTaskSEImproveITS+;
 #pragma link C++ class AliAnalysisTaskCombinHF+;
 #pragma link C++ class AliEventPlaneResolutionHandler+;
-#pragma link C++ class AliAnalysisTaskSEHFv2+;
 #pragma link C++ class AliAnalysisTaskSEHFvn+;
 #pragma link C++ class AliAnalysisTaskHFv1+;
 #pragma link C++ class AliAnalysisTaskFlowD2H+;
@@ -94,6 +93,7 @@
 #pragma link C++ class AliAnalysisTaskSELc2V0bachelorTMVA+;
 #pragma link C++ class AliAnalysisTaskSELambdacTMVA+;
 #pragma link C++ class AliHFMultiTrials+;
+#pragma link C++ class AliHFInvMassMultiTrialFit+;
 #pragma link C++ class AliHFMassFitterVAR+;
 #pragma link C++ class AliHFInvMassFitter+;
 #pragma link C++ class AliHFCutVarFDsubAnalysisManager+;

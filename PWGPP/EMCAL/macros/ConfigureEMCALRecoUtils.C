@@ -1,10 +1,24 @@
+//#ifndef CONFIGUREEMCALRECOUTILS_C
+//#define CONFIGUREEMCALRECOUTILS_C
+
 ///
 /// \file ConfigureEMCALRecoUtils.C
-/// \ingroup EMCALPerformanceMacros
+/// \ingroup EMCALPerfAddTaskMacros
 /// \brief Configuration of AliEMCALRecoUtils.
 ///
 /// Example of configuration of AliEMCALRecoUtils. Called in different analysis configuration macros.
 /// This class is used to calibrate/correct/accept EMCal clusters.
+///
+/// \author : Gustavo Conesa Balbastre <Gustavo.Conesa.Balbastre@cern.ch>, (LPSC-CNRS)
+///
+
+#if !defined(__CINT__) || defined(__MAKECINT__)
+
+#include "AliEMCALRecoUtils.h"
+
+#endif
+
+/// Main method
 ///
 /// The input parameters:
 /// \param reco: pointer to object to initialize in this macro.
@@ -15,8 +29,7 @@
 /// \param bBad: Bool, indicates if bad channels/clusters are removed.
 /// \param bRecalT: Bool, indicates if time is calibrated.
 /// \param debug: int debug level, print info on settings in the macro
-///
-/// \author : Gustavo Conesa Balbastre <Gustavo.Conesa.Balbastre@cern.ch>, (LPSC-CNRS)
+
 ///
 void ConfigureEMCALRecoUtils(AliEMCALRecoUtils* reco,
                              Bool_t  bMC    = kFALSE,
@@ -27,13 +40,13 @@ void ConfigureEMCALRecoUtils(AliEMCALRecoUtils* reco,
                              Bool_t  bRecalT= kTRUE,
                              Int_t   debug  = -1)
 {
-  if ( debug > 0 ) printf("**** Configure AliEMCALRecoUtils ***\n");
+  if ( debug > 0 ) printf("ConfigureEMCALRecoUtils() - **** Start ***\n");
   
   // Exotic cells removal
   
   if(bExotic)
   {
-    if ( debug > 0 ) printf("Remove exotics in EMCAL\n");
+    if ( debug > 0 ) printf("ConfigureEMCALRecoUtils() - Remove exotics in EMCAL\n");
     reco->SwitchOnRejectExoticCell() ;
     reco->SwitchOnRejectExoticCluster(); 
     
@@ -46,6 +59,7 @@ void ConfigureEMCALRecoUtils(AliEMCALRecoUtils* reco,
   
   if(bRecalE && ! bMC)
   {
+    if ( debug > 0 ) printf("ConfigureEMCALRecoUtils() - Switch on energy recalibration in EMCAL\n");
     reco->SwitchOnRecalibration();
     reco->SwitchOnRunDepCorrection();    
   } 
@@ -54,6 +68,7 @@ void ConfigureEMCALRecoUtils(AliEMCALRecoUtils* reco,
   
   if(bBad)
   {
+    if ( debug > 0 ) printf("ConfigureEMCALRecoUtils() - Switch on bad channels removal in EMCAL\n");
     reco->SwitchOnBadChannelsRemoval();
     reco->SwitchOnDistToBadChannelRecalculation();
   }
@@ -62,6 +77,7 @@ void ConfigureEMCALRecoUtils(AliEMCALRecoUtils* reco,
   
   if(bRecalT && ! bMC)
   {
+    if ( debug > 0 ) printf("ConfigureEMCALRecoUtils() - Switch on time recalibration in EMCAL\n");
     reco->SwitchOnTimeRecalibration();
     reco->SwitchOnL1PhaseInTimeRecalibration() ;
   }
@@ -76,19 +92,22 @@ void ConfigureEMCALRecoUtils(AliEMCALRecoUtils* reco,
   { 
     if(!bMC)
     {
-      if ( debug > 0 ) printf("xxx SET Non linearity correction kBeamTestCorrected xxx\n");
+      if ( debug > 0 ) printf("ConfigureEMCALRecoUtils() xxx SET Non linearity correction kBeamTestCorrected xxx\n");
       reco->SetNonLinearityFunction(AliEMCALRecoUtils::kBeamTestCorrectedv3);
     }
     else
     {       
-      if ( debug > 0 ) printf("xxx SET Non linearity correction kPi0MCv3 xxx\n");
+      if ( debug > 0 ) printf("ConfigureEMCALRecoUtils() xxx SET Non linearity correction kPi0MCv3 xxx\n");
       reco->SetNonLinearityFunction(AliEMCALRecoUtils::kPi0MCv3);
     }
   }
   else 
   {
-    if ( debug > 0 ) printf("xxx DON'T SET Non linearity correction xxx\n");
+    if ( debug > 0 ) printf("ConfigureEMCALRecoUtils() xxx DON'T SET Non linearity correction xxx\n");
     reco->SetNonLinearityFunction(AliEMCALRecoUtils::kNoCorrection);
   }
   
 }
+
+//#endif //CONFIGUREEMCALRECOUTILS_C
+

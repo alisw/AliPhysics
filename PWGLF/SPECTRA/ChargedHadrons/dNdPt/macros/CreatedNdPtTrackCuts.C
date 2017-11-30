@@ -9,9 +9,11 @@
 // added cut modes 200,201: replacing TPCNcluster cut
 
 
-AliESDtrackCuts* CreatedNdPtTrackCuts(Int_t cutMode=1, Bool_t isMC = kFALSE, Double_t scaleChi2 = 1, Bool_t fieldOn = kTRUE, Bool_t hists = kTRUE)
+AliESDtrackCuts* CreatedNdPtTrackCuts(Int_t cutMode=1, const char *control = "",  Bool_t fieldOn = kTRUE, Bool_t hists = kTRUE)
 {
   AliESDtrackCuts* esdTrackCuts = new AliESDtrackCuts("AliESDtrackCuts");
+  
+  TString stControlString(control);
 
   if (hists)
     esdTrackCuts->DefineHistograms(1);
@@ -1427,16 +1429,21 @@ AliESDtrackCuts* CreatedNdPtTrackCuts(Int_t cutMode=1, Bool_t isMC = kFALSE, Dou
     esdTrackCuts->SetRequireSigmaToVertex(kFALSE);
     esdTrackCuts->SetMaxDCAToVertexZ(maxdcazITSTPC);
 
-    // DCArphi parametrization (LHC10c pass2)
-    // 7*(0.0026+0.0050/pt^1.01)
-    esdTrackCuts->SetMaxDCAToVertexXYPtDep("0.0182+0.0350/pt^1.01");
+    // DCArphi parametrization
+    if (stControlString.Contains("XeXe")){ 
+      // 7*(0.0017 + 0.007/pt^1.01)
+      esdTrackCuts->SetMaxDCAToVertexXYPtDep("0.0119 + 0.049/pt^1.01");
+    }else{
+      // 7*(0.0026+0.005/pt^1.01)
+      esdTrackCuts->SetMaxDCAToVertexXYPtDep("0.0182+0.035/pt^1.01");
+    }
 
     // tpcc cut
-    if(isMC) esdTrackCuts->SetMaxChi2TPCConstrainedGlobal(36.);
-    else     esdTrackCuts->SetMaxChi2TPCConstrainedGlobal(scaleChi2*36.);
+    esdTrackCuts->SetMaxChi2TPCConstrainedGlobal(36.);
 
     // Geometrical-Length Cut
-    esdTrackCuts->SetCutGeoNcrNcl(3,130,1.5,0.85,0.7); 
+    if (stControlString.Contains("XeXe")){esdTrackCuts->SetCutGeoNcrNcl(3,130,0.7,0.85,0.7);}
+    else {esdTrackCuts->SetCutGeoNcrNcl(3,130,1.5,0.85,0.7); }
     
     TString tag = "Default track cuts (2015) for 5TeV data";
   }
@@ -1996,10 +2003,10 @@ AliESDtrackCuts* CreatedNdPtTrackCuts(Int_t cutMode=1, Bool_t isMC = kFALSE, Dou
 
     TString tag = "for cut/efficiency studies (version 3)";
   }
+  
 
 
-   if ((cutMode >= 5000) && (cutMode <= 5400))
-  {
+  if ((cutMode >= 5000) && (cutMode <= 5400)){
     //According to 223 for study of systematic uncertanties. Change to fit the default cuts for 5TeV analysis 
     //Just like the 4000 but now with intiger increasing numbers. 
     //Easier to use. 
@@ -2025,16 +2032,22 @@ AliESDtrackCuts* CreatedNdPtTrackCuts(Int_t cutMode=1, Bool_t isMC = kFALSE, Dou
     //
     esdTrackCuts->SetDCAToVertex2D(kFALSE);
     esdTrackCuts->SetRequireSigmaToVertex(kFALSE);
-    esdTrackCuts->SetMaxDCAToVertexZ(2.0); 
-    // 7*(0.0026+0.0050/pt^1.01)
-    esdTrackCuts->SetMaxDCAToVertexXYPtDep("0.0182+0.0350/pt^1.01"); 
+    esdTrackCuts->SetMaxDCAToVertexZ(2.0);
+    if (stControlString.Contains("XeXe")){ 
+      // 7*(0.0017 + 0.007/pt^1.01)
+      esdTrackCuts->SetMaxDCAToVertexXYPtDep("0.0119 + 0.049/pt^1.01");
+    }else{
+      // 7*(0.0026+0.005/pt^1.01)
+      esdTrackCuts->SetMaxDCAToVertexXYPtDep("0.0182+0.035/pt^1.01");
+    }
     esdTrackCuts->SetAcceptKinkDaughters(kFALSE); 
     // tpcc cut
-    if(isMC) esdTrackCuts->SetMaxChi2TPCConstrainedGlobal(36.);
-    else     esdTrackCuts->SetMaxChi2TPCConstrainedGlobal(scaleChi2*36.);
+    esdTrackCuts->SetMaxChi2TPCConstrainedGlobal(36.);
     
     // Geometrical-Length Cut
-    esdTrackCuts->SetCutGeoNcrNcl(3,130,1.5,0.85,0.7); 
+    Double_t dLenghtSlopeDependence = 1.5;
+    if (stControlString.Contains("XeXe")){ dLenghtSlopeDependence = 0.7;}
+    esdTrackCuts->SetCutGeoNcrNcl(3,130,dLenghtSlopeDependence,0.85,0.7);
     
     //
     // Swich Low/High for study of systematics
@@ -2047,27 +2060,24 @@ AliESDtrackCuts* CreatedNdPtTrackCuts(Int_t cutMode=1, Bool_t isMC = kFALSE, Dou
     if(cutMode==5006){esdTrackCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(0.9);}
     if(cutMode==5007){esdTrackCuts->SetMaxFractionSharedTPCClusters(0.2);}
     if(cutMode==5008){esdTrackCuts->SetMaxFractionSharedTPCClusters(1.0);}
-    if(cutMode==5009){
-      if(isMC) esdTrackCuts->SetMaxChi2TPCConstrainedGlobal(25.);
-      else     esdTrackCuts->SetMaxChi2TPCConstrainedGlobal(scaleChi2*25.);
-    } 
-    if(cutMode==5010){
-      if(isMC) esdTrackCuts->SetMaxChi2TPCConstrainedGlobal(49.);
-      else     esdTrackCuts->SetMaxChi2TPCConstrainedGlobal(scaleChi2*49.);
+    if(cutMode==5009){esdTrackCuts->SetMaxChi2TPCConstrainedGlobal(25.);} 
+    if(cutMode==5010){esdTrackCuts->SetMaxChi2TPCConstrainedGlobal(49.);}
+    if (stControlString.Contains("XeXe")){
+      if(cutMode==5011){esdTrackCuts->SetMaxDCAToVertexXYPtDep("0.0068+0.028/pt^1.01");}
+      if(cutMode==5012){esdTrackCuts->SetMaxDCAToVertexXYPtDep("0.017+0.07/pt^1.01");}
+    }else{
+      if(cutMode==5011){esdTrackCuts->SetMaxDCAToVertexXYPtDep("0.0104+0.0200/pt^1.01");}
+      if(cutMode==5012){esdTrackCuts->SetMaxDCAToVertexXYPtDep("0.0260+0.0500/pt^1.01");}
     }
-    if(cutMode==5011){esdTrackCuts->SetMaxDCAToVertexXYPtDep("0.0104+0.0200/pt^1.01");}
-    if(cutMode==5012){esdTrackCuts->SetMaxDCAToVertexXYPtDep("0.0260+0.0500/pt^1.01");}
     if(cutMode==5013){esdTrackCuts->SetMaxDCAToVertexZ(1.0); }
     if(cutMode==5014){esdTrackCuts->SetMaxDCAToVertexZ(5.0); }
     if(cutMode==5015){esdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kOff); }
-    if(cutMode==5016){esdTrackCuts->SetCutGeoNcrNcl(3,120,1.5,0.85,0.7);}	
-    if(cutMode==5017){esdTrackCuts->SetCutGeoNcrNcl(3,140,1.5,0.85,0.7);}	
-
-    if(cutMode==5018){esdTrackCuts->SetCutGeoNcrNcl(4,130,1.5,0.85,0.7);}	//Make a varaition of cut on the width of the dead zone
-    if(cutMode==5019){esdTrackCuts->SetCutGeoNcrNcl(2,130,1.5,0.85,0.7);}	// Make a varaition of cut on the width of the dead zone
-    
-    if(cutMode==5020){esdTrackCuts->SetCutGeoNcrNcl(3,130,1.5,0.80,0.65);}  //Make a variation of cut Nc,Ncl  THE EFFECT IS NEGLIGIBLE
-    }
+    if(cutMode==5016){esdTrackCuts->SetCutGeoNcrNcl(3,120,dLenghtSlopeDependence,0.85,0.7);}
+    if(cutMode==5017){esdTrackCuts->SetCutGeoNcrNcl(3,140,dLenghtSlopeDependence,0.85,0.7);}
+    if(cutMode==5018){esdTrackCuts->SetCutGeoNcrNcl(4,130,dLenghtSlopeDependence,0.85,0.7);}//Make a varaition of cut on the width of the dead zone
+    if(cutMode==5019){esdTrackCuts->SetCutGeoNcrNcl(2,130,dLenghtSlopeDependence,0.85,0.7);}// Make a varaition of cut on the width of the dead zone
+    if(cutMode==5020){esdTrackCuts->SetCutGeoNcrNcl(3,130,dLenghtSlopeDependence,0.80,0.65);}  //Make a variation of cut Nc,Ncl  THE EFFECT IS NEGLIGIBLE
+  }
 
  
 

@@ -27,6 +27,7 @@
 #include "AliDielectronHistos.h"
 #include "AliDielectronHF.h"
 #include "AliDielectronCutQA.h"
+#include "AliDielectronEvtVsTrkHist.h"
 
 class AliEventplane;
 class AliVEvent;
@@ -74,6 +75,9 @@ public:
   AliAnalysisFilter& GetEventPlanePreFilter(){ return fEventPlanePreFilter; }
   AliAnalysisFilter& GetEventPlanePOIPreFilter(){ return fEventPlanePOIPreFilter; }
   AliDielectronQnEPcorrection* GetQnTPCACcuts(){ return fQnTPCACcuts; }
+
+  Bool_t GetEvtVsTrkHistExists() {return fEvtVsTrkHistExists;}
+  void SetEvtVsTrkHistExists(Bool_t doesExist = kTRUE) {fEvtVsTrkHistExists = doesExist;}
 
   void  SetMotherPdg( Int_t pdgMother ) { fPdgMother=pdgMother; }
   void  SetLegPdg(Int_t pdgLeg1, Int_t pdgLeg2) { fPdgLeg1=pdgLeg1; fPdgLeg2=pdgLeg2; }
@@ -172,6 +176,10 @@ public:
   void SetWidthCorrFunctionITS(TF1 *fun, UInt_t varx, UInt_t vary=0, UInt_t varz=0);
   void SetCentroidCorrFunctionITS(TH1 *fun, UInt_t varx, UInt_t vary=0, UInt_t varz=0);
   void SetWidthCorrFunctionITS(TH1 *fun, UInt_t varx, UInt_t vary=0, UInt_t varz=0);
+  void SetCentroidCorrFunctionTOF(TF1 *fun, UInt_t varx, UInt_t vary=0, UInt_t varz=0);
+  void SetWidthCorrFunctionTOF(TF1 *fun, UInt_t varx, UInt_t vary=0, UInt_t varz=0);
+  void SetCentroidCorrFunctionTOF(TH1 *fun, UInt_t varx, UInt_t vary=0, UInt_t varz=0);
+  void SetWidthCorrFunctionTOF(TH1 *fun, UInt_t varx, UInt_t vary=0, UInt_t varz=0);
 
   void SetQnTPCACcuts(AliDielectronQnEPcorrection *acCuts){ fQnTPCACcuts = acCuts; fACremovalIsSetted = kTRUE;}
   void SetQnVectorNormalisation(TString norm) {fQnVectorNorm = norm;}
@@ -181,6 +189,8 @@ public:
   Bool_t GammaTracksUsed() const { return fUseGammaTracks; }
   void SetUseGammaTracks(Bool_t setValue=kTRUE) { fUseGammaTracks=setValue; }
   void  FillHistogramsFromPairArray(Bool_t pairInfoOnly=kFALSE);
+
+  void FinishEvtVsTrkHistoClass();
 
 private:
 
@@ -193,6 +203,8 @@ private:
   TH1 *fPostPIDWdthCorr;    // post pid correction object for electron sigma widths in TPC
   TH1 *fPostPIDCntrdCorrITS;// post pid correction object for electron sigma centroids in ITS
   TH1 *fPostPIDWdthCorrITS; // post pid correction object for electron sigma widths in ITS
+  TH1 *fPostPIDCntrdCorrTOF;// post pid correction object for electron sigma centroids in TOF
+  TH1 *fPostPIDWdthCorrTOF; // post pid correction object for electron sigma widths in TOF
                             /// @TODO: smart way to store corrections, potentially for all detectors.
   TObject *fLegEffMap;      // single electron efficiency map
   TObject *fPairEffMap;      // pair efficiency map
@@ -239,6 +251,9 @@ private:
   Bool_t fRotateMM; // combine rotated negative tracks
   AliDielectronDebugTree *fDebugTree;  // Debug tree output
   AliDielectronMixingHandler *fMixing; // handler for event mixing
+
+  AliDielectronEvtVsTrkHist *fEvtVsTrkHist;
+  Bool_t fEvtVsTrkHistExists; // Tells the Multi Analysis Task if it has to process the AliDielectronEvtVsTrkHist class
 
   Bool_t fPreFilterEventPlane;  //Filter for the Eventplane determination in TPC
   Bool_t fACremovalIsSetted;

@@ -13,7 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-// jtAnalysis main class
+// iaaAnalysis main class
 // used in local and grid execution
 
 #include <TH1D.h>
@@ -68,6 +68,7 @@ AliJIaaAnalysis::AliJIaaAnalysis() :
 	fbTriggCorrel(0),
 	fbLPCorrel(0),
 	fMinimumPt(0),
+    fMCTruthRun(false),
 	fEventBC(0),
 	fEfficiency(0),
 	fRunTable(0),
@@ -103,6 +104,7 @@ AliJIaaAnalysis::AliJIaaAnalysis(Bool_t execLocal) :
 	fbTriggCorrel(0),
 	fbLPCorrel(0),
 	fMinimumPt(0),
+    fMCTruthRun(false),
 	fEventBC(0),
 	fEfficiency(0),
 	fRunTable(0),
@@ -157,6 +159,7 @@ AliJIaaAnalysis::AliJIaaAnalysis(const AliJIaaAnalysis& obj) :
 	fbTriggCorrel(obj.fbTriggCorrel),
 	fbLPCorrel(obj.fbLPCorrel),
 	fMinimumPt(obj.fMinimumPt),
+    fMCTruthRun(obj.fMCTruthRun),
 	fEventBC(obj.fEventBC),
 	fEfficiency(obj.fEfficiency),
 	fRunTable(obj.fRunTable),
@@ -185,6 +188,10 @@ void AliJIaaAnalysis::UserCreateOutputObjects(){
 	cout << "jtAnalysis user create output objects ----------------" << endl;
 
 	fHadronSelectionCut =int ( fcard->Get("HadronSelectionCut"));
+
+    // Switch between regular analysis and MC truth analysis
+    fMCTruthRun = false;
+    if(fcard->Get("AnalyseMCTruth") == 1) fMCTruthRun = true;
 
 	// Initialize the histograms needed to store the output
 	fhistos = new AliJIaaHistograms( fcard );
@@ -361,7 +368,7 @@ void AliJIaaAnalysis::UserExec(){
 	// Triggers and associated
 	//----------------------ooooo---------------------------------------
 
-	if(fjtrigg==kJHadron || fjassoc==kJHadron){
+	if(fjtrigg==kJHadron || fjassoc==kJHadron || fjtrigg==kJHadronMC || fjassoc==kJHadronMC){
 		fchargedHadronList->Clear();
 		fdmg->RegisterList(fchargedHadronList, NULL, cBin, zBin, kJHadron);
 		// apply efficiencies
@@ -371,15 +378,20 @@ void AliJIaaAnalysis::UserExec(){
 			triggerTrack = (AliJBaseTrack*)fchargedHadronList->At(i);
 			ptt = triggerTrack->Pt();
 
-			effCorr = 1./fEfficiency->GetCorrection(ptt, fHadronSelectionCut, fcent);  // here you generate warning if ptt>30
-			fhistos->fhTrackingEfficiency[cBin]->Fill( ptt, 1./effCorr );
-			triggerTrack->SetTrackEff( 1./effCorr );
+            if(fMCTruthRun){  
+                fhistos->fhTrackingEfficiency[cBin]->Fill( ptt, 1.0 );
+                triggerTrack->SetTrackEff(1.0);
+            } else {
+                effCorr = 1./fEfficiency->GetCorrection(ptt, fHadronSelectionCut, fcent);  // here you generate warning if ptt>30
+                fhistos->fhTrackingEfficiency[cBin]->Fill( ptt, 1./effCorr );
+                triggerTrack->SetTrackEff( 1./effCorr );
+            }
 		}
 	}
 
 	//---- assign input list ----
 	if(fjtrigg==kJPizero)      finputList = fpizeroList;
-	else if(fjtrigg==kJHadron) finputList = fchargedHadronList;
+	else if(fjtrigg==kJHadron || fjtrigg==kJHadronMC) finputList = fchargedHadronList;
 	else if(fjtrigg==kJPhoton) finputList = fphotonList;
 	int noAllTriggTracks = finputList->GetEntries();
 	int noAllChargedTracks = fchargedHadronList->GetEntries();
@@ -428,7 +440,7 @@ void AliJIaaAnalysis::UserExec(){
 	fassocList->Clear();
 	int noAssocs=0;
 	if(fjassoc==kJPizero) finputList = fpizeroList;
-	else if(fjassoc==kJHadron) finputList = fchargedHadronList;
+	else if(fjassoc==kJHadron || fjassoc==kJHadronMC) finputList = fchargedHadronList;
 	else if(fjassoc==kJPhoton) finputList = fphotonList;
 
 	int noAllAssocTracks = finputList->GetEntries();
@@ -453,7 +465,11 @@ void AliJIaaAnalysis::UserExec(){
 	// Leading particle pT and eta
 	//-----------------------------------------------
 	if( lpTrackCounter->Exists() ){
-		effCorr = 1./fEfficiency->GetCorrection(lpTrackCounter->Pt(), fHadronSelectionCut, fcent );
+        if(fMCTruthRun){
+            effCorr = 1.0;
+        } else {
+            effCorr = 1./fEfficiency->GetCorrection(lpTrackCounter->Pt(), fHadronSelectionCut, fcent );
+        }
 		fhistos->fhLPpt->Fill(lpTrackCounter->Pt(), effCorr);
 		fhistos->fhLPeta->Fill(lPTr->Eta(), effCorr);
 	}

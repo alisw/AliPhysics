@@ -115,6 +115,8 @@ AliFemtoTrack::AliFemtoTrack(const AliFemtoTrack& t) :
   fP(t.fP),
   fPt(t.fPt),
   fInnerMomentum(t.fInnerMomentum),
+  fMultiplicity(t.fMultiplicity),
+  fZvtx(t.fZvtx),
   fHelix(t.fHelix),
   fFlags(t.fFlags),
   fLabel(t.fLabel),
@@ -206,6 +208,8 @@ AliFemtoTrack& AliFemtoTrack::operator=(const AliFemtoTrack& aTrack)
   fP=aTrack.fP;
   fPt=aTrack.fPt;
   fInnerMomentum=aTrack.fInnerMomentum;
+  fMultiplicity=aTrack.fMultiplicity;
+  fZvtx=aTrack.fZvtx;
   fHelix=aTrack.fHelix;
   fTrackId=aTrack.fTrackId;
   fFlags=aTrack.fFlags;
@@ -720,3 +724,14 @@ void AliFemtoTrack::GetPrimaryVertex(double* vertex)
   vertex[1] = fVertex[1];
   vertex[2] = fVertex[2];
 }
+//______________________
+void AliFemtoTrack::SetMultiplicity(int mult)
+{
+  fMultiplicity=mult;
+}
+//______________________
+void AliFemtoTrack::SetZvtx(double vtx)
+{
+  fZvtx=vtx;
+}
+//______________________

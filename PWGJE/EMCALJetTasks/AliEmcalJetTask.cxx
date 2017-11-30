@@ -35,6 +35,8 @@
 #include "AliEmcalJetUtility.h"
 #include "AliParticleContainer.h"
 #include "AliClusterContainer.h"
+#include "AliEmcalClusterJetConstituent.h"
+#include "AliEmcalParticleJetConstituent.h"
 
 #include "AliEmcalJetTask.h"
 
@@ -55,8 +57,8 @@ const Int_t AliEmcalJetTask::fgkConstIndexShift = 100000;
 AliEmcalJetTask::AliEmcalJetTask() :
   AliAnalysisTaskEmcal(),
   fJetsTag(),
-  fJetAlgo(AliJetContainer::antikt_algorithm),
   fJetType(AliJetContainer::kFullJet),
+  fJetAlgo(AliJetContainer::antikt_algorithm),
   fRecombScheme(AliJetContainer::pt_scheme),
   fRadius(0.4),
   fMinJetArea(0.001),
@@ -67,9 +69,10 @@ AliEmcalJetTask::AliEmcalJetTask() :
   fJetEtaMax(+1),
   fGhostArea(0.005),
   fTrackEfficiency(1.),
-  fTrackEfficiencyOnlyForEmbedding(kFALSE),
   fUtilities(0),
+  fTrackEfficiencyOnlyForEmbedding(kFALSE),
   fLocked(0),
+  fFillConstituents(kTRUE),
   fJetsName(),
   fIsInit(0),
   fIsPSelSet(0),
@@ -77,9 +80,9 @@ AliEmcalJetTask::AliEmcalJetTask() :
   fLegacyMode(kFALSE),
   fFillGhost(kFALSE),
   fJets(0),
+  fFastJetWrapper("AliEmcalJetTask","AliEmcalJetTask"),
   fClusterContainerIndexMap(),
-  fParticleContainerIndexMap(),
-  fFastJetWrapper("AliEmcalJetTask","AliEmcalJetTask")
+  fParticleContainerIndexMap()
 {
 }
 
@@ -90,8 +93,8 @@ AliEmcalJetTask::AliEmcalJetTask() :
 AliEmcalJetTask::AliEmcalJetTask(const char *name) :
   AliAnalysisTaskEmcal(name),
   fJetsTag("Jets"),
-  fJetAlgo(AliJetContainer::antikt_algorithm),
   fJetType(AliJetContainer::kFullJet),
+  fJetAlgo(AliJetContainer::antikt_algorithm),
   fRecombScheme(AliJetContainer::pt_scheme),
   fRadius(0.4),
   fMinJetArea(0.001),
@@ -102,9 +105,10 @@ AliEmcalJetTask::AliEmcalJetTask(const char *name) :
   fJetEtaMax(+1),
   fGhostArea(0.005),
   fTrackEfficiency(1.),
-  fTrackEfficiencyOnlyForEmbedding(kFALSE),
   fUtilities(0),
+  fTrackEfficiencyOnlyForEmbedding(kFALSE),
   fLocked(0),
+  fFillConstituents(kTRUE),
   fJetsName(),
   fIsInit(0),
   fIsPSelSet(0),
@@ -112,9 +116,9 @@ AliEmcalJetTask::AliEmcalJetTask(const char *name) :
   fLegacyMode(kFALSE),
   fFillGhost(kFALSE),
   fJets(0),
+  fFastJetWrapper(name,name),
   fClusterContainerIndexMap(),
-  fParticleContainerIndexMap(),
-  fFastJetWrapper(name,name)
+  fParticleContainerIndexMap()
 {
 }
 
@@ -374,6 +378,18 @@ void AliEmcalJetTask::ExecOnce()
   }
 
   fJetsName = AliJetContainer::GenerateJetName(fJetType, fJetAlgo, fRecombScheme, fRadius, GetParticleContainer(0), GetClusterContainer(0), fJetsTag);
+  std::cout << GetName() << ": Name of the jet container: " << fJetsName << std::endl;
+  std::cout << "Use this name in order to connect jet containers in your task to connect to the collection of jets found by this jet finder" << std::endl;
+  if(auto partcont = GetParticleContainer(0)) {
+    std::cout << "Found particle container with name " << partcont->GetName() << std::endl;
+  } else {
+    std::cout << "Not particle container found for task" << std::endl;
+  }
+  if(auto clustcont = GetClusterContainer(0)){
+    std::cout << "Found cluster container with name " << clustcont->GetName() << std::endl;
+  } else {
+    std::cout << "Not cluster container found for task" << std::endl;
+  }
 
   // add jets to event if not yet there
   if (!(InputEvent()->FindListObject(fJetsName))) {
@@ -493,6 +509,9 @@ void AliEmcalJetTask::FillJetConstituents(AliEmcalJet *jet, std::vector<fastjet:
         AliError(Form("Could not find track %d",tid));
         continue;
       }
+      if(fFillConstituents){
+        jet->AddParticleConstituent(t, partCont->GetIsEmbedding(), fParticleContainerIndexMap.GlobalIndexFromLocalIndex(partCont, tid));
+      }
 
       Double_t cEta = t->Eta();
       Double_t cPhi = t->Phi();
@@ -553,6 +572,8 @@ void AliEmcalJetTask::FillJetConstituents(AliEmcalJet *jet, std::vector<fastjet:
       Double_t cPhi = nP.Phi_0_2pi();
       Double_t cPt  = nP.Pt();
       Double_t cP   = nP.P();
+      Double_t pvec[3] = {nP.Px(), nP.Py(), nP.Pz()};
+      if(fFillConstituents) jet->AddClusterConstituent(c, (AliVCluster::VCluUserDefEnergy_t)clusCont->GetDefaultClusterEnergy(), pvec, clusCont->GetIsEmbedding(), fClusterContainerIndexMap.GlobalIndexFromLocalIndex(clusCont, cid));
 
       neutralE += cP;
       if (cPt > maxNe) maxNe = cPt;
@@ -1066,8 +1087,6 @@ AliEmcalJetTask* AliEmcalJetTask::AddTaskEmcalJet(
   // Create containers for input/output
   AliAnalysisDataContainer* cinput = mgr->GetCommonInputContainer();
   mgr->ConnectInput(jetTask, 0, cinput);
-
-  TObjArray* cnt = mgr->GetContainers();
 
   return jetTask;
 }

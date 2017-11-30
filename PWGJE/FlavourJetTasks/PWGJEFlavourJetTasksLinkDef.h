@@ -8,9 +8,10 @@
 #pragma link C++ class AliAnalysisTaskFlavourJetCorrelations+;
 
 #pragma link C++ class AliPicoJet+;
-#pragma link C++ class AliPicoJetHeader+;
-#pragma link C++ class AliPicoHeaderCJ+;
-#pragma link C++ class AliPicoV0Base+;
+#pragma link C++ class AliPicoHeaderJet+;
+#pragma link C++ class AliPicoHeaderV0+;
+#pragma link C++ class AliPicoBase+;
+#pragma link C++ class AliPicoV0+;
 #pragma link C++ class AliPicoV0MC+;
 #pragma link C++ class AliPicoV0RD+;
 #pragma link C++ class AliAnalysisTaskEmcalJetV0CF+;
@@ -28,6 +29,7 @@
 #pragma link C++ class AliAnalysisTaskDmesonJets::AliDmesonInfoSummary+;
 #pragma link C++ class AliAnalysisTaskDmesonJets::AliDmesonMCInfoSummary+;
 #pragma link C++ class AliAnalysisTaskDmesonJets::AliD0InfoSummary+;
+#pragma link C++ class AliAnalysisTaskDmesonJets::AliD0ExtendedInfoSummary+;
 #pragma link C++ class AliAnalysisTaskDmesonJets::AliDStarInfoSummary+;
 #pragma link C++ class AliAnalysisTaskDmesonJets::AliJetInfoSummary+;
 #pragma link C++ class AliAnalysisTaskDmesonJets::AliJetInfoPbPbSummary+;

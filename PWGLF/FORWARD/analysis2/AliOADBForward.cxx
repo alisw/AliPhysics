@@ -132,7 +132,8 @@ AliOADBForward::Entry::GetTitle() const
 	      (fSys == 1 ? "pp"   : 
 	       fSys == 2 ? "PbPb" : 
 	       fSys == 3 ? "pPb"  :
-	       fSys == 4 ? "Pbp"  : "?"), 
+	       fSys == 4 ? "Pbp"  :
+	       fSys == 5 ? "XeXe" : "?"), 
 	      fSNN, fField, (fMC ? "mc" : "real"),
 	      (fSatellite ? "sat" : "nom"), d.AsSQLString(), fData,
 	      (fData ? fData->GetName() : "?"), fAuthor.Data());

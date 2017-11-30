@@ -108,6 +108,12 @@ class AliAnalysisTaskSED0Correlations : public AliAnalysisTaskSE
   void SetMinDPt(Double_t minDPt) {fMinDPt=minDPt;}
   void SetFillTrees(TreeFill fillTrees, Double_t fractAccME) {fFillTrees=fillTrees; fFractAccME=fractAccME;}
  
+  void SetUseNtrklWeight(Bool_t flag=kTRUE) {fUseNtrklWeight=flag;}
+  void SetHistNtrklWeight(TH1D* h) {
+    if(fHistNtrklWeight) delete fHistNtrklWeight;
+    fHistNtrklWeight = new TH1D(*h);
+  }
+
  private:
 
   AliAnalysisTaskSED0Correlations(const AliAnalysisTaskSED0Correlations &source);
@@ -131,6 +137,7 @@ class AliAnalysisTaskSED0Correlations : public AliAnalysisTaskSE
   void ResetBranchDForCutOptim();
   Bool_t AcceptTrackForMEOffline(Double_t pt);
   void FillPurityPlots(TClonesArray* mcArray, AliReducedParticle* track, Int_t ptbin, Double_t deltaphi);
+  Double_t GetNtrklWeight(Int_t ntrkl); 
   
   Int_t             	 fNPtBinsCorr;        // number of pt bins per correlations
   std::vector<Double_t>  fBinLimsCorr;        // limits of pt bins per correlations
@@ -141,14 +148,11 @@ class AliAnalysisTaskSED0Correlations : public AliAnalysisTaskSE
   std::vector<Double_t>  fRSBLowLim;          // Right SB upper lim
   std::vector<Double_t>  fRSBUppLim;          // Right SB upper lim
   std::vector<Int_t>     fDaughTrackID;       // ID of tagged daughters
-  std::vector<Int_t>     fDaughTrigNum;	      // ID of D-trigger for daughters		
-  std::vector<Int_t>     fSoftPiTrackID;      // ID of tagged soft pions
-  std::vector<Int_t>     fSoftPiTrigNum;      // ID of D-trigger for soft pions
+  std::vector<Int_t>     fDaughTrigNum;	      // ID of D-trigger for daughters	
 
   Int_t     fEvents;		  	// EventCounter
   Bool_t    fAlreadyFilled;	  	// D0 in an event already analyzed (for track distribution plots)
   Int_t	    fNtrigD;			// counter on number of D triggers filled (for association with daughter tracks in TTrees)
-  Int_t     fNsoftPi;			// counter of number of soft pions
   TList    *fOutputMass;          	//!list send on output slot 1
   TList    *fOutputCorr;	  	//!list of correlation histos, output slot 5
   TList    *fOutputStudy;	  	//!list of histos with MC distributions, output slot 6
@@ -193,6 +197,10 @@ class AliAnalysisTaskSED0Correlations : public AliAnalysisTaskSE
   Int_t     fAODProtection;  	        // flag to activate protection against AOD-dAOD mismatch.
   Bool_t    fPurityStudies;		// flag to activate purity studies (primaries, secondaries, charm and beauth tracks rejected by DCA cut, vs pT and deltaPhi)
 
+  Bool_t    fUseNtrklWeight;            // flag to activate events weighting via Ntracklet distribution data/MC ratio
+  TH1D      *fHistNtrklWeight;          // histo with Ntracklets weights
+  Double_t  fWeight;                    // Ntrkl weight to apply to events when filling the MC THnSparse (for closure test) and MC purity plots
+
   AliHFCorrelationBranchD   *fBranchD;
   AliHFCorrelationBranchTr  *fBranchTr;
   AliD0hCutOptim	    *fBranchDCutVars; //for cut optimization!
@@ -202,7 +210,7 @@ class AliAnalysisTaskSED0Correlations : public AliAnalysisTaskSE
   TObjArray *fTrackArray;		// Array with selected tracks for association
   Bool_t    fTrackArrayFilled;		// Flag to fill fTrackArray or not (if already filled)
 
-  ClassDef(AliAnalysisTaskSED0Correlations,143); // AliAnalysisTaskSE for D0->Kpi - h correlations
+  ClassDef(AliAnalysisTaskSED0Correlations,15); // AliAnalysisTaskSE for D0->Kpi - h correlations
 };
 
 #endif

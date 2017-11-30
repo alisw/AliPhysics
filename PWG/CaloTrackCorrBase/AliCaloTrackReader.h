@@ -46,6 +46,7 @@ class AliESDtrackCuts;
 //class AliTriggerAnalysis;
 class AliEventplane;
 class AliVCluster;
+#include "AliLog.h"
 
 // --- CaloTrackCorr / EMCAL ---
 #include "AliFiducialCut.h"
@@ -291,6 +292,9 @@ public:
   void             SetEMCALClusterListName(TString &name)  { fEMCALClustersListName = name  ; }
   TString          GetEMCALClusterListName()         const { return fEMCALClustersListName  ; }
 
+  void             SetEMCALCellsListName(TString &name)    { fEMCALCellsListName = name     ; }
+  TString          GetEMCALCellsListName()           const { return fEMCALCellsListName     ; }
+  
   // Arrays with clusters/track/cells access method
   
   virtual TObjArray*     GetCTSTracks()              const { return fCTSTracks              ; }
@@ -317,8 +321,9 @@ public:
   void             SetRejectEventsWithBit(UInt_t bit)      { Int_t n = fRejectEventsWithBit.GetSize();
                                                              fRejectEventsWithBit.Set(n+1);
                                                              fRejectEventsWithBit.AddAt(bit,n) ; }
-
-  void             SwitchOnLEDEventsRemoval()              { fRemoveLEDEvents       = kTRUE  ; }
+  /// Activate removal of LED events depending on number of cells in SM
+  /// \param opt: 1- default, check only SM3, 2- or larger check all SMs
+  void             SwitchOnLEDEventsRemoval(Int_t opt = 1) { fRemoveLEDEvents       = opt    ; }
   void             SwitchOffLEDEventsRemoval()             { fRemoveLEDEvents       = kFALSE ; }
   Bool_t           IsLEDEventRemoved()               const { return fRemoveLEDEvents         ; }   
   Bool_t           RejectLEDEvents();
@@ -440,6 +445,21 @@ public:
   void             SwitchOffSelectEventTimeStamp()         { fTimeStampEventSelect = kFALSE  ; }
   
   Bool_t           IsSelectEventTimeStampOn()              { return  fTimeStampEventSelect   ; }
+
+  // Time Stamp CTP corrected
+    
+  Double_t         GetTimeStampEventCTPBCCorrMin()   const { return fTimeStampEventCTPBCCorrMin ; }
+  Double_t         GetTimeStampEventCTPBCCorrMax()   const { return fTimeStampEventCTPBCCorrMax ; }
+  
+  void             SetTimeStampEventCTPBCCorrRange(Double_t a, Double_t b) { 
+                                                             fTimeStampEventCTPBCCorrMin = a    ;
+                                                             fTimeStampEventCTPBCCorrMax = b    ; } // seconds
+  
+  void             SwitchOnExcludeEventTimeCTPBCCorrStamp() { fTimeStampEventCTPBCCorrExclude = kTRUE   ; }
+  void             SwitchOffExcludeEventTimeCTPBCCorrStamp(){ fTimeStampEventCTPBCCorrExclude = kFALSE  ; }
+  
+  Bool_t           IsExcludeEventTimeStampCTPBCCorrOn()     { return  fTimeStampEventCTPBCCorrExclude ; }
+
   
   // Event tagging as pile-up
   
@@ -635,7 +655,8 @@ public:
   // Kinematics and galice.root available
   
   virtual AliHeader*         GetHeader()             const ;
-  virtual AliGenEventHeader* GetGenEventHeader() const ;
+  virtual AliGenEventHeader* GetGenEventHeader()     const { return 0x0                    ; }
+  // See implementation in AOD and ESD readers
   
   // Filtered kinematics in AOD
   
@@ -649,13 +670,11 @@ public:
   virtual AliMixedEvent*    GetMixedEvent()          const { return fMixedEvent            ; }
   virtual Int_t             GetNMixedEvent()         const { return fNMixedEvent           ; } 
   
-  void             SwitchOnStack()                         { fReadStack          = kTRUE   ; }
-  void             SwitchOffStack()                        { fReadStack          = kFALSE  ; }
-  void             SwitchOnAODMCParticles()                { fReadAODMCParticles = kTRUE   ; }
-  void             SwitchOffAODMCParticles()               { fReadAODMCParticles = kFALSE  ; }
-  Bool_t           ReadStack()                       const { return fReadStack             ; }
-  Bool_t           ReadAODMCParticles()              const { return fReadAODMCParticles    ; }
-	
+  void             SwitchOnStack()                         { AliError("Obsolete, remove this setting in AddTask") ; }
+  void             SwitchOffStack()                        { AliError("Obsolete, remove this setting in AddTask") ; }
+  void             SwitchOnAODMCParticles()                { AliError("Obsolete, remove this setting in AddTask") ; }
+  void             SwitchOffAODMCParticles()               { AliError("Obsolete, remove this setting in AddTask") ; }
+
   void             RemapMCLabelForAODs(Int_t &label);
   
   // Select generated events, depending on comparison of pT hard and jets
@@ -680,9 +699,9 @@ public:
   virtual Int_t    GetNumberOfMCGeneratorsToAccept()         const { return fNMCGenerToAccept ; } 
   
   virtual void     SetNameOfMCGeneratorsToAccept(Int_t ig, TString name) 
-  { if ( ig < 5 || ig >= 0 ) fMCGenerToAccept[ig] = name ; }  
+  { if ( ig < 5 && ig >= 0 ) fMCGenerToAccept[ig] = name ; }  
   virtual void     SetIndexOfMCGeneratorsToAccept(Int_t ig, Int_t index) 
-  { if ( ig < 5 || ig >= 0 ) fMCGenerIndexToAccept[ig] = index ; }  
+  { if ( ig < 5 && ig >= 0 ) fMCGenerIndexToAccept[ig] = index ; }  
   virtual TString GetNameOfMCGeneratorsToAccept(Int_t ig)   const { return fMCGenerToAccept[ig] ; }
   virtual Int_t   GetIndexOfMCGeneratorsToAccept(Int_t ig)  const { return fMCGenerIndexToAccept[ig] ; }
   
@@ -782,7 +801,7 @@ public:
   
   /// Temporal array with EMCAL CaloClusters.
   TObjArray      * fEMCALClusters ;                //-> 
-  
+
   /// Temporal array with DCAL CaloClusters, not needed in the normal case, use just EMCal array with DCal limits.
   TObjArray      * fDCALClusters ;                 //-> 
   
@@ -822,10 +841,7 @@ public:
   Int_t            fTrackMultNPtCut    ;           ///<  Track multiplicty, number of pt cuts
   Float_t          fTrackMultPtCut[10] ;           ///<  Track multiplicity and sum pt cuts list
   Float_t          fTrackMultEtaCut    ;           ///<  Track multiplicity eta cut.
-  
-  Bool_t           fReadStack          ;           ///<  Access kine information from stack.
-  Bool_t           fReadAODMCParticles ;           ///<  Access kine information from filtered AOD MC particles.
-	
+  	
   TString          fDeltaAODFileName   ;           ///<  Delta AOD file name.
   TString          fFiredTriggerClassName;         ///<  Name of trigger event type used to do the analysis.
 
@@ -870,12 +886,13 @@ public:
   Int_t            fV0Mul[2]    ;                  ///<  Integrated V0 Multiplicity.
 
   TString          fEMCALClustersListName;         ///<  Alternative list of clusters produced elsewhere and not from InputEvent.
+  TString          fEMCALCellsListName;            ///<  Alternative list of cells produced elsewhere and not from InputEvent.
   
   //  Event selection
   
   Float_t          fZvtxCut ;	                     ///<  Cut on vertex position.
   Bool_t           fAcceptFastCluster;             ///<  Accept events from fast cluster, exclude these events for LHC11a.
-  Bool_t           fRemoveLEDEvents;               ///<  Remove events where LED was wrongly firing - EMCAL LHC11a.
+  Int_t            fRemoveLEDEvents;               ///<  Remove events where LED was wrongly firing - only EMCAL LHC11a for this equal to 1, generalized to any SM for larger
   
   Bool_t           fRemoveBadTriggerEvents;        ///<  Remove triggered events because trigger was exotic, bad, or out of BC.
   Bool_t           fTriggerPatchClusterMatch;      ///<  Search for the trigger patch and check if associated cluster was the trigger.
@@ -909,6 +926,10 @@ public:
   Float_t          fTimeStampEventFracMax;         ///<  Maximum value of time stamp fraction event.
   Double_t         fTimeStampRunMin;               ///<  Minimum value of time stamp in run.
   Double_t         fTimeStampRunMax;               ///<  Maximum value of time stamp in run.
+  
+  Bool_t           fTimeStampEventCTPBCCorrExclude; ///<  Activate event selection within a range of data taking time CTP corrected. ESD only.
+  Double_t         fTimeStampEventCTPBCCorrMin;    ///<  Minimum value of time stamp corrected by CTP in run.
+  Double_t         fTimeStampEventCTPBCCorrMax;    ///<  Maximum value of time stamp corrected by CTP in run.
   
   ///< Parameters to pass to method IsPileupFromSPD:
   ///< Int_t minContributors, Double_t minZdist, Double_t nSigmaZdist,Double_t nSigmaDiamXY,Double_t nSigmaDiamZ
@@ -951,6 +972,7 @@ public:
   // cut control histograms
   
   TList *          fOutputContainer;               //!<! Output container with cut control histograms.
+  TH2F  *          fhEMCALClusterEtaPhi;           //!<! Control histogram on EMCAL clusters acceptance, before fiducial cuts
   TH2F  *          fhEMCALClusterTimeE;            //!<! Control histogram on EMCAL timing
   TH1F  *          fhEMCALClusterCutsE[8];         //!<! Control histogram on the different EMCal cluster selection cuts, E
   TH1F  *          fhPHOSClusterCutsE [7];         //!<! Control histogram on the different PHOS cluster selection cuts, E
@@ -975,7 +997,7 @@ public:
   AliCaloTrackReader & operator = (const AliCaloTrackReader & r) ; 
   
   /// \cond CLASSIMP
-  ClassDef(AliCaloTrackReader,76) ;
+  ClassDef(AliCaloTrackReader,79) ;
   /// \endcond
 
 } ;

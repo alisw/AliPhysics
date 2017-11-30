@@ -42,8 +42,10 @@
 #pragma link C++ class AliAnalysisTaskPIDconfig+;
 #pragma link C++ class AliAnalysisTaskMultiparticleFemtoscopy+;
 #pragma link C++ class AliAnalysisTaskForStudents+;
-#pragma link C++ class AliAnalysisTaskVnZDC+;
 #pragma link C++ class AliAnalysisTaskZDCGainEq+;
 #pragma link C++ class AliAnalysisTaskZDCEP+;
+#pragma link C++ class AliAnalysisTaskPiKpK0Lamba+;
+#pragma link C++ class AliAnalysisTaskCmeEse+;
+#pragma link C++ class AliAnalysisTaskCMEV0+;
 #endif
 

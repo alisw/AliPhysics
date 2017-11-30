@@ -98,6 +98,7 @@ AliAnalysisTaskEHCorrel::AliAnalysisTaskEHCorrel(const char *name)
   fpVtx(0),
   fpidResponse(0),
   fMultSelection(0),
+  fHistElecEffi(0),
   fCentrality(-1),
   fMultiplicity(-1),
   fTracks_tender(0),
@@ -140,6 +141,10 @@ AliAnalysisTaskEHCorrel::AliAnalysisTaskEHCorrel(const char *name)
   fCentBin(-999),
   fFlagMEBinChange(kFALSE),
   fIsPbPb(kTRUE),
+  fEMCClsTimeCut(kFALSE),
+  fApplyElectronEffi(kFALSE),
+  fEffi(1.0),
+  fWeight(1.0),
   fOutputList(0),
   fNevents(0),
   fVtxZ(0),
@@ -237,6 +242,7 @@ AliAnalysisTaskEHCorrel::AliAnalysisTaskEHCorrel()
   fpVtx(0),
   fpidResponse(0),
   fMultSelection(0),
+  fHistElecEffi(0),
   fCentrality(-1),
   fCentralityMin(0),
   fCentralityMax(20),
@@ -279,6 +285,10 @@ AliAnalysisTaskEHCorrel::AliAnalysisTaskEHCorrel()
   fCentBin(-999),
   fFlagMEBinChange(kFALSE),
   fIsPbPb(kTRUE),
+  fEMCClsTimeCut(kFALSE),
+  fApplyElectronEffi(kFALSE),
+  fEffi(1.0),
+  fWeight(1.0),
   fOutputList(0),
   fNevents(0),
   fVtxZ(0),
@@ -391,6 +401,7 @@ AliAnalysisTaskEHCorrel::~AliAnalysisTaskEHCorrel()
   delete fSprsTagLSEHCorrl;
   delete fSprsMixTagULSEHCorrl;
   delete fSprsMixTagLSEHCorrl;
+    if(fHistElecEffi) {delete fHistElecEffi; fHistElecEffi=0;}
 
 }
 //_________________________________________
@@ -399,6 +410,21 @@ void AliAnalysisTaskEHCorrel::UserCreateOutputObjects()
   // Create histograms
   // Called once
   AliDebug(3, "Creating Output Objects");
+    
+    if(fApplyElectronEffi){
+        TString elecEffiFileName;
+        
+        if(!fIsPbPb){
+            elecEffiFileName = "alien:///alice/cern.ch/user/d/dthomas/HFElecEffi_pPb/HFElectronTrackEffi.root";
+        }
+        if(fIsPbPb){
+            elecEffiFileName = "alien:///alice/cern.ch/user/d/dthomas/HFElecEffi_PbPb/HFElectronTrackEffi.root";
+        }
+        
+        TFile* f2 = TFile::Open(elecEffiFileName.Data());
+        TH1D *h = (TH1D*)f2->Get("ElecEffi");
+        SetElectronEffiMap(h);
+    }
 
   Double_t pi = TMath::Pi();
 
@@ -495,19 +521,36 @@ void AliAnalysisTaskEHCorrel::UserCreateOutputObjects()
     }
   }
   if(!fIsPbPb){
-    vertexBins[0] = -10;
-    vertexBins[1] = -4.6;
-    vertexBins[2] = -1.6;
-    vertexBins[3] = 0.9;
-    vertexBins[4] = 3.4;
-    vertexBins[5] = 6.1;
-    vertexBins[6] = 10;
+    if(!fFlagMEBinChange){
+      vertexBins[0] = -10;
+      vertexBins[1] = -4.6;
+      vertexBins[2] = -1.6;
+      vertexBins[3] = 0.9;
+      vertexBins[4] = 3.4;
+      vertexBins[5] = 6.1;
+      vertexBins[6] = 10;
 
-    CentralityBinspp[0] = 0;
-    CentralityBinspp[1] = 25;
-    CentralityBinspp[2] = 50;
-    CentralityBinspp[3] = 75;
-    CentralityBinspp[4] = 100;
+      CentralityBinspp[0] = 0;
+      CentralityBinspp[1] = 25;
+      CentralityBinspp[2] = 50;
+      CentralityBinspp[3] = 75;
+      CentralityBinspp[4] = 100;
+    }
+    if(fFlagMEBinChange){
+      vertexBins[0] = -10;
+      vertexBins[1] = -5;
+      vertexBins[2] = -2.5;
+      vertexBins[3] = 0;
+      vertexBins[4] = 2.5;
+      vertexBins[5] = 5;
+      vertexBins[6] = 10;
+
+      CentralityBinspp[0] = 0;
+      CentralityBinspp[1] = 20;
+      CentralityBinspp[2] = 40;
+      CentralityBinspp[3] = 60;
+      CentralityBinspp[4] = 100;
+    }
   }
 
   if(fIsPbPb)
@@ -627,34 +670,43 @@ void AliAnalysisTaskEHCorrel::UserCreateOutputObjects()
   fOutputList->Add(fM02EovP);
 
   fHistEop = new TH2F("fHistEop", "E/p distribution;p_{T} (GeV/c);E/p", 200,0,20,60, 0.0, 3.0);
+    fHistEop->Sumw2();
   fOutputList->Add(fHistEop);
 
   fHistEop_AftEID = new TH2F("fHistEop_AftEID", "E/p distribution after nsig, SS cuts;p_{T} (GeV/c);E/p", 200,0,20,60, 0.0, 3.0);
+    fHistEop_AftEID->Sumw2();
   fOutputList->Add(fHistEop_AftEID);
 
   fInclsElecPt = new TH1F("fInclsElecPt","p_{T} distribution of inclusive electrons;p_{T} (GeV/c);counts",500,0,50);
+  fInclsElecPt->Sumw2();
   fOutputList->Add(fInclsElecPt);
 
   fNElecInEvt = new TH1F("fNElecInEvt","No of electrons in the event; N^{ele};counts",20,-0.5,19.5);
   fOutputList->Add(fNElecInEvt);
 
   fHadEop = new TH2F("fHadEop", "E/p distribution for hadrons;p_{T} (GeV/c);E/p", 200,0,20,60, 0.0, 3.0);
+    fHadEop->Sumw2();
   fOutputList->Add(fHadEop);
+    
   fHadPt_AftEID = new TH1F("fHadPt_AftEID","p_{T} distribution of hadrons after Eid cuts;p_{T} (GeV/c);counts",500,0,50);
+  fHadPt_AftEID->Sumw2();
   fOutputList->Add(fHadPt_AftEID);
 
   fULSElecPt  = new TH1F("fULSElecPt","p_{T} distribution of ULS electrons;p_{T} (GeV/c);counts",500,0,50);
+  fULSElecPt->Sumw2();
   fOutputList->Add(fULSElecPt);
 
   fLSElecPt= new TH1F("fLSElecPt","p_{T} distribution of LS electrons;p_{T} (GeV/c);counts",500,0,50);
+  fLSElecPt->Sumw2();
   fOutputList->Add(fLSElecPt);
 
   fTagULSElecPt  = new TH1F("fTagULSElecPt","p_{T} distribution of tagged ULS electrons;p_{T} (GeV/c);counts",500,0,50);
+  fTagULSElecPt->Sumw2();
   fOutputList->Add(fTagULSElecPt);
 
   fTagLSElecPt= new TH1F("fTagLSElecPt","p_{T} distribution of tagged LS electrons;p_{T} (GeV/c);counts",500,0,50);
+  fTagLSElecPt->Sumw2();
   fOutputList->Add(fTagLSElecPt);
-
 
   fHadronPhiPt = new TH2F("fHadronPhiPt", "Hadron phi vs pt; hadron phi; pt (GeV/c)",1000,0,2*pi,500,0,50);
   fOutputList->Add(fHadronPhiPt);
@@ -675,9 +727,11 @@ void AliAnalysisTaskEHCorrel::UserCreateOutputObjects()
   fOutputList->Add(fInvmassULS);
 
   fInvmassLSPt = new TH2F("fInvmassLSPt", "Inv mass of LS (e,e) vs pT; p_{T}(GeV/c); mass(GeV/c^2); counts;", 500,0,50,1000,0,1.0);
+    fInvmassLSPt->Sumw2();
   fOutputList->Add(fInvmassLSPt);
 
   fInvmassULSPt = new TH2F("fInvmassULSPt", "Inv mass of ULS (e,e) vs pT; p_{T}(GeV/c); mass(GeV/c^2); counts;", 500,0,50,1000,0,1.0);
+    fInvmassULSPt->Sumw2();
   fOutputList->Add(fInvmassULSPt);
 
   fNoMixedEvents = new TH1F("fNoMixedEvents","No of mixing events",1,-0.5,0.5);
@@ -729,52 +783,68 @@ void AliAnalysisTaskEHCorrel::UserCreateOutputObjects()
   Double_t xmax[4] = {30,20,(3*TMath::Pi())/2,1.8};
 
   fSprsAllHadHCorrl = new THnSparseD("fSprsAllHadHCorrl","Sparse for Dphi and Deta for all hadrons;p_{T}^{e};p_{T}^{h};#Delta#varphi;#Delta#eta;",4,bin,xmin,xmax);
+  fSprsAllHadHCorrl->Sumw2();
   fOutputList->Add(fSprsAllHadHCorrl);
 
   fSprsMixAllHadHCorrl = new THnSparseD("fSprsMixAllHadHCorrl","Sparse for Dphi and Deta for all hadrons for mixed event;p_{T}^{e};p_{T}^{h};#Delta#varphi;#Delta#eta;",4,bin,xmin,xmax);
+  fSprsMixAllHadHCorrl->Sumw2();
   fOutputList->Add(fSprsMixAllHadHCorrl);
 
   fSprsHadHCorrl = new THnSparseD("fSprsHadHCorrl","Sparse for Dphi and Deta hadrons;p_{T}^{e};p_{T}^{h};#Delta#varphi;#Delta#eta;",4,bin,xmin,xmax);
+  fSprsHadHCorrl->Sumw2();
   fOutputList->Add(fSprsHadHCorrl);
 
   fSprsInclusiveEHCorrl = new THnSparseD("fSprsInclusiveEHCorrl","Sparse for Dphi and Deta with Inclusive electron;p_{T}^{e};p_{T}^{h};#Delta#varphi;#Delta#eta;",4,bin,xmin,xmax);
+  fSprsInclusiveEHCorrl->Sumw2();
   fOutputList->Add(fSprsInclusiveEHCorrl);
 
   fSprsLSEHCorrl = new THnSparseD("fSprsLSEHCorrl","Sparse for Dphi and Deta with LS Non-HFE electron;p_{T}^{e};p_{T}^{h};#Delta#varphi;#Delta#eta;",4,bin,xmin,xmax);
+  fSprsLSEHCorrl->Sumw2();
   fOutputList->Add(fSprsLSEHCorrl);
 
   fSprsULSEHCorrl = new THnSparseD("fSprsULSEHCorrl","Sparse for Dphi and Deta with ULS Non-HFE electron;p_{T}^{e};p_{T}^{h};#Delta#varphi;#Delta#eta;",4,bin,xmin,xmax);
+  fSprsULSEHCorrl->Sumw2();
   fOutputList->Add(fSprsULSEHCorrl);
 
   fSprsLSNoPartnerEHCorrl = new THnSparseD("fSprsLSNoPartnerEHCorrl","Sparse for Dphi and Deta with LS Non-HFE electron, No partner;p_{T}^{e};p_{T}^{h};#Delta#varphi;#Delta#eta;",4,bin,xmin,xmax);
+  fSprsLSNoPartnerEHCorrl->Sumw2();
   fOutputList->Add(fSprsLSNoPartnerEHCorrl);
 
   fSprsULSNoPartnerEHCorrl = new THnSparseD("fSprsULSNoPartnerEHCorrl","Sparse for Dphi and Deta with ULS Non-HFE electron, No partner;p_{T}^{e};p_{T}^{h};#Delta#varphi;#Delta#eta;",4,bin,xmin,xmax);
+  fSprsULSNoPartnerEHCorrl->Sumw2();
   fOutputList->Add(fSprsULSNoPartnerEHCorrl);
 
   fSprsTagULSEHCorrl = new THnSparseD("fSprsTagULSEHCorrl","Sparse for Dphi and Deta with Tagged ULS Non-HFE electron;p_{T}^{e};p_{T}^{h};#Delta#varphi;#Delta#eta;",4,bin,xmin,xmax);
+  fSprsTagULSEHCorrl->Sumw2();
   fOutputList->Add(fSprsTagULSEHCorrl);
 
   fSprsTagLSEHCorrl = new THnSparseD("fSprsTagLSEHCorrl","Sparse for Dphi and Deta with Tagged LS Non-HFE electron;p_{T}^{e};p_{T}^{h};#Delta#varphi;#Delta#eta;",4,bin,xmin,xmax);
+  fSprsTagLSEHCorrl->Sumw2();
   fOutputList->Add(fSprsTagLSEHCorrl);
 
   fSprsMixHadHCorrl = new THnSparseD("fSprsMixHadHCorrl","Sparse for Dphi and Deta hadrons for mixed events;p_{T}^{e};p_{T}^{h};#Delta#varphi;#Delta#eta;",4,bin,xmin,xmax);
+  fSprsMixHadHCorrl->Sumw2();
   fOutputList->Add(fSprsMixHadHCorrl);
 
   fSprsMixInclusiveEHCorrl = new THnSparseD("fSprsMixInclusiveEHCorrl","Sparse for Dphi and Deta with Inclusive electron for mixed event;p_{T}^{e};p_{T}^{mixTrk};#Delta#varphi;#Delta#eta;",4,bin,xmin,xmax);
+  fSprsMixInclusiveEHCorrl->Sumw2();
   fOutputList->Add(fSprsMixInclusiveEHCorrl);
 
   fSprsMixLSEHCorrl = new THnSparseD("fSprsMixLSEHCorrl","Sparse for Dphi and Deta with LS Non-HFE electron for mixed events;p_{T}^{e};p_{T}^{h};#Delta#varphi;#Delta#eta;",4,bin,xmin,xmax);
+  fSprsMixLSEHCorrl->Sumw2();
   fOutputList->Add(fSprsMixLSEHCorrl);
 
   //fSprsMixULSEHCorrl = new THnSparseD("fSprsMixULSEHCorrl","Sparse for Dphi and Deta with ULS Non-HFE electron for mixed events;p_{T}^{e};p_{T}^{h};#Delta#varphi;#Delta#eta;VtxZBin,CentBin;",6,bin,xmin,xmax);
   fSprsMixULSEHCorrl = new THnSparseD("fSprsMixULSEHCorrl","Sparse for Dphi and Deta with ULS Non-HFE electron for mixed events;p_{T}^{e};p_{T}^{h};#Delta#varphi;#Delta#eta;",4,bin,xmin,xmax);
+  fSprsMixULSEHCorrl->Sumw2();
   fOutputList->Add(fSprsMixULSEHCorrl);
 
   fSprsMixTagULSEHCorrl = new THnSparseD("fSprsMixTagULSEHCorrl","Sparse for Dphi and Deta with tagged ULS Non-HFE electron for mixed events;p_{T}^{e};p_{T}^{h};#Delta#varphi;#Delta#eta;",4,bin,xmin,xmax);
+  fSprsMixTagULSEHCorrl->Sumw2();
   fOutputList->Add(fSprsMixTagULSEHCorrl);
 
   fSprsMixTagLSEHCorrl = new THnSparseD("fSprsMixTagLSEHCorrl","Sparse for Dphi and Deta with tagged LS Non-HFE electron for mixed events;p_{T}^{e};p_{T}^{h};#Delta#varphi;#Delta#eta;",4,bin,xmin,xmax);
+  fSprsMixTagLSEHCorrl->Sumw2();
   fOutputList->Add(fSprsMixTagLSEHCorrl);
 
   PostData(1,fOutputList);
@@ -928,6 +998,11 @@ void AliAnalysisTaskEHCorrel::UserExec(Option_t*)
       if(fFlagClsTypeDCAL && !fFlagClsTypeEMC)
         if(!fClsTypeDCAL) continue; //selecting only DCAL clusters
 
+      Double_t clustTime = clustMatch->GetTOF()*1e+9; // ns;
+
+      if(fEMCClsTimeCut)
+        if(TMath::Abs(clustTime) > 50) continue;
+
       /////////////////////////////////////////////
       //Properties of tracks matched to the EMCAL//
       /////////////////////////////////////////////
@@ -947,20 +1022,27 @@ void AliAnalysisTaskEHCorrel::UserExec(Option_t*)
       //////////////////
       Bool_t fHadTrack = kFALSE, fElectTrack = kFALSE;
       fElectTrack = PassEIDCuts(track, clustMatch, fHadTrack);
+        
+      //---Get electron weight------
+      if(fApplyElectronEffi) {
+        fEffi = GetElecEffi(track);
+        fWeight = 1/fEffi;
+      }
 
       ///////////////////
       //H-H Correlation//
       ///////////////////
       if(fHadTrack)
       {
-        fHadPt_AftEID->Fill(TrkPt);
+        fHadPt_AftEID->Fill(TrkPt,fWeight);
         //ElectronHadCorrel(iTracks, track, fSprsHadHCorrl, fHisHadDphi);
         ElectronHadCorrel(iTracks, track, fSprsHadHCorrl);
         MixedEvent(track, fSprsMixHadHCorrl);
       }
 
       if(!fElectTrack) continue;
-      fInclsElecPt->Fill(TrkPt);
+        
+      fInclsElecPt->Fill(TrkPt,fWeight);
       fNEle++;
 
       ///////////////////
@@ -983,13 +1065,13 @@ void AliAnalysisTaskEHCorrel::UserExec(Option_t*)
       {
         ElectronHadCorrel(iTracks, track, fSprsTagULSEHCorrl);
         MixedEvent(track, fSprsMixTagULSEHCorrl);
-        fTagULSElecPt->Fill(TrkPt);
+        fTagULSElecPt->Fill(TrkPt,fWeight);
       }
       if(fFlagElecLS)
       {
         ElectronHadCorrel(iTracks, track, fSprsTagLSEHCorrl);
         MixedEvent(track, fSprsMixTagLSEHCorrl);
-        fTagLSElecPt->Fill(TrkPt);
+        fTagLSElecPt->Fill(TrkPt,fWeight);
       }
 
     }//EMCAL track match
@@ -1065,17 +1147,29 @@ void AliAnalysisTaskEHCorrel::ElectronHadCorrel(Int_t itrack, AliVTrack *track, 
       Dphi = Dphi + 2*pi;
 
     Deta = etaEle - etaHad;
-
+      
     fvalueDphi[0] = ptEle;
     fvalueDphi[1] = ptHad;
     fvalueDphi[2] = Dphi;
     fvalueDphi[3] = Deta;
     //    fvalueDphi[4] = fVtxZBin;
     //    fvalueDphi[5] = fCentBin;
-    SparseEHCorrl->Fill(fvalueDphi);
+    SparseEHCorrl->Fill(fvalueDphi,fWeight);
 
     //if(ptHad > ptEle) HisDphi->Fill(ptEle,Dphi);
   }
+}
+//___________________________________________
+Double_t AliAnalysisTaskEHCorrel::GetElecEffi(AliVTrack *track){
+//Get electron efficiency
+   
+    Int_t bin = fHistElecEffi->FindBin(track->Pt());
+    Int_t bin10 = fHistElecEffi->FindBin(10);
+    
+    if(fHistElecEffi->IsBinUnderflow(bin)||fHistElecEffi->IsBinOverflow(bin)) return 1.0;
+    if(track->Pt()>10) return fHistElecEffi->GetBinContent(bin10);
+    
+    return fHistElecEffi->GetBinContent(bin);
 }
 //___________________________________________
 void AliAnalysisTaskEHCorrel::ElectronHadCorrelNoPartner(Int_t itrack, Int_t jtrack, AliVTrack *track, THnSparse *SparseEHCorrlNoPartner)
@@ -1127,14 +1221,14 @@ void AliAnalysisTaskEHCorrel::ElectronHadCorrelNoPartner(Int_t itrack, Int_t jtr
       Dphi = Dphi + 2*pi;
 
     Deta = etaEle - etaHad;
-
+      
     fvalueDphi[0] = ptEle;
     fvalueDphi[1] = ptHad;
     fvalueDphi[2] = Dphi;
     fvalueDphi[3] = Deta;
     //    fvalueDphi[4] = fVtxZBin;
     //    fvalueDphi[5] = fCentBin;
-    SparseEHCorrlNoPartner->Fill(fvalueDphi);
+    SparseEHCorrlNoPartner->Fill(fvalueDphi,fWeight);
 
     //if(ptHad > ptEle) HisDphi->Fill(ptEle,Dphi);
   }
@@ -1262,7 +1356,7 @@ Bool_t AliAnalysisTaskEHCorrel::PassEIDCuts(AliVTrack *track, AliVCluster *clust
   {
     if((m02 > fM02Min && m02 < fM02Max) && (m20 > fM20Min && m20 < fM20Max))
     {
-      fHadEop->Fill(TrkPt,eop);
+      fHadEop->Fill(TrkPt,eop,fWeight);
       if(eop > fEovPMin && eop < fEovPMax) hadTrk=kTRUE;
     }
   }
@@ -1272,7 +1366,7 @@ Bool_t AliAnalysisTaskEHCorrel::PassEIDCuts(AliVTrack *track, AliVCluster *clust
   if(m02 < fM02Min || m02 > fM02Max) return kFALSE;
   if(m20 < fM20Min || m20 > fM20Max) return kFALSE;
 
-  fHistEop_AftEID->Fill(TrkPt,eop);
+  fHistEop_AftEID->Fill(TrkPt,eop,fWeight);
 
   if(eop < fEovPMin || eop > fEovPMax) return kFALSE;
 
@@ -1495,6 +1589,9 @@ void AliAnalysisTaskEHCorrel::EMCalClusterInfo()
       if(fFlagClsTypeDCAL && !fFlagClsTypeEMC)
         if(!fClsTypeDCAL) continue; //selecting only DCAL clusters
 
+      if(fEMCClsTimeCut)
+        if(TMath::Abs(tof) > 50) continue;
+
       fHistClustE->Fill(clustE);
       fEMCClsEtaPhi->Fill(emceta,emcphi);
 
@@ -1600,22 +1697,22 @@ void AliAnalysisTaskEHCorrel::SelectNonHFElectron(Int_t itrack, AliVTrack *track
 
     if(fFlagLS && track->Pt()>1) fInvmassLS->Fill(mass);
     if(fFlagULS && track->Pt()>1) fInvmassULS->Fill(mass);
-    if(fFlagLS) fInvmassLSPt->Fill(track->Pt(),mass);
-    if(fFlagULS) fInvmassULSPt->Fill(track->Pt(),mass);
+    if(fFlagLS) fInvmassLSPt->Fill(track->Pt(),mass,fWeight);
+    if(fFlagULS) fInvmassULSPt->Fill(track->Pt(),mass,fWeight);
 
     if(fFlagLS && mass<fInvmassCut) {
       //ElectronHadCorrel(itrack, track, fSprsLSEHCorrl, fHisLSDphi);
       ElectronHadCorrel(itrack, track, fSprsLSEHCorrl);
       ElectronHadCorrelNoPartner(itrack, jTracks, track, fSprsLSNoPartnerEHCorrl);
       MixedEvent(track, fSprsMixLSEHCorrl);
-      fLSElecPt->Fill(track->Pt());
+      fLSElecPt->Fill(track->Pt(),fWeight);
     }
     if(fFlagULS && mass<fInvmassCut){
       //ElectronHadCorrel(itrack, track, fSprsULSEHCorrl, fHisULSDphi);
       ElectronHadCorrel(itrack, track, fSprsULSEHCorrl);
       ElectronHadCorrelNoPartner(itrack, jTracks, track, fSprsULSNoPartnerEHCorrl);
       MixedEvent(track, fSprsMixULSEHCorrl);
-      fULSElecPt->Fill(track->Pt());
+      fULSElecPt->Fill(track->Pt(),fWeight);
     }
 
     if(mass<fInvmassCut && fFlagULS && !flagPhotonicElec){
@@ -1698,7 +1795,7 @@ void  AliAnalysisTaskEHCorrel::MixedEvent(AliVTrack *track, THnSparse *SparseMix
         fvalueMixDphi[3] = Deta;
         //fvalueMixDphi[4] = fVtxZBin;
         //fvalueMixDphi[5] = fCentBin;
-        SparseMixEHCorrl->Fill(fvalueMixDphi);
+        SparseMixEHCorrl->Fill(fvalueMixDphi,fWeight);
       }
     }
   }

@@ -60,8 +60,6 @@ double etaRange = 0.8;  //set eta range
 double minPhi   = 0.;   //set min phi
 double maxPhi   = 6.28; //set max phi
 
-
-double fitRange[npt] = {1,1,1,0.7,0.6,0.2,0.2};
 double ptlims[npt+1]   = {0.7,1.,2.,3.,4.,6.,8.,15.};
 double xlowsec[nPhi]   = {0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0};
 double xhighprim[nPhi] = {1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0};
@@ -70,21 +68,28 @@ double xhighprim[nPhi] = {1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.
 //parameters of the TFractionFitter, namely primary fraction lower limit and
 //secondary fraction upper limit.
 //***** if vs pt analysis
-double xlowprimVsPt[npt]  = {0.95,0.95,0.95,0.95,0.95,0.95,0.95};
-double xhighsecVsPt[npt]  = {0.2,0.1,0.1,0.2,0.15,0.15,0.1};
+double xlowprimVsPt[npt]     = {0.9,0.9,0.9,0.9,0.9,0.9,0.9};
+double xhighsecVsPt[npt]     = {0.2,0.2,0.2,0.2,0.1,0.1,0.1};
+double xhighsecMatVsPt[npt]  = {0.10,0.1,0.1,0.05,0.05,0.02,0.02};
 
 //***** if vs phi
 double xlowprimVsPhi[nPhi]  = {0.6,0.9,0.9,0.9,0.9,0.9,0.5,0.7,0.9,0.8,0.8,0.9,0.9,0.9,0.9,0.9,0.5,0.7};
 double xhighsecVsPhi[nPhi]  = {0.3,0.1,0.5,0.5,0.5,0.5,0.5,0.3,0.3,0.3,0.3,0.2,0.3,0.3,0.3,0.3,0.5,0.1};
+double xhighsecMatVsPhi[nPhi]  = {0.3,0.1,0.5,0.5,0.5,0.5,0.5,0.3,0.3,0.3,0.3,0.2,0.3,0.3,0.3,0.3,0.5,0.1};
 
 //***** if vs eta
 double xlowprimVsEta[nEta]  = {0.95,0.95,0.95,0.95,0.95,0.95,0.95,0.95,0.95,0.95,0.95,0.95,0.95,0.95,0.95,0.95};
 double xhighsecVsEta[nEta]  = {0.3,0.2,0.3,0.2,0.3,0.3,0.2,0.3,0.3,0.3,0.2,0.2,0.3,0.2,0.3,0.3};
+double xhighsecMatVsEta[nEta]  = {0.3,0.2,0.3,0.2,0.3,0.3,0.2,0.3,0.3,0.3,0.2,0.2,0.3,0.2,0.3,0.3};
 
 /////////////Don't touch the 3 lines below (no of axis of thnsparses)/////////////
 const Int_t nVarData   = 6;  //nVars for data
 const Int_t nVarMC     = 10;  //nVars for MC
 const Int_t nVarMCTPC  = 10;  //nVars for MC, TPC only
+
+//do not touch unless you want fraction in a smaller DCAxy range
+double fitRange[npt] = {2.4,2.4,2.4,2.4,2.4,2.4,2.4};
+
 //////////////////////////////////////////////////////////////////////////////////
 
 Bool_t fUseMCPt;    //true = particle MC pt used, false = track global pt used
@@ -213,6 +218,7 @@ void projectSparse(TString filenameData = "15o/AnalysisResults_Data_megarun.root
     TCanvas *c1 = new TCanvas("c1","",1300,700);
     c1->Divide(npx,npy);
     
+
     Double_t FracTPC[4];
     Double_t Frac[4];
     for(int ibin = 0; ibin < nBinTot; ibin++) {
@@ -355,12 +361,27 @@ void projectSparse(TString filenameData = "15o/AnalysisResults_Data_megarun.root
 }
 //__________________________________________________________________
 void calcFractions(Int_t vsWhichVar, Int_t fPt, TString period, TString dir) {
+
     vector<double> vectorPrim;
     vector<double> vectorPrimErr;
     vector<double> vectorSec;
+    vector<double> vectorSecErr;
+    vector<double> vectorPrimInt;
+
+    vector<double> vectorSecPhInt;
+    vector<double> vectorSecMatInt;
+    vector<double> vectorSecPh;
+    vector<double> vectorSecMat;
+
+    vectorPrimInt.clear();
+    vectorSecPhInt.clear();
+    vectorSecMatInt.clear();
     vectorPrim.clear();
     vectorPrimErr.clear();
     vectorSec.clear();
+    vectorSecPh.clear();
+    vectorSecMat.clear();
+    vectorSecErr.clear();
     
     TString whichPt;
     fUseMCPt   = kFALSE;
@@ -373,14 +394,21 @@ void calcFractions(Int_t vsWhichVar, Int_t fPt, TString period, TString dir) {
         fUseMCPt = kTRUE;
         whichPt  = "MCPt";
     }
-    
     TH1F *hPrimFit;
     TH1F *hPrimMC;
     TH1F *hSecFit;
+    TH1F *hSecPhFit;
+    TH1F *hSecMatFit;
     TH1F *hSecMC;
+    TH1F *hSecPhMC;
+    TH1F *hSecMatMC;
     TH1F *hRedChi2;
     TH1F *hChi2;
     TH1F *hNDF;
+    
+    TH1F *hPrimLim;
+    TH1F *hSecPhLim;
+    TH1F *hSecMatLim;
     
     TString whichVar;
     Int_t nBinTot;
@@ -389,11 +417,19 @@ void calcFractions(Int_t vsWhichVar, Int_t fPt, TString period, TString dir) {
         hPrimFit = new TH1F("hPrimFit","",npt,ptlims);
         hPrimMC  = new TH1F("hPrimMC","",npt,ptlims);
         hSecFit  = new TH1F("hSecFit","",npt,ptlims);
-        hSecMC   = new TH1F("hSecMC","",npt,ptlims);
+        hSecPhFit  = new TH1F("hSecPhFit","",npt,ptlims);
+        hSecMatFit = new TH1F("hSecMatFit","",npt,ptlims);
+        hSecMC     = new TH1F("hSecMC","",npt,ptlims);
+        hSecPhMC   = new TH1F("hSecPhMC","",npt,ptlims);
+        hSecMatMC  = new TH1F("hSecMatMC","",npt,ptlims);
         hRedChi2 = new TH1F("hRedChi2","",npt,ptlims);
         hChi2    = new TH1F("hChi2","",npt,ptlims);
         hNDF     = new TH1F("hNDF","",npt,ptlims);
         
+        hPrimLim = new TH1F("hPrimLim","",npt,ptlims);
+        hSecMatLim = new TH1F("hSecMatLim","",npt,ptlims);
+        hSecPhLim  = new TH1F("hSecPhLim","",npt,ptlims);
+
         whichVar = "Pt";
         nBinTot  = npt;
         npx = 3;
@@ -405,7 +441,11 @@ void calcFractions(Int_t vsWhichVar, Int_t fPt, TString period, TString dir) {
         hPrimFit = new TH1F("hPrimFit","",nPhi,0.,6.28);
         hPrimMC  = new TH1F("hPrimMC","",nPhi,0.,6.28);
         hSecFit  = new TH1F("hSecFit","",nPhi,0.,6.28);
-        hSecMC   = new TH1F("hSecMC","",nPhi,0.,6.28);
+        hSecPhFit  = new TH1F("hSecPhFit","",nPhi,0.,6.28);
+        hSecMatFit = new TH1F("hSecMatFit","",nPhi,0.,6.28);
+        hSecMC     = new TH1F("hSecMC","",nPhi,0.,6.28);
+        hSecPhMC   = new TH1F("hSecPhMC","",nPhi,0.,6.28);
+        hSecMatMC  = new TH1F("hSecMatMC","",nPhi,0.,6.28);
         hRedChi2 = new TH1F("hRedChi2","",nPhi,0.,6.28);
         hChi2    = new TH1F("hChi2","",nPhi,0.,6.28);
         hNDF     = new TH1F("hNDF","",nPhi,0.,6.28);
@@ -420,7 +460,11 @@ void calcFractions(Int_t vsWhichVar, Int_t fPt, TString period, TString dir) {
         hPrimFit = new TH1F("hPrimFit","",nEta,-0.8,0.8);
         hPrimMC  = new TH1F("hPrimMC","",nEta,-0.8,0.8);
         hSecFit  = new TH1F("hSecFit","",nEta,-0.8,0.8);
-        hSecMC   = new TH1F("hSecMC","",nEta,-0.8,0.8);
+        hSecPhFit  = new TH1F("hSecPhFit","",nEta,-0.8,0.8);
+        hSecMatFit = new TH1F("hSecMatFit","",nEta,-0.8,0.8);
+        hSecMC     = new TH1F("hSecMC","",nEta,-0.8,0.8);
+        hSecPhMC   = new TH1F("hSecPhMC","",nEta,-0.8,0.8);
+        hSecMatMC  = new TH1F("hSecMatMC","",nEta,-0.8,0.8);
         hRedChi2 = new TH1F("hRedChi2","",nEta,-0.8,0.8);
         hChi2    = new TH1F("hChi2","",nEta,-0.8,0.8);
         hNDF     = new TH1F("hNDF","",nEta,-0.8,0.8);
@@ -439,7 +483,12 @@ void calcFractions(Int_t vsWhichVar, Int_t fPt, TString period, TString dir) {
     c5->Divide(npx,npy);
     TCanvas *c6 = new TCanvas("c6","",1300,800);
     c6->Divide(npx,npy);
+    TCanvas *cPulls = new TCanvas("cPulls","",1300,800);
+    cPulls->Divide(npx,npy);
     
+    TCanvas *cTFResults = new TCanvas("cTFResults","",1300,800);
+    cTFResults->Divide(npx,npy);
+
     
     TFile *_file0 = TFile::Open(Form("%s/Proj%s_%s_%s_%s.root",dir.Data(),suffix.Data(),whichPt.Data(),period.Data(),whichVar.Data()));
     
@@ -447,6 +496,8 @@ void calcFractions(Int_t vsWhichVar, Int_t fPt, TString period, TString dir) {
     TH1F *hMC[3];
     double DCAcut = 2.4;
     
+    TLegend *legRes = new TLegend(0.6,0.55,0.88,0.88);
+
     for(int ibin = 0; ibin < nBinTot; ibin++) {
         printf("Bin %d/%d\n",ibin,nBinTot);
         
@@ -455,6 +506,10 @@ void calcFractions(Int_t vsWhichVar, Int_t fPt, TString period, TString dir) {
         hMC[1] = (TH1F*)_file0->Get(Form("hMC%s%d_Sec_%s_%s",whichVar.Data(),ibin,suffix.Data(),whichPt.Data()));
         hMC[2] = (TH1F*)_file0->Get(Form("hMC%s%d_Mat_%s_%s",whichVar.Data(),ibin,suffix.Data(),whichPt.Data()));
         
+        hMC[0]->Sumw2();
+        hMC[1]->Sumw2();
+        hMC[2]->Sumw2();
+
         if(hData && hMC[0] && hMC[1] && hMC[2]) {
             TObjArray *mc = new TObjArray(3);        // MC histograms are put in this array
             mc->Add(hMC[0]);
@@ -475,10 +530,10 @@ void calcFractions(Int_t vsWhichVar, Int_t fPt, TString period, TString dir) {
             hdata->Sumw2();
             hmc->Sumw2();
             
-            hmc->Scale(hdata->Integral()/hmc->Integral());
-            hmcprim->Scale(hdata->Integral()/hmc->Integral());
-            hmcsec->Scale(hdata->Integral()/hmc->Integral());
-            hmcmat->Scale(hdata->Integral()/hmc->Integral());
+//            hmc->Scale(hdata->Integral()/hmc->Integral());
+//            hmcprim->Scale(hdata->Integral()/hmc->Integral());
+//            hmcsec->Scale(hdata->Integral()/hmc->Integral());
+//            hmcmat->Scale(hdata->Integral()/hmc->Integral());
             
             hdata->Divide(hdata,hmc,1,1);
             
@@ -527,24 +582,24 @@ void calcFractions(Int_t vsWhichVar, Int_t fPt, TString period, TString dir) {
             if(vsWhichVar==1) {
                 fit->Constrain(1,xlowprimVsPt[ibin],xhighprim[ibin]);             // constrain fraction 1 to be between 0 and 1
                 fit->Constrain(2,xlowsec[ibin],xhighsecVsPt[ibin]);               // constrain fraction 1 to be between 0 and 1
-                fit->Constrain(3,xlowsec[ibin],xhighsecVsPt[ibin]);               // constrain fraction 1 to be between 0 and 1
+                fit->Constrain(3,xlowsec[ibin],xhighsecMatVsPt[ibin]);               // constrain fraction 1 to be between 0 and 1
             }
             else if(vsWhichVar==2) {
                 fit->Constrain(1,xlowprimVsPhi[ibin],xhighprim[ibin]);             // constrain fraction 1 to be between 0 and 1
                 fit->Constrain(2,xlowsec[ibin],xhighsecVsPhi[ibin]);               // constrain fraction 1 to be between 0 and 1
-                fit->Constrain(3,xlowsec[ibin],xhighsecVsPhi[ibin]);               // constrain fraction 1 to be between 0 and 1
+                fit->Constrain(3,xlowsec[ibin],xhighsecMatVsPhi[ibin]);               // constrain fraction 1 to be between 0 and 1
             }
             else if(vsWhichVar==3) {
                 fit->Constrain(1,xlowprimVsEta[ibin],xhighprim[ibin]);             // constrain fraction 1 to be between 0 and 1
                 fit->Constrain(2,xlowsec[ibin],xhighsecVsEta[ibin]);               // constrain fraction 1 to be between 0 and 1
-                fit->Constrain(3,xlowsec[ibin],xhighsecVsEta[ibin]);               // constrain fraction 1 to be between 0 and 1
+                fit->Constrain(3,xlowsec[ibin],xhighsecMatVsEta[ibin]);               // constrain fraction 1 to be between 0 and 1
             }
-//            fit->SetRangeX(hData->FindBin(-fitRange[ibin]),hData->FindBin(fitRange[ibin]));
-            fit->SetRangeX(hData->FindBin(-1),hData->FindBin(1));
+            fit->SetRangeX(hData->FindBin(-fitRange[ibin]),hData->FindBin(fitRange[ibin]));
+      
             Int_t status = fit->Fit();                                  // perform the fit
             std::cout << "fit status: " << status << std::endl;
             
-            double prim, secMat = 0, sec, secAll = 0,totres,totdata;
+            double prim, secMat = 0, sec, secAll = 0,totres,totdata, errMat, errSec;
             if (status == 0) {                                          // check on fit status
                 TH1F* result = (TH1F*) fit->GetPlot();
                 
@@ -556,32 +611,105 @@ void calcFractions(Int_t vsWhichVar, Int_t fPt, TString period, TString dir) {
                 SecMatMCPred->SetLineColor(kBlue-1);
                 
                 Double_t value,error;
-                fit->GetResult(0,value,error);
+                
+                fit->GetResult(0,prim,error);
+                vectorPrim.push_back(prim);
                 vectorPrimErr.push_back(error);
-                PrimMCPred->Scale(hData->GetSumOfWeights()*value/PrimMCPred->GetSumOfWeights());
-                fit->GetResult(1,value,error);
-                SecMCPred->Scale(hData->GetSumOfWeights()*value/SecMCPred->GetSumOfWeights());
-                fit->GetResult(2,value,error);
-                SecMatMCPred->Scale(hData->GetSumOfWeights()*value/SecMatMCPred->GetSumOfWeights());
+                PrimMCPred->Scale(hData->GetSumOfWeights()*prim/PrimMCPred->GetSumOfWeights());
+
+                fit->GetResult(1,sec,errSec);
+                vectorSecPh.push_back(sec);
+                SecMCPred->Scale(hData->GetSumOfWeights()*sec/SecMCPred->GetSumOfWeights());
+         
+                fit->GetResult(2,secMat,errMat);
+                vectorSecMat.push_back(secMat);
+                SecMatMCPred->Scale(hData->GetSumOfWeights()*secMat/SecMatMCPred->GetSumOfWeights());
                 
-                Double_t errPrim, errSecAll;
-                prim = PrimMCPred->IntegralAndError(PrimMCPred->FindBin(-DCAcut),PrimMCPred->FindBin(DCAcut),errPrim);
-                secMat = SecMatMCPred->Integral(PrimMCPred->FindBin(-DCAcut),PrimMCPred->FindBin(DCAcut));
-                SecMCPred->Add(SecMatMCPred);
-                secAll  = SecMCPred->IntegralAndError(PrimMCPred->FindBin(-DCAcut),PrimMCPred->FindBin(DCAcut),errSecAll);
+                secAll = sec+secMat;
+
+                vectorSec.push_back(secAll);
+                vectorSecErr.push_back(TMath::Sqrt(errSec*errSec+errMat*errMat));
                 
+                vectorPrimInt.push_back(PrimMCPred->GetSumOfWeights());
+                vectorSecPhInt.push_back(SecMCPred->GetSumOfWeights());
+                vectorSecMatInt.push_back(SecMatMCPred->GetSumOfWeights());
+
+                
+//                Double_t errPrim, errSecAll;
+//                prim = PrimMCPred->IntegralAndError(PrimMCPred->FindBin(-DCAcut),PrimMCPred->FindBin(DCAcut),errPrim);
+//                secMat = SecMatMCPred->Integral(PrimMCPred->FindBin(-DCAcut),PrimMCPred->FindBin(DCAcut));
+//                SecMCPred->Add(SecMatMCPred);
+//                secAll  = SecMCPred->IntegralAndError(PrimMCPred->FindBin(-DCAcut),PrimMCPred->FindBin(DCAcut),errSecAll);
+                
+                cTFResults->cd(ibin+1);
+                gPad->SetLogy();
+                result->SetLineColor(kOrange);
+                PrimMCPred->SetLineColor(kMagenta);
+                SecMCPred->SetLineColor(kRed);
+                SecMatMCPred->SetLineColor(kGreen+1);
+                PrimMCPred->SetTitle(Form("pt %d",ibin));
+                PrimMCPred->SetStats(0);
+                PrimMCPred->GetXaxis()->SetRangeUser(-2.4,2.4);
+                PrimMCPred->DrawCopy("e");
+                SecMCPred->DrawCopy("esame");
+                SecMatMCPred->DrawCopy("esame");
+                hData->DrawCopy("same");
+                if(ibin==0) {
+                    legRes->AddEntry(hData,"Data");
+                    legRes->AddEntry(PrimMCPred,"Prim.");
+                    legRes->AddEntry(SecMCPred,"Sec.");
+                    legRes->AddEntry(SecMatMCPred,"Mat.");
+                    legRes->AddEntry(result,"MC inclusive");
+                    legRes->SetTextSize(0.045);
+                    
+                }
+                legRes->Draw("same");
+                result->DrawCopy("esame");
+
                 
                 hRedChi2->SetBinContent(ibin+1,fit->GetChisquare()/fit->GetNDF());
                 hChi2->SetBinContent(ibin+1,fit->GetChisquare());
                 hNDF->SetBinContent(ibin+1,fit->GetNDF());
-                vectorPrim.push_back(prim/(prim+secAll));
-                vectorSec.push_back(secAll/(prim+secAll));
+//                vectorPrim.push_back(prim/(prim+secAll));
+//                vectorSec.push_back(secAll/(prim+secAll));
+//                
+//                hPrimFit->SetBinContent(ibin+1,prim/(prim+secAll));
+//                hPrimFit->SetBinError(ibin+1,vectorPrimErr[ibin]);
+//                hSecFit->SetBinContent(ibin+1,secAll/(prim+secAll));
+//                hSecFit->SetBinError(ibin+1,0.00001);
                 
-                hPrimFit->SetBinContent(ibin+1,prim/(prim+secAll));
+                
+                hPrimFit->SetBinContent(ibin+1,prim/(prim+sec+secMat));
                 hPrimFit->SetBinError(ibin+1,vectorPrimErr[ibin]);
-                hSecFit->SetBinContent(ibin+1,secAll/(prim+secAll));
-                hSecFit->SetBinError(ibin+1,0.00001);
                 
+                hSecFit->SetBinContent(ibin+1,secAll/(prim+sec+secMat));
+                hSecFit->SetBinError(ibin+1,vectorSecErr[ibin]);
+                
+                hSecPhFit->SetBinContent(ibin+1,sec/(prim+sec+secMat));
+                hSecPhFit->SetBinError(ibin+1,errSec);
+                
+                hSecMatFit->SetBinContent(ibin+1,secMat/(prim+sec+secMat));
+                hSecMatFit->SetBinError(ibin+1,errMat);
+                
+                if(vsWhichVar==1) {
+                    hPrimLim->SetBinContent(ibin+1,xlowprimVsPt[ibin]);
+                    hSecPhLim->SetBinContent(ibin+1,xhighsecVsPt[ibin]);
+                    hSecMatLim->SetBinContent(ibin+1,xhighsecMatVsPt[ibin]);
+                }
+                if(vsWhichVar==2) {
+                    hPrimLim->SetBinContent(ibin+1,xlowprimVsPhi[ibin]);
+                    hSecPhLim->SetBinContent(ibin+1,xhighsecVsPhi[ibin]);
+                    hSecMatLim->SetBinContent(ibin+1,xhighsecMatVsPhi[ibin]);
+                }
+                if(vsWhichVar==3) {
+                    hPrimLim->SetBinContent(ibin+1,xlowprimVsPhi[ibin]);
+                    hSecPhLim->SetBinContent(ibin+1,xhighsecVsPhi[ibin]);
+                    hSecMatLim->SetBinContent(ibin+1,xhighsecMatVsPhi[ibin]);
+                }
+                hPrimLim->SetBinError(ibin+1,0.00000001);
+                hSecPhLim->SetBinError(ibin+1,0.00000001);
+                hSecMatLim->SetBinError(ibin+1,0.00000001);
+
                 
                 c5->cd(ibin+1);
                 TH1F *hDCAdata = (TH1F*)hData->Clone(Form("hDCAdata%d",ibin));
@@ -591,7 +719,6 @@ void calcFractions(Int_t vsWhichVar, Int_t fPt, TString period, TString dir) {
                 hDCAdata->SetTitle("data / fit");
                 hDCAdata->GetXaxis()->SetLabelSize(0.04);
                 hDCAdata->GetYaxis()->SetLabelSize(0.07);
-                hDCAdata->GetXaxis()->SetRangeUser(-1,1.);
                 hDCAdata->GetYaxis()->SetLabelSize(0.07);
                 if(vsWhichVar==1)hDCAdata->SetTitle(Form("%.0f < p_{t} < %.0f GeV/c",ptlims[ibin],ptlims[ibin+1]));
                 else hDCAdata->SetTitle(Form("%s Bin %d",whichVar.Data(),ibin));
@@ -602,6 +729,25 @@ void calcFractions(Int_t vsWhichVar, Int_t fPt, TString period, TString dir) {
                 hDCAdata->GetXaxis()->SetTitleSize(0.05);
                 
                 hDCAdata->DrawCopy();
+                
+                cPulls->cd(ibin+1);
+                TH1F *hPulls = (TH1F*)hData->Clone(Form("hPullsPt%d",ibin));
+                hPulls->Sumw2();
+                for(int ii=1; ii<= hPulls->GetNbinsX(); ii++) {
+                    double yData = hPulls->GetBinContent(ii);
+                    double eData = hPulls->GetBinError(ii);
+                    double yRes  = result->GetBinContent(ii);
+                    double eRes  = result->GetBinError(ii);
+                    if(yData>0. && yRes>0.) {
+                        //                        Printf("ydata - yres = %f - %f, errData %f, errres %f",yData,yRes,eData,eRes);
+                        hPulls->SetBinContent(ii,(yData-yRes)/TMath::Sqrt(eData*eData+eRes*eRes));
+                        hPulls->SetBinError(ii,0.00000001);
+                    }
+                }
+                hPulls->SetMarkerColor(kBlue+2);
+                hPulls->SetMarkerStyle(20);
+                hPulls->DrawCopy();
+
             }
             else {
                 vectorPrim.push_back(-1.);
@@ -618,11 +764,113 @@ void calcFractions(Int_t vsWhichVar, Int_t fPt, TString period, TString dir) {
             hPrimMC->SetBinError(ibin+1,0.0001);
             hSecMC->SetBinContent(ibin+1,(secMat+sec)/(prim+sec+secMat));
             hSecMC->SetBinError(ibin+1,0.0001);
+            hSecPhMC->SetBinContent(ibin+1,sec/(prim+sec+secMat));
+            hSecPhMC->SetBinError(ibin+1,0.0001);
+            hSecMatMC->SetBinContent(ibin+1,secMat/(prim+sec+secMat));
+            hSecMatMC->SetBinError(ibin+1,0.0001);
+
         } else {
             printf("no histos!\n");
             return;
         }
     }
+    
+    
+    cTFResults->SaveAs("Fitresults_TFF.eps");
+  
+    TCanvas *cFractionsPrim = new TCanvas("cFractionsPrim","Fractions from TFF",700,800);
+    gPad->SetLogy();
+    hPrimFit->GetYaxis()->SetRangeUser(0.7,1.);
+
+    hPrimFit->SetLineColor(kBlue);
+    hSecPhFit->SetLineColor(kRed);
+    hSecMatFit->SetLineColor(kMagenta);
+    hPrimFit->SetMarkerColor(kBlue);
+    hSecPhFit->SetMarkerColor(kRed);
+    hSecMatFit->SetMarkerColor(kMagenta);
+    hPrimFit->SetMarkerStyle(20);
+    hSecPhFit->SetMarkerStyle(20);
+    hSecMatFit->SetMarkerStyle(20);
+    
+    
+    hPrimMC->SetLineColor(kBlue);
+    hSecPhMC->SetLineColor(kRed);
+    hSecMatMC->SetLineColor(kMagenta);
+    hPrimMC->SetMarkerColor(kBlue);
+    hSecPhMC->SetMarkerColor(kRed);
+    hSecMatMC->SetMarkerColor(kMagenta);
+    hPrimMC->SetMarkerStyle(3);
+    hSecPhMC->SetMarkerStyle(3);
+    hSecMatMC->SetMarkerStyle(3);
+    
+    
+    hPrimLim->SetLineColor(kBlue);
+    hSecPhLim->SetLineColor(kRed);
+    hSecMatLim->SetLineColor(kMagenta);
+    
+    hPrimMC->SetLineStyle(kDashed);
+    hSecMC->SetLineStyle(kDashed);
+    hSecPhMC->SetLineStyle(kDashed);
+    hSecMatMC->SetLineStyle(kDashed);
+    hPrimLim->SetLineStyle(kDashed);
+    hSecPhLim->SetLineStyle(kDashed);
+    hSecMatLim->SetLineStyle(kDashed);
+    hPrimLim->SetMarkerColor(kBlue);
+    hSecPhLim->SetMarkerColor(kRed);
+    hSecMatLim->SetMarkerColor(kMagenta);
+    
+    hPrimLim->SetMarkerStyle(4);
+    hSecPhLim->SetMarkerStyle(4);
+    hSecMatLim->SetMarkerStyle(4);
+    
+    hPrimFit->SetTitle("Fraction resulting from TFF");
+    hPrimFit->SetStats(0);
+    hPrimFit->DrawCopy();
+    hPrimLim->DrawCopy("psame");
+    hPrimMC->DrawCopy("psame");
+    
+    //    cFractions->SaveAs("ClosureTestMC.eps");
+    cFractionsPrim->SaveAs("FractionsPrimFromFit.eps");
+    
+    
+    TH1F *hcpPrim = (TH1F*)hPrimFit->Clone("hPrimCl");
+    TH1F *hcpPrimMC = (TH1F*)hPrimMC->Clone("hPrimClMC");
+    TLegend *legFrac = new TLegend(0.6,0.3,0.88,0.55);
+    legFrac->AddEntry(hcpPrim,"prim.","pl");
+    legFrac->AddEntry(hcpPrimMC,"MC prim.","pl");
+    legFrac->AddEntry(hPrimLim,"Input fit prim.","pl");
+    
+    legFrac->Draw();
+    
+    TCanvas *cFractionsSec = new TCanvas("cFractionsSec","Fractions from TFF",700,800);
+    gPad->SetLogy();
+    hSecPhFit->GetYaxis()->SetRangeUser(0.00005,0.4);
+    
+    
+    hSecPhFit->SetTitle("Fraction resulting from TFF");
+    hSecPhFit->SetStats(0);
+    hSecPhFit->DrawCopy();
+    hSecMatFit->DrawCopy("same");
+    hSecPhLim->DrawCopy("psame");
+    hSecMatLim->DrawCopy("psame");
+    
+    hSecPhMC->DrawCopy("psame");
+    hSecMatMC->DrawCopy("psame");
+    
+    
+    TLegend *legFrac2 = new TLegend(0.6,0.12,0.88,0.4);
+    legFrac2->AddEntry(hSecPhFit,"sec.","pl");
+    legFrac2->AddEntry(hSecMatFit,"sec. mat.","pl");
+    legFrac2->AddEntry(hSecPhMC,"MC sec.","pl");
+    legFrac2->AddEntry(hSecMatMC,"MC sec. mat.","pl");
+    legFrac2->AddEntry(hSecPhLim,"Input fit sec.","pl");
+    legFrac2->AddEntry(hSecMatLim,"Input fit sec. mat.","pl");
+    
+    legFrac2->Draw();
+    
+    cFractionsSec->SaveAs("FractionsSecFromFit.eps");
+    
+    
     
     hPrimFit->SetLineColor(kRed);
     hPrimFit->SetMarkerColor(kRed);
@@ -678,6 +926,8 @@ void calcFractions(Int_t vsWhichVar, Int_t fPt, TString period, TString dir) {
     hPrimFit->DrawCopy();
     hSecFit->DrawCopy("same");
     c1->cd(4);
+    hNDF->SetMarkerStyle(20);
+    hNDF->GetYaxis()->SetRangeUser(hNDF->GetBinContent(1)-50,hNDF->GetBinContent(1)+50);
     hNDF->SetStats(0);
     hNDF->SetTitle("ndf");
     hNDF->DrawCopy("EP");
@@ -685,14 +935,25 @@ void calcFractions(Int_t vsWhichVar, Int_t fPt, TString period, TString dir) {
     c1->SaveAs(Form("%s/fractions_%s_ESDTrOnly_%s_Vs%s.eps",dir.Data(),suffix.Data(),period.Data(),whichVar.Data()));
     
     
+    Printf("*********************");
+    Printf("Primary fractions:");
     for(int i=0; i<(int)vectorPrim.size();i++) {
-        printf("%f +- %f,\n",vectorPrim[i],vectorPrimErr[i]);
-        
+        Printf("%f +- %f, --> re-normalized: %f\n",vectorPrim[i],vectorPrimErr[i],vectorPrim[i]/(vectorPrim[i]+vectorSecPh[i]+vectorSecMat[i]));
+    }
+    Printf("*********************");
+    Printf("Secondary fractions:");
+    for(int i=0; i<(int)vectorSecPh.size();i++) {
+        Printf("%f --> re-normalized: %f\n",vectorSecPh[i],vectorSecPh[i]/(vectorPrim[i]+vectorSecPh[i]+vectorSecMat[i]));
+    }
+    Printf("*********************");
+    Printf("Material fractions:");
+    for(int i=0; i<(int)vectorSecMat.size();i++) {
+        Printf("%f --> re-normalized: %f\n",vectorSecMat[i],vectorSecMat[i]/(vectorPrim[i]+vectorSecPh[i]+vectorSecMat[i]));
     }
     ofstream myfile (Form("%s/fractions_%s_%s_Vs%s.txt",dir.Data(),suffix.Data(),period.Data(),whichVar.Data()));
     if (myfile.is_open())
     {
-        for(int i = 0; i <(int)vectorPrim.size(); i++) myfile << Form("%f\n",vectorPrim[i]);
+        for(int i = 0; i <(int)vectorPrim.size(); i++) myfile << Form("%f\n",vectorPrim[i]/(vectorPrim[i]+vectorSecPh[i]+vectorSecMat[i]));
         myfile.close();
     }
     
@@ -703,6 +964,22 @@ void calcFractions(Int_t vsWhichVar, Int_t fPt, TString period, TString dir) {
         myfile2.close();
     }
     
+    ofstream myfile3 (Form("%s/Secfractions_%s_%s_Vs%s.txt",dir.Data(),suffix.Data(),period.Data(),whichVar.Data()));
+    if (myfile3.is_open()) {
+        for(int i = 0; i <(int)vectorSec.size(); i++){
+            myfile3 << Form("%f\n",vectorSec[i]/(vectorPrim[i]+vectorSecPh[i]+vectorSecMat[i]));
+        }
+        myfile3.close();
+    }
+    
+    ofstream myfile4 (Form("%s/SecfractionErrs_%s_%s_Vs%s.txt",dir.Data(),suffix.Data(),period.Data(),whichVar.Data()));
+    if (myfile4.is_open()) {
+        for(int i = 0; i <(int)vectorSecErr.size(); i++){
+            myfile4 << Form("%f\n",vectorSecErr[i]);
+        }
+        myfile4.close();
+    }
+
     
     delete hData;
     for(int i=0; i<3; i++) delete hMC[i];
@@ -782,13 +1059,14 @@ TH1D* projectMC(THnSparse *hSparse, Double_t partType, Int_t ibin) {
     
 
     //TOF bc
-    iax = 7;
-    binWidth = ax[iax]->GetBinWidth(1);
-    first = -0.5 + binWidth/2.;
-    last  = 0.5  - binWidth/2.;
-    if(fUseTOFbc)ax[iax]->SetRange(first,last);
-    Printf("Part.type : %g, %g",ax[iax]->GetBinLowEdge(first),ax[iax]->GetBinUpEdge(last));
-    
+    if(fUseTOFbc) {
+        iax = 9;
+        binWidth = ax[iax]->GetBinWidth(1);
+        first = ax[iax]->FindBin(-0.5 + binWidth/2.);
+        last  = ax[iax]->FindBin(0.5  - binWidth/2.);
+        ax[iax]->SetRange(first,last);
+        Printf("TOF bc : %g, %g",ax[iax]->GetBinLowEdge(first),ax[iax]->GetBinUpEdge(last));
+    }
 
     TH1D* hproj = (TH1D*)hSparse->Projection(0);
     return hproj;
@@ -855,6 +1133,16 @@ TH1D* projectData(THnSparse *hSparse, Int_t ibin) {
     ax[iax]->SetRange(first,last);
     printf("Eta : %g, %g \n",ax[iax]->GetBinLowEdge(first),ax[iax]->GetBinUpEdge(last));
     
+    //request on TOF bc==0
+    if(fUseTOFbc) {
+        iax = 5;
+        binWidth = ax[iax]->GetBinWidth(1);
+        first = ax[iax]->FindBin(-0.5 + binWidth/2.);
+        last  = ax[iax]->FindBin(0.5  - binWidth/2.);
+        ax[iax]->SetRange(first,last);
+        Printf("TOF bc : %g, %g",ax[iax]->GetBinLowEdge(first),ax[iax]->GetBinUpEdge(last));
+    }
+
     
     TH1D* hproj = (TH1D*)hSparse->Projection(0);
     return hproj;

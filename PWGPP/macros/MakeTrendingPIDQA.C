@@ -5,6 +5,8 @@
 #include "TFile.h"
 #include "TKey.h"
 #include "TLine.h"
+#include "TLegend.h"
+#include "TLegendEntry.h"
 #include "TList.h"
 #include "TMath.h"
 #include "TTree.h"
@@ -25,6 +27,7 @@ void SetupStyle();
 TH2* Get2DHistogramfromList(TList *pidqalist, const char* listname, const char* histoname);
 void AddFit(TH2* h2d);
 void PublishCanvas(TList *qaList, const char* det, const char* name, TString nadd="", TString outputformat="");
+void CheckPIDInTracking(TList* qaListTPC,const char* listname);
 void SetupPadStyle();
 void StoreTrendingVars(TH1* hMean, TH1* hSigma);
 
@@ -118,6 +121,7 @@ void MakeTrendingPIDQA(const char* inputFile, TString dirInFile = "PIDqa", TStri
   if(detList.Contains("ALL") || detList.Contains("TPC")){
     TList *qaListTPC = (TList*)qaList->FindObject("TPC");
     if (qaListTPC){
+      CheckPIDInTracking(qaListTPC,"TPCBasic");
       PublishCanvas(qaListTPC,"TPCBasic","hNsigmaP_TPC_Basic_%s","",outputformat);
       PublishCanvas(qaListTPC,"TPCV0","hNsigmaP_TPC_V0_%s","",outputformat);
       //   if (man->GetCurrentPeriod()=="11h"){
@@ -373,6 +377,45 @@ void PublishCanvas(TList *qaList, const char* det, const char* name, TString nad
   fCanvas->Clear();
 
 }
+
+void CheckPIDInTracking(TList* qaListTPC,const char* listname){
+
+  TList *histolist = (TList *)qaListTPC->FindObject(listname);
+  if (!histolist) {printf(" list not found \n");  return; }
+  TCanvas* ctrpid=new TCanvas("ctrpid","PID-in-track",1000,700);
+  TCanvas* ctrpidall=new TCanvas("ctrpidall","PID-in-track",1500,700);
+  TLegend* leg=new TLegend(0.7,0.35,0.89,0.87);
+  leg->SetHeader("PID in tracking");
+  ctrpidall->Divide(3,3);
+  Bool_t saveCan=kFALSE;
+  Int_t cols[9]={kGreen+2,kGray,1,2,4,kMagenta,kOrange+1,kYellow,kCyan};
+  for(Int_t j=0; j<9; j++){
+    TString histoname=Form("hSigP_TPC_TrackedAs_%s",AliPID::ParticleName(j));
+    TH2* histo = (TH2*)histolist->FindObject(histoname.Data());
+    if(histo){
+      saveCan=kTRUE;
+      TH2* histo2=(TH2*)histo->Clone(Form("%scolor",histoname.Data()));
+      histo2->SetTitle(" ");
+      histo2->SetStats(0);
+      histo2->SetMarkerColor(cols[j]);
+      leg->AddEntry(histo2,Form("%s",AliPID::ParticleName(j)),"")->SetTextColor(histo2->GetMarkerColor());
+      ctrpid->cd();
+      SetupPadStyle();
+      if(j==0) histo2->Draw();
+      else histo2->Draw("same");
+      ctrpidall->cd(j+1);
+      SetupPadStyle();
+      histo->Draw("colz");
+    }
+  }
+  if(saveCan){
+    ctrpid->cd();
+    leg->Draw();
+    ctrpidall->SaveAs("TPCdEdx-PIDinTracking-9pads.png");
+    ctrpid->SaveAs("TPCdEdx-PIDinTracking.png");
+  }
+}
+
 
 void StoreTrendingVars(TH1* hMean, TH1* hSigma){
 

@@ -471,6 +471,22 @@ AliAnalysisTriggerScalers::GetLuminosityTriggerAndCrossSection(Int_t runNumber,
         lumiTriggerCrossSection = 30.1;
     }
   }
+  else if ( period.BeginsWith("LHC17"))
+  {
+    lumiTriggerClassName = "C0TVX-B-NOPF-CENTNOTRD";
+    lumiTriggerCrossSection = 30.0;
+
+    if (runNumber>=280141 && runNumber<=280235) {
+      // from http://aliqaevs.web.cern.ch/aliqaevs/data/2017/runLevelEventStatQA.C
+      lumiTriggerCrossSection = 4000.; // INEL=5.4b*C0V0M/CINT7ZAC0
+      lumiTriggerClassName = "C0V0M-B-NOPF-CENTNOTRD";
+    }
+
+    if ( period.BeginsWith("LHC17p") ) // pp ref 5.02 TeV
+    {
+      lumiTriggerCrossSection = 21.0;
+      lumiTriggerCrossSectionError = 0.04;
+    }}
   else
   {
     AliError("Period not implemented yet");

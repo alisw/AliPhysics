@@ -1,5 +1,6 @@
-AlidNdPtUnifiedAnalysisTask* AddTask_Unified_pPb(Int_t cutMode)
+AlidNdPtUnifiedAnalysisTask* AddTask_Unified_pPb(Int_t cutMode, TString controll = "")
 // cut variation for studdy of cut systematics (cutMode == 100 - 119) and Matching Eff (cutMode == 2100 - 2199)
+// controll = "vz10" for vz<10 cut 
 {
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
 
@@ -55,6 +56,8 @@ AlidNdPtUnifiedAnalysisTask* AddTask_Unified_pPb(Int_t cutMode)
   task->SetMeanXYZv(0.0,0.0,0.0);
   task->SetSigmaMeanXYZv(1.0,1.0,10.0);
   task->SetZvtx(30.);  		
+  if (controll.Contains("vz10")) task->SetZvtx(10.);
+
   task->SetEventTriggerRequired(kTRUE);
     
   task->Set2013pA(kTRUE);    //only p-Pb 2013!!!

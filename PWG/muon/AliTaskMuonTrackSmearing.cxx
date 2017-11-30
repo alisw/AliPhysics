@@ -83,6 +83,7 @@ void AliTaskMuonTrackSmearing::UserExec ( Option_t * /*option*/ )
   //
   AliVParticle* track = 0x0, *genParticle = 0x0;
   Double_t charge = 0.;
+  Double_t rAbs = -1.;
   Bool_t isAOD = ( InputEvent()->IsA() == AliAODEvent::Class() );
 
   TObjArray* smearedTrackList = static_cast<TObjArray*>(InputEvent()->FindListObject(AliAnalysisMuonUtility::GetSmearedTrackListName()));
@@ -99,15 +100,19 @@ void AliTaskMuonTrackSmearing::UserExec ( Option_t * /*option*/ )
   Int_t nTracks = AliAnalysisMuonUtility::GetNTracks(InputEvent());
   for (Int_t itrack = 0; itrack < nTracks; itrack++) {
     track = AliAnalysisMuonUtility::GetTrack(itrack,InputEvent());
+    // Smear only track parameters for tracks in the muon spectrometer
+    if ( ! AliAnalysisMuonUtility::IsMuonTrack(track) ) continue;
+    // We need the MC info to smear the track
     if ( track->GetLabel() < 0 ) continue;
     genParticle = MCEvent()->GetTrack(track->GetLabel());
-    TLorentzVector smearedTrack = fMuonTrackSmearing.GetRecoTrack(genParticle->P(),genParticle->Eta(),genParticle->Phi(),genParticle->Charge(),charge);
+    TLorentzVector smearedTrack = fMuonTrackSmearing.GetRecoTrack(genParticle->P(),genParticle->Eta(),genParticle->Phi(),genParticle->Charge(),charge,rAbs);
     if ( isAOD ) { // AOD
       AliAODTrack* aodTrack = static_cast<AliAODTrack*>(track->Clone());
       aodTrack->SetPt(smearedTrack.Pt());
-      aodTrack->SetPhi(smearedTrack.Phi());
+      aodTrack->SetPhi(TMath::Pi()+TMath::ATan2(-smearedTrack.Py(),-smearedTrack.Px()));
       aodTrack->SetTheta(smearedTrack.Theta());
       aodTrack->SetCharge(charge);
+      aodTrack->SetRAtAbsorberEnd(rAbs);
       smearedTrackList->Add(aodTrack);
     }
     else { // ESD
@@ -115,12 +120,16 @@ void AliTaskMuonTrackSmearing::UserExec ( Option_t * /*option*/ )
       Double_t pz = smearedTrack.Pz();
       Double_t slopeY = smearedTrack.Py()/pz;
       Double_t invMomentum = -1./(pz*TMath::Sqrt(1.+slopeY*slopeY));
-//      if ( charge < 0. ) invMomentum *= -1.;
+      // In the ESDMuonTrack the sign is determined from the inverse bending momentum
+      // So, if the charge is negative, the momentum must be multiplied by -1
+      if ( charge < 0. ) invMomentum *= -1.;
       esdTrack->SetInverseBendingMomentum(invMomentum);
       esdTrack->SetThetaX(TMath::ATan(smearedTrack.Px()/pz));
       esdTrack->SetThetaY(TMath::ATan(slopeY));
+      esdTrack->SetRAtAbsorberEnd(rAbs);
       smearedTrackList->Add(esdTrack);
     }
+    // AliVParticle* clonedTrack = static_cast<AliVParticle*>(smearedTrackList->Last()); printf("Smear (%g, %g, %g) => (%g, %g, %g)   %g => %g\n",track->Px(),track->Py(),track->Pz(), clonedTrack->Px(),clonedTrack->Py(),clonedTrack->Pz(), track->Eta(), clonedTrack->Eta());
   } // loop on tracks
   smearedTrackList->Compress();
   AliAnalysisMuonUtility::SetUseSmearedTracks(kTRUE,kFALSE);

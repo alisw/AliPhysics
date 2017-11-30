@@ -19,7 +19,7 @@
 void ExtractOutput(
    Bool_t treeSE=kFALSE, Bool_t treeME=kFALSE, //read TH2F from offline correlation framewrks (produced from the TTree) for SE, ME analysis instead of THnSparse
    Int_t specie=AliDhCorrelationExtraction::kD0toKpi, //the D-meson decay channel (check the enumerator for the options)
-   Int_t SandB=AliDhCorrelationExtraction::kBfromBinCount, //how to extract S and B (check the enumerator for the options) - kBfromBinCount is the paper approach
+   Int_t SandB=AliDhCorrelationExtraction::kSfromBinCount, //how to extract S and B (check the enumerator for the options) - kBfromBinCount is the paper approach
    Int_t SBscale=AliDhCorrelationExtraction::kBinCountScaling, //how to renormalize the sidebands (check the enumerator for the options) - kBfromBinCount is the paper approach
    Int_t rebin=1, //rebin the invariant mass plots - USE WITH CARE! (different bin width w.r.t. THnSparse)
    Double_t leftRng=1.7, Double_t rightRng=2.1, //invariant mass fit range -> use 1.7-2.1 for D0 and D+, 0.14-0.16 for D* (but 1.695-2.1 for D0 in pp for results before 1/5/2015)
@@ -28,13 +28,14 @@ void ExtractOutput(
    Bool_t autoSign=kTRUE, //kTRUE = define Sign from the fit results, in the range nsigmaS (below); kFALSE = use ranges provided via SetSignRanges
    Double_t nsigmaS=2, //number of sigma in which to define the signal region (for correlations), Valid only if autoSign flag = kTRUE, otherwise dummy
    Bool_t autoSB=kFALSE, //kTRUE = define SB from the fit results, in the range insigma-outsigma (below); kFALSE = use ranges provided via SetSBRanges
-   Double_t insigma=0, Double_t outsigma=0, //sideband ranges (in units of sigma). Valid only if autoSB = kTRUE, otherwise dummy
+   Double_t insigma=0, Double_t outsigma=0, //sideband ranges (in units of sigma). Valid only if autoSB=kTRUES, otherwise dummy
    Bool_t singleBinSB=kTRUE, //kTRUE=a single mass bin is used in the THnSparse for storing the sideband corlelations (used by D0 to save space)
    Int_t npools=9, //number of pools for the event-mixing
    Bool_t poolByPool=kTRUE, //kTRUE=pool-by-pool ME correction; kFALSE=merged-pools ME correction (set the options that you used in the online analysis)
    Double_t deltaEtaMin=-1., Double_t deltaEtaMax=1., //deltaEta ranges for correlation distributions  
-   Bool_t use2Dmassplots=kFALSE, Double_t mincent=0., Double_t maxcent=100., // ***NOTE: ONLY FOR OFFLINE APPROACH*** takes mass plots from 2D massVscent - ***use only if you did a centrality selection in CorrelateOffline.C, and put the same range!!***
-   Bool_t subtractSoftPiME=kTRUE) // ***NOTE: ONLY FOR ONLINE APPROACH*** remove likely soft pions (via inv.mass cut) also in ME distributions (for OFFLINE, is done via CorrelateOffline.C)
+   Bool_t use2Dmassplots=kFALSE, Double_t mincent=0., Double_t maxcent=100., //***NOTE: ONLY FOR OFFLINE APPROACH*** takes mass plots from 2D massVscent - ***use only if you did a centrality selection in CorrelateOffline.C, and put the same range!!***
+   Bool_t subtractSoftPiME=kTRUE, //removes likely soft pions (via inv.mass cut) also in ME distributions, though they are fake (shall stay kTRUE)
+   Bool_t useRefl=kTRUE) //includes also the D0 reflection templates in the fits. Need to set the template filename in the SetInputNames
 {
 
   //Create and set the correlation plotter class
@@ -56,12 +57,13 @@ void ExtractOutput(
   plotter->ReadTTreeOutputFiles(treeSE,treeME);
   plotter->SetSubtractSoftPiInMEdistr(subtractSoftPiME);
   plotter->SetUseMassVsCentPlots(use2Dmassplots);
+  plotter->SetUseReflections(useRefl);
   if(use2Dmassplots) plotter->SetCentralitySelection(mincent,maxcent);
   if(!flagSpecie) return;
 
   plotter->SetDebugLevel(0); //0 = get main results; 1 = get full list of plots; 2 = get debug printouts
 
-  SetInputNames(plotter);  // check the names in the method!!
+  SetInputNames(plotter,useRefl);  // check the names in the method!!
 
   Bool_t read = plotter->ReadInputs();
   if(!read) {
@@ -82,7 +84,7 @@ void ExtractOutput(
 }
 
 //________________________________________
-void SetInputNames(AliDhCorrelationExtraction *plotter){
+void SetInputNames(AliDhCorrelationExtraction *plotter, Bool_t useRefl){
 
   plotter->SetInputFilenameMass("./AnalysisResults_pp.root");
   plotter->SetInputFilenameSE("./AnalysisResults_pp.root");
@@ -98,6 +100,11 @@ void SetInputNames(AliDhCorrelationExtraction *plotter){
   plotter->SetSECorrelHistoName("hPhi_Charg_Bin");
   plotter->SetMECorrelHistoNameSuffix("_EvMix");
 
+  if(useRefl) {
+    plotter->SetReflFilename("reflections_fitted_DoubleGaus_pPb2016_0100.root"); //depends on the cuts, and hence on centrality!
+    plotter->SetHistNameRefl("histRflFittedDoubleGaus_ptBin");  //only the suffix (without the ptbin number)
+    plotter->SetHistNameSignal("histSgn_");  //only the suffix (without the ptbin number)
+  }
 /*
  //Dstar paths
   plotter->SetInputFilename("./../AnalysisResults_InvMass_TRAIN_FINALE_pp.root");

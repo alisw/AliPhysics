@@ -28,7 +28,7 @@
 #include <AliPIDResponse.h>
 #include <AliPID.h>
 #include <TLorentzVector.h>
-#include "AliNuclexEventCuts.h"
+#include "AliEventCuts.h"
 
 class TF1;
 class TH2F;
@@ -91,11 +91,13 @@ public:
   virtual void   UserExec(Option_t *);
   virtual void   Terminate(Option_t *);
 
-  AliNuclexEventCuts  fEventCut;
-  TArrayD             fTOFfunctionPars;
+  AliEventCuts  fEventCut;
+  TArrayD       fTOFfunctionPars;
 
   UInt_t              fFilterBit;       /// AOD filter bit for the tracks used in this analysis (set to 0 to skip the cut)
   bool                fPropagateTracks; /// Workaround for troublesome productions
+  TArrayF             fPtCorrectionA;         ///<  Array containing the parametrisation of the \f$p_{T}\$ correction for anti-matter
+  TArrayF             fPtCorrectionM;         ///<  Array containing the parametrisation of the \f$p_{T}\$ correction for matter
 private:
   AliAnalysisTaskNucleiYield (const AliAnalysisTaskNucleiYield &source);
   AliAnalysisTaskNucleiYield &operator=(const AliAnalysisTaskNucleiYield &source);
@@ -123,9 +125,6 @@ private:
 
   Float_t               fDCAzLimit;             ///<  Limits of the \f$DCA_{z}\f$ histograms
   Int_t                 fDCAzNbins;             ///<  Number of bins used for \f$DCA_{z}\f$ distributions
-
-  TArrayF               fPtCorrectionA;         ///<  Array containing the parametrisation of the \f$p_{T}\$ correction for anti-matter
-  TArrayF               fPtCorrectionM;         ///<  Array containing the parametrisation of the \f$p_{T}\$ correction for matter
 
   Float_t               fTOFlowBoundary;        ///<  Lower limit for the TOF mass spectra histograms
   Float_t               fTOFhighBoundary;       ///<  Upper limit for the TOF mass spectra histograms
@@ -166,8 +165,7 @@ private:
   TArrayF               fFlatteningProbs;       ///<  Flattening probabilities
 
   // Event related histograms
-  TH1F                 *fFlattenedCentrality;   //!<! Events centrality distribution after the flattening
-  TH1F                 *fCentralityClasses;     //!<! Events statistics per centrality classes
+  TH2F                 *fNormalisationHist;     //!<! Normalisation per centrality classes
 
   // MC only histograms
   TH1F                 *fProduction;             //!<! *(MC only)* Total number of produced particles
@@ -183,7 +181,6 @@ private:
   TH3F                 *fTPCcounts[2];           //!<! *(Data only)* TPC counts for (anti-)matter
   TH3F                 *fDCAxy[2][2];            //!<! *(Data only)* \f$DCA_{xy}\f$ distribution for ITS+TPC tracks
   TH3F                 *fDCAz[2][2];             //!<! *(Data only)* \f$DCA_{z}\f$ distribution for ITS+TPC tracks
-  TH3F                 *fTOFtemplates[5];        //!<! *(Data only)* TOF signal templates for pi/k/p/d/t
 
   /// \cond CLASSDEF
   ClassDef(AliAnalysisTaskNucleiYield, 1);

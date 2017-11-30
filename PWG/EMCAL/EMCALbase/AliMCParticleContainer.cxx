@@ -147,7 +147,7 @@ Bool_t AliMCParticleContainer::AcceptMCParticle(const AliAODMCParticle *vp, UInt
   if (!r) return kFALSE;
 
   AliTLorentzVector mom;
-  GetMomentumFromParticle(mom, vp);
+  if(!GetMomentumFromParticle(mom, vp)) return false;
 
   return ApplyKinematicCuts(mom, rejectionReason);
 }
@@ -168,7 +168,7 @@ Bool_t AliMCParticleContainer::AcceptMCParticle(Int_t i, UInt_t &rejectionReason
   if (!r) return kFALSE;
 
   AliTLorentzVector mom;
-  GetMomentum(mom, i);
+  if(!GetMomentum(mom, i)) return false;
 
   return ApplyKinematicCuts(mom, rejectionReason);
 }
@@ -239,16 +239,6 @@ const AliMCParticleIterableMomentumContainer AliMCParticleContainer::accepted_mo
 const char* AliMCParticleContainer::GetTitle() const
 {
   static TString trackString;
-
-  if (GetMinPt() == 0) {
-    trackString = TString::Format("%s_pT0000", GetArrayName().Data());
-  }
-  else if (GetMinPt() < 1.0) {
-    trackString = TString::Format("%s_pT0%3.0f", GetArrayName().Data(), GetMinPt()*1000.0);
-  }
-  else {
-    trackString = TString::Format("%s_pT%4.0f", GetArrayName().Data(), GetMinPt()*1000.0);
-  }
-
+  trackString = TString::Format("%s_pT%04d", GetArrayName().Data(), static_cast<int>(GetMinPt()*1000.0));
   return trackString.Data();
 }

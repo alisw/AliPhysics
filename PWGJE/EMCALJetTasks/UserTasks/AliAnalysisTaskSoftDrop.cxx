@@ -25,7 +25,6 @@ ClassImp(AliAnalysisTaskSoftDrop)
 AliAnalysisTaskSoftDrop::AliAnalysisTaskSoftDrop() : 
   AliAnalysisTaskEmcalJet("AliAnalysisTaskSoftDrop", kTRUE),
   fHistTracksPt(0),
-  fHistNTracks(0),
   fHistClustersPt(0),
   fHistLeadingJetPt(0),
   fHistJetsPhiEta(0),
@@ -34,6 +33,7 @@ AliAnalysisTaskSoftDrop::AliAnalysisTaskSoftDrop() :
   fHistJetsCorrPtArea(0),
   fHistPtDEtaDPhiTrackClus(0),
   fHistPtDEtaDPhiClusTrack(0),
+  fHistNTracks(0),
   fHistClustDx(0),
   fHistClustDz(0),
   fNAccJets(0),
@@ -72,7 +72,6 @@ AliAnalysisTaskSoftDrop::AliAnalysisTaskSoftDrop() :
 AliAnalysisTaskSoftDrop::AliAnalysisTaskSoftDrop(const char *name) : 
   AliAnalysisTaskEmcalJet(name, kTRUE),
   fHistTracksPt(0),
-  fHistNTracks(0),
   fHistClustersPt(0),
   fHistLeadingJetPt(0),
   fHistJetsPhiEta(0),
@@ -81,6 +80,7 @@ AliAnalysisTaskSoftDrop::AliAnalysisTaskSoftDrop(const char *name) :
   fHistJetsCorrPtArea(0),
   fHistPtDEtaDPhiTrackClus(0),
   fHistPtDEtaDPhiClusTrack(0),
+  fHistNTracks(0),
   fHistClustDx(0),
   fHistClustDz(0),
   fNAccJets(0),
@@ -228,8 +228,23 @@ void AliAnalysisTaskSoftDrop::UserCreateOutputObjects()
   fhCorrPtZg = new TH2F("fhCorrPtZg", "#it{Z}_{g}; p_{T}^{corr} [GeV/c]; #it{Z}_{g}", 16, 0, 160, 20, 0., 0.5);
   fOutput->Add(fhCorrPtZg);
 
+  fhCorrPtZg2 = new TH2F("fhCorrPtZg2", "#it{Z}_{g}; p_{T}^{corr} [GeV/c]; #it{Z}_{g}", 16, 0, 160, 20, 0., 0.5);
+  fOutput->Add(fhCorrPtZg2);
+
+  fhCorrPtZgD = new TH2F("fhCorrPtZgD", "#it{Z}_{g}; p_{T}^{corr} [GeV/c]; #it{Z}_{g}", 16, 0, 160, 20, 0., 0.5);
+  fOutput->Add(fhCorrPtZgD);
+
   fhCorrPtRg = new TH2F("fhCorrPtRg", "R_{g}; p_{T}^{corr} [GeV/c]; R_{g}", 16, 0, 160, 40, 0., 0.5);
   fOutput->Add(fhCorrPtRg);
+
+  fhCorrPtRgD = new TH2F("fhCorrPtRgD", "R_{g}; p_{T}^{corr} [GeV/c]; R_{g}", 16, 0, 160, 40, 0., 0.5);
+  fOutput->Add(fhCorrPtRgD);
+
+  fhCorrPtZgSDstep = new TH3F("fhCorrPtZgSDstep", "fhCorrPtZgSDstep", 16, 0, 160, 20, 0., 0.5, 20, 0, 20);
+  fOutput->Add(fhCorrPtZgSDstep);
+
+  fhCorrPtRgSDstep = new TH3F("fhCorrPtRgSDstep", "fhCorrPtRgSDstep", 16, 0, 160, 20, 0., 0.5, 20, 0, 20);
+  fOutput->Add(fhCorrPtRgSDstep);
 
   fhCorrPtPtfrac = new TH2F("fhCorrPtPtfrac", "#deltap_{T}; p_{T}^{corr} [GeV/c]; #deltap_{T}", 16, 0, 160, 80, 0., 1.0);
   fOutput->Add(fhCorrPtPtfrac);
@@ -286,6 +301,21 @@ Bool_t AliAnalysisTaskSoftDrop::FillHistograms()
       }
 
       Double_t jetpt_ungrmd = jet->Pt() / ( jet->GetShapeProperties()->GetSoftDropPtfrac() );
+
+      std::vector<fastjet::PseudoJet> particles;
+      UShort_t ntracks = jet->GetNumberOfTracks();
+      for (int j = 0; j < ntracks; j++) {
+        particles.push_back( fastjet::PseudoJet( jet->Track(j)->Px(), jet->Track(j)->Py(), jet->Track(j)->Pz(), jet->Track(j)->E() ) );
+      }
+      fastjet::JetDefinition jet_def(fastjet::cambridge_algorithm, 0.4, fastjet::E_scheme);
+      fastjet::ClusterSequence cs(particles, jet_def);
+      std::vector<fastjet::PseudoJet> jets = sorted_by_pt(cs.inclusive_jets());
+
+      if (jets.size() > 0) {
+        fSDM = 0;
+        SoftDropDeepDeclustering( jets[0], jets[0].pt() );
+        fhCorrPtZg2->Fill( jets[0].pt(), SoftDropDeclustering(jets[0], 0.5, 1.5) );
+      }
 
       fhZg->Fill(jet->GetShapeProperties()->GetSoftDropZg());
       fhCorrPtZg->Fill(jetpt_ungrmd - fJetsCont->GetRhoVal() * jet->Area(), jet->GetShapeProperties()->GetSoftDropZg() );
@@ -365,6 +395,65 @@ void AliAnalysisTaskSoftDrop::CheckClusTrackMatching()
     }
     cluster = fCaloClustersCont->GetNextAcceptCluster();
   }
+}
+
+void AliAnalysisTaskSoftDrop::SoftDropDeepDeclustering(fastjet::PseudoJet jet, const Float_t inpt) {
+
+  fastjet::PseudoJet jet1;
+  fastjet::PseudoJet jet2;
+
+  if ( jet.has_parents(jet1, jet2) ) {
+
+    Float_t pt1 = jet1.pt();
+    Float_t pt2 = jet2.pt();
+
+    Float_t dr = TMath::Sqrt( jet1.plain_distance(jet2) );
+
+    Float_t z;
+    if (pt1 < pt2) z = pt1/(pt1+pt2);
+    else z = pt2/(pt1+pt2);
+
+    if (z > 0.1) {
+      fSDM++;
+      fhCorrPtZgD->Fill(inpt, z);
+      fhCorrPtRgD->Fill(inpt, dr);
+      fhCorrPtZgSDstep->Fill(inpt, z,  fSDM);
+      fhCorrPtRgSDstep->Fill(inpt, dr, fSDM);
+    }
+
+    if (pt1 > pt2) SoftDropDeepDeclustering(jet1, inpt);
+    else SoftDropDeepDeclustering(jet2, inpt);
+
+  }
+
+}
+
+Float_t AliAnalysisTaskSoftDrop::SoftDropDeclustering(fastjet::PseudoJet jet, const Float_t zcut, const Float_t beta) {
+
+  fastjet::PseudoJet jet1;
+  fastjet::PseudoJet jet2;
+
+  if ( !(jet.has_parents(jet1, jet2)) ) {
+    return 0.0;
+  }
+  else {
+    Float_t pt1 = jet1.pt();
+    Float_t pt2 = jet2.pt();
+
+    Float_t dr = TMath::Sqrt( jet1.plain_distance(jet2) );
+    Float_t angular_term = TMath::Power(dr/0.4, beta);
+
+    Float_t z;
+    if (pt1 < pt2) z = pt1/(pt1+pt2);
+    else z = pt2/(pt1+pt2);
+    
+    if ( z > (zcut*angular_term) ) return z;
+    else {
+      if (pt1 > pt2) return SoftDropDeclustering(jet1, zcut, beta);
+      else return SoftDropDeclustering(jet2, zcut, beta);
+    }
+  }
+
 }
 
 //________________________________________________________________________

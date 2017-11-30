@@ -1476,7 +1476,9 @@ void AliHFMassFitterVAR::PlotFitVAR(TVirtualPad* pd,Double_t nsigma,Int_t writeF
 
     for (Int_t i=fNparBack;i<fNparBack+fNparSignal;i++){
       pinfom->SetTextColor(kBlue);
+    //    TString str=Form("%s = %.3f #pm %.3f",ff->GetParName(i),ff->GetParameter(i),ff->GetParError(i));
       TString str=Form("%s = %.3f #pm %.3f",ff->GetParName(i),ff->GetParameter(i),ff->GetParError(i));
+       if (ff->GetParameter(fNparBack+1)<0.2) str=Form("%s = %.3f #pm %.3f",ff->GetParName(i),ff->GetParameter(i)*1000,ff->GetParError(i)*1000);
       if(!(writeFitInfo==1 && i==fNparBack)) pinfom->AddText(str);
     }
     for (Int_t i=fNparBack+fNparSignal;i<fNparBack+fNparSignal+fNparRefl;i++){
