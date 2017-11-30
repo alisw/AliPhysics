@@ -393,6 +393,7 @@ void AliEventCuts::AutomaticSetup(AliVEvent *ev) {
   if (fCurrentRun == 280234 || fCurrentRun == 280235) {
     ::Info("AliEventCuts::AutomaticSetup","Xe-Xe runs found: we will setup the same LHC15o cuts.");
     SetupLHC15o();
+    fUseEstimatorsCorrelationCut = false;
     return;
   }
 
