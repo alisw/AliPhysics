@@ -33,25 +33,27 @@ AliAnalysisTask * AddTaskZDCEP(TString ZDCCalibFileName,
   if(trigger=="muon_single") taskZDC->SelectCollisionCandidates(AliVEvent::kMuonSingleHighPt7 | AliVEvent::kMuonSingleLowPt7);
   if(dataset=="muon_calo_pass1") taskZDC->SetDataSet(AliAnalysisTaskZDCEP::k2015o_muon_calo_pass1);
 
-  if(ZDCCalibFileName!="") {
-    // add list for ZDC towers gain equalization
-    TString ZDCTowerEqFileName = "alien:///alice/cern.ch/user/j/jmargutt/15oHI_EZDCcalib.root";
-    TFile* ZDCTowerEqFile = TFile::Open(ZDCTowerEqFileName,"READ");
-    if(!ZDCTowerEqFile) {
-      cout << "ERROR: ZDC tower equalisation: file not found!" << endl;
-      exit(1);
-    }
-    gROOT->cd();
-    TList* ZDCTowerEqList = (TList*)(ZDCTowerEqFile->FindObjectAny("EZNcalib"));
-    if(ZDCTowerEqList) {
-      taskZDC->SetTowerEqList(ZDCTowerEqList);
-      cout << "ZDC tower equalisation: set! (from " <<  ZDCTowerEqFileName.Data() << ")" << endl;
-    } else {
-      cout << "ERROR: ZDC tower equalisation: EZNcalib TList not found!" << endl;
-      exit(1);
-    }
-    delete ZDCTowerEqFile;
+  // add list for ZDC towers gain equalization
+  TString ZDCTowerEqFileName = "";
+  if(dataset=="pass1") ZDCTowerEqFileName = "alien:///alice/cern.ch/user/j/jmargutt/15oHI_EZDCcalib.root";
+  if(dataset=="muon_calo_pass1") ZDCTowerEqFileName = "alien:///alice/cern.ch/user/j/jmargutt/15oHI_muon_calo_pass1_EZDCcalib.root";
+  TFile* ZDCTowerEqFile = TFile::Open(ZDCTowerEqFileName,"READ");
+  if(!ZDCTowerEqFile) {
+    cout << "ERROR: ZDC tower equalisation: file not found!" << endl;
+    exit(1);
+  }
+  gROOT->cd();
+  TList* ZDCTowerEqList = (TList*)(ZDCTowerEqFile->FindObjectAny("EZNcalib"));
+  if(ZDCTowerEqList) {
+    taskZDC->SetTowerEqList(ZDCTowerEqList);
+    cout << "ZDC tower equalisation: set! (from " <<  ZDCTowerEqFileName.Data() << ")" << endl;
+  } else {
+    cout << "ERROR: ZDC tower equalisation: EZNcalib TList not found!" << endl;
+    exit(1);
+  }
+  delete ZDCTowerEqFile;
 
+  if(ZDCCalibFileName!="") {
     // add list for ZDC Q-vector re-centering
     TFile* ZDCCalibFile = TFile::Open(ZDCCalibFileName,"READ");
     if(!ZDCCalibFile) {
@@ -77,24 +79,24 @@ AliAnalysisTask * AddTaskZDCEP(TString ZDCCalibFileName,
   taskZDCEPname += Label;
   taskZDCEPname += suffix;
   AliAnalysisDataContainer *coutputFE = mgr->CreateContainer(taskZDCEPname,
-                                                             AliFlowEventSimple::Class(),
-                                                             AliAnalysisManager::kExchangeContainer);
-  // connect the input data to the flow event task
-  mgr->ConnectInput(taskZDC,0,cinput);
-  // and connect the output to the flow event task
-  mgr->ConnectOutput(taskZDC,1,coutputFE);
+    AliFlowEventSimple::Class(),
+    AliAnalysisManager::kExchangeContainer);
+    // connect the input data to the flow event task
+    mgr->ConnectInput(taskZDC,0,cinput);
+    // and connect the output to the flow event task
+    mgr->ConnectOutput(taskZDC,1,coutputFE);
 
-  // QA OUTPUT CONTAINER
-  TString taskZDCQAname = "AnalysisResults.root:ZDCQA";
-  taskZDCQAname += Label;
-  taskZDCQAname += suffix;
-  AliAnalysisDataContainer* coutputZDCQA = mgr->CreateContainer(taskZDCQAname.Data(),
-                                                               TList::Class(),
-                                                               AliAnalysisManager::kOutputContainer,
-                                                               taskZDCQAname);
-  // and connect the qa output container to the flow event.
-  // this container will be written to the output file
-  mgr->ConnectOutput(taskZDC,2,coutputZDCQA);
+    // QA OUTPUT CONTAINER
+    TString taskZDCQAname = "AnalysisResults.root:ZDCQA";
+    taskZDCQAname += Label;
+    taskZDCQAname += suffix;
+    AliAnalysisDataContainer* coutputZDCQA = mgr->CreateContainer(taskZDCQAname.Data(),
+    TList::Class(),
+    AliAnalysisManager::kOutputContainer,
+    taskZDCQAname);
+    // and connect the qa output container to the flow event.
+    // this container will be written to the output file
+    mgr->ConnectOutput(taskZDC,2,coutputZDCQA);
 
-  return taskZDC;
-}
+    return taskZDC;
+  }

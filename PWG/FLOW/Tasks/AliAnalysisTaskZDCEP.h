@@ -85,11 +85,14 @@ private:
   TH2D* fZDCQvec2Ddis[10][2];      //!
 
   // QA histograms
+  TList *fQAListMagPol;            //! QA list per magnet polarity
   TProfile*   fQVecCen[4][2];      //!
   TProfile3D* fQVecVtx[4][2];      //!
   TProfile*   fQVecCorCen[4][2];   //!
   // TProfile* fQVecDeltaC[4][2];     //!
   // TProfile* fQVecCorDeltaC[4][2];  //!
+  TH2D* fQvecC2Ddis[2]; //!
+  TH2D* fQvecA2Ddis[2]; //!
   TH1D* fEventCounter;             //!
   TH1D* fCentralityHisto;        //!
 
@@ -103,7 +106,7 @@ private:
   const static Int_t fnRunMax = 200; //
   TList *fQVecListRun[fnRunMax];        //! run-by-run list
   TProfile2D* fQVecRbRCen[fnRunMax];    //!
-  TProfile2D* fQVecRbRVtxZ[fnRunMax];   //!
+  TProfile3D* fQVecRbRVtxZ[fnRunMax];   //!
   const static Int_t fCRCnTow = 5;
   TProfile *fZNCTower[fnRunMax][fCRCnTow]; //! ZNC tower spectra
   TProfile *fZNATower[fnRunMax][fCRCnTow]; //! ZNA tower spectra
@@ -113,7 +116,7 @@ private:
   TArrayD fAvVtxPosX;             // average vx position vs run number
   TArrayD fAvVtxPosY;             // average vy position vs run number
   TArrayD fAvVtxPosZ;             // average vz position vs run number
-  Bool_t fbFlagIsPosMagField;     //
+  Bool_t fbIsMagnetPolarityNegative;     //
   AliFlowEvent* fFlowEvent;       // flowevent
 
   AliAnalysisUtils* fAnalysisUtils; //!
@@ -123,7 +126,7 @@ private:
   AliAnalysisTaskZDCEP(const AliAnalysisTaskZDCEP&);
   AliAnalysisTaskZDCEP& operator=(const AliAnalysisTaskZDCEP&);
 
-  ClassDef(AliAnalysisTaskZDCEP,6);
+  ClassDef(AliAnalysisTaskZDCEP,7);
 };
 
 #endif
