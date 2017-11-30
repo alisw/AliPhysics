@@ -252,6 +252,10 @@ void AliAnalysisTaskReducedTreeMaker::UserCreateOutputObjects()
   if (fSetTrackFilterUsed && (fTreeWritingOption==kBaseEventsWithFullTracks || fTreeWritingOption==kFullEventsWithFullTracks))
     fWriteBaseTrack.at(0) = kFALSE;
 
+  // print active filters
+  for (Int_t i=0; i<fTrackFilter.GetEntries(); i++)
+    cout << "AliAnalysisTaskReducedTreeMaker::UserCreateOutputObjects() filter " << i << ", base track = " << fWriteBaseTrack.at(i) << endl;
+
   // check for tension between fTreeWritingOption and individual choices from AddTrackFilter
   if (fTreeWritingOption==kBaseEventsWithBaseTracks || fTreeWritingOption==kFullEventsWithBaseTracks) {
     for (Int_t i=0; i<fWriteBaseTrack.size(); i++) {
@@ -261,16 +265,58 @@ void AliAnalysisTaskReducedTreeMaker::UserCreateOutputObjects()
       }
     }
   }
+  if (fTreeWritingOption==kBaseEventsWithFullTracks) {
+    if (std::find(fWriteBaseTrack.begin(), fWriteBaseTrack.end(), kFALSE) == fWriteBaseTrack.end()) {
+      printf("AliAnalysisTaskReducedTreeMaker::UserCreateOutputObjects() WARNING: fTreeWritingOption = kBaseEventsWithFullTracks but only base tracks requested, will be set to kBaseEventsWithBaseTracks!\n");
+      fTreeWritingOption = kBaseEventsWithBaseTracks;
+    }
+  }
+  if (fTreeWritingOption==kFullEventsWithFullTracks) {
+    if (std::find(fWriteBaseTrack.begin(), fWriteBaseTrack.end(), kFALSE) == fWriteBaseTrack.end()) {
+      printf("AliAnalysisTaskReducedTreeMaker::UserCreateOutputObjects() WARNING: fTreeWritingOption = kFullEventsWithFullTracks but only base tracks requested, will be set to kFullEventsWithBaseTracks!\n");
+      fTreeWritingOption = kFullEventsWithBaseTracks;
+    }
+  }
+
+  // check for tension between fTreeWritingOption and individual choices for MC tracks
+  if (fTreeWritingOption==kBaseEventsWithBaseTracks) {
+    for (Int_t i=0; i<kMaxMCsignals; i++) {
+      if (fMCsignalsWritingOptions[i]==kFullTrack) {
+        printf("AliAnalysisTaskReducedTreeMaker::UserCreateOutputObjects() WARNING: fTreeWritingOption = kBaseEventsWithBaseTracks but full tracks requested for MC signal, will be set to kBaseEventsWithFullTracks!\n");
+        fTreeWritingOption = kBaseEventsWithFullTracks;
+        break;
+      }
+    }
+  }
+  if (fTreeWritingOption==kFullEventsWithBaseTracks) {
+    for (Int_t i=0; i<kMaxMCsignals; i++) {
+      if (fMCsignalsWritingOptions[i]==kFullTrack) {
+        printf("AliAnalysisTaskReducedTreeMaker::UserCreateOutputObjects() WARNING: fTreeWritingOption = kFullEventsWithBaseTracks but full tracks requested for MC signal, will be set to kFullEventsWithFullTracks!\n");
+        fTreeWritingOption = kFullEventsWithFullTracks;
+        break;
+      }
+    }
+  }
 
   // check if second track array is needed, i.e. fTracks contains full tracks, fTracks2 contains base tracks
   if (fTreeWritingOption==kBaseEventsWithFullTracks || fTreeWritingOption==kFullEventsWithFullTracks) {
-    if (std::find(fWriteBaseTrack.begin(), fWriteBaseTrack.end(), kTRUE) != fWriteBaseTrack.end())
+    // data
+    if (std::find(fWriteBaseTrack.begin(), fWriteBaseTrack.end(), kTRUE) != fWriteBaseTrack.end()) {
+      printf("AliAnalysisTaskReducedTreeMaker::UserCreateOutputObjects(): Second track array will be used.\n");
       fWriteSecondTrackArray = kTRUE;
-  }
+    }
 
-  // print active filters
-  for (Int_t i=0; i<fTrackFilter.GetEntries(); i++)
-    cout << "AliAnalysisTaskReducedTreeMaker::UserCreateOutputObjects() filter " << i << ", base track = " << fWriteBaseTrack.at(i) << endl;
+    // MC
+    if (fWriteSecondTrackArray==kFALSE) {
+      for (Int_t i=0; i<kMaxMCsignals; i++) {
+        if (fMCsignalsWritingOptions[i]==kBaseTrack) {
+          printf("AliAnalysisTaskReducedTreeMaker::UserCreateOutputObjects(): Second track array will be used.\n");
+          fWriteSecondTrackArray = kTRUE;
+          break;
+        }
+      }
+    }
+  }
 
   Int_t track2Option = AliReducedBaseEvent::kNoInit;
   if (fWriteSecondTrackArray) track2Option = AliReducedBaseEvent::kUseBaseTracks;

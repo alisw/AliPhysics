@@ -145,21 +145,21 @@ public:
 
   TH2I*  fEventsHistogram;     // event statistics histogram
 
-  Bool_t fFillTrackInfo;             // fill track information
-  Bool_t fFillV0Info;                // fill the V0 information
-  Bool_t fFillGammaConversions;      // fill gamma conversions
-  Bool_t fFillK0s;                   // fill the K0s V0s
-  Bool_t fFillLambda;                // fill the lambda V0s
-  Bool_t fFillALambda;               // fill the anti-lambda V0s
-  Bool_t fFillCaloClusterInfo;       // fill the calorimeter clusters  
-  Bool_t fFillFMDInfo;               // fill the FMD info
-  //Bool_t fFillBayesianPIDInfo;   // fill the bayesian PID information
-  Bool_t fFillEventPlaneInfo;     // Write event plane information
-  Bool_t fFillMCInfo;                  // Write MC truth information
-  Bool_t fFillHFInfo;                  // Write HF Process information
-  TList   fMCsignals;                  // list of AliSignalMC objects to select which particles from the Kinematics stack will be written in the tree
+  Bool_t fFillTrackInfo;            // fill track information
+  Bool_t fFillV0Info;               // fill the V0 information
+  Bool_t fFillGammaConversions;     // fill gamma conversions
+  Bool_t fFillK0s;                  // fill the K0s V0s
+  Bool_t fFillLambda;               // fill the lambda V0s
+  Bool_t fFillALambda;              // fill the anti-lambda V0s
+  Bool_t fFillCaloClusterInfo;      // fill the calorimeter clusters
+  Bool_t fFillFMDInfo;              // fill the FMD info
+  //Bool_t fFillBayesianPIDInfo;    // fill the bayesian PID information
+  Bool_t fFillEventPlaneInfo;       // Write event plane information
+  Bool_t fFillMCInfo;               // Write MC truth information
+  Bool_t fFillHFInfo;               // Write HF Process information
+  TList   fMCsignals;               // list of AliSignalMC objects to select which particles from the Kinematics stack will be written in the tree
   Int_t   fMCsignalsWritingOptions[kMaxMCsignals];   // writing options for each of the MC signals (either base or full track)     
-  Bool_t fFillTRDMatchedTracks;  // Write global tracks with matched TRD tracks
+  Bool_t fFillTRDMatchedTracks;     // Write global tracks with matched TRD tracks
   Bool_t fFillAllTRDMatchedTracks;  // if true, fill all global tracks matched in TRD; if false, fill just those global tracks which were selected with the track of V0 filters
 
   AliAnalysisCuts *fEventFilter;      // event filter
