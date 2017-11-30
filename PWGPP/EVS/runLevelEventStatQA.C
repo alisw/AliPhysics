@@ -289,8 +289,10 @@ Int_t runLevelEventStatQA(TString qafilename="EventStat_temp.root", Int_t run=25
   else if (run>=275924 && run<=276096) { refSigma= 64.0; refEff = 0.85; refClass = "CINT7-B-NOPF-CENTNOTRD"; } // T0 is not operational, using V0AND
   else if (run>=267167 && run<=280140) { refSigma= 30.0; refEff = 0.40; refClass = "C0TVX-B-NOPF-CENTNOTRD"; } // back to pp at 13TeV
   else if (run>=280141 && run<=280235) { refSigma=4000.; refEff = 0.74; refClass = "C0V0M-B-NOPF-CENTNOTRD"; } // INEL=5.4b*C0V0M/CINT7ZAC
-  else if (run>=280236 && run<=281961) { refSigma= 30.0; refEff = 0.40; refClass = "C0TVX-B-NOPF-CENTNOTRD"; } // back to pp at 13TeV
-  else if (run>=281962               ) { refSigma= 21.6; refEff = 0.40; refClass = "C0TVX-B-NOPF-CENTNOTRD"; } // switch to pp at 5TeV
+  else if (run>=280236 && run<=282007) { refSigma= 30.0; refEff = 0.40; refClass = "C0TVX-B-NOPF-CENTNOTRD"; } // back to pp at 13TeV
+  else if (run>=282008 && run<=282441) { refSigma= 21.0; refEff = 0.40; refClass = "C0TVX-B-NOPF-CENTNOTRD"; } // pp@5.02TeV. Taking previous estimates
+  else if (run>=282442               ) { refSigma= 30.0; refEff = 0.40; refClass = "C0TVX-B-NOPF-CENTNOTRD"; } // back to pp at 13TeV
+
   
   Double_t orbitRate = 11245.;
   TString partition;
@@ -464,25 +466,22 @@ Int_t runLevelEventStatQA(TString qafilename="EventStat_temp.root", Int_t run=25
       class_lumi[i] = lumi_seen*class_lifetime[i]*class_ds[i];
     }
   }
-
+/*
   // special treatment for T-Mask
-  if (run>=276135 && run<=281961) {
+  if (run>=276135) {
     AliTriggerClass* refTmaskClassObject = (AliTriggerClass*) classes.FindObject("C0TVX-T-NOPF-CENTNOTRD");
     if (refClass.Contains("CINT7")) refTmaskClassObject = (AliTriggerClass*) classes.FindObject("CINT7-T-NOPF-CENTNOTRD");
-    if (refTmaskClassObject) {
-      Int_t refTmaskId = classes.IndexOf(refTmaskClassObject);
-      TString refTmaskCluster = refTmaskClassObject->GetCluster()->GetName();
-      refTmaskCounts = (activeDetectorsString.Contains("TRD") && (refTmaskCluster.EqualTo("CENT") || refTmaskCluster.EqualTo("ALL") || refTmaskCluster.EqualTo("FAST"))) ? class_lMb[refTmaskId] : class_l0b[refTmaskId];
-      for (Int_t i=0;i<classes.GetEntriesFast();i++){
-        AliTriggerClass* cl = (AliTriggerClass*) classes.At(i);
-        if (!cl) continue;
-        if (TString(cl->GetName()).Contains("-T-")){
-          class_lumi[i] = class_lumi[i]*TMath::Log(1-(Double_t)(refTmaskCounts)/totalBCs)/TMath::Log(1-(Double_t)(refCounts)/totalBCs);
-        }
+    Int_t refTmaskId = classes.IndexOf(refTmaskClassObject);
+    TString refTmaskCluster = refTmaskClassObject->GetCluster()->GetName();
+    refTmaskCounts = (activeDetectorsString.Contains("TRD") && (refTmaskCluster.EqualTo("CENT") || refTmaskCluster.EqualTo("ALL") || refTmaskCluster.EqualTo("FAST"))) ? class_lMb[refTmaskId] : class_l0b[refTmaskId];
+    for (Int_t i=0;i<classes.GetEntriesFast();i++){
+      AliTriggerClass* cl = (AliTriggerClass*) classes.At(i);
+      if (TString(cl->GetName()).Contains("-T-")){
+        class_lumi[i] = class_lumi[i]*TMath::Log(1-(Double_t)(refTmaskCounts)/totalBCs)/TMath::Log(1-(Double_t)(refCounts)/totalBCs);
       }
     }
   }
-
+*/
 
   
   TFile* fin = new TFile(qafilename);
@@ -623,7 +622,8 @@ Int_t runLevelEventStatQA(TString qafilename="EventStat_temp.root", Int_t run=25
     Int_t ibit = TMath::Nint(TMath::Log2(mask));
 
     // FIXME
-    // if (!bitNames[ibit].EqualTo("kINT7") && !bitNames[ibit].EqualTo("kINT7inMUON") && !bitNames[ibit].EqualTo("kMuonUnlikeLowPt7")) continue;
+//     if (!bitNames[ibit].EqualTo("kINT7") && !bitNames[ibit].EqualTo("kINT7inMUON") && !bitNames[ibit].EqualTo("kMuonUnlikeLowPt7")) continue;
+    if (!bitNames[ibit].EqualTo("kINT7")) continue;
 
     if (ibit>=NBITS) continue;
 //    if (alias_recorded[ibit]) break; 
