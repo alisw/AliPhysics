@@ -1371,22 +1371,11 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::Run()
         fHistTrials->Fill("#sum{ntrials}",fTrials);
       }
     }
-
-    if(fTriggerLevel1 != 0){
-      if(!MCSimTrigger(fVevent,fTriggerLevel1) && fAnalysispPb)
-	return kFALSE;
-    }
   }
-
-  fVz->Fill(fVertex[2]); // Fill Vertex Z histogram
-
-    // fOutClusters->Delete(); // Delete output USEFUL LATER FOR CONTAINER CREATION !!
 
   Int_t index=0;
 
   if(fIsMC){
-//    AliAODMCHeader *mcHeader; // Is this object useful compared to fmcHeader?
-
     fAODMCParticles = static_cast <TClonesArray*>(InputEvent()->FindListObject(AliAODMCParticle::StdBranchName()));
     fmcHeader = dynamic_cast<AliAODMCHeader*>(InputEvent()->FindListObject(AliAODMCHeader::StdBranchName()));
 
@@ -1409,6 +1398,13 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::Run()
       AnalyzeMC();
     }
   }
+
+  if(fIsMC && (fTriggerLevel1 != 0)){
+    if(!MCSimTrigger(fVevent,fTriggerLevel1) && fAnalysispPb)
+      return kFALSE;
+  }
+
+  fVz->Fill(fVertex[2]); // Fill Vertex Z histogram
 
   if(!isL1 && fIsMC && f2012EGA){
     return kFALSE;
