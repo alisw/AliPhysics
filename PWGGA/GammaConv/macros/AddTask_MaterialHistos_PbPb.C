@@ -149,7 +149,6 @@ void AddTask_MaterialHistos_PbPb(	Int_t   trainConfig             = 1,        //
       fCuts->SetPreSelectionCutFlag(kTRUE);
       fCuts->SetIsHeavyIon(IsHeavyIon);
       fCuts->SetV0ReaderName(V0ReaderName);
-      fCuts->SetProcessAODCheck(processAODcheckForV0s); // if processAODcheckForV0s is kTRUE, also check for V0s to be contained in AliAODs and AliAODGammaConversion.root
       if(fCuts->InitializeCutsFromCutString(cutnumberPhoton.Data())){
         fV0ReaderV1->SetConversionCuts(fCuts);
         fCuts->SetFillCutHistograms("",kTRUE);
