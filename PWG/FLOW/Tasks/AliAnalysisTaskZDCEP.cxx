@@ -80,6 +80,7 @@ fQAList(0x0),
 fZDCGainAlpha(0.395),
 fZDCCalibList(0x0),
 fTowerEqList(0x0),
+fQAListMagPol(0x0),
 fEventCounter(NULL),
 fCentralityHisto(NULL),
 fCachedRunNum(0),
@@ -87,7 +88,7 @@ fnRun(0),
 fDataSet(k2015o_pass1_pass1pidfix),
 fAnalysisUtils(0x0),
 fMultSelection(0x0),
-fbFlagIsPosMagField(kFALSE),
+fbIsMagnetPolarityNegative(kFALSE),
 fFlowEvent(NULL)
 {
   for(Int_t k=0; k<4; k++) {
@@ -132,6 +133,10 @@ fFlowEvent(NULL)
       // fQVecDeltaC[c][i] =  NULL;
       // fQVecCorDeltaC[c][i] =  NULL;
     }
+  }
+  for(Int_t i=0; i<2; i++) {
+    fQvecC2Ddis[i] = NULL;
+    fQvecA2Ddis[i] = NULL;
   }
   for(Int_t k=0; k<2; k++) {
     for(Int_t c=0; c<10; c++) {
@@ -169,6 +174,7 @@ fQAList(0x0),
 fZDCGainAlpha(0.395),
 fZDCCalibList(0x0),
 fTowerEqList(0x0),
+fQAListMagPol(0x0),
 fEventCounter(NULL),
 fCentralityHisto(NULL),
 fCachedRunNum(0),
@@ -176,7 +182,7 @@ fnRun(0),
 fDataSet(k2015o_pass1_pass1pidfix),
 fAnalysisUtils(0x0),
 fMultSelection(0x0),
-fbFlagIsPosMagField(kFALSE),
+fbIsMagnetPolarityNegative(kFALSE),
 fFlowEvent(NULL)
 {
   for(Int_t k=0; k<4; k++) {
@@ -221,6 +227,10 @@ fFlowEvent(NULL)
       // fQVecDeltaC[c][i] =  NULL;
       // fQVecCorDeltaC[c][i] =  NULL;
     }
+  }
+  for(Int_t i=0; i<2; i++) {
+    fQvecC2Ddis[i] = NULL;
+    fQvecA2Ddis[i] = NULL;
   }
   for(Int_t k=0; k<2; k++) {
     for(Int_t c=0; c<10; c++) {
@@ -339,7 +349,7 @@ void AliAnalysisTaskZDCEP::UserCreateOutputObjects ()
 
   TString WhichQ[] = {"QCx","QCy","QAx","QAy"};
   TString WhichCor[] = {"QAxQCx","QAyQCy","QAxQCy","QCxQAy"};
-  TString WhichMP[] = {"+","-"};
+  TString WhichMP[] = {"--","++"};
   Double_t xmin=0.,xmax=0.,ymin=0.,ymax=0.,zmin=0.,zmax=0.;
   xmin = -8.5e-3;
   xmax = 8.5e-3;
@@ -359,19 +369,33 @@ void AliAnalysisTaskZDCEP::UserCreateOutputObjects ()
   fCentralityHisto = new TH1D("fCentralityHisto","fCentralityHisto",100,0.,100.);
   fQAList->Add(fCentralityHisto);
 
-  for(Int_t c=0; c<4; c++) {
-    for(Int_t i=0; i<2; i++) {
+
+  fQAListMagPol = new TList();
+  fQAListMagPol->SetName("QA list Magnet Polarity");
+  fQAListMagPol->SetOwner(kTRUE);
+  fQAList->Add(fQAListMagPol);
+
+  for(Int_t i=0; i<2; i++) {
+    for(Int_t c=0; c<4; c++) {
       fQVecCen[c][i] =  new TProfile(Form("fQVecCen[%d][%d]",c,i),Form("ZDC <%s> mag.pol. %s;centrality;<%s>",WhichQ[c].Data(),WhichMP[i].Data(),WhichQ[c].Data()),20,0.,100.);
-      fQAList->Add(fQVecCen[c][i]);
-      fQVecVtx[c][i] =  new TProfile3D(Form("fQVecVtx[%d][%d]",c,i),Form("ZDC <%s> mag.pol. %s;x_{vtx} (cm);y_{vtx} (cm);z_{vtx} (cm)",WhichQ[c].Data(),WhichMP[i].Data()),10,xmin,xmax,10,ymin,ymax,10,zmin,zmax);
-      fQAList->Add(fQVecVtx[c][i]);
-      fQVecCorCen[c][i] = new TProfile(Form("fQVecCorCen[%d][%d]",c,i),Form("ZDC <%s> mag.pol. %s;centrality;<%s>",WhichCor[c].Data(),WhichMP[i].Data(),WhichCor[c].Data()),20,0.,100.);
-      fQAList->Add(fQVecCorCen[c][i]);
-      // fQVecDeltaC[c][i] = new TProfile(Form("fQVecDeltaC[%d][%d]",c,i),Form("ZDC <%s> mag.pol. %s;#Delta centroids (cm);<%s>",WhichQ[c].Data(),WhichMP[i].Data(),WhichQ[c].Data()),100,0.,2.5);
-      // fQAList->Add(fQVecDeltaC[c][i]);
-      // fQVecCorDeltaC[c][i] = new TProfile(Form("fQVecCorDeltaC[%d][%d]",c,i),Form("ZDC <%s> mag.pol. %s;#Delta centroids (cm);<%s>",WhichCor[c].Data(),WhichMP[i].Data(),WhichCor[c].Data()),100,0.,2.5);
-      // fQAList->Add(fQVecCorDeltaC[c][i]);
+      fQAListMagPol->Add(fQVecCen[c][i]);
     }
+    for(Int_t c=0; c<4; c++) {
+      fQVecVtx[c][i] =  new TProfile3D(Form("fQVecVtx[%d][%d]",c,i),Form("ZDC <%s> mag.pol. %s;x_{vtx} (cm);y_{vtx} (cm);z_{vtx} (cm)",WhichQ[c].Data(),WhichMP[i].Data()),10,xmin,xmax,10,ymin,ymax,10,zmin,zmax);
+      fQAListMagPol->Add(fQVecVtx[c][i]);
+    }
+    for(Int_t c=0; c<4; c++) {
+      fQVecCorCen[c][i] = new TProfile(Form("fQVecCorCen[%d][%d]",c,i),Form("ZDC <%s> mag.pol. %s;centrality;<%s>",WhichCor[c].Data(),WhichMP[i].Data(),WhichCor[c].Data()),20,0.,100.);
+      fQAListMagPol->Add(fQVecCorCen[c][i]);
+    }
+    // fQVecDeltaC[c][i] = new TProfile(Form("fQVecDeltaC[%d][%d]",c,i),Form("ZDC <%s> mag.pol. %s;#Delta centroids (cm);<%s>",WhichQ[c].Data(),WhichMP[i].Data(),WhichQ[c].Data()),100,0.,2.5);
+    // fQAListMagPol->Add(fQVecDeltaC[c][i]);
+    // fQVecCorDeltaC[c][i] = new TProfile(Form("fQVecCorDeltaC[%d][%d]",c,i),Form("ZDC <%s> mag.pol. %s;#Delta centroids (cm);<%s>",WhichCor[c].Data(),WhichMP[i].Data(),WhichCor[c].Data()),100,0.,2.5);
+    // fQAListMagPol->Add(fQVecCorDeltaC[c][i]);
+    fQvecC2Ddis[i] = new TH2D(Form("fQvecC2Ddis[%d]",i),Form("%s x-y distribution mag.pol. %s;x (cm);y (cm)","QC",WhichMP[i].Data()),100, -2., 2. , 100., -2., 2.);
+    fQAListMagPol->Add(fQvecC2Ddis[i]);
+    fQvecA2Ddis[i] = new TH2D(Form("fQvecA2Ddis[%d]",i),Form("%s x-y distribution mag.pol. %s;x (cm);y (cm)","QA",WhichMP[i].Data()),100, -2., 2. , 100., -2., 2.);
+    fQAListMagPol->Add(fQvecA2Ddis[i]);
   }
   for(Int_t k=0; k<2; k++) {
     for(Int_t c=0; c<10; c++) {
@@ -420,16 +444,18 @@ void AliAnalysisTaskZDCEP::UserCreateOutputObjects ()
 
     fQVecRbRCen[r] = new TProfile2D(Form("QVecRbRCen[%d]",fRunList[r]),Form("ZDC <Q_{i}> run %d;centrality;Q_{i}",fRunList[r]),20,0.,100.,4,0.,4.);
     fQVecListRun[r]->Add(fQVecRbRCen[r]);
-    fQVecRbRVtxZ[r] = new TProfile2D(Form("QVecRbRVtxZ[%d]",fRunList[r]),Form("ZDC <Q_{i}> run %d;vtx-z (cm);Q_{i}",fRunList[r]),20,-10.,10.,4,0.,4.);
+    fQVecRbRVtxZ[r] = new TProfile3D(Form("QVecRbRVtxZ[%d]",fRunList[r]),Form("ZDC <Q_{i}> run %d;centrality;vtx-z (cm);Q_{i}",fRunList[r]),18,0.,90.,20,-10.,10.,4,0.,4.);
     fQVecListRun[r]->Add(fQVecRbRVtxZ[r]);
 
-    for(Int_t k=0; k<fCRCnTow; k++) {
-      fZNCTower[r][k] = new TProfile(Form("fZNCTower[%d][%d]",fRunList[r],k),Form("fZNCTower[%d][%d]",fRunList[r],k),100,0.,100.,"s");
-      fZNCTower[r][k]->Sumw2();
-      fQVecListRun[r]->Add(fZNCTower[r][k]);
-      fZNATower[r][k] = new TProfile(Form("fZNATower[%d][%d]",fRunList[r],k),Form("fZNATower[%d][%d]",fRunList[r],k),100,0.,100.,"s");
-      fZNATower[r][k]->Sumw2();
-      fQVecListRun[r]->Add(fZNATower[r][k]);
+    if(!fTowerEqList) {
+      for(Int_t k=0; k<fCRCnTow; k++) {
+        fZNCTower[r][k] = new TProfile(Form("fZNCTower[%d][%d]",fRunList[r],k),Form("fZNCTower[%d][%d]",fRunList[r],k),100,0.,100.,"s");
+        fZNCTower[r][k]->Sumw2();
+        fQVecListRun[r]->Add(fZNCTower[r][k]);
+        fZNATower[r][k] = new TProfile(Form("fZNATower[%d][%d]",fRunList[r],k),Form("fZNATower[%d][%d]",fRunList[r],k),100,0.,100.,"s");
+        fZNATower[r][k]->Sumw2();
+        fQVecListRun[r]->Add(fZNATower[r][k]);
+      }
     }
   }
 
@@ -443,7 +469,7 @@ void AliAnalysisTaskZDCEP::UserExec(Option_t *)
   //  get  an  event  from  the  analysis  manager
   AliAODEvent *aod = dynamic_cast<AliAODEvent*>(InputEvent());
   if(!aod) return;
-  Float_t Centrality = 0.;
+  Double_t Centrality = 0.;
   fMultSelection = (AliMultSelection*)aod->FindListObject("MultSelection");
   if(!fMultSelection) {
     AliWarning("WARNING: AliMultSelection object not found ! \n");
@@ -460,12 +486,13 @@ void AliAnalysisTaskZDCEP::UserExec(Option_t *)
   Int_t fCenBin = GetCenBin(Centrality);
 
   if(RunNum!=fCachedRunNum) {
-    fbFlagIsPosMagField = kFALSE;
-    Int_t dRun15hPos[] = {246390, 246391, 246392, 246994, 246991, 246989, 246984, 246982, 246980, 246948, 246945, 246928, 246851, 246847, 246846, 246845, 246844, 246810, 246809, 246808, 246807, 246805, 246804, 246766, 246765, 246763, 246760, 246759, 246758, 246757, 246751, 246750, 246495, 246493, 246488, 246487, 246434, 246431, 246428, 246424};
-    for (Int_t i=0; i<40; i++) {
-      if(RunNum==dRun15hPos[i]) fbFlagIsPosMagField = kTRUE;
-    }
+    fbIsMagnetPolarityNegative = kFALSE;
+    // LHC15o
+    // negative polarity: 246390 - 246994
+    // positive polarity: 244824 - 246276
+    if(RunNum>246276) fbIsMagnetPolarityNegative = kTRUE;
   }
+  Int_t qb = (fbIsMagnetPolarityNegative?0:1);
 
   Bool_t IsGoodEvent = kTRUE;
   fEventCounter->Fill(0.5);
@@ -514,8 +541,8 @@ void AliAnalysisTaskZDCEP::UserExec(Option_t *)
       if(towZNCraw[i]<0. || towZNAraw[i]<0.) continue;
       towZNC[i] = towZNCraw[i];
       towZNA[i] = towZNAraw[i];
-      fZNCTower[RunBin][i]->Fill(Centrality,towZNC[i]);
-      fZNATower[RunBin][i]->Fill(Centrality,towZNA[i]);
+      if(fZNCTower[RunBin][i]) fZNCTower[RunBin][i]->Fill(Centrality,towZNC[i]);
+      if(fZNATower[RunBin][i]) fZNATower[RunBin][i]->Fill(Centrality,towZNA[i]);
     }
   }
 
@@ -741,7 +768,7 @@ void AliAnalysisTaskZDCEP::UserExec(Option_t *)
     // second iteration (2D)
 
     if (fZDCVtxCenHistMagPol[fCenBin][0]) {
-      if(fbFlagIsPosMagField) {
+      if(fbIsMagnetPolarityNegative) {
         QCReR -= fZDCVtxCenHistMagPol[fCenBin][0]->GetBinContent(fZDCVtxCenHistMagPol[fCenBin][0]->FindBin(fVtxPosCor[0],fVtxPosCor[1],fVtxPosCor[2]));
         QCImR -= fZDCVtxCenHistMagPol[fCenBin][1]->GetBinContent(fZDCVtxCenHistMagPol[fCenBin][1]->FindBin(fVtxPosCor[0],fVtxPosCor[1],fVtxPosCor[2]));
         QAReR -= fZDCVtxCenHistMagPol[fCenBin][4]->GetBinContent(fZDCVtxCenHistMagPol[fCenBin][4]->FindBin(fVtxPosCor[0],fVtxPosCor[1],fVtxPosCor[2]));
@@ -762,75 +789,55 @@ void AliAnalysisTaskZDCEP::UserExec(Option_t *)
       fEventCounter->Fill(4.5);
     }
 
-    // store ZDC Qvectors for QA plots ****************************************
-
-    if(IsGoodEvent) {
-      Int_t qb = (fbFlagIsPosMagField?0:1);
-      QAReR = -QAReR;  // this is not a bug: QAReR --> -QAReR
-
-      fQVecCen[0][qb]->Fill(Centrality,QCReR);
-      fQVecCen[1][qb]->Fill(Centrality,QCImR);
-      fQVecCen[2][qb]->Fill(Centrality,QAReR);
-      fQVecCen[3][qb]->Fill(Centrality,QAImR);
-
-      fQVecCorCen[0][qb]->Fill(Centrality,QCReR*QAReR);
-      fQVecCorCen[1][qb]->Fill(Centrality,QCImR*QAImR);
-      fQVecCorCen[2][qb]->Fill(Centrality,QAReR*QCImR);
-      fQVecCorCen[3][qb]->Fill(Centrality,QAImR*QCReR);
-
-      fQVecRbRCen[RunBin]->Fill(Centrality,0.5,QCReR);
-      fQVecRbRCen[RunBin]->Fill(Centrality,1.5,QCImR);
-      fQVecRbRCen[RunBin]->Fill(Centrality,2.5,QAReR);
-      fQVecRbRCen[RunBin]->Fill(Centrality,3.5,QAImR);
-
-      if(Centrality>5. && Centrality<40.) {
-
-        fQVecVtx[0][qb]->Fill(fVtxPosCor[0],fVtxPosCor[1],fVtxPosCor[2],QCReR);
-        fQVecVtx[1][qb]->Fill(fVtxPosCor[0],fVtxPosCor[1],fVtxPosCor[2],QCImR);
-        fQVecVtx[2][qb]->Fill(fVtxPosCor[0],fVtxPosCor[1],fVtxPosCor[2],QAReR);
-        fQVecVtx[3][qb]->Fill(fVtxPosCor[0],fVtxPosCor[1],fVtxPosCor[2],QAImR);
-
-        fQVecRbRVtxZ[RunBin]->Fill(fVtxPos[2],0.5,QCReR);
-        fQVecRbRVtxZ[RunBin]->Fill(fVtxPos[2],1.5,QCImR);
-        fQVecRbRVtxZ[RunBin]->Fill(fVtxPos[2],2.5,QAReR);
-        fQVecRbRVtxZ[RunBin]->Fill(fVtxPos[2],3.5,QAImR);
-
-        // Double_t DeltaC = sqrt(pow(QCReR-QAReR,2.)+pow(QCImR-QAImR,2.));
-        // fQVecDeltaC[0][qb]->Fill(DeltaC,QCReR);
-        // fQVecDeltaC[1][qb]->Fill(DeltaC,QCImR);
-        // fQVecDeltaC[2][qb]->Fill(DeltaC,QAReR);
-        // fQVecDeltaC[3][qb]->Fill(DeltaC,QAImR);
-        // fQVecCorDeltaC[0][qb]->Fill(DeltaC,QCReR*QAReR);
-        // fQVecCorDeltaC[1][qb]->Fill(DeltaC,QCImR*QAImR);
-        // fQVecCorDeltaC[2][qb]->Fill(DeltaC,QAReR*QCImR);
-        // fQVecCorDeltaC[3][qb]->Fill(DeltaC,QAImR*QCReR);
-      }
-
-      fEventCounter->Fill(1.5);
-    }
-
-  } else {
-    // if no calibration files provided, store <Q>
-
-    if(IsGoodEvent) {
-      fQVecRbRCen[RunBin]->Fill(Centrality,0.5,QCReR);
-      fQVecRbRCen[RunBin]->Fill(Centrality,1.5,QCImR);
-      fQVecRbRCen[RunBin]->Fill(Centrality,2.5,QAReR);
-      fQVecRbRCen[RunBin]->Fill(Centrality,3.5,QAImR);
-
-      if(Centrality>5. && Centrality<40.) {
-        fQVecRbRVtxZ[RunBin]->Fill(fVtxPos[2],0.5,QCReR);
-        fQVecRbRVtxZ[RunBin]->Fill(fVtxPos[2],1.5,QCImR);
-        fQVecRbRVtxZ[RunBin]->Fill(fVtxPos[2],2.5,QAReR);
-        fQVecRbRVtxZ[RunBin]->Fill(fVtxPos[2],3.5,QAImR);
-      }
-    }
-
   }
 
+  // fill QA plots *************************************************************
+
   if(IsGoodEvent) {
+
+    fQVecCen[0][qb]->Fill(Centrality,QCReR);
+    fQVecCen[1][qb]->Fill(Centrality,QCImR);
+    fQVecCen[2][qb]->Fill(Centrality,QAReR);
+    fQVecCen[3][qb]->Fill(Centrality,QAImR);
+
+    fQVecRbRCen[RunBin]->Fill(Centrality,0.5,QCReR);
+    fQVecRbRCen[RunBin]->Fill(Centrality,1.5,QCImR);
+    fQVecRbRCen[RunBin]->Fill(Centrality,2.5,QAReR);
+    fQVecRbRCen[RunBin]->Fill(Centrality,3.5,QAImR);
+
+    fQVecVtx[0][qb]->Fill(fVtxPosCor[0],fVtxPosCor[1],fVtxPosCor[2],QCReR);
+    fQVecVtx[1][qb]->Fill(fVtxPosCor[0],fVtxPosCor[1],fVtxPosCor[2],QCImR);
+    fQVecVtx[2][qb]->Fill(fVtxPosCor[0],fVtxPosCor[1],fVtxPosCor[2],QAReR);
+    fQVecVtx[3][qb]->Fill(fVtxPosCor[0],fVtxPosCor[1],fVtxPosCor[2],QAImR);
+
+    fQVecRbRVtxZ[RunBin]->Fill(Centrality,fVtxPos[2],0.5,QCReR);
+    fQVecRbRVtxZ[RunBin]->Fill(Centrality,fVtxPos[2],1.5,QCImR);
+    fQVecRbRVtxZ[RunBin]->Fill(Centrality,fVtxPos[2],2.5,QAReR);
+    fQVecRbRVtxZ[RunBin]->Fill(Centrality,fVtxPos[2],3.5,QAImR);
+
     fZDCQvec2Ddis[fCenBin][0]->Fill(QCReR,QCImR);
     fZDCQvec2Ddis[fCenBin][1]->Fill(QAReR,QAImR);
+
+    fQvecC2Ddis[qb]->Fill(QCReR,QCImR);
+    fQvecA2Ddis[qb]->Fill(QAReR,QAImR);
+
+    // Double_t DeltaC = sqrt(pow(QCReR-QAReR,2.)+pow(QCImR-QAImR,2.));
+    // fQVecDeltaC[0][qb]->Fill(DeltaC,QCReR);
+    // fQVecDeltaC[1][qb]->Fill(DeltaC,QCImR);
+    // fQVecDeltaC[2][qb]->Fill(DeltaC,QAReR);
+    // fQVecDeltaC[3][qb]->Fill(DeltaC,QAImR);
+
+    QAReR = -QAReR;  // this is not a bug: QAReR --> -QAReR
+
+    fQVecCorCen[0][qb]->Fill(Centrality,QCReR*QAReR);
+    fQVecCorCen[1][qb]->Fill(Centrality,QCImR*QAImR);
+    fQVecCorCen[2][qb]->Fill(Centrality,QAReR*QCImR);
+    fQVecCorCen[3][qb]->Fill(Centrality,QAImR*QCReR);
+
+    // fQVecCorDeltaC[0][qb]->Fill(DeltaC,QCReR*QAReR);
+    // fQVecCorDeltaC[1][qb]->Fill(DeltaC,QCImR*QAImR);
+    // fQVecCorDeltaC[2][qb]->Fill(DeltaC,QAReR*QCImR);
+    // fQVecCorDeltaC[3][qb]->Fill(DeltaC,QAImR*QCReR);
   }
 
   // pass ZDC Qvectors in output **********************************************
@@ -840,6 +847,8 @@ void AliAnalysisTaskZDCEP::UserExec(Option_t *)
   if(!IsGoodEvent) {
     xyZNCfinal[0]=0.; xyZNCfinal[1]=0.;
     xyZNAfinal[0]=0.; xyZNAfinal[1]=0.;
+  } else {
+    fEventCounter->Fill(1.5);
   }
   fFlowEvent->SetZDC2Qsub(xyZNCfinal,denZNC,xyZNAfinal,denZNA);
 
