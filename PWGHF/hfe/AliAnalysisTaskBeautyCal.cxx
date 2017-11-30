@@ -2053,7 +2053,8 @@ void AliAnalysisTaskBeautyCal::FindMother(AliAODMCParticle* part, int &label, in
 Bool_t AliAnalysisTaskBeautyCal::IsDdecay(int mpid)
 {
  int abmpid = TMath::Abs(mpid);
- if(abmpid==411 || abmpid==421 || abmpid==413 || abmpid==423 || abmpid==431 || abmpid==433)
+ //if(abmpid==411 || abmpid==421 || abmpid==413 || abmpid==423 || abmpid==431 || abmpid==433)
+ if(abmpid==411 || abmpid==421 || abmpid==413 || abmpid==423 || abmpid==431 || abmpid==433 || abmpid==4122)
    {
     return kTRUE;
    }
