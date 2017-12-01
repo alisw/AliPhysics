@@ -494,7 +494,7 @@ void AliAnalysisHFjetTagHFE::UserCreateOutputObjects()
   fQAHistTrPhi = new TH1F("fQAHistTrPhi","track phi",650,0.0,6.5);
   fOutput->Add(fQAHistTrPhi);
  
-  fQAHistNits = new TH1F("fQAHistNits","ITS hits",7,-0.5,-6.5);
+  fQAHistNits = new TH1F("fQAHistNits","ITS hits",7,-0.5,6.5);
   fOutput->Add(fQAHistNits);
 
   fHistClustE = new TH1F("fHistClustE", "EMCAL cluster energy distribution; Cluster E;counts", 500, 0.0, 50.0);
