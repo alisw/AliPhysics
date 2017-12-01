@@ -523,7 +523,6 @@ void AliAnalysisTaskCEP::UserCreateOutputObjects()
   
 }
 
-
 //------------------------------------------------------------------------------
 void AliAnalysisTaskCEP::UserExec(Option_t *)
 {
@@ -639,7 +638,9 @@ void AliAnalysisTaskCEP::UserExec(Option_t *)
   }
   
   // EMCAL information
-  if (flEMC) fCEPUtil->EMCAnalysis(fESDEvent,flEMC);
+  Int_t *nCaloCluster = new Int_t[2];
+  Double_t *CaloEnergy= new Double_t[2];
+  if (flEMC) fCEPUtil->EMCAnalysis(fESDEvent,flEMC,nCaloCluster,CaloEnergy);
 
   // count number of recorded triggers
   // CINT11-B-NOPF-CENTNOTRD, DG trigger has to be replayed, LHC16[d,e,h]
@@ -1044,6 +1045,12 @@ void AliAnalysisTaskCEP::UserExec(Option_t *)
     fCEPEvent->SetnV0(fNumV0s);
     fCEPEvent->SetVtxType(kVertexType);
     fCEPEvent->SetVtxPos(fVtxPos);
+    
+    // Calorimeter information
+    for (Int_t ii=0; ii<2; ii++) {
+      fCEPEvent->SetnCaloCluster(nCaloCluster[ii],ii);
+      fCEPEvent->SetCaloEnergy(CaloEnergy[ii],ii);
+    }
   
     // if this is a MC event then get the MC true information
     // and save it into the event buffer
@@ -1071,10 +1078,13 @@ void AliAnalysisTaskCEP::UserExec(Option_t *)
         stack->Particle(1)->Momentum(lvtmp);
         lvin += lvtmp;
         
-        // for DIME save the CEP particle
+        // for DIME and PYTHIA8-CD save the CEP particle
         // add primaries except for the incoming and outgoing protons
         lvprod = TLorentzVector(0,0,0,0);
-        if ( fMCGenerator.EqualTo("Dime") ) {
+        if ( fMCGenerator.EqualTo("Dime") ||
+             ( fMCGenerator.EqualTo("Pythia") && fMCProcess==106 )
+           )
+        {
           stack->Particle(4)->Momentum(lvtmp);
           lvprod  = lvtmp;
           for (Int_t ii=5; ii<nPrimaries; ii++) {
@@ -1204,6 +1214,8 @@ void AliAnalysisTaskCEP::UserExec(Option_t *)
     delete TTindices;
     TTindices = 0x0;
   }
+  delete[] nCaloCluster;
+  delete[] CaloEnergy;
 
 }
 

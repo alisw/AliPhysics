@@ -222,7 +222,7 @@ AliAnalysisTaskEmcalQGTagging::~AliAnalysisTaskEmcalQGTagging()
   fShapesVarNames[0] = "partonCode"; 
   fShapesVarNames[1] = "ptJet"; 
   fShapesVarNames[2] = "ptDJet"; 
-  fShapesVarNames[3] = "mJet";
+  fShapesVarNames[3] = "phiJet";
   // fShapesVarNames[4] = "nbOfConst";
   fShapesVarNames[4] = "angularity";
   //fShapesVarNames[5] = "circularity";
@@ -231,7 +231,7 @@ AliAnalysisTaskEmcalQGTagging::~AliAnalysisTaskEmcalQGTagging()
 
   fShapesVarNames[6] = "ptJetMatch"; 
   fShapesVarNames[7] = "ptDJetMatch"; 
-  fShapesVarNames[8] = "mJetMatch";
+  fShapesVarNames[8] = "phiJetMatch";
   // fShapesVarNames[12] = "nbOfConstMatch";
   fShapesVarNames[9] = "angularityMatch";
   //fShapesVarNames[12] = "circularityMatch";
@@ -527,7 +527,8 @@ Bool_t AliAnalysisTaskEmcalQGTagging::FillHistograms()
   
       fShapesVar[1] = ptSubtracted;
       fShapesVar[2] = GetJetpTD(jet1,0);
-      fShapesVar[3] = GetJetMass(jet1,0);
+      fShapesVar[3] =jet1->Phi();
+	//GetJetMass(jet1,0);
       fShapesVar[4] = GetJetAngularity(jet1,0);
       //fShapesVar[5] = GetJetCircularity(jet1,0);
       fShapesVar[5] = GetJetLeSub(jet1,0);
@@ -545,7 +546,8 @@ Bool_t AliAnalysisTaskEmcalQGTagging::FillHistograms()
         
          ptMatch=jet3->Pt();
          ptDMatch=GetJetpTD(jet3, kMatched);
-         massMatch=GetJetMass(jet3,kMatched);
+         massMatch=jet3->Phi();
+	 // GetJetMass(jet3,kMatched);
          //constMatch=1.*GetJetNumberOfConstituents(jet2,kMatched);
          angulMatch=GetJetAngularity(jet3, kMatched);
 	 //circMatch=GetJetCircularity(jet3, kMatched);
@@ -559,7 +561,8 @@ Bool_t AliAnalysisTaskEmcalQGTagging::FillHistograms()
         if(fJetShapeSub==kDerivSub) kMatched = 2;
         ptMatch=jet3->Pt();
         ptDMatch=GetJetpTD(jet3, kMatched);
-        massMatch=GetJetMass(jet3,kMatched);
+        massMatch=jet3->Phi();
+	//GetJetMass(jet3,kMatched);
         // constMatch=1.*GetJetNumberOfConstituents(jet3,kMatched);
         angulMatch=GetJetAngularity(jet3, kMatched);
 	// circMatch=GetJetCircularity(jet3, kMatched);

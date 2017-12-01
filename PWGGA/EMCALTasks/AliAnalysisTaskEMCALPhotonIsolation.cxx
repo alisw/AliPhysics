@@ -462,7 +462,6 @@ void AliAnalysisTaskEMCALPhotonIsolation::UserCreateOutputObjects(){
     // Create ouput histograms and THnSparse and TTree
 
   AliAnalysisTaskEmcal::UserCreateOutputObjects();
-    // printf("Up here all good");
 
     // Histogram binning and ranges (to consider geometry-dependent histograms)
   Int_t   netabins = GetHistogramRangesAndBinning()->GetHistoEtaBins();
@@ -679,16 +678,18 @@ void AliAnalysisTaskEMCALPhotonIsolation::UserCreateOutputObjects(){
         fOutput->Add(fM02);
 
 	fEtaPhiClusVsM02 = new TH3F ("hEtaVsPhiVsM02", "#eta vs. #varphi vs. #sigma_{long}^{2} for clusters with 14 < #it{E}_{T} < 16 GeV", netabins, etamin, etamax, nphibins, phimin, phimax, 75, 0., 1.5);
-        fEtaPhiClusVsM02->Sumw2();
+	fEtaPhiClusVsM02->Sumw2();
 	fOutput->Add(fEtaPhiClusVsM02);
 
-	fEtaPhiClusVsEtIsoClus = new TH3F ("hEtaVsPhiVsEtIsoClus", "#eta vs. #varphi vs. #Sigma #it{E}_{T}^{clus, cone} for clusters with 14 < #it{E}_{T} < 16 GeV", netabins, etamin, etamax, nphibins, phimin, phimax, 60, 0., 30.);
-        fEtaPhiClusVsEtIsoClus->Sumw2();
-	fOutput->Add(fEtaPhiClusVsEtIsoClus);
+	if(fQA){
+	  fEtaPhiClusVsEtIsoClus = new TH3F ("hEtaVsPhiVsEtIsoClus", "#eta vs. #varphi vs. #Sigma #it{E}_{T}^{clus, cone} for clusters with 14 < #it{E}_{T} < 16 GeV", netabins, etamin, etamax, nphibins, phimin, phimax, 60, 0., 30.);
+	  fEtaPhiClusVsEtIsoClus->Sumw2();
+	  fOutput->Add(fEtaPhiClusVsEtIsoClus);
 
-	fEtaPhiClusVsPtIsoTrack = new TH3F ("hEtaVsPhiVsPtIsoTrack", "#eta vs. #varphi vs. #Sigma #it{p}_{T}^{track, cone} for clusters with 14 < #it{E}_{T} < 16 GeV", netabins, etamin, etamax, nphibins, phimin, phimax, 60, 0., 30.);
-        fEtaPhiClusVsPtIsoTrack->Sumw2();
-	fOutput->Add(fEtaPhiClusVsPtIsoTrack);
+	  fEtaPhiClusVsPtIsoTrack = new TH3F ("hEtaVsPhiVsPtIsoTrack", "#eta vs. #varphi vs. #Sigma #it{p}_{T}^{track, cone} for clusters with 14 < #it{E}_{T} < 16 GeV", netabins, etamin, etamax, nphibins, phimin, phimax, 60, 0., 30.);
+	  fEtaPhiClusVsPtIsoTrack->Sumw2();
+	  fOutput->Add(fEtaPhiClusVsPtIsoTrack);
+	}
 
         fEtIsoClust = new TH2D("hEtIsoClus_NC","#Sigma #it{p}_{T}^{iso cone} in iso cone distribution for Neutral Clusters with EMCal Clusters",200,0.,100.,200,0.,100.);
         fEtIsoClust->SetYTitle("#Sigma #it{p}_{T}^{iso cone} (GeV/c)");
@@ -963,6 +964,14 @@ void AliAnalysisTaskEMCALPhotonIsolation::UserCreateOutputObjects(){
       fEtaBandArea->Sumw2();
       fOutput->Add(fEtaBandArea);
     }
+
+    fClusEtVsEtaPhiMatched = new TH3F ("hEtaVsPhiVsEt_Matched", "#eta vs. #varphi vs. #it{E}_{T} for TRACK-MATCHED clusters", netabins, etamin, etamax, nphibins, phimin, phimax, 60, 0., 60.);
+    fClusEtVsEtaPhiMatched->Sumw2();
+    fOutput->Add(fClusEtVsEtaPhiMatched);
+
+    fClusEtVsEtaPhiUnmatched = new TH3F ("hEtaVsPhiVsEt_Unmatched", "#eta vs. #varphi vs. #it{E}_{T} for NON TRACK-MATCHED clusters", netabins, etamin, etamax, nphibins, phimin, phimax, 60, 0., 60.);
+    fClusEtVsEtaPhiUnmatched->Sumw2();
+    fOutput->Add(fClusEtVsEtaPhiUnmatched);
   }
 
     // Initialization of all the common THistos for the 3 different outputs
@@ -1011,14 +1020,6 @@ void AliAnalysisTaskEMCALPhotonIsolation::UserCreateOutputObjects(){
   fPtaftNLM = new TH1D("hPtaftNLM_NC","#it{p}_{T} distribution for Clusters after NLM cut",200,0.,100.);
   fPtaftNLM->Sumw2();
   fOutput->Add(fPtaftNLM);
-
-  fClusEtVsEtaPhiMatched = new TH3F ("hEtaVsPhiVsEt_Matched", "#eta vs. #varphi vs. #it{E}_{T} for TRACK-MATCHED clusters", netabins, etamin, etamax, nphibins, phimin, phimax, 60, 0., 60.);
-  fClusEtVsEtaPhiMatched->Sumw2();
-  fOutput->Add(fClusEtVsEtaPhiMatched);
-
-  fClusEtVsEtaPhiUnmatched = new TH3F ("hEtaVsPhiVsEt_Unmatched", "#eta vs. #varphi vs. #it{E}_{T} for NON TRACK-MATCHED clusters", netabins, etamin, etamax, nphibins, phimin, phimax, 60, 0., 60.);
-  fClusEtVsEtaPhiUnmatched->Sumw2();
-  fOutput->Add(fClusEtVsEtaPhiUnmatched);
 
   fPtaftTM = new TH1D("hPtaftTM_NC","#it{p}_{T} distribution for Neutral Clusters",200,0.,100.);
   fPtaftTM->Sumw2();
@@ -1157,7 +1158,6 @@ void AliAnalysisTaskEMCALPhotonIsolation::ExecOnce()
 
     // Tracks for CT Matching
   AliTrackContainer *tracks = GetTrackContainer("tpconlyMatch");
-    // Printf("name of the first track container: %s", tracks->GetClassName().Data());
   if(!tracks){
     AliError(Form("%s: This task needs a 1particle container!", GetName()));
     return;
@@ -1165,8 +1165,6 @@ void AliAnalysisTaskEMCALPhotonIsolation::ExecOnce()
 
     // Tracks for Isolation
   AliTrackContainer *tracksANA = GetTrackContainer("filterTracksAna");
-    // Printf("name of the second track container: %s", tracksANA->GetClassName().Data());
-
   if(!tracksANA){
     AliError(Form("%s: This task needs a 2particle container!", GetName()));
     return;
@@ -1182,7 +1180,6 @@ void AliAnalysisTaskEMCALPhotonIsolation::ExecOnce()
     // Init the EMCAL Framework
   AliAnalysisTaskEmcal::ExecOnce();
   if(!fLocalInitialized){
-
     AliError(Form("AliAnalysisTask not initialized"));
     return;
   }
@@ -1236,11 +1233,14 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::SelectCandidate(AliVCluster *coi)
 
   if(fTMClusterRejected){
     if(ClustTrackMatching(coi,kTRUE)){
-      fClusEtVsEtaPhiMatched->Fill(vecCOI.Eta(), vecCOI.Phi(), vecCOI.Pt());
+      if(fQA)
+	fClusEtVsEtaPhiMatched->Fill(vecCOI.Eta(), vecCOI.Phi(), vecCOI.Pt());
       return kFALSE;
     }
-    else
-      fClusEtVsEtaPhiUnmatched->Fill(vecCOI.Eta(), vecCOI.Phi(), vecCOI.Pt());
+    else{
+      if(fQA)
+	fClusEtVsEtaPhiUnmatched->Fill(vecCOI.Eta(), vecCOI.Phi(), vecCOI.Pt());
+    }
   }
 
   fPtaftTM->Fill(vecCOI.Pt());
@@ -1270,31 +1270,27 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::SelectCandidate(AliVCluster *coi)
   //______________________________________________________________________________________
 Bool_t AliAnalysisTaskEMCALPhotonIsolation::Run()
 {
-    // Run the analysis.
-
-    // fTest1+=1;
-    // vertex cuts
+    // Run the analysis
 
   AliTrackContainer *tracks = GetTrackContainer("tpconlyMatch");
   if(!tracks){
-    Printf("Cannot find the tracks for CT Matching");
+    AliWarning(Form("Cannot find the tracks for CT matching"));
     return kFALSE;
   }
 
   if(tracks->GetTrackFilterType() != AliEmcalTrackSelection::kTPCOnlyTracks){
-    AliWarning(Form("CT matching NOT performed with TPCOnly Tracks"));
+    AliWarning(Form("CT matching NOT performed with TPCOnly tracks"));
     AliWarning(Form("You better be sure of what you are doing"));
   }
 
   AliTrackContainer *tracksANA = GetTrackContainer("filterTracksAna");
   if(!tracksANA){
-    Printf("Cannot find the tracks for Isolation");
+    AliWarning(Form("Cannot find the tracks for isolation"));
     return kFALSE;
   }
 
-    // Printf("FilterType of the tracks for Analysis: %d \t(should be %d)", tracksANA->GetTrackFilterType(),AliEmcalTrackSelection::kHybridTracks);
+  // AliWarning(Form("FilterType of the tracks for Analysis: %d \t(should be %d)", tracksANA->GetTrackFilterType(),AliEmcalTrackSelection::kHybridTracks));
 
-    //  AliError(Form("\n\n\n\nGO CHECK the Settings!!!! Is Isolation calculated with filteredTracks?\n\n\n\n"));
   if(tracksANA->GetTrackFilterType() != AliEmcalTrackSelection::kHybridTracks){
     AliWarning(Form("Isolation NOT calculated with HybridTracks"));
     AliWarning(Form("You better be sure of what you are doing"));
@@ -1324,7 +1320,7 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::Run()
   if(fRejectionEventWithoutTracks && (nbTracksEvent == 0))
     return kFALSE;
 
-// reject events below 2012 EGA threshold
+  // Reject events below 2012 EGA threshold
   Bool_t isL1 = kFALSE;
   if(f2012EGA){
     TClonesArray *triPatchInfo = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject("EmcalTriggers"));
@@ -1335,9 +1331,9 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::Run()
         if(!pti) continue;
         if(!pti->IsEMCal()) continue;
         if(!pti->IsRecalcGamma()) continue;
-//        if(pti->GetEtaGeo()==0. && pti->GetPhiGeo()==0.){
-//         continue;
-//        }
+	// if(pti->GetEtaGeo()==0. && pti->GetPhiGeo()==0.){
+	//   continue;
+	// }
         if(!fIsMC && pti->GetADCAmp() > 130){
           isL1 = kTRUE;
           break;
@@ -1366,36 +1362,23 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::Run()
         fHistTrials->Fill("#sum{ntrials}",fTrials);
       }
     }
-
-    if(fTriggerLevel1 != 0){
-      if(!MCSimTrigger(fVevent,fTriggerLevel1) && fAnalysispPb)
-	return kFALSE;
-    }
   }
-
-  fVz->Fill(fVertex[2]); // Fill Vertex Z histogram
-
-    // fOutClusters->Delete(); // Delete output USEFUL LATER FOR CONTAINER CREATION !!
 
   Int_t index=0;
 
   if(fIsMC){
-//    AliAODMCHeader *mcHeader; // Is this object useful compared to fmcHeader?
-
     fAODMCParticles = static_cast <TClonesArray*>(InputEvent()->FindListObject(AliAODMCParticle::StdBranchName()));
     fmcHeader = dynamic_cast<AliAODMCHeader*>(InputEvent()->FindListObject(AliAODMCHeader::StdBranchName()));
 
     if(!fIsMC)
       return kFALSE;
-      // AliInfo(Form("It's a MC analysis %e",fAODMCParticles));
+
     if(!fStack && !fAODMCParticles){
-      AliError("No MC stack saved\n");
+      AliError("No MC stack saved");
       return kFALSE;
     }
-      // cout << "There's a list of particles" << endl;
 
-      // DO THIS ALSO FOR ESDs
-    if(fAODMCParticles->GetEntries() < 1){
+    if(fAODMCParticles->GetEntries() < 1){ // DO THIS ALSO FOR ESDs?
       AliError("Number of MC particles insufficient");
       return kFALSE;
     }
@@ -1405,14 +1388,18 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::Run()
     }
   }
 
+  if(fIsMC && (fTriggerLevel1 != 0)){
+    if(!MCSimTrigger(fVevent,fTriggerLevel1) && fAnalysispPb)
+      return kFALSE;
+  }
+
+  fVz->Fill(fVertex[2]); // Fill Vertex Z histogram
+
   if(!isL1 && fIsMC && f2012EGA){
     return kFALSE;
   }
 
   // Get the entries of the Cluster Container
-  // Whatever is a RETURN in LCAnalysis here is a CONTINUE,
-  // since there are more than 1 Cluster per Event
-
   for(auto it : clusters->accepted()){
     AliVCluster *coi = static_cast<AliVCluster*>(it);
     if(!coi){
@@ -1496,17 +1483,11 @@ void AliAnalysisTaskEMCALPhotonIsolation::FillQAHistograms(AliVCluster *coi, TLo
   fClusTime->Fill(checktof);
 
   if(checktof>-30. && checktof<30. && !fIsMC){
-      // fPtaftTime->Fill(vecCOI.Pt());
-      // if(!ClustTrackMatching(coi)){
-      // fPtaftTM->Fill(vecCOI.Pt());
-
     if(CheckBoundaries(vecCOI)){
-        // fPtaftFC->Fill(vecCOI.Pt());
-      Double_t checkM02=coi->GetM02();
+      Double_t checkM02 = coi->GetM02();
       if(fM02mincut < checkM02 && checkM02 < fM02maxcut && fWho==2)
         fPtaftM02C->Fill(vecCOI.Pt());
     }
-      // }
   }
 }
 
@@ -1514,9 +1495,10 @@ void AliAnalysisTaskEMCALPhotonIsolation::FillQAHistograms(AliVCluster *coi, TLo
 Bool_t AliAnalysisTaskEMCALPhotonIsolation::MCSimTrigger(AliVEvent *eventIn, Int_t triggerLevel){
 
   if(triggerLevel < 1 || triggerLevel > 2){
-    AliError(Form("No trigger level have been chosen for the MC analysis"));
+    AliError(Form("No trigger level has been chosen for the MC analysis"));
     return kFALSE;
   }
+
   Double_t threshold = 0.;
   Double_t spread    = 0.;
 
@@ -1567,37 +1549,40 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::MCSimTrigger(AliVEvent *eventIn, Int
   //__________________________________________________________________________
 Bool_t AliAnalysisTaskEMCALPhotonIsolation::ClustTrackMatching(AliVCluster *clust, Bool_t candidate){
 
-    // Check if the cluster matches to a track
+    // Check if the cluster matches a track
 
   AliTrackContainer* tracks = GetTrackContainer("tpconlyMatch");
-  AliVTrack* mt = 0;
+  if(tracks->GetTrackFilterType() != AliEmcalTrackSelection::kTPCOnlyTracks)
+    AliError(Form("No TPC only tracks"));
+
   TLorentzVector vecClust;
   clust->GetMomentum(vecClust,fVertex);
 
-  Int_t nbMObj = clust -> GetNTracksMatched();
-  if(tracks->GetTrackFilterType() != AliEmcalTrackSelection::kTPCOnlyTracks)  AliError(Form("NO TPC only tracks"));
-
-  Double_t distCT=0.,maxdist=10.;
-  Bool_t matched=kFALSE;
+  Int_t nbMObj = clust->GetNTracksMatched();
   if(nbMObj == 0)
     return kFALSE;
 
-  for(Int_t i=0;i<nbMObj && matched==kFALSE;i++){
+  Double_t distCT = 0., maxdist = 10.;
+  Bool_t matched = kFALSE;
+  AliVTrack* mt = 0;
+
+  for(Int_t i = 0; i < nbMObj && matched == kFALSE; i++){
     if(fIsEsd){
       Int_t imt = clust->GetTrackMatchedIndex(0);
-      if(imt >= 0) mt = static_cast<AliVTrack*>(tracks->GetAcceptParticle(imt));
+      if(imt >= 0)
+	mt = static_cast<AliVTrack*>(tracks->GetAcceptParticle(imt));
     }
     else{
       mt = static_cast<AliVTrack*>(clust->GetTrackMatched(i));
       UInt_t rejectionReason = 0;
-      if(!tracks->AcceptParticle(mt, rejectionReason)) mt = 0;
+      if(!tracks->AcceptParticle(mt, rejectionReason))
+	mt = 0;
     }
-      // Int_t imt = partC->GetMatchedObjId(i);
 
     if(!mt)
       continue;
 
-    Double_t deltaEta,deltaPhi;
+    Double_t deltaEta, deltaPhi;
     Double_t deta = 999;
     Double_t dphi = 999;
 
@@ -1619,8 +1604,8 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::ClustTrackMatching(AliVCluster *clus
     }
 
     distCT = TMath::Sqrt(deta*deta+dphi*dphi);
-    if(distCT<maxdist)
-      maxdist=distCT;
+    if(distCT < maxdist)
+      maxdist = distCT;
 
     if(candidate){
       deltaEta = fdetacut;
@@ -1631,14 +1616,14 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::ClustTrackMatching(AliVCluster *clus
       deltaPhi = fdphicutIso;
     }
 
-    if(TMath::Abs(dphi)<deltaPhi && TMath::Abs(deta)<deltaEta){
+    if(TMath::Abs(dphi) < deltaPhi && TMath::Abs(deta) < deltaEta){
       if(fQA && candidate){
 	if(fWho != 2){
 	  fDeltaETAClusTrackMatch->Fill(deta);
 	  fDeltaPHIClusTrackMatch->Fill(dphi);
 	}
       }
-        matched=kTRUE;
+      matched = kTRUE;
     }
   }
   if(fWho != 2)
@@ -1682,7 +1667,6 @@ Int_t AliAnalysisTaskEMCALPhotonIsolation::GetNLM(AliVCluster* coi, AliVCaloCell
   for(iDigit = 0; iDigit < nCells ; iDigit++){
     absIdList[iDigit] = coi->GetCellsAbsId()[iDigit];
     Float_t en = cells->GetCellAmplitude(absIdList[iDigit]);
-      // Printf("Cell Energy Before Recalculation: %.4f",en);
     RecalAmpCell(en,absIdList[iDigit]);
 
     if(en > emax){
@@ -1789,10 +1773,11 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::AreNeighbours(Int_t absId1, Int_t ab
 
   return areNeighbours;
 }
-  //_____________________________________________________________________________________________
-  /// Recalculate cell energy if recalibration factor.
-  //_____________________________________________________________________________________________
+
+  //__________________________________________________________________________________________
 void AliAnalysisTaskEMCALPhotonIsolation::RecalAmpCell(Float_t & amp, Int_t id) const {
+
+    // Recalculate cell energy if recalibration factor
 
   Int_t iSupMod = -1, iTower = -1, iIphi = -1, iIeta = -1, iphi = -1, ieta = -1;
   fGeom->GetCellIndex(id,iSupMod,iTower,iIphi,iIeta);
@@ -1801,14 +1786,10 @@ void AliAnalysisTaskEMCALPhotonIsolation::RecalAmpCell(Float_t & amp, Int_t id) 
   amp *= fEMCALRecoUtils->GetEMCALChannelRecalibrationFactor(iSupMod,ieta,iphi);
 }
 
-  //__________________________________________________________________________
-  /// Recalibrate the cluster energy, considering the recalibration map and the energy of the cells that compose the cluster.
-  //__________________________________________________________________________
+  //__________________________________________________________________________________________
 Float_t AliAnalysisTaskEMCALPhotonIsolation::RecalEnClust(AliVCluster * coi, AliVCaloCells * cells){
 
-    // Printf("Inside clust Recal");
-
-    // Initialize some used variables
+    // Recalibrate the cluster energy, considering the recalibration map and the energy of the cells that compose the cluster
   Float_t frac = 0., energy = 0.;
 
   if(cells){
@@ -1827,8 +1808,6 @@ Float_t AliAnalysisTaskEMCALPhotonIsolation::RecalEnClust(AliVCluster * coi, Ali
       Float_t amp = cells->GetCellAmplitude(absId);
       RecalAmpCell(amp, absId);
 
-        // Printf("Recalibrate cell: EMCal, cell fraction %f, cell energy: before cal %f; after cal %f",frac,cells->GetCellAmplitude(absId),amp);
-
       energy += amp*frac;
     }
 
@@ -1838,7 +1817,6 @@ Float_t AliAnalysisTaskEMCALPhotonIsolation::RecalEnClust(AliVCluster * coi, Ali
   else{
     AliFatal("Cells pointer does not exist!");
   }
-    // Printf("recalculated energy: %.4f",energy);
 
   return energy;
 }
@@ -1849,7 +1827,7 @@ void AliAnalysisTaskEMCALPhotonIsolation::EtIsoCellPhiBand(TLorentzVector c, Dou
     // Underlying events study with EMCal cells in phi band
 
   AliEMCALGeometry* emcalGeom = AliEMCALGeometry::GetInstance();
-  Double_t sumEnergyPhiBandCells=0., sumEnergyConeCells=0.;
+  Double_t sumEnergyPhiBandCells = 0., sumEnergyConeCells = 0.;
 
     // Check the cell corresponding to the leading cluster
   Int_t absId = 999;
@@ -1941,7 +1919,7 @@ void AliAnalysisTaskEMCALPhotonIsolation::EtIsoCellEtaBand(TLorentzVector c, Dou
     // Underlying events study with EMCal cell in eta band
 
   AliEMCALGeometry* emcalGeom = AliEMCALGeometry::GetInstance();
-  Double_t sumEnergyEtaBandCells=0., sumEnergyConeCells=0.;
+  Double_t sumEnergyEtaBandCells = 0., sumEnergyConeCells = 0.;
 
     // Check the cell corresponding to the leading cluster
   Int_t absId = 999;
@@ -2101,8 +2079,7 @@ void AliAnalysisTaskEMCALPhotonIsolation::EtIsoClusPhiBand(TLorentzVector c, Dou
 	if(TMath::Abs(etaClust - c.Eta()) < fIsoConeRadius)
 	  sumEnergyPhiBandClus += nClust.Pt();
       }
-      // else if(radius < fIsoConeRadius && radius != 0.){
-      else{                                                                                         // The cluster is inside the isolation cone -> add the cluster pT to pT_iso
+      else{                                                                                    // The cluster is inside the isolation cone -> add the cluster pT to pT_iso
 	sumEnergyConeClus += nClust.Pt();
 	if(fQA && fWho != 2){
 	  fTestEtaPhiCone->Fill(c.Eta(),c.Phi());
@@ -2121,8 +2098,6 @@ void AliAnalysisTaskEMCALPhotonIsolation::EtIsoClusPhiBand(TLorentzVector c, Dou
     AliError(Form("Could not retrieve tracks !"));
     return;
   }
-    // const Int_t nbTracks = fTracksAna->GetEntries();
-    // Int_t iTracks = 0;
 
   tracksAna->ResetCurrentID();
 
@@ -2136,7 +2111,6 @@ void AliAnalysisTaskEMCALPhotonIsolation::EtIsoClusPhiBand(TLorentzVector c, Dou
       AliError(Form("No tracks in collection"));
       continue;
     }
-      // if(!(eTrack->IsHybridGlobalConstrainedGlobal())){Printf("skipping track %d because it's not an hybrid\n",eTrack->GetID()); continue;}
 
     if(!fIsEsd){
       aodEtrack = static_cast<AliAODTrack*>(eTrack);
@@ -2169,7 +2143,7 @@ void AliAnalysisTaskEMCALPhotonIsolation::EtIsoClusPhiBand(TLorentzVector c, Dou
 	if(TMath::Abs(etaTrack - c.Eta()) < fIsoConeRadius)
 	  sumpTPhiBandTracks += eTrack->Pt();
       }
-      else{                                                                                             // The track is inside the isolation cone -> add the track pT to pT_iso
+      else{                                                                                        // The track is inside the isolation cone -> add the track pT to pT_iso
 	sumpTConeCharged += eTrack->Pt();
 	if(fIsMC){
 	  int tracklabel = TMath::Abs(eTrack->GetLabel());
@@ -2183,7 +2157,7 @@ void AliAnalysisTaskEMCALPhotonIsolation::EtIsoClusPhiBand(TLorentzVector c, Dou
   } // End of tracks loop
 
   fTestEnergyCone->Fill(c.Pt(),sumEnergyConeClus,sumpTConeCharged);
-  if(c.Pt()>14. && c.Pt()<16. && fWho == 2){
+  if(fQA && c.Pt()>14. && c.Pt()<16. && fWho == 2){
     fEtaPhiClusVsEtIsoClus->Fill(c.Eta(),c.Phi(),sumEnergyConeClus);
     fEtaPhiClusVsPtIsoTrack->Fill(c.Eta(),c.Phi(),sumpTConeCharged);
   }
@@ -2267,7 +2241,6 @@ void AliAnalysisTaskEMCALPhotonIsolation::EtIsoClusEtaBand(TLorentzVector c, Dou
     coi->GetMomentum(nClust,fVertex);
     phiClust = nClust.Phi();
     etaClust = nClust.Eta();
-    // Double_t eTcluster = 0.;
 
     if(fExtraIsoCuts){
       if((coi->GetNCells() < 2))
@@ -2275,7 +2248,6 @@ void AliAnalysisTaskEMCALPhotonIsolation::EtIsoClusEtaBand(TLorentzVector c, Dou
       if((coi->GetDistanceToBadChannel() < 2))
         continue;
     }
-      //  printf("\nCluster ID %d with pT: %.4f\t\t Eta: %.4f \t Phi: %.4f \t time %.3f", coi->GetID(), nClust.Pt(),etaClust,phiClust,coi->GetTOF()*1e9);
 
     clustTOF = coi->GetTOF()*1e9;
 
@@ -2315,11 +2287,9 @@ void AliAnalysisTaskEMCALPhotonIsolation::EtIsoClusEtaBand(TLorentzVector c, Dou
     AliError(Form("Could not retrieve tracks !"));
     return;
   }
-    // Printf("ntracks accepted: %d",tracksAna->GetNAcceptedTracks());
 
   if(tracksAna->GetTrackFilterType() != AliEmcalTrackSelection::kHybridTracks)
     AliError(Form("NOT Hybrid Tracks"));
-    // Printf("Name of the tracks used for Isolation: %s",tracksAna->GetName());
 
   tracksAna->ResetCurrentID();
 
@@ -2336,10 +2306,8 @@ void AliAnalysisTaskEMCALPhotonIsolation::EtIsoClusEtaBand(TLorentzVector c, Dou
 
     if(!fIsEsd){
       aodEtrack = static_cast<AliAODTrack*>(eTrack);
-      if(!(aodEtrack->IsHybridGlobalConstrainedGlobal())){
-          // Printf("skipping track %d because it's not an hybrid\n",eTrack->GetID());
+      if(!(aodEtrack->IsHybridGlobalConstrainedGlobal()))
         continue;
-      }
     }
 
     if((eTrack->Pt())<0.2)
@@ -2386,8 +2354,6 @@ void AliAnalysisTaskEMCALPhotonIsolation::EtIsoClusEtaBand(TLorentzVector c, Dou
     }
   } // End of tracks loop
 
-    // Printf("\ntotal activity in isolation Cone from Tracks %.4lf",sumpTConeCharged);
-
   fTestEnergyCone->Fill(c.Pt(), sumEnergyConeClus, sumpTConeCharged);
   if(fAreasPerEvent)
     fTestEnergyEtaBand->Fill(c.Pt(), sumEnergyEtaBandClus, sumpTEtaBandTracks);
@@ -2408,7 +2374,7 @@ void AliAnalysisTaskEMCALPhotonIsolation::EtIsoClusEtaBand(TLorentzVector c, Dou
     }
   }
 
-  if(c.Pt()>14. && c.Pt()<16. && fWho == 2){
+  if(fQA && c.Pt()>14. && c.Pt()<16. && fWho == 2){
     fEtaPhiClusVsEtIsoClus->Fill(c.Eta(),c.Phi(),sumEnergyConeClus);
     fEtaPhiClusVsPtIsoTrack->Fill(c.Eta(),c.Phi(),sumpTConeCharged);
 
@@ -2483,7 +2449,6 @@ void AliAnalysisTaskEMCALPhotonIsolation::PtIsoTrackPhiBand(TLorentzVector c, Do
     AliError(Form("Could not retrieve tracks !"));
     return;
   }
-    // Printf("Name of the tracks used for Isolation: %s",(tracks->GetClassName()).Data());
 
   tracksAna->ResetCurrentID();
 
@@ -2583,7 +2548,6 @@ void AliAnalysisTaskEMCALPhotonIsolation::PtIsoTrackEtaBand(TLorentzVector c, Do
     AliError(Form("Could not retrieve tracks !"));
     return;
   }
-    // Printf("Name of the tracks used for Isolation: %s",(tracks->GetClassName()).Data());
 
   tracksAna->ResetCurrentID();
 
@@ -2673,7 +2637,6 @@ void AliAnalysisTaskEMCALPhotonIsolation::PtIsoTrackOrthCones(TLorentzVector c, 
     AliError(Form("Could not retrieve tracks !"));
     return;
   }
-    // Printf("Name of the tracks used for Isolation: %s",(tracks->GetClassName()).Data());
 
   tracksAna->ResetCurrentID();
 
@@ -2755,7 +2718,6 @@ void AliAnalysisTaskEMCALPhotonIsolation::PtIsoTrackFullTPC(TLorentzVector c, Do
     AliError(Form("Could not retrieve tracks !"));
     return;
   }
-    // Printf("Name of the tracks used for Isolation: %s",(tracks->GetClassName()).Data());
 
   tracksAna->ResetCurrentID();
 
@@ -3121,7 +3083,6 @@ void AliAnalysisTaskEMCALPhotonIsolation::LookforParticle(Int_t clusterlabel, Do
     }
       // AliWarning(Form("Hadronic cluster with energy: %f, M02: %f, cluster PDG: %d, mother PDG: %d, truth energy: %f, dphi: %f, deta %f, isolation energy: %f, cluster label: %d, charge: %d",energyCLS, ss, clustPDG, momP2Check->GetPdgCode(), enTrue, dPhi, dEta, isolation, clusterFromPromptPhoton, p2ccharge ));
   }
-    // printf("filling fOutClustMC\n");
 
   outputvalueMCmix[0] = energyCLS;
   outputvalueMCmix[1] = ss;
@@ -3176,10 +3137,6 @@ void AliAnalysisTaskEMCALPhotonIsolation::FillInvMassHistograms(Bool_t iso, Doub
       TLorentzVector nClust(0., 0., 0., 0.);
       coi->GetMomentum(nClust,fVertex);
 
-        // Float_t phiClust =nClust.Phi();
-        // Float_t etaClust= nClust.Eta();
-        // Float_t eTcluster=0;
-
       if((coi->GetNCells() < 2))
         continue;
 
@@ -3192,19 +3149,16 @@ void AliAnalysisTaskEMCALPhotonIsolation::FillInvMassHistograms(Bool_t iso, Doub
           continue;
       }
 
-        // The TM cut is commented out in order not to reject the cluster partner if it is near to a track
-        // if(ClustTrackMatching(coi))
-        // 	continue;
+      // The TM cut is commented out in order not to reject the cluster partner if it is near to a track
+      // if(ClustTrackMatching(coi))
+      // 	continue;
 
-//      invMass = (c+nClust).M();
     }
   } // End of clusters loop
 }
 
   //__________________________________________________________________________
 void AliAnalysisTaskEMCALPhotonIsolation::IsolationAndUEinEMCAL(AliVCluster *coi, Double_t& isolation,Double_t& ue,Double_t eTThreshold, Int_t index){
-
-    // Printf("Inside IsolationAncUEinEMCal");
 
   Double_t isoConeArea = TMath::Pi()*fIsoConeRadius*fIsoConeRadius;
   Double_t etaBandArea = ((fGeom->GetArm1EtaMax()-0.03)-(fGeom->GetArm1EtaMin()+0.03))*2.*fIsoConeRadius-isoConeArea;
@@ -3400,7 +3354,7 @@ void AliAnalysisTaskEMCALPhotonIsolation::IsolationAndUEinEMCAL(AliVCluster *coi
   //__________________________________________________________________________
 void AliAnalysisTaskEMCALPhotonIsolation::IsolationAndUEinTPC(AliVCluster *coi, Double_t& isolation,Double_t& ue,Double_t eTThreshold, Int_t index){
 
-    // EMCal + TPC (Only tracks for the Isolation since IsoCone Goes Out of EMCal)
+    // EMCal + TPC (only tracks for isolation since IsoCone goes out of EMCal)
 
   Double_t isoConeArea   = TMath::Pi()*fIsoConeRadius*fIsoConeRadius;
   Double_t etaBandAreaTr = 1.74*2.*fIsoConeRadius-isoConeArea; // 1.74 = 2*0.87
@@ -3627,16 +3581,13 @@ void AliAnalysisTaskEMCALPhotonIsolation::IsolationAndUEinTPC(AliVCluster *coi, 
 Bool_t AliAnalysisTaskEMCALPhotonIsolation::FillGeneralHistograms(AliVCluster *coi, TLorentzVector vecCOI, Int_t index){
 
     // Fill the histograms for underlying event and isolation studies
-    // AliError(Form("Arrive bien dans fill general histograms"));
 
     // I would like to remove this part and fill the tracks multiplicity histogram in FillQAHistograms, is that ok for thnSparses? (especially cause here the histogram is filled several times per event)
-    // AliParticleContainer *tracks = static_cast<AliParticleContainer*>(fParticleCollArray.At(0));
 
   AliTrackContainer *tracksAna = GetTrackContainer("filterTracksAna");
   tracksAna->ResetCurrentID();
 
   const Int_t nTracks = tracksAna->GetNAcceptedTracks();
-    // Printf("Ntracks for the event with this cluster: %d", nTracks);
 
   if(fQA)
     fTrackMult->Fill(nTracks);
@@ -3671,9 +3622,6 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::FillGeneralHistograms(AliVCluster *c
 
     case 2:  // Etmax < EtThr
       eTThreshold = fEtIsoThreshold;
-      // if(eTCOI<eTThreshold && fWho==2 && !fLightOutput){ // Photon candidate, cuts have to be decided after studies
-      //   fEtIsolatedClust->Fill(eTCOI);
-      // }
       break;
   }
 
@@ -3687,10 +3635,6 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::FillGeneralHistograms(AliVCluster *c
   if(fIsMC)
     LookforParticle(coi->GetLabel(),vecCOI.Et(),vecCOI.Phi(),vecCOI.Eta(),coi->GetTOF()*1e9,m02COI,isolation);
 
-    // Here we should call something to know the number of tracks...
-    // Soon I'll put in this version the "old way", please let me know if
-    // any of you could do the same with the JET framework
-
   switch(fWho)
   {
     case 0:
@@ -3700,7 +3644,6 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::FillGeneralHistograms(AliVCluster *c
       fetaT=vecCOI.Eta(); // for all neutral clusters
       fphiT=vecCOI.Phi(); // for all neutral clusters
       fsumEtisoconeT=isolation;
-        // AliError(Form("lambda 0 %f",flambda0T));
       fsumEtUE=ue;
         // Does not fill the tree anyway files too big
         // fOutputTree->Fill();
@@ -4035,16 +3978,12 @@ void AliAnalysisTaskEMCALPhotonIsolation::AnalyzeMC(){
 
   if(!fIsMC)
     return;
-    // AliInfo(Form("It's a MC analysis %e",fAODMCParticles));
 
   if(!fStack && !fAODMCParticles){
     cout<<"No stack saved\n"; return;
   }
 
-    // cout<<"there's a List of particles"<<endl;
-    // DO THIS ALSO FOR ESDs
-
-  Double_t eT = 0., sumEiso = 0., sumUE = 0., phi = 0., eta = 0., distance = 0., phip = 0., etap = 0., mcfirstEnergy = 0.;
+  Double_t eT = 0., sumEiso = 0., sumUE = 0., phi = 0., eta = 0., distance = 0., phip = 0., etap = 0.;
   Double_t etaMax = 0./*, etaMinDCal_InnerEdge = 0.*/, phiMinEMCal = 0., phiMaxEMCal = 0./*, phiMinDCal = 0. , phiMaxDCal_FullSM = 0., phiMaxDCal = 0.*/;
 
   if(fAODMCParticles->GetEntries() < 1){
@@ -4073,12 +4012,10 @@ void AliAnalysisTaskEMCALPhotonIsolation::AnalyzeMC(){
   }
     // AliInfo(Form("number of particles in the array %d",nTracks));
 
-  AliAODMCParticle *mcpart, *mom, *mcpp,*mcsearch, *mcfirst,*matchingtrack, *mum;
+  AliAODMCParticle *mcpart, *mom, *mcpp/*, *mum*/;
 
     // Bool_t prompt=kFALSE;
-  Double_t maxE;
   Int_t pdg, mompdg, photonlabel;
-  Double_t mcFirstEta=0., mcFirstPhi=0.;
 
     // AliAODMCParticle *mcfirst = static_cast<AliAODMCParticle*>(fAODMCParticles->At(0));
     // AliAODMCParticle *mcp, *mcpmaxE, *mcpp, *mom;
@@ -4142,8 +4079,6 @@ void AliAnalysisTaskEMCALPhotonIsolation::AnalyzeMC(){
 	continue;
     }
 
-    // printf("\nParticle Position %d  and Label: %d  PDG: %d  Pt: %f  Eta: %f  Phi: %f",iTr, mcpart->GetLabel(),pdg,mcpart->Pt(), eta, phi);
-
     photonlabel = iTr;
 
     int momidx = mcpart->GetMother();
@@ -4153,8 +4088,6 @@ void AliAnalysisTaskEMCALPhotonIsolation::AnalyzeMC(){
     }
     else
       mompdg=mcpart->GetPdgCode();
-
-    // printf("With Mother at %d with label %d which is a %d",momidx, mom->GetLabel(), mompdg);
 
     eT = mcpart->E()*TMath::Sin(mcpart->Theta()); // Transform to transverse Energy
 
@@ -4219,7 +4152,7 @@ void AliAnalysisTaskEMCALPhotonIsolation::AnalyzeMC(){
       if(mumidx<0 || mumidx>nTracks)
 	continue;
 
-      mum = static_cast<AliAODMCParticle*>(fAODMCParticles->At(mumidx));
+      // mum = static_cast<AliAODMCParticle*>(fAODMCParticles->At(mumidx));
       if(mumidx == photonlabel)
 	continue;
 

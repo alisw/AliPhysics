@@ -1356,22 +1356,28 @@ void AliAnalysisTaskStrEffStudy::UserExec(Option_t *)
         //lNegTrackArray[iV0], lPosTrackArray[iV0]
         Int_t nv0s = lESDevent->GetNumberOfV0s();
         
+        Bool_t lFoundOTF = kFALSE;
+        
         for(Long_t iOTFv0=0; iOTFv0<nv0s; iOTFv0++){
             AliESDv0 *v0 = ((AliESDEvent*)lESDevent)->GetV0(iOTFv0);
             if (!v0) continue;
             
-            if (
-                (v0->GetPindex() == lPosTrackArray[iV0] && v0->GetNindex() == lNegTrackArray[iV0] ) ||
-                (v0->GetNindex() == lPosTrackArray[iV0] && v0->GetPindex() == lNegTrackArray[iV0] )
+            if (v0->GetOnFlyStatus()  &&
+                (
+                 (v0->GetPindex() == lPosTrackArray[iV0] && v0->GetNindex() == lNegTrackArray[iV0] ) ||
+                 (v0->GetNindex() == lPosTrackArray[iV0] && v0->GetPindex() == lNegTrackArray[iV0] )
+                 )
                 ){
                 //Found corresponding OTF V0! Save it to TTree, please
                 AliESDv0 lV0ToStore(*v0), *lPointerToV0ToStore=&lV0ToStore;
                 fTreeVariableOTFV0 = lPointerToV0ToStore;
-            }else{
-                //Create empty V0
-                AliESDv0 lV0ToStore, *lPointerToV0ToStore=&lV0ToStore;
-                fTreeVariableOTFV0 = lPointerToV0ToStore;
+                lFoundOTF = kTRUE;
+                break; //stop looking
             }
+        }
+        if( !lFoundOTF ) {
+            AliESDv0 lV0ToStore, *lPointerToV0ToStore=&lV0ToStore;
+            fTreeVariableOTFV0 = lPointerToV0ToStore;
         }
         //=================================================================================
         
@@ -1575,22 +1581,28 @@ void AliAnalysisTaskStrEffStudy::UserExec(Option_t *)
         //lNegTrackArray[iV0], lPosTrackArray[iV0]
         Int_t nv0s = lESDevent->GetNumberOfV0s();
         
+        Bool_t lFoundOTF = kFALSE;
+        
         for(Long_t iOTFv0=0; iOTFv0<nv0s; iOTFv0++){
             AliESDv0 *v0 = ((AliESDEvent*)lESDevent)->GetV0(iOTFv0);
             if (!v0) continue;
             
-            if (
-                (v0->GetPindex() == lCascPosTrackArray[iCasc] && v0->GetNindex() == lCascNegTrackArray[iCasc] ) ||
-                (v0->GetNindex() == lCascPosTrackArray[iCasc] && v0->GetPindex() == lCascNegTrackArray[iCasc] )
+            if ( v0->GetOnFlyStatus()  &&
+                (
+                 (v0->GetPindex() == lCascPosTrackArray[iCasc] && v0->GetNindex() == lCascNegTrackArray[iCasc] ) ||
+                 (v0->GetNindex() == lCascPosTrackArray[iCasc] && v0->GetPindex() == lCascNegTrackArray[iCasc] )
+                 )
                 ){
                 //Found corresponding OTF V0! Save it to TTree, please
                 AliESDv0 lV0ToStore(*v0), *lPointerToV0ToStore=&lV0ToStore;
                 fTreeCascVarOTFV0 = lPointerToV0ToStore;
-            }else{
-                //Create empty V0
-                AliESDv0 lV0ToStore, *lPointerToV0ToStore=&lV0ToStore;
-                fTreeCascVarOTFV0 = lPointerToV0ToStore;
+                lFoundOTF = kTRUE;
+                break; //stop looking
             }
+        }
+        if( !lFoundOTF ) {
+            AliESDv0 lV0ToStore, *lPointerToV0ToStore=&lV0ToStore;
+            fTreeCascVarOTFV0 = lPointerToV0ToStore;
         }
         //=================================================================================
         

@@ -53,6 +53,9 @@ class AliAnalysisTaskCheckAODTracks : public AliAnalysisTaskSE {
   void SetTriggerMask(Int_t mask){
     fTriggerMask=mask;
   }
+  void SetUsePileupCut(Bool_t opt=kTRUE){
+    fUsePileupCut=kTRUE;
+  }
   void SetTPCTrackCuts(AliESDtrackCuts* cuts){
     if(fTrCutsTPC) delete fTrCutsTPC;
     fTrCutsTPC=new AliESDtrackCuts(*cuts);
@@ -72,7 +75,7 @@ class AliAnalysisTaskCheckAODTracks : public AliAnalysisTaskSE {
   void SetUpperMultiplicity(Double_t maxMult){
     fMaxMult=maxMult;
   }
-  Bool_t ConvertAndSelectAODTrack(AliAODTrack* aTrack, const AliESDVertex vESD);
+  Bool_t ConvertAndSelectAODTrack(AliAODTrack* aTrack, const AliESDVertex vESD, Double_t magField);
 
  private:
 
@@ -135,10 +138,10 @@ class AliAnalysisTaskCheckAODTracks : public AliAnalysisTaskSE {
   TH2F* fHistITScluPtFiltBit[kNumOfFilterBits];               //!<!  histo of n. ITS clus per filter bit
   TH2F* fHistSPDcluPtFiltBit[kNumOfFilterBits];               //!<!  histo of n. SPD clus per filter bit
   TH2F* fHistTPCcluPtFiltBit[kNumOfFilterBits];               //!<!  histo of n. TPC clus per filter bit
-  TH2F* fHistTPCcrrowsPtFiltBit[kNumOfFilterBits];               //!<!  histo of n. TPC clus per filter bit
-  TH2F* fHistTPCCrowOverFindPtFiltBit[kNumOfFilterBits];      //!<!  histo of n. TPC clus per filter bit
-  TH2F* fHistTPCChi2ndfPtFiltBit[kNumOfFilterBits];           //!<!  histo of n. TPC clus per filter bit
-  TH2F* fHistChi2TPCConstrVsGlobPtFiltBit[kNumOfFilterBits];  //!<!  histo of n. TPC clus per filter bit
+  TH2F* fHistTPCcrrowsPtFiltBit[kNumOfFilterBits];               //!<!  histo of n. TPC crossed rows per filter bit
+  TH2F* fHistTPCCrowOverFindPtFiltBit[kNumOfFilterBits];      //!<!  histo of crossedrows/findable per filter bit
+  TH2F* fHistTPCChi2clusPtFiltBit[kNumOfFilterBits];           //!<!  histo of TPC chi2 per filter bit
+  TH2F* fHistChi2TPCConstrVsGlobPtFiltBit[kNumOfFilterBits];  //!<!  histo of golden chi2 per filter bit
 
   TH2F* fHistPtResidVsPtTPCselAll;                       //!<!  Pt residuals for TPC only tracks tracked with good mass hypothesis
   TH2F* fHistPtResidVsPtTPCselITSrefAll;                 //!<!  Pt residuals for ITS+TPC tracks tracked with good mass hypothesis
@@ -170,6 +173,7 @@ class AliAnalysisTaskCheckAODTracks : public AliAnalysisTaskSE {
   AliESDtrackCuts* fTrCutsTPC; // TPC track cuts
   Int_t   fMinNumOfTPCPIDclu;  // cut on min. of TPC clust for PID
   Bool_t  fUsePhysSel;         // flag use/not use phys sel
+  Bool_t  fUsePileupCut;       // flag use/not use phys pileup cut
   Int_t   fTriggerMask;        // mask used in physics selection
   Int_t fNEtaBins;             // number of eta intervals in histos
   Int_t fNPhiBins;             // number of phi intervals in histos
@@ -180,7 +184,7 @@ class AliAnalysisTaskCheckAODTracks : public AliAnalysisTaskSE {
   Bool_t  fReadMC;             // flag read/not-read MC truth info
   Bool_t  fUseMCId;            // flag use/not-use MC identity for PID
 
-  ClassDef(AliAnalysisTaskCheckAODTracks,10);
+  ClassDef(AliAnalysisTaskCheckAODTracks,12);
 };
 
 

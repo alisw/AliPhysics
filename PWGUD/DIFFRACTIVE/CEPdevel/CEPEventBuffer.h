@@ -56,7 +56,8 @@ class CEPEventBuffer : public TObject {
     UInt_t   fVtxType;      // see AliCEPBase.h for a definition of the bits
     TVector3 fVtxPos;       // vertex position
     
-    Int_t fnCaloCluster;    // number of calorimeter cluster
+    Int_t fnCaloCluster[2]; // number of EMCal and PHOS cluster
+    Double_t fCaloEnergy[2];// total energy in EMCal/PHOS
     
     // Monte Carlo information
     TString  fMCGenerator;
@@ -106,8 +107,11 @@ class CEPEventBuffer : public TObject {
     void SetVtxType(UInt_t vtxtype)     { fVtxType = vtxtype; }
     void SetVtxPos(Double_t xp,Double_t yp,Double_t zp)
                                         { fVtxPos.SetXYZ(xp,yp,zp); }
-    void SetnCaloCluster(Int_t nclus)   { fnCaloCluster = nclus; }
-
+    void SetnCaloCluster(Int_t nclus, Int_t ind)
+                                        { if (ind==0 || ind==1) fnCaloCluster[ind] = nclus; }
+    void SetCaloEnergy(Double_t ene, Int_t ind)
+                                        { if (ind==0 || ind==1) fCaloEnergy[ind] = ene; }
+    
     void SetVtxPos(TVector3 vtxpos)     { fVtxPos = TVector3(vtxpos); }
     
     void SetMCGenerator(TString MCGenerator) { fMCGenerator = MCGenerator; }
@@ -153,7 +157,8 @@ class CEPEventBuffer : public TObject {
     UInt_t GetVtxType()  const { return fVtxType; }
     TVector3 GetVtxPos() const { return fVtxPos; }
     
-    Int_t GetnCaloCluster() const { return fnCaloCluster; }
+    Int_t GetnCaloCluster(Int_t ind) const { return (ind==0 || ind==1) ? fnCaloCluster[ind] : 0; }
+    Double_t GetCaloEnergy(Int_t ind) const { return (ind==0 || ind==1) ? fCaloEnergy[ind] : 0; }
 
     TString GetMCGenerator()        const { return fMCGenerator; }
     UInt_t GetMCProcessType()       const { return fMCProcessType; }
@@ -197,7 +202,7 @@ class CEPEventBuffer : public TObject {
     CEPTrackBuffer* GetTrack(Int_t ind);
     Bool_t RemoveTrack(Int_t ind);
 
-    ClassDef(CEPEventBuffer, 3)     // CEP event buffer
+    ClassDef(CEPEventBuffer, 4)     // CEP event buffer
 
 };
 

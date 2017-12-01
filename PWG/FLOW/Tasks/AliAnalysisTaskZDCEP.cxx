@@ -1,24 +1,24 @@
 /*************************************************************************
- * Copyright(c) 1998-2008, ALICE Experiment at CERN, All rights reserved. *
- *                                                                        *
- * Author: The ALICE Off-line Project.                                    *
- * Contributors are mentioned in the code where appropriate.              *
- *                                                                        *
- * Permission to use, copy, modify and distribute this software and its   *
- * documentation strictly for non-commercial purposes is hereby granted   *
- * without fee, provided that the above copyright notice appears in all   *
- * copies and that both the copyright notice and this permission notice   *
- * appear in the supporting documentation. The authors make no claims     *
- * about the suitability of this software for any purpose. It is          *
- * provided "as is" without express or implied warranty.                  *
- **************************************************************************/
+* Copyright(c) 1998-2008, ALICE Experiment at CERN, All rights reserved. *
+*                                                                        *
+* Author: The ALICE Off-line Project.                                    *
+* Contributors are mentioned in the code where appropriate.              *
+*                                                                        *
+* Permission to use, copy, modify and distribute this software and its   *
+* documentation strictly for non-commercial purposes is hereby granted   *
+* without fee, provided that the above copyright notice appears in all   *
+* copies and that both the copyright notice and this permission notice   *
+* appear in the supporting documentation. The authors make no claims     *
+* about the suitability of this software for any purpose. It is          *
+* provided "as is" without express or implied warranty.                  *
+**************************************************************************/
 
 /***********************************
- * ZDC Event Plane                 *
- *                                 *
- * author: Jacopo Margutti         *
- * email:  jacopo.margutti@cern.ch *
- ***********************************/
+* ZDC Event Plane                 *
+*                                 *
+* author: Jacopo Margutti         *
+* email:  jacopo.margutti@cern.ch *
+***********************************/
 
 #define AliAnalysisTaskZDCEP_cxx
 
@@ -80,10 +80,15 @@ fQAList(0x0),
 fZDCGainAlpha(0.395),
 fZDCCalibList(0x0),
 fTowerEqList(0x0),
+fQAListMagPol(0x0),
+fEventCounter(NULL),
+fCentralityHisto(NULL),
 fCachedRunNum(0),
+fnRun(0),
+fDataSet(k2015o_pass1_pass1pidfix),
 fAnalysisUtils(0x0),
 fMultSelection(0x0),
-fbFlagIsPosMagField(kFALSE),
+fbIsMagnetPolarityNegative(kFALSE),
 fFlowEvent(NULL)
 {
   for(Int_t k=0; k<4; k++) {
@@ -120,26 +125,42 @@ fFlowEvent(NULL)
   }
   for (Int_t i=0; i<2; i++) fZDCFlowVect[i] = NULL;
 
-  Int_t dRun15o[] = {244917, 244918, 244975, 244980, 244982, 244983, 245064, 245066, 245068, 246390, 246391, 246392, 246994, 246991, 246989, 246984, 246982, 246980, 246948, 246945, 246928, 246851, 246847, 246846, 246845, 246844, 246810, 246809, 246808, 246807, 246805, 246804, 246766, 246765, 246763, 246760, 246759, 246758, 246757, 246751, 246750, 246495, 246493, 246488, 246487, 246434, 246431, 246428, 246424, 246276, 246275, 246272, 246271, 246225, 246222, 246217, 246185, 246182, 246181, 246180, 246178, 246153, 246152, 246151, 246115, 246113, 246089, 246087, 246053, 246052, 246049, 246048, 246042, 246037, 246036, 246012, 246003, 246001, 245954, 245952, 245949, 245923, 245833, 245831, 245829, 245705, 245702, 245700, 245692, 245683, 245145, 245146, 245151, 245152, 245231, 245232, 245259, 245343, 245345, 245346, 245347, 245349, 245353, 245396, 245397, 245401, 245407, 245409, 245441, 245446, 245450, 245454, 245496, 245497, 245501, 245504, 245505, 245507, 245535, 245540, 245542, 245543, 245544, 245545, 245554};
-  Double_t dVtxPosX15o[] = {0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,7.619407e-02, 7.612905e-02, 7.609009e-02, 7.610981e-02, 7.608885e-02, 7.609981e-02, 7.559263e-02, 7.563009e-02, 7.551201e-02, 7.570994e-02, 7.571927e-02, 7.575639e-02, 7.571133e-02, 7.570653e-02, 7.528412e-02, 7.535235e-02, 7.539954e-02, 7.535435e-02, 7.541641e-02, 7.543658e-02, 7.527343e-02, 7.526024e-02, 7.528295e-02, 7.533821e-02, 7.540461e-02, 7.538317e-02, 7.531677e-02, 7.539861e-02, 7.537667e-02, 7.659318e-02, 7.656796e-02, 7.662898e-02, 7.664257e-02, 7.597872e-02, 7.597437e-02, 7.599091e-02, 7.601310e-02, 7.000359e-02, 6.999659e-02, 6.992559e-02, 6.996793e-02, 7.028519e-02, 7.032696e-02, 7.033503e-02, 6.952509e-02, 6.956378e-02, 6.952446e-02, 6.959759e-02, 6.956048e-02, 6.933134e-02, 6.932882e-02, 6.939338e-02, 6.950613e-02, 6.943631e-02, 6.946196e-02, 6.950454e-02, 7.030973e-02, 7.030203e-02, 7.032272e-02, 7.030936e-02, 7.038967e-02, 7.035136e-02, 7.024752e-02, 6.942316e-02, 6.940115e-02, 6.936367e-02, 6.860689e-02, 6.881501e-02, 6.886743e-02, 6.932714e-02, 6.970325e-02, 6.966504e-02, 6.957355e-02, 6.932303e-02, 6.938184e-02, 6.944933e-02, 6.952461e-02, 6.964167e-02, 6.793435e-02, 6.802185e-02, 6.801235e-02, 6.804823e-02, 6.842972e-02, 6.839652e-02, 6.851932e-02, 6.976507e-02, 6.989692e-02, 6.994544e-02, 6.994261e-02, 6.997887e-02, 7.001687e-02, 6.934462e-02, 6.958349e-02, 6.907266e-02, 6.905944e-02, 6.895395e-02, 7.006562e-02, 7.008493e-02, 7.012736e-02, 6.964645e-02, 6.960466e-02, 6.962255e-02, 6.979086e-02, 6.985343e-02, 6.983755e-02, 6.957177e-02, 6.875991e-02, 6.871756e-02, 6.871021e-02, 6.871769e-02, 6.869493e-02, 6.874049e-02, 6.860300e-02};
-  Double_t dVtxPosY15o[] = {0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,3.361709e-01, 3.361818e-01, 3.362205e-01, 3.363199e-01, 3.363092e-01, 3.362369e-01, 3.374328e-01, 3.374148e-01, 3.375140e-01, 3.361514e-01, 3.361743e-01, 3.362329e-01, 3.361395e-01, 3.361633e-01, 3.367675e-01, 3.366963e-01, 3.366845e-01, 3.366490e-01, 3.366937e-01, 3.366825e-01, 3.373764e-01, 3.373762e-01, 3.373721e-01, 3.373705e-01, 3.373943e-01, 3.373675e-01, 3.374071e-01, 3.373368e-01, 3.373442e-01, 3.375773e-01, 3.375333e-01, 3.377335e-01, 3.378285e-01, 3.362674e-01, 3.362492e-01, 3.362604e-01, 3.363473e-01, 3.295003e-01, 3.295046e-01, 3.295761e-01, 3.296100e-01, 3.291527e-01, 3.292071e-01, 3.290824e-01, 3.299371e-01, 3.300008e-01, 3.300078e-01, 3.300391e-01, 3.300740e-01, 3.300345e-01, 3.300776e-01, 3.301195e-01, 3.289427e-01, 3.289736e-01, 3.296084e-01, 3.297025e-01, 3.297724e-01, 3.298166e-01, 3.298278e-01, 3.298682e-01, 3.297381e-01, 3.296875e-01, 3.297720e-01, 3.298361e-01, 3.298561e-01, 3.299325e-01, 3.300111e-01, 3.301161e-01, 3.302630e-01, 3.289954e-01, 3.292915e-01, 3.293319e-01, 3.294174e-01, 3.314355e-01, 3.314431e-01, 3.316189e-01, 3.318682e-01, 3.323906e-01, 3.315020e-01, 3.312268e-01, 3.310778e-01, 3.310524e-01, 3.314478e-01, 3.312986e-01, 3.311297e-01, 3.324064e-01, 3.322524e-01, 3.322019e-01, 3.321221e-01, 3.321050e-01, 3.319118e-01, 3.317922e-01, 3.314658e-01, 3.315735e-01, 3.316331e-01, 3.316525e-01, 3.308030e-01, 3.308038e-01, 3.306947e-01, 3.305741e-01, 3.316492e-01, 3.316117e-01, 3.314973e-01, 3.314110e-01, 3.313450e-01, 3.313649e-01, 3.325841e-01, 3.324226e-01, 3.323649e-01, 3.323381e-01, 3.322566e-01, 3.322077e-01, 3.320860e-01};
-  Double_t dVtxPosZ15o[] = {0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,5.559279e-01, 3.535446e-01, 4.846955e-01, 4.525585e-01, 3.684501e-01, 2.485494e-01, 2.372653e-01, 1.707859e-01, 3.314213e-01, 1.709195e-01, 2.209753e-01, 3.125757e-01, 3.422085e-01, 3.868156e-01, 4.859695e-01, 4.780697e-01, 4.400149e-01, 4.014992e-01, 3.049883e-01, 3.708501e-01, 3.883566e-01, 3.940632e-01, 4.197670e-01, 3.938399e-01, 3.814413e-01, 3.335539e-01, 3.181929e-01, 2.300734e-01, 2.722395e-01, 5.241033e-01, 3.225908e-01, 1.925791e-01, 1.892765e-01, 3.384066e-01, 2.026459e-01, 2.495699e-01, 3.569992e-01, 3.891381e-01, 4.603724e-01, 3.696685e-01, 3.002207e-01, 2.929533e-01, 3.095468e-01, 3.517200e-01, 2.784445e-01, 3.866626e-01, 3.058719e-01, 3.336752e-01, 3.226473e-01, 3.222815e-01, 3.428469e-01, 3.728514e-01, 2.858642e-01, 2.832485e-01, 3.378933e-01, 3.547548e-01, 3.799414e-01, 4.043543e-01, 4.314049e-01, 4.141138e-01, 3.888746e-01, 4.103586e-01, 3.871045e-01, 4.614473e-01, 4.023404e-01, 4.203531e-01, 4.401272e-01, 6.450558e-01, 6.819582e-01, 2.588529e-01, 3.693471e-01, 3.990708e-01, 3.813842e-01, 3.471682e-01, 3.356156e-01, 2.550150e-01, 3.830723e-01, 4.293259e-01, 4.723797e-01, 4.684324e-01, 4.609304e-01, 4.554974e-01, 4.523016e-01, 3.769890e-01, 4.485548e-01, 5.024484e-01, 5.200088e-01, 5.261731e-01, 5.392851e-01, 5.399264e-01, 5.155504e-01, 4.267668e-01, 5.348764e-01, 4.526746e-01, 4.045626e-01, 4.261759e-01, 5.889205e-01, 6.364843e-01, 5.896163e-01, 3.768637e-01, 4.440771e-01, 4.687029e-01, 4.794467e-01, 4.313422e-01, 3.954777e-01, 3.983129e-01, 3.608064e-01, 2.627038e-01, 3.665826e-01, 4.275667e-01, 3.335445e-01, 3.250815e-01, 3.022907e-01};
-  for(Int_t r=0; r<fnRun; r++) {
-    fRunList[r] = dRun15o[r];
-    fQVecRbR[r] = NULL;
-  }
-  fAvVtxPosX=TArrayD(fnRun,dVtxPosX15o);
-  fAvVtxPosY=TArrayD(fnRun,dVtxPosY15o);
-  fAvVtxPosZ=TArrayD(fnRun,dVtxPosZ15o);
-
   for(Int_t c=0; c<4; c++) {
     for(Int_t i=0; i<2; i++) {
       fQVecCen[c][i] =  NULL;
       fQVecVtx[c][i] =  NULL;
       fQVecCorCen[c][i] =  NULL;
-      fQVecDeltaC[c][i] =  NULL;
-      fQVecCorDeltaC[c][i] =  NULL;
+      // fQVecDeltaC[c][i] =  NULL;
+      // fQVecCorDeltaC[c][i] =  NULL;
     }
+  }
+  for(Int_t i=0; i<2; i++) {
+    fQvecC2Ddis[i] = NULL;
+    fQvecA2Ddis[i] = NULL;
+  }
+  for(Int_t k=0; k<2; k++) {
+    for(Int_t c=0; c<10; c++) {
+      fZDCQvec2Ddis[c][k] = NULL;
+    }
+  }
+
+  fRunList = TArrayI();
+  fAvVtxPosX = TArrayD();
+  fAvVtxPosY = TArrayD();
+  fAvVtxPosZ = TArrayD();
+
+  for(Int_t r=0; r<fnRunMax; r++) {
+    fQVecListRun[r] = NULL;
+    fQVecRbRCen[r] = NULL;
+    fQVecRbRVtxZ[r] = NULL;
+    for(Int_t k=0;k<fCRCnTow;k++) {
+      fZNCTower[r][k] = NULL;
+      fZNATower[r][k] = NULL;
+    }
+  }
+  for(Int_t k=0;k<fCRCnTow;k++) {
+    fZNCTowerSpec[k] = NULL;
+    fZNATowerSpec[k] = NULL;
   }
 }
 
@@ -153,10 +174,15 @@ fQAList(0x0),
 fZDCGainAlpha(0.395),
 fZDCCalibList(0x0),
 fTowerEqList(0x0),
+fQAListMagPol(0x0),
+fEventCounter(NULL),
+fCentralityHisto(NULL),
 fCachedRunNum(0),
+fnRun(0),
+fDataSet(k2015o_pass1_pass1pidfix),
 fAnalysisUtils(0x0),
 fMultSelection(0x0),
-fbFlagIsPosMagField(kFALSE),
+fbIsMagnetPolarityNegative(kFALSE),
 fFlowEvent(NULL)
 {
   for(Int_t k=0; k<4; k++) {
@@ -193,26 +219,42 @@ fFlowEvent(NULL)
   }
   for (Int_t i=0; i<2; i++) fZDCFlowVect[i] = NULL;
 
-  Int_t dRun15o[] = {244917, 244918, 244975, 244980, 244982, 244983, 245064, 245066, 245068, 246390, 246391, 246392, 246994, 246991, 246989, 246984, 246982, 246980, 246948, 246945, 246928, 246851, 246847, 246846, 246845, 246844, 246810, 246809, 246808, 246807, 246805, 246804, 246766, 246765, 246763, 246760, 246759, 246758, 246757, 246751, 246750, 246495, 246493, 246488, 246487, 246434, 246431, 246428, 246424, 246276, 246275, 246272, 246271, 246225, 246222, 246217, 246185, 246182, 246181, 246180, 246178, 246153, 246152, 246151, 246115, 246113, 246089, 246087, 246053, 246052, 246049, 246048, 246042, 246037, 246036, 246012, 246003, 246001, 245954, 245952, 245949, 245923, 245833, 245831, 245829, 245705, 245702, 245700, 245692, 245683, 245145, 245146, 245151, 245152, 245231, 245232, 245259, 245343, 245345, 245346, 245347, 245349, 245353, 245396, 245397, 245401, 245407, 245409, 245441, 245446, 245450, 245454, 245496, 245497, 245501, 245504, 245505, 245507, 245535, 245540, 245542, 245543, 245544, 245545, 245554};
-  Double_t dVtxPosX15o[] = {0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,7.619407e-02, 7.612905e-02, 7.609009e-02, 7.610981e-02, 7.608885e-02, 7.609981e-02, 7.559263e-02, 7.563009e-02, 7.551201e-02, 7.570994e-02, 7.571927e-02, 7.575639e-02, 7.571133e-02, 7.570653e-02, 7.528412e-02, 7.535235e-02, 7.539954e-02, 7.535435e-02, 7.541641e-02, 7.543658e-02, 7.527343e-02, 7.526024e-02, 7.528295e-02, 7.533821e-02, 7.540461e-02, 7.538317e-02, 7.531677e-02, 7.539861e-02, 7.537667e-02, 7.659318e-02, 7.656796e-02, 7.662898e-02, 7.664257e-02, 7.597872e-02, 7.597437e-02, 7.599091e-02, 7.601310e-02, 7.000359e-02, 6.999659e-02, 6.992559e-02, 6.996793e-02, 7.028519e-02, 7.032696e-02, 7.033503e-02, 6.952509e-02, 6.956378e-02, 6.952446e-02, 6.959759e-02, 6.956048e-02, 6.933134e-02, 6.932882e-02, 6.939338e-02, 6.950613e-02, 6.943631e-02, 6.946196e-02, 6.950454e-02, 7.030973e-02, 7.030203e-02, 7.032272e-02, 7.030936e-02, 7.038967e-02, 7.035136e-02, 7.024752e-02, 6.942316e-02, 6.940115e-02, 6.936367e-02, 6.860689e-02, 6.881501e-02, 6.886743e-02, 6.932714e-02, 6.970325e-02, 6.966504e-02, 6.957355e-02, 6.932303e-02, 6.938184e-02, 6.944933e-02, 6.952461e-02, 6.964167e-02, 6.793435e-02, 6.802185e-02, 6.801235e-02, 6.804823e-02, 6.842972e-02, 6.839652e-02, 6.851932e-02, 6.976507e-02, 6.989692e-02, 6.994544e-02, 6.994261e-02, 6.997887e-02, 7.001687e-02, 6.934462e-02, 6.958349e-02, 6.907266e-02, 6.905944e-02, 6.895395e-02, 7.006562e-02, 7.008493e-02, 7.012736e-02, 6.964645e-02, 6.960466e-02, 6.962255e-02, 6.979086e-02, 6.985343e-02, 6.983755e-02, 6.957177e-02, 6.875991e-02, 6.871756e-02, 6.871021e-02, 6.871769e-02, 6.869493e-02, 6.874049e-02, 6.860300e-02};
-  Double_t dVtxPosY15o[] = {0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,3.361709e-01, 3.361818e-01, 3.362205e-01, 3.363199e-01, 3.363092e-01, 3.362369e-01, 3.374328e-01, 3.374148e-01, 3.375140e-01, 3.361514e-01, 3.361743e-01, 3.362329e-01, 3.361395e-01, 3.361633e-01, 3.367675e-01, 3.366963e-01, 3.366845e-01, 3.366490e-01, 3.366937e-01, 3.366825e-01, 3.373764e-01, 3.373762e-01, 3.373721e-01, 3.373705e-01, 3.373943e-01, 3.373675e-01, 3.374071e-01, 3.373368e-01, 3.373442e-01, 3.375773e-01, 3.375333e-01, 3.377335e-01, 3.378285e-01, 3.362674e-01, 3.362492e-01, 3.362604e-01, 3.363473e-01, 3.295003e-01, 3.295046e-01, 3.295761e-01, 3.296100e-01, 3.291527e-01, 3.292071e-01, 3.290824e-01, 3.299371e-01, 3.300008e-01, 3.300078e-01, 3.300391e-01, 3.300740e-01, 3.300345e-01, 3.300776e-01, 3.301195e-01, 3.289427e-01, 3.289736e-01, 3.296084e-01, 3.297025e-01, 3.297724e-01, 3.298166e-01, 3.298278e-01, 3.298682e-01, 3.297381e-01, 3.296875e-01, 3.297720e-01, 3.298361e-01, 3.298561e-01, 3.299325e-01, 3.300111e-01, 3.301161e-01, 3.302630e-01, 3.289954e-01, 3.292915e-01, 3.293319e-01, 3.294174e-01, 3.314355e-01, 3.314431e-01, 3.316189e-01, 3.318682e-01, 3.323906e-01, 3.315020e-01, 3.312268e-01, 3.310778e-01, 3.310524e-01, 3.314478e-01, 3.312986e-01, 3.311297e-01, 3.324064e-01, 3.322524e-01, 3.322019e-01, 3.321221e-01, 3.321050e-01, 3.319118e-01, 3.317922e-01, 3.314658e-01, 3.315735e-01, 3.316331e-01, 3.316525e-01, 3.308030e-01, 3.308038e-01, 3.306947e-01, 3.305741e-01, 3.316492e-01, 3.316117e-01, 3.314973e-01, 3.314110e-01, 3.313450e-01, 3.313649e-01, 3.325841e-01, 3.324226e-01, 3.323649e-01, 3.323381e-01, 3.322566e-01, 3.322077e-01, 3.320860e-01};
-  Double_t dVtxPosZ15o[] = {0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,5.559279e-01, 3.535446e-01, 4.846955e-01, 4.525585e-01, 3.684501e-01, 2.485494e-01, 2.372653e-01, 1.707859e-01, 3.314213e-01, 1.709195e-01, 2.209753e-01, 3.125757e-01, 3.422085e-01, 3.868156e-01, 4.859695e-01, 4.780697e-01, 4.400149e-01, 4.014992e-01, 3.049883e-01, 3.708501e-01, 3.883566e-01, 3.940632e-01, 4.197670e-01, 3.938399e-01, 3.814413e-01, 3.335539e-01, 3.181929e-01, 2.300734e-01, 2.722395e-01, 5.241033e-01, 3.225908e-01, 1.925791e-01, 1.892765e-01, 3.384066e-01, 2.026459e-01, 2.495699e-01, 3.569992e-01, 3.891381e-01, 4.603724e-01, 3.696685e-01, 3.002207e-01, 2.929533e-01, 3.095468e-01, 3.517200e-01, 2.784445e-01, 3.866626e-01, 3.058719e-01, 3.336752e-01, 3.226473e-01, 3.222815e-01, 3.428469e-01, 3.728514e-01, 2.858642e-01, 2.832485e-01, 3.378933e-01, 3.547548e-01, 3.799414e-01, 4.043543e-01, 4.314049e-01, 4.141138e-01, 3.888746e-01, 4.103586e-01, 3.871045e-01, 4.614473e-01, 4.023404e-01, 4.203531e-01, 4.401272e-01, 6.450558e-01, 6.819582e-01, 2.588529e-01, 3.693471e-01, 3.990708e-01, 3.813842e-01, 3.471682e-01, 3.356156e-01, 2.550150e-01, 3.830723e-01, 4.293259e-01, 4.723797e-01, 4.684324e-01, 4.609304e-01, 4.554974e-01, 4.523016e-01, 3.769890e-01, 4.485548e-01, 5.024484e-01, 5.200088e-01, 5.261731e-01, 5.392851e-01, 5.399264e-01, 5.155504e-01, 4.267668e-01, 5.348764e-01, 4.526746e-01, 4.045626e-01, 4.261759e-01, 5.889205e-01, 6.364843e-01, 5.896163e-01, 3.768637e-01, 4.440771e-01, 4.687029e-01, 4.794467e-01, 4.313422e-01, 3.954777e-01, 3.983129e-01, 3.608064e-01, 2.627038e-01, 3.665826e-01, 4.275667e-01, 3.335445e-01, 3.250815e-01, 3.022907e-01};
-  for(Int_t r=0; r<fnRun; r++) {
-    fRunList[r] = dRun15o[r];
-    fQVecRbR[r] = NULL;
-  }
-  fAvVtxPosX=TArrayD(fnRun,dVtxPosX15o);
-  fAvVtxPosY=TArrayD(fnRun,dVtxPosY15o);
-  fAvVtxPosZ=TArrayD(fnRun,dVtxPosZ15o);
-
   for(Int_t c=0; c<4; c++) {
     for(Int_t i=0; i<2; i++) {
       fQVecCen[c][i] =  NULL;
       fQVecVtx[c][i] =  NULL;
       fQVecCorCen[c][i] =  NULL;
-      fQVecDeltaC[c][i] =  NULL;
-      fQVecCorDeltaC[c][i] =  NULL;
+      // fQVecDeltaC[c][i] =  NULL;
+      // fQVecCorDeltaC[c][i] =  NULL;
     }
+  }
+  for(Int_t i=0; i<2; i++) {
+    fQvecC2Ddis[i] = NULL;
+    fQvecA2Ddis[i] = NULL;
+  }
+  for(Int_t k=0; k<2; k++) {
+    for(Int_t c=0; c<10; c++) {
+      fZDCQvec2Ddis[c][k] = NULL;
+    }
+  }
+
+  fRunList = TArrayI();
+  fAvVtxPosX = TArrayD();
+  fAvVtxPosY = TArrayD();
+  fAvVtxPosZ = TArrayD();
+
+  for(Int_t r=0; r<fnRunMax; r++) {
+    fQVecListRun[r] = NULL;
+    fQVecRbRCen[r] = NULL;
+    fQVecRbRVtxZ[r] = NULL;
+    for(Int_t k=0;k<fCRCnTow;k++) {
+      fZNCTower[r][k] = NULL;
+      fZNATower[r][k] = NULL;
+    }
+  }
+  for(Int_t k=0;k<fCRCnTow;k++) {
+    fZNCTowerSpec[k] = NULL;
+    fZNATowerSpec[k] = NULL;
   }
 
   DefineInput(0,TChain::Class());
@@ -307,59 +349,115 @@ void AliAnalysisTaskZDCEP::UserCreateOutputObjects ()
 
   TString WhichQ[] = {"QCx","QCy","QAx","QAy"};
   TString WhichCor[] = {"QAxQCx","QAyQCy","QAxQCy","QCxQAy"};
-  TString WhichMP[] = {"+","-"};
+  TString WhichMP[] = {"--","++"};
   Double_t xmin=0.,xmax=0.,ymin=0.,ymax=0.,zmin=0.,zmax=0.;
-  // if(fDataSet==k2010) {
-  //   xmin=-0.032;
-  //   xmax=0.016;
-  //   ymin=0.146;
-  //   ymax=0.21;
-  //   zmin=-10.;
-  //   zmax=10.;
-  // }
-  // if(fDataSet==k2011) {
-  //   xmin=0.045;
-  //   xmax=0.08;
-  //   ymin=0.258;
-  //   ymax=0.292;
-  //   zmin=-10.;
-  //   zmax=10.;
-  // }
-  // if(fDataSet==k2015 || fDataSet==k2015v6 || fDataSet==k2015pidfix) {
-    xmin = -8.5e-3;
-    xmax = 8.5e-3;
-    ymin = -7.8e-3;
-    ymax = 7.8e-3;
-    zmin = -10.;
-    zmax = 10.;
-  // }
+  xmin = -8.5e-3;
+  xmax = 8.5e-3;
+  ymin = -7.8e-3;
+  ymax = 7.8e-3;
+  zmin = -10.;
+  zmax = 10.;
 
-  fEventCounter = new TH1D("fEventCounter","fEventCounter",5,0.,5.);
+  fEventCounter = new TH1D("fEventCounter","fEventCounter",6,0.,6.);
   fEventCounter->GetXaxis()->SetBinLabel(1,"total");
   fEventCounter->GetXaxis()->SetBinLabel(2,"passed");
   fEventCounter->GetXaxis()->SetBinLabel(3,"den<0");
   fEventCounter->GetXaxis()->SetBinLabel(4,"vtx out-of-boundaries");
   fEventCounter->GetXaxis()->SetBinLabel(5,"norm=0");
+  fEventCounter->GetXaxis()->SetBinLabel(6,"raw tower<0");
   fQAList->Add(fEventCounter);
+  fCentralityHisto = new TH1D("fCentralityHisto","fCentralityHisto",100,0.,100.);
+  fQAList->Add(fCentralityHisto);
 
-  for(Int_t c=0; c<4; c++) {
-    for(Int_t i=0; i<2; i++) {
-      fQVecCen[c][i] =  new TProfile(Form("fQVecCen[%d][%d]",c,i),Form("ZDC <%s> mag.pol. %s;centrality;<%s>",WhichQ[c].Data(),WhichMP[i].Data(),WhichQ[c].Data()),100,0.,100.);
-      fQAList->Add(fQVecCen[c][i]);
+
+  fQAListMagPol = new TList();
+  fQAListMagPol->SetName("QA list Magnet Polarity");
+  fQAListMagPol->SetOwner(kTRUE);
+  fQAList->Add(fQAListMagPol);
+
+  for(Int_t i=0; i<2; i++) {
+    for(Int_t c=0; c<4; c++) {
+      fQVecCen[c][i] =  new TProfile(Form("fQVecCen[%d][%d]",c,i),Form("ZDC <%s> mag.pol. %s;centrality;<%s>",WhichQ[c].Data(),WhichMP[i].Data(),WhichQ[c].Data()),20,0.,100.);
+      fQAListMagPol->Add(fQVecCen[c][i]);
+    }
+    for(Int_t c=0; c<4; c++) {
       fQVecVtx[c][i] =  new TProfile3D(Form("fQVecVtx[%d][%d]",c,i),Form("ZDC <%s> mag.pol. %s;x_{vtx} (cm);y_{vtx} (cm);z_{vtx} (cm)",WhichQ[c].Data(),WhichMP[i].Data()),10,xmin,xmax,10,ymin,ymax,10,zmin,zmax);
-      fQAList->Add(fQVecVtx[c][i]);
-      fQVecCorCen[c][i] = new TProfile(Form("fQVecCorCen[%d][%d]",c,i),Form("ZDC <%s> mag.pol. %s;centrality;<%s>",WhichCor[c].Data(),WhichMP[i].Data(),WhichCor[c].Data()),100,0.,100.);
-      fQAList->Add(fQVecCorCen[c][i]);
-      fQVecDeltaC[c][i] = new TProfile(Form("fQVecDeltaC[%d][%d]",c,i),Form("ZDC <%s> mag.pol. %s;#Delta centroids (cm);<%s>",WhichQ[c].Data(),WhichMP[i].Data(),WhichQ[c].Data()),100,0.,2.5);
-      fQAList->Add(fQVecDeltaC[c][i]);
-      fQVecCorDeltaC[c][i] = new TProfile(Form("fQVecCorDeltaC[%d][%d]",c,i),Form("ZDC <%s> mag.pol. %s;#Delta centroids (cm);<%s>",WhichCor[c].Data(),WhichMP[i].Data(),WhichCor[c].Data()),100,0.,2.5);
-      fQAList->Add(fQVecCorDeltaC[c][i]);
+      fQAListMagPol->Add(fQVecVtx[c][i]);
+    }
+    for(Int_t c=0; c<4; c++) {
+      fQVecCorCen[c][i] = new TProfile(Form("fQVecCorCen[%d][%d]",c,i),Form("ZDC <%s> mag.pol. %s;centrality;<%s>",WhichCor[c].Data(),WhichMP[i].Data(),WhichCor[c].Data()),20,0.,100.);
+      fQAListMagPol->Add(fQVecCorCen[c][i]);
+    }
+    // fQVecDeltaC[c][i] = new TProfile(Form("fQVecDeltaC[%d][%d]",c,i),Form("ZDC <%s> mag.pol. %s;#Delta centroids (cm);<%s>",WhichQ[c].Data(),WhichMP[i].Data(),WhichQ[c].Data()),100,0.,2.5);
+    // fQAListMagPol->Add(fQVecDeltaC[c][i]);
+    // fQVecCorDeltaC[c][i] = new TProfile(Form("fQVecCorDeltaC[%d][%d]",c,i),Form("ZDC <%s> mag.pol. %s;#Delta centroids (cm);<%s>",WhichCor[c].Data(),WhichMP[i].Data(),WhichCor[c].Data()),100,0.,2.5);
+    // fQAListMagPol->Add(fQVecCorDeltaC[c][i]);
+    fQvecC2Ddis[i] = new TH2D(Form("fQvecC2Ddis[%d]",i),Form("%s x-y distribution mag.pol. %s;x (cm);y (cm)","QC",WhichMP[i].Data()),100, -2., 2. , 100., -2., 2.);
+    fQAListMagPol->Add(fQvecC2Ddis[i]);
+    fQvecA2Ddis[i] = new TH2D(Form("fQvecA2Ddis[%d]",i),Form("%s x-y distribution mag.pol. %s;x (cm);y (cm)","QA",WhichMP[i].Data()),100, -2., 2. , 100., -2., 2.);
+    fQAListMagPol->Add(fQvecA2Ddis[i]);
+  }
+  for(Int_t k=0; k<2; k++) {
+    for(Int_t c=0; c<10; c++) {
+      fZDCQvec2Ddis[c][k] = new TH2D(Form("fZDCQvec2Ddis[%d][%d]",c,k),Form("%s x-y distribution (centrality bin %d);x (cm);y (cm)",(k==0?"QC":"QA"),c),100, -2., 2. , 100., -2., 2.);
+      fQAList->Add(fZDCQvec2Ddis[c][k]);
     }
   }
 
-  // for(Int_t r=0; r<fnRun; r++) {
-  //   fQVecRbR[r] = new TProfile2D(Form("QVecRbR[%d]",fRunList[r]),Form("ZDC <Q_{i}> run %d:centrality (%):Q_{i}",fRunList[r]),20,0.,100.,4,0.,4.);
-  // }
+  Int_t dRun15o[] = {244917, 244918, 244975, 244980, 244982, 244983, 245064, 245066, 245068, 246390, 246391, 246392, 246994, 246991, 246989, 246984, 246982, 246980, 246948, 246945, 246928, 246851, 246847, 246846, 246845, 246844, 246810, 246809, 246808, 246807, 246805, 246804, 246766, 246765, 246763, 246760, 246759, 246758, 246757, 246751, 246750, 246495, 246493, 246488, 246487, 246434, 246431, 246428, 246424, 246276, 246275, 246272, 246271, 246225, 246222, 246217, 246185, 246182, 246181, 246180, 246178, 246153, 246152, 246151, 246115, 246113, 246089, 246087, 246053, 246052, 246049, 246048, 246042, 246037, 246036, 246012, 246003, 246001, 245954, 245952, 245949, 245923, 245833, 245831, 245829, 245705, 245702, 245700, 245692, 245683, 245145, 245146, 245151, 245152, 245231, 245232, 245259, 245343, 245345, 245346, 245347, 245349, 245353, 245396, 245397, 245401, 245407, 245409, 245441, 245446, 245450, 245454, 245496, 245497, 245501, 245504, 245505, 245507, 245535, 245540, 245542, 245543, 245544, 245545, 245554};
+  Double_t dVtxPosX15o[] = {0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,7.619407e-02, 7.612905e-02, 7.609009e-02, 7.610981e-02, 7.608885e-02, 7.609981e-02, 7.559263e-02, 7.563009e-02, 7.551201e-02, 7.570994e-02, 7.571927e-02, 7.575639e-02, 7.571133e-02, 7.570653e-02, 7.528412e-02, 7.535235e-02, 7.539954e-02, 7.535435e-02, 7.541641e-02, 7.543658e-02, 7.527343e-02, 7.526024e-02, 7.528295e-02, 7.533821e-02, 7.540461e-02, 7.538317e-02, 7.531677e-02, 7.539861e-02, 7.537667e-02, 7.659318e-02, 7.656796e-02, 7.662898e-02, 7.664257e-02, 7.597872e-02, 7.597437e-02, 7.599091e-02, 7.601310e-02, 7.000359e-02, 6.999659e-02, 6.992559e-02, 6.996793e-02, 7.028519e-02, 7.032696e-02, 7.033503e-02, 6.952509e-02, 6.956378e-02, 6.952446e-02, 6.959759e-02, 6.956048e-02, 6.933134e-02, 6.932882e-02, 6.939338e-02, 6.950613e-02, 6.943631e-02, 6.946196e-02, 6.950454e-02, 7.030973e-02, 7.030203e-02, 7.032272e-02, 7.030936e-02, 7.038967e-02, 7.035136e-02, 7.024752e-02, 6.942316e-02, 6.940115e-02, 6.936367e-02, 6.860689e-02, 6.881501e-02, 6.886743e-02, 6.932714e-02, 6.970325e-02, 6.966504e-02, 6.957355e-02, 6.932303e-02, 6.938184e-02, 6.944933e-02, 6.952461e-02, 6.964167e-02, 6.793435e-02, 6.802185e-02, 6.801235e-02, 6.804823e-02, 6.842972e-02, 6.839652e-02, 6.851932e-02, 6.976507e-02, 6.989692e-02, 6.994544e-02, 6.994261e-02, 6.997887e-02, 7.001687e-02, 6.934462e-02, 6.958349e-02, 6.907266e-02, 6.905944e-02, 6.895395e-02, 7.006562e-02, 7.008493e-02, 7.012736e-02, 6.964645e-02, 6.960466e-02, 6.962255e-02, 6.979086e-02, 6.985343e-02, 6.983755e-02, 6.957177e-02, 6.875991e-02, 6.871756e-02, 6.871021e-02, 6.871769e-02, 6.869493e-02, 6.874049e-02, 6.860300e-02};
+  Double_t dVtxPosY15o[] = {0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,3.361709e-01, 3.361818e-01, 3.362205e-01, 3.363199e-01, 3.363092e-01, 3.362369e-01, 3.374328e-01, 3.374148e-01, 3.375140e-01, 3.361514e-01, 3.361743e-01, 3.362329e-01, 3.361395e-01, 3.361633e-01, 3.367675e-01, 3.366963e-01, 3.366845e-01, 3.366490e-01, 3.366937e-01, 3.366825e-01, 3.373764e-01, 3.373762e-01, 3.373721e-01, 3.373705e-01, 3.373943e-01, 3.373675e-01, 3.374071e-01, 3.373368e-01, 3.373442e-01, 3.375773e-01, 3.375333e-01, 3.377335e-01, 3.378285e-01, 3.362674e-01, 3.362492e-01, 3.362604e-01, 3.363473e-01, 3.295003e-01, 3.295046e-01, 3.295761e-01, 3.296100e-01, 3.291527e-01, 3.292071e-01, 3.290824e-01, 3.299371e-01, 3.300008e-01, 3.300078e-01, 3.300391e-01, 3.300740e-01, 3.300345e-01, 3.300776e-01, 3.301195e-01, 3.289427e-01, 3.289736e-01, 3.296084e-01, 3.297025e-01, 3.297724e-01, 3.298166e-01, 3.298278e-01, 3.298682e-01, 3.297381e-01, 3.296875e-01, 3.297720e-01, 3.298361e-01, 3.298561e-01, 3.299325e-01, 3.300111e-01, 3.301161e-01, 3.302630e-01, 3.289954e-01, 3.292915e-01, 3.293319e-01, 3.294174e-01, 3.314355e-01, 3.314431e-01, 3.316189e-01, 3.318682e-01, 3.323906e-01, 3.315020e-01, 3.312268e-01, 3.310778e-01, 3.310524e-01, 3.314478e-01, 3.312986e-01, 3.311297e-01, 3.324064e-01, 3.322524e-01, 3.322019e-01, 3.321221e-01, 3.321050e-01, 3.319118e-01, 3.317922e-01, 3.314658e-01, 3.315735e-01, 3.316331e-01, 3.316525e-01, 3.308030e-01, 3.308038e-01, 3.306947e-01, 3.305741e-01, 3.316492e-01, 3.316117e-01, 3.314973e-01, 3.314110e-01, 3.313450e-01, 3.313649e-01, 3.325841e-01, 3.324226e-01, 3.323649e-01, 3.323381e-01, 3.322566e-01, 3.322077e-01, 3.320860e-01};
+  Double_t dVtxPosZ15o[] = {0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,5.559279e-01, 3.535446e-01, 4.846955e-01, 4.525585e-01, 3.684501e-01, 2.485494e-01, 2.372653e-01, 1.707859e-01, 3.314213e-01, 1.709195e-01, 2.209753e-01, 3.125757e-01, 3.422085e-01, 3.868156e-01, 4.859695e-01, 4.780697e-01, 4.400149e-01, 4.014992e-01, 3.049883e-01, 3.708501e-01, 3.883566e-01, 3.940632e-01, 4.197670e-01, 3.938399e-01, 3.814413e-01, 3.335539e-01, 3.181929e-01, 2.300734e-01, 2.722395e-01, 5.241033e-01, 3.225908e-01, 1.925791e-01, 1.892765e-01, 3.384066e-01, 2.026459e-01, 2.495699e-01, 3.569992e-01, 3.891381e-01, 4.603724e-01, 3.696685e-01, 3.002207e-01, 2.929533e-01, 3.095468e-01, 3.517200e-01, 2.784445e-01, 3.866626e-01, 3.058719e-01, 3.336752e-01, 3.226473e-01, 3.222815e-01, 3.428469e-01, 3.728514e-01, 2.858642e-01, 2.832485e-01, 3.378933e-01, 3.547548e-01, 3.799414e-01, 4.043543e-01, 4.314049e-01, 4.141138e-01, 3.888746e-01, 4.103586e-01, 3.871045e-01, 4.614473e-01, 4.023404e-01, 4.203531e-01, 4.401272e-01, 6.450558e-01, 6.819582e-01, 2.588529e-01, 3.693471e-01, 3.990708e-01, 3.813842e-01, 3.471682e-01, 3.356156e-01, 2.550150e-01, 3.830723e-01, 4.293259e-01, 4.723797e-01, 4.684324e-01, 4.609304e-01, 4.554974e-01, 4.523016e-01, 3.769890e-01, 4.485548e-01, 5.024484e-01, 5.200088e-01, 5.261731e-01, 5.392851e-01, 5.399264e-01, 5.155504e-01, 4.267668e-01, 5.348764e-01, 4.526746e-01, 4.045626e-01, 4.261759e-01, 5.889205e-01, 6.364843e-01, 5.896163e-01, 3.768637e-01, 4.440771e-01, 4.687029e-01, 4.794467e-01, 4.313422e-01, 3.954777e-01, 3.983129e-01, 3.608064e-01, 2.627038e-01, 3.665826e-01, 4.275667e-01, 3.335445e-01, 3.250815e-01, 3.022907e-01};
+
+  Int_t dRun15o_GoodMuonRuns[] = {246994, 246991, 246989, 246984, 246982, 246980, 246949, 246948, 246945, 246942, 246937, 246930, 246871, 246867, 246865, 246864, 246859, 246855, 246851, 246847, 246846, 246845, 246844, 246809, 246808, 246807, 246806, 246805, 246804, 246765, 246763, 246760, 246759, 246758, 246757, 246755, 246751, 246750, 246676, 246675, 246495, 246493, 246488, 246487, 246434, 246433, 246431, 246428, 246424, 246392, 246391, 246390, 246276, 246275, 246272, 246225, 246222, 246220, 246217, 246182, 246181, 246178, 246153, 246152, 246151, 246148, 246115, 246113, 246089, 246087, 246053, 246049, 246048, 246042, 246037, 246036, 246012, 246003, 246001, 245996, 245963, 245954, 245952, 245949, 245833, 245831, 245829, 245793, 245785, 245775, 245766, 245759, 245752, 245738, 245731, 245729, 245705, 245700, 245692, 245683, 245554, 245543, 245542, 245540, 245535, 245507, 245505, 245504, 245501, 245496, 245450, 245446, 245410, 245409, 245407, 245401, 245353, 245347, 245346, 245345, 245343, 245259, 245253, 245233, 245232, 245231, 245152, 245151, 245146, 245145, 245068, 245066, 245064, 244983, 244982, 244980, 244918};
+
+  switch(fDataSet) {
+    case k2015o_pass1_pass1pidfix:
+    fnRun=125;
+    fRunList=TArrayI(fnRun,dRun15o);
+    fAvVtxPosX=TArrayD(fnRun,dVtxPosX15o);
+    fAvVtxPosY=TArrayD(fnRun,dVtxPosY15o);
+    fAvVtxPosZ=TArrayD(fnRun,dVtxPosZ15o);
+    break;
+    case k2015o_muon_calo_pass1:
+    fnRun=137;
+    fRunList=TArrayI(fnRun,dRun15o_GoodMuonRuns);
+    fAvVtxPosX=TArrayD(fnRun);
+    fAvVtxPosY=TArrayD(fnRun);
+    fAvVtxPosZ=TArrayD(fnRun);
+    break;
+  }
+
+
+  for(Int_t k=0;k<fCRCnTow;k++) {
+    fZNCTowerSpec[k] = new TH2D(Form("fZNCTowerSpec[%d]",k),Form("fZNCTowerSpec[%d];centrality;ADC signal (a.u.);counts",k),100,0.,100.,500,0.,5.E4);
+    fQAList->Add(fZNCTowerSpec[k]);
+    fZNATowerSpec[k] = new TH2D(Form("fZNATowerSpec[%d]",k),Form("fZNATowerSpec[%d];centrality;ADC signal (a.u.);counts",k),100,0.,100.,500,0.,5.E4);
+    fQAList->Add(fZNATowerSpec[k]);
+  }
+
+  for(Int_t r=0; r<fnRun; r++) {
+    fQVecListRun[r] = new TList();
+    fQVecListRun[r]->SetName(Form("run %d",fRunList[r]));
+    fQVecListRun[r]->SetOwner(kTRUE);
+    fQAList->Add(fQVecListRun[r]);
+
+    fQVecRbRCen[r] = new TProfile2D(Form("QVecRbRCen[%d]",fRunList[r]),Form("ZDC <Q_{i}> run %d;centrality;Q_{i}",fRunList[r]),20,0.,100.,4,0.,4.);
+    fQVecListRun[r]->Add(fQVecRbRCen[r]);
+    fQVecRbRVtxZ[r] = new TProfile3D(Form("QVecRbRVtxZ[%d]",fRunList[r]),Form("ZDC <Q_{i}> run %d;centrality;vtx-z (cm);Q_{i}",fRunList[r]),18,0.,90.,20,-10.,10.,4,0.,4.);
+    fQVecListRun[r]->Add(fQVecRbRVtxZ[r]);
+
+    if(!fTowerEqList) {
+      for(Int_t k=0; k<fCRCnTow; k++) {
+        fZNCTower[r][k] = new TProfile(Form("fZNCTower[%d][%d]",fRunList[r],k),Form("fZNCTower[%d][%d]",fRunList[r],k),100,0.,100.,"s");
+        fZNCTower[r][k]->Sumw2();
+        fQVecListRun[r]->Add(fZNCTower[r][k]);
+        fZNATower[r][k] = new TProfile(Form("fZNATower[%d][%d]",fRunList[r],k),Form("fZNATower[%d][%d]",fRunList[r],k),100,0.,100.,"s");
+        fZNATower[r][k]->Sumw2();
+        fQVecListRun[r]->Add(fZNATower[r][k]);
+      }
+    }
+  }
 
   PostData(2, fQAList);
 }
@@ -371,7 +469,7 @@ void AliAnalysisTaskZDCEP::UserExec(Option_t *)
   //  get  an  event  from  the  analysis  manager
   AliAODEvent *aod = dynamic_cast<AliAODEvent*>(InputEvent());
   if(!aod) return;
-  Float_t Centrality = 0.;
+  Double_t Centrality = 0.;
   fMultSelection = (AliMultSelection*)aod->FindListObject("MultSelection");
   if(!fMultSelection) {
     AliWarning("WARNING: AliMultSelection object not found ! \n");
@@ -388,21 +486,23 @@ void AliAnalysisTaskZDCEP::UserExec(Option_t *)
   Int_t fCenBin = GetCenBin(Centrality);
 
   if(RunNum!=fCachedRunNum) {
-    fbFlagIsPosMagField = kFALSE;
-    Int_t dRun15hPos[] = {246390, 246391, 246392, 246994, 246991, 246989, 246984, 246982, 246980, 246948, 246945, 246928, 246851, 246847, 246846, 246845, 246844, 246810, 246809, 246808, 246807, 246805, 246804, 246766, 246765, 246763, 246760, 246759, 246758, 246757, 246751, 246750, 246495, 246493, 246488, 246487, 246434, 246431, 246428, 246424};
-    for (Int_t i=0; i<40; i++) {
-      if(RunNum==dRun15hPos[i]) fbFlagIsPosMagField = kTRUE;
-    }
+    fbIsMagnetPolarityNegative = kFALSE;
+    // LHC15o
+    // negative polarity: 246390 - 246994
+    // positive polarity: 244824 - 246276
+    if(RunNum>246276) fbIsMagnetPolarityNegative = kTRUE;
   }
+  Int_t qb = (fbIsMagnetPolarityNegative?0:1);
 
   Bool_t IsGoodEvent = kTRUE;
   fEventCounter->Fill(0.5);
+  fCentralityHisto->Fill(Centrality);
 
   // get primary vertex position
   Double_t fVtxPos[3]={0.,0.,0.};
-  fVtxPos[0] = ((AliAODVertex*)aod->GetPrimaryVertex())->GetX();
-  fVtxPos[1] = ((AliAODVertex*)aod->GetPrimaryVertex())->GetY();
-  fVtxPos[2] = ((AliAODVertex*)aod->GetPrimaryVertex())->GetZ();
+  fVtxPos[0] = ((AliVVertex*)aod->GetPrimaryVertexSPD())->GetX();
+  fVtxPos[1] = ((AliVVertex*)aod->GetPrimaryVertexSPD())->GetY();
+  fVtxPos[2] = ((AliVVertex*)aod->GetPrimaryVertexSPD())->GetZ();
   Double_t fVtxPosCor[3] = {fVtxPos[0]-fAvVtxPosX[RunBin],fVtxPos[1]-fAvVtxPosY[RunBin],fVtxPos[2]-fAvVtxPosZ[RunBin]};
 
   // zdc selection
@@ -410,6 +510,11 @@ void AliAnalysisTaskZDCEP::UserExec(Option_t *)
 
   const Double_t * towZNCraw = aodZDC->GetZNCTowerEnergy();
   const Double_t * towZNAraw = aodZDC->GetZNATowerEnergy();
+
+  for(Int_t i=0; i<5; i++) {
+    if(towZNCraw[i]<0. || (i!=2 && towZNAraw[i]<0.)) IsGoodEvent = kFALSE;
+  }
+  if(!IsGoodEvent) fEventCounter->Fill(5.5);
 
   // Get centroid from ZDCs *******************************************************
 
@@ -420,15 +525,30 @@ void AliAnalysisTaskZDCEP::UserExec(Option_t *)
   Double_t ZNCcalib=1., ZNAcalib=1.;
 
   // equalize gain of all towers
-  if(RunNum!=fCachedRunNum) {
+  if(fTowerEqList) {
+    if(RunNum!=fCachedRunNum) {
+      for(Int_t i=0; i<5; i++) {
+        fTowerGainEq[0][i] = (TH1D*)(fTowerEqList->FindObject(Form("fZNCTower[%d][%d]",RunNum,i)));
+        fTowerGainEq[1][i] = (TH1D*)(fTowerEqList->FindObject(Form("fZNATower[%d][%d]",RunNum,i)));
+      }
+    }
     for(Int_t i=0; i<5; i++) {
-      fTowerGainEq[0][i] = (TH1D*)(fTowerEqList->FindObject(Form("fZNCTower[%d][%d]",RunNum,i)));
-      fTowerGainEq[1][i] = (TH1D*)(fTowerEqList->FindObject(Form("fZNATower[%d][%d]",RunNum,i)));
+      if(fTowerGainEq[0][i]) towZNC[i] = towZNCraw[i]*fTowerGainEq[0][i]->GetBinContent(fTowerGainEq[0][i]->FindBin(Centrality));
+      if(fTowerGainEq[1][i]) towZNA[i] = towZNAraw[i]*fTowerGainEq[1][i]->GetBinContent(fTowerGainEq[1][i]->FindBin(Centrality));
+    }
+  } else {
+    for(Int_t i=0; i<5; i++) {
+      if(towZNCraw[i]<0. || towZNAraw[i]<0.) continue;
+      towZNC[i] = towZNCraw[i];
+      towZNA[i] = towZNAraw[i];
+      if(fZNCTower[RunBin][i]) fZNCTower[RunBin][i]->Fill(Centrality,towZNC[i]);
+      if(fZNATower[RunBin][i]) fZNATower[RunBin][i]->Fill(Centrality,towZNA[i]);
     }
   }
+
   for(Int_t i=0; i<5; i++) {
-    if(fTowerGainEq[0][i]) towZNC[i] = towZNCraw[i]*fTowerGainEq[0][i]->GetBinContent(fTowerGainEq[0][i]->FindBin(Centrality));
-    if(fTowerGainEq[1][i]) towZNA[i] = towZNAraw[i]*fTowerGainEq[1][i]->GetBinContent(fTowerGainEq[1][i]->FindBin(Centrality));
+    fZNCTowerSpec[i]->Fill(Centrality,towZNC[i]);
+    fZNATowerSpec[i]->Fill(Centrality,towZNA[i]);
   }
 
   if(RunNum>=245829) towZNA[2] = 0.;
@@ -501,19 +621,21 @@ void AliAnalysisTaskZDCEP::UserExec(Option_t *)
   fZDCFlowVect[0]->SetMult(denZNC);
   fZDCFlowVect[1]->SetMult(denZNA);
 
+  // ZDCN-C
+  Double_t QCRe = fZDCFlowVect[0]->X();
+  Double_t QCIm = fZDCFlowVect[0]->Y();
+  Double_t QMC  = fZDCFlowVect[0]->GetMult();
+  // ZDCN-A
+  Double_t QARe = fZDCFlowVect[1]->X();
+  Double_t QAIm = fZDCFlowVect[1]->Y();
+  Double_t QMA  = fZDCFlowVect[1]->GetMult();
+
+  Double_t QCReR=QCRe, QCImR=QCIm, QAReR=QARe, QAImR=QAIm;
+
   // RE-CENTER ZDC Q-VECTORS ***************************************************
 
-  // get re-centered QM*
-//  Double_t QMCrec = denZNC;
-//  Double_t QMArec = denZNA;
-//  if(fAvEZDCCRbRPro && fAvEZDCARbRPro) {
-//    Int_t runbin = fAvEZDCCRbRPro->GetXaxis()->FindBin(Form("%d",RunNum));
-//    Int_t cenbin = fAvEZDCCRbRPro->GetYaxis()->FindBin(Centrality);
-//    QMCrec -= fAvEZDCCRbRPro->GetBinContent(runbin,cenbin);
-//    QMArec -= fAvEZDCARbRPro->GetBinContent(runbin,cenbin);
-//  }
-
   if(fZDCCalibList) {
+
     if(RunNum!=fCachedRunNum) {
       // get histos of run
       fZDCQHist[0] = (TProfile*)(fZDCCalibList->FindObject(Form("Run %d",RunNum))->FindObject(Form("fCRCZDCQVecC[%d][%d]",RunNum,0)));
@@ -552,26 +674,15 @@ void AliAnalysisTaskZDCEP::UserExec(Option_t *)
         }
       }
 
-//      for(Int_t i=0; i<10; i++) {
-//        for(Int_t z=0; z<10; z++) {
-//          for(Int_t k=0; k<4; k++) {
-//            fZDCQVecVtxCenEZDC3D[i][z][k] = (TH3D*)(fZDCCalibList->FindObject(Form("ZDCQVecVtxCenEZDC3D[%d][%d][%d]",i,z,qb[k])));
-//          }
-//        }
-//      }
+      //      for(Int_t i=0; i<10; i++) {
+      //        for(Int_t z=0; z<10; z++) {
+      //          for(Int_t k=0; k<4; k++) {
+      //            fZDCQVecVtxCenEZDC3D[i][z][k] = (TH3D*)(fZDCCalibList->FindObject(Form("ZDCQVecVtxCenEZDC3D[%d][%d][%d]",i,z,qb[k])));
+      //          }
+      //        }
+      //      }
 
     }
-
-    // ZDCN-C
-    Double_t QCRe = fZDCFlowVect[0]->X();
-    Double_t QCIm = fZDCFlowVect[0]->Y();
-    Double_t QMC  = fZDCFlowVect[0]->GetMult();
-    // ZDCN-A
-    Double_t QARe = fZDCFlowVect[1]->X();
-    Double_t QAIm = fZDCFlowVect[1]->Y();
-    Double_t QMA  = fZDCFlowVect[1]->GetMult();
-
-    Double_t QCReR=QCRe, QCImR=QCIm, QAReR=QARe, QAImR=QAIm;
 
     // STEP #1: re-center vs centrality (1%) vs run number
 
@@ -657,7 +768,7 @@ void AliAnalysisTaskZDCEP::UserExec(Option_t *)
     // second iteration (2D)
 
     if (fZDCVtxCenHistMagPol[fCenBin][0]) {
-      if(fbFlagIsPosMagField) {
+      if(fbIsMagnetPolarityNegative) {
         QCReR -= fZDCVtxCenHistMagPol[fCenBin][0]->GetBinContent(fZDCVtxCenHistMagPol[fCenBin][0]->FindBin(fVtxPosCor[0],fVtxPosCor[1],fVtxPosCor[2]));
         QCImR -= fZDCVtxCenHistMagPol[fCenBin][1]->GetBinContent(fZDCVtxCenHistMagPol[fCenBin][1]->FindBin(fVtxPosCor[0],fVtxPosCor[1],fVtxPosCor[2]));
         QAReR -= fZDCVtxCenHistMagPol[fCenBin][4]->GetBinContent(fZDCVtxCenHistMagPol[fCenBin][4]->FindBin(fVtxPosCor[0],fVtxPosCor[1],fVtxPosCor[2]));
@@ -672,96 +783,61 @@ void AliAnalysisTaskZDCEP::UserExec(Option_t *)
       fZDCFlowVect[1]->Set(QAReR,QAImR);
     }
 
-    // STEP #6: re-center vs centrality vs total energy vs vtx
-
-    //    Int_t EZDCCBin = fCRCZDCQVecDummyEZDCBins[fCenBin]->GetXaxis()->FindBin(QMCrec)-1;
-    //    Int_t EZDCABin = fCRCZDCQVecDummyEZDCBins[fCenBin]->GetXaxis()->FindBin(QMArec)-1;
-    //
-    //    if(fZDCQVecVtxCenEZDC3D[0][0][0]) {
-    //      printf("doing step 6 \n");
-    //      Bool_t pass2=kTRUE;
-    //      // exclude events with vtx outside of range
-    //      if(fVtxPosCor[0] < fZDCQVecVtxCenEZDC3D[0][0][0]->GetXaxis()->GetXmin() || fVtxPosCor[0] > fZDCQVecVtxCenEZDC3D[0][0][0]->GetXaxis()->GetXmax()) pass2 = kFALSE;
-    //      if(fVtxPosCor[1] < fZDCQVecVtxCenEZDC3D[0][0][0]->GetYaxis()->GetXmin() || fVtxPosCor[1] > fZDCQVecVtxCenEZDC3D[0][0][0]->GetYaxis()->GetXmax()) pass2 = kFALSE;
-    //      if(fVtxPosCor[2] < fZDCQVecVtxCenEZDC3D[0][0][0]->GetZaxis()->GetXmin() || fVtxPosCor[2] > fZDCQVecVtxCenEZDC3D[0][0][0]->GetZaxis()->GetXmax()) pass2 = kFALSE;
-    //      // exclude events with very low or very high total energy
-    //      if(fabs(QMCrec)>100. || fabs(QMArec)>100.) pass2 = kFALSE;
-    //      // get EZDC bin
-    //      Int_t EZDCCBin = fCRCZDCQVecDummyEZDCBins[fCenBin]->GetXaxis()->FindBin(QMCrec)-1;
-    //      Int_t EZDCABin = fCRCZDCQVecDummyEZDCBins[fCenBin]->GetXaxis()->FindBin(QMArec)-1;
-    //      if(EZDCCBin<0) EZDCCBin=0;
-    //      if(EZDCCBin>9) EZDCCBin=9;
-    //      if(EZDCABin<0) EZDCABin=0;
-    //      if(EZDCABin>9) EZDCABin=9;
-    //      if(pass2) {
-    //        // check if possible to interpolate
-    //        Bool_t bInterp = kTRUE;
-    //        Int_t bx = fZDCQVecVtxCenEZDC3D[0][0][0]->GetXaxis()->FindBin(fVtxPosCor[0]);
-    //        Int_t by = fZDCQVecVtxCenEZDC3D[0][0][0]->GetYaxis()->FindBin(fVtxPosCor[1]);
-    //        Int_t bz = fZDCQVecVtxCenEZDC3D[0][0][0]->GetZaxis()->FindBin(fVtxPosCor[2]);
-    //        if(bx==1 || bx==fZDCQVecVtxCenEZDC3D[0][0][0]->GetXaxis()->GetNbins()) bInterp = kFALSE;
-    //        if(by==1 || by==fZDCQVecVtxCenEZDC3D[0][0][0]->GetYaxis()->GetNbins()) bInterp = kFALSE;
-    //        if(bz==1 || bz==fZDCQVecVtxCenEZDC3D[0][0][0]->GetZaxis()->GetNbins()) bInterp = kFALSE;
-    //        if(bInterp) {
-    //          QCReR -= fZDCQVecVtxCenEZDC3D[fCenBin][EZDCCBin][0]->Interpolate(fVtxPosCor[0],fVtxPosCor[1],fVtxPosCor[2]);
-    //          QCImR -= fZDCQVecVtxCenEZDC3D[fCenBin][EZDCCBin][1]->Interpolate(fVtxPosCor[0],fVtxPosCor[1],fVtxPosCor[2]);
-    //          QAReR -= fZDCQVecVtxCenEZDC3D[fCenBin][EZDCABin][2]->Interpolate(fVtxPosCor[0],fVtxPosCor[1],fVtxPosCor[2]);
-    //          QAImR -= fZDCQVecVtxCenEZDC3D[fCenBin][EZDCABin][3]->Interpolate(fVtxPosCor[0],fVtxPosCor[1],fVtxPosCor[2]);
-    //        } else {
-    //          QCReR -= fZDCQVecVtxCenEZDC3D[fCenBin][EZDCCBin][0]->GetBinContent(bx,by,bz);
-    //          QCImR -= fZDCQVecVtxCenEZDC3D[fCenBin][EZDCCBin][1]->GetBinContent(bx,by,bz);
-    //          QAReR -= fZDCQVecVtxCenEZDC3D[fCenBin][EZDCABin][2]->GetBinContent(bx,by,bz);
-    //          QAImR -= fZDCQVecVtxCenEZDC3D[fCenBin][EZDCABin][3]->GetBinContent(bx,by,bz);
-    //        }
-    //      } else {
-    //        IsGoodEvent = kFALSE;
-    //      }
-    //    }
-
     // after re-centering, cut on Q-vectors near zero *************************
     if (sqrt(QCReR*QCReR+QCImR*QCImR)<1.E-6 || sqrt(QAReR*QAReR+QAImR*QAImR)<1.E-6) {
       IsGoodEvent = kFALSE;
       fEventCounter->Fill(4.5);
     }
 
-    // store ZDC Qvectors for QA plots ****************************************
+  }
 
-    if(IsGoodEvent) {
-      Int_t qb = (fbFlagIsPosMagField?0:1);
-      QAReR = -QAReR;  // this is not a bug: QAReR --> -QAReR
+  // fill QA plots *************************************************************
 
-      fQVecCen[0][qb]->Fill(Centrality,QCReR);
-      fQVecCen[1][qb]->Fill(Centrality,QCImR);
-      fQVecCen[2][qb]->Fill(Centrality,QAReR);
-      fQVecCen[3][qb]->Fill(Centrality,QAImR);
+  if(IsGoodEvent) {
 
-      fQVecCorCen[0][qb]->Fill(Centrality,QCReR*QAReR);
-      fQVecCorCen[1][qb]->Fill(Centrality,QCImR*QAImR);
-      fQVecCorCen[2][qb]->Fill(Centrality,QAReR*QCImR);
-      fQVecCorCen[3][qb]->Fill(Centrality,QAImR*QCReR);
+    fQVecCen[0][qb]->Fill(Centrality,QCReR);
+    fQVecCen[1][qb]->Fill(Centrality,QCImR);
+    fQVecCen[2][qb]->Fill(Centrality,QAReR);
+    fQVecCen[3][qb]->Fill(Centrality,QAImR);
 
-      if(Centrality>5. && Centrality<40.) {
-        fQVecVtx[0][qb]->Fill(fVtxPosCor[0],fVtxPosCor[1],fVtxPosCor[2],QCReR);
-        fQVecVtx[1][qb]->Fill(fVtxPosCor[0],fVtxPosCor[1],fVtxPosCor[2],QCImR);
-        fQVecVtx[2][qb]->Fill(fVtxPosCor[0],fVtxPosCor[1],fVtxPosCor[2],QAReR);
-        fQVecVtx[3][qb]->Fill(fVtxPosCor[0],fVtxPosCor[1],fVtxPosCor[2],QAImR);
+    fQVecRbRCen[RunBin]->Fill(Centrality,0.5,QCReR);
+    fQVecRbRCen[RunBin]->Fill(Centrality,1.5,QCImR);
+    fQVecRbRCen[RunBin]->Fill(Centrality,2.5,QAReR);
+    fQVecRbRCen[RunBin]->Fill(Centrality,3.5,QAImR);
 
-        Double_t DeltaC = sqrt(pow(QCReR-QAReR,2.)+pow(QCImR-QAImR,2.));
-        fQVecDeltaC[0][qb]->Fill(DeltaC,QCReR);
-        fQVecDeltaC[1][qb]->Fill(DeltaC,QCImR);
-        fQVecDeltaC[2][qb]->Fill(DeltaC,QAReR);
-        fQVecDeltaC[3][qb]->Fill(DeltaC,QAImR);
-        fQVecCorDeltaC[0][qb]->Fill(DeltaC,QCReR*QAReR);
-        fQVecCorDeltaC[1][qb]->Fill(DeltaC,QCImR*QAImR);
-        fQVecCorDeltaC[2][qb]->Fill(DeltaC,QAReR*QCImR);
-        fQVecCorDeltaC[3][qb]->Fill(DeltaC,QAImR*QCReR);
-      }
+    fQVecVtx[0][qb]->Fill(fVtxPosCor[0],fVtxPosCor[1],fVtxPosCor[2],QCReR);
+    fQVecVtx[1][qb]->Fill(fVtxPosCor[0],fVtxPosCor[1],fVtxPosCor[2],QCImR);
+    fQVecVtx[2][qb]->Fill(fVtxPosCor[0],fVtxPosCor[1],fVtxPosCor[2],QAReR);
+    fQVecVtx[3][qb]->Fill(fVtxPosCor[0],fVtxPosCor[1],fVtxPosCor[2],QAImR);
 
-      fEventCounter->Fill(1.5);
-    }
+    fQVecRbRVtxZ[RunBin]->Fill(Centrality,fVtxPos[2],0.5,QCReR);
+    fQVecRbRVtxZ[RunBin]->Fill(Centrality,fVtxPos[2],1.5,QCImR);
+    fQVecRbRVtxZ[RunBin]->Fill(Centrality,fVtxPos[2],2.5,QAReR);
+    fQVecRbRVtxZ[RunBin]->Fill(Centrality,fVtxPos[2],3.5,QAImR);
 
-  } else {
-    printf("WARNING: no list provided for ZDC Q-vector re-centering ! \n");
+    fZDCQvec2Ddis[fCenBin][0]->Fill(QCReR,QCImR);
+    fZDCQvec2Ddis[fCenBin][1]->Fill(QAReR,QAImR);
+
+    fQvecC2Ddis[qb]->Fill(QCReR,QCImR);
+    fQvecA2Ddis[qb]->Fill(QAReR,QAImR);
+
+    // Double_t DeltaC = sqrt(pow(QCReR-QAReR,2.)+pow(QCImR-QAImR,2.));
+    // fQVecDeltaC[0][qb]->Fill(DeltaC,QCReR);
+    // fQVecDeltaC[1][qb]->Fill(DeltaC,QCImR);
+    // fQVecDeltaC[2][qb]->Fill(DeltaC,QAReR);
+    // fQVecDeltaC[3][qb]->Fill(DeltaC,QAImR);
+
+    QAReR = -QAReR;  // this is not a bug: QAReR --> -QAReR
+
+    fQVecCorCen[0][qb]->Fill(Centrality,QCReR*QAReR);
+    fQVecCorCen[1][qb]->Fill(Centrality,QCImR*QAImR);
+    fQVecCorCen[2][qb]->Fill(Centrality,QAReR*QCImR);
+    fQVecCorCen[3][qb]->Fill(Centrality,QAImR*QCReR);
+
+    // fQVecCorDeltaC[0][qb]->Fill(DeltaC,QCReR*QAReR);
+    // fQVecCorDeltaC[1][qb]->Fill(DeltaC,QCImR*QAImR);
+    // fQVecCorDeltaC[2][qb]->Fill(DeltaC,QAReR*QCImR);
+    // fQVecCorDeltaC[3][qb]->Fill(DeltaC,QAImR*QCReR);
   }
 
   // pass ZDC Qvectors in output **********************************************
@@ -771,6 +847,8 @@ void AliAnalysisTaskZDCEP::UserExec(Option_t *)
   if(!IsGoodEvent) {
     xyZNCfinal[0]=0.; xyZNCfinal[1]=0.;
     xyZNAfinal[0]=0.; xyZNAfinal[1]=0.;
+  } else {
+    fEventCounter->Fill(1.5);
   }
   fFlowEvent->SetZDC2Qsub(xyZNCfinal,denZNC,xyZNAfinal,denZNA);
 

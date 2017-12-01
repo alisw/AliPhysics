@@ -123,7 +123,8 @@ class AliCEPUtils : public TObject {
     static TList* GetEMCQAHists();
     void EMCAnalysis (
       AliESDEvent *Event,
-      TList *lhh );
+      TList *lhh,
+      Int_t *nCaloCluster, Double_t *CaloEnergy );
 
     UInt_t GetVtxPos(AliVEvent *Event, TVector3 *vtxpos);
 

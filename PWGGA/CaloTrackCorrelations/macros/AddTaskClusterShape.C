@@ -31,7 +31,7 @@
 #include "AliESDtrackCuts.h"
 #include "CreateTrackCutsPWGJE.C"
 #include "CheckActiveEMCalTriggerPerPeriod.C"
-#include "ConfigureEMCALRecoUtils.C"
+//#include "ConfigureEMCALRecoUtils.C"
 
 #endif // CINT
 
@@ -113,7 +113,8 @@ AliAnalysisTaskCaloTrackCorrelation * AddTaskClusterShape
   TString trigger  = trigSuffix;
   
   TString colType  = gSystem->Getenv("ALIEN_JDL_LPMINTERACTIONTYPE");
-  TString prodType = gSystem->Getenv("ALIEN_JDL_LPMPRODUCTIONTAG");
+  TString prodTag  = gSystem->Getenv("ALIEN_JDL_LPMPRODUCTIONTAG");
+  TString prodType = gSystem->Getenv("ALIEN_JDL_LPMPRODUCTIONTYPE");
 
   if(collision=="") // Check the alien environment 
   {
@@ -130,14 +131,14 @@ AliAnalysisTaskCaloTrackCorrelation * AddTaskClusterShape
     if   ( prodType.Contains("MC") ) simulation = kTRUE;
     else                             simulation = kFALSE;
     
-    if   ( !simulation  && period!="" ) period = prodType;
+    if   ( !simulation && period!="" ) period = prodTag;
     
     // print check on global settings once
-    if ( trigger.Contains("default") ||trigger.Contains("INT") || trigger.Contains("MB") )
+    if ( trigger.Contains("default") || trigger.Contains("INT") || trigger.Contains("MB") )
       printf("AddTaskClusterShape() - Get the data features from global parameters: collision <%s> (<%s>), "
-             "period <%s>, production Type <%s>, mc bool <%d> \n",
+             "period <%s>,  tag <%s>, type <%s>, MC bool <%d> \n",
              colType.Data(),collision.Data(),
-             period.Data(),prodType.Data(),simulation);
+             period.Data(),prodType.Data(),prodTag.Data(),simulation);
   }
   
   Int_t year = 2017;
@@ -591,9 +592,7 @@ AliCalorimeterUtils* ConfigureCaloUtils(TString col,           Bool_t simulation
   
   if(!simulation)
     cu->SwitchOnLoadOwnEMCALGeometryMatrices();
-  
-  AliEMCALRecoUtils * recou = cu->GetEMCALRecoUtils();
-  
+    
   // calibrations
   Bool_t calibEner = kFALSE;
   Bool_t calibTime = kFALSE;
@@ -618,14 +617,23 @@ AliCalorimeterUtils* ConfigureCaloUtils(TString col,           Bool_t simulation
     cu->SwitchOffRunDepCorrection();
   }
   
-  gROOT->LoadMacro("$ALICE_PHYSICS/PWGPP/EMCAL/macros/ConfigureEMCALRecoUtils.C");
-  ConfigureEMCALRecoUtils(recou,
-                          simulation,
-                          kTRUE,      // exotic
-                          nonLinOn,   // Non linearity
-                          calibEner,  // E calib
-                          kTRUE,      // bad map
-                          calibTime); // time calib
+AliEMCALRecoUtils * recou = cu->GetEMCALRecoUtils();
+//
+//  gROOT->LoadMacro("$ALICE_PHYSICS/PWGPP/EMCAL/macros/ConfigureEMCALRecoUtils.C");
+//  ConfigureEMCALRecoUtils(recou,
+//                          simulation,
+//                          kTRUE,      // exotic
+//                          nonLinOn,   // Non linearity
+//                          calibEner,  // E calib
+//                          kTRUE,      // bad map
+//                          calibTime); // time calib
+  
+  cu->ConfigureEMCALRecoUtils(simulation,
+                              kTRUE,      // exotic
+                              nonLinOn,   // Non linearity
+                              calibEner,  // E calib
+                              kTRUE,      // bad map
+                              calibTime); // time calib
   
   //if( calibTime ) recou->SetExoticCellDiffTimeCut(1e6);
   

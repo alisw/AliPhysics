@@ -59,16 +59,42 @@ class AliAnalysisTaskEmcalJetPerformance : public AliAnalysisTaskEmcalJet {
     const Double_t minClPt         = 0.30,              // Minimum cluster E in standard cluster container
     const char *suffix             = "");
   
+  // Truth-level particle types
+  enum ContributorType {
+    kUndefined      = -1,  //!< Undefined
+    kPhoton         = 0,   //!< Photon (direct or decay)
+    kPi0            = 1,   //!< Pi0 (merged pi0)
+    kPi0Conversion  = 2,   //!< Pi0 (merged pi0) with conversion of one photon (may be only partially contained in cluster)
+    kEta            = 3,   //!< Eta (merged eta)
+    kChargedPion    = 4,   //!< Charged pion
+    kProton         = 5,   //!< Proton
+    kAntiProton     = 6,   //!< Antiproton
+    kKaon           = 7,   //!< Charged Kaon
+    kNeutron        = 8,   //!< Neutron
+    kAntiNeutron    = 9,   //!< Antineutron
+    kElectron       = 10,  //!< Electron
+    kMuon           = 11,  //!< Muon
+    kOther          = 12   //!< Other
+  };
+  
+  // Detector-level particle types, based on PhysicalPrimary contributors
   enum ParticleType {
-    kUndefined      = -1, //!< Undefined
-    kPhoton         = 0,  //!< Photon (direct or decay)
-    kPi0            = 1,  //!< Pi0 (merged pi0)
-    kPi0Conversion  = 2,  //!< Pi0 (merged pi0) with conversion of one photon (may be only partially contained in cluster)
-    kEta            = 3,  //!< Eta (merged eta)
-    kHadron         = 4,  //!< Hadron (aside from pi0)
-    kElectron       = 5,  //!< Electron
-    kMuon           = 6,  //!< Muon
-    kOther          = 7   //!< Other
+    kNotDefined               = -1, //!< Undefined
+    kSinglePhoton             = 0,  //!< Photon (direct or decay) is the only contributor
+    kSingleElectron           = 1,  //!< Electron is the only contributor
+    kSingleChargedPion        = 2,  //!< Charged pion is the only contributor
+    kSingleProton             = 3,  //!< Proton is the only contributor
+    kSingleAntiProton         = 4,  //!< Antiproton is the only contributor
+    kSingleKaon               = 5,  //!< Kaon is the only contributor
+    kSingleNeutron            = 6,  //!< Neutron is the only contributor
+    kSingleAntiNeutron        = 7,  //!< Antineutron is the only contributor
+    kSingleOther              = 8,  //!< One contributor (excluding the above cases)
+    kPhotonHadron             = 9,  //!< Hadron+Photon are the only contributors
+    kPhotonPhoton             = 10,  //!< Photon+Photon (not from same parent) are the only contributors
+    kHadronHadron             = 11, //!< Hadron+Hadron are the only contributors
+    kMergedPi0                = 12, //!< Two contributos from merged pi0 are the only contributors
+    kTwoContributorsOther     = 13, //!< Two contributors (excluding the above cases)
+    kMoreThanTwoContributors  = 14  //!< More than two contributors
   };
   
   enum ClusterType {
@@ -111,6 +137,8 @@ class AliAnalysisTaskEmcalJetPerformance : public AliAnalysisTaskEmcalJet {
   void                        FillJetHistograms()                               ;
   void                        FillClusterHistograms()                           ;
   void                        FillParticleCompositionHistograms()               ;
+  void                        FillParticleCompositionClusterHistograms(const AliMCEvent* mcevent);
+  void                        FillParticleCompositionJetHistograms(const AliMCEvent* mcevent);
   void                        ComputeBackground()                               ;
   void                        DoTriggerSimulation()                             ;
   void                        FillTriggerSimHistograms()                        ;
@@ -120,8 +148,8 @@ class AliAnalysisTaskEmcalJetPerformance : public AliAnalysisTaskEmcalJet {
   Double_t                    GetJetPt(const AliEmcalJet* jet, Double_t rho);
   Double_t                    GetDeltaR(const AliTLorentzVector* part, Double_t etaRef, Double_t phiRef);
   Double_t                    GetJetType(const AliEmcalJet* jet);
-  ParticleType                GetParticleType1(const AliVCluster* clus, const AliMCEvent* mcevent, const TClonesArray* clusArray);
-  ParticleType                GetParticleType2(const AliVCluster* clus, const AliMCEvent* mcevent, Int_t label, const AliClusterContainer* clusters);
+  ContributorType             GetContributorTypeFromUtils(const AliVCluster* clus, const AliMCEvent* mcevent, const TClonesArray* clusArray);
+  ContributorType             GetContributorType(const AliVCluster* clus, const AliMCEvent* mcevent, Int_t label);
   
   // Analysis parameters
   Bool_t                      fPlotJetHistograms;                   ///< Set whether to enable inclusive jet histograms
@@ -175,7 +203,7 @@ class AliAnalysisTaskEmcalJetPerformance : public AliAnalysisTaskEmcalJet {
   AliAnalysisTaskEmcalJetPerformance &operator=(const AliAnalysisTaskEmcalJetPerformance&); // not implemented
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskEmcalJetPerformance, 4);
+  ClassDef(AliAnalysisTaskEmcalJetPerformance, 6);
   /// \endcond
 };
 #endif

@@ -85,6 +85,7 @@ fPostPIDWdthCorrTOF(0x0),
 fUsedVars(0x0),
 fSignalsMC(0x0),
 fDoPairing(kFALSE),
+fDoWeighting(kFALSE),
 fSelectPhysics(kFALSE),
 fTriggerMask(AliVEvent::kAny),
 fEventFilter(0x0),
@@ -117,6 +118,7 @@ fCalcEfficiencyGen(kTRUE),
 fCalcEfficiencyRec(kFALSE),
 fCalcEfficiencyPoslabel(kTRUE),
 fvTrackCuts(),
+fSingleEff(),
 fvExtraTrackCuts(),
 fvDoPrefilterEff(),
 fvRejCutMee(),
@@ -164,6 +166,11 @@ fvRecoPairsRecDiffMothers(),
 fvRecoPairsRecCharm(),
 fvRecoPairsRecBeauty(),
 fvRecoPairsRecHF(),
+fvGenPairsWeightedResonances(),
+fvGenPairsWeightedDiffMothers(),
+fvGenPairsWeightedCharm(),
+fvGenPairsWeightedBeauty(),
+fvGenPairsWeightedHF(),
 fCalcResolution(kFALSE),
 fMakeResolutionSparse(kFALSE),
 fTHnResElectrons1(0x0),
@@ -278,6 +285,7 @@ fSelectedByCut(0),
 fSelectedByExtraCut(0)
 {
   /// Default Constructor
+fSingleEff.SetOwner();
 }
 
 
@@ -296,6 +304,7 @@ fPostPIDWdthCorrTOF(0x0),
 fUsedVars(0x0),
 fSignalsMC(0x0),
 fDoPairing(kFALSE),
+fDoWeighting(kFALSE),
 fSelectPhysics(kFALSE),
 fTriggerMask(AliVEvent::kAny),
 fEventFilter(0x0),
@@ -328,6 +337,7 @@ fCalcEfficiencyGen(kTRUE),
 fCalcEfficiencyRec(kFALSE),
 fCalcEfficiencyPoslabel(kTRUE),
 fvTrackCuts(),
+fSingleEff(),
 fvExtraTrackCuts(),
 fvDoPrefilterEff(),
 fvRejCutMee(),
@@ -375,6 +385,11 @@ fvRecoPairsRecDiffMothers(),
 fvRecoPairsRecCharm(),
 fvRecoPairsRecBeauty(),
 fvRecoPairsRecHF(),
+fvGenPairsWeightedResonances(),
+fvGenPairsWeightedDiffMothers(),
+fvGenPairsWeightedCharm(),
+fvGenPairsWeightedBeauty(),
+fvGenPairsWeightedHF(),
 fCalcResolution(kFALSE),
 fMakeResolutionSparse(kFALSE),
 fTHnResElectrons1(0x0),
@@ -623,31 +638,51 @@ void AliAnalysisTaskElectronEfficiency::UserCreateOutputObjects()
       lReso->SetName("resonances");
       lReso->SetOwner();
       lReso->Add(fNgenPairsRecResonances);
-      for(UInt_t iCut=0; iCut<GetNCutsets(); ++iCut) lReso->Add(fvRecoPairsRecResonances.at(iCut));
+      for(UInt_t iCut=0; iCut<GetNCutsets(); ++iCut)
+      {
+        lReso->Add(fvRecoPairsRecResonances.at(iCut));
+        if (fDoWeighting) lReso->Add(fvGenPairsWeightedResonances.at(iCut));
+      }
       lRecBinning->Add(lReso);
       TList *lDiff = new TList();
       lDiff->SetName("differentMothers");
       lDiff->SetOwner();
       lDiff->Add(fNgenPairsRecDiffMothers);
-      for(UInt_t iCut=0; iCut<GetNCutsets(); ++iCut) lDiff->Add(fvRecoPairsRecDiffMothers.at(iCut));
+      for(UInt_t iCut=0; iCut<GetNCutsets(); ++iCut)
+      {
+        lDiff->Add(fvRecoPairsRecDiffMothers.at(iCut));
+        if (fDoWeighting) lDiff->Add(fvGenPairsWeightedDiffMothers.at(iCut));
+      }
       lRecBinning->Add(lDiff);
       TList *lCharm = new TList();
       lCharm->SetName("charm");
       lCharm->SetOwner();
       lCharm->Add(fNgenPairsRecCharm);
-      for(UInt_t iCut=0; iCut<GetNCutsets(); ++iCut) lCharm->Add(fvRecoPairsRecCharm.at(iCut));
+      for(UInt_t iCut=0; iCut<GetNCutsets(); ++iCut)
+      {
+        lCharm->Add(fvRecoPairsRecCharm.at(iCut));
+        if (fDoWeighting) lCharm->Add(fvGenPairsWeightedCharm.at(iCut));
+      }
       lRecBinning->Add(lCharm);
       TList *lBeauty = new TList();
       lBeauty->SetName("beauty");
       lBeauty->SetOwner();
       lBeauty->Add(fNgenPairsRecBeauty);
-      for(UInt_t iCut=0; iCut<GetNCutsets(); ++iCut) lBeauty->Add(fvRecoPairsRecBeauty.at(iCut));
+      for(UInt_t iCut=0; iCut<GetNCutsets(); ++iCut)
+      {
+        lBeauty->Add(fvRecoPairsRecBeauty.at(iCut));
+        if (fDoWeighting) lBeauty->Add(fvGenPairsWeightedBeauty.at(iCut));
+      }
       lRecBinning->Add(lBeauty);
       TList *lHF = new TList();
       lHF->SetName("heavyflavor");
       lHF->SetOwner();
       lHF->Add(fNgenPairsRecHF);
-      for(UInt_t iCut=0; iCut<GetNCutsets(); ++iCut) lHF->Add(fvRecoPairsRecHF.at(iCut));
+      for(UInt_t iCut=0; iCut<GetNCutsets(); ++iCut)
+      {
+        lHF->Add(fvRecoPairsRecHF.at(iCut));
+        if (fDoWeighting) lHF->Add(fvGenPairsWeightedHF.at(iCut));
+      };
       lRecBinning->Add(lHF);
 
       //lRecBinning->Print();
@@ -1519,26 +1554,40 @@ void AliAnalysisTaskElectronEfficiency::UserExec(Option_t *)
               if(it1->mlabel == it2->mlabel){
                 fNgenPairsRecResonances->Fill(mee,ptee);
                 for(UInt_t iCut=0; iCut<fvTrackCuts.size(); ++iCut)
+                {
                   if(it1->vbRec.at(iCut) && it2->vbRec.at(iCut)) fvRecoPairsRecResonances.at(iCut)->Fill(mee,ptee);
+                  if (fDoWeighting && static_cast<TH3D *> (fSingleEff.At(iCut)))       fvGenPairsWeightedResonances.at(iCut)->Fill(mee,ptee,GetSingleEff(static_cast<TH3D *> (fSingleEff.At(iCut)),it1->recPt,it1->recEta,it1->recPhi)*GetSingleEff(static_cast<TH3D *> (fSingleEff.At(iCut)),it2->recPt,it2->recEta,it2->recPhi));
+                }
               }
               else{
                 fNgenPairsRecDiffMothers->Fill(mee,ptee);
                 for(UInt_t iCut=0; iCut<fvTrackCuts.size(); ++iCut)
+                {
                   if(it1->vbRec.at(iCut) && it2->vbRec.at(iCut)) fvRecoPairsRecDiffMothers.at(iCut)->Fill(mee,ptee);
+                  if (fDoWeighting && static_cast<TH3D *> (fSingleEff.At(iCut))) fvGenPairsWeightedDiffMothers.at(iCut)->Fill(mee,ptee,GetSingleEff(static_cast<TH3D *> (fSingleEff.At(iCut)),it1->recPt,it1->recEta,it1->recPhi)*GetSingleEff(static_cast<TH3D *> (fSingleEff.At(iCut)),it2->recPt,it2->recEta,it2->recPhi));
+                }
                 if(charm1 && charm2){
                   fNgenPairsRecCharm ->Fill(mee,ptee);
                   for(UInt_t iCut=0; iCut<fvTrackCuts.size(); ++iCut)
+                  {
                     if(it1->vbRec.at(iCut) && it2->vbRec.at(iCut)) fvRecoPairsRecCharm.at(iCut)->Fill(mee,ptee);
+                    if (fDoWeighting && static_cast<TH3D *> (fSingleEff.At(iCut))) fvGenPairsWeightedCharm.at(iCut)->Fill(mee,ptee,GetSingleEff(static_cast<TH3D *> (fSingleEff.At(iCut)),it1->recPt,it1->recEta,it1->recPhi)*GetSingleEff(static_cast<TH3D *> (fSingleEff.At(iCut)),it2->recPt,it2->recEta,it2->recPhi));
+                  }
                 }
                 if(beauty1 && beauty2){
                   fNgenPairsRecBeauty->Fill(mee,ptee);
-                  for(UInt_t iCut=0; iCut<fvTrackCuts.size(); ++iCut)
+                  for(UInt_t iCut=0; iCut<fvTrackCuts.size(); ++iCut){
                     if(it1->vbRec.at(iCut) && it2->vbRec.at(iCut)) fvRecoPairsRecBeauty.at(iCut)->Fill(mee,ptee);
+                    if (fDoWeighting && static_cast<TH3D *> (fSingleEff.At(iCut))) fvGenPairsWeightedBeauty.at(iCut)->Fill(mee,ptee,GetSingleEff(static_cast<TH3D *> (fSingleEff.At(iCut)),it1->recPt,it1->recEta,it1->recPhi)*GetSingleEff(static_cast<TH3D *> (fSingleEff.At(iCut)),it2->recPt,it2->recEta,it2->recPhi));
+                  }
                 }
                 if((charm1 || beauty1) && (charm2 || beauty2)){
                   fNgenPairsRecHF->Fill(mee,ptee);
                   for(UInt_t iCut=0; iCut<fvTrackCuts.size(); ++iCut)
+                  {
                     if(it1->vbRec.at(iCut) && it2->vbRec.at(iCut)) fvRecoPairsRecHF.at(iCut)->Fill(mee,ptee);
+                    if (fDoWeighting && static_cast<TH3D *> (fSingleEff.At(iCut))) fvGenPairsWeightedHF.at(iCut)->Fill(mee,ptee,GetSingleEff(static_cast<TH3D *> (fSingleEff.At(iCut)),it1->recPt,it1->recEta,it1->recPhi)*GetSingleEff(static_cast<TH3D *> (fSingleEff.At(iCut)),it2->recPt,it2->recEta,it2->recPhi));
+                  }
                 }
               }
             }
@@ -2023,6 +2072,23 @@ void AliAnalysisTaskElectronEfficiency::CreateHistograms(TString names, Int_t cu
       fvRecoPairsRecCharm       .push_back(hNrecoPairsRecCharm);
       fvRecoPairsRecBeauty      .push_back(hNrecoPairsRecBeauty);
       fvRecoPairsRecHF          .push_back(hNrecoPairsRecHF);
+    }
+    if(fDoWeighting){
+      TH2D *hNgenPairsWeightedResonances  = new TH2D(Form("NgenPairsWeightedResonances_%s",       name.Data()),"",fNmeeBins,fMeeBins,fNpteeBins,fPteeBins);
+      TH2D *hNgenPairsWeightedDiffMothers = new TH2D(Form("NgenPairsWeightedDifferentMothers_%s", name.Data()),"",fNmeeBins,fMeeBins,fNpteeBins,fPteeBins);
+      TH2D *hNgenPairsWeightedCharm       = new TH2D(Form("NgenPairsWeightedCharm_%s",            name.Data()),"",fNmeeBins,fMeeBins,fNpteeBins,fPteeBins);
+      TH2D *hNgenPairsWeightedBeauty      = new TH2D(Form("NgenPairsWeightedBeauty_%s",           name.Data()),"",fNmeeBins,fMeeBins,fNpteeBins,fPteeBins);
+      TH2D *hNgenPairsWeightedHF          = new TH2D(Form("NgenPairsWeightedHF_%s",               name.Data()),"",fNmeeBins,fMeeBins,fNpteeBins,fPteeBins);
+      hNgenPairsWeightedResonances ->Sumw2();
+      hNgenPairsWeightedDiffMothers->Sumw2();
+      hNgenPairsWeightedCharm      ->Sumw2();
+      hNgenPairsWeightedBeauty     ->Sumw2();
+      hNgenPairsWeightedHF         ->Sumw2();
+      fvGenPairsWeightedResonances .push_back(hNgenPairsWeightedResonances);
+      fvGenPairsWeightedDiffMothers.push_back(hNgenPairsWeightedDiffMothers);
+      fvGenPairsWeightedCharm      .push_back(hNgenPairsWeightedCharm);
+      fvGenPairsWeightedBeauty     .push_back(hNgenPairsWeightedBeauty);
+      fvGenPairsWeightedHF         .push_back(hNgenPairsWeightedHF);
     }
   }
   // be really careful if you need to implement this (see comments in UserExec):
@@ -2614,4 +2680,11 @@ Double_t AliAnalysisTaskElectronEfficiency::GetSmearing(TObjArray *arr, Double_t
   if(hisSlice) smearing = hisSlice->GetRandom();
 
   return smearing;
+}
+//______________________________________________________________________________________
+Double_t AliAnalysisTaskElectronEfficiency::GetSingleEff(TH3D* h, Double_t pt, Double_t eta, Double_t phi)
+{
+  // printf("BinContent EffiFile%f\n",  h->GetBinContent(h->FindBin(pt,eta,phi)) );
+  return h->GetBinContent(h->FindBin(pt,eta,phi));
+  // return 1.;
 }

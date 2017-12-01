@@ -48,6 +48,7 @@ struct mother_struct{
 struct daughter_struct{
   int mother_pdg;
   int mother_id;
+  int mc_truth;     // pdg code of the generated particle
   unsigned char properties;
   FourVector_t vec;
 };
@@ -89,9 +90,11 @@ private:
   TTree                *fMCTree;                    //!<!
 
   vector<daughter_struct>   fDeuteronVector;        //<
-  vector<daughter_struct>   fPionVector;            //<
+  vector<daughter_struct>   fPiPlusVector;          //<
+  vector<daughter_struct>   fPiMinusVector;         //<
   vector<daughter_struct>   fMCDeuteronVector;      //<
-  vector<daughter_struct>   fMCPionVector;          //<
+  vector<daughter_struct>   fMCPiPlusVector;        //<
+  vector<daughter_struct>   fMCPiMinusVector;       //<
 
 
   /// \cond CLASSDEF
