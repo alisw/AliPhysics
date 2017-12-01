@@ -1593,6 +1593,27 @@ void AliEmcalCorrectionTask::GetPropertyNamesFromNode(const std::string configur
 }
 
 /**
+ * Helper function to return a particular correction component. For example, it could be used for retrieving the
+ * currently loaded bad channel map. You are strongly advised _NOT_ to use this to configure a component!
+ *
+ * @param[in] name Correction component name (Usually the standard names of the components)
+ *
+ * @return The requested component (or nullptr if not found)
+ */
+AliEmcalCorrectionComponent * AliEmcalCorrectionTask::GetCorrectionComponent(const std::string & name) const
+{
+  AliEmcalCorrectionComponent * returnComponent = nullptr;
+  for (auto component : fCorrectionComponents)
+  {
+    if (name == component->GetName()) {
+      returnComponent = component;
+      break;
+    }
+  }
+  return returnComponent;
+}
+
+/**
  * Finds the desired cell container by name.
  *
  * @param cellsContainerName Name of the desired cells container
