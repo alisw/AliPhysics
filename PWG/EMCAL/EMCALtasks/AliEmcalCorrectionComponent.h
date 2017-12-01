@@ -79,6 +79,7 @@ class AliEmcalCorrectionComponent : public TNamed {
   AliTrackContainer      *GetTrackContainer(const char* name)              const { return dynamic_cast<AliTrackContainer*>(GetParticleContainer(name))     ; }
   void                    RemoveParticleContainer(Int_t i=0)                     { fParticleCollArray.RemoveAt(i)                      ; }
   void                    RemoveClusterContainer(Int_t i=0)                      { fClusterCollArray.RemoveAt(i)                       ; }
+  AliEMCALRecoUtils      *GetRecoUtils()  const { return fRecoUtils; }
   AliVCaloCells          *GetCaloCells()  const { return fCaloCells; }
   TList                  *GetOutputList() const { return fOutput; }
   
