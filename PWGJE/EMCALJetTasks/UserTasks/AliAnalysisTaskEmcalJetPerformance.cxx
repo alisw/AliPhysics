@@ -54,6 +54,7 @@
 #include "AliEmcalDownscaleFactorsOCDB.h"
 #include "AliEMCALTriggerPatchInfo.h"
 #include "AliAnalysisTaskEmcalEmbeddingHelper.h"
+#include "AliMCEvent.h"
 
 #include "AliAnalysisTaskEmcalJetPerformance.h"
 
@@ -511,10 +512,10 @@ void AliAnalysisTaskEmcalJetPerformance::AllocateParticleCompositionHistograms()
   const Int_t nRejBins = 32;
   Double_t* rejReasonBins = new Double_t[nRejBins+1];
   GenerateFixedBinArray(nRejBins, 0, nRejBins, rejReasonBins);
-  const Int_t nContributorTypes = 10;
-  Double_t *contributorTypeBins = GenerateFixedBinArray(nContributorTypes, -0.5, 9.5);
-  const Int_t nParticleTypes = 15;
-  Double_t *particleTypeBins = GenerateFixedBinArray(nParticleTypes, -0.5, 14.5);
+  const Int_t nContributorTypes = 11;
+  Double_t *contributorTypeBins = GenerateFixedBinArray(nContributorTypes, -0.5, 10.5);
+  const Int_t nParticleTypes = 16;
+  Double_t *particleTypeBins = GenerateFixedBinArray(nParticleTypes, -0.5, 15.5);
   
   AliEmcalContainer* cont = 0;
   TIter nextClusColl(&fClusterCollArray);
@@ -652,16 +653,17 @@ void AliAnalysisTaskEmcalJetPerformance::SetParticleTypeLabels(TAxis* axis)
   axis->SetBinLabel(3,  "SingleChargedPion");
   axis->SetBinLabel(4,  "SingleProton");
   axis->SetBinLabel(5,  "SingleAntiProton");
-  axis->SetBinLabel(6,  "SingleKaon");
-  axis->SetBinLabel(7,  "SingleNeutron");
-  axis->SetBinLabel(8,  "SingleAntiNeutron");
-  axis->SetBinLabel(9,  "SingleOther");
-  axis->SetBinLabel(10, "PhotonHadron");
-  axis->SetBinLabel(11, "PhotonPhoton");
-  axis->SetBinLabel(12, "HadronHadron");
-  axis->SetBinLabel(13, "MergedPi0");
-  axis->SetBinLabel(14, "TwoContributorsOther");
-  axis->SetBinLabel(15, "MoreThanTwoContributors");
+  axis->SetBinLabel(6,  "SingleChargedKaon");
+  axis->SetBinLabel(7,  "SingleK0L");
+  axis->SetBinLabel(8,  "SingleNeutron");
+  axis->SetBinLabel(9,  "SingleAntiNeutron");
+  axis->SetBinLabel(10, "SingleOther");
+  axis->SetBinLabel(11, "PhotonHadron");
+  axis->SetBinLabel(12, "MergedPi0");
+  axis->SetBinLabel(13, "PhotonPhotonOther");
+  axis->SetBinLabel(14, "HadronHadron");
+  axis->SetBinLabel(15, "TwoContributorsOther");
+  axis->SetBinLabel(16, "MoreThanTwoContributors");
 }
       
 /*
@@ -1435,6 +1437,7 @@ void AliAnalysisTaskEmcalJetPerformance::FillParticleCompositionClusterHistogram
   AliClusterContainer* clusters = GetClusterContainer(0);
   const AliVCluster* clus;
   std::vector<ContributorType> vecContributorTypes;
+  std::vector<Int_t> vecContributorLabels;
   for (auto it : clusters->accepted_momentum()) {
     
     clus = it.second;
@@ -1454,6 +1457,7 @@ void AliAnalysisTaskEmcalJetPerformance::FillParticleCompositionClusterHistogram
     
     // Create a vector to store the contributor types for PhysicalPrimary particles
     vecContributorTypes.clear();
+    vecContributorLabels.clear();
     for (Int_t iLabel=0; iLabel<nLabels; iLabel++) {
       
       Int_t label = clus->GetLabels()[iLabel];
@@ -1461,6 +1465,7 @@ void AliAnalysisTaskEmcalJetPerformance::FillParticleCompositionClusterHistogram
         contributorType = GetContributorType(clus, mcevent, label);
         if (contributorType != kUndefined) {
           vecContributorTypes.push_back(contributorType);
+          vecContributorLabels.push_back(label);
         }
       }
     }
@@ -1486,8 +1491,11 @@ void AliAnalysisTaskEmcalJetPerformance::FillParticleCompositionClusterHistogram
       else if (contributorType == kAntiProton) {
         particleType = kSingleAntiProton;
       }
-      else if (contributorType == kKaon) {
-        particleType = kSingleKaon;
+      else if (contributorType == kChargedKaon) {
+        particleType = kSingleChargedKaon;
+      }
+      else if (contributorType == kK0L) {
+        particleType = kSingleK0L;
       }
       else if (contributorType == kNeutron) {
         particleType = kSingleNeutron;
@@ -1505,8 +1513,8 @@ void AliAnalysisTaskEmcalJetPerformance::FillParticleCompositionClusterHistogram
       ContributorType contributorType1 = vecContributorTypes[0];
       ContributorType contributorType2 = vecContributorTypes[1];
       
-      Bool_t isHadron1 = (contributorType1 == kChargedPion) || (contributorType1 == kProton) || (contributorType1 == kAntiProton) || (contributorType1 == kKaon) || (contributorType1 == kNeutron) || (contributorType1 == kAntiNeutron);
-      Bool_t isHadron2 = (contributorType2 == kChargedPion) || (contributorType2 == kProton) || (contributorType2 == kAntiProton) || (contributorType2 == kKaon) || (contributorType2 == kNeutron) || (contributorType2 == kAntiNeutron);
+      Bool_t isHadron1 = IsHadron(contributorType1);
+      Bool_t isHadron2 = IsHadron(contributorType2);
       Bool_t isPhoton1 = contributorType1 == kPhoton;
       Bool_t isPhoton2 = contributorType2 == kPhoton;
       
@@ -1516,8 +1524,28 @@ void AliAnalysisTaskEmcalJetPerformance::FillParticleCompositionClusterHistogram
       else if ((isHadron1 && isPhoton2) || (isHadron2 && isPhoton1)) {
         particleType = kPhotonHadron;
       }
-      else if (isPhoton1 && isPhoton2) { // this includes merged pi0
-        particleType = kPhotonPhoton;
+      else if (isPhoton1 && isPhoton2) {
+        
+        // By default, assume the two photons are not a merged pi0
+        particleType = kPhotonPhotonOther;
+
+        // Using the vector of accepted contributor labels, check whether the two photons are from the same pi0
+        AliAODMCParticle *part1 = fGeneratorLevel->GetMCParticleWithLabel(vecContributorLabels[0]);
+        AliAODMCParticle *part2 = fGeneratorLevel->GetMCParticleWithLabel(vecContributorLabels[1]);
+        if (part1 && part2) {
+          Int_t iMother1 = part1->GetMother();
+          Int_t iMother2 = part2->GetMother();
+          AliVParticle *mother1 = mcevent->GetTrack(iMother1);
+          AliVParticle *mother2 = mcevent->GetTrack(iMother2);
+          
+          if (mother1 && mother2) {
+            if ( (mother1->PdgCode() == 111) && (mother2->PdgCode() == 111) ) {
+              if (iMother1 == iMother2) {
+                particleType = kMergedPi0;
+              }
+            }
+          }
+        }
       }
       else {
         particleType = kTwoContributorsOther; // this includes partially contained conversion overlaps
@@ -1578,7 +1606,7 @@ void AliAnalysisTaskEmcalJetPerformance::FillParticleCompositionJetHistograms(co
       fHistManager.FillTHnSparse(histname, x);
       
       // If the cluster is a hadron, sum its energy to compute the jet's hadronic calo energy
-      Bool_t isHadron = (contributorType == kChargedPion) || (contributorType == kProton) || (contributorType == kAntiProton) || (contributorType == kKaon) || (contributorType == kNeutron) || (contributorType == kAntiNeutron);
+      Bool_t isHadron = IsHadron(contributorType);
       if (isHadron) {
         Bool_t hasMatchedTrack = (clus->GetNTracksMatched() > 0);
         //Bool_t hasMatchedTrack = ((clus->GetNonLinCorrEnergy() - clus->GetHadCorrEnergy()) > 1e-3);
@@ -1978,7 +2006,10 @@ AliAnalysisTaskEmcalJetPerformance::ContributorType AliAnalysisTaskEmcalJetPerfo
         contributorType = kAntiProton;
       }
       else if (TMath::Abs(pdg) == 321) {  // K+ 321
-        contributorType = kKaon;
+        contributorType = kChargedKaon;
+      }
+      else if (pdg == 130) {  // K0L 130
+        contributorType = kK0L;
       }
       else if (pdg == 2112) { // neutron 2112
         contributorType = kNeutron;
@@ -2035,6 +2066,14 @@ Double_t AliAnalysisTaskEmcalJetPerformance::GetJetPt(const AliEmcalJet* jet, Do
 {
   Double_t pT = jet->Pt() - rho * jet->Area();
   return pT;
+}
+
+/**
+ * Return whether a contributor is a stable hadron
+ */
+Bool_t AliAnalysisTaskEmcalJetPerformance::IsHadron(const ContributorType contributor)
+{
+  return (contributor == kChargedPion) || (contributor == kProton) || (contributor == kAntiProton) || (contributor == kChargedKaon) || (contributor == kK0L) || (contributor == kNeutron) || (contributor == kAntiNeutron);
 }
 
 /**
