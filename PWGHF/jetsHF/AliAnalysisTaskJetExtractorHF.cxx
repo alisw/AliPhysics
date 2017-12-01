@@ -299,7 +299,7 @@ Bool_t AliAnalysisTaskJetExtractorHF::IsJetSelected(AliEmcalJet* jet)
   if(jetPt >= fExtractionCutMaxPt || jetPt < 0)
     return kFALSE;
 
-  if(jetPt < fExtractionCutMinPt)
+  if(jetPt < fExtractionCutMinPt && jetPt >= fUnderflowCutOff)
   {
     if(!fUnderflowNumBins) // If low-pT extraction is not active, discard jet
       return kFALSE;
