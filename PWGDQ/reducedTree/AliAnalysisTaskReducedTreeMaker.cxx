@@ -75,6 +75,7 @@
 #include "AliReducedCaloClusterInfo.h"
 #include "AliReducedFMDInfo.h"
 #include "AliReducedEventPlaneInfo.h"
+#include "AliSignalMC.h"
 #include "AliAnalysisTaskReducedTreeMaker.h"
 
 #include <iostream>
@@ -1059,6 +1060,65 @@ Double_t AliAnalysisTaskReducedTreeMaker::Radius(Double_t eta, Double_t z){
 }
 
 //_________________________________________________________________________________
+Bool_t AliAnalysisTaskReducedTreeMaker::CheckPDGcode(AliMCEvent* event, Int_t ipart, AliSignalMC* mcSignal) {
+   //
+   // Check that the particle satisfies the PDG code criteria specified in the mcSignal
+   // Work on just 1 pronged MC signals here
+   // Method: All of the defined generations of the prong must fulfill the defined PDG criteria
+   // 
+   if(mcSignal->GetNProngs()>1) return kFALSE;
+   
+   // loop over all generations
+   AliVParticle* currentGenerationParticle = event->GetTrack(ipart);
+   Int_t currentGenerationLabel = ipart;
+   for(UInt_t ig=0; ig<mcSignal->GetNGenerations(); ++ig) {
+      if(!currentGenerationParticle) break;       // end of MC history (may end before the specified number of generations in the MC signal)
+      
+      // test the PDG code of this particle
+      if(!mcSignal->TestPDG(0, ig, currentGenerationParticle->PdgCode())) 
+         return kFALSE;
+      
+      // get the next generation
+      currentGenerationLabel = currentGenerationParticle->GetMother();
+      currentGenerationParticle = event->GetTrack(currentGenerationLabel);
+   }
+   return kTRUE;
+}
+
+//_________________________________________________________________________________
+Bool_t AliAnalysisTaskReducedTreeMaker::CheckParticleSource(AliMCEvent* event, Int_t ipart, AliSignalMC* mcSignal) {
+   //
+   // Check that the particle satisfies the source criteria specified in the mcSignal
+   // Work on just 1 pronged MC signals here
+   // Method: All of the defined generations of the prong must fulfill the defined source bit map
+   //               For a given generation, all the sources for which corresponding bits are enabled, must be fulfilled 
+   // 
+   if(mcSignal->GetNProngs()>1) return kFALSE;
+   
+   // loop over all generations
+   AliVParticle* currentGenerationParticle = event->GetTrack(ipart);
+   Int_t currentGenerationLabel = ipart;
+   for(UInt_t ig=0; ig<mcSignal->GetNGenerations(); ++ig) {
+      if(!mcSignal->GetSources(0,ig)) continue;       // no sources requested
+      if(!currentGenerationParticle) break;       // end of MC history (may end before the specified number of generations in the MC signal)
+      // check all implemented sources
+      Bool_t decision = kTRUE;
+      if(mcSignal->CheckSourceBit(0,ig, AliSignalMC::kPhysicalPrimary) && !event->IsPhysicalPrimary(currentGenerationLabel)) decision = kFALSE;
+      if(mcSignal->CheckSourceBit(0,ig, AliSignalMC::kFromBGEvent) && !event->IsFromBGEvent(currentGenerationLabel)) decision = kFALSE;
+      if(mcSignal->CheckSourceBit(0,ig, AliSignalMC::kSecondaryFromWeakDecay) && !event->IsSecondaryFromWeakDecay(currentGenerationLabel)) decision = kFALSE;
+      if(mcSignal->CheckSourceBit(0,ig, AliSignalMC::kSecondaryFromMaterial) && !event->IsSecondaryFromMaterial(currentGenerationLabel)) decision = kFALSE;
+      if(mcSignal->CheckSourceBit(0,ig, AliSignalMC::kFromSubsidiaryEvent) && !event->IsFromSubsidiaryEvent(currentGenerationLabel)) decision = kFALSE;
+      if(mcSignal->CheckSourceBit(0,ig, AliSignalMC::kRadiativeDecay) && !(currentGenerationParticle->GetNDaughters()>2)) decision = kFALSE;
+      
+      if(decision && mcSignal->GetSourcesExclude(0,ig)) return kFALSE;
+      // get the next generation
+      currentGenerationLabel = currentGenerationParticle->GetMother();
+      currentGenerationParticle = event->GetTrack(currentGenerationLabel);
+   }
+   return kTRUE;
+}
+
+//_________________________________________________________________________________
 UInt_t AliAnalysisTaskReducedTreeMaker::MatchMCsignals(Int_t iparticle) {
    //
    // check whether the defined MC signals match this particle
@@ -1073,9 +1133,9 @@ UInt_t AliAnalysisTaskReducedTreeMaker::MatchMCsignals(Int_t iparticle) {
    
    UInt_t mcSignalsMap = 0;
    for(Int_t isig=0; isig<nMCsignals; ++isig) {
-      Bool_t mcMatch = kFALSE;
-      // TODO: add the code to really check the MC signal
-      if(gRandom->Rndm()<0.05) mcMatch = kTRUE;
+      Bool_t mcMatch = CheckPDGcode(event, iparticle, (AliSignalMC*)fMCsignals.At(isig)) && 
+                                    CheckParticleSource(event, iparticle, (AliSignalMC*)fMCsignals.At(isig));
+      
       if(mcMatch)
          mcSignalsMap |= (UInt_t(1)<<isig);
    }
@@ -1108,12 +1168,8 @@ void AliAnalysisTaskReducedTreeMaker::FillMCTruthInfo()
    Int_t nMCsignals = fMCsignals.GetEntries();
    if(!nMCsignals) return;
    
-   //AliDielectronMC* mcHandler = AliDielectronMC::Instance();
    AliMCEvent* event = AliDielectronMC::Instance()->GetMCEvent();
-   
-   //Int_t nPrimary = mcHandler->GetNPrimaryFromStack();
-   
-   
+      
    //cout << "Event+++++++++++++++++++++++++" << endl;
    
    // We loop over all particles in the MC event

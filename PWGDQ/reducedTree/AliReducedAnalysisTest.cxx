@@ -260,6 +260,11 @@ void AliReducedAnalysisTest::FillTrackHistograms(TClonesArray* trackList) {
             AliReducedVarManager::FillTrackInfo(track,fValues);
             if(track->TestMCFlag(0)) fHistosManager->FillHistClass("PureMCqa_Signal1", fValues);
             if(track->TestMCFlag(1)) fHistosManager->FillHistClass("PureMCqa_Signal2", fValues);
+            if(track->TestMCFlag(2)) fHistosManager->FillHistClass("PureMCqa_Signal3", fValues);
+            if(track->TestMCFlag(3)) fHistosManager->FillHistClass("PureMCqa_Signal4", fValues);
+            if(track->TestMCFlag(4)) fHistosManager->FillHistClass("PureMCqa_Signal5", fValues);
+            if(track->TestMCFlag(5)) fHistosManager->FillHistClass("PureMCqa_Signal6", fValues);
+            if(track->TestMCFlag(6)) fHistosManager->FillHistClass("PureMCqa_Signal7", fValues);
             
             for(UShort_t iflag=0; iflag<32; ++iflag) {
                AliReducedVarManager::FillTrackMCFlag(track, iflag, fValues);

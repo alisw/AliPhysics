@@ -21,6 +21,7 @@ class AliReducedBaseEvent;
 class AliReducedPairInfo;
 class AliAnalysisUtils;
 class AliFlowTrackCuts;
+class AliMCEvent;
 //class AliFlowBayesianPID;
 
 //_________________________________________________________________________
@@ -208,6 +209,8 @@ public:
   
   UInt_t MatchMCsignals(Int_t iparticle);     // check all MC signals for MC particle i and write decisions in a bit map
   Bool_t CheckMCtruthWriteFormat(UInt_t bitMap);   // make a decision on which format (base/full) to be used for the MC track
+  Bool_t CheckParticleSource(AliMCEvent* event, Int_t ipart, AliSignalMC* mcSignal);
+  Bool_t CheckPDGcode(AliMCEvent* event, Int_t ipart, AliSignalMC* mcSignal);
   
   AliAnalysisTaskReducedTreeMaker(const AliAnalysisTaskReducedTreeMaker &c);
   AliAnalysisTaskReducedTreeMaker& operator= (const AliAnalysisTaskReducedTreeMaker &c);
