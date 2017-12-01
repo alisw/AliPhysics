@@ -10,7 +10,7 @@ Bool_t kMix = kFALSE;
 Bool_t kNoPairing   = kTRUE;
 Bool_t randomizeDau = kTRUE;
      
-TString names("V0_noPID;V0_TPC;V0_TPC_TOF");
+TString names("V0_noPID;V0_TPC;V0_TPC_TOF;V0_TPC_TOFpid;V0_TPC_ITS;V0_TPC_ITSpid");
 TObjArray *arrNames=names.Tokenize(";");
 const Int_t nDie=arrNames->GetEntriesFast();
 
