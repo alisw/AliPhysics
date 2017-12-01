@@ -601,6 +601,9 @@ void AliAnalysisTaskCaloFilter::FillAODCaloClusters()
     caloCluster->SetCellsAmplitudeFraction(cluster->GetCellsAmplitudeFraction());
     caloCluster->SetTrackDistance(dR, dZ);
     
+    caloCluster->SetCellsMCEdepFractionMap(cluster->GetCellsMCEdepFractionMap());
+    caloCluster->SetClusterMCEdepFraction (cluster->GetClusterMCEdepFraction ());
+    
     AliDebug(2,Form("Filter, aod     : i %d, E %f, dispersion %f, m02 %f, m20 %f",caloCluster->GetID(),caloCluster->E(),
                     caloCluster->GetDispersion(),caloCluster->GetM02(),caloCluster->GetM20()));
     caloCluster->GetPosition(posF);
