@@ -60,8 +60,9 @@ public:
   void    SetPsiHarmonic(Int_t nforpsi)               {this->fHarmonicPsi       =      nforpsi;}
   void    SetApplyNUAinEP(Bool_t bApplyNUAEP)         {this->bApplyNUAforEP     =  bApplyNUAEP;}
   void    SetSourceFileNUA(TString sfilenua)          {this->sFileNUA           =     sfilenua;}
-
-
+  void    SetFillZDNCalHist(Bool_t bfillZDC)          {this->bFillZDCinfo       =     bfillZDC;}
+  void    SetSkipNestedLoop(Bool_t bskipNest)         {this->bSkipNestedTrk     =    bskipNest;}
+  void    SetMCEffiDimension(TString mcDimen)         {this->sMCdimension       =      mcDimen;}
 
 
 
@@ -102,13 +103,16 @@ private:
   Bool_t               bApplyNUACorr;         //
   Bool_t               bApplyZDCCorr;         //
   Bool_t              bApplyNUAforEP;         //
+  Bool_t                bFillZDCinfo;         //
+  Bool_t              bSkipNestedTrk;         //
+
 
 
   TString                   sDataSet;         // Dataset: 2010, 2011, or 2015.
   TString               sAnalysisSet;         // Values: recenter1,recenter2,analysis1
   TString             sCentEstimator;         // Centrality Estimator
   TString                   sFileNUA;         // NUA source file.
-
+  TString               sMCdimension;         // Dimention for MC effi Correction
   Int_t                  runNums[90];         //!  array of runnumbers
   Int_t                     fRunFlag;         //!  number of total run
   Int_t                   fOldRunNum;         //!
@@ -205,6 +209,9 @@ private:
   TH1F        *fEtaBinFinderForQA;   //!
   TH1F        *fVzBinFinderForNUA;   //!
 
+  TH2F            *fHistVtxZvsRun; //!
+  TH2F            *fHistVtxXvsRun; //!
+  TH2F            *fHistVtxYvsRun; //!
 
 
 
@@ -219,6 +226,10 @@ private:
   TH3F         *fHist3DEtaPhiVz_Neg_Run[4][90];  //! 4 centrality bin 90 Bins for Run. NUA
 
   TH1D         *fFB_Efficiency_Cent[10];  //!
+
+  TH3F          *fFB_Efficiency_Pos[10];  //!  3d correction Map
+  TH3F          *fFB_Efficiency_Neg[10];  //!
+
 
   //CME using scalar product method:
   TProfile     *fHist_Corr3p_SP_Norm_PN[2][3];  //! Norm = 10 centrality bins along X
