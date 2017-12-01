@@ -56,9 +56,8 @@
 //#include <netinet/in.h>
 //#include <netinet/tcp.h>
 #include <unistd.h>
-#ifndef __CYGWIN__
-#include <rpc/types.h>
-#endif
+#include <sys/types.h>
+#include <sys/time.h>
 #include <fcntl.h>
 #include <sys/stat.h>
 #include <netinet/in.h>
