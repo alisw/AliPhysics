@@ -1,4 +1,4 @@
-AliAnalysisTask *AddTaskHaHFECorrel(Double_t period, Double_t MinPtEvent, Double_t MaxPtEvent, Bool_t TRDQA, Bool_t CorrHadron, Bool_t CorrLP,  Bool_t IsMC, Bool_t IsAOD, Bool_t UseTender, Int_t ITSnCut,  Int_t TPCnCut, Int_t TPCnCutdEdx,   Double_t PhotElecPtCut, Int_t PhotElecTPCnCut,Bool_t PhotElecITSrefitCut,Double_t InvmassCut, Int_t HTPCnCut,   Bool_t HITSrefitCut, Bool_t HTPCrefitCut, Bool_t UseITS, Double_t SigmaITScut, Double_t SigmaTOFcut, Double_t SigmaTPCcut, const char * ID="")
+AliAnalysisTaskHaHFECorrel *AddTaskHaHFECorrel(Double_t period, Double_t MinPtEvent, Double_t MaxPtEvent, Bool_t TRDQA, Bool_t CorrHadron, Bool_t CorrLP,  Bool_t IsMC, Bool_t IsAOD, Bool_t UseTender, Int_t ITSnCut,  Int_t TPCnCut, Int_t TPCnCutdEdx,   Double_t PhotElecPtCut, Int_t PhotElecTPCnCut,Bool_t PhotElecITSrefitCut,Double_t InvmassCut, Int_t HTPCnCut,   Bool_t HITSrefitCut, Bool_t HTPCrefitCut, Bool_t UseITS, Double_t SigmaITScut, Double_t SigmaTOFcut, Double_t SigmaTPCcut, const char * ID="")
 {
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
@@ -33,6 +33,7 @@ AliAnalysisTask *AddTaskHaHFECorrel(Double_t period, Double_t MinPtEvent, Double
   }
   taskMB->SelectCollisionCandidates(AliVEvent::kINT7);
   
+  // Load correction weights for pi0, eta
   if (IsMC) {
     TH1::AddDirectory(kFALSE);
     printf("Loading Pi0EtaCorrectionFiles\n");
@@ -49,6 +50,23 @@ AliAnalysisTask *AddTaskHaHFECorrel(Double_t period, Double_t MinPtEvent, Double
     else printf("Could not open Pi0Eta correction file \n");
     TH1::AddDirectory(kTRUE);
   }
+  TH1::AddDirectory(kFALSE);
+  printf("Loading RecEffFiles\n");
+  TString RecEffFileName="alien:///alice/cern.ch/user/f/flherrma/HaHFECorrel/RecEff.root";
+  TFile *RecEffFile = TFile::Open(RecEffFileName.Data());
+  if (RecEffFile) {    
+    TH3F * HadRecEff = (TH3F*)RecEffFile->Get("HadRecEff");
+    TH3F * EleRecEff = (TH3F*)RecEffFile->Get("EleRecEff");
+    if (HadRecEff) taskMB->SetHadRecEff(*HadRecEff);
+    else printf("Could not load HadRecEff\n");
+    if (EleRecEff) taskMB->SetEleRecEff(*EleRecEff);
+    else printf("Could not load EleRecEff\n");
+  }
+  else printf("Could not open RecEff correction file \n");
+  TH1::AddDirectory(kTRUE);
+
+
+
 
   mgr->AddTask(taskMB);
 
