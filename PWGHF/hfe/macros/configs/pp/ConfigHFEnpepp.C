@@ -103,10 +103,8 @@ AliAnalysisTaskHFE* ConfigHFEnpepp(Bool_t useMC, Bool_t isAOD, TString appendix,
     // should be implemented in a different way, reading it from a root file.
     
     if(!useMC){
-        
-        
-        TF1 *hBackground
-        
+      
+       TF1 *hBackground;
         // First hadron contamination fit for 13TeV  by Andrea
         // relative to the case of a TPC+TOF PID cut at -1 sigma
         if(HadronContFunc == 0){
