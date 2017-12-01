@@ -250,7 +250,7 @@ void AliFITv7::CreateGeometry()
   TGeoVolumeAssembly* stlinA = new TGeoVolumeAssembly("0STL");  // A side mother
   TGeoVolumeAssembly* stlinC = new TGeoVolumeAssembly("0STR");  // C side mother
   //FIT interior
-  TVirtualMC::GetMC()->Gsvolu("0INS","BOX",idtmed[kAir],pinstart,3);
+  TVirtualMC::GetMC()->Gsvolu("0INS","BOX",idtmed[kOpAir],pinstart,3);
   TGeoVolume *ins = gGeoManager->GetVolume("0INS");
   TGeoTranslation *tr[52];
   TString nameTr;
@@ -311,11 +311,12 @@ void AliFITv7::SetOneMCP(TGeoVolume *ins)
   
   Int_t *idtmed = fIdtmed->GetArray();
   Float_t pinstart[3] = {2.95,2.95,4.34};
-  Float_t pmcp[3] = {2.949, 2.949, 2.8};     // MCP
   Float_t ptop[3] = {1.324, 1.324, 1.};      // Cherenkov radiator
   Float_t ptopref[3] = {1.3241, 1.3241, 1.}; // Cherenkov radiator wrapped with reflector
-  Float_t preg[3] = {1.324, 1.324, 0.005};   // Photcathode
   Double_t prfv[3]= {0.0002,1.323, 1.};      // Vertical refracting layer bettwen radiators and between radiator and not optical Air
+  Float_t pmcp[3] = {2.949, 2.949, 2.8};     // MCP
+  Float_t pmcptopglass[3] = {2.949, 2.949, 0.1};     // MCP top glass optical 
+  Float_t preg[3] = {1.324, 1.324, 0.005};   // Photcathode
   Double_t prfh[3]= {1.323,0.0002, 1.};      // Horizontal refracting layer bettwen radiators and ...
   Double_t pal[3]= {2.648,2.648, 0.25};      // 5mm Al on top of each radiator
   // Entry window (glass)
@@ -323,11 +324,7 @@ void AliFITv7::SetOneMCP(TGeoVolume *ins)
   TGeoVolume *top = gGeoManager->GetVolume("0TOP");
   TVirtualMC::GetMC()->Gsvolu("0TRE","BOX",idtmed[kAir],ptopref,3);  // Air: wrapped  radiator
   TGeoVolume *topref = gGeoManager->GetVolume("0TRE");
-  TVirtualMC::GetMC()->Gsvolu ("0REG", "BOX", idtmed[kOpGlassCathode], preg, 3); 
-  TGeoVolume *cat = gGeoManager->GetVolume("0REG");
-  TVirtualMC::GetMC()->Gsvolu("0MCP","BOX",idtmed[kGlass],pmcp,3);   // Glass
-  TGeoVolume *mcp = gGeoManager->GetVolume("0MCP");
-  TVirtualMC::GetMC()->Gsvolu("0RFV","BOX",idtmed[kOpAir],prfv,3);   // Optical Air vertical
+   TVirtualMC::GetMC()->Gsvolu("0RFV","BOX",idtmed[kOpAir],prfv,3);   // Optical Air vertical
   TGeoVolume *rfv = gGeoManager->GetVolume("0RFV");
   TVirtualMC::GetMC()->Gsvolu("0RFH","BOX",idtmed[kOpAir],prfh,3);   // Optical Air horizontal
   TGeoVolume *rfh = gGeoManager->GetVolume("0RFH");
@@ -367,7 +364,11 @@ void AliFITv7::SetOneMCP(TGeoVolume *ins)
   TVirtualMC::GetMC()->Gsvolu("0SUP","PGON",idtmed[kAl], mgon, 16); //Al Housing for Support Structure
   TGeoVolume *alsup = gGeoManager->GetVolume("0SUP");
 
+  TVirtualMC::GetMC()->Gsvolu ("0REG", "BOX", idtmed[kOpGlassCathode], preg, 3);
+  TGeoVolume *cat = gGeoManager->GetVolume("0REG");
+
   //wrapped radiator +  reflecting layers
+  
   Int_t ntops=0, nrfvs=0, nrfhs=0;
   Float_t xin=0, yin=0, xinv=0, yinv=0,xinh=0,yinh=0;
   x=y=z=0;
@@ -393,9 +394,9 @@ void AliFITv7::SetOneMCP(TGeoVolume *ins)
       ntops++;
       ins->AddNode(topref, ntops, new TGeoTranslation(xin,yin,z) );
       printf(" 0TOP  full %i x %f y %f z %f \n", ntops, xin, yin, z);
-      z = -pinstart[2]   + 2*pal[2] + 2 * ptopref[2] + preg[2];
+      z += ptopref[2] + 2.*pmcptopglass[2] + preg[2] ;
       ins->AddNode(cat, ntops, new TGeoTranslation(xin, yin, z) );
-      // cat->Print();
+      cat->Print();
       printf(" GEOGEO  CATHOD x=%f , y= %f z= %f num  %i\n", xin, yin, z, ntops);
     }
   }
@@ -404,12 +405,22 @@ void AliFITv7::SetOneMCP(TGeoVolume *ins)
   ins->AddNode(altop, 1 , new TGeoTranslation(0,0,z) );
   
   // MCP
-  z=-pinstart[2] + 2*pal[2] + 2*ptopref[2] + 2*preg[2] + pmcp[2];
-  //z=-pinstart[2] + 2*ptopref[2] + preg[2];
-  ins->AddNode(mcp, 1 , new TGeoTranslation(0,0,z) );
+
+  TVirtualMC::GetMC()->Gsvolu("0MCP","BOX",idtmed[kAir],pmcp,3); //glass
+  TGeoVolume *mcp = gGeoManager->GetVolume("0MCP");
+  mcp->Print();
+  
+  TVirtualMC::GetMC()->Gsvolu("0MTO", "BOX", idtmed[kOpGlass], pmcptopglass,3);   //Op  Glass
+  TGeoVolume *mcptop = gGeoManager->GetVolume("0MTO");
+  z = - pinstart[2] + 2*pal[2] + 2*ptopref[2] + pmcptopglass[2];
+  ins->AddNode(mcptop, 1, new TGeoTranslation(0,0,z) );
+  //  mcptop->Print();
+  
+  //  z = pinstart[2] -  pmcp[2];
+  //  ins->AddNode(mcp, 1 , new TGeoTranslation(0,0,z) );
   
   // Al Housing for Support Structure
-  ins->AddNode(alsup,1);
+  //  ins->AddNode(alsup,1);
 }
 //--------------------------------------------------------------------
 
