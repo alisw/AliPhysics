@@ -138,10 +138,10 @@ class AliAnalysisTaskCheckAODTracks : public AliAnalysisTaskSE {
   TH2F* fHistITScluPtFiltBit[kNumOfFilterBits];               //!<!  histo of n. ITS clus per filter bit
   TH2F* fHistSPDcluPtFiltBit[kNumOfFilterBits];               //!<!  histo of n. SPD clus per filter bit
   TH2F* fHistTPCcluPtFiltBit[kNumOfFilterBits];               //!<!  histo of n. TPC clus per filter bit
-  TH2F* fHistTPCcrrowsPtFiltBit[kNumOfFilterBits];               //!<!  histo of n. TPC clus per filter bit
-  TH2F* fHistTPCCrowOverFindPtFiltBit[kNumOfFilterBits];      //!<!  histo of n. TPC clus per filter bit
-  TH2F* fHistTPCChi2ndfPtFiltBit[kNumOfFilterBits];           //!<!  histo of n. TPC clus per filter bit
-  TH2F* fHistChi2TPCConstrVsGlobPtFiltBit[kNumOfFilterBits];  //!<!  histo of n. TPC clus per filter bit
+  TH2F* fHistTPCcrrowsPtFiltBit[kNumOfFilterBits];               //!<!  histo of n. TPC crossed rows per filter bit
+  TH2F* fHistTPCCrowOverFindPtFiltBit[kNumOfFilterBits];      //!<!  histo of crossedrows/findable per filter bit
+  TH2F* fHistTPCChi2clusPtFiltBit[kNumOfFilterBits];           //!<!  histo of TPC chi2 per filter bit
+  TH2F* fHistChi2TPCConstrVsGlobPtFiltBit[kNumOfFilterBits];  //!<!  histo of golden chi2 per filter bit
 
   TH2F* fHistPtResidVsPtTPCselAll;                       //!<!  Pt residuals for TPC only tracks tracked with good mass hypothesis
   TH2F* fHistPtResidVsPtTPCselITSrefAll;                 //!<!  Pt residuals for ITS+TPC tracks tracked with good mass hypothesis
@@ -184,7 +184,7 @@ class AliAnalysisTaskCheckAODTracks : public AliAnalysisTaskSE {
   Bool_t  fReadMC;             // flag read/not-read MC truth info
   Bool_t  fUseMCId;            // flag use/not-use MC identity for PID
 
-  ClassDef(AliAnalysisTaskCheckAODTracks,11);
+  ClassDef(AliAnalysisTaskCheckAODTracks,12);
 };
 
 

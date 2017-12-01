@@ -971,12 +971,12 @@ void PlotAODtrackQA(TString filename="AnalysisResults.root", TString suffix="QA"
     gPad->SetLogz();
     TH2F* hdist5=(TH2F*)l->FindObject(Form("hTPCCrowOverFindPtFiltBit%d",jb));
     hdist5->SetTitle(Form("Filter bit %d",jb ));
-    hdist5->GetYaxis()->SetTitle("Crossed rows /findable clusters");
     hdist5->SetStats(0);
     hdist5->Draw("colz");
     ccc->cd(6);
     gPad->SetLogz();
     TH2F* hdist6=(TH2F*)l->FindObject(Form("hTPCChi2ndfPtFiltBit%d",jb));
+    if(!hdist6) hdist6=(TH2F*)l->FindObject(Form("hTPCChi2clusPtFiltBit%d",jb));
     hdist6->SetTitle(Form("Filter bit %d",jb ));
     hdist6->SetStats(0);
     hdist6->Draw("colz");
