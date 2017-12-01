@@ -9,10 +9,12 @@ class AliAnalysisTaskCMEV0;
  TString sAnalysisFile = "AOD", TString sDataSet = "2010", TString sAnalysisType = "AUTOMATIC", TString sEventTrigger = "MB", Bool_t bEventCutsQA = kFALSE, 
  Bool_t bTrackCutsQA = kFALSE,Double_t dVertexLow = -10.,Double_t dVertexHigh = 10., Bool_t bPileUp = kFALSE, Bool_t bPileUpTight = kFALSE, 
  TString sCentEstimator = "V0", Bool_t bFBeffi = kFALSE,TString sEfficiencyFB = "alien:///alice/cern.ch/user/m/mhaque/calib_files/FB768_Hijing_LHC15o.root",
+ TString sFBEffiDimension = "1D", 
  Bool_t bApplyNUA = kFALSE, TString sNUAFile="alien:///alice/cern.ch/user/m/mhaque/gain/Run2015o_Pass1_FB768_pT0p2_5GeV_NUA_Wgt_PosNeg_Run.root", 
  Bool_t bZDCGainEq= kFALSE, TString sZDCFile="alien:///alice/cern.ch/user/m/mhaque/gain/Run2015o_pass1_ZDNP_WgtTotEn_VsCentRun.root", 
- Bool_t bFillTPCQn= kFALSE, Bool_t bFillNUAhist= kFALSE, Int_t fSetHarmN = 1, Int_t fSetHarmM = 1, Int_t fSetPsiHarm = 2, Bool_t bUseNUAinEP = kFALSE, 
- TString sNUAtype="NewR", const char *suffix = "")
+ Bool_t bFillTPCQn= kFALSE, Bool_t bFillNUAhist= kFALSE,Bool_t bFillZDCHist= kFALSE, Bool_t bSkipNestedLoop= kFALSE, 
+ Int_t fSetHarmN = 1, Int_t fSetHarmM = 1, Int_t fSetPsiHarm = 2, Bool_t bUseNUAinEP = kFALSE, TString sNUAtype="NewR", 
+ const char *suffix = "")
 {
 
   //gSystem->Load("libPWGflowBase.so");
@@ -205,12 +207,16 @@ class AliAnalysisTaskCMEV0;
   taskQC_prot->SetApplyNUAinEP(bUseNUAinEP);
   taskQC_prot->SetSourceFileNUA(sNUAtype);
   //taskQC_prot->SetDebugLevel(0);
+  taskQC_prot->SetFillZDNCalHist(bFillZDCHist);
+  taskQC_prot->SetSkipNestedLoop(bSkipNestedLoop);
+  taskQC_prot->SetMCEffiDimension(sFBEffiDimension);
+
 
 
   if(bFBeffi){
     TFile* FileFBeffi  = TFile::Open(sEfficiencyFB,"READ");
     TList* FBEffiListUse = dynamic_cast<TList*>(FileFBeffi->FindObjectAny("fMcEffiHij"));
-     
+
     if(FBEffiListUse) {
       //std::cout<<"\n\n Efficiency Histograms found\n:"<<FBEffiListUse->ls()<<"\n\n"<<std::endl;
        taskQC_prot->SetFBEfficiencyList(FBEffiListUse);
@@ -218,7 +224,7 @@ class AliAnalysisTaskCMEV0;
     else{
        std::cout<<"\n\n !!!!**** ERROR: FB Efficiency Histograms not found  *****\n\n"<<std::endl;
       //exit(1);
-    }
+    }   
   }
   if(bApplyNUA && sNUAtype!="OldJ") {
     TFile* fNUAFile = TFile::Open(sNUAFile,"READ");
