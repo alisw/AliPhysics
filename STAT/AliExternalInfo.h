@@ -78,6 +78,7 @@ public:
   Bool_t CacheProdCycle()                                               {return Cache("MonALISA.ProductionCycle", "", "");}
   Bool_t CacheCPass()                                                   {return Cache("MonALISA.ProductionCPass", "", "");}
   Bool_t CacheProdCycleByID(TString ID)                                 {return Cache("MonALISA.ProductionCycleID", ID, "");}
+  static void CacheProduction(TPRegexp select, TPRegexp reject, TString sourceList);
 
   TTree* GetTree(TString type, TString period, TString pass, Int_t buildIndex=1);
   TTree* GetTree(TString type, TString period, TString pass, TString friendList);
