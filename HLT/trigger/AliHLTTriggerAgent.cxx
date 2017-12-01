@@ -44,7 +44,6 @@
 #include "AliHLTTriggerPhosClusterEnergy.h"
 #include "AliHLTTriggerEmcalClusterEnergy.h"
 #include "AliHLTTriggerPhosMip.h"
-#include "AliHLTTriggerTrdClusterMultiplicity.h"
 #include "AliHLTTriggerGammaConversion.h"
 #include "AliHLTMuonSpectroTriggerComponent.h"
 #include "AliHLTUpcTriggerComponent.h"
@@ -92,7 +91,6 @@ int AliHLTTriggerAgent::RegisterComponents(AliHLTComponentHandler* pHandler) con
   pHandler->AddComponent(new AliHLTTriggerPhosClusterEnergy); 
   pHandler->AddComponent(new AliHLTTriggerEmcalClusterEnergy); 
   pHandler->AddComponent(new AliHLTTriggerPhosMip); 
-  pHandler->AddComponent(new AliHLTTriggerTrdClusterMultiplicity);
   pHandler->AddComponent(new AliHLTTriggerGammaConversion);
   pHandler->AddComponent(new AliHLTMuonSpectroTriggerComponent);
   pHandler->AddComponent(new AliHLTUpcTriggerComponent);

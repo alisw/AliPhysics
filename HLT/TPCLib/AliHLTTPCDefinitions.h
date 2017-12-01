@@ -109,6 +109,9 @@ public:
   /** cluster data */
   static const AliHLTComponentDataType fgkClustersDataType;             // see above
   static const AliHLTComponentDataType& ClustersDataType();
+  /** xyz cluster coordinates */
+  static const AliHLTComponentDataType fgkClustersXYZDataType;          // see above
+  static const AliHLTComponentDataType& ClustersXYZDataType();
   /** raw cluster data (not transformed) */
   static const AliHLTComponentDataType fgkRawClustersDataType;          // see above
   static const AliHLTComponentDataType fgkRawClustersDataTypeNotCompressed;          // A copy of the fgkRawClustersDataType, which is used if the DataCompressor failed to compress clusters
@@ -119,13 +122,16 @@ public:
   static const AliHLTComponentDataType& RawClustersDescriptorDataType();
   /** HW cluster data */
   static const AliHLTComponentDataType fgkHWClustersDataType;           // see above
-  static const AliHLTComponentDataType& HWClustersDataType();
-  /** HW alternative output cluster data */
-  static const AliHLTComponentDataType fgkAlterClustersDataType;        // see above
-  static const AliHLTComponentDataType& AlterClustersDataType();
+  static const AliHLTComponentDataType& HWClustersDataType(); 
+  /** TPC DEDX Data (new format) */
+  static const AliHLTComponentDataType fgkTPCdEdxNew;           // see above
+  static const AliHLTComponentDataType& TPCdEdxNew(); 
   /** track segments in local coordinates */
   static const AliHLTComponentDataType fgkTrackSegmentsDataType;        // see above
   static const AliHLTComponentDataType& TrackSegmentsDataType();
+  /** outer tracks in global koordinates */
+  static const AliHLTComponentDataType fgkTracksOuterDataType;               // see above
+  static const AliHLTComponentDataType& TracksOuterDataType();
   /** tracks in global koordinates */
   static const AliHLTComponentDataType fgkTracksDataType;               // see above
   static const AliHLTComponentDataType& TracksDataType();
@@ -135,6 +141,9 @@ public:
   
   //Initialized Fast transform data object
   static const AliHLTComponentDataType fgkTPCFastTransformDataObjectDataType;	//see above
+  static const AliHLTComponentDataType &TPCFastTransformDataObjectDataType(){ return fgkTPCFastTransformDataObjectDataType; }	//see above
+  static const AliHLTComponentDataType fgkTPCReverseTransformInfoDataType; //
+  static const AliHLTComponentDataType &TPCReverseTransformInfoDataType(){ return fgkTPCReverseTransformInfoDataType; }	//see above
 
   // Cluster & Tracks model data
   /** data compression descriptor*/

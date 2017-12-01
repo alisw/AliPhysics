@@ -36,14 +36,15 @@ const AliHLTComponentDataType AliHLTTPCDefinitions::fgkPackedRawDataType = AliHL
 const AliHLTComponentDataType AliHLTTPCDefinitions::fgkUnpackedRawDataType = AliHLTComponentDataTypeInitializer("RAWUNPAK", kAliHLTDataOriginTPC);
 const AliHLTComponentDataType AliHLTTPCDefinitions::fgkUnpackedRawLateDataType = AliHLTComponentDataTypeInitializer("RAWUPAKL", kAliHLTDataOriginTPC);
 const AliHLTComponentDataType AliHLTTPCDefinitions::fgkClustersDataType = AliHLTComponentDataTypeInitializer("CLUSTERS", kAliHLTDataOriginTPC);
+const AliHLTComponentDataType AliHLTTPCDefinitions::fgkClustersXYZDataType = AliHLTComponentDataTypeInitializer("CLUSTXYZ", kAliHLTDataOriginTPC);
 const AliHLTComponentDataType AliHLTTPCDefinitions::fgkRawClustersDataType = AliHLTComponentDataTypeInitializer("CLUSTRAW", kAliHLTDataOriginTPC);
 const AliHLTComponentDataType AliHLTTPCDefinitions::fgkRawClustersDataTypeNotCompressed = AliHLTComponentDataTypeInitializer("CLUSNOTC", kAliHLTDataOriginTPC);
 const AliHLTComponentDataType AliHLTTPCDefinitions::fgkRawClustersDescriptorDataType = AliHLTComponentDataTypeInitializer("CLRAWDSC", kAliHLTDataOriginTPC);
 const AliHLTComponentDataType AliHLTTPCDefinitions::fgkHWClustersDataType = AliHLTComponentDataTypeInitializer("HWCLUST1", kAliHLTDataOriginTPC);
-const AliHLTComponentDataType AliHLTTPCDefinitions::fgkAlterClustersDataType = AliHLTComponentDataTypeInitializer("HWCL_ALT", kAliHLTDataOriginTPC);
 const AliHLTComponentDataType AliHLTTPCDefinitions::fgkVertexDataType = AliHLTComponentDataTypeInitializer("VERTEX  ", kAliHLTDataOriginTPC);
 const AliHLTComponentDataType AliHLTTPCDefinitions::fgkTrackSegmentsDataType = AliHLTComponentDataTypeInitializer("TRAKSEGS", kAliHLTDataOriginTPC);
 const AliHLTComponentDataType AliHLTTPCDefinitions::fgkTracksDataType = AliHLTComponentDataTypeInitializer("TRACKS  ", kAliHLTDataOriginTPC);
+const AliHLTComponentDataType AliHLTTPCDefinitions::fgkTracksOuterDataType = AliHLTComponentDataTypeInitializer("TRACKSOU", kAliHLTDataOriginTPC);
 
 const AliHLTComponentDataType AliHLTTPCDefinitions::fgkDataCompressionDescriptorDataType = AliHLTComponentDataTypeInitializer("COMPDESC", kAliHLTDataOriginTPC);
 const AliHLTComponentDataType AliHLTTPCDefinitions::fgkClusterTracksModelDataType = AliHLTComponentDataTypeInitializer("CLSTRKMD", kAliHLTDataOriginTPC); 
@@ -52,6 +53,9 @@ const AliHLTComponentDataType AliHLTTPCDefinitions::fgkClusterTracksCompressedDa
 const AliHLTComponentDataType AliHLTTPCDefinitions::fgkRemainingClustersCompressedDataType = AliHLTComponentDataTypeInitializer("REMCLSCM", kAliHLTDataOriginTPC);
 const AliHLTComponentDataType AliHLTTPCDefinitions::fgkClustersFlagsDataType = AliHLTComponentDataTypeInitializer("CLSFLAGS", kAliHLTDataOriginTPC);
 const AliHLTComponentDataType AliHLTTPCDefinitions::fgkTPCFastTransformDataObjectDataType = AliHLTComponentDataTypeInitializer("HLTTPCFT", kAliHLTDataOriginTPC);
+const AliHLTComponentDataType AliHLTTPCDefinitions::fgkTPCReverseTransformInfoDataType = AliHLTComponentDataTypeInitializer("REVTRANS", kAliHLTDataOriginTPC);
+const AliHLTComponentDataType AliHLTTPCDefinitions::fgkAliHLTDataTypeClusterMCInfo = AliHLTComponentDataTypeInitializer("CLMCINFO", kAliHLTDataOriginTPC);
+const AliHLTComponentDataType AliHLTTPCDefinitions::fgkTPCdEdxNew = AliHLTComponentDataTypeInitializer("DEDX2   ", kAliHLTDataOriginTPC);
 
 const AliHLTComponentDataType& AliHLTTPCDefinitions::DDLEncodedEntropyRawDataType() {
   static AliHLTComponentDataType dt = AliHLTComponentDataTypeInitializer("DDLENCEN", kAliHLTDataOriginTPC);
@@ -73,6 +77,10 @@ const AliHLTComponentDataType& AliHLTTPCDefinitions::ClustersDataType() {
   static AliHLTComponentDataType dt = AliHLTComponentDataTypeInitializer("CLUSTERS", kAliHLTDataOriginTPC);
   return dt;
 }
+const AliHLTComponentDataType& AliHLTTPCDefinitions::ClustersXYZDataType() {
+  static AliHLTComponentDataType dt = AliHLTComponentDataTypeInitializer("CLUSTXYZ", kAliHLTDataOriginTPC);
+  return dt;
+}
 const AliHLTComponentDataType& AliHLTTPCDefinitions::RawClustersDataType() {
   static AliHLTComponentDataType dt = AliHLTComponentDataTypeInitializer("CLUSTRAW", kAliHLTDataOriginTPC);
   return dt;
@@ -89,10 +97,6 @@ const AliHLTComponentDataType& AliHLTTPCDefinitions::HWClustersDataType() {
   static AliHLTComponentDataType dt = AliHLTComponentDataTypeInitializer("HWCLUST1", kAliHLTDataOriginTPC);
   return dt;
 }
-const AliHLTComponentDataType& AliHLTTPCDefinitions::AlterClustersDataType() {
-  static AliHLTComponentDataType dt = AliHLTComponentDataTypeInitializer("HWCL_ALT", kAliHLTDataOriginTPC);
-  return dt;
-}
 const AliHLTComponentDataType& AliHLTTPCDefinitions::VertexDataType() {
   static AliHLTComponentDataType dt = AliHLTComponentDataTypeInitializer("VERTEX  ", kAliHLTDataOriginTPC);
   return dt;
@@ -103,6 +107,10 @@ const AliHLTComponentDataType& AliHLTTPCDefinitions::TrackSegmentsDataType() {
 }
 const AliHLTComponentDataType& AliHLTTPCDefinitions::TracksDataType() {
   static AliHLTComponentDataType dt = AliHLTComponentDataTypeInitializer("TRACKS  ", kAliHLTDataOriginTPC);
+  return dt;
+}
+const AliHLTComponentDataType& AliHLTTPCDefinitions::TracksOuterDataType() {
+  static AliHLTComponentDataType dt = AliHLTComponentDataTypeInitializer("TRACKSOU", kAliHLTDataOriginTPC);
   return dt;
 }
 const AliHLTComponentDataType& AliHLTTPCDefinitions::DataCompressionDescriptorDataType() {
@@ -173,8 +181,11 @@ const AliHLTComponentDataType& AliHLTTPCDefinitions::AliHLTDataTypeClusterMCInfo
   static AliHLTComponentDataType dt = AliHLTComponentDataTypeInitializer("CLMCINFO", kAliHLTDataOriginTPC);
   return dt;
 }
-const AliHLTComponentDataType AliHLTTPCDefinitions::fgkAliHLTDataTypeClusterMCInfo = AliHLTComponentDataTypeInitializer("CLMCINFO", kAliHLTDataOriginTPC);
 
+const AliHLTComponentDataType& AliHLTTPCDefinitions::TPCdEdxNew() {
+  static AliHLTComponentDataType dt = AliHLTComponentDataTypeInitializer("DEDX2   ", kAliHLTDataOriginTPC);
+  return dt;
+}
 
 const AliHLTTPCDefinitions::AliClusterParameter AliHLTTPCDefinitions::fgkClusterParameterDefinitions[]= {
   {AliHLTTPCDefinitions::kPadRow,  "padrow",   6,  1,   1}, // difference of rows, mostly 0 or 1

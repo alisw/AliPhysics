@@ -39,6 +39,7 @@ class AliHLTMiscImplementation : public AliHLTMisc
   AliHLTTriggerMask_t GetTriggerMask(AliRawReader* rawReader) const;
 
   AliHLTUInt32_t GetTimeStamp(AliRawReader* rawReader) const;
+  AliHLTUInt32_t GetTimeStamp(AliRunLoader* runLoader, int evtNo) const;
   AliHLTUInt32_t GetEventType(AliRawReader* rawReader) const;
   const char* GetBeamTypeFromGRP() const;
 

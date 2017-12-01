@@ -102,7 +102,7 @@ Float_t AliTRDonlineTrackingDataContainer::GetTrackletLocalY(UInt_t det, UInt_t 
 AliESDTrdTracklet* AliTRDonlineTrackingDataContainer::GetTracklet(UInt_t det, UInt_t trackletIndex) {
   AliESDTrdTracklet* trkl = NULL;
   if ((det < fgkNumChambers) && (trackletIndex < fNumTracklets[det])){
-    trkl = new AliESDTrdTracklet(fTrackletWords[det][trackletIndex], fTrackletHCId[det][trackletIndex], -1);
+    trkl = new AliESDTrdTracklet(fTrackletWords[det][trackletIndex], fTrackletHCId[det][trackletIndex], 0);
   }
   return trkl;
 }

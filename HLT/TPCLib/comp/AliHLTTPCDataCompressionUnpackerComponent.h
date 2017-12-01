@@ -13,7 +13,7 @@
 
 #include "AliHLTProcessor.h"
 #include "AliHLTTPCRawCluster.h"
-#include "AliHLTTPCSpacePointData.h"
+#include "AliHLTTPCGeometry.h"
 #include "TString.h"
 #include <stdexcept>
 #include <map>
@@ -107,7 +107,7 @@ public:
     ~AliHLTTPCRawClusterArrayRef() {}
 
     AliHLTTPCRawCluster& operator[](unsigned id) {
-      unsigned n=AliHLTTPCSpacePointData::GetNumber(id);
+      unsigned n=AliHLTTPCGeometry::CluID2Index(id);
       if (n>=fArraySize) {
         throw std::runtime_error("index out of bounds");
       }
@@ -247,7 +247,7 @@ public:
           }
           id=fClusterIdBlock->fIds[fClusterNo];
         }
-        if (id==kAliHLTVoidDataSpec) id=AliHLTTPCSpacePointData::GetID(fSlice, fPartition, fClusterNo);
+        if (id==kAliHLTVoidDataSpec) id=AliHLTTPCGeometry::CreateClusterID(fSlice, fPartition, fClusterNo);
         return id;
       };
 

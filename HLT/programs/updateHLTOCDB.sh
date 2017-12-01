@@ -15,7 +15,7 @@ main ()
     echo '* aliroot -b -q $ALICE_SRC'"'"'/HLT/programs/downloadCDB.C(999999,"local:///cvmfs/alice-ocdb.cern.ch/calibration/data/2015/OCDB","local://OCDB/2015","*/*/*")'"'"
     echo
     echo "example:"
-    echo "  ${0##*/} ocdbSource=local:///cvmfs/alice-ocdb.cern.ch/calibration/data/2015/OCDB/ ocdbTarget=local://OCDB/2015/ cdbEntries=*/*/*"
+    echo "  ${0##*/} ocdbSource=/cvmfs/alice-ocdb.cern.ch/calibration/data/2015/OCDB/ ocdbTarget=/OCDB/2015/ cdbEntries=*/*/*"
     return 1
   fi
 
@@ -26,7 +26,7 @@ main ()
 
   for sourceEntryPath in ${ocdbSource}/${cdbEntries}
   do 
-    cdbEntry=${sourceEntryPath#$ocdbSource}
+    cdbEntry=${sourceEntryPath#$ocdbSource/}
     targetEntryPath=${ocdbTarget}/${cdbEntry}
 
     #latestFileTarget=$(/bin/ls -1 ${targetEntryPath} | sort --field-separator=_ --key=2Vr,3Vr | grep -v Run0_999 | head -1)
@@ -52,7 +52,7 @@ main ()
     #TODO: this is stupid
     if [[ ! -d ${targetEntryPath} ]]; then
       firstRun=${runRange[0]}
-      copyOCDBentry ${cdbEntry} ${ocdbSource} ${ocdbTarget} ${firstRun} "999999999"
+      copyOCDBentry ${cdbEntry} local://${ocdbSource} local://${ocdbTarget} ${firstRun} "999999999"
     fi
   done
 }

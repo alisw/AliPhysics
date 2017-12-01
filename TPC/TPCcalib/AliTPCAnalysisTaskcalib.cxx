@@ -23,16 +23,18 @@
 #include "AliTPCAnalysisTaskcalib.h"
 #include "TChain.h"
 #include "AliTPCcalibBase.h"
-#include "AliESDEvent.h"
-#include "AliESDfriend.h"
-#include "AliESDtrack.h"
-#include "AliESDfriendTrack.h"
+#include "AliVEvent.h"
+#include "AliVfriendEvent.h"
+#include "AliVTrack.h"
+#include "AliVfriendTrack.h"
 #include "AliTPCseed.h"
-#include "AliESDInputHandler.h"
+#include "AliVEventHandler.h"
 #include "AliAnalysisManager.h"
 #include "TFile.h"
 #include "TSystem.h"
 #include "TTimeStamp.h"
+#include "TStopwatch.h"
+#include "AliSysInfo.h"
 
 ClassImp(AliTPCAnalysisTaskcalib)
 
@@ -40,8 +42,8 @@ ClassImp(AliTPCAnalysisTaskcalib)
 AliTPCAnalysisTaskcalib::AliTPCAnalysisTaskcalib()
   :AliAnalysisTask(),
    fCalibJobs(0),
-   fESD(0),
-   fESDfriend(0),
+   fV(0),
+   fVfriend(0),
    fDebugOutputPath("")
 {
   //
@@ -54,8 +56,8 @@ AliTPCAnalysisTaskcalib::AliTPCAnalysisTaskcalib()
 AliTPCAnalysisTaskcalib::AliTPCAnalysisTaskcalib(const char *name) 
   :AliAnalysisTask(name,""),
    fCalibJobs(0),
-   fESD(0),
-   fESDfriend(0),
+   fV(0),
+   fVfriend(0),
    fDebugOutputPath("")
 {
   //
@@ -84,52 +86,54 @@ void AliTPCAnalysisTaskcalib::Exec(Option_t *) {
   //
   // Exec function
   // Loop over tracks and call  Process function
-  if (!fESD) {
-    //Printf("ERROR: fESD not available");
+    //Printf(" **************** AliTPCAnalysisTaskcalib::Exec() **************** ");
+  TStopwatch stopWatch;
+  stopWatch.Start();
+  if (!fV) {
+    Printf("ERROR: fV not available");
     return;
   }
-  fESDfriend=static_cast<AliESDfriend*>(fESD->FindListObject("AliESDfriend"));
-  Int_t n=fESD->GetNumberOfTracks();
-  Process(fESD);
-  if (!fESDfriend) {
-    //Printf("ERROR: fESDfriend not available");
+
+  fVfriend=fV->FindFriend();
+    
+  Int_t n=fV->GetNumberOfTracks();
+  Process(fV);
+  if (!fVfriend) {
+    Printf("ERROR: fVfriend not available");
     return;
   }
-  if (fESDfriend->TestSkipBit()) return;
-  //
-  Int_t run = fESD->GetRunNumber();
+
+  if (fVfriend->TestSkipBit()) return;
+  Int_t run = fV->GetRunNumber();
   for (Int_t i=0;i<n;++i) {
-    AliESDtrack *track=fESD->GetTrack(i);
-    AliESDfriendTrack *friendTrack= (AliESDfriendTrack*)track->GetFriendTrack();
-    TObject *calibObject=0;
-    AliTPCseed *seed=0;
+    AliVfriendTrack *friendTrack=const_cast<AliVfriendTrack*>(fVfriend->GetTrack(i));
     if (!friendTrack) continue;
-    for (Int_t j=0;(calibObject=friendTrack->GetCalibObject(j));++j)
-      if ((seed=dynamic_cast<AliTPCseed*>(calibObject)))
-	break;
+    AliVTrack *track=fV->GetVTrack(i);
+    AliTPCseed *seed=0;
+    AliTPCseed tpcSeed;
+    if (friendTrack->GetTPCseed(tpcSeed)==0) seed=&tpcSeed;
+    
     if (track) Process(track, run);
-    if (seed)
-      Process(seed);
+    if (seed)  Process(seed);
   }
+  stopWatch.Stop();
+  AliSysInfo::AddStamp("AliTPCAnalysisTaskcalib::Exec()",fV->GetNumberOfTracks(),stopWatch.RealTime()*1000,stopWatch.CpuTime()*1000);
 }
 
 void AliTPCAnalysisTaskcalib::ConnectInputData(Option_t *) {
   //
   //
   //
-  TTree* tree=dynamic_cast<TTree*>(GetInputData(0));
-  if (!tree) {
-    //Printf("ERROR: Could not read chain from input slot 0");
-  } 
+  AliVEventHandler *vH = AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler();
+  //TString classInputHandler = vH->ClassName();
+  if (!vH) {
+    Printf("ERROR: Could not get VEventHandler");
+  }
   else {
-    AliESDInputHandler *esdH = dynamic_cast<AliESDInputHandler*> (AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
-    if (!esdH) {
-      //Printf("ERROR: Could not get ESDInputHandler");
-    } 
-    else {
-      fESD = (AliESDEvent*)esdH->GetEvent();
-      //Printf("*** CONNECTED NEW EVENT ****");
-    }
+    fV = vH->GetEvent();
+    if(!fV) Printf("AliTPCAnalysisTaskcalib: ERROR: no V event!");
+
+    //if (fV) {Printf("*** CONNECTED NEW EVENT ****");}
   }
 }
 
@@ -173,10 +177,12 @@ void AliTPCAnalysisTaskcalib::FinishTaskOutput()
 }
 
 
-void AliTPCAnalysisTaskcalib::Process(AliESDEvent *event) {
+void AliTPCAnalysisTaskcalib::Process(AliVEvent *event) {
   //
-  // Process ESD event
+  // Process V event
   //
+
+    //Printf("AliTPCAnalysisTaskcalib::Process event");
   AliTPCcalibBase *job=0;
   Int_t njobs = fCalibJobs->GetEntriesFast();
   for (Int_t i=0;i<njobs;i++){
@@ -203,9 +209,9 @@ void AliTPCAnalysisTaskcalib::Process(AliTPCseed *track) {
   }
 }
 
-void AliTPCAnalysisTaskcalib::Process(AliESDtrack *track, Int_t run) {
+void AliTPCAnalysisTaskcalib::Process(AliVTrack *track, Int_t run) {
   //
-  // Process ESD track
+  // Process V track
   //
   AliTPCcalibBase *job=0;
   Int_t njobs = fCalibJobs->GetEntriesFast();
@@ -271,4 +277,19 @@ void AliTPCAnalysisTaskcalib::RegisterDebugOutput(){
   printf("copy %s\t%s\n",dsName.Data(),dsName2.Data());
   TFile::Cp(dsName.Data(),dsName2.Data());
 
+}
+
+Bool_t AliTPCAnalysisTaskcalib::ResetOutputData()
+{
+  //
+  // Call the ResetOutputData function of all sub fCalibJobs
+  //
+  AliTPCcalibBase *job=0;
+  const Int_t njobs = fCalibJobs->GetEntriesFast();
+  Bool_t result=kTRUE;
+  for (Int_t i=0;i<njobs;i++){
+    job = (AliTPCcalibBase*)fCalibJobs->UncheckedAt(i);
+    if (job) result &= job->ResetOutputData();
+  }
+  return result;
 }

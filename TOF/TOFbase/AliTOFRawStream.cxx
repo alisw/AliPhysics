@@ -1481,8 +1481,7 @@ Bool_t AliTOFRawStream::Decode(Int_t verbose = 0) {
       }
     
     if (verbose)
-      AliInfo(Form("Equipment # %d (DDL # %d) data has been readed", currentEquipment, currentDDL));
-    
+      AliInfo(Form("Equipment # %d (DDL # %d) data has been readed", currentEquipment, currentDDL));    
     
     //set up the decoder
     fDecoder->SetVerbose(verbose);

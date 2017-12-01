@@ -16,6 +16,11 @@ class TTree;
 class TObjArray;
 class AliVEvent;
 class AliVfriendEvent;
+class AliVCuts;
+class AliEventTag;
+class AliRunTag;
+class AliPIDResponse;
+class AliMCEvent;
 
 class AliVEventHandler : public TNamed {
 
@@ -52,6 +57,16 @@ enum EEventHandlerFlags {
     virtual Bool_t       FinishEvent()                    = 0;
     virtual Bool_t       Terminate()                      = 0;
     virtual Bool_t       TerminateIO()                    = 0;
+    virtual AliVCuts*    GetEventSelection() const        = 0;
+    virtual UInt_t       IsEventSelected() {return 0;}
+    virtual Long64_t     GetReadEntry() const {return 0;}
+    virtual const AliEventTag* GetEventTag() const {return 0;}
+    virtual Option_t    *GetAnalysisType() const                      {return 0;}
+    virtual AliRunTag   *GetRunTag()       const                      {return 0;}
+    virtual AliPIDResponse* GetPIDResponse() {return 0x0;}
+    virtual AliMCEvent*  MCEvent() const			      {return 0;}
+    virtual void         SetNeedField(Bool_t flag=kTRUE)  {}
+    virtual TObject     *GetStatistics(Option_t *option="") const {return NULL;}
     //
     virtual Bool_t       Notify() { return TNamed::Notify(); };
     // Security
@@ -67,7 +82,6 @@ enum EEventHandlerFlags {
     virtual AliVEvent*          GetEvent() const {return 0x0;};
     virtual AliVfriendEvent*   GetVfriendEvent() const {return 0x0;};
 
- private :
   ClassDef(AliVEventHandler, 1);
 };
 

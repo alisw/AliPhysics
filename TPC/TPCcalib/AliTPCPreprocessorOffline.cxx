@@ -246,7 +246,8 @@ Int_t AliTPCPreprocessorOffline::CalibTimeVdrift(AliTPCcalibTime* timeDrift, Int
   //4.b make alignment
   //
   MakeFitTime();
-  TFile * ftime= TFile::Open("fitITSVertex.root");
+  TFile* ftime = NULL;
+  if (!(getenv("HLT_ONLINE_MODE") && strcmp(getenv("HLT_ONLINE_MODE"), "on") == 0)) ftime = TFile::Open("fitITSVertex.root");
   if (ftime){
     TObject * alignmentTime=ftime->Get("FitCorrectionTime");
     if (alignmentTime) fVdriftArray->AddLast(alignmentTime);
@@ -1119,6 +1120,8 @@ void AliTPCPreprocessorOffline::AddAlignmentGraphs(  TObjArray * vdriftArray, Al
   TObjArray * arrayITSP= AliTPCcalibDButil::SmoothRelKalman(arrayITS,mstatITS, 0, 5.);
   TObjArray * arrayITSM= AliTPCcalibDButil::SmoothRelKalman(arrayITS,mstatITS, 1, 5.);
   TObjArray * arrayITSB= AliTPCcalibDButil::SmoothRelKalman(arrayITSP,arrayITSM);
+  if (arrayITSB == NULL) AliWarning("Failed to create ALIGN_ITSB_TPC object!");
+
   TObjArray * arrayTOFP= AliTPCcalibDButil::SmoothRelKalman(arrayTOF,mstatTOF, 0, 5.);
   TObjArray * arrayTOFM= AliTPCcalibDButil::SmoothRelKalman(arrayTOF,mstatTOF, 1, 5.);
   TObjArray * arrayTOFB= AliTPCcalibDButil::SmoothRelKalman(arrayTOFP,arrayTOFM);
@@ -1132,7 +1135,7 @@ void AliTPCPreprocessorOffline::AddAlignmentGraphs(  TObjArray * vdriftArray, Al
   //
   //
   Int_t entries=TMath::Max(arrayITS->GetEntriesFast(),arrayTOF->GetEntriesFast());
-  TObjArray *arrays[12]={arrayITS, arrayITSP, arrayITSM, arrayITSB,
+  TObjArray *arrays[12]={arrayITS, arrayITSP, arrayITSM, arrayITSB, //During deletion, we must not delete arrayITS, arrayTRD, and arrayTOF bacause we do not own them!!!
 			 arrayTRD, arrayTRDP, arrayTRDM, arrayTRDB,
 			 arrayTOF, arrayTOFP, arrayTOFM, arrayTOFB};
   TString   grnames[12]={"ALIGN_ITS", "ALIGN_ITSP", "ALIGN_ITSM", "ALIGN_ITSB",
@@ -1174,8 +1177,8 @@ void AliTPCPreprocessorOffline::AddAlignmentGraphs(  TObjArray * vdriftArray, Al
       graph->SetName(grName.Data());
       vdriftArray->AddLast(graph);
     }
-    delete arrays[iarray];
-  }  
+    if (iarray != 0 && iarray != 4 && iarray != 8) delete arrays[iarray];  //the objects number 0, 4, and 8 are arrayITS, arrayTRD, and arrayTOF, which we do not own, so we must not delete them.
+  }
 }
 
 //_____________________________________________________________________________
@@ -2408,6 +2411,11 @@ void AliTPCPreprocessorOffline::MakeChainTime(){
   //
   //
   //
+  if (getenv("HLT_ONLINE_MODE") && strcmp(getenv("HLT_ONLINE_MODE"), "on") == 0)
+  {
+    //CalibObjects.root does not exist in HLT case, so we cannot use it to create distortion map
+    return;
+  }
   TFile f("CalibObjects.root");
   
   //  const char *cdtype[7]={"ITS","TRD","Vertex","TOF","TPC","TPC0","TPC1"};
@@ -2561,10 +2569,14 @@ void AliTPCPreprocessorOffline::MakePrimitivesTime(){
   // Create primitive transformation to fit
   //
   fAlignTree=new TChain("fit","fit");
-  fAlignTree->AddFile("meanITSVertex.root",10000000,"ITSdy");
-  fAlignTree->AddFile("meanITSVertex.root",10000000,"ITSdsnp");
-  fAlignTree->AddFile("meanITSVertex.root",10000000,"Vertexdy");
-  fAlignTree->AddFile("meanITSVertex.root",10000000,"Vertexdsnp");
+  if (!(getenv("HLT_ONLINE_MODE") && strcmp(getenv("HLT_ONLINE_MODE"), "on") == 0))
+  {
+    //File does not exist when running on HLT cluster
+    fAlignTree->AddFile("meanITSVertex.root",10000000,"ITSdy");
+    fAlignTree->AddFile("meanITSVertex.root",10000000,"ITSdsnp");
+    fAlignTree->AddFile("meanITSVertex.root",10000000,"Vertexdy");
+    fAlignTree->AddFile("meanITSVertex.root",10000000,"Vertexdsnp");
+  }
   // 
   AliTPCParam *param= AliTPCcalibDB::Instance()->GetParameters();
   Double_t bzField=AliTrackerBase::GetBz(); 
@@ -2741,10 +2753,12 @@ void AliTPCPreprocessorOffline::CreateAlignTime(TString fstring, TVectorD paramC
   fAlignTree->SetAlias("AlignTime","AliTPCPreprocessorOffline::EvalAt(phi,refX,theta,1002,ptype)+0");
   fAlignTree->SetAlias("FitCorrectionTime","AliTPCPreprocessorOffline::EvalAt(phi,refX,theta,1003,ptype)+0");
 
-
-  TFile *f = new TFile("fitITSVertex.root","update");
-  corrTime->Write("FitCorrectionTime");
-  f->Close();
+  if (!(getenv("HLT_ONLINE_MODE") && strcmp(getenv("HLT_ONLINE_MODE"), "on") == 0))
+  {
+    TFile *f = new TFile("fitITSVertex.root","update");
+    corrTime->Write("FitCorrectionTime");
+    f->Close();
+  }
 }
 
 //_____________________________________________________________________________

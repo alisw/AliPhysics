@@ -11,13 +11,15 @@
 #ifndef ALIHLTTPCGMTRACKPARAM_H
 #define ALIHLTTPCGMTRACKPARAM_H
 
-#include "AliHLTTPCCADef.h"
 #include "AliHLTTPCCAMath.h"
+#include "AliHLTTPCGMMergedTrackHit.h"
 
-class AliHLTTPCGMTrackLinearisation;
 class AliHLTTPCGMBorderTrack;
 class AliExternalTrackParam;
 class AliHLTTPCCAParam;
+class AliHLTTPCGMPhysicalTrackModel;
+class AliHLTTPCGMPolynomialField;
+class AliHLTTPCGMMergedTrack;
 
 /**
  * @class AliHLTTPCGMTrackParam
@@ -30,17 +32,13 @@ class AliHLTTPCGMTrackParam
 {
 public:
 
-  struct AliHLTTPCGMTrackFitParam {
-    //float fBethe, fE, fTheta2, fEP2, fSigmadE2, fK22, fK33, fK43, fK44;// parameters
-    float fDLMax, fBetheRho, fE, fTheta2, fEP2, fSigmadE2, fK22, fK33, fK43, fK44;// parameters
-  };
-    
   GPUd() float& X()      { return fX;    }
   GPUd() float& Y()      { return fP[0]; }
   GPUd() float& Z()      { return fP[1]; }
   GPUd() float& SinPhi() { return fP[2]; }
   GPUd() float& DzDs()   { return fP[3]; }
   GPUd() float& QPt()    { return fP[4]; }
+  GPUd() float& ZOffset() {return fZOffset;}
   
   GPUhd() float GetX()      const { return fX; }
   GPUhd() float GetY()      const { return fP[0]; }
@@ -48,6 +46,7 @@ public:
   GPUd() float GetSinPhi() const { return fP[2]; }
   GPUd() float GetDzDs()   const { return fP[3]; }
   GPUd() float GetQPt()    const { return fP[4]; }
+  GPUd() float GetZOffset() const {return fZOffset;}
 
   GPUd() float GetKappa( float Bz ) const { return -fP[4]*Bz; }
 
@@ -87,27 +86,23 @@ public:
   GPUd() void SetCov( int i, float v ) { fC[i] = v; }
   GPUd() void SetChi2( float v )  {  fChi2 = v; }
   GPUd() void SetNDF( int v )   { fNDF = v; }
-  
 
-  GPUd() static float ApproximateBetheBloch( float beta2 );
+  GPUd() float GetMirroredY( float Bz ) const;
 
-  GPUd() void CalculateFitParameters( AliHLTTPCGMTrackFitParam &par,float RhoOverRadLen,  float Rho,  bool NoField=0, float mass = 0.13957 );
+  GPUd() void ResetCovariance();
 
   GPUd() bool CheckNumericalQuality() const ;
 
   GPUd() void Fit
   (
-   float* PolinomialFieldBz,
-   float x[], float y[], float z[], unsigned int rowType[], float alpha[], AliHLTTPCCAParam &param,
+   const AliHLTTPCGMPolynomialField* field,
+   AliHLTTPCGMMergedTrackHit* clusters, const AliHLTTPCCAParam &param,
    int &N, float &Alpha, 
    bool UseMeanPt = 0,
    float maxSinPhi = .999
    );
   
-  GPUd() bool Rotate( float alpha, AliHLTTPCGMTrackLinearisation &t0, float maxSinPhi = .999 );
-  
-  GPUhd() static float GetBz( float x, float y, float z, float* PolinomialFieldBz );
-  GPUhd() float GetBz(float* PolinomialFieldBz ) const{ return GetBz( fX, fP[0], fP[1], PolinomialFieldBz );}
+  GPUd() bool Rotate( float alpha, AliHLTTPCGMPhysicalTrackModel &t0, float maxSinPhi = .999 );
 
   GPUd() static float Reciprocal( float x ){ return 1./x; }
   GPUd() static void Assign( float &x, bool mask, float v ){
@@ -117,6 +112,15 @@ public:
   GPUd() static void Assign( int &x, bool mask, int v ){
     if( mask ) x = v;
   }
+  
+  GPUd() static void RefitTrack(AliHLTTPCGMMergedTrack &track, const AliHLTTPCGMPolynomialField* field, AliHLTTPCGMMergedTrackHit* clusters, const AliHLTTPCCAParam& param);
+  
+  struct AliHLTTPCCAOuterParam {
+      float fX, fAlpha;
+      float fP[5];
+      float fC[15];
+  };
+  GPUd() const AliHLTTPCCAOuterParam& OuterParam() const {return fOuterParam;}
 
 #if !defined(HLTCA_STANDALONE) & !defined(HLTCA_GPUCODE)
   bool GetExtParam( AliExternalTrackParam &T, double alpha ) const;
@@ -126,18 +130,33 @@ public:
   private:
   
     float fX;      // x position
+    float fZOffset;
     float fP[5];   // 'active' track parameters: Y, Z, SinPhi, DzDs, q/Pt
     float fC[15];  // the covariance matrix for Y,Z,SinPhi,..
     float fChi2;   // the chi^2 value
     int   fNDF;    // the Number of Degrees of Freedom
+    AliHLTTPCCAOuterParam fOuterParam;
 };
 
-inline float AliHLTTPCGMTrackParam::GetBz( float x, float y, float z, float* PolinomialFieldBz ) 
+GPUd() inline void AliHLTTPCGMTrackParam::ResetCovariance()
 {
-  float r2 = x * x + y * y;
-  float r  = sqrt( r2 );
-  const float *c = PolinomialFieldBz;
-  return ( c[0] + c[1]*z  + c[2]*r  + c[3]*z*z + c[4]*z*r + c[5]*r2 );
+  fC[ 0] = 100.;
+  fC[ 1] = 0.;  fC[ 2] = 100.;
+  fC[ 3] = 0.;  fC[ 4] = 0.;  fC[ 5] = 1.;
+  fC[ 6] = 0.;  fC[ 7] = 0.;  fC[ 8] = 0.; fC[ 9] = 10.;
+  fC[10] = 0.;  fC[11] = 0.;  fC[12] = 0.; fC[13] = 0.; fC[14] = 10.;
+  fChi2 = 0;
+  fNDF = -5;
+}
+
+GPUd() inline float AliHLTTPCGMTrackParam::GetMirroredY( float Bz ) const
+{
+  // get Y of the point which has the same X, but located on the other side of trajectory
+  float qptBz = GetQPt()*Bz;
+  float cosPhi2 = 1.f - GetSinPhi()*GetSinPhi();
+  if( fabs(qptBz)<1.e-8 ) qptBz = 1.e-8;
+  if( cosPhi2<0.f ) cosPhi2 = 0.f;
+  return GetY() - 2.f*sqrt(cosPhi2)/qptBz;
 }
 
 #endif //ALIHLTTPCCATRACKPARAM_H

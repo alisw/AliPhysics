@@ -35,6 +35,7 @@ class AliTRDtrackletMCM : public AliTRDtrackletBase {
   Int_t GetROB() const { return fROB; }
   Int_t GetLabel() const { return fLabel[0]; }
   Int_t GetLabel(const Int_t i) const { return fLabel[i]; }
+  const int* GetLabels() const {return fLabel;}
   Bool_t HasLabel(const Int_t label) const { return (fLabel[0] == label || fLabel[1] == label || fLabel[2] == label); }
 
   // ----- Getters for offline corresponding values -----

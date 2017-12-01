@@ -1,0 +1,12 @@
+/config_options.mak
+/events*
+/release
+/ca
+/makefiles/.svn
+/cmodules/.svn
+/glpos.tmp
+/output.*.txt
+/output.bin
+/*.pdf
+/*.root
+/test-*/

@@ -41,6 +41,8 @@
 #include "AliCDBId.h"
 #include "AliCDBMetaData.h"
 #include "AliCDBEntry.h"
+#include "AliHLTTPCClusterStatComponent.h"
+#include "AliHLTTPCReverseTransformInfoV1.h"
 #include "TH1F.h"
 #include "TFile.h"
 #include <memory>
@@ -52,6 +54,7 @@ AliHLTTPCDataCompressionComponent::AliHLTTPCDataCompressionComponent()
   , fMode(kCompressionModeNone)
   , fDeflaterMode(kDeflaterModeNone)
   , fVerificationMode(0)
+  , fProvideClusterIds(0)
   , fCreateFlags(0)
   , fMaxDeltaPad(AliHLTTPCDefinitions::GetMaxClusterDeltaPad())
   , fMaxDeltaTime(AliHLTTPCDefinitions::GetMaxClusterDeltaTime())
@@ -177,7 +180,7 @@ int AliHLTTPCDataCompressionComponent::DoEvent( const AliHLTComponentEventData& 
 
   // Loop over all input blocks in the event
   bool bHaveMC=(GetFirstInputBlock(AliHLTTPCDefinitions::fgkAliHLTDataTypeClusterMCInfo | kAliHLTDataOriginTPC))!=NULL;
-  if ((bHaveMC || fVerificationMode>0) && fpWrittenAssociatedClusterIds==NULL) {
+  if ((bHaveMC || fVerificationMode>0 || fProvideClusterIds ) && fpWrittenAssociatedClusterIds==NULL) {
     fpWrittenAssociatedClusterIds=new vector<AliHLTUInt32_t>;
   }
 
@@ -275,9 +278,9 @@ int AliHLTTPCDataCompressionComponent::DoEvent( const AliHLTComponentEventData& 
       UInt_t nofPoints=track->GetNumberOfPoints();
       const UInt_t* points=track->GetPoints();
       for (unsigned i=0; i<nofPoints; i++) {
-	int slice=AliHLTTPCSpacePointData::GetSlice(points[i]);
-	int partition=AliHLTTPCSpacePointData::GetPatch(points[i]);
-	int number=AliHLTTPCSpacePointData::GetNumber(points[i]);
+	int slice=AliHLTTPCGeometry::CluID2Slice(points[i]);
+	int partition=AliHLTTPCGeometry::CluID2Partition(points[i]);
+	int number=AliHLTTPCGeometry::CluID2Index(points[i]);
 	HLTInfo("track %d point %d id 0x%08x slice %d partition %d number %d", track->GetID(), i, points[i], slice, partition, number);
       }
     }
@@ -304,7 +307,7 @@ int AliHLTTPCDataCompressionComponent::DoEvent( const AliHLTComponentEventData& 
     param.fX       = track->GetX();
     param.fY       = track->GetY();
     param.fZ       = track->GetZ();
-    param.fSinPsi  = track->GetSnp();
+    param.fSinPhi  = track->GetSnp();
     param.fTgl     = track->GetTgl();
     param.fq1Pt    = track->GetSigned1Pt();
     AliHLTGlobalBarrelTrack ctrack(param);
@@ -598,14 +601,14 @@ int AliHLTTPCDataCompressionComponent::ProcessTrackClusters(AliHLTGlobalBarrelTr
     const UInt_t* trackPoints=track.GetPoints();
     for (unsigned i=0; i<nofTrackPoints; i++) {
       const AliHLTUInt32_t& clusterId=trackPoints[i];
-      if (AliHLTTPCSpacePointData::GetSlice(clusterId)!=(unsigned)slice ||
-	  AliHLTTPCSpacePointData::GetPatch(clusterId)!=(unsigned)partition) {
+      if (AliHLTTPCGeometry::CluID2Slice(clusterId)!=(unsigned)slice ||
+	  AliHLTTPCGeometry::CluID2Partition(clusterId)!=(unsigned)partition) {
 	// not in the current partition;
 	continue;
       }
 
       int clusterrow=(int)pClusters->GetX(clusterId);
-      AliHLTUInt32_t pointId=AliHLTTPCSpacePointData::GetID(slice, partition, clusterrow);
+      AliHLTUInt32_t pointId=AliHLTTPCGeometry::CreateClusterID(slice, partition, clusterrow);
       AliHLTTrackGeometry::AliHLTTrackPoint* point=pTrackPoints->GetRawTrackPoint(pointId);
       if (!point) {
 	//HLTError("can not find track point slice %d partition %d padrow %d (0x%08x) of track %d", slice, partition, clusterrow, pointId, trackId.Data());
@@ -655,7 +658,7 @@ int AliHLTTPCDataCompressionComponent::ProcessRemainingClusters(AliHLTGlobalBarr
 	HLTError("invalid track geometry type for track %d, expecting AliHLTTPCTrackGeometry", trackId.Data());
 	continue;	
       }
-      AliHLTUInt32_t pointId=AliHLTTPCSpacePointData::GetID(slice, partition, padrow);
+      AliHLTUInt32_t pointId=AliHLTTPCGeometry::CreateClusterID(slice, partition, padrow);
       AliHLTTrackGeometry::AliHLTTrackPoint* point=pTrackPoints->GetRawTrackPoint(pointId);
       if (!point) {
 	//HLTError("can not find track point slice %d partition %d padrow %d (0x%08x) of track %d", slice, partition, padrow, pointId, trackId.Data());
@@ -1154,7 +1157,19 @@ int AliHLTTPCDataCompressionComponent::ScanConfigurationArgument(int argc, const
       if ((bMissingParam=(++i>=argc))) break;
       TString parameter=argv[i];
       if (parameter.IsDigit()) {
-	fVerificationMode=parameter.Atoi();
+	fVerificationMode=parameter.Atoi();	
+	return 2;
+      } else {
+	HLTError("invalid parameter for argument %s, expecting number instead of %s", argument.Data(), parameter.Data());
+	return -EPROTO;
+      }
+    }
+    // -cluster-ids
+    if (argument.CompareTo("-cluster-ids")==0) {
+      if ((bMissingParam=(++i>=argc))) break;
+      TString parameter=argv[i];
+      if (parameter.IsDigit()) {
+	fProvideClusterIds = parameter.Atoi();
 	return 2;
       } else {
 	HLTError("invalid parameter for argument %s, expecting number instead of %s", argument.Data(), parameter.Data());
@@ -1177,7 +1192,7 @@ int AliHLTTPCDataCompressionComponent::InitDriftTimeTransformation()
   /// drift time transformation, separately for A and C side
   int iResult=0;
   AliHLTTPCClusterTransformation transform;
-  if ((iResult=transform.Init( GetBz(), GetTimeStamp()))<0) {
+  if ((iResult=transform.Init( GetBz(), GetTimeStamp(), false, 0))<0) {
     HLTError("failed to init AliHLTTPCClusterTransformation: %d", iResult);
     return iResult;
   }
@@ -1190,15 +1205,17 @@ int AliHLTTPCDataCompressionComponent::InitDriftTimeTransformation()
   return 0;
 }
 
-int AliHLTTPCDataCompressionComponent::CalculateDriftTimeTransformation(AliHLTTPCClusterTransformation& transform,
+template <class T> static inline int GenericCalculateDriftTimeTransformation(T& transform,
 									int slice, int padrow,
-									float& m, float& n) const
+									float& m, float& n,
+									AliHLTTPCReverseTransformInfoV1* rev)
 {
   /// calculate correction factor and offset for a linear approximation of the
   /// drift time transformation by just probing the range of timebins with
   /// AliHLTTPCClusterTransformation
   const int nofSteps=100;
   vector<float> zvalues;
+  vector<float> tvalues;
 
   int nofTimebins=AliHLTTPCGeometry::GetNTimeBins();
   int stepWidth=nofTimebins/nofSteps;
@@ -1206,11 +1223,21 @@ int AliHLTTPCDataCompressionComponent::CalculateDriftTimeTransformation(AliHLTTP
   int count=0;
   float meanT=0.;
   float meanZ=0.;
-  for (time=0; time<nofTimebins; time+=stepWidth, count++) {
+  for (time=0; time<nofTimebins; time+=stepWidth) {
     Float_t xyz[3];
     transform.Transform(slice, padrow, 0, time, xyz);
+    float mytime = time;
+    if (rev)
+    {
+	Float_t padtimeref[2];
+	AliHLTTPCClusterStatComponent::TransformReverse(slice, padrow, xyz[1], xyz[2], padtimeref, rev);
+	mytime -= padtimeref[1];
+    }
+    if ((slice < 18) ^ (xyz[2] > 0)) continue;
+    count++;
     zvalues.push_back(xyz[2]);
-    meanT+=time;
+    tvalues.push_back(mytime);
+    meanT+=mytime;
     meanZ+=xyz[2];
   }
   if (count==0) count=1;
@@ -1218,14 +1245,25 @@ int AliHLTTPCDataCompressionComponent::CalculateDriftTimeTransformation(AliHLTTP
   meanZ/=count;
   float sumTZ=.0;
   float sumT2=.0;
-  time=0;
-  for (vector<float>::const_iterator z=zvalues.begin();
-       z!=zvalues.end(); z++, time+=stepWidth) {
-    sumTZ+=(time-meanT)*((*z)-meanZ);
-    sumT2+=(time-meanT)*(time-meanT);
+  vector<float>::const_iterator t=tvalues.begin();
+  for (vector<float>::const_iterator z=zvalues.begin(); z!=zvalues.end(); z++, t++) {
+    sumTZ+=(*t-meanT)*(*z-meanZ);
+    sumT2+=(*t-meanT)*(*t-meanT);
   }
   m=sumTZ/sumT2;
   n=meanZ-m*meanT;
 
+  for (float z = 0;fabs(z) < 250;z += slice < 18 ? 10 : -10)
+  {
+	float test = (z - n) / m;
+  }
+
   return 0;
+}
+
+int AliHLTTPCDataCompressionComponent::CalculateDriftTimeTransformation(AliHLTTPCClusterTransformation& transform, int slice, int padrow, float& m, float& n, AliHLTTPCReverseTransformInfoV1* rev) {
+    return GenericCalculateDriftTimeTransformation(transform, slice, padrow, m, n, rev);
+}
+int AliHLTTPCDataCompressionComponent::CalculateDriftTimeTransformation(AliHLTTPCFastTransform& transform, int slice, int padrow, float& m, float& n, AliHLTTPCReverseTransformInfoV1* rev) {
+    return GenericCalculateDriftTimeTransformation(transform, slice, padrow, m, n, rev);
 }

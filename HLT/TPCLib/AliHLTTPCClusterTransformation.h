@@ -27,6 +27,7 @@
 
 class AliTPCParam;
 class AliRecoParam;
+class AliHLTTPCReverseTransformInfoV1;
 
 /**
  * @class AliHLTTPCClusterTransformation
@@ -47,7 +48,7 @@ class AliHLTTPCClusterTransformation{
   virtual ~AliHLTTPCClusterTransformation();
 
   /** Initialisation  */
-  Int_t  Init( double FieldBz, Long_t TimeStamp );
+  Int_t  Init( double FieldBz, Long_t TimeStamp, bool isMC, int useOrigTransform );
  
   /** Initialisation  */
   Int_t  Init( const AliHLTTPCFastTransformObject &obj );
@@ -84,6 +85,8 @@ class AliHLTTPCClusterTransformation{
   AliHLTTPCFastTransform& GetFastTransformNonConst(){ return fFastTransform; }
   
   void SetInitSec(Int_t min, Int_t max) {fFastTransform.SetInitSec(min, max);}
+  
+  const AliHLTTPCReverseTransformInfoV1* GetReverseTransformInfo() {return fFastTransform.GetReverseTransformInfo();}
 
  private:
 
@@ -100,6 +103,8 @@ class AliHLTTPCClusterTransformation{
   TString fError; // Last error message
 
   AliHLTTPCFastTransform fFastTransform;// fast transformation object
+  
+  bool fIsMC; //Do we process MC?
 
   ClassDef(AliHLTTPCClusterTransformation, 1)
 };

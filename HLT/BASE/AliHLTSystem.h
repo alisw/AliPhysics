@@ -368,7 +368,7 @@ class AliHLTSystem : public AliHLTLogging {
    * @return number of reconstructed events, neg. error code if failed 
    */
   int Reconstruct(int nofEvents, AliRunLoader* runLoader, 
-		  AliRawReader* rawReader=NULL);
+		  AliRawReader* rawReader=NULL, int evtNo = -1);
 
   /**
    * Fill ESD for one event.

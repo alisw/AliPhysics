@@ -29,6 +29,8 @@ if(HLT_OPENCL)
     add_subdirectory(tracking-ca/cagpu/opencl)
 endif()
 
+#add_subdirectory(tracking-standalone/cmake_AliRoot) #We use the HLT O2 CA Tracking standalone build at the moment
+
 # Module
 set(MODULE AliHLTTPC)
 
@@ -66,13 +68,9 @@ ALICE_UseVc()
 # Sources in alphabetical order
 set(SRCS
     AliHLTTPCAgent.cxx
-    AliHLTTPCCFComparisonComponent.cxx
     AliHLTTPCClusterAccessHLTOUT.cxx    
     AliHLTTPCClusterDumpComponent.cxx
-    AliHLTTPCClusterFinderComponent.cxx
-    AliHLTTPCClusterFinder.cxx
     AliHLTTPCClusterHistoComponent.cxx
-    AliHLTTPCClusters.cxx
     AliHLTTPCClusterTransformationComponent.cxx
     AliHLTTPCClusterTransformationPrepareComponent.cxx
     AliHLTTPCOfflinePreprocessorWrapperComponent.cxx
@@ -80,6 +78,7 @@ set(SRCS
     AliHLTTPCDataCheckerComponent.cxx
     AliHLTTPCDataPublisherComponent.cxx
     AliHLTTPCdEdxComponent.cxx
+    AliHLTTPCFastdEdxComponent.cxx
     AliHLTTPCdEdxMonitoringComponent.cxx
     AliHLTTPCDefinitions.cxx
     AliHLTTPCDigitDumpComponent.cxx
@@ -89,19 +88,17 @@ set(SRCS
     AliHLTTPCFileHandler.cxx
     AliHLTTPCHistogramHandlerComponent.cxx
     AliHLTTPCHWCFData.cxx
-    AliHLTTPCHWCFDataReverterComponent.cxx
     AliHLTTPCHWCFSpacePointContainer.cxx
     AliHLTTPCHWClusterDecoderComponent.cxx
     AliHLTTPCLog.cxx
     AliHLTTPCMapping.cxx
     AliHLTTPCMemHandler.cxx
-    AliHLTTPCPad.cxx
     AliHLTTPCRawSpacePointContainer.cxx
     AliHLTTPCSpacePointContainer.cxx
-    AliHLTTPCTrackGeometry.cxx
-    AliHLTTPCTrackHistoComponent.cxx
+    AliHLTTPCTrackGeometry.cxx    
     AliHLTTPCTrackMCMarkerComponent.cxx
     AliHLTTPCGeometry.cxx
+    AliHLTTPCPolynomFit.cxx
     comp/AliHLTTPCClusterStatComponent.cxx
     comp/AliHLTTPCDataCompressionComponent.cxx
     comp/AliHLTTPCDataCompressionDecoder.cxx
@@ -123,23 +120,24 @@ set(SRCS
     merger-ca/AliHLTTPCGMMerger.cxx
     merger-ca/AliHLTTPCGMSliceTrack.cxx
     merger-ca/AliHLTTPCGMTrackParam.cxx
+    merger-ca/AliHLTTPCGMPhysicalTrackModel.cxx
+    merger-ca/AliHLTTPCGMPropagator.cxx
+    merger-ca/AliHLTTPCGMPolynomialField.cxx
+    merger-ca/AliHLTTPCGMPolynomialFieldCreator.cxx
     offline/AliHLTTPCDigitPublisherComponent.cxx
     offline/AliHLTTPCOfflineCluster.cxx
     tracking-ca/AliHLTTPCCABaseTrackParam.cxx
     tracking-ca/AliHLTTPCCAClusterData.cxx
-    tracking-ca/AliHLTTPCCADisplay.cxx
     tracking-ca/AliHLTTPCCAGlobalMergerComponent.cxx
     tracking-ca/AliHLTTPCCAGPUTracker.cxx
     tracking-ca/AliHLTTPCCAGrid.cxx
     tracking-ca/AliHLTTPCCAHitArea.cxx
-    tracking-ca/AliHLTTPCCAInputDataCompressorComponent.cxx
     tracking-ca/AliHLTTPCCAMCPoint.cxx
     tracking-ca/AliHLTTPCCAMCTrack.cxx
     tracking-ca/AliHLTTPCCAMerger.cxx
     tracking-ca/AliHLTTPCCANeighboursCleaner.cxx
     tracking-ca/AliHLTTPCCANeighboursFinder.cxx
     tracking-ca/AliHLTTPCCAParam.cxx
-    tracking-ca/AliHLTTPCCAPerformance.cxx
     tracking-ca/AliHLTTPCCARow.cxx
     tracking-ca/AliHLTTPCCASliceData.cxx
     tracking-ca/AliHLTTPCCASliceOutput.cxx
@@ -155,11 +153,11 @@ set(SRCS
     tracking-ca/AliHLTTPCCATracklet.cxx
     tracking-ca/AliHLTTPCCATrackletSelector.cxx
     tracking-ca/AliHLTTPCCATrackParam.cxx
-    tracking-ca/AliTPCtrackerCA.cxx
     transform/AliHLTTPCFastTransform.cxx
     transform/AliHLTTPCSpline2D3D.cxx
     transform/AliHLTTPCSpline2D3DObject.cxx
     transform/AliHLTTPCFastTransformObject.cxx
+    test/AliHLTTPCRawClusterDumpComponent.cxx
    )
 
 # Headers from sources
@@ -177,7 +175,11 @@ set(HDRS ${HDRS}
     HWCFemulator/AliHLTTPCHWCFDataTypes.h
     tracking-ca/AliHLTTPCCADef.h
     tracking-ca/AliHLTTPCCAMath.h
+    merger-ca/AliHLTTPCGMMergedTrack.h
+    transform/AliHLTTPCReverseTransformInfoV1.h
 )
+
+#set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O0 -ggdb")
 
 # Generate the dictionary
 # It will create G_ARG1.cxx and G_ARG1.h / ARG1 = function first argument

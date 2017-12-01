@@ -22,7 +22,6 @@
 #include "AliHLTTPCDataCompressionIDMap.h"
 #include "AliHLTTPCGeometry.h"
 #include "AliHLTTPCDefinitions.h"
-#include "AliHLTTPCSpacePointData.h"
 #include "AliHLTTPCRawCluster.h"
 #include "AliHLTComponent.h"
 
@@ -126,9 +125,9 @@ void AliHLTTPCDataCompressionIDMap::FillHLTID( AliHLTUInt32_t hltID)
     return;
   }
 
-  UInt_t slice = (UInt_t) AliHLTTPCSpacePointData::GetSlice(hltID);
-  UInt_t patch = (UInt_t) AliHLTTPCSpacePointData::GetPatch(hltID);
-  UInt_t number = (UInt_t) AliHLTTPCSpacePointData::GetNumber(hltID);
+  UInt_t slice = (UInt_t) AliHLTTPCGeometry::CluID2Slice(hltID);
+  UInt_t patch = (UInt_t) AliHLTTPCGeometry::CluID2Partition(hltID);
+  UInt_t number = (UInt_t) AliHLTTPCGeometry::CluID2Index(hltID);
   UInt_t slicepatch = (UInt_t) ( slice*fkNPatches + patch );
 
   if( slice>= fkNSlices || patch >= fkNPatches ){
@@ -234,9 +233,9 @@ void AliHLTTPCDataCompressionIDMap::SetPatchIndices(UInt_t nIDs)
   int nOK=0;
   for( unsigned int i=0; i<nIDs; i++ ){
     const AliIDMapEntry &entry = fIDMap[i];
-    UInt_t slice = AliHLTTPCSpacePointData::GetSlice(entry.fHltID);
-    UInt_t patch = AliHLTTPCSpacePointData::GetPatch(entry.fHltID);
-    UInt_t number = AliHLTTPCSpacePointData::GetNumber(entry.fHltID);
+    UInt_t slice = AliHLTTPCGeometry::CluID2Slice(entry.fHltID);
+    UInt_t patch = AliHLTTPCGeometry::CluID2Partition(entry.fHltID);
+    UInt_t number = AliHLTTPCGeometry::CluID2Index(entry.fHltID);
     UInt_t slicepatch = slice*fkNPatches + patch;
 
     if( slice>= fkNSlices || patch >= fkNPatches || slicepatch < currentPatch ){
@@ -290,9 +289,9 @@ Bool_t AliHLTTPCDataCompressionIDMap::GetOfflineID( AliHLTUInt32_t hltID, AliHLT
 
   offlineID = 0;
 
-  UInt_t slice = AliHLTTPCSpacePointData::GetSlice(hltID);
-  UInt_t patch = AliHLTTPCSpacePointData::GetPatch(hltID);
-  UInt_t number = AliHLTTPCSpacePointData::GetNumber(hltID);
+  UInt_t slice = AliHLTTPCGeometry::CluID2Slice(hltID);
+  UInt_t patch = AliHLTTPCGeometry::CluID2Partition(hltID);
+  UInt_t number = AliHLTTPCGeometry::CluID2Index(hltID);
   UInt_t slicepatch = slice*fkNPatches + patch;
   if( !fIDMap || slice>= fkNSlices || patch >= fkNPatches ){
     HLTWarning("Wrong HLT ID: slice %d, patch %d", slice, patch);

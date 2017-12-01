@@ -293,9 +293,9 @@ void AliTRDReconstructor::FillESD(TTree* /*digitsTree*/
   AliTRDrawStream::SortTracklets(fgTracklets, trklList, trackletIndex);
   TIter trackletIter(&trklList);
   while (AliTRDtrackletBase* tracklet = (AliTRDtrackletBase*) trackletIter()) {
-    Int_t label = -2; // mark raw tracklets with label -2
-    if (AliTRDtrackletMCM *trklMCM = dynamic_cast<AliTRDtrackletMCM*> (tracklet)) label = trklMCM->GetLabel();
-    esd->AddTrdTracklet(tracklet->GetTrackletWord(), tracklet->GetHCId(), label);
+    const Int_t* labels = 0; // mark raw tracklets with label -2
+    if (AliTRDtrackletMCM *trklMCM = dynamic_cast<AliTRDtrackletMCM*> (tracklet)) labels = trklMCM->GetLabels();
+    esd->AddTrdTracklet(tracklet->GetTrackletWord(), tracklet->GetHCId(), labels);
   }
 
   // ----- filling GTU tracks -----

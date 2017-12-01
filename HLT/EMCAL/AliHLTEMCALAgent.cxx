@@ -64,6 +64,7 @@ AliHLTEMCALAgent gAliHLTEMCALAgent;
 #include "AliHLTEMCALClusterizerComponentNbyN.h"
 #include "AliHLTEMCALTriggerMakerComponent.h"
 #include "AliHLTEMCALTriggerQAComponent.h"
+#include "AliHLTEMCALDigitsMonitorComponent.h"
 
 /** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTEMCALAgent)
@@ -156,6 +157,10 @@ int AliHLTEMCALAgent::CreateConfigurations(AliHLTConfigurationHandler* handler,
        handler->CreateConfiguration("EMCAL-DM", "EmcalDigitMaker", "EMCAL-RA", arg.Data());
        if(tmInput.Length() > 0) tmInput += " ";
        tmInput+ "EMCAL-DM";
+
+       // digit monitor componentl
+       handler->CreateConfiguration("EMCAL-DQA", "EmcalDigitsMonitor", "EMCAL-DM", "");
+
             
        arg = "";
        arg.Form("-digitthreshold 0.005 -recpointthreshold 0.1 -modulemode");
@@ -227,6 +232,7 @@ int AliHLTEMCALAgent::RegisterComponents(AliHLTComponentHandler* pHandler) const
     //pHandler->AddComponent(new AliHLTEMCALESDEntriesMakerComponent);
     pHandler->AddComponent(new AliHLTEMCALTriggerMakerComponent);
     pHandler->AddComponent(new AliHLTEMCALTriggerQAComponent);
+    pHandler->AddComponent(new AliHLTEMCALDigitsMonitorComponent);
     return 0;
 }
 

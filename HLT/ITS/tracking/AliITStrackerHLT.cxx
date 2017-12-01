@@ -42,7 +42,6 @@
 #include "AliCDBManager.h"
 #include "AliAlignObj.h"
 #include "AliTrackPointArray.h"
-#include "AliESDVertex.h"
 #include "AliESDEvent.h"
 #include "AliESDtrack.h"
 #include "AliV0.h"
@@ -60,6 +59,7 @@
 //#include "AliHLTTPCCATrackParam.h"
 //#include "AliHLTVertexer.h"
 #include <vector>
+#include "AliHLTITSTrackPoint.h"
 
 using std::vector;
 ClassImp(AliITStrackerHLT)
@@ -99,8 +99,10 @@ AliITStrackerHLT::AliITStrackerHLT()
    fxOverX0Pipe(-1.),
    fxTimesRhoPipe(-1.), 
    fTracks(0),
+   fITSExtrapTracks(0),
    fITSOutTracks(0),
    fNTracks(0),
+   fNITSExtrapTracks(0),
    fNITSOutTracks(0),
    fLoadTime(0),
    fRecoTime(0),
@@ -123,11 +125,13 @@ AliITStrackerHLT::AliITStrackerHLT(const Char_t *geom)
   fxOverX0Pipe(-1.),
   fxTimesRhoPipe(-1.),
   fTracks(0),
+  fITSExtrapTracks(0),
   fITSOutTracks(0),
   fNTracks(0),
+  fNITSExtrapTracks(0),
   fNITSOutTracks(0),
   fLoadTime(0),
-   fRecoTime(0),
+  fRecoTime(0),
   fNEvents(0),
   fClusters(0),
   fNClusters(0)
@@ -239,11 +243,13 @@ AliITStrackerHLT::AliITStrackerHLT(const AliITStrackerHLT &tracker)
  fxOverX0Pipe(tracker.fxOverX0Pipe),
  fxTimesRhoPipe(tracker.fxTimesRhoPipe), 
  fTracks(0),
+ fITSExtrapTracks(0),
  fITSOutTracks(0),
  fNTracks(0),
+ fNITSExtrapTracks(0),
  fNITSOutTracks(0),
-  fLoadTime(0),
-   fRecoTime(0),
+ fLoadTime(0),
+ fRecoTime(0),
  fNEvents(0),
  fClusters(0),
  fNClusters(0)
@@ -278,6 +284,7 @@ AliITStrackerHLT::~AliITStrackerHLT()
   //
   delete[] fLayers;
   delete[] fTracks;
+  delete[] fITSExtrapTracks;
   delete[] fITSOutTracks;
   delete[] fClusters;
 }
@@ -405,10 +412,13 @@ void AliITStrackerHLT::Reconstruct( AliExternalTrackParam *tracksTPC, int *track
 
   Double_t pimass = TDatabasePDG::Instance()->GetParticle(211)->Mass();
   delete[] fTracks;
+  delete[] fITSExtrapTracks;
   delete[] fITSOutTracks;
   fTracks = new AliHLTITSTrack[nTPCTracks];
+  fITSExtrapTracks = new AliHLTITSTrack[nTPCTracks];
   fITSOutTracks = new AliHLTITSTrack[nTPCTracks];
   fNTracks = 0;
+  fNITSExtrapTracks = 0;
   fNITSOutTracks = 0;
   for( int itr=0; itr<nTPCTracks; itr++ ){    
 
@@ -420,10 +430,17 @@ void AliITStrackerHLT::Reconstruct( AliExternalTrackParam *tracksTPC, int *track
     t->SetLabel(tracksTPCLab[itr]);
 
     //if (!CorrectForTPCtoITSDeadZoneMaterial(t))  continue;
-      
+
+    {
+      AliHLTITSTrack tinw = *t; 
+      FollowProlongationTree( &tinw, kFALSE ); 
+      TransportToX( &tinw, 0. );
+      fITSExtrapTracks[fNITSExtrapTracks++] = tinw;  
+    }    
+  
     Int_t tpcLabel=t->GetLabel(); //save the TPC track label       
     
-    FollowProlongationTree(t); 
+    FollowProlongationTree(t, kTRUE); 
     int nclu=0;
     for(Int_t i=0; i<6; i++) {
       if( t->GetClusterIndex(i)>=0 ) nclu++; 
@@ -436,8 +453,6 @@ void AliITStrackerHLT::Reconstruct( AliExternalTrackParam *tracksTPC, int *track
       CookLabel(t,.99); //For comparison only
       //cout<<"SG: label = "<<t->GetLabel()<<" / "<<tpcLabel<<endl;
     }
-
-    CorrectForPipeMaterial(t);
    
     TransportToX(t, 0 );
     fTracks[fNTracks++] = *t;  
@@ -520,7 +535,7 @@ AliCluster *AliITStrackerHLT::GetCluster(Int_t index) const
 
 
 //------------------------------------------------------------------------
-void AliITStrackerHLT::FollowProlongationTree(AliHLTITSTrack * track ) 
+void AliITStrackerHLT::FollowProlongationTree(AliHLTITSTrack * track, bool pickUpClusters ) 
 {
   // FollowProlongationTree
   for (Int_t ilayer=5; ilayer>=0; ilayer--) {
@@ -549,6 +564,8 @@ void AliITStrackerHLT::FollowProlongationTree(AliHLTITSTrack * track )
       if (!TransportToPhiX( track, det.GetPhi(), det.GetR() ) ) return;
       CorrectForLayerMaterial(track,ilayer);
     }
+
+    if( !pickUpClusters ) continue; // do transport only    
 
     // DEFINITION OF SEARCH ROAD AND CLUSTERS SELECTION
     
@@ -621,6 +638,9 @@ void AliITStrackerHLT::FollowProlongationTree(AliHLTITSTrack * track )
     track->SetClusterIndex(track->GetNumberOfClusters(), (ilayer<<28)+bestIdx);
     track->SetNumberOfClusters(track->GetNumberOfClusters()+1);  
   }
+
+  CorrectForPipeMaterial(track);
+
 }
 
 
@@ -1137,5 +1157,69 @@ Bool_t AliITStrackerHLT::GetTrackPointTrackingError(Int_t /*index*/,
 						    AliTrackPoint& /*p*/, const AliESDtrack */*t*/) 
 {
   // dummy
+  return 0;
+}
+
+Int_t AliITStrackerHLT::GetTrackPoint( Int_t clusterIndex, AliHLTITSTrackPoint& p ) const 
+{
+  //--------------------------------------------------------------------
+  // Get track space point with index clusterIndex
+  //--------------------------------------------------------------------
+
+  Int_t iLayer = ( clusterIndex & 0xf0000000) >> 28;
+  Int_t iCluster = (clusterIndex & 0x0fffffff) >> 00;
+
+  if( iLayer >= AliITSgeomTGeo::kNLayers ){
+    AliError( "AliITSSAPTracker: wrong cluster layer" );
+    p.Reset();
+    return -1;
+  }
+
+  const AliITSRecPoint* cl = fLayers[iLayer].GetCluster(iCluster);
+  if( !cl ){
+    AliError( "AliITSSAPTracker: wrong cluster pointer" );
+    p.Reset();
+    return -1;
+  }
+
+  Int_t idet = cl->GetDetectorIndex();
+
+  bool ok = cl->GetGlobalXYZ(p.fXYZ) && cl->GetGlobalCov(p.fCov);
+  if( !ok ){
+    AliError( "AliITStrackerHLT: can not get global coordinates of a cluster" );
+    p.Reset();
+    return -1;
+  }
+
+  p.fCharge = cl->GetQ();
+  p.fChargeRatio = cl->GetChargeRatio();
+  p.fClusterType = cl->GetClusterType();
+  p.fDriftTime = cl->GetDriftTime();
+
+  AliGeomManager::ELayerID layerID = AliGeomManager::kInvalidLayer; 
+  switch (cl->GetLayer()) {
+  case 0:
+    layerID = AliGeomManager::kSPD1;
+    break;
+  case 1:
+    layerID = AliGeomManager::kSPD2;
+    break;
+  case 2:
+    layerID = AliGeomManager::kSDD1;
+    break;
+  case 3:
+    layerID = AliGeomManager::kSDD2;
+    break;
+  case 4:
+    layerID = AliGeomManager::kSSD1;
+    break;
+  case 5:
+    layerID = AliGeomManager::kSSD2;
+    break;
+  default:
+    AliWarning(Form("AliITSSAPTracker: Wrong layer index in ITS (%d) !",iLayer));
+    break;
+  };
+  p.fVolumeID = AliGeomManager::LayerToVolUID(layerID,idet);
   return 0;
 }

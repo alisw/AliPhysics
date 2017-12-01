@@ -55,6 +55,7 @@
 #include "AliFlatESDVertex.h"
 #include "AliHLTReadoutList.h"
 #include "AliHLTCTPData.h"
+#include "AliHLTITSTrackPoint.h"
 #include <map>
 
 using namespace std;
@@ -146,6 +147,7 @@ int AliHLTITSSAPTrackerComponent::GetOutputDataTypes(AliHLTComponentDataTypeList
   tgtList.clear();
   tgtList.push_back(kAliHLTDataTypeITSSAPData|kAliHLTDataOriginITS);
   tgtList.push_back(kAliHLTDataTypeFlatESDVertex|kAliHLTDataOriginITS ); // RS??: is this correct?
+  tgtList.push_back(kAliHLTDataTypeITSSAPTrackPoint|kAliHLTDataOriginITS);
   return tgtList.size();
 }
 
@@ -153,7 +155,7 @@ void AliHLTITSSAPTrackerComponent::GetOutputDataSize( unsigned long& constBase, 
 {
   // define guess for the output data size
   constBase = 200;       // minimum size
-  inputMultiplier = 2.; // size relative to input
+  inputMultiplier = 3.; // size relative to input
 }
 
 AliHLTComponent* AliHLTITSSAPTrackerComponent::Spawn()
@@ -541,6 +543,10 @@ int AliHLTITSSAPTrackerComponent::DoEvent
   
   // Fill output tracks
   int nAddedTracks = 0;
+  int nTrackClusters = 0;
+  int trackIDMap[fTracker->GetNTracks()];
+  for( int i=0; i<fTracker->GetNTracks(); i++) trackIDMap[i] = -1;
+  AliHLTITSSAPTrackerDataContainer *outTrackData = reinterpret_cast<AliHLTITSSAPTrackerDataContainer*>(outputPtr);
   {  
     int nFoundTracks = fTracker->GetNTracks();
     AliHLTUInt32_t blockSize = sizeof(AliHLTITSSAPTrackerDataContainer) + nFoundTracks*sizeof(AliHLTITSSAPTrackerData);
@@ -551,10 +557,9 @@ int AliHLTITSSAPTrackerComponent::DoEvent
     }    
     if( iResult>=0 ){
       blockSize = sizeof(AliHLTITSSAPTrackerDataContainer);
-      AliHLTITSSAPTrackerDataContainer *data = reinterpret_cast<AliHLTITSSAPTrackerDataContainer*>(outputPtr);
-      data->fCount=0;
-      data->fNSPDtracklets = fTracker->GetNTracklets();
-      for (int i=AliITSSAPTracker::kNLrActive;i--;) data->fNclusters[i] = fTracker->GetLayer(i)->GetNClusters();
+      outTrackData->fCount=0;
+      outTrackData->fNSPDtracklets = fTracker->GetNTracklets();
+      for (int i=AliITSSAPTracker::kNLrActive;i--;) outTrackData->fNclusters[i] = fTracker->GetLayer(i)->GetNClusters();
       for (int itr=0;itr<nFoundTracks;itr++) {
 	const AliITSSAPTracker::ITStrack_t& track = fTracker->GetTrack(itr);
 	// the track is just a struct of 2 AliExternalTrackParams (params at vertex and at the outer ITS layer)
@@ -562,15 +567,17 @@ int AliHLTITSSAPTrackerComponent::DoEvent
 	if ( track.paramOut.TestBit(AliITSSAPTracker::kInvalidBit) || 
 	     track.paramInw.TestBit(AliITSSAPTracker::kInvalidBit)) continue;
 	// use only those tracks whose both inward and outward params are OK.
-	AliHLTITSSAPTrackerData &trcHLT = data->fTracks[data->fCount];
+	AliHLTITSSAPTrackerData &trcHLT = outTrackData->fTracks[outTrackData->fCount];
 	trcHLT.paramOut.SetExternalTrackParam(&track.paramOut);
 	trcHLT.paramInw.SetExternalTrackParam(&track.paramInw);
 	trcHLT.chi2 = track.chi2;
 	trcHLT.ncl  = track.ncl;
 	trcHLT.label = track.label;
-	data->fCount++;
+	trackIDMap[outTrackData->fCount] = itr;
+	outTrackData->fCount++;
 	blockSize += sizeof(AliHLTITSSAPTrackerData);
 	nAddedTracks++;
+	nTrackClusters+=trcHLT.ncl;
       }
       
       AliHLTComponentBlockData resultData;
@@ -601,6 +608,51 @@ int AliHLTITSSAPTrackerComponent::DoEvent
       vtxOK = kTRUE;
     }
   }
+
+  if ( iResult>=0 ) do{ // Fill output track points
+
+    AliHLTITSTrackPointData* outTrackPoints = reinterpret_cast<AliHLTITSTrackPointData*>( outputPtr + size );
+    AliHLTUInt32_t blockSize = sizeof(AliHLTITSTrackPointData) + nTrackClusters*sizeof(AliHLTITSTrackPoint);
+    if( size + blockSize > maxBufferSize ){    	
+      HLTWarning( "Output buffer size exceed (buffer size %d, current size %d), %d track points are not stored", 
+		  maxBufferSize, size + blockSize, nTrackClusters);
+      iResult = -ENOSPC;
+      break;
+    }    
+    outTrackPoints->fCount = 0; 
+
+    for( int itr=0; itr<outTrackData->fCount; itr++){      
+      AliHLTITSSAPTrackerData &trcHLT = outTrackData->fTracks[itr];
+      const AliITSSAPTracker::ITStrack_t& track = fTracker->GetTrack(trackIDMap[itr]);
+      int nCl=0;
+      for( int iLayer=0; iLayer<6; iLayer++ ){
+	int id = track.clID[iLayer];
+	if( id<0 ) continue;
+	nCl++;
+	if( nCl > trcHLT.ncl ) break;
+	if( fTracker->GetTrackPoint( iLayer, id, outTrackPoints->fPoints[outTrackPoints->fCount] )!=0 ){
+	  HLTError( "wrong cluster pointer" );
+	  outTrackPoints->fPoints[outTrackPoints->fCount].Reset();	
+	}
+	outTrackPoints->fCount++;
+      }
+      if( nCl != trcHLT.ncl ){
+	HLTError( "wrong n clusters in output track: %d instead of %d", trcHLT.ncl, nCl );
+      }
+      trcHLT.ncl = nCl;
+    }
+    blockSize = sizeof(AliHLTITSTrackPointData) + outTrackPoints->fCount*sizeof(AliHLTITSTrackPoint);
+
+    AliHLTComponentBlockData resultData;
+    FillBlockData( resultData );
+    resultData.fOffset = size;
+    resultData.fSize = blockSize;
+    resultData.fDataType = kAliHLTDataTypeITSSAPTrackPoint |kAliHLTDataOriginITS;
+    fBenchmark.AddOutput(resultData.fSize);
+    outputBlocks.push_back( resultData );
+    size += resultData.fSize;   
+  } while(0);
+
   //
   fTracker->Clear();
   fClusters->Clear();

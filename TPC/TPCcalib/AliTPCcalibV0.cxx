@@ -23,10 +23,11 @@
 
 #include "AliMagF.h"
 #include "AliTracker.h"
-#include "AliESDEvent.h"
-#include "AliESDtrack.h"
-#include "AliESDfriend.h"
-#include "AliESDfriendTrack.h" 
+#include "AliVEvent.h"
+#include "AliVTrack.h"
+#include "AliVfriendEvent.h"
+#include "AliVfriendTrack.h"
+#include "AliESDVertex.h"
 #include "AliMathBase.h" 
 #include "AliTPCseed.h"
 #include "AliTPCreco.h"
@@ -56,7 +57,7 @@ AliTPCcalibV0::AliTPCcalibV0() :
    fV0Tree(0),
    fHPTTree(0),
    fStack(0),
-   fESD(0),
+   fVevent(0),
    fPdg(0),
    fParticles(0),
    fV0s(0),
@@ -69,7 +70,7 @@ AliTPCcalibV0::AliTPCcalibV0(const Text_t *name, const Text_t *title):
    fV0Tree(0),
    fHPTTree(0),
    fStack(0),
-   fESD(0),
+   fVevent(0),
    fPdg(0),
    fParticles(0),
    fV0s(0),
@@ -93,43 +94,44 @@ AliTPCcalibV0::~AliTPCcalibV0(){
 
 
 
-void  AliTPCcalibV0::ProcessESD(AliESDEvent *esd){
+void  AliTPCcalibV0::ProcessEv(AliVEvent *ev){
   //
   //
   //
-  fESD = esd;
-  AliKFParticle::SetField(esd->GetMagneticField());
+  fVevent = ev;
+  AliKFParticle::SetField(ev->GetMagneticField());
   if (TMath::Abs(AliTracker::GetBz())<1) return;  
-  DumpToTree(esd);
-  DumpToTreeHPT(esd);
+  DumpToTree(ev);
+  DumpToTreeHPT(ev);
 }
 
-void  AliTPCcalibV0::DumpToTreeHPT(AliESDEvent *esd){
+void  AliTPCcalibV0::DumpToTreeHPT(AliVEvent *ev){
   //
   // Dump V0s fith full firend information to the 
   // 
   if (TMath::Abs(AliTracker::GetBz())<1) return;
   const Int_t kMinCluster=110;
   const Float_t kMinPt   =4.;
-  AliESDfriend *esdFriend=static_cast<AliESDfriend*>(esd->FindListObject("AliESDfriend"));
-//   if (!esdFriend) {
-//     Printf("ERROR: esdFriend not available");
+  AliVfriendEvent *vFriend=ev->FindFriend();
+//   if (!vFriend) {
+//     Printf("ERROR: vFriend not available");
 //     return;
 //   }
   //
-  Int_t ntracks=esd->GetNumberOfTracks();
+  Int_t ntracks=ev->GetNumberOfTracks();
   for (Int_t i=0;i<ntracks;++i) {
     Bool_t isOK=kFALSE;
-    AliESDtrack *track = esd->GetTrack(i);
+    AliVTrack *track = ev->GetVTrack(i);
+    if(!track) continue;
     if (track->GetTPCncls()<kMinCluster) continue;
     if (TMath::Abs(AliTracker::GetBz())>1){ // cut on momenta if measured
       if (track->Pt()>kMinPt) isOK=kTRUE;
     }
     if (TMath::Abs(AliTracker::GetBz())<1){  // require primary track for the B field OFF data
       Bool_t isAccepted=kTRUE;
-      if (!track->IsOn(AliESDtrack::kITSrefit)) isAccepted=kFALSE;
-      if (!track->IsOn(AliESDtrack::kTPCrefit)) isAccepted=kFALSE;
-      if (!track->IsOn(AliESDtrack::kTOFout))   isAccepted=kFALSE;
+      if (!track->IsOn(AliVTrack::kITSrefit)) isAccepted=kFALSE;
+      if (!track->IsOn(AliVTrack::kTPCrefit)) isAccepted=kFALSE;
+      if (!track->IsOn(AliVTrack::kTOFout))   isAccepted=kFALSE;
       Float_t dvertex[2],cvertex[3]; 
       track->GetImpactParametersTPC(dvertex,cvertex);
       if (TMath::Abs(dvertex[0]/TMath::Sqrt(cvertex[0]+0.01))>20) isAccepted=kFALSE;
@@ -139,36 +141,38 @@ void  AliTPCcalibV0::DumpToTreeHPT(AliESDEvent *esd){
       if (TMath::Abs(dvertex[1]/TMath::Sqrt(TMath::Abs(cvertex[2]+0.01)))>10) isAccepted=kFALSE;
       if (!isAccepted) isOK=kFALSE;
     } 
-    if ( track->GetTPCsignal()>100 && track->GetInnerParam()->Pt()>1 ){
-      if (track->IsOn(AliESDtrack::kITSin)||track->IsOn(AliESDtrack::kTRDout)||track->IsOn(AliESDtrack::kTOFin))
+
+    AliExternalTrackParam trkIn;
+    track->GetTrackParamIp(trkIn);
+
+    if ( track->GetTPCsignal()>100 && trkIn.Pt()>1 ){
+      if (track->IsOn(AliVTrack::kITSin)||track->IsOn(AliVTrack::kTRDout)||track->IsOn(AliVTrack::kTOFin))
 	isOK=kTRUE;
       if (isOK){
 	TString filename(AliAnalysisManager::GetAnalysisManager()->GetTree()->GetCurrentFile()->GetName());
-	Int_t eventNumber = esd->GetEventNumberInFile();
-	Bool_t hasFriend=(esdFriend) ? track->GetFriendTrack():0; 
+	Int_t eventNumber = ev->GetEventNumberInFile();
+	Bool_t hasFriend=(vFriend) ? (vFriend->GetTrack(i)!=0):0;
 	Bool_t hasITS=(track->GetNcls(0)>2);
-	printf("DUMPIONTrack:%s|%f|%d|%d|%d\n",filename.Data(),track->GetInnerParam()->Pt()*track->GetTPCsignal()/50., eventNumber,hasFriend,hasITS);
+	printf("DUMPIONTrack:%s|%f|%d|%d|%d\n",filename.Data(),trkIn.Pt()*track->GetTPCsignal()/50., eventNumber,hasFriend,hasITS);
       }
     }
     if (!isOK) continue;
     TString filename(AliAnalysisManager::GetAnalysisManager()->GetTree()->GetCurrentFile()->GetName());
-    Int_t eventNumber = esd->GetEventNumberInFile();	
-    Bool_t hasFriend=(esdFriend) ? track->GetFriendTrack():0;
+    Int_t eventNumber = ev->GetEventNumberInFile();
+    Bool_t hasFriend=(vFriend) ? (vFriend->GetTrack(i)!=0):0;
     Bool_t hasITS=(track->GetNcls(0)>2);    
     printf("DUMPHPTTrack:%s|%f|%d|%d|%d\n",filename.Data(),track->Pt(), eventNumber,hasFriend,hasITS);
     //
-    if (!esdFriend) continue;
-    AliESDfriendTrack *friendTrack = (AliESDfriendTrack*)track->GetFriendTrack();
+    if (!vFriend) continue;
+    AliVfriendTrack *friendTrack = const_cast<AliVfriendTrack*>(vFriend->GetTrack(i));
     if (!friendTrack) continue;
 
     if (!isOK) continue;
     //
 
-    TObject *calibObject;
     AliTPCseed *seed = 0;
-    for (Int_t l=0;(calibObject=friendTrack->GetCalibObject(l));++l) {
-      if ((seed=dynamic_cast<AliTPCseed*>(calibObject))) break;
-    }
+    AliTPCseed tpcSeed;
+    if (friendTrack->GetTPCseed(tpcSeed)==0) seed=&tpcSeed;
     if (!seed) continue;
       if (!fHPTTree) {
       fHPTTree = new TTree("HPT","HPT");
@@ -192,25 +196,30 @@ void  AliTPCcalibV0::DumpToTreeHPT(AliESDEvent *esd){
 
 
 
-void  AliTPCcalibV0::DumpToTree(AliESDEvent *esd){
+void  AliTPCcalibV0::DumpToTree(AliVEvent *ev){
   //
   // Dump V0s fith full firend information to the 
   // 
-  Int_t nV0s  = fESD->GetNumberOfV0s();
+  Int_t nV0s  = fVevent->GetNumberOfV0s();
   const Int_t kMinCluster=110;
   const Double_t kDownscale=0.01;
   const Float_t kMinPt   =1.0;
   const Float_t kMinMinPt   =0.7;
-  AliESDfriend *esdFriend=static_cast<AliESDfriend*>(esd->FindListObject("AliESDfriend"));
+  AliVfriendEvent *vFriend=ev->FindFriend();
   //
   
   for (Int_t ivertex=0; ivertex<nV0s; ivertex++){
     Bool_t isOK=kFALSE;
-    AliESDv0 * v0 = (AliESDv0*) esd->GetV0(ivertex);
-    AliESDtrack * track0 = fESD->GetTrack(v0->GetIndex(0)); // negative track
-    AliESDtrack * track1 = fESD->GetTrack(v0->GetIndex(1)); // positive track 
+    //AliESDv0 * v0 = (AliESDv0*) esd->GetV0(ivertex);
+
+    AliESDv0 dummyv0;
+    ev->GetV0(dummyv0,ivertex);
+    AliESDv0 *v0=&dummyv0;
+
+    AliVTrack * track0 = fVevent->GetVTrack(v0->GetIndex(0)); // negative track
+    AliVTrack * track1 = fVevent->GetVTrack(v0->GetIndex(1)); // positive track
     if (track0->GetTPCNcls()<kMinCluster) continue;
-    if (track0->GetKinkIndex(0)>0) continue;    
+    if (track0->GetKinkIndex(0)>0) continue;
     if (track1->GetTPCNcls()<kMinCluster) continue;
     if (track1->GetKinkIndex(0)>0) continue;
     if (v0->GetOnFlyStatus()==kFALSE) continue;
@@ -223,34 +232,33 @@ void  AliTPCcalibV0::DumpToTree(AliESDEvent *esd){
     if (!isOK) continue;
     //
     TString filename(AliAnalysisManager::GetAnalysisManager()->GetTree()->GetCurrentFile()->GetName());
-    Int_t eventNumber = esd->GetEventNumberInFile();
+    Int_t eventNumber = ev->GetEventNumberInFile();
     Bool_t hasITS=(track0->GetNcls(0)+ track1->GetNcls(0)>4);
-    printf("DUMPHPTV0:%s|%f|%d|%d|%d\n",filename.Data(), (TMath::Min(track0->Pt(),track1->Pt())), eventNumber,(esdFriend!=0), hasITS);
+    printf("DUMPHPTV0:%s|%f|%d|%d|%d\n",filename.Data(), (TMath::Min(track0->Pt(),track1->Pt())), eventNumber,(vFriend!=0), hasITS);
     //
-    if (!esdFriend) continue;
+    if (!vFriend) continue;
     //
     
     //
-    AliESDfriendTrack *ftrack0 = (AliESDfriendTrack*)track0->GetFriendTrack();
+    AliVfriendTrack *ftrack0 = const_cast<AliVfriendTrack*>(vFriend->GetTrack(v0->GetIndex(0)));
     if (!ftrack0) continue;
-    AliESDfriendTrack *ftrack1 = (AliESDfriendTrack*)track1->GetFriendTrack();
+    AliVfriendTrack *ftrack1 = const_cast<AliVfriendTrack*>(vFriend->GetTrack(v0->GetIndex(1)));
     if (!ftrack1) continue;
     //
-    TObject *calibObject;
     AliTPCseed *seed0 = 0;
     AliTPCseed *seed1 = 0;
-    for (Int_t l=0;(calibObject=ftrack0->GetCalibObject(l));++l) {
-      if ((seed0=dynamic_cast<AliTPCseed*>(calibObject))) break;
-    }
-    for (Int_t l=0;(calibObject=ftrack1->GetCalibObject(l));++l) {
-      if ((seed1=dynamic_cast<AliTPCseed*>(calibObject))) break;
-    }
+    AliTPCseed tpcSeed0;
+    AliTPCseed tpcSeed1;
+    if (ftrack0->GetTPCseed(tpcSeed0)==0) seed0=&tpcSeed0;
+    if (ftrack1->GetTPCseed(tpcSeed1)==1) seed1=&tpcSeed1;
     if (!seed0) continue;
     if (!seed1) continue;
-    AliExternalTrackParam * paramIn0 = (AliExternalTrackParam *)track0->GetInnerParam();
-    AliExternalTrackParam * paramIn1 = (AliExternalTrackParam *)track1->GetInnerParam();
-    if (!paramIn0) continue;
-    if (!paramIn1) continue;
+
+    AliExternalTrackParam prmIn0;
+    if ( (track0->GetTrackParamIp(prmIn0)) < 0 ) continue;
+
+    AliExternalTrackParam prmIn1;
+    if ( (track1->GetTrackParamIp(prmIn1)) < 0 ) continue;
     //
     //
     if (!fV0Tree) {
@@ -308,10 +316,10 @@ void AliTPCcalibV0::AddTree(TTree * treeInput){
   return ;
   AliESDv0 * v0 = new AliESDv0;
   Double_t kMinPt=0.8;
-  AliESDtrack * track0 = 0; // negative track
-  AliESDtrack * track1 = 0; // positive track 
-  AliESDfriendTrack *ftrack0 = 0;
-  AliESDfriendTrack *ftrack1 = 0;
+  AliVTrack * track0 = 0; // negative track
+  AliVTrack * track1 = 0; // positive track
+  AliVfriendTrack *ftrack0 = 0;
+  AliVfriendTrack *ftrack1 = 0;
   AliTPCseed *seed0 = 0;
   AliTPCseed *seed1 = 0;
   treeInput->SetBranchStatus("ft0.",kFALSE);
@@ -387,8 +395,8 @@ void AliTPCcalibV0::AddTreeHPT(TTree * treeInput){
   // Notice automatic copy of tree in ROOT does not work for such complicated tree
   //  
   return ;
-  AliESDtrack *track = 0;
-  AliESDfriendTrack *friendTrack = 0;
+  AliVTrack *track = 0;
+  AliVfriendTrack *friendTrack = 0;
   AliTPCseed *seed = 0;
   if (!treeInput) return;
   if (treeInput->GetEntries()==0) return;
@@ -416,8 +424,8 @@ void AliTPCcalibV0::AddTreeHPT(TTree * treeInput){
       fHPTTree->SetBranchAddress("s.",&seed);
     }    
     Bool_t isOK=kTRUE;
-    if (!track->IsOn(AliESDtrack::kITSrefit)) isOK=kFALSE;
-    if (!track->IsOn(AliESDtrack::kTOFout)) isOK=kFALSE;
+    if (!track->IsOn(AliVTrack::kITSrefit)) isOK=kFALSE;
+    if (!track->IsOn(AliVTrack::kTOFout)) isOK=kFALSE;
     if (isOK) fHPTTree->Fill();
     //
     delete track;
@@ -443,8 +451,8 @@ void AliTPCcalibV0::MakeFitTreeTrack(const TObjArray * corrArray, Double_t ptCut
   AliTPCcalibV0 *v0TPC = (AliTPCcalibV0*) f.Get("v0TPC");
   TTree * treeInput = v0TPC->GetHPTTree();
   TTreeSRedirector *pcstream = new TTreeSRedirector("fitHPT.root");
-  AliESDtrack *track = 0;
-  AliESDfriendTrack *friendTrack = 0;
+  AliVTrack *track = 0;
+  AliVfriendTrack *friendTrack = 0;
   AliTPCseed *seed = 0;
   if (!treeInput) return;
   if (treeInput->GetEntries()==0) return;
@@ -558,12 +566,12 @@ void AliTPCcalibV0::MakeFitTreeV0(const TObjArray * corrArray, Double_t ptCut, I
   TTree * treeInput = v0TPC->GetV0Tree();
   TTreeSRedirector *pcstream = new TTreeSRedirector("fitV0.root");
   AliESDv0 *v0 = 0;
-  AliESDtrack *track0 = 0;
-  AliESDfriendTrack *friendTrack0 = 0;
+  AliVTrack *track0 = 0;
+  AliVfriendTrack *friendTrack0 = 0;
   AliTPCseed *seed0 = 0;
   AliTPCseed *s0 = 0;
-  AliESDtrack *track1 = 0;
-  AliESDfriendTrack *friendTrack1 = 0;
+  AliVTrack *track1 = 0;
+  AliVfriendTrack *friendTrack1 = 0;
   AliTPCseed *s1 = 0;
   AliTPCseed *seed1 = 0;
   if (!treeInput) return;
@@ -886,7 +894,7 @@ void AliTPCcalibV0::BinLogX(TH2F *h) {
 
 
 
-void AliTPCcalibV0::FilterV0s(AliESDEvent* event){
+void AliTPCcalibV0::FilterV0s(AliVEvent *event){
   //
   // 
   TDatabasePDG pdg;  
@@ -895,13 +903,19 @@ void AliTPCcalibV0::FilterV0s(AliESDEvent* event){
   const Double_t ptCut=0.2;
   const Int_t kMinNcl=110;
   //
-  Int_t nv0 = event->GetNumberOfV0s(); 
-  AliESDVertex *vertex= (AliESDVertex *)event->GetPrimaryVertex();
+  Int_t nv0 = event->GetNumberOfV0s();
+  //AliESDVertex *vertex= (AliESDVertex *)event->GetPrimaryVertex();
+  AliESDVertex vtx;
+  event->GetPrimaryVertex(vtx);
+  AliESDVertex *vertex=&vtx;
+
   AliKFVertex kfvertex=*vertex;
   //
   for (Int_t iv0=0;iv0<nv0;iv0++){
-    AliESDv0 *v0 = event->GetV0(iv0);
-    if (!v0) continue;
+    //AliESDv0 *v0 = event->GetV0(iv0);
+    AliESDv0 dummyv0;
+    if ((event->GetV0(dummyv0,iv0)) < 0 ) continue;
+    AliESDv0 *v0=&dummyv0;
     if (v0->GetPindex()<0) continue;
     if (v0->GetNindex()<0) continue;
     if (TMath::Max(v0->GetPindex(), v0->GetNindex())>event->GetNumberOfTracks()) continue;
@@ -918,8 +932,8 @@ void AliTPCcalibV0::FilterV0s(AliESDEvent* event){
     AliKFParticle *v0KFK0CVM = new AliKFParticle(*v0KFK0CV);
     v0KFK0CVM->SetMassConstraint(pdg.GetParticle("K_S0")->Mass());
     Double_t chi2K0 = v0KFK0CV->GetChi2();
-    //    Double_t chi2K0M= v0KFK0CVM->GetChi2();    
-    //Double_t massK0=v0KFK0CV->GetMass();
+    Double_t chi2K0M= v0KFK0CVM->GetChi2();    
+    Double_t massK0=v0KFK0CV->GetMass();
     if (chi2K0>kChi2Cut) continue;
     if (v0->GetRr()>kMinR) continue;
     //
@@ -934,14 +948,20 @@ void AliTPCcalibV0::FilterV0s(AliESDEvent* event){
 
     Double_t sign= v0->GetParamP()->GetSign()* v0->GetParamN()->GetSign();
     if (sign<0&&v0->GetOnFlyStatus()>0.5&&maxPt>ptCut&&isV0){
-      AliESDtrack * trackP = event->GetTrack(v0->GetPindex());
-      AliESDtrack * trackN = event->GetTrack(v0->GetNindex());
+      AliVTrack * trackP = event->GetVTrack(v0->GetPindex());
+      AliVTrack * trackN = event->GetVTrack(v0->GetNindex());
       if (!trackN) continue;
       if (!trackP) continue;
       Int_t nclP= (Int_t)trackP->GetTPCClusterInfo(2,1);
       Int_t nclN= (Int_t)trackN->GetTPCClusterInfo(2,1);
       if (TMath::Min(nclP,nclN)<kMinNcl) continue;
-      Double_t eta = TMath::Max(TMath::Abs(trackP->Eta()), TMath::Abs(trackN->Eta()));
+
+      AliExternalTrackParam trkprmP;
+      trackP->GetTrackParam(trkprmP);
+      AliExternalTrackParam trkprmN;
+      trackN->GetTrackParam(trkprmN);
+
+      Double_t eta = TMath::Max(TMath::Abs(trkprmP.Eta()), TMath::Abs(trkprmN.Eta()));
       Double_t ncls = TMath::Min(TMath::Abs(trackP->GetNcls(0)), TMath::Abs(trackN->GetNcls(0)));
       if (eta<0.8&&ncls>2){
 	//	printf("%d\t%f\t%f\t%d\t%d\t%f\t%f\n",i, v0->Pt(), maxPt, v0->GetNindex(),v0->GetPindex(),v0->GetRr(),effMass22);	

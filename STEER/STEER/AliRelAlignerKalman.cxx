@@ -87,6 +87,55 @@ ClassImp(AliRelAlignerKalman)
 //______________________________________________________________________________
 AliRelAlignerKalman::AliRelAlignerKalman():
     TObject(),
+    fPTrackParam1(NULL),
+    fPTrackParam2(NULL),
+    fMagField(0.),
+    fNMeasurementParams(4),
+    fPX(NULL),
+    fPXcov(NULL),
+    fPH(NULL),
+    fQ(1.e-15),
+    fPMeasurement(NULL),
+    fPMeasurementCov(NULL),
+    fPMeasurementPrediction(NULL),
+    fOutRejSigmas(1.),
+    fOutRejSigma2Median(5.),
+    fYZOnly(kFALSE),
+    fNumericalParanoia(kTRUE),
+    fRejectOutliers(kTRUE),
+    fRejectOutliersSigma2Median(kFALSE),
+    fRequireMatchInTPC(kFALSE),
+    fCuts(kFALSE),
+    fMinPointsVol1(3),
+    fMinPointsVol2(50),
+    fMinPt(0.),
+    fMaxPt(1.e100),
+    fMaxMatchingAngle(0.1),
+    fMaxMatchingDistance(10.),  //in cm
+    fCorrectionMode(kFALSE),
+    fNTracks(0),
+    fNUpdates(0),
+    fNOutliers(0),
+    fNOutliersSigma2Median(0),
+    fNMatchedCosmics(0),
+    fNMatchedTPCtracklets(0),
+    fNProcessedEvents(0),
+    fTimeStamp(0),
+    fRunNumber(0),
+    fNMerges(0),
+    fNMergesFailed(0),
+    fTPCvd(2.64),
+    fTPCZLengthA(2.4972500e02),
+    fTPCZLengthC(2.4969799e02)
+{
+  //Default constructor
+  for (Int_t i=0;i<fgkNSystemParams;i++) fDelta[i] = 1.e-6;
+  for (Int_t i=0; i<4;i++){fResArrSigma2Median[i]=NULL;}
+}
+
+//______________________________________________________________________________
+AliRelAlignerKalman::AliRelAlignerKalman(const char* /*name*/):
+    TObject(),
     fPTrackParam1(new AliExternalTrackParam()),
     fPTrackParam2(new AliExternalTrackParam()),
     fMagField(0.),
@@ -128,7 +177,7 @@ AliRelAlignerKalman::AliRelAlignerKalman():
     fTPCZLengthA(2.4972500e02),
     fTPCZLengthC(2.4969799e02)
 {
-  //Default constructor
+  //named constructor
   for (Int_t i=0;i<fgkNSystemParams;i++) fDelta[i] = 1.e-6;
   for (Int_t i=0; i<4;i++){fResArrSigma2Median[i]=NULL;}
   Reset();

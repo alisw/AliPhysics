@@ -69,9 +69,9 @@ GPUdi() void AliHLTTPCCAGrid::Create( float yMin, float yMax, float zMin, float 
 GPUdi() int AliHLTTPCCAGrid::GetBin( float Y, float Z ) const
 {
   //* get the bin pointer
-  const int yBin = static_cast<int>( CAMath::FMulRZ( Y - fYMin, fStepYInv ) );
-  const int zBin = static_cast<int>( CAMath::FMulRZ( Z - fZMin, fStepZInv ) );
-  const int bin = CAMath::Mul24( zBin, fNy ) + yBin;
+  const int yBin = static_cast<int>((Y - fYMin) * fStepYInv);
+  const int zBin = static_cast<int>((Z - fZMin) * fStepZInv);
+  const int bin = zBin * fNy + yBin;
 #ifndef HLTCA_GPUCODE
   assert( bin >= 0 );
   assert( bin < static_cast<int>( fN ) );
@@ -82,9 +82,9 @@ GPUdi() int AliHLTTPCCAGrid::GetBin( float Y, float Z ) const
 GPUdi() int AliHLTTPCCAGrid::GetBinBounded( float Y, float Z ) const
 {
   //* get the bin pointer
-  const int yBin = static_cast<int>( CAMath::FMulRZ( Y - fYMin, fStepYInv ) );
-  const int zBin = static_cast<int>( CAMath::FMulRZ( Z - fZMin, fStepZInv ) );
-  const int bin = CAMath::Mul24( zBin, fNy ) + yBin;
+  const int yBin = static_cast<int>((Y - fYMin) * fStepYInv);
+  const int zBin = static_cast<int>((Z - fZMin) * fStepZInv);
+  const int bin = zBin * fNy + yBin;
   if ( bin < 0 ) return 0;
   if ( bin >= static_cast<int>( fN ) ) return fN - 1;
   return bin;
@@ -103,4 +103,21 @@ GPUdi() void AliHLTTPCCAGrid::GetBin( float Y, float Z, int* const bY, int* cons
   else if ( bbZ >= ( int )fNz ) bbZ = fNz - 1;
   *bY = ( unsigned int ) bbY;
   *bZ = ( unsigned int ) bbZ;
+}
+
+GPUdi() void AliHLTTPCCAGrid::GetBinArea( float Y, float Z, float dy, float dz, int& bin, int& ny, int& nz ) const
+{
+    Y -= fYMin;
+    int by = (int) ((Y - dy) * fStepYInv);
+    ny = (int) ((Y + dy) * fStepYInv) - by;
+    Z -= fZMin;
+    int bz = (int) ((Z - dz) * fStepZInv);
+    nz = (int) ((Z + dz) * fStepZInv) - bz;
+    if (by < 0) by = 0;
+    else if (by >= (int) fNy) by = fNy - 1;
+    if (bz < 0) bz = 0;
+    else if (bz >= (int) fNz) bz = fNz - 1;
+    if (by + ny >= (int) fNy) ny = fNy - 1 - by;
+    if (bz + nz >= (int) fNz) nz = fNz - 1 - bz;
+    bin = bz * fNy + by;
 }

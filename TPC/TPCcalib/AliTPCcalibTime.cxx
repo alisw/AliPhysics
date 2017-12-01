@@ -1,3 +1,4 @@
+
 /**************************************************************************
  * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  *                                                                        *
@@ -39,10 +40,11 @@ Comments to be written here:
 
 #include "AliDCSSensor.h"
 #include "AliDCSSensorArray.h"
-#include "AliESDEvent.h"
-#include "AliESDInputHandler.h"
+#include "AliVEvent.h"
 #include "AliESDVertex.h"
-#include "AliESDfriend.h"
+#include "AliVfriendEvent.h"
+#include "AliVfriendTrack.h"
+#include "AliVTrack.h"
 #include "AliLog.h"
 #include "AliRelAlignerKalman.h"
 #include "AliTPCCalROC.h"
@@ -59,6 +61,9 @@ Comments to be written here:
 #include "AliKFVertex.h"
 #include <AliLog.h>
 
+#include "TStopwatch.h"
+#include "AliSysInfo.h"
+
 ClassImp(AliTPCcalibTime)
 
 Double_t AliTPCcalibTime::fgResHistoMergeCut = 20000000.;
@@ -73,6 +78,8 @@ AliTPCcalibTime::AliTPCcalibTime()
    fCutTheta(0.03),    // maximal distan theta
    fCutMinDir(-0.99),  // direction vector products
    fCutTracks(2500),
+   fMinPt(0.2),
+   fMinPtITSTPCalign(0.3),
    fArrayLaserA(0),      //laser  fit parameters C
    fArrayLaserC(0),      //laser  fit parameters A
    fArrayDz(0),          //NEW! Tmap of V drifts for different triggers
@@ -139,6 +146,8 @@ AliTPCcalibTime::AliTPCcalibTime(const Text_t *name, const Text_t *title, UInt_t
    fCutTheta(5*0.004644),// maximal distan theta
    fCutMinDir(-0.99),    // direction vector products
    fCutTracks(2500),
+   fMinPt(0.2),
+   fMinPtITSTPCalign(0.3),
    fArrayLaserA(new TObjArray(1000)),      //laser  fit parameters C
    fArrayLaserC(new TObjArray(1000)),      //laser  fit parameters A
    fArrayDz(0),            //Tmap of V drifts for different triggers
@@ -313,14 +322,22 @@ AliTPCcalibTime::~AliTPCcalibTime(){
 
   if (fAlignITSTPC){
     fAlignITSTPC->SetOwner(kTRUE);
-    fAlignTRDTPC->SetOwner(kTRUE);
-    fAlignTOFTPC->SetOwner(kTRUE);
     
     fAlignITSTPC->Delete();
-    fAlignTRDTPC->Delete();
-    fAlignTOFTPC->Delete();
     delete fAlignITSTPC;
+  }
+
+  if (fAlignTRDTPC){
+    fAlignTRDTPC->SetOwner(kTRUE);
+    
+    fAlignTRDTPC->Delete();
     delete fAlignTRDTPC;
+  }
+
+  if (fAlignTOFTPC){
+    fAlignTOFTPC->SetOwner(kTRUE);
+    
+    fAlignTOFTPC->Delete();
     delete fAlignTOFTPC;
   }
 
@@ -330,7 +347,7 @@ AliTPCcalibTime::~AliTPCcalibTime(){
     delete fArrayLaserA;
   }
 
-  if (fArrayLaserA) {
+  if (fArrayLaserC) {
     fArrayLaserC->SetOwner(); 
     fArrayLaserC->Delete();
     delete fArrayLaserC;
@@ -367,17 +384,19 @@ void AliTPCcalibTime::ResetCurrent(){
 
 
 
-void AliTPCcalibTime::Process(AliESDEvent *event){
+void AliTPCcalibTime::Process(AliVEvent *event){
   //
   // main function to make calibration
   //
+  TStopwatch stopWatch;
+  stopWatch.Start();
   if(!event) return;
   if (event->GetNumberOfTracks()<2) return; 
-  AliESDfriend *ESDfriend=static_cast<AliESDfriend*>(event->FindListObject("AliESDfriend"));
-  if (!ESDfriend) {
+  AliVfriendEvent *Vfriend=event->FindFriend();
+  if (!Vfriend) {
     return;
   }
-  if (ESDfriend->TestSkipBit()) return;
+  if (Vfriend->TestSkipBit()) return;
   
   ResetCurrent();
   //if(IsLaser  (event)) 
@@ -386,9 +405,12 @@ void AliTPCcalibTime::Process(AliESDEvent *event){
   ProcessCosmic(event);
   //if(IsBeam   (event)) 
   ProcessBeam  (event);
+
+  stopWatch.Stop();
+  AliSysInfo::AddStamp("AliTPCcalibTime::Process()",event->GetNumberOfTracks(),stopWatch.RealTime()*1000,stopWatch.CpuTime()*1000);
 }
 
-void AliTPCcalibTime::ProcessLaser(AliESDEvent *event){
+void AliTPCcalibTime::ProcessLaser(AliVEvent *event){
   //
   // Fit drift velocity using laser 
   // 
@@ -517,12 +539,12 @@ void AliTPCcalibTime::ProcessLaser(AliESDEvent *event){
   }
 }
 
-void AliTPCcalibTime::ProcessCosmic(const AliESDEvent *const event){
+void AliTPCcalibTime::ProcessCosmic(const AliVEvent *const event){
   //
   // process Cosmic event - track matching A side C side
   //
   if (!event) {
-    Printf("ERROR: ESD not available");
+    Printf("ERROR: event not available");
     return;
   }  
   if (event->GetTimeStamp() == 0 ) {
@@ -543,8 +565,7 @@ void AliTPCcalibTime::ProcessCosmic(const AliESDEvent *const event){
   if (ntracks > fCutTracks) return;
   
   if (GetDebugLevel()>20) printf("Hallo world: Im here\n");
-  AliESDfriend *esdFriend=(AliESDfriend*)(((AliESDEvent*)event)->FindListObject("AliESDfriend"));
-  
+  AliVfriendEvent *vFriend=event->FindFriend();
   TObjArray  tpcSeeds(ntracks);
   Double_t vtxx[3]={0,0,0};
   Double_t svtxx[3]={0.000001,0.000001,100.};
@@ -557,22 +578,23 @@ void AliTPCcalibTime::ProcessCosmic(const AliESDEvent *const event){
   for (Int_t i=0;i<ntracks;++i) {
     clusterSideA[i]=0;
     clusterSideC[i]=0;
-    AliESDtrack *track = event->GetTrack(i);
+    AliVTrack *track = event->GetVTrack(i);
     
-    const AliExternalTrackParam * trackIn = track->GetInnerParam();
-    const AliExternalTrackParam * trackOut = track->GetOuterParam();
-    if (!trackIn) continue;
-    if (!trackOut) continue;
+    AliExternalTrackParam trckIn;
+    if ( (track->GetTrackParamIp(trckIn)) <0) continue;
+
+    AliExternalTrackParam trckOut;
+    if ( (track->GetTrackParamOp(trckOut)) <0) continue;
     
-    AliESDfriendTrack *friendTrack = (AliESDfriendTrack*) track->GetFriendTrack();
+    AliVfriendTrack *friendTrack = const_cast<AliVfriendTrack*>(vFriend->GetTrack(i));
     if (!friendTrack) continue;
     if (friendTrack) ProcessSame(track,friendTrack,event);
-    if (friendTrack) ProcessAlignITS(track,friendTrack,event,esdFriend);
+    if (friendTrack) ProcessAlignITS(track,friendTrack,event,vFriend);
     if (friendTrack) ProcessAlignTRD(track,friendTrack);
     if (friendTrack) ProcessAlignTOF(track,friendTrack);
-    TObject *calibObject;
     AliTPCseed *seed = 0;
-    for (Int_t l=0;(calibObject=friendTrack->GetCalibObject(l));++l) if ((seed=dynamic_cast<AliTPCseed*>(calibObject))) break;
+    AliTPCseed tpcSeed;
+    if (friendTrack->GetTPCseed(tpcSeed)==0) seed=&tpcSeed;
     if (seed) {
       tpcSeeds.AddAt(seed,i);
       Int_t nA=0, nC=0;
@@ -592,19 +614,23 @@ void AliTPCcalibTime::ProcessCosmic(const AliESDEvent *const event){
   //
 
   for (Int_t i=0;i<ntracks;++i) {
-    AliESDtrack *track0 = event->GetTrack(i);
+    AliVTrack *track0 = event->GetVTrack(i);
     // track0 - choosen upper part
     if (!track0) continue;
-    if (!track0->GetOuterParam()) continue;
-    if (track0->GetOuterParam()->GetAlpha()<0) continue;
+
+    AliExternalTrackParam trckOut;
+    if ( (track0->GetTrackParamOp(trckOut)) < 0) continue;
+    if (trckOut.GetAlpha()<0) continue;
+
     Double_t d1[3];
     track0->GetDirection(d1);    
     for (Int_t j=0;j<ntracks;++j) {
       if (i==j) continue;
-      AliESDtrack *track1 = event->GetTrack(j);   
+      AliVTrack *track1 = event->GetVTrack(j);
       //track 1 lower part
       if (!track1) continue;
-      if (!track1->GetOuterParam()) continue;
+      AliExternalTrackParam trck1Out;
+      if ( (track1->GetTrackParamOp(trck1Out)) < 0) continue;
       if (track0->GetTPCNcls()+ track1->GetTPCNcls()< kMinClusters) continue;
       Int_t nAC = TMath::Max( TMath::Min(clusterSideA[i], clusterSideC[j]), 
 			      TMath::Min(clusterSideC[i], clusterSideA[j]));
@@ -641,8 +667,12 @@ void AliTPCcalibTime::ProcessCosmic(const AliESDEvent *const event){
       //
       //
       Float_t dmax = TMath::Max(TMath::Abs(dist0),TMath::Abs(dist1));
-      AliExternalTrackParam param0(*track0);
-      AliExternalTrackParam param1(*track1);
+
+      AliExternalTrackParam param0;
+      track0->GetTrackParam(param0);
+      AliExternalTrackParam param1;
+      track1->GetTrackParam(param1);
+
       //
       // Propagate using Magnetic field and correct fo material budget
       //
@@ -760,7 +790,7 @@ void AliTPCcalibTime::ProcessCosmic(const AliESDEvent *const event){
   if (GetDebugLevel()>20) printf("Trigger: %s\n",event->GetFiredTriggerClasses().Data());
 }
 
-void AliTPCcalibTime::ProcessBeam(const AliESDEvent *const event){
+void AliTPCcalibTime::ProcessBeam(const AliVEvent *const event){
   //
   // Process beam data - calculates vartex
   //                     from A side and C side
@@ -793,31 +823,44 @@ void AliTPCcalibTime::ProcessBeam(const AliESDEvent *const event){
   if (ntracks==0) return;
   if (ntracks > fCutTracks) return;
   //
-  AliESDfriend *esdFriend=(AliESDfriend*)(((AliESDEvent*)event)->FindListObject("AliESDfriend"));
+  AliVfriendEvent *vFriend=event->FindFriend();
   //
   // Divide tracks to A and C side tracks - using the cluster indexes
   TObjArray tracksA(ntracks);  
   TObjArray tracksC(ntracks);  
   //
-  AliESDVertex *vertexSPD =  (AliESDVertex *)event->GetPrimaryVertexSPD();
-  AliESDVertex *vertex    =  (AliESDVertex *)event->GetPrimaryVertex();
-  AliESDVertex *vertexTracks =  (AliESDVertex *)event->GetPrimaryVertexTracks();
+
+  AliESDVertex vtxSPD;
+  event->GetPrimaryVertexSPD(vtxSPD);
+  AliESDVertex *vertexSPD=&vtxSPD;
+
+  AliESDVertex vtx;
+  event->GetPrimaryVertex(vtx);
+  AliESDVertex *vertex=&vtx;
+
+  AliESDVertex vtxTracks;
+  event->GetPrimaryVertexTracks(vtxTracks);
+  AliESDVertex *vertexTracks=&vtxTracks;
+
   Double_t vertexZA[10000], vertexZC[10000];
   //
   Int_t ntracksA= 0;
   Int_t ntracksC= 0;
   //
   for (Int_t itrack=0;itrack<ntracks;itrack++) {
-    AliESDtrack *track = event->GetTrack(itrack);
-    AliESDfriendTrack *friendTrack = (AliESDfriendTrack*)track->GetFriendTrack();
+    AliVTrack *track = event->GetVTrack(itrack);
+    AliVfriendTrack *friendTrack = const_cast<AliVfriendTrack*>(vFriend->GetTrack(itrack));
     if (!friendTrack) continue;
-    if (TMath::Abs(track->GetTgl())>kMaxTgl) continue;
-    if (TMath::Abs(track->Pt())<kMinPt) continue;
-    const AliExternalTrackParam * trackIn  = track->GetInnerParam();
-    TObject *calibObject=0;
+
+    AliExternalTrackParam trkprm;
+    track->GetTrackParam(trkprm);
+    if (TMath::Abs(trkprm.GetTgl())>kMaxTgl) continue;
+    if (TMath::Abs(track->Pt())<fMinPt) continue;
+
     AliTPCseed *seed = 0;
     Int_t nA=0, nC=0;
-    for (Int_t l=0;(calibObject=friendTrack->GetCalibObject(l));++l) if ((seed=dynamic_cast<AliTPCseed*>(calibObject))) break;
+    AliTPCseed tpcSeed;
+    if (friendTrack->GetTPCseed(tpcSeed)==0) seed=&tpcSeed;
     if (seed) {
       for (Int_t irow=kMaxRow;irow--;) {
 	AliTPCclusterMI *cl=seed->GetClusterPointer(irow);
@@ -829,7 +872,10 @@ void AliTPCcalibTime::ProcessBeam(const AliESDEvent *const event){
 	track->GetImpactParameters(dca0[0],dca0[1]);
 	if (TMath::Abs(dca0[0])>kMaxD0) continue;
 	if (TMath::Abs(dca0[1])>kMaxZ0) continue;
-	AliExternalTrackParam pTPCvertex(*trackIn);
+
+    AliExternalTrackParam pTPCvertex;
+    track->GetTrackParamIp(pTPCvertex);
+
 	if (!AliTracker::PropagateTrackToBxByBz(&pTPCvertex,4.+4.*TMath::Abs(dca0[0]),0.1,2,kTRUE)) continue;
 	pTPCvertex.PropagateToDCA(vertex,AliTracker::GetBz(), kMaxD, dcaVertex,0);
 	if (TMath::Abs(dcaVertex[0])>kMaxD) continue;
@@ -1258,17 +1304,22 @@ Bool_t  AliTPCcalibTime::IsPair(const AliExternalTrackParam *tr0, const AliExter
 
   return kTRUE;  
 }
-Bool_t AliTPCcalibTime::IsCross(const AliESDtrack *const tr0, const AliESDtrack *const tr1){
+Bool_t AliTPCcalibTime::IsCross(const AliVTrack *const tr0, const AliVTrack *const tr1){
   //
   // check if the cosmic pair of tracks crossed A/C side
-  // 
-  Bool_t result= tr0->GetOuterParam()->GetZ()*tr1->GetOuterParam()->GetZ()<0;
+  //
+  AliExternalTrackParam tr0Op;
+  tr0->GetTrackParamOp(tr0Op);
+  AliExternalTrackParam tr1Op;
+  tr1->GetTrackParamOp(tr1Op);
+
+  Bool_t result= tr0Op.GetZ()*tr1Op.GetZ()<0;
   if (result==kFALSE) return result;
   result=kTRUE;
   return result;
 }
 
-Bool_t AliTPCcalibTime::IsSame(const AliESDtrack *const tr0, const AliESDtrack *const tr1){
+Bool_t AliTPCcalibTime::IsSame(const AliVTrack *const tr0, const AliVTrack *const tr1){
   // 
   // track crossing the CE
   // 0. minimal number of clusters 
@@ -1290,21 +1341,33 @@ Bool_t AliTPCcalibTime::IsSame(const AliESDtrack *const tr0, const AliESDtrack *
   //
   // 1. alpha cut - sector+-1
   //
-  if (TMath::Abs(tr0->GetOuterParam()->GetAlpha()-tr1->GetOuterParam()->GetAlpha())>kalphaCut) return kFALSE;
+  AliExternalTrackParam trck0Out;
+  tr0->GetTrackParamOp(trck0Out);
+
+  AliExternalTrackParam trck1Out;
+  tr1->GetTrackParamOp(trck1Out);
+
+  if (TMath::Abs(trck0Out.GetAlpha()-trck1Out.GetAlpha())>kalphaCut) return kFALSE;
   //
   // 2. Z crossing
   //
-  if (tr0->GetOuterParam()->GetZ()*tr0->GetInnerParam()->GetZ()>0) result&=kFALSE;
-  if (tr1->GetOuterParam()->GetZ()*tr1->GetInnerParam()->GetZ()>0) result&=kFALSE;
+  AliExternalTrackParam trck0In;
+  tr0->GetTrackParamIp(trck0In);
+
+  AliExternalTrackParam trck1In;
+  tr1->GetTrackParamIp(trck1In);
+  if (trck0Out.GetZ()*trck0In.GetZ()>0) result&=kFALSE;
+  if (trck1Out.GetZ()*trck1In.GetZ()>0) result&=kFALSE;
+
   if (result==kFALSE){
     return result;
   }
   //
   //
-  const Double_t *p0I = tr0->GetInnerParam()->GetParameter();
-  const Double_t *p1I = tr1->GetInnerParam()->GetParameter();
-  const Double_t *p0O = tr0->GetOuterParam()->GetParameter();
-  const Double_t *p1O = tr1->GetOuterParam()->GetParameter();
+  const Double_t *p0I = trck0In.GetParameter();
+  const Double_t *p1I = trck1In.GetParameter();
+  const Double_t *p0O = trck0Out.GetParameter();
+  const Double_t *p1O = trck1Out.GetParameter();
   //
   if (TMath::Abs(p0I[0]-p1I[0])>fCutMaxD)  result&=kFALSE;
   if (TMath::Abs(p0I[1]-p1I[1])>fCutMaxDz) result&=kFALSE;
@@ -1321,170 +1384,177 @@ Bool_t AliTPCcalibTime::IsSame(const AliESDtrack *const tr0, const AliESDtrack *
 }
 
 
-void  AliTPCcalibTime::ProcessSame(const AliESDtrack *const track, AliESDfriendTrack *const friendTrack, const AliESDEvent *const event){
-  //
-  // Process  TPC tracks crossing CE
-  //
-  // 0. Select only track crossing the CE
-  // 1. Cut on the track length
-  // 2. Refit the the track on A and C side separatelly
-  // 3. Fill time histograms
-  const Int_t kMinNcl=100;
-  const Int_t kMinNclS=25;  // minimul number of clusters on the sides
-  const Double_t pimass=TDatabasePDG::Instance()->GetParticle("pi+")->Mass();
-  const Double_t kMaxDy=1;  // maximal distance in y
-  const Double_t kMaxDsnp=0.05;  // maximal distance in snp
-  const Double_t kMaxDtheta=0.05;  // maximal distance in theta
-  
-  if (!friendTrack->GetTPCOut()) return;
-  //
-  // 0. Select only track crossing the CE
-  //
-  if (track->GetInnerParam()->GetZ()*friendTrack->GetTPCOut()->GetZ()>0) return;
-  //
-  // 1. cut on track length
-  //
-  if (track->GetTPCNcls()<kMinNcl) return;
-  //
-  // 2. Refit track sepparatel on A and C side
-  //
-  TObject *calibObject;
-  AliTPCseed *seed = 0;
-  for (Int_t l=0;(calibObject=friendTrack->GetCalibObject(l));++l) {
-    if ((seed=dynamic_cast<AliTPCseed*>(calibObject))) break;
-  }
-  if (!seed) return;
-  //
-  AliExternalTrackParam trackIn(*track->GetInnerParam());
-  AliExternalTrackParam trackOut(*track->GetOuterParam());
-  Double_t cov[3]={0.01,0.,0.01}; //use the same errors
-  Double_t xyz[3]={0,0.,0.0};  
-  Double_t bz   =0;
-  Int_t nclIn=0,nclOut=0;
-  trackIn.ResetCovariance(1000.);
-  trackOut.ResetCovariance(1000.);
-  //
-  //2.a Refit inner
-  // 
-  Int_t sideIn=0;
-  for (Int_t irow=0;irow<kMaxRow;irow++) {
-    AliTPCclusterMI *cl=seed->GetClusterPointer(irow);
-    if (!cl) continue;
-    if (cl->GetX()<80) continue;
-    if (sideIn==0){
-      if (cl->GetDetector()%36<18) sideIn=1;
-      if (cl->GetDetector()%36>=18) sideIn=-1;
-    }
-    if (sideIn== -1 && (cl->GetDetector()%36)<18) break;
-    if (sideIn==  1 &&(cl->GetDetector()%36)>=18) break;
-    Int_t sector = cl->GetDetector();
-    Float_t dalpha = TMath::DegToRad()*(sector%18*20.+10.)-trackIn.GetAlpha();
-    if (TMath::Abs(dalpha)>0.01){
-      if (!trackIn.Rotate(TMath::DegToRad()*(sector%18*20.+10.))) break;
-    }
-    Double_t r[3]={cl->GetX(),cl->GetY(),cl->GetZ()};
-    trackIn.GetXYZ(xyz);
-    bz = AliTracker::GetBz(xyz);
-    AliTracker::PropagateTrackToBxByBz(&trackIn,r[0],pimass,1.,kFALSE);
-    if (!trackIn.PropagateTo(r[0],bz)) break;
-    nclIn++;
-    trackIn.Update(&r[1],cov);    
-  }
-  //
-  //2.b Refit outer
-  //
-  Int_t sideOut=0;
-  for (Int_t irow=kMaxRow;irow--;) {
-    AliTPCclusterMI *cl=seed->GetClusterPointer(irow);
-    if (!cl) continue;
-    if (cl->GetX()<80) continue;
-    if (sideOut==0){
-      if (cl->GetDetector()%36<18) sideOut=1;
-      if (cl->GetDetector()%36>=18) sideOut=-1;
-      if (sideIn==sideOut) break;
-    }
-    if (sideOut== -1 && (cl->GetDetector()%36)<18) break;
-    if (sideOut==  1 &&(cl->GetDetector()%36)>=18) break;
+void  AliTPCcalibTime::ProcessSame(const AliVTrack *const track, AliVfriendTrack *const friendTrack, const AliVEvent *const event){
     //
-    Int_t sector = cl->GetDetector();
-    Float_t dalpha = TMath::DegToRad()*(sector%18*20.+10.)-trackOut.GetAlpha();
-    if (TMath::Abs(dalpha)>0.01){
-      if (!trackOut.Rotate(TMath::DegToRad()*(sector%18*20.+10.))) break;
+    // Process  TPC tracks crossing CE
+    //
+    // 0. Select only track crossing the CE
+    // 1. Cut on the track length
+    // 2. Refit the the track on A and C side separatelly
+    // 3. Fill time histograms
+    const Int_t kMinNcl=100;
+    const Int_t kMinNclS=25;  // minimul number of clusters on the sides
+    const Double_t pimass=TDatabasePDG::Instance()->GetParticle("pi+")->Mass();
+    const Double_t kMaxDy=1;  // maximal distance in y
+    const Double_t kMaxDsnp=0.05;  // maximal distance in snp
+    const Double_t kMaxDtheta=0.05;  // maximal distance in theta
+
+    AliExternalTrackParam trckTPCOut;
+    if ( (friendTrack->GetTrackParamTPCOut(trckTPCOut)) < 0) return;
+
+    AliExternalTrackParam trckIn;
+    track->GetTrackParamIp(trckIn);
+    //
+    // 0. Select only track crossing the CE
+    //
+
+    if (trckIn.GetZ()*trckTPCOut.GetZ()>0) return;
+    //
+    // 1. cut on track length
+    //
+    if (track->GetTPCNcls()<kMinNcl) return;
+    //
+    // 2. Refit track sepparatel on A and C side
+    //
+    AliTPCseed *seed = 0;
+    AliTPCseed tpcSeed;
+    if (friendTrack->GetTPCseed(tpcSeed)==0) seed=&tpcSeed;
+    if (!seed) return;
+    //
+
+    AliExternalTrackParam trackIn;
+    track->GetTrackParamIp(trackIn);
+    AliExternalTrackParam trackOut;
+    track->GetTrackParamOp(trackOut);
+
+    Double_t cov[3]={0.01,0.,0.01}; //use the same errors
+    Double_t xyz[3]={0,0.,0.0};
+    Double_t bz   =0;
+    Int_t nclIn=0,nclOut=0;
+    trackIn.ResetCovariance(1000.);
+    trackOut.ResetCovariance(1000.);
+    //
+    //2.a Refit inner
+    //
+    Int_t sideIn=0;
+    for (Int_t irow=0;irow<kMaxRow;irow++) {
+      AliTPCclusterMI *cl=seed->GetClusterPointer(irow);
+      if (!cl) continue;
+      if (cl->GetX()<80) continue;
+      if (sideIn==0){
+        if (cl->GetDetector()%36<18) sideIn=1;
+        if (cl->GetDetector()%36>=18) sideIn=-1;
+      }
+      if (sideIn== -1 && (cl->GetDetector()%36)<18) break;
+      if (sideIn==  1 &&(cl->GetDetector()%36)>=18) break;
+      Int_t sector = cl->GetDetector();
+      Float_t dalpha = TMath::DegToRad()*(sector%18*20.+10.)-trackIn.GetAlpha();
+      if (TMath::Abs(dalpha)>0.01){
+        if (!trackIn.Rotate(TMath::DegToRad()*(sector%18*20.+10.))) break;
+      }
+      Double_t r[3]={cl->GetX(),cl->GetY(),cl->GetZ()};
+      trackIn.GetXYZ(xyz);
+      bz = AliTracker::GetBz(xyz);
+      AliTracker::PropagateTrackToBxByBz(&trackIn,r[0],pimass,1.,kFALSE);
+      if (!trackIn.PropagateTo(r[0],bz)) break;
+      nclIn++;
+      trackIn.Update(&r[1],cov);
     }
-    Double_t r[3]={cl->GetX(),cl->GetY(),cl->GetZ()};
-    trackOut.GetXYZ(xyz);
-    bz = AliTracker::GetBz(xyz);
-    AliTracker::PropagateTrackToBxByBz(&trackOut,r[0],pimass,1.,kFALSE);
-    if (!trackOut.PropagateTo(r[0],bz)) break;
-    nclOut++;
-    trackOut.Update(&r[1],cov);    
-  }
-  trackOut.Rotate(trackIn.GetAlpha());
-  Double_t meanX = (trackIn.GetX()+trackOut.GetX())*0.5;
-  trackIn.PropagateTo(meanX,bz); 
-  trackOut.PropagateTo(meanX,bz); 
-  if (TMath::Abs(trackIn.GetY()-trackOut.GetY())>kMaxDy) return;
-  if (TMath::Abs(trackIn.GetSnp()-trackOut.GetSnp())>kMaxDsnp) return;
-  if (TMath::Abs(trackIn.GetTgl()-trackOut.GetTgl())>kMaxDtheta) return;
-  if (TMath::Min(nclIn,nclOut)>kMinNclS){
-    FillResHistoTPCCE(&trackIn,&trackOut);
-  }
-  TTreeSRedirector *cstream = GetDebugStreamer();
-  if (cstream){
-    TVectorD gxyz(3);
-    trackIn.GetXYZ(gxyz.GetMatrixArray());
-    TTimeStamp tstamp(fTime);
-    (*cstream)<<"tpctpc"<<
-      "run="<<fRun<<              //  run number
-      "event="<<fEvent<<          //  event number
-      "time="<<fTime<<            //  time stamp of event
-      "trigger="<<fTrigger<<      //  trigger
-      "mag="<<fMagF<<             //  magnetic field
+    //
+    //2.b Refit outer
+    //
+    Int_t sideOut=0;
+    for (Int_t irow=kMaxRow;irow--;) {
+      AliTPCclusterMI *cl=seed->GetClusterPointer(irow);
+      if (!cl) continue;
+      if (cl->GetX()<80) continue;
+      if (sideOut==0){
+        if (cl->GetDetector()%36<18) sideOut=1;
+        if (cl->GetDetector()%36>=18) sideOut=-1;
+        if (sideIn==sideOut) break;
+      }
+      if (sideOut== -1 && (cl->GetDetector()%36)<18) break;
+      if (sideOut==  1 &&(cl->GetDetector()%36)>=18) break;
       //
-      "sideIn="<<sideIn<<         // side at inner part
-      "sideOut="<<sideOut<<         // side at puter part
-      "xyz.="<<&gxyz<<             // global position
-      "tIn.="<<&trackIn<<         // refitterd track in 
-      "tOut.="<<&trackOut<<       // refitter track out
-      "nclIn="<<nclIn<<           // 
-      "nclOut="<<nclOut<<         //
-      "\n";  
-  }
-  //
-  // 3. Fill time histograms
-  // Debug stremaer expression
-  // chainTPCTPC->Draw("(tIn.fP[1]-tOut.fP[1])*sign(-tIn.fP[3]):tIn.fP[3]","min(nclIn,nclOut)>30","")
-  if (TMath::Min(nclIn,nclOut)>kMinNclS){
-    fDz = trackOut.GetZ()-trackIn.GetZ();
-    if (trackOut.GetTgl()<0) fDz*=-1.;
-    TTimeStamp tstamp(fTime);
-    Double_t ptrelative0 = AliTPCcalibDB::GetPTRelative(tstamp,fRun,0);
-    Double_t ptrelative1 = AliTPCcalibDB::GetPTRelative(tstamp,fRun,1);
-    Double_t vecDrift[4]={static_cast<Double_t>(fTime),(ptrelative0+ptrelative1)/2.0,fDz/500.0,static_cast<Double_t>(event->GetRunNumber())};
-    //
-    // fill histograms per trigger class and itegrated
-    //
-    THnSparse* curHist=NULL;
-    for (Int_t itype=0; itype<2; itype++){
-      TString name="MEAN_VDRIFT_CROSS_";  
-      if (itype==0){
-	name+=event->GetFiredTriggerClasses();
-	name.ToUpper();
-      }else{
-	name+="ALL";
+      Int_t sector = cl->GetDetector();
+      Float_t dalpha = TMath::DegToRad()*(sector%18*20.+10.)-trackOut.GetAlpha();
+      if (TMath::Abs(dalpha)>0.01){
+        if (!trackOut.Rotate(TMath::DegToRad()*(sector%18*20.+10.))) break;
       }
-      curHist=(THnSparseF*)fArrayDz->FindObject(name);
-      if(!curHist){
-	curHist=new THnSparseF(name,"HistVdrift;time;p/T ratio;Vdrift;run",4,fBinsVdrift,fXminVdrift,fXmaxVdrift);
-	fArrayDz->AddLast(curHist);
-      }
-      curHist->Fill(vecDrift);
+      Double_t r[3]={cl->GetX(),cl->GetY(),cl->GetZ()};
+      trackOut.GetXYZ(xyz);
+      bz = AliTracker::GetBz(xyz);
+      AliTracker::PropagateTrackToBxByBz(&trackOut,r[0],pimass,1.,kFALSE);
+      if (!trackOut.PropagateTo(r[0],bz)) break;
+      nclOut++;
+      trackOut.Update(&r[1],cov);
     }
+    trackOut.Rotate(trackIn.GetAlpha());
+    Double_t meanX = (trackIn.GetX()+trackOut.GetX())*0.5;
+    trackIn.PropagateTo(meanX,bz);
+    trackOut.PropagateTo(meanX,bz);
+    if (TMath::Abs(trackIn.GetY()-trackOut.GetY())>kMaxDy) return;
+    if (TMath::Abs(trackIn.GetSnp()-trackOut.GetSnp())>kMaxDsnp) return;
+    if (TMath::Abs(trackIn.GetTgl()-trackOut.GetTgl())>kMaxDtheta) return;
+    if (TMath::Min(nclIn,nclOut)>kMinNclS){
+      FillResHistoTPCCE(&trackIn,&trackOut);
+    }
+    TTreeSRedirector *cstream = GetDebugStreamer();
+    if (cstream){
+      TVectorD gxyz(3);
+      trackIn.GetXYZ(gxyz.GetMatrixArray());
+      TTimeStamp tstamp(fTime);
+      (*cstream)<<"tpctpc"<<
+        "run="<<fRun<<              //  run number
+        "event="<<fEvent<<          //  event number
+        "time="<<fTime<<            //  time stamp of event
+        "trigger="<<fTrigger<<      //  trigger
+        "mag="<<fMagF<<             //  magnetic field
+        //
+        "sideIn="<<sideIn<<         // side at inner part
+        "sideOut="<<sideOut<<         // side at puter part
+        "xyz.="<<&gxyz<<             // global position
+        "tIn.="<<&trackIn<<         // refitterd track in
+        "tOut.="<<&trackOut<<       // refitter track out
+        "nclIn="<<nclIn<<           //
+        "nclOut="<<nclOut<<         //
+        "\n";
+    }
+    //
+    // 3. Fill time histograms
+    // Debug stremaer expression
+    // chainTPCTPC->Draw("(tIn.fP[1]-tOut.fP[1])*sign(-tIn.fP[3]):tIn.fP[3]","min(nclIn,nclOut)>30","")
+    if (TMath::Min(nclIn,nclOut)>kMinNclS){
+      fDz = trackOut.GetZ()-trackIn.GetZ();
+      if (trackOut.GetTgl()<0) fDz*=-1.;
+      TTimeStamp tstamp(fTime);
+      Double_t ptrelative0 = AliTPCcalibDB::GetPTRelative(tstamp,fRun,0);
+      Double_t ptrelative1 = AliTPCcalibDB::GetPTRelative(tstamp,fRun,1);
+      Double_t vecDrift[4]={static_cast<Double_t>(fTime),(ptrelative0+ptrelative1)/2.0,fDz/500.0,static_cast<Double_t>(event->GetRunNumber())};
+      //
+      // fill histograms per trigger class and itegrated
+      //
+      THnSparse* curHist=NULL;
+      for (Int_t itype=0; itype<2; itype++){
+        TString name="MEAN_VDRIFT_CROSS_";
+        if (itype==0){
+      name+=event->GetFiredTriggerClasses();
+      name.ToUpper();
+        }else{
+      name+="ALL";
+        }
+        curHist=(THnSparseF*)fArrayDz->FindObject(name);
+        if(!curHist){
+      curHist=new THnSparseF(name,"HistVdrift;time;p/T ratio;Vdrift;run",4,fBinsVdrift,fXminVdrift,fXmaxVdrift);
+      fArrayDz->AddLast(curHist);
+        }
+        curHist->Fill(vecDrift);
+      }
+    }
+
   }
 
-}
-
-void  AliTPCcalibTime::ProcessAlignITS(AliESDtrack *const track, const AliESDfriendTrack *const friendTrack, const AliESDEvent *const event, AliESDfriend *const esdFriend){
+void  AliTPCcalibTime::ProcessAlignITS(AliVTrack *const track, const AliVfriendTrack *const friendTrack, const AliVEvent *const event, AliVfriendEvent *const vFriend){
   //
   // Process track - Update TPC-ITS alignment
   // Updates: 
@@ -1503,63 +1573,89 @@ void  AliTPCcalibTime::ProcessAlignITS(AliESDtrack *const track, const AliESDfri
   const Double_t kT0Err   = 3.;  // initial uncertainty of the T0 time
   const Double_t kVdYErr  = 0.05;  // initial uncertainty of the vd correction 
   const Double_t kOutCut  = 3.0;   // outlyer cut in AliRelAlgnmentKalman
-  const Double_t kMinPt   = 0.3;   // minimal pt
   const Double_t kMax1Pt=0.5;        //maximal 1/pt distance
   const  Int_t     kN=50;         // deepnes of history
   static Int_t     kglast=0;
   static Double_t* kgdP[4]={new Double_t[kN], new Double_t[kN], new Double_t[kN], new Double_t[kN]};
+  
+  static const int ITSStandaloneOnly = getenv("HLT_ONLINE_MODE") && strcmp(getenv("HLT_ONLINE_MODE"), "on") == 0;
   //
   // 0. Apply standard cuts
   // 
-  Int_t dummycl[1000];
   if (track->GetTPCNcls()<kMinTPC) return;  // minimal amount of clusters cut
-  if (!track->IsOn(AliESDtrack::kTPCrefit)) return;
-  if (!track->GetInnerParam())   return;
-  if (!track->GetOuterParam())   return;
-  if (track->GetInnerParam()->Pt()<kMinPt)  return;
+  if (!track->IsOn(AliVTrack::kTPCrefit)) return;
+
+  AliExternalTrackParam trckIn;
+  if ( (track->GetTrackParamIp(trckIn)) < 0) return;
+  AliExternalTrackParam * trackIn = &trckIn;
+
+  /*AliExternalTrackParam trckTPCIn;
+  AliExternalTrackParam trck;
+  if ( (track->GetTrackParamTPCInner(trckTPCIn)) < 0) return;
+  if ( (track->GetTrackParam(trck)) < 0) return;
+  printf("XXXXXXXXXXXX X: In %f TPCIn %f P %f, Pt In %f TPCIn %f P %f, Z: In %f TPCIn %f P %f\n", (double) trackIn->GetX(), (double) trckTPCIn.GetX(), (double) trck.GetX(), (double) trackIn->GetSigned1Pt(), (double) trckTPCIn.GetSigned1Pt(), (double) trck.GetSigned1Pt(), (double) trackIn->GetZ(), (double) trckTPCIn.GetZ(), (double) trck.GetZ());*/
+
+  AliExternalTrackParam trckOut;
+  if ( (track->GetTrackParamOp(trckOut)) < 0) return;
+
+  if (trackIn->Pt()<fMinPtITSTPCalign)  return;
   // exclude crossing track
-  if (track->GetOuterParam()->GetZ()*track->GetInnerParam()->GetZ()<0)   return;
-  if (TMath::Abs(track->GetInnerParam()->GetZ())<kMinZ/3.)   return;
-  if (track->GetInnerParam()->GetX()>90)   return;
+  if (trckOut.GetZ()*trckIn.GetZ()<0)   return;
+  if (TMath::Abs(trackIn->GetZ())<kMinZ/3.)   return;
+  if (trackIn->GetX()>90)   return;
   //
-  AliExternalTrackParam &pTPC=(AliExternalTrackParam &)(*(track->GetInnerParam()));
+  AliExternalTrackParam &pTPC=(AliExternalTrackParam &)(*trackIn);
+
   //  
   AliExternalTrackParam pITS;   // ITS standalone if possible
   AliExternalTrackParam pITS2;  //TPC-ITS track
-  if (friendTrack->GetITSOut()){
-    pITS2=(*(friendTrack->GetITSOut()));  //TPC-ITS track - snapshot ITS out
-    pITS2.Rotate(pTPC.GetAlpha());
-    AliTracker::PropagateTrackToBxByBz(&pITS2,pTPC.GetX(),0.1,0.1,kFALSE);
-  }
 
-  AliESDfriendTrack *itsfriendTrack=0;
+  AliExternalTrackParam trckITSOut;
+
+  //Compare the tracks at inner end of TPC in order to make sure the below cuts make sense
+  AliTracker::PropagateTrackToBxByBz(&pTPC,AliTPCcalibDB::Instance()->GetParameters()->GetInnerRadiusLow(),0.1,0.1,kFALSE);
+
+  AliVfriendTrack *itsfriendTrack=0;
   //
   // try to find standalone ITS track corresponing to the TPC if possible
   //
   Bool_t hasAlone=kFALSE;
   Int_t ntracks=event->GetNumberOfTracks();
-  for (Int_t i=0; i<ntracks; i++){
-    AliESDtrack * trackITS = event->GetTrack(i); 
+  for (Int_t i = ntracks - 1; i >= 0; i--){ //We want to prefer ITS SA tracks, which are inserted after the TPS tracks, so we start from the end, and stop after the first match
+    AliVTrack * trackITS = event->GetVTrack(i);
     if (!trackITS) continue;
-    if (trackITS->GetITSclusters(dummycl)<kMinITS) continue;  // minimal amount of clusters
-    itsfriendTrack = (AliESDfriendTrack*)trackITS->GetFriendTrack();
+    if (ITSStandaloneOnly && trackITS->GetNumberOfTPCClusters()) continue;
+    if (trackITS->GetNumberOfITSClusters()<kMinITS) continue;  // minimal amount of clusters
+    itsfriendTrack = const_cast<AliVfriendTrack*>(vFriend->GetTrack(i));
     if (!itsfriendTrack) continue;
-    if (!itsfriendTrack->GetITSOut()) continue;
-     
-    if (TMath::Abs(pTPC.GetTgl()-itsfriendTrack->GetITSOut()->GetTgl())> kMaxAngle) continue;
-    if (TMath::Abs(pTPC.GetSigned1Pt()-itsfriendTrack->GetITSOut()->GetSigned1Pt())> kMax1Pt) continue;
-    pITS=(*(itsfriendTrack->GetITSOut()));
+
+    AliExternalTrackParam itstrckOut;
+    if ( (itsfriendTrack->GetTrackParamITSOut(itstrckOut)) < 0) continue;
+    AliExternalTrackParam * ITStrackOut = &itstrckOut;
+
+    if (TMath::Abs(pTPC.GetTgl()-ITStrackOut->GetTgl())> kMaxAngle) continue;
+    if (TMath::Abs(pTPC.GetSigned1Pt()-ITStrackOut->GetSigned1Pt())> kMax1Pt) continue;
+    pITS=(*ITStrackOut);
     //
     pITS.Rotate(pTPC.GetAlpha());
     AliTracker::PropagateTrackToBxByBz(&pITS,pTPC.GetX(),0.1,0.1,kFALSE);
+    //pITS.PropagateTo(pTPC.GetX(),AliTrackerBase::GetBz());
     if (TMath::Abs(pTPC.GetY()-pITS.GetY())> kMaxDy) continue;
     if (TMath::Abs(pTPC.GetSnp()-pITS.GetSnp())> kMaxAngle) continue;
     hasAlone=kTRUE;
+    break;
   }
   if (!hasAlone) {
-    if (track->GetITSclusters(dummycl)<kMinITS) return;
+    if (ITSStandaloneOnly) return;
+    if (track->GetNumberOfITSClusters()<kMinITS) return;
+    if ( (friendTrack->GetTrackParamITSOut(trckITSOut)) == 0 ){
+      pITS2=trckITSOut;  //TPC-ITS track - snapshot ITS out
+      pITS2.Rotate(pTPC.GetAlpha());
+      AliTracker::PropagateTrackToBxByBz(&pITS2,pTPC.GetX(),0.1,0.1,kFALSE);
+    }
     pITS=pITS2;  // use combined track if it has ITS
   }
+
   //
   if (TMath::Abs(pITS.GetY()-pTPC.GetY())    >kMaxDy)    return;
   if (TMath::Abs(pITS.GetSnp()-pTPC.GetSnp())>kMaxAngle) return;
@@ -1601,7 +1697,7 @@ void  AliTPCcalibTime::ProcessAlignITS(AliESDtrack *const track, const AliESDfri
   AliRelAlignerKalman* align =  (AliRelAlignerKalman*)fAlignITSTPC->At(htime);
   if (!align){
     // make Alignment object if doesn't exist
-    align=new AliRelAlignerKalman(); 
+    align=new AliRelAlignerKalman(""); 
     align->SetRunNumber(fRun);
     (*align->GetStateCov())(6,6)=kVdErr*kVdErr;
     (*align->GetStateCov())(7,7)=kT0Err*kT0Err;
@@ -1673,7 +1769,7 @@ void  AliTPCcalibTime::ProcessAlignITS(AliESDtrack *const track, const AliESDfri
 
 
 
-void  AliTPCcalibTime::ProcessAlignTRD(AliESDtrack *const track, const AliESDfriendTrack *const friendTrack){
+void  AliTPCcalibTime::ProcessAlignTRD(AliVTrack *const track, AliVfriendTrack *const friendTrack){
   //
   // Process track - Update TPC-TRD alignment
   // Updates: 
@@ -1704,17 +1800,24 @@ void  AliTPCcalibTime::ProcessAlignTRD(AliESDtrack *const track, const AliESDfri
   if (track->GetTPCNcls()<kMinTPC) return;  // minimal amount of clusters cut
   //  if (!friendTrack->GetTRDIn()) return;  
   //  if (!track->IsOn(AliESDtrack::kTRDrefit)) return;   
-  if (!track->IsOn(AliESDtrack::kTRDout)) return;  
-  if (!track->GetInnerParam())   return;
-  if (!friendTrack->GetTPCOut())   return;
+  if (!track->IsOn(AliVTrack::kTRDout)) return;
+
+  AliExternalTrackParam trckIn;
+  if ( (track->GetTrackParamIp(trckIn)) < 0) return;
+
+  AliExternalTrackParam trckTPCOut;
+  if ( (friendTrack->GetTrackParamTPCOut(trckTPCOut)) < 0) return;
+
   // exclude crossing track
-  if (friendTrack->GetTPCOut()->GetZ()*track->GetInnerParam()->GetZ()<0)   return;
+  if (trckTPCOut.GetZ()*trckIn.GetZ()<0)   return;
   //
-  AliExternalTrackParam &pTPC=(AliExternalTrackParam &)(*(friendTrack->GetTPCOut()));
+  AliExternalTrackParam &pTPC = trckTPCOut;
+
   AliTracker::PropagateTrackToBxByBz(&pTPC,kRefX,0.1,0.1,kFALSE);
+  friendTrack->ResetTrackParamTPCOut(&trckTPCOut);
   AliExternalTrackParam *pTRDtrack = 0; 
   TObject *calibObject=0;
-  for (Int_t l=0;(calibObject=((AliESDfriendTrack*)friendTrack)->GetCalibObject(l));++l) {
+  for (Int_t l=0;(calibObject=((AliVfriendTrack*)friendTrack)->GetCalibObject(l));++l) {
     if ((dynamic_cast< AliTPCseed*>(calibObject))) continue;
     if ((pTRDtrack=dynamic_cast< AliExternalTrackParam*>(calibObject))) break;
   }
@@ -1770,7 +1873,7 @@ void  AliTPCcalibTime::ProcessAlignTRD(AliESDtrack *const track, const AliESDfri
   AliRelAlignerKalman* align =  (AliRelAlignerKalman*)fAlignTRDTPC->At(htime);
   if (!align){
     // make Alignment object if doesn't exist
-    align=new AliRelAlignerKalman(); 
+    align=new AliRelAlignerKalman(""); 
     align->SetRunNumber(fRun);
     (*align->GetStateCov())(6,6)=kVdErr*kVdErr;
     (*align->GetStateCov())(7,7)=kT0Err*kT0Err;
@@ -1841,7 +1944,7 @@ void  AliTPCcalibTime::ProcessAlignTRD(AliESDtrack *const track, const AliESDfri
 }
 
 
-void  AliTPCcalibTime::ProcessAlignTOF(AliESDtrack *const track, const AliESDfriendTrack *const friendTrack){
+void  AliTPCcalibTime::ProcessAlignTOF(AliVTrack *const track, const AliVfriendTrack *const friendTrack){
   //
   //
   // Process track - Update TPC-TOF alignment
@@ -1870,13 +1973,20 @@ void  AliTPCcalibTime::ProcessAlignTOF(AliESDtrack *const track, const AliESDfri
   //     Clusters are not in friends - use alingment points
   //
   if (track->GetTOFsignal()<=0)  return;
-  if (!friendTrack->GetTPCOut()) return;
-  if (!track->GetInnerParam())   return;
-  if (!friendTrack->GetTPCOut())   return;
+
+  AliExternalTrackParam trckTPCOut;
+  if ( (friendTrack->GetTrackParamTPCOut(trckTPCOut)) < 0) return;
+
+  AliExternalTrackParam trckIn;
+  if ( (track->GetTrackParamIp(trckIn)) < 0) return;
+
   const AliTrackPointArray *points=friendTrack->GetTrackPointArray();
   if (!points) return;
-  AliExternalTrackParam pTPC(*(friendTrack->GetTPCOut()));
+
+  AliExternalTrackParam * trackTPCOut = &trckTPCOut;
+  AliExternalTrackParam pTPC(*trackTPCOut);
   AliExternalTrackParam pTOF(pTPC);
+
   Double_t mass = TDatabasePDG::Instance()->GetParticle("mu+")->Mass();
   Int_t npoints = points->GetNPoints();
   AliTrackPoint point;
@@ -1908,7 +2018,7 @@ void  AliTPCcalibTime::ProcessAlignTOF(AliESDtrack *const track, const AliESDfri
   //
   if (track->GetTPCNcls()<kMinTPC) return;  // minimal amount of clusters cut
   // exclude crossing track
-  if (friendTrack->GetTPCOut()->GetZ()*track->GetInnerParam()->GetZ()<0)   return;
+  if (trckTPCOut.GetZ()*trckIn.GetZ()<0)   return;
   //
   if (TMath::Abs(pTOF.GetY()-pTPC.GetY())    >kMaxDy)    return;
   if (TMath::Abs(pTOF.GetSnp()-pTPC.GetSnp())>kMaxAngle) return;
@@ -1953,7 +2063,7 @@ void  AliTPCcalibTime::ProcessAlignTOF(AliESDtrack *const track, const AliESDfri
   AliRelAlignerKalman* align =  (AliRelAlignerKalman*)fAlignTOFTPC->At(htime);
   if (!align){
     // make Alignment object if doesn't exist
-    align=new AliRelAlignerKalman(); 
+    align=new AliRelAlignerKalman(""); 
     align->SetRunNumber(fRun);
     (*align->GetStateCov())(6,6)=kVdErr*kVdErr;
     (*align->GetStateCov())(7,7)=kT0Err*kT0Err;
@@ -2194,19 +2304,26 @@ void        AliTPCcalibTime::FillResHistoTPCITS(const AliExternalTrackParam * pT
 }  
 
      
-void        AliTPCcalibTime::FillResHistoTPC(const AliESDtrack * pTrack){
+void        AliTPCcalibTime::FillResHistoTPC(const AliVTrack * pTrack){
   //
   // fill residual histograms pTPC - vertex
   // Histogram is filled only for primary tracks
   //
   if (fMemoryMode<2) return;
   Double_t histoX[4];
-  const AliExternalTrackParam * pTPCIn = pTrack->GetInnerParam();
-  AliExternalTrackParam pTPCvertex(*(pTrack->GetInnerParam()));
+  AliExternalTrackParam prmTPCIn;
+  pTrack->GetTrackParamIp(prmTPCIn);
+  const AliExternalTrackParam * pTPCIn = &prmTPCIn;
+  AliExternalTrackParam pTPCvertex(*pTPCIn);
   //
-  if (!(pTrack->GetConstrainedParam())) return;
-  AliExternalTrackParam lits(*(pTrack->GetConstrainedParam()));
-  if (TMath::Abs(pTrack->GetY())>3) return;  // beam pipe
+  AliExternalTrackParam cnstrPrm;
+  if ( (pTrack->GetTrackParamCp(cnstrPrm)) <0) return;
+  AliExternalTrackParam * constrainedParam = &cnstrPrm;
+  AliExternalTrackParam lits(*constrainedParam);
+
+  AliExternalTrackParam ptrkprm;
+  pTrack->GetTrackParam(ptrkprm);
+  if (TMath::Abs(ptrkprm.GetY())>3) return;  // beam pipe
   pTPCvertex.Rotate(lits.GetAlpha());
   //pTPCvertex.PropagateTo(pTPCvertex->GetX(),fMagF);
   AliTracker::PropagateTrackToBxByBz(&pTPCvertex,lits.GetX(),0.1,2,kFALSE);
@@ -2276,4 +2393,61 @@ void        AliTPCcalibTime::FillResHistoTPCTOF(const AliExternalTrackParam * pT
     fResHistoTPCTOF[ihisto]->Fill(histoX);
   }
 
+}
+
+Bool_t AliTPCcalibTime::ResetOutputData()
+{
+  // Reset all calibration data
+  for (Int_t i=0;i<3;i++) {
+    if (fHistVdriftLaserA[i]) fHistVdriftLaserA[i]->Reset();
+    if (fHistVdriftLaserC[i]) fHistVdriftLaserC[i]->Reset();
+  }
+
+  for (Int_t i=0;i<5;i++) {
+    if (fResHistoTPCCE[i])     fResHistoTPCCE[i]    ->Reset();
+    if (fResHistoTPCITS[i])    fResHistoTPCITS[i]   ->Reset();
+    if (fResHistoTPCTRD[i])    fResHistoTPCTRD[i]   ->Reset();
+    if (fResHistoTPCTOF[i])    fResHistoTPCTOF[i]   ->Reset();
+    if (fResHistoTPCvertex[i]) fResHistoTPCvertex[i]->Reset();
+  }
+
+  for (Int_t i=0;i<12;i++) {
+    if (fTPCVertex[i]) fTPCVertex[i]->Reset();
+  }
+
+  for (Int_t i=0;i<5;i++) {
+    if (fTPCVertexCorrelation[i]) fTPCVertexCorrelation[i]->Reset();
+  }
+
+  for (Int_t i=0;i<10;i++) {
+    if (fCosmiMatchingHisto[i]) fCosmiMatchingHisto[i]->Reset();
+  }
+
+  if (fArrayDz) {
+    for (Int_t i=0; i<fArrayDz->GetEntriesFast(); ++i) {
+      ((THnSparseF*)fArrayDz->UncheckedAt(i))->Reset();
+    }
+  }
+
+  if (fAlignITSTPC){
+    fAlignITSTPC->SetOwner();
+    fAlignTRDTPC->SetOwner();
+    fAlignTOFTPC->SetOwner();
+
+    fAlignITSTPC->Delete();
+    fAlignTRDTPC->Delete();
+    fAlignTOFTPC->Delete();
+  }
+
+  if (fArrayLaserA) {
+    fArrayLaserA->SetOwner();
+    fArrayLaserA->Delete();
+  }
+
+  if (fArrayLaserA) {
+    fArrayLaserC->SetOwner();
+    fArrayLaserC->Delete();
+  }
+
+  return kTRUE;
 }

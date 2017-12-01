@@ -12,6 +12,7 @@ class AliESDtrack;
 class AliITSChannelStatus;
 class AliITSDetTypeRec;
 class AliITSRecoParam;
+class AliHLTITSTrackPoint;
 #include "AliHLTITSTrack.h" 
 #include "AliHLTITSDetector.h"
 #include "AliHLTITSLayer.h"
@@ -33,6 +34,10 @@ public:
 
   AliHLTITSTrack *Tracks() const { return fTracks;}
   Int_t NTracks() const { return fNTracks;}
+
+  AliHLTITSTrack *ITSExtrapTracks() const { return fITSExtrapTracks;} // TPC tracks, extrapolated through the ITS
+  Int_t NITSExtrapTracks() const { return fNITSExtrapTracks;}
+
   AliHLTITSTrack *ITSOutTracks() const { return fITSOutTracks;}
   Int_t NITSOutTracks() const { return fNITSOutTracks;}
 
@@ -64,11 +69,14 @@ public:
   AliHLTITSLayer    & GetLayer(Int_t layer) const;
   AliHLTITSDetector & GetDetector(Int_t layer, Int_t n) const {return GetLayer(layer).GetDetector(n); }
  
-  void FollowProlongationTree(AliHLTITSTrack * otrack);
+  void FollowProlongationTree(AliHLTITSTrack * otrack, bool pickUpClusters = 1);
   Int_t FitOutward(AliHLTITSTrack * track );
 
   void Init();
 
+ // track point calculation
+
+  Int_t GetTrackPoint( Int_t clusterIndex, AliHLTITSTrackPoint& p ) const ;
 
 protected:
 
@@ -110,8 +118,10 @@ protected:
   Float_t fxTimesRhoLayer[6];            // material budget
 
   AliHLTITSTrack *fTracks; // array of its-updated tracks
+  AliHLTITSTrack *fITSExtrapTracks; // array of TPC tracks, extrapolated through the ITS material.
   AliHLTITSTrack *fITSOutTracks; // array of tracks, fitted outward with ITS only
   int fNTracks;// n tracks
+  int fNITSExtrapTracks;// n extrapolated tracks
   int fNITSOutTracks;// n out tracks
   double fLoadTime; //
   double fRecoTime; //

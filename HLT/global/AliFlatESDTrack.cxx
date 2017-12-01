@@ -52,6 +52,7 @@ Int_t AliFlatESDTrack::SetFromESDTrack(const AliESDtrack* track)
   fNTPCClusters = 0;
   fNITSClusters = 0;
   fContentSize = 0;
+  fTPCdEdxInfoPointer = -1;
   
   if( !track ) return 0;
 
@@ -68,7 +69,14 @@ Int_t AliFlatESDTrack::SetFromESDTrack(const AliESDtrack* track)
 
   track->GetImpactParametersTPC(fImpTPC, fImpTPC+2 );
   fImpTPC[5] = track->GetConstrainedChi2TPC();
-
+  
+  if( track->GetTPCsignalN()>0 || track->GetTPCdEdxInfo() ){
+    AliFlatTPCdEdxInfo info;
+    info.SetTPCsignal( track->GetTPCsignal(), track->GetTPCsignalSigma(), track->GetTPCsignalN() );
+    info.SetFromTPCdEdxInfo( track->GetTPCdEdxInfo() );
+    SetTPCdEdxInfo( info );
+  }
+    
   return iResult;
 }
 
@@ -100,7 +108,21 @@ void  AliFlatESDTrack::GetESDTrack( AliESDtrack* esdTrack ) const
  } else {
    esdTrack->SetImpactParameters( fImp, fImp+2, fImp[5], NULL);
  }
+
  esdTrack->SetImpactParametersTPC( fImpTPC, fImpTPC+2, fImpTPC[5] );
+
+ const AliFlatTPCdEdxInfo *info = GetFlatTPCdEdxInfo();
+
+ if( info ){
+   Float_t signal;
+   Float_t rms;
+   UShort_t ncl;
+   info->GetTPCsignal( signal, rms, ncl );   
+   esdTrack->SetTPCsignal( signal, rms, ncl );
+   AliTPCdEdxInfo *dEdxInfo = new AliTPCdEdxInfo; //will be deleted automatically when esdTrack goes out of scope.
+   info->GetTPCdEdxInfo( dEdxInfo );
+   esdTrack->SetTPCdEdxInfo( dEdxInfo ); 
+ }
 
 }
 
@@ -119,7 +141,8 @@ Int_t AliFlatESDTrack::SetExternalTrackParam(
   fTrackParamMask = 0;
   fNTPCClusters = 0;
   fContentSize = 0;
-
+  fTPCdEdxInfoPointer = -1;
+  
   Int_t iResult = 0;
 
   Byte_t flag = 0x1;
@@ -152,6 +175,7 @@ Int_t AliFlatESDTrack::FillExternalTrackParam(const AliExternalTrackParam* param
   current->SetExternalTrackParam( param );    
   fTrackParamMask |= flag;
   fContentSize += sizeof(AliFlatExternalTrackParam);
+  fTPCdEdxInfoPointer = -1;
 
   return 0;
 }

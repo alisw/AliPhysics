@@ -6,7 +6,7 @@ firstRun="0"
 lastRun="999999999"
 sourceRun="241544"
 
-main ()
+main()
 {
   if [[ -z "$@" ]]; then
     echo "extend/modify the validity of OCDB objects"
@@ -14,7 +14,7 @@ main ()
     echo '* aliroot -b -q $ALICE_SRC'"'"'/HLT/programs/downloadCDB.C(someRunNumber,"local:///cvmfs/alice-ocdb.cern.ch/calibration/data/2015/OCDB","local://OCDB/2015","*/*/*")'"'"
     echo
     echo "example:"
-    echo "  ${0##*/} ocdbSource=local:///cvmfs/alice-ocdb.cern.ch/calibration/data/2015/OCDB/ ocdbTarget=local://OCDB/2015/ cdbEntries=*/*/* sourceRun=<someRunNumber> firstRun=<begin target validity range> lastRun=<end target validity range>"
+    echo "  ${0##*/} ocdbSource=/cvmfs/alice-ocdb.cern.ch/calibration/data/2015/OCDB/ ocdbTarget=OCDB/2015/ cdbEntries=*/*/* sourceRun=<someRunNumber> firstRun=<begin target validity range> lastRun=<end target validity range>"
     return 1
   fi
 

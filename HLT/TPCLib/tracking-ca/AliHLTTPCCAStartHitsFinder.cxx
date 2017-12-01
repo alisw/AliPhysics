@@ -34,7 +34,11 @@ GPUdi() void AliHLTTPCCAStartHitsFinder::Thread
       s.fNRowStartHits = 0;
       if ( s.fIRow <= s.fNRows - 4 ) {
         s.fNHits = tracker.Row( s.fIRow ).NHits();
-        if ( s.fNHits >= ALIHLTTPCCASTARTHITSFINDER_MAX_FROWSTARTHITS ) s.fNHits = ALIHLTTPCCASTARTHITSFINDER_MAX_FROWSTARTHITS - 1;
+        if ( s.fNHits >= ALIHLTTPCCASTARTHITSFINDER_MAX_FROWSTARTHITS )
+        {
+            tracker.GPUParameters()->fGPUError = HLTCA_GPU_ERROR_STARTHIT_OVERFLOW;
+            s.fNHits = - 1;
+        }
       } else s.fNHits = -1;
     }
   } else if ( iSync == 1 ) {
@@ -47,7 +51,7 @@ GPUdi() void AliHLTTPCCAStartHitsFinder::Thread
 	const AliHLTTPCCARow &rowUp = tracker.Row( s.fIRow + 2 );
 #endif
     for ( int ih = iThread; ih < s.fNHits; ih += nThreads ) {
-      if (tracker.HitLinkDownData(row, ih) < 0 && tracker.HitLinkUpData(row, ih) >= 0 && tracker.HitLinkUpData(rowUp, tracker.HitLinkUpData(row, ih)) >= 0) {
+      if (tracker.HitLinkDownData(row, ih) == CALINK_INVAL && tracker.HitLinkUpData(row, ih) != CALINK_INVAL && tracker.HitLinkUpData(rowUp, tracker.HitLinkUpData(row, ih)) != CALINK_INVAL) {
         int oldNRowStartHits = CAMath::AtomicAddShared( &s.fNRowStartHits, 1 );
 #ifdef HLTCA_GPUCODE
         s.fRowStartHits[oldNRowStartHits].Set( *xxx, ih );
@@ -85,4 +89,3 @@ GPUdi() void AliHLTTPCCAStartHitsFinder::Thread
     }
   }
 }
-

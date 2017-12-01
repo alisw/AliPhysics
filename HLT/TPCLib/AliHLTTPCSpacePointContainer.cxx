@@ -98,33 +98,21 @@ int AliHLTTPCSpacePointContainer::AddInputBlock(const AliHLTComponentBlockData* 
   bool bIsSinglePartition=(pDesc->fSpecification==kAliHLTVoidDataSpec?false:minslice==maxslice && minpart==maxpart);
 
   for (UInt_t i=0; i<pClusterData->fSpacePointCnt; i++) {
-    AliHLTUInt32_t clusterID=~(AliHLTUInt32_t)0;
-    if (bIsSinglePartition) {
-      // cluster ID has to match ID encoded from slice, partition and index
-      clusterID=AliHLTTPCSpacePointData::GetID(minslice, minpart, i);
-      if (clusterID!=pClusterData->fSpacePoints[i].fID) {
-	HLTWarning("cluster ID 0x%08x does not match slice %d partition %d index %d",
-		   pClusterData->fSpacePoints[i].fID, minslice, minpart, i);
-      }
-    } else {
-      // check the cluster ID for correct bounds
-      clusterID=pClusterData->fSpacePoints[i].fID;
-      UInt_t clusterSlice =AliHLTTPCSpacePointData::GetSlice(clusterID);
-      UInt_t clusterPart  =AliHLTTPCSpacePointData::GetPatch(clusterID);
-      UInt_t clusterNumber=AliHLTTPCSpacePointData::GetNumber(clusterID);
-      if (pDesc->fSpecification!=kAliHLTVoidDataSpec) {
-	if (clusterSlice<minslice || clusterSlice>maxslice ||
-	    clusterPart<minpart || clusterPart>maxpart) {
-	  HLTWarning("cluster ID 0x%08d out of range indicated by data specification 0x%08x", clusterID, pDesc->fSpecification);
-	} else if (clusterNumber!=i) {
-	  HLTWarning("cluster ID 0x%08d does not match index %d in block 0x%08x", clusterID, i, pDesc->fSpecification);
-	}
-      }
+    // check the cluster ID for correct bounds
+    AliHLTUInt32_t clusterID = pClusterData->fSpacePoints[i].GetRawID();
+    UInt_t clusterSlice  = AliHLTTPCGeometry::CluID2Slice(clusterID);
+    UInt_t clusterPart   = AliHLTTPCGeometry::CluID2Partition(clusterID);
+    UInt_t clusterNumber = AliHLTTPCGeometry::CluID2Index(clusterID);
+    if (pDesc->fSpecification!=kAliHLTVoidDataSpec) {
+      if (clusterSlice<minslice || clusterSlice>maxslice ||
+	  clusterPart<minpart || clusterPart>maxpart) {
+	HLTWarning("cluster ID 0x%08d out of range indicated by data specification 0x%08x", clusterID, pDesc->fSpecification);
+      } 
     }
     {
       // consistency check for x and row number
-      // UInt_t clusterSlice =AliHLTTPCSpacePointData::GetSlice(clusterID);
-      // UInt_t clusterPart  =AliHLTTPCSpacePointData::GetPatch(clusterID);
+      // UInt_t clusterSlice =AliHLTTPCGeometry::CluID2Slice(clusterID);
+      // UInt_t clusterPart  =AliHLTTPCGeometry::CluID2Partition(clusterID);
       // int row=AliHLTTPCGeometry::GetPadRow(pClusterData->fSpacePoints[i].fX);
       // if (row<AliHLTTPCGeometry::GetFirstRow(clusterPart) || row>AliHLTTPCGeometry::GetLastRow(clusterPart)) {
       // 	HLTError("row number %d calculated from x value %f is outside slice %d partition %d, expected row %d"
@@ -169,13 +157,13 @@ const vector<AliHLTUInt32_t>* AliHLTTPCSpacePointContainer::GetClusterIDs(AliHLT
   // create new collection
   vector<AliHLTUInt32_t>* selected=new vector<AliHLTUInt32_t>;
   if (!selected) return NULL;
-  UInt_t slice=AliHLTTPCSpacePointData::GetSlice(mask);
-  UInt_t partition=AliHLTTPCSpacePointData::GetPatch(mask);
+  UInt_t slice=AliHLTTPCGeometry::CluID2Slice(mask);
+  UInt_t partition=AliHLTTPCGeometry::CluID2Partition(mask);
   HLTInfo("creating collection 0x%08x", mask);
   for (std::map<AliHLTUInt32_t, AliHLTTPCSpacePointProperties>::const_iterator cl=fClusters.begin();
        cl!=fClusters.end(); cl++) {
-    UInt_t s=AliHLTTPCSpacePointData::GetSlice(cl->first);
-    UInt_t p=AliHLTTPCSpacePointData::GetPatch(cl->first);
+    UInt_t s=AliHLTTPCGeometry::CluID2Slice(cl->first);
+    UInt_t p=AliHLTTPCGeometry::CluID2Partition(cl->first);
     if ((slice>=(unsigned)AliHLTTPCGeometry::GetNSlice() || s==slice) && 
 	(partition>=(unsigned)AliHLTTPCGeometry::GetNumberOfPatches() || p==partition)) {
       selected->push_back(cl->first);
@@ -261,7 +249,7 @@ float AliHLTTPCSpacePointContainer::GetPhi(AliHLTUInt32_t clusterID) const
 
   // phi can be derived directly from the id, no need to search
   // for existing cluster
-  int slice=AliHLTTPCSpacePointData::GetSlice(clusterID);
+  int slice=AliHLTTPCGeometry::CluID2Slice(clusterID);
   return ( slice + 0.5 ) * TMath::Pi() / 9.0;
 }
 
@@ -304,12 +292,12 @@ AliHLTSpacePointContainer* AliHLTTPCSpacePointContainer::SelectByMask(AliHLTUInt
   std::auto_ptr<AliHLTTPCSpacePointContainer> c(new AliHLTTPCSpacePointContainer);
   if (!c.get()) return NULL;
 
-  UInt_t slice=AliHLTTPCSpacePointData::GetSlice(mask);
-  UInt_t partition=AliHLTTPCSpacePointData::GetPatch(mask);
+  UInt_t slice=AliHLTTPCGeometry::CluID2Slice(mask);
+  UInt_t partition=AliHLTTPCGeometry::CluID2Partition(mask);
   for (std::map<AliHLTUInt32_t, AliHLTTPCSpacePointProperties>::const_iterator cl=fClusters.begin();
        cl!=fClusters.end(); cl++) {
-    UInt_t s=AliHLTTPCSpacePointData::GetSlice(cl->first);
-    UInt_t p=AliHLTTPCSpacePointData::GetPatch(cl->first);
+    UInt_t s=AliHLTTPCGeometry::CluID2Slice(cl->first);
+    UInt_t p=AliHLTTPCGeometry::CluID2Partition(cl->first);
     if ((slice>=(unsigned)AliHLTTPCGeometry::GetNSlice() || s==slice) && 
 	(partition>=(unsigned)AliHLTTPCGeometry::GetNumberOfPatches() || p==partition)) {
       c->fClusters[cl->first]=cl->second;

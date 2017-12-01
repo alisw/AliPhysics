@@ -257,6 +257,12 @@ const AliHLTComponentDataType fgkITSTracksDataType = AliHLTComponentDataTypeInit
 /** Container of HLT ITS SAP tracker data */
 const AliHLTComponentDataType kAliHLTDataTypeITSSAPData = AliHLTComponentDataTypeInitializer( "SAPTRACK", kAliHLTDataOriginITS );
 
+/** Container of HLT ITS track point data */
+const AliHLTComponentDataType kAliHLTDataTypeITSTrackPoint = AliHLTComponentDataTypeInitializer( "ITSTRPNT", kAliHLTDataOriginITS );
+
+/** Container of HLT ITS SAP track point data */
+const AliHLTComponentDataType kAliHLTDataTypeITSSAPTrackPoint = AliHLTComponentDataTypeInitializer( "SAPTRPNT", kAliHLTDataOriginITS );
+
 /** Container of HLT calorimeter clusters */
 const AliHLTComponentDataType kAliHLTDataTypeCaloCluster = AliHLTComponentDataTypeInitializer( "CALOCLUS", kAliHLTDataOriginAny );
 
@@ -326,6 +332,9 @@ const char kAliHLTDataOriginITS[kAliHLTComponentDataTypefOriginSize]     = {'I',
 
 /** ITSOut */
 const char kAliHLTDataOriginITSOut[kAliHLTComponentDataTypefOriginSize]     = {'I','T','S','O'};
+
+/** ITSExtrapolated */
+const char kAliHLTDataOriginITSExtrapolated[kAliHLTComponentDataTypefOriginSize]     = {'I','T','S','E'};
 
 /** ITS-SPD */
 const char kAliHLTDataOriginITSSPD[kAliHLTComponentDataTypefOriginSize]  = {'I','S','P','D'};

@@ -1,6 +1,6 @@
 #ifndef ALIHLTGLOBALPROMPTRECOQACOMPONENT_H
 #define ALIHLTGLOBALPROMPTRECOQACOMPONENT_H
-//* This file is property of and copyright by the ALICE HLT Project        * 
+//* This file is property of and copyright by the ALICE HLT Project        *
 //* ALICE Experiment at CERN, All rights reserved.                         *
 //* See cxx source for full Copyright notice                               *
 
@@ -35,11 +35,12 @@ struct axisStruct {
   double high;
   double* value;
   std::map<std::string,bool> histograms;
-  axisStruct() : bins(1), low(0.), high(1.), value(NULL), histograms() {}
-  axisStruct(const axisStruct& s) : bins(s.bins), low(s.low), high(s.high), value(s.value), histograms(s.histograms) {}
-  axisStruct& operator=(const axisStruct& s) {bins=s.bins; low=s.low; high=s.high; value=s.value; histograms=s.histograms; return *this;}
-  void set( int b, double l, double h, double* v )
-  { bins=b; low=l; high=h; value=v; }
+  string description;
+  axisStruct() : bins(0), low(0.), high(1.), value(NULL), histograms(), description() {}
+  axisStruct(const axisStruct& s) : bins(s.bins), low(s.low), high(s.high), value(s.value), histograms(s.histograms), description(s.description) {}
+  axisStruct& operator=(const axisStruct& s) {bins=s.bins; low=s.low; high=s.high; value=s.value; histograms=s.histograms; description=s.description; return *this;}
+  void set( int b, double l, double h, double* v, string desc="" )
+  { bins=b; low=l; high=h; value=v; description=desc; }
 };
 
 struct histStruct {
@@ -74,9 +75,9 @@ class AliHLTGlobalPromptRecoQAComponent : public AliHLTProcessor, public AliOpti
   int DoInit(int argc, const char** argv);
   int DoDeinit();
   int DoEvent( const AliHLTComponentEventData& evtData,
-		       const AliHLTComponentBlockData* blocks, 
+		       const AliHLTComponentBlockData* blocks,
 		       AliHLTComponentTriggerData& trigData,
-		       AliHLTUInt8_t* outputPtr, 
+		       AliHLTUInt8_t* outputPtr,
 		       AliHLTUInt32_t& size,
 		       AliHLTComponentBlockDataList& outputBlocks );
 
@@ -105,9 +106,9 @@ class AliHLTGlobalPromptRecoQAComponent : public AliHLTProcessor, public AliOpti
    */
   int ProcessOption(TString option, TString value);
 
-  
+
   void NewAxis(string config);
-  void NewAxis(string name, int bins, float low, float high);
+  void NewAxis(string name, int bins, float low, float high, string desc="");
   void NewHistogram(string trigName, string histName, string histTitle, string xname, string yname, string config="" );
   void NewHistogram(std::string histConfig);
   void CreateFixedHistograms();
@@ -118,29 +119,32 @@ protected:
 
   int fVerbosity; //!transient
   AliHLTComponentBenchmark fBenchmark; // benchmark
-  
+
   AliHLTTPCHWCFData* fpHWCFData;
-  
+
   Int_t fSkipEvents;
   Int_t fPrintStats; //print status messages: 0: never, 1: when pushing histograms (respect pushback-period), 2: always
   Int_t fPrintDownscale;
   Int_t fEventsSinceSkip;
   Bool_t fPushEmptyHistograms;
+  Bool_t fResetAfterPush;
+
+  Int_t fScaleDownClusterAttachHistos; //Scale down filling of histograms: 0 = disable histogramn, 1 = fill every histogram, n = fill every n-th histogram
 
   std::map<string,histStruct> fHistograms;
   std::map<string,axisStruct> fAxes;
 
-  double fnClustersSPD; 
-  double frawSizeSPD; 
-  double fnClustersSDD; 
-  double frawSizeSDD; 
-  double fnClustersSSD; 
-  double frawSizeSSD; 
-  double fnClustersITS; 
-  double frawSizeITS; 
-  double frawSizeVZERO; 
-  double frawSizeEMCAL; 
-  double frawSizeZDC; 
+  double fnClustersSPD;
+  double frawSizeSPD;
+  double fnClustersSDD;
+  double frawSizeSDD;
+  double fnClustersSSD;
+  double frawSizeSSD;
+  double fnClustersITS;
+  double frawSizeITS;
+  double frawSizeVZERO;
+  double frawSizeEMCAL;
+  double frawSizeZDC;
   double frawSizeTRD;
   double frawSizeFMD;
   double frawSizeTZERO;
@@ -154,52 +158,70 @@ protected:
   double frawSizePMD;
   double frawSizeMUTK;
   double frawSizeMUTG;
-  
-  double fnClustersTPC; 
-  double frawSizeTPC; 
-  double fhwcfSizeTPC; 
-  double fclusterSizeTPCtransformed; 
-  double fclusterSizeTPC; 
-  double fcompressedSizeTPC; 
+
+  double fnClustersTPC;
+  double frawSizeTPC;
+  double fhwcfSizeTPC;
+  double fclusterSizeTPCtransformed;
+  double fclusterSizeTPC;
+  double fcompressedSizeTPC;
   double fTPCSplitRatioPad;
   double fTPCSplitRatioTime;
 
-  double fnITSSAPtracks; 
-  double fnTPCtracklets; 
-  double fnTPCtracks; 
-  double fnITSTracks; 
-  double fnITSOutTracks; 
+  double fnITSSAPtracks;
+  double fnTPCtracklets;
+  double fnTPCtracks;
+  double fnITSTracks;
+  double fnITSOutTracks;
 
-  double fvZEROMultiplicity; 
-  double fvZEROTriggerChargeA; 
-  double fvZEROTriggerChargeC; 
-  double fvZEROTriggerChargeAC; 
-
-  double fzdcZNC; 
-  double fzdcZNA; 
-  double fzdcZNAC; 
-
-  double fzdcRecoSize; 
-  double femcalRecoSize; 
-  double femcalTRU; 
-  double femcalSTU; 
+  double fvZEROMultiplicity;
+  double fvZEROTriggerChargeA;
+  double fvZEROTriggerChargeC;
+  double fvZEROTriggerChargeAC;
   
+  double ftZEROAmplitude;
+
+  double fzdcZNC;
+  double fzdcZNA;
+  double fzdcZNAC;
+
+  double fzdcRecoSize;
+  double femcalRecoSize;
+  double femcalTRU;
+  double femcalSTU;
+  
+  double fnTRDTracklets;
+
   double fcompressionRatio;
   double fcompressionRatioFull;
-  
-  double fnESDSize; 
-  double fnESDFriendSize; 
-  double fnFlatESDSize; 
-  double fnFlatESDFriendSize; 
-  
-  double fnHLTInSize; 
-  double fnHLTOutSize; 
+
+  double fnESDSize;
+  double fnESDFriendSize;
+  double fnFlatESDSize;
+  double fnFlatESDFriendSize;
+
+  double fnHLTInSize;
+  double fnHLTOutSize;
   double fhltRatio;
   
+  long long int fTotalClusters;
+  long long int fTotalCompressedBytes;
+
+  double fITSSPDvertexZ;
+
   //Fixed histograms with track / cluster properties.
   //These are not created dynamically because that would require quite some CPU resources.
   TH1D* fHistClusterChargeTot;
+  TH1D* fHistClusterChargeMax;
   TH1D* fHistTPCTrackPt;
+  TH2F* fHistTPCAattachedClustersRowPhi;
+  TH2F* fHistTPCAallClustersRowPhi;
+  TH2F* fHistTPCCattachedClustersRowPhi;
+  TH2F* fHistTPCCallClustersRowPhi;
+  TH2F* fHistDeDxOffline;
+  TH2F* fHistDeDxNew[10];
+  TH1D* fHistTRDHCId;
+  TH1D* fHistTPCClusterFlags;
 
   ClassDef(AliHLTGlobalPromptRecoQAComponent, 0)
 };

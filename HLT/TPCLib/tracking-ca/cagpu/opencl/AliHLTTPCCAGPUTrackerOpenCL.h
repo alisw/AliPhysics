@@ -30,7 +30,6 @@ public:
 
 	virtual int InitGPU_Runtime(int sliceCount = -1, int forceDeviceID = -1);
 	virtual int Reconstruct(AliHLTTPCCASliceOutput** pOutput, AliHLTTPCCAClusterData* pClusterData, int fFirstSlice, int fSliceCount = -1);
-	virtual int ReconstructPP(AliHLTTPCCASliceOutput** pOutput, AliHLTTPCCAClusterData* pClusterData, int fFirstSlice, int fSliceCount = -1);
 	virtual int ExitGPU_Runtime();
 	virtual int RefitMergedTracks(AliHLTTPCGMMerger* Merger);
 
@@ -41,7 +40,6 @@ protected:
 	virtual int GPUSync(const char* state = "UNKNOWN", int sliceLocal = 0, int slice = 0);
 
 private:
-	void DumpRowBlocks(AliHLTTPCCATracker* tracker, int iSlice, bool check = true);
 	bool GPUFailedMsgA(int, const char* file, int line);
 	AliHLTTPCCAGPUTrackerOpenCLInternals* ocl;
 

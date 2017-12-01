@@ -26,7 +26,7 @@
 #include <TChain.h>
 #include <TList.h>
 #include "AliTPCseed.h"
-#include "AliESDtrack.h"
+#include "AliVTrack.h"
 #include "AliTPCcalibTracksCuts.h"
 
 ClassImp(AliTPCcalibTracksCuts)
@@ -143,7 +143,7 @@ Int_t AliTPCcalibTracksCuts::AcceptTrack(const AliTPCseed * track) const {
   return 0;
 }
 
-Int_t AliTPCcalibTracksCuts::AcceptTrack(const AliESDtrack * track) const {
+Int_t AliTPCcalibTracksCuts::AcceptTrack(const AliVTrack * track) const {
   //
   // Function, that decides wheather a given track is accepted for 
   // the analysis or not. 
@@ -153,13 +153,15 @@ Int_t AliTPCcalibTracksCuts::AcceptTrack(const AliESDtrack * track) const {
   
   //
   // edge induced noise tracks - NEXT RELEASE will be removed during tracking
-  if ( TMath::Abs(track->GetY() / track->GetX()) > fEdgeYXCutNoise )
-    if ( TMath::Abs(track->GetTgl()) < fEdgeThetaCutNoise ) return 1;
+    AliExternalTrackParam trkprm;
+    track->GetTrackParam(trkprm);
+  if ( TMath::Abs(trkprm.GetY() / trkprm.GetX()) > fEdgeYXCutNoise )
+    if ( TMath::Abs(trkprm.GetTgl()) < fEdgeThetaCutNoise ) return 1;
   if (track->GetTPCNcls() < fMinClusters) return 2;
   Float_t ratio = track->GetTPCNcls() / (track->GetTPCNclsF() + 1.);
   if (ratio < fMinRatio) return 3;
   //   Float_t mpt = track->Get1Pt();       // Get1Pt() doesn't exist any more
-  Float_t mpt = track->GetSigned1Pt();
+  Float_t mpt = trkprm.GetSigned1Pt();
   if (TMath::Abs(mpt) > fMax1pt) return 4;
   
   return 0;

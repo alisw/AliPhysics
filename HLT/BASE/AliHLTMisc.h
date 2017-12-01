@@ -23,6 +23,7 @@
 class AliCDBManager;
 class AliCDBEntry;
 class AliRawReader;
+class AliRunLoader;
 struct AliHLTComponentDataType;
 class AliHLTGlobalTriggerDecision;
 class TMap;
@@ -77,6 +78,7 @@ class AliHLTMisc : public TObject {
   /// extract the timestamp from the rawreader
   /// NOTE: not to be used in the online system, use AliHLTComponent::GetTimeStamp()
   virtual AliHLTUInt32_t GetTimeStamp(AliRawReader* rawReader) const;
+  virtual AliHLTUInt32_t GetTimeStamp(AliRunLoader* runLoader, int evtNo) const;
 
   /// extract the event type from the rawreader
   /// NOTE: not to be used in the online system

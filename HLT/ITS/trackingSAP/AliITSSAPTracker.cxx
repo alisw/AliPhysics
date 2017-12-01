@@ -14,6 +14,8 @@
 #include <TFile.h>
 #include "AliLog.h"
 
+#include "AliHLTITSTrackPoint.h"
+#include "Riostream.h"
 
 ClassImp(AliITSSAPTracker)
 
@@ -1556,3 +1558,60 @@ void AliITSSAPTracker::PrintTiming()
   for (int i=0;i<kNSW;i++) {printf("%-10s:\t",fgkSWNames[i]); fSW[i].Print();}
 }
 #endif
+
+
+Int_t AliITSSAPTracker::GetTrackPoint( Int_t iLayer, Int_t clusterIndex, AliHLTITSTrackPoint& p ) const 
+{
+  //--------------------------------------------------------------------
+  // Get track space point with index clusterIndex
+  //--------------------------------------------------------------------
+
+  const AliITSRecPoint* cl = fLayers[iLayer]->GetClusterSorted( clusterIndex );
+
+  if( !cl ){
+    AliError( "AliITSSAPTracker: wrong cluster pointer" );
+    p.Reset();
+    return -1;
+  }
+
+  Int_t idet = cl->GetDetectorIndex();
+
+  bool ok = cl->GetGlobalXYZ(p.fXYZ) && cl->GetGlobalCov(p.fCov);
+  if( !ok ){
+    AliError( "AliITSSAPTracker: can not get global coordinates of a cluster" );
+    p.Reset();
+    return -1;
+  }
+
+  p.fCharge = cl->GetQ();
+  p.fChargeRatio = cl->GetChargeRatio();
+  p.fClusterType = cl->GetClusterType();
+  p.fDriftTime = cl->GetDriftTime();
+
+  AliGeomManager::ELayerID layerID = AliGeomManager::kInvalidLayer; 
+  switch (iLayer) {
+  case 0:
+    layerID = AliGeomManager::kSPD1;
+    break;
+  case 1:
+    layerID = AliGeomManager::kSPD2;
+    break;
+  case 2:
+    layerID = AliGeomManager::kSDD1;
+    break;
+  case 3:
+    layerID = AliGeomManager::kSDD2;
+    break;
+  case 4:
+    layerID = AliGeomManager::kSSD1;
+    break;
+  case 5:
+    layerID = AliGeomManager::kSSD2;
+    break;
+  default:
+    AliWarning(Form("AliITSSAPTracker: Wrong layer index in ITS (%d) !",iLayer));
+    break;
+  };
+  p.fVolumeID = AliGeomManager::LayerToVolUID(layerID,idet);
+  return 0;
+}

@@ -39,7 +39,7 @@ AliHLTTPCFastTransformObject::AliHLTTPCFastTransformObject()
 {
   // constructor
   for (int i = 0;i < fkNSec;i++) fSectorInit[i] = false;
-  
+  for (int i = 0;i < sizeof(fReverseTransformInfo) / sizeof(float);i++) fReverseTransformInfo[i] = 0.;
   Reset();
 }
 
@@ -53,11 +53,12 @@ void  AliHLTTPCFastTransformObject::Reset()
   fTimeSplit2 = 0.;  
   for( Int_t i=0; i<fkNSplinesIn + fkNSplinesOut; i++) fSplines[i].Reset();
   fAlignment.Set(0);
+  for (int i = 0;i < sizeof(fReverseTransformInfo) / sizeof(float);i++) fReverseTransformInfo[i] = 0.;
 }
 
 AliHLTTPCFastTransformObject::AliHLTTPCFastTransformObject( const AliHLTTPCFastTransformObject &o )
   :
-  TObject( o ),
+  TObject(o),
   fVersion(0),
   fLastTimeBin(o.fLastTimeBin),
   fTimeSplit1(o.fTimeSplit1),
@@ -68,6 +69,7 @@ AliHLTTPCFastTransformObject::AliHLTTPCFastTransformObject( const AliHLTTPCFastT
   for( Int_t i=0; i<fkNSplinesIn + fkNSplinesOut; i++){
     fSplines[i] = o.fSplines[i];
   }
+  for (int i = 0;i < sizeof(fReverseTransformInfo) / sizeof(float);i++) fReverseTransformInfo[i] = o.fReverseTransformInfo[i];
 }
 
 AliHLTTPCFastTransformObject& AliHLTTPCFastTransformObject::operator=( const AliHLTTPCFastTransformObject &o)
@@ -122,4 +124,16 @@ Long64_t AliHLTTPCFastTransformObject::Merge(TCollection* list)
 		}
 	}
 	return(nMerged);
+}
+
+void AliHLTTPCFastTransformObject::SetReverseTransformInfo(const AliHLTTPCReverseTransformInfoV1 p)
+{
+    if (sizeof(AliHLTTPCReverseTransformInfoV1) > sizeof(fReverseTransformInfo))
+    {
+	printf("ERROR: Not enough space in HLT fast transform object to store revere transform info. Increase array size!");
+    }
+    else
+    {
+	*(AliHLTTPCReverseTransformInfoV1*) fReverseTransformInfo = p;
+    }
 }

@@ -17,8 +17,8 @@ class TH3F;
 class TH2F;
 class TList;
 class TGraphErrors;
-class AliESDEvent;
-class AliESDtrack;
+class AliVEvent;
+class AliVTrack;
 class AliTPCcalibLaser;
 class AliTPCseed;
 
@@ -31,19 +31,19 @@ public:
   AliTPCcalibTimeGain(const Text_t *name, const Text_t *title, UInt_t StartTime, UInt_t EndTime, Int_t deltaIntegrationTimeGain);
   virtual ~AliTPCcalibTimeGain();
   //
-  virtual void           Process(AliESDEvent *event);
+  virtual void           Process(AliVEvent *event);
   virtual Long64_t       Merge(TCollection *li);
   virtual void           AnalyzeRun(Int_t minEntries);
   //
-  void                   ProcessCosmicEvent(AliESDEvent *event);
-  void                   ProcessBeamEvent(AliESDEvent *event);
+  void                   ProcessCosmicEvent(AliVEvent *event);
+  void                   ProcessBeamEvent(AliVEvent *event);
   //
   void                   CalculateBetheAlephParams(TH2F *hist, Double_t * ini);
   static void            BinLogX(THnSparse *h, Int_t axisDim);
   static void            BinLogX(TH1 *h);
   //
-  THnSparse *            GetHistGainTime() const {return (THnSparse*) fHistGainTime;};
-  TH2F      *            GetHistDeDxTotal() const {return (TH2F*) fHistDeDxTotal;};
+  THnSparse *            GetHistGainTime() const {return (THnSparse*) fHistGainTime;}
+  TH2F      *            GetHistDeDxTotal() const {return (TH2F*) fHistDeDxTotal;}
   //
   TGraphErrors *         GetGraphGainVsTime(Int_t runNumber = 0, Int_t minEntries = 2000);
   static AliSplineFit *  MakeSplineFit(TGraphErrors * graph);
@@ -76,6 +76,10 @@ public:
   static void SetMergeEntriesCut(Double_t entriesCut){fgMergeEntriesCut = entriesCut;}
 
   Double_t GetEntries() const {return fHistGainTime->GetEntries();}
+
+  // full reset: discard all statistics, zero histograms, start again.
+  // called in online mode (HLT) after sending output for merging.
+  virtual Bool_t            ResetOutputData();
 
 private:
   static Double_t fgMergeEntriesCut;  //maximal number of entries for merging  -can be modified via setter
@@ -119,7 +123,7 @@ private:
   //
   AliTPCcalibTimeGain(const AliTPCcalibTimeGain&); 
   AliTPCcalibTimeGain& operator=(const AliTPCcalibTimeGain&); 
-  void     Process(AliESDtrack *track, Int_t runNo=-1){AliTPCcalibBase::Process(track,runNo);};
+  void     Process(AliVTrack *track, Int_t runNo=-1){AliTPCcalibBase::Process(track,runNo);}
   void     Process(AliTPCseed *track){return AliTPCcalibBase::Process(track);}
 
   ClassDef(AliTPCcalibTimeGain, 3);

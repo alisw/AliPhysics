@@ -87,6 +87,7 @@ struct AliHLTTPCRawCluster {
   Bool_t  GetFlagSplitTime() const {return (fFlags & (1 << 1));}
   Bool_t  GetFlagSplitAny() const {return (fFlags & 3);}
   Bool_t  GetFlagEdge() const {return (fFlags & (1 << 2));}
+  Bool_t  GetFlagSplitAnyOrEdge() const {return (fFlags & 7);}
   unsigned short GetFlags() const {return(fFlags);}
 
   void SetPadRow(Short_t padrow)  {fPadRow=padrow;}

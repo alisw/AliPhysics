@@ -96,7 +96,7 @@ class AliHLTTPCTrackGeometry : public AliHLTTrackGeometry
     AliHLTFloat32_t  fX; //! first X
     AliHLTFloat32_t  fY; //! first Y
     AliHLTFloat32_t  fZ; //! first Z
-    AliHLTFloat32_t  fSinPsi; // local sine of the track momentum azimuthal angle
+    AliHLTFloat32_t  fSinPhi; // local sine of the track momentum azimuthal angle
     AliHLTFloat32_t  fTgl;    // tangent of the track momentum dip angle
     AliHLTFloat32_t  fq1Pt;   // 1/pt (1/(GeV/c))
   };

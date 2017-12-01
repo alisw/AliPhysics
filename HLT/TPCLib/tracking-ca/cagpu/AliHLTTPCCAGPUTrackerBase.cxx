@@ -86,27 +86,17 @@ void* AliHLTTPCCAGPUTrackerBase::helperWrapper(void* arg)
 				if (myISlice >= 0)
 				{
 					tmpTracker->Initialize(cls->fSlaveTrackers[par->fFirstSlice + myISlice].Param());
-					tmpTracker->ReadEvent(&par->pClusterData[myISlice]);
+					if (tmpTracker->ReadEvent(&par->pClusterData[myISlice]))
+					{
+						printf("Fatal error during CPU tracking!\n");
+						exit(1);
+					}
 					tmpTracker->DoTracking();
 					tmpTracker->SetOutput(&par->pOutput[myISlice]);
 					pthread_mutex_lock((pthread_mutex_t*) cls->fHelperMemMutex);
 					tmpTracker->WriteOutputPrepare();
 					pthread_mutex_unlock((pthread_mutex_t*) cls->fHelperMemMutex);
 					tmpTracker->WriteOutput();
-
-					/*cls->fSlaveTrackers[par->fFirstSlice + myISlice].SetGPUSliceDataMemory((char*) new uint4[HLTCA_GPU_SLICE_DATA_MEMORY/sizeof(uint4)], (char*) new uint4[HLTCA_GPU_ROWS_MEMORY/sizeof(uint4)]);
-					cls->fSlaveTrackers[par->fFirstSlice + myISlice].ReadEvent(&par->pClusterData[myISlice]);
-					cls->fSlaveTrackers[par->fFirstSlice + myISlice].SetPointersTracklets(HLTCA_GPU_MAX_TRACKLETS);
-					cls->fSlaveTrackers[par->fFirstSlice + myISlice].SetPointersHits(par->pClusterData[myISlice].NumberOfClusters());
-					cls->fSlaveTrackers[par->fFirstSlice + myISlice].SetPointersTracks(HLTCA_GPU_MAX_TRACKS, par->pClusterData[myISlice].NumberOfClusters());
-					cls->fSlaveTrackers[par->fFirstSlice + myISlice].SetGPUTrackerTrackletsMemory(reinterpret_cast<char*> ( new uint4 [ cls->fSlaveTrackers[par->fFirstSlice + myISlice].TrackletMemorySize()/sizeof( uint4 ) + 100] ), HLTCA_GPU_MAX_TRACKLETS, cls->fConstructorBlockCount);
-					cls->fSlaveTrackers[par->fFirstSlice + myISlice].SetGPUTrackerHitsMemory(reinterpret_cast<char*> ( new uint4 [ cls->fSlaveTrackers[par->fFirstSlice + myISlice].HitMemorySize()/sizeof( uint4 ) + 100]), par->pClusterData[myISlice].NumberOfClusters());
-					cls->fSlaveTrackers[par->fFirstSlice + myISlice].SetGPUTrackerTracksMemory(reinterpret_cast<char*> ( new uint4 [ cls->fSlaveTrackers[par->fFirstSlice + myISlice].TrackMemorySize()/sizeof( uint4 ) + 100]), HLTCA_GPU_MAX_TRACKS, par->pClusterData[myISlice].NumberOfClusters());
-					cls->fSlaveTrackers[par->fFirstSlice + myISlice].DoTracking();
-					cls->WriteOutput(par->pOutput, par->fFirstSlice, myISlice, par->fNum + 1);
-					delete[] cls->fSlaveTrackers[par->fFirstSlice + myISlice].HitMemory();
-					delete[] cls->fSlaveTrackers[par->fFirstSlice + myISlice].TrackletMemory();
-					delete[] cls->fSlaveTrackers[par->fFirstSlice + myISlice].TrackMemory();*/
 				}
 #ifdef HLTCA_STANDALONE
 				if (cls->fDebugLevel >= 3) HLTInfo("\tHelper Thread %d Finished, Slice %d", par->fNum, myISlice);
@@ -155,7 +145,7 @@ void* AliHLTTPCCAGPUTrackerBase::helperWrapper(void* arg)
 				}
 				else
 				{
-					cls->ReadEvent(par->pClusterData, par->fFirstSlice, i, par->fNum + 1);
+					if (cls->ReadEvent(par->pClusterData, par->fFirstSlice, i, par->fNum + 1)) par->fError = 1;
 					par->fDone = i + 1;
 				}
 				//if (cls->fDebugLevel >= 3) HLTInfo("\tHelper Thread %d Finished, Slice %d+%d, Phase %d", par->fNum, par->fFirstSlice, i, par->fPhase);
@@ -201,12 +191,12 @@ fDebugLevel(0),
 fDebugMask(0xFFFFFFFF),
 fOutFile(NULL),
 fGPUMemSize(0),
+fHostMemSize(0),
 fSliceCount(HLTCA_GPU_DEFAULT_MAX_SLICE_COUNT),
 fCudaDevice(0),
 fOutputControl(NULL),
 fThreadId(0),
 fCudaInitialized(0),
-fPPMode(0),
 fSelfheal(0),
 fConstructorBlockCount(30),
 selectorBlockCount(30),
@@ -219,7 +209,9 @@ fNCPUTrackers(0),
 fNSlicesPerCPUTracker(0),
 fGlobalTracking(0),
 fUseGlobalTracking(0),
-fNSlaveThreads(0)
+fNSlaveThreads(0),
+fStuckProtection(0),
+fGPUStuck(0)
 {}
 
 AliHLTTPCCAGPUTrackerBase::~AliHLTTPCCAGPUTrackerBase()
@@ -264,7 +256,10 @@ int AliHLTTPCCAGPUTrackerBase::CheckMemorySizes(int sliceCount)
 
 	if (fDebugLevel >= 3)
 	{
-		HLTInfo("Memory usage: Tracker Object %d / %d, Common Memory %d / %d, Row Memory %d / %d", (int) sizeof(AliHLTTPCCATracker) * sliceCount, HLTCA_GPU_TRACKER_OBJECT_MEMORY, (int) (fgkNSlices * AliHLTTPCCATracker::CommonMemorySize()), HLTCA_GPU_COMMON_MEMORY, (int) (fgkNSlices * (HLTCA_ROW_COUNT + 1) * sizeof(AliHLTTPCCARow)), HLTCA_GPU_ROWS_MEMORY);
+		HLTInfo("Memory usage: Tracker Object %lld / %lld, Common Memory %lld / %lld, Row Memory %lld / %lld",
+			(long long int) sizeof(AliHLTTPCCATracker) * sliceCount, (long long int) HLTCA_GPU_TRACKER_OBJECT_MEMORY,
+			(long long int) (fgkNSlices * AliHLTTPCCATracker::CommonMemorySize()), (long long int) HLTCA_GPU_COMMON_MEMORY,
+			(long long int) (fgkNSlices * (HLTCA_ROW_COUNT + 1) * sizeof(AliHLTTPCCARow)), (long long int) HLTCA_GPU_ROWS_MEMORY);
 	}
 	return(0);
 }
@@ -274,16 +269,13 @@ void AliHLTTPCCAGPUTrackerBase::SetDebugLevel(const int dwLevel, std::ostream* c
 	//Set Debug Level and Debug output File if applicable
 	fDebugLevel = dwLevel;
 	if (NewOutFile) fOutFile = NewOutFile;
+	for (int i = 0;i < fgkNSlices;i++) fSlaveTrackers[i].SetGPUDebugLevel(dwLevel > 0); //Set at least to 1 to collect timing information
 }
 
-int AliHLTTPCCAGPUTrackerBase::SetGPUTrackerOption(char* OptionName, int OptionValue)
+int AliHLTTPCCAGPUTrackerBase::SetGPUTrackerOption(const char* OptionName, int OptionValue)
 {
 	//Set a specific GPU Tracker Option
-	if (strcmp(OptionName, "PPMode") == 0)
-	{
-		fPPMode = OptionValue;
-	}
-	else if (strcmp(OptionName, "DebugMask") == 0)
+	if (strcmp(OptionName, "DebugMask") == 0)
 	{
 		fDebugMask = OptionValue;
 	}
@@ -303,6 +295,10 @@ int AliHLTTPCCAGPUTrackerBase::SetGPUTrackerOption(char* OptionName, int OptionV
 	{
 		fGlobalTracking = OptionValue;
 	}
+	else if (strcmp(OptionName, "StuckProtection") == 0)
+	{
+		fStuckProtection = OptionValue;
+	}
 	else
 	{
 		HLTError("Unknown Option: %s", OptionName);
@@ -318,19 +314,6 @@ int AliHLTTPCCAGPUTrackerBase::SetGPUTrackerOption(char* OptionName, int OptionV
 
 	return(0);
 }
-
-#ifdef HLTCA_STANDALONE
-void AliHLTTPCCAGPUTrackerBase::StandalonePerfTime(int iSlice, int i)
-{
-	//Run Performance Query for timer i of slice iSlice
-	if (fDebugLevel >= 1)
-	{
-		AliHLTTPCCATracker::StandaloneQueryTime( fSlaveTrackers[iSlice].PerfTimer(i));
-	}
-}
-#else
-void AliHLTTPCCAGPUTrackerBase::StandalonePerfTime(int /*iSlice*/, int /*i*/) {}
-#endif
 
 int AliHLTTPCCAGPUTrackerBase::SelfHealReconstruct(AliHLTTPCCASliceOutput** pOutput, AliHLTTPCCAClusterData* pClusterData, int firstSlice, int sliceCountLocal)
 {
@@ -364,18 +347,19 @@ int AliHLTTPCCAGPUTrackerBase::SelfHealReconstruct(AliHLTTPCCASliceOutput** pOut
 	return(retVal);
 }
 
-void AliHLTTPCCAGPUTrackerBase::ReadEvent(AliHLTTPCCAClusterData* pClusterData, int firstSlice, int iSlice, int threadId)
+int AliHLTTPCCAGPUTrackerBase::ReadEvent(AliHLTTPCCAClusterData* pClusterData, int firstSlice, int iSlice, int threadId)
 {
 	fSlaveTrackers[firstSlice + iSlice].SetGPUSliceDataMemory(SliceDataMemory(fHostLockedMemory, iSlice), RowMemory(fHostLockedMemory, firstSlice + iSlice));
 #ifdef HLTCA_GPU_TIME_PROFILE
 	unsigned long long int a, b;
 	AliHLTTPCCATracker::StandaloneQueryTime(&a);
 #endif
-	fSlaveTrackers[firstSlice + iSlice].ReadEvent(&pClusterData[iSlice]);
+	if (fSlaveTrackers[firstSlice + iSlice].ReadEvent(&pClusterData[iSlice])) return(1);
 #ifdef HLTCA_GPU_TIME_PROFILE
 	AliHLTTPCCATracker::StandaloneQueryTime(&b);
 	HLTInfo("Read %d %f %f\n", threadId, ((double) b - (double) a) / (double) fProfTimeC, ((double) a - (double) fProfTimeD) / (double) fProfTimeC);
 #endif
+	return(0);
 }
 
 void AliHLTTPCCAGPUTrackerBase::WriteOutput(AliHLTTPCCASliceOutput** pOutput, int firstSlice, int iSlice, int threadId)
@@ -397,7 +381,7 @@ void AliHLTTPCCAGPUTrackerBase::WriteOutput(AliHLTTPCCASliceOutput** pOutput, in
 	if (fDebugLevel >= 3) {HLTDebug("GPU Tracker finished WriteOutput for slice %d on thread %d\n", firstSlice + iSlice, threadId);}
 }
 
-int AliHLTTPCCAGPUTrackerBase::InitializeSliceParam(int iSlice, AliHLTTPCCAParam &param)
+int AliHLTTPCCAGPUTrackerBase::InitializeSliceParam(int iSlice, const AliHLTTPCCAParam &param)
 {
 	//Initialize Slice Tracker Parameter for a slave tracker
 	fSlaveTrackers[iSlice].Initialize(param);
@@ -532,12 +516,6 @@ int AliHLTTPCCAGPUTrackerBase::GetThread()
 #endif
 }
 
-unsigned long long int* AliHLTTPCCAGPUTrackerBase::PerfTimer(int iSlice, unsigned int i)
-{
-	//Returns pointer to PerfTimer i of slice iSlice
-	return(fSlaveTrackers ? fSlaveTrackers[iSlice].PerfTimer(i) : NULL);
-}
-
 const AliHLTTPCCASliceOutput::outputControlStruct* AliHLTTPCCAGPUTrackerBase::OutputControl() const
 {
 	//Return Pointer to Output Control Structure
@@ -548,11 +526,6 @@ int AliHLTTPCCAGPUTrackerBase::GetSliceCount() const
 {
 	//Return max slice count processable
 	return(fSliceCount);
-}
-
-char* AliHLTTPCCAGPUTrackerBase::MergerBaseMemory()
-{
-	return(alignPointer((char*) fGPUMergerHostMemory, 1024 * 1024));
 }
 
 int AliHLTTPCCAGPUTrackerBase::IsInitialized()
@@ -602,15 +575,17 @@ int AliHLTTPCCAGPUTrackerBase::InitGPU(int sliceCount, int forceDeviceID)
 
 	fThreadId = GetThread();
 
-	fGPUMemSize = HLTCA_GPU_ROWS_MEMORY + HLTCA_GPU_COMMON_MEMORY + sliceCount * (HLTCA_GPU_SLICE_DATA_MEMORY + HLTCA_GPU_GLOBAL_MEMORY);
-
 #ifdef HLTCA_GPU_MERGER
-	fGPUMergerMaxMemory = 2000000 * 5 * sizeof(float);
-	fGPUMemSize += fGPUMergerMaxMemory;
+	fGPUMergerMaxMemory = HLTCA_GPU_MERGER_MEMORY;
 #endif
-
+	const size_t trackerGPUMem  = HLTCA_GPU_ROWS_MEMORY + HLTCA_GPU_COMMON_MEMORY + sliceCount * (HLTCA_GPU_SLICE_DATA_MEMORY + HLTCA_GPU_GLOBAL_MEMORY);
+	const size_t trackerHostMem = HLTCA_GPU_ROWS_MEMORY + HLTCA_GPU_COMMON_MEMORY + sliceCount * (HLTCA_GPU_SLICE_DATA_MEMORY + HLTCA_GPU_TRACKS_MEMORY) + HLTCA_GPU_TRACKER_OBJECT_MEMORY;
+	fGPUMemSize = trackerGPUMem + fGPUMergerMaxMemory + HLTCA_GPU_MEMALIGN;
+	fHostMemSize = trackerHostMem + fGPUMergerMaxMemory + HLTCA_GPU_MEMALIGN;
 	int retVal = InitGPU_Runtime(sliceCount, forceDeviceID);
 	ReleaseGlobalLock(semLock);
+	fGPUMergerMemory = alignPointer(((char*) fGPUMemory) + trackerGPUMem, HLTCA_GPU_MEMALIGN);
+	fGPUMergerHostMemory = alignPointer(((char*) fHostLockedMemory) + trackerHostMem, HLTCA_GPU_MEMALIGN);
 
 	if (retVal)
 	{
@@ -824,8 +799,6 @@ int AliHLTTPCCAGPUTrackerBase::Reconstruct_Base_Finalize(AliHLTTPCCASliceOutput*
 		}
 	}
 
-	StandalonePerfTime(firstSlice, 10);
-
 	if (fDebugLevel >= 3) HLTInfo("GPU Reconstruction finished");
 	return(0);
 }
@@ -850,7 +823,7 @@ int AliHLTTPCCAGPUTrackerBase::Reconstruct_Base_StartGlobal(AliHLTTPCCASliceOutp
 
 		for (int iSlice = 0;iSlice < fgkNSlices;iSlice++)
 		{
-			fSlaveTrackers[iSlice].SetGPUTrackerTrackletsMemory(tmpMemoryGlobalTracking + (tmpmemSize * iSlice), 1, fConstructorBlockCount);
+			fSlaveTrackers[iSlice].SetGPUTrackerTrackletsMemory(tmpMemoryGlobalTracking + (tmpmemSize * iSlice), 1);
 		}
 	}
 	for (int i = 0;i < fNHelperThreads;i++)
@@ -864,18 +837,25 @@ int AliHLTTPCCAGPUTrackerBase::Reconstruct_Base_StartGlobal(AliHLTTPCCASliceOutp
 
 int AliHLTTPCCAGPUTrackerBase::Reconstruct_Base_SliceInit(AliHLTTPCCAClusterData* pClusterData, int& iSlice, int& firstSlice)
 {
-	StandalonePerfTime(firstSlice + iSlice, 0);
-
 	//Initialize GPU Slave Tracker
 	if (fDebugLevel >= 3) HLTInfo("Creating Slice Data (Slice %d)", iSlice);
 	if (iSlice % (fNHelperThreads + 1) == 0)
 	{
-		ReadEvent(pClusterData, firstSlice, iSlice, 0);
+		if (ReadEvent(pClusterData, firstSlice, iSlice, 0))
+		{
+			ResetHelperThreads(1);
+			return(1);
+		}
 	}
 	else
 	{
 		if (fDebugLevel >= 3) HLTInfo("Waiting for helper thread %d", iSlice % (fNHelperThreads + 1) - 1);
 		while(fHelperParams[iSlice % (fNHelperThreads + 1) - 1].fDone < iSlice);
+		if (fHelperParams[iSlice % (fNHelperThreads + 1) - 1].fError)
+		{
+			ResetHelperThreads(1);
+			return(1);
+		}
 	}
 
 	if (fDebugLevel >= 4)
@@ -888,14 +868,14 @@ int AliHLTTPCCAGPUTrackerBase::Reconstruct_Base_SliceInit(AliHLTTPCCAClusterData
 
 	if (fSlaveTrackers[firstSlice + iSlice].Data().MemorySize() > HLTCA_GPU_SLICE_DATA_MEMORY RANDOM_ERROR)
 	{
-		HLTError("Insufficiant Slice Data Memory: Slice %d, Needed %d, Available %d", firstSlice + iSlice, (int) fSlaveTrackers[firstSlice + iSlice].Data().MemorySize(), HLTCA_GPU_SLICE_DATA_MEMORY);
+		HLTError("Insufficiant Slice Data Memory: Slice %d, Needed %lld, Available %lld", firstSlice + iSlice, (long long int) fSlaveTrackers[firstSlice + iSlice].Data().MemorySize(), (long long int) HLTCA_GPU_SLICE_DATA_MEMORY);
 		ResetHelperThreads(1);
 		return(1);
 	}
 
 	if (fDebugLevel >= 3)
 	{
-		HLTInfo("GPU Slice Data Memory Used: %d/%d", (int) fSlaveTrackers[firstSlice + iSlice].Data().MemorySize(), HLTCA_GPU_SLICE_DATA_MEMORY);
+		HLTInfo("GPU Slice Data Memory Used: %lld/%lld", (long long int) fSlaveTrackers[firstSlice + iSlice].Data().MemorySize(), (long long int) HLTCA_GPU_SLICE_DATA_MEMORY);
 	}
 	return(0);
 }
@@ -929,12 +909,6 @@ int AliHLTTPCCAGPUTrackerBase::Reconstruct_Base_Init(AliHLTTPCCASliceOutput** pO
 	}
 	
 	ActivateThreadContext();
-	if (fPPMode)
-	{
-		int retVal = ReconstructPP(pOutput, pClusterData, firstSlice, sliceCountLocal);
-		ReleaseThreadContext();
-		return(retVal);
-	}
 
 	for (int i = fNHelperThreads;i < fNCPUTrackers + fNHelperThreads;i++)
 	{
@@ -973,15 +947,15 @@ int AliHLTTPCCAGPUTrackerBase::Reconstruct_Base_Init(AliHLTTPCCASliceOutput** pO
 
 		if (fDebugLevel >= 3) HLTInfo("Initialising GPU Hits Memory");
 		tmpMem = fGpuTracker[iSlice].SetGPUTrackerHitsMemory(tmpMem, pClusterData[iSlice].NumberOfClusters());
-		tmpMem = alignPointer(tmpMem, 1024 * 1024);
+		tmpMem = alignPointer(tmpMem, HLTCA_GPU_MEMALIGN);
 
 		if (fDebugLevel >= 3) HLTInfo("Initialising GPU Tracklet Memory");
-		tmpMem = fGpuTracker[iSlice].SetGPUTrackerTrackletsMemory(tmpMem, HLTCA_GPU_MAX_TRACKLETS, fConstructorBlockCount);
-		tmpMem = alignPointer(tmpMem, 1024 * 1024);
+		tmpMem = fGpuTracker[iSlice].SetGPUTrackerTrackletsMemory(tmpMem, HLTCA_GPU_MAX_TRACKLETS);
+		tmpMem = alignPointer(tmpMem, HLTCA_GPU_MEMALIGN);
 
 		if (fDebugLevel >= 3) HLTInfo("Initialising GPU Track Memory");
 		tmpMem = fGpuTracker[iSlice].SetGPUTrackerTracksMemory(tmpMem, HLTCA_GPU_MAX_TRACKS, pClusterData[iSlice].NumberOfClusters());
-		tmpMem = alignPointer(tmpMem, 1024 * 1024);
+		tmpMem = alignPointer(tmpMem, HLTCA_GPU_MEMALIGN);
 
 		if (fGpuTracker[iSlice].TrackMemorySize() >= HLTCA_GPU_TRACKS_MEMORY RANDOM_ERROR)
 		{
@@ -990,7 +964,7 @@ int AliHLTTPCCAGPUTrackerBase::Reconstruct_Base_Init(AliHLTTPCCASliceOutput** pO
 			return(1);
 		}
 
-		if (tmpMem - (char*) GlobalMemory(fGPUMemory, iSlice) > HLTCA_GPU_GLOBAL_MEMORY RANDOM_ERROR)
+		if ((size_t) (tmpMem - (char*) GlobalMemory(fGPUMemory, iSlice)) > HLTCA_GPU_GLOBAL_MEMORY RANDOM_ERROR)
 		{
 			HLTError("Insufficiant Global Memory");
 			ResetHelperThreads(0);
@@ -999,7 +973,7 @@ int AliHLTTPCCAGPUTrackerBase::Reconstruct_Base_Init(AliHLTTPCCASliceOutput** pO
 
 		if (fDebugLevel >= 3)
 		{
-			HLTInfo("GPU Global Memory Used: %d/%d, Page Locked Tracks Memory used: %d / %d", (int) (tmpMem - (char*) GlobalMemory(fGPUMemory, iSlice)), HLTCA_GPU_GLOBAL_MEMORY, (int) fGpuTracker[iSlice].TrackMemorySize(), HLTCA_GPU_TRACKS_MEMORY);
+			HLTInfo("GPU Global Memory Used: %lld/%lld, Page Locked Tracks Memory used: %lld / %lld", (long long int) (tmpMem - (char*) GlobalMemory(fGPUMemory, iSlice)), (long long int) HLTCA_GPU_GLOBAL_MEMORY, (long long int) fGpuTracker[iSlice].TrackMemorySize(), (long long int) HLTCA_GPU_TRACKS_MEMORY);
 		}
 
 		//Initialize Startup Constants
@@ -1019,6 +993,7 @@ int AliHLTTPCCAGPUTrackerBase::Reconstruct_Base_Init(AliHLTTPCCASliceOutput** pO
 	{
 		fHelperParams[i].CPUTracker = 0;
 		fHelperParams[i].fDone = 0;
+		fHelperParams[i].fError = 0;
 		fHelperParams[i].fPhase = 0;
 		fHelperParams[i].pClusterData = pClusterData;
 		fHelperParams[i].fSliceCount = sliceCountLocal;
@@ -1028,3 +1003,6 @@ int AliHLTTPCCAGPUTrackerBase::Reconstruct_Base_Init(AliHLTTPCCASliceOutput** pO
 
 	return(0);
 }
+
+double AliHLTTPCCAGPUTrackerBase::GetTimer(int iSlice, unsigned int iTimer) {return fSlaveTrackers[iSlice].GetTimer(iTimer) / ((iTimer == 0 || iTimer >= 8) ? (fNHelperThreads + 1) : 1);}
+void AliHLTTPCCAGPUTrackerBase::ResetTimer(int iSlice, unsigned int iTimer) {fSlaveTrackers[iSlice].ResetTimer(iTimer);}

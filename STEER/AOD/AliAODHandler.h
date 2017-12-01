@@ -22,6 +22,7 @@ class AliAODMCHeader;
 class AliGenEventHeader;
 class TMap;
 class AliAnalysisFilter;
+class AliVCuts;
 
 class AliAODHandler : public AliVEventHandler {
     
@@ -43,6 +44,7 @@ class AliAODHandler : public AliVEventHandler {
     virtual Bool_t       FinishEvent();
     virtual Bool_t       Terminate();
     virtual Bool_t       TerminateIO();
+    virtual AliVCuts*    GetEventSelection() const {return NULL;}
     //
     virtual void         SetCreateNonStandardAOD()               {Changed(); fIsStandard = kFALSE;}
     virtual void         SetFillAOD(Bool_t b)                    {Changed(); fFillAOD = b;}

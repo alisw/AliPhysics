@@ -1,4 +1,4 @@
-//**************************************************************************
+//************************OB**************************************************
 //* This file is property of and copyright by the ALICE HLT Project        *
 //* ALICE Experiment at CERN, All rights reserved.                         *
 //*                                                                        *
@@ -20,13 +20,15 @@
     @brief 
 */
 
-
 #include "AliHLTTPCFastTransform.h"
 #include "AliTPCTransform.h"
 #include "AliTPCParam.h"
 #include "AliTPCRecoParam.h"
 #include "AliTPCcalibDB.h"
 #include "AliHLTTPCFastTransformObject.h"
+#include "AliHLTTPCDataCompressionComponent.h"
+#include "AliHLTTPCClusterStatComponent.h"
+#include "AliHLTTPCGeometry.h"
 
 #include <iostream>
 #include <iomanip>
@@ -47,7 +49,10 @@ AliHLTTPCFastTransform::AliHLTTPCFastTransform()
   fLastTimeBin(600),
   fTimeBorder1(100),
   fTimeBorder2(500),
-  fAlignment(NULL)
+  fAlignment(NULL),
+  fReverseTransformInfo(),
+  fUseCorrectionMap(false),
+  fUseOrigTransform(0)
 {
   // see header file for class documentation
   // or
@@ -84,12 +89,13 @@ void  AliHLTTPCFastTransform::DeInit()
 }
 
 
-Int_t  AliHLTTPCFastTransform::Init( AliTPCTransform *transform, Long_t TimeStamp )
+Int_t  AliHLTTPCFastTransform::Init( AliTPCTransform *transform, Long_t TimeStamp, int useOrigTransform )
 {
   // Initialisation 
 
   DeInit();
   fInitialisationMode = 1;
+  fUseOrigTransform = useOrigTransform;
 
   AliTPCcalibDB* pCalib=AliTPCcalibDB::Instance();  
   if(!pCalib ) return Error( -1, "AliHLTTPCFastTransform::Init: No TPC calibration instance found");
@@ -121,7 +127,8 @@ Int_t  AliHLTTPCFastTransform::Init( AliTPCTransform *transform, Long_t TimeStam
   const AliTPCRecoParam *rec = transform->GetCurrentRecoParam();
 
   if( !rec ) return Error( -5, "AliHLTTPCFastTransform::Init: No TPC Reco Param set in transformation");
-  transform->SetCorrectionMapMode(kTRUE); //If the simulation set this to false to simulate distortions, we need to reverse it for the transformation
+  fUseCorrectionMap = rec->GetUseCorrectionMap();
+  if (fUseCorrectionMap) transform->SetCorrectionMapMode(kTRUE); //If the simulation set this to false to simulate distortions, we need to reverse it for the transformation
 
   fOrigTransform = transform;
 
@@ -188,7 +195,8 @@ Int_t AliHLTTPCFastTransform::WriteToObject( AliHLTTPCFastTransformObject &obj )
     }
     obj.SetInitSec(iSec, true);
   }
-  
+  obj.SetReverseTransformInfo(fReverseTransformInfo);
+
   return 0;
 }
 
@@ -200,6 +208,7 @@ Int_t AliHLTTPCFastTransform::ReadFromObject( const AliHLTTPCFastTransformObject
   // read fast transformation from ROOT object in database
   //
 
+  if (fUseOrigTransform) return 0;
   DeInit();
   fInitialisationMode = 0;
 
@@ -253,7 +262,9 @@ Int_t AliHLTTPCFastTransform::ReadFromObject( const AliHLTTPCFastTransformObject
   if( alignment.GetSize() == fkNSec*21 ){
     fAlignment = new Float_t [fkNSec*21];
     for( Int_t i=0; i<fkNSec*21; i++ ) fAlignment[i] = alignment[i];
-  }  
+  }
+  
+  fReverseTransformInfo = obj.GetReverseTransformInfo();
   return 0;
 }
 
@@ -305,7 +316,7 @@ Int_t AliHLTTPCFastTransform::SetCurrentTimeStamp( Long_t TimeStamp )
 {
   // Set the current time stamp
   
-  if( fInitialisationMode!=1 ){
+  if( fUseOrigTransform==0 && fInitialisationMode!=1 ){
     fLastTimeStamp = TimeStamp;
     return 0;
   }
@@ -329,9 +340,11 @@ Int_t AliHLTTPCFastTransform::SetCurrentTimeStamp( Long_t TimeStamp )
   if( fLastTimeStamp>=0 && TMath::Abs(fLastTimeStamp - TimeStamp ) <60 ) return 0;
  
    
-  fOrigTransform->SetCorrectionMapMode(kTRUE); //If the simulation set this to false to simulate distortions, we need to reverse it for the transformation
+  if (fUseCorrectionMap) fOrigTransform->SetCorrectionMapMode(kTRUE); //If the simulation set this to false to simulate distortions, we need to reverse it for the transformation
   fOrigTransform->SetCurrentTimeStamp( static_cast<UInt_t>(TimeStamp) );
   fLastTimeStamp = TimeStamp;  
+  
+  if (fUseOrigTransform) return(0);
 
   // find last calibrated time bin
   
@@ -365,6 +378,53 @@ Int_t AliHLTTPCFastTransform::SetCurrentTimeStamp( Long_t TimeStamp )
       }
     }
   }
+
+  AliHLTTPCReverseTransformInfoV1* info = fOrigTransform->GetReverseTransformInfo();
+
+  AliHLTTPCDataCompressionComponent::CalculateDriftTimeTransformation(*this, 0, 0, info->fDriftTimeFactorA, info->fDriftTimeOffsetA, info);
+  AliHLTTPCDataCompressionComponent::CalculateDriftTimeTransformation(*this, 18, 0, info->fDriftTimeFactorC, info->fDriftTimeOffsetC, info);
+  
+  TLinearFitter fitter(3,"hyp2");
+  int nPoints = 0;
+  for(int i = 0;i < 36;i+=4)
+  {
+    for (int j = 0;j < 159;j += 30)
+    {
+      for (int k = 0;k < AliHLTTPCGeometry::GetNPads(j);k += AliHLTTPCGeometry::GetNPads(j) / 10)
+      {
+        for (int l = 0;l < fLastTimeBin;l += fLastTimeBin / 10)
+        {
+	  int sector, sectorrow;
+          if (j < AliHLTTPCGeometry::GetNRowLow())
+          {
+            sector = i;
+            sectorrow = j;
+          }
+          else
+          {
+            sector = i + 36;
+            sectorrow = j - AliHLTTPCGeometry::GetNRowLow();
+          }
+          float xyz[3];
+          Transform(sector, sectorrow, k, l, xyz);
+          float xyz2[3];
+          AliHLTTPCClusterStatComponent::TransformForward(i, j, k, l, xyz2, info);
+          Double_t x[2] = {xyz[0], AliHLTTPCGeometry::GetZLength() - fabs(xyz[2])}; 
+          fitter.AddPoint(x, xyz[1] - xyz2[1]);
+          nPoints++;
+        }
+      }
+    }
+  }
+  fitter.Eval();
+  TVectorD param(3);
+  fitter.GetParameters(param);
+  info->fCorrectY1 = param[0];
+  info->fCorrectY2 = param[1];
+  info->fCorrectY3 = param[2];
+
+  fReverseTransformInfo = *info;
+  delete info;
   return 0;
 }
 

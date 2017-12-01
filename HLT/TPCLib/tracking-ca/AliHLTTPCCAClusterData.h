@@ -42,6 +42,14 @@ class AliHLTTPCCAClusterData
       float fY;
       float fZ;
       float fAmp;
+#ifdef HLTCA_FULL_CLUSTERDATA
+      float fPad;
+      float fTime;
+      float fAmpMax;
+      float fSigmaPad2;
+      float fSigmaTime2;
+      unsigned char fFlags;
+#endif
     };
 
     /**
@@ -64,9 +72,9 @@ class AliHLTTPCCAClusterData
     /**
      * Read/Write Events from/to file
      */
-    void ReadEvent(std::istream &in);
+    void ReadEvent(std::istream &in, bool addData = false);
     void WriteEvent(std::ostream &out) const;
-    template <class T> void ReadEventVector(T* &data, std::istream &in, int MinSize = 0);
+    template <class T> void ReadEventVector(T* &data, std::istream &in, int MinSize = 0, bool addData = false);
     template <class T> void WriteEventVector(const T* const &data, std::ostream &out) const;
 
     /**
@@ -118,6 +126,8 @@ class AliHLTTPCCAClusterData
 
     Data *GetClusterData( int index ) { return &( fData[index] ); }
 
+    void Allocate( int number);
+
   private:
     AliHLTTPCCAClusterData(AliHLTTPCCAClusterData&): fSliceIndex( 0 ), fData( NULL ), fNumberOfClusters(0), fAllocated(0) {}
     AliHLTTPCCAClusterData& operator=( const AliHLTTPCCAClusterData& );
@@ -127,7 +137,6 @@ class AliHLTTPCCAClusterData
      */
     void Merge( int index1, int index2 );
 
-    void Allocate( int number);
     static bool CompareClusters( const Data &a, const Data &b ) { return ( a.fRow == b.fRow ? (a.fY < b.fY) : (a.fRow < b.fRow) ); }
 
     int fSliceIndex;  // the slice index this data belongs to

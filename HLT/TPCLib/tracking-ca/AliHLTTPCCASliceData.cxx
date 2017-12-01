@@ -62,21 +62,29 @@ inline void AliHLTTPCCASliceData::CreateGrid( AliHLTTPCCARow *row, const float2*
     if ( zMin > z ) zMin = z;
   }
 
-  const float norm = fastInvSqrt( row->fNHits );
+  float dz = zMax - zMin;
+  float tfFactor = 1.;
+  if (dz > 270.)
+  {
+      tfFactor = dz / 250.;
+      dz = 250.;
+  }
+  const float norm = fastInvSqrt( row->fNHits / tfFactor );
   row->fGrid.Create( yMin, yMax, zMin, zMax,
                      CAMath::Max( ( yMax - yMin ) * norm, 2.f ),
-                     CAMath::Max( ( zMax - zMin ) * norm, 2.f ) );
+                     CAMath::Max( dz * norm, 2.f ) );
 }
 
-inline void AliHLTTPCCASliceData::PackHitData( AliHLTTPCCARow* const row, const AliHLTArray<AliHLTTPCCAHit> &binSortedHits )
+inline int AliHLTTPCCASliceData::PackHitData( AliHLTTPCCARow* const row, const AliHLTArray<AliHLTTPCCAHit> &binSortedHits )
 {
   // hit data packing
 
-  static const float shortPackingConstant = 1.f / 65535.f;
+  static const float maxVal = (((long long int) 1 << AliHLTTPCCAMath::Min(24, sizeof(cahit) * 8)) - 1); //Stay within float precision in any case!
+  static const float packingConstant = 1.f / (maxVal - 2.);
   const float y0 = row->fGrid.YMin();
   const float z0 = row->fGrid.ZMin();
-  const float stepY = ( row->fGrid.YMax() - y0 ) * shortPackingConstant;
-  const float stepZ = ( row->fGrid.ZMax() - z0 ) * shortPackingConstant;
+  const float stepY = ( row->fGrid.YMax() - y0 ) * packingConstant;
+  const float stepZ = ( row->fGrid.ZMax() - z0 ) * packingConstant;
   const float stepYi = 1.f / stepY;
   const float stepZi = 1.f / stepZ;
 
@@ -93,13 +101,15 @@ inline void AliHLTTPCCASliceData::PackHitData( AliHLTTPCCARow* const row, const 
     const AliHLTTPCCAHit &hh = binSortedHits[hitIndex];
     const float xx = ( ( hh.Y() - y0 ) * stepYi ) + .5 ;
     const float yy = ( ( hh.Z() - z0 ) * stepZi ) + .5 ;
-    if ( xx < 0 || yy < 0 || xx >= 65536  || yy >= 65536 ) {
-      std::cout << "!!!! hit packing error!!! " << xx << " " << yy << " " << std::endl;
+    if ( xx < 0 || yy < 0 || xx > maxVal  || yy > maxVal ) {
+      std::cout << "!!!! hit packing error!!! " << xx << " " << yy << " (" << maxVal << ")" << std::endl;
+      return 1;
     }
     // HitData is bin sorted
-    fHitData[globalHitIndex].x = (unsigned short) xx;
-    fHitData[globalHitIndex].y = (unsigned short) yy;
+    fHitData[globalHitIndex].x = (cahit) xx;
+    fHitData[globalHitIndex].y = (cahit) yy;
   }
+  return 0;
 }
 
 void AliHLTTPCCASliceData::Clear()
@@ -146,7 +156,7 @@ size_t AliHLTTPCCASliceData::SetPointers(const AliHLTTPCCAClusterData *data, boo
 {
   //Set slice data internal pointers
 
-  int hitMemCount = HLTCA_ROW_COUNT * (sizeof(HLTCA_GPU_ROWALIGNMENT) / sizeof(ushort_v) - 1) + data->NumberOfClusters();
+  int hitMemCount = HLTCA_ROW_COUNT * sizeof(HLTCA_GPU_ROWALIGNMENT) + data->NumberOfClusters();
   //Calculate Memory needed to store hits in rows
 
   const unsigned int kVectorAlignment = 256 /*sizeof( uint4 )*/ ;
@@ -158,33 +168,30 @@ size_t AliHLTTPCCASliceData::SetPointers(const AliHLTTPCCAClusterData *data, boo
 
   const int memorySize =
     // LinkData, HitData
-    fNumberOfHitsPlusAlign * 4 * sizeof( short ) +
+    fNumberOfHitsPlusAlign * 2 * (sizeof( cahit ) + sizeof( calink )) +
     // FirstHitInBin
     NextMultipleOf<kVectorAlignment>( ( firstHitInBinSize ) * sizeof( int ) ) +
     // HitWeights, ClusterDataIndex
     fNumberOfHitsPlusAlign * 2 * sizeof( int );
 
-  if ( 1 )// fMemorySize < memorySize ) { // release the memory on CPU
+  fMemorySize = memorySize + 4;
+  if (allocate)
   {
-	fMemorySize = memorySize + 4;
-	if (allocate)
-	{
-		if (!fIsGpuSliceData)
-		{
-			if (fMemory)
-			{
-				delete[] fMemory;
-			}
-			fMemory = new char[fMemorySize];// kVectorAlignment];
-		}
-		else
-		{
-			if (fMemorySize > HLTCA_GPU_SLICE_DATA_MEMORY)
-			{
-				return(0);
-			}
-		}
-	}
+  	if (!fIsGpuSliceData)
+  	{
+  		if (fMemory)
+  		{
+  			delete[] fMemory;
+  		}
+  		fMemory = new char[fMemorySize];// kVectorAlignment];
+  	}
+  	else
+  	{
+  		if (fMemorySize > HLTCA_GPU_SLICE_DATA_MEMORY)
+  		{
+  			return(0);
+  		}
+  	}
   }
 
   char *mem = fMemory;
@@ -200,7 +207,7 @@ size_t AliHLTTPCCASliceData::SetPointers(const AliHLTTPCCAClusterData *data, boo
   return(mem - fMemory);
 }
 
-void AliHLTTPCCASliceData::InitFromClusterData( const AliHLTTPCCAClusterData &data )
+int AliHLTTPCCASliceData::InitFromClusterData( const AliHLTTPCCAClusterData &data )
 {
   // initialisation from cluster data
 
@@ -209,6 +216,7 @@ void AliHLTTPCCASliceData::InitFromClusterData( const AliHLTTPCCAClusterData &da
   ////////////////////////////////////
 
   fNumberOfHits = data.NumberOfClusters();
+  fMaxZ = 0.f;
 
   float2* YZData = new float2[fNumberOfHits];
   int* tmpHitIndex = new int[fNumberOfHits];
@@ -229,9 +237,20 @@ void AliHLTTPCCASliceData::InitFromClusterData( const AliHLTTPCCAClusterData &da
   int tmpOffset = 0;
   for (int i = fFirstRow;i <= fLastRow;i++)
   {
+      if ((long long int) NumberOfClustersInRow[i] >= ((long long int) 1 << (sizeof(calink) * 8)))
+      {
+        printf("Too many clusters in row %d for row indexing (%d >= %lld), indexing insufficient\n", i, NumberOfClustersInRow[i], ((long long int) 1 << (sizeof(calink) * 8)));
+        return(1);
+      }
+      if (NumberOfClustersInRow[i] >= (1 << 24))
+      {
+        printf("Too many clusters in row %d for hit id indexing (%d >= %d), indexing insufficient\n", i, NumberOfClustersInRow[i], 1 << 24);
+        return(1);
+      }
 	  RowOffset[i] = tmpOffset;
 	  tmpOffset += NumberOfClustersInRow[i];
   }
+  
   {
 	  int RowsFilled[HLTCA_ROW_COUNT];
 	  memset(RowsFilled, 0, HLTCA_ROW_COUNT * sizeof(int));
@@ -240,6 +259,7 @@ void AliHLTTPCCASliceData::InitFromClusterData( const AliHLTTPCCAClusterData &da
 		float2 tmp;
 		tmp.x = data.Y(i);
 		tmp.y = data.Z(i);
+        if (fabs(tmp.y) > fMaxZ) fMaxZ = fabs(tmp.y);
 		int tmpRow = data.RowNumber(i);
 		int newIndex = RowOffset[tmpRow] + (RowsFilled[tmpRow])++;
 		YZData[newIndex] = tmp;
@@ -258,7 +278,7 @@ void AliHLTTPCCASliceData::InitFromClusterData( const AliHLTTPCCAClusterData &da
   {
 	delete[] YZData;
 	delete[] tmpHitIndex;
-	return;
+	return 1;
   }
 
   ////////////////////////////////////
@@ -303,14 +323,13 @@ void AliHLTTPCCASliceData::InitFromClusterData( const AliHLTTPCCAClusterData &da
   int hitOffset = 0;
 
   int binCreationMemorySize = 103 * 2 + fNumberOfHits;
-  AliHLTResizableArray<unsigned short> binCreationMemory( binCreationMemorySize );
+  AliHLTResizableArray<calink> binCreationMemory( binCreationMemorySize );
 
   fGPUSharedDataReq = 0;
 
   for ( int rowIndex = fFirstRow; rowIndex <= fLastRow; ++rowIndex ) {
     AliHLTTPCCARow &row = fRows[rowIndex];
 	row.fNHits = NumberOfClustersInRow[rowIndex];
-    assert( row.fNHits < ( 1 << sizeof( unsigned short ) * 8 ) );
 	row.fHitNumberOffset = hitOffset;
 	hitOffset += NextMultipleOf<sizeof(HLTCA_GPU_ROWALIGNMENT) / sizeof(ushort_v)>(NumberOfClustersInRow[rowIndex]);
 
@@ -319,6 +338,13 @@ void AliHLTTPCCASliceData::InitFromClusterData( const AliHLTTPCCAClusterData &da
     CreateGrid( &row, YZData, RowOffset[rowIndex] );
     const AliHLTTPCCAGrid &grid = row.fGrid;
     const int numberOfBins = grid.N();
+    if ((long long int) numberOfBins >= ((long long int) 1 << (sizeof(calink) * 8)))
+    {
+      printf("Too many bins in row %d for grid (%d >= %lld), indexing insufficient\n", rowIndex, numberOfBins, ((long long int) 1 << (sizeof(calink) * 8)));
+      delete[] YZData;
+      delete[] tmpHitIndex;
+      return(1);
+    }
 
     int binCreationMemorySizeNew;
     if ( ( binCreationMemorySizeNew = numberOfBins * 2 + 6 + row.fNHits + sizeof(HLTCA_GPU_ROWALIGNMENT) / sizeof(unsigned short) * numberOfRows + 1) > binCreationMemorySize ) {
@@ -326,9 +352,9 @@ void AliHLTTPCCASliceData::InitFromClusterData( const AliHLTTPCCAClusterData &da
       binCreationMemory.Resize( binCreationMemorySize );
     }
 
-    AliHLTArray<unsigned short> c = binCreationMemory;           // number of hits in all previous bins
-    AliHLTArray<unsigned short> bins = c + ( numberOfBins + 3 ); // cache for the bin index for every hit in this row
-    AliHLTArray<unsigned short> filled = bins + row.fNHits;      // counts how many hits there are per bin
+    AliHLTArray<calink> c = binCreationMemory;           // number of hits in all previous bins
+    AliHLTArray<calink> bins = c + ( numberOfBins + 3 ); // cache for the bin index for every hit in this row, 3 extra empty bins at the end!!!
+    AliHLTArray<calink> filled = bins + row.fNHits;      // counts how many hits there are per bin
 
     for ( unsigned int bin = 0; bin < row.fGrid.N() + 3; ++bin ) {
       filled[bin] = 0; // initialize filled[] to 0
@@ -336,22 +362,22 @@ void AliHLTTPCCASliceData::InitFromClusterData( const AliHLTTPCCAClusterData &da
 
     for ( int hitIndex = 0; hitIndex < row.fNHits; ++hitIndex ) {
       const int globalHitIndex = RowOffset[rowIndex] + hitIndex;
-      const unsigned short bin = row.fGrid.GetBin( YZData[globalHitIndex].x, YZData[globalHitIndex].y );
+      const calink bin = row.fGrid.GetBin( YZData[globalHitIndex].x, YZData[globalHitIndex].y );
 
       bins[hitIndex] = bin;
       ++filled[bin];
     }
 
-    unsigned short n = 0;
+    calink n = 0;
     for ( int bin = 0; bin < numberOfBins + 3; ++bin ) {
       c[bin] = n;
       n += filled[bin];
     }
 
     for ( int hitIndex = 0; hitIndex < row.fNHits; ++hitIndex ) {
-      const unsigned short bin = bins[hitIndex];
+      const calink bin = bins[hitIndex];
       --filled[bin];
-      const unsigned short ind = c[bin] + filled[bin]; // generate an index for this hit that is >= c[bin] and < c[bin + 1]
+      const calink ind = c[bin] + filled[bin]; // generate an index for this hit that is >= c[bin] and < c[bin + 1]
       const int globalBinsortedIndex = row.fHitNumberOffset + ind;
       const int globalHitIndex = RowOffset[rowIndex] + hitIndex;
 
@@ -361,12 +387,17 @@ void AliHLTTPCCASliceData::InitFromClusterData( const AliHLTTPCCAClusterData &da
       binSortedHits[ind].SetZ( YZData[globalHitIndex].y );
     }
 
-    PackHitData( &row, binSortedHits );
+    if (PackHitData( &row, binSortedHits ))
+    {
+      delete[] YZData;
+      delete[] tmpHitIndex;
+      return(1);
+    }
 
     for ( int i = 0; i < numberOfBins; ++i ) {
       fFirstHitInBin[row.fFirstHitInBinOffset + i] = c[i]; // global bin-sorted hit index
     }
-    const unsigned short a = c[numberOfBins];
+    const calink a = c[numberOfBins];
     // grid.N is <= row.fNHits
     const int nn = numberOfBins + grid.Ny() + 3;
     for ( int i = numberOfBins; i < nn; ++i ) {
@@ -377,69 +408,17 @@ void AliHLTTPCCASliceData::InitFromClusterData( const AliHLTTPCCAClusterData &da
     row.fFullSize = nn;
     gridContentOffset += nn;
 
-	if (NextMultipleOf<sizeof(HLTCA_GPU_ROWALIGNMENT) / sizeof(ushort_v)>(row.fNHits) + nn > (unsigned) fGPUSharedDataReq)
-		fGPUSharedDataReq = NextMultipleOf<sizeof(HLTCA_GPU_ROWALIGNMENT) / sizeof(ushort_v)>(row.fNHits) + nn;
+	if (NextMultipleOf<sizeof(HLTCA_GPU_ROWALIGNMENT) / sizeof(calink)>(row.fNHits) + nn > (unsigned) fGPUSharedDataReq)
+		fGPUSharedDataReq = NextMultipleOf<sizeof(HLTCA_GPU_ROWALIGNMENT) / sizeof(calink)>(row.fNHits) + nn;
 
 	//Make pointer aligned
-	gridContentOffset = NextMultipleOf<sizeof(HLTCA_GPU_ROWALIGNMENT) / sizeof(ushort_v)>(gridContentOffset);
+	gridContentOffset = NextMultipleOf<sizeof(HLTCA_GPU_ROWALIGNMENT) / sizeof(calink)>(gridContentOffset);
   }
 
   delete[] YZData;
   delete[] tmpHitIndex;
 
-#if 0
-  //SG cell finder - test code
-
-  if ( fTmpHitInputIDs ) delete[] fTmpHitInputIDs;
-  fTmpHitInputIDs = new int [NHits];
-  const float areaY = .5;
-  const float areaZ = .5;
-  int newRowNHitsTotal = 0;
-  bool *usedHits = new bool [NHits];
-  for ( int iHit = 0; iHit < NHits; iHit++ ) usedHits[iHit] = 0;
-  for ( int iRow = 0; iRow < fParam.NRows(); iRow++ ) {
-    rowHeaders[iRow*2  ] = newRowNHitsTotal; // new first hit
-    rowHeaders[iRow*2+1] = 0; // new N hits
-    int newRowNHits = 0;
-    int oldRowFirstHit = RowFirstHit[iRow];
-    int oldRowLastHit = oldRowFirstHit + RowNHits[iRow];
-    for ( int iHit = oldRowFirstHit; iHit < oldRowLastHit; iHit++ ) {
-      if ( usedHits[iHit] ) continue;
-      float x0 = X[iHit];
-      float y0 = Y[iHit];
-      float z0 = Z[iHit];
-      float cx = x0;
-      float cy = y0;
-      float cz = z0;
-      int nclu = 1;
-      usedHits[iHit] = 1;
-      if ( 0 ) for ( int jHit = iHit + 1; jHit < oldRowLastHit; jHit++ ) {//SG!!!
-          //if( usedHits[jHit] ) continue;
-          float dy = Y[jHit] - y0;
-          float dz = Z[jHit] - z0;
-          if ( CAMath::Abs( dy ) < areaY && CAMath::Abs( dz ) < areaZ ) {
-            cx += X[jHit];
-            cy += Y[jHit];
-            cz += Z[jHit];
-            nclu++;
-            usedHits[jHit] = 1;
-          }
-        }
-      int id = newRowNHitsTotal + newRowNHits;
-      hitsXYZ[id*3+0 ] = cx / nclu;
-      hitsXYZ[id*3+1 ] = cy / nclu;
-      hitsXYZ[id*3+2 ] = cz / nclu;
-      fTmpHitInputIDs[id] = iHit;
-      newRowNHits++;
-    }
-    rowHeaders[iRow*2+1] = newRowNHits;
-    newRowNHitsTotal += newRowNHits;
-  }
-  NHitsTotal() = newRowNHitsTotal;
-  reinterpret_cast<int*>( fInputEvent )[1+fParam.NRows()*2] = newRowNHitsTotal;
-
-  delete[] usedHits;
-#endif
+  return(0);
 }
 
 void AliHLTTPCCASliceData::ClearHitWeights()
@@ -463,23 +442,10 @@ void AliHLTTPCCASliceData::ClearLinks()
 {
   // link cleaning
 
-#ifdef ENABLE_VECTORIZATION
-  const short_v v0( -1 );
-  const short *const end1 = fLinkUpData + fNumberOfHits;
-  for ( short *mem = fLinkUpData; mem < end; mem += v0.Size ) {
-    v0.store( mem );
-  }
-  const short *const end2 = fLinkDownData + fNumberOfHits;
-  for ( short *mem = fLinkDownData; mem < end; mem += v0.Size ) {
-    v0.store( mem );
-  }
-#else
   for ( int i = 0; i < fNumberOfHits; ++i ) {
-    fLinkUpData[i] = -1;
+    fLinkUpData[i] = CALINK_INVAL;
   }
   for ( int i = 0; i < fNumberOfHits; ++i ) {
-    fLinkDownData[i] = -1;
+    fLinkDownData[i] = CALINK_INVAL;
   }
-#endif
 }
-

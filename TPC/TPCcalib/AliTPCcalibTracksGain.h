@@ -89,8 +89,8 @@ public:
 
 
   TLinearFitter*  GetFitter(UInt_t segment, UInt_t padType, UInt_t fitType);  
-  void     Process(AliESDEvent *event) {AliTPCcalibBase::Process(event);};
-  void     Process(AliESDtrack *track, Int_t runNo=-1){AliTPCcalibBase::Process(track,runNo);};
+  void     Process(AliVEvent *event) {AliTPCcalibBase::Process(event);}
+  void     Process(AliVTrack *track, Int_t runNo=-1){AliTPCcalibBase::Process(track,runNo);}
   
 public:
   //
@@ -143,7 +143,7 @@ public:
    static const char*          fgkDebugStreamFileName;  // filename of the debug stream file
    static const Bool_t         fgkUseTotalCharge;       // whether to use the cluster's total or maximum charge
 
-   ClassDef(AliTPCcalibTracksGain, 1);
+   ClassDef(AliTPCcalibTracksGain, 1)
 };
 
 #endif

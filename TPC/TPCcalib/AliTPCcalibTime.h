@@ -20,14 +20,14 @@ class TH3F;
 class TH2F;
 class TH1D;
 class TList;
-class AliESDEvent;
-class AliESDtrack;
+class AliVEvent;
+class AliVTrack;
+class AliExternalTrackParam;
 class AliTPCcalibLaser;
 class TGraphErrors;
 class AliSplineFit;
-class AliESDfriendTrack;
-class AliESDfriend;
-class AliExternalTrackParam;
+class AliVfriendTrack;
+class AliVfriendEvent;
 
 class AliTPCcalibTime:public AliTPCcalibBase {
 public:
@@ -35,33 +35,34 @@ public:
   AliTPCcalibTime(const Text_t *name, const Text_t *title, UInt_t StartTime, UInt_t EndTime, Int_t deltaIntegrationTimeVdrift, Int_t memoryMode=2);
   virtual ~AliTPCcalibTime();
   
-  virtual void           Process(AliESDEvent *event);
+  virtual void           Process(AliVEvent *event);
   virtual Long64_t       Merge(TCollection *const li);
   virtual void           Analyze();
   //static Bool_t          IsLaser      (const AliESDEvent *const event) const;
   //static Bool_t          IsCosmics    (const AliESDEvent *const event) const;
   //static Bool_t          IsBeam       (const AliESDEvent *const event) const;
-  void                   ProcessLaser (AliESDEvent *event);
-  void                   ProcessCosmic(const AliESDEvent *const event);
-  void                   ProcessBeam  (const AliESDEvent *const event);
-  Bool_t                 IsPair(const AliExternalTrackParam *tr0, const AliExternalTrackParam *tr1);
-  Bool_t                 IsCross(const AliESDtrack *const tr0, const AliESDtrack *const tr1);
-  Bool_t                 IsSame (const AliESDtrack *const tr0, const AliESDtrack *const tr1);
-  void                   ProcessSame(const AliESDtrack *const track, AliESDfriendTrack *const friendTrack, const AliESDEvent *const event);
-  void                   ProcessAlignITS(AliESDtrack *const track, const AliESDfriendTrack *const friendTrack, const AliESDEvent *const event, AliESDfriend *const ESDfriend);
-  void                   ProcessAlignTRD(AliESDtrack* const track, const AliESDfriendTrack *const friendTrack);
-  void                   ProcessAlignTOF(AliESDtrack* const track, const AliESDfriendTrack *const friendTrack);
+  void                   ProcessLaser (AliVEvent *event);
+  void                   ProcessCosmic(const AliVEvent *const event);
+  void                   ProcessBeam  (const AliVEvent *const event);
 
-  THnSparse*    GetHistVdriftLaserA(Int_t index=1) const {return fHistVdriftLaserA[index];};
-  THnSparse*    GetHistVdriftLaserC(Int_t index=1) const {return fHistVdriftLaserC[index];};
+  Bool_t                 IsPair(const AliExternalTrackParam *tr0, const AliExternalTrackParam *tr1);
+  Bool_t                 IsCross(const AliVTrack *const tr0, const AliVTrack *const tr1);
+  Bool_t                 IsSame (const AliVTrack *const tr0, const AliVTrack *const tr1);
+  void                   ProcessSame(const AliVTrack *const track, AliVfriendTrack *const friendTrack, const AliVEvent *const event);
+  void                   ProcessAlignITS(AliVTrack *const track, const AliVfriendTrack *const friendTrack, const AliVEvent *const event, AliVfriendEvent *const vFriend);
+  void                   ProcessAlignTRD(AliVTrack* const track, AliVfriendTrack *const friendTrack);
+  void                   ProcessAlignTOF(AliVTrack* const track, const AliVfriendTrack *const friendTrack);
+
+  THnSparse*    GetHistVdriftLaserA(Int_t index=1) const {return fHistVdriftLaserA[index];}
+  THnSparse*    GetHistVdriftLaserC(Int_t index=1) const {return fHistVdriftLaserC[index];}
   THnSparse*    GetHistoDrift(const char* name) const;
   TObjArray*    GetHistoDrift() const;
   TGraphErrors* GetGraphDrift(const char* name);
   TObjArray*    GetGraphDrift();
   AliSplineFit* GetFitDrift(const char* name);
 //  TObjArray*    GetFitDrift();
-  TH1F*         GetCosmiMatchingHisto(Int_t index=0) const {return fCosmiMatchingHisto[index];};
-  void     Process(AliESDtrack *track, Int_t runNo=-1){AliTPCcalibBase::Process(track,runNo);};
+  TH1F*         GetCosmiMatchingHisto(Int_t index=0) const {return fCosmiMatchingHisto[index];}
+  void     Process(AliVTrack *track, Int_t runNo=-1){AliTPCcalibBase::Process(track,runNo);}
   void     Process(AliTPCseed *track){return AliTPCcalibBase::Process(track);}
   TObjArray* GetAlignITSTPC() const {return fAlignITSTPC;}              // alignemnt array ITS TPC match
   TObjArray* GetAlignTRDTPC() const {return fAlignTRDTPC;}              // alignemnt array TRD TPC match
@@ -79,7 +80,7 @@ public:
   void        BookDistortionMaps();      // book histograms
   void        FillResHistoTPCCE(const AliExternalTrackParam * pTPCIn, const AliExternalTrackParam * pTPCOut );       // fill residual histo
   void        FillResHistoTPCITS(const AliExternalTrackParam * pTPCIn, const AliExternalTrackParam * pITSOut );       // fill residual histo
-  void        FillResHistoTPC(const AliESDtrack * pTrack);
+  void        FillResHistoTPC(const AliVTrack * pTrack);
   void        FillResHistoTPCTRD(const AliExternalTrackParam * pTPCOut, const AliExternalTrackParam * pTRDIn );
   void        FillResHistoTPCTOF(const AliExternalTrackParam * pTPCOut, const AliExternalTrackParam * pTOFIn );
 
@@ -90,9 +91,17 @@ public:
 
   void   SetCutTracks(Int_t maxTracks)  { fCutTracks = maxTracks; }  // set maximal number of tracks
   Int_t  GetCutTracks() const { return fCutTracks; }    // retun maximal number of tracks
+  void   SetMinPt(Double_t m) { fMinPt = m; }
+  Double_t GetMinPt() const { return fMinPt;}
+  void   SetMinPtITSTPCalign (Double_t m) { fMinPtITSTPCalign=m; }
+  Double_t GetMinPtITSTPCalign () const { return fMinPtITSTPCalign; }
 
   static Double_t fgResHistoMergeCut;
   static void SetResHistoMergeCut(Double_t d) {fgResHistoMergeCut=d;}
+
+  // full reset: discard all statistics, zero histograms, start again.
+  // called in online mode (HLT) after sending output for merging.
+  virtual Bool_t            ResetOutputData();
 
 protected:
   void ResetCurrent();                  // reset current values
@@ -110,6 +119,8 @@ protected:
   Float_t fCutTheta;    // maximal distance in theta ditection
   Float_t fCutMinDir;   // direction vector products
   Int_t   fCutTracks;   // maximal number of tracks
+  Double_t   fMinPt;    //pt cut on tracks used for calibration
+  Double_t   fMinPtITSTPCalign; //
  
 
   TH1F* fCosmiMatchingHisto[10];        // cosmic matching histogram
@@ -157,7 +168,7 @@ private:
   AliTPCcalibTime(const AliTPCcalibTime&); 
   AliTPCcalibTime& operator=(const AliTPCcalibTime&); 
 
-  ClassDef(AliTPCcalibTime, 10); 
+  ClassDef(AliTPCcalibTime, 10)
 };
 
 #endif

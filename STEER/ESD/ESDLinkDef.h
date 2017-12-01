@@ -99,6 +99,10 @@ code="{fTrackTime = new Double32_t[AliPID::kSPECIESC];for(Int_t isp=AliPID::kSPE
 #pragma link C++ class  AliESDTrdTrigger+;
 #pragma link C++ class  AliESDTrdTrack+;
 #pragma link C++ class  AliESDTrdTracklet+;
+#pragma read sourceClass="AliESDTrdTracklet" targetClass="AliESDTrdTracklet" \
+  source="Int_t fLabel" version="[-2]"	target="fLabel" targetType="Int_t[3]"\
+  code="{fLabel[0]=onfile.fLabel; fLabel[1]=fLabel[2]=-1;}"
+ 
 #pragma link C++ class  AliESDHLTtrack+;
 #pragma link C++ class  AliESDv0+;
 #pragma link C++ class  AliESDcascade+;

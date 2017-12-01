@@ -32,6 +32,10 @@
 #include <dlfcn.h>
 #endif
 
+#if defined(HLTCA_BUILD_O2_LIB) & defined(HLTCA_STANDALONE)
+#undef HLTCA_STANDALONE //We disable the standalone application features for the O2 lib. This is a hack since the HLTCA_STANDALONE setting is ambigious... In this file it affects standalone application features, in the other files it means independence from aliroot
+#endif
+
 #ifdef HLTCA_STANDALONE
 #include <omp.h>
 #endif
@@ -98,6 +102,16 @@ GPUhd() void AliHLTTPCCATrackerFramework::SetOutputControl( AliHLTTPCCASliceOutp
 
 int AliHLTTPCCATrackerFramework::ProcessSlices(int firstSlice, int sliceCount, AliHLTTPCCAClusterData* pClusterData, AliHLTTPCCASliceOutput** pOutput)
 {
+	long long int totalNClusters = 0;
+	for (int iSlice = 0;iSlice < CAMath::Min(sliceCount, fgkNSlices - firstSlice);iSlice++)
+	{
+		totalNClusters += pClusterData[iSlice].NumberOfClusters();
+		if (totalNClusters >= ((long long int) 1) << (sizeof(int) * 8))
+		{
+			printf("Too many clusters for cluster indexing: %lld >= %lld\n", totalNClusters, ((long long int) 1) << (sizeof(int) * 8));
+			return(1);
+		}
+	}
 	int useGlobalTracking = fGlobalTracking;
 	if (fGlobalTracking && (firstSlice || sliceCount != fgkNSlices))
 	{
@@ -112,6 +126,7 @@ int AliHLTTPCCATrackerFramework::ProcessSlices(int firstSlice, int sliceCount, A
 	}
 	else
 	{
+		bool error = false;
 #ifdef HLTCA_STANDALONE
 		if (fOutputControl->fOutputPtr && omp_get_max_threads() > 1)
 		{
@@ -124,10 +139,12 @@ int AliHLTTPCCATrackerFramework::ProcessSlices(int firstSlice, int sliceCount, A
 #endif
 		for (int iSlice = 0;iSlice < CAMath::Min(sliceCount, fgkNSlices - firstSlice);iSlice++)
 		{
-#ifdef HLTCA_STANDALONE
-			fCPUTrackers[firstSlice + iSlice].StandalonePerfTime(0);
-#endif
-			fCPUTrackers[firstSlice + iSlice].ReadEvent(&pClusterData[iSlice]);
+			if (error) continue;
+			if (fCPUTrackers[firstSlice + iSlice].ReadEvent(&pClusterData[iSlice]))
+			{
+				error = true;
+				continue;
+			}
 			fCPUTrackers[firstSlice + iSlice].SetOutput(&pOutput[iSlice]);
 			fCPUTrackers[firstSlice + iSlice].Reconstruct();
 			fCPUTrackers[firstSlice + iSlice].CommonMemory()->fNLocalTracks = fCPUTrackers[firstSlice + iSlice].CommonMemory()->fNTracks;
@@ -145,6 +162,7 @@ int AliHLTTPCCATrackerFramework::ProcessSlices(int firstSlice, int sliceCount, A
 				}
 			}
 		}
+		if (error) return(1);
 
 		if (useGlobalTracking)
 		{
@@ -176,6 +194,16 @@ int AliHLTTPCCATrackerFramework::ProcessSlices(int firstSlice, int sliceCount, A
 				}
 			}
 		}
+		for (int iSlice = 0;iSlice < CAMath::Min(sliceCount, fgkNSlices - firstSlice);iSlice++)
+		{
+			if (fCPUTrackers[iSlice].GPUParameters()->fGPUError != 0)
+			{
+				const char* errorMsgs[] = HLTCA_GPU_ERROR_STRINGS;
+				const char* errorMsg = (unsigned) fCPUTrackers[iSlice].GPUParameters()->fGPUError >= sizeof(errorMsgs) / sizeof(errorMsgs[0]) ? "UNKNOWN" : errorMsgs[fCPUTrackers[iSlice].GPUParameters()->fGPUError];
+				printf("Error during tracking: %s\n", errorMsg);
+				return(1);
+			}
+		}
 #ifdef HLTCA_STANDALONE
 		//printf("Slice Tracks Output %d: - Tracks: %d local, %d global -  Hits: %d local, %d global\n", nOutputTracks, nLocalTracks, nGlobalTracks, nLocalHits, nGlobalHits);
 		/*for (int i = firstSlice;i < firstSlice + sliceCount;i++)
@@ -195,10 +223,13 @@ int AliHLTTPCCATrackerFramework::ProcessSlices(int firstSlice, int sliceCount, A
 	return(0);
 }
 
-unsigned long long int* AliHLTTPCCATrackerFramework::PerfTimer(int GPU, int iSlice, int iTimer)
+double AliHLTTPCCATrackerFramework::GetTimer(int iSlice, int iTimer)
 {
-	//Performance information for slice trackers
-	return(GPU ? fGPUTracker->PerfTimer(iSlice, iTimer) : fCPUTrackers[iSlice].PerfTimer(iTimer));
+	return(fUseGPUTracker ? fGPUTracker->GetTimer(iSlice, iTimer) : fCPUTrackers[iSlice].GetTimer(iTimer));
+}
+void AliHLTTPCCATrackerFramework::ResetTimer(int iSlice, int iTimer)
+{
+	return(fUseGPUTracker ? fGPUTracker->ResetTimer(iSlice, iTimer) : fCPUTrackers[iSlice].ResetTimer(iTimer));
 }
 
 int AliHLTTPCCATrackerFramework::InitializeSliceParam(int iSlice, AliHLTTPCCAParam &param)
@@ -207,6 +238,11 @@ int AliHLTTPCCATrackerFramework::InitializeSliceParam(int iSlice, AliHLTTPCCAPar
 	if (fGPUTrackerAvailable && fGPUTracker->InitializeSliceParam(iSlice, param)) return(1);
 	fCPUTrackers[iSlice].Initialize(param);
 	return(0);
+}
+
+void AliHLTTPCCATrackerFramework::UpdateGPUSliceParam()
+{
+	if (fGPUTrackerAvailable) for (int i = 0;i < fgkNSlices;i++) fGPUTracker->InitializeSliceParam(i, fCPUTrackers[i].Param());
 }
 
 #ifdef HLTCA_STANDALONE
@@ -218,15 +254,28 @@ int AliHLTTPCCATrackerFramework::InitializeSliceParam(int iSlice, AliHLTTPCCAPar
 AliHLTTPCCATrackerFramework::AliHLTTPCCATrackerFramework(int allowGPU, const char* GPU_Library, int GPUDeviceNum) : fGPULibAvailable(false), fGPUTrackerAvailable(false), fUseGPUTracker(false), fGPUDebugLevel(0), fGPUTracker(NULL), fGPULib(NULL), fOutputControl( NULL ), fKeepData(false), fGlobalTracking(false)
 {
 	//Constructor
-	if (GPU_Library && !GPU_Library[0]) GPU_Library = NULL;
+	#ifdef R__WIN32
+		HMODULE hGPULib;
+	#else
+		void* hGPULib;
+	#endif
+	if (allowGPU != -1)
+	{
+		if (GPU_Library && !GPU_Library[0]) GPU_Library = NULL;
 #ifdef R__WIN32
-	HMODULE hGPULib = LoadLibraryEx(GPU_Library == NULL ? (GPULIBNAME ".dll") : GPU_Library, NULL, NULL);
+		hGPULib = LoadLibraryEx(GPU_Library == NULL ? (GPULIBNAME ".dll") : GPU_Library, NULL, NULL);
 #else
-	void* hGPULib = dlopen(GPU_Library == NULL ? (GPULIBNAME ".so") : GPU_Library, RTLD_NOW);
+		hGPULib = dlopen(GPU_Library == NULL ? (GPULIBNAME ".so") : GPU_Library, RTLD_NOW);
 #endif
+	}
+	else
+	{
+		hGPULib = NULL;
+	}
+	
 	if (hGPULib == NULL)
 	{
-		if (allowGPU)
+		if (allowGPU > 0)
 		{
 			#ifndef R__WIN32
 				HLTImportant("The following error occured during dlopen: %s", dlerror());
@@ -235,7 +284,7 @@ AliHLTTPCCATrackerFramework::AliHLTTPCCATrackerFramework(int allowGPU, const cha
 		}
 		else
 		{
-			HLTDebug("Cagpu library was not found, Tracking on GPU will not be available");
+			HLTDebug("Tracking on GPU disabled");
 		}
 		fGPUTracker = new AliHLTTPCCAGPUTracker;
 	}
@@ -262,7 +311,7 @@ AliHLTTPCCATrackerFramework::AliHLTTPCCATrackerFramework(int allowGPU, const cha
 			fGPUTracker = tmp();
 			fGPULibAvailable = true;
 			fGPULib = (void*) (size_t) hGPULib;
-			HLTInfo("GPU Tracker library loaded and GPU tracker object created sucessfully (%sactive)", allowGPU ? "" : "in");
+			HLTInfo("GPU Tracker library loaded and GPU tracker object created sucessfully (%sactive)", allowGPU > 0 ? "" : "in");
 		}
 	}
 

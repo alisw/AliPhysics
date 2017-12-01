@@ -25,19 +25,15 @@ AliHLTTPCCAGPUTracker::~AliHLTTPCCAGPUTracker() {}
 int AliHLTTPCCAGPUTracker::IsInitialized() {return(0);}
 int AliHLTTPCCAGPUTracker::InitGPU(int /*sliceCount*/, int /*forceDeviceID*/) { return(1); }
 void AliHLTTPCCAGPUTracker::SetDebugLevel(int /*dwLevel*/, std::ostream* /*NewOutFile*/) {}
-int AliHLTTPCCAGPUTracker::SetGPUTrackerOption(char* /*OptionName*/, int /*OptionValue*/) {return(1);}
+int AliHLTTPCCAGPUTracker::SetGPUTrackerOption(const char* /*OptionName*/, int /*OptionValue*/) {return(1);}
 int AliHLTTPCCAGPUTracker::Reconstruct(AliHLTTPCCASliceOutput** /*pTracker*/, AliHLTTPCCAClusterData* /*pClusterData*/, int /*fFirstSlice*/, int /*fSliceCount*/) {return(1);}
 int AliHLTTPCCAGPUTracker::ExitGPU() {return(0);}
-int AliHLTTPCCAGPUTracker::InitializeSliceParam(int /*iSlice*/, AliHLTTPCCAParam& /*param*/) { return 1; }
+int AliHLTTPCCAGPUTracker::InitializeSliceParam(int /*iSlice*/, const AliHLTTPCCAParam& /*param*/) { return 1; }
 void AliHLTTPCCAGPUTracker::SetOutputControl( AliHLTTPCCASliceOutput::outputControlStruct* /*val*/) {}
-unsigned long long int* AliHLTTPCCAGPUTracker::PerfTimer(int /*iSlice*/, unsigned int /*i*/)
-{
-	//Just return some dummy adress the caller can access
-	static unsigned long long int tmp;
-	return(&tmp);
-}
+double AliHLTTPCCAGPUTracker::GetTimer(int /*iSlice*/, unsigned int /*i*/) {return 0;}
+void AliHLTTPCCAGPUTracker::ResetTimer(int /*iSlice*/, unsigned int /*i*/) {};
 const AliHLTTPCCASliceOutput::outputControlStruct* AliHLTTPCCAGPUTracker::OutputControl() const { return NULL; }
 int AliHLTTPCCAGPUTracker::GetSliceCount() const { return(0); }
 int AliHLTTPCCAGPUTracker::RefitMergedTracks(AliHLTTPCGMMerger* /*Merger*/) { return(0); }
-char* AliHLTTPCCAGPUTracker::MergerBaseMemory() {return(NULL);}
+char* AliHLTTPCCAGPUTracker::MergerHostMemory() {return(NULL);}
 int AliHLTTPCCAGPUTracker::GPUMergerAvailable() {return(0);}

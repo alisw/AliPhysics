@@ -1989,8 +1989,7 @@ void AliTPCcalibDB::UpdateChamberHighVoltageData()
   // check active state by analysing the scalers
   //
   // initialise graph with active running
-  const char* hltMode = NULL;
-  hltMode = gSystem->Getenv("HLT_ONLINE_MODE");
+  bool hltMode = getenv("HLT_ONLINE_MODE") && strcmp(getenv("HLT_ONLINE_MODE"), "on") == 0;
 
   AliCDBEntry *entry = NULL;
   if (!hltMode) entry = GetCDBEntry("GRP/CTP/Scalers");

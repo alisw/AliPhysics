@@ -56,6 +56,8 @@
  * @author Matthias.Richter@ift.uib.no
  * @ingroup alihlt_qa
  */
+AliReconstruction rec;
+
 void recraw_local(const char *filename,
     const char *cdbURI,
     int minEvent=-1,
@@ -63,7 +65,8 @@ void recraw_local(const char *filename,
     const char *modules="ALL",
     const char *hltOptions="loglevel=0x7c",
     const char *cdbDrain=NULL,
-    const char* cdbSnapshot=NULL)
+    const char* cdbSnapshot=NULL,
+    const char* qaOptionsOverride=NULL)
 {
   if(!gSystem->AccessPathName("galice.root")){
     cerr << "AliReconstruction on raw data requires to delete galice.root, or run at different place." << endl;
@@ -81,15 +84,19 @@ void recraw_local(const char *filename,
 
   // Set the CDB storage location
   AliCDBManager * man = AliCDBManager::Instance();
-  man->SetDefaultStorage(cdbURI);
-  
+  if (struri.CompareTo("") != 0)
+  {
+    //printf("Setting CDB storage: %s\n", cdbURI);
+    man->SetDefaultStorage(cdbURI);
+  }
+
   //if found, configure any specific storages
   //same logic as in CPassX and benchmark
   if (gROOT->LoadMacro("localOCDBaccessConfig.C")==0) {
     localOCDBaccessConfig();
   }  
 
-  if (struri.BeginsWith("local://")) {
+  if (cdbSnapshot == NULL && struri.BeginsWith("local://")) {
     // set specific storage for GRP entry
     // search in the working directory and one level above, the latter
     // follows the standard simulation setup like e.g. in test/ppbench
@@ -106,8 +113,6 @@ void recraw_local(const char *filename,
   }
 
   // Reconstruction settings
-  AliReconstruction rec;
-
   if (minEvent>=0 || maxEvent>minEvent) {
     if (minEvent<0) minEvent=0;
     if (maxEvent<minEvent) maxEvent=minEvent;
@@ -124,6 +129,7 @@ void recraw_local(const char *filename,
   TString qaOptions="HLT TPC";
   if (!strModules.Contains("TPC")) qaOptions.ReplaceAll("TPC", "");
   qaOptions+=":ALL";
+  if (qaOptionsOverride) qaOptions = qaOptionsOverride;
   rec.SetRunQA(qaOptions) ;
   //rec.SetQARefDefaultStorage("local://$ALICE_ROOT/QAref") ;
 
@@ -133,6 +139,7 @@ void recraw_local(const char *filename,
   rec.SetRunMultFinder(strModules.Contains("ITS"));
   rec.SetInput(filename);
   rec.SetOption("HLT", hltOptions);
+  rec.SetFractionHLTESD(1.0);
 
   rec.SetRunPlaneEff(kFALSE);
 

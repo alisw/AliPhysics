@@ -18,7 +18,7 @@
 
 class TChain;
 class AliTPCseed;
-class AliESDtrack;
+class AliVTrack;
 
 using namespace std;
 
@@ -33,7 +33,7 @@ public:
    static  AliTPCcalibTracksCuts  *CreateCuts(char* ctype);
 
    Int_t AcceptTrack(const AliTPCseed * track) const;
-   Int_t AcceptTrack(const AliESDtrack * track) const;
+   Int_t AcceptTrack(const AliVTrack * track) const;
 
    void SetMinClusters(Int_t minClusters){fMinClusters = minClusters;}
    void SetMinRatio(Float_t minRatio){fMinRatio = minRatio;}

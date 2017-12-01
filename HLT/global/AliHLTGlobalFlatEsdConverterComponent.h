@@ -99,6 +99,8 @@ protected:
   
   Bool_t fProduceFriend; // should it produce the flat ESD friend
 
+  bool fBeamTypePbPb; //Do we process PbPb data
+
   ClassDef(AliHLTGlobalFlatEsdConverterComponent, 0)
 };
 #endif

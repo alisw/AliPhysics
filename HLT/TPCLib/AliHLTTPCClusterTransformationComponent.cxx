@@ -21,12 +21,13 @@
     @brief 
 */
 
+#include "AliHLTTPCReverseTransformInfoV1.h"
 #include "AliHLTTPCClusterTransformationComponent.h"
 #include "AliHLTTPCClusterTransformation.h"
 #include "AliHLTTPCDefinitions.h"
 #include "AliHLTTPCGeometry.h"
 #include "AliHLTTPCRawCluster.h"
-#include "AliHLTTPCClusterDataFormat.h"
+#include "AliHLTTPCClusterXYZ.h"
 #include "AliHLTErrorGuard.h"
 #include "AliHLTTPCFastTransformObject.h"
 #include "AliGRPManager.h"
@@ -55,10 +56,12 @@ Bool_t AliHLTTPCClusterTransformationComponent::fgTimeInitialisedFromEvent = 0;
 AliHLTTPCClusterTransformationComponent::AliHLTTPCClusterTransformationComponent()
 :
 fOfflineMode(0),
+fOfflineKeepInitialTimestamp(0),
 fInitializeByObjectInDoEvent(0),
 fInitialized(0),
 fTPCPresent(0),
-fDataId(kFALSE),
+fIsMC(0),
+fUseOrigTransform(0),
 fBenchmark("ClusterTransformation")
 {
   // see header file for class documentation
@@ -86,9 +89,9 @@ void AliHLTTPCClusterTransformationComponent::GetInputDataTypes( vector<AliHLTCo
   // see header file for class documentation
 
   list.clear(); 
-  list.push_back( AliHLTTPCDefinitions::fgkRawClustersDataType  | kAliHLTDataOriginTPC  );
-  list.push_back( AliHLTTPCDefinitions::fgkAliHLTDataTypeClusterMCInfo | kAliHLTDataOriginTPC );
-  list.push_back( AliHLTTPCDefinitions::fgkTPCFastTransformDataObjectDataType | kAliHLTDataOriginTPC );
+  list.push_back( AliHLTTPCDefinitions::RawClustersDataType() );
+  list.push_back( AliHLTTPCDefinitions::AliHLTDataTypeClusterMCInfo() );
+  list.push_back( AliHLTTPCDefinitions::TPCFastTransformDataObjectDataType() );
 }
 
 AliHLTComponentDataType AliHLTTPCClusterTransformationComponent::GetOutputDataType() { 
@@ -101,15 +104,16 @@ int AliHLTTPCClusterTransformationComponent::GetOutputDataTypes(AliHLTComponentD
   // see header file for class documentation
 
   tgtList.clear();
-  tgtList.push_back(AliHLTTPCDefinitions::fgkClustersDataType| kAliHLTDataOriginTPC);
-  tgtList.push_back(AliHLTTPCDefinitions::fgkAliHLTDataTypeClusterMCInfo | kAliHLTDataOriginTPC );
+  tgtList.push_back( AliHLTTPCDefinitions::RawClustersDataType() );
+  tgtList.push_back( AliHLTTPCDefinitions::AliHLTDataTypeClusterMCInfo() );
+  tgtList.push_back( AliHLTTPCDefinitions::ClustersXYZDataType() );
   return tgtList.size();
 }
 
 void AliHLTTPCClusterTransformationComponent::GetOutputDataSize( unsigned long& constBase, double& inputMultiplier ) { 
   // see header file for class documentation
-  constBase = 0;
-  inputMultiplier = 2.5;
+  constBase = sizeof(AliHLTTPCClusterXYZData)*6*36;
+  inputMultiplier = ( (double) sizeof(AliHLTTPCClusterXYZ) ) / ( sizeof(AliHLTTPCRawCluster) );
 }
 
 AliHLTComponent* AliHLTTPCClusterTransformationComponent::Spawn() { 
@@ -135,6 +139,12 @@ int AliHLTTPCClusterTransformationComponent::DoInit( int argc, const char** argv
 
   if (iResult>=0 && argc>0)
     iResult=ConfigureFromArgumentString(argc, argv);
+    
+  if (fUseOrigTransform)
+  {
+    fOfflineMode = 1;
+    fInitializeByObjectInDoEvent = 0;
+  }
 
   AliTPCcalibDB *calib=AliTPCcalibDB::Instance();  
   if(!calib){
@@ -148,11 +158,11 @@ int AliHLTTPCClusterTransformationComponent::DoInit( int argc, const char** argv
     TStopwatch timer;
     timer.Start();
     int err = 0;
-    if ( fInitializeByObjectInDoEvent == 1 ) {
+    if ( fInitializeByObjectInDoEvent == 1 ) {//Only if equal to 1!
           HLTInfo( "Cluster Transformation will initialize on the fly in DoEvent loop via FastTransformation Data Object, skipping initialization." );
     }
     else if( fOfflineMode ) {
-      err = fgTransform.Init( GetBz(), GetTimeStamp() );
+      err = fgTransform.Init( GetBz(), GetTimeStamp(), fIsMC, fUseOrigTransform );
 	  fInitialized = true;
     } else {
        const char* defaultNotify = "";
@@ -185,8 +195,6 @@ int AliHLTTPCClusterTransformationComponent::DoInit( int argc, const char** argv
     }
   }
 
-  fDataId = kFALSE;
-
   return iResult;
 } // end DoInit()
 
@@ -199,7 +207,6 @@ int AliHLTTPCClusterTransformationComponent::DoDeinit() {
 
 int AliHLTTPCClusterTransformationComponent::Reconfigure(const char* /*cdbEntry*/, const char* /*chainId*/) { 
   // see header file for class documentation
-  fDataId = kFALSE;
   return 0;//!! ConfigureFromCDBTObjString(fgkOCDBEntryClusterTransformation);
 }
 
@@ -212,8 +219,7 @@ int AliHLTTPCClusterTransformationComponent::ScanConfigurationArgument(int argc,
   for( int i=0; i<argc; i++ ){
     TString argument=argv[i];  
     if (argument.CompareTo("-change-dataId")==0){
-      HLTDebug("Change data ID received.");
-      fDataId = kTRUE;
+      HLTWarning("Obsolete -change-dataId option received.");
       iRet++;
     } else if (argument.CompareTo("-offline-mode")==0){
       fOfflineMode = 1;
@@ -226,6 +232,18 @@ int AliHLTTPCClusterTransformationComponent::ScanConfigurationArgument(int argc,
     } else if (argument.CompareTo("-update-object-on-the-fly")==0){
       fInitializeByObjectInDoEvent = 2;
       HLTDebug("Initialize object at startup and update on the fly mode set.");
+      iRet++;
+    } else if (argument.CompareTo("-do-mc")==0){
+      fIsMC = 1;
+      HLTDebug("Processing Monte Carlo Data.");
+      iRet++;
+    } else if (argument.CompareTo("-use-orig-transform")==0){
+      fUseOrigTransform = 1;
+      HLTInfo("Running unmodified original TPC transformation.");
+      iRet++;
+    } else if (argument.CompareTo("-offline-keep-initial-timestamp")==0){
+      fOfflineKeepInitialTimestamp = 1;
+      HLTInfo("Not updating transform timestamp!.");
       iRet++;
     } else {
       iRet = -EINVAL;
@@ -291,6 +309,17 @@ int AliHLTTPCClusterTransformationComponent::DoEvent(const AliHLTComponentEventD
 
   fBenchmark.StartNewEvent();
   fBenchmark.Start(0);
+  
+  if( fOfflineMode && !fInitializeByObjectInDoEvent && !fOfflineKeepInitialTimestamp )
+  {
+    Long_t eventTimeStamp = GetTimeStamp();
+    int err = fgTransform.SetCurrentTimeStamp( eventTimeStamp );
+    if (err != 0)
+    {
+      HLTError(Form("Cannot set time stamp, AliHLTTPCClusterTransformation returns %d",err));
+      return(-ENOENT);
+    }
+  }
 
   for( unsigned long ndx=0; ndx<evtData.fBlockCnt; ndx++ ){
     
@@ -301,130 +330,111 @@ int AliHLTTPCClusterTransformationComponent::DoEvent(const AliHLTComponentEventD
     HLTDebug("Event 0x%08LX (%Lu) received datatype: %s - required datatype: %s or $s",
 	     evtData.fEventID, evtData.fEventID, 
 	     DataType2Text( iter->fDataType).c_str(), 
-	     DataType2Text(AliHLTTPCDefinitions::fgkRawClustersDataType).c_str(), DataType2Text(AliHLTTPCDefinitions::fgkAliHLTDataTypeClusterMCInfo).c_str());                       
+	     DataType2Text(AliHLTTPCDefinitions::fgkRawClustersDataType).c_str(), DataType2Text(AliHLTTPCDefinitions::fgkAliHLTDataTypeClusterMCInfo).c_str());
  
-    if(iter->fDataType == (AliHLTTPCDefinitions::fgkAliHLTDataTypeClusterMCInfo | kAliHLTDataOriginTPC) ){
-      // simply forward MC labels
-      
-      if( size+iter->fSize > maxOutSize ){
-	HLTWarning( "Output buffer (%db) is too small, required %db", maxOutSize, size+iter->fSize);
-	iResult  = -ENOSPC;
-	break;
-      }
-
-      memcpy( outputPtr, iter->fPtr, iter->fSize );
-      
-      AliHLTComponentBlockData bd;
-      FillBlockData( bd );
-      bd.fOffset = size;
-      bd.fSize = iter->fSize;
-      bd.fSpecification = iter->fSpecification;     
-      bd.fDataType = iter->fDataType;
-      outputBlocks.push_back( bd );     
-      fBenchmark.AddOutput(bd.fSize);    
-      size   += bd.fSize;
-      outputPtr += bd.fSize;
+    if( iter->fDataType == AliHLTTPCDefinitions::AliHLTDataTypeClusterMCInfo() ){
+      // forward MC labels
+      fBenchmark.AddOutput( iter->fSize );
+      outputBlocks.push_back( *iter );     
       continue;
     }
 
-    if(iter->fDataType != (AliHLTTPCDefinitions::fgkRawClustersDataType  | kAliHLTDataOriginTPC)) continue;                        
-        
-    UInt_t minSlice     = AliHLTTPCDefinitions::GetMinSliceNr(*iter); 
-    UInt_t minPartition = AliHLTTPCDefinitions::GetMinPatchNr(*iter);
-
-    float padpitch=1.0;
-    if ((int)minPartition<AliHLTTPCGeometry::GetNRowLow())
-      padpitch=AliHLTTPCGeometry::GetPadPitchWidthLow();
-    else
-      padpitch=AliHLTTPCGeometry::GetPadPitchWidthUp();
-    float zwidth=AliHLTTPCGeometry::GetZWidth();
-
-    fBenchmark.SetName(Form("ClusterTransform slice %d patch %d",minSlice,minPartition));
-
-    HLTDebug("minSlice: %d, minPartition: %d", minSlice, minPartition);
+    if( iter->fDataType != AliHLTTPCDefinitions::RawClustersDataType() ) continue;
     
-    AliHLTTPCRawClusterData* rawClusters = (AliHLTTPCRawClusterData*)(iter->fPtr);
+    // forward raw clusters
+    fBenchmark.AddOutput( iter->fSize );
+    outputBlocks.push_back( *iter );
+        
+    UInt_t slice     = AliHLTTPCDefinitions::GetMinSliceNr(*iter);
+    UInt_t partition = AliHLTTPCDefinitions::GetMinPatchNr(*iter);
+
+    /*
+    float padpitch=AliHLTTPCGeometry::GetPadPitch(partition);
+    float zwidth=AliHLTTPCGeometry::GetZWidth();
+    */
+
+    HLTDebug("slice: %d, partition: %d", slice, partition);
+    
+    AliHLTTPCRawClusterData* rawClusters = reinterpret_cast<AliHLTTPCRawClusterData*>(iter->fPtr);
     if( !rawClusters ) continue;
 
-    AliHLTTPCClusterData* outPtr  = (AliHLTTPCClusterData*)outputPtr;
-    outPtr->fSpacePointCnt=0;
-
-    long maxPoints = ((long)maxOutSize-size-sizeof(AliHLTTPCClusterData))/sizeof(AliHLTTPCSpacePointData);
-  
-    if( rawClusters->fCount > maxPoints ){
+    if( size + sizeof(AliHLTTPCClusterXYZData) + rawClusters->fCount * sizeof(AliHLTTPCClusterXYZ) > maxOutSize ){
       HLTWarning("No more space to add clusters, exiting!");
       iResult  = -ENOSPC;
       break;
     }
-  
-    for( UInt_t icl=0; icl<rawClusters->fCount; icl++){
+ 
+    int firstRow = AliHLTTPCGeometry::GetFirstRow(partition);
+
+    // create AliHLTTPCClusterXYZData array in parallel to raw clusters, fill xyz==0 in case of problems 
+
+    AliHLTTPCClusterXYZData* outPtr  = reinterpret_cast<AliHLTTPCClusterXYZData*>(outputPtr);
+    outPtr->fCount = rawClusters->fCount;
+     
+    for( UInt_t icl=0; icl<rawClusters->fCount; icl++ ){
       
       const AliHLTTPCRawCluster &cl = rawClusters->fClusters[icl];
+      AliHLTTPCClusterXYZ& cXYZ = outPtr->fClusters[icl];
+      cXYZ.Set( 0.f, 0.f, 0.f );
 
-      AliHLTTPCSpacePointData& c=outPtr->fSpacePoints[outPtr->fSpacePointCnt];
       int padrow=cl.GetPadRow();
       if (padrow<0) {
 	// something wrong here, padrow is stored in the cluster header
 	// word which has bit pattern 0x3 in bits bit 30 and 31 which was
 	// not recognized
 	ALIHLTERRORGUARD(1, "can not read cluster header word");
-	break;
+	continue;
       }
-      padrow+=AliHLTTPCGeometry::GetFirstRow(minPartition);
-      AliHLTUInt32_t charge=cl.GetCharge();
-
-      float pad=cl.GetPad();
-      float time=cl.GetTime();
-      float sigmaY2=cl.GetSigmaPad2();
-      float sigmaZ2=cl.GetSigmaTime2();
-      sigmaY2*=padpitch*padpitch;
-      sigmaZ2*=zwidth*zwidth;
-      c.SetPad( cl.GetPad() );
-      c.SetTime( cl.GetTime() );
-      c.SetPadRow(padrow);
-      c.SetCharge(charge);
-      c.SetSigmaY2(sigmaY2);
-      c.SetSigmaZ2(sigmaZ2);
-      c.SetQMax(cl.GetQMax());
-        Float_t xyz[3];
-      int err = fgTransform.Transform( minSlice, padrow, pad, time, xyz );	 
+      Float_t xyz[3];
+      int err = fgTransform.Transform( slice, firstRow + padrow, cl.GetPad(), cl.GetTime(), xyz );	 
       if( err!=0 ){
 	HLTWarning(Form("Cannot transform the cluster, AliHLTTPCClusterTransformation returns error %d, %s",err, fgTransform.GetLastError()));
 	continue;
       }
-      c.SetX(xyz[0]);
-      c.SetY(xyz[1]);
-      c.SetZ(xyz[2]);
 
-      // set the cluster ID so that the cluster dump printout is the same for FCF and SCF
-      c.SetID( minSlice, minPartition, outPtr->fSpacePointCnt );
+      cXYZ.Set( xyz[0], xyz[1], xyz[2] );
 	 
-      HLTDebug("Cluster number %d: %f, Y: %f, Z: %f, charge: %d \n", outPtr->fSpacePointCnt, c.GetX(), c.GetY(), c.GetZ(), (UInt_t)c.GetCharge());
-	 
-      outPtr->fSpacePointCnt++; 
-    } // end of loop over clusters
+      HLTDebug("Cluster number %d: %f, Y: %f, Z: %f, charge: %d \n", outPtr->fCount, cXYZ.GetX(), cXYZ.GetY(), cXYZ.GetZ(), (UInt_t)cl.GetCharge());
       
-    HLTDebug("Number of found clusters: %d", outPtr->fSpacePointCnt);
+    } // end of loop over clusters
+
+    HLTDebug("Number of found clusters: %d", outPtr->fCount);
      
-    UInt_t mysize = sizeof(AliHLTTPCClusterData) + sizeof(AliHLTTPCSpacePointData)*outPtr->fSpacePointCnt;
+    UInt_t mysize = sizeof(AliHLTTPCClusterXYZData) + sizeof(AliHLTTPCClusterXYZ)*outPtr->fCount;
     
     AliHLTComponentBlockData bd;
     FillBlockData( bd );
     bd.fOffset = size;
     bd.fSize = mysize;
-    bd.fSpecification = iter->fSpecification;     
-    if(fDataId==kFALSE) bd.fDataType = AliHLTTPCDefinitions::fgkClustersDataType;
-    else                bd.fDataType = AliHLTTPCDefinitions::fgkAlterClustersDataType;
+    bd.fSpecification = iter->fSpecification;
+    bd.fDataType = AliHLTTPCDefinitions::ClustersXYZDataType();
     
     //HLTDebug("datatype: %s", DataType2Text(bd.fDataType).c_str());
-     
+    
     outputBlocks.push_back( bd );
      
-    fBenchmark.AddOutput(bd.fSize);    
+    fBenchmark.AddOutput(bd.fSize);
     size   += mysize;
     outputPtr += mysize; 
  
   } // end of loop over data blocks  
+  
+  if (size + sizeof(AliHLTTPCReverseTransformInfoV1) > maxOutSize)
+  {
+    HLTError("Cannot store reverse transform object to output");
+    return(-ENOSPC);
+  }
+  * (AliHLTTPCReverseTransformInfoV1*) outputPtr = *fgTransform.GetReverseTransformInfo();
+  AliHLTComponentBlockData bd;
+  FillBlockData( bd );
+  bd.fOffset = size;
+  bd.fSize = sizeof(AliHLTTPCReverseTransformInfoV1);
+  bd.fDataType = AliHLTTPCDefinitions::TPCReverseTransformInfoDataType();
+  outputBlocks.push_back( bd );
+
+  size += sizeof(AliHLTTPCReverseTransformInfoV1);
+  outputPtr += sizeof(AliHLTTPCReverseTransformInfoV1);
+  
   
   fBenchmark.Stop(0);
   HLTInfo(fBenchmark.GetStatistics());

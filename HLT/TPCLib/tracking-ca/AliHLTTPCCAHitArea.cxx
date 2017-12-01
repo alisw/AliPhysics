@@ -43,13 +43,13 @@ MEM_TEMPLATE() GPUdi() void AliHLTTPCCAHitArea::Init( const MEM_TYPE( AliHLTTPCC
   fIz = bZmin;
 
   // for given fIz (which is min atm.) get
-#ifdef HLTCA_GPU_TEXTURE_FETCHa
-  fHitYfst = tex1Dfetch(gAliTexRefu, ((char*) slice.FirstHitInBin(row) - slice.GPUTextureBaseConst()) / sizeof(unsigned short) + fIndYmin);
-  fHitYlst = tex1Dfetch(gAliTexRefu, ((char*) slice.FirstHitInBin(row) - slice.GPUTextureBaseConst()) / sizeof(unsigned short) + fIndYmin + fBDY);
+#ifdef HLTCA_GPU_TEXTURE_FETCH_NEIGHBORS
+  fHitYfst = tex1Dfetch(gAliTexRefu, ((char*) slice.FirstHitInBin(row) - slice.GPUTextureBaseConst()) / sizeof(calink) + fIndYmin);
+  fHitYlst = tex1Dfetch(gAliTexRefu, ((char*) slice.FirstHitInBin(row) - slice.GPUTextureBaseConst()) / sizeof(calink) + fIndYmin + fBDY);
 #else
   fHitYfst = slice.FirstHitInBin( row, fIndYmin ); // first and
   fHitYlst = slice.FirstHitInBin( row, fIndYmin + fBDY ); // last hit index in the bin
-#endif
+#endif //HLTCA_GPU_TEXTURE_FETCH_NEIGHBORS
   fIh = fHitYfst;
 }
 
@@ -75,9 +75,9 @@ MEM_TEMPLATE() GPUdi() int AliHLTTPCCAHitArea::GetNext( GPUconstant() const MEM_
       // go to next z and start y from the min again
       ++fIz;
       fIndYmin += fNy;
-#ifdef HLTCA_GPU_TEXTURE_FETCHa
-	  fHitYfst = tex1Dfetch(gAliTexRefu, ((char*) slice.FirstHitInBin(row) - slice.GPUTextureBaseConst()) / sizeof(unsigned short) + fIndYmin);
-	  fHitYlst = tex1Dfetch(gAliTexRefu, ((char*) slice.FirstHitInBin(row) - slice.GPUTextureBaseConst()) / sizeof(unsigned short) + fIndYmin + fBDY);
+#ifdef HLTCA_GPU_TEXTURE_FETCH_NEIGHBORS
+	  fHitYfst = tex1Dfetch(gAliTexRefu, ((char*) slice.FirstHitInBin(row) - slice.GPUTextureBaseConst()) / sizeof(calink) + fIndYmin);
+	  fHitYlst = tex1Dfetch(gAliTexRefu, ((char*) slice.FirstHitInBin(row) - slice.GPUTextureBaseConst()) / sizeof(calink) + fIndYmin + fBDY);
 #else
       fHitYfst = slice.FirstHitInBin( row, fIndYmin );
       fHitYlst = slice.FirstHitInBin( row, fIndYmin + fBDY );
@@ -85,8 +85,8 @@ MEM_TEMPLATE() GPUdi() int AliHLTTPCCAHitArea::GetNext( GPUconstant() const MEM_
       fIh = fHitYfst;
     }
 
-#ifdef HLTCA_GPU_TEXTURE_FETCHa
-	ushort2 tmpval = tex1Dfetch(gAliTexRefu2, ((char*) slice.HitData(row) - slice.GPUTextureBaseConst()) / sizeof(ushort2) + fIh);;
+#ifdef HLTCA_GPU_TEXTURE_FETCH_NEIGHBORS
+	cahit2 tmpval = tex1Dfetch(gAliTexRefu2, ((char*) slice.HitData(row) - slice.GPUTextureBaseConst()) / sizeof(cahit2) + fIh);;
 	h->SetY( y0 + tmpval.x * stepY );
     h->SetZ( z0 + tmpval.y * stepZ );
 #else
@@ -94,7 +94,7 @@ MEM_TEMPLATE() GPUdi() int AliHLTTPCCAHitArea::GetNext( GPUconstant() const MEM_
     h->SetZ( z0 + tracker.HitDataZ( row, fIh ) * stepZ );
 #endif
 
-    if ( 1 && ( h->Z() > fMaxZ || h->Z() < fMinZ || h->Y() < fMinY || h->Y() > fMaxY ) ) { //SG!!!
+    if ( h->Z() > fMaxZ || h->Z() < fMinZ || h->Y() < fMinY || h->Y() > fMaxY ) {
       fIh++;
       continue;
     }
@@ -104,29 +104,3 @@ MEM_TEMPLATE() GPUdi() int AliHLTTPCCAHitArea::GetNext( GPUconstant() const MEM_
   } while ( 1 );
   return ret;
 }
-
-
-/*
-int AliHLTTPCCAHitArea::GetBest( const AliHLTTPCCATracker &tracker, const AliHLTTPCCARow &row,
-    const int *content, AliHLTTPCCAHit *h)
-{
-  // get closest hit in the area
-  int best = -1;
-  float ds = 1.e10;
-  do {
-    AliHLTTPCCAHit hh;
-    int ih = GetNext( tracker, row, content, hh );
-    if ( ih < 0 ) break;
-    float dy = hh.Y() - fY;
-    float dz = hh.Z() - fZ;
-    float dds = dy * dy + dz * dz;
-    if ( dds < ds ) {
-      ds = dds;
-      best = ih;
-      h = hh;
-    }
-  } while ( 1 );
-
-  return best;
-}
-*/

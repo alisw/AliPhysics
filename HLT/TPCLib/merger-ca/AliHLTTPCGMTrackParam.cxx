@@ -16,320 +16,251 @@
 //                                                                          *
 //***************************************************************************
 
+
 #include "AliHLTTPCGMTrackParam.h"
 #include "AliHLTTPCCAMath.h"
-#include "AliHLTTPCGMTrackLinearisation.h"
+#include "AliHLTTPCGMPhysicalTrackModel.h"
+#include "AliHLTTPCGMPropagator.h"
 #include "AliHLTTPCGMBorderTrack.h"
-#include "Riostream.h"
+#include "AliHLTTPCGMMergedTrack.h"
+#include "AliHLTTPCGMPolynomialField.h"
 #ifndef HLTCA_STANDALONE
 #include "AliExternalTrackParam.h"
 #endif
 #include "AliHLTTPCCAParam.h"
 #include <cmath>
+#include <stdlib.h>
 
-GPUd() void AliHLTTPCGMTrackParam::Fit
-(
- float* PolinomialFieldBz,
- float x[], float y[], float z[], unsigned int rowType[], float alpha[], AliHLTTPCCAParam &param,
- int &N,
- float &Alpha, 
- bool UseMeanPt,
- float maxSinPhi
- ){
-  
+#define DEBUG 0
+#define PRINT_TRACKS 0
+#define MIRROR 1
+#define DOUBLE 1
+/*#include "TFile.h"
+#include "TNtuple.h"*/
+
+GPUd() void AliHLTTPCGMTrackParam::Fit(const AliHLTTPCGMPolynomialField* field, AliHLTTPCGMMergedTrackHit* clusters, const AliHLTTPCCAParam &param, int &N, float &Alpha, bool UseMeanPt, float maxSinPhi)
+{
   const float kRho = 1.025e-3;//0.9e-3;
   const float kRadLen = 29.532;//28.94;
-  const float kRhoOverRadLen = kRho / kRadLen;
   
-  AliHLTTPCGMTrackLinearisation t0(*this);
- 
-  const float kZLength = 250.f - 0.275f;
-  float trDzDs2 = t0.DzDs()*t0.DzDs();
- 
-  AliHLTTPCGMTrackFitParam par;
-  CalculateFitParameters( par, kRhoOverRadLen, kRho, UseMeanPt );
+  static int nTracks = 0;
+  if (PRINT_TRACKS || DEBUG) nTracks++;
 
-  int maxN = N;
+  AliHLTTPCGMPropagator prop;
+  prop.SetMaterial( kRadLen, kRho );
+  prop.SetPolynomialField( field );  
+  prop.SetUseMeanMomentum( UseMeanPt );
+  prop.SetContinuousTracking( param.GetContinuousTracking() );
+  prop.SetMaxSinPhi( maxSinPhi );
 
-  bool first = 1;
-  N = 0;
-
-  for( int ihit=0; ihit<maxN; ihit++ ){
+  if (param.GetContinuousTracking())
+  {  
+    fP[1] += fZOffset;
     
-    float sliceAlpha =  alpha[ihit];
-    
-    if ( fabs( sliceAlpha - Alpha ) > 1.e-4 ) {
-      if( !Rotate(  sliceAlpha - Alpha, t0, .999 ) ) break;
-      Alpha = sliceAlpha;
+    const float cosPhi = AliHLTTPCCAMath::Sqrt(1 - fP[2] * fP[2]);
+    const float dxf = -AliHLTTPCCAMath::Abs(fP[2]);
+    const float dyf = cosPhi * (fP[2] > 0 ? 1. : -1.);
+    const float r = 1./fabs(fP[4] * field->GetNominalBz());
+    float xp = fX + dxf * r;
+    float yp = fP[0] + dyf * r;
+    //printf("\nX %f Y %f SinPhi %f QPt %f R %f --> XP %f YP %f\n", fX, fP[0], fP[2], fP[4], r, xp, yp);
+    const float r2 = (r + AliHLTTPCCAMath::Sqrt(xp * xp + yp * yp)) / 2.; //Improve the radius by taking into acount both points we know (00 and xy).
+    xp = fX + dxf * r2;
+    yp = fP[0] + dyf * r2;
+    //printf("X %f Y %f SinPhi %f QPt %f R %f --> XP %f YP %f\n", fX, fP[0], fP[2], fP[4], r2, xp, yp);
+    float atana = AliHLTTPCCAMath::ATan2(CAMath::Abs(xp), CAMath::Abs(yp));
+    float atanb = AliHLTTPCCAMath::ATan2(CAMath::Abs(fX - xp), CAMath::Abs(fP[0] - yp));
+    //printf("Tan %f %f (%f %f)\n", atana, atanb, fX - xp, fP[0] - yp);
+    const float dS = (xp > 0 ? (atana + atanb) : (atanb - atana)) * r;
+    float dz = dS * fP[3];
+    //printf("Track Z %f, Z0 %f (dS %f, dZds %f)             - Direction %f to %f: %f\n", fP[1], dz, dS, fP[3], clusters[0].fZ, clusters[N - 1].fZ, clusters[0].fZ - clusters[N - 1].fZ);
+    if (CAMath::Abs(dz) > 250.) dz = dz > 0 ? 250. : -250.;
+    if (fP[1] * (fP[1] - dz) < 0)
+    {
+      fZOffset = clusters[N - 1].fZ;
     }
+    else
+    {
+      
+      fZOffset = fP[1] - dz; 
+    }
+    fP[1] -= fZOffset;
+  }
 
-    float dL=0;    
-    float bz =  GetBz(x[ihit], y[ihit],z[ihit], PolinomialFieldBz);
-        
-    float err2Y, err2Z;
+  int nWays = param.GetNWays();
+  int maxN = N;
+  int ihitStart = 0;
+  for (int iWay = 0;iWay < nWays;iWay++)
+  {
+    if (iWay && param.GetNWaysOuter() && iWay == nWays - 1)
+    {
+        for (int i = 0;i < 5;i++) fOuterParam.fP[i] = fP[i];
+        fP[1] += fZOffset;
+        for (int i = 0;i < 15;i++) fOuterParam.fC[i] = fC[i];
+        fOuterParam.fX = fX;
+        fOuterParam.fAlpha = prop.GetAlpha();
+    }
+    if (DEBUG) printf("Fitting track %d way %d\n", nTracks, iWay);
 
-    { // transport block
-      
-      bz = -bz;
+    int resetT0 = CAMath::Max(10.f, CAMath::Min(40.f, 150.f / fP[4]));
+    const bool rejectChi2ThisRound = ( nWays == 1 || iWay == 1 );
+    const bool markNonFittedClusters = rejectChi2ThisRound && !(param.HighQPtForward() < fabs(fP[4]));
+    const double kDeg2Rad = 3.14159265358979323846/180.;
+    const float maxSinForUpdate = CAMath::Sin(70.*kDeg2Rad);
+  
+    ResetCovariance();
+    prop.SetTrack( this, iWay ? prop.GetAlpha() : Alpha);
 
-      float ex = t0.CosPhi();
+    N = 0;
+    const bool inFlyDirection = iWay & 1;
+    unsigned char lastLeg = clusters[ihitStart].fLeg;
+    const int wayDirection = (iWay & 1) ? -1 : 1;
+    int ihit = ihitStart;
+    for(;ihit >= 0 && ihit<maxN;ihit += wayDirection)
+    {
+      if (clusters[ihit].fState < 0) continue; // hit is excluded from fit
+      const int rowType = clusters[ihit].fRow < 64 ? 0 : clusters[ihit].fRow < 128 ? 2 : 1;
+      if (DEBUG) printf("\tHit %3d/%3d Row %3d: Cluster Alpha %8.3f    , X %8.3f - Y %8.3f, Z %8.3f\n", ihit, maxN, clusters[ihit].fRow, param.Alpha(clusters[ihit].fSlice), clusters[ihit].fX, clusters[ihit].fY, clusters[ihit].fZ);
       
-      float ey = t0.SinPhi();
-      float k  = t0.QPt()*bz;
-      float dx = x[ihit] - X();
-      float kdx = k*dx;
-      float ey1 = kdx + ey;
-      
-      if( fabs( ey1 ) >= maxSinPhi ) break;
-
-      float ss = ey + ey1;   
-      float ex1 = sqrt(1 - ey1*ey1);
-      
-      float dxBz = dx * bz;
-    
-      float cc = ex + ex1;  
-      float dxcci = dx * Reciprocal(cc);
-      float kdx205 = kdx*kdx*0.5f;
-      
-      float dy = dxcci * ss;      
-      float norm2 = float(1.f) + ey*ey1 + ex*ex1;
-      float dl = dxcci * sqrt( norm2 + norm2 );
-
-      float dS;    
-      { 
-	float dSin = float(0.5f)*k*dl;
-	float a = dSin*dSin;
-	const float k2 = 1.f/6.f;
-	const float k4 = 3.f/40.f;
-	//const float k6 = 5.f/112.f;
-	dS = dl + dl*a*(k2 + a*(k4 ));//+ k6*a) );
-      }
-      
-      float ex1i = Reciprocal(ex1);
-      float dz = dS * t0.DzDs();  
-      
-      dL = -dS * t0.DlDs();
-      
-      float hh = dxcci*ex1i*(2.f+kdx205); 
-      float h2 = hh * t0.SecPhi();
-      float h4 = bz*dxcci*hh;
-
-      float d2 = fP[2] - t0.SinPhi();
-      float d3 = fP[3] - t0.DzDs();
-      float d4 = fP[4] - t0.QPt();
-      
-      
-      fX+=dx;
-      fP[0]+= dy     + h2 * d2           +   h4 * d4;
-      fP[1]+= dz               + dS * d3;
-      fP[2] = ey1 +     d2           + dxBz * d4;    
-      
-      t0.CosPhi() = ex1;
-      t0.SecPhi() = ex1i;
-      t0.SinPhi() = ey1;      
-
+      float xx = clusters[ihit].fX;
+      float yy = clusters[ihit].fY;
+      float zz = clusters[ihit].fZ - fZOffset;
+      if (DOUBLE && ihit + wayDirection >= 0 && ihit + wayDirection < maxN && clusters[ihit].fRow == clusters[ihit + wayDirection].fRow)
       {
-	const float *cy = param.GetParamS0Par(0,rowType[ihit]);
-	const float *cz = param.GetParamS0Par(1,rowType[ihit]);
+          float count = 1.;
+          do
+          {
+              if (clusters[ihit].fSlice != clusters[ihit + wayDirection].fSlice || clusters[ihit].fLeg != clusters[ihit + wayDirection].fLeg || fabs(clusters[ihit].fY - clusters[ihit + wayDirection].fY) > 4. || fabs(clusters[ihit].fZ - clusters[ihit + wayDirection].fZ) > 4.) break;
+              ihit += wayDirection;
+              if (DEBUG) printf("\t\tMerging hit row %d X %f Y %f Z %f\n", clusters[ihit].fRow, clusters[ihit].fX, clusters[ihit].fY, clusters[ihit].fZ);
+              xx += clusters[ihit].fX;
+              yy += clusters[ihit].fY;
+              zz += clusters[ihit].fZ - fZOffset;
+              count += 1.;
+          } while (ihit + wayDirection >= 0 && ihit + wayDirection < maxN && clusters[ihit].fRow == clusters[ihit + wayDirection].fRow);
+          xx /= count;
+          yy /= count;
+          zz /= count;
+          if (DEBUG) printf("\t\tDouble row (%d hits)\n", (int) count);
+      }
+      
+      bool changeDirection = (clusters[ihit].fLeg - lastLeg) & 1;
+      if (DEBUG && changeDirection) printf("\t\tChange direction\n");
+      if (DEBUG) printf("\tLeg %3d%14sTrack   Alpha %8.3f %s, X %8.3f - Y %8.3f, Z %8.3f   -   QPt %7.2f (%7.2f), SinPhi %5.2f (%5.2f) %28s    ---   Cov sY %8.3f sZ %8.3f sSP %8.3f sPt %8.3f   -   YPt %8.3f SPPt %8.3f YSP %8.3f\n",
+        (int) clusters[ihit].fLeg, "", prop.GetAlpha(), (fabs(prop.GetAlpha() - param.Alpha(clusters[ihit].fSlice)) < 0.01 ? "   " : " R!"), fX, fP[0], fP[1], fP[4], prop.GetQPt0(), fP[2], prop.GetSinPhi0(), "", sqrt(fC[0]), sqrt(fC[2]), sqrt(fC[5]), sqrt(fC[14]), fC[10], fC[12], fC[3]);
+      int err = prop.PropagateToXAlpha(xx, param.Alpha(clusters[ihit].fSlice), inFlyDirection );
+      if (err == -2) //Rotation failed, try to bring to new x with old alpha first, rotate, and then propagate to x, alpha
+      {
+          if (prop.PropagateToXAlpha(xx, prop.GetAlpha(), inFlyDirection ) == 0)
+            err = prop.PropagateToXAlpha(xx, param.Alpha(clusters[ihit].fSlice), inFlyDirection );
+      }
+      
+      /*if (PRINT_TRACKS)
+      {
+          float ac = cos(alpha[ihit]), as = sin(alpha[ihit]);
+          static int init = 0;
+          static TFile *file;
+          static TNtuple *nt;
+          if (init == 0)
+          {
+            file = new TFile("tracksout.root","RECREATE");
+            file->cd();
+            nt = new TNtuple("field","field","track:cx:cy:cz:tx:ty:tz:mx:my:mz");      
+            init = 1;
+          }
+          nt->Fill((float) nTracks, ac * xx - as * yy, as * xx + ac * yy, zz, ac * fX - as * fP[0], as * fX + ac * fP[0], fP[1], ac * prop.Model().X() - as * prop.Model().Y(), as * prop.Model().X() + ac * prop.Model().Y(), prop.Model().Z());
+          if (nTracks == 29) {
+            nt->Write();
+            file->Write();
+            file->Close();
+            exit(0);
+          }
+      }*/
+    
+      if (DEBUG) printf("\t%21sPropaga Alpha %8.3f    , X %8.3f - Y %8.3f, Z %8.3f   -   QPt %7.2f (%7.2f), SinPhi %5.2f (%5.2f)   ---   Res %8.3f %8.3f   ---   Cov sY %8.3f sZ %8.3f sSP %8.3f sPt %8.3f   -   YPt %8.3f SPPt %8.3f YSP %8.3f   -   Err %d", "", prop.GetAlpha(), fX, fP[0], fP[1], fP[4], prop.GetQPt0(), fP[2], prop.GetSinPhi0(), fP[0] - yy, fP[1] - zz, sqrt(fC[0]), sqrt(fC[2]), sqrt(fC[5]), sqrt(fC[14]), fC[10], fC[12], fC[3], err);
+      const float Bz = prop.GetBz(prop.GetAlpha(), fX, fP[0], fP[1]);
+      if (MIRROR && err == 0 && changeDirection && fP[2] * fP[4] * Bz < 0)
+      {
+          const float mirrordY = prop.GetMirroredYTrack();
+          if (DEBUG) printf(" -- MiroredY: %f --> %f", fP[0], mirrordY);
+          if (fabs(yy - fP[0]) > fabs(yy - mirrordY))
+          {
+              if (DEBUG) printf(" - Mirroring!!!");
+              prop.Mirror(inFlyDirection);
+              float err2Y, err2Z;
+              prop.GetErr2(err2Y, err2Z, param, zz, rowType);
+              prop.Model().Y() = fP[0] = yy;
+              prop.Model().Z() = fP[1] = zz;
+              if (fC[0] < err2Y) fC[0] = err2Y;
+              if (fC[2] < err2Z) fC[2] = err2Z;
+              if (fabs(fC[5]) < 0.1) fC[5] = fC[5] > 0 ? 0.1 : -0.1;
+              if (fC[9] < 1.) fC[9] = 1.;
+              prop.SetTrack(this, prop.GetAlpha());
 
-	float secPhi2 = ex1i*ex1i;
-	float zz = fabs( kZLength - fabs(fP[2]) );	
-	float zz2 = zz*zz;
-	float angleY2 = secPhi2 - 1.f; 
-	float angleZ2 = trDzDs2 * secPhi2 ;
-
-	float cy0 = cy[0] + cy[1]*zz + cy[3]*zz2;
-	float cy1 = cy[2] + cy[5]*zz;
-	float cy2 = cy[4];
-	float cz0 = cz[0] + cz[1]*zz + cz[3]*zz2;
-	float cz1 = cz[2] + cz[5]*zz;
-	float cz2 = cz[4];
-	
-	err2Y = fabs( cy0 + angleY2 * ( cy1 + angleY2*cy2 ) );
-	err2Z = fabs( cz0 + angleZ2 * ( cz1 + angleZ2*cz2 ) );      
-     }
-
-
-      if ( first ) {
-	fP[0] = y[ihit];
-	fP[1] = z[ihit];
-	SetCov( 0, err2Y );
-	SetCov( 1,  0 );
-	SetCov( 2, err2Z);
-	SetCov( 3,  0 );
-	SetCov( 4,  0 );
-	SetCov( 5,  1 );
-	SetCov( 6,  0 );
-	SetCov( 7,  0 );
-	SetCov( 8,  0 );
-	SetCov( 9,  1 );
-	SetCov( 10,  0 );
-	SetCov( 11,  0 );
-	SetCov( 12,  0 );
-	SetCov( 13,  0 );
-	SetCov( 14,  10 );
-	SetChi2( 0 );
-	SetNDF( -3 );
-	CalculateFitParameters( par, kRhoOverRadLen, kRho, UseMeanPt );
-	first = 0;
-	N+=1;
-	continue;
+              fNDF = -3;
+              lastLeg = clusters[ihit].fLeg;
+              N++;
+              resetT0 = CAMath::Max(10.f, CAMath::Min(40.f, 150.f / fP[4]));
+              if (DEBUG) printf("\n");
+              if (DEBUG) printf("\t%21sMirror  Alpha %8.3f    , X %8.3f - Y %8.3f, Z %8.3f   -   QPt %7.2f (%7.2f), SinPhi %5.2f (%5.2f) %28s    ---   Cov sY %8.3f sZ %8.3f sSP %8.3f sPt %8.3f   -   YPt %8.3f SPPt %8.3f YSP %8.3f\n", "", prop.GetAlpha(), fX, fP[0], fP[1], fP[4], prop.GetQPt0(), fP[2], prop.GetSinPhi0(), "", sqrt(fC[0]), sqrt(fC[2]), sqrt(fC[5]), sqrt(fC[14]), fC[10], fC[12], fC[3]);
+              continue;
+          }
       }
 
-      float c20 = fC[3];
-      float c21 = fC[4];
-      float c22 = fC[5];
-      float c30 = fC[6];
-      float c31 = fC[7];
-      float c32 = fC[8];
-      float c33 = fC[9];
-      float c40 = fC[10];
-      float c41 = fC[11];
-      float c42 = fC[12];
-      float c43 = fC[13];
-      float c44 = fC[14];
-      
-      float c20ph4c42 =  c20 + h4*c42;
-      float h2c22 = h2*c22;
-      float h4c44 = h4*c44;
-      
-      float n6 = c30 + h2*c32 + h4*c43;
-      float n7 = c31 + dS*c33;
-      float n10 = c40 + h2*c42 + h4c44;
-      float n11 = c41 + dS*c43;
-      float n12 = c42 + dxBz*c44;
-      
-      fC[8] = c32 + dxBz * c43;
-      
-      fC[0]+= h2*h2c22 + h4*h4c44 + float(2.f)*( h2*c20ph4c42  + h4*c40 );
-      
-      fC[1]+= h2*c21 + h4*c41 + dS*n6;
-      fC[6] = n6;
-      
-      fC[2]+= dS*(c31 + n7);
-      fC[7] = n7; 
-      
-      fC[3] = c20ph4c42 + h2c22  + dxBz*n10;
-      fC[10] = n10;
-      
-      fC[4] = c21 + dS*c32 + dxBz*n11;
-      fC[11] = n11;
-      
-      fC[5] = c22 + dxBz*( c42 + n12 );
-      fC[12] = n12;
-      
-    } // end transport block 
-
- 
-    float &fC22 = fC[5];
-    float &fC33 = fC[9];
-    float &fC40 = fC[10];
-    float &fC41 = fC[11];
-    float &fC42 = fC[12];
-    float &fC43 = fC[13];
-    float &fC44 = fC[14];
-    
-    float 
-      c00 = fC[ 0],
-      c11 = fC[ 2],
-      c20 = fC[ 3],
-      c31 = fC[ 7];
-    
-    
-    // MS block  
-    
-    float dLmask = 0.f;
-    bool maskMS = ( fabs( dL ) < par.fDLMax );
-
-    
-    // Filter block
-    
-    float mS0 = Reciprocal(err2Y + c00);
-    
-    // MS block
-    Assign( dLmask, maskMS, dL );
-    
-    // Filter block
-    
-    float  z0 = y[ihit] - fP[0];
-    float mS2 = Reciprocal(err2Z + c11);
-    
-    if( fabs( fP[2] + z0*c20*mS0  ) > maxSinPhi ) break;
-    
-    // MS block
-    
-    float dLabs = fabs( dLmask); 
-    float corr = float(1.f) - par.fEP2* dLmask ;
-    
-    fP[4]*= corr;
-    fC40 *= corr;
-    fC41 *= corr;
-    fC42 *= corr;
-    fC43 *= corr;
-    fC44  = fC44*corr*corr + dLabs*par.fSigmadE2;
-    
-    fC22 += dLabs * par.fK22 * (float(1.f)-fP[2]*fP[2]);
-    fC33 += dLabs * par.fK33;
-    fC43 += dLabs * par.fK43;
+      if ( err || CAMath::Abs(prop.GetSinPhi0())>=maxSinForUpdate )
+      {
+        if (markNonFittedClusters)
+        {
+          if (fNDF > 0 && (fabs(yy - fP[0]) > 3 || fabs(zz - fP[1]) > 3)) clusters[ihit].fState = -2;
+          else if (err) clusters[ihit].fState = -1;
+        }
         
-
-    // Filter block
+        if (DEBUG) printf(" --- break\n");
+        continue;
+      }
+      if (DEBUG) printf("\n");
+      
+      int retVal = prop.Update( yy, zz, rowType, param, rejectChi2ThisRound);
+      if (DEBUG) printf("\t%21sFit     Alpha %8.3f    , X %8.3f - Y %8.3f, Z %8.3f   -   QPt %7.2f (%7.2f), SinPhi %5.2f (%5.2f) %28s    ---   Cov sY %8.3f sZ %8.3f sSP %8.3f sPt %8.3f   -   YPt %8.3f SPPt %8.3f YSP %8.3f   -   Err %d\n", "", prop.GetAlpha(), fX, fP[0], fP[1], fP[4], prop.GetQPt0(), fP[2], prop.GetSinPhi0(), "", sqrt(fC[0]), sqrt(fC[2]), sqrt(fC[5]), sqrt(fC[14]), fC[10], fC[12], fC[3], retVal);
+      if (retVal == 0) // track is updated
+      {
+        ihitStart = ihit;
+        N++;
+        float dy = fP[0] - prop.Model().Y();
+        float dz = fP[1] - prop.Model().Z();
+        if (AliHLTTPCCAMath::Abs(fP[4]) > 10 && --resetT0 <= 0 && AliHLTTPCCAMath::Abs(fP[2]) < 0.15 && dy*dy+dz*dz>1)
+        {
+            if (DEBUG) printf("Reinit linearization\n");
+            prop.SetTrack(this, prop.GetAlpha());
+        }
+      }
+      else if (retVal == 2) // cluster far away form the track
+      {
+        if (markNonFittedClusters) clusters[ihit].fState = -2;
+      }
+      else break; // bad chi2 for the whole track, stop the fit
+    }
+  }
   
-    float c40 = fC40;
-    
-    // K = CHtS
-    
-    float k00, k11, k20, k31, k40;
-    
-    k00 = c00 * mS0;
-    k20 = c20 * mS0;
-    k40 = c40 * mS0;
-    fChi2  += mS0*z0*z0;
-    fP[0] += k00 * z0;
-    fP[2] += k20 * z0;
-    fP[4] += k40 * z0;
-    fC[ 0] -= k00 * c00 ;
-    fC[ 5] -= k20 * c20 ;
-    fC[10] -= k00 * c40 ;
-    fC[12] -= k40 * c20 ;
-    fC[ 3] -= k20 * c00 ;
-    fC[14] -= k40 * c40 ;
-  
-    float  z1 = z[ihit] - fP[1];
-    
-    k11 = c11 * mS2;
-    k31 = c31 * mS2;
-    
-    fChi2  +=  mS2*z1*z1 ;
-    fNDF  += 2;
-    N+=1;
-    
-    fP[1] += k11 * z1;
-    fP[3] += k31 * z1;
-    
-    fC[ 7] -= k31 * c11;
-    fC[ 2] -= k11 * c11;
-    fC[ 9] -= k31 * c31;    
-  } 
+  if (param.GetTrackReferenceX() <= 500) prop.PropagateToXAlpha(param.GetTrackReferenceX(), prop.GetAlpha(), 0 );
+  Alpha = prop.GetAlpha();
 }
 
 GPUd() bool AliHLTTPCGMTrackParam::CheckNumericalQuality() const
 {
   //* Check that the track parameters and covariance matrix are reasonable
-
   bool ok = AliHLTTPCCAMath::Finite(fX) && AliHLTTPCCAMath::Finite( fChi2 ) && AliHLTTPCCAMath::Finite( fNDF );
 
   const float *c = fC;
   for ( int i = 0; i < 15; i++ ) ok = ok && AliHLTTPCCAMath::Finite( c[i] );
   for ( int i = 0; i < 5; i++ ) ok = ok && AliHLTTPCCAMath::Finite( fP[i] );
-
+  
   if ( c[0] <= 0 || c[2] <= 0 || c[5] <= 0 || c[9] <= 0 || c[14] <= 0 ) ok = 0;
   if ( c[0] > 5. || c[2] > 5. || c[5] > 2. || c[9] > 2. 
        //|| ( CAMath::Abs( QPt() ) > 1.e-2 && c[14] > 2. ) 
        ) ok = 0;
 
   if ( fabs( fP[2] ) > .999 ) ok = 0;
-  if ( fabs( fP[4] ) > 1. / 0.05 ) ok = 0;
   if( ok ){
     ok = ok 
       && ( c[1]*c[1]<=c[2]*c[0] )
@@ -344,149 +275,6 @@ GPUd() bool AliHLTTPCGMTrackParam::CheckNumericalQuality() const
       && ( c[13]*c[13]<=c[14]*c[9] );      
   }
   return ok;
-}
-
-//*
-//*  Multiple scattering and energy losses
-//*
-
-GPUd() float AliHLTTPCGMTrackParam::ApproximateBetheBloch( float beta2 )
-{
-  //------------------------------------------------------------------
-  // This is an approximation of the Bethe-Bloch formula with
-  // the density effect taken into account at beta*gamma > 3.5
-  // (the approximation is reasonable only for solid materials)
-  //------------------------------------------------------------------
-
-  const float log0 = log( float(5940.f));
-  const float log1 = log( float(3.5f*5940.f) );
-
-  bool bad = (beta2 >= .999f)||( beta2 < 1.e-8f );
-
-  Assign( beta2, bad, 0.5f);
-
-  float a = beta2 / ( 1.f - beta2 ); 
-  float b = 0.5*log(a);
-  float d =  0.153e-3 / beta2;
-  float c = b - beta2;
-
-  float ret = d*(log0 + b + c );
-  float case1 = d*(log1 + c );
-  
-  Assign( ret, ( a > 3.5*3.5  ), case1);
-  Assign( ret,  bad, 0. ); 
-
-  return ret;
-}
-
- GPUd() void AliHLTTPCGMTrackParam::CalculateFitParameters( AliHLTTPCGMTrackFitParam &par, float RhoOverRadLen,  float Rho, bool NoField, float mass )
-{
-  //*!
-
-  float qpt = fP[4];
-  if( NoField ) qpt = 1./0.35;
-
-  float p2 = ( 1. + fP[3] * fP[3] );
-  float k2 = qpt * qpt;
-  Assign( k2, (  k2 < 1.e-4f ), 1.e-4f );
-
-  float mass2 = mass * mass;
-  float beta2 = p2 / ( p2 + mass2 * k2 );
-  
-  float pp2 = p2 / k2; // impuls 2
-
-  //par.fBethe = BetheBlochGas( pp2/mass2);
-  par.fBetheRho = ApproximateBetheBloch( pp2 / mass2 )*Rho;
-  par.fE = sqrt( pp2 + mass2 );
-  par.fTheta2 = ( 14.1*14.1/1.e6 ) / ( beta2 * pp2 )*RhoOverRadLen;
-  par.fEP2 = par.fE / pp2;
-
-  // Approximate energy loss fluctuation (M.Ivanov)
-
-  const float knst = 0.07; // To be tuned.
-  par.fSigmadE2 = knst * par.fEP2 * qpt;
-  par.fSigmadE2 = par.fSigmadE2 * par.fSigmadE2;
-  
-  float k22 = 1. + fP[3] * fP[3];
-  par.fK22 = par.fTheta2*k22;
-  par.fK33 = par.fK22 * k22;
-  par.fK43 = 0.;
-  par.fK44 =  par.fTheta2*fP[3] * fP[3] * k2;
-  
-  float br=1.e-8f;
-  Assign( br, ( par.fBetheRho>1.e-8f ), par.fBetheRho );
-  par.fDLMax = 0.3*par.fE * Reciprocal( br );
-
-  par.fEP2*=par.fBetheRho;
-  par.fSigmadE2 = par.fSigmadE2*par.fBetheRho+par.fK44;  
-}
-
-
-
-
-//*
-//* Rotation
-//*
-
-
-GPUd() bool AliHLTTPCGMTrackParam::Rotate( float alpha, AliHLTTPCGMTrackLinearisation &t0, float maxSinPhi )
-{
-  //* Rotate the coordinate system in XY on the angle alpha
-
-  float cA = CAMath::Cos( alpha );
-  float sA = CAMath::Sin( alpha );
-  float x0 = X(), y0 = Y(), sP = t0.SinPhi(), cP = t0.CosPhi();
-  float cosPhi = cP * cA + sP * sA;
-  float sinPhi = -cP * sA + sP * cA;
-
-  if ( CAMath::Abs( sinPhi ) > maxSinPhi || CAMath::Abs( cosPhi ) < 1.e-2 || CAMath::Abs( cP ) < 1.e-2  ) return 0;
-
-  //float J[5][5] = { { j0, 0, 0,  0,  0 }, // Y
-  //                    {  0, 1, 0,  0,  0 }, // Z
-  //                    {  0, 0, j2, 0,  0 }, // SinPhi
-  //                  {  0, 0, 0,  1,  0 }, // DzDs
-  //                  {  0, 0, 0,  0,  1 } }; // Kappa
-
-  float j0 = cP / cosPhi;
-  float j2 = cosPhi / cP;
-  float d[2] = {Y() - y0, SinPhi() - sP};
-
-  X() = ( x0*cA +  y0*sA );
-  Y() = ( -x0*sA +  y0*cA + j0*d[0] );
-  t0.CosPhi() = fabs( cosPhi );
-  t0.SecPhi() = ( 1./t0.CosPhi() );
-  t0.SinPhi() = ( sinPhi );
-
-  SinPhi() = ( sinPhi + j2*d[1] );
-
-  fC[0] *= j0 * j0;
-  fC[1] *= j0;
-  fC[3] *= j0;
-  fC[6] *= j0;
-  fC[10] *= j0;
-
-  fC[3] *= j2;
-  fC[4] *= j2;
-  fC[5] *= j2 * j2;
-  fC[8] *= j2;
-  fC[12] *= j2;
-  if( cosPhi <0 ){ // change direction
-    t0.SinPhi() = -sinPhi;
-    t0.DzDs() = -t0.DzDs();
-    t0.DlDs() = -t0.DlDs();
-    t0.QPt() = -t0.QPt();
-    SinPhi() = -SinPhi();
-    DzDs() = -DzDs();
-    QPt() = -QPt();
-    fC[3] = -fC[3];
-    fC[4] = -fC[4];
-    fC[6] = -fC[6];
-    fC[7] = -fC[7];
-    fC[10] = -fC[10];
-    fC[11] = -fC[11];
-  }
-
-  return 1;
 }
 
 #if !defined(HLTCA_STANDALONE) & !defined(HLTCA_GPUCODE)
@@ -510,8 +298,6 @@ bool AliHLTTPCGMTrackParam::GetExtParam( AliExternalTrackParam &T, double alpha 
   T.Set( (double) fX, alpha, par, cov );
   return ok;
 }
-
-
  
 void AliHLTTPCGMTrackParam::SetExtParam( const AliExternalTrackParam &T )
 {
@@ -525,57 +311,128 @@ void AliHLTTPCGMTrackParam::SetExtParam( const AliExternalTrackParam &T )
 }
 #endif
 
+GPUd() void AliHLTTPCGMTrackParam::RefitTrack(AliHLTTPCGMMergedTrack &track, const AliHLTTPCGMPolynomialField* field, AliHLTTPCGMMergedTrackHit* clusters, const AliHLTTPCCAParam& param)
+{
+	if( !track.OK() ) return;    
+
+	int nTrackHits = track.NClusters();
+	   
+	AliHLTTPCGMTrackParam t = track.Param();
+	float Alpha = track.Alpha();  
+	//int nTrackHitsOld = nTrackHits;
+	//float ptOld = t.QPt();
+	t.Fit( field, clusters + track.FirstClusterRef(), param, nTrackHits, Alpha );      
+	
+	if ( fabs( t.QPt() ) < 1.e-4 ) t.QPt() = 1.e-4 ;
+	bool okhits = nTrackHits >= TRACKLET_SELECTOR_MIN_HITS(track.Param().QPt());
+	bool okqual = t.CheckNumericalQuality();
+	bool okphi = fabs( t.SinPhi() ) <= .999;
+			
+	bool ok = okhits && okqual && okphi;
+
+	//printf("Track %d OUTPUT hits %d -> %d, QPt %f -> %f, ok %d (%d %d %d) chi2 %f chi2ndf %f\n", blanum,  nTrackHitsOld, nTrackHits, ptOld, t.QPt(), (int) ok, (int) okhits, (int) okqual, (int) okphi, t.Chi2(), t.Chi2() / max(1,nTrackHits);
+	if (param.HighQPtForward() < fabs(track.Param().QPt()))
+	{
+		ok = 1;
+		for (int k = 0;k < track.NClusters();k++) if (clusters[k].fState < 0) clusters[k].fState = -clusters[k].fState - 1;
+	}
+	track.SetOK(ok);
+	if (!ok) return;
+
+	if( 1 ){//SG!!!
+	  track.SetNClustersFitted( nTrackHits );
+	  track.Param() = t;
+	  track.Param().Z() += track.Param().ZOffset();
+	  track.Alpha() = Alpha;
+	}
+
+	{
+	  int ind = track.FirstClusterRef();
+	  float alphaa = param.Alpha(clusters[ind].fSlice);
+	  float xx = clusters[ind].fX;
+	  float yy = clusters[ind].fY;
+	  float zz = clusters[ind].fZ - track.Param().GetZOffset();
+	  float sinA = AliHLTTPCCAMath::Sin( alphaa - track.Alpha());
+	  float cosA = AliHLTTPCCAMath::Cos( alphaa - track.Alpha());
+	  track.SetLastX( xx*cosA - yy*sinA );
+	  track.SetLastY( xx*sinA + yy*cosA );
+	  track.SetLastZ( zz );
+	}
+}
+
 #ifdef HLTCA_GPUCODE
 
-#include "AliHLTTPCGMMergedTrack.h"
-
-GPUg() void RefitTracks(AliHLTTPCGMMergedTrack* tracks, int nTracks, float* PolinomialFieldBz, float* x, float* y, float* z, unsigned int* rowType, float* alpha, AliHLTTPCCAParam* param)
+GPUg() void RefitTracks(AliHLTTPCGMMergedTrack* tracks, int nTracks, const AliHLTTPCGMPolynomialField* field, AliHLTTPCGMMergedTrackHit* clusters, AliHLTTPCCAParam* param)
 {
 	for (int i = get_global_id(0);i < nTracks;i += get_global_size(0))
 	{
-		//This is in fact a copy of ReFit() in AliHLTTPCGMMerger.cxx
-		AliHLTTPCGMMergedTrack& track = tracks[i];
-		float Alpha = track.Alpha();
-		int N = track.NClusters();
-		AliHLTTPCGMTrackParam t = track.Param();
-
-		t.Fit(PolinomialFieldBz,
-			x+track.FirstClusterRef(),
-			y+track.FirstClusterRef(),
-			z+track.FirstClusterRef(),
-			rowType+track.FirstClusterRef(),
-			alpha+track.FirstClusterRef(),
-			*param,
-			N,
-			Alpha,
-			0
-			);
-
-		if ( fabs( t.QPt() ) < 1.e-4 ) t.QPt() = 1.e-4 ;
-		
-		bool ok = N >= 30 && t.CheckNumericalQuality() && fabs( t.SinPhi() ) <= .999;
-		track.SetOK(ok);
-		if( !ok ) continue;
-
-		if( 1 ){//SG!!!
-		  track.SetNClusters( N );
-		  track.Param() = t;
-		  track.Alpha() = Alpha;
-		}
-
-		{
-		  int ind = track.FirstClusterRef();
-		  float alphaalpha = alpha[ind];
-		  float xx = x[ind];
-		  float yy = y[ind];
-		  float zz = z[ind];
-		  float sinA = AliHLTTPCCAMath::Sin( alphaalpha - track.Alpha());
-		  float cosA = AliHLTTPCCAMath::Cos( alphaalpha - track.Alpha());
-		  track.SetLastX( xx*cosA - yy*sinA );
-		  track.SetLastY( xx*sinA + yy*cosA );
-		  track.SetLastZ( zz );
-		}
+	  AliHLTTPCGMTrackParam::RefitTrack(tracks[i], field, clusters, *param);
 	}
 }
 
 #endif
+
+
+GPUd() bool AliHLTTPCGMTrackParam::Rotate( float alpha, AliHLTTPCGMPhysicalTrackModel &t0, float maxSinPhi )
+{
+  //* Rotate the coordinate system in XY on the angle alpha
+
+  float cA = CAMath::Cos( alpha );
+  float sA = CAMath::Sin( alpha );
+  float x0 = t0.X(), y0 = t0.Y(), sinPhi0 = t0.SinPhi(), cosPhi0 = t0.CosPhi();
+  float cosPhi =  cosPhi0 * cA + sinPhi0 * sA;
+  float sinPhi = -cosPhi0 * sA + sinPhi0 * cA;
+
+  if ( CAMath::Abs( sinPhi ) > maxSinPhi || CAMath::Abs( cosPhi ) < 1.e-2 || CAMath::Abs( cosPhi0 ) < 1.e-2  ) return 0;
+
+  //float J[5][5] = { { j0, 0, 0,  0,  0 }, // Y
+  //                    {  0, 1, 0,  0,  0 }, // Z
+  //                    {  0, 0, j2, 0,  0 }, // SinPhi
+  //                  {  0, 0, 0,  1,  0 }, // DzDs
+  //                  {  0, 0, 0,  0,  1 } }; // Kappa
+
+  float j0 = cosPhi0 / cosPhi;
+  float j2 = cosPhi / cosPhi0;
+  float d[2] = {Y() - y0, SinPhi() - sinPhi0};
+
+  {
+    float px = t0.Px();
+    float py = t0.Py();
+    
+    t0.X()  =  x0*cA + y0*sA;
+    t0.Y()  = -x0*sA + y0*cA;
+    t0.Px() =  px*cA + py*sA;
+    t0.Py() = -px*sA + py*cA;
+    t0.UpdateValues();
+  }
+  
+  X() = t0.X();
+  Y() = t0.Y() + j0*d[0];
+
+  SinPhi() = sinPhi + j2*d[1] ;
+
+  fC[0] *= j0 * j0;
+  fC[1] *= j0;
+  fC[3] *= j0;
+  fC[6] *= j0;
+  fC[10] *= j0;
+
+  fC[3] *= j2;
+  fC[4] *= j2;
+  fC[5] *= j2 * j2;
+  fC[8] *= j2;
+  fC[12] *= j2;
+  if( cosPhi <0 ){ // change direction ( t0 direction is already changed in t0.UpdateValues(); )
+    SinPhi() = -SinPhi();
+    DzDs() = -DzDs();
+    QPt() = -QPt();
+    fC[3] = -fC[3];
+    fC[4] = -fC[4];
+    fC[6] = -fC[6];
+    fC[7] = -fC[7];
+    fC[10] = -fC[10];
+    fC[11] = -fC[11];
+  }
+  
+  return 1;
+}

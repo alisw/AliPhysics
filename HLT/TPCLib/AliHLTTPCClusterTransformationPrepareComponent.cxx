@@ -32,7 +32,6 @@
 #include "AliCDBManager.h"
 #include "AliCDBEntry.h"
 #include "AliTPCcalibDB.h"
-#include "AliAnalysisDataContainer.h"
 #include "AliTPCPreprocessorOffline.h"
 #include "AliTPCcalibTime.h"
 
@@ -134,7 +133,7 @@ AliHLTTPCFastTransformObject* AliHLTTPCClusterTransformationPrepareComponent::Ge
 	{
 		fgTransform.SetInitSec(fMinInitSec, fMaxInitSec);
 	}
-	int err = fgTransform.Init( GetBz(), GetTimeStamp() );
+	int err = fgTransform.Init( GetBz(), GetTimeStamp(), false, 0 ); //This runs only online, so we do not need to bother with MC
 
 	timer.Stop();
 	HLTImportant("Initialization time: %f / %f", timer.CpuTime(), timer.RealTime());

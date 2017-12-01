@@ -248,7 +248,7 @@ void AliHLTReconstructor::FinishEvent()
   // indicate step 'FinishEvent'
   SetProcessingStep(kProcessingStepFinishEvent);
 
-  AliInfo("finishing event");
+  //AliInfo("finishing event");
   AliHLTSystem* pSystem=fpPluginBase->GetInstance();
   if (pSystem) {
     // this is the end of the lifetime of the HLTOUT instance

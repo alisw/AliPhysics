@@ -191,14 +191,14 @@ int AliHLTTRDMonitorComponent::DoInit(int argc, const char** argv) {
 
   fHistTriggerContribs = new TH2I("trdmon_trigger_contribs", "TRD internal contributions by sector;TRD sector;trigger contribution;",
 				  18, 0, 18, 12, 0, 12);
-  fHistTrackingTiming->GetYaxis()->SetBinLabel(1, "trg0");
-  fHistTrackingTiming->GetYaxis()->SetBinLabel(2, "trg1");
-  fHistTrackingTiming->GetYaxis()->SetBinLabel(3, "trg2");
-  fHistTrackingTiming->GetYaxis()->SetBinLabel(4, "trg3");
-  fHistTrackingTiming->GetYaxis()->SetBinLabel(5, "trg4");
-  fHistTrackingTiming->GetYaxis()->SetBinLabel(6, "trg5");
-  fHistTrackingTiming->GetYaxis()->SetBinLabel(7, "trg5");
-  fHistTrackingTiming->GetYaxis()->SetBinLabel(8, "T");
+  fHistTriggerContribs->GetYaxis()->SetBinLabel(1, "trg0");
+  fHistTriggerContribs->GetYaxis()->SetBinLabel(2, "trg1");
+  fHistTriggerContribs->GetYaxis()->SetBinLabel(3, "trg2");
+  fHistTriggerContribs->GetYaxis()->SetBinLabel(4, "trg3");
+  fHistTriggerContribs->GetYaxis()->SetBinLabel(5, "trg4");
+  fHistTriggerContribs->GetYaxis()->SetBinLabel(6, "trg5");
+  fHistTriggerContribs->GetYaxis()->SetBinLabel(7, "trg5");
+  fHistTriggerContribs->GetYaxis()->SetBinLabel(8, "T");
   fHistArray->AddLast(fHistTriggerContribs);
 
  vector<const char*> remainingArgs;

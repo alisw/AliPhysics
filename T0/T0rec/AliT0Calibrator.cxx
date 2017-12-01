@@ -50,7 +50,7 @@ ClassImp(AliT0Calibrator)
 				     
 {
   //constructor
-   printf(" AliT0Calibrator ::: AliT0RecoParam GetEq() %i\n", fEqualized);
+   AliInfo(Form(" AliT0Calibrator ::: AliT0RecoParam GetEq() %i", fEqualized));
    AliT0Parameters* param = AliT0Parameters::Instance();
    param->Init();
    //slewing correcion and equalizing channels

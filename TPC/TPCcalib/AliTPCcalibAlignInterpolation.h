@@ -10,6 +10,7 @@ class AliExternalTrackParam;
 class AliESDfriendTrack;
 class AliTrackPointArray;
 class TCut;
+class AliESDEvent;
 
 class AliTPCcalibAlignInterpolation : public AliTPCcalibBase {
 public :

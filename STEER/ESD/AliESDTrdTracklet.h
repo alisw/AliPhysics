@@ -12,14 +12,15 @@ class AliESDTrdTracklet : public AliVTrdTracklet
 {
  public:
   AliESDTrdTracklet();
-  AliESDTrdTracklet(UInt_t trackletWord, Short_t hcid, Int_t label = -1);
+  AliESDTrdTracklet(UInt_t trackletWord, Short_t hcid, const Int_t *label=0);
   AliESDTrdTracklet(const AliESDTrdTracklet &trkl);
   AliESDTrdTracklet& operator=(const AliESDTrdTracklet &trkl);
   ~AliESDTrdTracklet();
 
   void SetTrackletWord(UInt_t trklWord) { fTrackletWord = trklWord; }
   void SetHCId(Short_t hcid) { fHCId = hcid; }
-  void SetLabel(Int_t label) { fLabel = label; }
+  void SetLabel(Int_t label[]) { for (int i=3;i--;) fLabel[i] = label[i]; }
+  void SetLabel(int ilb, Int_t label) { fLabel[ilb] = label; }
 
   // ----- tracklet information -----
   virtual UInt_t GetTrackletWord() const { return fTrackletWord; }
@@ -35,16 +36,19 @@ class AliESDTrdTracklet : public AliVTrdTracklet
   Int_t GetMCM() const { return -1; }
 
   // ----- MC information -----
-  Int_t GetLabel() const { return fLabel; }
-
+  Int_t GetLabel()         const { return fLabel[0]; }
+  Int_t GetLabel(int i)    const { return fLabel[i]; }
+  const Int_t* GetLabels() const { return fLabel; }
+  
  protected:
   Short_t fHCId;		// half-chamber ID
 
   UInt_t fTrackletWord;		// tracklet word (as from FEE)
 				// pppp : pppp : zzzz : dddd : dddy : yyyy : yyyy : yyyy
-  Int_t  fLabel;		// MC label
+  Int_t  fLabel[3];		// MC labels
 
-  ClassDef(AliESDTrdTracklet, 2);
+  ClassDef(AliESDTrdTracklet, 3);
+
 };
 
 #endif

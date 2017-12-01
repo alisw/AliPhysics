@@ -23,7 +23,9 @@ class AliHLTComponentBenchmark;
 class AliHLTSpacePointContainer;
 class AliHLTDataDeflater;
 class AliHLTTPCClusterTransformation;
+class AliHLTTPCFastTransform;
 class TH1F;
+class AliHLTTPCReverseTransformInfoV1;
 
 /**
  * @class AliHLTTPCDataCompressionComponent
@@ -163,6 +165,13 @@ public:
     float          fGlobalParameters[1]; //! array of global parameters
   };
 
+  /// calculate correction factor and offset for a linear approximation of the
+  /// drift time transformation by just probing the range of timebins
+  static int CalculateDriftTimeTransformation(AliHLTTPCClusterTransformation& transform, int slice, int padrow,
+				       float& m, float& n, AliHLTTPCReverseTransformInfoV1* rev = NULL);
+  static int CalculateDriftTimeTransformation(AliHLTTPCFastTransform& transform, int slice, int padrow,
+				       float& m, float& n, AliHLTTPCReverseTransformInfoV1* rev = NULL);
+
 protected:
   /// inherited from AliHLTProcessor: data processing
   int DoEvent( const AliHLTComponentEventData& evtData, 
@@ -217,16 +226,13 @@ private:
   /// calculate correction factor and offset for a linear approximation of the
   /// drift time transformation, separately for A and C side
   int InitDriftTimeTransformation();
-  /// calculate correction factor and offset for a linear approximation of the
-  /// drift time transformation by just probing the range of timebins
-  int CalculateDriftTimeTransformation(AliHLTTPCClusterTransformation& transform, int slice, int padrow,
-				       float& m, float& n) const;
 
   AliHLTComponentBenchmark* GetBenchmarkInstance() const {return fpBenchmark;}
 
   int fMode; //! mode
   int fDeflaterMode; //! deflater mode
   int fVerificationMode; //! mode for verification and unit tests
+  int fProvideClusterIds; //! provide blocks of HLT cluster ids 
   int fCreateFlags; //! Store cluster flags in compressed data
 
   float fMaxDeltaPad; //! maximum deviation in pad

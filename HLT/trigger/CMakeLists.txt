@@ -74,7 +74,6 @@ set(SRCS
     AliHLTTriggerITSMultiplicity.cxx
     AliHLTTriggerPhosClusterEnergy.cxx
     AliHLTTriggerPhosMip.cxx
-    AliHLTTriggerTrdClusterMultiplicity.cxx
     AliHLTUpcTriggerComponent.cxx
     AliHLTTriggerCTPRE.cxx
    )

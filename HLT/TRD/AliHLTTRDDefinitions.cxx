@@ -33,7 +33,7 @@ const AliHLTComponentDataType AliHLTTRDDefinitions::fgkClusterDataType = { sizeo
 
 const AliHLTComponentDataType AliHLTTRDDefinitions::fgkHiLvlClusterDataType = { sizeof(AliHLTComponentDataType), {'H','I','C','L','U','S','T','S'},{'T','R','D',' '}};;
 
-const AliHLTComponentDataType AliHLTTRDDefinitions::fgkTracksDataType = { sizeof(AliHLTComponentDataType), {'T','R','A','C','K','S','S','A'},{'T','R','D',' '}};;
+const AliHLTComponentDataType AliHLTTRDDefinitions::fgkTracksV1DataType = { sizeof(AliHLTComponentDataType), {'T','R','A','C','K','S','S','A'},{'T','R','D',' '}};;
 
 const AliHLTComponentDataType AliHLTTRDDefinitions::fgkOnlineDataType = { sizeof(AliHLTComponentDataType), {'T','R','A','C','K','D','A','T'},{'T','R','D',' '}};;
 
@@ -48,6 +48,13 @@ const AliHLTComponentDataType AliHLTTRDDefinitions::fgkCalibrationDataType = { s
 const AliHLTComponentDataType AliHLTTRDDefinitions::fgkEORCalibrationDataType = { sizeof(AliHLTComponentDataType), {'C','A','L','I','B','E','O','R'},{'T','R','D',' '}};;
 
 const AliHLTComponentDataType AliHLTTRDDefinitions::fgkSimpleIntegerDataType = { sizeof(AliHLTComponentDataType), {'S','I','M','P','L','I','N','T'},{'T','R','D',' '}};;
+
+const AliHLTComponentDataType AliHLTTRDDefinitions::fgkTRDTrackletDataType = { sizeof(AliHLTComponentDataType), {'T','R','A','C','K','L','E','T'},{'T','R','D',' '}};;
+
+const AliHLTComponentDataType AliHLTTRDDefinitions::fgkTRDTrackPointDataType = { sizeof(AliHLTComponentDataType), {'T','R','A','C','K','P','N','T'},{'T','R','D',' '}};;
+
+const AliHLTComponentDataType AliHLTTRDDefinitions::fgkTRDTrackDataType = { sizeof(AliHLTComponentDataType), {'T','R','D','T','R','A','C','K'},{'T','R','D',' '}};;
+
 
 AliHLTTRDDefinitions::AliHLTTRDDefinitions()
 {

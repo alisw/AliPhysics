@@ -17,6 +17,7 @@ class AliESDEvent;
 class AliESDfriend;
 class TFile;
 class TTree;
+class AliVCuts;
 
 class AliESDHandler : public AliVEventHandler {
     
@@ -41,6 +42,7 @@ class AliESDHandler : public AliVEventHandler {
 	void FillTree();
 	void SetInputTree(TTree* /*tree*/) {;}
 	void SelectEventForFriends() {fIsEventSelectedForFriends = kTRUE;}
+  virtual AliVCuts*    GetEventSelection() const {return NULL;}
 
  private:
 

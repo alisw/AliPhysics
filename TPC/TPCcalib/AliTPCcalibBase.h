@@ -11,9 +11,9 @@
 #include "TNamed.h"
 #include "TObjString.h"
 class AliTPCseed;
-class AliESDEvent;
-class AliESDtrack;
-class AliESDfriendTrack;
+class AliVEvent;
+class AliVTrack;
+class AliVfriendTrack;
 class TCollection;
 class TTreeSRedirector;
 class TGraph;
@@ -30,16 +30,20 @@ public:
   AliTPCcalibBase(const AliTPCcalibBase&calib);
   AliTPCcalibBase &operator=(const AliTPCcalibBase&calib);
   virtual ~AliTPCcalibBase();
-  virtual void     Process(AliESDEvent *event){ fCurrentEvent = event; return;}
+  virtual void     Process(AliVEvent *event){ fCurrentEvent = event; return;}
   virtual void     Process(AliTPCseed *track){fCurrentSeed = track; return;}
-  virtual void     Process(AliESDtrack *track, Int_t /*runNo=-1*/){fCurrentTrack=track; return;}
+  virtual void     Process(AliVTrack *track, Int_t /*runNo=-1*/){fCurrentTrack=track; return;}
   virtual Long64_t Merge(TCollection */*li*/){return 0;}
   virtual void     Analyze(){return;}
   virtual void     Terminate();
-  virtual void     UpdateEventInfo(AliESDEvent * event);
+  virtual void     UpdateEventInfo(AliVEvent * event);
   virtual Bool_t   AcceptTrigger();
   virtual void     SetTriggerMask(Int_t accept, Int_t reject, Bool_t rejectLaser){fTriggerMaskAccept=accept;fTriggerMaskReject=reject; fRejectLaser = rejectLaser;}
- 
+
+  // full reset: discard all statistics, zero histograms, start again.
+  // called in online mode (HLT) after sending output for merging.
+  virtual Bool_t            ResetOutputData() {return kFALSE;}
+
   //
   // debug streamer support
   TTreeSRedirector *GetDebugStreamer();
@@ -48,7 +52,7 @@ public:
   Int_t      GetStreamLevel() const {return fStreamLevel;}
   Int_t      GetDebugLevel() const {return fDebugLevel;}
   virtual void RegisterDebugOutput(const char *path);
-  static     Bool_t HasLaser(AliESDEvent *event);
+  static     Bool_t HasLaser(AliVEvent *event);
   static TGraphErrors *        FitSlices(THnSparse *h, Int_t axisDim1, Int_t axisDim2, Int_t minEntries, Int_t nmaxBin, Float_t fracLow=0.1, Float_t fracUp=0.9, Bool_t useMedian=kFALSE, TTreeSRedirector *cstream=0, Int_t ival=1);
   static TGraphErrors *        FitSlices(TH2* hist, Int_t minEntries, Int_t nmaxBin, Float_t fracLow=0.1, Float_t fracUp=0.9, Bool_t useMedian=kFALSE, TTreeSRedirector *cstream=0, Int_t ival=1);
   static TH2*            NormalizedProjection(THnSparse *h, Int_t axisDim1, Int_t axisDim2, Int_t normDim, Float_t minStatFrac=0.5);
@@ -69,9 +73,9 @@ protected:
   Bool_t  fHasLaser;                    //flag the laser is overlayed with given event
   Bool_t  fRejectLaser;                 //flag- reject laser
   TObjString fTriggerClass;             // trigger class
-  AliESDEvent  *fCurrentEvent;          //! current event
-  AliESDtrack *fCurrentTrack;           //! current esd track
-  AliESDfriendTrack *fCurrentFriendTrack;     //! current friend track
+  AliVEvent  *fCurrentEvent;          //! current event
+  AliVTrack *fCurrentTrack;           //! current esd track
+  AliVfriendTrack *fCurrentFriendTrack;     //! current friend track
   AliTPCseed   *fCurrentSeed;           //! current seed
 private:
   Int_t  fDebugLevel;                   //  debug level

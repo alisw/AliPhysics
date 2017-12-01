@@ -7,7 +7,7 @@
 #include "AliAnalysisTask.h"
 #include "AliAnalysisManager.h"
 
-#include "AliESDEvent.h"
+//#include "AliESDEvent.h"
 #include "AliESDtrackCuts.h"
 #include "AliVEventHandler.h"
 #include "AliTPCseed.h"
@@ -57,14 +57,14 @@ void AliAnalysisTaskPt::ConnectInputData(Option_t *)
     */
 
     AliVEventHandler *esdH = AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler();
-    TString classInputHandler;
+    TString classInputHandler = esdH->ClassName();
+
+    Printf("----> AliAnalysisTaskPt: ClassName of handler = %s", classInputHandler.Data());
 
     if (!esdH) {
       Printf("ERROR: Could not get ESDInputHandler");
     } 
     else {
-      classInputHandler = esdH->ClassName();
-      Printf("----> AliAnalysisTaskPt: ClassName of handler = %s", classInputHandler.Data());
       Printf("----> AliAnalysisTaskPt::ConnectInputData Getting the event from handler %p", esdH);
       fESD = esdH->GetEvent();
       if (fUseFriends){
@@ -127,14 +127,14 @@ void AliAnalysisTaskPt::CreateOutputObjects()
   fHistNTPCCl->GetYaxis()->SetTitle("dN/d(n. TPC Cl)");
   fHistNTPCCl->SetMarkerStyle(kFullCircle);
 
-  fHistNESDtracks = new TH1F("fHistNESDtracks", "Number of ESD friend tracks", 1000, -0.5, 999.5);
-  fHistNESDtracks->GetXaxis()->SetTitle("n. ESD friend tracks");
-  fHistNESDtracks->GetYaxis()->SetTitle("dN/d(n. ESD friend tracks)");
+  fHistNESDtracks = new TH1F("fHistNESDtracks", "Number of ESD tracks", 1000, -0.5, 999.5);
+  fHistNESDtracks->GetXaxis()->SetTitle("n. ESD tracks");
+  fHistNESDtracks->GetYaxis()->SetTitle("dN/d(n. ESD tracks)");
   fHistNESDtracks->SetMarkerStyle(kFullCircle);
 
-  fHistNESDfriendtracks = new TH1F("fHistNESDfriendtracks", "Number of ESD tracks", 1000, -0.5, 999.5);
-  fHistNESDfriendtracks->GetXaxis()->SetTitle("n. ESD tracks");
-  fHistNESDfriendtracks->GetYaxis()->SetTitle("dN/d(n. ESD tracks)");
+  fHistNESDfriendtracks = new TH1F("fHistNESDfriendtracks", "Number of ESD friend tracks", 1000, -0.5, 999.5);
+  fHistNESDfriendtracks->GetXaxis()->SetTitle("n. ESD friend tracks");
+  fHistNESDfriendtracks->GetYaxis()->SetTitle("dN/d(n. ESD friend tracks)");
   fHistNESDfriendtracks->SetMarkerStyle(kFullCircle);
 
   fListOut->Add(fHistPt);

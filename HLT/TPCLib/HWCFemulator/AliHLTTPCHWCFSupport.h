@@ -47,7 +47,7 @@ class AliHLTTPCHWCFSupport : public AliHLTLogging
   int CheckRawData( const AliHLTUInt32_t *buffer, unsigned long bufferSize32, int patch, int slice );
 
   /** clean up */
-  void ReleaseEventMemory();
+  void ReleaseEventMemory(bool releaseInputTree = true);
 
   // unload mapping from memory
   void UnloadMapping();

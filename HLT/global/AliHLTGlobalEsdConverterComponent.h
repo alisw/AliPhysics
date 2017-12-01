@@ -115,6 +115,8 @@ protected:
   Bool_t fMakeFriends; // flag to create friends
   AliTPCclusterMI   *fPartitionClusters[fkNPartition];  //! arrays of cluster data for each TPC partition
   Int_t              fNPartitionClusters[fkNPartition]; //! number of clusters for each TPC partition
+  
+  bool fBeamTypePbPb; //Do we process PbPb data
  
   AliHLTComponentBenchmark fBenchmark; // benchmark
 

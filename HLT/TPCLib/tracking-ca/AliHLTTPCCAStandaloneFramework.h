@@ -18,6 +18,8 @@
 #endif
 #include "AliHLTTPCCAClusterData.h"
 #include "AliHLTTPCCATrackerFramework.h"
+#include "AliHLTTPCClusterMCData.h"
+#include "AliHLTTPCCAMCInfo.h"
 #include <iostream>
 #include <fstream>
 
@@ -26,7 +28,6 @@
  *
  * The class to run the HLT TPC reconstruction (36 CA slice trackers + CA merger )
  * in a stand-alone mode.
- * Used by AliTPCtrackerCA, the CA event display, CA performance.
  *
  */
 class AliHLTTPCCAStandaloneFramework
@@ -37,12 +38,13 @@ class AliHLTTPCCAStandaloneFramework
 
   public:
 
-    AliHLTTPCCAStandaloneFramework();
+    AliHLTTPCCAStandaloneFramework(int allowGPU = 1, const char* GPULibrary = NULL);
     ~AliHLTTPCCAStandaloneFramework();
 
-    static AliHLTTPCCAStandaloneFramework &Instance();
+    static AliHLTTPCCAStandaloneFramework &Instance(int allowGPU = 1, const char* GPULibrary = NULL);
 
 	const AliHLTTPCCAParam &Param ( int iSlice ) const { return(fTracker.Param(iSlice)); }
+	const AliHLTTPCCAParam &Param () const { return(fMerger.SliceParam()); }
 	const AliHLTTPCCARow &Row ( int iSlice, int iRow ) const { return(fTracker.Row(iSlice, iRow)); }
     const AliHLTTPCCASliceOutput &Output( int iSlice ) const { return *fSliceOutput[iSlice]; }
     AliHLTTPCGMMerger  &Merger()  { return fMerger; }
@@ -68,7 +70,7 @@ class AliHLTTPCCAStandaloneFramework
     /**
      *  perform event reconstruction
      */
-    int ProcessEvent(int forceSingleSlice = -1);
+    int ProcessEvent(int forceSingleSlice = -1, bool resetTimers = true);
 
 
     int NSlices() const { return fgkNSlices; }
@@ -77,26 +79,36 @@ class AliHLTTPCCAStandaloneFramework
     double StatTime( int iTimer ) const { return fStatTime[iTimer]; }
     int StatNEvents() const { return fStatNEvents; }
 
-    void WriteSettings( std::ostream &out ) const;
+    void SetSettings(float solenoidBz = -5.00668, bool constBz = false);
     void WriteEvent( std::ostream &out ) const;
-    void WriteTracks( std::ostream &out ) const;
-
-    void ReadSettings( std::istream &in );
-    void ReadEvent( std::istream &in );
-    void ReadTracks( std::istream &in );
+    int ReadEvent( std::istream &in, bool ResetIds = false, bool addData = false, float shift = 0., float minZ = -1e6, float maxZ = -1e6, bool silent = false, bool doQA = true );
 
 	int InitGPU(int sliceCount = 1, int forceDeviceID = -1) { return(fTracker.InitGPU(sliceCount, forceDeviceID)); }
 	int ExitGPU() { return(fTracker.ExitGPU()); }
 	void SetGPUDebugLevel(int Level, std::ostream *OutFile = NULL, std::ostream *GPUOutFile = NULL) { fDebugLevel = Level; fTracker.SetGPUDebugLevel(Level, OutFile, GPUOutFile); fMerger.SetDebugLevel(Level);}
-	int SetGPUTrackerOption(char* OptionName, int OptionValue) {return(fTracker.SetGPUTrackerOption(OptionName, OptionValue));}
+	int SetGPUTrackerOption(const char* OptionName, int OptionValue) {return(fTracker.SetGPUTrackerOption(OptionName, OptionValue));}
 	int SetGPUTracker(bool enable) { return(fTracker.SetGPUTracker(enable)); }
 	int GetGPUStatus() const { return(fTracker.GetGPUStatus()); }
 	int GetGPUMaxSliceCount() const { return(fTracker.MaxSliceCount()); }
+	void SetHighQPtForward(float v) { AliHLTTPCCAParam param = fMerger.SliceParam(); param.SetHighQPtForward(v); fMerger.SetSliceParam(param);}
+	void SetNWays(int v) { AliHLTTPCCAParam param = fMerger.SliceParam(); param.SetNWays(v); fMerger.SetSliceParam(param);}
+	void SetNWaysOuter(bool v) { AliHLTTPCCAParam param = fMerger.SliceParam(); param.SetNWaysOuter(v); fMerger.SetSliceParam(param);}
+	void SetSearchWindowDZDR(float v) { AliHLTTPCCAParam param = fMerger.SliceParam(); param.SetSearchWindowDZDR(v); fMerger.SetSliceParam(param);for (int i = 0;i < fgkNSlices;i++) fTracker.GetParam(i).SetSearchWindowDZDR(v);}
+	void SetContinuousTracking(bool v) { AliHLTTPCCAParam param = fMerger.SliceParam(); param.SetContinuousTracking(v); fMerger.SetSliceParam(param);for (int i = 0;i < fgkNSlices;i++) fTracker.GetParam(i).SetContinuousTracking(v);}
+	void SetTrackReferenceX(float v) { AliHLTTPCCAParam param = fMerger.SliceParam(); param.SetTrackReferenceX(v); fMerger.SetSliceParam(param);}
+	void UpdateGPUSliceParam() {fTracker.UpdateGPUSliceParam();}
 	void SetEventDisplay(int v) {fEventDisplay = v;}
+	void SetRunQA(int v) {fRunQA = v;}
 	void SetRunMerger(int v) {fRunMerger = v;}
+	void SetExternalClusterData(AliHLTTPCCAClusterData* v) {fClusterData = v;}
 
 	int InitializeSliceParam(int iSlice, AliHLTTPCCAParam& param) { return(fTracker.InitializeSliceParam(iSlice, param)); }
 	void SetOutputControl(char* ptr, size_t size) {fOutputControl.fOutputPtr = ptr;fOutputControl.fOutputMaxSize = size;}
+	
+	int GetNMCLabels() {return(fMCLabels.size());}
+	int GetNMCInfo() {return(fMCInfo.size());}
+	const AliHLTTPCClusterMCLabel* GetMCLabels() {return(fMCLabels.data());}
+	const AliHLTTPCCAMCInfo* GetMCInfo() {return(fMCInfo.data());}
 
   private:
 
@@ -106,7 +118,8 @@ class AliHLTTPCCAStandaloneFramework
     const AliHLTTPCCAStandaloneFramework &operator=( const AliHLTTPCCAStandaloneFramework& ) const;
 
     AliHLTTPCGMMerger fMerger;  //* global merger
-    AliHLTTPCCAClusterData fClusterData[fgkNSlices];
+	AliHLTTPCCAClusterData* fClusterData;
+    AliHLTTPCCAClusterData fInternalClusterData[fgkNSlices];
 	AliHLTTPCCASliceOutput* fSliceOutput[fgkNSlices];
 	AliHLTTPCCASliceOutput::outputControlStruct fOutputControl;
 
@@ -118,7 +131,10 @@ class AliHLTTPCCAStandaloneFramework
 
 	int fDebugLevel;	//Tracker Framework Debug Level
 	int fEventDisplay;	//Display event in Standalone Event Display
+	int fRunQA;         //Stun Standalone QA
 	int fRunMerger;		//Run Track Merger
+	std::vector<AliHLTTPCClusterMCLabel> fMCLabels;
+	std::vector<AliHLTTPCCAMCInfo> fMCInfo;
 };
 
 #endif //ALIHLTTPCCASTANDALONEFRAMEWORK_H

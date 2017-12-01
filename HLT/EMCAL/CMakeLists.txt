@@ -62,6 +62,8 @@ set(SRCS
     AliHLTEMCALSTURawDigitMaker.cxx
     AliHLTEMCALRawAnalyzerComponentSTU.cxx
     AliHLTEMCALTriggerQAComponent.cxx
+    AliHLTEMCALDigitsMonitorComponent.cxx
+    AliHLTEMCALDigitsMonitor.cxx
    )
 
 # Headers from sources

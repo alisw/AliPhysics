@@ -10,8 +10,8 @@
 
 #include "AliTPCcalibBase.h"
 class AliTPCseed;
-class AliESDEvent;
-class AliESDtrack;
+class AliVEvent;
+class AliVTrack;
 class TCollection;
 class TTreeSRedirector;
 class AliExternalTrackParam;
@@ -24,12 +24,12 @@ public:
   AliTPCcalibCalib(const AliTPCcalibCalib&calib);
   AliTPCcalibCalib &operator=(const AliTPCcalibCalib&calib);
   virtual ~AliTPCcalibCalib();
-  virtual void     Process(AliESDEvent *event);
+  virtual void     Process(AliVEvent *event);
   virtual void     Analyze(){return;}
   
-  Bool_t  RefitTrack(AliESDtrack * track, AliTPCseed *seed, Float_t magesd);
+  Bool_t  RefitTrack(AliVTrack * track, AliTPCseed *seed, Float_t magesd);
   Bool_t  RejectCluster(AliTPCclusterMI* cl, AliExternalTrackParam * param);
-  void     Process(AliESDtrack *track, Int_t runNo=-1){AliTPCcalibBase::Process(track,runNo);};
+  void     Process(AliVTrack *track, Int_t runNo=-1){AliTPCcalibBase::Process(track,runNo);}
   void     Process(AliTPCseed *track){return AliTPCcalibBase::Process(track);}
 
   void  SetApplyExBCorrection(Int_t flag){fApplyExBCorrection=flag;}

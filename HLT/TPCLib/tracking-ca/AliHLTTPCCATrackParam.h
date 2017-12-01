@@ -24,7 +24,7 @@ class AliHLTTPCCATrackLinearisation;
  * which is used by the AliHLTTPCCATracker slice tracker.
  *
  */
- MEM_CLASS_PRE() class AliHLTTPCCATrackParam
+MEM_CLASS_PRE() class AliHLTTPCCATrackParam
 {
   public:
 
@@ -42,6 +42,7 @@ class AliHLTTPCCATrackLinearisation;
     GPUd() float SinPhi() const { return fParam.SinPhi(); }
     GPUd() float DzDs()   const { return fParam.DzDs(); }
     GPUd() float QPt()    const { return fParam.QPt(); }
+    GPUd() float ZOffset() const{ return fParam.ZOffset(); }
     GPUd() float SignCosPhi() const { return fSignCosPhi; }
     GPUd() float Chi2()  const { return fChi2; }
     GPUd() int   NDF()   const { return fNDF; }
@@ -85,9 +86,10 @@ class AliHLTTPCCATrackLinearisation;
     GPUd() void SetX( float v )     {  fParam.SetX(v);    }
     GPUd() void SetY( float v )     {  fParam.SetY(v); }
     GPUd() void SetZ( float v )     {  fParam.SetZ(v); }
-    GPUd() void SetSinPhi( float v ) {  fParam.SetSinPhi(v); }
+    GPUd() void SetSinPhi( float v ){  fParam.SetSinPhi(v); }
     GPUd() void SetDzDs( float v )  {  fParam.SetDzDs(v); }
     GPUd() void SetQPt( float v )   {  fParam.SetQPt(v); }
+    GPUd() void SetZOffset( float v){  fParam.SetZOffset(v); }
     GPUd() void SetSignCosPhi( float v ) {  fSignCosPhi = v >= 0 ? 1 : -1; }
     GPUd() void SetChi2( float v )  {  fChi2 = v; }
     GPUd() void SetNDF( int v )   { fNDF = v; }
@@ -131,7 +133,7 @@ class AliHLTTPCCATrackLinearisation;
 
     GPUd() bool Rotate( float alpha, float maxSinPhi = .999 );
     GPUd() bool Rotate( float alpha, AliHLTTPCCATrackLinearisation &t0, float maxSinPhi = .999 );
-    GPUd() bool Filter( float y, float z, float err2Y, float err2Z, float maxSinPhi = .999 );
+    GPUd() bool Filter( float y, float z, float err2Y, float err2Z, float maxSinPhi = .999, bool paramOnly = false );
 
     GPUd() bool CheckNumericalQuality() const;
 
@@ -176,6 +178,7 @@ class AliHLTTPCCATrackLinearisation;
   SetCov( 12, 0 );
   SetCov( 13, 0 );
   SetCov( 14, 10. );
+  SetZOffset( 0 );
 }
 
 #endif //ALIHLTTPCCATRACKPARAM_H

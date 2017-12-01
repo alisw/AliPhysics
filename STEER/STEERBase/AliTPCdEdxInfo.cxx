@@ -112,7 +112,7 @@ void  AliTPCdEdxInfo::GetTPCSignals(Double_t signal[4]) const {
 }
 
 //_______________________________________________________________________________________________
-void  AliTPCdEdxInfo::SetTPCSignalRegionInfo(Double_t signal[4], Char_t ncl[3], Char_t nrows[3]){
+void  AliTPCdEdxInfo::SetTPCSignalRegionInfo(const Double_t signal[4], const Char_t ncl[3], const Char_t nrows[3]){
   //
   // Set the TPC dEdx variables per region
   //
@@ -130,7 +130,7 @@ void  AliTPCdEdxInfo::SetTPCSignalRegionInfo(Double_t signal[4], Char_t ncl[3], 
 }
 
 //_______________________________________________________________________________________________
-void  AliTPCdEdxInfo::SetTPCSignals(Double_t signal[4]){
+void  AliTPCdEdxInfo::SetTPCSignals(const Double_t signal[4]){
   //
   // Set the TPC dEdx variables per region
   //
@@ -172,7 +172,7 @@ void  AliTPCdEdxInfo::GetTPCSignalsQmax(Double_t signal[4]) const {
 }
 
 //_______________________________________________________________________________________________
-void  AliTPCdEdxInfo::SetTPCSignalRegionInfoQmax(Double_t signal[4], Char_t ncl[3], Char_t nrows[3]){
+void  AliTPCdEdxInfo::SetTPCSignalRegionInfoQmax(const Double_t signal[4], const Char_t ncl[3], const Char_t nrows[3]){
   //
   // Set the TPC dEdx variables per region
   //
@@ -190,7 +190,7 @@ void  AliTPCdEdxInfo::SetTPCSignalRegionInfoQmax(Double_t signal[4], Char_t ncl[
 }
 
 //_______________________________________________________________________________________________
-void  AliTPCdEdxInfo::SetTPCSignalsQmax(Double_t signal[4]){
+void  AliTPCdEdxInfo::SetTPCSignalsQmax(const Double_t signal[4]){
   //
   // Set the TPC dEdx variables per region
   //

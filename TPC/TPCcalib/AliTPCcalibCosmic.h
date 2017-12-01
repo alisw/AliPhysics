@@ -8,8 +8,8 @@
 class TH2F;
 class TH1F;
 class TList;
-class AliESDEvent;
-class AliESDtrack;
+class AliVEvent;
+class AliVTrack;
 class THnSparse;
 
 class AliTPCcalibCosmic:public AliTPCcalibBase {
@@ -18,14 +18,14 @@ public:
   AliTPCcalibCosmic(const Text_t *name, const Text_t *title);
   virtual ~AliTPCcalibCosmic();
   
-  virtual void      Process(AliESDEvent *event);
+  virtual void      Process(AliVEvent *event);
   virtual Long64_t  Merge(TCollection *const li);
   void              Add(const AliTPCcalibCosmic* cosmic);
   //
   //
   void              Init();
-  void              FindPairs(const AliESDEvent *event);
-  void              FindCosmicPairs(const AliESDEvent * event);
+  void              FindPairs(const AliVEvent *event);
+  void              FindCosmicPairs(const AliVEvent * event);
 
   Bool_t            IsPair(AliExternalTrackParam *tr0, AliExternalTrackParam *tr1) const;
   static void       CalculateBetheParams(TH2F *hist, Double_t * initialParam);
@@ -39,19 +39,19 @@ public:
   static void MakeFitTree(TTree * treeInput, TTreeSRedirector *pcstream, const TObjArray * corrArray, Int_t step, Int_t run);
   TTree * GetCosmicTree() const {return fCosmicTree;}
   //
-  TH1F   *          GetHistNTracks() const {return fHistNTracks;};
-  TH1F   *          GetHistClusters() const {return fClusters;};
-  TH2F   *          GetHistAcorde()const {return fModules;};
-  TH1F   *          GetHistPt() const {return fHistPt;};
-  TH2F   *          GetHistDeDx() const {return fDeDx;};
-  TH1F   *          GetHistMIP() const {return fDeDxMIP;};
+  TH1F   *          GetHistNTracks() const {return fHistNTracks;}
+  TH1F   *          GetHistClusters() const {return fClusters;}
+  TH2F   *          GetHistAcorde()const {return fModules;}
+  TH1F   *          GetHistPt() const {return fHistPt;}
+  TH2F   *          GetHistDeDx() const {return fDeDx;}
+  TH1F   *          GetHistMIP() const {return fDeDxMIP;}
   //
-  Double_t          GetMIPvalue()const {return fMIPvalue;};
+  Double_t          GetMIPvalue()const {return fMIPvalue;}
   //
   static void       BinLogX(TH1 *const h);   // method for correct histogram binning
   static void       BinLogX(THnSparse *const h, Int_t axisDim);   // method for correct histogram binning
 
-  void     Process(AliESDtrack *const track, Int_t runNo=-1) {AliTPCcalibBase::Process(track,runNo);};
+  void     Process(AliVTrack *const track, Int_t runNo=-1) {AliTPCcalibBase::Process(track,runNo);}
   void     Process(AliTPCseed *const track)  {return AliTPCcalibBase::Process(track);}
   virtual void  Terminate();
   static Double_t GetDeltaTime(Double_t rmin0, Double_t rmax0, Double_t rmin1, Double_t rmax1, Double_t tmin0, Double_t tmax0, Double_t tmin1, Double_t tmax1, Double_t dcaR, TVectorD& vectorDT);
@@ -66,7 +66,7 @@ public:
   static void AddTree(TTree* treeOutput, TTree * treeInput);
 private:
   
-  void              FillAcordeHist(AliESDtrack *upperTrack);
+  void              FillAcordeHist(AliVTrack *upperTrack);
 
   
 
@@ -90,7 +90,7 @@ private:
   AliTPCcalibCosmic(const AliTPCcalibCosmic&); 
   AliTPCcalibCosmic& operator=(const AliTPCcalibCosmic&); 
 
-  ClassDef(AliTPCcalibCosmic, 3); 
+  ClassDef(AliTPCcalibCosmic, 3)
 };
 
 #endif

@@ -20,11 +20,8 @@
 #include "AliHLTTPCCAMath.h"
 #include "AliHLTTPCGMBorderTrack.h"
 #include "AliHLTTPCGMTrackLinearisation.h"
-#include "Riostream.h"
 #include "AliHLTTPCCAParam.h"
 #include <cmath>
-
-
 
 bool AliHLTTPCGMSliceTrack::FilterErrors( AliHLTTPCCAParam &param, float maxSinPhi )
 {
@@ -46,7 +43,7 @@ bool AliHLTTPCGMSliceTrack::FilterErrors( AliHLTTPCCAParam &param, float maxSinP
 
   {
     float secPhi2 = fSecPhi*fSecPhi;
-    float zz = fabs( kZLength - fabs(fZ) );	
+    float zz = param.GetContinuousTracking() ? 125. : fabs( kZLength - fabs(fZ) );
     float zz2 = zz*zz;
     float angleY2 = secPhi2 - 1.f; 
     float angleZ2 = trDzDs2 * secPhi2 ;
@@ -105,7 +102,7 @@ bool AliHLTTPCGMSliceTrack::FilterErrors( AliHLTTPCCAParam &param, float maxSinP
       float z = fZ+ dz;
       {	
 	float secPhi2 = ex1i*ex1i;
-	float zz = fabs( kZLength - fabs(z) );	
+	float zz = param.GetContinuousTracking() ? 125. : fabs( kZLength - fabs(z) );
 	float zz2 = zz*zz;
 	float angleY2 = secPhi2 - 1.f; 
 	float angleZ2 = trDzDs2 * secPhi2 ;
@@ -221,7 +218,7 @@ bool AliHLTTPCGMSliceTrack::FilterErrors( AliHLTTPCCAParam &param, float maxSinP
 
 
 
-bool AliHLTTPCGMSliceTrack::TransportToX( float x, float Bz, AliHLTTPCGMBorderTrack &b, float maxSinPhi ) const 
+bool AliHLTTPCGMSliceTrack::TransportToX( float x, float Bz, AliHLTTPCGMBorderTrack &b, float maxSinPhi, bool doCov ) const 
 {
   Bz = -Bz;
   float ex = fCosPhi;
@@ -253,9 +250,18 @@ bool AliHLTTPCGMSliceTrack::TransportToX( float x, float Bz, AliHLTTPCGMBorderTr
     dS = dl + dl*a*(k2 + a*(k4 ));//+ k6*a) );
   }
   
-  float ex1i = 1.f/ex1;
   float dz = dS * fDzDs;
 
+  b.SetPar(0, fY + dy );
+  b.SetPar(1, fZ + dz );
+  b.SetPar(2, ey1 );
+  b.SetPar(3, fDzDs);
+  b.SetPar(4, fQPt);
+  b.SetZOffset(fZOffset);
+
+  if (!doCov) return(1);
+
+  float ex1i = 1.f/ex1;
   float hh = dxcci*ex1i*norm2; 
   float h2 = hh *fSecPhi;
   float h4 = Bz*dxcci*hh;
@@ -273,19 +279,23 @@ bool AliHLTTPCGMSliceTrack::TransportToX( float x, float Bz, AliHLTTPCGMBorderTr
   float h4c44 = h4*c44;
   float n7 = c31 + dS*c33;
   
-  b.SetPar(0, fY + dy );
-  b.SetPar(1, fZ + dz );
-  b.SetPar(2, ey1 );
-  b.SetPar(3, fDzDs);
-  b.SetPar(4, fQPt);
-
-  b.SetCov(0, fC0 + h2*h2c22 + h4*h4c44 + 2.f*( h2*c20ph4c42  + h4*c40 ));
-  b.SetCov(1, fC2+ dS*(c31 + n7) );
+  if (fabs(fQPt) > 6.66) //Special treatment for low Pt
+  {
+      b.SetCov(0, AliHLTTPCCAMath::Max(fC0, fC0 + h2*h2c22 + h4*h4c44 + 2.f*( h2*c20ph4c42  + h4*c40 ))); //Do not decrease Y cov for matching!
+      float C2tmp = dS * 2.f * c31;
+      if (C2tmp < 0) C2tmp = 0;
+      b.SetCov(1, fC2 + C2tmp + dS * dS * c33); //Incorrect formula, correct would be "dS * (c31 + n7)", but we need to make sure cov(Z) increases regardless of the direction of the propagation
+  }
+  else
+  {
+    b.SetCov(0, fC0 + h2*h2c22 + h4*h4c44 + 2.f*( h2*c20ph4c42  + h4*c40 ));
+    b.SetCov(1, fC2+ dS*(c31 + n7) );
+  }
   b.SetCov(2, c22 + dxBz*( c42 + c42 + dxBz*c44 ));
   b.SetCov(3, c33);
   b.SetCov(4, c44);
   b.SetCovD(0, c20ph4c42 + h2c22  + dxBz*(c40 + h2*c42 + h4c44) );
-  b.SetCovD(1, n7 );   
+  b.SetCovD(1, n7 );
   return 1;
 }
 
@@ -392,6 +402,7 @@ bool AliHLTTPCGMSliceTrack::TransportToXAlpha( float newX, float sinAlpha, float
   b.SetPar(2, ey1 );
   b.SetPar(3, dzds);
   b.SetPar(4, qpt);
+  b.SetZOffset(fZOffset);
   
   b.SetCov(0, c00 + h2*h2c22 + h4*h4c44 + 2.f*( h2*c20ph4c42  + h4*c40 ));
   b.SetCov(1, c11 + dS*(c31 + n7) );

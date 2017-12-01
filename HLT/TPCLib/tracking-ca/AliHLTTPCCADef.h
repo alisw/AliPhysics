@@ -44,15 +44,8 @@
 
 #if defined(HLTCA_STANDALONE) || (defined(HLTCA_GPUCODE) && defined(__OPENCL__) && !defined(HLTCA_HOSTCODE))
 
+#ifndef ROOT_Rtypes
 // class TObject{};
-
-#ifdef ClassDef
-#undef ClassDef
-#endif //ClassDef
-
-#ifdef ClassTmp
-#undef ClassTmp
-#endif //ClassTmp
 
 #define ClassDef(name,id)
 #define ClassImp(name)
@@ -98,6 +91,7 @@ typedef short          SCoord_t;    //Screen coordinates (short)
 typedef double         Coord_t;     //Pad world coordinates (double)
 typedef float          Angle_t;     //Graphics angle (float)
 typedef float          Size_t;      //Attribute size (float)
+#endif
 
 #define TRACKER_KEEP_TEMPDATA
 
@@ -109,36 +103,6 @@ typedef float          Size_t;      //Attribute size (float)
 #include "AliHLTTPCCADefinitions.h"
 
 #endif //HLTCA_STANDALONE
-
-#define EXTERN_ROW_HITS
-#define TRACKLET_SELECTOR_MIN_HITS(QPT) (QPT > 10 ? 10 : (QPT > 5 ? 15 : 29)) //Minimum hits should depend on Pt, lot Pt tracks can have few hits. 29 Hits default, 15 for < 200 mev, 10 for < 100 mev
-
-#define GLOBAL_TRACKING_RANGE 45					//Number of rows from the upped/lower limit to search for global track candidates in for
-#define GLOBAL_TRACKING_Y_RANGE_UPPER_LEFT 0.85		//Inner portion of y-range in slice that is not used in searching for global track candidates
-#define GLOBAL_TRACKING_Y_RANGE_LOWER_LEFT 0.85
-#define GLOBAL_TRACKING_Y_RANGE_UPPER_RIGHT 0.85
-#define GLOBAL_TRACKING_Y_RANGE_LOWER_RIGHT 0.85
-//#define GLOBAL_TRACKING_ONLY_UNASSIGNED_HITS		//Only use unassigned clusters in the global tracking step
-//#define GLOBAL_TRACKING_EXTRAPOLATE_ONLY			//Do not update the track parameters with new hits from global tracing
-#define GLOBAL_TRACKING_MIN_ROWS 10					//Min num of rows an additional global track must span over
-#define GLOBAL_TRACKING_MIN_HITS 8					//Min num of hits for an additional global track
-#ifdef HLTCA_STANDALONE
-#define GLOBAL_TRACKING_MAINTAIN_TRACKLETS			//Maintain tracklets for standalone OpenGL event display
-#endif
-
-#define REPRODUCIBLE_CLUSTER_SORTING
-
-#ifdef HLTCA_GPUCODE
-#define ALIHLTTPCCANEIGHBOURS_FINDER_MAX_NNEIGHUP 6
-#define ALIHLTTPCCANEIGHBOURS_FINDER_MAX_FGRIDCONTENTUPDOWN 1000
-#define ALIHLTTPCCASTARTHITSFINDER_MAX_FROWSTARTHITS 3500
-#define ALIHLTTPCCATRACKLET_CONSTRUCTOR_TEMP_MEM 1536					//Max amount of hits in a row that can be stored in shared memory, make sure this is divisible by ROW ALIGNMENT
-#else
-#define ALIHLTTPCCANEIGHBOURS_FINDER_MAX_NNEIGHUP 20
-#define ALIHLTTPCCANEIGHBOURS_FINDER_MAX_FGRIDCONTENTUPDOWN 7000
-#define ALIHLTTPCCASTARTHITSFINDER_MAX_FROWSTARTHITS 10000
-#define ALIHLTTPCCATRACKLET_CONSTRUCTOR_TEMP_MEM 15000
-#endif //HLTCA_GPUCODE
 
 #ifdef HLTCA_GPUCODE
 #ifdef __OPENCL__
@@ -346,5 +310,15 @@ namespace
 #define UNROLL8(var, code) UNROLL4(var, code) UNROLL4(var, code)
 #define UNROLL16(var, code) UNROLL8(var, code) UNROLL8(var, code)
 #define UNROLL32(var, code) UNROLL16(var, code) UNROLL16(var, code)
+
+#include "AliHLTTPCCASettings.h"
+#define CALINK_INVAL ((calink) -1)
+struct cahit2{cahit x, y;};
+
+#ifdef HLTCA_FULL_CLUSTERDATA
+#define HLTCA_EVDUMP_FILE "event_full"
+#else
+#define HLTCA_EVDUMP_FILE "event"
+#endif
 
 #endif //ALIHLTTPCCADEF_H

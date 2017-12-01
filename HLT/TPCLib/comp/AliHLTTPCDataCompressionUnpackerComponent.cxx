@@ -23,6 +23,7 @@
 #include "AliHLTTPCDataCompressionUnpackerComponent.h"
 #include "AliHLTTPCDataCompressionDecoder.h"
 #include "AliHLTTPCDefinitions.h"
+#include "AliHLTTPCGeometry.h"
 #include "AliHLTErrorGuard.h"
 #include <stdexcept>
 #include <cerrno>
@@ -357,8 +358,8 @@ int AliHLTTPCDataCompressionUnpackerComponent::AliClusterWriter::ProcessTrackMod
   // count track model clusters in the individual partitions
   for (std::map<AliHLTUInt32_t, AliHLTTPCRawCluster>::const_iterator mapit=fTrackModelClusters.begin();
        mapit!=fTrackModelClusters.end(); ++mapit) {
-    unsigned slice=AliHLTTPCSpacePointData::GetSlice(mapit->first);
-    unsigned partition=AliHLTTPCSpacePointData::GetPatch(mapit->first);
+    unsigned slice=AliHLTTPCGeometry::CluID2Slice(mapit->first);
+    unsigned partition=AliHLTTPCGeometry::CluID2Partition(mapit->first);
     AliHLTUInt32_t specification=AliHLTTPCDefinitions::EncodeDataSpecification(slice, slice, partition, partition);
     if (fTrackModelClusterCounts.find(specification)==fTrackModelClusterCounts.end()) {
       fTrackModelClusterCounts[specification]=0;
@@ -416,8 +417,8 @@ int AliHLTTPCDataCompressionUnpackerComponent::AliClusterWriter::Finish(AliHLTCo
   std::map<AliHLTUInt32_t, int> writtenPartitionClusters;
   for (std::map<AliHLTUInt32_t, AliHLTTPCRawCluster>::const_iterator mapit=fTrackModelClusters.begin();
        mapit!=fTrackModelClusters.end(); ++mapit) {
-    unsigned slice=AliHLTTPCSpacePointData::GetSlice(mapit->first);
-    unsigned partition=AliHLTTPCSpacePointData::GetPatch(mapit->first);
+    unsigned slice=AliHLTTPCGeometry::CluID2Slice(mapit->first);
+    unsigned partition=AliHLTTPCGeometry::CluID2Partition(mapit->first);
     AliHLTUInt32_t specification=AliHLTTPCDefinitions::EncodeDataSpecification(slice, slice, partition, partition);
     if (writtenPartitionClusters.find(specification)==writtenPartitionClusters.end()) {
       // init map for counting of written clusters
@@ -444,9 +445,9 @@ int AliHLTTPCDataCompressionUnpackerComponent::AliClusterWriter::Finish(AliHLTCo
       // contiguously, ignoring the clusters ids
       writtenPartitionClusters[specification]=0;
     }
-    unsigned clusterNo=AliHLTTPCSpacePointData::GetNumber(mapit->first);
+    unsigned clusterNo=AliHLTTPCGeometry::CluID2Index(mapit->first);
     if (fTrackModelClusterIds.fIds!=NULL && (writtenPartitionClusters[specification]<0)) {
-      clusterNo=AliHLTTPCSpacePointData::GetNumber(fTrackModelClusterIds.fIds[clusterNo]);
+      clusterNo=AliHLTTPCGeometry::CluID2Index(fTrackModelClusterIds.fIds[clusterNo]);
     } else {
       clusterNo=writtenPartitionClusters[specification]++;
     }

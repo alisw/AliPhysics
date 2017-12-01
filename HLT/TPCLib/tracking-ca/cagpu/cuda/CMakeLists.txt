@@ -30,7 +30,7 @@ if(LIBCUDA_SO_PATH_NOTFOUND GREATER -1)
 endif(LIBCUDA_SO_PATH_NOTFOUND GREATER -1)
 
 #set nvcc flags
-set(CUDA_NVCC_FLAGS --use_fast_math --maxrregcount 64 -O4 -Xcompiler -fPIC -Xptxas -O4 -gencode arch=compute_20,code=sm_20 -gencode arch=compute_30,code=sm_30 -gencode arch=compute_35,code=sm_35)
+set(CUDA_NVCC_FLAGS -Wno-deprecated-gpu-targets --use_fast_math --maxrregcount 64 -O4 -Xcompiler -fPIC -Xptxas -O4 -gencode arch=compute_30,code=sm_30 -gencode arch=compute_35,code=sm_35 -gencode arch=compute_52,code=sm_52 -gencode arch=compute_61,code=sm_61 --compiler-bindir /usr/x86_64-pc-linux-gnu/gcc-bin/5.4.0/x86_64-pc-linux-gnu-gcc)
 
 #for convenience
 set(CAGPUDIR ${AliRoot_SOURCE_DIR}/HLT/TPCLib/tracking-ca/cagpu)
@@ -45,14 +45,6 @@ include_directories(${AliRoot_SOURCE_DIR}/HLT/TPCLib/tracking-ca/cagpu/cuda
 include_directories(SYSTEM ${ROOT_INCLUDE_DIR})
 include_directories(${AliRoot_SOURCE_DIR}/HLT/BASE
                    )
-
-#nvcc fails with std=c++11, remove it temporarily
-if(CMAKE_CXX_FLAGS)
-string(FIND ${CMAKE_CXX_FLAGS} "-std=c++11" STDCXX11FOUND )
-if(STDCXX11FOUND GREATER -1)
-  string(REPLACE "-std=c++11" "-std=c++98" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
-endif()
-endif(CMAKE_CXX_FLAGS)
 
 #compile CUDA object file
 cuda_compile(CAGPU_O AliHLTTPCCAGPUTrackerNVCC.cu)

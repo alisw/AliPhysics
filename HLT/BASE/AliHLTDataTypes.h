@@ -174,6 +174,11 @@ extern const char kAliHLTDataOriginITS[kAliHLTComponentDataTypefOriginSize];
  */
 extern const char kAliHLTDataOriginITSOut[kAliHLTComponentDataTypefOriginSize];
 
+/** Data origin ITSExtrapolated
+ * @ingroup alihlt_component_datatypes
+ */
+extern const char kAliHLTDataOriginITSExtrapolated[kAliHLTComponentDataTypefOriginSize];
+
 /** Data origin ITS SPD
  * @ingroup alihlt_component_datatypes
  */
@@ -1403,6 +1408,16 @@ extern "C" {
    * @ingroup alihlt_component_datatypes
    */	
   extern const AliHLTComponentDataType kAliHLTDataTypeITSSAPData;
+
+  /** Container of ITS trackpoint data
+   * @ingroup alihlt_component_datatypes
+   */	
+  extern const AliHLTComponentDataType kAliHLTDataTypeITSTrackPoint;
+
+  /** Container of ITS SAP trackpoint data
+   * @ingroup alihlt_component_datatypes
+   */	
+  extern const AliHLTComponentDataType kAliHLTDataTypeITSSAPTrackPoint;
 
   /** Container of calorimeter clusters
    * @ingroup alihlt_component_datatypes

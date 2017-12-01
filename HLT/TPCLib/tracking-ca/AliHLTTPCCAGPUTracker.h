@@ -30,18 +30,19 @@ public:
 	virtual int ExitGPU();
 
 	virtual void SetDebugLevel(const int dwLevel, std::ostream* const NewOutFile = NULL);
-	virtual int SetGPUTrackerOption(char* OptionName, int OptionValue);
+	virtual int SetGPUTrackerOption(const char* OptionName, int OptionValue);
 
-	virtual unsigned long long int* PerfTimer(int iSlice, unsigned int i);
+	virtual double GetTimer(int iSlice, unsigned int i);
+	virtual void ResetTimer(int iSlice, unsigned int i);
 
-	virtual int InitializeSliceParam(int iSlice, AliHLTTPCCAParam &param);
+	virtual int InitializeSliceParam(int iSlice, const AliHLTTPCCAParam &param);
 	virtual void SetOutputControl( AliHLTTPCCASliceOutput::outputControlStruct* val);
 
 	virtual const AliHLTTPCCASliceOutput::outputControlStruct* OutputControl() const;
 	virtual int GetSliceCount() const;
 
 	virtual int RefitMergedTracks(AliHLTTPCGMMerger* Merger);
-	virtual char* MergerBaseMemory();
+	virtual char* MergerHostMemory();
 	virtual int GPUMergerAvailable();
 
 private:

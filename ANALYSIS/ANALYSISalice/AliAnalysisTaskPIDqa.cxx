@@ -529,13 +529,12 @@ void AliAnalysisTaskPIDqa::FillTPCHistogramsSignal(TList *sublist, Int_t scenari
   }
 
   // Get TPC dE/dx info and different TPC signals (IROC, OROCmedium, OROClong)
-  AliTPCdEdxInfo* fTPCdEdxInfo = 0x0;
-  fTPCdEdxInfo = track->GetTPCdEdxInfo();
+  AliTPCdEdxInfo fTPCdEdxInfo;
 
-  if (fTPCdEdxInfo) {
-    sigIROC=fTPCdEdxInfo->GetTPCsignalShortPad();
-    sigOROCmedium=fTPCdEdxInfo->GetTPCsignalMediumPad();
-    sigOROClong=fTPCdEdxInfo->GetTPCsignalLongPad();
+  if ( track->GetTPCdEdxInfo( fTPCdEdxInfo ) ) {
+    sigIROC=fTPCdEdxInfo.GetTPCsignalShortPad();
+    sigOROCmedium=fTPCdEdxInfo.GetTPCsignalMediumPad();
+    sigOROClong=fTPCdEdxInfo.GetTPCsignalLongPad();
     iSigMax=4;
 
     //printf("mom = %.3f  sigStd = %.3f  sigIROC = %.3f  sigOROCmedium = %.3f  sigOROClong = %.3f \n",mom,sigStd,sigIROC,sigOROCmedium,sigOROClong);

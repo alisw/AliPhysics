@@ -277,15 +277,17 @@ int AliHLTAsyncProcessor::GetNumberOfAsyncTasksInQueue()
 	return(retVal);
 }
 
-void* AliHLTAsyncProcessor::InitializeAsyncTask(void* (*initFunction)(void*), void* data)
+int AliHLTAsyncProcessor::InitializeAsyncTask(void* (*initFunction)(void*), void* data, void** pRetVal, int msTimeOut)
 {
 	HLTInfo("Running Initialization of ASYNC Task");
-	if (GetNumberOfAsyncTasksInQueue()) return(NULL);
+	if (GetNumberOfAsyncTasksInQueue()) return(1);
 	QueueAsyncTask(initFunction, data);
-	WaitForTasks(1);
+	int retValTimeout = WaitForTasks(1, msTimeOut);
+	if (retValTimeout) return(retValTimeout);
 	void* retVal = RetrieveQueuedTaskResult();
 	HLTInfo("Initialization of ASYNC Task finished");
-	return(retVal);
+	if (pRetVal) *pRetVal = retVal;
+	return(0);
 }
 
 int AliHLTAsyncProcessor::QueueAsyncTask(void* (*processFunction)(void*), void* data)
@@ -351,9 +353,9 @@ void* AliHLTAsyncProcessor::RetrieveQueuedTaskResult()
 	return(retVal);
 }
 
-void AliHLTAsyncProcessor::WaitForTasks(int n)
+int AliHLTAsyncProcessor::WaitForTasks(int n, int msTimeOut)
 {
-	if (fMe->fQueueDepth == 0) return;
+	if (fMe->fQueueDepth == 0) return(0);
 	fMe->fBackend->LockMutex(1);
 	if (n == 0) n = fMe->fQueueDepth;
 	if (n > GetTotalQueue()) n = GetTotalQueue();
@@ -362,12 +364,20 @@ void AliHLTAsyncProcessor::WaitForTasks(int n)
 	{
 		fMe->fBackend->UnlockMutex(1);
 		HLTInfo("%d Tasks already ready, no need to wait", n);
-		return;
+		return(0);
 	}
 	fMe->fWaitingForTasks = n;
 	fMe->fBackend->UnlockMutex(1);
-	fMe->fBackend->LockMutex(3);
+	if (msTimeOut)
+	{
+		if (fMe->fBackend->TimedLockMutex(3, msTimeOut)) return(-1);
+	}
+	else
+	{
+		fMe->fBackend->LockMutex(3);
+	}
 	HLTInfo("Waiting for %d tasks finished", n);
+	return(0);
 }
 
 int AliHLTAsyncProcessor::LockMutex()

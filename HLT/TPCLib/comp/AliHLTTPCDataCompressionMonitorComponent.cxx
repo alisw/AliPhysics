@@ -775,31 +775,31 @@ AliHLTTPCDataCompressionMonitorComponent::AliDataContainer::AliDataContainer()
 }
 
 const AliHLTTPCDataCompressionMonitorComponent::AliHistogramDefinition AliHLTTPCDataCompressionMonitorComponent::fgkHistogramDefinitions[] = {
-  {kHistogramPadrow,        "padrow"   , "padrow; padrow; counts"                  ,  160,   0.,   160., ""},
-  {kHistogramHWCFPad,       "hwcfpad"  , "hwcfpad; pad; counts"                    ,  280,   0.,   140., ""},
-  {kHistogramPad,           "pad"      , "pad; pad; counts"                        ,  280,   0.,   140., ""},
-  {kHistogramTime,          "timebin"  , "timebin; time; counts"                   , 1024,   0.,  1024., ""},
-  {kHistogramSigmaY2,       "sigmaY2"  , "sigmaY2; #sigma_{Y}^{2}; counts"         ,  100,   0.,     1., ""},
-  {kHistogramSigmaZ2,       "sigmaZ2"  , "sigmaZ2; #sigma_{Z}^{2}; counts"         ,  100,   0.,     1., ""},
-  {kHistogramCharge,        "charge"   , "charge; charge; counts"                  , 1024,   0., 65536., ""},
-  {kHistogramQMax,          "qmax"     , "qmax; Q_{max}; counts"                   ,  128,   0.,  1024., ""},
-  {kHistogramDeltaPadrow,   "d_padrow" , "d_padrow; #Delta padrow; counts"         , 1000,  -1.,     1., ""},
-  {kHistogramDeltaPad,      "d_pad"    , "d_pad; #Delta pad; counts"               , 1000,  -1.,     1., ""},
-  {kHistogramDeltaTime,     "d_time"   , "d_time; #Delta time; counts"             , 1000,  -1.,     1., ""},
-  {kHistogramDeltaSigmaY2,  "d_sigmaY2", "d_sigmaY2; #Delta #sigma_{Y}^{2}; counts", 1000,  -1.,     1., ""},
-  {kHistogramDeltaSigmaZ2,  "d_sigmaZ2", "d_sigmaZ2; #Delta #sigma_{Z}^{2}; counts", 1000,  -1.,     1., ""},
-  {kHistogramDeltaCharge,   "d_charge" , "d_charge; #Delta charge"                 , 1000,  -1.,     1., ""},
-  {kHistogramDeltaQMax,     "d_qmax"   , "d_qmax; #Delta Q_{max}"                  , 1000,  -1.,     1., ""},
-  {kHistogramOutOfRange,    "ResError" , "Residual Error; padrow; counts"          ,  159,   0.,   159., ""},
+  {kHistogramPadrow,        "padrow"   , "TPC clusters (all) padrow; padrow; counts"                  ,  160,   0.,   160., ""},
+  {kHistogramHWCFPad,       "hwcfpad"  , "TPC clusters (all) hwcfpad; pad; counts"                    ,  280,   0.,   140., ""},
+  {kHistogramPad,           "pad"      , "TPC clusters (all) pad; pad; counts"                        ,  280,   0.,   140., ""},
+  {kHistogramTime,          "timebin"  , "TPC clusters (all) timebin; time; counts"                   , 1024,   0.,  1024., ""},
+  {kHistogramSigmaY2,       "sigmaY2"  , "TPC clusters (all) sigmaY2; #sigma_{Y}^{2}; counts"         ,  100,   0.,     1., ""},
+  {kHistogramSigmaZ2,       "sigmaZ2"  , "TPC clusters (all) sigmaZ2; #sigma_{Z}^{2}; counts"         ,  100,   0.,     1., ""},
+  {kHistogramCharge,        "charge"   , "TPC clusters (all) charge; charge; counts"                  , 1024,   0., 65536., ""},
+  {kHistogramQMax,          "qmax"     , "TPC clusters (all) qmax; Q_{max}; counts"                   ,  128,   0.,  1024., ""},
+  {kHistogramDeltaPadrow,   "d_padrow" , "TPC compression QA delta_padrow; #Delta padrow; counts"         , 1000,  -1.,     1., ""},
+  {kHistogramDeltaPad,      "d_pad"    , "TPC compression QA delta_pad; #Delta pad; counts"               , 1000,  -1.,     1., ""},
+  {kHistogramDeltaTime,     "d_time"   , "TPC compression QA delta_time; #Delta time; counts"             , 1000,  -1.,     1., ""},
+  {kHistogramDeltaSigmaY2,  "d_sigmaY2", "TPC compression QA delta_sigmaY2; #Delta #sigma_{Y}^{2}; counts", 1000,  -1.,     1., ""},
+  {kHistogramDeltaSigmaZ2,  "d_sigmaZ2", "TPC compression QA delta_sigmaZ2; #Delta #sigma_{Z}^{2}; counts", 1000,  -1.,     1., ""},
+  {kHistogramDeltaCharge,   "d_charge" , "TPC compression QA delta_charge; #Delta charge"                 , 1000,  -1.,     1., ""},
+  {kHistogramDeltaQMax,     "d_qmax"   , "TPC compression QA delta_qmax; #Delta Q_{max}"                  , 1000,  -1.,     1., ""},
+  {kHistogramOutOfRange,    "ResError" , "TPC Compression Residual Error; padrow; counts"          ,  159,   0.,   159., ""},
   {kNumberOfHistograms, NULL, NULL, 0,0.,0., NULL}
 };
 
 const AliHLTTPCDataCompressionMonitorComponent::AliHistogramDefinition2D AliHLTTPCDataCompressionMonitorComponent::fgkHistogramDefinitions2D[] = {
-  {kHistogramQMaxSector,    "qmaxsector"   , "qmaxsector; sector; Q_{max}"           ,  72,   0.,  72., 1024,   0., 1024., "colz"},
-  {kHistogramSigmaY2Sector, "sigmaY2sector", "sigmaY2sector; sector; #sigma_{Y}^{2}" ,  72,   0.,  72.,  100,   0.,    1., "colz"},
-  {kHistogramSigmaZ2Sector, "sigmaZ2sector", "sigmaZ2sector; sector; #sigma_{Z}^{2}" ,  72,   0.,  72.,  100,   0.,    1., "colz"},
-  {kHistogramXYA,            "XYA", "XY - A side; X[cm]; Y[cm]"                      , 100,-300., 300.,  100,-300.,  300., "colz"},
-  {kHistogramXYC,            "XYC", "XY - C side; X[cm]; Y[cm]"                      , 100,-300., 300.,  100,-300.,  300., "colz"},
+  {kHistogramQMaxSector,    "qmaxsector"   , "TPC cluster charge QMax v.s. TPC sector; sector; Q_{max}"           ,  72,   0.,  72., 1024,   0., 1024., "colz"},
+  {kHistogramSigmaY2Sector, "sigmaY2sector", "TPC cluster width sigmaY2 v.s. TPC sector; sector; #sigma_{Y}^{2}" ,  72,   0.,  72.,  100,   0.,    1., "colz"},
+  {kHistogramSigmaZ2Sector, "sigmaZ2sector", "TPC cluster width sigmaZ2 v.s. TPC sector; sector; #sigma_{Z}^{2}" ,  72,   0.,  72.,  100,   0.,    1., "colz"},
+  {kHistogramXYA,            "XYA", "TPC clusters (all) XY positions - A side; X[cm]; Y[cm]"                      , 100,-300., 300.,  100,-300.,  300., "colz"},
+  {kHistogramXYC,            "XYC", "TPC clusters (all) XY positions - C side; X[cm]; Y[cm]"                      , 100,-300., 300.,  100,-300.,  300., "colz"},
   {kNumberOfHistograms2D, NULL, NULL, 0,0.,0., 0,0.,0., NULL}
 };
 

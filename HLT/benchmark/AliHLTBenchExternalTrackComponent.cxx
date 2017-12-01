@@ -481,7 +481,7 @@ int AliHLTBenchExternalTrackComponent::SerializeToStruct(const TObjArray* pArray
     tgtParam->fLastX=0;
     tgtParam->fLastY=0;
     tgtParam->fLastZ=0;
-    tgtParam->fSinPsi = srcParam->GetSnp();
+    tgtParam->fSinPhi = srcParam->GetSnp();
     tgtParam->fTgl = srcParam->GetTgl();
     tgtParam->fq1Pt = srcParam->GetSigned1Pt();
     const Double_t *cov=srcParam->GetCovariance();
@@ -519,7 +519,7 @@ int AliHLTBenchExternalTrackComponent::ReadFromStruct(TObjArray* pTgtArray, AliH
       //tp->Set(pArray[track].fX, (Float_t)0.0, &pArray[track].fY, pArray[track].fC);
       param[0]=pArray[track].fY;
       param[1]=pArray[track].fZ;
-      param[2]=pArray[track].fSinPsi;
+      param[2]=pArray[track].fSinPhi;
       param[3]=pArray[track].fTgl;
       param[4]=pArray[track].fq1Pt;
       for (int i=0; i<15; i++) {

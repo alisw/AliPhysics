@@ -781,7 +781,7 @@ void AliQAv1::SetQARefStorage(const char * name)
 		fgQARefFileName =  fgkQAName ; 
 
   else {
-	  AliErrorClass(Form("ERROR: %s is an invalid storage definition\n", name)) ; 
+	  AliErrorClass(Form("ERROR: %s is an invalid storage definition", name)) ; 
 	  fgQARefDirName  = "" ; 
 	  fgQARefFileName = "" ; 
   }	

@@ -16,7 +16,6 @@
 #pragma link C++ class AliHLTTPCAgent+;
 #pragma link C++ class AliHLTTPCMemHandler+;
 #pragma link C++ class AliHLTTPCFileHandler+;
-#pragma link C++ class AliHLTTPCClusterFinder+;
 #pragma link C++ class AliHLTTPCMapping+;
 #pragma link C++ class AliHLTTPCDigitReader+;
 #pragma link C++ class AliHLTTPCDigitReaderUnpacked+;
@@ -30,11 +29,7 @@
 #pragma link C++ class AliHLTTPCHWCFData+;
 #pragma link C++ class AliHLTTPCDigitPublisherComponent+;
 #pragma link C++ class AliHLTTPCOfflineCluster+;
-#pragma link C++ class AliHLTTPCClusters+;
-#pragma link C++ class AliHLTTPCPad+;
 #pragma link C++ class AliHLTTPCDefinitions+;
-#pragma link C++ class AliHLTTPCClusterFinderComponent+;
-#pragma link C++ class AliHLTTPCCFComparisonComponent+;
 #pragma link C++ class AliHLTTPCHistogramHandlerComponent+;
 #pragma link C++ class AliHLTTPCClusterAccessHLTOUT+;
 #pragma link C++ class AliHLTTPCCATrack+;
@@ -54,23 +49,21 @@
 #pragma link C++ class AliHLTTPCCAStartHitsFinder+;
 #pragma link C++ class AliHLTTPCCATrackletConstructor+;
 #pragma link C++ class AliHLTTPCCATrackletSelector+;
-#pragma link C++ class AliHLTTPCCADisplay+;
 #pragma link C++ class AliHLTTPCCAMCTrack+;
-#pragma link C++ class AliHLTTPCCAPerformance+;
 #pragma link C++ class AliHLTTPCCAMerger+;
 #pragma link C++ class AliHLTTPCCAGlobalMergerComponent+;
 #pragma link C++ class AliHLTTPCCAClusterData+;
 #pragma link C++ class AliHLTTPCCASliceData+;
 #pragma link C++ class AliHLTTPCCASliceOutput+;
 #pragma link C++ class AliHLTTPCCAStandaloneFramework+;
-#pragma link C++ class AliTPCtrackerCA+;
 #pragma link C++ class AliHLTTPCCATrackerFramework+;
-#pragma link C++ class AliHLTTPCCAInputDataCompressorComponent+;
 #pragma link C++ class AliHLTTPCCAGPUTracker+;
 #pragma link C++ class AliHLTTPCCATrackerOutputConverter+;
 #pragma link C++ class AliHLTTPCGMTrackParam+;
 #pragma link C++ class AliHLTTPCGMSliceTrack+;
 #pragma link C++ class AliHLTTPCGMMerger+;
+#pragma link C++ class AliHLTTPCGMPolynomialField+;
+#pragma link C++ class AliHLTTPCGMPolynomialFieldCreator+;
 #pragma link C++ class AliHLTTPCClusterStatComponent+;
 #pragma link C++ class AliHLTTPCDataCompressionComponent+;
 #pragma link C++ class AliHLTTPCDataCompressionMonitorComponent+;
@@ -80,11 +73,10 @@
 #pragma link C++ class AliHLTTPCDataCompressionIDMap+;
 #pragma link C++ class AliHLTTPCDataPublisherComponent+;
 #pragma link C++ class AliHLTTPCClusterHistoComponent+;
-#pragma link C++ class AliHLTTPCTrackHistoComponent+;
 #pragma link C++ class AliHLTTPCClusterDumpComponent+;
-#pragma link C++ class AliHLTTPCHWCFDataReverterComponent+;
 #pragma link C++ class AliHLTTPCTrackMCMarkerComponent+;
 #pragma link C++ class AliHLTTPCdEdxComponent+;
+#pragma link C++ class AliHLTTPCFastdEdxComponent+;
 #pragma link C++ class AliHLTTPCdEdxMonitoringComponent+;
 #pragma link C++ class AliHLTTPCHWCFExtractorUnit+;
 #pragma link C++ class AliHLTTPCHWCFPeakFinderUnit+;
@@ -100,6 +92,7 @@
 #pragma link C++ class AliHLTTPCHWClusterDecoderComponent+;
 #pragma link C++ class AliHLTTPCSpline2D3DObject+;
 #pragma link C++ class AliHLTTPCFastTransformObject+;
+#pragma link C++ class AliHLTTPCRawClusterDumpComponent+;
 #endif // __CINT__
 //
 // EOF

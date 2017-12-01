@@ -11,6 +11,7 @@
 #define ALIHLTTPCGMMERGEDTRACK_H
 
 #include "AliHLTTPCGMTrackParam.h"
+#include "AliHLTTPCGMMergedTrackHit.h"
 
 /**
  * @class AliHLTTPCGMMergedTrack
@@ -22,6 +23,7 @@ class AliHLTTPCGMMergedTrack
  public:
 
   GPUd() int NClusters()                      const { return fNClusters;       }
+  GPUd() int NClustersFitted()                const { return fNClustersFitted; }
   GPUd() int FirstClusterRef()                const { return fFirstClusterRef; }
   GPUd() const AliHLTTPCGMTrackParam &GetParam() const { return fParam;      }
   GPUd() float GetAlpha()                        const { return fAlpha;      }
@@ -33,6 +35,7 @@ class AliHLTTPCGMMergedTrack
   GPUd() bool OK() const{ return fOK; }
 
   GPUd() void SetNClusters      ( int v )                { fNClusters = v;       }
+  GPUd() void SetNClustersFitted( int v )                { fNClustersFitted = v; }
   GPUd() void SetFirstClusterRef( int v )                { fFirstClusterRef = v; }
   GPUd() void SetParam( const AliHLTTPCGMTrackParam &v ) { fParam = v;      }     
   GPUd() void SetAlpha( float v )                        { fAlpha = v;      }  
@@ -40,6 +43,7 @@ class AliHLTTPCGMMergedTrack
   GPUd() void SetLastY( float v )                        { fLastY = v; }
   GPUd() void SetLastZ( float v )                        { fLastZ = v; }
   GPUd() void SetOK( bool v ) {fOK = v;}
+  
  private:
 
   AliHLTTPCGMTrackParam fParam; //* fitted track parameters 
@@ -50,8 +54,8 @@ class AliHLTTPCGMMergedTrack
   float fLastZ; //* outer Z
   int fFirstClusterRef;         //* index of the first track cluster in corresponding cluster arrays
   int fNClusters;               //* number of track clusters
+  int fNClustersFitted;         //* number of clusters used in fit
   bool fOK;//
 };
-
 
 #endif 

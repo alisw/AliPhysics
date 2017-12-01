@@ -59,18 +59,17 @@ GPUdi() void AliHLTTPCCANeighboursCleaner::Thread
       // - look at down link, if it's valid but the up link in the row below doesn't link to us remove
       //   the link
       for ( int ih = iThread; ih < s.fNHits; ih += nThreads ) {
-        int up = tracker.HitLinkUpData( row, ih );
-        if ( up >= 0 ) {
-          short upDn = tracker.HitLinkDownData( rowUp, up );
-          if ( ( upDn != ih ) ) tracker.SetHitLinkUpData( row, ih, -1 );
+        calink up = tracker.HitLinkUpData( row, ih );
+        if ( up != CALINK_INVAL ) {
+          calink upDn = tracker.HitLinkDownData( rowUp, up );
+          if ( ( upDn != (calink) ih ) ) tracker.SetHitLinkUpData( row, ih, CALINK_INVAL );
         }
-        int dn = tracker.HitLinkDownData( row, ih );
-        if ( dn >= 0 ) {
-          short dnUp = tracker.HitLinkUpData( rowDn, dn );
-          if ( dnUp != ih ) tracker.SetHitLinkDownData( row, ih, -1 );
+        calink dn = tracker.HitLinkDownData( row, ih );
+        if ( dn != CALINK_INVAL ) {
+          calink dnUp = tracker.HitLinkUpData( rowDn, dn );
+          if ( dnUp != (calink) ih ) tracker.SetHitLinkDownData( row, ih, CALINK_INVAL );
         }
       }
     }
   }
 }
-

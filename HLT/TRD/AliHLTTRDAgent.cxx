@@ -24,6 +24,7 @@
 #include "AliHLTTRDAgent.h"
 #include "AliHLTTRDDefinitions.h"
 #include "AliDAQ.h"
+#include <TMath.h>
 
 // #include "AliHLTOUT.h"
 // #include "AliHLTOUTHandlerChain.h"
@@ -33,19 +34,10 @@
 AliHLTTRDAgent gAliHLTTRDAgent;
 
 // component headers
-#include "AliHLTTRDClusterizerComponent.h"
-#include "AliHLTTRDTrackerV1Component.h"
-#include "AliHLTTRDCalibrationComponent.h"
-#include "AliHLTTRDCalibFitComponent.h"
-#include "AliHLTTRDCalibHistoComponent.h"
-#include "AliHLTTRDEsdWriterComponent.h"
-#include "AliHLTTRDClusterHistoComponent.h"
-#include "AliHLTTRDTrackHistoComponent.h"
-#include "AliHLTTRDHistoMergerComponent.h"
-#include "AliHLTTRDOfflineClusterizerComponent.h"
-#include "AliHLTTRDOfflineTrackerV1Component.h"
+#include "tracking/AliHLTTRDTrackerComponent.h"
 #include "AliHLTTRDPreprocessorComponent.h"
 #include "AliHLTTRDMonitorComponent.h"
+#include "tracking/AliHLTTRDTrackletReaderComponent.h"
 
 /** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTTRDAgent)
@@ -72,20 +64,38 @@ UInt_t AliHLTTRDAgent::GetDetectorMask() const
   return AliDAQ::kTRD;
 }
 
-int AliHLTTRDAgent::CreateConfigurations(AliHLTConfigurationHandler* /*handler*/,
-					 AliRawReader* /*rawReader*/,
-					 AliRunLoader* /*runloader*/) const
+int AliHLTTRDAgent::CreateConfigurations(AliHLTConfigurationHandler* handler,
+					 AliRawReader* rawReader,
+					 AliRunLoader* runloader) const
 {
   // see header file for class documentation
-  for (int module = 0;module < 18;module++)
-  {
-    TString arg, publisher;
-    // raw data publisher components
-    publisher.Form("TRD-RP_%02d", module);
-    arg.Form("-minid %d -datatype 'DDL_RAW ' 'TRD ' -dataspec %i", 1024 + module, (int) TMath::Power(2, module));
-    AliHLTConfiguration pubConf(publisher.Data(), "AliRawReaderPublisher", NULL , arg.Data());
+
+  if( !handler ) return 0;
+
+  if (rawReader || !runloader){
+    TString rawInput="";
+    for (int module = 0;module < 18;module++)
+      {
+	TString arg, publisher;
+	// raw data publisher components
+	publisher.Form("TRD-RP_%02d", module);
+	arg.Form("-minid %d -datatype 'DDL_RAW ' 'TRD ' -dataspec %i", 1024 + module, (int) TMath::Power(2, module));
+	handler->CreateConfiguration(publisher.Data(), "AliRawReaderPublisher", NULL , arg.Data());
+	if( module>0 ) rawInput+=" ";
+	rawInput+=publisher;
+      }
+    handler->CreateConfiguration("TRD-tracklet-reader", "TRDTrackletReader", rawInput.Data(),"");
+    handler->CreateConfiguration("TRD-tracker", "TRDTracker", "TRD-tracklet-reader TPC-globalmerger","");
   }
-  return 0;
+  else if (runloader && !rawReader) {
+    
+    // indicates AliSimulation with no RawReader available -> run on digits
+    
+    handler->CreateConfiguration("TRDDigitPublisher","AliLoaderPublisher",NULL,"-loader TRDLoader -tree tracklets -datatype 'ALITREED' 'TRD '");
+    handler->CreateConfiguration("TRD-tracklet-reader", "TRDTrackletReader", "TRDDigitPublisher","");
+    handler->CreateConfiguration("TRD-tracker", "TRDTracker", "TRD-tracklet-reader TPC-globalmerger TPC-mcTrackMarker","");
+  }
+ return 0;
 }
 
 const char* AliHLTTRDAgent::GetReconstructionChains(AliRawReader* /*rawReader*/,
@@ -105,19 +115,10 @@ int AliHLTTRDAgent::RegisterComponents(AliHLTComponentHandler* pHandler) const
 {
   // see header file for class documentation
   if (!pHandler) return -EINVAL;
-  pHandler->AddComponent(new AliHLTTRDClusterizerComponent);
-  pHandler->AddComponent(new AliHLTTRDTrackerV1Component);
-  pHandler->AddComponent(new AliHLTTRDCalibrationComponent);
-  pHandler->AddComponent(new AliHLTTRDCalibFitComponent);
-  pHandler->AddComponent(new AliHLTTRDCalibHistoComponent);
-  pHandler->AddComponent(new AliHLTTRDEsdWriterComponent);
-  pHandler->AddComponent(new AliHLTTRDClusterHistoComponent);
-  pHandler->AddComponent(new AliHLTTRDTrackHistoComponent);
-  pHandler->AddComponent(new AliHLTTRDHistoMergerComponent);
-  pHandler->AddComponent(new AliHLTTRDOfflineClusterizerComponent);
-  pHandler->AddComponent(new AliHLTTRDOfflineTrackerV1Component);
+  pHandler->AddComponent(new AliHLTTRDTrackerComponent);
   pHandler->AddComponent(new AliHLTTRDPreprocessorComponent);
   pHandler->AddComponent(new AliHLTTRDMonitorComponent);
+  pHandler->AddComponent(new AliHLTTRDTrackletReaderComponent);
   return 0;
 }
 
