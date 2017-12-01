@@ -299,6 +299,44 @@ Bool_t AliExternalInfo::Cache(TString type, TString period, TString pass){
   }
 }
 
+/// Cache selected production trees.  Input production list obtained from MonALISA web interface
+/// \param select      - selection mask
+/// \param reject      - rejection mask
+/// \param sourceList  - list of detectors to cache
+/*!
+   Example usage:
+   \code
+        AliExternalInfo::CacheProduction(TPRegexp("LHC17.*"),TPRegexp("cpass0"),"QA.TPC;QA.EVS;QA.TRD;QA.rawTPC;QA.ITS;Logbook;QA.TOF;Logbook.detector");
+   \endcode
+*/
+void AliExternalInfo::CacheProduction(TPRegexp select, TPRegexp reject, TString sourceList){
+  AliExternalInfo info;
+  TTree* treeProd = info.GetTreeProdCycle();
+  Int_t entries=treeProd->GetEntries();
+  TObjArray * detectorArray=sourceList.Tokenize(";");
+  for (Int_t i=0; i<entries; i++){
+    treeProd->GetEntry(i);
+    char * productionTag= (char*)treeProd->GetLeaf("Tag")->GetValuePointer();
+    if (select.Match(productionTag)==0) continue;
+    if (reject.Match(productionTag)==1) continue;
+    printf("Caching\t%s\n",productionTag);
+    TString production(productionTag);
+    Int_t pos=production.First('_');
+    if (pos<0) continue;
+    if (pos>production.Length()-4) continue;
+    printf("Caching\t%s\n",productionTag);
+    TString period( production(0,pos));
+    TString pass(production(pos+1, production.Length()-pos-1));
+    printf("Caching\t%s\t%s\t%s\n",productionTag,period.Data(),pass.Data());
+    for (Int_t iDet=0;iDet<detectorArray->GetEntries(); iDet++) {
+      info.Cache(detectorArray->At(iDet)->GetName(), period.Data(), pass.Data());
+    }
+  }
+}
+
+
+
+
 /// \param type Type of the resource as described in the config file, e.g. QA.TPC, MonALISA.RCT
 /// \param period Period, e.g. 'LHC15f'
 /// \param pass E.g. 'pass2' or 'passMC'
@@ -540,9 +578,36 @@ TChain* AliExternalInfo::GetChain(TString type, TString period, TString pass, TS
   }
   TObjArray * arrFriendList= friendList.Tokenize(";");
   for (Int_t ilist=0; ilist<arrFriendList->GetEntriesFast(); ilist++) {
-    TChain *chainF = GetChain(arrFriendList->At(ilist)->GetName(), period.Data(), pass.Data(),kTRUE);
+
+    TString fname=arrFriendList->At(ilist)->GetName();
+    TString conditionName="";
+    TString condition="";
+    Int_t nDots = fname.CountChar(':');
+    TChain *chainF =NULL;
+
+    // in case there are more than one entry for primary index - secondary key has to be specified
+    // following syntax is used in this case <treeID>:conditionName:condition
+    //     e.g Logbook.detector:TPC:detector==\"TPC\"
+    if (nDots!=0 && nDots!=2) continue;
+    if (nDots==2){
+      TObjArray * tokenArray = fname.Tokenize(":");
+      fname=tokenArray->At(0)->GetName();
+      conditionName=tokenArray->At(1)->GetName();
+      condition=tokenArray->At(2)->GetName();
+      delete tokenArray;
+    }
+
+    chainF=GetChain(fname.Data(), period.Data(), pass.Data(),kTRUE);
+
     if (chainF){
-      chain->AddFriend(chainF,arrFriendList->At(ilist)->GetName());
+      if (nDots!=2) {
+        chain->AddFriend(chainF, arrFriendList->At(ilist)->GetName());
+      }else{
+        chain->SetAlias(conditionName.Data(),"(1+0)");
+        chainF->SetAlias(conditionName.Data(),condition.Data());
+        chainF->BuildIndex(chainF->GetTreeIndex()->GetMajorName(), conditionName.Data());
+        chain->AddFriend(chainF, (fname+"_"+conditionName).Data());
+      }
     }else{
       ::Error("AliExternalInfo::GetChain", "Invalid friend tree\t%s\t%s",arrFriendList->At(ilist)->GetName(), friendList.Data());
       continue;
