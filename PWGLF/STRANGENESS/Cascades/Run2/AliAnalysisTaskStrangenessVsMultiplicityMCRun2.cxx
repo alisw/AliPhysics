@@ -5616,7 +5616,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::AddStandardCascadeConfigura
     Double_t lPtbinlimits[] = {0.4, 0.5, 0.6,
         0.7,0.8,.9,1.0,1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2.0,
         2.1,2.2,2.3,2.4,2.5,2.6,2.7,2.8,3.0,3.2,3.4,3.6,3.8,4.0,4.2,
-        4.4,4.6,4.8,5.0,5.5,6.0,6.5,7.0,8.0,9.0,10.,11.,12.};
+        4.4,4.5,4.6,4.8,5.0,5.5,6.0,6.5,7.0,8.0,9.0,10.,11.,12.};
     Long_t lPtbinnumb = sizeof(lPtbinlimits)/sizeof(Double_t) - 1;
     
     // centrality binning
@@ -5638,7 +5638,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::AddStandardCascadeConfigura
         "CascRadius", //9
         "ProperLifetime", //10
         "ProperLifetimeV0", //11
-        "LeastNumberOfClusters", //12
+        "MinLength", //12
         "TPCdEdx", //13
         "Competing", //14
         "DCA3DCascToPV" //15
@@ -5674,7 +5674,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::AddStandardCascadeConfigura
     lcuts[lIdx][0][ 8] =  0.8;    lcuts[lIdx][1][ 8] =   1.2; lcuts[lIdx][2][ 8] =  3.00; //CascRadius 9
     lcuts[lIdx][0][ 9] = 17.5;    lcuts[lIdx][1][ 9] =  15.0; lcuts[lIdx][2][ 9] =  12.5; //ProperLifetime 10
     lcuts[lIdx][0][10] = 40.0;    lcuts[lIdx][1][10] =  30.0; lcuts[lIdx][2][10] =  20.0; //ProperLifetimeV0 11
-    lcuts[lIdx][0][11] =   -1;    lcuts[lIdx][1][11] =    70; lcuts[lIdx][2][11] =    80; //LeastNumberOfClusters 12
+    lcuts[lIdx][0][11] =   80;    lcuts[lIdx][1][11] =    90; lcuts[lIdx][2][11] =   100; //MinimumTrackLength 12
     lcuts[lIdx][0][12] =    5;    lcuts[lIdx][1][12] =     4; lcuts[lIdx][2][12] =     3; //TPCdEdx 13
     lcuts[lIdx][0][13] =  0.0;    lcuts[lIdx][1][13] = 0.008; lcuts[lIdx][2][13] = 0.010; //Competing 14
     lcuts[lIdx][0][14] =  1.2;    lcuts[lIdx][1][14] =   0.8; lcuts[lIdx][2][14] =   0.6; //3D DCA Cascade To PV
@@ -5696,7 +5696,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::AddStandardCascadeConfigura
     lcuts[lIdx][0][ 8] =  0.8;    lcuts[lIdx][1][ 8] =   1.2; lcuts[lIdx][2][ 8] =  3.00; //CascRadius 9
     lcuts[lIdx][0][ 9] = 17.5;    lcuts[lIdx][1][ 9] =  15.0; lcuts[lIdx][2][ 9] =  12.5; //ProperLifetime 10
     lcuts[lIdx][0][10] = 40.0;    lcuts[lIdx][1][10] =  30.0; lcuts[lIdx][2][10] =  20.0; //ProperLifetimeV0 11
-    lcuts[lIdx][0][11] =   -1;    lcuts[lIdx][1][11] =    70; lcuts[lIdx][2][11] =    80; //LeastNumberOfClusters 12
+    lcuts[lIdx][0][11] =   80;    lcuts[lIdx][1][11] =    90; lcuts[lIdx][2][11] =   100; //MinimumTrackLength 12
     lcuts[lIdx][0][12] =    5;    lcuts[lIdx][1][12] =     4; lcuts[lIdx][2][12] =     3; //TPCdEdx 13
     lcuts[lIdx][0][13] =  0.0;    lcuts[lIdx][1][13] = 0.008; lcuts[lIdx][2][13] = 0.010; //Competing 14
     lcuts[lIdx][0][14] =  1.2;    lcuts[lIdx][1][14] =   0.8; lcuts[lIdx][2][14] =   0.6; //3D DCA Cascade To PV
@@ -5714,14 +5714,14 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::AddStandardCascadeConfigura
     lcuts[lIdx][0][ 4] = 0.05;    lcuts[lIdx][1][ 4] =   0.1; lcuts[lIdx][2][ 4] =  0.15; //DCAV0ToPV 5
     lcuts[lIdx][0][ 5] =0.006;    lcuts[lIdx][1][ 5] = 0.005; lcuts[lIdx][2][ 5] = 0.004; //V0Mass 6
     lcuts[lIdx][0][ 6] = 0.05;    lcuts[lIdx][1][ 6] =  0.10; lcuts[lIdx][2][ 6] =  0.15; //DCABachToPV 7
-    lcuts[lIdx][0][ 7] = 1.00;    lcuts[lIdx][1][ 7] =   0.7; lcuts[lIdx][2][ 7] =   0.5; //DCACascDaughters 8
+    lcuts[lIdx][0][ 7] = 1.00;    lcuts[lIdx][1][ 7] =   0.6; lcuts[lIdx][2][ 7] =   0.5; //DCACascDaughters 8
     lcuts[lIdx][0][ 8] =  0.6;    lcuts[lIdx][1][ 8] =   1.0; lcuts[lIdx][2][ 8] =  2.50; //CascRadius 9
     lcuts[lIdx][0][ 9] = 14.0;    lcuts[lIdx][1][ 9] =  12.0; lcuts[lIdx][2][ 9] =  10.0; //ProperLifetime 10
     lcuts[lIdx][0][10] = 40.0;    lcuts[lIdx][1][10] =  30.0; lcuts[lIdx][2][10] =  20.0; //ProperLifetimeV0 11
-    lcuts[lIdx][0][11] =   -1;    lcuts[lIdx][1][11] =    70; lcuts[lIdx][2][11] =    80; //LeastNumberOfClusters 12
+    lcuts[lIdx][0][11] =   80;    lcuts[lIdx][1][11] =    90; lcuts[lIdx][2][11] =   100; //MinimumTrackLength 12
     lcuts[lIdx][0][12] =    5;    lcuts[lIdx][1][12] =     4; lcuts[lIdx][2][12] =     3; //TPCdEdx 13
     lcuts[lIdx][0][13] =  0.0;    lcuts[lIdx][1][13] = 0.008; lcuts[lIdx][2][13] = 0.010; //Competing 14
-    lcuts[lIdx][0][14] =  1.2;    lcuts[lIdx][1][14] =   0.8; lcuts[lIdx][2][14] =   0.6; //3D DCA Cascade To PV
+    lcuts[lIdx][0][14] =  0.8;    lcuts[lIdx][1][14] =   0.6; lcuts[lIdx][2][14] =   0.5; //3D DCA Cascade To PV
     //================================================================================
     
     //================================================================================
@@ -5736,14 +5736,14 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::AddStandardCascadeConfigura
     lcuts[lIdx][0][ 4] = 0.05;    lcuts[lIdx][1][ 4] =   0.1; lcuts[lIdx][2][ 4] =  0.15; //DCAV0ToPV 5
     lcuts[lIdx][0][ 5] =0.006;    lcuts[lIdx][1][ 5] = 0.005; lcuts[lIdx][2][ 5] = 0.004; //V0Mass 6
     lcuts[lIdx][0][ 6] = 0.05;    lcuts[lIdx][1][ 6] =  0.10; lcuts[lIdx][2][ 6] =  0.15; //DCABachToPV 7
-    lcuts[lIdx][0][ 7] = 1.00;    lcuts[lIdx][1][ 7] =   0.7; lcuts[lIdx][2][ 7] =   0.5; //DCACascDaughters 8
+    lcuts[lIdx][0][ 7] = 1.00;    lcuts[lIdx][1][ 7] =   0.6; lcuts[lIdx][2][ 7] =   0.5; //DCACascDaughters 8
     lcuts[lIdx][0][ 8] =  0.6;    lcuts[lIdx][1][ 8] =   1.0; lcuts[lIdx][2][ 8] =  2.50; //CascRadius 9
     lcuts[lIdx][0][ 9] = 14.0;    lcuts[lIdx][1][ 9] =  12.0; lcuts[lIdx][2][ 9] =  10.0; //ProperLifetime 10
     lcuts[lIdx][0][10] = 40.0;    lcuts[lIdx][1][10] =  30.0; lcuts[lIdx][2][10] =  20.0; //ProperLifetimeV0 11
-    lcuts[lIdx][0][11] =   -1;    lcuts[lIdx][1][11] =    70; lcuts[lIdx][2][11] =    80; //LeastNumberOfClusters 12
+    lcuts[lIdx][0][11] =   80;    lcuts[lIdx][1][11] =    90; lcuts[lIdx][2][11] =   100; //MinimumTrackLength 12
     lcuts[lIdx][0][12] =    5;    lcuts[lIdx][1][12] =     4; lcuts[lIdx][2][12] =     3; //TPCdEdx 13
     lcuts[lIdx][0][13] =  0.0;    lcuts[lIdx][1][13] = 0.008; lcuts[lIdx][2][13] = 0.010; //Competing 14
-    lcuts[lIdx][0][14] =  1.2;    lcuts[lIdx][1][14] =   0.8; lcuts[lIdx][2][14] =   0.6; //3D DCA Cascade To PV
+    lcuts[lIdx][0][14] =  0.8;    lcuts[lIdx][1][14] =   0.6; lcuts[lIdx][2][14] =   0.5; //3D DCA Cascade To PV
     //================================================================================
     
     //STEP 3: Creation of output objects
@@ -5783,7 +5783,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::AddStandardCascadeConfigura
         //Miscellaneous
         lCascadeResult[lN]->SetCutProperLifetime        ( lcuts[i][1][ 9] ) ;
         lCascadeResult[lN]->SetCutMaxV0Lifetime         ( lcuts[i][1][10] ) ;
-        lCascadeResult[lN]->SetCutLeastNumberOfClusters ( lcuts[i][1][11] ) ;
+        lCascadeResult[lN]->SetCutMinTrackLength        ( lcuts[i][1][11] ) ;
         lCascadeResult[lN]->SetCutTPCdEdx               ( lcuts[i][1][12] ) ;
         lCascadeResult[lN]->SetCutXiRejection           ( lcuts[i][1][13] ) ;
         lCascadeResult[lN]->SetCutDCACascadeToPV        ( lcuts[i][1][14] ) ;
@@ -5799,11 +5799,20 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::AddStandardCascadeConfigura
         
         //Cascade cosine of pointing angle
         lCascadeResult[lN]->SetCutCascCosPA             ( 0.95 ) ; //+variable
-        lCascadeResult[lN]->SetCutVarCascCosPA          (TMath::Exp(4.86664),
-                                                         -10.786,
-                                                         TMath::Exp(-1.33411),
-                                                         -0.729825,
-                                                         0.0695724);
+        if(i < 2){
+            lCascadeResult[lN]->SetCutVarCascCosPA          (TMath::Exp(4.86664),
+                                                             -10.786,
+                                                             TMath::Exp(-1.33411),
+                                                             -0.729825,
+                                                             0.0695724);
+        }
+        if(i >= 2){
+            lCascadeResult[lN]->SetCutVarCascCosPA          (TMath::Exp(   12.8752),
+                                                             -21.522,
+                                                             TMath::Exp( -1.49906),
+                                                             -0.813472,
+                                                             0.0480962);
+        }
         
         //BB cosine of pointing angle
         lCascadeResult[lN]->SetCutBachBaryonCosPA       ( TMath::Cos(0.04) ) ; //+variable
@@ -5839,7 +5848,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::AddStandardCascadeConfigura
         //Miscellaneous
         lCascadeResult[lN]->SetCutProperLifetime        ( lcuts[i][1][ 9] ) ;
         lCascadeResult[lN]->SetCutMaxV0Lifetime         ( lcuts[i][1][10] ) ;
-        lCascadeResult[lN]->SetCutLeastNumberOfClusters ( lcuts[i][1][11] ) ;
+        lCascadeResult[lN]->SetCutMinTrackLength        ( lcuts[i][1][11] ) ;
         lCascadeResult[lN]->SetCutTPCdEdx               ( lcuts[i][1][12] ) ;
         lCascadeResult[lN]->SetCutXiRejection           ( lcuts[i][1][13] ) ;
         lCascadeResult[lN]->SetCutDCACascadeToPV        ( lcuts[i][1][14] ) ;
@@ -5855,11 +5864,20 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::AddStandardCascadeConfigura
         
         //Cascade cosine of pointing angle
         lCascadeResult[lN]->SetCutCascCosPA             ( 0.95 ) ; //+variable
-        lCascadeResult[lN]->SetCutVarCascCosPA          (TMath::Exp(4.86664),
-                                                         -10.786,
-                                                         TMath::Exp(-1.33411),
-                                                         -0.729825,
-                                                         0.0695724);
+        if(i < 2){
+            lCascadeResult[lN]->SetCutVarCascCosPA          (TMath::Exp(4.86664),
+                                                             -10.786,
+                                                             TMath::Exp(-1.33411),
+                                                             -0.729825,
+                                                             0.0695724);
+        }
+        if(i >= 2){
+            lCascadeResult[lN]->SetCutVarCascCosPA          (TMath::Exp(   12.8752),
+                                                             -21.522,
+                                                             TMath::Exp( -1.49906),
+                                                             -0.813472,
+                                                             0.0480962);
+        }
         
         //BB cosine of pointing angle
         lCascadeResult[lN]->SetCutBachBaryonCosPA       ( TMath::Cos(0.04) ) ; //+variable
@@ -5926,7 +5944,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::AddStandardCascadeConfigura
             //Miscellaneous
             if(iCut ==  9 ) lCascadeResult[lN]->SetCutProperLifetime        ( lcuts[i][0][iCut] ) ;
             if(iCut == 10 ) lCascadeResult[lN]->SetCutMaxV0Lifetime         ( lcuts[i][0][iCut] ) ;
-            if(iCut == 11 ) lCascadeResult[lN]->SetCutLeastNumberOfClusters ( lcuts[i][0][iCut] ) ;
+            if(iCut == 11 ) lCascadeResult[lN]->SetCutMinTrackLength        ( lcuts[i][0][iCut] ) ;
             if(iCut == 12 ) lCascadeResult[lN]->SetCutTPCdEdx               ( lcuts[i][0][iCut] ) ;
             if(iCut == 13 ) lCascadeResult[lN]->SetCutXiRejection           ( lcuts[i][0][iCut] ) ;
             if(iCut == 14 ) lCascadeResult[lN]->SetCutDCACascadeToPV        ( lcuts[i][0][iCut] ) ;
@@ -5957,7 +5975,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::AddStandardCascadeConfigura
             //Miscellaneous
             if(iCut ==  9 ) lCascadeResult[lN]->SetCutProperLifetime        ( lcuts[i][2][iCut] ) ;
             if(iCut == 10 ) lCascadeResult[lN]->SetCutMaxV0Lifetime         ( lcuts[i][2][iCut] ) ;
-            if(iCut == 11 ) lCascadeResult[lN]->SetCutLeastNumberOfClusters ( lcuts[i][2][iCut] ) ;
+            if(iCut == 11 ) lCascadeResult[lN]->SetCutMinTrackLength        ( lcuts[i][2][iCut] ) ;
             if(iCut == 12 ) lCascadeResult[lN]->SetCutTPCdEdx               ( lcuts[i][2][iCut] ) ;
             if(iCut == 13 ) lCascadeResult[lN]->SetCutXiRejection           ( lcuts[i][2][iCut] ) ;
             if(iCut == 14 ) lCascadeResult[lN]->SetCutDCACascadeToPV        ( lcuts[i][2][iCut] ) ;
@@ -5993,31 +6011,53 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::AddStandardCascadeConfigura
                                              TMath::Exp( -1.53357),
                                              -0.920017,
                                              0.0262315);
+        
         lN++;
         //======================================================
         //CascCosPA Variations
         //======================================================
-        lCascadeResult[lN] = new AliCascadeResult( lCascadeResult[i], Form("%s_%s_%s",lParticleName[i].Data(),"CascCosPA","Loose") );
-        lCascadeResult[lN]->SetCutVarCascCosPA(TMath::Exp(  -1.77429),
-                                               -0.692453,
-                                               TMath::Exp( -2.01938),
-                                               -0.201574,
-                                               0.0776465);
-        lN++;
-        lCascadeResult[lN] = new AliCascadeResult( lCascadeResult[i], Form("%s_%s_%s",lParticleName[i].Data(),"CascCosPA","Tight") );
-        lCascadeResult[lN]->SetCutVarCascCosPA(TMath::Exp(   12.8752),
-                                               -21.522,
-                                               TMath::Exp( -1.49906),
-                                               -0.813472,
-                                               0.0480962);
-        lN++;
-        lCascadeResult[lN] = new AliCascadeResult( lCascadeResult[i], Form("%s_%s_%s",lParticleName[i].Data(),"CascCosPA","VeryTight") );
-        lCascadeResult[lN]->SetCutVarCascCosPA(TMath::Exp(    12.801),
-                                               -21.6157,
-                                               TMath::Exp( -1.66297),
-                                               -0.889246,
-                                               0.0346838);
-        lN++;
+        if( i < 2 ){
+            lCascadeResult[lN] = new AliCascadeResult( lCascadeResult[i], Form("%s_%s_%s",lParticleName[i].Data(),"CascCosPA","Loose") );
+            lCascadeResult[lN]->SetCutVarCascCosPA(TMath::Exp(  -1.77429),
+                                                   -0.692453,
+                                                   TMath::Exp( -2.01938),
+                                                   -0.201574,
+                                                   0.0776465);
+            lN++;
+            lCascadeResult[lN] = new AliCascadeResult( lCascadeResult[i], Form("%s_%s_%s",lParticleName[i].Data(),"CascCosPA","Tight") );
+            lCascadeResult[lN]->SetCutVarCascCosPA(TMath::Exp(   12.8752),
+                                                   -21.522,
+                                                   TMath::Exp( -1.49906),
+                                                   -0.813472,
+                                                   0.0480962);
+            lN++;
+            lCascadeResult[lN] = new AliCascadeResult( lCascadeResult[i], Form("%s_%s_%s",lParticleName[i].Data(),"CascCosPA","VeryTight") );
+            lCascadeResult[lN]->SetCutVarCascCosPA(TMath::Exp(    12.801),
+                                                   -21.6157,
+                                                   TMath::Exp( -1.66297),
+                                                   -0.889246,
+                                                   0.0346838);
+            lN++;
+        }
+        if( i >= 2 ){
+            lCascadeResult[lN] = new AliCascadeResult( lCascadeResult[i], Form("%s_%s_%s",lParticleName[i].Data(),"CascCosPA","Loose") );
+            lCascadeResult[lN]->SetCutVarCascCosPA(TMath::Exp(4.86664),
+                                                   -10.786,
+                                                   TMath::Exp(-1.33411),
+                                                   -0.729825,
+                                                   0.0695724);
+            lN++;
+            lCascadeResult[lN] = new AliCascadeResult( lCascadeResult[i], Form("%s_%s_%s",lParticleName[i].Data(),"CascCosPA","Tight") );
+            lCascadeResult[lN]->SetCutVarCascCosPA(TMath::Exp(    12.801),
+                                                   -21.6157,
+                                                   TMath::Exp( -1.66297),
+                                                   -0.889246,
+                                                   0.0346838);
+            lN++;
+            lCascadeResult[lN] = new AliCascadeResult( lCascadeResult[i], Form("%s_%s_%s",lParticleName[i].Data(),"CascCosPA","VeryTight") );
+            lCascadeResult[lN]->SetCutCascCosPA             ( 0.9992 );
+            lN++;
+        }
         //======================================================
         //BBCosPA Variations
         //======================================================
@@ -6087,7 +6127,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::AddStandardCascadeConfigura
         lCascadeResult[lN]->SetCutCascCosPA             ( 0.98 ) ;
         //Miscellaneous
         lCascadeResult[lN]->SetCutProperLifetime        ( lLifetimeCut[i] ) ;
-        lCascadeResult[lN]->SetCutLeastNumberOfClusters ( 70.0 ) ;
+        lCascadeResult[lN]->SetCutMinTrackLength           ( 90.0 ) ;
         lCascadeResult[lN]->SetCutTPCdEdx               ( 4.0 ) ;
         lCascadeResult[lN]->SetCutXiRejection           ( 0.008 ) ;
         lCascadeResult[lN]->SetCutBachBaryonCosPA        ( TMath::Cos(0.006) ) ;
@@ -6095,51 +6135,9 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::AddStandardCascadeConfigura
         lN++;
     }
     
-    cout<<"Added "<<lN<<" Cascade configurations to output."<<endl;
     for (Int_t iconf = 0; iconf<lN; iconf++)
         AddConfiguration(lCascadeResult[iconf]);
-    
-    //Add V0 configuration for the determination of mass and width of the Lambda peak
-    
-    //Map to mass hypothesis
-    AliV0Result::EMassHypo lMassHypoV0[3];
-    lMassHypoV0[0] = AliV0Result::kK0Short;
-    lMassHypoV0[1] = AliV0Result::kLambda;
-    lMassHypoV0[2] = AliV0Result::kAntiLambda;
-    
-    //Array of results
-    AliV0Result *lV0Result[500];
-    Long_t lNV0 = 0;
-    
-    TString lParticleNameV0[] = {"K0Short", "Lambda",  "AntiLambda"};
-    
-    //Central results: Stored in indices 0, 1, 2 (careful!)
-    for(Int_t i = 0 ; i < 3 ; i ++){
-        //Central result, customized binning: the one to use, usually
-        lV0Result[lNV0] = new AliV0Result( Form("%s_Central",lParticleNameV0[i].Data() ),lMassHypoV0[i],"",lCentbinnumb,lCentbinlimits, lPtbinnumb,lPtbinlimits);
-        
-        //Setters for V0 Cuts
-        lV0Result[lNV0]->SetCutDCANegToPV            ( lcuts[0][1][ 0] ) ;
-        lV0Result[lNV0]->SetCutDCAPosToPV            ( lcuts[0][1][ 1] ) ;
-        lV0Result[lNV0]->SetCutDCAV0Daughters        ( lcuts[0][1][ 2] ) ;
-        lV0Result[lNV0]->SetCutV0CosPA               ( 0.95 ) ; //+variable
-        lV0Result[lNV0]->SetCutVarV0CosPA            (TMath::Exp(10.853),
-                                                      -25.0322,
-                                                      TMath::Exp(-0.843948),
-                                                      -0.890794,
-                                                      0.057553);
-        
-        lV0Result[lNV0]->SetCutV0Radius              ( lcuts[0][1][ 3] ) ;
-        
-        //Add result to pool
-        lNV0++;
-    }
-    
-    for (Int_t iconf = 0; iconf<lNV0; iconf++)
-        AddConfiguration(lV0Result[iconf]);
-    
     cout<<"Added "<<lN<<" Cascade configurations to output."<<endl;
-    cout<<"Added "<<lNV0<<" V0 configurations to output."<<endl;
 }
 
 //________________________________________________________________________
