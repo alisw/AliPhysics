@@ -132,13 +132,14 @@ void AliT0v1::CreateGeometry()
   
   Float_t pstart[3]={4., 12.5,6.8};
   Float_t pinstart[3]={0.,1.45,6.5};
-  Float_t ppmt[3]={0.,1.4,3.5};
+  //  Float_t ppmt[3]={0.,1.4,3.5};
+  Float_t ppmt[3]={0.,1.4,3.};
   Float_t ptop[3]={0.,1.,1.0};
   Float_t preg[3]={0., 1.0, 0.005}; //photcathode dobavil bogdanov
   Float_t ptopout[3]={1.,1.01, 1.};  //metal air around raiator for photos reflection 
   Float_t pbot[3]={0.6,1.2,0.1};
-  Float_t pglass[3]={1.2,1.3,2.};
-  Float_t pcer[3]={0.9,1.1,1.35};
+  Float_t pglass[3]={1.001,1.3,2.};
+  Float_t pcer[3]={0.5,0.99,1.35};
   Float_t psteel[3]={0.9,1.1,0.15};
   Float_t psupport1[3] = {4.51,4.52,4.0};//C kozhuh vnutri
   Float_t psupport2[3] = {9.5,9.6,4.0};// snaruzhi  C
@@ -328,18 +329,19 @@ void AliT0v1::CreateGeometry()
    TVirtualMC::GetMC()->Gspos ("0REG", 1, "0PMT", 0, 0, z, 0, "ONLY"); 
   // Bottom glass
    TVirtualMC::GetMC()->Gsvolu("0BOT","TUBE",idtmed[kGlass],pbot,3);
-   z=ppmt[2]-pbot[2];
+   z = ppmt[2] - pbot[2];
    TVirtualMC::GetMC()->Gspos("0BOT",1,"0PMT",0,0,z,0,"ONLY");
    // Side cylinder glass
    TVirtualMC::GetMC()->Gsvolu("0OUT","TUBE",idtmed[kGlass],pglass,3);
-   z=ppmt[2]-pglass[2];
+   z = ppmt[2]-pglass[2];
    TVirtualMC::GetMC()->Gspos("0OUT",1,"0PMT",0,0,z,0,"ONLY");
    //PMT electrodes support structure
    TVirtualMC::GetMC()->Gsvolu("0CER","TUBE",idtmed[kCer],pcer,3);
    TVirtualMC::GetMC()->Gsvolu("0STE","TUBE",idtmed[kSteel],psteel,3);
-   z=-ppmt[2]+2*ptop[2]+0.3 + pcer[2];
+   z = ppmt[2] - pcer[2] - 2*pbot[2] ;
+   //   z = -ppmt[2] + 2*ptop[2] + 0.3 + pcer[2];
    TVirtualMC::GetMC()->Gspos("0CER",1,"0PMT",0,0,z,0,"ONLY");
-   z +=psteel[2]+pcer[2];
+   z -= psteel[2] - pcer[2];
    TVirtualMC::GetMC()->Gspos("0STE",1,"0PMT",0,0,z,0,"ONLY");
     
    //Support absorber (C) side
@@ -356,8 +358,6 @@ void AliT0v1::CreateGeometry()
    
    z=pinstart[2]-psupport7[2];
    //  TVirtualMC::GetMC()->Gspos("0SU8",1,"0SU6",0,0,z,0,"ONLY"); //Al kolechko
-   
-   
    Float_t par[3];
    par[0]=4.4;
    par[1]=4.5;
@@ -386,8 +386,7 @@ void AliT0v1::CreateGeometry()
     par[2]=0.01/2;
 
     TVirtualMC::GetMC()->Gsvolu("0SA1","TUBE",idtmed[kAl],par,3);
-    
-     z += par[2];
+    z += par[2];
      //  z -= par[2];
     TVirtualMC::GetMC()->Gspos("0SA1",1,"0SUP",0,0,z,0,"ONLY"); 
     z=z+par[2];
