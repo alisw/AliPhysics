@@ -1,4 +1,4 @@
-AliAnalysisTaskStrangenessVsMultiplicityMCRun2 *AddTaskStrangenessVsMultiplicityMCRun2( Bool_t lSaveEventTree = kTRUE, Bool_t lSaveV0 = kTRUE, Bool_t lSaveCascade = kTRUE, TString lExtraOptions = "", const TString lMasterJobSessionFlag = "")
+AliAnalysisTaskStrangenessVsMultiplicityMCRun2 *AddTaskStrangenessVsMultiplicityMCRun2( Bool_t lSaveEventTree = kTRUE, Bool_t lSaveV0 = kTRUE, Bool_t lSaveCascade = kTRUE, TString lExtraOptions = "", const TString lMasterJobSessionFlag = "", TString lExtraOutputName = "")
 {
     // Creates, configures and attaches to the train a cascades check task.
     // Get the pointer to the existing analysis manager via the static access method.
@@ -18,43 +18,44 @@ AliAnalysisTaskStrangenessVsMultiplicityMCRun2 *AddTaskStrangenessVsMultiplicity
     TString type = mgr->GetInputEventHandler()->GetDataType(); // can be "ESD" or "AOD"
     
     // Create and configure the task
-    AliAnalysisTaskStrangenessVsMultiplicityMCRun2 *taskAuxiliary = new AliAnalysisTaskStrangenessVsMultiplicityMCRun2(lSaveEventTree, lSaveV0, lSaveCascade, "taskAuxiliary", lExtraOptions);
+    AliAnalysisTaskStrangenessVsMultiplicityMCRun2 *taskAuxiliary = new AliAnalysisTaskStrangenessVsMultiplicityMCRun2(lSaveEventTree, lSaveV0, lSaveCascade, Form("taskAuxiliary%s",lExtraOutputName.Data()), lExtraOptions);
     mgr->AddTask(taskAuxiliary);
     TString outputFileName = AliAnalysisManager::GetCommonFileName();
     
     outputFileName += ":PWGLF_StrVsMult";
     if (mgr->GetMCtruthEventHandler()) outputFileName += "_MC";
+    outputFileName += lExtraOutputName.Data();
     
     Printf("Set OutputFileName : \n %s\n", outputFileName.Data() );
     
-    AliAnalysisDataContainer *coutputList = mgr->CreateContainer("cList",
+    AliAnalysisDataContainer *coutputList = mgr->CreateContainer(Form("cList%s",lExtraOutputName.Data()),
                                                                  TList::Class(),
                                                                  AliAnalysisManager::kOutputContainer,
                                                                  outputFileName );
-    AliAnalysisDataContainer *coutputListV0 = mgr->CreateContainer("cListV0",
-                                                                 TList::Class(),
-                                                                 AliAnalysisManager::kOutputContainer,
-                                                                 outputFileName );
-    AliAnalysisDataContainer *coutputListCascade = mgr->CreateContainer("cListCascade",
-                                                                 TList::Class(),
-                                                                 AliAnalysisManager::kOutputContainer,
-                                                                 outputFileName );
+    AliAnalysisDataContainer *coutputListV0 = mgr->CreateContainer(Form("cListV0%s",lExtraOutputName.Data()),
+                                                                   TList::Class(),
+                                                                   AliAnalysisManager::kOutputContainer,
+                                                                   outputFileName );
+    AliAnalysisDataContainer *coutputListCascade = mgr->CreateContainer(Form("cListCascade%s",lExtraOutputName.Data()),
+                                                                        TList::Class(),
+                                                                        AliAnalysisManager::kOutputContainer,
+                                                                        outputFileName );
     if( lSaveEventTree ){
-        AliAnalysisDataContainer *coutputTree = mgr->CreateContainer("cTreeEvent",
+        AliAnalysisDataContainer *coutputTree = mgr->CreateContainer(Form("cTreeEvent%s",lExtraOutputName.Data()),
                                                                      TTree::Class(),
                                                                      AliAnalysisManager::kOutputContainer,
                                                                      outputFileName );
         coutputTree->SetSpecialOutput();
     }
     if( lSaveV0 ){
-        AliAnalysisDataContainer *coutputTreeV0 = mgr->CreateContainer("cTreeV0",
+        AliAnalysisDataContainer *coutputTreeV0 = mgr->CreateContainer(Form("cTreeV0%s",lExtraOutputName.Data()),
                                                                        TTree::Class(),
                                                                        AliAnalysisManager::kOutputContainer,
                                                                        outputFileName );
         coutputTreeV0->SetSpecialOutput();
     }
     if (lSaveCascade){
-        AliAnalysisDataContainer *coutputTreeCascade = mgr->CreateContainer("cTreeCascade",
+        AliAnalysisDataContainer *coutputTreeCascade = mgr->CreateContainer(Form("cTreeCascade%s",lExtraOutputName.Data()),
                                                                             TTree::Class(),
                                                                             AliAnalysisManager::kOutputContainer,
                                                                             outputFileName );
