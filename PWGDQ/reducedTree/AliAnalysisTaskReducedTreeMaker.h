@@ -65,8 +65,8 @@ public:
   // Cuts for selection of event to be written to tree
   void SetEventFilter(AliAnalysisCuts * const filter) {fEventFilter=filter;}
   // Cuts for selecting tracks included in the tree
-  void SetTrackFilter(AliAnalysisCuts * const filter);
-  void AddTrackFilter(AliAnalysisCuts * const filter, Bool_t option=kFALSE);
+  void SetTrackFilter(AliAnalysisCuts * const filter, TString name="");
+  void AddTrackFilter(AliAnalysisCuts * const filter, Bool_t option=kFALSE, TString name="");
     
   // Cuts for selecting V0s
   void SetK0sPionCuts(AliAnalysisCuts * const filter) {fK0sPionCuts=filter;}
@@ -121,9 +121,10 @@ public:
   Double_t Rapidity(Double_t r, Double_t z);
   Double_t Radius(Double_t eta, Double_t z);
 
-  Bool_t  IsTrackSelected(AliVParticle * track, std::vector<Bool_t>& filterDecision);
+  Bool_t  IsTrackSelected(AliVParticle* track, std::vector<Bool_t>& filterDecision);
   Bool_t  IsSelectedTrackRequestedBaseTrack(std::vector<Bool_t> filterDecision);
   void    SetTrackFilterQualityFlags(AliReducedBaseTrack* track, std::vector<Bool_t> filterDecision);
+  void    FillTrackStatisticsHistogram(std::vector<Bool_t> filterDecision, Bool_t usedForV0Or);
 
   AliAnalysisUtils* fAnalysisUtils;      // Analysis Utils instance (used to select p-Pb events)
   Bool_t            fUseAnalysisUtils;   // Enable using AnalysisUtils
@@ -143,8 +144,10 @@ public:
   Bool_t    fWriteSecondTrackArray;       // write second array only if full+base tracks requested
   Bool_t    fSetTrackFilterUsed;          // specifier if SetTrackFilter method was used
   std::vector<Bool_t> fWriteBaseTrack;    // specifier if tracks for certain track filter are reduced or base tracks
+  std::vector<TString> fTrackFilterName;  // vector containing names for different track filters
 
-  TH2I*  fEventsHistogram;     // event statistics histogram
+  TH2I*  fEventsHistogram;      // event statistics histogram
+  TH1I*  fTracksHistogram;      // track statistics histogram
 
   Bool_t fFillTrackInfo;            // fill track information
   Bool_t fFillV0Info;               // fill the V0 information
@@ -215,6 +218,6 @@ public:
   AliAnalysisTaskReducedTreeMaker(const AliAnalysisTaskReducedTreeMaker &c);
   AliAnalysisTaskReducedTreeMaker& operator= (const AliAnalysisTaskReducedTreeMaker &c);
 
-  ClassDef(AliAnalysisTaskReducedTreeMaker, 6); //Analysis Task for creating a reduced event information tree 
+  ClassDef(AliAnalysisTaskReducedTreeMaker, 7); //Analysis Task for creating a reduced event information tree
 };
 #endif

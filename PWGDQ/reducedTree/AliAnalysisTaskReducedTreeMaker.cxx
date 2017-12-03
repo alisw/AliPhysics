@@ -106,7 +106,9 @@ AliAnalysisTaskReducedTreeMaker::AliAnalysisTaskReducedTreeMaker() :
   fWriteSecondTrackArray(kFALSE),
   fSetTrackFilterUsed(kFALSE),
   fWriteBaseTrack(),
+  fTrackFilterName(),
   fEventsHistogram(0x0),
+  fTracksHistogram(0x0),
   fFillTrackInfo(kTRUE),
   fFillV0Info(kTRUE),
   fFillGammaConversions(kTRUE),
@@ -173,7 +175,9 @@ AliAnalysisTaskReducedTreeMaker::AliAnalysisTaskReducedTreeMaker(const char *nam
   fWriteSecondTrackArray(kFALSE),
   fSetTrackFilterUsed(kFALSE),
   fWriteBaseTrack(),
+  fTrackFilterName(),
   fEventsHistogram(0x0),
+  fTracksHistogram(0x0),
   fFillTrackInfo(kTRUE),
   fFillV0Info(kTRUE),
   fFillGammaConversions(kTRUE),
@@ -229,8 +233,9 @@ AliAnalysisTaskReducedTreeMaker::AliAnalysisTaskReducedTreeMaker(const char *nam
   //DefineInput(2,AliAODForwardMult::Class());
   DefineOutput(1, AliReducedBaseEvent::Class());   // reduced information tree
   if(writeTree) {
-    DefineOutput(2, TTree::Class());   // reduced information tree
+    DefineOutput(2, TTree::Class());  // reduced information tree
     DefineOutput(3, TH2I::Class());   // reduced information tree
+    DefineOutput(4, TH1I::Class());   // reduced information tree
   }
 }
 
@@ -352,6 +357,7 @@ void AliAnalysisTaskReducedTreeMaker::UserCreateOutputObjects()
   
   AliDielectronVarManager::SetFillMap(fUsedVars);
 
+  // event statistics histogram
   fEventsHistogram = new TH2I("EventStatistics", "Event statistics", 9, -0.5,8.5,32,-0.5,31.5);
   const Char_t* offlineTriggerNames[32] = {"MB/INT1", "INT7", "MUON", "HighMult/HighMultSPD", "EMC1", "CINT5/INT5", "CMUS5/MUSPB/INT7inMUON",
      "MuonSingleHighPt7/MUSH7/MUSHPB", "MuonLikeLowPt7/MUL7/MuonLikePB", "MuonUnlikeLowPt7/MUU7/MuonUnlikePB", "EMC7/EMC8", 
@@ -365,6 +371,19 @@ void AliAnalysisTaskReducedTreeMaker::UserCreateOutputObjects()
   for(Int_t i=1;i<=9;++i)
      fEventsHistogram->GetXaxis()->SetBinLabel(i, selectionNames[i-1]);
   
+  // track statistics histogram
+  Int_t nBins = fTrackFilter.GetEntries()+3;
+  Double_t xMin = -3.5;
+  Double_t xMax = xMin + nBins;
+  fTracksHistogram = new TH1I("TrackStatistics", "Track statistics for passed track filters", nBins, xMin, xMax);
+  fTracksHistogram->GetXaxis()->SetBinLabel(1, "written to tree");
+  fTracksHistogram->GetXaxis()->SetBinLabel(2, "used for any V0, no filter passed");
+  fTracksHistogram->GetXaxis()->SetBinLabel(3, "any filter passed");
+  for (Int_t i=4; i<nBins+1; i++) {
+    if ((fTrackFilterName.at(i-4)).CompareTo("")) fTracksHistogram->GetXaxis()->SetBinLabel(i, (fTrackFilterName.at(i-4)).Data());
+    else                                          fTracksHistogram->GetXaxis()->SetBinLabel(i, Form("filter %d", i-4));
+  }
+
   // set a seed for the random number generator
   TTimeStamp ts;
   gRandom->SetSeed(ts.GetNanoSec());
@@ -373,6 +392,7 @@ void AliAnalysisTaskReducedTreeMaker::UserCreateOutputObjects()
   if(fWriteTree) {
     PostData(2, fTree);
     PostData(3, fEventsHistogram);
+    PostData(4, fTracksHistogram);
   }
 }
 
@@ -532,22 +552,24 @@ void AliAnalysisTaskReducedTreeMaker::UserExec(Option_t *option)
   if(fWriteTree) {
     PostData(2, fTree);
     PostData(3, fEventsHistogram);
+    PostData(4, fTracksHistogram);
   }
 }
 
 //_________________________________________________________________________________
-void AliAnalysisTaskReducedTreeMaker::SetTrackFilter(AliAnalysisCuts * const filter)
+void AliAnalysisTaskReducedTreeMaker::SetTrackFilter(AliAnalysisCuts * const filter, TString name/*=""*/)
 {
   //
   // set track filter at first position in track filter list
   //
   fTrackFilter.AddAt(filter, 0);
   fWriteBaseTrack.insert(fWriteBaseTrack.begin(), kTRUE);
+  fTrackFilterName.insert(fTrackFilterName.begin(), name);
   fSetTrackFilterUsed = kTRUE;
 }
 
 //_________________________________________________________________________________
-void AliAnalysisTaskReducedTreeMaker::AddTrackFilter(AliAnalysisCuts * const filter, Bool_t option/*=kFALSE*/)
+void AliAnalysisTaskReducedTreeMaker::AddTrackFilter(AliAnalysisCuts * const filter, Bool_t option/*=kFALSE*/, TString name/*=""*/)
 {
   //
   // add track filter to track filter list
@@ -555,13 +577,14 @@ void AliAnalysisTaskReducedTreeMaker::AddTrackFilter(AliAnalysisCuts * const fil
   if (fTrackFilter.GetEntries()<32) {
     fTrackFilter.Add(filter);
     fWriteBaseTrack.push_back(option);
+    fTrackFilterName.push_back(name);
   } else {
     printf("AliAnalysisTaskReducedTreeMaker::AddTrackFilter() WARNING: Track filter list full (%d entries), will not add another filter!\n", fTrackFilter.GetEntries());
   }
 }
 
 //_________________________________________________________________________________
-Bool_t AliAnalysisTaskReducedTreeMaker::IsTrackSelected(AliVParticle * track, std::vector<Bool_t>& filterDecision)
+Bool_t AliAnalysisTaskReducedTreeMaker::IsTrackSelected(AliVParticle* track, std::vector<Bool_t>& filterDecision)
 {
   //
   // check if track is selected and write filter decision to vector
@@ -606,6 +629,25 @@ void AliAnalysisTaskReducedTreeMaker::SetTrackFilterQualityFlags(AliReducedBaseT
     if (filterDecision[i])
       track->SetQualityFlag(32+i); // AliReduceBaseTrack::fQualityFlags BIT 32+i (0<=i<fTrackFilter.GetEntries())
   }
+}
+
+//_________________________________________________________________________________
+void AliAnalysisTaskReducedTreeMaker::FillTrackStatisticsHistogram(std::vector<Bool_t> filterDecision, Bool_t usedForV0Or)
+{
+  //
+  // fill track statistics histogram
+  //
+  if (!fTrackFilter.GetEntries()) return;
+  Bool_t passedTrackFilters = kFALSE;
+  for (Int_t i=0; i<fTrackFilter.GetEntries(); i++) {
+    if (filterDecision[i]) {
+      passedTrackFilters = kTRUE;
+      fTracksHistogram->Fill(i);
+      fTracksHistogram->Fill(-1);
+    }
+  }
+  if (passedTrackFilters)                 fTracksHistogram->Fill(-3);
+  if (usedForV0Or && !passedTrackFilters) fTracksHistogram->Fill(-2);
 }
 
 //_________________________________________________________________________________
@@ -1518,7 +1560,10 @@ void AliAnalysisTaskReducedTreeMaker::FillTrackInfo()
 
     // set track quality flags
     SetTrackFilterQualityFlags(reducedParticle, individualFilterDecisions);
-        
+
+    // fill track statistics histogram
+    FillTrackStatisticsHistogram(individualFilterDecisions, usedForV0Or);
+
     Double_t values[AliDielectronVarManager::kNMaxValues];
     // set the fill map (all 1's) for the AliDielectronVarManager
     AliDielectronVarManager::SetFillMap(fUsedVars);
