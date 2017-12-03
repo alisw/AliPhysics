@@ -165,6 +165,8 @@ public:
 
   Bool_t HasSubsidiaries() const {return fSubsidiaryEvents!=0;}
   Bool_t IsFromSubsidiaryEvent(int id) const;
+  void   SetTopEvent(const AliMCEvent* ev) {fTopEvent = ev;}
+  const AliMCEvent* GetTopEvent() const {return fTopEvent;}
   
 private:
     virtual void      ReorderAndExpandTreeTR();
@@ -189,10 +191,11 @@ private:
     TFile            *fTmpFileTR;        // Temporary file with TreeTR to read old format
     Int_t             fNprimaries;       // Number of primaries
     Int_t             fNparticles;       // Number of particles
-    TList            *fSubsidiaryEvents; // List of possible subsidiary events (for example merged underlying event) 
+    TList            *fSubsidiaryEvents; // List of possible subsidiary events (for example merged underlying event)
     Int_t             fPrimaryOffset;    // Offset for primaries
     Int_t             fSecondaryOffset;  // Offset for secondaries
     Bool_t            fExternal;         // True if external particle array
+    const AliMCEvent* fTopEvent;         //! Top MCEvent (if not embedded, then itself)
     static   Int_t        fgkBgLabelOffset;  // Standard branch name    
     mutable  AliVVertex*  fVertex;           // MC Vertex
     Int_t             fNBG;              //! Background particles in current event

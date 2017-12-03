@@ -61,10 +61,12 @@ AliMCEvent::AliMCEvent():
     fPrimaryOffset(0),
     fSecondaryOffset(0),
     fExternal(0),
+    fTopEvent(0),
     fVertex(0),
     fNBG(-1)
 {
     // Default constructor
+  fTopEvent = this;
 }
 
 AliMCEvent::AliMCEvent(const AliMCEvent& mcEvnt) :
@@ -85,6 +87,7 @@ AliMCEvent::AliMCEvent(const AliMCEvent& mcEvnt) :
     fPrimaryOffset(0),
     fSecondaryOffset(0),
     fExternal(0),
+    fTopEvent(mcEvnt.fTopEvent),
     fVertex(mcEvnt.fVertex),
     fNBG(mcEvnt.fNBG)
 { 
@@ -684,6 +687,7 @@ void AliMCEvent::AddSubsidiaryEvent(AliMCEvent* event)
     
     fSubsidiaryEvents->Add(event);
     if (fStack) fStack->SetMCEmbeddingFlag(kTRUE);
+    event->SetTopEvent(this);
 }
 
 AliGenEventHeader *AliMCEvent::FindHeader(Int_t ipart) {
@@ -965,7 +969,7 @@ void AliMCEvent::AssignGeneratorIndex() {
       //
       // Loop over primary particles for generator i
       for (Int_t j = nsumpart-1; j >= nsumpart-npart; j--) {
-	AliVParticle* part = GetTrack(j);
+	AliVParticle* part = fTopEvent->GetTrack(j); // after 1st GetTrack indices correspond to top event
 	if (!part) {
 	  AliWarning(Form("AliMCEvent::AssignGeneratorIndex: 0-pointer to particle j %8d npart %8d nsumpart %8d Nprimaries %8d\n", 
 			  j, npart, nsumpart, fNprimaries));
@@ -983,7 +987,7 @@ void AliMCEvent::AssignGeneratorIndex() {
 }
 void AliMCEvent::AssignGeneratorIndex(Int_t index, Int_t dmin, Int_t dmax) {
   for (Int_t k = dmin; k <= dmax; k++) {
-    AliVParticle* dpart = GetTrack(k);
+    AliVParticle* dpart = fTopEvent->GetTrack(k);
     dpart->SetGeneratorIndex(index);
     Int_t d1 = dpart->GetFirstDaughter();
     Int_t d2 = dpart->GetLastDaughter();
@@ -993,9 +997,9 @@ void AliMCEvent::AssignGeneratorIndex(Int_t index, Int_t dmin, Int_t dmax) {
   }
 }
 
-   Bool_t  AliMCEvent::GetCocktailGenerator(Int_t index,TString &nameGen){
+Bool_t  AliMCEvent::GetCocktailGenerator(Int_t index,TString &nameGen){
      //method that gives the generator for a given particle with label index (or that of the corresponding primary)
-     AliVParticle* mcpart0 = (AliVParticle*) (GetTrack(index));
+     AliVParticle* mcpart0 = (AliVParticle*) (fTopEvent->GetTrack(index));
      if(!mcpart0){
        printf("AliMCEvent-BREAK: No valid AliMCParticle at label %i\n",index);
        return 0;
@@ -1014,7 +1018,7 @@ void AliMCEvent::AssignGeneratorIndex(Int_t index, Int_t dmin, Int_t dmax) {
     while(nameGen.IsWhitespace()){
       
       
-    AliVParticle* mcpart = (AliVParticle*) (GetTrack(lab));
+    AliVParticle* mcpart = (AliVParticle*) (fTopEvent->GetTrack(lab));
  
      if(!mcpart){
       printf("AliMCEvent-BREAK: No valid AliMCParticle at label %i\n",lab);
@@ -1026,7 +1030,7 @@ void AliMCEvent::AssignGeneratorIndex(Int_t index, Int_t dmin, Int_t dmax) {
       printf("AliMCEvent - BREAK: Reached primary particle without valid mother\n");
       break;
     }
-      AliVParticle* mcmom = (AliVParticle*) (GetTrack(mother));
+      AliVParticle* mcmom = (AliVParticle*) (fTopEvent->GetTrack(mother));
       if(!mcmom){
       printf("AliMCEvent-BREAK: No valid AliMCParticle mother at label %i\n",mother);
        break;
