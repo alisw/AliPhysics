@@ -13,7 +13,7 @@
 #include "TString.h"
 
 class TLorentzVector;
-class AliInputEventHandler;
+class AliVEventHandler;
 class AliVEvent;
 class AliMCEvent;
 class AliVParticle;
@@ -74,8 +74,8 @@ class AliAnalysisMuonUtility : public TObject {
   static Double_t MuonMass2();
   
   // Utilities for ESD/AOD
-  static Int_t GetPassNumber ( const AliInputEventHandler* eventHandler );
-  static TString GetPassName ( const AliInputEventHandler* eventHandler );
+  static Int_t GetPassNumber ( const AliVEventHandler* eventHandler );
+  static TString GetPassName ( const AliVEventHandler* eventHandler );
 
   // Path utilities
   static Int_t GetPassNumber ( const char* str );

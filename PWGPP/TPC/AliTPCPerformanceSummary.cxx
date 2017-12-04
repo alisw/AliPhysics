@@ -170,7 +170,7 @@ void AliTPCPerformanceSummary::WriteToTTreeSRedirector(const AliPerformanceTPC* 
   Int_t year=0;
   if (gSystem->Getenv("eyear")) year=atoi(gSystem->Getenv("eyear"));
     if (!pcstream) return;
-    (*pcstream)<<"trending"<<      
+    (*pcstream)<<"tpcQA"<<      
       "run="<<run<<
       "time="<<time<<
       "year="<<year<<
@@ -183,9 +183,9 @@ void AliTPCPerformanceSummary::WriteToTTreeSRedirector(const AliPerformanceTPC* 
       "bz="<<bz<<
       "runType.="<<&runType;
     if (pTPC) {
-        pTPC->GetTPCTrackHisto()->GetAxis(9)->SetRangeUser(0.5,1.5);
-        pTPC->GetTPCTrackHisto()->GetAxis(7)->SetRangeUser(0.25,10);
-        pTPC->GetTPCTrackHisto()->GetAxis(5)->SetRangeUser(-1,1);    
+        if(fgForceTHnSparse) pTPC->GetTPCTrackHisto()->GetAxis(9)->SetRangeUser(0.5,1.5);
+        if(fgForceTHnSparse) pTPC->GetTPCTrackHisto()->GetAxis(7)->SetRangeUser(0.25,10);
+        if(fgForceTHnSparse) pTPC->GetTPCTrackHisto()->GetAxis(5)->SetRangeUser(-1,1);    
         AnalyzeNCL(pTPC, pcstream);    
 	MakeRawOCDBQAPlot(pcstream);
         AnalyzeDrift(pTPC, pcstream);
@@ -202,17 +202,17 @@ void AliTPCPerformanceSummary::WriteToTTreeSRedirector(const AliPerformanceTPC* 
 	AnalyzeQADCAFitParameter(pTPC,pcstream);
 	AnalyzeOcc(pTPC,pcstream);
 
-        pTPC->GetTPCTrackHisto()->GetAxis(9)->SetRangeUser(-10,10);
-        pTPC->GetTPCTrackHisto()->GetAxis(7)->SetRangeUser(0,100);
-        pTPC->GetTPCTrackHisto()->GetAxis(5)->SetRangeUser(-10,10); 
+        if(fgForceTHnSparse) pTPC->GetTPCTrackHisto()->GetAxis(9)->SetRangeUser(-10,10);
+        if(fgForceTHnSparse) pTPC->GetTPCTrackHisto()->GetAxis(7)->SetRangeUser(0,100);
+        if(fgForceTHnSparse) pTPC->GetTPCTrackHisto()->GetAxis(5)->SetRangeUser(-10,10); 
     }
     AnalyzeGain(pTPCgain, pcstream);
     AnalyzeMatch(pTPCMatch, pcstream);
     AnalyzePull(pTPCPull, pcstream);
     AnalyzeConstrain(pConstrain, pcstream);
-   
-    (*pcstream)<<"trending"<<"\n";
-    TTree * tree = ((*pcstream)<<"trending").GetTree();
+
+    (*pcstream)<<"tpcQA"<<"\n";
+    TTree * tree = ((*pcstream)<<"tpcQA").GetTree();
     tree->SetAlias("nEvents","entriesMult");
     
 }
@@ -772,7 +772,7 @@ Int_t AliTPCPerformanceSummary::AnalyzeDCARPhi(const AliPerformanceTPC* pTPC, TT
     //
     // dump values
     //
-    (*pcstream)<<"trending"<<
+    (*pcstream)<<"tpcQA"<<
         "offsetdRA="<< offsetdRA<<
         "slopedRA="<< slopedRA<<
         "offsetdRC="<< offsetdRC<<
@@ -868,7 +868,7 @@ Int_t AliTPCPerformanceSummary::AnalyzeDCARPhiPos(const AliPerformanceTPC* pTPC,
     //
     // dump values
     //
-    (*pcstream)<<"trending"<<
+    (*pcstream)<<"tpcQA"<<
         "offsetdRAPos="<< offsetdRAPos<<
         "slopedRAPos="<< slopedRAPos<<
         "offsetdRCPos="<< offsetdRCPos<<
@@ -958,7 +958,7 @@ Int_t AliTPCPerformanceSummary::AnalyzeDCARPhiNeg(const AliPerformanceTPC* pTPC,
     //
     // dump drift QA values
     //
-    (*pcstream)<<"trending"<<
+    (*pcstream)<<"tpcQA"<<
         "offsetdRANeg="<< offsetdRANeg<<
         "slopedRANeg="<< slopedRANeg<<
         "offsetdRCNeg="<< offsetdRCNeg<<
@@ -1022,8 +1022,8 @@ Int_t AliTPCPerformanceSummary::AnalyzeNCL(const AliPerformanceTPC* pTPC, TTreeS
     // only events with rec. vertex
     // eta cut - +-1
     // pt cut  - 0.250 GeV
-    pTPC->GetTPCTrackHisto()->GetAxis(5)->SetRangeUser(-1.,1.);
-    pTPC->GetTPCTrackHisto()->GetAxis(7)->SetRangeUser(0.25,10);
+    if(fgForceTHnSparse) pTPC->GetTPCTrackHisto()->GetAxis(5)->SetRangeUser(-1.,1.);
+    if(fgForceTHnSparse) pTPC->GetTPCTrackHisto()->GetAxis(7)->SetRangeUser(0.25,10);
     
     if (pTPC->GetHistos()->FindObject("h_tpc_track_all_recvertex_0_5_7")) {    
         his3D0 = dynamic_cast<TH3*>(pTPC->GetHistos()->FindObject("h_tpc_track_all_recvertex_0_5_7"));
@@ -1115,7 +1115,7 @@ Int_t AliTPCPerformanceSummary::AnalyzeNCL(const AliPerformanceTPC* pTPC, TTreeS
     slopeCTPCnclFErr= fpol1->GetParameter(1);
     delete his1D;
         
-    pTPC->GetTPCTrackHisto()->GetAxis(2)->SetRangeUser(0,10);
+    if(fgForceTHnSparse) pTPC->GetTPCTrackHisto()->GetAxis(2)->SetRangeUser(0,10);
     
     printf("Cluster QA report\n");
     printf("meanTPCnclF=\t%f\n",meanTPCnclF);
@@ -1131,7 +1131,7 @@ Int_t AliTPCPerformanceSummary::AnalyzeNCL(const AliPerformanceTPC* pTPC, TTreeS
     //
     // dump results to the tree
     //
-    (*pcstream)<<"trending"<<
+    (*pcstream)<<"tpcQA"<<
       "infoTPCnclF.="<<&infoTPCnclF <<   // number of found/findable clusters statistic information
       "infoTPCncl.="<<&infoTPCncl <<     // number of findable clusters statistic information
       "infoTPCchi2.="<<&infoTPCChi2 <<   // chi2   statistic c information
@@ -1159,7 +1159,9 @@ Int_t AliTPCPerformanceSummary::AnalyzeNCL(const AliPerformanceTPC* pTPC, TTreeS
     }
     
     TH3D * hisNclpos = dynamic_cast<TH3D*>(pTPC->GetHistos()->FindObject("h_tpc_track_pos_recvertex_2_5_6"));
-    TH3D * hisNclneg = dynamic_cast<TH3D*>(pTPC->GetHistos()->FindObject("h_tpc_track_neg_recvertex_2_5_6"));    
+    if(!hisNclpos) return 1;
+    TH3D * hisNclneg = dynamic_cast<TH3D*>(pTPC->GetHistos()->FindObject("h_tpc_track_neg_recvertex_2_5_6"));
+    if(!hisNclneg) return 1;
     Int_t nbins= hisNclpos->GetZaxis()->GetNbins();
     TAxis* paxisPhi=hisNclpos->GetZaxis();
     TH3D * hisNcl= 0;
@@ -1227,7 +1229,7 @@ Int_t AliTPCPerformanceSummary::AnalyzeNCL(const AliPerformanceTPC* pTPC, TTreeS
       graphNclMostProbPhiSector[igr]->SetMarkerColor(1+igr);
     } 
 
-    (*pcstream)<<"trending"<<
+    (*pcstream)<<"tpcQA"<<
       "grNclPhiMedian.="<<&normMedian<<            //  median value (144 phi bins)  of the number of clusters 
       "grNclPhiPosA.="<< graphNclMostProbPhi[0]<<  //  phi NCL/findable profile per phi bin - positive tracks A side
       "grNclPhiNegA.="<< graphNclMostProbPhi[1]<<  //  phi NCL/findable profile per phi bin - negative tracks A side
@@ -1238,7 +1240,7 @@ Int_t AliTPCPerformanceSummary::AnalyzeNCL(const AliPerformanceTPC* pTPC, TTreeS
       "grNtrPhiPosC.="<< graphNclMostProbPhi[6]<<  //  phi entries per phi bin - positive tracks C side
       "grNtrPhiNegC.="<< graphNclMostProbPhi[7];   //  phi entries per phi bin - negative tracks C side
 
-    (*pcstream)<<"trending"<<
+    (*pcstream)<<"tpcQA"<<
       "grNclSectorPosA.="<< graphNclMostProbPhiSector[0]<<  //  sector NCL/findable profile
       "grNclSectorNegA.="<< graphNclMostProbPhiSector[1]<<  // 
       "grNclSectorPosC.="<< graphNclMostProbPhiSector[2]<<  // 
@@ -1322,7 +1324,7 @@ Int_t AliTPCPerformanceSummary::AnalyzeDrift(const AliPerformanceTPC* pTPC, TTre
     //
     // dump drift QA values
     //
-    (*pcstream)<<"trending"<<
+    (*pcstream)<<"tpcQA"<<
         "offsetdZA="<< offsetdZA<<
         "slopedZA="<< slopedZA<<
         "offsetdZC="<< offsetdZC<<
@@ -1412,7 +1414,7 @@ Int_t AliTPCPerformanceSummary::AnalyzeDriftPos(const AliPerformanceTPC* pTPC, T
     //
     // dump drift QA values
     //
-    (*pcstream)<<"trending"<<
+    (*pcstream)<<"tpcQA"<<
         "offsetdZAPos="<< offsetdZAPos<<
         "slopedZAPos="<< slopedZAPos<<
         "offsetdZCPos="<< offsetdZCPos<<
@@ -1502,7 +1504,7 @@ Int_t AliTPCPerformanceSummary::AnalyzeDriftNeg(const AliPerformanceTPC* pTPC, T
     //
     // dump drift QA values
     //
-    (*pcstream)<<"trending"<<
+    (*pcstream)<<"tpcQA"<<
         "offsetdZANeg="<< offsetdZANeg<<
         "slopedZANeg="<< slopedZANeg<<
         "offsetdZCNeg="<< offsetdZCNeg<<
@@ -1553,10 +1555,10 @@ Int_t AliTPCPerformanceSummary::AnalyzeGain(const AliPerformanceDEdx* pTPCgain, 
     //
     // select MIP particles
     //
-    pTPCgain->GetDeDxHisto()->GetAxis(7)->SetRangeUser(0.4,0.55);
-    pTPCgain->GetDeDxHisto()->GetAxis(0)->SetRangeUser(35,60);
-    pTPCgain->GetDeDxHisto()->GetAxis(6)->SetRangeUser(80,160);
-    pTPCgain->GetDeDxHisto()->GetAxis(5)->SetRangeUser(-1,1);
+    if(fgForceTHnSparse) pTPCgain->GetDeDxHisto()->GetAxis(7)->SetRangeUser(0.4,0.55);
+    if(fgForceTHnSparse) pTPCgain->GetDeDxHisto()->GetAxis(0)->SetRangeUser(35,60);
+    if(fgForceTHnSparse) pTPCgain->GetDeDxHisto()->GetAxis(6)->SetRangeUser(80,160);
+    if(fgForceTHnSparse) pTPCgain->GetDeDxHisto()->GetAxis(5)->SetRangeUser(-1,1);
     //
     // MIP position and resolution
     //    
@@ -1578,7 +1580,7 @@ Int_t AliTPCPerformanceSummary::AnalyzeGain(const AliPerformanceDEdx* pTPCgain, 
     //
     // MIP position vs. dip angle (attachment)
     //    
-    pTPCgain->GetDeDxHisto()->GetAxis(5)->SetRangeUser(-3,0); // C side
+      if(fgForceTHnSparse) pTPCgain->GetDeDxHisto()->GetAxis(5)->SetRangeUser(-3,0); // C side
     if (pTPCgain->GetHistos()->FindObject("h_tpc_dedx_mips_c_0_5") && !fgForceTHnSparse) {    
         his2D = dynamic_cast<TH2*>(pTPCgain->GetHistos()->FindObject("h_tpc_dedx_mips_c_0_5")->Clone());
     } else {
@@ -1595,7 +1597,7 @@ Int_t AliTPCPerformanceSummary::AnalyzeGain(const AliPerformanceDEdx* pTPCgain, 
     //removedtotest// delete his2D;
     //removedtotest// delete his1D;
     //
-    pTPCgain->GetDeDxHisto()->GetAxis(5)->SetRangeUser(0,3); // A side
+      if(fgForceTHnSparse)  pTPCgain->GetDeDxHisto()->GetAxis(5)->SetRangeUser(0,3); // A side
     if (pTPCgain->GetHistos()->FindObject("h_tpc_dedx_mips_a_0_5") && !fgForceTHnSparse) {    
         his2D = dynamic_cast<TH2*>(pTPCgain->GetHistos()->FindObject("h_tpc_dedx_mips_a_0_5")->Clone());
     } else {
@@ -1615,7 +1617,7 @@ Int_t AliTPCPerformanceSummary::AnalyzeGain(const AliPerformanceDEdx* pTPCgain, 
     //
     // MIP position vs. sector
     //
-    pTPCgain->GetDeDxHisto()->GetAxis(5)->SetRangeUser(-3,0); // C side
+    if(fgForceTHnSparse) pTPCgain->GetDeDxHisto()->GetAxis(5)->SetRangeUser(-3,0); // C side
     if (pTPCgain->GetHistos()->FindObject("h_tpc_dedx_mips_c_0_1") && !fgForceTHnSparse) {    
         his2D = dynamic_cast<TH2*>(pTPCgain->GetHistos()->FindObject("h_tpc_dedx_mips_c_0_1")->Clone());
     } else {
@@ -1642,7 +1644,7 @@ Int_t AliTPCPerformanceSummary::AnalyzeGain(const AliPerformanceDEdx* pTPCgain, 
     }
      //removedtotest// delete his2D;
     //
-    pTPCgain->GetDeDxHisto()->GetAxis(5)->SetRangeUser(0,3); // A side
+    if(fgForceTHnSparse)  pTPCgain->GetDeDxHisto()->GetAxis(5)->SetRangeUser(0,3); // A side
     if (pTPCgain->GetHistos()->FindObject("h_tpc_dedx_mips_a_0_1") && !fgForceTHnSparse) {    
         his2D = dynamic_cast<TH2*>(pTPCgain->GetHistos()->FindObject("h_tpc_dedx_mips_a_0_1")->Clone());
     } else {
@@ -1673,10 +1675,10 @@ Int_t AliTPCPerformanceSummary::AnalyzeGain(const AliPerformanceDEdx* pTPCgain, 
     //  
     // select electrons                                                                                                               
     //                                                                                                                                                                           
-    pTPCgain->GetDeDxHisto()->GetAxis(7)->SetRangeUser(0.32,0.38); // momenta
-    pTPCgain->GetDeDxHisto()->GetAxis(0)->SetRangeUser(70,100); // dedx
-    pTPCgain->GetDeDxHisto()->GetAxis(6)->SetRangeUser(80,160); // nr clusters
-    pTPCgain->GetDeDxHisto()->GetAxis(5)->SetRangeUser(-1,1); // eta
+    if(fgForceTHnSparse) pTPCgain->GetDeDxHisto()->GetAxis(7)->SetRangeUser(0.32,0.38); // momenta
+    if(fgForceTHnSparse) pTPCgain->GetDeDxHisto()->GetAxis(0)->SetRangeUser(70,100); // dedx
+    if(fgForceTHnSparse) pTPCgain->GetDeDxHisto()->GetAxis(6)->SetRangeUser(80,160); // nr clusters
+    if(fgForceTHnSparse) pTPCgain->GetDeDxHisto()->GetAxis(5)->SetRangeUser(-1,1); // eta
 
     TF1 gausFitEle("gausFitEle","gaus");
 
@@ -1695,10 +1697,10 @@ Int_t AliTPCPerformanceSummary::AnalyzeGain(const AliPerformanceDEdx* pTPCgain, 
     if (meanMIPele!=0) resolutionMIPele = gausFitEle.GetParameter(2)/meanMIPele;
     
     //restore cuts as before
-    pTPCgain->GetDeDxHisto()->GetAxis(7)->SetRangeUser(0.4,0.55);
-    pTPCgain->GetDeDxHisto()->GetAxis(0)->SetRangeUser(35,60);
-    pTPCgain->GetDeDxHisto()->GetAxis(6)->SetRangeUser(80,160);
-    pTPCgain->GetDeDxHisto()->GetAxis(5)->SetRangeUser(-1,1);
+    if(fgForceTHnSparse) pTPCgain->GetDeDxHisto()->GetAxis(7)->SetRangeUser(0.4,0.55);
+    if(fgForceTHnSparse) pTPCgain->GetDeDxHisto()->GetAxis(0)->SetRangeUser(35,60);
+    if(fgForceTHnSparse) pTPCgain->GetDeDxHisto()->GetAxis(6)->SetRangeUser(80,160);
+    if(fgForceTHnSparse) pTPCgain->GetDeDxHisto()->GetAxis(5)->SetRangeUser(-1,1);
 
     //                                                                                                                                                                        
     // separation between electrons and MIPs                                                                                                                                  
@@ -1714,7 +1716,7 @@ Int_t AliTPCPerformanceSummary::AnalyzeGain(const AliPerformanceDEdx* pTPCgain, 
     printf("Electons MIP resolution\t%f\n",resolutionMIPele);
     // 
     
-    (*pcstream)<<"trending"<<
+    (*pcstream)<<"tpcQA"<<
       "fitMIP.="<<&fitMIP<<        // MIP position fit parameters, errors and chi2 
       "fitElectron.="<<&fitEle<<   // electorn peak  fit parameters, errors and chi2 
       //
@@ -1789,7 +1791,7 @@ Int_t AliTPCPerformanceSummary::AnalyzeEvent(const AliPerformanceTPC* pTPC, TTre
     
     delete his1D;
     
-    pTPC->GetTPCEventHisto()->GetAxis(6)->SetRange(2,2);
+    if(fgForceTHnSparse) pTPC->GetTPCEventHisto()->GetAxis(6)->SetRange(2,2);
    
     if (pTPC->GetHistos()->FindObject("h_tpc_event_recvertex_0") && !fgForceTHnSparse) {    
         his1D = dynamic_cast<TH1*>(pTPC->GetHistos()->FindObject("h_tpc_event_recvertex_0")->Clone());
@@ -1881,9 +1883,9 @@ Int_t AliTPCPerformanceSummary::AnalyzeEvent(const AliPerformanceTPC* pTPC, TTre
 
     delete his1D;
     
-    pTPC->GetTPCEventHisto()->GetAxis(6)->SetRange(1,2);
+    //pTPC->GetTPCEventHisto()->GetAxis(6)->SetRange(1,2);
     //
-    (*pcstream)<<"trending"<<
+    (*pcstream)<<"tpcQA"<<
       "infoVertX.="<<&infoVertexX <<       // vertex X stat information
       "infoVertY.="<<&infoVertexY <<       // vertex Y stat information
       "infoVertZ.="<<&infoVertexZ <<       // vertex Z stat information
@@ -2002,7 +2004,7 @@ Int_t AliTPCPerformanceSummary::AnalyzePt(const AliPerformanceTPC* pTPC, TTreeSR
 
     // dump values
     //
-    (*pcstream)<<"trending"<<
+    (*pcstream)<<"tpcQA"<<
       "meanPtAPos="<< meanPtAPos<<
       "mediumPtAPos="<< mediumPtAPos<<
       "highPtAPos="<< highPtAPos<<
@@ -2079,7 +2081,7 @@ Int_t AliTPCPerformanceSummary::AnalyzeChargeOverPt(const AliPerformanceTPC* pTP
     }
     
     
-    (*pcstream)<<"trending"<<
+    (*pcstream)<<"tpcQA"<<
       "qOverPt="<< qOverPt<<
       "qOverPtA="<< qOverPtA<<
       "qOverPtC="<< qOverPtC;
@@ -2151,7 +2153,7 @@ Int_t AliTPCPerformanceSummary::AnalyzeMatch(const AliPerformanceMatch* pMatch, 
     //    delete h2D1;
   }
 
-  (*pcstream)<<"trending"<<
+  (*pcstream)<<"tpcQA"<<
     "tpcItsMatchA="<< tpcItsMatchA<<
     "tpcItsMatchHighPtA="<< tpcItsMatchHighPtA<<
     "tpcItsMatchC="<< tpcItsMatchC<<
@@ -2261,7 +2263,7 @@ Int_t AliTPCPerformanceSummary::AnalyzePull(const AliPerformanceMatch* pPull, TT
     //    delete h2D5;
   }
   
-  (*pcstream)<<"trending"<<
+  (*pcstream)<<"tpcQA"<<
     "phiPull="<< phiPull<<
     "phiPullHighPt="<< phiPullHighPt<<
     "ptPull="<< ptPull<<
@@ -2314,7 +2316,7 @@ Int_t AliTPCPerformanceSummary::AnalyzeConstrain(const AliPerformanceMatch* pCon
 
   }
   
-  (*pcstream)<<"trending"<<
+  (*pcstream)<<"tpcQA"<<
     "tpcConstrainPhiA="<<tpcConstrainPhiA <<
     "tpcConstrainPhiC="<< tpcConstrainPhiC<<
     "infotpcConstrainPhiA.="<< &infotpcConstrainPhiA <<
@@ -2490,7 +2492,7 @@ Int_t AliTPCPerformanceSummary::AnalyzeConstrain(const AliPerformanceMatch* pCon
     delete negC;
     delete ratioC;
     
-    (*pcstream)<<"trending"<<      
+    (*pcstream)<<"tpcQA"<<      
       "deltaPt="<< deltaPt<<
       "deltaPtchi2="<< deltaPtchi2<<
       "deltaPtA="<< deltaPtA<<
@@ -2727,7 +2729,7 @@ Int_t AliTPCPerformanceSummary::AnalyzeConstrain(const AliPerformanceMatch* pCon
 
 
 // store results (shift in dca) in ttree
-  (*pcstream)<<"trending"<<      
+  (*pcstream)<<"tpcQA"<<      
     "grdcar_pos_Eta.="<<graphEtaProfile[0]<<
     "grdcar_neg_Eta.="<<graphEtaProfile[1]<<
     "grdcaz_pos_Eta.="<<graphEtaProfile[2]<<
@@ -2743,7 +2745,7 @@ Int_t AliTPCPerformanceSummary::AnalyzeConstrain(const AliPerformanceMatch* pCon
     "grdcaz_neg_CSidePhi.="<<graphPhiProfile[7];
     
     
-    (*pcstream)<<"trending"<<      
+    (*pcstream)<<"tpcQA"<<      
       "dcar_posA_0="<< dcar_posA_0<<
       "dcar_posA_1="<< dcar_posA_1<<
       "dcar_posA_2="<< dcar_posA_2<<
@@ -2752,7 +2754,7 @@ Int_t AliTPCPerformanceSummary::AnalyzeConstrain(const AliPerformanceMatch* pCon
       "dcar_posA_1_Err="<< dcar_posA_1_Err<<
       "dcar_posA_2_Err="<< dcar_posA_2_Err;    
       
-      (*pcstream)<<"trending"<<            
+      (*pcstream)<<"tpcQA"<<            
       "dcaz_posA_0="<< dcaz_posA_0<<
       "dcaz_posA_1="<< dcaz_posA_1<<
       "dcaz_posA_2="<< dcaz_posA_2<<
@@ -2761,7 +2763,7 @@ Int_t AliTPCPerformanceSummary::AnalyzeConstrain(const AliPerformanceMatch* pCon
       "dcaz_posA_1_Err="<< dcaz_posA_1_Err<<
       "dcaz_posA_2_Err="<< dcaz_posA_2_Err;          
       
-      (*pcstream)<<"trending"<<            
+      (*pcstream)<<"tpcQA"<<            
       "dcaz_posC_0="<< dcaz_posC_0<<
       "dcaz_posC_1="<< dcaz_posC_1<<
       "dcaz_posC_2="<< dcaz_posC_2<<
@@ -2770,7 +2772,7 @@ Int_t AliTPCPerformanceSummary::AnalyzeConstrain(const AliPerformanceMatch* pCon
       "dcaz_posC_1_Err="<< dcaz_posC_1_Err<<
       "dcaz_posC_2_Err="<< dcaz_posC_2_Err;           
 
-      (*pcstream)<<"trending"<<            
+      (*pcstream)<<"tpcQA"<<            
       "dcar_posC_0="<< dcar_posC_0<<
       "dcar_posC_1="<< dcar_posC_1<<
       "dcar_posC_2="<< dcar_posC_2<<
@@ -2780,7 +2782,7 @@ Int_t AliTPCPerformanceSummary::AnalyzeConstrain(const AliPerformanceMatch* pCon
       "dcar_posC_2_Err="<< dcar_posC_2_Err;           
             
       
-     (*pcstream)<<"trending"<<      
+     (*pcstream)<<"tpcQA"<<      
       "dcar_negA_0="<< dcar_negA_0<<
       "dcar_negA_1="<< dcar_negA_1<<
       "dcar_negA_2="<< dcar_negA_2<<
@@ -2789,7 +2791,7 @@ Int_t AliTPCPerformanceSummary::AnalyzeConstrain(const AliPerformanceMatch* pCon
       "dcar_negA_1_Err="<< dcar_negA_1_Err<<
       "dcar_negA_2_Err="<< dcar_negA_2_Err;    
       
-      (*pcstream)<<"trending"<<            
+      (*pcstream)<<"tpcQA"<<            
       "dcaz_negA_0="<< dcaz_negA_0<<
       "dcaz_negA_1="<< dcaz_negA_1<<
       "dcaz_negA_2="<< dcaz_negA_2<<
@@ -2798,7 +2800,7 @@ Int_t AliTPCPerformanceSummary::AnalyzeConstrain(const AliPerformanceMatch* pCon
       "dcaz_negA_1_Err="<< dcaz_negA_1_Err<<
       "dcaz_negA_2_Err="<< dcaz_negA_2_Err;          
       
-      (*pcstream)<<"trending"<<            
+      (*pcstream)<<"tpcQA"<<            
       "dcaz_negC_0="<< dcaz_negC_0<<
       "dcaz_negC_1="<< dcaz_negC_1<<
       "dcaz_negC_2="<< dcaz_negC_2<<
@@ -2807,7 +2809,7 @@ Int_t AliTPCPerformanceSummary::AnalyzeConstrain(const AliPerformanceMatch* pCon
       "dcaz_negC_1_Err="<< dcaz_negC_1_Err<<
       "dcaz_negC_2_Err="<< dcaz_negC_2_Err;           
 
-      (*pcstream)<<"trending"<<            
+      (*pcstream)<<"tpcQA"<<            
       "dcar_negC_0="<< dcar_negC_0<<
       "dcar_negC_1="<< dcar_negC_1<<
       "dcar_negC_2="<< dcar_negC_2<<
@@ -2855,6 +2857,8 @@ Int_t AliTPCPerformanceSummary::AnalyzeOcc(const AliPerformanceTPC* pTPC, TTreeS
 
  if (pTPC->GetHistos()->FindObject("h_tpc_clust_0_1_2")) {  
     h3D_1 = dynamic_cast<TH3*>(pTPC->GetHistos()->FindObject("h_tpc_clust_0_1_2"));
+  } else { 
+    h3D_1 = pTPC->GetTPCClustHisto()->Projection(0,1,2);
   }
   if(!h3D_1) {
     printf("E-AliTPCPerformanceSummary::AnalyzeOcc: h_tpc_clust_0_1_2 not found");
@@ -3067,7 +3071,7 @@ Int_t AliTPCPerformanceSummary::AnalyzeOcc(const AliPerformanceTPC* pTPC, TTreeS
   n_chamber_lowOcc=0;
   minOcc=0.;
 
-  (*pcstream)<<"trending"<<      
+  (*pcstream)<<"tpcQA"<<      
    "iroc_A_side="<< iroc_A_side<<
    "oroc_A_side="<< oroc_A_side<<
    "iroc_C_side="<< iroc_C_side<<
@@ -3251,7 +3255,7 @@ void   AliTPCPerformanceSummary::MakeRawOCDBQAPlot(TTreeSRedirector *pcstream){
   canvasROCStatusOCDB->SaveAs("canvasROCStatusOCDB.png");
 
   if (pcstream){
-    (*pcstream)<<"trending"<<
+    (*pcstream)<<"tpcQA"<<
       "hasRawQA="<<hasRawQA<<                   // flag - Raw QA present
       "rawClusterCounter="<<clusterCounter<<    // absolute number of cluster  in Raw QA          -  calibDB->GetDataQA()->GetClusterCounter();
       "rawSignalCounter="<<signalCounter<<      // absolute number of signal above Thr  in Raw QA -  calibDB->GetDataQA()->GetSignalCounter()

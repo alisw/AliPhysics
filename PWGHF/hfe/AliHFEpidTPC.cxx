@@ -425,22 +425,20 @@ void AliHFEpidTPC::UseOROC(AliVTrack *track, AliHFEpidObject::AnalysisType_t ana
   // N.B. This correction has to be applied on a copy track
   //
   //Double_t original = track->GetTPCsignal();
-  
+
+  AliTPCdEdxInfo dEdxInfo;
+  if( !track->GetTPCdEdxInfo(dEdxInfo) ) return;
+
+  Double32_t  TPCsignalRegion[4]; // TPC dEdx signal in 4 different regions - 0 - IROC, 1- OROC medium, 2 - OROC long, 3- OROC all, (default truncation used)
+  Char_t      TPCsignalNRegion[3]; // number of clusters above threshold used in the dEdx calculation
+  Char_t      TPCsignalNRowRegion[3]; // number of crosed rows used in the dEdx calculation - signal below threshold included
+  dEdxInfo.GetTPCSignalRegionInfo(TPCsignalRegion,TPCsignalNRegion,TPCsignalNRowRegion);
+
   if(anatype == AliHFEpidObject::kESDanalysis){
     AliESDtrack *esdtrack = static_cast<AliESDtrack *>(track);
-    AliTPCdEdxInfo *dEdxInfo = track->GetTPCdEdxInfo();
-    Double32_t  TPCsignalRegion[4]; // TPC dEdx signal in 4 different regions - 0 - IROC, 1- OROC medium, 2 - OROC long, 3- OROC all, (default truncation used)
-    Char_t      TPCsignalNRegion[3]; // number of clusters above threshold used in the dEdx calculation
-    Char_t      TPCsignalNRowRegion[3]; // number of crosed rows used in the dEdx calculation - signal below threshold included
-    dEdxInfo->GetTPCSignalRegionInfo(TPCsignalRegion,TPCsignalNRegion,TPCsignalNRowRegion);
     esdtrack->SetTPCsignal(TPCsignalRegion[3],esdtrack->GetTPCsignalSigma(),(TPCsignalNRegion[1]+TPCsignalNRegion[2])); // the two last are not ok
   } else {
     AliAODTrack *aodtrack = static_cast<AliAODTrack *>(track);
-    AliTPCdEdxInfo *dEdxInfo = track->GetTPCdEdxInfo();
-    Double32_t  TPCsignalRegion[4]; // TPC dEdx signal in 4 different regions - 0 - IROC, 1- OROC medium, 2 - OROC long, 3- OROC all, (default truncation used)
-    Char_t      TPCsignalNRegion[3]; // number of clusters above threshold used in the dEdx calculation
-    Char_t      TPCsignalNRowRegion[3]; // number of crosed rows used in the dEdx calculation - signal below threshold included
-    dEdxInfo->GetTPCSignalRegionInfo(TPCsignalRegion,TPCsignalNRegion,TPCsignalNRowRegion);
     AliAODPid *pid = aodtrack->GetDetPid();
     if(pid) pid->SetTPCsignal(TPCsignalRegion[3]);
     if(pid) pid->SetTPCsignalN((TPCsignalNRegion[1]+TPCsignalNRegion[2]));

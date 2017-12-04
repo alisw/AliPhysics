@@ -21,7 +21,7 @@ class AliVParticle;
 class AliVEvent;
 class AliMCEvent;
 class TH1;
-class AliInputEventHandler;
+class AliVEventHandler;
 class AliAnalysisMuMuCutRegistry;
 
 class AliAnalysisMuMuBase : public TObject
@@ -77,7 +77,7 @@ public:
   static const char* MCInputPrefix() { return "MCINPUT" ; }
 
   /// Called at each new run
-  virtual void SetRun(const AliInputEventHandler* /*eventHandler*/) {}
+  virtual void SetRun(const AliVEventHandler* /*eventHandler*/) {}
 
   virtual void Terminate(Option_t* /*opt*/="") {}
 

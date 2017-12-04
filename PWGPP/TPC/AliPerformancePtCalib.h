@@ -12,7 +12,8 @@
 // Fit options and theta, phi bins can be set by user.
 // Attention: use the Set* functions of AliPerformancePtCalib when running AliPerformancePtCalib::Analyse().
 //
-// Author: S. Schuchmann 11/13/2009 
+// Author: S. Schuchmann 11/13/2009
+// Updated: J. Salzwedel 01/12/2014
 //----------------------------------------------------------------------------------------------------
 
 class TString;
@@ -22,23 +23,20 @@ class TH1F;
 class TH2F;
 class TList;
 
-class AliESDVertex;
-class AliESDtrack;
 class AliMCEvent;
 class AliTrackReference;
-class AliESDEvent; 
-class AliESDfriend; 
-class AliESDfriendTrack; 
-class AliMCInfoCuts;
-class AliRecInfoCuts;
+class AliVEvent; 
+class AliVfriendEvent; 
 class AliESDtrackCuts;
 class AliESDpid;
+class TRootIOCtor;
 
 #include "THnSparse.h"
 #include "AliPerformanceObject.h"
 
 class AliPerformancePtCalib : public AliPerformanceObject {
 public:
+  AliPerformancePtCalib(TRootIOCtor*);
   AliPerformancePtCalib(const Char_t * name="AliPerformancePtCalib",const Char_t* title ="AliPerformancePtCalib");
    virtual ~AliPerformancePtCalib();
 
@@ -46,10 +44,10 @@ public:
    virtual void  Init();
 
    // Execute analysis
-   virtual void  Exec(AliMCEvent* const mcEvent, AliESDEvent *const esdEvent, AliESDfriend *const esdFriend, const Bool_t bUseMC, const Bool_t bUseESDfriend);
+   virtual void  Exec(AliMCEvent* const mcEvent, AliVEvent *const vEvent, AliVfriendEvent *const vfriendEvent, const Bool_t bUseMC, const Bool_t bUseVfriend);
 
    // Merge output objects (needed by PROOF) 
-   virtual Long64_t Merge(TCollection* const list);
+   virtual Long64_t Merge(TCollection* list);
 
    // Analyse output histograms
    virtual void Analyse();
@@ -77,13 +75,6 @@ public:
 
    // Export objects to folder
    TFolder *ExportToFolder(TObjArray * array=0);
-
-   // Selection cuts
-   void SetAliRecInfoCuts(AliRecInfoCuts* const cuts=0) {fCutsRC = cuts;}   
-   void SetAliMCInfoCuts(AliMCInfoCuts* const cuts=0) {fCutsMC = cuts;}  
-
-   AliRecInfoCuts*  GetAliRecInfoCuts() const {return fCutsRC;}  
-   AliMCInfoCuts*   GetAliMCInfoCuts()  const {return fCutsMC;}
 
 protected:
    // variables for fitting in Analyse() function
@@ -114,11 +105,6 @@ private:
 
    //ESD track cut values
    Double_t fEtaAcceptance;//sets value of eta window
-
-   AliRecInfoCuts* fCutsRC;     // selection cuts for reconstructed tracks
-   AliMCInfoCuts*  fCutsMC;     // selection cuts for MC tracks
-  
-
     
    TList       *fList;// list of histograms
    
@@ -150,7 +136,7 @@ private:
    AliPerformancePtCalib(const AliPerformancePtCalib&);            // not implemented 
    AliPerformancePtCalib& operator=(const AliPerformancePtCalib&); // not implemented 
 
-   ClassDef(AliPerformancePtCalib, 1); 
+   ClassDef(AliPerformancePtCalib, 2); 
 };
 
 #endif

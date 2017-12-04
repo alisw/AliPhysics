@@ -12,13 +12,26 @@
 */
 
 // function to set TPC OCDB parameters
-void ConfigOCDB(Int_t crun);
+int ConfigOCDB();
 
 Int_t debugLevel=0;
 Int_t streamLevel=0;
 
 //_____________________________________________________________________________
-AliAnalysisTask  *AddTaskTPCCalib(Int_t runNumber)
+Bool_t isOptionSelected(const char* optionstr, const char* optionsstr, const char* allstr="ALL")
+{
+  //check if option is enabled and not disabled in options
+  TString option=optionstr;
+  TString options=optionsstr;
+  TString all=allstr;
+  TString notOption="-";
+  notOption+=option;
+  if (options.Contains(notOption)) return kFALSE;
+  return (options.Contains(option) || options.Contains(all));
+}
+
+//_____________________________________________________________________________
+AliAnalysisTask  *AddTaskTPCCalib(const char* options="ALL")
 {
   //
   // add calibration task
@@ -36,65 +49,82 @@ AliAnalysisTask  *AddTaskTPCCalib(Int_t runNumber)
   }  
 
   // set TPC OCDB parameters
-  ConfigOCDB(runNumber);
-
-  // setup task TPCCalib
-  TString outputFileName=mgr->GetCommonFileName();
-  AliTPCAnalysisTaskcalib *task1=new AliTPCAnalysisTaskcalib("CalibObjectsTrain1");
-  SetupCalibTaskTrain1(task1);
-  mgr->AddTask(task1);
-  AliAnalysisDataContainer *cinput1 = mgr->GetCommonInputContainer();
-  if (!cinput1) cinput1 = mgr->CreateContainer("cchain",TChain::Class(), 
-                                      AliAnalysisManager::kInputContainer);
-  for (Int_t i=0; i<task1->GetJobs()->GetEntries(); i++) {
-    if (task1->GetJobs()->At(i)) {
-      AliAnalysisDataContainer* coutput = mgr->CreateContainer(task1->GetJobs()->At(i)->GetName(),
-                                                               AliTPCcalibBase::Class(), 
-                                                               AliAnalysisManager::kOutputContainer, 
-                                                               "CalibObjects.root:TPCCalib"); 
-      mgr->ConnectOutput(task1,i,coutput);
-    }
+  if (ConfigOCDB())
+  {
+    return(NULL);
   }
-  mgr->ConnectInput(task1,0,cinput1);
+
+  AliTPCAnalysisTaskcalib *task=NULL;
+  
+  // setup task TPCCalib
+  if (isOptionSelected("TPCCalib",options))
+  {
+    ::Info("AddTaskTPCCalib", "Adding TPCCalib");
+    TString outputFileName=mgr->GetCommonFileName();
+    task=new AliTPCAnalysisTaskcalib("CalibObjectsTrain1");
+    SetupCalibTaskTrain1(task,options);
+    mgr->AddTask(task);
+    AliAnalysisDataContainer *cinput1 = mgr->GetCommonInputContainer();
+    if (!cinput1) cinput1 = mgr->CreateContainer("cchain",TChain::Class(), 
+        AliAnalysisManager::kInputContainer);
+    for (Int_t i=0; i<task->GetJobs()->GetEntries(); i++) {
+      if (task->GetJobs()->At(i)) {
+        AliAnalysisDataContainer* coutput = mgr->CreateContainer(task->GetJobs()->At(i)->GetName(),
+            AliTPCcalibBase::Class(), 
+            AliAnalysisManager::kOutputContainer, 
+            "CalibObjects.root:TPCCalib"); 
+        mgr->ConnectOutput(task,i,coutput);
+      }
+    }
+    mgr->ConnectInput(task,0,cinput1);
+  }
   //
   // setup task TPCAlign
-  AliTPCAnalysisTaskcalib *taskAlign=new AliTPCAnalysisTaskcalib("CalibObjectsTrain1");
-  SetupCalibTaskTrainAlign(taskAlign);
-  mgr->AddTask(taskAlign);
-  AliAnalysisDataContainer *cinput1 = mgr->GetCommonInputContainer();
-  if (!cinput1) cinput1 = mgr->CreateContainer("cchain",TChain::Class(), 
-                                      AliAnalysisManager::kInputContainer);
-  for (Int_t i=0; i<taskAlign->GetJobs()->GetEntries(); i++) {
-    if (taskAlign->GetJobs()->At(i)) {
-      AliAnalysisDataContainer* coutput = mgr->CreateContainer(taskAlign->GetJobs()->At(i)->GetName(),
-                                                               AliTPCcalibBase::Class(), 
-                                                               AliAnalysisManager::kOutputContainer, 
-                                                               "CalibObjects.root:TPCAlign"); 
-      mgr->ConnectOutput(taskAlign,i,coutput);
+  if (isOptionSelected("TPCAlign",options))
+  {
+    ::Info("AddTaskTPCCalib", "Adding TPCAlign");
+    task=new AliTPCAnalysisTaskcalib("CalibObjectsTrain1");
+    SetupCalibTaskTrainAlign(task,options);
+    mgr->AddTask(task);
+    AliAnalysisDataContainer *cinput1 = mgr->GetCommonInputContainer();
+    if (!cinput1) cinput1 = mgr->CreateContainer("cchain",TChain::Class(), 
+        AliAnalysisManager::kInputContainer);
+    for (Int_t i=0; i<task->GetJobs()->GetEntries(); i++) {
+      if (task->GetJobs()->At(i)) {
+        AliAnalysisDataContainer* coutput = mgr->CreateContainer(task->GetJobs()->At(i)->GetName(),
+            AliTPCcalibBase::Class(), 
+            AliAnalysisManager::kOutputContainer, 
+            "CalibObjects.root:TPCAlign"); 
+        mgr->ConnectOutput(task,i,coutput);
+      }
     }
+    mgr->ConnectInput(task,0,cinput1);
   }
-  mgr->ConnectInput(taskAlign,0,cinput1);
   //
   // setup task TPCCluster
-  AliTPCAnalysisTaskcalib *taskCluster=new AliTPCAnalysisTaskcalib("CalibObjectsTrain1");
-  SetupCalibTaskTrainCluster(taskCluster);
-  mgr->AddTask(taskCluster);
-  AliAnalysisDataContainer *cinput1 = mgr->GetCommonInputContainer();
-  if (!cinput1) cinput1 = mgr->CreateContainer("cchain",TChain::Class(), 
-                                      AliAnalysisManager::kInputContainer);
-  for (Int_t i=0; i<taskCluster->GetJobs()->GetEntries(); i++) {
-    if (taskCluster->GetJobs()->At(i)) {
-      AliAnalysisDataContainer* coutput = mgr->CreateContainer(taskCluster->GetJobs()->At(i)->GetName(),
-                                                               AliTPCcalibBase::Class(), 
-                                                               AliAnalysisManager::kOutputContainer, 
-                                                               "CalibObjects.root:TPCCluster"); 
-      mgr->ConnectOutput(taskCluster,i,coutput);
+  if (isOptionSelected("TPCCluster",options))
+  {
+    ::Info("AddTaskTPCCalib", "Adding TPCCluster");
+    task=new AliTPCAnalysisTaskcalib("CalibObjectsTrain1");
+    SetupCalibTaskTrainCluster(task,options);
+    mgr->AddTask(task);
+    AliAnalysisDataContainer *cinput1 = mgr->GetCommonInputContainer();
+    if (!cinput1) cinput1 = mgr->CreateContainer("cchain",TChain::Class(), 
+        AliAnalysisManager::kInputContainer);
+    for (Int_t i=0; i<task->GetJobs()->GetEntries(); i++) {
+      if (task->GetJobs()->At(i)) {
+        AliAnalysisDataContainer* coutput = mgr->CreateContainer(task->GetJobs()->At(i)->GetName(),
+            AliTPCcalibBase::Class(), 
+            AliAnalysisManager::kOutputContainer, 
+            "CalibObjects.root:TPCCluster"); 
+        mgr->ConnectOutput(task,i,coutput);
+      }
     }
+    mgr->ConnectInput(task,0,cinput1);
   }
-  mgr->ConnectInput(taskCluster,0,cinput1);
   //
 
-  return task1;
+  return task;
 }
 
 //_____________________________________________________________________________
@@ -111,6 +141,7 @@ void AddCalibCalib(TObject* task){
   calibCalib->SetStreamLevel(0);
   calibCalib->SetTriggerMask(-1,-1,kFALSE);        //accept everything 
   myTask->AddJob(calibCalib);
+  ::Info("AddTaskTPCCalib", "AddTaskTPCCalib:AddCalibCalib");
 }
 
 //_____________________________________________________________________________
@@ -188,6 +219,7 @@ void AddCalibTimeGain(TObject* task, Bool_t isCosmic = kFALSE, char * name = "ca
 
   calibTimeGain->SetMinTPCsignalN(minTPCsignalN);
   calibGainMult->SetMinTPCsignalN(minTPCsignalN);
+  ::Info("AddTaskTPCCalib", "AddTaskTPCCalib:AddCalibTimeGain");
 }
 
 //_____________________________________________________________________________
@@ -232,6 +264,7 @@ void AddCalibTime(TObject* task){
   calibTime->SetCutTracks(15000);
 
   myTask->AddJob(calibTime);
+  ::Info("AddTaskTPCCalib", "AddTaskTPCCalib:AddCalibTime");
 }
 
 
@@ -251,6 +284,7 @@ void AddCalibTracks(TObject* task){
   calibTracks->SetStreamLevel(streamLevel);
   calibTracks->SetTriggerMask(-1,-1,kTRUE);       
   myTask->AddJob(calibTracks); 
+  ::Info("AddTaskTPCCalib", "AddTaskTPCCalib:AddCalibTracks");
 }
 
 
@@ -265,6 +299,7 @@ void AddCalibAlign(TObject* task){
   calibAlign->SetStreamLevel(streamLevel);
   calibAlign->SetTriggerMask(-1,-1,kTRUE);        //accept everything
   myTask->AddJob(calibAlign);
+  ::Info("AddTaskTPCCalib", "AddTaskTPCCalib:AddCalibAlign");
 }
 
 void AddCalibAlignInterpolation(TObject* task){
@@ -283,7 +318,7 @@ void AddCalibAlignInterpolation(TObject* task){
   //  calibAlign->SetSyswatchStep(10);
 
   calibAlign->SetTriggerMask(-1,-1,kTRUE);        //accept everything
-  ::Info("AddCalibAlignInterpolation");
+  ::Info("AddTaskTPCCalib", "AddCalibAlignInterpolation");
   calibAlign->Dump();
   myTask->AddJob(calibAlign);
 }
@@ -300,6 +335,7 @@ void AddCalibLaser(TObject* task){
   calibLaser->SetStreamLevel(streamLevel);
   calibLaser->SetTriggerMask(-1,-1,kFALSE);        //accept everything
   myTask->AddJob(calibLaser);
+  ::Info("AddTaskTPCCalib", "AddTaskTPCCalib:AddCalibLaser");
 }
 
 
@@ -316,52 +352,53 @@ void AddCalibCosmic(TObject* task){
   calibCosmic->SetStreamLevel(1);
   calibCosmic->SetTriggerMask(-1,-1,kTRUE);        //accept everything
   myTask->AddJob(calibCosmic);
+  ::Info("AddTaskTPCCalib", "AddTaskTPCCalib:AddCalibCosmic");
 }
 
 
 
 //_____________________________________________________________________________
-void SetupCalibTaskTrain1(TObject* task){
+void SetupCalibTaskTrain1(TObject* task, const char* options="ALL"){
   //
   // Setup tasks for calibration train
   //
-  AddCalibCalib(task);
-  AddCalibTimeGain(task);
-  AddCalibTime(task);
-  AddCalibAlignInterpolation(task);
+  if (isOptionSelected(":CalibCalib",options)) AddCalibCalib(task);
+  if (isOptionSelected(":CalibTimeGain",options)) AddCalibTimeGain(task);
+  if (isOptionSelected(":CalibTimeDrift",options)) AddCalibTime(task);
+  if (isOptionSelected(":CalibAlignInterpolation",options)) AddCalibAlignInterpolation(task);
 }
 
-void SetupCalibTaskTrainAlign(TObject* task){
+void SetupCalibTaskTrainAlign(TObject* task, const char* options="ALL"){
   //
   // Setup tasks for calibration train
   //
-  //AddCalibAlign(task);
-  AddCalibLaser(task);
+  //if (isOptionSelected(":CalibAlign",options)) AddCalibAlign(task);
+  if (isOptionSelected(":CalibLaser",options)) AddCalibLaser(task);
   //AddCalibCosmic(task);
 }
 
-void SetupCalibTaskTrainCluster(TObject* task){
+void SetupCalibTaskTrainCluster(TObject* task, const char* options="ALL"){
   //
   // Setup tasks for calibration train
   //
-  AddCalibTracks(task);
+  if (isOptionSelected(":CalibTracks",options)) AddCalibTracks(task);
 }
 
 //_____________________________________________________________________________
-void ConfigOCDB(Int_t run){
+int ConfigOCDB(){
   //
   // Configure TPC OCDB
   //
-  printf("SETUP OCBD for TPC\n");
-  printf("SETUP OCBD for TPC\n");
-  printf("SETUP OCBD for TPC Run =%d\n", run);
+  bool print_info = !(getenv("HLT_ONLINE_MODE") && strcmp(getenv("HLT_ONLINE_MODE"), "on") == 0);
+
+  if (print_info) ::Info("AddTaskTPCCalib", "SETUP OCBD\n");
   //
   //
   AliTPCParam *param= AliTPCcalibDB::Instance()->GetParameters();
   param->ReadGeoMatrices();
   //
   AliMagF* magF= TGeoGlobalMagField::Instance()->GetField();
-  printf("\n\nSET EXB FIELD\t\n\n");
+  if (print_info) ::Info("AddTaskTPCCalib", "\n\nSET EXB FIELD\t\n\n");
   AliTPCcalibDB::Instance()->SetExBField(magF);
   //
   //
@@ -373,18 +410,25 @@ void ConfigOCDB(Int_t run){
   AliCDBEntry* entry = AliCDBManager::Instance()->Get("TPC/Calib/RecoParam");
   if (!entry){
     ::Error("AddTaskTPCCalib","TPC reco param not available");
-    return;
+    return(1);
   }
   TObjArray * array = (TObjArray*)entry->GetObject();
   if (!array){
     ::Error("AddTaskTPCCalib","TPC reco param not available");
-    return;
+    return(1);
   }
   
   //get the beam type from OCDB to decide which type of reco param we need -
   //high or low flux
   entry = AliCDBManager::Instance()->Get("GRP/GRP/Data");
   AliGRPObject* grpData = dynamic_cast<AliGRPObject*>(entry->GetObject());  // new GRP entry
+  
+  if ((grpData->GetDetectorMask() & AliDAQ::kTPC) == 0)
+  {
+    ::Error("AddTaskTPCCalib", "TPC not in list of active detectors for this run");
+    return(1);
+  }
+
   TString beamType = grpData->GetBeamType();
   if (beamType==AliGRPObject::GetInvalidString()) {
     ::Error("AddTaskTPCCalib","GRP/GRP/Data entry:  missing value for the beam type ! Using UNKNOWN");
@@ -395,8 +439,8 @@ void ConfigOCDB(Int_t run){
   if (beamType.Contains("p-p")) {fluxType=0;}
   if (beamType.Contains("Pb-Pb") || beamType.Contains("A-A")) {fluxType=1;}
   AliTPCRecoParam * tpcRecoParam = (AliTPCRecoParam*)array->At(fluxType);
-  ::Info("AddTaskTPCCalib","Beam type: %s, using fluxType=%i",beamType.Data(),fluxType);
-  tpcRecoParam->Print();
+  ::Info("AddTaskTPCCalib", "AddTaskTPCCalib","Beam type: %s, using fluxType=%i",beamType.Data(),fluxType);
+  if (print_info) tpcRecoParam->Print();
 
   transform->SetCurrentRecoParam(tpcRecoParam);
 
@@ -445,8 +489,6 @@ void ConfigOCDB(Int_t run){
   //
   tpcRecoParam->SetUseAlignmentTime(kFALSE);
   tpcRecoParam->SetUseComposedCorrection(kTRUE);
-
-  // ===| Initialise AliTPCcalibDB |============================================
-  //
-  AliTPCcalibDB::Instance()->SetRun(run);
+  
+  return(0);
 }

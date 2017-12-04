@@ -24,6 +24,7 @@
 // 
 // Author: J.Otwinowski 01/04/2009 
 // Changes by M.Knichel 15/10/2010
+// Changes by J.Salzwedel 30/9/2014
 //------------------------------------------------------------------------------
 
 #include "iostream"
@@ -35,11 +36,11 @@
 #include "TList.h"
 #include "TFile.h"
 #include "TSystem.h"
-
-#include "AliAnalysisTask.h"
+#include "TBufferFile.h"
+#include "AliAnalysisTaskSE.h"
 #include "AliAnalysisManager.h"
-#include "AliESDEvent.h"
-#include "AliESDfriend.h"
+#include "AliVEvent.h"
+#include "AliVfriendEvent.h"
 #include "AliMCEvent.h"
 #include "AliESDInputHandler.h"
 #include "AliMCEventHandler.h"
@@ -64,77 +65,82 @@
 #include "AliPerformanceMatch.h"
 #include "AliPerformanceTask.h"
 
+#include <AliSysInfo.h>
 
 using namespace std;
+
+static bool showInfo = !(getenv("HLT_ONLINE_MODE") && strcmp(getenv("HLT_ONLINE_MODE"), "on") == 0);
 
 ClassImp(AliPerformanceTask)
 
 //_____________________________________________________________________________
 AliPerformanceTask::AliPerformanceTask() 
-  : AliAnalysisTaskSE("Performance")
-  , fESD(0)
-  , fESDfriend(0)
+  : AliAnalysisTaskSE()
+  , fVEvent(0)
+  , fVfriendEvent(0)
   , fMC(0)
   , fOutput(0)
   , fOutputSummary(0)
   , fPitList(0)
   , fCompList(0)
   , fUseMCInfo(kFALSE)
-  , fUseESDfriend(kFALSE)
+  , fUseVfriend(kFALSE)
   , fUseHLT(kFALSE)
   , fUseTerminate(kTRUE)
   , fUseCentrality(0)
   , fUseOCDB(kTRUE)
+  , fDebug(0)
   , fUseCentralityBin(0)
+  , fEvents(0)
 {
-  // Dummy Constructor
+    // Dummy Constructor
   // should not be used
 }
 
 //_____________________________________________________________________________
-AliPerformanceTask::AliPerformanceTask(const char *name, const char */*title*/) 
+AliPerformanceTask::AliPerformanceTask(const char *name, const char* title)
   : AliAnalysisTaskSE(name)
-  , fESD(0)
-  , fESDfriend(0)
+  , fVEvent(0)
+  , fVfriendEvent(0)
   , fMC(0)
   , fOutput(0)
   , fOutputSummary(0)
   , fPitList(0)
-  , fCompList(0)
+  , fCompList(new TList)
   , fUseMCInfo(kFALSE)
-  , fUseESDfriend(kFALSE)
+  , fUseVfriend(kFALSE)
   , fUseHLT(kFALSE)
   , fUseTerminate(kTRUE)
   , fUseCentrality(0)
   , fUseOCDB(kTRUE)
+  , fDebug(0)
   , fUseCentralityBin(0)
+  , fEvents(0)
 {
   // Constructor
 
   // Define input and output slots here
   DefineOutput(0, TTree::Class());
   DefineOutput(1, TList::Class());
-
-  // create the list for comparison objects
-  fCompList = new TList;
 }
 
 //_____________________________________________________________________________
 AliPerformanceTask::~AliPerformanceTask()
 {
-  if (!AliAnalysisManager::GetAnalysisManager()->IsProofMode()) {
-    if (fOutput)     delete fOutput;    fOutput   = 0; 
-    if (fOutputSummary) delete fOutputSummary; fOutputSummary = 0;
-    if (fCompList)   delete fCompList;  fCompList = 0; 
+  if (!(AliAnalysisManager::GetAnalysisManager() && AliAnalysisManager::GetAnalysisManager()->IsProofMode())) {
+    delete fOutput;
+    delete fOutputSummary;
+    delete fCompList;
   }
 }
 
 //_____________________________________________________________________________
 Bool_t AliPerformanceTask::AddPerformanceObject(AliPerformanceObject *pObj) 
 {
-  // add comparison object to the list
+
+    // add comparison object to the list
   if(pObj == 0) {
-    Printf("ERROR: Could not add comparison object");
+    AliInfo("ERROR: Could not add comparison object");
     return kFALSE;
   }
 
@@ -150,7 +156,7 @@ void AliPerformanceTask::UserCreateOutputObjects()
   // Create histograms
   // Called once
 
-  // create output list
+    // create output list
   fOutput = new TList;
   fOutput->SetOwner();
   fPitList = fOutput->MakeIterator();
@@ -167,8 +173,9 @@ void AliPerformanceTask::UserCreateOutputObjects()
     fOutput->Add(pObj);
     count++;
   }
-  Printf("UserCreateOutputObjects(): Number of output comparison objects: %d \n", count);
-  
+
+  if (showInfo) AliInfo(Form("UserCreateOutputObjects(): Number of output comparison objects: %d", count));
+ 
   PostData(1, fOutput);  
   PostData(0, fOutputSummary);  
 }
@@ -178,60 +185,52 @@ void AliPerformanceTask::UserExec(Option_t *)
 {
   // Main loop
   // Called for each event
-
-
-  // Decide whether to use HLT or Offline ESD
+  fEvents++;
+  if (showInfo) AliInfo(Form("%s %s Event number %i",GetName(), GetTitle(), fEvents));
+  //if(fDebug) AliSysInfo::AddStamp("memleak",fEvents);
+  
+// Decide whether to use HLT ESD or Offline ESD/AOD
   if(fUseHLT){
-
     AliESDInputHandler *esdH = dynamic_cast<AliESDInputHandler*> 
       (AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
-    
-    if (!esdH) {
-      printf("ERROR: Could not get ESDInputHandler");
+    if(!esdH) {
+      AliInfo("ERROR: Could not get ESDInputHandler");
       return;
-    } 
-    fESD = esdH->GetHLTEvent();
-  }// end if fUseHLT
-  else  
-    fESD = (AliESDEvent*) (InputEvent());
-
-  if(fUseESDfriend)
-    {
-	  if (fUseHLT)
-	  {
-		AliESDEvent *fESDoffline;
-	    fESDoffline = (AliESDEvent*) (InputEvent());
-		fESDfriend = static_cast<AliESDfriend*>(fESDoffline->FindListObject("AliESDfriend"));
-	  }
-	  else
-	  {
-        fESDfriend = static_cast<AliESDfriend*>(fESD->FindListObject("AliESDfriend"));
-	  }
-      if(!fESDfriend) {
-        Printf("ERROR: ESD friends not available");
-      }
     }
+    fVEvent = esdH->GetHLTEvent();
+    if(!fVEvent) {
+      AliInfo("ERROR: HLTEvent unavailable from ESDInputHandler");
+      return;
+    } else {
+      AliInfo("Using the HLT ESD event");
+    }
+  }// end if fUseHLT
+  else {
+    // Get an offline event
+      AliVEventHandler *vH = AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler();
+      if (!vH) {
+          AliInfo("ERROR: Could not get VEventHandler");
+          return;
+      }
+      fVEvent = vH->GetEvent();
+      //fVEvent =InputEvent(); //this one does not currently work, TaskSE makes stupid assumptions about the tree
+      if(!fVEvent) { AliInfo("ERROR: Event not available!"); return;}
+  }
+
+  if(fUseVfriend) {
+    fVfriendEvent = fVEvent->FindFriend();
+    if(!fVfriendEvent) {
+      AliInfo("ERROR: ESD friends not available");
+    }
+  } // end if fUseVfriend
   
   if(fUseMCInfo) {
       fMC = MCEvent();
   }  
 
-
-  if (!fESD) {
-    Printf("ERROR: ESD event not available");
-    return;
-  }
-  
   if (fUseMCInfo && !fMC) {
-    Printf("ERROR: MC event not available");
+    AliInfo("ERROR: MC event not available");
     return;
-  }
-
-  if(fUseESDfriend)
-  {
-    if(!fESDfriend) {
-    Printf("ERROR: ESD friends not available");
-    }
   }
 
   // Process analysis
@@ -241,21 +240,29 @@ void AliPerformanceTask::UserExec(Option_t *)
   if (fUseCentrality) {
     if ( CalculateCentralityBin() != fUseCentralityBin ) {
       process = kFALSE;
+    } else {
+      AliInfo("wrong centrality");
     }
   }
 
   // Process comparison
-  if (process) {
+    if(fEvents==1) fVEvent->InitMagneticField();
+    if (process) {
     AliPerformanceObject *pObj=0;
     fPitList->Reset();
     while(( pObj = (AliPerformanceObject *)fPitList->Next()) != NULL) {
       //AliInfo(pObj->GetName());
-      pObj->Exec(fMC,fESD,fESDfriend,fUseMCInfo,fUseESDfriend);
+      if (showInfo) AliInfo(Form("...executing job %s",pObj->GetName()));
+      pObj->Exec(fMC,fVEvent,fVfriendEvent,fUseMCInfo,fUseVfriend);
     }
   }
 
-  // Post output data.
-  PostData(1, fOutput);
+    if(fDebug) {
+        TBufferFile tempMem(TBuffer::kWrite);
+        tempMem.WriteObject(fOutput);
+        AliSysInfo::AddStamp("memleak",fEvents,tempMem.Length()/1024.);
+    }
+
 }
 
 //_____________________________________________________________________________
@@ -270,7 +277,7 @@ void AliPerformanceTask::Terminate(Option_t *)
     fOutputSummary = dynamic_cast<TTree*> (GetOutputData(0));
     fOutput = dynamic_cast<TList*> (GetOutputData(1));
     if (!fOutput) {
-        Printf("ERROR: AliPerformanceTask::Terminate(): fOutput data not available  ..." );
+        AliInfo("ERROR: AliPerformanceTask::Terminate(): fOutput data not available  ..." );
         return;
    }
     if (fOutputSummary) { delete fOutputSummary; fOutputSummary=0; }      
@@ -298,20 +305,20 @@ void AliPerformanceTask::Terminate(Option_t *)
   
    
     if(!fUseOCDB)  { 
-      printf("DO NOT USE OCDB \n");
+      AliInfo("DO NOT USE OCDB");
       return;
     }
   
-//    if (! AliCDBManager::Instance()->GetDefaultStorage()) { AliCDBManager::Instance()->SetDefaultStorage("raw://"); }
-//     TUUID uuid;
-//     TString tmpFile = gSystem->TempDirectory() + TString("/TPCQASummary.") + uuid.AsString() + TString(".root");
-//     AliTPCPerformanceSummary::WriteToFile(pTPC, pDEdx, pMatch, pPull, pConstrain, tmpFile.Data());
-//     TChain* chain = new TChain("tpcQA");
-//     if(!chain) return;
-//     chain->Add(tmpFile.Data());
-//     TTree *tree = chain->CopyTree("1");
-//     if (chain) { delete chain; chain=0; }
-//     fOutputSummary = tree;
+/*    if (! AliCDBManager::Instance()->GetDefaultStorage()) { AliCDBManager::Instance()->SetDefaultStorage("raw://"); }
+    TUUID uuid;
+    TString tmpFile = gSystem->TempDirectory() + TString("/TPCQASummary.") + uuid.AsString() + TString(".root");
+    AliTPCPerformanceSummary::WriteToFile(pTPC, pDEdx, pMatch, pPull, pConstrain, tmpFile.Data());
+    TChain* chain = new TChain("tpcQA");
+    if(!chain) return;
+    chain->Add(tmpFile.Data());
+    TTree *tree = chain->CopyTree("1");
+    if (chain) { delete chain; chain=0; }
+    fOutputSummary = tree;*/
       
 //      // Post output data.
 //      PostData(0, fOutputSummary);
@@ -327,7 +334,7 @@ void AliPerformanceTask::FinishTaskOutput()
     
     fOutput = dynamic_cast<TList*> (GetOutputData(1));
     if (!fOutput) {
-        Printf("ERROR: AliPerformanceTask::FinishTaskOutput(): fOutput data not available  ..." );
+        AliInfo("ERROR: AliPerformanceTask::FinishTaskOutput(): fOutput data not available  ..." );
         return;
    }
 
@@ -335,12 +342,21 @@ void AliPerformanceTask::FinishTaskOutput()
       TIterator* itOut = fOutput->MakeIterator();  
       itOut->Reset();
       while(( pObj = dynamic_cast<AliPerformanceObject*>(itOut->Next())) != NULL) {
-          pObj->SetRunNumber(fCurrentRunNumber);
+          //pObj->SetRunNumber(fCurrentRunNumber);
           pObj->Analyse();
       }
-      
+    
+    if(fDebug) {
+        TBufferFile tempMem(TBuffer::kWrite);
+        tempMem.WriteObject(fOutput);
+        AliSysInfo::AddStamp("memleak",fEvents+1,tempMem.Length()/1024.);
+    }
+
+    
      // Post output data.
-     PostData(1, fOutput);
+     //PostData(1, fOutput);
+     //PostData(0, fOutputSummary);
+
 }
 
 //_____________________________________________________________________________
@@ -348,7 +364,7 @@ Bool_t AliPerformanceTask::Notify()
 {
   static Int_t count = 0;
   count++;
-  Printf("Processing %d. file", count);
+  AliInfo(Form("Processing %d. file", count));
 
   return kTRUE;
 }
@@ -362,16 +378,20 @@ Int_t AliPerformanceTask::CalculateCentralityBin(){
 
   if (fUseCentrality == 0)
     return centrality;
-
-  AliCentrality *esdCentrality = fESD->GetCentrality();
-    
+  
+  AliCentrality *eventCentrality = NULL;
+  if(fVEvent) eventCentrality = fVEvent->GetCentrality();
+  if(!eventCentrality) {
+    AliInfo("ERROR: Could not obtain event centrality");
+    return centrality;
+  }
   // New : 2010-11-18 JMT 
   if ( fUseCentrality == 1 )
-    centralityF = esdCentrality->GetCentralityPercentile("V0M");
+    centralityF = eventCentrality->GetCentralityPercentile("V0M");
   else if ( fUseCentrality == 2 )
-    centralityF = esdCentrality->GetCentralityPercentile("CL1");
+    centralityF = eventCentrality->GetCentralityPercentile("CL1");
   else if ( fUseCentrality == 3 )
-    centralityF = esdCentrality->GetCentralityPercentile("TRK"); 
+    centralityF = eventCentrality->GetCentralityPercentile("TRK"); 
   if (centralityF == 0.)
     centralityF = 100.;
 
@@ -386,6 +406,20 @@ Int_t AliPerformanceTask::CalculateCentralityBin(){
   else if ( centralityF >= 70. && centralityF <  80.) centrality = 70;
   else if ( centralityF >= 80. && centralityF <  90.) centrality = 80;
   else if ( centralityF >= 90. && centralityF <=100.) centrality = 90;
-  
+
   return centrality;
+}
+
+//________________________________________________________________________
+Bool_t AliPerformanceTask::ResetOutputData(){
+
+    AliPerformanceObject* pObj=0;
+    TIterator* itOut = fOutput->MakeIterator();
+    itOut->Reset();
+
+    while(( pObj = dynamic_cast<AliPerformanceObject*>(itOut->Next())) != NULL) {
+      pObj->ResetOutputData();
+    }
+
+    return kFALSE;
 }
