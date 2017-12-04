@@ -14,7 +14,7 @@ class AliAnalysisTaskCMEV0;
  Bool_t bZDCGainEq= kFALSE, TString sZDCFile="alien:///alice/cern.ch/user/m/mhaque/gain/Run2015o_pass1_ZDNP_WgtTotEn_VsCentRun.root", 
  Bool_t bFillTPCQn= kFALSE, Bool_t bFillNUAhist= kFALSE,Bool_t bFillZDCHist= kFALSE, Bool_t bSkipNestedLoop= kFALSE, 
  Int_t fSetHarmN = 1, Int_t fSetHarmM = 1, Int_t fSetPsiHarm = 2, Bool_t bUseNUAinEP = kFALSE, TString sNUAtype="NewR", 
- const char *suffix = "")
+ Bool_t bRemTrkRndm= kFALSE, const char *suffix = "")
 {
 
   //gSystem->Load("libPWGflowBase.so");
@@ -210,6 +210,7 @@ class AliAnalysisTaskCMEV0;
   taskQC_prot->SetFillZDNCalHist(bFillZDCHist);
   taskQC_prot->SetSkipNestedLoop(bSkipNestedLoop);
   taskQC_prot->SetMCEffiDimension(sFBEffiDimension);
+  taskQC_prot->SetRemoveNegTrkRndm(bRemTrkRndm);
 
 
 
