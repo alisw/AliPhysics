@@ -99,7 +99,6 @@ void AliGenEvtGen::Generate()
   Float_t polar[3]= {0,0,0};  // Polarisation of daughter particles 
   Float_t origin0[3];         // Origin of the parent particle 
   Float_t pc[3], och[3]; // Momentum and origin of the children particles from EvtGen
-  Int_t nt;
   Float_t tof;
   Int_t nPrimsPythia;
   TLorentzVector *mom=new TLorentzVector();
@@ -191,7 +190,12 @@ void AliGenEvtGen::Generate()
 
          AliDebug(1,Form("FirstMother = %d e indicePart = %d e pdg = %d \n",jpa,i,kf));         
           
+         Int_t nt = -1;
          PushTrack(trackIt[i], iparent, kf, pc, och, polar,tof, kPDecay, nt, 1., ksc); 
+         if (nt < 0) {
+           AliWarning(Form("Particle %i, pdg = %i, could not be pushed and will be skipped.", i, kf));
+           continue;
+         }
          if(trackIt[i]==1) AliDebug(1,Form("Trackable particles: %d e pdg %d \n",i,kf));
          pParent[i] = nt;
          KeepTrack(nt);
