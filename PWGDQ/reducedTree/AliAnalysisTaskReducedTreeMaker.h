@@ -122,7 +122,7 @@ public:
   Double_t Radius(Double_t eta, Double_t z);
 
   Bool_t  IsTrackSelected(AliVParticle* track, std::vector<Bool_t>& filterDecision);
-  Bool_t  IsSelectedTrackRequestedBaseTrack(std::vector<Bool_t> filterDecision);
+  Bool_t  IsSelectedTrackRequestedBaseTrack(std::vector<Bool_t> filterDecision, Bool_t usedForV0Or);
   void    SetTrackFilterQualityFlags(AliReducedBaseTrack* track, std::vector<Bool_t> filterDecision);
   void    FillTrackStatisticsHistogram(std::vector<Bool_t> filterDecision, Bool_t usedForV0Or);
 

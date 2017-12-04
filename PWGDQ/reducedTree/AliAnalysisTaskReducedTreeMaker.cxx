@@ -376,12 +376,13 @@ void AliAnalysisTaskReducedTreeMaker::UserCreateOutputObjects()
   Double_t xMin = -3.5;
   Double_t xMax = xMin + nBins;
   fTracksHistogram = new TH1I("TrackStatistics", "Track statistics for passed track filters", nBins, xMin, xMax);
-  fTracksHistogram->GetXaxis()->SetBinLabel(1, "written to tree");
-  fTracksHistogram->GetXaxis()->SetBinLabel(2, "used for any V0, no filter passed");
-  fTracksHistogram->GetXaxis()->SetBinLabel(3, "any filter passed");
+  fTracksHistogram->GetYaxis()->SetTitle("numer of tracks");
+  fTracksHistogram->GetXaxis()->SetBinLabel(1, "written to tree, track filter passed");
+  fTracksHistogram->GetXaxis()->SetBinLabel(2, "used for V0, no track filter passed");
+  fTracksHistogram->GetXaxis()->SetBinLabel(3, "any track filter passed");
   for (Int_t i=4; i<nBins+1; i++) {
-    if ((fTrackFilterName.at(i-4)).CompareTo("")) fTracksHistogram->GetXaxis()->SetBinLabel(i, (fTrackFilterName.at(i-4)).Data());
-    else                                          fTracksHistogram->GetXaxis()->SetBinLabel(i, Form("filter %d", i-4));
+    if ((fTrackFilterName.at(i-4)).CompareTo("")) fTracksHistogram->GetXaxis()->SetBinLabel(i, Form("%s passed", (fTrackFilterName.at(i-4)).Data()));
+    else                                          fTracksHistogram->GetXaxis()->SetBinLabel(i, Form("filter %d passed", i-4));
   }
 
   // set a seed for the random number generator
@@ -603,7 +604,7 @@ Bool_t AliAnalysisTaskReducedTreeMaker::IsTrackSelected(AliVParticle* track, std
 }
 
 //_________________________________________________________________________________
-Bool_t AliAnalysisTaskReducedTreeMaker::IsSelectedTrackRequestedBaseTrack(std::vector<Bool_t> filterDecision)
+Bool_t AliAnalysisTaskReducedTreeMaker::IsSelectedTrackRequestedBaseTrack(std::vector<Bool_t> filterDecision, Bool_t usedForV0Or)
 {
   //
   // compare passed track filter and corresponding choice of base or full track
@@ -615,6 +616,10 @@ Bool_t AliAnalysisTaskReducedTreeMaker::IsSelectedTrackRequestedBaseTrack(std::v
       isBaseTrack = kFALSE;
       break;
     }
+  }
+  if (isBaseTrack && usedForV0Or) {
+    if (fTreeWritingOption==kBaseEventsWithFullTracks || fTreeWritingOption==kFullEventsWithFullTracks)
+      isBaseTrack = kFALSE;
   }
   return isBaseTrack;
 }
@@ -1548,7 +1553,7 @@ void AliAnalysisTaskReducedTreeMaker::FillTrackInfo()
     if(!writeTrack) continue;
     //if(!matchedInTRD && !usedForV0Or && fTrackFilter && !fTrackFilter->IsSelected(particle)) continue;
 
-    Bool_t fSelectedTrackIsBaseTrack = IsSelectedTrackRequestedBaseTrack(individualFilterDecisions);
+    Bool_t fSelectedTrackIsBaseTrack = IsSelectedTrackRequestedBaseTrack(individualFilterDecisions, usedForV0Or);
     TClonesArray& tracks = (fWriteSecondTrackArray && fSelectedTrackIsBaseTrack) ? *(fReducedEvent->fTracks2) : *(fReducedEvent->fTracks);
     AliReducedBaseTrack* reducedParticle = NULL;
     if (fSelectedTrackIsBaseTrack && fWriteSecondTrackArray)
