@@ -425,39 +425,19 @@ void AliJFFlucAnalysis::UserExec(Option_t *) {
 	// use complex variable instead of doulbe Qn //
 	TComplex QnA[kNH];
 	TComplex QnB[kNH];
+	TComplex QnA_star[kNH];
 	TComplex QnB_star[kNH];
 
 	//--------------- Calculate Qn--------------------
 	for(int ih=0; ih<kNH; ih++){
 		QnA[ih] = CalculateQnSP( Eta_config[kSubA][kMin], Eta_config[kSubA][kMax], ih);
 		QnB[ih] = CalculateQnSP( Eta_config[kSubB][kMin], Eta_config[kSubB][kMax], ih);
+		QnA_star[ih] = TComplex::Conjugate ( QnA[ih] ) ;
 		QnB_star[ih] = TComplex::Conjugate ( QnB[ih] ) ;
 	}
 	NSubTracks[kSubA] = QnA[0].Re(); // this is number of tracks in Sub A
 	NSubTracks[kSubB] = QnB[0].Re(); // this is number of tracks in Sub B
 	
-	Double_t ebe_2p_weight = 1.0;
-	Double_t ebe_3p_weight = 1.0;
-	Double_t ebe_4p_weight = 1.0;
-	Double_t ebe_4p_weightB = 1.0;
-	if( IsEbEWeighted == kTRUE ){
-		ebe_2p_weight = NSubTracks[kSubA] * NSubTracks[kSubB] ;
-		ebe_3p_weight = ebe_2p_weight * (NSubTracks[kSubB]-1.0);
-		ebe_4p_weight = ebe_2p_weight * (NSubTracks[kSubA]-1.0) * (NSubTracks[kSubB]-1.0);
-		ebe_4p_weightB = ebe_3p_weight * (NSubTracks[kSubB]-2.0);
-	}
-	Double_t ebe_2Np_weight[2*nKL] = {
-		ebe_2p_weight,
-		ebe_4p_weight,
-	};
-	if( IsEbEWeighted == kTRUE ){
-		for(int ik=2; ik<2*nKL; ik++){
-			double dk = (double)ik;
-			ebe_2Np_weight[ik] = ebe_2Np_weight[ik-1]*max(NSubTracks[kSubA]-dk,1.0)*max(NSubTracks[kSubB]-dk,1.0);
-		}
-	}else for(int ik=2; ik<2*nKL; ik++)
-		ebe_2Np_weight[ik] = 1.0;
-
 	// v2^2 :  k=1  /// remember QnQn = vn^(2k) not k
 	// use k=0 for check v2, v3 only
 	Double_t vn2[kNH][nKL];
@@ -466,111 +446,144 @@ void AliJFFlucAnalysis::UserExec(Option_t *) {
 	TComplex corr[kNH][nKL];
 	TComplex ncorr[kNH][nKL];
 
-	double mf = 1.0/((NSubTracks[0]-1.0)*(NSubTracks[1]-1.0));
+	const TComplex *pQn[][2] = {
+		{QnA,QnB_star},
+		{QnB,QnA_star}
+	};
+	const double N[][2] = {
+		{NSubTracks[0],NSubTracks[1]},
+		{NSubTracks[1],NSubTracks[0]}
+	};
 
-	for(int ih=2; ih<kNH; ih++){
-		corr[ih][1] = QnA[ih]*QnB_star[ih];
-		for(int ik=2; ik<nKL; ik++)
-			corr[ih][ik] = corr[ih][ik-1]*corr[ih][1];//TComplex::Power(corr[ih][1],ik);
-		ncorr[ih][1] = corr[ih][1];
-		ncorr[ih][2] = mf*(corr[ih][2]*NSubTracks[0]*NSubTracks[1]-QnB_star[2*ih]*QnA[ih]*QnA[ih]*NSubTracks[0]-QnA[2*ih]*QnB_star[ih]*QnB_star[ih]*NSubTracks[1]+QnB_star[2*ih]*QnA[2*ih]);
-		for(int ik=3; ik<nKL; ik++)
-			ncorr[ih][ik] = corr[ih][ik]; //for 6,8,...-particle correlations, ignore the autocorrelation for now
-	}
-	
-	for(int ih=2; ih<kNH; ih++){
-		for(int ik=1; ik<nKL; ik++){ // 2k(0) =1, 2k(1) =2, 2k(2)=4....
-			vn2[ih][ik] = corr[ih][ik].Re();
-			fh_vn[ih][ik][fCBin]->Fill( vn2[ih][ik] , ebe_2Np_weight[ik-1]); // Fill hvn2
-			fh_vna[ih][ik][fCBin]->Fill(ncorr[ih][ik].Re(), ebe_2Np_weight[ik-1]); //4-particle weight etc?
-			for( int ihh=2; ihh<kNH; ihh++){
-				for(int ikk=1; ikk<nKL; ikk++){
-					vn2_vn2[ih][ik][ihh][ikk] = (corr[ih][ik]*corr[ihh][ikk]).Re();
-					fh_vn_vn[ih][ik][ihh][ikk][fCBin]->Fill( vn2_vn2[ih][ik][ihh][ikk], ebe_2Np_weight[ik+ikk-1]) ; // Fill hvn_vn
+	for(int i = 0; i < 2; ++i){
+		Double_t ebe_2p_weight = 1.0;
+		Double_t ebe_3p_weight = 1.0;
+		Double_t ebe_4p_weight = 1.0;
+		Double_t ebe_4p_weightB = 1.0;
+		if( IsEbEWeighted == kTRUE ){
+			ebe_2p_weight = N[i][0]*N[i][1];//NSubTracks[kSubA] * NSubTracks[kSubB] ;
+			ebe_3p_weight = ebe_2p_weight*(N[i][1]-1.0);// * (NSubTracks[kSubB]-1.0);
+			ebe_4p_weight = ebe_2p_weight*(N[i][0]-1.0)*(N[i][1]-1.0);// * (NSubTracks[kSubA]-1.0) * (NSubTracks[kSubB]-1.0);
+			ebe_4p_weightB = ebe_3p_weight*(N[i][1]-2.0);// * (NSubTracks[kSubB]-2.0);
+		}
+		Double_t ebe_2Np_weight[2*nKL] = {
+			ebe_2p_weight,
+			ebe_4p_weight,
+		};
+		if( IsEbEWeighted == kTRUE ){
+			for(int ik=2; ik<2*nKL; ik++){
+				double dk = (double)ik;
+				ebe_2Np_weight[ik] = ebe_2Np_weight[ik-1]*max(N[i][0]-dk,1.0)*max(N[i][1]-dk,1.0);
+			}
+		}else for(int ik=2; ik<2*nKL; ik++)
+			ebe_2Np_weight[ik] = 1.0;
+
+		//double mf = 1.0/((NSubTracks[0]-1.0)*(NSubTracks[1]-1.0));
+		double mf = 1.0/((N[i][0]-1.0)*(N[i][1]-1.0));
+
+		for(int ih=2; ih<kNH; ih++){
+			corr[ih][1] = pQn[i][0][ih]*pQn[i][1][ih];//QnA[ih]*QnB_star[ih];
+			for(int ik=2; ik<nKL; ik++)
+				corr[ih][ik] = corr[ih][ik-1]*corr[ih][1];//TComplex::Power(corr[ih][1],ik);
+			ncorr[ih][1] = corr[ih][1];
+			//ncorr[ih][2] = mf*(corr[ih][2]*NSubTracks[0]*NSubTracks[1]-QnB_star[2*ih]*QnA[ih]*QnA[ih]*NSubTracks[0]-QnA[2*ih]*QnB_star[ih]*QnB_star[ih]*NSubTracks[1]+QnB_star[2*ih]*QnA[2*ih]);
+			ncorr[ih][2] = mf*(corr[ih][2]*N[i][0]*N[i][1]-pQn[i][1][2*ih]*pQn[i][0][ih]*pQn[i][0][ih]*N[i][0]-pQn[i][0][2*ih]*pQn[i][1][ih]*pQn[i][1][ih]*N[i][1]+pQn[i][1][2*ih]*pQn[i][0][2*ih]);
+			for(int ik=3; ik<nKL; ik++)
+				ncorr[ih][ik] = corr[ih][ik]; //for 6,8,...-particle correlations, ignore the autocorrelation for now
+		}
+		
+		for(int ih=2; ih<kNH; ih++){
+			for(int ik=1; ik<nKL; ik++){ // 2k(0) =1, 2k(1) =2, 2k(2)=4....
+				vn2[ih][ik] = corr[ih][ik].Re();
+				fh_vn[ih][ik][fCBin]->Fill( vn2[ih][ik] , ebe_2Np_weight[ik-1]);
+				fh_vna[ih][ik][fCBin]->Fill(ncorr[ih][ik].Re(), ebe_2Np_weight[ik-1]);
+				for( int ihh=2; ihh<kNH; ihh++){
+					for(int ikk=1; ikk<nKL; ikk++){
+						vn2_vn2[ih][ik][ihh][ikk] = (corr[ih][ik]*corr[ihh][ikk]).Re();
+						fh_vn_vn[ih][ik][ihh][ikk][fCBin]->Fill( vn2_vn2[ih][ik][ihh][ikk], ebe_2Np_weight[ik+ikk-1]) ; // Fill hvn_vn
+					}
 				}
 			}
+			fSingleVn[ih][0] = TMath::Sqrt(vn2[ih][1]); // fill single vn with SP as method 0
 		}
-		fSingleVn[ih][0] = TMath::Sqrt(vn2[ih][1]); // fill single vn with SP as method 0
-	}
 
-	//************************************************************************
+		//************************************************************************
 
-	TComplex V4V2star_2 = QnA[4] * QnB_star[2] * QnB_star[2];
-	TComplex V4V2starv2_2 =	V4V2star_2 * corr[2][1];//vn[2][1]
-	TComplex V4V2starv2_4 = V4V2star_2 * corr[2][2];//vn2[2][2]
-	TComplex V5V2starV3starv2_2 = QnA[5] * QnB_star[2] * QnB_star[3] * corr[2][1]; //vn2[2][1]
-	TComplex V5V2starV3star = QnA[5] * QnB_star[2] * QnB_star[3] ;
-	TComplex V5V2starV3startv3_2 = V5V2starV3star * corr[3][1]; //vn2[3][1]
-	TComplex V6V2star_3 = QnA[6] * QnB_star[2] * QnB_star[2] * QnB_star[2];
-	TComplex V6V3star_2 = QnA[6] * QnB_star[3] * QnB_star[3];
-	TComplex V6V2starV4star = QnA[6] * QnB_star[2] * QnB_star[4];
-	TComplex V7V2star_2V3star = QnA[7] * QnB_star[2] * QnB_star[2] * QnB_star[3];
-	TComplex V7V2starV5star = QnA[7] * QnB_star[2] * QnB_star[5];
-	TComplex V7V3starV4star = QnA[7] * QnB_star[3] * QnB_star[4];
-	TComplex V8V2starV3star_2 = QnA[8] * QnB_star[2] * QnB_star[3] * QnB_star[3];
-	TComplex V8V2star_4 = QnA[8] * TComplex::Power(QnB_star[2],4);
+		TComplex V4V2star_2 = pQn[i][0][4] * pQn[i][1][2] * pQn[i][1][2];
+		TComplex V4V2starv2_2 =	V4V2star_2 * corr[2][1];//vn[2][1]
+		TComplex V4V2starv2_4 = V4V2star_2 * corr[2][2];//vn2[2][2]
+		TComplex V5V2starV3starv2_2 = pQn[i][0][5] * pQn[i][1][2] * pQn[i][1][3] * corr[2][1]; //vn2[2][1]
+		TComplex V5V2starV3star = pQn[i][0][5] * pQn[i][1][2] * pQn[i][1][3] ;
+		TComplex V5V2starV3startv3_2 = V5V2starV3star * corr[3][1]; //vn2[3][1]
+		TComplex V6V2star_3 = pQn[i][0][6] * pQn[i][1][2] * pQn[i][1][2] * pQn[i][1][2];
+		TComplex V6V3star_2 = pQn[i][0][6] * pQn[i][1][3] * pQn[i][1][3];
+		TComplex V6V2starV4star = pQn[i][0][6] * pQn[i][1][2] * pQn[i][1][4];
+		TComplex V7V2star_2V3star = pQn[i][0][7] * pQn[i][1][2] * pQn[i][1][2] * pQn[i][1][3];
+		TComplex V7V2starV5star = pQn[i][0][7] * pQn[i][1][2] * pQn[i][1][5];
+		TComplex V7V3starV4star = pQn[i][0][7] * pQn[i][1][3] * pQn[i][1][4];
+		TComplex V8V2starV3star_2 = pQn[i][0][8] * pQn[i][1][2] * pQn[i][1][3] * pQn[i][1][3];
+		TComplex V8V2star_4 = pQn[i][0][8] * TComplex::Power(pQn[i][1][2],4);
 
-	// New correlators (Modified by You's correction term for self-correlations)
-	double nf = 1.0/(NSubTracks[1]-1.0);
-	double ef = nf/(NSubTracks[1]-2.0);
-	TComplex nV4V2star_2 = nf*( V4V2star_2*NSubTracks[1] - QnA[4]*QnB_star[4] );
-	TComplex nV5V2starV3star = nf*( V5V2starV3star*NSubTracks[1] - QnA[5]*QnB_star[5] );
-	TComplex nV6V2star_3 = QnA[6]*ef*( QnB_star[2]*QnB_star[2]*QnB_star[2]*NSubTracks[1]*NSubTracks[1] - 3.0*QnB_star[2]*QnB_star[4]*NSubTracks[1] + 2.0*QnB_star[6] );
-	TComplex nV6V3star_2 = nf*(V6V3star_2*NSubTracks[1] - QnA[6]*QnB_star[6]);
-	TComplex nV6V2starV4star = nf*(V6V2starV4star*NSubTracks[1] - QnA[6]*QnB_star[6]);
-	TComplex nV7V2star_2V3star = QnA[7]*ef*( QnB_star[2]*QnB_star[2]*QnB_star[3]*NSubTracks[1]*NSubTracks[1] - 2.0*QnB_star[2]*QnB_star[5]*NSubTracks[1] - QnB_star[3]*QnB_star[4]*NSubTracks[1] + 2.0*QnB_star[7] );
-	TComplex nV7V2starV5star = nf*(V7V2starV5star*NSubTracks[1] - QnA[7]*QnB_star[7]);
-	TComplex nV7V3starV4star = nf*(V7V3starV4star*NSubTracks[1] - QnA[7]*QnB_star[7]);
-	TComplex nV8V2starV3star_2 = QnA[8]*ef*( QnB_star[2]*QnB_star[3]*QnB_star[3]*NSubTracks[1]*NSubTracks[1] - 2.0*QnB_star[3]*QnB_star[5]*NSubTracks[1] - QnB_star[2]*QnB_star[6]*NSubTracks[1] + 2.0*QnB_star[8] );
+		// New correlators (Modified by You's correction term for self-correlations)
+		double nf = 1.0/(N[i][1]-1.0);
+		double ef = nf/(N[i][1]-2.0);
+		TComplex nV4V2star_2 = nf*( V4V2star_2*N[i][1] - pQn[i][0][4]*pQn[i][1][4] );
+		TComplex nV5V2starV3star = nf*( V5V2starV3star*N[i][1] - pQn[i][0][5]*pQn[i][1][5] );
+		TComplex nV6V2star_3 = pQn[i][0][6]*ef*( pQn[i][1][2]*pQn[i][1][2]*pQn[i][1][2]*N[i][1]*N[i][1] - 3.0*pQn[i][1][2]*pQn[i][1][4]*N[i][1] + 2.0*pQn[i][1][6] );
+		TComplex nV6V3star_2 = nf*(V6V3star_2*N[i][1] - pQn[i][0][6]*pQn[i][1][6]);
+		TComplex nV6V2starV4star = nf*(V6V2starV4star*N[i][1] - pQn[i][0][6]*pQn[i][1][6]);
+		TComplex nV7V2star_2V3star = pQn[i][0][7]*ef*( pQn[i][1][2]*pQn[i][1][2]*pQn[i][1][3]*N[i][1]*N[i][1] - 2.0*pQn[i][1][2]*pQn[i][1][5]*N[i][1] - pQn[i][1][3]*pQn[i][1][4]*N[i][1] + 2.0*pQn[i][1][7] );
+		TComplex nV7V2starV5star = nf*(V7V2starV5star*N[i][1] - pQn[i][0][7]*pQn[i][1][7]);
+		TComplex nV7V3starV4star = nf*(V7V3starV4star*N[i][1] - pQn[i][0][7]*pQn[i][1][7]);
+		TComplex nV8V2starV3star_2 = pQn[i][0][8]*ef*( pQn[i][1][2]*pQn[i][1][3]*pQn[i][1][3]*N[i][1]*N[i][1] - 2.0*pQn[i][1][3]*pQn[i][1][5]*N[i][1] - pQn[i][1][2]*pQn[i][1][6]*N[i][1] + 2.0*pQn[i][1][8] );
 
-	// New correlators (Modifed by Ante's correction term for self-correlations for SC result)
-	TComplex nV4V4V2V2 = (QnA[4]*QnB_star[4]*QnA[2]*QnB_star[2]) - ((1/(NSubTracks[1]-1) * QnB_star[6] * QnA[4] *QnA[2] ))
-		- ((1/(NSubTracks[0]-1) * QnA[6]*QnB_star[4] * QnB_star[2])) + (1/((NSubTracks[0]-1)*(NSubTracks[1]-1))*QnA[6]*QnB_star[6] );
-	TComplex nV3V3V2V2 = (QnA[3]*QnB_star[3]*QnA[2]*QnB_star[2]) - ((1/(NSubTracks[1]-1) * QnB_star[5] * QnA[3] *QnA[2] ))
-		- ((1/(NSubTracks[0]-1) * QnA[5]*QnB_star[3] * QnB_star[2])) + (1/((NSubTracks[0]-1)*(NSubTracks[1]-1))*QnA[5]*QnB_star[5] );
-	// add higher order SC results
-	TComplex nV5V5V2V2 = (QnA[5]*QnB_star[5]*QnA[2]*QnB_star[2]) - ((1/(NSubTracks[1]-1) * QnB_star[7] * QnA[5] *QnA[2] ))
-		- ((1/(NSubTracks[0]-1) * QnA[7]*QnB_star[5] * QnB_star[2])) + (1/((NSubTracks[0]-1)*(NSubTracks[1]-1))*QnA[7]*QnB_star[7] );
-	TComplex nV5V5V3V3 = (QnA[5]*QnB_star[5]*QnA[3]*QnB_star[3]) - ((1/(NSubTracks[1]-1) * QnB_star[8] * QnA[5] *QnA[3] ))
-		- ((1/(NSubTracks[0]-1) * QnA[8]*QnB_star[5] * QnB_star[3])) + (1/((NSubTracks[0]-1)*(NSubTracks[1]-1))*QnA[8]*QnB_star[8] );
-	TComplex nV4V4V3V3 = (QnA[4]*QnB_star[4]*QnA[3]*QnB_star[3]) - ((1/(NSubTracks[1]-1) * QnB_star[7] * QnA[4] *QnA[3] ))
-		- ((1/(NSubTracks[0]-1) * QnA[7]*QnB_star[4] * QnB_star[3])) + (1/((NSubTracks[0]-1)*(NSubTracks[1]-1))*QnA[7]*QnB_star[7] );
+		TComplex nV4V4V2V2 = (pQn[i][0][4]*pQn[i][1][4]*pQn[i][0][2]*pQn[i][1][2]) - ((1/(N[i][1]-1) * pQn[i][1][6] * pQn[i][0][4] *pQn[i][0][2] ))
+			- ((1/(N[i][0]-1) * pQn[i][0][6]*pQn[i][1][4] * pQn[i][1][2])) + (1/((N[i][0]-1)*(N[i][1]-1))*pQn[i][0][6]*pQn[i][1][6] );
+		TComplex nV3V3V2V2 = (pQn[i][0][3]*pQn[i][1][3]*pQn[i][0][2]*pQn[i][1][2]) - ((1/(N[i][1]-1) * pQn[i][1][5] * pQn[i][0][3] *pQn[i][0][2] ))
+			- ((1/(N[i][0]-1) * pQn[i][0][5]*pQn[i][1][3] * pQn[i][1][2])) + (1/((N[i][0]-1)*(N[i][1]-1))*pQn[i][0][5]*pQn[i][1][5] );
+		TComplex nV5V5V2V2 = (pQn[i][0][5]*pQn[i][1][5]*pQn[i][0][2]*pQn[i][1][2]) - ((1/(N[i][1]-1) * pQn[i][1][7] * pQn[i][0][5] *pQn[i][0][2] ))
+			- ((1/(N[i][0]-1) * pQn[i][0][7]*pQn[i][1][5] * pQn[i][1][2])) + (1/((N[i][0]-1)*(N[i][1]-1))*pQn[i][0][7]*pQn[i][1][7] );
+		TComplex nV5V5V3V3 = (pQn[i][0][5]*pQn[i][1][5]*pQn[i][0][3]*pQn[i][1][3]) - ((1/(N[i][1]-1) * pQn[i][1][8] * pQn[i][0][5] *pQn[i][0][3] ))
+			- ((1/(N[i][0]-1) * pQn[i][0][8]*pQn[i][1][5] * pQn[i][1][3])) + (1/((N[i][0]-1)*(N[i][1]-1))*pQn[i][0][8]*pQn[i][1][8] );
+		TComplex nV4V4V3V3 = (pQn[i][0][4]*pQn[i][1][4]*pQn[i][0][3]*pQn[i][1][3]) - ((1/(N[i][1]-1) * pQn[i][1][7] * pQn[i][0][4] *pQn[i][0][3] ))
+			- ((1/(N[i][0]-1) * pQn[i][0][7]*pQn[i][1][4] * pQn[i][1][3])) + (1/((N[i][0]-1)*(N[i][1]-1))*pQn[i][0][7]*pQn[i][1][7] );
 
-	fh_correlator[0][fCBin]->Fill( V4V2starv2_2.Re() );
-	fh_correlator[1][fCBin]->Fill( V4V2starv2_4.Re() );
-	fh_correlator[2][fCBin]->Fill( V4V2star_2.Re(),ebe_3p_weight ) ; // added 2015.3.18
-	fh_correlator[3][fCBin]->Fill( V5V2starV3starv2_2.Re() );
-	fh_correlator[4][fCBin]->Fill( V5V2starV3star.Re(),ebe_3p_weight );
-	fh_correlator[5][fCBin]->Fill( V5V2starV3startv3_2.Re() );
-	fh_correlator[6][fCBin]->Fill( V6V2star_3.Re(),ebe_4p_weightB );
-	fh_correlator[7][fCBin]->Fill( V6V3star_2.Re(),ebe_3p_weight );
-	fh_correlator[8][fCBin]->Fill( V7V2star_2V3star.Re(),ebe_4p_weightB ) ;
+		fh_correlator[0][fCBin]->Fill( V4V2starv2_2.Re() );
+		fh_correlator[1][fCBin]->Fill( V4V2starv2_4.Re() );
+		fh_correlator[2][fCBin]->Fill( V4V2star_2.Re(),ebe_3p_weight ) ; // added 2015.3.18
+		fh_correlator[3][fCBin]->Fill( V5V2starV3starv2_2.Re() );
+		fh_correlator[4][fCBin]->Fill( V5V2starV3star.Re(),ebe_3p_weight );
+		fh_correlator[5][fCBin]->Fill( V5V2starV3startv3_2.Re() );
+		fh_correlator[6][fCBin]->Fill( V6V2star_3.Re(),ebe_4p_weightB );
+		fh_correlator[7][fCBin]->Fill( V6V3star_2.Re(),ebe_3p_weight );
+		fh_correlator[8][fCBin]->Fill( V7V2star_2V3star.Re(),ebe_4p_weightB ) ;
 
-	fh_correlator[9][fCBin]->Fill( nV4V2star_2.Re(),ebe_3p_weight ); // added 2015.6.10
-	fh_correlator[10][fCBin]->Fill( nV5V2starV3star.Re(),ebe_3p_weight );
-	fh_correlator[11][fCBin]->Fill( nV6V3star_2.Re(),ebe_3p_weight ) ;
+		fh_correlator[9][fCBin]->Fill( nV4V2star_2.Re(),ebe_3p_weight ); // added 2015.6.10
+		fh_correlator[10][fCBin]->Fill( nV5V2starV3star.Re(),ebe_3p_weight );
+		fh_correlator[11][fCBin]->Fill( nV6V3star_2.Re(),ebe_3p_weight ) ;
 
-	// use this to avoid self-correlation 4p correlation (2 particles from A, 2 particles from B) -> MA(MA-1)MB(MB-1) : evt weight..
-	fh_correlator[12][fCBin]->Fill( nV4V4V2V2.Re(),ebe_4p_weight );
-	fh_correlator[13][fCBin]->Fill( nV3V3V2V2.Re(),ebe_4p_weight );
+		// use this to avoid self-correlation 4p correlation (2 particles from A, 2 particles from B) -> MA(MA-1)MB(MB-1) : evt weight..
+		fh_correlator[12][fCBin]->Fill( nV4V4V2V2.Re(),ebe_4p_weight );
+		fh_correlator[13][fCBin]->Fill( nV3V3V2V2.Re(),ebe_4p_weight );
 
-	fh_correlator[14][fCBin]->Fill( nV5V5V2V2.Re(),ebe_4p_weight );
-	fh_correlator[15][fCBin]->Fill( nV5V5V3V3.Re(),ebe_4p_weight );
-	fh_correlator[16][fCBin]->Fill( nV4V4V3V3.Re(),ebe_4p_weight );
+		fh_correlator[14][fCBin]->Fill( nV5V5V2V2.Re(),ebe_4p_weight );
+		fh_correlator[15][fCBin]->Fill( nV5V5V3V3.Re(),ebe_4p_weight );
+		fh_correlator[16][fCBin]->Fill( nV4V4V3V3.Re(),ebe_4p_weight );
 
-	//higher order correlators, added 2017.8.10
-	fh_correlator[17][fCBin]->Fill( V8V2starV3star_2.Re(),ebe_4p_weightB );
-	fh_correlator[18][fCBin]->Fill( V8V2star_4.Re() ); //5p weight
-	fh_correlator[19][fCBin]->Fill( nV6V2star_3.Re(),ebe_4p_weightB );
-	fh_correlator[20][fCBin]->Fill( nV7V2star_2V3star.Re(),ebe_4p_weightB );
-	fh_correlator[21][fCBin]->Fill( nV8V2starV3star_2.Re(),ebe_4p_weightB );
+		//higher order correlators, added 2017.8.10
+		fh_correlator[17][fCBin]->Fill( V8V2starV3star_2.Re(),ebe_4p_weightB );
+		fh_correlator[18][fCBin]->Fill( V8V2star_4.Re() ); //5p weight
+		fh_correlator[19][fCBin]->Fill( nV6V2star_3.Re(),ebe_4p_weightB );
+		fh_correlator[20][fCBin]->Fill( nV7V2star_2V3star.Re(),ebe_4p_weightB );
+		fh_correlator[21][fCBin]->Fill( nV8V2starV3star_2.Re(),ebe_4p_weightB );
 
-	fh_correlator[22][fCBin]->Fill( V6V2starV4star.Re(),ebe_3p_weight );
-	fh_correlator[23][fCBin]->Fill( V7V2starV5star.Re(),ebe_3p_weight );
-	fh_correlator[24][fCBin]->Fill( V7V3starV4star.Re(),ebe_3p_weight );
-	fh_correlator[25][fCBin]->Fill( nV6V2starV4star.Re(),ebe_3p_weight );
-	fh_correlator[26][fCBin]->Fill( nV7V2starV5star.Re(),ebe_3p_weight );
-	fh_correlator[27][fCBin]->Fill( nV7V3starV4star.Re(),ebe_3p_weight );
+		fh_correlator[22][fCBin]->Fill( V6V2starV4star.Re(),ebe_3p_weight );
+		fh_correlator[23][fCBin]->Fill( V7V2starV5star.Re(),ebe_3p_weight );
+		fh_correlator[24][fCBin]->Fill( V7V3starV4star.Re(),ebe_3p_weight );
+		fh_correlator[25][fCBin]->Fill( nV6V2starV4star.Re(),ebe_3p_weight );
+		fh_correlator[26][fCBin]->Fill( nV7V2starV5star.Re(),ebe_3p_weight );
+		fh_correlator[27][fCBin]->Fill( nV7V3starV4star.Re(),ebe_3p_weight );
+		}
 
 	CalculateQvectorsQC();
 
@@ -729,6 +742,7 @@ void AliJFFlucAnalysis::UserExec(Option_t *) {
 		//Check evt-by-evt SP/QC ratio. (term-by-term)
 		// calculate  (vn^2 vm^2)_SP /  (vn^2 vm^2)_QC
 		// 4p ( v3v3v2v2, v4v4v2v2, v5v5v2v2, v5v5v3v3, v4v4v3v3
+#if 0
 		Double_t SP_4p_value[5] = { nV3V3V2V2.Re(), nV4V4V2V2.Re(), nV5V5V2V2.Re(), nV5V5V3V3.Re(), nV4V4V3V3.Re()};
 		Double_t evtSP_QC_ratio_2p = -99.;
 		Double_t evtSP_QC_ratio_4p = -99.;
@@ -749,6 +763,7 @@ void AliJFFlucAnalysis::UserExec(Option_t *) {
 				evtSP_QC_ratio_2p = -99;
 			fh_evt_SP_QC_ratio_2p[i][fCBin]->Fill(evtSP_QC_ratio_2p );
 		}
+#endif
 
 	} // QC method done.
 
