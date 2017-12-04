@@ -458,27 +458,23 @@ void AliJFFlucAnalysis::UserExec(Option_t *) {
 	for(int i = 0; i < 2; ++i){
 		Double_t ebe_2p_weight = 1.0;
 		Double_t ebe_3p_weight = 1.0;
-		Double_t ebe_4p_weight = 1.0;
 		Double_t ebe_4p_weightB = 1.0;
 		if( IsEbEWeighted == kTRUE ){
 			ebe_2p_weight = N[i][0]*N[i][1];//NSubTracks[kSubA] * NSubTracks[kSubB] ;
 			ebe_3p_weight = ebe_2p_weight*(N[i][1]-1.0);// * (NSubTracks[kSubB]-1.0);
-			ebe_4p_weight = ebe_2p_weight*(N[i][0]-1.0)*(N[i][1]-1.0);// * (NSubTracks[kSubA]-1.0) * (NSubTracks[kSubB]-1.0);
 			ebe_4p_weightB = ebe_3p_weight*(N[i][1]-2.0);// * (NSubTracks[kSubB]-2.0);
 		}
 		Double_t ebe_2Np_weight[2*nKL] = {
 			ebe_2p_weight,
-			ebe_4p_weight,
 		};
 		if( IsEbEWeighted == kTRUE ){
-			for(int ik=2; ik<2*nKL; ik++){
+			for(int ik=1; ik<2*nKL; ik++){
 				double dk = (double)ik;
 				ebe_2Np_weight[ik] = ebe_2Np_weight[ik-1]*max(N[i][0]-dk,1.0)*max(N[i][1]-dk,1.0);
 			}
-		}else for(int ik=2; ik<2*nKL; ik++)
+		}else for(int ik=1; ik<2*nKL; ik++)
 			ebe_2Np_weight[ik] = 1.0;
 
-		//double mf = 1.0/((NSubTracks[0]-1.0)*(NSubTracks[1]-1.0));
 		double mf = 1.0/((N[i][0]-1.0)*(N[i][1]-1.0));
 
 		for(int ih=2; ih<kNH; ih++){
@@ -486,7 +482,6 @@ void AliJFFlucAnalysis::UserExec(Option_t *) {
 			for(int ik=2; ik<nKL; ik++)
 				corr[ih][ik] = corr[ih][ik-1]*corr[ih][1];//TComplex::Power(corr[ih][1],ik);
 			ncorr[ih][1] = corr[ih][1];
-			//ncorr[ih][2] = mf*(corr[ih][2]*NSubTracks[0]*NSubTracks[1]-QnB_star[2*ih]*QnA[ih]*QnA[ih]*NSubTracks[0]-QnA[2*ih]*QnB_star[ih]*QnB_star[ih]*NSubTracks[1]+QnB_star[2*ih]*QnA[2*ih]);
 			ncorr[ih][2] = mf*(corr[ih][2]*N[i][0]*N[i][1]-pQn[i][1][2*ih]*pQn[i][0][ih]*pQn[i][0][ih]*N[i][0]-pQn[i][0][2*ih]*pQn[i][1][ih]*pQn[i][1][ih]*N[i][1]+pQn[i][1][2*ih]*pQn[i][0][2*ih]);
 			for(int ik=3; ik<nKL; ik++)
 				ncorr[ih][ik] = corr[ih][ik]; //for 6,8,...-particle correlations, ignore the autocorrelation for now
@@ -563,12 +558,12 @@ void AliJFFlucAnalysis::UserExec(Option_t *) {
 		fh_correlator[11][fCBin]->Fill( nV6V3star_2.Re(),ebe_3p_weight ) ;
 
 		// use this to avoid self-correlation 4p correlation (2 particles from A, 2 particles from B) -> MA(MA-1)MB(MB-1) : evt weight..
-		fh_correlator[12][fCBin]->Fill( nV4V4V2V2.Re(),ebe_4p_weight );
-		fh_correlator[13][fCBin]->Fill( nV3V3V2V2.Re(),ebe_4p_weight );
+		fh_correlator[12][fCBin]->Fill( nV4V4V2V2.Re(),ebe_2Np_weight[1]);
+		fh_correlator[13][fCBin]->Fill( nV3V3V2V2.Re(),ebe_2Np_weight[1]);
 
-		fh_correlator[14][fCBin]->Fill( nV5V5V2V2.Re(),ebe_4p_weight );
-		fh_correlator[15][fCBin]->Fill( nV5V5V3V3.Re(),ebe_4p_weight );
-		fh_correlator[16][fCBin]->Fill( nV4V4V3V3.Re(),ebe_4p_weight );
+		fh_correlator[14][fCBin]->Fill( nV5V5V2V2.Re(),ebe_2Np_weight[1]);
+		fh_correlator[15][fCBin]->Fill( nV5V5V3V3.Re(),ebe_2Np_weight[1]);
+		fh_correlator[16][fCBin]->Fill( nV4V4V3V3.Re(),ebe_2Np_weight[1]);
 
 		//higher order correlators, added 2017.8.10
 		fh_correlator[17][fCBin]->Fill( V8V2starV3star_2.Re(),ebe_4p_weightB );
@@ -583,7 +578,7 @@ void AliJFFlucAnalysis::UserExec(Option_t *) {
 		fh_correlator[25][fCBin]->Fill( nV6V2starV4star.Re(),ebe_3p_weight );
 		fh_correlator[26][fCBin]->Fill( nV7V2starV5star.Re(),ebe_3p_weight );
 		fh_correlator[27][fCBin]->Fill( nV7V3starV4star.Re(),ebe_3p_weight );
-		}
+	}
 
 	CalculateQvectorsQC();
 
