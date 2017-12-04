@@ -65,7 +65,8 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHFLctoV0bachelor(const char* cutFile = "
 							 Bool_t isPPData = kTRUE, 
 							 Bool_t isPPbData = kFALSE, 
 							 Double_t refMult = 9.26, 
-							 Bool_t isFineNtrkBin = kFALSE)
+							 Bool_t isFineNtrkBin = kFALSE,
+							 Bool_t useCentrality = kFALSE)
 {
 
   if ( (isPPData && isPPbData) ||
@@ -543,7 +544,7 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHFLctoV0bachelor(const char* cutFile = "
   task->SetUseWeight(useWeight);
   task->SetUseZWeight(useZWeight);
   task->SetSign(isSign);
-  task->SetCentralitySelection(kFALSE);
+  task->SetCentralitySelection(useCentrality);
   task->SetFakeSelection(0);
   task->SetRejectCandidateIfNotFromQuark(rejectIfNotFromQuark); // put to false if you want to keep HIJING D0!!
   task->SetUseMCVertex(kFALSE); // put to true if you want to do studies on pp
