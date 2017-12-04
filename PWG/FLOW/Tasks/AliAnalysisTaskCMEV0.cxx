@@ -42,6 +42,7 @@
 #include "AliFlowEventSimple.h"
 #include "AliAnalysisTaskCMEV0.h"
 
+
 using std::endl;
 using std::cout;
 
@@ -65,6 +66,7 @@ AliAnalysisTaskCMEV0::AliAnalysisTaskCMEV0(const TString name):AliAnalysisTaskSE
   bApplyNUAforEP(kFALSE),
   bFillZDCinfo(kFALSE),
   bSkipNestedTrk(kFALSE),
+  bRemNegTrkRndm(kFALSE),
   sDataSet("2015"),
   sAnalysisSet("DoGainEq"),
   sCentEstimator("V0"),
@@ -130,7 +132,8 @@ AliAnalysisTaskCMEV0::AliAnalysisTaskCMEV0(const TString name):AliAnalysisTaskSE
   fVzBinFinderForNUA(NULL),
   fHistVtxZvsRun(NULL),
   fHistVtxXvsRun(NULL),
-  fHistVtxYvsRun(NULL)
+  fHistVtxYvsRun(NULL),
+  fRejectRatioVsCR(NULL)
 {
   for(int i=0;i<4;i++){
     fHCorrectNUApos[i] = NULL;
@@ -273,6 +276,7 @@ AliAnalysisTaskCMEV0::AliAnalysisTaskCMEV0(): AliAnalysisTaskSE(),
   bApplyNUAforEP(kFALSE),
   bFillZDCinfo(kFALSE),
   bSkipNestedTrk(kFALSE),
+  bRemNegTrkRndm(kFALSE),
   sDataSet("2015"),
   sAnalysisSet("DoGainEq"),
   sCentEstimator("V0"),
@@ -338,7 +342,8 @@ AliAnalysisTaskCMEV0::AliAnalysisTaskCMEV0(): AliAnalysisTaskSE(),
   fVzBinFinderForNUA(NULL),
   fHistVtxZvsRun(NULL),
   fHistVtxXvsRun(NULL),
-  fHistVtxYvsRun(NULL)
+  fHistVtxYvsRun(NULL),
+  fRejectRatioVsCR(NULL)
 {
   for(int i=0;i<4;i++){
     fHCorrectNUApos[i] = NULL;
@@ -886,6 +891,9 @@ void AliAnalysisTaskCMEV0::UserExec(Option_t *)
 
  Int_t iTracks = fEvent->NumberOfTracks();
 
+ Int_t icReject = 0;
+
+
  AliFlowTrackSimple*   pTrack1 = NULL;
  AliFlowTrackSimple*   pTrack2 = NULL;
 
@@ -907,6 +915,16 @@ void AliAnalysisTaskCMEV0::UserExec(Option_t *)
 
    if(!pTrack1->InPOISelection())
    continue;
+
+   //remove randomly -Ve tracks:
+   if(bRemNegTrkRndm && dChrg1<0 && fRand.Rndm()<0.15){ 
+     icReject++;
+     continue;
+   }
+
+
+
+
 
    if(bFillEtaPhiNUA){
      if(dChrg1>0){
@@ -1157,6 +1175,12 @@ void AliAnalysisTaskCMEV0::UserExec(Option_t *)
 
      if(!pTrack2->InPOISelection())
      continue;
+
+     //remove randomly -Ve tracks:
+     if(bRemNegTrkRndm && dChrg1<0 && fRand.Rndm()<0.15){ 
+       continue;
+     }
+
    
      if(sMCdimension=="1D"){
        ptBin = fFB_Efficiency_Cent[cIndex]->FindBin(dPt2);
@@ -1281,6 +1305,10 @@ void AliAnalysisTaskCMEV0::UserExec(Option_t *)
  fHist_Event_count->Fill(stepCount); //6
  stepCount++;
 
+ Float_t fNegTracks = iTracks*0.5;
+ Float_t ratioReject = (Float_t) icReject/fNegTracks;
+
+ fRejectRatioVsCR->Fill(EvtCent,runindex,ratioReject);
 
 
  Double_t QTPCRe = 0.;
@@ -2501,6 +2529,7 @@ void AliAnalysisTaskCMEV0::DefineHistograms(){
     fListHistos->Add(fHistVtxYvsRun);
   }
 
+
   //----- CME-ZDN correlator SP method---------
   for(int i=0;i<3;i++){ //ZDN_SP
    //Detector: 0 = V0A, 1 = V0C, 3 = Q-cumulant
@@ -2524,6 +2553,11 @@ void AliAnalysisTaskCMEV0::DefineHistograms(){
   //--------------------------------------------
 
   Double_t centRange[11]    = {0,5,10,20,30,40,50,60,70,80,90};
+
+
+  fRejectRatioVsCR =  new TProfile2D("fRejectRatioVsCentRun","",10,centRange,fRunFlag,0,fRunFlag);
+  fListHistos->Add(fRejectRatioVsCR);
+
 
   //----- CME SP method histograms ---------
   for(int i=0;i<2;i++){

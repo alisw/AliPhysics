@@ -18,6 +18,7 @@
 #include "TProfile2D.h"
 #include "TProfile.h"
 #include "TString.h"
+#include "TRandom3.h"
 #include "AliAnalysisTaskSE.h"
 
 
@@ -63,8 +64,8 @@ public:
   void    SetFillZDNCalHist(Bool_t bfillZDC)          {this->bFillZDCinfo       =     bfillZDC;}
   void    SetSkipNestedLoop(Bool_t bskipNest)         {this->bSkipNestedTrk     =    bskipNest;}
   void    SetMCEffiDimension(TString mcDimen)         {this->sMCdimension       =      mcDimen;}
-
-
+  void    SetRemoveNegTrkRndm(Bool_t remRndm)         {this->bRemNegTrkRndm     =      remRndm;}
+ 
 
 
 private:
@@ -105,7 +106,7 @@ private:
   Bool_t              bApplyNUAforEP;         //
   Bool_t                bFillZDCinfo;         //
   Bool_t              bSkipNestedTrk;         //
-
+  Bool_t              bRemNegTrkRndm;         //
 
 
   TString                   sDataSet;         // Dataset: 2010, 2011, or 2015.
@@ -212,6 +213,17 @@ private:
   TH2F            *fHistVtxZvsRun; //!
   TH2F            *fHistVtxXvsRun; //!
   TH2F            *fHistVtxYvsRun; //!
+
+  TProfile2D      *fRejectRatioVsCR; //!
+
+  TRandom3                  fRand; //!
+
+
+
+
+
+
+
 
 
 
