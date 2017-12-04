@@ -81,10 +81,8 @@ Bool_t AliAnalysisMuMuCutElement::CallCutMethod(Long_t p) const
   fCallParams[0] = p;
 
   fCutMethod->SetParamPtrs(&fCallParams[0],fCallParams.size());
-
   Long_t result;
   fCutMethod->Execute(fCutObject,result);
-
   return (result!=0);
 }
 
@@ -95,17 +93,17 @@ Bool_t AliAnalysisMuMuCutElement::CallCutMethod(Long_t p1, Long_t p2) const
 
   if (!fCutMethod)
   {
-
     Init();
     if (!fCutMethod) return kFALSE;
   }
 
   fCallParams[0] = p1;
   fCallParams[1] = p2;
-  fCutMethod->SetParamPtrs(&fCallParams[0],fCallParams.size());
 
+  fCutMethod->SetParamPtrs(&fCallParams[0],fCallParams.size());
   Long_t result;
   fCutMethod->Execute(fCutObject,result);
+
   return (result!=0);
 }
 
@@ -527,7 +525,6 @@ Bool_t AliAnalysisMuMuCutElement::Pass(const TString& firedTriggerClasses,
     L0,L1,L2 };
 
   fCutMethod->SetParamPtrs(params,sizeof(params)/sizeof(params[0]));
-
   fCutMethod->Execute(fCutObject,result);
   return (result!=0);
 }
