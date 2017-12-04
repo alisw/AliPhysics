@@ -285,19 +285,6 @@ void AliAnalysisTaskHFJetIPQA::SmearTrack(AliAODTrack *track) {
     param[4]=pt1n ;
 
 
-    //Disable since we do not correctly accoutn for them --- thas why we smear
-    /*
-   //cov matrix update
-  if(sd0rpo>0.)            covar[0]*=(sd0rpn/sd0rpo)*(sd0rpn/sd0rpo);//yy
-  if(sd0zo>0. && sd0rpo>0.)covar[1]*=(sd0rpn/sd0rpo)*(sd0zn/sd0zo);//yz
-  if(sd0zo>0.)             covar[2]*=(sd0zn/sd0zo)*(sd0zn/sd0zo);//zz
-  if(sd0rpo>0.)            covar[3]*=(sd0rpn/sd0rpo);//yl
-  if(sd0zo>0.)             covar[4]*=(sd0zn/sd0zo);//zl
-  if(sd0rpo>0.)            covar[6]*=(sd0rpn/sd0rpo);//ysenT
-  if(sd0zo>0.)             covar[7]*=(sd0zn/sd0zo);//zsenT
-  if(sd0rpo>0.)            covar[10]*=(sd0rpn/sd0rpo);//ypt
-  if(sd0zo>0.)             covar[11]*=(sd0zn/sd0zo);//ypt
-*/
     // Copy the smeared parameters to the AOD track
     Double_t x[3];
     Double_t p[3];
@@ -2556,7 +2543,7 @@ Bool_t AliAnalysisTaskHFJetIPQA::IsSelectionParticleMeson( AliVParticle *  mcpar
     AliMCParticle * mother = nullptr;
     idx = -1;
     pdg = abs(mcpart->PdgCode());
-    //if(!IsPhysicalPrimary(mcpart))return kFALSE;
+    if(!IsPhysicalPrimary(mcpart))return kFALSE;
     switch(pdg){
         case bD0:
             idx = bIdxD0;
@@ -2608,7 +2595,7 @@ Bool_t AliAnalysisTaskHFJetIPQA::IsSelectionParticleOmegaXiSigmaP( AliVParticle 
     pT 	= mcpart->Pt();
     idx = -1;
     pdg = abs(mcpart->PdgCode());
-    //if (!IsPhysicalPrimary(mcpart)) return kFALSE;
+    if (!IsPhysicalPrimary(mcpart)) return kFALSE;
     switch(pdg){
         case bSigmaMinus:
             Printf("bSigmaMinus");
