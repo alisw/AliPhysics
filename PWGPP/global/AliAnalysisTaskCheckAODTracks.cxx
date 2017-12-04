@@ -683,11 +683,12 @@ void AliAnalysisTaskCheckAODTracks::UserExec(Option_t *)
     Float_t dedx=track->GetTPCsignal();
     Int_t  filtmap=track->GetFilterMap();
     
-    Double_t nSigmaTPC[9]={-999.,-999.,-999.,-999.,-999.,-999.,-999.,-999.,-999.};
+    Double_t nSigmaTPC[AliPID::kSPECIESC];
+    for(Int_t jsp=0; jsp<AliPID::kSPECIESC; jsp++) nSigmaTPC[jsp]=-999.;
     if(pidResp){
       AliPIDResponse::EDetPidStatus status = pidResp->CheckPIDStatus(AliPIDResponse::kTPC,track);
       if (status == AliPIDResponse::kDetPidOk){
-	for(Int_t jsp=0; jsp<9; jsp++){
+	for(Int_t jsp=0; jsp<AliPID::kSPECIESC; jsp++){
 	  nSigmaTPC[jsp]=pidResp->NumberOfSigmasTPC(track,(AliPID::EParticleType)jsp);
 	}
       }
@@ -731,7 +732,7 @@ void AliAnalysisTaskCheckAODTracks::UserExec(Option_t *)
       fTreeVarFloat[26]=phigen;
       if (fUseMCId) {
         int pdg = TMath::Abs(part->GetPdgCode());
-        for (int iS = 0; iS < AliPID::kSPECIESCN; ++iS) {
+        for (int iS = 0; iS < AliPID::kSPECIESC; ++iS) {
           if (pdg == AliPID::ParticleCode(iS)) hadronSpecies=iS;
         }
       }
@@ -794,11 +795,11 @@ void AliAnalysisTaskCheckAODTracks::UserExec(Option_t *)
       if(spdAny) fHistTPCchi2PerClusPhiPtTPCselSPDany->Fill(chi2clus,pttrack,phitrack);
     }
 
-    bool pid[AliPID::kSPECIESCN] = {false};
+    bool pid[AliPID::kSPECIESC] = {false};
     if (fReadMC && fUseMCId) {
       if (hadronSpecies > -1) pid[hadronSpecies] = true;
     } else {
-      for (int iS = 0; iS < AliPID::kSPECIESCN; ++iS)
+      for (int iS = 0; iS < AliPID::kSPECIESC; ++iS)
         pid[iS] = TMath::Abs(nSigmaTPC[iS])<3;
     }
     bool isProton = pid[AliPID::kProton];
