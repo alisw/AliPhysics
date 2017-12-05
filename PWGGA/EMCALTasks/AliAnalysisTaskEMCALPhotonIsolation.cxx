@@ -162,6 +162,7 @@ fPtaftFC(0),
 fPtaftM02C(0),
 fClusTime(0),
 fM02(0),
+fM02_1000(0),
 fEtaPhiClusVsM02(0),
 fEtaPhiClusVsEtIsoClus(0),
 fEtaPhiClusVsPtIsoTrack(0),
@@ -360,6 +361,7 @@ fPtaftFC(0),
 fPtaftM02C(0),
 fClusTime(0),
 fM02(0),
+fM02_1000(0),
 fEtaPhiClusVsM02(0),
 fEtaPhiClusVsEtIsoClus(0),
 fEtaPhiClusVsPtIsoTrack(0),
@@ -674,6 +676,10 @@ void AliAnalysisTaskEMCALPhotonIsolation::UserCreateOutputObjects(){
         fM02 = new TH2D("hM02_NC","#sigma_{long}^{2} vs. #it{E}_{T} for clusters",100,0.,100.,500,0.,5.);
         fM02->Sumw2();
         fOutput->Add(fM02);
+
+        fM02_1000 = new TH1D("hM02_1000","#sigma_{long}^{2} (1000 bins) for clusters with 10 < #it{E}_{T} < 15 GeV after Ncells cut",1000,0.,2.);
+        fM02_1000->Sumw2();
+        fOutput->Add(fM02_1000);
 
 	fEtaPhiClusVsM02 = new TH3F ("hEtaVsPhiVsM02", "#eta vs. #varphi vs. #sigma_{long}^{2} for clusters with 14 < #it{E}_{T} < 16 GeV", netabins, etamin, etamax, nphibins, phimin, phimax, 75, 0., 1.5);
 	fEtaPhiClusVsM02->Sumw2();
@@ -1198,6 +1204,9 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::SelectCandidate(AliVCluster *coi)
     return kFALSE;
 
   fPtaftCell->Fill(vecCOI.Pt());
+
+  if(vecCOI.Pt()>10. && vecCOI.Pt()<15.)
+    fM02_1000->Fill(coi->GetM02());
 
   Int_t nlm=0;
   AliVCaloCells * fCaloCells =InputEvent()->GetEMCALCells();
