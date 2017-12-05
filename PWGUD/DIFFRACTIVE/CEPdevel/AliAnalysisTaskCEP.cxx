@@ -1064,21 +1064,31 @@ void AliAnalysisTaskCEP::UserExec(Option_t *)
       
       // get MC vertex
       TParticle *part = NULL;
-      TLorentzVector lvtmp, lvin, lvprod;
+      TLorentzVector lvtmp;
+      TLorentzVector lvin=TLorentzVector(0,0,0,0);
+      TLorentzVector lvprod=TLorentzVector(0,0,0,0);
+      
       stack = fMCEvent->Stack();
+      // stack->DumpPStack();
+      
       if (stack) {
         Int_t nPrimaries = stack->GetNprimary();
-        //printf("number of tracks: primaries - %i, reconstructed - %i\n",
-        //  nPrimaries,nTracks);
+        // printf("number of tracks: primaries - %i, reconstructed - %i\n",
+        //   nPrimaries,nTracks);
+        
+        // get first particle -> primary vertex position
+        part = stack->Particle(0);
         
         // incident beam-beam system
-        part = stack->Particle(0);
-        part->Momentum(lvtmp);
-        lvin  = lvtmp;
-        stack->Particle(1)->Momentum(lvtmp);
-        lvin += lvtmp;
+        if (!fMCGenerator.EqualTo("SL")) {
+          part->Momentum(lvtmp);
+          lvin  = lvtmp;
+          stack->Particle(1)->Momentum(lvtmp);
+          lvin += lvtmp;
+        }
+        // lvin.Print();
         
-        // for DIME and PYTHIA8-CD save the CEP particle
+        // for DIME, PYTHIA8-CD, and Starlight save the CEP particle
         // add primaries except for the incoming and outgoing protons
         lvprod = TLorentzVector(0,0,0,0);
         if ( fMCGenerator.EqualTo("Dime") ||
@@ -1093,13 +1103,22 @@ void AliAnalysisTaskCEP::UserExec(Option_t *)
           }
         }
         
+        // in Starlight the initial protons are missing in the stack
+        else if (fMCGenerator.EqualTo("SL")) {
+          stack->Particle(0)->Momentum(lvtmp);
+          lvprod  = lvtmp;
+          stack->Particle(1)->Momentum(lvtmp);
+          lvprod += lvtmp;
+        }
+        // lvprod.Print();
+                  
         // update the event buffer
         fCEPEvent->SetMCGenerator(fMCGenerator);
         fCEPEvent->SetMCProcessType(fMCProcess);
         fCEPEvent->SetMCVtxPos(part->Vx(),part->Vy(),part->Vz());
         fCEPEvent->SetMCIniSystem(lvin);
         fCEPEvent->SetMCParticle(lvprod);
-        
+                
       }
     }
     
@@ -1171,11 +1190,12 @@ void AliAnalysisTaskCEP::UserExec(Option_t *)
       
       // get MC truth
       Int_t MCind = tmptrk->GetLabel();
+      // printf("MCind %i\n",MCind);
       if (fMCEvent && MCind >= 0) {
         
         TParticle* part = stack->Particle(MCind);
         // printf("MC particle (%i): %f/%f/%f - %f/%f\n",
-        //  ii,part->Px(),part->Py(),part->Pz(),part->GetMass(),part->Energy());
+        //   ii,part->Px(),part->Py(),part->Pz(),part->GetMass(),part->Energy());
         
         // set MC mass and momentum
         TLorentzVector lv;

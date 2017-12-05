@@ -938,6 +938,7 @@ Int_t AliCEPUtils::AnalyzeTracks(AliESDEvent* fESDEvent,
     // add track to buffer
     fTracks->Add(track);
 
+    /*
     // get number of hits in various detectors
     //if (track->HasPointOnITSLayer(0) || track->HasPointOnITSLayer(1)) {
     if (track->GetEMCALcluster()>=0) {
@@ -948,7 +949,7 @@ Int_t AliCEPUtils::AnalyzeTracks(AliESDEvent* fESDEvent,
         track->GetTOFclusterN(),
         track->GetEMCALcluster());
     }
-    
+    */
     
     // go through the list of selection tests
     // and update the TrackStatus word trackstat accordingly
@@ -1475,7 +1476,7 @@ void AliCEPUtils::DetermineMCprocessType (
       // get the name of this generator
       fMCGenerator = TString(header->GetName());
       // printf("MC generator name: %s\n",fMCGenerator.Data());
-      // Int_t nprod = header->NProduced();
+      Int_t nprod = header->NProduced();
 			// printf("Number of produced particles: %i\n",nprod);
 
       // Pythia
@@ -1512,6 +1513,11 @@ void AliCEPUtils::DetermineMCprocessType (
 				case 7:  fMCProcessType = AliCEPBase::kProctypeDD; break;
 				default: fMCProcessType = AliCEPBase::kProctypeND; break;
 				}
+			}
+
+      // Starlight
+			else if (fMCGenerator.EqualTo("SL")) {
+				fMCProcessType = AliCEPBase::kProctypeCD;
 			}
 
 		}
