@@ -82,6 +82,7 @@ void Spectra() {
 
   for (auto list_key : *signal_file.GetListOfKeys()) {
     if (string(list_key->GetName()).find(kFilterListNames.data()) == string::npos) continue;
+    if (string(list_key->GetName()).find("_MV") != string::npos) continue;
     TTList* list = (TTList*)data_file.Get(list_key->GetName());
     /// Getting the correct directories
     TDirectory* base_dir = output_file.mkdir(list_key->GetName());
@@ -111,8 +112,8 @@ void Spectra() {
         /// Getting efficiencies
         TH1* eff_tpc_graph = (TH1*)efficiency_file.Get(Form("%s/effTpc%c%i",list_key->GetName(),kLetter[iS],0));
         TH1* eff_tof_graph = (TH1*)efficiency_file.Get(Form("%s/effTof%c%i",list_key->GetName(),kLetter[iS],0));
-        Requires(eff_tpc_graph,"eff_tpc_graph");
-        Requires(eff_tof_graph,"eff_tof_graph");
+        Requires(eff_tpc_graph,Form("%s/effTpc%c%i",list_key->GetName(),kLetter[iS],0));
+        Requires(eff_tof_graph,Form("%s/effTof%c%i",list_key->GetName(),kLetter[iS],0));
         /// I am not considering Secondaries here, the analysis is only at high pT
         if (secondaries_file.IsOpen()) {
           TH1* hResTFF = (TH1*)secondaries_file.Get(Form("%s/Results/hResTFF_%i",list_key->GetName(),iC));

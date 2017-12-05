@@ -21,7 +21,7 @@ const string kNames[2] = {"deuterons","antideuterons"};
 const string kBaseOutputDir = "/Users/lbariogl/cernbox/Deuterons13TeV/results/";
 const string kBaseInputDir = "/Users/lbariogl/cernbox/Deuterons13TeV/";
 
-const string kDataFilename = kBaseInputDir + "Dati/data_new.root";
+const string kDataFilename = kBaseInputDir + "Dati/data_new_new.root";
 const string kMCfilename = kBaseInputDir + "mc.root";
 
 const string kFilterListNames = "mpuccio_deuterons_";

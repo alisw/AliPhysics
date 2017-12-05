@@ -27,7 +27,7 @@ void Secondaries() {
   fitModel.SetParLimits(1, -30, 30);
 
   gStyle->SetOptStat(0);
-  gStyle->SetOptFit(1111);
+  gStyle->SetOptFit(0);
   gErrorIgnoreLevel=kError;
 
   const int nDCAbins = 34;
@@ -41,6 +41,8 @@ void Secondaries() {
   TObjArray obj(2);
   for (auto&& list_key : *data_file.GetListOfKeys()) {
     if (string(list_key->GetName()).find(kFilterListNames.data()) == string::npos) continue;
+    if (string(list_key->GetName()).find("_MV") != string::npos) continue;
+    std::cout << "list_key : " << list_key->GetName() << std::endl;
     TTList* mcList = (TTList*)mc_file.Get(list_key->GetName());
     TTList* dtList = (TTList*)data_file.Get(list_key->GetName());
 

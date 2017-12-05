@@ -82,7 +82,7 @@ void Final() {
   RooRealVar x_pull("x_pull","#frac{#mu - 1}{#sigma}",-4.,4.);
   std::unique_ptr<RooDataSet> ratio_pull[n_centralities];
   for(int iC = 0; iC < n_centralities; iC++){
-    ratio_pull[iC] = std::make_unique<RooDataSet>(Form("pull_ratio_%d",iC),Form("pull_ratio_%d",iC),RooArgSet(x_pull));
+    ratio_pull[iC] = make_unique<RooDataSet>(Form("pull_ratio_%d",iC),Form("pull_ratio_%d",iC),RooArgSet(x_pull));
   }
   RooRealVar pull_mean("#mu","#mu",0,-2,2);
   RooRealVar pull_sigma("#sigma","#sigma",1.,0.1,3.);
@@ -140,6 +140,19 @@ void Final() {
           vec_syst_tpc[iS][iC][iSyst] = (TH1F*) partial_syst_tpc_tmp->Rebin(n_pt_bins,Form("%s_tpc_%d_%d",syst_names[iSyst],iS,iC),pt_bin_limits);
         }
       }
+      // Compute the minimum of the systematic uncertainty related to the material budget
+      float min_material_tof = 1.,min_material_tpc = 1.;
+      float tof_tmp = 0., tpc_tmp = 0.;
+      for (int iB = 1; iB <= n_pt_bins; ++iB) {
+        tof_tmp = vec_syst_tof[iS][iC][matsyst]->GetBinContent(iB);
+        tpc_tmp = vec_syst_tpc[iS][iC][matsyst]->GetBinContent(iB);
+        if(tof_tmp>1e-8){
+          if(tof_tmp<min_material_tof) min_material_tof = tof_tmp;
+        }
+        if(tpc_tmp>1e-8){
+          if(tpc_tmp<min_material_tpc) min_material_tpc = tpc_tmp;
+        }
+      }
       comp[iS][iC] = new TH1F(Form("comp_%d_%d",iS,iC),";#it{p}_{T} (GeV/#it{c}); #frac{N_{TPC} - N_{TOF}}{#sigma}",2,1.,1.2);
       plotting::SetHistStyle(comp[iS][iC],plotting::kSpectraColors[iC]);
       // Fit function
@@ -158,7 +171,7 @@ void Final() {
           syst_tof[iS][iC]->SetBinContent(iB,stat_tof[iS][iC]->GetBinContent(iB));
           syst_tof[iS][iC]->SetBinError(iB,totsyst->GetBinContent(iB) * stat_tof[iS][iC]->GetBinContent(iB));
           stat_all[iS][iC]->SetBinContent(iB,stat_tof[iS][iC]->GetBinContent(iB));
-          stat_all[iS][iC]->SetBinError(iB,stat_tof[iS][iC]->GetBinError(iB));//TMath::Sqrt(stat_tof[iS][iC]->GetBinError(iB)*stat_tof[iS][iC]->GetBinError(iB) +            syst_tof[iS][iC]->GetBinError(iB)*syst_tof[iS][iC]->GetBinError(iB)));
+          stat_all[iS][iC]->SetBinError(iB,/*stat_tof[iS][iC]->GetBinError(iB));//*/TMath::Sqrt(stat_tof[iS][iC]->GetBinError(iB)*stat_tof[iS][iC]->GetBinError(iB) +            syst_tof[iS][iC]->GetBinError(iB)*syst_tof[iS][iC]->GetBinError(iB)-kAbsSyst[iS]*kAbsSyst[iS]*stat_tof[iS][iC]->GetBinContent(iB)*stat_tof[iS][iC]->GetBinContent(iB)-min_material_tof*min_material_tof*stat_tof[iS][iC]->GetBinContent(iB)*stat_tof[iS][iC]->GetBinContent(iB)));
           //syst_all[iS][iC]->SetBinContent(iB,syst_tof[iS][iC]->GetBinContent(iB));
           //syst_all[iS][iC]->SetBinError(iB,syst_tof[iS][iC]->GetBinError(iB));
         }
@@ -166,7 +179,7 @@ void Final() {
           syst_tpc[iS][iC]->SetBinContent(iB,stat_tpc[iS][iC]->GetBinContent(iB));
           syst_tpc[iS][iC]->SetBinError(iB,totsyst_tpc->GetBinContent(iB) * stat_tpc[iS][iC]->GetBinContent(iB));
           stat_all[iS][iC]->SetBinContent(iB,stat_tpc[iS][iC]->GetBinContent(iB));
-          stat_all[iS][iC]->SetBinError(iB,stat_tpc[iS][iC]->GetBinError(iB));//TMath::Sqrt(stat_tpc[iS][iC]->GetBinError(iB)*stat_tpc[iS][iC]->GetBinError(iB) +                      syst_tpc[iS][iC]->GetBinError(iB)*syst_tpc[iS][iC]->GetBinError(iB)));
+          stat_all[iS][iC]->SetBinError(iB,/*stat_tpc[iS][iC]->GetBinError(iB));//*/TMath::Sqrt(stat_tpc[iS][iC]->GetBinError(iB)*stat_tpc[iS][iC]->GetBinError(iB) +                      syst_tpc[iS][iC]->GetBinError(iB)*syst_tpc[iS][iC]->GetBinError(iB)-kAbsSyst[iS]*kAbsSyst[iS]*stat_tpc[iS][iC]->GetBinContent(iB)*stat_tpc[iS][iC]->GetBinContent(iB)-min_material_tpc*min_material_tpc*stat_tpc[iS][iC]->GetBinContent(iB)*stat_tpc[iS][iC]->GetBinContent(iB)));
           //syst_all[iS][iC]->SetBinContent(iB,syst_tpc[iS][iC]->GetBinContent(iB));
           //syst_all[iS][iC]->SetBinError(iB,syst_tpc[iS][iC]->GetBinError(iB));
         }
@@ -273,6 +286,8 @@ void Final() {
       stat_tpc[iS][iC]->Draw("esamex0");
       syst_tpc[iS][iC]->Draw("e2same");
       //stat_all[iS][iC]->Draw("esamex0");
+      //fit_function[iS][iC]->SetRange(0.,1.1*kCentPtLimits[iC]);
+      fit_function[iS][iC]->SetLineStyle(2);
       fit_function[iS][iC]->Draw("lsame");
       final_leg.AddEntry(syst_tpc[iS][iC],Form("%4.0f - %2.0f %% (#times %d)",kCentLabels[iC][0],kCentLabels[iC][1],1<<(kCentLength-iC-1)),"fp");
       final_leg.AddEntry(syst_tof[iS][iC],Form("%4.0f - %2.0f %% (#times %d)",kCentLabels[iC][0],kCentLabels[iC][1],1<<(kCentLength-iC-1)),"fp");

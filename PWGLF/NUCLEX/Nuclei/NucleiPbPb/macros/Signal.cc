@@ -50,9 +50,9 @@ void Signal(bool useMBsignal=false, bool use_extended=true) {
   TFile output_file(kSignalOutput.data(),"recreate");
 
   /// Setting up the fitting environment for TOF analysis
-  RooRealVar m("dm2","m^{2} - m^{2}_{d}",-1.2,1.5,"GeV^{2}/#it{c}^{4}");
+  RooRealVar m("dm2","m^{2} - m^{2}_{d}",-2.,2.5,"GeV^{2}/#it{c}^{4}");
   m.setBins(1000,"cache");
-  m.setRange("Full", -1.2, 1.5);
+  m.setRange("Full", -2., 2.5);
 
   FitExpExpTailGaus fExpExpTailGaus(&m,use_extended);
   fExpExpTailGaus.mMu->setRange(0.00001,0.5);
@@ -69,9 +69,9 @@ void Signal(bool useMBsignal=false, bool use_extended=true) {
   fExpExpTailGaus.mTau1 ->setUnit("GeV^{-2}#it{c}^{4}");
 
   //Background
-  RooRealVar m_bis("dm2_bis","m^{2} - m^{2}_{d}",-1.2,1.5,"GeV^{2}/#it{c}^{4}");
+  RooRealVar m_bis("dm2_bis","m^{2} - m^{2}_{d}",-2.,2.5,"GeV^{2}/#it{c}^{4}");
   m_bis.setBins(1000,"cache");
-  m_bis.setRange("Full", -1.2, 1.5);
+  m_bis.setRange("Full", -2., 2.5);
   FitExpExpTailGaus fBkg(&m_bis,use_extended);
   fBkg.UseSignal(false);
   fBkg.mTau0->setUnit("GeV^{-2}#it{c}^{4}");
@@ -99,6 +99,7 @@ void Signal(bool useMBsignal=false, bool use_extended=true) {
   for (auto list_key : *input_file.GetListOfKeys()) {
     /// Preliminary operation to read the list and create an output dir
     if (string(list_key->GetName()).find(kFilterListNames.data()) == string::npos) continue;
+    if (string(list_key->GetName()).find("_MV") != string::npos) continue;
 
     TTList* list = (TTList*)input_file.Get(list_key->GetName());
     TDirectory* base_dir = output_file.mkdir(list_key->GetName());
@@ -106,7 +107,9 @@ void Signal(bool useMBsignal=false, bool use_extended=true) {
 
     /// Taking all the necessary histogram to perform the analysis
     TH3F *fATOFsignal = (TH3F*)list->Get("fATOFsignal");
+    fATOFsignal->RebinZ();
     TH3F *fMTOFsignal = (TH3F*)list->Get("fMTOFsignal");
+    fMTOFsignal->RebinZ();
     TH3F *fATPCcounts = (TH3F*)list->Get("fATPCcounts");
     fATPCcounts->RebinZ();
     TH3F *fMTPCcounts = (TH3F*)list->Get("fMTPCcounts");
@@ -230,7 +233,7 @@ void Signal(bool useMBsignal=false, bool use_extended=true) {
             fExpExpTailGaus.UseBackground(true);
             fExpExpTailGaus.mSigma->setRange(0.05,0.18);
             fExpExpTailGaus.mSigma->setVal(0.1);
-            if(iB<=11){
+            if(iB<10){
               fExpExpTailGaus.mKbkg->setVal(0.);
               fExpExpTailGaus.mKbkg->setConstant(true);
               fExpExpTailGaus.mTau0->setConstant(true);
@@ -298,8 +301,8 @@ void Signal(bool useMBsignal=false, bool use_extended=true) {
             float right_edge_float = dat->GetBinLowEdge(right_edge_bin+1);
             fBkg.mX->setRange("signal",left_edge_float,right_edge_float);
             if (iSigma==0) {
-              fBkg.mX->setRange("left",-1.2,left_edge_float);
-              fBkg.mX->setRange("right",right_edge_float,1.5);
+              fBkg.mX->setRange("left",-2.,left_edge_float);
+              fBkg.mX->setRange("right",right_edge_float,2.5);
               RooPlot* bkgPlot = fBkg.FitData(dat, Form("%s_sideband",iName.Data()), iTitle, "left,right","Full");
               base_dir->cd(Form("%s/Sidebands/C_%d",kNames[iS].data(),iC));
               if(pt_axis->GetBinCenter(iB+1) > kTOFminPt) bkgPlot->Write();

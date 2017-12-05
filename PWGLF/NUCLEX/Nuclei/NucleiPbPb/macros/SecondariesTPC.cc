@@ -40,6 +40,7 @@ void SecondariesTPC() {
   TObjArray obj(2);
   for (auto&& list_key : *data_file.GetListOfKeys()) {
     if (string(list_key->GetName()).find(kFilterListNames.data()) == string::npos) continue;
+    if (string(list_key->GetName()).find("_MV") != string::npos) continue;
     TTList* mcList = (TTList*)mc_file.Get(list_key->GetName());
     TTList* dtList = (TTList*)data_file.Get(list_key->GetName());
 

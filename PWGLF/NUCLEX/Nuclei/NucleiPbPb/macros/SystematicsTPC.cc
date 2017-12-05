@@ -182,14 +182,22 @@ void SystematicsTPC() {
         if (ptAxis->GetBinCenter(iB) < kPtRange[0] ||
             ptAxis->GetBinCenter(iB) > kPtRange[1])
           continue;
-        if (ptAxis->GetBinCenter(iB) > 1.4) continue;
-        float tot = sqrt(
+        if (ptAxis->GetBinCenter(iB) > 1.4){
+          cutsyst_tpc[iC]->SetBinContent(iB,0.);
+          matsyst_tpc[iC]->SetBinContent(iB,0.);
+          abssyst_tpc[iC]->SetBinContent(iB,0.);
+          countsyst_tpc[iC]->SetBinContent(iB,0.);
+          totsyst_tpc[iC]->SetBinContent(iB,0.);
+        }
+        else{
+          float tot = sqrt(
               cutsyst_tpc[iC]->GetBinContent(iB) * cutsyst_tpc[iC]->GetBinContent(iB) +
               matsyst_tpc[iC]->GetBinContent(iB) * matsyst_tpc[iC]->GetBinContent(iB) +
               abssyst_tpc[iC]->GetBinContent(iB) * abssyst_tpc[iC]->GetBinContent(iB) +
               countsyst_tpc[iC]->GetBinContent(iB) * countsyst_tpc[iC]->GetBinContent(iB)
               );
-        totsyst_tpc[iC]->SetBinContent(iB,tot);
+          totsyst_tpc[iC]->SetBinContent(iB,tot);
+        }
       }
 
       TCanvas summary("summary","Summary");
