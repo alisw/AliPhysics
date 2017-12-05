@@ -195,9 +195,8 @@ fTestIndex(0),
 fTestIndexE(0),
 fTestLocalIndexE(0),
 fTestEnergyCone(0),
-fTestEnergyConeNorm(0),
+fPtVsNormConeVsNormEtaBand(0),
 fTestEnergyEtaBand(0),
-fTestEnergyEtaBandNorm(0),
 fTestEtaPhiCone(0),
 fInvMassM02iso(0),
 fInvMassM02noiso(0),
@@ -394,9 +393,8 @@ fTestIndex(0),
 fTestIndexE(0),
 fTestLocalIndexE(0),
 fTestEnergyCone(0),
-fTestEnergyConeNorm(0),
+fPtVsNormConeVsNormEtaBand(0),
 fTestEnergyEtaBand(0),
-fTestEnergyEtaBandNorm(0),
 fTestEtaPhiCone(0),
 fInvMassM02iso(0),
 fInvMassM02noiso(0),
@@ -712,19 +710,12 @@ void AliAnalysisTaskEMCALPhotonIsolation::UserCreateOutputObjects(){
 	fOutput->Add(fPtvsM02vsSumUE);
 
 	if(fAreasPerEvent){
-	  fTestEnergyConeNorm = new TH3F("hTestEnergyConeVSpT_Norm","Test energy clusters and tracks in cone (already normalised by cone area)",200,0.,100.,250,0.,100.,250,0.,100.);
-	  fTestEnergyConeNorm->SetXTitle("#it{p}_{T}^{cluster}");
-	  fTestEnergyConeNorm->SetYTitle("#sum^{cone} #it{p}_{T}^{cluster}");
-	  fTestEnergyConeNorm->SetZTitle("#sum^{cone} #it{p}_{T}^{track}");
-	  fTestEnergyConeNorm->Sumw2();
-	  fOutput->Add(fTestEnergyConeNorm);
-
-	  fTestEnergyEtaBandNorm = new TH3F("hTestEnergyEtaBandVSpT_Norm","Test energy clusters and tracks in eta-band (already normalised by band area)",200,0.,100.,250,0.,100.,250,0.,100.);
-	  fTestEnergyEtaBandNorm->SetXTitle("#it{p}_{T}^{cluster}");
-	  fTestEnergyEtaBandNorm->SetYTitle("#sum^{eta-band} #it{p}_{T}^{cluster}");
-	  fTestEnergyEtaBandNorm->SetZTitle("#sum^{eta-band} #it{p}_{T}^{track}");
-	  fTestEnergyEtaBandNorm->Sumw2();
-	  fOutput->Add(fTestEnergyEtaBandNorm);
+	  fPtVsNormConeVsNormEtaBand = new TH3F("hPtVsConeVsEtaBand_Norm","Cluster energy vs. cone energy vs. eta band energy (already normalised by the appropriate area)",200,0.,100.,250,0.,100.,250,0.,100.);
+	  fPtVsNormConeVsNormEtaBand->SetXTitle("#it{p}_{T}^{cluster}");
+	  fPtVsNormConeVsNormEtaBand->SetYTitle("#sum^{cone} #it{p}_{T}^{cluster}");
+	  fPtVsNormConeVsNormEtaBand->SetZTitle("#sum^{eta-band} #it{p}_{T}^{cluster}");
+	  fPtVsNormConeVsNormEtaBand->Sumw2();
+	  fOutput->Add(fPtVsNormConeVsNormEtaBand);
 	}
 
           // fPtvsM02vsSumPi0 = new TH3D("hPtvsM02vsSumPi0 when pi0 rejecting","#it{p}_{T} vs #sigma_{long}^{2} vs  #Sigma E_{T}^{iso cone}-UE  pi0 rejecting distribution for clusters",200,0.,100.,500,0.,5.,200,-10.,90.);
@@ -1043,8 +1034,8 @@ void AliAnalysisTaskEMCALPhotonIsolation::UserCreateOutputObjects(){
   if(fAreasPerEvent){
     fTestEnergyEtaBand = new TH3F("hTestEnergyEtaBandVSpT","Test energy clusters and tracks in eta-band",200,0.,100.,250,0.,100.,250,0.,100.);
     fTestEnergyEtaBand->SetXTitle("#it{p}_{T}^{cluster}");
-    fTestEnergyEtaBand->SetYTitle("#sum^{eta-band} #it{p}_{T}^{cluster}");
-    fTestEnergyEtaBand->SetZTitle("#sum^{eta-band} #it{p}_{T}^{track}");
+    fTestEnergyEtaBand->SetYTitle("#sum^{eta-band} #it{p}_{T}^{track}");
+    fTestEnergyEtaBand->SetZTitle("#sum^{eta-band} #it{p}_{T}^{cluster}");
     fTestEnergyEtaBand->Sumw2();
     fOutput->Add(fTestEnergyEtaBand);
   }
@@ -2356,22 +2347,21 @@ void AliAnalysisTaskEMCALPhotonIsolation::EtIsoClusEtaBand(TLorentzVector c, Dou
 
   fTestEnergyCone->Fill(c.Pt(), sumEnergyConeClus, sumpTConeCharged);
   if(fAreasPerEvent)
-    fTestEnergyEtaBand->Fill(c.Pt(), sumEnergyEtaBandClus, sumpTEtaBandTracks);
+    fTestEnergyEtaBand->Fill(c.Pt(), sumpTEtaBandTracks, sumEnergyEtaBandClus);
 
   Double_t isoConeArea = 0.; // Cluster (eta, phi)-dependent cone area
   Double_t etaBandArea = 0.; // Cluster phi-dependent eta-band area
   if(fWho == 2 && fAreasPerEvent){
     ComputeConeArea(c, isoConeArea);
-    fTestEnergyConeNorm->Fill(c.Pt(), sumEnergyConeClus/isoConeArea, sumpTConeCharged/isoConeArea);
-
     ComputeEtaBandArea(c, etaBandArea);
     etaBandArea -= isoConeArea;
-    fTestEnergyEtaBandNorm->Fill(c.Pt(), sumEnergyEtaBandClus/etaBandArea, sumpTEtaBandTracks/etaBandArea);
 
-    if(fQA){
+    fPtVsNormConeVsNormEtaBand->Fill(c.Pt(), sumEnergyConeClus/isoConeArea, sumEnergyEtaBandClus/etaBandArea);
+
+    // if(fQA){
       fConeArea->Fill(isoConeArea);
       fEtaBandArea->Fill(etaBandArea);
-    }
+    // }
   }
 
   if(fQA && c.Pt()>14. && c.Pt()<16. && fWho == 2){
