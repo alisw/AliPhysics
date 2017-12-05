@@ -103,6 +103,7 @@ fFlowEvent(NULL)
       fZDCVtxFitCenProjHist[k][i] = NULL;
     }
   }
+  fZDCCenVtxZ = NULL;
   for(Int_t c=0; c<10; c++) {
     for(Int_t k=0; k<8; k++) {
       fZDCVtxCenHistMagPol[c][k] = NULL;
@@ -197,6 +198,7 @@ fFlowEvent(NULL)
       fZDCVtxFitCenProjHist[k][i] = NULL;
     }
   }
+  fZDCCenVtxZ = NULL;
   for(Int_t c=0; c<10; c++) {
     for(Int_t k=0; k<8; k++) {
       fZDCVtxCenHistMagPol[c][k] = NULL;
@@ -311,6 +313,8 @@ void AliAnalysisTaskZDCEP::UserCreateOutputObjects ()
       fHistList->Add(fZDCVtxFitCenProjHist[k][i]);
     }
   }
+  fZDCCenVtxZ = new TProfile3D();
+  fHistList->Add(fZDCCenVtxZ);
   for(Int_t c=0; c<10; c++) {
     for(Int_t k=0; k<8; k++) {
       fZDCVtxCenHistMagPol[c][k] = new TProfile3D();
@@ -648,6 +652,7 @@ void AliAnalysisTaskZDCEP::UserExec(Option_t *)
 
         fZDCEcomTotHist[k] = (TProfile2D*)(fZDCCalibList->FindObject(Form("fCRCZDCQVecEComTot[%d]",k)));
       }
+      fZDCCenVtxZ = (TProfile3D*)(fZDCCalibList->FindObject(Form("Run %d",RunNum))->FindObject(Form("fCRCZDCQVecCenVtxZ[%d]",RunNum)));
 
       for(Int_t c=0; c<10; c++) {
         for(Int_t k=0; k<4; k++) {
@@ -780,6 +785,17 @@ void AliAnalysisTaskZDCEP::UserExec(Option_t *)
         QAImR -= fZDCVtxCenHistMagPol[fCenBin][7]->GetBinContent(fZDCVtxCenHistMagPol[fCenBin][7]->FindBin(fVtxPosCor[0],fVtxPosCor[1],fVtxPosCor[2]));
       }
       fZDCFlowVect[0]->Set(QCReR,QCImR);
+      fZDCFlowVect[1]->Set(QAReR,QAImR);
+    }
+
+    // STEP #6 (only for muon_calo_pass1): re-center vs centrality vs vz
+
+    if(fZDCCenVtxZ) {
+      QCReR -= fZDCCenVtxZ->GetBinContent(fZDCCenVtxZ->FindBin(Centrality,fVtxPosCor[2],0.5));
+      QCImR -= fZDCCenVtxZ->GetBinContent(fZDCCenVtxZ->FindBin(Centrality,fVtxPosCor[2],1.5));
+      fZDCFlowVect[0]->Set(QCReR,QCImR);
+      QAReR -= fZDCCenVtxZ->GetBinContent(fZDCCenVtxZ->FindBin(Centrality,fVtxPosCor[2],2.5));
+      QAImR -= fZDCCenVtxZ->GetBinContent(fZDCCenVtxZ->FindBin(Centrality,fVtxPosCor[2],3.5));
       fZDCFlowVect[1]->Set(QAReR,QAImR);
     }
 

@@ -83,6 +83,7 @@ private:
   TProfile3D* fZDCVtxCenHist[10][4]; //!
   TH1D* fCRCZDCQVecDummyEZDCBins[10]; //!
   TH2D* fZDCQvec2Ddis[10][2];      //!
+  TProfile3D* fZDCCenVtxZ;         //!
 
   // QA histograms
   TList *fQAListMagPol;            //! QA list per magnet polarity
@@ -126,7 +127,7 @@ private:
   AliAnalysisTaskZDCEP(const AliAnalysisTaskZDCEP&);
   AliAnalysisTaskZDCEP& operator=(const AliAnalysisTaskZDCEP&);
 
-  ClassDef(AliAnalysisTaskZDCEP,7);
+  ClassDef(AliAnalysisTaskZDCEP,8);
 };
 
 #endif
