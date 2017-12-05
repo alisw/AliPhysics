@@ -2044,7 +2044,7 @@ Bool_t AliConvEventCuts::IsCentralitySelected(AliVEvent *event, AliMCEvent *mcEv
       { 251,  251}, // 40-50
       { 136,  136}, // 50-60
       {  67,   67}, // 60-70
-      {  67,   67}, // 70-80
+      {  28,   28}, // 70-80
       {   0,    0}, // 80-90% cent class min # of tracks
       {   0,    0}  // not used
     };
