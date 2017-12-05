@@ -82,6 +82,7 @@ class AliEventCuts : public TList {
     void   SetupLHC11h();
     void   SetupLHC15o();
     void   SetupRun2pp();
+    void   SetupRun1pA(int iPeriod);
     void   SetupRun2pA(int iPeriod);
     void   UseMultSelectionEventSelection(bool useIt = true);
 
@@ -92,10 +93,10 @@ class AliEventCuts : public TList {
     /// (e.g. the max vertex z position is always symmetric wrt the nominal beam collision point) thus
     /// is convenient having special setters in this case.
     float             GetCentrality (unsigned int estimator = 0) const;
-    string            GetCentralityEstimator (unsigned int estimator = 0) const;
+    std::string       GetCentralityEstimator (unsigned int estimator = 0) const;
     const AliVVertex* GetPrimaryVertex() const { return fPrimaryVertex; }
 
-    void          SetCentralityEstimators (string first = "V0M", string second = "CL0") { fCentEstimators[0] = first; fCentEstimators[1] = second; }
+    void          SetCentralityEstimators (std::string first = "V0M", std::string second = "CL0") { fCentEstimators[0] = first; fCentEstimators[1] = second; }
     void          SetCentralityRange (float min, float max) { fMinCentrality = min; fMaxCentrality = max; }
     void          SetMaxVertexZposition (float max) { fMinVtz = -fabs(max); fMaxVtz = fabs(max); }
 
@@ -150,7 +151,7 @@ class AliEventCuts : public TList {
     unsigned long fTriggerMask;                   ///< Trigger mask
 
     AliEventCutsContainer fContainer;       //!<! Local copy of the event cuts container (safe against user changes)
-    const string  fkLabels[2];                    ///< Histograms labels (raw/selected)
+    const std::string  fkLabels[2];                    ///< Histograms labels (raw/selected)
 
   private:
     AliEventCuts(const AliEventCuts& copy);
@@ -164,7 +165,7 @@ class AliEventCuts : public TList {
     int           fCurrentRun;                    ///<
     unsigned long fFlag;                          ///< Flag of the passed cuts
 
-    string        fCentEstimators[2];             ///< Centrality estimators: the first is used as main estimators, that is correlated with the second to monitor spurious events.
+    std::string        fCentEstimators[2];             ///< Centrality estimators: the first is used as main estimators, that is correlated with the second to monitor spurious events.
     float         fCentPercentiles[2];            ///< Centrality percentiles
     AliVVertex   *fPrimaryVertex;                 //!<! Primary vertex pointer
 
