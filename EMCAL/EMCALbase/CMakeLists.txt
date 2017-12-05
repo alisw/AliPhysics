@@ -126,6 +126,21 @@ install(TARGETS ${MODULE}
 
 install(FILES ${HDRS} DESTINATION include)
 
+# Unit tests
+# TRU DCS config unit test
+add_executable(testemcaltrudcsconfig TestsAliEMCALTriggerTRUDCSConfig.cxx)
+target_link_libraries(testemcaltrudcsconfig ${MODULE} ${LIBDEPS})
+add_test(func_EMCALbase_AliEMCALTriggerTRUDCSConfig 
+    testemcaltrudcsconfig)
+install(TARGETS testemcaltrudcsconfig RUNTIME DESTINATION bin)
+
+# STU DCS config unit test
+add_executable(testemcalstudcsconfig TestsAliEMCALTriggerSTUDCSConfig.cxx)
+target_link_libraries(testemcalstudcsconfig ${MODULE} ${LIBDEPS})
+add_test(func_EMCALbase_AliEMCALTriggerSTUDCSConfig 
+    testemcalstudcsconfig)
+install(TARGETS testemcalstudcsconfig RUNTIME DESTINATION bin)
+
 # Static version if DA enabled
 if(ALIROOT_STATIC)
     add_library(${MODULE}-static STATIC $<TARGET_OBJECTS:${MODULE}-object>)
