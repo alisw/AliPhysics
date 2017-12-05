@@ -31,6 +31,7 @@ class AliGenCocktail : public AliGenerator
     virtual void SetVertexSmear(VertexSmear_t smear);
     virtual void SetRandomise(Bool_t flag) {fSRandom = flag;}
     virtual void UsePerEventRates() {fUsePerEventRate  = kTRUE;}
+    virtual void UseSingleInjectionPerEvent(bool flag = true) {fUseSingleInjectionPerEvent = flag;}
     virtual void SetSeed(UInt_t seed) {fSeed = seed;}
     //
     // Add a new generator to the list
@@ -48,7 +49,8 @@ class AliGenCocktail : public AliGenerator
     Int_t fNGenerators;                 // Number of generators booked
     Float_t fTotalRate;                 // Total rate of the generators booked
     Bool_t fSRandom;                    // Flag to select random generator from list
-    Bool_t fUsePerEventRate;            // Flag to generate the events according to the rate per event    
+    Bool_t fUseSingleInjectionPerEvent; // Flag to use only one additional generator on top of the background event
+    Bool_t fUsePerEventRate;            // Flag to generate the events according to the rate per event
     TArrayF  fProb;                     // Probability of an event (if fSRandom == kTRUE)
     TList  *fEntries;                   // List of Generators
     TObjLink *flnk1;                    // ! Iterator for first generator

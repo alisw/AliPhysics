@@ -18,9 +18,9 @@
 // Container class for AliGenerator through recursion.
 // Container is itself an AliGenerator.
 // What is stored are not the pointers to the generators directly but to objects of type
-// AliGenCocktail entry.   
-// The class provides also iterator functionality.  
-// Author: andreas.morsch@cern.ch 
+// AliGenCocktail entry.
+// The class provides also iterator functionality.
+// Author: andreas.morsch@cern.ch
 //
 
 #include <TList.h>
@@ -38,243 +38,246 @@
 ClassImp(AliGenCocktail)
 
 AliGenCocktail::AliGenCocktail()
-    :AliGenerator(), 
-     fNGenerators(0),
-     fTotalRate(0.),
-     fSRandom(kFALSE),
-     fUsePerEventRate(kFALSE),
-     fProb(0),
-     fEntries(0),
-     flnk1(0),
-     flnk2(0), 
-     fHeader(0),
-     fSeed(0)
+  :AliGenerator(),
+  fNGenerators(0),
+  fTotalRate(0.),
+  fSRandom(kFALSE),
+  fUseSingleInjectionPerEvent(kFALSE),
+  fUsePerEventRate(kFALSE),
+  fProb(0),
+  fEntries(0),
+  flnk1(0),
+  flnk2(0),
+  fHeader(0),
+  fSeed(0)
 {
-// Constructor
-    fName = "Cocktail";
-    fTitle= "Particle Generator using cocktail of generators";
+  // Constructor
+  fName = "Cocktail";
+  fTitle= "Particle Generator using cocktail of generators";
 }
 
 AliGenCocktail::~AliGenCocktail()
 {
-// Destructor
-    delete fEntries;
-    fEntries = 0;
-    //    delete fHeader; // It is removed in AliRunLoader
-    fHeader = 0;
+  // Destructor
+  delete fEntries;
+  fEntries = 0;
+  //    delete fHeader; // It is removed in AliRunLoader
+  fHeader = 0;
 }
 
 void AliGenCocktail::
 AddGenerator(AliGenerator *Generator, const char* Name, Float_t RateExp, TFormula* formula, Int_t ntimes)
 {
-//
-// Add a generator to the list 
-// First check that list exists
-    if (!fEntries) fEntries = new TList();
-    fTotalRate += RateExp;
-//
-//  Forward parameters to the new generator
-    if(TestBit(kPtRange) && !(Generator->TestBit(kPtRange)) && !(Generator->TestBit(kMomentumRange))) 
-	Generator->SetPtRange(fPtMin,fPtMax);
-    if(TestBit(kMomentumRange) && !(Generator->TestBit(kPtRange)) && !(Generator->TestBit(kMomentumRange)))
-	Generator->SetMomentumRange(fPMin,fPMax);
-    
-    if (TestBit(kYRange) && !(Generator->TestBit(kYRange)))
-	Generator->SetYRange(fYMin,fYMax);
-    if (TestBit(kPhiRange) && !(Generator->TestBit(kPhiRange)))
-	Generator->SetPhiRange(fPhiMin*180/TMath::Pi(),fPhiMax*180/TMath::Pi());
-    if (TestBit(kThetaRange) && !(Generator->TestBit(kThetaRange)) && !(Generator->TestBit(kEtaRange)))
-	Generator->SetThetaRange(fThetaMin*180/TMath::Pi(),fThetaMax*180/TMath::Pi());
-    if (!(Generator->TestBit(kVertexRange))) {
-	Generator->SetOrigin(fOrigin[0], fOrigin[1], fOrigin[2]);
-	Generator->SetSigma(fOsigma[0], fOsigma[1], fOsigma[2]);
-	Generator->SetVertexSmear(fVertexSmear);
-	Generator->SetVertexSource(kContainer);
-    }
-    Generator->SetTrackingFlag(fTrackIt);
-    Generator->SetContainer(this);
+  //
+  // Add a generator to the list
+  // First check that list exists
+  if (!fEntries) fEntries = new TList();
+  fTotalRate += RateExp;
+  //
+  //  Forward parameters to the new generator
+  if(TestBit(kPtRange) && !(Generator->TestBit(kPtRange)) && !(Generator->TestBit(kMomentumRange)))
+    Generator->SetPtRange(fPtMin,fPtMax);
+  if(TestBit(kMomentumRange) && !(Generator->TestBit(kPtRange)) && !(Generator->TestBit(kMomentumRange)))
+    Generator->SetMomentumRange(fPMin,fPMax);
 
-        
-//
-//  Add generator to list   
-    char theName[256];
-    snprintf(theName, 256, "%s_%d",Name, fNGenerators);
-    Generator->SetName(theName);
+  if (TestBit(kYRange) && !(Generator->TestBit(kYRange)))
+    Generator->SetYRange(fYMin,fYMax);
+  if (TestBit(kPhiRange) && !(Generator->TestBit(kPhiRange)))
+    Generator->SetPhiRange(fPhiMin*180/TMath::Pi(),fPhiMax*180/TMath::Pi());
+  if (TestBit(kThetaRange) && !(Generator->TestBit(kThetaRange)) && !(Generator->TestBit(kEtaRange)))
+    Generator->SetThetaRange(fThetaMin*180/TMath::Pi(),fThetaMax*180/TMath::Pi());
+  if (!(Generator->TestBit(kVertexRange))) {
+    Generator->SetOrigin(fOrigin[0], fOrigin[1], fOrigin[2]);
+    Generator->SetSigma(fOsigma[0], fOsigma[1], fOsigma[2]);
+    Generator->SetVertexSmear(fVertexSmear);
+    Generator->SetVertexSource(kContainer);
+  }
+  Generator->SetTrackingFlag(fTrackIt);
+  Generator->SetContainer(this);
 
-    AliGenCocktailEntry *entry = 
-	new AliGenCocktailEntry(Generator, Name, RateExp);
-    if (formula) entry->SetFormula(formula);  
-    entry->SetNTimes(ntimes);
-     fEntries->Add(entry);
-     fNGenerators++;
-     flnk1 = 0;
-     flnk2 = 0;
-     fSRandom  = kFALSE;
-     fHeader  = 0;
+
+  //
+  //  Add generator to list
+  char theName[256];
+  snprintf(theName, 256, "%s_%d",Name, fNGenerators);
+  Generator->SetName(theName);
+
+  AliGenCocktailEntry *entry =
+    new AliGenCocktailEntry(Generator, Name, RateExp);
+  if (formula) entry->SetFormula(formula);
+  entry->SetNTimes(ntimes);
+  fEntries->Add(entry);
+  fNGenerators++;
+  flnk1 = 0;
+  flnk2 = 0;
+  fSRandom  = kFALSE;
+  fHeader  = 0;
 }
 
-  void AliGenCocktail::Init()
+void AliGenCocktail::Init()
 {
-// Initialisation
-    TIter next(fEntries);
-    AliGenCocktailEntry *entry;
-    //
-    // Loop over generators and initialize
+  // Initialisation
+  TIter next(fEntries);
+  AliGenCocktailEntry *entry;
+  //
+  // Loop over generators and initialize
+  while((entry = (AliGenCocktailEntry*)next())) {
+    if (fStack)  entry->Generator()->SetStack(fStack);
+    if (fSeed)   entry->Generator()->SetSeed(fSeed);
+    entry->Generator()->Init();
+  }
+
+  next.Reset();
+
+  if (fSRandom) {
+    fProb.Set(fNGenerators);
+    next.Reset();
+    Float_t sum = 0.;
     while((entry = (AliGenCocktailEntry*)next())) {
-	if (fStack)  entry->Generator()->SetStack(fStack);
-	if (fSeed)   entry->Generator()->SetSeed(fSeed);
-	entry->Generator()->Init();
-    }  
+      sum += entry->Rate();
+    }
 
     next.Reset();
-
-    if (fSRandom) {
-	fProb.Set(fNGenerators);
-	next.Reset();
-	Float_t sum = 0.;
-	while((entry = (AliGenCocktailEntry*)next())) {
-	    sum += entry->Rate();
-	} 
-
-	next.Reset();
-	Int_t i = 0;
-	Float_t psum = 0.;
-	while((entry = (AliGenCocktailEntry*)next())) {
-	    psum +=  entry->Rate() / sum;
-	    fProb[i++] = psum;
-	}
-    }
-	next.Reset();
-}
-
-  void AliGenCocktail::FinishRun()
-{
-// Initialisation
-    TIter next(fEntries);
-    AliGenCocktailEntry *entry;
-    //
-    // Loop over generators and initialize
+    Int_t i = 0;
+    Float_t psum = 0.;
     while((entry = (AliGenCocktailEntry*)next())) {
-	entry->Generator()->FinishRun();
-    }  
+      psum +=  entry->Rate() / sum;
+      fProb[i++] = psum;
+    }
+  }
+  next.Reset();
 }
 
- void AliGenCocktail::Generate()
+void AliGenCocktail::FinishRun()
 {
-//
-// Generate event 
-    TIter next(fEntries);
-    AliGenCocktailEntry *entry = 0;
-    AliGenCocktailEntry *preventry = 0;
-    AliGenCocktailEntry *collentry = 0;
-    AliGenerator* gen = 0;
-    if (fHeader) delete fHeader;
+  // Initialisation
+  TIter next(fEntries);
+  AliGenCocktailEntry *entry;
+  //
+  // Loop over generators and initialize
+  while((entry = (AliGenCocktailEntry*)next())) {
+    entry->Generator()->FinishRun();
+  }
+}
 
-    
-    fHeader = new AliGenCocktailEventHeader("Cocktail Header");
+void AliGenCocktail::Generate()
+{
+  //
+  // Generate event
+  TIter next(fEntries);
+  AliGenCocktailEntry *entry = 0;
+  AliGenCocktailEntry *preventry = 0;
+  AliGenCocktailEntry *collentry = 0;
+  AliGenerator* gen = 0;
+  if (fHeader) delete fHeader;
 
-    const TObjArray *partArray = gAlice->GetMCApp()->Particles();
 
-//
-//  Generate the vertex position used by all generators
-//    
-    if(fVertexSmear == kPerEvent) Vertex();
+  fHeader = new AliGenCocktailEventHeader("Cocktail Header");
 
-    TArrayF eventVertex;
-    eventVertex.Set(3);
-    for (Int_t j=0; j < 3; j++) eventVertex[j] = fVertex[j];
+  const TObjArray *partArray = gAlice->GetMCApp()->Particles();
 
-    if (!fSRandom) {
-	//
-	// Loop over generators and generate events
-	Int_t igen   = 0;
-	while((entry = (AliGenCocktailEntry*)next())) {
-          Int_t ntimes = entry->NTimes();
-	  if (fUsePerEventRate && (gRandom->Rndm() > entry->Rate())) continue;
-	  
-	  igen++;
-	  if (igen ==1) {
-	    entry->SetFirst(0);
-	  } else {
-	    entry->SetFirst((partArray->GetEntriesFast())+1);
-	  }
-	  gen = entry->Generator();
-	  if (gen->ProvidesCollisionGeometry()) collentry = entry; 
-	  //
-	  //      Handle case in which current generator needs collision geometry from previous generator
-          //
-	  if (gen->NeedsCollisionGeometry() && (entry->Formula() == 0))
-	    {
-	      if (preventry && preventry->Generator()->ProvidesCollisionGeometry())
-		{
-		  gen->SetCollisionGeometry(preventry->Generator()->CollisionGeometry());
-		} else {
-		Fatal("Generate()", "No Collision Geometry Provided");
-	      }
-	    }
-	  //
-	  //      Number of signals is calculated from Collision Geometry
-	  //      and entry with given centrality bin is selected
-	  //
-	  if (entry->Formula() != 0)
-	    {
-	      if (!collentry) {
-		Fatal("Generate()", "No Collision Geometry Provided");
-		return;
-	      }
-	      AliCollisionGeometry* coll = (collentry->Generator())->CollisionGeometry();
-	      Float_t b  = coll->ImpactParameter();
-	      Int_t nsig = Int_t(entry->Formula()->Eval(b));
-	      Int_t bin = entry->Bin() - 100;
-	      if (bin > 0) {
-		if (bin != nsig) continue;
-	      } else {
-		if (nsig < 1) nsig = 1;
-		AliInfo(Form("Signal Events %13.3f %5d %5d\n", b, coll->HardScatters(), nsig));
-		ntimes = nsig;
-	      }
-	    }
-	  gen->SetVertex(fVertex.At(0), fVertex.At(1), fVertex.At(2), fTime);
-	  
-	  gen->GenerateN(ntimes);
-	  entry->SetLast(partArray->GetEntriesFast());
-	  preventry = entry;
-	}
-    } else if (fSRandom) {
-	//
-	// Select a generator randomly
-	//
-	Int_t i;
-	Float_t p0 =  gRandom->Rndm();
+  //
+  //  Generate the vertex position used by all generators
+  //
+  if(fVertexSmear == kPerEvent) Vertex();
 
-	for (i = 0; i < fNGenerators; i++) {
-	    if (p0 < fProb[i]) break;
-	}
+  TArrayF eventVertex;
+  eventVertex.Set(3);
+  for (Int_t j=0; j < 3; j++) eventVertex[j] = fVertex[j];
 
-	entry = (AliGenCocktailEntry*) fEntries->At(i);
-	entry->SetFirst(0);
-	gen = entry->Generator();
-	gen->SetVertex(fVertex.At(0), fVertex.At(1), fVertex.At(2), fTime);
-	gen->Generate();
-	entry->SetLast(partArray->GetEntriesFast());
-    } 
-    
-    next.Reset();
+  if (!fSRandom) {
+    //
+    // Loop over generators and generate events
+    Int_t igen = 0;
+    int inj_gen = fUseSingleInjectionPerEvent ? TMath::Floor(gRandom->Uniform(1,fNGenerators)) : 0;
+    while((entry = (AliGenCocktailEntry*)next())) {
+      Int_t ntimes = entry->NTimes();
+      if (fUsePerEventRate && (gRandom->Rndm() > entry->Rate())) continue;
+      igen++;
+      if (igen==1) {
+        entry->SetFirst(0);
+      } else {
+        if (fUseSingleInjectionPerEvent && igen != inj_gen + 1) continue;
+        entry->SetFirst((partArray->GetEntriesFast())+1);
+      }
 
-    // Event Vertex
-    fHeader->SetPrimaryVertex(eventVertex);
-    fHeader->CalcNProduced();
-    if (fContainer) {
-      fHeader->SetName(fName);
-      fContainer->AddHeader(fHeader);
-    } else {
-      gAlice->SetGenEventHeader(fHeader);	
+      gen = entry->Generator();
+      if (gen->ProvidesCollisionGeometry()) collentry = entry;
+      //
+      //      Handle case in which current generator needs collision geometry from previous generator
+      //
+      if (gen->NeedsCollisionGeometry() && (entry->Formula() == 0))
+      {
+        if (preventry && preventry->Generator()->ProvidesCollisionGeometry())
+        {
+          gen->SetCollisionGeometry(preventry->Generator()->CollisionGeometry());
+        } else {
+          Fatal("Generate()", "No Collision Geometry Provided");
+        }
+      }
+      //
+      //      Number of signals is calculated from Collision Geometry
+      //      and entry with given centrality bin is selected
+      //
+      if (entry->Formula() != 0)
+      {
+        if (!collentry) {
+          Fatal("Generate()", "No Collision Geometry Provided");
+          return;
+        }
+        AliCollisionGeometry* coll = (collentry->Generator())->CollisionGeometry();
+        Float_t b  = coll->ImpactParameter();
+        Int_t nsig = Int_t(entry->Formula()->Eval(b));
+        Int_t bin = entry->Bin() - 100;
+        if (bin > 0) {
+          if (bin != nsig) continue;
+        } else {
+          if (nsig < 1) nsig = 1;
+          AliInfo(Form("Signal Events %13.3f %5d %5d\n", b, coll->HardScatters(), nsig));
+          ntimes = nsig;
+        }
+      }
+      gen->SetVertex(fVertex.At(0), fVertex.At(1), fVertex.At(2), fTime);
+
+      gen->GenerateN(ntimes);
+      entry->SetLast(partArray->GetEntriesFast());
+      preventry = entry;
     }
+  } else if (fSRandom) {
+    //
+    // Select a generator randomly
+    //
+    Int_t i;
+    Float_t p0 =  gRandom->Rndm();
+
+    for (i = 0; i < fNGenerators; i++) {
+      if (p0 < fProb[i]) break;
+    }
+
+    entry = (AliGenCocktailEntry*) fEntries->At(i);
+    entry->SetFirst(0);
+    gen = entry->Generator();
+    gen->SetVertex(fVertex.At(0), fVertex.At(1), fVertex.At(2), fTime);
+    gen->Generate();
+    entry->SetLast(partArray->GetEntriesFast());
+  }
+
+  next.Reset();
+
+  // Event Vertex
+  fHeader->SetPrimaryVertex(eventVertex);
+  fHeader->CalcNProduced();
+  if (fContainer) {
+    fHeader->SetName(fName);
+    fContainer->AddHeader(fHeader);
+  } else {
+    gAlice->SetGenEventHeader(fHeader);
+  }
 }
 
 void AliGenCocktail::SetVertexSmear(VertexSmear_t smear)
 {
-// Set vertex smearing and propagate it to the generators
+  // Set vertex smearing and propagate it to the generators
 
   AliGenerator::SetVertexSmear(smear);
   TIter next(fEntries);
@@ -285,62 +288,62 @@ void AliGenCocktail::SetVertexSmear(VertexSmear_t smear)
 
 AliGenCocktailEntry *  AliGenCocktail::FirstGenerator()
 {
-// Iterator over generators: Initialisation
-    flnk1 = fEntries->FirstLink();
-    if (flnk1) {
-	return (AliGenCocktailEntry*) (flnk1->GetObject());
-    } else {
-	return 0;
-    }
+  // Iterator over generators: Initialisation
+  flnk1 = fEntries->FirstLink();
+  if (flnk1) {
+    return (AliGenCocktailEntry*) (flnk1->GetObject());
+  } else {
+    return 0;
+  }
 }
 
 AliGenCocktailEntry*  AliGenCocktail::NextGenerator()
 {
-// Iterator over generators: Increment
-    flnk1 = flnk1->Next();
-    if (flnk1) {
-	return (AliGenCocktailEntry*) (flnk1->GetObject());
-    } else {
-	return 0;
-    }
+  // Iterator over generators: Increment
+  flnk1 = flnk1->Next();
+  if (flnk1) {
+    return (AliGenCocktailEntry*) (flnk1->GetObject());
+  } else {
+    return 0;
+  }
 }
 
 void AliGenCocktail::
 FirstGeneratorPair(AliGenCocktailEntry*& e1, AliGenCocktailEntry*& e2)
 {
-// Iterator over generator pairs: Initialisation
-    flnk2 = flnk1 = fEntries->FirstLink();
-    if (flnk1) {
-	e2 = e1 = (AliGenCocktailEntry*) (flnk1->GetObject());
-    } else {
-	e2= e1 = 0;
-    }
+  // Iterator over generator pairs: Initialisation
+  flnk2 = flnk1 = fEntries->FirstLink();
+  if (flnk1) {
+    e2 = e1 = (AliGenCocktailEntry*) (flnk1->GetObject());
+  } else {
+    e2= e1 = 0;
+  }
 }
 
 void AliGenCocktail::
 NextGeneratorPair(AliGenCocktailEntry*& e1, AliGenCocktailEntry*& e2)
 {
-// Iterator over generators: Increment
-    flnk2 = flnk2->Next();
-    if (flnk2) {
-	e1 = (AliGenCocktailEntry*) (flnk1->GetObject());
-	e2 = (AliGenCocktailEntry*) (flnk2->GetObject());	
+  // Iterator over generators: Increment
+  flnk2 = flnk2->Next();
+  if (flnk2) {
+    e1 = (AliGenCocktailEntry*) (flnk1->GetObject());
+    e2 = (AliGenCocktailEntry*) (flnk2->GetObject());
+  } else {
+    flnk2 = flnk1 = flnk1->Next();
+    if (flnk1) {
+      e1 = (AliGenCocktailEntry*) (flnk1->GetObject());
+      e2 = (AliGenCocktailEntry*) (flnk2->GetObject());
     } else {
-	flnk2 = flnk1 = flnk1->Next();
-	if (flnk1) {
-	    e1 = (AliGenCocktailEntry*) (flnk1->GetObject());
-	    e2 = (AliGenCocktailEntry*) (flnk2->GetObject());
-	} else {
-	    e1=0;
-	    e2=0;
-	}
+      e1=0;
+      e2=0;
     }
+  }
 }
 
 void AliGenCocktail::AddHeader(AliGenEventHeader* header)
 {
-// Add a header to the list 
-    if (fHeader) fHeader->AddHeader(header);
+  // Add a header to the list
+  if (fHeader) fHeader->AddHeader(header);
 }
 
 
