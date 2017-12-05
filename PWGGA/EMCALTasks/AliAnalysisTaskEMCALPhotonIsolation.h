@@ -317,9 +317,8 @@ class AliAnalysisTaskEMCALPhotonIsolation: public AliAnalysisTaskEmcal {
   TH2D                       * fTestIndexE;                     //!<! Index vs cluster energy test
   TH2D                       * fTestLocalIndexE;                //!<! Local index vs cluster energy test
   TH3F                       * fTestEnergyCone;                 //!<! Energy cone clusters vs tracks test
-  TH3F                       * fTestEnergyConeNorm;             //!<! Energy cone clusters vs tracks test (area normalised)
+  TH3F                       * fPtVsNormConeVsNormEtaBand;      //!<! Energy cone clusters vs tracks test (area normalised)
   TH3F                       * fTestEnergyEtaBand;              //!<! Energy eta-band clusters vs tracks test
-  TH3F                       * fTestEnergyEtaBandNorm;          //!<! Energy eta-band clusters vs tracks test (area normalised)
   TH2D                       * fTestEtaPhiCone;                 //!<! Eta vs phi test for clusters in cone
   TH3D                       * fInvMassM02iso;                  //!<!
   TH3D                       * fInvMassM02noiso;                //!<!
