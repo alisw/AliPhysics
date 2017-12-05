@@ -26,6 +26,7 @@
 #include <TChain.h>
 #include <TKey.h>
 
+#include "AliGenCocktailEventHeader.h"
 #include "AliStack.h"
 #include "AliAODEvent.h"
 #include "AliAnalysisManager.h"
@@ -1032,26 +1033,23 @@ Bool_t AliAnalysisTaskEmcalLight::RetrieveEventObjects()
 
   if (fIsPythia) {
     if (MCEvent()) {
-      fPythiaHeader = dynamic_cast<AliGenPythiaEventHeader*>(MCEvent()->GenEventHeader());
-
-      if (fDataType == kAOD) {
-        AliAODMCHeader* aodMCH = dynamic_cast<AliAODMCHeader*>(InputEvent()->FindListObject(AliAODMCHeader::StdBranchName()));
-        if (aodMCH) {
-          if (!fPythiaHeader) {
-            for (UInt_t i = 0;i<aodMCH->GetNCocktailHeaders();i++) {
-              fPythiaHeader = dynamic_cast<AliGenPythiaEventHeader*>(aodMCH->GetCocktailHeader(i));
-              if (fPythiaHeader) break;
-            }
-          }
-          fGeneratorName = aodMCH->GetGeneratorName();
+      AliGenEventHeader* header = MCEvent()->GenEventHeader();
+      if (header->InheritsFrom("AliGenPythiaEventHeader")) {
+        fPythiaHeader = static_cast<AliGenPythiaEventHeader*>(header);
+      }
+      else if (header->InheritsFrom("AliGenCocktailEventHeader")) {
+        AliGenCocktailEventHeader* cocktailHeader = static_cast<AliGenCocktailEventHeader*>(header);
+        TList* headers = cocktailHeader->GetHeaders();
+        for (auto obj : *headers) {
+          fPythiaHeader = dynamic_cast<AliGenPythiaEventHeader*>(obj);
+          if (fPythiaHeader) break;
         }
       }
-
-      if (fPythiaHeader) {
-        fPtHard = fPythiaHeader->GetPtHard();
-        fXsection = fPythiaHeader->GetXsection();
-        fNTrials = fPythiaHeader->Trials();
-      }
+    }
+    if (fPythiaHeader) {
+      fPtHard = fPythiaHeader->GetPtHard();
+      fXsection = fPythiaHeader->GetXsection();
+      fNTrials = fPythiaHeader->Trials();
     }
   }
 
