@@ -69,14 +69,18 @@ AliAnalysisTaskAccCont *AddTaskAccCont(Double_t vertexZ=10.,
   task[iCentralityBin]->UsePileUpCuts();
   
   //PID
+
   if(PID){
   task[iCentralityBin]->UsePID();
   task[iCentralityBin]->SetNSigmaPID(nsigma);
   task[iCentralityBin]->setParticleType(particleType);
+  mgr->AddTask(task[iCentralityBin]);  
   }
-  
+
+  else if(!PID){ 
   mgr->AddTask(task[iCentralityBin]);
-    
+  }  
+
   // Create ONLY the output containers for the data produced by the task.
   // Get and connect other common input/output containers via the manager as below
   //===========================================================================
