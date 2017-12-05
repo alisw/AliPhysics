@@ -2034,6 +2034,20 @@ Bool_t AliConvEventCuts::IsCentralitySelected(AliVEvent *event, AliMCEvent *mcEv
       {   0,   0},  // 90
       {   0,   0}// 100 // only max accessible
     };
+  Int_t PrimaryTracksLHC15o10[11][2] =
+    {
+      {9999, 9999}, // 0-10% cent class max # of tracks
+      {1498, 1498}, // 0-10% cent class min # of tracks
+      {1012, 1012}, // 10-20
+      { 669,  669}, // 20-30
+      { 423,  423}, // 30-40
+      { 251,  251}, // 40-50
+      { 136,  136}, // 50-60
+      {  67,   67}, // 60-70
+      {  67,   67}, // 70-80
+      {   0,    0}, // 80-90% cent class min # of tracks
+      {   0,    0}  // not used
+    };
   Int_t PrimaryTracks5a[11][2] =
     {
       {9999,9999}, // 0 ///1550 changed to 9999 on 9 Dec
@@ -2062,6 +2076,20 @@ Bool_t AliConvEventCuts::IsCentralitySelected(AliVEvent *event, AliMCEvent *mcEv
       { 214, 214},  // 45
       { 165, 162}// 50 only max accessible
     };
+  Int_t PrimaryTracksLHC15o5a[11][2] =
+    {
+      { 9999, 9999}, // 0-5% cent class max # of tracks (arbitrarily chosen large value)
+      { 1827, 1827}, // 0-5% cent class min # of tracks
+      { 1498, 1498}, // 5-10
+      { 1234, 1234}, // 10-15
+      { 1012, 1012}, // 15-20
+      {  827,  827}, // 20-25
+      {  669,  669}, // 25-30
+      {  536,  536}, // 30-35
+      {  423,  423}, // 35-40
+      {  329,  329}, // 40-45 cent class min # of tracks (cut digit 9)
+      {    0,    0}  // not used
+    };
   Int_t PrimaryTracks5b[11][2] =
     {
       { 260, 214}, // 45
@@ -2089,6 +2117,20 @@ Bool_t AliConvEventCuts::IsCentralitySelected(AliVEvent *event, AliMCEvent *mcEv
       {  11,  11}, // 85
       {   0,   0},  // 90
       {   0,   0}// 100 only max accessible
+    };
+  Int_t PrimaryTracksLHC15o5b[11][2] =
+    {
+      { 329, 329}, // 45-50% cent class max # of tracks
+      { 251, 251}, // 45-50% cent class min # of tracks
+      { 188, 188}, // 50-55
+      { 136, 136}, // 55-60
+      {  97,  97}, // 60-65
+      {  67,  67}, // 65-70
+      {  44,  44}, // 70-75
+      {  28,  28}, // 75-80
+      {  17,  17}, // 80-85
+      {   0,   0}, // 85-90 cent class minimum # of tracks
+      {   0,   0}  // not used
     };
     Int_t PrimaryTracksLHC17n10[11][2] =
     {
@@ -2121,6 +2163,11 @@ Bool_t AliConvEventCuts::IsCentralitySelected(AliVEvent *event, AliMCEvent *mcEv
         if(nprimaryTracks > PrimaryTracksLHC17n10[fCentralityMax][column] && nprimaryTracks <= PrimaryTracksLHC17n10[fCentralityMin][column])
             return kTRUE;
         else return kFALSE;
+      // setting specific arry for LHC15o for MC track mult
+      if(fPeriodEnum == kLHC16g1 || fPeriodEnum == kLHC16g1a || fPeriodEnum == kLHC16g1b || fPeriodEnum == kLHC16g1c || fPeriodEnum == kLHC16h4){
+        if(nprimaryTracks > PrimaryTracksLHC15o10[fCentralityMax][column] && nprimaryTracks <= PrimaryTracksLHC15o10[fCentralityMin][column])
+          return kTRUE;
+        else return kFALSE;
       // setting specific arry for LHC10h for MC track mult
       } else {
         if(nprimaryTracks > PrimaryTracks10[fCentralityMax][column] && nprimaryTracks <= PrimaryTracks10[fCentralityMin][column])
@@ -2142,6 +2189,11 @@ Bool_t AliConvEventCuts::IsCentralitySelected(AliVEvent *event, AliMCEvent *mcEv
         if(nprimaryTracks > PrimaryTracksLHC11h5a[fCentralityMax][column] && nprimaryTracks <= PrimaryTracksLHC11h5a[fCentralityMin][column])
           return kTRUE;
         else return kFALSE;
+      // setting specific arry for LHC15o for MC track mult
+      if(fPeriodEnum == kLHC16g1 || fPeriodEnum == kLHC16g1a || fPeriodEnum == kLHC16g1b || fPeriodEnum == kLHC16g1c || fPeriodEnum == kLHC16h4){
+        if(nprimaryTracks > PrimaryTracksLHC15o5a[fCentralityMax][column] && nprimaryTracks <= PrimaryTracksLHC15o5a[fCentralityMin][column])
+          return kTRUE;
+        else return kFALSE;
       // setting specific arry for LHC10h for MC track mult
       } else {
         if(nprimaryTracks > PrimaryTracks5a[fCentralityMax][column] && nprimaryTracks <= PrimaryTracks5a[fCentralityMin][column])
@@ -2161,6 +2213,11 @@ Bool_t AliConvEventCuts::IsCentralitySelected(AliVEvent *event, AliMCEvent *mcEv
       // setting specific arry for LHC11h for MC track mult
       if(fPeriodEnum == kLHC14a1a || fPeriodEnum == kLHC14a1b || fPeriodEnum == kLHC14a1c){
         if(nprimaryTracks > PrimaryTracksLHC11h5b[fCentralityMax][column] && nprimaryTracks <= PrimaryTracksLHC11h5b[fCentralityMin][column])
+          return kTRUE;
+        else return kFALSE;
+      // setting specific arry for LHC15o for MC track mult
+      if(fPeriodEnum == kLHC16g1 || fPeriodEnum == kLHC16g1a || fPeriodEnum == kLHC16g1b || fPeriodEnum == kLHC16g1c || fPeriodEnum == kLHC16h4){
+        if(nprimaryTracks > PrimaryTracksLHC15o5b[fCentralityMax][column] && nprimaryTracks <= PrimaryTracksLHC15o5b[fCentralityMin][column])
           return kTRUE;
         else return kFALSE;
       // setting specific arry for LHC10h for MC track mult
