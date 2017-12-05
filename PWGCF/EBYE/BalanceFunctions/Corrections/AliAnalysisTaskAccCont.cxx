@@ -184,8 +184,8 @@ void AliAnalysisTaskAccCont::UserCreateOutputObjects() {
                                       "Survived negative primaries;#phi;#eta;V_{z} (cm)",
                                       phiBin, nArrayPhi, etaBin,nArrayEta, vertex_bin, nArrayVertex);
     
-    fHistDCAXYptchargedminus = new TH3F("fHistDCAxychargedminus","DCA_{xy} vs pt for charged particles (negative);p_{T} [GeV/c];#eta;DCA_{xy}",100,0,10,16,-0.8,0.8,1000,-4,4);
-    fHistDCAXYptchargedplus = new TH3F("fHistDCAxychargedplus","DCA_{xy} vs pt for charged particles (positive);p_{T} [GeV/c];#eta;DCA_{xy}",100,0,10,16,-0.8,0.8,1000,-4,4);
+    fHistDCAXYptchargedminus = new TH3F("fHistDCAxychargedminus","DCA_{xy} vs pt for charged particles (negative);p_{T} [GeV/c];#eta;DCA_{xy}",100,0,10,16,-0.8,0.8,1000,-0.5,0.5);
+    fHistDCAXYptchargedplus = new TH3F("fHistDCAxychargedplus","DCA_{xy} vs pt for charged particles (positive);p_{T} [GeV/c];#eta;DCA_{xy}",100,0,10,16,-0.8,0.8,1000,-0.5,0.5);
     
     fListResults->Add(fHistEtaPhiVertexPlus);
     fListResults->Add(fHistEtaPhiVertexMinus);
@@ -312,12 +312,17 @@ void AliAnalysisTaskAccCont::UserExec(Option_t *) {
                                         Double_t xdca = aodTrack->DCA();
                                         Double_t zdca = aodTrack->ZAtDCA();
                                         Double_t charge = aodTrack->Charge();
-                                        
-					Float_t probMis = fPIDResponse->GetTOFMismatchProbability(aodTrack);
-					if (probMis < 0.01) { //if u want to reduce mismatch using also TPC
-
+                                       
+					if( eta < fEtaMin || eta > fEtaMax) continue;
+                                        if( pt < fPtMin || pt > fPtMax) continue;
+ 
+						
                                         if(fUsePID) {
-                                            
+						
+					    Float_t probMis = fPIDResponse->GetTOFMismatchProbability(aodTrack);                                            
+					
+					    if (probMis < 0.01) { //if u want to reduce mismatch using also TPC						
+
                                             Double_t nSigmaPionTPC   = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(aodTrack,AliPID::kPion));
                                             Double_t nSigmaKaonTPC   = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(aodTrack,AliPID::kKaon));
                                             Double_t nSigmaProtonTPC = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(aodTrack,AliPID::kProton));
@@ -379,13 +384,11 @@ void AliAnalysisTaskAccCont::UserExec(Option_t *) {
                                                 }
                                             }//end of the proton case
                       			    
-					}
-					}
-                                        
-                                        // Kinematics cuts from ESD track cuts
-                                        if( eta < fEtaMin || eta > fEtaMax) continue;
-                                        if( pt < fPtMin || pt > fPtMax) continue;
-                                        
+					}//end probability check
+					
+					}//end PID			
+
+					
                                         fHistPt->Fill(pt);
                                         fHistPtbin->Fill(pt);
                                         fHistCent->Fill(gCentrality);
