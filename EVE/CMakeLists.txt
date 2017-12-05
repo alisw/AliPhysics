@@ -18,9 +18,9 @@ add_subdirectory(EveBase)
 add_subdirectory(EveDet)
 add_subdirectory(EveHLT)
 add_subdirectory(converters/ConverterCollada)
-if(ROOT_HTTP_FOUND)
+if(ROOT_HASHTTP)
 add_subdirectory(converters/ConverterJSON)
-endif(ROOT_HTTP_FOUND)
+endif(ROOT_HASHTTP)
 
 # EVE executables
 add_subdirectory(executables)
