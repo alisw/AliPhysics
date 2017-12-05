@@ -2164,7 +2164,7 @@ Bool_t AliConvEventCuts::IsCentralitySelected(AliVEvent *event, AliMCEvent *mcEv
             return kTRUE;
         else return kFALSE;
       // setting specific arry for LHC15o for MC track mult
-      if(fPeriodEnum == kLHC16g1 || fPeriodEnum == kLHC16g1a || fPeriodEnum == kLHC16g1b || fPeriodEnum == kLHC16g1c || fPeriodEnum == kLHC16h4){
+      } else if(fPeriodEnum == kLHC16g1 || fPeriodEnum == kLHC16g1a || fPeriodEnum == kLHC16g1b || fPeriodEnum == kLHC16g1c || fPeriodEnum == kLHC16h4){
         if(nprimaryTracks > PrimaryTracksLHC15o10[fCentralityMax][column] && nprimaryTracks <= PrimaryTracksLHC15o10[fCentralityMin][column])
           return kTRUE;
         else return kFALSE;
@@ -2190,7 +2190,7 @@ Bool_t AliConvEventCuts::IsCentralitySelected(AliVEvent *event, AliMCEvent *mcEv
           return kTRUE;
         else return kFALSE;
       // setting specific arry for LHC15o for MC track mult
-      if(fPeriodEnum == kLHC16g1 || fPeriodEnum == kLHC16g1a || fPeriodEnum == kLHC16g1b || fPeriodEnum == kLHC16g1c || fPeriodEnum == kLHC16h4){
+      } else if(fPeriodEnum == kLHC16g1 || fPeriodEnum == kLHC16g1a || fPeriodEnum == kLHC16g1b || fPeriodEnum == kLHC16g1c || fPeriodEnum == kLHC16h4){
         if(nprimaryTracks > PrimaryTracksLHC15o5a[fCentralityMax][column] && nprimaryTracks <= PrimaryTracksLHC15o5a[fCentralityMin][column])
           return kTRUE;
         else return kFALSE;
@@ -2216,7 +2216,7 @@ Bool_t AliConvEventCuts::IsCentralitySelected(AliVEvent *event, AliMCEvent *mcEv
           return kTRUE;
         else return kFALSE;
       // setting specific arry for LHC15o for MC track mult
-      if(fPeriodEnum == kLHC16g1 || fPeriodEnum == kLHC16g1a || fPeriodEnum == kLHC16g1b || fPeriodEnum == kLHC16g1c || fPeriodEnum == kLHC16h4){
+      } else if(fPeriodEnum == kLHC16g1 || fPeriodEnum == kLHC16g1a || fPeriodEnum == kLHC16g1b || fPeriodEnum == kLHC16g1c || fPeriodEnum == kLHC16h4){
         if(nprimaryTracks > PrimaryTracksLHC15o5b[fCentralityMax][column] && nprimaryTracks <= PrimaryTracksLHC15o5b[fCentralityMin][column])
           return kTRUE;
         else return kFALSE;
