@@ -26,6 +26,14 @@ public:
   
   AliEMCALTriggerDCSConfig();
   virtual ~AliEMCALTriggerDCSConfig();
+
+  /**
+   * @brief Equalty operator
+   * 
+   * Checks if two DCS configs are the same. For equalty all both DCS configurations 
+   * and all TRU configurations must match.
+   */
+  bool operator==(const AliEMCALTriggerDCSConfig &other) const;
   
   void                         SetTRUArr(TClonesArray* const ta)             { fTRUArr    = ta; }
   inline void                  SetSTUObj(AliEMCALTriggerSTUDCSConfig* so, Bool_t isDCAL = false);
