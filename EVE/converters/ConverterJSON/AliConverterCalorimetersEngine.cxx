@@ -4,7 +4,8 @@
 #include "AliCDBManager.h"
 
 #include <TGeoManager.h>
-
+#include <TEnv.h>
+#include <AliEveInit.h>
 #include <iostream>
 
 using namespace std;
@@ -144,7 +145,11 @@ void AliConverterCalorimetersEngine::AssertGeometry()
 void AliConverterCalorimetersEngine::AssertMagField()
 {
     AliCDBManager* cdb = AliCDBManager::Instance();
-    cdb->SetDefaultStorage(Form("local://%s/../src/OCDB",gSystem->Getenv("ALICE_ROOT")));
+    TEnv settings;
+    AliEveInit::GetConfig(&settings);
+    TString ocdbStorage   = settings.GetValue("OCDB.default.path","local://$ALICE_ROOT/../src/OCDB");// default path to OCDB
+    cdb->SetDefaultStorage(ocdbStorage);
+    //cdb->SetDefaultStorage(Form("local://%s/../src/OCDB",gSystem->Getenv("ALICE_ROOT")));
     if (!cdb->IsDefaultStorageSet())
     {
         std::cerr<<"\n\nCould not set CDB.\n\n"<<std::endl;
