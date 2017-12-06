@@ -40,6 +40,98 @@ Bool_t IsCellMaskedByHand(Int_t cell, std::vector<Int_t> cellVector);
 void CreateCellCompPDF(TH2F* hAmpIDMasked, std::vector<Int_t> cellVector, TH1* goodCellsMerged, TH1* goodCellsRbR, TString pdfName);
 void Plot2DCells(TString Block, Int_t runNo, std::vector<Int_t> cellVectorMergeB, std::vector<Int_t> cellVectorMergeA);
 
+/// get all runnumbers from different groups
+/// and sort them to give a min and max range for the bad map.
+/// Run numbers are in your runList file.
+///________________________________________________________________________
+void Compare_RunNumbers(TString period="LHC15n",Int_t trainNo=603,TString runList1="",TString runList2="")
+{
+	//......................................................
+	//..PT. II open the 1st text file and save the run IDs into the RunId[] array
+	//......................................................
+	cout<<"o o o Open .txt file with run indices. Name = " << runList1 << endl;
+	TString RunPath1        = Form("./AnalysisInput/%s/Train_%i/%s",period.Data(),trainNo,runList1.Data());
+	cout<<"o o o Open .txt file with run indices = " << RunPath1 << endl;
+	FILE *pFile1 = fopen(RunPath1.Data(), "r");
+	if(!pFile1)
+	{
+		cout<<"couldn't open file "<<RunPath1<<"!"<<endl;
+		return;
+	}
+	Int_t q1;
+	Int_t ncols1;
+	Int_t nlines1 = 0 ;
+	std::vector<Int_t> RunIdVec1;
+	while (1)
+	{
+		ncols1 = fscanf(pFile1,"  %d ",&q1);
+		if (ncols1< 0) break;
+		RunIdVec1.push_back(q1);
+		nlines1++;
+	}
+	fclose(pFile1);
+	std::sort (RunIdVec1.begin(), RunIdVec1.end());
+	//......................................................
+	//..PT. II open the 2nd text file and save the run IDs into the RunId[] array
+	//......................................................
+	cout<<"o o o Open .txt file with run indices. Name = " << runList2 << endl;
+	TString RunPath2       = Form("./AnalysisInput/%s/Train_%i/%s",period.Data(),trainNo,runList2.Data());
+	cout<<"o o o Open .txt file with run indices = " << RunPath2 << endl;
+	FILE *pFile2 = fopen(RunPath2.Data(), "r");
+	if(!pFile2)
+	{
+		cout<<"couldn't open file "<<RunPath2<<"!"<<endl;
+		return;
+	}
+	Int_t q2;
+	Int_t ncols2;
+	Int_t nlines2 = 0 ;
+	std::vector<Int_t> RunIdVec2;
+	while (1)
+	{
+		ncols2 = fscanf(pFile2,"  %d ",&q2);
+		if (ncols2< 0) break;
+		RunIdVec2.push_back(q2);
+		nlines2++;
+	}
+	fclose(pFile2);
+	std::sort (RunIdVec2.begin(), RunIdVec2.end());
+
+	//......................................................
+	//..Find different elements in the runlists
+	//......................................................
+	//find runnumbers present in both lists
+
+	//this part is not yet working
+	//what it should do is find unique elements.
+	//means I compare list 1 and list 2 and I am interested in elements
+	//that are exclusivley in list1 or exclusivley in list2
+
+	std::vector<Int_t> RunIdVecSum;
+	cout<<"Elements in Vector Sum a ("<<RunIdVecSum.size()<<")"<<endl;
+	RunIdVecSum.insert( RunIdVecSum.end(),RunIdVec1.begin(), RunIdVec1.end());
+	cout<<"Elements in Vector Sum b("<<RunIdVecSum.size()<<")"<<endl;
+	RunIdVecSum.insert( RunIdVecSum.end(),RunIdVec2.begin(), RunIdVec2.end());
+	cout<<"Elements in Vector Sum c("<<RunIdVecSum.size()<<")"<<endl;
+	std::sort (RunIdVecSum.begin(), RunIdVecSum.end());
+
+	// using default comparison:
+	std::vector<int>::iterator it;
+	it = std::unique (RunIdVecSum.begin(), RunIdVecSum.end());
+	RunIdVecSum.resize( std::distance(RunIdVecSum.begin(),it) );
+	cout<<"Elements in Vector Sum d("<<RunIdVecSum.size()<<")"<<endl;
+
+
+	cout<<"Elements in Vector 1 ("<<RunIdVec1.size()<<")"<<endl;
+	cout<<"Elements in Vector 2 ("<<RunIdVec2.size()<<")"<<endl;
+
+	cout<<"##Unique elements in vector(not really) ("<<RunIdVecSum.size()<<"):"<<endl;
+	for(Int_t i=0;i<(Int_t)RunIdVecSum.size();i++)
+	{
+		cout<<RunIdVecSum.at(i)<<", "<<flush;
+	}
+	cout<<endl;
+}
 ///
 /// check where the bad cell is (row collumn), if you have only its ID
 /// or get it's ID if you have its row and collumn

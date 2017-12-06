@@ -269,7 +269,7 @@ void SummarizeRunByRun(TString period = "LHC15o", TString train = "Train_641", T
 		{
 			cout<<"Couldn't open/find .root file: "<<badChannelOutput<<endl;
 			cout<<endl;
-			break;
+			continue;
 		}
 
 		//..you may introduce a cut here, selecting only
@@ -465,8 +465,9 @@ void SummarizeRunByRun(TString period = "LHC15o", TString train = "Train_641", T
 	SetHisto(badCellsVsRun,"Run","No. of cells",0);
 	badCellsVsRun->GetYaxis()->SetTitleOffset(1.7);
 	badCellsVsRun->GetYaxis()->SetRangeUser(0,1300);
-	if(nRunsUsed>8)badCellsVsRun->GetXaxis()->SetLabelSize(0.06-0.1*(nRunsUsed-8)/4); //..lables should get smaller the more runs are on the x-axis
+	if(nRunsUsed>8)badCellsVsRun->GetXaxis()->SetLabelSize(0.06-0.01*(nRunsUsed-8)/4); //..lables should get smaller the more runs are on the x-axis
 	else badCellsVsRun->GetXaxis()->SetLabelSize(0.06);
+    if(nRunsUsed>24)badCellsVsRun->GetXaxis()->SetLabelSize(0.025);   //..labels should not be smaller than 0.025
 	badCellsVsRun->SetLineColor(kCyan+2);
 	badCellsVsRun->SetLineWidth(2);
 	badCellsVsRun->DrawCopy("hist");
@@ -607,7 +608,7 @@ void SummarizeRunByRun(TString period = "LHC15o", TString train = "Train_641", T
 	// Plot cells with low fraction if bad runs
 	// Double checks if they are really bad and re-includes them
 	//..................................................................
-	TString pdfName  = Form("%s/RunByRunSummary/%s_LowFractionCells",analysisOutput.Data(),listName.Data());
+	TString pdfName  = Form("%s/RunByRunSummary%i/%s_LowFractionCells",analysisOutput.Data(),nRunsUsed,listName.Data());
 	PlotLowFractionCells(pdfName,cellVector,hFlagvsRun,nRunsUsed,ampID,hCellGoodMean);
 
 	//..................................................................
@@ -881,7 +882,7 @@ void SummarizeRunByRun(TString period = "LHC15o", TString train = "Train_641", T
 	SetHisto(CompressedClean,"certain dead+bad cell (cleaned) pt.1","Run No.",1);
 	CompressedClean->GetXaxis()->SetRangeUser(0,nBadCells/2);
 	CompressedClean->SetFillColor(histCol);
-	if(nRunsUsed>8)CompressedClean->GetYaxis()->SetLabelSize(0.025-0.1*(nRunsUsed-8)/4); //..lables should get smaller the more runs are on the x-axis
+	if(nRunsUsed>8 && nRunsUsed<24)CompressedClean->GetYaxis()->SetLabelSize(0.025-0.1*(nRunsUsed-8)/4); //..lables should get smaller the more runs are on the x-axis
 	else CompressedClean->GetYaxis()->SetLabelSize(0.025);
 	CompressedClean->GetYaxis()->SetTitleOffset(0.7);
 	CompressedClean->DrawCopy("BOX");
@@ -890,7 +891,7 @@ void SummarizeRunByRun(TString period = "LHC15o", TString train = "Train_641", T
 	cFlagSumCompCleanII->cd()->SetBottomMargin(0.05);
 	cFlagSumCompCleanII->cd()->SetTopMargin(0.02);
 	SetHisto(CompressedClean,"certain dead+bad cell (cleaned) pt.2","Run No.",1);
-	if(nRunsUsed>8)CompressedClean->GetYaxis()->SetLabelSize(0.025-0.1*(nRunsUsed-8)/4); //..lables should get smaller the more runs are on the x-axis
+	if(nRunsUsed>8 && nRunsUsed<24)CompressedClean->GetYaxis()->SetLabelSize(0.025-0.1*(nRunsUsed-8)/4); //..lables should get smaller the more runs are on the x-axis
 	else CompressedClean->GetYaxis()->SetLabelSize(0.025);
 	CompressedClean->GetYaxis()->SetTitleOffset(0.7);
 	CompressedClean->GetXaxis()->SetRangeUser(nBadCells/2,nBadCells+2);
