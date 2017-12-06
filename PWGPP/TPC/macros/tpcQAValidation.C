@@ -14,7 +14,7 @@
   AliDrawStyle::ApplyStyle("figTemplate");
   //
   InitTPCValidation("LHC15o", "pass3_lowIR_pidfix",0,0); //short period
-  InitTPCValidation("LHC17p","cpass1_pass1",0,0);
+  //InitTPCValidation("LHC17p","cpass1_pass1",0,0);
   //
   MakeReport();
  
@@ -25,6 +25,10 @@
 
 \endcode
 */
+
+// TODO - show error message in case f missing information - instaead of failing
+//      - probelem can be emulated e.g excluding QA.EVS input
+//
 
 #include <TError.h>
 #include <TMultiGraph.h>
@@ -69,6 +73,12 @@ void makeHtml();
 void makeHtmlDCA();
 void MakeJSROOTHTML(TString prefix, TString outputName);
 
+void LoadStyles(){
+  AliDrawStyle::RegisterCssStyle("AliTreeTrending", AliDrawStyle::ReadCSSFile("$AliRoot_SRC/STAT/test/AliTreeTrending.css", 0));
+  AliDrawStyle::RegisterCssStyle("AliTreeTrending_QATPC", AliDrawStyle::ReadCSSFile("$AliPhysics_SRC/PWGPP/TPC/macros/TPCQAWebpage/QAtabs/AliTreeTrending_TPCQA.css", 0));
+
+}
+
 
 /// function to create a set of the comparison plots MC/AnchorRaw data
 /// \param mcPeriod    -  MC production name
@@ -88,7 +98,18 @@ void tpcQAValidation(const char *period, const char *pass, const char *sOutputDi
 /// \param doCheck - force check of the variables
 /// \param verbose - set verbosity for make alarms
 void makeTPCAlarms(TTree * treeQA, Bool_t doCheck,Int_t verbose){
-    ::Info("makeTPCalarms","Done with aliases");
+  ::Info("makeTPCalarms","Done with aliases");
+  // Alarms for the MIP QA per sector OFF
+  treeQA->SetAlias("gainCalib_Warning","Max$(abs(meanMIPvsSector.fElements/meanMIP-1)*(meanMIPvsSector.fElements/meanMIP>0.1))>0.015"); // Warning    1.5 % OFF
+  treeQA->SetAlias("gainCalib_Outlier","Max$(abs(meanMIPvsSector.fElements/meanMIP-1)*(meanMIPvsSector.fElements/meanMIP>0.1))>0.03");  // Outlier    3.% % OFF
+  treeQA->SetAlias("gainCalib_PhysAcc","Max$(abs(meanMIPvsSector.fElements/meanMIP-1)*(meanMIPvsSector.fElements/meanMIP>0.1))<0.02");  // Acceptable 2.% % ONN
+  treeQA->SetAlias("MIPquality_Warning",TString::Format("%s||gainCalib_Warning", treeQA->GetAlias("MIPquality_Warning")));
+  treeQA->SetAlias("MIPquality_Outlier",TString::Format("%s||gainCalib_Outlier", treeQA->GetAlias("MIPquality_Outlier")));
+  treeQA->SetAlias("MIPquality_PhysAcc",TString::Format("%s||gainCalib_PhysAcc", treeQA->GetAlias("MIPquality_PhysAcc")));
+
+
+
+
 }
 ///
 /// \param period
@@ -105,7 +126,7 @@ Bool_t InitTPCValidation(TString period, TString pass, Int_t verbose, Int_t doCh
   trendingDraw = new AliTreeTrending("QA validation","QA validation");
   trendingDraw->SetDefaultStyle();
   gStyle->SetOptTitle(0);
-  treeQA = externalInfo->GetTree("QA.TPC", period, pass, "QA.TPC;QA.TRD;QA.TOF;QA.ITS;Logbook;QA.rawTPC");
+  treeQA = externalInfo->GetTree("QA.TPC", period, pass, "QA.TPC;QA.TRD;QA.TOF;QA.ITS;Logbook;QA.EVS;QA.rawTPC;Logbook.detector:TPC:detector==\"TPC\"");
   //
   makeTPCAlarms(treeQA, doCheck, verbose);
   TString sStatusBarVars("MIPquality;dcaz;dcar;tpcItsMatch;meanTPCncl;itsTpcPulls");
@@ -121,7 +142,7 @@ Bool_t InitTPCValidation(TString period, TString pass, Int_t verbose, Int_t doCh
   treeQA->SetAlias("present","run>0");
   treeQA->SetAlias("defaultCut", "run==QA.TPC.run");
   Bool_t initStatus=trendingDraw->InitSummaryTrending(statusString, 0.015, "defaultCut");
-
+  makeTPCAlarms(treeQA,doCheck,verbose);
 
   // treeQA->SetAlias("defaultCut", "run>0");   // TODO enable all runs - need to make reorting of the multigraphs
   if (initStatus) {
@@ -139,6 +160,22 @@ void MakeReport() {
 
   trendingDraw->fWorkingCanvas->Clear();
   trendingDraw->fWorkingCanvas->Print(TString(outputDir) + "/report.pdf]", "pdf");
+  //
+    // 1.) Event properties  ($AliPhysic_SRC/PWGPP/TPC/macros/TPCQAWebpage/MCAnchor/tabEvent.html)
+  trendingDraw->MakePlot(outputDir, "interactionRate.png", "Interaction rate", cRange, "",
+                         "Logbook.averageEventsPerSecond;QA.EVS.interactionRate:run", "defaultCut", "figTemplateTRD",
+                         "figTemplateTRD", 1, 1, 4, kTRUE);
+  trendingDraw->MakePlot(outputDir, "runDuration.png", "Run duration ", cRange, "", "Logbook.runDuration:run",
+                         "defaultCut", "figTemplateTRD", "figTemplateTRD", 1, 1.0, 4, kTRUE);
+  trendingDraw->MakePlot(outputDir, "bField.png", "Magnet current", cRange, "", "Logbook.L3_magnetCurrent:run",
+                         "defaultCut", "figTemplateTRD", "figTemplateTRD", 1, 1.0, 3, kTRUE);
+  trendingDraw->MakePlot(outputDir, "eventCounters.png", "Event counters ", cRange, "",
+                         "Logbook.totalEvents;totalEventsPhysics;totalEventsCalibration;Logbook.detector_TPC.eventCountPhysics;TPC.Anchor.nEvents;QA.TPC.nEvents:run",
+                         "defaultCut", "figTemplateTRD", "figTemplateTRD", 1, 1.0, 4, kFALSE);
+
+
+
+
 }
 
 
