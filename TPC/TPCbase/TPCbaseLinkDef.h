@@ -143,7 +143,7 @@
 #pragma link C++ class AliTPCTrackPoint2+;    // defined in AliComplexCluster.h - moved from TPCrec
 #pragma link C++ class AliTPCSAMPAEmulator+;   //UTIL SAMPA emulator
 
-#pragma link C++ class AliTPC3DCylindricalInterpolator+;       
+#pragma link C++ class AliTPC3DCylindricalInterpolator+;
 #pragma link C++ class AliTPC3DCylindricalInterpolatorFull+;
 #pragma link C++ class AliTPCLookUpTable3DInterpolatorD+;
 #pragma link C++ class AliTPCLookUpTable3DInterpolatorDFull+;
