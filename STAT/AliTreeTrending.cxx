@@ -532,6 +532,45 @@ void AliTreeTrending::MakeStatusPlot(const char *outputDir, const char *figureNa
   AliSysInfo::AddStamp(expression.Data(),3,counter++);
 }
 
+///
+/// \param figureName       - figure name
+/// \param bandNamePrefix   - band prefix
+/// \param selection        - selection
+/// \param groupName        - group name (used to specify class or properties)
+/// TODO- finish implementation
+void AliTreeTrending::AppendDefaultBandsMinMax(const char *outputDir, const char *figureName, const char * bandNamePrefix, const char * selection, const char* groupName /*other drawing variable  TString style*/ ){
+  TMultiGraph *mGraph=0;
+  const char* aType[6]={"WarningMin","WarningMax","OutlierMin","OutlierMax","PhysAccMin","PhysAccMax"}; //yellow 400 ,red 632 ,green 416/
+  TString expr;
+  for(Int_t itype=0; itype<6; itype++){
+    expr = bandNamePrefix+TString(aType[itype])+TString(":run");
+    mGraph = TStatToolkit::MakeMultGraph(fTree,"",expr,selection, "figTemplateTRDPair", "figTemplateTRDPair",kTRUE,0,6,0,kTRUE);
+    if(!mGraph){
+      ::Error("MakePlot","No plot returned -> dummy plot!");
+    }
+    else {
+      if (kTRUE) TStatToolkit::RebinSparseMultiGraph(mGraph,(TGraph*)fStatusGraphM->GetListOfGraphs()->At(0));
+      for(Int_t it=0; it<mGraph->GetListOfGraphs()->GetSize(); it++){
+        TGraph* band = (TGraph*) mGraph->GetListOfGraphs()->At(it);
+        if (groupName && strlen(groupName)>1){    // example  groupName=".class(multiGraphPair).{marker_style:25,21,22,23;marker_color:1,2,4,5;}"
+          band->SetName(TString::Format("graph[%d]%s",itype,groupName).Data());
+        }else {
+          band->SetName(TString::Format("graph[%d].class(deadBand)", itype).Data());
+        }
+        // TODO add group name if exist
+        AliDrawStyle::TGraphApplyStyle(fCurrentCssStyle,band); //"testStyle" to be changed to fCurrenCSSStyle
+      }
+      TStatToolkit::DrawMultiGraph(mGraph,"l");
+    }
+  }
+  if(outputDir!=0){
+    fWorkingCanvas->SaveAs(TString(outputDir)+"/"+TString(figureName));
+    fWorkingCanvas->Print(TString(outputDir)+"/report.pdf");
+    if (fReport) {fReport->cd();fWorkingCanvas->Write(figureName);}
+  }
+  static Int_t counter=0;
+  AliSysInfo::AddStamp(expr,2,counter++);
+}
 
 
 ///
