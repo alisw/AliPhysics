@@ -109,6 +109,12 @@ set(SRCS
     AliTransform.cxx
     AliXRDPROOFtoolkit.cxx
     AliTPCSAMPAEmulator.cxx
+        AliTPC3DCylindricalInterpolator.cxx
+        AliTPC3DCylindricalInterpolatorFull.cxx
+        AliTPCLookUpTable3DInterpolatorD.cxx
+        AliTPCLookUpTable3DInterpolatorDFull.cxx
+        AliTPCPoissonSolver.cxx
+        AliTPCSpaceCharge3DDriftLine.cxx
    )
 
 # Headers from sources
