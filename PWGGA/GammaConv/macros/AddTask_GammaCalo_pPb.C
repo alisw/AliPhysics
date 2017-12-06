@@ -352,13 +352,13 @@ void AddTask_GammaCalo_pPb(
     cuts.AddCut("80000113","1111143057032230000","0163103100000060"); // CCRF testbeam nonlin
     cuts.AddCut("80000113","1111144057032230000","0163103100000060"); // CRF testbeam nonlin
     cuts.AddCut("80000113","1111102057032230000","0163103100000060"); // testbeam nonlin
-  } else if (trainConfig == 37){ // TM variations
+  } else if (trainConfig == 37){ // M02 variations
     cuts.AddCut("80000113","11111410570322c0000","01631031000000d0"); // MB std
     cuts.AddCut("80000113","1111141057032200000","01631031000000d0"); // no M02
     cuts.AddCut("80000113","11111410570322k0000","01631031000000d0"); // M02, pT-dep with 0.27-0.5
     cuts.AddCut("80000113","11111410570322l0000","01631031000000d0"); // M02, pT-dep with 0.32-0.5
     cuts.AddCut("80000113","11111410570322m0000","01631031000000d0"); // M02, pT-dep with 0.32-0.7
-  } else if (trainConfig == 38){ // TM variations
+  } else if (trainConfig == 38){ // M02 variations
     cuts.AddCut("80000113","11111410570322n0000","01631031000000d0"); // M02, pT-dep with 0.32-0.7
     cuts.AddCut("80000113","11111410570322o0000","01631031000000d0"); // M02, pT-dep with 0.27-0.7
     cuts.AddCut("80000113","11111410570322p0000","01631031000000d0"); // M02, pT-dep with 0.32-0.7

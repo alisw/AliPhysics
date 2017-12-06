@@ -208,7 +208,8 @@ AliAnalysisTaskGammaCaloMerged::AliAnalysisTaskGammaCaloMerged(): AliAnalysisTas
   fEnableDetailedPrintOut(kFALSE),
   fEnableSortForClusMC(kFALSE),
   tBrokenFiles(NULL),
-  fFileNameBroken(NULL)
+  fFileNameBroken(NULL),
+  fDoDetailedM02(NULL)
 {
 
 }
@@ -361,7 +362,8 @@ AliAnalysisTaskGammaCaloMerged::AliAnalysisTaskGammaCaloMerged(const char *name)
   fEnableDetailedPrintOut(kFALSE),
   fEnableSortForClusMC(kFALSE),
   tBrokenFiles(NULL),
-  fFileNameBroken(NULL)
+  fFileNameBroken(NULL),
+  fDoDetailedM02(NULL)
 {
   // Define output slots here
   DefineOutput(1, TList::Class());
@@ -440,6 +442,7 @@ void AliAnalysisTaskGammaCaloMerged::UserCreateOutputObjects(){
   Float_t startShowerShape                    = 0;
   Float_t endShowerShape                      = 5;
 
+  if (fDoDetailedM02) showerShapeBins         = 5000;
 
   // Create histograms
   if(fOutputContainer != NULL){

@@ -77,6 +77,7 @@ void AddTask_GammaCaloMerged_pp(  Int_t     trainConfig                 = 1,    
                                   Bool_t    runLightOutput              = kFALSE,             // switch to run light output (only essential histograms for afterburner)
                                   Double_t  minEnergyForExoticsCut      = 1.0,                // minimum energy to be used for exotics CutHandler
                                   Bool_t    runQAForExotics             = kFALSE,             // switch to run QA for exotic clusters
+                                  Bool_t    runDetailedM02              = kFALSE,             // switch on very detailed M02 distribution
                                   TString   additionalTrainConfig       = "0"                 // additional counter for trainconfig, always has to be last parameter
 ) {
   TH1S* histoAcc = 0x0;         // histo for modified acceptance
@@ -1035,6 +1036,7 @@ void AddTask_GammaCaloMerged_pp(  Int_t     trainConfig                 = 1,    
     analysisMesonCuts[i]->SetFillCutHistograms("");
     analysisEventCuts[i]->SetAcceptedHeader(HeaderList);
   }
+  task->SetEnableDetailedM02Distribtuon(runDetailedM02);
   task->SetSelectedMesonID(selectedMeson);
   task->SetEventCutList(numberOfCuts,EventCutList);
   task->SetCaloCutList(numberOfCuts,ClusterCutList);

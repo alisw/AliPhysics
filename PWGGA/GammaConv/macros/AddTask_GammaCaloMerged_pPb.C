@@ -73,6 +73,7 @@ void AddTask_GammaCaloMerged_pPb( Int_t     trainConfig                 = 1,    
                                   TString   periodNameV0Reader          = "",                 // set period name for V0 Reader
                                   Bool_t    enableSortingMCLabels       = kTRUE,              // enable sorting for MC cluster labels
                                   Bool_t    runLightOutput              = kFALSE,             // switch to run light output (only essential histograms for afterburner)
+                                  Bool_t    runDetailedM02              = kFALSE,             // switch on very detailed M02 distribution
                                   TString   additionalTrainConfig       = "0"                 // additional counter for trainconfig, this has to be always the last parameter
 ) {
 
@@ -363,6 +364,7 @@ void AddTask_GammaCaloMerged_pPb( Int_t     trainConfig                 = 1,    
     analysisMesonCuts[i]->SetFillCutHistograms("");
     analysisEventCuts[i]->SetAcceptedHeader(HeaderList);
   }
+  task->SetEnableDetailedM02Distribtuon(runDetailedM02);
   task->SetEventCutList(numberOfCuts,EventCutList);
   task->SetCaloCutList(numberOfCuts,ClusterCutList);
   task->SetCaloMergedCutList(numberOfCuts,ClusterMergedCutList);
