@@ -161,7 +161,8 @@ void MakeReport() {
   trendingDraw->fWorkingCanvas->Clear();
   trendingDraw->fWorkingCanvas->Print(TString(outputDir) + "/report.pdf]", "pdf");
   //
-    // 1.) Event properties  ($AliPhysic_SRC/PWGPP/TPC/macros/TPCQAWebpage/MCAnchor/tabEvent.html)
+  // 1.) Event properties  ($AliPhysic_SRC/PWGPP/TPC/macros/TPCQAWebpage/QAtabs/tabEvent.html)
+  // TODO - add meanMultPosNeg.png to the tabs
   trendingDraw->MakePlot(outputDir, "interactionRate.png", "Interaction rate", cRange, "",
                          "Logbook.averageEventsPerSecond;QA.EVS.interactionRate:run", "defaultCut", "figTemplateTRD",
                          "figTemplateTRD", 1, 1, 4, kTRUE);
@@ -170,10 +171,56 @@ void MakeReport() {
   trendingDraw->MakePlot(outputDir, "bField.png", "Magnet current", cRange, "", "Logbook.L3_magnetCurrent:run",
                          "defaultCut", "figTemplateTRD", "figTemplateTRD", 1, 1.0, 3, kTRUE);
   trendingDraw->MakePlot(outputDir, "eventCounters.png", "Event counters ", cRange, "",
-                         "Logbook.totalEvents;totalEventsPhysics;totalEventsCalibration;Logbook.detector_TPC.eventCountPhysics;TPC.Anchor.nEvents;QA.TPC.nEvents:run",
+                         "Logbook.totalEvents;totalEventsPhysics;totalEventsCalibration;Logbook.detector_TPC.eventCountPhysics;QA.TPC.nEvents:run",
                          "defaultCut", "figTemplateTRD", "figTemplateTRD", 1, 1.0, 4, kFALSE);
+  trendingDraw->MakePlot(outputDir, "meanMult.png", "Mean TPC multiplicity (|DCA|<3 cm)", cRange, "",
+                         "QA.TPC.meanMult:run", "defaultCut", "figTemplateTRDPair",
+                         "figTemplateTRDPair", 1, 1.0, 4, kTRUE);
+  trendingDraw->MakePlot(outputDir, "meanMultPos.png", "Mean TPC multiplicity (q>0, |DCA|<3 cm)", cRange, "",
+                         "QA.TPC.meanMultPos:run", "defaultCut", "figTemplateTRDPair",
+                         "figTemplateTRDPair", 1, 1.0, 4, kTRUE);
+  trendingDraw->MakePlot(outputDir, "meanMultNeg.png", "Mean TPC multiplicity (q<0, |DCA|<3 cm)", cRange, "",
+                         "QA.TPC.meanMultNeg:run", "defaultCut", "figTemplateTRDPair",
+                         "figTemplateTRDPair", 1, 1.0, 4, kTRUE);
+  trendingDraw->MakePlot(outputDir, "meanMultPosNeg.png", "Mean TPC multiplicity Pos/Neg ( |DCA|<3 cm)", cRange, "",
+                         "QA.TPC.meanMultPos/QA.TPC.meanMultNeg:run", "defaultCut", "figTemplateTRDPair",
+                         "figTemplateTRDPair", 1, 1.0, 4, kTRUE);
+  trendingDraw->MakePlot(outputDir, "meanVertX.png", "Vertex X ", cRange, "",
+                         "QA.TPC.meanVertX;meanVtxSPDx;meanVtxTRKx:run", "defaultCut", "figTemplateTRDPair",
+                         "figTemplateTRDPair", 1, 1.0, 6, kFALSE);
+  trendingDraw->MakePlot(outputDir, "meanVertY.png", "Vertex Y", cRange, "",
+                         "QA.TPC.meanVertY;meanVtxSPDy;meanVtxTRKy:run", "defaultCut", "figTemplateTRDPair",
+                         "figTemplateTRDPair", 1, 1.0, 6, kFALSE);
+  trendingDraw->MakePlot(outputDir, "meanVertZ.png", "Vertex Z", cRange, "",
+                         "QA.TPC.meanVertZ;meanVtxSPDz;meanVtxTRKz:run", "defaultCut", "figTemplateTRDPair",
+                         "figTemplateTRDPair", 1, 1.0, 6, kFALSE);
 
+  //
+  // 2.) Number of clusters comparison ($AliPhysic_SRC/PWGPP/TPC/macros/TPCQAWebpage/QAtabs/tabNcl.html)
+  // TODO: Add all estimators fo missing chambers (Ncl, Voltage, RawQA, tracks)
+  //       Check all of the graphs and check tabNcl
+  //       Suggest modication for the alarms
+  //                *  (accepting bigger Nck, NFindebale)
+  //                *  correct Ncl for the Interaction rate
+  trendingDraw->MakePlot(outputDir, "meanTPCncl.png", "Number of clusters", cRange, "",
+                         "QA.TPC.meanTPCncl:run", "defaultCut", "figTemplateTRDPair",
+                         "figTemplateTRDPair", 1, 1.0, 5, kTRUE);
+  trendingDraw->AppendDefaultBands(outputDir,"meanTPCncl.png","QA.TPC.meanTPCncl", "absDiff.QA.TPC.meanTPCncl", "defaultCut","");
 
+  trendingDraw->MakePlot(outputDir, "meanTPCnclFindable.png", "Cluster fraction #left(#frac{N_{cl}}{N_{find.}}#right)",
+                         cRange, "", "QA.TPC.meanTPCnclF;TPC.Anchor.meanTPCnclF:run", "defaultCut",
+                         "figTemplateTRDPair", "figTemplateTRDPair", 1, 1.0, 5, kTRUE);
+  trendingDraw->AppendDefaultBands(outputDir,"meanTPCnclFindable.png","QA.TPC.meanTPCnclF", "absDiff.QA.TPC.meanTPCnclF", "defaultCut","");
+
+  trendingDraw->MakePlot(outputDir, "meanTPCNclRatioMCtoAnchor.png", "Number of clusters MC/Anchor", cRange, "",
+                         "meanTPCncl/TPC.Anchor.meanTPCncl;meanTPCnclF/TPC.Anchor.meanTPCnclF:run", "defaultCut",
+                         "figTemplateTRDPair", "figTemplateTRDPair", 1, 1.0, 5, kTRUE);
+  trendingDraw->MakePlot(outputDir, "iroc.png", "IROC #chambers", cRange, "",
+                         "iroc_A_side;TPC.Anchor.iroc_A_side;iroc_C_side;TPC.Anchor.iroc_C_side:run", "defaultCut",
+                         "figTemplateTRDPair", "figTemplateTRDPair", 1, 1.0, 4, kTRUE);
+  trendingDraw->MakePlot(outputDir, "oroc.png", "OROC #chambers", cRange, "",
+                         "oroc_A_side;TPC.Anchor.oroc_A_side;oroc_C_side;TPC.Anchor.oroc_C_side:run", "defaultCut",
+                         "figTemplateTRDPair", "figTemplateTRDPair", 1, 1.0, 4, kTRUE);
 
 
 }
