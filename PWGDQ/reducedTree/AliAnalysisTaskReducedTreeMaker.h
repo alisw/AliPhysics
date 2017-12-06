@@ -143,11 +143,11 @@ public:
   Double_t  fScaleDownEventsWithNoSelectedTracks; // scale down factor for events with no selected track candidates in the main track array
   Bool_t    fWriteSecondTrackArray;       // write second array only if full+base tracks requested
   Bool_t    fSetTrackFilterUsed;          // specifier if SetTrackFilter method was used
-  std::vector<Bool_t> fWriteBaseTrack;    // specifier if tracks for certain track filter are reduced or base tracks
-  std::vector<TString> fTrackFilterName;  // vector containing names for different track filters
+  std::vector<Bool_t>   fWriteBaseTrack;  // specifier if tracks for certain track filter are reduced or base tracks
+  std::vector<TString>  fTrackFilterName; // vector containing names for different track filters
 
   TH2I*  fEventsHistogram;      // event statistics histogram
-  TH1I*  fTracksHistogram;      // track statistics histogram
+  TH2I*  fTracksHistogram;      // track statistics histogram
 
   Bool_t fFillTrackInfo;            // fill track information
   Bool_t fFillV0Info;               // fill the V0 information
@@ -218,6 +218,6 @@ public:
   AliAnalysisTaskReducedTreeMaker(const AliAnalysisTaskReducedTreeMaker &c);
   AliAnalysisTaskReducedTreeMaker& operator= (const AliAnalysisTaskReducedTreeMaker &c);
 
-  ClassDef(AliAnalysisTaskReducedTreeMaker, 7); //Analysis Task for creating a reduced event information tree
+  ClassDef(AliAnalysisTaskReducedTreeMaker, 8); //Analysis Task for creating a reduced event information tree
 };
 #endif

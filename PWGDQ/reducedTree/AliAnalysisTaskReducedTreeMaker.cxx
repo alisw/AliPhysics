@@ -235,7 +235,7 @@ AliAnalysisTaskReducedTreeMaker::AliAnalysisTaskReducedTreeMaker(const char *nam
   if(writeTree) {
     DefineOutput(2, TTree::Class());  // reduced information tree
     DefineOutput(3, TH2I::Class());   // reduced information tree
-    DefineOutput(4, TH1I::Class());   // reduced information tree
+    DefineOutput(4, TH2I::Class());   // reduced information tree
   }
 }
 
@@ -372,17 +372,21 @@ void AliAnalysisTaskReducedTreeMaker::UserCreateOutputObjects()
      fEventsHistogram->GetXaxis()->SetBinLabel(i, selectionNames[i-1]);
   
   // track statistics histogram
-  Int_t nBins = fTrackFilter.GetEntries()+3;
-  Double_t xMin = -3.5;
+  Int_t nBins = fTrackFilter.GetEntries()+4;
+  Double_t xMin = -4.5;
   Double_t xMax = xMin + nBins;
-  fTracksHistogram = new TH1I("TrackStatistics", "Track statistics for passed track filters", nBins, xMin, xMax);
-  fTracksHistogram->GetYaxis()->SetTitle("numer of tracks");
-  fTracksHistogram->GetXaxis()->SetBinLabel(1, "written to tree, track filter passed");
-  fTracksHistogram->GetXaxis()->SetBinLabel(2, "used for V0, no track filter passed");
-  fTracksHistogram->GetXaxis()->SetBinLabel(3, "any track filter passed");
-  for (Int_t i=4; i<nBins+1; i++) {
-    if ((fTrackFilterName.at(i-4)).CompareTo("")) fTracksHistogram->GetXaxis()->SetBinLabel(i, Form("%s passed", (fTrackFilterName.at(i-4)).Data()));
-    else                                          fTracksHistogram->GetXaxis()->SetBinLabel(i, Form("filter %d passed", i-4));
+  fTracksHistogram = new TH2I("TrackStatistics", "Track statistics", nBins, xMin, xMax, 3, 0.5, 3.5);
+  const Char_t* yLabels[3] = {"base tracks", "full tracks", "total"};
+  const Char_t* xLabels[4] = {"written to tree", "written to tree, one track filter passed", "written to tree, several track filters passed", "written to tree, no track filter passed"};
+  for (Int_t i=1; i<=3; i++)
+    fTracksHistogram->GetYaxis()->SetBinLabel(i, yLabels[i-1]);
+  for (Int_t i=1; i<=4; i++)
+    fTracksHistogram->GetXaxis()->SetBinLabel(i, xLabels[i-1]);
+  for (Int_t i=5; i<nBins+1; i++) {
+    if ((fTrackFilterName.at(i-5)).CompareTo(""))
+      fTracksHistogram->GetXaxis()->SetBinLabel(i, Form("%s passed", (fTrackFilterName.at(i-5)).Data()));
+    else
+      fTracksHistogram->GetXaxis()->SetBinLabel(i, Form("filter %d passed", i-5));
   }
 
   // set a seed for the random number generator
@@ -643,16 +647,51 @@ void AliAnalysisTaskReducedTreeMaker::FillTrackStatisticsHistogram(std::vector<B
   // fill track statistics histogram
   //
   if (!fTrackFilter.GetEntries()) return;
-  Bool_t passedTrackFilters = kFALSE;
+  Bool_t fullTracksV0 = kFALSE;
+  if (fTreeWritingOption==kBaseEventsWithFullTracks || fTreeWritingOption==kFullEventsWithFullTracks) fullTracksV0 = kTRUE;
+  Int_t nPassedFiltersBase = 0;
+  Int_t nPassedFiltersFull = 0;
+  // individual filters
   for (Int_t i=0; i<fTrackFilter.GetEntries(); i++) {
     if (filterDecision[i]) {
-      passedTrackFilters = kTRUE;
-      fTracksHistogram->Fill(i);
-      fTracksHistogram->Fill(-1);
+      fTracksHistogram->Fill(i, 3);
+      if (!fWriteBaseTrack[i]) {
+        fTracksHistogram->Fill(i, 2);
+        nPassedFiltersFull++;
+      } else {
+        fTracksHistogram->Fill(i, 1);
+        nPassedFiltersBase++;
+      }
     }
   }
-  if (passedTrackFilters)                 fTracksHistogram->Fill(-3);
-  if (usedForV0Or && !passedTrackFilters) fTracksHistogram->Fill(-2);
+  // written to tree
+  if (nPassedFiltersFull || nPassedFiltersBase) {
+                            fTracksHistogram->Fill(-4, 3);
+    if (nPassedFiltersFull) fTracksHistogram->Fill(-4, 2);
+    else                    fTracksHistogram->Fill(-4, 1);
+  } else if (usedForV0Or) {
+                            fTracksHistogram->Fill(-4, 3);
+    if (fullTracksV0)       fTracksHistogram->Fill(-4, 2);
+    else                    fTracksHistogram->Fill(-4, 1);
+  }
+  // written to tree, one track filter passed
+  if (nPassedFiltersFull==1 || nPassedFiltersBase==1) {
+                                fTracksHistogram->Fill(-3, 3);
+    if (nPassedFiltersFull==1)  fTracksHistogram->Fill(-3, 2);
+    else                        fTracksHistogram->Fill(-3, 1);
+  }
+  // written to tree, several track filters passed
+  if (nPassedFiltersFull>1 || nPassedFiltersBase>1) {
+                              fTracksHistogram->Fill(-2, 3);
+    if (nPassedFiltersFull>1) fTracksHistogram->Fill(-2, 2);
+    else                      fTracksHistogram->Fill(-2, 1);
+  }
+  // written to tree, no track filter passed
+  if (usedForV0Or && !nPassedFiltersFull && !nPassedFiltersBase) {
+                      fTracksHistogram->Fill(-1, 3);
+    if (fullTracksV0) fTracksHistogram->Fill(-1, 2);
+    else              fTracksHistogram->Fill(-1, 1);
+  }
 }
 
 //_________________________________________________________________________________
