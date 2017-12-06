@@ -110,9 +110,9 @@ set(SRCS
     AliXRDPROOFtoolkit.cxx
     AliTPCSAMPAEmulator.cxx
         AliTPC3DCylindricalInterpolator.cxx
-        AliTPC3DCylindricalInterpolatorFull.cxx
+        AliTPC3DCylindricalInterpolatorIrregular.cxx
         AliTPCLookUpTable3DInterpolatorD.cxx
-        AliTPCLookUpTable3DInterpolatorDFull.cxx
+        AliTPCLookUpTable3DInterpolatorIrregularD.cxx
         AliTPCPoissonSolver.cxx
         AliTPCSpaceCharge3DDriftLine.cxx
    )

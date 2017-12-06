@@ -1,623 +1,185 @@
 #include "AliTPCLookUpTable3DInterpolatorD.h"
-#include "TVectorD.h"
-#include "TMatrixD.h"
-#include "TDecompLU.h"
-
 
 /// \cond CLASSIMP3
 ClassImp(AliTPCLookUpTable3DInterpolatorD)
 /// \endcond
 
 
-
-AliTPCLookUpTable3DInterpolatorD::AliTPCLookUpTable3DInterpolatorD()
-{	
-	fOrder = 1;
-	fIsAllocatingLookUp = kFALSE;
+/// constructor
+AliTPCLookUpTable3DInterpolatorD::AliTPCLookUpTable3DInterpolatorD() {
+  fOrder = 1;
+  fIsAllocatingLookUp = kFALSE;
 }
 
+/// constructor
+///
+/// \param nRRow Int_t size of grid in R direction
+/// \param rMin  Double_t minimal value of R
+/// \param rMax  Double_t maximal value of R
+/// \param nPhiSlice Int_t size of grid Phi direction
+/// \param phiMin Double_t minimal value of Phi
+/// \param phiMax Double_t maximal value of Phi
+/// \param nZColumn Int_t size of grid Z direction
+/// \param zMin Double_t minimal value of Z
+/// \param zMax Double_t maximal value of Z
+AliTPCLookUpTable3DInterpolatorD::AliTPCLookUpTable3DInterpolatorD(Int_t nRRow, Double_t rMin, Double_t rMax,
+                                                                   Int_t nPhiSlice,
+                                                                   Double_t phiMin, Double_t phiMax, Int_t nZColumn,
+                                                                   Double_t zMin, Double_t zMax) {
+  fOrder = 1;
+  fIsAllocatingLookUp = kTRUE;
 
+  fNR = nRRow;
+  fNPhi = nPhiSlice;
+  fNZ = nZColumn;
 
-AliTPCLookUpTable3DInterpolatorD::AliTPCLookUpTable3DInterpolatorD
-(
-	Int_t nr, 
-	Double_t rmin, 
-	Double_t rmax, 
-	Int_t nphi, 
-	Double_t phimin, 
-	Double_t phimax, 
-	Int_t nz , 
-	Double_t zmin, 
-	Double_t zmax
-)
-{
-	fOrder = 1;
-	fIsAllocatingLookUp = kTRUE;
-	
-	fNR = nr;
-	fNPhi = nphi;
-	fNZ = nz;
-	
-	fLookUpR = new TMatrixD*[fNPhi];
-	fLookUpPhi = new TMatrixD*[fNPhi];
-	fLookUpZ = new TMatrixD*[fNPhi];
-	
-	for (Int_t m=0;m < fNPhi;m++) {
-		fLookUpR[m] = new TMatrixD(fNR,fNZ);   ///< Array to store distterortion followind the drift
-		fLookUpPhi[m] = new TMatrixD(fNR,fNZ); ;   ///< Array to store distortion followind the drift
-		fLookUpZ[m] = new TMatrixD(fNR,fNZ); ;   ///< Array to store distortion followind the drift
-	}	
-	
-	fRlist = new Double_t[fNR];
-	fPhilist = new Double_t[fNPhi];
-	fZlist = new Double_t[fNZ];
-	
-	Double_t dr = (rmax - rmin) / fNR;
-	Double_t dphi = (phimax - phimin) / fNPhi;
-	Double_t dz = (zmax - zmin) / fNPhi;
-	
-	for (Int_t m=0;m<fNPhi;m++)  fPhilist[m] = phimin + dphi * m;
-	for (Int_t m=0;m<fNR;m++)  fRlist[m] = rmin + dr * m;
-	for (Int_t m=0;m<fNZ;m++)  fZlist[m] = zmin + dz * m;
-	
-	
-	
-	
+  fLookUpR = new TMatrixD *[fNPhi];
+  fLookUpPhi = new TMatrixD *[fNPhi];
+  fLookUpZ = new TMatrixD *[fNPhi];
+
+  for (Int_t m = 0; m < fNPhi; m++) {
+    fLookUpR[m] = new TMatrixD(fNR, fNZ);
+    fLookUpPhi[m] = new TMatrixD(fNR, fNZ);
+    fLookUpZ[m] = new TMatrixD(fNR, fNZ);
+  }
+
+  fRList = new Double_t[fNR];
+  fPhiList = new Double_t[fNPhi];
+  fZList = new Double_t[fNZ];
+
+  Double_t dR = (rMax - rMin) / fNR;
+  Double_t dPhi = (phiMax - phiMin) / fNPhi;
+  Double_t dZ = (zMax - zMin) / fNPhi;
+
+  for (Int_t m = 0; m < fNPhi; m++) fPhiList[m] = phiMin + dPhi * m;
+  for (Int_t m = 0; m < fNR; m++) fRList[m] = rMin + dR * m;
+  for (Int_t m = 0; m < fNZ; m++) fZList[m] = zMin + dZ * m;
 }
 
+/// Constructor
+///
+/// \param nRRow Int_t size of grid in R direction
+/// \param matricesRValue TMatrixD** values of component R
+/// \param rList Double_t* list of position R
+/// \param nPhiSlice Int_t size of grid in Phi direction
+/// \param matricesPhiValue TMatrixD** values of component Phi
+/// \param phiList Double_t* list of position Phi
+/// \param nZColumn Int_t size of grid in Z direction
+/// \param matricesZValue TMatrixD** values of component Z
+/// \param zList Double_t* list of position Z
+/// \param order Int_t order of interpolation
+AliTPCLookUpTable3DInterpolatorD::AliTPCLookUpTable3DInterpolatorD(
+        Int_t nRRow, TMatrixD **matricesRValue, Double_t *rList,
+        Int_t nPhiSlice, TMatrixD **matricesPhiValue, Double_t *phiList,
+        Int_t nZColumn, TMatrixD **matricesZValue, Double_t *zList, Int_t order) {
+  fIsAllocatingLookUp = kFALSE;
 
-AliTPCLookUpTable3DInterpolatorD::AliTPCLookUpTable3DInterpolatorD
-(
-	Int_t nr, 
-	TMatrixD**lookupr, 
-	Double_t *rlist, 
-	Int_t nphi, 
-	TMatrixD**lookupphi, 
-	Double_t *philist,
-	Int_t nz, 
-	TMatrixD**lookupz, 
-	Double_t *zlist,
-	Int_t order
-)
-{
-	fIsAllocatingLookUp = kFALSE;
-	
-	
-	SetNR(nr);
-	SetLookUpR(lookupr);	
-	SetRList(rlist);
-	
-	SetNPhi(nphi);
-	SetLookUpPhi(lookupphi);
-	SetPhiList(philist);
-	
-	SetNZ(nz);
-	SetLookUpZ(lookupz);
-	SetZList(zlist);	
-	SetOrder(order);
+  SetNR(nRRow);
+  SetLookUpR(matricesRValue);
+  SetRList(rList);
+  SetNPhi(nPhiSlice);
+  SetLookUpPhi(matricesPhiValue);
+  SetPhiList(phiList);
+  SetNZ(nZColumn);
+  SetLookUpZ(matricesZValue);
+  SetZList(zList);
+  SetOrder(order);
 
+  fInterpolatorR = new AliTPC3DCylindricalInterpolator();
+  fInterpolatorZ = new AliTPC3DCylindricalInterpolator();
+  fInterpolatorPhi = new AliTPC3DCylindricalInterpolator();
 
-	fInterpolatorR = new AliTPC3DCylindricalInterpolator();
-	fInterpolatorZ = new AliTPC3DCylindricalInterpolator();
-	fInterpolatorPhi = new AliTPC3DCylindricalInterpolator();
-	
-	fInterpolatorR->SetNR(nr);
-	fInterpolatorR->SetNZ(nz);
-	fInterpolatorR->SetNPhi(nphi);
-	fInterpolatorR->SetRList(rlist);
-	fInterpolatorR->SetZList(zlist);
-	fInterpolatorR->SetPhiList(philist);
-	fInterpolatorR->SetOrder(order);
-	
-	//interpolatorR->SetValue(lookupr);
-	
-	fInterpolatorZ->SetNR(nr);
-	fInterpolatorZ->SetNZ(nz);
-	fInterpolatorZ->SetNPhi(nphi);
-	fInterpolatorZ->SetRList(rlist);
-	fInterpolatorZ->SetZList(zlist);
-	fInterpolatorZ->SetPhiList(philist);
-	fInterpolatorZ->SetOrder(order);
-	
-	//interpolatorZ->SetValue(lookupz);
-	
-	
-	fInterpolatorPhi->SetNR(nr);
-	fInterpolatorPhi->SetNZ(nz);
-	fInterpolatorPhi->SetNPhi(nphi);
-	fInterpolatorPhi->SetRList(rlist);
-	fInterpolatorPhi->SetZList(zlist);
-	fInterpolatorPhi->SetPhiList(philist);
-	fInterpolatorPhi->SetOrder(order);
-	//interpolatorZ->SetValue(lookupphi);
-	
+  fInterpolatorR->SetNR(nRRow);
+  fInterpolatorR->SetNZ(nZColumn);
+  fInterpolatorR->SetNPhi(nPhiSlice);
+  fInterpolatorR->SetRList(rList);
+  fInterpolatorR->SetZList(zList);
+  fInterpolatorR->SetPhiList(phiList);
+  fInterpolatorR->SetOrder(order);
+
+  fInterpolatorZ->SetNR(nRRow);
+  fInterpolatorZ->SetNZ(nZColumn);
+  fInterpolatorZ->SetNPhi(nPhiSlice);
+  fInterpolatorZ->SetRList(rList);
+  fInterpolatorZ->SetZList(zList);
+  fInterpolatorZ->SetPhiList(phiList);
+  fInterpolatorZ->SetOrder(order);
+
+  fInterpolatorPhi->SetNR(nRRow);
+  fInterpolatorPhi->SetNZ(nZColumn);
+  fInterpolatorPhi->SetNPhi(nPhiSlice);
+  fInterpolatorPhi->SetRList(rList);
+  fInterpolatorPhi->SetZList(zList);
+  fInterpolatorPhi->SetPhiList(phiList);
+  fInterpolatorPhi->SetOrder(order);
+
 }
 
-AliTPCLookUpTable3DInterpolatorD::~AliTPCLookUpTable3DInterpolatorD()
-{
-	
-	if  (fIsAllocatingLookUp) {
-		for (Int_t m=0;m < fNPhi;m++) {
-			delete fLookUpR[m];
-			delete fLookUpPhi[m];
-			delete fLookUpZ[m];
-		}
-		delete fLookUpR;
-		delete fLookUpPhi;
-		delete fLookUpZ;
-	
-		delete fRlist;
-		delete fPhilist;
-		delete fZlist;
-	}
-
-	delete fInterpolatorR;
-	delete fInterpolatorZ;
-	delete fInterpolatorPhi;
-	
-}
-
-
-Double_t AliTPCLookUpTable3DInterpolatorD::Interpolate3DTableCyl
-( 
-	Int_t order, 
-	Double_t r,   
-	Double_t z,
-	Double_t phi,   	
-	Int_t  nr,    
-	Int_t  nz,
-	Int_t  nphi,    	
-	const Double_t rlist[], 
-	const Double_t zlist[],
-	const Double_t philist[], 
-	
-	TMatrixD **arrayofArrays 
-) 
-{
-  /// Interpolate table (TMatrix format) - 3D interpolation
-  /// Float version (in order to decrease the OCDB size)
-
-  static  Int_t ilow = 0, jlow = 0, klow = 0, m=0;
-  Float_t saveArray[6]= {0.,0.,0.,0.,0.,0.};
-  Float_t savedArray[6]= {0.,0.,0.,0.,0.,0.} ;
-
-	while (phi < 0.0) phi = TMath::TwoPi() + phi;
-	while (phi > TMath::TwoPi()) phi = phi - TMath::TwoPi() ;
-
-  Search( nr, rlist, r, ilow   ) ;
-  Search( nz, zlist, z, jlow   ) ;  
-  Search( nphi, philist, phi, klow   ) ;
-
-	
-	
-  if ( ilow < 0 ) ilow = 0 ;   // check if out of range
-  if ( jlow < 0 ) jlow = 0 ;  
-	if ( klow < 0 ) klow = nphi + klow ;
-  
-  // cubic spline
-	if (order > 2) {
-		if (ilow >= (order-2))
-		   ilow = ilow - (order - 2);
-		if (jlow >= (order-2))
-		   jlow = jlow - (order - 2);
-		klow = klow - (order - 2);		   			
-		if ( klow < 0 ) klow = nphi + klow ;	   
-	}
-
-	//if ( klow < 0 ) {
-	//	klow = nphi + klow ;
-	//}
-
-	
-
-  if ( ilow + order  >=    nr - 1 ) ilow =   nr- 1 - order ;
-  if ( jlow + order  >=    nz - 1 ) jlow =   nz - 1 - order ;
-  
-  
-  
-  
-
-  for ( Int_t k = 0 ; k <  order + 1 ; k++ )
-    {
-			m = (klow + k) % nphi;
-			
-      TMatrixD &table = *arrayofArrays[m] ;
-      
-      for ( Int_t i = ilow ; i < ilow + order + 1 ; i++ )
-			{
-				saveArray[i-ilow] = Interpolate( &zlist[jlow], &table(i,jlow), order, z )   ;
-			}
-      savedArray[k] = Interpolate( &rlist[ilow], saveArray, order, r )  ;
-      //table.Print();
+/// destructor
+AliTPCLookUpTable3DInterpolatorD::~AliTPCLookUpTable3DInterpolatorD() {
+  if (fIsAllocatingLookUp) {
+    for (Int_t m = 0; m < fNPhi; m++) {
+      delete fLookUpR[m];
+      delete fLookUpPhi[m];
+      delete fLookUpZ[m];
     }
-  return( InterpolatePhi( &philist[0], klow, nphi,  savedArray, order, phi ) )   ;
-}
+    delete fLookUpR;
+    delete fLookUpPhi;
+    delete fLookUpZ;
 
-
-Double_t AliTPCLookUpTable3DInterpolatorD::InterpolatePhi
-( 
-	const Double_t xArray[], 
-	const Int_t ilow,
-	const Int_t nx,
-	const Float_t yArray[],
-	Int_t order, 
-	Double_t x 
-)
-{
-  /// Interpolate function Y(x) using linear (order=1) or quadratic (order=2) interpolation.
-
-	Int_t i0 = ilow;
-	Double_t xi0 = xArray[ilow];
-	
-	Int_t i1 = (ilow + 1) % nx;
-	Double_t xi1 = xArray[i1];
-	Int_t i2 = (ilow + 2) % nx;
-	Double_t xi2 = xArray[i2];
-	if ((ilow + 1) >= nx) {
-		xi1 += TMath::TwoPi();
-	}
-	
-	
-	if ((ilow + 2) >= nx) {
-		xi2 += TMath::TwoPi();
-		
-	}
-  Double_t y ;
-  
-  if (order > 2) {
-		Double_t dphi = xArray[1] - xArray[0];
-		
-		Double_t * philist = new Double_t[order + 1];
-		
-		for (Int_t i=0;i < order +1;i++)
-			philist[i] = xArray[ilow] + i*dphi;
-		
-		Double_t * y2Array = new Double_t[order + 1];
-		
-		Spline3(philist,yArray,order+1,y2Array);
-		if (x < philist[0]) x = TMath::TwoPi() + x;
-		y = SplineInt3(philist,yArray,y2Array,order+1,x);		
-//		printf("phi:(%f,%f) (%f,%f)\n",philist[0],philist[order],x,y);
-		delete[] philist;
-		delete[] y2Array;
-	}
-	else if ( order == 2 ) {                // Quadratic Interpolation = 2		
-    y  = (x-xi1) * (x-xi2) * yArray[0] / ( (xi0-xi1) * (xi0-xi2) ) ;
-    y += (x-xi2) * (x-xi0) * yArray[1] / ( (xi1-xi2) * (xi1-xi0) ) ;
-    y += (x-xi0) * (x-xi1) * yArray[2] / ( (xi2-xi0) * (xi2-xi1) ) ;
-  } else {                           // Linear Interpolation = 1
-    y  = yArray[0] + ( yArray[1]-yArray[0] ) * ( x-xArray[i0] ) / (xi1 - xArray[i0] ) ;
+    delete fRList;
+    delete fPhiList;
+    delete fZList;
   }
 
-  return (y);
-
+  delete fInterpolatorR;
+  delete fInterpolatorZ;
+  delete fInterpolatorPhi;
 }
 
+/// copy from matrices to 1D array for interpolation algorithm
+void AliTPCLookUpTable3DInterpolatorD::CopyFromMatricesToInterpolator() {
+  fInterpolatorR->SetValue(fLookUpR);
+  fInterpolatorZ->SetValue(fLookUpZ);
+  fInterpolatorPhi->SetValue(fLookUpPhi);
 
-
-void AliTPCLookUpTable3DInterpolatorD::Search
-( 
-	Int_t n, 
-	const Double_t xArray[], 
-	Double_t x, 
-	Int_t &low 
-) 
-{
-  /// Search an ordered table by starting at the most recently used point
-
-  Long_t middle, high ;
-  Int_t  ascend = 0, increment = 1 ;
-
-  if ( xArray[n-1] >= xArray[0] ) ascend = 1 ;  // Ascending ordered table if true
-
-  if ( low < 0 || low > n-1 ) {
-    low = -1 ; high = n ;
-  } else {                                            // Ordered Search phase
-    if ( (Int_t)( x >= xArray[low] ) == ascend )  {
-      if ( low == n-1 ) return ;
-      high = low + 1 ;
-      while ( (Int_t)( x >= xArray[high] ) == ascend ) {
-	low = high ;
-	increment *= 2 ;
-	high = low + increment ;
-	if ( high > n-1 )  {  high = n ; break ;  }
-      }
-    } else {
-      if ( low == 0 )  {  low = -1 ;  return ;  }
-      high = low - 1 ;
-      while ( (Int_t)( x < xArray[low] ) == ascend ) {
-	high = low ;
-	increment *= 2 ;
-	if ( increment >= high )  {  low = -1 ;  break ;  }
-	else  low = high - increment ;
-      }
-    }
+  if (fOrder > 2) {
+    fInterpolatorR->InitCubicSpline();
+    fInterpolatorZ->InitCubicSpline();
+    fInterpolatorPhi->InitCubicSpline();
   }
 
-  while ( (high-low) != 1 ) {                     // Binary Search Phase
-    middle = ( high + low ) / 2 ;
-    if ( (Int_t)( x >= xArray[middle] ) == ascend )
-      low = middle ;
-    else
-      high = middle ;
-  }
-
-  if ( x == xArray[n-1] ) low = n-2 ;
-  if ( x == xArray[0]   ) low = 0 ;
-
 }
 
-
-Float_t AliTPCLookUpTable3DInterpolatorD::Interpolate
-( 
-	const Double_t xArray[], 
-	const Float_t yArray[],
-	Int_t order, 
-	Double_t x 
-) 
-{
-  /// Interpolate function Y(x) using linear (order=1) or quadratic (order=2) interpolation.
-  /// Float version (in order to decrease the OCDB size)
-  
-
-  Float_t y ;
-  
-  if ( order > 2) {
-		
-		Double_t * y2Array = new Double_t[order + 1];
-		Spline3(xArray,yArray,order+1,y2Array);
-		y = SplineInt3(xArray,yArray,y2Array,order+1,x);		
-		//printf("(%f,%f)(%f,%f)\n",xArray[0],xArray[order],x,y);
-		delete[] y2Array;
-		
-	}else  if ( order == 2 ) {                // Quadratic Interpolation = 2
-    y  = (x-xArray[1]) * (x-xArray[2]) * yArray[0] / ( (xArray[0]-xArray[1]) * (xArray[0]-xArray[2]) ) ;
-    y += (x-xArray[2]) * (x-xArray[0]) * yArray[1] / ( (xArray[1]-xArray[2]) * (xArray[1]-xArray[0]) ) ;
-    y += (x-xArray[0]) * (x-xArray[1]) * yArray[2] / ( (xArray[2]-xArray[0]) * (xArray[2]-xArray[1]) ) ;
-  } else {                           // Linear Interpolation = 1
-    y  = yArray[0] + ( yArray[1]-yArray[0] ) * ( x-xArray[0] ) / ( xArray[1] - xArray[0] ) ;
-  }
-
-  return (y);
-
+/// get value of 3-components at a P(r,phi,z)
+///
+/// \param r Double_t r position
+/// \param phi Double_t phi position
+/// \param z Double_t z position
+/// \param rValue Double_t value of r-component
+/// \param phiValue Double_t value of phi-component
+/// \param zValue Double_t value of z-component
+void AliTPCLookUpTable3DInterpolatorD::GetValue(
+        Double_t r, Double_t phi, Double_t z,
+        Double_t &rValue, Double_t &phiValue, Double_t &zValue) {
+  rValue = fInterpolatorR->GetValue(r, phi, z);
+  phiValue = fInterpolatorPhi->GetValue(r, phi, z);
+  zValue = fInterpolatorZ->GetValue(r, phi, z);
 }
 
-
-Double_t AliTPCLookUpTable3DInterpolatorD::Interpolate
-( 
-	const Double_t xArray[], 
-	const Double_t yArray[],
-	Int_t order, 
-	Double_t x 
-) 
-{
-  /// Interpolate function Y(x) using linear (order=1) or quadratic (order=2) interpolation.
-  
- 
-  Double_t y ;
-  
-  if ( order > 2) {
-		Double_t * y2Array = new Double_t[order + 1];
-		Spline3(xArray,yArray,order+1,y2Array);
-		y = SplineInt3(xArray,yArray,y2Array,order+1,x);		
-		//printf("(%f,%f)(%f,%f)\n",xArray[0],xArray[order],x,y);
-		delete[] y2Array;
-		
-	} else  if ( order == 2 ) {                // Quadratic Interpolation = 2
-    y  = (x-xArray[1]) * (x-xArray[2]) * yArray[0] / ( (xArray[0]-xArray[1]) * (xArray[0]-xArray[2]) ) ;
-    y += (x-xArray[2]) * (x-xArray[0]) * yArray[1] / ( (xArray[1]-xArray[2]) * (xArray[1]-xArray[0]) ) ;
-    y += (x-xArray[0]) * (x-xArray[1]) * yArray[2] / ( (xArray[2]-xArray[0]) * (xArray[2]-xArray[1]) ) ;
-  } else {                           // Linear Interpolation = 1
-    y  = yArray[0] + ( yArray[1]-yArray[0] ) * ( x-xArray[0] ) / ( xArray[1] - xArray[0] ) ;
-  }
-
-  return (y);
-
+/// get value for return value is a Float_t
+///
+/// \param r Double_t r position
+/// \param phi Double_t phi position
+/// \param z Double_t z position
+/// \param rValue Float_t value of r-component
+/// \param phiValue Float_t value of phi-component
+/// \param zValue Float_t value of z-component
+void AliTPCLookUpTable3DInterpolatorD::GetValue(
+        Double_t r, Double_t phi, Double_t z,
+        Float_t &rValue, Float_t &phiValue, Float_t &zValue) {
+  rValue = fInterpolatorR->GetValue(r, phi, z);
+  phiValue = fInterpolatorPhi->GetValue(r, phi, z);
+  zValue = fInterpolatorZ->GetValue(r, phi, z);
 }
 
-void AliTPCLookUpTable3DInterpolatorD::CopyVals()  {
-	fInterpolatorR->SetValue(fLookUpR);
-
-	fInterpolatorZ->SetValue(fLookUpZ);
-	fInterpolatorPhi->SetValue(fLookUpPhi);
-	
-	if (fOrder > 2) {
-		fInterpolatorR->InitCubicSpline();
-		fInterpolatorZ->InitCubicSpline();
-		fInterpolatorPhi->InitCubicSpline();
-	}
-	
-}
-
-
-void AliTPCLookUpTable3DInterpolatorD::GetValue
-(
-	Double_t r, 
-	Double_t phi, 
-	Double_t z,
-	Double_t &vr,
-	Double_t &vphi,
-	Double_t &vz
-) 
-{
-	
-	//vr = InterpolateCylindrical(fOrder, r,z,phi, fNR, fNZ, fNPhi, fListR, fListZ, fListPhi, fLookUpR);
-  vr =  fInterpolatorR->GetValue(r,phi,z);
-	//vphi = InterpolateCylindrical(fOrder, r,z,phi, fNR, fNZ, fNPhi, fListR, fListZ, fListPhi, fLookUpPhi);
-	vphi =  fInterpolatorPhi->GetValue(r,phi,z);
-	//InterpolateCylindrical(fOrder, r,z,phi, fNR, fNZ, fNPhi, fListR, fListZ, fListPhi, fLookUpPhi);
-	//vz = InterpolateCylindrical(fOrder, r,z,phi, fNR, fNZ, fNPhi, fListR, fListZ, fListPhi, fLookUpZ);
-	vz =  fInterpolatorZ->GetValue(r,phi,z);
-	//InterpolateCylindrical(fOrder, r,z,phi, fNR, fNZ, fNPhi, fListR, fListZ, fListPhi, fLookUpZ);
-	
-	
-}
-
-
-
-void AliTPCLookUpTable3DInterpolatorD::GetValue
-(
-	Double_t r, 
-	Double_t phi, 
-	Double_t z,
-	Float_t &vr,
-	Float_t &vphi,
-	Float_t &vz
-) 
-{
-	//fLookUpR[0]->Print();
-	//printf("before ddr=%f,ddrphi=%f,ddz=%f,r=%f,phi=%f,z=%f\n",vr,vphi,vz,r,phi,z);
-	//printf("(%d,%d,%d)\n",fNR,fNZ,fNPhi);
-	
-	
-	vr =  fInterpolatorR->GetValue(r,phi,z);
-	vphi =  fInterpolatorPhi->GetValue(r,phi,z);
-	vz =  fInterpolatorZ->GetValue(r,phi,z);
-	//vr   = InterpolateCylindrical(fOrder, r,z,phi, fNR, fNZ, fNPhi, fListR, fListZ, fListPhi, fLookUpR);
-	//vphi = InterpolateCylindrical(fOrder, r,z,phi, fNR, fNZ, fNPhi, fListR, fListZ, fListPhi, fLookUpPhi);
-	//vz 	 = InterpolateCylindrical(fOrder, r,z,phi, fNR, fNZ, fNPhi, fListR, fListZ, fListPhi, fLookUpZ);
-	
-	//fInterpolatorR->;
-	//printf("after ddr=%f,ddrphi=%f,ddz=%f\n",vr,vphi,vz);
-	
-	
-}
-
-// spline from recepi
-void AliTPCLookUpTable3DInterpolatorD::Spline3
-(	
-	const Double_t xArray[], 
-	const Double_t yArray[],
-	const Int_t n,
-	Double_t y2Array[]
-) 
-{
-	Double_t u[n];
-	Double_t sig,p,qn,un;
-	y2Array[n - 1] = 0.0;
-	u[n-1] = 0.0;
-	y2Array[0] = 0.0;
-	u[0] = 0.0;
-	for (Int_t i=1;i<=n-2;i++) {
-		sig = (xArray[i] - xArray[i-1])/(xArray[i+1] - xArray[i-1]);
-		p = sig * y2Array[i-1]+ 2.0;
-		y2Array[i] = (sig - 1.0)/p;
-		u[i] = (yArray[i+1] - yArray[i])/(xArray[i+1] - xArray[i]) - (yArray[i] - yArray[i-1])/(xArray[i] - xArray[i-1]);
-		u[i] = (6.0 * u[i]/(xArray[i+1] - xArray[i-1]) - sig * u[i-1])/p;	
-	}
-	qn = un = 0.0;
-	y2Array[n-1] = (un - qn * u[n-2])/(qn*y2Array[n-2]+1.0);
-	for (Int_t k=n-2;k>=1;k--)
-		y2Array[k] = y2Array[k] * y2Array[k+1] + u[k];	
-}
-
-
-
-// spline from recepi
-Double_t AliTPCLookUpTable3DInterpolatorD::SplineInt3
-(	
-	const Double_t xArray[], 
-	const Double_t yArray[],
-	Double_t y2Array[],	
-	const Int_t n,
-	Double_t x
-) 
-{
-	Int_t klo,khi,k;
-	Float_t h,b,a;
-	
-	
-	klo = 0;
-	khi = n-1;
-	while (khi-klo > 1) {
-		k = (khi + klo) >> 1;
-		if (xArray[k] > x) khi=k;
-		else klo = k;
-	}
-	
-	h = xArray[khi] - xArray[klo];
-	
-	
-	if (h < 1e-20)  {
-		printf("not found\n");
-		return 0.0;
-	}
-	
-	a = (xArray[khi] - x) / h;
-	b = (x - xArray[klo]) / h;
-	
-	
-	Double_t y = a *yArray[klo] + b * yArray[khi] + ((a*a*a -a) * y2Array[klo] + (b*b*b -b) * y2Array[khi]) * (h*h)/6.0;
-	return y;
-	
-}
-
-
-// spline from recepi
-void AliTPCLookUpTable3DInterpolatorD::Spline3
-(	
-	const Double_t xArray[], 
-	const Float_t yArray[],
-	const Int_t n,
-	Double_t y2Array[]
-) 
-{
-	Double_t u[n];
-	Double_t sig,p,qn,un;
-	y2Array[n - 1] = 0.0;
-	u[n-1] = 0.0;
-	y2Array[0] = 0.0;
-	u[0] = 0.0;
-	for (Int_t i=1;i<=n-2;i++) {
-		sig = (xArray[i] - xArray[i-1])/(xArray[i+1] - xArray[i-1]);
-		p = sig * y2Array[i-1]+ 2.0;
-		y2Array[i] = (sig - 1.0)/p;
-		u[i] = (yArray[i+1] - yArray[i])/(xArray[i+1] - xArray[i]) - (yArray[i] - yArray[i-1])/(xArray[i] - xArray[i-1]);
-		u[i] = (6.0 * u[i]/(xArray[i+1] - xArray[i-1]) - sig * u[i-1])/p;	
-	}
-	qn = un = 0.0;
-	y2Array[n-1] = (un - qn * u[n-2])/(qn*y2Array[n-2]+1.0);
-	for (Int_t k=n-2;k>=1;k--)
-		y2Array[k] = y2Array[k] * y2Array[k+1] + u[k];	
-}
-
-
-
-// spline from recepi
-Double_t AliTPCLookUpTable3DInterpolatorD::SplineInt3
-(	
-	const Double_t xArray[], 
-	const Float_t yArray[],
-	Double_t y2Array[],	
-	const Int_t n,
-	Double_t x
-) 
-{
-	Int_t klo,khi,k;
-	Float_t h,b,a;
-	
-	
-	klo = 0;
-	khi = n-1;
-	while (khi-klo > 1) {
-		k = (khi + klo) >> 1;
-		if (xArray[k] > x) khi=k;
-		else klo = k;
-	}
-	
-	h = xArray[khi] - xArray[klo];
-	
-	
-	if (h < 1e-20)  {
-		printf("not found\n");
-		return 0.0;
-	}
-	
-	a = (xArray[khi] - x) / h;
-	b = (x - xArray[klo]) / h;
-	
-	
-	Double_t y = a *yArray[klo] + b * yArray[khi] + ((a*a*a -a) * y2Array[klo] + (b*b*b -b) * y2Array[khi]) * (h*h)/6.0;
-	return y;
-	
-}
