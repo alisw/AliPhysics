@@ -1298,7 +1298,9 @@ TMultiGraph * TStatToolkit::MakeMultGraph(TTree * tree, const char *groupName, c
   }
   TObjArray*exprVarArray = TString(exprVars->At(0)->GetName()).Tokenize(";");
   TObjArray*exprVarErrArray=(exprVars->GetEntries()>2)?  TString(exprVars->At(2)->GetName()).Tokenize(";"):0;
-  TObjArray*exprCutArray= TString(cut).Tokenize(";");
+  TString cutString=(cut!=0)?cut:"1";
+  if (cutString.Length()==0) cutString="1";
+  TObjArray*exprCutArray= cutString.Tokenize(";");
   
   //determine marker style and line style
   const char* markerstyles;
