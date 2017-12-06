@@ -38,8 +38,11 @@ set(SRCS
   AliEmcalContainerUtils.cxx
   AliEmcalDownscaleFactorsOCDB.cxx
   AliEmcalAODFilterBitCuts.cxx
+  AliEmcalAODHybridTrackCuts.cxx
   AliEmcalContainerUtils.cxx
   AliEmcalESDTrackCutsGenerator.cxx
+  AliEmcalESDHybridTrackCuts.cxx
+  AliEmcalESDtrackCutsWrapper.cxx
   AliEmcalParticle.cxx
   AliEmcalPhysicsSelection.cxx
   AliEmcalPythiaInfo.cxx

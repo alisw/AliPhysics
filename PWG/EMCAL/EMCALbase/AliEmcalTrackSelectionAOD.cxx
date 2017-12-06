@@ -91,6 +91,11 @@ void AliEmcalTrackSelectionAOD::GenerateTrackCuts(ETrackFilterType_t type, const
     fHybridFilterBits[1] = -1;
     break;
 
+  case kHybridTracks2010wNoRefit:       // not possible on AODs
+  case kHybridTracks2010woNoRefit:      // not possible on AODs
+  case kHybridTracks2011wNoRefit:       // not possible on AODs
+  case kHybridTracks2011woNoRefit:      // not possible on AODs
+
   default:
     break;
   }
@@ -135,14 +140,7 @@ bool AliEmcalTrackSelectionAOD::IsTrackAccepted(AliVTrack * const trk)
   if (fListOfCuts) {
     for (auto cutIter : *fListOfCuts){
       AliVCuts *trackCuts = static_cast<AliVCuts*>(static_cast<AliEmcalManagedObject *>(cutIter)->GetObject());
-      if (trackCuts->IsA() == AliESDtrackCuts::Class()) {
-        // If track cuts are AliESDtrackCuts, AcceptVTrack needs to be called as the interface function IsSelected supports only AliESDtracks
-        AliESDtrackCuts *esdcuts = static_cast<AliESDtrackCuts *>(trackCuts);
-        if(esdcuts->AcceptVTrack(aodt)) fTrackBitmap.SetBitNumber(cutcounter);
-      }
-      else{
-        if (trackCuts->IsSelected(aodt)) fTrackBitmap.SetBitNumber(cutcounter);
-      }
+      if (trackCuts->IsSelected(aodt)) fTrackBitmap.SetBitNumber(cutcounter);
       cutcounter++;
     }
   }
