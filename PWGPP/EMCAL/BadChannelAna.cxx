@@ -850,10 +850,13 @@ void BadChannelAna::FlagAsBad(Int_t crit, TH1F* inhisto, Double_t nsigma, Double
 	//. . .determine settings for the histograms (range and binning)
 	//. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 	//cout<<"max value: "<<dmaxVal<<", min value: "<<dminVal<<endl;
+	//
 	if(crit==2 && inputBins==-1)	dnbins=dmaxVal-dminVal;
-	if(crit==1 && inputBins==-1)	dnbins=200;
+	if(crit==1 && inputBins==-1)	dnbins=200; //100 or lower, if you have problems with low statistic
 
-	if(crit==2 && inputBins!=-1)
+    //..For histograms with lower statistic (typically higher energy ranges)
+	//..find a proper binning automatically (mostly done to avoid steplike structures, 0 entries in bins etc)
+	if(inputBins!=-1)
 	{
 		//..calculate and print the "median"
 		Int_t numBins = inhisto->GetXaxis()->GetNbins();
@@ -871,21 +874,29 @@ void BadChannelAna::FlagAsBad(Int_t crit, TH1F* inhisto, Double_t nsigma, Double
 
 		//..if dmaxVal is too far away from medianOfHisto the histogram
 		//..range will be too large -> reduce the range
-		//cout<<"max value: "<<dmaxVal<<" median of histogram: "<<medianOfHisto<<endl;
+		//cout<<"max value: "<<dmaxVal<<", min: "<<dminVal<<" median of histogram: "<<medianOfHisto<<endl;
 		if(medianOfHisto*10<dmaxVal)
 		{
 			//cout<<"- - - median too far away from max range"<<endl;
 			dmaxVal=medianOfHisto+0.2*(dmaxVal-medianOfHisto);  //..reduce the distance between max and mean drastically to cut out the outliers
 		}
-		dnbins=dmaxVal-dminVal;
 
-		if(dmaxVal-dminVal>100)
+		if(crit==2)
 		{
-			if(dnbins>2000)dnbins=0.01*(dmaxVal-dminVal); //..maximum 5000 bins. changed to 3000 .. lets see..
-			if(dnbins>2000)dnbins=0.001*(dmaxVal-dminVal);//..maximum 5000 bins.
-			if(dnbins<100) dnbins=0.02*(dmaxVal-dminVal); //..minimum 100 bins.
+			dnbins=dmaxVal-dminVal;
+			if(dnbins>100)
+			{
+				if(dnbins>2000)dnbins=0.01*(dmaxVal-dminVal); //..maximum 5000 bins. changed to 3000 .. lets see..
+				if(dnbins>2000)dnbins=0.001*(dmaxVal-dminVal);//..maximum 5000 bins.
+				if(dnbins<100) dnbins=0.02*(dmaxVal-dminVal); //..minimum 100 bins.
+			}
+		}
+		if(crit==1)
+		{
+			dnbins=(dmaxVal-dminVal)*500;  //300 if you have problems with low statistic
 		}
 	}
+	//cout<<"number of bins: "<<dnbins<<endl;
 
 	if(crit==3)
 	{
@@ -1038,8 +1049,9 @@ void BadChannelAna::FlagAsBad(Int_t crit, TH1F* inhisto, Double_t nsigma, Double
 	goodmax = mean + nsigma*sig ;
 	//..for case 1 and 2 lower than 0 is an unphysical value
 	if(crit<3 && goodmin <0.) goodmin=0.;
-	if(inputBins==-1)         goodmin=-1; //..this is a special case for the very last histogram 3-40 GeV
-
+	//..this (below) is a special case for energy ranges where cell do not have many
+	//..entries typically. One should not apply a lower bound in this case.
+	if(inputBins==-1)         goodmin=-1;
 	if(fPrint==1)cout<<"    o Result of fit: "<<endl;
 	if(fPrint==1)cout<<"    o  "<<endl;
 	if(fPrint==1)cout<<"    o Mean: "<<mean <<" sigma: "<<sig<<endl;
@@ -1312,6 +1324,11 @@ void BadChannelAna::SummarizeResults()
 	ratio2DAmp->GetZaxis()->UnZoom();
 	ratio2DAmp->Draw("colz");
 
+	TLatex* textSM = new TLatex(0.1,0.1,"*test*");
+	textSM->SetTextSize(0.06);
+	textSM->SetTextColor(1);
+	textSM->SetNDC();
+
 	TCanvas *c1_proj = new TCanvas("CellPropPProj","III summary of cell properties",1000,500);
 	c1_proj->ToggleEventStatus();
 	c1_proj->Divide(2);
@@ -1321,24 +1338,30 @@ void BadChannelAna::SummarizeResults()
 	projEnergyMask->GetYaxis()->SetTitleOffset(1.6);
 	projEnergyMask->SetLineColor(kGreen+1);
 	projEnergyMask->DrawCopy(" hist");
-
 	TH1* projEnergy = fCellAmplitude->ProjectionX(Form("%s_Proj",fCellAmplitude->GetName()),fStartCell,fNoOfCells);
 	projEnergy->DrawCopy("same hist");
+	TLegend *leg = new TLegend(0.50,0.75,0.7,0.87);
+	leg->AddEntry(projEnergy,"all cells","l");
+	leg->AddEntry(projEnergyMask,"good cells","l");
+	leg->SetTextSize(0.05);
+	leg->SetBorderSize(0);
+	leg->SetFillColorAlpha(10, 0);
+	leg->Draw("same");
+	TLegend *legBig = (TLegend*)leg->Clone("legBig");
+	legBig->SetTextSize(0.08);
+	legBig->SetX1NDC(0.2);
 
 	c1_proj->cd(2)->SetLogy();
 	TH1* projTimeMask = cellTime_masked->ProjectionX(Form("%s_Proj",cellTime_masked->GetName()),fStartCell,fNoOfCells);
 	projTimeMask->SetXTitle("Cell Time [ns]");
 	projTimeMask->GetYaxis()->SetTitleOffset(1.6);
-	projTimeMask->SetLineColor(kGreen+3);
+	projTimeMask->GetYaxis()->SetRangeUser(1,projTimeMask->GetMaximum()*20);
+	projTimeMask->SetLineColor(kGreen+1);
 	projTimeMask->DrawCopy("hist");
 	TH1* projTime = fCellTime->ProjectionX(Form("%s_Proj",fCellTime->GetName()),fStartCell,fNoOfCells);
 	projTime->DrawCopy("same hist");
+	leg->Draw("same");
 	c1_proj->Update();
-
-	TLatex* textSM = new TLatex(0.1,0.1,"*test*");
-	textSM->SetTextSize(0.06);
-	textSM->SetTextColor(1);
-	textSM->SetNDC();
 
 	TCanvas *c1_projSM = new TCanvas("CellPropPProjSM","III summary of cell Energy per SM",1200,900);
 	c1_projSM->Divide(5,4,0.001,0.001);
@@ -1362,10 +1385,10 @@ void BadChannelAna::SummarizeResults()
 
 		projEnergySM[iSM] = fCellAmplitude->ProjectionX(Form("%s_ProjSM%i",fCellAmplitude->GetName(),iSM),fStartCellSM[iSM],fStartCellSM[iSM+1]-1);
 		projEnergySM[iSM]->DrawCopy("same hist");
-
+		if(iSM==0)legBig->Draw("same");
 		//textSM->Draw();
 		textSM->SetTitle(Form("Includes cell IDs %d-%d",fStartCellSM[iSM],fStartCellSM[iSM+1]-1));
-		textSM->DrawLatex(0.2,0.8,Form("Includes cell IDs %d-%d",fStartCellSM[iSM],fStartCellSM[iSM+1]-1));
+		textSM->DrawLatex(0.2,0.9,Form("Includes cell IDs %d-%d",fStartCellSM[iSM],fStartCellSM[iSM+1]-1));
 	}
 
 	TCanvas *c1_projRSM = new TCanvas("CellPropPProjRSM","III summary of cell Energy Ratio per SM",1200,900);
@@ -1401,6 +1424,7 @@ void BadChannelAna::SummarizeResults()
 		projTimeMaskSM[iSM]->SetLineColor(kGreen+1);
 		projTimeMaskSM[iSM]->DrawCopy(" hist");
 
+		if(iSM==0)legBig->Draw("same");
 		projTimeSM[iSM] = fCellTime->ProjectionX(Form("%s_ProjSMTime%i",fCellAmplitude->GetName(),iSM),fStartCellSM[iSM],fStartCellSM[iSM+1]-1);
 		projTimeSM[iSM]->DrawCopy("same hist");
 	}
