@@ -67,7 +67,7 @@ public:
 
         // #if ROOT_VERSION_CODE < ROOT_VERSION(5,99,0)
         // Private - cannot be streamed
-        ClassDef(AliTRDPIDThresholds, 2);
+        ClassDef(AliTRDPIDThresholds, 3);
         // #endif
     };
 
