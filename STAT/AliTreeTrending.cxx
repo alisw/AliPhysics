@@ -420,7 +420,7 @@ void AliTreeTrending::MakePlot(const char* outputDir, const char *figureName, co
   legend->SetBorderSize(0);
   mGraph = TStatToolkit::MakeMultGraph(fTree,groupName,expr,cut,markers,colors,drawSparse,markerSize,sigmaRange,legend,comp);
   
-  for(Int_t it=0; it<mGraph->GetListOfGraphs()->GetSize(); it++){
+  if (mGraph) for(Int_t it=0; it<mGraph->GetListOfGraphs()->GetSize(); it++){
     TGraph* graph = (TGraph*) mGraph->GetListOfGraphs()->At(it);
     if (groupName!=NULL && strlen(groupName)>0){    // example  groupName=".class(multiGraphPair).{marker_style:25,21,22,23;marker_color:1,2,4,5;}"
       graph->SetName(TString::Format("graph[%d].%s",it,groupName).Data());
@@ -431,11 +431,13 @@ void AliTreeTrending::MakePlot(const char* outputDir, const char *figureName, co
     AliDrawStyle::TGraphApplyStyle(fCurrentCssStyle.Data(),graph);
   }
   
-  if (groupName) mGraph->SetName(groupName);
+
   if(!mGraph){
-    ::Error("MakePlot","No plot returned -> dummy plot!");
+    ::Error("AliTreeTrending::MakePlot","No plot returned -> dummy plot! ");
+    ::Error("AliTreeTrending::MakePlot","Invalid query expression. Try tree->Draw(\"%s\",\"\t%s\")",expr, cut);
   }
   else {
+    mGraph->SetName(groupName);
     if (drawSparse) TStatToolkit::RebinSparseMultiGraph(mGraph,(TGraph*)fStatusGraphM->GetListOfGraphs()->At(0));
     TStatToolkit::DrawMultiGraph(mGraph,"alp");
     AppendStatusPad(0.3, 0.4, 0.05);
