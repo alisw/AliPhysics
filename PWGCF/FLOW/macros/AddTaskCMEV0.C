@@ -12,9 +12,9 @@ class AliAnalysisTaskCMEV0;
  TString sFBEffiDimension = "1D", 
  Bool_t bApplyNUA = kFALSE, TString sNUAFile="alien:///alice/cern.ch/user/m/mhaque/gain/Run2015o_Pass1_FB768_pT0p2_5GeV_NUA_Wgt_PosNeg_Run.root", 
  Bool_t bZDCGainEq= kFALSE, TString sZDCFile="alien:///alice/cern.ch/user/m/mhaque/gain/Run2015o_pass1_ZDNP_WgtTotEn_VsCentRun.root", 
+ Bool_t bV0MgainCorr= kFALSE, TString sV0MFile="alien:///alice/cern.ch/user/m/mhaque/gain/Run2015_V0GainEq_RbyR_pPb_FAST.root", 
  Bool_t bFillTPCQn= kFALSE, Bool_t bFillNUAhist= kFALSE,Bool_t bFillZDCHist= kFALSE, Bool_t bSkipNestedLoop= kFALSE, 
- Int_t fSetHarmN = 1, Int_t fSetHarmM = 1, Int_t fSetPsiHarm = 2, Bool_t bUseNUAinEP = kFALSE, TString sNUAtype="NewR", 
- Bool_t bRemTrkRndm= kFALSE, const char *suffix = "")
+ Int_t fSetHarmN = 1, Int_t fSetHarmM = 1, Int_t fSetPsiHarm = 2, Bool_t bUseNUAinEP = kFALSE, TString sNUAtype="NewR", const char *suffix = "")
 {
 
   //gSystem->Load("libPWGflowBase.so");
@@ -210,7 +210,11 @@ class AliAnalysisTaskCMEV0;
   taskQC_prot->SetFillZDNCalHist(bFillZDCHist);
   taskQC_prot->SetSkipNestedLoop(bSkipNestedLoop);
   taskQC_prot->SetMCEffiDimension(sFBEffiDimension);
-  taskQC_prot->SetRemoveNegTrkRndm(bRemTrkRndm);
+  taskQC_prot->SetRemoveNegTrkRndm(kFALSE);
+  taskQC_prot->SetInputFileforV0M(sZDCFile);
+  taskQC_prot->SetApplyV0MCorr(bV0MgainCorr);
+  taskQC_prot->SetInputFileforV0M(sV0MFile);
+
 
 
 
