@@ -14,6 +14,9 @@
  **************************************************************************/
 
 #include "AliEMCALTriggerTRUDCSConfig.h"
+#include <bitset>
+#include <iomanip>
+#include <iostream>
 
 /// \cond CLASSIMP
 ClassImp(AliEMCALTriggerTRUDCSConfig) ;
@@ -42,3 +45,18 @@ Int_t AliEMCALTriggerTRUDCSConfig::GetSegmentation()
 		return 1;
 }
 
+bool AliEMCALTriggerTRUDCSConfig::operator==(const AliEMCALTriggerTRUDCSConfig &other) const {
+	return (fSELPF == other.fSELPF) && (fL0SEL == other.fL0SEL) && (fL0COSM == other.fL0COSM)
+					&& (fGTHRL0 == other.fGTHRL0) && (fRLBKSTU == other.fRLBKSTU) && (fFw == other.fFw)
+					&& !memcmp(fMaskReg, other.fMaskReg, sizeof(UInt_t) * 6);
+}
+
+std::ostream &operator<<(std::ostream &stream, const AliEMCALTriggerTRUDCSConfig &conf){
+	stream << "SELPF: " << std::hex << conf.fSELPF << ", L0SEL: " << conf.fL0SEL << ", L0COSM: " << std::dec 
+				 << conf.fL0COSM << ", GTHRL0: " << conf.fGTHRL0 << ", RLBKSTU: " << conf.fRLBKSTU << ", FW: " << std::hex
+				 << conf.fFw << std::dec << std::endl;
+	for(int ireg = 0; ireg < 6; ireg++){
+		stream << "Reg" << ireg << ": " << std::bitset<sizeof(UInt_t) *8>(conf.fMaskReg[ireg]) << std::endl;
+	}
+	return stream;
+}

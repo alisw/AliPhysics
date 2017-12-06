@@ -44,3 +44,29 @@ AliEMCALTriggerDCSConfig::~AliEMCALTriggerDCSConfig()
   delete fSTUObj;
   delete fSTUDCAL;
 }
+
+bool AliEMCALTriggerDCSConfig::operator==(const AliEMCALTriggerDCSConfig & other) const {
+  bool isequal = true;
+  if(fSTUObj && other.fSTUObj) {
+    if(!(*fSTUObj == *other.fSTUObj)) isequal == false; // both EMCAL STU objects there, but not the same
+  } else if((fSTUObj && !other.fSTUObj) || (!fSTUObj && other.fSTUObj)) isequal == false; // one of the two missing
+
+  if(fSTUDCAL && other.fSTUDCAL) {
+    if(!(*fSTUDCAL == *other.fSTUDCAL)) isequal == false; // both DCAL STU objects there, but not the same
+  } else if((fSTUDCAL && !other.fSTUDCAL) || (!fSTUDCAL && other.fSTUDCAL)) isequal == false; // one of the two missing
+
+  // check TRUs
+  if(fTRUArr->GetEntries() != other.fTRUArr->GetEntries()){
+    // one object has more TRU entries than the other
+    isequal = false;
+  } else {
+    for(int itru = 0; itru < fTRUArr->GetSize(); itru++) {
+      AliEMCALTriggerTRUDCSConfig *thistru = GetTRUDCSConfig(itru),
+                                  *othertru = other.GetTRUDCSConfig(itru);
+      if(thistru && othertru){
+        if(!(*thistru == *othertru)) isequal = false;     
+      } else if((thistru && !othertru) || (!thistru && othertru)) isequal = false;    // one of the two missing
+    }
+  }
+  return isequal;
+}

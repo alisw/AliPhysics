@@ -4,6 +4,7 @@
  * See cxx source for full Copyright notice                               */
 
 #include "TObject.h"
+#include <iosfwd>
 
 class TVector2;
 class TClonesArray;
@@ -63,6 +64,22 @@ public:
 
   AliEMCALTriggerSTUDCSConfig();
   virtual ~AliEMCALTriggerSTUDCSConfig();
+
+  /**
+   * @brief Equalty operator
+   * 
+   * Checks whether the two STU DCS configurations are the same. For equalty
+   * all setting must be the same. Error counters are not considered.
+   */
+  bool operator==(const AliEMCALTriggerSTUDCSConfig &other) const;
+
+  /**
+   * @brief Streaming operator
+   * 
+   * Printing all STU DCS settings on the output stream, except for the
+   * error counters
+   */
+  friend std::ostream &operator<<(std::ostream &stream, const AliEMCALTriggerSTUDCSConfig &config);
   
   void    SetG(Int_t i, Int_t j, Int_t gv) { fG[i][j]    = gv; }
   void    SetJ(Int_t i, Int_t j, Int_t jv) { fJ[i][j]    = jv; }
