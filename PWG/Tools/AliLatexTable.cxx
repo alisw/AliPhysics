@@ -289,8 +289,15 @@ void AliLatexTable::InsertRow(){
 
   // Insert the row, based on all the individual columns
 
-  if ( fNcolReady != fNcol) {
-    Warning("InsertRow", "Wrong number of cols: %d (!= %d)", fNcolReady, fNcol); 
+  if ( fNcolReady > fNcol) {
+    Warning("InsertRow", "Wrong number of cols: %d (!= %d)", fNcolReady, fNcol);
+    return;
+  } else if (fNcolReady < fNcol) {
+    Warning("InsertRow", "Not enough columns provided, filling with empty cols");
+    for(Int_t icol = fNcolReady; icol < fNcol; icol++){
+      SetNextCol("");      
+    }
+    
   }
 
   TString row = "";
