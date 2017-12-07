@@ -12,6 +12,7 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
+#include <bitset>
 #include <TClonesArray.h>
 
 #include "AliAODEvent.h"
@@ -40,6 +41,7 @@ AliTrackContainer::AliTrackContainer():
   fTrackFilterType(AliEmcalTrackSelection::kHybridTracks),
   fListOfCuts(0),
   fSelectionModeAny(kFALSE),
+  fITSHybridTrackDistinction(kFALSE),
   fAODFilterBits(0),
   fTrackCutsPeriod(),
   fEmcalTrackSelection(0),
@@ -61,6 +63,7 @@ AliTrackContainer::AliTrackContainer(const char *name, const char *period):
   fTrackFilterType(AliEmcalTrackSelection::kHybridTracks),
   fListOfCuts(0),
   fSelectionModeAny(kFALSE),
+  fITSHybridTrackDistinction(kFALSE),
   fAODFilterBits(0),
   fTrackCutsPeriod(period),
   fEmcalTrackSelection(0),
@@ -167,16 +170,30 @@ void AliTrackContainer::NextEvent(const AliVEvent * event)
       if (!vTrack) {
         fTrackTypes[i] = kRejected;
       }
-      else if (fTrackFilterType == AliEmcalTrackSelection::kHybridTracks) {
-        if (bits->FirstSetBit() == 0) {
-          fTrackTypes[i] = kHybridGlobal;
-        }
-        else if (bits->FirstSetBit() == 1) {
-          if ((vTrack->GetStatus()&AliVTrack::kITSrefit) != 0) {
-            fTrackTypes[i] = kHybridConstrained;
-          }
+      else if (IsHybridTrackSelection()) {
+        // Use determination based on ITS information
+        if(fITSHybridTrackDistinction){
+          std::bitset<8> itsbits(vTrack->GetITSClusterMap());
+          auto hasSPD = (itsbits.test(0) || itsbits.test(1));
+          if(hasSPD) fTrackTypes[i] = kHybridGlobal;
           else {
-            fTrackTypes[i] = kHybridConstrainedNoITSrefit;
+            if(vTrack->GetStatus() & AliVTrack::kITSrefit)
+              fTrackTypes[i] = kHybridConstrained;
+            else
+              fTrackTypes[i] = kHybridConstrainedNoITSrefit;
+          }
+        } else {
+          // Legacy code - to be removed soon
+          if (bits->FirstSetBit() == 0) {
+            fTrackTypes[i] = kHybridGlobal;
+          }
+          else if (bits->FirstSetBit() == 1) {
+            if ((vTrack->GetStatus()&AliVTrack::kITSrefit) != 0) {
+              fTrackTypes[i] = kHybridConstrained;
+            }
+            else {
+              fTrackTypes[i] = kHybridConstrainedNoITSrefit;
+            }
           }
         }
       }
@@ -288,7 +305,7 @@ Bool_t AliTrackContainer::GetMomentumFromTrack(TLorentzVector &mom, const AliVTr
     if (mass < 0) mass = track->M();
 
     Bool_t useConstrainedParams = kFALSE;
-    if (fLoadedClass->InheritsFrom("AliESDtrack") && fTrackFilterType == AliEmcalTrackSelection::kHybridTracks) {
+    if (fLoadedClass->InheritsFrom("AliESDtrack") && IsHybridTrackSelection()) {
       Char_t trackType = GetTrackType(track);
       if (trackType == kHybridConstrained || trackType == kHybridConstrainedNoITSrefit) {
         useConstrainedParams = kTRUE;
@@ -340,7 +357,7 @@ Bool_t AliTrackContainer::GetMomentum(TLorentzVector &mom, Int_t i) const
   if (vp) {
     if (mass < 0) mass = vp->M();
 
-    if (fLoadedClass->InheritsFrom("AliESDtrack") && fTrackFilterType == AliEmcalTrackSelection::kHybridTracks &&
+    if (fLoadedClass->InheritsFrom("AliESDtrack") && IsHybridTrackSelection() &&
         (fTrackTypes[i] == kHybridConstrained || fTrackTypes[i] == kHybridConstrainedNoITSrefit)) {
       AliESDtrack *track = static_cast<AliESDtrack*>(vp);
       mom.SetPtEtaPhiM(track->GetConstrainedParam()->Pt(), track->GetConstrainedParam()->Eta(), track->GetConstrainedParam()->Phi(), mass);
@@ -373,7 +390,7 @@ Bool_t AliTrackContainer::GetNextMomentum(TLorentzVector &mom)
   if (vp) {
     if (mass < 0) mass = vp->M();
 
-    if (fLoadedClass->InheritsFrom("AliESDtrack") && fTrackFilterType == AliEmcalTrackSelection::kHybridTracks &&
+    if (fLoadedClass->InheritsFrom("AliESDtrack") && IsHybridTrackSelection() &&
         (fTrackTypes[fCurrentID] == kHybridConstrained || fTrackTypes[fCurrentID] == kHybridConstrainedNoITSrefit)) {
       AliESDtrack *track = static_cast<AliESDtrack*>(vp);
       mom.SetPtEtaPhiM(track->GetConstrainedParam()->Pt(), track->GetConstrainedParam()->Eta(), track->GetConstrainedParam()->Phi(), mass);
@@ -409,7 +426,7 @@ Bool_t AliTrackContainer::GetAcceptMomentum(TLorentzVector &mom, Int_t i) const
   if (vp) {
     if (mass < 0) mass = vp->M();
 
-    if (fLoadedClass->InheritsFrom("AliESDtrack") && fTrackFilterType == AliEmcalTrackSelection::kHybridTracks &&
+    if (fLoadedClass->InheritsFrom("AliESDtrack") && IsHybridTrackSelection() &&
         (fTrackTypes[i] == kHybridConstrained || fTrackTypes[i] == kHybridConstrainedNoITSrefit)) {
       AliESDtrack *track = static_cast<AliESDtrack*>(vp);
       mom.SetPtEtaPhiM(track->GetConstrainedParam()->Pt(), track->GetConstrainedParam()->Eta(), track->GetConstrainedParam()->Phi(), mass);
@@ -443,7 +460,7 @@ Bool_t AliTrackContainer::GetNextAcceptMomentum(TLorentzVector &mom)
   if (vp) {
     if (mass < 0) mass = vp->M();
 
-    if (fLoadedClass->InheritsFrom("AliESDtrack") && fTrackFilterType == AliEmcalTrackSelection::kHybridTracks &&
+    if (fLoadedClass->InheritsFrom("AliESDtrack") && IsHybridTrackSelection() &&
         (fTrackTypes[fCurrentID] == kHybridConstrained || fTrackTypes[fCurrentID] == kHybridConstrainedNoITSrefit)) {
       AliESDtrack *track = static_cast<AliESDtrack*>(vp);
       mom.SetPtEtaPhiM(track->GetConstrainedParam()->Pt(), track->GetConstrainedParam()->Eta(), track->GetConstrainedParam()->Phi(), mass);
@@ -552,6 +569,14 @@ AliVCuts* AliTrackContainer::GetTrackCuts(Int_t icut)
     return static_cast<AliVCuts *>(fListOfCuts->At(icut));
   }
   return NULL;
+}
+
+bool AliTrackContainer::IsHybridTrackSelection() const {
+  return (fTrackFilterType == AliEmcalTrackSelection::kHybridTracks) ||
+         (fTrackFilterType == AliEmcalTrackSelection::kHybridTracks2010wNoRefit) ||
+         (fTrackFilterType == AliEmcalTrackSelection::kHybridTracks2010woNoRefit) ||
+         (fTrackFilterType == AliEmcalTrackSelection::kHybridTracks2011wNoRefit) ||
+         (fTrackFilterType == AliEmcalTrackSelection::kHybridTracks2011woNoRefit);
 }
 
 /**

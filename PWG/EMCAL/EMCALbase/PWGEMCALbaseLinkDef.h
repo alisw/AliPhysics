@@ -34,4 +34,7 @@
 #pragma link C++ namespace PWG;
 #pragma link C++ namespace PWG::EMCAL;
 #pragma link C++ class PWG::EMCAL::AliEmcalAODFilterBitCuts+;
+#pragma link C++ class PWG::EMCAL::AliEmcalAODHybridTrackCuts+;
+#pragma link C++ class PWG::EMCAL::AliEmcalESDHybridTrackCuts+;
+#pragma link C++ class PWG::EMCAL::AliEmcalESDtrackCutsWrapper+;
 #endif
