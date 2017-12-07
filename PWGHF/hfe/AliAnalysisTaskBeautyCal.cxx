@@ -146,6 +146,7 @@ ClassImp(AliAnalysisTaskBeautyCal)
   fHistEop(0),
   fHistEopHad(0),
   fHistEopHad2(0),
+  fHistEopTrueMC(0),
   fM20(0),
   fM02(0),
   fM20EovP(0),
@@ -300,6 +301,7 @@ AliAnalysisTaskBeautyCal::AliAnalysisTaskBeautyCal()
   fHistEop(0),
   fHistEopHad(0),
   fHistEopHad2(0),
+  fHistEopTrueMC(0),
   fM20(0),
   fM02(0),
   fM20EovP(0),
@@ -572,6 +574,9 @@ void AliAnalysisTaskBeautyCal::UserCreateOutputObjects()
 
   fHistEopHad2 = new TH2F("fHistEopHad2", "E/p distribution Hadron without shower;p_{T} (GeV/c);E/p", 400,0,40,60, 0.0, 3.0);
   fOutputList->Add(fHistEopHad2);
+
+  fHistEopTrueMC = new TH2F("fHistEopTrueMC", "E/p distribution (MC true);p_{T} (GeV/c);E/p", 400,0,40,60, 0.0, 3.0);
+  fOutputList->Add(fHistEopTrueMC);
 
   fHistdEdxEop = new TH2F("fHistdEdxEop", "E/p vs dE/dx;E/p;dE/dx", 60, 0.0, 3.0, 500,0,160);
   fOutputList->Add(fHistdEdxEop);
@@ -1526,6 +1531,8 @@ void AliAnalysisTaskBeautyCal::UserExec(Option_t *)
       //cout << "eop org = " << eop << endl;
       if(fMCarray)  // E/p MC mean shift correction
         {
+         if(abs(pdg)==11)fHistEopTrueMC->Fill(track->Pt(),eop);
+
          if(centrality>=0 && centrality<10)
            { 
             //cout << "eop = " << eop << endl;
@@ -2193,7 +2200,8 @@ void AliAnalysisTaskBeautyCal::CheckMCgen(AliAODMCHeader* fMCheader)
       if(pdgMom>0)
         {
          AliAODMCParticle* fMCparticleMom = (AliAODMCParticle*) fMCarray->At(labelMom);
-         if(pdgMom==411 || pdgMom==421 || pdgMom==413 || pdgMom==423 || pdgMom==431 || pdgMom==433)
+         //if(pdgMom==411 || pdgMom==421 || pdgMom==413 || pdgMom==423 || pdgMom==431 || pdgMom==433)
+         if(pdgMom==411 || pdgMom==421 || pdgMom==413 || pdgMom==423 || pdgMom==431 || pdgMom==433 || pdgMom==4122)
             {
              fHistMCorgD->Fill(fMCparticle->Pt());
              //cout << "orgD : " << pdgMom << " ; " << pdgGen << endl;
