@@ -26,6 +26,7 @@
 #include "TH3F.h"
 #include "TFile.h"
 #include "TTree.h"
+#include "TBranch.h"
 #include "TVector.h"
 #include "TVector3.h"
 #include "TMatrix.h"
@@ -108,6 +109,8 @@ public:
   }
 
   TTree *CreateDistortionTree(Double_t step);
+  TTree *CreateDistortionTree(const Int_t nRRowTest, const Int_t nZColTest, const Int_t nPhiSliceTest);
+
   TH2F *CreateHistogramSCInXY(Float_t z, Int_t nx, Int_t ny);
   TH2F *CreateHistogramSCInZR(Float_t phi, Int_t nz, Int_t nr);
 

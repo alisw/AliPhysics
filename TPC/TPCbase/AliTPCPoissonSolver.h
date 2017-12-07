@@ -161,7 +161,7 @@ public:
 private:
   AliTPCPoissonSolver(const AliTPCPoissonSolver &);               // not implemented
   AliTPCPoissonSolver &operator=(const AliTPCPoissonSolver &);    // not implemented
-  StrategyType fStrategy = kMultiGrid;  ///< strategy used default multiGrid
+  StrategyType fStrategy;  ///< strategy used default multiGrid
   TMatrixD **fExactSolution; ///< Pointer to exact solution
   TVectorD *fErrorConvergenceNorm2; ///< for storing convergence error  norm2
   TVectorD *fErrorConvergenceNormInf; ///< for storing convergence error normInf
