@@ -2035,8 +2035,8 @@ Bool_t AliConvEventCuts::IsCentralitySelected(AliVEvent *event, AliMCEvent *mcEv
       {   0,   0}// 100 // only max accessible
     };
   Int_t PrimaryTracksLHC15o10[11][2] =
-    {
-      {9999, 9999}, // 0-10% cent class max # of tracks
+    {               // values calculated from ESD analysis so far
+      {2700, 2700}, // 0-10% cent class max # of tracks: max value of the data distribution
       {1498, 1498}, // 0-10% cent class min # of tracks
       {1012, 1012}, // 10-20
       { 669,  669}, // 20-30
@@ -2078,7 +2078,7 @@ Bool_t AliConvEventCuts::IsCentralitySelected(AliVEvent *event, AliMCEvent *mcEv
     };
   Int_t PrimaryTracksLHC15o5a[11][2] =
     {
-      { 9999, 9999}, // 0-5% cent class max # of tracks (arbitrarily chosen large value)
+      { 2700, 2700}, // 0-5% cent class max # of tracks: max value of the data distribution
       { 1827, 1827}, // 0-5% cent class min # of tracks
       { 1498, 1498}, // 5-10
       { 1234, 1234}, // 10-15
