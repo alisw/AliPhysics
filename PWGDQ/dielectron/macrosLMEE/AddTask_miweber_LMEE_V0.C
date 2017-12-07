@@ -1,4 +1,4 @@
-AliAnalysisTask *AddTask_miweber_LMEE_V0(Int_t cutDefinition = 0, TString outputFileName = "AnalysisResult.root", TString directoryBaseName = "miweber_LMEE_V0", Bool_t isNano = kFALSE, Bool_t bCutQA = kTRUE, Bool_t bCutV0Tight = kFALSE){
+AliAnalysisTask *AddTask_miweber_LMEE_V0(Int_t cutDefinition = 0, TString outputFileName = "AnalysisResult.root", TString directoryBaseName = "miweber_LMEE_V0", Bool_t isNano = kFALSE, Bool_t bCutQA = kTRUE, Bool_t bCutV0 = kTRUE, Bool_t bCutV0Tight = kFALSE){
 
 
   //get the current analysis manager
@@ -57,7 +57,7 @@ AliAnalysisTask *AddTask_miweber_LMEE_V0(Int_t cutDefinition = 0, TString output
   mgr->AddTask(task);
   
   //add dielectron analysis with selected cut to the task
-  AliDielectron *diel_low = Config_miweber_LMEE_V0(cutDefinition,bESDANA,bCutQA,bCutV0Tight);
+  AliDielectron *diel_low = Config_miweber_LMEE_V0(cutDefinition,bESDANA,bCutQA,bCutV0,bCutV0Tight);
   if(diel_low){
 
     // NOT NEEDED HERE:
