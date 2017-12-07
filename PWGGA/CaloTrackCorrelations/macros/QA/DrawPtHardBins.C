@@ -319,7 +319,6 @@ void DrawPtHardBins
       // Recover the summed histograms, or scale sum 
       if ( k==1 || (k==0 && !scaleHisto))
       {
-        
         hPtHardSum[k] = (TH1F*) fTot[k]->Get("hPtHard");
         if(hPtHardSum[k])
         {
@@ -351,10 +350,12 @@ void DrawPtHardBins
         
         for(Int_t j = 0; j < 3; j++)
         {
-          if(!hTrackPtSum[k][j]) continue;
           if(j==0) hTrackPtSum[k][j] = (TH1F*) fTot[k]->Get("AnaHadrons_hPt");
           if(j==1) hTrackPtSum[k][j] = (TH1F*) fTot[k]->Get("AnaHadrons_hPtSPDRefit");
           if(j==2) hTrackPtSum[k][j] = (TH1F*) fTot[k]->Get("AnaHadrons_hPtNoSPDRefit");
+          
+          if(!hTrackPtSum[k][j]) continue;
+
           hTrackPtSum[k][j]->SetLineColor(1);
           hTrackPtSum[k][j]->SetLineWidth(2);
           hTrackPtSum[k][j]->SetLineStyle(j);
@@ -515,6 +516,7 @@ void DrawPtHardBins
           
           for(Int_t j = 0; j < 3; j++)
           {
+            if(!hTrackPtSum[k][j]) continue;
             hTrackPtSum[k][j] = (TH1F*) hTrackPt[i][k][j]->Clone(Form("%sSum",hTrackPt[i][k][j]->GetName()));
             hTrackPtSum[k][j]->SetLineColor(1);
           }
@@ -550,7 +552,11 @@ void DrawPtHardBins
           if(hGamD[i][k])hGamESum[k]->Add(hGamE[i][k]);
           if(hGamD[i][k])hGamDSum[k]->Add(hGamD[i][k]);
           
-          for(Int_t j = 0; j < 3; j++) hTrackPtSum[k][j]->Add(hTrackPt[i][k][j]);
+          for(Int_t j = 0; j < 3; j++) 
+          {
+            if(!hTrackPtSum[k][j]) continue;
+            hTrackPtSum[k][j]->Add(hTrackPt[i][k][j]);
+          }
           
           hEtaPhiSum     [k]->Add(hEtaPhi     [i][k]);
           hCellEtaPhiSum [k]->Add(hCellEtaPhi [i][k]);
@@ -714,6 +720,8 @@ void DrawPtHardBins
     //
     for(Int_t j=0; j<3; j++)
     {
+      if(!hTrackPtSum[k][j]) continue;
+
       TCanvas * cTr = new TCanvas(Form("cTrackPt%d_Type%d",k,j),
                                   Form("Track Pt Type %s, %s",trackTitle[j].Data(),scaleTitle[k].Data()), 
                                   200,200);
