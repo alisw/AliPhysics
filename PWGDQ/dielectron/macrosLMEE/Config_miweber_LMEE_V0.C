@@ -14,7 +14,7 @@ TString names("V0_noPID;V0_TPC;V0_TPC_TOF;V0_TPC_TOFpid;V0_TPC_ITS;V0_TPC_ITSpid
 TObjArray *arrNames=names.Tokenize(";");
 const Int_t nDie=arrNames->GetEntriesFast();
 
-AliDielectron* Config_miweber_LMEE_V0(Int_t cutDefinition=1, Bool_t bESDANA = kFALSE, Bool_t bCutQA = kFALSE, Bool_t bCutV0Tight = kFALSE, Bool_t isRandomRej=kFALSE)
+AliDielectron* Config_miweber_LMEE_V0(Int_t cutDefinition=1, Bool_t bESDANA = kFALSE, Bool_t bCutQA = kFALSE, Bool_t bCutV0 = kTRUE, Bool_t bCutV0Tight = kFALSE, Bool_t isRandomRej=kFALSE)
 {
   //
   // Setup the instance of AliDielectron
@@ -61,7 +61,7 @@ AliDielectron* Config_miweber_LMEE_V0(Int_t cutDefinition=1, Bool_t bESDANA = kF
 
 
   // set track cuts
-  SetupCuts(die,cutDefinition,bESDANA,bCutV0Tight);
+  SetupCuts(die,cutDefinition,bESDANA,bCutV0,bCutV0Tight);
 
  //
  // histogram setup
@@ -79,7 +79,7 @@ AliDielectron* Config_miweber_LMEE_V0(Int_t cutDefinition=1, Bool_t bESDANA = kF
 }
 
 //______________________________________________________________________________________
-void SetupCuts(AliDielectron *die, Int_t cutDefinition, Bool_t bESDANA = kFALSE, Bool_t bCutV0Tight = kFALSE)
+void SetupCuts(AliDielectron *die, Int_t cutDefinition, Bool_t bESDANA = kFALSE, Bool_t bCutV0 = kTRUE, Bool_t bCutV0Tight = kFALSE)
 {
   // Setup the track cuts
 
@@ -87,7 +87,8 @@ void SetupCuts(AliDielectron *die, Int_t cutDefinition, Bool_t bESDANA = kFALSE,
   die->SetUseKF(kFALSE);
       
   // V0 cuts
-  die->GetTrackFilter().AddCuts(SetupV0Cuts(bCutV0Tight));
+  if(bCutV0)
+    die->GetTrackFilter().AddCuts(SetupV0Cuts(bCutV0Tight));
 
   // track cuts
   die->GetTrackFilter().AddCuts(SetupTrackCuts());
