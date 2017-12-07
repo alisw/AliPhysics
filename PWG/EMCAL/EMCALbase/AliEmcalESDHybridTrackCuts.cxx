@@ -69,11 +69,11 @@ bool AliEmcalESDHybridTrackCuts::IsSelected(TObject *o){
   AliDebugStream(1) << "AliEmcalESDHybridTrackCuts::IsSelected(): Called" << std::endl;
   if(!fLocalInitialized) Init();
   if(auto esdtrack = dynamic_cast<AliESDtrack *>(o)) {
-    bool selected[3] = {kTRUE, kTRUE, kTRUE};
-    if(fHybridTrackCutsGlobal && !fHybridTrackCutsGlobal->AcceptTrack(esdtrack)) selected[0] = false;
-    if(fHybridTrackCutsConstrained && !fHybridTrackCutsConstrained->AcceptTrack(esdtrack)) selected[1] = false;
-    if(fHybridTrackCutsNoItsRefit && !fHybridTrackCutsNoItsRefit->AcceptTrack(esdtrack)) selected[2]= false;
-    return selected[0] && selected[1] && selected[2];
+    bool selected[3] = {false, false, false};
+    if(fHybridTrackCutsGlobal && fHybridTrackCutsGlobal->AcceptTrack(esdtrack)) selected[0] = true;
+    if(fHybridTrackCutsConstrained && fHybridTrackCutsConstrained->AcceptTrack(esdtrack)) selected[1] = true;
+    if(fHybridTrackCutsNoItsRefit && fHybridTrackCutsNoItsRefit->AcceptTrack(esdtrack)) selected[2]= true;
+    return selected[0] || selected[1] || selected[2];
   }
   AliErrorStream() << "No ESD track" << std::endl;
   return false;
@@ -130,6 +130,7 @@ void AliEmcalESDHybridTrackCuts::InitHybridTracks2010() {
   if(this->fSelectNonRefitTracks) {
     // all complementary hybrid tracks: no SPD requirement, no ITS refit requirement
     //  AliESDtrackCuts* esdTrackCutsGCOnly = CreateTrackCutsPWGJE(10041006);
+    AliInfoStream() << "Create selection for non-refit tracks" << std::endl;
     fHybridTrackCutsNoItsRefit = baseCutsFactory("JetCuts10041006");
     fHybridTrackCutsConstrained->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kNone);
     fHybridTrackCutsNoItsRefit->SetRequireITSRefit(kFALSE);
@@ -154,7 +155,8 @@ void AliEmcalESDHybridTrackCuts::InitHybridTracks2011() {
   fHybridTrackCutsConstrained->SetRequireITSRefit(kTRUE);
 
   if(fSelectNonRefitTracks){
+    AliInfoStream() << "Create selection for non-refit tracks" << std::endl;
     fHybridTrackCutsNoItsRefit = new AliESDtrackCuts(*fHybridTrackCutsConstrained);
-    fHybridTrackCutsNoItsRefit->SetRequireITSRefit(kTRUE);
+    fHybridTrackCutsNoItsRefit->SetRequireITSRefit(kFALSE);
   }
 }
