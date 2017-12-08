@@ -13,6 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 #include <bitset>
+#include <iostream>
 #include <TClonesArray.h>
 
 #include "AliAODEvent.h"
@@ -161,6 +162,8 @@ void AliTrackContainer::NextEvent(const AliVEvent * event)
     fFilteredTracks = fEmcalTrackSelection->GetAcceptedTracks(fClArray);
 
     const TClonesArray* trackBitmaps = fEmcalTrackSelection->GetAcceptedTrackBitmaps();
+    AliDebugStream(1) << "AliTrackContainer: Found Array with " << trackBitmaps->GetEntries() << " Tracks" << std::endl;
+    int naccepted(0), nrejected(0), nhybridTracks1(0), nhybridTracks2(0), nhybridTracks3(0);
     TIter nextBitmap(trackBitmaps);
     TBits* bits = 0;
     Int_t i = 0;
@@ -168,37 +171,53 @@ void AliTrackContainer::NextEvent(const AliVEvent * event)
       if (i >= fTrackTypes.GetSize()) fTrackTypes.Set((i+1)*2);
       AliVTrack* vTrack = static_cast<AliVTrack*>(fFilteredTracks->At(i));
       if (!vTrack) {
+        nrejected++;
         fTrackTypes[i] = kRejected;
       }
-      else if (IsHybridTrackSelection()) {
-        // Use determination based on ITS information
-        if(fITSHybridTrackDistinction){
-          std::bitset<8> itsbits(vTrack->GetITSClusterMap());
-          auto hasSPD = (itsbits.test(0) || itsbits.test(1));
-          if(hasSPD) fTrackTypes[i] = kHybridGlobal;
-          else {
-            if(vTrack->GetStatus() & AliVTrack::kITSrefit)
-              fTrackTypes[i] = kHybridConstrained;
-            else
-              fTrackTypes[i] = kHybridConstrainedNoITSrefit;
-          }
-        } else {
-          // Legacy code - to be removed soon
-          if (bits->FirstSetBit() == 0) {
-            fTrackTypes[i] = kHybridGlobal;
-          }
-          else if (bits->FirstSetBit() == 1) {
-            if ((vTrack->GetStatus()&AliVTrack::kITSrefit) != 0) {
-              fTrackTypes[i] = kHybridConstrained;
+      else{ 
+        // track is accepted;
+        naccepted++;
+        if (IsHybridTrackSelection()) {
+          // Use determination based on ITS information
+          if(fITSHybridTrackDistinction){
+            std::bitset<8> itsbits(vTrack->GetITSClusterMap());
+            auto hasSPD = (itsbits.test(0) || itsbits.test(1));
+            if(hasSPD) {
+              fTrackTypes[i] = kHybridGlobal;
+              nhybridTracks1++;
             }
             else {
-              fTrackTypes[i] = kHybridConstrainedNoITSrefit;
+              if(vTrack->GetStatus() & AliVTrack::kITSrefit){
+                fTrackTypes[i] = kHybridConstrained;
+                nhybridTracks2++;
+              }
+              else {
+                fTrackTypes[i] = kHybridConstrainedNoITSrefit;
+                nhybridTracks3++;
+              }
+            }
+          } else {
+            // Legacy code - to be removed soon
+            if (bits->FirstSetBit() == 0) {
+              fTrackTypes[i] = kHybridGlobal;
+              nhybridTracks1++;
+            }
+            else if (bits->FirstSetBit() == 1) {
+              if ((vTrack->GetStatus()&AliVTrack::kITSrefit) != 0) {
+                fTrackTypes[i] = kHybridConstrained;
+                nhybridTracks2++;
+              }
+              else {
+                fTrackTypes[i] = kHybridConstrainedNoITSrefit;
+                nhybridTracks3++;
+              }
             }
           }
         }
       }
      i++;
     }
+    AliDebugStream(1) << "Accepted: " << naccepted << ", Rejected: " << nrejected << ", hybrid: (" << nhybridTracks1 << " | " << nhybridTracks2 << " | " << nhybridTracks3 << ")" << std::endl;
   }
   else {
     fFilteredTracks = fClArray;
@@ -308,6 +327,7 @@ Bool_t AliTrackContainer::GetMomentumFromTrack(TLorentzVector &mom, const AliVTr
     if (fLoadedClass->InheritsFrom("AliESDtrack") && IsHybridTrackSelection()) {
       Char_t trackType = GetTrackType(track);
       if (trackType == kHybridConstrained || trackType == kHybridConstrainedNoITSrefit) {
+        AliDebugStream(2) << "Found a constrained track" << std::endl;
         useConstrainedParams = kTRUE;
       }
     }
@@ -359,6 +379,7 @@ Bool_t AliTrackContainer::GetMomentum(TLorentzVector &mom, Int_t i) const
 
     if (fLoadedClass->InheritsFrom("AliESDtrack") && IsHybridTrackSelection() &&
         (fTrackTypes[i] == kHybridConstrained || fTrackTypes[i] == kHybridConstrainedNoITSrefit)) {
+      AliDebugStream(2) << "Found a constrained track" << std::endl;
       AliESDtrack *track = static_cast<AliESDtrack*>(vp);
       mom.SetPtEtaPhiM(track->GetConstrainedParam()->Pt(), track->GetConstrainedParam()->Eta(), track->GetConstrainedParam()->Phi(), mass);
     }
@@ -392,6 +413,7 @@ Bool_t AliTrackContainer::GetNextMomentum(TLorentzVector &mom)
 
     if (fLoadedClass->InheritsFrom("AliESDtrack") && IsHybridTrackSelection() &&
         (fTrackTypes[fCurrentID] == kHybridConstrained || fTrackTypes[fCurrentID] == kHybridConstrainedNoITSrefit)) {
+      AliDebugStream(2) << "Found a constrained track" << std::endl; 
       AliESDtrack *track = static_cast<AliESDtrack*>(vp);
       mom.SetPtEtaPhiM(track->GetConstrainedParam()->Pt(), track->GetConstrainedParam()->Eta(), track->GetConstrainedParam()->Phi(), mass);
     }
@@ -428,6 +450,7 @@ Bool_t AliTrackContainer::GetAcceptMomentum(TLorentzVector &mom, Int_t i) const
 
     if (fLoadedClass->InheritsFrom("AliESDtrack") && IsHybridTrackSelection() &&
         (fTrackTypes[i] == kHybridConstrained || fTrackTypes[i] == kHybridConstrainedNoITSrefit)) {
+      AliDebugStream(2) << "Found a constrained track" << std::endl;
       AliESDtrack *track = static_cast<AliESDtrack*>(vp);
       mom.SetPtEtaPhiM(track->GetConstrainedParam()->Pt(), track->GetConstrainedParam()->Eta(), track->GetConstrainedParam()->Phi(), mass);
     }
@@ -462,6 +485,7 @@ Bool_t AliTrackContainer::GetNextAcceptMomentum(TLorentzVector &mom)
 
     if (fLoadedClass->InheritsFrom("AliESDtrack") && IsHybridTrackSelection() &&
         (fTrackTypes[fCurrentID] == kHybridConstrained || fTrackTypes[fCurrentID] == kHybridConstrainedNoITSrefit)) {
+      AliDebugStream(2) << "Found a constrained track" << std::endl;
       AliESDtrack *track = static_cast<AliESDtrack*>(vp);
       mom.SetPtEtaPhiM(track->GetConstrainedParam()->Pt(), track->GetConstrainedParam()->Eta(), track->GetConstrainedParam()->Phi(), mass);
     }

@@ -84,7 +84,7 @@ void AliEmcalESDHybridTrackCuts::Init(){
   case kDef2010: InitHybridTracks2010(); break;
   case kDef2011: InitHybridTracks2011(); break;
   default:
-    std::cerr << "No matching initialization found for requested hybrid track definition" <<std::endl;
+    AliErrorStream() << "No matching initialization found for requested hybrid track definition" <<std::endl;
   };
   fLocalInitialized = true;
 }
