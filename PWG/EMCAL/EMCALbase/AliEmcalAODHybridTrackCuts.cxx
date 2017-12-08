@@ -34,13 +34,15 @@ ClassImp(PWG::EMCAL::AliEmcalAODHybridTrackCuts)
 using namespace PWG::EMCAL;
 
 AliEmcalAODHybridTrackCuts::AliEmcalAODHybridTrackCuts():
-  AliVCuts()
+  AliVCuts(),
+  fSelectNonITSrefitTracks(kTRUE)
 {
 
 }
 
 AliEmcalAODHybridTrackCuts::AliEmcalAODHybridTrackCuts(const char *name):
-  AliVCuts(name,"")
+  AliVCuts(name,""),
+  fSelectNonITSrefitTracks(kTRUE)
 {
   
 }
@@ -48,5 +50,8 @@ AliEmcalAODHybridTrackCuts::AliEmcalAODHybridTrackCuts(const char *name):
 bool AliEmcalAODHybridTrackCuts::IsSelected(TObject *o){
   AliAODTrack *aodtrack = dynamic_cast<AliAODTrack *>(o);
   if(!aodtrack) return false;
-  return aodtrack->IsHybridGlobalConstrainedGlobal();
+  bool selectionresult = aodtrack->IsHybridGlobalConstrainedGlobal();
+  // Reject non-ITSrefit tracks if requested
+  if((fSelectNonITSrefitTracks == false) && (!(aodtrack->GetStatus() & AliVTrack::kITSrefit))) selectionresult = false;
+  return selectionresult;
 }
