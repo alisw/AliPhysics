@@ -20,6 +20,7 @@
 #include <AliAODEvent.h>
 #include <AliAODTrack.h>
 #include <AliEmcalAODFilterBitCuts.h>
+#include <AliEmcalAODHybridTrackCuts.h>
 #include <AliEmcalTrackSelectionAOD.h>
 #include <AliESDtrack.h>
 #include <AliESDtrackCuts.h>
@@ -91,10 +92,35 @@ void AliEmcalTrackSelectionAOD::GenerateTrackCuts(ETrackFilterType_t type, const
     fHybridFilterBits[1] = -1;
     break;
 
-  case kHybridTracks2010wNoRefit:       // not possible on AODs
-  case kHybridTracks2010woNoRefit:      // not possible on AODs
-  case kHybridTracks2011wNoRefit:       // not possible on AODs
-  case kHybridTracks2011woNoRefit:      // not possible on AODs
+  case kHybridTracks2010wNoRefit:
+    {
+      auto trackcuts = new PWG::EMCAL::AliEmcalAODHybridTrackCuts("hybridcuts2010_wNoRefit");
+      AddTrackCuts(trackcuts);
+      break;
+    }
+
+  case kHybridTracks2010woNoRefit:
+    {
+      auto trackcuts = new PWG::EMCAL::AliEmcalAODHybridTrackCuts("hybridcuts2010_woNoRefit");
+      trackcuts->SetSelectNonITSrefitTracks(kFALSE);
+      AddTrackCuts(trackcuts);
+      break;
+    }
+
+  case kHybridTracks2011wNoRefit:
+    {
+      auto trackcuts = new PWG::EMCAL::AliEmcalAODHybridTrackCuts("hybridcuts2011_wNoRefit");
+      AddTrackCuts(trackcuts);
+      break;
+    }
+
+  case kHybridTracks2011woNoRefit:
+    {
+      auto trackcuts = new PWG::EMCAL::AliEmcalAODHybridTrackCuts("hybridcuts2011_woNoRefit");
+      trackcuts->SetSelectNonITSrefitTracks(kFALSE);
+      AddTrackCuts(trackcuts);
+      break;
+    }
 
   default:
     break;

@@ -73,9 +73,20 @@ namespace EMCAL {
    * @return true Track is an AliAODTrack and a hybrid track
    * @return false Track is not an AliAODTrack or not a hybrid track
    */
-   virtual bool IsSelected(TObject *o);
+  virtual bool IsSelected(TObject *o);
+
+  /**
+   * @brief Switch on/off selection of hybrid tracks without ITSrefit
+   * 
+   * Only valid for productions which use hybrid track definitions including 
+   * tracks without ITSrefit
+   * 
+   * @param doReject If true hybrid tracks without ITSrefit are rejected
+   */
+  void SetSelectNonITSrefitTracks(bool doReject) { fSelectNonITSrefitTracks = doReject; }
 
 private:
+  Bool_t                            fSelectNonITSrefitTracks;  ///< Select non-refit tracks
 
   /// \cond CLASSIMP
   ClassDef(AliEmcalAODHybridTrackCuts, 1);
