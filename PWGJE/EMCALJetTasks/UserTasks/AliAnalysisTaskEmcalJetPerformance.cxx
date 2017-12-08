@@ -396,6 +396,8 @@ void AliAnalysisTaskEmcalJetPerformance::AllocateClusterHistograms()
   Double_t *cellBins = GenerateFixedBinArray(nCellBins, -0.5, 29.5);
   const Int_t nMatchedTrackBins = 5;
   Double_t *matchedTrackBins = GenerateFixedBinArray(nMatchedTrackBins, -0.5, 4.5);
+  const Int_t nDeltaEtaBins = 60;
+  Double_t *deltaEtaBins = GenerateFixedBinArray(nDeltaEtaBins, -0.015, 0.015);
   
   //////////////////////////////////////////////
   ////// Plot M02 studies
@@ -453,6 +455,15 @@ void AliAnalysisTaskEmcalJetPerformance::AllocateClusterHistograms()
   htitle = histname + ";Centrality (%);#it{E}_{clus} (GeV); M02";
   fHistManager.CreateTH3(histname.Data(), htitle.Data(), fNCentHistBins, fCentHistBins, fNPtHistBins, fPtHistBins, fNM02HistBins, fM02HistBins);
   
+  // Plot clus-track deltaEta of matched tracks (deltaEta, Eclus, M02)
+  histname = "ClusterHistograms/hDeltaEtaCentral";
+  htitle = histname + ";#eta_{track} - #eta_{clus};#it{E}_{clus} (GeV); M02";
+  fHistManager.CreateTH3(histname.Data(), htitle.Data(), nDeltaEtaBins, deltaEtaBins, fNPtHistBins, fPtHistBins, fNM02HistBins, fM02HistBins);
+  
+  histname = "ClusterHistograms/hDeltaEtaPeripheral";
+  htitle = histname + ";#eta_{track} - #eta_{clus};#it{E}_{clus} (GeV); M02";
+  fHistManager.CreateTH3(histname.Data(), htitle.Data(), nDeltaEtaBins, deltaEtaBins, fNPtHistBins, fPtHistBins, fNM02HistBins, fM02HistBins);
+  
   //////////////////////////////////////////////
   ////// Plot E/p studies
   
@@ -498,6 +509,10 @@ void AliAnalysisTaskEmcalJetPerformance::AllocateClusterHistograms()
   htitle = histname + ";#it{E}_{clus} (GeV);#Sigma#it{p}_{track} (GeV); #frac{#DeltaE_{clus}}{E_{clus}}";
   fHistManager.CreateTH3(histname.Data(), htitle.Data(), fNPtHistBins, fPtHistBins, fNPtHistBins, fPtHistBins, nRcorrBins, RcorrBins);
   
+  // Plot total track multiplicity
+  histname = "ClusterHistograms/hTrackMultiplicity";
+  htitle = histname + ";N_{tracks};Centrality (%)";
+  fHistManager.CreateTH2(histname.Data(), htitle.Data(), 1000, 0, 10000, 20, 0, 100);
 }
 
 /*
@@ -1273,8 +1288,8 @@ void AliAnalysisTaskEmcalJetPerformance::FillClusterHistograms()
       
       Double_t trackPhi = TVector2::Phi_0_2pi(track->GetTrackPhiOnEMCal());
       Double_t trackEta = track->GetTrackEtaOnEMCal();
-      Double_t deta = TMath::Abs(clusPhi - trackPhi);
-      Double_t dphi = TMath::Abs(clusEta - trackEta);
+      Double_t deta = TMath::Abs(clusEta - trackEta);
+      Double_t dphi = TMath::Abs(clusPhi - trackPhi);
       
       if (deta < fTrackMatchingDeltaEtaMax && dphi < fTrackMatchingDeltaPhiMax) {
         trackPSum += track->P();
@@ -1352,11 +1367,31 @@ void AliAnalysisTaskEmcalJetPerformance::FillClusterHistograms()
       fHistManager.FillTH3(histname, fCent, clus->GetNonLinCorrEnergy(), clus->GetM02());
     }
     
+    // Plot clus-track deltaEta if there is one matched track (deltaEta, Eclus, M02)
+    if (nTracksMatched == 1) {
+      
+      const AliVTrack* track = dynamic_cast<AliVTrack*>(clus->GetTrackMatched(0));
+      if (track) {
+        Double_t trackEta = track->GetTrackEtaOnEMCal();
+        Double_t deta = trackEta - clusEta;
+        
+        if (fCent > 0 && fCent < 10) {
+          histname = "ClusterHistograms/hDeltaEtaCentral";
+          fHistManager.FillTH3(histname.Data(), deta, clus->GetNonLinCorrEnergy(), clus->GetM02());
+        }
+        
+        if (fCent > 50 && fCent < 90) {
+          histname = "ClusterHistograms/hDeltaEtaPeripheral";
+          fHistManager.FillTH3(histname.Data(), deta, clus->GetNonLinCorrEnergy(), clus->GetM02());
+        }
+      }
+    }
+    
     //////////////////////////////////////////////
     ////// Plot E/p studies
 
     // Plot E/p vs. M02 for 0-10% and 50-90% (Eclus nonlincorr, Eclus nonlincorr / trackPsum, M02)
-    if (fCent < 10) {
+    if (fCent > 0 && fCent < 10) {
       histname = "ClusterHistograms/hEoverPM02Central";
       fHistManager.FillTH3(histname, clus->GetNonLinCorrEnergy(), EoverP, clus->GetM02());
     }
@@ -1401,6 +1436,12 @@ void AliAnalysisTaskEmcalJetPerformance::FillClusterHistograms()
     }
     
   }
+  
+  // Fill total track multiplicity
+  histname = "ClusterHistograms/hTrackMultiplicity";
+  AliTrackContainer* trackCont = dynamic_cast<AliTrackContainer*>(GetParticleContainer("tracks"));
+  Int_t nTracks = trackCont->GetNAcceptedTracks();
+  fHistManager.FillTH2(histname.Data(), nTracks, fCent);
 
 }
 
@@ -1442,11 +1483,8 @@ void AliAnalysisTaskEmcalJetPerformance::FillParticleCompositionClusterHistogram
     
     clus = it.second;
     
-    // Include only EMCal clusters (reject DCal and PHOS clusters)
+    // Include only EMCal/DCal clusters (reject PHOS clusters)
     if (!clus->IsEMCAL()) {
-      continue;
-    }
-    if (it.first.Phi_0_2pi() > fgkEMCalDCalPhiDivide) {
       continue;
     }
     
