@@ -5,8 +5,8 @@ class AliAnalysisTaskCMEV0;
 
  //void AddTaskCMEV0(Double_t dcentrMin=0, Double_t dcentrMax=90, TString sAnalysisFile = "AOD", TString sDataSet = "2010", 
  AliAnalysisTaskCMEV0* AddTaskCMEV0(Double_t dcentrMin=0, Double_t dcentrMax=90., Int_t gFilterBit = 768, Int_t gClusterTPC = 70, 
- Double_t fpTLow = 0.2, Double_t fpTHigh = 10.0, Double_t fEtaLow = -0.8, Double_t fEtaHigh = 0.8, Double_t dDCAxy = 2.4, Double_t dDCAz  = 3.2,
- TString sAnalysisFile = "AOD", TString sDataSet = "2010", TString sAnalysisType = "AUTOMATIC", TString sEventTrigger = "MB", Bool_t bEventCutsQA = kFALSE, 
+ Double_t fpTLow = 0.2, Double_t fpTHigh = 10.0, Double_t fEtaLow = -0.8, Double_t fEtaHigh = 0.8, TString sAnalysisFile = "AOD", 
+ TString sDataSet = "2010", TString sAnalysisType = "AUTOMATIC", TString sEventTrigger = "MB", Bool_t bEventCutsQA = kFALSE, 
  Bool_t bTrackCutsQA = kFALSE,Double_t dVertexLow = -10.,Double_t dVertexHigh = 10., Bool_t bPileUp = kFALSE, Bool_t bPileUpTight = kFALSE, 
  TString sCentEstimator = "V0", Bool_t bFBeffi = kFALSE,TString sEfficiencyFB = "alien:///alice/cern.ch/user/m/mhaque/calib_files/FB768_Hijing_LHC15o.root",
  TString sFBEffiDimension = "1D", 
@@ -22,6 +22,12 @@ class AliAnalysisTaskCMEV0;
 
   gSystem->AddIncludePath("-I. -I$ALICE_ROOT/include -I$ALICE_PHYSICS/include -g ");
   gSystem->AddIncludePath("-I. -I$ROOTSYS/include -I$ALICE_ROOT -I$ALICE_ROOT/EMCAL -I$ALICE_ROOT/ANALYSIS -I$ALICE_ROOT/OCDB -I$ALICE_ROOT/STEER/macros -I$ALICE_ROOT/include -I$ALICE_ROOT/ITS -I$ALICE_ROOT/TPC -I$ALICE_ROOT/TRD -I$ALICE_ROOT/ZDC -I$ALICE_ROOT/macros -I$ALICE_PHYSICS -I$ALICE_PHYSICS/include -I$ALICE_PHYSICS/OADB $ALICE_PHYSICS/OADB/macros -I$ALICE_PHYSICS/PWGGA -I$ALICE_PHYSICS/PWGCF -I$ALICE_PHYSICS/PWGHF -I$ALICE_PHYSICS/TENDER -I$ALICE_PHYSICS/TENDER/Tender -I$ALICE_PHYSICS/TENDER/TenderSupplies -I$ALICE_PHYSICS/PARfiles -I$ALICE_PHYSICS/PWGCF/FLOW/macros I$ALICE_PHYSICS/PWGPP/ZDC -g ");
+
+  //Fixed Track cuts: only vary for systematic check
+  Double_t dDCAxy = 2.4;
+  Double_t dDCAz  = 3.2;
+
+
 
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
 

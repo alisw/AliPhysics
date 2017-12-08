@@ -221,6 +221,7 @@ private:
 
   TProfile2D    *fRejectRatioVsCR; //!
 
+  TH2F            *fCentDistvsRun; //! 
   TH1D              *fHCorrectV0M; //!   for V0-Mult Gain Correction per channel.
 
 
