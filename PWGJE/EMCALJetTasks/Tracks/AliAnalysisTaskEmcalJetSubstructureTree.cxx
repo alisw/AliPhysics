@@ -84,6 +84,7 @@ AliAnalysisTaskEmcalJetSubstructureTree::AliAnalysisTaskEmcalJetSubstructureTree
     fTriggerSelectionString(""),
     fUseDownscaleWeight(false),
     fFillPart(true),
+    fFillAcceptance(true),
     fFillRho(true),
     fFillMass(true),
     fFillSoftDrop(true),
@@ -104,6 +105,7 @@ AliAnalysisTaskEmcalJetSubstructureTree::AliAnalysisTaskEmcalJetSubstructureTree
     fTriggerSelectionString(""),
     fUseDownscaleWeight(false),
     fFillPart(true),
+    fFillAcceptance(true),
     fFillRho(true),
     fFillMass(true),
     fFillSoftDrop(true),
@@ -156,39 +158,43 @@ void AliAnalysisTaskEmcalJetSubstructureTree::UserCreateOutputObjects() {
   varnames[3] = "PtJetSim";
   varnames[4] = "EJetRec";
   varnames[5] = "EJetSim";
-  varnames[6] = "RhoPtRec";
-  varnames[7] = "RhoPtSim";
-  varnames[8] = "RhoMassRec";
-  varnames[9] = "RhoMassSim";
-  varnames[10] = "AreaRec";
-  varnames[11] = "AreaSim";
-  varnames[12] = "NEFRec";
-  varnames[13] = "NEFSim";
-  varnames[14] = "MassRec";
-  varnames[15] = "MassSim";
-  varnames[16] = "ZgMeasured";
-  varnames[17] = "ZgTrue";
-  varnames[18] = "RgMeasured";
-  varnames[19] = "RgTrue";
-  varnames[20] = "MgMeasured";
-  varnames[21] = "MgTrue";
-  varnames[22] = "PtgMeasured";
-  varnames[23] = "PtgTrue";
-  varnames[24] = "MugMeasured";
-  varnames[25] = "MugTrue";
-  varnames[26] = "OneSubjettinessMeasured";
-  varnames[27] = "OneSubjettinessTrue";
-  varnames[28] = "TwoSubjettinessMeasured";
-  varnames[29] = "TwoSubjettinessTrue";
-  varnames[30] = "AngularityMeasured";
-  varnames[31] = "AngularityTrue";
-  varnames[32] = "PtDMeasured";
-  varnames[33] = "PtDTrue";
-  varnames[34] = "NCharged";
-  varnames[35] = "NNeutral";
-  varnames[36] = "NConstTrue";
-  varnames[37] = "NDroppedMeasured";
-  varnames[38] = "NDroppedTrue";
+  varnames[6] = "EtaRec";
+  varnames[7] = "EtaSim";
+  varnames[8] = "PhiRec";
+  varnames[9] = "PhiSim";
+  varnames[10] = "RhoPtRec";
+  varnames[11] = "RhoPtSim";
+  varnames[12] = "RhoMassRec";
+  varnames[13] = "RhoMassSim";
+  varnames[14] = "AreaRec";
+  varnames[15] = "AreaSim";
+  varnames[16] = "NEFRec";
+  varnames[17] = "NEFSim";
+  varnames[18] = "MassRec";
+  varnames[19] = "MassSim";
+  varnames[20] = "ZgMeasured";
+  varnames[21] = "ZgTrue";
+  varnames[22] = "RgMeasured";
+  varnames[23] = "RgTrue";
+  varnames[24] = "MgMeasured";
+  varnames[25] = "MgTrue";
+  varnames[26] = "PtgMeasured";
+  varnames[27] = "PtgTrue";
+  varnames[28] = "MugMeasured";
+  varnames[29] = "MugTrue";
+  varnames[30] = "OneSubjettinessMeasured";
+  varnames[31] = "OneSubjettinessTrue";
+  varnames[32] = "TwoSubjettinessMeasured";
+  varnames[33] = "TwoSubjettinessTrue";
+  varnames[34] = "AngularityMeasured";
+  varnames[35] = "AngularityTrue";
+  varnames[36] = "PtDMeasured";
+  varnames[37] = "PtDTrue";
+  varnames[38] = "NCharged";
+  varnames[39] = "NNeutral";
+  varnames[40] = "NConstTrue";
+  varnames[41] = "NDroppedMeasured";
+  varnames[42] = "NDroppedTrue";
 
   for(int ib = 0; ib < kTNVar; ib++){
     LinkOutputBranch(varnames[ib], fJetTreeData + ib);
@@ -200,6 +206,7 @@ void AliAnalysisTaskEmcalJetSubstructureTree::UserCreateOutputObjects() {
 void AliAnalysisTaskEmcalJetSubstructureTree::LinkOutputBranch(const TString &branchname, Double_t *datalocation) {
   // Check whether branch is rejected
   if(!fFillPart && IsPartBranch(branchname)) return;
+  if(!fFillAcceptance && IsAcceptanceBranch(branchname)) return;
   if(!fFillRho && IsRhoBranch(branchname)) return;
   if(!fFillMass && IsMassBranch(branchname)) return;
   if(!fFillSoftDrop && IsSoftdropBranch(branchname)) return;
@@ -376,6 +383,10 @@ void AliAnalysisTaskEmcalJetSubstructureTree::FillTree(double r, double weight,
     fJetTreeData[kTNEFRec] = datajet->NEF();
     if(fFillMass) fJetTreeData[kTMassRec] = datajet->M();
     fJetTreeData[kTEJetRec] = datajet->E();
+    if(fFillAcceptance) {
+      fJetTreeData[kTEtaRec] = datajet->Eta();
+      fJetTreeData[kTPhiRec] = datajet->Phi();
+    }
   }
 
   if(fFillPart && mcjet){
@@ -385,6 +396,10 @@ void AliAnalysisTaskEmcalJetSubstructureTree::FillTree(double r, double weight,
     fJetTreeData[kTNEFSim] = mcjet->NEF();
     if(fFillMass) fJetTreeData[kTMassSim] = mcjet->M();
     fJetTreeData[kTEJetSim] = mcjet->E();
+    if(fFillAcceptance){
+      fJetTreeData[kTEtaSim] = mcjet->Eta();
+      fJetTreeData[kTPhiSim] = mcjet->Phi();
+    }
   }
 
   if(fFillSoftDrop){
@@ -616,6 +631,10 @@ void AliAnalysisTaskEmcalJetSubstructureTree::DoConstituentQA(const AliEmcalJet 
 
 bool AliAnalysisTaskEmcalJetSubstructureTree::IsPartBranch(const TString &branchname) const{
   return branchname.Contains("Sim") || branchname.Contains("True");
+}
+
+bool AliAnalysisTaskEmcalJetSubstructureTree::IsAcceptanceBranch(const TString &branchname) const {
+  return branchname.Contains("Eta") || branchname.Contains("Phi");
 }
 
 bool AliAnalysisTaskEmcalJetSubstructureTree::IsRhoBranch(const TString &branchname) const{
