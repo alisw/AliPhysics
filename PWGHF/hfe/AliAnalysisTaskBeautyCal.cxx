@@ -189,6 +189,7 @@ ClassImp(AliAnalysisTaskBeautyCal)
   fHistDCAbeEnhance(0),
   fHistDCAdeEnhance_D0(0),
   fHistDCAdeEnhance_D(0),
+  fHistDCAdeEnhance_Ds(0),
   fHistDCAdeEnhance_Lc(0),
   fHistDCAdePureMC(0),
   fHistDCAbePureMC(0),
@@ -342,6 +343,7 @@ AliAnalysisTaskBeautyCal::AliAnalysisTaskBeautyCal()
   fHistDCAbeEnhance(0),
   fHistDCAdeEnhance_D0(0),
   fHistDCAdeEnhance_D(0),
+  fHistDCAdeEnhance_Ds(0),
   fHistDCAdeEnhance_Lc(0),
   fHistDCAdePureMC(0),
   fHistDCAbePureMC(0),
@@ -731,6 +733,9 @@ void AliAnalysisTaskBeautyCal::UserCreateOutputObjects()
 
   fHistDCAdeEnhance_D = new TH2D("fHistDCAdeEnhance_D", "DCA of Dp-> e; p_{T}(GeV/c);DCAxchargexMag.", 40,0,40,2000,-0.2,0.2);
   fOutputList->Add(fHistDCAdeEnhance_D);
+
+  fHistDCAdeEnhance_Ds = new TH2D("fHistDCAdeEnhance_Ds", "DCA of Ds-> e; p_{T}(GeV/c);DCAxchargexMag.", 40,0,40,2000,-0.2,0.2);
+  fOutputList->Add(fHistDCAdeEnhance_Ds);
 
   fHistDCAdeEnhance_Lc = new TH2D("fHistDCAdeEnhance_Lc", "DCA of Lc-> e; p_{T}(GeV/c);DCAxchargexMag.", 40,0,40,2000,-0.2,0.2);
   fOutputList->Add(fHistDCAdeEnhance_Lc);
@@ -1531,7 +1536,7 @@ void AliAnalysisTaskBeautyCal::UserExec(Option_t *)
       //cout << "eop org = " << eop << endl;
       if(fMCarray)  // E/p MC mean shift correction
         {
-         if(abs(pdg)==11)fHistEopTrueMC->Fill(track->Pt(),eop);
+         if(abs(pdg)==11 && (pid_eleD || pid_eleB))fHistEopTrueMC->Fill(track->Pt(),eop);
 
          if(centrality>=0 && centrality<10)
            { 
@@ -1539,10 +1544,18 @@ void AliAnalysisTaskBeautyCal::UserExec(Option_t *)
             eop += Eop010Corr->Eval(track->Pt()); 
             //cout << "eop corr = " << eop << endl;
            }
-         else
+         else if(centrality>=30 && centrality<50)
            {
             eop += 0.04; //30-50% 
            } 
+         else if(centrality>=60 && centrality<80)
+           {
+            eop += 0.045; //60-80% (tuned up to 18 GeV/c) 
+           } 
+         else
+           {
+            eop += 0.0; 
+           }
         }
       //cout << "eop corr = " << eop << endl;
       m02 =clustMatch->GetM02();
@@ -1625,6 +1638,7 @@ void AliAnalysisTaskBeautyCal::UserExec(Option_t *)
                   fHistDCAdeEnhance->Fill(track->Pt(),DCAxy);
                   if(abs(pidM)==421)fHistDCAdeEnhance_D0->Fill(track->Pt(),DCAxy);
                   if(abs(pidM)==411)fHistDCAdeEnhance_D->Fill(track->Pt(),DCAxy);
+                  if(abs(pidM)==431)fHistDCAdeEnhance_Ds->Fill(track->Pt(),DCAxy);
                   if(abs(pidM)==4122)fHistDCAdeEnhance_Lc->Fill(track->Pt(),DCAxy);
                  } 
                }
