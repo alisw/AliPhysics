@@ -285,10 +285,13 @@ AliMUONTrackerHV::Plot(const char* dcsname, Bool_t withPatch, Bool_t plotInterme
       }
     }
 
-    if ( end )
+    if ( start && end )
     {
-      TGraph* g = new TGraph(1);
-      g->SetPoint(0,end,0);
+      TGraph* g = new TGraph(2);
+      g->SetName("runBoundaries");
+      g->SetTitle("run boundaries");
+      g->SetPoint(0,start,0);
+      g->SetPoint(1,end,0);
       mg->Add(g,"");
     }
 

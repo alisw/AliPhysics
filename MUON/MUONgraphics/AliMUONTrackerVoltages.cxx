@@ -123,9 +123,9 @@ TMultiGraph* AliMUONTrackerVoltages::CombineMulti(TObjArray& graphs)
     while ( ( mg = static_cast<TMultiGraph*>(next())) )
     {
       graph.Add(mg->GetListOfGraphs()->At(i));
-      TGraph* g = Combine(graph);
-      rv->Add(g);
     }
+    TGraph* g = Combine(graph);
+    rv->Add(g);
   }
   return rv;
 }
