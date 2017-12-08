@@ -136,6 +136,7 @@ AliAnalysisTaskCMEV0::AliAnalysisTaskCMEV0(const TString name):AliAnalysisTaskSE
   fHistVtxXvsRun(NULL),
   fHistVtxYvsRun(NULL),
   fRejectRatioVsCR(NULL),
+  fCentDistvsRun(NULL),
   fHCorrectV0M(NULL)
 {
   for(int i=0;i<4;i++){
@@ -349,6 +350,7 @@ AliAnalysisTaskCMEV0::AliAnalysisTaskCMEV0(): AliAnalysisTaskSE(),
   fHistVtxXvsRun(NULL),
   fHistVtxYvsRun(NULL),
   fRejectRatioVsCR(NULL),
+  fCentDistvsRun(NULL),
   fHCorrectV0M(NULL)
 {
   for(int i=0;i<4;i++){
@@ -563,6 +565,7 @@ AliAnalysisTaskCMEV0::~AliAnalysisTaskCMEV0()
 
 void AliAnalysisTaskCMEV0::UserExec(Option_t *)
 {
+ 
  Float_t stepCount = 0.5;
  fHist_Event_count->Fill(stepCount); //1
  stepCount++;
@@ -579,7 +582,6 @@ void AliAnalysisTaskCMEV0::UserExec(Option_t *)
  stepCount++;
 
 
-
  //---------pileup rejection: --------
 
  Bool_t kPileupEvent = kFALSE;
@@ -587,6 +589,8 @@ void AliAnalysisTaskCMEV0::UserExec(Option_t *)
  kPileupEvent = CheckEventIsPileUp(aod);
 
  if(kPileupEvent)    return;
+
+ 
 
  fHist_Event_count->Fill(stepCount); //3
  stepCount++;
@@ -657,6 +661,7 @@ void AliAnalysisTaskCMEV0::UserExec(Option_t *)
  }
 
 
+
   //------- load v0 calib file of Alex --------
  Int_t runindex = -111;
  Int_t runNumber = aod->GetRunNumber();
@@ -670,11 +675,13 @@ void AliAnalysisTaskCMEV0::UserExec(Option_t *)
    if(bApplyNUACorr){
      GetNUACorrectionHist(runNumber,sFileNUA);
    }
-   if(bApplyZDCCorr && sDataSet=="2015"){
+ //if(bApplyZDCCorr && sDataSet=="2015"){
+   if(bApplyZDCCorr && fListZDNCorr){
      GetZDCCorrectionHist(runNumber);
    }
    fOldRunNum = runNumber;
  }
+
 
 
 
@@ -688,6 +695,7 @@ void AliAnalysisTaskCMEV0::UserExec(Option_t *)
 
 //-------- V0 info ---------------
  const AliAODVZERO *fAODV0 = aod->GetVZEROData();
+
 
 
  Double_t QyanCor = 0., QycnCor = 0.;
@@ -743,13 +751,17 @@ void AliAnalysisTaskCMEV0::UserExec(Option_t *)
    QxcnCor = Qxcn;
    QyanCor = Qyan;
    QycnCor = Qycn;
+   
  }
+
 
  //Fill V0M Mult for all System:
  for(int iV0 = 0; iV0 < 64; iV0++) { //0-31 is V0C, 32-63 VOA
    fMultv0 = fAODV0->GetMultiplicity(iV0);
    fV0MultChVsRun->Fill(iV0+0.5,runindex,fMultv0);
  }
+
+ 
 
 
  if(sumMa < 0 || sumMc < 0)   return;
@@ -772,7 +784,7 @@ void AliAnalysisTaskCMEV0::UserExec(Option_t *)
   fHistVtxYvsRun->Fill(runindex,VtxY);
  }
 
-
+ 
  //------------- Load ZDC info: -----------
  Double_t energyZNC=0.,energyZNA=0.,energyZPC=0.,energyZPA=0.;
 
@@ -823,9 +835,7 @@ void AliAnalysisTaskCMEV0::UserExec(Option_t *)
    }
  }
 
-
-
-
+ 
 
  //Store Qvector for tracks:
  Double_t QxPos[2] = {0.,};  //[0]=n*phi,[1]=2*n*phi
@@ -924,6 +934,7 @@ void AliAnalysisTaskCMEV0::UserExec(Option_t *)
  Double_t ptw2  = 1.0; 
  Double_t w2NUA = 1.0;
 
+ 
  for(int i=0; i<iTracks; i++) {
    pTrack1    =     fEvent->GetTrack(i);
    if(!pTrack1)                continue;
@@ -1165,8 +1176,8 @@ void AliAnalysisTaskCMEV0::UserExec(Option_t *)
      }
    }
 
-   //QxTPC[0] += ptw1*w1NUA*TMath::Cos(n*dPhi1);
-   //QyTPC[0] += ptw1*w1NUA*TMath::Sin(n*dPhi1);
+ //QxTPC[0] += ptw1*w1NUA*TMath::Cos(n*dPhi1);
+ //QyTPC[0] += ptw1*w1NUA*TMath::Sin(n*dPhi1);
    QxTPC[1] += ptw1*w1NUA*TMath::Cos(psiN*dPhi1);
    QyTPC[1] += ptw1*w1NUA*TMath::Sin(psiN*dPhi1);
 
@@ -1320,12 +1331,16 @@ void AliAnalysisTaskCMEV0::UserExec(Option_t *)
 
  fEventStatvsRun->Fill(runindex);
 
+ fCentDistvsRun->Fill(EvtCent,runindex);
 
- Double_t QTPCRe = 0.;
- Double_t QTPCIm = 0.;
+ Double_t QTPCRe = QxTPC[1];
+ Double_t QTPCIm = QyTPC[1];
 
- QTPCRe = QxTPC[1];
- QTPCIm = QyTPC[1];
+ if(QTPCRe<1e-5 && QTPCIm<1e-5) return; // remove events with |Q| = 0
+
+ fHist_Event_count->Fill(stepCount); //6
+ stepCount++;
+
 
  Double_t Psi2TPC = 1./psiN*(TMath::ATan2(QTPCIm,QTPCRe));
  if(Psi2TPC < 0.) Psi2TPC += 2*pi/psiN;
@@ -1336,8 +1351,10 @@ void AliAnalysisTaskCMEV0::UserExec(Option_t *)
 
  if(isBadRun) return;
 
- fHist_Event_count->Fill(stepCount); //6
+ fHist_Event_count->Fill(stepCount); //7
  stepCount++;
+
+
 
  Float_t fNegTracks = iTracks*0.5;
  Float_t ratioReject = (Float_t) icReject/fNegTracks;
@@ -2238,7 +2255,7 @@ void AliAnalysisTaskCMEV0::GetV0MCorrectionHist(Int_t run)
     printf("\n\n ********** V0M ch wgt Histograms NotFound, use Wgt = 1.0 ***************\n\n");
     //exit(1);
   }
-  fileV0M->Close();
+  //fileV0M->Close();
 }
 
 
@@ -2528,8 +2545,9 @@ void AliAnalysisTaskCMEV0::DefineHistograms(){
   fHist_Event_count->GetXaxis()->SetBinLabel(3,"PileUp");
   fHist_Event_count->GetXaxis()->SetBinLabel(4,"iCentSPD<90");
   fHist_Event_count->GetXaxis()->SetBinLabel(5,"V0 Mult>0");
-  fHist_Event_count->GetXaxis()->SetBinLabel(6,"Bad Runs");
-  fHist_Event_count->GetXaxis()->SetBinLabel(7,"..TBA..");
+  fHist_Event_count->GetXaxis()->SetBinLabel(6,"TPC Q!=0");
+  fHist_Event_count->GetXaxis()->SetBinLabel(7,"Bad Runs");
+  fHist_Event_count->GetXaxis()->SetBinLabel(8,"..TBA..");
 
   fHist_Event_count->GetXaxis()->SetBinLabel(10,"Final Event");
   fListHistos->Add(fHist_Event_count);
@@ -2681,7 +2699,7 @@ void AliAnalysisTaskCMEV0::DefineHistograms(){
 
 
 
-  TH1::SetDefaultSumw2();
+  //TH1::SetDefaultSumw2();
 
   Char_t name[100], title[100];
  
@@ -2697,31 +2715,37 @@ void AliAnalysisTaskCMEV0::DefineHistograms(){
       sprintf(name,"fHist_Corr3p_pTSum_EP_V0A_PN_Mag%d_Cent%d",i,j);
       sprintf(title,"PN 3p vs (pT1+pT2)/2, Cent %2.0f-%2.0f",centRange[i],centRange[i+1]);
       fHist_Corr3p_pTSum_EP_V0A_PN[i][j] = new TProfile(name,title,20,pTRange,"");
+      fHist_Corr3p_pTSum_EP_V0A_PN[i][j]->Sumw2();
       fListHistos->Add(fHist_Corr3p_pTSum_EP_V0A_PN[i][j]);
 
       sprintf(name,"fHist_Corr3p_pTSum_EP_V0A_PP_Mag%d_Cent%d",i,j);
       sprintf(title,"PP 3p vs (pT1+pT2)/2, Cent %2.0f-%2.0f",centRange[i],centRange[i+1]);
       fHist_Corr3p_pTSum_EP_V0A_PP[i][j] = new TProfile(name,title,20,pTRange,"");
+      fHist_Corr3p_pTSum_EP_V0A_PP[i][j]->Sumw2();
       fListHistos->Add(fHist_Corr3p_pTSum_EP_V0A_PP[i][j]);
 
       sprintf(name,"fHist_Corr3p_pTSum_EP_V0A_NN_Mag%d_Cent%d",i,j);
       sprintf(title,"NN 3p vs (pT1+pT2)/2, Cent %2.0f-%2.0f",centRange[i],centRange[i+1]);
       fHist_Corr3p_pTSum_EP_V0A_NN[i][j] = new TProfile(name,title,20,pTRange,"");
+      fHist_Corr3p_pTSum_EP_V0A_NN[i][j]->Sumw2();
       fListHistos->Add(fHist_Corr3p_pTSum_EP_V0A_NN[i][j]);
       //-----v0c----
       sprintf(name,"fHist_Corr3p_pTSum_EP_V0C_PN_Mag%d_Cent%d",i,j);
       sprintf(title,"PN 3p vs (pT1+pT2)/2, Cent %2.0f-%2.0f",centRange[i],centRange[i+1]);
       fHist_Corr3p_pTSum_EP_V0C_PN[i][j] = new TProfile(name,title,20,pTRange,"");
+      fHist_Corr3p_pTSum_EP_V0C_PN[i][j]->Sumw2();
       fListHistos->Add(fHist_Corr3p_pTSum_EP_V0C_PN[i][j]);
 
       sprintf(name,"fHist_Corr3p_pTSum_EP_V0C_PP_Mag%d_Cent%d",i,j);
       sprintf(title,"PP 3p vs (pT1+pT2)/2, Cent %2.0f-%2.0f",centRange[i],centRange[i+1]);
       fHist_Corr3p_pTSum_EP_V0C_PP[i][j] = new TProfile(name,title,20,pTRange,"");
+      fHist_Corr3p_pTSum_EP_V0C_PP[i][j]->Sumw2();
       fListHistos->Add(fHist_Corr3p_pTSum_EP_V0C_PP[i][j]);
 
       sprintf(name,"fHist_Corr3p_pTSum_EP_V0C_NN_Mag%d_Cent%d",i,j);
       sprintf(title,"NN 3p vs (pT1+pT2)/2, Cent %2.0f-%2.0f",centRange[i],centRange[i+1]);
       fHist_Corr3p_pTSum_EP_V0C_NN[i][j] = new TProfile(name,title,20,pTRange,"");
+      fHist_Corr3p_pTSum_EP_V0C_NN[i][j]->Sumw2();
       fListHistos->Add(fHist_Corr3p_pTSum_EP_V0C_NN[i][j]);
     }
   }
@@ -2731,31 +2755,37 @@ void AliAnalysisTaskCMEV0::DefineHistograms(){
       sprintf(name,"fHist_Corr3p_pTDiff_EP_V0A_PN_Mag%d_Cent%d",i,j);
       sprintf(title,"PN 3p vs |pT1-pT2|, Cent %2.0f-%2.0f",centRange[i],centRange[i+1]);
       fHist_Corr3p_pTDiff_EP_V0A_PN[i][j] = new TProfile(name,title,20,pTRange,"");
+      fHist_Corr3p_pTDiff_EP_V0A_PN[i][j]->Sumw2();
       fListHistos->Add(fHist_Corr3p_pTDiff_EP_V0A_PN[i][j]);
 
       sprintf(name,"fHist_Corr3p_pTDiff_EP_V0A_PP_Mag%d_Cent%d",i,j);
       sprintf(title,"PP 3p vs |pT1-pT2|, Cent %2.0f-%2.0f",centRange[i],centRange[i+1]);
       fHist_Corr3p_pTDiff_EP_V0A_PP[i][j] = new TProfile(name,title,20,pTRange,"");
+      fHist_Corr3p_pTDiff_EP_V0A_PP[i][j]->Sumw2();
       fListHistos->Add(fHist_Corr3p_pTDiff_EP_V0A_PP[i][j]);
 
       sprintf(name,"fHist_Corr3p_pTDiff_EP_V0A_NN_Mag%d_Cent%d",i,j);
       sprintf(title,"NN 3p vs |pT1-pT2|, Cent %2.0f-%2.0f",centRange[i],centRange[i+1]);
       fHist_Corr3p_pTDiff_EP_V0A_NN[i][j] = new TProfile(name,title,20,pTRange,"");
+      fHist_Corr3p_pTDiff_EP_V0A_NN[i][j]->Sumw2();
       fListHistos->Add(fHist_Corr3p_pTDiff_EP_V0A_NN[i][j]);
       //-----v0c----
       sprintf(name,"fHist_Corr3p_pTDiff_EP_V0C_PN_Mag%d_Cent%d",i,j);
       sprintf(title,"PN 3p vs |pT1-pT2|, Cent %2.0f-%2.0f",centRange[i],centRange[i+1]);
       fHist_Corr3p_pTDiff_EP_V0C_PN[i][j] = new TProfile(name,title,20,pTRange,"");
+      fHist_Corr3p_pTDiff_EP_V0C_PN[i][j]->Sumw2();
       fListHistos->Add(fHist_Corr3p_pTDiff_EP_V0C_PN[i][j]);
 
       sprintf(name,"fHist_Corr3p_pTDiff_EP_V0C_PP_Mag%d_Cent%d",i,j);
       sprintf(title,"PP 3p vs |pT1-pT2|, Cent %2.0f-%2.0f",centRange[i],centRange[i+1]);
       fHist_Corr3p_pTDiff_EP_V0C_PP[i][j] = new TProfile(name,title,20,pTRange,"");
+      fHist_Corr3p_pTDiff_EP_V0C_PP[i][j]->Sumw2();
       fListHistos->Add(fHist_Corr3p_pTDiff_EP_V0C_PP[i][j]);
 
       sprintf(name,"fHist_Corr3p_pTDiff_EP_V0C_NN_Mag%d_Cent%d",i,j);
       sprintf(title,"NN 3p vs |pT1-pT2|, Cent %2.0f-%2.0f",centRange[i],centRange[i+1]);
       fHist_Corr3p_pTDiff_EP_V0C_NN[i][j] = new TProfile(name,title,20,pTRange,"");
+      fHist_Corr3p_pTDiff_EP_V0C_NN[i][j]->Sumw2();
       fListHistos->Add(fHist_Corr3p_pTDiff_EP_V0C_NN[i][j]);
     }
   }
@@ -2767,31 +2797,37 @@ void AliAnalysisTaskCMEV0::DefineHistograms(){
       sprintf(name,"fHist_Corr3p_EtaDiff_EP_V0A_PN_Mag%d_Cent%d",i,j);
       sprintf(title,"PN 3p vs |Eta1-Eta2|, Cent %2.0f-%2.0f",centRange[i],centRange[i+1]);
       fHist_Corr3p_EtaDiff_EP_V0A_PN[i][j] = new TProfile(name,title,8,EtaRange,"");
+      fHist_Corr3p_EtaDiff_EP_V0A_PN[i][j]->Sumw2();
       fListHistos->Add(fHist_Corr3p_EtaDiff_EP_V0A_PN[i][j]);
 
       sprintf(name,"fHist_Corr3p_EtaDiff_EP_V0A_PP_Mag%d_Cent%d",i,j);
       sprintf(title,"PP 3p vs |Eta1-Eta2|, Cent %2.0f-%2.0f",centRange[i],centRange[i+1]);
       fHist_Corr3p_EtaDiff_EP_V0A_PP[i][j] = new TProfile(name,title,8,EtaRange,"");
+      fHist_Corr3p_EtaDiff_EP_V0A_PP[i][j]->Sumw2();
       fListHistos->Add(fHist_Corr3p_EtaDiff_EP_V0A_PP[i][j]);
 
       sprintf(name,"fHist_Corr3p_EtaDiff_EP_V0A_NN_Mag%d_Cent%d",i,j);
       sprintf(title,"NN 3p vs |Eta1-Eta2|, Cent %2.0f-%2.0f",centRange[i],centRange[i+1]);
       fHist_Corr3p_EtaDiff_EP_V0A_NN[i][j] = new TProfile(name,title,8,EtaRange,"");
+      fHist_Corr3p_EtaDiff_EP_V0A_NN[i][j]->Sumw2();
       fListHistos->Add(fHist_Corr3p_EtaDiff_EP_V0A_NN[i][j]);
       //-----v0c----
       sprintf(name,"fHist_Corr3p_EtaDiff_EP_V0C_PN_Mag%d_Cent%d",i,j);
       sprintf(title,"PN 3p vs |Eta1-Eta2|, Cent %2.0f-%2.0f",centRange[i],centRange[i+1]);
-      fHist_Corr3p_EtaDiff_EP_V0C_PN[i][j] = new TProfile(name,title,8,EtaRange,"");
+      fHist_Corr3p_EtaDiff_EP_V0C_PN[i][j] = new TProfile(name,title,8,EtaRange,""); 
+      fHist_Corr3p_EtaDiff_EP_V0C_PN[i][j]->Sumw2();
       fListHistos->Add(fHist_Corr3p_EtaDiff_EP_V0C_PN[i][j]);
 
       sprintf(name,"fHist_Corr3p_EtaDiff_EP_V0C_PP_Mag%d_Cent%d",i,j);
       sprintf(title,"PP 3p vs |Eta1-Eta2|, Cent %2.0f-%2.0f",centRange[i],centRange[i+1]);
       fHist_Corr3p_EtaDiff_EP_V0C_PP[i][j] = new TProfile(name,title,8,EtaRange,"");
+      fHist_Corr3p_EtaDiff_EP_V0C_PP[i][j]->Sumw2();
       fListHistos->Add(fHist_Corr3p_EtaDiff_EP_V0C_PP[i][j]);
 
       sprintf(name,"fHist_Corr3p_EtaDiff_EP_V0C_NN_Mag%d_Cent%d",i,j);
       sprintf(title,"NN 3p vs |Eta1-Eta2|, Cent %2.0f-%2.0f",centRange[i],centRange[i+1]);
       fHist_Corr3p_EtaDiff_EP_V0C_NN[i][j] = new TProfile(name,title,8,EtaRange,"");
+      fHist_Corr3p_EtaDiff_EP_V0C_NN[i][j]->Sumw2();
       fListHistos->Add(fHist_Corr3p_EtaDiff_EP_V0C_NN[i][j]);
     }
   }
@@ -2830,6 +2866,10 @@ void AliAnalysisTaskCMEV0::DefineHistograms(){
   fEventStatvsRun = new TH1F("fEventStatvsRun","Event stat per run",fRunFlag,0,fRunFlag);
   fListCalibs->Add(fEventStatvsRun);
 
+  fCentDistvsRun  = new TH2F("fCentStatvsRun","Cent Dist. vs  run",90,0,90,fRunFlag,0,fRunFlag);
+  fListCalibs->Add(fCentDistvsRun);
+
+
   //for debug only, remove after stable code
   hUnderOverBinNUApos = new TH1F("hUnderOverBinNUApos","",90,0,90);
   fListCalibs->Add(hUnderOverBinNUApos);
@@ -2847,13 +2887,13 @@ void AliAnalysisTaskCMEV0::DefineHistograms(){
   fHEnergyZPAvsCent = new TH2F("fHEnergyZPAvsCent","ZPA Energy vs cent",15,fCentBinQvect,2000,0,50000);
   fListCalibs->Add(fHEnergyZPAvsCent);
 
-  fHEnergyZNCvsCentRun = new TProfile2D("fHEnergyZNCvsCentRun","",90,0,90,90,0,90);
+  fHEnergyZNCvsCentRun = new TProfile2D("fHEnergyZNCvsCentRun","",90,0,90,fRunFlag,0,fRunFlag);
   fListCalibs->Add(fHEnergyZNCvsCentRun);
-  fHEnergyZNAvsCentRun = new TProfile2D("fHEnergyZNAvsCentRun","",90,0,90,90,0,90);
+  fHEnergyZNAvsCentRun = new TProfile2D("fHEnergyZNAvsCentRun","",90,0,90,fRunFlag,0,fRunFlag);
   fListCalibs->Add(fHEnergyZNAvsCentRun);
-  fHEnergyZPCvsCentRun = new TProfile2D("fHEnergyZPCvsCentRun","",90,0,90,90,0,90);
+  fHEnergyZPCvsCentRun = new TProfile2D("fHEnergyZPCvsCentRun","",90,0,90,fRunFlag,0,fRunFlag);
   fListCalibs->Add(fHEnergyZPCvsCentRun);
-  fHEnergyZPAvsCentRun = new TProfile2D("fHEnergyZPAvsCentRun","",90,0,90,90,0,90);
+  fHEnergyZPAvsCentRun = new TProfile2D("fHEnergyZPAvsCentRun","",90,0,90,fRunFlag,0,fRunFlag);
   fListCalibs->Add(fHEnergyZPAvsCentRun);
 
   fHEnergyZPCvsZPA = new TH2F("fHEnergyZPCvsZPA","ZNC Energy vs cent",500,0,50000,500,0,50000);
@@ -2870,18 +2910,24 @@ void AliAnalysisTaskCMEV0::DefineHistograms(){
 
   for(int i=0;i<2;i++){
     fHist_Corr3p_QAEta_SP_V0A_PN[i] = new TProfile(Form("fHist_Corr3p_QAEta_SP_V0A_PN_Mag%d",magField[i]),"PN, Cent 10-20%",16,-0.8,0.8,"");
+    fHist_Corr3p_QAEta_SP_V0A_PN[i]->Sumw2();
     fListCalibs->Add(fHist_Corr3p_QAEta_SP_V0A_PN[i]);
     fHist_Corr3p_QAEta_SP_V0A_PP[i] = new TProfile(Form("fHist_Corr3p_QAEta_SP_V0A_PP_Mag%d",magField[i]),"PP, Cent 10-20%",16,-0.8,0.8,"");
+    fHist_Corr3p_QAEta_SP_V0A_PP[i]->Sumw2();
     fListCalibs->Add(fHist_Corr3p_QAEta_SP_V0A_PP[i]);
     fHist_Corr3p_QAEta_SP_V0A_NN[i] = new TProfile(Form("fHist_Corr3p_QAEta_SP_V0A_NN_Mag%d",magField[i]),"NN, Cent 10-20%",16,-0.8,0.8,"");
+    fHist_Corr3p_QAEta_SP_V0A_NN[i]->Sumw2();
     fListCalibs->Add(fHist_Corr3p_QAEta_SP_V0A_NN[i]);
   }
   for(int i=0;i<2;i++){
     fHist_Corr3p_QAEta_SP_V0C_PN[i] = new TProfile(Form("fHist_Corr3p_QAEta_SP_V0C_PN_Mag%d",magField[i]),"PN, Cent 10-20%",16,-0.8,0.8,"");
+    fHist_Corr3p_QAEta_SP_V0C_PN[i]->Sumw2();
     fListCalibs->Add(fHist_Corr3p_QAEta_SP_V0C_PN[i]);
     fHist_Corr3p_QAEta_SP_V0C_PP[i] = new TProfile(Form("fHist_Corr3p_QAEta_SP_V0C_PP_Mag%d",magField[i]),"PP, Cent 10-20%",16,-0.8,0.8,"");
+    fHist_Corr3p_QAEta_SP_V0C_PP[i]->Sumw2();
     fListCalibs->Add(fHist_Corr3p_QAEta_SP_V0C_PP[i]);
     fHist_Corr3p_QAEta_SP_V0C_NN[i] = new TProfile(Form("fHist_Corr3p_QAEta_SP_V0C_NN_Mag%d",magField[i]),"NN, Cent 10-20%",16,-0.8,0.8,"");
+    fHist_Corr3p_QAEta_SP_V0C_NN[i]->Sumw2();
     fListCalibs->Add(fHist_Corr3p_QAEta_SP_V0C_NN[i]);
   }
 
@@ -3021,12 +3067,12 @@ void AliAnalysisTaskCMEV0::DefineHistograms(){
     for(int j=0;j<fRunFlag;j++){
       sprintf(name,"fHistEtaPhiVz_Pos_Cent%d_Run%d",i,runNums[j]);
       sprintf(title,"eta,phi,Vz Pos Cent%d-%d%%",gCentForNUA[i],gCentForNUA[i+1]);
-      fHist3DEtaPhiVz_Pos_Run[i][j] = new TH3F(name,title,5,-10,10,100,0,6.2832,16,-0.8,0.8); 
+      fHist3DEtaPhiVz_Pos_Run[i][j] = new TH3F(name,title,10,-10,10,50,0,6.283185,16,-0.8,0.8); 
       fListCalibs->Add(fHist3DEtaPhiVz_Pos_Run[i][j]);
 
       sprintf(name,"fHistEtaPhiVz_Neg_Cent%d_Run%d",i,runNums[j]);
       sprintf(title,"eta,phi,Vz Pos Cent%d-%d%%",gCentForNUA[i],gCentForNUA[i+1]);
-      fHist3DEtaPhiVz_Neg_Run[i][j] = new TH3F(name,title,5,-10,10,100,0,6.2832,16,-0.8,0.8); 
+      fHist3DEtaPhiVz_Neg_Run[i][j] = new TH3F(name,title,10,-10,10,50,0,6.283185,16,-0.8,0.8); 
       fListCalibs->Add(fHist3DEtaPhiVz_Neg_Run[i][j]);
     }
    }
@@ -3034,10 +3080,12 @@ void AliAnalysisTaskCMEV0::DefineHistograms(){
 
 
 
-  //pT Dependent NUA correction:
+
   fVzBinFinderForNUA = new TH1F("fVzBinFinderForNUA","",4,-10,10);
   fListCalibs->Add(fVzBinFinderForNUA);
+
   /*
+  //pT Dependent NUA correction:
   Double_t pTbinNUA[16] = {0.2,0.4,0.6,0.8,1.0,1.2,1.4,1.6,1.8,2.0,2.4,2.6,3.0,3.5,4.0,5.0};
   Double_t etabinNUA[9] = {-0.8,-0.6,-0.4,-0.2,0.0,0.2,0.4,0.6,0.8}; 
   Double_t phibinNUA[51] = {0.,};
