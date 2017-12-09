@@ -88,12 +88,13 @@ class AliAnalysisTaskEmcalJetPerformance : public AliAnalysisTaskEmcalJet {
     kSingleNeutron            = 7,  //!< Neutron is the only contributor
     kSingleAntiNeutron        = 8,  //!< Antineutron is the only contributor
     kSingleOther              = 9,  //!< One contributor (excluding the above cases)
-    kPhotonHadron             = 10, //!< Hadron+Photon are the only contributors
-    kMergedPi0                = 11, //!< Two particles from merged pi0 are the only contributors
-    kPhotonPhotonOther        = 12, //!< Photon+Photon (not from same pi0) are the only contributors
-    kHadronHadron             = 13, //!< Hadron+Hadron are the only contributors
-    kTwoContributorsOther     = 14, //!< Two contributors (excluding the above cases)
-    kMoreThanTwoContributors  = 15  //!< More than two contributors
+    kPhotonHadron             = 10, //!< Photon+Hadron are the only contributors, with Photon leading
+    kHadronPhoton             = 11, //!< Hadron+Photon are the only contributors, with Hadron leading
+    kMergedPi0                = 12, //!< Two particles from merged pi0 are the only contributors
+    kPhotonPhotonOther        = 13, //!< Photon+Photon (not from same pi0) are the only contributors
+    kHadronHadron             = 14, //!< Hadron+Hadron are the only contributors
+    kTwoContributorsOther     = 15, //!< Two contributors (excluding the above cases)
+    kMoreThanTwoContributors  = 16  //!< More than two contributors
   };
   
   enum ClusterType {
@@ -203,7 +204,7 @@ class AliAnalysisTaskEmcalJetPerformance : public AliAnalysisTaskEmcalJet {
   AliAnalysisTaskEmcalJetPerformance &operator=(const AliAnalysisTaskEmcalJetPerformance&); // not implemented
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskEmcalJetPerformance, 8);
+  ClassDef(AliAnalysisTaskEmcalJetPerformance, 9);
   /// \endcond
 };
 #endif

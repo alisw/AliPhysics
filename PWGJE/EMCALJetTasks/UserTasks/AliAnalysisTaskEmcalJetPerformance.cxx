@@ -529,8 +529,8 @@ void AliAnalysisTaskEmcalJetPerformance::AllocateParticleCompositionHistograms()
   GenerateFixedBinArray(nRejBins, 0, nRejBins, rejReasonBins);
   const Int_t nContributorTypes = 11;
   Double_t *contributorTypeBins = GenerateFixedBinArray(nContributorTypes, -0.5, 10.5);
-  const Int_t nParticleTypes = 16;
-  Double_t *particleTypeBins = GenerateFixedBinArray(nParticleTypes, -0.5, 15.5);
+  const Int_t nParticleTypes = 17;
+  Double_t *particleTypeBins = GenerateFixedBinArray(nParticleTypes, -0.5, 16.5);
   
   AliEmcalContainer* cont = 0;
   TIter nextClusColl(&fClusterCollArray);
@@ -552,6 +552,16 @@ void AliAnalysisTaskEmcalJetPerformance::AllocateParticleCompositionHistograms()
   htitle = histname + ";M02;#it{E}_{clus} (GeV); Particle type";
   TH3* hM02VsParticleTypePeripheral = fHistManager.CreateTH3(histname.Data(), htitle.Data(), fNM02HistBins, fM02HistBins, fNPtHistBins, fPtHistBins, nParticleTypes, particleTypeBins);
   SetParticleTypeLabels(hM02VsParticleTypePeripheral->GetZaxis());
+  
+  // Plot photon energy in photon-hadron overlap clusters (Centrality, Photon energy, M02)
+  histname = "ClusterHistogramsMC/hPhotonHadronPhotonEnergy";
+  htitle = histname + ";Centrality (%);M02;#it{E}_{photon} (GeV)";
+  fHistManager.CreateTH3(histname.Data(), htitle.Data(), fNCentHistBins, fCentHistBins, fNM02HistBins, fM02HistBins, fNPtHistBins, fPtHistBins);
+  
+  // Plot hadron energy in hadron-photon overlap clusters (Centrality, Photon energy, M02)
+  histname = "ClusterHistogramsMC/hHadronPhotonHadronEnergy";
+  htitle = histname + ";Centrality (%);M02;#it{E}_{hadron} (GeV)";
+  fHistManager.CreateTH3(histname.Data(), htitle.Data(), fNCentHistBins, fCentHistBins, fNM02HistBins, fM02HistBins, fNPtHistBins, fPtHistBins);
   
   if (fPlotJetHistograms) {
   
@@ -674,11 +684,12 @@ void AliAnalysisTaskEmcalJetPerformance::SetParticleTypeLabels(TAxis* axis)
   axis->SetBinLabel(9,  "SingleAntiNeutron");
   axis->SetBinLabel(10, "SingleOther");
   axis->SetBinLabel(11, "PhotonHadron");
-  axis->SetBinLabel(12, "MergedPi0");
-  axis->SetBinLabel(13, "PhotonPhotonOther");
-  axis->SetBinLabel(14, "HadronHadron");
-  axis->SetBinLabel(15, "TwoContributorsOther");
-  axis->SetBinLabel(16, "MoreThanTwoContributors");
+  axis->SetBinLabel(12, "HadronPhoton");
+  axis->SetBinLabel(13, "MergedPi0");
+  axis->SetBinLabel(14, "PhotonPhotonOther");
+  axis->SetBinLabel(15, "HadronHadron");
+  axis->SetBinLabel(16, "TwoContributorsOther");
+  axis->SetBinLabel(17, "MoreThanTwoContributors");
 }
       
 /*
@@ -1548,9 +1559,15 @@ void AliAnalysisTaskEmcalJetPerformance::FillParticleCompositionClusterHistogram
     }
     else if (nLabelsPhysPrim == 2) {
       
+      // Get the contributor particle types
       ContributorType contributorType1 = vecContributorTypes[0];
       ContributorType contributorType2 = vecContributorTypes[1];
       
+      // Get the fraction of cluster energy from each contributor
+      //Double_t frac0 = clus->GetClusterMCEdepFraction(0);
+      Double_t frac1 = clus->GetClusterMCEdepFraction(1);
+      
+      // Check whether the leading/subleading contributors are photons/hadrons
       Bool_t isHadron1 = IsHadron(contributorType1);
       Bool_t isHadron2 = IsHadron(contributorType2);
       Bool_t isPhoton1 = contributorType1 == kPhoton;
@@ -1559,8 +1576,21 @@ void AliAnalysisTaskEmcalJetPerformance::FillParticleCompositionClusterHistogram
       if (isHadron1 && isHadron2) {
         particleType = kHadronHadron;
       }
-      else if ((isHadron1 && isPhoton2) || (isHadron2 && isPhoton1)) {
+      else if (isPhoton1 && isHadron2) {
         particleType = kPhotonHadron;
+        
+        // Plot cluster energy when subleading hadron is subtracted
+        Double_t photonEnergy = clus->GetNonLinCorrEnergy() * (1 - frac1);
+        histname = "ClusterHistogramsMC/hPhotonHadronPhotonEnergy";
+        fHistManager.FillTH3(histname.Data(), fCent, clus->GetM02(), photonEnergy);
+      }
+      else if (isHadron1 && isPhoton2) {
+        particleType = kHadronPhoton;
+        
+        // Plot cluster energy when subleading hadron is subtracted
+        Double_t hadronEnergy = clus->GetNonLinCorrEnergy() * (1 - frac1);
+        histname = "ClusterHistogramsMC/hHadronPhotonHadronEnergy";
+        fHistManager.FillTH3(histname.Data(), fCent, clus->GetM02(), hadronEnergy);
       }
       else if (isPhoton1 && isPhoton2) {
         
