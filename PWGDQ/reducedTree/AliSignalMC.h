@@ -91,7 +91,7 @@ public:
    void SetProngHistory(UInt_t prong, UInt_t pdgCodes[], Bool_t checkBothCharges[], UInt_t sourceBits[], Bool_t excludePDG[]=0x0, Bool_t excludeSources[]=0x0);
    void SetPDGcode(UInt_t prong, UInt_t generation, Int_t pdgCode, Bool_t checkBothCharges = kFALSE, Bool_t exclude = kFALSE);
    void SetSources(UInt_t prong, UInt_t generation, UInt_t bits, Bool_t exclude=kFALSE);
-   void SetSourceBit(UInt_t prong, UInt_t generation, UInt_t sourceBit);
+   void SetSourceBit(UInt_t prong, UInt_t generation, UInt_t sourceBit, Bool_t exclude=kFALSE);
    
    UInt_t GetCommonAncestorIdx() const {return fCommonAncestorIdx;}
    UInt_t GetNProngs() const {return fNProngs;}

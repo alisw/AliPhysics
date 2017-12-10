@@ -7,6 +7,7 @@
 
 #include <TList.h>
 #include <TClonesArray.h>
+#include <TString.h>
 
 #include "AliReducedAnalysisTaskSE.h"
 #include "AliReducedInfoCut.h"
@@ -33,9 +34,12 @@ public:
   void AddEventCut(AliReducedInfoCut* cut) {fEventCuts.Add(cut);}
   void AddTrackCut(AliReducedInfoCut* cut) {fTrackCuts.Add(cut);}
   void AddPairCut(AliReducedInfoCut* cut) {fPairCuts.Add(cut);}
+  void SetMCBitNames(const Char_t* names) {fMCBitsNames = names;}
+  void AddMCBitNames(const Char_t* names) {fMCBitsNames += names;}
   
   // getters
   virtual AliHistogramManager* GetHistogramManager() const {return fHistosManager;}
+  TString GetMCBitNames() const {return fMCBitsNames;}
   
 protected:
    AliHistogramManager* fHistosManager;   // Histogram manager
@@ -43,6 +47,8 @@ protected:
    TList fEventCuts;     // array of event cuts
    TList fTrackCuts;     // array of track cuts
    TList fPairCuts;      // array of pair cuts
+   
+   TString fMCBitsNames;     // names of MC bits, separated by ";"
    
   Bool_t IsEventSelected(AliReducedBaseEvent* event);
   Bool_t IsTrackSelected(AliReducedBaseTrack* track);

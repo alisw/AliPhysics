@@ -148,6 +148,7 @@ public:
 
   TH2I*  fEventsHistogram;      // event statistics histogram
   TH2I*  fTracksHistogram;      // track statistics histogram
+  TH2I*  fMCSignalsHistogram;    // MC tracks statistics histogram
 
   Bool_t fFillTrackInfo;            // fill track information
   Bool_t fFillV0Info;               // fill the V0 information

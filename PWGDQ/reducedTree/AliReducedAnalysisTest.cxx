@@ -27,7 +27,8 @@ AliReducedAnalysisTest::AliReducedAnalysisTest() :
   fHistosManager(new AliHistogramManager("Histogram Manager", AliReducedVarManager::kNVars)),
   fEventCuts(),
   fTrackCuts(),
-  fPairCuts()
+  fPairCuts(),
+  fMCBitsNames("")
 {
   //
   // default constructor
@@ -42,7 +43,8 @@ AliReducedAnalysisTest::AliReducedAnalysisTest(const Char_t* name, const Char_t*
   fHistosManager(new AliHistogramManager("Histogram Manager", AliReducedVarManager::kNVars)),
   fEventCuts(),
   fTrackCuts(),
-  fPairCuts()
+  fPairCuts(),
+  fMCBitsNames("")
 {
   //
   // named constructor
@@ -258,13 +260,16 @@ void AliReducedAnalysisTest::FillTrackHistograms(TClonesArray* trackList) {
          
          if(fProcessMCInfo && track->GetMCFlags()) {
             AliReducedVarManager::FillTrackInfo(track,fValues);
-            if(track->TestMCFlag(0)) fHistosManager->FillHistClass("PureMCqa_Signal1", fValues);
+            TObjArray* namesArr = fMCBitsNames.Tokenize(";");
+            for(Int_t iflag = 0; iflag<namesArr->GetEntries(); ++iflag)
+               if(track->TestMCFlag(iflag)) fHistosManager->FillHistClass(Form("PureMCqa_%s", namesArr->At(iflag)->GetName()), fValues);
+            /*if(track->TestMCFlag(0)) fHistosManager->FillHistClass("PureMCqa_Signal1", fValues);
             if(track->TestMCFlag(1)) fHistosManager->FillHistClass("PureMCqa_Signal2", fValues);
             if(track->TestMCFlag(2)) fHistosManager->FillHistClass("PureMCqa_Signal3", fValues);
             if(track->TestMCFlag(3)) fHistosManager->FillHistClass("PureMCqa_Signal4", fValues);
             if(track->TestMCFlag(4)) fHistosManager->FillHistClass("PureMCqa_Signal5", fValues);
             if(track->TestMCFlag(5)) fHistosManager->FillHistClass("PureMCqa_Signal6", fValues);
-            if(track->TestMCFlag(6)) fHistosManager->FillHistClass("PureMCqa_Signal7", fValues);
+            if(track->TestMCFlag(6)) fHistosManager->FillHistClass("PureMCqa_Signal7", fValues);  */
             
             for(UShort_t iflag=0; iflag<32; ++iflag) {
                AliReducedVarManager::FillTrackMCFlag(track, iflag, fValues);

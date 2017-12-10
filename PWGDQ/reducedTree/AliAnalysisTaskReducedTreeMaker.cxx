@@ -109,6 +109,7 @@ AliAnalysisTaskReducedTreeMaker::AliAnalysisTaskReducedTreeMaker() :
   fTrackFilterName(),
   fEventsHistogram(0x0),
   fTracksHistogram(0x0),
+  fMCSignalsHistogram(0x0),
   fFillTrackInfo(kTRUE),
   fFillV0Info(kTRUE),
   fFillGammaConversions(kTRUE),
@@ -178,6 +179,7 @@ AliAnalysisTaskReducedTreeMaker::AliAnalysisTaskReducedTreeMaker(const char *nam
   fTrackFilterName(),
   fEventsHistogram(0x0),
   fTracksHistogram(0x0),
+  fMCSignalsHistogram(0x0),
   fFillTrackInfo(kTRUE),
   fFillV0Info(kTRUE),
   fFillGammaConversions(kTRUE),
@@ -234,8 +236,9 @@ AliAnalysisTaskReducedTreeMaker::AliAnalysisTaskReducedTreeMaker(const char *nam
   DefineOutput(1, AliReducedBaseEvent::Class());   // reduced information tree
   if(writeTree) {
     DefineOutput(2, TTree::Class());  // reduced information tree
-    DefineOutput(3, TH2I::Class());   // reduced information tree
-    DefineOutput(4, TH2I::Class());   // reduced information tree
+    DefineOutput(3, TH2I::Class());   // event statistics information
+    DefineOutput(4, TH2I::Class());   // track statistics information
+    DefineOutput(5, TH2I::Class());   // MC signals statistics information
   }
 }
 
@@ -389,6 +392,16 @@ void AliAnalysisTaskReducedTreeMaker::UserCreateOutputObjects()
       fTracksHistogram->GetXaxis()->SetBinLabel(i, Form("filter %d passed", i-5));
   }
 
+  // MC statistics histogram
+  fMCSignalsHistogram = new TH2I("MCSignalsStatistics", "Monte-Carlo signals statistics", 
+                                 fMCsignals.GetEntries(), -0.5, Double_t(fMCsignals.GetEntries())-0.5, 32, -0.5, 31.5);
+  for(Int_t i=1;i<=32;++i) fMCSignalsHistogram->GetYaxis()->SetBinLabel(i, offlineTriggerNames[i-1]);
+  for(Int_t i=1;i<=fMCsignals.GetEntries();++i) {
+     TString trackTypeStr = "base track";
+     if(fMCsignalsWritingOptions[i-1]==kFullTrack) trackTypeStr = "full track";
+     fMCSignalsHistogram->GetXaxis()->SetBinLabel(i, Form("%s (%s)", ((AliSignalMC*)fMCsignals.At(i-1))->GetName(), trackTypeStr.Data()));
+  }
+  
   // set a seed for the random number generator
   TTimeStamp ts;
   gRandom->SetSeed(ts.GetNanoSec());
@@ -398,6 +411,7 @@ void AliAnalysisTaskReducedTreeMaker::UserCreateOutputObjects()
     PostData(2, fTree);
     PostData(3, fEventsHistogram);
     PostData(4, fTracksHistogram);
+    PostData(5, fMCSignalsHistogram);
   }
 }
 
@@ -1157,16 +1171,16 @@ Bool_t AliAnalysisTaskReducedTreeMaker::CheckPDGcode(AliMCEvent* event, Int_t ip
    // loop over all generations
    AliVParticle* currentGenerationParticle = event->GetTrack(ipart);
    Int_t currentGenerationLabel = ipart;
-   for(UInt_t ig=0; ig<mcSignal->GetNGenerations(); ++ig) {
-      if(!currentGenerationParticle) break;       // end of MC history (may end before the specified number of generations in the MC signal)
-      
+   for(UInt_t ig=0; ig<mcSignal->GetNGenerations(); ++ig) {      
       // test the PDG code of this particle
-      if(!mcSignal->TestPDG(0, ig, currentGenerationParticle->PdgCode())) 
+      // In case the MC history finished (no current particle), test the MC signal using the not assigned PDG.
+      // If there is no PDG requested in this generation, the MC test can still pass
+      if(!mcSignal->TestPDG(0, ig, currentGenerationParticle ? currentGenerationParticle->PdgCode() : AliSignalMC::kPDGnotAssigned)) 
          return kFALSE;
       
       // get the next generation
-      currentGenerationLabel = currentGenerationParticle->GetMother();
-      currentGenerationParticle = event->GetTrack(currentGenerationLabel);
+      currentGenerationLabel = (currentGenerationParticle ? currentGenerationParticle->GetMother() : 0);
+      currentGenerationParticle = (currentGenerationParticle ? event->GetTrack(currentGenerationLabel) : 0x0);
    }
    return kTRUE;
 }
@@ -1186,20 +1200,35 @@ Bool_t AliAnalysisTaskReducedTreeMaker::CheckParticleSource(AliMCEvent* event, I
    Int_t currentGenerationLabel = ipart;
    for(UInt_t ig=0; ig<mcSignal->GetNGenerations(); ++ig) {
       if(!mcSignal->GetSources(0,ig)) continue;       // no sources requested
-      if(!currentGenerationParticle) break;       // end of MC history (may end before the specified number of generations in the MC signal)
       // check all implemented sources
       Bool_t decision = kTRUE;
-      if(mcSignal->CheckSourceBit(0,ig, AliSignalMC::kPhysicalPrimary) && !event->IsPhysicalPrimary(currentGenerationLabel)) decision = kFALSE;
-      if(mcSignal->CheckSourceBit(0,ig, AliSignalMC::kFromBGEvent) && !event->IsFromBGEvent(currentGenerationLabel)) decision = kFALSE;
-      if(mcSignal->CheckSourceBit(0,ig, AliSignalMC::kSecondaryFromWeakDecay) && !event->IsSecondaryFromWeakDecay(currentGenerationLabel)) decision = kFALSE;
-      if(mcSignal->CheckSourceBit(0,ig, AliSignalMC::kSecondaryFromMaterial) && !event->IsSecondaryFromMaterial(currentGenerationLabel)) decision = kFALSE;
-      if(mcSignal->CheckSourceBit(0,ig, AliSignalMC::kFromSubsidiaryEvent) && !event->IsFromSubsidiaryEvent(currentGenerationLabel)) decision = kFALSE;
-      if(mcSignal->CheckSourceBit(0,ig, AliSignalMC::kRadiativeDecay) && !(currentGenerationParticle->GetNDaughters()>2)) decision = kFALSE;
+      if(currentGenerationParticle) {
+         if(mcSignal->CheckSourceBit(0,ig, AliSignalMC::kPhysicalPrimary) && !event->IsPhysicalPrimary(currentGenerationLabel)) 
+            decision = kFALSE;
+         if(mcSignal->CheckSourceBit(0,ig, AliSignalMC::kFromBGEvent) && !event->IsFromBGEvent(currentGenerationLabel)) 
+            decision = kFALSE;
+         if(mcSignal->CheckSourceBit(0,ig, AliSignalMC::kSecondaryFromWeakDecay) && !event->IsSecondaryFromWeakDecay(currentGenerationLabel)) 
+            decision = kFALSE;
+         if(mcSignal->CheckSourceBit(0,ig, AliSignalMC::kSecondaryFromMaterial) && !event->IsSecondaryFromMaterial(currentGenerationLabel)) 
+            decision = kFALSE;
+         if(mcSignal->CheckSourceBit(0,ig, AliSignalMC::kFromSubsidiaryEvent) && !event->IsFromSubsidiaryEvent(currentGenerationLabel)) 
+            decision = kFALSE;
+         if(mcSignal->CheckSourceBit(0,ig, AliSignalMC::kRadiativeDecay) && !(currentGenerationParticle->GetNDaughters()>2)) 
+            decision = kFALSE;
+         
+         if(!decision && !mcSignal->GetSourcesExclude(0,ig)) return kFALSE;
+         if(decision && mcSignal->GetSourcesExclude(0,ig)) return kFALSE;
+      }
+      else {
+         // In the case there is no current particle (MC history finished), check whether there is a source request.
+         // If no request, the MC test can still pass
+         if(mcSignal->GetSources(0,ig))
+            return kFALSE;
+      }
       
-      if(decision && mcSignal->GetSourcesExclude(0,ig)) return kFALSE;
       // get the next generation
-      currentGenerationLabel = currentGenerationParticle->GetMother();
-      currentGenerationParticle = event->GetTrack(currentGenerationLabel);
+      currentGenerationLabel = (currentGenerationParticle ? currentGenerationParticle->GetMother() : 0);
+      currentGenerationParticle = (currentGenerationParticle ? event->GetTrack(currentGenerationLabel) : 0x0);
    }
    return kTRUE;
 }
@@ -1253,18 +1282,27 @@ void AliAnalysisTaskReducedTreeMaker::FillMCTruthInfo()
    if(!hasMC) return;
    Int_t nMCsignals = fMCsignals.GetEntries();
    if(!nMCsignals) return;
+   AliInputEventHandler* inputHandler = (AliInputEventHandler*) (AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
    
    AliMCEvent* event = AliDielectronMC::Instance()->GetMCEvent();
-      
-   //cout << "Event+++++++++++++++++++++++++" << endl;
    
    // We loop over all particles in the MC event
    for(Int_t i=0; i<event->GetNumberOfTracks(); ++i) {
       //AliVParticle* particle = mcHandler->GetMCTrackFromMCEvent(i);
       AliVParticle* particle = event->GetTrack(i);
       if(!particle) continue;
+      if(!(particle->PdgCode()==443 || (TMath::Abs(particle->PdgCode())>500 && TMath::Abs(particle->PdgCode())<600))) continue;
       UInt_t mcSignalsMap = MatchMCsignals(i);    // check which MC signals match this particle and fill the bit map
       if(!mcSignalsMap) continue;
+      
+      // fill MC statistics summary
+      for(Int_t iTrig=0;iTrig<32;++iTrig) {
+         if(inputHandler->IsEventSelected() & (UInt_t(1)<<iTrig)) {
+            for(Int_t iSig=0;iSig<fMCsignals.GetEntries();++iSig) {
+               if(mcSignalsMap & (UInt_t(1)<<iSig)) fMCSignalsHistogram->Fill(Double_t(iSig), Double_t(iTrig));
+            }
+         }
+      }
       
       Bool_t writeBaseTrack = kFALSE;      // if false write full track format
       writeBaseTrack = CheckMCtruthWriteFormat(mcSignalsMap);  // check which track format (base/full) should be used
@@ -1320,77 +1358,6 @@ void AliAnalysisTaskReducedTreeMaker::FillMCTruthInfo()
          }
       }
       if(fFillHFInfo) trackInfo->fHFProc = AliDielectronMC::Instance()->GetHFProcess(particle->GetLabel());
-
-/*      
-      // write J/psi's and electrons from J/psi decays
-      // TODO: Create a dynamical way to define which particles from the MC stack will be written
-      if(!particle) continue;
-      Bool_t acceptParticle = kFALSE;
-      if(particle->PdgCode()==443) acceptParticle = kTRUE;
-      if(TMath::Abs(particle->PdgCode())==411) acceptParticle = kTRUE;
-      if(TMath::Abs(particle->PdgCode())==421) acceptParticle = kTRUE;
-      if(TMath::Abs(particle->PdgCode())==431) acceptParticle = kTRUE;
-      if(TMath::Abs(particle->PdgCode())==4122) acceptParticle = kTRUE;
-      AliVParticle* mother = mcHandler->GetMCTrackFromMCEvent(particle->GetMother());
-      if(mother && mother->PdgCode()==443) acceptParticle = kTRUE;
-      if(mother && TMath::Abs(mother->PdgCode())==411) acceptParticle = kTRUE;
-      if(mother && TMath::Abs(mother->PdgCode())==421) acceptParticle = kTRUE;
-      if(mother && TMath::Abs(mother->PdgCode())==431) acceptParticle = kTRUE;
-      if(mother && TMath::Abs(mother->PdgCode())==4122) acceptParticle = kTRUE;      
-      if(TMath::Abs(particle->PdgCode())==11 && particle->Pt()>0.5) acceptParticle = kTRUE;
-      if(!acceptParticle) continue;
-      
-      TClonesArray& tracks = *(fReducedEvent->fTracks);
-      AliReducedBaseTrack* reducedParticle=NULL;
-      if(fTreeWritingOption==kBaseEventsWithBaseTracks || fTreeWritingOption==kFullEventsWithBaseTracks) {
-         reducedParticle=new(tracks[fReducedEvent->fNtracks[1]]) AliReducedBaseTrack();
-      }
-      if(fTreeWritingOption==kBaseEventsWithFullTracks || fTreeWritingOption==kFullEventsWithFullTracks) {
-         reducedParticle=new(tracks[fReducedEvent->fNtracks[1]]) AliReducedTrackInfo();
-      }
-      
-      reducedParticle->PxPyPz(particle->Px(), particle->Py(), particle->Pz());
-      reducedParticle->fQualityFlags |= (ULong_t(1)<<63);               // this means that this is a pure MC track
-      
-      Int_t nDaughters = (particle->PdgCode()==443 ? particle->GetLastDaughter() - particle->GetFirstDaughter() + 1 : 0);
-      if(nDaughters==2) reducedParticle->fQualityFlags |= (ULong_t(1)<<62);    // J/psi -> e+e-
-      if(nDaughters>2) reducedParticle->fQualityFlags |= (ULong_t(1)<<61);       // J/psi -> e+e- + X 
-      
-      AliReducedTrackInfo* trackInfo = dynamic_cast<AliReducedTrackInfo*>(reducedParticle);
-      if(!trackInfo) continue;
-      
-      trackInfo->fMCLabels[0] = particle->GetLabel();
-      trackInfo->fMCPdg[0] = particle->PdgCode();
-      trackInfo->fMCMom[0] = particle->Px();
-      trackInfo->fMCMom[1] = particle->Py();
-      trackInfo->fMCMom[2] = particle->Pz();
-      
-      if(mother) {
-        trackInfo->fMCLabels[1] = mother->GetLabel();
-        trackInfo->fMCPdg[1] = mother->PdgCode();
-        if(particle->PdgCode()==443)
-          reducedParticle->fQualityFlags |= (ULong_t(1)<<60);    // secondary J/psi
-        
-        AliVParticle* grandmother = mcHandler->GetMCTrackFromMCEvent(mother->GetMother());
-        if(grandmother) {
-           trackInfo->fMCLabels[2] = grandmother->GetLabel();
-           trackInfo->fMCPdg[2] = grandmother->PdgCode();
-           
-           AliVParticle* grandgrandmother = mcHandler->GetMCTrackFromMCEvent(grandmother->GetMother());
-           if(grandgrandmother) {
-              trackInfo->fMCLabels[3] = grandgrandmother->GetLabel();
-              trackInfo->fMCPdg[3] = grandgrandmother->PdgCode();
-           }
-        }
-      }
-
-      if(fFillHFInfo)      trackInfo->fHFProc = mcHandler->GetHFProcess(particle->GetLabel());
-*/
-      
-      /*cout << "particle label/pdg/mlabel/mpdg/px/py/pz/ndaughters/first/last :: " << trackInfo->fMCLabels[0] << "/" << trackInfo->fMCPdg[0] << "/"
-        << trackInfo->fMCLabels[1] << "/" << trackInfo->fMCPdg[1] << "/" << reducedParticle->Px() << "/"
-        << reducedParticle->Py() << "/" << reducedParticle->Pz() << "/" << nDaughters << "/" << particle->GetFirstDaughter() << "/"
-        << particle->GetLastDaughter() << endl; */
         
       fReducedEvent->fNtracks[1] += 1;  
    }

@@ -186,7 +186,7 @@ void AliSignalMC::SetSources(UInt_t prong, UInt_t generation, UInt_t bits, Bool_
 }
 
 //________________________________________________________________________________________________________________
-void AliSignalMC::SetSourceBit(UInt_t prong, UInt_t generation, UInt_t sourceBit) {
+void AliSignalMC::SetSourceBit(UInt_t prong, UInt_t generation, UInt_t sourceBit, Bool_t exclude /*=kFALSE*/) {
    //
    // set a specific source bit for a prong at a given generation
    //
@@ -194,6 +194,9 @@ void AliSignalMC::SetSourceBit(UInt_t prong, UInt_t generation, UInt_t sourceBit
    if(generation<0 || generation>=fNGenerations) return;
    if(sourceBit>=kNSources) return;
    fSourceBits[prong][generation] |= (UInt_t(1)<<sourceBit);
+   // NOTE: The exclude factor is set here via the inidividual source bit, but actually overrides the flag for all sources (in case multiple sources have been defined)
+   // TODO: implement a bit map corresponding to each source, to hold an exclude flag for each source
+   fExcludeSource[prong][generation] = exclude;
 }
 
 //________________________________________________________________________________________________________________
