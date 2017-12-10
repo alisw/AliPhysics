@@ -355,12 +355,12 @@ void AliT0v1::CreateGeometry()
     
    //Support absorber (C) side
    z=-pstart[2]+psupport1[2];//  0.05; //0.1;
-   TVirtualMC::GetMC()->Gspos("0SU1",1,"0STR",0,0,z,0,"ONLY"); //C kozhuh snaruzhi
-   TVirtualMC::GetMC()->Gspos("0SU2",1,"0STR",0,0,z,0,"ONLY"); //C kozhuh vnutri
+    TVirtualMC::GetMC()->Gspos("0SU1",1,"0STR",0,0,z,0,"ONLY"); //C kozhuh snaruzhi
+   //    TVirtualMC::GetMC()->Gspos("0SU2",1,"0STR",0,0,z,0,"ONLY"); //C kozhuh vnutri
    z=-pstart[2]+psupport3[2];//  - 0.1;
-   TVirtualMC::GetMC()->Gspos("0SU3",1,"0STR",0,0,z,0,"ONLY"); //peredniaia kryshka
+   //  TVirtualMC::GetMC()->Gspos("0SU3",1,"0STR",0,0,z,0,"ONLY"); //peredniaia kryshka
    z=-pstart[2]+2.*psupport1[2];//+0.1;
-   TVirtualMC::GetMC()->Gspos("0SU4",1,"0STR",0,0,z,0,"MANY"); //zadnaiai kryshka
+   //  TVirtualMC::GetMC()->Gspos("0SU4",1,"0STR",0,0,z,0,"MANY"); //zadnaiai kryshka
    TVirtualMC::GetMC()->Gspos("0SU6",1,"0INS",0,0,0,0,"ONLY");//C stakanchik dlia feu 
    z=-pinstart[2]+psupport6[2]; //-0.1;
    TVirtualMC::GetMC()->Gspos("0SU7",1,"0INS",0,0,z,0,"ONLY"); //Al kryshechka 
