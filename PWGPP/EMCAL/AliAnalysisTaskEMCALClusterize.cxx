@@ -101,8 +101,10 @@ AliAnalysisTaskEMCALClusterize::AliAnalysisTaskEMCALClusterize(const char *name)
   for(Int_t i = 0; i < 22;    i++)  
   {
     fGeomMatrix[i] = 0;
-    fTCardCorrInduceEnerProb[i] = 0;
-    
+    fTCardCorrInduceEnerProb   [i] = 0;
+    fTCardCorrInduceEnerFracMax[i] = 100;
+    fTCardCorrInduceEnerFracMin[i] =-100;
+
     for(Int_t j = 0; j < 4 ; j++)
     {
       fTCardCorrInduceEner         [j][i] =  0 ;   
@@ -161,8 +163,10 @@ AliAnalysisTaskEMCALClusterize::AliAnalysisTaskEMCALClusterize()
   for(Int_t i = 0; i < 22;    i++)  
   {
     fGeomMatrix[i] = 0;
-    fTCardCorrInduceEnerProb[i] = 0;
-    
+    fTCardCorrInduceEnerProb   [i] = 0;
+    fTCardCorrInduceEnerFracMax[i] = 100;
+    fTCardCorrInduceEnerFracMin[i] =-100;
+
     for(Int_t j = 0; j < 4 ; j++)
     {
       fTCardCorrInduceEner         [j][i] =  0 ;   
@@ -1834,14 +1838,24 @@ void AliAnalysisTaskEMCALClusterize::MakeCellTCardCorrelation()
     Float_t fracleri       = fTCardCorrInduceEnerFrac[2][imod]+amp*fTCardCorrInduceEnerFracP1[2][imod];
     Float_t frac2nd        = fTCardCorrInduceEnerFrac[3][imod]+amp*fTCardCorrInduceEnerFracP1[3][imod];
     
-    AliDebug(1,Form("Fraction for SM %d:\n\t up-down   : c %2.2e, p1 %2.2e, p2 %2.2f, sig %2.2f, fraction %2.3f\n"
+    AliDebug(1,Form("Fraction for SM %d (min %2.2f, max %2.2f):\n\t up-down   : c %2.2e, p1 %2.2e, p2 %2.2f, sig %2.2f, fraction %2.3f\n"
                     "\t up-down-lr: c %2.2e, p1 %2.2e, p2 %2.2f, sig %2.2f, fraction %2.3f\n"
                     "\t left-right: c %2.2e, p1 %2.2e, p2 %2.2f, sig %2.2f, fraction %2.3f\n"
-                    "\t 2nd row   : c %2.2e, p1 %2.2e, p2 %2.2f, sig %2.2f, fraction %2.3f", imod,
+                    "\t 2nd row   : c %2.2e, p1 %2.2e, p2 %2.2f, sig %2.2f, fraction %2.3f", 
+                    imod, fTCardCorrInduceEnerFracMin[imod], fTCardCorrInduceEnerFracMax[imod],
                     fTCardCorrInduceEner[0][imod],fTCardCorrInduceEnerFrac[0][imod],fTCardCorrInduceEnerFracP1[0][imod],fTCardCorrInduceEnerFracWidth[0][imod],fracupdown,
                     fTCardCorrInduceEner[1][imod],fTCardCorrInduceEnerFrac[1][imod],fTCardCorrInduceEnerFracP1[1][imod],fTCardCorrInduceEnerFracWidth[1][imod],fracupdownleri,
                     fTCardCorrInduceEner[2][imod],fTCardCorrInduceEnerFrac[2][imod],fTCardCorrInduceEnerFracP1[2][imod],fTCardCorrInduceEnerFracWidth[2][imod],fracleri,
                     fTCardCorrInduceEner[3][imod],fTCardCorrInduceEnerFrac[3][imod],fTCardCorrInduceEnerFracP1[3][imod],fTCardCorrInduceEnerFracWidth[3][imod],frac2nd));
+    
+    if( fracupdown     < fTCardCorrInduceEnerFracMin[imod] ) fracupdown     = fTCardCorrInduceEnerFracMin[imod];
+    if( fracupdown     > fTCardCorrInduceEnerFracMax[imod] ) fracupdown     = fTCardCorrInduceEnerFracMax[imod];   
+    if( fracupdownleri < fTCardCorrInduceEnerFracMin[imod] ) fracupdownleri = fTCardCorrInduceEnerFracMin[imod];
+    if( fracupdownleri > fTCardCorrInduceEnerFracMax[imod] ) fracupdownleri = fTCardCorrInduceEnerFracMax[imod];
+    if( fracleri       < fTCardCorrInduceEnerFracMin[imod] ) fracleri       = fTCardCorrInduceEnerFracMin[imod];
+    if( fracleri       > fTCardCorrInduceEnerFracMax[imod] ) fracleri       = fTCardCorrInduceEnerFracMax[imod];
+    if( frac2nd        < fTCardCorrInduceEnerFracMin[imod] ) frac2nd        = fTCardCorrInduceEnerFracMin[imod];
+    if( frac2nd        > fTCardCorrInduceEnerFracMax[imod] ) frac2nd        = fTCardCorrInduceEnerFracMax[imod];
     
     // Randomize the induced fraction, if requested
     if(fRandomizeTCard)
@@ -2007,7 +2021,9 @@ void AliAnalysisTaskEMCALClusterize::PrintTCardParam()
   
   for(Int_t ism = 0; ism < 22; ism++)
   {
-    printf("\t sm %d, fraction %2.2f\n",ism, fTCardCorrInduceEnerProb[ism]);
+    printf("\t sm %d, fraction %2.2f, E frac abs min %2.2f max %2.2f\n",
+           ism, fTCardCorrInduceEnerProb[ism],fTCardCorrInduceEnerFracMin[ism],fTCardCorrInduceEnerFracMax[ism]);
+    
     for(Int_t icell = 0; icell < 4; icell++)
     {
       printf("\t \t cell type %d, c %2.2e, p0 %2.2e, p1 %2.2e, sigma %2.2e \n",
