@@ -205,7 +205,8 @@ TTree *  AliExternalInfo::GetProductionTree(TString period, TString pass){
       gSystem->mkdir(outputPath,kTRUE);
       outputPath+=fConfigMap["MonALISA.Production.filename"];
       TFile *f = TFile::Open(outputPath.Data(),"recreate");
-      productionTree->Write(fConfigMap["MonALISA.Production.treename"]);
+      TTree *copyTree = productionTree->CopyTree("");
+      copyTree->Write(fConfigMap["MonALISA.Production.treename"]);
       f->Close();
       if (fVerbose&0x1) ::Info("GetProductionTree","Make cache path %s",outputPath.Data());
       return productionTree;
