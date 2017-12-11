@@ -41,7 +41,6 @@ AliHLTTPCAgent gAliHLTTPCAgent;
 
 // component headers
 #include "AliHLTTPCCATrackerComponent.h"
-#include "AliHLTTPCCATrackerOutputConverter.h"
 #include "AliHLTTPCTrackMCMarkerComponent.h"
 #include "AliHLTTPCCAGlobalMergerComponent.h"
 #include "AliHLTTPCdEdxComponent.h"
@@ -405,7 +404,6 @@ int AliHLTTPCAgent::RegisterComponents(AliHLTComponentHandler* pHandler) const
   if (!pHandler) return -EINVAL;
 
   pHandler->AddComponent(new AliHLTTPCCATrackerComponent);
-  pHandler->AddComponent(new AliHLTTPCCATrackerOutputConverter);
   pHandler->AddComponent(new AliHLTTPCCAGlobalMergerComponent);
   pHandler->AddComponent(new AliHLTTPCTrackMCMarkerComponent);
   pHandler->AddComponent(new AliHLTTPCdEdxComponent);
