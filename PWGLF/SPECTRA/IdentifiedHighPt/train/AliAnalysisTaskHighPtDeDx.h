@@ -40,6 +40,7 @@ class AliAnalysisTaskHighPtDeDx : public AliAnalysisTaskSE {
   Double_t GetEtaCutStack() { return fEtaCutStack; }   
   Double_t GetMinPt() { return fMinPt; }   
   Double_t GetMinPtV0() { return fMinPtV0; }
+  Double_t GetCosPACut() { return fCosPACut; }
   Int_t    GetTreeOption() { return fTreeOption; }
 
   virtual void  SetTrigger1(UInt_t ktriggerInt1) {ftrigBit1 = ktriggerInt1;}
@@ -64,6 +65,7 @@ class AliAnalysisTaskHighPtDeDx : public AliAnalysisTaskSE {
   virtual void  SetRequireRecV0(Bool_t value) {fRequireRecV0 = value;}
   virtual void  SetStoreMcIn(Bool_t value) {fStoreMcIn = value;}
   virtual void  SetAnalysisPbPb(Bool_t isanaPbPb) {fAnalysisPbPb = isanaPbPb;}
+  virtual void  SetCosPACut(Double_t value) {fCosPACut = value;}   
 
  private:
   virtual Float_t GetVertex(const AliVEvent* event) const;
@@ -134,6 +136,7 @@ class AliAnalysisTaskHighPtDeDx : public AliAnalysisTaskSE {
   Double_t     fMinPt;              // Min pt - for histogram limits
   Double_t     fMinPtV0;            // Min pt - for histogram limits - V0s / strangeness part
   Double_t     fLowPtFraction;      // Fraction of tracks below min pt to keep
+  Double_t     fCosPACut;              // Min cosPA - for histogram limits
   Double_t     fMassCut;            // Reject all v0 with all dmass > masscut!
   Int_t        fTreeOption;         // 0: no tree, >0: enable debug tree
   Float_t      fMinCent; //minimum centrality

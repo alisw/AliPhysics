@@ -11,6 +11,8 @@ Comments:
 * 23 sep 2015: trichert: hardcoded trigger conditions, search for TRIGGER CONDITION
 * 21 oct 2015: trichert: uncommented hardcoded trigger conditions (search for TRIGGER CONDITION)
 * 14 dec 2015: trichert: changed aodTrack->TestFilterBit(1) to aodTrack->TestFilterBit(128) for TPC_only, and pTrack->TestFilterBit(128) and nTrack->TestFilterBit(128) (from 1)
+* 11 dec 2017: changed to trigger cond 2010 data
+* 11 dec 2017: implemented a setting function for cosPA ("fCosPACut")
     
 Remiders:
 * For pp: remove pile up thing
@@ -115,6 +117,7 @@ AliAnalysisTaskHighPtDeDx::AliAnalysisTaskHighPtDeDx():
   fEtaCutStack(1.2),  
   fMinPt(0.1),
   fMinPtV0(0.1),
+  fCosPACut(0.95),
   fLowPtFraction(0.01),
   fMassCut(0.1),//
   fTreeOption(0),
@@ -174,6 +177,7 @@ AliAnalysisTaskHighPtDeDx::AliAnalysisTaskHighPtDeDx(const char *name):
   fEtaCutStack(1.2),    
   fMinPt(0.1),
   fMinPtV0(0.1),
+  fCosPACut(0.95),
   fLowPtFraction(0.01),
   fMassCut(0.1),//
   fTreeOption(0),
@@ -382,18 +386,18 @@ void AliAnalysisTaskHighPtDeDx::UserExec(Option_t *)
   // Always use if MC
   // Use if 2010 data
 
-  // if(((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))
-  //    ->IsEventSelected() & ftrigBit1 ){
-  //   fn1->Fill(1);
-  //   fTriggeredEventMB = 1;  event triggered as minimum bias
-  // }
-  // if(((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))
-  //    ->IsEventSelected() & ftrigBit2 ){
-  //   From AliVEvent:
-  //      kINT7         = BIT(1), // V0AND trigger, offline V0 selection
-  //   fTriggeredEventMB += 2;  
-  //   fn2->Fill(1);
-  // }
+  if(((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))
+     ->IsEventSelected() & ftrigBit1 ){
+    fn1->Fill(1);
+    fTriggeredEventMB = 1;  event triggered as minimum bias
+  }
+  if(((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))
+     ->IsEventSelected() & ftrigBit2 ){
+    From AliVEvent:
+       kINT7         = BIT(1), // V0AND trigger, offline V0 selection
+    fTriggeredEventMB += 2;  
+    fn2->Fill(1);
+  }
 
  
   //_____________ end nominal _______________________
@@ -403,21 +407,21 @@ void AliAnalysisTaskHighPtDeDx::UserExec(Option_t *)
   // // Never use if MC
   // // Use if 2011 data
 
-  if(((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))
-     ->IsEventSelected() & ftrigBit1 ){
-    fn1->Fill(1);
-    fTriggeredEventMB = 1;  //event triggered as minimum bias
-  }
-  if(((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))
-     ->IsEventSelected() & AliVEvent::kSemiCentral ){
-    fTriggeredEventMB += 2;  
-    fn2->Fill(1);
-  }
-  if(((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))
-     ->IsEventSelected() & AliVEvent::kMB ){
-    fTriggeredEventMB += 4;  
-    fn2->Fill(1);
-  }
+  // if(((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))
+  //    ->IsEventSelected() & ftrigBit1 ){
+  //   fn1->Fill(1);
+  //   fTriggeredEventMB = 1;  //event triggered as minimum bias
+  // }
+  // if(((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))
+  //    ->IsEventSelected() & AliVEvent::kSemiCentral ){
+  //   fTriggeredEventMB += 2;  
+  //   fn2->Fill(1);
+  // }
+  // if(((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))
+  //    ->IsEventSelected() & AliVEvent::kMB ){
+  //   fTriggeredEventMB += 4;  
+  //   fn2->Fill(1);
+  // }
  
   // //_____________ end special ______________________
 
@@ -2314,7 +2318,7 @@ void AliAnalysisTaskHighPtDeDx::ProduceArrayV0ESD( AliESDEvent *ESDevent, Analys
         // Pt cut on decay products
         if (esdV0->Pt() < fMinPtV0) continue;
         // No point in keeping low cospa values...
-        if (esdV0->GetV0CosineOfPointingAngle() < 0.996 ) continue;
+        if (esdV0->GetV0CosineOfPointingAngle() < fCosPACut ) continue;
         //Reject on-the-fly tracks too
         if (esdV0->GetOnFlyStatus() != 0 ) continue;
         
@@ -2704,7 +2708,6 @@ void AliAnalysisTaskHighPtDeDx::ProduceArrayV0ESD( AliESDEvent *ESDevent, Analys
 	v0data->status  = esdV0->GetOnFlyStatus();
 	v0data->chi2    = esdV0->GetChi2V0();
 	v0data->cospt   = esdV0->GetV0CosineOfPointingAngle(); 
-	// cospt: as I understand this means that the pointing to the vertex
 	// is fine so I remove the dcaxy and dcaz for the V= class
 	v0data->dcadaughters = esdV0->GetDcaV0Daughters();
 	v0data->primary = primaryV0;
@@ -2898,7 +2901,7 @@ void AliAnalysisTaskHighPtDeDx::ProduceArrayV0ESD( AliESDEvent *ESDevent, Analys
         // Pt cut on decay products
         if (esdV0->Pt() < fMinPtV0) continue;
         // No point in keeping low cospa values...
-        if (esdV0->GetV0CosineOfPointingAngle() < 0.996 ) continue;
+        if (esdV0->GetV0CosineOfPointingAngle() < fCosPACut ) continue;
         //Reject on-the-fly tracks too
         if (esdV0->GetOnFlyStatus() != 0 ) continue;
  
@@ -3192,7 +3195,6 @@ void AliAnalysisTaskHighPtDeDx::ProduceArrayV0ESD( AliESDEvent *ESDevent, Analys
 	v0datatpc->status  = esdV0->GetOnFlyStatus();
 	v0datatpc->chi2    = esdV0->GetChi2V0();
 	v0datatpc->cospt   = esdV0->GetV0CosineOfPointingAngle(); 
-	// cospt: as I understand this means that the pointing to the vertex
 	// is fine so I remove the dcaxy and dcaz for the V= class
 	v0datatpc->dcadaughters = esdV0->GetDcaV0Daughters();
 	v0datatpc->primary = primaryV0;
@@ -3353,7 +3355,7 @@ void AliAnalysisTaskHighPtDeDx::ProduceArrayV0AOD( AliAODEvent *AODevent, Analys
         // Pt cut on decay products
         if (aodV0->Pt() < fMinPtV0) continue;
         // No point in keeping low cospa values...
-        if (aodV0->CosPointingAngle(myBestPrimaryVertex) < 0.996 ) continue;
+        if (aodV0->CosPointingAngle(myBestPrimaryVertex) < fCosPACut ) continue;
         //Reject on-the-fly tracks too
         if (aodV0->GetOnFlyStatus() != 0 ) continue;
       
@@ -3720,7 +3722,6 @@ void AliAnalysisTaskHighPtDeDx::ProduceArrayV0AOD( AliAODEvent *AODevent, Analys
 	v0data->status  = aodV0->GetOnFlyStatus();
 	v0data->chi2    = aodV0->Chi2V0();
 	v0data->cospt   = aodV0->CosPointingAngle(myBestPrimaryVertex);
-	// cospt: as I understand this means that the pointing to the vertex
 	// is fine so I remove the dcaxy and dcaz for the V= class
 	v0data->dcav0   = aodV0->DcaV0ToPrimVertex();
 	v0data->dcadaughters = aodV0->DcaV0Daughters();
@@ -3868,7 +3869,7 @@ void AliAnalysisTaskHighPtDeDx::ProduceArrayV0AOD( AliAODEvent *AODevent, Analys
        // Pt cut on decay products
        if (aodV0->Pt() < fMinPtV0) continue;
        // No point in keeping low cospa values...
-       if (aodV0->CosPointingAngle(myBestPrimaryVertex) < 0.996 ) continue;
+       if (aodV0->CosPointingAngle(myBestPrimaryVertex) < fCosPACut ) continue;
        //Reject on-the-fly tracks too
        if (aodV0->GetOnFlyStatus() != 0 ) continue;
          
@@ -4097,7 +4098,6 @@ void AliAnalysisTaskHighPtDeDx::ProduceArrayV0AOD( AliAODEvent *AODevent, Analys
 	v0datatpc->status  = aodV0->GetOnFlyStatus();
 	v0datatpc->chi2    = aodV0->Chi2V0();
 	v0datatpc->cospt   = aodV0->CosPointingAngle(myBestPrimaryVertex);
-	// cospt: as I understand this means that the pointing to the vertex
 	// is fine so I remove the dcaxy and dcaz for the V= class
 	v0datatpc->dcav0   = aodV0->DcaV0ToPrimVertex();
 	v0datatpc->dcadaughters = aodV0->DcaV0Daughters();
