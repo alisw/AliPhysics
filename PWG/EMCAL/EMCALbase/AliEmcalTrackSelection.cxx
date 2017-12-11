@@ -12,16 +12,17 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
-#include <AliEmcalTrackSelection.h>
 #include <TObjArray.h>
 #include <TClonesArray.h>
-#include <AliESDtrackCuts.h>
-#include <AliEmcalESDtrackCutsWrapper.h>
-#include <AliLog.h>
-#include <AliVCuts.h>
-#include <AliVTrack.h>
-#include <AliVEvent.h>
-#include <iostream>
+#include "AliESDtrackCuts.h"
+#include "AliEmcalESDtrackCutsWrapper.h"
+#include "AliEmcalVCutsWrapper.h"
+#include "AliEmcalTrackSelection.h"
+#include "AliLog.h"
+#include "AliVCuts.h"
+#include "AliVTrack.h"
+#include "AliVEvent.h"
+#include "iostream"
 
 /// \cond CLASSIMP
 ClassImp(AliEmcalManagedObject)
@@ -91,17 +92,23 @@ void AliEmcalTrackSelection::AddTrackCuts(AliVCuts *cuts){
     // both AliESDtracks and AliAODTracks
     AliVCuts *mycuts = cuts;
     if(AliESDtrackCuts *esdcuts = dynamic_cast<AliESDtrackCuts *>(cuts)) mycuts = new PWG::EMCAL::AliEmcalESDtrackCutsWrapper(esdcuts->GetName(), esdcuts);
-    fListOfCuts->Add(new AliEmcalManagedObject(mycuts, true));
+    // Convert to AliEmcalCutBase
+    fListOfCuts->Add(new AliEmcalManagedObject(new PWG::EMCAL::AliEmcalVCutsWrapper(mycuts), true));
   } 
 }
 
 void AliEmcalTrackSelection::AddTrackCuts(TObjArray *cuts){
   for(auto c : *cuts){
-    AliVCuts *cuts = dynamic_cast<AliVCuts*>(c);
-    if(cuts){
-      AddTrackCuts(cuts);
+    PWG::EMCAL::AliEmcalCutBase *emccuts = dynamic_cast<PWG::EMCAL::AliEmcalCutBase*>(c);
+    if(emccuts){
+      AddTrackCuts(emccuts);
     } else {
-      AliErrorStream() << "Object not inheriting from AliVCuts - not added to track selection" << std::endl;
+      AliVCuts *vcuts = dynamic_cast<AliVCuts *>(c);
+      if(vcuts) {
+        AddTrackCuts(vcuts);
+      } else {
+        AliErrorStream() << "Object not inheriting from AliVCuts - not added to track selection" << std::endl;
+      }
     }
   }
 }
@@ -111,11 +118,11 @@ Int_t AliEmcalTrackSelection::GetNumberOfCutObjects() const {
   return fListOfCuts->GetEntries();
 }
 
-AliVCuts* AliEmcalTrackSelection::GetTrackCuts(Int_t icut) {
+PWG::EMCAL::AliEmcalCutBase* AliEmcalTrackSelection::GetTrackCuts(Int_t icut) {
   if(!fListOfCuts) return NULL;
   if(icut < fListOfCuts->GetEntries()){
     AliEmcalManagedObject *ptr = static_cast<AliEmcalManagedObject *>(fListOfCuts->At(icut));
-    return static_cast<AliVCuts *>(ptr->GetObject());
+    return static_cast<PWG::EMCAL::AliEmcalCutBase *>(ptr->GetObject());
   }
 
   return NULL;
@@ -142,11 +149,9 @@ TObjArray* AliEmcalTrackSelection::GetAcceptedTracks(const TClonesArray* const t
   AliVTrack* track = 0;
   Int_t i = 0;
   while((track = static_cast<AliVTrack*>(next()))) {
-    if (IsTrackAccepted(track)) {
-      fListOfTracks->AddLast(track);
-    }
-    else {
-      fListOfTracks->AddLast(0);
+    PWG::EMCAL::AliEmcalTrackSelResultPtr selectionResult = IsTrackAccepted(track);
+    if(selectionResult) {
+      fListOfTracks->AddLast(new PWG::EMCAL::AliEmcalTrackSelResultPtr(selectionResult));
     }
     new ((*fListOfTrackBitmaps)[i]) TBits(fTrackBitmap);
     i++;
@@ -173,12 +178,9 @@ TObjArray* AliEmcalTrackSelection::GetAcceptedTracks(const AliVEvent* const even
 
   for(int itrk = 0; itrk < event->GetNumberOfTracks(); itrk++){
     AliVTrack *trk = static_cast<AliVTrack*>(event->GetTrack(itrk));
-    if (IsTrackAccepted(trk)) {
-      fListOfTracks->AddLast(trk);
-    }
-    else {
-      fListOfTracks->AddLast(trk);
-    }
+    PWG::EMCAL::AliEmcalTrackSelResultPtr selectionStatus = IsTrackAccepted(trk);
+    if(selectionStatus)
+      fListOfTracks->AddLast(new PWG::EMCAL::AliEmcalTrackSelResultPtr(selectionStatus));
     new ((*fListOfTrackBitmaps)[itrk]) TBits(fTrackBitmap);
   }
   return fListOfTracks;

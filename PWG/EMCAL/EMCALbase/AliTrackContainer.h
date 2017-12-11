@@ -12,6 +12,7 @@ class AliTLorentzVector;
 
 #include "AliVTrack.h"
 #include "AliEmcalTrackSelection.h"
+#include "AliEmcalTrackSelResultHybrid.h"
 #include "AliParticleContainer.h"
 
 #if !(defined(__CINT__) || defined(__MAKECINT__))
@@ -118,6 +119,8 @@ class AliTrackContainer : public AliParticleContainer {
    * @return Appropriate default array name
    */
   virtual TString             GetDefaultArrayName(const AliVEvent * const ev) const;
+
+  PWG::EMCAL::AliEmcalTrackSelResultHybrid::HybridType_t  GetHybridDefinition(const PWG::EMCAL::AliEmcalTrackSelResultPtr &selectionResult) const;
 
   static TString              fgDefTrackCutsPeriod;           //!<! default period string used to generate track cuts
 

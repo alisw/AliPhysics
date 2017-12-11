@@ -37,6 +37,8 @@ set(SRCS
   AliEmcalContainer.cxx
   AliEmcalContainerUtils.cxx
   AliEmcalDownscaleFactorsOCDB.cxx
+  AliEmcalCutBase.cxx
+  AliEmcalVCutsWrapper.cxx
   AliEmcalAODFilterBitCuts.cxx
   AliEmcalAODHybridTrackCuts.cxx
   AliEmcalContainerUtils.cxx
@@ -47,6 +49,8 @@ set(SRCS
   AliEmcalPhysicsSelection.cxx
   AliEmcalPythiaInfo.cxx
   AliEmcalTrackSelResultPtr.cxx
+  AliEmcalTrackSelResultCombined.cxx
+  AliEmcalTrackSelResultHybrid.cxx
   AliEmcalTrackSelection.cxx
   AliEmcalTrackSelectionESD.cxx
   AliEmcalTrackSelectionAOD.cxx

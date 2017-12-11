@@ -26,6 +26,9 @@
 #include "AliTLorentzVector.h"
 #include "AliEmcalTrackSelectionAOD.h"
 #include "AliEmcalTrackSelectionESD.h"
+#include "AliEmcalTrackSelResultPtr.h"
+#include "AliEmcalTrackSelResultCombined.h"
+#include "AliEmcalTrackSelResultHybrid.h"
 #include "AliTrackContainer.h"
 
 /// \cond CLASSIMP
@@ -159,18 +162,16 @@ void AliTrackContainer::NextEvent(const AliVEvent * event)
 
   fTrackTypes.Reset(kUndefined);
   if (fEmcalTrackSelection) {
-    fFilteredTracks = fEmcalTrackSelection->GetAcceptedTracks(fClArray);
+    auto acceptedTracks = fEmcalTrackSelection->GetAcceptedTracks(fClArray);
 
-    const TClonesArray* trackBitmaps = fEmcalTrackSelection->GetAcceptedTrackBitmaps();
-    AliDebugStream(1) << "AliTrackContainer: Found Array with " << trackBitmaps->GetEntries() << " Tracks" << std::endl;
     int naccepted(0), nrejected(0), nhybridTracks1(0), nhybridTracks2(0), nhybridTracks3(0);
-    TIter nextBitmap(trackBitmaps);
-    TBits* bits = 0;
     Int_t i = 0;
-    while ((bits = static_cast<TBits*>(nextBitmap()))) {
+    for(auto accresult : *acceptedTracks) {
       if (i >= fTrackTypes.GetSize()) fTrackTypes.Set((i+1)*2);
-      AliVTrack* vTrack = static_cast<AliVTrack*>(fFilteredTracks->At(i));
-      if (!vTrack) {
+      PWG::EMCAL::AliEmcalTrackSelResultPtr *selectionResult = static_cast<PWG::EMCAL::AliEmcalTrackSelResultPtr *>(accresult);
+      AliVTrack *vTrack = selectionResult->GetTrack();
+      fFilteredTracks->AddAt(vTrack, i);
+      if (!(*selectionResult) || !vTrack) {
         nrejected++;
         fTrackTypes[i] = kRejected;
       }
@@ -178,41 +179,23 @@ void AliTrackContainer::NextEvent(const AliVEvent * event)
         // track is accepted;
         naccepted++;
         if (IsHybridTrackSelection()) {
-          // Use determination based on ITS information
-          if(fITSHybridTrackDistinction){
-            std::bitset<8> itsbits(vTrack->GetITSClusterMap());
-            auto hasSPD = (itsbits.test(0) || itsbits.test(1));
-            if(hasSPD) {
+          switch(GetHybridDefinition(*selectionResult)) {
+            case PWG::EMCAL::AliEmcalTrackSelResultHybrid::kHybridGlobal:
               fTrackTypes[i] = kHybridGlobal;
               nhybridTracks1++;
-            }
-            else {
-              if(vTrack->GetStatus() & AliVTrack::kITSrefit){
-                fTrackTypes[i] = kHybridConstrained;
-                nhybridTracks2++;
-              }
-              else {
-                fTrackTypes[i] = kHybridConstrainedNoITSrefit;
-                nhybridTracks3++;
-              }
-            }
-          } else {
-            // Legacy code - to be removed soon
-            if (bits->FirstSetBit() == 0) {
-              fTrackTypes[i] = kHybridGlobal;
-              nhybridTracks1++;
-            }
-            else if (bits->FirstSetBit() == 1) {
-              if ((vTrack->GetStatus()&AliVTrack::kITSrefit) != 0) {
-                fTrackTypes[i] = kHybridConstrained;
-                nhybridTracks2++;
-              }
-              else {
-                fTrackTypes[i] = kHybridConstrainedNoITSrefit;
-                nhybridTracks3++;
-              }
-            }
-          }
+              break;
+            case PWG::EMCAL::AliEmcalTrackSelResultHybrid::kHybridConstrained:
+              fTrackTypes[i] = kHybridConstrained;
+              nhybridTracks2++;
+              break;
+            case PWG::EMCAL::AliEmcalTrackSelResultHybrid::kHybridConstrainedNoITSrefit:
+              fTrackTypes[i] = kHybridConstrainedNoITSrefit;
+              nhybridTracks3++;
+              break;
+            case PWG::EMCAL::AliEmcalTrackSelResultHybrid::kUndefined:
+              fTrackTypes[i] = kRejected; // should in principle never happen
+              break;
+          };
         }
       }
      i++;
@@ -601,6 +584,21 @@ bool AliTrackContainer::IsHybridTrackSelection() const {
          (fTrackFilterType == AliEmcalTrackSelection::kHybridTracks2010woNoRefit) ||
          (fTrackFilterType == AliEmcalTrackSelection::kHybridTracks2011wNoRefit) ||
          (fTrackFilterType == AliEmcalTrackSelection::kHybridTracks2011woNoRefit);
+}
+
+PWG::EMCAL::AliEmcalTrackSelResultHybrid::HybridType_t AliTrackContainer::GetHybridDefinition(const PWG::EMCAL::AliEmcalTrackSelResultPtr &selectionResult) const {
+  PWG::EMCAL::AliEmcalTrackSelResultHybrid::HybridType_t hybridDefinition = PWG::EMCAL::AliEmcalTrackSelResultHybrid::kUndefined;
+  if(auto hybriddata = dynamic_cast<const PWG::EMCAL::AliEmcalTrackSelResultHybrid *>(selectionResult.GetUserInfo())) {
+    hybridDefinition = hybriddata->GetHybridTrackType();
+  } else {
+    if(auto combineddata = dynamic_cast<const PWG::EMCAL::AliEmcalTrackSelResultCombined *>(selectionResult.GetUserInfo())){
+      for(int icut = 0; icut < combineddata->GetNumberOfSelectionResults(); icut++){
+        auto cutresult = GetHybridDefinition((*combineddata)[icut]);
+        if(cutresult != PWG::EMCAL::AliEmcalTrackSelResultHybrid::kUndefined) hybridDefinition = cutresult;
+      }
+    }
+  }
+  return hybridDefinition;
 }
 
 /**

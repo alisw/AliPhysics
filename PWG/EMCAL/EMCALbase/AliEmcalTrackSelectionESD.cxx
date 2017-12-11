@@ -12,6 +12,8 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
+#include <vector>
+
 #include <TBits.h>
 #include <TClonesArray.h>
 #include <TList.h>
@@ -22,6 +24,8 @@
 #include "AliEmcalESDHybridTrackCuts.h"
 #include "AliEmcalESDTrackCutsGenerator.h"
 #include "AliEmcalTrackSelectionESD.h"
+#include "AliEmcalTrackSelResultCombined.h"
+#include "AliEmcalCutBase.h"
 #include "AliESDEvent.h"
 #include "AliESDtrack.h"
 #include "AliESDtrackCuts.h"
@@ -106,10 +110,10 @@ void AliEmcalTrackSelectionESD::GenerateTrackCuts(ETrackFilterType_t type, const
   }
 }
 
-bool AliEmcalTrackSelectionESD::IsTrackAccepted(AliVTrack* const trk) {
+PWG::EMCAL::AliEmcalTrackSelResultPtr AliEmcalTrackSelectionESD::IsTrackAccepted(AliVTrack* const trk) {
   if (!fListOfCuts){
     AliDebugStream(2) << "No cut array " << std::endl;
-    return kTRUE;
+    return PWG::EMCAL::AliEmcalTrackSelResultPtr(nullptr, kFALSE);
   } 
   AliESDtrack *esdt = dynamic_cast<AliESDtrack *>(trk);
   if (!esdt) {
@@ -119,24 +123,29 @@ bool AliEmcalTrackSelectionESD::IsTrackAccepted(AliVTrack* const trk) {
     }
     else {
       AliError("Neither Pico nor ESD track");
-      return kFALSE;
+      return PWG::EMCAL::AliEmcalTrackSelResultPtr(nullptr, kFALSE);
     }
   }
 
   fTrackBitmap.ResetAllBits();
   UInt_t cutcounter = 0;
   AliDebugStream(2) << "Found cut array with " << fListOfCuts->GetEntries() << " cuts\n" << std::endl;
+  std::vector<PWG::EMCAL::AliEmcalTrackSelResultPtr> selectionStatus;
   for(auto cutIter : *fListOfCuts){
     AliDebugStream(3) << "executing nect cut: " << static_cast<AliVCuts *>(static_cast<AliEmcalManagedObject *>(cutIter)->GetObject())->GetName() << std::endl;
-    if((static_cast<AliVCuts *>(static_cast<AliEmcalManagedObject *>(cutIter)->GetObject()))->IsSelected(esdt)) fTrackBitmap.SetBitNumber(cutcounter);
+    PWG::EMCAL::AliEmcalCutBase *mycuts = static_cast<PWG::EMCAL::AliEmcalCutBase *>(static_cast<AliEmcalManagedObject *>(cutIter)->GetObject());
+    PWG::EMCAL::AliEmcalTrackSelResultPtr selresult = mycuts->IsSelected(esdt);
+    if(selresult) fTrackBitmap.SetBitNumber(cutcounter);
     cutcounter++;
   }
   // In case of ANY at least one bit has to be set, while in case of ALL all bits have to be set
+  PWG::EMCAL::AliEmcalTrackSelResultPtr result(esdt, kFALSE, new PWG::EMCAL::AliEmcalTrackSelResultCombined(selectionStatus));
   if (fSelectionModeAny){
-    return fTrackBitmap.CountBits() > 0 || cutcounter == 0;
+    result.SetSelectionResult(fTrackBitmap.CountBits() > 0 || cutcounter == 0);
   } else {
-    return fTrackBitmap.CountBits() == cutcounter;
+    result.SetSelectionResult(fTrackBitmap.CountBits() == cutcounter);
   }
+  return result;
 }
 
 void AliEmcalTrackSelectionESD::SaveQAObjects(TList* outputList) {

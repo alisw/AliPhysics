@@ -5,6 +5,7 @@
 
 #include <AliEmcalTrackSelection.h>
 #include "AliESDtrackCuts.h"
+#include "AliEmcalTrackSelResultPtr.h"
 
 class AliVCuts;
 class AliVTrack;
@@ -77,7 +78,7 @@ public:
 	 * @param[in] trk Track to check
 	 * @return true if selected, false otherwise
 	 */
-	virtual bool IsTrackAccepted(AliVTrack * const trk);
+	virtual PWG::EMCAL::AliEmcalTrackSelResultPtr IsTrackAccepted(AliVTrack * const trk);
 
 	/**
 	 * @brief Add a new filter bit to the track selection.

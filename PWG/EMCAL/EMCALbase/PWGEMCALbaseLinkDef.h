@@ -16,7 +16,6 @@
 #pragma link C++ class AliEmcalParticle+;
 #pragma link C++ class AliEmcalPhysicsSelection+;
 #pragma link C++ class AliEmcalPythiaInfo+;
-#pragma link C++ class AliEmcalTrackSelResultPtr+;
 #pragma link C++ class AliEmcalManagedObject+;
 #pragma link C++ class AliEmcalTrackSelection+;
 #pragma link C++ class AliEmcalTrackSelectionESD+;
@@ -33,7 +32,14 @@
 
 #pragma link C++ namespace PWG;
 #pragma link C++ namespace PWG::EMCAL;
+#pragma link C++ class PWG::EMCAL::AliEmcalTrackSelResultPtr+;
+#pragma link C++ class PWG::EMCAL::AliEmcalTrackSelResultUserPtr+;
+#pragma link C++ class PWG::EMCAL::AliEmcalTrackSelResultUserStorage+;
+#pragma link C++ class PWG::EMCAL::AliEmcalTrackSelResultCombined+;
+#pragma link C++ class PWG::EMCAL::AliEmcalTrackSelResultHybrid+;
 #pragma link C++ class PWG::EMCAL::AliEmcalAODFilterBitCuts+;
+#pragma link C++ class PWG::EMCAL::AliEmcalCutBase+;
+#pragma link C++ class PWG::EMCAL::AliEmcalVCutsWrapper+;
 #pragma link C++ class PWG::EMCAL::AliEmcalAODHybridTrackCuts+;
 #pragma link C++ class PWG::EMCAL::AliEmcalESDHybridTrackCuts+;
 #pragma link C++ class PWG::EMCAL::AliEmcalESDtrackCutsWrapper+;

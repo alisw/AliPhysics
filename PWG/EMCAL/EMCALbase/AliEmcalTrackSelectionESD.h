@@ -3,7 +3,8 @@
 /* Copyright(c) 1998-2015, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-#include <AliEmcalTrackSelection.h>
+#include "AliEmcalTrackSelection.h"
+#include "AliEmcalTrackSelResultPtr.h"
 
 class TList;
 class AliVCuts;
@@ -64,7 +65,7 @@ public:
 	 * @param[in] trk Track to check
 	 * @return true if selected, false otherwise
 	 */
-	virtual bool IsTrackAccepted(AliVTrack * const trk);
+	virtual PWG::EMCAL::AliEmcalTrackSelResultPtr IsTrackAccepted(AliVTrack * const trk);
 
   virtual void SaveQAObjects(TList *outputList);
 
