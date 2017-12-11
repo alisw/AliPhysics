@@ -393,13 +393,13 @@ void AliAnalysisTaskHighPtDeDx::UserExec(Option_t *)
   }
   if(((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))
      ->IsEventSelected() & ftrigBit2 ){
-    //    From AliVEvent:
-    kINT7         = BIT(1), // V0AND trigger, offline V0 selection
+    // From AliVEvent:
+    // kINT7         = BIT(1), // V0AND trigger, offline V0 selection
     fTriggeredEventMB += 2;  
     fn2->Fill(1);
   }
 
- 
+  
   //_____________ end nominal _______________________
 
 
