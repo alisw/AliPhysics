@@ -1595,9 +1595,9 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::FillPhoton()
     if(fIsFlowTask){
       dphi = DeltaPhiIn0Pi(phi - fEventPlane);
       sp1 = vg * fQVector1;
-      if(AliAnalysisTaskPHOSPi0EtaToGammaGamma::kEP)      value[1] = TMath::Cos(fHarmonics * dphi);
-      else if(AliAnalysisTaskPHOSPi0EtaToGammaGamma::kSP) value[1] = sp1;
-      else                                                value[1] = 0;
+      if(fFM == AliAnalysisTaskPHOSPi0EtaToGammaGamma::kEP)      value[1] = TMath::Cos(fHarmonics * dphi);
+      else if(fFM == AliAnalysisTaskPHOSPi0EtaToGammaGamma::kSP) value[1] = sp1;
+      else                                                       value[1] = 0;
     }
     else{
       //dphi = phi;
@@ -1738,9 +1738,9 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::FillMgg()
       if(fIsFlowTask){
         dphi = DeltaPhiIn0Pi(phi - fEventPlane);
         sp1 = vgg * fQVector1;
-        if(AliAnalysisTaskPHOSPi0EtaToGammaGamma::kEP)      value[3] = TMath::Cos(fHarmonics * dphi);
-        else if(AliAnalysisTaskPHOSPi0EtaToGammaGamma::kSP) value[3] = sp1;
-        else                                                value[3] = 0;
+        if(fFM == AliAnalysisTaskPHOSPi0EtaToGammaGamma::kEP)      value[3] = TMath::Cos(fHarmonics * dphi);
+        else if(fFM == AliAnalysisTaskPHOSPi0EtaToGammaGamma::kSP) value[3] = sp1;
+        else                                                       value[3] = 0;
       }
       else{
         dphi = phi;
@@ -1858,9 +1858,9 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::FillMixMgg()
         if(fIsFlowTask){
           dphi = DeltaPhiIn0Pi(phi - fEventPlane);
           sp1 = vgg * fQVector1;
-          if(AliAnalysisTaskPHOSPi0EtaToGammaGamma::kEP)      value[3] = TMath::Cos(fHarmonics * dphi);
-          else if(AliAnalysisTaskPHOSPi0EtaToGammaGamma::kSP) value[3] = sp1;
-          else                                                value[3] = 0;
+          if(fFM == AliAnalysisTaskPHOSPi0EtaToGammaGamma::kEP)      value[3] = TMath::Cos(fHarmonics * dphi);
+          else if(fFM == AliAnalysisTaskPHOSPi0EtaToGammaGamma::kSP) value[3] = sp1;
+          else                                                       value[3] = 0;
         }
         else{
           dphi = phi;
@@ -2764,8 +2764,8 @@ Double_t AliAnalysisTaskPHOSPi0EtaToGammaGamma::DeltaPhiIn0Pi(Double_t dphi)
 {
   //this returns dphi in 0-pi range in unit of radian.
   Double_t tmp = dphi;
-  while(tmp < 0)           tmp += 2./(Double_t)fHarmonics * TMath::Pi();
-  while(tmp > TMath::Pi()) tmp -= 2./(Double_t)fHarmonics * TMath::Pi();
+  while(tmp < 0)                                     tmp += 2./(Double_t)fHarmonics * TMath::Pi();
+  while(tmp > 2./(Double_t)fHarmonics * TMath::Pi()) tmp -= 2./(Double_t)fHarmonics * TMath::Pi();
 
   return tmp;
 }
