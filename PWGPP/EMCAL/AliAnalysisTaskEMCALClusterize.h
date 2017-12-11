@@ -284,7 +284,7 @@ class AliAnalysisTaskEMCALClusterize : public AliAnalysisTaskSE {
   /// \param min minimum fraction
   /// \param sm  super-module number
   void           SetInducedEnergyLossMinimumFractionPerSM(Float_t min, Int_t sm) { 
-    if ( sm < 22 && sm >= 0 ) fTCardCorrInduceEnerFracMax[sm] = min ; }  
+    if ( sm < 22 && sm >= 0 ) fTCardCorrInduceEnerFracMin[sm] = min ; }  
   
   /// Maximum induced energy fraction when linear dependency is set, same for all SM
   /// \param max maximum fraction
@@ -294,7 +294,7 @@ class AliAnalysisTaskEMCALClusterize : public AliAnalysisTaskSE {
   /// Minimum induced energy fraction when linear dependency is set, same for all SM
   /// \param min minimum fraction
   void           SetInducedEnergyLossMinimumFraction(Float_t min) { 
-    for(Int_t ism = 0; ism < 22; ism++) fTCardCorrInduceEnerFracMax[ism] = min ; }  
+    for(Int_t ism = 0; ism < 22; ism++) fTCardCorrInduceEnerFracMin[ism] = min ; }  
   
   /// fraction of times max cell energy correlates with cross cells, different for each super-module
   /// \param prob probability per event, from 0 to 1
