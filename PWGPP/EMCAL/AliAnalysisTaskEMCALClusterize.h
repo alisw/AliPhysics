@@ -274,17 +274,27 @@ class AliAnalysisTaskEMCALClusterize : public AliAnalysisTaskSE {
       fTCardCorrInduceEnerFracWidth[0][sm] = ud; fTCardCorrInduceEnerFracWidth[1][sm] = udlr;  
       fTCardCorrInduceEnerFracWidth[2][sm] = lr; fTCardCorrInduceEnerFracWidth[3][sm] = sec ; } }
 
-  /// Maximum induced energy fraction when linear dependency is set
-  /// \param max probability per event, from 0 to 1
-  /// \param sm   probability assigned to this super-module number
+  /// Maximum induced energy fraction when linear dependency is set, per SM number
+  /// \param max maximum fraction
+  /// \param sm  super-module number
   void           SetInducedEnergyLossMaximumFractionPerSM(Float_t max, Int_t sm) { 
     if ( sm < 22 && sm >= 0 ) fTCardCorrInduceEnerFracMax[sm] = max ; }  
   
-  /// Minimum induced energy fraction when linear dependency is set
-  /// \param max probability per event, from 0 to 1
-  /// \param sm   probability assigned to this super-module number
+  /// Minimum induced energy fraction when linear dependency is set, per SM number
+  /// \param min minimum fraction
+  /// \param sm  super-module number
   void           SetInducedEnergyLossMinimumFractionPerSM(Float_t min, Int_t sm) { 
     if ( sm < 22 && sm >= 0 ) fTCardCorrInduceEnerFracMax[sm] = min ; }  
+  
+  /// Maximum induced energy fraction when linear dependency is set, same for all SM
+  /// \param max maximum fraction
+  void           SetInducedEnergyLossMaximumFraction(Float_t max) { 
+    for(Int_t ism = 0; ism < 22; ism++) fTCardCorrInduceEnerFracMax[ism] = max ; }  
+  
+  /// Minimum induced energy fraction when linear dependency is set, same for all SM
+  /// \param min minimum fraction
+  void           SetInducedEnergyLossMinimumFraction(Float_t min) { 
+    for(Int_t ism = 0; ism < 22; ism++) fTCardCorrInduceEnerFracMax[ism] = min ; }  
   
   /// fraction of times max cell energy correlates with cross cells, different for each super-module
   /// \param prob probability per event, from 0 to 1
