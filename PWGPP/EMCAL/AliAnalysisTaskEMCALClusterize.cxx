@@ -2021,12 +2021,12 @@ void AliAnalysisTaskEMCALClusterize::PrintTCardParam()
   
   for(Int_t ism = 0; ism < 22; ism++)
   {
-    printf("\t sm %d, fraction %2.2f, E frac abs min %2.2f max %2.2f\n",
+    printf("\t sm %d, fraction %2.3f, E frac abs min %2.3e max %2.3e \n",
            ism, fTCardCorrInduceEnerProb[ism],fTCardCorrInduceEnerFracMin[ism],fTCardCorrInduceEnerFracMax[ism]);
     
     for(Int_t icell = 0; icell < 4; icell++)
     {
-      printf("\t \t cell type %d, c %2.2e, p0 %2.2e, p1 %2.2e, sigma %2.2e \n",
+      printf("\t \t cell type %d, c %2.3e, p0 %2.3e, p1 %2.3e, sigma %2.3e \n",
              icell,fTCardCorrInduceEner[icell][ism],fTCardCorrInduceEnerFrac[icell][ism],fTCardCorrInduceEnerFracP1[icell][ism],fTCardCorrInduceEnerFracWidth[icell][ism]);     
     }
   }
