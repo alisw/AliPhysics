@@ -882,7 +882,7 @@ void AliAnalysisTaskCorPIDTOFQA::UserExec(Option_t *)
 		    }
 		    if(m2tof -1.2< deut_mean + cut_width * deut_sigma  &&   m2tof -1.2> deut_mean - cut_width * deut_sigma)
 		    {
-			deut_track_num_B[deut_count_A] = i;
+			deut_track_num_B[deut_count_B] = i;
 			deut_count_B++;
 			m2_pt_pos_cut_B->Fill(pt,m2tof);
 			Float_t deut_phi = track->Phi();
