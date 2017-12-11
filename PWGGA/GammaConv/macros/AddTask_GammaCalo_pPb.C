@@ -311,6 +311,21 @@ void AddTask_GammaCalo_pPb(
     cuts.AddCut("80000113","11111410570322a0000","01631031000000d0"); // 0.33
     cuts.AddCut("80000113","11111410570322b0000","01631031000000d0"); // 0.28
     cuts.AddCut("80000113","11111410570322c0000","01631031000000d0"); // 0.32
+  } else if (trainConfig == 24){ // default cutstring, cluster energy variations, decreased tender thresholds
+    cuts.AddCut("80000113","1111141057012230000","01631031000000d0"); // E cluster > 0.5
+    cuts.AddCut("80000113","1111141057032230000","01631031000000d0"); // E cluster > 0.7
+    cuts.AddCut("80000113","1111141057052230000","01631031000000d0"); // E cluster > 0.9
+    cuts.AddCut("80000113","11111410570b2230000","01631031000000d0"); // E cluster > 1.0
+    cuts.AddCut("80000113","11111410570a2230000","01631031000000d0"); // E cluster > 1.5
+  } else if (trainConfig == 25){ // default cutstring, cluster energy variations, same tender thresholds
+    cuts.AddCut("80000113","1111141057032230000","01631031000000d0"); // E cluster > 0.7
+    cuts.AddCut("80000113","1111141057052230000","01631031000000d0"); // E cluster > 0.9
+    cuts.AddCut("80000113","11111410570b2230000","01631031000000d0"); // E cluster > 1.0
+    cuts.AddCut("80000113","11111410570a2230000","01631031000000d0"); // E cluster > 1.5
+  } else if (trainConfig == 26){ // default cutstring, cluster energy variations, increased tender thresholds
+    cuts.AddCut("80000113","1111141057052230000","01631031000000d0"); // E cluster > 0.9
+    cuts.AddCut("80000113","11111410570b2230000","01631031000000d0"); // E cluster > 1.0
+    cuts.AddCut("80000113","11111410570a2230000","01631031000000d0"); // E cluster > 1.5
   //-----------------------------------------------------------------------------------------------
   // Systematics variations MB
   //-----------------------------------------------------------------------------------------------
