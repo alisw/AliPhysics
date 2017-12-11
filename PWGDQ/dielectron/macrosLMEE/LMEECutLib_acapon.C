@@ -118,10 +118,11 @@ AliDielectronMixingHandler* LMEECutLib::GetMixingHandler(Int_t cutSet) {
         case kHighPt:
             mixingHandler = new AliDielectronMixingHandler;
             mixingHandler->AddVariable(AliDielectronVarManager::kZvPrim,"-10., -7.5, -5., -2.5 , 0., 2.5, 5., 7.5 , 10.");
-            mixingHandler->AddVariable(AliDielectronVarManager::kNacc,"0,500");
+            //mixingHandler->AddVariable(AliDielectronVarManager::kNacc,"0,500");
+            mixingHandler->AddVariable(AliDielectronVarManager::kCentralityNew,"0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100");
             // for using TPC event plane, uncorrected. (also, the old phi range was wrong, now same effective binning.)
             // mixingHandler->AddVariable(AliDielectronVarManager::kTPCrpH2uc, 6, TMath::Pi()/-2., TMath::Pi()/2.);
-            mixingHandler->SetDepth(10);
+            mixingHandler->SetDepth(20);
             mixingHandler->SetMixType(AliDielectronMixingHandler::kAll);
             break;
         //[...]
