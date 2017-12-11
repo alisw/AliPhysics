@@ -389,12 +389,12 @@ void AliAnalysisTaskHighPtDeDx::UserExec(Option_t *)
   if(((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))
      ->IsEventSelected() & ftrigBit1 ){
     fn1->Fill(1);
-    fTriggeredEventMB = 1;  event triggered as minimum bias
+    fTriggeredEventMB = 1; // event triggered as minimum bias
   }
   if(((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))
      ->IsEventSelected() & ftrigBit2 ){
-    From AliVEvent:
-       kINT7         = BIT(1), // V0AND trigger, offline V0 selection
+    //    From AliVEvent:
+    kINT7         = BIT(1), // V0AND trigger, offline V0 selection
     fTriggeredEventMB += 2;  
     fn2->Fill(1);
   }
@@ -410,7 +410,7 @@ void AliAnalysisTaskHighPtDeDx::UserExec(Option_t *)
   // if(((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))
   //    ->IsEventSelected() & ftrigBit1 ){
   //   fn1->Fill(1);
-  //   fTriggeredEventMB = 1;  //event triggered as minimum bias
+  //   fTriggeredEventMB = 1;  event triggered as minimum bias
   // }
   // if(((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))
   //    ->IsEventSelected() & AliVEvent::kSemiCentral ){
