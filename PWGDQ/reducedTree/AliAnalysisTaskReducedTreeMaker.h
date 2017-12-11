@@ -65,8 +65,8 @@ public:
   // Cuts for selection of event to be written to tree
   void SetEventFilter(AliAnalysisCuts * const filter) {fEventFilter=filter;}
   // Cuts for selecting tracks included in the tree
-  void SetTrackFilter(AliAnalysisCuts * const filter, TString name="");
-  void AddTrackFilter(AliAnalysisCuts * const filter, Bool_t option=kFALSE, TString name="");
+  void SetTrackFilter(AliAnalysisCuts * const filter);
+  void AddTrackFilter(AliAnalysisCuts * const filter, Bool_t option=kFALSE);
     
   // Cuts for selecting V0s
   void SetK0sPionCuts(AliAnalysisCuts * const filter) {fK0sPionCuts=filter;}
@@ -144,7 +144,6 @@ public:
   Bool_t    fWriteSecondTrackArray;       // write second array only if full+base tracks requested
   Bool_t    fSetTrackFilterUsed;          // specifier if SetTrackFilter method was used
   std::vector<Bool_t>   fWriteBaseTrack;  // specifier if tracks for certain track filter are reduced or base tracks
-  std::vector<TString>  fTrackFilterName; // vector containing names for different track filters
 
   TH2I*  fEventsHistogram;      // event statistics histogram
   TH2I*  fTracksHistogram;      // track statistics histogram

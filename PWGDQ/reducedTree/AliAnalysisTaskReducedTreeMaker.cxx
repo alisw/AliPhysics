@@ -106,7 +106,6 @@ AliAnalysisTaskReducedTreeMaker::AliAnalysisTaskReducedTreeMaker() :
   fWriteSecondTrackArray(kFALSE),
   fSetTrackFilterUsed(kFALSE),
   fWriteBaseTrack(),
-  fTrackFilterName(),
   fEventsHistogram(0x0),
   fTracksHistogram(0x0),
   fMCSignalsHistogram(0x0),
@@ -176,7 +175,6 @@ AliAnalysisTaskReducedTreeMaker::AliAnalysisTaskReducedTreeMaker(const char *nam
   fWriteSecondTrackArray(kFALSE),
   fSetTrackFilterUsed(kFALSE),
   fWriteBaseTrack(),
-  fTrackFilterName(),
   fEventsHistogram(0x0),
   fTracksHistogram(0x0),
   fMCSignalsHistogram(0x0),
@@ -385,12 +383,8 @@ void AliAnalysisTaskReducedTreeMaker::UserCreateOutputObjects()
     fTracksHistogram->GetYaxis()->SetBinLabel(i, yLabels[i-1]);
   for (Int_t i=1; i<=4; i++)
     fTracksHistogram->GetXaxis()->SetBinLabel(i, xLabels[i-1]);
-  for (Int_t i=5; i<nBins+1; i++) {
-    if ((fTrackFilterName.at(i-5)).CompareTo(""))
-      fTracksHistogram->GetXaxis()->SetBinLabel(i, Form("%s passed", (fTrackFilterName.at(i-5)).Data()));
-    else
-      fTracksHistogram->GetXaxis()->SetBinLabel(i, Form("filter %d passed", i-5));
-  }
+  for (Int_t i=5; i<nBins+1; i++)
+    fTracksHistogram->GetXaxis()->SetBinLabel(i, Form("%s passed", ((AliAnalysisCuts*)fTrackFilter.At(i-5))->GetName()));
 
   // MC statistics histogram
   fMCSignalsHistogram = new TH2I("MCSignalsStatistics", "Monte-Carlo signals statistics", 
@@ -576,19 +570,18 @@ void AliAnalysisTaskReducedTreeMaker::UserExec(Option_t *option)
 }
 
 //_________________________________________________________________________________
-void AliAnalysisTaskReducedTreeMaker::SetTrackFilter(AliAnalysisCuts * const filter, TString name/*=""*/)
+void AliAnalysisTaskReducedTreeMaker::SetTrackFilter(AliAnalysisCuts * const filter)
 {
   //
   // set track filter at first position in track filter list
   //
   fTrackFilter.AddAt(filter, 0);
   fWriteBaseTrack.insert(fWriteBaseTrack.begin(), kTRUE);
-  fTrackFilterName.insert(fTrackFilterName.begin(), name);
   fSetTrackFilterUsed = kTRUE;
 }
 
 //_________________________________________________________________________________
-void AliAnalysisTaskReducedTreeMaker::AddTrackFilter(AliAnalysisCuts * const filter, Bool_t option/*=kFALSE*/, TString name/*=""*/)
+void AliAnalysisTaskReducedTreeMaker::AddTrackFilter(AliAnalysisCuts * const filter, Bool_t option/*=kFALSE*/)
 {
   //
   // add track filter to track filter list
@@ -596,7 +589,6 @@ void AliAnalysisTaskReducedTreeMaker::AddTrackFilter(AliAnalysisCuts * const fil
   if (fTrackFilter.GetEntries()<32) {
     fTrackFilter.Add(filter);
     fWriteBaseTrack.push_back(option);
-    fTrackFilterName.push_back(name);
   } else {
     printf("AliAnalysisTaskReducedTreeMaker::AddTrackFilter() WARNING: Track filter list full (%d entries), will not add another filter!\n", fTrackFilter.GetEntries());
   }
