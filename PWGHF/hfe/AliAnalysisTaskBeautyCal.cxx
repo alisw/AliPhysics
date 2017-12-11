@@ -1404,7 +1404,8 @@ void AliAnalysisTaskBeautyCal::UserExec(Option_t *)
            WeightPho = fPi3040_1->Eval(pTmom);
           }
        }
-    if(iEmbEta && centrality>30 && centrality<50)
+    //if(iEmbEta && centrality>30 && centrality<50)
+    if(iEmbEta && centrality>30 && centrality<100)
        {
         if(pTmom<4.0)
           {
