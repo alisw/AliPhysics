@@ -1014,7 +1014,7 @@ TGraphErrors * TStatToolkit::MakeGraphErrors(TTree * tree, const char * expr, co
   graph->GetXaxis()->SetTitle(charray->At(1)->GetName());
   graph->GetYaxis()->SetTitle(charray->At(0)->GetName());
   THashList * metaData = (THashList*) tree->GetUserInfo()->FindObject("metaTable");
-  if (!metaData == 0){    
+  if ( metaData != NULL){
     TNamed *nmdTitle0 = TStatToolkit::GetMetadata(tree,Form("%s.Title",charray->At(0)->GetName()));
     TNamed *nmdTitle1 = TStatToolkit::GetMetadata(tree,Form("%s.Title",charray->At(1)->GetName()));
     TNamed *nmdYAxis  = TStatToolkit::GetMetadata(tree,Form("%s.AxisTitle",charray->At(0)->GetName()));
@@ -1129,7 +1129,7 @@ TNamed* TStatToolkit::GetMetadata(TTree* tree, const char *varTagName, TString *
           }
         }
       }
-      if (nDots = metaName.CountChar('.')) break;
+      if (nDots == metaName.CountChar('.')) break;
       nDots=metaName.CountChar('.');
     }
   }
@@ -1236,7 +1236,7 @@ TGraph * TStatToolkit::MakeGraphSparse(TTree * tree, const char * expr, const ch
   graphNew->SetTitle(chstring);
 
   THashList * metaData = (THashList*) tree->GetUserInfo()->FindObject("metaTable");
-  if (!metaData == 0){    
+  if (metaData != NULL){
     chstring=expr;
     TObjArray *charray = chstring.Tokenize(":");
     graphNew->GetXaxis()->SetTitle(charray->At(1)->GetName());
@@ -1689,7 +1689,7 @@ void TStatToolkit::MakeAnchorAlias(TTree * tree, TString& sTrendVars, Int_t doCh
     // check individual variables
     for (Int_t ivar=0; ivar<5; ivar++){
       variables[ivar]=descriptor->At(ivar)->GetName();
-      if (doCheck&1>0){  // check input formulas in case specified
+      if ((doCheck&1)>0){  // check input formulas in case specified
         TTreeFormula *form=new TTreeFormula("dummy",descriptor->At(ivar)->GetName(),tree);
         if (form->GetTree()==NULL){
           isOK=kFALSE;
@@ -2277,7 +2277,7 @@ TH1* TStatToolkit::DrawHistogram(TTree * tree, const char* drawCommand, const ch
    }
    THashList * metaData = (THashList*) tree->GetUserInfo()->FindObject("metaTable");
    
-   if (!metaData == 0){    
+   if (metaData != NULL){
     TNamed *nmdTitle0 = TStatToolkit::GetMetadata(tree,Form("%s.Title",charray->At(0)->GetName()));
     TNamed *nmdXAxis  = TStatToolkit::GetMetadata(tree,Form("%s.AxisTitle",charray->At(1)->GetName())); 
     TNamed *nmdTitle1 = TStatToolkit::GetMetadata(tree,Form("%s.Title",charray->At(1)->GetName()));
