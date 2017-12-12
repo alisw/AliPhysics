@@ -269,8 +269,6 @@ class AliAnalysisTaskEMCALPhotonIsolation: public AliAnalysisTaskEmcal {
   TH1D                       * fE;                              //!<! E distribution
   TH2D                       * fNLM;                            //!<! NLM distribution
   TH2D                       * fNLM2_NC_Acc;                    //!<! NLM (1,2) distribution for Neutral Clusters in Acceptance
-  TH1D                       * fConeArea;                       //!<! Cone area distribution (depending on the cluster position)
-  TH1D                       * fEtaBandArea;                    //!<! Eta-band area distribution (depending on the cluster position)
   TH1D                       * fVz;                             //!<! Vertex Z distribution
   TH1D                       * fEvents;                         //!<! Number of Events
   TH1D                       * fPtaftTime;                      //!<! E distribution for clusters after Cluster Time cut
@@ -284,7 +282,6 @@ class AliAnalysisTaskEMCALPhotonIsolation: public AliAnalysisTaskEmcal {
   TH1D                       * fPtaftM02C;                      //!<! E distribution for clusters after Shower Shape cut
   TH1D                       * fClusTime;                       //!<! Time distribution for clusters
   TH2D                       * fM02;                            //!<! Squared_Lambda0 (Squared_sigma_long) distribution
-  TH1D                       * fM02_1000;                       //!<! Squared_Lambda0 (Squared_sigma_long) distribution with 1000 bins and cluster energy from 10 to 15 GeV
   TH3F                       * fEtaPhiClusVsM02;                //!<! Cluster eta vs. phi vs. sigma_long squared (cluster energy from 14 to 16 GeV)
   TH3F                       * fEtaPhiClusVsEtIsoClus;          //!<! Cluster eta vs. phi vs. neutral contribution to the energy in isolation cone (cluster energy from 14 to 16 GeV)
   TH3F                       * fEtaPhiClusVsPtIsoTrack;         //!<! Cluster eta vs. phi vs. charged contribution to the energy in isolation cone (cluster energy from 14 to 16 GeV)
@@ -318,8 +315,11 @@ class AliAnalysisTaskEMCALPhotonIsolation: public AliAnalysisTaskEmcal {
   TH2D                       * fTestIndexE;                     //!<! Index vs cluster energy test
   TH2D                       * fTestLocalIndexE;                //!<! Local index vs cluster energy test
   TH3F                       * fTestEnergyCone;                 //!<! Energy cone clusters vs tracks test
+  /* TH1D                       * fConeArea;                       //!<! Cone area distribution (depending on the cluster position) */
+  /* TH1D                       * fEtaBandArea;                    //!<! Eta-band area distribution (depending on the cluster position) */
+  TH2F                       * fEtaBandVsConeArea;              //!<! Eta-band vs. cone area distribution (depending on the cluster position)
+  TH3F                       * fPtVsConeVsEtaBand;              //!<! Energy cone clusters vs tracks test (not normalised)
   TH3F                       * fPtVsNormConeVsNormEtaBand;      //!<! Energy cone clusters vs tracks test (area normalised)
-  TH3F                       * fTestEnergyEtaBand;              //!<! Energy eta-band clusters vs tracks test
   TH2D                       * fTestEtaPhiCone;                 //!<! Eta vs phi test for clusters in cone
   TH3D                       * fInvMassM02iso;                  //!<!
   TH3D                       * fInvMassM02noiso;                //!<!
