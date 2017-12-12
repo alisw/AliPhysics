@@ -316,9 +316,9 @@ void AliAnalysisTaskGammaHadron::UserCreateOutputObjects()
     nbinsThn[dimThn] = 45;
     Double_t deltaPhiArray[45+1];
     binEdgesThn[dimThn] = deltaPhiArray;
-    GenerateFixedBinArray(45,-90.,270.,deltaPhiArray);
-    minThn[dimThn] = -90.;
-    maxThn[dimThn] = 270.;
+    GenerateFixedBinArray(45,-pi/2.,3.*pi/2.,deltaPhiArray);
+    minThn[dimThn] = -pi/2.;
+    maxThn[dimThn] = 3.*pi/2.;
     dimThn++;
 
     titleThn[dimThn] = "#Delta #eta";
@@ -1572,6 +1572,8 @@ void AliAnalysisTaskGammaHadron::FillGhHisograms(Int_t identifier,AliTLorentzVec
 {
 	if(fDebug==1)cout<<"Inside of: AliAnalysisTaskGammaHadron::FillGhHisograms()"<<endl;
 
+  Double_t pi = TMath::Pi();
+
 	//..This function fills several histograms under different cut conditions.
 	//..it is run within a cluster{ track{}} loop to get all combinations.
 
@@ -1581,7 +1583,7 @@ void AliAnalysisTaskGammaHadron::FillGhHisograms(Int_t identifier,AliTLorentzVec
 	Double_t deltaEta   = ClusterVec.Eta()-TrackVec->Eta();
 	Double_t deltaPhi   = DeltaPhi(ClusterVec,TrackVec);
 	Double_t G_PT_Value = ClusterVec.Pt();
-	//Double_t ZT_Value   = TMath::Cos(deltaPhi*1/fRtoD)*TrackVec->P()/ClusterVec.P(); //   TrackVec->Pt()/G_PT_Value;
+	//Double_t ZT_Value   = TMath::Cos(deltaPhi)*TrackVec->P()/ClusterVec.P(); //   TrackVec->Pt()/G_PT_Value;
 	Double_t ZT_Value   = TrackVec->Pt()/G_PT_Value; //   TrackVec->Pt()/G_PT_Value;
 	//..Careful here: usually this is done for an opening angle (hadron-jet axis) of less than 90¡. Due to
 	//..resolution momentum smearing (our guess - check that!) there are particles appearing at angles greater than 90¡
@@ -1597,9 +1599,9 @@ void AliAnalysisTaskGammaHadron::FillGhHisograms(Int_t identifier,AliTLorentzVec
     //fEPV0C = aliEP->GetEventplane("V0C",InputEvent());
 	Double_t evtPlaneAngle= DeltaPhi(ClusterVec,fEPV0);
 	Int_t evtPlaneCategory=-1;
-	if(evtPlaneAngle>-60 && evtPlaneAngle<=60)       evtPlaneCategory=0;
-	else if ((evtPlaneAngle>60 && evtPlaneAngle<=120) || evtPlaneAngle<=-60 || evtPlaneAngle>240)evtPlaneCategory=1;
-	else if (evtPlaneAngle>120 && evtPlaneAngle<=240)evtPlaneCategory=2;
+	if ((TMath::Abs(evtPlaneAngle)<=pi/6.) || (TMath::Abs(evtPlaneAngle-pi)<pi/6.))       evtPlaneCategory=0;
+	else if ((TMath::Abs(evtPlaneAngle) <= pi/3.) || (TMath::Abs(evtPlaneAngle-pi) <= pi/.3)) evtPlaneCategory=1;
+	else evtPlaneCategory=2;
 
 	Double_t valueArray[8];
 	valueArray[0]=deltaPhi;
@@ -1873,9 +1875,6 @@ Double_t AliAnalysisTaskGammaHadron::DeltaPhi(AliTLorentzVector ClusterVec,AliVP
 	if (dPhi <= -TMath::Pi()/2)    dPhi += 2*pi;
 	if (dPhi > 3.0*TMath::Pi()/2.0)dPhi -= 2*pi;
 
-	//--change from rad to degree:
-	dPhi*= fRtoD;
-
 	return dPhi;
 }
 //________________________________________________________________________
@@ -1891,9 +1890,6 @@ Double_t AliAnalysisTaskGammaHadron::DeltaPhi(AliTLorentzVector ClusterVec,Doubl
 	//--to create a histogram that starts at -pi/2 and ends at 3/2pi
 	if (dPhi <= -TMath::Pi()/2)    dPhi += 2*pi;
 	if (dPhi > 3.0*TMath::Pi()/2.0)dPhi -= 2*pi;
-
-	//--change from rad to degree:
-	dPhi*= fRtoD;
 
 	return dPhi;
 }
