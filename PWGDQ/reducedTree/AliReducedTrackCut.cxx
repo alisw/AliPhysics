@@ -22,6 +22,9 @@ AliReducedTrackCut::AliReducedTrackCut() :
   fRejectKinks(kFALSE),
   fRejectTaggedGamma(kFALSE),
   fRejectTaggedPureGamma(kFALSE),
+  fCutOnTrackFilterMap(0),
+  fUseANDonTrackFilterMap(kTRUE),
+  fRejectPureMC(kFALSE),
   fRequestITSrefit(kFALSE),
   fCutOnITShitMap(0),
   fUseANDonITShitMap(kFALSE),
@@ -41,6 +44,9 @@ AliReducedTrackCut::AliReducedTrackCut(const Char_t* name, const Char_t* title) 
   fRejectKinks(kFALSE),
   fRejectTaggedGamma(kFALSE),
   fRejectTaggedPureGamma(kFALSE),
+  fCutOnTrackFilterMap(0),
+  fUseANDonTrackFilterMap(kTRUE),
+  fRejectPureMC(kFALSE),
   fRequestITSrefit(kFALSE),
   fCutOnITShitMap(0),
   fUseANDonITShitMap(kFALSE),
@@ -82,6 +88,18 @@ Bool_t AliReducedTrackCut::IsSelected(TObject* obj, Float_t* values) {
    // apply cuts
    //      
    if(!obj->InheritsFrom(AliReducedBaseTrack::Class())) return kFALSE;
+
+   if(fRejectPureMC && ((AliReducedBaseTrack*)obj)->GetMCFlags()) return kFALSE;
+   
+   if(fCutOnTrackFilterMap) {
+      UInt_t filterMap = 0;
+      for(UShort_t i=0;i<32;++i)  
+         if(((AliReducedBaseTrack*)obj)->TestQualityFlag(32+i)) 
+             filterMap |= (UInt_t(1)<<i);
+      UInt_t eval = filterMap & fCutOnTrackFilterMap;
+      if(fUseANDonTrackFilterMap && (eval!=fCutOnTrackFilterMap)) return kFALSE;
+      if(!fUseANDonTrackFilterMap && (eval==0)) return kFALSE;
+   }
    
    if(obj->InheritsFrom(AliReducedTrackInfo::Class())) {
       AliReducedTrackInfo* track = (AliReducedTrackInfo*)obj;
@@ -95,7 +113,7 @@ Bool_t AliReducedTrackCut::IsSelected(TObject* obj, Float_t* values) {
          if(!fUseANDonITShitMap && (eval==0)) return kFALSE;
       }
    }
-   //if(fRejectKinks && (((AliReducedBaseTrack*)obj)->IsKink(0) || ((AliReducedBaseTrack*)obj)->IsKink(1) || ((AliReducedBaseTrack*)obj)->IsKink(2))) return kFALSE;
+
    if(fRejectKinks && (((AliReducedBaseTrack*)obj)->IsKink(0))) return kFALSE;
    if(fRejectTaggedGamma && ((AliReducedBaseTrack*)obj)->IsGammaLeg()) return kFALSE;
    if(fRejectTaggedPureGamma && ((AliReducedBaseTrack*)obj)->IsPureGammaLeg()) return kFALSE;

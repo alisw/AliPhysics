@@ -539,6 +539,7 @@ class AliReducedVarManager : public TObject {
     // Track flags -----------------------------------------------------
     kTrackingFlag,
     kTrackQualityFlag,
+    kTrackMCFlag,
     // Correlation variables ----------------------------------------------
     kDeltaPhi,          
     kDeltaTheta,        
@@ -588,6 +589,7 @@ class AliReducedVarManager : public TObject {
   static void FillL2TriggerInputs(AliReducedEventInfo* event, Int_t input, Float_t* values);
   static void FillTrackingFlag(AliReducedTrackInfo* track, UInt_t flag, Float_t* values);
   static void FillTrackQualityFlag(AliReducedBaseTrack* track, UShort_t flag, Float_t* values);
+  static void FillTrackMCFlag(AliReducedBaseTrack* track, UShort_t flag, Float_t* values);
   static void FillPairQualityFlag(AliReducedPairInfo* p, UShort_t flag, Float_t* values);
   static void FillTrackInfo(AliReducedBaseTrack* p, Float_t* values);
   static void FillITSlayerFlag(AliReducedTrackInfo* track, Int_t layer, Float_t* values);

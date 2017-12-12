@@ -27,7 +27,8 @@ AliReducedAnalysisTest::AliReducedAnalysisTest() :
   fHistosManager(new AliHistogramManager("Histogram Manager", AliReducedVarManager::kNVars)),
   fEventCuts(),
   fTrackCuts(),
-  fPairCuts()
+  fPairCuts(),
+  fMCBitsNames("")
 {
   //
   // default constructor
@@ -42,7 +43,8 @@ AliReducedAnalysisTest::AliReducedAnalysisTest(const Char_t* name, const Char_t*
   fHistosManager(new AliHistogramManager("Histogram Manager", AliReducedVarManager::kNVars)),
   fEventCuts(),
   fTrackCuts(),
-  fPairCuts()
+  fPairCuts(),
+  fMCBitsNames("")
 {
   //
   // named constructor
@@ -185,74 +187,12 @@ void AliReducedAnalysisTest::Process() {
     }
   }
      
-  AliReducedBaseTrack* track = 0x0;
-  TClonesArray* trackList = fEvent->GetTracks();
-  TIter nextTrack(trackList);
-  if(trackList) {
-    for(Int_t it=0; it<fEvent->NTracks(); ++it) {
-      track = (AliReducedBaseTrack*)nextTrack();
-    
-      if(!IsTrackSelected(track)) continue;
-      AliReducedVarManager::FillTrackInfo(track,fValues);
-      fHistosManager->FillHistClass("TrackQA_AllTracks", fValues);
-    
-      AliReducedTrackInfo* trackInfo = NULL;
-      if(track->IsA()==AliReducedTrackInfo::Class()) trackInfo = (AliReducedTrackInfo*)track;
-    
-      if(trackInfo) {
-        for(UInt_t iflag=0; iflag<AliReducedVarManager::kNTrackingFlags; ++iflag) {
-          AliReducedVarManager::FillTrackingFlag(trackInfo, iflag, fValues);
-          fHistosManager->FillHistClass("TrackingFlags", fValues);
-        }
-      }
-      for(UShort_t iflag=0; iflag<64; ++iflag) {
-        AliReducedVarManager::FillTrackQualityFlag(track, iflag, fValues);
-        fHistosManager->FillHistClass("TrackQualityFlags", fValues);
-      }
-      if(trackInfo) {
-        for(Int_t iLayer=0; iLayer<6; ++iLayer) {
-          AliReducedVarManager::FillITSlayerFlag(trackInfo, iLayer, fValues);
-          fHistosManager->FillHistClass("ITSclusterMap", fValues);
-        }
-        for(Int_t iLayer=0; iLayer<8; ++iLayer) {
-          AliReducedVarManager::FillTPCclusterBitFlag(trackInfo, iLayer, fValues);
-          fHistosManager->FillHistClass("TPCclusterMap", fValues);
-        }
-      }
-      if(track->IsGammaLeg()) {
-         fHistosManager->FillHistClass("TrackQA_GammaLeg", fValues);
-         for(UShort_t iflag=0; iflag<64; ++iflag) {
-            AliReducedVarManager::FillTrackQualityFlag(track, iflag, fValues);
-            fHistosManager->FillHistClass("TrackQualityFlags_GammaLeg", fValues);
-         }
-      }
-      if(track->IsPureGammaLeg()) fHistosManager->FillHistClass("TrackQA_PureGammaLeg", fValues);
-      if(track->IsK0sLeg()) {
-         fHistosManager->FillHistClass("TrackQA_K0sLeg", fValues);
-         for(UShort_t iflag=0; iflag<64; ++iflag) {
-            AliReducedVarManager::FillTrackQualityFlag(track, iflag, fValues);
-            fHistosManager->FillHistClass("TrackQualityFlags_K0sLeg", fValues);
-         }
-      }
-      if(track->IsPureK0sLeg()) fHistosManager->FillHistClass("TrackQA_PureK0sLeg", fValues);
-      if(track->IsLambdaLeg()) {
-        if(track->Charge()>0) fHistosManager->FillHistClass("TrackQA_LambdaPosLeg", fValues);
-        else fHistosManager->FillHistClass("TrackQA_LambdaNegLeg", fValues);
-      }
-      if(track->IsPureLambdaLeg()) {
-        if(track->Charge()>0) fHistosManager->FillHistClass("TrackQA_PureLambdaPosLeg", fValues);
-        else fHistosManager->FillHistClass("TrackQA_PureLambdaNegLeg", fValues);
-      }
-      if(track->IsALambdaLeg()) {
-        if(track->Charge()>0) fHistosManager->FillHistClass("TrackQA_ALambdaPosLeg", fValues);
-        else fHistosManager->FillHistClass("TrackQA_ALambdaNegLeg", fValues);
-      }
-      if(track->IsPureALambdaLeg()) {
-        if(track->Charge()>0) fHistosManager->FillHistClass("TrackQA_PureALambdaPosLeg", fValues);
-        else fHistosManager->FillHistClass("TrackQA_PureALambdaNegLeg", fValues);
-      }  
-    }  // end loop over tracks
-  }  // end if(trackList)  
+  // fill track histograms for the first track array
+  FillTrackHistograms(fEvent->GetTracks());
+  // fill track histograms for the second track array
+  if(fEvent->NTracks2()>0)
+     FillTrackHistograms(fEvent->GetTracks2());
+  
     
   TClonesArray* pairList = fEvent->GetPairs();
   TIter nextPair(pairList);
@@ -306,6 +246,100 @@ void AliReducedAnalysisTest::Process() {
   fHistosManager->FillHistClass("Event_AfterCuts", fValues);
 }
 
+//___________________________________________________________________________
+void AliReducedAnalysisTest::FillTrackHistograms(TClonesArray* trackList) {
+   //
+   // fill tracks histograms
+   //
+   AliReducedBaseTrack* track = 0x0;
+   TIter nextTrack(trackList);
+   if(trackList) {
+      for(Int_t it=0; it<fEvent->NTracks(); ++it) {
+         track = (AliReducedBaseTrack*)nextTrack();
+         if(!track) continue;
+         
+         if(fProcessMCInfo && track->GetMCFlags()) {
+            AliReducedVarManager::FillTrackInfo(track,fValues);
+            TObjArray* namesArr = fMCBitsNames.Tokenize(";");
+            for(Int_t iflag = 0; iflag<namesArr->GetEntries(); ++iflag)
+               if(track->TestMCFlag(iflag)) fHistosManager->FillHistClass(Form("PureMCqa_%s", namesArr->At(iflag)->GetName()), fValues);
+            /*if(track->TestMCFlag(0)) fHistosManager->FillHistClass("PureMCqa_Signal1", fValues);
+            if(track->TestMCFlag(1)) fHistosManager->FillHistClass("PureMCqa_Signal2", fValues);
+            if(track->TestMCFlag(2)) fHistosManager->FillHistClass("PureMCqa_Signal3", fValues);
+            if(track->TestMCFlag(3)) fHistosManager->FillHistClass("PureMCqa_Signal4", fValues);
+            if(track->TestMCFlag(4)) fHistosManager->FillHistClass("PureMCqa_Signal5", fValues);
+            if(track->TestMCFlag(5)) fHistosManager->FillHistClass("PureMCqa_Signal6", fValues);
+            if(track->TestMCFlag(6)) fHistosManager->FillHistClass("PureMCqa_Signal7", fValues);  */
+            
+            for(UShort_t iflag=0; iflag<32; ++iflag) {
+               AliReducedVarManager::FillTrackMCFlag(track, iflag, fValues);
+               fHistosManager->FillHistClass("PureMCflags", fValues);
+            }
+            continue;
+         }
+         
+         if(!IsTrackSelected(track)) continue;
+         AliReducedVarManager::FillTrackInfo(track,fValues);
+         fHistosManager->FillHistClass("TrackQA_AllTracks", fValues);
+         
+         AliReducedTrackInfo* trackInfo = NULL;
+         if(track->IsA()==AliReducedTrackInfo::Class()) trackInfo = (AliReducedTrackInfo*)track;
+         
+         if(trackInfo) {
+            for(UInt_t iflag=0; iflag<AliReducedVarManager::kNTrackingFlags; ++iflag) {
+               AliReducedVarManager::FillTrackingFlag(trackInfo, iflag, fValues);
+               fHistosManager->FillHistClass("TrackingFlags", fValues);
+            }
+         }
+         for(UShort_t iflag=0; iflag<64; ++iflag) {
+            AliReducedVarManager::FillTrackQualityFlag(track, iflag, fValues);
+            fHistosManager->FillHistClass("TrackQualityFlags", fValues);
+         }
+         if(trackInfo) {
+            for(Int_t iLayer=0; iLayer<6; ++iLayer) {
+               AliReducedVarManager::FillITSlayerFlag(trackInfo, iLayer, fValues);
+               fHistosManager->FillHistClass("ITSclusterMap", fValues);
+            }
+            for(Int_t iLayer=0; iLayer<8; ++iLayer) {
+               AliReducedVarManager::FillTPCclusterBitFlag(trackInfo, iLayer, fValues);
+               fHistosManager->FillHistClass("TPCclusterMap", fValues);
+            }
+         }
+         if(track->IsGammaLeg()) {
+            fHistosManager->FillHistClass("TrackQA_GammaLeg", fValues);
+            for(UShort_t iflag=0; iflag<64; ++iflag) {
+               AliReducedVarManager::FillTrackQualityFlag(track, iflag, fValues);
+               fHistosManager->FillHistClass("TrackQualityFlags_GammaLeg", fValues);
+            }
+         }
+         if(track->IsPureGammaLeg()) fHistosManager->FillHistClass("TrackQA_PureGammaLeg", fValues);
+         if(track->IsK0sLeg()) {
+            fHistosManager->FillHistClass("TrackQA_K0sLeg", fValues);
+            for(UShort_t iflag=0; iflag<64; ++iflag) {
+               AliReducedVarManager::FillTrackQualityFlag(track, iflag, fValues);
+               fHistosManager->FillHistClass("TrackQualityFlags_K0sLeg", fValues);
+            }
+         }
+         if(track->IsPureK0sLeg()) fHistosManager->FillHistClass("TrackQA_PureK0sLeg", fValues);
+         if(track->IsLambdaLeg()) {
+            if(track->Charge()>0) fHistosManager->FillHistClass("TrackQA_LambdaPosLeg", fValues);
+            else fHistosManager->FillHistClass("TrackQA_LambdaNegLeg", fValues);
+         }
+         if(track->IsPureLambdaLeg()) {
+            if(track->Charge()>0) fHistosManager->FillHistClass("TrackQA_PureLambdaPosLeg", fValues);
+            else fHistosManager->FillHistClass("TrackQA_PureLambdaNegLeg", fValues);
+         }
+         if(track->IsALambdaLeg()) {
+            if(track->Charge()>0) fHistosManager->FillHistClass("TrackQA_ALambdaPosLeg", fValues);
+            else fHistosManager->FillHistClass("TrackQA_ALambdaNegLeg", fValues);
+         }
+         if(track->IsPureALambdaLeg()) {
+            if(track->Charge()>0) fHistosManager->FillHistClass("TrackQA_PureALambdaPosLeg", fValues);
+            else fHistosManager->FillHistClass("TrackQA_PureALambdaNegLeg", fValues);
+         }  
+      }  // end loop over tracks
+   }  // end if(trackList)  
+}
 
 //___________________________________________________________________________
 void AliReducedAnalysisTest::Finish() {

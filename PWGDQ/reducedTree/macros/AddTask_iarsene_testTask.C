@@ -15,6 +15,7 @@ AliAnalysisTask* AddTask_iarsene_testTask(Bool_t isAliRoot=kTRUE, Int_t runMode=
 
   AliReducedAnalysisTest* testAnalysis = new AliReducedAnalysisTest("TestAnalysis","Test analysis");
   testAnalysis->Init();
+  testAnalysis->SetProcessMC();
   Setup(testAnalysis, prod);
   // initialize an AliAnalysisTask which will wrapp the AliReducedAnalysisTest such that it can be run in an aliroot analysis train (e.g. LEGO, local analysis etc)
   AliAnalysisTaskReducedEventProcessor* task = new AliAnalysisTaskReducedEventProcessor("ReducedEventAnalysisManager", runMode);
@@ -74,7 +75,7 @@ void Setup(AliReducedAnalysisTest* processor, TString prod /*="LHC10h"*/) {
   
   // Set event cuts
   AliReducedEventCut* evCut1 = new AliReducedEventCut("Centrality","Centrality selection");
-  evCut1->AddCut(AliReducedVarManager::kCentVZERO, 0., 90.);
+  //evCut1->AddCut(AliReducedVarManager::kCentVZERO, 0., 90.);
   AliReducedEventCut* evCut2 = new AliReducedEventCut("VertexZ","Vertex selection");
   evCut2->AddCut(AliReducedVarManager::kVtxZ, -25.0, 25.0);
   //processor->AddEventCut(evCut1);
@@ -115,6 +116,9 @@ void DefineHistograms(AliHistogramManager* man, TString prod /*="LHC10h"*/) {
   //
   // define histograms
   //
+   // check whether an MC handler is present
+   Bool_t hasMC=(AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler());
+   
   TString histClasses = "";
   histClasses += "Event_NoCuts;";        //ok
   histClasses += "Event_AfterCuts;";     //ok
@@ -157,6 +161,10 @@ void DefineHistograms(AliHistogramManager* man, TString prod /*="LHC10h"*/) {
   histClasses += "PairQA_OnTheFlyPureALambda;";
   histClasses += "PairQA_Jpsi2EE_PP;PairQA_Jpsi2EE_PM;PairQA_Jpsi2EE_MM;";  
   histClasses += "PairQA_ADzeroToKplusPiminus_PP;PairQA_ADzeroToKplusPiminus_PM;PairQA_ADzeroToKplusPiminus_MM;";
+  //if(hasMC) {
+     histClasses += "PureMCflags;PureMCqa_Signal1;PureMCqa_Signal2;";
+  //}
+  
   
   Int_t runNBins = 0;
   Double_t runHistRange[2] = {0.0,0.0};
@@ -257,7 +265,7 @@ void DefineHistograms(AliHistogramManager* man, TString prod /*="LHC10h"*/) {
       man->AddHistogram(classStr.Data(),"NTRDtracklets","No. TRD tracklets",kFALSE,500,0.,50000.,AliReducedVarManager::kNTRDtracklets);
       man->AddHistogram(classStr.Data(),"SPDntracklets", "SPD #tracklets in |#eta|<1.0", kFALSE, 200, 0., 5000., AliReducedVarManager::kSPDntracklets);
       for(Int_t i=0; i<32; ++i)
-         man->AddHistogram(classStr.Data(),Form("SPDntracklets_%d",i), "", kFALSE, 100, 0., 300., AliReducedVarManager::kSPDntrackletsEta+i);
+         man->AddHistogram(classStr.Data(),Form("SPDntracklets_%d",i), "", kFALSE, 100, 0., 300., AliReducedVarManager::kSPDntrackletsEtaBin+i);
       for(Int_t il=0; il<2; ++il)
          man->AddHistogram(classStr.Data(), Form("SPDfiredChips_layer%d",il+1), Form("SPD fired chips in layer %d",il+1), 
                            kFALSE, 200, 0., 600., AliReducedVarManager::kSPDFiredChips+il);
@@ -475,6 +483,30 @@ void DefineHistograms(AliHistogramManager* man, TString prod /*="LHC10h"*/) {
 	                64, -0.5, 63.5, AliReducedVarManager::kTrackQualityFlag, 0, 0.0, 0.0, AliReducedVarManager::kNothing, 
 			0, 0.0, 0.0, AliReducedVarManager::kNothing, trackQualityFlagNames.Data());
       continue;
+    }
+    
+    TString mcFlagNames = "";
+    for(Int_t i=0;i<32;++i)
+      mcFlagNames += Form("Signal %d;", i);   
+      
+    if(classStr.Contains("PureMCflags")) {
+       man->AddHistClass(classStr.Data());
+       cout << classStr.Data() << endl;
+       man->AddHistogram(classStr.Data(), "MCFlags", "MC flags;;", kFALSE,
+                         32, -0.5, 31.5, AliReducedVarManager::kTrackMCFlag, 0, 0.0, 0.0, AliReducedVarManager::kNothing, 
+                         0, 0.0, 0.0, AliReducedVarManager::kNothing, mcFlagNames.Data());
+       continue;
+    }
+    
+    if(classStr.Contains("PureMCqa")) {
+       man->AddHistClass(classStr.Data());
+       cout << classStr.Data() << endl;
+       
+       man->AddHistogram(classStr.Data(), "Pt", "p_{T} distribution", kFALSE, 1000, 0.0, 50.0, AliReducedVarManager::kPt);
+       man->AddHistogram(classStr.Data(), "Eta", "", kFALSE, 1000, -1.5, 1.5, AliReducedVarManager::kEta);
+       man->AddHistogram(classStr.Data(), "Phi", "", kFALSE, 1000, 0.0, 6.3, AliReducedVarManager::kPhi);
+       man->AddHistogram(classStr.Data(), "Charge", "", kFALSE, 2, -1.0, 1.0, AliReducedVarManager::kCharge);
+       continue;
     }
     
     // Track histograms

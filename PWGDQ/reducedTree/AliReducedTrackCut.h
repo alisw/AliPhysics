@@ -28,9 +28,18 @@ class AliReducedTrackCut : public AliReducedVarCut {
   void SetRequestTOFout(Bool_t flag = kTRUE) {fRequestTOFout = flag;}  
   void SetRequestTRDmatch(Bool_t flag = kTRUE) {fRequestTRDonlineMatch = flag;}
   
+  void SetTrackFilterMap(UInt_t map, Bool_t useAND=kTRUE) {fCutOnTrackFilterMap = map; fUseANDonTrackFilterMap=useAND;}
+  void SetTrackFilterBit(Int_t bit) {if(bit>=0 && bit<32) fCutOnTrackFilterMap |= (UInt_t(1)<<bit);}
+  void SetUseANDonTrackFilterMap(Bool_t useAND=kTRUE) {fUseANDonTrackFilterMap=useAND;}
+  
+  void SetRejectPureMC(Bool_t reject=kTRUE) {fRejectPureMC=reject;}
+  
   Bool_t GetRejectKinks() const {return fRejectKinks;}
   Bool_t GetRejectTaggedGamma() const {return fRejectTaggedGamma;}
   Bool_t GetRejectTaggedPureGamma() const {return fRejectTaggedPureGamma;}
+  UInt_t GetTrackFilterMap() const {return fCutOnTrackFilterMap;}
+  Bool_t GetUseANDonTrackFilterMap() const {return fUseANDonTrackFilterMap;}
+  Bool_t GetRejectPureMC() const {return fRejectPureMC;}
   Bool_t GetRequestITSrefit() const {return fRequestITSrefit;}
   Bool_t GetRequestTPCrefit() const {return fRequestTPCrefit;}
   UChar_t GetITShitMapRequest() const {return fCutOnITShitMap;}
@@ -49,6 +58,13 @@ class AliReducedTrackCut : public AliReducedVarCut {
   Bool_t    fRejectKinks;                       // if true, reject kinks
   Bool_t    fRejectTaggedGamma;       // if true, reject tagged gamma conversions
   Bool_t    fRejectTaggedPureGamma;  // if true, reject only the high purity tagged gamma conversions
+  
+  // selections on the track filter map 
+  UInt_t    fCutOnTrackFilterMap;       // map encoding the various requests on track filters
+  Bool_t    fUseANDonTrackFilterMap;  // if false, at least one of the enabled positions in the cut map should be on in the track filters map
+   
+   // Reject pure MC tracks
+   Bool_t   fRejectPureMC;    
    
    // ITS quantities
   Bool_t    fRequestITSrefit;                // if true, request kITSrefit flag to be on

@@ -31,5 +31,6 @@
 #pragma link C++ class AliReducedVarCut+;
 #pragma link C++ class AliReducedVarManager+;
 #pragma link C++ class AliResonanceFits+;
+#pragma link C++ class AliSignalMC+;
 
 #endif

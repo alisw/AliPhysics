@@ -10,6 +10,7 @@ using std::endl;
 
 #include <TClonesArray.h>
 #include <TIterator.h>
+#include <TList.h>
 
 #include "AliReducedVarManager.h"
 #include "AliReducedEventInfo.h"
@@ -358,7 +359,6 @@ void AliReducedAnalysisJpsi2ee::FillPairHistograms(ULong_t mask, Int_t pairType,
          fHistosManager->FillHistClass(Form("%s%s_%s", pairClass.Data(), typeStr[pairType].Data(), fTrackCuts.At(icut)->GetName()), fValues);
          if(isMCTruth && pairType==1) fHistosManager->FillHistClass(Form("%s%s_%s_MCTruth", pairClass.Data(), typeStr[pairType].Data(), fTrackCuts.At(icut)->GetName()), fValues);
       }
-         
    }  // end loop over cuts
 }
 
@@ -376,7 +376,6 @@ void AliReducedAnalysisJpsi2ee::RunTrackSelection() {
    AliReducedTrackInfo* track = 0x0;
    TClonesArray* trackList = fEvent->GetTracks();
    TIter nextTrack(trackList);
-   Float_t nsigma = 0.;
    for(Int_t it=0; it<fEvent->NTracks(); ++it) {
       track = (AliReducedTrackInfo*)nextTrack();
       if(fOptionRunOverMC && track->IsMCTruth()) continue;
@@ -547,14 +546,17 @@ void AliReducedAnalysisJpsi2ee::RunPrefilter() {
    nextPosTrack.Reset();
    for(Int_t ip = fPosTracks.GetEntries()-1 ; ip >= 0; --ip) {
      track = (AliReducedTrackInfo*)nextPosTrack();
-     if(!track->GetFlags()) fPosTracks.Remove(track);
+     if(!track->GetFlags()) {
+        fPosTracks.Remove(track);
+     }
    }
   nextNegTrack.Reset();
   for(Int_t ip = fNegTracks.GetEntries()-1 ; ip >= 0; --ip) {
     track = (AliReducedTrackInfo*)nextNegTrack();
-    if(!track->GetFlags()) fNegTracks.Remove(track);
+    if(!track->GetFlags()) {
+       fNegTracks.Remove(track);
+    }
   }
-
 }
 
 //___________________________________________________________________________
@@ -605,7 +607,6 @@ void AliReducedAnalysisJpsi2ee::FillMCTruthHistograms() {
   AliReducedTrackInfo* leg2=0x0;
   TClonesArray* trackList = fEvent->GetTracks();
   TIter nextTrack(trackList);
-  Float_t nsigma = 0.;
   for(Int_t it=0; it<fEvent->NTracks(); ++it) {
      track = (AliReducedTrackInfo*)nextTrack();
      if(!track->IsMCTruth()) continue;
