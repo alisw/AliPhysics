@@ -339,6 +339,7 @@ void AliPerformanceMatch::ProcessITSTPC(Int_t iTrack, AliVEvent *const vEvent, A
     // if(vTrackTPC->GetTPCNclsIter1()<fCutsRC.GetMinNClustersTPC()) continue;
     tpcTrack2 = AliESDtrackCuts::GetTPCOnlyTrackFromVEvent(vEvent, jTrack);
     if(!tpcTrack2) continue;
+    //TODO: this will only work offline with ESD tracks! needs some work to make it work online as well.
     if(!tpcTrack2->RelateToVVertex(vVertex,vEvent->GetMagneticField(),100.)) { delete tpcTrack2; tpcTrack2=0; continue; } 
     
     if(!fCutsRC.AcceptVTrack(tpcTrack2)) { delete tpcTrack2; tpcTrack2=0; continue; }
@@ -433,23 +434,20 @@ void AliPerformanceMatch::ProcessTPCConstrain(AliMCEvent* /*const mcev*/, AliVEv
     Double_t b[3]; AliTracker::GetBxByBz(x,b);
     Bool_t isOK = kFALSE;
 
-    vTrack->GetTrackParamTPCInner(trackParamsTPCInner);
+    if (vTrack->GetTrackParamTPCInner(trackParamsTPCInner)<0) { return; }
     AliExternalTrackParam * TPCinner = &trackParamsTPCInner;
-    if(!TPCinner) return;
   
-    AliExternalTrackParam * TPCinnerC = new AliExternalTrackParam(*TPCinner);
-    if (TPCinnerC) {
-        isOK = TPCinnerC->ConstrainToVertex(vVertex, b);
+    isOK = TPCinner->ConstrainToVertex(vVertex, b);
 
-        // transform to the track reference frame 
-        isOK = TPCinnerC->Rotate(etpTrack->GetAlpha());
-        isOK = TPCinnerC->PropagateTo(etpTrack->GetX(),vEvent->GetMagneticField());
-    }
+    // transform to the track reference frame 
+    isOK = TPCinner->Rotate(etpTrack->GetAlpha());
+    if(!isOK) return;
+    isOK = TPCinner->PropagateTo(etpTrack->GetX(),vEvent->GetMagneticField());
     if(!isOK) return;
 
     Double_t sigmaPhi=0,deltaPhi=0,pullPhi=0;
-    deltaPhi = TPCinnerC->GetSnp() - etpTrack->GetSnp();
-    sigmaPhi = TMath::Sqrt(vTrack->GetSigmaSnp2()+TPCinnerC->GetSigmaSnp2());
+    deltaPhi = TPCinner->GetSnp() - etpTrack->GetSnp();
+    sigmaPhi = TMath::Sqrt(vTrack->GetSigmaSnp2()+TPCinner->GetSigmaSnp2());
     if(sigmaPhi!=0)
     pullPhi = deltaPhi/sigmaPhi;
 
@@ -458,8 +456,6 @@ void AliPerformanceMatch::ProcessTPCConstrain(AliMCEvent* /*const mcev*/, AliVEv
     else {
         h_tpc_constrain_tpc_0_2_3->Fill(vTPCConstrain[0],vTPCConstrain[2],vTPCConstrain[3]);
     }
-    if(TPCinnerC)
-    delete TPCinnerC;
 
     return;
 }

@@ -550,8 +550,11 @@ void AliPerformanceTPC::ProcessTPC(AliMCEvent* const mcev, AliVTrack *const vTra
   
     AliExternalTrackParam trackParams;
     vTrack->GetTrackParam(trackParams);
-    AliExternalTrackParam *etpTrack = &trackParams;
+    AliExternalTrackParam *pTrackParams = &trackParams;
 
+    AliExternalTrackParam innerTPCtrackParams;
+    vTrack->GetTrackParamTPCInner(innerTPCtrackParams);
+    AliExternalTrackParam *pInnerTPCtrackParams = &innerTPCtrackParams;
     
   if(IsUseTOFBunchCrossing()){
     if(vTrack->GetTOFBunchCrossing(vEvent->GetMagneticField())!=0){
@@ -564,37 +567,41 @@ void AliPerformanceTPC::ProcessTPC(AliMCEvent* const mcev, AliVTrack *const vTra
     {
     // Relate TPC inner params to prim. vertex
         AliESDVertex vertex;
-        vEvent->GetPrimaryVertex(vertex);
+        vEvent->GetPrimaryVertexTracks(vertex);
         const AliVVertex *vVertex = &vertex;
         Double_t x[3];
-        etpTrack->GetXYZ(x);
+        pTrackParams->GetXYZ(x);
         Double_t b[3];
         AliTracker::GetBxByBz(x,b);
         Bool_t isOK=kFALSE;
-        if(fabs(b[2])>0.000001)
-        isOK = etpTrack->PropagateToDCABxByBz(vVertex, b, kVeryBig,dca,cov);
+        if(fabs(b[2])>0.000001) {
+          isOK = pInnerTPCtrackParams->RelateToVVertexBxByBzDCA(vVertex, b, kVeryBig,NULL,dca,cov);
+        }
         if(!isOK) return;
     }
   // Fill TPC only resolution comparison information
   
     
- // dca_xy, dca_z, sigma_xy, sigma_xy_z, sigma_z
-    //etpTrack->GetImpactParameters(dca,cov);
-
-    Float_t q = etpTrack->Charge();
-    Float_t pt = etpTrack->Pt();
-    Float_t eta = etpTrack->Eta();
-    Float_t phi = etpTrack->Phi();
+    Float_t q = pTrackParams->Charge();
+    Float_t pt = pInnerTPCtrackParams->Pt();
+    Float_t eta = pInnerTPCtrackParams->Eta();
+    Float_t phi = pInnerTPCtrackParams->Phi();
     UShort_t nClust = vTrack->GetTPCNcls();
     Int_t nFindableClust = vTrack->GetTPCNclsF();
 
     Float_t chi2PerCluster = 0.;
-    if(nClust>0.) chi2PerCluster = etpTrack->GetTPCchi2()/Float_t(nClust);
+    if(nClust>0.) chi2PerCluster = vTrack->GetTPCchi2()/Float_t(nClust);
 
     Float_t clustPerFindClust = 0.;
     if(nFindableClust>0.) clustPerFindClust = Float_t(nClust)/nFindableClust;
   
-    //cout <<" q "<<q<<" pt "<<pt<<" eta "<<eta<<" phi "<<phi<<" nClust "<<nClust<<" nFindableClust "<<nFindableClust<<" dca[0] "<<dca[0]<<" dca[1] "<<dca[1]<<endl;
+  Float_t qpt = 0;
+  if( fabs(pt)>0 ) qpt = q/fabs(pt);
+
+  // filter out noise tracks
+  if(vTrack->GetTPCsignal() < 5) {
+    return;
+  }
     
   // select primaries
   //
@@ -603,10 +610,15 @@ void AliPerformanceTPC::ProcessTPC(AliMCEvent* const mcev, AliVTrack *const vTra
   {
     dcaToVertex = TMath::Sqrt(dca[0]*dca[0]/fCutsRC.GetMaxDCAToVertexXY()/fCutsRC.GetMaxDCAToVertexXY() + dca[1]*dca[1]/fCutsRC.GetMaxDCAToVertexZ()/fCutsRC.GetMaxDCAToVertexZ()); 
   }
-  if(fCutsRC.GetDCAToVertex2D() && dcaToVertex > 1) return;
-  if(!fCutsRC.GetDCAToVertex2D() && TMath::Abs(dca[0]) > fCutsRC.GetMaxDCAToVertexXY()) return;
-  if(!fCutsRC.GetDCAToVertex2D() && TMath::Abs(dca[1]) > fCutsRC.GetMaxDCAToVertexZ()) return;
-  if(nClust < fCutsRC.GetMinNClustersTPC()) return;
+  if(fCutsRC.GetDCAToVertex2D() && dcaToVertex > 1) {
+    return;
+  }
+  if(!fCutsRC.GetDCAToVertex2D() && TMath::Abs(dca[0]) > fCutsRC.GetMaxDCAToVertexXY()) {
+    return;
+  }
+  if(!fCutsRC.GetDCAToVertex2D() && TMath::Abs(dca[1]) > fCutsRC.GetMaxDCAToVertexZ()) {
+    return;
+  }
 
   //Double_t vTPCTrackHisto[10] = {nClust,chi2PerCluster,clustPerFindClust,dca[0],dca[1],eta,phi,pt,qpt,vertStatus};
   Double_t vTPCTrackHisto[10] = {static_cast<Double_t>(nClust),static_cast<Double_t>(chi2PerCluster),static_cast<Double_t>(clustPerFindClust),static_cast<Double_t>(dca[0]),static_cast<Double_t>(dca[1]),static_cast<Double_t>(eta),static_cast<Double_t>(phi),static_cast<Double_t>(pt),static_cast<Double_t>(q),static_cast<Double_t>(vertStatus)};
@@ -616,8 +628,9 @@ void AliPerformanceTPC::ProcessTPC(AliMCEvent* const mcev, AliVTrack *const vTra
     if(q > 0.000001) fMultP++;
     else if(q < 0.000001) fMultN++;
     
-    if(fUseSparse) fTPCTrackHisto->Fill(vTPCTrackHisto);
-    else {
+    if(fUseSparse) {
+      fTPCTrackHisto->Fill(vTPCTrackHisto);
+    } else {
         if(h_tpc_track_all_recvertex_5_8) h_tpc_track_all_recvertex_5_8->Fill(vTPCTrackHisto[5],vTPCTrackHisto[8]);
         if(h_tpc_track_all_recvertex_1_5_7) h_tpc_track_all_recvertex_1_5_7->Fill(vTPCTrackHisto[1],vTPCTrackHisto[5],vTPCTrackHisto[7]);
         if(h_tpc_track_all_recvertex_2_5_7) h_tpc_track_all_recvertex_2_5_7->Fill(vTPCTrackHisto[2],vTPCTrackHisto[5],vTPCTrackHisto[7]);
@@ -664,37 +677,38 @@ void AliPerformanceTPC::ProcessTPCITS(AliMCEvent* const mcev, AliVTrack *const v
 
     AliExternalTrackParam trackParams;
     vTrack->GetTrackParam(trackParams);
-    AliExternalTrackParam *etpTrack = &trackParams;
+    AliExternalTrackParam *pTrackParams = &trackParams;
+    AliExternalTrackParam innerTPCtrackParams;
+    vTrack->GetTrackParamTPCInner(innerTPCtrackParams);
+    AliExternalTrackParam *pInnerTPCtrackParams = &innerTPCtrackParams;
     Double_t dca[2] = {0.,0.};
     Double_t cov[3] = {0.,0.,0.};
     
     if( IsUseTrackVertex() )
     {        
         AliESDVertex vertex;
-        vEvent->GetPrimaryVertex(vertex);
+        vEvent->GetPrimaryVertexTracks(vertex);
         const AliVVertex *vVertex = &vertex;
-        Double_t x[3];
-        etpTrack->GetXYZ(x);
-        Double_t b[3];
-        AliTracker::GetBxByBz(x,b);
-        Bool_t isOK=kFALSE;
-        if(fabs(b[2])>0.000001)
-        isOK = etpTrack->PropagateToDCABxByBz(vVertex, b, kVeryBig,dca,cov);
+        Double_t x[3]; pTrackParams->GetXYZ(x);
+        Double_t b[3]; AliTracker::GetBxByBz(x,b);
+        Bool_t isOK = pTrackParams->RelateToVVertexBxByBzDCA(vVertex, b, kVeryBig,NULL,dca,cov);
         if(!isOK) return;
     }
-    Float_t q = etpTrack->Charge();
-    Float_t pt = etpTrack->Pt();
-    Float_t eta = etpTrack->Eta();
-    Float_t phi = etpTrack->Phi();
-    UShort_t nClust = vTrack->GetTPCNcls();
-    Int_t nFindableClust = vTrack->GetTPCNclsF();
 
     if ((vTrack->GetStatus()&AliVTrack::kITSrefit)==0) return; // ITS refit
     if ((vTrack->GetStatus()&AliVTrack::kTPCrefit)==0) return; // TPC refit
     if ((vTrack->HasPointOnITSLayer(0)==kFALSE)&&(vTrack->HasPointOnITSLayer(1)==kFALSE)) return; // at least one SPD
 
+    Float_t q = pTrackParams->Charge();
+    Float_t pt = pTrackParams->Pt();
+    Float_t eta = pTrackParams->Eta();
+    Float_t phi = pTrackParams->Phi();
+    UShort_t nClust = vTrack->GetTPCNcls();
+    Int_t nFindableClust = vTrack->GetTPCNclsF();
+
+
     Float_t chi2PerCluster = 0;
-    if(nClust>0.) chi2PerCluster = etpTrack->GetTPCchi2()/Float_t(nClust);
+    if(nClust>0.) chi2PerCluster = vTrack->GetTPCchi2()/Float_t(nClust);
   
     Float_t clustPerFindClust = 0.;
     if(nFindableClust>0.) clustPerFindClust = Float_t(nClust)/nFindableClust;
@@ -707,7 +721,6 @@ void AliPerformanceTPC::ProcessTPCITS(AliMCEvent* const mcev, AliVTrack *const v
   if(fCutsRC.GetDCAToVertex2D() && dcaToVertex > 1) return;
   if(!fCutsRC.GetDCAToVertex2D() && TMath::Abs(dca[0]) > fCutsRC.GetMaxDCAToVertexXY()) return;
   if(!fCutsRC.GetDCAToVertex2D() && TMath::Abs(dca[1]) > fCutsRC.GetMaxDCAToVertexZ()) return;
-  if(nClust < fCutsRC.GetMinNClustersTPC()) return;
 
   Double_t vTPCTrackHisto[10] = {static_cast<Double_t>(nClust),static_cast<Double_t>(chi2PerCluster),static_cast<Double_t>(clustPerFindClust),static_cast<Double_t>(dca[0]),static_cast<Double_t>(dca[1]),static_cast<Double_t>(eta),static_cast<Double_t>(phi),static_cast<Double_t>(pt),static_cast<Double_t>(q),static_cast<Double_t>(vertStatus)};
 
@@ -715,8 +728,9 @@ void AliPerformanceTPC::ProcessTPCITS(AliMCEvent* const mcev, AliVTrack *const v
     if(q > 0.000001) fMultP++;
     else if(q < 0.000001) fMultN++;
     
-    if(fUseSparse) fTPCTrackHisto->Fill(vTPCTrackHisto);
-    else {
+    if(fUseSparse) {
+      fTPCTrackHisto->Fill(vTPCTrackHisto);
+    } else {
         if(h_tpc_track_all_recvertex_5_8) h_tpc_track_all_recvertex_5_8->Fill(vTPCTrackHisto[5],vTPCTrackHisto[8]);
         if(h_tpc_track_all_recvertex_1_5_7) h_tpc_track_all_recvertex_1_5_7->Fill(vTPCTrackHisto[1],vTPCTrackHisto[5],vTPCTrackHisto[7]);
         if(h_tpc_track_all_recvertex_2_5_7) h_tpc_track_all_recvertex_2_5_7->Fill(vTPCTrackHisto[2],vTPCTrackHisto[5],vTPCTrackHisto[7]);
@@ -765,7 +779,7 @@ void AliPerformanceTPC::Exec(AliMCEvent* const mcEvent, AliVEvent *const vEvent,
 {
   // Process comparison information 
   //
-    
+
     if(!vEvent)
   {
     Error("Exec","vEvent not available");
