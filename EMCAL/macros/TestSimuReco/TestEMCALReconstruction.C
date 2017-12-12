@@ -28,6 +28,7 @@ void TestEMCALReconstruction(Int_t nev =-1)
 {
   // Uncomment to debug with different verbosity levels
   //  AliLog::SetModuleDebugLevel("EMCAL",100);
+  //  AliLog::SetGlobalDebugLevel(1000);
   
   AliReconstruction rec;
   
@@ -45,7 +46,7 @@ void TestEMCALReconstruction(Int_t nev =-1)
   //rec.SetInput("raw.root");
   
   //OCDB settings
-  rec.SetDefaultStorage("local://$ALICE_ROOT/OCDB");
+  rec.SetDefaultStorage("local://$ALIROOT_OCDB_ROOT/OCDB");
   
   // Decomment this line in case of anchored MC runs or data,
   // with the appropriate year
