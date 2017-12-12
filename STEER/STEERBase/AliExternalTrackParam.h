@@ -213,6 +213,8 @@ class AliExternalTrackParam: public AliVTrack {
 
   static void g3helx3(Double_t qfield, Double_t step, Double_t vect[7]); 
   Bool_t PropagateToBxByBz(Double_t x, const Double_t b[3]);
+  Bool_t RelateToVVertexBxByBzDCA(const AliVVertex *vtx, Double_t b[3], Double_t maxd,
+    AliExternalTrackParam *cParam=NULL, Double_t dz[2]=NULL, Double_t dzcov[3]=NULL);
 
   void GetHelixParameters(Double_t h[6], Double_t b) const;
   Double_t GetDCA(const AliExternalTrackParam *p, Double_t b,

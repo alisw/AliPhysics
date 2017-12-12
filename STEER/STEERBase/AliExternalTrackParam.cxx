@@ -3127,3 +3127,41 @@ Double_t  AliExternalTrackParam::GetParameterAtRadius(Double_t r, Double_t bz, I
   }
   return 0;
 }
+
+//_______________________________________________________________________
+Bool_t AliExternalTrackParam::RelateToVVertexBxByBzDCA(const AliVVertex *vtx, Double_t b[3], Double_t maxd, AliExternalTrackParam *cParam, Double_t dz[2], Double_t dzcov[3]) {
+  //
+  // Try to relate the track parameters to the vertex "vtx", 
+  // if the (rough) transverse impact parameter is not bigger then "maxd". 
+  //
+  // All three components of the magnetic field ,"b[3]" (kG), 
+  // are taken into account.
+  //
+  // a) The paramters are extapolated to the DCA to the vertex.
+  // b) The impact parameters and their covariance matrix are calculated.
+  // c) An attempt to constrain the params to the vertex is done.
+  //    The constrained params are returned via "cParam".
+  //
+  // In the case of success, the returned value is kTRUE
+  // otherwise, it's kFALSE)
+  // 
+
+  if (!vtx) return kFALSE;
+
+  if (!PropagateToDCABxByBz(vtx, b, maxd, dz, dzcov)) return kFALSE;
+
+  Double_t covar[6]; vtx->GetCovarianceMatrix(covar);
+  Double_t p[2]={GetParameter()[0]-dz[0],GetParameter()[1]-dz[1]};
+  Double_t c[3]={covar[2],0.,covar[5]};
+
+  Double_t chi2=GetPredictedChi2(p,c);
+  if (chi2>kVeryBig) return kFALSE;
+
+  if (!cParam) return kTRUE;
+
+  *cParam = *this;
+  if (!cParam->Update(p,c)) return kFALSE;
+
+  return kTRUE;
+}
+
