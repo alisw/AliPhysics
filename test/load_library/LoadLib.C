@@ -9,7 +9,8 @@ Int_t LoadLib(const TString &libName)
   if (libName.Contains("MONITOR") ||
       libName.Contains("Eve") ||
       libName.Contains("HLT") ||
-      libName.Contains("ConverterCollada")) {
+      libName.Contains("ConverterCollada") ||
+      libName.Contains("ConverterJSON")) {
     // Might load system-installed libraries (e.g. libdim.so)
     gSystem->AddDynamicPath("/lib:/lib64:/usr/lib:/usr/lib64:/usr/local/lib:/usr/local/lib64:/usr/lib/x86_64-linux-gnu");
   }
