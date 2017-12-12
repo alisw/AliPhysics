@@ -53,15 +53,15 @@ AliEmcalTrackSelection *AliEmcalAnalysisFactory::TrackCutsFactory(TString cutstr
   AliEmcalTrackSelection *result = NULL;
   std::unique_ptr<TObjArray> cuts(cutstring.Tokenize(","));
   std::cout << "Creating track cuts for " << (aod ? "AODs" : "ESDs") << std::endl;
+  TObjArray trackcuts;
   if(!aod){
-    std::vector<AliVCuts *> trackcuts;
     for(auto c : *cuts){
       TString &cut = static_cast<TObjString *>(c)->String();
       if(cut == "standard"){
         auto esdcuts = GenerateDefaultCutsESD();
         esdcuts->SetName("standardRAA");
         esdcuts->SetTitle("Standard Track cuts");
-        trackcuts.push_back(esdcuts);
+        trackcuts.Add(esdcuts);
       }
       if(cut == "standardcrossedrows"){
         auto esdcuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(true, 1);
@@ -70,38 +70,38 @@ AliEmcalTrackSelection *AliEmcalAnalysisFactory::TrackCutsFactory(TString cutstr
         esdcuts->SetTitle("Standard Track cuts");
         esdcuts->SetMinNCrossedRowsTPC(120);
         esdcuts->SetMaxDCAToVertexXYPtDep("0.0182+0.0350/pt^1.01");
-        trackcuts.push_back(esdcuts);
+        trackcuts.Add(esdcuts);
       }
       if(cut == "hybrid"){
         std::cout << "Configuring standard hybrid track cuts" << std::endl;
         auto esdcuts = GenerateLooseDCACutsESD();
         esdcuts->SetTitle("hybridglobal");
         esdcuts->SetTitle("Global Hybrid tracks, loose DCA");
-        trackcuts.push_back(esdcuts);
+        trackcuts.Add(esdcuts);
       }
       if(cut == "hybrid2010_wNoRefit"){
         std::cout << "Configuring hybrid track cuts 2010, including non-ITSrefit tracks" << std::endl;
         auto hybridcuts = new PWG::EMCAL::AliEmcalESDHybridTrackCuts("2010_wNoRefit", PWG::EMCAL::AliEmcalESDHybridTrackCuts::kDef2010);
         hybridcuts->SetUseNoITSrefitTracks(kTRUE);
-        trackcuts.push_back(hybridcuts);
+        trackcuts.Add(hybridcuts);
       }
       if(cut == "hybrid2010_woNoRefit"){
         std::cout << "Configuring hybrid track cuts 2010, excluding non-ITSrefit tracks" << std::endl;
         auto hybridcuts = new PWG::EMCAL::AliEmcalESDHybridTrackCuts("2010_woNoRefit", PWG::EMCAL::AliEmcalESDHybridTrackCuts::kDef2010);
         hybridcuts->SetUseNoITSrefitTracks(kFALSE);
-        trackcuts.push_back(hybridcuts); 
+        trackcuts.Add(hybridcuts); 
      }
       if(cut == "hybrid2011_wNoRefit"){
         std::cout << "Configuring hybrid track cuts 2011, including non-ITSrefit tracks" << std::endl;
         auto hybridcuts = new PWG::EMCAL::AliEmcalESDHybridTrackCuts("2011_wNoRefit", PWG::EMCAL::AliEmcalESDHybridTrackCuts::kDef2011);
         hybridcuts->SetUseNoITSrefitTracks(kTRUE);
-        trackcuts.push_back(hybridcuts);
+        trackcuts.Add(hybridcuts);
       }
       if(cut == "hybrid2011_woNoRefit"){
         std::cout << "Configuring hybrid track cuts 2011, excluding non-ITSrefit tracks" << std::endl;
         auto hybridcuts = new PWG::EMCAL::AliEmcalESDHybridTrackCuts("2011_woNoRefit", PWG::EMCAL::AliEmcalESDHybridTrackCuts::kDef2011);
         hybridcuts->SetUseNoITSrefitTracks(kFALSE);
-        trackcuts.push_back(hybridcuts);
+        trackcuts.Add(hybridcuts);
       }
 
       ////////////////////////////////////////////////////////////////
@@ -115,7 +115,7 @@ AliEmcalTrackSelection *AliEmcalAnalysisFactory::TrackCutsFactory(TString cutstr
         esdcuts->SetName(TString::Format("VarITSchi2Cut%04d", static_cast<int>(cutvalue * 10.)));
         esdcuts->SetTitle(TString::Format("Default cuts - variation ITS chi2 cut at %f", cutvalue));
         esdcuts->SetMaxChi2PerClusterITS(cutvalue);
-        trackcuts.push_back(esdcuts);
+        trackcuts.Add(esdcuts);
       }
       if(cut.Contains("VarTPCchi2") && !cut.Contains("Constrained")){
         double cutvalue = ValueDecoder(cut, "VarTPCchi2");
@@ -123,7 +123,7 @@ AliEmcalTrackSelection *AliEmcalAnalysisFactory::TrackCutsFactory(TString cutstr
         esdcuts->SetName(TString::Format("VarTPCchi2Cut%04d", static_cast<int>(cutvalue * 10.)));
         esdcuts->SetTitle(TString::Format("Default cuts - variation TPC chi2 cut at %f", cutvalue));
         esdcuts->SetMaxChi2PerClusterTPC(cutvalue);
-        trackcuts.push_back(esdcuts);
+        trackcuts.Add(esdcuts);
       }
       if(cut.Contains("VarTPCchi2Constrained")){
         double cutvalue = ValueDecoder(cut, "VarTPCchi2Constrained"); // in number of sigmas
@@ -131,7 +131,7 @@ AliEmcalTrackSelection *AliEmcalAnalysisFactory::TrackCutsFactory(TString cutstr
         esdcuts->SetName(TString::Format("VarTPCchi2ConstrainedCut%04d", static_cast<int>(cutvalue * 10.)));
         esdcuts->SetTitle(TString::Format("Default cuts - variation TPC chi2 constrained cut at %f", cutvalue));
         esdcuts->SetMaxChi2TPCConstrainedGlobal(cutvalue);
-        trackcuts.push_back(esdcuts);
+        trackcuts.Add(esdcuts);
       }
       if(cut.Contains("VarDCAz")){
         double cutvalue = ValueDecoder(cut, "VarDCAz");
@@ -139,7 +139,7 @@ AliEmcalTrackSelection *AliEmcalAnalysisFactory::TrackCutsFactory(TString cutstr
         esdcuts->SetName(TString::Format("VarDCAzCut%04d", static_cast<int>(cutvalue * 10.)));
         esdcuts->SetTitle(TString::Format("Default cuts - variation DCAz cut at %f", cutvalue));
         esdcuts->SetMaxDCAToVertexZ(cutvalue);
-        trackcuts.push_back(esdcuts);
+        trackcuts.Add(esdcuts);
       }
       if(cut.Contains("VarDCAr")){
         double cutvalue = ValueDecoder(cut, "VarDCAr");
@@ -148,7 +148,7 @@ AliEmcalTrackSelection *AliEmcalAnalysisFactory::TrackCutsFactory(TString cutstr
         esdcuts->SetName(TString::Format("VarDCArCut%04d", static_cast<int>(cutvalue * 10.)));
         esdcuts->SetTitle(TString::Format("Default cuts - variation DCAr cut at %f sigma", cutvalue));
         esdcuts->SetMaxDCAToVertexXYPtDep(TString::Format("%f + %f/pt^1.01", p1, p2));
-        trackcuts.push_back(esdcuts);
+        trackcuts.Add(esdcuts);
       }
       if(cut.Contains("VarRatioCrossedRowsFindable")){
         double cutvalue = ValueDecoder(cut, "VarRatioCrossedRowsFindable");
@@ -156,7 +156,7 @@ AliEmcalTrackSelection *AliEmcalAnalysisFactory::TrackCutsFactory(TString cutstr
         esdcuts->SetName(TString::Format("VarRatioCRFindableCut%04d", static_cast<int>(cutvalue * 10.)));
         esdcuts->SetTitle(TString::Format("Default cuts - variation ratio crossed rows over findable cut at %f", cutvalue));
         esdcuts->SetMinRatioCrossedRowsOverFindableClustersTPC(cutvalue);
-        trackcuts.push_back(esdcuts);
+        trackcuts.Add(esdcuts);
       }
       if(cut.Contains("VarFractionTPCshared")){
         double cutvalue = ValueDecoder(cut, "VarFractionTPCshared");
@@ -164,7 +164,7 @@ AliEmcalTrackSelection *AliEmcalAnalysisFactory::TrackCutsFactory(TString cutstr
         esdcuts->SetName(TString::Format("VarFractionTPCShared%04d", static_cast<int>(cutvalue * 10.)));
         esdcuts->SetTitle(TString::Format("Default cuts - variation fraction TPC shared clusters %f", cutvalue));
         esdcuts->SetMaxFractionSharedTPCClusters(cutvalue);
-        trackcuts.push_back(esdcuts);
+        trackcuts.Add(esdcuts);
       }
       if(cut.Contains("VarTrackLengthDeadArea")){
         double cutvalue = ValueDecoder(cut, "VarTrackLengthDeadArea");
@@ -172,7 +172,7 @@ AliEmcalTrackSelection *AliEmcalAnalysisFactory::TrackCutsFactory(TString cutstr
         esdcuts->SetName(TString::Format("VarTLDeadAreaCut%04d", static_cast<int>(cutvalue * 10.)));
         esdcuts->SetTitle(TString::Format("Default cuts - variation track length dead area cut at %f", cutvalue));
         esdcuts->SetCutGeoNcrNcl(cutvalue, 130., 1.5, 0.0, 0.0);
-        trackcuts.push_back(esdcuts);
+        trackcuts.Add(esdcuts);
       }
       if(cut.Contains("VarTrackLengthTPCLength")){
         double cutvalue = ValueDecoder(cut, "VarTrackLengthTPCLength");
@@ -180,7 +180,7 @@ AliEmcalTrackSelection *AliEmcalAnalysisFactory::TrackCutsFactory(TString cutstr
         esdcuts->SetName(TString::Format("VarTLTPCLengthCut%04d", static_cast<int>(cutvalue * 10.)));
         esdcuts->SetTitle(TString::Format("Default cuts - variation track length TPC length cut at %f", cutvalue));
         esdcuts->SetCutGeoNcrNcl(3., cutvalue, 1.5, 0.0, 0.0);
-        trackcuts.push_back(esdcuts);
+        trackcuts.Add(esdcuts);
       }
       if(cut.Contains("VarSPDhit")){
         double cutvalue = ValueDecoder(cut, "VarSPDhit");
@@ -193,7 +193,7 @@ AliEmcalTrackSelection *AliEmcalAnalysisFactory::TrackCutsFactory(TString cutstr
           esdcuts->SetTitle("Default cuts - variation SPD hit requirement off");
           esdcuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kOff);
         }
-        trackcuts.push_back(esdcuts);
+        trackcuts.Add(esdcuts);
       }
       ////////////////////////////////////////////////////////////////
       /// Test cuts - for tracking studies                         ///
@@ -212,7 +212,7 @@ AliEmcalTrackSelection *AliEmcalAnalysisFactory::TrackCutsFactory(TString cutstr
         esdcuts->SetMaxChi2PerClusterITS(itscut);
         // Set cut on the TPC global constrained chi2 to very loose
         esdcuts->SetMaxChi2TPCConstrainedGlobal(100);
-        trackcuts.push_back(esdcuts);
+        trackcuts.Add(esdcuts);
       }
       if(cut.Contains("TestTPCchi2")){
         double tpccut = ValueDecoder(cut,"TestTPCchi2");
@@ -224,7 +224,7 @@ AliEmcalTrackSelection *AliEmcalAnalysisFactory::TrackCutsFactory(TString cutstr
 
         // Do the variation
         esdcuts->SetMaxChi2PerClusterTPC(tpccut);
-        trackcuts.push_back(esdcuts);
+        trackcuts.Add(esdcuts);
       }
       if(cut.Contains("TestTPCchi2Constrained")){
         double tpcconstrainedcut = ValueDecoder(cut, "TestTPCchi2Constrained");
@@ -238,30 +238,28 @@ AliEmcalTrackSelection *AliEmcalAnalysisFactory::TrackCutsFactory(TString cutstr
         esdcuts->SetMaxChi2TPCConstrainedGlobal(tpcconstrainedcut);
         // Set ITS chi2 cut to very loose
         esdcuts->SetMaxChi2PerClusterITS(100);
-        trackcuts.push_back(esdcuts);
+        trackcuts.Add(esdcuts);
       }
       if(cut.Contains("geo")){
         auto geocuts = new AliEMCalTriggerExtraCuts();
         geocuts->SetName("geocuts");
         geocuts->SetTitle("TPC track length cut");
         geocuts->SetMinTPCTrackLengthCut();
-        trackcuts.push_back(geocuts);
+        trackcuts.Add(geocuts);
       }
     }
     result = new AliEmcalTrackSelectionESD;
-    for(std::vector<AliVCuts *>::iterator it = trackcuts.begin(); it != trackcuts.end(); ++it)
-      result->AddTrackCuts(*it);
+    result->AddTrackCuts(&trackcuts);
   } else {
     AliEmcalTrackSelectionAOD *aodsel = new AliEmcalTrackSelectionAOD;
     result = aodsel;
-    std::vector<AliVCuts *> trackcuts;
     // C++11 Lambda: Do not create multiple extra cut objects in case of AODs. If extra cut object does already exist -
     // specify new cut in the same object.
-    std::function<AliEMCalTriggerExtraCuts *(const std::vector<AliVCuts *> &)> FindTrackCuts = [] (const std::vector<AliVCuts *> &cuts) -> AliEMCalTriggerExtraCuts * {
+    auto FindTrackCuts = [] (const TObjArray &cuts) -> AliEMCalTriggerExtraCuts * {
       AliEMCalTriggerExtraCuts *found = nullptr;
-      for(std::vector<AliVCuts *>::const_iterator cutiter = cuts.begin(); cutiter != cuts.end(); ++cutiter){
-        if((*cutiter)->IsA() == AliEMCalTriggerExtraCuts::Class()){
-          found = static_cast<AliEMCalTriggerExtraCuts *>(*cutiter);
+      for(auto cutiter : cuts){
+        if(cutiter->IsA() == AliEMCalTriggerExtraCuts::Class()){
+          found = static_cast<AliEMCalTriggerExtraCuts *>(cutiter);
           break;
         }
       }
@@ -274,7 +272,7 @@ AliEmcalTrackSelection *AliEmcalAnalysisFactory::TrackCutsFactory(TString cutstr
         AliEMCalTriggerExtraCuts *extracuts = FindTrackCuts(trackcuts);
         if(!extracuts){
           extracuts = new AliEMCalTriggerExtraCuts;
-          trackcuts.push_back(extracuts);
+          trackcuts.Add(extracuts);
         }
         extracuts->SetMinTPCCrossedRows(120);
       }
@@ -297,13 +295,12 @@ AliEmcalTrackSelection *AliEmcalAnalysisFactory::TrackCutsFactory(TString cutstr
         AliEMCalTriggerExtraCuts *extracuts = FindTrackCuts(trackcuts);
         if(!extracuts){
           extracuts = new AliEMCalTriggerExtraCuts;
-          trackcuts.push_back(extracuts);
+          trackcuts.Add(extracuts);
         }
         extracuts->SetMinTPCTrackLengthCut();
       }
     }
-    for(std::vector<AliVCuts *>::iterator it = trackcuts.begin(); it != trackcuts.end(); ++it)
-      result->AddTrackCuts(*it);
+    result->AddTrackCuts(&trackcuts);
   }
 
   return result;

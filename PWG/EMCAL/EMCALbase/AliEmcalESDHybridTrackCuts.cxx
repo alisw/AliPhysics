@@ -33,12 +33,17 @@
 #include "AliESDtrack.h"
 #include "AliESDtrackCuts.h"
 #include "AliEmcalESDHybridTrackCuts.h"
+#include "AliEmcalTrackSelResultHybrid.h"
 #include "AliLog.h"
+
+/// \cond CLASSIMP
+ClassImp(PWG::EMCAL::AliEmcalESDHybridTrackCuts)
+/// \endcond
 
 using namespace PWG::EMCAL;
 
 AliEmcalESDHybridTrackCuts::AliEmcalESDHybridTrackCuts():
-  AliVCuts(),
+  AliEmcalCutBase(),
   fLocalInitialized(kFALSE),
   fHybridTrackDefinition(kDef2010),
   fHybridTrackCutsGlobal(nullptr),
@@ -49,7 +54,7 @@ AliEmcalESDHybridTrackCuts::AliEmcalESDHybridTrackCuts():
 }
 
 AliEmcalESDHybridTrackCuts::AliEmcalESDHybridTrackCuts(const char *name, HybridDefinition_t hybriddef):
-  AliVCuts(name, ""),
+  AliEmcalCutBase(name, ""),
   fLocalInitialized(kFALSE),
   fHybridTrackDefinition(hybriddef),
   fHybridTrackCutsGlobal(nullptr),
@@ -65,18 +70,22 @@ AliEmcalESDHybridTrackCuts::~AliEmcalESDHybridTrackCuts(){
   if(fHybridTrackCutsNoItsRefit) delete fHybridTrackCutsNoItsRefit;
 }
 
-bool AliEmcalESDHybridTrackCuts::IsSelected(TObject *o){
+AliEmcalTrackSelResultPtr AliEmcalESDHybridTrackCuts::IsSelected(TObject *o){
   AliDebugStream(1) << "AliEmcalESDHybridTrackCuts::IsSelected(): Called" << std::endl;
   if(!fLocalInitialized) Init();
   if(auto esdtrack = dynamic_cast<AliESDtrack *>(o)) {
-    bool selected[3] = {false, false, false};
-    if(fHybridTrackCutsGlobal && fHybridTrackCutsGlobal->AcceptTrack(esdtrack)) selected[0] = true;
-    if(fHybridTrackCutsConstrained && fHybridTrackCutsConstrained->AcceptTrack(esdtrack)) selected[1] = true;
-    if(fHybridTrackCutsNoItsRefit && fHybridTrackCutsNoItsRefit->AcceptTrack(esdtrack)) selected[2]= true;
-    return selected[0] || selected[1] || selected[2];
+    AliEmcalTrackSelResultHybrid::HybridType_t tracktype = AliEmcalTrackSelResultHybrid::kUndefined;
+    if(fHybridTrackCutsGlobal && fHybridTrackCutsGlobal->AcceptTrack(esdtrack)) tracktype = AliEmcalTrackSelResultHybrid::kHybridGlobal;
+    else
+    {
+      if(fHybridTrackCutsConstrained && fHybridTrackCutsConstrained->AcceptTrack(esdtrack)) tracktype = AliEmcalTrackSelResultHybrid::kHybridConstrained;
+      else if(fHybridTrackCutsNoItsRefit && fHybridTrackCutsNoItsRefit->AcceptTrack(esdtrack)) tracktype = AliEmcalTrackSelResultHybrid::kHybridConstrainedNoITSrefit;
+    }
+    AliEmcalTrackSelResultPtr result(esdtrack, tracktype != AliEmcalTrackSelResultHybrid::kUndefined);
+    return result;
   }
   AliErrorStream() << "No ESD track" << std::endl;
-  return false;
+  return AliEmcalTrackSelResultPtr(nullptr, kFALSE);
 }
 
 void AliEmcalESDHybridTrackCuts::Init(){

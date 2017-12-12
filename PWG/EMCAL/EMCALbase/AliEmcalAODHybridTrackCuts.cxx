@@ -26,6 +26,7 @@
  ************************************************************************************/
 #include "AliAODTrack.h"
 #include "AliEmcalAODHybridTrackCuts.h"
+#include "AliEmcalTrackSelResultHybrid.h"
 
 /// \cond CLASSIMP
 ClassImp(PWG::EMCAL::AliEmcalAODHybridTrackCuts)
@@ -34,24 +35,39 @@ ClassImp(PWG::EMCAL::AliEmcalAODHybridTrackCuts)
 using namespace PWG::EMCAL;
 
 AliEmcalAODHybridTrackCuts::AliEmcalAODHybridTrackCuts():
-  AliVCuts(),
+  AliEmcalCutBase(),
   fSelectNonITSrefitTracks(kTRUE)
 {
-
+  fHybridFilterBits[0] = -1;
+  fHybridFilterBits[1] = -1;
 }
 
 AliEmcalAODHybridTrackCuts::AliEmcalAODHybridTrackCuts(const char *name):
-  AliVCuts(name,""),
+  AliEmcalCutBase(name,""),
   fSelectNonITSrefitTracks(kTRUE)
 {
   
 }
 
-bool AliEmcalAODHybridTrackCuts::IsSelected(TObject *o){
+AliEmcalTrackSelResultPtr AliEmcalAODHybridTrackCuts::IsSelected(TObject *o){
   AliAODTrack *aodtrack = dynamic_cast<AliAODTrack *>(o);
-  if(!aodtrack) return false;
+  if(!aodtrack) return AliEmcalTrackSelResultPtr(nullptr, kFALSE);
   bool selectionresult = aodtrack->IsHybridGlobalConstrainedGlobal();
   // Reject non-ITSrefit tracks if requested
   if((fSelectNonITSrefitTracks == false) && (!(aodtrack->GetStatus() & AliVTrack::kITSrefit))) selectionresult = false;
-  return selectionresult;
+  AliEmcalTrackSelResultPtr result(aodtrack, result);
+  // Create user object defining the hybrid track type (only in case the object is selected as hybrid track)
+  if(selectionresult){
+    AliEmcalTrackSelResultHybrid::HybridType_t tracktype = AliEmcalTrackSelResultHybrid::kHybridGlobal;
+    if(fHybridFilterBits[0] > -1 && fHybridFilterBits[1 > -1]) {
+      if(aodtrack->TestFilterBit(BIT(fHybridFilterBits[0]))) tracktype = AliEmcalTrackSelResultHybrid::kHybridGlobal;
+      else if(aodtrack->TestFilterBit(BIT(fHybridFilterBits[1]))){
+        if(aodtrack->GetStatus() & AliVTrack::kITSrefit) tracktype = AliEmcalTrackSelResultHybrid::kHybridConstrained;
+        else tracktype = AliEmcalTrackSelResultHybrid::kHybridConstrainedNoITSrefit;
+    }
+  }
+  result.SetUserInfo(new AliEmcalTrackSelResultHybrid(tracktype));
+
+  }
+  return result;
 }

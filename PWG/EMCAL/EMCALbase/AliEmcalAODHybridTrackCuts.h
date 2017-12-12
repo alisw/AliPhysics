@@ -27,7 +27,7 @@
 #ifndef ALIEMCALAODHYBRIDTRACKCUTS_H
 #define ALIEMCALAODHYBRIDTRACKCUTS_H
 
-#include "AliVCuts.h"
+#include "AliEmcalCutBase.h"
 
 namespace PWG {
 
@@ -46,7 +46,7 @@ namespace EMCAL {
  * fully relies on the function IsHybridTrackGlobalConstrainedGlobal from
  * AliAODTrack.
  */
- class AliEmcalAODHybridTrackCuts : public AliVCuts {
+ class AliEmcalAODHybridTrackCuts : public AliEmcalCutBase {
  public:
 
   /**
@@ -70,10 +70,9 @@ namespace EMCAL {
    * @brief Run track selection of hybrid tracks
    * 
    * @param o Object (AliAODTrack) to be tested
-   * @return true Track is an AliAODTrack and a hybrid track
-   * @return false Track is not an AliAODTrack or not a hybrid track
+   * @return Track selection result with the selection status and the hybrid track type
    */
-  virtual bool IsSelected(TObject *o);
+  virtual AliEmcalTrackSelResultPtr IsSelected(TObject *o);
 
   /**
    * @brief Switch on/off selection of hybrid tracks without ITSrefit
@@ -85,8 +84,20 @@ namespace EMCAL {
    */
   void SetSelectNonITSrefitTracks(bool doReject) { fSelectNonITSrefitTracks = doReject; }
 
+  /**
+   * @brief Set the filterbits used to distinguish the different hybrid track types
+   * 
+   * @param globalfilterbit Filterbit for global hybrid tracks
+   * @param constrainedfilterbit Filterbit for constrained hybrid tracks (+ non-refit hybrid tracks if available)
+   */
+  void SetHybridFilterBits(Int_t globalfilterbit, Int_t constrainedfilterbit) {
+    fHybridFilterBits[0] = globalfilterbit;
+    fHybridFilterBits[1] = constrainedfilterbit;
+  }
+
 private:
   Bool_t                            fSelectNonITSrefitTracks;  ///< Select non-refit tracks
+  Int_t                             fHybridFilterBits[2];      ///< Bit numbers for various hybrid filter bits
 
   /// \cond CLASSIMP
   ClassDef(AliEmcalAODHybridTrackCuts, 1);
