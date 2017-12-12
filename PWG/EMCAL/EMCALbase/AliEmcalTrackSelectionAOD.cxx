@@ -22,10 +22,11 @@
 #include "AliAODTrack.h"
 #include "AliEmcalAODFilterBitCuts.h"
 #include "AliEmcalAODHybridTrackCuts.h"
+#include "AliEmcalAODTPCOnlyTrackCuts.h"
 #include "AliEmcalCutBase.h"
 #include "AliEmcalTrackSelResultCombined.h"
 #include "AliEmcalTrackSelectionAOD.h"
-#include "AliESDtrack.h"
+#include "AliEmcalVCutsWrapper.h"
 #include "AliESDtrackCuts.h"
 #include "AliPicoTrack.h"
 
@@ -34,34 +35,24 @@ ClassImp(AliEmcalTrackSelectionAOD)
 /// \endcond
 
 AliEmcalTrackSelectionAOD::AliEmcalTrackSelectionAOD() :
-	AliEmcalTrackSelection(),
-	fFilterBits(0),
-	fFilterHybridTracks(kFALSE),
-	fFilterTPCTracks(kFALSE)
+	AliEmcalTrackSelection()
 {
-  fHybridFilterBits[0] = -1;
-  fHybridFilterBits[1] = -1;
 }
 
 AliEmcalTrackSelectionAOD::AliEmcalTrackSelectionAOD(AliVCuts* cuts, UInt_t filterbits):
-	AliEmcalTrackSelection(),
-	fFilterBits(filterbits),
-  fFilterHybridTracks(kFALSE),
-  fFilterTPCTracks(kFALSE)
+	AliEmcalTrackSelection()
 {
-  fHybridFilterBits[0] = -1;
-  fHybridFilterBits[1] = -1;
   if(cuts) AddTrackCuts(cuts);
+  if(filterbits) {
+    auto filterbitcuts = new PWG::EMCAL::AliEmcalAODFilterBitCuts("filterbitcuts", "AOD filter bit cuts");
+    filterbitcuts->SetFilterBits(filterbits, true);
+    AddTrackCuts(filterbitcuts);
+  }
 }
 
 AliEmcalTrackSelectionAOD::AliEmcalTrackSelectionAOD(ETrackFilterType_t type, const char* period):
-  AliEmcalTrackSelection(),
-  fFilterBits(0),
-  fFilterHybridTracks(kFALSE),
-  fFilterTPCTracks(kFALSE)
+  AliEmcalTrackSelection()
 {
-  fHybridFilterBits[0] = -1;
-  fHybridFilterBits[1] = -1;
   GenerateTrackCuts(type, period);
 }
 
@@ -69,31 +60,27 @@ void AliEmcalTrackSelectionAOD::GenerateTrackCuts(ETrackFilterType_t type, const
 {
   switch (type) {
   case kHybridTracks:
-    if (fListOfCuts) fListOfCuts->Clear();
-    fFilterBits = 0;
-    fFilterHybridTracks = kTRUE;
-    fFilterTPCTracks = kFALSE;
-    GetHybridFilterBits(fHybridFilterBits, period);
-    fSelectionModeAny = kTRUE;
-    break;
+    {
+      auto hybridcuts = new PWG::EMCAL::AliEmcalAODHybridTrackCuts("hybridcuts");
+      Char_t hybridbits[2];
+      GetHybridFilterBits(hybridbits, period);
+      hybridcuts->SetHybridFilterBits(hybridbits[0], hybridbits[1]);
+      AddTrackCuts(hybridcuts);
+      break;
+    }
 
   case kTPCOnlyTracks:
-    if (fListOfCuts) fListOfCuts->Clear();
-    fFilterBits = 0;
-    fFilterHybridTracks = kFALSE;
-    fHybridFilterBits[0] = -1;
-    fHybridFilterBits[1] = -1;
-    fFilterTPCTracks = kTRUE;
-    break;
+    {
+      AddTrackCuts(new PWG::EMCAL::AliEmcalAODTPCOnlyTrackCuts("tpconlycuts", "hybrid track cuts for TPC only tracks"));
+      break;
+    }
 
   case AliEmcalTrackSelection::kITSPureTracks:
-    if (fListOfCuts) fListOfCuts->Clear();
-    AddTrackCuts(AliESDtrackCuts::GetStandardITSSATrackCuts2010());
-    fFilterHybridTracks = kFALSE;
-    fFilterTPCTracks = kFALSE;
-    fHybridFilterBits[0] = -1;
-    fHybridFilterBits[1] = -1;
-    break;
+    {
+      if (fListOfCuts) fListOfCuts->Clear();
+      AddTrackCuts(AliESDtrackCuts::GetStandardITSSATrackCuts2010());
+      break;
+    }
 
   case kHybridTracks2010wNoRefit:
     {
@@ -152,37 +139,6 @@ PWG::EMCAL::AliEmcalTrackSelResultPtr AliEmcalTrackSelectionAOD::IsTrackAccepted
   trackbitmap.ResetAllBits();
   UInt_t cutcounter(0);
   std::vector<PWG::EMCAL::AliEmcalTrackSelResultPtr> selectionStatus;
-  if (fFilterBits) {
-    if(aodt->TestFilterBit(fFilterBits)) {
-      trackbitmap.SetBitNumber(cutcounter);
-      selectionStatus.emplace_back(PWG::EMCAL::AliEmcalTrackSelResultPtr(aodt, kTRUE));
-    } else {
-      selectionStatus.emplace_back(PWG::EMCAL::AliEmcalTrackSelResultPtr(aodt, kFALSE));
-    }
-    cutcounter++;
-  }
-  if (fFilterHybridTracks) {
-    if (aodt->IsHybridGlobalConstrainedGlobal()) {
-      // If the hybrid filter bits are not provided (fHybridFilterBits[0] == 0) all hybrid tracks will be selected in the same group
-      if (fHybridFilterBits[0] < 0 || aodt->TestFilterBit(BIT(fHybridFilterBits[0]))) {
-        selectionStatus.emplace_back(PWG::EMCAL::AliEmcalTrackSelResultPtr(aodt, kTRUE));
-        trackbitmap.SetBitNumber(cutcounter);
-      } else {
-        selectionStatus.emplace_back(PWG::EMCAL::AliEmcalTrackSelResultPtr(aodt, kFALSE));
-      } 
-      if (aodt->TestFilterBit(BIT(fHybridFilterBits[1]))) trackbitmap.SetBitNumber(cutcounter+1);
-    }
-    cutcounter += 2;
-  }
-  if (fFilterTPCTracks) {
-    if(aodt->IsHybridTPCConstrainedGlobal()) {
-      selectionStatus.emplace_back(PWG::EMCAL::AliEmcalTrackSelResultPtr(aodt, kTRUE));
-      trackbitmap.SetBitNumber(cutcounter);
-    } else {
-      selectionStatus.emplace_back(PWG::EMCAL::AliEmcalTrackSelResultPtr(aodt, kTRUE));
-    }
-    cutcounter++;
-  }
   if (fListOfCuts) {
     for (auto cutIter : *fListOfCuts){
       PWG::EMCAL::AliEmcalCutBase *trackCuts = static_cast<PWG::EMCAL::AliEmcalCutBase*>(static_cast<AliEmcalManagedObject *>(cutIter)->GetObject());
@@ -203,6 +159,25 @@ PWG::EMCAL::AliEmcalTrackSelResultPtr AliEmcalTrackSelectionAOD::IsTrackAccepted
     result.SetSelectionResult(trackbitmap.CountBits() == cutcounter);
   }
   return result;
+}
+
+void AliEmcalTrackSelectionAOD::AddFilterBit(UInt_t filterbits){
+  PWG::EMCAL::AliEmcalAODFilterBitCuts *filtercuts = nullptr;
+  // Find existing filter bit cuts
+  for(auto c : *fListOfCuts) {
+    if(auto vcutswrapper = dynamic_cast<PWG::EMCAL::AliEmcalVCutsWrapper*>(c)) {
+      if(auto aodcuts = dynamic_cast<PWG::EMCAL::AliEmcalAODFilterBitCuts *>(vcutswrapper->GetCutObject())){
+        filtercuts = aodcuts;
+        break;
+      }
+    }
+  }
+  if(filtercuts) filtercuts->SetFilterBits(filterbits, false);
+  else {
+    filtercuts = new PWG::EMCAL::AliEmcalAODFilterBitCuts("filterbitcuts", "AOD filter bit cuts");
+    filtercuts->SetFilterBits(filterbits, kTRUE);
+    AddTrackCuts(filtercuts);
+  }
 }
 
 Bool_t AliEmcalTrackSelectionAOD::GetHybridFilterBits(Char_t bits[], TString period)

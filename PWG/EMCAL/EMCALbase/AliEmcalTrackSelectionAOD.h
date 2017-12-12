@@ -4,7 +4,6 @@
  * See cxx source for full Copyright notice                               */
 
 #include <AliEmcalTrackSelection.h>
-#include "AliESDtrackCuts.h"
 #include "AliEmcalTrackSelResultPtr.h"
 
 class AliVCuts;
@@ -88,7 +87,7 @@ public:
 	 *
 	 * @param filterbits Filter bits used to select tracks
 	 */
-	void AddFilterBit(UInt_t filterbits) { fFilterBits |= filterbits; }
+	void AddFilterBit(UInt_t filterbits);
 
 	/**
 	 * @brief Returns the hybrid filter bits according to a hard-coded look-up table
@@ -99,10 +98,6 @@ public:
 	static Bool_t GetHybridFilterBits(Char_t bits[], TString period);
 
 private:
-	UInt_t			fFilterBits;				    ///< Track filter bits
-	Bool_t      fFilterHybridTracks;    ///< Filter hybrid tracks using AliAODTrack::IsHybridGlobalConstrainedGlobal
-	Bool_t      fFilterTPCTracks;       ///< Filter TPC-only tracks using AliAODTrack::IsHybridGlobalConstrainedGlobal
-	Char_t      fHybridFilterBits[2];   ///< Filter bits of hybrid tracks
 
 	/// \cond CLASSIMP
 	ClassDef(AliEmcalTrackSelectionAOD, 2);

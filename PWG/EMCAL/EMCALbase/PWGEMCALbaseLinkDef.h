@@ -41,6 +41,7 @@
 #pragma link C++ class PWG::EMCAL::AliEmcalCutBase+;
 #pragma link C++ class PWG::EMCAL::AliEmcalVCutsWrapper+;
 #pragma link C++ class PWG::EMCAL::AliEmcalAODHybridTrackCuts+;
+#pragma link C++ class PWG::EMCAL::AliEmcalAODTPCOnlyTrackCuts+;
 #pragma link C++ class PWG::EMCAL::AliEmcalESDHybridTrackCuts+;
 #pragma link C++ class PWG::EMCAL::AliEmcalESDtrackCutsWrapper+;
 #endif

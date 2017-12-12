@@ -41,6 +41,7 @@ set(SRCS
   AliEmcalVCutsWrapper.cxx
   AliEmcalAODFilterBitCuts.cxx
   AliEmcalAODHybridTrackCuts.cxx
+  AliEmcalAODTPCOnlyTrackCuts.cxx
   AliEmcalContainerUtils.cxx
   AliEmcalESDTrackCutsGenerator.cxx
   AliEmcalESDHybridTrackCuts.cxx
