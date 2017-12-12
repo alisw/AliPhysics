@@ -142,8 +142,6 @@ void AliPerformanceDCA::ProcessTPC(AliMCEvent* const mcev, AliVTrack *const vTra
   { 
     // Relate TPC inner params to prim. vertex
     const AliVVertex *vVertex = vEvent->GetPrimaryVertexTracks();
-    // AliESDVertex *vtxESD = NULL;
-    // if(vVertex) vtxESD = dynamic_cast<AliESDVertex*>(vVertex);
     Double_t x[3]; vTrack->GetXYZ(x);
     Double_t b[3]; AliTracker::GetBxByBz(x,b);
     Bool_t isOK = vTrack->RelateToVVertexTPCBxByBz(vVertex, b, kVeryBig);
@@ -160,13 +158,15 @@ void AliPerformanceDCA::ProcessTPC(AliMCEvent* const mcev, AliVTrack *const vTra
   // get TPC inner params at DCA to prim. vertex 
   const AliExternalTrackParam *etpTrack = vTrack->GetTPCInnerParam();
   if(!etpTrack) return;
+
   // read from V track
   Float_t dca[2] = {0.,0.}; // dca_xy, dca_z
   Float_t cov[3] = {0.,0.,0.}; // sigma_xy, sigma_xy_z, sigma_z
   vTrack->GetImpactParametersTPC(dca,cov);
 
   if (vTrack->GetTPCNcls()<fCutsRC.GetMinNClustersTPC()) return; // min. nb. TPC clusters  
-  Double_t vDCAHisto[5]={dca[0],dca[1],etpTrack->Eta(),etpTrack->Pt(),etpTrack->Phi()};
+ 
+Double_t vDCAHisto[5]={dca[0],dca[1],etpTrack->Eta(),etpTrack->Pt(),etpTrack->Phi()};
   fDCAHisto->Fill(vDCAHisto);
 
   //
@@ -187,8 +187,6 @@ void AliPerformanceDCA::ProcessTPCITS(AliMCEvent* const mcev, AliVTrack *const v
   { 
     // Relate TPC inner params to prim. vertex
     const AliVVertex *vVertex = vEvent->GetPrimaryVertexTracks();
-    // const AliESDVertex *vtxESD = NULL;
-    // if(vVertex) vtxESD = dynamic_cast<AliESDVertex*>(vVertex);
     Double_t x[3]; vTrack->GetXYZ(x);
     Double_t b[3]; AliTracker::GetBxByBz(x,b);
     Bool_t isOK = vTrack->RelateToVVertexTPCBxByBz(vVertex, b, kVeryBig);
@@ -201,12 +199,14 @@ void AliPerformanceDCA::ProcessTPCITS(AliMCEvent* const mcev, AliVTrack *const v
       }
     */
   }
+
   Float_t dca[2] = {0.,0.}; // dca_xy, dca_z
   Float_t cov[3] = {0.,0.,0.}; // sigma_xy, sigma_xy_z, sigma_z
   vTrack->GetImpactParameters(dca,cov);
-  if(vTrack->GetITSclusters(0)<fCutsRC.GetMinNClustersITS()) return;  // min. nb. ITS clusters
+
   if ((vTrack->GetStatus()&AliVTrack::kTPCrefit)==0) return; // TPC refit
   if (vTrack->GetTPCNcls()<fCutsRC.GetMinNClustersTPC()) return; // min. nb. TPC clusters  
+  if(vTrack->GetITSclusters(0)<fCutsRC.GetMinNClustersITS()) return;  // min. nb. ITS clusters
 
   Double_t vDCAHisto[5]={dca[0],dca[1],vTrack->Eta(),vTrack->Pt(),vTrack->Phi()};
   fDCAHisto->Fill(vDCAHisto);

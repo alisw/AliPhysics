@@ -241,7 +241,11 @@ void AliPerformanceDEdx::ProcessInnerTPC(AliMCEvent* const mcev, AliVTrack *cons
     AliExternalTrackParam trackParams;
     vTrack->GetTrackParam(trackParams);
     AliExternalTrackParam *etpTrack = &trackParams;
-    
+
+    AliExternalTrackParam innerTPCtrackParams;
+    vTrack->GetTrackParamTPCInner(innerTPCtrackParams);
+    AliExternalTrackParam* innerTPCparam = &innerTPCtrackParams;
+
     Double_t dca[2] = {0.,0.};
     Double_t cov[3] = {0.,0.,0.};
     if( IsUseTrackVertex() ) {
@@ -249,16 +253,18 @@ void AliPerformanceDEdx::ProcessInnerTPC(AliMCEvent* const mcev, AliVTrack *cons
         AliESDVertex vertex;
         vEvent->GetPrimaryVertex(vertex);
         const AliVVertex *vVertex = &vertex;
-        Double_t x[3];
-        etpTrack->GetXYZ(x);
-        Double_t b[3];
-        AliTracker::GetBxByBz(x,b);
+        Double_t x[3]; etpTrack->GetXYZ(x);
+        Double_t b[3]; AliTracker::GetBxByBz(x,b);
         Bool_t isOK=kFALSE;
         if(fabs(b[2])>0.000001)
-            isOK = etpTrack->PropagateToDCABxByBz(vVertex, b, kVeryBig,dca,cov);
+            isOK = innerTPCparam->RelateToVVertexBxByBzDCA(vVertex, b, kVeryBig, NULL, dca, cov);
         if(!isOK) return;
     }
     
+    AliExternalTrackParam innerTrackParams;
+    vTrack->GetTrackParamIp(innerTrackParams);
+    AliExternalTrackParam* innerParam = &innerTrackParams;
+
     if((vTrack->GetStatus()&AliVTrack::kTPCrefit)==0) return; // TPC refit
     
     //
@@ -280,16 +286,16 @@ void AliPerformanceDEdx::ProcessInnerTPC(AliMCEvent* const mcev, AliVTrack *cons
     Float_t nClsF = vTrack->GetTPCClusterInfo(2,0);
     
     
-    Double_t pt = etpTrack->Pt();
-    Double_t lam = TMath::ATan2(etpTrack->Pz(),etpTrack->Pt());
+    Double_t pt = innerParam->Pt();
+    Double_t lam = TMath::ATan2(innerParam->Pz(),innerParam->Pt());
     Double_t p = pt/TMath::Cos(lam);
     //Double_t alpha = innerParam->GetAlpha();
-    Double_t phi = TMath::ATan2(etpTrack->Py(),etpTrack->Px());
+    Double_t phi = TMath::ATan2(innerParam->Py(),innerParam->Px());
     //if(phi<0.) phi += 2.*TMath::Phi();
-    Double_t y = etpTrack->GetY();
-    Double_t z = etpTrack->GetZ();
-    Double_t snp = etpTrack->GetSnp();
-    Double_t tgl = etpTrack->GetTgl();
+    Double_t y = innerParam->GetY();
+    Double_t z = innerParam->GetZ();
+    Double_t snp = innerParam->GetSnp();
+    Double_t tgl = innerParam->GetTgl();
     
     //fill thnspars here coud add oroc mdedium long..............Atti
     //you should select which pad leng here
