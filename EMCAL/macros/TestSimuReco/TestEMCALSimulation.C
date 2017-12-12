@@ -50,7 +50,7 @@ void TestEMCALSimulation(Int_t nev =10, Bool_t raw = kFALSE)
   if(raw)  simulator.SetWriteRawData("EMCAL","raw.root",kTRUE);
   
   //OCDB settings
-  simulator.SetDefaultStorage("local://$ALICE_ROOT/OCDB");
+  simulator.SetDefaultStorage("local://$ALIROOT_OCDB_ROOT/OCDB");
   simulator.SetSpecificStorage("GRP/GRP/Data",
                                Form("local://%s",gSystem->pwd()));
   
