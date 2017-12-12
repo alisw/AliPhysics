@@ -37,21 +37,25 @@ AliAnalysisTaskSE* AddTaskForwardFlowRun2()
   const char* name = Form("ForwardFlowQC");
   AliForwardFlowRun2Task* task = new AliForwardFlowRun2Task(name);
   
-  //AliForwardNUATask* task = new AliForwardNUATask(name);
-
   TString resName = "awesome";
 
   task->fSettings.doNUA = doNUA;
 
-
-
   if (task->fSettings.doNUA){
-      TFile* file = new TFile("/home/thoresen/Documents/PhD/Analysis/nua.root");     
-      file->GetObject("nuacentral", task->fSettings.nuacentral);   
-      task->fSettings.nuacentral->SetDirectory(0);
-      file->GetObject("nuaforward", task->fSettings.nuaforward);   
-      task->fSettings.nuaforward->SetDirectory(0);
-      file->Close(); 
+
+    TString nua_filepath = std::getenv("NUA_FILE");
+    if (!nua_filepath) {
+      nua_filepath = "/home/thoresen/Documents/PhD/Analysis/nua.root"
+      std::cerr << "Environment variable 'NUA_FILE' not found (this should be a path to nua.root).\n";
+      std::cerr << "   Using default value: '" << nua_filepath << "'\n";
+    }
+    TFile *file = new TFile(nua_filepath);
+
+    file->GetObject("nuacentral", task->fSettings.nuacentral);   
+    task->fSettings.nuacentral->SetDirectory(0);
+    file->GetObject("nuaforward", task->fSettings.nuaforward);   
+    task->fSettings.nuaforward->SetDirectory(0);
+    file->Close(); 
   }
 
 

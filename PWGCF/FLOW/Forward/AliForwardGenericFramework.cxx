@@ -32,18 +32,6 @@ AliForwardGenericFramework::AliForwardGenericFramework()
   //fAutoRef = TH1F("fAutoRef","fAutoRef", 1, -4.0, 6.0);
   //fAutoDiff = TH1F("fAutoDiff","fAutoDiff", fSettings.fNDiffEtaBins, -4.0, 6.0);
   useEvent = true;
-
-/*
-  Int_t dimensions = 4;
-  Int_t dcorrbins[4] = {6, 1} ; // kind, n, p, eta
-  Int_t rcorrbins[4] = {6, 24} ; // kind, n, p, eta
-  Double_t xmin[4] = {-1.0, 0, 0, -5.0};
-  Double_t xmax[4] = { 1,   6, 5,  5.0};
-
-  fQcorrfactor = new THnD("fQcorrfactor", "fQcorrfactor", corrdimensions, rcorrbins, cxmin, cxmax);
-  fpcorrfactor = new THnD("fpcorrfactor", "fpcorrfactor", corrdimensions, dcorrbins, cxmin, cxmax);
-  fqcorrfactor = new THnD("fqcorrfactor", "fqcorrfactor", corrdimensions, dcorrbins, cxmin, cxmax);
-*/
 }
 
 
