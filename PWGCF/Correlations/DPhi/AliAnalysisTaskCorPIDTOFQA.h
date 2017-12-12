@@ -33,7 +33,7 @@ class AliAnalysisTaskCorPIDTOFQA : public AliAnalysisTaskSE
 	TF1 *fit_deut_curve   = new TF1("fit_m_mean",   "[0] + [1]*x + [2]/sqrt(x)",  1.0, 4.4);
 
 	Double_t cut_width    = 2.0;
-	short    do_lead_only = 0;     // 0 = all,  1 = only leading
+	short    do_lead_only = 1;     // 0 = all,  1 = only leading
 
 	Float_t pio2   = TMath::PiOver2();
 	Float_t twopi  = TMath::TwoPi();
