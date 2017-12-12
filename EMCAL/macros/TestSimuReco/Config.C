@@ -3,7 +3,6 @@
 /// \ingroup EMCAL_TestSimRec
 /// \brief Single particle simulation configuration macro.
 ///
-/// 
 /// Example of configuration for particle (photon) 
 /// simulation in EMCal/DCal acceptance.
 /// Include only EMCAL in this example, 
@@ -11,57 +10,73 @@
 ///
 /// Example for the configuration needed for different years provided.
 ///
-/// One can use the configuration macro in compiled mode by
-/// root [0] gSystem->Load("libgeant321");
-/// root [0] gSystem->SetIncludePath("-I$ROOTSYS/include -I$ALICE_ROOT/include\
-///                   -I$ALICE_ROOT -I$ALICE/geant3/TGeant3");
-/// root [0] .x grun.C(1,"Config.C++")
+/// In order to execute this configuration you can do 
+///    * Root5: aliroot -q -b -l $ALICE_ROOT/EMCAL/macros/TestSimuReco/TestEMCALSimulation.C
+///    * Root6: aliroot -q -b -l $ALICE_ROOT/EMCAL/macros/TestSimuReco/LoadLibForConfig.C $ALICE_ROOT/EMCAL/macros/TestSimuReco/TestEMCALSimulation.C
+///
+/// Or directly in the root prompt 
+///    root [1] .x LoadLibForConfig.C //Root6
+///    root [2] .x TestEMCALSimulation.C
+///
+/// In order to find all the included classes one should add to the rootlogon.C file some paths
+/// gSystem->SetIncludePath("-I$ROOTSYS/include -I$ALICE_ROOT/  -I$ALICE_ROOT/include -I$ALICE_ROOT/ANALYSIS/macros -I$ALICE_ROOT/STEER -I$ALICE_ROOT/STEER/STEER -I$GEANT3DIR/include -I$GEANT3DIR/include/TGeant3");
+/// or do it in the root prompt before execution.
 ///
 /// \author : Gustavo Conesa Balbastre <Gustavo.Conesa.Balbastre@cern.ch>, (LPSC-CNRS), 
 /// just the particle configuration and EMCal stuff.
 ///
 
 #if !defined(__CINT__) || defined(__MAKECINT__)
+
 #include <Riostream.h>
 #include <TPDGCode.h>
 #include <TRandom.h>
 #include <TSystem.h>
 #include <TVirtualMC.h>
 #include <TGeant3TGeo.h>
-#include "STEER/AliRunLoader.h"
-#include "STEER/AliRun.h"
-#include "STEER/AliConfig.h"
-#include "PYTHIA6/AliDecayerPythia.h"
-#include "EVGEN/AliGenCocktail.h"
-#include "EVGEN/AliGenHIJINGpara.h"
-#include "STEER/AliMagF.h"
-#include "STRUCT/AliBODY.h"
-#include "STRUCT/AliMAG.h"
-#include "STRUCT/AliABSOv3.h"
-#include "STRUCT/AliDIPOv3.h"
-#include "STRUCT/AliHALLv3.h"
-#include "STRUCT/AliFRAMEv2.h"
-#include "STRUCT/AliSHILv3.h"
-#include "STRUCT/AliPIPEv3.h"
-#include "ITS/AliITSv11.h"
-#include "TPC/AliTPCv2.h"
-#include "TOF/AliTOFv6T0.h"
-#include "HMPID/AliHMPIDv2.h"
-#include "ZDC/AliZDCv3.h"
-#include "TRD/AliTRDv1.h"
-#include "FMD/AliFMDv1.h"
-#include "MUON/AliMUONv1.h"
-#include "PHOS/AliPHOSv1.h"
-#include "PMD/AliPMDv1.h"
-#include "T0/AliT0v1.h"
-#include "EMCAL/AliEMCALv2.h"
-#include "ACORDE/AliACORDEv1.h"
-#include "VZERO/AliVZEROv7.h"
+#include <TGeoGlobalMagField.h>
+
+#include "AliRunLoader.h"
+#include "AliRun.h"
+#include "AliConfig.h"
+#include "AliDecayerPythia.h"
+#include "AliGenCocktail.h"
+#include "AliGenHIJINGpara.h"
+#include "AliSimulation.h"
+#include "AliGenParam.h"
+#include "AliGenBox.h"
+#include "AliGenPHOSlib.h"
+
+#include "AliMagF.h"
+#include "AliBODY.h"
+#include "AliMAG.h"
+#include "AliABSOv3.h"
+#include "AliDIPOv3.h"
+#include "AliHALLv3.h"
+#include "AliFRAMEv2.h"
+#include "AliSHILv3.h"
+#include "AliPIPEv3.h"
+#include "AliITSv11.h"
+#include "AliTPCv2.h"
+#include "AliTOFv6T0.h"
+#include "AliHMPIDv3.h"
+#include "AliZDCv3.h"
+#include "AliTRDv1.h"
+#include "AliTRDgeometry.h"
+#include "AliFMDv1.h"
+#include "AliMUONv1.h"
+#include "AliPHOSv1.h"
+#include "AliPMDv1.h"
+#include "AliT0v1.h"
+#include "AliEMCALv2.h"
+#include "AliACORDEv1.h"
+#include "AliVZEROv7.h"
+
 #endif
 
 Float_t EtaToTheta(Float_t arg);
 
-void    LoadPythia();
+void    LoadLibs();
 
 AliGenerator *GenParamCalo(Int_t nPart, Int_t type, TString calo);
 
@@ -75,9 +90,6 @@ void Config()
 {
   //AliLog::SetGlobalDebugLevel(2);
   
-  // ThetaRange is (0., 180.). It was (0.28,179.72) 7/12/00 09:00
-  // Theta range given through pseudorapidity limits 22/6/2001
-  
   // Set Random Number seed
   //gRandom->SetSeed(123456); // Set 0 to use the current time
   
@@ -85,21 +97,15 @@ void Config()
                   Form("Seed for random number generation = %d",gRandom->GetSeed()), 
                   "Config.C", "Config.C", "Config()","Config.C", __LINE__);
   
-  // Load Pythia libraries                                        
-  LoadPythia();
+  LoadLibs();
   
-  // libraries required by geant321
-#if defined(__CINT__)
-  gSystem->Load("libgeant321");
-#endif
+  new TGeant3TGeo("C++ Interface to Geant3");
+    
+  AliLog::Message(AliLog::kInfo, 
+                  "Creating Run Loader", 
+                  "Config.C", "Config.C", "Config()"," Config.C", __LINE__);
   
-  new     TGeant3TGeo("C++ Interface to Geant3");
-  
-  AliRunLoader* rl=0x0;
-  
-  AliLog::Message(AliLog::kInfo, "Creating Run Loader", "Config.C", "Config.C", "Config()"," Config.C", __LINE__);
-  
-  rl = AliRunLoader::Open("galice.root",
+  AliRunLoader* rl = AliRunLoader::Open("galice.root",
                           AliConfig::GetDefaultEventFolderName(),
                           "recreate");
   if (rl == 0x0)
@@ -452,16 +458,21 @@ Float_t EtaToTheta(Float_t arg)
 }
 
 ///
-/// Load phythia libraries
+/// Load needed libraries
+/// This works for Root5, in Root6, load before the external macro
 ///
-void LoadPythia()
+void LoadLibs()
 {
+#if defined(__CINT__)
   // Load Pythia related libraries                                                                
   gSystem->Load("liblhapdf");      // Parton density functions                                 
   gSystem->Load("libEGPythia6");   // TGenerator interface                                     
   gSystem->Load("libpythia6");     // Pythia                                                   
   gSystem->Load("libAliPythia6");  // ALICE specific
-  // implementations                           
+
+  // Load Geant3 related libraries                                                                
+  gSystem->Load("libgeant321");
+#endif
 }
 
 ///
