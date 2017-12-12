@@ -739,8 +739,8 @@ AliAnalysisTaskEmcalJetSubstructureTree *AliAnalysisTaskEmcalJetSubstructureTree
   TString outputfile = mgr->GetCommonFileName();
   outputfile += TString::Format(":JetSubstructure_R%02d_%s", int(jetradius * 10.), trigger);
   mgr->ConnectInput(treemaker, 0, mgr->GetCommonInputContainer());
-  mgr->ConnectOutput(treemaker, 1, mgr->CreateContainer("JetSubstructureHistos_" + TString::Format("R%0d_", int(jetradius * 10.)) + trigger, AliEmcalList::Class(), AliAnalysisManager::kOutputContainer, outputfile));
-  mgr->ConnectOutput(treemaker, 2, mgr->CreateContainer("JetSubstuctureTree_" + TString::Format("R%0d_", int(jetradius * 10.)) + trigger, TTree::Class(), AliAnalysisManager::kOutputContainer, mgr->GetCommonFileName()));
+  mgr->ConnectOutput(treemaker, 1, mgr->CreateContainer("JetSubstructureHistos_" + TString::Format("R%02d_", int(jetradius * 10.)) + trigger, AliEmcalList::Class(), AliAnalysisManager::kOutputContainer, outputfile));
+  mgr->ConnectOutput(treemaker, 2, mgr->CreateContainer("JetSubstructureTree_" + TString::Format("R%02d_", int(jetradius * 10.)) + trigger, TTree::Class(), AliAnalysisManager::kOutputContainer, mgr->GetCommonFileName()));
 
   return treemaker;
 }
