@@ -127,7 +127,8 @@ PWG::EMCAL::AliEmcalTrackSelResultPtr AliEmcalTrackSelectionESD::IsTrackAccepted
     }
   }
 
-  fTrackBitmap.ResetAllBits();
+  TBits trackbitmap(64);
+  trackbitmap.ResetAllBits();
   UInt_t cutcounter = 0;
   AliDebugStream(2) << "Found cut array with " << fListOfCuts->GetEntries() << " cuts\n" << std::endl;
   std::vector<PWG::EMCAL::AliEmcalTrackSelResultPtr> selectionStatus;
@@ -135,15 +136,15 @@ PWG::EMCAL::AliEmcalTrackSelResultPtr AliEmcalTrackSelectionESD::IsTrackAccepted
     AliDebugStream(3) << "executing nect cut: " << static_cast<AliVCuts *>(static_cast<AliEmcalManagedObject *>(cutIter)->GetObject())->GetName() << std::endl;
     PWG::EMCAL::AliEmcalCutBase *mycuts = static_cast<PWG::EMCAL::AliEmcalCutBase *>(static_cast<AliEmcalManagedObject *>(cutIter)->GetObject());
     PWG::EMCAL::AliEmcalTrackSelResultPtr selresult = mycuts->IsSelected(esdt);
-    if(selresult) fTrackBitmap.SetBitNumber(cutcounter);
+    if(selresult) trackbitmap.SetBitNumber(cutcounter);
     cutcounter++;
   }
   // In case of ANY at least one bit has to be set, while in case of ALL all bits have to be set
   PWG::EMCAL::AliEmcalTrackSelResultPtr result(esdt, kFALSE, new PWG::EMCAL::AliEmcalTrackSelResultCombined(selectionStatus));
   if (fSelectionModeAny){
-    result.SetSelectionResult(fTrackBitmap.CountBits() > 0 || cutcounter == 0);
+    result.SetSelectionResult(trackbitmap.CountBits() > 0 || cutcounter == 0);
   } else {
-    result.SetSelectionResult(fTrackBitmap.CountBits() == cutcounter);
+    result.SetSelectionResult(trackbitmap.CountBits() == cutcounter);
   }
   return result;
 }

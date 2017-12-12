@@ -287,18 +287,6 @@ public:
 	PWG::EMCAL::AliEmcalCutBase *GetTrackCuts(Int_t icut);
 
 	/**
-	 * @brief Get selection bitmap for the last handled track
-	 * @return Track selection bitmap of the last handled track
-	 */
-	const TBits& GetTrackBitmap() const { return fTrackBitmap; }
-
-	/**
-	 * Get selection bitmaps of all accepted tracks
-	 * @return Bitmaps of all selected tracks
-	 */
-	const TClonesArray* GetAcceptedTrackBitmaps() const { return fListOfTrackBitmaps; }
-
-	/**
 	 * @brief Set selection mode to any
 	 *
 	 * In this case tracks are accepted if any of the
@@ -322,8 +310,6 @@ public:
 
 protected:
 	TObjArray    *fListOfTracks;         ///< TObjArray with accepted tracks
-	TClonesArray *fListOfTrackBitmaps;   ///< TClonesArray with accepted tracks' bit maps
-	TBits         fTrackBitmap;          ///< Bitmap of last accepted/rejected track
 	TObjArray    *fListOfCuts;           ///< List of track cut objects
 	Bool_t        fSelectionModeAny;     ///< Accept track if any of the cuts is fulfilled
 

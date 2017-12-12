@@ -32,8 +32,6 @@ ClassImp(AliEmcalTrackSelection)
 AliEmcalTrackSelection::AliEmcalTrackSelection() :
 	TObject(),
 	fListOfTracks(NULL),
-  fListOfTrackBitmaps(NULL),
-  fTrackBitmap(64),
 	fListOfCuts(NULL),
 	fSelectionModeAny(kFALSE)
 {
@@ -42,13 +40,10 @@ AliEmcalTrackSelection::AliEmcalTrackSelection() :
 AliEmcalTrackSelection::AliEmcalTrackSelection(const AliEmcalTrackSelection& ref):
 	TObject(ref),
 	fListOfTracks(NULL),
-	fListOfTrackBitmaps(NULL),
-	fTrackBitmap(64),
 	fListOfCuts(NULL),
 	fSelectionModeAny(kFALSE)
 {
 	if(ref.fListOfTracks) fListOfTracks = new TObjArray(*(ref.fListOfTracks));
-	if(ref.fListOfTrackBitmaps) fListOfTrackBitmaps = new TClonesArray(*(ref.fListOfTrackBitmaps));
 	if(ref.fListOfCuts){
 	  fListOfCuts = new TObjArray;
 	  fListOfCuts->SetOwner(true); // Ownership handled object-by-object by the smart pointer
@@ -62,7 +57,6 @@ AliEmcalTrackSelection& AliEmcalTrackSelection::operator=(const AliEmcalTrackSel
 	if(this != &ref){
 		this->~AliEmcalTrackSelection();
 		if(ref.fListOfTracks) fListOfTracks = new TObjArray(*(ref.fListOfTracks));
-		if(ref.fListOfTrackBitmaps) fListOfTrackBitmaps = new TClonesArray(*(ref.fListOfTrackBitmaps));
 		if(ref.fListOfCuts){
 		  fListOfCuts = new TObjArray;
 		  fListOfCuts->SetOwner(true);  // Ownership handled object-by-object by the smart pointer
@@ -75,7 +69,6 @@ AliEmcalTrackSelection& AliEmcalTrackSelection::operator=(const AliEmcalTrackSel
 
 AliEmcalTrackSelection::~AliEmcalTrackSelection() {
 	if(fListOfTracks) delete fListOfTracks;
-	if(fListOfTrackBitmaps) delete fListOfTrackBitmaps;
 	if(fListOfCuts) delete fListOfCuts;
 }
 
@@ -137,24 +130,12 @@ TObjArray* AliEmcalTrackSelection::GetAcceptedTracks(const TClonesArray* const t
     fListOfTracks->Clear();
   }
 
-  if (!fListOfTrackBitmaps) {
-    fListOfTrackBitmaps = new TClonesArray("TBits", 1000);
-    fListOfTrackBitmaps->SetOwner(kTRUE);
-  }
-  else {
-    fListOfTrackBitmaps->Delete();
-  }
-
-  TIter next(tracks);
-  AliVTrack* track = 0;
-  Int_t i = 0;
-  while((track = static_cast<AliVTrack*>(next()))) {
+  for(auto mytrack : *tracks) {
+    AliVTrack *track = static_cast<AliVTrack *>(mytrack);
     PWG::EMCAL::AliEmcalTrackSelResultPtr selectionResult = IsTrackAccepted(track);
     if(selectionResult) {
       fListOfTracks->AddLast(new PWG::EMCAL::AliEmcalTrackSelResultPtr(selectionResult));
     }
-    new ((*fListOfTrackBitmaps)[i]) TBits(fTrackBitmap);
-    i++;
   }
   return fListOfTracks;
 }
@@ -168,20 +149,11 @@ TObjArray* AliEmcalTrackSelection::GetAcceptedTracks(const AliVEvent* const even
     fListOfTracks->Clear();
   }
 
-  if (!fListOfTrackBitmaps) {
-    fListOfTrackBitmaps = new TClonesArray("TBits", 1000);
-    fListOfTrackBitmaps->SetOwner(kTRUE);
-  }
-  else {
-    fListOfTrackBitmaps->Delete();
-  }
-
   for(int itrk = 0; itrk < event->GetNumberOfTracks(); itrk++){
     AliVTrack *trk = static_cast<AliVTrack*>(event->GetTrack(itrk));
     PWG::EMCAL::AliEmcalTrackSelResultPtr selectionStatus = IsTrackAccepted(trk);
     if(selectionStatus)
       fListOfTracks->AddLast(new PWG::EMCAL::AliEmcalTrackSelResultPtr(selectionStatus));
-    new ((*fListOfTrackBitmaps)[itrk]) TBits(fTrackBitmap);
   }
   return fListOfTracks;
 }

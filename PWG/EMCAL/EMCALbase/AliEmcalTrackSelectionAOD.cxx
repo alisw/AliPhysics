@@ -148,12 +148,13 @@ PWG::EMCAL::AliEmcalTrackSelResultPtr AliEmcalTrackSelectionAOD::IsTrackAccepted
     return PWG::EMCAL::AliEmcalTrackSelResultPtr(nullptr, kFALSE);
   }
 
-  fTrackBitmap.ResetAllBits();
+  TBits trackbitmap(64);
+  trackbitmap.ResetAllBits();
   UInt_t cutcounter(0);
   std::vector<PWG::EMCAL::AliEmcalTrackSelResultPtr> selectionStatus;
   if (fFilterBits) {
     if(aodt->TestFilterBit(fFilterBits)) {
-      fTrackBitmap.SetBitNumber(cutcounter);
+      trackbitmap.SetBitNumber(cutcounter);
       selectionStatus.emplace_back(PWG::EMCAL::AliEmcalTrackSelResultPtr(aodt, kTRUE));
     } else {
       selectionStatus.emplace_back(PWG::EMCAL::AliEmcalTrackSelResultPtr(aodt, kFALSE));
@@ -165,18 +166,18 @@ PWG::EMCAL::AliEmcalTrackSelResultPtr AliEmcalTrackSelectionAOD::IsTrackAccepted
       // If the hybrid filter bits are not provided (fHybridFilterBits[0] == 0) all hybrid tracks will be selected in the same group
       if (fHybridFilterBits[0] < 0 || aodt->TestFilterBit(BIT(fHybridFilterBits[0]))) {
         selectionStatus.emplace_back(PWG::EMCAL::AliEmcalTrackSelResultPtr(aodt, kTRUE));
-        fTrackBitmap.SetBitNumber(cutcounter);
+        trackbitmap.SetBitNumber(cutcounter);
       } else {
         selectionStatus.emplace_back(PWG::EMCAL::AliEmcalTrackSelResultPtr(aodt, kFALSE));
       } 
-      if (aodt->TestFilterBit(BIT(fHybridFilterBits[1]))) fTrackBitmap.SetBitNumber(cutcounter+1);
+      if (aodt->TestFilterBit(BIT(fHybridFilterBits[1]))) trackbitmap.SetBitNumber(cutcounter+1);
     }
     cutcounter += 2;
   }
   if (fFilterTPCTracks) {
     if(aodt->IsHybridTPCConstrainedGlobal()) {
       selectionStatus.emplace_back(PWG::EMCAL::AliEmcalTrackSelResultPtr(aodt, kTRUE));
-      fTrackBitmap.SetBitNumber(cutcounter);
+      trackbitmap.SetBitNumber(cutcounter);
     } else {
       selectionStatus.emplace_back(PWG::EMCAL::AliEmcalTrackSelResultPtr(aodt, kTRUE));
     }
@@ -186,7 +187,7 @@ PWG::EMCAL::AliEmcalTrackSelResultPtr AliEmcalTrackSelectionAOD::IsTrackAccepted
     for (auto cutIter : *fListOfCuts){
       PWG::EMCAL::AliEmcalCutBase *trackCuts = static_cast<PWG::EMCAL::AliEmcalCutBase*>(static_cast<AliEmcalManagedObject *>(cutIter)->GetObject());
       PWG::EMCAL::AliEmcalTrackSelResultPtr cutresults = trackCuts->IsSelected(aodt);
-      if (cutresults) fTrackBitmap.SetBitNumber(cutcounter);
+      if (cutresults) trackbitmap.SetBitNumber(cutcounter);
       selectionStatus.emplace_back(cutresults);
       cutcounter++;
     }
@@ -195,11 +196,11 @@ PWG::EMCAL::AliEmcalTrackSelResultPtr AliEmcalTrackSelectionAOD::IsTrackAccepted
   PWG::EMCAL::AliEmcalTrackSelResultPtr result(aodt, kFALSE, new PWG::EMCAL::AliEmcalTrackSelResultCombined(selectionStatus));
   if (fSelectionModeAny){
     // In case of ANY one of the cuts need to be fulfilled (equivalent to one but set)
-    result.SetSelectionResult(fTrackBitmap.CountBits() > 0 || cutcounter == 0);
+    result.SetSelectionResult(trackbitmap.CountBits() > 0 || cutcounter == 0);
   }
   else {
     // In case of ALL all of the cuts need to be fulfilled (equivalent to all bits set)
-    result.SetSelectionResult(fTrackBitmap.CountBits() == cutcounter);
+    result.SetSelectionResult(trackbitmap.CountBits() == cutcounter);
   }
   return result;
 }
