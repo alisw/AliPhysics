@@ -86,7 +86,8 @@ Bool_t ConfigPhiPP13TeV_PID
     for(j=1;j<=10;j++){multbins[nmult]=0.1*j; nmult++;}
   }else{
     for(j=0;j<10;j++){multbins[nmult]=0.1*j; nmult++;}
-    for(j=1;j<=100;j++){multbins[nmult]=j; nmult++;}
+    for(j=1;j<10;j++){multbins[nmult]=j; nmult++;}
+    for(j=2;j<=20;j++){multbins[nmult]=5.*j; nmult++;}
   }
   
   // -- Create all needed outputs -----------------------------------------------------------------
