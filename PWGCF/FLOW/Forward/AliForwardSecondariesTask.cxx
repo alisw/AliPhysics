@@ -269,7 +269,7 @@ AliForwardSecondariesTask::AliForwardSecondariesTask() : AliAnalysisTaskSE(),
       Int_t dbins[5] = {fSettings.fnoSamples, fSettings.fNZvtxBins, fSettings.fNDiffEtaBins, fSettings.fCentBins, fSettings.kSinphi1phi2phi3p+1} ;
       Int_t rbins[5] = {fSettings.fnoSamples, fSettings.fNZvtxBins, fSettings.fNRefEtaBins, fSettings.fCentBins, fSettings.kSinphi1phi2phi3p+1} ;
       Double_t xmin[5] = {0,fSettings.fZVtxAcceptanceLowEdge, -6.0, 0, 0};
-      Double_t xmax[5] = {10,fSettings.fZVtxAcceptanceUpEdge, 6, 100, fSettings.kSinphi1phi2phi3p+1};
+      Double_t xmax[5] = {10,fSettings.fZVtxAcceptanceUpEdge, 6, 100, (double)(fSettings.kSinphi1phi2phi3p+1)};
 
       // The THn has dimensions [random samples, vertex position, eta, centrality, kind of variable to store]
       static_cast<TList*>(fGFList->At(0))->Add(new THnD(Form("cumuRef_v%d", n), Form("cumuRef_v%d", n), dimensions, rbins, xmin, xmax));
