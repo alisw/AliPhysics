@@ -14,6 +14,8 @@
  **************************************************************************/
 
 #include "AliGRPRecoParam.h"
+#include "AliV0HypSel.h"
+#include "AliLog.h"
 
 ///////////////////////////////////////////////////////////////////////////////
 //                                                                           //
@@ -103,7 +105,8 @@ fVertexerCascadeDBachMin(0.01),
 fVertexerCascadeDCAmax(2.0),
 fVertexerCascadeCPAmin(0.98),
 fVertexerCascadeRmin(0.2),
-fVertexerCascadeRmax(100.)
+fVertexerCascadeRmax(100.),
+fV0HypSelArray()
 {
   //
   // constructor
@@ -200,6 +203,14 @@ AliGRPRecoParam::AliGRPRecoParam(const AliGRPRecoParam& par) :
   fVertexerCascadeRmax(par.fVertexerCascadeRmax)
 {
   // copy constructor
+  for (int i=0;i<par.fV0HypSelArray.GetEntriesFast();i++) {
+    const AliV0HypSel* h = dynamic_cast<const AliV0HypSel*>( par.fV0HypSelArray.At(i) );
+    if (!h) {
+      AliFatal("Object provided as V0 hypothesis selection cut is not recognized");      
+    }
+    AddV0HypSel( *h );
+  }
+  fV0HypSelArray.SetOwner(kTRUE);
 }
 
 //_____________________________________________________________________________
@@ -468,4 +479,10 @@ void AliGRPRecoParam::SetVertexerCascadeCuts(Int_t ncuts,Double_t cuts[8]) {
   fVertexerCascadeRmin     = cuts[6];
   fVertexerCascadeRmax     = cuts[7];
   return;
+}
+
+//_____________________________________________________________________________
+void AliGRPRecoParam::AddV0HypSel(const AliV0HypSel& sel)
+{
+  fV0HypSelArray.AddLast(new AliV0HypSel(sel));
 }

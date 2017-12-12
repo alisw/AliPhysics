@@ -2515,6 +2515,8 @@ Bool_t AliReconstruction::ProcessEvent(Int_t iEvent)
 	 Double_t cutsV0vertexer[nCutsV0vertexer];
 	 grpRecoParam->GetVertexerV0Cuts(cutsV0vertexer);
 	 vtxer.SetCuts(cutsV0vertexer);
+	 //
+	 vtxer.SetV0HypSel(grpRecoParam->GetV0HypSelArray());
        }
        vtxer.Tracks2V0vertices(fesd);
        AliSysInfo::AddStamp(Form("V0Finder_%d",iEvent), 0,0,iEvent); 

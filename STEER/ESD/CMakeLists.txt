@@ -69,6 +69,7 @@ set(SRCS
     AliESDTZEROfriend.cxx
     AliESDUtils.cxx
     AliESDv0.cxx
+    AliV0HypSel.cxx
     AliESDV0Params.cxx
     AliESDVertex.cxx
     AliESDVZERO.cxx

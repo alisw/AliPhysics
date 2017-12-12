@@ -14,6 +14,8 @@
 
 
 #include "AliDetectorRecoParam.h"
+#include "TObjArray.h"
+class AliV0HypSel;
 
 class AliGRPRecoParam : public AliDetectorRecoParam
 {
@@ -53,6 +55,9 @@ class AliGRPRecoParam : public AliDetectorRecoParam
   void  GetVertexerV0Cuts(Double_t *cuts) const;
   void  GetVertexerCascadeCuts(Double_t *cuts) const;
 
+  const TObjArray* GetV0HypSelArray() const {return &fV0HypSelArray;}
+  void  AddV0HypSel(const AliV0HypSel& sel);
+  
   AliGRPRecoParam(const AliGRPRecoParam&);
   AliGRPRecoParam& operator=(const AliGRPRecoParam&);
 
@@ -144,7 +149,9 @@ class AliGRPRecoParam : public AliDetectorRecoParam
   Double_t fVertexerCascadeRmin;     //min radius of the fiducial volume
   Double_t fVertexerCascadeRmax;     //max radius of the fiducial volume
 
-  ClassDef(AliGRPRecoParam,7) // global reco parameters
+  TObjArray fV0HypSelArray;         // array of V0 hypotheses selection
+  
+  ClassDef(AliGRPRecoParam,8) // global reco parameters
 };
 
 inline void  AliGRPRecoParam::SetVertexerTracksTPCClusterization(Bool_t use, Double_t dzcut, Double_t nsigmazcut)

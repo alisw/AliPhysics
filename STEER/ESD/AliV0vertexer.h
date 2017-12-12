@@ -10,7 +10,9 @@
 //------------------------------------------------------------------
 
 #include "TObject.h"
+#include "TObjArray.h"
 
+class AliV0HypSel;
 class TTree;
 class AliESDEvent;
 
@@ -26,6 +28,10 @@ public:
   void GetCuts(Double_t *cuts) const;
   static void GetDefaultCuts(Double_t *cuts);
 
+  void SetV0HypSel(const TObjArray* selArr);
+  void AddV0HypSel(const AliV0HypSel& h);
+  const TObjArray& GetV0HypSelArray() const {return fV0HypSelArray;}
+  
 private:
   static
   Double_t fgEtaMax;      // maximal allowed Eta
@@ -49,8 +55,10 @@ private:
   Double_t fDCAmax;       // maximal allowed DCA between the daughter tracks 
   Double_t fCPAmin;       // minimal allowed cosine of V0's pointing angle
   Double_t fRmin, fRmax;  // max & min radii of the fiducial volume
+
+  TObjArray fV0HypSelArray; // array of V0 hypothesis to select
   
-  ClassDef(AliV0vertexer,4)  // V0 verterxer 
+  ClassDef(AliV0vertexer,5)  // V0 verterxer 
 };
 
 inline AliV0vertexer::AliV0vertexer() :
@@ -62,8 +70,10 @@ inline AliV0vertexer::AliV0vertexer() :
   fDCAmax(fgDCAmax),
   fCPAmin(fgCPAmin), 
   fRmin(fgRmin),
-  fRmax(fgRmax) 
+  fRmax(fgRmax),
+  fV0HypSelArray()
 {
+  fV0HypSelArray.SetOwner(kTRUE);
 }
 
 inline void AliV0vertexer::SetCuts(const Double_t *cuts) {

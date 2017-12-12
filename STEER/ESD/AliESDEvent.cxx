@@ -2750,15 +2750,15 @@ void AliESDEvent::RestoreOfflineV0Prongs()
     AliExternalTrackParam *parN = (AliExternalTrackParam*) v0->GetParamN();
     if (parP->GetSigmaY2()>0. && parP->GetSigmaZ2()>0.) continue; // were not filled by 0s
     double xP = parP->GetX(), xN = parN->GetX(); // Only X info is valid
-    parP = *GetTrack(GetPindex());
-    parN = *GetTrack(GetNindex());
+    *parP = *GetTrack(v0->GetPindex());
+    *parN = *GetTrack(v0->GetNindex());
     if (!parP->PropagateTo(xP,bZ)) {
-      AliErrorF("Failed to restore V0 prong from track %d at X=%e",GetPindex(),xP);
+      AliErrorF("Failed to restore V0 prong from track %d at X=%e",v0->GetPindex(),xP);
       parP->Print();
       continue;
     }
     if (!parN->PropagateTo(xN,bZ)) {
-      AliErrorF("Failed to restore V0 prong from track %d at X=%e",GetPindex(),xP);
+      AliErrorF("Failed to restore V0 prong from track %d at X=%e",v0->GetPindex(),xP);
       parP->Print();
       continue;
     }
