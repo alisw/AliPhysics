@@ -3,9 +3,22 @@
 /// \ingroup EMCAL_TestSimRec
 /// \brief Simple macro to test EMCAL simulation
 ///
-/// Simple macro to test EMCAL simulation
+/// Simple macro to test EMCAL simulation.
+/// It will take the Config.C macro that is sitting in the same place as the execution is performed.
+/// In order to execute this you can do 
+///    * Root5: aliroot -q -b -l $ALICE_ROOT/EMCAL/macros/TestSimuReco/TestEMCALSimulation.C
+///    * Root6: aliroot -q -b -l $ALICE_ROOT/EMCAL/macros/TestSimuReco/LoadLibForConfig.C $ALICE_ROOT/EMCAL/macros/TestSimuReco/TestEMCALSimulation.C
 ///
-/// \author Jenn Klay, LLNL
+/// Or directly in the root prompt 
+///    root [1] .x LoadLibForConfig.C //Root6
+///    root [2] .x TestEMCALSimulation.C
+///
+/// In order to find all the included classes in the Config.C one should add to the rootlogon.C file some paths
+/// gSystem->SetIncludePath("-I$ROOTSYS/include -I$ALICE_ROOT/  -I$ALICE_ROOT/include -I$ALICE_ROOT/ANALYSIS/macros -I$ALICE_ROOT/STEER -I$ALICE_ROOT/STEER/STEER -I$GEANT3DIR/include -I$GEANT3DIR/include/TGeant3");
+/// or do it in the root prompt before execution.
+///
+/// \author : Jenn Klay, LLNL.
+/// \author : Gustavo Conesa Balbastre <Gustavo.Conesa.Balbastre@cern.ch>, (LPSC-CNRS). 
 ///
 
 #if !defined(__CINT__) || defined(__MAKECINT__)
