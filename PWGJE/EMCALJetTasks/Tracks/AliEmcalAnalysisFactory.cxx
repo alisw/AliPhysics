@@ -269,7 +269,7 @@ AliEmcalTrackSelection *AliEmcalAnalysisFactory::TrackCutsFactory(TString cutstr
     };
     for(auto c : *cuts){
       TString &cut = static_cast<TObjString *>(c)->String();
-      if(cut.Contains("standard")){
+      if(cut == "standard"){
         aodsel->AddFilterBit(AliAODTrack::kTrkGlobal);
         AliEMCalTriggerExtraCuts *extracuts = FindTrackCuts(trackcuts);
         if(!extracuts){
@@ -278,10 +278,22 @@ AliEmcalTrackSelection *AliEmcalAnalysisFactory::TrackCutsFactory(TString cutstr
         }
         extracuts->SetMinTPCCrossedRows(120);
       }
-      if(cut.Contains("hybrid")){
+      if(cut == "hybrid"){
         aodsel->GenerateTrackCuts(AliEmcalTrackSelection::kHybridTracks, AliTrackContainer::GetDefTrackCutsPeriod());
       }
-      if(cut.Contains("geo")){
+      if(cut == "hybrid2010_wNoRefit"){
+        aodsel->GenerateTrackCuts(AliEmcalTrackSelection::kHybridTracks2010wNoRefit, AliTrackContainer::GetDefTrackCutsPeriod());
+      }
+      if(cut == "hybrid2010_woNoRefit"){
+        aodsel->GenerateTrackCuts(AliEmcalTrackSelection::kHybridTracks2010woNoRefit, AliTrackContainer::GetDefTrackCutsPeriod());
+      }
+      if(cut == "hybrid2011_wNoRefit"){
+        aodsel->GenerateTrackCuts(AliEmcalTrackSelection::kHybridTracks2011wNoRefit, AliTrackContainer::GetDefTrackCutsPeriod());
+      }
+      if(cut == "hybrid2011_woNoRefit"){
+        aodsel->GenerateTrackCuts(AliEmcalTrackSelection::kHybridTracks2011woNoRefit, AliTrackContainer::GetDefTrackCutsPeriod());
+      }
+      if(cut == "geo"){
         AliEMCalTriggerExtraCuts *extracuts = FindTrackCuts(trackcuts);
         if(!extracuts){
           extracuts = new AliEMCalTriggerExtraCuts;
