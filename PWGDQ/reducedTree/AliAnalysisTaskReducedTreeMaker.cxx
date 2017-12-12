@@ -432,7 +432,11 @@ void AliAnalysisTaskReducedTreeMaker::UserExec(Option_t *option)
 
   // Was event selected ?
   UInt_t isSelected = AliVEvent::kAny;
-  if(inputHandler){
+  // event statistics before any cuts
+  for(Int_t i=0;i<32;++i) 
+     if(inputHandler->IsEventSelected() & (UInt_t(1)<<i)) fEventsHistogram->Fill(0.,Double_t(i));
+  
+  if(inputHandler) {
     if((isESD && inputHandler->GetEventSelection()) || isAOD){
       isSelected = inputHandler->IsEventSelected();
       isSelected&=fTriggerMask;
@@ -447,14 +451,9 @@ void AliAnalysisTaskReducedTreeMaker::UserExec(Option_t *option)
      
   if(!fSelectPhysics) isSelected = AliVEvent::kAny;
   
-  // event statistics before any cuts
-  for(Int_t i=0;i<32;++i) 
-     if(inputHandler->IsEventSelected() & (UInt_t(1)<<i)) fEventsHistogram->Fill(0.,Double_t(i));
-  
   if(isSelected==0) {
-    //cout << "AliAnalysisTaskReducedTreeMaker::UserExec() event is not selected" << endl;
-    //PostData(1, fReducedEvent);
-    return;
+     PostData(3, fEventsHistogram);
+     return;
   }
   
   //event filter
@@ -463,7 +462,8 @@ void AliAnalysisTaskReducedTreeMaker::UserExec(Option_t *option)
        // event statistics for events failing selection cuts
        for(Int_t i=0;i<32;++i) 
           if(inputHandler->IsEventSelected() & (UInt_t(1)<<i)) fEventsHistogram->Fill(3.,Double_t(i));
-          
+
+       PostData(3, fEventsHistogram);
        return;
     }
   }
@@ -474,7 +474,8 @@ void AliAnalysisTaskReducedTreeMaker::UserExec(Option_t *option)
        // event statistics for events failing selection cuts
        for(Int_t i=0;i<32;++i) 
           if(inputHandler->IsEventSelected() & (UInt_t(1)<<i)) fEventsHistogram->Fill(3.,Double_t(i));
-          
+       
+       PostData(3, fEventsHistogram);
        return;
     }
   }
@@ -566,6 +567,7 @@ void AliAnalysisTaskReducedTreeMaker::UserExec(Option_t *option)
     PostData(2, fTree);
     PostData(3, fEventsHistogram);
     PostData(4, fTracksHistogram);
+    PostData(5, fMCSignalsHistogram);
   }
 }
 
