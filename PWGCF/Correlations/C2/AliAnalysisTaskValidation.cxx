@@ -449,15 +449,15 @@ AliAnalysisTaskValidation::Tracks AliAnalysisTaskValidation::GetTracks() {
   Tracks out_tracks;
   for (auto obj: *in_tracks) {
     auto tr = static_cast<AliAODTrack*>(obj);
+    auto track_valid = true;
     for (UInt_t idx = 0; idx < this->fEventValidators.size(); idx++) {
-      auto track_valid = true;
       switch (this->fTrackValidators[idx]) {
       case TrackValidation::kNoTrackCut:
 	break;
       case TrackValidation::kTPCOnly:
 	track_valid = tr->TestFilterBit(128); break;
       case TrackValidation::kEtaCut:
-	track_valid = (TMath::Abs(tr->Eta()) > 0.8); break;
+	track_valid = (TMath::Abs(tr->Eta()) < 0.9); break;
       case TrackValidation::kPtCut:
 	track_valid = (tr->Pt() < 0.3); break;
       }
@@ -468,13 +468,16 @@ AliAnalysisTaskValidation::Tracks AliAnalysisTaskValidation::GetTracks() {
 	break;
       }
     }
-    Double_t weight = 1.0;
-    out_tracks
-      .push_back(AliAnalysisTaskValidation::Track(tr->Eta(),
-						  AliAnalysisC2Utils::Wrap02pi(tr->Phi()),
-						  tr->Pt(),
-						  weight));
+    if (track_valid) {
+      Double_t weight = 1.0;
+      out_tracks
+	.push_back(AliAnalysisTaskValidation::Track(tr->Eta(),
+						    AliAnalysisC2Utils::Wrap02pi(tr->Phi()),
+						    tr->Pt(),
+						    weight));
+    }
   }
+  PostData(1, fOutputList);
   return out_tracks;
 }
 
