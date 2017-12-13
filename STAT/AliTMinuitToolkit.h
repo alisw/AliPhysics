@@ -82,8 +82,11 @@ public:
   static AliTMinuitToolkit *  GetPredefinedFitter(std::string fitterName){return fPredefinedFitters[fitterName];}
   static void   SetPredefinedFitter(std::string fitterName, AliTMinuitToolkit * fitter){fPredefinedFitters[fitterName]=fitter;}
   static  void  RegisterDefaultFitters();
+  static AliTMinuitToolkit * RegisterPlaneFitter(Int_t nPlanes, Int_t logLikeType);
   // helper functions for TFormula and TTreeFormuladrawing
   static Double_t  GaussCachyLogLike(Double_t *x, Double_t *p);
+  static Double_t  HuberLogLike(Double_t *x, Double_t *p);
+  static Double_t  PseudoHuberLogLike(Double_t *x, Double_t *p);
   static Double_t RrndmGaus(Double_t mean=0, Double_t sigma=1);
   static Double_t RrndmLandau(Double_t mean=0, Double_t sigma=1);  
   static void SetFunctionDrawOption(TF1 *fun, Option_t *option); // parse draw option and set function attributes

@@ -545,15 +545,45 @@ Double_t  AliTMinuitToolkit::RrndmLandau(Double_t mean, Double_t sigma){
   return gRandom->Landau(mean,sigma);
 }
 
+
+/// Log likelihood for the gaus+cauchy - used for Log likelihood minimization of distribution with tails
+/// \param x   -
+/// \param p   - p[0] - gaus fraction
+///            - p[1] - cauchy 0.5*FWHM
+/// \return    log likelihood for the mixture of gaus and cauchy distribution
+///            representation as in https://en.wikipedia.org/wiki/Cauchy_distribution
 Double_t  AliTMinuitToolkit::GaussCachyLogLike(Double_t *x, Double_t *p){
-  //
-  // parameters
   Double_t vCauchy=p[1]/(TMath::Pi()*(p[1]*p[1]+(*x)*(*x)));
   Double_t vGaus=(TMath::Abs(*x)<20) ? TMath::Gaus(*x,0,1.,kTRUE):0.;
-  return TMath::Abs(TMath::Log(p[0]*vGaus+(1-p[0])*vCauchy)-1);
-  static Double_t norm= 1/TMath::Gaus(0,0,1.,kTRUE);
-  return TMath::Abs(TMath::Log((p[0]*vGaus+(1-p[0])*vCauchy)*norm));
+  Double_t p0= p[0]*TMath::Gaus(0,0,1,kTRUE)+(1-p[0])/(TMath::Pi()*p[1]);
+  return -TMath::Log((p[0]*vGaus+(1-p[0])*vCauchy)/p0);
 }
+
+/// Huber loss  is a loss function used in robust regression - representation as in https://en.wikipedia.org/w/index.php?title=Huber_loss&diff=809252384&oldid=798150659
+/// \param x   -
+/// \param p   - p[0] - gaus region boundary
+/// \return    - loss  function (used as a log likelihood)
+///
+Double_t  AliTMinuitToolkit::HuberLogLike(Double_t *x, Double_t *p){
+  Double_t absX=TMath::Abs(x[0]);
+  if (absX<p[0]) return absX*absX;
+  return p[0]*(2*absX-p[0]);
+}
+
+/// Pseudo Huber loss  is a loss function used in robust regression - representation as in https://en.wikipedia.org/w/index.php?title=Huber_loss&diff=809252384&oldid=798150659
+/// \param x   -
+/// \param p   - p[0] - gaus region boundary
+/// \return    - loss  function (used as a log likelihood)
+///
+Double_t  AliTMinuitToolkit::PseudoHuberLogLike(Double_t *x, Double_t *p){
+  Double_t p2=p[0]*p[0];
+  Double_t x2=x[0]*x[0];
+  Double_t result=p2*(TMath::Sqrt(1.+x2/p2)-1.);
+  return result;
+}
+
+
+
 
 void AliTMinuitToolkit::Bootstrap(Int_t nIter, const char * reportName, Option_t *option){
   //
@@ -843,6 +873,37 @@ void  AliTMinuitToolkit::RegisterDefaultFitters(){
   AliTMinuitToolkit::SetPredefinedFitter("gausR",fitterGR);
  //
 }
+
+
+AliTMinuitToolkit * AliTMinuitToolkit::RegisterPlaneFitter(Int_t nPlanes, Int_t logLikeType){
+  AliTMinuitToolkit *fitter = new AliTMinuitToolkit(TString::Format("AliTMinuitToolkitTest%d.root", nPlanes));
+  TString sFormula = "[0]*x[0]";
+  for (Int_t iPlane=1; iPlane<nPlanes; iPlane++) sFormula+=TString::Format("+[%d]*x[%d]", iPlane,iPlane);
+  TFormula *formula = new TFormula(TString::Format("hyp%dR",nPlanes).Data(), sFormula.Data());
+  fitter->SetFitFunction((TF1 *) formula, kTRUE);
+  //
+  if (logLikeType==0) { // standard minimization
+    TF1 *likeGaus = new TF1("likeGausCachy", "x*x*0.5", -10, 10);
+    fitter->SetLogLikelihoodFunction(likeGaus);
+    fitter->SetName(TString::Format("hyp%d", nPlanes).Data());
+  }
+  if (logLikeType==1){
+    TF1 *likeGausCachy = new TF1("likeGausCachy", AliTMinuitToolkit::GaussCachyLogLike, -10, 10, 2);
+    likeGausCachy->SetParameters(0.8, 1);
+    fitter->SetLogLikelihoodFunction(likeGausCachy);
+    fitter->SetName(TString::Format("hyp%dR", nPlanes).Data());
+  }
+  if (logLikeType==2){
+    TF1 *likePseudoHuber = new TF1("likePseudoHuber", AliTMinuitToolkit::PseudoHuberLogLike, -10, 10, 1);
+    likePseudoHuber->SetParameter(0,3);
+    fitter->SetLogLikelihoodFunction(likePseudoHuber);
+    fitter->SetName(TString::Format("hyp%dH", nPlanes).Data());
+  }
+  fitter->SetInitialParam(new TMatrixD(nPlanes,4));
+  AliTMinuitToolkit::SetPredefinedFitter(fitter->GetName(), fitter);
+  return fitter;
+}
+
 
 
 AliTMinuitToolkit *  AliTMinuitToolkit::Fit(TH1* his, const char *fitterName, Option_t* option, Option_t* goption,Option_t* foption, Double_t xmin, Double_t xmax){
