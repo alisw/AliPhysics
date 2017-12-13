@@ -106,8 +106,9 @@ void AddTask_GammaCaloMerged_pp(  Int_t     trainConfig                 = 1,    
     }
   }
 
-  if (additionalTrainConfig.Atoi() > 0){
-    trainConfig = trainConfig + additionalTrainConfig.Atoi();
+  TString sAdditionalTrainConfig = rAdditionalTrainConfig->GetString();
+  if (sAdditionalTrainConfig.Atoi() > 0){
+    trainConfig = trainConfig + sAdditionalTrainConfig.Atoi();
     cout << "INFO: AddTask_GammaCaloMerged_pp running additionalTrainConfig '" << sAdditionalTrainConfig.Atoi() << "', train config: '" << trainConfig << "'" << endl;
   }
 
