@@ -2,8 +2,6 @@
 #include "TSystem.h"
 class AliAnalysisTaskCMEV0;
 
-
- //void AddTaskCMEV0(Double_t dcentrMin=0, Double_t dcentrMax=90, TString sAnalysisFile = "AOD", TString sDataSet = "2010", 
  AliAnalysisTaskCMEV0* AddTaskCMEV0(Double_t dcentrMin=0, Double_t dcentrMax=90., Int_t gFilterBit = 768, Int_t gClusterTPC = 70, 
  Double_t fpTLow = 0.2, Double_t fpTHigh = 10.0, Double_t fEtaLow = -0.8, Double_t fEtaHigh = 0.8, TString sAnalysisFile = "AOD", 
  TString sDataSet = "2010", TString sAnalysisType = "AUTOMATIC", TString sEventTrigger = "MB", Bool_t bEventCutsQA = kFALSE, 
@@ -45,7 +43,7 @@ class AliAnalysisTaskCMEV0;
   taskFE->SetQAOn(bEventCutsQA);
   taskFE->SetAnalysisType(sAnalysisType); //sanalysisType = AUTOMATIC see the initializers!!
 
-  if(sDataSet=="2015"||sDataSet=="2015pPb"){
+  if(sDataSet=="2015"||sDataSet=="2015pPb"||sDataSet=="pPb"){
     taskFE->SelectCollisionCandidates(AliVEvent::kINT7);
   }
   else{
@@ -59,7 +57,8 @@ class AliAnalysisTaskCMEV0;
   cutsEvent->SetCheckPileup(kFALSE);
   cutsEvent->SetPrimaryVertexZrange(dVertexLow, dVertexHigh);      // vertex-z cut
   cutsEvent->SetQA(bEventCutsQA);                                  // enable the qa plots
-  if(sDataSet=="2015pPb"){
+
+  if(sDataSet=="2015pPb"||sDataSet=="pPb"){
     cutsEvent->SetCutTPCmultiplicityOutliersAOD(kFALSE); 	   // multiplicity outlier cut
   }
   else {
@@ -217,10 +216,7 @@ class AliAnalysisTaskCMEV0;
   taskQC_prot->SetSkipNestedLoop(bSkipNestedLoop);
   taskQC_prot->SetMCEffiDimension(sFBEffiDimension);
   taskQC_prot->SetRemoveNegTrkRndm(kFALSE);
-  taskQC_prot->SetInputFileforV0M(sZDCFile);
   taskQC_prot->SetApplyV0MCorr(bV0MgainCorr);
-  taskQC_prot->SetInputFileforV0M(sV0MFile);
-
 
 
 
@@ -258,7 +254,7 @@ class AliAnalysisTaskCMEV0;
      if(!fZDCGainFile) {
        printf("\n\n *** ERROR: ZDC wgt file not found! **EXIT** \n\n");
        exit(1);
-     } 
+     }
 
      TList* fZDCWgtUse = dynamic_cast<TList*>(fZDCGainFile->FindObjectAny("fZDN_ZDP_Wgts"));
   
@@ -266,10 +262,34 @@ class AliAnalysisTaskCMEV0;
        taskQC_prot->SetGainCorrZDNP(fZDCWgtUse);
      }
      else{
-       printf("\n\n !!!!**** ERROR:ZDC Channel wgt List not found **EXIT**!!!\n\n");
+       printf("\n\n !!!!**** ERROR: ZDC Channel wgt List not found **EXIT**!!!\n\n");
        exit(1);
      }
   }
+
+
+  if(bV0MgainCorr){
+    TFile* fV0MFile = TFile::Open(sV0MFile,"READ");
+     if(!fV0MFile) {
+       printf("\n\n *** ERROR: VOM Gain correction file not found! **EXIT** \n\n");
+       exit(1);
+     } 
+     else{
+       TList* fListV0MUse = dynamic_cast<TList*>(fV0MFile->FindObjectAny("fV0MChWgts"));
+     }
+
+     if(fListV0MUse) {
+       taskQC_prot->SetInputListforV0M(fListV0MUse);
+     }
+     else{
+       printf("\n\n !!!!**** ERROR: VOM Gain List not found **EXIT**!!!\n\n");
+       taskQC_prot->SetInputListforV0M(NULL);
+       //exit(1);
+     }
+  }
+
+
+ 
 
 
   /*
