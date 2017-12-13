@@ -57,6 +57,7 @@ AliAnalysisTaskCMEV0::AliAnalysisTaskCMEV0(const TString name):AliAnalysisTaskSE
   fListFBHijing(NULL),
   fListNUACorr(NULL),
   fListZDNCorr(NULL),
+  fListV0MCorr(NULL),
   fRejectPileUp(kTRUE),
   fRejectPileUpTight(kTRUE),
   bFillAvgTPCQn(kFALSE),
@@ -73,7 +74,6 @@ AliAnalysisTaskCMEV0::AliAnalysisTaskCMEV0(const TString name):AliAnalysisTaskSE
   sCentEstimator("V0"),
   sFileNUA("NewR"),
   sMCdimension("1D"),
-  fFileV0MCorr(""),
   fRunFlag(0),
   fOldRunNum(0),
   fievent(0),
@@ -137,7 +137,9 @@ AliAnalysisTaskCMEV0::AliAnalysisTaskCMEV0(const TString name):AliAnalysisTaskSE
   fHistVtxYvsRun(NULL),
   fRejectRatioVsCR(NULL),
   fCentDistvsRun(NULL),
-  fHCorrectV0M(NULL)
+  fHCorrectV0M(NULL),
+  fCentV0MvsVzRun(NULL),
+  fCentCL1vsVzRun(NULL)
 {
   for(int i=0;i<4;i++){
     fHCorrectNUApos[i] = NULL;
@@ -271,6 +273,7 @@ AliAnalysisTaskCMEV0::AliAnalysisTaskCMEV0(): AliAnalysisTaskSE(),
   fListFBHijing(NULL),
   fListNUACorr(NULL),
   fListZDNCorr(NULL),
+  fListV0MCorr(NULL),
   fRejectPileUp(kTRUE),
   fRejectPileUpTight(kTRUE),
   bFillAvgTPCQn(kFALSE),
@@ -287,7 +290,6 @@ AliAnalysisTaskCMEV0::AliAnalysisTaskCMEV0(): AliAnalysisTaskSE(),
   sCentEstimator("V0"),
   sFileNUA("NewR"),
   sMCdimension("1D"),
-  fFileV0MCorr(""),
   fRunFlag(0),
   fOldRunNum(0),
   fievent(0),
@@ -351,7 +353,9 @@ AliAnalysisTaskCMEV0::AliAnalysisTaskCMEV0(): AliAnalysisTaskSE(),
   fHistVtxYvsRun(NULL),
   fRejectRatioVsCR(NULL),
   fCentDistvsRun(NULL),
-  fHCorrectV0M(NULL)
+  fHCorrectV0M(NULL),
+  fCentV0MvsVzRun(NULL),
+  fCentCL1vsVzRun(NULL)
 {
   for(int i=0;i<4;i++){
     fHCorrectNUApos[i] = NULL;
@@ -679,6 +683,11 @@ void AliAnalysisTaskCMEV0::UserExec(Option_t *)
    if(bApplyZDCCorr && fListZDNCorr){
      GetZDCCorrectionHist(runNumber);
    }
+
+   if(sDataSet=="2015pPb"||sDataSet=="pPb"){
+     if(bApplyV0MCorr) GetV0MCorrectionHist(runNumber);
+   }
+
    fOldRunNum = runNumber;
  }
 
@@ -722,8 +731,6 @@ void AliAnalysisTaskCMEV0::UserExec(Option_t *)
    }
  }
  else{
-
-   if(bApplyV0MCorr) GetV0MCorrectionHist(runNumber);
 
    for(int iV0 = 0; iV0 < 64; iV0++) { //0-31 is V0C, 32-63 VOA
 
@@ -951,9 +958,6 @@ void AliAnalysisTaskCMEV0::UserExec(Option_t *)
    //icReject++;
    //continue;
    //}
-
-
-
 
 
    if(bFillEtaPhiNUA){
@@ -1186,7 +1190,7 @@ void AliAnalysisTaskCMEV0::UserExec(Option_t *)
   
 
    //if(i%10==0)
-   //cout<<" track "<<i<<" eta = "<<dEta1<<"\tvz = "<<VtxZ<<"\tptw1 = "<<ptw1<<"\tw1NUA = "<<w1NUA<<"\tAvgCos1n = "<<AvgCos1n<<endl;
+   //cout<<" track "<<i<<" eta = "<<dEta1<<"\tdPhi1 = "<<dPhi1<<"\tptw1 = "<<ptw1<<"\tw1NUA = "<<w1NUA<<"\tAvgCos1n = "<<AvgCos1n<<endl;
 
 
    if(bSkipNestedTrk) continue;
@@ -1336,7 +1340,7 @@ void AliAnalysisTaskCMEV0::UserExec(Option_t *)
  Double_t QTPCRe = QxTPC[1];
  Double_t QTPCIm = QyTPC[1];
 
- if(QTPCRe<1e-5 && QTPCIm<1e-5) return; // remove events with |Q| = 0
+ if(QTPCRe==0 && QTPCIm==0) return; // remove events with |Q| = 0
 
  fHist_Event_count->Fill(stepCount); //6
  stepCount++;
@@ -1345,8 +1349,15 @@ void AliAnalysisTaskCMEV0::UserExec(Option_t *)
  Double_t Psi2TPC = 1./psiN*(TMath::ATan2(QTPCIm,QTPCRe));
  if(Psi2TPC < 0.) Psi2TPC += 2*pi/psiN;
 
- fTPCQnxVsCentRun->Fill(centrCL1,runindex,TMath::Cos(Psi2TPC));
- fTPCQnyVsCentRun->Fill(centrCL1,runindex,TMath::Sin(Psi2TPC));
+ fTPCQnxVsCentRun->Fill(EvtCent,runindex,TMath::Cos(Psi2TPC));
+ fTPCQnyVsCentRun->Fill(EvtCent,runindex,TMath::Sin(Psi2TPC));//centrCL1
+
+
+ fCentV0MvsVzRun->Fill(VtxZ,runindex,EvtCent);
+
+ fCentCL1vsVzRun->Fill(VtxZ,runindex,centrCL1);
+
+
 
 
  if(isBadRun) return;
@@ -1805,8 +1816,8 @@ void AliAnalysisTaskCMEV0::UserExec(Option_t *)
  
  fHist_Event_count->Fill(9.5);
 
- //if(fievent%20==0) {
- //cout<<"irun = "<<runindex<<" n "<<n<<" m = "<<m<<" p = "<<p<<" cent= "<<EvtCent<<"\tiCentSPD = "<<iCentSPD<<"\tsumMa= "<<sumMa<<"\tQxA = "<<QxanCor<<endl;
+ //if(fievent%100==0) {
+ //cout<<"irun = "<<runindex<<" n "<<n<<" m = "<<m<<" p = "<<p<<" cent= "<<EvtCent<<"\tiCentSPD = "<<iCentSPD<<"\tQRe= "<<QTPCRe<<"\tQIm= "<<QTPCIm<<"\tpsiN = "<<psiN<<endl;
  //cout<<" cent= "<<EvtCent<<"\teZNC= "<<energyZNC<<"\teZPC = "<<energyZPC<<"\teZNA= "<<energyZNA<<"\teZPA = "<<energyZPA<<endl;
  //}
 
@@ -2225,21 +2236,20 @@ Bool_t AliAnalysisTaskCMEV0::PileUpMultiVertex(const AliAODEvent* faod)
 
 void AliAnalysisTaskCMEV0::GetV0MCorrectionHist(Int_t run)
 {
+/*
   if(!gGrid){
     TGrid::Connect("alien://");
   }
 
-//TFile *fileV0M  = TFile::Open("alien:///alice/cern.ch/user/m/mhaque/gain/Run2015o_pass2_LI_V0GainEq_RunbyRun_Oct26.root");
   TFile *fileV0M  = TFile::Open(fFileV0MCorr);
   if(!fileV0M){
     printf("\n\n ********** File for V0M gain eq. not found ***************\n\n");
   }
 
   TList *mListV0M = dynamic_cast<TList*> (fileV0M->FindObjectAny("fV0MChWgts"));
-
-  if(mListV0M){
-    TH1D *fTempV0M = (TH1D *) mListV0M->FindObject(Form("fHistV0Gain_Run%d",run));
-    fHCorrectV0M   = (TH1D *) fTempV0M->Clone("fHCorrectV0M");
+*/
+  if(fListV0MCorr){
+    fHCorrectV0M = (TH1D *) fListV0MCorr->FindObject(Form("fHistV0Gain_Run%d",run));
     //TH2D *fV0QnAvgTemp = (TH2D *) mListV0M->FindObject(Form("fHistV0_AvgQnAC_Run%d",run));
     //fV0Qn_AvgCorr  = (TH2D *) fV0QnAvgTemp->Clone("fV0Qn_AvgCorr");
     //TH2D *fV0QnSigTemp = (TH2D *) mListV0M->FindObject(Form("fHistV0_SigQnAC_Run%d",run));
@@ -2636,6 +2646,7 @@ void AliAnalysisTaskCMEV0::DefineHistograms(){
   fListHistos->Add(fRejectRatioVsCR);
 
 
+
   //----- CME SP method histograms ---------
   for(int i=0;i<2;i++){
     for(int j=0;j<3;j++){
@@ -2860,7 +2871,15 @@ void AliAnalysisTaskCMEV0::DefineHistograms(){
 
 
 
+
+
+
+
+
   //=========== Calibtation Histograms etc ==================
+
+
+
   fListCalibs->Add(fHist_Event_count);
 
   fEventStatvsRun = new TH1F("fEventStatvsRun","Event stat per run",fRunFlag,0,fRunFlag);
@@ -2868,6 +2887,15 @@ void AliAnalysisTaskCMEV0::DefineHistograms(){
 
   fCentDistvsRun  = new TH2F("fCentStatvsRun","Cent Dist. vs  run",90,0,90,fRunFlag,0,fRunFlag);
   fListCalibs->Add(fCentDistvsRun);
+
+
+  fCentV0MvsVzRun =  new TProfile2D("fCentV0MvsVzRun","",100,-10,10,fRunFlag,0,fRunFlag);
+  fListHistos->Add(fCentV0MvsVzRun);
+
+  fCentCL1vsVzRun =  new TProfile2D("fCentCL1vsVzRun","",100,-10,10,fRunFlag,0,fRunFlag);
+  fListHistos->Add(fCentCL1vsVzRun);
+
+
 
 
   //for debug only, remove after stable code

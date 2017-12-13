@@ -47,6 +47,7 @@ public:
   void    SetInputListNUA(TList *finputNUA)           {this->fListNUACorr       =    finputNUA;}
   void    SetGainCorrZDNP(TList *finputZDN)           {this->fListZDNCorr       =    finputZDN;}
   void    SetFBEfficiencyList(TList *fFBlist)         {this->fListFBHijing      =      fFBlist;}
+  void    SetInputListforV0M(TList *finputV0M)        {this->fListV0MCorr       =    finputV0M;}
   void    SetRejectPileUp(Bool_t  pileup)             {this->fRejectPileUp      =       pileup;}
   void    SetRejectPileUpTight(Bool_t  pileupt8)      {this->fRejectPileUpTight =     pileupt8;}
   void    SetStoreTPCQnAvg(Bool_t bstoreTPCQn)        {this->bFillAvgTPCQn      =  bstoreTPCQn;} 
@@ -66,7 +67,7 @@ public:
   void    SetMCEffiDimension(TString mcDimen)         {this->sMCdimension       =      mcDimen;}
   void    SetRemoveNegTrkRndm(Bool_t remRndm)         {this->bRemNegTrkRndm     =      remRndm;}
   void    SetApplyV0MCorr(Bool_t  bV0Mcorr)           {this->bApplyV0MCorr      =     bV0Mcorr;}
-  void    SetInputFileforV0M(TString finputV0M)       {this->fFileV0MCorr       =    finputV0M;}
+
 
 
 private:
@@ -95,9 +96,11 @@ private:
 
   TList*                 fListHistos;         //! collection of output
   TList*                 fListCalibs;         //! collection of Calib Histos
+
   TList*               fListFBHijing;         // Hijing Efficiency list
   TList*                fListNUACorr;         // NUA Correction List
   TList*                fListZDNCorr;         // ZDC gain Correction Wgts
+  TList*                fListV0MCorr;
 
   Bool_t               fRejectPileUp;         //
   Bool_t          fRejectPileUpTight;         //
@@ -116,7 +119,7 @@ private:
   TString             sCentEstimator;         // Centrality Estimator
   TString                   sFileNUA;         // NUA source file.
   TString               sMCdimension;         // Dimention for MC effi Correction
-  TString               fFileV0MCorr;
+
 
 
   Int_t                  runNums[90];         //!  array of runnumbers
@@ -224,10 +227,13 @@ private:
   TH2F            *fCentDistvsRun; //! 
   TH1D              *fHCorrectV0M; //!   for V0-Mult Gain Correction per channel.
 
-
+  TProfile2D     *fCentV0MvsVzRun; //!
+  TProfile2D     *fCentCL1vsVzRun; //!
 
 
   //TRandom3                fRand; //!
+
+
 
 
 
