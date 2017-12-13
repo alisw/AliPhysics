@@ -290,7 +290,7 @@ void AddTask_GammaCalo_PbPb(  Int_t     trainConfig                     = 1,    
     cuts.AddCut("50980013","1111100003032230000","0163103100000050"); // 0-90%
   } else if (trainConfig == 34){ // EMCAL clusters
     cuts.AddCut("50100013","1111102053032230000","01631031000000d0"); // 0-10
-    cuts.AddCut("50100013","1111171053032230000","01631031000000d0"); // 0-10
+//     cuts.AddCut("50100013","1111171053032230000","01631031000000d0"); // 0-10
   } else if (trainConfig == 35){ // EMCAL clusters
     cuts.AddCut("50100013","11111020530a2230000","01631031000000d0"); // 0-10
     cuts.AddCut("50100013","11111710530a2230000","01631031000000d0"); // 0-10
@@ -302,12 +302,12 @@ void AddTask_GammaCalo_PbPb(  Int_t     trainConfig                     = 1,    
     cuts.AddCut("52500013","11111720530a2230000","01631031000000d0"); // 20-50
   } else if (trainConfig == 38){ // EMCAL clusters - added signals
     cuts.AddCut("50100023","1111171053032230000","01631031000000d0"); // 0-10
-    cuts.AddCut("50100023","11111710530a2230000","01631031000000d0"); // 0-10
-    cuts.AddCut("50100023","11111710530b2230000","01631031000000d0"); // 0-10
+//     cuts.AddCut("50100023","11111710530a2230000","01631031000000d0"); // 0-10
+//     cuts.AddCut("50100023","11111710530b2230000","01631031000000d0"); // 0-10
   } else if (trainConfig == 39){ // EMCAL clusters - added signals
     cuts.AddCut("50100023","1111171053032230000","01631031000000d0"); // 0-10
-    cuts.AddCut("50100023","11111710530a2230000","01631031000000d0"); // 0-10
-    cuts.AddCut("50100023","11111710530b2230000","01631031000000d0"); // 0-10
+//     cuts.AddCut("50100023","11111710530a2230000","01631031000000d0"); // 0-10
+//     cuts.AddCut("50100023","11111710530b2230000","01631031000000d0"); // 0-10
   } else if (trainConfig == 40){ // EMCAL clusters - added signals
     cuts.AddCut("52500023","1111172053032230000","01631031000000d0"); // 20-50
     cuts.AddCut("52500023","11111720530a2230000","01631031000000d0"); // 20-50
@@ -493,11 +493,62 @@ void AddTask_GammaCalo_PbPb(  Int_t     trainConfig                     = 1,    
     } else if (headerSelectionInt == 2){
       TObjString *Header1 = new TObjString("eta_2");
       HeaderList->Add(Header1);
-    } else {
-      TObjString *Header1 = new TObjString("pi0_1");
+    } else if (headerSelectionInt == 3){
+      TString nameHeaders[2]    = { "pi0_1", "eta_2" };
+      for (Int_t iHead = 0; iHead < 2; iHead++ ){
+        TObjString *Header = new TObjString(nameHeaders[iHead]);
+        HeaderList->Add(Header);
+      }
+    } else if (headerSelectionInt == 4){
+      TObjString *Header1 = new TObjString("pi0EMC_3");
       HeaderList->Add(Header1);
-      TObjString *Header2 = new TObjString("eta_2");
-      HeaderList->Add(Header2);
+    } else if (headerSelectionInt == 5){
+      TObjString *Header1 = new TObjString("etaEMC_5");
+      HeaderList->Add(Header1);
+    } else if (headerSelectionInt == 6){
+      TString nameHeaders[2]    = { "pi0EMC_3", "etaEMC_5" };
+      for (Int_t iHead = 0; iHead < 2; iHead++ ){
+        TObjString *Header = new TObjString(nameHeaders[iHead]);
+        HeaderList->Add(Header);
+      }
+    } else if (headerSelectionInt == 7){
+      TString nameHeaders[4]    = { "pi0_1", "eta_2", "pi0EMC_3", "etaEMC_5" };
+      for (Int_t iHead = 0; iHead < 4; iHead++ ){
+        TObjString *Header = new TObjString(nameHeaders[iHead]);
+        HeaderList->Add(Header);
+      }
+    } else if (headerSelectionInt == 8){
+      TObjString *Header1 = new TObjString("gEMCPhoton_7");
+      HeaderList->Add(Header1);
+    } else if (headerSelectionInt == 9){
+      TString nameHeaders[10]   = { "Pythia_Jets_PtHard_1_10", "Pythia_Jets_PtHard_2_10", "Pythia_Jets_PtHard_3_10", "Pythia_Jets_PtHard_4_10", "Pythia_Jets_PtHard_5_10",
+                                    "Pythia_Jets_PtHard_6_10", "Pythia_Jets_PtHard_7_10", "Pythia_Jets_PtHard_8_10", "Pythia_Jets_PtHard_9_10", "Pythia_Jets_PtHard_10_10"
+      };
+      for (Int_t iHead = 0; iHead < 10; iHead++ ){
+        TObjString *Header = new TObjString(nameHeaders[iHead]);
+        HeaderList->Add(Header);
+      }
+    } else if (headerSelectionInt == 10){
+      TObjString *Header1 = new TObjString("pythia_bele_10_10");
+      HeaderList->Add(Header1);
+    } else if (headerSelectionInt == 11){
+      TString nameHeaders[29]   = { "Pythia_Jets_PtHard_1_10", "Pythia_Jets_PtHard_2_10", "Pythia_Jets_PtHard_3_10", "Pythia_Jets_PtHard_4_10", "Pythia_Jets_PtHard_5_10",
+                                    "Pythia_Jets_PtHard_6_10", "Pythia_Jets_PtHard_7_10", "Pythia_Jets_PtHard_8_10", "Pythia_Jets_PtHard_9_10", "Pythia_Jets_PtHard_10_10",
+                                    "gEMCPhoton_7", "flat pt kstar_8", "flat pt kstarbar_9", "pyhtia_cele_10_10", "pyhtia_cele_18_10",
+                                    "pyhtia_cele_30_10", "pyhtia_cele_50_10", "pyhtia_ccbar_10_10", "pyhtia_ccbar_18_10", "pyhtia_ccbar_30_10",
+                                    "pyhtia_ccbar_50_10", "pyhtia_bele_10_10", "pyhtia_bele_18_10", "pyhtia_bele_30_10", "pyhtia_bele_50_10",
+                                    "pyhtia_bbbar_10_10", "pyhtia_bbbar_18_10", "pyhtia_bbbar_30_10", "pyhtia_bbbar_50_10"
+      };
+      for (Int_t iHead = 0; iHead < 29; iHead++ ){
+        TObjString *Header = new TObjString(nameHeaders[iHead]);
+        HeaderList->Add(Header);
+      }
+    } else {
+      TString nameHeaders[2]    = { "pi0_1", "eta_2" };
+      for (Int_t iHead = 0; iHead < 2; iHead++ ){
+        TObjString *Header = new TObjString(nameHeaders[iHead]);
+        HeaderList->Add(Header);
+      }
     }
   } else if (periodName.CompareTo("LHC14a1b")==0 || periodName.CompareTo("LHC14a1c")==0){
     TObjString *Header1 = new TObjString("BOX");
@@ -588,6 +639,7 @@ void AddTask_GammaCalo_PbPb(  Int_t     trainConfig                     = 1,    
       }
     }
 
+//     analysisEventCuts[i]->SetDebugLevel(1);
     analysisEventCuts[i]->SetLightOutput(runLightOutput);
     analysisEventCuts[i]->InitializeCutsFromCutString((cuts.GetEventCut(i)).Data());
     EventCutList->Add(analysisEventCuts[i]);
