@@ -1354,21 +1354,19 @@ void AliAnalysisTaskEmcalJetShapesMC::SoftDrop(AliEmcalJet *fJet,AliJetContainer
 }
 
 
-
 //_________________________________________________________________________
 void AliAnalysisTaskEmcalJetShapesMC::RecursiveParents(AliEmcalJet *fJet,AliJetContainer *fJetCont, Int_t ReclusterAlgo){
  
   std::vector<fastjet::PseudoJet>  fInputVectors;
   fInputVectors.clear();
   fastjet::PseudoJet  PseudoTracks;
+  fastjet::PseudoJet  PseudoTracksLab;
   double xflagalgo=0;
   double lnpt_relinject=0;
   double yinject=0;
   int xflagAdded=0;
-  double zinject,angleinject,pptheta,sinpptheta,omega;
-  fastjet::PseudoJet MyJet;
-  fastjet::PseudoJet PseudoTracksCMS;
-  AliParticleContainer *fTrackCont = fJetCont->GetParticleContainer();
+   double zinject,angleinject,pptheta,sinpptheta,omega,omega2,angle2;
+   AliParticleContainer *fTrackCont = fJetCont->GetParticleContainer();
   
     if (fTrackCont) for (Int_t i=0; i<fJet->GetNumberOfTracks(); i++) {
       AliVParticle *fTrk = fJet->TrackAt(i, fTrackCont->GetArray());
@@ -1380,7 +1378,7 @@ void AliAnalysisTaskEmcalJetShapesMC::RecursiveParents(AliEmcalJet *fJet,AliJetC
     }
 
     //add tracks to the jet prior to the reclusterer in case of iterative mapping of splittings
-    MyJet.reset(fJet->Px(),fJet->Py(),fJet->Pz(),fJet->E());
+   
     Double_t omegac=0.5*fqhat*fxlength*fxlength/0.2;
     Double_t thetac=TMath::Sqrt(12*0.2/(fqhat*TMath::Power(fxlength,3)));
     Double_t xQs=TMath::Sqrt(fqhat*fxlength);				
@@ -1403,18 +1401,26 @@ void AliAnalysisTaskEmcalJetShapesMC::RecursiveParents(AliEmcalJet *fJet,AliJetC
      lim1o=kTscale/TMath::Sin(0.1);
      fTf1Omega= new TF1("fTf1Omega","1/x",lim2o,lim1o);
      omega=fTf1Omega->GetRandom();
-     
      sinpptheta=kTscale/omega;
      pptheta=TMath::ASin(sinpptheta);
-     //cout<<"angle_omega_kt"<<pptheta<<" "<<omega<<" "<<kTscale<<endl;
      if(pptheta>fJetRadius) continue;
+
+     //Lorentz vector in the frame where the jet moves along z axis 
+     TLorentzVector pTrackCMS(kTscale/TMath::Sqrt(2),kTscale/TMath::Sqrt(2),omega*TMath::Cos(pptheta),omega);
+     TVector3 MyJet(fJet->Px(),fJet->Py(),fJet->Pz());
+     TVector3 direction = MyJet.Unit();
+     //rotate the track to the jet frame 
+     pTrackCMS.RotateUz(direction);
+   
+     //add the rotated track to the jet
+     PseudoTracksLab.reset(pTrackCMS.Px(),pTrackCMS.Py(),pTrackCMS.Pz(),pTrackCMS.E());
      
-     PseudoTracksCMS.reset(kTscale/TMath::Sqrt(2),kTscale/TMath::Sqrt(2),omega*TMath::Cos(pptheta),omega);
-     //boost the particle in the rest frame of the jet to the lab frame
-     fastjet::PseudoJet PseudoTracksLab=PseudoTracksCMS.boost(MyJet);
-     PseudoTracksLab.set_user_index(i+fJet->GetNumberOfTracks()+100);											 
+     PseudoTracksLab.set_user_index(i+fJet->GetNumberOfTracks()+100);
+
+     omega2=PseudoTracksLab.perp();
+     angle2=pTrackCMS.Angle(MyJet);
+     
      fInputVectors.push_back(PseudoTracksLab);
-     //in the frame of the jet 
      xflagAdded=1;
    }
 
@@ -1455,9 +1461,9 @@ void AliAnalysisTaskEmcalJetShapesMC::RecursiveParents(AliEmcalJet *fJet,AliJetC
     jj=j1;} 
 
     if(fAdditionalTracks>0 && xflagAdded>0){
-     zinject=omega/fOutputJets[0].perp();  
-     angleinject=pptheta;
-     cout<<"angle"<<pptheta<<endl;
+     zinject=omega2/fOutputJets[0].perp();  
+     angleinject=angle2;
+   
      yinject =log(1.0/angleinject);
      lnpt_relinject=log(zinject*angleinject);
      Double_t LundEntriesInject[4] = {yinject,lnpt_relinject,fOutputJets[0].perp(),fJet->Pt()};  
