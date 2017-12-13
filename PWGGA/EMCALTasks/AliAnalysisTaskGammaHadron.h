@@ -28,8 +28,9 @@
     void                        SetEffHistGamma(THnF *h)                              { fHistEffGamma    = h      ; }
     void                        SetEffHistHadron(THnF *h)                             { fHistEffHadron   = h      ; }
     void                        SetSavePool(Bool_t input)                             { fSavePool        = input  ; }
-    void                        SetPlotMore(Int_t input)                             { fPlotQA          = input  ; }
+    void                        SetPlotMore(Int_t input)                              { fPlotQA          = input  ; }
     void                        SetEvtTriggerType(UInt_t input)                       { fTriggerType     = input  ; }
+    void                        SetTriggerPtCut(Double_t input)                       { fTriggerPtCut = input; }
     void                        SetEvtMixType(UInt_t input)                           { fMixingEventType = input  ; }
   //  void                        SetCutsId(Id, cent, ptCl,Ecl,,.... UInt_t input)      { fMixingEventType = input  ; }
     void                        SetClEnergyMin(Int_t input)                           { fClEnergyMin = input;}
@@ -71,8 +72,9 @@
     Int_t                       CorrelateClusterAndTrack(AliParticleContainer* tracks,TObjArray* bgTracks,Bool_t SameMix, Double_t Weight);
     Int_t                       CorrelatePi0AndTrack(AliParticleContainer* tracks,TObjArray* bgTracks,Bool_t SameMix, Double_t Weight);
     void                        FillPi0CandsHist(AliTLorentzVector CaloClusterVec,AliTLorentzVector CaloClusterVec2,AliTLorentzVector CaloClusterVecPi0,Double_t fMaxClusM02,Double_t Weight);
-    void                        FillGhHisograms(Int_t identifier,AliTLorentzVector ClusterVec,AliVParticle* TrackVec, Double_t ClusterEcut, Double_t Weight);
-    void                        FillQAHisograms(Int_t identifier,AliClusterContainer* clusters,AliVCluster* caloCluster,AliVParticle* TrackVec);
+    void                        FillTriggerHist(AliTLorentzVector ClusterVec, Double_t Weight);
+    void                        FillGhHistograms(Int_t identifier,AliTLorentzVector ClusterVec,AliVParticle* TrackVec, Double_t Weight);
+    void                        FillQAHistograms(Int_t identifier,AliClusterContainer* clusters,AliVCluster* caloCluster,AliVParticle* TrackVec);
     Bool_t                      AccClusterForAna(AliClusterContainer* clusters, AliVCluster* caloCluster);
     Bool_t                      AccClusPairForAna(AliVCluster* cluster1, AliVCluster * cluster2, TLorentzVector vecPi0);
     Bool_t                      DetermineMatchedTrack(AliVCluster* caloCluster,Double_t &etadiff,Double_t & phidiff);
@@ -109,6 +111,7 @@
   Double_t                    fArrayNVertBins[21];       ///< 21=kNvertBins+1
 
   //..cuts
+  Double_t                    fTriggerPtCut;          ///< Cut of 5 GeV/c on Trigger Pt
   Double_t                    fClShapeMin;               ///< Minimum cluster shape
   Double_t                    fClShapeMax;               ///< Maximum cluster shape
   Double_t                    fClEnergyMin;              ///< Minimum cluster energy for pi0 Reconstruction
@@ -166,8 +169,9 @@
   TH2                      **fHistDEtaDPhiTrackQA;     //!<! Distribution of tracks in delta phi delta eta
   TH2                      **fHistClusterTime;         //!<! Cluster time vs energy
   THnSparseF                *fCorrVsManyThings;        //!<! Thn sparse filled with delta phi, delta eta,Eg,zt,xi,vertex Z,centrality...
+  THnSparseF                *fTriggerHist;             //!<! Thn sparse filled with Eg,vertex Z,eventPlane Bin,centrality,
   THnSparseF                *fClusterProp;             //!<! Thn sparse filled with cluster properties
-  TH2                	    *fHPoolReady;              //!<! Check how many Jobs start mixing
+  TH2                 	    *fHPoolReady;              //!<! Check how many Jobs start mixing
   //
 
  private:
