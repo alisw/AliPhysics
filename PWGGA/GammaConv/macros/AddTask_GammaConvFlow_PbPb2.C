@@ -353,6 +353,17 @@ void AddTask_GammaConvFlow_PbPb2(
     cuts.AddCut("50200013", "08200009007000008250400000"); // |eta| < 0.4
     cuts.AddCut("52400013", "05200009007000008250400000"); // |eta| < 0.5
     cuts.AddCut("52400013", "08200009007000008250400000"); // |eta| < 0.4
+  //Additional checks purity with semi-closed TPC cuts
+  } else if (trainConfig == 83) {
+    cuts.AddCut("50200013", "00200009207000008250400000"); // TPCe -5,5
+    cuts.AddCut("52400013", "00200009207000008250400000"); // TPCe -5,5
+    cuts.AddCut("50200013", "00200009407000008250400000"); // TPCe -6,7
+    cuts.AddCut("52400013", "00200009407000008250400000"); // TPCe -6,7
+  } else if (trainConfig == 84) {
+    cuts.AddCut("50200013", "00200009017000008250400000"); // TPCpi 0,-10
+    cuts.AddCut("52400013", "00200009017000008250400000"); // TPCpi 0,-10
+    cuts.AddCut("50200013", "00200009097000008250400000"); // TPCpi 1,0.5
+    cuts.AddCut("52400013", "00200009097000008250400000"); // TPCpi 1,0.5
   } else {
       Error(Form("GammaConvV1_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
       return;
