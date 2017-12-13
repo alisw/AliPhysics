@@ -3423,7 +3423,6 @@ void AliConvEventCuts::GetNotRejectedParticles(Int_t rejection, TList *HeaderLis
 //                   if (fDebugLevel > 0 ) cout << "cond 2: " << fnHeaders << endl;
                   fnHeaders++;
                   continue;
-
                 }
               }
               if ( fMCEventAOD){
@@ -3567,9 +3566,9 @@ void AliConvEventCuts::GetNotRejectedParticles(Int_t rejection, TList *HeaderLis
 }
 
 //_________________________________________________________________________
-Int_t AliConvEventCuts::IsParticleFromBGEvent(Int_t index, AliMCEvent *mcEvent, AliVEvent *InputEvent){
+Int_t AliConvEventCuts::IsParticleFromBGEvent(Int_t index, AliMCEvent *mcEvent, AliVEvent *InputEvent, Int_t debug ){
 
-  if (fDebugLevel > 2 ) cout << index << endl;
+  //   if (debug > 2 ) cout << index << endl;
   if(index < 0) return 0; // No Particle
 
   Int_t accepted = 0;
@@ -3577,16 +3576,17 @@ Int_t AliConvEventCuts::IsParticleFromBGEvent(Int_t index, AliMCEvent *mcEvent, 
     if(!mcEvent) return 0; // no mcEvent available, return 0
     if(index >= mcEvent->GetNumberOfPrimaries()){ // initial particle is secondary particle
       if( ((TParticle*)mcEvent->Particle(index))->GetMother(0) < 0) return 0; // material particle, return 0
-      return IsParticleFromBGEvent(((TParticle*)mcEvent->Particle(index))->GetMother(0),mcEvent,InputEvent);
+      return IsParticleFromBGEvent(((TParticle*)mcEvent->Particle(index))->GetMother(0),mcEvent,InputEvent, debug);
     }
     for(Int_t i = 0;i<fnHeaders;i++){
-      if (fDebugLevel > 2 ) cout << "header " << i << ":"<< fNotRejectedStart[i] << "\t" << fNotRejectedEnd[i] << endl;
+      //       if (debug > 2 ) cout << "header " << fGeneratorNames[i].Data() << ":"<< fNotRejectedStart[i] << "\t" << fNotRejectedEnd[i] << endl;
       if(index >= fNotRejectedStart[i] && index <= fNotRejectedEnd[i]){
-        if (fDebugLevel > 1 ) cout << "accepted:" << index << "\t header " << i << ": "<< fNotRejectedStart[i] << "\t" << fNotRejectedEnd[i] << endl;
+        if (debug > 1 ) cout << "accepted:" << index << "\t header " << fGeneratorNames[i].Data()  << ": "<< fNotRejectedStart[i] << "\t" << fNotRejectedEnd[i] << endl;
         accepted = 1;
         if(i == 0) accepted = 2; // MB Header
       }
     }
+    if (debug > 1 && !accepted) cout << "rejected:" << index << endl;
   }
   else if(InputEvent->IsA()==AliAODEvent::Class()){
     TClonesArray *AODMCTrackArray = dynamic_cast<TClonesArray*>(InputEvent->FindListObject(AliAODMCParticle::StdBranchName()));
@@ -3595,7 +3595,7 @@ Int_t AliConvEventCuts::IsParticleFromBGEvent(Int_t index, AliMCEvent *mcEvent, 
       if(!aodMCParticle) return 0; // no particle
       if(!aodMCParticle->IsPrimary()){
         if( aodMCParticle->GetMother() < 0) return 0;// material particle, return 0
-        return IsParticleFromBGEvent(aodMCParticle->GetMother(),mcEvent,InputEvent);
+        return IsParticleFromBGEvent(aodMCParticle->GetMother(),mcEvent,InputEvent, debug);
       }
       index = TMath::Abs(static_cast<AliAODMCParticle*>(AODMCTrackArray->At(index))->GetLabel());
       for(Int_t i = 0;i<fnHeaders;i++){

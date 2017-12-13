@@ -64,6 +64,7 @@ void AddTask_GammaConvCalo_PbPb(  Int_t     trainConfig                     = 1,
                                   Int_t     enableQAPhotonTask              = 0,                      // enable additional QA task
                                   TString   fileNameInputForWeighting       = "MCSpectraInput.root",  // path to file for weigting input / modified acceptance
                                   Int_t     headerSelectionInt              = 0,                      // 1 pi0 header, 2 eta header, 3 both (only for "named" boxes)
+                                  Bool_t    enableHeaderOverlap             = kTRUE,                // allow overlapping header for the clusters
                                   TString   cutnumberAODBranch              = "100000006008400000001500000",
                                   TString   periodName                      = "LHC13d2",              // name of the period for added signals and weighting
                                   Bool_t    doWeighting                     = kFALSE,                 // enable Weighting
@@ -301,8 +302,9 @@ void AddTask_GammaConvCalo_PbPb(  Int_t     trainConfig                     = 1,
     cuts.AddCut("50100013","00200009297002008250400000","1111102053032230000","0163103100000010"); // 0-10
     cuts.AddCut("50100013","00200009297002008250400000","1111171053032230000","0163103100000010"); // 0-10
   } else if (trainConfig == 35){ // EMCAL clusters
-    cuts.AddCut("50100013","00200009297002008250400000","11111020530a2230000","0163103100000010"); // 0-10
+    cuts.AddCut("50100013","00200009297002008250400000","11111020530a2230000","0163103100000010"); // 0-10 // using cluster cuts of Astrid
     cuts.AddCut("50100013","00200009297002008250400000","11111710530a2230000","0163103100000010"); // 0-10
+    cuts.AddCut("50100013","00200009297002008250400000","1111171053032230000","0163103100000010");
   } else if (trainConfig == 36){ // EMCAL clusters
     cuts.AddCut("52500013","00200009297002008250400000","1111102053032230000","0163103100000010"); // 20-50
     cuts.AddCut("52500013","00200009297002008250400000","1111172053032230000","0163103100000010"); // 20-50
@@ -325,6 +327,30 @@ void AddTask_GammaConvCalo_PbPb(  Int_t     trainConfig                     = 1,
     cuts.AddCut("52500023","00200009297002008250400000","1111172053032230000","0163103100000010"); // 20-50
     cuts.AddCut("52500023","00200009297002008250400000","11111720530a2230000","0163103100000010"); // 20-50
     cuts.AddCut("52500023","00200009297002008250400000","11111720530b2230000","0163103100000010"); // 20-50
+  } else if (trainConfig == 42){ // EMCAL clusters all headers
+    cuts.AddCut("50100003","00200009297002008250400000","11111020530a2230000","0163103100000010"); // 0-10
+    cuts.AddCut("50100003","00200009297002008250400000","11111710530a2230000","0163103100000010"); // 0-10
+    cuts.AddCut("50100003","00200009297002008250400000","1111171053032230000","0163103100000010");
+  } else if (trainConfig == 43){ // EMCAL clusters added signals pi0 header forseen
+    cuts.AddCut("50100023","00200009297002008250400000","11111020530a2230000","0163103100000010"); // 0-10 // using cluster cuts of Astrid
+    cuts.AddCut("50100023","00200009297002008250400000","11111710530a2230000","0163103100000010"); // 0-10
+    cuts.AddCut("50100023","00200009297002008250400000","1111171053032230000","0163103100000010");
+  } else if (trainConfig == 44){ // EMCAL clusters added signals eta header forseen
+    cuts.AddCut("50100023","00200009297002008250400000","11111020530a2230000","0163103100000010"); // 0-10 // using cluster cuts of Astrid
+    cuts.AddCut("50100023","00200009297002008250400000","11111710530a2230000","0163103100000010"); // 0-10
+    cuts.AddCut("50100023","00200009297002008250400000","1111171053032230000","0163103100000010");
+  } else if (trainConfig == 45){ // EMCAL clusters added signals other header forseen
+    cuts.AddCut("50100023","00200009297002008250400000","11111020530a2230000","0163103100000010"); // 0-10 // using cluster cuts of Astrid
+    cuts.AddCut("50100023","00200009297002008250400000","11111710530a2230000","0163103100000010"); // 0-10
+    cuts.AddCut("50100023","00200009297002008250400000","1111171053032230000","0163103100000010");
+  } else if (trainConfig == 46){ // EMCAL clusters added signals other header forseen
+    cuts.AddCut("50100023","00200009297002008250400000","11111020530a2230000","0163103100000010"); // 0-10 // using cluster cuts of Astrid
+    cuts.AddCut("50100023","00200009297002008250400000","11111710530a2230000","0163103100000010"); // 0-10
+    cuts.AddCut("50100023","00200009297002008250400000","1111171053032230000","0163103100000010");
+  } else if (trainConfig == 47){ // EMCAL clusters V0 Cent
+    cuts.AddCut("10100013","00200009297002008250400000","11111020530a2230000","0163103100000010"); // 0-10 // using cluster cuts of Astrid
+    cuts.AddCut("10100013","00200009297002008250400000","11111710530a2230000","0163103100000010"); // 0-10
+    cuts.AddCut("10100013","00200009297002008250400000","1111171053032230000","0163103100000010");
 
   } else if (trainConfig == 101){ // PHOS clusters
     cuts.AddCut("60100013","00200009297002008250400000","2444400042033200000","0163103100000010"); // 0-5%
@@ -489,11 +515,75 @@ void AddTask_GammaConvCalo_PbPb(  Int_t     trainConfig                     = 1,
     } else if (headerSelectionInt == 2){
       TObjString *Header1 = new TObjString("eta_2");
       HeaderList->Add(Header1);
-    } else {
-      TObjString *Header1 = new TObjString("pi0_1");
+    } else if (headerSelectionInt == 3){
+      TString nameHeaders[2]    = { "pi0_1", "eta_2" };
+      for (Int_t iHead = 0; iHead < 2; iHead++ ){
+        TObjString *Header = new TObjString(nameHeaders[iHead]);
+        HeaderList->Add(Header);
+      }
+    } else if (headerSelectionInt == 4){
+      TObjString *Header1 = new TObjString("pi0EMC_3");
       HeaderList->Add(Header1);
-      TObjString *Header2 = new TObjString("eta_2");
-      HeaderList->Add(Header2);
+    } else if (headerSelectionInt == 5){
+      TObjString *Header1 = new TObjString("etaEMC_5");
+      HeaderList->Add(Header1);
+    } else if (headerSelectionInt == 6){
+      TString nameHeaders[2]    = { "pi0EMC_3", "etaEMC_5" };
+      for (Int_t iHead = 0; iHead < 2; iHead++ ){
+        TObjString *Header = new TObjString(nameHeaders[iHead]);
+        HeaderList->Add(Header);
+      }
+    } else if (headerSelectionInt == 7){
+      TString nameHeaders[4]    = { "pi0_1", "eta_2", "pi0EMC_3", "etaEMC_5" };
+      for (Int_t iHead = 0; iHead < 4; iHead++ ){
+        TObjString *Header = new TObjString(nameHeaders[iHead]);
+        HeaderList->Add(Header);
+      }
+    } else if (headerSelectionInt == 8){
+      TObjString *Header1 = new TObjString("gEMCPhoton_7");
+      HeaderList->Add(Header1);
+    } else if (headerSelectionInt == 9){
+      TString nameHeaders[10]   = { "Pythia_Jets_PtHard_1_10", "Pythia_Jets_PtHard_2_10", "Pythia_Jets_PtHard_3_10", "Pythia_Jets_PtHard_4_10", "Pythia_Jets_PtHard_5_10",
+        "Pythia_Jets_PtHard_6_10", "Pythia_Jets_PtHard_7_10", "Pythia_Jets_PtHard_8_10", "Pythia_Jets_PtHard_9_10", "Pythia_Jets_PtHard_10_10"
+      };
+      for (Int_t iHead = 0; iHead < 10; iHead++ ){
+        TObjString *Header = new TObjString(nameHeaders[iHead]);
+        HeaderList->Add(Header);
+      }
+    } else if (headerSelectionInt == 10){
+      TObjString *Header1 = new TObjString("pythia_bele_10_10");
+      HeaderList->Add(Header1);
+    } else if (headerSelectionInt == 11){
+      TString nameHeaders[34]   = { "Pythia_Jets_PtHard_1_10", "Pythia_Jets_PtHard_2_10", "Pythia_Jets_PtHard_3_10", "Pythia_Jets_PtHard_4_10", "Pythia_Jets_PtHard_5_10",
+        "Pythia_Jets_PtHard_6_10", "Pythia_Jets_PtHard_7_10", "Pythia_Jets_PtHard_8_10", "Pythia_Jets_PtHard_9_10", "Pythia_Jets_PtHard_10_10",
+        "gEMCPhoton_7", "flat pt kstar_8", "flat pt kstarbar_9", "pythia_cele_10_10", "pythia_cele_18_10",
+        "pythia_cele_30_10", "pythia_cele_50_10", "pythia_ccbar_10_10", "pythia_ccbar_18_10", "pythia_ccbar_30_10",
+        "pythia_ccbar_50_10", "pythia_bele_10_10", "pythia_bele_18_10", "pythia_bele_30_10", "pythia_bele_50_10",
+        "pythia_bbbar_10_10", "pythia_bbbar_18_10", "pythia_bbbar_30_10", "pythia_bbbar_50_10", "pi0_1",
+        "eta_2", "pi0EMC_3", "etaEMC_5", "hijing_0"
+      };
+      for (Int_t iHead = 0; iHead < 34; iHead++ ){
+        TObjString *Header = new TObjString(nameHeaders[iHead]);
+        HeaderList->Add(Header);
+      }
+    } else if (headerSelectionInt == 12){
+      TObjString *Header1 = new TObjString("pi0PHS_4");
+      HeaderList->Add(Header1);
+    } else if (headerSelectionInt == 13){
+      TObjString *Header1 = new TObjString("etaPHS_6");
+      HeaderList->Add(Header1);
+    } else if (headerSelectionInt == 14){
+      TString nameHeaders[2]    = { "pi0PHS_4", "etaPHS_6" };
+      for (Int_t iHead = 0; iHead < 2; iHead++ ){
+        TObjString *Header = new TObjString(nameHeaders[iHead]);
+        HeaderList->Add(Header);
+      }
+    } else {
+      TString nameHeaders[2]    = { "pi0_1", "eta_2" };
+      for (Int_t iHead = 0; iHead < 2; iHead++ ){
+        TObjString *Header = new TObjString(nameHeaders[iHead]);
+        HeaderList->Add(Header);
+      }
     }
   } else if (periodName.CompareTo("LHC14a1b")==0 || periodName.CompareTo("LHC14a1c")==0){
     TObjString *Header1 = new TObjString("BOX");
@@ -563,30 +653,24 @@ void AddTask_GammaConvCalo_PbPb(  Int_t     trainConfig                     = 1,
 
     if (trainConfig == 34 || trainConfig == 35){
       if (periodName.CompareTo("LHC14a1a") ==0 || periodName.CompareTo("LHC14a1b") ==0 || periodName.CompareTo("LHC14a1c") ==0 ){
-        if ( i == 0 && doWeighting)  analysisEventCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kTRUE, kFALSE,fileNameInputForWeighting, Form("Pi0_Hijing_%s_PbPb_2760GeV_0010TPC",periodName.Data()), Form("Eta_Hijing_%s_PbPb_2760GeV_0010TPC",periodName.Data()), "","Pi0_Fit_Data_PbPb_2760GeV_0010V0M","Eta_Fit_Data_PbPb_2760GeV_0010V0M");
-        if ( i == 1 && doWeighting)  analysisEventCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kTRUE, kFALSE,fileNameInputForWeighting, Form("Pi0_Hijing_%s_PbPb_2760GeV_0010TPC",periodName.Data()), Form("Eta_Hijing_%s_PbPb_2760GeV_0010TPC",periodName.Data()), "","Pi0_Fit_Data_PbPb_2760GeV_0010V0M","Eta_Fit_Data_PbPb_2760GeV_0010V0M");
+        if ( doWeighting)  analysisEventCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kTRUE, kFALSE,fileNameInputForWeighting, Form("Pi0_Hijing_%s_PbPb_2760GeV_0010TPC",periodName.Data()), Form("Eta_Hijing_%s_PbPb_2760GeV_0010TPC",periodName.Data()), "","Pi0_Fit_Data_PbPb_2760GeV_0010V0M","Eta_Fit_Data_PbPb_2760GeV_0010V0M");
       }
     }
     if (trainConfig == 36 || trainConfig == 37){
       if (periodName.CompareTo("LHC14a1a") ==0 || periodName.CompareTo("LHC14a1b") ==0 || periodName.CompareTo("LHC14a1c") ==0 ){
-        if ( i == 0 && doWeighting)  analysisEventCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kTRUE, kFALSE,fileNameInputForWeighting, Form("Pi0_Hijing_%s_PbPb_2760GeV_2050TPC",periodName.Data()), Form("Eta_Hijing_%s_PbPb_2760GeV_2050TPC",periodName.Data()), "","Pi0_Fit_Data_PbPb_2760GeV_2050V0M","Eta_Fit_Data_PbPb_2760GeV_2050V0M");
-        if ( i == 1 && doWeighting)  analysisEventCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kTRUE, kFALSE,fileNameInputForWeighting, Form("Pi0_Hijing_%s_PbPb_2760GeV_2050TPC",periodName.Data()), Form("Eta_Hijing_%s_PbPb_2760GeV_2050TPC",periodName.Data()), "","Pi0_Fit_Data_PbPb_2760GeV_2050V0M","Eta_Fit_Data_PbPb_2760GeV_2050V0M");
+        if ( doWeighting)   analysisEventCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kTRUE, kFALSE,fileNameInputForWeighting, Form("Pi0_Hijing_%s_PbPb_2760GeV_2050TPC",periodName.Data()), Form("Eta_Hijing_%s_PbPb_2760GeV_2050TPC",periodName.Data()), "","Pi0_Fit_Data_PbPb_2760GeV_2050V0M","Eta_Fit_Data_PbPb_2760GeV_2050V0M");
       }
     }
 
-    if (trainConfig == 38 || trainConfig == 39){
+    if (trainConfig == 38 || trainConfig == 39 || trainConfig == 43 || trainConfig == 44){
       if (periodName.CompareTo("LHC14a1a") ==0 || periodName.CompareTo("LHC14a1b") ==0 || periodName.CompareTo("LHC14a1c") ==0 ){
-        if ( i == 0 && doWeighting)  analysisEventCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kTRUE, kFALSE,fileNameInputForWeighting, Form("Pi0_Hijing_%s_addSig_PbPb_2760GeV_0010TPC",periodName.Data()), Form("Eta_Hijing_%s_addSig_PbPb_2760GeV_0010TPC",periodName.Data()), "","Pi0_Fit_Data_PbPb_2760GeV_0010V0M","Eta_Fit_Data_PbPb_2760GeV_0010V0M");
-        if ( i == 1 && doWeighting)  analysisEventCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kTRUE, kFALSE,fileNameInputForWeighting, Form("Pi0_Hijing_%s_addSig_PbPb_2760GeV_0010TPC",periodName.Data()), Form("Eta_Hijing_%s_addSig_PbPb_2760GeV_0010TPC",periodName.Data()), "","Pi0_Fit_Data_PbPb_2760GeV_0010V0M","Eta_Fit_Data_PbPb_2760GeV_0010V0M");
-        if ( i == 2 && doWeighting)  analysisEventCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kTRUE, kFALSE,fileNameInputForWeighting, Form("Pi0_Hijing_%s_addSig_PbPb_2760GeV_0010TPC",periodName.Data()), Form("Eta_Hijing_%s_addSig_PbPb_2760GeV_0010TPC",periodName.Data()), "","Pi0_Fit_Data_PbPb_2760GeV_0010V0M","Eta_Fit_Data_PbPb_2760GeV_0010V0M");
+        if ( doWeighting)  analysisEventCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kTRUE, kFALSE,fileNameInputForWeighting, Form("Pi0_Hijing_%s_addSig_PbPb_2760GeV_0010TPC",periodName.Data()), Form("Eta_Hijing_%s_addSig_PbPb_2760GeV_0010TPC",periodName.Data()), "","Pi0_Fit_Data_PbPb_2760GeV_0010V0M","Eta_Fit_Data_PbPb_2760GeV_0010V0M");
       }
     }
 
     if (trainConfig == 40 || trainConfig == 41){
       if (periodName.CompareTo("LHC14a1a") ==0 || periodName.CompareTo("LHC14a1b") ==0 || periodName.CompareTo("LHC14a1c") ==0 ){
-        if ( i == 0 && doWeighting)  analysisEventCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kTRUE, kFALSE,fileNameInputForWeighting, Form("Pi0_Hijing_%s_addSig_PbPb_2760GeV_2050TPC",periodName.Data()), Form("Eta_Hijing_%s_addSig_PbPb_2760GeV_2050TPC",periodName.Data()), "","Pi0_Fit_Data_PbPb_2760GeV_2050V0M","Eta_Fit_Data_PbPb_2760GeV_2050V0M");
-        if ( i == 1 && doWeighting)  analysisEventCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kTRUE, kFALSE,fileNameInputForWeighting, Form("Pi0_Hijing_%s_addSig_PbPb_2760GeV_2050TPC",periodName.Data()), Form("Eta_Hijing_%s_addSig_PbPb_2760GeV_2050TPC",periodName.Data()), "","Pi0_Fit_Data_PbPb_2760GeV_2050V0M","Eta_Fit_Data_PbPb_2760GeV_2050V0M");
-        if ( i == 2 && doWeighting)  analysisEventCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kTRUE, kFALSE,fileNameInputForWeighting, Form("Pi0_Hijing_%s_addSig_PbPb_2760GeV_2050TPC",periodName.Data()), Form("Eta_Hijing_%s_addSig_PbPb_2760GeV_2050TPC",periodName.Data()), "","Pi0_Fit_Data_PbPb_2760GeV_2050V0M","Eta_Fit_Data_PbPb_2760GeV_2050V0M");
+        if ( doWeighting)  analysisEventCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kTRUE, kFALSE,fileNameInputForWeighting, Form("Pi0_Hijing_%s_addSig_PbPb_2760GeV_2050TPC",periodName.Data()), Form("Eta_Hijing_%s_addSig_PbPb_2760GeV_2050TPC",periodName.Data()), "","Pi0_Fit_Data_PbPb_2760GeV_2050V0M","Eta_Fit_Data_PbPb_2760GeV_2050V0M");
       }
     }
 
@@ -626,6 +710,7 @@ void AddTask_GammaConvCalo_PbPb(  Int_t     trainConfig                     = 1,
 
   }
 
+  task->SetAllowOverlapHeaders(enableHeaderOverlap);
   task->SetEventCutList(numberOfCuts,EventCutList);
   task->SetConversionCutList(numberOfCuts,ConvCutList);
   task->SetCaloCutList(numberOfCuts,ClusterCutList);
