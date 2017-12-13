@@ -3978,55 +3978,115 @@ Bool_t AliCaloPhotonCuts::SetMaxM02(Int_t maxM02)
       if (!fUseM02) fUseM02=1;
       fMaxM02=0.35;
       break;
-    case 10:
+    case 10: // a
       if (!fUseM02) fUseM02=1;
       fMaxM02=0.33;
       break;
-    case 11:
+    case 11: // b
       if (!fUseM02) fUseM02=1;
       fMaxM02=0.28;
       break;
-    case 12:
+    case 12: // c
       if (!fUseM02) fUseM02=1;
       fMaxM02=0.32;
       break;
-
-    case 20:
+    // E dependent configurations
+    case 13:  // d
+      //(0.27 + 0.0072 * TMath::Power(clusEnergy,2));
+      fUseM02=2;
+      fMinM02CutNr=9;
+      fMaxM02=0.4;
+      break;
+    case 14:  // e
+      //(0.31 + 0.0072 * TMath::Power(clusEnergy,2));
       fUseM02=2;
       fMinM02CutNr=9;
       fMaxM02=0.5;
       break;
-    case 21:
+    case 15:  // f
+      //(0.36 + 0.0072 * TMath::Power(clusEnergy,2));
+      fUseM02=2;
+      fMinM02CutNr=9;
+      fMaxM02=0.7;
+      break;
+    case 16:  // g
+      // (0.37 + 0.0072 * TMath::Power(clusEnergy,2));
+      fUseM02=2;
+      fMinM02CutNr=9;
+      fMaxM02=0.7;
+      break;
+    case 17:  // h
+      //(0.30 + 0.0072 * TMath::Power(clusEnergy,2));
       fUseM02=2;
       fMinM02CutNr=9;
       fMaxM02=0.5;
       break;
-    case 22:
+    case 18:  // i
+      // (0.35 + 0.0072 * TMath::Power(clusEnergy,2));
       fUseM02=2;
       fMinM02CutNr=9;
       fMaxM02=0.7;
       break;
-    case 23:
+    case 19:  // j
+      // (0.25 + 0.0072 * TMath::Power(clusEnergy,2));
+      fUseM02=2;
+      fMinM02CutNr=9;
+      fMaxM02=0.39;
+      break;
+    case 20:  //k
+      //(0.27 + 0.0092 * TMath::Power(clusEnergy,2));
+      fUseM02=2;
+      fMinM02CutNr=9;
+      fMaxM02=0.5;
+      break;
+    case 21:  // l
+      //(0.32 + 0.0072 * TMath::Power(clusEnergy,2));
+      fUseM02=2;
+      fMinM02CutNr=9;
+      fMaxM02=0.5;
+      break;
+    case 22:  // m
+      // (0.32 + 0.0152 * TMath::Power(clusEnergy,2));
+      fUseM02=2;
+      fMinM02CutNr=9;
+      fMaxM02=0.5;
+      break;
+    case 23:  // n
+      // (0.32 + 0.0238 * TMath::Power(clusEnergy,2));
       fUseM02=2;
       fMinM02CutNr=9;
       fMaxM02=0.7;
       break;
-    case 24:
+    case 24:  // o
+      // (0.27 + 0.0092 * TMath::Power(clusEnergy,2));
       fUseM02=2;
       fMinM02CutNr=9;
       fMaxM02=0.7;
       break;
-    case 25:
+    case 25:  // p
+      // (0.32 + 0.0072 * TMath::Power(clusEnergy,2));
       fUseM02=2;
       fMinM02CutNr=9;
       fMaxM02=0.7;
       break;
-    case 26:
+    case 26:  // q
+      // (0.34 + 0.0072 * TMath::Power(clusEnergy,2));
       fUseM02=2;
       fMinM02CutNr=9;
       fMaxM02=0.7;
       break;
-
+    case 27:  // r
+      // (0.25 + 0.0072 * TMath::Power(clusEnergy,2));
+      fUseM02=2;
+      fMinM02CutNr=9;
+      fMaxM02=0.5;
+      break;
+    case 28:  // s
+      // (0.32 + 0.0238 * TMath::Power(clusEnergy,2));
+      fUseM02=2;
+      fMinM02CutNr=9;
+      fMaxM02=0.5;
+      break;
     default:
       AliError(Form("Max M02 Cut not defined %d",maxM02));
       return kFALSE;
@@ -4064,27 +4124,54 @@ Float_t AliCaloPhotonCuts::CalculateMaxM02 (Int_t maxM02, Float_t clusEnergy){
         return 10;
       }
 
-    case 20: //k
+    case 13:  // d
+      if( (0.27 + 0.0072 * TMath::Power(clusEnergy,2)) >= 0.4) return 0.4;
+      else return (0.27 + 0.0072 * TMath::Power(clusEnergy,2));
+    case 14:  // e
+      if( (0.31 + 0.0072 * TMath::Power(clusEnergy,2)) >= 0.5) return 0.5;
+      else return (0.31 + 0.0072 * TMath::Power(clusEnergy,2));
+    case 15:  // f
+      if( (0.36 + 0.0072 * TMath::Power(clusEnergy,2)) >= 0.7) return 0.7;
+      else return (0.36 + 0.0072 * TMath::Power(clusEnergy,2));
+    case 16:  // g
+      if( (0.37 + 0.0072 * TMath::Power(clusEnergy,2)) >= 0.7) return 0.7;
+      else return (0.37 + 0.0072 * TMath::Power(clusEnergy,2));
+    case 17:  // h
+      if( (0.30 + 0.0072 * TMath::Power(clusEnergy,2)) >= 0.5) return 0.5;
+      else return (0.30 + 0.0072 * TMath::Power(clusEnergy,2));
+    case 18:  // i
+      if( (0.35 + 0.0072 * TMath::Power(clusEnergy,2)) >= 0.7) return 0.7;
+      else return (0.35 + 0.0072 * TMath::Power(clusEnergy,2));
+    case 19:  // j
+      if( (0.25 + 0.0072 * TMath::Power(clusEnergy,2)) >= 0.39) return 0.39;
+      else return (0.25 + 0.0072 * TMath::Power(clusEnergy,2));
+    case 20:  // k
       if( (0.27 + 0.0092 * TMath::Power(clusEnergy,2)) >= 0.5) return 0.5;
       else return (0.27 + 0.0092 * TMath::Power(clusEnergy,2));
-    case 21: //l
+    case 21:  // l
       if( (0.32 + 0.0072 * TMath::Power(clusEnergy,2)) >= 0.5) return 0.5;
       else return (0.32 + 0.0072 * TMath::Power(clusEnergy,2));
-    case 22: //m
-      if( (0.32 + 0.0152 * TMath::Power(clusEnergy,2)) >= 0.7) return 0.7;
+    case 22:  // m
+      if( (0.32 + 0.0152 * TMath::Power(clusEnergy,2)) >= 0.5) return 0.5;
       else return (0.32 + 0.0152 * TMath::Power(clusEnergy,2));
-    case 23: //n
+    case 23:  // n
       if( (0.32 + 0.0238 * TMath::Power(clusEnergy,2)) >= 0.7) return 0.7;
       else return (0.32 + 0.0238 * TMath::Power(clusEnergy,2));
-    case 24: //o
-      if( (0.27 + 0.0092 * TMath::Power(clusEnergy,2)) >= 0.5) return 0.7;
+    case 24:  // o
+      if( (0.27 + 0.0092 * TMath::Power(clusEnergy,2)) >= 0.7) return 0.7;
       else return (0.27 + 0.0092 * TMath::Power(clusEnergy,2));
-    case 25: //p - standard
-      if( (0.32 + 0.0072 * TMath::Power(clusEnergy,2)) >= 0.5) return 0.7;
+    case 25:  // p - standard
+      if( (0.32 + 0.0072 * TMath::Power(clusEnergy,2)) >= 0.7) return 0.7;
       else return (0.32 + 0.0072 * TMath::Power(clusEnergy,2));
-    case 26: //q
-      if( (0.34 + 0.0072 * TMath::Power(clusEnergy,2)) >= 0.5) return 0.7;
+    case 26:  // q
+      if( (0.34 + 0.0072 * TMath::Power(clusEnergy,2)) >= 0.7) return 0.7;
       else return (0.34 + 0.0072 * TMath::Power(clusEnergy,2));
+    case 27:  // r
+      if( (0.25 + 0.0072 * TMath::Power(clusEnergy,2)) >= 0.5) return 0.5;
+      else return (0.25 + 0.0072 * TMath::Power(clusEnergy,2));
+    case 28:  // s
+      if( (0.32 + 0.0238 * TMath::Power(clusEnergy,2)) >= 0.5) return 0.5;
+      else return (0.32 + 0.0238 * TMath::Power(clusEnergy,2));
 
     default:
       AliError(Form("Max M02 for merged cluster Cut not defined %d",maxM02));
