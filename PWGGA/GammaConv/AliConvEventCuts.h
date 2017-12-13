@@ -474,7 +474,9 @@ class AliConvEventCuts : public AliAnalysisCuts {
       ///Cut functions
       Int_t   IsParticleFromBGEvent(  Int_t index,
                                       AliMCEvent *mcEvent,
-                                      AliVEvent *event = 0x0);
+                                      AliVEvent *event = 0x0,
+                                      Int_t debug = 0
+                                   );
 
       void    LoadWeightingFlatCentralityFromFile ();
       void    LoadWeightingMultiplicityFromFile ();

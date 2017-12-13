@@ -3990,7 +3990,8 @@ Bool_t AliCaloPhotonCuts::SetMaxM02(Int_t maxM02)
       if (!fUseM02) fUseM02=1;
       fMaxM02=0.32;
       break;
-    // E dependent configurations
+
+    // E dependent M02 variations
     case 13:  // d
       //(0.27 + 0.0072 * TMath::Power(clusEnergy,2));
       fUseM02=2;
@@ -4010,7 +4011,7 @@ Bool_t AliCaloPhotonCuts::SetMaxM02(Int_t maxM02)
       fMaxM02=0.7;
       break;
     case 16:  // g
-      // (0.37 + 0.0072 * TMath::Power(clusEnergy,2));
+      //(0.37 + 0.0072 * TMath::Power(clusEnergy,2))
       fUseM02=2;
       fMinM02CutNr=9;
       fMaxM02=0.7;
