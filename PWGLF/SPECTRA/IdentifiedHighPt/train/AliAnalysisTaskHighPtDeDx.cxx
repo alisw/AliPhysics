@@ -3755,6 +3755,5 @@ void AliAnalysisTaskHighPtDeDx::ProduceArrayV0AOD( AliAODEvent *AODevent, Analys
 	 
       }
     }//end v0's loop
-    
-  }  
+  }
 }
