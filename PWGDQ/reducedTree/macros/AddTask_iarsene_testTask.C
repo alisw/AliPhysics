@@ -70,8 +70,6 @@ void Setup(AliReducedAnalysisTest* processor, TString prod /*="LHC10h"*/) {
                                            (TH1I*)grpFile->Get("timeStart"), (TH1I*)grpFile->Get("timeStop"));
       grpFile->Close();
    }
-   
-  SetupHistogramManager(processor->GetHistogramManager(), prod);
   
   // Set event cuts
   AliReducedEventCut* evCut1 = new AliReducedEventCut("Centrality","Centrality selection");
@@ -95,24 +93,33 @@ void Setup(AliReducedAnalysisTest* processor, TString prod /*="LHC10h"*/) {
   pairCut1->AddCut(AliReducedVarManager::kPt, 0.0,100.0);
   //pairCut1->AddCut(AliReducedVarManager::kEta, -1.5,1.5);
   processor->AddPairCut(pairCut1);
+  
+  // add pure MC filter names
+  if(processor->ProcessMC()) {
+     processor->AddMCBitNames("JpsiInclusive;JpsiFromB;JpsiNotFromB;");
+     processor->AddMCBitNames("JpsiInclusiveRadiative;JpsiInclusiveNonRadiative;JpsiFromBRadiative;JpsiFromBNonRadiative;");
+  }
+  processor->SetTrackFilterBitNames("JpsiElectrons;AssocHadr;AssocHadr_noITS;AssocHadr_Pion;AssocHadr_Kaon;AssocHadr_Proton;");
+  
+  SetupHistogramManager(processor, processor->GetHistogramManager(), prod);
 }
 
 
 //_________________________________________________________________
-void SetupHistogramManager(AliHistogramManager* man, TString prod /*="LHC10h"*/) {
+void SetupHistogramManager(AliReducedAnalysisTest* testTask, AliHistogramManager* man, TString prod /*="LHC10h"*/) {
   //
   // setup the histograms manager
   //
   AliReducedVarManager::SetDefaultVarNames();
   
-  DefineHistograms(man, prod);
+  DefineHistograms(testTask, man, prod);
   
   AliReducedVarManager::SetUseVars(man->GetUsedVars());
 }
 
 
 //_________________________________________________________________
-void DefineHistograms(AliHistogramManager* man, TString prod /*="LHC10h"*/) {
+void DefineHistograms(AliReducedAnalysisTest* testTask, AliHistogramManager* man, TString prod /*="LHC10h"*/) {
   //
   // define histograms
   //
@@ -141,6 +148,10 @@ void DefineHistograms(AliHistogramManager* man, TString prod /*="LHC10h"*/) {
   histClasses += "TrackQA_ALambdaNegLeg;";
   histClasses += "TrackQA_PureALambdaNegLeg;";
   histClasses += "TrackQA_AllTracks;";            //ok
+  TString trkBitNames = testTask->GetTrackFilterBitNames();
+  TObjArray* trkBitNamesArr = trkBitNames.Tokenize(";");
+  for(Int_t iflag = 0; iflag<trkBitNamesArr->GetEntries(); ++iflag)
+     histClasses += Form("TrackQA_%s;", trkBitNamesArr->At(iflag)->GetName());
   histClasses += "TrackingFlags;TrackQualityFlags;PairQualityFlags_Offline;PairQualityFlags_OnTheFly;";   //ok
   histClasses += "TrackQualityFlags_GammaLeg;TrackQualityFlags_K0sLeg;";
   histClasses += "PairQA_OfflineGamma;";           // ok
@@ -161,9 +172,13 @@ void DefineHistograms(AliHistogramManager* man, TString prod /*="LHC10h"*/) {
   histClasses += "PairQA_OnTheFlyPureALambda;";
   histClasses += "PairQA_Jpsi2EE_PP;PairQA_Jpsi2EE_PM;PairQA_Jpsi2EE_MM;";  
   histClasses += "PairQA_ADzeroToKplusPiminus_PP;PairQA_ADzeroToKplusPiminus_PM;PairQA_ADzeroToKplusPiminus_MM;";
-  //if(hasMC) {
-     histClasses += "PureMCflags;PureMCqa_Signal1;PureMCqa_Signal2;";
-  //}
+  if(testTask->ProcessMC()) {
+    histClasses += "PureMCflags;";
+    //"PureMCflags;PureMCqa_Signal1;PureMCqa_Signal2;PureMCqa_Signal3;PureMCqa_Signal4;PureMCqa_Signal5;PureMCqa_Signal6;PureMCqa_Signal7;";
+    TObjArray* arrNames = testTask->GetMCBitNames().Tokenize(";"); 
+    for(Int_t iflag=0; iflag<arrNames->GetEntries(); ++iflag) 
+       histClasses += Form("PureMCqa_%s;", arrNames->At(iflag)->GetName());
+  }
   
   
   Int_t runNBins = 0;

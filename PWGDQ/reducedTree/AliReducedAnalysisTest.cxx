@@ -28,6 +28,7 @@ AliReducedAnalysisTest::AliReducedAnalysisTest() :
   fEventCuts(),
   fTrackCuts(),
   fPairCuts(),
+  fTrackFilterBitNames(""),
   fMCBitsNames("")
 {
   //
@@ -44,6 +45,7 @@ AliReducedAnalysisTest::AliReducedAnalysisTest(const Char_t* name, const Char_t*
   fEventCuts(),
   fTrackCuts(),
   fPairCuts(),
+  fTrackFilterBitNames(""),
   fMCBitsNames("")
 {
   //
@@ -254,23 +256,17 @@ void AliReducedAnalysisTest::FillTrackHistograms(TClonesArray* trackList) {
    AliReducedBaseTrack* track = 0x0;
    TIter nextTrack(trackList);
    if(trackList) {
-      for(Int_t it=0; it<fEvent->NTracks(); ++it) {
+      for(Int_t it=0; it<trackList->GetEntries(); ++it) {
          track = (AliReducedBaseTrack*)nextTrack();
          if(!track) continue;
+         // reset track variables
+         for(Int_t i=AliReducedVarManager::kNEventVars; i<AliReducedVarManager::kEMCALmatchedEOverP; ++i) fValues[i]=-9999.;
          
          if(fProcessMCInfo && track->GetMCFlags()) {
             AliReducedVarManager::FillTrackInfo(track,fValues);
             TObjArray* namesArr = fMCBitsNames.Tokenize(";");
             for(Int_t iflag = 0; iflag<namesArr->GetEntries(); ++iflag)
                if(track->TestMCFlag(iflag)) fHistosManager->FillHistClass(Form("PureMCqa_%s", namesArr->At(iflag)->GetName()), fValues);
-            /*if(track->TestMCFlag(0)) fHistosManager->FillHistClass("PureMCqa_Signal1", fValues);
-            if(track->TestMCFlag(1)) fHistosManager->FillHistClass("PureMCqa_Signal2", fValues);
-            if(track->TestMCFlag(2)) fHistosManager->FillHistClass("PureMCqa_Signal3", fValues);
-            if(track->TestMCFlag(3)) fHistosManager->FillHistClass("PureMCqa_Signal4", fValues);
-            if(track->TestMCFlag(4)) fHistosManager->FillHistClass("PureMCqa_Signal5", fValues);
-            if(track->TestMCFlag(5)) fHistosManager->FillHistClass("PureMCqa_Signal6", fValues);
-            if(track->TestMCFlag(6)) fHistosManager->FillHistClass("PureMCqa_Signal7", fValues);  */
-            
             for(UShort_t iflag=0; iflag<32; ++iflag) {
                AliReducedVarManager::FillTrackMCFlag(track, iflag, fValues);
                fHistosManager->FillHistClass("PureMCflags", fValues);
@@ -281,6 +277,10 @@ void AliReducedAnalysisTest::FillTrackHistograms(TClonesArray* trackList) {
          if(!IsTrackSelected(track)) continue;
          AliReducedVarManager::FillTrackInfo(track,fValues);
          fHistosManager->FillHistClass("TrackQA_AllTracks", fValues);
+         TObjArray* namesBitArr = fTrackFilterBitNames.Tokenize(";");
+         for(Int_t iflag = 0; iflag<namesBitArr->GetEntries(); ++iflag)
+            if(track->TestQualityFlag(iflag+32)) fHistosManager->FillHistClass(Form("TrackQA_%s", namesBitArr->At(iflag)->GetName()), fValues);
+         
          
          AliReducedTrackInfo* trackInfo = NULL;
          if(track->IsA()==AliReducedTrackInfo::Class()) trackInfo = (AliReducedTrackInfo*)track;
