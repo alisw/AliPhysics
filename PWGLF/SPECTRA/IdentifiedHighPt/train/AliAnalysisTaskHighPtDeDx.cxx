@@ -15,7 +15,6 @@ Comments:
 * 11 dec 2017: implemented a setting function for cosPA ("fCosPACut")
 * 13 dec 2017: cleanup + filtering to reduce output size: 
               - eta: 0.9->0.8
-	      - changed this if(TMath::Abs(deltaInvMassK0s) > fMassCut && TMath::Abs(deltaInvMassL) > fMassCut && TMath::Abs(deltaInvMassAntiL) > fMassCut && TMath::Abs(deltaInvMassG) > fMassCut ) continue; to if(TMath::Abs(deltaInvMassK0s) > fMassCut || TMath::Abs(deltaInvMassL) > fMassCut || TMath::Abs(deltaInvMassAntiL) > fMassCut || TMath::Abs(deltaInvMassG) > fMassCut ) continue;
 	      - setting function for DecayRCut: if (lV0Radius < fDecayRCut ) continue;
 
 
@@ -2306,9 +2305,9 @@ void AliAnalysisTaskHighPtDeDx::ProduceArrayV0ESD( AliESDEvent *ESDevent, Analys
       Double_t deltaInvMassAntiL = v0AntiLambdaKF.GetMass()-1.116;
 
 
-      if(TMath::Abs(deltaInvMassK0s) > fMassCut ||
-	 TMath::Abs(deltaInvMassL) > fMassCut ||
-	 TMath::Abs(deltaInvMassAntiL) > fMassCut ||
+      if(TMath::Abs(deltaInvMassK0s) > fMassCut &&
+	 TMath::Abs(deltaInvMassL) > fMassCut &&
+	 TMath::Abs(deltaInvMassAntiL) > fMassCut &&
 	TMath::Abs(deltaInvMassG) > fMassCut )
 	continue;
 
@@ -2812,9 +2811,9 @@ void AliAnalysisTaskHighPtDeDx::ProduceArrayV0ESD( AliESDEvent *ESDevent, Analys
       Double_t deltaInvMassAntiL = v0AntiLambdaKF.GetMass()-1.116;
       
       
-      if(TMath::Abs(deltaInvMassK0s) > fMassCut ||
-	 TMath::Abs(deltaInvMassL) > fMassCut ||
-	 TMath::Abs(deltaInvMassAntiL) > fMassCut ||
+      if(TMath::Abs(deltaInvMassK0s) > fMassCut &&
+	 TMath::Abs(deltaInvMassL) > fMassCut &&
+	 TMath::Abs(deltaInvMassAntiL) > fMassCut &&
 	 TMath::Abs(deltaInvMassG) > fMassCut )
 	continue;
       
@@ -3202,9 +3201,9 @@ void AliAnalysisTaskHighPtDeDx::ProduceArrayV0AOD( AliAODEvent *AODevent, Analys
       Double_t deltaInvMassL     = aodV0->MassLambda()-1.116;
       Double_t deltaInvMassAntiL = aodV0->MassAntiLambda()-1.116;
       
-      if(TMath::Abs(deltaInvMassK0s) > fMassCut ||
-	 TMath::Abs(deltaInvMassL) > fMassCut ||
-	 TMath::Abs(deltaInvMassAntiL) > fMassCut ||
+      if(TMath::Abs(deltaInvMassK0s) > fMassCut &&
+	 TMath::Abs(deltaInvMassL) > fMassCut &&
+	 TMath::Abs(deltaInvMassAntiL) > fMassCut &&
 	 TMath::Abs(deltaInvMassG) > fMassCut )
 	continue;
 
@@ -3532,9 +3531,9 @@ void AliAnalysisTaskHighPtDeDx::ProduceArrayV0AOD( AliAODEvent *AODevent, Analys
        Double_t deltaInvMassAntiL = aodV0->MassAntiLambda()-1.116;
        
        
-       if(TMath::Abs(deltaInvMassK0s) > fMassCut ||
-	  TMath::Abs(deltaInvMassL) > fMassCut ||
-	  TMath::Abs(deltaInvMassAntiL) > fMassCut ||
+       if(TMath::Abs(deltaInvMassK0s) > fMassCut &&
+	  TMath::Abs(deltaInvMassL) > fMassCut &&
+	  TMath::Abs(deltaInvMassAntiL) > fMassCut &&
 	  TMath::Abs(deltaInvMassG) > fMassCut )
 	 continue;
        
