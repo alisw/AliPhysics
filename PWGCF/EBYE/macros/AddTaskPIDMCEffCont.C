@@ -6,6 +6,7 @@ AliAnalysisTaskPIDMCEffCont *AddTaskPIDMCEffCont( TString  centralityEstimator="
                                                 Double_t etaMin=-0.8, Double_t etaMax=0.8,
                                                 Bool_t PIDNsigma = kFALSE,
 						Bool_t PIDPDG = kFALSE,
+						Bool_t DCAext = kFALSE,
                                                 AliAnalysisTaskPIDMCEffCont::kParticleOfInterest particleType = AliAnalysisTaskPIDMCEffCont::kPion,
                                                 Int_t AODfilterBit = 768,
                                                 TString fileNameBase="AnalysisResults"
@@ -66,6 +67,14 @@ AliAnalysisTaskPIDMCEffCont *AddTaskPIDMCEffCont( TString  centralityEstimator="
     suffixName[iCentralityBin] += gCentrality[iCentralityBin];
     suffixName[iCentralityBin] += "To";
     suffixName[iCentralityBin] += gCentrality[iCentralityBin+1];
+    suffixName[iCentralityBin] += "_fb";
+    suffixName[iCentralityBin] += AODfilterBit;
+
+    if(PIDNsigma)
+    suffixName[iCentralityBin] += "_nsigmaPID";
+
+    if(PIDPDG)
+    suffixName[iCentralityBin] += "_nsigmaPDG";
 
     AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
     if (!mgr) {
@@ -100,23 +109,26 @@ AliAnalysisTaskPIDMCEffCont *AddTaskPIDMCEffCont( TString  centralityEstimator="
     task[iCentralityBin]->SetVertexDiamond(3.,3.,vertexZ);
     task[iCentralityBin]->SetKinematicsCutsAOD(ptMin,ptMax,etaMin,etaMax);
     task[iCentralityBin]->SetAODtrackCutBit(AODfilterBit);
-    
+        
+    if(DCAext)
+	task[iCentralityBin]->USEextendedDCA();	    
+
     if(PIDNsigma) {
-            task[iCentralityBin]->UsePIDNsigma();
-            task[iCentralityBin]->SetNSigmaPID(nsigma);
-            task[iCentralityBin]->setParticleType(particleType);
-	    mgr->AddTask(task[iCentralityBin]); 
+	task[iCentralityBin]->UsePIDNsigma();
+        task[iCentralityBin]->SetNSigmaPID(nsigma);
+        task[iCentralityBin]->setParticleType(particleType);
+	mgr->AddTask(task[iCentralityBin]); 
    }
     
-    if(PIDPDG) {    
-	    task[iCentralityBin]->UsePIDPDG();
-    	    task[iCentralityBin]->setParticleType(particleType);
-            mgr->AddTask(task[iCentralityBin]); 
+    if(PIDPDG) {  
+	task[iCentralityBin]->UsePIDPDG();
+    	task[iCentralityBin]->setParticleType(particleType);
+        mgr->AddTask(task[iCentralityBin]); 
    }
 
     if(!PIDNsigma && !PIDPDG){
   	mgr->AddTask(task[iCentralityBin]);
-    }	
+   }	
        
     // Create ONLY the output containers for the data produced by the task.
     // Get and connect other common input/output containers via the manager as below

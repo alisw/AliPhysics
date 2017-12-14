@@ -40,14 +40,16 @@ class AliAnalysisTaskAccCont : public AliAnalysisTaskSE {
   }
 
   void UsePileUpCuts() {fUseOutOfBunchPileUpCutsLHC15o = kTRUE;}
- 
-  void UsePID(){fUsePID = kTRUE;}
+  
+  void USEextendedDCA() {fDCAext = kTRUE;}
+  
+  void UsePID() {fUsePID = kTRUE;}
 
   void SetNSigmaPID(Int_t nsigma) {
  
     fPIDNSigma = nsigma;
   }
-
+ 
   void UseOfflineTrigger() {fUseOfflineTrigger = kTRUE;}
 
   void SetCentralityEstimator(const char* centralityEstimator) {
@@ -103,10 +105,13 @@ class AliAnalysisTaskAccCont : public AliAnalysisTaskSE {
   TH3D *fHistEtaPhiVertexMinus;   
   TH3F *fHistDCAXYptchargedminus;
   TH3F *fHistDCAXYptchargedplus;
-
+  TH3F *fHistDCAXYptchargedminus_ext;
+  TH3F *fHistDCAXYptchargedplus_ext;
+  
   Bool_t fUseOfflineTrigger;//Usage of the offline trigger selection
   Bool_t fUseOutOfBunchPileUpCutsLHC15o;
   Bool_t fUsePID;
+  Bool_t fDCAext;
 
   Double_t fVxMax;//vxmax
   Double_t fVyMax;//vymax

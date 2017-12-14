@@ -52,22 +52,6 @@ fHistGeneratedEtaPtPhiPlus(0),
 fHistSurvivedEtaPtPhiPlus(0),
 fHistGeneratedEtaPtPhiMinus(0),
 fHistSurvivedEtaPtPhiMinus(0),
-fHistGeneratedEtaPtPlusControl(0),
-fHistSurvivedEtaPtPlusControl(0),
-fHistGeneratedEtaPtMinusControl(0),
-fHistSurvivedEtaPtMinusControl(0),
-fHistGeneratedEtaPtPlusPlus(0),
-fHistSurvivedEtaPtPlusPlus(0),
-fHistGeneratedEtaPtMinusMinus(0),
-fHistSurvivedEtaPtMinusMinus(0),
-fHistGeneratedEtaPtPlusMinus(0),
-fHistSurvivedEtaPtPlusMinus(0),
-fHistGeneratedPhiEtaPlusPlus(0),
-fHistSurvivedPhiEtaPlusPlus(0),
-fHistGeneratedPhiEtaMinusMinus(0),
-fHistSurvivedPhiEtaMinusMinus(0),
-fHistGeneratedPhiEtaPlusMinus(0),
-fHistSurvivedPhiEtaPlusMinus(0),
 fUseCentrality(kFALSE),
 fCentralityEstimator("V0M"),
 fCentralityPercentileMin(0.0),
@@ -92,11 +76,10 @@ fEtaMin(-0.8),
 fEtaMax(0.8),
 fUsePIDNsigma(kFALSE),
 fUsePIDPDG(kFALSE),
+fDCAextended(kFALSE),
 fPIDResponse(0),
 fPIDNSigma(3),
 fParticleOfInterest(kPion),
-fHistSurvived4EtaPtPhiPlus(0),
-fHistSurvived8EtaPtPhiPlus(0),
 fHistDCAXYptprimminus(0),
 fHistDCAXYptprimplus(0),
 fHistDCAXYptsecminusweak(0),
@@ -104,7 +87,15 @@ fHistDCAXYptsecplusweak(0),
 fHistDCAXYptsecminusmat(0),
 fHistDCAXYptsecplusmat(0),
 fHistDCAXYptchargedminus(0),
-fHistDCAXYptchargedplus(0)
+fHistDCAXYptchargedplus(0),
+fHistDCAXYptprimminus_ext(0),
+fHistDCAXYptprimplus_ext(0),
+fHistDCAXYptsecminusweak_ext(0),
+fHistDCAXYptsecplusweak_ext(0),
+fHistDCAXYptsecminusmat_ext(0),
+fHistDCAXYptsecplusmat_ext(0),
+fHistDCAXYptchargedminus_ext(0),
+fHistDCAXYptchargedplus_ext(0)
 {
     // Define input and output slots here
     // Input slot #0 works with a TChain
@@ -183,17 +174,7 @@ void AliAnalysisTaskPIDMCEffCont::UserCreateOutputObjects() {
   
     fHistEta = new TH1F("fHistEta","Eta distribution;Eta;Number Of Entries",100,-1,1);
     fQAList->Add(fHistEta);
-
    
-    //Electron cuts -> PID QA
-    //fHistNSigmaTPCvsPtbeforePID = new TH2F ("NSigmaTPCvsPtbefore","NSigmaTPCvsPtbefore",200, 0, 20, 200, -10, 10);
-    //fQAList->Add(fHistNSigmaTPCvsPtbeforePID);
-    
-    //fHistNSigmaTPCvsPtafterPID = new TH2F ("NSigmaTPCvsPtafter","NSigmaTPCvsPtafter",200, 0, 20, 200, -10, 10);
-    //fQAList->Add(fHistNSigmaTPCvsPtafterPID);
-    
-    //Contamination for Secondaries
-    
     fHistContaminationSecondariesPlus = new TH3D("fHistContaminationSecondariesPlus","Secondaries;#eta;p_{T} (GeV/c);#varphi",etaBin,nArrayEta,ptBin,nArrayPt,phiBin,nArrayPhi);
     fOutputList->Add(fHistContaminationSecondariesPlus);
     
@@ -228,28 +209,7 @@ void AliAnalysisTaskPIDMCEffCont::UserCreateOutputObjects() {
     fHistSurvivedEtaPtPhiMinus = new TH3D("fHistSurvivedEtaPtPhiMinus",
                                           "Survived positive primaries;#eta;p_{T} (GeV/c);#phi",
                                           etaBin,nArrayEta,ptBin,nArrayPt,phiBin,nArrayPhi);
-    fOutputList->Add(fHistSurvivedEtaPtPhiMinus);
-    
-    //eta vs pt for MC positives (control)
-    fHistGeneratedEtaPtPlusControl = new TH2F("fHistGeneratedEtaPtPlusControl",
-                                              "Generated positive primaries;#eta;p_{T} (GeV/c)",
-                                              etaBin,nArrayEta,ptBin,nArrayPt);
-    fOutputList->Add(fHistGeneratedEtaPtPlusControl);
-    fHistSurvivedEtaPtPlusControl = new TH2F("fHistSurvivedEtaPtPlusControl",
-                                             "Survived positive primaries;#eta;p_{T} (GeV/c)",
-                                             etaBin,nArrayEta,ptBin,nArrayPt);
-    fOutputList->Add(fHistSurvivedEtaPtPlusControl);
-    
-    //eta vs pt for MC negatives (control)
-    fHistGeneratedEtaPtMinusControl = new TH2F("fHistGeneratedEtaPtMinusControl",
-                                               "Generated positive primaries;#eta;p_{T} (GeV/c)",
-                                               etaBin,nArrayEta,ptBin,nArrayPt);
-    fOutputList->Add(fHistGeneratedEtaPtMinusControl);
-    fHistSurvivedEtaPtMinusControl = new TH2F("fHistSurvivedEtaPtMinusControl",
-                                              "Survived positive primaries;#eta;p_{T} (GeV/c)",
-                                              etaBin,nArrayEta,ptBin,nArrayPt);
-    fOutputList->Add(fHistSurvivedEtaPtMinusControl);
- 
+    fOutputList->Add(fHistSurvivedEtaPtPhiMinus); 
 
     fHistDCAXYptprimminus = new TH3F("fHistDCAxyptprimminus","DCA_{xy} vs pt for primaries (negative);p_{T} [GeV/c];#eta;DCA_{xy}",100,0,10,16,-0.8,0.8,1000,-0.5,0.5);
     fHistDCAXYptprimplus = new TH3F("fHistDCAxyptprimplus","DCA_{xy} vs pt for primaries (positive);p_{T} [GeV/c];#eta;DCA_{xy}",100,0,10,16,-0.8,0.8,1000,-0.5,0.5);
@@ -258,9 +218,19 @@ void AliAnalysisTaskPIDMCEffCont::UserCreateOutputObjects() {
     fHistDCAXYptsecminusmat = new TH3F("fHistDCAxyptsecminusmat","DCA_{xy} vs pt for secondaries from material (negative);p_{T} [GeV/c];#eta;DCA_{xy}",100,0,10,16,-0.8,0.8,1000,-0.5,0.5);
     fHistDCAXYptsecplusmat = new TH3F("fHistDCAxyptsecplusmat","DCA_{xy} vs pt for secondaries from material (positive);p_{T} [GeV/c];#eta;DCA_{xy}",100,0,10,16,-0.8,0.8,1000,-0.5,0.5);
 
-    fHistDCAXYptchargedminus = new TH3F("fHistDCAxychargedminus","DCA_{xy} vs pt for charged particles (negative);p_{T} [GeV/c];#eta;DCA_{xy}",100,0,10,16,-0.8,0.8,1000,-0.5,0.5);
-    fHistDCAXYptchargedplus = new TH3F("fHistDCAxychargedplus","DCA_{xy} vs pt for charged particles (positive);p_{T} [GeV/c];#eta;DCA_{xy}",100,0,10,16,-0.8,0.8,1000,-0.5,0.5);
-    
+    fHistDCAXYptchargedminus = new TH3F("fHistDCAxychargedminus","DCA_{xy} vs pt for charged particles (negative);p_{T} [GeV/c];#eta;DCA_{xy}",100,0,10,16,-0.8,0.8,1000,-4,4);
+    fHistDCAXYptchargedplus = new TH3F("fHistDCAxychargedplus","DCA_{xy} vs pt for charged particles (positive);p_{T} [GeV/c];#eta;DCA_{xy}",100,0,10,16,-0.8,0.8,1000,-4,4);
+     
+    fHistDCAXYptprimminus_ext = new TH3F("fHistDCAxyptprimminusext","DCA_{xy} vs pt for primaries (negative);p_{T} [GeV/c];#eta;DCA_{xy}",100,0,10,16,-0.8,0.8,1000,-4,4);
+    fHistDCAXYptprimplus_ext = new TH3F("fHistDCAxyptprimplusext","DCA_{xy} vs pt for primaries (positive);p_{T} [GeV/c];#eta;DCA_{xy}",100,0,10,16,-0.8,0.8,1000,-4,4);
+    fHistDCAXYptsecminusweak_ext = new TH3F("fHistDCAxyptsecminusweakext","DCA_{xy} vs pt for seondaries from weak decays (negative);p_{T} [GeV/c];#eta;DCA_{xy}",100,0,10,16,-0.8,0.8,1000,-4,4);
+    fHistDCAXYptsecplusweak_ext = new TH3F("fHistDCAxyptsecplusweakext","DCA_{xy} vs pt for secondaries from weak decays (positive);p_{T} [GeV/c];#eta;DCA_{xy}",100,0,10,16,-0.8,0.8,1000,-4,4);
+    fHistDCAXYptsecminusmat_ext = new TH3F("fHistDCAxyptsecminusmatext","DCA_{xy} vs pt for secondaries from material (negative);p_{T} [GeV/c];#eta;DCA_{xy}",100,0,10,16,-0.8,0.8,1000,-4,4);
+    fHistDCAXYptsecplusmat_ext = new TH3F("fHistDCAxyptsecplusmatext","DCA_{xy} vs pt for secondaries from material (positive);p_{T} [GeV/c];#eta;DCA_{xy}",100,0,10,16,-0.8,0.8,1000,-4,4);
+
+    fHistDCAXYptchargedminus_ext = new TH3F("fHistDCAxychargedminusext","DCA_{xy} vs pt for charged particles (negative);p_{T} [GeV/c];#eta;DCA_{xy}",100,0,10,16,-0.8,0.8,1000,-4,4);
+    fHistDCAXYptchargedplus_ext = new TH3F("fHistDCAxychargedplusext","DCA_{xy} vs pt for charged particles (positive);p_{T} [GeV/c];#eta;DCA_{xy}",100,0,10,16,-0.8,0.8,1000,-4,4);
+
     fOutputList->Add(fHistDCAXYptprimminus);
     fOutputList->Add(fHistDCAXYptprimplus);
     fOutputList->Add(fHistDCAXYptsecminusweak);
@@ -268,8 +238,16 @@ void AliAnalysisTaskPIDMCEffCont::UserCreateOutputObjects() {
     fOutputList->Add(fHistDCAXYptsecminusmat);
     fOutputList->Add(fHistDCAXYptsecplusmat);
     fOutputList->Add(fHistDCAXYptchargedminus);
-    fOutputList->Add(fHistDCAXYptchargedplus);   
-    
+    fOutputList->Add(fHistDCAXYptchargedplus);  
+    fOutputList->Add(fHistDCAXYptprimminus_ext);
+    fOutputList->Add(fHistDCAXYptprimplus_ext);
+    fOutputList->Add(fHistDCAXYptsecminusweak_ext);
+    fOutputList->Add(fHistDCAXYptsecplusweak_ext);
+    fOutputList->Add(fHistDCAXYptsecminusmat_ext);
+    fOutputList->Add(fHistDCAXYptsecplusmat_ext);
+    fOutputList->Add(fHistDCAXYptchargedminus_ext);
+    fOutputList->Add(fHistDCAXYptchargedplus_ext);    
+     
     //fQAList->Print();
     //fOutputList->Print(); 
  
@@ -407,8 +385,18 @@ void AliAnalysisTaskPIDMCEffCont::UserExec(Option_t*)
 				                                
 				Double_t  dca[2] = {0.0,0.0};
                                 Double_t  cov[3] = {0.0,0.0,0.0};
-				if (!track->PropagateToDCA(vertex,fAOD->GetMagneticField(),300.,dca,cov))
+
+				if (fAODTrackCutBit==768){
+                                if (track->TestFilterBit(256)){
+                                if (!track->PropagateToDCA(vertex,fAOD->GetMagneticField(),300.,dca,cov))
                                 continue;
+                                }
+                                }
+
+                                else if (fAODTrackCutBit==96 || fAODTrackCutBit==4){
+                                if (!track->PropagateToDCA(vertex,fAOD->GetMagneticField(),300.,dca,cov))
+                                continue;
+                                }				
 
                                 if(fUsePIDNsigma) {
 
@@ -501,55 +489,206 @@ void AliAnalysisTaskPIDMCEffCont::UserExec(Option_t*)
 					}
                                 }//end of PDG PID
                                 
-				fHistPhi->Fill(phi);
+                                fHistPhi->Fill(phi);
                                 fHistEta->Fill(eta);
                                 fHistPt->Fill(ptreco);                                
 
-                                if(gAODmcCharge < 0)
-                                    fHistDCAXYptchargedminus->Fill(track->Pt(),track->Eta(),dca[0]);
-                                else if (gAODmcCharge > 0)
-                                    fHistDCAXYptchargedplus->Fill(track->Pt(),track->Eta(),dca[0]);
+                                if(gAODmcCharge < 0){
+                                    
+					if (fAODTrackCutBit==768){
+                                        	if (fDCAextended){
+                                            		if (track->TestFilterBit(512))
+                                                		fHistDCAXYptchargedminus_ext->Fill(track->Pt(),track->Eta(),track->DCA());
+                                            		else if (track->TestFilterBit(256))
+                                                		fHistDCAXYptchargedminus_ext->Fill(track->Pt(),track->Eta(),dca[0]);
+                                        	}
+                                        	else if (!fDCAextended) {
+                                                	if (track->TestFilterBit(512))
+                                                		fHistDCAXYptchargedminus->Fill(track->Pt(),track->Eta(),track->DCA());
+                                                	else if (track->TestFilterBit(256))
+                                                       		fHistDCAXYptchargedminus->Fill(track->Pt(),track->Eta(),dca[0]);
+                                       		}
+                                    	}
+                                 	else {
+                                        	if (fDCAextended)
+                                            		fHistDCAXYptchargedminus_ext->Fill(track->Pt(),track->Eta(),dca[0]);
+                                        	else if (!fDCAextended)
+                                            		fHistDCAXYptchargedminus->Fill(track->Pt(),track->Eta(),dca[0]);
+                                    	}
+                                }
                                 
-        
+				else if (gAODmcCharge > 0){
+					if (fAODTrackCutBit==768){
+                                        	if (fDCAextended){
+                                            		if (track->TestFilterBit(512))
+                                                		fHistDCAXYptchargedplus_ext->Fill(track->Pt(),track->Eta(),track->DCA());
+                                            		else if (track->TestFilterBit(256))
+                                                		fHistDCAXYptchargedplus_ext->Fill(track->Pt(),track->Eta(),dca[0]);
+                                        	}
+                                        	else if (!fDCAextended){
+                                        		if (track->TestFilterBit(512))
+                                                		fHistDCAXYptchargedplus->Fill(track->Pt(),track->Eta(),track->DCA());
+                                            		else if (track->TestFilterBit(256))
+                                                		fHistDCAXYptchargedplus->Fill(track->Pt(),track->Eta(),dca[0]);
+                                        	}
+                                    	}	
+                                    	else {
+                                    		if (fDCAextended)
+                                            		fHistDCAXYptchargedplus_ext->Fill(track->Pt(),track->Eta(),dca[0]);
+                                        	else if (!fDCAextended)
+                                            		fHistDCAXYptchargedplus->Fill(track->Pt(),track->Eta(),dca[0]);
+                                    	}
+                                }
+                                
                                 if (AODmcTrack->IsPhysicalPrimary()) {
-                                    if(gAODmcCharge > 0){
-                                        fHistContaminationPrimariesPlus->Fill(track->Eta(),track->Pt(),phiRad);
-                                        fHistDCAXYptprimplus->Fill(track->Pt(),track->Eta(),dca[0]);
-                                        }
-                                    else if(gAODmcCharge < 0){
-                                        fHistContaminationPrimariesMinus->Fill(track->Eta(),track->Pt(),phiRad);
-                                        fHistDCAXYptprimminus->Fill(track->Pt(),track->Eta(),dca[0]);
-                                    }
+					if(gAODmcCharge > 0){
+                                        	fHistContaminationPrimariesPlus->Fill(track->Eta(),track->Pt(),phiRad);
+                                            		if (fAODTrackCutBit==768){
+                                                		if (fDCAextended){
+                                                    			if (track->TestFilterBit(512))
+                                                        			fHistDCAXYptprimplus_ext->Fill(track->Pt(),track->Eta(),track->DCA());
+                                                    			else if (track->TestFilterBit(256))
+                                                        			fHistDCAXYptprimplus_ext->Fill(track->Pt(),track->Eta(),dca[0]);
+                                                		}		
+                                                		else if (!fDCAextended){
+                                                    			if (track->TestFilterBit(512))
+                                                        			fHistDCAXYptprimplus->Fill(track->Pt(),track->Eta(),track->DCA());
+                                                    			else if (track->TestFilterBit(256))
+                                                        			fHistDCAXYptprimplus->Fill(track->Pt(),track->Eta(),dca[0]);
+                                                		}
+                                            		}	
+                                            		else {
+                                                		if (fDCAextended)
+                                                    			fHistDCAXYptprimplus_ext->Fill(track->Pt(),track->Eta(),dca[0]);
+                                                		else if (!fDCAextended)
+                                              	     			fHistDCAXYptprimplus->Fill(track->Pt(),track->Eta(),dca[0]);
+                                            		}
+                                    	}
+                                    
+                                     	else if(gAODmcCharge < 0){
+				    		fHistContaminationPrimariesMinus->Fill(track->Eta(),track->Pt(),phiRad);
+                                        		if (fAODTrackCutBit==768){
+                                                		if (fDCAextended){
+                                                    			if (track->TestFilterBit(512))
+                                                        			fHistDCAXYptprimminus_ext->Fill(track->Pt(),track->Eta(),track->DCA());
+                                                    			else if (track->TestFilterBit(256))
+                                                        			fHistDCAXYptprimminus_ext->Fill(track->Pt(),track->Eta(),dca[0]);
+                                                		}
+                                                		else if (!fDCAextended){
+                                                    			if (track->TestFilterBit(512))
+                                                        			fHistDCAXYptprimminus->Fill(track->Pt(),track->Eta(),track->DCA());
+                                                    			else if (track->TestFilterBit(256))
+                                                        			fHistDCAXYptprimminus->Fill(track->Pt(),track->Eta(),dca[0]);
+                                                		}
+                                            		}
+                                            		else {
+                                                		if (fDCAextended)
+                                                    			fHistDCAXYptprimminus_ext->Fill(track->Pt(),track->Eta(),dca[0]);
+                                                		else if (!fDCAextended)
+                                                    			fHistDCAXYptprimminus->Fill(track->Pt(),track->Eta(),dca[0]);
+                                            		}
+                                       }
                                 }
                                 
                                 else {
+                                
+					if(gAODmcCharge > 0){
+                                        	fHistContaminationSecondariesPlus->Fill(track->Eta(),track->Pt(),phiRad);
+                                        		if(AODmcTrack->IsSecondaryFromWeakDecay()){
+	                                        		if (fAODTrackCutBit==768){
+                                                			if (fDCAextended){
+                                                    				if (track->TestFilterBit(512))
+                                                        				fHistDCAXYptsecplusweak_ext->Fill(track->Pt(),track->Eta(),track->DCA());
+                                                    				else if (track->TestFilterBit(256))
+                                                        				fHistDCAXYptsecplusweak_ext->Fill(track->Pt(),track->Eta(),dca[0]);
+                                                			}
+                                                			else if (!fDCAextended){
+                                                    				if (track->TestFilterBit(512))
+                                                        				fHistDCAXYptsecplusweak->Fill(track->Pt(),track->Eta(),track->DCA());
+                                                    				else if (track->TestFilterBit(256))
+                                                        				fHistDCAXYptsecplusweak->Fill(track->Pt(),track->Eta(),dca[0]);
+                                                			}
+                                            			}
+                                            			else {
+                                                			if (fDCAextended)
+                                                    				fHistDCAXYptsecplusweak_ext->Fill(track->Pt(),track->Eta(),dca[0]);
+                                                			else if (!fDCAextended)
+                                                    				fHistDCAXYptsecplusweak->Fill(track->Pt(),track->Eta(),dca[0]);
+                                           			}
+                                        		}
+
+                                       		 	else if(AODmcTrack->IsSecondaryFromMaterial()){
+                                            			if (fAODTrackCutBit==768){
+                                                			if (fDCAextended){
+                                                    				if (track->TestFilterBit(512))
+                                                        				fHistDCAXYptsecplusmat_ext->Fill(track->Pt(),track->Eta(),track->DCA());
+                                                    				else if (track->TestFilterBit(256))
+                                                        				fHistDCAXYptsecplusmat_ext->Fill(track->Pt(),track->Eta(),dca[0]);
+                                                			}
+                                                			else if (!fDCAextended){
+                                                    				if (track->TestFilterBit(512))
+                                                        				fHistDCAXYptsecplusmat->Fill(track->Pt(),track->Eta(),track->DCA());
+                                                    				else if (track->TestFilterBit(256))
+                                                        				fHistDCAXYptsecplusmat->Fill(track->Pt(),track->Eta(),dca[0]);
+                                               				}			
+                                            			}
+                                            			else {
+                                                			if (fDCAextended)
+                                                    				fHistDCAXYptsecplusmat_ext->Fill(track->Pt(),track->Eta(),dca[0]);
+                                                			else if (!fDCAextended)
+                                                    				fHistDCAXYptsecplusmat->Fill(track->Pt(),track->Eta(),dca[0]);
+                                            			}
+                                        		}
+                                   	}
                                     
-                                    if(gAODmcCharge > 0){
-                                    
-                                        fHistContaminationSecondariesPlus->Fill(track->Eta(),track->Pt(),phiRad);
-                                        
-                                        if(AODmcTrack->IsSecondaryFromWeakDecay())
-                                        
-                                        fHistDCAXYptsecplusweak->Fill(track->Pt(),track->Eta(),dca[0]);
+                                   	else if(gAODmcCharge < 0){
+                                        	fHistContaminationSecondariesMinus->Fill(track->Eta(),track->Pt(),phiRad);
+                                           		if(AODmcTrack->IsSecondaryFromWeakDecay()){
+                                                		if (fAODTrackCutBit==768){
+                                                    			if (fDCAextended){
+                                                        			if (track->TestFilterBit(512))
+                                                            				fHistDCAXYptsecminusweak_ext->Fill(track->Pt(),track->Eta(),track->DCA());
+                                                        			else if (track->TestFilterBit(256))
+                                                      			      		fHistDCAXYptsecminusweak_ext->Fill(track->Pt(),track->Eta(),dca[0]);
+                                                    			}		
+                                                    			else if (!fDCAextended){
+                                                        			if (track->TestFilterBit(512))
+                                                            				fHistDCAXYptsecminusweak->Fill(track->Pt(),track->Eta(),track->DCA());
+                                                        			else if (track->TestFilterBit(256))
+                                                            				fHistDCAXYptsecminusweak->Fill(track->Pt(),track->Eta(),dca[0]);
+                                                    			}			
+                                                		}
+                                                		else {
+                                                    			if (fDCAextended)
+                                                        			fHistDCAXYptsecminusweak_ext->Fill(track->Pt(),track->Eta(),dca[0]);
+                                                    			else if (!fDCAextended)
+                                                        			fHistDCAXYptsecminusweak->Fill(track->Pt(),track->Eta(),dca[0]);
+                                                		}
+                                            		}	
                                        
-                                        else if(AODmcTrack->IsSecondaryFromMaterial())
-					
-                                        fHistDCAXYptsecplusmat->Fill(track->Pt(),track->Eta(),dca[0]);
-                                    }
-                                    
-                                   else if(gAODmcCharge < 0){
-                                    
-                                        fHistContaminationSecondariesMinus->Fill(track->Eta(),track->Pt(),phiRad);
-                                        
-                                        if(AODmcTrack->IsSecondaryFromWeakDecay())
-            
-                                        fHistDCAXYptsecminusweak->Fill(track->Pt(),track->Eta(),dca[0]);
-                                        
-                                        else if(AODmcTrack->IsSecondaryFromMaterial())
-					
-                                        fHistDCAXYptsecminusmat->Fill(track->Pt(),track->Eta(),dca[0]);
-                                        
-                                        }
+                                            		else if(AODmcTrack->IsSecondaryFromMaterial()){
+                                                		if (fAODTrackCutBit==768){
+                                                    			if (fDCAextended){
+                                                        			if (track->TestFilterBit(512))
+                                                            				fHistDCAXYptsecminusmat_ext->Fill(track->Pt(),track->Eta(),track->DCA());
+                                                        			else if (track->TestFilterBit(256))
+                                                            				fHistDCAXYptsecminusmat_ext->Fill(track->Pt(),track->Eta(),dca[0]);
+                                                    			}		
+                                                   	 		else if (!fDCAextended){
+                                                        			if (track->TestFilterBit(512))
+                                                            				fHistDCAXYptsecminusmat->Fill(track->Pt(),track->Eta(),track->DCA());
+                                                        			else if (track->TestFilterBit(256))
+                                                            				fHistDCAXYptsecminusmat->Fill(track->Pt(),track->Eta(),dca[0]);
+                                                    			}
+                                                		}
+                                                		else {
+                                                    			if (fDCAextended)
+                                                        			fHistDCAXYptsecminusmat_ext->Fill(track->Pt(),track->Eta(),dca[0]);
+                                                    			else if (!fDCAextended)
+                                                        			fHistDCAXYptsecminusmat->Fill(track->Pt(),track->Eta(),dca[0]);
+                                                		}
+                                            		}
+                                   	}
                                 }
                             }//loop over tracks
                             
@@ -801,20 +940,6 @@ void AliAnalysisTaskPIDMCEffCont::UserExec(Option_t*)
         }//number of contributors
     }//valid vertex  
     
-    
-    for (Int_t i = 0; i < nMCLabelCounter ; i++) {
-        // control 1D histograms (charge might be different?)
-        if(charge[i] > 0){
-            if(level[i] > 0) fHistGeneratedEtaPtPlusControl->Fill(eta[i],pt[i]);
-            if(level[i] > 1) fHistSurvivedEtaPtPlusControl->Fill(eta[i],pt[i]);
-        }
-        else if(charge[i] < 0){
-            if(level[i] > 0) fHistGeneratedEtaPtMinusControl->Fill(eta[i],pt[i]);
-            if(level[i] > 1) fHistSurvivedEtaPtMinusControl->Fill(eta[i],pt[i]);
-        }
-        
-        
-    }
 }
 }
 
