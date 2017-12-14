@@ -750,7 +750,7 @@ void AliAnalysisTaskGammaHadron::UserCreateOutputObjects()
 		fHistBinCheckXi[identifier]->GetYaxis()->SetTitle("Entries");
 		fOutput->Add(fHistBinCheckXi[identifier]);
 
-		fHistBinCheckEvtPl[identifier] = new TH1F(Form("fHistBinCheckEvtPl_%0d",identifier),Form("fHistBinCheckEvtPl_%0d",identifier), 182, -92, 272);
+		fHistBinCheckEvtPl[identifier] = new TH1F(Form("fHistBinCheckEvtPl_%0d",identifier),Form("fHistBinCheckEvtPl_%0d",identifier), 182, -182, 182);
 		fHistBinCheckEvtPl[identifier]->GetXaxis()->SetTitle("#Delta#varphi^{#gamma-EvtPl}");
 		fHistBinCheckEvtPl[identifier]->GetYaxis()->SetTitle("Entries");
 		fOutput->Add(fHistBinCheckEvtPl[identifier]);
@@ -1689,9 +1689,15 @@ void AliAnalysisTaskGammaHadron::FillGhHistograms(Int_t identifier,AliTLorentzVe
 	//fEPV0C = aliEP->GetEventplane("V0C",InputEvent());
 	Double_t evtPlaneAngle=DeltaPhi(ClusterVec,fEPV0);
 	Int_t evtPlaneCategory=-1;
-	if ((TMath::Abs(evtPlaneAngle)<=pi/6.) || (TMath::Abs(evtPlaneAngle-pi)<pi/6.))       evtPlaneCategory=0;
-	else if ((TMath::Abs(evtPlaneAngle) <= pi/3.) || (TMath::Abs(evtPlaneAngle-pi) <= pi/.3)) evtPlaneCategory=1;
-	else evtPlaneCategory=2;
+	Double_t angleFromAxis;
+	//..fold around 0 axis
+	angleFromAxis=fabs(evtPlaneAngle);
+	//..fold once more arounad pi/2 axis
+	if((pi-angleFromAxis)<angleFromAxis)angleFromAxis = pi-angleFromAxis;
+	//.. --> now we have only one quadrant left 0 to  <pi/2
+	if(angleFromAxis>=0 && angleFromAxis<pi/6.)           evtPlaneCategory=0;
+	else if (angleFromAxis>=pi/6. && angleFromAxis<pi/3.) evtPlaneCategory=1;
+	else if (angleFromAxis>=pi/3. && angleFromAxis<=pi/2.)evtPlaneCategory=2;
 
 	Double_t valueArray[8];
 	valueArray[0]=deltaPhi;
@@ -1707,7 +1713,7 @@ void AliAnalysisTaskGammaHadron::FillGhHistograms(Int_t identifier,AliTLorentzVe
 
 	//..Histograms to test the binning
 	fHistBinCheckEvtPl[identifier] ->Fill(evtPlaneAngle*fRtoD,Weight);
-	//fHistBinCheckEvtPl2[identifier]->Fill(angleFromAxis*fRtoD,Weight);
+	fHistBinCheckEvtPl2[identifier]->Fill(angleFromAxis*fRtoD,Weight);
 	fHistBinCheckPt[identifier] ->Fill(G_PT_Value,Weight);
 	fHistBinCheckZt[identifier] ->Fill(ZT_Value,Weight);
 	fHistBinCheckXi[identifier] ->Fill(XI_Value,Weight);
@@ -1977,10 +1983,8 @@ Double_t AliAnalysisTaskGammaHadron::DeltaPhi(AliTLorentzVector ClusterVec,Doubl
 	//..delta phi between gamma and evt plane
 	dPhi = phi_g-phi_EVP;
 
-	//--shift the second peak over the fist peak: \-^-/   --> -^-/\
-	//--to create a histogram that starts at -pi/2 and ends at 3/2pi
-	if (dPhi <= -pi/2)    dPhi += 2*pi;
-	if (dPhi > 3.0*pi/2.0)dPhi -= 2*pi;
+	//--to create a histogram that starts at -pi and ends at pi
+	if (dPhi > pi)dPhi -= pi;
 
 	return dPhi;
 }
