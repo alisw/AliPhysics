@@ -119,7 +119,8 @@ class AliAnalysisTaskEMCALPhotonIsolation: public AliAnalysisTaskEmcal {
   void                         SetFiducialCut ( Float_t fiducial )                        { fFiducialCut = fiducial; }
   void                         SetComputeAreasPerEvent ( Bool_t eventAreas )              { fAreasPerEvent = eventAreas; }
   void                         Set2012L1Analysis ( Bool_t is2012L1 )                      { f2012EGA = is2012L1; }
-
+  void                         SetANWithNoSameTcard (Bool_t iNoSameTCard)                 { fANnoSameTcard=iNoSameTCard; }
+  
  protected:
   
   void                         FillQAHistograms      ( AliVCluster * coi, TLorentzVector vecCOI );                          // Fill some QA histograms
@@ -136,13 +137,13 @@ class AliAnalysisTaskEMCALPhotonIsolation: public AliAnalysisTaskEmcal {
   void                         ApplySmearing         ( AliVCluster * coi, Double_t &m02COI );                               // Applying smearing on MC
 
   Bool_t                       ClustTrackMatching    ( AliVCluster * emccluster, Bool_t candidate );
-
   Int_t                        GetNLM                ( AliVCluster * coi, AliVCaloCells * cells );
   Int_t                        GetNLM                ( AliVCluster * coi, AliVCaloCells * cells, Int_t * absIdList, Float_t * maxEList );
   Bool_t                       AreNeighbours         ( Int_t abscell1, Int_t abscell2 ) const;
   Float_t                      RecalEnClust          ( AliVCluster * cluster, AliVCaloCells * cells );
   void                         RecalAmpCell          ( Float_t &amp, Int_t absId ) const ;
-  
+  Bool_t                       IsAbsIDsFromTCard(Int_t absId1, Int_t absId2, Int_t & rowDiff, Int_t & colDiff) const ;
+
   Bool_t                       CheckBoundaries       ( TLorentzVector vecCOI );
   void                         FillInvMassHistograms ( Bool_t iso, Double_t m02COI, TLorentzVector c, Int_t index, Double_t isolation );
   
@@ -216,27 +217,28 @@ class AliAnalysisTaskEMCALPhotonIsolation: public AliAnalysisTaskEmcal {
   Bool_t                       fAreasPerEvent;                  ///< Enable/disable the event-by-event cone area computation
   
   // Initialization for TTree variables
-  Double_t                     fEClustersT;                     ///< E for all clusters
-  Double_t                     fPtClustersT;                    ///< Pt for all clusters
-  Double_t                     fEtClustersT;                    ///< Et for all clusters
-  Double_t                     fEtaClustersT;                   ///< Eta for all clusters
-  Double_t                     fPhiClustersT;                   ///< Phi for all clusters
-  Double_t                     fM02ClustersT;                   ///< lambda0^2 ( sigma_long^2 ) for all clusters
-  Int_t                        fevents;                         ///< Number of events
-  Int_t                        fNClustersT;                     ///< Clusters multiplicity
-  Double_t                     flambda0T;                       ///< M02 for considered clusters ( leading one or all depending on flag )
-  Double_t                     fM02isoT;                        ///< M02 for isolated clusters
-  Double_t                     fM02noisoT;                      ///< M02 for non isolated clusters
-  Double_t                     fPtnoisoT;                       ///< Pt for non isolated clusters
-  Double_t                     fEtT;                            ///< Et for considered clusters ( leading one or all depending on flag )
-  Double_t                     fPtT;                            ///< Pt for considered clusters ( leading one or all depending on flag )
-  Double_t                     fPtisoT;                         ///< Pt for all isolated neutral clusters
-  Double_t                     fEtisolatedT;                    ///< Et for isolated clusters
-  Double_t                     fPtisolatedT;                    ///< Pt for isolated clusters
-  Double_t                     fetaT;                           ///< Eta for considered clusters
-  Double_t                     fphiT;                           ///< Phi for considered clusters
-  Double_t                     fsumEtisoconeT;                  ///< Sum Et in cone
-  Double_t                     fsumEtUE;                        ///< Sum UE
+  Double_t                     fEClustersT;                     // E for all clusters
+  Double_t                     fPtClustersT;                    // Pt for all clusters
+  Double_t                     fEtClustersT;                    // Et for all clusters
+  Double_t                     fEtaClustersT;                   // Eta for all clusters
+  Double_t                     fPhiClustersT;                   // Phi for all clusters
+  Double_t                     fM02ClustersT;                   // lambda0^2 (sigma_long^2) for all clusters
+  Int_t                        fevents;                         // Number of events
+  Int_t                        fNClustersT;                     // Clusters multiplicity
+  Double_t                     flambda0T;                       // M02 for considered clusters (leading one or all depending on flag)
+  Double_t                     fM02isoT;                        // M02 for isolated clusters
+  Double_t                     fM02noisoT;                      // M02 for non isolated clusters
+  Double_t                     fPtnoisoT;                       // Pt for non isolated clusters
+  Double_t                     fEtT;                            // Et for considered clusters (leading one or all depending on flag)
+  Double_t                     fPtT;                            // Pt for considered clusters (leading one or all depending on flag)
+  Double_t                     fPtisoT;                         // Pt for all isolated neutral clusters
+  Double_t                     fEtisolatedT;                    // Et for isolated clusters
+  Double_t                     fPtisolatedT;                    // Pt for isolated clusters
+  Double_t                     fetaT;                           // Eta for considered clusters
+  Double_t                     fphiT;                           // Phi for considered clusters
+  Double_t                     fsumEtisoconeT;                  // Sum Et in cone
+  Double_t                     fsumEtUE;                        // Sum UE
+  Bool_t                       fANnoSameTcard;                  ///<
   
   // Initialization of variables for THnSparse
   std::vector<Double_t>        fBinsPt;                         ///<
@@ -349,17 +351,18 @@ class AliAnalysisTaskEMCALPhotonIsolation: public AliAnalysisTaskEmcal {
   TTree                      * fOutputQATree;                   ///< 2nd method 4 QA Output
   TTree                      * fOutputTree;                     ///< 2nd Method 4 Output
   
-  TH3D                       * fphietaPhotons;                  ///<
-  TH3D                       * fphietaOthers;                   ///<
-  TH3D                       * fphietaOthersBis;                ///<
-  TH2F                       * fSPDclustVsSPDtracklets;         ///<
-  TH1F                       * fnPUevents;                      ///<
-  Bool_t                       f2012EGA;                        ///< Analyze only Events with EGA recalc patches above threshold
-  /* TH1                        * fPDGM02;                         ///< check for zeroM02 clusters */
-  /* TH2                        * fEtrueEclustM02;                 ///< check for zeroM02 clusters */
-  /* TH2                        * fDphiDetaM02;                    ///< check for zeroM02 clusters */
-  /* TH1D                       * fMomPDGM02;                      ///< */
-  /* TH2D                       * fTvsE_MismatchEM02;              ///< */
+  TH3D                       * fphietaPhotons;                  //!<!
+  TH3D                       * fphietaOthers;                   //!<!
+  TH3D                       * fphietaOthersBis;                //!<!
+  TH2F                       * fSPDclustVsSPDtracklets;         //!<!
+  TH1F                       * fnPUevents;                      //!<!
+  Bool_t                       f2012EGA;                        // Analyze only Events with EGA recalc patches above threshold
+  Int_t                        fAbsIDNLM[2];                    //!<!
+  // TH1                        * fPDGM02;                         //!<! check for zeroM02 clusters
+  // TH2                        * fEtrueEclustM02;                 //!<! check for zeroM02 clusters
+  // TH2                        * fDphiDetaM02;                    //!<! check for zeroM02 clusters
+  // TH1D                       * fMomPDGM02;                      //!<!
+  // TH2D                       * fTvsE_MismatchEM02;              //!<!
   
   /* AliParticleContainer       * fTracksCont;                     ///< Tracks */
   /* AliParticleContainer       * fclusters;                       ///< Container for Particle container 4 clusters */
@@ -372,7 +375,7 @@ class AliAnalysisTaskEMCALPhotonIsolation: public AliAnalysisTaskEmcal {
   AliAnalysisTaskEMCALPhotonIsolation&operator = ( const AliAnalysisTaskEMCALPhotonIsolation & ); // Not implemented
   
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskEMCALPhotonIsolation, 21);            // EMCal neutrals base analysis task
+  ClassDef(AliAnalysisTaskEMCALPhotonIsolation, 22);            // EMCal neutrals base analysis task
   /// \endcond
 };
 #endif
