@@ -119,7 +119,8 @@ class AliAnalysisTaskEMCALPhotonIsolation: public AliAnalysisTaskEmcal {
   void                         SetFiducialCut ( Float_t fiducial )                        { fFiducialCut = fiducial; }
   void                         SetComputeAreasPerEvent ( Bool_t eventAreas )              { fAreasPerEvent = eventAreas; }
   void                         Set2012L1Analysis ( Bool_t is2012L1 )                      { f2012EGA = is2012L1; }
-
+  void                         SetANWithNoSameTcard (Bool_t iNoSameTCard)                 { fANnoSameTcard=iNoSameTCard; }
+  
  protected:
   
   void                         FillQAHistograms      ( AliVCluster * coi, TLorentzVector vecCOI );                          // Fill some QA histograms
@@ -136,13 +137,13 @@ class AliAnalysisTaskEMCALPhotonIsolation: public AliAnalysisTaskEmcal {
   void                         ApplySmearing         ( AliVCluster * coi, Double_t &m02COI );                               // Applying smearing on MC
 
   Bool_t                       ClustTrackMatching    ( AliVCluster * emccluster, Bool_t candidate );
-
   Int_t                        GetNLM                ( AliVCluster * coi, AliVCaloCells * cells );
   Int_t                        GetNLM                ( AliVCluster * coi, AliVCaloCells * cells, Int_t * absIdList, Float_t * maxEList );
   Bool_t                       AreNeighbours         ( Int_t abscell1, Int_t abscell2 ) const;
   Float_t                      RecalEnClust          ( AliVCluster * cluster, AliVCaloCells * cells );
   void                         RecalAmpCell          ( Float_t &amp, Int_t absId ) const ;
-  
+  Bool_t                       IsAbsIDsFromTCard(Int_t absId1, Int_t absId2, Int_t & rowDiff, Int_t & colDiff) const ;
+
   Bool_t                       CheckBoundaries       ( TLorentzVector vecCOI );
   void                         FillInvMassHistograms ( Bool_t iso, Double_t m02COI, TLorentzVector c, Int_t index, Double_t isolation );
   
@@ -216,27 +217,28 @@ class AliAnalysisTaskEMCALPhotonIsolation: public AliAnalysisTaskEmcal {
   Bool_t                       fAreasPerEvent;                  ///< Enable/disable the event-by-event cone area computation
   
   // Initialization for TTree variables
-  Double_t                     fEClustersT;                     ///< E for all clusters
-  Double_t                     fPtClustersT;                    ///< Pt for all clusters
-  Double_t                     fEtClustersT;                    ///< Et for all clusters
-  Double_t                     fEtaClustersT;                   ///< Eta for all clusters
-  Double_t                     fPhiClustersT;                   ///< Phi for all clusters
-  Double_t                     fM02ClustersT;                   ///< lambda0^2 ( sigma_long^2 ) for all clusters
-  Int_t                        fevents;                         ///< Number of events
-  Int_t                        fNClustersT;                     ///< Clusters multiplicity
-  Double_t                     flambda0T;                       ///< M02 for considered clusters ( leading one or all depending on flag )
-  Double_t                     fM02isoT;                        ///< M02 for isolated clusters
-  Double_t                     fM02noisoT;                      ///< M02 for non isolated clusters
-  Double_t                     fPtnoisoT;                       ///< Pt for non isolated clusters
-  Double_t                     fEtT;                            ///< Et for considered clusters ( leading one or all depending on flag )
-  Double_t                     fPtT;                            ///< Pt for considered clusters ( leading one or all depending on flag )
-  Double_t                     fPtisoT;                         ///< Pt for all isolated neutral clusters
-  Double_t                     fEtisolatedT;                    ///< Et for isolated clusters
-  Double_t                     fPtisolatedT;                    ///< Pt for isolated clusters
-  Double_t                     fetaT;                           ///< Eta for considered clusters
-  Double_t                     fphiT;                           ///< Phi for considered clusters
-  Double_t                     fsumEtisoconeT;                  ///< Sum Et in cone
-  Double_t                     fsumEtUE;                        ///< Sum UE
+  Double_t                     fEClustersT;                     // E for all clusters
+  Double_t                     fPtClustersT;                    // Pt for all clusters
+  Double_t                     fEtClustersT;                    // Et for all clusters
+  Double_t                     fEtaClustersT;                   // Eta for all clusters
+  Double_t                     fPhiClustersT;                   // Phi for all clusters
+  Double_t                     fM02ClustersT;                   // lambda0^2 (sigma_long^2) for all clusters
+  Int_t                        fevents;                         // Number of events
+  Int_t                        fNClustersT;                     // Clusters multiplicity
+  Double_t                     flambda0T;                       // M02 for considered clusters (leading one or all depending on flag)
+  Double_t                     fM02isoT;                        // M02 for isolated clusters
+  Double_t                     fM02noisoT;                      // M02 for non isolated clusters
+  Double_t                     fPtnoisoT;                       // Pt for non isolated clusters
+  Double_t                     fEtT;                            // Et for considered clusters (leading one or all depending on flag)
+  Double_t                     fPtT;                            // Pt for considered clusters (leading one or all depending on flag)
+  Double_t                     fPtisoT;                         // Pt for all isolated neutral clusters
+  Double_t                     fEtisolatedT;                    // Et for isolated clusters
+  Double_t                     fPtisolatedT;                    // Pt for isolated clusters
+  Double_t                     fetaT;                           // Eta for considered clusters
+  Double_t                     fphiT;                           // Phi for considered clusters
+  Double_t                     fsumEtisoconeT;                  // Sum Et in cone
+  Double_t                     fsumEtUE;                        // Sum UE
+  Bool_t                       fANnoSameTcard;                  ///<
   
   // Initialization of variables for THnSparse
   std::vector<Double_t>        fBinsPt;                         ///<
@@ -254,93 +256,95 @@ class AliAnalysisTaskEMCALPhotonIsolation: public AliAnalysisTaskEmcal {
   std::vector<Double_t>        fBinsDecay;                      ///<
   
   //IMPLEMENT ALL THE HISTOGRAMS AND ALL THE OUTPUT OBJECTS WE WANT!!!
-  TH1D                       * fTrackMult;                      ///< Track Multiplicity ---QA
-  TH2D                       * fPtvsSumUE_MC;                   ///<
-  TH2D                       * fEtaPhiClus;                     ///< EMCal Cluster Distribution EtaPhi ---QA
-  TH2D                       * fClusEvsClusT;                   ///< Cluster Energy vs Cluster Time ---QA
-  TH1D                       * fPT;                             ///< Pt distribution
-  TH1D                       * fE;                              ///< E distribution
-  TH2D                       * fNLM;                            ///< NLM distribution
-  TH2D                       * fNLM2_NC_Acc;                    ///< NLM ( 1, 2 ) distribution for Neutral Clusters in Acceptance
-  TH1D                       * fVz;                             ///< Vertex Z distribution
-  TH1D                       * fEvents;                         ///< Number of Events
-  TH1D                       * fPtaftTime;                      ///< E distribution for clusters after Cluster Time cut
-  TH1D                       * fPtaftCell;                      ///< Pt distribution for clusters after NCells cut
-  TH1D                       * fPtaftNLM;                       ///< Pt distribution for clusters after NLM cut
-  TH3F                       * fClusEtVsEtaPhiMatched;          ///< Track-matched cluster eta vs. phi vs. E_T
-  TH3F                       * fClusEtVsEtaPhiUnmatched;        ///< Not track-matched cluster eta vs. phi vs. E_T
-  TH1D                       * fPtaftTM;                        ///< E distribution for neutral clusters
-  TH1D                       * fPtaftDTBC;                      ///< E distribution for NC after DistanceToBadChannel cut
-  TH1D                       * fPtaftFC;                        ///< E distribution for clusters after Fiducial cut
-  TH1D                       * fPtaftM02C;                      ///< E distribution for clusters after Shower Shape cut
-  TH1D                       * fClusTime;                       ///< Time distribution for clusters
-  TH2D                       * fM02;                            ///< Squared_Lambda0 ( Squared_sigma_long ) distribution
-  TH3F                       * fEtaPhiClusVsM02;                ///< Cluster eta vs. phi vs. sigma_long squared ( cluster energy from 14 to 16 GeV )
-  TH3F                       * fEtaPhiClusVsEtIsoClus;          ///< Cluster eta vs. phi vs. neutral contribution to the energy in isolation cone ( cluster energy from 14 to 16 GeV )
-  TH3F                       * fEtaPhiClusVsPtIsoTrack;         ///< Cluster eta vs. phi vs. charged contribution to the energy in isolation cone ( cluster energy from 14 to 16 GeV )
-  TH3F                       * fEtaPhiClusVsPtUETrackCside;     ///< Cluster eta vs. phi vs. charged contribution to the energy in C-side UE ( cluster energy from 14 to 16 GeV )
-  TH3F                       * fEtaPhiClusVsPtUETrackAside;     ///< Cluster eta vs. phi vs. charged contribution to the energy in A-side UE ( cluster energy from 14 to 16 GeV )
-  TH1D                       * fDeltaETAClusTrack;              ///< dEta Cluster-Track
-  TH1D                       * fDeltaPHIClusTrack;              ///< dPhi Cluster-Track
-  TH1D                       * fDeltaETAClusTrackMatch;         ///< dEta Cluster-Track matched
-  TH1D                       * fDeltaPHIClusTrackMatch;         ///< dPhi Cluster-Track matched
-  TH1D                       * fEtIsoCells;                     ///< Isolation Energy with EMCal Cells
-  TH2D                       * fEtIsoClust;                     ///< Isolation Energy with EMCal Clusters
-  TH2D                       * fPtIsoTrack;                     ///< Isolation Pt with Tracks
-  TH1D                       * fPtEtIsoTC;                      ///< Isolation with Pt from Tracks and Et from NON-Matched Clusters
-  TH2D                       * fPhiBandUEClust;                 ///< UE with Phi Band ( Clusters )
-  TH2D                       * fEtaBandUEClust;                 ///< UE with Eta Band ( Clusters )
-  TH2D                       * fPhiBandUECells;                 ///< UE with Phi Band ( Cells )
-  TH2D                       * fEtaBandUECells;                 ///< UE with Eta Band ( Cells )
-  TH2D                       * fPhiBandUETracks;                ///< UE with Phi Band ( Tracks )
-  TH2D                       * fEtaBandUETracks;                ///< UE with Eta Band ( Tracks )
-  TH2D                       * fPerpConesUETracks;              ///< UE with Cones ( Tracks ONLY )
-  TH2D                       * fTPCWithoutIsoConeB2BbandUE;     ///< UE with Full TPC except IsoCone and EtaBand in Back2Back
-  TH1D                       * fNTotClus10GeV;                  ///< Number of TOTAL clusters with Energy bigger than 10 GeV
-  TH1D                       * fEtIsolatedCells;                ///< Isolated photons, isolation with cells
-  TH1D                       * fEtIsolatedClust;                ///< Isolated photons, isolation with clusters
-  TH1D                       * fPtIsolatedNClust;               ///< Isolated neutral clusters
-  TH1D                       * fPtIsolatedNTracks;              ///< Isolated neutral clusters with tracks
-  TH1D                       * fEtIsolatedTracks;               ///< Isolated photons, isolation with tracks
-  TH2D                       * fPtvsM02iso;                     ///< Isolated clusters, Pt distribution vs M02
-  TH2D                       * fPtvsM02noiso;                   ///< Non isolated clusters, pt distribution vs M02
-  TH2D                       * fTestIndex;                      ///< Index and local index test
-  TH2D                       * fTestIndexE;                     ///< Index vs cluster energy test
-  TH2D                       * fTestLocalIndexE;                ///< Local index vs cluster energy test
-  TH3F                       * fTestEnergyCone;                 ///< Energy cone clusters vs tracks test
-  /* TH1D                       * fConeArea;                       ///< Cone area distribution ( depending on the cluster position ) */
-  /* TH1D                       * fEtaBandArea;                    ///< Eta-band area distribution ( depending on the cluster position ) */
-  TH2F                       * fEtaBandVsConeArea;              ///< Eta-band vs. cone area distribution ( depending on the cluster position )
-  TH3F                       * fPtVsConeVsEtaBand;              ///< Energy cone clusters vs tracks test ( not normalised )
-  TH3F                       * fPtVsNormConeVsNormEtaBand;      ///< Energy cone clusters vs tracks test ( area normalised )
-  TH3D                       * fPtvsM02vsSumUE_Norm;            ///<
-  TH2D                       * fTestEtaPhiCone;                 ///< Eta vs phi test for clusters in cone
-  TH3D                       * fInvMassM02iso;                  ///<
-  TH3D                       * fInvMassM02noiso;                ///<
-  TH3D                       * fPtvsM02vsSumPi0;                ///<
-  TH3D                       * fPtvsM02vsSumEta;                ///<
-  TH3D                       * fPtvsM02vsSum;                   ///<
-  TH3D                       * fPtvsM02vsSumUE;                 ///<
-  TH3D                       * fTrackMultvsSumChargedvsUE;      ///<
-  TH2D                       * fTrackMultvsPt;                  ///<
-  TH3D                       * fTracksConeEtaPt;                ///<
-  TH3D                       * fTracksConeEtaM02;               ///<
-  TH1F                       * fHistXsection;                   ///<
-  TH1F                       * fHistTrials;                     ///<
-  TH2F                       * fPtTracksVSpTNC;                 ///<
-  TH2F                       * fCTdistVSpTNC;                   ///<
-  TH2F                       * fPtTracksVSpTNC_MC;              ///<
-  TH3F                       * fpi0VSclusterVSIsolation;        ///<
-  TH3F                       * fpi0VSclusterVSM02;              ///<
-  TH3F                       * fpi0VSM02VSIsolation;            ///<
-  TH3F                       * fEtVSM02VSEisoclust;             ///<
-  TH3F                       * fEtVSM02VSPisotrack;             ///<
-  TH2F                       * fPhiTracksVSclustPt;             ///<
-  TH2F                       * fEtaTracksVSclustPt;             ///<
-  TH2F                       * fTracksPhiVsPt;                  ///<
-  TH2F                       * fTracksEtaVsPt;                  ///<
-  TH2F                       * fTrackResolutionPtMC;            ///<
-  TH1D                       * fVzBeforecut;                    ///<
+
+  TH1D                       * fTrackMult;                      ///<  Track Multiplicity ---QA
+  TH2D                       * fPtvsSumUE_MC;                   //!<!
+  TH2D                       * fEtaPhiClus;                     ///<  EMCal Cluster Distribution EtaPhi ---QA
+  TH2D                       * fClusEvsClusT;                   //!<! Cluster Energy vs Cluster Time ---QA
+  TH1D                       * fPT;                             //!<! Pt distribution
+  TH1D                       * fE;                              //!<! E distribution
+  TH2D                       * fNLM;                            //!<! NLM distribution
+  TH2D                       * fNLM2_NC_Acc;                    //!<! NLM (1,2) distribution for Neutral Clusters in Acceptance
+  TH2D                       * fNLM2_NC_Acc_noTcard;            //!<! NLM (1,2) distribution for Neutral Clusters in Acceptance w/o NLM=2 in SameT
+  TH1D                       * fVz;                             //!<! Vertex Z distribution
+  TH1D                       * fEvents;                         //!<! Number of Events
+  TH1D                       * fPtaftTime;                      //!<! E distribution for clusters after Cluster Time cut
+  TH1D                       * fPtaftCell;                      //!<! Pt distribution for clusters after NCells cut
+  TH1D                       * fPtaftNLM;                       //!<! Pt distribution for clusters after NLM cut
+  TH3F                       * fClusEtVsEtaPhiMatched;          //!<! Track-matched cluster eta vs. phi vs. E_T
+  TH3F                       * fClusEtVsEtaPhiUnmatched;        //!<! Not track-matched cluster eta vs. phi vs. E_T
+  TH1D                       * fPtaftTM;                        //!<! E distribution for neutral clusters
+  TH1D                       * fPtaftDTBC;                      //!<! E distribution for NC after DistanceToBadChannel cut
+  TH1D                       * fPtaftFC;                        //!<! E distribution for clusters after Fiducial cut
+  TH1D                       * fPtaftM02C;                      //!<! E distribution for clusters after Shower Shape cut
+  TH1D                       * fClusTime;                       //!<! Time distribution for clusters
+  TH2D                       * fM02;                            //!<! Squared_Lambda0 (Squared_sigma_long) distribution
+  TH3F                       * fEtaPhiClusVsM02;                //!<! Cluster eta vs. phi vs. sigma_long squared (cluster energy from 14 to 16 GeV)
+  TH3F                       * fEtaPhiClusVsEtIsoClus;          //!<! Cluster eta vs. phi vs. neutral contribution to the energy in isolation cone (cluster energy from 14 to 16 GeV)
+  TH3F                       * fEtaPhiClusVsPtIsoTrack;         //!<! Cluster eta vs. phi vs. charged contribution to the energy in isolation cone (cluster energy from 14 to 16 GeV)
+  TH3F                       * fEtaPhiClusVsPtUETrackCside;     //!<! Cluster eta vs. phi vs. charged contribution to the energy in C-side UE (cluster energy from 14 to 16 GeV)
+  TH3F                       * fEtaPhiClusVsPtUETrackAside;     //!<! Cluster eta vs. phi vs. charged contribution to the energy in A-side UE (cluster energy from 14 to 16 GeV)
+  TH1D                       * fDeltaETAClusTrack;              //!<! dEta Cluster-Track
+  TH1D                       * fDeltaPHIClusTrack;              //!<! dPhi Cluster-Track
+  TH1D                       * fDeltaETAClusTrackMatch;         //!<! dEta Cluster-Track matched
+  TH1D                       * fDeltaPHIClusTrackMatch;         //!<! dPhi Cluster-Track matched
+  TH1D                       * fEtIsoCells;                     //!<! Isolation Energy with EMCal Cells
+  TH2D                       * fEtIsoClust;                     //!<! Isolation Energy with EMCal Clusters
+  TH2D                       * fPtIsoTrack;                     //!<! Isolation Pt with Tracks
+  TH1D                       * fPtEtIsoTC;                      //!<! Isolation with Pt from Tracks and Et from NON-Matched Clusters
+  TH2D                       * fPhiBandUEClust;                 //!<! UE with Phi Band (Clusters)
+  TH2D                       * fEtaBandUEClust;                 //!<! UE with Eta Band (Clusters)
+  TH2D                       * fPhiBandUECells;                 //!<! UE with Phi Band (Cells)
+  TH2D                       * fEtaBandUECells;                 //!<! UE with Eta Band (Cells)
+  TH2D                       * fPhiBandUETracks;                //!<! UE with Phi Band (Tracks)
+  TH2D                       * fEtaBandUETracks;                //!<! UE with Eta Band (Tracks)
+  TH2D                       * fPerpConesUETracks;              //!<! UE with Cones (Tracks ONLY)
+  TH2D                       * fTPCWithoutIsoConeB2BbandUE;     //!<! UE with Full TPC except IsoCone and EtaBand in Back2Back
+  TH1D                       * fNTotClus10GeV;                  //!<! Number of TOTAL clusters with Energy bigger than 10 GeV
+  TH1D                       * fEtIsolatedCells;                //!<! Isolated photons, isolation with cells
+  TH1D                       * fEtIsolatedClust;                //!<! Isolated photons, isolation with clusters
+  TH1D                       * fPtIsolatedNClust;               //!<! Isolated neutral clusters
+  TH1D                       * fPtIsolatedNTracks;              //!<! Isolated neutral clusters with tracks
+  TH1D                       * fEtIsolatedTracks;               //!<! Isolated photons, isolation with tracks
+  TH2D                       * fPtvsM02iso;                     //!<! Isolated clusters, Pt distribution vs M02
+  TH2D                       * fPtvsM02noiso;                   //!<! Non isolated clusters, pt distribution vs M02
+  TH2D                       * fTestIndex;                      //!<! Index and local index test
+  TH2D                       * fTestIndexE;                     //!<! Index vs cluster energy test
+  TH2D                       * fTestLocalIndexE;                //!<! Local index vs cluster energy test
+  TH3F                       * fTestEnergyCone;                 //!<! Energy cone clusters vs tracks test
+  /* TH1D                       * fConeArea;                       //!<! Cone area distribution (depending on the cluster position) */
+  /* TH1D                       * fEtaBandArea;                    //!<! Eta-band area distribution (depending on the cluster position) */
+  TH2F                       * fEtaBandVsConeArea;              //!<! Eta-band vs. cone area distribution (depending on the cluster position)
+  TH3F                       * fPtVsConeVsEtaBand;              //!<! Energy cone clusters vs tracks test (not normalised)
+  TH3F                       * fPtVsNormConeVsNormEtaBand;      //!<! Energy cone clusters vs tracks test (area normalised)
+  TH3F                       * fPtvsM02vsSumUE_Norm;
+  TH2D                       * fTestEtaPhiCone;                 //!<! Eta vs phi test for clusters in cone
+  TH3D                       * fInvMassM02iso;                  //!<!
+  TH3D                       * fInvMassM02noiso;                //!<!
+  TH3D                       * fPtvsM02vsSumPi0;                //!<!
+  TH3D                       * fPtvsM02vsSumEta;                //!<!
+  TH3D                       * fPtvsM02vsSum;                   //!<!
+  TH3D                       * fPtvsM02vsSumUE;                 //!<!
+  TH3D                       * fTrackMultvsSumChargedvsUE;      //!<!
+  TH2D                       * fTrackMultvsPt;                  //!<!
+  TH3D                       * fTracksConeEtaPt;                //!<!
+  TH3D                       * fTracksConeEtaM02;               //!<!
+  TH1F                       * fHistXsection;                   //!<!
+  TH1F                       * fHistTrials;                     //!<!
+  TH2F                       * fPtTracksVSpTNC;                 //!<!
+  TH2F                       * fCTdistVSpTNC;                   //!<!
+  TH2F                       * fPtTracksVSpTNC_MC;              //!<!
+  TH3F                       * fpi0VSclusterVSIsolation;        //!<!
+  TH3F                       * fpi0VSclusterVSM02;              //!<!
+  TH3F                       * fpi0VSM02VSIsolation;            //!<!
+  TH3F                       * fEtVSM02VSEisoclust;             //!<!
+  TH3F                       * fEtVSM02VSPisotrack;             //!<!
+  TH2F                       * fPhiTracksVSclustPt;             //!<!
+  TH2F                       * fEtaTracksVSclustPt;             //!<!
+  TH2F                       * fTracksPhiVsPt;                  //!<!
+  TH2F                       * fTracksEtaVsPt;                  //!<!
+  TH2F                       * fTrackResolutionPtMC;            //!<!
+  TH1D                       * fVzBeforecut;                    //!<!
   
   THnSparse                  * fOutputTHnS;                     ///< 1st Method 4 Output
   THnSparse                  * fOutMCTruth;                     ///< 1st Method 4 MC truth Output // Isolation on pTMax
@@ -349,17 +353,18 @@ class AliAnalysisTaskEMCALPhotonIsolation: public AliAnalysisTaskEmcal {
   TTree                      * fOutputQATree;                   ///< 2nd method 4 QA Output
   TTree                      * fOutputTree;                     ///< 2nd Method 4 Output
   
-  TH3D                       * fphietaPhotons;                  ///<
-  TH3D                       * fphietaOthers;                   ///<
-  TH3D                       * fphietaOthersBis;                ///<
-  TH2F                       * fSPDclustVsSPDtracklets;         ///<
-  TH1F                       * fnPUevents;                      ///<
-  Bool_t                       f2012EGA;                        ///< Analyze only Events with EGA recalc patches above threshold
-  /* TH1                        * fPDGM02;                         ///< check for zeroM02 clusters */
-  /* TH2                        * fEtrueEclustM02;                 ///< check for zeroM02 clusters */
-  /* TH2                        * fDphiDetaM02;                    ///< check for zeroM02 clusters */
-  /* TH1D                       * fMomPDGM02;                      ///< */
-  /* TH2D                       * fTvsE_MismatchEM02;              ///< */
+  TH3D                       * fphietaPhotons;                  //!<!
+  TH3D                       * fphietaOthers;                   //!<!
+  TH3D                       * fphietaOthersBis;                //!<!
+  TH2F                       * fSPDclustVsSPDtracklets;         //!<!
+  TH1F                       * fnPUevents;                      //!<!
+  Bool_t                       f2012EGA;                        // Analyze only Events with EGA recalc patches above threshold
+  Int_t                        fAbsIDNLM[2];                    //!<!
+  // TH1                        * fPDGM02;                         //!<! check for zeroM02 clusters
+  // TH2                        * fEtrueEclustM02;                 //!<! check for zeroM02 clusters
+  // TH2                        * fDphiDetaM02;                    //!<! check for zeroM02 clusters
+  // TH1D                       * fMomPDGM02;                      //!<!
+  // TH2D                       * fTvsE_MismatchEM02;              //!<!
   
   /* AliParticleContainer       * fTracksCont;                     ///< Tracks */
   /* AliParticleContainer       * fclusters;                       ///< Container for Particle container 4 clusters */
@@ -372,7 +377,7 @@ class AliAnalysisTaskEMCALPhotonIsolation: public AliAnalysisTaskEmcal {
   AliAnalysisTaskEMCALPhotonIsolation&operator = ( const AliAnalysisTaskEMCALPhotonIsolation & ); // Not implemented
   
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskEMCALPhotonIsolation, 21);            // EMCal neutrals base analysis task
+  ClassDef(AliAnalysisTaskEMCALPhotonIsolation, 22);            // EMCal neutrals base analysis task
   /// \endcond
 };
 #endif

@@ -124,6 +124,7 @@ fetaT(0),
 fphiT(0),
 fsumEtisoconeT(0),
 fsumEtUE(0),
+fANnoSameTcard(kFALSE),
 fBinsPt(),
 fBinsM02(),
 fBinsEtiso(),
@@ -322,6 +323,7 @@ fetaT(0),
 fphiT(0),
 fsumEtisoconeT(0),
 fsumEtUE(0),
+fANnoSameTcard(kFALSE),
 fBinsPt(),
 fBinsM02(),
 fBinsEtiso(),
@@ -656,10 +658,16 @@ void AliAnalysisTaskEMCALPhotonIsolation::UserCreateOutputObjects(){
           fOutput->Add(fTrackResolutionPtMC);
         }
 
-	if(fQA){
+	if(fQA && fWho==1){
 	  fNLM2_NC_Acc = new TH2D("hNLM2_NC_Acc","NLM distribution for *Neutral* Clusters in acceptance",10,0.,10.,100,0.,100.);
 	  fNLM2_NC_Acc->Sumw2();
 	  fOutput->Add(fNLM2_NC_Acc);
+    
+    if(fANnoSameTcard){
+      fNLM2_NC_Acc_noTcard = new TH2D("hNLM2_NC_Acc_noTcard","NLM distribution for *Neutral* Clusters in acceptance with NLM=2 NOT in same Tcard",10,0.,10.,100,0.,100.);
+      fNLM2_NC_Acc_noTcard->Sumw2();
+      fOutput->Add(fNLM2_NC_Acc_noTcard);
+    }
 	}
       }
         break;
@@ -1260,9 +1268,26 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::SelectCandidate(AliVCluster *coi)
   if(vecCOI.Pt()<5.)
     return kFALSE;
 
-  if(fQA && fWho == 1)
+  if(fQA && fWho == 1){
     fNLM2_NC_Acc->Fill(nlm,coi->E());
-
+    
+    if(fANnoSameTcard){
+      if(nlm==2){
+        Int_t rowdiff,coldiff;
+        if(!IsAbsIDsFromTCard(fAbsIDNLM[0],fAbsIDNLM[1],rowdiff,coldiff))
+        {
+          fNLM2_NC_Acc_noTcard->Fill(nlm,coi->E());
+          return kTRUE;
+        }
+        else
+          return kFALSE;
+      }
+    }
+    else
+      fNLM2_NC_Acc_noTcard->Fill(nlm,coi->E());
+  } //the flag fANnoSameTcard could be used also independently of fQA and fWho,
+    //depending on the results of the analysis on full dataset.
+  
   return kTRUE;
 }
 
@@ -1771,6 +1796,56 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::AreNeighbours(Int_t absId1, Int_t ab
     areNeighbours = kTRUE;
 
   return areNeighbours;
+}
+
+  //________________________________________________________________________________________
+  /// Check, in case of clusters with NLM=2, that they are not in the same T-Card.
+  //________________________________________________________________________________________
+Bool_t  AliAnalysisTaskEMCALPhotonIsolation::IsAbsIDsFromTCard(Int_t absId1, Int_t absId2,
+                                                               Int_t & rowDiff, Int_t & colDiff) const
+{
+  rowDiff = -100;
+  colDiff = -100;
+  
+  if(absId1 == absId2) return kFALSE;
+  
+    // Check if in same SM, if not for sure not same TCard
+  Int_t sm1 = fGeom->GetSuperModuleNumber(absId1);
+  Int_t sm2 = fGeom->GetSuperModuleNumber(absId2);
+  if ( sm1 != sm2 ) return kFALSE ;
+  
+    // Get the column and row of each absId
+  Int_t iTower = -1, iIphi = -1, iIeta = -1;
+  
+  Int_t col1, row1;
+  fGeom->GetCellIndex(absId1,sm1,iTower,iIphi,iIeta);
+  fGeom->GetCellPhiEtaIndexInSModule(sm1,iTower,iIphi, iIeta,row1,col1);
+  
+  Int_t col2, row2;
+  fGeom->GetCellIndex(absId2,sm2,iTower,iIphi,iIeta);
+  fGeom->GetCellPhiEtaIndexInSModule(sm2,iTower,iIphi, iIeta,row2,col2);
+  
+  Int_t row0 = Int_t(row1-row1%8);
+  Int_t col0 = Int_t(col1-col1%2);
+  
+  Int_t rowDiff0 = row2-row0;
+  Int_t colDiff0 = col2-col0;
+  
+  rowDiff = row1-row2;
+  colDiff = col1-col2;
+  
+    // TCard is made by 2x8 towers
+  if ( colDiff0 >=0 && colDiff0 < 2 && rowDiff0 >=0 && rowDiff0 < 8 )
+  {
+    
+      //    printf("\t absId (%d,%d), sm %d; col (%d,%d), colDiff %d; row (%d,%d),rowDiff %d\n",
+      //           absId1 , absId2, sm1,
+      //           col1, col2, colDiff,
+      //           row1, row2, rowDiff);
+    return kTRUE ;
+  }
+  else
+    return kFALSE;
 }
 
   //__________________________________________________________________________________________
