@@ -1030,6 +1030,7 @@ void AliAnalysisTaskCMEV0::UserExec(Option_t *)
      }
    }
 
+   if (ptw1>1e3) ptw1 = 1.0;
 
    /*
     if(bFillAvgTPCQn) { //fill TPC Q-vect: 
@@ -1231,6 +1232,7 @@ void AliAnalysisTaskCMEV0::UserExec(Option_t *)
        }
      }
 
+     if (ptw2>1e3) ptw1 = 1.0;
 
 
      if(bApplyNUACorr) {
@@ -1337,6 +1339,13 @@ void AliAnalysisTaskCMEV0::UserExec(Option_t *)
 
  fCentDistvsRun->Fill(EvtCent,runindex);
 
+
+ if(EvtCent<=20){
+   fCentV0MvsVzRun->Fill(VtxZ,runindex,EvtCent);
+   fCentCL1vsVzRun->Fill(VtxZ,runindex,TMath::Abs(centrCL1-EvtCent));
+ }
+
+
  Double_t QTPCRe = QxTPC[1];
  Double_t QTPCIm = QyTPC[1];
 
@@ -1352,10 +1361,6 @@ void AliAnalysisTaskCMEV0::UserExec(Option_t *)
  fTPCQnxVsCentRun->Fill(EvtCent,runindex,TMath::Cos(Psi2TPC));
  fTPCQnyVsCentRun->Fill(EvtCent,runindex,TMath::Sin(Psi2TPC));//centrCL1
 
-
- fCentV0MvsVzRun->Fill(VtxZ,runindex,EvtCent);
-
- fCentCL1vsVzRun->Fill(VtxZ,runindex,centrCL1);
 
 
 
