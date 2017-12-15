@@ -321,6 +321,7 @@ AliAnalysisTaskGammaCalo::AliAnalysisTaskGammaCalo(): AliAnalysisTaskSE(),
   fProduceTreeEOverP(kFALSE),
   tBrokenFiles(NULL),
   fFileNameBroken(NULL),
+  tClusterQATree(NULL),
   fCloseHighPtClusters(NULL),
   fLocalDebugFlag(0),
   fAllowOverlapHeaders(kTRUE)
@@ -588,6 +589,7 @@ AliAnalysisTaskGammaCalo::AliAnalysisTaskGammaCalo(const char *name):
   fProduceTreeEOverP(kFALSE),
   tBrokenFiles(NULL),
   fFileNameBroken(NULL),
+  tClusterQATree(NULL),
   fCloseHighPtClusters(NULL),
   fLocalDebugFlag(0),
   fAllowOverlapHeaders(kTRUE)
@@ -1901,11 +1903,15 @@ void AliAnalysisTaskGammaCalo::UserCreateOutputObjects(){
     }
   }
 
-  if (fIsMC > 0 || fDoClusterQA > 0){
+  if (fIsMC > 0 ){
     tBrokenFiles = new TTree("BrokenFiles","BrokenFiles");
     tBrokenFiles->Branch("fileName",&fFileNameBroken);
-    tBrokenFiles->Branch("closeHighPtClusters",&fCloseHighPtClusters);
     fOutputContainer->Add(tBrokenFiles);
+  }
+  if (fDoClusterQA > 1){
+    tClusterQATree = new TTree("ClusterQATree","ClusterQATree");
+    tClusterQATree->Branch("closeHighPtClusters",&fCloseHighPtClusters);
+    fOutputContainer->Add(tClusterQATree);
   }
 
   if(fLocalDebugFlag > 0){
@@ -1953,8 +1959,8 @@ void AliAnalysisTaskGammaCalo::UserExec(Option_t *)
   //
   // Called for each event
   //
-  fInputEvent = InputEvent();
-
+  fInputEvent           = InputEvent();
+  fCloseHighPtClusters  = 0x0;
   if(fIsMC> 0) fMCEvent = MCEvent();
 
   Int_t eventQuality = ((AliConvEventCuts*)fV0Reader->GetEventCuts())->GetEventQuality();
@@ -2111,6 +2117,7 @@ void AliAnalysisTaskGammaCalo::UserExec(Option_t *)
 
     fClusterCandidates->Clear(); // delete cluster candidates
   }
+  if (fCloseHighPtClusters) delete fCloseHighPtClusters;
 
   PostData(1, fOutputContainer);
 }
@@ -3248,10 +3255,11 @@ void AliAnalysisTaskGammaCalo::CalculatePi0Candidates(){
               ProcessTrueMesonCandidatesAOD(pi0cand,gamma0,gamma1);
           }
 
-          if((pi0cand->GetOpeningAngle() < 0.017) && (pi0cand->Pt() > 15.) && fDoClusterQA > 0){
-            fCloseHighPtClusters = new TObjString(Form("%s",((TString)fV0Reader->GetCurrentFileName()).Data()));
-            if (tBrokenFiles) tBrokenFiles->Fill();
-            delete fCloseHighPtClusters;
+          if((pi0cand->GetOpeningAngle() < 0.017) && (pi0cand->Pt() > 15.) && fDoClusterQA > 1){
+            if (fCloseHighPtClusters == NULL){
+              fCloseHighPtClusters = new TObjString(Form("%s",((TString)fV0Reader->GetCurrentFileName()).Data()));
+              if (tClusterQATree) tClusterQATree->Fill();
+            }
           }
         }
         delete pi0cand;

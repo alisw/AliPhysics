@@ -73,7 +73,6 @@ void AddTask_GammaCalo_PbPb(  Int_t     trainConfig                     = 1,    
                               Bool_t    runLightOutput                  = kFALSE,               // switch to run light output (only essential histograms for afterburner)
                               Bool_t    doFlattening                    = kFALSE,               // switch on centrality flattening for LHC11h
                               TString   fileNameInputForCentFlattening  = "",                   // file name for centrality flattening
-
                               TString   additionalTrainConfig           = "0"                   // additional counter for trainconfig
                 ) {
 
