@@ -119,7 +119,7 @@ class AliAnalysisTaskEMCALPhotonIsolation: public AliAnalysisTaskEmcal {
   void                         SetFiducialCut ( Float_t fiducial )                        { fFiducialCut = fiducial; }
   void                         SetComputeAreasPerEvent ( Bool_t eventAreas )              { fAreasPerEvent = eventAreas; }
   void                         Set2012L1Analysis ( Bool_t is2012L1 )                      { f2012EGA = is2012L1; }
-  void                         SetANWithNoSameTcard (Bool_t iNoSameTCard)                 { fANnoSameTcard=iNoSameTCard; }
+  void                         SetANWithNoSameTcard ( Bool_t iNoSameTCard )               { fANnoSameTcard=iNoSameTCard; }
   
  protected:
   
@@ -142,7 +142,7 @@ class AliAnalysisTaskEMCALPhotonIsolation: public AliAnalysisTaskEmcal {
   Bool_t                       AreNeighbours         ( Int_t abscell1, Int_t abscell2 ) const;
   Float_t                      RecalEnClust          ( AliVCluster * cluster, AliVCaloCells * cells );
   void                         RecalAmpCell          ( Float_t &amp, Int_t absId ) const ;
-  Bool_t                       IsAbsIDsFromTCard(Int_t absId1, Int_t absId2, Int_t & rowDiff, Int_t & colDiff) const ;
+  Bool_t                       IsAbsIDsFromTCard     ( Int_t absId1, Int_t absId2, Int_t & rowDiff, Int_t & colDiff ) const ;
 
   Bool_t                       CheckBoundaries       ( TLorentzVector vecCOI );
   void                         FillInvMassHistograms ( Bool_t iso, Double_t m02COI, TLorentzVector c, Int_t index, Double_t isolation );
@@ -217,27 +217,27 @@ class AliAnalysisTaskEMCALPhotonIsolation: public AliAnalysisTaskEmcal {
   Bool_t                       fAreasPerEvent;                  ///< Enable/disable the event-by-event cone area computation
   
   // Initialization for TTree variables
-  Double_t                     fEClustersT;                     // E for all clusters
-  Double_t                     fPtClustersT;                    // Pt for all clusters
-  Double_t                     fEtClustersT;                    // Et for all clusters
-  Double_t                     fEtaClustersT;                   // Eta for all clusters
-  Double_t                     fPhiClustersT;                   // Phi for all clusters
-  Double_t                     fM02ClustersT;                   // lambda0^2 (sigma_long^2) for all clusters
-  Int_t                        fevents;                         // Number of events
-  Int_t                        fNClustersT;                     // Clusters multiplicity
-  Double_t                     flambda0T;                       // M02 for considered clusters (leading one or all depending on flag)
-  Double_t                     fM02isoT;                        // M02 for isolated clusters
-  Double_t                     fM02noisoT;                      // M02 for non isolated clusters
-  Double_t                     fPtnoisoT;                       // Pt for non isolated clusters
-  Double_t                     fEtT;                            // Et for considered clusters (leading one or all depending on flag)
-  Double_t                     fPtT;                            // Pt for considered clusters (leading one or all depending on flag)
-  Double_t                     fPtisoT;                         // Pt for all isolated neutral clusters
-  Double_t                     fEtisolatedT;                    // Et for isolated clusters
-  Double_t                     fPtisolatedT;                    // Pt for isolated clusters
-  Double_t                     fetaT;                           // Eta for considered clusters
-  Double_t                     fphiT;                           // Phi for considered clusters
-  Double_t                     fsumEtisoconeT;                  // Sum Et in cone
-  Double_t                     fsumEtUE;                        // Sum UE
+  Double_t                     fEClustersT;                     ///< E for all clusters
+  Double_t                     fPtClustersT;                    ///< Pt for all clusters
+  Double_t                     fEtClustersT;                    ///< Et for all clusters
+  Double_t                     fEtaClustersT;                   ///< Eta for all clusters
+  Double_t                     fPhiClustersT;                   ///< Phi for all clusters
+  Double_t                     fM02ClustersT;                   ///< lambda0^2 (sigma_long^2) for all clusters
+  Int_t                        fevents;                         ///< Number of events
+  Int_t                        fNClustersT;                     ///< Clusters multiplicity
+  Double_t                     flambda0T;                       ///< M02 for considered clusters (leading one or all depending on flag)
+  Double_t                     fM02isoT;                        ///< M02 for isolated clusters
+  Double_t                     fM02noisoT;                      ///< M02 for non isolated clusters
+  Double_t                     fPtnoisoT;                       ///< Pt for non isolated clusters
+  Double_t                     fEtT;                            ///< Et for considered clusters (leading one or all depending on flag)
+  Double_t                     fPtT;                            ///< Pt for considered clusters (leading one or all depending on flag)
+  Double_t                     fPtisoT;                         ///< Pt for all isolated neutral clusters
+  Double_t                     fEtisolatedT;                    ///< Et for isolated clusters
+  Double_t                     fPtisolatedT;                    ///< Pt for isolated clusters
+  Double_t                     fetaT;                           ///< Eta for considered clusters
+  Double_t                     fphiT;                           ///< Phi for considered clusters
+  Double_t                     fsumEtisoconeT;                  ///< Sum Et in cone
+  Double_t                     fsumEtUE;                        ///< Sum UE
   Bool_t                       fANnoSameTcard;                  ///<
   
   // Initialization of variables for THnSparse
