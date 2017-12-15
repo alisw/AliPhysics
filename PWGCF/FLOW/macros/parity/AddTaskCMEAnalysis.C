@@ -74,7 +74,7 @@ void AddTaskCMEAnalysis(Bool_t isPbPb = kTRUE,
   
   for(Int_t iCentralityBin = 0; iCentralityBin < nCentralities - 1; iCentralityBin++) {
     //Create the event cut object
-    cutsEvent[iCentralityBin] = createFlowEventCutObject(gCentrality[iCentralityBin],gCentrality[iCentralityBin+1],isPbPb,whichData,gCentralityEstimator,doQA);
+    cutsEvent[iCentralityBin] = createFlowEventCutObject(gCentrality[iCentralityBin],gCentrality[iCentralityBin+1],isPbPb,whichData,gCentralityEstimator,doQA,checkPileup);
     
     //Create the RP cut object
     cutsRP[iCentralityBin] = createFlowRPCutObject(gCentrality[iCentralityBin],gCentrality[iCentralityBin+1],isVZERO,gAODfilterBit,whichData,gChargeRP,doQA);
@@ -398,7 +398,7 @@ AliFlowEventCuts *createFlowEventCutObject(Int_t gCentralityMin = -1,
                                            Bool_t isPbPb = kTRUE,
                                            Double_t whichData = 2011,
                                            AliFlowEventCuts::refMultMethod gCentralityEstimator = AliFlowEventCuts::kVZERO,
-                                           Bool_t doQA = kFALSE) {
+                                           Bool_t doQA = kFALSE, Bool_t bPileup=kFALSE) {
     //Part of the code that creates the event cut objects
     Double_t gVertexZmin = -10., gVertexZmax = 10.;
     
@@ -413,13 +413,14 @@ AliFlowEventCuts *createFlowEventCutObject(Int_t gCentralityMin = -1,
       }
       else if(whichData!=2011){
 	cutsEvent->SetLHC11h(kFALSE);
-	if(whichData==2015) 
+	if(whichData==2015){ 
 	  cutsEvent->SetCentralityPercentileRange(gCentralityMin,gCentralityMax,kTRUE);
+	  cutsEvent->SetCheckPileup(bPileup); //
+	}
       }
       cutsEvent->SetCutTPCmultiplicityOutliersAOD(kTRUE);
     }
-    //    else
-    //cutsEvent->SetCheckPileup(checkPileup);
+   
     
     cutsEvent->SetPrimaryVertexZrange(gVertexZmin,gVertexZmax);
     cutsEvent->SetQA(doQA);
