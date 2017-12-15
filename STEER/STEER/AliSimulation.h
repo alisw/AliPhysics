@@ -53,6 +53,9 @@ public:
                    {fMakeSDigits = detectors;};
   void           MergeWith(const char* fileName, Int_t nSignalPerBkgrd = 0);
   void           EmbedInto(const char* fileName, Int_t nSignalPerBkgrd = 0);
+
+  Bool_t         GetEmbeddingFlag() const {return fEmbeddingFlag;}
+  
   void           SetUseBkgrdVertex(Bool_t useBkgrdVertex)
                    {fUseBkgrdVertex = useBkgrdVertex;};
   void           SetRegionOfInterest(Bool_t flag) {fRegionOfInterest = flag;};
