@@ -438,7 +438,12 @@ void AliGenParam::Init()
 {
   // Initialisation
 
-  if (TVirtualMC::GetMC()) fDecayer = TVirtualMC::GetMC()->GetDecayer();
+  if (!fDecayer && TVirtualMC::GetMC()) fDecayer = TVirtualMC::GetMC()->GetDecayer();
+  if (!fDecayer){
+	Fatal("AliGenParam",
+              "No decayer attached");
+  }
+
   //Begin_Html
   /*
     <img src="picts/AliGenParam.gif">
