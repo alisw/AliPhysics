@@ -14,9 +14,9 @@
   * 11 dec 2017: changed to trigger cond 2010 data
   * 11 dec 2017: implemented a setting function for cosPA ("fCosPACut")
   * 13 dec 2017: cleanup + filtering to reduce output size: 
-  - eta: 0.9->0.8
-  - setting function for DecayRCut: if (lV0Radius < fDecayRCut ) continue;
-
+                 - eta: 0.9->0.8
+                 - setter function for DecayRCut: if (lV0Radius < fDecayRCut ) continue;
+  * 15 dec 2017: setter for trigger, removed trigger settings in addtask parameters (now set it in train config), TODO: implement choice of severel trigger types
 
   Remiders:
   * For pp: remove pile up thing
@@ -46,7 +46,8 @@
 #include <AliESDtrackCuts.h>
 #include <AliESDVZERO.h>
 #include <AliAODVZERO.h>
- 
+#include "AliMultSelectionTask.h"
+
 #include <AliMCEventHandler.h>
 #include <AliMCEvent.h>
 #include <AliStack.h>
@@ -114,8 +115,9 @@ AliAnalysisTaskHighPtDeDx::AliAnalysisTaskHighPtDeDx():
   fV0ArrayTPCPar(0x0),//
   fTrackArrayMC(0x0),
   fVZEROArray(0x0),
-  ftrigBit1(0x0),
-  ftrigBit2(0x0),
+  // ftrigBit1(0x0),
+  // ftrigBit2(0x0),
+  fTrigType(AliVEvent::kMB),
   fVtxCut(10.0),  
   fEtaCut(0.8),  
   fEtaCutStack(1.2),  
@@ -175,8 +177,9 @@ AliAnalysisTaskHighPtDeDx::AliAnalysisTaskHighPtDeDx(const char *name):
   fV0ArrayTPCPar(0x0),//
   fTrackArrayMC(0x0),
   fVZEROArray(0x0),
-  ftrigBit1(0x0),
-  ftrigBit2(0x0),
+  // ftrigBit1(0x0),
+  // ftrigBit2(0x0),
+  fTrigType(AliVEvent::kMB),
   fVtxCut(10.0),  
   fEtaCut(0.8),
   fEtaCutStack(1.2),    
@@ -386,26 +389,34 @@ void AliAnalysisTaskHighPtDeDx::UserExec(Option_t *)
   
   // Get trigger decision
   fTriggeredEventMB = 0; 
-  
 
+  Bool_t lIsDesiredTrigger = AliMultSelectionTask::IsSelectedTrigger(event, fTrigType);
+  
+  if(lIsDesiredTrigger){
+    fTriggeredEventMB = 1;
+    fn1->Fill(1);
+  }
+  //TODO: implement fTrigType2 etc, and do if(lIsDesiredTrigger){fTriggeredEventMB = +2;} etc, see "old method"
+
+  
+  
+  // /*
+  //____________________ OLD METHOD __________________________________________________
+  
   //_____________NOMINAL TRIGGER CONDITION___________
   // Always use if MC
   // Use if 2010 data
 
-  if(((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))
-     ->IsEventSelected() & ftrigBit1 ){
-    fn1->Fill(1);
-    fTriggeredEventMB = 1; // event triggered as minimum bias
-  }
-  if(((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))
-     ->IsEventSelected() & ftrigBit2 ){
-    // From AliVEvent:
-    // kINT7         = BIT(1), // V0AND trigger, offline V0 selection
-    fTriggeredEventMB += 2;  
-    fn2->Fill(1);
-  }
-
-  
+  // if(((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))
+  //    ->IsEventSelected() & ftrigBit1 ){
+  //   fn1->Fill(1);
+  //   fTriggeredEventMB = 1; // event triggered as minimum bias
+  // }
+  // if(((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))
+  //    ->IsEventSelected() & ftrigBit2 ){
+  //   fTriggeredEventMB += 2;  
+  //   fn2->Fill(1);
+  // }
   //_____________ end nominal _______________________
 
 
@@ -414,9 +425,9 @@ void AliAnalysisTaskHighPtDeDx::UserExec(Option_t *)
   // // Use if 2011 data
 
   // if(((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))
-  //    ->IsEventSelected() & ftrigBit1 ){
+  //    ->IsEventSelected() & ftrigBit1 ){//AliVEvent::kMB
   //   fn1->Fill(1);
-  //   fTriggeredEventMB = 1;  event triggered as minimum bias
+  //   fTriggeredEventMB = 1; // event triggered as minimum bias
   // }
   // if(((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))
   //    ->IsEventSelected() & AliVEvent::kSemiCentral ){
@@ -431,7 +442,10 @@ void AliAnalysisTaskHighPtDeDx::UserExec(Option_t *)
  
   // //_____________ end special ______________________
 
+  //____________________________________________________________________________
+  // */
 
+  
 
   // Get process type for MC
   fMcProcessType = 0; // -1=invalid, 0=data, 1=ND, 2=SD, 3=DD
@@ -3104,8 +3118,8 @@ void AliAnalysisTaskHighPtDeDx::ProduceArrayV0AOD( AliAODEvent *AODevent, Analys
       if(pPid) {
 	pncl     = pPid->GetTPCsignalN();
 	pdedx    = pPid->GetTPCsignal();
-
       }
+      
       TBits psharedTPC=pTrack->GetTPCSharedMap();
       Int_t psharedtpcclusters=psharedTPC.CountBits(0)-psharedTPC.CountBits(159);
 
@@ -3271,9 +3285,6 @@ void AliAnalysisTaskHighPtDeDx::ProduceArrayV0AOD( AliAODEvent *AODevent, Analys
 	v0data->ptrack.filter  = filterFlag_p;
 	v0data->ptrack.tpcnclS    = psharedtpcclusters;
 	
-	
-	
-	
 	// negative track
 	v0data->ntrack.p       = np;
 	v0data->ntrack.pt      = npt;
@@ -3302,7 +3313,7 @@ void AliAnalysisTaskHighPtDeDx::ProduceArrayV0AOD( AliAODEvent *AODevent, Analys
     
     
     // ################################
-    // #### BEGINNING OF V0 CODE ######
+    // #### BEGINNING OF V0 CODE ###### AOD
     // ################################
     // This is the begining of the V0 loop  
     

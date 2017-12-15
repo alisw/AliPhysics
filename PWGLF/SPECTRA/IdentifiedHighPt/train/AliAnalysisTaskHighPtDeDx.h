@@ -44,8 +44,8 @@ class AliAnalysisTaskHighPtDeDx : public AliAnalysisTaskSE {
   Double_t GetDecayRCut() { return fDecayRCut; }
   Int_t    GetTreeOption() { return fTreeOption; }
 
-  virtual void  SetTrigger1(UInt_t ktriggerInt1) {ftrigBit1 = ktriggerInt1;}
-  virtual void  SetTrigger2(UInt_t ktriggerInt2) {ftrigBit2 = ktriggerInt2;}
+  /* virtual void  SetTrigger1(UInt_t ktriggerInt1) {ftrigBit1 = ktriggerInt1;} */
+  /* virtual void  SetTrigger2(UInt_t ktriggerInt2) {ftrigBit2 = ktriggerInt2;} */
   virtual void  SetTrackFilter(AliAnalysisFilter* trackF) {fTrackFilter = trackF;}
   virtual void  SetTrackFilterGolden(AliAnalysisFilter* trackF) {fTrackFilterGolden = trackF;}
   virtual void  SetTrackFilterTPC(AliAnalysisFilter* trackF) {fTrackFilterTPC = trackF;}
@@ -68,6 +68,10 @@ class AliAnalysisTaskHighPtDeDx : public AliAnalysisTaskSE {
   virtual void  SetAnalysisPbPb(Bool_t isanaPbPb) {fAnalysisPbPb = isanaPbPb;}
   virtual void  SetCosPACut(Double_t value) {fCosPACut = value;}   
   virtual void  SetDecayRCut(Double_t value) {fDecayRCut = value;}   
+
+  //Task Configuration: trigger selection
+  void SetSelectedTriggerClass(AliVEvent::EOfflineTriggerTypes trigType) {fTrigType = trigType;}
+
 
  private:
   virtual Float_t GetVertex(const AliVEvent* event) const;
@@ -100,7 +104,8 @@ class AliAnalysisTaskHighPtDeDx : public AliAnalysisTaskSE {
 
   AliAODMCParticle* FindPrimaryMotherAODV0(AliAODMCParticle* startParticle, Int_t& nSteps);
 
-
+  AliVEvent::EOfflineTriggerTypes fTrigType; // trigger type
+  
 
   static const Double_t fgkClight;   // Speed of light (cm/ps)
 
@@ -130,8 +135,8 @@ class AliAnalysisTaskHighPtDeDx : public AliAnalysisTaskSE {
   //
   // Cuts and options
   //
-  UInt_t       ftrigBit1;
-  UInt_t       ftrigBit2;
+  /* UInt_t       ftrigBit1; */
+  /* UInt_t       ftrigBit2; */
   Double_t     fVtxCut;             // Vtx cut on z position in cm
   Double_t     fEtaCut;             // Eta cut used to select particles
   Double_t     fEtaCutStack;        // Eta cut used to select particles - reduce saved stack size
