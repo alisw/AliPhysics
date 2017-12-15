@@ -165,6 +165,8 @@
   TH1 					   **fHistBinCheckPt;          //!<! plot Pt distribution for ideal binning
   TH1 					   **fHistBinCheckZt;          //!<! plot Zt distribution for ideal binning
   TH1 					   **fHistBinCheckXi;          //!<! plot Xi distribution for ideal binning
+  TH1 					   **fHistBinCheckEvtPl;       //!<! plot Event Plane distribution for ideal binning
+  TH1 					   **fHistBinCheckEvtPl2;      //!<! plot reduced Event Plane distribution for ideal binning
   TH2                      **fHistDEtaDPhiGammaQA;     //!<! Distribution of gammas in delta phi delta eta
   TH2                      **fHistDEtaDPhiTrackQA;     //!<! Distribution of tracks in delta phi delta eta
   TH2                      **fHistClusterTime;         //!<! Cluster time vs energy
