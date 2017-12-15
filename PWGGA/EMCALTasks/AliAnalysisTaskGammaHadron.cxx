@@ -1965,7 +1965,7 @@ Double_t AliAnalysisTaskGammaHadron::DeltaPhi(AliTLorentzVector ClusterVec,AliVP
 	Double_t pi = TMath::Pi();
 
 	dPhi = Phi_g-Phi_h;
-	//--cut the away side peak on the left of the NS peak and insert it to the very right: \-Æ-/  ---> -Æ-/\
+	//--cut the away side peak on the left of the NS peak and insert it to the very right: \-^-/  ---> -^-/\
 	//--to create a correlation histogram that starts at -pi/2 and ends at 3/2pi
 	if (dPhi <= -pi/2)    dPhi += 2*pi;
 	if (dPhi > 3.0*pi/2.0)dPhi -= 2*pi;
