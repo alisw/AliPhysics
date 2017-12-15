@@ -44,7 +44,8 @@ AliAnalysisTaskEMCALPhotonIsolation* AddTaskEMCALPhotonIsolation(
                                                                  TString                triggerName               = "",
                                                                  const Bool_t           RejectPileUpEvent         = kFALSE,
                                                                  const Int_t            NContrToPileUp            = 3,
-                                                                 const Float_t          iFiducialCut              = 0.4
+                                                                 const Float_t          iFiducialCut              = 0.4,
+                                                                 const Bool_t           bANwithNoSameTcard        = kFALSE
                                                                  )
 {
   Printf("Preparing neutral cluster analysis\n");
@@ -127,7 +128,7 @@ AliAnalysisTaskEMCALPhotonIsolation* AddTaskEMCALPhotonIsolation(
     pileUp = "";
   }
   
-  myContName.Append(Form("%s_TM_%s_CPVe%.2lf_CPVp%.2lf_IsoMet%d_EtIsoMet%d_UEMet%d_TPCbound_%s_IsoConeR%.1f_NLMCut_%s_minNLM%d_maxNLM%d_SSsmear_%s_Width%.3f_Mean_%.3f_PureIso_%s_WhichSmear_%d%s%s",is2012_EGA ? "_L1recalc":"",bTMClusterRejection? "On" :"Off", TMdeta , TMdphi ,iIsoMethod,iEtIsoMethod,iUEMethod,bUseofTPC ? "Yes" : "No",iIsoConeRadius,bNLMCut ? "On": "Off",minNLM, NLMCut, iSmearingSS ? "On":"Off",iWidthSSsmear,iMean_SSsmear,iExtraIsoCuts?"On":"Off",bWhichToSmear,triggerName.Data(),pileUp.Data()));
+  myContName.Append(Form("%s_TM_%s_CPVe%.2lf_CPVp%.2lf_IsoMet%d_EtIsoMet%d_UEMet%d_TPCbound_%s_IsoConeR%.1f_NLMCut_%s_minNLM%d_maxNLM%d_SSsmear_%s_Width%.3f_Mean_%.3f_PureIso_%s_WhichSmear_%d%s%s%s",is2012_EGA ? "_L1recalc":"",bTMClusterRejection? "On" :"Off", TMdeta , TMdphi ,iIsoMethod,iEtIsoMethod,iUEMethod,bUseofTPC ? "Yes" : "No",iIsoConeRadius,bNLMCut ? "On": "Off",minNLM, NLMCut, iSmearingSS ? "On":"Off",iWidthSSsmear,iMean_SSsmear,iExtraIsoCuts?"On":"Off",bWhichToSmear,triggerName.Data(),pileUp.Data(),bANwithNoSameTcard?"_NoSameTcard":""));
 
   // Switch on/off the p-Pb analysis features
   Bool_t i_pPb = kFALSE;
@@ -236,6 +237,7 @@ AliAnalysisTaskEMCALPhotonIsolation* AddTaskEMCALPhotonIsolation(
   task->SetNcontributorsToPileUp(NContrToPileUp);
   task->SetFiducialCut(iFiducialCut);
   task->Set2012L1Analysis(is2012_EGA);
+  task->SetANWithNoSameTcard(bANwithNoSameTcard);
 
   if(triggerName.Contains("EG1") || triggerName.Contains("EGA1")){
     if(bIsMC)
