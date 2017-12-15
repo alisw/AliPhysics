@@ -14,6 +14,7 @@
 #include <vector>
 #include <ostream>
 #include <iostream>
+#include <iterator>
 
 #include <TBuffer.h>
 #include <TString.h>
@@ -21,7 +22,8 @@
 #include <TPaveText.h>
 
 
-#if false && __cplusplus >= 201103L
+// #if false && __cplusplus >= 201103L
+#if __cplusplus >= 201103L
 #define ENABLE_MOVE_SEMANTICS 1
 #endif
 
@@ -178,16 +180,22 @@ public:
   /// Assign value
   AliFemtoConfigObject& operator=(AliFemtoConfigObject const &);
 
+  // I don't know why this needs to be specified explicitly
+  // instead of the 
+  AliFemtoConfigObject(const char * v):
+    fTypeTag(kSTRING), fValueString(v), fPainter(nullptr) { }
+
   // define constructors
   #define ConstructorDef(__type, __tag, __dest) \
-    AliFemtoConfigObject(const __type &v): fTypeTag(__tag), __dest(v), fPainter(nullptr) { }
+    AliFemtoConfigObject(const __type &v): \
+      fTypeTag(__tag), __dest(v), fPainter(nullptr) { }
 
+    // ConstructorDef(char*, kSTRING, fValueString);
 
     // constructors with all associated value-types (IntValue_t, MapValue_t, etc..)
     FORWARD_STANDARD_TYPES(ConstructorDef);
 
     //ConstructorDef(TString, kSTRING, fValueString);   // implicit cast - not allowed by clang 9.0, must be declared explicitly
-    ConstructorDef(char *, kSTRING, fValueString);
     ConstructorDef(int, kINT, fValueInt);
     ConstructorDef(float, kFLOAT, fValueFloat);
   #undef ConstructorDef
@@ -391,6 +399,57 @@ public:
 
   /// @}
 
+  /// \class Iterator
+  class list_iterator : public std::iterator<std::bidirectional_iterator_tag, AliFemtoConfigObject> {
+    AliFemtoConfigObject *fParent;
+    bool fIsArray;
+    ArrayValue_t::iterator fInternal;
+    friend class AliFemtoConfigObject;
+
+    list_iterator(AliFemtoConfigObject *obj, ArrayValue_t::iterator it):
+      fParent(obj), fIsArray(true), fInternal(it) {}
+
+  public:
+    /// construct from config object
+    list_iterator(AliFemtoConfigObject &obj): fParent(&obj), fIsArray(obj.is_array()) {
+      if (fIsArray) {
+        fInternal = obj.fValueArray.begin();
+      }
+    }
+
+    value_type& operator*() {
+      return *fInternal;
+    }
+
+    list_iterator& operator++(int) {
+      fInternal++;
+      return *this;
+    }
+
+    bool operator!=(list_iterator const &rhs) const {
+      return rhs.fParent != fParent                  // if we don't have same parent - different
+          || fIsArray ? (fInternal != rhs.fInternal) // if array, compare internal iterator
+                      : false;                       // if not array, we are equal
+    }
+  };
+
+  ///
+  list_iterator list_begin() {
+    return list_iterator(*this);
+  }
+
+  ///
+  list_iterator list_end() {
+    if (is_array()) {
+      return list_iterator(this, fValueArray.end());
+    }
+    return list_iterator(*this);
+  }
+
+
+
+
+
   /// \class Popper
   /// \brief Struct used for 'poping' many values from object
   struct Popper {
@@ -552,7 +611,7 @@ private:
   void _DeleteValue();
   void _CopyConstructValue(const AliFemtoConfigObject &);
 #ifdef ENABLE_MOVE_SEMANTICS
-  void _MoveConstructValue(const AliFemtoConfigObject &&);
+  void _MoveConstructValue(AliFemtoConfigObject &&);
 #endif
 
   ClassDef(AliFemtoConfigObject, 1);
@@ -671,6 +730,33 @@ void AliFemtoConfigObject::_CopyConstructValue(const AliFemtoConfigObject &src)
 
   #undef COPY
 }
+
+#ifdef ENABLE_MOVE_SEMANTICS
+
+inline
+void AliFemtoConfigObject::_MoveConstructValue(AliFemtoConfigObject &&src)
+{
+  #define MOVE(__type, __dest) new (& __dest) __type (std::move(src. __dest))
+
+  switch (src.fTypeTag) {
+    case kEMPTY: break;
+    case kBOOL: MOVE(BoolValue_t, fValueBool); break;
+    case kINT: MOVE(IntValue_t, fValueInt); break;
+    case kFLOAT: MOVE(FloatValue_t, fValueFloat); break;
+    case kSTRING: MOVE(StringValue_t, fValueString); break;
+    case kARRAY: MOVE(ArrayValue_t, fValueArray); break;
+    case kMAP: MOVE(MapValue_t, fValueMap); break;
+    case kRANGE: MOVE(RangeValue_t, fValueRange); break;
+    case kRANGELIST: MOVE(RangeListValue_t, fValueRangeList); break;
+  }
+
+  src._DeleteValue();
+  src.fTypeTag = kEMPTY;
+
+  #undef MOVE
+}
+
+#endif
 
 inline
 AliFemtoConfigObject::AliFemtoConfigObject():

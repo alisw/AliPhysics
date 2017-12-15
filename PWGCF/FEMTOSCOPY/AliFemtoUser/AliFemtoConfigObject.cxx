@@ -737,7 +737,8 @@ AliFemtoConfigObject::ParseMap(StringIter_t& it, const StringIter_t stop)
   it = match[0].second;
 
   // loop until we match right bracket }
-  for (; !std::regex_search(it, stop, match, RBRK_RX); ) {
+  // for (; !std::regex_search(it, stop, match, RBRK_RX); ) {
+  while (!std::regex_search(it, stop, match, RBRK_RX)) {
       // load key
       if (!std::regex_search(it, stop, match, KEY_RX)) {
         // throw std::runtime_error("Expected a Key or '}", it);
