@@ -14,9 +14,11 @@
 #include <vector>
 #include <ostream>
 #include <iostream>
+#include <iterator>
 
 #include <TBuffer.h>
 #include <TString.h>
+#include <TObjString.h>
 #include <TText.h>
 #include <TPaveText.h>
 
@@ -153,9 +155,17 @@ protected:
   // template <TypeTagEnum_t> struct type_from_enum { };
 
 public:
+  /// Create object by parsing cstring
+  static AliFemtoConfigObject Parse(const char*);
 
   /// Create object by parsing string
   static AliFemtoConfigObject Parse(const std::string &);
+
+  /// Create object by parsing TString
+  static AliFemtoConfigObject Parse(const TString &);
+
+  /// Create object by parsing TString
+  static AliFemtoConfigObject Parse(const TObjString &);
 
   /// Create object from string; if a map, also parse defaults and
   /// insert any values missing in object with defaults.
@@ -178,16 +188,22 @@ public:
   /// Assign value
   AliFemtoConfigObject& operator=(AliFemtoConfigObject const &);
 
+  // I don't know why this needs to be specified explicitly
+  // instead of the macro-generated ones below
+  AliFemtoConfigObject(const char * v):
+    fTypeTag(kSTRING), fValueString(v), fPainter(nullptr) { }
+
   // define constructors
   #define ConstructorDef(__type, __tag, __dest) \
-    AliFemtoConfigObject(const __type &v): fTypeTag(__tag), __dest(v), fPainter(nullptr) { }
+    AliFemtoConfigObject(const __type &v):      \
+      fTypeTag(__tag), __dest(v), fPainter(nullptr) { }
 
+    // ConstructorDef(char*, kSTRING, fValueString);
 
     // constructors with all associated value-types (IntValue_t, MapValue_t, etc..)
     FORWARD_STANDARD_TYPES(ConstructorDef);
 
     //ConstructorDef(TString, kSTRING, fValueString);   // implicit cast - not allowed by clang 9.0, must be declared explicitly
-    ConstructorDef(char *, kSTRING, fValueString);
     ConstructorDef(int, kINT, fValueInt);
     ConstructorDef(float, kFLOAT, fValueFloat);
   #undef ConstructorDef
@@ -343,11 +359,11 @@ public:
   /// Copies item identified by *key*, returns true if found
   #define IMPL_FINDANDLOAD(__dest_type, __tag, __source)            \
     bool find_and_load(const Key_t &key, __dest_type &dest) const { \
-      if (!is_map()) { return false; }                        \
-      auto found = fValueMap.find(key);                       \
-      if (found == fValueMap.end()) { return false; }         \
-      if (found->second.fTypeTag != __tag) { return false; }  \
-      dest = found->second. __source;                         \
+      if (!is_map()) { return false; }                              \
+      MapValue_t::const_iterator found = fValueMap.find(key);       \
+      if (found == fValueMap.cend()) { return false; }              \
+      if (found->second.fTypeTag != __tag) { return false; }        \
+      dest = found->second. __source;                               \
       return true; }
 
     FORWARD_STANDARD_TYPES(IMPL_FINDANDLOAD)
@@ -395,8 +411,8 @@ public:
   #define IMPL_POPANDLOAD(__dest_type, __tag, __source)      \
     bool pop_and_load(const Key_t &key, __dest_type &dest) { \
       if (!is_map()) { return false; }                       \
-      auto found = fValueMap.find(key);                      \
-      if (found == fValueMap.end()) { return false; }        \
+      MapValue_t::const_iterator found = fValueMap.find(key);\
+      if (found == fValueMap.cend()) { return false; }       \
       if (found->second.fTypeTag != __tag) { return false; } \
       dest = found->second. __source;                        \
       fValueMap.erase(found); return true; }
@@ -752,7 +768,7 @@ private:
   void _DeleteValue();
   void _CopyConstructValue(const AliFemtoConfigObject &);
 #ifdef ENABLE_MOVE_SEMANTICS
-  void _MoveConstructValue(const AliFemtoConfigObject &&);
+  void _MoveConstructValue(AliFemtoConfigObject &&);
 #endif
 
   ClassDef(AliFemtoConfigObject, 1);
@@ -871,6 +887,33 @@ void AliFemtoConfigObject::_CopyConstructValue(const AliFemtoConfigObject &src)
 
   #undef COPY
 }
+
+#ifdef ENABLE_MOVE_SEMANTICS
+
+inline
+void AliFemtoConfigObject::_MoveConstructValue(AliFemtoConfigObject &&src)
+{
+  #define MOVE(__type, __dest) new (& __dest) __type (std::move(src. __dest))
+
+  switch (src.fTypeTag) {
+    case kEMPTY: break;
+    case kBOOL: MOVE(BoolValue_t, fValueBool); break;
+    case kINT: MOVE(IntValue_t, fValueInt); break;
+    case kFLOAT: MOVE(FloatValue_t, fValueFloat); break;
+    case kSTRING: MOVE(StringValue_t, fValueString); break;
+    case kARRAY: MOVE(ArrayValue_t, fValueArray); break;
+    case kMAP: MOVE(MapValue_t, fValueMap); break;
+    case kRANGE: MOVE(RangeValue_t, fValueRange); break;
+    case kRANGELIST: MOVE(RangeListValue_t, fValueRangeList); break;
+  }
+
+  src._DeleteValue();
+  src.fTypeTag = kEMPTY;
+
+  #undef MOVE
+}
+
+#endif
 
 inline
 AliFemtoConfigObject::AliFemtoConfigObject():
