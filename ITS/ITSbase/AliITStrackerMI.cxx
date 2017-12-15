@@ -552,6 +552,7 @@ Int_t AliITStrackerMI::Clusters2Tracks(AliESDEvent *event) {
   AliDebug(2,Form("SKIPPING %d %d %d %d %d %d",ForceSkippingOfLayer(0),ForceSkippingOfLayer(1),ForceSkippingOfLayer(2),ForceSkippingOfLayer(3),ForceSkippingOfLayer(4),ForceSkippingOfLayer(5)));
 
   fTrackingPhase="Clusters2Tracks";
+  fAfterV0 = kFALSE;
   //
   // RS
   fSelectBestMIP03  = kFALSE;//AliITSReconstructor::GetRecoParam()->GetSelectBestMIP03();
