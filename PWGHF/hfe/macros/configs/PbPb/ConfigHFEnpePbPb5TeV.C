@@ -1,7 +1,7 @@
 TF1* GetEtaCorrection(){
   TString list=gSystem->Getenv("LIST");
 
-  TString etaMap="$ALICE_PHYSICS/PWGHF/hfe/macros/configs/PbPb/EtaCorrMapsTPC.root";
+  TString etaMap="$TRAIN_ROOT/hfe_HFE/EtaCorrMapsTest.root";
   TString trainRoot=gSystem->Getenv("TRAIN_ROOT");
 
   if (gSystem->AccessPathName(gSystem->ExpandPathName(etaMap.Data()))){
@@ -255,7 +255,7 @@ AliAnalysisTaskHFE* ConfigHFEnpePbPb5TeV(Bool_t useMC, Bool_t isAOD, TString app
     //   cout << a << " " << paramsTPCdEdxcut[a] << endl;
     Double_t tpcparamlow[1]={paramsTPCdEdxcutlow[a]};
     Float_t tpcparamhigh=paramsTPCdEdxcuthigh[a];
-    pid->ConfigureTPCcentralityCut(a,cutmodel,tpcparamlow,tpcparamhigh);
+    pid->ConfigureTPCcentralityCut(a,cutmodel,tpcparamlow,tpcparamhigh);        // TPC PID cut!
   }
 
   if(!useMC){
@@ -287,7 +287,8 @@ AliAnalysisTaskHFE* ConfigHFEnpePbPb5TeV(Bool_t useMC, Bool_t isAOD, TString app
   if (useits>0){
     AliHFEpidITS *itspid = pid->GetDetPID(AliHFEpid::kITSpid);
     //itspid->SetITSnSigma(1.);
-    itspid->SetITSnSigma(ITSs); // ***** modified 11/06/2017 (mfaggin)
+    //itspid->SetITSnSigma(ITSs); // ***** modified 11/06/2017 (mfaggin)
+    itspid->SetITSnSigma(-ITSs,ITSs);   // ***** modified 11 Dec 2017 (mfaggin)
   }
 
   // To make different upper TOF cut to see contamination effect
@@ -305,7 +306,7 @@ AliAnalysisTaskHFE* ConfigHFEnpePbPb5TeV(Bool_t useMC, Bool_t isAOD, TString app
     //status = ReadContaminationFunctions("hadronContamination_PbPb5TeV_attempt19072017.root", hBackground, tpcdEdxcutlow[0], TOFs, ITSs);        // attempt 19/07/2017
     //status = ReadContaminationFunctions("hadronContamination_PbPb5TeV_22072017attempt.root", hBackground, tpcdEdxcutlow[0], TOFs, ITSs);        // attempt 22/07/2017
     //status = ReadContaminationFunctions("hadronContamination_PbPb5TeV_24072017attempt.root", hBackground, tpcdEdxcutlow[0], TOFs, ITSs);        // attempt 24/07/2017
-   // status = ReadContaminationFunctions("hadronContamination_PbPb5TeV_24072017attempt_newParametrisation.root", hBackground, tpcdEdxcutlow[0], TOFs, ITSs);        // attempt 24/07/2017 with new parametrisation done on 28/07/2017
+    //status = ReadContaminationFunctions("hadronContamination_PbPb5TeV_24072017attempt_newParametrisation.root", hBackground, tpcdEdxcutlow[0], TOFs, ITSs);        // attempt 24/07/2017 with new parametrisation done on 28/07/2017
 
   for(Int_t a=0;a<12;a++) {
       //printf("back %f \n",hBackground[a]);
