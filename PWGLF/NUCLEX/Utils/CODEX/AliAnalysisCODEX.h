@@ -8,11 +8,15 @@
 #include <vector>
 #include "TLorentzVector.h"
 #include "Math/Vector3D.h"
+#include "Math/Vector4D.h"
+
 #include <assert.h>
 
 using std::string;
 using std::vector;
 using ROOT::Math::XYZVectorF;
+
+typedef ROOT::Math::LorentzVector<ROOT::Math::PtEtaPhiM4D<float>> FourVector_t;
 
 namespace AliAnalysisCODEX {
   /// Constants
@@ -248,17 +252,19 @@ namespace AliAnalysisCODEX {
 
       // fills the vector of tracks in the correct matrix element
       // depending on the value of centrality and vertex the event
-      void FillEvent(vector<Track*> &track, char c, float v, int p) {
+      void FillEvent(vector<FourVector_t> &track, char c, float v, int p) {
         if (track.size() > 0 && fabs(v) < mVMax && c < mCMax) {
           int cbin = c / mCWBin;
           int vbin = ( v + mVMax ) / mVWBin;
           int index = mLevel[cbin][vbin][p] < mDepth ? mLevel[cbin][vbin][p] : 0;
-          vector<TLorentzVector> &vv3 = mPool[cbin][vbin][p][index];
+          vector<FourVector_t> vv3;
           vv3.resize(track.size());
           for (size_t iT = 0; iT < track.size(); iT++) {
-            Track *&ntr = track[iT];
-            vv3[iT].SetPtEtaPhiM(ntr->Pt(), ntr->Eta(), ntr->Phi(), mPartMass[p]);
+            FourVector_t ntr = track[iT];
+            FourVector_t vec = {ntr.Pt(), ntr.Eta(), ntr.Phi(), ntr.M()};
+            vv3[iT] = vec;
           }
+          mPool[cbin][vbin][p][index] = vv3;
           mLevel[cbin][vbin][p] = index + 1;
         }
       }
@@ -277,7 +283,7 @@ namespace AliAnalysisCODEX {
       }
 
       // returns the vector of TLorentzVector stored in the
-      vector<TLorentzVector>& GetVectorTLV(int c, float v, int p, int d) {
+      vector<FourVector_t> GetVectorFV(int c, float v, int p, int d) {
         if (fabs(v) < mVMax && c < mCMax) {
           int cbin = c / mCWBin;
           int vbin = ( v + mVMax ) / mVWBin;
@@ -312,7 +318,7 @@ namespace AliAnalysisCODEX {
 
     private:
 
-      vector<TLorentzVector> mPool[centr][vert][part][depth];
+      vector<FourVector_t> mPool[centr][vert][part][depth];
       const int mCentralityBins;
       const int mVertexBins;
       const int mNparticles;

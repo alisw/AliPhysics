@@ -34,7 +34,7 @@ class TList;
 const unsigned char c = 0x1;   // on if charge is +1
 const unsigned char p = 0x2;   // on if is Physical Primary
 const unsigned char s = 0x4;   // on if is Seconbdary from Material
-// const unsigned char secondarywd = 0x8;   // on if is Secondary from Weak Decay
+const unsigned char t = 0x8;   // on if has TOF
 
 struct mother_struct{
   int id;
