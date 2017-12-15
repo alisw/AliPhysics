@@ -264,7 +264,7 @@ void AliTOFAnalysisTaskCalibTree::UserExec(Option_t *) {
     fDeltaz[fnhits] = deltaz;
     fDeltat[fnhits] = deltat;
     fDeltaraw[fnhits] = deltaraw;
-   
+    fHitFlag[fnhits] = 0; 
     if (fSaveCoordinates){ // set hit flags
      
          SetClusterFlags(track,fnhits);  // check for multiple hits & adjjacent clusters in X and Z (flags 1,2,4)
