@@ -822,12 +822,18 @@ void AliPerformanceTPC::Exec(AliMCEvent* const mcEvent, AliVEvent *const vEvent,
   }
 
   // get TPC event vertex
-    AliESDVertex vertex;
-    vEvent->GetPrimaryVertex(vertex);
-    const AliVVertex *vVertex = &vertex;
-    if(!(vVertex->GetStatus())) return;
+  AliESDVertex vertex;
+  Int_t vertexStatus = 0;
+  if(fUseTrackVertex) {
+    vertexStatus = vEvent->GetPrimaryVertexTracks(vertex);
+  } else {
+    vertexStatus = vEvent->GetPrimaryVertexTPC(vertex);
+  }
+  if (vertexStatus<0) {
+    return;
+  }
+  const AliVVertex *vVertex = &vertex;
 
-    
   //  events with rec. vertex
     fMult = 0; fMultP = 0; fMultN = 0;
   
