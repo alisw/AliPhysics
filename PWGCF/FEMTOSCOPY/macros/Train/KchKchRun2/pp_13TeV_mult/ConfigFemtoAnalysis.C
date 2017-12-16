@@ -60,7 +60,7 @@ AliFemtoManager* ConfigFemtoAnalysis() {
  //////// const int cKt=3;
   
   
-  const int cMu=2;
+  const int cMu=3;
   const int cKt=2;
   
   
@@ -87,11 +87,10 @@ AliFemtoManager* ConfigFemtoAnalysis() {
 
   // Switches for QA analyses
  
-  int runmults[2] = {1, 1};
+  int runmults[4] = {1, 1, 1, 0};
  // int multbins[5] = {0, 900, 300, 500, 900};
 //old pp
- // int multbins[5] = {0, 11, 22, 60, 200};
-  int multbins[3] = {0, 18, 200};
+  int multbins[5] = {1, 20, 50, 1000, 200};
   //.................................................
 
   int runch[2] = {1, 1};
@@ -101,8 +100,8 @@ AliFemtoManager* ConfigFemtoAnalysis() {
   int runktdep = 1;
 //YS  double ktrng[cKt+1] = {0.2, 0.36, 0.48, 0.6, 1.0, 1.5};
 //  double ktrng[cKt+1] = {0.2, 0.4, 0.6, 1.5};
-  /////double ktrng[5] = {0.2, 0.4, 0.6, 0.8, 1.3};
-  double ktrng[3] = {0.2, 0.6, 1.3};
+  //double ktrng[5] = {0.2, 0.4, 0.6, 0.8, 1.3};
+  double ktrng[3] = {0.2, 0.5, 1.5};
 
 // double ktrng[8] = {0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 2.0};
 
@@ -165,17 +164,37 @@ AliFemtoEventReaderAODChain *Reader = new AliFemtoEventReaderAODChain();
 
 /* Run2 PbPb
 */
-AliFemtoEventReaderAOD *Reader = new AliFemtoEventReaderAODMultSelection();
+
+
+AliFemtoEventReaderAODChain *Reader = new AliFemtoEventReaderAODChain();
+//AliFemtoEventReaderAOD *Reader = new AliFemtoEventReaderAODMultSelection();
     Reader->SetFilterBit(7);
-    Reader->SetEPVZERO(kTRUE);
+////    Reader->SetEPVZERO(kTRUE);
 //    Reader->SetUseMultiplicity(AliFemtoEventReaderAOD::kCentrality);
+
+    Reader->SetNoCentrality(kTRUE);
+//    Reader->SetUseMultiplicity(AliFemtoEventReaderAOD::kTPCOnlyRef);
     Reader->SetUseMultiplicity(AliFemtoEventReaderAOD::kReference);
+    
+    /*
+     // Counting particles to set multiplicity
+    if (fEstEventMult == kGlobalCount) {
+      //if (aodtrack->IsPrimaryCandidate()) //? instead of kinks?
+      if (aodtrack->Chi2perNDF() < 4.0)
+        if (0.15 <= aodtrack->Pt() && aodtrack->Pt() < 20)
+          if (aodtrack->GetTPCNcls() > 70)
+            if (aodtrack->Eta() < 0.8)
+              tNormMult++;
+    }
+    
+    */
+    
+    
     Reader->SetCentralityFlattening(kFALSE);
     Reader->SetReadV0(0);
     // rdr->SetPrimaryVertexCorrectionTPCPoints(kTRUE);
-    Reader->SetDCAglobalTrack(kTRUE);
-  
-
+////    Reader->SetDCAglobalTrack(kTRUE);
+ 
     
   AliFemtoManager* Manager=new AliFemtoManager();
   Manager->SetEventReader(Reader);
@@ -186,6 +205,9 @@ AliFemtoEventReaderAOD *Reader = new AliFemtoEventReaderAODMultSelection();
   AliFemtoCutMonitorEventMult   *cutFailEvMetaphitpc[20];
   AliFemtoCutMonitorEventVertex *cutPassEvVetaphitpc[20];
   AliFemtoCutMonitorEventVertex *cutFailEvVetaphitpc[20];
+  AliFemtoCutMonitorCollections   *cutPassColletaphitpc[20];
+  AliFemtoCutMonitorCollections   *cutFailColletaphitpc[20];
+ 
   AliFemtoKKTrackCut           *dtc1etaphitpc[20];
   AliFemtoKKTrackCut           *dtc2etaphitpc[20];
 //  AliFemtoESDTrackCut           *dtc1etaphitpc[20];
@@ -198,6 +220,7 @@ AliFemtoEventReaderAOD *Reader = new AliFemtoEventReaderAODMultSelection();
   AliFemtoCutMonitorParticleYPt *cutFail2YPtetaphitpc[20];
   AliFemtoCutMonitorParticlePID *cutPass2PIDetaphitpc[20];
   AliFemtoCutMonitorParticlePID *cutFail2PIDetaphitpc[20];
+  
 //AliFemtoPairCutAntiGamma      *sqpcetaphitpc[20];
 //    AliFemtoShareQualityTPCEntranceSepPairCut      *sqpcetaphitpc[20];
  // AliFemtoPairCutRadialDistance      *sqpcetaphitpc[20];//AliFemto dphi* cut
@@ -225,16 +248,16 @@ AliFemtoEventReaderAOD *Reader = new AliFemtoEventReaderAODMultSelection();
     if (runmults[imult]) {
       for (int ichg=0; ichg<2; ichg++) {
 	if (runch[ichg]) {
-	  aniter = ichg*cMu+imult;
+	  aniter = ichg*cMu+imult; //0, 1(ich=0) ,2,3
 
 	  anetaphitpc[aniter] = new AliFemtoVertexMultAnalysis(3, -10.0, 10.0, 3, multbins[imult], multbins[imult+1]);
-//	  anetaphitpc[aniter] = new AliFemtoVertexMultAnalysis(3, -8.0, 8.0, 3, multbins[imult], multbins[imult+1]);
 	  anetaphitpc[aniter]->SetNumEventsToMix(10);
 	  anetaphitpc[aniter]->SetMinSizePartCollection(1);
 
 	  mecetaphitpc[aniter] = new AliFemtoBasicEventCut();
-	  mecetaphitpc[aniter]->SetEventMult(0,100000);
-	  mecetaphitpc[aniter]->SetVertZPos(-10.0,10.0); //-8
+	  mecetaphitpc[aniter]->SetEventMult(0.01,100000);
+//	  mecetaphitpc[aniter]->SetVertZPos(-10.0,10.0);
+	  mecetaphitpc[aniter]->SetVertZPos(-10.0,10.0);
 	  /* //was in aliroot 5.03.76
 	  if (isrealdata)
 	     mecetaphitpc[aniter]->SetAcceptOnlyPhysics(kTRUE);
@@ -248,6 +271,15 @@ AliFemtoEventReaderAOD *Reader = new AliFemtoEventReaderAODMultSelection();
 	  cutPassEvVetaphitpc[aniter] = new AliFemtoCutMonitorEventVertex(Form("cutPass%stpcM%i", chrgs[ichg], imult));
 	  cutFailEvVetaphitpc[aniter] = new AliFemtoCutMonitorEventVertex(Form("cutFail%stpcM%i", chrgs[ichg], imult));
 	  mecetaphitpc[aniter]->AddCutMonitor(cutPassEvVetaphitpc[aniter], cutFailEvVetaphitpc[aniter]);
+	  
+	  
+	  
+	  //Study the collection multiplicity distribution
+//	  cutPassColletaphitpc[aniter] = new AliFemtoCutMonitorCollections(Form("cutPass%stpcM%i", chrgs[ichg], imult));
+//	  cutFailColletaphitpc[aniter] = new AliFemtoCutMonitorCollections(Form("cutFail%stpcM%i", chrgs[ichg], imult));
+//	  mecetaphitpc[aniter]->AddCutMonitor(cutPassColletaphitpc[aniter], cutFailColletaphitpc[aniter]);
+	  
+	  
 	  
 	  dtc1etaphitpc[aniter] = new AliFemtoKKTrackCut();
 //	  dtc1etaphitpc[aniter] = new AliFemtoESDTrackCut();
