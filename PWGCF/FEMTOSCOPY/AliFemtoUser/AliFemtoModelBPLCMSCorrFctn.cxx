@@ -18,7 +18,7 @@ ClassImp(AliFemtoModelBPLCMSCorrFctn)
 #endif
 
 //____________________________
-AliFemtoModelBPLCMSCorrFctn::AliFemtoModelBPLCMSCorrFctn(char* title, const int& nbins, const float& QLo, const float& QHi)
+AliFemtoModelBPLCMSCorrFctn::AliFemtoModelBPLCMSCorrFctn(const char* title, const int& nbins, const float& QLo, const float& QHi)
   :
   AliFemtoModelCorrFctn(title, nbins, QLo, QHi),
   fNumerator3DTrue(0),

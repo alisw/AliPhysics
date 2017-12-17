@@ -16,7 +16,7 @@
 #endif
 
 //____________________________
-AliFemtoQinvCorrFctn::AliFemtoQinvCorrFctn(char* title, const int& nbins, const float& QinvLo, const float& QinvHi):
+AliFemtoQinvCorrFctn::AliFemtoQinvCorrFctn(const char* title, const int& nbins, const float& QinvLo, const float& QinvHi):
   fNumerator(0),
   fDenominator(0),
   fRatio(0),

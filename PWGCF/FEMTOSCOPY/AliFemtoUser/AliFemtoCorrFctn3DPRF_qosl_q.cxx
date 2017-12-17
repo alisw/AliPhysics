@@ -12,11 +12,11 @@
 
 #include <cstdio>
 
-#ifdef __ROOT__ 
+#ifdef __ROOT__
 ClassImp(AliFemtoCorrFctn3DPRF_qosl_q)
 #endif
 //____________________________
-AliFemtoCorrFctn3DPRF_qosl_q::AliFemtoCorrFctn3DPRF_qosl_q(char* title, const int& nbins, const float& QHi)
+AliFemtoCorrFctn3DPRF_qosl_q::AliFemtoCorrFctn3DPRF_qosl_q(const char* title, const int& nbins, const float& QHi)
   :
   AliFemtoCorrFctn(),
   fNumerator(0),
@@ -126,12 +126,12 @@ TList* AliFemtoCorrFctn3DPRF_qosl_q::GetOutputList()
   // Prepare the list of objects to be written to the output
   TList *tOutputList = new TList();
 
-  //tOutputList->Add(fNumerator); 
-  //tOutputList->Add(fDenominator);  
-  //tOutputList->Add(fNumeratorW); 
-  //tOutputList->Add(fDenominatorW); 
-  tOutputList->Add(fNumS); 
-  tOutputList->Add(fDenS); 
+  //tOutputList->Add(fNumerator);
+  //tOutputList->Add(fDenominator);
+  //tOutputList->Add(fNumeratorW);
+  //tOutputList->Add(fDenominatorW);
+  tOutputList->Add(fNumS);
+  tOutputList->Add(fDenS);
 
   return tOutputList;
 }
@@ -162,7 +162,7 @@ AliFemtoString AliFemtoCorrFctn3DPRF_qosl_q::Report(){
     stemp += ctemp;
   }
 
-  //  
+  //
   AliFemtoString returnThis = stemp;
   return returnThis;
 }
@@ -194,7 +194,7 @@ void AliFemtoCorrFctn3DPRF_qosl_q::AddRealPair( AliFemtoPair* pair){
     //fNumeratorW->Fill(qOut,qSide,qLong,qqinv);
 
 
-   
+
 }
 //____________________________
 void AliFemtoCorrFctn3DPRF_qosl_q::AddMixedPair( AliFemtoPair* pair){
@@ -226,7 +226,7 @@ void AliFemtoCorrFctn3DPRF_qosl_q::AddMixedPair( AliFemtoPair* pair){
     //fDenominatorW->Fill(qOut,qSide,qLong,qqqinv);
 
 
- 
+
 }
 
 

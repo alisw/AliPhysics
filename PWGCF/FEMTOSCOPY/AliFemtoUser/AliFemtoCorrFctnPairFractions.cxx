@@ -24,7 +24,7 @@
 #define PIT 6.28318530717958623
 
 //____________________________
-AliFemtoCorrFctnPairFractions::AliFemtoCorrFctnPairFractions(char* title):
+AliFemtoCorrFctnPairFractions::AliFemtoCorrFctnPairFractions(const char* title):
 AliFemtoCorrFctn(),
   fPairFractions(0),
   fPairFractionsDen(0),
