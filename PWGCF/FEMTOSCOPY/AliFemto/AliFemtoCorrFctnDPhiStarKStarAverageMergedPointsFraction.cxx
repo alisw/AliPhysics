@@ -20,12 +20,12 @@
   ClassImp(AliFemtoCorrFctnDPhiStarKStarAverageMergedPointsFraction);
   /// \endcond
 #endif
-  
+
 #define PIH 1.57079632679489656
 #define PIT 6.28318530717958623
 
 //____________________________
-AliFemtoCorrFctnDPhiStarKStarAverageMergedPointsFraction::AliFemtoCorrFctnDPhiStarKStarAverageMergedPointsFraction(char* title, Double_t aRadiusMin, Double_t aRadiusMax, Double_t aDistanceMax, Double_t aDEtaMax, const int& aKStarBins, Double_t aKStarRangeLow, Double_t aKStarRangeUp, const Int_t& aPhiStarBins, Double_t aPhiStarRangeLow, Double_t aPhiStarRangeUp):
+AliFemtoCorrFctnDPhiStarKStarAverageMergedPointsFraction::AliFemtoCorrFctnDPhiStarKStarAverageMergedPointsFraction(const char* title, Double_t aRadiusMin, Double_t aRadiusMax, Double_t aDistanceMax, Double_t aDEtaMax, const int& aKStarBins, Double_t aKStarRangeLow, Double_t aKStarRangeUp, const Int_t& aPhiStarBins, Double_t aPhiStarRangeLow, Double_t aPhiStarRangeUp):
 AliFemtoCorrFctn(),
   fDPhiStarKStarMergedNumerator(0),
   fDPhiStarKStarTotalNumerator(0),
@@ -47,11 +47,11 @@ AliFemtoCorrFctn(),
   fKStarRangeUp = aKStarRangeUp;
   fDPhiStarRangeLow = aPhiStarRangeLow;
   fDPhiStarRangeUp = aPhiStarRangeUp;
-  
+
   // Calculate parameters:
   fDistanceMax = aDistanceMax;
   fDEtaMax = aDEtaMax;
-  
+
   // Calculate radii range:
   fRadiusMin = aRadiusMin;
   fRadiusMax = aRadiusMax;
@@ -122,7 +122,7 @@ AliFemtoCorrFctnDPhiStarKStarAverageMergedPointsFraction::AliFemtoCorrFctnDPhiSt
   fRadiusMin = aCorrFctn.fRadiusMin;
   fRadiusMax = aCorrFctn.fRadiusMax;
   fMagSign = aCorrFctn.fMagSign;
-  
+
 }
 
 //____________________________
@@ -244,12 +244,12 @@ void AliFemtoCorrFctnDPhiStarKStarAverageMergedPointsFraction::AddRealPair( AliF
   double afsi1b_radiusmin = -0.07510020733*chg2*fMagSign*fRadiusMin/pt2;
   Double_t dphistar_radiusmin =  phi2 - phi1 + TMath::ASin(afsi1b_radiusmin) - TMath::ASin(afsi0b_radiusmin);
   dphistar_radiusmin = TVector2::Phi_mpi_pi(dphistar_radiusmin);
-  
+
   if(TMath::Abs(deta) < TMath::Abs(fDEtaMax)) {
-    
+
     // Iterate through all radii in range (fRadiusMin, fRadiusMax):
     for(double irad = fRadiusMin; irad < fRadiusMax; irad += 0.01) {
-      
+
       // Calculate dPhiStar:
       double afsi0b = -0.07510020733*chg1*fMagSign*irad/pt1;
       double afsi1b = -0.07510020733*chg2*fMagSign*irad/pt2;
@@ -311,12 +311,12 @@ void AliFemtoCorrFctnDPhiStarKStarAverageMergedPointsFraction::AddMixedPair( Ali
   double afsi1b_radiusmin = -0.07510020733*chg2*fMagSign*fRadiusMin/pt2;
   Double_t dphistar_radiusmin =  phi2 - phi1 + TMath::ASin(afsi1b_radiusmin) - TMath::ASin(afsi0b_radiusmin);
   dphistar_radiusmin = TVector2::Phi_mpi_pi(dphistar_radiusmin);
-  
+
   if(TMath::Abs(deta) < TMath::Abs(fDEtaMax)) {
-    
+
     // Iterate through all radii in range (fRadiusMin, fRadiusMax):
     for(double irad = fRadiusMin; irad < fRadiusMax; irad += 0.01) {
-      
+
       // Calculate dPhiStar:
       double afsi0b = -0.07510020733*chg1*fMagSign*irad/pt1;
       double afsi1b = -0.07510020733*chg2*fMagSign*irad/pt2;
@@ -349,12 +349,12 @@ TList* AliFemtoCorrFctnDPhiStarKStarAverageMergedPointsFraction::GetOutputList()
 {
   // Prepare the list of objects to be written to the output
   TList *tOutputList = new TList();
-  
+
   tOutputList->Add(fDPhiStarKStarMergedNumerator);
   tOutputList->Add(fDPhiStarKStarTotalNumerator);
   tOutputList->Add(fDPhiStarKStarMergedDenominator);
   tOutputList->Add(fDPhiStarKStarTotalDenominator);
-  
+
   return tOutputList;
 }
 

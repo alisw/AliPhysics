@@ -26,7 +26,7 @@
 
 class AliFemtoBPLCMS3DCorrFctnKK : public AliFemtoCorrFctn {
 public:
-  AliFemtoBPLCMS3DCorrFctnKK(char* title, const int& nbins, const float& QLo, const float& QHi);
+  AliFemtoBPLCMS3DCorrFctnKK(const char* title, const int& nbins, const float& QLo, const float& QHi);
   AliFemtoBPLCMS3DCorrFctnKK(const AliFemtoBPLCMS3DCorrFctnKK& aCorrFctn);
   virtual ~AliFemtoBPLCMS3DCorrFctnKK();
 

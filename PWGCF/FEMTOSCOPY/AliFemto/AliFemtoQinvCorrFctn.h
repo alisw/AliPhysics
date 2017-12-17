@@ -58,7 +58,7 @@
 
 class AliFemtoQinvCorrFctn : public AliFemtoCorrFctn {
 public:
-  AliFemtoQinvCorrFctn(char* title, const int& nbins, const float& QinvLo, const float& QinvHi);
+  AliFemtoQinvCorrFctn(const char* title, const int& nbins, const float& QinvLo, const float& QinvHi);
   AliFemtoQinvCorrFctn(const AliFemtoQinvCorrFctn& aCorrFctn);
   virtual ~AliFemtoQinvCorrFctn();
 

@@ -13,12 +13,12 @@
 #include <cstdio>
 #include <TMath.h>
 
-#ifdef __ROOT__ 
+#ifdef __ROOT__
 ClassImp(AliFemtoCorrFctnGammaMonitorAlpha)
 #endif
 
 //____________________________
-AliFemtoCorrFctnGammaMonitorAlpha::AliFemtoCorrFctnGammaMonitorAlpha(char* title, const int& aMinvBins=20, const int& aDAlphaBins=20):
+AliFemtoCorrFctnGammaMonitorAlpha::AliFemtoCorrFctnGammaMonitorAlpha(const char* title, const int& aMinvBins=20, const int& aDAlphaBins=20):
   AliFemtoCorrFctn(),
   fNumPMinvDAlpha(0),
   fDenPMinvDAlpha(0),
@@ -151,7 +151,7 @@ void AliFemtoCorrFctnGammaMonitorAlpha::AddRealPair( AliFemtoPair* pair){
   double e1 = TMath::Sqrt(me*me + pair->Track1()->Track()->P().Mag2());
   double e2 = TMath::Sqrt(me*me + pair->Track2()->Track()->P().Mag2());
 
-  double minv = (2*me*me + 2*(e1*e2 - 
+  double minv = (2*me*me + 2*(e1*e2 -
 			     pair->Track1()->Track()->P().x()*pair->Track2()->Track()->P().x() -
 			     pair->Track1()->Track()->P().y()*pair->Track2()->Track()->P().y() -
 					 pair->Track1()->Track()->P().z()*pair->Track2()->Track()->P().z()));
@@ -178,7 +178,7 @@ void AliFemtoCorrFctnGammaMonitorAlpha::AddMixedPair( AliFemtoPair* pair){
   double e1 = TMath::Sqrt(me*me + pair->Track1()->Track()->P().Mag2());
   double e2 = TMath::Sqrt(me*me + pair->Track2()->Track()->P().Mag2());
 
-  double minv = (2*me*me + 2*(e1*e2 - 
+  double minv = (2*me*me + 2*(e1*e2 -
 			     pair->Track1()->Track()->P().x()*pair->Track2()->Track()->P().x() -
 			     pair->Track1()->Track()->P().y()*pair->Track2()->Track()->P().y() -
 					 pair->Track1()->Track()->P().z()*pair->Track2()->Track()->P().z()));

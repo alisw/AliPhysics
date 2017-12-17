@@ -27,7 +27,7 @@ class AliFemtoModelBPLCMSCorrFctnKK : public AliFemtoModelCorrFctn {
     fNumerator3DTrueIdeal(0),
     fNumerator3DFakeIdeal(0),
     fDenominator3DIdeal(0){}
-  AliFemtoModelBPLCMSCorrFctnKK(char* title, const int& nbins, const float& QLo, const float& QHi);
+  AliFemtoModelBPLCMSCorrFctnKK(const char* title, const int& nbins, const float& QLo, const float& QHi);
   AliFemtoModelBPLCMSCorrFctnKK(const AliFemtoModelBPLCMSCorrFctnKK& aCorrFctn);
   virtual ~AliFemtoModelBPLCMSCorrFctnKK();
 

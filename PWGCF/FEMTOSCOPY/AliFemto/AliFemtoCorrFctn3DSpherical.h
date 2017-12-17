@@ -16,7 +16,7 @@
 class AliFemtoCorrFctn3DSpherical : public AliFemtoCorrFctn {
 public:
 
-  AliFemtoCorrFctn3DSpherical(char* title,
+  AliFemtoCorrFctn3DSpherical(const char* title,
                               const int& nqbins,
                               const float& QLo,
                               const float& QHi,
