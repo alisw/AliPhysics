@@ -17,16 +17,16 @@
 
 //____________________________
 AliFemtoQinvCorrFctn::AliFemtoQinvCorrFctn(const char* title, const int& nbins, const float& QinvLo, const float& QinvHi):
-  fNumerator(0),
-  fDenominator(0),
-  fRatio(0),
-  fkTMonitor(0),
+  fNumerator(nullptr),
+  fDenominator(nullptr),
+  fRatio(nullptr),
+  fkTMonitor(nullptr),
   fDetaDphiscal(kFALSE),
   fPairKinematics(kFALSE),
   fRaddedps(1.2),
-  fNumDEtaDPhiS(0),
-  fDenDEtaDPhiS(0),
-  PairReader(0)// ,
+  fNumDEtaDPhiS(nullptr),
+  fDenDEtaDPhiS(nullptr),
+  PairReader(nullptr)// ,
   // fTrack1(NULL),
   // fTrack2(NULL)
 
@@ -82,21 +82,18 @@ AliFemtoQinvCorrFctn::AliFemtoQinvCorrFctn(const char* title, const int& nbins, 
 }
 
 //____________________________
-AliFemtoQinvCorrFctn::AliFemtoQinvCorrFctn(const AliFemtoQinvCorrFctn& aCorrFctn) :
-  AliFemtoCorrFctn(),
-  fNumerator(0),
-  fDenominator(0),
-  fRatio(0),
-  fkTMonitor(0),
-  fDetaDphiscal(kFALSE),
-  fPairKinematics(kFALSE),
-  fRaddedps(1.2),
-  fNumDEtaDPhiS(0),
-  fDenDEtaDPhiS(0),
-  PairReader(0)// ,
-  // fTrack1(NULL),
-  // fTrack2(NULL)
-
+AliFemtoQinvCorrFctn::AliFemtoQinvCorrFctn(const AliFemtoQinvCorrFctn& aCorrFctn):
+  AliFemtoCorrFctn()
+  , fNumerator(nullptr)
+  , fDenominator(nullptr)
+  , fRatio(nullptr)
+  , fkTMonitor(nullptr)
+  , fDetaDphiscal(aCorrFctn.fDetaDphiscal)
+  , fPairKinematics(aCorrFctn.fPairKinematics)
+  , fRaddedps(aCorrFctn.fRaddedps)
+  , fNumDEtaDPhiS(nullptr)
+  , fDenDEtaDPhiS(nullptr)
+  , PairReader(nullptr)
 {
   // copy constructor
   fNumerator = new TH1D(*aCorrFctn.fNumerator);
@@ -107,13 +104,8 @@ AliFemtoQinvCorrFctn::AliFemtoQinvCorrFctn(const AliFemtoQinvCorrFctn& aCorrFctn
   fNumDEtaDPhiS = new TH2D(*aCorrFctn.fNumDEtaDPhiS);
   fDenDEtaDPhiS = new TH2D(*aCorrFctn.fDenDEtaDPhiS);
 
-  fDetaDphiscal = aCorrFctn.fDetaDphiscal;
-  fRaddedps = aCorrFctn.fRaddedps;
-
-  fPairKinematics = aCorrFctn.fPairKinematics;
-
   if (aCorrFctn.PairReader)
-    PairReader = (TNtuple*)aCorrFctn.PairReader;
+    PairReader = (TNtuple*)aCorrFctn.PairReader->Clone();
 
 }
 //____________________________
@@ -155,7 +147,7 @@ AliFemtoQinvCorrFctn& AliFemtoQinvCorrFctn::operator=(const AliFemtoQinvCorrFctn
   fPairKinematics = aCorrFctn.fPairKinematics;
 
   if (aCorrFctn.PairReader)
-    PairReader = (TNtuple*)aCorrFctn.PairReader;
+    PairReader = (TNtuple*)aCorrFctn.PairReader->Clone();
 
   return *this;
 }
