@@ -507,6 +507,30 @@ struct ParseError : public std::runtime_error {
 
 #undef DEFINE_PARSING_ERROR
 
+AliFemtoConfigObject
+AliFemtoConfigObject::Parse(const char *src)
+{
+  std::string s(src);
+  return AliFemtoConfigObject::Parse(s);
+}
+
+AliFemtoConfigObject
+AliFemtoConfigObject::Parse(const TString &src)
+{
+  std::string s(src.Data());
+  return AliFemtoConfigObject::Parse(s);
+}
+
+/// Create object by parsing TString
+AliFemtoConfigObject
+AliFemtoConfigObject::Parse(const TObjString &src)
+{
+  std::string s(src.GetString().Data());
+  return AliFemtoConfigObject::Parse(s);
+}
+
+
+
 // public parsing method - This should handle all user-facing parsing errors
 AliFemtoConfigObject
 AliFemtoConfigObject::Parse(const std::string &src)

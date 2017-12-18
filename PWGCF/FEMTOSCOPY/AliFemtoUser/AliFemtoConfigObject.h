@@ -18,6 +18,7 @@
 
 #include <TBuffer.h>
 #include <TString.h>
+#include <TObjString.h>
 #include <TText.h>
 #include <TPaveText.h>
 
@@ -155,9 +156,17 @@ protected:
   // template <TypeTagEnum_t> struct type_from_enum { };
 
 public:
+  /// Create object by parsing cstring
+  static AliFemtoConfigObject Parse(const char*);
 
   /// Create object by parsing string
   static AliFemtoConfigObject Parse(const std::string &);
+
+  /// Create object by parsing TString
+  static AliFemtoConfigObject Parse(const TString &);
+
+  /// Create object by parsing TString
+  static AliFemtoConfigObject Parse(const TObjString &);
 
   /// Create object from string; if a map, also parse defaults and
   /// insert any values missing in object with defaults.
@@ -181,7 +190,7 @@ public:
   AliFemtoConfigObject& operator=(AliFemtoConfigObject const &);
 
   // I don't know why this needs to be specified explicitly
-  // instead of the 
+  // instead of the macro-generated ones below
   AliFemtoConfigObject(const char * v):
     fTypeTag(kSTRING), fValueString(v), fPainter(nullptr) { }
 
@@ -331,11 +340,11 @@ public:
   /// Copies item identified by *key*, returns true if found
   #define IMPL_FINDANDLOAD(__dest_type, __tag, __source)            \
     bool find_and_load(const Key_t &key, __dest_type &dest) const { \
-      if (!is_map()) { return false; }                        \
-      auto found = fValueMap.find(key);                       \
-      if (found == fValueMap.end()) { return false; }         \
-      if (found->second.fTypeTag != __tag) { return false; }  \
-      dest = found->second. __source;                         \
+      if (!is_map()) { return false; }                              \
+      MapValue_t::const_iterator found = fValueMap.find(key);       \
+      if (found == fValueMap.cend()) { return false; }              \
+      if (found->second.fTypeTag != __tag) { return false; }        \
+      dest = found->second. __source;                               \
       return true; }
 
     FORWARD_STANDARD_TYPES(IMPL_FINDANDLOAD)
@@ -383,8 +392,8 @@ public:
   #define IMPL_POPANDLOAD(__dest_type, __tag, __source)      \
     bool pop_and_load(const Key_t &key, __dest_type &dest) { \
       if (!is_map()) { return false; }                       \
-      auto found = fValueMap.find(key);                      \
-      if (found == fValueMap.end()) { return false; }        \
+      MapValue_t::const_iterator found = fValueMap.find(key);\
+      if (found == fValueMap.cend()) { return false; }       \
       if (found->second.fTypeTag != __tag) { return false; } \
       dest = found->second. __source;                        \
       fValueMap.erase(found); return true; }
