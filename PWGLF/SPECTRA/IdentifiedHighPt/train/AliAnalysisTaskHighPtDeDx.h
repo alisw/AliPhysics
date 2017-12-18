@@ -41,10 +41,11 @@ class AliAnalysisTaskHighPtDeDx : public AliAnalysisTaskSE {
   Double_t GetMinPt() { return fMinPt; }   
   Double_t GetMinPtV0() { return fMinPtV0; }
   Double_t GetCosPACut() { return fCosPACut; }
+  Double_t GetDecayRCut() { return fDecayRCut; }
   Int_t    GetTreeOption() { return fTreeOption; }
 
-  virtual void  SetTrigger1(UInt_t ktriggerInt1) {ftrigBit1 = ktriggerInt1;}
-  virtual void  SetTrigger2(UInt_t ktriggerInt2) {ftrigBit2 = ktriggerInt2;}
+  /* virtual void  SetTrigger1(UInt_t ktriggerInt1) {ftrigBit1 = ktriggerInt1;} */
+  /* virtual void  SetTrigger2(UInt_t ktriggerInt2) {ftrigBit2 = ktriggerInt2;} */
   virtual void  SetTrackFilter(AliAnalysisFilter* trackF) {fTrackFilter = trackF;}
   virtual void  SetTrackFilterGolden(AliAnalysisFilter* trackF) {fTrackFilterGolden = trackF;}
   virtual void  SetTrackFilterTPC(AliAnalysisFilter* trackF) {fTrackFilterTPC = trackF;}
@@ -66,6 +67,13 @@ class AliAnalysisTaskHighPtDeDx : public AliAnalysisTaskSE {
   virtual void  SetStoreMcIn(Bool_t value) {fStoreMcIn = value;}
   virtual void  SetAnalysisPbPb(Bool_t isanaPbPb) {fAnalysisPbPb = isanaPbPb;}
   virtual void  SetCosPACut(Double_t value) {fCosPACut = value;}   
+  virtual void  SetDecayRCut(Double_t value) {fDecayRCut = value;}   
+
+  //Task Configuration: trigger selection
+  void SetSelectedTriggerClass1(AliVEvent::EOfflineTriggerTypes trigType) {fTrigType1 = trigType;}
+  void SetSelectedTriggerClass2(AliVEvent::EOfflineTriggerTypes trigType) {fTrigType2 = trigType;} 
+  void SetSelectedTriggerClass3(AliVEvent::EOfflineTriggerTypes trigType) {fTrigType3 = trigType;} 
+
 
  private:
   virtual Float_t GetVertex(const AliVEvent* event) const;
@@ -98,7 +106,10 @@ class AliAnalysisTaskHighPtDeDx : public AliAnalysisTaskSE {
 
   AliAODMCParticle* FindPrimaryMotherAODV0(AliAODMCParticle* startParticle, Int_t& nSteps);
 
-
+  AliVEvent::EOfflineTriggerTypes fTrigType1; // trigger type
+  AliVEvent::EOfflineTriggerTypes fTrigType2; // trigger type
+  AliVEvent::EOfflineTriggerTypes fTrigType3; // trigger type
+  
 
   static const Double_t fgkClight;   // Speed of light (cm/ps)
 
@@ -128,8 +139,8 @@ class AliAnalysisTaskHighPtDeDx : public AliAnalysisTaskSE {
   //
   // Cuts and options
   //
-  UInt_t       ftrigBit1;
-  UInt_t       ftrigBit2;
+  /* UInt_t       ftrigBit1; */
+  /* UInt_t       ftrigBit2; */
   Double_t     fVtxCut;             // Vtx cut on z position in cm
   Double_t     fEtaCut;             // Eta cut used to select particles
   Double_t     fEtaCutStack;        // Eta cut used to select particles - reduce saved stack size
@@ -137,6 +148,7 @@ class AliAnalysisTaskHighPtDeDx : public AliAnalysisTaskSE {
   Double_t     fMinPtV0;            // Min pt - for histogram limits - V0s / strangeness part
   Double_t     fLowPtFraction;      // Fraction of tracks below min pt to keep
   Double_t     fCosPACut;              // Min cosPA - for histogram limits
+  Double_t     fDecayRCut;              // Min decay radius
   Double_t     fMassCut;            // Reject all v0 with all dmass > masscut!
   Int_t        fTreeOption;         // 0: no tree, >0: enable debug tree
   Float_t      fMinCent; //minimum centrality

@@ -413,16 +413,18 @@ void AliAnalysisTaskAccCont::UserExec(Option_t *) {
                                         
                                         Double_t  dca[2] = {0.0,0.0};
                                         Double_t  cov[3] = {0.0,0.0,0.0};
+
+				        AliAODTrack copy(*aodTrack);
                                         
                                         if (fAODtrackCutBit==768){
                                 		if (aodTrack->TestFilterBit(256)){
-                                			if (!aodTrack->PropagateToDCA(vertex,gAOD->GetMagneticField(),300.,dca,cov))
+                                			if (!copy.PropagateToDCA(vertex,gAOD->GetMagneticField(),300.,dca,cov))
                                 			continue;
                                 		}
                                 	}
 
                                 	else {
-                                		if (!aodTrack->PropagateToDCA(vertex,gAOD->GetMagneticField(),300.,dca,cov))
+                                		if (!copy.PropagateToDCA(vertex,gAOD->GetMagneticField(),300.,dca,cov))
                                 		continue;
                                 	}
 

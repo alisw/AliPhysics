@@ -209,6 +209,7 @@ const char* AliDielectronVarManager::fgkParticleNames[AliDielectronVarManager::k
   {"ThetaSqCS",              "cos^{2}(#theta_{CS})",                               ""},
   {"PsiPair",                "#Psi^{pair}",                                        "(rad.)"},
   {"PhivPair",               "#Phi_{v}^{pair}",                                    "(rad.)"},
+  {"ITSscPair",              "ITS shared Cluster of pair",                         ""},
   {"DeltaCotTheta",          "#Delta cot(#Theta)",                                 ""},
   {"PairPlaneAngle1A",       "#Phi_{1A}",                                          "(rad.)"},
   {"PairPlaneAngle2A",       "#Phi_{2A}",                                          "(rad.)"},
@@ -640,7 +641,6 @@ const char* AliDielectronVarManager::fgkParticleNames[AliDielectronVarManager::k
   {"CentralityCL0minus05",       "centrality_{V0M AP -0.5%}",                     "(%)"},
   {"CentralityCL0plus10",        "centrality_{V0M AP +1.0%}",                     "(%)"},
   {"CentralityCL0minus10",       "centrality_{V0M AP -1.0%}",                     "(%)"},
-
 
 
   {"TriggerInclONL",         "online trigger bit (inclusive)",                     ""},
