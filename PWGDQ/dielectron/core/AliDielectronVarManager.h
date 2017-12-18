@@ -284,6 +284,7 @@ public:
     kThetaSqCS,              // squared value of kThetaCS
     kPsiPair,                // phi in mother's rest frame in Collins-Soper picture
     kPhivPair,               // angle between ee plane and the magnetic field (can be useful for conversion rejection)
+    kITSscPair,              // ITS shared cluster of both daughters of a pair
     kDeltaCotTheta,          // difference of cotangens of theta of daughters
 
     kPairPlaneAngle1A,         // angle between ee decay plane and x'-z reaction plane by using V0-A
@@ -1862,7 +1863,51 @@ inline void AliDielectronVarManager::FillVarDielectronPair(const AliDielectronPa
   if(Req(kArmPt))    values[AliDielectronVarManager::kArmPt]        = pair->GetArmPt();
 
   if(Req(kPsiPair))  values[AliDielectronVarManager::kPsiPair]      = fgEvent ? pair->PsiPair(fgEvent->GetMagneticField()) : -5;
-  if(Req(kPhivPair)) values[AliDielectronVarManager::kPhivPair]      = fgEvent ? pair->PhivPair(fgEvent->GetMagneticField()) : -5;
+  if(Req(kPhivPair)) values[AliDielectronVarManager::kPhivPair]     = fgEvent ? pair->PhivPair(fgEvent->GetMagneticField()) : -5;
+
+  values[AliDielectronVarManager::kITSscPair]   = -999;
+  if(Req(kITSscPair)) { 
+
+    // get track references from pair
+    AliVParticle* d1 = pair-> GetFirstDaughterP();
+    AliVParticle* d2 = pair->GetSecondDaughterP();
+
+    if (d1 && d2) {
+      // check for ESD or AOD
+      Bool_t isESD = (d1->IsA() == AliESDtrack::Class());
+
+      if (d1->IsA() == d2->IsA()) { // Don't mix AOD with ESD. Needed because AliAnalysisTaskRandomRejection always creates AliAODTracks (should be fixed).
+
+        ////// first daughter
+        Double_t itsNclsS1 = 0;
+
+        ////// second daughter
+        Double_t itsNclsS2 = 0;
+
+        if (isESD) {
+          for(Int_t i = 0; i<6; i++){
+            if(static_cast<AliESDtrack*>(d1)->HasSharedPointOnITSLayer(i)) itsNclsS1++;
+            if(static_cast<AliESDtrack*>(d2)->HasSharedPointOnITSLayer(i)) itsNclsS2++;
+          }
+        }
+        else { // AOD
+          for(Int_t i = 0; i<6; i++){
+            if(static_cast<AliAODTrack*>(d1)->HasSharedPointOnITSLayer(i)) itsNclsS1++;
+            if(static_cast<AliAODTrack*>(d2)->HasSharedPointOnITSLayer(i)) itsNclsS2++;
+          }
+        }
+
+        if(itsNclsS1 > 0 && itsNclsS2 > 0)
+          values[AliDielectronVarManager::kITSscPair]   = 2.;
+        else if (itsNclsS1 > 0 || itsNclsS2 > 0) 
+          values[AliDielectronVarManager::kITSscPair]   = 1.;     
+        else
+          values[AliDielectronVarManager::kITSscPair]   = 0.;
+        
+      }
+    }
+  }
+
   if(Req(kDeltaCotTheta)) values[kDeltaCotTheta] =  pair->DeltaCotTheta();
   if(Req(kTriangularConversionCut)) values[AliDielectronVarManager::kTriangularConversionCut] = fgEvent ? pair->PhivPair(fgEvent->GetMagneticField()) - 21. * pair->M() : -999.;
   if(Req(kPseudoProperTime) || Req(kPseudoProperTimeErr)) {
