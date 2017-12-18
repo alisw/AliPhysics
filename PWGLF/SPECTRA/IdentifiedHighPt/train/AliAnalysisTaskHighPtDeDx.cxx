@@ -11,12 +11,11 @@
   * 23 sep 2015: trichert: hardcoded trigger conditions, search for TRIGGER CONDITION
   * 21 oct 2015: trichert: uncommented hardcoded trigger conditions (search for TRIGGER CONDITION)
   * 14 dec 2015: trichert: changed aodTrack->TestFilterBit(1) to aodTrack->TestFilterBit(128) for TPC_only, and pTrack->TestFilterBit(128) and nTrack->TestFilterBit(128) (from 1)
-  * 11 dec 2017: changed to trigger cond 2010 data
   * 11 dec 2017: implemented a setting function for cosPA ("fCosPACut")
   * 13 dec 2017: cleanup + filtering to reduce output size: 
                  - eta: 0.9->0.8
                  - setter function for DecayRCut: if (lV0Radius < fDecayRCut ) continue;
-  * 15 dec 2017: setter for trigger, removed trigger settings in addtask parameters (now set it in train config), TODO: implement choice of severel trigger types
+  * 15 dec 2017: setter for trigger, removed trigger settings in addtask parameters (now set it in train config)
   * 18 dec 2017: - centrality selection also for MC
                  - several trigger settings
 
@@ -576,8 +575,8 @@ void AliAnalysisTaskHighPtDeDx::UserExec(Option_t *)
   // Float_t centralityCL1 = -10;
 
   // only analyze triggered events
-  if(fTriggeredEventMB) {
-    if (fAnalysisType == "ESD"){
+  if(fTriggeredEventMB){
+    if(fAnalysisType == "ESD"){
       if(fAnalysisPbPb){
 
 	AliCentrality *centObject = fESD->GetCentrality();
@@ -593,7 +592,7 @@ void AliAnalysisTaskHighPtDeDx::UserExec(Option_t *)
       fcent->Fill(centralityV0M);
       AnalyzeESD(fESD);
 
-    } else { // AOD
+    }else{ // AOD
       if(fAnalysisPbPb){
 	AliCentrality *centObject = fAOD->GetCentrality();
 	if(centObject){
@@ -619,7 +618,7 @@ void AliAnalysisTaskHighPtDeDx::UserExec(Option_t *)
     
     if(fAnalysisPbPb && ((centralityV0M>fMaxCent)||(centralityV0M<fMinCent)))return;
 
-    if (fAnalysisType == "ESD") ProcessMCTruthESD();
+    if(fAnalysisType == "ESD") ProcessMCTruthESD();
     else ProcessMCTruthAOD(); // AOD
   
   }//if MC
@@ -658,7 +657,7 @@ void AliAnalysisTaskHighPtDeDx::UserExec(Option_t *)
 //________________________________________________________________________
 void AliAnalysisTaskHighPtDeDx::AnalyzeESD(AliESDEvent* esdEvent)
 {
-  fRun  = esdEvent->GetRunNumber();
+  fRun = esdEvent->GetRunNumber();
   fEventId = 0;
   if(esdEvent->GetHeader())
     fEventId = GetEventIdAsLong(esdEvent->GetHeader());
@@ -693,7 +692,6 @@ void AliAnalysisTaskHighPtDeDx::AnalyzeESD(AliESDEvent* esdEvent)
   } // end if triggered
   
   if(fTreeOption) {
-
     fEvent->run       = fRun;
     fEvent->eventid   = fEventId;
     fEvent->time      = time;
@@ -882,12 +880,12 @@ void AliAnalysisTaskHighPtDeDx::ProcessMCTruthESD()
 //_____________________________________________________________________________
 void AliAnalysisTaskHighPtDeDx::ProcessMCTruthAOD() 
 {
-  // Fill the special MC histogram with the MC truth info
+
   Short_t trackmult = 0;
   Short_t nadded    = 0;
   const Int_t nTracksMC = fMCArray->GetEntriesFast();
 
-  for (Int_t iTracks = 0; iTracks < nTracksMC; iTracks++) {
+  for(Int_t iTracks = 0; iTracks < nTracksMC; iTracks++){
     AliAODMCParticle* trackMC = dynamic_cast<AliAODMCParticle*>(fMCArray->At(iTracks));
     //Cuts
     if(!(trackMC->IsPhysicalPrimary()))
