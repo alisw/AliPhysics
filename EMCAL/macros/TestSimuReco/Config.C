@@ -10,20 +10,20 @@
 ///
 /// Example for the configuration needed for different years provided.
 ///
-/// In order to execute this configuration you can do 
-///    * Root5: aliroot -q -b -l $ALICE_ROOT/EMCAL/macros/TestSimuReco/TestEMCALSimulation.C
-///    * Root6: aliroot -q -b -l $ALICE_ROOT/EMCAL/macros/TestSimuReco/LoadLibForConfig.C $ALICE_ROOT/EMCAL/macros/TestSimuReco/TestEMCALSimulation.C
+/// In order to execute this configuration you can do:
+///
+/// aliroot -q -b -l $ALICE_ROOT/EMCAL/macros/TestSimuReco/LoadLibForConfig.C'("Geant3")' $ALICE_ROOT/EMCAL/macros/TestSimuReco/TestEMCALSimulation.C
 ///
 /// Or directly in the root prompt 
-///    root [1] .x LoadLibForConfig.C //Root6
+///    root [1] .x LoadLibForConfig.C("Geant4") 
 ///    root [2] .x TestEMCALSimulation.C
 ///
 /// In order to find all the included classes one should add to the rootlogon.C file some paths
-/// gSystem->SetIncludePath("-I$ROOTSYS/include -I$ALICE_ROOT/  -I$ALICE_ROOT/include -I$ALICE_ROOT/ANALYSIS/macros -I$ALICE_ROOT/STEER -I$ALICE_ROOT/STEER/STEER -I$GEANT3DIR/include -I$GEANT3DIR/include/TGeant3");
+/// gSystem->SetIncludePath("-I$ROOTSYS/include -I$ALICE_ROOT/  -I$ALICE_ROOT/include -I$ALICE_ROOT/ANALYSIS/macros -I$ALICE_ROOT/STEER -I$ALICE_ROOT/STEER/STEER -I$GEANT3DIR/include -I$GEANT3DIR/include/TGeant3 -I$GEANT4_VMC_ROOT/include/geant4vmc");
 /// or do it in the root prompt before execution.
 ///
 /// \author : Gustavo Conesa Balbastre <Gustavo.Conesa.Balbastre@cern.ch>, (LPSC-CNRS), 
-/// just the particle configuration and EMCal stuff.
+/// just the particle configuration and EMCal stuff. Geant4 stuff copied from somewhere else.
 ///
 
 #if !defined(__CINT__) || defined(__MAKECINT__)
@@ -32,9 +32,15 @@
 #include <TPDGCode.h>
 #include <TRandom.h>
 #include <TSystem.h>
+#include <TString.h>
+
 #include <TVirtualMC.h>
-#include <TGeant3TGeo.h>
 #include <TGeoGlobalMagField.h>
+
+// Already loaded with LoadLibForConfig
+//#include <TGeant4.h>
+//#include <TG4RunConfiguration.h>
+//#include <TGeant3TGeo.h>
 
 #include "AliRunLoader.h"
 #include "AliRun.h"
@@ -74,13 +80,20 @@
 
 #endif
 
+// Comment line
+static TString comment;
 Float_t EtaToTheta(Float_t arg);
 
-void    LoadLibs();
+#ifndef TRANSPORTMODEL
+#define TRANSPORTMODEL
+
+TString kTransportModel = "Geant3";
+
+#endif //TRANSPORTMODEL
 
 AliGenerator *GenParamCalo(Int_t nPart, Int_t type, TString calo);
 
-Int_t  year = 2015;             ///< year for detector configuration
+Int_t  year = 2011;             ///< year for detector configuration
 Bool_t checkGeoAndRun = kFALSE; ///< check or not the year to configure the detector
 
 /// 
@@ -97,17 +110,23 @@ void Config()
                   Form("Seed for random number generation = %d",gRandom->GetSeed()), 
                   "Config.C", "Config.C", "Config()","Config.C", __LINE__);
   
-  LoadLibs();
+  if(kTransportModel == "Geant3")
+  {
+    AliLog::Message(AliLog::kInfo, 
+                    Form("Init transport model = %s",kTransportModel.Data()), 
+                    "Config.C", "Config.C", "Config()","Config.C", __LINE__);    
+        
+    new TGeant3TGeo("C++ Interface to Geant3");
+  }
   
-  new TGeant3TGeo("C++ Interface to Geant3");
-    
+  
   AliLog::Message(AliLog::kInfo, 
                   "Creating Run Loader", 
                   "Config.C", "Config.C", "Config()"," Config.C", __LINE__);
   
   AliRunLoader* rl = AliRunLoader::Open("galice.root",
-                          AliConfig::GetDefaultEventFolderName(),
-                          "recreate");
+                                        AliConfig::GetDefaultEventFolderName(),
+                                        "recreate");
   if (rl == 0x0)
   {
     gAlice->Fatal("Config.C","Can not instatiate the Run Loader");
@@ -122,55 +141,14 @@ void Config()
   AliSimulation::Instance()->SetTriggerConfig("Pb-Pb");
   cout<<"Trigger configuration is set to  Pb-Pb"<<endl;
   
-  //
   // Set External decayer
-  TVirtualMCDecayer *decayer = new AliDecayerPythia();
-  
-  decayer->SetForceDecay(kAll);
-  decayer->Init();
-
-  TVirtualMC * vmc = TVirtualMC::GetMC();
-
-  gMC->SetExternalDecayer(decayer);
-  //=======================================================================
-  // ************* STEERING parameters FOR ALICE SIMULATION **************
-  // --- Specify event type to be tracked through the ALICE setup
-  // --- All positions are in cm, angles in degrees, and P and E in GeV 
-  
-  gMC->SetProcess("DCAY",1);
-  gMC->SetProcess("PAIR",1);
-  gMC->SetProcess("COMP",1);
-  gMC->SetProcess("PHOT",1);
-  gMC->SetProcess("PFIS",0);
-  gMC->SetProcess("DRAY",0);
-  gMC->SetProcess("ANNI",1);
-  gMC->SetProcess("BREM",1);
-  gMC->SetProcess("MUNU",1);
-  gMC->SetProcess("CKOV",1);
-  gMC->SetProcess("HADR",1);
-  gMC->SetProcess("LOSS",2);
-  gMC->SetProcess("MULS",1);
-  gMC->SetProcess("RAYL",1);
-  
-  Float_t cut    = 1.e-3;  // 1 MeV cut by default
-  Float_t tofmax = 1.e10;
-  
-  gMC->SetCut("CUTGAM", cut);
-  gMC->SetCut("CUTELE", cut);
-  gMC->SetCut("CUTNEU", cut);
-  gMC->SetCut("CUTHAD", cut);
-  gMC->SetCut("CUTMUO", cut);
-  gMC->SetCut("BCUTE",  cut); 
-  gMC->SetCut("BCUTM",  cut); 
-  gMC->SetCut("DCUTE",  cut); 
-  gMC->SetCut("DCUTM",  cut); 
-  gMC->SetCut("PPCUTM", cut);
-  gMC->SetCut("TOFMAX", tofmax); 
+  TVirtualMCDecayer* decayer = new AliDecayerPythia();
+  decayer->SetForceDecay(kAll);  
   
   //
   // Particle generator settings
   //
-
+  
   int     nParticles = 1;
   if (gSystem->Getenv("CONFIG_NPARTICLES"))
   {
@@ -183,18 +161,18 @@ void Config()
   }
   
   AliGenBox *gener = new AliGenBox(nParticles);
-  gener->SetMomentumRange(10.,10.);
+  gener->SetMomentumRange(25.,25.);
   
   gener->SetPart(22); // Photons
   
   if     (year == 2010)
-  gener->SetPhiRange(80.0,120.0);
+    gener->SetPhiRange(80.0,120.0);
   else if(year == 2011)
-  gener->SetPhiRange(80.0,180.0);
+    gener->SetPhiRange(80.0,180.0);
   else if(year == 2012 || year == 2013)
-  gener->SetPhiRange(80.0,190.0);
+    gener->SetPhiRange(80.0,190.0);
   else
-  gener->SetPhiRange(80.0,330.0); // Include DCal
+    gener->SetPhiRange(80.0,330.0); // Include DCal
   
   gener->SetThetaRange(EtaToTheta(0.7), EtaToTheta(-0.7));
   
@@ -332,6 +310,7 @@ void Config()
   {
     //============================ TPC parameters ===================
     AliTPC *TPC = new AliTPCv2("TPC", "Default");
+    if (kTransportModel=="Geant4")  TPC->SetPrimaryIonisation(1);
   }
   
   
@@ -359,9 +338,24 @@ void Config()
   if (iTRD)
   {
     //=================== TRD parameters ============================
+    AliTRDgeometry *geoTRD = 0;
+
+    if (kTransportModel=="Geant4") 
+    {
+      // takes into account a de/dx scaling factor of 1.164 between G3 and G4  
+      //AliTRD *TRD = new AliTRDtestG4("TRD", "TRD slow simulator");
+      //AliTRD *TRD = new AliTRDv1("TRD", "TRD slow simulator");
+      AliTRDtestG4 *TRD = new AliTRDtestG4("TRD", "TRD slow simulator"); 
+      TRD->SetScaleG4(1.11);
+      geoTRD = TRD->GetGeometry();
+
+    } 
+    else 
+    {
+      AliTRD *TRD = new AliTRDv1("TRD", "TRD slow simulator");
+      geoTRD = TRD->GetGeometry();
+    }
     
-    AliTRD *TRD = new AliTRDv1("TRD", "TRD slow simulator");
-    AliTRDgeometry *geoTRD = TRD->GetGeometry();
     // starting at 3h in positive direction
     if(year==2011 || year == 2010)
     { // not sure if good for 2010
@@ -447,6 +441,130 @@ void Config()
   
   AliLog::Message(AliLog::kInfo, "End of Config", "Config.C", "Config.C", "Config()"," Config.C", __LINE__);
   
+  
+  if(kTransportModel == "Geant4")
+  {
+    // Create Geant4 VMC
+    //  
+    AliLog::Message(AliLog::kInfo, 
+                    Form("Init transport model = %s",kTransportModel.Data()), 
+                    "Config.C", "Config.C", "Config()","Config.C", __LINE__);    
+    
+    TGeant4 *geant4 = 0;
+    if ( ! gMC ) 
+    {
+      TG4RunConfiguration* runConfiguration
+      = new TG4RunConfiguration("geomRoot", 
+                                "FTFP_BERT_EMV+optical",
+                                "specialCuts+stackPopper+stepLimiter",
+                                true);
+      geant4 = new TGeant4("TGeant4", 
+                           "The Geant4 Monte Carlo : FTFP_BERT_EMV-EMCAL", 
+                           runConfiguration);
+      cout << "Geant4 has been created." << endl;
+    } 
+    else 
+    {
+      cout << "Monte Carlo has been already created." << endl;
+    }  
+    
+    //((AliMC*)gMC)->SetUseMonitoring(1);
+    
+    // Customization of Geant4 VMC
+    //
+    geant4->ProcessGeantCommand("/control/verbose 2");  
+    geant4->ProcessGeantCommand("/mcVerbose/all 1");  
+    geant4->ProcessGeantCommand("/mcVerbose/geometryManager 1");  
+    geant4->ProcessGeantCommand("/mcVerbose/opGeometryManager 1");  
+    geant4->ProcessGeantCommand("/mcTracking/loopVerbose 1");     
+    geant4->ProcessGeantCommand("/mcPhysics/rangeCuts 0.01 mm"); 
+    
+    geant4->ProcessGeantCommand("/mcVerbose/composedPhysicsList 2");  
+    geant4->ProcessGeantCommand("/mcTracking/skipNeutrino true");
+    geant4->ProcessGeantCommand("/mcDet/setIsMaxStepInLowDensityMaterials true");
+    geant4->ProcessGeantCommand("/mcDet/setMaxStepInLowDensityMaterials 10 m");
+    geant4->ProcessGeantCommand("/mcMagField/setConstDistance 1 mm");
+    //
+    // optical
+    //
+    geant4->ProcessGeantCommand("/process/optical/verbose 0");
+    geant4->ProcessGeantCommand("/process/optical/processActivation Scintillation 0");
+    geant4->ProcessGeantCommand("/process/optical/processActivation OpWLS 0");
+    geant4->ProcessGeantCommand("/process/optical/processActivation OpMieHG 0");
+    geant4->ProcessGeantCommand("/process/optical/setTrackSecondariesFirst Cerenkov 0");
+    geant4->ProcessGeantCommand("/mcMagField/stepperType NystromRK4");
+    
+    if(iTRD)
+    {
+      //
+      // PAI for TRD
+      //
+      // Geant4 VMC >= v3.2
+      geant4->ProcessGeantCommand("/mcPhysics/emModel/setEmModel  PAI");
+      geant4->ProcessGeantCommand("/mcPhysics/emModel/setRegions  TRD_Gas-mix");
+      geant4->ProcessGeantCommand("/mcPhysics/emModel/setParticles  all");
+      // Geant4 VMC < v3.2
+      // Int_t trdGas = gMC->MediumId("TRD_Gas-mix");
+      // geant4->ProcessGeantCommand(Form("/mcPhysics/emModel/selectMedium %3d", trdGas));
+      // geant4->ProcessGeantCommand("/mcPhysics/emModel/setElossModel  PAI");
+      // geant4->ProcessGeantCommand("/mcPhysics/emModel/setFluctModel  PAI");
+      // geant4->ProcessGeantCommand("/mcPhysics/emModel/setParticles   all");
+      // geant4->ProcessGeantCommand("/mcDet/printMedia");
+    }
+    
+    if(iEMCAL)
+    {
+      //
+      // Precise Msc for EMCAL
+      //
+      // Geant4 VMC >= v3.2
+      geant4->ProcessGeantCommand("/mcPhysics/emModel/setEmModel  SpecialUrbanMsc");
+      geant4->ProcessGeantCommand("/mcPhysics/emModel/setRegions  EMCAL_Lead$ EMCAL_Scintillator$");
+      geant4->ProcessGeantCommand("/mcPhysics/emModel/setParticles  e- e+");
+      
+      // Print media
+      //geant4->ProcessGeantCommand("/mcDet/printMedia");
+      //geant4->ProcessGeantCommand("/mcVerbose/physicsEmModel 2"); 
+      //geant4->ProcessGeantCommand("/mcVerbose/regionsManager 2"); 
+    }
+  }
+  
+  //=======================================================================
+  // ************* STEERING parameters FOR ALICE SIMULATION **************
+  //======================//
+  TVirtualMC * vmc = TVirtualMC::GetMC();
+  decayer->Init();
+  vmc->SetExternalDecayer(decayer);
+  
+  vmc->SetProcess("DCAY",1);
+  vmc->SetProcess("PAIR",1);
+  vmc->SetProcess("COMP",1);
+  vmc->SetProcess("PHOT",1);
+  vmc->SetProcess("PFIS",0);
+  vmc->SetProcess("DRAY",0);
+  vmc->SetProcess("ANNI",1);
+  vmc->SetProcess("BREM",1);
+  vmc->SetProcess("MUNU",1);
+  vmc->SetProcess("CKOV",1);
+  vmc->SetProcess("HADR",1);
+  vmc->SetProcess("LOSS",2);
+  vmc->SetProcess("MULS",1);
+  vmc->SetProcess("RAYL",1);
+  
+  Float_t cut = 1.e-3;        // 1MeV cut by default
+  Float_t tofmax = 1.e10;
+  
+  vmc->SetCut("CUTGAM", cut);
+  vmc->SetCut("CUTELE", cut);
+  vmc->SetCut("CUTNEU", cut);
+  vmc->SetCut("CUTHAD", cut);
+  vmc->SetCut("CUTMUO", cut);
+  vmc->SetCut("BCUTE",  cut); 
+  vmc->SetCut("BCUTM",  cut); 
+  vmc->SetCut("DCUTE",  cut); 
+  vmc->SetCut("DCUTM",  cut); 
+  vmc->SetCut("PPCUTM", cut);
+  vmc->SetCut("TOFMAX", tofmax); 
 }
 
 ///
@@ -455,24 +573,6 @@ void Config()
 Float_t EtaToTheta(Float_t arg)
 {
   return (180./TMath::Pi())*2.*atan(exp(-arg));
-}
-
-///
-/// Load needed libraries
-/// This works for Root5, in Root6, load before the external macro
-///
-void LoadLibs()
-{
-#if defined(__CINT__)
-  // Load Pythia related libraries                                                                
-  gSystem->Load("liblhapdf");      // Parton density functions                                 
-  gSystem->Load("libEGPythia6");   // TGenerator interface                                     
-  gSystem->Load("libpythia6");     // Pythia                                                   
-  gSystem->Load("libAliPythia6");  // ALICE specific
-
-  // Load Geant3 related libraries                                                                
-  gSystem->Load("libgeant321");
-#endif
 }
 
 ///
