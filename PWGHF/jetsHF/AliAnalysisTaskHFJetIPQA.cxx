@@ -65,6 +65,7 @@ AliAnalysisTaskHFJetIPQA::AliAnalysisTaskHFJetIPQA():
     fParam_Smear_Sigma(1.),
     fParam_Smear_Mean(0.),
     fRunSmearing(kTRUE),
+    fGlobalVertex(kFALSE),
     fGraphMean(nullptr),
     fGraphSigmaData(nullptr),
     fGraphSigmaMC(nullptr),
@@ -115,6 +116,7 @@ AliAnalysisTaskHFJetIPQA::AliAnalysisTaskHFJetIPQA(const char *name):
     fParam_Smear_Sigma(1.),
     fParam_Smear_Mean(0.),
     fRunSmearing(kTRUE),
+    fGlobalVertex(kFALSE),
     fGraphMean(nullptr),
     fGraphSigmaData(nullptr),
     fGraphSigmaMC(nullptr),
@@ -1985,6 +1987,7 @@ AliAODVertex *AliAnalysisTaskHFJetIPQA::RemoveDaughtersFromPrimaryVtx( const Ali
     Int_t id = (Int_t)track->GetID();
     if(!(id<0)) skipped[0] = id;
     int nTrksToSkip=1;
+
     Int_t nTracks=aod->GetNumberOfTracks();
     AliAODTrack * t = nullptr;
     AliExternalTrackParam etp_at_r39_old; etp_at_r39_old.CopyFromVTrack(track);
@@ -2009,7 +2012,7 @@ AliAODVertex *AliAnalysisTaskHFJetIPQA::RemoveDaughtersFromPrimaryVtx( const Ali
             if(fabs(zz-zz0)>0.5) {
                     doskip=true;
                 }
-            if(doskip){
+            if(doskip && !fGlobalVertex){
                     skipped[nTrksToSkip++] = id;
                 }
         }
@@ -2331,12 +2334,6 @@ Double_t AliAnalysisTaskHFJetIPQA::GetWeightFactor( AliVTrack * track,Int_t &pCo
     pCorr_indx = _particlesourceidx;
     Double_t flucafactor = 1;
 
-
-    /*if(abs(mcpart->PdgCode()) == bProton) factor *=0.80;
-    if(abs(mcpart->PdgCode()) == bPi) factor *=0.80;
-*/
-
-
     switch(mcpart->PdgCode())
         {
         case -bPhi:
@@ -2394,37 +2391,8 @@ Double_t AliAnalysisTaskHFJetIPQA::GetWeightFactor( AliVTrack * track,Int_t &pCo
             break;
         }
     factor*=flucafactor;
-
-
-
     if (factor <= 0 || factor > 6.)  return 1;
-
-
     return factor ;
-
-
-
-
-    /*if (factor <= 0 || factor > 6.)  factor = 1.;
-    if(IsSecondaryFromWeakDecay(mcpartclone)){
-            factor *= ff;
-            return factor;
-        }
-    mother = GetVParticleMother(mcpart);
-    if(mother){
-            if(IsSecondaryFromWeakDecay(mother)){
-                    factor *= ff;
-                    return factor;
-                }
-            mother = GetVParticleMother(mcpart);
-            if(mother){
-                    if(IsSecondaryFromWeakDecay(mother)){
-                            factor *= ff;
-                            return factor;
-                        }
-                }
-        }*/
-    return factor;
 }
 
 /*! \brief GetBMesonWeight
@@ -2488,7 +2456,7 @@ Bool_t AliAnalysisTaskHFJetIPQA::IsSelectionParticle( AliVParticle *  mcpart ,In
             idx = bIdxRho;
             if(!IsSecondaryFromWeakDecay(mcpart))return kTRUE;
             break;
-        case bRhoPlus: //Experimental assume same shape correction for neutral and charged rho
+        case bRhoPlus:
             idx = bIdxRho;
             if(!IsSecondaryFromWeakDecay(mcpart))return kTRUE;
             break;
