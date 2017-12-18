@@ -236,8 +236,7 @@ ConfigFemtoAnalysis(const TString& param_str="")
 
       if (macro_config.do_qinv_cf) {
         TString cf_title("_qinv");
-        int bin_count = (int)TMath::Abs(macro_config.qinv_max_GeV * 1000 / macro_config.qinv_bin_size_MeV));
-        AliFemtoCorrFctn *cf = new AliFemtoQinvCorrFctn(cf_title.Data(), bin_count, 0.0, macro_config.qinv_max_GeV);
+        AliFemtoCorrFctn *cf = new AliFemtoQinvCorrFctn(cf_title.Data(), QINV_BIN_COUNT, 0.0, macro_config.qinv_max_GeV);
         analysis->AddCorrFctn(cf);
       }
 
@@ -282,7 +281,7 @@ ConfigFemtoAnalysis(const TString& param_str="")
 
       if (macro_config.do_kt_qinv_cf) {
         TString cf_title("_qinv");
-        AliFemtoQinvCorrFctn *qinv_cf = new AliFemtoQinvCorrFctn(cf_title.Data(), bin_count, 0.0, macro_config.qinv_max_GeV);
+        AliFemtoQinvCorrFctn *qinv_cf = new AliFemtoQinvCorrFctn(cf_title.Data(), QINV_BIN_COUNT, 0.0, macro_config.qinv_max_GeV);
         AliFemtoKtBinnedCorrFunc *kt_qinv = new AliFemtoKtBinnedCorrFunc("KT_Qinv", qinv_cf);
         // loop over (low,high) pairs in the kt_ranges vector
         for (size_t kt_idx=0; kt_idx < macro_config.kt_ranges.size(); kt_idx += 2) {
@@ -324,7 +323,9 @@ ConfigFemtoAnalysis(const TString& param_str="")
       }
 
       if (macro_config.do_ylm_cf) {
-        TString name = TString::Format("ylm", chrgs[ichg], imult);
+        
+        // TString name = TString::Format("ylm%s", chrgs[ichg], imult);
+        TString name = "ylm";
         AliFemtoCorrFctnDirectYlm *ylm_cf = new AliFemtoCorrFctnDirectYlm(
             name,
             macro_config.ylm_max_l,
@@ -362,7 +363,7 @@ BuildConfiguration(const TString &text,
   TIter next_line(lines);
   TObject *line_obj = NULL;
 
-  while (line_obj = next_line()) {
+  while ((line_obj = next_line())) {
 
     const TString line = ((TObjString*)line_obj)->String().Strip(TString::kBoth, ' ');
 
@@ -393,12 +394,12 @@ BuildConfiguration(const TString &text,
       TIter next_range_group(range_groups);
       TObjString *range_group = NULL;
 
-      while (range_group = (TObjString*)next_range_group()) {
+      while ((range_group = (TObjString*)next_range_group())) {
         TObjArray *subrange = range_group->String().Tokenize(":");
         TIter next_subrange(subrange);
         TObjString *subrange_it = (TObjString *)next_subrange();
         TString prev = TString::Format("%0.2d", subrange_it->String().Atoi());
-        while (subrange_it = (TObjString *)next_subrange()) {
+        while ((subrange_it = (TObjString *)next_subrange())) {
           TString next = TString::Format("%0.2d", subrange_it->String().Atoi());
 
           cmd = macro_varname + ".centrality_ranges.push_back(" + prev + ");";
@@ -426,12 +427,12 @@ BuildConfiguration(const TString &text,
       TIter next_range_group(range_groups);
       TObjString *range_group = NULL;
 
-      while (range_group = (TObjString*)next_range_group()) {
+      while ((range_group = (TObjString*)next_range_group())) {
         TObjArray *subrange = range_group->String().Tokenize(":");
         TIter next_subrange(subrange);
         TObjString *subrange_it = (TObjString *)next_subrange();
         TString prev = TString::Format("%0.6e", subrange_it->String().Atof());
-        while (subrange_it = (TObjString *)next_subrange()) {
+        while ((subrange_it = (TObjString *)next_subrange())) {
           TString next = TString::Format("%0.6e", subrange_it->String().Atof());
 
           cmd = macro_varname + ".kt_ranges.push_back(" + prev + ");";
