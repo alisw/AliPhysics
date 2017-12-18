@@ -64,7 +64,7 @@ void TestEMCALSimulation(Int_t nev =10, Bool_t raw = kFALSE)
   simulator.SetRunHLT("");
   
   //Avoid QA
-  simulator.SetRunQA(":");
+  //simulator.SetRunQA(":");
   
   TStopwatch timer;
   timer.Start();
