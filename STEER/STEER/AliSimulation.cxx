@@ -2795,7 +2795,17 @@ void AliSimulation::StoreUsedCDBMapsAndEmbPaths() const
 
   // store embedding info
   if (fBkgrdFileNames) {
-    gDirectory->WriteObject(fBkgrdFileNames,AliStack::GetEmbeddingBKGPathsKey(),"kSingleKey");
+    TString str(gSystem->Getenv("OVERRIDE_BKG_PATH_RECORD"));
+    if (!str.IsNull()) {
+      TObjArray arrTmp;
+      arrTmp.AddLast( new TObjString(str.Data()) );
+      arrTmp.SetOwner(kTRUE);
+      AliInfoF("Overriding background path to: %s",str.Data());
+      gDirectory->WriteObject(&arrTmp,AliStack::GetEmbeddingBKGPathsKey(),"kSingleKey");
+    }
+    else {
+      gDirectory->WriteObject(fBkgrdFileNames,AliStack::GetEmbeddingBKGPathsKey(),"kSingleKey");
+    }
   }
   
   delete runLoader;
