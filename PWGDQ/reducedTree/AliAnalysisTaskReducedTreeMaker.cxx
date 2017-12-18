@@ -1289,7 +1289,6 @@ void AliAnalysisTaskReducedTreeMaker::FillMCTruthInfo()
       //AliVParticle* particle = mcHandler->GetMCTrackFromMCEvent(i);
       AliVParticle* particle = event->GetTrack(i);
       if(!particle) continue;
-      if(!(particle->PdgCode()==443 || (TMath::Abs(particle->PdgCode())>500 && TMath::Abs(particle->PdgCode())<600))) continue;
       UInt_t mcSignalsMap = MatchMCsignals(i);    // check which MC signals match this particle and fill the bit map
       if(!mcSignalsMap) continue;
       
