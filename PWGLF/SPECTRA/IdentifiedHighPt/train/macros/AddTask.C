@@ -145,14 +145,7 @@ AliAnalysisTask* AddTask(Bool_t AnalysisMC, const Char_t* taskname, Int_t typeru
   // the manager as below
   //=======================================================================
   
-  //before 22 aug 2015
-  // Char_t outFileName[256]={0};
-  // sprintf(outFileName,"%s_Tree_%1.0f_%1.0f.root",taskname,minc,maxc);
-  // cout_hist = mgr->CreateContainer(Form("output_%1.0f_%1.0f",minc,maxc), TList::Class(), AliAnalysisManager::kOutputContainer, outFileName);
-  
-  //suggestion by Ramona:  
-  //        TString outputFileName = AliAnalysisManager::GetCommonFileName();    
-  TString outputFileName = Form("%s", AliAnalysisManager::GetCommonFileName());
+    TString outputFileName = Form("%s", AliAnalysisManager::GetCommonFileName());
   AliAnalysisDataContainer *cout_hist = mgr->CreateContainer("output", TList::Class(), AliAnalysisManager::kOutputContainer, outputFileName);
  
   mgr->ConnectInput (taskHighPtDeDx, 0, mgr->GetCommonInputContainer());
@@ -245,7 +238,7 @@ if(typerun==3){//pp analysis
     taskHighPtDeDx->SetTrackFilter(trackFilter0);
     taskHighPtDeDx->SetTrackFilterTPC(trackFilterTPC);
     //V0's cuts
-    taskHighPtDeDx->SetMassCut(0.1);         // def: 0.03
+    taskHighPtDeDx->SetMassCut(0.1);       
     taskHighPtDeDx->SetRequireRecV0(kTRUE); // def: kTRUE
     taskHighPtDeDx->SetStoreMcIn(kTRUE);     // def: kFALSE
 
