@@ -174,7 +174,7 @@ AliDielectronPID *SetPIDcuts(Int_t cutDefinition){
     pid->AddCut(AliDielectronPID::kTPC, AliPID::kPion,       -100. ,  4.,   0.0, 1e30,  kTRUE,   AliDielectronPID::kRequire,     AliDielectronVarManager::kPt);
 
     // TOF matching required
-    pid->AddCut(AliDielectronPID::kTOF, AliPID::kElectron,     -999. ,  999.,   0.0, 1e30,    kFALSE,  AliDielectronPID::kRequire, AliDielectronVarManager::kPt);
+    pid->AddCut(AliDielectronPID::kTOF, AliPID::kElectron,     -999. ,  1e30,   0.0, 1e30,    kFALSE,  AliDielectronPID::kRequire, AliDielectronVarManager::kPt);
   }
   
   // TPC PID + TOF PID
@@ -196,7 +196,7 @@ AliDielectronPID *SetPIDcuts(Int_t cutDefinition){
     pid->AddCut(AliDielectronPID::kTPC, AliPID::kPion,       -100. ,  4.,   0.0, 1e30,  kTRUE,   AliDielectronPID::kRequire,     AliDielectronVarManager::kPt);
 
     // ITS matching required
-    pid->AddCut(AliDielectronPID::kITS, AliPID::kElectron,     -999. ,  999.,   0.0, 1e30,    kFALSE,  AliDielectronPID::kRequire, AliDielectronVarManager::kPt);
+    pid->AddCut(AliDielectronPID::kITS, AliPID::kElectron,     -999. ,  1e30,   0.0, 1e30,    kFALSE,  AliDielectronPID::kRequire, AliDielectronVarManager::kPt);
   }
 
    // TPC PID + ITS PID
@@ -221,7 +221,7 @@ AliDielectronPID *SetPIDcuts(Int_t cutDefinition){
     pid->AddCut(AliDielectronPID::kITS, AliPID::kElectron,     -3. ,  3.,   0.0, 1e30,    kFALSE,  AliDielectronPID::kRequire, AliDielectronVarManager::kPt);
 
     // TOF matching required
-    pid->AddCut(AliDielectronPID::kTOF, AliPID::kElectron,     -999. ,  999.,   0.0, 1e30,    kFALSE,  AliDielectronPID::kRequire, AliDielectronVarManager::kPt);
+    pid->AddCut(AliDielectronPID::kTOF, AliPID::kElectron,     -999. ,  1e30,   0.0, 1e30,    kFALSE,  AliDielectronPID::kRequire, AliDielectronVarManager::kPt);
   }
 
     // ITS  + TPC PID + TOF PID
@@ -232,7 +232,7 @@ AliDielectronPID *SetPIDcuts(Int_t cutDefinition){
     pid->AddCut(AliDielectronPID::kTPC, AliPID::kPion,       -100. ,  4.,   0.0, 1e30,  kTRUE,   AliDielectronPID::kRequire,     AliDielectronVarManager::kPt);
 
     // ITS matching required
-    pid->AddCut(AliDielectronPID::kITS, AliPID::kElectron,     -999. ,  999.,   0.0, 1e30,    kFALSE,  AliDielectronPID::kRequire, AliDielectronVarManager::kPt);
+    pid->AddCut(AliDielectronPID::kITS, AliPID::kElectron,     -999. ,  1e30,   0.0, 1e30,    kFALSE,  AliDielectronPID::kRequire, AliDielectronVarManager::kPt);
 
      // TOF required
     pid->AddCut(AliDielectronPID::kTOF, AliPID::kElectron,     -3. ,  3.,   0.0, 1e30,    kFALSE,  AliDielectronPID::kRequire, AliDielectronVarManager::kPt);
