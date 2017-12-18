@@ -87,7 +87,7 @@ Float_t EtaToTheta(Float_t arg);
 #ifndef TRANSPORTMODEL
 #define TRANSPORTMODEL
 
-TString kTransportModel = "Geant3";
+TString kTransportModel = "None"; // Set it in LoadLibForConfig.C
 
 #endif //TRANSPORTMODEL
 
@@ -101,6 +101,14 @@ Bool_t checkGeoAndRun = kFALSE; ///< check or not the year to configure the dete
 ///
 void Config()
 {
+  if(kTransportModel=="" || kTransportModel=="None")
+  {
+    AliLog::Message(AliLog::kInfo, 
+                    "SKIP CONFIGURATION *** Remember to load before LoadLibForConfig.C!! Set there the transport model!! ***", 
+                    "Config.C", "Config.C", "Config()","Config.C", __LINE__);
+    return;
+  }
+  
   //AliLog::SetGlobalDebugLevel(2);
   
   // Set Random Number seed
@@ -161,7 +169,7 @@ void Config()
   }
   
   AliGenBox *gener = new AliGenBox(nParticles);
-  gener->SetMomentumRange(25.,25.);
+  gener->SetMomentumRange(10.,10.);
   
   gener->SetPart(22); // Photons
   
