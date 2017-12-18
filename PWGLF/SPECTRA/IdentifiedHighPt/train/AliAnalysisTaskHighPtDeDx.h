@@ -70,7 +70,9 @@ class AliAnalysisTaskHighPtDeDx : public AliAnalysisTaskSE {
   virtual void  SetDecayRCut(Double_t value) {fDecayRCut = value;}   
 
   //Task Configuration: trigger selection
-  void SetSelectedTriggerClass(AliVEvent::EOfflineTriggerTypes trigType) {fTrigType = trigType;}
+  void SetSelectedTriggerClass1(AliVEvent::EOfflineTriggerTypes trigType) {fTrigType1 = trigType;}
+  void SetSelectedTriggerClass2(AliVEvent::EOfflineTriggerTypes trigType) {fTrigType2 = trigType;} 
+  void SetSelectedTriggerClass3(AliVEvent::EOfflineTriggerTypes trigType) {fTrigType3 = trigType;} 
 
 
  private:
@@ -104,7 +106,9 @@ class AliAnalysisTaskHighPtDeDx : public AliAnalysisTaskSE {
 
   AliAODMCParticle* FindPrimaryMotherAODV0(AliAODMCParticle* startParticle, Int_t& nSteps);
 
-  AliVEvent::EOfflineTriggerTypes fTrigType; // trigger type
+  AliVEvent::EOfflineTriggerTypes fTrigType1; // trigger type
+  AliVEvent::EOfflineTriggerTypes fTrigType2; // trigger type
+  AliVEvent::EOfflineTriggerTypes fTrigType3; // trigger type
   
 
   static const Double_t fgkClight;   // Speed of light (cm/ps)
