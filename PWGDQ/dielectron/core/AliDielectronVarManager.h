@@ -856,7 +856,7 @@ inline void AliDielectronVarManager::FillVarVParticle(const AliVParticle *partic
     values[AliDielectronVarManager::kEtaMC]     = -999.;
     AliVParticle *mcTrack(0x0);
     if(AliDielectronMC::Instance()->HasMC())
-      mcTrack = AliDielectronMC::Instance()->GetMCTrackFromMCEvent(TMath::Abs(particle->GetLabel()));
+      mcTrack = AliDielectronMC::Instance()->GetMCTrack(particle);
     if(mcTrack){
       values[AliDielectronVarManager::kPtMC]   = mcTrack->Pt();
       values[AliDielectronVarManager::kPMC]    = mcTrack->P();
@@ -1434,30 +1434,34 @@ inline void AliDielectronVarManager::FillVarAODTrack(const AliAODTrack *particle
   values[AliDielectronVarManager::kNumberOfDaughters]=-1;
 
   AliDielectronMC *mc=AliDielectronMC::Instance();
+  AliAODMCParticle *mcParticle = 0x0;
   if (mc->HasMC()){
-    if (mc->GetMCTrack(particle)) {
+    if ((mcParticle = (AliAODMCParticle*) mc->GetMCTrack(particle))) {
 
-      Int_t trkLbl = particle->GetLabel();
+
+
+      // Int_t trkLbl = particle->GetLabel();
+      // using the label this will potentially crash since the label can be out of range for aods
 
       if (Req(kMCLegSource)){
         values[AliDielectronVarManager::kMCLegSource] = 0;
-        if (mc->CheckParticleSource(trkLbl, AliDielectronSignalMC::kPrimary)) values[AliDielectronVarManager::kMCLegSource] += 1;
-        if (mc->CheckParticleSource(trkLbl, AliDielectronSignalMC::kFinalState)) values[AliDielectronVarManager::kMCLegSource] += 2;
-        if (mc->CheckParticleSource(trkLbl, AliDielectronSignalMC::kDirect)) values[AliDielectronVarManager::kMCLegSource] +=4;
-        if (mc->CheckParticleSource(trkLbl, AliDielectronSignalMC::kSecondary)) values[AliDielectronVarManager::kMCLegSource] +=8;
-        if (mc->CheckParticleSource(trkLbl, AliDielectronSignalMC::kSecondaryFromWeakDecay)) values[AliDielectronVarManager::kMCLegSource] +=16;
-        if (mc->CheckParticleSource(trkLbl, AliDielectronSignalMC::kSecondaryFromMaterial)) values[AliDielectronVarManager::kMCLegSource] +=32;
+        if (mc->CheckParticleSource(mcParticle, AliDielectronSignalMC::kPrimary)) values[AliDielectronVarManager::kMCLegSource] += 1;
+        if (mc->CheckParticleSource(mcParticle, AliDielectronSignalMC::kFinalState)) values[AliDielectronVarManager::kMCLegSource] += 2;
+        if (mc->CheckParticleSource(mcParticle, AliDielectronSignalMC::kDirect)) values[AliDielectronVarManager::kMCLegSource] +=4;
+        if (mc->CheckParticleSource(mcParticle, AliDielectronSignalMC::kSecondary)) values[AliDielectronVarManager::kMCLegSource] +=8;
+        if (mc->CheckParticleSource(mcParticle, AliDielectronSignalMC::kSecondaryFromWeakDecay)) values[AliDielectronVarManager::kMCLegSource] +=16;
+        if (mc->CheckParticleSource(mcParticle, AliDielectronSignalMC::kSecondaryFromMaterial)) values[AliDielectronVarManager::kMCLegSource] +=32;
       }
 
-      if (Req(kPdgCode))           values[AliDielectronVarManager::kPdgCode]           =mc->GetMCTrack(particle)->PdgCode();
-      if (Req(kHasCocktailMother)) values[AliDielectronVarManager::kHasCocktailMother] =mc->CheckParticleSource(trkLbl, AliDielectronSignalMC::kDirect);
-      if (Req(kPdgCodeMother))     values[AliDielectronVarManager::kPdgCodeMother]     =mc->GetMotherPDG(particle);
+      if (Req(kPdgCode))           values[AliDielectronVarManager::kPdgCode]           = mcParticle->PdgCode();
+      if (Req(kHasCocktailMother)) values[AliDielectronVarManager::kHasCocktailMother] = mc->CheckParticleSource(mcParticle, AliDielectronSignalMC::kDirect);
+      if (Req(kPdgCodeMother))     values[AliDielectronVarManager::kPdgCodeMother] = mc->GetMotherPDG(mcParticle);
       if (Req(kPdgCodeGrandMother)){
-        AliAODMCParticle *motherMC=mc->GetMCTrackMother(particle); //mother
+        AliAODMCParticle *motherMC = mc->GetMCTrackMother(mcParticle); //mother
         if(motherMC) values[AliDielectronVarManager::kPdgCodeGrandMother]=mc->GetMotherPDG(motherMC);
       }
     }
-    if (Req(kNumberOfDaughters)) values[AliDielectronVarManager::kNumberOfDaughters]=mc->NumberOfDaughters(particle);
+    if (Req(kNumberOfDaughters)) values[AliDielectronVarManager::kNumberOfDaughters] = mc->NumberOfDaughters(mcParticle);
   } //if(mc->HasMC())
 
   if(Req(kTOFPIDBit))     values[AliDielectronVarManager::kTOFPIDBit]=(particle->GetStatus()&AliESDtrack::kTOFpid? 1: 0);
@@ -1772,9 +1776,9 @@ inline void AliDielectronVarManager::FillVarAODMCParticle(const AliAODMCParticle
 
   // Fill AliAODMCParticle interface specific information
   AliDielectronMC *mc=AliDielectronMC::Instance();
-  Int_t trkLbl = TMath::Abs(particle->GetLabel());
+  // Int_t trkLbl = TMath::Abs(particle->GetLabel()); // Handle with caution this is the label of the original esd track not the AODTrack
   values[AliDielectronVarManager::kPdgCode]           = particle->PdgCode();
-  values[AliDielectronVarManager::kHasCocktailMother] = mc->CheckParticleSource(trkLbl, AliDielectronSignalMC::kDirect);
+  values[AliDielectronVarManager::kHasCocktailMother] = mc->CheckParticleSource(particle, AliDielectronSignalMC::kDirect);
   values[AliDielectronVarManager::kPdgCodeMother]     = mc->GetMotherPDG(particle);
   AliAODMCParticle *motherMC=mc->GetMCTrackMother(particle); //mother
   if(motherMC) values[AliDielectronVarManager::kPdgCodeGrandMother]=mc->GetMotherPDG(motherMC);
@@ -2098,8 +2102,10 @@ inline void AliDielectronVarManager::FillVarDielectronPair(const AliDielectronPa
           values[AliDielectronVarManager::kPMC]   = -999.;
           values[AliDielectronVarManager::kPhiMC] = -999.;
           values[AliDielectronVarManager::kEtaMC] = -999.;
-          AliVParticle *mcDaughter1 = AliDielectronMC::Instance()->GetMCTrackFromMCEvent(TMath::Abs((pair->GetFirstDaughterP() )->GetLabel()));
-          AliVParticle *mcDaughter2 = AliDielectronMC::Instance()->GetMCTrackFromMCEvent(TMath::Abs((pair->GetSecondDaughterP())->GetLabel()));
+
+
+          AliVParticle *mcDaughter1 = AliDielectronMC::Instance()->GetMCTrack(pair->GetFirstDaughterP());
+          AliVParticle *mcDaughter2 = AliDielectronMC::Instance()->GetMCTrack(pair->GetSecondDaughterP());
           if(mcDaughter1 && mcDaughter2){
             TLorentzVector lv1MC,lv2MC;
             lv1MC.SetPtEtaPhiM(mcDaughter1->Pt(),mcDaughter1->Eta(),mcDaughter1->Phi(),mElectron);
@@ -2247,7 +2253,7 @@ inline void AliDielectronVarManager::FillVarDielectronPair(const AliDielectronPa
   if(Req(kQnV0rpH2FlowV2)) values[AliDielectronVarManager::kQnV0rpH2FlowV2]    = TMath::Cos( 2.*values[AliDielectronVarManager::kQnDeltaPhiV0rpH2] );
   if(Req(kQnSPDrpH2FlowV2)) values[AliDielectronVarManager::kQnSPDrpH2FlowV2]    = TMath::Cos( 2.*values[AliDielectronVarManager::kQnDeltaPhiSPDrpH2] );
 
-  AliDielectronMC *mc=AliDielectronMC::Instance();
+  AliDielectronMC *mc = AliDielectronMC::Instance();
 
   if (mc->HasMC()){
     values[AliDielectronVarManager::kPseudoProperTimeResolution] = -10.0e+10;
@@ -2261,14 +2267,21 @@ inline void AliDielectronVarManager::FillVarDielectronPair(const AliDielectronPa
     if(samemother && fgEvent) {
       if(pair->GetFirstDaughterP()->GetLabel() > 0) {
         const AliVParticle *motherMC = 0x0;
-        if(fgEvent->IsA() == AliESDEvent::Class())  motherMC = (AliMCParticle*)mc->GetMCTrackMother((AliESDtrack*)pair->GetFirstDaughterP());
-        else if(fgEvent->IsA() == AliAODEvent::Class())  motherMC = (AliAODMCParticle*)mc->GetMCTrackMother((AliAODTrack*)pair->GetFirstDaughterP());
+        Int_t motherLbl = 0;
+        if(fgEvent->IsA() == AliESDEvent::Class()){
+          motherMC = (AliMCParticle*) mc->GetMCTrackMother((AliESDtrack*) pair->GetFirstDaughterP());
+          motherLbl = motherMC->GetLabel();
+        }
+        else if(fgEvent->IsA() == AliAODEvent::Class()){
+          motherMC = (AliAODMCParticle*) mc->GetMCTrackMother((AliAODTrack*) pair->GetFirstDaughterP());
+          AliAODMCParticle *daughterMC = (AliAODMCParticle*) mc->GetMCTrack(pair->GetFirstDaughterP());
+          motherLbl = daughterMC->GetMother();
+        }
         Double_t vtxX, vtxY, vtxZ;
 	if(motherMC && mc->GetPrimaryVertex(vtxX,vtxY,vtxZ)) {
-	  Int_t motherLbl = motherMC->GetLabel();
-	  values[AliDielectronVarManager::kHasCocktailMother]=mc->CheckParticleSource(motherLbl, AliDielectronSignalMC::kDirect);
-      	  const Double_t lxyMC = ( (motherMC->Xv() - vtxX) * motherMC->Px() +
-                                   (motherMC->Yv() - vtxY) * motherMC->Py()   ) / motherMC->Pt();
+
+	  values[AliDielectronVarManager::kHasCocktailMother] = mc->CheckParticleSource(motherLbl, AliDielectronSignalMC::kDirect);
+    const Double_t lxyMC = ( (motherMC->Xv() - vtxX) * motherMC->Px() + (motherMC->Yv() - vtxY) * motherMC->Py()   ) / motherMC->Pt();
 	  const Double_t pseudoMC = lxyMC * (TDatabasePDG::Instance()->GetParticle(443)->Mass())/motherMC->Pt();
 	  values[AliDielectronVarManager::kPseudoProperTimeResolution] = values[AliDielectronVarManager::kPseudoProperTime] - pseudoMC;
           if (errPseudoProperTime2 > 0)
@@ -2323,7 +2336,7 @@ inline void AliDielectronVarManager::FillVarDielectronPair(const AliDielectronPa
   }
 
   if(kRndmPair) values[AliDielectronVarManager::kRndmPair] = gRandom->Rndm();
-}
+} // end FillVarDielectronPair
 
 inline void AliDielectronVarManager::FillVarKFParticle(const AliKFParticle *particle, Double_t * const values)
 {
