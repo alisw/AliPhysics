@@ -23,8 +23,8 @@
 #include <TPaveText.h>
 
 
-// #if false && __cplusplus >= 201103L
-#if __cplusplus >= 201103L
+#if false && __cplusplus >= 201103L
+// #if __cplusplus >= 201103L
 #define ENABLE_MOVE_SEMANTICS 1
 #endif
 
@@ -408,8 +408,16 @@ public:
 
   /// @}
 
-  /// \class Iterator
-  class list_iterator : public std::iterator<std::bidirectional_iterator_tag, AliFemtoConfigObject> {
+  /// \class list_iterator
+  /// \brief Iterates over object if it is a list
+  ///
+  /// Use this class by calling `list_begin()` and `list_end()` on a
+  /// config object.
+  /// If the object is not a list, then list_begin() will return the
+  /// same value as list_end(), and there is no iteration (using
+  /// standard iteration rules)
+  ///
+  class list_iterator : public std::iterator<std::bidirectional_iterator_tag, ArrayValue_t::value_type> {
     AliFemtoConfigObject *fParent;
     bool fIsArray;
     ArrayValue_t::iterator fInternal;
@@ -453,6 +461,62 @@ public:
       return list_iterator(this, fValueArray.end());
     }
     return list_iterator(*this);
+  }
+
+
+  /// \class map_iterator
+  /// \brief Iterates over object if it is a map
+  ///
+  /// Use this class by calling `map_begin()` and `map_end()` on a
+  /// config object.
+  /// If the object is not a list, then map_begin() will return the
+  /// same value as map_end(), and there is no iteration (using
+  /// standard iteration rules)
+  ///
+  class map_iterator : public std::iterator<std::bidirectional_iterator_tag, MapValue_t::value_type> {
+    AliFemtoConfigObject *fParent;
+    bool fIsMap;
+    MapValue_t::iterator fInternal;
+    friend class AliFemtoConfigObject;
+
+    map_iterator(AliFemtoConfigObject *obj, MapValue_t::iterator it):
+      fParent(obj), fIsMap(true), fInternal(it) {}
+
+  public:
+    /// construct from config object
+    map_iterator(AliFemtoConfigObject &obj): fParent(&obj), fIsMap(obj.is_map()) {
+      if (fIsMap) {
+        fInternal = obj.fValueMap.begin();
+      }
+    }
+
+    value_type& operator*() {
+      return *fInternal;
+    }
+
+    map_iterator& operator++(int) {
+      fInternal++;
+      return *this;
+    }
+
+    bool operator!=(map_iterator const &rhs) const {
+      return rhs.fParent != fParent                // if we don't have same parent - different
+          || fIsMap ? (fInternal != rhs.fInternal) // if array, compare internal iterator
+                    : false;                       // if not array, we are equal
+    }
+  };
+
+  ///
+  map_iterator map_begin() {
+    return map_iterator(*this);
+  }
+
+  ///
+  map_iterator map_end() {
+    if (is_map()) {
+      return map_iterator(this, fValueMap.end());
+    }
+    return map_iterator(*this);
   }
 
 
