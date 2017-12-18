@@ -312,7 +312,9 @@ void AddTaskCMEAnalysis(Bool_t isPbPb = kTRUE,
       taskMHLS[iCentralityBin]->SetCorrectForDetectorEffects(kTRUE);
       taskMHLS[iCentralityBin]->SetEvaluateDifferential3pCorrelator(kTRUE); // evaluate <<cos[n(psi1+psi2-2phi3)]>> (Remark: two nested loops)
       taskMHLS[iCentralityBin]->SetOppositeChargesPOI(kFALSE); //
-      
+      taskMHLS[iCentralityBin]->SetRejectPileUp(kTRUE);
+      taskMHLS[iCentralityBin]->SetRejectPileUpTight(checkPileup);
+
       coutputMHLS[iCentralityBin] = mgr->CreateContainer(Form("%s",outputSlotNameMHLS[iCentralityBin].Data()),TList::Class(),AliAnalysisManager::kOutputContainer,outputMHLS);
       mgr->AddTask(taskMHLS[iCentralityBin]);
       mgr->ConnectInput(taskMHLS[iCentralityBin],0,flowEvent[iCentralityBin]);
@@ -332,7 +334,9 @@ void AddTaskCMEAnalysis(Bool_t isPbPb = kTRUE,
       taskMHLS2[iCentralityBin]->SetCorrectForDetectorEffects(kTRUE);
       taskMHLS2[iCentralityBin]->SetEvaluateDifferential3pCorrelator(kTRUE); // evaluate <<cos[n(psi1+psi2-2phi3)]>> (Remark: two nested loops)
       taskMHLS2[iCentralityBin]->SetOppositeChargesPOI(kFALSE); //
-      
+      taskMHLS2[iCentralityBin]->SetRejectPileUp(kTRUE);
+      taskMHLS2[iCentralityBin]->SetRejectPileUpTight(checkPileup);
+
       coutputMHLS2[iCentralityBin] = mgr->CreateContainer(Form("%s",outputSlotNameMHLS2[iCentralityBin].Data()),TList::Class(),AliAnalysisManager::kOutputContainer,outputMHLS2);
       mgr->AddTask(taskMHLS2[iCentralityBin]);
       mgr->ConnectInput(taskMHLS2[iCentralityBin],0,flowEvent[iCentralityBin]);
@@ -354,6 +358,9 @@ void AddTaskCMEAnalysis(Bool_t isPbPb = kTRUE,
       taskMHUS[iCentralityBin]->SetCorrectForDetectorEffects(kTRUE);
       taskMHUS[iCentralityBin]->SetEvaluateDifferential3pCorrelator(kTRUE); // evaluate <<cos[n(psi1+psi2-2phi3)]>> (Remark: two nested loops)
       taskMHUS[iCentralityBin]->SetOppositeChargesPOI(kTRUE); //
+      taskMHUS[iCentralityBin]->SetRejectPileUp(kTRUE);
+      taskMHUS[iCentralityBin]->SetRejectPileUpTight(checkPileup);
+
       
       coutputMHUS[iCentralityBin] = mgr->CreateContainer(Form("%s",outputSlotNameMHUS[iCentralityBin].Data()),TList::Class(),AliAnalysisManager::kOutputContainer,outputMHUS);
       mgr->AddTask(taskMHUS[iCentralityBin]);
@@ -372,7 +379,11 @@ void AddTaskCMEAnalysis(Bool_t isPbPb = kTRUE,
       taskMHUS2[iCentralityBin]->SetCorrectForDetectorEffects(kTRUE);
       taskMHUS2[iCentralityBin]->SetEvaluateDifferential3pCorrelator(kTRUE); // evaluate <<cos[n(psi1+psi2-2phi3)]>> (Remark: two nested loops)
       taskMHUS2[iCentralityBin]->SetOppositeChargesPOI(kTRUE); //
-      
+      taskMHUS2[iCentralityBin]->SetRejectPileUp(kTRUE);
+      taskMHUS2[iCentralityBin]->SetRejectPileUpTight(checkPileup);
+
+
+
       coutputMHUS2[iCentralityBin] = mgr->CreateContainer(Form("%s",outputSlotNameMHUS2[iCentralityBin].Data()),TList::Class(),AliAnalysisManager::kOutputContainer,outputMHUS2);
       mgr->AddTask(taskMHUS2[iCentralityBin]);
       mgr->ConnectInput(taskMHUS2[iCentralityBin],0,flowEvent[iCentralityBin]);
@@ -415,7 +426,7 @@ AliFlowEventCuts *createFlowEventCutObject(Int_t gCentralityMin = -1,
 	cutsEvent->SetLHC11h(kFALSE);
 	if(whichData==2015){ 
 	  cutsEvent->SetCentralityPercentileRange(gCentralityMin,gCentralityMax,kTRUE);
-	  cutsEvent->SetCheckPileup(bPileup); //
+	  //cutsEvent->SetCheckPileup(bPileup); //
 	}
       }
       cutsEvent->SetCutTPCmultiplicityOutliersAOD(kTRUE);
