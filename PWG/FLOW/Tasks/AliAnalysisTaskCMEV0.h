@@ -228,7 +228,8 @@ private:
   TH1D              *fHCorrectV0M; //!   for V0-Mult Gain Correction per channel.
 
   TProfile2D     *fCentV0MvsVzRun; //!
-  TProfile2D     *fCentCL1vsVzRun; //!
+  TProfile2D     *fCent3pvsVzRun; //!
+  TH3F           *fCentCL1vsVzRun; //!
 
 
   //TRandom3                fRand; //!
