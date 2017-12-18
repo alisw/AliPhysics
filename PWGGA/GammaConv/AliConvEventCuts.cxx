@@ -2402,7 +2402,7 @@ Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliMCEvent *mcEvent, Double_t& 
     for(Int_t i = 0; i<genHeaders->GetEntries();i++){
       gh = (AliGenEventHeader*)genHeaders->At(i);
       TString GeneratorName = gh->GetName();
-      if (GeneratorName.CompareTo("AliGenPythiaEventHeader") == 0){
+      if (GeneratorName.CompareTo("AliGenPythiaEventHeader") == 0 || GeneratorName.Contains("Pythia8Jets")){
         Bool_t eventAccepted = kTRUE;
         TParticle * jet = 0;
         Int_t nTriggerJets = dynamic_cast<AliGenPythiaEventHeader*>(gh)->NTriggerJets();
@@ -2563,6 +2563,19 @@ Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliMCEvent *mcEvent, Double_t& 
           while (!((ptHard< ptHardBinRanges[bin+1] && ptHard > ptHardBinRanges[bin]) || (ptHard == ptHardBinRanges[bin]) ) )bin++;
           if (bin < 10) weight = weightsBins[bin];
 
+        } else if ( fPeriodEnum == kLHC17g8b ){ // preliminary weights obtained from local running
+          Double_t ptHardBinRanges[21]  = { 5, 7, 9, 12, 16, 21, 28, 36, 45, 57, 70, 85, 99, 115, 132, 150, 169, 190, 212, 235, 10000};
+          Double_t weightsBins[20]      = {2.648510E+01, 7.963350E+00, 3.926460E+00, 1.535630E+00, 5.125940E-01, 1.982910E-01, 6.705810E-02, 2.214220E-02, 9.872830E-03, 3.460430E-03, 1.426840E-03, 5.212990E-04, 2.534030E-04, 1.157210E-04, 6.609650E-05, 3.424850E-05, 1.833500E-05, 1.022650E-05, 5.878600E-06, 8.550350E-06};
+          Int_t bin = 0;
+          while (!((ptHard< ptHardBinRanges[bin+1] && ptHard > ptHardBinRanges[bin]) || (ptHard == ptHardBinRanges[bin]) ) )bin++;
+          if (bin < 20) weight = weightsBins[bin];
+        } else if ( fPeriodEnum == kLHC17g8c ){ // preliminary weights obtained from local running
+          Double_t ptHardBinRanges[21]  = { 5, 7, 9, 12, 16, 21, 28, 36, 45, 57, 70, 85, 99, 115, 132, 150, 169, 190, 212, 235, 10000};
+          Double_t weightsBins[20]      = {2.638850E+01, 8.160880E+00, 3.937510E+00, 1.485000E+00, 5.382460E-01, 2.034610E-01, 6.293600E-02, 2.206170E-02, 9.319700E-03, 3.354230E-03, 1.392300E-03, 5.023470E-04, 2.645860E-04, 1.299660E-04, 6.415310E-05, 3.469890E-05, 1.816550E-05, 1.047480E-05, 5.728760E-06, 8.547820E-06};
+          Int_t bin = 0;
+          while (!((ptHard< ptHardBinRanges[bin+1] && ptHard > ptHardBinRanges[bin]) || (ptHard == ptHardBinRanges[bin]) ) )bin++;
+          if (bin < 20) weight = weightsBins[bin];
+
         } else {
           weight = 1;
         }
@@ -2575,7 +2588,7 @@ Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliMCEvent *mcEvent, Double_t& 
   } else {
     AliGenEventHeader * eventHeader = mcEvent->GenEventHeader();
     TString eventHeaderName     = eventHeader->ClassName();
-    if (eventHeaderName.CompareTo("AliGenPythiaEventHeader") == 0){
+    if (eventHeaderName.CompareTo("AliGenPythiaEventHeader") == 0 || eventHeaderName.Contains("Pythia8Jets")){
       Bool_t eventAccepted = kTRUE;
       TParticle * jet =  0;
       Int_t nTriggerJets =  dynamic_cast<AliGenPythiaEventHeader*>(eventHeader)->NTriggerJets();
@@ -2789,7 +2802,7 @@ void AliConvEventCuts::GetXSectionAndNTrials(AliMCEvent *mcEvent, Float_t &XSect
     for(Int_t i = 0; i<genHeaders->GetEntries();i++){
       gh = (AliGenEventHeader*)genHeaders->At(i);
       TString GeneratorName   = gh->GetName();
-      if (GeneratorName.CompareTo("AliGenPythiaEventHeader") == 0){
+      if (GeneratorName.CompareTo("AliGenPythiaEventHeader") == 0 || GeneratorName.Contains("Pythia8Jets")){
         AliGenPythiaEventHeader* gPythia = dynamic_cast<AliGenPythiaEventHeader*>(gh);
         NTrials = gPythia->Trials();
         XSection = gPythia->GetXsection();
@@ -2800,7 +2813,7 @@ void AliConvEventCuts::GetXSectionAndNTrials(AliMCEvent *mcEvent, Float_t &XSect
     AliGenEventHeader * eventHeader = mcEvent->GenEventHeader();
     if(eventHeader){
       TString eventHeaderName     = eventHeader->ClassName();
-      if (eventHeaderName.CompareTo("AliGenPythiaEventHeader") == 0){
+      if (eventHeaderName.CompareTo("AliGenPythiaEventHeader") == 0 || eventHeaderName.Contains("Pythia8Jets")){
         AliGenPythiaEventHeader* gPythia = dynamic_cast<AliGenPythiaEventHeader*>(eventHeader);
         NTrials = gPythia->Trials();
         XSection = gPythia->GetXsection();
@@ -2848,7 +2861,7 @@ Float_t AliConvEventCuts::GetPtHard(AliMCEvent *mcEvent){
     for(Int_t i = 0; i<genHeaders->GetEntries();i++){
       gh             = (AliGenEventHeader*)genHeaders->At(i);
       TString GeneratorName   = gh->GetName();
-      if (GeneratorName.CompareTo("AliGenPythiaEventHeader") == 0){
+      if (GeneratorName.CompareTo("AliGenPythiaEventHeader") == 0 || GeneratorName.Contains("Pythia8Jets")){
         return dynamic_cast<AliGenPythiaEventHeader*>(gh)->GetPtHard();
       }
     }
@@ -2856,7 +2869,7 @@ Float_t AliConvEventCuts::GetPtHard(AliMCEvent *mcEvent){
     AliGenEventHeader * eventHeader = mcEvent->GenEventHeader();
     if(eventHeader){
       TString eventHeaderName     = eventHeader->ClassName();
-      if (eventHeaderName.CompareTo("AliGenPythiaEventHeader") == 0){
+      if (eventHeaderName.CompareTo("AliGenPythiaEventHeader") == 0 || eventHeaderName.Contains("Pythia8Jets")){
         return dynamic_cast<AliGenPythiaEventHeader*>(eventHeader)->GetPtHard();
       }
     }
@@ -4471,7 +4484,6 @@ void AliConvEventCuts::SetPeriodEnum (TString periodName){
   if (periodName.CompareTo("") == 0){
     periodName = ((AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask(fV0ReaderName.Data()))->GetPeriodName();
   }
-
   if (periodName.CompareTo("") == 0) {
     fPeriodEnum = kNoPeriod;
     fEnergyEnum = kUnset;
