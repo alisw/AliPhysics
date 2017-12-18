@@ -500,7 +500,8 @@ void Config()
     geant4->ProcessGeantCommand("/process/optical/processActivation OpWLS 0");
     geant4->ProcessGeantCommand("/process/optical/processActivation OpMieHG 0");
     geant4->ProcessGeantCommand("/process/optical/setTrackSecondariesFirst Cerenkov 0");
-    geant4->ProcessGeantCommand("/mcMagField/stepperType NystromRK4");
+    // Not working, comment for the moment, adds shift in phi and tail to shower shape (which is good ...) 
+    //geant4->ProcessGeantCommand("/mcMagField/stepperType NystromRK4");
     
     if(iTRD)
     {
