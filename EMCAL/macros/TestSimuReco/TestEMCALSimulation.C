@@ -31,6 +31,13 @@
 
 #endif
 
+#ifndef TRANSPORTMODEL
+#define TRANSPORTMODEL
+
+TString kTransportModel = "None"; // Set it in LoadLibForConfig.C
+
+#endif //TRANSPORTMODEL
+
 ///
 /// Main execution method
 ///
@@ -39,6 +46,14 @@
 ///
 void TestEMCALSimulation(Int_t nev =10, Bool_t raw = kFALSE)
 {
+  if(kTransportModel=="" || kTransportModel=="None")
+  {
+    AliLog::Message(AliLog::kInfo, 
+                    "DO NOTHING *** Remember to load before LoadLibForConfig.C!! Set there the transport model!! ***", 
+                    "TestEMCALSimulation.C", "TestEMCALSimulation.C", "TestEMCALSimulation()","TestEMCALSimulation.C", __LINE__);
+    return;
+  }
+  
   AliSimulation simulator;
   simulator.SetConfigFile("Config.C");
   simulator.SetMakeSDigits("EMCAL");
@@ -64,7 +79,7 @@ void TestEMCALSimulation(Int_t nev =10, Bool_t raw = kFALSE)
   simulator.SetRunHLT("");
   
   //Avoid QA
-  simulator.SetRunQA(":");
+  //simulator.SetRunQA(":");
   
   TStopwatch timer;
   timer.Start();
