@@ -192,7 +192,7 @@ AliAnalysisManager *  MakeManager(){
 void AddComparison( AliGenInfoTask * task){
   
   // Create ESD track reconstruction cuts
-  AliRecInfoCuts *pRecInfoCuts = new AliRecInfoCuts(); 
+  AliRecInfoCuts *pRecInfoCuts = new AliRecInfoCuts("pRecInfoCuts");
   if(pRecInfoCuts) {
     pRecInfoCuts->SetPtRange(0.15,200.0);
     pRecInfoCuts->SetMaxAbsTanTheta(1.0);
@@ -206,7 +206,7 @@ void AddComparison( AliGenInfoTask * task){
   }
 
   // Create MC track reconstruction cuts
-  AliMCInfoCuts  *pMCInfoCuts = new AliMCInfoCuts();
+  AliMCInfoCuts  *pMCInfoCuts = new AliMCInfoCuts("pMCInfoCuts");
   if(pMCInfoCuts) {
     pMCInfoCuts->SetMinRowsWithDigits(50);
     pMCInfoCuts->SetMaxR(0.001);  

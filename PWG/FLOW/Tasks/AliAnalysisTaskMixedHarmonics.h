@@ -25,6 +25,10 @@ class TString;
 class TList;
 class AliFlowEventSimple;
 class AliFlowAnalysisWithMixedHarmonics;
+class AliAODEvent;
+class AliVVertex;
+class AliMultSelection;
+class AliAnalysisUtils;
 
 //================================================================================================================
 
@@ -67,10 +71,22 @@ class AliAnalysisTaskMixedHarmonics : public AliAnalysisTaskSE{
   void SetUseEtaWeights(Bool_t const uEtaW) {this->fUseEtaWeights = uEtaW;};
   Bool_t GetUseEtaWeights() const {return this->fUseEtaWeights;};
  
+  void  SetRejectPileUp(Bool_t  pileup) {this->fRejectPileUp = pileup;}
+  void  SetRejectPileUpTight(Bool_t pileupT) {this->fRejectPileUpTight = pileupT;}
+
+
  private:
   AliAnalysisTaskMixedHarmonics(const AliAnalysisTaskMixedHarmonics& aatmh);
   AliAnalysisTaskMixedHarmonics& operator=(const AliAnalysisTaskMixedHarmonics& aatmh);
   
+  Bool_t CheckEventIsPileUp(AliAODEvent* faod,Bool_t bPileUpTight=kFALSE);
+  Bool_t PileUpMultiVertex(const AliAODEvent* faod);
+  double GetWDist(const AliVVertex* v0, const AliVVertex* v1);
+
+  AliMultSelection*   fMultSelection;    //! MultSelection (RUN2 centrality estimator)
+  AliAnalysisUtils*    fAnalysisUtil;    //! Event selection
+
+
   AliFlowEventSimple *fEvent; // the input event
   AliFlowAnalysisWithMixedHarmonics *fMH; // mixed harmonics object
   TList *fListHistos; // collection of output 
@@ -90,8 +106,16 @@ class AliAnalysisTaskMixedHarmonics : public AliAnalysisTaskSE{
   Bool_t fUsePhiWeights; // use phi weights
   Bool_t fUsePtWeights; // use pt weights
   Bool_t fUseEtaWeights; // use eta weights  
+
+  Bool_t   fRejectPileUp; //
+  Bool_t   fRejectPileUpTight; //
+
   TList *fWeightsList; // list with weights
   
+
+
+
+
   ClassDef(AliAnalysisTaskMixedHarmonics, 1); 
 };
 

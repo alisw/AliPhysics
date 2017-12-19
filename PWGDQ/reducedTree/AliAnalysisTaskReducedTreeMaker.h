@@ -110,9 +110,10 @@ public:
      fMCsignalsWritingOptions[fMCsignals.GetEntries()-1] = wOpt;}
   void SetFillHFInfo(Bool_t flag=kTRUE)               {fFillHFInfo = flag;}
   void SetFillTRDMatchedTracks(Bool_t flag1=kTRUE, Bool_t flag2=kFALSE)   {fFillTRDMatchedTracks = flag1; fFillAllTRDMatchedTracks=flag2;}
-  void SetWriteEventsWithNoSelectedTracks(Bool_t flag=kTRUE, Double_t scaleDown=0.0)   {
+  void SetWriteEventsWithNoSelectedTracks(Bool_t flag=kTRUE, Double_t scaleDown=0.0, Int_t minSelectedTracks=1)   {
      fWriteEventsWithNoSelectedTracks = flag; 
      fScaleDownEventsWithNoSelectedTracks = scaleDown;
+     fMinSelectedTracks = minSelectedTracks;
   }
   void SetWriteEventsWithNoSelectedTracksAndNoSelectedAssociatedTracks(Bool_t flag=kTRUE) {fWriteEventsWithNoSelectedTracksAndNoSelectedAssociatedTracks = flag;}
     
@@ -139,6 +140,7 @@ public:
   Int_t     fTreeWritingOption;                 // one of the options described by ETreeWritingOptions
   Bool_t    fWriteTree;                         // if kFALSE don't write the tree, use task only to produce on the fly reduced events
   Bool_t    fWriteEventsWithNoSelectedTracks;   // write events without any selected tracks
+  Int_t      fMinSelectedTracks;        // minimum number of selected tracks for the event to be written (defaults to 1)
   Bool_t    fWriteEventsWithNoSelectedTracksAndNoSelectedAssociatedTracks;  // write events without tracks in both track arrays
   Double_t  fScaleDownEventsWithNoSelectedTracks; // scale down factor for events with no selected track candidates in the main track array
   Bool_t    fWriteSecondTrackArray;       // write second array only if full+base tracks requested
@@ -218,6 +220,6 @@ public:
   AliAnalysisTaskReducedTreeMaker(const AliAnalysisTaskReducedTreeMaker &c);
   AliAnalysisTaskReducedTreeMaker& operator= (const AliAnalysisTaskReducedTreeMaker &c);
 
-  ClassDef(AliAnalysisTaskReducedTreeMaker, 8); //Analysis Task for creating a reduced event information tree
+  ClassDef(AliAnalysisTaskReducedTreeMaker, 9); //Analysis Task for creating a reduced event information tree
 };
 #endif

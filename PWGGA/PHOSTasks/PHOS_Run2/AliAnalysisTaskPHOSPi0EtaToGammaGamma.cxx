@@ -1557,7 +1557,6 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::FillPhoton()
   for(Int_t iph=0;iph<multClust;iph++){
     AliCaloPhoton *ph = (AliCaloPhoton*)fPHOSClusterArray->At(iph);
     if(!fPHOSClusterCuts->AcceptPhoton(ph)) continue;
-    //if(!fIsMC && fIsPHOSTriggerAnalysis && !ph->IsTrig()) continue;//it is meaningless to focus on photon without fired trigger in PHOS triggered data.
 
     if(fIsPHOSTriggerAnalysis){
       if(!fPHOSTriggerHelper->IsOnActiveTRUChannel(ph)) continue;
@@ -2019,6 +2018,8 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::EstimatePIDCutEfficiency()
 
   for(Int_t i1=0;i1<multClust;i1++){
     AliCaloPhoton *ph1 = (AliCaloPhoton*)fPHOSClusterArray->At(i1);
+    if(!fIsMC && fIsPHOSTriggerAnalysis && !ph1->IsTrig()) continue;//take trigger bias into account.
+
     if(!fPHOSClusterCuts->AcceptPhoton(ph1)) continue;
 
     for(Int_t i2=0;i2<multClust;i2++){
@@ -2392,19 +2393,19 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::EstimateTriggerEfficiency()
       Int_t dx = chX_tag - chX;
       Int_t dz = chZ_tag - chZ;
 
-      //if( (dm == 0)
-      // && (dt == 0)
-      // && (TMath::Abs(dx) < 2)
-      // && (TMath::Abs(dz) < 2)
-      // ) continue;//reject cluster pair where they belong to same 4x4 region.
+      if( (dm == 0)
+       && (dt == 0)
+       && (TMath::Abs(dx) < 2)
+       && (TMath::Abs(dz) < 2)
+       ) continue;//reject cluster pair where they belong to same 4x4 region.
 
       AliInfo(Form("dm = %d , dt = %d , dx = %d , dz = %d, truch = %d.",dm,dt,dx,dz,truch));
       DeltaR_probe = fPHOSTriggerHelper->GetDistanceToClosestTRUChannel(ph2);
 
       Rlimit = DeltaR_tag + DeltaR_probe;
       DeltaRgg = TMath::Sqrt(TMath::Power(eta_tag - eta_probe,2) + TMath::Power(phi_tag - phi_probe,2));
-      AliInfo(Form("DeltaR between 2 gammas = %e, DeltaR_tag = %e , DeltaR_probe = = %e.",DeltaRgg,DeltaR_tag,DeltaR_probe));
-      if(DeltaRgg < Rlimit) continue;//efficiency can be measured at low pT by pi0 and at high pT by eta meson.
+      //AliInfo(Form("DeltaR between 2 gammas = %e, DeltaR_tag = %e , DeltaR_probe = = %e.",DeltaRgg,DeltaR_tag,DeltaR_probe));
+      //if(DeltaRgg < Rlimit) continue;//efficiency can be measured at low pT by pi0 and at high pT by eta meson.
 
       FillHistogramTH2(fOutputContainer,"hMgg_Probe_Trg",m12,energy);
       FillHistogramTH2(fOutputContainer,Form("hMgg_Probe_Trg_M%d_TRU%d",module,tru),m12,energy);

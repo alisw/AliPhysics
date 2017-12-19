@@ -5,8 +5,9 @@
 // Class keeps matching information between 
 // central barrel detectors.   
 // 
-// Author: J.Otwinowski 17/10/2009  
-// Changes by M.Knichel 22/10/2010
+// Author: J.Otwinowski   17/10/2009  
+// Changes by M.Knichel   22/10/2010
+// Changes by J.Salzwedel 14/10/2014
 //------------------------------------------------------------------------------
 
 class TString;
@@ -15,35 +16,34 @@ class TCanvas;
 class TH1F;
 class TH2F;
 
-class AliESDVertex;
-class AliESDtrack;
+class AliVTrack;
 class AliMCEvent;
 class AliTrackReference;
-class AliESDEvent; 
-class AliESDfriend; 
-class AliESDfriendTrack; 
+class AliVEvent; 
+class AliVfriendEvent; 
+class AliVfriendTrack; 
 class AliMCEvent;
 class AliMCParticle;
-class AliMCInfoCuts;
-class AliRecInfoCuts;
 class AliExternalTrackParam;
+class TRootIOCtor;
 
 #include "THnSparse.h"
 #include "AliPerformanceObject.h"
 
 class AliPerformanceMatch : public AliPerformanceObject {
 public :
-  AliPerformanceMatch(const Char_t* name="AliPerformanceMatch", const Char_t* title="AliPerformanceMatch",Int_t analysisMode=0,Bool_t hptGenerator=kFALSE);
+  AliPerformanceMatch(TRootIOCtor*);
+  AliPerformanceMatch(const Char_t* name="AliPerformanceMatch", const Char_t* title="AliPerformanceMatch",Int_t analysisMode=0,Bool_t hptGenerator=kFALSE, Bool_t useSparse=kTRUE);
   virtual ~AliPerformanceMatch();
 
   // Init data members
   virtual void  Init();
 
   // Execute analysis
-  virtual void  Exec(AliMCEvent* const mcEvent, AliESDEvent *const esdEvent,AliESDfriend *const esdFriend, const Bool_t bUseMC, const Bool_t bUseESDfriend);
+  virtual void  Exec(AliMCEvent* const mcEvent, AliVEvent *const vEvent,AliVfriendEvent *const vfriendEvent, const Bool_t bUseMC, const Bool_t bUseVfriend);
 
   // Merge output objects (needed by PROOF) 
-  virtual Long64_t Merge(TCollection* const list);
+  virtual Long64_t Merge(TCollection* list);
 
   // Project Histograms store in AnalysisFolder
   virtual void Analyse();
@@ -55,26 +55,19 @@ public :
   virtual TFolder* GetAnalysisFolder() const {return fAnalysisFolder;}
 
   // Process matching
-  void ProcessTPCITS(AliMCEvent* const mcev, AliESDtrack *const esdTrack);
-  //  void ProcessTPCTRD(AliStack* const stack, AliESDtrack *const esdTrack, AliESDfriendTrack *const friendTrack);
-  void ProcessITSTPC(Int_t trackIdx, AliESDEvent* const esdEvent, AliMCEvent* const mcev, AliESDtrack *const esdTrack);
-  void ProcessTPCConstrain(AliMCEvent* const mcev, AliESDEvent *const esdEvent, AliESDtrack *const esdTrack); // - 01.11.2011
+  void ProcessTPCITS(AliMCEvent* const mcev, AliVEvent *const vEvent, AliVTrack *const vTrack);
+  void ProcessTPCTRD(AliMCEvent* const mcev, AliVTrack *const vTrack, AliVfriendTrack *const friendTrack);
+  void ProcessITSTPC(Int_t trackIdx, AliVEvent* const vEvent, AliMCEvent* const mcev, AliVTrack *const vTrack);
+  void ProcessTPCConstrain(AliMCEvent* const mcev, AliVEvent *const vEvent, AliVTrack *const vTrack); // - 01.11.2011
 
   // Fill histogrrams
-  void FillHistograms(AliESDtrack *const refParam, AliESDtrack *const param, Bool_t isRec);
+  void FillHistograms(AliVTrack *const refParam, AliVTrack *const param, Bool_t isRec);
 
   // Create folder for analysed histograms
   TFolder *CreateFolder(TString folder = "folderRes",TString title = "Analysed Resolution histograms");
 
   // Export objects to folder
   TFolder *ExportToFolder(TObjArray * array=0);
-
-  // Selection cuts
-  void SetAliRecInfoCuts(AliRecInfoCuts* const cuts=0) {fCutsRC = cuts;}   
-  void SetAliMCInfoCuts(AliMCInfoCuts* const cuts=0) {fCutsMC = cuts;}  
-   
-  AliRecInfoCuts*  GetAliRecInfoCuts() const {return fCutsRC;}  
-  AliMCInfoCuts*   GetAliMCInfoCuts()  const {return fCutsMC;}  
 
   TH1F*  MakeResol(TH2F * his, Int_t integ=0, Bool_t type=kFALSE, Int_t cut=0); 
 
@@ -92,6 +85,10 @@ public :
   
   void SetUseHLT(Bool_t useHLT = kTRUE) {fUseHLT = useHLT;}
   Bool_t GetUseHLT() { return fUseHLT; }  
+
+  TCollection* GetListOfDrawableObjects();
+    
+  virtual void ResetOutputData();
 
 private:
 
@@ -119,19 +116,24 @@ private:
   
   TObjArray* fFolderObj; // array of analysed histograms  
 
-  // Global cuts objects
-  AliRecInfoCuts*  fCutsRC;      // selection cuts for reconstructed tracks
-  AliMCInfoCuts*  fCutsMC;       // selection cuts for MC tracks
-
   // analysis folder 
   TFolder *fAnalysisFolder; // folder for analysed histograms
   
   Bool_t fUseHLT; // use HLT ESD
 
+  TH2D* h_tpc_match_trackingeff_all_2_3; //!
+  TH2D* h_tpc_match_trackingeff_tpc_2_3; //!
+  TH2D* h_tpc_match_pull_2_7; //!
+  TH2D* h_tpc_match_pull_4_7; //!
+  TH2D* h_tpc_match_pull_0_7; //!
+  TH2D* h_tpc_match_pull_1_7; //!
+  TH2D* h_tpc_match_pull_3_7; //!
+  TH3D* h_tpc_constrain_tpc_0_2_3; //!
+
   AliPerformanceMatch(const AliPerformanceMatch&); // not implemented
   AliPerformanceMatch& operator=(const AliPerformanceMatch&); // not implemented
 
-  ClassDef(AliPerformanceMatch,3);
+  ClassDef(AliPerformanceMatch,8);
 };
 
 #endif

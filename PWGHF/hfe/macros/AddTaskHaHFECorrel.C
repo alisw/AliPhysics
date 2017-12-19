@@ -54,6 +54,8 @@ AliAnalysisTaskHaHFECorrel *AddTaskHaHFECorrel(Double_t period, Double_t MinPtEv
   printf("Loading RecEffFiles\n");
   TString RecEffFileName="alien:///alice/cern.ch/user/f/flherrma/HaHFECorrel/RecEff.root";
   TFile *RecEffFile = TFile::Open(RecEffFileName.Data());
+
+  //RecEffFile->ls();
   if (RecEffFile) {    
     TH3F * HadRecEff = (TH3F*)RecEffFile->Get("HadRecEff");
     TH3F * EleRecEff = (TH3F*)RecEffFile->Get("EleRecEff");

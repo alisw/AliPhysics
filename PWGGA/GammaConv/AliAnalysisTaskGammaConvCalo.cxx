@@ -881,6 +881,8 @@ void AliAnalysisTaskGammaConvCalo::UserCreateOutputObjects(){
   fHistoClusGammaPt                   = new TH1F*[fnCuts];
   fHistoClusGammaE                    = new TH1F*[fnCuts];
   fHistoClusOverlapHeadersGammaPt     = new TH1F*[fnCuts];
+  fHistoClusAllHeadersGammaPt         = new TH1F*[fnCuts];
+  fHistoClusRejectedHeadersGammaPt    = new TH1F*[fnCuts];
 
   if(fDoConvGammaShowerShapeTree){
     fGammaERM02               = new TList*[fnCuts];

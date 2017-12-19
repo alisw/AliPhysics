@@ -44,10 +44,6 @@ public:
     fHistSurvivedEtaPtPhiPlus(0),
     fHistGeneratedEtaPtPhiMinus(0),
     fHistSurvivedEtaPtPhiMinus(0),
-    fHistGeneratedEtaPtPlusControl(0),
-    fHistSurvivedEtaPtPlusControl(0),
-    fHistGeneratedEtaPtMinusControl(0),
-    fHistSurvivedEtaPtMinusControl(0),
     fUseCentrality(kFALSE),
     fCentralityEstimator("V0M"),
     fCentralityPercentileMin(0.0),
@@ -72,11 +68,10 @@ public:
     fEtaMax(0.8),
     fUsePIDNsigma(kFALSE),
     fUsePIDPDG(kFALSE),
+    fDCAextended(kFALSE),
     fPIDResponse(0),
     fPIDNSigma(3),
     fParticleOfInterest(kPion),
-    fHistSurvived4EtaPtPhiPlus(0),
-    fHistSurvived8EtaPtPhiPlus(0),
     fHistDCAXYptprimminus(0),
     fHistDCAXYptprimplus(0),
     fHistDCAXYptsecminusweak(0),
@@ -84,7 +79,15 @@ public:
     fHistDCAXYptsecminusmat(0),
     fHistDCAXYptsecplusmat(0),
     fHistDCAXYptchargedminus(0),
-    fHistDCAXYptchargedplus(0){}
+    fHistDCAXYptchargedplus(0),
+    fHistDCAXYptprimminus_ext(0),
+    fHistDCAXYptprimplus_ext(0),
+    fHistDCAXYptsecminusweak_ext(0),
+    fHistDCAXYptsecplusweak_ext(0),
+    fHistDCAXYptsecminusmat_ext(0),
+    fHistDCAXYptsecplusmat_ext(0),
+    fHistDCAXYptchargedminus_ext(0),
+    fHistDCAXYptchargedplus_ext(0){}
     AliAnalysisTaskPIDMCEffCont(const char *name);
     virtual ~AliAnalysisTaskPIDMCEffCont() {}
     
@@ -156,7 +159,9 @@ public:
         
         fPIDNSigma = nsigma;
     }
-    
+  
+    void USEextendedDCA() {fDCAextended = kTRUE;}
+
     enum kParticleOfInterest { kMuon, kElectron, kPion, kKaon, kProton };
     
     void setParticleType(kParticleOfInterest ptype){
@@ -194,31 +199,6 @@ private:
     TH3D        *fHistGeneratedEtaPtPhiMinus;//!correction map for negatives (generated)
     TH3D        *fHistSurvivedEtaPtPhiMinus;//!correction map negatives (survived)
     
-    TH2F        *fHistGeneratedEtaPtPlusControl;//!correction map for positives (generated)
-    TH2F        *fHistSurvivedEtaPtPlusControl;//!correction map positives (survived)
-    
-    TH2F        *fHistGeneratedEtaPtMinusControl;//!correction map for negatives (generated)
-    TH2F        *fHistSurvivedEtaPtMinusControl;//!correction map negatives (survived)
-    
-    // output histograms (pairs)
-    TH2F        *fHistGeneratedEtaPtPlusPlus;//!correction map for ++ (generated)
-    TH2F        *fHistSurvivedEtaPtPlusPlus;//!correction map ++ (survived)
-    
-    TH2F        *fHistGeneratedEtaPtMinusMinus;//!correction map for -- (generated)
-    TH2F        *fHistSurvivedEtaPtMinusMinus;//!correction map -- (survived)
-    
-    TH2F        *fHistGeneratedEtaPtPlusMinus;//!correction map for +- (generated)
-    TH2F        *fHistSurvivedEtaPtPlusMinus;//!correction map +- (survived)
-    
-    TH2F        *fHistGeneratedPhiEtaPlusPlus;//!correction map for ++ (generated)
-    TH2F        *fHistSurvivedPhiEtaPlusPlus;//!correction map ++ (survived)
-    
-    TH2F        *fHistGeneratedPhiEtaMinusMinus;//!correction map for -- (generated)
-    TH2F        *fHistSurvivedPhiEtaMinusMinus;//!correction map -- (survived)
-    
-    TH2F        *fHistGeneratedPhiEtaPlusMinus;//!correction map for +- (generated)
-    TH2F        *fHistSurvivedPhiEtaPlusMinus;//!correction map +- (survived)
-
     TH3F        *fHistDCAXYptprimminus;
     TH3F        *fHistDCAXYptprimplus;
     TH3F        *fHistDCAXYptsecminusweak;
@@ -227,6 +207,14 @@ private:
     TH3F        *fHistDCAXYptsecplusmat;
     TH3F        *fHistDCAXYptchargedminus;
     TH3F        *fHistDCAXYptchargedplus;
+    TH3F        *fHistDCAXYptprimminus_ext;
+    TH3F        *fHistDCAXYptprimplus_ext;
+    TH3F        *fHistDCAXYptsecminusweak_ext;
+    TH3F        *fHistDCAXYptsecplusweak_ext;
+    TH3F        *fHistDCAXYptsecminusmat_ext;
+    TH3F        *fHistDCAXYptsecplusmat_ext;
+    TH3F        *fHistDCAXYptchargedminus_ext;
+    TH3F        *fHistDCAXYptchargedplus_ext;
 
     Bool_t  fUseCentrality;// Bool_t use centrality or not
     TString fCentralityEstimator;//"V0M","TRK","TKL","ZDC","FMD"
@@ -235,6 +223,7 @@ private:
     Bool_t fInjectedSignals;//Flag for using the rejection of injected signals
     Bool_t fUsePIDNsigma;
     Bool_t fUsePIDPDG;
+    Bool_t fDCAextended;
 
     AliPIDResponse *fPIDResponse;     //! PID response object
     Bool_t   fElectronRejection;//flag to use electron rejection
@@ -257,9 +246,6 @@ private:
     
     Int_t fPIDNSigma;
     kParticleOfInterest fParticleOfInterest;
-    
-    TH3F        *fHistSurvived4EtaPtPhiPlus;//!
-    TH3F        *fHistSurvived8EtaPtPhiPlus;//!
     
     AliAnalysisTaskPIDMCEffCont(const AliAnalysisTaskPIDMCEffCont&); // not implemented
     AliAnalysisTaskPIDMCEffCont& operator=(const AliAnalysisTaskPIDMCEffCont&); // not implemented

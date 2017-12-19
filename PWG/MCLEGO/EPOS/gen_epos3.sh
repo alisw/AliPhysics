@@ -18,7 +18,7 @@ eval $(alienv printenv EPOS::v3.111-8)
 # prepare EPOS configuration
 OptnsEpos3="pp"
 ENERGY="7000"
-MAXEPOSEVENTS=100
+MAXEPOSEVENTS=50
 EPOSNFREEZE=10
 
 cp ${ALICE_PHYSICS}/PWG/MCLEGO/EPOS/${OptnsEpos3}.optns .
@@ -28,7 +28,7 @@ sed -i "s/\(nfull\)\(\s\+[0-9]\+\)/\1 $(( $MAXEPOSEVENTS / $EPOSNFREEZE ))/g" ${
 sed -i "s/\(nfreeze\)\(\s\+[0-9]\+\)/\1 $EPOSNFREEZE/g" ${OptnsEpos3}.optns
 
 # generate events and alternate between two files
-until true; do
+until false; do
     epos $OptnsEpos3 > epos.out 2> epos.err;
     if [ ! -f $EPOSFILE1 ]; then
 	mv z-${OptnsEpos3}.root $EPOSFILE1;

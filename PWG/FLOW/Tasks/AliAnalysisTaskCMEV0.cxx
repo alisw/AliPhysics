@@ -139,6 +139,7 @@ AliAnalysisTaskCMEV0::AliAnalysisTaskCMEV0(const TString name):AliAnalysisTaskSE
   fCentDistvsRun(NULL),
   fHCorrectV0M(NULL),
   fCentV0MvsVzRun(NULL),
+  fCent3pvsVzRun(NULL),
   fCentCL1vsVzRun(NULL)
 {
   for(int i=0;i<4;i++){
@@ -355,6 +356,7 @@ AliAnalysisTaskCMEV0::AliAnalysisTaskCMEV0(): AliAnalysisTaskSE(),
   fCentDistvsRun(NULL),
   fHCorrectV0M(NULL),
   fCentV0MvsVzRun(NULL),
+  fCent3pvsVzRun(NULL),
   fCentCL1vsVzRun(NULL)
 {
   for(int i=0;i<4;i++){
@@ -1030,6 +1032,7 @@ void AliAnalysisTaskCMEV0::UserExec(Option_t *)
      }
    }
 
+   if (ptw1>1e3) ptw1 = 1.0;
 
    /*
     if(bFillAvgTPCQn) { //fill TPC Q-vect: 
@@ -1231,6 +1234,7 @@ void AliAnalysisTaskCMEV0::UserExec(Option_t *)
        }
      }
 
+     if (ptw2>1e3) ptw1 = 1.0;
 
 
      if(bApplyNUACorr) {
@@ -1268,6 +1272,10 @@ void AliAnalysisTaskCMEV0::UserExec(Option_t *)
      if(dChrg1!=dChrg2){
        fHist_Corr3p_EP_Norm_PN[QAindex][0]->Fill(EvtCent, TMath::Cos(n*dPhi1 + m*dPhi2 - p*Psi2V0A),WgtEP);
        fHist_Corr3p_EP_Norm_PN[QAindex][1]->Fill(EvtCent, TMath::Cos(n*dPhi1 + m*dPhi2 - p*Psi2V0C),WgtEP);
+
+       if(EvtCent>=10. && EvtCent<20){
+         fCent3pvsVzRun->Fill(VtxZ,runindex,TMath::Cos(n*dPhi1 + m*dPhi2 - p*Psi2V0A));
+       }
 
        //fHist_Corr3p_vsRun_EP_PN[0]->Fill(EvtCent, runindex, TMath::Cos(n*dPhi1 + m*dPhi2 - p*Psi2V0A),WgtEP);
        //fHist_Corr3p_vsRun_EP_PN[1]->Fill(EvtCent, runindex, TMath::Cos(n*dPhi1 + m*dPhi2 - p*Psi2V0C),WgtEP);
@@ -1337,6 +1345,13 @@ void AliAnalysisTaskCMEV0::UserExec(Option_t *)
 
  fCentDistvsRun->Fill(EvtCent,runindex);
 
+
+ if(EvtCent<=20){
+   fCentV0MvsVzRun->Fill(VtxZ,runindex,EvtCent);
+   fCentCL1vsVzRun->Fill(VtxZ,runindex,(centrCL1-EvtCent));
+ }
+
+
  Double_t QTPCRe = QxTPC[1];
  Double_t QTPCIm = QyTPC[1];
 
@@ -1352,10 +1367,6 @@ void AliAnalysisTaskCMEV0::UserExec(Option_t *)
  fTPCQnxVsCentRun->Fill(EvtCent,runindex,TMath::Cos(Psi2TPC));
  fTPCQnyVsCentRun->Fill(EvtCent,runindex,TMath::Sin(Psi2TPC));//centrCL1
 
-
- fCentV0MvsVzRun->Fill(VtxZ,runindex,EvtCent);
-
- fCentCL1vsVzRun->Fill(VtxZ,runindex,centrCL1);
 
 
 
@@ -2389,7 +2400,7 @@ Bool_t AliAnalysisTaskCMEV0::CheckEventIsPileUp(AliAODEvent *faod) {
          fPileUpCount->Fill(3.5);
          BisPileup=kTRUE;
       }
-      if(fabs(centrV0M-centrCL1)>7.5)  {
+      if(fabs(centrV0M-centrCL1)> 2.5)  {//default: 7.5
          fPileUpCount->Fill(4.5);
          BisPileup=kTRUE;
       }
@@ -2453,7 +2464,7 @@ Bool_t AliAnalysisTaskCMEV0::CheckEventIsPileUp(AliAODEvent *faod) {
         fPileUpCount->Fill(7.5);
         BisPileup=kTRUE;
         }*/
-      if(multESDTPCDif > 15000.){
+      if(multESDTPCDif > 1500.){ //default: 15000
         fPileUpCount->Fill(7.5);
         BisPileup=kTRUE;
       }
@@ -2890,10 +2901,13 @@ void AliAnalysisTaskCMEV0::DefineHistograms(){
 
 
   fCentV0MvsVzRun =  new TProfile2D("fCentV0MvsVzRun","",100,-10,10,fRunFlag,0,fRunFlag);
-  fListHistos->Add(fCentV0MvsVzRun);
+  fListCalibs->Add(fCentV0MvsVzRun);
 
-  fCentCL1vsVzRun =  new TProfile2D("fCentCL1vsVzRun","",100,-10,10,fRunFlag,0,fRunFlag);
-  fListHistos->Add(fCentCL1vsVzRun);
+  fCent3pvsVzRun =  new TProfile2D("fCent3pvsVzRun","",100,-10,10,fRunFlag,0,fRunFlag);
+  fListCalibs->Add(fCent3pvsVzRun);
+
+  fCentCL1vsVzRun =  new TH3F("fCentCL1vsVzRun","",80,-10,10,fRunFlag,0,fRunFlag,20,-10,10);
+  fListCalibs->Add(fCentCL1vsVzRun);
 
 
 

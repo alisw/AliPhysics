@@ -925,31 +925,37 @@ void AliReducedVarManager::FillITSlayerFlag(TRACK* track, Int_t layer, Float_t* 
 }
 
 //_________________________________________________________________
-void AliReducedVarManager::FillL0TriggerInputs(EVENT* event, Int_t input, Float_t* values) {
+void AliReducedVarManager::FillL0TriggerInputs(EVENT* event, Int_t input, Float_t* values, Int_t input2 /*=999*/) {
   //
   // fill the L0 trigger inputs
   //
   values[kL0TriggerInput] = -1.0;
   if(fgUsedVars[kL0TriggerInput] && event->L0TriggerInput(input)) values[kL0TriggerInput] = input;
+  values[kL0TriggerInput2] = -1.0;
+  if(fgUsedVars[kL0TriggerInput2] && event->L0TriggerInput(input2)) values[kL0TriggerInput2] = input2;
 }
 
 
 //_________________________________________________________________
-void AliReducedVarManager::FillL1TriggerInputs(EVENT* event, Int_t input, Float_t* values) {
+void AliReducedVarManager::FillL1TriggerInputs(EVENT* event, Int_t input, Float_t* values, Int_t input2 /*=999*/) {
   //
   // fill the L1 trigger inputs
   //
   values[kL1TriggerInput] = -1.0;
   if(fgUsedVars[kL1TriggerInput] && event->L1TriggerInput(input)) values[kL1TriggerInput] = input;
+  values[kL1TriggerInput2] = -1.0;
+  if(fgUsedVars[kL1TriggerInput2] && event->L1TriggerInput(input2)) values[kL1TriggerInput2] = input2;
 }
 
 //_________________________________________________________________
-void AliReducedVarManager::FillL2TriggerInputs(EVENT* event, Int_t input, Float_t* values) {
+void AliReducedVarManager::FillL2TriggerInputs(EVENT* event, Int_t input, Float_t* values, Int_t input2 /*=999*/) {
   //
   // fill the L2 trigger inputs
   //
   values[kL2TriggerInput] = -1.0;
   if(fgUsedVars[kL2TriggerInput] && event->L2TriggerInput(input)) values[kL2TriggerInput] = input;
+  values[kL2TriggerInput2] = -1.0;
+  if(fgUsedVars[kL2TriggerInput2] && event->L2TriggerInput(input2)) values[kL2TriggerInput2] = input2;
 }
 
 //_________________________________________________________________
@@ -1004,30 +1010,36 @@ void AliReducedVarManager::FillTrackingFlag(TRACK* track, UInt_t flag, Float_t* 
 }
 
 //_________________________________________________________________
-void AliReducedVarManager::FillTrackQualityFlag(BASETRACK* track, UShort_t flag, Float_t* values) {
+void AliReducedVarManager::FillTrackQualityFlag(BASETRACK* track, UShort_t flag, Float_t* values, UShort_t flag2 /*=999*/) {
   //
   // fill the track quality flag
   //
   values[kTrackQualityFlag] = -1;
   if(track->TestQualityFlag(flag)) values[kTrackQualityFlag] = flag;
+  values[kTrackQualityFlag2] = -1;
+  if(track->TestQualityFlag(flag2)) values[kTrackQualityFlag2] = flag2;
 }
 
 //_________________________________________________________________
-void AliReducedVarManager::FillTrackMCFlag(BASETRACK* track, UShort_t flag, Float_t* values) {
+void AliReducedVarManager::FillTrackMCFlag(BASETRACK* track, UShort_t flag, Float_t* values, UShort_t flag2 /*=999*/) {
    //
    // fill the track MC flag
    //
    values[kTrackMCFlag] = -1;
    if(flag<32 && track->TestMCFlag(flag)) values[kTrackMCFlag] = flag;
+   values[kTrackMCFlag2] = -1;
+   if(flag2<32 && track->TestMCFlag(flag2)) values[kTrackMCFlag2] = flag2;
 }
 
 //_________________________________________________________________
-void AliReducedVarManager::FillPairQualityFlag(PAIR* p, UShort_t flag, Float_t* values) {
+void AliReducedVarManager::FillPairQualityFlag(PAIR* p, UShort_t flag, Float_t* values, UShort_t flag2 /*=999*/) {
   //
   // fill the pair quality flag
   //
   values[kPairQualityFlag] = -1;
   if(p->TestQualityFlag(flag)) values[kPairQualityFlag] = flag;
+  values[kPairQualityFlag2] = -1;
+  if(p->TestQualityFlag(flag2)) values[kPairQualityFlag2] = flag2;
 }
 
 //_________________________________________________________________
@@ -1041,16 +1053,18 @@ void AliReducedVarManager::FillEventOnlineTriggers(AliReducedEventInfo* event, F
 }
 
 //_________________________________________________________________
-void AliReducedVarManager::FillEventOnlineTrigger(UShort_t triggerBit, Float_t* values) {
+void AliReducedVarManager::FillEventOnlineTrigger(UShort_t triggerBit, Float_t* values, UShort_t triggerBit2 /*=999*/) {
   //
   // fill the trigger bit input
+  //  The second trigger bit (triggerBit2) is used for correlation histograms between the different trigger inputs
   //
   if(triggerBit>=64) return;
   if(!fgEvent) return;
-  ULong64_t trigger = 1;
   values[kOnlineTrigger] = triggerBit;
-  values[kOnlineTriggerFired] = (((AliReducedEventInfo*)fgEvent)->TriggerMask()&(trigger<<triggerBit) ? 1.0 : 0.0);
-  values[kOnlineTriggerFired2] = (values[kOnlineTriggerFired]>0.01 ? triggerBit : -1.0); 
+  values[kOnlineTriggerFired] = (((AliReducedEventInfo*)fgEvent)->TriggerMask()&(ULong_t(1)<<triggerBit) ? triggerBit : -1.0);
+  values[kOnlineTriggerFired2] = 0.0;
+  if(triggerBit<64)
+     values[kOnlineTriggerFired2] = (((AliReducedEventInfo*)fgEvent)->TriggerMask()&(ULong_t(1)<<triggerBit2) ? triggerBit2 : -1.0);
 }
 
 //_________________________________________________________________
@@ -2002,9 +2016,12 @@ void AliReducedVarManager::SetDefaultVarNames() {
   
   fgVariableNames[kEventTag]             = "Event tag";                       fgVariableUnits[kEventTag]             = "";
   fgVariableNames[kEventNumberInFile]    = "Event no. in ESD file";           fgVariableUnits[kEventNumberInFile]    = "";
-  fgVariableNames[kL0TriggerInput]       = "L0 trigger inputs";               fgVariableUnits[kL0TriggerInput]       = "";
-  fgVariableNames[kL1TriggerInput]       = "L1 trigger inputs";               fgVariableUnits[kL1TriggerInput]       = "";
-  fgVariableNames[kL2TriggerInput]       = "L2 trigger inputs";               fgVariableUnits[kL2TriggerInput]       = "";
+  fgVariableNames[kL0TriggerInput]       = "  ";               fgVariableUnits[kL0TriggerInput]       = "";
+  fgVariableNames[kL1TriggerInput]       = "  ";               fgVariableUnits[kL1TriggerInput]       = "";
+  fgVariableNames[kL2TriggerInput]       = "  ";               fgVariableUnits[kL2TriggerInput]       = "";
+  fgVariableNames[kL0TriggerInput2]       = "  ";               fgVariableUnits[kL0TriggerInput2]       = "";
+  fgVariableNames[kL1TriggerInput2]       = "  ";               fgVariableUnits[kL1TriggerInput2]       = "";
+  fgVariableNames[kL2TriggerInput2]       = "  ";               fgVariableUnits[kL2TriggerInput2]       = "";
   fgVariableNames[kRunNo]                = "Run number";                      fgVariableUnits[kRunNo]                = "";
   fgVariableNames[kRunID]                = "Run number";                      fgVariableUnits[kRunID]                = "";
   fgVariableNames[kLHCFillNumber]        = "LHC fill number";                 fgVariableUnits[kLHCFillNumber]        = ""; 
@@ -2025,8 +2042,8 @@ void AliReducedVarManager::SetDefaultVarNames() {
   fgVariableNames[kEventType]            = "Event type";                      fgVariableUnits[kEventType]            = "";
   fgVariableNames[kTriggerMask]          = "Trigger mask";                    fgVariableUnits[kTriggerMask]          = "";
   fgVariableNames[kOnlineTrigger]        = "Online trigger";                  fgVariableUnits[kOnlineTrigger]        = "";
-  fgVariableNames[kOnlineTriggerFired]   = "Online trigger fired";            fgVariableUnits[kOnlineTriggerFired]   = "";
-  fgVariableNames[kOnlineTriggerFired2]  = "Online trigger fired2";           fgVariableUnits[kOnlineTriggerFired2]  = "";
+  fgVariableNames[kOnlineTriggerFired]   = "  ";            fgVariableUnits[kOnlineTriggerFired]   = "";
+  fgVariableNames[kOnlineTriggerFired2]  = "  ";           fgVariableUnits[kOnlineTriggerFired2]  = "";
   fgVariableNames[kIsPhysicsSelection]   = "Physics selection ON";            fgVariableUnits[kIsPhysicsSelection]   = "";
   fgVariableNames[kIsSPDPileup]          = "SPD pileup ON";                   fgVariableUnits[kIsSPDPileup]          = "";
   fgVariableNames[kIsSPDPileup5]          = "SPD pileup (5 contributors) ON";                   fgVariableUnits[kIsSPDPileup5]          = "";

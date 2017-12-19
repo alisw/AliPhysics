@@ -101,6 +101,7 @@ AliAnalysisTaskReducedTreeMaker::AliAnalysisTaskReducedTreeMaker() :
   fTreeWritingOption(kBaseEventsWithBaseTracks),
   fWriteTree(kTRUE),
   fWriteEventsWithNoSelectedTracks(kTRUE),
+  fMinSelectedTracks(1),
   fWriteEventsWithNoSelectedTracksAndNoSelectedAssociatedTracks(kTRUE),
   fScaleDownEventsWithNoSelectedTracks(0.0),
   fWriteSecondTrackArray(kFALSE),
@@ -170,6 +171,7 @@ AliAnalysisTaskReducedTreeMaker::AliAnalysisTaskReducedTreeMaker(const char *nam
   fTreeWritingOption(kBaseEventsWithBaseTracks),
   fWriteTree(writeTree),
   fWriteEventsWithNoSelectedTracks(kTRUE),
+  fMinSelectedTracks(1),
   fWriteEventsWithNoSelectedTracksAndNoSelectedAssociatedTracks(kTRUE),
   fScaleDownEventsWithNoSelectedTracks(0.0),
   fWriteSecondTrackArray(kFALSE),
@@ -405,7 +407,8 @@ void AliAnalysisTaskReducedTreeMaker::UserCreateOutputObjects()
     PostData(2, fTree);
     PostData(3, fEventsHistogram);
     PostData(4, fTracksHistogram);
-    PostData(5, fMCSignalsHistogram);
+    if(fFillMCInfo)
+       PostData(5, fMCSignalsHistogram);
   }
 }
 
@@ -511,7 +514,7 @@ void AliAnalysisTaskReducedTreeMaker::UserExec(Option_t *option)
     Bool_t writeEvent = kFALSE;
     Int_t nTracks = fReducedEvent->fTracks->GetEntries();
     Int_t nTracks2 = fReducedEvent->fTracks2->GetEntries();
-    if(nTracks>0) {
+    if(nTracks>=fMinSelectedTracks) {
        writeEvent = kTRUE;
        // event statistics, event with tracks -> written
        for(Int_t i=0;i<32;++i) 
@@ -548,12 +551,12 @@ void AliAnalysisTaskReducedTreeMaker::UserExec(Option_t *option)
       }  // end else (nTracks2==0)
     }  // end else(nTracks==0)
     
-    if(!writeEvent && nTracks==0 && nTracks2==0) {
+    if(!writeEvent && nTracks<fMinSelectedTracks && nTracks2==0) {
        // event statistics, event with no POI tracks, and no assoc tracks -> NOT written
        for(Int_t i=0;i<32;++i) 
           if(inputHandler->IsEventSelected() & (UInt_t(1)<<i)) fEventsHistogram->Fill(5.,Double_t(i));
     }
-    if(!writeEvent && nTracks==0) {
+    if(!writeEvent && nTracks<fMinSelectedTracks) {
        // event statistics, event with no POI tracks (may have assoc tracks) -> NOT written
        for(Int_t i=0;i<32;++i) 
           if(inputHandler->IsEventSelected() & (UInt_t(1)<<i)) fEventsHistogram->Fill(4.,Double_t(i));
@@ -567,7 +570,8 @@ void AliAnalysisTaskReducedTreeMaker::UserExec(Option_t *option)
     PostData(2, fTree);
     PostData(3, fEventsHistogram);
     PostData(4, fTracksHistogram);
-    PostData(5, fMCSignalsHistogram);
+    if(fFillMCInfo)
+      PostData(5, fMCSignalsHistogram);
   }
 }
 
@@ -1285,7 +1289,6 @@ void AliAnalysisTaskReducedTreeMaker::FillMCTruthInfo()
       //AliVParticle* particle = mcHandler->GetMCTrackFromMCEvent(i);
       AliVParticle* particle = event->GetTrack(i);
       if(!particle) continue;
-      if(!(particle->PdgCode()==443 || (TMath::Abs(particle->PdgCode())>500 && TMath::Abs(particle->PdgCode())<600))) continue;
       UInt_t mcSignalsMap = MatchMCsignals(i);    // check which MC signals match this particle and fill the bit map
       if(!mcSignalsMap) continue;
       

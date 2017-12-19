@@ -58,6 +58,7 @@ fHistPtEtaCent(0),
 fHistPtPhiCent(0),
 fUseOfflineTrigger(kFALSE),
 fUseOutOfBunchPileUpCutsLHC15o(kFALSE),
+fDCAext(kFALSE),
 fUsePID(kFALSE),
 fVxMax(0.3), fVyMax(0.3), fVzMax(10.),
 fAODtrackCutBit(128),
@@ -70,7 +71,9 @@ fUtils(0),
 fHistEtaPhiVertexPlus(0),
 fHistEtaPhiVertexMinus(0),
 fHistDCAXYptchargedminus(0),
-fHistDCAXYptchargedplus(0){
+fHistDCAXYptchargedplus(0),
+fHistDCAXYptchargedminus_ext(0),
+fHistDCAXYptchargedplus_ext(0){
     // Constructor
     
     // Define input and output slots here
@@ -186,12 +189,15 @@ void AliAnalysisTaskAccCont::UserCreateOutputObjects() {
     
     fHistDCAXYptchargedminus = new TH3F("fHistDCAxychargedminus","DCA_{xy} vs pt for charged particles (negative);p_{T} [GeV/c];#eta;DCA_{xy}",100,0,10,16,-0.8,0.8,1000,-0.5,0.5);
     fHistDCAXYptchargedplus = new TH3F("fHistDCAxychargedplus","DCA_{xy} vs pt for charged particles (positive);p_{T} [GeV/c];#eta;DCA_{xy}",100,0,10,16,-0.8,0.8,1000,-0.5,0.5);
-    
+    fHistDCAXYptchargedminus_ext = new TH3F("fHistDCAxychargedminusext","DCA_{xy} vs pt for charged particles (negative);p_{T} [GeV/c];#eta;DCA_{xy}",100,0,10,16,-0.8,0.8,1000,-4,4);
+    fHistDCAXYptchargedplus_ext = new TH3F("fHistDCAxychargedplusext","DCA_{xy} vs pt for charged particles (positive);p_{T} [GeV/c];#eta;DCA_{xy}",100,0,10,16,-0.8,0.8,1000,-4,4);
+     
     fListResults->Add(fHistEtaPhiVertexPlus);
     fListResults->Add(fHistEtaPhiVertexMinus);
     fListResults->Add(fHistDCAXYptchargedminus);
     fListResults->Add(fHistDCAXYptchargedplus);
-    
+    fListResults->Add(fHistDCAXYptchargedminus_ext);
+    fListResults->Add(fHistDCAXYptchargedplus_ext);
     
     // Post output data
     PostData(1, fListQA);
@@ -315,8 +321,7 @@ void AliAnalysisTaskAccCont::UserExec(Option_t *) {
                                        
 					if( eta < fEtaMin || eta > fEtaMax) continue;
                                         if( pt < fPtMin || pt > fPtMax) continue;
- 
-						
+				 		
                                         if(fUsePID) {
 						
 					    Float_t probMis = fPIDResponse->GetTOFMismatchProbability(aodTrack);                                            
@@ -387,7 +392,6 @@ void AliAnalysisTaskAccCont::UserExec(Option_t *) {
 					}//end probability check
 					
 					}//end PID			
-
 					
                                         fHistPt->Fill(pt);
                                         fHistPtbin->Fill(pt);
@@ -409,18 +413,69 @@ void AliAnalysisTaskAccCont::UserExec(Option_t *) {
                                         
                                         Double_t  dca[2] = {0.0,0.0};
                                         Double_t  cov[3] = {0.0,0.0,0.0};
+
+				        AliAODTrack copy(*aodTrack);
                                         
-                                        if (!aodTrack->PropagateToDCA(vertex,gAOD->GetMagneticField(),300.,dca,cov))
-                                            continue;
-                                        
+                                        if (fAODtrackCutBit==768){
+                                		if (aodTrack->TestFilterBit(256)){
+                                			if (!copy.PropagateToDCA(vertex,gAOD->GetMagneticField(),300.,dca,cov))
+                                			continue;
+                                		}
+                                	}
+
+                                	else {
+                                		if (!copy.PropagateToDCA(vertex,gAOD->GetMagneticField(),300.,dca,cov))
+                                		continue;
+                                	}
+
+					                                       
                                         if (charge>0){
-                                            fHistEtaPhiVertexPlus->Fill(phi,eta,vertex->GetZ());
-                                            fHistDCAXYptchargedplus->Fill(pt,eta,dca[0]);
-                                        }
+                                        	fHistEtaPhiVertexPlus->Fill(phi,eta,vertex->GetZ());
+                                            	if (fAODtrackCutBit==768){
+                                                	if (fDCAext){
+                                                        	if (aodTrack->TestFilterBit(512))
+									fHistDCAXYptchargedplus_ext->Fill(pt,eta,aodTrack->DCA());
+                                        			else if (aodTrack->TestFilterBit(256))
+									fHistDCAXYptchargedplus_ext->Fill(pt,eta,dca[0]);	
+							}
+							else if (!fDCAext) {
+                                                        	if (aodTrack->TestFilterBit(512))
+									fHistDCAXYptchargedplus->Fill(pt,eta,aodTrack->DCA());
+								else if (aodTrack->TestFilterBit(256))
+									fHistDCAXYptchargedplus->Fill(pt,eta,dca[0]);
+                                                        }
+						}
+						else {
+                                                	if (fDCAext)
+								fHistDCAXYptchargedplus_ext->Fill(pt,eta,dca[0]);
+							else if (!fDCAext)
+								fHistDCAXYptchargedplus->Fill(pt,eta,dca[0]);
+						}
+					}
                                         else if (charge<0){
-                                            fHistEtaPhiVertexMinus->Fill(phi,eta,vertex->GetZ());
-                                            fHistDCAXYptchargedminus->Fill(pt,eta,dca[0]);
-                                        }
+                                        	fHistEtaPhiVertexMinus->Fill(phi,eta,vertex->GetZ());
+                                        	if (fAODtrackCutBit==768){ 
+					   		if (fDCAext){
+								if (aodTrack->TestFilterBit(512))	
+									fHistDCAXYptchargedminus_ext->Fill(pt,eta,aodTrack->DCA());
+								else if (aodTrack->TestFilterBit(256))	
+									fHistDCAXYptchargedminus_ext->Fill(pt,eta,dca[0]);
+                                        		}
+							else if (!fDCAext) {
+								if (aodTrack->TestFilterBit(512))
+									fHistDCAXYptchargedminus->Fill(pt,eta,aodTrack->DCA());
+								else if (aodTrack->TestFilterBit(256))
+									fHistDCAXYptchargedminus->Fill(pt,eta,dca[0]);
+							}
+						}
+						else {
+                                                        if (fDCAext)
+								fHistDCAXYptchargedminus_ext->Fill(pt,eta,dca[0]);
+							else if (!fDCAext)
+								fHistDCAXYptchargedminus->Fill(pt,eta,dca[0]);
+						}	
+					}
+		
                                         nAcceptedTracks += 1;
                                     } //track loop
                                     fHistMultiplicity->Fill(gCentrality,nAcceptedTracks);

@@ -205,8 +205,11 @@ class AliReducedVarManager : public TObject {
     kEventTag = kNRunWiseVariables,      // event tag
     kEventNumberInFile, // event number in file
     kL0TriggerInput,    // L0 trigger input
+    kL0TriggerInput2,    // L0 trigger input, used for correlations between inputs
     kL1TriggerInput,    // L1 trigger input
+    kL1TriggerInput2,    // L1 trigger input, used for correlations between inputs
     kL2TriggerInput,    // L2 trigger input
+    kL2TriggerInput2,    // L2 trigger input, used for correlations between inputs
     kRunNo,             // run number         
     kRunID,             // variable for easy filling of histograms vs. run number, without empty bins
     kBeamEnergy,        // LHC beam energy
@@ -459,6 +462,7 @@ class AliReducedVarManager : public TObject {
     kPairThetaHE,                // cos (theta*) in helicity frame       
     kPairPhiHE,                    // phi* in helicity frame
     kPairQualityFlag,
+    kPairQualityFlag2,
     kDMA,                        // Distance of minimal approach
     kPairPhiV,                   // angle between pair plane and magnetic field
     kPairDca,                    // pair DCA: sqare root of quadratic sum of daughter DCAs
@@ -539,7 +543,9 @@ class AliReducedVarManager : public TObject {
     // Track flags -----------------------------------------------------
     kTrackingFlag,
     kTrackQualityFlag,
+    kTrackQualityFlag2,
     kTrackMCFlag,
+    kTrackMCFlag2,
     // Correlation variables ----------------------------------------------
     kDeltaPhi,          
     kDeltaTheta,        
@@ -582,15 +588,15 @@ class AliReducedVarManager : public TObject {
   static void FillEventInfo(Float_t* values);
   static void FillEventInfo(AliReducedBaseEvent* event, Float_t* values, AliReducedEventPlaneInfo* eventPlane=0x0);
   static void FillEventOnlineTriggers(AliReducedEventInfo* event, Float_t* values);
-  static void FillEventOnlineTrigger(UShort_t triggerBit, Float_t* values);
+  static void FillEventOnlineTrigger(UShort_t triggerBit, Float_t* values, UShort_t triggerBit2=999);
   static void FillEventTagInput(AliReducedBaseEvent* event, Int_t input, Float_t* values);
-  static void FillL0TriggerInputs(AliReducedEventInfo* event, Int_t input, Float_t* values);
-  static void FillL1TriggerInputs(AliReducedEventInfo* event, Int_t input, Float_t* values);
-  static void FillL2TriggerInputs(AliReducedEventInfo* event, Int_t input, Float_t* values);
+  static void FillL0TriggerInputs(AliReducedEventInfo* event, Int_t input, Float_t* values, Int_t input2=999);
+  static void FillL1TriggerInputs(AliReducedEventInfo* event, Int_t input, Float_t* values, Int_t input2=999);
+  static void FillL2TriggerInputs(AliReducedEventInfo* event, Int_t input, Float_t* values, Int_t input2=999);
   static void FillTrackingFlag(AliReducedTrackInfo* track, UInt_t flag, Float_t* values);
-  static void FillTrackQualityFlag(AliReducedBaseTrack* track, UShort_t flag, Float_t* values);
-  static void FillTrackMCFlag(AliReducedBaseTrack* track, UShort_t flag, Float_t* values);
-  static void FillPairQualityFlag(AliReducedPairInfo* p, UShort_t flag, Float_t* values);
+  static void FillTrackQualityFlag(AliReducedBaseTrack* track, UShort_t flag, Float_t* values, UShort_t flag2=999);
+  static void FillTrackMCFlag(AliReducedBaseTrack* track, UShort_t flag, Float_t* values, UShort_t flag2=999);
+  static void FillPairQualityFlag(AliReducedPairInfo* p, UShort_t flag, Float_t* values, UShort_t flag2=999);
   static void FillTrackInfo(AliReducedBaseTrack* p, Float_t* values);
   static void FillITSlayerFlag(AliReducedTrackInfo* track, Int_t layer, Float_t* values);
   static void FillTPCclusterBitFlag(AliReducedTrackInfo* track, Int_t bit, Float_t* values);
