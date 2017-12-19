@@ -98,7 +98,7 @@ class AliAnalysisTaskValidation : public AliAnalysisTaskSE {
   TList *fOutputList;  //!
 
   void UserExec(Option_t *);
-
+  Bool_t UserNotify();
   /// Create QA histograms based on the set validators
   void CreateQAHistograms(TList* outlist);
   /// Histogram showing why an even got discarded to be read from left to right
