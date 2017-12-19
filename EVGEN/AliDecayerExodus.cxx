@@ -339,6 +339,11 @@ Double_t AliDecayerExodus::Lorentz(Float_t mass, Double_t vmass, Double_t vwidth
 // using Lorentz function
 
   Double_t weight;
+
+  if( vwidth < 1e-6 ){
+    AliWarning(Form("Width = %f (Mass = %f) < 1e-6, set to 1e-6",vwidth,vmass));
+    vwidth = 1e-6;
+  }
   
   weight = (vwidth*vwidth/4.0)/(vwidth*vwidth/4.0+(vmass-mass)*(vmass-mass));
 
