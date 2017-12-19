@@ -368,13 +368,12 @@ void AliAnalysisTaskGammaHadron::UserCreateOutputObjects()
     maxThn[dimThn] = SeMeBinArray[nSeMeBins];
     dimThn++;
 */
+    static const Int_t nEvtPlaneBins=3;
+    Double_t evtPlaneArray[nEvtPlaneBins+1] = {0,1,2,3};// = {In Plane, MP, Out of Plane};
+    static const Int_t nCentHistBins=4;
+    Double_t centBinArray[nCentHistBins+1]  = {0.0,10.0,30.0,60.0,100.0};
     if(fForceBeamType != AliAnalysisTaskEmcal::kpp)
     {
-     	static const Int_t nEvtPlaneBins=3;
-    		Double_t evtPlaneArray[nEvtPlaneBins+1] = {0,1,2,3};// = {In Plane, MP, Out of Plane};
-        static const Int_t nCentHistBins=4;
-     	Double_t centBinArray[nCentHistBins+1]  = {0.0,10.0,30.0,60.0,100.0};
-
      	//..Event plane
      	titleThn[dimThn] = "IP(0), MP(1), OP(2)";
      	nbinsThn[dimThn] = nEvtPlaneBins;
@@ -644,8 +643,8 @@ void AliAnalysisTaskGammaHadron::UserCreateOutputObjects()
     }
 
     Double_t EPArray[100+1];
-    static const Int_t nCentHistBins=4;
-    Double_t centBinArray[nCentHistBins+1]  = {0.0,10.0,30.0,60.0,100.0};
+//    static const Int_t nCentHistBins=4; // These are define already now
+//    Double_t centBinArray[nCentHistBins+1]  = {0.0,10.0,30.0,60.0,100.0};
 
     if(fPlotQA==2)
     {
