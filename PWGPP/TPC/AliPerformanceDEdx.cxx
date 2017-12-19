@@ -251,7 +251,7 @@ void AliPerformanceDEdx::ProcessInnerTPC(AliMCEvent* const mcev, AliVTrack *cons
     if( IsUseTrackVertex() ) {
         // Relate TPC inner params to prim. vertex
         AliESDVertex vertex;
-        vEvent->GetPrimaryVertex(vertex);
+        vEvent->GetPrimaryVertexTracks(vertex);
         const AliVVertex *vVertex = &vertex;
         Double_t x[3]; etpTrack->GetXYZ(x);
         Double_t b[3]; AliTracker::GetBxByBz(x,b);
