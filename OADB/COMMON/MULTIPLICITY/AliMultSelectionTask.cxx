@@ -2436,8 +2436,13 @@ TString AliMultSelectionTask::GetPeriodNameByRunNumber() const
     if ( fCurrentRun >= 264076 && fCurrentRun <= 264347 ) lProductionName = "LHC16p";
 
     //2017
+    if ( fCurrentRun >= 270531 && fCurrentRun <= 270667 ) lProductionName = "LHC17c";
     if ( fCurrentRun >= 270822 && fCurrentRun <= 270830 ) lProductionName = "LHC17e";
+    if ( fCurrentRun >= 270854 && fCurrentRun <= 270865 ) lProductionName = "LHC17f";
+    if ( fCurrentRun >= 270882 && fCurrentRun <= 271777 ) lProductionName = "LHC17g";
     if ( fCurrentRun >= 273591 && fCurrentRun <= 274442 ) lProductionName = "LHC17i"; 
+    if ( fCurrentRun >= 274593 && fCurrentRun <= 274671 ) lProductionName = "LHC17j";
+    if ( fCurrentRun >= 282008 && fCurrentRun <= 282343 ) lProductionName = "LHC17p"; 
     
     //Registered Productions : Run 2 Pb-Pb
     if ( fCurrentRun >= 243395 && fCurrentRun <= 243984 ) lProductionName = "LHC15m";
@@ -2488,6 +2493,8 @@ TString AliMultSelectionTask::GetSystemTypeByRunNumber() const
     if ( fCurrentRun >= 244340 && fCurrentRun <= 244628 ) lSystemType = "pp";
     
     //2016
+    if ( fCurrentRun >= 252235 && fCurrentRun <= 252375 ) lSystemType = "pp";
+    if ( fCurrentRun >= 252603 && fCurrentRun <= 253591 ) lSystemType = "pp";
     if ( fCurrentRun >= 254124 && fCurrentRun <= 254332 ) lSystemType = "pp";
     if ( fCurrentRun >= 254378 && fCurrentRun <= 255467 ) lSystemType = "pp";
     if ( fCurrentRun >= 255515 && fCurrentRun <= 255618 ) lSystemType = "pp";
@@ -2499,7 +2506,13 @@ TString AliMultSelectionTask::GetSystemTypeByRunNumber() const
     if ( fCurrentRun >= 264076 && fCurrentRun <= 264347 ) lSystemType = "pp";
     
     //2017
+    if ( fCurrentRun >= 270531 && fCurrentRun <= 270667 ) lSystemType = "pp";
     if ( fCurrentRun >= 270822 && fCurrentRun <= 270830 ) lSystemType = "pp";
+    if ( fCurrentRun >= 270854 && fCurrentRun <= 270865 ) lSystemType = "pp";
+    if ( fCurrentRun >= 270882 && fCurrentRun <= 271777 ) lSystemType = "pp";
+    if ( fCurrentRun >= 273591 && fCurrentRun <= 274442 ) lSystemType = "pp"; 
+    if ( fCurrentRun >= 274593 && fCurrentRun <= 274671 ) lSystemType = "pp";
+    if ( fCurrentRun >= 282008 && fCurrentRun <= 282343 ) lSystemType = "pp"; 
     
     //Registered Productions : Run 2 Pb-Pb
     if ( fCurrentRun >= 243395 && fCurrentRun <= 243984 ) lSystemType = "Pb-Pb";
