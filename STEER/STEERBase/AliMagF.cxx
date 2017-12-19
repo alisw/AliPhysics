@@ -642,7 +642,9 @@ AliMagF* AliMagF::CreateFieldMap(Float_t l3Cur, Float_t diCur, Int_t convention,
       AliWarningClassF("Beam is A-A but supplied AZ records are %d %d, PbPb is assumed",az0,az1);
       a2z = 208./82.;
     }
-    a2z = 1.;
+    else {
+      a2z = 1.;
+    }
   }
   return new AliMagF("MagneticFieldMap", ttl,sclL3,sclDip,map,btype,beamenergy,a2z, 2,10.,path);
   //
