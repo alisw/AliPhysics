@@ -7165,17 +7165,12 @@ void AliHFSystErr::InitDstartoD0pi2015PbPb010() {
   //  2015 PbPb sample, 0-10% CC
   //
 
-<<<<<<< HEAD
   AliInfo(" Settings for D*+ --> D0pi Pb-Pb collisions at 5.02 TeV - 0-10% centrality ");
-=======
-  AliInfo(" Settings for D*+ --> D0pi Pb-Pb collisions at 5.02 TeV - 0-10% centrality "); 
->>>>>>> 1aec9df64f3ea2db8ff067087a91beae85abd03e
 
 
  // Normalization
   fNorm = new TH1F("fNorm","fNorm",50,0,50);
   for(Int_t i=4;i<=50;i++) fNorm->SetBinContent(i,0.048); // TAA and pp norm
-<<<<<<< HEAD
 
   // Branching ratio
   fBR = new TH1F("fBR","fBR",50,0,50);
@@ -7186,18 +7181,6 @@ void AliHFSystErr::InitDstartoD0pi2015PbPb010() {
   for(Int_t i=4;i<=8;i++) fTrackingEff->SetBinContent(i,0.10);
   for(Int_t i=9;i<=10;i++) fTrackingEff->SetBinContent(i,0.09);
   for(Int_t i=11;i<=12;i++) fTrackingEff->SetBinContent(i,0.085);
-=======
- 
-  // Branching ratio 
-  fBR = new TH1F("fBR","fBR",50,0,50);
-  for(Int_t i=4;i<=50;i++) fBR->SetBinContent(i,0.015); // 1.5% PDG2010
- 
-  // Tracking efficiency
-  fTrackingEff = new TH1F("fTrackingEff","fTrackingEff",50,0,50);;
-  for(Int_t i=4;i<=8;i++) fTrackingEff->SetBinContent(i,0.10); 
-  for(Int_t i=9;i<=10;i++) fTrackingEff->SetBinContent(i,0.09); 
-  for(Int_t i=11;i<=12;i++) fTrackingEff->SetBinContent(i,0.085); 
->>>>>>> 1aec9df64f3ea2db8ff067087a91beae85abd03e
   for(Int_t i=13;i<=16;i++) fTrackingEff->SetBinContent(i,0.08);
   for(Int_t i=17;i<=50;i++) fTrackingEff->SetBinContent(i,0.075);
 
@@ -7210,16 +7193,11 @@ void AliHFSystErr::InitDstartoD0pi2015PbPb010() {
 
   // Cuts efficiency (from cuts variation)
   fCutsEff = new TH1F("fCutsEff","fCutsEff",50,0,50);
-<<<<<<< HEAD
   fCutsEff->SetBinContent(4,0.15);
   for(Int_t i=5;i<=10;i++) fCutsEff->SetBinContent(i,0.10);
   for(Int_t i=11;i<=24;i++) fCutsEff->SetBinContent(i,0.05);
   for(Int_t i=25;i<=36;i++) fCutsEff->SetBinContent(i,0.03);
   for(Int_t i=37;i<=50;i++) fCutsEff->SetBinContent(i,0.0);
-=======
-  for(Int_t i=4;i<=5;i++) fCutsEff->SetBinContent(i,0.13); 
-  for(Int_t i=6;i<=50;i++) fCutsEff->SetBinContent(i,0.10);  
->>>>>>> 1aec9df64f3ea2db8ff067087a91beae85abd03e
 
   // PID efficiency (from PID/noPID)
   fPIDEff = new TH1F("fPIDEff","fPIDEff",50,0,50);
@@ -7227,15 +7205,9 @@ void AliHFSystErr::InitDstartoD0pi2015PbPb010() {
 
   // MC dN/dpt  (from study on D* pt shape)
   fMCPtShape = new TH1F("fMCPtShape","fMCPtShape",50,0,50);
-<<<<<<< HEAD
   fMCPtShape->SetBinContent(4,0.04);
   for(Int_t i=5;i<=50;i++) fMCPtShape->SetBinContent(i,0.0);
 
-=======
-  fMCPtShape->SetBinContent(4,0.04); 
-  for(Int_t i=5;i<=50;i++) fMCPtShape->SetBinContent(i,0.0); 
- 
->>>>>>> 1aec9df64f3ea2db8ff067087a91beae85abd03e
   return;
 
 }
