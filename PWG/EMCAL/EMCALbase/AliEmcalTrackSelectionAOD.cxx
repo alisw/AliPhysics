@@ -12,6 +12,7 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
+#include <iostream>
 #include <vector>
 
 #include <TClonesArray.h>
@@ -25,13 +26,16 @@
 #include "AliEmcalAODTPCOnlyTrackCuts.h"
 #include "AliEmcalCutBase.h"
 #include "AliEmcalTrackSelResultCombined.h"
+#include "AliEmcalTrackSelResultHybrid.h"
 #include "AliEmcalTrackSelectionAOD.h"
 #include "AliEmcalVCutsWrapper.h"
 #include "AliESDtrackCuts.h"
+#include "AliLog.h"
 #include "AliPicoTrack.h"
 
 /// \cond CLASSIMP
 ClassImp(AliEmcalTrackSelectionAOD)
+ClassImp(PWG::EMCAL::TestAliEmcalTrackSelectionAOD)
 /// \endcond
 
 AliEmcalTrackSelectionAOD::AliEmcalTrackSelectionAOD() :
@@ -85,6 +89,9 @@ void AliEmcalTrackSelectionAOD::GenerateTrackCuts(ETrackFilterType_t type, const
   case kHybridTracks2010wNoRefit:
     {
       auto trackcuts = new PWG::EMCAL::AliEmcalAODHybridTrackCuts("hybridcuts2010_wNoRefit");
+      Char_t hybridbits[2];
+      GetHybridFilterBits(hybridbits, period);
+      trackcuts->SetHybridFilterBits(hybridbits[0], hybridbits[1]);
       AddTrackCuts(trackcuts);
       break;
     }
@@ -92,6 +99,9 @@ void AliEmcalTrackSelectionAOD::GenerateTrackCuts(ETrackFilterType_t type, const
   case kHybridTracks2010woNoRefit:
     {
       auto trackcuts = new PWG::EMCAL::AliEmcalAODHybridTrackCuts("hybridcuts2010_woNoRefit");
+      Char_t hybridbits[2];
+      GetHybridFilterBits(hybridbits, period);
+      trackcuts->SetHybridFilterBits(hybridbits[0], hybridbits[1]);
       trackcuts->SetSelectNonITSrefitTracks(kFALSE);
       AddTrackCuts(trackcuts);
       break;
@@ -100,6 +110,9 @@ void AliEmcalTrackSelectionAOD::GenerateTrackCuts(ETrackFilterType_t type, const
   case kHybridTracks2011wNoRefit:
     {
       auto trackcuts = new PWG::EMCAL::AliEmcalAODHybridTrackCuts("hybridcuts2011_wNoRefit");
+      Char_t hybridbits[2];
+      GetHybridFilterBits(hybridbits, period);
+      trackcuts->SetHybridFilterBits(hybridbits[0], hybridbits[1]);
       AddTrackCuts(trackcuts);
       break;
     }
@@ -107,6 +120,9 @@ void AliEmcalTrackSelectionAOD::GenerateTrackCuts(ETrackFilterType_t type, const
   case kHybridTracks2011woNoRefit:
     {
       auto trackcuts = new PWG::EMCAL::AliEmcalAODHybridTrackCuts("hybridcuts2011_woNoRefit");
+      Char_t hybridbits[2];
+      GetHybridFilterBits(hybridbits, period);
+      trackcuts->SetHybridFilterBits(hybridbits[0], hybridbits[1]);
       trackcuts->SetSelectNonITSrefitTracks(kFALSE);
       AddTrackCuts(trackcuts);
       break;
@@ -224,4 +240,266 @@ Bool_t AliEmcalTrackSelectionAOD::GetHybridFilterBits(Char_t bits[], TString per
   }
 
   return kTRUE;
+}
+
+namespace PWG {
+
+namespace EMCAL {
+
+TestAliEmcalTrackSelectionAOD::TestAliEmcalTrackSelectionAOD() :
+  TObject(),
+  fTrackSelHybrid2010wRefit(nullptr),
+  fTrackSelHybrid2010woRefit(nullptr),
+  fTrackSelHybrid2011(nullptr),
+  fTrackSelTPConly(nullptr)
+{
+
+}
+
+TestAliEmcalTrackSelectionAOD::~TestAliEmcalTrackSelectionAOD(){
+  if(fTrackSelHybrid2010woRefit) delete fTrackSelHybrid2010woRefit;
+  if(fTrackSelHybrid2010wRefit) delete fTrackSelHybrid2010wRefit;
+  if(fTrackSelHybrid2011) delete fTrackSelHybrid2011;
+  if(fTrackSelTPConly) delete fTrackSelTPConly;
+}
+
+void TestAliEmcalTrackSelectionAOD::Init() {
+  fTrackSelHybrid2010woRefit = new AliEmcalTrackSelectionAOD(AliEmcalTrackSelection::kHybridTracks2010woNoRefit, "lhc10hold");
+  fTrackSelHybrid2010wRefit = new AliEmcalTrackSelectionAOD(AliEmcalTrackSelection::kHybridTracks2010wNoRefit, "lhc10hold");
+  fTrackSelHybrid2011 = new AliEmcalTrackSelectionAOD(AliEmcalTrackSelection::kHybridTracks2010woNoRefit, "lhc11h");
+  fTrackSelTPConly = new AliEmcalTrackSelectionAOD(AliEmcalTrackSelection::kTPCOnlyTracks);
+}
+
+bool TestAliEmcalTrackSelectionAOD::RunAllTests() const {
+ return TestHybridDef2010wRefit() && TestHybridDef2010woRefit() && TestHybridDef2011() && TestTPConly();
+}
+
+bool TestAliEmcalTrackSelectionAOD::TestHybridDef2010wRefit() const {
+  AliInfoStream() << "Running test for 2010 Definition with non-refit tracks" << std::endl;
+  AliAODTrack testCat1WithRefit, testCat2WithRefit, testCat2WithoutRefit, testNoHybrid;
+  testCat1WithRefit.SetIsHybridGlobalConstrainedGlobal();
+  testCat2WithRefit.SetIsHybridGlobalConstrainedGlobal();
+  testCat2WithoutRefit.SetIsHybridGlobalConstrainedGlobal();
+  testCat1WithRefit.SetStatus(AliVTrack::kITSrefit);
+  testCat2WithRefit.SetStatus(AliVTrack::kITSrefit);
+  testCat1WithRefit.SetFilterMap(BIT(8));
+  testCat2WithRefit.SetFilterMap(BIT(4));
+  testCat2WithoutRefit.SetFilterMap(BIT(4));
+
+  int nfailure = 0;
+  auto result_cat1_wrefit = fTrackSelHybrid2010wRefit->IsTrackAccepted(&testCat1WithRefit);
+  if(!result_cat1_wrefit){
+    AliErrorStream() << "Hybrid track CAT1 not selected" << std::endl;
+    nfailure++;
+  } else {
+    auto hybridcat = FindHybridSelectionResult(result_cat1_wrefit);
+    if(!hybridcat){
+      AliErrorStream() << "No hybrid selection result found for CAT1 hybrid track" << std::endl;
+      nfailure++;
+    } else {
+      if(hybridcat->GetHybridTrackType() != AliEmcalTrackSelResultHybrid::kHybridGlobal) {
+        AliErrorStream() << "Incorrect hybrid track type for CAT1 hybrid track: " << hybridcat->GetHybridTrackType() << std::endl;
+        nfailure++;
+      }
+    }
+  }
+
+  auto result_cat2_wrefit = fTrackSelHybrid2010wRefit->IsTrackAccepted(&testCat2WithRefit);
+  if(!result_cat2_wrefit){
+    AliErrorStream() << "Hybrid track CAT2 not selected" << std::endl;
+    nfailure++;
+  } else {
+    auto hybridcat = FindHybridSelectionResult(result_cat2_wrefit);
+    if(!hybridcat){
+      AliErrorStream() << "No hybrid selection result found for CAT2 hybrid track" << std::endl;
+      nfailure++;
+    } else {
+      if(hybridcat->GetHybridTrackType() != AliEmcalTrackSelResultHybrid::kHybridConstrained) {
+        AliErrorStream() << "Incorrect hybrid track type for CAT2 hybrid track: " << hybridcat->GetHybridTrackType() << std::endl;
+        nfailure++;
+      }
+    }
+  }
+
+  auto result_cat2_worefit = fTrackSelHybrid2010wRefit->IsTrackAccepted(&testCat2WithoutRefit);
+  if(!result_cat2_worefit){
+    AliErrorStream() << "Hybrid track CAT3 not selected" << std::endl;
+    nfailure++;
+  } else {
+    auto hybridcat = FindHybridSelectionResult(result_cat2_worefit);
+    if(!hybridcat){
+      AliErrorStream() << "No hybrid selection result found for CAT3 hybrid track" << std::endl;
+      nfailure++;
+    } else {
+      if(hybridcat->GetHybridTrackType() != AliEmcalTrackSelResultHybrid::kHybridConstrainedNoITSrefit) {
+        AliErrorStream() << "Incorrect hybrid track type for CAT3 hybrid track: " << hybridcat->GetHybridTrackType() << std::endl;
+        nfailure++;
+      }
+    }
+  }
+
+  auto result_nohybrid = fTrackSelHybrid2010wRefit->IsTrackAccepted(&testNoHybrid);
+  if(result_nohybrid){
+    AliErrorStream() << "Non-hybrid track selected as hybrid track" << std::endl;
+    nfailure++;
+  }
+
+  return nfailure == 0;
+}
+
+bool TestAliEmcalTrackSelectionAOD::TestHybridDef2010woRefit() const {
+  AliInfoStream() << "Running test for 2010 Definition without non-refit tracks" << std::endl;
+  AliAODTrack testCat1WithRefit, testCat2WithRefit, testCat2WithoutRefit, testNoHybrid;
+  testCat1WithRefit.SetIsHybridGlobalConstrainedGlobal();
+  testCat2WithRefit.SetIsHybridGlobalConstrainedGlobal();
+  testCat2WithoutRefit.SetIsHybridGlobalConstrainedGlobal();
+  testCat1WithRefit.SetStatus(AliVTrack::kITSrefit);
+  testCat2WithRefit.SetStatus(AliVTrack::kITSrefit);
+  testCat1WithRefit.SetFilterMap(BIT(8));
+  testCat2WithRefit.SetFilterMap(BIT(4));
+  testCat2WithoutRefit.SetFilterMap(BIT(4));
+
+  int nfailure = 0;
+  auto result_cat1_wrefit = fTrackSelHybrid2010woRefit->IsTrackAccepted(&testCat1WithRefit);
+  if(!result_cat1_wrefit){
+    AliErrorStream() << "Hybrid track CAT1 not selected" << std::endl;
+    nfailure++;
+  } else {
+    auto hybridcat = FindHybridSelectionResult(result_cat1_wrefit);
+    if(!hybridcat){
+      AliErrorStream() << "No hybrid selection result found for CAT1 hybrid track" << std::endl;
+      nfailure++;
+    } else {
+      if(hybridcat->GetHybridTrackType() != AliEmcalTrackSelResultHybrid::kHybridGlobal) {
+        AliErrorStream() << "Incorrect hybrid track type for CAT1 hybrid track: " << hybridcat->GetHybridTrackType() << std::endl;
+        nfailure++;
+      }
+    }
+  }
+
+  auto result_cat2_wrefit = fTrackSelHybrid2010woRefit->IsTrackAccepted(&testCat2WithRefit);
+  if(!result_cat2_wrefit){
+    AliErrorStream() << "Hybrid track CAT2 not selected" << std::endl;
+    nfailure++;
+  } else {
+    auto hybridcat = FindHybridSelectionResult(result_cat2_wrefit);
+    if(!hybridcat){
+      AliErrorStream() << "No hybrid selection result found for CAT2 hybrid track" << std::endl;
+      nfailure++;
+    } else {
+      if(hybridcat->GetHybridTrackType() != AliEmcalTrackSelResultHybrid::kHybridConstrained) {
+        AliErrorStream() << "Incorrect hybrid track type for CAT2 hybrid track: " << hybridcat->GetHybridTrackType() << std::endl;
+        nfailure++;
+      }
+    }
+  }
+  
+  auto result_cat2_worefit = fTrackSelHybrid2010woRefit->IsTrackAccepted(&testCat2WithoutRefit);
+  if(result_cat2_worefit){
+    AliErrorStream() << "CAT2 track without refit selected as hybrid track in track selection excluding non-refit tracks" << std::endl;
+    nfailure++;
+  }
+ 
+  auto result_nohybrid = fTrackSelHybrid2010woRefit->IsTrackAccepted(&testNoHybrid);
+  if(result_nohybrid){
+    AliErrorStream() << "Non-hybrid track selected as hybrid track" << std::endl;
+    nfailure++;
+  }
+
+  return nfailure == 0;
+}
+
+bool TestAliEmcalTrackSelectionAOD::TestHybridDef2011() const {
+  AliInfoStream() << "Running test for 2011 Definition" << std::endl;
+  AliAODTrack testCat1, testCat2, testNoHybrid;
+  testCat1.SetIsHybridGlobalConstrainedGlobal();
+  testCat2.SetIsHybridGlobalConstrainedGlobal();
+  testCat1.SetStatus(AliVTrack::kITSrefit);
+  testCat2.SetStatus(AliVTrack::kITSrefit);
+  testCat1.SetFilterMap(BIT(8));
+  testCat2.SetFilterMap(BIT(9));
+
+  int nfailure = 0;
+  
+  auto result_cat1 = fTrackSelHybrid2011->IsTrackAccepted(&testCat1);
+  if(!result_cat1){
+    AliErrorStream() << "Hybrid track CAT1 not selected" << std::endl;
+    nfailure++;
+  } else {
+    auto hybridcat = FindHybridSelectionResult(result_cat1);
+    if(!hybridcat){
+      AliErrorStream() << "No hybrid selection result found for CAT1 hybrid track" << std::endl;
+      nfailure++;
+    } else {
+      if(hybridcat->GetHybridTrackType() != AliEmcalTrackSelResultHybrid::kHybridGlobal) {
+        AliErrorStream() << "Incorrect hybrid track type for CAT1 hybrid track: " << hybridcat->GetHybridTrackType() << std::endl;
+        nfailure++;
+      }
+    }
+  }
+
+  auto result_cat2 = fTrackSelHybrid2011->IsTrackAccepted(&testCat2);
+  if(!result_cat2){
+    AliErrorStream() << "Hybrid track CAT2 not selected" << std::endl;
+    nfailure++;
+  } else {
+    auto hybridcat = FindHybridSelectionResult(result_cat2);
+    if(!hybridcat){
+      AliErrorStream() << "No hybrid selection result found for CAT2 hybrid track" << std::endl;
+      nfailure++;
+    } else {
+      if(hybridcat->GetHybridTrackType() != AliEmcalTrackSelResultHybrid::kHybridConstrained) {
+        AliErrorStream() << "Incorrect hybrid track type for CAT2 hybrid track: " << hybridcat->GetHybridTrackType() << std::endl;
+        nfailure++;
+      }
+    }
+  }
+
+  auto result_nohybrid = fTrackSelHybrid2011->IsTrackAccepted(&testNoHybrid);
+  if(result_nohybrid){
+    AliErrorStream() << "Non-hybrid track selected as hybrid track" << std::endl;
+    nfailure++;
+  }
+  return nfailure == 0;
+}
+
+bool TestAliEmcalTrackSelectionAOD::TestTPConly() const {
+  AliInfoStream() << "Running test for TPC-only tracks" << std::endl;
+  AliAODTrack testtrackTrue, testtrackFalse;
+  testtrackTrue.SetIsHybridTPCConstrainedGlobal(true);
+
+  int nfailure = 0;
+  auto result_true = fTrackSelTPConly->IsTrackAccepted(&testtrackTrue);
+  if(!result_true) {
+    AliErrorStream() << "TPC-only constrained track rejected" << std::endl;
+    nfailure++;
+  }
+
+  auto result_false = fTrackSelTPConly->IsTrackAccepted(&testtrackFalse);
+  if(result_false) {
+    AliErrorStream() << "Non-TPC-only track selected as constrained track" << std::endl;
+    nfailure++;
+  }
+
+  return nfailure == 0;
+}
+
+const AliEmcalTrackSelResultHybrid *TestAliEmcalTrackSelectionAOD::FindHybridSelectionResult(const AliEmcalTrackSelResultPtr &data) const {
+  if(!data.GetUserInfo()) return nullptr;
+  if(auto hybridinfo = dynamic_cast<const AliEmcalTrackSelResultHybrid *>(data.GetUserInfo())) return hybridinfo;
+  if(auto combinedinfo = dynamic_cast<const AliEmcalTrackSelResultCombined *>(data.GetUserInfo())) {
+    for(int i = 0; i < combinedinfo->GetNumberOfSelectionResults(); i++) {
+      try{
+        auto res = FindHybridSelectionResult((*combinedinfo)[i]);
+        if(res) return res;
+      } catch (AliEmcalTrackSelResultCombined::IndexException &e) {
+        // just go on
+      }
+    }
+  }  
+  return nullptr;
+}
+
+}
+
 }

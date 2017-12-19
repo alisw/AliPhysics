@@ -102,7 +102,106 @@ private:
   /// \cond CLASSIMP
   ClassDef(AliEmcalAODHybridTrackCuts, 1);
   /// \endcond
+};
+
+/**
+ * @class TestAliEmcalAODFilterBitCuts
+ * @brief Unit test for AOD hybrid track cuts
+ * @ingroup EMCALCOREFW
+ * @author Markus Fasel <markus.fasel@cern.ch>, Oak Ridge National Laboratory
+ * @since Dec 18, 2017
+ * 
+ * Unit test class for AOD hybrid track cuts. Covering
+ * - 2010 definition with non-refit tracks
+ * - 2010 definition without non-refit tracks
+ * - 2011 definition
+ * In each test for each supported category one track is prepared as hybrid track of
+ * a given category, and one track is prepared as non-hybrid track. For passing the test
+ * in all cases the selection status must match (i.e. hybrid tracks true, non-hybrid tracks 
+ * false). In addition for hybrid tracks a user object of type AliEmcalTrackSelResultHybrid
+ * must be provided storing the correct track type. Non-hybrid track selection results must 
+ * not carry a user object.
+ */
+class TestAliEmcalAODHybridTrackCuts : public TObject {
+public:
+  TestAliEmcalAODHybridTrackCuts();
   
+  /**
+   * @brief Destructor
+   * 
+   * Deleting track selection objects
+   */
+  virtual ~TestAliEmcalAODHybridTrackCuts();
+
+  /**
+   * @brief Initializing track selection objects
+   */
+  void Init();
+
+  /**
+   * @brief Run all unit tests for the class AliEmcalAODHybridTrackCuts
+   * 
+   * @return true All tests passed
+   * @return false At least one failure observed
+   */
+  bool RunAllTests() const;
+
+  /**
+   * @brief Test for hybrid tracks according to the 2010 definition including non-refit tracks
+   * 
+   * Preparation of 4 AOD tracks
+   * 1) Hybrid flag set, refit true, cat 1 track
+   * 2) Hybrid flag set, refit true, cat 2 track
+   * 3) Hybrid flag set, refit false, cat 2 track
+   * 4) Hybrid flag not set
+   * Track selection must determine correcty the selection status and for true hybrid tracks also the category must match
+   * 
+   * @return true  All tests passed
+   * @return false At least one failure observed
+   */
+  bool TestDef2010wRefit() const;
+
+  /**
+   * @brief Test for hybrid tracks according to the 2010 definition excluding non-refit tracks
+   * 
+   * Preparation of 4 AOD tracks
+   * 1) Hybrid flag set, refit true, cat 1 track
+   * 2) Hybrid flag set, refit true, cat 2 track
+   * 3) Hybrid flag set, refit false, cat 2 track
+   * 4) Hybrid flag not set
+   * Track selection must determine correcty the selection status (excluding non-hybrid track and hybrid track without refit) 
+   * and for true hybrid tracks also the category must match
+   * 
+   * @return true  All tests passed
+   * @return false At least one failure observed
+   */
+  bool TestDef2010woRefit() const;
+
+  /**
+   * @brief Test for hybrid tracks according to the 2011 definition
+   * 
+   * Preparation of 3 AOD tracks
+   * 1) Hybrid flag set, cat 1 track
+   * 2) Hybrid flag set, cat 2 track
+   * 3) Hybrid flag not set
+   * Track selection must determine correctly the selection status and for true hybrid tracks also the category must match
+   * 
+   * @return true  All tests passed
+   * @return false At least one failure observed 
+   */
+  bool TestDef2011() const;
+
+private:
+  AliEmcalAODHybridTrackCuts    *fDef2010wRefit;        ///< Hybrid track definition from 2010 including non-refit tracks
+  AliEmcalAODHybridTrackCuts    *fDef2010woRefit;       ///< Hybrid track definition from 2010 excluding non-refit tracks
+  AliEmcalAODHybridTrackCuts    *fDef2011;              ///< Hybrid track definition from 2011 e
+
+  TestAliEmcalAODHybridTrackCuts(const TestAliEmcalAODHybridTrackCuts &);
+  TestAliEmcalAODHybridTrackCuts &operator=(const TestAliEmcalAODHybridTrackCuts &);
+
+  /// \cond CLASSIMP
+  ClassDef(TestAliEmcalAODHybridTrackCuts, 1);
+  /// \endcond
 };
 
 }

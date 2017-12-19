@@ -104,4 +104,79 @@ private:
 	/// \endcond
 };
 
+namespace PWG {
+
+namespace EMCAL {
+
+class AliEmcalTrackSelResultHybrid;
+
+/**
+ * @class TestAliEmcalTrackSelectionAOD
+ * @brief Unit test for the class AliEmcalTrackSelectionAOD
+ * @ingroup EMCALCOREFW
+ * @author Markus Fasel <markus.fasel@cern.ch>, Oak Ridge National Laboratory
+ * @since Dec 19, 2018 
+ */
+class TestAliEmcalTrackSelectionAOD : public TObject {
+public:
+
+	/**
+	 * @brief Constructor
+	 */
+	TestAliEmcalTrackSelectionAOD();
+
+	/**
+	 * @brief Destructor
+	 */
+	virtual ~TestAliEmcalTrackSelectionAOD();
+
+	/**
+	 * @brief Init test suite
+	 * 
+	 * Create track selection objects for the various selections supported in the test suite
+	 */
+	void Init();
+
+	/**
+	 * @brief Run all tests
+	 * 
+	 * @return true  All tests passed
+	 * @return false At least one test failed
+	 */
+	bool RunAllTests() const;
+	bool TestHybridDef2010wRefit() const;
+	bool TestHybridDef2010woRefit() const;
+	bool TestHybridDef2011() const;
+	bool TestTPConly() const;
+
+private:
+	/**
+	 * @brief Extract hybrid track user object from a track selection result ptr
+	 * 
+	 * Tool used to extract recursively a user object of type AliEmcalTrackSelResultHybrid. 
+	 * In case the user object is of type AliEmcalTrackSelResultCombined it tries to find
+	 * the hybrid user information within the results of the combined track selection result.
+	 * 
+	 * @param data Track selection result pointer to be inspected
+	 * @return Pointer to the hybrid track selection user object (if existing), nullptr otherwise
+	 */
+	const AliEmcalTrackSelResultHybrid 			*FindHybridSelectionResult(const AliEmcalTrackSelResultPtr &data) const;
+
+	AliEmcalTrackSelectionAOD 				*fTrackSelHybrid2010wRefit;				///< Hybrid tracks from 2010 including non-refit tracks
+	AliEmcalTrackSelectionAOD					*fTrackSelHybrid2010woRefit;			///< Hybrid tracks from 2010 excluding non-refit tracks
+	AliEmcalTrackSelectionAOD					*fTrackSelHybrid2011;							///< Hybrid tracks from 2011
+	AliEmcalTrackSelectionAOD					*fTrackSelTPConly;								///< TPConly tracks
+
+	TestAliEmcalTrackSelectionAOD(const TestAliEmcalTrackSelectionAOD &);
+	TestAliEmcalTrackSelectionAOD &operator=(const TestAliEmcalTrackSelectionAOD &);
+
+	/// \cond CLASSIMP
+	ClassDef(TestAliEmcalTrackSelectionAOD, 1);
+	/// \endcond
+};
+
+}
+
+}
+
 #endif /* ALIEMCALTRACKSELECTIONAOD_H_ */

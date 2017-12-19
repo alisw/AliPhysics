@@ -25,6 +25,7 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.                     *
  ************************************************************************************/
 #include <iostream>
+#include <TNamed.h> // for user object
 #include "AliEmcalTrackSelResultPtr.h"
 #include "AliVTrack.h"
 
@@ -32,6 +33,7 @@
 ClassImp(PWG::EMCAL::AliEmcalTrackSelResultPtr)
 ClassImp(PWG::EMCAL::AliEmcalTrackSelResultUserPtr)
 ClassImp(PWG::EMCAL::AliEmcalTrackSelResultUserStorage)
+ClassImp(PWG::EMCAL::TestAliEmcalTrackSelResultPtr)
 /// \endcond
 
 using namespace PWG::EMCAL;
@@ -241,4 +243,71 @@ AliEmcalTrackSelResultUserPtr::~AliEmcalTrackSelResultUserPtr(){
     // The last pointer connected to the storage deletes it
     if(fUserStorage->GetReferenceCount() < 1) delete fUserStorage;
   }
+}
+
+bool TestAliEmcalTrackSelResultPtr::RunAllTests() const {
+  return TestOperatorBool() && TestUserInfo() && TestCopyConstructor() && TestOperatorAssign();
+}
+
+bool TestAliEmcalTrackSelResultPtr::TestOperatorBool() const {
+  AliEmcalTrackSelResultPtr testtrue(nullptr, true), testfalse(nullptr, false);
+
+  bool testresult(true);
+  if(!(testtrue == true)) testresult = false;
+  if(testfalse == true) testresult = false;
+  return testresult;
+}
+
+bool TestAliEmcalTrackSelResultPtr::TestCopyConstructor() const {
+  int failure(0);
+  for(int i = 0; i < 10; i++) {
+    TNamed *payloadTrue = new TNamed("truewith", "true, with object"), 
+           *payloadFalse = new TNamed("falsewith", "false, with user object");
+    AliEmcalTrackSelResultPtr truewith(nullptr, true, payloadTrue),
+                              truewithout(nullptr, true),
+                              falsewith(nullptr, false, payloadFalse),
+                              falsewithout(nullptr, false);
+    // make copies
+    AliEmcalTrackSelResultPtr cpytruewith(truewith), cpyfalsewith(falsewith), cpytruewithout(truewithout), cpyfalsewithout(falsewithout);
+    if(!(AssertBool(cpytruewith, true) && AssertBool(cpytruewithout, true) && AssertBool(cpyfalsewith, false) && AssertBool(cpyfalsewithout, false))) failure++;
+    if(!(AssertPayload(cpytruewith, payloadTrue) && AssertPayload(cpytruewithout, nullptr) && AssertPayload(cpyfalsewith, payloadFalse) && AssertPayload(cpyfalsewithout, nullptr))) failure++;
+  }
+  return failure == 0;
+}
+
+bool TestAliEmcalTrackSelResultPtr::TestOperatorAssign() const {
+  int failure(0);
+  for(int i = 0; i < 10; i++) {
+    TNamed *payloadTrue = new TNamed("truewith", "true, with object"), 
+           *payloadFalse = new TNamed("falsewith", "false, with user object");
+    AliEmcalTrackSelResultPtr truewith(nullptr, true, payloadTrue),
+                              truewithout(nullptr, true),
+                              falsewith(nullptr, false, payloadFalse),
+                              falsewithout(nullptr, false);
+    // make assignments
+    AliEmcalTrackSelResultPtr asgtruewith = truewith, asgfalsewith = falsewith, asgtruewithout = truewithout, asgfalsewithout = falsewithout;
+    if(!(AssertBool(asgtruewith, true) && AssertBool(asgtruewithout, true) && AssertBool(asgfalsewith, false) && AssertBool(asgfalsewithout, false))) failure++;
+    if(!(AssertPayload(asgtruewith, payloadTrue) && AssertPayload(asgtruewithout, nullptr) && AssertPayload(asgfalsewith, payloadFalse) && AssertPayload(asgfalsewithout, nullptr))) failure++;
+  }
+  return failure == 0;
+}
+
+bool TestAliEmcalTrackSelResultPtr::TestUserInfo() const {
+  int failure(0);
+  for(int i = 0; i < 10; i++) {
+    AliEmcalTrackSelResultPtr testwith(nullptr, true, new TNamed("testuserobject", "Test userobject"));
+    if(!testwith.GetUserInfo()) failure++;
+
+    AliEmcalTrackSelResultPtr testwithout(nullptr, true);
+    if(testwithout.GetUserInfo()) failure++;
+  }
+  return failure == 0;
+}
+
+bool TestAliEmcalTrackSelResultPtr::AssertBool(const AliEmcalTrackSelResultPtr &test, bool assertval) const {
+  return test.GetSelectionResult() == assertval;
+}
+
+bool TestAliEmcalTrackSelResultPtr::AssertPayload(const AliEmcalTrackSelResultPtr &test, void *payload) const {
+  return test.GetUserInfo() == reinterpret_cast<const TObject *>(payload);
 }

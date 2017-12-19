@@ -408,6 +408,100 @@ protected:
   /// \endcond
 };
 
+/**
+ * @class TestAliEmcalTrackSelResultPtr
+ * @brief Unit test for class AliEmcalTrackSelResultPtr
+ * @ingroup EMCALCOREFW
+ * @author Markus Fasel <markus.fasel@cern.ch>, Oak Ridge National Laboratory
+ * @since Dec 18, 2017
+ * 
+ * Unit test for AliEmcalTrackSelResultPtr, covering
+ * - operator bool
+ * - Copy constructor
+ * - Assignment operator
+ * - user info
+ */
+class TestAliEmcalTrackSelResultPtr : public TObject {
+public:
+  /**
+   * @brief Constructor
+   */
+  TestAliEmcalTrackSelResultPtr() {}
+
+  /**
+   * @brief Destructor
+   */
+  virtual ~TestAliEmcalTrackSelResultPtr() {}
+
+  /**
+   * @brief Run test suite
+   * 
+   * Running all unit tests implemented for AliEmcalTrackSelResultPtr
+   * - operator bool
+   * - Assignment operator
+   * - Copy constructor
+   * - User information 
+   * 
+   * @return true All tests passed
+   * @return false At least one test failed
+   */
+  bool RunAllTests() const;
+
+  /**
+   * @brief Test for operator bool
+   * 
+   * Both cases tested:
+   * - track selection is true, operator must return true
+   * - track selection is false, operator must return false
+   * 
+   * @return true Test passed
+   * @return false Test failed
+   */
+  bool TestOperatorBool() const;
+
+  /**
+   * @brief Test copy constructor with user information
+   * 
+   * Test prepared with 10 instances of user objects and 10 instances without user objects
+   * 
+   * @return true All tests passed
+   * @return false At least one test failed
+   */
+  bool TestCopyConstructor() const;
+
+  /**
+   * @brief Tests assignment operatator with user info
+   * 
+   * Test prepared with 10 instances of user objects and 10 instances without user objects
+   * 
+   * @return true All tests passed
+   * @return false All tests failed
+   */
+  bool TestOperatorAssign() const;
+
+  /**
+   * @brief Test handling of user storage
+   * 
+   * Prepared 10 pointers with and 10 without storage. Pointer must return
+   * - user object for test with user object
+   * - nullptr for test without user object
+   * 
+   * @return true Tests passed
+   * @return false At least one test failed
+   */
+  bool TestUserInfo() const;
+
+protected:
+
+  bool AssertBool(const AliEmcalTrackSelResultPtr &test, bool testvalue) const;
+
+  bool AssertPayload(const AliEmcalTrackSelResultPtr &test, void *payload) const;
+
+  /// \cond CLASSIMP
+  ClassDef(TestAliEmcalTrackSelResultPtr, 1);
+  /// \endcond
+};
+
 }
 
 }
