@@ -147,7 +147,10 @@ public:
     {
         fRunSmearing = value;
     }
-
+    void setGlobalVertex(Bool_t value)
+    {
+        fGlobalVertex = value;
+    }
     //virtual Bool_t IsEventSelected();
     void FillCorrelations(bool bn[3], double v[3], double jetpt);
     void setFFillCorrelations(const Bool_t &value);
@@ -199,6 +202,7 @@ private:
     Double_t fParam_Smear_Sigma;//
     Double_t fParam_Smear_Mean;//
     Bool_t   fRunSmearing;//
+    Bool_t   fGlobalVertex;//
     TGraph * fGraphMean;//!
     TGraph * fGraphSigmaData;//!
     TGraph * fGraphSigmaMC;//!
@@ -296,7 +300,7 @@ private:
 
 
 
-    ClassDef(AliAnalysisTaskHFJetIPQA, 24)
+    ClassDef(AliAnalysisTaskHFJetIPQA, 25)
 };
 
 #endif
