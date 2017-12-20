@@ -133,7 +133,7 @@ void AliEmcalTrackSelResultPtr::PrintStream(std::ostream &stream) const {
           << ", HasUserInfo: " << (fUserInfo.GetData() ? "Yes" : "No");
 }
 
-std::ostream &operator<<(std::ostream &stream, const AliEmcalTrackSelResultPtr &o){
+std::ostream &PWG::EMCAL::operator<<(std::ostream &stream, const PWG::EMCAL::AliEmcalTrackSelResultPtr &o){
   o.PrintStream(stream);
   return stream;
 }

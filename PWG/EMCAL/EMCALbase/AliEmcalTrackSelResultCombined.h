@@ -28,10 +28,10 @@
 #define ALIEMCALTRACKSELRESULTCOMBINED_H
 
 #include <TObject.h>
+#include <TObjArray.h>
 #include <exception>
 #include <sstream>
 #include <string>
-#include <vector>
 #include "AliEmcalTrackSelResultPtr.h"
 
 class TObjArray;
@@ -60,7 +60,7 @@ public:
   };
   
   AliEmcalTrackSelResultCombined();
-  AliEmcalTrackSelResultCombined(std::vector<AliEmcalTrackSelResultPtr> singleSelPointers);
+  AliEmcalTrackSelResultCombined(const TObjArray &singleSelPointers);
   virtual ~AliEmcalTrackSelResultCombined() {}
 
   AliEmcalTrackSelResultPtr &operator[](int index) const;

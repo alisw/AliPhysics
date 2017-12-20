@@ -24,7 +24,6 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS    *
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.                     *
  ************************************************************************************/
-#include <TObjArray.h>
 #include "AliEmcalTrackSelResultCombined.h"
 
 /// \cond CLASSIMP
@@ -40,11 +39,11 @@ AliEmcalTrackSelResultCombined::AliEmcalTrackSelResultCombined():
 
 }
 
-AliEmcalTrackSelResultCombined::AliEmcalTrackSelResultCombined(std::vector<AliEmcalTrackSelResultPtr> singleSelPointers):
+AliEmcalTrackSelResultCombined::AliEmcalTrackSelResultCombined(const TObjArray &singleSelPointers):
   TObject(),
   fData()
 {
-  for(auto o  : singleSelPointers) fData.Add(new AliEmcalTrackSelResultPtr(o));
+  for(auto o  : singleSelPointers) fData.Add(new AliEmcalTrackSelResultPtr(*(static_cast<AliEmcalTrackSelResultPtr *>(o))));
 }
 
 AliEmcalTrackSelResultPtr &AliEmcalTrackSelResultCombined::operator[](int index) const {

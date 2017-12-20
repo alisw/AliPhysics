@@ -274,11 +274,13 @@ public:
    */
   AliEmcalTrackSelResultPtr(const AliEmcalTrackSelResultPtr &ref);
 
+#if !defined(__CINT__) && !defined(__MAKECINT__)
   /**
    * Move constructor, implements move procedure for track selection results
    * @param[in] ref Pointer to be moved
    */
   AliEmcalTrackSelResultPtr(AliEmcalTrackSelResultPtr &&ref);
+#endif
 
   /**
    * Assignment operator, copies information from a reference into this object. As
@@ -288,6 +290,7 @@ public:
    */
   AliEmcalTrackSelResultPtr &operator=(const AliEmcalTrackSelResultPtr &ref);
 
+#if !defined(__CINT__) && !defined (__MAKECINT__)
   /**
    * Move assignment operator, copies information from a reference into this object. As
    * for the copy and move constructor only
@@ -295,6 +298,7 @@ public:
    * @return Object after assignment
    */
   AliEmcalTrackSelResultPtr &operator=(AliEmcalTrackSelResultPtr &&ref);
+#endif
 
   /**
    * @brief Destructor
@@ -347,14 +351,6 @@ public:
    */
   operator bool() const { return fSelectionResult; }
 
-  /**
-   * Streaming operator, print content of the track selection result to the
-   * stream
-   * @param stream Stream for the printing
-   * @param ref Object to be streamed
-   * @return Reference to the original stream after printing the object
-   */
-  friend std::ostream &operator<<(std::ostream &stream, const AliEmcalTrackSelResultPtr &ref);
 
   /**
    * Create a stream representation of the object and put it on then stream;
@@ -407,6 +403,15 @@ protected:
   ClassDef(AliEmcalTrackSelResultPtr, 1);
   /// \endcond
 };
+
+/**
+ * Streaming operator, print content of the track selection result to the
+ * stream
+ * @param stream Stream for the printing
+ * @param ref Object to be streamed
+ * @return Reference to the original stream after printing the object
+ */
+std::ostream &operator<<(std::ostream &stream, const AliEmcalTrackSelResultPtr &ref);
 
 /**
  * @class TestAliEmcalTrackSelResultPtr
