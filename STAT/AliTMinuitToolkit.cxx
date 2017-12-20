@@ -17,128 +17,58 @@
 
 #include <TCanvas.h>
 #include <TF1.h>
-#include <TFormula.h>
 #include <TH1F.h>
-#include <TH2F.h>
 #include <TMath.h>
 #include <TMatrix.h>
 #include <TRandom.h>
-#include <TString.h>
 #include <TVector.h>
 #include <TVectorD.h>
 #include <TVirtualFitter.h>
 #include <TLegend.h>
 #include <TStyle.h>
 #include <TTree.h>
-#include <TRandom.h>
 #include <TTreeStream.h>
 #include "AliSysInfo.h"
-#include "TFitter.h"
-#include "TMinuit.h"
 #include "AliTMinuitToolkit.h"
 #include "TGraph.h"
-#include <vector>
 #include "TPRegexp.h"
 #include "TStatToolkit.h"
 
-std::map<std::string, AliTMinuitToolkit*> AliTMinuitToolkit::fPredefinedFitters;  
-
-//--------------------------------------------------------------------------------------
-//
-// The AliTMinuitToolkit serves as an easy to use interface for the TMinuit 
-// package: 
-
-// A small example illustrating the usage of AliTMinuitToolkit is given in the function 
-// "AliTMinuitToolkit::Test()" , respectively in  $ALICE_ROOT/../src/STAT/test/AliTMinuitToolkitTest.C+
-// 
-// 
-// 1. Setting the formula:
-//  The formula is simply set via "void SetFitFunction(TFormula * formula, Bool_t doReset)".
-//
-// 2. Adding the data points
-//
-//  - Direct specification of the points is possible via
-//    "void SetPoints(TMatrixD * points)". 
-//     Note, that the each point corresponds to one row in the matrix. The fitter is then started with  the command "void Fit()". 
-//  - In order to fit a histogram, use "void FitHistogram(TH1F * his)"
-//  - Filling input points useing TTree queries 
-//     tool1D->FillFitter(inputTree,"test1D+noise:1/sqrt(12.+0)","testx0", "", 0,fitEntries);
-//
-// 3. Accessing the fit results
-//
-//   The N parameters of the formula are stored in a N-dimensional vector which
-//   is returned by "TVectorD * GetParameters()". In a similar way the covariance 
-//   matrix of the fit is returned via "TMatrixD * GetCovarianceMatrix()" which
-//   is of the type N x N.
-//
-//
-// 4. Non-linear robust fitting - see example $ALICE_ROOT/../src/STAT/test/AliTMinuitToolkitTest.C:Test1D()
-//
-//  Even a few outliers can lead to wrong results of a least-squares fitting 
-//  procedure. In this case the use of robust(resistant) methods can be 
-//  helpful, but a stronger dependence on starting values or convergence to
-//  local minima can occur.
-//
-//  a.) By default chi2 minimization is invoked. 
-//  b.) Optionally more robust log likelihood- Huber cost function can be specified instead of chi^2.
-//   For small deviations  the function behaves like x^2 and for larger deviations like |x| - the so 
-//   called Huber estimator:
-//
-//   h(x) = x^2                              , for x < 2.5*sigma
-//   h(x) = 2*(2.5*sigma)*x - (2.5*sigma)^2  , for x > 2.5*sigma
-//      REFERENCE for non-linear robust fitting:
-//      Ekblom H. and Madsen K. (1988), Alogrithms for non-linear Huber estimation,
-//      BIT Numerical Mathematics 29 (1989) 60-76.
-//      internet: http://www.springerlink.com/content/m277218542988344/
-//  c.) User defined log likelihood function can be specified 
-//        TF1 * fcost = new TF1("1","abs(x)<10?-log(0.8*exp(-x**2)+0.2/(1+x**2)):-log(0.2/(1+x**2))",-20,20); // 80 % gaus + 20% cachy
-//        tool1D->SetLogLikelihoodFunction(fcost);
-//        tool1D->Fit();
-//  
-//  5.) Work in progress
-//         *  Multidimensional fits (more than one observable) 
-//         **    e.g fitting Er and Erphi in parallel
-//         *  Regularization
-//         ** e.g positive definite, monotonous function            
-//         *  CrossValidation
-//
-//
-// Comments and questions are always welcome: marian.ivanov@cern.ch, A.Kalweit@gsi.de
-//
-//--------------------------------------------------------------------------------------
+std::map<std::string, AliTMinuitToolkit*> AliTMinuitToolkit::fPredefinedFitters;
 
 
 ClassImp(AliTMinuitToolkit)
 
 AliTMinuitToolkit::AliTMinuitToolkit(const char *streamerName, const char *mode) :
-  TNamed(),
-  fStreamer(0),
-  fVerbose(0),
-  fFormula(0),
-  fLogLikelihoodFunction(0),
-  fFitAlgorithm(""),
-  fPoints(0),
-  fValues(0),
-  fVarNames(0),           // variable names  
-  fValueNames(0),         // value  names                    
-  fPointIndex(0),              // point index - to specify points for likelihood calculation (used for Bottstrap and CrossValidation)             
-  fParam(0),
-  fInitialParam(0),
-  fRMSEstimator(0),       // parameter spread as estimated in Bootstrap resp. TwoFold cross validation
-  fMISACEstimators(0),    // MISAC estimators - median, mean, rms
-  fCovar(0),
-  fChi2(0),
-  fMaxCalls(0),
-  fPrecision(0),
-  fIsHuberCost(0)
+        TNamed(),
+        fStreamer(nullptr),
+        fVerbose(0),
+        fFormula(nullptr),
+        fLogLikelihoodFunction(nullptr),
+        fFitAlgorithm(""),
+        fPoints(nullptr),
+        fValues(nullptr),
+        fVarNames(nullptr),           // variable names
+        fValueNames(nullptr),         // value  names
+        fPointIndex(0),              // point index - to specify points for likelihood calculation (used for Bootstrap and CrossValidation)
+        fParam(nullptr),
+        fInitialParam(nullptr),
+        fRMSEstimator(nullptr),       // parameter spread as estimated in Bootstrap resp. TwoFold cross validation
+        fMISACEstimators(nullptr),    // MISAC estimators - median, mean, rms
+        fCovar(nullptr),
+        fChi2(0),
+        fMaxCalls(0),
+        fPrecision(0),
+        fIsHuberCost(0),
+        fFCNCounter(0)                // cost function call counter
 {
- //
- // standard constructor
- //
- fMaxCalls = 500;
- fPrecision = 1;
- fIsHuberCost = false;
- if (streamerName!=NULL) fStreamer= new TTreeSRedirector(streamerName,mode);
+  //
+  // standard constructor
+  //
+  fMaxCalls = 500;
+  fPrecision = 1;
+  fIsHuberCost = false;
+  if (streamerName!= nullptr) fStreamer= new TTreeSRedirector(streamerName,mode);
 }
 
 
@@ -155,29 +85,37 @@ AliTMinuitToolkit::~AliTMinuitToolkit(){
   delete fRMSEstimator;
   delete fMISACEstimators;
   delete fCovar;
-  if (fStreamer) delete fStreamer;
+  delete fStreamer;
 }
-
+/// \brief Set stream for  writing info into TTree.
+///        see examples(STEER/STEERBase/TTreeStream.cxx)
+/// \param streamerName - Name of .root file
+/// \param mode - option for .root file open 
+///        * recreate
+///        * update
+///        * ....
 void  AliTMinuitToolkit::SetStreamer(const char *streamerName, const char *mode){
   //
   // set streamer
-  if (fStreamer) delete fStreamer;
+  delete fStreamer;
   fStreamer= new TTreeSRedirector(streamerName,mode);
 }
 
 
 void  AliTMinuitToolkit::ClearData(){
   delete fPoints;
-  fPoints=0;
+  fPoints= nullptr;
   delete fValues;
-  fValues=0;
+  fValues= nullptr;
   //  delete fParam;
   //   fParam=0;
   //   delete fCovar;
   //   fCovar=0;
 }
-
-void  AliTMinuitToolkit::SetFitFunction(TF1 *const formula, Bool_t doReset) {
+/// \brief Set formula of the fitted function and reset parameter. See doReset
+/// \param formula - formula of the fitted function
+/// \param doReset - if true reset parameters related to the fit function
+void  AliTMinuitToolkit::SetFitFunction(TF1 * formula, Bool_t doReset) {
   //
   fFormula=formula;
   if (doReset){
@@ -190,42 +128,50 @@ void  AliTMinuitToolkit::SetFitFunction(TF1 *const formula, Bool_t doReset) {
   }
 }
 
-
-void   AliTMinuitToolkit::SetInitialParam(TMatrixD *const paramLimits) { 
+/// \brief Set initial parameters matrix
+/// \param paramLimits - Initialization matrix
+///        * number of lines = number of  parameters
+///        * 4 columns
+///          * [0]      - initial value
+///          * [1]      - initial error
+///          * [2],[3]  - optional parameters to specify minimum and maximum of the parameter (see TMinuit)    
+void   AliTMinuitToolkit::SetInitialParam(const TMatrixD * paramLimits) {
   fInitialParam=new TMatrixD(*paramLimits);
-};  
+};
 
 
-
-void AliTMinuitToolkit::FitHistogram(TH1 *const his, Option_t *option) {
-  //
-  // Fit a one dimensional histogram
-  //
+/// \brief Fit a one dimensional histogram
+/// \param his    -   const TH1 object
+/// \param option -   fit option e.g (default, bootstrap20,misac ... )
+/// * In alternative usage more option and histogram range can be specified
+///    \code Fit(TH1* his, const char *fitterName, Option_t* fitOption = "", Option_t* hisOption = "", Option_t *funOption="", Double_t xMin = 0, Double_t xMax = 0)\endcode
+void AliTMinuitToolkit::FitHistogram(const TH1 * his, Option_t *option) {
   ClearData();
   fPoints  = new TMatrixD(his->GetNbinsX(), 1);
-  fValues  = new TMatrixD(his->GetNbinsX(), 2); 
-  for(Int_t ibin=0; ibin < his->GetNbinsX(); ibin++) {
-    Double_t x = his->GetXaxis()->GetBinCenter(ibin+1);
-    Double_t y = his->GetBinContent(ibin+1);  
-    (*fPoints)(ibin, 0) = x;
-    Double_t err=his->GetBinError(ibin+1);
-    (*fValues)(ibin,0)=y;
-    (*fValues)(ibin,1)=(err>0)? 1./err:0;
+  fValues  = new TMatrixD(his->GetNbinsX(), 2);
+  for(Int_t iBin=0; iBin < his->GetNbinsX(); iBin++) {
+    Double_t x = his->GetXaxis()->GetBinCenter(iBin+1);
+    Double_t y = his->GetBinContent(iBin+1);
+    (*fPoints)(iBin, 0) = x;
+    Double_t err=his->GetBinError(iBin+1);
+    (*fValues)(iBin,0)=y;
+    (*fValues)(iBin,1)=(err>0)? 1./err:0;
   }
   Fit(option);
 }
-
-void AliTMinuitToolkit::FitGraph(TGraph *const gr, Option_t *option) {
-  //
-  // Fit a one dimensional histogram
-  //
+/// \brief Fit a TGraph object
+/// \param gr     - const TGraph object
+/// \param option - fit option e.g (default, bootstrap20,misac .... )
+/// * In alternative usage more option and graph range can be specified
+///    \code Fit(TGraph* graph, const char *fitterName, Option_t* fitOption = "", Option_t* graphOption = "", Option_t* funOption="",Double_t xMin = 0, Double_t xMax = 0)\endcode
+void AliTMinuitToolkit::FitGraph(const TGraph * gr, Option_t *option) {
   ClearData();
   Int_t nPoints=gr->GetN();
   fPoints  = new TMatrixD(nPoints, 1);
-  fValues  = new TMatrixD(nPoints, 2); 
+  fValues  = new TMatrixD(nPoints, 2);
   for(Int_t ip=0; ip < nPoints; ip++) {
     Double_t x = gr->GetX()[ip];
-    Double_t y = gr->GetY()[ip];  
+    Double_t y = gr->GetY()[ip];
     (*fPoints)(ip, 0) = x;
     Double_t err=gr->GetErrorY(ip);
     (*fValues)(ip,0)=y;
@@ -234,156 +180,159 @@ void AliTMinuitToolkit::FitGraph(TGraph *const gr, Option_t *option) {
   Fit(option);
 }
 
-
-
-
-
-
-
-
-void AliTMinuitToolkit::FitterFCN(int &/*npar*/, double */*info*/, double &fchisq, double *gin, int iflag){
-  //
-  // internal function which gives the specified function to the TMinuit function
-  //  
-  //
-  static Int_t fcnCounter=0;
-  //if (info) info[0]=fcnCounter;
-  fcnCounter++;
+/// \brief Internal function used in the TMinuit minimization
+/// * see  documentation for FCN parameters g.g in ROOT- TMinuit::Eval
+///
+/// \param nPar          - not used in our interface
+/// \param grad    - gradient of cost function
+/// \param chi2(fVal))   - cost function to minimize (chi2/log-likelihood/)
+/// \param gin(par)      - function parameters
+/// \param iflag(flag)   - flag  used by root (1.) print/ 2.) derivative/ 3. final fit)
+///                      - in our interface also possible to specify stream data (kStreamFcnPoint,kStreamFcn)
+/// typedef void(* 	FCNFunc_t) (Int_t &nPar, Double_t *gin, Double_t &f, Double_t *u, Int_t flag)
+///
+///*   Original documentation in TMinuit::Eval documentation in root
+///  *  Input parameters:
+///    *  nPar:    number of currently variable parameters
+///    *  par:     array of (constant and variable) parameters
+///    *  flag:    Indicates what is to be calculated (see example below) ()
+///    *  grad:    array of gradients
+///  * Output parameters:
+///    *  fVal:    The calculated function value.
+///    *  grad:    The (optional) vector of first derivatives).
+void AliTMinuitToolkit::FitterFCN(int &/*nPar*/, double */*grad*/, double &chi2, double *gin, int iflag){
   AliTMinuitToolkit * fitter = (AliTMinuitToolkit*)TVirtualFitter::GetFitter()->GetObjectFit();
+  if (!fitter) return;
+  Int_t &fcnCounter=fitter->fFCNCounter;
   TF1 *logLike=fitter->fLogLikelihoodFunction;
-  const Double_t* likeParam= (logLike!=NULL) ? logLike->GetParameters():NULL;
-  fchisq = 0;
+  const Double_t* likeParam= (logLike!= nullptr) ? logLike->GetParameters(): nullptr;
+  chi2 = 0;
   const TMatrixD & variables= (*fitter->GetPoints());
   const TMatrixD & values=    (*fitter->GetValues());
-  Int_t nvars       = variables.GetNcols();
-  Int_t npoints     = variables.GetNrows();
+  Int_t nVars       = variables.GetNcols();
+  Int_t nPoints     = variables.GetNrows();
   TVectorD param(fitter->fFormula->GetNpar(), gin);
   // calculate  log likelihood
   //
-  if (fitter->fPointIndex.GetSize()>0) { 
-    npoints=fitter->fPointIndex.GetSize();
+  if (fitter->fPointIndex.GetSize()>0) {
+    nPoints=fitter->fPointIndex.GetSize();
   }
-  for (Int_t jpoint=0; jpoint<npoints; jpoint++){
-    Int_t ipoint=(fitter->fPointIndex.GetSize()>0) ? fitter->fPointIndex[jpoint]:jpoint;
+  for (Int_t jPoint=0; jPoint<nPoints; jPoint++){
+    Int_t iPoint=(fitter->fPointIndex.GetSize()>0) ? fitter->fPointIndex[jPoint]:jPoint;
     Double_t x[100];
-    for (Int_t ivar=0; ivar<nvars; ivar++){
-      x[ivar] = variables(ipoint, ivar);      
-    }    
-    Float_t funx = (fitter->GetFormula())->EvalPar(x,gin);   
-    Double_t value=values(ipoint,0);
-    Double_t weight=values(ipoint,1);
-    Double_t delta = TMath::Abs(value - funx);
+    for (Int_t ivar=0; ivar<nVars; ivar++){
+      x[ivar] = variables(iPoint, ivar);
+    }
+    Double_t funX = (fitter->GetFormula())->EvalPar(x,gin);
+    Double_t value=values(iPoint,0);
+    Double_t weight=values(iPoint,1);
+    Double_t delta = (value - funX);
     Double_t toAdd=0;
     if (logLike){
-      Double_t normDelta = delta*weight;
-      toAdd=logLike->EvalPar(&delta,likeParam);
-      //      continue;
+      //Double_t normDelta = delta*weight;
+      toAdd=logLike->EvalPar(&delta,likeParam)*weight;
     }else{
-      if (fitter->IsHuberCost() == true) {       //hubert norm
-	delta = delta*weight;                   // normalization
-	if (delta <= 2.5) toAdd= delta*delta; // new metric: Huber-k-estimator
-	if (delta > 2.5)  toAdd= 2*(2.5)*delta - (2.5*2.5);
+      if (fitter->IsHuberCost() != 0) {       //hubert norm
+        delta = TMath::Abs(delta*weight);                   // normalization
+        if (delta <= 2.5) toAdd= delta*delta; // new metric: Huber-k-estimator
+        if (delta > 2.5)  toAdd= 2*(2.5)*delta - (2.5*2.5);
       } else {
-	Double_t chi2 = delta*weight;
-	chi2*=chi2;
-	toAdd=chi2;   // chi2 (log likelihood)
+        Double_t lChi2 = delta*weight;
+        lChi2*=lChi2;
+        toAdd=lChi2;   // chi2 (log likelihood)
       }
     }
-    //if (fitter-
+    //
     if (fitter->IsVerbose(kStreamFcnPoint) || (iflag&kStreamFcnPoint)){
-      TVectorD vecX(nvars, x);
+      TVectorD vecX(nVars, x);
       (*(fitter->fStreamer))<<"fcnDebugPoint"<<
-	"toAdd="<<toAdd<<  // log likelihood to add
-	"val="<<value<<    // "measurement"
-	"w="<<weight<<     // wight of point
-	"fun="<<funx<<     // function value
-	"x.="<<&vecX<<     // variable vector
-	"p.="<<&param<<    // parameter vector
-	"\n";
+                            "toAdd="<<toAdd<<  // log likelihood to add
+                            "val="<<value<<    // "measurement"
+                            "w="<<weight<<     // wight of point
+                            "fun="<<funX<<     // function value
+                            "x.="<<&vecX<<     // variable vector
+                            "p.="<<&param<<    // parameter vector
+                            "\n";
     }
-    fchisq+=toAdd;    
+    chi2+=toAdd;
   }
   if (fitter->IsVerbose(kStreamFcn) || (iflag&kStreamFcn )){
     (*(fitter->fStreamer))<<"fcnDebug"<<
-      "fchisq="<<fchisq<<
-      "p.="<<&param<<
-      "\n";
+                          "chi2="<<chi2<<
+                          "p.="<<&param<<
+                          "\n";
   }
   fcnCounter++;
 }
- 
 
+/// \brief Internal function that calls the fitter
+/// \param option:
+///          * bootstrap[0-9]* -
+///          * twofold[0-9]* -
+///          * misac\([0-9]*,[0-9]*\) -
 void AliTMinuitToolkit::Fit(Option_t *option) {
-  //
-  // internal function that calls the fitter
-  //
-  TString sOption=(option==NULL)?"":option;
+  TString sOption=(option== nullptr)?"":option;
   TPRegexp regBootstrap("bootstrap[0-9]*");
   TPRegexp regTwofold("twofold[0-9]*");
   TPRegexp regMISAC("misac\\([0-9]*,[0-9]*\\)");
-  TPRegexp regFitName("rFitName:");
 
-  // run bootstap if specified
-  if (regBootstrap.Match(sOption)>0){      // run boootstrap
+  // run bootstrap if specified
+  if (regBootstrap.Match(sOption)>0){      // run bootstrap
     TString newOption=sOption;
     regBootstrap.Substitute(newOption,"");
-    Int_t nPoints=TString(&(sOption.Data()[sOption.Index(regBootstrap)+9])).Atoi();
+    UInt_t nPoints= static_cast<UInt_t>(TString(&(sOption.Data()[sOption.Index(regBootstrap) + 9])).Atoi());
     if (nPoints<0) nPoints=5;
-    return Bootstrap(nPoints,0,newOption.Data());
+    return Bootstrap(nPoints, nullptr,newOption.Data());
   }
   // run two fold minimization if specified
   if (regTwofold.Match(sOption)>0){      // run twofold minimization
     TString newOption=sOption;
     regTwofold.Substitute(newOption,"");
-    Int_t nPoints=TString(&(sOption.Data()[sOption.Index(regTwofold)+7])).Atoi();
+    UInt_t nPoints= static_cast<UInt_t>(TString(&(sOption.Data()[sOption.Index(regTwofold) + 7])).Atoi());
     if (nPoints<0) nPoints=5;
-    return TwoFoldCrossValidation(nPoints,0,newOption.Data());
+    return TwoFoldCrossValidation(nPoints, nullptr,newOption.Data());
   }
   // run MISAC
-  if (regMISAC.Match(sOption)>0){      // run MISAC minimization  - mix of RAMSAC and KFold 
+  if (regMISAC.Match(sOption)>0){      // run MISAC minimization  - mix of RANSAC and KFold
     TString newOption=sOption;
     regMISAC.Substitute(newOption,"");
     Int_t index1=sOption.Index(regMISAC)+6;
     Int_t index2=sOption.Index(",",index1+1)+1;
     Int_t nPoints=TString(&(sOption.Data()[index1])).Atoi();
-    Int_t nIter=TString(&(sOption.Data()[index2])).Atoi();
+    UInt_t nIter= static_cast<UInt_t>(TString(&(sOption.Data()[index2])).Atoi());
     if (nPoints<0) nPoints=5;
-    return MISAC(nPoints,nIter,0,newOption.Data());
+    return MISAC(nPoints,nIter, nullptr,newOption.Data());
   }
   fStatus=0;
-  
-  //  Int_t nParam  = fParam->GetNrows();
+
   Int_t nParam  = fFormula->GetNpar();
-  Int_t npoints = fPoints->GetNrows();
-  Int_t nvar    = fPoints->GetNcols()-1;
-  
-  // create "intial param" in case not set before
-  if (fParam==NULL) fParam=new TVectorD(nParam);
-  if (fInitialParam == 0) {
+  // create "initial param" in case not set before
+  if (fParam== nullptr) fParam=new TVectorD(nParam);
+  if (fInitialParam == nullptr) {
     ::Info("AliTMinuitToolkit::Fit","Default initial parameters set");
     fInitialParam=  new TMatrixD(nParam,4);
-    for (Int_t iparam=0; iparam<nParam; iparam++) {
-      (*fInitialParam)(iparam,0)=0;
-      (*fInitialParam)(iparam,1)=1000;
-      (*fInitialParam)(iparam,2)=0;
-      (*fInitialParam)(iparam,3)=0;
+    for (Int_t iParam=0; iParam<nParam; iParam++) {
+      (*fInitialParam)(iParam,0)=0;
+      (*fInitialParam)(iParam,1)=1000;
+      (*fInitialParam)(iParam,2)=0;
+      (*fInitialParam)(iParam,3)=0;
     }
   }
-    
+
   // migrad fit algorithm as default
   if (fFitAlgorithm == "") {
     fFitAlgorithm = "migrad";
   }
-  
+
   // assign weights
-  if (fValues == 0) {
+  if (fValues == nullptr) {
     ::Error("AliTMinuitToolkit::Fit()","Invalid fit. Values not set");
     return ;
   }
-  
+
   // set up the fitter
-  TVirtualFitter *minuit = TVirtualFitter::Fitter(0, nParam);
-  minuit->SetObjectFit(this); 
+  TVirtualFitter *minuit = TVirtualFitter::Fitter(nullptr, nParam);
+  minuit->SetObjectFit(this);
   minuit->SetFCN(AliTMinuitToolkit::FitterFCN);
   if ((fVerbose& kPrintMinuit)==0){  // MAKE minuit QUIET!!
     double p1 = -1;
@@ -393,24 +342,24 @@ void AliTMinuitToolkit::Fit(Option_t *option) {
     double pprint=2;
     minuit->ExecuteCommand("SET PRINTOUT",&pprint,1);
   }
-  
+
   // initialize parameters (step size???)
-  for (Int_t iparam=0; iparam<nParam; iparam++){
+  for (Int_t iParam=0; iParam<nParam; iParam++){
     if (sOption.Contains("rndmInit")){
-      Double_t initValue=(*fInitialParam)(iparam, 0)+gRandom->Gaus()*(*fInitialParam)(iparam,1);
-      minuit->SetParameter(iparam, Form("p[%d]",iparam), initValue, (*fInitialParam)(iparam,1), (*fInitialParam)(iparam, 2), (*fInitialParam)(iparam, 3));
+      Double_t initValue=(*fInitialParam)(iParam, 0)+gRandom->Gaus()*(*fInitialParam)(iParam,1);
+      minuit->SetParameter(iParam, Form("p[%d]",iParam), initValue, (*fInitialParam)(iParam,1), (*fInitialParam)(iParam, 2), (*fInitialParam)(iParam, 3));
     }else{
-      minuit->SetParameter(iparam, Form("p[%d]",iparam), (*fInitialParam)(iparam,0), (*fInitialParam)(iparam,1), (*fInitialParam)(iparam, 2), (*fInitialParam)(iparam, 3));
+      minuit->SetParameter(iParam, Form("p[%d]",iParam), (*fInitialParam)(iParam,0), (*fInitialParam)(iParam,1), (*fInitialParam)(iParam, 2), (*fInitialParam)(iParam, 3));
     }
     /*
       if (doReset){
-      minuit->SetParameter(iparam, Form("p[%d]",iparam), (*fInitialParam)(iparam,0), (*fInitialParam)(iparam,1), (*fInitialParam)(iparam, 2), (*fInitialParam)(iparam, 3));
+      minuit->SetParameter(iParam, Form("p[%d]",iParam), (*fInitialParam)(iParam,0), (*fInitialParam)(iParam,1), (*fInitialParam)(iParam, 2), (*fInitialParam)(iParam, 3));
       }else{
-      minuit->SetParameter(iparam, Form("p[%d]",iparam), (*fParam)(iparam), TMath::Sqrt((*fCovar)(iparam,iparam)), (*fInitialParam)(iparam, 2), (*fInitialParam)(iparam, 3));
+      minuit->SetParameter(iParam, Form("p[%d]",iParam), (*fParam)(iParam), TMath::Sqrt((*fCovar)(iParam,iParam)), (*fInitialParam)(iParam, 2), (*fInitialParam)(iParam, 3));
       }
     */
   }
-  
+
   //
   Double_t argList[2];
   argList[0] = fMaxCalls; //maximal number of calls 
@@ -419,84 +368,99 @@ void AliTMinuitToolkit::Fit(Option_t *option) {
   //if (fMaxCalls != 500 || fPrecision != 1) 
   minuit->ExecuteCommand(fFitAlgorithm, argList, 2);
   // two additional arguments can be specified ExecuteCommand("migrad", argList, 2) - use 0,0 for default
-  //  fStatus = (((TFitter*)minuit)->GetMinuit())->GetStatus(); // we should add separate status for Minuit and  AliTMinuitTookit
-  
+  //  fStatus = (((TFitter*)minuit)->GetMinuit())->GetStatus(); // we should add separate status for Minuit and  AliTMinuitToolkit
+
   // fill parameter vector
   for (Int_t ivar=0; ivar<nParam; ivar++){
     (*fParam)(ivar) = minuit->GetParameter(ivar);
     fFormula->SetParameter(ivar, minuit->GetParameter(ivar));
     //fFormula->SetPar(ivar, minuit->GetParameter(ivar));
   }
-  FitterFCN(nParam,0,fChi2, fParam->GetMatrixArray(),0); 
-  
+  FitterFCN(nParam, nullptr,fChi2, fParam->GetMatrixArray(),0);
+
   // fill parameter vector
   for (Int_t ivar=0; ivar<nParam; ivar++){
-   (*fParam)(ivar) = minuit->GetParameter(ivar);
-   fFormula->SetParameter(ivar, minuit->GetParameter(ivar));
+    (*fParam)(ivar) = minuit->GetParameter(ivar);
+    fFormula->SetParameter(ivar, minuit->GetParameter(ivar));
   }
-  
+
   // fill covariance matrix
-  if (fCovar==NULL)   fCovar = new TMatrixD(nParam, nParam);
+  if (fCovar== nullptr)   fCovar = new TMatrixD(nParam, nParam);
   if (minuit->GetCovarianceMatrix()){
     fCovar->SetMatrixArray(minuit->GetCovarianceMatrix());
   }else{
     fStatus|=kCovarFailed;
   }
-  
+
 }
 
+/// \brief Fill input matrices of the fitter
+/// * TODO - add better working example (using code/trees from the test directory)
+/// \param inputTree      -  pointer to input tree
+/// \param values         - values description (parameter:<error>)
+/// \param variables      - variables array (var0:<var1>)  
+/// \param selection      - tree selection 
+/// \param firstEntry     - first entry to query
+/// \param nEntries       - number of entries to query
+/// \param doReset        - switch reset previous/or append
+/// \return
+/*!
+   * Example: TPC occupancy 6 dimensional hyperplane fit
+   \code
+      AliTMinuitToolkit * hyp6R= AliTMinuitToolkit::GetPredefinedFitter("hyp6R");
+      hyp6R->FillFitter(treeQA, "NoThreshold.fElements:0.1*NoThreshold.fElements", "1:dRNorm:Phi2Norm:QNorm:gxNorm:gyNorm", "region&&occFitCut&&rndm<0.2", 0, 10000000);
+      hyp6R->Fit();
+   \endcode
 
-Int_t AliTMinuitToolkit::FillFitter(TTree * inputTree, TString values, TString variables, TString selection, Int_t firstEntry, Int_t nentries, Bool_t doReset ){
-  //
-  // Make unbinned fit
-  //
+*/
+Long64_t AliTMinuitToolkit::FillFitter(TTree * inputTree, TString values, TString variables, TString selection, Int_t firstEntry, Int_t nEntries, Bool_t doReset ){
   TString query=values;
   query+=":";
   query+=variables;
-  if (inputTree==NULL){
-    ::Error("AliTMinuitToolkit::UnbinnedFit","Zerro input tree");
+  if (inputTree== nullptr){
+    ::Error("AliTMinuitToolkit::FillFitter","Input tree==NULL");
     return -1;
   }
   fValueNames=values.Tokenize(":");
   fVarNames=variables.Tokenize(":");
-  Int_t nVals= fValueNames->GetEntries();
+  Int_t nVal= fValueNames->GetEntries();
   Int_t nVars= fVarNames->GetEntries();
-  if (doReset==kFALSE  && fPoints!=NULL){
+  if (doReset == 0 && fPoints != nullptr){
     if (fPoints->GetNrows()!=nVars){
-      ::Error("AliTMinuitToolkit::UnbinnedFit","Not comatible number of variables: %d instead of %d: variables:  %s",nVars, fPoints->GetNrows(), query.Data());
+      ::Error("AliTMinuitToolkit::FillFitter","Non compatible number of variables: %d instead of %d: variables:  %s",nVars, fPoints->GetNrows(), query.Data());
       return -1;
     }
   }
 
-  Int_t entries = inputTree->Draw(query.Data(),selection.Data(),"goffpara",nentries,firstEntry);
+  Long64_t entries = inputTree->Draw(query.Data(),selection.Data(),"goff para",nEntries,firstEntry);
   if (entries<=0) {
-    ::Error("AliTMinuitToolkit::UnbinnedFit","badly formatted values or variables: %s",query.Data());
-    ::Error("AliTMinuitToolkit::UnbinnedFit","valueDescription: %s",values.Data());
-    ::Error("AliTMinuitToolkit::UnbinnedFit","variables: %s",variables.Data());
+    ::Error("AliTMinuitToolkit::FillFitter","badly formatted values or variables: %s",query.Data());
+    ::Error("AliTMinuitToolkit::FillFitter","valueDescription: %s",values.Data());
+    ::Error("AliTMinuitToolkit::FillFitter","variables: %s",variables.Data());
     return -1;
-  }  
+  }
   Int_t index0=0;
-  if (doReset || fPoints==NULL) {
+  if (doReset || fPoints== nullptr) {
     ClearData();
     fPoints=new TMatrixD(entries,nVars);
-    fValues=new TMatrixD(entries,nVals);
+    fValues=new TMatrixD(entries,nVal);
   }else{
     index0= fPoints->GetNrows();
-    fPoints->ResizeTo(index0+entries,nVars);
-    fValues->ResizeTo(index0+entries,nVals);
+    fPoints->ResizeTo(index0+Int_t(entries),nVars);
+    fValues->ResizeTo(index0+Int_t(entries),nVal);
   }
   for (Int_t iPoint=0; iPoint<entries; iPoint++){
     for (Int_t iVar=0; iVar<nVars; iVar++){
-      (*fPoints)(index0+iPoint,iVar)=inputTree->GetVal(iVar+nVals)[iPoint];
+      (*fPoints)(index0+iPoint,iVar)=inputTree->GetVal(iVar+nVal)[iPoint];
     }
-    for (Int_t iVal=0; iVal<nVals; iVal++){
+    for (Int_t iVal=0; iVal<nVal; iVal++){
       (*fValues)(index0+iPoint,iVal)=inputTree->GetVal(iVal)[iPoint];
     }
   }
   return entries;
 }
 
-/// forrma alias string for the for tree alias or for fit title
+/// \brief Format alias string for the for tree alias or for fit title
 /// \param option  - use latex in case of title request
 /// \return        - string description
 TString AliTMinuitToolkit::GetFitFunctionAsAlias(Option_t *option, TTree * tree){
@@ -506,8 +470,8 @@ TString AliTMinuitToolkit::GetFitFunctionAsAlias(Option_t *option, TTree * tree)
   TString sOption(option);
   sOption.ToLower();
 
-  if (fVarNames==NULL){
-    ::Error("AliTMinuitToolkit::GetFitFunctionAsAlias","Variable names not defined. Fucntion supported for TTree::UnbinnedFit");
+  if (fVarNames== nullptr){
+    ::Error("AliTMinuitToolkit::GetFitFunctionAsAlias","Variable names not defined");
     return "";
   }
 
@@ -531,188 +495,232 @@ TString AliTMinuitToolkit::GetFitFunctionAsAlias(Option_t *option, TTree * tree)
                                TString::Format("(%2.2f#pm%2.2f)", (*fParam)[iPar], (*GetRMSEstimator())[iPar]).Data());
       }
     }
-  }  
+  }
   return inputString;
 }
 
-
-Double_t AliTMinuitToolkit::RrndmGaus(Double_t mean, Double_t sigma){
-  //
+/// \brief Random gaus generator as static function (to use in root TFormula, TTreeFormula)
+/// \param mean    - mean Gaus
+/// \param sigma   - sigma gaus
+/// \return
+Double_t AliTMinuitToolkit::RndmGaus(Double_t mean, Double_t sigma){
   return gRandom->Gaus(mean,sigma);
 }
 
-Double_t  AliTMinuitToolkit::RrndmLandau(Double_t mean, Double_t sigma){
+/// \brief Random gaus generator as static function (to use in root TFormula, TTreeFormula)
+/// \param mean
+/// \param sigma
+/// \return
+Double_t  AliTMinuitToolkit::RndmLandau(Double_t mean, Double_t sigma){
   return gRandom->Landau(mean,sigma);
 }
 
-Double_t  AliTMinuitToolkit::GaussCachyLogLike(Double_t *x, Double_t *p){
-  //
-  // parameters
+
+/// Log likelihood for the gaus+cauchy - used for Log likelihood minimization of distribution with tails
+/// \param x   -
+/// \param p   - p[0] - gaus fraction
+///            - p[1] - cauchy 0.5*FWHM
+/// \return    log likelihood for the mixture of gaus and cauchy distribution
+///            representation as in https://en.wikipedia.org/wiki/Cauchy_distribution
+Double_t  AliTMinuitToolkit::GaussCachyLogLike(const Double_t *x, const Double_t *p){
   Double_t vCauchy=p[1]/(TMath::Pi()*(p[1]*p[1]+(*x)*(*x)));
   Double_t vGaus=(TMath::Abs(*x)<20) ? TMath::Gaus(*x,0,1.,kTRUE):0.;
-  return TMath::Abs(TMath::Log(p[0]*vGaus+(1-p[0])*vCauchy)-1);
-  static Double_t norm= 1/TMath::Gaus(0,0,1.,kTRUE);
-  return TMath::Abs(TMath::Log((p[0]*vGaus+(1-p[0])*vCauchy)*norm));
+  Double_t p0= p[0]*TMath::Gaus(0,0,1,kTRUE)+(1-p[0])/(TMath::Pi()*p[1]);
+  return -TMath::Log((p[0]*vGaus+(1-p[0])*vCauchy)/p0);
 }
 
-void AliTMinuitToolkit::Bootstrap(Int_t nIter, const char * reportName, Option_t *option){
-  //
-  // Bootstrap minimization 
-  // fitting parameters done on several times on modified data (random samples with replacement)  (to be done togerher with M-stimator)
-  //    to emulate different data population
-  //    reduce problem with local minima in the M-estimator estimated parameters - robust mean/median
-  //    obtained RMS can be used to estimate error of the estemator
-  //   
+/// Huber loss  is a loss function used in robust regression - representation as in https://en.wikipedia.org/w/index.php?title=Huber_loss&diff=809252384&oldid=798150659
+/// \param x   -
+/// \param p   - p[0] - gaus region boundary
+/// \return    - loss  function (used as a log likelihood)
+///
+Double_t  AliTMinuitToolkit::HuberLogLike(const Double_t *x, const Double_t *p){
+  Double_t absX=TMath::Abs(x[0]);
+  if (absX<p[0]) return absX*absX;
+  return p[0]*(2*absX-p[0]);
+}
+
+/// Pseudo Huber loss  is a loss function used in robust regression - representation as in https://en.wikipedia.org/w/index.php?title=Huber_loss&diff=809252384&oldid=798150659
+/// \param x   -
+/// \param p   - p[0] - gaus region boundary
+/// \return    - loss  function (used as a log likelihood)
+///
+Double_t  AliTMinuitToolkit::PseudoHuberLogLike(const Double_t *x, const Double_t *p){
+  Double_t p2=p[0]*p[0];
+  Double_t x2=x[0]*x[0];
+  Double_t result=p2*(TMath::Sqrt(1.+x2/p2)-1.);
+  return result;
+}
+
+/// \brief Bootstrap minimization
+/// * fitting parameters done several times on modified data sample (random samples with replacement)
+///  *   to emulate different data population
+///  *   reduce problem with local minimum in the M-estimator estimated parameters - robust mean/median
+///  *   obtained RMS used to estimate error (take into account also model error)
+/// * TODO - parameters robust estimator setting
+/// \param nIter        - number of iteration
+/// \param reportName   - report name - in case results streamed
+/// \param option       - fit option
+
+void AliTMinuitToolkit::Bootstrap(ULong_t nIter, const char * reportName, Option_t *option){
   static Int_t counter=0;
   Int_t nPoints= fPoints->GetNrows();
   fPointIndex.Set(nPoints);
-  Double_t info[3]={0,0,0};
-  Int_t nPar=fFormula->GetNpar();
+  // Double_t info[3]={0,0,0};
+  Int_t nPar= fFormula->GetNpar();
   Int_t fcnP=-1;
   TObjString rName("bootstrap");
-  if (reportName!=NULL) rName=reportName;
-  std::vector< std::vector<double> > vecPar(nPar, std::vector<double>(nIter));
+  if (reportName!= nullptr) rName=reportName;
+  std::vector< std::vector<double> > vecPar(static_cast<unsigned long>(nPar), std::vector<double>(nIter));
   for (Int_t iter=0; iter<nIter; iter++){
     counter++;
     for (Int_t iPoint=0; iPoint<nPoints; iPoint++){
-      fPointIndex[iPoint]=gRandom->Rndm()*nPoints;
+      fPointIndex[iPoint]= static_cast<Int_t>(gRandom->Rndm() * nPoints);
     }
     Fit(option);
-    FitterFCN(nPar,NULL,fChi2, fParam->GetMatrixArray(),0); 
-    if (fcnP<0) fcnP=info[0];
-    if (fVerbose&kSysInfo) AliSysInfo::AddStamp("Bootstrap",0,counter,iter,info[0]-fcnP);
-    //Int_t fcnCounter=info[0]-fcnP;
-    //fcnP=info[0];
-    for (Int_t iPar=0; iPar<nPar;iPar++)  vecPar[iPar][iter]=(*fParam)(iPar);
-    if (fStreamer){      
+    FitterFCN(nPar, nullptr,fChi2, fParam->GetMatrixArray(),0);
+    if (fcnP<0) fcnP=fFCNCounter;
+    if (fVerbose&kSysInfo) AliSysInfo::AddStamp("Bootstrap",0,counter,iter,fFCNCounter-fcnP);
+    Int_t fcnCounter=fFCNCounter-fcnP;
+    fcnP=fFCNCounter;
+    for (UInt_t iPar=0; iPar<nPar;iPar++)  vecPar[iPar][iter]=(*fParam)(iPar);
+    if (fStreamer){
       (*fStreamer)<<"bootstrap"<<
-	"iter="<<iter<<
-	"fStatus="<<fStatus<<    // minuit status
-	"reportName.="<<&rName<<
-	"nPoints="<<nPoints<<   
-	"fChi2="<<fChi2<<
-	//	"fcnCounterI="<<info[0]<<
-	//	"fcnCounter="<<fcnCounter<<
-	"fParam.="<<fParam<<
-	"fCovar.="<<fCovar<<
-	"\n";
+                  "iter="<<iter<<
+                  "fStatus="<<fStatus<<    // minuit status
+                  "reportName.="<<&rName<<
+                  "nPoints="<<nPoints<<
+                  "fChi2="<<fChi2<<
+                  "fcnCounterI="<<fFCNCounter<<
+                  "fcnCounter="<<fcnCounter<<
+                  "fParam.="<<fParam<<
+                  "fCovar.="<<fCovar<<
+                  "\n";
     }
   }
-  if (fRMSEstimator==NULL) fRMSEstimator=new TVectorD(*fParam);
+  if (fRMSEstimator== nullptr) fRMSEstimator=new TVectorD(*fParam);
   TVectorD &par=*fParam;
   TVectorD &rms=*fRMSEstimator;
   for (Int_t iPar=0; iPar<nPar;iPar++) {
-    Double_t rmsf,meanf;
-    TStatToolkit::EvaluateUni(nIter,vecPar[iPar].data(),meanf,rmsf,TMath::Max(nIter*0.75,1.));
-    par[iPar]=TMath::Median(nIter,vecPar[iPar].data());
-    rms[iPar]=rmsf;
+    Double_t rmsF,meanF;
+    TStatToolkit::EvaluateUni(static_cast<Int_t>(nIter), vecPar[iPar].data(), meanF, rmsF,
+                              static_cast<Int_t>(TMath::Max(nIter * 0.75, 1.)));
+    par[iPar]=TMath::Median(static_cast<Long64_t>(nIter), vecPar[iPar].data());
+    rms[iPar]=rmsF;
   }
   fPointIndex.Set(0);
-  return ;
 }
 
 
-void AliTMinuitToolkit::TwoFoldCrossValidation(Int_t nIter, const char * reportName, Option_t *option){
-  //
-  // Two fold cross validation 
-  // Sample randomly divided to the independent training set and  complementary test set
-  //  - log likehood cost function calculated for training fit set 
-  //     
-  static Int_t counter=0;
-  Int_t nPoints= fPoints->GetNrows();
+///\breief Two fold cross validation - https://en.wikipedia.org/wiki/Cross-validation_(statistics)
+/// * Sample randomly divided to the independent training set and  complementary test set (Repeated random sub-sampling validation)
+/// * log likelihood cost function calculated for training fit set
+/// * TODO - Used for fit model validation. Report - Post processing using streamer not available for the moment
+/// * TODO - Add:  The results are then averaged over the splits as described in the wiki section - (Repeated random sub-sampling validation)
+/// \param nIter        - number of iterations
+/// \param reportName   - report name (identifier in the streamer)
+/// \param option       - fit option
+void AliTMinuitToolkit::TwoFoldCrossValidation(UInt_t nIter, const char *reportName, Option_t *option) {
+  static Int_t counter = 0;
+  Int_t nPoints = fPoints->GetNrows();
   TArrayI indexFold(nPoints);
-  TArrayF rndmCV(nPoints);  
+  TArrayD rndmCV(nPoints);
   fPointIndex.Set(nPoints);
-  Double_t chi2_00, chi2_01,  chi2_10, chi2_11;
-  Double_t info[3]={0,0,0};
-  Int_t nPar=fFormula->GetNpar();
-  Int_t fcnP=-1;
+  Double_t chi2_00, chi2_01, /*chi2_10,*/ chi2_11;
+  //Double_t info[3] = {0, 0, 0};
+  Int_t nPar = fFormula->GetNpar();
+  Int_t fcnP = -1;
   TObjString rName(reportName);
-  std::vector< std::vector<double> > vecPar(2*nPar+4, std::vector<double>(nIter));  //store vectors and chi2
-  for (Int_t iter=0; iter<nIter; iter++){
-    for (Int_t iPoint=0; iPoint<nPoints; iPoint++){
-      rndmCV[iPoint]=gRandom->Rndm()*nPoints;
+  std::vector<std::vector<double> > vecPar(static_cast<unsigned long>(2 * nPar + 4), std::vector<double>(nIter));  //store vectors and chi2
+  for (Int_t iter = 0; iter < nIter; iter++) {
+    for (Int_t iPoint = 0; iPoint < nPoints; iPoint++) {
+      rndmCV[iPoint] = gRandom->Rndm() * nPoints;
     }
-    TMath::Sort(nPoints,rndmCV.GetArray(), indexFold.GetArray());
+    TMath::Sort(nPoints, rndmCV.GetArray(), indexFold.GetArray());
     //
-    fPointIndex.Set(nPoints/2,indexFold.GetArray());
+    fPointIndex.Set(nPoints / 2, indexFold.GetArray());
     Fit(option);
-    for (Int_t iPar=0; iPar<nPar;iPar++)  vecPar[iPar][iter]=(*fParam)(iPar);
+    for (Int_t iPar = 0; iPar < nPar; iPar++) vecPar[iPar][iter] = (*fParam)(iPar);
     TVectorD param0(*fParam);
     TMatrixD covar0(*fCovar);
-    FitterFCN(nPar,info,chi2_00, fParam->GetMatrixArray(),0); 
+    FitterFCN(nPar, nullptr, chi2_00, fParam->GetMatrixArray(), 0);
     //
-    fPointIndex.Set(nPoints-nPoints/2,&(indexFold.GetArray()[nPoints/2]));
-    FitterFCN(nPar,info,chi2_01, fParam->GetMatrixArray(),0); 
+    fPointIndex.Set(nPoints - nPoints / 2, &(indexFold.GetArray()[nPoints / 2]));
+    FitterFCN(nPar, nullptr, chi2_01, fParam->GetMatrixArray(), 0);
     Fit(option);
-    for (Int_t iPar=0; iPar<nPar;iPar++)  vecPar[nPar+iPar][iter]=(*fParam)(iPar);    
-    FitterFCN(nPar,info,chi2_11, fParam->GetMatrixArray(),0); 
-    vecPar[2*nPar][iter]=chi2_00+chi2_01+chi2_11;
+    for (Int_t iPar = 0; iPar < nPar; iPar++) vecPar[nPar + iPar][iter] = (*fParam)(iPar);
+    FitterFCN(nPar, nullptr, chi2_11, fParam->GetMatrixArray(), 0);
+    vecPar[2 * nPar][iter] = chi2_00 + chi2_01 + chi2_11;
     TVectorD param1(*fParam);
     TMatrixD covar1(*fCovar);
     // param distance
     TMatrixD covar(covar0);
-    covar+=covar1;
+    covar += covar1;
     covar.Invert();
-    TMatrixD delta(nPar,1,(param1-param0).GetMatrixArray());
-    TMatrixD delta2(covar,TMatrixD::kMult,delta);
+    TMatrixD delta(nPar, 1, (param1 - param0).GetMatrixArray());
+    TMatrixD delta2(covar, TMatrixD::kMult, delta);
     delta.T();
-    TMatrixD chi2(delta,TMatrixD::kMult,delta2);
-    chi2*=vecPar[2*nPar][iter];
-    vecPar[2*nPar+1][iter]=chi2(0,0);
-    Double_t logLike=chi2_00+chi2_01+chi2_11;
-    Double_t normDistance=TMath::Sqrt(chi2(0,0));
+    TMatrixD chi2(delta, TMatrixD::kMult, delta2);
+    chi2 *= vecPar[2 * nPar][iter];
+    vecPar[2 * nPar + 1][iter] = chi2(0, 0);
+    Double_t logLike = chi2_00 + chi2_01 + chi2_11;
+    Double_t normDistance = TMath::Sqrt(chi2(0, 0));
     //
-    if (fcnP<0) fcnP=info[0];
-    if (fVerbose&kSysInfo) AliSysInfo::AddStamp("TwoFoldCrossValidation",0,counter,iter,info[0]-fcnP);
+    if (fcnP < 0) fcnP = fFCNCounter;
+    if (fVerbose & kSysInfo) AliSysInfo::AddStamp("TwoFoldCrossValidation", 0, counter, iter, fFCNCounter - fcnP);
     counter++;
-    Int_t fcnCounter=info[0]-fcnP;
-    fcnP=info[0];
-    if (fStreamer){      
-      (*fStreamer)<<"crossValidation"<<
-	"reportName.="<<&rName<<
-	"iter="<<iter<<          // iteration 
-	"fStatus="<<fStatus<<    // minuit status
-	"nPoints="<<nPoints<<    // number of points
-	"chi2_00="<<chi2_00<<    // log likelihodd for training sample
-	"chi2_01="<<chi2_01<<    // log likelihood for test sample using traning fit
-	"chi2_11="<<chi2_11<<    // log likelihood for test sample using test fit
-	//
-	"fcnCounterI="<<info[0]<<   // fcn counter integral
-	"fcnCounter="<<fcnCounter<< // fcn counter per fit
-	"param0.="<<&param0<<    // parameters estimate training sample
-	"covar0.="<<&covar0<<    // covariance for training sample
-	"param1.="<<&param1<<    // parameters for complementaray subsample
-	"covar1.="<<&covar1<<    // covariance for complementaray subsample
-	"logLike="<<logLike<<
-	"normDistance="<<normDistance<< // parameters  normalizaed distance
-	"\n";
+    Int_t fcnCounter = fFCNCounter - fcnP;
+    fcnP = fFCNCounter;
+    if (fStreamer) {
+      (*fStreamer) << "crossValidation" <<
+                   "reportName.=" << &rName <<
+                   "iter=" << iter <<          // iteration
+                   "fStatus=" << fStatus <<    // minuit status
+                   "nPoints=" << nPoints <<    // number of points
+                   "chi2_00=" << chi2_00 <<    // log likelihood for training sample
+                   "chi2_01=" << chi2_01 <<    // log likelihood for test sample using training fit
+                   "chi2_11=" << chi2_11 <<    // log likelihood for test sample using test fit
+                   "fcnCounterI=" << fFCNCounter <<   // fcn counter integral
+                   "fcnCounter=" << fcnCounter << // fcn counter per fit
+                   "param0.=" << &param0 <<    // parameters estimate training sample
+                   "covar0.=" << &covar0 <<    // covariance for training sample
+                   "param1.=" << &param1 <<    // parameters for complementary subsample
+                   "covar1.=" << &covar1 <<    // covariance for complementary subsample
+                   "logLike=" << logLike << "normDistance=" << normDistance << // parameters  normalized distance
+                   "\n";
     }
   }
   fPointIndex.Set(0);
-  return ;
 }
 
-void AliTMinuitToolkit::MISAC(Int_t nFitPoints, Int_t nIter, const char * reportName, Option_t *option){
-  //
-  // Fitting with outlier removal inspired by RAMSAC  - see https://en.wikipedia.org/w/index.php?title=Random_sample_consensus&oldid=767657742
-  //
-  // nPoints - minimal number of points
-  const Double_t kRelMedDistanceCut=2;            // otlier rejection cut - should be parameter
-  //
+/// \brief  Fitting with outlier removal inspired by RANSAC  - see https://en.wikipedia.org/w/index.php?title=Random_sample_consensus&oldid=767657742
+/// * TODO: Make robust n-dimensional estimator
+/// \param nFitPoints  - number of points used in one fit
+/// \param nIter       - number of iterations
+/// \param reportName  - report name (!=NULL- specified stream to save intermediate data)
+/// \param option      - fit option
+/// * Algorithm:
+///  * 0.) Generate permutations of data
+///  * 1.) Calculate fit parameters for small subset of data
+///  * 2.) Calculate normalized distance between each fit vector
+///  * 3.) Reject outliers and calculate robust mean
+///  * 4.) Extract combined statistic
+///  * 5.) Dump results into tree in verbose mode
+void AliTMinuitToolkit::MISAC(Int_t nFitPoints, UInt_t nIter, const char * reportName, Option_t *option){
+  TObjString rName(reportName);
+  const Double_t kRelMedDistanceCut=2;            // outlier rejection cut - should be parameter
   Int_t nPoints= fPoints->GetNrows();         //
   Int_t nPar=fFormula->GetNpar();             // 
-  Int_t nSamples=nFitPoints*nIter;            // number of fit samples 
+  Int_t nSamples=nFitPoints*nIter;            // number of fit samples
   Int_t nRepeat=(1+(nSamples/nPoints));       //
-  Int_t *permutationIndex= new Int_t[nRepeat*nPoints];   // generate random permuations
+  Int_t *permutationIndex= new Int_t[nRepeat*nPoints];   // generate random permutations
   Double_t *xrndm=new Double_t[nPoints];
   std::vector<TMatrixD*>  paramArray(nIter); // fit parameters
   std::vector<TMatrixD*>  covarArray(nIter); // fit covariance
-  std::vector<float> logLike(nIter);         // fit to points
-  std::vector<float> medDistance(nIter);     // fit to other fits
+  std::vector<double> logLike(nIter);         // fit to points
+  std::vector<double> medDistance(nIter);     // fit to other fits
   std::vector<int> fitStatus(nIter);         // fit status
-  //
-  // 0. Generate permuations of data
+  // 0. Generate permutations of data
   for (Int_t iR=0; iR<nRepeat; iR++){         // make nRepeat random permutations of points
     for (Int_t iPoint=0; iPoint<nPoints; iPoint++){
       xrndm[iPoint]=gRandom->Rndm();
@@ -720,45 +728,45 @@ void AliTMinuitToolkit::MISAC(Int_t nFitPoints, Int_t nIter, const char * report
     TMath::Sort(nPoints, xrndm, &(permutationIndex[iR*nPoints]));
   }
   // 1.) Calculate fit parameters for small subset of data 
-  for (Int_t iter=0; iter<nIter; iter++){
+  for (UInt_t iter=0; iter<nIter; iter++){
     fPointIndex.Set(nFitPoints, &(permutationIndex[iter*nFitPoints]));
-    Fit(option); 
+    Fit(option);
     fitStatus[iter]=fStatus;
-    FitterFCN(nPar,NULL,fChi2, fParam->GetMatrixArray(),0);
+    FitterFCN(nPar, nullptr,fChi2, fParam->GetMatrixArray(),0);
     logLike[iter]=fChi2;
     paramArray[iter] = new TMatrixD(nPar,1,fParam->GetMatrixArray());
-    covarArray[iter] = new TMatrixD(*fCovar);    
+    covarArray[iter] = new TMatrixD(*fCovar);
   }
   // 2. Calculate normalized distance between each fits
   std::vector< std::vector<double> > logDistance(nIter, std::vector<double>(nIter));  //store vectors and chi2
-  for (Int_t iter0=0; iter0<nIter; iter0++){    
+  for (Int_t iter0=0; iter0<nIter; iter0++){
     for (Int_t iter1=0; iter1<nIter; iter1++){
       if ( ((fitStatus[iter0]&kCovarFailed) || (fitStatus[iter1]&kCovarFailed))==0){
-	TMatrixD covar(*(covarArray[iter0]));
-	covar+=*(covarArray[iter1]);
-	covar.Invert();
-	TMatrixD delta(*(paramArray[iter0]));
-	delta-=*(paramArray[iter1]);
-	TMatrixD delta2(covar,TMatrixD::kMult,delta);
-	delta.T();
-	TMatrixD chi2(delta,TMatrixD::kMult,delta2);
-	chi2*=logLike[iter0]+logLike[iter1];
-	Double_t normDistance=TMath::Sqrt(chi2(0,0));      
-	logDistance[iter0][iter1]=normDistance;
+        TMatrixD covar(*(covarArray[iter0]));
+        covar+=*(covarArray[iter1]);
+        covar.Invert();
+        TMatrixD delta(*(paramArray[iter0]));
+        delta-=*(paramArray[iter1]);
+        TMatrixD delta2(covar,TMatrixD::kMult,delta);
+        delta.T();
+        TMatrixD chi2(delta,TMatrixD::kMult,delta2);
+        chi2*=logLike[iter0]+logLike[iter1];
+        Double_t normDistance=TMath::Sqrt(chi2(0,0));
+        logDistance[iter0][iter1]=normDistance;
       }else{
-	logDistance[iter0][iter1]=-1.;
+        logDistance[iter0][iter1]=-1.;
       }
     }
   }
   // 3. Reject outliers and calculate robust mean
-  for (Int_t iter=0; iter<nIter; iter++){    
+  for (Int_t iter=0; iter<nIter; iter++){
     medDistance[iter]=TMath::Median(nIter, logDistance[iter].data());
   }
   Double_t medMedDistance=TMath::Median(nIter,medDistance.data());
   // 4.  Extract combined statistic
   // 4.a 1D median,mean,rms
   // 4.b nD ?
-  if (fMISACEstimators==NULL) fMISACEstimators = new TMatrixD(4,nPar);
+  if (fMISACEstimators== nullptr) fMISACEstimators = new TMatrixD(4,nPar);
   for (Int_t iPar=0;iPar<nPar; iPar++){
     std::vector<double>workingArray(nIter);
     Int_t nAccepted=0;
@@ -778,18 +786,19 @@ void AliTMinuitToolkit::MISAC(Int_t nFitPoints, Int_t nIter, const char * report
 
   }
   // 5. Dump results into tree in verbose mode
-  if (fStreamer){      
-    for (Int_t iter=0; iter<nIter; iter++){ 
+  if (fStreamer){
+    for (Int_t iter=0; iter<nIter; iter++){
       (*fStreamer)<<"misac"<<
-	"iter="<<iter<<          // iteration 
-	"fStatus="<<fStatus<<    // minuit status
-	"nPoints="<<nPoints<<    // number of points
-	"param.="<<paramArray[iter]<<
-	"covar.="<<covarArray[iter]<<
-	"medDistance="<<medDistance[iter]<<
-	"medMedDistance="<<medMedDistance<<
-	"misacE.="<<fMISACEstimators<<   // estimator matrix (estimator(median,mean,rms),param)
-	"\n";
+                  "iter="<<iter<<          // iteration
+                  "reportName.="<<&rName<<
+                  "fStatus="<<fStatus<<    // minuit status
+                  "nPoints="<<nPoints<<    // number of points
+                  "param.="<<paramArray[iter]<<
+                  "covar.="<<covarArray[iter]<<
+                  "medDistance="<<medDistance[iter]<<
+                  "medMedDistance="<<medMedDistance<<
+                  "misacE.="<<fMISACEstimators<<   // estimator matrix (estimator(median,mean,rms),param)
+                  "\n";
     }
   }
   fPointIndex.Set(0);
@@ -798,133 +807,200 @@ void AliTMinuitToolkit::MISAC(Int_t nFitPoints, Int_t nIter, const char * report
 }
 
 
-
+/// \brief Register default fitters
+/// * Registered function can be used in standard minimization using sting identifier, e.g:
+///   * \code AliTMinuitToolkit::Fit(TH1* his, const char *fitterName, Option_t* option, Option_t* goption,Option_t* foption, Double_t xMin, Double_t xMax) \endcode
+///   * \code AliTMinuitToolkit::Fit(TH1* his, const char *fitterName, Option_t* option, Option_t* goption,Option_t* foption, Double_t xMin, Double_t xMax) \endcode
+/// * Registered fitter can be accessed - eventually modified (e.g to set initial values)
+///   * \code AliTMinuitToolkit * pol1R= AliTMinuitToolkit::GetPredefinedFitter("pol1R");\endocode
+/// * Default fitters:
+///   * formula: pol<N>, gauss
+///   * log-likelihood: chi2, likeGausCachy, huber norm
 void  AliTMinuitToolkit::RegisterDefaultFitters(){
-  //
-  //
   TF1 *likeGausCachy = new TF1("likeGausCachy", AliTMinuitToolkit::GaussCachyLogLike,-10,10,2);
   likeGausCachy->SetParameters(0.8,1);
   //
-  for (Int_t ipol=0; ipol<10; ipol++){ //register polynomial fitters
-    TMatrixD initPar(ipol+1,4);
-    for (Int_t ipar=0; ipar<ipol+1; ipar++) initPar(ipar,1)=1; 
+  for (Int_t iPol=0; iPol<10; iPol++){ //register polynomial fitters
+    TMatrixD initPar(iPol+1,4);
+    for (Int_t iPar=0; iPar<iPol+1; iPar++) initPar(iPar,1)=1;
     //
-    TF1 *fpol = new TF1(TString::Format("fpol%d",ipol).Data(),TString::Format("pol%d",ipol).Data());
+    TF1 *fpol = new TF1(TString::Format("fpol%d",iPol).Data(),TString::Format("pol%d",iPol).Data());
     AliTMinuitToolkit * fitter1D = new AliTMinuitToolkit();
     fitter1D->SetVerbose(0x1); fitter1D->SetFitFunction(fpol,kTRUE);
     fitter1D->SetInitialParam(&initPar);
-    fitter1D->SetName(TString::Format("pol%d",ipol).Data());
+    fitter1D->SetName(TString::Format("pol%d",iPol).Data());
     AliTMinuitToolkit::SetPredefinedFitter(fitter1D->GetName(),fitter1D);
     // gaus log likelihood cost function
     AliTMinuitToolkit * fitter1DR = new AliTMinuitToolkit();
     fitter1DR->SetVerbose(0x1); fitter1DR->SetFitFunction(fpol,kTRUE);
     fitter1DR->SetLogLikelihoodFunction(likeGausCachy);
     fitter1DR->SetInitialParam(&initPar);
-    fitter1DR->SetName(TString::Format("pol%dR",ipol).Data());
+    fitter1DR->SetName(TString::Format("pol%dR",iPol).Data());
     AliTMinuitToolkit::SetPredefinedFitter(fitter1DR->GetName(),fitter1DR);
     // huber cost function
     AliTMinuitToolkit * fitter1DH = new AliTMinuitToolkit();
     fitter1DH->SetVerbose(0x1); fitter1DH->SetFitFunction(fpol,kTRUE);
     fitter1DH->SetInitialParam(&initPar);
     fitter1DH->EnableRobust(true);
-    fitter1DH->SetName(TString::Format("pol%dH",ipol).Data());
+    fitter1DH->SetName(TString::Format("pol%dH",iPol).Data());
     AliTMinuitToolkit::SetPredefinedFitter(fitter1DH->GetName(),fitter1DH);
   }
   //
-  TF1 *fgaus = new TF1("fgaus","gaus");
+  TF1 *fGaus = new TF1("fgaus","gaus");
   TMatrixD initPar(3,4);
-  initPar(0,0)=0; initPar(0,1)=1; 
-  initPar(1,0)=0; initPar(1,1)=1; 
-  initPar(2,0)=1; initPar(2,1)=1; 
+  initPar(0,0)=0; initPar(0,1)=1;
+  initPar(1,0)=0; initPar(1,1)=1;
+  initPar(2,0)=1; initPar(2,1)=1;
   AliTMinuitToolkit * fitterGR = new AliTMinuitToolkit();
-  fitterGR->SetVerbose(0x1); fitterGR->SetFitFunction(fgaus,kTRUE);
+  fitterGR->SetVerbose(0x1); fitterGR->SetFitFunction(fGaus,kTRUE);
   fitterGR->SetLogLikelihoodFunction(likeGausCachy);
   fitterGR->SetInitialParam(&initPar);
   AliTMinuitToolkit::SetPredefinedFitter("gausR",fitterGR);
- //
+  //
+}
+
+/// \breief Register plane fitters (As in the TLinearFitter)
+/// Global registered fitters can be obtained e.g :
+/// \code AliTMinuitToolkit * hyp2R= AliTMinuitToolkit::GetPredefinedFitter("hyp2R"); \endcode
+/// \param nPlanes       - number of planes
+/// \param logLikeType   - type of the log likelihood
+///                        * 0) chi2, 1.) gaus+cauchy, 2.) pseudo-huber
+/// \return return registered fitter
+AliTMinuitToolkit * AliTMinuitToolkit::RegisterPlaneFitter(Int_t nPlanes, Int_t logLikeType){
+  AliTMinuitToolkit *fitter = new AliTMinuitToolkit(TString::Format("AliTMinuitToolkitTest%d.root", nPlanes));
+  TString sFormula = "[0]*x[0]";
+  for (Int_t iPlane=1; iPlane<nPlanes; iPlane++) sFormula+=TString::Format("+[%d]*x[%d]", iPlane,iPlane);
+  TFormula *formula = new TFormula(TString::Format("hyp%dR",nPlanes).Data(), sFormula.Data());
+  fitter->SetFitFunction((TF1 *) formula, kTRUE);
+  //
+  if (logLikeType==0) { // standard minimization
+    TF1 *likeGaus = new TF1("likeGausCachy", "x*x*0.5", -10, 10);
+    fitter->SetLogLikelihoodFunction(likeGaus);
+    fitter->SetName(TString::Format("hyp%d", nPlanes).Data());
+  }
+  if (logLikeType==1){
+    TF1 *likeGausCachy = new TF1("likeGausCachy", AliTMinuitToolkit::GaussCachyLogLike, -10, 10, 2);
+    likeGausCachy->SetParameters(0.8, 1);
+    fitter->SetLogLikelihoodFunction(likeGausCachy);
+    fitter->SetName(TString::Format("hyp%dR", nPlanes).Data());
+  }
+  if (logLikeType==2){
+    TF1 *likePseudoHuber = new TF1("likePseudoHuber", AliTMinuitToolkit::PseudoHuberLogLike, -10, 10, 1);
+    likePseudoHuber->SetParameter(0,3);
+    fitter->SetLogLikelihoodFunction(likePseudoHuber);
+    fitter->SetName(TString::Format("hyp%dH", nPlanes).Data());
+  }
+  fitter->SetInitialParam(new TMatrixD(nPlanes,4));
+  AliTMinuitToolkit::SetPredefinedFitter(fitter->GetName(), fitter);
+  return fitter;
 }
 
 
-AliTMinuitToolkit *  AliTMinuitToolkit::Fit(TH1* his, const char *fitterName, Option_t* option, Option_t* goption,Option_t* foption, Double_t xmin, Double_t xmax){
-  //
-  //
+/// \brief Make histogram fit
+/// * TODO- add example code snippet - using the code from test directory
+/// \param his              - pointer to histogram
+/// \param fitterName       - fitter name ()
+/// \param fitOption        - fit Option
+/// \param hisOption        - graphic option for histogram
+/// \param funOption        - graphic option for function drawing
+/// \param xMin             - fit range min
+/// \param xMax             - fit range max
+/// \return                 - pointer to the fitter
+
+AliTMinuitToolkit *  AliTMinuitToolkit::Fit(TH1* his, const char *fitterName, Option_t* fitOption, Option_t* hisOption,Option_t* funOption, Double_t xMin, Double_t xMax){
   AliTMinuitToolkit *fitter=GetPredefinedFitter(fitterName);
-  if (fitter==NULL){
-    ::Error("AliTMinuitToolkit::Fit","Unsuported fitter %s. \nfitter can be added to the list using. SetPredefinedFitter", fitterName);
-    return NULL;
+  if (fitter== nullptr){
+    ::Error("AliTMinuitToolkit::Fit","Non supported fitter %s. \nfitter can be added to the list using. SetPredefinedFitter", fitterName);
+    return nullptr;
   }
-  if (his==NULL){
-    ::Error("AliTMinuitToolkit::Fit","Zerro pointer");
-    return NULL;
+  if (his== nullptr){
+    ::Error("AliTMinuitToolkit::Fit","NULL pointer");
+    return nullptr;
   }
-  fitter->FitHistogram(his,foption);
+  fitter->FitHistogram(his,fitOption);
   TF1 * fitFun = (TF1*)(fitter->GetFormula()->Clone());
   fitFun->SetParameters(fitter->GetParameters()->GetMatrixArray());
-  SetFunctionDrawOption(fitFun,goption);
+  SetFunctionDrawOption(fitFun,funOption);
   his->GetListOfFunctions()->AddLast(fitFun);
-  if (xmin<xmax) {
-    fitFun->SetRange(xmin,xmax);
+  if (xMin<xMax) {
+    fitFun->SetRange(xMin,xMax);
   }else{
     fitFun->SetRange(his->GetXaxis()->GetXmin(), his->GetXaxis()->GetXmax());
   }
-  his->Draw(goption);
+  if (hisOption) his->Draw(hisOption);
   return fitter;
 }
 
 
+/// \brief Make graph fit
+/// * TODO- add example code snippet - using the code from test directory
+/// \param graph            - pointer to graph
+/// \param fitterName       - fitter name ()
+/// \param fitOption        - fitter setting option
+/// \param graphOption      - graphic option
+/// \param funOption        - graphic option for function
+/// \param xMin             - fit range min
+/// \param xMax             - fit range max
+/// \return                 - pointer to the fitter
 
-AliTMinuitToolkit *  AliTMinuitToolkit::Fit(TGraph *graph, const char *fitterName, Option_t* option, Option_t* goption,  Option_t* foption, Double_t xmin, Double_t xmax){
+AliTMinuitToolkit *  AliTMinuitToolkit::Fit(TGraph *graph, const char *fitterName, Option_t* fitOption, Option_t* graphOption,  Option_t* funOption, Double_t xMin, Double_t xMax){
   //
   //
   AliTMinuitToolkit *fitter=GetPredefinedFitter(fitterName);
-  if (fitter==NULL){
-    ::Error("AliTMinuitToolkit::Fit","Unsuported fitter %s. \nfitter can be added to the list using. SetPredefinedFitter", fitterName);
-    return NULL;
+  if (fitter== nullptr){
+    ::Error("AliTMinuitToolkit::Fit","Non supported fitter %s. \nfitter can be added to the list using. SetPredefinedFitter", fitterName);
+    return nullptr;
   }
-  if (graph==NULL){
-    ::Error("AliTMinuitToolkit::Fit","Zerro pointer");
-    return NULL;
+  if (graph== nullptr){
+    ::Error("AliTMinuitToolkit::Fit","NULL pointer");
+    return nullptr;
   }
-  fitter->FitGraph(graph,option);
+  fitter->FitGraph(graph,fitOption);
   TF1 * fitFun = (TF1*)(fitter->GetFormula()->Clone());
   fitFun->SetParameters(fitter->GetParameters()->GetMatrixArray());
-  fitFun->SetName(TString::Format("%s:%s",fitter->GetName(), option).Data());
-  fitFun->SetTitle(TString::Format("%s:%s",fitter->GetName(), option).Data());
-  SetFunctionDrawOption(fitFun,foption);
+  fitFun->SetName(TString::Format("%s:%s",fitter->GetName(), fitOption).Data());
+  fitFun->SetTitle(TString::Format("%s:%s",fitter->GetName(), fitOption).Data());
+  SetFunctionDrawOption(fitFun,funOption);
   graph->GetListOfFunctions()->AddLast(fitFun);
-  if (xmin<xmax) {
-    fitFun->SetRange(xmin,xmax);
+  if (xMin<xMax) {
+    fitFun->SetRange(xMin,xMax);
   }else{
     fitFun->SetRange(graph->GetXaxis()->GetXmin(), graph->GetXaxis()->GetXmax());
   }
-  graph->Draw();
+  if (graphOption) graph->Draw(graphOption);
   return fitter;
 }
+
+/// Parse draw option for function
+/// \param fun        - pointer to function to change
+/// \param option     - draw option for function
+/// * TODO- add example using the code from test directory
+/// * Example usage:
+/// \code AliTMinuitToolkit::SetFunctionDrawOption(fpol1,"funOption(1,1,1)")\endcode
 
 void  AliTMinuitToolkit::SetFunctionDrawOption(TF1 *fun, Option_t *option){
   TString funOption=option; // e.g  "funOption(1,1,1)"
   TPRegexp regFunOption("funOption\\(");
-  // Error measges ???
+  // Error message
   if (regFunOption.Match(funOption)){
     Int_t index0=funOption.Index(regFunOption)+9;
     Int_t index1=funOption.Index(")",index0+1);
     if (index1<index0) {
-      ::Error("AliTMinuitToolkit::SetFunctionDrawOption","Invalide function draw option syntax %s", option);
+      ::Error("AliTMinuitToolkit::SetFunctionDrawOption","Invalid function draw option syntax %s", option);
       return;
     }
     Int_t index=index0+1;
     Int_t color=TString(&(funOption.Data()[index])).Atoi();
-    if (color>0) fun->SetLineColor(color);
+    if (color>0) fun->SetLineColor(static_cast<Color_t>(color));
     index=funOption.Index(",",index+1)+1;
     if (index>0) {
       Int_t width=TString(&(funOption.Data()[index])).Atoi();
-      if (width>0) fun->SetLineWidth(width);
+      if (width>0) fun->SetLineWidth(static_cast<Width_t>(width));
       index=funOption.Index(",",index+1)+1;
       if (index>0) {
-	Int_t style=TString(&(funOption.Data()[index])).Atoi();
-	if (style>0) fun->SetLineStyle(style);
+        Int_t style=TString(&(funOption.Data()[index])).Atoi();
+        if (style>0) fun->SetLineStyle(static_cast<Style_t>(style));
       }
     }
   }
-
 }

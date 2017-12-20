@@ -36,6 +36,7 @@
 #include <TClonesArray.h>
 
 //#include "AliRun.h"
+#include "AliGenEventHeader.h"
 #include "AliGenDRgen.h"
 #include "TDRgen.h"
 #include "DRGENcommon.h"
@@ -192,6 +193,12 @@ void AliGenDRgen::Generate()
     Info("Generate","Event %d\n",fEvent);
     fTDRgen->Finish();
   }
+
+  // Make header
+  AliGenEventHeader* header = new AliGenEventHeader("DRgen");
+ 
+  // Pass header
+  AddHeader(header);
 }
 
 //____________________________________________________________

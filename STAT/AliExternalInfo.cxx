@@ -137,6 +137,85 @@ void AliExternalInfo::PrintConfig(){
 }
 
 
+///  AliExternalInfo::GetProductionTree(TString period, TString pass)
+/// \param period    - period ID
+/// \param pass      - pass ID
+/// \return production tree ()
+/// * Input data source MonALISA
+///   * Production information from MonALISA web interface - querying tags
+///     * PPass - https://alimonitor.cern.ch/prod/?t=1&res_path=mif
+///     * CPass - https://alimonitor.cern.ch/prod/?t=2&res_path=mif
+///     * MC - https://alimonitor.cern.ch/prod/?t=3&res_path=mif
+///   * Tags query not fully reliable as syntax was chenging several times
+///   * Only reliable information - path column in reulting tree (path to the output data)
+/// * Algorithm:
+///   * loop over all possible production (Prod, ProdCPassm, ProdMC)  for given period
+///   * loop over all passes for given production
+///   * check presence of output path
+///   * save tree in cache file
+/*!
+  Example usage:
+  \code
+  AliExternalInfo info;
+  TTree *  prodTree = info.GetProductionTree("LHC17f","pass1");
+  prodTree->Scan("RunNo:outputdir:jobs_error:jobs_total","","col=10:50:10:10");
+  TTree *  mcProdTree = info.GetProductionTree("LHC17k2","");
+  mcProdTree->Scan("RunNo:outputdir:jobs_error:jobs_total","","col=10:50:10:10");
+  \endcode
+*/
+TTree *  AliExternalInfo::GetProductionTree(TString period, TString pass){
+  TTree *productionTree=NULL;
+  TPRegexp regexpDir(TString::Format("/%s$",pass.Data()));
+  for (Int_t productionSource=0; productionSource<3; productionSource++){
+    TTree *  treeProductionAll = NULL;
+    if (productionSource==0) treeProductionAll = GetTree("MonALISA.ProductionCycle","","");
+    if (productionSource==1) treeProductionAll = GetTree("MonALISA.ProductionCPass","","");
+    if (productionSource==2) treeProductionAll = GetTree("MonALISA.ProductionMC","","");
+    treeProductionAll->SetBranchStatus("*",kFALSE);
+    treeProductionAll->SetBranchStatus("Tag",kTRUE);
+    treeProductionAll->SetBranchStatus("ID",kTRUE);
+    Int_t entriesAll=treeProductionAll->GetEntries();
+    for (Int_t i=0; i<entriesAll; i++){
+      treeProductionAll->GetEntry(i);
+      TString tag=((char*)treeProductionAll->GetLeaf("Tag")->GetValuePointer());
+      if (tag.Contains(period.Data())==0) continue;
+      Int_t id = TMath::Nint(treeProductionAll->GetLeaf("ID")->GetValue());
+      if (fVerbose&0x2) ::Info("GetProductionTree","Check id %d\t%s",id, tag.Data());
+      TTree * cTree = GetTreeProdCycleByID(TString::Format("%d", id));
+      if (cTree==NULL) continue;
+      if (productionSource==2) {  // do not check dir for the MC production  - different naming convention
+        productionTree=cTree;
+        break;
+      }
+      cTree->GetEntry(0);
+      TString dir=((char*)cTree->GetLeaf("outputdir")->GetValuePointer());
+      if (regexpDir.Match(dir)){
+         productionTree=cTree;
+         break;
+      }
+    }
+    delete treeProductionAll;
+    if (productionTree) { // save file in predefined folder
+      TString outputPath = CreatePath("MonALISA.Production",period,pass);
+      if (gSystem->Getenv("AliExternalInfoCache")){
+        outputPath.Prepend(gSystem->Getenv("AliExternalInfoCache"));
+      }else{
+        outputPath.Prepend(".");
+      }
+      gSystem->mkdir(outputPath,kTRUE);
+      outputPath+=fConfigMap["MonALISA.Production.filename"];
+      TFile *f = TFile::Open(outputPath.Data(),"recreate");
+      TTree *copyTree = productionTree->CopyTree("");
+      copyTree->Write(fConfigMap["MonALISA.Production.treename"]);
+      f->Close();
+      if (fVerbose&0x1) ::Info("GetProductionTree","Make cache path %s",outputPath.Data());
+      return productionTree;
+    }
+  }
+  return NULL;
+}
+
+
 /// Sets up all variables according to period, pass and type. Extracts information from the config file
 void AliExternalInfo::SetupVariables(TString& internalFilename, TString& internalLocation, Bool_t& resourceIsTree, TString& pathStructure, \
                                      TString& detector, TString& rootFileName, TString& treeName, const TString& type, const TString& period, const TString& pass, TString & indexName){
@@ -632,6 +711,7 @@ Bool_t AliExternalInfo::BuildIndex(TTree* tree, TString type){
   //
   if (oldIndexName.Length()>0){  // rename branch  with index if specified in configuration file
     if (tree->GetBranch(oldIndexName.Data())) {
+      tree->SetAlias(indexName.Data(),oldIndexName.Data());
     }
   }
   if (indexName.Length()<=0) { // set default index name
@@ -639,7 +719,7 @@ Bool_t AliExternalInfo::BuildIndex(TTree* tree, TString type){
     if (tree->GetListOfBranches()!=NULL) if (tree->GetListOfBranches()->FindObject("run"))  indexName="run";
   }
   if (indexName.Length()<=0) {
-    ::Error("AliExternalInfo::BuildIndex","Index %s not avaible for type %s", indexName.Data(), type.Data());
+    ::Error("AliExternalInfo::BuildIndex","Index %s not available for type %s", indexName.Data(), type.Data());
   }  
   if (tree->GetBranch(indexName.Data()) && TString(tree->GetBranch(indexName.Data())->GetTitle()).Contains("/C")){
     BuildHashIndex(tree,indexName.Data(),"hashIndex");
@@ -648,24 +728,7 @@ Bool_t AliExternalInfo::BuildIndex(TTree* tree, TString type){
   }
   TStatToolkit::AddMetadata(tree,"TTree.indexName",indexName.Data());
 
- //  TString name = "";
-
-//   if(type.Contains("QA")){ // use TPC instead of QA.TPC
-//     name = type(3, type.Length()-1);
-//   }
-//   else if(type.Contains("MonALISA")){
-//     name = type(9, type.Length()-1);
-//   }
-//   else {
-//     name = type;
-//   }
-//   tree->SetName(name);
-//   if (fTree == 0x0) fTree = dynamic_cast<TTree*>(tree->Clone());
-
- 
-//   fTree->AddFriend(tree, name);  
-//  AliInfo(TString::Format("Added as friend with the name: %s",name.Data()));
-  ::Info("AliExternalInfo::BuildIndex", "TreeName:%s;IndexName:%s",tree->GetName(), indexName.Data());
+  if (fVerbose&0x2) ::Info("AliExternalInfo::BuildIndex", "TreeName:%s;IndexName:%s",tree->GetName(), indexName.Data());
   return kTRUE;
 }
 /// \param type Type of the resource as described in the config file, e.g. QA.TPC, MonALISA.RCT

@@ -3,9 +3,22 @@
 /// \ingroup EMCAL_TestSimRec
 /// \brief Simple macro to test EMCAL simulation
 ///
-/// Simple macro to test EMCAL simulation
+/// Simple macro to test EMCAL simulation.
+/// It will take the Config.C macro that is sitting in the same place as the execution is performed.
+/// In order to execute this you can do 
+///    * Root5: aliroot -q -b -l $ALICE_ROOT/EMCAL/macros/TestSimuReco/TestEMCALSimulation.C
+///    * Root6: aliroot -q -b -l $ALICE_ROOT/EMCAL/macros/TestSimuReco/LoadLibForConfig.C $ALICE_ROOT/EMCAL/macros/TestSimuReco/TestEMCALSimulation.C
 ///
-/// \author Jenn Klay, LLNL
+/// Or directly in the root prompt 
+///    root [1] .x LoadLibForConfig.C //Root6
+///    root [2] .x TestEMCALSimulation.C
+///
+/// In order to find all the included classes in the Config.C one should add to the rootlogon.C file some paths
+/// gSystem->SetIncludePath("-I$ROOTSYS/include -I$ALICE_ROOT/  -I$ALICE_ROOT/include -I$ALICE_ROOT/ANALYSIS/macros -I$ALICE_ROOT/STEER -I$ALICE_ROOT/STEER/STEER -I$GEANT3DIR/include -I$GEANT3DIR/include/TGeant3");
+/// or do it in the root prompt before execution.
+///
+/// \author : Jenn Klay, LLNL.
+/// \author : Gustavo Conesa Balbastre <Gustavo.Conesa.Balbastre@cern.ch>, (LPSC-CNRS). 
 ///
 
 #if !defined(__CINT__) || defined(__MAKECINT__)
@@ -18,6 +31,13 @@
 
 #endif
 
+#ifndef TRANSPORTMODEL
+#define TRANSPORTMODEL
+
+TString kTransportModel = "None"; // Set it in LoadLibForConfig.C
+
+#endif //TRANSPORTMODEL
+
 ///
 /// Main execution method
 ///
@@ -26,6 +46,14 @@
 ///
 void TestEMCALSimulation(Int_t nev =10, Bool_t raw = kFALSE)
 {
+  if(kTransportModel=="" || kTransportModel=="None")
+  {
+    AliLog::Message(AliLog::kInfo, 
+                    "DO NOTHING *** Remember to load before LoadLibForConfig.C!! Set there the transport model!! ***", 
+                    "TestEMCALSimulation.C", "TestEMCALSimulation.C", "TestEMCALSimulation()","TestEMCALSimulation.C", __LINE__);
+    return;
+  }
+  
   AliSimulation simulator;
   simulator.SetConfigFile("Config.C");
   simulator.SetMakeSDigits("EMCAL");
@@ -37,7 +65,7 @@ void TestEMCALSimulation(Int_t nev =10, Bool_t raw = kFALSE)
   if(raw)  simulator.SetWriteRawData("EMCAL","raw.root",kTRUE);
   
   //OCDB settings
-  simulator.SetDefaultStorage("local://$ALICE_ROOT/OCDB");
+  simulator.SetDefaultStorage("local://$ALIROOT_OCDB_ROOT/OCDB");
   simulator.SetSpecificStorage("GRP/GRP/Data",
                                Form("local://%s",gSystem->pwd()));
   
@@ -51,7 +79,7 @@ void TestEMCALSimulation(Int_t nev =10, Bool_t raw = kFALSE)
   simulator.SetRunHLT("");
   
   //Avoid QA
-  simulator.SetRunQA(":");
+  //simulator.SetRunQA(":");
   
   TStopwatch timer;
   timer.Start();
