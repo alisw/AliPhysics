@@ -97,7 +97,8 @@ void GetEnvelopeForEachV2(Int_t collsyst, Bool_t subtrMCclos, Bool_t oldnames, I
     Int_t dPtmax = 3;
     Int_t dhadPtmax = 3;
     Int_t dPtMin = 1;
-    if(collsyst==2) {dPtmax = 4; dhadPtmax = 7; dPtMin = 0;}
+    if(collsyst==2 && centbin==0) {dPtmax = 4; dhadPtmax = 7; dPtMin = 0;}
+    if(collsyst==2 && centbin!=0) {dPtmax = 4; dhadPtmax = 3; dPtMin = 0;}    
 
     for(Int_t iDpt = dPtMin; iDpt <dPtmax; iDpt++){
         for(Int_t ihadpt = 0; ihadpt <dhadPtmax; ihadpt++){
@@ -237,7 +238,8 @@ void GetTotalEnvelopeFromV2(Int_t collsyst, Bool_t subtrMCclos, Bool_t oldnames,
     Int_t dPtmax = 3;
     Int_t dhadPtmax = 3;
     Int_t dPtMin = 1;
-    if(collsyst==2) {dPtmax = 4; dhadPtmax = 7; dPtMin = 0;}
+    if(collsyst==2 && centbin==0) {dPtmax = 4; dhadPtmax = 7; dPtMin = 0;}
+    if(collsyst==2 && centbin!=0) {dPtmax = 4; dhadPtmax = 3; dPtMin = 0;}    
 
     for(Int_t iDpt = dPtMin; iDpt <dPtmax; iDpt++){
         for(Int_t ihadpt = 0; ihadpt <dhadPtmax; ihadpt++){
