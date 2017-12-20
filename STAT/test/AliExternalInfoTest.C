@@ -8,7 +8,7 @@
   -I$ALICE_ROOT/TPC -I$ALICE_ROOT/ITS -I$ALICE_ROOT/TRD -I$ALICE_ROOT/TOF -I$ALICE_ROOT/RAW  -I$ALICE_ROOT/STAT -I$ALICE_ROOT/TPC/TPCBase  -I$ALICE_ROOT/TPC/TPCRec -I$ALICE_ROOT/TPC/TPCCalib -I$ALICE_PHYSICS/../src/PWGPP/TPC/  -I$ALICE_ROOT/../src/STAT/");
 
   
-  .L $ALICE_ROOT/../src/STAT/test/AliExternalInfoTest.C+
+  .L $AliRoot_SRC//STAT/test/AliExternalInfoTest.C+
   
 
   TestMCProduction(); 

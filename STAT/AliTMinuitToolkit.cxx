@@ -33,6 +33,8 @@
 #include "TGraph.h"
 #include "TPRegexp.h"
 #include "TStatToolkit.h"
+//#include "TFormulaPrimitive.h"
+#include "TDataMember.h"
 
 std::map<std::string, AliTMinuitToolkit*> AliTMinuitToolkit::fPredefinedFitters;
 
@@ -552,6 +554,24 @@ Double_t  AliTMinuitToolkit::PseudoHuberLogLike(const Double_t *x, const Double_
   return result;
 }
 
+/// \brief Gaus convoluted with Erf to emulate kurtosis and skewness
+///
+/// \param x
+/// \param p
+///          * p[0],p[1],p[2] - as for gauss
+///          * p[3] - Kurtosis  - tails - proportional to 4 moment
+///          * p[4] - Asymmetry  - proportional to 3 moment
+/// \return
+Double_t AliTMinuitToolkit::GausKurtosisSkewness(const Double_t *x, const Double_t *p){
+  // TODO add protection against out of range
+  static Float_t msqrt2=1./TMath::Sqrt(2.);
+  Double_t gaussPart=p[0]*TMath::Exp(-(TMath::Power(TMath::Abs(x[0]-p[1])/p[2],p[3])));
+  Double_t erfPart=(1.+TMath::Erf(p[4]*(x[0]-p[1])/p[2]*msqrt2));
+  return gaussPart*erfPart;
+}
+
+
+
 /// \brief Bootstrap minimization
 /// * fitting parameters done several times on modified data sample (random samples with replacement)
 ///  *   to emulate different data population
@@ -710,7 +730,7 @@ void AliTMinuitToolkit::MISAC(Int_t nFitPoints, UInt_t nIter, const char * repor
   TObjString rName(reportName);
   const Double_t kRelMedDistanceCut=2;            // outlier rejection cut - should be parameter
   Int_t nPoints= fPoints->GetNrows();         //
-  Int_t nPar=fFormula->GetNpar();             // 
+  Int_t nPar=fFormula->GetNpar();             //
   Int_t nSamples=nFitPoints*nIter;            // number of fit samples
   Int_t nRepeat=(1+(nSamples/nPoints));       //
   Int_t *permutationIndex= new Int_t[nRepeat*nPoints];   // generate random permutations
@@ -720,6 +740,9 @@ void AliTMinuitToolkit::MISAC(Int_t nFitPoints, UInt_t nIter, const char * repor
   std::vector<double> logLike(nIter);         // fit to points
   std::vector<double> medDistance(nIter);     // fit to other fits
   std::vector<int> fitStatus(nIter);         // fit status
+  if (nullptr == fRMSEstimator){
+    fRMSEstimator=new TVectorD(nPar);
+  }
   // 0. Generate permutations of data
   for (Int_t iR=0; iR<nRepeat; iR++){         // make nRepeat random permutations of points
     for (Int_t iPoint=0; iPoint<nPoints; iPoint++){
@@ -741,7 +764,7 @@ void AliTMinuitToolkit::MISAC(Int_t nFitPoints, UInt_t nIter, const char * repor
   std::vector< std::vector<double> > logDistance(nIter, std::vector<double>(nIter));  //store vectors and chi2
   for (Int_t iter0=0; iter0<nIter; iter0++){
     for (Int_t iter1=0; iter1<nIter; iter1++){
-      if ( ((fitStatus[iter0]&kCovarFailed) || (fitStatus[iter1]&kCovarFailed))==0){
+      if ( ((fitStatus[iter0]&kCovarFailed)==0 && (fitStatus[iter1]&kCovarFailed))==0){
         TMatrixD covar(*(covarArray[iter0]));
         covar+=*(covarArray[iter1]);
         covar.Invert();
@@ -751,8 +774,12 @@ void AliTMinuitToolkit::MISAC(Int_t nFitPoints, UInt_t nIter, const char * repor
         delta.T();
         TMatrixD chi2(delta,TMatrixD::kMult,delta2);
         chi2*=logLike[iter0]+logLike[iter1];
-        Double_t normDistance=TMath::Sqrt(chi2(0,0));
-        logDistance[iter0][iter1]=normDistance;
+        if (chi2(0,0)>0) {
+          Double_t normDistance = TMath::Sqrt(chi2(0, 0));
+          logDistance[iter0][iter1] = normDistance;
+        }else{
+          logDistance[iter0][iter1]=-1.;  ///TODO- check failure of the fit
+        };
       }else{
         logDistance[iter0][iter1]=-1.;
       }
@@ -857,6 +884,12 @@ void  AliTMinuitToolkit::RegisterDefaultFitters(){
   fitterGR->SetInitialParam(&initPar);
   AliTMinuitToolkit::SetPredefinedFitter("gausR",fitterGR);
   //
+  //
+  // TFormulaPrimitive::AddFormula(new TFormulaPrimitive("GausKS","GausKS",(TFormulaPrimitive::GenFuncG)AliTMinuitToolkit::GausKurtosisSkewness,5));
+  // hack number of arguments in the primitive (protected member) - //TODO - fix ROOT
+  // TFormulaPrimitive * p = TFormulaPrimitive::FindFormula("GausKS");
+  // TDataMember *m = (TDataMember*)p->IsA()->GetListOfDataMembers()->FindObject("fNArguments");
+  // *((Int_t*)(((char*)p)+m->GetOffset()))=1;
 }
 
 /// \breief Register plane fitters (As in the TLinearFitter)

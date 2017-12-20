@@ -169,6 +169,7 @@ public:
   static Double_t  GaussCachyLogLike(const Double_t *x, const Double_t *p);
   static Double_t  HuberLogLike(const Double_t *x, const Double_t *p);
   static Double_t  PseudoHuberLogLike(const Double_t *x, const Double_t *p);
+  static Double_t  GausKurtosisSkewness(const Double_t *x, const Double_t *p);
   static Double_t  RndmGaus(Double_t mean=0, Double_t sigma=1);
   static Double_t  RndmLandau(Double_t mean=0, Double_t sigma=1);
   static void SetFunctionDrawOption(TF1 *fun, Option_t *option); // parse draw option and set function attributes
