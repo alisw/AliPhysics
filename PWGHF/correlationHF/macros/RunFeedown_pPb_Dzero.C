@@ -63,23 +63,34 @@ void GetEnvelopeForEachV2(Int_t collsyst, Bool_t subtrMCclos, Bool_t oldnames, I
     Double_t hadptMaxInput[] = {99.0,0.99,99.0,99.0,99.0,1.99,2.99}; // set associated tracks pt bins (upper) //03-99, 03-1, 1-99, 2-99, 3-99, 1-2, 2-3
     Double_t hadptMax[] = {99.0,1.0,99.0,99.0,99.0,2.0,3.0}; // set associated tracks pt bins (upper) //03-99, 03-1, 1-99, 2-99, 3-99, 1-2, 2-3
     Double_t purities[7];
-    if(collsyst ==0){
+    if(collsyst==0){
      purities[0] = 0.967; purities[1] = 0.963; purities[2] = 0.973;  //03-99, 03-1, 1-99
       //      purities[0] = 0.963; purities[1] = 0.967; purities[2] = 0.963; purities[3] = 0.973; 
       gSystem->Exec("mkdir -p Final_Plots_pp/Singlev2Envelope/");
     }
-    else if(collsyst ==1){
+    else if(collsyst==1){
         purities[0] = 0.965; purities[1] = 0.965; purities[2] = 0.965; //03-99, 03-1, 1-99
         gSystem->Exec("mkdir -p Final_Plots_pPb/Singlev2Envelope/");
     }
-    else if(collsyst ==2){
-        purities[0] = 0.958; purities[1] = 0.953; purities[2] = 0.973; purities[3] = 0.985; purities[4] = 0.990; purities[5] = 0.969; purities[6] = 0.982; //03-99, 03-1, 1-99, 2-99, 3-99, 1-2, 2-3
+    else if(collsyst==2 && centbin==0){ //0-100
+        purities[0] = 0.952; purities[1] = 0.949; purities[2] = 0.962; purities[3] = 0.970; purities[4] = 0.977; purities[5] = 0.958; purities[6] = 0.967; //03-99, 03-1, 1-99, 2-99, 3-99, 1-2, 2-3
         //CORRECTION FOR RATIO OF EFFICIENCIES WITH ONLY pi,K,p,e,mu (CORRECT) OVER ALL TRACKS (WRONG AND USED FOR RESULTS)
-  /*DEACTIVATED*/ //	purities[0]/=1.015;  purities[1]/= 1.010; purities[2]/= 1.042; purities[3]/= 1.063; purities[4]/= 1.069; purities[5]/= 1.038; purities[6]/= 1.063; 
+ /* DEACTIVATED */ //        purities[0]/=1.015;  purities[1]/= 1.010; purities[2]/= 1.042; purities[3]/= 1.063; purities[4]/= 1.069; purities[5]/= 1.038; purities[6]/= 1.063; 
+        gSystem->Exec("mkdir -p Final_Plots_pPb/Singlev2Envelope/");
+    }
+    else if(collsyst==2 && centbin==1){ //0-20
+        purities[0] = 0.953; purities[1] = 0.949; purities[2] = 0.961; purities[3] = 0.970; purities[4] = 0.977; purities[5] = 0.958; purities[6] = 0.967; //03-99, 03-1, 1-99, 
+        gSystem->Exec("mkdir -p Final_Plots_pPb/Singlev2Envelope/");
+    }    
+    else if(collsyst==2 && centbin==2){ //20-60
+        purities[0] = 0.953; purities[1] = 0.949; purities[2] = 0.962; purities[3] = 0.971; purities[4] = 0.979; purities[5] = 0.959; purities[6] = 0.968; //03-99, 03-1, 1-99, 
+        gSystem->Exec("mkdir -p Final_Plots_pPb/Singlev2Envelope/");
+    }    
+    else if(collsyst==2 && centbin==3){ //60-100
+        purities[0] = 0.953; purities[1] = 0.949; purities[2] = 0.964; purities[3] = 0.973; purities[4] = 0.979; purities[5] = 0.961; purities[6] = 0.971; //03-99, 03-1, 1-99, 
         gSystem->Exec("mkdir -p Final_Plots_pPb/Singlev2Envelope/");
     }    
     else cout << " ! Purity Value is not system wise " << endl;
-
     
     Int_t systmode = 3; // mode for evaluation of the envelope - standard is set to 3
 
@@ -196,19 +207,31 @@ void GetTotalEnvelopeFromV2(Int_t collsyst, Bool_t subtrMCclos, Bool_t oldnames,
     Double_t hadptMax[] = {99.0,1.0,99.0,99.0,99.0,2.0,3.0}; // set associated tracks pt bins (upper) //03-99, 03-1, 1-99, 2-99, 3-99, 1-2, 2-3
     Double_t purities[7];
 
-    if(collsyst ==0){
+    if(collsyst==0){
      purities[0] = 0.967; purities[1] = 0.963; purities[2] = 0.973;  //03-99, 03-1, 1-99
       //      purities[0] = 0.963; purities[1] = 0.967; purities[2] = 0.963; purities[3] = 0.973; 
       gSystem->Exec("mkdir -p Final_Plots_pp/Singlev2Envelope/");
     }
-    else if(collsyst ==1){
+    else if(collsyst==1){
         purities[0] = 0.965; purities[1] = 0.965; purities[2] = 0.965; //03-99, 03-1, 1-99
         gSystem->Exec("mkdir -p Final_Plots_pPb/Singlev2Envelope/");
     }
-    else if(collsyst ==2){
-        purities[0] = 0.958; purities[1] = 0.953; purities[2] = 0.973; purities[3] = 0.985; purities[4] = 0.990; purities[5] = 0.969; purities[6] = 0.982; //03-99, 03-1, 1-99, 2-99, 3-99, 1-2, 2-3
+    else if(collsyst==2 && centbin==0){ //0-100
+        purities[0] = 0.952; purities[1] = 0.949; purities[2] = 0.962; purities[3] = 0.970; purities[4] = 0.977; purities[5] = 0.958; purities[6] = 0.967; //03-99, 03-1, 1-99, 2-99, 3-99, 1-2, 2-3
         //CORRECTION FOR RATIO OF EFFICIENCIES WITH ONLY pi,K,p,e,mu (CORRECT) OVER ALL TRACKS (WRONG AND USED FOR RESULTS)
-  /* DEACTIVATED*/ //	purities[0]/=1.015;  purities[1]/= 1.010; purities[2]/= 1.042; purities[3]/= 1.063; purities[4]/= 1.069; purities[5]/= 1.038; purities[6]/= 1.063; 
+ /* DEACTIVATED */ //        purities[0]/=1.015;  purities[1]/= 1.010; purities[2]/= 1.042; purities[3]/= 1.063; purities[4]/= 1.069; purities[5]/= 1.038; purities[6]/= 1.063; 
+        gSystem->Exec("mkdir -p Final_Plots_pPb/Singlev2Envelope/");
+    }
+    else if(collsyst==2 && centbin==1){ //0-20
+        purities[0] = 0.953; purities[1] = 0.949; purities[2] = 0.961; purities[3] = 0.970; purities[4] = 0.977; purities[5] = 0.958; purities[6] = 0.967; //03-99, 03-1, 1-99, 
+        gSystem->Exec("mkdir -p Final_Plots_pPb/Singlev2Envelope/");
+    }    
+    else if(collsyst==2 && centbin==2){ //20-60
+        purities[0] = 0.953; purities[1] = 0.949; purities[2] = 0.962; purities[3] = 0.971; purities[4] = 0.979; purities[5] = 0.959; purities[6] = 0.968; //03-99, 03-1, 1-99, 
+        gSystem->Exec("mkdir -p Final_Plots_pPb/Singlev2Envelope/");
+    }    
+    else if(collsyst==2 && centbin==3){ //60-100
+        purities[0] = 0.953; purities[1] = 0.949; purities[2] = 0.964; purities[3] = 0.973; purities[4] = 0.979; purities[5] = 0.961; purities[6] = 0.971; //03-99, 03-1, 1-99, 
         gSystem->Exec("mkdir -p Final_Plots_pPb/Singlev2Envelope/");
     }    
     else cout << " ! Purity Value is not system wise " << endl;
