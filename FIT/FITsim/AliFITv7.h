@@ -18,7 +18,7 @@ class AliFITv7 : public AliFIT {
   
 public:
 
-  enum constants {kAir=1, kVac=3, kGlass=6, kOpAir=7, kAl=15, kOpGlass=16, kOpGlassCathode=19,kSensAir=22};
+  enum constants {kAir=1, kVac=3, kCeramic=4,  kGlass=6, kOpAir=7, kAl=15, kOpGlass=16, kOpGlassCathode=19,kSensAir=22};
  
   AliFITv7();
   AliFITv7(const char *name, const char *title);
