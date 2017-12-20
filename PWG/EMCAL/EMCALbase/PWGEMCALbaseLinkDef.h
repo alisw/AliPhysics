@@ -24,6 +24,7 @@
 #pragma link C++ class AliPicoTrack+;
 #pragma link C++ class AliMCParticleContainer+;
 #pragma link C++ class AliTrackContainer+;
+#pragma link C++ class AliTrackContainer::TrackOwnerHandler+;
 #pragma link C++ class AliEmcalList+;
 #pragma link C++ class std::map<std::string, AliParticleContainer*>+;
 #pragma link C++ class std::pair<std::string, AliParticleContainer*>+;
